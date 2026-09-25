@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S.B.E — מוכנות לשדה החינוכי</title>
+<style>
+:root{
+  --c-bg:#f0f4f8;--c-card:#fff;--c-border:#dee2e6;--c-text:#212529;
+  --c-muted:#6c757d;--c-primary:#1565c0;--c-primary-d:#0d47a1;
+  --c-primary-l:#e3f2fd;--c-accent:#00897b;--c-accent-l:#e0f2f1;
+  --r:12px;--shadow:0 4px 16px rgba(0,0,0,.08)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:var(--c-bg);color:var(--c-text);min-height:100vh}
+
+/* Hero */
+.hero{background:linear-gradient(135deg,var(--c-primary-d) 0%,var(--c-primary) 100%);color:#fff;padding:2.5rem 1.5rem 2rem;text-align:center}
+.hero-logo{font-size:2.5rem;font-weight:900;letter-spacing:.05em;margin-bottom:.25rem}
+.hero-sub{font-size:1rem;opacity:.85;margin-bottom:.5rem}
+.hero-desc{font-size:.88rem;opacity:.7;max-width:380px;margin:0 auto;line-height:1.5}
+
+/* Sections */
+.main{max-width:700px;margin:0 auto;padding:1.5rem 1rem}
+.section-title{font-size:.78rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--c-muted);margin:1.5rem 0 .75rem}
+.section-title:first-child{margin-top:0}
+
+/* Tool cards */
+.tool-card{
+  display:flex;align-items:flex-start;gap:1rem;
+  background:var(--c-card);border:1px solid var(--c-border);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:1.1rem 1.25rem;margin-bottom:.75rem;
+  text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s;
+  cursor:pointer
+}
+.tool-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.tool-card.disabled{opacity:.5;cursor:not-allowed;pointer-events:none}
+.tool-icon{
+  width:44px;height:44px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:1.3rem;flex-shrink:0
+}
+.icon-blue{background:var(--c-primary-l)}
+.icon-teal{background:var(--c-accent-l)}
+.icon-amber{background:#fff8e1}
+.icon-purple{background:#f3e5f5}
+.icon-gray{background:#f5f5f5}
+.tool-body{flex:1;min-width:0}
+.tool-name{font-weight:700;font-size:.95rem;margin-bottom:.2rem}
+.tool-desc{font-size:.82rem;color:var(--c-muted);line-height:1.45}
+.tool-badge{
+  font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:99px;
+  margin-top:.4rem;display:inline-block
+}
+.badge-ready{background:#e8f5e9;color:#2e7d32}
+.badge-new{background:var(--c-primary-l);color:var(--c-primary)}
+.badge-soon{background:#f5f5f5;color:#757575}
+.tool-arrow{font-size:1rem;color:var(--c-border);align-self:center;flex-shrink:0}
+a.tool-card .tool-arrow{color:var(--c-muted)}
+
+/* Two-column split for fill/team */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
+.split .tool-card{margin-bottom:0}
+@media(max-width:440px){.split{grid-template-columns:1fr}}
+
+/* Info box */
+.info-row{background:var(--c-primary-l);border:1px solid #90caf9;border-radius:var(--r);padding:.75rem 1rem;font-size:.85rem;color:#0d47a1;margin-bottom:.75rem;line-height:1.5}
+
+/* Footer */
+footer{text-align:center;padding:2rem 1rem;font-size:.78rem;color:var(--c-muted)}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-logo">S.B.E</div>
+  <div class="hero-sub">מוכנות לשדה החינוכי</div>
+  <div class="hero-desc">כלים למיפוי, הערכה ובניית חוסן — לצוות חינוכי</div>
+</div>
+
+<div class="main">
+
+  <!-- ── כלי החוסן ── -->
+  <div class="section-title">כלי המדידה — חוסן חברתי בכיתה</div>
+
+  <div class="info-row">
+    <strong>כיצד להשתמש:</strong>
+    פתח/י "ניהול וצפייה" להגדרת כיתה וקבלת קישור. שלח/י את הקישור לנשאלים (תלמידים/הורים/מורים).
+    לאחר מענה — חזור/י ל"ניהול" לראות תוצאות.
+  </div>
+
+  <div class="split">
+    <a href="resilience-team.html" class="tool-card">
+      <div class="tool-icon icon-blue">📊</div>
+      <div class="tool-body">
+        <div class="tool-name">ניהול וצפייה</div>
+        <div class="tool-desc">הגדרת כיתה · ציונים · דוח · קולות</div>
+        <span class="tool-badge badge-ready">למחנכת/מנהלת</span>
+      </div>
+      <div class="tool-arrow">›</div>
+    </a>
+    <a href="resilience-fill.html" class="tool-card">
+      <div class="tool-icon icon-teal">📝</div>
+      <div class="tool-body">
+        <div class="tool-name">מילוי שאלון</div>
+        <div class="tool-desc">לתלמידים · הורים · מורים</div>
+        <span class="tool-badge badge-ready">לנשאלים</span>
+      </div>
+      <div class="tool-arrow">›</div>
+    </a>
+  </div>
+
+  <!-- ── ספרייה וידע ── -->
+  <div class="section-title">בסיס הידע</div>
+
+  <div class="tool-card disabled">
+    <div class="tool-icon icon-purple">📚</div>
+    <div class="tool-body">
+      <div class="tool-name">ספריית המקורות</div>
+      <div class="tool-desc">23 מקורות אקדמיים — APA 7 · מאומתים ומקושרים</div>
+      <span class="tool-badge badge-soon">בקרוב</span>
+    </div>
+    <div class="tool-arrow">›</div>
+  </div>
+
+  <!-- ── תוצרים ── -->
+  <div class="section-title">תוצרים מבוססי ידע</div>
+
+  <div class="tool-card disabled">
+    <div class="tool-icon icon-amber">🎓</div>
+    <div class="tool-body">
+      <div class="tool-name">מסגרת תיאורטית</div>
+      <div class="tool-desc">חוסן חברתי בכיתה — בסיס אקדמי וגישת ההתערבות</div>
+      <span class="tool-badge badge-soon">בקרוב</span>
+    </div>
+    <div class="tool-arrow">›</div>
+  </div>
+
+  <div class="tool-card disabled">
+    <div class="tool-icon icon-teal">🗓</div>
+    <div class="tool-body">
+      <div class="tool-name">רצף 14 מפגשים</div>
+      <div class="tool-desc">תוכנית עבודה מובנית לחיזוק חוסן חברתי בכיתה</div>
+      <span class="tool-badge badge-soon">בקרוב</span>
+    </div>
+    <div class="tool-arrow">›</div>
+  </div>
+
+  <!-- ── מפת המערכת ── -->
+  <div class="section-title">מפת המערכת</div>
+
+  <div class="tool-card disabled">
+    <div class="tool-icon icon-gray">🗂</div>
+    <div class="tool-body">
+      <div class="tool-name">תוכן עניינים</div>
+      <div class="tool-desc">מבט-על על כל רכיבי המערכת וקישורים ביניהם</div>
+      <span class="tool-badge badge-soon">בקרוב</span>
+    </div>
+    <div class="tool-arrow">›</div>
+  </div>
+
+  <!-- ── בדיקות ── -->
+  <div class="section-title">מפתח</div>
+
+  <a href="test.html" class="tool-card">
+    <div class="tool-icon icon-gray">🧪</div>
+    <div class="tool-body">
+      <div class="tool-name">בדיקות מערכת</div>
+      <div class="tool-desc">검 בדיקות אוטומטיות לנוסחת הציון, hash, ונתוני המערכת</div>
+    </div>
+    <div class="tool-arrow">›</div>
+  </a>
+
+</div>
+
+<footer>S.B.E · מוכנות לשדה החינוכי</footer>
+</body>
+</html>
