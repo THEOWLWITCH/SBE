@@ -173,6 +173,23 @@ if (track === "parent" || track === "youth") {
     if (e) e.hidden = true;
   });
 }
+
+// מנהל.ת מוסד (role=inst): קרא הגדרות מודולים מהשרת, הסתר קטגוריות שבוטלו
+if (role === "inst" && inst) {
+  const CAT_IDS = { conv: "catConv", activity: "catActivity", academic: "catAcademic" };
+  fetch("/api/inst-config?inst=" + encodeURIComponent(inst))
+    .then(r => r.ok ? r.json() : null)
+    .then(cfg => {
+      if (!cfg) return; // שגיאה — ברירת מחדל הכל מוצג
+      Object.entries(CAT_IDS).forEach(([key, id]) => {
+        if (cfg[key] === false) {
+          const el = document.getElementById(id);
+          if (el) el.hidden = true;
+        }
+      });
+    })
+    .catch(() => {}); // שגיאת רשת — ברירת מחדל הכל מוצג
+}
 </script>
 
 <!-- ── כפתור דיווח גלובלי — אותו רכיב שבכל 17 מסכי app/, ראו entry.html (09/09/2026) ── -->

@@ -268,6 +268,15 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <div class="df"><button class="act d" id="dok">אישור</button><button class="act" id="dno">ביטול</button></div>
 </dialog>
 
+<dialog id="modDlg">
+  <div class="dh" id="modDh">הגדרת מודולים</div>
+  <div class="db" id="modDb"></div>
+  <div class="df">
+    <button class="act p" id="modSave">שמירה בשרת</button>
+    <button class="act" id="modCancel">ביטול</button>
+  </div>
+</dialog>
+
 <script src="lib/feedback-bank.js"></script>
 <script>
 "use strict";
@@ -648,7 +657,9 @@ function pInsts(){
     status.addEventListener("click",()=>{ x.active = !x.active; render(); });
     const b = el("button",{class:"act"},"קוד חדש");
     b.addEventListener("click",()=>{ x.code=code6(); render(); });
-    r.append(status, b);
+    const bMod = el("button",{class:"act",title:"הגדרת מודולים נגישים למנהל.ת המוסד"},"מודולים");
+    bMod.addEventListener("click",()=> openModDlg(x.n));
+    r.append(status, b, bMod);
     rows.append(r);
   });
   inn.append(rows);
@@ -1197,6 +1208,88 @@ function ask(t, msg, ok){
   const d = $("dlg"); d.showModal();
   $("dok").onclick = () => { d.close(); ok(); };
   $("dno").onclick = () => d.close();
+}
+
+// ── הגדרת מודולים למוסד ──
+// מאפשרת למנהלת המערכת לבחור אילו קטגוריות נגישות למנהל.ת מוסד ספציפי.
+// הנתון נשמר בשרת (/api/inst-config) ונקרא בעת כניסת מנהל.ת מוסד ל-system-select.html.
+// AUTH: הכנסת ערך SBE_ADMIN_TOKEN שהוגדר בלוח הבקרה של Netlify.
+const MOD_LABELS = {
+  conv:     "תכנון שיחה",
+  activity: "תכנון פעילות",
+  academic: "ניתוח ומשוב לעבודה אקדמית",
+};
+
+function openModDlg(instName) {
+  $("modDh").textContent = "מודולים — " + instName;
+  const body = $("modDb");
+  body.textContent = "";
+
+  // Load current config from server first, then render toggles
+  fetch("/api/inst-config?inst=" + encodeURIComponent(instName))
+    .then(r => r.ok ? r.json() : { conv: true, activity: true, academic: true })
+    .catch(() => ({ conv: true, activity: true, academic: true }))
+    .then(cfg => {
+      body.textContent = "";
+
+      const note = el("p",{style:"margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.6"},
+        "בחרי אילו מודולים יהיו נגישים למנהל.ת המוסד הזה בעת כניסה. ברירת מחדל: הכל פעיל.");
+      body.append(note);
+
+      const toggles = {};
+      Object.entries(MOD_LABELS).forEach(([k, label]) => {
+        const row = el("div",{style:"display:flex;align-items:center;gap:12px;margin-bottom:10px;"});
+        const cb = el("input",{type:"checkbox",id:"mod_"+k,style:"width:18px;height:18px;cursor:pointer;"});
+        cb.checked = cfg[k] !== false;
+        toggles[k] = cb;
+        const lbl = el("label",{"for":"mod_"+k,style:"font-size:15px;cursor:pointer;"}, label);
+        row.append(cb, lbl);
+        body.append(row);
+      });
+
+      const sep = el("div",{style:"margin-top:16px;padding-top:14px;border-top:1px solid var(--hair);"});
+      const tokenLbl = el("label",{style:"display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;"},
+        "קוד מנהלת מערכת (SBE_ADMIN_TOKEN) לאישור שמירה");
+      const tokenInput = el("input",{type:"password",placeholder:"הכניסי את הקוד",
+        style:"width:100%;font-family:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--hair);border-radius:6px;background:var(--ground);color:var(--ink);direction:rtl;"});
+      const errMsg = el("p",{style:"display:none;color:var(--brick);font-size:13px;margin:6px 0 0;"}, "");
+      sep.append(tokenLbl, tokenInput, errMsg);
+      body.append(sep);
+
+      const dlg = $("modDlg");
+      dlg.showModal();
+
+      $("modCancel").onclick = () => dlg.close();
+      $("modSave").onclick = async () => {
+        const token = tokenInput.value.trim();
+        if (!token) { errMsg.textContent = "יש להכניס קוד."; errMsg.style.display="block"; return; }
+        errMsg.style.display = "none";
+        $("modSave").disabled = true;
+        $("modSave").textContent = "שומר...";
+        try {
+          const modules = {};
+          Object.keys(toggles).forEach(k => modules[k] = toggles[k].checked);
+          const res = await fetch("/api/inst-config", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ inst: instName, modules, adminToken: token }),
+          });
+          const data = await res.json();
+          if (data.ok) {
+            dlg.close();
+          } else {
+            errMsg.textContent = data.error === "unauthorized" ? "קוד שגוי." : (data.error || "שגיאה.");
+            errMsg.style.display = "block";
+          }
+        } catch {
+          errMsg.textContent = "שגיאת רשת — בדקי שהאתר פרוס ב-Netlify.";
+          errMsg.style.display = "block";
+        } finally {
+          $("modSave").disabled = false;
+          $("modSave").textContent = "שמירה בשרת";
+        }
+      };
+    });
 }
 
 $("role").addEventListener("change", e => { role = e.target.value; render(); });
