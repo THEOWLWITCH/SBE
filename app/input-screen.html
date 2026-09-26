@@ -701,7 +701,8 @@ const AI_TRAIT_KEYS = ["actorTraits","traineeTraitAxes"];
 
 async function generateProposals(required) {
   try {
-    const system = [
+    // הקדמה משותפת לשתי הקריאות — השדות הנעולים + חוקי כתיבה
+    const preamble = [
       "את בונה דמויות וקונפליקט לסימולציה חינוכית עבור מערכת S.B.E, בעברית. את לא כותבת טקסט לקריאה — את ממלאת שדות בלבד, לפי הסכימה בסוף.",
       "שלושת השדות הבאים נכתבו על ידי היוצרת ונעולים — אסור לנסח אותם מחדש, אסור להחליף מונח במונח קרוב, ואסור \"לשפר\" אותם. כל שדה שתמלאי חייב להיות עקבי איתם:",
       "דמות 1 · תפקיד המתנסה: " + (required.traineeRole || ""),
@@ -709,43 +710,68 @@ async function generateProposals(required) {
       "סיפור האירוע, מה הוביל לפגישה, והיכרות קודמת בין השתיים: " + (required.event || ""),
       "חוק הספציפיות: כל שדה טקסט חייב להכיל לפחות אחד מאלה — שם פרטי, מספר, תאריך, חפץ מוחשי, מקום מסוים, או משפט במרכאות. שדה שאפשר להעתיק לתרחיש אחר בלי לשנות מילה נפסל, כתבי אותו מחדש.",
       "שם הדמות (actorName/traineeName): שם פרטי בלבד, בלי שם משפחה בשום מצב.",
-      "actorGender/traineeGender: קבעי לפי השם שבחרת/שנכתב (נקבה/זכר/אחר — לא תבחרי ערך חופשי, זהו שדה שהיוצרת יכולה להרחיב בעצמה אם תרצה). כל שדה שמתאר את השחקנית (register, tic, valve, wontSay, stated, trust, contra, domainMaterial) חייב להיות מנוקד דקדוקית בהתאם לactorGender, כולל בתוך ציטוטים במרכאות.",
+    ].join("\n\n");
+
+    // קריאה א׳ — מבנה התרחיש + דמות השחקנית (כ-30 שדות)
+    const sysActor = [
+      preamble,
+      "actorGender: קבעי לפי השם שבחרת (נקבה/זכר/אחר). כל שדה שמתאר את השחקנית (register, tic, valve, wontSay, stated, trust, contra, domainMaterial) חייב להיות מנוקד דקדוקית בהתאם לactorGender, כולל בתוך ציטוטים במרכאות.",
       "domainMaterial: מחרוזת אחת אחודה שמשלבת ארבעה חלקים (אפשר להפריד ב-\" · \"): מה היא עושה השבוע בפועל, לא בכללי · חפץ אחד או מקום אחד מעולמה המקצועי ששייך רק לה · משפט אחד שהיא תשלוף כשילחצו עליה, במרכאות · שלוש דוגמאות במרכאות איך המקצוע מעצב את התחביר שלה. זה השדה החשוב ביותר: אם היוצרת כתבה תפקיד מסוים, המונחים שלו חייבים להישמע במשפטיה גם כשלא מדובר בו ישירות.",
       "register: מחרוזת אחת שמשלבת: אורך תשובה טיפוסי במילים · מה היא עושה בגוף במקום לענות · באיזה תנאי היא אומרת משפט ארוך. \"מדברת בקצרה\" אינו מספיק — משהו כמו \"שלוש עד שש מילים, משפט ארוך רק אחרי שתיקה של ארבע שניות\" הוא הרמה הנדרשת.",
       "tic: ניסוח חוזר אחד שהוא שלה בלבד, במרכאות. השחקנית צריכה להיאחז בו תוך שלושים שניות.",
       "visibleLayer/hiddenLayer (emotions/needs/fear/stated) תלויים בסוג הקונפליקט (cType) שתבחרי: ברגשי הסמוי חייב להסביר את הגלוי; בערכי הסמוי אינו מסביר את הגלוי ואינו הופך אותו לתסמין, שתי הדמויות מתכוונות למה שהן אומרות; במבני הסמוי הוא בעיקר מה שהדמות מפסידה במערכת; במידעי ייתכן שאין רובד סמוי כלל, המנוע הוא פער הידע.",
-      "emotions (רגשות, בכל שדה emotionsVisible/emotionsHidden/traineeEmotionsVisible/traineeEmotionsHidden): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("emotions"),
-      "needs (צרכים, בכל שדה needsVisible/needsHidden/traineeNeedsVisible/traineeNeedsHidden): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("needs"),
+      "emotions (רגשות — שדות emotionsVisible/emotionsHidden של השחקנית): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("emotions"),
+      "needs (צרכים — שדות needsVisible/needsHidden של השחקנית): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("needs"),
       "skills (מיומנויות, כולל על מה המתנסה מתאמן/ת — שדה אחד ומשותף): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("skills"),
-      "הכלל החשוב מכל לבחירת רגש/צורך/מיומנות: הבחירה חייבת להתאים לסיטואציה הספציפית של הדמות הזאת ואסור שתהיה אקראית. לפני שאת בוחרת פריט, שאלי למה דווקא הוא — מה בתפקיד, בקונפליקט או בדמות שכבר נכתבו מצדיק אותו. בחירה שאפשר להעתיק לכל דמות אחרת בלי לשנות מילה היא בחירה אקראית, גם אם המילה עצמה מהרשימה הנכונה.",
+      "הכלל החשוב מכל לבחירת רגש/צורך/מיומנות: הבחירה חייבת להתאים לסיטואציה הספציפית ואסור שתהיה אקראית.",
       "wontSay: משפט אחד במרכאות שהיא לא תגיד בשום מצב. משפט ממשי, לא נושא כללי.",
       "valve (שדה \"תגובת הדמות כשהיא נלחצת\"): מה כן יוצא ממנה בלחץ השלישי, כשהקיר של wontSay עדיין מחזיק אבל משהו קטן יותר בורח. **אסור בהחלט שברירת המחדל תהיה הרמת קול** — אם עלה לך \"מרימה את הקול\"/\"צועקת\"/\"קולה עולה\", כתבי מחדש. חלופות: משפט קצר יותר מהרגיל שלה, שתיקה שנמשכת רגע אחד יותר מדי, חזרה על מילה אחת פעמיים, הנחת חפץ בכוח קטן, קימה כדי לצאת בלי לצאת בפועל, היפוך לגוף שלישי, משפט שנגמר באמצע — גזרי אותה מה-domainMaterial או מה-register של הדמות הזו בדיוק, לא מרשימה כללית.",
       "trust (שדה \"מה פותח את האמון שלה\"): פעולה מדויקת שאפשר לזהות מתי היא קרתה — לא \"אמפתיה\" ולא \"הקשבה\". כתבי גם למה דווקא זה עובד עליה.",
       "contra: עובדה אחת שלא מסתדרת עם הסטריאוטיפ של תפקיד השחקנית, שמישה בתוך שיחה של חמש דקות (לא קישוט שאי אפשר לגעת בו). שדה זה שייך לשחקנית בלבד.",
-      "actorTraits/traineeTraitAxes (תכונות ומזג): מערך אובייקטים {axis, note}, שניים עד ארבעה פריטים לכל דמות. axis חייב להיות בדיוק שם ציר אחד מהרשימה הבאה, מילה במילה, ו-note הוא תיאור ספציפי איך זה בא לידי ביטוי אצל הדמות הזו בסיטואציה הזו (לא הגדרה כללית של הציר):\n" + traitsAxisPromptText(),
+      "actorTraits (תכונות ומזג השחקנית): מערך אובייקטים {axis, note}, שניים עד ארבעה פריטים. axis חייב להיות בדיוק שם ציר אחד מהרשימה הבאה, מילה במילה, ו-note הוא תיאור ספציפי איך זה בא לידי ביטוי אצל הדמות הזו בסיטואציה הזו:\n" + traitsAxisPromptText(),
       "cType (סוג הקונפליקט): בחרי אחד בדיוק מתוך: " + CTYPE_CARDS.map(c=>c.v).join(" | ") + ". הגדרת כל סוג:\n" + CTYPE_CARDS.map(c=>c.v+": "+c.d).join("\n"),
       "conflictReal (נושא השיחה — על מה המפגש באמת): חייב להיות שונה מהותית מהסיפור הגלוי שכתבה היוצרת, אחרת אין תרחיש, יש שיחה.",
       "turningPoints: בדיוק חמש שורות ממוספרות, כל שורה בפורמט \"N. <ביטוי/טריגר קצר וספציפי> · <תגית: פתיחה|סגירה|מותנה|היפוך|פתיחה עמוקה>\" (אפשר להוסיף \" · ליבה\" בסוף לשתיים מהן). לפחות אחת מהחמש חייבת להיות סגירה או ניתוק.",
       "coreTurns: מספרי שתי התפניות שהן ליבה, בפורמט \"1 · 3\" (המספרים חייבים להתאים לשתיים מהתפניות שסימנת \"ליבה\" ב-turningPoints).",
       "knows: מה המתנסה יודעת ומה היא לא יודעת — כולל לפחות פרט אחד שהשחקנית יודעת/ראתה שהמתנסה אינה מודעת אליו (asymmetry).",
-      "actorGoal/tGoal (מטרת כל דמות בפגישה הזו): חובה לבחור אחד עד שלושה פריטים אך ורק מתוך הרשימה הסגורה הבאה (אותה רשימה של צרכים), מילה במילה, לפי מה שמתאים לפגישה הספציפית הזאת — לא בחירה אקראית:\n" + taxonomyPromptText("needs"),
+      "actorGoal (מטרת השחקנית בפגישה): חובה לבחור אחד עד שלושה פריטים אך ורק מתוך רשימת הצרכים, מילה במילה:\n" + taxonomyPromptText("needs"),
       "שדות סגורים נוספים, כל אחד בדיוק אחד מהרשימה שלו: lang מתוך [עברית | ערבית | אנגלית]. outType מתוך [תרחיש | משחק תפקידים | פרומפט לתרחיש | פרומפט למשחק תפקידים]. audience מתוך [רמה א · הכשרה בסיסית | רמה ב · שנים ראשונות במערכת | רמה ג · הכשרה מקצועית]. age מתוך [גן | כיתה א-ג | כיתה ד-ה | חטיבת ביניים | חטיבה עליונה] — לפי מה שמתאים לתפקידים שנכתבו. dur מתוך [5 דקות | 8 דקות | 10 דקות]. exp מתוך [פעם ראשונה | קבוצה מנוסה]. approach מתוך [ניתוח התנהגות ו-CBT | חינוך למשמעות | הכלה, קשיבות והתנסות | דיאלוג ומפגש]. timeOfDay מתוך [בוקר | צהריים | אחר הצהריים | ערב].",
-      "broad (הקשר רחב) ו-domain (תחום לימודי): עדיפות לרשימה סגורה מוכרת בתחום (למשל \"גבולות מעורבות ההורים\", \"קשיי משמעת בכיתה\" עבור broad; \"מתמטיקה\", \"גיל הרך\" עבור domain) — אם שום ערך מוכר לא מתאים, מותרת מחרוזת קצרה חלופית.",
+      "broad (הקשר רחב) ו-domain (תחום לימודי): עדיפות לרשימה סגורה מוכרת בתחום — אם שום ערך מוכר לא מתאים, מותרת מחרוזת קצרה חלופית.",
       "place: מקום המפגש, מקום מסוים וקונקרטי (לא \"בבית הספר\" באופן כללי).",
-      "אל תזכירי מספר תלמידים בכיתה אלא אם הוא משמעותי ישירות לתרחיש עצמו (למשל בחינוך מיוחד, שם גודל הכיתה משפיע ישירות על העומס).",
-      "בדיקה עצמית לפני שאת מחזירה: כל שדה נעול מופיע כפי שנכתב מילה במילה · אין שדה שאפשר להעתיק לתרחיש אחר בלי שינוי · ה-hiddenLayer מסביר את ה-visibleLayer ולא רק יושב לידו (ברגשי) · ה-contra ניתנת לנגיעה בתוך השיחה · ה-domainMaterial נשמע בתוך ה-register ולא רק ברשימה · שתי הדמויות לא נשמעות אותו דבר.",
-      "החזירי אך ורק אובייקט JSON תקין אחד, בלי טקסט לפני או אחרי, עם המפתחות המדויקים הבאים בלבד: lang, outType, audience, age, dur, domain, approach, exp, skills, broad, place, timeOfDay, cType, conflictReal, turningPoints, coreTurns, actorName, actorAge, actorGoal, actorGender, domainMaterial, register, tic, actorTraits, emotionsVisible, emotionsHidden, needsVisible, needsHidden, fear, stated, wontSay, valve, trust, contra, traineeName, traineeAge, traineeGender, traineeOccupation, traineeTraitAxes, traineeAnchor, tGoal, traineeEmotionsVisible, traineeEmotionsHidden, traineeNeedsVisible, traineeNeedsHidden, knows. השדות skills/emotionsVisible/emotionsHidden/needsVisible/needsHidden/traineeEmotionsVisible/traineeEmotionsHidden/traineeNeedsVisible/traineeNeedsHidden/actorGoal/tGoal הם מערכי מחרוזות. actorTraits/traineeTraitAxes הם מערכי אובייקטים {axis, note}. actorAge/traineeAge הם מחרוזות ספרות. שאר השדות הם מחרוזות טקסט.",
+      "אל תזכירי מספר תלמידים בכיתה אלא אם הוא משמעותי ישירות לתרחיש עצמו.",
+      "בדיקה עצמית לפני שאת מחזירה: כל שדה נעול מופיע כפי שנכתב מילה במילה · אין שדה שאפשר להעתיק לתרחיש אחר בלי שינוי · ה-hiddenLayer מסביר את ה-visibleLayer (ברגשי) · ה-contra ניתנת לנגיעה בתוך השיחה · ה-domainMaterial נשמע בתוך ה-register.",
+      "החזירי אך ורק אובייקט JSON תקין אחד, בלי טקסט לפני או אחרי, עם המפתחות הבאים בלבד: lang, outType, audience, age, dur, domain, approach, exp, skills, broad, place, timeOfDay, cType, conflictReal, turningPoints, coreTurns, actorName, actorAge, actorGoal, actorGender, domainMaterial, register, tic, actorTraits, emotionsVisible, emotionsHidden, needsVisible, needsHidden, fear, stated, wontSay, valve, trust, contra, knows. השדות skills/emotionsVisible/emotionsHidden/needsVisible/needsHidden/actorGoal הם מערכי מחרוזות. actorTraits הוא מערך אובייקטים {axis, note}. actorAge הוא מחרוזת ספרות. שאר השדות הם מחרוזות טקסט.",
     ].join("\n\n");
 
-    // maxTokens/timeout גדולים בכוונה: זהו שדרוג משמעותי בהיקף לעומת הצעת
-    // 16 השדות של activity-planner.html (שדרשה 16000/200 שניות) — כאן יש
-    // כ-40 שדות, כולל כמה שדות שהם בעצמם הרכבה של 3-4 חלקים (domainMaterial,
-    // register, opening, turningPoints), ושני גיליונות דמות מלאים. יכויל
-    // שוב אם יתגלה בפועל שזה לא מספיק.
-    const raw = await callAI(system, "בני דמויות וקונפליקט מלאים לתרחיש הזה, בעברית, לפי כל ההנחיות.", 24000, 90000);
-    const m = raw.match(/\{[\s\S]*\}/);
-    if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
-    const parsed = JSON.parse(m[0]);
+    // קריאה ב׳ — דמות המתנסה בלבד (כ-11 שדות)
+    const sysTrainee = [
+      preamble,
+      "traineeGender: קבעי לפי השם שבחרת (נקבה/זכר/אחר). כל שדה שמתאר את המתנסה חייב להיות מנוקד דקדוקית בהתאם לtraineeGender.",
+      "סוג הקונפליקט (cType) שקבעת לתרחיש זה — בחרי אחד מ: " + CTYPE_CARDS.map(c=>c.v).join(" | ") + " — והשתמשי בו כדי לעצב את הרובד הסמוי של המתנסה (traineeEmotionsHidden, traineeNeedsHidden). הגדרת כל סוג:\n" + CTYPE_CARDS.map(c=>c.v+": "+c.d).join("\n"),
+      "traineeEmotionsVisible/traineeEmotionsHidden: חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("emotions"),
+      "traineeNeedsVisible/traineeNeedsHidden: חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("needs"),
+      "traineeTraitAxes (תכונות ומזג המתנסה): מערך אובייקטים {axis, note}, שניים עד ארבעה פריטים. axis חייב להיות בדיוק שם ציר אחד מהרשימה הבאה, מילה במילה:\n" + traitsAxisPromptText(),
+      "tGoal (מטרת המתנסה בפגישה): חובה לבחור אחד עד שלושה פריטים אך ורק מתוך רשימת הצרכים, מילה במילה:\n" + taxonomyPromptText("needs"),
+      "traineeOccupation: עיסוק/תפקיד ספציפי של המתנסה (לא כללי).",
+      "traineeAnchor: עוגן אחד שעוזר למתנסה להישאר בדמות — פרט ספציפי מהרקע שלה.",
+      "החזירי אך ורק אובייקט JSON תקין אחד, בלי טקסט לפני או אחרי, עם המפתחות הבאים בלבד: traineeName, traineeAge, traineeGender, traineeOccupation, traineeTraitAxes, traineeAnchor, tGoal, traineeEmotionsVisible, traineeEmotionsHidden, traineeNeedsVisible, traineeNeedsHidden. השדות tGoal/traineeEmotionsVisible/traineeEmotionsHidden/traineeNeedsVisible/traineeNeedsHidden הם מערכי מחרוזות. traineeTraitAxes הוא מערך אובייקטים {axis, note}. traineeAge הוא מחרוזת ספרות. שאר השדות הם מחרוזות טקסט.",
+    ].join("\n\n");
+
+    // שתי הקריאות רצות במקביל — חוסכת ~40% מזמן ההמתנה
+    const [rawA, rawB] = await Promise.all([
+      callAI(sysActor,   "בני את מבנה התרחיש ואת דמות השחקנית לתרחיש הזה, בעברית, לפי כל ההנחיות.", 14000, 90000),
+      callAI(sysTrainee, "בני את דמות המתנסה לתרחיש הזה, בעברית, לפי כל ההנחיות.", 6000, 90000),
+    ]);
+
+    const mA = rawA.match(/\{[\s\S]*\}/);
+    const mB = rawB.match(/\{[\s\S]*\}/);
+    if (!mA) throw new Error("לא התקבל JSON תקין מהמודל (קריאה א׳)");
+    if (!mB) throw new Error("לא התקבל JSON תקין מהמודל (קריאה ב׳)");
+    const parsedA = JSON.parse(mA[0]);
+    const parsedB = JSON.parse(mB[0]);
+    // cType של קריאה א׳ קובע — היא זו שבנתה את כל מבנה הקונפליקט
+    const parsed = { ...parsedA, ...parsedB, cType: parsedA.cType };
+
     AI_CHIP_KEYS.forEach(k => { if (Array.isArray(parsed[k])) parsed[k] = parsed[k].join(","); });
     AI_TRAIT_KEYS.forEach(k => { if (Array.isArray(parsed[k])) parsed[k] = JSON.stringify(parsed[k]); });
     if (typeof parsed.actorAge === "number") parsed.actorAge = String(parsed.actorAge);
