@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חוסן חברתי — מילוי שאלון</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script src="lib/resilience-data.js"></script>
+<script src="lib/resilience-score.js"></script>
+<style>
+:root{
+  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
+  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
+  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
+  --auto:#4A6B5A; --auto-soft:#DFE9E2;
+  --brick:#8C3A34; --brick-soft:#F5E4E2;
+  --shadow:rgba(20,28,36,.09);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+    --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+    --spoken:#82AECE; --spoken-soft:#1E2E3A;
+    --auto:#83B599; --auto-soft:#1B2A22;
+    --brick:#CF7C74; --brick-soft:#331E1C;
+    --shadow:rgba(0,0,0,.5);color-scheme:dark
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+  --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+  --spoken:#82AECE; --spoken-soft:#1E2E3A;
+  --auto:#83B599; --auto-soft:#1B2A22;
+  --brick:#CF7C74; --brick-soft:#331E1C;
+  --shadow:rgba(0,0,0,.5);color-scheme:dark
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.55;
+  background:var(--ground);color:var(--ink);min-height:100vh;
+  padding:1rem 16px 60px;-webkit-font-smoothing:antialiased;direction:rtl
+}
+.wrap{max-width:560px;margin:0 auto}
+.card{
+  background:var(--surface);border:1px solid var(--hair);
+  border-radius:9px;box-shadow:0 1px 3px var(--shadow);
+  padding:1.5rem;margin-bottom:1rem
+}
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:1.5rem;margin-bottom:.4rem}
+h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:1.05rem;font-weight:700;color:var(--spoken);margin-bottom:1rem}
+p{line-height:1.6;color:var(--muted);margin-bottom:.75rem;font-size:.95rem}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:.3rem}
+select,input[type=text]{
+  width:100%;font-family:inherit;font-size:16px;color:var(--ink);
+  background:var(--ground);border:1px solid var(--hair);
+  border-radius:6px;padding:10px 12px;direction:rtl;
+  margin-bottom:12px;transition:border-color .15s
+}
+select:focus,input:focus{outline:2px solid var(--spoken);outline-offset:1px}
+.btn{
+  display:block;width:100%;padding:.75rem 1.5rem;border:none;border-radius:6px;
+  font-size:15px;font-family:inherit;font-weight:600;cursor:pointer;
+  background:var(--spoken);color:#fff;transition:opacity .15s
+}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1px solid var(--hair);color:var(--ink);font-weight:400}
+/* progress */
+.prog-track{height:5px;background:var(--hair);border-radius:3px;margin-bottom:1.25rem}
+.prog-fill{height:100%;background:var(--spoken);border-radius:3px;transition:width .3s}
+/* domain */
+.dom-label{font-size:.78rem;color:var(--muted);margin-bottom:.5rem;padding-bottom:.5rem;border-bottom:1px solid var(--hair)}
+.item-count{font-size:.78rem;color:var(--muted);margin-bottom:.75rem}
+.item-text{font-size:1.05rem;font-weight:500;line-height:1.55;margin-bottom:1rem;color:var(--ink)}
+.rev-notice{font-size:.82rem;color:var(--brick);margin-bottom:.6rem;font-weight:600}
+/* likert */
+.likert{display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem;margin:1rem 0}
+.lk-opt input{display:none}
+.lk-opt label{
+  display:flex;flex-direction:column;align-items:center;gap:.35rem;
+  padding:.5rem .2rem;border:2px solid var(--hair);border-radius:9px;
+  cursor:pointer;font-size:.72rem;line-height:1.25;text-align:center;
+  transition:border-color .15s,background .15s;user-select:none;
+  background:var(--surface);color:var(--ink)
+}
+.lk-opt input:checked+label{border-color:var(--spoken);background:var(--spoken-soft);font-weight:700}
+.lk-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--hair)}
+.lk-opt input:checked+label .lk-dot{border-color:var(--spoken);background:var(--spoken)}
+/* nav */
+.nav{display:grid;grid-template-columns:1fr 2fr;gap:.5rem;margin-top:1rem}
+/* screens */
+.scr{display:none}.scr.on{display:block}
+/* done */
+.done-icon{font-size:3rem;text-align:center;margin:1rem 0}
+.done-msg{text-align:center;font-size:1.1rem;font-weight:600;margin-bottom:.5rem;color:var(--auto)}
+.info-box{
+  background:var(--spoken-soft);border:1px solid var(--hair);
+  border-inline-start:3px solid var(--spoken);border-radius:6px;
+  padding:.75rem 1rem;font-size:.9rem;color:var(--spoken);margin:1rem 0
+}
+/* back nav */
+.topnav{font-size:12px;font-family:"IBM Plex Mono",monospace;letter-spacing:.02em;
+  margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.topnav a{color:var(--spoken);text-decoration:none}
+.topnav a:hover{text-decoration:underline}
+.topnav .sep{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="topnav"><a href="entry.html">S.B.E</a><span class="sep">›</span><span>חוסן חברתי</span></nav>
+
+<!-- ── מסך 1: הגדרה ── -->
+<div id="s-setup" class="scr on">
+  <div class="card">
+    <h1 id="fq-title">חוסן חברתי</h1>
+    <p>השאלון מודד את ממד החוסן החברתי. אין תשובות נכונות — ענה/י על פי מה שאת/ה חווה.</p>
+  </div>
+  <div class="card">
+    <h2>פרטי מילוי</h2>
+    <label for="s-band">שכבה</label>
+    <select id="s-band"><option value="">— בחר/י שכבה —</option></select>
+    <label for="s-cls" id="lbl-cls">הכיתה שלי</label>
+    <input type="text" id="s-cls" placeholder='לדוגמה: ג׳2' maxlength="20" autocomplete="off">
+    <label for="s-voice" id="lbl-voice">מי ממלא את השאלון</label>
+    <select id="s-voice"><option value="">— בחר/י תפקיד —</option></select>
+    <label for="s-code" id="lbl-code">הקוד האישי שלי</label>
+    <input type="text" id="s-code" placeholder="קוד סודי — רק אתה/את רואה אותו" maxlength="30" autocomplete="off" dir="ltr">
+    <p style="font-size:.8rem;margin-top:-.5rem">הקוד מאפשר לאחד תשובות בין סיבובים. לא נשמרת כל זהות.</p>
+    <button class="btn" id="btn-start" disabled>התחל/י מילוי</button>
+  </div>
+</div>
+
+<!-- ── מסך 2: שאלון ── -->
+<div id="s-q" class="scr">
+  <div class="card">
+    <div class="prog-track"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+    <div class="dom-label" id="dom-lbl"></div>
+    <div class="item-count" id="item-cnt"></div>
+    <div class="rev-notice" id="rev-note" style="display:none">↕ היגד זה מתאר מצב הפוך</div>
+    <p class="item-text" id="item-txt"></p>
+    <div class="likert" id="likert-row" role="radiogroup" aria-labelledby="item-txt"></div>
+    <div class="nav">
+      <button class="btn btn-ghost" id="btn-prev">הקודם</button>
+      <button class="btn" id="btn-next" disabled>הבא</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── מסך 3: סיום ── -->
+<div id="s-done" class="scr">
+  <div class="card">
+    <div class="done-icon">✓</div>
+    <div class="done-msg">תודה על המילוי!</div>
+    <div class="info-box">תשובותיך נשמרו. ניתן לסגור את הדפדפן.</div>
+    <p style="text-align:center;font-size:.9rem;color:var(--c-muted)">
+      אם ברצונך למלא סיבוב נוסף או לתקן תשובות, לחץ/י למטה.
+    </p>
+    <button class="btn btn-ghost" id="btn-again" style="margin-top:.5rem">מילוי נוסף</button>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+<script>
+(function(){
+'use strict';
+const R  = window.SBE_RES;
+const SC = window.SBE_SCORE;
+const LS = 'sbe.resilience.v1';
+const LK = 'sbe.locked';
+
+if(!R||!SC){document.body.innerHTML='<p style="padding:2rem;color:red">שגיאה: קובץ הנתונים לא נטען.</p>';return;}
+
+// ── FORMQ labels ──
+document.getElementById('fq-title').textContent   = R.FORMQ.title;
+document.getElementById('lbl-cls').textContent    = R.FORMQ.q_class;
+document.getElementById('lbl-voice').textContent  = R.FORMQ.q_voice;
+document.getElementById('lbl-code').textContent   = R.FORMQ.q_code;
+
+// ── URL params pre-fill ──
+const qp  = new URLSearchParams(location.search);
+const sBand  = document.getElementById('s-band');
+const sVoice = document.getElementById('s-voice');
+const iCls   = document.getElementById('s-cls');
+const iCode  = document.getElementById('s-code');
+
+R.BANDS.forEach(b=>{
+  const o=document.createElement('option');o.value=b.id;
+  o.textContent=b.label+' ('+b.range+')';sBand.appendChild(o);
+});
+R.VOICES.forEach(v=>{
+  const o=document.createElement('option');o.value=v.id;
+  o.textContent=v.label;sVoice.appendChild(o);
+});
+
+if(qp.get('cls'))  iCls.value  = qp.get('cls');
+if(qp.get('band')) sBand.value = qp.get('band');
+if(qp.get('v'))    sVoice.value= qp.get('v');
+
+// ── validation ──
+const btnStart = document.getElementById('btn-start');
+function chk(){btnStart.disabled=!(sBand.value!==''&&sVoice.value!==''&&iCls.value.trim()&&iCode.value.trim());}
+[sBand,sVoice,iCls,iCode].forEach(el=>el.addEventListener('input',chk));
+chk();
+
+// ── state ──
+let bandItems=[], cursor=0, answers=[], session=null;
+
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+
+function lockNow(){try{localStorage.setItem(LK,'1');}catch(e){}}
+function unlockFill(){try{localStorage.removeItem(LK);}catch(e){}}
+
+function loadStore(){try{return JSON.parse(localStorage.getItem(LS)||'{}')||{};}catch{return{};}}
+function saveRecord(rec){
+  const st=loadStore();
+  if(!st.resp)st.resp=[];
+  st.resp=st.resp.filter(r=>!(r.v===rec.v&&r.k===rec.k&&r.rd===rec.rd));
+  st.resp.push(rec);
+  try{localStorage.setItem(LS,JSON.stringify(st));}catch(e){}
+}
+
+btnStart.addEventListener('click',function(){
+  const band  = parseInt(sBand.value);
+  const voice = parseInt(sVoice.value);
+  const cls   = iCls.value.trim();
+  const code  = iCode.value.trim();
+  const key   = SC.hashCode(voice, code);
+
+  const st    = loadStore();
+  const prev  = (st.resp||[]).filter(r=>r.v===voice&&r.k===key).map(r=>r.rd);
+  const round = prev.length ? Math.max(...prev)+1 : 1;
+
+  session   = {band, voice, cls, code, key, round};
+  bandItems = R.ITEMS.filter(it=>it.b===band);
+  answers   = new Array(bandItems.length).fill(null);
+  cursor    = 0;
+
+  lockNow();
+  show('s-q');
+  renderItem();
+});
+
+function renderItem(){
+  if(cursor>=bandItems.length){finish();return;}
+  const item  = bandItems[cursor];
+  const total = bandItems.length;
+  document.getElementById('prog').style.width = Math.round(cursor/total*100)+'%';
+  document.getElementById('dom-lbl').textContent  = item.g+' · '+item.d;
+  document.getElementById('item-cnt').textContent = (cursor+1)+' מתוך '+total;
+  document.getElementById('item-txt').textContent = item.t;
+  document.getElementById('rev-note').style.display = item.r?'':'none';
+
+  const row=document.getElementById('likert-row');
+  row.innerHTML='';
+  R.LEVELS.forEach(lv=>{
+    const w=document.createElement('div');w.className='lk-opt';
+    const inp=document.createElement('input');
+    inp.type='radio';inp.name='q'+cursor;inp.id='lv'+lv.id;inp.value=lv.id;
+    if(answers[cursor]===lv.id)inp.checked=true;
+    const lbl=document.createElement('label');lbl.htmlFor='lv'+lv.id;
+    const dot=document.createElement('div');dot.className='lk-dot';dot.setAttribute('aria-hidden','true');
+    lbl.appendChild(dot);lbl.appendChild(document.createTextNode(lv.label));
+    w.appendChild(inp);w.appendChild(lbl);row.appendChild(w);
+    inp.addEventListener('change',function(){answers[cursor]=parseInt(this.value);document.getElementById('btn-next').disabled=false;});
+  });
+  document.getElementById('btn-next').disabled=(answers[cursor]===null);
+  document.getElementById('btn-prev').disabled=(cursor===0);
+}
+
+document.getElementById('btn-next').addEventListener('click',function(){cursor++;renderItem();});
+document.getElementById('btn-prev').addEventListener('click',function(){cursor--;renderItem();});
+
+function finish(){
+  saveRecord({v:session.voice,k:session.key,a:answers.slice(),rd:session.round,dt:new Date().toISOString().slice(0,10),ts:Date.now()});
+  unlockFill();
+  show('s-done');
+}
+
+document.getElementById('btn-again').addEventListener('click',function(){
+  cursor=0;answers=[];session=null;show('s-setup');
+});
+
+})();
+</script>
+</body>
+</html>

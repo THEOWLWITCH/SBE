@@ -1,0 +1,1404 @@
+<meta charset="UTF-8">
+<title>ניהול</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
+  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
+  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
+  --hidden:#8F5F2E; --hidden-soft:#F5EAD9;
+  --auto:#4A6B5A; --auto-soft:#DFE9E2;
+  --brick:#8C3A34; --brick-soft:#F5E4E2;
+  --shadow:rgba(20,28,36,.09);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+    --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+    --spoken:#82AECE; --spoken-soft:#1E2E3A;
+    --hidden:#CE9C5E; --hidden-soft:#332617;
+    --auto:#83B599; --auto-soft:#1B2A22;
+    --brick:#CF7C74; --brick-soft:#331E1C;
+    --shadow:rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+  --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+  --spoken:#82AECE; --spoken-soft:#1E2E3A;
+  --hidden:#CE9C5E; --hidden-soft:#332617;
+  --auto:#83B599; --auto-soft:#1B2A22;
+  --brick:#CF7C74; --brick-soft:#331E1C;
+  --shadow:rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{direction:rtl;background:var(--ground);color:var(--ink);margin:0;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;padding:0 16px 70px;}
+body.sbe-hasnav{padding-top:38px;}
+.wrap{max-width:860px;margin:0 auto;}
+
+/* ניווט — הוחלף מתפריט-צד קבוע לסרגל דק + תפריט נפתח (09/09/2026), כדי
+   שיהיה עקבי עם כל שאר המסכים ("תוריד את תפריט הצד במקומות שעדיין יש
+   ותחליף בתפריט הזה"). התפריט הנפתח כולל שלוש קבוצות: לשוניות אזור הניהול
+   (לוחצת מחליפה tab בתוך admin.html, לא מנווטת), מסכים נוספים (קישור אמיתי
+   לקובץ אחר), וכניסה. נבנה מחדש בכל render() כדי לשקף את הלשונית הפעילה. */
+#navBar{position:fixed;top:0;inset-inline-start:0;inset-inline-end:0;height:38px;z-index:9997;
+  display:flex;align-items:center;gap:6px;padding:0 10px;direction:rtl;
+  background:var(--surface);border-bottom:1px solid var(--hair);
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;}
+#navBack,#navHome,#navMenuBtn{font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:12px;
+  border:1px solid var(--hair);background:var(--surface);color:var(--ink);cursor:pointer;line-height:1.4;}
+#navBack:hover,#navHome:hover,#navMenuBtn:hover{border-color:var(--spoken);}
+#navHome[hidden]{display:none;}
+#navPanel{position:fixed;top:38px;inset-inline-start:10px;z-index:9997;width:260px;
+  max-height:75vh;overflow-y:auto;background:var(--surface);border:1px solid var(--hair);border-radius:10px;
+  box-shadow:0 14px 40px var(--shadow);padding:10px 0;direction:rtl;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;}
+#navPanel[hidden]{display:none;}
+#navPanel h5{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);
+  margin:12px 16px 4px;font-weight:700;}
+#navPanel h5:first-child{margin-top:0;}
+#navPanel button.nlink,#navPanel a.nlink{display:block;width:100%;text-align:inherit;
+  font-family:inherit;font-size:13px;padding:6px 16px;border:none;background:none;
+  color:var(--ink);text-decoration:none;cursor:pointer;border-inline-start:3px solid transparent;}
+#navPanel button.nlink:hover,#navPanel a.nlink:hover{background:var(--ground);}
+#navPanel button.nlink.on{border-inline-start-color:var(--spoken);background:var(--spoken-soft);
+  color:var(--spoken);font-weight:700;}
+/* התראה על תוספות "אחר" חדשות שממתינות לסקירה (22/09/2026) — ראו
+   countUnseenAdditions(). לא שער אישור (הוכרע 09/09/2026 שתוספת אינה
+   צריכה אישור), רק תזכורת גלויה שיש מה לעבור עליו. */
+.navbadge{display:inline-flex;align-items:center;justify-content:center;
+  margin-inline-start:6px;min-width:17px;height:17px;padding:0 5px;border-radius:9px;
+  background:var(--brick);color:#fff;font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px;font-weight:700;line-height:1;}
+.newtag{font-size:11px;font-weight:700;color:var(--brick);border:1px solid var(--brick-soft);
+  background:var(--brick-soft);border-radius:9px;padding:2px 7px;flex:0 0 auto;}
+
+/* תפריט צד קבוע במסכי הניהול (20/09/2026) — בקשה חוזרת: "עדיין אין תפריט
+   צד". ב-09/09/2026 תפריט צד קבוע הוחלף בסרגל+תפריט-נפתח לאחידות עם שאר
+   המערכת ("תוריד את תפריט הצד... ותחליף בתפריט הזה") — אבל מסך הניהול הוא
+   המסך שבו משתמשת הכי הרבה בין כל המסכים, וקליק נדרש בכל טעינה לא מספיק
+   טוב. פתרון: היברידי, לא חזרה מלאה לישן ולא ויתור על התפריט הנפתח —
+   ברוחב מסך רחב (≥900px) התפריט קבוע וגלוי תמיד לצד התוכן; במסך צר (טלפון)
+   נשאר בדיוק אותו כפתור-טריגר כמו קודם. אותו #navPanel/render() בדיוק,
+   רק ה-CSS קובע אם הוא "נפתח בלחיצה" או "תמיד גלוי". */
+@media (min-width:900px){
+  #navMenuBtn{display:none;}
+  #navPanel{position:fixed;inset-inline-start:0;top:38px;bottom:0;width:260px;
+    height:auto;max-height:none;border-radius:0;box-shadow:none;
+    border-inline-end:1px solid var(--hair);}
+  #navPanel[hidden]{display:block;}
+  body.sbe-hasnav{padding-inline-start:280px;}
+}
+
+header{padding:32px 0 10px;}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);margin:0 0 10px;}
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(26px,5vw,34px);
+  line-height:1.14;margin:0 0 5px;}
+.lead{color:var(--muted);font-size:15.5px;margin:0;max-width:62ch;}
+
+.roleswitch{background:var(--hidden-soft);border:1px solid var(--hair);
+  border-inline-start:3px solid var(--hidden);border-radius:8px;padding:12px 16px;
+  margin:16px 0 18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px;}
+.roleswitch b{color:var(--hidden);}
+.roleswitch select{font-family:inherit;font-size:14.5px;background:var(--surface);
+  border:1px solid var(--hair);border-radius:6px;padding:6px 10px;color:var(--ink);
+  margin-inline-start:auto;}
+
+.panel{display:none;} .panel.on{display:block;}
+h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:700;font-size:19px;margin:0 0 5px;}
+.sub{font-size:14.5px;color:var(--muted);margin:0 0 14px;max-width:64ch;}
+
+.evalframe{width:100%;height:80vh;border:1px solid var(--hair);border-radius:9px;background:#fff;}
+
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:12px;
+  margin-bottom:14px;overflow:hidden;box-shadow:0 1px 2px var(--shadow);}
+.card>h3{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:16.5px;font-weight:700;margin:0;
+  padding:15px 18px 12px;border-bottom:1px solid var(--hair);
+  display:flex;gap:10px;align-items:baseline;}
+.card>h3 em{font-style:normal;font-size:11.5px;font-weight:400;color:var(--muted);margin-inline-start:auto;
+  font-family:"IBM Plex Mono",monospace;}
+.card .in{padding:17px 18px;}
+
+.codebox{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+.bigcode{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:30px;
+  letter-spacing:.1em;color:var(--spoken);font-variant-numeric:tabular-nums;}
+.bigcode.none{color:var(--muted);opacity:.4;}
+.meta{font-size:13.5px;color:var(--muted);}
+
+.rows{display:flex;flex-direction:column;}
+.r{display:grid;grid-template-columns:1fr auto auto;gap:0 12px;padding:11px 0;
+  align-items:center;font-size:15px;}
+.r+.r{border-top:1px solid var(--hair);}
+.r .nm{min-width:0;}
+.r .nm b{display:block;font-weight:600;}
+.r .nm span{font-size:13px;color:var(--muted);}
+.role{font-size:12.5px;border:1px solid var(--hair);border-radius:20px;padding:3px 11px;
+  color:var(--muted);background:var(--ground);white-space:nowrap;}
+.role.adm{border-color:var(--spoken);color:var(--spoken);background:var(--spoken-soft);}
+/* מוסד פעיל/מושהה (22/09/2026) — הפכה מ-span סטטי לכפתור אמיתי, ראו pInsts */
+button.role{font-family:inherit;cursor:pointer;}
+button.role.role-on{border-color:var(--auto,var(--spoken));color:var(--auto,var(--spoken));background:var(--auto-soft,var(--spoken-soft));}
+button.role.role-off{border-color:var(--brick);color:var(--brick);background:var(--brick-soft);}
+button.role:hover{opacity:.85;}
+.r.inactive{opacity:.55;}
+
+button.act{font-family:inherit;font-size:14px;font-weight:600;padding:7px 14px;border-radius:6px;
+  border:1px solid var(--hair);background:var(--surface-2);color:var(--ink);cursor:pointer;}
+button.act.p{background:var(--spoken);border-color:var(--spoken);color:#fff;}
+:root[data-theme="dark"] button.act.p,:root:not([data-theme="light"]) button.act.p{color:#0F1418;}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) button.act.p{color:#fff;}}
+button.act.d{color:var(--brick);border-color:var(--brick-soft);background:var(--brick-soft);}
+button.act:disabled{opacity:.4;cursor:not-allowed;}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+
+input,select.f{font-family:inherit;font-size:15px;color:var(--ink);background:var(--ground);
+  border:1px solid var(--hair);border-radius:6px;padding:9px 11px;direction:rtl;}
+input:focus,select.f:focus{outline:2px solid var(--spoken);outline-offset:1px;}
+.addrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;
+  border-top:1px solid var(--hair);}
+.addrow input{flex:1;min-width:150px;}
+
+.lock{background:var(--brick-soft);border:1px solid var(--hair);
+  border-inline-start:3px solid var(--brick);border-radius:8px;padding:13px 17px;
+  margin:14px 0;font-size:14.5px;line-height:1.6;}
+.lock b{color:var(--brick);}
+.note{background:var(--surface);border:1px solid var(--hair);border-inline-start:3px solid var(--spoken);
+  border-radius:8px;padding:13px 17px;margin:14px 0;font-size:14.5px;line-height:1.6;}
+
+.lib{display:flex;flex-direction:column;}
+.li{display:grid;grid-template-columns:26px 1fr auto;gap:0 11px;padding:9px 0;align-items:center;font-size:14.5px;}
+.li+.li{border-top:1px solid var(--hair);}
+.li .n{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);}
+.li input{width:100%;border-color:transparent;background:transparent;padding:5px 7px;}
+.li input:hover{border-color:var(--hair);background:var(--ground);}
+.more{font-size:13.5px;color:var(--muted);padding:10px 0 0;}
+
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin-bottom:12px;}
+.stat>div{background:var(--surface);border:1px solid var(--hair);border-radius:8px;
+  padding:13px 15px;box-shadow:0 1px 2px var(--shadow);}
+.stat b{display:block;font-family:"IBM Plex Mono",monospace;font-size:22px;color:var(--spoken);
+  font-variant-numeric:tabular-nums;line-height:1.2;}
+.stat span{font-size:13px;color:var(--muted);}
+
+.facetgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px 12px;margin-bottom:4px;}
+.facet{position:relative;}
+.facet h4{font-size:11px;font-weight:600;color:var(--muted);margin:0 0 6px;
+  letter-spacing:.02em;}
+.facet-trigger{width:100%;text-align:inherit;font-family:inherit;font-size:13.5px;
+  padding:7px 12px;border:1px solid var(--hair);border-radius:20px;background:var(--surface);
+  color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:6px;
+  transition:border-color .12s,box-shadow .12s;}
+.facet-trigger:hover:not(:disabled){border-color:var(--spoken);}
+.facet-trigger:disabled{opacity:.4;cursor:not-allowed;}
+.facet-trigger .ph{color:var(--muted);}
+.facet-trigger .fcnt{margin-inline-start:auto;flex:0 0 auto;font-family:"IBM Plex Mono",monospace;
+  font-size:10px;color:#fff;background:var(--spoken);border-radius:9px;padding:1px 6px;}
+.facet-panel{position:absolute;inset-inline:0;top:calc(100% + 6px);z-index:30;
+  background:var(--surface);border:1px solid var(--hair);border-radius:11px;
+  box-shadow:0 10px 28px var(--shadow);padding:8px 9px;max-height:min(340px,65vh);
+  display:flex;flex-direction:column;gap:6px;}
+.facet-panel[hidden]{display:none;}
+/* נפתח כלפי מעלה כשאין מקום למטה עד תחתית המסך (22/09/2026) — ראו activity-planner.html. */
+.facet-panel.flip-up{top:auto;bottom:calc(100% + 6px);}
+.facet-search{width:100%;font-family:inherit;font-size:13.5px;padding:5px 9px;
+  border:1px solid var(--hair);border-radius:16px;background:var(--ground);color:var(--ink);
+  direction:rtl;flex:0 0 auto;}
+.facet-search:focus{outline:2px solid var(--spoken);outline-offset:1px;}
+.facet-body{overflow-y:auto;flex:1 1 auto;display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start;}
+.fchip{font-family:inherit;font-size:12px;padding:3px 10px;border-radius:14px;
+  border:1px solid var(--hair);background:var(--ground);color:var(--ink);cursor:pointer;
+  transition:background .1s,border-color .1s,color .1s;}
+.fchip:hover{border-color:var(--spoken);}
+.fchip.on{background:var(--spoken);border-color:var(--spoken);color:#fff;font-weight:600;}
+:root[data-theme="dark"] .fchip.on,:root:not([data-theme="light"]) .fchip.on{color:#0F1418;}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .fchip.on{color:#fff;}}
+
+dialog{border:1px solid var(--hair);border-radius:10px;background:var(--surface);color:var(--ink);
+  max-width:480px;width:92vw;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+dialog::backdrop{background:rgba(10,14,18,.55);}
+.dh{padding:15px 20px;border-bottom:1px solid var(--hair);font-weight:700;
+  font-family:"Frank Ruhl Libre",Georgia,serif;font-size:18px;}
+.db{padding:16px 20px;font-size:15px;line-height:1.6;}
+.df{padding:12px 20px;border-top:1px solid var(--hair);display:flex;gap:8px;}
+@media(max-width:600px){.r{grid-template-columns:1fr auto;}.r>button{grid-column:2;}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;}}
+
+.brandrow{display:flex;align-items:center;gap:11px;margin:0 0 12px;}
+.brandrow img{height:25px;width:auto;display:block;}
+.brandrow .eyebrow{margin:0;}
+:root[data-theme="dark"] .brandrow img{filter:brightness(1.85) saturate(.85);}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .brandrow img{filter:brightness(1.85) saturate(.85);}
+}
+</style>
+
+<div id="navBar">
+  <button type="button" id="navBack" title="חזרה צעד אחד">→ חזרה</button>
+  <button type="button" id="navHome" title="חזרה למסך שנפתח אחרי הכניסה שלך" hidden>⌂ המסך שלי</button>
+  <button type="button" id="navMenuBtn" title="כל המסכים">☰ תפריט</button>
+</div>
+<div id="navPanel" hidden></div>
+<div class="wrap">
+<header>
+  <div class="brandrow"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAABDCAYAAAB+8vx+AAAt0ElEQVR42r19e5gU5Z3u+31V1VXV1d3DzIjwMAjGQIwEFxncoLgeF29HJGIgJ3EmN3EHNLvZSybL2ZyYmMMT182eDQm7x2eTVWaiMbthEk8g6KJsomE9RiKeOGQiixBQucyw4MAM07eq7qr6vvNHXbqquqq7h+yz7eMDQ/dUf5ff97u+v/cjen4SzosA4OAgIOCIfRECznng07XfnM6r9nvE/caklzem5O8Ivxf3eeL+3Pg5ceOLH03tGTyyDhf7ItN8FmkyVtJkDmiy7q3OMTru4OdodIjeNnhP5jFCFfxC0kC0eMz/rWxq8FtaEyrvKPCYVeSR55DEsQQPCnH/i/u+2N/n8ZtP0Hjiwc3gMc8jTYSGNBA6kri+PHTo0MIzkp9L6j5HAIjcXcTwcDnASWAAADiPPynEeS+08BxgnPnLQIizSQzceTQ4KHGElwQFlhAQHtQvge8iBJwxcM5BKQ1PjnAQ7g4m8PegdgVxh0nc+XJet1UkRlJIC1qDeOOLjtmZvTOmGE3tLCsHCKkXGhKnkcNCGKdJeMLfSYK1qNdeJPakJD83/tSICBhAxCwNaaa+ee3TjDEQQiBLEoSU5HyIMXAQMNMCESioIACUArYFw6jCsm0QEFAa3GwelGdnVIxBSaUgyBKqRhWWZYFS6mwM98bpziQg7P7ic0eI4Qs36mZMErRXdIPjNQFvaFh5zGcJAE5IshYMCmeM6eLTMKM8sns8YKF4aLd5jETHPz3JFeKOYBHfONQmQEILQmKsKg+8zxiDIAjQMhqYbePk6fGu4YNHt5wYn1h9bnwiCwBjk3l0tecAAMsWLRiaPavzhd9ZOH8wk9MAxlCpmGCMw2bMkwJQEAgChSxLAKE4fupM1/DBo1u6Fy/cNG/OzDHDqIASEjLX4PHm09NSYRMeFR4S0ZXubElQ6GM0gatpeZK5irgRzXy50JgCz+axGxz2K3kLJjc4R173lNpS1r8/DT+w5rzHL1qSOiUgYJyBgEDVVBSLJfzk5eHtrx861vPKwWOYKpZCz6XUcecYY7BthrQi4/1XzMWS911eWL54Yf9VV8wd1FQFqZToaDTGYJs28mUdb7492rd77/6B4WMnMXb2PLoXvRdbN91H0ooMZjN3ERpMuaaokjewwdkkdduRZBZJxENMUh8189eK74UWN5Qk+Wok+hzSUEyTnPhWgg5fq5cDUSEBT1Bv9dO0mQ1VVcBthl0vvrp92zM/6zlzbhKUUqgpEaIo+Z9mjPkDCApY1bRQMU1IoojOGVnM6pzhazVPy509fwHnLxRgMwYlJUESRUwVS/j7L96/YUX3osFSsQSB0pCvwOuiH/fPgEZrFtVMdzOjW9typBi78QiZSsfU84bC39q/kwbHo0kEnDDOJOEU45Yi/GFS8/td38WybWSyGo6fOtO1+bEfjI4ceQeSKCKbVn09alSqKBsVCAJFVktDIASMc5SNCoxKFYqcQlqRocgpMMYwOVXE+QsFjFhWSMtJgoC0IgOAayZrwgnO6jyRkBoPBBzEXR3egkYI+zzN9FWyP9WSaSJxcua+S+qDJjT0xRqZPxKrQFpOZ5BmqaNwVC/yuqCRJ8cDHLAZRyanYd/rh/oefPSfBgplHVktDe75AcxGyahi9iXtuOeO3yssX7ywf87Mjj3eI06PT9xx5uz5W595ZbjnjaMnIFAKRU5BkkQQAEpKqvOXbDcaJITAtCxk0yrmzOzYY5u2479E585JTAzVOASP21xH2/EmjnVc4M2bbnTjTeV+YERa8MeaOey8LnqLFy6SrEgbRp91/8Z5zRSSBiGq97IZg5bVsOO5l7c/8uTOHkkQkJJE2IyBUgrGGIyqiU+uvqmwfs3KXHt7zveVvJcgOVFh1ajil/92rO/xHT8dGDnyTk04Xa0U9EE84REpRaGs4+qF8zH4lT8iFdN00hZ1HmeTCCYh0YtpJhv/Qz4X2ME409xQiN2YgrQUKTb6qVU/K/634rQ9JWjtVASFavO2p3vSrpaxGQMlxHfKH/3Chg3969fm0oqMYr6EUklHxTT9/0tlA8V8CbZtY0X3osFvf+kB8um7VhYKpTKYK6CB/GztT1cQTNPCmhu6hwRZAmOBOCeSSgiuftDnSjIv0YUKrQlvpcJAGvyUkGCMSAVvkmSu0yB8OhWEsFvAmyRSw0JKQiaVRFIvcZE25Q2XxxMqDk1Tse/1Q32PPLmzJ6upgCtM3ueNqom/+NSaoRXXLh4sThVg2wyCQEEpBSXESZISAkooBMHxkYrFEgiA/nvvzj30Bx8Z8gRYFMSQdoFrBo1KFV2zOrHy+iW9Fb0CgQa2n3tJ3UieN5T/4SFlRlo0j9HQGy3ksRolNv2NiIkMk7QVAjkvglqSqPaM6RXWkhUKCY0xaEZJRMRJJOsefJdGk3M8JjIWRQGTU0U8vO3pAQAQXLMHAFQQUCrpuOODV2Pd6pt6i1MFR6BIUqmE19L+ggDGOIr5Etatvqn36/33bpBEEWWjAkJpKD9FKUXZqGDjmpuH2ttzME0LhNCY0xznQJPQCecx2qD+CfU5eNLCKY91K3j8e01NEYlWp3i9BuK8zqPj06wrRsWKNP19HvsvQWGlzaIWxjlkVcaTz+zNj509j5wqgzEbbkUGzLagphWsXrl8AzNNt3xTf+pIzMlwNBEgCAKKUwWsWLZo8K/+5BMbFDmFatWEKAgghECgFBNTBdx1w1Lcfct1vXqxDEGgkQC8lpvxxlAnGiTu1IY9CBK7FvVBTaNwILqxhCRrsnrNSQKmjiSWVHjS8whJ1EbNclJxSobHHNK48dRcDedvlEQkLSShnENJSTh+8kzXrr2vZbOaCotxgFCAO2F/1WJYOH8Ouq+6YrBaqYJSkpDVra/FBaVcECiK+RJWdC8a/Os//eSG9rYMJqYKKOkGJqYK6F70Xmzq+wixea0ARUD8Mk20rhlGNsSPh7cYb/GW8tmNfZWweW6UD+KxpR8ScyB4QkTWCHVCAo5/cvG//ljFFYPqV4H7QZHYyGlknENQZOzcu//NiakCZmQ1xwQGjqDNGLrac0ilJOhuiaVx2IvYAQGAKFAUCyWsWPr+wW8/+MCenXv3v3lufCK7bNGCoTtuurZXFARYpuXUFVErVAb89oAZqUV+POKvTSez3fjfeesheIL08UTj0qwAzEMHhLSUCgk5bC2mTXns2OqT6eFsvsgTnC/u+lJGqYyR3xzPSpIYkMpA2G7ZbtKy5mTzBuWSZmG4KDo+22WzOsf616/NwfXljLLuF56DzlJilT8m5RCbhgggKkikPspbwpShpaRrq2mJ0PMSaoyt5JZ40yR/nIFrNJd49Ea0qux9Rkyy+5xzyJKEU2fPdx09cRpKSnJgK6H4mENMSRibzMMwqhAorUv9o8WYJajKKaWomCZ4teoPnVJaQyfEgA9JA63YcBMjzi+JQnU4b+KfkAYZHsQBkvy/uNWaBmUUPu1kKNDa2vOwN1c3hjjXpdkcg0aSJjqHnEOQBJwen7jDqJp1QC7HVDLIkojDb49i+M23+1JyysFhEdLQWa2PFGO0mxsJUkr8Ek7cJhFef9rifanWT3WShuMJTn3cfJpFfiDNNml6CQTSTOhIvOOflIMLloBqm0Rik7Zx86DJjjsAQnHm7PlbndA+Wt6tlbOqlSp2790/QAXBGRJv5BaTcI4qIZeTHA6T5IRhS6WaxgKPpBQBCR8CErM1ZBpI2bg8Gr9oFGcLGo03Sok0WD1SHxSRFtIsNCmHVReaE1JThoHVtbmTPH32lQPY8fzL27VcBpbNYqOZ+tojb1h+ieZHeCwUsUXIM290YuNXiTR2z0Ims5nQJPUQoAF0hSdmuElstvvi+g5axIrzZKBQ3L7RhiEyZ5g9q/MFSRL9hKgH7fX/cyG5OU3BN77/zz37fnmwL9OWBeMcjPNEzHsrWGsSgDrzhM/8to0MyXJF/MjYZiwCZY581vPTCHHzewSMwwcuMsZD/lLQh4pqQd40oq6P4EhCRj3RVEZAi7XDQSKHL1k6vDxm0qrQiDWtOV+EwDZtzJnZsUdV5NrEeMCxDTmijh/0ua9/Z2DH7pe2a1oasiTBtlnotPMmixd/UHhdjgYtgvyTbQepM3fB+TMXkqMqMjRNRUqSYDMezr65WH7Py7PdeinAIUsiNE2BltGgaQpkSQIhxEFqxPhh0c3kTRzkmnyQWP+sockkJFbYeF3zCk9OifAmikEvXIjdMG/gsiSi76vf4iNH3kFGVcA8Zzl+xOCcw6iauOODV2Pjx1bNvXz+nLFKWYfp5p+i9THSAlIxKaRpFM4TtIYYjTM9zJ23zTl++W/H+gBgzsyOPZfPvXTMNm0YVbNunwRBcCDUggijWMKZ81Ndp8cn7vA+M2dmx55Zl8wYU1UFhq6DMR6CVTeLOi8WbdpyyoMHhDbYdJKgtHwL5vYrRNfQhybHfbnFGDIBRMOMXAa2bSMOCczd5KOXFiiUymjLaLh75QcdCE3HDNhGBXql6kZ85KKw1I2UEJ+mYCXlv0RRREk30L/lCe5hxtKKXJtLWwZwC+WOqrJQLOr49dETffsPHt068pvj2eNj76JsVHxwYlqR8d7LZmPNDd1DH7p5eS8AJy/XgnBNX7TitRSJ9AM4/QrO7wmCA6okQq0j0DQt1+KwkHUSRQGKqjgCZtuoVKr1B1vPXwglVXikX4MQAsuy8dG/2MLPXyhAlkTXX3Damjz4Nue1SjvnHIIgwLZtFEo6umZ14vbrrymsXbn8qsvnzR5jlg3DqIRauVqCBEcSsGgRu5R0kuMcWQfJoeBL3/wuf/aVA+jMabBBQnPpXjAPl8zsKHi/f258Ijt87CQmp4qomCZkSYIip0Inm3OOimnBqFRx1w1LsanvIyStyM5BJaQplOW3xXpF14q5e5hOO+jcYknHucmCr2XnzOzY05ZNj+XSqtNx5fYhgFLopTKe/9f/t/31Q8d6li1aMPTh21f0GkbF3/+Qxop2uHh/WrajtfYNH+r77NceH8hqaTdRysNdCqHmvRrEg1KKatVE2aigoy2Lu1d+sLB88cL+65ZcOUgpga5XHLNAybTjGNLEpPEWAGlxKi8lOub/8NujUOQUbNt2DoF7WMpGxfWl4EODGGMgjIOIgn/aBYEio8iA26bm1EQFv6D+l59fT/SSHqqvokHPAU+Yw3QbLWybIZ12NM6rI0f6du/dPzA2mcfxsXdhWo6WEkUBWU3FrM4ZWPK+ywvzZ3bsBoAT4xOrR35zPPvG0RMwTQtdszqx85tfINFkru9jocGmcMaR1hRs/d6z+Sd+/GK2oy0Ly7ZiCl8JkFw32emd+rQi45Zli7B65fIN135gwWBKTsHQDdi2XcOzt+BkkYuE/zYyO4wxaJqKHXte2b5529M9HW1Z2Lbt+JaEuI22JFQlKJR1XNrRhu4F87Bs0YKh4AYceusU5JTkBwRekFOpmvjh32yaO2/OzDFDr4DQwHxILRfogxU5QnA73iIaFDGmT8umcfyk069w6K1TMC3L6SsgBLZbohNFAZxzmJYNwzV1Ho5OEkWkFRmmZWHh/Dn41v/YSKhQOzxOXyFvoQHA1SyfvWdV7tz4hG8iLC+MJrX8Vmg9AnGFhw6dkcuAc47nXh3BntfeGLh64fyBNTd0D91x07W9WlaDXtKbaDDeMHKaTj2OxHQhU0qh6xV8+PYVvSfGJ1Z/b9fPsum04jfHeh1HHngxny/iU3ffXINih08k9h043PeFv/vegM2YW/LiIJTCtCwMHzy65fJ5s3sZ5xCCYsN5XUDUDFTYTMi8aoqWSWPHcy9v/8b3/7mnbFTQltFgWgLKRgWakkJ7WwYAkC+WUSjpUOQUOtqytYPnjsVrjOlqzyGtKSiVjADwMtJMwRMEjLoP4pzjf/7xJwgA/uwrB9CWSTuaiLHY7hMeScL4aAPOkdXSAIBDb53CyJF3ep55ZbhnzQ3dQ6tXfrBXVSWUSjoIqQEGY8sPPJzM5NNocPJbqxJehlFF//q1ufkzO7Y/8uTOHk2RA3VFRwuXjApWrbgG/ffenasaVRTzpTpbteLaxYP9PXfe+siTO3uyaRWWZfkzODE+sTraa0ji/Mq6rinetLkjaiY550inFWx9alf+iR+/mM1pCtoyGiamCuia1Yk///iHhroXL9zUlk2PAcBUodw1fPDoFq/pJZtW3aYWR+sKlMK2GVavXL4BhNa1bISaKZqdcuaqfkVJYceeV7b/9VO7eryuGcZZCPUQzDuRgEongQgSnmkBYFSqMC0LS658D+5fd9uGFcsWDVb0CizLcvsGI4uW2I9HEgurjZoV6n/msG2OTFsWW5/cmX/ixy9mZ2TSYK5QmaaF9rYMvv+1fqKpCkzTrKtpcu74vHrFxMe/uJVPThUhiYLvZ9334VsK/Z++O1cqlkIuAEnYAQ7e3E+M8cO8foWt33WEakZWA+cc5UoVn1x9U2Hj2ltzmZwGZtmwXFMoEAJBlmDoFXz7h3vy/7j7pazX1wkAU8USllz5Hjz+0B8S27Lqqg+UtOiXOOrfcVLLZQPr7ryx92//+x9sWHLle3ChUELVtCG4iE9n13mDjH4NVssYA2MMipxCW0bDobdO4XNf/87A1u/uypumBVVVYDEW270Xn7FOLhHxGPBfo5okpQRV3cD6NStzXbM6UbVs//vKRgW3X39NoX1GDtWqGYbzBPJbjHG0ZTXM6pyBimn6vQIAMH9mx+5k9yGeIYY36SOMFvJtxqBlnHa9f9z9UrYtq7mCUcYnV99U6F+/NidJIor5Egz3INuWjYppOhqYMfSvX5v70vq1Q4IgoFDWMTFVwOxL2rH5gXvmCoTE8lrQ+nbG+Hqhz57l+hbFfAnXLbly8LEvf4Zs3vjRoc4ZWVzIF2FaNqgg+K41iQLNGzjNlm1DkVOQUxKe+PGL2T/+XwP85OnxroymuvXHcKtXq/RIpAGmu1EhkBKKqmmivT2H26+/plB1c3CeYCxfvLAfnPnrFOwDDAq95WPWqMuT4hyk7sULNzHL9klMWhGaRlUHHvlexjiUVArHT53penjb0wOSIEBwg427bliK/k/fnSvlC7AtG4JAnQAiwAIkCg4MqpQvYN2dN/Y+9fCfzr3jg1fjvg/fUvj2gw84gUfVDKUZEBSsRIvNUQeo850zQXBTBQzr7ryx9/tf6yf3ffiWQntbBhfyRVRMC5QKfsNDbQN5uP0pUK5xNJgT2ne0ZTFy5B2s/8qjo/sOHO7LZDXYzA787nQyqSSRdaVRMdgnSOGOdrFcP9OyGWbkMrWmWdRMex0enVKUdANnz19wTDohKJcN3HbtB+BFhJSQhhxjaNGikChPEOegkohtP3x+dOzseShyCkaliraMho0fWzXXrpqOUiEkOXdGHMBnqVDGvDkzxx758/tI/6fvzs25tGNMD3RKRcdJEdP8QBLaq6NUPF7kVsyXkFZk9N97d+77X+uvabBCCeWKAwCstcVHWrJ4nMbgsCwTWS2NslHBg4/+08DxU2e60qoCm/E6GEtjmSKx3F485kAlaQVm234x3ouINFVGWzY9Ztp23fp4z7FtBkVV8Obbo31nzk1ClkRUqyZScgobP7Zqrn+oSUzahjeG9jTrpLE5g6LK+MWBN/v2vPYG2jJpMM5RrVRxw+IFuHze7DHd7VEASdaSvmmjBIZRQbFYQqlYctG89SiLminkwazQxQEwBIGC2cwXsHWrb+p9+m82kc0bPzp09cL5KJR1FItlJ2HqmkmOYLMmj2GzI2C2BSUloVDW8Yd/9djoVKEEURTckJc3hLOEIcqkzjy1DDkhBNxmmDOzY48TpDhfOKtzBlQ5Bc7CtVMS6AWQJBG6buDxHT8dcNIVDGWjgr/41Jqhyy+bPVYuG7UDRyLQUtI6YjSuK4i42nL33v0DHm+ZB/NetmjBEGe8vr0sAVsW9NkEUusVjaaqeLhhlSd2ZpCWfJfaitYErABRFLBu1Y29//ClB8jff/H+DatWXAPTZiiUyu4JEEIqMWriPKNpM4acKmPs7HlsGfwRl2XJFzyOlvbAr9rzCIwnuehbXzNty6bHVMUp05gucUkqJYGDhSAnzDWVqqpApBR/+a3tfPjQW5AEAfmSgc0bPzq0btWNvcVCyU04hhtqo4gLHpOjI3Vp4vBcGONQFBknRs92vfj6IWiKg+zlAMSUhNmzOl/gjIHGIkebI18RgAklwXsCUSEP9LrGt/i0wm5CiNfQylEslMA5x4ql7x985PP3km9uum/DndctAeMchVK5JvkBSGpcLc+0GdqyGva89gb2HTjcp2oqGOMNi7aetvKiTh6TJ4rnFG3Mb2XbTummqz3nmAIeoGpyNzST03Dy9HhX31e/xfe89gZymgpFTuEfvvyZDetW39RrlPUQN1Do3JOEdgfOYdsMls18fFhSpxDjHFSSsHPv/jfLRgVUEB1F6CZmvUZjFoMI5TFrxzwyPETSSY0yCN5p86DHpGFPcJD4tTExLSG1EkCppKNcNnDdkisHH/nz+8jX++/dcOd1S1Ao66haNiSB1jxFQmIXmADglo3de/cPBOFUia1rjEGWJGhZDVpWgxJNcLZalST1TQ2Wnx+gbszhoGgVVcbJ0+NdW7+7K7/+K4+OvnH0BDRFdjSYksL+g0e37tj90na9aiKT05yCOuMNIXpeHkoQRWTassi0ZaHlsk5QxOJR6wKlqJR1v7sqiBSQRBGP7/jpALNtx5RzDtsFJNqMh+g+NU111k9T/bHyFpEmNXRDA/qdmsLlTcgjGr+YG/mpqgJKCfYdONz38LanB86+O4FMVgO3bb/drd5vcPi1JFHEk1/9k7mXzeocq0Q6r4N+lZpWcWL0bNfwwaNbAGD2rM4Xrlty5aAH8WjUmlaHjScEeqXqJznLRsVPbhYLJahyCvsPHu17fMdPB94ePYsL+SJymgJKKGyv66hqwqhUIQgUsy9px8Y1Nw/d+fu/20spDSVX6wIHxpHOpH2azBPjE6vnz+zYfefv/25vKiWhYlRCmpgFuqs+/eW/G2WMh7qBKCEolHXced0SbPzYqrmXzeocEyTBbUJ2fDDdqOLsuQtdHuXU7FmdLyy58vJBRZJQqZrhuiYSqSIvNFT/dVnqCB9nK0QYdUA6V/K1bBqTk3lsGfwRf+7VEbRlNFi25RdceUQzUkHAhXwxxk8JVwfUtIqde36+fdszP+sx8kX//TX/9fcKf/aJD+WiEI/4cdca6z3eiDrB+tRduWrVwul3J7p6vvCN0YrpRLKUEDDbrqUfmO0A4gQH+eChPTzKy1xahVGt1gkXZxyqpuIXB97s+7s/+fJAdL3/YfeTLl2m7Wt4r4i+78BhB42SdtyG4ASpmwLRVAVXzJ2FrvacDwM6Nz6RHZvM49jJf4deqfo5uyVXvgebH7hn7pxLO8Zsy/LhSyRhn2lCZie5myWh+YE3QWbyUOhK/ZZ6TVXwyOfvJZ++a2Uhny+ChloFIhGj+90nxidWx9ky77SeGD3b5QmVksv4/z/zLz/PvjpypE9NqyGmHJIYZjfRwS5ioy2bHmtvy4AwjpJuYKpYwoViGYWy7pxwQkEoBbNtMNuCKAqYkctg+NBb6N/yBM+XdYiiGO5h5BxUFFAqlhEnVACcYMaNVEOUjoKIM2fP3+pBe7jPxuP5iTY0RQZnDG8cPYFnXzmAJ378YvapZ/dmn3t1BIffHgUlBJqqIKul0ZbRMHzoLQwfPLol5aZ8eII4eDsnttKWlHRDBUkwI7wJsN+zdaIouChFG/2fuit3bnyCP/fqCLJaGsy2Yp8vEoJz4xNZJ2NNIr6IQwkwfPDoFk+ooq/de/cPrFj6/kHSBCEBP5J0CN98/yWgIUGcQqymKvj+1/rJm2+P9nlvnTl7/tYT4xOrf/KLX2WdHJbkk9QRzsFsC505Z8O2DP6IP/L5e0mpZPtmi3EOLa1ix+6Xtidtw7Edz2Ky7yNIK3Ko2QWc1QrcJNL96HJucM5R1A3YNkM2k4YkCLAtCxW3nONxwwZfs2d1vsBtO+y7k/hkrtisv85DGobCel+oSAsM5/UUijWAIIdAHd/JMKp46LMfJ2OTef7G0RNIu45lVGNxSjA2mQ/599Hxh1ADSbzppEmtzQfVOp+aKpS7SnolbK7czbQsC5qqYMXS9w8GhG4QADauvRU/+fnw9m3P/Kzn7LsTaMumYdqOaTRtGzlNxXOvjmD1gcN91y25clDXKy2AHmuvqUK5S1OVMQ9dW3cTBq+3SKZpwbRt3HndEixbtGCoe/HCTYhQeb5+6FiPRy4MALdff03h2g8sGDTKengNAqje4A6LjeC6jHOoLrFsxaiCk3jGmOT2KR7LLhPdUurCnzM5DWtu6B4aOfJOj8dbwEOcCsQP9eNre04ScPnihf3P/MvP68zHpcffwrJPrhkiguBzmpKEDupQ8lCgOD0+cUe1avqQ42h237IsmKYVDoC4o+HWrb6pd+X1S3o9DH3t0DjoDttm2H/w6NYVyxYNcj87RcDdjD+AniTBCgIFmxHReohgSRTwzU33bVix9P2DII6J5q7ZnDdn5iAVhcF1d9zQWyzqMG0bKVGApqkwjGrsLRqxndCJUREBNC2Nk6fHu14dOdInKylHhSY0kzai/mmlrCdQiopewcrrl/TOvqQdXnGTRHSeF+oH8zD+HCiBoRtYeuV7Bld0L0Lu1yPwnPfcr0egrrwJK69f0lvVDQeo1+BQ+UgIDl+DOJomedM8OgBKHbySIFCAcxSnCsilVXzrwfvJ1Qvno1yp+mgIDkCSRIz85njWKBs+RIhQAr2kY0X3osEF6+6K/c4/e/QvNzgEdQ3WOmC3PE6M/t7VDvNiUUexUIKuG77503XDpfg0IAoUqpxyaoUlvQmXBI9vWI1KnySI2PrUrnzPF74x+rmvf2fgob99ilt2gKWY84tuKUcC3bPjCGvoXjAPpht5xMEtLpnZUQhKBQllnRkEUcCmvo+Q6x64tzD/PXMxq3MGFqy7C5sfuGduW1aDZVpOeN20WcGdHa1RDSDQQBGiA4/wSQajaFGg0CtVpFUZ96+7bYOTQLb97ZAEAWfPX4BeqUIQhForOyGoGBV8+Y96yXUP3FuICtX1S68a1MtlXxgbbTqlFEbVxOxL2nH7jd29eqEISp2xeZ1VHoRccDkzuBuZesxDiONAJfHdnGJcbS2druHb2zJpCIKAZ185gEtmduT716/NlfIFB2bbAn8mb+GquGC219MOXkQThclIkujAVbz6V4w5tCwbmqrgc59ak7sw5ezHjLYsmGmhhi9vgDONcTyDfpsYYnQOwj9IQsHeMYmlko7rl141eNu1Hxh47tURZN0+TS93NFUod+XS6pgVqGJ4N2/0r1+b09fdBsOy0JbVQChFuVQOMfyQQFPx/JkduwWB9nhBhuBm3bsXzENaVaDrketi4ksXIeQHiUE+EM5dJC6ph82QSI1p34HDfduffzk7wwWF2baNXEbFrr2vZY+fON2lpFJ15QDSws1TcZc/JXUvCwKt8fwQBxtlmhYu7WjDVVfMHaxUajigKL8DpU5TQLmkQ3UvKtBd9mbSimMcEA5KKeyKWctiA+CU+OsVpWiMbXUPaHdCCC6Z2VGw7Rorj+PLptCWTY9ZbhokDPHmKOULIAKFpiow9ArKbkms/hIC4qMxZMmhniIBrDoS/MhmcKPEAnikQsKDPlbwJixKCXbv3T9gunBT7nIwUOrAaXfu3f+mIEuh3ElzWsjGRGHellBKUKmYGJvMOz4ID29c2aige8E8tM/wyG0bIBqI8zzOOJht10BsDYhn6ziyOEdKFHHq7Pmu42PvQklJflPI2GQ+gBxt3AXo8Vt4/+y1UgVZEWtoCRbGjnsQbkrBGYNtWSABaqdohxV1YdNXXTF3sL0tA9NLy7g5vrHJvMO82GLkmYQEIQ0gNojyYwkChW5U/Y1lrrPqRWhZzdVaJ890qa7Wmg5VEElkt+T+Jv77+GTX26NnocqSLyCAc1dhWpEdEl3brjODPImgIoHXqe7Uxtw/wlyOsOGDR7dMFUsQ3IBBoNT3iYIHoJbgjOMHreVGPLPq37ZhWuhqz0FRFQcpS+I1QogXM4g3i0zKsmy0t2XQvWCeA4d25yK5XGYjR473pVzIz8VwbpEAWQpP8LUpIsQeRqWKs+cvOO3WhNQ2xa3TTRVL2PbD50eDBP6kAW94Y6ogHkgJ1fhOHeSDUMuJCAKKuoFbli3C9UuvGtTdqK5hETmJ9D/herh6qXdL7YTi9UPHeoImTU5JyBfLmCqUu0RKa2YmgkTlEfYMDxPlXbUXFIzVK5dvqLM+0d6BIKc7b8QLxv1nBjUbIQQV08T+g0e3UhfXRlpOjpMQ778sSchkNAiCkEy8liSeUVprmzFk0yp++st/w77XD/VlMmq9k92wbzna51bTDKqcwvETp7t+8otfZdOKHIiMKCzbRlZLY+PHVs1lZn20SJr4SY38hjiMuoeOUFUZx0+d6frXkSPQFNkRIJcevFDSMXzw6BZBlmKqXDXSXT/Dz7nPlz987KSfDzOqJrpmdTp+o1EBDUSrJMYpbhxicz91YxhVLLny8sFLO9r81A1jDFktjf/z033Z4yfPdGUyTi9Bs9tJggllpzkjjVNnz3fteP7l7WXDTRrzhDyWR/CQSztt1Szi3wQIGgAAD297emByqohUSvL7Chs3APBY39A7lEJKwrYfPj965twkJFH0HV2BUuSLZXzunlVDHpyWxOCqpqvSSRNMOXGLxpsf+8FoWTcgimKIxF+SRDzzynAPs+yQ9iQJlxEw5vDl7/3FyPYz5yaREql/28bt119TaO+Y4SRYycURy0XpiSzbhpZJY+Oam4cMN43BXcy+UTWx+bEfjE5OFaHKKVg2a0iUS4iHzeLQclnsGz7U94d/9djo5m1P9zz5zN68rMo+7VMs8ZrNOARZwpL3XV4wKlUIMSUTz9d5d2IKWwZ/xAVCoKRSvuS3Sr7qtCZxcAKks2lsfWpX3sFma77tDl4c8OHbV/SWC2W/VsdbvB2i1durSKTikM6o2PrUrvzIkXeQVRVYAbSCbdvIplW8cfQEXh050pfOpkPURlGhtW2GTEbF8ZNnuv72B8/3yJIESpxume5F78XGtbfmjJI3NzItXydpVgKh0Es6PnTz8t7uRe/FlHuvI3OtzsiRd/wCeKYtC7hAQo8kLoTTsp1sgaYp2LH7pe2f+/p3BvIlHYJA3Xxe/ZhCmXdKCeyKibUrl181I5dB1WbO1SMRSkdvYZ97dQRfefQfncFltUSHLnrTAXPvPFQVGaqqYOt3d+WfenZvNq3IvvYTBQFTxRK6F70XD37mHlKtmtNiY+bTvOrDHyvj0DSnDf17u36WzabVms8WmBdjDJIg4OFtTw8cP3mmq7095yA8A4A520VfZjIqJqeK2PzYD0aLhRIk17+hlOL+dbdt0DJpv0WsVUZk0oDBlgd6GkVRwP3rbtsgS5L/naZlIaulceitU/j4F7fyHbtf2i6IIjIZFZqmQFFkyJIEVZVdoJ+Ck6fHu770ze/yh7/zo56U6FAeeX5cXEae6PnJ0MCZ2+C44/mXfVIMy4WzksgVbgKlyOeLmHVpBx7a+NENHoNMtWrBsiwX2Be2ogKlSMkpUFHwiSm8Fm7L7bEjhOBCoYS7bliKBz9zD5FE0Sduuxiij1bJQxhjSGtp7Nzz8+2btz3d05bVnPCfOL5e8Eo67x7skm7g6oXzsfmBe+ZePvfSMc/sUUp86h8P0Hjm3CSyWtonR0nClbVKchJXNK/r1olwnLVltRoqVRBCHejeNcre/ZLBgvRLI0dQ0g20ZZzcZpQxJ5ofDFzdG/YB1bSCL3/zyRBHlB/mB3iwPJoi07Zx9cL5uH/dbRuuumLuYFtWAxWFsBfPGHSjigNvvt23/+DRrTt/tj9bKJWRSauOc+tO1APSffaeVTnOud9mz1uwga1S+sS163uH6kvfeII/v+9XyOUyPhyl6iICAOeyTkEQnOQjdSJpSghuWbbIv0jdg868fuhYz7/+6jBMy0ZakWFUqqiYJh76g48MrVt1Y2+pWI4/MAmASnIRFzEFlcXD3/lRjyxJjm/ssvsQQlDSDT9HpyoyRFezFVyTp6kKRJfGaapYxl03LMVDn/04AeeIdvzUcTf4A3F/Toki/vfQc/mnnt2blUQRmizB5gjQRTqn13NeS0bFQRG4lD4eKnH+zI7d3o32Y5N5HH57FBXTRFqRIYmi6xjayJcMdM3qxMY1Nw+tW3Vjr1HWffqg6bL8Xczllh760itnpRUZFRc2fGlHG2Z1zgAAHB97FwW3IcLjM7BsCyW94tP8eGaQUgqvbexCvoiOtiz+9GN3uEJVcqJA0vrceAN2ikacX55w7Rs+1PfwtqcHxs6eR1ZTndpkoHxDPZ5Ud929GqHNGIplHZIoonfVjYU/+8SHctWq6WPk61KHSTeseg9W0yp2PP+yf5m4JIrO9boBreUVpT0Bs92bVj3yseBLEkXIKclxJDn3YbpZTcV/u22Fw/p32eyxxJPcYm3vohiVXYohy7Lxtcd/yIePnUT3gnlYvXL5hquumDuoyikQQvDv45NdwwePbnn90LGe//vr32DKNWVpRXbqb5z5jSF6pQrTdOp7/+V33ufwsl42e6x2SfpFEMRN99Z59w2bMWQyGiYv5PHkM3vzu/a+lp2YKkCSREiC4JPIwa222DaDaduOPymKuO3aD2D1yuUbVixbNKi7aAeSlL6JM4Vxp7hY1PGTnw9vf+aV4R6PrEsSRYc9hdZY7UKXgScAB6tVB6Jh26yORrJqVGOZW/4zX5RSSJKIctlAOq2ACgIqRsXnXxVEEamUUzc8PvquL2TDx05CN6p+pzQAnxFv7crlV3nkuHql6vMiRGmYLvY64Ya/E5A4mzGkJAkpJYXjJ8+Exg4AxbLhC5KqpPzxeyyMAFDWjTDaIe764WaC5TmjoihAVmSUyzp+dfidEIlrwWVFDmqnoHBxywanDqBNkVPonJH12e+6Fy/c5PGS6rrhwzcSF43zpn1tzRecJ5Ax1rQ1d0F6tu3QYlI/E+/13DmnVUlJEGQJYAyTU0VMFcpd3jN9Dk9Fhm1U3EQlElEFZJoQJH6RroCXTlBSKQiyBLtiIl/WQ2MPjV+WEOWNbTq+ZoJFIhGGSCkUVQYIhaEbOBNoE/L8KAA+fBiA3wUyf2bH7tmzOl8IOvdVo4qqe2l4Q4Ga7iInaoN4wAy5SCpw5jqvHiW3F4Z7wEAvsRiiIue/xZUSLZD1Tue2DsYZCIjPmuwhZrmXOrFt/xBNBzJdJ1itSLzTWeymDiTRv5new4Ezxn2oq39zvVeq4AzVqgXTsnzHn8TAXX+b0zxdDvSL88fihYNzHuZJB6btnDd+n0R7p5tLDyENfg6yL8bUHwhPTNo2pD2fjsZKVquByj6J4BYI/Cq6/x5B00gvqV8N07gb8D9SIzS9zuxin99C+iT+XtNgQjSBy3CabsNvsy7RfxOTJK8RtXX0ssZQsTUOwCCQi54AGlyC7mmF6H2DPIY0f7oln8QlJBdvqvg0hSp66QhpgjOPLbg3+o6LFLxWDjBt9bbOVoq+sfiri9ybpMudSLAuHrksktTf5tkSM97074Jufg1dM0QtvwghRQxZ3G91kWHcMzimWasksWiW/w8UOwHyDOTWoAAAAABJRU5ErkJggg==" alt="S.B.E"><p class="eyebrow">ניהול</p></div>
+  <h1 id="title">ניהול</h1>
+  <p class="lead" id="lead"></p>
+</header>
+
+<div class="roleswitch">
+  <b>שני אזורים נפרדים.</b> אזור ניהול המוסד ואזור ניהול כלל המערכת — ההרשאה בפועל נקבעת בכניסה (סיסמת מוסד מול סיסמת ניהול מערכת); כאן, במסך הדגמה בלי login אמיתי, מחליפים ביניהם ידנית כדי לראות את שניהם.
+  <select id="role">
+    <option value="inst">אזור ניהול מוסד</option>
+    <option value="sys">אזור ניהול כלל המערכת</option>
+  </select>
+</div>
+
+<div id="panels"></div>
+</div>
+
+<dialog id="dlg">
+  <div class="dh" id="dh"></div>
+  <div class="db" id="db"></div>
+  <div class="df"><button class="act d" id="dok">אישור</button><button class="act" id="dno">ביטול</button></div>
+</dialog>
+
+<script src="lib/feedback-bank.js"></script>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const el = (t,a={},...k)=>{const n=document.createElement(t);
+  for(const[x,v] of Object.entries(a)){ if(x==="class")n.className=v; else n.setAttribute(x,v);}
+  k.flat().forEach(c=>n.append(c)); return n;};
+const code6 = () => String(Math.floor(100000+Math.random()*900000));
+
+const D = {
+  instName:"מכללה לחינוך",
+  instCode:{ code:"482913", until:"סוף סמסטר א׳" },
+  users:[
+    { n:"נועה ברששת", e:"noa@", r:"מנחה" },
+    { n:"רותם אלמוג", e:"rotem@", r:"יוצרת" },
+    { n:"סמאח דיאב",  e:"samah@", r:"מנחה" },
+    { n:"דנה שגב",    e:"dana@", r:"מנהלת מוסדית" },
+  ],
+  institutions:[
+    { n:"מכללה לחינוך", code:"482913", users:14, scen:23, since:"2025", active:true },
+    { n:"מכללה אקדמית ב׳", code:"733204", users:6, scen:9, since:"2026", active:true },
+    { n:"מרכז סימולציה אזורי", code:"115708", users:3, scen:4, since:"2026", active:true },
+  ],
+};
+
+// שלוש הטקסונומיות הקבועות — עותק מדויק מ-app/input-screen.html (TAXONOMIES),
+// אותה מגבלה מוכרת של שכפול ידני בפרויקט הזה (בלי שרת/טעינה משותפת, כמו
+// PRACTICE_PROMPT_TEMPLATE וכו'). מקור האמת בפועל הוא input-screen.html; זה
+// עותק לתצוגה ולאישור תוספות כאן. אם אחת מהן משתנה, יש לעדכן בשני המקומות.
+const TAXONOMIES = {
+  emotions: [{"id":"joy","name":"שמחה וחיוניות","items":["שמחה","אושר","חדוות חיים","עליזות","קלילות"]},{"id":"sadness","name":"עצב ואבל","items":["עצב","אבל","יגון","שברון לב"]},{"id":"anger","name":"כעס ותסכול","items":["כעס","זעם","תסכול","מרירות","טינה"]},{"id":"fear","name":"פחד וחרדה","items":["פחד","חרדה","אימה","פאניקה"]},{"id":"shame","name":"בושה ואשמה","items":["בושה","אשמה","ייסורי מצפון","השפלה"]},{"id":"love","name":"אהבה וחיבור","items":["אהבה","חיבה","קרבה","חום","התאהבות","געגוע"]},{"id":"loneliness","name":"בדידות וניתוק","items":["בדידות","ניתוק","ניכור","ריחוק","זרות","ריקנות"]},{"id":"calm","name":"שלווה ומנוחה","items":["שלווה","רוגע","מנוחה","נינוחות","סיפוק","איזון"]},{"id":"strength","name":"ביטחון ועוצמה","items":["ביטחון","ביטחון עצמי","כוח פנימי","נחישות","תעוזה","גאווה","מסוגלות"]},{"id":"confusion","name":"בלבול ואמביוולנטיות","items":["בלבול","ספק","היסוס","התלבטות","אמביוולנטיות","קונפליקט פנימי"]},{"id":"hope","name":"תקווה וכמיהה","items":["תקווה","כמיהה","ערגה","סקרנות","השתאות","אופטימיות"]},{"id":"exhaustion","name":"עייפות וריקנות","items":["עייפות","עייפות נפשית","שחיקה","תלישות","חוסר אונים"]}],
+  needs: [{"id":"connection","name":"קשר ושייכות","items":["שייכות","קרבה","אינטימיות","חברות","חיבור רגשי","תמיכה רגשית"]},{"id":"security","name":"ביטחון ואמון","items":["ביטחון רגשי","ביטחון פיזי","ביטחון חברתי","אמון","מוגנות רגשית","יציבות","וודאות"]},{"id":"recognition","name":"הכרה וכבוד","items":["הכרה בערך","הכרה במאמץ","כבוד","כבוד הדדי","תשומת לב"]},{"id":"autonomy","name":"אוטונומיה ובחירה","items":["אוטונומיה","אפשרות בחירה","אחריות","עצמאות","גבולות ברורים ומובנים","כבוד עצמי","הרגשת מסוגלות"]},{"id":"expression","name":"ביטוי וקבלה","items":["אותנטיות","ביטוי אישי","ביטוי רגשי","קבלה ואי-שיפוט","הקשבה"]}],
+  skills: [{"id":"listening","name":"תקשורת","items":["הקשבה בלי לקטוע","שיקוף תוכן במילים אחרות","שיקוף רגש","שאילת שאלה פתוחה","שאילת שאלת הבהרה","בדיקת הבנה נכונה לפני המשך","זיהוי שינוי בטון או בשפת גוף והתייחסות אליו","הבחנה בין עובדה לפרשנות","החזקת שתיקה בלי מיהור למילויה","סיכום ביניים"]},{"id":"trust","name":"יצירת קשר ואמון","items":["הכרה בקושי של הדמות במפורש","אמירה מפורשת של מה ניתן לעשות ומה לא","הימנעות מהבטחת מה שלא ניתן לקיים","שמירה על דיסקרטיות לפי בקשה","מתן בחירה או שליטה בקצב","הכרה בנקודת מבט שונה בלי ויתור על העמדה העצמית","תיקון רגע שנפגם בשיחה","הבעת הערכה או הכרה","הצבת גבול בלי דחיית האדם","הצעת המשך קונקרטי"]},{"id":"speech","name":"דיבור והתנסחות","items":["ניסוח מסר קצר וברור","דיבור בשפה עשירה ורהוטה, המובנת גם לצד השני","הימנעות מניסוח מאשים","הימנעות מהכללות","אמירת דבר קשה בלי הקטנתו","התאמת רמת הישירות למצב","לקיחת אחריות במפורש","חזרה למיקוד אחרי סטייה","ניסוח הסכמה או צעד המשך בסיום"]},{"id":"body","name":"שפת גוף והבעות","items":["קשר עין מותאם, לא נמנע ולא נועץ","מרחק וישיבה מותאמים","מחווה שמסמנת הקשבה","טון קול מותאם למצב","קצב דיבור מותאם","עוצמת קול מותאמת","הבעת פנים תואמת למה שנאמר","גוף פתוח ולא מתגונן","מחוות ידיים מלווות ותומכות, בלי אצבע מאשימה, תנועה חדה או ידיים שלובות","סימני מתח בגוף: נגיעה בשיער, הקפצת רגל, ליקוק שפתיים, מבט למעלה","שתיקה עם נוכחות ולא עם ניתוק"]}],
+};
+const TAX_LABELS = { skills:"מיומנויות", emotions:"רגשות", needs:"צרכים" };
+
+// תוספות "אחר" שיוצרות מציעות במסך הקלט (app/input-screen.html) — אותו מפתח
+// localStorage בדיוק. עיקרון-העל "שיתופיות עם קרדיט" (09/09/2026, CLAUDE.md):
+// כל פריט נושא creator/inst/date, וכאן המקום היחיד שמאשר תוספת לרשימה קבועה.
+function loadCustomTaxonomy(){
+  try { return JSON.parse(localStorage.getItem("sbe.taxonomy.custom.v1")) || {}; }
+  catch(e){ return {}; }
+}
+function saveCustomTaxonomy(ct){ try { localStorage.setItem("sbe.taxonomy.custom.v1", JSON.stringify(ct)); } catch(e){} }
+
+// רשימות "אחר" נוספות מחוץ למיומנויות/רגשות/צרכים — קהל יעד ותחום דעת
+// (app/activity-planner.html, 22/09/2026), אותו עיקרון בדיוק, מפתח נפרד
+// כדי לא לערבב עם שלוש הטקסונומיות המקוריות. LIST_LABELS ניתן להרחבה בעתיד
+// בלי לגעת בלוגיקת התצוגה.
+const LIST_LABELS = { age:"קהלי יעד (תכנון פעילות / ניתוח עבודה)", domain:"תחומי דעת (תכנון פעילות)",
+  reviewCriteria:"קריטריוני בדיקה (ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה)",
+  // תכנון רצף מפגשים (activity-planner.html?mode=seq, 23/09/2026). חייבות
+  // להופיע כאן: countUnseenAdditions סופרת כל מפתח ב-sbe.lists.custom.v1,
+  // ותוספת שלא מוצגת כאן הייתה נספרת בהתראה בלי דרך לסקור אותה.
+  framework:"מסגרות פורמליות (תכנון רצף מפגשים)", audience:"קהלי יעד (תכנון רצף מפגשים)",
+  ageRange:"טווחי גיל (תכנון רצף מפגשים)", courseLevel:"סוג קורס (תכנון רצף מפגשים)",
+  seqPrefs:"העדפות (תכנון רצף מפגשים)", seqLimits:"מגבלות (תכנון רצף מפגשים)" };
+function loadCustomLists(){
+  try { return JSON.parse(localStorage.getItem("sbe.lists.custom.v1")) || {}; }
+  catch(e){ return {}; }
+}
+function saveCustomLists(cl){ try { localStorage.setItem("sbe.lists.custom.v1", JSON.stringify(cl)); } catch(e){} }
+
+// התראה במסך הניהול (22/09/2026, בקשה מפורשת: "בכל התפריטים הנפתחים צריכה
+// להיות אפשרות הוספה עם אישור מיידי. מנהלת המערכת תקבל התראה במסך הניהול
+// ותוכל לאשר/למחוק/לערוך") — סופר את כל התוספות (בשתי המשפחות גם יחד) שעוד
+// לא סומנו כנסקרות. לא שער-לפני-כניסה (התוספת כבר בתוקף) — רק תזכורת.
+function countUnseenAdditions(){
+  let n = 0;
+  const ct = loadCustomTaxonomy();
+  Object.values(ct).forEach(arr => (arr||[]).forEach(x => { if (!x.seen) n++; }));
+  const cl = loadCustomLists();
+  Object.values(cl).forEach(arr => (arr||[]).forEach(x => { if (!x.seen) n++; }));
+  return n;
+}
+
+// עריכה/מחיקה של פריטי הבסיס הקבועים (40/64/30, מוגדרים בקוד ב-TAXONOMIES) —
+// הכרעת המשתמשת (09/09/2026): "אני צריכה שתהיה פה גם אפשרות לראות את כל
+// הרשימה הקיימת, למחוק פריט או לערוך פריט (אם הוקלד עם טעות או בהטיה לא
+// נכונה)." TAXONOMIES עצמו נשאר קבוע בקוד (המקור, מסונכרן ידנית עם
+// input-screen.html) — השכבה הזאת היא "overrides" נפרד: מיפוי ערך-מקורי →
+// ערך-מתוקן, ורשימת ערכים-מקוריים שנמחקו. מפתח על הערך המקורי (לא הנוכחי),
+// כדי שעריכה חזרה-ונשנה של אותו פריט תמשיך לעדכן את אותה רשומה ולא תיצור
+// שכבות. אותו מפתח localStorage משמש גם ב-input-screen.html כדי שהתוצאה
+// תשתקף בבחירה בזמן יצירת תרחיש, לא רק כאן.
+function loadTaxonomyOverrides(){
+  try { return JSON.parse(localStorage.getItem("sbe.taxonomy.overrides.v1")) || {}; }
+  catch(e){ return {}; }
+}
+function saveTaxonomyOverrides(ov){ try { localStorage.setItem("sbe.taxonomy.overrides.v1", JSON.stringify(ov)); } catch(e){} }
+function overrideFor(key){
+  const ov = loadTaxonomyOverrides();
+  if (!ov[key]) ov[key] = { edits:{}, deletes:[] };
+  if (!ov[key].edits) ov[key].edits = {};
+  if (!ov[key].deletes) ov[key].deletes = [];
+  return ov;
+}
+
+// בנק מדדי המשוב: lib/feedback-bank.js — מקור אמת יחיד לטפסים, למסך הסדנה,
+// לתוצאות ולכאן (24/09/2026; עד אז הבנק הועתק ידנית לשלושה קבצים).
+function loadBank(){ return SBE_FB.loadBank(); }
+function saveBank(bank){ SBE_FB.saveBank(bank); }
+
+function loadSuggestions(){
+  try { return JSON.parse(localStorage.getItem("sbe.source.suggestions.v1")) || []; }
+  catch(e){ return []; }
+}
+function saveSuggestions(list){ try { localStorage.setItem("sbe.source.suggestions.v1", JSON.stringify(list)); } catch(e){} }
+
+const TABS = {
+  inst:[["codes","קודים"],["users","משתמשות"],["feedback","מדדי המשוב"],["data","נתונים"]],
+  sys: [["insts","מוסדות"],["taxonomies","רשימות"],["libs","מקורות"],["eval","בקרת איכות"],["data","נתונים"]],
+};
+
+// קישורים למסכים אחרים בפרויקט — לא לשוניות בתוך admin.html, אלא ניווט
+// אמיתי לקובץ אחר. אותה רשימה לשני התפקידים: גם ניהול מערכת רוצה גישה
+// מהירה, לא רק מנהלת מוסדית. כל 22 המסכים חוץ מ-admin.html/eval-set.html
+// עצמם (כבר נגישים כלשוניות בתוך admin.html), כדי שלא תצטרך להיכנס עם
+// קוד אחר כדי להגיע לשום מסך אחר במערכת — אותה רשימה שמוצגת בתפריט הצד
+// הגלובלי בכל שאר המסכים (למשל practice.html).
+const OTHER_SCREENS_GROUPS = [
+  { title:"לקראת ההצגה", items:[
+    { href:"system-toc.html", t:"תוכן עניינים — כל המערכת" },
+    { href:"products/index.html", t:"תוצרי המערכת — הופקו על ידי המודל" },
+  ]},
+  { title:"כניסה", items:[
+    { href:"entry.html", t:"מסך כניסה" },
+    { href:"system-select.html", t:"בחירת מערכת" },
+    { href:"demo-hub.html", t:"מסך הדגמה כולל" },
+  ]},
+  { title:"יצירת תרחיש", items:[
+    { href:"input-screen.html", t:"מסך קלט סטודנטים/יות" },
+    { href:"parent-input-screen.html", t:"מסך קלט הורים" },
+    { href:"student-input-screen.html", t:"מסך קלט נוער" },
+    { href:"search.html", t:"חיפוש במאגר התרחישים" },
+    { href:"sources-library.html", t:"ספריית המקורות" },
+  ]},
+  { title:"תכנון שיחה ופעילות", items:[
+    { href:"conversation-planner.html", t:"תכנון שיחה" },
+    { href:"activity-planner.html", t:"תכנון פעילות" },
+    { href:"academic-review.html", t:"ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה" },
+  ]},
+  { title:"תוצרי הסדנה", items:[
+    { href:"doc-actor.html", t:"גרסת השחקנית" },
+    { href:"card-actor.html", t:"כרטיס שחקנית" },
+    { href:"doc-trainee.html", t:"גרסת המתנסה" },
+    { href:"doc-facilitator.html", t:"גרסת המנחה" },
+  ]},
+  { title:"הרצת הסדנה", items:[
+    { href:"facilitator-screen.html", t:"מסך הסדנה" },
+    { href:"observation-sheet.html", t:"דף צפייה (טלפון)" },
+    { href:"feedback.html", t:"משוב" },
+    { href:"feedback-results.html", t:"תוצאות המשוב" },
+    { href:"creative-assessment.html", t:"הערכה יצירתית" },
+  ]},
+  { title:"תרגול עצמי", items:[
+    { href:"practice.html", t:"תרגול עצמי" },
+    { href:"practice-crossings.html", t:"חציות קווים אדומים" },
+  ]},
+];
+
+// role נקבע מ-?role= בכתובת אם קיים ותקין (מגיע מ-entry.html אחרי כניסה עם
+// סיסמה) — אותו רעיון בדיוק כמו ?maxTurns= ב-practice.html. בלי הפרמטר,
+// נשאר "inst" כברירת המחדל של מסך הדגמה שנפתח ישירות.
+const roleParam = new URLSearchParams(location.search).get("role");
+let role = (roleParam === "sys" || roleParam === "inst") ? roleParam : "inst", tab = "codes";
+
+// Demo-only roleswitch: visible only when no ?role= param (direct access without login)
+if (roleParam === "sys" || roleParam === "inst") {
+  const rs = document.querySelector('.roleswitch');
+  if (rs) rs.style.display = 'none';
+}
+
+function render(){
+  $("title").textContent = role==="inst" ? "אזור ניהול מוסד" : "אזור ניהול כלל המערכת";
+  $("lead").textContent = role==="inst"
+    ? D.instName + " · ניפוק קודים, ניהול משתמשות וייצוא נתונים של המוסד שלך בלבד."
+    : "פתיחת מוסדות, עריכת הרשימות הקבועות ואישור מקורות, בקרת איכות וייצוא כולל. הרמה היחידה שרואה בין־מוסדית — גישה לכל התפריטים והספריות של המערכת.";
+
+  const nav = $("navPanel"); nav.textContent = "";
+  const list = TABS[role];
+  if (!list.some(t => t[0] === tab)) tab = list[0][0];
+
+  nav.append(el("h5",{}, role==="inst" ? "ניהול המוסד" : "ניהול המערכת"));
+  const unseenCount = role==="sys" ? countUnseenAdditions() : 0;
+  list.forEach(([k,l]) => {
+    const b = el("button",{ class: "nlink" + (k===tab ? " on" : "") }, l);
+    if (k === "taxonomies" && unseenCount) b.append(el("span",{class:"navbadge"}, String(unseenCount)));
+    b.addEventListener("click", () => { tab = k; nav.hidden = true; render(); });
+    nav.append(b);
+  });
+
+  OTHER_SCREENS_GROUPS.forEach(g => {
+    nav.append(el("h5",{}, g.title));
+    g.items.forEach(s => nav.append(el("a",{ class:"nlink", href:s.href }, s.t)));
+  });
+
+  // "יציאה" ולא "כניסה" — הכותרת "כניסה" כבר משמשת את קבוצת מסכי הכניסה
+  // ב-OTHER_SCREENS_GROUPS למעלה; שתי כותרות זהות באותו תפריט בלבלו (21/09/2026).
+  nav.append(el("h5",{}, "יציאה"));
+  nav.append(el("a",{ class:"nlink", href:"entry.html" }, "החלפת תפקיד / קוד אחר"));
+
+  const p = $("panels"); p.textContent = "";
+  p.append(({ codes:pCodes, users:pUsers, feedback:pFeedback, data:pData, insts:pInsts, taxonomies:pTaxonomies, libs:pLibs, eval:pEvalSet })[tab]());
+}
+
+// ── קודים ──
+function pCodes(){
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"קודים"),
+    el("p",{class:"sub"},"שני סוגים. קוד המוסד מנפיקה את, וקוד הסדנה נוצר לבד כשמנחה פותחת סדנה."));
+
+  const c1 = el("div",{class:"card"});
+  c1.append(el("h3",{},"קוד המוסד", el("em",{},"תקף לסמסטר")));
+  const in1 = el("div",{class:"in"});
+  const big = el("div",{class:"bigcode"}, D.instCode.code);
+  in1.append(el("div",{class:"codebox"}, big,
+    el("div",{class:"meta"}, "תקף עד " + D.instCode.until, el("br"), "יוצרות ומנחות נכנסות איתו")));
+  const row = el("div",{class:"btnrow"});
+  const bCopy = el("button",{class:"act"},"העתקה");
+  bCopy.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(D.instCode.code);
+    bCopy.textContent="הועתק"; setTimeout(()=>bCopy.textContent="העתקה",1400);}catch(e){} });
+  const bNew = el("button",{class:"act d"},"החלפת קוד");
+  bNew.addEventListener("click", ()=> ask("החלפת קוד המוסד",
+    "הקוד הנוכחי יפסיק לעבוד מיד. מי שכבר נכנסה תישאר מחוברת, אבל כל כניסה חדשה תדרוש את הקוד החדש.",
+    ()=>{ D.instCode.code = code6(); render(); }));
+  row.append(bCopy,bNew); in1.append(row); c1.append(in1);
+
+  const c2 = el("div",{class:"card"});
+  c2.append(el("h3",{},"קודי סדנה", el("em",{},"פגים בסוף היום")));
+  c2.append(el("div",{class:"in"},
+    el("p",{style:"margin:0;font-size:14.5px;color:var(--muted);line-height:1.6"},
+      "נוצרים לבד כשמנחה פותחת סדנה, ואינם דורשים ניפוק. הצופות מקלידות אותם ואת שמן, בלי חשבון ובלי הרשמה.")));
+
+  w.append(c1,c2, el("div",{class:"note"},
+    el("b",{},"למה קוד ולא סיסמה. "),
+    "מי שיש לו את הקוד נכנס. לדף צפייה זה בסדר, ולמאגר התרחישים זה נשען על כך שקוד המוסד מתחלף כל סמסטר וניתן לביטול מיידי. זו הפשרה בתמורה לכך שאיש לא נתקע בהרשמה."));
+  return w;
+}
+
+// ── משתמשות ──
+function pUsers(){
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"משתמשות"), el("p",{class:"sub"},
+    "התפקיד קובע מה נגיש. ההרשאות מצטברות, ואישה אחת יכולה להחזיק כמה תפקידים."));
+
+  const c = el("div",{class:"card"});
+  c.append(el("h3",{},D.instName, el("em",{}, D.users.length + " משתמשות")));
+  const inn = el("div",{class:"in"});
+  const rows = el("div",{class:"rows"});
+  D.users.forEach((u,i)=>{
+    const r = el("div",{class:"r"});
+    r.append(el("span",{class:"nm"}, el("b",{},u.n), el("span",{},u.e)));
+    const sel = el("select",{class:"f"});
+    ["יוצרת","מנחה","מנהלת מוסדית"].forEach(o=>{
+      const op=el("option",{},o); op.value=o; if(o===u.r) op.setAttribute("selected","");
+      sel.append(op);});
+    sel.addEventListener("change",()=>{ u.r=sel.value; });
+    const del = el("button",{class:"act d"},"הסרה");
+    del.addEventListener("click",()=> ask("הסרת "+u.n,
+      "היא לא תוכל להיכנס יותר. התרחישים שיצרה נשארים במאגר המוסד.",
+      ()=>{ D.users.splice(i,1); render(); }));
+    r.append(sel,del); rows.append(r);
+  });
+  inn.append(rows);
+
+  const add = el("div",{class:"addrow"});
+  const nm = el("input",{placeholder:"שם"});
+  const bAdd = el("button",{class:"act p"},"הוספה");
+  bAdd.addEventListener("click",()=>{ const v=nm.value.trim(); if(!v)return;
+    D.users.push({n:v,e:"",r:"יוצרת"}); render(); });
+  add.append(nm,bAdd); inn.append(add); c.append(inn);
+  w.append(c);
+  return w;
+}
+
+// ── מדדי המשוב ──
+// המנחה בוחרת 5–10 מדדים לכל שאלון במסך הסדנה (facilitator-screen.html). כאן:
+// הבנק כולו, ברירת המחדל שמוצעת למנחה, והוספת מדד עם קרדיט (24/09/2026).
+function pFeedback(){
+  const FB = SBE_FB;
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"מדדי המשוב"), el("p",{class:"sub"},
+    "שלושה שאלונים — למנחה, למתנסה ולצופה. המנחה בוחרת " + FB.MIN + "–" + FB.MAX + " מדדים לכל שאלון במסך הסדנה, לפני שהיא פותחת אותה. המדדים המסומנים כאן מוצעים לה כברירת המחדל של המוסד."));
+
+  w.append(el("div",{class:"note"},
+    el("b",{},"הבנק משותף בין כל המוסדות, בדיוק כמו מאגר התרחישים המשותף. "),
+    "מדד שהוספת כאן נגיש למוסדות אחרים, ומסומן בשם התורמת, בשם המוסד ובתאריך. ",
+    "הסימון של ברירת המחדל משפיע רק על המוסד שלך. מדד לא נמחק לעולם."));
+
+  const bank = loadBank();
+  const TYPE_LABEL = { scale:"סולם", opts:"בחירה", text:"פתוחה" };
+
+  FB.ROLES.forEach(role=>{
+    const r = bank[role];
+    const n = r.active.length, total = Object.keys(r.bank).length;
+    const c = el("div",{class:"card"});
+    c.append(el("h3",{}, "שאלון " + FB.ROLE_LABEL[role], el("em",{}, n + " בברירת המחדל · " + total + " מדדים בבנק")));
+    const inn = el("div",{class:"in"});
+    if (!FB.valid(n)) inn.append(el("div",{class:"note"}, "ברירת המחדל צריכה לכלול " + FB.MIN + "–" + FB.MAX + " מדדים, כדי שהמנחה תוכל לפתוח סדנה בלי לשנות דבר."));
+    const full = n >= FB.MAX;
+    FB.grouped(role, bank).forEach(({ g, items })=>{
+      inn.append(el("div",{style:"font-size:12.5px;font-weight:700;color:var(--muted);margin:12px 0 4px"}, g));
+      const rows = el("div",{class:"rows"});
+      items.forEach(({ id, q })=>{
+        const isOn = r.active.includes(id);
+        const row = el("div",{class:"r"});
+        const label = el("label",{style:"display:flex;gap:10px;align-items:baseline;cursor:pointer;flex:1;min-width:0"});
+        const cb = document.createElement("input"); cb.type="checkbox"; cb.checked = isOn; cb.disabled = !isOn && full;
+        const txt = el("span",{class:"nm"}, el("b",{style: isOn ? "" : "font-weight:400"}, q.l));
+        if (q.by || q.creator) txt.append(el("span",{}, "נוסף על ידי " + [q.creator, q.by, q.date].filter(Boolean).join(" · ")));
+        cb.addEventListener("change",()=>{
+          if (cb.checked) { if (!r.active.includes(id) && r.active.length < FB.MAX) r.active.push(id); }
+          else r.active = r.active.filter(x=>x!==id);
+          saveBank(bank); render();
+        });
+        label.append(cb, txt);
+        row.append(label, el("span",{class:"role"}, TYPE_LABEL[q.type] || q.type));
+        rows.append(row);
+      });
+      inn.append(rows);
+    });
+
+    const add = el("div",{class:"addrow"});
+    const who = el("input",{placeholder:"שם מלא — לקרדיט"}); who.style.flex = "0 0 150px";
+    const nm = el("input",{placeholder:"מדד חדש לשאלון " + FB.ROLE_LABEL[role]});
+    const ty = el("select",{}); ty.append(el("option",{value:"scale"},"סולם 5 דרגות"), el("option",{value:"text"},"שאלה פתוחה"));
+    ty.style.flex = "0 0 130px";
+    const bAdd = el("button",{class:"act p"},"הוספה");
+    bAdd.addEventListener("click",()=>{
+      const v = nm.value.trim(); if (!v) return;
+      const id = FB.addMetric(role, { l:v, type:ty.value, creator: who.value.trim()||null, by:D.instName });
+      const b = loadBank();
+      if (id && !b[role].active.includes(id) && b[role].active.length < FB.MAX) { b[role].active.push(id); saveBank(b); }
+      render();
+    });
+    add.append(who, nm, ty, bAdd); inn.append(add);
+    c.append(inn); w.append(c);
+  });
+
+  const reset = el("button",{class:"act d"},"איפוס ברירת המחדל");
+  reset.addEventListener("click",()=> ask("איפוס ברירת המחדל",
+    "הסימון של ברירת המחדל בשלושת השאלונים יחזור למקורי. מדדים שנוספו נשארים בבנק.",
+    ()=>{ FB.resetBank(); render(); }));
+  w.append(el("div",{class:"btnrow"}, reset));
+  return w;
+}
+
+// ── מוסדות ──
+function pInsts(){
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"מוסדות"), el("p",{class:"sub"},
+    "פתיחת מוסד מנפיקה לו קוד ומנהלת מוסדית ראשונה."));
+
+  const st = el("div",{class:"stat"});
+  st.append(el("div",{}, el("b",{},String(D.institutions.length)), el("span",{},"מוסדות")),
+            el("div",{}, el("b",{},String(D.institutions.reduce((a,x)=>a+x.users,0))), el("span",{},"משתמשות")),
+            el("div",{}, el("b",{},String(D.institutions.reduce((a,x)=>a+x.scen,0))), el("span",{},"תרחישים")));
+  w.append(st);
+
+  const c = el("div",{class:"card"});
+  c.append(el("h3",{},"רשימת המוסדות"));
+  const inn = el("div",{class:"in"});
+  const rows = el("div",{class:"rows"});
+  D.institutions.forEach(x=>{
+    // "פעיל" היה תמיד span סטטי בלי שום קשר לנתון — נראה כמו כפתור (אותו
+    // עיצוב כמו "קוד חדש" לידו) אבל לחיצה עליו לא עשתה כלום. המשתמשת דיווחה
+    // "המסך הזה אינו פעיל" (22/09/2026) — תוקן לכפתור מתפקד אמיתי: מוסד יכול
+    // להיות פעיל/מושהה, ומוצג בהתאם (שורה מושהית מעומעמת). זו הדגמת ניהול
+    // בלבד (D.institutions הוא מוקאפ מקומי, בלי שרת) — לא חוסם בפועל כניסה
+    // ב-entry.html (שם קודי המוסד משוכפלים ידנית, מגבלה כלל-פרויקטית מוכרת).
+    const r = el("div",{class:"r"});
+    if (!x.active) r.classList.add("inactive");
+    r.append(el("span",{class:"nm"}, el("b",{},x.n),
+      el("span",{}, "קוד " + x.code + " · " + x.users + " משתמשות · " + x.scen + " תרחישים · מאז " + x.since)));
+    const status = el("button",{class:"role" + (x.active ? " role-on" : " role-off")}, x.active ? "פעיל" : "מושהה");
+    status.title = x.active ? "לחיצה משהה את הכניסה למוסד" : "לחיצה מפעילה מחדש";
+    status.addEventListener("click",()=>{ x.active = !x.active; render(); });
+    const b = el("button",{class:"act"},"קוד חדש");
+    b.addEventListener("click",()=>{ x.code=code6(); render(); });
+    r.append(status, b);
+    rows.append(r);
+  });
+  inn.append(rows);
+  const add = el("div",{class:"addrow"});
+  const nm = el("input",{placeholder:"שם המוסד"});
+  const bAdd = el("button",{class:"act p"},"פתיחת מוסד");
+  bAdd.addEventListener("click",()=>{ const v=nm.value.trim(); if(!v)return;
+    D.institutions.push({n:v,code:code6(),users:0,scen:0,since:"2026"}); render(); });
+  add.append(nm,bAdd); inn.append(add); c.append(inn);
+  w.append(c);
+
+  w.append(el("div",{class:"note"},
+    el("b",{},"מה שאינו נגיש לך — נגיש. "),
+    "כניהול המערכת את רואה הכול, כולל תרחישים של כל מוסד, לא רק מה ששותף מרצון למאגר המשותף — יש לך אחריות על כל המערכת. ההפרדה בין מוסדות היא ביניהם לבין עצמם, ולא בינך לבינם: מנהלת מוסדית רואה רק את המוסד שלה."));
+  return w;
+}
+
+// ── רשימות ──
+// מיומנויות/רגשות/צרכים — אוצר מילים קבוע, לא ספרייה. תוספת "אחר" שיוצרת
+// מוסיפה במסך הקלט (app/input-screen.html) נכנסת לתוקף מיד, בלי אישור —
+// הכרעת המשתמשת (09/09/2026): "תוספת אינה צריכה אישור. במקרה שצריך יהיה
+// למחוק אני אעשה זאת דרך ממשק הניהול." הרשת ביטחון היא עריכה/מחיקה כאן בכל
+// עת, לא שער מראש. ראו "עיקרון-על: שיתופיות עם קרדיט" ב-CLAUDE.md.
+// שורות "תוספות קהילה" — משותף לטקסונומיות (מיומנויות/רגשות/צרכים) ולרשימות
+// הנוספות (קהל יעד/תחום דעת) — אותה חוויה בדיוק בשני המקומות (22/09/2026).
+// item.seen===false מציג תג "חדש" + כפתור "✓ אישור" (סימון-כנסקר, לא שער
+// לפני כניסה — התוספת כבר בתוקף). עריכה מסמנת seen אוטומטית, כי זה כבר סוג
+// של סקירה.
+// filterFn אופציונלי (22/09/2026) — מציג רק פריטים שעומדים בתנאי (למשל
+// item.group===groupId), אבל עדיין עורך/מוחק לפי המיקום האמיתי במערך
+// המלא (indexed), כדי שעריכה על תצוגה מסוננת תפגע בפריט הנכון.
+function renderCommunityRows(lib, loadFn, saveFn, groupKey, filterFn){
+  lib.textContent = "";
+  const all = (loadFn()[groupKey] || []);
+  const indexed = all.map((item,i)=>({item,i})).filter(x => !filterFn || filterFn(x.item));
+  if (!indexed.length) { lib.append(el("p",{style:"margin:0;font-size:13px;color:var(--muted)"},"אין תוספות עדיין.")); return; }
+  indexed.forEach(({item,i})=>{
+    const r = el("div",{class:"li"});
+    const inp = el("input"); inp.value = item.value;
+    // item.detail (אופציונלי, למשל פירוט קריטריון ב-academic-review.html) —
+    // לא ניתן לעריכה כאן (רק ה-value), אבל מוצג ב-tooltip לצד הקרדיט.
+    inp.title = [item.creator, item.inst, item.date, item.detail].filter(Boolean).join(" · ") || "בלי פרטי קרדיט";
+    inp.addEventListener("change",()=>{
+      const cur = loadFn();
+      if (cur[groupKey] && cur[groupKey][i]) { cur[groupKey][i].value = inp.value.trim(); cur[groupKey][i].seen = true; }
+      saveFn(cur);
+    });
+    const cell3 = el("div",{style:"display:flex;gap:6px;align-items:center;"});
+    if (!item.seen) {
+      cell3.append(el("span",{class:"newtag"},"חדש"));
+      const ok = el("button",{class:"act p", title:"סימון כנסקר"},"✓ אישור");
+      ok.addEventListener("click",()=>{
+        const cur = loadFn(); if (cur[groupKey] && cur[groupKey][i]) cur[groupKey][i].seen = true;
+        saveFn(cur); render();
+      });
+      cell3.append(ok);
+    }
+    const del = el("button",{class:"act d"},"הסרה");
+    del.addEventListener("click",()=>{
+      const cur = loadFn();
+      cur[groupKey] = (cur[groupKey]||[]).filter((_,ix)=>ix!==i);
+      saveFn(cur); render();
+    });
+    cell3.append(del);
+    r.append(el("span",{class:"n"},String(i+1)), inp, cell3);
+    lib.append(r);
+  });
+}
+
+function pTaxonomies(){
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"רשימות"), el("p",{class:"sub"},
+    "מיומנויות, רגשות וצרכים — אוצר המילים הקבוע שנפתח כאפשרויות בחירה בזמן יצירת תרחיש. הניסוח חייב להישאר זהה בין מוסדות כדי לאפשר הצלבת נתוני מחקר."));
+
+  const unseenNow = countUnseenAdditions();
+  w.append(el("div",{class:"note"},
+    el("b",{},"תוספות מהיוצרות נכנסות מיד, בלי אישור. "),
+    "כל תוספת נושאת קרדיט (שם, מוסד, תאריך — מוצג בריחוף מעל הפריט). כל תוספת חדשה מסומנת \"חדש\" עד שתסמני אותה כנסקרת (או תערכי/תמחקי אותה) — זו ההתראה שלך, לא שער לפני כניסה."
+    + (unseenNow ? " כרגע ממתינות " + unseenNow + " תוספות לסקירה." : " אין כרגע תוספות חדשות.")));
+
+  const ct = loadCustomTaxonomy();
+
+  ["skills","emotions","needs"].forEach(key=>{
+    const base = TAXONOMIES[key];
+    const baseCount = base.reduce((a,g)=>a+g.items.length,0);
+    const deletedCount = (overrideFor(key)[key].deletes || []).length;
+
+    const c = el("div",{class:"card"});
+    const extraNow = () => (loadCustomTaxonomy()[key] || []);
+    c.append(el("h3",{}, TAX_LABELS[key],
+      el("em",{}, (baseCount-deletedCount+extraNow().length) + " פריטים · " + base.length + " קבוצות בסיס")));
+    const inn = el("div",{class:"in"});
+
+    // הרשימה הקבועה (40/64/30) — לכל קבוצה כותרת משנה, שורה ניתנת לעריכה
+    // לכל פריט בסיס, תוספות הקהילה ששייכות לקבוצה הזאת, והוספה ישירה
+    // לתוך הקבוצה הזאת בדיוק (22/09/2026, "אפשרות הוספה תהיה ליד כל
+    // תת-סעיף ברשימה אחרת אין ערך לחלוקה זו") — במקום דלי שטוח אחד של כל
+    // התוספות וכפתור הוספה גלובלי אחד בסוף, שלא ידע לשייך תוספת לתת-סעיף.
+    // עריכה/מחיקה של פריטי בסיס חלות על ה-overrides, לא על TAXONOMIES עצמו.
+    const ov = overrideFor(key);
+    base.forEach(group=>{
+      inn.append(el("p",{style:"margin:14px 0 6px;font-size:12px;font-weight:700;color:var(--muted)"}, group.name));
+      const glib = el("div",{class:"lib"});
+      group.items.forEach((original,i)=>{
+        if (ov[key].deletes.includes(original)) return;   // נמחק — לא מוצג
+        const current = ov[key].edits[original] || original;
+        const r = el("div",{class:"li"});
+        const inp = el("input"); inp.value = current;
+        inp.addEventListener("change",()=>{
+          const v = inp.value.trim(); if (!v) { inp.value = current; return; }
+          const cur = overrideFor(key);
+          if (v === original) delete cur[key].edits[original];
+          else cur[key].edits[original] = v;
+          saveTaxonomyOverrides(cur);
+        });
+        const del = el("button",{class:"act d"},"הסרה");
+        del.addEventListener("click",()=> ask("הסרת \"" + current + "\"",
+          "פריט מהרשימה הקבועה, לא תוספת יוצרת. ההסרה חלה על כל מי שיוצרת תרחיש מעכשיו, בכל מוסד. שינוי ניסוח נעשה בעריכה, לא בהסרה והוספה מחדש — כדי לא לאבד את המקום בקבוצה.",
+          ()=>{
+            const cur = overrideFor(key);
+            cur[key].deletes.push(original);
+            saveTaxonomyOverrides(cur); render();
+          }));
+        r.append(el("span",{class:"n"},String(i+1)), inp, del);
+        glib.append(r);
+      });
+      inn.append(glib);
+
+      // תוספות קהילה ששייכות לתת-הסעיף הזה בדיוק
+      const glib2 = el("div",{class:"lib"});
+      renderCommunityRows(glib2, loadCustomTaxonomy, saveCustomTaxonomy, key, x => x.group === group.id);
+      inn.append(glib2);
+
+      // הוספה ישירה לתת-הסעיף הזה
+      const add = el("div",{class:"addrow"});
+      const nm = el("input",{placeholder:"הוספה ל\"" + group.name + "\" — נכנסת לתוקף מיד"});
+      const bAdd = el("button",{class:"act p"},"הוספה");
+      bAdd.addEventListener("click",()=>{
+        const v = nm.value.trim(); if(!v) return;
+        const cur = loadCustomTaxonomy();
+        // seen:true — ניהול המערכת היא זו שמוסיפה, אין צורך להתריע לעצמה.
+        cur[key] = [...(cur[key]||[]),
+          { value:v, group:group.id, creator:"ניהול המערכת", inst:null, date:new Date().toISOString().slice(0,10), seen:true }];
+        saveCustomTaxonomy(cur); render();
+      });
+      add.append(nm,bAdd); inn.append(add);
+    });
+
+    // תוספות ללא שיוך לקבוצה קיימת (תוספות ישנות שנוספו לפני 22/09/2026,
+    // לפני שהיה group על כל פריט) — לא נעלמות, רק מרוכזות בנפרד בסוף.
+    const isUnassigned = x => !base.some(g => g.id === x.group);
+    if (extraNow().some(isUnassigned)) {
+      inn.append(el("p",{style:"margin:16px 0 6px;font-size:12px;font-weight:700;color:var(--muted)"}, "תוספות ללא שיוך לתת-סעיף"));
+      const lib3 = el("div",{class:"lib"});
+      renderCommunityRows(lib3, loadCustomTaxonomy, saveCustomTaxonomy, key, isUnassigned);
+      inn.append(lib3);
+    }
+
+    c.append(inn); w.append(c);
+  });
+
+  // ── רשימות נוספות (22/09/2026) — קהל יעד ותחום דעת מ-activity-planner.html,
+  // אותו מנגנון בדיוק (sbe.lists.custom.v1 במקום sbe.taxonomy.custom.v1) —
+  // "בכל התפריטים הנפתחים צריכה להיות אפשרות הוספה עם אישור מיידי". ניתן
+  // להרחיב ל-LIST_LABELS נוספים בעתיד בלי לשנות את הלוגיקה כאן.
+  Object.keys(LIST_LABELS).forEach(key=>{
+    const c = el("div",{class:"card"});
+    const extraNow = () => (loadCustomLists()[key] || []);
+    c.append(el("h3",{}, LIST_LABELS[key], el("em",{}, extraNow().length + " תוספות")));
+    const inn = el("div",{class:"in"});
+    const lib = el("div",{class:"lib"});
+    renderCommunityRows(lib, loadCustomLists, saveCustomLists, key);
+    inn.append(lib);
+
+    const add = el("div",{class:"addrow"});
+    const nm = el("input",{placeholder:"הוספה ישירה — נכנסת לתוקף מיד"});
+    const bAdd = el("button",{class:"act p"},"הוספה");
+    bAdd.addEventListener("click",()=>{
+      const v = nm.value.trim(); if(!v) return;
+      const cur = loadCustomLists();
+      cur[key] = [...(cur[key]||[]),
+        { value:v, creator:"ניהול המערכת", inst:null, date:new Date().toISOString().slice(0,10), seen:true }];
+      saveCustomLists(cur); render();
+    });
+    add.append(nm,bAdd); inn.append(add);
+
+    c.append(inn); w.append(c);
+  });
+
+  return w;
+}
+
+// ── מקורות ──
+// עד 09/09/2026 נקראה "שלוש הספריות" וכללה גם מיומנויות (רשימה, לא ספרייה —
+// עברה ל-pTaxonomies) וגם "דרכי הערכה" מדומות שלא היו מחוברות לשום דבר אמיתי
+// (14 האפשרויות האמיתיות בנויות בקוד ב-app/creative-assessment.html, לא
+// ספרייה שניתן לערוך פריט-פריט). נשאר כאן רק מה שבאמת ספרייה שמוסדות תורמים
+// אליה: מקורות. ראו "רשימה מול ספרייה — הבחנה שהוכרעה" ב-CLAUDE.md.
+function pLibs(){
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"מקורות"), el("p",{class:"sub"},
+    "ספריית המקורות התיאורטיים. מוסדות מציעות, וכל מקור נכנס לשימוש רק אחרי אישור כאן."));
+
+  w.append(el("div",{class:"lock"},
+    el("b",{},"למה מקור טעון אישור, בניגוד לשאלת משוב. "),
+    "המערכת לעולם לא כותבת מקור מעצמה — כל מקור חייב להיבדק שהוא באמת קיים ומצוטט נכון לפני שהוא זמין למודל לבחור ממנו. שאלת משוב היא רק ניסוח, ולכן נפתחת מיידית."));
+
+  const pending = loadSuggestions().filter(s => s.status === "pending");
+  if (pending.length) {
+    const cp = el("div",{class:"card"});
+    cp.append(el("h3",{},"מקורות שהוצעו לאישור", el("em",{}, pending.length + " ממתינים")));
+    const innp = el("div",{class:"in"});
+    const rows = el("div",{class:"rows"});
+    pending.forEach(s=>{
+      const r = el("div",{class:"r"});
+      const nm = el("span",{class:"nm"}, el("b",{},s.text),
+        el("span",{}, [s.creator, s.by, s.date].filter(Boolean).join(" · ")));
+      if (s.forWhom) nm.append(el("span",{}, "למי: " + s.forWhom));
+      if (s.why) nm.append(el("span",{}, "למה: " + s.why));
+      r.append(nm);
+      const ok = el("button",{class:"act p"},"אישור");
+      ok.addEventListener("click",()=>{
+        const list = loadSuggestions();
+        const item = list.find(x=>x.id===s.id); if (item) item.status = "approved";
+        saveSuggestions(list);
+        // הכנסת המקור בפועל לרשימה המלאה (139) דורשת עדכון ידני של המערך
+        // המוטמע ב-sources-library.html — אין שרת שמאפשר הזרקה אוטומטית
+        // לקובץ סטטי. "אושר" כאן מסמן שהוא עבר בדיקה ומוכן לעדכון הבא.
+        render();
+      });
+      const no = el("button",{class:"act d"},"דחייה");
+      no.addEventListener("click",()=>{
+        const list = loadSuggestions();
+        const item = list.find(x=>x.id===s.id); if (item) item.status = "rejected";
+        saveSuggestions(list); render();
+      });
+      r.append(ok,no); rows.append(r);
+    });
+    innp.append(rows); cp.append(innp); w.append(cp);
+  }
+
+  // הרשימה המלאה — 139 המקורות האמיתיים מ-app/sources-library.html, לא
+  // מוקאפ נפרד. הוכרע 09/09/2026 (המשתמשת: "חייב להיות כפתור שמאפשר לי
+  // לראות את כל הרשימה או חלק ממנה לפי מיון") — במקום לשכפל את 139
+  // הרשומות שוב כאן, מוטמע כלי הדפדוף האמיתי עם החיפוש/סינון/מיון שכבר
+  // קיימים בו, אותו היגיון בדיוק כמו "בקרת איכות" (eval-set.html).
+  const c = el("div",{class:"card"});
+  c.append(el("h3",{},"כל המקורות", el("em",{},"139 פריטים")));
+  const frame = document.createElement("iframe");
+  frame.src = "sources-library.html";
+  frame.className = "evalframe";
+  c.append(el("div",{class:"in"}, frame));
+  w.append(c);
+  return w;
+}
+
+// ── בקרת איכות ──
+// גלוי רק לניהול המערכת (role==="sys") — לא ליוצרת, לא למנחה, לא למנהלת מוסדית.
+// הרובריקה (app/eval-set.html) היא מסך עצמאי משלה, מוטמע כאן ב-iframe במקום
+// לשכפל את לוגיקת הניקוד — כך יש מקור אמת אחד לרובריקה, גם כשנפתחת ישירות
+// וגם כשנפתחת מתוך הניהול.
+function pEvalSet(){
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"בקרת איכות"), el("p",{class:"sub"},
+    "סט ההערכה: אחד עשר קלטים קבועים, עשרה שערים ותשעה קריטריונים. רץ לפני ואחרי כל שינוי בפרומפט, במודל או בצינור."));
+  const frame = document.createElement("iframe");
+  frame.src = "eval-set.html";
+  frame.className = "evalframe";
+  w.append(frame);
+  return w;
+}
+
+// ── נתונים ──
+// תרחישים — נתוני דמו לסינון+ייצוא+מחיקה מדורגת (09/09/2026). אין עדיין
+// מסד תרחישים אמיתי בפרויקט הזה (input-screen.html לא שומר תרחיש שהופק
+// לשום מקום מרכזי) — זה מדגים את המנגנון על סט מדומה, בדיוק כמו כל שאר
+// הנתונים המדומים בקובץ הזה (D.institutions וכו'). כשיהיה מסד אמיתי,
+// FACETS/scenarioMatchesAll/exportScenarioRecords ממשיכים לעבוד בלי שינוי —
+// רק loadScenarioRecords() צריכה להתחבר למקור אמיתי במקום ל-seed.
+const SCENARIO_RECORDS_SEED = [
+  {id:"s1", name:"יש לך גן טוב", inst:"מכללה לחינוך", creator:"רותם אלמוג", year:"2026", lang:"עברית", age:"גן", approach:"דיאלוג ומפגש", conflictType:"ערכי", emotions:["פחד","אשמה"], needs:["ביטחון רגשי","הכרה בערך"], characters:"גננת / אמא"},
+  {id:"s2", name:"עשרים ושתיים כאלה", inst:"מכללה לחינוך", creator:"נועה ברששת", year:"2026", lang:"עברית", age:"כיתה ד-ה", approach:"ניתוח התנהגות ו-CBT", conflictType:"מבני", emotions:["תסכול","חרדה"], needs:["גבולות ברורים ומובנים","הרגשת מסוגלות"], characters:"רכזת שילוב / מחנכת"},
+  {id:"s3", name:"למה בכלל", inst:"מכללה לחינוך", creator:"סמאח דיאב", year:"2025", lang:"עברית", age:"חטיבת ביניים", approach:"חינוך למשמעות", conflictType:"רגשי", emotions:["עייפות נפשית","בלבול"], needs:["אותנטיות","הקשבה"], characters:"רכזת פדגוגית / מורה מתחילה"},
+  {id:"s4", name:"הקיר בין הכיתות", inst:"מכללה אקדמית ב׳", creator:"דנה שגב", year:"2026", lang:"עברית", age:"כיתה א-ג", approach:"הכלה, קשיבות והתנסות", conflictType:"מידעי", emotions:["בדידות","ניתוק"], needs:["שייכות","קבלה ואי-שיפוט"], characters:"מורה / הורה"},
+  {id:"s5", name:"שיחה בחדר המורים", inst:"מכללה אקדמית ב׳", creator:"מאיה כרמי", year:"2025", lang:"עברית", age:"חטיבה עליונה", approach:"דיאלוג ומפגש", conflictType:"ערכי", emotions:["כעס","טינה"], needs:["כבוד הדדי","הכרה במאמץ"], characters:"מורה / מנהלת"},
+  {id:"s6", name:"מה שנשאר בשקט", inst:"מרכז סימולציה אזורי", creator:"עדי לוין", year:"2026", lang:"ערבית", age:"גן", approach:"הכלה, קשיבות והתנסות", conflictType:"רגשי", emotions:["פחד","בושה"], needs:["ביטחון פיזי","תמיכה רגשית"], characters:"גננת / אמא"},
+  {id:"s7", name:"אחרי הצעקה", inst:"מרכז סימולציה אזורי", creator:"רותם אלמוג", year:"2025", lang:"עברית", age:"כיתה ד-ה", approach:"ניתוח התנהגות ו-CBT", conflictType:"מבני", emotions:["אשמה","ייסורי מצפון"], needs:["כבוד עצמי","אחריות"], characters:"מחנך / תלמיד"},
+  {id:"s8", name:"הכיסא הפנוי", inst:"מכללה לחינוך", creator:"דנה שגב", year:"2025", lang:"עברית", age:"חטיבת ביניים", approach:"חינוך למשמעות", conflictType:"ערכי", emotions:["יגון","אבל"], needs:["חיבור רגשי","תמיכה רגשית"], characters:"יועצת / תלמידה"},
+  {id:"s9", name:"מבט מהצד", inst:"מכללה אקדמית ב׳", creator:"נועה ברששת", year:"2026", lang:"אנגלית", age:"חטיבה עליונה", approach:"דיאלוג ומפגש", conflictType:"מידעי", emotions:["ריחוק","ניכור"], needs:["אמון","וודאות"], characters:"מדריכה פדגוגית / סטודנטית בינלאומית"},
+  {id:"s10", name:"שקט לפני הפעימה", inst:"מרכז סימולציה אזורי", creator:"סמאח דיאב", year:"2026", lang:"עברית", age:"כיתה א-ג", approach:"הכלה, קשיבות והתנסות", conflictType:"רגשי", emotions:["חרדה","פאניקה"], needs:["ביטחון רגשי","מוגנות רגשית"], characters:"הורה / מורה"},
+  {id:"s11", name:"הישיבה שנדחתה", inst:"מכללה לחינוך", creator:"מאיה כרמי", year:"2025", lang:"עברית", age:"כיתה ד-ה", approach:"ניתוח התנהגות ו-CBT", conflictType:"מבני", emotions:["תסכול","מרירות"], needs:["הכרה בערך","כבוד"], characters:"הורה / מחנכת"},
+  {id:"s12", name:"הצד השני של השקט", inst:"מכללה אקדמית ב׳", creator:"עדי לוין", year:"2026", lang:"עברית", age:"גן", approach:"דיאלוג ומפגש", conflictType:"ערכי", emotions:["חום","קרבה"], needs:["שייכות","קרבה"], characters:"גננת / סייעת"},
+  {id:"s13", name:"מה שהיא לא ידעה", inst:"מרכז סימולציה אזורי", creator:"דנה שגב", year:"2025", lang:"ערבית", age:"חטיבת ביניים", approach:"חינוך למשמעות", conflictType:"מידעי", emotions:["בלבול","ספק"], needs:["וודאות","אמון"], characters:"מורה / תלמיד"},
+  {id:"s14", name:"הפסקה הארוכה", inst:"מכללה לחינוך", creator:"רותם אלמוג", year:"2026", lang:"עברית", age:"חטיבה עליונה", approach:"הכלה, קשיבות והתנסות", conflictType:"רגשי", emotions:["שחיקה","עייפות"], needs:["תמיכה רגשית","הקשבה"], characters:"מורה / מורה עמיתה"},
+  {id:"s15", name:"הגבול של דנה", inst:"מכללה אקדמית ב׳", creator:"נועה ברששת", year:"2025", lang:"עברית", age:"כיתה א-ג", approach:"ניתוח התנהגות ו-CBT", conflictType:"מבני", emotions:["כעס","זעם"], needs:["גבולות ברורים ומובנים","אוטונומיה"], characters:"סייעת / גננת"},
+  {id:"s16", name:"אחרי שהדלת נסגרה", inst:"מרכז סימולציה אזורי", creator:"מאיה כרמי", year:"2026", lang:"עברית", age:"כיתה ד-ה", approach:"דיאלוג ומפגש", conflictType:"ערכי", emotions:["געגוע","אהבה"], needs:["חיבור רגשי","קרבה"], characters:"הורה / מורה"},
+];
+function loadScenarioRecords(){
+  try {
+    const saved = JSON.parse(localStorage.getItem("sbe.mock.scenarios.v1"));
+    if (Array.isArray(saved)) return saved;
+  } catch(e){}
+  return JSON.parse(JSON.stringify(SCENARIO_RECORDS_SEED));
+}
+function saveScenarioRecords(list){ try { localStorage.setItem("sbe.mock.scenarios.v1", JSON.stringify(list)); } catch(e){} }
+
+// קריטריוני הסינון. array:true = שדה שהוא רשימה (בחירה תואמת אם אחד
+// מהערכים ברשימה נבחר). "וגם" בין קריטריונים, "או" בתוך קריטריון —
+// הכרעת המשתמשת (09/09/2026): "ניתן יהיה לבחור גם.... וגם... לפי הררכיה."
+// ההיררכיה ממומשת כ"אפשרויות מצטמצמות": הערכים המוצעים בכל קריטריון
+// מחושבים מהתרחישים שעדיין תואמים לכל הקריטריונים האחרים שנבחרו.
+const FACETS = [
+  {key:"inst", label:"מוסד"},
+  {key:"creator", label:"שם יוצרת"},
+  {key:"year", label:"שנה"},
+  {key:"lang", label:"שפה"},
+  {key:"age", label:"שכבת גיל"},
+  {key:"approach", label:"גישה חינוכית"},
+  {key:"conflictType", label:"סוג קונפליקט"},
+  {key:"emotions", label:"רגש", array:true},
+  {key:"needs", label:"צורך", array:true},
+];
+const scenarioFilter = {};   // key -> Set, גלובלי כדי לשרוד בין קריאות render()
+// איזה תפריט-קריטריון פתוח כרגע — גם זה גלובלי, כדי שה-render() המלא שרץ
+// אחרי כל שינוי (הדפוס הקיים בקובץ הזה) לא יסגור תפריט שהיא באמצע לבחור
+// ממנו. הכרעת המשתמשת (09/09/2026): "הכל יהיה בתפריטים נפתחים כי כשהמאגר
+// יתמלא הפריסה הזאת תהיה בלתי נסבלת" — הצ'יפים הגלויים-תמיד לכל קריטריון
+// הוחלפו בתפריט מתקפל, אותו רעיון בדיוק כמו רכיב ה-combo ב-input-screen.html.
+let openFacetKey = null;
+document.addEventListener("click", e => {
+  if (openFacetKey && !e.target.closest(".facet")) { openFacetKey = null; render(); }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && openFacetKey) { openFacetKey = null; render(); }
+});
+const facetVal = (rec,key,arr) => arr ? (rec[key]||[]) : [rec[key]];
+function scenarioMatchesAll(rec){
+  return FACETS.every(f => {
+    const sel = scenarioFilter[f.key];
+    if (!sel || !sel.size) return true;
+    return facetVal(rec,f.key,f.array).some(v => sel.has(v));
+  });
+}
+function availableFacetValues(base, key, arr){
+  const set = new Set();
+  base.filter(rec => FACETS.every(f => {
+    if (f.key === key) return true;
+    const sel = scenarioFilter[f.key];
+    if (!sel || !sel.size) return true;
+    return facetVal(rec,f.key,f.array).some(v => sel.has(v));
+  })).forEach(rec => facetVal(rec,key,arr).forEach(v => v && set.add(v)));
+  return [...set].sort((a,b)=>String(a).localeCompare(String(b),"he"));
+}
+function exportScenarioRecords(list, fmt){
+  const cols = ["id","name","inst","creator","year","lang","age","approach","conflictType","emotions","needs","characters"];
+  let content, mime, filename;
+  if (fmt === "json") {
+    content = JSON.stringify(list, null, 2);
+    mime = "application/json"; filename = "תרחישים.json";
+  } else {
+    const esc = v => '"' + (Array.isArray(v) ? v.join("; ") : String(v ?? "")).replace(/"/g,'""') + '"';
+    const lines = [cols.join(",")];
+    list.forEach(r => lines.push(cols.map(c=>esc(r[c])).join(",")));
+    content = "﻿" + lines.join("\r\n");
+    mime = "text/csv;charset=utf-8"; filename = "תרחישים.csv";
+  }
+  const blob = new Blob([content], {type:mime});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(a.href);
+}
+
+function pData(){
+  const w = el("div",{class:"panel on"});
+  const mine = role==="inst";
+  if (mine) scenarioFilter.inst = new Set();   // הצג רק את המוסד שלה, בלי שדה נעול מסינון קודם כניהול מערכת
+  w.append(el("h2",{},"נתונים"), el("p",{class:"sub"},
+    mine ? "סינון, ייצוא ומחיקה במוסד שלך בלבד." : "סינון, ייצוא ומחיקה בכל המוסדות."));
+
+  let all = loadScenarioRecords();
+  if (mine) all = all.filter(r => r.inst === D.instName);
+  const facetsForRole = FACETS.filter(f => !(mine && f.key==="inst"));
+
+  const st = el("div",{class:"stat"});
+  st.append(el("div",{}, el("b",{}, String(all.length)), el("span",{},"תרחישים")),
+            el("div",{}, el("b",{}, mine?"41":"63"), el("span",{},"סדנאות שנפתחו")),
+            el("div",{}, el("b",{}, mine?"612":"908"), el("span",{},"סימוני דף צפייה")),
+            el("div",{}, el("b",{}, mine?"127":"195"), el("span",{},"משובים")));
+  w.append(st);
+
+  // ── תרחישים: סינון אחד, ופעולות (ייצוא/מחיקה) על התוצאה שלו ──
+  // "תכין מערכת סינון אחת ואז ניתן יהיה לבחור יצוא. מה זה חשוב אם היצוא הוא
+  // למחקר או לגיבוי?" (09/09/2026) — במקום ארבעה כרטיסים נפרדים (סינון,
+  // תוצאות, "ייצוא למחקר", "ייצוא תרחישים" שלא היה מחובר לשום דבר), כרטיס
+  // אחד: סינון בראש, תוצאות באמצע, שורת פעולות (ייצוא/מחיקה) בתחתית —
+  // כולן פועלות על אותה תוצאה מסוננת בדיוק. "למחקר" הוסר מהניסוח: הייצוא
+  // הוא הייצוא, בלי קשר למה שהיא מתכננת לעשות איתו.
+  const cf = el("div",{class:"card"});
+  cf.append(el("h3",{},"תרחישים", el("em",{}, all.length + " בסך הכול")));
+  const finn = el("div",{class:"in"});
+  finn.append(el("p",{style:"margin:0 0 12px;font-size:13.5px;color:var(--muted);line-height:1.6"},
+    "כמה ערכים באותו קריטריון פועלים כ\"או\" ביניהם. בין קריטריונים שונים פועל \"וגם\" — כל תוספת מצמצמת עוד. האפשרויות בכל קריטריון מתעדכנות לפי מה שכבר נבחר באחרים."));
+  const fgrid = el("div",{class:"facetgrid"});
+  facetsForRole.forEach(f=>{
+    const box = el("div",{class:"facet"});
+    box.append(el("h4",{}, f.label));
+    const values = availableFacetValues(all, f.key, f.array);
+    const sel = scenarioFilter[f.key] || (scenarioFilter[f.key] = new Set());
+
+    const trigger = el("button",{type:"button", class:"facet-trigger"});
+    function updateTrigger(){
+      trigger.textContent = "";
+      const chosen = [...sel].filter(v => values.includes(v));
+      if (!chosen.length) { trigger.append(el("span",{class:"ph"}, "הכל")); }
+      else {
+        const label = chosen.length > 2 ? chosen.slice(0,2).join("، ") + ` ועוד ${chosen.length-2}` : chosen.join("، ");
+        trigger.append(document.createTextNode(label));
+        trigger.append(el("span",{class:"fcnt"}, String(chosen.length)));
+      }
+    }
+    updateTrigger();
+    if (!values.length) trigger.disabled = true;
+
+    const panel = el("div",{class:"facet-panel"});
+    panel.hidden = (openFacetKey !== f.key);
+    const search = el("input",{class:"facet-search", placeholder:"חיפוש..."});
+    const body = el("div",{class:"facet-body"});
+    function renderChips(filterText){
+      body.textContent = "";
+      const q = (filterText||"").trim();
+      const list = q ? values.filter(v=>v.includes(q)) : values;
+      if (!list.length) body.append(el("span",{style:"font-size:12px;color:var(--muted)"},"אין תוצאה תואמת."));
+      list.forEach(v=>{
+        const chip = el("button",{type:"button", class:"fchip"+(sel.has(v)?" on":"")}, v);
+        chip.addEventListener("click",()=>{
+          if (sel.has(v)) sel.delete(v); else sel.add(v);
+          render();
+        });
+        body.append(chip);
+      });
+    }
+    search.addEventListener("input", ()=> renderChips(search.value));
+    trigger.addEventListener("click", ()=>{
+      openFacetKey = (openFacetKey === f.key) ? null : f.key;
+      render();
+      // render() בנתה DOM חדש מאפס — הפאנל הפתוח (אם יש) נמצא עכשיו מחדש
+      // ולא דרך המשתנה המקומי panel, שכבר לא מחובר למסמך (22/09/2026).
+      if (openFacetKey) {
+        const p = document.querySelector(".facet-panel:not([hidden])");
+        if (p) {
+          p.classList.remove("flip-up");
+          const r = p.getBoundingClientRect();
+          if (r.bottom > window.innerHeight - 8) p.classList.add("flip-up");
+        }
+      }
+    });
+    if (!panel.hidden) renderChips("");
+    panel.append(search, body);
+    box.append(trigger, panel);
+    fgrid.append(box);
+  });
+  finn.append(fgrid);
+  const anyActive = facetsForRole.some(f => scenarioFilter[f.key] && scenarioFilter[f.key].size);
+  const clearBtn = el("button",{class:"act"},"ניקוי כל הסינון");
+  clearBtn.disabled = !anyActive;
+  clearBtn.addEventListener("click",()=>{ facetsForRole.forEach(f=>scenarioFilter[f.key]?.clear()); render(); });
+  finn.append(el("div",{class:"btnrow"}, clearBtn));
+
+  const matching = all.filter(rec => scenarioMatchesAll(rec));
+
+  // תוצאות — אותה תיבה, ממש מתחת לסינון
+  const rhead = el("div",{style:"display:flex;align-items:baseline;gap:8px;margin:20px 0 8px;border-top:1px solid var(--hair);padding-top:16px"},
+    el("b",{style:"font-size:14px"},"תוצאות"),
+    el("span",{style:"font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted)"}, matching.length + " מתוך " + all.length));
+  finn.append(rhead);
+  if (!matching.length) {
+    finn.append(el("p",{style:"margin:0;font-size:14px;color:var(--muted)"},"אין תרחיש שמתאים לסינון הזה."));
+  } else {
+    const rows = el("div",{class:"rows"});
+    matching.forEach(rec=>{
+      const r = el("div",{class:"r"});
+      // כל 16 הרשומות כאן הן נתוני הדגמה (SCENARIO_RECORDS_SEED) — אין עדיין
+      // מסד תרחישים אמיתי בפרויקט הזה. תרחיש אחד בלבד ("יש לך גן טוב", s1)
+      // הוא תרחיש אמיתי ומאושר עם תוצרים אמיתיים בפועל (doc-actor/card-actor/
+      // doc-trainee/doc-facilitator.html) — הקישור מוצג רק אליו, לא לשאר,
+      // כדי לא ליצור רושם כוזב שלכל 16 יש תוצר (20/09/2026, בעקבות "רשימת
+      // התרחישים אינה מקושרת לתוצר עצמו").
+      const REAL_PRODUCTS = { s1: "doc-facilitator.html" };
+      const nameBit = REAL_PRODUCTS[rec.id]
+        ? el("a",{href:REAL_PRODUCTS[rec.id], target:"_blank", rel:"noopener",
+            style:"display:block;font-weight:600;color:var(--spoken);text-decoration:underline;",
+            title:"פתיחת גרסת המנחה — משם יש קישורים לשאר התוצרים (גרסת השחקנית, כרטיס שחקנית, גרסת המתנסה)"}, rec.name)
+        : el("b",{},rec.name);
+      const nm = el("span",{class:"nm"}, nameBit,
+        el("span",{}, [rec.inst, rec.creator, rec.year].filter(Boolean).join(" · ")));
+      if (!REAL_PRODUCTS[rec.id]) nm.append(el("span",{style:"color:var(--muted);font-size:11.5px"},"אין תוצר אמיתי — רשומת הדגמה"));
+      r.append(nm);
+      const del = el("button",{class:"act d"},"הסרה");
+      del.addEventListener("click",()=> ask("הסרת \""+rec.name+"\"",
+        "מחיקת תרחיש בודד, בלתי הפיכה. מומלץ לייצא לפני.",
+        ()=>{
+          saveScenarioRecords(loadScenarioRecords().filter(x=>x.id!==rec.id));
+          render();
+        }));
+      r.append(el("span",{class:"role"}, rec.age), del);
+      rows.append(r);
+    });
+    finn.append(rows);
+  }
+
+  // פעולות על התוצאה: ייצוא (לא "למחקר" — פשוט ייצוא, בלי קשר לשימוש
+  // שהיא מתכננת) ומחיקה מדורגת, שתי הפעולות פועלות על matching בלבד.
+  const arow = el("div",{style:"margin-top:16px;padding-top:14px;border-top:1px solid var(--hair);display:flex;gap:8px;flex-wrap:wrap;align-items:center"});
+  const bCsv = el("button",{class:"act p"},"ייצוא CSV");
+  bCsv.disabled = !matching.length;
+  bCsv.addEventListener("click",()=> exportScenarioRecords(matching,"csv"));
+  const bJson = el("button",{class:"act"},"ייצוא JSON");
+  bJson.disabled = !matching.length;
+  bJson.addEventListener("click",()=> exportScenarioRecords(matching,"json"));
+  // "מחיקה תמיד תהיה לקבוצת תרחישים שתבחר לפי קריטריונים או לתרחיש בודד.
+  // אסור שיהיה כפתור מחיקה כולל!" — מנוטרל כשאין שום סינון פעיל.
+  const bDel = el("button",{class:"act d"}, "מחיקת " + matching.length + " המסוננים");
+  bDel.disabled = !anyActive || !matching.length;
+  bDel.title = anyActive ? "" : "בחרי קריטריון סינון אחד לפחות — אין כפתור שמוחק הכול";
+  bDel.addEventListener("click",()=> ask("מחיקת " + matching.length + " תרחישים",
+    "התרחישים התואמים לסינון הנוכחי בלבד: " +
+      matching.slice(0,3).map(r=>r.name).join("، ") + (matching.length>3 ? " ועוד "+(matching.length-3) : "") +
+      ". פעולה בלתי הפיכה. ודאי שייצאת קודם.",
+    ()=>{
+      const ids = new Set(matching.map(r=>r.id));
+      saveScenarioRecords(loadScenarioRecords().filter(x=>!ids.has(x.id)));
+      render();
+    }));
+  arow.append(bCsv, bJson, el("span",{style:"flex:1"}), bDel);
+  finn.append(arow);
+  if (!anyActive) finn.append(el("p",{style:"margin:8px 0 0;font-size:12.5px;color:var(--muted)"},
+    "מחיקה דורשת קריטריון סינון אחד לפחות, או הסרה בודדת מהרשימה למעלה."));
+
+  cf.append(finn); w.append(cf);
+  return w;
+}
+
+function ask(t, msg, ok){
+  $("dh").textContent = t; $("db").textContent = msg;
+  const d = $("dlg"); d.showModal();
+  $("dok").onclick = () => { d.close(); ok(); };
+  $("dno").onclick = () => d.close();
+}
+
+$("role").addEventListener("change", e => { role = e.target.value; render(); });
+$("role").value = role;
+document.body.classList.add("sbe-hasnav");
+render();
+
+// ── סרגל הניווט הגלובלי (חזרה/תפריט) — אותו רכיב שיש לכל שאר המסכים,
+// מוטמע כאן ישירות (לא הקובץ המשותף) כי התפריט חייב לדעת להחליף tab
+// פנימי, לא רק לנווט לקובץ אחר (09/09/2026, מחליף את תפריט הצד הקבוע). ──
+const navPanel = $("navPanel");
+$("navMenuBtn").addEventListener("click", () => { navPanel.hidden = !navPanel.hidden; });
+$("navBack").addEventListener("click", () => {
+  if (window.history.length > 1) window.history.back();
+  else location.href = "entry.html";
+});
+// כפתור "⌂ המסך שלי" (22/09/2026) — אותה לוגיקה כמו lib/nav-widget.html,
+// מוטמעת כאן כי admin.html לא משתמש בקובץ המשותף. admin.html עצמו הוא לרוב
+// ה-homeUrl של מנהלת/ניהול מערכת — הכפתור מוסתר אוטומטית כשכבר נמצאים כאן.
+try {
+  const homeUrl = sessionStorage.getItem("sbe.session.homeUrl");
+  if (homeUrl) {
+    const hereFull = (location.pathname.split("/").pop() || "") + location.search;
+    if (hereFull !== homeUrl) {
+      const homeBtn = $("navHome");
+      homeBtn.hidden = false;
+      homeBtn.addEventListener("click", () => { location.href = homeUrl; });
+    }
+  }
+} catch(e){}
+document.addEventListener("click", e => {
+  if (!navPanel.hidden && !e.target.closest("#navPanel") && !e.target.closest("#navMenuBtn")) navPanel.hidden = true;
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !navPanel.hidden) navPanel.hidden = true;
+});
+</script>
+
+<!-- ── כפתור דיווח גלובלי — אותו רכיב שבכל 17 מסכי app/, ראו entry.html (09/09/2026) ── -->
+<style>
+#rptFab{position:fixed;inset-inline-end:16px;bottom:16px;z-index:9999;width:auto;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:13px;font-weight:600;
+  padding:9px 15px;border-radius:22px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;
+  cursor:pointer;box-shadow:0 4px 14px rgba(20,28,36,.28);}
+#rptFab:hover{opacity:.9;}
+dialog#rptDlg{border:1px solid #CDD3D8;border-radius:10px;background:#FCFCFD;color:#141C24;
+  max-width:440px;width:92vw;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.3);
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;direction:rtl;}
+dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
+#rptDlg h3{margin:0;padding:15px 20px;border-bottom:1px solid #CDD3D8;font-size:16.5px;font-weight:700;}
+#rptDlg .rb{padding:16px 20px;max-height:65vh;overflow:auto;}
+#rptDlg label{display:block;font-size:12.5px;font-weight:600;color:#5C6771;margin-bottom:4px;}
+#rptDlg input,#rptDlg select,#rptDlg textarea{width:100%;font-family:inherit;font-size:14.5px;color:#141C24;
+  background:#EDEFF1;border:1px solid #CDD3D8;border-radius:6px;padding:8px 10px;direction:rtl;
+  margin-bottom:10px;box-sizing:border-box;}
+#rptDlg textarea{min-height:70px;resize:vertical;}
+#rptDlg .req{color:#8C3A34;}
+#rptDlg .rerr{background:#F5E4E2;border-inline-start:3px solid #8C3A34;border-radius:6px;padding:8px 11px;
+  font-size:12.5px;color:#8C3A34;margin-bottom:10px;}
+#rptDlg .rerr[hidden]{display:none;}
+#rptDlg .rnote{font-size:11.5px;color:#5C6771;line-height:1.55;margin:0 0 12px;}
+#rptDlg .rscreen{font-size:11px;color:#5C6771;margin:0 0 10px;}
+#rptDlg .rf{padding:12px 20px;border-top:1px solid #CDD3D8;display:flex;gap:8px;}
+#rptDlg .rf button{font-family:inherit;font-size:14px;font-weight:600;padding:8px 16px;border-radius:6px;
+  border:1px solid #CDD3D8;background:#E4E7EA;color:#141C24;cursor:pointer;}
+#rptDlg .rf button.p{background:#2E5A7D;border-color:#2E5A7D;color:#fff;}
+</style>
+<button type="button" id="rptFab" title="דיווח על תקלה, שאלה, רעיון או בקשה">דיווח / רעיון</button>
+<dialog id="rptDlg">
+  <h3>דיווח על תקלה, שאלה, רעיון או בקשה</h3>
+  <div class="rb">
+    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח — לא ניתן לצרף קובץ אוטומטית למייל.</p>
+    <div class="rerr" id="rptErr" hidden></div>
+    <label>שם מלא <span class="req">*</span></label>
+    <input id="rptName">
+    <label>תאריך</label>
+    <input id="rptDate" readonly>
+    <label>תפקיד</label>
+    <input id="rptRole" placeholder="לא צוין">
+    <label>סוג הפנייה</label>
+    <select id="rptType">
+      <option>תקלה</option><option>שאלה</option><option>רעיון לשיפור</option><option>בקשה</option><option>משוב על השימוש במערכת</option>
+    </select>
+    <p class="rscreen" id="rptScreen"></p>
+    <div id="rptGeneric">
+      <label>פירוט <span class="req">*</span></label>
+      <textarea id="rptDetails" placeholder="מה קרה, מה ציפית שיקרה, ובאיזה מסך"></textarea>
+    </div>
+    <div id="rptUsage" hidden>
+      <label>ההצעות של המערכת התאימו למה שרצית?</label>
+      <select id="rptFit"><option value="">לא צוין</option><option>כן במלואן</option><option>חלקית</option><option>לא</option></select>
+      <label>המערכת ידידותית</label>
+      <select id="rptFriendly"><option value="">לא צוין</option><option>במידה רבה</option><option>במידה בינונית</option><option>במידה מועטה</option></select>
+      <label>האם תרצה/י להמשיך להשתמש במערכת?</label>
+      <select id="rptContinue"><option value="">לא צוין</option><option>במידה רבה</option><option>במידה בינונית</option><option>במידה מועטה</option></select>
+      <label>למי היית ממליץ/ה להשתמש במערכת?</label>
+      <input id="rptRecommend" placeholder="לא חובה">
+      <label>מה חסר, מה היה מבלבל, או הערה אחרת?</label>
+      <textarea id="rptUsageNotes" placeholder="לא חובה"></textarea>
+    </div>
+    <label>צילום מסך (לא חובה)</label>
+    <input type="file" id="rptFile" accept="image/*">
+  </div>
+  <div class="rf">
+    <button type="button" class="p" id="rptSend">שליחה במייל</button>
+    <button type="button" id="rptCancel">ביטול</button>
+  </div>
+</dialog>
+<script>
+(function(){
+  "use strict";
+  if (window.self !== window.top) {
+    // מוטמע בתוך iframe (admin.html/demo-hub.html) — העמוד המארח
+    // מציג דיווח משלו; עותק כפול היה מתמקם לפי חלון ה-iframe ולא לפי המסך.
+    var _rf = document.getElementById("rptFab"); if (_rf) _rf.remove();
+    var _rd = document.getElementById("rptDlg"); if (_rd) _rd.remove();
+    return;
+  }
+  var fab = document.getElementById("rptFab");
+  var dlg = document.getElementById("rptDlg");
+  var nameEl = document.getElementById("rptName");
+  var dateEl = document.getElementById("rptDate");
+  var roleEl = document.getElementById("rptRole");
+  var errEl = document.getElementById("rptErr");
+  var typeEl = document.getElementById("rptType");
+  var genericEl = document.getElementById("rptGeneric");
+  var usageEl = document.getElementById("rptUsage");
+  var screenEl = document.getElementById("rptScreen");
+  var screenName = document.title || location.pathname;
+
+  // "משוב על השימוש במערכת" (17/09/2026) — סוג פנייה נוסף עם חמש שאלות
+  // ייעודיות במקום "פירוט" חופשי, ותיוג אוטומטי של המסך שממנו זה נשלח
+  // (המשתמשת: "איך אדע באיזה חלק השולח השתמש/ה?"). כל שליחה נשמרת גם
+  // ב-localStorage (sbe.reports.<ts>), לא רק דרך mailto — כדי שיהיה מסך
+  // תוצאות לקרוא אותן בחזרה, לא רק תיבת מייל.
+  function syncType(){
+    var isUsage = typeEl.value === "משוב על השימוש במערכת";
+    genericEl.hidden = isUsage;
+    usageEl.hidden = !isUsage;
+  }
+  typeEl.addEventListener("change", syncType);
+
+  function openDlg(presetType){
+    dateEl.value = new Date().toLocaleDateString("he-IL");
+    if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
+    try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
+    errEl.hidden = true;
+    screenEl.textContent = "נשלח מהמסך: " + screenName;
+    if (presetType) typeEl.value = presetType;
+    syncType();
+    dlg.showModal();
+  }
+  fab.addEventListener("click", function(){ openDlg(null); });
+  // נקודת חיבור לפתיחה אוטומטית בסיום תרגול/יצירה — מסכים אחרים באותו
+  // קובץ קוראים ל-window.sbeOpenUsageFeedback() מתוך handler ההשלמה שלהם.
+  window.sbeOpenUsageFeedback = function(){ openDlg("משוב על השימוש במערכת"); };
+
+  document.getElementById("rptCancel").addEventListener("click", function(){ dlg.close(); });
+  document.getElementById("rptSend").addEventListener("click", function(){
+    var name = nameEl.value.trim();
+    var type = typeEl.value;
+    var isUsage = type === "משוב על השימוש במערכת";
+    var details = document.getElementById("rptDetails").value.trim();
+    if (!name || (!isUsage && !details)) {
+      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.hidden = false;
+      return;
+    }
+    var roleVal = roleEl.value.trim() || "לא צוין";
+    var record = {
+      name: name, date: dateEl.value, role: roleVal, type: type, screen: screenName,
+      details: details,
+      fit: isUsage ? document.getElementById("rptFit").value : "",
+      friendly: isUsage ? document.getElementById("rptFriendly").value : "",
+      continueUsing: isUsage ? document.getElementById("rptContinue").value : "",
+      recommend: isUsage ? document.getElementById("rptRecommend").value.trim() : "",
+      notes: isUsage ? document.getElementById("rptUsageNotes").value.trim() : "",
+      ts: Date.now()
+    };
+    try { localStorage.setItem("sbe.reports." + record.ts, JSON.stringify(record)); } catch(e){}
+    var bodyLines = [
+      "שם מלא: " + name,
+      "תאריך: " + record.date,
+      "תפקיד: " + roleVal,
+      "סוג פנייה: " + type,
+      "מסך: " + screenName,
+      ""
+    ];
+    if (isUsage) {
+      bodyLines.push(
+        "ההצעות התאימו: " + (record.fit || "לא צוין"),
+        "ידידותיות: " + (record.friendly || "לא צוין"),
+        "ממשיכה להשתמש: " + (record.continueUsing || "לא צוין"),
+        "המלצה למי: " + (record.recommend || "-"),
+        "מה חסר/הערות: " + (record.notes || "-")
+      );
+    } else {
+      bodyLines.push("פירוט:", details);
+    }
+    var subject = "S.B.E · " + type + " · " + name;
+    location.href = "mailto:yael.sade@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(bodyLines.join("\n"));
+    dlg.close();
+  });
+})();
+</script>

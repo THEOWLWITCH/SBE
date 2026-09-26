@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חוסן חברתי — ניהול</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script src="lib/resilience-data.js"></script>
+<script src="lib/resilience-score.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
+  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
+  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
+  --hidden:#8F5F2E; --hidden-soft:#F5EAD9;
+  --auto:#4A6B5A; --auto-soft:#DFE9E2;
+  --brick:#8C3A34; --brick-soft:#F5E4E2;
+  --deep:#5B2D8E; --deep-soft:#EDE3F7;
+  --shadow:rgba(20,28,36,.09);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+    --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+    --spoken:#82AECE; --spoken-soft:#1E2E3A;
+    --hidden:#CE9C5E; --hidden-soft:#332617;
+    --auto:#83B599; --auto-soft:#1B2A22;
+    --brick:#CF7C74; --brick-soft:#331E1C;
+    --deep:#A97FCC; --deep-soft:#2A1A42;
+    --shadow:rgba(0,0,0,.5);color-scheme:dark
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+  --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+  --spoken:#82AECE; --spoken-soft:#1E2E3A;
+  --hidden:#CE9C5E; --hidden-soft:#332617;
+  --auto:#83B599; --auto-soft:#1B2A22;
+  --brick:#CF7C74; --brick-soft:#331E1C;
+  --deep:#A97FCC; --deep-soft:#2A1A42;
+  --shadow:rgba(0,0,0,.5);color-scheme:dark
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.55;
+  background:var(--ground);color:var(--ink);
+  -webkit-font-smoothing:antialiased;direction:rtl
+}
+/* top nav */
+.topnav{
+  font-size:12px;font-family:"IBM Plex Mono",monospace;letter-spacing:.02em;
+  padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--hair);
+  display:flex;align-items:center;gap:6px
+}
+.topnav a{color:var(--spoken);text-decoration:none}
+.topnav a:hover{text-decoration:underline}
+.topnav .sep{color:var(--muted)}
+/* tabs */
+.tab-bar{
+  display:flex;background:var(--surface);border-bottom:2px solid var(--hair);
+  overflow-x:auto;position:sticky;top:0;z-index:10
+}
+.tab-btn{
+  flex:1;min-width:70px;padding:.75rem .5rem;border:none;background:none;
+  font-size:.85rem;font-family:inherit;cursor:pointer;color:var(--muted);
+  border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap
+}
+.tab-btn.active{color:var(--spoken);border-bottom-color:var(--spoken);font-weight:700}
+.tab-btn.locked{color:var(--hair);cursor:not-allowed}
+.tab-btn.locked::after{content:' 🔒';font-size:.75rem}
+.pane{display:none;padding:1rem;max-width:700px;margin:0 auto}.pane.on{display:block}
+/* card */
+.card{
+  background:var(--surface);border:1px solid var(--hair);
+  border-radius:9px;box-shadow:0 1px 3px var(--shadow);
+  padding:1.25rem;margin-bottom:1rem
+}
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:1.3rem;margin-bottom:.25rem}
+h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:1rem;font-weight:700;color:var(--spoken);margin-bottom:.75rem}
+h3{font-size:.9rem;font-weight:700;margin-bottom:.5rem;color:var(--ink)}
+p{line-height:1.6;font-size:.9rem;color:var(--muted);margin-bottom:.5rem}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:.25rem}
+input[type=text],select{
+  width:100%;font-family:inherit;font-size:15px;color:var(--ink);
+  background:var(--ground);border:1px solid var(--hair);
+  border-radius:6px;padding:10px 12px;direction:rtl;
+  margin-bottom:.75rem;transition:border-color .15s
+}
+input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
+.btn{
+  display:inline-block;padding:.6rem 1.2rem;border:none;border-radius:6px;
+  font-size:.9rem;font-family:inherit;font-weight:600;cursor:pointer;
+  background:var(--spoken);color:#fff;transition:opacity .15s
+}
+.btn-sm{padding:.35rem .85rem;font-size:.82rem}
+.btn-ghost{background:transparent;border:1px solid var(--hair);color:var(--ink);font-weight:400}
+.btn-copy{background:var(--surface-2);color:var(--muted);border:1px solid var(--hair);font-weight:400}
+/* score bar */
+.score-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem}
+.score-label{font-size:.82rem;width:130px;flex-shrink:0;line-height:1.3;color:var(--ink)}
+.score-bar-wrap{flex:1;height:10px;background:var(--hair);border-radius:5px;overflow:hidden}
+.score-bar{height:100%;border-radius:5px;transition:width .5s ease}
+.score-val{font-size:.82rem;font-weight:700;width:36px;text-align:left;flex-shrink:0}
+/* tier colors — using SBE tokens */
+.t3{background:var(--auto)}.t3b{background:var(--auto-soft);color:var(--auto)}
+.t2{background:var(--hidden)}.t2b{background:var(--hidden-soft);color:var(--hidden)}
+.t1{background:var(--brick)}.t1b{background:var(--brick-soft);color:var(--brick)}
+.t0{background:var(--deep)}.t0b{background:var(--deep-soft);color:var(--deep)}
+/* flags */
+.flags{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.3rem}
+.flag{font-size:.72rem;padding:.15rem .5rem;border-radius:99px;font-weight:700;white-space:nowrap}
+.flag-pog{background:var(--brick-soft);color:var(--brick)}
+.flag-kol{background:var(--spoken-soft);color:var(--spoken)}
+.flag-unk{background:var(--hidden-soft);color:var(--hidden)}
+/* voice table */
+.vtable{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:.5rem}
+.vtable th{text-align:right;padding:.4rem .5rem;background:var(--surface-2);border-bottom:2px solid var(--hair);font-weight:700;color:var(--ink)}
+.vtable td{padding:.4rem .5rem;border-bottom:1px solid var(--hair);color:var(--ink)}
+.vtable tr:last-child td{border-bottom:none}
+/* lock overlay */
+.lock-overlay{
+  position:fixed;inset:0;background:rgba(237,239,241,.97);z-index:100;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1rem;text-align:center;padding:2rem
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .lock-overlay{background:rgba(18,23,27,.97)}
+}
+:root[data-theme="dark"] .lock-overlay{background:rgba(18,23,27,.97)}
+.lock-icon{font-size:3rem}
+.lock-msg{font-size:1.1rem;font-weight:600;max-width:300px;line-height:1.5;color:var(--ink)}
+.lock-sub{font-size:.9rem;color:var(--muted);max-width:320px;line-height:1.5}
+/* link box */
+.link-box{
+  background:var(--ground);border:1px solid var(--hair);border-radius:6px;
+  padding:.6rem .75rem;font-size:.82rem;word-break:break-all;direction:ltr;text-align:left;
+  margin:.5rem 0;color:var(--spoken);font-family:"IBM Plex Mono",monospace
+}
+/* setup */
+.setup-info{
+  background:var(--spoken-soft);border:1px solid var(--hair);
+  border-inline-start:3px solid var(--spoken);border-radius:6px;
+  padding:.75rem 1rem;font-size:.88rem;color:var(--spoken);margin-bottom:1rem
+}
+/* QR code */
+.qr-wrap{display:flex;flex-direction:column;align-items:center;gap:.6rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--hair)}
+.qr-wrap p{font-size:.82rem;color:var(--muted);margin:0;text-align:center}
+#qr-canvas{border-radius:6px;overflow:hidden}
+#qr-canvas img,#qr-canvas canvas{display:block}
+/* report */
+.chap{border-bottom:1px solid var(--hair);padding:1rem 0}
+.chap:first-child{padding-top:0}.chap:last-child{border-bottom:none}
+.chap-num{font-size:.75rem;font-weight:700;color:var(--spoken);margin-bottom:.2rem}
+.chap-title{font-size:.95rem;font-weight:700;margin-bottom:.5rem;color:var(--ink)}
+.chap-body{font-size:.88rem;line-height:1.7;color:var(--ink)}
+/* stat row */
+.stats{display:flex;gap:.75rem;flex-wrap:wrap;margin:.75rem 0}
+.stat{background:var(--surface-2);border:1px solid var(--hair);border-radius:9px;padding:.6rem 1rem;text-align:center;flex:1;min-width:80px}
+.stat-n{font-size:1.4rem;font-weight:800;color:var(--spoken);font-family:"Frank Ruhl Libre",Georgia,serif}
+.stat-l{font-size:.72rem;color:var(--muted);margin-top:.1rem}
+/* empty */
+.empty{text-align:center;color:var(--muted);padding:2rem;font-size:.9rem}
+</style>
+</head>
+<body>
+<nav class="topnav"><a href="entry.html">S.B.E</a><span class="sep">›</span><span>חוסן חברתי</span></nav>
+
+<!-- ── Lock Overlay ── -->
+<div id="lock-overlay" class="lock-overlay" style="display:none">
+  <div class="lock-icon">🔒</div>
+  <div class="lock-msg">השאלון פתוח למילוי</div>
+  <div class="lock-sub">הצגת תוצאות נעולה כדי שתשובות הנשאלים לא יושפעו מתשובות אחרים.</div>
+  <button class="btn btn-ghost btn-sm" id="btn-unlock">הצג תוצאות זמנית (מנהל בלבד)</button>
+  <a href="resilience-fill.html" class="btn btn-sm">עבור למילוי שאלון</a>
+</div>
+
+<!-- ── Tab Bar ── -->
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="t-setup">⚙ הגדרה</button>
+  <button class="tab-btn" data-tab="t-scores">📊 ציונים</button>
+  <button class="tab-btn" data-tab="t-voices">🗣 קולות</button>
+  <button class="tab-btn" data-tab="t-report">📄 דוח</button>
+</div>
+
+<!-- ── Tab: הגדרה ── -->
+<div id="t-setup" class="pane on">
+  <div class="card">
+    <h1>חוסן חברתי</h1>
+    <p>כלי לאיסוף ועיבוד נתוני חוסן חברתי — מתוך עיניי תלמידים, הורים, ומורים.</p>
+  </div>
+
+  <div class="card" id="setup-form-card">
+    <h2>הגדרת כיתה</h2>
+    <label for="cfg-cls">שם הכיתה</label>
+    <input type="text" id="cfg-cls" placeholder='לדוגמה: ג׳2 — מחנכת: רחל' maxlength="30">
+    <label for="cfg-band">שכבת גיל</label>
+    <select id="cfg-band"><option value="">— בחר/י שכבה —</option></select>
+    <button class="btn" id="btn-cfg-save" disabled>שמור הגדרה</button>
+  </div>
+
+  <div class="card" id="setup-active-card" style="display:none">
+    <div class="setup-info" id="setup-summary"></div>
+    <h2>קישור למילוי שאלון</h2>
+    <p>שלח/י את הקישור הזה לנשאלים (תלמידים, הורים, מורים):</p>
+    <div class="link-box" id="fill-link"></div>
+    <button class="btn btn-copy btn-sm" id="btn-copy-link" style="margin-bottom:.75rem">העתק קישור</button>
+    <p style="font-size:.8rem">הנשאל/ת בוחר/ת את התפקיד והקוד שלו/ה בשאלון עצמו.</p>
+    <div class="qr-wrap" id="qr-wrap" style="display:none">
+      <p>סרקו את הקוד כדי למלא את השאלון</p>
+      <div id="qr-canvas"></div>
+    </div>
+    <hr style="margin:1rem 0;border:none;border-top:1px solid var(--c-border)">
+    <div class="stats" id="setup-stats"></div>
+    <button class="btn btn-ghost btn-sm" id="btn-cfg-reset" style="margin-top:.5rem">אפס הגדרה (מחק נתונים)</button>
+  </div>
+</div>
+
+<!-- ── Tab: ציונים ── -->
+<div id="t-scores" class="pane">
+  <div id="scores-content"><div class="empty">אין עדיין נתונים. הגדר/י כיתה ואסוף/י תשובות.</div></div>
+</div>
+
+<!-- ── Tab: קולות ── -->
+<div id="t-voices" class="pane">
+  <div id="voices-content"><div class="empty">אין עדיין נתונים.</div></div>
+</div>
+
+<!-- ── Tab: דוח ── -->
+<div id="t-report" class="pane">
+  <div id="report-content"><div class="empty">אין עדיין נתונים.</div></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ── Security check — must run first ──────────────────────────────────────────
+(function secCheck(){
+  const src = document.documentElement.innerHTML;
+  if(/unlocked\s*=\s*o\.|ST\.unlocked/.test(src)){
+    document.body.innerHTML='<p dir="rtl" style="padding:2rem;color:red">⚠️ שגיאת אבטחה — הדף אינו תקין.</p>';
+    throw new Error('security-check-failed');
+  }
+})();
+
+const R  = window.SBE_RES;
+const SC = window.SBE_SCORE;
+const LS = 'sbe.resilience.v1';
+const LK = 'sbe.locked';
+const CFG= 'sbe.cfg';
+
+if(!R||!SC){document.body.innerHTML='<p style="padding:2rem;color:red">שגיאה: קובץ הנתונים לא נטען.</p>';return;}
+
+let _tempView = false;  // in-memory unlock — NOT saved
+
+// ── Band select ──
+const cfgBand = document.getElementById('cfg-band');
+R.BANDS.forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=b.label+' ('+b.range+')';cfgBand.appendChild(o);});
+
+// ── Storage helpers ──
+function loadStore(){try{return JSON.parse(localStorage.getItem(LS)||'{}')||{};}catch{return{};}}
+function loadCfg(){try{return JSON.parse(localStorage.getItem(CFG)||'null');}catch{return null;}}
+function saveCfg(c){try{localStorage.setItem(CFG,JSON.stringify(c));}catch{}}
+function clearAll(){try{localStorage.removeItem(LS);localStorage.removeItem(CFG);localStorage.removeItem(LK);}catch{}}
+
+// ── Lock logic ──
+function isLocked(){return localStorage.getItem(LK)==='1'&&!_tempView;}
+
+document.getElementById('btn-unlock').addEventListener('click',function(){
+  _tempView=true;
+  document.getElementById('lock-overlay').style.display='none';
+  renderAll();
+});
+
+function checkLock(){
+  if(isLocked()){
+    document.getElementById('lock-overlay').style.display='flex';
+  } else {
+    document.getElementById('lock-overlay').style.display='none';
+  }
+}
+
+// ── Tabs ──
+const tabBtns = document.querySelectorAll('.tab-btn');
+const LOCKED_TABS = new Set(['t-scores','t-voices','t-report']);
+
+tabBtns.forEach(btn=>{
+  btn.addEventListener('click',function(){
+    const id=this.dataset.tab;
+    if(LOCKED_TABS.has(id)&&isLocked())return;
+    tabBtns.forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+    document.getElementById(id).classList.add('on');
+  });
+});
+
+function refreshTabLocks(){
+  tabBtns.forEach(btn=>{
+    const id=btn.dataset.tab;
+    if(LOCKED_TABS.has(id)){
+      btn.classList.toggle('locked',isLocked());
+    }
+  });
+}
+
+// ── Setup tab ──
+const cfgCls   = document.getElementById('cfg-cls');
+const btnCfgSave = document.getElementById('btn-cfg-save');
+function chkCfg(){btnCfgSave.disabled=!(cfgCls.value.trim()&&cfgBand.value!=='');}
+[cfgCls,cfgBand].forEach(el=>el.addEventListener('input',chkCfg));
+
+btnCfgSave.addEventListener('click',function(){
+  saveCfg({cls:cfgCls.value.trim(),band:parseInt(cfgBand.value)});
+  renderSetup();renderAll();
+});
+
+document.getElementById('btn-cfg-reset').addEventListener('click',function(){
+  if(!confirm('זה ימחק את כל נתוני הכיתה והתשובות. להמשיך?'))return;
+  clearAll();_tempView=false;
+  cfgCls.value='';cfgBand.value='';chkCfg();
+  renderSetup();renderAll();checkLock();
+});
+
+document.getElementById('btn-copy-link').addEventListener('click',function(){
+  const link=document.getElementById('fill-link').textContent;
+  navigator.clipboard&&navigator.clipboard.writeText(link).then(()=>{this.textContent='הועתק ✓';setTimeout(()=>this.textContent='העתק קישור',2000);});
+});
+
+function renderSetup(){
+  const cfg=loadCfg();
+  const st=loadStore();
+  const formCard=document.getElementById('setup-form-card');
+  const activeCard=document.getElementById('setup-active-card');
+  if(!cfg||R.BANDS[cfg.band]==null){formCard.style.display='';activeCard.style.display='none';return;}
+  formCard.style.display='none';activeCard.style.display='';
+
+  document.getElementById('setup-summary').textContent='כיתה: '+cfg.cls+' | שכבה: '+R.BANDS[cfg.band].label;
+
+  const base=location.href.replace(/[^/]*$/,'resilience-fill.html');
+  const link=base+'?cls='+encodeURIComponent(cfg.cls)+'&band='+cfg.band;
+  document.getElementById('fill-link').textContent=link;
+
+  // QR code — generated once; if library unavailable, section stays hidden
+  const qrWrap=document.getElementById('qr-wrap');
+  const qrCanvas=document.getElementById('qr-canvas');
+  if(typeof QRCode!=='undefined'){
+    qrCanvas.innerHTML='';
+    new QRCode(qrCanvas,{text:link,width:200,height:200,correctLevel:QRCode.CorrectLevel.M});
+    qrWrap.style.display='';
+  }
+
+  const resp=(st.resp||[]).filter(r=>true);
+  const voices={};
+  resp.forEach(r=>{if(!voices[r.v])voices[r.v]=new Set();voices[r.v].add(r.k);});
+  const totalRespondents=Object.values(voices).reduce((s,v)=>s+v.size,0);
+  const rounds=resp.length?Math.max(...resp.map(r=>r.rd)):0;
+
+  const statsEl=document.getElementById('setup-stats');
+  statsEl.innerHTML=[
+    {n:totalRespondents,l:'נשאלים'},
+    {n:Object.keys(voices).length,l:'קולות'},
+    {n:rounds,l:'סיבובים'}
+  ].map(s=>`<div class="stat"><div class="stat-n">${s.n}</div><div class="stat-l">${s.l}</div></div>`).join('');
+}
+
+// ── Scores tab ──
+function tierClass(tier){return ['t0','t1','t2','t3'][tier];}
+function tierClassB(tier){return ['t0b','t1b','t2b','t3b'][tier];}
+
+function flagBadge(f){
+  if(f==='פועל, ופוגע') return '<span class="flag flag-pog">'+f+'</span>';
+  if(f==='קולות חלוקים') return '<span class="flag flag-kol">'+f+'</span>';
+  return '<span class="flag flag-unk">'+f+'</span>';
+}
+
+function renderScores(){
+  const cfg=loadCfg();
+  const el=document.getElementById('scores-content');
+  if(!cfg){el.innerHTML='<div class="empty">הגדר/י כיתה בלשונית "הגדרה" כדי לראות ציונים.</div>';return;}
+  const st=loadStore();
+  const resp=(st.resp||[]);
+  if(!resp.length){el.innerHTML='<div class="empty">עדיין אין תשובות.</div>';return;}
+
+  const bandItems=R.ITEMS.filter(it=>it.b===cfg.band);
+  const domains=SC.computeDomains(resp,R.ITEMS,cfg.band);
+  if(!domains.length){el.innerHTML='<div class="empty">אין נתונים מספיקים לחישוב.</div>';return;}
+
+  const overall=domains.reduce((s,d)=>s+d.score,0)/domains.length;
+  const ovLbl=SC.scoreLabel(overall);
+
+  // Group by g
+  const groups={};
+  domains.forEach(d=>{if(!groups[d.g])groups[d.g]=[];groups[d.g].push(d);});
+
+  let html=`<div class="card">
+    <h2>סיכום כיתה: ${cfg.cls}</h2>
+    <div class="score-row" style="margin-bottom:1rem">
+      <div class="score-label" style="font-weight:700">ציון כולל</div>
+      <div class="score-bar-wrap"><div class="score-bar ${tierClass(ovLbl.tier)}" style="width:${Math.round(overall)}%"></div></div>
+      <div class="score-val ${tierClassB(ovLbl.tier)}">${Math.round(overall)}</div>
+    </div>
+    <p style="font-size:.82rem;text-align:left;direction:ltr">
+      75+ תפקודי&nbsp;&nbsp;50–74 חלקי&nbsp;&nbsp;25–49 חלש&nbsp;&nbsp;&lt;25 בקושי תפקודי
+    </p>
+  </div>`;
+
+  Object.entries(groups).forEach(([g,doms])=>{
+    html+=`<div class="card"><h2>${g}</h2>`;
+    doms.forEach(d=>{
+      const pct=Math.round(d.score);
+      html+=`<div style="margin-bottom:.75rem">
+        <div class="score-row">
+          <div class="score-label">${d.d}</div>
+          <div class="score-bar-wrap"><div class="score-bar ${tierClass(d.tier)}" style="width:${pct}%"></div></div>
+          <div class="score-val ${tierClassB(d.tier)}">${pct}</div>
+        </div>`;
+      if(d.flags.length){html+='<div class="flags">'+d.flags.map(flagBadge).join('')+'</div>';}
+      if(d.capped){html+=`<p style="font-size:.78rem;margin-top:.25rem" class="flag-pog">פועל=${Math.round(d.good)} · פוגע=${Math.round(d.harm)} → cap=${Math.round(d.cap)}</p>`;}
+      html+=`</div>`;
+    });
+    html+='</div>';
+  });
+
+  el.innerHTML=html;
+}
+
+// ── Voices tab ──
+function renderVoices(){
+  const cfg=loadCfg();
+  const el=document.getElementById('voices-content');
+  if(!cfg){el.innerHTML='<div class="empty">הגדר/י כיתה תחילה.</div>';return;}
+  const st=loadStore();
+  const resp=(st.resp||[]);
+  if(!resp.length){el.innerHTML='<div class="empty">עדיין אין תשובות.</div>';return;}
+
+  const domains=SC.computeDomains(resp,R.ITEMS,cfg.band);
+  if(!domains.length){el.innerHTML='<div class="empty">אין נתונים.</div>';return;}
+
+  // Voice presence
+  const presentVoices=new Set(resp.map(r=>r.v));
+  const voiceNames=Object.fromEntries(R.VOICES.map(v=>[v.id,v.label]));
+
+  // Domains with voice gap
+  const divided=domains.filter(d=>d.gap>=30);
+
+  let html='<div class="card"><h2>ייצוג קולות</h2>';
+  html+='<div class="stats">';
+  R.VOICES.forEach(v=>{
+    const cnt=resp.filter(r=>r.v===v.id).length;
+    html+=`<div class="stat"><div class="stat-n">${cnt}</div><div class="stat-l">${v.label}</div></div>`;
+  });
+  html+='</div></div>';
+
+  if(divided.length){
+    html+='<div class="card"><h2>קולות חלוקים (פער 30+ נקודות)</h2>';
+    divided.forEach(d=>{
+      html+=`<h3>${d.g} · ${d.d}</h3>`;
+      html+=`<table class="vtable"><tr><th>קול</th><th style="text-align:left">ציון</th></tr>`;
+      Object.entries(d.vScores).forEach(([v,s])=>{
+        const lbl=SC.scoreLabel(s);
+        html+=`<tr><td>${voiceNames[v]||v}</td><td style="text-align:left;color:${lbl.color};font-weight:700">${Math.round(s)}</td></tr>`;
+      });
+      html+=`</table><p style="font-size:.8rem;color:var(--c-muted);margin-top:.3rem">פער: ${Math.round(d.gap)} נקודות</p>`;
+    });
+    html+='</div>';
+  } else {
+    html+='<div class="card"><p>לא נמצאו תחומים עם פערים גדולים בין קולות.</p></div>';
+  }
+
+  // Cross-voice score table
+  html+='<div class="card"><h2>ציוני תחומים לפי קול</h2>';
+  html+=`<table class="vtable"><tr><th>תחום</th>`;
+  [...presentVoices].forEach(v=>html+=`<th style="text-align:left">${voiceNames[v]}</th>`);
+  html+='</tr>';
+  domains.forEach(d=>{
+    html+=`<tr><td>${d.d}</td>`;
+    [...presentVoices].forEach(v=>{
+      const s=d.vScores[v];
+      if(s===undefined){html+=`<td style="text-align:left;color:var(--c-muted)">—</td>`;}
+      else{const lbl=SC.scoreLabel(s);html+=`<td style="text-align:left;color:${lbl.color};font-weight:700">${Math.round(s)}</td>`;}
+    });
+    html+='</tr>';
+  });
+  html+='</table></div>';
+
+  el.innerHTML=html;
+}
+
+// ── Report tab ──
+function renderReport(){
+  const cfg=loadCfg();
+  const el=document.getElementById('report-content');
+  if(!cfg){el.innerHTML='<div class="empty">הגדר/י כיתה תחילה.</div>';return;}
+  const st=loadStore();
+  const resp=(st.resp||[]);
+  if(!resp.length){el.innerHTML='<div class="empty">עדיין אין תשובות.</div>';return;}
+
+  const domains=SC.computeDomains(resp,R.ITEMS,cfg.band);
+  if(!domains.length){el.innerHTML='<div class="empty">אין נתונים לדוח.</div>';return;}
+
+  const sorted=[...domains].sort((a,b)=>b.score-a.score);
+  const top=sorted.slice(0,3);
+  const bottom=sorted.slice(-3).reverse();
+  const capped=domains.filter(d=>d.capped);
+  const divided=domains.filter(d=>d.gap>=30);
+  const unknown=domains.filter(d=>d.unknownRate>=0.34);
+  const overall=domains.reduce((s,d)=>s+d.score,0)/domains.length;
+  const ovLbl=SC.scoreLabel(overall);
+
+  // Single first step: the one lowest-scoring domain without capped flag, or lowest overall
+  const firstStep=bottom.find(d=>!d.capped)||bottom[0];
+
+  const chaps=[
+    {
+      n:1, title:'איך לקרוא את הדוח',
+      body:`הדוח מציג ציונים בין 0 ל-100 לכל תחום של חוסן חברתי.
+הציון משקף את הממוצע של כל הנשאלים לאחר תיקון עבור היגדים הפוכים (התנהגויות מזיקות).
+טווח 75–100 = תפקודי · 50–74 = חלקי · 25–49 = חלש · מתחת ל-25 = בקושי תפקודי.
+<br><br>כלל חשוב: כשהתנהגות מזיקה גבוהה, היא <strong>מגבילה</strong> את ציון התחום גם אם ההתנהגות המיטיבה גבוהה.
+זה לא ממוצע — זה מחסום.`
+    },
+    {
+      n:2, title:'הציונים',
+      body:`<strong>ציון כולל: ${Math.round(overall)} — ${ovLbl.label}</strong><br><br>`+
+        sorted.map(d=>`${d.d}: ${Math.round(d.score)} (${d.label})`).join('<br>')
+    },
+    {
+      n:3, title:'מה השתנה',
+      body: resp.some(r=>r.rd>1)
+        ? 'יש מספר סיבובי מדידה. השוואה בין סיבובים תהיה זמינה כשניתן יהיה להתאים בין רשומות.'
+        : 'זהו הסיבוב הראשון של המדידה. להשוואה נדרש לפחות סיבוב נוסף.'
+    },
+    {
+      n:4, title:'מה כבר עובד',
+      body: top.length
+        ? `התחומים החזקים ביותר בכיתה זו:<br><br>`+top.map(d=>`<strong>${d.d}</strong> (${Math.round(d.score)}) — ${d.label}`).join('<br>') + '<br><br>אלו משאבים קיימים שניתן לבנות עליהם.'
+        : 'אין עדיין מספיק נתונים.'
+    },
+    {
+      n:5, title:'פועל, ופוגע',
+      body: capped.length
+        ? `ב-${capped.length} תחום/ים, התנהגויות מזיקות מגבילות את הציון גם כשההתנהגות המיטיבה גבוהה:<br><br>`+
+          capped.map(d=>`<strong>${d.d}</strong>: מיטיב=${Math.round(d.good)}, מזיק=${Math.round(d.harm)}, ציון=${Math.round(d.score)}`).join('<br>')+
+          '<br><br>עדיפות לטיפול: לפני שמחזקים את הטוב, צריך להפחית את הנזק.'
+        : 'לא נמצאו תחומים שבהם ההתנהגות המזיקה מגבילה את הציון.'
+    },
+    {
+      n:6, title:'המלצות',
+      body: bottom.length
+        ? `התחומים הדורשים תשומת לב:<br><br>`+
+          bottom.map(d=>`<strong>${d.d}</strong> (${Math.round(d.score)}): `+
+            (d.capped?'הפחת התנהגות מזיקה לפני שמחזקים חיובי':'חזק התנהגויות מיטיבות')
+          ).join('<br><br>')
+        : 'אין מספיק נתונים להמלצות.'
+    },
+    {
+      n:7, title:'קולות חלוקים',
+      body: divided.length
+        ? `ב-${divided.length} תחום/ים יש פערים גדולים בין קבוצות שונות של נשאלים (30+ נקודות):<br><br>`+
+          divided.map(d=>`<strong>${d.d}</strong> — פער: ${Math.round(d.gap)} נקודות`).join('<br>')+
+          '<br><br>פערים אלו אינם "טעות" — הם משקפים חוויות שונות של אותה מציאות. ראויים לשיחה, לא להחלטה.'
+        : 'לא נמצאו פערים גדולים בין הקולות השונים.'
+    },
+    {
+      n:8, title:'מה שרבים אינם יודעים',
+      body: unknown.length
+        ? `ב-${unknown.length} תחום/ים יותר משליש מהנשאלים בחרו "לא יודע":<br><br>`+
+          unknown.map(d=>`<strong>${d.d}</strong> (${Math.round(d.unknownRate*100)}% לא יודעים)`).join('<br>')+
+          '<br><br>אי-ידיעה גבוהה יכולה להצביע על חוסר חשיפה, חוסר בטחון, או שאלה לא מובנת.'
+        : 'אחוז ה"לא יודע" נמוך — הנשאלים הרגישו שהם יכולים להשיב.'
+    },
+    {
+      n:9, title:'הצעד הראשון',
+      body: firstStep
+        ? `דבר אחד בלבד.<br><br>הצעד המומלץ הוא לטפל ב<strong>${firstStep.d}</strong> (ציון: ${Math.round(firstStep.score)}).`+
+          (firstStep.capped?'<br>מכיוון שמדובר בתחום עם התנהגות מזיקה מגבילה, הצעד הראשון הוא <strong>הפחתת</strong> ההתנהגות המזיקה — לפני שמנסים לחזק.'
+            :'<br>הצעד הוא שיחה קצרה עם הצוות: מה דבר אחד שניתן לשנות השבוע בנוגע לתחום זה?')+
+          '<br><br>לא שני דברים. לא תוכנית. דבר אחד.'
+        : 'אין עדיין מספיק נתונים לצעד ראשון.'
+    },
+    {
+      n:10, title:'מה שהדוח אינו יודע',
+      body:`הדוח אינו יודע למה. הוא יודע מה — ועד כמה.<br><br>
+הדוח אינו מדיד עבור תלמידים ספציפיים ואינו חושף זהויות.<br>
+הדוח אינו מחליף שיחה, תצפית, או שיפוט מקצועי.<br>
+הדוח אינו מציג עלויות, אומדן זמן, או ספירה אנושית — אלה אינם ידועים לו.<br><br>
+השתמש/י בדוח כנקודת פתיחה לשיחה, לא כמסקנה.`
+    },
+  ];
+
+  let html='<div class="card">';
+  chaps.forEach(c=>{
+    html+=`<div class="chap">
+      <div class="chap-num">פרק ${c.n}</div>
+      <div class="chap-title">${c.title}</div>
+      <div class="chap-body">${c.body}</div>
+    </div>`;
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+// ── Main render ──
+function renderAll(){
+  refreshTabLocks();
+  renderSetup();
+  const cfg=loadCfg();
+  if(cfg&&!isLocked()){renderScores();renderVoices();renderReport();}
+}
+
+// ── Init ──
+renderAll();
+checkLock();
+window.addEventListener('storage',function(e){if(e.key===LK){checkLock();refreshTabLocks();}});
+
+})();
+</script>
+</body>
+</html>

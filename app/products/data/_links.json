@@ -1,0 +1,106 @@
+{
+ "מסך קלט סטודנטים/יות — \"שאלה 4\"": [
+  {
+   "label": "גרסת המתנסה",
+   "href": "edu-doc-trainee.html"
+  },
+  {
+   "label": "גרסת השחקנית",
+   "href": "edu-doc-actor.html"
+  },
+  {
+   "label": "גרסת המנחה",
+   "href": "edu-doc-facilitator.html"
+  },
+  {
+   "label": "כרטיס שחקנית",
+   "href": "edu-card-actor.html"
+  }
+ ],
+ "יש לך גן טוב — תרחיש הסדנה": [
+  {
+   "label": "גרסת השחקנית",
+   "href": "../doc-actor.html"
+  },
+  {
+   "label": "כרטיס שחקנית",
+   "href": "../card-actor.html"
+  },
+  {
+   "label": "גרסת המתנסה",
+   "href": "../doc-trainee.html"
+  },
+  {
+   "label": "גרסת המנחה",
+   "href": "../doc-facilitator.html"
+  }
+ ],
+ "מסך קלט הורים — \"סגרנו על משהו\"": [
+  {
+   "label": "תסריט למשחק תפקידים",
+   "href": "parents-scenario.html"
+  },
+  {
+   "label": "כרטיס דמות · רועי",
+   "href": "parents-card-1.html"
+  },
+  {
+   "label": "כרטיס דמות · מאיה",
+   "href": "parents-card-2.html"
+  }
+ ],
+ "מסך קלט נוער — \"עזוב, לא משנה\"": [
+  {
+   "label": "תסריט למשחק תפקידים · למנחה",
+   "href": "youth-scenario.html"
+  },
+  {
+   "label": "כרטיס דמות · איתי",
+   "href": "youth-card-1.html"
+  },
+  {
+   "label": "כרטיס דמות · ניב",
+   "href": "youth-card-2.html"
+  }
+ ],
+ "תכנון שיחה — שיחה בעל פה": [
+  {
+   "label": "פתיחת התדריך",
+   "href": "conversation-oral.html"
+  }
+ ],
+ "תכנון שיחה — התכתבות דיגיטלית": [
+  {
+   "label": "פתיחת הטיוטה",
+   "href": "conversation-digital.html"
+  }
+ ],
+ "תכנון פעילות — מפגש בודד": [
+  {
+   "label": "פתיחת התכנית",
+   "href": "activity-single.html"
+  }
+ ],
+ "תכנון פעילות — רצף של 14 מפגשים (מסילבוס)": [
+  {
+   "label": "פתיחת התכנון",
+   "href": "seq-14-sessions.html"
+  }
+ ],
+ "תכנון פעילות — דו״ח ניתוח לרצף": [
+  {
+   "label": "פתיחת הדו״ח",
+   "href": "seq-14-report.html"
+  }
+ ],
+ "ניתוח ומשוב לעבודה אקדמית — משוב לפני הגשה": [
+  {
+   "label": "פתיחת המשוב",
+   "href": "academic-formative.html"
+  }
+ ],
+ "תרגול עצמי מול AI": [],
+ "הסדנה החיה — מסך הסדנה, דף הצפייה, משוב ותוצאות המשוב": [],
+ "הערכה יצירתית": [],
+ "חציות קווים אדומים, בקרת איכות, ניהול": []
+}

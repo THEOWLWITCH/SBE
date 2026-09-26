@@ -1,0 +1,264 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>תכנון שיחה — תדריך לפני שיחה בעל פה</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&amp;family=Assistant:wght@300;400;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap"><style>
+:root{
+  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
+  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
+  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
+  --hidden:#8F5F2E; --hidden-soft:#F5EAD9;
+  --auto:#4A6B5A; --auto-soft:#DFE9E2;
+  --brick:#8C3A34; --brick-soft:#F5E4E2;
+  --shadow:rgba(20,28,36,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+    --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+    --spoken:#82AECE; --spoken-soft:#1E2E3A;
+    --hidden:#CE9C5E; --hidden-soft:#332617;
+    --auto:#83B599; --auto-soft:#1B2A22;
+    --brick:#CF7C74; --brick-soft:#331E1C;
+    --shadow:rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+  --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+  --spoken:#82AECE; --spoken-soft:#1E2E3A;
+  --hidden:#CE9C5E; --hidden-soft:#332617;
+  --auto:#83B599; --auto-soft:#1B2A22;
+  --brick:#CF7C74; --brick-soft:#331E1C;
+  --shadow:rgba(0,0,0,.45);
+}
+.cardgrid{display:grid;grid-template-columns:1fr;gap:10px;}
+@media(min-width:640px){.cardgrid{grid-template-columns:1fr 1fr;}}
+.cardopt{border:1px solid var(--hair);border-radius:8px;padding:13px 15px;cursor:pointer;
+  background:var(--ground);transition:border-color .15s,background .15s;}
+.cardopt:hover{border-color:var(--spoken);}
+.cardopt:focus-visible{outline:2px solid var(--spoken);outline-offset:2px;}
+.cardopt.sel{border-color:var(--spoken);border-width:2px;background:var(--spoken-soft);}
+.cardopt h4{margin:0 0 6px;font-family:"Frank Ruhl Libre",Georgia,serif;font-size:15.5px;}
+.cardopt .when{font-size:12.5px;color:var(--spoken);font-weight:600;margin-bottom:6px;line-height:1.5;}
+.cardopt .d{font-size:13px;color:var(--ink);white-space:pre-line;line-height:1.55;margin-bottom:6px;}
+.cardopt .ex{font-size:12.5px;color:var(--muted);white-space:pre-line;line-height:1.5;}
+
+.dlg-b h4{margin:16px 0 8px;font-family:"Frank Ruhl Libre",Georgia,serif;font-size:15px;}
+.dlg-b h4:first-child{margin-top:0;}
+.banner-mini{background:var(--hidden-soft);border-inline-start:3px solid var(--hidden);
+  border-radius:6px;padding:9px 12px;font-size:12.5px;margin-bottom:14px;line-height:1.5;}
+.rcard{border:1px solid var(--hair);border-radius:8px;padding:14px 16px;background:var(--spoken-soft);margin-bottom:6px;}
+.rcard-meta{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.rcard-row{margin-bottom:9px;font-size:13.5px;line-height:1.5;}
+.rcard-row:last-child{margin-bottom:0;}
+.rcard-row b{display:block;font-size:11.5px;color:var(--muted);margin-bottom:2px;font-weight:600;}
+.tree2{display:flex;flex-direction:column;gap:7px;}
+.tree2-root{font-size:13.5px;padding:9px 11px;background:var(--ground);border-radius:6px;border:1px solid var(--hair);}
+.tree2-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:9px 11px;
+  background:var(--ground);border-radius:6px;border:1px solid var(--hair);font-size:12.5px;line-height:1.5;}
+.tree2-ends{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px;}
+.tree2-end{padding:9px 11px;border-radius:6px;font-size:12.5px;border:1px solid var(--hair);line-height:1.5;}
+.tree2-end.good{background:var(--auto-soft);}
+.tree2-end.alt{background:var(--brick-soft);}
+.tree2-row b,.tree2-end b,.tree2-root b{font-weight:700;}
+.draftbox{white-space:pre-line;border:1px solid var(--hair);border-radius:6px;padding:13px 15px;
+  background:var(--ground);font-size:14px;line-height:1.65;margin-bottom:6px;}
+.dlg-dl{margin-top:10px;}
+.savenote{font-size:13px;color:var(--muted);background:var(--surface-2);border-radius:6px;
+  padding:9px 13px;margin:14px 0 0;}
+.traits-combo{position:relative;}
+.traits-trigger{width:100%;text-align:inherit;font-family:inherit;font-size:13px;
+  padding:8px 10px;border:1px solid var(--hair);border-radius:6px;background:var(--ground);
+  color:var(--ink);cursor:pointer;display:flex;align-items:center;}
+.traits-trigger:hover{border-color:var(--muted);}
+.traits-panel{display:none;margin-top:6px;max-height:min(430px,70vh);overflow-y:auto;
+  border:1px solid var(--hair);border-radius:6px;padding:7px;background:var(--surface);}
+.traits-combo.open .traits-panel{display:block;}
+.traitfield{display:flex;flex-direction:column;gap:5px;}
+.traitgrp{border:1px solid var(--hair);border-radius:6px;overflow:hidden;background:var(--surface);}
+.traitgrp>summary{padding:6px 9px;background:var(--ground);font-size:13.5px;font-weight:700;
+  cursor:pointer;color:var(--muted);list-style:none;}
+.traitgrp>summary::-webkit-details-marker{display:none;}
+.traitgrp-b{padding:4px 9px;display:flex;flex-direction:column;}
+.traitrow{border-bottom:1px solid var(--hair);padding:4px 2px;}
+.traitrow:last-child{border-bottom:none;}
+.traitrow label{display:flex;align-items:baseline;gap:7px;font-size:12.5px;cursor:pointer;}
+.traitrow .poles{color:var(--muted);font-size:11px;}
+.traitnote{display:none;width:100%;margin-top:5px;font-family:inherit;font-size:12.5px;
+  border:1px solid var(--hair);border-radius:5px;padding:6px 8px;background:var(--ground);
+  resize:vertical;min-height:32px;box-sizing:border-box;}
+.traitrow.on{background:var(--spoken-soft);border-radius:5px;}
+.traitrow.on .traitnote{display:block;}
+*{box-sizing:border-box;}
+body{direction:rtl;background:var(--ground);color:var(--ink);
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.6;
+  margin:0;padding:0 18px 120px;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:800px;margin:0 auto;}
+
+header{padding:44px 0 22px;border-bottom:2px solid var(--ink);margin-bottom:26px;}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);margin:0 0 12px;}
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(30px,5.5vw,42px);
+  line-height:1.1;margin:0 0 10px;}
+.sub{color:var(--muted);font-size:16.5px;margin:0;max-width:56ch;font-weight:300;}
+
+.bar{position:sticky;top:0;z-index:20;background:var(--ground);
+  padding:12px 0;margin-bottom:18px;border-bottom:1px solid var(--hair);
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.chip{font-size:14.5px;border:1px solid var(--hair);border-radius:20px;padding:4px 12px;
+  background:var(--surface);display:flex;gap:7px;align-items:center;}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;}
+.d-w{background:var(--spoken);} .d-p{background:var(--auto);} .d-r{background:var(--brick);}
+.chip b{font-family:"IBM Plex Mono",monospace;font-size:12.5px;}
+.spacer{flex:1;}
+
+/* overflow:hidden הוסר (22/09/2026, "תפריט הבחירה קטוע ע"י המסגרת") — הוא
+   נועד רק לשמור את רקע ה-summary בתוך הפינות המעוגלות, אבל חתך גם כל
+   תפריט נפתח (combo/customsel/traits) שהוא position:absolute בתוך הקבוצה,
+   כי overflow:hidden על אב חוצץ גם צאצא ממוקם-מוחלט. העיגול נשמר במקום
+   זאת ישירות על ה-summary (הפינות העליונות בלבד), אותו תיקון כמו entry.html
+   ב-20/09/2026 (.card). */
+.grp{background:var(--surface);border:1px solid var(--hair);border-radius:8px;
+  margin-bottom:12px;box-shadow:0 1px 3px var(--shadow);}
+.grp>summary{padding:13px 18px;background:var(--surface-2);cursor:pointer;
+  display:flex;align-items:center;gap:10px;list-style:none;font-weight:700;font-size:15.5px;
+  font-family:"Frank Ruhl Libre",Georgia,serif;border-radius:8px 8px 0 0;}
+.grp:not([open])>summary{border-radius:8px;}
+.grp>summary::-webkit-details-marker{display:none;}
+.grp>summary::before{content:"▸";color:var(--muted);font-size:12px;transition:transform .15s;}
+.grp[open]>summary::before{transform:rotate(-90deg);}
+.grp .count{margin-inline-start:auto;font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+  color:var(--muted);font-weight:400;}
+.grp-b{padding:16px 18px 18px;display:flex;flex-direction:column;gap:14px;}
+
+.f label{display:block;font-size:13.5px;font-weight:600;color:var(--muted);margin-bottom:5px;}
+.f .hint{font-size:12.5px;color:var(--muted);font-weight:400;}
+.f .reqmark{font-size:12.5px;color:var(--brick,#8C3A34);font-weight:600;}
+.f textarea,.f input,.f select{
+  width:100%;font-family:inherit;font-size:15.5px;line-height:1.55;color:var(--ink);
+  background:var(--ground);border:1px solid var(--hair);border-radius:5px;
+  padding:10px 12px;resize:vertical;direction:rtl;}
+.f textarea{min-height:46px;}
+.f textarea:focus,.f input:focus,.f select:focus{outline:2px solid var(--spoken);outline-offset:1px;}
+.f[data-state="proposal"] textarea,.f[data-state="proposal"] input,.f[data-state="proposal"] select{
+  border-inline-start:3px solid var(--auto);color:var(--muted);border-style:dashed;}
+.f[data-state="locked"] textarea,.f[data-state="locked"] input,.f[data-state="locked"] select{
+  border-inline-start:3px solid var(--spoken);}
+.f[data-state="stale"] textarea,.f[data-state="stale"] input,.f[data-state="stale"] select{
+  border-inline-start:3px solid var(--brick);background:var(--brick-soft);}
+.f[data-req="1"] textarea,.f[data-req="1"] input{border-inline-start:3px solid var(--spoken);}
+.state{font-size:12px;font-family:"IBM Plex Mono",monospace;margin-top:5px;
+  display:flex;gap:6px;align-items:center;min-height:16px;}
+.s-proposal{color:var(--auto);} .s-locked{color:var(--spoken);} .s-stale{color:var(--brick);}
+.state .dot{width:7px;height:7px;}
+.deps{font-size:12px;color:var(--muted);margin-top:3px;}
+
+.actions{position:fixed;inset-inline:0;bottom:0;background:var(--surface);
+  border-top:1px solid var(--hair);padding:13px 18px;z-index:30;
+  box-shadow:0 -2px 12px var(--shadow);}
+.actions .inner{max-width:800px;margin:0 auto;display:flex;gap:9px;flex-wrap:wrap;align-items:center;}
+button{font-family:inherit;font-size:15px;font-weight:600;padding:10px 20px;border-radius:6px;
+  border:1px solid var(--hair);background:var(--surface-2);color:var(--ink);cursor:pointer;}
+button:hover:not(:disabled){border-color:var(--muted);}
+button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
+:root[data-theme="dark"] button.primary,
+:root:not([data-theme="light"]) button.primary{color:#0F1418;}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) button.primary{color:#fff;}}
+button:disabled{opacity:.45;cursor:not-allowed;}
+.note{font-size:13px;color:var(--muted);}
+
+.banner{background:var(--hidden-soft);border:1px solid var(--hair);
+  border-inline-start:3px solid var(--hidden);border-radius:6px;padding:13px 17px;
+  margin-bottom:20px;font-size:14.5px;line-height:1.6;}
+.banner b{color:var(--hidden);}
+.redlines{background:var(--brick-soft);border:1px solid var(--hair);
+  border-inline-start:3px solid var(--brick);border-radius:6px;padding:13px 17px;
+  margin-bottom:20px;font-size:13.5px;line-height:1.6;}
+.redlines b{color:var(--brick);}
+.ai-status{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;}
+.ai-status .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;}
+.ai-status.ok .dot{background:#2e8b57;}
+.ai-status.ok{color:#2e8b57;}
+.ai-status.mock .dot{background:#b8860b;}
+.ai-status.mock{color:#b8860b;}
+.mock-note{font-size:12.5px;color:#b8860b;border:1px solid #b8860b;border-radius:6px;
+  padding:8px 12px;margin-bottom:12px;background:rgba(184,134,11,.08);}
+details.log{font-size:12.5px;color:var(--muted);}
+details.log summary{cursor:pointer;}
+dialog{border:1px solid var(--hair);border-radius:10px;background:var(--surface);color:var(--ink);
+  max-width:620px;width:92vw;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+dialog::backdrop{background:rgba(10,14,18,.55);}
+.dlg-h{padding:16px 22px;border-bottom:1px solid var(--hair);font-weight:700;
+  font-family:"Frank Ruhl Libre",Georgia,serif;font-size:19px;}
+.dlg-b{padding:18px 22px;max-height:60vh;overflow:auto;font-size:14.5px;}
+.dlg-b pre{background:var(--ground);border:1px solid var(--hair);border-radius:5px;
+  padding:12px;overflow-x:auto;font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+  direction:ltr;text-align:left;line-height:1.5;}
+.dlg-f{padding:13px 22px;border-top:1px solid var(--hair);display:flex;gap:9px;justify-content:flex-start;}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;}}
+
+.brandrow{display:flex;align-items:center;gap:11px;margin:0 0 12px;}
+.brandrow img{height:25px;width:auto;display:block;}
+.brandrow .eyebrow{margin:0;}
+:root[data-theme="dark"] .brandrow img{filter:brightness(1.85) saturate(.85);}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .brandrow img{filter:brightness(1.85) saturate(.85);}
+}
+
+
+#rptFab{position:fixed;inset-inline-end:16px;bottom:16px;z-index:9999;width:auto;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:13px;font-weight:600;
+  padding:9px 15px;border-radius:22px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;
+  cursor:pointer;box-shadow:0 4px 14px rgba(20,28,36,.28);}
+#rptFab:hover{opacity:.9;}
+dialog#rptDlg{border:1px solid #CDD3D8;border-radius:10px;background:#FCFCFD;color:#141C24;
+  max-width:440px;width:92vw;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.3);
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;direction:rtl;}
+dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
+#rptDlg h3{margin:0;padding:15px 20px;border-bottom:1px solid #CDD3D8;font-size:16.5px;font-weight:700;}
+#rptDlg .rb{padding:16px 20px;max-height:65vh;overflow:auto;}
+#rptDlg label{display:block;font-size:12.5px;font-weight:600;color:#5C6771;margin-bottom:4px;}
+#rptDlg input,#rptDlg select,#rptDlg textarea{width:100%;font-family:inherit;font-size:14.5px;color:#141C24;
+  background:#EDEFF1;border:1px solid #CDD3D8;border-radius:6px;padding:8px 10px;direction:rtl;
+  margin-bottom:10px;box-sizing:border-box;}
+#rptDlg textarea{min-height:70px;resize:vertical;}
+#rptDlg .req{color:#8C3A34;}
+#rptDlg .rerr{background:#F5E4E2;border-inline-start:3px solid #8C3A34;border-radius:6px;padding:8px 11px;
+  font-size:12.5px;color:#8C3A34;margin-bottom:10px;}
+#rptDlg .rerr[hidden]{display:none;}
+#rptDlg .rnote{font-size:11.5px;color:#5C6771;line-height:1.55;margin:0 0 12px;}
+#rptDlg .rscreen{font-size:11px;color:#5C6771;margin:0 0 10px;}
+#rptDlg .rf{padding:12px 20px;border-top:1px solid #CDD3D8;display:flex;gap:8px;}
+#rptDlg .rf button{font-family:inherit;font-size:14px;font-weight:600;padding:8px 16px;border-radius:6px;
+  border:1px solid #CDD3D8;background:#E4E7EA;color:#141C24;cursor:pointer;}
+#rptDlg .rf button.p{background:#2E5A7D;border-color:#2E5A7D;color:#fff;}
+
+
+body.sbe-hasnav{padding-top:38px;}
+#navBar{position:fixed;top:0;inset-inline-start:0;inset-inline-end:0;height:38px;z-index:9997;
+  display:flex;align-items:center;gap:6px;padding:0 10px;direction:rtl;
+  background:#FCFCFD;border-bottom:1px solid #CDD3D8;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;}
+#navBack,#navHome,#navMenuBtn{font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:12px;
+  border:1px solid #CDD3D8;background:#FCFCFD;color:#141C24;cursor:pointer;line-height:1.4;}
+#navBack:hover,#navHome:hover,#navMenuBtn:hover{border-color:#2E5A7D;}
+#navHome[hidden]{display:none;}
+#navPanel{position:fixed;top:38px;inset-inline-start:10px;z-index:9997;width:260px;
+  max-height:75vh;overflow-y:auto;background:#FCFCFD;border:1px solid #CDD3D8;border-radius:10px;
+  box-shadow:0 14px 40px rgba(20,28,36,.22);padding:10px 0;direction:rtl;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;}
+#navPanel[hidden]{display:none;}
+#navPanel h5{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:#5C6771;
+  margin:12px 16px 4px;font-weight:700;}
+#navPanel h5:first-child{margin-top:0;}
+#navPanel a{display:block;padding:8px 16px;color:#141C24;text-decoration:none;font-size:15px;
+  border-inline-start:3px solid transparent;}
+#navPanel a:hover{background:#EDEFF1;}
+#navPanel a.current{color:#2E5A7D;font-weight:700;background:#DCE7EF;border-inline-start-color:#2E5A7D;}
+
+body{padding:24px 16px 60px;} .snapwrap{max-width:860px;margin:0 auto;background:var(--surface,#fff);border:1px solid var(--hair,#ccc);border-radius:12px;padding:22px 26px;} .snapwrap dialog,.snapwrap .dlg{position:static;display:block;border:0;max-width:none;width:auto;box-shadow:none;padding:0;}</style></head><body><div class="snapwrap">
+  <div class="dlg-h" id="dlgH">התדריך לפני השיחה</div>
+  <div class="dlg-b" id="dlgB"><div><div class="banner-mini">התדריך נכתב על ידי המודל מתוך השדות שמילאת. קראי, ואם משהו לא מדויק — ערכי את השדה למעלה ובני מחדש.</div><h4>לפני שאת נכנסת לחדר</h4><div class="draftbox">יעל, את נכנסת לחדר הזה ב-23.9 לא כמי שבאה לריב על סיור, אלא כרכזת שכבה ח' שמבקשת להבין ולסכם. חודשיים עבדת על הסיור — אתר, הסעות, טפסים, חלוקת קבוצות, שלושה רבעים מאישורי ההורים כבר בידיים — וביום ראשון הגיעה הודעה קצרה בקבוצת הצוות שהכול מבוטל, ומורים והורים פנו אליך ולא היו לך תשובות. זה מה שכואב, ומותר שיכאב. מולך יושבת סגנית המנהלת, אישה שמחליטה מהר ורואה בעצמה שומרת הסף של בית הספר: מלווים, בטיחות, חשיפה משפטית, אולי תקציב או הוראה שקיבלה ולא תוכל לחשוף. סביר מאוד שהיא לא חשבה לרגע שהיא פוגעת בך — בעיניה זו הודעה, לא עלבון, ואולי היא אפילו סבורה שחסכה ממך כישלון. היא גם זו שתמכה במינוי שלך, ויש לה אינטרס אמיתי שתצליחי. מה שבאמת על הכף הוא לא התאריך של הסיור אלא השאלה אם את יכולה לתפקד כרכזת מול צוות והורים, ולזה יש פתרון שלא עולה לה כסף ולא מסכן אף ילד.
+
+פתחי בשלום ובדבר אחד אמיתי וטוב: 'שלום, תודה שמצאת לי זמן באמצע שבוע עמוס. אני מעריכה שאת זמינה לצוות גם כשהיומן שלך בלתי אפשרי, וגם שסמכת עליי כשלקחתי את ריכוז השכבה.' ורק אז לגוף העניין — שבאת להבין את השיקולים ולסכם איך אתן עובדות יחד על החלטות כאלה בהמשך. אם היא תיפתח בהסבר ארוך ומתגונן על בטיחות ומלווים, תני לה להגיע עד הסוף בלי לקטוע, ואז שקפי: 'אז השיקול המרכזי היה המלווים ואישורי ההורים — הבנתי נכון?' — כך את מראה שאת מחפשת את הצורך שמאחורי ההחלטה ולא את הניצחון עליה. אם תאמר 'זו החלטה ניהולית ואני לא חייבת להתייעץ', אל תילחמי בסמכות: 'ההחלטה בהחלט שלך. אני מבקשת לדעת לפני הצוות, כדי שאוכל לעמוד מולם.' אם תסכים באופן כללי אבל בלי שינוי ממשי, תרגמי את ההסכמה לצעד קטן ומדיד — הודעה קצרה אליך לפני פרסום, לחודש ניסיון. אם תרגישי שהיא לוקחת את זה כהאשמה אישית, החזירי את זה לעתיד: 'אני לא באה עם תלונה על מה שהיה, אני מנסה לסדר את מה שיהיה.' ואם תשמעי סיבה שאין לך דרך להפריך, תקציב או הוראה מלמעלה, אל תתווכחי על העובדות — הניחי על השולחן את הדף המסודר עם לוח הזמנים, העלות ושתי חלופות התאריך ושאלי מה כן אפשרי: פורמט מצומצם, מסע ברגל, חצי עלות. אם הקול ירעד, עצרי, שתי מים ואמרי משפט אחד: 'זה חשוב לי ולכן זה נשמע רגשי, אני ממשיכה', ואל תצאי מהחדר באמצע. ואם תגלי שאתן מסתובבות במעגל בפעם השנייה: 'נראה לי שאנחנו חוזרות על עצמנו — בואי נסכם על מה כן הסכמנו וממה נמשיך בהמשך השבוע.'
+
+הקו התחתון שלך פשוט: על הסיור עצמו את מוכנה לקבל את הכרעתה, גם ביטול סופי, ובלבד שתוכלי להסביר אותו לצוות; על ההיוועצות המוקדמת את לא מוותרת, כי בלעדיה אין תפקיד. את לא משתמשת בהורים או במורים כמנוף לחץ, לא מזכירה 'מה ההורים יגידו', לא מדברת עליה עם אף אחד לפני או אחרי, ולא מאיימת בעזיבה — לא כי זה טקטי, אלא כי כך את עובדת. שימי לב לנטייה שלך לבלוע ולצאת באווירה נעימה: אל תתנצלי על עצם הבקשה ואל תשקעי בפרטי ההסעות עד שהזמן ייגמר. אם זה יצליח, שלחי עוד באותו יום מייל קצר ונעים שמסכם את ההחלטה על הסיור ואת אופן העדכון ההדדי ומבקש אישור שהבנת נכון, עדכני את המורים וההורים בהודעה אחת בשמכן המשותף כדי שתראה שאת מגנה על ההחלטה כלפי חוץ, והקפידי על הצד שלך — עדכון שוטף שלה בשלבי התכנון, כדי שלא תצטרך שוב להחליט בלי מידע. ואם לא תגיעו להסכמה, הציעי ניסוי קטן: 'בואי ננסה חודש שבו החלטות שכבה ח' עוברות אליי בהודעה קצרה לפני הצוות, ונראה איך זה עובד.' ואם גם זה יידחה — תמשיכי לתפקד במלוא המקצועיות ותבני לעצמך נקודת מגע קבועה, עדכון שבועי כתוב ממך אליה על מצב הפעילויות, שמצמצם הפתעות מאליו; ואם הדפוס יחזור, תבקשי שיחה משולשת עם המנהלת על הגדרת התפקיד וסמכויות הרכזת — כבירור מסודר, לא כתלונה.</div><h4>כרטיס תזכורת</h4><div class="rcard"><div class="rcard-meta">ד״ר יעל שדה · 23.9.26</div><div class="rcard-row"><b>המטרה שלי</b><div>שני דברים מוגדרים: (1) להבין מה היו השיקולים לביטול, ולבחון יחד אם ניתן לקיים את הסיור במועד חלופי או בפורמט מצומצם שעונה על אותם שיקולים; (2) לסכם נוהל עבודה מוסכם — שהחלטה שנוגעת לשכבה ח׳ לא תפורסם לצוות לפני שיחה קצרה איתי, גם אם ההחלטה עצמה נשארת שלה.</div></div><div class="rcard-row"><b>קו תחתון</b><div>לא אוותר על הבקשה להיוועצות מוקדמת בהחלטות הנוגעות לשכבה שלי — זה תנאי לתפקד כרכזת. לא אשתמש בהורים, בתלמידים או בצוות כלחץ עליה ולא אזכיר 'מה ההורים יגידו' כאיום. לא אדבר עליה עם מורים אחרים לפני או אחרי השיחה. לא אאשים אותה בכוונות רעות ולא אעלה קול. לא אעמיד אולטימטום ולא ארמוז על עזיבת התפקיד. אם היא נשארת בהחלטת הביטול מטעמי בטיחות — אקבל את סמכותה בעניין הסיור, ואמשיך להתעקש רק על שאלת התהליך.</div></div><div class="rcard-row"><b>איך לפתוח</b><div>שלום, תודה שמצאת לי זמן באמצע שבוע עמוס. אני באמת מעריכה שאת זמינה לצוות גם כשהיומן שלך בלתי אפשרי, וגם שסמכת עליי כשלקחתי את ריכוז השכבה. באתי לדבר על ביטול הסיור של שכבה ח׳ — גם כדי להבין מה היו השיקולים, וגם כדי שנסכם איך אנחנו עובדות יחד על החלטות כאלה בהמשך.</div></div><div class="rcard-row"><b>הגישה</b><div>משא ומתן מבוסס עניינים (פישר ויורי) — כששני הצדדים צריכים להגיע להסכם קונקרטי — משאב, זמן, חלוקת תפקידים — לא רק להבין זה את זה.</div></div><div class="rcard-row"><b>תוכנית ב׳</b><div>אם לא נגיע להסכמה על התהליך, אנסח את הבקשה כצעד קטן וניסיוני: 'בוא ננסה חודש שבו החלטות שכבה ח׳ עוברות אליי בהודעה קצרה לפני הצוות, ונראה איך זה עובד'. אם גם זה נדחה, אמשיך לתפקד במלוא המקצועיות ואבנה לעצמי מנגנון עצמאי — עדכון שבועי כתוב ממני אליה על מצב הפעילויות, שמייצר נקודת מגע קבועה ומצמצם הפתעות. אם הדפוס יחזור על עצמו פעם נוספת, אבקש שיחה משולשת עם המנהלת בנושא הגדרת התפקיד וסמכויות הרכזת — כשיחת בירור מוסדרת, לא כתלונה.</div></div><div class="rcard-row"><b>המאפיינים שלי</b><div>אחריות (עבדתי חודשיים על הסיור — תיאום אתר, הסעות, טפסים, חלוקת קבוצות — ואני מרגישה אחראית אישית מול המורים, התלמידים וההורים שכבר קיבלו הודעה.) · אסרטיביות מול פסיביות (הנטייה הטבעית שלי מול ממונה היא לבלוע ולהמשיך; בשיחה הזו אצטרך להישאר על הקו האסרטיבי ולומר במפורש מה אני צריכה, בלי להתנצל על עצם הבקשה.) · צורך באישור וריצוי (בשנה ראשונה בתפקיד אני רוצה מאוד שיראו בי רכזת טובה, ויש סכנה שאוותר על העניין המהותי רק כדי לצאת מהשיחה באווירה נעימה.) · יסודיות מול ספונטניות (אני מגיעה עם נתונים מסודרים — לוח זמנים, אישורי הורים שכבר נאספו, עלויות — וזה הכוח שלי בשיחה, ובלבד שלא אשקע בפרטים במקום להגיע לשאלת ההתייעצות.)</div></div><div class="rcard-row"><b>המאפיינים של סגנית המנהלת, הממונה הישירה שלי, שהחליטה לבטל את סיור הלימודי של השכבה שבוע לפני המועד בלי להתייעץ איתי</b><div>החלטיות מול הססנות (מקבלת החלטות מהר ובעצמה, גם כשהן לא נוחות; ביטול שבוע מראש הוא בעיניה סימן לניהול טוב, לא לפזיזות.) · צורך בביטחון (בטיחות התלמידים וחשיפה משפטית/ציבורית של בית הספר הם השיקול המוביל אצלה, ובסביבתו כדאי לנסח כל הצעה חלופית.) · מעשיות (תגיב היטב להצעה קונקרטית עם תאריך, עלות ורשימת מלווים, ופחות טוב לשיחה על תחושות בלבד.) · יכולת לקבל ביקורת (מוכנה לשמוע הערה על תהליך אם היא מנוסחת כבקשה לעתיד ולא כהאשמה על העבר; אם תרגיש מותקפת בסמכותה, תתכנס ותסגור את הדיון.)</div></div></div><p class="savenote">אפשר לסגור, לערוך כל שדה למעלה ולבנות מחדש — התוצר כאן הוא תמיד הגרסה האחרונה שבנית. מרוצה? שמרי אותו למטה.</p></div></div>
+  
+</div></body></html>

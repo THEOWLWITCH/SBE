@@ -1,0 +1,553 @@
+<meta charset="UTF-8">
+<title>כניסה למערכת</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
+  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
+  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
+  --hidden:#8F5F2E; --hidden-soft:#F5EAD9;
+  --auto:#4A6B5A; --auto-soft:#DFE9E2;
+  --brick:#8C3A34; --brick-soft:#F5E4E2;
+  --shadow:rgba(20,28,36,.09);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+    --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+    --spoken:#82AECE; --spoken-soft:#1E2E3A;
+    --hidden:#CE9C5E; --hidden-soft:#332617;
+    --auto:#83B599; --auto-soft:#1B2A22;
+    --brick:#CF7C74; --brick-soft:#331E1C;
+    --shadow:rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+  --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+  --spoken:#82AECE; --spoken-soft:#1E2E3A;
+  --hidden:#CE9C5E; --hidden-soft:#332617;
+  --auto:#83B599; --auto-soft:#1B2A22;
+  --brick:#CF7C74; --brick-soft:#331E1C;
+  --shadow:rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{direction:rtl;background:var(--ground);color:var(--ink);margin:0;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;padding:0 16px 60px;}
+.wrap{max-width:640px;margin:0 auto;}
+
+header{padding:32px 0 6px;}
+.brandrow{display:flex;align-items:center;gap:11px;margin:0 0 14px;}
+.brandrow img{height:28px;width:auto;display:block;}
+.brandrow .tagline{margin:0;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted);
+  letter-spacing:.02em;}
+:root[data-theme="dark"] .brandrow img{filter:brightness(1.85) saturate(.85);}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .brandrow img{filter:brightness(1.85) saturate(.85);}
+}
+.credit{text-align:center;margin-top:34px;font-size:11px;color:var(--muted);line-height:1.7;}
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(24px,5vw,30px);
+  line-height:1.16;margin:0 0 6px;}
+.lead{color:var(--muted);font-size:15px;margin:0 0 22px;max-width:60ch;}
+
+.banner{background:var(--hidden-soft);border:1px solid var(--hair);
+  border-inline-start:3px solid var(--hidden);border-radius:6px;padding:12px 16px;
+  margin-bottom:22px;font-size:13.5px;line-height:1.6;}
+.banner b{color:var(--hidden);}
+
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:9px;
+  margin-bottom:16px;box-shadow:0 1px 3px var(--shadow);}
+.card>h2{font-size:16px;font-weight:700;margin:0;padding:13px 18px;background:var(--surface-2);
+  border-bottom:1px solid var(--hair);font-family:"Frank Ruhl Libre",Georgia,serif;
+  border-radius:9px 9px 0 0;}
+.card .in{padding:17px 18px;}
+.card .hint{font-size:13.5px;color:var(--muted);margin:0 0 13px;line-height:1.55;}
+
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px;}
+input,select{width:100%;font-family:inherit;font-size:16px;color:var(--ink);
+  background:var(--ground);border:1px solid var(--hair);border-radius:6px;
+  padding:10px 12px;direction:rtl;margin-bottom:12px;}
+input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px;}
+input.code{font-family:"IBM Plex Mono",monospace;font-size:20px;letter-spacing:.15em;
+  text-align:center;direction:ltr;}
+
+button{font-family:inherit;font-size:15px;font-weight:600;padding:10px 20px;border-radius:6px;
+  border:1px solid var(--hair);background:var(--surface-2);color:var(--ink);cursor:pointer;width:100%;}
+button:hover{border-color:var(--muted);}
+button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
+:root[data-theme="dark"] button.primary,:root:not([data-theme="light"]) button.primary{color:#0F1418;}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) button.primary{color:#fff;}}
+
+.err{background:var(--brick-soft);border:1px solid var(--hair);border-inline-start:3px solid var(--brick);
+  border-radius:6px;padding:9px 13px;font-size:13.5px;color:var(--brick);margin-bottom:12px;}
+.err[hidden]{display:none;}
+
+.landing .role-pick{display:flex;gap:10px;margin-bottom:14px;}
+.landing .role-pick button{background:var(--ground);}
+.landing .role-pick button.on{background:var(--spoken-soft);border-color:var(--spoken);
+  color:var(--spoken);font-weight:700;}
+/* תפריט תפקיד נפתח (20/09/2026) — מחליף שבעה כפתורים גלויים-תמיד ב"מבולגן",
+   באותו רכיב דרופדאון בנוי-עצמאית שכבר קיים ב-activity-planner.html
+   (.customsel) — לא רכיב חדש, כדי לשמור על שפה עיצובית אחידה בכל המערכת. */
+.rolesel{position:relative;}
+.rolesel-trigger{width:100%;text-align:inherit;font-family:inherit;font-size:16px;
+  padding:12px 14px;border:1px solid var(--hair);border-radius:7px;background:var(--ground);
+  color:var(--ink);cursor:pointer;display:flex;align-items:center;transition:border-color .12s;}
+.rolesel-trigger .ph{color:var(--muted);}
+.rolesel-trigger:hover{border-color:var(--spoken);}
+.rolesel-trigger::after{content:"▾";margin-inline-start:auto;color:var(--muted);font-size:13px;}
+.rolesel-panel{display:none;position:absolute;z-index:15;top:calc(100% + 6px);inset-inline:0;
+  max-height:min(420px,70vh);overflow-y:auto;border:1px solid var(--hair);border-radius:9px;
+  background:var(--surface);box-shadow:0 12px 32px var(--shadow);padding:6px;}
+.rolesel.open .rolesel-panel{display:block;}
+/* נפתח כלפי מעלה כשאין מקום למטה עד תחתית המסך (22/09/2026) — ראו activity-planner.html. */
+.rolesel.flip-up .rolesel-panel{top:auto;bottom:calc(100% + 6px);}
+.rolesel-grouplabel{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.05em;padding:5px 9px 2px;}
+.rolesel-grouplabel:first-child{padding-top:2px;}
+.rolesel-opt{display:block;width:100%;text-align:inherit;font-family:inherit;font-size:14.5px;
+  padding:5px 11px;border:none;border-radius:6px;background:transparent;color:var(--ink);
+  cursor:pointer;transition:background .1s;}
+.rolesel-opt:hover{background:var(--spoken-soft);}
+.rolesel-opt.on{background:var(--spoken-soft);color:var(--spoken);font-weight:700;}
+#dynField{margin-top:12px;padding-top:12px;border-top:1px solid var(--hair);}
+#dynField[hidden]{display:none;}
+.linklist{display:flex;flex-direction:column;gap:8px;}
+.linklist a{display:block;padding:11px 14px;border:1px solid var(--hair);border-radius:6px;
+  background:var(--ground);color:var(--ink);text-decoration:none;font-size:14.5px;}
+.linklist a:hover{border-color:var(--spoken);}
+.linklist a b{display:block;font-weight:700;margin-bottom:2px;}
+.linklist a span{color:var(--muted);font-size:12.5px;}
+.whoami{font-size:13px;color:var(--muted);margin-bottom:14px;}
+.whoami b{color:var(--ink);}
+.switchlink{font-size:13.5px;color:var(--spoken);cursor:pointer;background:none;border:none;
+  padding:0;text-decoration:underline;width:auto;font-weight:600;}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="brandrow"><img src="data:image/png;base64,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" alt="S.B.E"><p class="tagline">S.B.E · יצירה, ניהול, הערכה ותרגול של סימולציות בחינוך</p></div>
+  <h1>כניסה למערכת</h1>
+  <p class="lead">קוד סדנה לסטודנט/ית, הורים, נוער או שחקנית · קוד מוסד ליוצרת, מחנך/כת או מנחה · כניסת ניהול למנהל.ת מוסד/תכנית או למנהלת מערכת.</p>
+</header>
+
+<div class="banner">
+  <b>מסך הדגמה.</b> אין login אמיתי בפרויקט הזה — הקודים והסיסמאות כאן קבועים בקוד, לא נבדקים מול שום שרת. הכניסה קובעת רק לאן המסך מוביל, לא הרשאה אמיתית.
+</div>
+
+<div id="entry-view"></div>
+
+<p style="text-align:center;margin-top:26px;font-size:13px;color:var(--muted)">
+  רוצה לראות את כל המסכים יחד, בלי להתחזות לתפקיד? <a href="demo-hub.html" style="color:var(--spoken)">מסך הדגמה כולל</a>
+</p>
+
+<p class="credit">פיתוח המערכת: ד"ר יעל שדה · 052-3969417 · yael.sade@gmail.com</p>
+</div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const el = (t,a={},...k)=>{const n=document.createElement(t);
+  for(const[x,v] of Object.entries(a)){ if(x==="class")n.className=v; else n.setAttribute(x,v);}
+  k.flat().forEach(c=>n.append(c)); return n;};
+
+const INSTITUTIONS = {
+  "482913": "מכללה לחינוך",
+  "733204": "מכללה אקדמית ב׳",
+  "115708": "מרכז סימולציה אזורי",
+};
+
+const ADMIN_PASSWORDS = {
+  inst: "550118",
+  sys: "990211",
+};
+
+const view = $("entry-view");
+
+const ROLES = [
+  { key:"trainee", label:"סטודנט/ית", group:"workshop" },
+  { key:"parent",  label:"הורים",     group:"workshop" },
+  { key:"youth",   label:"נוער",      group:"workshop" },
+  { key:"actor",   label:"שחקנית",   group:"workshop" },
+  { key:"creator", label:"יוצרת",    group:"inst" },
+  { key:"homeroom", label:"מחנך/כת", group:"inst" },
+  { key:"fac_trainee", label:"מנחה/ת סטודנטים", group:"inst", track:"trainee" },
+  { key:"fac_parent",  label:"מנחה/ת הורים",    group:"inst", track:"parent" },
+  { key:"fac_youth",   label:"מנחה/ת נוער",     group:"inst", track:"youth" },
+  { key:"inst",    label:"מנהל.ת מוסד/תכנית",  group:"admin" },
+  { key:"sys",     label:"מנהלת מערכת",   group:"admin" },
+];
+const GROUP_LABEL = { workshop:"קוד סדנה — סטודנט/ית / הורים / נוער / שחקנית", inst:"קוד מוסד — יוצרת / מחנך/כת / מנחה", admin:"כניסת ניהול — סיסמה" };
+let pickedRole = null;
+
+function renderEntry(){
+  view.textContent = "";
+  const card = el("div",{class:"card"});
+  const inn = el("div",{class:"in"});
+  inn.append(el("p",{class:"hint"},"בחרי את התפקיד שלך מהרשימה — השדה המתאים (קוד או סיסמה) יופיע מתחתיה."));
+
+  const rolesel = el("div",{class:"rolesel"});
+  const trigger = el("button",{type:"button", class:"rolesel-trigger"}, el("span",{class:"ph"},"בחירת תפקיד..."));
+  const panel = el("div",{class:"rolesel-panel"});
+  const optBtns = {};
+  ["workshop","inst","admin"].forEach(g => {
+    panel.append(el("div",{class:"rolesel-grouplabel"}, GROUP_LABEL[g]));
+    ROLES.filter(r => r.group === g).forEach(r => {
+      const b = el("button",{type:"button", class:"rolesel-opt"}, r.label);
+      b.addEventListener("click", () => { selectRole(r.key); rolesel.classList.remove("open"); });
+      optBtns[r.key] = b;
+      panel.append(b);
+    });
+  });
+  trigger.addEventListener("click", () => {
+    const willOpen = !rolesel.classList.contains("open");
+    rolesel.classList.toggle("open");
+    rolesel.classList.remove("flip-up");
+    if (willOpen) {
+      const r = panel.getBoundingClientRect();
+      if (r.bottom > window.innerHeight - 8) rolesel.classList.add("flip-up");
+    }
+  });
+  document.addEventListener("click", (ev) => { if (!ev.target.closest(".rolesel")) { rolesel.classList.remove("open"); rolesel.classList.remove("flip-up"); } });
+  document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") rolesel.classList.remove("open"); });
+  rolesel.append(trigger, panel);
+  inn.append(rolesel);
+
+  const dyn = el("div",{id:"dynField"}); dyn.hidden = true;
+  inn.append(dyn);
+  card.append(el("h2",{},"כניסה למערכת"), inn);
+  view.append(card);
+
+  function selectRole(key){
+    pickedRole = key;
+    const roleInfo = ROLES.find(r => r.key === key);
+    trigger.textContent = "";
+    trigger.append(roleInfo.label);
+    Object.entries(optBtns).forEach(([k,b]) => b.classList.toggle("on", k===key));
+    dyn.hidden = false;
+    dyn.textContent = "";
+    if (roleInfo.group === "workshop") dyn.append(buildWorkshopField(key));
+    else if (roleInfo.group === "inst") dyn.append(buildInstField(key));
+    else dyn.append(buildAdminField(key));
+    requestAnimationFrame(() => dyn.scrollIntoView({ behavior:"smooth", block:"start" }));
+  }
+}
+
+function persistSession(name, roleLabel){
+  try {
+    if (name) sessionStorage.setItem("sbe.session.name", name);
+    sessionStorage.setItem("sbe.session.role", roleLabel || "");
+  } catch(e){}
+}
+
+const ROLE_LABEL = { trainee:"סטודנט/ית", actor:"שחקנית", parent:"הורים", youth:"נוער", creator:"יוצרת",
+  homeroom:"מחנך/כת",
+  fac_trainee:"מנחה/ת סטודנטים", fac_parent:"מנחה/ת הורים", fac_youth:"מנחה/ת נוער" };
+
+const WORKSHOP_ROLES = ["trainee","parent","youth","actor"];
+
+function buildWorkshopField(role){
+  const wrap = el("div",{});
+  const err = el("div",{class:"err"},""); err.hidden = true;
+  const code = el("input",{class:"code", placeholder:"6 ספרות", maxlength:"6", inputmode:"numeric"});
+  const nm = el("input",{placeholder:"השם שלך"});
+  const btn = el("button",{class:"primary"},"כניסה");
+  const submit = () => {
+    const c = code.value.replace(/[‎‏؜]/g, "").trim();
+    const name = nm.value.trim();
+    if (c.length !== 6 || !/^\d{6}$/.test(c)) { err.textContent = "הקוד הוא שש ספרות."; err.hidden = false; return; }
+    if (!name) { err.textContent = "צריך גם שם."; err.hidden = false; return; }
+    err.hidden = true;
+    persistSession(name, ROLE_LABEL[role]);
+    try { sessionStorage.setItem("sbe.session.homeUrl", "entry.html?home=" + role); } catch(e){}
+    renderWorkshopSuccess(role, name);
+  };
+  btn.addEventListener("click", submit);
+  nm.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
+  wrap.append(
+    el("p",{class:"hint"},"הקוד שהמנחה הציגה בסדנה. בלי חשבון ובלי הרשמה — הקוד פג בסוף היום."),
+    el("label",{},"קוד הסדנה"), code,
+    el("label",{},"שם"), nm, err, btn);
+  return wrap;
+}
+
+function renderWorkshopSuccess(role, name){
+  view.textContent = "";
+  const card = el("div",{class:"card landing"});
+  card.append(el("h2",{},"נכנסת בהצלחה"), el("div",{class:"in"}));
+  const inn = card.querySelector(".in");
+  inn.append(el("p",{class:"whoami"}, "שם: ", el("b",{},name), " · תפקיד: ", el("b",{},ROLE_LABEL[role])));
+
+  const links = el("div",{class:"linklist"});
+  const CONV_LINK = { href:"conversation-planner.html", t:"תכנון שיחה", d:"כלי הכנה לשיחה אמיתית — לא סימולציה, פתוח לכל תפקיד" };
+  const ACTIVITY_LINK = { href:"activity-planner.html", t:"תכנון פעילות", d:"הדרכה לבניית פעילות חינוכית, או ניתוח פעילות קיימת — פתוח לכל תפקיד" };
+  const ACADEMIC_LINK = { href:"academic-review.html", t:"ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה", d:"משוב ממוקד-קריטריונים על עבודה או פרויקט לפני הגשה" };
+  const PRACTICE_LINK = { href:"practice.html", t:"תרגול עצמי", d:"תרגול מול AI שמגלם דמות" };
+  const SOURCES_LINK = { href:"sources-library.html", t:"ספריית המקורות", d:"חיפוש במקורות התיאורטיים" };
+  const TRAINEE_LINKS = [
+    { href:"doc-trainee.html", t:"גרסת המתנסה", d:"התדריך שלך לפני הכניסה לתפקיד, בסבב שבו את המתנסה" },
+    { href:"observation-sheet.html", t:"דף צפייה (טלפון)", d:"למי שצופה, בסבב שבו מישהי אחרת מתנסה" },
+    PRACTICE_LINK,
+    { href:"feedback.html", t:"משוב", d:"משוב על הסדנה" },
+    CONV_LINK, ACTIVITY_LINK, ACADEMIC_LINK, SOURCES_LINK,
+  ];
+  const ACTOR_LINKS = [
+    { href:"card-actor.html", t:"כרטיס שחקנית", d:"התדריך לדמות שאת מגלמת" },
+    PRACTICE_LINK,
+    { href:"feedback.html", t:"משוב", d:"משוב על הסדנה" },
+    CONV_LINK, ACTIVITY_LINK, ACADEMIC_LINK, SOURCES_LINK,
+  ];
+  const PARENT_LINKS = [
+    { href:"parent-input-screen.html", t:"יצירת תרחיש להורים", d:"מתארים את המצב האישי שלכם, המערכת מציעה תרחיש לתרגול" },
+    PRACTICE_LINK,
+    { href:"feedback.html", t:"משוב", d:"משוב על השימוש במערכת" },
+    CONV_LINK, ACTIVITY_LINK, ACADEMIC_LINK, SOURCES_LINK,
+  ];
+  const YOUTH_LINKS = [
+    PRACTICE_LINK,
+    { href:"feedback.html", t:"משוב", d:"משוב על הסדנה" },
+    CONV_LINK, ACTIVITY_LINK, ACADEMIC_LINK, SOURCES_LINK,
+  ];
+  const BY_ROLE = { trainee:TRAINEE_LINKS, actor:ACTOR_LINKS, parent:PARENT_LINKS, youth:YOUTH_LINKS };
+  BY_ROLE[role].forEach(it => {
+    links.append(el("a",{href:it.href}, el("b",{},it.t), el("span",{},it.d)));
+  });
+
+  inn.append(links);
+  const back = el("button",{class:"switchlink", style:"margin-top:16px;display:block"},"כניסה עם קוד/תפקיד אחר");
+  back.addEventListener("click", renderEntry);
+  inn.append(back);
+  view.append(card);
+}
+
+function buildInstField(role){
+  const wrap = el("div",{});
+  const err = el("div",{class:"err"},""); err.hidden = true;
+  const inp = el("input",{class:"code", placeholder:"6 ספרות", maxlength:"6", inputmode:"numeric"});
+  const btn = el("button",{class:"primary"},"כניסה");
+  const roleInfo = ROLES.find(r => r.key === role);
+  const submit = () => {
+    const inst = INSTITUTIONS[inp.value.replace(/[‎‏؜]/g, "").trim()];
+    if (!inst) { err.textContent = "קוד לא מוכר. בדקי שהקלדת שישה ספרות נכונות."; err.hidden = false; return; }
+    err.hidden = true;
+    persistSession(null, ROLE_LABEL[role] + " (" + inst + ")");
+    const trackParam = roleInfo && roleInfo.track ? "&track=" + roleInfo.track : "";
+    // מחנך/כת מועבר/ת ישירות לכלי החוסן החברתי — לא ל-system-select.html.
+    const dest = (role === "homeroom")
+      ? "resilience-team.html"
+      : "system-select.html?role=" + role + "&inst=" + encodeURIComponent(inst) + trackParam;
+    try { sessionStorage.setItem("sbe.session.homeUrl", dest); } catch(e){}
+    location.href = dest;
+  };
+  btn.addEventListener("click", submit);
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
+  wrap.append(
+    el("p",{class:"hint"},"קוד המוסד שלך, מנפיקה אותו מנהלת המוסד."),
+    el("label",{},"קוד מוסד"), inp, err, btn);
+  return wrap;
+}
+
+function buildAdminField(role){
+  const wrap = el("div",{});
+  const pass = el("input",{type:"password", placeholder:"סיסמה", autocomplete:"off"});
+  const toggle = el("button",{type:"button", style:"width:auto;padding:6px 10px;font-size:12.5px;margin-inline-start:8px"},"הצג");
+  toggle.addEventListener("click", () => {
+    const showing = pass.type === "text";
+    pass.type = showing ? "password" : "text";
+    toggle.textContent = showing ? "הצג" : "הסתר";
+  });
+  pass.style.marginBottom = "0";
+  pass.style.flex = "1";
+  const passWrap = el("div",{style:"display:flex;align-items:flex-start;margin-bottom:12px"}, pass, toggle);
+  const err = el("div",{class:"err"},""); err.hidden = true;
+  const btn = el("button",{class:"primary"},"כניסה");
+  const submit = () => {
+    const need = ADMIN_PASSWORDS[role];
+    const clean = pass.value.replace(/[‎‏؜]/g, "").trim();
+    if (clean !== need) { err.textContent = "סיסמה שגויה. אפשר ללחוץ \"הצג\" כדי לבדוק מה הוקלד."; err.hidden = false; return; }
+    persistSession(null, role === "sys" ? "ניהול מערכת" : "מנהלת מוסדית");
+    const dest = "admin.html?role=" + role;
+    try { sessionStorage.setItem("sbe.session.homeUrl", dest); } catch(e){}
+    location.href = dest;
+  };
+  btn.addEventListener("click", submit);
+  pass.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
+  wrap.append(
+    el("p",{class:"hint"},"סיסמה, לא קוד — נכנסת ברמת מוסד אחד או ברמת כל המערכת."),
+    el("label",{},"סיסמה"), passWrap, err, btn);
+  return wrap;
+}
+
+(function initFromHome(){
+  var homeRole = new URLSearchParams(location.search).get("home");
+  var savedName = null;
+  try { savedName = sessionStorage.getItem("sbe.session.name"); } catch(e){}
+  if (homeRole && WORKSHOP_ROLES.indexOf(homeRole) !== -1 && savedName) {
+    renderWorkshopSuccess(homeRole, savedName);
+    return;
+  }
+  renderEntry();
+})();
+</script>
+
+<style>
+#rptFab{position:fixed;inset-inline-end:16px;bottom:16px;z-index:9999;width:auto;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:13px;font-weight:600;
+  padding:9px 15px;border-radius:22px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;
+  cursor:pointer;box-shadow:0 4px 14px rgba(20,28,36,.28);}
+#rptFab:hover{opacity:.9;}
+dialog#rptDlg{border:1px solid #CDD3D8;border-radius:10px;background:#FCFCFD;color:#141C24;
+  max-width:440px;width:92vw;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.3);
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;direction:rtl;}
+dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
+#rptDlg h3{margin:0;padding:15px 20px;border-bottom:1px solid #CDD3D8;font-size:16.5px;font-weight:700;}
+#rptDlg .rb{padding:16px 20px;max-height:65vh;overflow:auto;}
+#rptDlg label{display:block;font-size:12.5px;font-weight:600;color:#5C6771;margin-bottom:4px;}
+#rptDlg input,#rptDlg select,#rptDlg textarea{width:100%;font-family:inherit;font-size:14.5px;color:#141C24;
+  background:#EDEFF1;border:1px solid #CDD3D8;border-radius:6px;padding:8px 10px;direction:rtl;
+  margin-bottom:10px;box-sizing:border-box;}
+#rptDlg textarea{min-height:70px;resize:vertical;}
+#rptDlg .req{color:#8C3A34;}
+#rptDlg .rerr{background:#F5E4E2;border-inline-start:3px solid #8C3A34;border-radius:6px;padding:8px 11px;
+  font-size:12.5px;color:#8C3A34;margin-bottom:10px;}
+#rptDlg .rerr[hidden]{display:none;}
+#rptDlg .rnote{font-size:11.5px;color:#5C6771;line-height:1.55;margin:0 0 12px;}
+#rptDlg .rscreen{font-size:11px;color:#5C6771;margin:0 0 10px;}
+#rptDlg .rf{padding:12px 20px;border-top:1px solid #CDD3D8;display:flex;gap:8px;}
+#rptDlg .rf button{font-family:inherit;font-size:14px;font-weight:600;padding:8px 16px;border-radius:6px;
+  border:1px solid #CDD3D8;background:#E4E7EA;color:#141C24;cursor:pointer;}
+#rptDlg .rf button.p{background:#2E5A7D;border-color:#2E5A7D;color:#fff;}
+</style>
+<button type="button" id="rptFab" title="דיווח על תקלה, שאלה, רעיון או בקשה">דיווח / רעיון</button>
+<dialog id="rptDlg">
+  <h3>דיווח על תקלה, שאלה, רעיון או בקשה</h3>
+  <div class="rb">
+    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח — לא ניתן לצרף קובץ אוטומטית למייל.</p>
+    <div class="rerr" id="rptErr" hidden></div>
+    <label>שם מלא <span class="req">*</span></label>
+    <input id="rptName">
+    <label>תאריך</label>
+    <input id="rptDate" readonly>
+    <label>תפקיד</label>
+    <input id="rptRole" placeholder="לא צוין">
+    <label>סוג הפנייה</label>
+    <select id="rptType">
+      <option>תקלה</option><option>שאלה</option><option>רעיון לשיפור</option><option>בקשה</option><option>משוב על השימוש במערכת</option>
+    </select>
+    <p class="rscreen" id="rptScreen"></p>
+    <div id="rptGeneric">
+      <label>פירוט <span class="req">*</span></label>
+      <textarea id="rptDetails" placeholder="מה קרה, מה ציפית שיקרה, ובאיזה מסך"></textarea>
+    </div>
+    <div id="rptUsage" hidden>
+      <label>ההצעות של המערכת התאימו למה שרצית?</label>
+      <select id="rptFit"><option value="">לא צוין</option><option>כן במלואן</option><option>חלקית</option><option>לא</option></select>
+      <label>המערכת ידידותית</label>
+      <select id="rptFriendly"><option value="">לא צוין</option><option>במידה רבה</option><option>במידה בינונית</option><option>במידה מועטה</option></select>
+      <label>האם תרצה/י להמשיך להשתמש במערכת?</label>
+      <select id="rptContinue"><option value="">לא צוין</option><option>במידה רבה</option><option>במידה בינונית</option><option>במידה מועטה</option></select>
+      <label>למי היית ממליץ/ה להשתמש במערכת?</label>
+      <input id="rptRecommend" placeholder="לא חובה">
+      <label>מה חסר, מה היה מבלבל, או הערה אחרת?</label>
+      <textarea id="rptUsageNotes" placeholder="לא חובה"></textarea>
+    </div>
+    <label>צילום מסך (לא חובה)</label>
+    <input type="file" id="rptFile" accept="image/*">
+  </div>
+  <div class="rf">
+    <button type="button" class="p" id="rptSend">שליחה במייל</button>
+    <button type="button" id="rptCancel">ביטול</button>
+  </div>
+</dialog>
+<script>
+(function(){
+  "use strict";
+  if (window.self !== window.top) {
+    var _rf = document.getElementById("rptFab"); if (_rf) _rf.remove();
+    var _rd = document.getElementById("rptDlg"); if (_rd) _rd.remove();
+    return;
+  }
+  var fab = document.getElementById("rptFab");
+  var dlg = document.getElementById("rptDlg");
+  var nameEl = document.getElementById("rptName");
+  var dateEl = document.getElementById("rptDate");
+  var roleEl = document.getElementById("rptRole");
+  var errEl = document.getElementById("rptErr");
+  var typeEl = document.getElementById("rptType");
+  var genericEl = document.getElementById("rptGeneric");
+  var usageEl = document.getElementById("rptUsage");
+  var screenEl = document.getElementById("rptScreen");
+  var screenName = document.title || location.pathname;
+
+  function syncType(){
+    var isUsage = typeEl.value === "משוב על השימוש במערכת";
+    genericEl.hidden = isUsage;
+    usageEl.hidden = !isUsage;
+  }
+  typeEl.addEventListener("change", syncType);
+
+  function openDlg(presetType){
+    dateEl.value = new Date().toLocaleDateString("he-IL");
+    if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
+    try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
+    errEl.hidden = true;
+    screenEl.textContent = "נשלח מהמסך: " + screenName;
+    if (presetType) typeEl.value = presetType;
+    syncType();
+    dlg.showModal();
+  }
+  fab.addEventListener("click", function(){ openDlg(null); });
+  window.sbeOpenUsageFeedback = function(){ openDlg("משוב על השימוש במערכת"); };
+
+  document.getElementById("rptCancel").addEventListener("click", function(){ dlg.close(); });
+  document.getElementById("rptSend").addEventListener("click", function(){
+    var name = nameEl.value.trim();
+    var type = typeEl.value;
+    var isUsage = type === "משוב על השימוש במערכת";
+    var details = document.getElementById("rptDetails").value.trim();
+    if (!name || (!isUsage && !details)) {
+      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.hidden = false;
+      return;
+    }
+    var roleVal = roleEl.value.trim() || "לא צוין";
+    var record = {
+      name: name, date: dateEl.value, role: roleVal, type: type, screen: screenName,
+      details: details,
+      fit: isUsage ? document.getElementById("rptFit").value : "",
+      friendly: isUsage ? document.getElementById("rptFriendly").value : "",
+      continueUsing: isUsage ? document.getElementById("rptContinue").value : "",
+      recommend: isUsage ? document.getElementById("rptRecommend").value.trim() : "",
+      notes: isUsage ? document.getElementById("rptUsageNotes").value.trim() : "",
+      ts: Date.now()
+    };
+    try { localStorage.setItem("sbe.reports." + record.ts, JSON.stringify(record)); } catch(e){}
+    var bodyLines = [
+      "שם מלא: " + name,
+      "תאריך: " + record.date,
+      "תפקיד: " + roleVal,
+      "סוג פנייה: " + type,
+      "מסך: " + screenName,
+      ""
+    ];
+    if (isUsage) {
+      bodyLines.push(
+        "ההצעות התאימו: " + (record.fit || "לא צוין"),
+        "ידידותיות: " + (record.friendly || "לא צוין"),
+        "ממשיכה להשתמש: " + (record.continueUsing || "לא צוין"),
+        "המלצה למי: " + (record.recommend || "-"),
+        "מה חסר/הערות: " + (record.notes || "-")
+      );
+    } else {
+      bodyLines.push("פירוט:", details);
+    }
+    var subject = "S.B.E · " + type + " · " + name;
+    location.href = "mailto:yael.sade@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(bodyLines.join("\n"));
+    dlg.close();
+  });
+})();
+</script>

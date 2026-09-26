@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S.B.E — בדיקות מערכת חוסן</title>
+<script src="lib/resilience-data.js"></script>
+<script src="lib/resilience-score.js"></script>
+<style>
+:root{--ok:#2e7d32;--fail:#c62828;--warn:#ef6c00;--bg:#f8f9fa;--card:#fff;--border:#dee2e6;--r:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:var(--bg);padding:1rem;color:#212529}
+.wrap{max-width:660px;margin:0 auto}
+h1{font-size:1.2rem;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:2px solid var(--border)}
+.suite{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1rem;overflow:hidden}
+.suite-head{padding:.75rem 1rem;font-weight:700;font-size:.9rem;border-bottom:1px solid var(--border);background:#f0f4f8}
+.case{display:flex;align-items:center;gap:.75rem;padding:.5rem 1rem;border-bottom:1px solid #f3f4f6;font-size:.85rem}
+.case:last-child{border-bottom:none}
+.badge{flex-shrink:0;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff}
+.badge.ok{background:var(--ok)}.badge.fail{background:var(--fail)}.badge.skip{background:var(--warn)}
+.case-label{flex:1}.case-detail{font-family:monospace;color:#555;font-size:.78rem}
+.summary{padding:.75rem 1rem;font-size:.88rem;background:#f0f4f8}
+.s-ok{color:var(--ok);font-weight:700}.s-fail{color:var(--fail);font-weight:700}
+.err{background:#ffebee;color:var(--fail);padding:.4rem .75rem;font-size:.78rem;font-family:monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>בדיקות מערכת — חוסן חברתי</h1>
+<div id="output"></div>
+</div>
+<script>
+(function(){
+'use strict';
+const SC = window.SBE_SCORE;
+const R  = window.SBE_RES;
+const out= document.getElementById('output');
+
+let totalPass=0, totalFail=0;
+
+function suite(name, cases){
+  const rows = cases.map(c => {
+    let pass=false, detail='', err='';
+    try{
+      const got = c.run();
+      pass = c.expect(got);
+      detail = c.fmt ? c.fmt(got) : String(got);
+    } catch(e){ err=String(e); }
+    pass?totalPass++:totalFail++;
+    return {pass, label:c.label, detail, err};
+  });
+
+  const allPass=rows.every(r=>r.pass);
+  let html=`<div class="suite">
+    <div class="suite-head">${allPass?'✓':'✗'} ${name}</div>`;
+  rows.forEach(r=>{
+    html+=`<div class="case">
+      <div class="badge ${r.pass?'ok':'fail'}">${r.pass?'✓':'✗'}</div>
+      <div class="case-label">${r.label}</div>
+      <div class="case-detail">${r.detail}</div>
+    </div>`;
+    if(r.err) html+=`<div class="err">${r.err}</div>`;
+  });
+  html+=`</div>`;
+  return html;
+}
+
+let html='';
+
+// ── 1. נוסחת הציון ──────────────────────────────────────────────────────────
+html+=suite('נוסחת הציון הדומייני', [
+  {
+    label:'good=74 harm=92 → score=8 (לא 41)',
+    run(){
+      const items=[{i:0,r:0},{i:1,r:1}];
+      const goodRaters=Array(74).fill(3).concat(Array(26).fill(0));
+      const harmRaters=Array(92).fill(3).concat(Array(8).fill(0));
+      return SC.domainScore(items,{0:goodRaters,1:harmRaters});
+    },
+    expect(r){return Math.round(r.score)===8;},
+    fmt(r){return `good=${r.good.toFixed(0)} harm=${r.harm.toFixed(0)} cap=${r.cap.toFixed(0)} → score=${r.score.toFixed(0)}`}
+  },
+  {
+    label:'good=74 harm=92 → capped=true',
+    run(){
+      const items=[{i:0,r:0},{i:1,r:1}];
+      const goodRaters=Array(74).fill(3).concat(Array(26).fill(0));
+      const harmRaters=Array(92).fill(3).concat(Array(8).fill(0));
+      return SC.domainScore(items,{0:goodRaters,1:harmRaters});
+    },
+    expect(r){return r.capped===true;},
+    fmt(r){return `capped=${r.capped}`}
+  },
+  {
+    label:'good=74 harm=20 → score=74 (cap=80 לא מגביל)',
+    run(){
+      const items=[{i:0,r:0},{i:1,r:1}];
+      const goodRaters=Array(74).fill(3).concat(Array(26).fill(0));
+      const harmRaters=Array(20).fill(3).concat(Array(80).fill(0));
+      return SC.domainScore(items,{0:goodRaters,1:harmRaters});
+    },
+    expect(r){return Math.round(r.score)===74;},
+    fmt(r){return `score=${r.score.toFixed(0)}`}
+  },
+  {
+    label:'אין פריטים הפוכים — score=good',
+    run(){
+      const items=[{i:0,r:0},{i:1,r:0}];
+      const resp={0:[3,3,2],1:[2,2,3]};
+      return SC.domainScore(items,resp);
+    },
+    expect(r){return r.capped===false&&r.harm===0;},
+    fmt(r){return `harm=${r.harm.toFixed(0)} capped=${r.capped}`}
+  },
+]);
+
+// ── 2. item_score ────────────────────────────────────────────────────────────
+html+=suite('item_score', [
+  {
+    label:'avg(raters)/3*100 — דוגמה: [3,0,3] → 66.67',
+    run(){return SC.itemScore([3,0,3]);},
+    expect(r){return Math.abs(r-200/3)<0.01;},
+    fmt(r){return r.toFixed(2)}
+  },
+  {
+    label:'level 4 (לא יודע) מוחרג — [3,4,0] → avg(3,0)/3*100=50',
+    run(){return SC.itemScore([3,4,0]);},
+    expect(r){return Math.abs(r-50)<0.01;},
+    fmt(r){return r.toFixed(2)}
+  },
+  {
+    label:'רק level 4 → null',
+    run(){return SC.itemScore([4,4,4]);},
+    expect(r){return r===null;},
+    fmt(r){return String(r)}
+  },
+  {
+    label:'[3,3,3] → 100',
+    run(){return SC.itemScore([3,3,3]);},
+    expect(r){return r===100;},
+    fmt(r){return r+''}
+  },
+  {
+    label:'[0,0,0] → 0',
+    run(){return SC.itemScore([0,0,0]);},
+    expect(r){return r===0;},
+    fmt(r){return r+''}
+  },
+]);
+
+// ── 3. scoreLabel ────────────────────────────────────────────────────────────
+html+=suite('scoreLabel — טווחי ציון', [
+  {label:'100 → תפקודי (tier 3)',run(){return SC.scoreLabel(100);},expect(r){return r.tier===3&&r.label==='תפקודי';},fmt(r){return r.label}},
+  {label:'75 → תפקודי',         run(){return SC.scoreLabel(75); },expect(r){return r.tier===3;},fmt(r){return r.label}},
+  {label:'74 → חלקי (tier 2)',   run(){return SC.scoreLabel(74); },expect(r){return r.tier===2&&r.label==='חלקי';},fmt(r){return r.label}},
+  {label:'50 → חלקי',            run(){return SC.scoreLabel(50); },expect(r){return r.tier===2;},fmt(r){return r.label}},
+  {label:'49 → חלש (tier 1)',    run(){return SC.scoreLabel(49); },expect(r){return r.tier===1&&r.label==='חלש';},fmt(r){return r.label}},
+  {label:'25 → חלש',             run(){return SC.scoreLabel(25); },expect(r){return r.tier===1;},fmt(r){return r.label}},
+  {label:'24 → בקושי תפקודי',   run(){return SC.scoreLabel(24); },expect(r){return r.tier===0;},fmt(r){return r.label}},
+  {label:'0 → בקושי תפקודי',    run(){return SC.scoreLabel(0);  },expect(r){return r.tier===0;},fmt(r){return r.label}},
+]);
+
+// ── 4. unknownRate ───────────────────────────────────────────────────────────
+html+=suite('unknownRate — "לא יודע"', [
+  {
+    label:'34% → flag (0.34)',
+    run(){
+      const items=[{i:0},{i:1},{i:2}];
+      // item 0: [4,4,0] → 2/3 unknown; item 1: [0,0,0] → 0; item 2: [0,0,0] → 0
+      // total: 9 ratings, 2 unknown → 22% — not 34
+      // to get 34%: 3 out of 9 = 0.333, round up: 4 out of 12 = 0.333
+      const items2=[{i:0},{i:1},{i:2},{i:3}];
+      const resp={0:[4,4,0,0],1:[0,0,0,0],2:[0,0,0,0],3:[0,0,0,0]};  // 2/16 = 12.5%
+      // simpler: all 4 items, 1 respondent each, 4 answers of 4 out of 12 total
+      const items3=[{i:0}];
+      const resp3={0:[4,4,4,0,0,0,0,0,0]};  // 3/9 = 33.3% — just below
+      const items4=[{i:0}];
+      const resp4={0:[4,4,4,4,0,0,0,0,0,0,0,0]};  // 4/12 = 33.3% — still 33.3
+      const items5=[{i:0}];
+      const resp5={0:[4,4,4,0,0,0,0,0,0,0]};  // 3/10 = 30%
+      // 34% exactly: need ceil(34% * n). With n=100: 34 fours.
+      const r100=[...Array(34).fill(4),...Array(66).fill(0)];
+      return SC.unknownRate([{i:0}],{0:r100});
+    },
+    expect(r){return r>=0.34;},
+    fmt(r){return (r*100).toFixed(1)+'%'}
+  },
+  {
+    label:'0 "לא יודע" → rate=0',
+    run(){return SC.unknownRate([{i:0}],{0:[0,1,2,3]});},
+    expect(r){return r===0;},
+    fmt(r){return (r*100).toFixed(0)+'%'}
+  },
+]);
+
+// ── 5. hashCode ──────────────────────────────────────────────────────────────
+html+=suite('hashCode — FNV-like base36 12 תווים', [
+  {
+    label:'אורך תמיד 12 תווים',
+    run(){return SC.hashCode(0,'abc123');},
+    expect(r){return typeof r==='string'&&r.length===12;},
+    fmt(r){return r}
+  },
+  {
+    label:'אותו קול+קוד → אותו hash',
+    run(){return SC.hashCode(1,'שלום')=== SC.hashCode(1,'שלום');},
+    expect(r){return r===true;},
+    fmt(r){return r+''}
+  },
+  {
+    label:'קול שונה → hash שונה',
+    run(){return SC.hashCode(0,'test')!==SC.hashCode(1,'test');},
+    expect(r){return r===true;},
+    fmt(){return 'קול 0 ≠ קול 1'}
+  },
+  {
+    label:'קוד שונה → hash שונה',
+    run(){return SC.hashCode(0,'abc')!==SC.hashCode(0,'xyz');},
+    expect(r){return r===true;},
+    fmt(){return 'abc ≠ xyz'}
+  },
+  {
+    label:'רווחים מנורמלים — "AB CD" = "abcd"',
+    run(){return SC.hashCode(0,'AB CD')===SC.hashCode(0,'abcd');},
+    expect(r){return r===true;},
+    fmt(r){return r+''}
+  },
+]);
+
+// ── 6. buildResponses ────────────────────────────────────────────────────────
+html+=suite('buildResponses — בניית מפת תשובות', [
+  {
+    label:'record אחד: answers=[2,1,3] → responses מדויק',
+    run(){
+      const bandItems=[{i:10,r:0},{i:11,r:1},{i:12,r:0}];
+      const records=[{v:0,k:'k1',a:[2,1,3],rd:1,dt:'2026-01-01',ts:0}];
+      return SC.buildResponses(records,bandItems);
+    },
+    expect(r){return JSON.stringify(r)==='{"10":[2],"11":[1],"12":[3]}';},
+    fmt(r){return JSON.stringify(r)}
+  },
+  {
+    label:'שני records → ratings מצטברות',
+    run(){
+      const bandItems=[{i:0,r:0}];
+      const records=[
+        {v:0,k:'a',a:[2],rd:1,dt:'',ts:0},
+        {v:1,k:'b',a:[3],rd:1,dt:'',ts:0},
+      ];
+      const r=SC.buildResponses(records,bandItems);
+      return r[0];
+    },
+    expect(r){return Array.isArray(r)&&r.length===2&&r[0]===2&&r[1]===3;},
+    fmt(r){return JSON.stringify(r)}
+  },
+]);
+
+// ── 7. נתוני המערכת (SBE_RES) ───────────────────────────────────────────────
+if(R){
+  html+=suite('SBE_RES — מבנה הנתונים', [
+    {label:'BANDS: 4 שכבות',run(){return R.BANDS.length;},expect(n){return n===4;},fmt(n){return n+''}},
+    {label:'VOICES: 5 קולות',run(){return R.VOICES.length;},expect(n){return n===5;},fmt(n){return n+''}},
+    {label:'LEVELS: 5 רמות',run(){return R.LEVELS.length;},expect(n){return n===5;},fmt(n){return n+''}},
+    {label:'level 4 = "לא יודע" עם skip:true',run(){return R.LEVELS[4];},expect(l){return l.skip===true&&l.id===4;},fmt(l){return l.label}},
+    {label:'ITEMS: לפחות 2 פריטים',run(){return R.ITEMS.length;},expect(n){return n>=2;},fmt(n){return n+' פריטים'}},
+    {label:'ITEMS[0]: פורמט {i,b,g,d,t,r}',run(){return R.ITEMS[0];},expect(it){return 'i' in it&&'b' in it&&'g' in it&&'d' in it&&'t' in it&&'r' in it;},fmt(it){return `i=${it.i} b=${it.b} r=${it.r}`}},
+    {label:'ITEMS[1]: r=1 (היגד הפוך)',run(){return R.ITEMS[1]?.r;},expect(r){return r===1;},fmt(r){return 'r='+r}},
+    {label:'FORMQ: title+q_class+q_voice+q_code',run(){return R.FORMQ;},expect(q){return q.title&&q.q_class&&q.q_voice&&q.q_code;},fmt(q){return q.title}},
+    {label:'RULES: לפחות 6 כללים',run(){return R.RULES.length;},expect(n){return n>=6;},fmt(n){return n+' כללים'}},
+    {label:'SCALE: 4 טווחים',run(){return R.SCALE.length;},expect(n){return n===4;},fmt(n){return n+''}},
+    {label:'CHAPS: 10 פרקים',run(){return R.CHAPS.length;},expect(n){return n===10;},fmt(n){return n+''}},
+    {label:'כל פריט band 0: i בטווח 0-61',
+      run(){return R.ITEMS.filter(it=>it.b===0).every(it=>it.i>=0&&it.i<=61);},
+      expect(r){return r===true;},fmt(r){return r?'✓':'✗'}},
+  ]);
+} else {
+  html+=`<div class="suite"><div class="suite-head">⚠ SBE_RES — קובץ הנתונים לא נטען</div></div>`;
+}
+
+out.innerHTML=html;
+
+// Summary
+const total=totalPass+totalFail;
+out.insertAdjacentHTML('beforeend',
+  `<div class="suite"><div class="summary">
+    <span class="${totalFail===0?'s-ok':'s-fail'}">${totalPass} עברו</span> מתוך ${total}
+    ${totalFail>0?`<span class="s-fail"> · ${totalFail} נכשלו</span>`:''}
+  </div></div>`
+);
+})();
+</script>
+</body>
+</html>

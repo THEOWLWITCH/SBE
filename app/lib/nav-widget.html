@@ -1,0 +1,141 @@
+<!-- ── ניווט גלובלי: חזרה + הבית + תפריט (09/09/2026, הוקטן 09/09/2026,
+     נוסף כפתור "הבית" 22/09/2026) ──
+     סרגל דק וקבוע ברוחב מלא במקום כפתורים צפים גדולים שהתנגשו עם כותרת
+     העמוד. ה-body מקבל padding-top רק כש-SCREENS.sbe-hasnav מוגדר (לא כשהסרגל
+     מוסר בגלל הטמעה ב-iframe) — כך שאין צורך במלחמת specificity/!important
+     עם ה-padding הקיים של כל עמוד, ואין שינוי כשאין סרגל. לא ל-entry.html
+     (הוא עצמו הבית). כפתור "חזרה" משתמש בהיסטוריית הדפדפן, לא בקישור קבוע.
+     כפתור "הבית" (22/09/2026, בקשת המשתמשת: "חץ חזרה למסך שנפתח לאחר
+     הכניסה") — לא היסטוריה, אלא הכתובת המדויקת שנוצרה ונשמרה ב-entry.html
+     ברגע ההצלחה (sessionStorage.sbe.session.homeUrl): לסטודנטית/הורה/נוער/
+     שחקנית זו entry.html?home=<תפקיד> (משחזר את רשימת הקישורים בלי הקוד
+     עצמו — הקוד עצמו אף פעם לא נשמר, "מבלי לפרוץ את גבולות הקודים"); ליוצרת/
+     מנחה זה system-select.html עם role+inst (שם המוסד, לא הקוד שלו — כבר
+     היה כך בכל קישור אחר במערכת); למנהלת/ניהול זה admin.html?role=. אם אין
+     ערך שמור (מסך נפתח ישירות בלי כניסה), הכפתור לא מוצג — לא מנחשת. -->
+<style>
+body.sbe-hasnav{padding-top:38px;}
+#navBar{position:fixed;top:0;inset-inline-start:0;inset-inline-end:0;height:38px;z-index:9997;
+  display:flex;align-items:center;gap:6px;padding:0 10px;direction:rtl;
+  background:#FCFCFD;border-bottom:1px solid #CDD3D8;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;}
+#navBack,#navHome,#navMenuBtn{font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:12px;
+  border:1px solid #CDD3D8;background:#FCFCFD;color:#141C24;cursor:pointer;line-height:1.4;}
+#navBack:hover,#navHome:hover,#navMenuBtn:hover{border-color:#2E5A7D;}
+#navHome[hidden]{display:none;}
+#navPanel{position:fixed;top:38px;inset-inline-start:10px;z-index:9997;width:260px;
+  max-height:75vh;overflow-y:auto;background:#FCFCFD;border:1px solid #CDD3D8;border-radius:10px;
+  box-shadow:0 14px 40px rgba(20,28,36,.22);padding:10px 0;direction:rtl;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;}
+#navPanel[hidden]{display:none;}
+#navPanel h5{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:#5C6771;
+  margin:12px 16px 4px;font-weight:700;}
+#navPanel h5:first-child{margin-top:0;}
+#navPanel a{display:block;padding:8px 16px;color:#141C24;text-decoration:none;font-size:15px;
+  border-inline-start:3px solid transparent;}
+#navPanel a:hover{background:#EDEFF1;}
+#navPanel a.current{color:#2E5A7D;font-weight:700;background:#DCE7EF;border-inline-start-color:#2E5A7D;}
+</style>
+<div id="navBar">
+  <button type="button" id="navBack" title="חזרה צעד אחד">→ חזרה</button>
+  <button type="button" id="navHome" title="חזרה למסך שנפתח אחרי הכניסה שלך" hidden>⌂ המסך שלי</button>
+  <button type="button" id="navMenuBtn" title="כל המסכים">☰ תפריט</button>
+</div>
+<div id="navPanel" hidden></div>
+<script>
+(function(){
+  "use strict";
+  if (window.self !== window.top) {
+    // מוטמע בתוך iframe (admin.html/demo-hub.html) — לעמוד המארח יש
+    // תפריט ניווט משלו; עותק כפול היה מתמקם לפי חלון ה-iframe ולא לפי המסך.
+    var _nb = document.getElementById("navBar"); if (_nb) _nb.remove();
+    var _np = document.getElementById("navPanel"); if (_np) _np.remove();
+    return;
+  }
+  document.body.classList.add("sbe-hasnav");
+  var SCREENS = [
+    { title:"לקראת ההצגה", items:[
+      { label:"תוכן עניינים — כל המערכת", file:"system-toc.html" },
+      { label:"תוצרי המערכת — הופקו על ידי המודל", file:"products/index.html" }
+    ]},
+    { title:"כניסה", items:[
+      { label:"מסך כניסה", file:"entry.html" },
+      { label:"בחירת מערכת", file:"system-select.html" },
+      { label:"מסך הדגמה כולל", file:"demo-hub.html" }
+    ]},
+    { title:"יצירת תרחיש", items:[
+      { label:"מסך קלט סטודנטים/יות", file:"input-screen.html" },
+      { label:"מסך קלט הורים", file:"parent-input-screen.html" },
+      { label:"מסך קלט נוער", file:"student-input-screen.html" },
+      { label:"חיפוש במאגר התרחישים", file:"search.html" },
+      { label:"ספריית המקורות", file:"sources-library.html" }
+    ]},
+    { title:"תכנון שיחה ופעילות", items:[
+      { label:"תכנון שיחה", file:"conversation-planner.html" },
+      { label:"תכנון פעילות", file:"activity-planner.html" },
+      { label:"ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה", file:"academic-review.html" }
+    ]},
+    { title:"תוצרי הסדנה", items:[
+      { label:"גרסת השחקנית", file:"doc-actor.html" },
+      { label:"כרטיס שחקנית", file:"card-actor.html" },
+      { label:"גרסת המתנסה", file:"doc-trainee.html" },
+      { label:"גרסת המנחה", file:"doc-facilitator.html" }
+    ]},
+    { title:"הרצת הסדנה", items:[
+      { label:"מסך הסדנה", file:"facilitator-screen.html" },
+      { label:"דף צפייה (טלפון)", file:"observation-sheet.html" },
+      { label:"משוב", file:"feedback.html" },
+      { label:"תוצאות המשוב", file:"feedback-results.html" },
+      { label:"הערכה יצירתית", file:"creative-assessment.html" }
+    ]},
+    { title:"תרגול עצמי", items:[
+      { label:"תרגול עצמי", file:"practice.html" },
+      { label:"חציות קווים אדומים", file:"practice-crossings.html" }
+    ]},
+    { title:"ניהול", items:[
+      { label:"מסך הניהול", file:"admin.html" },
+      { label:"בקרת איכות", file:"eval-set.html" }
+    ]}
+  ];
+  var panel = document.getElementById("navPanel");
+  // הקישורים יחסיים ל-app/. מסמך שנפתח מתוך תת-תיקייה (products/ — תוצרי
+  // המערכת) צריך "../" לפניהם, אחרת "entry.html" מצביע על products/entry.html (404).
+  var sub = (location.pathname.match(/\/(products)\/[^\/]*$/) || [])[1];
+  var base = sub ? "../" : "";
+  var here = (sub ? sub + "/" : "") + (location.pathname.split("/").pop() || "index.html").toLowerCase();
+  SCREENS.forEach(function(section){
+    var h = document.createElement("h5"); h.textContent = section.title; panel.appendChild(h);
+    section.items.forEach(function(it){
+      var a = document.createElement("a"); a.href = base + it.file; a.textContent = it.label;
+      if (it.file.toLowerCase() === here) a.className = "current";
+      panel.appendChild(a);
+    });
+  });
+  document.getElementById("navMenuBtn").addEventListener("click", function(){
+    panel.hidden = !panel.hidden;
+  });
+  document.getElementById("navBack").addEventListener("click", function(){
+    if (window.history.length > 1) window.history.back();
+    else location.href = base + "entry.html";
+  });
+  // כפתור "⌂ המסך שלי" — ראו ההערה המלאה בראש הקובץ. מוצג רק אם יש ערך
+  // שמור וזה לא כבר המסך הנוכחי (כדי לא להציע "לחזור" למקום שכבר עומדים בו).
+  try {
+    var homeUrl = sessionStorage.getItem("sbe.session.homeUrl");
+    if (homeUrl) {
+      var hereFull = (location.pathname.split("/").pop() || "") + location.search;
+      if (hereFull !== homeUrl) {
+        var homeBtn = document.getElementById("navHome");
+        homeBtn.hidden = false;
+        homeBtn.addEventListener("click", function(){ location.href = base + homeUrl; });
+      }
+    }
+  } catch(e){}
+  document.addEventListener("click", function(e){
+    if (!panel.hidden && !e.target.closest("#navPanel") && !e.target.closest("#navMenuBtn")) panel.hidden = true;
+  });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && !panel.hidden) panel.hidden = true;
+  });
+})();
+</script>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S.B.E · הדגמת המערכת</title>
+<style>
+  :root{
+    --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
+    --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
+    --accent:#2E5A7D; --accent-soft:#DCE7EF;
+    --warn:#8C3A34; --warn-soft:#F5E4E2;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    display:flex; flex-direction:column;
+    background:var(--ground); color:var(--ink);
+    font-family:"Segoe UI","Assistant",system-ui,sans-serif;
+    font-size:15px;
+  }
+  header{
+    padding:14px 20px; background:var(--surface); border-bottom:1px solid var(--hair);
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  header h1{font-size:18px; margin:0; font-weight:800;}
+  header .note{
+    font-size:13px; color:var(--muted); background:var(--accent-soft);
+    border:1px solid var(--hair); border-radius:6px; padding:6px 10px; max-width:640px;
+  }
+  /* ניווט — הוחלף מתפריט-צד קבוע לסרגל דק + תפריט נפתח (09/09/2026), כדי
+     שיהיה עקבי עם כל שאר המסכים ("תוריד את תפריט הצד במקומות שעדיין יש
+     ותחליף בתפריט הזה"). לחיצה על פריט טוענת אותו ל-iframe בדיוק כמו קודם,
+     רק שהרשימה חייה בתפריט נפתח במקום בעמודה קבועה. */
+  body.sbe-hasnav{padding-top:38px;}
+  #navBar{position:fixed;top:0;inset-inline-start:0;inset-inline-end:0;height:38px;z-index:9997;
+    display:flex;align-items:center;gap:6px;padding:0 10px;direction:rtl;
+    background:var(--surface);border-bottom:1px solid var(--hair);}
+  #navBack,#navHome,#navMenuBtn{font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:12px;
+    border:1px solid var(--hair);background:var(--surface);color:var(--ink);cursor:pointer;line-height:1.4;}
+  #navBack:hover,#navHome:hover,#navMenuBtn:hover{border-color:var(--accent);}
+  #navHome[hidden]{display:none;}
+  #navPanel{position:fixed;top:38px;inset-inline-start:10px;z-index:9997;width:280px;
+    max-height:75vh;overflow-y:auto;background:var(--surface);border:1px solid var(--hair);border-radius:10px;
+    box-shadow:0 14px 40px rgba(20,28,36,.22);padding:10px 0;direction:rtl;}
+  #navPanel[hidden]{display:none;}
+  #navPanel h2{
+    font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted);
+    margin:12px 16px 4px; font-weight:700;
+  }
+  #navPanel h2:first-child{margin-top:0;}
+  .item{
+    display:block; width:100%; text-align:right; padding:6px 16px; border:none; background:none;
+    color:var(--ink); font-size:13px; cursor:pointer; border-inline-start:3px solid transparent;
+  }
+  .item:hover{background:var(--surface-2);}
+  .item.active{background:var(--accent-soft); border-inline-start-color:var(--accent); font-weight:700;}
+  main{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .frame-bar{
+    padding:8px 16px; background:var(--surface); border-bottom:1px solid var(--hair);
+    font-size:13px; color:var(--muted); display:flex; justify-content:space-between; gap:10px;
+  }
+  #frame-wrap{flex:1; min-height:0; display:flex; flex-direction:column;}
+  #frame-wrap.empty{align-items:center; justify-content:center; color:var(--muted); font-size:15px;}
+  iframe{flex:1; min-height:0; width:100%; border:none; background:#fff;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>S.B.E · הדגמת המערכת</h1>
+  <span class="note">כל המסכים בקובץ אחד לצורך הצגה. תרגול עצמי, תכנון פעילות ותכנון שיחה מחוברים למודל אמיתי (19/09/2026) כשהשרת המקומי (harness/practice-server.mjs) רץ — אחרת נופלים בשקט למנוע ההיוריסטי.</span>
+</header>
+
+<div id="navBar">
+  <button type="button" id="navBack" title="חזרה צעד אחד">→ חזרה</button>
+  <button type="button" id="navHome" title="חזרה למסך שנפתח אחרי הכניסה שלך" hidden>⌂ המסך שלי</button>
+  <button type="button" id="navMenuBtn" title="כל המסכים">☰ תפריט</button>
+</div>
+<div id="navPanel" hidden></div>
+<main>
+  <div class="frame-bar">
+    <span id="current-label">בחרי מסך מהתפריט</span>
+    <span id="current-path"></span>
+  </div>
+  <div id="frame-wrap" class="empty">בחרי מסך כדי להתחיל</div>
+</main>
+
+<script>
+document.body.classList.add("sbe-hasnav");
+const SECTIONS = [
+  { title: "לקראת ההצגה", items: [
+    { label: "תוכן עניינים — כל המערכת", file: "system-toc.html" },
+    { label: "מצגת הרקע התיאורטי ↗", file: "https://canva.link/3c0slqd77p6i41b", external: true },
+    { label: "תוצרי המערכת — הופקו על ידי המודל", file: "products/index.html" },
+  ]},
+  { title: "כניסה למערכת", items: [
+    { label: "מסך כניסה — קוד סדנה / קוד מוסד / כניסת ניהול", file: "entry.html" },
+    { label: "בחירת מערכת — אנשי חינוך / הורים / תכנון שיחה ופעילות", file: "system-select.html" },
+  ]},
+  { title: "יצירת תרחיש", items: [
+    { label: "מסך קלט סטודנטים/יות", file: "input-screen.html" },
+    { label: "מסך קלט הורים", file: "parent-input-screen.html" },
+    { label: "מסך קלט נוער", file: "student-input-screen.html" },
+  ]},
+  { title: "תכנון שיחה", items: [
+    { label: "תכנון שיחה — שיחה בעל פה / התכתבות דיגיטלית", file: "conversation-planner.html" },
+  ]},
+  { title: "תכנון פעילות", items: [
+    { label: "תכנון פעילות — הדרכה + ניתוח פעילות קיימת", file: "activity-planner.html" },
+  ]},
+  { title: "ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה", items: [
+    { label: "ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה — משוב ממוקד-קריטריונים", file: "academic-review.html" },
+  ]},
+  { title: "תוצרי הסדנה — \"יש לך גן טוב\"", items: [
+    { label: "גרסת השחקנית", file: "doc-actor.html" },
+    { label: "כרטיס שחקנית", file: "card-actor.html" },
+    { label: "גרסת המתנסה", file: "doc-trainee.html" },
+    { label: "גרסת המנחה", file: "doc-facilitator.html" },
+  ]},
+  { title: "הרצת הסדנה", items: [
+    { label: "מסך הסדנה", file: "facilitator-screen.html" },
+    { label: "דף צפייה (טלפון)", file: "observation-sheet.html" },
+    { label: "משוב", file: "feedback.html" },
+    { label: "תוצאות המשוב", file: "feedback-results.html" },
+    { label: "הערכה יצירתית (סטודנטית)", file: "creative-assessment.html" },
+  ]},
+  { title: "תרגול עצמי", items: [
+    { label: "תרגול עצמי — בחירת תרחיש", file: "practice.html" },
+    { label: "חציות קווים אדומים (תצוגת מנחה)", file: "practice-crossings.html" },
+  ]},
+  { title: "ניהול וחיפוש", items: [
+    { label: "חיפוש במאגר התרחישים", file: "search.html" },
+    { label: "ספריית המקורות התיאורטיים", file: "sources-library.html" },
+    { label: "מסך הניהול — אזור מוסד ואזור ניהול כלל המערכת", file: "admin.html" },
+    // הוחזר 21/09/2026 לבקשת המשתמשת ("תחזירי את בקרת איכות גם למסך ההדגמה") —
+    // הוסר מכאן ב-05/09 כשעבר להיות לשונית בניהול המערכת; עכשיו מופיע בשניהם.
+    { label: "בקרת איכות — סט ההערכה (11 קלטים, 10 שערים, 9 קריטריונים)", file: "eval-set.html" },
+  ]},
+];
+
+const navPanel = document.getElementById("navPanel");
+const frameWrap = document.getElementById("frame-wrap");
+const currentLabel = document.getElementById("current-label");
+const currentPath = document.getElementById("current-path");
+let currentFile = null;
+
+function renderNavPanel(){
+  navPanel.textContent = "";
+  let firstBtn = null;
+  SECTIONS.forEach(section => {
+    const h2 = document.createElement("h2");
+    h2.textContent = section.title;
+    navPanel.appendChild(h2);
+    section.items.forEach(item => {
+      const btn = document.createElement("button");
+      btn.className = "item" + (item.file === currentFile ? " active" : "");
+      btn.textContent = item.label;
+      btn.dataset.file = item.file;
+      btn.addEventListener("click", () => {
+        navPanel.hidden = true;
+        if (item.external) { window.open(item.file, "_blank", "noopener"); }
+        else { loadScreen(item.file, item.label); }
+      });
+      navPanel.appendChild(btn);
+      if (!firstBtn) firstBtn = { file: item.file, label: item.label };
+    });
+  });
+  return firstBtn;
+}
+const firstScreen = renderNavPanel();
+
+// נטען מסך ברירת מחדל (הראשון בתפריט) בכניסה — כדי שהמסך הראשי לא יישאר
+// ריק ומעורר תחושת "לא תקין" כשנפתח על מסך רחב. המשתמשת דיווחה שזה בדיוק
+// מה שקרה (09/09/2026): פתחה את הכלי, ראתה תפריט צר ושטח ריק גדול לצידו.
+if (firstScreen) loadScreen(firstScreen.file, firstScreen.label);
+
+function loadScreen(file, label) {
+  currentFile = file;
+  renderNavPanel();
+  currentLabel.textContent = label;
+  currentPath.textContent = file;
+  frameWrap.className = "";
+  frameWrap.innerHTML = "";
+  const iframe = document.createElement("iframe");
+  iframe.src = file;
+  frameWrap.appendChild(iframe);
+}
+
+document.getElementById("navMenuBtn").addEventListener("click", () => { navPanel.hidden = !navPanel.hidden; });
+document.getElementById("navBack").addEventListener("click", () => {
+  if (window.history.length > 1) window.history.back();
+  else location.href = "entry.html";
+});
+// כפתור "⌂ המסך שלי" (22/09/2026) — אותה לוגיקה כמו lib/nav-widget.html,
+// מוטמעת כאן כי demo-hub.html לא משתמש בקובץ המשותף.
+try {
+  const homeUrl = sessionStorage.getItem("sbe.session.homeUrl");
+  if (homeUrl) {
+    const hereFull = (location.pathname.split("/").pop() || "") + location.search;
+    if (hereFull !== homeUrl) {
+      const homeBtn = document.getElementById("navHome");
+      homeBtn.hidden = false;
+      homeBtn.addEventListener("click", () => { location.href = homeUrl; });
+    }
+  }
+} catch(e){}
+document.addEventListener("click", e => {
+  if (!navPanel.hidden && !e.target.closest("#navPanel") && !e.target.closest("#navMenuBtn")) navPanel.hidden = true;
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !navPanel.hidden) navPanel.hidden = true;
+});
+</script>
+
+
+<!-- ── כפתור דיווח גלובלי — אותו רכיב שבכל 17 מסכי app/, ראו entry.html (09/09/2026) ── -->
+<style>
+#rptFab{position:fixed;inset-inline-end:16px;bottom:16px;z-index:9999;width:auto;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:13px;font-weight:600;
+  padding:9px 15px;border-radius:22px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;
+  cursor:pointer;box-shadow:0 4px 14px rgba(20,28,36,.28);}
+#rptFab:hover{opacity:.9;}
+dialog#rptDlg{border:1px solid #CDD3D8;border-radius:10px;background:#FCFCFD;color:#141C24;
+  max-width:440px;width:92vw;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.3);
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;direction:rtl;}
+dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
+#rptDlg h3{margin:0;padding:15px 20px;border-bottom:1px solid #CDD3D8;font-size:16.5px;font-weight:700;}
+#rptDlg .rb{padding:16px 20px;max-height:65vh;overflow:auto;}
+#rptDlg label{display:block;font-size:12.5px;font-weight:600;color:#5C6771;margin-bottom:4px;}
+#rptDlg input,#rptDlg select,#rptDlg textarea{width:100%;font-family:inherit;font-size:14.5px;color:#141C24;
+  background:#EDEFF1;border:1px solid #CDD3D8;border-radius:6px;padding:8px 10px;direction:rtl;
+  margin-bottom:10px;box-sizing:border-box;}
+#rptDlg textarea{min-height:70px;resize:vertical;}
+#rptDlg .req{color:#8C3A34;}
+#rptDlg .rerr{background:#F5E4E2;border-inline-start:3px solid #8C3A34;border-radius:6px;padding:8px 11px;
+  font-size:12.5px;color:#8C3A34;margin-bottom:10px;}
+#rptDlg .rerr[hidden]{display:none;}
+#rptDlg .rnote{font-size:11.5px;color:#5C6771;line-height:1.55;margin:0 0 12px;}
+#rptDlg .rscreen{font-size:11px;color:#5C6771;margin:0 0 10px;}
+#rptDlg .rf{padding:12px 20px;border-top:1px solid #CDD3D8;display:flex;gap:8px;}
+#rptDlg .rf button{font-family:inherit;font-size:14px;font-weight:600;padding:8px 16px;border-radius:6px;
+  border:1px solid #CDD3D8;background:#E4E7EA;color:#141C24;cursor:pointer;}
+#rptDlg .rf button.p{background:#2E5A7D;border-color:#2E5A7D;color:#fff;}
+</style>
+<button type="button" id="rptFab" title="דיווח על תקלה, שאלה, רעיון או בקשה">דיווח / רעיון</button>
+<dialog id="rptDlg">
+  <h3>דיווח על תקלה, שאלה, רעיון או בקשה</h3>
+  <div class="rb">
+    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח — לא ניתן לצרף קובץ אוטומטית למייל.</p>
+    <div class="rerr" id="rptErr" hidden></div>
+    <label>שם מלא <span class="req">*</span></label>
+    <input id="rptName">
+    <label>תאריך</label>
+    <input id="rptDate" readonly>
+    <label>תפקיד</label>
+    <input id="rptRole" placeholder="לא צוין">
+    <label>סוג הפנייה</label>
+    <select id="rptType">
+      <option>תקלה</option><option>שאלה</option><option>רעיון לשיפור</option><option>בקשה</option><option>משוב על השימוש במערכת</option>
+    </select>
+    <p class="rscreen" id="rptScreen"></p>
+    <div id="rptGeneric">
+      <label>פירוט <span class="req">*</span></label>
+      <textarea id="rptDetails" placeholder="מה קרה, מה ציפית שיקרה, ובאיזה מסך"></textarea>
+    </div>
+    <div id="rptUsage" hidden>
+      <label>ההצעות של המערכת התאימו למה שרצית?</label>
+      <select id="rptFit"><option value="">לא צוין</option><option>כן במלואן</option><option>חלקית</option><option>לא</option></select>
+      <label>המערכת ידידותית</label>
+      <select id="rptFriendly"><option value="">לא צוין</option><option>במידה רבה</option><option>במידה בינונית</option><option>במידה מועטה</option></select>
+      <label>האם תרצה/י להמשיך להשתמש במערכת?</label>
+      <select id="rptContinue"><option value="">לא צוין</option><option>במידה רבה</option><option>במידה בינונית</option><option>במידה מועטה</option></select>
+      <label>למי היית ממליץ/ה להשתמש במערכת?</label>
+      <input id="rptRecommend" placeholder="לא חובה">
+      <label>מה חסר, מה היה מבלבל, או הערה אחרת?</label>
+      <textarea id="rptUsageNotes" placeholder="לא חובה"></textarea>
+    </div>
+    <label>צילום מסך (לא חובה)</label>
+    <input type="file" id="rptFile" accept="image/*">
+  </div>
+  <div class="rf">
+    <button type="button" class="p" id="rptSend">שליחה במייל</button>
+    <button type="button" id="rptCancel">ביטול</button>
+  </div>
+</dialog>
+<script>
+(function(){
+  "use strict";
+  if (window.self !== window.top) {
+    // מוטמע בתוך iframe (admin.html/demo-hub.html) — העמוד המארח
+    // מציג דיווח משלו; עותק כפול היה מתמקם לפי חלון ה-iframe ולא לפי המסך.
+    var _rf = document.getElementById("rptFab"); if (_rf) _rf.remove();
+    var _rd = document.getElementById("rptDlg"); if (_rd) _rd.remove();
+    return;
+  }
+  var fab = document.getElementById("rptFab");
+  var dlg = document.getElementById("rptDlg");
+  var nameEl = document.getElementById("rptName");
+  var dateEl = document.getElementById("rptDate");
+  var roleEl = document.getElementById("rptRole");
+  var errEl = document.getElementById("rptErr");
+  var typeEl = document.getElementById("rptType");
+  var genericEl = document.getElementById("rptGeneric");
+  var usageEl = document.getElementById("rptUsage");
+  var screenEl = document.getElementById("rptScreen");
+  var screenName = document.title || location.pathname;
+
+  // "משוב על השימוש במערכת" (17/09/2026) — סוג פנייה נוסף עם חמש שאלות
+  // ייעודיות במקום "פירוט" חופשי, ותיוג אוטומטי של המסך שממנו זה נשלח
+  // (המשתמשת: "איך אדע באיזה חלק השולח השתמש/ה?"). כל שליחה נשמרת גם
+  // ב-localStorage (sbe.reports.<ts>), לא רק דרך mailto — כדי שיהיה מסך
+  // תוצאות לקרוא אותן בחזרה, לא רק תיבת מייל.
+  function syncType(){
+    var isUsage = typeEl.value === "משוב על השימוש במערכת";
+    genericEl.hidden = isUsage;
+    usageEl.hidden = !isUsage;
+  }
+  typeEl.addEventListener("change", syncType);
+
+  function openDlg(presetType){
+    dateEl.value = new Date().toLocaleDateString("he-IL");
+    if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
+    try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
+    errEl.hidden = true;
+    screenEl.textContent = "נשלח מהמסך: " + screenName;
+    if (presetType) typeEl.value = presetType;
+    syncType();
+    dlg.showModal();
+  }
+  fab.addEventListener("click", function(){ openDlg(null); });
+  // נקודת חיבור לפתיחה אוטומטית בסיום תרגול/יצירה — מסכים אחרים באותו
+  // קובץ קוראים ל-window.sbeOpenUsageFeedback() מתוך handler ההשלמה שלהם.
+  window.sbeOpenUsageFeedback = function(){ openDlg("משוב על השימוש במערכת"); };
+
+  document.getElementById("rptCancel").addEventListener("click", function(){ dlg.close(); });
+  document.getElementById("rptSend").addEventListener("click", function(){
+    var name = nameEl.value.trim();
+    var type = typeEl.value;
+    var isUsage = type === "משוב על השימוש במערכת";
+    var details = document.getElementById("rptDetails").value.trim();
+    if (!name || (!isUsage && !details)) {
+      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.hidden = false;
+      return;
+    }
+    var roleVal = roleEl.value.trim() || "לא צוין";
+    var record = {
+      name: name, date: dateEl.value, role: roleVal, type: type, screen: screenName,
+      details: details,
+      fit: isUsage ? document.getElementById("rptFit").value : "",
+      friendly: isUsage ? document.getElementById("rptFriendly").value : "",
+      continueUsing: isUsage ? document.getElementById("rptContinue").value : "",
+      recommend: isUsage ? document.getElementById("rptRecommend").value.trim() : "",
+      notes: isUsage ? document.getElementById("rptUsageNotes").value.trim() : "",
+      ts: Date.now()
+    };
+    try { localStorage.setItem("sbe.reports." + record.ts, JSON.stringify(record)); } catch(e){}
+    var bodyLines = [
+      "שם מלא: " + name,
+      "תאריך: " + record.date,
+      "תפקיד: " + roleVal,
+      "סוג פנייה: " + type,
+      "מסך: " + screenName,
+      ""
+    ];
+    if (isUsage) {
+      bodyLines.push(
+        "ההצעות התאימו: " + (record.fit || "לא צוין"),
+        "ידידותיות: " + (record.friendly || "לא צוין"),
+        "ממשיכה להשתמש: " + (record.continueUsing || "לא צוין"),
+        "המלצה למי: " + (record.recommend || "-"),
+        "מה חסר/הערות: " + (record.notes || "-")
+      );
+    } else {
+      bodyLines.push("פירוט:", details);
+    }
+    var subject = "S.B.E · " + type + " · " + name;
+    location.href = "mailto:yael.sade@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(bodyLines.join("\n"));
+    dlg.close();
+  });
+})();
+</script>
+</body>
+</html>

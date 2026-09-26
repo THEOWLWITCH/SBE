@@ -1,0 +1,1382 @@
+<meta charset="UTF-8">
+<title>הערכה יצירתית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
+  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
+  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
+  --hidden:#8F5F2E; --hidden-soft:#F5EAD9;
+  --auto:#4A6B5A; --auto-soft:#DFE9E2;
+  --brick:#8C3A34; --brick-soft:#F5E4E2;
+  --shadow:rgba(20,28,36,.09);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+    --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+    --spoken:#82AECE; --spoken-soft:#1E2E3A;
+    --hidden:#CE9C5E; --hidden-soft:#332617;
+    --auto:#83B599; --auto-soft:#1B2A22;
+    --brick:#CF7C74; --brick-soft:#331E1C;
+    --shadow:rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+  --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+  --spoken:#82AECE; --spoken-soft:#1E2E3A;
+  --hidden:#CE9C5E; --hidden-soft:#332617;
+  --auto:#83B599; --auto-soft:#1B2A22;
+  --brick:#CF7C74; --brick-soft:#331E1C;
+  --shadow:rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{direction:rtl;background:var(--ground);color:var(--ink);margin:0;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;padding:0 16px 100px;}
+.wrap{max-width:760px;margin:0 auto;}
+.screen{display:none;} .screen.on{display:block;}
+
+header{padding:34px 0 14px;}
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(26px,5vw,34px);
+  line-height:1.14;margin:0 0 6px;}
+.lead{color:var(--muted);font-size:15px;margin:0 0 6px;}
+.field{margin:14px 0;}
+.field label{display:block;font-size:13.5px;color:var(--muted);margin-bottom:5px;}
+input[type=text], input[type=number], textarea, select{
+  width:100%;font-family:inherit;font-size:15.5px;color:var(--ink);background:var(--surface);
+  border:1px solid var(--hair);border-radius:7px;padding:10px 12px;direction:rtl;}
+textarea{resize:vertical;min-height:90px;line-height:1.55;}
+.err{color:var(--brick);font-size:13.5px;margin-top:6px;}
+.facilitator-link{margin-top:22px;}
+.hint{font-size:13px;color:var(--muted);margin:6px 0 0;}
+.linklike{background:none;border:none;font-family:inherit;font-size:13px;color:var(--muted);
+  text-decoration:underline;cursor:pointer;padding:0;}
+.pickcard.active{border-color:var(--auto);border-width:2px;}
+.err[hidden]{display:none;}
+
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+.act{font-family:inherit;font-size:14.5px;padding:10px 18px;border-radius:8px;border:1px solid var(--hair);
+  background:var(--surface);color:var(--ink);cursor:pointer;}
+.act.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;font-weight:600;}
+.act.primary:disabled{opacity:.45;cursor:not-allowed;}
+.act.ghost{background:none;}
+
+.brief{background:var(--surface);border:1px solid var(--hair);border-radius:9px;padding:16px 19px;
+  box-shadow:0 1px 3px var(--shadow);margin:16px 0;}
+.brief h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:19px;margin:0 0 4px;}
+.brief .sub{color:var(--muted);font-size:14.5px;margin:0 0 10px;}
+.brief p{margin:0 0 8px;font-size:15px;line-height:1.6;}
+
+.pickgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:16px 0;}
+.pickcard{background:var(--surface);border:1px solid var(--hair);border-radius:9px;padding:14px 16px;
+  cursor:pointer;box-shadow:0 1px 3px var(--shadow);}
+.pickcard:hover{border-color:var(--spoken);}
+.pickcard b{display:block;font-size:15px;margin-bottom:4px;}
+.pickcard .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);}
+.pickcard span{font-size:13px;color:var(--muted);line-height:1.5;}
+
+.methodbar{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
+.methodbar h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:21px;margin:0;flex:1;}
+.instr{background:var(--spoken-soft);border-inline-start:3px solid var(--spoken);border-radius:6px;
+  padding:12px 15px;font-size:14.5px;line-height:1.6;margin:10px 0 18px;}
+
+.qbox{background:var(--surface);border:1px solid var(--hair);border-radius:8px;padding:14px 16px;margin-bottom:12px;}
+.qbox label{display:block;font-size:14.5px;font-weight:600;margin-bottom:8px;}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0;}
+.chip{font-size:14.5px;padding:6px 13px;border-radius:14px;border:1px solid var(--hair);background:var(--surface);
+  color:var(--muted);cursor:pointer;}
+.chip[aria-pressed="true"]{background:var(--spoken);border-color:var(--spoken);color:#fff;}
+.chip[disabled]{opacity:.4;cursor:not-allowed;}
+.pickcount{font-size:13px;color:var(--muted);}
+
+.tree-row{display:grid;grid-template-columns:24px 1fr 1fr auto;gap:8px;align-items:start;margin-bottom:8px;}
+.tree-row textarea{min-height:50px;}
+.tree-row .num{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);align-self:center;text-align:center;}
+.tree-row > button{justify-self:end;align-self:center;white-space:nowrap;padding:8px 14px;}
+.tree-labels{margin-bottom:4px;}
+.tree-labels b{font-size:13px;color:var(--spoken);}
+@media(max-width:640px){
+  .tree-row{grid-template-columns:1fr 1fr;grid-template-areas:"num num" "if then" "rm rm";}
+  .tree-row .num{grid-area:num;text-align:start;}
+  .tree-row textarea:nth-of-type(1){grid-area:if;}
+  .tree-row textarea:nth-of-type(2){grid-area:then;}
+  .tree-row > button{grid-area:rm;justify-self:stretch;margin-top:4px;}
+  .tree-labels{display:none;}
+}
+
+.whisper-row{display:grid;grid-template-columns:1fr 120px auto;gap:8px;margin-bottom:8px;}
+@media(max-width:560px){.whisper-row{grid-template-columns:1fr;}}
+
+.upload-wrap{margin:8px 0;}
+.upload-preview{margin-top:8px;}
+.upload-preview img{max-width:260px;max-height:260px;border-radius:10px;border:1px solid var(--hair);display:block;}
+
+.mockimg{width:100%;max-width:260px;aspect-ratio:1;border-radius:10px;margin:10px 0;
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+  border:1px solid var(--hair);}
+.mockimg .tag{position:absolute;bottom:6px;inset-inline:6px;background:rgba(20,28,36,.6);color:#fff;
+  font-size:11px;text-align:center;padding:3px 6px;border-radius:5px;}
+
+.glasses{display:flex;gap:14px;margin:14px 0;flex-wrap:wrap;}
+.glass-btn{font-family:inherit;font-size:14px;padding:12px 18px;border-radius:10px;border:2px solid var(--hair);
+  background:var(--surface);cursor:pointer;}
+.glass-btn.pink[aria-pressed="true"]{border-color:#c76b8a;background:#f6dde6;color:#7a2f47;}
+.glass-btn.gray[aria-pressed="true"]{border-color:#7a828c;background:#e2e5e8;color:#33393f;}
+.glass-btn.clear[aria-pressed="true"]{border-color:#5f9cae;background:#dcf0f4;color:#215b68;}
+
+.clipping{background:#f7f2e6;border:1px solid #d8cfb6;border-radius:4px;padding:16px;
+  box-shadow:0 1px 4px rgba(0,0,0,.12);margin-bottom:14px;}
+.clipping label{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:700;font-size:15.5px;
+  display:block;margin-bottom:8px;color:#3a3226;}
+.clipping textarea{background:#fffdf7;border-color:#d8cfb6;font-family:Georgia,serif;}
+
+.studio{background:#141a1f;color:#e7ecef;border-radius:10px;padding:18px;margin-bottom:14px;}
+.studio label{color:#9fb0bb;font-size:13px;display:block;margin-bottom:6px;}
+.studio input,.studio textarea{background:#1f272d;border-color:#333e46;color:#e7ecef;}
+.studio .onair{display:inline-block;background:#8c3a34;color:#fff;font-size:11px;padding:3px 9px;
+  border-radius:10px;margin-bottom:10px;letter-spacing:.05em;}
+
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin:14px 0;}
+.gitem{background:var(--surface);border:1px solid var(--hair);border-radius:8px;padding:10px;text-align:center;}
+.gitem b{display:block;font-size:13px;margin:6px 0 2px;}
+.gitem span{font-size:12px;color:var(--muted);}
+
+.done-report{background:var(--surface);border:1px solid var(--hair);border-radius:9px;padding:18px 20px;
+  box-shadow:0 1px 3px var(--shadow);}
+.done-report h3{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:16.5px;margin:16px 0 8px;}
+.done-report h3:first-child{margin-top:0;}
+.done-report ul{margin:0;padding-inline-start:20px;}
+.done-report li{margin-bottom:6px;font-size:14.5px;line-height:1.55;}
+.mockbanner{background:var(--brick-soft);border:1px solid var(--hair);border-inline-start:3px solid var(--brick);
+  border-radius:6px;padding:11px 15px;font-size:13.5px;line-height:1.55;margin-bottom:16px;}
+
+dialog{border:none;border-radius:10px;padding:0;max-width:640px;width:92vw;max-height:85vh;box-shadow:0 8px 30px var(--shadow);}
+dialog::backdrop{background:rgba(10,14,18,.55);}
+.dh{padding:16px 20px;font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:700;font-size:19px;
+  background:var(--surface-2);border-bottom:1px solid var(--hair);}
+.db{padding:16px 20px;background:var(--surface);overflow-y:auto;max-height:60vh;}
+.db p{margin:0 0 10px;font-size:15px;line-height:1.6;}
+.db p b{color:var(--spoken);}
+.db h4{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:15.5px;margin:16px 0 6px;}
+.db h4:first-child{margin-top:0;}
+.db img{max-width:220px;border-radius:8px;border:1px solid var(--hair);display:block;margin:6px 0;}
+.df{padding:14px 20px;background:var(--surface);border-top:1px solid var(--hair);display:flex;gap:8px;justify-content:flex-end;}
+</style>
+
+<div class="wrap">
+
+<!-- ① כניסה -->
+<section class="screen on" id="screen-join">
+  <header><p class="lead">S.B.E · הערכה יצירתית</p><h1>כניסה לסדנה</h1></header>
+  <p class="lead">הקלידי את קוד הסדנה שמופיע על המסך, ואת שמך.</p>
+  <div class="field"><label>קוד הסדנה</label>
+    <input id="jCode" type="text" inputmode="numeric" maxlength="6" placeholder="שש ספרות"></div>
+  <div class="field"><label>שם</label><input id="jName" type="text" placeholder="שמך"></div>
+  <p class="err" id="jErr" hidden></p>
+  <button class="act primary" id="jGo">כניסה</button>
+  <p class="facilitator-link"><button class="linklike" id="openSetup">מנחה או מנהלת מוסד — בחירת תרחיש להערכה</button></p>
+</section>
+
+<!-- ⓿ הגדרת תרחיש למנחה/מנהלת -->
+<section class="screen" id="screen-setup">
+  <header><p class="lead">S.B.E · הערכה יצירתית</p><h1>בחירת תרחיש להערכה</h1></header>
+  <p class="lead">הבחירה כאן קובעת איזה תרחיש יוצג לכל מי שנכנסת מעכשיו במסך הזה, בכל המכשירים ששמורים לאותו דפדפן.
+    אין עדיין חשבון מנחה אמיתי בפרויקט הזה (כמו בכל מסך אחר כאן) — כל מי שיודעת לפתוח את הקישור הזה יכולה לשנות את הבחירה.</p>
+  <div class="pickgrid" id="setupGrid"></div>
+  <button class="act" id="backFromSetup">חזרה למסך הכניסה</button>
+</section>
+
+<!-- ② תקציר התרחיש -->
+<section class="screen" id="screen-scenario">
+  <header><p class="lead">S.B.E · הערכה יצירתית</p><h1>תקציר התרחיש</h1></header>
+  <div class="brief">
+    <h2 id="scName"></h2>
+    <p class="sub" id="scSub"></p>
+    <div id="scOpening"></div>
+  </div>
+  <button class="act primary" id="toPicker">המשך לבחירת ההערכה</button>
+</section>
+
+<!-- ③ בחירת אפשרות -->
+<section class="screen" id="screen-picker">
+  <header><p class="lead">S.B.E · הערכה יצירתית</p><h1>בחרי דרך להערכה יצירתית</h1></header>
+  <p class="lead">אפשר לבחור יותר מדרך אחת, אחת אחרי השנייה.</p>
+  <div class="pickgrid" id="pickgrid"></div>
+</section>
+
+<!-- ④ מסך אפשרות -->
+<section class="screen" id="screen-method">
+  <div class="methodbar"><h2 id="mTitle"></h2></div>
+  <div class="brief" id="mScenario">
+    <h2 id="mScName"></h2>
+    <p class="sub" id="mScSub"></p>
+    <div id="mScOpening"></div>
+  </div>
+  <div class="instr" id="mInstr"></div>
+  <div id="mBody"></div>
+  <div class="btnrow">
+    <button class="act" id="bPreview">הצגה לפני שליחה</button>
+    <button class="act primary" id="mSend" disabled>שליחה</button>
+    <button class="act" id="backToPicker">חזרה לבחירת הערכה</button>
+  </div>
+</section>
+
+<dialog id="previewDlg">
+  <div class="dh">התוצר שלך עד כה</div>
+  <div class="db" id="previewBody"></div>
+  <div class="df">
+    <button class="act primary" id="bBackToEdit">חזרה לעריכה</button>
+  </div>
+</dialog>
+
+<!-- ⑤ משוב -->
+<section class="screen" id="screen-feedback">
+  <header><p class="lead">S.B.E · הערכה יצירתית</p><h1>המשוב שלך</h1></header>
+  <div class="mockbanner">המשוב הזה מבוסס היוריסטיקה פשוטה (אורך כתיבה, מגוון מילים, כמה מהתפניות/מיומנויות של התרחיש הוזכרו) —
+    <b>לא שיפוט תוכן אמיתי</b>. כשיהיה מודל אמיתי מחובר, הוא יחליף את הפונקציה הזו בשיפוט איכותי אמיתי על מה שכתבת.</div>
+  <div class="done-report" id="reportBody"></div>
+  <div class="btnrow">
+    <button class="act" id="bDownload">שמירה למחשב</button>
+    <button class="act" id="bMailSelf">שליחה במייל לעצמי</button>
+  </div>
+  <p class="hint" id="mailHint" hidden>המייל נפתח עם התוכן מוכן, אבל בתוכן ארוך תוכניות מייל עלולות לחתוך אותו — אם זה קרה, כדאי להשתמש ב"שמירה למחשב" לעותק המלא.</p>
+  <div class="btnrow">
+    <button class="act primary" id="anotherMethod">לבחור דרך נוספת</button>
+  </div>
+</section>
+
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const show = id => document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+const el = (t,a={},...k) => { const n = document.createElement(t);
+  for (const [x,v] of Object.entries(a)) { if (x==="class") n.className=v; else if (x==="html") n.innerHTML=v; else n.setAttribute(x,v); }
+  k.flat().forEach(c => { if (c!=null) n.append(c); }); return n; };
+
+// ── מאגר התרחישים, מועתק מ-app/practice.html (SCENARIOS) ──
+// אותה מגבלת סנכרון ידני כמו בכל מקום אחר בפרויקט הזה שאין בו שרת משותף.
+// שני התרחישים הנוספים (cbt-01, meaning-01) הם טיוטה שלי, טרם אושרו על ידי
+// המשתמשת — בדיוק כמו הסטטוס שלהם ב-practice.html.
+const SCENARIOS = {
+  "gan-tov": {
+    name: "יש לך גן טוב",
+    subtitle: "מחלוקת בין גננת לאם על גבולות מעורבות ההורים",
+    actorName: "רננה", traineeLabel: "הגננת",
+    opening: [
+      "את גננת בגן טרום חובה, עשרים ושישה ילדים וסייעת אחת. השבוע התחלתם יחידה על מים, ובגללה הרצפה רטובה בין עשר לשתים עשרה כל יום.",
+      "לפני שבוע, ליד הברז, ילד דחף ילד אחר ואת הפרדת ביניהם. שני הילדים חזרו לשחק אחרי כמה דקות, ולא דיווחת על כך הביתה.",
+      "אתמול פנתה אלייך רננה, אמו של אחד מהם, וביקשה להיפגש היום.",
+      "כעת תיפגשי עם רננה בחדר הצוות. לרשותך חמש דקות.",
+    ],
+    skills: [
+      "הכרה בנקודת מבט שונה בלי ויתור על העמדה העצמית", "הצבת גבול בלי דחיית האדם",
+      "הבחנה בין עובדה לפרשנות", "אמירה מפורשת של מה ניתן לעשות ומה לא",
+      "הימנעות מהבטחת מה שלא ניתן לקיים", "שיקוף רגש",
+      "החזקת שתיקה בלי מיהור למילויה", "טון קול מותאם למצב",
+      "גוף פתוח ולא מתגונן", "סימני מתח בגוף",
+    ],
+  },
+  "cbt-01": {
+    name: "עשרים ושתיים כאלה",
+    subtitle: "מחלוקת בין רכזת שילוב למחנכת על יציאת תלמיד מהכיתה",
+    actorName: "דנה", traineeLabel: "המחנכת",
+    opening: [
+      "את מחנכת כיתה ד'.",
+      "אחד התלמידים, עידן, יוצא מהכיתה כמעט כל יום בלי רשות. השבוע זה קרה שלוש פעמים, תמיד בשיעור חשבון.",
+      "דנה, רכזת השילוב, ביקשה להיפגש כדי לדבר על \"תוכנית התערבות\". את לא בטוחה מה זה אומר בפועל.",
+      "כעת תיפגשי עם דנה בחדר רכזות השילוב. לרשותך חמש דקות.",
+    ],
+    skills: [
+      "הבחנה בין עובדה לפרשנות", "ניסוח מסר קצר וברור", "הצעת המשך קונקרטי",
+      "בדיקת הבנה נכונה לפני המשך", "שאילת שאלת הבהרה", "סיכום ביניים",
+      "חזרה למיקוד אחרי סטייה", "התאמת רמת הישירות למצב",
+      "טון קול מותאם למצב", "סימני מתח בגוף",
+    ],
+  },
+  "meaning-01": {
+    name: "למה בכלל",
+    subtitle: "מחלוקת בין רכזת פדגוגית למורה מתחילה ששוקלת לעזוב",
+    actorName: "מאיה", traineeLabel: "הרכזת",
+    opening: [
+      "את רכזת פדגוגית בחטיבת ביניים, אחראית על ליווי מורות בשנה הראשונה שלהן.",
+      "מאיה, מורה לספרות בשנה הראשונה שלה, שלחה לך אתמול הודעה: \"אני לא בטוחה שאני ממשיכה בזה בשנה הבאה.\"",
+      "לפני שבועיים היה אירוע קשה בכיתה שלה — תלמיד צעק עליה מול הכיתה, והיא לא ידעה איך להגיב.",
+      "כעת תיפגשי עם מאיה בחדר הרכזת. לרשותך חמש דקות.",
+    ],
+    skills: [
+      "הכרה בנקודת מבט שונה בלי מתן תשובה", "מתן בחירה או שליטה בקצב",
+      "שאילת שאלה פתוחה", "הבעת הערכה או הכרה", "החזקת שתיקה בלי מיהור למילויה",
+      "שיקוף רגש", "הימנעות מהצעת פתרון מוקדם", "תיקון רגע שנפגם בשיחה",
+      "טון קול מותאם למצב", "גוף פתוח ולא מתגונן",
+    ],
+  },
+};
+const SCENARIO_KEY = "sbe.creative.scenario";
+function currentScenarioId(){ return localStorage.getItem(SCENARIO_KEY) || "gan-tov"; }
+let SCENARIO = SCENARIOS[currentScenarioId()];
+
+let STATE = { code:"", name:"", methodId:null, answers:null, startedAt:0 };
+
+// ── בחירת תרחיש להערכה (מנחה/מנהלת מוסד) ──
+$("openSetup").addEventListener("click", () => { buildSetup(); show("screen-setup"); });
+$("backFromSetup").addEventListener("click", () => show("screen-join"));
+function buildSetup(){
+  const g = $("setupGrid"); g.textContent = "";
+  const active = currentScenarioId();
+  Object.entries(SCENARIOS).forEach(([id, sc]) => {
+    const c = el("div",{class:"pickcard" + (id===active ? " active" : "")},
+      el("b",{}, sc.name), el("span",{}, sc.subtitle));
+    c.addEventListener("click", () => {
+      localStorage.setItem(SCENARIO_KEY, id);
+      buildSetup();
+    });
+    g.append(c);
+  });
+}
+
+// ── ① כניסה ──
+$("jGo").addEventListener("click", () => {
+  const code = $("jCode").value.replace(/\D/g,"");
+  const name = $("jName").value.trim();
+  if (code.length !== 6) { $("jErr").textContent = "הקוד הוא שש ספרות"; $("jErr").hidden = false; return; }
+  if (!name) { $("jErr").textContent = "צריך שם"; $("jErr").hidden = false; return; }
+  $("jErr").hidden = true;
+  STATE.code = code; STATE.name = name;
+  SCENARIO = SCENARIOS[currentScenarioId()];
+  $("scName").textContent = SCENARIO.name;
+  $("scSub").textContent = SCENARIO.subtitle;
+  const ot = $("scOpening"); ot.textContent = "";
+  SCENARIO.opening.forEach(p => ot.append(el("p",{},p)));
+  show("screen-scenario");
+});
+
+$("toPicker").addEventListener("click", () => { buildPicker(); show("screen-picker"); });
+$("backToPicker").addEventListener("click", () => show("screen-picker"));
+$("anotherMethod").addEventListener("click", () => show("screen-picker"));
+
+function buildPicker(){
+  const g = $("pickgrid"); g.textContent = "";
+  METHODS.forEach(m => {
+    const c = el("div",{class:"pickcard"},
+      el("span",{class:"n"}, "אפשרות " + m.n),
+      el("b",{}, m.title),
+      el("span",{}, m.desc));
+    c.addEventListener("click", () => openMethod(m.id));
+    g.append(c);
+  });
+}
+
+function openMethod(id){
+  const m = METHODS.find(x => x.id === id);
+  STATE.methodId = id; STATE.answers = {}; STATE.startedAt = Date.now();
+  $("mTitle").textContent = m.n + ". " + m.title;
+  $("mScName").textContent = SCENARIO.name;
+  $("mScSub").textContent = SCENARIO.subtitle;
+  const scOp = $("mScOpening"); scOp.textContent = "";
+  SCENARIO.opening.forEach(p => scOp.append(el("p",{},p)));
+  $("mInstr").textContent = m.instr;
+  $("mSend").disabled = true;
+  $("mSend").onclick = null;
+  const body = $("mBody"); body.textContent = "";
+  m.render(body, STATE.answers, ok => { $("mSend").disabled = !ok; });
+  $("mSend").onclick = () => finishMethod(m);
+  show("screen-method");
+}
+
+function finishMethod(m){
+  const record = { code: STATE.code, name: STATE.name, scenario: SCENARIO.name,
+    methodId: m.id, methodTitle: m.title, ts: STATE.startedAt, answers: STATE.answers };
+  try { localStorage.setItem("sbe.creative." + m.id + "." + STATE.startedAt, JSON.stringify(record)); } catch(e){}
+  renderFeedback(m, STATE.answers);
+  show("screen-feedback");
+}
+
+// ── כלים משותפים לבניית שיטות ──
+
+function textField(container, key, answers, label, opts={}){
+  const box = el("div",{class:"qbox"});
+  const lab = el("label",{}, label);
+  const ta = document.createElement("textarea");
+  if (opts.rows) ta.rows = opts.rows;
+  ta.addEventListener("input", () => { answers[key] = ta.value.trim(); opts.onInput && opts.onInput(); });
+  box.append(lab, ta); container.append(box);
+  return ta;
+}
+
+function shortField(container, key, answers, label, onInput){
+  const box = el("div",{class:"qbox"});
+  const lab = el("label",{}, label);
+  const inp = document.createElement("input"); inp.type = "text";
+  inp.addEventListener("input", () => { answers[key] = inp.value.trim(); onInput && onInput(); });
+  box.append(lab, inp); container.append(box);
+  return inp;
+}
+
+// שאלות ברצף — נפתחות אחת אחרי השנייה ככל שממלאים
+function sequentialQuestions(container, keys, labels, answers, onProgress){
+  const boxes = [];
+  function reveal(i){
+    if (i >= labels.length) { onProgress(true); return; }
+    const ta = textField(container, keys[i], answers, labels[i], { onInput: () => {
+      if (ta.value.trim() && i === boxes.length - 1) reveal(i+1);
+      onProgress(boxes.every((b,j)=> j===boxes.length-1 ? true : !!answers[keys[j]]) );
+    }});
+    boxes.push(ta);
+    onProgress(false);
+  }
+  reveal(0);
+}
+
+let METHODS;
+
+// ═══ הגדרת ארבע עשרה השיטות ═══
+METHODS = [
+
+// 1 · רפלקציה עצמית
+{ id:1, n:1, title:"רפלקציה עצמית", desc:"כתיבה חופשית או מונחית על החוויה בסדנה",
+  instr:"כתוב/כתבי רפלקציה על החוויה שלך בסדנה.",
+  render(container, answers, onProgress){
+    const guiding = [
+      "אילו רגשות התעוררו אצלך במהלך הסימולציה?",
+      "אילו מחשבות עברו במוחך במהלך הסימולציה?",
+      "מה את היית אומרת אחרת בשיחה?",
+      "איך את היית מגיבה אחרת בשיחה?",
+      "מה היית ממליצה לחברתך המתנסה לשפר בעתיד?",
+      "מה תרצי לזכור מהסדנה כדי שישמש אותך בעתיד?",
+      "מה ראית בסימולציה שלא מאפיין אותך והיית רוצה לנסות?",
+    ];
+    const modeRow = el("div",{class:"chips"});
+    const bFree = el("button",{class:"chip"}, "תשובה פתוחה");
+    const bGuided = el("button",{class:"chip"}, "תשובה מונחית לפי שאלות");
+    modeRow.append(bFree, bGuided); container.append(modeRow);
+    const body = el("div"); container.append(body);
+    function pick(mode){
+      bFree.setAttribute("aria-pressed", String(mode==="free"));
+      bGuided.setAttribute("aria-pressed", String(mode==="guided"));
+      body.textContent = ""; onProgress(false);
+      if (mode === "free") {
+        textField(body, "reflection", answers, "הרפלקציה שלך", { rows:8, onInput: () => onProgress(!!answers.reflection) });
+      } else {
+        const keys = guiding.map((_,i)=>"g"+i);
+        sequentialQuestions(body, keys, guiding, answers, onProgress);
+      }
+    }
+    bFree.addEventListener("click", () => pick("free"));
+    bGuided.addEventListener("click", () => pick("guided"));
+  }},
+
+// 2 · הערכה מקצועית
+{ id:2, n:2, title:"הערכה מקצועית", desc:"בחירת חמש מיומנויות מהתרחיש והערכתן",
+  instr:"כתוב/כתבי הערכה על מיומנויות שעמדו בבסיס התרחיש. בחרי חמש מהרשימה.",
+  render(container, answers, onProgress){
+    answers.skills = [];
+    const cnt = el("span",{class:"pickcount"}, "נבחרו 0 מתוך 5");
+    const chips = el("div",{class:"chips"});
+    const body = el("div");
+    SCENARIO.skills.forEach((s,i) => {
+      const c = el("button",{class:"chip"}, s);
+      c.addEventListener("click", () => {
+        const idx = answers.skills.indexOf(i);
+        if (idx >= 0) { answers.skills.splice(idx,1); c.setAttribute("aria-pressed","false"); }
+        else { if (answers.skills.length >= 5) return; answers.skills.push(i); c.setAttribute("aria-pressed","true"); }
+        cnt.textContent = "נבחרו " + answers.skills.length + " מתוך 5";
+        chips.querySelectorAll(".chip").forEach((el2,j) => { if (answers.skills.indexOf(j)<0 && answers.skills.length>=5) el2.disabled = true; else el2.disabled=false; });
+        if (answers.skills.length === 5) { body.textContent=""; buildSkillQuestions(); } else { body.textContent=""; onProgress(false); }
+      });
+      chips.append(c);
+    });
+    container.append(cnt, chips, body);
+    function buildSkillQuestions(){
+      const subs = ["באיזו מידה המיומנות באה לידי ביטוי","אופן השימוש במיומנות","הצעות לשיפור","הסבירי כיצד שרתה המיומנות את הדמות"];
+      let remaining = answers.skills.length * subs.length;
+      answers.skills.forEach(i => {
+        const h = el("div",{class:"qbox"}, el("label",{}, "מיומנות: " + SCENARIO.skills[i]));
+        body.append(h);
+        subs.forEach((s,si) => {
+          textField(body, "skill" + i + "_" + si, answers, s, { rows:2, onInput: () => {
+            const done = answers.skills.every(k => subs.every((_,j)=> !!answers["skill"+k+"_"+j]));
+            onProgress(done);
+          }});
+        });
+      });
+      onProgress(false);
+    }
+  }},
+
+// 3 · ניתוח דילמות קבוצתי
+{ id:3, n:3, title:"ניתוח דילמות קבוצתי", desc:"עץ אם/אז משותף, לפחות עשרה סבבים",
+  instr:"מספר סטודנטיות מנתחות יחד את התרחיש וממלאות עץ התקדמות — אם... אז.... חובה לפחות עשרה סבבים, אפשר להוסיף עוד.",
+  render(container, answers, onProgress){ buildTree(container, answers, onProgress, { min:10, group:true }); }},
+
+// 4 · ניתוח דילמות ליחיד
+{ id:4, n:4, title:"ניתוח דילמות ליחיד", desc:"כמו אפשרות 3, אבל לבד",
+  instr:"כמו אפשרות 3, אבל לבד. עץ התקדמות אם... אז.... לפחות עשרה סבבים, אפשר להוסיף עוד.",
+  render(container, answers, onProgress){ buildTree(container, answers, onProgress, { min:10, group:false }); }},
+
+// 5 · זבוב על הקיר
+{ id:5, n:5, title:"זבוב על הקיר", desc:"לחישות, עקיצות, וסיפור לחברה הטובה",
+  instr:"לו היית זבוב על הקיר בעת הסימולציה — מה היית לוחשת, מתי היית עוקצת, ומה סיפר הזבוב לחברתו הטובה בסוף.",
+  render(container, answers, onProgress){
+    answers.whispersTrainee = []; answers.whispersActor = [];
+    function whisperGroup(label, key, minN){
+      container.append(el("div",{class:"qbox"}, el("label",{}, label + " (לפחות שלוש)")));
+      const list = el("div"); container.append(list);
+      function addRow(){
+        const row = el("div",{class:"whisper-row"});
+        const w = document.createElement("input"); w.type="text"; w.placeholder="מה תלחשי";
+        const when = document.createElement("input"); when.type="text"; when.placeholder="מתי";
+        const rm = el("button",{class:"act ghost"},"הסרה");
+        function sync(){ answers[key] = [...list.querySelectorAll(".whisper-row")].map(r => ({
+          whisper: r.querySelector("input:nth-child(1)").value.trim(), when: r.querySelector("input:nth-child(2)").value.trim() })); checkAll(); }
+        w.addEventListener("input", sync); when.addEventListener("input", sync);
+        rm.addEventListener("click", () => { row.remove(); sync(); });
+        row.append(w, when, rm); list.append(row);
+      }
+      for (let i=0;i<minN;i++) addRow();
+      const add = el("button",{class:"act ghost"}, "הוסיפי לחישה"); add.addEventListener("click", addRow);
+      container.append(add);
+    }
+    whisperGroup("מה היית לוחשת למתנסה?", "whispersTrainee", 3);
+    whisperGroup("מה היית לוחשת לשחקנית?", "whispersActor", 3);
+    textField(container, "stingTrainee", answers, "מתי היית עוקצת את המתנסה? (הרגע שהכי היית רוצה לשנות)", { onInput: checkAll });
+    textField(container, "stingActor", answers, "מתי היית עוקצת את השחקנית? (הרגע שהכי היית רוצה לשנות)", { onInput: checkAll });
+    textField(container, "toldFriend", answers, "עם סיום הסימולציה הזבוב עף לספר עליה לחברתו הטובה. מה הוא סיפר לה?", { onInput: checkAll });
+    function checkAll(){
+      const wt = (answers.whispersTrainee||[]).filter(x=>x.whisper).length >= 3;
+      const wa = (answers.whispersActor||[]).filter(x=>x.whisper).length >= 3;
+      onProgress(wt && wa && !!answers.stingTrainee && !!answers.stingActor && !!answers.toldFriend);
+    }
+    checkAll();
+  }},
+
+// 6 · עיצוב תמונות ב-AI (יחיד)
+{ id:6, n:6, title:"עיצוב תמונות ב-AI", desc:"פוסטר לסימולציה ועוד שלוש גרסאות",
+  instr:"בחרי מערכת AI זמינה שיודעת ליצור תמונות. צרי פוסטר לסימולציה שכולל כותרת, הצגת המשתתפות והזמנה משכנעת לצפות בה, והסבירי את הרציונל. אחר כך צרי שלוש גרסאות נוספות, ובכל אחת שני רכיב משמעותי כלשהו — הסבירי את השינויים ומשמעותם.",
+  render(container, answers, onProgress){ buildImageSet(container, answers, onProgress, ["פוסטר ראשי","גרסה נוספת 1","גרסה נוספת 2","גרסה נוספת 3"]); }},
+
+// 7 · עיצוב גלריה ב-AI (קבוצתי)
+{ id:7, n:7, title:"עיצוב גלריה ב-AI", desc:"גלריית תמונות משותפת של כמה סטודנטיות",
+  instr:"בדומה לאפשרות הקודמת, אבל כאן עובדות יחד כמה סטודנטיות. הגלריה תציג את שם הסטודנטית, כותרת התמונה וההסבר.",
+  render(container, answers, onProgress){
+    answers.gallery = [];
+    const grid = el("div",{class:"gallery"});
+    const form = el("div");
+    const box = el("div",{class:"qbox"}, el("label",{},"פרטי הפריט הבא"));
+    form.append(box);
+    let src;
+    function freshBox(){
+      box.textContent = "";
+      box.append(el("label",{},"פרטי הפריט הבא"));
+      const nameI = document.createElement("input"); nameI.type="text"; nameI.placeholder="שם הסטודנטית";
+      src = imageSourceField(() => {});
+      const titleI = document.createElement("input"); titleI.type="text"; titleI.placeholder="כותרת התמונה";
+      const expl = document.createElement("textarea"); expl.rows=2; expl.placeholder="הסבר";
+      const addErr = el("p",{class:"err"},"צריך למלא שם, ליצור או להעלות תמונה, ולמלא כותרת לפני ההוספה."); addErr.hidden = true;
+      const add = el("button",{class:"act ghost"},"הוספה לגלריה");
+      add.addEventListener("click", () => {
+        if (!nameI.value.trim() || !src.hasImage() || !titleI.value.trim()) { addErr.hidden = false; return; }
+        addErr.hidden = true;
+        answers.gallery.push({ name:nameI.value.trim(), image:src.getRecord(), title:titleI.value.trim(), expl:expl.value.trim() });
+        renderGrid();
+        freshBox();
+        onProgress(answers.gallery.length >= 2);
+      });
+      box.append(nameI, src.el, titleI, expl, add, addErr);
+    }
+    function renderGrid(){
+      grid.textContent = "";
+      answers.gallery.forEach(g => {
+        const item = el("div",{class:"gitem"});
+        item.append(renderImageRecord(g.image), el("b",{},g.title), el("span",{},g.name), el("div",{},el("span",{},g.expl)));
+        grid.append(item);
+      });
+    }
+    freshBox();
+    container.append(grid, form);
+    onProgress(false);
+  }},
+
+// 8 · מכתב לדמות בעוד שנה
+{ id:8, n:8, title:"מכתב לדמות בעוד שנה", desc:"מכתב חופשי מהעתיד לעצמה",
+  instr:"דמייני שאת אחת הדמויות שהשתתפו בסימולציה. עברה שנה, ואת כותבת לעצמך מכתב. כתבי אותו באופן חופשי ואותנטי.",
+  render(container, answers, onProgress){
+    shortField(container, "character", answers, "מי הדמות?", () => onProgress(!!answers.character && !!answers.letter));
+    textField(container, "letter", answers, "המכתב", { rows:9, onInput: () => onProgress(!!answers.character && !!answers.letter) });
+  }},
+
+// 9 · מפגש בין הדמויות בעוד 5 שנים
+{ id:9, n:9, title:"מפגש בין הדמויות בעוד 5 שנים", desc:"תרחיש כתוב חופשי למפגש עתידי",
+  instr:"דמייני שעברו חמש שנים מאז המפגש, והדמויות נפגשות שוב במקרה. כתבי את השיחה ביניהן, כולל תיאור פיזי, תנועות, הבעות פנים וכל מה שעולה בדמיונך.",
+  render(container, answers, onProgress){
+    shortField(container, "title", answers, "כותרת", () => onProgress(!!answers.title && !!answers.story));
+    textField(container, "story", answers, "התרחיש", { rows:10, onInput: () => onProgress(!!answers.title && !!answers.story) });
+  }},
+
+// 10 · ומה עכשיו
+{ id:10, n:10, title:"ומה עכשיו", desc:"תרחיש המשך עם עץ שיחה",
+  instr:"כתבי תרחיש להמשך השיחה בין הדמויות.",
+  render(container, answers, onProgress){
+    textField(container, "whenWhere", answers, "מתי ואיפה נערכה הפגישה?", { rows:2, onInput: check });
+    const treeWrap = el("div"); container.append(el("div",{class:"qbox"}, el("label",{},"עץ שיחה — אם... אז...")), treeWrap);
+    buildTreeRows(treeWrap, answers, "tree10", 1, check);
+    textField(container, "howEnded", answers, "איך הסתיימה השיחה?", { rows:2, onInput: check });
+    function check(){ onProgress(!!answers.whenWhere && !!answers.howEnded && (answers.tree10||[]).length>0); }
+  }},
+
+// 11 · ראיון בפודקאסט
+{ id:11, n:11, title:"ראיון בפודקאסט", desc:"ראיון מדומה עם הדמות המרכזית",
+  instr:"דמייני שאת מנחה פודקאסט פופולרי בנושאי חינוך ותקשורת. היום, האורחת באולפן היא הדמות המרכזית מהסימולציה שזה עתה הסתיימה.",
+  render(container, answers, onProgress){
+    const studio = el("div",{class:"studio"}, el("span",{class:"onair"},"ON AIR"));
+    container.append(studio);
+    const mk = (key,label,tag) => {
+      const wrap = el("div",{}, el("label",{},label));
+      const inp = document.createElement(tag); if (tag==="textarea") inp.rows=2;
+      inp.addEventListener("input", () => { answers[key]=inp.value.trim(); check(); });
+      wrap.append(inp); studio.append(wrap); return inp;
+    };
+    mk("epTitle","מהי כותרת הפרק?","input");
+    mk("intro","נסחי את פתיח התוכנית שמציג את הקונפליקט של האורחת","textarea");
+    mk("q1","שאלה קשה 1","input");
+    mk("q2","שאלה קשה 2","input");
+    const which = el("div",{}, el("label",{},"איזו מהשתיים הכי קשה או מאתגרת?"));
+    const sel = document.createElement("select");
+    sel.append(el("option",{value:""},"בחרי"), el("option",{value:"1"},"שאלה 1"), el("option",{value:"2"},"שאלה 2"));
+    sel.addEventListener("change", () => { answers.harder = sel.value; check(); });
+    which.append(sel); studio.append(which);
+    mk("answer","כיצד היא עונה על השאלה הקשה מביניהן?","textarea");
+    function check(){ onProgress(!!answers.epTitle && !!answers.intro && !!answers.q1 && !!answers.q2 && !!answers.harder && !!answers.answer); }
+  }},
+
+// 12 · מדור שאלות ותשובות בעיתון
+{ id:12, n:12, title:"מדור שאלות ותשובות בעיתון", desc:"מכתב אנונימי ותשובת מומחית",
+  instr:"אחת הדמויות בסימולציה מרגישה אבודה ופונה לכתוב מכתב אנונימי למדור ייעוץ, בסגנון \"קוראת יקרה\".",
+  render(container, answers, onProgress){
+    const c1 = el("div",{class:"clipping"}, el("label",{},"המכתב האנונימי — הדילמה, התסכול או הקונפליקט מנקודת המבט של הדמות"));
+    const t1 = document.createElement("textarea"); t1.rows=5;
+    t1.addEventListener("input", () => { answers.letter = t1.value.trim(); check(); });
+    c1.append(t1);
+    const c2 = el("div",{class:"clipping"}, el("label",{},"תשובת המומחית — מקצועית, אמפתית ומעשית"));
+    const t2 = document.createElement("textarea"); t2.rows=5;
+    t2.addEventListener("input", () => { answers.reply = t2.value.trim(); check(); });
+    c2.append(t2);
+    container.append(c1, c2);
+    function check(){ onProgress(!!answers.letter && !!answers.reply); }
+  }},
+
+// 13 · משקפיים מתחלפים
+{ id:13, n:13, title:"משקפיים מתחלפים", desc:"שלוש פרספקטיבות על מה שקרה",
+  instr:"בחני את מה שהתרחש בסימולציה דרך שלושה זוגות משקפיים שונים.",
+  render(container, answers, onProgress){
+    const glasses = el("div",{class:"glasses"});
+    const body = el("div");
+    const specs = [
+      { key:"pink", cls:"pink", label:"המשקפיים הוורודים (האופטימיים)", q:"מה עבד בצורה יוצאת מן הכלל? איזו חוזקה בלטה כאן?" },
+      { key:"gray", cls:"gray", label:"המשקפיים האפורים (הביקורתיים)", q:"מה היה רגע השפל של השיחה? איפה הפוטנציאל לכישלון התממש?" },
+      { key:"clear", cls:"clear", label:"המשקפיים השקופים (החומלים)", q:"איזה כאב סמוי, צורך או פחד ניהל את הצד השני בשיחה ולא נאמר במפורש?" },
+    ];
+    specs.forEach(s => {
+      const b = el("button",{class:"glass-btn " + s.cls}, s.label);
+      b.addEventListener("click", () => {
+        const already = document.getElementById("box_"+s.key);
+        if (already) return;
+        b.setAttribute("aria-pressed","true");
+        textField(body, s.key, answers, s.q, { onInput: check }).id = "box_"+s.key;
+      });
+      glasses.append(b);
+    });
+    container.append(glasses, body);
+    function check(){ onProgress(specs.every(s => !!answers[s.key])); }
+  }},
+
+// 14 · מטאפורה ויזואלית
+{ id:14, n:14, title:"מטאפורה ויזואלית", desc:"חפץ או דימוי שמייצג את הדינמיקה",
+  instr:"בחרי חפץ יומיומי, כלי עבודה, תופעת טבע או חיה המהווים מטאפורה מרכזית לדינמיקה שהתרחשה בסימולציה.",
+  render(container, answers, onProgress){
+    const src = imageSourceField(() => { answers.metaphorImage = src.getRecord(); check(); });
+    container.append(el("div",{class:"qbox"}, el("label",{},"החפץ או הדימוי"), src.el));
+    textField(container, "why", answers, "הסבירי מדוע בחרת דווקא בדימוי זה", { onInput: check });
+    textField(container, "change", answers, "איזה שינוי צריך לקרות למטאפורה כדי שהקונפליקט ייפתר?", { onInput: check });
+    function check(){ onProgress(!!answers.metaphorImage && !!answers.why && !!answers.change); }
+  }},
+];
+
+// ── בונה עץ אם/אז משותף לאפשרות 3 ולאפשרות 4 ──
+function buildTree(container, answers, onProgress, {min, group}){
+  if (group) shortField(container, "participants", answers, "שמות המשתתפות בקבוצה (מופרדות בפסיק)", check);
+  const wrap = el("div"); container.append(el("div",{class:"qbox"}, el("label",{},"עץ ההתקדמות — אם... אז...")), wrap);
+  buildTreeRows(wrap, answers, "tree", min, check);
+  textField(container, "insights", answers, "תובנות משותפות ו\"לקחת הביתה\"", { rows:4, onInput: check });
+  function check(){
+    const okTree = (answers.tree||[]).filter(r => r.if && r.then).length >= min;
+    onProgress(okTree && !!answers.insights && (!group || !!answers.participants));
+  }
+  check();
+}
+
+const TREE_OPENING_LINE = "שלום, תודה שבאת לפגישה. מה שלומך?";
+function buildTreeRows(wrap, answers, key, min, onChange){
+  answers[key] = [];
+  const labels = el("div",{class:"tree-row tree-labels"},
+    el("span",{class:"num"},""), el("b",{}, SCENARIO.actorName + ":"), el("b",{}, SCENARIO.traineeLabel + ":"), el("span",{}));
+  wrap.append(labels);
+  const list = el("div"); wrap.append(list);
+  function addRow(){
+    const idx = list.children.length + 1;
+    const row = el("div",{class:"tree-row"});
+    const ifT = document.createElement("textarea"); ifT.placeholder = "מה " + SCENARIO.actorName + " אומרת...";
+    const thenT = document.createElement("textarea"); thenT.placeholder = "מה " + SCENARIO.traineeLabel + " עונה...";
+    if (idx === 1) ifT.value = TREE_OPENING_LINE;
+    const rm = el("button",{class:"act ghost"},"הסרה");
+    function sync(){
+      answers[key] = [...list.children].map(r => ({
+        if: r.querySelector("textarea:nth-of-type(1)").value.trim(),
+        then: r.querySelector("textarea:nth-of-type(2)").value.trim(),
+      }));
+      onChange();
+    }
+    ifT.addEventListener("input", sync); thenT.addEventListener("input", sync);
+    rm.addEventListener("click", () => { row.remove(); sync(); });
+    row.append(el("span",{class:"num"}, String(idx)), ifT, thenT, rm);
+    list.append(row);
+    sync();
+  }
+  for (let i=0;i<min;i++) addRow();
+  const add = el("button",{class:"act ghost"},"הוסיפי סבב"); add.addEventListener("click", addRow);
+  wrap.append(add);
+}
+
+// ── מחולל תמונה מדומה (SVG מופשט, לא AI אמיתי) — "יצירה מקומית". ──
+function hashSeed(s){ let h=0; for (let i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i)) >>> 0; } return h; }
+function mockImage(seed){
+  const h = hashSeed(seed||"x");
+  const c1 = "hsl(" + (h%360) + " 55% 55%)";
+  const c2 = "hsl(" + ((h*7)%360) + " 60% 45%)";
+  const box = el("div",{class:"mockimg"});
+  box.style.background = "linear-gradient(135deg," + c1 + "," + c2 + ")";
+  const shape = document.createElementNS("http://www.w3.org/2000/svg","svg");
+  shape.setAttribute("viewBox","0 0 100 100"); shape.style.width="60%"; shape.style.opacity=".55";
+  const circ = document.createElementNS("http://www.w3.org/2000/svg","circle");
+  circ.setAttribute("cx", 30 + (h%40)); circ.setAttribute("cy", 30 + ((h>>4)%40)); circ.setAttribute("r", 18 + (h%20));
+  circ.setAttribute("fill","#fff");
+  shape.append(circ); box.append(shape, el("div",{class:"tag"},"הדמיה — לא תמונה שנוצרה על ידי AI אמיתי"));
+  return box;
+}
+function renderImageRecord(rec){
+  if (!rec) return el("div");
+  if (rec.source === "upload" && rec.dataUrl) {
+    const img = document.createElement("img"); img.src = rec.dataUrl; img.alt = rec.filename || "";
+    img.style.maxWidth = "260px"; img.style.maxHeight = "260px"; img.style.borderRadius = "10px"; img.style.border = "1px solid var(--hair)";
+    return img;
+  }
+  return mockImage(rec.seed);
+}
+function describeImage(rec){
+  if (!rec) return "תמונה: (לא נוצרה)";
+  if (rec.source === "upload") return "קובץ שהועלה: " + (rec.filename || "");
+  return "תיאור לתמונה (הדמיה): " + (rec.seed || "");
+}
+
+// ── שדה תמונה משולב — שתי דרכים זמינות תמיד: יצירה מקומית (מחולל מדומה)
+// או יצירה חיצונית + העלאה (קובץ אמיתי מהמכשיר). המשתמשת ביקשה במפורש
+// ששתי האפשרויות יהיו זמינות בכל מקום, לא רק אחת. ──
+function imageSourceField(onChange){
+  const wrap = el("div",{class:"imgsrc"});
+  const tabs = el("div",{class:"chips"});
+  const bMock = el("button",{class:"chip"},"יצירה כאן (הדמיה)");
+  const bUp = el("button",{class:"chip"},"יצירה חיצונית + העלאה");
+  tabs.append(bMock, bUp);
+  const body = el("div");
+  wrap.append(tabs, body);
+  let record = null;
+  let initialized = false;
+  function fire(){ if (initialized) onChange(); }
+
+  function showMock(){
+    bMock.setAttribute("aria-pressed","true"); bUp.setAttribute("aria-pressed","false");
+    body.textContent = "";
+    const seedI = document.createElement("input"); seedI.type="text"; seedI.placeholder="מילת מפתח או תיאור לתמונה";
+    const genErr = el("p",{class:"err"},"צריך למלא מילת מפתח או תיאור לפני היצירה."); genErr.hidden = true;
+    const genBtn = el("button",{class:"act ghost"},"יצירת תמונה (הדמיה)");
+    const imgWrap = el("div");
+    genBtn.addEventListener("click", () => {
+      if (!seedI.value.trim()) { genErr.hidden = false; return; }
+      genErr.hidden = true;
+      record = { source:"mock", seed: seedI.value.trim() };
+      imgWrap.textContent = ""; imgWrap.append(mockImage(record.seed));
+      fire();
+    });
+    body.append(seedI, genBtn, genErr, imgWrap);
+    record = null; fire();
+  }
+  function showUpload(){
+    bMock.setAttribute("aria-pressed","false"); bUp.setAttribute("aria-pressed","true");
+    body.textContent = "";
+    const input = document.createElement("input"); input.type = "file"; input.accept = "image/*";
+    const preview = el("div",{class:"upload-preview"});
+    input.addEventListener("change", () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        record = { source:"upload", filename: file.name, dataUrl: reader.result };
+        preview.textContent = "";
+        const img = document.createElement("img"); img.src = record.dataUrl; img.alt = file.name;
+        preview.append(img);
+        fire();
+      };
+      reader.readAsDataURL(file);
+    });
+    body.append(input, preview);
+    record = null; fire();
+  }
+  bMock.addEventListener("click", showMock);
+  bUp.addEventListener("click", showUpload);
+  showMock();
+  initialized = true;
+
+  return { el: wrap, hasImage: () => !!record, getRecord: () => record };
+}
+
+function buildImageSet(container, answers, onProgress, labels){
+  answers.images = labels.map(()=>({}));
+  labels.forEach((label,i) => {
+    const wrap = el("div",{class:"qbox"}, el("label",{}, label));
+    const src = imageSourceField(() => { answers.images[i].image = src.getRecord(); check(); });
+    const titleI = document.createElement("input"); titleI.type="text"; titleI.placeholder = i===0 ? "כותרת הפוסטר" : "מה השתנה בגרסה הזו";
+    titleI.addEventListener("input", () => { answers.images[i].title = titleI.value.trim(); check(); });
+    const expl = document.createElement("textarea"); expl.rows=2; expl.placeholder = i===0 ? "הרציונל לעיצוב" : "משמעות השינוי";
+    expl.addEventListener("input", () => { answers.images[i].expl = expl.value.trim(); check(); });
+    wrap.append(src.el, titleI, expl);
+    container.append(wrap);
+  });
+  function check(){ onProgress(answers.images.every(im => im.image && im.title && im.expl)); }
+}
+
+// ── עיצוב הפלט לשמירה/שליחה, לכל אפשרות בנפרד — כדי שהתוויות יהיו קריאות ──
+const FORMATTERS = {
+  1(a){
+    if (a.reflection) return ["הרפלקציה שלך:", a.reflection];
+    const qs = ["אילו רגשות התעוררו אצלך במהלך הסימולציה?","אילו מחשבות עברו במוחך במהלך הסימולציה?",
+      "מה את היית אומרת אחרת בשיחה?","איך את היית מגיבה אחרת בשיחה?",
+      "מה היית ממליצה לחברתך המתנסה לשפר בעתיד?","מה תרצי לזכור מהסדנה כדי שישמש אותך בעתיד?",
+      "מה ראית בסימולציה שלא מאפיין אותך והיית רוצה לנסות?"];
+    return qs.flatMap((q,i) => a["g"+i] ? [q, a["g"+i], ""] : []);
+  },
+  2(a){
+    const subs = ["באיזו מידה המיומנות באה לידי ביטוי","אופן השימוש במיומנות","הצעות לשיפור","הסבירי כיצד שרתה המיומנות את הדמות"];
+    return (a.skills||[]).flatMap(i => [
+      "מיומנות: " + SCENARIO.skills[i],
+      ...subs.flatMap((s,si) => a["skill"+i+"_"+si] ? [s + ": " + a["skill"+i+"_"+si]] : []),
+      "",
+    ]);
+  },
+  treeFmt(a, treeKey){
+    const lines = [];
+    if (a.participants) lines.push("משתתפות: " + a.participants, "");
+    (a[treeKey]||[]).forEach((r,i) => { if (r.if || r.then) lines.push("סבב " + (i+1) + " — אם: " + r.if + " / אז: " + r.then); });
+    if (a.insights) lines.push("", "תובנות משותפות ולקחת הביתה:", a.insights);
+    return lines;
+  },
+  3(a){ return FORMATTERS.treeFmt(a, "tree"); },
+  4(a){ return FORMATTERS.treeFmt(a, "tree"); },
+  5(a){
+    const lines = [];
+    lines.push("לחישות למתנסה:");
+    (a.whispersTrainee||[]).forEach(w => { if (w.whisper) lines.push("- (" + (w.when||"—") + ") " + w.whisper); });
+    lines.push("", "לחישות לשחקנית:");
+    (a.whispersActor||[]).forEach(w => { if (w.whisper) lines.push("- (" + (w.when||"—") + ") " + w.whisper); });
+    lines.push("", "מתי היית עוקצת את המתנסה: " + (a.stingTrainee||""));
+    lines.push("מתי היית עוקצת את השחקנית: " + (a.stingActor||""));
+    lines.push("מה הזבוב סיפר לחברתו: " + (a.toldFriend||""));
+    return lines;
+  },
+  6(a){
+    const labels = ["פוסטר ראשי","גרסה נוספת 1","גרסה נוספת 2","גרסה נוספת 3"];
+    return (a.images||[]).flatMap((im,i) => [labels[i] + ":",
+      describeImage(im.image), "כותרת/מה השתנה: " + (im.title||""), "הסבר: " + (im.expl||""), ""]);
+  },
+  7(a){
+    return (a.gallery||[]).flatMap(g => ["סטודנטית: " + g.name, "כותרת: " + g.title,
+      describeImage(g.image), "הסבר: " + g.expl, ""]);
+  },
+  8(a){ return ["הדמות: " + (a.character||""), "", "המכתב:", a.letter||""]; },
+  9(a){ return ["כותרת: " + (a.title||""), "", "התרחיש:", a.story||""]; },
+  10(a){
+    const lines = ["מתי ואיפה נערכה הפגישה: " + (a.whenWhere||"")];
+    (a.tree10||[]).forEach((r,i) => { if (r.if || r.then) lines.push("סבב " + (i+1) + " — אם: " + r.if + " / אז: " + r.then); });
+    lines.push("", "איך הסתיימה השיחה: " + (a.howEnded||""));
+    return lines;
+  },
+  11(a){ return ["כותרת הפרק: " + (a.epTitle||""), "פתיח: " + (a.intro||""),
+    "שאלה קשה 1: " + (a.q1||""), "שאלה קשה 2: " + (a.q2||""),
+    "השאלה הקשה מביניהן: שאלה " + (a.harder||""), "תשובת הדמות: " + (a.answer||"")]; },
+  12(a){ return ["המכתב האנונימי:", a.letter||"", "", "תשובת המומחית:", a.reply||""]; },
+  13(a){ return [
+    "המשקפיים הוורודים — מה עבד בצורה יוצאת מן הכלל: " + (a.pink||""),
+    "המשקפיים האפורים — מה היה רגע השפל: " + (a.gray||""),
+    "המשקפיים השקופים — מה לא נאמר במפורש: " + (a.clear||""),
+  ]; },
+  14(a){ return [describeImage(a.metaphorImage), "מדוע נבחרה: " + (a.why||""), "מה צריך להשתנות: " + (a.change||"")]; },
+};
+
+let LAST = null;
+
+function buildExportText(m, answers, feedbackLines){
+  const lines = [];
+  lines.push("S.B.E · הערכה יצירתית");
+  lines.push("אפשרות " + m.n + " · " + m.title);
+  lines.push("תרחיש: " + SCENARIO.name);
+  lines.push("שם: " + STATE.name + " · קוד סדנה: " + STATE.code);
+  lines.push("תאריך: " + new Date(STATE.startedAt).toLocaleString("he-IL"));
+  lines.push("");
+  lines.push("── מה יצרת ──");
+  const fmt = FORMATTERS[m.id];
+  lines.push(...(fmt ? fmt(answers) : [JSON.stringify(answers, null, 1)]));
+  lines.push("");
+  lines.push("── המשוב שקיבלת ──");
+  lines.push("(משוב מבוסס היוריסטיקה פשוטה, לא שיפוט תוכן אמיתי)");
+  lines.push(...feedbackLines);
+  return lines.join("\n");
+}
+
+// ── תצוגה מקדימה לפני שליחה, ניתנת לפתיחה בכל שלב תוך כדי מילוי ──
+// שלוש האפשרויות שכוללות תמונה (6, 7, 14) מציגות את התמונה עצמה, לא רק
+// טקסט על אודותיה. כל שאר האפשרויות משתמשות בפלט של FORMATTERS, מפורק
+// לפסקאות קריאות במקום טקסט גולמי.
+const IMAGE_PREVIEWERS = {
+  6(answers){
+    const labels = ["פוסטר ראשי","גרסה נוספת 1","גרסה נוספת 2","גרסה נוספת 3"];
+    const frag = document.createDocumentFragment();
+    (answers.images||[]).forEach((im,i) => {
+      frag.append(el("h4",{}, labels[i] || ("תמונה " + (i+1))));
+      if (im.image) frag.append(renderImageRecord(im.image));
+      frag.append(el("p",{}, el("b",{},"כותרת/מה השתנה: "), im.title || "—"));
+      frag.append(el("p",{}, el("b",{},"הסבר: "), im.expl || "—"));
+    });
+    if (!(answers.images||[]).length) frag.append(el("p",{},"עדיין לא מולא כלום."));
+    return frag;
+  },
+  7(answers){
+    const frag = document.createDocumentFragment();
+    (answers.gallery||[]).forEach(g => {
+      frag.append(el("h4",{}, g.title || "(ללא כותרת)"));
+      if (g.image) frag.append(renderImageRecord(g.image));
+      frag.append(el("p",{}, el("b",{},"סטודנטית: "), g.name || "—"));
+      frag.append(el("p",{}, el("b",{},"הסבר: "), g.expl || "—"));
+    });
+    if (!(answers.gallery||[]).length) frag.append(el("p",{},"עדיין לא נוסף כלום לגלריה."));
+    return frag;
+  },
+  14(answers){
+    const frag = document.createDocumentFragment();
+    if (answers.metaphorImage) frag.append(renderImageRecord(answers.metaphorImage));
+    else frag.append(el("p",{},"עדיין לא נוצרה תמונה."));
+    frag.append(el("p",{}, el("b",{},"מדוע נבחרה: "), answers.why || "—"));
+    frag.append(el("p",{}, el("b",{},"מה צריך להשתנות: "), answers.change || "—"));
+    return frag;
+  },
+};
+
+function buildPreviewNodes(m, answers){
+  if (IMAGE_PREVIEWERS[m.id]) return IMAGE_PREVIEWERS[m.id](answers);
+  const frag = document.createDocumentFragment();
+  const fmt = FORMATTERS[m.id];
+  const lines = fmt ? fmt(answers) : [];
+  if (!lines.some(Boolean)) { frag.append(el("p",{},"עדיין לא מולא כלום.")); return frag; }
+  lines.forEach(line => {
+    if (!line) { frag.append(el("div",{style:"height:8px"})); return; }
+    if (/:$/.test(line)) { frag.append(el("h4",{}, line.slice(0,-1))); return; }
+    const idx = line.indexOf(": ");
+    if (idx > 0 && idx < 40) frag.append(el("p",{}, el("b",{}, line.slice(0,idx+2)), line.slice(idx+2) || "—"));
+    else frag.append(el("p",{}, line));
+  });
+  return frag;
+}
+
+$("bPreview").addEventListener("click", () => {
+  const m = METHODS.find(x => x.id === STATE.methodId);
+  const body = $("previewBody"); body.textContent = "";
+  body.append(buildPreviewNodes(m, STATE.answers));
+  $("previewDlg").showModal();
+});
+$("bBackToEdit").addEventListener("click", () => $("previewDlg").close());
+
+$("bDownload").addEventListener("click", () => {
+  if (!LAST) return;
+  const blob = new Blob([LAST.text], { type: "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "הערכה-יצירתית-" + LAST.method.n + "-" + STATE.code + ".txt";
+  document.body.appendChild(a); a.click(); a.remove();
+});
+
+$("bMailSelf").addEventListener("click", () => {
+  if (!LAST) return;
+  const subject = "הערכה יצירתית · " + LAST.method.title;
+  const url = "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(LAST.text);
+  $("mailHint").hidden = false;
+  location.href = url;
+});
+
+// ── משוב מדומה (היוריסטי בלבד) ──
+function wordCount(s){ return (s||"").trim().split(/\s+/).filter(Boolean).length; }
+function collectText(answers){
+  let all = [];
+  (function walk(v){
+    if (typeof v === "string") all.push(v);
+    else if (Array.isArray(v)) v.forEach(walk);
+    else if (v && typeof v === "object") Object.values(v).forEach(walk);
+  })(answers);
+  return all.join(" ");
+}
+function computeFeedback(answers){
+  const text = collectText(answers);
+  const words = wordCount(text);
+  const uniqueWords = new Set(text.toLowerCase().split(/\s+/).filter(Boolean)).size;
+  const mentionsSkill = SCENARIO.skills.some(s => text.includes(s.split(" ").slice(0,2).join(" ")));
+  const strengths = [];
+  const growth = [];
+  if (words >= 120) strengths.push("כתבת בהיקף משמעותי — יש כאן חומר אמיתי לחשוב עליו, לא רק משפט או שניים.");
+  else growth.push("הכתיבה קצרה יחסית. פירוט נוסף — דוגמה קונקרטית אחת, משפט שנאמר בפועל — היה מעשיר את מה שאפשר ללמוד מזה.");
+  if (uniqueWords / Math.max(words,1) > 0.6) strengths.push("השפה מגוונת ולא חוזרת על עצמה, סימן לחשיבה פעילה ולא לניסוח אוטומטי.");
+  if (mentionsSkill) strengths.push("יש התייחסות ישירה למיומנויות שהתרחיש התמקד בהן, לא רק תיאור כללי של מה שקרה.");
+  else growth.push("כדאי לנסות לקשור את מה שכתבת ישירות למיומנות ספציפית מהתרחיש — זה מה שהופך רפלקציה למשהו שאפשר ליישם בפעם הבאה.");
+  if (!growth.length) growth.push("נסי בפעם הבאה להוסיף גם את מה שהיה קשה או לא ברור, לא רק את מה שעבד.");
+  const recommendation = "בהערכה הבאה, נסי להתמקד ב" + (mentionsSkill
+    ? "תיאור של רגע קונקרטי אחד לעומק, במקום כמה רגעים בקצרה."
+    : "קישור ברור בין מה שכתבת לבין מיומנות ספציפית אחת מהתרחיש.");
+  return { strengths, growth, recommendation };
+}
+
+function renderFeedback(m, answers){
+  const { strengths, growth, recommendation } = computeFeedback(answers);
+  const body = $("reportBody"); body.textContent = "";
+  body.append(el("h3",{},"חוזקות"), el("ul",{}, strengths.map(s=>el("li",{},s))));
+  body.append(el("h3",{},"נקודות לחיזוק"), el("ul",{}, growth.map(s=>el("li",{},s))));
+  body.append(el("h3",{},"המלצה ממוקדת"), el("p",{}, recommendation));
+
+  const feedbackLines = ["", "חוזקות:", ...strengths.map(s=>"- "+s),
+    "", "נקודות לחיזוק:", ...growth.map(s=>"- "+s),
+    "", "המלצה ממוקדת:", recommendation];
+  LAST = { method: m, text: buildExportText(m, answers, feedbackLines) };
+}
+</script>
+
+<!-- ── כפתור דיווח גלובלי — אותו רכיב שבכל 17 מסכי app/, ראו entry.html (09/09/2026) ── -->
+<style>
+#rptFab{position:fixed;inset-inline-end:16px;bottom:16px;z-index:9999;width:auto;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:13px;font-weight:600;
+  padding:9px 15px;border-radius:22px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;
+  cursor:pointer;box-shadow:0 4px 14px rgba(20,28,36,.28);}
+#rptFab:hover{opacity:.9;}
+dialog#rptDlg{border:1px solid #CDD3D8;border-radius:10px;background:#FCFCFD;color:#141C24;
+  max-width:440px;width:92vw;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.3);
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;direction:rtl;}
+dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
+#rptDlg h3{margin:0;padding:15px 20px;border-bottom:1px solid #CDD3D8;font-size:16.5px;font-weight:700;}
+#rptDlg .rb{padding:16px 20px;max-height:65vh;overflow:auto;}
+#rptDlg label{display:block;font-size:12.5px;font-weight:600;color:#5C6771;margin-bottom:4px;}
+#rptDlg input,#rptDlg select,#rptDlg textarea{width:100%;font-family:inherit;font-size:14.5px;color:#141C24;
+  background:#EDEFF1;border:1px solid #CDD3D8;border-radius:6px;padding:8px 10px;direction:rtl;
+  margin-bottom:10px;box-sizing:border-box;}
+#rptDlg textarea{min-height:70px;resize:vertical;}
+#rptDlg .req{color:#8C3A34;}
+#rptDlg .rerr{background:#F5E4E2;border-inline-start:3px solid #8C3A34;border-radius:6px;padding:8px 11px;
+  font-size:12.5px;color:#8C3A34;margin-bottom:10px;}
+#rptDlg .rerr[hidden]{display:none;}
+#rptDlg .rnote{font-size:11.5px;color:#5C6771;line-height:1.55;margin:0 0 12px;}
+#rptDlg .rscreen{font-size:11px;color:#5C6771;margin:0 0 10px;}
+#rptDlg .rf{padding:12px 20px;border-top:1px solid #CDD3D8;display:flex;gap:8px;}
+#rptDlg .rf button{font-family:inherit;font-size:14px;font-weight:600;padding:8px 16px;border-radius:6px;
+  border:1px solid #CDD3D8;background:#E4E7EA;color:#141C24;cursor:pointer;}
+#rptDlg .rf button.p{background:#2E5A7D;border-color:#2E5A7D;color:#fff;}
+</style>
+<button type="button" id="rptFab" title="דיווח על תקלה, שאלה, רעיון או בקשה">דיווח / רעיון</button>
+<dialog id="rptDlg">
+  <h3>דיווח על תקלה, שאלה, רעיון או בקשה</h3>
+  <div class="rb">
+    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח — לא ניתן לצרף קובץ אוטומטית למייל.</p>
+    <div class="rerr" id="rptErr" hidden></div>
+    <label>שם מלא <span class="req">*</span></label>
+    <input id="rptName">
+    <label>תאריך</label>
+    <input id="rptDate" readonly>
+    <label>תפקיד</label>
+    <input id="rptRole" placeholder="לא צוין">
+    <label>סוג הפנייה</label>
+    <select id="rptType">
+      <option>תקלה</option><option>שאלה</option><option>רעיון לשיפור</option><option>בקשה</option><option>משוב על השימוש במערכת</option>
+    </select>
+    <p class="rscreen" id="rptScreen"></p>
+    <div id="rptGeneric">
+      <label>פירוט <span class="req">*</span></label>
+      <textarea id="rptDetails" placeholder="מה קרה, מה ציפית שיקרה, ובאיזה מסך"></textarea>
+    </div>
+    <div id="rptUsage" hidden>
+      <label>ההצעות של המערכת התאימו למה שרצית?</label>
+      <select id="rptFit"><option value="">לא צוין</option><option>כן במלואן</option><option>חלקית</option><option>לא</option></select>
+      <label>המערכת ידידותית</label>
+      <select id="rptFriendly"><option value="">לא צוין</option><option>במידה רבה</option><option>במידה בינונית</option><option>במידה מועטה</option></select>
+      <label>האם תרצה/י להמשיך להשתמש במערכת?</label>
+      <select id="rptContinue"><option value="">לא צוין</option><option>במידה רבה</option><option>במידה בינונית</option><option>במידה מועטה</option></select>
+      <label>למי היית ממליץ/ה להשתמש במערכת?</label>
+      <input id="rptRecommend" placeholder="לא חובה">
+      <label>מה חסר, מה היה מבלבל, או הערה אחרת?</label>
+      <textarea id="rptUsageNotes" placeholder="לא חובה"></textarea>
+    </div>
+    <label>צילום מסך (לא חובה)</label>
+    <input type="file" id="rptFile" accept="image/*">
+  </div>
+  <div class="rf">
+    <button type="button" class="p" id="rptSend">שליחה במייל</button>
+    <button type="button" id="rptCancel">ביטול</button>
+  </div>
+</dialog>
+<script>
+(function(){
+  "use strict";
+  if (window.self !== window.top) {
+    // מוטמע בתוך iframe (admin.html/demo-hub.html) — העמוד המארח
+    // מציג דיווח משלו; עותק כפול היה מתמקם לפי חלון ה-iframe ולא לפי המסך.
+    var _rf = document.getElementById("rptFab"); if (_rf) _rf.remove();
+    var _rd = document.getElementById("rptDlg"); if (_rd) _rd.remove();
+    return;
+  }
+  var fab = document.getElementById("rptFab");
+  var dlg = document.getElementById("rptDlg");
+  var nameEl = document.getElementById("rptName");
+  var dateEl = document.getElementById("rptDate");
+  var roleEl = document.getElementById("rptRole");
+  var errEl = document.getElementById("rptErr");
+  var typeEl = document.getElementById("rptType");
+  var genericEl = document.getElementById("rptGeneric");
+  var usageEl = document.getElementById("rptUsage");
+  var screenEl = document.getElementById("rptScreen");
+  var screenName = document.title || location.pathname;
+
+  // "משוב על השימוש במערכת" (17/09/2026) — סוג פנייה נוסף עם חמש שאלות
+  // ייעודיות במקום "פירוט" חופשי, ותיוג אוטומטי של המסך שממנו זה נשלח
+  // (המשתמשת: "איך אדע באיזה חלק השולח השתמש/ה?"). כל שליחה נשמרת גם
+  // ב-localStorage (sbe.reports.<ts>), לא רק דרך mailto — כדי שיהיה מסך
+  // תוצאות לקרוא אותן בחזרה, לא רק תיבת מייל.
+  function syncType(){
+    var isUsage = typeEl.value === "משוב על השימוש במערכת";
+    genericEl.hidden = isUsage;
+    usageEl.hidden = !isUsage;
+  }
+  typeEl.addEventListener("change", syncType);
+
+  function openDlg(presetType){
+    dateEl.value = new Date().toLocaleDateString("he-IL");
+    if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
+    try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
+    errEl.hidden = true;
+    screenEl.textContent = "נשלח מהמסך: " + screenName;
+    if (presetType) typeEl.value = presetType;
+    syncType();
+    dlg.showModal();
+  }
+  fab.addEventListener("click", function(){ openDlg(null); });
+  // נקודת חיבור לפתיחה אוטומטית בסיום תרגול/יצירה — מסכים אחרים באותו
+  // קובץ קוראים ל-window.sbeOpenUsageFeedback() מתוך handler ההשלמה שלהם.
+  window.sbeOpenUsageFeedback = function(){ openDlg("משוב על השימוש במערכת"); };
+
+  document.getElementById("rptCancel").addEventListener("click", function(){ dlg.close(); });
+  document.getElementById("rptSend").addEventListener("click", function(){
+    var name = nameEl.value.trim();
+    var type = typeEl.value;
+    var isUsage = type === "משוב על השימוש במערכת";
+    var details = document.getElementById("rptDetails").value.trim();
+    if (!name || (!isUsage && !details)) {
+      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.hidden = false;
+      return;
+    }
+    var roleVal = roleEl.value.trim() || "לא צוין";
+    var record = {
+      name: name, date: dateEl.value, role: roleVal, type: type, screen: screenName,
+      details: details,
+      fit: isUsage ? document.getElementById("rptFit").value : "",
+      friendly: isUsage ? document.getElementById("rptFriendly").value : "",
+      continueUsing: isUsage ? document.getElementById("rptContinue").value : "",
+      recommend: isUsage ? document.getElementById("rptRecommend").value.trim() : "",
+      notes: isUsage ? document.getElementById("rptUsageNotes").value.trim() : "",
+      ts: Date.now()
+    };
+    try { localStorage.setItem("sbe.reports." + record.ts, JSON.stringify(record)); } catch(e){}
+    var bodyLines = [
+      "שם מלא: " + name,
+      "תאריך: " + record.date,
+      "תפקיד: " + roleVal,
+      "סוג פנייה: " + type,
+      "מסך: " + screenName,
+      ""
+    ];
+    if (isUsage) {
+      bodyLines.push(
+        "ההצעות התאימו: " + (record.fit || "לא צוין"),
+        "ידידותיות: " + (record.friendly || "לא צוין"),
+        "ממשיכה להשתמש: " + (record.continueUsing || "לא צוין"),
+        "המלצה למי: " + (record.recommend || "-"),
+        "מה חסר/הערות: " + (record.notes || "-")
+      );
+    } else {
+      bodyLines.push("פירוט:", details);
+    }
+    var subject = "S.B.E · " + type + " · " + name;
+    location.href = "mailto:yael.sade@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(bodyLines.join("\n"));
+    dlg.close();
+  });
+})();
+</script>
+
+<!-- ── ניווט גלובלי: חזרה + הבית + תפריט (09/09/2026, הוקטן 09/09/2026,
+     נוסף כפתור "הבית" 22/09/2026) ──
+     סרגל דק וקבוע ברוחב מלא במקום כפתורים צפים גדולים שהתנגשו עם כותרת
+     העמוד. ה-body מקבל padding-top רק כש-SCREENS.sbe-hasnav מוגדר (לא כשהסרגל
+     מוסר בגלל הטמעה ב-iframe) — כך שאין צורך במלחמת specificity/!important
+     עם ה-padding הקיים של כל עמוד, ואין שינוי כשאין סרגל. לא ל-entry.html
+     (הוא עצמו הבית). כפתור "חזרה" משתמש בהיסטוריית הדפדפן, לא בקישור קבוע.
+     כפתור "הבית" (22/09/2026, בקשת המשתמשת: "חץ חזרה למסך שנפתח לאחר
+     הכניסה") — לא היסטוריה, אלא הכתובת המדויקת שנוצרה ונשמרה ב-entry.html
+     ברגע ההצלחה (sessionStorage.sbe.session.homeUrl): לסטודנטית/הורה/נוער/
+     שחקנית זו entry.html?home=<תפקיד> (משחזר את רשימת הקישורים בלי הקוד
+     עצמו — הקוד עצמו אף פעם לא נשמר, "מבלי לפרוץ את גבולות הקודים"); ליוצרת/
+     מנחה זה system-select.html עם role+inst (שם המוסד, לא הקוד שלו — כבר
+     היה כך בכל קישור אחר במערכת); למנהלת/ניהול זה admin.html?role=. אם אין
+     ערך שמור (מסך נפתח ישירות בלי כניסה), הכפתור לא מוצג — לא מנחשת. -->
+<style>
+body.sbe-hasnav{padding-top:38px;}
+#navBar{position:fixed;top:0;inset-inline-start:0;inset-inline-end:0;height:38px;z-index:9997;
+  display:flex;align-items:center;gap:6px;padding:0 10px;direction:rtl;
+  background:#FCFCFD;border-bottom:1px solid #CDD3D8;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;}
+#navBack,#navHome,#navMenuBtn{font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:12px;
+  border:1px solid #CDD3D8;background:#FCFCFD;color:#141C24;cursor:pointer;line-height:1.4;}
+#navBack:hover,#navHome:hover,#navMenuBtn:hover{border-color:#2E5A7D;}
+#navHome[hidden]{display:none;}
+#navPanel{position:fixed;top:38px;inset-inline-start:10px;z-index:9997;width:260px;
+  max-height:75vh;overflow-y:auto;background:#FCFCFD;border:1px solid #CDD3D8;border-radius:10px;
+  box-shadow:0 14px 40px rgba(20,28,36,.22);padding:10px 0;direction:rtl;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;}
+#navPanel[hidden]{display:none;}
+#navPanel h5{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:#5C6771;
+  margin:12px 16px 4px;font-weight:700;}
+#navPanel h5:first-child{margin-top:0;}
+#navPanel a{display:block;padding:8px 16px;color:#141C24;text-decoration:none;font-size:15px;
+  border-inline-start:3px solid transparent;}
+#navPanel a:hover{background:#EDEFF1;}
+#navPanel a.current{color:#2E5A7D;font-weight:700;background:#DCE7EF;border-inline-start-color:#2E5A7D;}
+</style>
+<div id="navBar">
+  <button type="button" id="navBack" title="חזרה צעד אחד">→ חזרה</button>
+  <button type="button" id="navHome" title="חזרה למסך שנפתח אחרי הכניסה שלך" hidden>⌂ המסך שלי</button>
+  <button type="button" id="navMenuBtn" title="כל המסכים">☰ תפריט</button>
+</div>
+<div id="navPanel" hidden></div>
+<script>
+(function(){
+  "use strict";
+  if (window.self !== window.top) {
+    // מוטמע בתוך iframe (admin.html/demo-hub.html) — לעמוד המארח יש
+    // תפריט ניווט משלו; עותק כפול היה מתמקם לפי חלון ה-iframe ולא לפי המסך.
+    var _nb = document.getElementById("navBar"); if (_nb) _nb.remove();
+    var _np = document.getElementById("navPanel"); if (_np) _np.remove();
+    return;
+  }
+  document.body.classList.add("sbe-hasnav");
+  var SCREENS = [
+    { title:"לקראת ההצגה", items:[
+      { label:"תוכן עניינים — כל המערכת", file:"system-toc.html" },
+      { label:"תוצרי המערכת — הופקו על ידי המודל", file:"products/index.html" }
+    ]},
+    { title:"כניסה", items:[
+      { label:"מסך כניסה", file:"entry.html" },
+      { label:"בחירת מערכת", file:"system-select.html" },
+      { label:"מסך הדגמה כולל", file:"demo-hub.html" }
+    ]},
+    { title:"יצירת תרחיש", items:[
+      { label:"מסך קלט סטודנטים/יות", file:"input-screen.html" },
+      { label:"מסך קלט הורים", file:"parent-input-screen.html" },
+      { label:"מסך קלט נוער", file:"student-input-screen.html" },
+      { label:"חיפוש במאגר התרחישים", file:"search.html" },
+      { label:"ספריית המקורות", file:"sources-library.html" }
+    ]},
+    { title:"תכנון שיחה ופעילות", items:[
+      { label:"תכנון שיחה", file:"conversation-planner.html" },
+      { label:"תכנון פעילות", file:"activity-planner.html" },
+      { label:"ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה", file:"academic-review.html" }
+    ]},
+    { title:"תוצרי הסדנה", items:[
+      { label:"גרסת השחקנית", file:"doc-actor.html" },
+      { label:"כרטיס שחקנית", file:"card-actor.html" },
+      { label:"גרסת המתנסה", file:"doc-trainee.html" },
+      { label:"גרסת המנחה", file:"doc-facilitator.html" }
+    ]},
+    { title:"הרצת הסדנה", items:[
+      { label:"מסך הסדנה", file:"facilitator-screen.html" },
+      { label:"דף צפייה (טלפון)", file:"observation-sheet.html" },
+      { label:"משוב", file:"feedback.html" },
+      { label:"תוצאות המשוב", file:"feedback-results.html" },
+      { label:"הערכה יצירתית", file:"creative-assessment.html" }
+    ]},
+    { title:"תרגול עצמי", items:[
+      { label:"תרגול עצמי", file:"practice.html" },
+      { label:"חציות קווים אדומים", file:"practice-crossings.html" }
+    ]},
+    { title:"ניהול", items:[
+      { label:"מסך הניהול", file:"admin.html" },
+      { label:"בקרת איכות", file:"eval-set.html" }
+    ]}
+  ];
+  var panel = document.getElementById("navPanel");
+  // הקישורים יחסיים ל-app/. מסמך שנפתח מתוך תת-תיקייה (products/ — תוצרי
+  // המערכת) צריך "../" לפניהם, אחרת "entry.html" מצביע על products/entry.html (404).
+  var sub = (location.pathname.match(/\/(products)\/[^\/]*$/) || [])[1];
+  var base = sub ? "../" : "";
+  var here = (sub ? sub + "/" : "") + (location.pathname.split("/").pop() || "index.html").toLowerCase();
+  SCREENS.forEach(function(section){
+    var h = document.createElement("h5"); h.textContent = section.title; panel.appendChild(h);
+    section.items.forEach(function(it){
+      var a = document.createElement("a"); a.href = base + it.file; a.textContent = it.label;
+      if (it.file.toLowerCase() === here) a.className = "current";
+      panel.appendChild(a);
+    });
+  });
+  document.getElementById("navMenuBtn").addEventListener("click", function(){
+    panel.hidden = !panel.hidden;
+  });
+  document.getElementById("navBack").addEventListener("click", function(){
+    if (window.history.length > 1) window.history.back();
+    else location.href = base + "entry.html";
+  });
+  // כפתור "⌂ המסך שלי" — ראו ההערה המלאה בראש הקובץ. מוצג רק אם יש ערך
+  // שמור וזה לא כבר המסך הנוכחי (כדי לא להציע "לחזור" למקום שכבר עומדים בו).
+  try {
+    var homeUrl = sessionStorage.getItem("sbe.session.homeUrl");
+    if (homeUrl) {
+      var hereFull = (location.pathname.split("/").pop() || "") + location.search;
+      if (hereFull !== homeUrl) {
+        var homeBtn = document.getElementById("navHome");
+        homeBtn.hidden = false;
+        homeBtn.addEventListener("click", function(){ location.href = base + homeUrl; });
+      }
+    }
+  } catch(e){}
+  document.addEventListener("click", function(e){
+    if (!panel.hidden && !e.target.closest("#navPanel") && !e.target.closest("#navMenuBtn")) panel.hidden = true;
+  });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && !panel.hidden) panel.hidden = true;
+  });
+})();
+</script>
