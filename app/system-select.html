@@ -87,7 +87,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
   </div>
 </div>
 
-<div class="cat">
+<div class="cat" id="catConv">
   <h2><span class="ico" style="background:var(--hidden)"></span>תכנון שיחה</h2>
   <div class="in">
     <p class="hint">כלי הכנה לשיחה אמיתית שאת/ה עומד/ת לקיים עם מישהו — לא סימולציה. פתוח לכל תפקיד.</p>
@@ -98,7 +98,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
   </div>
 </div>
 
-<div class="cat">
+<div class="cat" id="catActivity">
   <h2><span class="ico" style="background:var(--brick)"></span>תכנון פעילות</h2>
   <div class="in">
     <p class="hint">הדרכה לבניית פעילות חינוכית איכותית, או בדיקת פעילות קיימת מול קריטריוני למידה. פתוח לכל תפקיד.</p>
@@ -108,7 +108,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
   </div>
 </div>
 
-<div class="cat">
+<div class="cat" id="catAcademic">
   <h2><span class="ico" style="background:var(--auto)"></span>ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה</h2>
   <div class="in">
     <p class="hint">משוב ממוקד-קריטריונים על עבודה, פרויקט או תקציר לפני הגשה. לא סימולציה, פתוח לכל תפקיד.</p>
@@ -130,11 +130,8 @@ const el = (t,a={},...k)=>{const n=document.createElement(t);
   k.flat().forEach(c=>n.append(c)); return n;};
 
 const params = new URLSearchParams(location.search);
-const role = params.get("role");   // "creator" | "fac" | null
-const inst = params.get("inst");   // שם המוסד, אם הגיע מקוד מוסד
-// track (21/09/2026): "מנחה" פוצל ב-entry.html לשלושה מסלולים — מנחה/ת
-// סטודנטים / הורים / נוער — כדי שהתפריט ידע להראות תווית מדויקת בלי
-// שהלוגיקה הפנימית (eduItems למטה) תצטרך לדעת על שלושת המסלולים בנפרד.
+const role = params.get("role");
+const inst = params.get("inst");
 const track = params.get("track"); // "trainee" | "parent" | "youth" | null
 const TRACK_LABEL = { trainee:"מנחה/ת סטודנטים", parent:"מנחה/ת הורים", youth:"מנחה/ת נוער" };
 
@@ -142,43 +139,40 @@ if (inst) {
   const w = document.getElementById("whoami");
   w.hidden = false;
   w.append("מוסד: ", el("b",{}, inst));
-  if (role) w.append(" · תפקיד: ", el("b",{}, role === "creator" ? "יוצרת" : (TRACK_LABEL[track] || "מנחה")));
+  if (track) w.append(" · תפקיד: ", el("b",{}, TRACK_LABEL[track] || "מנחה"));
 }
 
-// "אנשי חינוך" — בלי role (למשל נכנסים ישירות לקובץ הזה) מוצגת הרשימה
-// המלאה, כדי שלא ייראה כאילו חסר משהו. עם role, מסוננת (21/09/2026, הכרעות
-// המשתמשת): **יצירת תרחיש** ו**חיפוש במאגר התרחישים** — שתיהן עברו
-// מ-EDU_BASE ל-EDU_FAC_ONLY ("יצירת תרחיש... רק למנחה, מנהלת מוסד ומנהלת
-// מערכת" / "חיפוש במאגר התרחישים - מנחה, מנהלת מוסד, מנהלת מערכת") —
-// "יוצרת" כבר לא רואה אף אחת מהן כאן. מנהלת מוסד/מערכת ממשיכות לגשת לשתיהן
-// דרך admin.html (קישורים "מסך הקלט"/"חיפוש במאגר התרחישים" קיימים שם תחת
-// "מסכים נוספים", לא נגעתי). EDU_BASE נשאר קיים כמנגנון ריק במכוון — אם
-// יתווסף בעתיד עוד פריט פתוח-לכל-יוצרת, יש לו כבר מקום.
-const EDU_BASE = [];
-const EDU_FAC_ONLY = [
-  { href:"input-screen.html", t:"יצירת תרחיש — סטודנטים.יות", d:"יצירת תרחיש — סטודנטים.יות — שלושת השדות שאת כותבת, שאר השדות מוצעים" },
-  // שני מסכי הקלט האחרים (21/09/2026): מנחה/ת הורים ומנחה/ת נוער לא יכלו להגיע
-  // מכאן למסך הקלט של המסלול שלהן — רק דרך תפריט הניווט. יצירת תרחיש היא
-  // הרשאת מנחה/מנהלות, אז שלושת המסכים מוצגים לכל מנחה.
-  { href:"parent-input-screen.html", t:"מסך קלט הורים", d:"תרחיש להורים — שתי דמויות שוות, ארבע גישות הוריות" },
-  { href:"student-input-screen.html", t:"מסך קלט נוער", d:"תרחיש למשחק תפקידים בין שני בני נוער — 34 נושאי שיחה בשישה פרקים" },
-  { href:"search.html", t:"חיפוש במאגר התרחישים", d:"תרחישי המוסד שלך והמאגר המשותף בין מוסדות" },
-  { href:"facilitator-screen.html", t:"פתיחת סדנה", d:"קוד סדנה נוצר לבד, לא דורש ניפוק" },
-  { href:"feedback-results.html", t:"משוב והערכה", d:"משוב מנחה, מתנסה וצופה על סדנאות המוסד" },
+const ALL_INPUT_ITEMS = [
+  { href:"input-screen.html",        t:"יצירת תרחיש — סטודנטים.יות", d:"יצירת תרחיש — סטודנטים.יות — שלושת השדות שאת כותבת, שאר השדות מוצעים", track:"trainee" },
+  { href:"parent-input-screen.html", t:"מסך קלט הורים",              d:"תרחיש להורים — שתי דמויות שוות, ארבע גישות הוריות",                   track:"parent"  },
+  { href:"student-input-screen.html",t:"מסך קלט נוער",               d:"תרחיש למשחק תפקידים בין שני בני נוער — 34 נושאי שיחה בשישה פרקים",    track:"youth"   },
 ];
-// ספריית המקורות פתוחה לכל מי שנכנסה למערכת (21/09/2026: "חיפוש בספרית
-// המקורות האקדמיים - לכולם") — גם דרך entry.html בנתיב קוד-הסדנה, ראו שם.
-const EDU_ALWAYS_LAST = [
-  { href:"sources-library.html", t:"ספריית המקורות", d:"חיפוש במקורות התיאורטיים — פתוח לכל מי שנכנסה" },
+const FAC_ITEMS = [
+  { href:"search.html",           t:"חיפוש במאגר התרחישים", d:"תרחישי המוסד שלך והמאגר המשותף בין מוסדות" },
+  { href:"facilitator-screen.html",t:"פתיחת סדנה",          d:"קוד סדנה נוצר לבד, לא דורש ניפוק" },
+  { href:"feedback-results.html", t:"משוב והערכה",          d:"משוב מנחה, מתנסה וצופה על סדנאות המוסד" },
 ];
-const eduItems = role === "creator"
-  ? [...EDU_BASE, ...EDU_ALWAYS_LAST]
-  : [...EDU_BASE, ...EDU_FAC_ONLY, ...EDU_ALWAYS_LAST];
+const SOURCES_ITEM = { href:"sources-library.html", t:"ספריית המקורות", d:"חיפוש במקורות התיאורטיים — פתוח לכל מי שנכנסה" };
+
+// מנחה/ת רואה רק את מסך הקלט של המסלול שלה/שלו + כלים משותפים + מקורות.
+// ללא track (כניסה ישירה לקובץ) — מוצגת הרשימה המלאה.
+const inputItems = track
+  ? ALL_INPUT_ITEMS.filter(i => i.track === track)
+  : ALL_INPUT_ITEMS;
+const eduItems = [...inputItems, ...FAC_ITEMS, SOURCES_ITEM];
 
 const eduWrap = document.getElementById("eduLinks");
 eduItems.forEach(it => eduWrap.append(el("a",{href:it.href}, el("b",{},it.t), el("span",{},it.d))));
 
 document.getElementById("back").addEventListener("click", () => { location.href = "entry.html"; });
+
+// מנחת הורים ומנחת נוער: אין תכנון שיחה, תכנון פעילות, ניתוח ומשוב אקדמי
+if (track === "parent" || track === "youth") {
+  ["catConv", "catActivity", "catAcademic"].forEach(id => {
+    const e = document.getElementById(id);
+    if (e) e.hidden = true;
+  });
+}
 </script>
 
 <!-- ── כפתור דיווח גלובלי — אותו רכיב שבכל 17 מסכי app/, ראו entry.html (09/09/2026) ── -->

@@ -742,7 +742,7 @@ async function generateProposals(required) {
     // כ-40 שדות, כולל כמה שדות שהם בעצמם הרכבה של 3-4 חלקים (domainMaterial,
     // register, opening, turningPoints), ושני גיליונות דמות מלאים. יכויל
     // שוב אם יתגלה בפועל שזה לא מספיק.
-    const raw = await callAI(system, "בני דמויות וקונפליקט מלאים לתרחיש הזה, בעברית, לפי כל ההנחיות.", 24000, 420000);
+    const raw = await callAI(system, "בני דמויות וקונפליקט מלאים לתרחיש הזה, בעברית, לפי כל ההנחיות.", 24000, 90000);
     const m = raw.match(/\{[\s\S]*\}/);
     if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
     const parsed = JSON.parse(m[0]);
