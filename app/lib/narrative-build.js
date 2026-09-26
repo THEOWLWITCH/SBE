@@ -292,6 +292,7 @@
     if (leaked.length) console.warn("⚠ דלף בגרסת המתנסה:", leaked[0]);
     const prefix = (scn.id || "scenario") + "-";
     const named = files.map(([n, h, l]) => [prefix + n, h, l]);
+    window._sbeScenarioBuilt = true;
     show("התוצר — " + scn.name,
       docsPanel({ files: named, mock: false, saveKey: "sbe.edu.built.v1", meta: { id: scn.id, name: scn.name } }));
   }
