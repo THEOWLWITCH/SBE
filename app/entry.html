@@ -173,7 +173,6 @@ const ROLES = [
   { key:"parent",  label:"הורים",     group:"workshop" },
   { key:"youth",   label:"נוער",      group:"workshop" },
   { key:"actor",   label:"שחקנית",   group:"workshop" },
-  { key:"creator", label:"יוצרת",    group:"inst" },
   { key:"homeroom", label:"מחנך/כת", group:"inst" },
   { key:"fac_trainee", label:"מנחה/ת סטודנטים", group:"inst", track:"trainee" },
   { key:"fac_parent",  label:"מנחה/ת הורים",    group:"inst", track:"parent" },
@@ -181,7 +180,7 @@ const ROLES = [
   { key:"inst",    label:"מנהל.ת מוסד/תכנית",  group:"admin" },
   { key:"sys",     label:"מנהלת מערכת",   group:"admin" },
 ];
-const GROUP_LABEL = { workshop:"קוד סדנה — סטודנט/ית / הורים / נוער / שחקנית", inst:"קוד מוסד — יוצרת / מחנך/כת / מנחה", admin:"כניסת ניהול — סיסמה" };
+const GROUP_LABEL = { workshop:"קוד סדנה — סטודנט/ית / הורים / נוער / שחקנית", inst:"קוד מוסד — מחנך/כת / מנחה", admin:"כניסת ניהול — סיסמה" };
 let pickedRole = null;
 
 function renderEntry(){
@@ -305,12 +304,12 @@ function renderWorkshopSuccess(role, name){
     { href:"parent-input-screen.html", t:"יצירת תרחיש להורים", d:"מתארים את המצב האישי שלכם, המערכת מציעה תרחיש לתרגול" },
     PRACTICE_LINK,
     { href:"feedback.html", t:"משוב", d:"משוב על השימוש במערכת" },
-    CONV_LINK, ACTIVITY_LINK, ACADEMIC_LINK, SOURCES_LINK,
+    CONV_LINK, SOURCES_LINK,
   ];
   const YOUTH_LINKS = [
     PRACTICE_LINK,
     { href:"feedback.html", t:"משוב", d:"משוב על הסדנה" },
-    CONV_LINK, ACTIVITY_LINK, ACADEMIC_LINK, SOURCES_LINK,
+    CONV_LINK, SOURCES_LINK,
   ];
   const BY_ROLE = { trainee:TRAINEE_LINKS, actor:ACTOR_LINKS, parent:PARENT_LINKS, youth:YOUTH_LINKS };
   BY_ROLE[role].forEach(it => {
