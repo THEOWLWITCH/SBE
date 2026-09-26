@@ -1179,7 +1179,7 @@ function refresh() {
   const ok = missing.length === 0;
   document.getElementById("bBuild").disabled = !ok || p+w === reqKeys.length;
   document.getElementById("hint").textContent = ok
-    ? (p ? "אפשר לבנות. שדות בהצעה יישארו כפי שהם." : "מלאי הצעות או כתבי בעצמך")
+    ? (p ? "אפשר לבנות. שדות בהצעה יישארו כפי שהם." : "")
     : `חסרים ${missing.length} שדות חובה`;
   document.getElementById("ready").textContent = ok ? "" : "טרם מולאו שדות החובה";
 }
