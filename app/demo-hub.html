@@ -91,6 +91,7 @@ document.body.classList.add("sbe-hasnav");
 const SECTIONS = [
   { title: "לקראת ההצגה", items: [
     { label: "תוכן עניינים — כל המערכת", file: "system-toc.html" },
+    { label: "מצגת הרקע התיאורטי ↗", file: "https://canva.link/3c0slqd77p6i41b", external: true },
     { label: "תוצרי המערכת — הופקו על ידי המודל", file: "products/index.html" },
   ]},
   { title: "כניסה למערכת", items: [
@@ -156,7 +157,11 @@ function renderNavPanel(){
       btn.className = "item" + (item.file === currentFile ? " active" : "");
       btn.textContent = item.label;
       btn.dataset.file = item.file;
-      btn.addEventListener("click", () => { loadScreen(item.file, item.label); navPanel.hidden = true; });
+      btn.addEventListener("click", () => {
+        navPanel.hidden = true;
+        if (item.external) { window.open(item.file, "_blank", "noopener"); }
+        else { loadScreen(item.file, item.label); }
+      });
       navPanel.appendChild(btn);
       if (!firstBtn) firstBtn = { file: item.file, label: item.label };
     });
