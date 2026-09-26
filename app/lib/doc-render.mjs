@@ -113,7 +113,9 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .red{border:1px solid #E0C4C1;background:#FAF0EF;border-radius:4px;
   padding:12px 15px;font-size:14px;color:#7A322D;}
 .foot{border-top:1px solid var(--hair);padding:11px 36px;font-size:11.5px;
-  color:var(--muted);display:flex;justify-content:space-between;background:var(--sub);}
+  color:var(--muted);display:flex;flex-direction:column;gap:3px;background:var(--sub);}
+.foot-row{display:flex;justify-content:space-between;}
+.foot-by{font-size:10px;}
 @media(max-width:640px){
   .two{grid-template-columns:1fr;} .row,.tp-b,.br{grid-template-columns:1fr;gap:3px;}
   .head,.body,.foot{padding-inline:20px;}
@@ -227,6 +229,7 @@ export function createRenderer(config) {
   const WIDGET = (config.NAV_WIDGET || '') + (config.REPORT_WIDGET || '');
 
   function page(scn, { badge, meta, body }) {
+    const byline = [scn.creator, scn.date, scn.institution].filter(Boolean).map(esc).join(' · ');
     return `<meta charset="UTF-8">
 <title>${esc(scn.name)} · ${esc(badge)}</title>
 ${FONTS}
@@ -241,7 +244,10 @@ ${FONTS}
   </div>
   <div class="hr"></div>
   <div class="body">${body}</div>
-  <div class="foot"><span>S.B.E · חינוך מבוסס סימולציה · ${esc(scn.id)}</span><span>${esc(badge)}</span></div>
+  <div class="foot">
+    <div class="foot-row"><span>S.B.E · חינוך מבוסס סימולציה · ${esc(scn.id)}</span><span>${esc(badge)}</span></div>
+    ${byline ? `<div class="foot-by">${byline}</div>` : ''}
+  </div>
 </div>
 ${WIDGET}`;
   }
