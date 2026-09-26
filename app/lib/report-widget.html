@@ -1,0 +1,167 @@
+<!-- ── כפתור דיווח גלובלי — אותו רכיב שבכל 17 מסכי app/, ראו entry.html (09/09/2026) ── -->
+<style>
+#rptFab{position:fixed;inset-inline-end:16px;bottom:16px;z-index:9999;width:auto;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:13px;font-weight:600;
+  padding:9px 15px;border-radius:22px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;
+  cursor:pointer;box-shadow:0 4px 14px rgba(20,28,36,.28);}
+#rptFab:hover{opacity:.9;}
+dialog#rptDlg{border:1px solid #CDD3D8;border-radius:10px;background:#FCFCFD;color:#141C24;
+  max-width:440px;width:92vw;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.3);
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;direction:rtl;}
+dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
+#rptDlg h3{margin:0;padding:15px 20px;border-bottom:1px solid #CDD3D8;font-size:16.5px;font-weight:700;}
+#rptDlg .rb{padding:16px 20px;max-height:65vh;overflow:auto;}
+#rptDlg label{display:block;font-size:12.5px;font-weight:600;color:#5C6771;margin-bottom:4px;}
+#rptDlg input,#rptDlg select,#rptDlg textarea{width:100%;font-family:inherit;font-size:14.5px;color:#141C24;
+  background:#EDEFF1;border:1px solid #CDD3D8;border-radius:6px;padding:8px 10px;direction:rtl;
+  margin-bottom:10px;box-sizing:border-box;}
+#rptDlg textarea{min-height:70px;resize:vertical;}
+#rptDlg .req{color:#8C3A34;}
+#rptDlg .rerr{background:#F5E4E2;border-inline-start:3px solid #8C3A34;border-radius:6px;padding:8px 11px;
+  font-size:12.5px;color:#8C3A34;margin-bottom:10px;}
+#rptDlg .rerr[hidden]{display:none;}
+#rptDlg .rnote{font-size:11.5px;color:#5C6771;line-height:1.55;margin:0 0 12px;}
+#rptDlg .rscreen{font-size:11px;color:#5C6771;margin:0 0 10px;}
+#rptDlg .rf{padding:12px 20px;border-top:1px solid #CDD3D8;display:flex;gap:8px;}
+#rptDlg .rf button{font-family:inherit;font-size:14px;font-weight:600;padding:8px 16px;border-radius:6px;
+  border:1px solid #CDD3D8;background:#E4E7EA;color:#141C24;cursor:pointer;}
+#rptDlg .rf button.p{background:#2E5A7D;border-color:#2E5A7D;color:#fff;}
+</style>
+<button type="button" id="rptFab" title="דיווח על תקלה, שאלה, רעיון או בקשה">דיווח / רעיון</button>
+<dialog id="rptDlg">
+  <h3>דיווח על תקלה, שאלה, רעיון או בקשה</h3>
+  <div class="rb">
+    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח — לא ניתן לצרף קובץ אוטומטית למייל.</p>
+    <div class="rerr" id="rptErr" hidden></div>
+    <label>שם מלא <span class="req">*</span></label>
+    <input id="rptName">
+    <label>תאריך</label>
+    <input id="rptDate" readonly>
+    <label>תפקיד</label>
+    <input id="rptRole" placeholder="לא צוין">
+    <label>סוג הפנייה</label>
+    <select id="rptType">
+      <option>תקלה</option><option>שאלה</option><option>רעיון לשיפור</option><option>בקשה</option><option>משוב על השימוש במערכת</option>
+    </select>
+    <p class="rscreen" id="rptScreen"></p>
+    <div id="rptGeneric">
+      <label>פירוט <span class="req">*</span></label>
+      <textarea id="rptDetails" placeholder="מה קרה, מה ציפית שיקרה, ובאיזה מסך"></textarea>
+    </div>
+    <div id="rptUsage" hidden>
+      <label>ההצעות של המערכת התאימו למה שרצית?</label>
+      <select id="rptFit"><option value="">לא צוין</option><option>כן במלואן</option><option>חלקית</option><option>לא</option></select>
+      <label>המערכת ידידותית</label>
+      <select id="rptFriendly"><option value="">לא צוין</option><option>במידה רבה</option><option>במידה בינונית</option><option>במידה מועטה</option></select>
+      <label>האם תרצה/י להמשיך להשתמש במערכת?</label>
+      <select id="rptContinue"><option value="">לא צוין</option><option>במידה רבה</option><option>במידה בינונית</option><option>במידה מועטה</option></select>
+      <label>למי היית ממליץ/ה להשתמש במערכת?</label>
+      <input id="rptRecommend" placeholder="לא חובה">
+      <label>מה חסר, מה היה מבלבל, או הערה אחרת?</label>
+      <textarea id="rptUsageNotes" placeholder="לא חובה"></textarea>
+    </div>
+    <label>צילום מסך (לא חובה)</label>
+    <input type="file" id="rptFile" accept="image/*">
+  </div>
+  <div class="rf">
+    <button type="button" class="p" id="rptSend">שליחה במייל</button>
+    <button type="button" id="rptCancel">ביטול</button>
+  </div>
+</dialog>
+<script>
+(function(){
+  "use strict";
+  if (window.self !== window.top) {
+    // מוטמע בתוך iframe (admin.html/demo-hub.html) — העמוד המארח
+    // מציג דיווח משלו; עותק כפול היה מתמקם לפי חלון ה-iframe ולא לפי המסך.
+    var _rf = document.getElementById("rptFab"); if (_rf) _rf.remove();
+    var _rd = document.getElementById("rptDlg"); if (_rd) _rd.remove();
+    return;
+  }
+  var fab = document.getElementById("rptFab");
+  var dlg = document.getElementById("rptDlg");
+  var nameEl = document.getElementById("rptName");
+  var dateEl = document.getElementById("rptDate");
+  var roleEl = document.getElementById("rptRole");
+  var errEl = document.getElementById("rptErr");
+  var typeEl = document.getElementById("rptType");
+  var genericEl = document.getElementById("rptGeneric");
+  var usageEl = document.getElementById("rptUsage");
+  var screenEl = document.getElementById("rptScreen");
+  var screenName = document.title || location.pathname;
+
+  // "משוב על השימוש במערכת" (17/09/2026) — סוג פנייה נוסף עם חמש שאלות
+  // ייעודיות במקום "פירוט" חופשי, ותיוג אוטומטי של המסך שממנו זה נשלח
+  // (המשתמשת: "איך אדע באיזה חלק השולח השתמש/ה?"). כל שליחה נשמרת גם
+  // ב-localStorage (sbe.reports.<ts>), לא רק דרך mailto — כדי שיהיה מסך
+  // תוצאות לקרוא אותן בחזרה, לא רק תיבת מייל.
+  function syncType(){
+    var isUsage = typeEl.value === "משוב על השימוש במערכת";
+    genericEl.hidden = isUsage;
+    usageEl.hidden = !isUsage;
+  }
+  typeEl.addEventListener("change", syncType);
+
+  function openDlg(presetType){
+    dateEl.value = new Date().toLocaleDateString("he-IL");
+    if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
+    try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
+    errEl.hidden = true;
+    screenEl.textContent = "נשלח מהמסך: " + screenName;
+    if (presetType) typeEl.value = presetType;
+    syncType();
+    dlg.showModal();
+  }
+  fab.addEventListener("click", function(){ openDlg(null); });
+  // נקודת חיבור לפתיחה אוטומטית בסיום תרגול/יצירה — מסכים אחרים באותו
+  // קובץ קוראים ל-window.sbeOpenUsageFeedback() מתוך handler ההשלמה שלהם.
+  window.sbeOpenUsageFeedback = function(){ openDlg("משוב על השימוש במערכת"); };
+
+  document.getElementById("rptCancel").addEventListener("click", function(){ dlg.close(); });
+  document.getElementById("rptSend").addEventListener("click", function(){
+    var name = nameEl.value.trim();
+    var type = typeEl.value;
+    var isUsage = type === "משוב על השימוש במערכת";
+    var details = document.getElementById("rptDetails").value.trim();
+    if (!name || (!isUsage && !details)) {
+      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.hidden = false;
+      return;
+    }
+    var roleVal = roleEl.value.trim() || "לא צוין";
+    var record = {
+      name: name, date: dateEl.value, role: roleVal, type: type, screen: screenName,
+      details: details,
+      fit: isUsage ? document.getElementById("rptFit").value : "",
+      friendly: isUsage ? document.getElementById("rptFriendly").value : "",
+      continueUsing: isUsage ? document.getElementById("rptContinue").value : "",
+      recommend: isUsage ? document.getElementById("rptRecommend").value.trim() : "",
+      notes: isUsage ? document.getElementById("rptUsageNotes").value.trim() : "",
+      ts: Date.now()
+    };
+    try { localStorage.setItem("sbe.reports." + record.ts, JSON.stringify(record)); } catch(e){}
+    var bodyLines = [
+      "שם מלא: " + name,
+      "תאריך: " + record.date,
+      "תפקיד: " + roleVal,
+      "סוג פנייה: " + type,
+      "מסך: " + screenName,
+      ""
+    ];
+    if (isUsage) {
+      bodyLines.push(
+        "ההצעות התאימו: " + (record.fit || "לא צוין"),
+        "ידידותיות: " + (record.friendly || "לא צוין"),
+        "ממשיכה להשתמש: " + (record.continueUsing || "לא צוין"),
+        "המלצה למי: " + (record.recommend || "-"),
+        "מה חסר/הערות: " + (record.notes || "-")
+      );
+    } else {
+      bodyLines.push("פירוט:", details);
+    }
+    var subject = "S.B.E · " + type + " · " + name;
+    location.href = "mailto:yael.sade@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(bodyLines.join("\n"));
+    dlg.close();
+  });
+})();
+</script>
