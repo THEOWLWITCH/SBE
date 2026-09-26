@@ -4,68 +4,112 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>חוסן חברתי בכיתה — מילוי שאלון</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="lib/resilience-data.js"></script>
 <script src="lib/resilience-score.js"></script>
 <style>
 :root{
-  --c-bg:#f8f9fa;--c-card:#fff;--c-border:#dee2e6;--c-text:#212529;
-  --c-muted:#6c757d;--c-primary:#1565c0;--c-primary-l:#e3f2fd;
-  --c-harm:#c62828;--c-ok:#2e7d32;--r:10px;
-  --shadow:0 2px 12px rgba(0,0,0,.08);
+  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
+  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
+  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
+  --auto:#4A6B5A; --auto-soft:#DFE9E2;
+  --brick:#8C3A34; --brick-soft:#F5E4E2;
+  --shadow:rgba(20,28,36,.09);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+    --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+    --spoken:#82AECE; --spoken-soft:#1E2E3A;
+    --auto:#83B599; --auto-soft:#1B2A22;
+    --brick:#CF7C74; --brick-soft:#331E1C;
+    --shadow:rgba(0,0,0,.5);color-scheme:dark
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+  --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+  --spoken:#82AECE; --spoken-soft:#1E2E3A;
+  --auto:#83B599; --auto-soft:#1B2A22;
+  --brick:#CF7C74; --brick-soft:#331E1C;
+  --shadow:rgba(0,0,0,.5);color-scheme:dark
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:var(--c-bg);color:var(--c-text);min-height:100vh;padding:1rem}
-.wrap{max-width:560px;margin:0 auto}
-.card{background:var(--c-card);border:1px solid var(--c-border);border-radius:var(--r);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem}
-h1{font-size:1.3rem;margin-bottom:.4rem}
-h2{font-size:1rem;color:var(--c-primary);margin-bottom:1rem}
-p{line-height:1.6;color:var(--c-muted);margin-bottom:.75rem;font-size:.95rem}
-label{display:block;font-weight:600;font-size:.9rem;margin-bottom:.3rem}
-select,input[type=text]{
-  width:100%;padding:.625rem .75rem;border:1.5px solid var(--c-border);
-  border-radius:var(--r);font-size:1rem;font-family:inherit;
-  margin-bottom:1rem;background:#fff;transition:border-color .15s
+body{
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.55;
+  background:var(--ground);color:var(--ink);min-height:100vh;
+  padding:1rem 16px 60px;-webkit-font-smoothing:antialiased;direction:rtl
 }
-select:focus,input:focus{outline:none;border-color:var(--c-primary)}
+.wrap{max-width:560px;margin:0 auto}
+.card{
+  background:var(--surface);border:1px solid var(--hair);
+  border-radius:9px;box-shadow:0 1px 3px var(--shadow);
+  padding:1.5rem;margin-bottom:1rem
+}
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:1.5rem;margin-bottom:.4rem}
+h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:1.05rem;font-weight:700;color:var(--spoken);margin-bottom:1rem}
+p{line-height:1.6;color:var(--muted);margin-bottom:.75rem;font-size:.95rem}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:.3rem}
+select,input[type=text]{
+  width:100%;font-family:inherit;font-size:16px;color:var(--ink);
+  background:var(--ground);border:1px solid var(--hair);
+  border-radius:6px;padding:10px 12px;direction:rtl;
+  margin-bottom:12px;transition:border-color .15s
+}
+select:focus,input:focus{outline:2px solid var(--spoken);outline-offset:1px}
 .btn{
-  display:block;width:100%;padding:.8rem 1.5rem;border:none;border-radius:var(--r);
-  font-size:1rem;font-family:inherit;font-weight:700;cursor:pointer;
-  background:var(--c-primary);color:#fff;transition:opacity .15s
+  display:block;width:100%;padding:.75rem 1.5rem;border:none;border-radius:6px;
+  font-size:15px;font-family:inherit;font-weight:600;cursor:pointer;
+  background:var(--spoken);color:#fff;transition:opacity .15s
 }
 .btn:disabled{opacity:.4;cursor:not-allowed}
-.btn-ghost{background:transparent;border:1.5px solid var(--c-border);color:var(--c-text);font-weight:400}
+.btn-ghost{background:transparent;border:1px solid var(--hair);color:var(--ink);font-weight:400}
 /* progress */
-.prog-track{height:5px;background:var(--c-border);border-radius:3px;margin-bottom:1.25rem}
-.prog-fill{height:100%;background:var(--c-primary);border-radius:3px;transition:width .3s}
+.prog-track{height:5px;background:var(--hair);border-radius:3px;margin-bottom:1.25rem}
+.prog-fill{height:100%;background:var(--spoken);border-radius:3px;transition:width .3s}
 /* domain */
-.dom-label{font-size:.78rem;color:var(--c-muted);margin-bottom:.5rem;padding-bottom:.5rem;border-bottom:1px solid var(--c-border)}
-.item-count{font-size:.78rem;color:var(--c-muted);margin-bottom:.75rem}
-.item-text{font-size:1.05rem;font-weight:500;line-height:1.55;margin-bottom:1rem}
-.rev-notice{font-size:.82rem;color:var(--c-harm);margin-bottom:.6rem;font-weight:600}
+.dom-label{font-size:.78rem;color:var(--muted);margin-bottom:.5rem;padding-bottom:.5rem;border-bottom:1px solid var(--hair)}
+.item-count{font-size:.78rem;color:var(--muted);margin-bottom:.75rem}
+.item-text{font-size:1.05rem;font-weight:500;line-height:1.55;margin-bottom:1rem;color:var(--ink)}
+.rev-notice{font-size:.82rem;color:var(--brick);margin-bottom:.6rem;font-weight:600}
 /* likert */
 .likert{display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem;margin:1rem 0}
 .lk-opt input{display:none}
 .lk-opt label{
   display:flex;flex-direction:column;align-items:center;gap:.35rem;
-  padding:.5rem .2rem;border:2px solid var(--c-border);border-radius:var(--r);
+  padding:.5rem .2rem;border:2px solid var(--hair);border-radius:9px;
   cursor:pointer;font-size:.72rem;line-height:1.25;text-align:center;
-  transition:border-color .15s,background .15s;user-select:none
+  transition:border-color .15s,background .15s;user-select:none;
+  background:var(--surface);color:var(--ink)
 }
-.lk-opt input:checked+label{border-color:var(--c-primary);background:var(--c-primary-l);font-weight:700}
-.lk-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--c-border)}
-.lk-opt input:checked+label .lk-dot{border-color:var(--c-primary);background:var(--c-primary)}
+.lk-opt input:checked+label{border-color:var(--spoken);background:var(--spoken-soft);font-weight:700}
+.lk-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--hair)}
+.lk-opt input:checked+label .lk-dot{border-color:var(--spoken);background:var(--spoken)}
 /* nav */
 .nav{display:grid;grid-template-columns:1fr 2fr;gap:.5rem;margin-top:1rem}
 /* screens */
 .scr{display:none}.scr.on{display:block}
 /* done */
 .done-icon{font-size:3rem;text-align:center;margin:1rem 0}
-.done-msg{text-align:center;font-size:1.1rem;font-weight:600;margin-bottom:.5rem}
-.info-box{background:var(--c-primary-l);border:1px solid #90caf9;border-radius:var(--r);padding:.75rem 1rem;font-size:.9rem;color:#0d47a1;margin:1rem 0}
+.done-msg{text-align:center;font-size:1.1rem;font-weight:600;margin-bottom:.5rem;color:var(--auto)}
+.info-box{
+  background:var(--spoken-soft);border:1px solid var(--hair);
+  border-inline-start:3px solid var(--spoken);border-radius:6px;
+  padding:.75rem 1rem;font-size:.9rem;color:var(--spoken);margin:1rem 0
+}
+/* back nav */
+.topnav{font-size:12px;font-family:"IBM Plex Mono",monospace;letter-spacing:.02em;
+  margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.topnav a{color:var(--spoken);text-decoration:none}
+.topnav a:hover{text-decoration:underline}
+.topnav .sep{color:var(--muted)}
 </style>
 </head>
 <body>
 <div class="wrap">
+<nav class="topnav"><a href="entry.html">S.B.E</a><span class="sep">›</span><span>חוסן חברתי בכיתה</span></nav>
 
 <!-- ── מסך 1: הגדרה ── -->
 <div id="s-setup" class="scr on">
