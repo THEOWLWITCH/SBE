@@ -435,6 +435,12 @@ const OTHER_SCREENS_GROUPS = [
 const roleParam = new URLSearchParams(location.search).get("role");
 let role = (roleParam === "sys" || roleParam === "inst") ? roleParam : "inst", tab = "codes";
 
+// Demo-only roleswitch: visible only when no ?role= param (direct access without login)
+if (roleParam === "sys" || roleParam === "inst") {
+  const rs = document.querySelector('.roleswitch');
+  if (rs) rs.style.display = 'none';
+}
+
 function render(){
   $("title").textContent = role==="inst" ? "אזור ניהול מוסד" : "אזור ניהול כלל המערכת";
   $("lead").textContent = role==="inst"

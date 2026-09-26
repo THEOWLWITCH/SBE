@@ -335,7 +335,7 @@ function renderSetup(){
   const st=loadStore();
   const formCard=document.getElementById('setup-form-card');
   const activeCard=document.getElementById('setup-active-card');
-  if(!cfg){formCard.style.display='';activeCard.style.display='none';return;}
+  if(!cfg||R.BANDS[cfg.band]==null){formCard.style.display='';activeCard.style.display='none';return;}
   formCard.style.display='none';activeCard.style.display='';
 
   document.getElementById('setup-summary').textContent='כיתה: '+cfg.cls+' | שכבה: '+R.BANDS[cfg.band].label;
