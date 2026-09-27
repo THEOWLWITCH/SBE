@@ -622,7 +622,7 @@ $("upFile").addEventListener("change", async (e) => {
 });
 
 // ── חיבור AI — אותו שרת proxy משותף לכל app/ (harness/practice-server.mjs) ──
-const AI_SERVER = "http://127.0.0.1:8790";
+const AI_SERVER = "https://sbe-server.onrender.com";
 function setAIStatus(status){
   const chip = $("aiStatusChip");
   if (!chip) return;
