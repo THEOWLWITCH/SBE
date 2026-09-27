@@ -131,7 +131,9 @@ const server = createServer(async (req, res) => {
 
   if (req.method === 'GET' && req.url === '/health') {
     const hasKey = !!process.env[getProviderEnvKeyName()];
-    return sendJson(res, 200, { ok: true, hasKey });
+    const hasWorkspace = !!(process.env.ANTHROPIC_WORKSPACE_ID || '').trim();
+    const hasSupabase = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
+    return sendJson(res, 200, { ok: true, hasKey, hasWorkspace, hasSupabase });
   }
 
   const validPaths = ['/api/complete', '/api/character-turn', '/api/pipeline'];
