@@ -35,6 +35,51 @@ import { getProvider } from './lib/providers.mjs';
 import { runPipeline } from './lib/pipeline.mjs';
 import { toScenario } from './lib/to-scenario.mjs';
 
+// שמירת תרחיש ב-Supabase. נקראת רק כשיש SUPABASE_SERVICE_KEY בסביבה.
+// scenario הוא הפלט של toScenario(); meta הוא payload.meta מהלקוח.
+async function saveScenario(scenario, meta) {
+  const supaUrl = process.env.SUPABASE_URL;
+  const supaKey = process.env.SUPABASE_SERVICE_KEY;
+  if (!supaUrl || !supaKey) return;
+
+  const roles = [scenario.trainee?.role, scenario.actor?.role].filter(Boolean);
+  const skills = scenario.facilitator?.skills || [];
+
+  const row = {
+    id:             scenario.id,
+    institution_id: meta.institutionId || 'unknown',
+    name:           scenario.name,
+    subtitle:       scenario.subtitle || '',
+    roles,
+    event_desc:     meta.eventDesc || '',
+    broad_topic:    meta.broadTopic || '',
+    domain:         meta.domain || '',
+    content_type:   scenario.conflictType || '',
+    approach:       scenario.approach || '',
+    age_group:      scenario.age || '',
+    product_type:   meta.productType || 'תרחיש',
+    skills:         Array.isArray(skills) ? skills : [],
+    language:       scenario.language || 'עברית',
+    duration_min:   parseInt(scenario.duration) || 5,
+    creator:        scenario.creator || meta.creator || '',
+    scenario_json:  scenario,
+  };
+  const r = await fetch(`${supaUrl}/rest/v1/scenarios`, {
+    method: 'POST',
+    headers: {
+      apikey:         supaKey,
+      Authorization:  `Bearer ${supaKey}`,
+      'Content-Type': 'application/json',
+      Prefer:         'resolution=merge-duplicates',
+    },
+    body: JSON.stringify(row),
+  });
+  if (!r.ok) {
+    const body = await r.text().catch(() => '');
+    throw new Error(`Supabase ${r.status}: ${body}`);
+  }
+}
+
 const args = process.argv.slice(2);
 const portArgIdx = args.indexOf('--port');
 const PORT = Number(portArgIdx >= 0 ? args[portArgIdx + 1] : (process.env.PORT || 8790));
@@ -115,6 +160,8 @@ const server = createServer(async (req, res) => {
       const out = await runPipeline(payload.input, provider, { sourceLibrary: payload.sourceLibrary || [] });
       const scenario = toScenario(out, { input: payload.input, meta: payload.meta || {} });
       clearInterval(keepAlive);
+      // שמירה ב-Supabase בצד שרת — לא חוסמת את התגובה
+      saveScenario(scenario, payload.meta || {}).catch(() => {});
       res.end(JSON.stringify({ scenario, _ms: out._ms }));
     } catch (e) {
       clearInterval(keepAlive);
