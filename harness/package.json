@@ -1,0 +1,13 @@
+{
+  "name": "scenario-harness",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "רתמת הרצה לסט ההערכה",
+  "scripts": {
+    "run": "node run.mjs",
+    "gates": "node run.mjs --gates-only"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

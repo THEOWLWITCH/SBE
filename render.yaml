@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: sbe-server
+    runtime: node
+    buildCommand: ""
+    startCommand: node harness/practice-server.mjs
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+    healthCheckPath: /health
