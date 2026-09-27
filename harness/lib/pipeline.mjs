@@ -22,17 +22,7 @@ export async function runPipeline(input, provider, { sourceLibrary = [] } = {}) 
     fill(loadPrompt('stage1'), { LOCKED_FIELDS: input.locked || {} }) +
     `\n\nנתוני הקלט:\n${JSON.stringify(input.given, null, 2)}`));
 
-  // שלב 2 — חמש התפניות. גזירה, לא המצאה.
-  const s2 = extractJson(await step('stage2', 'medium',
-    fill(loadPrompt('stage2'), {
-      STAGE1_OUTPUT: s1,
-      APPROACH: input.approach || '',
-      APPROACH_RULES: input.approachRules || '',
-      EXPERIENCE: input.experience || 'קבוצה מנוסה',
-      SKILLS: (input.skills || []).join(' · '),
-    })));
-
-  // פסקת המתנסה — קריאה נפרדת שלא מקבלת את המידע הסמוי.
+  // שלב 2 ופסקת המתנסה — שניהם תלויים רק ב-s1, לא אחד בשני, מריצים במקביל.
   const visible = {
     traineeRole: s1.characters?.trainee?.role,
     traineeAnchor: s1.characters?.trainee?.domainMaterial,
@@ -46,8 +36,20 @@ export async function runPipeline(input, provider, { sourceLibrary = [] } = {}) 
   // הקריאה מחזירה את פסקת הפתיחה, ואחרי מפריד "---" גם את "מה על הפרק
   // בשבילך" (21/09/2026, prompts/narrative-products.md). שני החלקים נכתבים
   // מאותם נתונים גלויים בלבד — לכן גם השני לא יכול להדליף.
-  const traineeRaw = (await step('trainee', 'low',
-    fill(loadPrompt('trainee'), { TRAINEE_VISIBLE_DATA: visible }))).trim();
+  const [s2raw, traineeRawFull] = await Promise.all([
+    step('stage2', 'medium',
+      fill(loadPrompt('stage2'), {
+        STAGE1_OUTPUT: s1,
+        APPROACH: input.approach || '',
+        APPROACH_RULES: input.approachRules || '',
+        EXPERIENCE: input.experience || 'קבוצה מנוסה',
+        SKILLS: (input.skills || []).join(' · '),
+      })),
+    step('trainee', 'low',
+      fill(loadPrompt('trainee'), { TRAINEE_VISIBLE_DATA: visible })),
+  ]);
+  const s2 = extractJson(s2raw);
+  const traineeRaw = traineeRawFull.trim();
   const traineeParts = traineeRaw.split(/\n\s*-{3,}\s*\n/);
   const traineeDoc = traineeParts[0].trim();
   const traineeStakes = (traineeParts[1] || '').trim();
