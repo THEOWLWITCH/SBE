@@ -125,6 +125,14 @@ mark{background:var(--spoken-soft);color:inherit;border-radius:2px;padding:0 2px
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]) .brandrow img{filter:brightness(1.85) saturate(.85);}
 }
+
+/* שורת מוסד */
+.inst-bar{display:flex;align-items:center;gap:10px;margin:14px 0 8px;padding:10px 14px;
+  background:var(--surface);border:1px solid var(--hair);border-radius:8px;}
+.inst-label{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;}
+.inst-input{flex:1;font-family:inherit;font-size:14.5px;color:var(--ink);background:transparent;
+  border:none;outline:none;direction:rtl;min-width:0;}
+.inst-input::placeholder{color:var(--hair);}
 </style>
 
 <div class="wrap">
@@ -133,6 +141,12 @@ mark{background:var(--spoken-soft);color:inherit;border-radius:2px;padding:0 2px
   <h1>חיפוש במאגר</h1>
   <p class="lead">מילה אחת נסרקת מול כל שדות התרחיש: השם, התפקידים, האירוע, ההקשר, המיומנויות והגישה.</p>
 </header>
+
+<div class="inst-bar">
+  <span class="inst-label">מוסד</span>
+  <input id="instCode" class="inst-input" type="text"
+    placeholder="הקלידי קוד מוסד (לדוגמה: ort-ra-anana)" autocomplete="off" spellcheck="false">
+</div>
 
 <div class="scope">
   <button id="sMine" aria-pressed="true">המאגר של המוסד</button>
@@ -162,178 +176,196 @@ mark{background:var(--spoken-soft);color:inherit;border-radius:2px;padding:0 2px
 <p class="note" id="note"></p>
 </div>
 
-<script>
-"use strict";
+<script type="module">
+import { fetchScenarios, incrementRuns } from './lib/sbe-db.js';
 
-// מאגר לדוגמה. בייצור מגיע מהשרת, מסונן לפי המוסד.
-const DB = [
-  { id:"TR-0209-01", name:"יש לך גן טוב", sub:"מחלוקת בין גננת לאם על גבולות מעורבות ההורים",
-    creator:"יעל שדה", date:"2.9.2026", year:2026, mine:true, roles:["גננת","אם"],
-    event:"האם מבקשת שהילד שלה לא יישב ליד ילד מסוים בגן", broad:"גבולות מעורבות ההורים",
-    domain:"גיל הרך", ct:"ערכי", ap:"דיאלוג ומפגש", age:"גן", dur:5, lang:"עברית", type:"תרחיש",
-    skills:["הכרה בנקודת מבט שונה","הצבת גבול בלי לדחות את האדם"], runs:8, rate:4 },
-  { id:"TR-0209-02", name:"שמונה שניות של שקט", sub:"שיחה בין מחנכת לתלמידה על סרטון שעבר בשכבה",
-    creator:"יעל שדה", date:"2.9.2026", year:2026, mine:true, roles:["מחנכת","תלמידה"],
-    event:"סרטון של התלמידה עבר בקבוצת השכבה", broad:"פגיעות ברשת",
-    domain:"כישורי חיים", ct:"רגשי", ap:"הכלה, קשיבות והתנסות", age:"חטיבת ביניים", dur:5, lang:"עברית", type:"תרחיש",
-    skills:["החזקת שתיקה","נתינת בחירה או שליטה בקצב"], runs:12, rate:5 },
-  { id:"TR-1806-04", name:"הכיסא שהוזז", sub:"מחלוקת בין מורה למנהלת על שיבוץ לחינוך כיתה",
-    creator:"נועה ברששת", date:"18.6.2026", year:2026, mine:true, roles:["מורה","מנהלת"],
-    event:"המנהלת שיבצה אותה לחינוך כיתה בלי לשאול", broad:"סמכות וניהול",
-    domain:"מתמטיקה", ct:"מבני", ap:"דיאלוג ומפגש", age:"חטיבה עליונה", dur:5, lang:"עברית", type:"תרחיש",
-    skills:["אמירת מה היא כן יכולה ומה לא","שמירה על רוגע"], runs:5, rate:4 },
-  { id:"TR-1103-09", name:"אחרי הצלצול", sub:"שיחה בין יועצת למורה עמיתה על הוצאת תלמידים מהכיתה",
-    creator:"נועה ברששת", date:"11.3.2026", year:2026, mine:true, roles:["יועצת","מורה"],
-    event:"המורה מוציאה תלמידים מהכיתה כמעט בכל שיעור", broad:"אקלים כיתה",
-    domain:"חינוך כללי", ct:"מבני", ap:"ניתוח התנהגות ו-CBT", age:"כיתה ד-ה", dur:5, lang:"עברית", type:"תרחיש",
-    skills:["ניסוח לא מאשים","הצעת המשך קונקרטי"], runs:9, rate:3 },
-  { id:"TR-2711-02", name:"מה שכתוב בטופס", sub:"מחלוקת בין סייעת לגננת על שותפות בקבלת החלטות",
-    creator:"רותם אלמוג", date:"27.11.2025", year:2025, mine:true, roles:["סייעת","גננת"],
-    event:"הסייעת גילתה מהורים על שינוי בסדר היום", broad:"עבודת צוות",
-    domain:"גיל הרך", ct:"מבני", ap:"דיאלוג ומפגש", age:"גן", dur:5, lang:"עברית", type:"תרחיש",
-    skills:["ביטוי צורך","שמירה על רוגע"], runs:6, rate:4 },
-  { id:"TR-0409-07", name:"מחר בבוקר", sub:"עימות בין מנהלת לאב בעקבות פגיעה בהפסקה",
-    creator:"רותם אלמוג", date:"4.9.2025", year:2025, mine:true, roles:["מנהלת","אב"],
-    event:"בנו נפגע בהפסקה והאב מאיים לפנות לתקשורת", broad:"אלימות ומוגנות",
-    domain:"חינוך כללי", ct:"רגשי", ap:"הכלה, קשיבות והתנסות", age:"כיתה א-ג", dur:5, lang:"עברית", type:"תרחיש",
-    skills:["לא להבטיח מה שאי אפשר לקיים","הכרה בקושי במפורש"], runs:14, rate:5 },
-  { id:"TR-1502-03", name:"הטקס", sub:"מחלוקת בין מחנכת לתלמיד על השתתפות בטקס מטעמי מצפון",
-    creator:"יעל שדה", date:"15.2.2025", year:2025, mine:true, roles:["מחנכת","תלמיד"],
-    event:"התלמיד הודיע שלא ישתתף בטקס בית ספרי", broad:"שיח פוליטי טעון",
-    domain:"אזרחות", ct:"ערכי", ap:"חינוך למשמעות", age:"חטיבה עליונה", dur:5, lang:"עברית", type:"תרחיש",
-    skills:["השהיית שיפוט","התאמת רמת הישירות"], runs:4, rate:4 },
-  { id:"TR-0810-01", name:"מי שלא הגיש", sub:"שיחה בין מורה לתלמיד שהפסיק להגיש עבודות",
-    creator:"נועה ברששת", date:"8.10.2024", year:2024, mine:true, roles:["מורה","תלמיד"],
-    event:"מתחילת הסמסטר הוא לא הגיש אף עבודה", broad:"מצוקה רגשית",
-    domain:"חינוך כללי", ct:"רגשי", ap:"חינוך למשמעות", age:"חטיבה עליונה", dur:5, lang:"עברית", type:"תרחיש",
-    skills:["החזקת שתיקה","נתינת בחירה או שליטה בקצב"], runs:11, rate:4 },
-  { id:"TR-2205-06", name:"مَنشور لم يصل", sub:"خلاف بين معلمة ومفتشة حول تنفيذ إجراء تربوي",
-    creator:"סמאח דיאב", date:"22.5.2026", year:2026, mine:false, roles:["מורה","מפקחת"],
-    event:"המפקחת קיבלה דיווח על נוהל שלא בוצע", broad:"נהלים ותקשורת מערכתית",
-    domain:"חינוך כללי", ct:"מידעי", ap:"דיאלוג ומפגש", age:"כיתה ד-ה", dur:5, lang:"ערבית", type:"תרחיש",
-    skills:["בדיקת הבנה","הבחנה בין אחריות לאשמה"], runs:3, rate:4 },
-  { id:"TR-3006-05", name:"שני מכתבים", sub:"משחק תפקידים בין מורה מקצועית למחנכת על זימון הורים",
-    creator:"רותם אלמוג", date:"30.6.2026", year:2026, mine:false, roles:["מורה מקצועית","מחנכת"],
-    event:"תלמיד נכשל שוב ויש מחלוקת אם לזמן הורים", broad:"עבודת צוות",
-    domain:"חינוך כללי", ct:"מבני", ap:"ניתוח התנהגות ו-CBT", age:"חטיבת ביניים", dur:8, lang:"עברית",
-    type:"משחק תפקידים", skills:["בירור נקודות הסכמה","בניית מכנה משותף"], runs:2, rate:3 },
-];
+const $ = id => document.getElementById(id);
 
+/* --- state --- */
+const state = {
+  q: '',
+  scope: 'mine',
+  sort: 'new',
+  institutionId: (() => { try { return sessionStorage.getItem('sbe_inst') || ''; } catch { return ''; } })(),
+  filters: {},
+};
+
+/* --- institution input --- */
+const instEl = $('instCode');
+instEl.value = state.institutionId;
+instEl.addEventListener('input', () => {
+  state.institutionId = instEl.value.trim();
+  try { sessionStorage.setItem('sbe_inst', state.institutionId); } catch {}
+  render();
+});
+
+/* --- filters --- */
 const FILTERS = [
-  { k:"ap",   l:"גישה" },
-  { k:"ct",   l:"סוג קונפליקט" },
-  { k:"age",  l:"שכבת גיל", opts:["גן","כיתה א-ג","כיתה ד-ה","חטיבת ביניים","חטיבה עליונה"] },
-  { k:"lang", l:"שפה", opts:["עברית","ערבית","אנגלית"] },
-  { k:"type", l:"סוג תוצר", opts:["תרחיש","משחק תפקידים","פרומפט לתרחיש","פרומפט למשחק תפקידים"] },
-  { k:"year", l:"שנת יצירה" },
-  { k:"creator", l:"יוצרת" },
+  { k:'approach',     l:'גישה',          opts:[] },
+  { k:'content_type', l:'סוג קונפליקט',  opts:['ערכי','רגשי','מבני','מידעי'] },
+  { k:'age_group',    l:'שכבת גיל',      opts:['גן','כיתה א-ג','כיתה ד-ה','חטיבת ביניים','חטיבה עליונה'] },
+  { k:'language',     l:'שפה',           opts:['עברית','ערבית','אנגלית'] },
+  { k:'product_type', l:'סוג תוצר',      opts:['תרחיש','משחק תפקידים'] },
+  { k:'domain',       l:'תחום',          opts:[] },
+  { k:'creator',      l:'יוצרת',         opts:[] },
 ];
 
-const $ = (id) => document.getElementById(id);
-const state = { q:"", scope:"mine", sort:"new", f:{} };
-const norm = (s) => String(s ?? "").toLowerCase();
+// מאכלס אפשרויות דינמיות מהנתונים שנטענו
+function populateDynamic(data) {
+  ['approach','domain','creator'].forEach(key => {
+    const f = FILTERS.find(x => x.k === key);
+    if (!f) return;
+    const vals = [...new Set(data.map(r => r[key]).filter(Boolean))].sort((a, b) =>
+      String(a).localeCompare(String(b), 'he'));
+    const sel = $('f-' + key);
+    if (!sel) return;
+    const cur = sel.value;
+    sel.textContent = '';
+    const o0 = document.createElement('option'); o0.value = ''; o0.textContent = f.l; sel.append(o0);
+    vals.forEach(v => {
+      const o = document.createElement('option'); o.value = v; o.textContent = v; sel.append(o);
+    });
+    sel.value = cur;
+  });
+}
 
-// כל השדות שהחיפוש החופשי סורק
-const haystack = (r) => norm([r.name, r.sub, r.creator, ...r.roles, r.event,
-  r.broad, r.domain, r.ap, r.ct, ...r.skills, r.type, r.lang, r.age].join(" "));
-
-function buildFilters(){
-  const box = $("filters"); box.textContent = "";
+function buildFilters() {
+  const box = $('filters');
+  box.textContent = '';
   FILTERS.forEach(f => {
-    const sel = document.createElement("select");
-    sel.id = "f-" + f.k;
-    const vals = f.opts || [...new Set(DB.map(r => r[f.k]))].sort((a,b) =>
-      typeof a === "number" ? b - a : String(a).localeCompare(String(b), "he"));
-    const o0 = document.createElement("option"); o0.value = ""; o0.textContent = f.l;
-    sel.append(o0);
-    vals.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; sel.append(o); });
-    sel.addEventListener("change", () => {
-      state.f[f.k] = sel.value;
-      sel.classList.toggle("set", !!sel.value);
+    const sel = document.createElement('select');
+    sel.id = 'f-' + f.k;
+    const o0 = document.createElement('option'); o0.value = ''; o0.textContent = f.l; sel.append(o0);
+    f.opts.forEach(v => {
+      const o = document.createElement('option'); o.value = v; o.textContent = v; sel.append(o);
+    });
+    sel.addEventListener('change', () => {
+      state.filters[f.k] = sel.value;
+      sel.classList.toggle('set', !!sel.value);
       render();
     });
     box.append(sel);
   });
-  const r = document.createElement("button");
-  r.className = "reset"; r.type = "button"; r.textContent = "ניקוי סינון";
-  r.addEventListener("click", () => {
-    state.f = {}; state.q = ""; $("q").value = ""; $("clearq").classList.remove("on");
-    box.querySelectorAll("select").forEach(s => { s.value = ""; s.classList.remove("set"); });
+  const r = document.createElement('button');
+  r.className = 'reset'; r.type = 'button'; r.textContent = 'ניקוי סינון';
+  r.addEventListener('click', () => {
+    state.filters = {}; state.q = ''; $('q').value = ''; $('clearq').classList.remove('on');
+    box.querySelectorAll('select').forEach(s => { s.value = ''; s.classList.remove('set'); });
     render();
   });
   box.append(r);
 }
 
-function highlight(text, q){
+/* --- highlight --- */
+function hl(text, q) {
+  if (!text) return document.createDocumentFragment();
   const frag = document.createDocumentFragment();
   if (!q) { frag.append(text); return frag; }
-  const i = norm(text).indexOf(norm(q));
+  const lo = text.toLowerCase(), lq = q.toLowerCase();
+  const i = lo.indexOf(lq);
   if (i < 0) { frag.append(text); return frag; }
   frag.append(text.slice(0, i));
-  const m = document.createElement("mark"); m.textContent = text.slice(i, i + q.length);
+  const m = document.createElement('mark'); m.textContent = text.slice(i, i + q.length);
   frag.append(m, text.slice(i + q.length));
   return frag;
 }
 
-function render(){
-  let list = DB.filter(r => state.scope === "mine" ? r.mine : !r.mine);
+/* --- render --- */
+let _rt = null;
+function render() { clearTimeout(_rt); _rt = setTimeout(doRender, 100); }
+
+async function doRender() {
   const q = state.q.trim();
-  if (q) list = list.filter(r => haystack(r).includes(norm(q)));
-  Object.entries(state.f).forEach(([k, v]) => { if (v) list = list.filter(r => String(r[k]) === v); });
+  const box = $('res');
+  box.innerHTML = '<div class="empty" style="color:var(--muted)">טוענת…</div>';
+  $('count').textContent = '';
 
-  const S = {
-    new:  (a,b) => b.year - a.year || b.runs - a.runs,
-    used: (a,b) => b.runs - a.runs,
-    name: (a,b) => a.name.localeCompare(b.name, "he"),
-  };
-  list.sort(S[state.sort]);
+  if (state.scope === 'mine' && !state.institutionId) {
+    box.innerHTML = '<div class="empty">הקלידי קוד מוסד בשורה למעלה כדי לראות את תרחישי המוסד שלך</div>';
+    return;
+  }
 
-  $("count").innerHTML = "";
-  const c = document.createElement("span");
-  c.innerHTML = "<b>" + list.length + "</b> תרחישים";
-  $("count").append(c);
+  let data;
+  try {
+    const res = await fetchScenarios({
+      q,
+      institutionId: state.institutionId,
+      scope: state.scope,
+      approach:    state.filters.approach    || '',
+      contentType: state.filters.content_type || '',
+      ageGroup:    state.filters.age_group   || '',
+      language:    state.filters.language    || '',
+      productType: state.filters.product_type || '',
+      domain:      state.filters.domain      || '',
+      creator:     state.filters.creator     || '',
+      sort: state.sort,
+    });
+    data = res.data;
+  } catch (e) {
+    box.innerHTML = `<div class="empty">שגיאת מסד נתונים: ${e.message}</div>`;
+    return;
+  }
 
-  const box = $("res"); box.textContent = "";
-  if (!list.length) {
-    const e = document.createElement("div"); e.className = "empty";
-    e.textContent = state.scope === "mine"
-      ? "אין תרחיש שמתאים. אפשר לנקות את הסינון, או לחפש במאגר המשותף."
-      : "אין תרחיש שמתאים במאגר המשותף.";
+  $('count').innerHTML = `<b>${data.length}</b> תרחישים`;
+  populateDynamic(data);
+
+  box.textContent = '';
+  if (!data.length) {
+    const e = document.createElement('div'); e.className = 'empty';
+    e.textContent = state.scope === 'mine'
+      ? 'אין תרחיש שמתאים. אפשר לנקות את הסינון, או לחפש במאגר המשותף.'
+      : 'אין תרחיש שמתאים במאגר המשותף.';
     box.append(e); return;
   }
 
-  list.forEach(r => {
-    const row = document.createElement("div"); row.className = "row";
+  data.forEach(r => {
+    const dt    = r.created_at ? new Date(r.created_at) : null;
+    const dateStr = dt ? dt.toLocaleDateString('he-IL', { day:'numeric', month:'numeric', year:'numeric' }) : '';
+    const year  = dt ? dt.getFullYear() : '';
 
-    const r1 = document.createElement("div"); r1.className = "r1";
-    const b = document.createElement("b"); b.append(highlight(r.name, q));
-    const y = document.createElement("span"); y.className = "year"; y.textContent = r.year;
+    const row = document.createElement('div'); row.className = 'row';
+    row.addEventListener('click', () => openScenario(r));
+
+    const r1 = document.createElement('div'); r1.className = 'r1';
+    const b = document.createElement('b'); b.append(hl(r.name, q));
+    const y = document.createElement('span'); y.className = 'year'; y.textContent = year;
     r1.append(b, y);
-    if (r.mine && state.scope === "shared") {
-      const m = document.createElement("span"); m.className = "mine"; m.textContent = "שלך";
-      r1.append(m);
+    if (r.institution_id === state.institutionId && state.scope === 'shared') {
+      const m = document.createElement('span'); m.className = 'mine'; m.textContent = 'שלך'; r1.append(m);
     }
 
-    const r2 = document.createElement("div"); r2.className = "r2";
-    r2.append(highlight(r.sub, q));
+    const r2 = document.createElement('div'); r2.className = 'r2';
+    r2.append(hl(r.subtitle || '', q));
 
-    const tags = document.createElement("div"); tags.className = "tags";
-    const tag = (t, cls) => { const s = document.createElement("span");
-      s.className = "tag" + (cls ? " " + cls : ""); s.textContent = t; tags.append(s); };
-    tag(r.ap, "ap"); tag("קונפליקט " + r.ct, "ct");
-    r.roles.forEach(x => tag(x));
-    tag(r.age); tag(r.lang); if (r.type !== "תרחיש") tag(r.type);
+    const tags = document.createElement('div'); tags.className = 'tags';
+    const tag = (t, cls) => {
+      if (!t) return;
+      const s = document.createElement('span');
+      s.className = 'tag' + (cls ? ' ' + cls : ''); s.textContent = t; tags.append(s);
+    };
+    tag(r.approach, 'ap');
+    if (r.content_type) tag('קונפליקט ' + r.content_type, 'ct');
+    (r.roles || []).forEach(x => tag(x));
+    tag(r.age_group); tag(r.language);
+    if (r.product_type && r.product_type !== 'תרחיש') tag(r.product_type);
 
-    const r3 = document.createElement("div"); r3.className = "r3";
-    const add = (t, cls) => { const s = document.createElement("span");
-      if (cls) s.className = cls; s.textContent = t; r3.append(s); };
-    add(r.creator); add(r.date); add(r.dur + " דק׳");
-    add("הועבר ב־" + r.runs + " סדנאות", "use");
-    const rate = document.createElement("span"); rate.className = "rate";
-    rate.title = "דירוג המנחות שהעבירו";
-    for (let i = 1; i <= 5; i++) { const d = document.createElement("i");
-      if (i <= r.rate) d.className = "on"; rate.append(d); }
-    r3.append(rate);
+    const r3 = document.createElement('div'); r3.className = 'r3';
+    const add = (t, cls) => {
+      if (!t) return;
+      const s = document.createElement('span');
+      if (cls) s.className = cls; s.textContent = String(t); r3.append(s);
+    };
+    add(r.creator); add(dateStr);
+    add(r.duration_min ? r.duration_min + ' דק׳' : '');
+    if (r.runs) add('הועבר ב־' + r.runs + ' סדנאות', 'use');
+    if (r.rating) {
+      const rate = document.createElement('span'); rate.className = 'rate';
+      rate.title = 'דירוג המנחות שהעבירו';
+      for (let i = 1; i <= 5; i++) {
+        const d = document.createElement('i'); if (i <= r.rating) d.className = 'on'; rate.append(d);
+      }
+      r3.append(rate);
+    }
     add(r.id);
 
     row.append(r1, r2, tags, r3);
@@ -341,28 +373,43 @@ function render(){
   });
 }
 
-let t = null;
-$("q").addEventListener("input", (e) => {
-  $("clearq").classList.toggle("on", !!e.target.value);
-  clearTimeout(t); t = setTimeout(() => { state.q = e.target.value; render(); }, 120);
-});
-$("clearq").addEventListener("click", () => {
-  $("q").value = ""; state.q = ""; $("clearq").classList.remove("on"); render(); $("q").focus();
-});
-$("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
-$("sMine").addEventListener("click", () => setScope("mine"));
-$("sShared").addEventListener("click", () => setScope("shared"));
-function setScope(s){
+function openScenario(r) {
+  if (!r.scenario_json) return;
+  incrementRuns(r.id);
+  try { sessionStorage.setItem('sbe_scenario', JSON.stringify(r.scenario_json)); } catch {}
+  // ניווט למסמכים — TODO: פתיחה ב-doc-viewer
+  window.location.href = 'doc-trainee.html';
+}
+
+/* --- scope --- */
+function setScope(s) {
   state.scope = s;
-  $("sMine").setAttribute("aria-pressed", String(s === "mine"));
-  $("sShared").setAttribute("aria-pressed", String(s === "shared"));
-  $("note").textContent = s === "mine"
-    ? "המאגר של המוסד שלך. תרחישים של מוסדות אחרים אינם נגישים, והמאגר המשותף מכיל רק את מה ששותף מרצון."
-    : "המאגר המשותף. כאן נמצאים רק תרחישים שהיוצרת בחרה במפורש לשתף. אפשר להסיר שיתוף בכל עת.";
+  $('sMine').setAttribute('aria-pressed', String(s === 'mine'));
+  $('sShared').setAttribute('aria-pressed', String(s === 'shared'));
+  $('note').textContent = s === 'mine'
+    ? 'המאגר של המוסד שלך. תרחישים של מוסדות אחרים אינם נגישים, והמאגר המשותף מכיל רק את מה ששותף מרצון.'
+    : 'המאגר המשותף. כאן נמצאים רק תרחישים שהיוצרת בחרה במפורש לשתף. אפשר להסיר שיתוף בכל עת.';
   render();
 }
 
-buildFilters(); setScope("mine");
+/* --- event listeners --- */
+let _qt = null;
+$('q').addEventListener('input', e => {
+  $('clearq').classList.toggle('on', !!e.target.value);
+  clearTimeout(_qt);
+  _qt = setTimeout(() => { state.q = e.target.value; render(); }, 300);
+});
+$('clearq').addEventListener('click', () => {
+  $('q').value = ''; state.q = ''; $('clearq').classList.remove('on'); render(); $('q').focus();
+});
+$('sort').addEventListener('change', e => { state.sort = e.target.value; render(); });
+$('sMine').addEventListener('click',   () => setScope('mine'));
+$('sShared').addEventListener('click', () => setScope('shared'));
+
+/* --- init --- */
+buildFilters();
+setScope('mine');
+
 </script>
 
 <!-- ── כפתור דיווח גלובלי — אותו רכיב שבכל 17 מסכי app/, ראו entry.html (09/09/2026) ── -->
