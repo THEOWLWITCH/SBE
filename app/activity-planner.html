@@ -832,7 +832,7 @@ async function callAI(system, userText, maxTokens, timeoutMs) {
       signal: ctrl.signal,
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || ("שגיאת שרת " + res.status));
+    if (!res.ok || data.error) throw new Error(data.error || ("שגיאת שרת " + res.status));
     return data.text;
   } finally { clearTimeout(timer); }
 }

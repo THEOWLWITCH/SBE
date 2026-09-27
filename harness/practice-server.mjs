@@ -97,6 +97,22 @@ function sendJson(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
+// ה-proxy של Render סוגר חיבור שלא עוברים בו נתונים ~30 שניות, וקריאה ארוכה
+// למודל שותקת דקות. שולחים כותרות 200 מיד ורווח כל 25 שניות (JSON.parse
+// מתעלם מרווחים מובילים); שגיאה מאוחרת חוזרת כ-{error} בגוף עם 200.
+function startKeepAlive(res) {
+  res.writeHead(200, {
+    'content-type': 'application/json; charset=utf-8',
+    'access-control-allow-origin': CORS_ORIGIN,
+    'access-control-allow-methods': 'POST, OPTIONS',
+    'access-control-allow-headers': 'content-type',
+  });
+  const timer = setInterval(() => {
+    try { if (!res.writableEnded) res.write(' '); } catch {}
+  }, 25000);
+  return (body) => { clearInterval(timer); if (!res.writableEnded) res.end(JSON.stringify(body)); };
+}
+
 function readBody(req) {
   return new Promise((resolve, reject) => {
     // setEncoding: אותו תיקון כמו ב-providers.mjs — בלעדיו אות עברית שנחתכת בין
@@ -136,10 +152,6 @@ const server = createServer(async (req, res) => {
   // ב-effort גבוה) — הלקוח חייב timeout ארוך בהתאם. requestTimeout של
   // השרת כבר 0 (ראו למטה).
   //
-  // keep-alive: ה-proxy של Render סוגר חיבורים שלא שולחים נתונים ~30 שניות.
-  // שולחים רווח כל 25 שניות כדי לשמור על החיבור חי לאורך כל הצינור.
-  // תגובת השגיאה מוחזרת בגוף עם status 200 (כי ה-headers כבר נשלחו),
-  // הלקוח מזהה אותה לפי שדה error.
   if (req.url === '/api/pipeline') {
     if (!payload.input || !payload.input.given) {
       return sendJson(res, 400, { error: 'חסר input.given (who / whatHappened / goals)' });
@@ -147,25 +159,19 @@ const server = createServer(async (req, res) => {
     let provider;
     try { provider = getProvider(process.env.PROVIDER || 'anthropic'); }
     catch (e) { return sendJson(res, 500, { error: e.message }); }
-    res.writeHead(200, {
-      'content-type': 'application/json; charset=utf-8',
-      'access-control-allow-origin': CORS_ORIGIN,
-      'access-control-allow-methods': 'POST, OPTIONS',
-      'access-control-allow-headers': 'content-type',
-    });
-    const keepAlive = setInterval(() => {
-      try { if (!res.writableEnded) res.write(' '); } catch {}
-    }, 25000);
+    const finish = startKeepAlive(res);
+    const t0 = Date.now();
     try {
       const out = await runPipeline(payload.input, provider, { sourceLibrary: payload.sourceLibrary || [] });
       const scenario = toScenario(out, { input: payload.input, meta: payload.meta || {} });
-      clearInterval(keepAlive);
-      // שמירה ב-Supabase בצד שרת — לא חוסמת את התגובה
-      saveScenario(scenario, payload.meta || {}).catch(() => {});
-      res.end(JSON.stringify({ scenario, _ms: out._ms }));
+      console.log(`pipeline: הצליח אחרי ${Math.round((Date.now() - t0) / 1000)} שניות`);
+      saveScenario(scenario, payload.meta || {})
+        .then(() => console.log(`supabase: נשמר ${scenario.id}`))
+        .catch(e => console.error(`supabase: השמירה נכשלה — ${e.message}`));
+      finish({ scenario, _ms: out._ms });
     } catch (e) {
-      clearInterval(keepAlive);
-      res.end(JSON.stringify({ error: `שגיאת ספק: ${e.message}` }));
+      console.error(`pipeline: נכשל אחרי ${Math.round((Date.now() - t0) / 1000)} שניות — ${e.message}`);
+      finish({ error: `שגיאת ספק: ${e.message}` });
     }
     return;
   }
@@ -185,6 +191,8 @@ const server = createServer(async (req, res) => {
     return sendJson(res, 500, { error: e.message });
   }
 
+  const finish = startKeepAlive(res);
+  const t0 = Date.now();
   try {
     const result = await provider.complete({
       system,
@@ -194,9 +202,11 @@ const server = createServer(async (req, res) => {
       variation: 'medium',
       maxTokens: maxTokens || 220,
     });
-    sendJson(res, 200, { text: result.text, toolCalls: result.toolCalls || [] });
+    console.log(`complete: הצליח אחרי ${Math.round((Date.now() - t0) / 1000)} שניות (maxTokens ${maxTokens || 220})`);
+    finish({ text: result.text, toolCalls: result.toolCalls || [] });
   } catch (e) {
-    sendJson(res, 502, { error: `שגיאת ספק: ${e.message}` });
+    console.error(`complete: נכשל אחרי ${Math.round((Date.now() - t0) / 1000)} שניות — ${e.message}`);
+    finish({ error: `שגיאת ספק: ${e.message}` });
   }
 });
 

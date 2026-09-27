@@ -692,7 +692,7 @@ async function callAI(system, userText, maxTokens, timeoutMs) {
       signal: ctrl.signal,
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || ("שגיאת שרת " + res.status));
+    if (!res.ok || data.error) throw new Error(data.error || ("שגיאת שרת " + res.status));
     return data.text;
   } finally { clearTimeout(timer); }
 }
@@ -796,7 +796,7 @@ async function generateProposals(required) {
   } catch (e) {
     console.warn("שרת ה-AI לא זמין — נופלת לתרחיש הדוגמה הקבוע. סיבה:", e.message);
     setAIStatus("mock");
-    return Object.assign({}, SAMPLE, { _mock: true });
+    return Object.assign({}, SAMPLE, { _mock: true, _why: String(e.message || e).slice(0, 200) });
   }
 }
 
@@ -1219,7 +1219,8 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
     // תיוג לא-שקט: אם הופק מתרחיש הדוגמה הקבוע (אין חיבור למודל), היוצרת
     // צריכה לדעת שזה לא נבנה במיוחד עבור התפקידים/האירוע שכתבה (19/09/2026).
     if (out._mock) document.getElementById("hint").textContent =
-      "⚠ אין חיבור למודל כרגע — זה תרחיש דוגמה קבוע (הדגמה), לא דמויות שנבנו עבור מה שכתבת.";
+      "⚠ אין חיבור למודל כרגע — זה תרחיש דוגמה קבוע (הדגמה), לא דמויות שנבנו עבור מה שכתבת." +
+      (out._why ? " · סיבה: " + out._why : "");
   } finally { e.target.disabled = false; e.target.textContent = "מילוי הצעות"; }
 });
 
