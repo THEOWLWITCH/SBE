@@ -1444,7 +1444,7 @@ async function callAI(system, messages, timeoutMs){
       signal: ctrl.signal,
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || ("שגיאת שרת " + res.status));
+    if (!res.ok || data.error) throw new Error(data.error || ("שגיאת שרת " + res.status));
     const call = (data.toolCalls || []).find(t => t.name === "report_turn");
     if (!call) throw new Error("המודל לא החזיר report_turn");
     return call.input;
