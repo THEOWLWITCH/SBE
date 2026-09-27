@@ -120,6 +120,7 @@ const server = createServer(async (req, res) => {
       clearInterval(keepAlive);
       res.end(JSON.stringify({ error: `שגיאת ספק: ${e.message}` }));
     }
+    return;
   }
 
   const { system, messages, tools, toolChoice, maxTokens } = payload;
