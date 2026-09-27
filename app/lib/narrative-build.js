@@ -277,7 +277,7 @@
         // שאר השדות שמולאו במסך — חומר גלם שהצינור רשאי להישען עליו
         given_extra: fieldsText(fields, labels),
       };
-      const meta = { institution: fields.inst || "", creator: fields.creator || "", date: fields.date || "", duration: String(fields.dur || "5").replace(/\D+/g, "") || "5", age: fields.age || "", audience: fields.audience || "" };
+      const meta = { institution: fields.inst || "", institutionId: String(fields.inst || "").trim(), eventDesc: fields.event || "", productType: "תרחיש", creator: fields.creator || "", date: fields.date || "", duration: String(fields.dur || "5").replace(/\D+/g, "") || "5", age: fields.age || "", audience: fields.audience || "" };
       const data = await postJson(server + "/api/pipeline", { input, meta }, 1800000);
       scn = data.scenario;
       if (!scn || !scn.actor || !scn.trainee) throw new Error("הצינור לא החזיר תרחיש");
