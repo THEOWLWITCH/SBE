@@ -90,6 +90,11 @@ const server = createServer(async (req, res) => {
   // לרינדור ב-lib/doc-render.mjs. אורך: 10-20 דקות (ארבע קריאות רצופות
   // ב-effort גבוה) — הלקוח חייב timeout ארוך בהתאם. requestTimeout של
   // השרת כבר 0 (ראו למטה).
+  //
+  // keep-alive: ה-proxy של Render סוגר חיבורים שלא שולחים נתונים ~30 שניות.
+  // שולחים רווח כל 25 שניות כדי לשמור על החיבור חי לאורך כל הצינור.
+  // תגובת השגיאה מוחזרת בגוף עם status 200 (כי ה-headers כבר נשלחו),
+  // הלקוח מזהה אותה לפי שדה error.
   if (req.url === '/api/pipeline') {
     if (!payload.input || !payload.input.given) {
       return sendJson(res, 400, { error: 'חסר input.given (who / whatHappened / goals)' });
@@ -97,12 +102,23 @@ const server = createServer(async (req, res) => {
     let provider;
     try { provider = getProvider(process.env.PROVIDER || 'anthropic'); }
     catch (e) { return sendJson(res, 500, { error: e.message }); }
+    res.writeHead(200, {
+      'content-type': 'application/json; charset=utf-8',
+      'access-control-allow-origin': CORS_ORIGIN,
+      'access-control-allow-methods': 'POST, OPTIONS',
+      'access-control-allow-headers': 'content-type',
+    });
+    const keepAlive = setInterval(() => {
+      try { if (!res.writableEnded) res.write(' '); } catch {}
+    }, 25000);
     try {
       const out = await runPipeline(payload.input, provider, { sourceLibrary: payload.sourceLibrary || [] });
       const scenario = toScenario(out, { input: payload.input, meta: payload.meta || {} });
-      return sendJson(res, 200, { scenario, _ms: out._ms });
+      clearInterval(keepAlive);
+      res.end(JSON.stringify({ scenario, _ms: out._ms }));
     } catch (e) {
-      return sendJson(res, 502, { error: `שגיאת ספק: ${e.message}` });
+      clearInterval(keepAlive);
+      res.end(JSON.stringify({ error: `שגיאת ספק: ${e.message}` }));
     }
   }
 
