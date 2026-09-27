@@ -33,7 +33,7 @@
     try {
       const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || ("שגיאת שרת " + res.status));
+      if (!res.ok || data.error) throw new Error(data.error || ("שגיאת שרת " + res.status));
       return data;
     } finally { clearTimeout(timer); }
   }
@@ -187,9 +187,9 @@
     box.append(el("style", {}, `.sbe-build .sb-banner{border-radius:6px;padding:10px 13px;font-size:14px;line-height:1.6;margin-bottom:10px;background:#FAEFDC;border-inline-start:3px solid #8F5F2E;color:#5C3D1A;}
       .sbe-build .sb-why{font-size:12px;color:#5C6771;direction:ltr;text-align:left;background:#EDEFF1;border-radius:6px;padding:6px 9px;word-break:break-word;}`));
     box.append(el("div", { class: "sb-banner" }, offline
-      ? "התוצר לא נבנה: אין חיבור לשרת ה-AI במחשב הזה. הפעילי את הקובץ \"הפעלת-המערכת.bat\" (או ודאי שחלון \"S.B.E - AI\" פתוח), המתיני שתופיע ההודעה \"שרת ה-AI פועל\", ולחצי שוב על \"בנייה\". כל מה שמילאת בטופס נשמר."
+      ? "התוצר לא נבנה: אין חיבור לשרת. אם את עובדת בענן — השרת ישן ומתעורר, המתיני כ-60 שניות ולחצי שוב על \"בנייה\". אם את עובדת מקומית — ודאי שחלון \"S.B.E - AI\" פתוח ושתופיע ההודעה \"שרת ה-AI פועל\". כל מה שמילאת בטופס נשמר."
       : slow
-      ? "התוצר לא נבנה: המודל לא סיים בזמן שהוקצב. זה קורה בעיקר כשכמה הפקות רצות במקביל. כל מה שמילאת בטופס נשמר — לחצי שוב על \"בנייה\", רצוי כשאין הפקה אחרת שרצה."
+      ? "התוצר לא נבנה: הבנייה לקחה יותר מ-30 דקות — זה קורה לפעמים כשהשרת עמוס. כל מה שמילאת בטופס נשמר — לחצי שוב על \"בנייה\"."
       : "התוצר לא נבנה: המודל החזיר תשובה חסרה או שהקריאה נכשלה באמצע. כל מה שמילאת בטופס נשמר — לחצי שוב על \"בנייה\". אם זה חוזר, העתיקי את השורה למטה ושלחי אותה בכפתור \"דיווח\"."));
     if (reason) box.append(el("div", { class: "sb-why" }, String(reason).slice(0, 300)));
     return box;
