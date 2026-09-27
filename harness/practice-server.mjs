@@ -31,6 +31,7 @@
 // חוזה התשובה: { text: "...", toolCalls: [{name, input}] }
 
 import { createServer } from 'node:http';
+import { randomUUID } from 'node:crypto';
 import { getProvider } from './lib/providers.mjs';
 import { runPipeline } from './lib/pipeline.mjs';
 import { toScenario } from './lib/to-scenario.mjs';
@@ -70,7 +71,7 @@ async function saveScenario(scenario, meta) {
       apikey:         supaKey,
       Authorization:  `Bearer ${supaKey}`,
       'Content-Type': 'application/json',
-      Prefer:         'resolution=merge-duplicates',
+      Prefer:         'return=minimal',
     },
     body: JSON.stringify(row),
   });
@@ -130,7 +131,9 @@ const server = createServer(async (req, res) => {
 
   if (req.method === 'GET' && req.url === '/health') {
     const hasKey = !!process.env[getProviderEnvKeyName()];
-    return sendJson(res, 200, { ok: true, hasKey });
+    const hasWorkspace = !!(process.env.ANTHROPIC_WORKSPACE_ID || '').trim();
+    const hasSupabase = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
+    return sendJson(res, 200, { ok: true, hasKey, hasWorkspace, hasSupabase });
   }
 
   const validPaths = ['/api/complete', '/api/character-turn', '/api/pipeline'];
@@ -161,11 +164,18 @@ const server = createServer(async (req, res) => {
     catch (e) { return sendJson(res, 500, { error: e.message }); }
     const finish = startKeepAlive(res);
     const t0 = Date.now();
+    // בלי מזהה ייחודי, to-scenario נותן לכל תרחיש של אותו יום את TR-MMDD-01,
+    // וכל שמירה במאגר הייתה מתנגשת בקודמת.
+    const meta = { ...(payload.meta || {}) };
+    if (!meta.id) {
+      const d = new Date(), p = (n) => String(n).padStart(2, '0');
+      meta.id = `TR-${p(d.getMonth() + 1)}${p(d.getDate())}-${randomUUID().slice(0, 8)}`;
+    }
     try {
       const out = await runPipeline(payload.input, provider, { sourceLibrary: payload.sourceLibrary || [] });
-      const scenario = toScenario(out, { input: payload.input, meta: payload.meta || {} });
+      const scenario = toScenario(out, { input: payload.input, meta });
       console.log(`pipeline: הצליח אחרי ${Math.round((Date.now() - t0) / 1000)} שניות`);
-      saveScenario(scenario, payload.meta || {})
+      saveScenario(scenario, meta)
         .then(() => console.log(`supabase: נשמר ${scenario.id}`))
         .catch(e => console.error(`supabase: השמירה נכשלה — ${e.message}`));
       finish({ scenario, _ms: out._ms });

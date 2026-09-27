@@ -89,7 +89,8 @@ const anthropic = {
     // API key is not scoped to a workspace"). אופציונלי — לא נשלח כלל אם
     // המשתנה לא מוגדר, כי רוב המפתחות לא צריכים את זה.
     const headers = { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' };
-    if (process.env.ANTHROPIC_WORKSPACE_ID) headers['anthropic-workspace-id'] = process.env.ANTHROPIC_WORKSPACE_ID;
+    const workspaceId = (process.env.ANTHROPIC_WORKSPACE_ID || '').trim();
+    if (workspaceId) headers['anthropic-workspace-id'] = workspaceId;
     const r = await post('https://api.anthropic.com/v1/messages', headers, body);
     if (r.stop_reason === 'max_tokens') throw new ProviderError('התוצר נקטע. max_tokens נמוך מדי');
     if (r.stop_reason === 'refusal') throw new ProviderError('הבקשה נדחתה על ידי המודל');
