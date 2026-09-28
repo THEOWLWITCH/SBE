@@ -274,8 +274,8 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <div id="next-steps" hidden>
   <p class="ns-title">מה עכשיו?</p>
   <div class="ns-btns">
-    <a href="eval-set.html" class="ns-btn p">בחירת מדדים</a>
-    <a href="system-select.html" class="ns-btn s">חזרה לבחירת אפשרויות</a>
+    <a href="system-select.html" class="ns-btn p" id="nsBack">חזרה לבחירת אפשרויות</a>
+    <a href="entry.html" class="ns-btn s" id="nsExit">יציאה</a>
   </div>
 </div>
 </div>
@@ -1273,6 +1273,16 @@ document.getElementById("dlgX").addEventListener("click", () => {
     const ns = document.getElementById("next-steps");
     if (ns) { ns.hidden = false; setTimeout(() => ns.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80); }
   }
+});
+
+// "חזרה לבחירת אפשרויות" חוזרת למסך האפשרויות של המנחה כפי שנשמר בכניסה
+// (עם התפקיד ושם המוסד); "יציאה" מסיימת את הסשן וחוזרת למסך הכניסה.
+try {
+  const home = sessionStorage.getItem("sbe.session.homeUrl") || "";
+  if (home.startsWith("system-select.html")) document.getElementById("nsBack").href = home;
+} catch (e) {}
+document.getElementById("nsExit").addEventListener("click", () => {
+  try { ["sbe.session.name", "sbe.session.role", "sbe.session.homeUrl", "sbe_inst"].forEach(k => sessionStorage.removeItem(k)); } catch (e) {}
 });
 
 render();
