@@ -274,8 +274,8 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <div id="next-steps" hidden>
   <p class="ns-title">מה עכשיו?</p>
   <div class="ns-btns">
-    <a href="eval-set.html" class="ns-btn p">בחירת מדדים</a>
-    <a href="system-select.html" class="ns-btn s">חזרה לבחירת אפשרויות</a>
+    <a href="system-select.html" class="ns-btn p" id="nsBack">חזרה לבחירת אפשרויות</a>
+    <a href="entry.html" class="ns-btn s" id="nsExit">יציאה</a>
   </div>
 </div>
 </div>
@@ -1275,6 +1275,16 @@ document.getElementById("dlgX").addEventListener("click", () => {
   }
 });
 
+// "חזרה לבחירת אפשרויות" חוזרת למסך האפשרויות של המנחה כפי שנשמר בכניסה
+// (עם התפקיד ושם המוסד); "יציאה" מסיימת את הסשן וחוזרת למסך הכניסה.
+try {
+  const home = sessionStorage.getItem("sbe.session.homeUrl") || "";
+  if (home.startsWith("system-select.html")) document.getElementById("nsBack").href = home;
+} catch (e) {}
+document.getElementById("nsExit").addEventListener("click", () => {
+  try { ["sbe.session.name", "sbe.session.role", "sbe.session.homeUrl", "sbe_inst"].forEach(k => sessionStorage.removeItem(k)); } catch (e) {}
+});
+
 render();
 </script>
 
@@ -1546,6 +1556,11 @@ body.sbe-hasnav{padding-top:38px;}
     ]}
   ];
   var panel = document.getElementById("navPanel");
+  // התפריט המלא (כל מסכי המערכת) — רק למנהלת המערכת. אצל כל משתמשת אחרת
+  // הוא פתח את כל המערכת.
+  var isSysAdmin = false;
+  try { isSysAdmin = sessionStorage.getItem("sbe.session.homeUrl") === "admin.html?role=sys"; } catch(e){}
+  if (!isSysAdmin) { document.getElementById("navMenuBtn").style.display = "none"; panel.remove(); }
   // הקישורים יחסיים ל-app/. מסמך שנפתח מתוך תת-תיקייה (products/ — תוצרי
   // המערכת) צריך "../" לפניהם, אחרת "entry.html" מצביע על products/entry.html (404).
   var sub = (location.pathname.match(/\/(products)\/[^\/]*$/) || [])[1];
