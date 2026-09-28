@@ -99,7 +99,7 @@
       <button data-page="tasks">✓ משימות ומועדים</button>
       <button data-page="timeline">↗ ציר זמן</button>
       <button data-page="journals">◎ עיתונים</button>
-      <button data-page="contacts">☺ שותפים</button>
+      <button data-page="contacts">☺ עמיתים לכתיבה</button>
       <button data-page="nobel">★ הדרך לנובל</button>
       <div class="sep"></div>
       <button data-page="admin">⚙ ניהול</button>
@@ -150,7 +150,7 @@
     </section>
 
     <section id="contacts" class="page">
-      <div class="topbar"><div class="title"><h1>שותפים ואנשי קשר</h1><p>שותפים לכתיבה, עורכים וקולגות — לשליחה מהירה במייל</p></div><button class="btn primary" onclick="editContact()">+ איש קשר</button></div>
+      <div class="topbar"><div class="title"><h1>עמיתים לכתיבה ואנשי קשר</h1><p>עמיתים לכתיבה, עורכים וקולגות — לשליחה מהירה במייל</p></div><button class="btn primary" onclick="editContact()">+ איש קשר</button></div>
       <div class="panel"><div id="contactsTable"></div></div>
     </section>
 
@@ -214,8 +214,8 @@ const TASK_STAGES = ['לביצוע', 'בעבודה', 'בדיקה', 'ממתין',
 const SITES = ['אתר אישי', 'Google Scholar', 'ORCID', 'ResearchGate', 'מערכת המוסד (CRIS / Pure)', 'LinkedIn', 'Academia.edu', 'קורות חיים (CV)'];
 // כל פעולה: שם, שדות, מצב שהמאמר עובר אליו, התקדמות, והצעה ל"פעולה הבאה"
 const ACTIONS = {
-  plan:      {label:'תכנון מאמר', fields:['date','note'], status:'בעבודה', progress:10, next:'לכתוב טיוטה ראשונה ולשלוח לשותפים'},
-  draft:     {label:'שליחה לשותפים – סבב טיוטה', round:true, fields:['date','recipients','ver','note'], status:'בעבודה', progress:40, next:'לקבל הערות שותפים ולהעלות גרסה מעודכנת'},
+  plan:      {label:'תכנון מאמר', fields:['date','note'], status:'בעבודה', progress:10, next:'לכתוב טיוטה ראשונה ולשלוח לעמיתים לכתיבה'},
+  draft:     {label:'שליחה לעמיתים לכתיבה – סבב טיוטה', round:true, fields:['date','recipients','ver','note'], status:'בעבודה', progress:40, next:'לקבל הערות מהעמיתים ולהעלות גרסה מעודכנת'},
   submit:    {label:'שליחה לפרסום בעיתון', fields:['date','journal','url','ms','receiptGot','receiptDate','ver','note'], status:'נשלח', progress:75, next:'לוודא שהתקבל אישור קבלה ולעקוב אחרי הסטטוס'},
   reviews:   {label:'קבלת הערות', round:true, fields:['date','journal','decision','due','done','note'], status:'Revision', progress:82, next:'להגיש תיקונים'},
   resubmit:  {label:'הגשת תיקונים', round:true, fields:['date','journal','ver','note'], status:'נשלח', progress:90, next:'ממתין להחלטת העורך'},
@@ -427,7 +427,7 @@ function fieldDef(k, p) {
     ms: {k: 'ms', label: 'מספר כתב היד (Manuscript ID)'},
     receiptGot: {k: 'receiptGot', label: 'התקבל אישור קבלה מהעיתון', type: 'checkbox'},
     receiptDate: {k: 'receiptDate', label: 'תאריך אישור הקבלה', type: 'date'},
-    decision: {k: 'decision', label: 'סוג ההערות', type: 'select', options: ['', 'Minor revision', 'Major revision', 'הערות עורך', 'הערות שותפים', 'אחר']},
+    decision: {k: 'decision', label: 'סוג ההערות', type: 'select', options: ['', 'Minor revision', 'Major revision', 'הערות עורך', 'הערות עמיתים לכתיבה', 'אחר']},
     due: {k: 'due', label: 'מועד אחרון להגשת תיקונים (תישלח התראה)', type: 'date'},
     done: {k: 'done', label: 'התיקונים כבר הוגשו', type: 'checkbox'},
     doi: {k: 'doi', label: 'DOI', placeholder: '10.xxxx/xxxxx'},
@@ -636,7 +636,7 @@ function paperFields(isNew) { return [
   {k: 'status', label: 'מצב', type: 'select', options: STATUSES},
   {k: 'priority', label: 'עדיפות', type: 'select', options: PRIORITIES},
   {k: 'journal', label: 'עיתון נוכחי / יעד', list: 'journalsList'},
-  {k: 'coauthors', label: 'מיילים של שותפים (לשליחה מהירה, מופרדים בפסיק)', full: true},
+  {k: 'coauthors', label: 'מיילים של עמיתים לכתיבה (לשליחה מהירה, מופרדים בפסיק)', full: true},
   {k: 'summary', label: 'תקציר בשורה', type: 'textarea', full: true},
   {k: 'next', label: 'הפעולה הבאה', type: 'textarea', full: true},
   {k: 'progress', label: 'התקדמות %', type: 'number'},
@@ -644,7 +644,7 @@ function paperFields(isNew) { return [
   isNew ? null : {k: 'doi', label: 'DOI (לאחר פרסום)'},
   isNew ? null : {k: 'citations', label: 'מספר ציטוטים (לחישוב h-index)', type: 'number'},
 ]}
-const FIELD_NAMES = {short: 'שם קצר', title: 'כותרת', type: 'תחום', status: 'מצב', priority: 'עדיפות', journal: 'עיתון', coauthors: 'שותפים', summary: 'תקציר', next: 'פעולה הבאה', progress: 'התקדמות', folder: 'קישור', doi: 'DOI', citations: 'ציטוטים'};
+const FIELD_NAMES = {short: 'שם קצר', title: 'כותרת', type: 'תחום', status: 'מצב', priority: 'עדיפות', journal: 'עיתון', coauthors: 'עמיתים לכתיבה', summary: 'תקציר', next: 'פעולה הבאה', progress: 'התקדמות', folder: 'קישור', doi: 'DOI', citations: 'ציטוטים'};
 function openNewPaper(pre = {}) {
   formModal({title: 'מאמר חדש', values: Object.assign({id: nextId(), type: db.settings.fields[0], status: 'בעבודה', priority: 'בינונית', progress: 5}, pre),
     note: 'למאמר תיפתח תיקייה משלו, שבה יישמרו כל הגרסאות. מספר המאמר נשאר קבוע, ומספר הגרסה עולה בכל העלאה.',
@@ -695,7 +695,7 @@ function renderPaper() {
   ${stepper(p)}
   <div class="panel infobar"><div><div class="chips" style="margin-top:0"><span class="chip status ${clsStatus(p.status)}">${esc(p.status)}</span><span class="chip">${esc(p.type)}</span><span class="chip">עדיפות ${esc(p.priority)}</span>${p.journal ? `<span class="chip">📰 ${esc(p.journal)}</span>` : ''}${p.doi ? `<a class="chip link" target="_blank" rel="noopener" href="https://doi.org/${esc(p.doi)}">DOI</a>` : ''}</div>
       <b>הפעולה הבאה:</b> ${esc(p.next || '—')}<br>${p.summary ? `<b>תקציר:</b> ${esc(p.summary)}` : ''}<div class="progress"><span style="width:${Number(p.progress || 0)}%"></span></div></div>
-    <div><b>נפתח:</b> ${fmtTs(p.created)}<br><b>עודכן לאחרונה:</b> ${fmtTs(p.updated || p.created)}<br>${p.coauthors ? `<b>שותפים:</b> ${esc(p.coauthors)}<br>` : ''}${p.folder ? `<b>קישור:</b> <a href="${safeUrl(p.folder)}" target="_blank" rel="noopener">פתיחה</a><br>` : ''}<b>תיקייה בדיסק:</b> ${rootOK ? `${esc(db.settings.rootName || '')}/${esc(p.dir || folderName(p))}` : '<span class="muted">לא מחוברת</span>'}</div></div>
+    <div><b>נפתח:</b> ${fmtTs(p.created)}<br><b>עודכן לאחרונה:</b> ${fmtTs(p.updated || p.created)}<br>${p.coauthors ? `<b>עמיתים לכתיבה:</b> ${esc(p.coauthors)}<br>` : ''}${p.folder ? `<b>קישור:</b> <a href="${safeUrl(p.folder)}" target="_blank" rel="noopener">פתיחה</a><br>` : ''}<b>תיקייה בדיסק:</b> ${rootOK ? `${esc(db.settings.rootName || '')}/${esc(p.dir || folderName(p))}` : '<span class="muted">לא מחוברת</span>'}</div></div>
   <div class="tabs">${tabs.map(([k, t]) => `<button class="${curTab === k ? 'active' : ''}" onclick="curTab='${k}';renderPaper()">${t}</button>`).join('')}</div>
   <div class="panel" id="paperTab"></div>`;
   const box = $('paperTab');
@@ -731,7 +731,7 @@ async function docToVersion(pid) {
 }
 function docPrint(pid) { const p = getPaper(pid); p.doc = $('docEditor').innerHTML; const w = window.open('', '_blank'); w.document.write(docHtml(p)); w.document.close(); w.focus(); w.print() }
 
-/* ---------- משימות, עיתונים, שותפים, רעיונות, הזדמנויות ---------- */
+/* ---------- משימות, עיתונים, עמיתים, רעיונות, הזדמנויות ---------- */
 function paperOptions() { return [['', '—'], ...db.papers.map(p => [p.id, `${p.id} · ${p.short}`])] }
 function editTask(id) {
   const t = db.tasks.find(x => x.id === id);
@@ -753,7 +753,7 @@ function editJournal(id) {
 function editContact(id) {
   const c = db.contacts.find(x => x.id === id);
   formModal({title: c ? 'עריכת איש קשר' : 'איש קשר חדש', values: c || {},
-    fields: [{k: 'name', label: 'שם', required: true}, {k: 'email', label: 'מייל', type: 'email'}, {k: 'inst', label: 'מוסד'}, {k: 'role', label: 'תפקיד', type: 'select', options: ['', 'שותף לכתיבה', 'סטודנט/ית', 'עורך/ת', 'סוקר/ת', 'קולגה', 'אחר']}, {k: 'note', label: 'הערות (תחום, מאמרים משותפים)', type: 'textarea', full: true}],
+    fields: [{k: 'name', label: 'שם', required: true}, {k: 'email', label: 'מייל', type: 'email'}, {k: 'inst', label: 'מוסד'}, {k: 'role', label: 'תפקיד', type: 'select', options: ['', 'עמית/ה לכתיבה', 'סטודנט/ית', 'עורך/ת', 'סוקר/ת', 'קולגה', 'אחר']}, {k: 'note', label: 'הערות (תחום, מאמרים משותפים)', type: 'textarea', full: true}],
     onSave: v => { if (c) Object.assign(c, v); else db.contacts.push(Object.assign({id: uid()}, v)); persist() },
     onDelete: c ? () => { db.contacts = db.contacts.filter(x => x.id !== id); persist() } : null});
 }
@@ -834,7 +834,7 @@ function renderJournals() {
   $('journalsList').innerHTML = db.journals.map(j => `<option value="${esc(j.name)}">`).join('');
 }
 function renderContacts() {
-  $('contactsTable').innerHTML = db.contacts.length ? `<table><tr><th>שם</th><th>מייל</th><th>מוסד</th><th>תפקיד</th><th>הערות</th></tr>${db.contacts.map(c => `<tr style="cursor:pointer" onclick="editContact('${c.id}')"><td><b>${esc(c.name)}</b></td><td>${c.email ? `<a href="mailto:${esc(c.email)}" onclick="event.stopPropagation()">${esc(c.email)}</a>` : ''}</td><td>${esc(c.inst || '')}</td><td>${esc(c.role || '')}</td><td>${esc(c.note || '')}</td></tr>`).join('')}</table>` : '<div class="empty">עוד אין אנשי קשר. הוסיפו שותפים כדי לשלוח אליהם מאמרים בלחיצה.</div>';
+  $('contactsTable').innerHTML = db.contacts.length ? `<table><tr><th>שם</th><th>מייל</th><th>מוסד</th><th>תפקיד</th><th>הערות</th></tr>${db.contacts.map(c => `<tr style="cursor:pointer" onclick="editContact('${c.id}')"><td><b>${esc(c.name)}</b></td><td>${c.email ? `<a href="mailto:${esc(c.email)}" onclick="event.stopPropagation()">${esc(c.email)}</a>` : ''}</td><td>${esc(c.inst || '')}</td><td>${esc(c.role || '')}</td><td>${esc(c.note || '')}</td></tr>`).join('')}</table>` : '<div class="empty">עוד אין אנשי קשר. הוסיפו עמיתים לכתיבה כדי לשלוח אליהם מאמרים בלחיצה.</div>';
   $('contactsList').innerHTML = db.contacts.filter(c => c.email).map(c => `<option value="${esc(c.email)}">${esc(c.name)}</option>`).join('');
 }
 /* ---- הדרך לנובל ---- */
