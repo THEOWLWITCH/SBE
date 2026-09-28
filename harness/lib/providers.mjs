@@ -28,6 +28,9 @@ class ProviderError extends Error {
 // הועלה ל-600000. הוחלף ל-node:https ישירות, שבו ה-timeout שמוגדר על
 // הבקשה עצמה הוא היחיד שקובע.
 import { request as httpsRequest } from 'node:https';
+import { request as httpRequest } from 'node:http';
+
+const ANTHROPIC_URL = (process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com').replace(/\/+$/, '') + '/v1/messages';
 
 function post(url, headers, body, timeoutMs = 600000) {
   return new Promise((resolve, reject) => {
@@ -54,6 +57,94 @@ function post(url, headers, body, timeoutMs = 600000) {
       });
     });
     req.on('timeout', () => req.destroy(new ProviderError(`timeout אחרי ${timeoutMs}ms`, { retryable: true })));
+    req.on('error', e => reject(e instanceof ProviderError ? e : new ProviderError(e.message, { retryable: true })));
+    req.write(data);
+    req.end();
+  });
+}
+
+// גרסת streaming (SSE) של post: תשובה ארוכה (עשרות אלפי טוקנים) לוקחת יותר
+// מ-10 דקות, ובלי streaming החיבור שותק כל הזמן הזה ונחתך. timeout כאן הוא
+// זמן שקט על ה-socket, לא זמן כולל. מחזירה אובייקט באותה צורה כמו תשובה
+// רגילה: { content, stop_reason, usage }.
+function postStream(url, headers, body, timeoutMs = 600000) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const data = JSON.stringify({ ...body, stream: true });
+    const request = u.protocol === 'http:' ? httpRequest : httpsRequest;
+    const req = request({
+      hostname: u.hostname, port: u.port || undefined, path: u.pathname + u.search, method: 'POST',
+      headers: { 'content-type': 'application/json', 'content-length': Buffer.byteLength(data), ...headers },
+      timeout: timeoutMs,
+    }, res => {
+      res.setEncoding('utf8');
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        let raw = '';
+        res.on('data', c => raw += c);
+        res.on('end', () => {
+          const retryable = res.statusCode === 429 || res.statusCode >= 500;
+          reject(new ProviderError(`${res.statusCode}: ${raw.slice(0, 500)}`, { status: res.statusCode, retryable }));
+        });
+        return;
+      }
+      const blocks = [];
+      const msg = { content: blocks, stop_reason: null, usage: {} };
+      let buf = '', failed = false;
+      const handle = (ev) => {
+        switch (ev.type) {
+          case 'message_start':
+            Object.assign(msg.usage, ev.message?.usage || {});
+            break;
+          case 'content_block_start': {
+            const b = { ...ev.content_block };
+            if (b.type === 'text') b.text = '';
+            if (b.type === 'tool_use') { b._json = ''; b.input = {}; }
+            blocks[ev.index] = b;
+            break;
+          }
+          case 'content_block_delta': {
+            const b = blocks[ev.index];
+            if (!b) break;
+            if (ev.delta.type === 'text_delta') b.text += ev.delta.text;
+            else if (ev.delta.type === 'input_json_delta') b._json += ev.delta.partial_json;
+            break;
+          }
+          case 'content_block_stop': {
+            const b = blocks[ev.index];
+            if (b && b.type === 'tool_use') { b.input = b._json ? JSON.parse(b._json) : {}; delete b._json; }
+            break;
+          }
+          case 'message_delta':
+            if (ev.delta?.stop_reason) msg.stop_reason = ev.delta.stop_reason;
+            Object.assign(msg.usage, ev.usage || {});
+            break;
+          case 'error': {
+            const t = ev.error?.type || 'error';
+            failed = true;
+            req.destroy(new ProviderError(`${t}: ${ev.error?.message || ''}`, { retryable: t === 'overloaded_error' || t === 'api_error' }));
+            break;
+          }
+        }
+      };
+      res.on('data', chunk => {
+        buf += chunk.replace(/\r/g, '');
+        let i;
+        while ((i = buf.indexOf('\n\n')) >= 0) {
+          const block = buf.slice(0, i); buf = buf.slice(i + 2);
+          const line = block.split('\n').find(l => l.startsWith('data:'));
+          if (!line) continue;
+          try { handle(JSON.parse(line.slice(5).trim())); }
+          catch (e) { failed = true; req.destroy(new ProviderError('תשובה לא תקינה מהספק: ' + e.message, { retryable: true })); return; }
+        }
+      });
+      res.on('end', () => {
+        if (failed) return;
+        if (!msg.stop_reason) return reject(new ProviderError('החיבור לספק נסגר לפני סוף התשובה', { retryable: true }));
+        resolve(msg);
+      });
+      res.on('error', e => reject(e instanceof ProviderError ? e : new ProviderError(e.message, { retryable: true })));
+    });
+    req.on('timeout', () => req.destroy(new ProviderError(`אין נתונים מהספק ${timeoutMs / 1000} שניות`, { retryable: true })));
     req.on('error', e => reject(e instanceof ProviderError ? e : new ProviderError(e.message, { retryable: true })));
     req.write(data);
     req.end();
@@ -91,8 +182,8 @@ const anthropic = {
     const headers = { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' };
     const workspaceId = (process.env.ANTHROPIC_WORKSPACE_ID || '').trim();
     if (workspaceId) headers['anthropic-workspace-id'] = workspaceId;
-    const r = await post('https://api.anthropic.com/v1/messages', headers, body);
-    if (r.stop_reason === 'max_tokens') throw new ProviderError('התוצר נקטע. max_tokens נמוך מדי');
+    const r = await postStream(ANTHROPIC_URL, headers, body);
+    if (r.stop_reason === 'max_tokens') throw new ProviderError(`התוצר נקטע. max_tokens נמוך מדי (${maxTokens}, נוצרו ${r.usage?.output_tokens ?? '?'})`);
     if (r.stop_reason === 'refusal') throw new ProviderError('הבקשה נדחתה על ידי המודל');
     const blocks = r.content || [];
     const text = blocks.filter(b => b.type === 'text').map(b => b.text).join('');
