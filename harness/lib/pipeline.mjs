@@ -1,18 +1,19 @@
 // ארבעת שלבי הצינור. כל שלב מקבל את פלט קודמו.
 import { loadPrompt, fill, extractJson } from './prompts.mjs';
 
-// 16000 נמדד כלא מספיק בפועל (19/09/2026): שלב 1 (שני גיליונות דמות מלאים +
-// קונפליקט) נקטע עם "max_tokens נמוך מדי". אותו סדר גודל בדיוק כמו מה
-// שנמדד באותו יום ב-input-screen.html (משימה דומה בהיקפה, דרשה 24000
-// בפועל) — הועלה כאן לאותו ערך.
-const MAX_TOKENS = 24000;
+// גם 24000 נקטע בפועל (28/09/2026) — טוקני החשיבה נספרים באותה תקרה, ושלב 1
+// רץ ב-effort xhigh. זו תקרה בלבד (המודל לא כותב יותר ממה שצריך); הקריאות
+// רצות ב-streaming (providers.mjs), אז תשובה ארוכה לא נחתכת על שקט בחיבור.
+const MAX_TOKENS = 64000;
 
 export async function runPipeline(input, provider, { sourceLibrary = [] } = {}) {
   const t0 = Date.now();
   const trace = [];
   const step = async (stage, variation, prompt) => {
     const s = Date.now();
-    const r = await provider.complete({ prompt, variation, maxTokens: MAX_TOKENS });
+    let r;
+    try { r = await provider.complete({ prompt, variation, maxTokens: MAX_TOKENS }); }
+    catch (e) { e.message = `שלב ${stage}: ${e.message}`; throw e; }
     trace.push({ stage, ms: Date.now() - s, usage: r.usage });
     return r.text;
   };
