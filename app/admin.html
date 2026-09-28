@@ -1343,8 +1343,8 @@ function ask(t, msg, ok){
 
 // ── הגדרת מודולים למוסד ──
 // מאפשרת למנהלת המערכת לבחור אילו קטגוריות נגישות למנהל.ת מוסד ספציפי.
-// הנתון נשמר בשרת (/api/inst-config) ונקרא בעת כניסת מנהל.ת מוסד ל-system-select.html.
-// AUTH: הכנסת ערך SBE_ADMIN_TOKEN שהוגדר בלוח הבקרה של Netlify.
+// הנתון נשמר בשרת ב-Render (טבלת access_settings ב-Supabase) ונקרא בעת כניסת
+// מנהל.ת מוסד ל-system-select.html. שמירה דורשת את סיסמת מנהלת המערכת.
 const MOD_LABELS = {
   conv:     "תכנון שיחה",
   activity: "תכנון פעילות",
@@ -1356,15 +1356,22 @@ function openModDlg(instName) {
   const body = $("modDb");
   body.textContent = "";
 
-  // Load current config from server first, then render toggles
-  fetch("/api/inst-config?inst=" + encodeURIComponent(instName))
-    .then(r => r.ok ? r.json() : { conv: true, activity: true, academic: true })
-    .catch(() => ({ conv: true, activity: true, academic: true }))
-    .then(cfg => {
+  body.append(el("p",{style:"margin:0;font-size:14px;color:var(--muted)"}, "טוענת את ההגדרות... (לפעמים עד דקה)"));
+  $("modSave").disabled = true;
+  $("modDlg").showModal();
+  $("modCancel").onclick = () => $("modDlg").close();
+
+  accessCall("getModules", { inst: instName })
+    .then(cfg => ({ cfg, loaded: true }))
+    .catch(() => ({ cfg: { conv: true, activity: true, academic: true }, loaded: false }))
+    .then(({ cfg, loaded }) => {
       body.textContent = "";
+      $("modSave").disabled = false;
+      if (!loaded) body.append(el("div",{class:"lock",style:"margin-top:0"},
+        "לא הצלחתי לטעון את ההגדרות השמורות מהשרת — מוצג כאן \"הכול פעיל\". שמירה תחליף את מה ששמור."));
 
       const note = el("p",{style:"margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.6"},
-        "בחרי אילו מודולים יהיו נגישים למנהל.ת המוסד הזה בעת כניסה. ברירת מחדל: הכל פעיל.");
+        "בחרי אילו מודולים יהיו פתוחים לצוות המוסד הזה — מי שנכנסת עם קוד המוסד. ברירת מחדל: הכל פעיל.");
       body.append(note);
 
       const toggles = {};
@@ -1378,42 +1385,36 @@ function openModDlg(instName) {
         body.append(row);
       });
 
+      // סיסמת מנהלת המערכת: אם כבר הוקלדה בלשונית "סיסמאות וקודים" בדף הזה —
+      // משתמשים בה; אחרת מבקשים אותה כאן. נשמרת רק בזיכרון הדף.
       const sep = el("div",{style:"margin-top:16px;padding-top:14px;border-top:1px solid var(--hair);"});
-      const tokenLbl = el("label",{style:"display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;"},
-        "קוד מנהלת מערכת (SBE_ADMIN_TOKEN) לאישור שמירה");
-      const tokenInput = el("input",{type:"password",placeholder:"הכניסי את הקוד",
+      const pwInput = el("input",{type:"password",placeholder:"סיסמת מנהלת המערכת", autocomplete:"off",
         style:"width:100%;font-family:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--hair);border-radius:6px;background:var(--ground);color:var(--ink);direction:rtl;"});
       const errMsg = el("p",{style:"display:none;color:var(--brick);font-size:13px;margin:6px 0 0;"}, "");
-      sep.append(tokenLbl, tokenInput, errMsg);
+      if (!accessAuth) {
+        sep.append(el("label",{style:"display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;"},
+          "סיסמת מנהלת המערכת לאישור השמירה"), pwInput);
+      }
+      sep.append(errMsg);
       body.append(sep);
 
       const dlg = $("modDlg");
-      dlg.showModal();
-
-      $("modCancel").onclick = () => dlg.close();
       $("modSave").onclick = async () => {
-        const token = tokenInput.value.trim();
-        if (!token) { errMsg.textContent = "יש להכניס קוד."; errMsg.style.display="block"; return; }
+        const typed = pwInput.value.replace(/[‎‏؜]/g, "").trim();
+        if (!accessAuth && !typed) { errMsg.textContent = "יש להקליד את סיסמת מנהלת המערכת."; errMsg.style.display = "block"; return; }
         errMsg.style.display = "none";
         $("modSave").disabled = true;
-        $("modSave").textContent = "שומר...";
+        $("modSave").textContent = "שומרת...";
+        const prevAuth = accessAuth;
+        if (!accessAuth) accessAuth = typed;
         try {
           const modules = {};
           Object.keys(toggles).forEach(k => modules[k] = toggles[k].checked);
-          const res = await fetch("/api/inst-config", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ inst: instName, modules, adminToken: token }),
-          });
-          const data = await res.json();
-          if (data.ok) {
-            dlg.close();
-          } else {
-            errMsg.textContent = data.error === "unauthorized" ? "קוד שגוי." : (data.error || "שגיאה.");
-            errMsg.style.display = "block";
-          }
-        } catch {
-          errMsg.textContent = "שגיאת רשת — בדקי שהאתר פרוס ב-Netlify.";
+          await accessCall("setModules", { inst: instName, modules });
+          dlg.close();
+        } catch (e) {
+          accessAuth = prevAuth;
+          errMsg.textContent = e.status === 403 ? "סיסמה שגויה." : "אין כרגע חיבור לשרת. נסי שוב בעוד רגע.";
           errMsg.style.display = "block";
         } finally {
           $("modSave").disabled = false;

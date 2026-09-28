@@ -9,6 +9,7 @@ import { scryptSync, randomBytes, timingSafeEqual } from 'node:crypto';
 // כתובות עד עכשיו ב-entry.html).
 const DEFAULT_PASSWORDS = { sys: '990211', inst: '550118' };
 const MIN_PASSWORD = 8;
+const DEFAULT_MODULES = { conv: true, activity: true, academic: true };
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
 const pause = () => new Promise((r) => setTimeout(r, 400));
@@ -62,8 +63,24 @@ export async function handleAccess(store, body) {
     return [200, { ok: true }];
   }
 
+  // אילו מודולים פתוחים למנהלת מוסד — לא סוד, נקרא בכניסה ל-system-select.html.
+  if (action === 'getModules') {
+    const inst = String(body.inst || '').trim();
+    if (!inst) return [400, { error: 'missing inst' }];
+    return [200, { ...DEFAULT_MODULES, ...((await store.get('modules:' + inst)) || {}) }];
+  }
+
   // כל פעולת ניהול מחייבת את סיסמת מנהלת המערכת בבקשה עצמה.
   if (!(await checkPassword(store, 'sys', body?.auth))) { await pause(); return [403, { error: 'unauthorized' }]; }
+
+  if (action === 'setModules') {
+    const inst = String(body.inst || '').trim();
+    const m = body.modules;
+    if (!inst || !m || typeof m !== 'object') return [400, { error: 'missing fields' }];
+    const safe = { conv: m.conv !== false, activity: m.activity !== false, academic: m.academic !== false };
+    await store.set('modules:' + inst, safe);
+    return [200, { ok: true, modules: safe }];
+  }
 
   if (action === 'status') return [200, await status(store)];
 
