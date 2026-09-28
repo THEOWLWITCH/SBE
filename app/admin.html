@@ -469,7 +469,8 @@ function render(){
     nav.append(b);
   });
 
-  OTHER_SCREENS_GROUPS.forEach(g => {
+  // רשימת כל מסכי המערכת — רק לניהול המערכת; מנהלת מוסדית רואה רק את לשוניות המוסד.
+  if (role === "sys") OTHER_SCREENS_GROUPS.forEach(g => {
     nav.append(el("h5",{}, g.title));
     g.items.forEach(s => nav.append(el("a",{ class:"nlink", href:s.href }, s.t)));
   });
