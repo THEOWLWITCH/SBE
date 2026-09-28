@@ -174,10 +174,12 @@ if (track === "parent" || track === "youth") {
   });
 }
 
-// מנהל.ת מוסד (role=inst): קרא הגדרות מודולים מהשרת, הסתר קטגוריות שבוטלו
-if (role === "inst" && inst) {
+// כל מי שנכנסה עם קוד המוסד: קרא את הגדרות המודולים של המוסד מהשרת ב-Render
+// (נקבעות במסך הניהול), והסתר קטגוריות שבוטלו.
+if (inst) {
   const CAT_IDS = { conv: "catConv", activity: "catActivity", academic: "catAcademic" };
-  fetch("/api/inst-config?inst=" + encodeURIComponent(inst))
+  fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ action: "getModules", inst }) })
     .then(r => r.ok ? r.json() : null)
     .then(cfg => {
       if (!cfg) return; // שגיאה — ברירת מחדל הכל מוצג
