@@ -1,0 +1,1050 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PaperFlow — ניהול מאמרים</title>
+  <script id="pf-lock" type="application/json">{}</script>
+  <style>
+    :root{
+      --bg:#f6f8fb; --panel:#ffffff; --text:#1e293b; --muted:#64748b; --line:#e7edf4;
+      --brand:#183a5a; --brand2:#2f6c99; --soft:#eef6fb; --good:#1f7a5b; --warn:#a16a16;
+      --bad:#a04444; --violet:#6d5ca8; --gold:#b8892b; --shadow:0 10px 28px rgba(24,58,90,.08); --radius:18px;
+    }
+    *{box-sizing:border-box} body{margin:0;font-family:Arial,"Noto Sans Hebrew",sans-serif;background:var(--bg);color:var(--text)}
+    button,input,select,textarea{font:inherit} a{color:var(--brand2)}
+    body:not(.authed) .app{display:none}
+    .app{min-height:100vh;display:grid;grid-template-columns:260px 1fr}
+    .sidebar{background:linear-gradient(180deg,#163653,#1b4669);color:white;padding:26px 18px;position:sticky;top:0;height:100vh;overflow:auto}
+    .brand{font-size:24px;font-weight:800;letter-spacing:.2px;margin:0 10px 6px}.tagline{opacity:.78;font-size:13px;margin:0 10px 24px}
+    .nav button{width:100%;border:0;background:transparent;color:#e9f3fb;text-align:right;padding:11px 14px;border-radius:12px;margin:2px 0;cursor:pointer;display:flex;align-items:center;gap:10px}
+    .nav button:hover,.nav button.active{background:rgba(255,255,255,.13)}
+    .nav .sep{height:1px;background:rgba(255,255,255,.14);margin:10px 8px}
+    .sidebar .smallbox{margin-top:22px;background:rgba(255,255,255,.09);padding:12px;border-radius:14px;font-size:12px;line-height:1.6}
+    .sidebar .smallbox button{margin-top:8px;width:100%;border:0;border-radius:10px;padding:8px;background:rgba(255,255,255,.16);color:white;cursor:pointer}
+    .main{padding:26px 30px 48px;min-width:0}.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:22px}
+    .title h1{margin:0;font-size:27px}.title p{margin:5px 0 0;color:var(--muted)}
+    .actions{display:flex;gap:9px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:white;padding:10px 14px;border-radius:12px;cursor:pointer;color:var(--text);text-decoration:none;display:inline-block}
+    .btn.primary{background:var(--brand);color:white;border-color:var(--brand)}.btn:hover{transform:translateY(-1px)}
+    .btn.sm{padding:5px 9px;font-size:12px;border-radius:9px}.btn.danger{color:#9f3c3c}.btn.gold{background:var(--gold);border-color:var(--gold);color:white}
+    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}.stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+    .stat .num{font-size:30px;font-weight:800}.stat .label{color:var(--muted);font-size:13px;margin-top:4px}.stat .mini{margin-top:11px;font-size:12px;color:var(--brand2)}
+    .toolbar{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px;display:flex;gap:10px;align-items:center;margin-bottom:16px;box-shadow:var(--shadow);flex-wrap:wrap}
+    .toolbar input,.toolbar select{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fbfdff;min-width:170px}.toolbar input{flex:1}
+    .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:var(--shadow);cursor:pointer;transition:.16s}
+    .card:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(24,58,90,.12)}.cardtop{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.pid{font-size:12px;font-weight:700;color:var(--brand2)}
+    .card h3{font-size:17px;margin:10px 0 7px;line-height:1.35}.meta{color:var(--muted);font-size:13px;line-height:1.5;min-height:38px}.chips{display:flex;gap:7px;flex-wrap:wrap;margin:13px 0}
+    .chip{font-size:11px;padding:5px 8px;border-radius:999px;background:#f1f5f9;color:#475569;display:inline-block;text-decoration:none}
+    .chip.ok{background:#e7f7f0;color:#197052}.chip.warn{background:#fff5df;color:#9a650f}.chip.bad{background:#fbeaea;color:#9f3c3c}.chip.link{background:#eef6fb;color:#205b82}
+    .status{font-weight:700}.status.working{background:#eef6fb;color:#205b82}.status.submitted{background:#fff5df;color:#9a650f}.status.revision{background:#f2ecff;color:#6d4ca4}.status.accepted{background:#e7f7f0;color:#197052}.status.published{background:#fdf3dc;color:#8a6414}.status.paused{background:#f2f3f5;color:#697586}
+    .verbadge{font-size:13px;background:var(--soft);color:var(--brand2);padding:4px 9px;border-radius:999px;vertical-align:middle;font-weight:700}
+    .next{border-top:1px solid var(--line);padding-top:12px;font-size:12px}.next b{display:block;color:var(--muted);font-weight:600;margin-bottom:4px}.progress{height:6px;background:#edf1f5;border-radius:8px;overflow:hidden;margin-top:12px}.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--brand2),#5e95bc)}
+    .page{display:none}.page.active{display:block}
+    .split{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .panel{background:white;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);margin-bottom:16px}.panel h2{margin:0 0 14px;font-size:18px}.panel h3{margin:0 0 10px;font-size:15px}
+    table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:right;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:600;background:#fbfcfe}
+    .kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.col{background:#f1f5f9;border:1px solid var(--line);border-radius:16px;padding:12px;min-height:280px}.col h3{font-size:14px;margin:2px 3px 11px}
+    .task{background:white;border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:9px;font-size:13px}.task small{display:block;color:var(--muted);margin-top:6px}.task.click{cursor:pointer}.task.click:hover{border-color:#c9d9e6}
+    .task select{margin-top:8px;border:1px solid var(--line);border-radius:8px;padding:4px;font-size:12px;background:#fbfdff}
+    .journal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.journal{background:white;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow);cursor:pointer}.journal h3{margin:8px 0 6px;font-size:16px}.journal p{color:var(--muted);font-size:13px;line-height:1.45}.score{font-size:12px;color:var(--brand2)}
+    .timeline{border-right:3px solid #dbe7ef;margin-right:10px;padding-right:18px}.event{position:relative;margin:0 0 18px}.event:before{content:"";position:absolute;right:-25px;top:4px;width:11px;height:11px;border-radius:50%;background:var(--brand2);border:3px solid white;box-shadow:0 0 0 1px #ccdbe6}
+    .event b{font-size:14px}.event small{display:block;color:var(--muted);margin-top:4px;font-size:11px}.event .chips{margin:7px 0 4px}.evnote{font-size:13px;color:#334155;white-space:pre-wrap;margin-top:4px}.evactions{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
+    .overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.overlay.open{display:flex}
+    .modal{background:white;width:min(760px,95vw);max-height:90vh;overflow:auto;border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.22);padding:22px}.modalhead{display:flex;justify-content:space-between;align-items:center;gap:10px}.modalhead h2{margin:0;font-size:20px}
+    .close{border:0;background:#f1f5f9;border-radius:10px;width:38px;height:38px;cursor:pointer}
+    .formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.formgrid label{font-size:12px;color:var(--muted);display:block}
+    .formgrid input:not([type=checkbox]),.formgrid select,.formgrid textarea{width:100%;margin-top:5px;border:1px solid var(--line);border-radius:10px;padding:10px;background:#fbfdff;color:var(--text)}
+    .formgrid textarea{min-height:84px;resize:vertical}.formgrid label.check{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);padding-top:18px}
+    .formgrid fieldset{border:1px solid var(--line);border-radius:12px;padding:10px 12px}.formgrid fieldset legend{font-size:12px;color:var(--muted);padding:0 6px}.formgrid fieldset label{display:inline-flex;align-items:center;gap:6px;margin:4px 0 4px 14px;font-size:13px;color:var(--text)}
+    .full{grid-column:1/-1}.info{font-size:13px;background:var(--soft);border-radius:12px;padding:11px 13px;line-height:1.6}
+    .modalactions{display:flex;justify-content:flex-start;gap:8px;margin-top:16px;flex-wrap:wrap}.fmnote{margin-top:12px;font-size:13px;color:#334155;background:#fbfcfe;border:1px solid var(--line);border-radius:12px;padding:10px 12px;line-height:1.6}
+    .empty{padding:26px;text-align:center;color:var(--muted);background:white;border:1px dashed #cbd5e1;border-radius:16px}
+    .sectiontitle{display:flex;justify-content:space-between;align-items:center;margin:0 0 14px;gap:8px}.sectiontitle h2{margin:0;font-size:18px}.muted{color:var(--muted)}
+    .tabs{display:flex;gap:6px;margin:0 0 12px;flex-wrap:wrap}.tabs button{border:1px solid var(--line);background:white;border-radius:12px;padding:9px 16px;cursor:pointer}.tabs button.active{background:var(--brand);color:white;border-color:var(--brand)}
+    .stepper{display:flex;gap:4px;margin-bottom:16px;overflow:auto;padding-bottom:4px}.step{flex:1;min-width:108px;background:white;border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center;cursor:pointer;font-size:12px;position:relative}
+    .step .dot{width:26px;height:26px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;background:#edf1f5;color:#94a3b8;font-weight:700}
+    .step.done .dot{background:#e7f7f0;color:var(--good)}.step.current{border-color:var(--brand2);box-shadow:0 0 0 2px #d6e6f2}.step.current .dot{background:var(--brand2);color:white}.step small{display:block;color:var(--muted);margin-top:3px;font-size:11px}
+    .infobar{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;font-size:13px;line-height:1.6}.infobar b{color:var(--muted);font-weight:600}
+    .drop{border:2px dashed #c9d9e6;border-radius:14px;padding:18px;text-align:center;color:var(--muted);margin-bottom:14px;background:#fbfdff}.drop.over{border-color:var(--brand2);background:var(--soft)}
+    .diskline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:13px}
+    .edtools{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}.edtools button{border:1px solid var(--line);background:#fbfdff;border-radius:8px;padding:6px 10px;cursor:pointer}
+    .editor{min-height:420px;border:1px solid var(--line);border-radius:12px;padding:18px 22px;line-height:1.7;background:#fffefc;outline:none;font-family:Georgia,"Times New Roman","Noto Sans Hebrew",serif}.editor:focus{border-color:#b9cfe0}
+    .dl{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}.dl:last-child{border-bottom:0}.dl .when{font-weight:700;white-space:nowrap}
+    .dl .when.late{color:var(--bad)}.dl .when.soon{color:var(--warn)}
+    .alert{background:#fff8e8;border:1px solid #f1dfb5;color:#7a5410;border-radius:14px;padding:11px 14px;margin-bottom:12px;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .goal{margin:10px 0}.goal .bar{height:10px;background:#edf1f5;border-radius:8px;overflow:hidden;margin-top:6px}.goal .bar span{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#e0b75a)}
+    .vision{width:100%;min-height:90px;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;line-height:1.6;background:#fffdf7;resize:vertical}
+    .tip{background:linear-gradient(135deg,#fdf6e3,#fff);border:1px solid #f0e2bb;border-radius:16px;padding:16px;line-height:1.6}
+    .weeks{display:flex;gap:4px;align-items:flex-end;height:60px;margin-top:10px}.weeks span{flex:1;background:#dbe7ef;border-radius:4px 4px 0 0;min-height:3px}.weeks span.on{background:var(--brand2)}
+    .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:13px;align-items:center}
+    .devcode{font-family:Consolas,monospace;font-size:22px;letter-spacing:2px;background:#f1f5f9;border-radius:12px;padding:10px 14px;text-align:center;margin:10px 0;direction:ltr}
+    .gate{position:fixed;inset:0;background:linear-gradient(160deg,#163653,#2f6c99);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}.gate.open{display:flex}
+    .gatebox{background:white;border-radius:24px;padding:30px;width:min(420px,95vw);box-shadow:0 30px 80px rgba(0,0,0,.3);text-align:center}.gatebox h2{margin:6px 0 8px}.gatebox p{color:var(--muted);font-size:14px;line-height:1.6}
+    .gbrand{font-weight:800;font-size:22px;color:var(--brand)}.gatebox input{width:100%;border:1px solid var(--line);border-radius:12px;padding:13px;font-size:20px;text-align:center;letter-spacing:4px;margin:10px 0}
+    .gatebox .wide{width:100%;padding:12px}.gerr{color:var(--bad);font-size:13px;min-height:20px;margin-top:8px}.gatebox details{margin-top:14px;font-size:13px;color:var(--muted)}
+    .toast{position:fixed;bottom:22px;left:22px;background:#1e293b;color:white;padding:12px 16px;border-radius:12px;box-shadow:var(--shadow);z-index:200;font-size:14px;max-width:420px;display:none;line-height:1.5}.toast.show{display:block}
+    @media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(3,1fr)}.journal-grid{grid-template-columns:repeat(2,1fr)}.kanban{grid-template-columns:repeat(2,1fr)}.split,.grid2{grid-template-columns:1fr}}
+    @media(max-width:780px){.app{grid-template-columns:1fr}.sidebar{height:auto;position:relative;padding:16px}.nav{display:flex;overflow:auto}.nav .sep{display:none}.nav button{width:auto;white-space:nowrap}.sidebar .smallbox{display:none}.main{padding:18px}.cards,.journal-grid,.split,.formgrid,.infobar{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.topbar{align-items:flex-start;flex-direction:column}.kanban{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="gate" id="gate"><div class="gatebox" id="gateBox"></div></div>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">PaperFlow</div><div class="tagline">מרכז ניהול המאמרים והמחקרים</div>
+    <nav class="nav">
+      <button class="active" data-page="dashboard">▦ לוח ראשי</button>
+      <button data-page="papers">▤ מאמרים</button>
+      <button data-page="tasks">✓ משימות ומועדים</button>
+      <button data-page="timeline">↗ ציר זמן</button>
+      <button data-page="journals">◎ עיתונים</button>
+      <button data-page="contacts">☺ שותפים</button>
+      <button data-page="nobel">★ הדרך לנובל</button>
+      <div class="sep"></div>
+      <button data-page="admin">⚙ ניהול</button>
+    </nav>
+    <div class="smallbox" id="sideBox"></div>
+  </aside>
+  <main class="main">
+    <section id="dashboard" class="page active">
+      <div class="topbar"><div class="title"><h1 id="hello">לוח המאמרים</h1><p>תמונה אחת של כל מה שנמצא בעבודה עכשיו</p></div><div class="actions"><button class="btn" onclick="exportData(true)">גיבוי מלא</button><button class="btn primary" onclick="openNewPaper()">+ מאמר חדש</button></div></div>
+      <div id="alerts"></div>
+      <div class="stats" id="stats"></div>
+      <div class="split">
+        <div>
+          <div class="panel"><div class="sectiontitle"><h2>המאמרים הפעילים</h2><span class="muted" id="activeCount"></span></div><div class="cards" id="dashboardCards" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div></div>
+        </div>
+        <div>
+          <div class="panel"><div class="sectiontitle"><h2>מועדים קרובים</h2><button class="btn sm" onclick="exportAllIcs()">הכל ליומן</button></div><div id="dashDeadlines"></div></div>
+          <div class="panel"><div class="sectiontitle"><h2>מה דורש טיפול</h2></div><div id="attention"></div></div>
+          <div class="panel" id="dashNobel"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="papers" class="page">
+      <div class="topbar"><div class="title"><h1>כל המאמרים</h1><p>כל מאמר נשאר עם אותו מספר לכל אורך חייו, ומקבל מספר גרסה בכל העלאה</p></div><button class="btn primary" onclick="openNewPaper()">+ מאמר חדש</button></div>
+      <div class="toolbar"><input id="search" placeholder="חיפוש לפי מספר, שם או כותרת…"><select id="statusFilter"></select><select id="typeFilter"></select></div>
+      <div class="cards" id="paperCards"></div>
+    </section>
+
+    <section id="paper" class="page"><div id="paperView"></div></section>
+
+    <section id="tasks" class="page">
+      <div class="topbar"><div class="title"><h1>משימות ומועדים</h1><p>מה צריך לעשות עכשיו — בלי לפתוח כל מאמר</p></div><button class="btn primary" onclick="editTask()">+ משימה</button></div>
+      <div class="panel"><div class="sectiontitle"><h2>כל המועדים</h2><div class="actions"><button class="btn sm" onclick="askNotify()">🔔 התראות במחשב</button><button class="btn sm" onclick="exportAllIcs()">📅 ייצוא הכל ליומן (לנייד)</button></div></div><div id="allDeadlines"></div></div>
+      <div class="kanban" id="kanban"></div>
+    </section>
+
+    <section id="timeline" class="page">
+      <div class="topbar"><div class="title"><h1>ציר זמן</h1><p>כל צעד שנעשה, בכל מאמר — עם תאריך</p></div></div>
+      <div class="toolbar"><select id="tlPaper"></select><select id="tlType"></select></div>
+      <div class="panel"><div class="timeline" id="timelineList"></div></div>
+    </section>
+
+    <section id="journals" class="page">
+      <div class="topbar"><div class="title"><h1>מאגר עיתונים</h1><p>מאגר אישי לפי תחום והיכרות קודמת</p></div><button class="btn primary" onclick="editJournal()">+ עיתון</button></div>
+      <div class="toolbar"><select id="journalFilter"></select></div>
+      <div class="journal-grid" id="journalGrid"></div>
+    </section>
+
+    <section id="contacts" class="page">
+      <div class="topbar"><div class="title"><h1>שותפים ואנשי קשר</h1><p>שותפים לכתיבה, עורכים וקולגות — לשליחה מהירה במייל</p></div><button class="btn primary" onclick="editContact()">+ איש קשר</button></div>
+      <div class="panel"><div id="contactsTable"></div></div>
+    </section>
+
+    <section id="nobel" class="page">
+      <div class="topbar"><div class="title"><h1>הדרך לנובל ★</h1><p>חזון, יעדים, השפעה ורעיונות — כדי שכל מאמר יקרב אל החלום</p></div></div>
+      <div id="nobelView"></div>
+    </section>
+
+    <section id="admin" class="page">
+      <div class="topbar"><div class="title"><h1>ניהול</h1><p>אבטחה, תיקיות, גיבוי, התראות והגדרות</p></div></div>
+      <div id="adminView"></div>
+    </section>
+  </main>
+</div>
+
+<div class="overlay" id="fm"><div class="modal"><div class="modalhead"><h2 id="fmTitle"></h2><button class="close" onclick="closeFM()">×</button></div>
+  <div class="fmnote" id="fmNote"></div>
+  <div class="formgrid" id="fmBody"></div>
+  <div class="modalactions" id="fmActions"></div>
+</div></div>
+
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<datalist id="journalsList"></datalist><datalist id="contactsList"></datalist>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= PaperFlow — מערכת מקומית לניהול מאמרים =================
+   הנתונים נשמרים בדפדפן (localStorage), הקבצים עצמם ב-IndexedDB,
+   ובנוסף — אם חוברה תיקייה בדיסק — כל גרסה נכתבת גם לתיקיית המאמר במחשב. */
+const SOURCE = '<!doctype html>\n' + document.documentElement.outerHTML; // עותק מקור, לשמירת "קובץ נעול"
+let LOCK = {}; try { LOCK = JSON.parse(document.getElementById('pf-lock').textContent) || {} } catch {}
+
+/* ---------- כלים ---------- */
+const $ = id => document.getElementById(id);
+function esc(s = '') { return String(s ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c])) }
+function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-3) }
+function today() { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10) }
+function nowISO() { return new Date().toISOString() }
+function fmtTs(ts) { if (!ts) return ''; return new Date(ts).toLocaleString('he-IL', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) }
+function fmtDate(d) { if (!d) return ''; const [y, m, dd] = String(d).split('-'); return dd ? `${dd}/${m}/${y}` : d }
+function daysUntil(d) { return Math.round((new Date(d + 'T00:00:00') - new Date(today() + 'T00:00:00')) / 86400000) }
+function dueText(n) { return n < 0 ? `באיחור של ${-n} ימים` : n === 0 ? 'היום!' : n === 1 ? 'מחר' : `בעוד ${n} ימים` }
+function fmtSize(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB' }
+function safeUrl(u) { u = String(u || '').trim(); if (!u) return '#'; if (/^(https?:|file:|mailto:)/i.test(u)) return esc(u); if (/^javascript:/i.test(u)) return '#'; return esc('https://' + u) }
+function lsGet(k) { try { return localStorage.getItem(k) } catch { return null } }
+function lsSet(k, v) { try { localStorage.setItem(k, v) } catch {} }
+function cyrb53(str, seed = 0) { let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed; for (let i = 0; i < str.length; i++) { const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677) } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return 4294967296 * (2097151 & h2) + (h1 >>> 0) }
+function hcode(s, len = 8) { return (cyrb53(s, 7).toString(36) + cyrb53(s, 13).toString(36)).toUpperCase().slice(0, len) }
+function normKey(s) { return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '') }
+function randKey(n) { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', r = new Uint32Array(n); crypto.getRandomValues(r); return [...r].map(x => a[x % a.length]).join('') }
+function toast(msg, ms = 4000) { const t = $('toast'); t.innerHTML = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), ms) }
+function download(data, name, type) { const blob = data instanceof Blob ? data : new Blob([data], {type}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10000) }
+async function blobToB64(blob) { const bytes = new Uint8Array(await blob.arrayBuffer()); let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(bin) }
+function b64ToBlob(b64, type) { const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], {type}) }
+function b64utf8(s) { return btoa(unescape(encodeURIComponent(s))) }
+
+/* ---------- הגדרות קבועות ---------- */
+const STATUSES = ['בעבודה', 'נשלח', 'Revision', 'התקבל', 'פורסם', 'מושהה'];
+const PRIORITIES = ['גבוהה', 'בינונית', 'נמוכה'];
+const TASK_STAGES = ['לביצוע', 'בעבודה', 'בדיקה', 'ממתין', 'בוצע'];
+const SITES = ['אתר אישי', 'Google Scholar', 'ORCID', 'ResearchGate', 'מערכת המוסד (CRIS / Pure)', 'LinkedIn', 'Academia.edu', 'קורות חיים (CV)'];
+// כל פעולה: שם, שדות, מצב שהמאמר עובר אליו, התקדמות, והצעה ל"פעולה הבאה"
+const ACTIONS = {
+  plan:      {label:'תכנון מאמר', fields:['date','note'], status:'בעבודה', progress:10, next:'לכתוב טיוטה ראשונה ולשלוח לשותפים'},
+  draft:     {label:'שליחה לשותפים – סבב טיוטה', round:true, fields:['date','recipients','ver','note'], status:'בעבודה', progress:40, next:'לקבל הערות שותפים ולהעלות גרסה מעודכנת'},
+  submit:    {label:'שליחה לפרסום בעיתון', fields:['date','journal','url','ms','receiptGot','receiptDate','ver','note'], status:'נשלח', progress:75, next:'לוודא שהתקבל אישור קבלה ולעקוב אחרי הסטטוס'},
+  reviews:   {label:'קבלת הערות', round:true, fields:['date','journal','decision','due','done','note'], status:'Revision', progress:82, next:'להגיש תיקונים'},
+  resubmit:  {label:'הגשת תיקונים', round:true, fields:['date','journal','ver','note'], status:'נשלח', progress:90, next:'ממתין להחלטת העורך'},
+  reject:    {label:'דחייה מהעיתון', fields:['date','journal','note'], status:'בעבודה', next:'לבחור עיתון חלופי מהמאגר ולהתאים את המאמר'},
+  accept:    {label:'אישור המאמר לפרסום', fields:['date','journal','url','note'], status:'התקבל', progress:100, next:'לעדכן אתרים אישיים ומערכות אקדמיות'},
+  published: {label:'פורסם (DOI)', fields:['date','doi','url','note'], status:'פורסם', progress:100, next:'לעדכן אתרים ומערכות ולשתף את המאמר'},
+  sites:     {label:'עדכון אתרים אישיים ומערכות אקדמיות', fields:['date','sites','note'], next:'לשתף את המאמר ולהציג בכנס הבא'},
+  other:     {label:'פעולה אחרת', fields:['date','note']},
+  create:    {label:'פתיחת תיק מאמר', auto:true, fields:['date','note']},
+  upload:    {label:'העלאת גרסה', auto:true, fields:['date','note']},
+  email:     {label:'נשלח במייל', auto:true, fields:['date','recipients','ver','note']},
+  edit:      {label:'עדכון פרטי המאמר', auto:true, fields:['date','note']},
+};
+const USER_ACTIONS = Object.keys(ACTIONS).filter(k => !ACTIONS[k].auto);
+const PIPE = [['plan','תכנון',['plan']], ['draft','טיוטות',['draft']], ['submit','הגשה',['submit']], ['reviews','הערות ותיקונים',['reviews','resubmit']], ['accept','אישור',['accept']], ['published','פורסם',['published']], ['sites','עדכון אתרים',['sites']]];
+const TIPS = [
+  'התמקדו בשאלה אחת גדולה. פרסי נובל ניתנים על פריצת דרך אחת עמוקה, לא על עשרות תוצאות קטנות.',
+  'העלו preprint (bioRxiv / arXiv) במקביל להגשה. כך החשיפה והציטוטים מגיעים מוקדם יותר.',
+  'בקשו מעמית בכיר מחוץ לתחום לקרוא את התקציר. אם החידוש לא ברור לו, כדאי לשכתב.',
+  'בכל פעם שמאמר מתקבל, עדכנו ORCID, Google Scholar והאתר האישי באותו שבוע.',
+  'שתפו פעולה עם מעבדה משלימה (ניסויית מול תיאורטית). רוב הפרסים האחרונים הם פרי שיתוף.',
+  'הציגו לפחות בכנס בינלאומי אחד בשנה, שם נולדים שיתופי הפעולה.',
+  'רשמו כל רעיון ב"בנק הרעיונות", גם אם הוא נראה מוזר. פריצות דרך מתחילות כך.',
+  'קבעו חלון זמן קבוע בשבוע לכתיבה בלבד, בלי מיילים.',
+  'במכתב תשובה לסוקרים: להודות, לתקן ולהסביר כל נקודה בנפרד. מכתב מסודר מקצר סבבים.',
+  'הגישו למענקים גדולים (ERC, ISF, HFSP). מימון מאפשר לחשוב בגדול.',
+  'מאמר סקירה בתחום ממצב אתכם כמובילי התחום.',
+  'פעם בחודש חזרו לחזון ובדקו אם המאמרים הנוכחיים מקרבים אתכם אליו.',
+];
+
+/* ---------- נתונים ---------- */
+const seed = {
+ papers:[
+  {id:'P001',short:'Model 2A',title:'Synaptic intensity shaped by dendritic geometry',type:'מודל',status:'בעבודה',priority:'גבוהה',journal:'',summary:'מודל המתאר כיצד גיאומטריית הצמתים קשורה לעוצמת הסינפסות.',next:'לסגור גרסה מלאה ולבחור 3 עיתוני יעד.',progress:72,folder:''},
+  {id:'P002',short:'Model 3',title:'Dendritic network geometry shapes nonlinear axonal routing in neuronal networks',type:'מודל',status:'נשלח',priority:'גבוהה',journal:'',summary:'מודל weighted-state לניתוב אקסונלי כתלות בגיאומטריית הרשת.',next:'לעקוב אחר סטטוס ההגשה.',progress:92,folder:''},
+  {id:'P003',short:'GBM Calcite',title:'Calcite-selective sensitization of glioblastoma to temozolomide',type:'חומרים / הנדסת רקמות',status:'בעבודה',priority:'גבוהה',journal:'',summary:'שילוב קלציט ו-TMZ עם דגש על ספציפיות ורגישות של GBM.',next:'לסיים Introduction ו-Discussion.',progress:58,folder:''},
+  {id:'P004',short:'Breast cancer calcite',title:'Microscale Calcite Induces Cell-Cycle Disruption and Actin Filament Thickening Associated with Cell Death in MCF-7 Breast Cancer Cells',type:'ביולוגיה',status:'Revision',priority:'בינונית',journal:'',summary:'אפיון השפעת calcite מיקרוני על שרידות, מחזור התא, אקטין ומיגרציה.',next:'להשלים תיקוני נוסח ורפרנסים.',progress:86,folder:''},
+  {id:'P005',short:'Local growth rules',title:'Local growth rules generate non-local dendritic organization',type:'מודל',status:'בעבודה',priority:'גבוהה',journal:'',summary:'בדיקה האם חוקים מקומיים של גדילה מסבירים ארגון דנדריטי לא-מקומי.',next:'לחדד את השאלה המדעית ואת הבידול ממאמר 4.',progress:45,folder:''}
+ ],
+ tasks:[
+  {paper:'P001',text:'לבחור 3 עיתוני יעד',stage:'לביצוע',due:''},{paper:'P003',text:'לסיים Discussion',stage:'בעבודה',due:''},{paper:'P004',text:'בדיקת רפרנסים סופית',stage:'בדיקה',due:''},{paper:'P002',text:'מעקב אחרי מערכת ההגשה',stage:'ממתין',due:''}
+ ],
+ journals:[
+  {name:'Example Physics Journal',group:'מודלים',scope:'פיזיקה יישומית, מודלים מורכבים ורשתות.',q:'Q2',ifv:'3.1',malmad:'כן'},
+  {name:'Example Biomaterials Journal',group:'ביולוגיה - חומרים/הנדסת רקמות',scope:'ביומטריאלס, אינטראקציות חומר-תא והנדסת רקמות.',q:'Q1',ifv:'5.2',malmad:'לא ידוע'},
+  {name:'Example Cell Biology Journal',group:'ביולוגיה',scope:'ביולוגיה תאית, מנגנוני תא ומערכות ניסוי.',q:'Q2',ifv:'3.8',malmad:'כן'}
+ ],
+ submissions:[
+  {paper:'P002',journal:'עיתון יעד',date:'2026-09-26',status:'נשלח',link:'',note:'גרסה ראשונה'},
+  {paper:'P004',journal:'עיתון קודם',date:'2026-09-12',status:'Revision',link:'',note:'התקבלו הערות עורכים'}
+ ]
+};
+// המרה מהגרסה הקודמת של המערכת (paperflow-db) למבנה החדש
+function migrate(o) {
+  const d = {papers: o.papers || [], tasks: o.tasks || [], journals: o.journals || [], contacts: [], ideas: [], opps: [], log: [], settings: {}};
+  d.papers.forEach(p => { p.events = p.events || []; if (!p.events.length) p.events.push({id: uid(), type: 'create', date: today(), ts: nowISO(), note: 'הועבר לגרסה החדשה של המערכת'}) });
+  (o.submissions || []).forEach(s => {
+    const p = d.papers.find(x => x.id === s.paper); if (!p) return;
+    const rev = s.status === 'Revision';
+    p.events.push({id: uid(), type: rev ? 'reviews' : 'submit', date: s.date, ts: nowISO(), journal: s.journal, url: s.link || '', note: s.note || '', round: rev ? 1 : undefined});
+  });
+  return d;
+}
+function normalize(d) {
+  d.settings = Object.assign({
+    codeHash: hcode('2412|pf'), ownerName: 'דני', remindDays: [7, 3, 1, 0], autoLockMin: 30,
+    fields: ['מודל', 'ביולוגיה', 'חומרים / הנדסת רקמות'], groups: ['מודלים', 'ביולוגיה - חומרים/הנדסת רקמות', 'ביולוגיה'],
+    labels: {}, goals: {submit: 4, accept: 3}, vision: '', scholarUrl: '', orcid: '', lastBackup: null
+  }, d.settings || {});
+  ['papers', 'tasks', 'journals', 'contacts', 'ideas', 'opps', 'log'].forEach(k => d[k] = d[k] || []);
+  d.papers.forEach(p => { p.events = p.events || []; p.versions = p.versions || []; p.version = p.version || 0; p.created = p.created || nowISO(); p.diskSeen = p.diskSeen || {} });
+  ['tasks', 'journals', 'contacts', 'ideas', 'opps'].forEach(k => d[k].forEach(x => x.id = x.id || uid()));
+  return d;
+}
+function loadDb() {
+  let d = null; try { d = JSON.parse(lsGet('paperflow-v2') || 'null') } catch {}
+  if (d) return normalize(d);
+  let old = null; try { old = JSON.parse(lsGet('paperflow-db') || 'null') } catch {}
+  return normalize(migrate(old || JSON.parse(JSON.stringify(seed))));
+}
+let db = loadDb();
+function saveDb() { try { localStorage.setItem('paperflow-v2', JSON.stringify(db)) } catch (e) { alert('השמירה נכשלה (ייתכן שהאחסון בדפדפן מלא): ' + e.message) } }
+function persist() { saveDb(); renderAll() }
+function audit(text) { db.log.unshift({ts: nowISO(), text}); db.log = db.log.slice(0, 300) }
+function getPaper(id) { return db.papers.find(p => p.id === id) }
+function actionLabel(t) { return (db.settings.labels || {})[t] || (ACTIONS[t] ? ACTIONS[t].label : t) }
+function clsStatus(s) { return s === 'בעבודה' ? 'working' : s === 'נשלח' ? 'submitted' : s === 'Revision' ? 'revision' : s === 'התקבל' ? 'accepted' : s === 'פורסם' ? 'published' : 'paused' }
+
+/* ---------- קבצים: IndexedDB ---------- */
+const IDB = {
+  db: null,
+  open() { return this.db ? Promise.resolve(this.db) : new Promise((res, rej) => { const r = indexedDB.open('paperflow-files', 1); r.onupgradeneeded = () => { r.result.createObjectStore('files'); r.result.createObjectStore('kv') }; r.onsuccess = () => { this.db = r.result; res(this.db) }; r.onerror = () => rej(r.error) }) },
+  async run(store, mode, fn) { const d = await this.open(); return new Promise((res, rej) => { const t = d.transaction(store, mode); const req = fn(t.objectStore(store)); t.oncomplete = () => res(req && req.result); t.onerror = () => rej(t.error) }) },
+  get(s, k) { return this.run(s, 'readonly', st => st.get(k)) },
+  put(s, k, v) { return this.run(s, 'readwrite', st => st.put(v, k)) },
+  del(s, k) { return this.run(s, 'readwrite', st => st.delete(k)) },
+};
+
+/* ---------- תיקייה אמיתית בדיסק (Chrome / Edge) ---------- */
+const hasFS = 'showDirectoryPicker' in window;
+let rootDir = null, rootOK = false;
+async function ensureRoot(ask) {
+  if (!hasFS) return null;
+  if (!rootDir) { try { rootDir = await IDB.get('kv', 'root') } catch {} }
+  if (!rootDir) return null;
+  let perm = 'denied';
+  try { perm = await rootDir.queryPermission({mode: 'readwrite'}); if (perm !== 'granted' && ask) perm = await rootDir.requestPermission({mode: 'readwrite'}) } catch {}
+  rootOK = perm === 'granted';
+  return rootOK ? rootDir : null;
+}
+async function connectFolder() {
+  if (!hasFS) { alert('חיבור לתיקייה בדיסק זמין בדפדפני Chrome ו-Edge. בדפדפן זה הקבצים נשמרים בתוך המערכת בלבד (ואפשר להוריד אותם בכל עת).'); return }
+  try {
+    const h = await showDirectoryPicker({mode: 'readwrite', id: 'paperflow'});
+    await IDB.put('kv', 'root', h); rootDir = h; rootOK = true;
+    db.settings.rootName = h.name; audit('חוברה תיקיית מאמרים בדיסק: ' + h.name); persist();
+    await syncAllToDisk(true);
+  } catch (e) { if (e.name !== 'AbortError') alert('לא ניתן לחבר את התיקייה: ' + e.message) }
+}
+function folderName(p) { return (p.id + ' - ' + (p.short || '')).replace(/[\\/:*?"<>|]/g, '_').trim() }
+async function paperDir(p) { const r = await ensureRoot(false); if (!r) return null; p.dir = p.dir || folderName(p); return r.getDirectoryHandle(p.dir, {create: true}) }
+async function writeToDisk(p, ver, blob) {
+  try {
+    const d = await paperDir(p); if (!d) return false;
+    const fh = await d.getFileHandle(ver.file, {create: true}); const w = await fh.createWritable(); await w.write(blob); await w.close();
+    p.diskSeen[ver.file] = (await fh.getFile()).lastModified;
+    return true;
+  } catch (e) { console.warn(e); return false }
+}
+async function syncAllToDisk(quiet) {
+  const r = await ensureRoot(true); if (!r) { if (!quiet) alert('התיקייה בדיסק לא מחוברת או שלא ניתנה הרשאה.'); return }
+  let n = 0;
+  for (const p of db.papers) { await paperDir(p); for (const v of p.versions) if (!v.disk) { const b = await IDB.get('files', v.key); if (b && await writeToDisk(p, v, b)) { v.disk = true; n++ } } }
+  persist(); toast(`התיקייה בדיסק מסונכרנת${n ? ` · נכתבו ${n} קבצים` : ''}`);
+}
+// עריכה ישירה בתיקייה: קובץ שנערך (למשל ב-Word) או קובץ חדש שנוסף — נרשם כגרסה חדשה
+async function scanFolder(pid) {
+  const p = getPaper(pid); const r = await ensureRoot(true);
+  if (!r) { alert('כדי לסרוק, חברו קודם תיקייה בדיסק (בכפתור "חיבור תיקייה").'); return }
+  const d = await paperDir(p); const known = {}; p.versions.forEach(v => known[v.file] = v);
+  const files = []; for await (const [name, h] of d.entries()) if (h.kind === 'file' && !/^[~.]/.test(name)) files.push(h);
+  let added = 0;
+  for (const h of files) {
+    const f = await h.getFile(), k = known[f.name];
+    if (p.diskSeen[f.name] === f.lastModified) continue;
+    if (k && !p.diskSeen[f.name] && f.lastModified <= Date.parse(k.ts) + 5000) { p.diskSeen[f.name] = f.lastModified; continue }
+    p.diskSeen[f.name] = f.lastModified;
+    await addVersion(p, f, f.name, k ? `נערך ישירות בתיקייה (על בסיס v${k.v})` : 'נוסף ישירות לתיקייה'); added++;
+  }
+  persist(); toast(added ? `נוספו ${added} גרסאות חדשות מהתיקייה` : 'אין שינויים חדשים בתיקייה');
+}
+
+/* ---------- גרסאות ---------- */
+async function addVersion(p, blob, origName, note) {
+  const v = (p.version || 0) + 1;
+  const ext = ((origName || '').match(/\.[A-Za-z0-9]{1,6}$/) || [''])[0].toLowerCase();
+  const ver = {v, file: `${p.id}_v${v}_${today()}${ext}`, orig: origName || '', size: blob.size, mime: blob.type || '', ts: nowISO(), note: note || '', key: `${p.id}/v${v}/${uid()}`, disk: false};
+  await IDB.put('files', ver.key, blob);
+  ver.disk = await writeToDisk(p, ver, blob);
+  p.versions.push(ver); p.version = v;
+  addEvent(p, {type: 'upload', ver: String(v), note: `גרסה v${v}${origName ? ' · ' + origName : ''}${note ? ' · ' + note : ''}`});
+  saveDb(); return ver;
+}
+function uploadVersion(pid, file) {
+  const p = getPaper(pid);
+  formModal({title: `העלאת גרסה חדשה · ${p.id}`, values: {file},
+    note: `הקובץ יקבל את המספר <b>v${(p.version || 0) + 1}</b> ואת התאריך של היום, וגם יישמר בתיקיית המאמר.`,
+    fields: [file ? {type: 'info', html: `קובץ: <b>${esc(file.name)}</b> (${fmtSize(file.size)})`} : {k: 'file', label: 'בחירת קובץ (Word, PDF, תמונות, נתונים…)', type: 'file', full: true, required: true},
+             {k: 'note', label: 'מה השתנה בגרסה הזו?', type: 'textarea', full: true}],
+    onSave: async v => { const f = v.file; if (!f) { alert('יש לבחור קובץ'); return false } const ver = await addVersion(p, f, f.name, v.note); persist(); toast(`נשמרה גרסה v${ver.v}${ver.disk ? ' · נכתבה גם לתיקייה בדיסק' : ''}`) }});
+}
+async function versionBlob(p, n) { const v = p.versions.find(x => String(x.v) === String(n)); if (!v) return [null, null]; return [v, await IDB.get('files', v.key)] }
+async function openVersion(pid, n, forceDownload) {
+  const [v, b] = await versionBlob(getPaper(pid), n); if (!b) { alert('הקובץ לא נמצא באחסון'); return }
+  const viewable = /^(application\/pdf|image\/|text\/)/.test(b.type);
+  if (viewable && !forceDownload) { const url = URL.createObjectURL(b); window.open(url, '_blank'); setTimeout(() => URL.revokeObjectURL(url), 60000) }
+  else download(b, v.file);
+}
+function editVersionNote(pid, n) {
+  const p = getPaper(pid), v = p.versions.find(x => String(x.v) === String(n));
+  formModal({title: `הערה לגרסה v${v.v}`, values: {note: v.note}, fields: [{k: 'note', label: 'הערה', type: 'textarea', full: true}], onSave: x => { v.note = x.note; v.edited = nowISO(); persist() }});
+}
+
+/* ---------- שלבים (אירועים) — לכל צעד מוצמד תאריך ---------- */
+function countRounds(p, type) { return p.events.filter(e => e.type === type).length }
+function addEvent(p, ev) {
+  ev.id = uid(); ev.ts = nowISO(); ev.date = ev.date || today();
+  const A = ACTIONS[ev.type] || {};
+  if (A.round && !ev.round) ev.round = countRounds(p, ev.type) + 1;
+  Object.keys(ev).forEach(k => (ev[k] === '' || ev[k] == null) && delete ev[k]);
+  p.events.push(ev); p.updated = ev.ts;
+  if (A.status) p.status = A.status;
+  if (A.progress) p.progress = Math.max(Number(p.progress || 0), A.progress);
+  if (A.next) p.next = ev.type === 'reviews' && ev.due ? `להגיש תיקונים עד ${fmtDate(ev.due)} (סבב ${ev.round})` : A.next;
+  if (ev.journal && ['submit', 'reviews', 'resubmit', 'accept'].includes(ev.type)) p.journal = ev.journal;
+  if (ev.type === 'resubmit') p.events.filter(e => e.type === 'reviews' && !e.done).forEach(e => e.done = true);
+  if (ev.type === 'published' && ev.doi) p.doi = ev.doi;
+  return ev;
+}
+function fieldDef(k, p) {
+  const vers = [['', '—'], ...p.versions.slice().reverse().map(v => [String(v.v), `v${v.v} · ${v.orig || v.file}`])];
+  return ({
+    date: {k: 'date', label: 'תאריך הפעולה', type: 'date'},
+    note: {k: 'note', label: 'הערות', type: 'textarea', full: true},
+    recipients: {k: 'recipients', label: 'נשלח אל (שמות / מיילים)', full: true, list: 'contactsList'},
+    ver: {k: 'ver', label: 'גרסה שנשלחה', type: 'select', options: vers},
+    journal: {k: 'journal', label: 'עיתון', list: 'journalsList'},
+    url: {k: 'url', label: 'קישור לאתר העיתון / למערכת ההגשה', type: 'url', full: true, placeholder: 'https://'},
+    ms: {k: 'ms', label: 'מספר כתב היד (Manuscript ID)'},
+    receiptGot: {k: 'receiptGot', label: 'התקבל אישור קבלה מהעיתון', type: 'checkbox'},
+    receiptDate: {k: 'receiptDate', label: 'תאריך אישור הקבלה', type: 'date'},
+    decision: {k: 'decision', label: 'סוג ההערות', type: 'select', options: ['', 'Minor revision', 'Major revision', 'הערות עורך', 'הערות שותפים', 'אחר']},
+    due: {k: 'due', label: 'מועד אחרון להגשת תיקונים (תישלח התראה)', type: 'date'},
+    done: {k: 'done', label: 'התיקונים כבר הוגשו', type: 'checkbox'},
+    doi: {k: 'doi', label: 'DOI', placeholder: '10.xxxx/xxxxx'},
+    sites: {k: 'sites', label: 'אילו אתרים ומערכות עודכנו?', type: 'checks', options: SITES, full: true},
+  })[k];
+}
+function newEvent(pid, type) {
+  const p = getPaper(pid);
+  formModal({title: `תיעוד שלב · ${p.id} ${p.short}`, rebuildOn: 'type',
+    values: {type: type || 'plan', date: today(), journal: p.journal || '', ver: p.version ? String(p.version) : ''},
+    note: 'התאריך והשעה של הרישום נשמרים אוטומטית. אפשר לשנות את "תאריך הפעולה" אם היא נעשתה ביום אחר.',
+    fields: v => [{k: 'type', label: 'איזו פעולה נעשתה?', type: 'select', full: true, options: USER_ACTIONS.map(t => [t, actionLabel(t)])},
+                  ...ACTIONS[v.type].fields.map(k => fieldDef(k, p)),
+                  ACTIONS[v.type].round ? {type: 'info', html: `זה יירשם כ<b>סבב ${countRounds(p, v.type) + 1}</b> של "${esc(actionLabel(v.type))}".`} : null],
+    onSave: v => {
+      const keep = {type: v.type}; ACTIONS[v.type].fields.forEach(k => keep[k] = v[k]);
+      const ev = addEvent(p, keep); persist();
+      toast(`נרשם: ${esc(actionLabel(ev.type))} · ${fmtDate(ev.date)}`);
+      if (ev.type === 'reviews' && ev.due && !ev.done) setTimeout(() => calendarModal(dlFromEvent(p, ev), true), 60);
+    }});
+}
+function editEvent(pid, eid) {
+  const p = getPaper(pid), ev = p.events.find(e => e.id === eid); if (!ev) return;
+  const A = ACTIONS[ev.type] || ACTIONS.other;
+  formModal({title: `עריכת שלב · ${actionLabel(ev.type)}${ev.round ? ' · סבב ' + ev.round : ''}`, values: Object.assign({}, ev),
+    note: `נרשם במקור: ${fmtTs(ev.ts)}${ev.edited ? ` · נערך לאחרונה: ${fmtTs(ev.edited)}` : ''}`,
+    fields: A.fields.map(k => fieldDef(k, p)),
+    onSave: v => { Object.assign(ev, v, {edited: nowISO()}); if (ev.type === 'published' && ev.doi) p.doi = ev.doi; if (ev.journal && ev === p.events[p.events.length - 1]) p.journal = ev.journal; persist() },
+    onDelete: () => { if (!confirm('למחוק את השלב מהתיעוד?')) return false; p.events = p.events.filter(e => e.id !== eid); audit(`נמחק שלב "${actionLabel(ev.type)}" (${fmtDate(ev.date)}) ממאמר ${p.id}`); persist() }});
+}
+function markReceipt(pid, eid) { const ev = getPaper(pid).events.find(e => e.id === eid); ev.receiptGot = true; ev.receiptDate = ev.receiptDate || today(); ev.edited = nowISO(); persist(); toast('סומן: התקבל אישור קבלה') }
+function markDone(pid, eid) { const ev = getPaper(pid).events.find(e => e.id === eid); ev.done = true; ev.edited = nowISO(); persist(); toast('סומן: התיקונים הוגשו') }
+function evDetails(p, e) {
+  const c = [];
+  if (e.round) c.push(`<span class="chip">סבב ${e.round}</span>`);
+  if (e.journal) c.push(`<span class="chip">📰 ${esc(e.journal)}</span>`);
+  if (e.decision) c.push(`<span class="chip">${esc(e.decision)}</span>`);
+  if (e.ms) c.push(`<span class="chip">ID: ${esc(e.ms)}</span>`);
+  if (e.type === 'submit') c.push(e.receiptGot ? `<span class="chip ok">✓ אישור קבלה${e.receiptDate ? ' ' + fmtDate(e.receiptDate) : ''}</span>` : `<span class="chip warn">ממתין לאישור קבלה</span>`);
+  if (e.due) { const n = daysUntil(e.due); c.push(e.done ? `<span class="chip ok">✓ התיקונים הוגשו</span>` : `<span class="chip ${n < 0 ? 'bad' : n <= 3 ? 'warn' : ''}">⏰ תיקונים עד ${fmtDate(e.due)} · ${dueText(n)}</span>`) }
+  if (e.recipients) c.push(`<span class="chip">אל: ${esc(e.recipients)}</span>`);
+  if (e.ver) c.push(`<span class="chip">v${esc(e.ver)}</span>`);
+  if (e.doi) c.push(`<a class="chip link" href="https://doi.org/${esc(e.doi)}" target="_blank" rel="noopener">DOI ${esc(e.doi)}</a>`);
+  if (e.url) c.push(`<a class="chip link" href="${safeUrl(e.url)}" target="_blank" rel="noopener">🔗 קישור</a>`);
+  (e.sites || []).forEach(s => c.push(`<span class="chip ok">✓ ${esc(s)}</span>`));
+  return (c.length ? `<div class="chips">${c.join('')}</div>` : '') + (e.note ? `<div class="evnote">${esc(e.note)}</div>` : '');
+}
+function eventHtml(p, e, withPaper) {
+  const acts = [`<button class="btn sm" onclick="editEvent('${p.id}','${e.id}')">עריכה</button>`];
+  if (e.type === 'submit' && !e.receiptGot) acts.push(`<button class="btn sm" onclick="markReceipt('${p.id}','${e.id}')">✓ התקבל אישור קבלה</button>`);
+  if (e.due && !e.done) acts.push(`<button class="btn sm" onclick="markDone('${p.id}','${e.id}')">✓ הוגש</button><button class="btn sm" onclick="calendarModal(dlFromEvent(getPaper('${p.id}'),getPaper('${p.id}').events.find(x=>x.id==='${e.id}')))">📅 ליומן ולנייד</button>`);
+  return `<div class="event"><b>${fmtDate(e.date)} · ${withPaper ? `<a href="#" onclick="openPaper('${p.id}');return false">${p.id} ${esc(p.short)}</a> · ` : ''}${esc(actionLabel(e.type))}</b>
+    ${evDetails(p, e)}<small>נרשם: ${fmtTs(e.ts)}${e.edited ? ' · נערך: ' + fmtTs(e.edited) : ''}</small><div class="evactions">${acts.join('')}</div></div>`;
+}
+
+/* ---------- מועדים, התראות ויומן ---------- */
+function dlFromEvent(p, e) { return {id: 'ev' + e.id, date: e.due, title: `הגשת תיקונים · ${p.id} ${p.short} (סבב ${e.round || 1})`, paper: p.id, kind: 'תיקונים', detail: e.journal || ''} }
+function deadlines() {
+  const out = [];
+  db.papers.forEach(p => p.events.forEach(e => { if (e.type === 'reviews' && e.due && !e.done) out.push(dlFromEvent(p, e)) }));
+  db.tasks.forEach(t => { if (t.due && t.stage !== 'בוצע') out.push({id: 't' + t.id, date: t.due, title: `משימה: ${t.text}`, paper: t.paper, kind: 'משימה'}) });
+  db.opps.forEach(o => { if (o.due && !o.done) out.push({id: 'o' + o.id, date: o.due, title: `${o.kind || 'הזדמנות'}: ${o.title}`, kind: o.kind || 'הזדמנות', url: o.url}) });
+  return out.sort((a, b) => a.date.localeCompare(b.date));
+}
+const DLMAP = {};
+function dlHtml(list, empty) {
+  list.forEach(d => DLMAP[d.id] = d);
+  if (!list.length) return `<div class="empty">${empty || 'אין מועדים פתוחים'}</div>`;
+  return list.map((d, i) => { const n = daysUntil(d.date); return `<div class="dl"><div>${d.paper ? `<a href="#" onclick="openPaper('${esc(d.paper)}');return false">${esc(d.title)}</a>` : esc(d.title)}<div class="muted" style="font-size:12px">${fmtDate(d.date)} · ${esc(d.kind)}</div></div>
+    <div style="display:flex;gap:6px;align-items:center"><span class="when ${n < 0 ? 'late' : n <= 3 ? 'soon' : ''}">${dueText(n)}</span><button class="btn sm" title="הוספה ליומן / לנייד" onclick="calendarModal(DLMAP['${d.id}'])">📅</button></div></div>` }).join('');
+}
+function askNotify() {
+  if (!('Notification' in window)) { alert('הדפדפן הזה לא תומך בהתראות. אפשר להשתמש בייצוא ליומן.'); return }
+  Notification.requestPermission().then(r => { renderAll(); if (r === 'granted') { new Notification('PaperFlow', {body: 'ההתראות הופעלו ✓ תקבלו תזכורת לפני כל מועד.'}); checkReminders() } else alert('ההתראות לא אושרו בדפדפן.') });
+}
+function checkReminders() {
+  let sent = {}; try { sent = JSON.parse(lsGet('pf-notified') || '{}') } catch {}
+  const days = db.settings.remindDays || [7, 3, 1, 0];
+  deadlines().forEach(d => {
+    const n = daysUntil(d.date); if (!(n < 0 || days.includes(n))) return;
+    const key = `${d.id}|${d.date}|${n < 0 ? 'late' + today() : n}`; if (sent[key]) return;
+    if ('Notification' in window && Notification.permission === 'granted') { try { new Notification('PaperFlow · ' + (n < 0 ? 'באיחור!' : n === 0 ? 'היום!' : `בעוד ${n} ימים`), {body: `${d.title}\nמועד: ${fmtDate(d.date)}`, tag: key}); sent[key] = 1 } catch {} }
+  });
+  lsSet('pf-notified', JSON.stringify(sent));
+}
+function icsEsc(s) { return String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n') }
+function ics(list) {
+  const stamp = nowISO().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+  const ev = list.map(d => {
+    const s = d.date.replace(/-/g, ''); const e = new Date(d.date + 'T12:00:00'); e.setDate(e.getDate() + 1); const en = e.toISOString().slice(0, 10).replace(/-/g, '');
+    const alarms = (db.settings.remindDays || [7, 3, 1, 0]).map(n => { const h = 9 - 24 * n; return `BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:${icsEsc(d.title)}\r\nTRIGGER:${h >= 0 ? 'PT' + h + 'H' : '-PT' + (-h) + 'H'}\r\nEND:VALARM` }).join('\r\n');
+    return `BEGIN:VEVENT\r\nUID:${d.id}-${s}@paperflow\r\nDTSTAMP:${stamp}\r\nDTSTART;VALUE=DATE:${s}\r\nDTEND;VALUE=DATE:${en}\r\nSUMMARY:${icsEsc(d.title)}\r\nDESCRIPTION:${icsEsc('נוצר מתוך PaperFlow' + (d.detail ? ' · ' + d.detail : ''))}\r\n${alarms}\r\nEND:VEVENT`;
+  }).join('\r\n');
+  return `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//PaperFlow//HE\r\nCALSCALE:GREGORIAN\r\n${ev}\r\nEND:VCALENDAR\r\n`;
+}
+function gcalUrl(d) { const s = d.date.replace(/-/g, ''); const e = new Date(d.date + 'T12:00:00'); e.setDate(e.getDate() + 1); return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(d.title)}&dates=${s}/${e.toISOString().slice(0, 10).replace(/-/g, '')}&details=${encodeURIComponent('נוצר מתוך PaperFlow')}` }
+function calendarModal(d, justAdded) {
+  formModal({title: justAdded ? 'נקבע מועד להגשת תיקונים' : 'הוספה ליומן ולנייד',
+    fields: [{type: 'info', html: `<b>${esc(d.title)}</b><br>מועד: ${fmtDate(d.date)} (${dueText(daysUntil(d.date))})<br><br>
+      <b>במחשב</b>: המערכת תקפיץ התראה ${(db.settings.remindDays || []).map(n => n ? n + ' ימים לפני' : 'ביום עצמו').join(', ')}${'Notification' in window && Notification.permission === 'granted' ? '' : ' (צריך להפעיל התראות: 🔔)'}.<br>
+      <b>בנייד</b>: הוסיפו את המועד ליומן (Google / Outlook / iPhone), והיומן ישלח התראה גם לטלפון.`}],
+    actions: [{label: 'Google Calendar', primary: true, fn: () => { window.open(gcalUrl(d), '_blank') }},
+              {label: 'קובץ יומן (Outlook / iPhone)', fn: () => download(ics([d]), `deadline-${d.date}.ics`, 'text/calendar')},
+              ('Notification' in window && Notification.permission !== 'granted') ? {label: '🔔 הפעלת התראות במחשב', fn: () => askNotify()} : null]});
+}
+function exportAllIcs() { const l = deadlines(); if (!l.length) { toast('אין מועדים פתוחים לייצוא'); return } download(ics(l), `paperflow-deadlines-${today()}.ics`, 'text/calendar'); toast('נשמר קובץ יומן. פתחו אותו כדי להוסיף את כל המועדים ליומן. היומן יסנכרן לנייד.') }
+
+/* ---------- שליחה במייל עם קובץ מצורף ---------- */
+function openMail(pid, n) {
+  const p = getPaper(pid); const ver = n || p.version || '';
+  const vers = [['', 'ללא קובץ מצורף'], ...p.versions.slice().reverse().map(v => [String(v.v), `v${v.v} · ${v.orig || v.file} (${fmtDate(v.ts.slice(0, 10))})`])];
+  const canShare = !!(navigator.canShare && navigator.share);
+  formModal({title: `שליחה במייל · ${p.id} ${p.short}`,
+    values: {to: p.coauthors || '', subject: `${p.short}${ver ? ' – v' + ver : ''}: ${p.title}`, ver: String(ver), logAs: 'email',
+             body: `שלום,\n\nמצורפת${ver ? ` גרסה v${ver} של` : ''} המאמר:\n"${p.title}"\n\nאשמח להערותיך.\n\nבברכה,\n${db.settings.ownerName}`},
+    note: `<b>✉ פתיחת חלון מייל</b>: המערכת מכינה טיוטת מייל <b>עם הקובץ מצורף</b> ושומרת אותה כקובץ. לחיצה עליו (בשורת ההורדות) פותחת חלון מייל חדש ב-Outlook או ב-Mail, מוכן לשליחה.<br>
+      <span class="muted">טיפ: בהורדה הראשונה בחרו ב-Chrome "תמיד לפתוח קבצים מסוג זה", ומאז חלון המייל ייפתח ישירות.</span>`,
+    fields: [{k: 'to', label: 'אל (כמה נמענים: מפרידים בפסיק)', full: true, list: 'contactsList'},
+             {k: 'subject', label: 'נושא', full: true},
+             {k: 'ver', label: 'קובץ מצורף', type: 'select', options: vers},
+             {k: 'logAs', label: 'לרשום בציר השלבים כ…', type: 'select', options: [['email', 'נשלח במייל'], ['draft', actionLabel('draft')], ['submit', actionLabel('submit')], ['resubmit', actionLabel('resubmit')]]},
+             {k: 'body', label: 'תוכן ההודעה', type: 'textarea', full: true}],
+    actions: [{label: '✉ פתח חלון מייל עם הקובץ', primary: true, fn: v => sendEml(p, v)},
+              canShare ? {label: 'שיתוף (Outlook / WhatsApp / נייד)', fn: v => sendShare(p, v)} : null,
+              {label: 'Gmail', fn: v => sendGmail(p, v)}]});
+}
+function logMail(p, v, via) {
+  if (v.logAs === 'email') addEvent(p, {type: 'email', recipients: v.to, ver: v.ver, note: `${v.subject} (${via})`});
+  else addEvent(p, {type: v.logAs, recipients: v.to, ver: v.ver, journal: v.logAs !== 'draft' ? p.journal : '', note: `נשלח במייל (${via}): ${v.subject}`});
+  persist();
+}
+async function sendEml(p, v) {
+  const [ver, blob] = v.ver ? await versionBlob(p, v.ver) : [null, null];
+  const bd = 'pf_' + uid(), wrap = s => s.replace(/.{76}/g, '$&\r\n');
+  const html = `<div dir="rtl" style="font-family:Arial,sans-serif;font-size:14px">${esc(v.body).replace(/\n/g, '<br>')}</div>`;
+  const parts = ['To: ' + v.to.replace(/[\r\n]/g, ''), 'Subject: =?UTF-8?B?' + b64utf8(v.subject) + '?=', 'X-Unsent: 1', 'MIME-Version: 1.0', `Content-Type: multipart/mixed; boundary="${bd}"`, '',
+    '--' + bd, 'Content-Type: text/html; charset="UTF-8"', 'Content-Transfer-Encoding: base64', '', wrap(b64utf8(html))];
+  if (blob) parts.push('--' + bd, `Content-Type: ${blob.type || 'application/octet-stream'}; name="${ver.file}"`, 'Content-Transfer-Encoding: base64', `Content-Disposition: attachment; filename="${ver.file}"`, '', wrap(await blobToB64(blob)));
+  parts.push('--' + bd + '--', '');
+  download(parts.join('\r\n'), `mail_${p.id}${ver ? '_v' + ver.v : ''}.eml`, 'message/rfc822');
+  logMail(p, v, 'Outlook/Mail');
+  toast('טיוטת המייל מוכנה ✓ לחצו על הקובץ שירד (mail_….eml) וייפתח חלון מייל עם הקובץ המצורף.', 8000);
+}
+async function sendShare(p, v) {
+  const [ver, blob] = v.ver ? await versionBlob(p, v.ver) : [null, null];
+  const data = {title: v.subject, text: v.body};
+  if (blob) data.files = [new File([blob], ver.file, {type: blob.type || 'application/octet-stream'})];
+  if (data.files && !navigator.canShare(data)) { alert('המערכת לא מאפשרת לשתף את סוג הקובץ הזה. נסו "פתח חלון מייל".'); return false }
+  try { await navigator.share(data); logMail(p, v, 'שיתוף') } catch (e) { if (e.name !== 'AbortError') alert(e.message); return false }
+}
+async function sendGmail(p, v) {
+  window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(v.to)}&su=${encodeURIComponent(v.subject)}&body=${encodeURIComponent(v.body)}`, '_blank');
+  if (v.ver) { const [ver, blob] = await versionBlob(p, v.ver); if (blob) download(blob, ver.file) }
+  logMail(p, v, 'Gmail'); toast('נפתח Gmail. הקובץ ירד למחשב, גררו אותו לחלון המייל כדי לצרף.', 7000);
+}
+
+/* ---------- טופס כללי (חלון) ---------- */
+let FM = null;
+function formModal(cfg) { FM = cfg; cfg.values = Object.assign({}, cfg.values || {}); drawFM(); $('fm').classList.add('open'); setTimeout(() => { const i = $('fmBody').querySelector('input:not([type=checkbox]):not([readonly]),textarea'); i && i.focus() }, 50) }
+function closeFM() { $('fm').classList.remove('open'); FM = null }
+function fmFields() { return (typeof FM.fields === 'function' ? FM.fields(FM.values) : FM.fields).filter(Boolean) }
+function fieldHtml(f, val) {
+  const cls = f.full ? 'full' : '', lab = esc(f.label || '');
+  if (f.type === 'info') return `<div class="full info">${f.html}</div>`;
+  if (f.type === 'textarea') return `<label class="${cls}">${lab}<textarea name="${f.k}" placeholder="${esc(f.placeholder || '')}">${esc(val ?? '')}</textarea></label>`;
+  if (f.type === 'select') return `<label class="${cls}">${lab}<select name="${f.k}">${f.options.map(o => { const [v, t] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}" ${String(val ?? '') === String(v) ? 'selected' : ''}>${esc(t || '—')}</option>` }).join('')}</select></label>`;
+  if (f.type === 'checkbox') return `<label class="check ${cls}"><input type="checkbox" name="${f.k}" ${val ? 'checked' : ''}> ${lab}</label>`;
+  if (f.type === 'checks') return `<fieldset class="full"><legend>${lab}</legend>${f.options.map(o => `<label><input type="checkbox" name="${f.k}" value="${esc(o)}" ${(val || []).includes(o) ? 'checked' : ''}> ${esc(o)}</label>`).join('')}</fieldset>`;
+  if (f.type === 'file') return `<label class="${cls}">${lab}<input type="file" name="${f.k}"></label>`;
+  return `<label class="${cls}">${lab}<input type="${f.type || 'text'}" name="${f.k}" value="${esc(val ?? '')}" ${f.list ? `list="${f.list}"` : ''} placeholder="${esc(f.placeholder || '')}" ${f.readonly ? 'readonly' : ''} ${f.type === 'number' ? 'step="any"' : ''}></label>`;
+}
+function readFM() {
+  const b = $('fmBody'), v = Object.assign({}, FM.values);
+  fmFields().forEach(f => {
+    if (!f.k) return;
+    if (f.type === 'checks') { v[f.k] = [...b.querySelectorAll(`[name="${f.k}"]:checked`)].map(x => x.value); return }
+    const el = b.querySelector(`[name="${f.k}"]`); if (!el) return;
+    v[f.k] = f.type === 'checkbox' ? el.checked : f.type === 'file' ? (el.files[0] || v[f.k] || null) : f.type === 'number' ? (el.value === '' ? '' : Number(el.value)) : el.value.trim();
+  });
+  return v;
+}
+function drawFM() {
+  const c = FM, fields = fmFields();
+  $('fmTitle').textContent = c.title; $('fmNote').innerHTML = c.note || ''; $('fmNote').style.display = c.note ? 'block' : 'none';
+  $('fmBody').innerHTML = fields.map(f => fieldHtml(f, c.values[f.k])).join('');
+  const acts = (c.actions || [{label: 'שמירה', primary: true, fn: c.onSave}]).filter(Boolean);
+  $('fmActions').innerHTML = acts.map((a, i) => `<button class="btn ${a.primary ? 'primary' : ''}" data-i="${i}">${a.label}</button>`).join('') + `<button class="btn" data-x>סגירה</button>` + (c.onDelete ? `<button class="btn danger" data-del style="margin-right:auto">מחיקה</button>` : '');
+  $('fmActions').querySelectorAll('[data-i]').forEach(btn => btn.onclick = async () => {
+    const v = readFM(); const miss = fields.find(f => f.required && !v[f.k]); if (miss) { alert('יש למלא: ' + miss.label); return }
+    btn.disabled = true; let r; try { r = await acts[btn.dataset.i].fn(v) } catch (e) { alert('שגיאה: ' + e.message); r = false } btn.disabled = false;
+    if (r !== false && FM === c) closeFM();
+  });
+  $('fmActions').querySelector('[data-x]').onclick = closeFM;
+  if (c.onDelete) $('fmActions').querySelector('[data-del]').onclick = async () => { if (await c.onDelete() !== false) closeFM() };
+  if (c.rebuildOn) { const el = $('fmBody').querySelector(`[name="${c.rebuildOn}"]`); if (el) el.onchange = () => { c.values = readFM(); drawFM() } }
+}
+$('fm').addEventListener('mousedown', e => { if (e.target.id === 'fm') closeFM() });
+
+/* ---------- מאמרים ---------- */
+function nextId() { const n = db.papers.map(p => parseInt(String(p.id).replace(/\D/g, '')) || 0); return 'P' + String((n.length ? Math.max(...n) : 0) + 1).padStart(3, '0') }
+function paperFields(isNew) { return [
+  {k: 'id', label: isNew ? 'מספר מאמר (אותיות לועזיות ומספרים)' : 'מספר מאמר (קבוע)', required: true, readonly: !isNew},
+  {k: 'short', label: 'שם קצר', required: true, placeholder: 'למשל: Model 3'},
+  {k: 'title', label: 'כותרת מלאה', required: true, full: true},
+  {k: 'type', label: 'תחום', type: 'select', options: db.settings.fields},
+  {k: 'status', label: 'מצב', type: 'select', options: STATUSES},
+  {k: 'priority', label: 'עדיפות', type: 'select', options: PRIORITIES},
+  {k: 'journal', label: 'עיתון נוכחי / יעד', list: 'journalsList'},
+  {k: 'coauthors', label: 'מיילים של שותפים (לשליחה מהירה, מופרדים בפסיק)', full: true},
+  {k: 'summary', label: 'תקציר בשורה', type: 'textarea', full: true},
+  {k: 'next', label: 'הפעולה הבאה', type: 'textarea', full: true},
+  {k: 'progress', label: 'התקדמות %', type: 'number'},
+  {k: 'folder', label: 'קישור נוסף (Drive / Dropbox)', placeholder: 'https://… או file:///…'},
+  isNew ? null : {k: 'doi', label: 'DOI (לאחר פרסום)'},
+  isNew ? null : {k: 'citations', label: 'מספר ציטוטים (לחישוב h-index)', type: 'number'},
+]}
+const FIELD_NAMES = {short: 'שם קצר', title: 'כותרת', type: 'תחום', status: 'מצב', priority: 'עדיפות', journal: 'עיתון', coauthors: 'שותפים', summary: 'תקציר', next: 'פעולה הבאה', progress: 'התקדמות', folder: 'קישור', doi: 'DOI', citations: 'ציטוטים'};
+function openNewPaper(pre = {}) {
+  formModal({title: 'מאמר חדש', values: Object.assign({id: nextId(), type: db.settings.fields[0], status: 'בעבודה', priority: 'בינונית', progress: 5}, pre),
+    note: 'למאמר תיפתח תיקייה משלו, שבה יישמרו כל הגרסאות. מספר המאמר נשאר קבוע, ומספר הגרסה עולה בכל העלאה.',
+    fields: paperFields(true),
+    onSave: async v => {
+      v.id = String(v.id).toUpperCase().replace(/[^A-Z0-9_-]/g, ''); if (!v.id) { alert('מספר מאמר לא תקין'); return false }
+      if (getPaper(v.id)) { alert('מספר המאמר כבר קיים'); return false }
+      const p = Object.assign(v, {version: 0, events: [], versions: [], diskSeen: {}, created: nowISO(), progress: Number(v.progress || 0)});
+      db.papers.push(p); addEvent(p, {type: 'create', note: 'נפתח תיק מאמר'}); audit(`נפתח מאמר ${p.id}`);
+      delete p.ideaId; if (pre.ideaId) db.ideas = db.ideas.filter(i => i.id !== pre.ideaId);
+      await paperDir(p).catch(() => {}); persist(); openPaper(p.id);
+    }});
+}
+function editPaper(id) {
+  const p = getPaper(id);
+  formModal({title: `עריכת פרטים · ${p.id}`, values: Object.assign({}, p), fields: paperFields(false),
+    onSave: v => {
+      const changed = Object.keys(FIELD_NAMES).filter(k => String(p[k] ?? '') !== String(v[k] ?? ''));
+      Object.keys(FIELD_NAMES).forEach(k => p[k] = v[k]); p.progress = Number(p.progress || 0);
+      if (changed.length) addEvent(p, {type: 'edit', note: 'עודכנו: ' + changed.map(k => FIELD_NAMES[k]).join(', ')});
+      persist();
+    },
+    onDelete: async () => {
+      if (!confirm(`למחוק את ${p.id} (${p.short}) כולל כל הגרסאות השמורות במערכת?\n(קבצים בתיקייה בדיסק לא יימחקו)`)) return false;
+      for (const v of p.versions) await IDB.del('files', v.key).catch(() => {});
+      db.papers = db.papers.filter(x => x.id !== id); audit(`נמחק מאמר ${id}`); persist(); showPage('papers');
+    }});
+}
+function paperCard(p) {
+  return `<article class="card" onclick="openPaper('${p.id}')"><div class="cardtop"><span class="pid">${p.id} · v${p.version || 0}</span><span class="chip status ${clsStatus(p.status)}">${esc(p.status)}</span></div><h3>${esc(p.short)}</h3><div class="meta">${esc(p.title)}</div><div class="chips"><span class="chip">${esc(p.type)}</span><span class="chip">עדיפות ${esc(p.priority)}</span>${p.journal ? `<span class="chip">${esc(p.journal)}</span>` : ''}</div><div class="next"><b>הפעולה הבאה</b>${esc(p.next || '—')}</div><div class="progress"><span style="width:${Number(p.progress || 0)}%"></span></div></article>`;
+}
+
+/* ---------- עמוד מאמר ---------- */
+let curPaper = null, curTab = 'steps';
+function openPaper(id, tab) { curPaper = id; if (tab) curTab = tab; showPage('paper') }
+function stepper(p) {
+  const done = PIPE.map(([, , types]) => p.events.filter(e => types.includes(e.type)));
+  let cur = -1; done.forEach((l, i) => { if (l.length) cur = i });
+  return `<div class="stepper">${PIPE.map(([k, name], i) => { const l = done[i], last = l[l.length - 1];
+    return `<div class="step ${l.length ? 'done' : ''} ${i === cur ? 'current' : ''}" onclick="newEvent('${p.id}','${k}')" title="לחצו כדי לתעד: ${esc(actionLabel(k))}"><div class="dot">${l.length ? '✓' : i + 1}</div>${name}<small>${last ? fmtDate(last.date) + (l.length > 1 ? ` · ${l.length} סבבים` : '') : '—'}</small></div>` }).join('')}</div>`;
+}
+function renderPaper() {
+  const p = getPaper(curPaper); if (!p) { showPage('papers'); return }
+  const tabs = [['steps', `שלבים (${p.events.length})`], ['files', `תיקיית גרסאות (${p.versions.length})`], ['doc', 'מסמך עבודה']];
+  $('paperView').innerHTML = `
+  <div class="topbar"><div class="title"><button class="btn sm" onclick="showPage('papers')">→ לכל המאמרים</button><h1 style="margin-top:10px">${p.id} · ${esc(p.short)} <span class="verbadge">גרסה v${p.version || 0}</span></h1><p>${esc(p.title)}</p></div>
+    <div class="actions"><button class="btn primary" onclick="newEvent('${p.id}')">+ תיעוד שלב</button><button class="btn" onclick="uploadVersion('${p.id}')">⇪ העלאת גרסה</button><button class="btn" onclick="openMail('${p.id}')">✉ שליחה במייל</button><button class="btn" onclick="editPaper('${p.id}')">✎ עריכת פרטים</button></div></div>
+  ${stepper(p)}
+  <div class="panel infobar"><div><div class="chips" style="margin-top:0"><span class="chip status ${clsStatus(p.status)}">${esc(p.status)}</span><span class="chip">${esc(p.type)}</span><span class="chip">עדיפות ${esc(p.priority)}</span>${p.journal ? `<span class="chip">📰 ${esc(p.journal)}</span>` : ''}${p.doi ? `<a class="chip link" target="_blank" rel="noopener" href="https://doi.org/${esc(p.doi)}">DOI</a>` : ''}</div>
+      <b>הפעולה הבאה:</b> ${esc(p.next || '—')}<br>${p.summary ? `<b>תקציר:</b> ${esc(p.summary)}` : ''}<div class="progress"><span style="width:${Number(p.progress || 0)}%"></span></div></div>
+    <div><b>נפתח:</b> ${fmtTs(p.created)}<br><b>עודכן לאחרונה:</b> ${fmtTs(p.updated || p.created)}<br>${p.coauthors ? `<b>שותפים:</b> ${esc(p.coauthors)}<br>` : ''}${p.folder ? `<b>קישור:</b> <a href="${safeUrl(p.folder)}" target="_blank" rel="noopener">פתיחה</a><br>` : ''}<b>תיקייה בדיסק:</b> ${rootOK ? `${esc(db.settings.rootName || '')}/${esc(p.dir || folderName(p))}` : '<span class="muted">לא מחוברת</span>'}</div></div>
+  <div class="tabs">${tabs.map(([k, t]) => `<button class="${curTab === k ? 'active' : ''}" onclick="curTab='${k}';renderPaper()">${t}</button>`).join('')}</div>
+  <div class="panel" id="paperTab"></div>`;
+  const box = $('paperTab');
+  if (curTab === 'steps') {
+    const evs = p.events.slice().sort((a, b) => (b.date + b.ts).localeCompare(a.date + a.ts));
+    box.innerHTML = `<div class="sectiontitle"><h2>תיעוד השלבים</h2><button class="btn sm primary" onclick="newEvent('${p.id}')">+ תיעוד שלב</button></div><div class="timeline">${evs.map(e => eventHtml(p, e)).join('') || '<div class="empty">עוד לא תועדו שלבים</div>'}</div>`;
+  } else if (curTab === 'files') {
+    const vs = p.versions.slice().reverse();
+    box.innerHTML = `<div class="diskline"><div>📁 ${rootOK ? `תיקייה בדיסק: <b>${esc(db.settings.rootName || '')}/${esc(p.dir || folderName(p))}</b>` : hasFS ? 'הגרסאות נשמרות במערכת. אפשר לחבר גם תיקייה אמיתית במחשב.' : 'הגרסאות נשמרות בתוך המערכת (חיבור לתיקייה בדיסק זמין ב-Chrome / Edge).'}</div>
+        <div class="actions">${rootOK ? `<button class="btn sm" onclick="scanFolder('${p.id}')">⟳ סריקת שינויים בתיקייה</button>` : hasFS ? `<button class="btn sm" onclick="${db.settings.rootName ? `ensureRoot(true).then(renderAll)` : 'connectFolder()'}">${db.settings.rootName ? 'חיבור מחדש לתיקייה' : 'חיבור תיקייה בדיסק'}</button>` : ''}</div></div>
+      <div class="drop" id="drop">גררו לכאן קובץ, או <a href="#" onclick="uploadVersion('${p.id}');return false">בחרו קובץ</a>. הוא יישמר כגרסה <b>v${(p.version || 0) + 1}</b> עם תאריך היום.</div>
+      ${vs.length ? `<table><tr><th>גרסה</th><th>קובץ</th><th>הועלה</th><th>גודל</th><th>הערה</th><th></th></tr>${vs.map(v => `<tr><td><b>v${v.v}</b></td><td>${esc(v.file)}${v.orig && v.orig !== v.file ? `<div class="muted" style="font-size:11px">מקור: ${esc(v.orig)}</div>` : ''}</td><td>${fmtTs(v.ts)}</td><td>${fmtSize(v.size)}${v.disk ? ' <span title="נשמר גם בתיקייה בדיסק">💾</span>' : ''}</td><td>${esc(v.note || '')} <a href="#" onclick="editVersionNote('${p.id}',${v.v});return false" class="muted">✎</a></td>
+        <td style="white-space:nowrap"><button class="btn sm" onclick="openVersion('${p.id}',${v.v})">פתיחה</button> <button class="btn sm" onclick="openVersion('${p.id}',${v.v},true)">הורדה</button> <button class="btn sm" onclick="openMail('${p.id}',${v.v})">✉</button></td></tr>`).join('')}</table>` : '<div class="empty">עדיין אין גרסאות. העלו את הקובץ הראשון.</div>'}
+      <div class="fmnote"><b>איך עורכים קובץ?</b> ${rootOK ? 'פתחו את הקובץ העדכני בתיקייה שבמחשב, ערכו ושמרו ב-Word, ואז לחצו "סריקת שינויים". תיווצר גרסה חדשה עם מספר ותאריך.' : 'מורידים את הגרסה, עורכים ב-Word ומעלים חזרה. המערכת נותנת לה מספר גרסה חדש ותאריך.'} אפשר גם לכתוב ישירות בלשונית "מסמך עבודה".</div>`;
+    const dz = $('drop');
+    dz.ondragover = e => { e.preventDefault(); dz.classList.add('over') }; dz.ondragleave = () => dz.classList.remove('over');
+    dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); const f = e.dataTransfer.files[0]; if (f) uploadVersion(p.id, f) };
+  } else {
+    box.innerHTML = `<div class="sectiontitle"><h2>מסמך עבודה</h2><span class="muted" id="docSaved">${p.docTs ? 'נשמר ' + fmtTs(p.docTs) : ''}</span></div>
+      <div class="edtools"><button onclick="ed('bold')"><b>B</b></button><button onclick="ed('italic')"><i>I</i></button><button onclick="ed('underline')"><u>U</u></button><button onclick="ed('formatBlock','H2')">כותרת</button><button onclick="ed('formatBlock','P')">טקסט</button><button onclick="ed('insertUnorderedList')">• רשימה</button><button onclick="ed('insertOrderedList')">1. רשימה</button><button onclick="ed('justifyLeft')">יישור לשמאל</button><button onclick="ed('justifyRight')">יישור לימין</button>${p.doc ? '' : `<button onclick="docTemplate('${p.id}')">📄 תבנית מאמר (IMRaD)</button>`}</div>
+      <div class="editor" id="docEditor" contenteditable="true" dir="auto">${p.doc || ''}</div>
+      <div class="modalactions"><button class="btn primary" onclick="docToVersion('${p.id}')">שמירה כגרסה חדשה (Word)</button><button class="btn" onclick="docPrint('${p.id}')">הדפסה / PDF</button></div>
+      <div class="fmnote">הטקסט נשמר אוטומטית תוך כדי כתיבה. "שמירה כגרסה חדשה" יוצרת קובץ Word בתיקיית המאמר, עם מספר גרסה ותאריך.</div>`;
+    let t; $('docEditor').oninput = () => { clearTimeout(t); t = setTimeout(() => { p.doc = $('docEditor').innerHTML; p.docTs = nowISO(); saveDb(); $('docSaved').textContent = 'נשמר ' + fmtTs(p.docTs) }, 700) };
+  }
+}
+function ed(cmd, val) { document.execCommand(cmd, false, val); $('docEditor').focus(); $('docEditor').dispatchEvent(new Event('input')) }
+function docTemplate(pid) { const p = getPaper(pid); p.doc = `<h1>${esc(p.title)}</h1><p><i>Authors · Affiliations</i></p>` + ['Abstract', 'Introduction', 'Methods', 'Results', 'Discussion', 'Conclusions', 'References'].map(h => `<h2>${h}</h2><p><br></p>`).join(''); p.docTs = nowISO(); saveDb(); renderPaper() }
+function docHtml(p) { return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${esc(p.title)}</title><style>body{font-family:'Times New Roman',serif;font-size:12pt;line-height:1.5}</style></head><body>${p.doc || ''}</body></html>` }
+async function docToVersion(pid) {
+  const p = getPaper(pid); p.doc = $('docEditor').innerHTML; if (!p.doc.replace(/<[^>]*>|&nbsp;|\s/g, '')) { alert('המסמך ריק'); return }
+  const ver = await addVersion(p, new Blob(['\ufeff', docHtml(p)], {type: 'application/msword'}), `${p.id}_working.doc`, 'נשמר ממסמך העבודה'); persist(); toast(`נשמרה גרסה v${ver.v} (Word)`);
+}
+function docPrint(pid) { const p = getPaper(pid); p.doc = $('docEditor').innerHTML; const w = window.open('', '_blank'); w.document.write(docHtml(p)); w.document.close(); w.focus(); w.print() }
+
+/* ---------- משימות, עיתונים, שותפים, רעיונות, הזדמנויות ---------- */
+function paperOptions() { return [['', '—'], ...db.papers.map(p => [p.id, `${p.id} · ${p.short}`])] }
+function editTask(id) {
+  const t = db.tasks.find(x => x.id === id);
+  formModal({title: t ? 'עריכת משימה' : 'משימה חדשה', values: t || {stage: 'לביצוע', paper: curPaper || ''},
+    fields: [{k: 'text', label: 'מה המשימה?', required: true, full: true}, {k: 'paper', label: 'מאמר', type: 'select', options: paperOptions()}, {k: 'stage', label: 'שלב', type: 'select', options: TASK_STAGES}, {k: 'due', label: 'תאריך יעד (תישלח תזכורת)', type: 'date'}],
+    onSave: v => { if (t) Object.assign(t, v); else db.tasks.push(Object.assign({id: uid(), created: nowISO()}, v)); persist() },
+    onDelete: t ? () => { db.tasks = db.tasks.filter(x => x.id !== id); persist() } : null});
+}
+function moveTask(id, stage) { const t = db.tasks.find(x => x.id === id); t.stage = stage; if (stage === 'בוצע') t.doneTs = nowISO(); persist() }
+function editJournal(id) {
+  const j = db.journals.find(x => x.id === id);
+  formModal({title: j ? 'עריכת עיתון' : 'עיתון חדש', values: j || {group: db.settings.groups[0]},
+    fields: [{k: 'name', label: 'שם העיתון', required: true, full: true}, {k: 'group', label: 'קבוצה', type: 'select', options: db.settings.groups}, {k: 'url', label: 'אתר העיתון / מערכת ההגשה', type: 'url'},
+             {k: 'q', label: 'רבעון (Q1–Q4)'}, {k: 'ifv', label: 'Impact Factor'}, {k: 'malmad', label: 'מלמ"ד', type: 'select', options: ['', 'כן', 'לא', 'לא ידוע']}, {k: 'apc', label: 'דמי פרסום (APC)'},
+             {k: 'scope', label: 'תחומי העיתון', type: 'textarea', full: true}, {k: 'notes', label: 'הערות / ניסיון קודם', type: 'textarea', full: true}],
+    onSave: v => { if (j) Object.assign(j, v); else db.journals.push(Object.assign({id: uid()}, v)); persist() },
+    onDelete: j ? () => { db.journals = db.journals.filter(x => x.id !== id); persist() } : null});
+}
+function editContact(id) {
+  const c = db.contacts.find(x => x.id === id);
+  formModal({title: c ? 'עריכת איש קשר' : 'איש קשר חדש', values: c || {},
+    fields: [{k: 'name', label: 'שם', required: true}, {k: 'email', label: 'מייל', type: 'email'}, {k: 'inst', label: 'מוסד'}, {k: 'role', label: 'תפקיד', type: 'select', options: ['', 'שותף לכתיבה', 'סטודנט/ית', 'עורך/ת', 'סוקר/ת', 'קולגה', 'אחר']}, {k: 'note', label: 'הערות (תחום, מאמרים משותפים)', type: 'textarea', full: true}],
+    onSave: v => { if (c) Object.assign(c, v); else db.contacts.push(Object.assign({id: uid()}, v)); persist() },
+    onDelete: c ? () => { db.contacts = db.contacts.filter(x => x.id !== id); persist() } : null});
+}
+function editOpp(id) {
+  const o = db.opps.find(x => x.id === id);
+  formModal({title: o ? 'עריכת הזדמנות' : 'הזדמנות חדשה', values: o || {kind: 'מענק'},
+    fields: [{k: 'title', label: 'שם (מענק / פרס / כנס / גיליון מיוחד)', required: true, full: true}, {k: 'kind', label: 'סוג', type: 'select', options: ['מענק', 'פרס', 'כנס', 'גיליון מיוחד', 'הרצאה', 'אחר']}, {k: 'due', label: 'מועד אחרון', type: 'date'}, {k: 'url', label: 'קישור', type: 'url', full: true}, {k: 'note', label: 'הערות', type: 'textarea', full: true}, {k: 'done', label: 'הוגש / טופל', type: 'checkbox'}],
+    onSave: v => { if (o) Object.assign(o, v); else db.opps.push(Object.assign({id: uid(), created: nowISO()}, v)); persist() },
+    onDelete: o ? () => { db.opps = db.opps.filter(x => x.id !== id); persist() } : null});
+}
+function addIdea() { const el = $('ideaInput'); const text = el.value.trim(); if (!text) return; db.ideas.unshift({id: uid(), text, created: nowISO()}); persist() }
+function ideaToPaper(id) { const i = db.ideas.find(x => x.id === id); openNewPaper({short: i.text.slice(0, 40), title: i.text, summary: i.text, ideaId: i.id}) }
+
+/* ---------- רינדור ---------- */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === id));
+  const nav = id === 'paper' ? 'papers' : id;
+  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.page === nav));
+  if (id === 'paper') renderPaper(); else if (id === 'admin') renderAdmin();
+  window.scrollTo(0, 0);
+}
+function fillSelect(id, opts, first) { const el = $(id), cur = el.value; el.innerHTML = `<option value="">${first}</option>` + opts.map(o => { const [v, t] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}">${esc(t)}</option>` }).join(''); el.value = cur }
+function renderStats() {
+  const count = s => db.papers.filter(p => p.status === s).length;
+  $('stats').innerHTML = [['כל המאמרים', db.papers.length, 'סה״כ במערכת'], ['בעבודה', count('בעבודה'), 'כתיבה / ניתוח'], ['נשלחו', count('נשלח'), 'ממתינים לעיתון'], ['Revision', count('Revision'), 'דורשים תיקונים'], ['התקבלו / פורסמו', count('התקבל') + count('פורסם'), 'הישגים ★']]
+    .map(x => `<div class="stat"><div class="num">${x[1]}</div><div class="label">${x[0]}</div><div class="mini">${x[2]}</div></div>`).join('');
+}
+function attentionItems() {
+  const items = [], dl = deadlines().filter(d => daysUntil(d.date) <= 7);
+  dl.forEach(d => items.push({p: d.paper, t: `⏰ ${d.title}`, s: `${fmtDate(d.date)} · ${dueText(daysUntil(d.date))}`}));
+  db.papers.forEach(p => {
+    p.events.filter(e => e.type === 'submit' && !e.receiptGot && daysUntil(e.date) <= -3).forEach(e => items.push({p: p.id, t: `📨 ${p.id} · לא התקבל אישור קבלה`, s: `נשלח ל-${e.journal || 'עיתון'} ב-${fmtDate(e.date)}`}));
+    if (['התקבל', 'פורסם'].includes(p.status) && !p.events.some(e => e.type === 'sites')) items.push({p: p.id, t: `🌐 ${p.id} · לעדכן אתרים אישיים ומערכות אקדמיות`, s: 'המאמר אושר. זה הזמן לעדכן את כולם'});
+  });
+  db.papers.filter(p => p.priority === 'גבוהה' && !['התקבל', 'פורסם', 'מושהה'].includes(p.status)).forEach(p => items.push({p: p.id, t: `${p.id} · ${p.short}`, s: p.next || 'אין פעולה מוגדרת'}));
+  return items;
+}
+function renderDashboard() {
+  const h = new Date().getHours(); $('hello').textContent = `${h < 12 ? 'בוקר טוב' : h < 18 ? 'צהריים טובים' : 'ערב טוב'}, ${db.settings.ownerName}`;
+  const active = db.papers.filter(p => !['התקבל', 'פורסם', 'מושהה'].includes(p.status)).sort((a, b) => PRIORITIES.indexOf(a.priority) - PRIORITIES.indexOf(b.priority)).slice(0, 4);
+  $('dashboardCards').innerHTML = active.map(paperCard).join('') || '<div class="empty">אין מאמרים פעילים</div>';
+  $('activeCount').textContent = `${active.length} מוצגים`;
+  $('dashDeadlines').innerHTML = dlHtml(deadlines().slice(0, 6));
+  $('attention').innerHTML = attentionItems().map(i => `<div class="task click" onclick="${i.p ? `openPaper('${esc(i.p)}')` : ''}"><b>${esc(i.t)}</b><small>${esc(i.s)}</small></div>`).join('') || '<div class="empty">אין כרגע פריטים דחופים 🎉</div>';
+  const al = [];
+  if ('Notification' in window && Notification.permission === 'default') al.push(`<div class="alert">🔔 כדי לקבל התראות על מועדי תיקונים, הפעילו התראות במחשב.<button class="btn sm" onclick="askNotify()">הפעלת התראות</button></div>`);
+  if (!db.settings.lastBackup || daysUntil(db.settings.lastBackup.slice(0, 10)) < -14) al.push(`<div class="alert">💾 ${db.settings.lastBackup ? 'עברו יותר משבועיים מהגיבוי האחרון.' : 'עוד לא נעשה גיבוי.'} מומלץ לשמור גיבוי מלא (כולל הקבצים).<button class="btn sm" onclick="exportData(true)">גיבוי עכשיו</button></div>`);
+  if (isOwner() && !LOCK.owner) al.push(`<div class="alert">🔒 הקובץ עדיין לא ננעל למחשב הזה.<button class="btn sm" onclick="saveLockedFile()">נעילה למחשב של ${esc(db.settings.ownerName)}</button></div>`);
+  if (hasFS && db.settings.rootName && !rootOK) al.push(`<div class="alert">📁 התיקייה בדיסק (${esc(db.settings.rootName)}) צריכה אישור מחדש.<button class="btn sm" onclick="ensureRoot(true).then(()=>{renderAll();syncAllToDisk(true)})">אישור גישה</button></div>`);
+  $('alerts').innerHTML = al.join('');
+  const y = new Date().getFullYear(), st = yearStats(y), g = db.settings.goals;
+  $('dashNobel').innerHTML = `<div class="sectiontitle"><h2>★ הדרך לנובל</h2><a href="#" onclick="showPage('nobel');return false">לעמוד המלא</a></div>
+    ${db.settings.vision ? `<div class="tip" style="margin-bottom:10px">“${esc(db.settings.vision)}”</div>` : `<div class="muted" style="font-size:13px">עוד לא נכתב חזון. <a href="#" onclick="showPage('nobel');return false">לכתוב את השאלה הגדולה</a></div>`}
+    ${goalBar('הגשות ' + y, st.submit, g.submit)}${goalBar('מאמרים שהתקבלו ' + y, st.accept, g.accept)}<div class="fmnote">💡 ${esc(weeklyTip())}</div>`;
+}
+function renderPapers() {
+  const q = ($('search').value || '').toLowerCase(), s = $('statusFilter').value, t = $('typeFilter').value;
+  const arr = db.papers.filter(p => (!q || [p.id, p.short, p.title, p.summary, p.journal].join(' ').toLowerCase().includes(q)) && (!s || p.status === s) && (!t || p.type === t));
+  $('paperCards').innerHTML = arr.map(paperCard).join('') || '<div class="empty">לא נמצאו מאמרים</div>';
+}
+function renderTasks() {
+  $('allDeadlines').innerHTML = dlHtml(deadlines(), 'אין מועדים פתוחים. מועדים נוצרים ממשימות, מ"קבלת הערות" ומהזדמנויות.');
+  $('kanban').innerHTML = TASK_STAGES.map(stage => `<div class="col"><h3>${stage}</h3>${db.tasks.filter(t => t.stage === stage).map(t => { const n = t.due ? daysUntil(t.due) : null; return `<div class="task"><div class="click" style="cursor:pointer" onclick="editTask('${t.id}')"><b>${esc(t.paper || '')}</b> ${esc(t.text)}<small>${t.due ? `<span style="color:${n < 0 && stage !== 'בוצע' ? 'var(--bad)' : 'inherit'}">יעד: ${fmtDate(t.due)}${stage !== 'בוצע' ? ' · ' + dueText(n) : ''}</span>` : ''}</small></div><select onchange="moveTask('${t.id}',this.value)">${TASK_STAGES.map(s => `<option ${s === stage ? 'selected' : ''}>${s}</option>`).join('')}</select></div>` }).join('') || '<div class="muted" style="font-size:12px">אין משימות</div>'}</div>`).join('');
+}
+function renderTimeline() {
+  fillSelect('tlPaper', db.papers.map(p => [p.id, `${p.id} · ${p.short}`]), 'כל המאמרים');
+  fillSelect('tlType', Object.keys(ACTIONS).map(k => [k, actionLabel(k)]), 'כל סוגי הפעולות');
+  const fp = $('tlPaper').value, ft = $('tlType').value, all = [];
+  db.papers.forEach(p => (!fp || p.id === fp) && p.events.forEach(e => (!ft || e.type === ft) && all.push([p, e])));
+  all.sort((a, b) => (b[1].date + b[1].ts).localeCompare(a[1].date + a[1].ts));
+  $('timelineList').innerHTML = all.slice(0, 300).map(([p, e]) => eventHtml(p, e, true)).join('') || '<div class="empty">אין אירועים</div>';
+}
+function renderJournals() {
+  fillSelect('journalFilter', db.settings.groups, 'כל הקבוצות');
+  const f = $('journalFilter').value; const arr = db.journals.filter(j => !f || j.group === f);
+  $('journalGrid').innerHTML = arr.map(j => { const used = db.papers.filter(p => p.events.some(e => e.journal === j.name)).map(p => p.id);
+    return `<div class="journal" onclick="editJournal('${j.id}')"><div class="chip">${esc(j.group)}</div><h3>${esc(j.name)}</h3><p>${esc(j.scope || '')}</p><div class="score">${esc(j.q || '')}${j.ifv ? ' · IF ' + esc(j.ifv) : ''}${j.malmad ? ' · מלמ"ד: ' + esc(j.malmad) : ''}${j.apc ? ' · APC ' + esc(j.apc) : ''}</div>${used.length ? `<div class="muted" style="font-size:12px;margin-top:6px">הוגשו: ${used.join(', ')}</div>` : ''}${j.url ? `<a class="chip link" style="margin-top:8px" href="${safeUrl(j.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 לאתר העיתון</a>` : ''}</div>` }).join('') || '<div class="empty">אין עיתונים בקבוצה זו</div>';
+  $('journalsList').innerHTML = db.journals.map(j => `<option value="${esc(j.name)}">`).join('');
+}
+function renderContacts() {
+  $('contactsTable').innerHTML = db.contacts.length ? `<table><tr><th>שם</th><th>מייל</th><th>מוסד</th><th>תפקיד</th><th>הערות</th></tr>${db.contacts.map(c => `<tr style="cursor:pointer" onclick="editContact('${c.id}')"><td><b>${esc(c.name)}</b></td><td>${c.email ? `<a href="mailto:${esc(c.email)}" onclick="event.stopPropagation()">${esc(c.email)}</a>` : ''}</td><td>${esc(c.inst || '')}</td><td>${esc(c.role || '')}</td><td>${esc(c.note || '')}</td></tr>`).join('')}</table>` : '<div class="empty">עוד אין אנשי קשר. הוסיפו שותפים כדי לשלוח אליהם מאמרים בלחיצה.</div>';
+  $('contactsList').innerHTML = db.contacts.filter(c => c.email).map(c => `<option value="${esc(c.email)}">${esc(c.name)}</option>`).join('');
+}
+/* ---- הדרך לנובל ---- */
+function yearStats(y) { const r = {submit: 0, accept: 0, published: 0}; db.papers.forEach(p => p.events.forEach(e => { if (String(e.date).startsWith(y) && r[e.type] !== undefined) r[e.type]++ })); return r }
+function goalBar(label, n, goal) { const pct = goal ? Math.min(100, Math.round(n / goal * 100)) : 0; return `<div class="goal"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${label}</span><b>${n} / ${goal || '—'}</b></div><div class="bar"><span style="width:${pct}%"></span></div></div>` }
+function weeklyTip() { const w = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 1)) / 604800000); return TIPS[w % TIPS.length] }
+function hIndex() { const c = db.papers.map(p => Number(p.citations || 0)).sort((a, b) => b - a); let h = 0; c.forEach((x, i) => { if (x >= i + 1) h = i + 1 }); return h }
+function weekActivity() {
+  const wk = ts => Math.floor((Date.now() - Date.parse(ts)) / 604800000), counts = Array(12).fill(0);
+  db.papers.forEach(p => p.events.forEach(e => { const w = wk(e.ts); if (w >= 0 && w < 12) counts[11 - w]++ }));
+  let streak = 0, i = counts[11] ? 11 : 10; for (; i >= 0 && counts[i] > 0; i--) streak++;
+  return {counts, streak};
+}
+function setCitations(pid, v) { const p = getPaper(pid); p.citations = Number(v || 0); persist() }
+function renderNobel() {
+  const y = new Date().getFullYear(), st = yearStats(y), g = db.settings.goals, act = weekActivity(), max = Math.max(1, ...act.counts);
+  const pubs = db.papers.filter(p => ['התקבל', 'פורסם'].includes(p.status) || p.doi || p.citations);
+  const total = db.papers.reduce((s, p) => s + Number(p.citations || 0), 0);
+  $('nobelView').innerHTML = `
+  <div class="panel"><h2>החזון: השאלה הגדולה</h2><p class="muted" style="margin-top:-6px">איזו שאלה מדעית, אם תיפתר, תשנה את התחום? כל מאמר צריך לקרב אליה.</p>
+    <textarea class="vision" id="visionBox" placeholder="למשל: להבין איך חוקים מקומיים של גדילה יוצרים את הארכיטקטורה של רשתות עצביות…">${esc(db.settings.vision)}</textarea></div>
+  <div class="grid2">
+    <div class="panel"><div class="sectiontitle"><h2>יעדי ${y}</h2><button class="btn sm" onclick="editGoals()">עריכת יעדים</button></div>
+      ${goalBar('מאמרים שהוגשו לעיתון', st.submit, g.submit)}${goalBar('מאמרים שהתקבלו לפרסום', st.accept, g.accept)}${goalBar('מאמרים שפורסמו', st.published, g.published || g.accept)}</div>
+    <div class="panel"><h2>רצף עבודה</h2><div style="font-size:14px">🔥 <b>${act.streak}</b> שבועות רצופים עם התקדמות מתועדת</div>
+      <div class="weeks">${act.counts.map(c => `<span class="${c ? 'on' : ''}" style="height:${Math.max(5, c / max * 100)}%" title="${c} פעולות"></span>`).join('')}</div><div class="muted" style="font-size:11px;margin-top:4px">12 השבועות האחרונים</div></div>
+  </div>
+  <div class="panel"><div class="sectiontitle"><h2>מדדי השפעה</h2><div class="actions">${db.settings.scholarUrl ? `<a class="btn sm" target="_blank" rel="noopener" href="${safeUrl(db.settings.scholarUrl)}">Google Scholar</a>` : ''}${db.settings.orcid ? `<a class="btn sm" target="_blank" rel="noopener" href="https://orcid.org/${esc(db.settings.orcid)}">ORCID</a>` : ''}</div></div>
+    <div class="stats" style="grid-template-columns:repeat(3,1fr)"><div class="stat"><div class="num">${pubs.length}</div><div class="label">מאמרים שהתקבלו / פורסמו</div></div><div class="stat"><div class="num">${total}</div><div class="label">סה״כ ציטוטים (מתועדים)</div></div><div class="stat"><div class="num">${hIndex()}</div><div class="label">h-index (מחושב)</div></div></div>
+    ${pubs.length ? `<table><tr><th>מאמר</th><th>DOI</th><th>ציטוטים</th></tr>${pubs.map(p => `<tr><td><a href="#" onclick="openPaper('${p.id}');return false">${p.id} · ${esc(p.short)}</a></td><td>${p.doi ? `<a target="_blank" rel="noopener" href="https://doi.org/${esc(p.doi)}">${esc(p.doi)}</a>` : '—'}</td><td><input type="number" min="0" value="${Number(p.citations || 0)}" style="width:90px;border:1px solid var(--line);border-radius:8px;padding:5px" onchange="setCitations('${p.id}',this.value)"></td></tr>`).join('')}</table>` : '<div class="empty">כשמאמר יתקבל לפרסום הוא יופיע כאן, ואפשר יהיה לעקוב אחרי הציטוטים שלו.</div>'}</div>
+  <div class="grid2">
+    <div class="panel"><h2>בנק רעיונות</h2><div style="display:flex;gap:8px"><input id="ideaInput" placeholder="רעיון, שאלה, ניסוי שכדאי לבדוק…" style="flex:1;border:1px solid var(--line);border-radius:10px;padding:10px" onkeydown="if(event.key==='Enter')addIdea()"><button class="btn primary" onclick="addIdea()">הוספה</button></div>
+      <div style="margin-top:10px">${db.ideas.map(i => `<div class="dl"><div>${esc(i.text)}<div class="muted" style="font-size:11px">${fmtTs(i.created)}</div></div><div style="display:flex;gap:6px"><button class="btn sm" onclick="ideaToPaper('${i.id}')">→ למאמר</button><button class="btn sm danger" onclick="db.ideas=db.ideas.filter(x=>x.id!=='${i.id}');persist()">×</button></div></div>`).join('') || '<div class="muted" style="font-size:13px">עוד אין רעיונות שמורים.</div>'}</div></div>
+    <div class="panel"><div class="sectiontitle"><h2>הזדמנויות: מענקים, פרסים, כנסים</h2><button class="btn sm primary" onclick="editOpp()">+ הוספה</button></div>
+      ${db.opps.slice().sort((a, b) => (a.done - b.done) || String(a.due || '9').localeCompare(String(b.due || '9'))).map(o => `<div class="dl" style="cursor:pointer;${o.done ? 'opacity:.55' : ''}" onclick="editOpp('${o.id}')"><div><b>${esc(o.title)}</b><div class="muted" style="font-size:12px">${esc(o.kind || '')}${o.due ? ' · ' + fmtDate(o.due) : ''}${o.done ? ' · ✓ טופל' : ''}</div></div>${o.due && !o.done ? `<span class="when ${daysUntil(o.due) < 0 ? 'late' : daysUntil(o.due) <= 14 ? 'soon' : ''}">${dueText(daysUntil(o.due))}</span>` : ''}</div>`).join('') || '<div class="muted" style="font-size:13px">הוסיפו מענקים (ERC, ISF, HFSP), פרסים וכנסים עם מועדים. התזכורות יגיעו אוטומטית.</div>'}</div>
+  </div>
+  <div class="tip">💡 <b>טיפ השבוע:</b> ${esc(weeklyTip())}</div>`;
+  $('visionBox').onchange = e => { db.settings.vision = e.target.value.trim(); persist() };
+}
+function editGoals() { formModal({title: 'יעדי השנה', values: Object.assign({}, db.settings.goals), fields: [{k: 'submit', label: 'כמה מאמרים להגיש השנה?', type: 'number'}, {k: 'accept', label: 'כמה מאמרים יתקבלו?', type: 'number'}, {k: 'published', label: 'כמה יפורסמו?', type: 'number'}], onSave: v => { db.settings.goals = v; persist() }}) }
+
+/* ---------- גישה, נעילה למחשב ואישור מכשירים ---------- */
+function deviceId() { let d = lsGet('pf-device'); if (!d) { const k = randKey(8); d = k.slice(0, 4) + '-' + k.slice(4); lsSet('pf-device', d) } return d }
+function isOwner() { return LOCK.owner ? deviceId() === LOCK.owner : lsGet('pf-owner') === deviceId() }
+function approvalFor(dev) { const c = hcode(normKey(dev) + '|' + LOCK.salt + '|ok', 8); return c.slice(0, 4) + '-' + c.slice(4) }
+function accessState() {
+  const dev = deviceId();
+  if (!LOCK.owner) return lsGet('pf-owner') === dev ? 'login' : 'setup';
+  if (dev === LOCK.owner || (LOCK.approved || []).includes(dev)) return 'login';
+  if (normKey(lsGet('pf-approval')) === normKey(approvalFor(dev))) return 'login';
+  return 'blocked';
+}
+let fails = 0, failUntil = 0;
+function checkCode(c) {
+  if (Date.now() < failUntil) { $('gErr').textContent = 'יותר מדי ניסיונות. נסו שוב בעוד חצי דקה.'; return false }
+  if (hcode(String(c).trim() + '|pf') === db.settings.codeHash) { fails = 0; return true }
+  if (++fails >= 5) { failUntil = Date.now() + 30000; fails = 0 }
+  $('gErr').textContent = 'קוד שגוי'; return false;
+}
+function showGate(state) {
+  const g = $('gateBox'), name = esc(db.settings.ownerName);
+  document.body.classList.remove('authed'); closeFM();
+  if (state === 'setup') g.innerHTML = `<div class="gbrand">PaperFlow</div><h2>הגדרה ראשונה</h2><p>המחשב הזה יוגדר כ<b>מחשב של ${name}</b>. הכניסה למערכת תתאפשר רק ממנו, אלא אם יינתן אישור מפורש למכשיר נוסף.</p><input id="gCode" type="password" inputmode="numeric" autocomplete="off" placeholder="קוד כניסה"><button class="btn primary wide" onclick="gateSetup()">הגדרת המחשב וכניסה</button><div class="gerr" id="gErr"></div>`;
+  else if (state === 'login') g.innerHTML = `<div class="gbrand">PaperFlow</div><h2>שלום ${name} 👋</h2><p>הזינו את קוד הכניסה</p><input id="gCode" type="password" inputmode="numeric" autocomplete="off" placeholder="••••"><button class="btn primary wide" onclick="gateLogin()">כניסה</button><div class="gerr" id="gErr"></div>`;
+  else g.innerHTML = `<div class="gbrand">PaperFlow</div><h2>המכשיר הזה לא מאושר</h2><p>המערכת פועלת רק במחשב של ${name}. כדי להשתמש במכשיר אחר צריך אישור מפורש.</p><div class="devcode">${deviceId()}</div><p style="font-size:13px">שלחו את קוד המכשיר ל${name}. באזור הניהול במחשב שלו אפשר להפיק קוד אישור.</p><input id="gApprove" autocomplete="off" placeholder="קוד אישור" style="letter-spacing:2px"><button class="btn primary wide" onclick="gateApprove()">אישור המכשיר</button><div class="gerr" id="gErr"></div>
+    <details><summary>אני ${name}. נמחקו נתוני הדפדפן, שחזור גישה</summary><input id="gRecover" autocomplete="off" placeholder="מפתח שחזור" style="letter-spacing:1px;font-size:16px"><button class="btn wide" onclick="gateRecover()">שחזור</button></details>`;
+  $('gate').classList.add('open');
+  g.querySelectorAll('input').forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') i.nextElementSibling.click() }));
+  setTimeout(() => { const i = g.querySelector('input'); i && i.focus() }, 60);
+}
+function gateSetup() { if (!checkCode($('gCode').value)) return; lsSet('pf-owner', deviceId()); audit(`המחשב הוגדר כמחשב של ${db.settings.ownerName} (קוד מכשיר ${deviceId()})`); saveDb(); enterApp(); setTimeout(offerLock, 500) }
+function gateLogin() { if (!checkCode($('gCode').value)) return; audit('כניסה למערכת' + (isOwner() ? '' : ` ממכשיר מאושר ${deviceId()}`)); saveDb(); enterApp() }
+function gateApprove() { const v = $('gApprove').value; if (normKey(v) === normKey(approvalFor(deviceId()))) { lsSet('pf-approval', normKey(v)); showGate('login') } else $('gErr').textContent = 'קוד האישור לא תואם למכשיר הזה' }
+function gateRecover() { const v = normKey($('gRecover').value); if (LOCK.recovery && hcode(v + '|' + LOCK.salt, 10) === LOCK.recovery) { lsSet('pf-device', LOCK.owner); lsSet('pf-owner', LOCK.owner); showGate('login') } else $('gErr').textContent = 'מפתח השחזור שגוי' }
+function enterApp() {
+  sessionStorage.setItem('pf-auth', String(Date.now())); lastAct = Date.now();
+  $('gate').classList.remove('open'); document.body.classList.add('authed');
+  renderAll(); checkReminders();
+  ensureRoot(true).then(r => { if (r) renderAll() });
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist() } catch {}
+}
+function lockApp() { sessionStorage.removeItem('pf-auth'); showGate(accessState()) }
+function offerLock() {
+  formModal({title: 'נעילת המערכת למחשב הזה', note: `כדי שהמערכת תיפתח <b>רק</b> במחשב של ${esc(db.settings.ownerName)}, המערכת תשמור עותק "נעול" של הקובץ. מעכשיו עובדים רק עם העותק הנעול.`,
+    fields: [{type: 'info', html: '1. לחצו "שמירת קובץ נעול". יירד הקובץ <b>PaperFlow.html</b>.<br>2. שימו אותו במקום קבוע (למשל בתיקיית המסמכים) ופתחו ממנו מעכשיו.<br>3. מחקו עותקים ישנים ולא נעולים של הקובץ.'}],
+    actions: [{label: 'שמירת קובץ נעול', primary: true, fn: () => { saveLockedFile(); return false }}, {label: 'אחר כך', fn: () => {}}]});
+}
+function saveLockedFile(reset) {
+  if (!isOwner()) { alert(`אפשר לנעול רק מהמחשב של ${db.settings.ownerName}.`); return }
+  const lock = {v: 1, owner: deviceId(), approved: [], salt: (reset || !LOCK.salt) ? randKey(16) : LOCK.salt};
+  const rec = randKey(12); lock.recovery = hcode(rec + '|' + lock.salt, 10);
+  const html = SOURCE.replace(/<script id="pf-lock"[^>]*>[\s\S]*?<\/script>/, () => '<scr' + 'ipt id="pf-lock" type="application/json">' + JSON.stringify(lock) + '</scr' + 'ipt>');
+  download(html, 'PaperFlow.html', 'text/html');
+  LOCK = lock; lsSet('pf-owner', deviceId()); lsSet('pf-lock-saved', nowISO());
+  audit(reset ? 'בוטלו כל אישורי המכשירים הנוספים והופק קובץ נעול חדש' : 'הופק קובץ נעול למחשב הזה'); persist();
+  formModal({title: 'הקובץ הנעול נשמר ✓', fields: [{type: 'info', html: `הקובץ <b>PaperFlow.html</b> ירד למחשב. שימו אותו במקום קבוע ועבדו רק איתו.<br><br><b>מפתח שחזור</b>. רשמו ושמרו במקום בטוח. הוא נדרש רק אם נתוני הדפדפן יימחקו:<div class="devcode">${rec.match(/.{4}/g).join('-')}</div><span class="muted">בכל שמירה של קובץ נעול נוצר מפתח חדש, והמפתח הקודם כבר לא יעבוד.</span>`}], actions: [{label: 'רשמתי, תודה', primary: true, fn: () => {}}]});
+}
+function approveDevice() {
+  if (!LOCK.owner) { alert('קודם צריך לנעול את הקובץ למחשב הזה ("שמירת קובץ נעול").'); return }
+  formModal({title: 'אישור מכשיר נוסף', note: 'במכשיר החדש פותחים את הקובץ הנעול. מופיע שם "קוד מכשיר". הקלידו אותו כאן כדי לקבל קוד אישור.',
+    fields: [{k: 'dev', label: 'קוד המכשיר החדש', required: true, placeholder: 'XXXX-XXXX'}, {k: 'who', label: 'למי / איזה מכשיר? (לתיעוד)'}],
+    actions: [{label: 'הפקת קוד אישור', primary: true, fn: v => { const code = approvalFor(v.dev); audit(`ניתן אישור מפורש למכשיר ${normKey(v.dev)}${v.who ? ' (' + v.who + ')' : ''}`); saveDb();
+      setTimeout(() => formModal({title: 'קוד האישור', fields: [{type: 'info', html: `קוד אישור למכשיר <b>${esc(v.dev)}</b>:<div class="devcode">${code}</div>הקלידו אותו במכשיר החדש. כדי לבטל בעתיד את כל האישורים: "ביטול כל האישורים" באזור הניהול.`}], actions: [{label: 'הבנתי', primary: true, fn: () => {}}]}), 60) }}]});
+}
+function changeCode() {
+  formModal({title: 'שינוי קוד הכניסה', fields: [{k: 'old', label: 'קוד נוכחי', type: 'password', required: true}, {k: 'n1', label: 'קוד חדש', type: 'password', required: true}, {k: 'n2', label: 'שוב את הקוד החדש', type: 'password', required: true}],
+    onSave: v => { if (hcode(v.old + '|pf') !== db.settings.codeHash) { alert('הקוד הנוכחי שגוי'); return false } if (v.n1 !== v.n2 || v.n1.length < 4) { alert('הקודים לא תואמים או קצרים מ-4 תווים'); return false } db.settings.codeHash = hcode(v.n1 + '|pf'); audit('קוד הכניסה שונה'); persist(); toast('קוד הכניסה עודכן') }});
+}
+let lastAct = Date.now();
+['mousemove', 'keydown', 'click', 'touchstart'].forEach(ev => document.addEventListener(ev, () => lastAct = Date.now(), {passive: true}));
+setInterval(() => { if (document.body.classList.contains('authed') && db.settings.autoLockMin > 0 && Date.now() - lastAct > db.settings.autoLockMin * 60000) lockApp() }, 30000);
+setInterval(() => { if (document.body.classList.contains('authed')) { checkReminders(); renderDashboard() } }, 15 * 60000);
+
+/* ---------- גיבוי ---------- */
+async function exportData(full) {
+  const out = {app: 'PaperFlow', format: 2, exported: nowISO(), db};
+  if (full) { toast('מכין גיבוי מלא…'); out.files = {}; for (const p of db.papers) for (const v of p.versions) { const b = await IDB.get('files', v.key).catch(() => null); if (b) out.files[v.key] = {type: b.type, data: await blobToB64(b)} } }
+  db.settings.lastBackup = nowISO(); audit(full ? 'גיבוי מלא (כולל קבצים)' : 'גיבוי נתונים'); saveDb();
+  download(JSON.stringify(out), `paperflow-backup-${today()}${full ? '-full' : ''}.json`, 'application/json'); renderAll();
+}
+$('importFile').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return; const r = new FileReader();
+  r.onload = async () => {
+    try {
+      const j = JSON.parse(r.result);
+      if (!confirm('הייבוא יחליף את כל הנתונים הנוכחיים במערכת. להמשיך?')) return;
+      if (j.db) { db = normalize(j.db); for (const [k, x] of Object.entries(j.files || {})) await IDB.put('files', k, b64ToBlob(x.data, x.type)) }
+      else db = normalize(migrate(j));
+      audit('נטען גיבוי: ' + f.name); persist(); alert('הגיבוי נטען בהצלחה');
+    } catch (err) { alert('קובץ לא תקין: ' + err.message) }
+    e.target.value = '';
+  };
+  r.readAsText(f);
+});
+
+/* ---------- אזור ניהול ---------- */
+function renderAdmin() {
+  const s = db.settings, notif = 'Notification' in window ? Notification.permission : 'unsupported';
+  const nTxt = {granted: '✓ פעילות', denied: '✗ נחסמו בדפדפן (יש לאשר בהגדרות האתר)', default: 'לא הופעלו', unsupported: 'לא נתמך בדפדפן זה'}[notif];
+  $('adminView').innerHTML = `<div class="grid2">
+  <div class="panel"><h2>🔒 גישה ואבטחה</h2><div class="kv">
+      <span class="muted">קוד מכשיר זה</span><b style="direction:ltr;text-align:right">${deviceId()}</b>
+      <span class="muted">תפקיד המכשיר</span><b>${isOwner() ? `המחשב של ${esc(s.ownerName)}` : 'מכשיר מאושר'}</b>
+      <span class="muted">מצב הקובץ</span><b>${LOCK.owner ? '✓ נעול למחשב של ' + esc(s.ownerName) : '⚠ עדיין לא ננעל'}</b>
+      <span class="muted">נעילה אוטומטית</span><b>${s.autoLockMin ? `אחרי ${s.autoLockMin} דקות ללא פעילות` : 'כבויה'}</b></div>
+    ${isOwner() ? `<div class="modalactions"><button class="btn primary" onclick="saveLockedFile()">${LOCK.owner ? 'שמירת קובץ נעול מחדש' : 'שמירת קובץ נעול'}</button><button class="btn" onclick="approveDevice()">אישור מכשיר נוסף</button><button class="btn" onclick="changeCode()">שינוי קוד כניסה</button>${LOCK.owner ? `<button class="btn danger" onclick="if(confirm('לבטל את כל האישורים שניתנו למכשירים אחרים? יירד קובץ נעול חדש, וצריך לעבוד רק איתו.'))saveLockedFile(true)">ביטול כל האישורים</button>` : ''}</div>` : '<div class="fmnote">ניהול הגישה אפשרי רק מהמחשב של ' + esc(s.ownerName) + '.</div>'}
+    <div class="fmnote">הנעילה פועלת ברמת הדפדפן: הקוד והמכשיר נבדקים בכל כניסה, ומכשיר אחר לא ייכנס בלי קוד אישור. זו הגנה מפני כניסה מקרית, לא הצפנה של הנתונים.</div></div>
+  <div class="panel"><h2>📁 תיקיות המאמרים בדיסק</h2><div class="kv"><span class="muted">מצב</span><b>${!hasFS ? 'לא נתמך בדפדפן זה (מומלץ Chrome או Edge)' : rootOK ? '✓ מחובר: ' + esc(s.rootName) : s.rootName ? '⚠ דרוש אישור מחדש: ' + esc(s.rootName) : 'לא חוברה תיקייה'}</b></div>
+    <p class="muted" style="font-size:13px">בתיקייה שתבחרו תיפתח תת-תיקייה לכל מאמר (למשל <b>P003 - GBM Calcite</b>), ובה יישמרו כל הגרסאות: P003_v1_2026-09-28.docx, P003_v2_…</p>
+    ${hasFS ? `<div class="modalactions"><button class="btn primary" onclick="connectFolder()">${s.rootName ? 'בחירת תיקייה אחרת' : 'חיבור תיקייה'}</button>${s.rootName ? `<button class="btn" onclick="syncAllToDisk()">סנכרון כל הגרסאות לתיקייה</button>` : ''}</div>` : ''}</div>
+  <div class="panel"><h2>💾 גיבוי ושחזור</h2><div class="kv"><span class="muted">גיבוי אחרון</span><b>${s.lastBackup ? fmtTs(s.lastBackup) : 'אף פעם'}</b></div>
+    <div class="modalactions"><button class="btn primary" onclick="exportData(true)">גיבוי מלא (כולל קבצים)</button><button class="btn" onclick="exportData(false)">גיבוי נתונים בלבד</button><button class="btn" onclick="$('importFile').click()">שחזור מגיבוי</button></div>
+    <div class="fmnote">הנתונים שמורים בדפדפן במחשב הזה. מומלץ לשמור גיבוי מלא פעם בשבוע-שבועיים (למשל ל-Drive או לדיסק חיצוני).</div></div>
+  <div class="panel"><h2>🔔 התראות</h2><div class="kv"><span class="muted">התראות במחשב</span><b>${nTxt}</b><span class="muted">מתי להתריע</span><b>${(s.remindDays || []).map(n => n ? n + ' ימים לפני' : 'ביום עצמו').join(' · ')}</b></div>
+    <div class="modalactions"><button class="btn primary" onclick="askNotify()">הפעלה / בדיקה</button><button class="btn" onclick="exportAllIcs()">ייצוא כל המועדים ליומן (לנייד)</button></div>
+    <div class="fmnote">התראות במחשב קופצות כשהמערכת פתוחה בדפדפן. כדי לקבל התראות גם בנייד, מוסיפים את המועדים ליומן (Google / Outlook / iPhone), והיומן שולח את ההתראות לטלפון.</div></div>
+  <div class="panel"><h2>⚙ הגדרות כלליות</h2><div class="kv"><span class="muted">שם</span><b>${esc(s.ownerName)}</b><span class="muted">תחומים</span><b>${esc(s.fields.join(' · '))}</b><span class="muted">קבוצות עיתונים</span><b>${esc(s.groups.join(' · '))}</b></div>
+    <div class="modalactions"><button class="btn primary" onclick="editSettings()">עריכת הגדרות</button><button class="btn" onclick="editLabels()">שמות הפעולות</button></div></div>
+  <div class="panel"><h2>📜 יומן מערכת</h2><div style="max-height:260px;overflow:auto">${db.log.slice(0, 80).map(l => `<div class="dl"><span>${esc(l.text)}</span><span class="muted" style="white-space:nowrap">${fmtTs(l.ts)}</span></div>`).join('') || '<div class="muted">ריק</div>'}</div>
+    ${isOwner() ? `<div class="modalactions"><button class="btn danger" onclick="resetAll()">מחיקת כל הנתונים…</button></div>` : ''}</div>
+  </div>`;
+}
+function editSettings() {
+  const s = db.settings;
+  formModal({title: 'הגדרות כלליות', values: {ownerName: s.ownerName, fields: s.fields.join(', '), groups: s.groups.join(', '), remindDays: (s.remindDays || []).join(', '), autoLockMin: s.autoLockMin, scholarUrl: s.scholarUrl, orcid: s.orcid},
+    fields: [{k: 'ownerName', label: 'שם בעל המערכת'}, {k: 'autoLockMin', label: 'נעילה אוטומטית אחרי (דקות, 0 = כבוי)', type: 'number'},
+             {k: 'fields', label: 'תחומי מחקר (מופרדים בפסיק)', full: true}, {k: 'groups', label: 'קבוצות עיתונים (מופרדות בפסיק)', full: true},
+             {k: 'remindDays', label: 'כמה ימים לפני מועד להתריע (למשל: 7, 3, 1, 0)', full: true},
+             {k: 'scholarUrl', label: 'קישור לפרופיל Google Scholar', type: 'url'}, {k: 'orcid', label: 'ORCID iD', placeholder: '0000-0000-0000-0000'}],
+    onSave: v => {
+      const list = x => String(x || '').split(',').map(t => t.trim()).filter(Boolean);
+      Object.assign(s, {ownerName: v.ownerName || 'דני', autoLockMin: Number(v.autoLockMin || 0), fields: list(v.fields).length ? list(v.fields) : s.fields, groups: list(v.groups).length ? list(v.groups) : s.groups,
+        remindDays: list(v.remindDays).map(Number).filter(n => n >= 0), scholarUrl: v.scholarUrl, orcid: v.orcid});
+      audit('עודכנו הגדרות'); persist(); renderAdmin();
+    }});
+}
+function editLabels() {
+  formModal({title: 'שמות הפעולות ברשימה', note: 'אפשר לשנות את הניסוח של כל פעולה. שדה ריק מחזיר את ברירת המחדל.', values: Object.assign({}, db.settings.labels),
+    fields: Object.keys(ACTIONS).map(k => ({k, label: ACTIONS[k].label, placeholder: ACTIONS[k].label})),
+    onSave: v => { const l = {}; Object.keys(ACTIONS).forEach(k => { if (v[k]) l[k] = v[k] }); db.settings.labels = l; persist(); renderAdmin() }});
+}
+async function resetAll() {
+  if (!confirm('למחוק את כל המאמרים, הגרסאות וההגדרות מהמחשב הזה? מומלץ לשמור גיבוי מלא קודם.')) return;
+  if (prompt('כדי לאשר, הקלידו: מחק') !== 'מחק') return;
+  for (const p of db.papers) for (const v of p.versions) await IDB.del('files', v.key).catch(() => {});
+  const keep = {codeHash: db.settings.codeHash, ownerName: db.settings.ownerName};
+  db = normalize({papers: [], tasks: [], journals: [], settings: keep}); audit('כל הנתונים נמחקו'); persist(); renderAdmin();
+}
+
+function renderSide() {
+  $('sideBox').innerHTML = `${isOwner() ? `🖥 המחשב של ${esc(db.settings.ownerName)}` : '🖥 מכשיר מאושר'}<br>${LOCK.owner ? '🔒 הקובץ נעול למחשב זה' : '⚠ הקובץ עדיין לא ננעל'}<br>${rootOK ? '📁 תיקייה: ' + esc(db.settings.rootName) : '📁 הקבצים שמורים במערכת'}<button onclick="lockApp()">🔒 נעילת המסך</button>`;
+}
+function renderAll() {
+  if (!document.body.classList.contains('authed')) return;
+  fillSelect('statusFilter', STATUSES, 'כל המצבים'); fillSelect('typeFilter', db.settings.fields, 'כל התחומים');
+  renderStats(); renderContacts(); renderJournals(); renderDashboard(); renderPapers(); renderTasks(); renderTimeline(); renderNobel(); renderSide();
+  if ($('paper').classList.contains('active')) renderPaper();
+  if ($('admin').classList.contains('active')) renderAdmin();
+}
+
+/* ---------- אתחול ---------- */
+document.querySelectorAll('.nav button').forEach(b => b.addEventListener('click', () => showPage(b.dataset.page)));
+['search', 'statusFilter', 'typeFilter'].forEach(id => $(id).addEventListener('input', renderPapers));
+$('journalFilter').addEventListener('input', renderJournals);
+['tlPaper', 'tlType'].forEach(id => $(id).addEventListener('input', renderTimeline));
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && FM) closeFM() });
+(function start() {
+  const st = accessState(), sess = Number(sessionStorage.getItem('pf-auth') || 0);
+  if (st === 'login' && sess && Date.now() - sess < (db.settings.autoLockMin || 30) * 60000) enterApp();
+  else showGate(st);
+})();
+</script>
+</body></html>
