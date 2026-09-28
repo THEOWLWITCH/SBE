@@ -35,6 +35,7 @@ import { randomUUID } from 'node:crypto';
 import { getProvider } from './lib/providers.mjs';
 import { runPipeline } from './lib/pipeline.mjs';
 import { toScenario } from './lib/to-scenario.mjs';
+import { handleAccess, supabaseStore } from './lib/access.mjs';
 
 // שמירת תרחיש ב-Supabase. נקראת רק כשיש SUPABASE_SERVICE_KEY בסביבה.
 // scenario הוא הפלט של toScenario(); meta הוא payload.meta מהלקוח.
@@ -134,6 +135,21 @@ const server = createServer(async (req, res) => {
     const hasWorkspace = !!(process.env.ANTHROPIC_WORKSPACE_ID || '').trim();
     const hasSupabase = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
     return sendJson(res, 200, { ok: true, hasKey, hasWorkspace, hasSupabase });
+  }
+
+  // POST /api/access — סיסמאות הניהול וקוד "משוב לעבודות" (lib/access.mjs).
+  if (req.method === 'POST' && req.url === '/api/access') {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return sendJson(res, 503, { error: 'storage unavailable' });
+    let body;
+    try { body = JSON.parse(await readBody(req)); }
+    catch { return sendJson(res, 400, { error: 'invalid JSON' }); }
+    try {
+      const [status, out] = await handleAccess(supabaseStore(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY), body);
+      return sendJson(res, status, out);
+    } catch (e) {
+      console.error(`access: ${e.message}`);
+      return sendJson(res, 503, { error: 'storage unavailable' });
+    }
   }
 
   const validPaths = ['/api/complete', '/api/character-turn', '/api/pipeline'];
