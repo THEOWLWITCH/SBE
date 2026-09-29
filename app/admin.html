@@ -284,21 +284,14 @@ const $ = (id) => document.getElementById(id);
 const el = (t,a={},...k)=>{const n=document.createElement(t);
   for(const[x,v] of Object.entries(a)){ if(x==="class")n.className=v; else n.setAttribute(x,v);}
   k.flat().forEach(c=>n.append(c)); return n;};
-const code6 = () => String(Math.floor(100000+Math.random()*900000));
 
 const D = {
   instName:"מכללה לחינוך",
-  instCode:{ code:"482913", until:"סוף סמסטר א׳" },
   users:[
     { n:"נועה ברששת", e:"noa@", r:"מנחה" },
     { n:"רותם אלמוג", e:"rotem@", r:"יוצרת" },
     { n:"סמאח דיאב",  e:"samah@", r:"מנחה" },
     { n:"דנה שגב",    e:"dana@", r:"מנהלת מוסדית" },
-  ],
-  institutions:[
-    { n:"מכללה לחינוך", code:"482913", users:14, scen:23, since:"2025", active:true },
-    { n:"מכללה אקדמית ב׳", code:"733204", users:6, scen:9, since:"2026", active:true },
-    { n:"מרכז סימולציה אזורי", code:"115708", users:3, scen:4, since:"2026", active:true },
   ],
 };
 
@@ -490,20 +483,24 @@ function pCodes(){
   w.append(el("h2",{},"קודים"),
     el("p",{class:"sub"},"שני סוגים. קוד המוסד מנפיקה את, וקוד הסדנה נוצר לבד כשמנחה פותחת סדנה."));
 
+  // קוד המוסד נשמר ונבדק בשרת — מוצג רק אחרי סיסמת מנהלת המוסד.
+  if (!gate(w, myInst, async () => { myInst = await accessCall("instGetCode", { inst: D.instName }); }, "סיסמת מנהלת המוסד")) return w;
+
   const c1 = el("div",{class:"card"});
-  c1.append(el("h3",{},"קוד המוסד", el("em",{},"תקף לסמסטר")));
+  c1.append(el("h3",{},"קוד המוסד", el("em",{}, D.instName)));
   const in1 = el("div",{class:"in"});
-  const big = el("div",{class:"bigcode"}, D.instCode.code);
+  const big = el("div",{class:"bigcode"}, myInst.code);
   in1.append(el("div",{class:"codebox"}, big,
-    el("div",{class:"meta"}, "תקף עד " + D.instCode.until, el("br"), "יוצרות ומנחות נכנסות איתו")));
+    el("div",{class:"meta"}, myInst.active ? "פעיל" : "מושהה — הכניסה עם הקוד חסומה כרגע",
+      el("br"), "יוצרות ומנחות נכנסות איתו")));
   const row = el("div",{class:"btnrow"});
   const bCopy = el("button",{class:"act"},"העתקה");
-  bCopy.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(D.instCode.code);
+  bCopy.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(myInst.code);
     bCopy.textContent="הועתק"; setTimeout(()=>bCopy.textContent="העתקה",1400);}catch(e){} });
   const bNew = el("button",{class:"act d"},"החלפת קוד");
   bNew.addEventListener("click", ()=> ask("החלפת קוד המוסד",
     "הקוד הנוכחי יפסיק לעבוד מיד. מי שכבר נכנסה תישאר מחוברת, אבל כל כניסה חדשה תדרוש את הקוד החדש.",
-    ()=>{ D.instCode.code = code6(); render(); }));
+    ()=> accessCall("instNewCode", { inst: D.instName }).then(d => { myInst = d; render(); }).catch(accessFail)));
   row.append(bCopy,bNew); in1.append(row); c1.append(in1);
 
   const c2 = el("div",{class:"card"});
@@ -630,36 +627,43 @@ function pFeedback(){
 function pInsts(){
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"מוסדות"), el("p",{class:"sub"},
-    "פתיחת מוסד מנפיקה לו קוד ומנהלת מוסדית ראשונה."));
+    "פתיחת מוסד מנפיקה לו קוד כניסה. הרשימה והקודים נשמרים בשרת, והכניסה נבדקת מולם."));
+
+  if (!gate(w, instList, async () => { instList = (await accessCall("listInstitutions")).institutions; }, "סיסמת מנהלת המערכת")) return w;
+
+  const act = (action, extra) => accessCall(action, extra)
+    .then(d => { instList = d.institutions; render(); })
+    .catch(e => e.status === 409
+      ? ask("המוסד כבר קיים", "יש כבר מוסד בשם הזה ברשימה.", () => {})
+      : accessFail(e));
 
   const st = el("div",{class:"stat"});
-  st.append(el("div",{}, el("b",{},String(D.institutions.length)), el("span",{},"מוסדות")),
-            el("div",{}, el("b",{},String(D.institutions.reduce((a,x)=>a+x.users,0))), el("span",{},"משתמשות")),
-            el("div",{}, el("b",{},String(D.institutions.reduce((a,x)=>a+x.scen,0))), el("span",{},"תרחישים")));
+  st.append(el("div",{}, el("b",{},String(instList.length)), el("span",{},"מוסדות")),
+            el("div",{}, el("b",{},String(instList.filter(x => x.active !== false).length)), el("span",{},"פעילים")));
   w.append(st);
 
   const c = el("div",{class:"card"});
   c.append(el("h3",{},"רשימת המוסדות"));
   const inn = el("div",{class:"in"});
   const rows = el("div",{class:"rows"});
-  D.institutions.forEach(x=>{
-    // "פעיל" היה תמיד span סטטי בלי שום קשר לנתון — נראה כמו כפתור (אותו
-    // עיצוב כמו "קוד חדש" לידו) אבל לחיצה עליו לא עשתה כלום. המשתמשת דיווחה
-    // "המסך הזה אינו פעיל" (22/09/2026) — תוקן לכפתור מתפקד אמיתי: מוסד יכול
-    // להיות פעיל/מושהה, ומוצג בהתאם (שורה מושהית מעומעמת). זו הדגמת ניהול
-    // בלבד (D.institutions הוא מוקאפ מקומי, בלי שרת) — לא חוסם בפועל כניסה
-    // ב-entry.html (שם קודי המוסד משוכפלים ידנית, מגבלה כלל-פרויקטית מוכרת).
+  instList.forEach(x=>{
+    const active = x.active !== false;
     const r = el("div",{class:"r"});
-    if (!x.active) r.classList.add("inactive");
-    r.append(el("span",{class:"nm"}, el("b",{},x.n),
-      el("span",{}, "קוד " + x.code + " · " + x.users + " משתמשות · " + x.scen + " תרחישים · מאז " + x.since)));
-    const status = el("button",{class:"role" + (x.active ? " role-on" : " role-off")}, x.active ? "פעיל" : "מושהה");
-    status.title = x.active ? "לחיצה משהה את הכניסה למוסד" : "לחיצה מפעילה מחדש";
-    status.addEventListener("click",()=>{ x.active = !x.active; render(); });
+    if (!active) r.classList.add("inactive");
+    r.append(el("span",{class:"nm"}, el("b",{},x.name),
+      el("span",{}, "קוד " + x.code + (x.since ? " · מאז " + x.since : ""))));
+    const status = el("button",{class:"role" + (active ? " role-on" : " role-off")}, active ? "פעיל" : "מושהה");
+    status.title = active ? "לחיצה משהה את הכניסה למוסד" : "לחיצה מפעילה מחדש";
+    status.addEventListener("click",()=> active
+      ? ask("השהיית " + x.name, "מי שמקלידה את קוד המוסד לא תוכל להיכנס עד שתפעילי אותו מחדש.",
+          () => act("setInstitutionActive", { name: x.name, active: false }))
+      : act("setInstitutionActive", { name: x.name, active: true }));
     const b = el("button",{class:"act"},"קוד חדש");
-    b.addEventListener("click",()=>{ x.code=code6(); render(); });
-    const bMod = el("button",{class:"act",title:"הגדרת מודולים נגישים למנהל.ת המוסד"},"מודולים");
-    bMod.addEventListener("click",()=> openModDlg(x.n));
+    b.addEventListener("click",()=> ask("קוד חדש ל" + x.name,
+      "הקוד הנוכחי יפסיק לעבוד מיד. צריך יהיה למסור למנחות של המוסד את הקוד החדש.",
+      () => act("newInstitutionCode", { name: x.name })));
+    const bMod = el("button",{class:"act",title:"אילו מודולים פתוחים לצוות המוסד"},"מודולים");
+    bMod.addEventListener("click",()=> openModDlg(x.name));
     r.append(status, b, bMod);
     rows.append(r);
   });
@@ -667,8 +671,7 @@ function pInsts(){
   const add = el("div",{class:"addrow"});
   const nm = el("input",{placeholder:"שם המוסד"});
   const bAdd = el("button",{class:"act p"},"פתיחת מוסד");
-  bAdd.addEventListener("click",()=>{ const v=nm.value.trim(); if(!v)return;
-    D.institutions.push({n:v,code:code6(),users:0,scen:0,since:"2026"}); render(); });
+  bAdd.addEventListener("click",()=>{ const v=nm.value.trim(); if(!v)return; act("addInstitution", { name: v }); });
   add.append(nm,bAdd); inn.append(add); c.append(inn);
   w.append(c);
 
@@ -1223,41 +1226,70 @@ async function accessCall(action, extra = {}){
   } finally { clearTimeout(timer); }
 }
 
+// נתונים שנטענו מהשרת אחרי אימות — מתאפסים כשהסיסמה כבר לא תקפה.
+let instList = null;   // מוסדות וקודים (ניהול מערכת)
+let myInst = null;     // קוד המוסד של מנהלת המוסד
+let gateFailed = false;
+
+function resetAccessData(){ accessAuth = ""; accessState = null; instList = null; myInst = null; }
+
+function accessFail(e){
+  ask("הפעולה לא בוצעה",
+    e.status === 403 ? "הסיסמה כבר לא תקפה. הקלידי אותה מחדש." : "אין כרגע חיבור לשרת. נסי שוב בעוד רגע.",
+    () => { if (e.status === 403) { resetAccessData(); render(); } });
+}
+
+// כרטיס אימות משותף. הסיסמה נשמרת רק בזיכרון הדף (accessAuth), לא ב-storage.
+function unlockCard(pwLabel, loader){
+  const c = el("div",{class:"card"});
+  c.append(el("h3",{},"אימות"));
+  const inn = el("div",{class:"in"});
+  const pw = el("input",{type:"password", placeholder:pwLabel, autocomplete:"off"});
+  pw.style.width = "100%";
+  const err = el("div",{class:"lock"}, "אין כרגע חיבור לשרת. נסי שוב בעוד רגע.");
+  err.hidden = !gateFailed;
+  const go = el("button",{class:"act p"},"פתיחה");
+  const submit = async () => {
+    accessAuth = pw.value.replace(/[‎‏؜]/g, "").trim();
+    gateFailed = false;
+    go.disabled = true; go.textContent = "בודקת... (לפעמים עד דקה)";
+    try { await loader(); render(); }
+    catch (e) {
+      accessAuth = "";
+      err.textContent = e.status === 403 ? "סיסמה שגויה." : "אין כרגע חיבור לשרת. נסי שוב בעוד רגע.";
+      err.hidden = false; go.disabled = false; go.textContent = "פתיחה";
+    }
+  };
+  go.addEventListener("click", submit);
+  pw.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
+  inn.append(el("p",{style:"margin:0 0 10px;font-size:14.5px;color:var(--muted)"},
+    "כדי לראות ולשנות, הקלידי את " + pwLabel + ". היא נשמרת רק כל עוד הדף הזה פתוח."),
+    pw, err, el("div",{class:"btnrow"}, go));
+  c.append(inn);
+  return c;
+}
+
+// מחזירה true כשהנתונים כבר נטענו. אחרת: אם כבר יש סיסמה בזיכרון — טוענת
+// ברקע ומציגה "טוענת"; אם אין — מציגה את כרטיס האימות.
+function gate(w, loaded, loader, pwLabel){
+  if (loaded) return true;
+  if (accessAuth && !gateFailed) {
+    w.append(el("p",{class:"sub"},"טוענת... (לפעמים עד דקה)"));
+    loader().then(() => render())
+      .catch(e => { if (e.status === 403) resetAccessData(); else gateFailed = true; render(); });
+    return false;
+  }
+  w.append(unlockCard(pwLabel, loader));
+  return false;
+}
+
 function pAccess(){
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"סיסמאות וקודים"),
     el("p",{class:"sub"},"קוד הגישה למשוב לעבודות, והחלפת סיסמאות הניהול. הכול נשמר ונבדק בשרת, ולא מופיע בקוד של האתר."));
 
-  if (!accessState) {
-    const c = el("div",{class:"card"});
-    c.append(el("h3",{},"אימות"));
-    const inn = el("div",{class:"in"});
-    const pw = el("input",{type:"password", placeholder:"סיסמת מנהלת המערכת", autocomplete:"off"});
-    pw.style.width = "100%";
-    const err = el("div",{class:"lock"}); err.hidden = true;
-    const go = el("button",{class:"act p"},"פתיחה");
-    const submit = async () => {
-      accessAuth = pw.value.replace(/[‎‏؜]/g, "").trim();
-      go.disabled = true;
-      try { accessState = await accessCall("status"); render(); }
-      catch (e) {
-        accessAuth = "";
-        err.textContent = e.status === 403 ? "סיסמה שגויה." : "אין כרגע חיבור לשרת. נסי שוב בעוד רגע.";
-        err.hidden = false; go.disabled = false;
-      }
-    };
-    go.addEventListener("click", submit);
-    pw.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
-    inn.append(el("p",{style:"margin:0 0 10px;font-size:14.5px;color:var(--muted)"},
-      "כדי לראות ולשנות, הקלידי שוב את סיסמת מנהלת המערכת. היא נשמרת רק כל עוד הדף הזה פתוח."),
-      pw, err, el("div",{class:"btnrow"}, go));
-    c.append(inn); w.append(c);
-    return w;
-  }
-
-  const fail = (e) => ask("הפעולה לא בוצעה",
-    e.status === 403 ? "סיסמת מנהלת המערכת כבר לא תקפה. פתחי את הלשונית מחדש." : "אין כרגע חיבור לשרת. נסי שוב בעוד רגע.",
-    () => { if (e.status === 403) { accessState = null; accessAuth = ""; render(); } });
+  if (!gate(w, accessState, async () => { accessState = await accessCall("status"); }, "סיסמת מנהלת המערכת")) return w;
+  const fail = accessFail;
 
   // קוד משוב לעבודות
   const c1 = el("div",{class:"card"});

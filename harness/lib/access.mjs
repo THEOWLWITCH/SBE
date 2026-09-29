@@ -38,6 +38,25 @@ function newCode() {
   return s.slice(0, 4) + '-' + s.slice(4);
 }
 
+// מוסדות וקודי המוסד. עד השמירה הראשונה — הרשימה שהייתה כתובה ב-entry.html.
+const DEFAULT_INSTITUTIONS = [
+  { name: 'מכללה לחינוך', code: '482913', active: true, since: '2025' },
+  { name: 'מכללה אקדמית ב׳', code: '733204', active: true, since: '2026' },
+  { name: 'מרכז סימולציה אזורי', code: '115708', active: true, since: '2026' },
+  { name: 'מוסד YS', code: 'ys7777', active: true, since: '2026' },
+];
+
+async function getInstitutions(store) {
+  return (await store.get('institutions')) || DEFAULT_INSTITUTIONS.map((x) => ({ ...x }));
+}
+
+function newInstCode(list) {
+  for (;;) {
+    const c = String(100000 + (randomBytes(4).readUInt32BE(0) % 900000));
+    if (!list.some((x) => normCode(x.code) === c)) return c;
+  }
+}
+
 async function status(store) {
   const [code, sys, inst] = await Promise.all([store.get('code-academic'), store.get('pw-sys'), store.get('pw-inst')]);
   return {
@@ -59,6 +78,12 @@ export async function handleAccess(store, body) {
       const rec = await store.get('code-academic');
       ok = !!rec && normCode(secret).length > 0 && same(normCode(secret), normCode(rec.code));
     }
+    else if (kind === 'inst-code') {
+      const c = normCode(secret);
+      const hit = c && (await getInstitutions(store)).find((x) => same(normCode(x.code), c));
+      if (hit && hit.active === false) { await pause(); return [403, { error: 'inactive' }]; }
+      if (hit) return [200, { ok: true, inst: hit.name }];
+    }
     if (!ok) { await pause(); return [403, { error: 'wrong' }]; }
     return [200, { ok: true }];
   }
@@ -70,8 +95,39 @@ export async function handleAccess(store, body) {
     return [200, { ...DEFAULT_MODULES, ...((await store.get('modules:' + inst)) || {}) }];
   }
 
-  // כל פעולת ניהול מחייבת את סיסמת מנהלת המערכת בבקשה עצמה.
-  if (!(await checkPassword(store, 'sys', body?.auth))) { await pause(); return [403, { error: 'unauthorized' }]; }
+  const isSys = await checkPassword(store, 'sys', body?.auth);
+
+  // מנהלת מוסד רואה ומחליפה את קוד המוסד שלה (גם סיסמת מנהלת המערכת מתקבלת).
+  if (action === 'instGetCode' || action === 'instNewCode') {
+    if (!isSys && !(await checkPassword(store, 'inst', body?.auth))) { await pause(); return [403, { error: 'unauthorized' }]; }
+    const list = await getInstitutions(store);
+    const x = list.find((i) => i.name === String(body.inst || '').trim());
+    if (!x) return [404, { error: 'no such institution' }];
+    if (action === 'instNewCode') { x.code = newInstCode(list); await store.set('institutions', list); }
+    return [200, { name: x.name, code: x.code, active: x.active !== false }];
+  }
+
+  // כל שאר פעולות הניהול מחייבות את סיסמת מנהלת המערכת בבקשה עצמה.
+  if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
+
+  if (action === 'listInstitutions') return [200, { institutions: await getInstitutions(store) }];
+
+  if (action === 'addInstitution' || action === 'newInstitutionCode' || action === 'setInstitutionActive') {
+    const list = await getInstitutions(store);
+    const name = String(body.name || '').trim();
+    if (!name) return [400, { error: 'missing name' }];
+    const x = list.find((i) => i.name === name);
+    if (action === 'addInstitution') {
+      if (x) return [409, { error: 'exists' }];
+      list.push({ name, code: newInstCode(list), active: true, since: String(new Date().getFullYear()) });
+    } else {
+      if (!x) return [404, { error: 'no such institution' }];
+      if (action === 'newInstitutionCode') x.code = newInstCode(list);
+      else x.active = body.active !== false;
+    }
+    await store.set('institutions', list);
+    return [200, { institutions: list }];
+  }
 
   if (action === 'setModules') {
     const inst = String(body.inst || '').trim();
