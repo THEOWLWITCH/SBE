@@ -169,6 +169,7 @@ async function checkAccess(kind, secret){
     const data = await r.json().catch(() => ({}));
     if (r.ok) {
       lastInst = data.inst || "";
+      clearSession(); // כניסה חדשה מחליפה את הקודמת — גם את האסימון שלה
       // אסימון חתום מהשרת — מוכיח לשרת בפעולות הבאות (למשל פתיחת כיתת חוסן) שנכנסת.
       try { if (data.token) sessionStorage.setItem("sbe.session.token", data.token); } catch(e){}
       return "ok";
@@ -251,6 +252,16 @@ function renderEntry(){
   }
 }
 
+// יציאה / התחלת כניסה חדשה: מוחקת את הכניסה של הלשונית ואת העותק שלה
+// ללשוניות חדשות (lib/access-guard.js).
+const SESSION_KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token"];
+function clearSession(){
+  try {
+    SESSION_KEYS.forEach(k => sessionStorage.removeItem(k));
+    localStorage.removeItem("sbe.session.mirror");
+  } catch(e){}
+}
+
 function persistSession(name, roleLabel){
   try {
     if (name) sessionStorage.setItem("sbe.session.name", name);
@@ -276,6 +287,7 @@ function buildWorkshopField(role){
     if (c.length !== 6 || !/^\d{6}$/.test(c)) { err.textContent = "הקוד הוא שש ספרות."; err.hidden = false; return; }
     if (!name) { err.textContent = "צריך גם שם."; err.hidden = false; return; }
     err.hidden = true;
+    clearSession();
     persistSession(name, ROLE_LABEL[role]);
     try { sessionStorage.setItem("sbe.session.homeUrl", "entry.html?home=" + role); } catch(e){}
     renderWorkshopSuccess(role, name);
@@ -466,13 +478,35 @@ function buildAdminField(role){
     renderWorkshopSuccess(homeRole, savedName);
     return;
   }
-  // חזרה למסך הכניסה = יציאה: שוכחים את הכניסה הקודמת בלשונית, כדי שהרשאות
-  // של כניסה קודמת (למשל התפריט של מנהלת המערכת) לא יישארו לכניסה הבאה.
-  if (!homeRole) try {
-    ["sbe.session.homeUrl", "sbe.session.token"].forEach(k => sessionStorage.removeItem(k));
-    localStorage.removeItem("sbe.session.mirror"); // העותק ללשוניות חדשות (lib/access-guard.js)
-  } catch(e){}
+  // יציאה רק כשמבקשים אותה (?logout=1 או כפתור "יציאה"), לא בכל הגעה למסך
+  // הכניסה — אחרת קישור "S.B.E" או "מסך כניסה" ניתק את מנהלת המערכת וחסם
+  // אותה מכל המסכים. כניסה חדשה מוחקת ממילא את הקודמת (clearSession).
+  if (new URLSearchParams(location.search).get("logout")) clearSession();
   renderEntry();
+  var home = null, roleLabel = "";
+  try {
+    home = sessionStorage.getItem("sbe.session.homeUrl");
+    roleLabel = sessionStorage.getItem("sbe.session.role") || "";
+    if (!home) { // לשונית חדשה — העותק של הכניסה (lib/access-guard.js)
+      var m = JSON.parse(localStorage.getItem("sbe.session.mirror") || "null");
+      if (m && m.exp > Date.now() && m.data && m.data["sbe.session.homeUrl"]) {
+        Object.keys(m.data).forEach(function(k){ sessionStorage.setItem(k, m.data[k]); });
+        home = m.data["sbe.session.homeUrl"]; roleLabel = m.data["sbe.session.role"] || "";
+      }
+    }
+  } catch(e){}
+  if (home) {
+    var bar = el("div",{class:"card", style:"margin-bottom:14px"});
+    var inn = el("div",{class:"in"});
+    var goHome = el("button",{class:"primary", style:"width:auto;margin-inline-end:8px"},"חזרה למסך שלי");
+    var out = el("button",{style:"width:auto"},"יציאה");
+    goHome.addEventListener("click", function(){ location.href = home; });
+    out.addEventListener("click", function(){ clearSession(); bar.remove(); });
+    inn.append(el("p",{class:"whoami", style:"margin-top:0"}, "את/ה מחובר/ת", roleLabel ? " · " : "", roleLabel ? el("b",{},roleLabel) : ""),
+      goHome, out);
+    bar.append(inn);
+    view.prepend(bar);
+  }
 })();
 </script>
 
