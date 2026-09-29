@@ -235,7 +235,7 @@ if(!gid){
 }
 
 // ── state ──
-let bandItems=[], cursor=0, answers=[], session=null;
+let bandItems=[], positions=[], cursor=0, answers=[], session=null;
 
 function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
 
@@ -244,7 +244,11 @@ btnStart.addEventListener('click',function(){
   const voice = parseInt(sVoice.value);
   const code  = iCode.value.trim();
   session   = {band, voice, key:SC.hashCode(voice, code)};
-  bandItems = R.ITEMS.filter(it=>it.b===band);
+  // רק ההיגדים שהמחנך/כת בחר/ה (sel = מיקומים בתוך היגדי השכבה); כיתה ישנה — כולם.
+  const all = R.ITEMS.filter(it=>it.b===band);
+  positions = Array.isArray(group.sel) ? group.sel.filter(p=>p<all.length) : all.map((_,p)=>p);
+  bandItems = positions.map(p=>all[p]);
+  session.total = all.length;
   answers   = new Array(bandItems.length).fill(null);
   cursor    = 0;
   show('s-q');
@@ -288,7 +292,10 @@ function finish(){
   show('s-send');
   sendMsg.textContent='שולח את התשובות... (לפעמים עד דקה)';sendMsg.style.color='var(--muted)';
   btnRetry.style.display='none';
-  api({action:'resilSubmit',id:gid,v:session.voice,k:session.key,a:answers.slice()}).then(d=>{
+  // מערך באורך כל היגדי השכבה, null בהיגדים שלא נשאלו — הניקוד מדלג עליהם.
+  const full=new Array(session.total).fill(null);
+  positions.forEach((p,j)=>{full[p]=answers[j];});
+  api({action:'resilSubmit',id:gid,v:session.voice,k:session.key,a:full}).then(d=>{
     if(d.ok){show('s-done');return;}
     sendMsg.style.color='var(--brick)';
     if(d._status===409){sendMsg.textContent='השאלון נסגר בינתיים, והתשובות לא נשמרו.';return;}
