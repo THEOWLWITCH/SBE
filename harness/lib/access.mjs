@@ -103,7 +103,13 @@ export async function verifyToken(store, token) {
 // מפתח הכיתה (key) נמסר רק למחנך/כת שפתח/ה אותה, ורק איתו (או עם כניסת מנהלת
 // המערכת) אפשר לראות תוצאות, לסגור את השאלון או למחוק.
 const RESIL_ITEMS = { 0: 62, 1: 75, 2: 75, 3: 75 }; // מספר ההיגדים בכל שכבה (resilience-data.js)
-const RESIL_VOICES = 5, RESIL_LEVELS = 5, RESIL_MAX_RESP = 3000;
+const RESIL_VOICES = 5, RESIL_LEVELS = 5, RESIL_MAX_RESP = 3000, RESIL_MAX_SEL = 15;
+// השאלות שהמחנך/כת בחר/ה: מיקומים בתוך היגדי השכבה (0..מספר ההיגדים-1),
+// 1 עד 15, בלי כפילויות, בסדר עולה. כיתה ישנה בלי sel — כל ההיגדים.
+function validSel(sel, band) {
+  return Array.isArray(sel) && sel.length >= 1 && sel.length <= RESIL_MAX_SEL
+    && sel.every((x, j) => Number.isInteger(x) && x >= 0 && x < RESIL_ITEMS[band] && (j === 0 || x > sel[j - 1]));
+}
 const ID_ALPHABET = 'abcdefghijkmnpqrstuvwxyz23456789';
 const randId = (n) => { let s = ''; for (const b of randomBytes(n)) s += ID_ALPHABET[b % ID_ALPHABET.length]; return s; };
 const sha = (x) => createHash('sha256').update(String(x)).digest('hex');
@@ -119,7 +125,7 @@ async function resilCanManage(store, body, g) {
   return !!t && t.k === 'sys';
 }
 
-const publicGroup = (id, g) => ({ id, cls: g.cls, band: g.band, open: g.open !== false, createdAt: g.createdAt });
+const publicGroup = (id, g) => ({ id, cls: g.cls, band: g.band, sel: g.sel || null, open: g.open !== false, createdAt: g.createdAt });
 
 async function handleResilience(store, body) {
   const { action } = body;
@@ -135,7 +141,9 @@ async function handleResilience(store, body) {
     const band = Number(body.band);
     if (!cls || !(band in RESIL_ITEMS)) return [400, { error: 'missing fields' }];
     const id = randId(12), key = randId(20);
-    const g = { inst: t.inst || '', cls, band, open: true, keyHash: sha(key), createdAt: new Date().toISOString() };
+    const sel = Array.isArray(body.sel) ? [...body.sel].sort((x, y) => x - y) : null;
+    if (!validSel(sel, band)) return [400, { error: 'bad selection', max: RESIL_MAX_SEL }];
+    const g = { inst: t.inst || '', cls, band, sel, open: true, keyHash: sha(key), createdAt: new Date().toISOString() };
     await store.set('resil:' + id, g);
     return [200, { key, group: publicGroup(id, g) }];
   }
@@ -167,8 +175,11 @@ async function handleResilience(store, body) {
     const v = Number(body.v), k = String(body.k || ''), a = body.a;
     if (!Number.isInteger(v) || v < 0 || v >= RESIL_VOICES) return [400, { error: 'bad voice' }];
     if (!/^[a-z0-9]{4,24}$/.test(k)) return [400, { error: 'bad key' }];
+    // תשובה לכל היגדי השכבה; בהיגדים שלא נבחרו — null (הניקוד מדלג עליהם).
+    const asked = g.sel ? new Set(g.sel) : null;
     if (!Array.isArray(a) || a.length !== RESIL_ITEMS[g.band]
-      || !a.every((x) => Number.isInteger(x) && x >= 0 && x < RESIL_LEVELS)) return [400, { error: 'bad answers' }];
+      || !a.every((x, j) => (asked && !asked.has(j)) ? x === null
+        : Number.isInteger(x) && x >= 0 && x < RESIL_LEVELS)) return [400, { error: 'bad answers' }];
     const all = await store.list('resil:' + body.id + ':r:', { keysOnly: true });
     if (all.length >= RESIL_MAX_RESP) return [429, { error: 'full' }];
     const mine = 'resil:' + body.id + ':r:' + v + ':' + k + ':';
