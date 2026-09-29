@@ -172,6 +172,31 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
 .sel-item input{margin-top:.2rem;width:17px;height:17px;flex-shrink:0}
 .sel-item.dis{opacity:.45;cursor:not-allowed}
 .sel-rev{font-size:.72rem;color:var(--brick);font-weight:700;white-space:nowrap}
+/* סיכום והמלצות */
+.sum-doc h2{font-size:1.15rem;margin:1.4rem 0 .6rem;padding-bottom:.35rem;border-bottom:2px solid var(--spoken);color:var(--spoken)}
+.sum-doc h2:first-child{margin-top:0}
+.sum-doc h3{font-size:.98rem;margin:1.1rem 0 .5rem;color:var(--ink)}
+.sum-doc p,.sum-doc li{font-size:.9rem;line-height:1.7;color:var(--ink)}
+.sum-doc ul{margin:.3rem 0 .6rem;padding-inline-start:1.2rem}
+.sum-intro{background:var(--spoken-soft);border-inline-start:3px solid var(--spoken);border-radius:6px;padding:.75rem 1rem;margin-bottom:1rem}
+.act{border:1px solid var(--hair);border-radius:9px;padding:.7rem .9rem;margin:.55rem 0;background:var(--surface)}
+.act-t{font-weight:700;font-size:.95rem;margin-bottom:.3rem;color:var(--ink)}
+.act-tags{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.35rem}
+.act-tag{font-size:.72rem;padding:.12rem .5rem;border-radius:99px;background:var(--surface-2);color:var(--muted);font-weight:700}
+.act-tag.kind{background:var(--spoken-soft);color:var(--spoken)}
+.act-tag.circle{background:var(--auto-soft);color:var(--auto)}
+.act-d{font-size:.88rem;line-height:1.65;margin:0}
+.act-m{font-size:.8rem;color:var(--muted);margin:.35rem 0 0;line-height:1.5}
+.sum-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem}
+.sum-actions .btn{width:auto}
+@media print{
+  #navBar,#navPanel,#rptFab,.topnav,.tab-bar,.no-print,#lock-overlay{display:none!important}
+  body.sbe-hasnav{padding-top:0!important}
+  .pane{display:none!important}
+  #t-summary{display:block!important}
+  .card{box-shadow:none;border:none}
+  .act{break-inside:avoid}
+}
 /* empty */
 .empty{text-align:center;color:var(--muted);padding:2rem;font-size:.9rem}
 </style>
@@ -196,6 +221,7 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
   <button class="tab-btn" data-tab="t-scores">📊 ציונים</button>
   <button class="tab-btn" data-tab="t-voices">👥 לפי קבוצות</button>
   <button class="tab-btn" data-tab="t-report">📄 דוח</button>
+  <button class="tab-btn" data-tab="t-summary">📝 סיכום והמלצות</button>
 </div>
 
 <!-- ── Tab: הגדרה ── -->
@@ -283,6 +309,11 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
 <!-- ── Tab: לפי קבוצות נשאלים ── -->
 <div id="t-voices" class="pane">
   <div id="voices-content"><div class="empty">אין עדיין נתונים.</div></div>
+</div>
+
+<!-- ── Tab: סיכום והמלצות (מופק על ידי המודל) ── -->
+<div id="t-summary" class="pane">
+  <div id="summary-content"><div class="empty">אין עדיין נתונים.</div></div>
 </div>
 
 <!-- ── Tab: דוח ── -->
@@ -391,7 +422,7 @@ function setOpen(open){
 
 // ── Tabs ──
 const tabBtns = document.querySelectorAll('.tab-btn');
-const LOCKED_TABS = new Set(['t-scores','t-voices','t-report']);
+const LOCKED_TABS = new Set(['t-scores','t-voices','t-report','t-summary']);
 
 tabBtns.forEach(btn=>{
   btn.addEventListener('click',function(){
@@ -889,12 +920,169 @@ function renderReport(){
   el.innerHTML=html;
 }
 
+// ── סיכום והמלצות למחנך/ת (מופק על ידי המודל) ──
+// המודל מקבל את הממצאים המחושבים (ציוני תחומים, סימונים, פערים בין קבוצות,
+// "לא יודע", שכבת הגיל) ומחזיר JSON במבנה קבוע: חוזקות (+ פעילויות להעצמה,
+// + שימוש בחוזקות כמנוף לאתגרים) ואתגרים (בניסוח אופטימי + פעילויות). הכול
+// נבנה ב-DOM עם textContent — הפלט של המודל לא נכנס כ-HTML.
+const AI_SERVER='https://sbe-server.onrender.com';
+const SUM_KEY='sbe.resil.summary';
+let SUMMARY=null, SUM_BUSY=false;
+function sumCacheId(cfg){return (cfg.demo?'demo':cfg.id)+':'+RESP.length;}
+function loadSummaryCache(cfg){
+  if(SUMMARY&&SUMMARY.cid===sumCacheId(cfg))return SUMMARY;
+  if(cfg.demo)return null;
+  try{const c=JSON.parse(localStorage.getItem(SUM_KEY)||'null');if(c&&c.cid===sumCacheId(cfg))return c;}catch{}
+  return null;
+}
+function saveSummaryCache(obj){SUMMARY=obj;if(obj.cid.startsWith('demo'))return;try{localStorage.setItem(SUM_KEY,JSON.stringify(obj));}catch{}}
+
+function summaryInput(cfg){
+  const band=R.BANDS[cfg.band];
+  const domains=SC.computeDomains(RESP,R.ITEMS,cfg.band);
+  const vName=Object.fromEntries(R.VOICES.map(v=>[v.id,v.label]));
+  const counts={};const seen={};
+  RESP.forEach(r=>{const k=r.v+':'+r.k;if(seen[k])return;seen[k]=1;counts[vName[r.v]]=(counts[vName[r.v]]||0)+1;});
+  const lines=domains.sort((a,b)=>b.score-a.score).map(d=>{
+    const parts=[d.g+' · '+d.d+': ציון '+Math.round(d.score)+' ('+d.label+')'];
+    if(d.capped)parts.push('התנהגות פוגעת מגבילה את הציון — מיטיבה '+Math.round(d.good)+', פוגעת '+Math.round(d.harm));
+    if(d.gap>=30)parts.push('פער בין קבוצות הנשאלים: '+Object.entries(d.vScores).map(([v,sc])=>vName[v]+' '+Math.round(sc)).join(', '));
+    if(d.unknownRate>=0.34)parts.push(Math.round(d.unknownRate*100)+'% ענו "לא יודע"');
+    return '- '+parts.join(' | ');
+  });
+  return {band,domains,text:[
+    'כיתה: '+cfg.cls,
+    'שכבת גיל: '+band.label+' ('+band.range+')',
+    'מי ענה: '+Object.entries(counts).map(([n,c])=>n+' '+c).join(', '),
+    'סולם: 75–100 תפקודי · 50–74 חלקי · 25–49 חלש · מתחת ל-25 בקושי תפקודי. ציון תחום = min(התנהגות מיטיבה, 100 − התנהגות פוגעת).',
+    '',
+    'ממצאים לפי תחום (מהגבוה לנמוך):',
+    ...lines
+  ].join('\n')};
+}
+
+const SUM_SYSTEM=[
+  'את/ה יועץ/ת חינוכי/ת מנוסה בתחום החוסן החברתי בכיתה. בעברית, עבור מערכת S.B.E, את/ה כותב/ת מסמך סיכום והמלצות למחנך/ת הכיתה על סמך ממצאי שאלון חוסן חברתי.',
+  'עקרונות מחייבים:',
+  '1. תעדוף: קודם כול פעילויות ותהליכים שמפתחים עבודת צוות, מיומנויות משותפות ושימוש במנגנונים חברתיים של הכיתה — למשל תורנויות (ניקיון, סדר, קבלת פנים), ועדות כיתה, לוח מודעות כיתתי שהתלמידים מפעילים, ציון אירועים וימי הולדת, טקסים ומסורות כיתתיות, התנדבות, פרויקטים משותפים, מועצת כיתה, חונכות בין תלמידים.',
+  '2. יצירתיות וגיוון: הצע/י כמה אפשרויות שונות זו מזו בכל סעיף (לא הצעה אחת), ושלב/י בין פעילויות חד-פעמיות לתהליכים מתמשכים.',
+  '3. התאמה לגיל: כל הצעה חייבת להתאים לשכבת הגיל שבנתונים — ניסוח, רמת אחריות של התלמידים ומשך הפעילות.',
+  '4. מעגלים: עודד/י מעורבות גם מחוץ לכיתה — בבית הספר ובקהילה (שכבות אחרות, הורים, שכונה, מוסדות קהילתיים) — ולא רק בכיתה.',
+  '5. אתגרים בניסוח אופטימי: לנסח כל אתגר ככיוון צמיחה ("הכיתה יכולה לפתח..."), לא כליקוי. בלי האשמה ובלי הכללות על תלמידים.',
+  '6. להישען רק על הנתונים שנמסרו. אסור להמציא ממצאים, מספרים או מקרים, ואין להתייחס לתלמיד/ה מסוים/ת. תחום עם "התנהגות פוגעת מגבילה" — ההמלצה הראשונה בו היא הפחתת הפגיעה. פער בין קבוצות — להציע גם דרך לשיחה בין הקבוצות. הרבה "לא יודע" — להציע דרך להפוך את התחום לגלוי ומדובר.',
+  '7. פנייה למחנך/ת בלשון מכבדת ומעשית, בשפה פשוטה וברורה.',
+  'היקף: 3–5 חוזקות, 3–5 אתגרים, ו-3–5 פעילויות בכל אחת משלוש רשימות הפעילויות.',
+  'החזר/י אך ורק JSON תקין, בלי טקסט נוסף, במבנה:',
+  '{"intro":"2–3 משפטים — מבט-על על הכיתה",',
+  ' "strengths":[{"domain":"שם התחום","text":"מה החוזקה ומה היא מאפשרת"}],',
+  ' "strengthActivities":[ACT],',
+  ' "leverage":[ACT + "from":"החוזקה שמשמשת מנוף","to":"האתגר שהיא מסייעת בו"],',
+  ' "challenges":[{"domain":"שם התחום","text":"האתגר בניסוח אופטימי"}],',
+  ' "challengeActivities":[ACT + "for":"שם התחום"]}',
+  'כאשר ACT הוא {"title":"שם קצר","kind":"חד-פעמית" או "תהליך מתמשך","circle":"כיתה" או "בית הספר" או "קהילה","description":"מה עושים, מי מוביל/ה ואיך — 2–4 משפטים","mechanism":"איזה מנגנון חברתי / עבודת צוות / מיומנות משותפת זה מפתח"}'
+].join('\n');
+
+async function generateSummary(){
+  const cfg=loadCfg();if(!cfg||SUM_BUSY)return;
+  const inp=summaryInput(cfg);
+  if(!inp.domains.length)return;
+  SUM_BUSY=true;renderSummary();
+  const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),300000);
+  try{
+    const res=await fetch(AI_SERVER+'/api/complete',{method:'POST',headers:{'content-type':'application/json'},signal:ctrl.signal,
+      body:JSON.stringify({system:SUM_SYSTEM,messages:[{role:'user',content:inp.text}],maxTokens:8000})});
+    const data=await res.json();
+    if(!res.ok||data.error)throw new Error(data.error||('שגיאת שרת '+res.status));
+    const m=String(data.text||'').match(/\{[\s\S]*\}/);
+    if(!m)throw new Error('המודל לא החזיר מבנה תקין');
+    const doc=JSON.parse(m[0]);
+    saveSummaryCache({cid:sumCacheId(cfg),at:new Date().toISOString(),cls:cfg.cls,band:inp.band.label,doc});
+    window._sumErr='';
+  }catch(e){
+    window._sumErr=e.name==='AbortError'?'ההפקה לקחה יותר מדי זמן. נסו שוב.':'ההפקה לא הצליחה ('+e.message+'). נסו שוב בעוד רגע.';
+  }finally{clearTimeout(timer);SUM_BUSY=false;renderSummary();}
+}
+
+function el2(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=String(text);return n;}
+function actCard(a,extra){
+  const c=el2('div','act');
+  c.appendChild(el2('div','act-t',a.title||''));
+  const tags=el2('div','act-tags');
+  if(a.kind)tags.appendChild(el2('span','act-tag kind',a.kind));
+  if(a.circle)tags.appendChild(el2('span','act-tag circle',a.circle));
+  if(extra)tags.appendChild(el2('span','act-tag',extra));
+  if(tags.childNodes.length)c.appendChild(tags);
+  c.appendChild(el2('p','act-d',a.description||''));
+  if(a.mechanism)c.appendChild(el2('p','act-m','מה זה מפתח: '+a.mechanism));
+  return c;
+}
+function textList(items){
+  const ul=el2('ul');
+  (items||[]).forEach(it=>{const li=el2('li');if(it.domain){li.appendChild(el2('b',null,it.domain+': '));}li.appendChild(document.createTextNode(it.text||''));ul.appendChild(li);});
+  return ul;
+}
+function summaryPlainText(c){
+  const d=c.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  מה זה מפתח: '+a.mechanism:'');
+  L.push('סיכום והמלצות — כיתה '+c.cls+' ('+c.band+')','',d.intro||'','','1. חוזקות הכיתה');
+  (d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
+  L.push('','1.1 פעילויות ותהליכים להעצמת החוזקות');(d.strengthActivities||[]).forEach(a=>L.push(act(a)));
+  L.push('','1.2 החוזקות כמנוף להתמודדות עם האתגרים');(d.leverage||[]).forEach(a=>L.push(act(a,a.from&&a.to?a.from+' ← '+a.to:'')));
+  L.push('','2. אתגרים','','2.1 האתגרים — כיווני צמיחה');(d.challenges||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
+  L.push('','2.2 פעילויות ותהליכים להתמודדות');(d.challengeActivities||[]).forEach(a=>L.push(act(a,a.for)));
+  return L.join('\n');
+}
+
+function renderSummary(){
+  const cfg=loadCfg();const box=document.getElementById('summary-content');
+  if(!cfg){box.innerHTML='<div class="empty">הגדר/י כיתה תחילה.</div>';return;}
+  if(!RESP.length){box.innerHTML='<div class="empty">עדיין אין תשובות. הסיכום יופק אחרי שייאספו תשובות.</div>';return;}
+  box.textContent='';
+  const cached=loadSummaryCache(cfg);
+  const head=el2('div','card no-print');
+  head.appendChild(el2('h2',null,'סיכום והמלצות למחנך/ת'));
+  head.appendChild(el2('p',null,'המודל מנתח את הממצאים ומציע: חוזקות הכיתה ואיך להעצים אותן ולהשתמש בהן כמנוף, ואתגרים בניסוח אופטימי עם פעילויות ותהליכים — בדגש על עבודת צוות ומנגנונים חברתיים, בהתאמה לשכבת הגיל.'));
+  const acts=el2('div','sum-actions');
+  const gen=el2('button','btn',SUM_BUSY?'מפיק את הסיכום... (דקה–שלוש)':cached?'הפקה מחדש':'הפקת סיכום והמלצות');
+  gen.id='btn-sum-gen';gen.disabled=SUM_BUSY;gen.addEventListener('click',generateSummary);acts.appendChild(gen);
+  if(cached&&!SUM_BUSY){
+    const pr=el2('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.print());acts.appendChild(pr);
+    const cp=el2('button','btn btn-ghost','העתקת הטקסט');cp.addEventListener('click',()=>{navigator.clipboard&&navigator.clipboard.writeText(summaryPlainText(cached)).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הטקסט',2000);});});acts.appendChild(cp);
+  }
+  head.appendChild(acts);
+  if(window._sumErr&&!SUM_BUSY){const e=el2('p',null,window._sumErr);e.style.cssText='color:var(--brick);font-weight:600;margin-top:.6rem';head.appendChild(e);}
+  if(cached&&cached.cid!==sumCacheId(cfg))head.appendChild(el2('p',null,'נוספו תשובות מאז ההפקה — אפשר להפיק מחדש.'));
+  box.appendChild(head);
+  if(!cached)return;
+
+  const d=cached.doc||{};
+  const card=el2('div','card sum-doc');
+  const t=el2('h2',null,'סיכום והמלצות — כיתה '+cached.cls);t.style.borderBottom='none';card.appendChild(t);
+  card.appendChild(el2('p',null,'שכבה: '+cached.band+' · הופק: '+new Date(cached.at).toLocaleDateString('he-IL')+(cfg.demo?' · כיתת דמו':''))).style.cssText='font-size:.8rem;color:var(--muted);margin-top:-.4rem';
+  if(d.intro)card.appendChild(el2('p','sum-intro',d.intro));
+
+  card.appendChild(el2('h2',null,'1. חוזקות הכיתה'));
+  card.appendChild(textList(d.strengths));
+  card.appendChild(el2('h3',null,'1.1 פעילויות ותהליכים להעצמת החוזקות'));
+  (d.strengthActivities||[]).forEach(a=>card.appendChild(actCard(a)));
+  card.appendChild(el2('h3',null,'1.2 החוזקות כמנוף להתמודדות עם האתגרים'));
+  (d.leverage||[]).forEach(a=>card.appendChild(actCard(a,a.from&&a.to?a.from+' ← '+a.to:'')));
+
+  card.appendChild(el2('h2',null,'2. אתגרים'));
+  card.appendChild(el2('h3',null,'2.1 האתגרים — כיווני צמיחה'));
+  card.appendChild(textList(d.challenges));
+  card.appendChild(el2('h3',null,'2.2 פעילויות ותהליכים להתמודדות'));
+  (d.challengeActivities||[]).forEach(a=>card.appendChild(actCard(a,a.for)));
+
+  card.appendChild(el2('p',null,'הסיכום הופק על ידי מודל שפה על סמך תוצאות השאלון בלבד. הוא נקודת פתיחה לחשיבה ולשיחה עם הצוות, ולא מחליף שיקול דעת מקצועי.')).style.cssText='font-size:.78rem;color:var(--muted);margin-top:1.2rem';
+  box.appendChild(card);
+}
+
 // ── Main render ──
 function renderAll(){
   refreshTabLocks();
   renderSetup();
   const cfg=loadCfg();
-  if(cfg&&!isLocked()){renderScores();renderVoices();renderReport();}
+  if(cfg&&!isLocked()){renderScores();renderVoices();renderReport();renderSummary();}
 }
 
 // ── Init ──
