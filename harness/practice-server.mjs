@@ -16,7 +16,8 @@
 // הרצה מקומית:
 //   ANTHROPIC_API_KEY=... node harness/practice-server.mjs [--port 8790]
 //
-// פריסה ב-Render: CORS נעול לדומיין CORS_ORIGIN (ברירת מחדל: s-b-e.netlify.app).
+// פריסה ב-Render: CORS נעול לדומיינים ב-CORS_ORIGIN (ברירת מחדל: s-b-e.netlify.app),
+// ותמיד גם לאתר הגיבוי ב-GitHub Pages.
 // השרת מאזין על 0.0.0.0 כדי לקבל חיבורים מרשת.
 //
 // חוזה הבקשה, POST /api/complete (וגם /api/character-turn — כינוי זהה
@@ -86,13 +87,20 @@ const args = process.argv.slice(2);
 const portArgIdx = args.indexOf('--port');
 const PORT = Number(portArgIdx >= 0 ? args[portArgIdx + 1] : (process.env.PORT || 8790));
 
-// CORS: ברירת מחדל לדומיין Netlify הידוע. ניתן לדריסה דרך CORS_ORIGIN.
-const CORS_ORIGIN = process.env.CORS_ORIGIN || 'https://s-b-e.netlify.app';
+// CORS: ברירת מחדל לדומיין Netlify הידוע. ניתן לדריסה דרך CORS_ORIGIN (כמה דומיינים
+// מופרדים בפסיק). אתר הגיבוי ב-GitHub Pages מותר תמיד.
+const CORS_ORIGINS = [
+  ...(process.env.CORS_ORIGIN || 'https://s-b-e.netlify.app').split(',').map(s => s.trim()).filter(Boolean),
+  'https://theowlwitch.github.io',
+];
+// מחזירה את ה-Origin של הבקשה אם הוא ברשימה, אחרת את הדומיין הראשון.
+const corsOriginFor = (req) => CORS_ORIGINS.includes(req.headers.origin) ? req.headers.origin : CORS_ORIGINS[0];
 
 function sendJson(res, status, body) {
   res.writeHead(status, {
     'content-type': 'application/json; charset=utf-8',
-    'access-control-allow-origin': CORS_ORIGIN,
+    'access-control-allow-origin': res.corsOrigin || CORS_ORIGINS[0],
+    'vary': 'Origin',
     'access-control-allow-methods': 'POST, OPTIONS',
     'access-control-allow-headers': 'content-type',
   });
@@ -105,7 +113,8 @@ function sendJson(res, status, body) {
 function startKeepAlive(res) {
   res.writeHead(200, {
     'content-type': 'application/json; charset=utf-8',
-    'access-control-allow-origin': CORS_ORIGIN,
+    'access-control-allow-origin': res.corsOrigin || CORS_ORIGINS[0],
+    'vary': 'Origin',
     'access-control-allow-methods': 'POST, OPTIONS',
     'access-control-allow-headers': 'content-type',
   });
@@ -128,6 +137,7 @@ function readBody(req) {
 }
 
 const server = createServer(async (req, res) => {
+  res.corsOrigin = corsOriginFor(req);
   if (req.method === 'OPTIONS') return sendJson(res, 204, {});
 
   if (req.method === 'GET' && req.url === '/health') {
@@ -251,7 +261,7 @@ server.headersTimeout = 0;
 server.listen(PORT, '0.0.0.0', () => {
   const keyName = getProviderEnvKeyName();
   console.log(`שרת מנוע התרגול פועל · http://0.0.0.0:${PORT}`);
-  console.log(`CORS מוגדר ל: ${CORS_ORIGIN}`);
+  console.log(`CORS מוגדר ל: ${CORS_ORIGINS.join(', ')}`);
   console.log(process.env[keyName]
     ? `מפתח ${keyName} נמצא.`
     : `אזהרה: אין ${keyName} מוגדר — כל בקשה תיכשל עם שגיאה ברורה.`);
