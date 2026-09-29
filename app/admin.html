@@ -486,7 +486,7 @@ function render(){
   // "יציאה" ולא "כניסה" — הכותרת "כניסה" כבר משמשת את קבוצת מסכי הכניסה
   // ב-OTHER_SCREENS_GROUPS למעלה; שתי כותרות זהות באותו תפריט בלבלו (21/09/2026).
   nav.append(el("h5",{}, "יציאה"));
-  nav.append(el("a",{ class:"nlink", href:"entry.html" }, "החלפת תפקיד / קוד אחר"));
+  nav.append(el("a",{ class:"nlink", href:"entry.html?logout=1" }, "יציאה / החלפת תפקיד"));
 
   const p = $("panels"); p.textContent = "";
   p.append(({ codes:pCodes, users:pUsers, feedback:pFeedback, data:pData, insts:pInsts, access:pAccess, taxonomies:pTaxonomies, libs:pLibs, eval:pEvalSet })[tab]());

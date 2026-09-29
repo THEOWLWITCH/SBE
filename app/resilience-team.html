@@ -226,9 +226,21 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
     <div class="stats" id="setup-stats"></div>
     <button class="btn btn-ghost btn-sm" id="btn-refresh">רענון התוצאות</button>
     <p id="srv-status" style="font-size:.8rem;margin:.4rem 0"></p>
-    <p style="font-size:.8rem;margin:.75rem 0 .25rem">קוד ניהול הכיתה — לשחזור הכיתה במכשיר אחר. לא למסור לתלמידים:</p>
-    <div class="link-box" id="manage-code"></div>
+    <div id="manage-code-wrap">
+      <p style="font-size:.8rem;margin:.75rem 0 .25rem">קוד ניהול הכיתה — לשחזור הכיתה במכשיר אחר. לא למסור לתלמידים:</p>
+      <div class="link-box" id="manage-code"></div>
+    </div>
+    <button class="btn btn-ghost btn-sm" id="btn-switch" style="margin-top:.5rem">מעבר לכיתה אחרת (בלי מחיקה)</button>
     <button class="btn btn-ghost btn-sm" id="btn-cfg-reset" style="margin-top:.5rem">מחיקת הכיתה וכל התשובות</button>
+  </div>
+
+  <!-- מנהלת המערכת: כל הכיתות בכל המוסדות -->
+  <div class="card" id="all-groups-card" style="display:none">
+    <h2>כל הכיתות במערכת</h2>
+    <p style="font-size:.8rem">גלוי רק למנהלת המערכת. "פתיחה" מציגה את הכיתה כאן, עם כל הפעולות.</p>
+    <button class="btn btn-ghost btn-sm" id="btn-all-refresh">טעינת הרשימה</button>
+    <p id="all-status" style="font-size:.8rem;margin:.4rem 0"></p>
+    <div id="all-groups"></div>
   </div>
 </div>
 
@@ -281,7 +293,7 @@ R.BANDS.forEach(b=>{const o=document.createElement('option');o.value=b.id;o.text
 function loadStore(){return {resp:RESP};}
 function loadCfg(){
   let c=null;try{c=JSON.parse(localStorage.getItem(CFG)||'null');}catch{}
-  return c&&c.id&&c.key ? c : null;
+  return c&&c.id&&(c.key||c.admin) ? c : null; // admin: כיתה שמנהלת המערכת פתחה מהרשימה
 }
 function saveCfg(c){try{localStorage.setItem(CFG,JSON.stringify(c));}catch{}}
 function clearAll(){try{localStorage.removeItem(CFG);}catch{} RESP=[];GROUP=null;}
@@ -301,8 +313,9 @@ let loading=false;
 function refresh(){
   const cfg=loadCfg(); if(!cfg||loading) return Promise.resolve();
   loading=true; setStatus('טוען תשובות מהשרת... (לפעמים עד דקה)');
-  return api({action:'resilResults',id:cfg.id,key:cfg.key}).then(d=>{
+  return api({action:'resilResults',id:cfg.id,key:cfg.key,token:sessionToken()}).then(d=>{
     if(d.group){GROUP=d.group;RESP=d.resp||[];setStatus('עודכן: '+new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}));}
+    else if(d._status===403&&cfg.admin){setStatus('תוקף הכניסה פג. צריך להיכנס מחדש כמנהלת מערכת.',true);}
     else if(d._status===404||d._status===403){setStatus('הכיתה הזאת כבר לא קיימת בשרת. אפשר לפתוח כיתה חדשה.',true);clearAll();}
     else setStatus('אין כרגע חיבור לשרת. התוצאות יתעדכנו כשיחזור.',true);
   }).catch(()=>setStatus('אין כרגע חיבור לשרת. התוצאות יתעדכנו כשיחזור.',true))
@@ -335,7 +348,7 @@ function checkLock(){
 function setOpen(open){
   const cfg=loadCfg(); if(!cfg) return;
   setStatus(open?'פותח את השאלון...':'סוגר את השאלון...');
-  api({action:'resilSetOpen',id:cfg.id,key:cfg.key,open}).then(d=>{
+  api({action:'resilSetOpen',id:cfg.id,key:cfg.key,token:sessionToken(),open}).then(d=>{
     if(d.group){GROUP=d.group;setStatus(open?'השאלון פתוח למילוי.':'השאלון נסגר. אפשר לראות את התוצאות.');}
     else setStatus('הפעולה לא הצליחה. נסו שוב.',true);
   }).catch(()=>setStatus('אין כרגע חיבור לשרת. נסו שוב.',true)).finally(renderAll);
@@ -407,12 +420,50 @@ document.getElementById('btn-cfg-reset').addEventListener('click',function(){
   const cfg=loadCfg();
   const done=()=>{clearAll();_tempView=false;cfgCls.value='';cfgBand.value='';chkCfg();renderAll();checkLock();setStatus('');};
   if(!cfg){done();return;}
-  api({action:'resilDelete',id:cfg.id,key:cfg.key}).then(d=>{
+  api({action:'resilDelete',id:cfg.id,key:cfg.key,token:sessionToken()}).then(d=>{
     if(d.ok||d._status===404)done(); else setStatus('המחיקה לא הצליחה. נסו שוב.',true);
   }).catch(()=>setStatus('אין כרגע חיבור לשרת. נסו שוב.',true));
 });
 document.getElementById('btn-refresh').addEventListener('click',refresh);
 document.getElementById('btn-toggle-open').addEventListener('click',function(){setOpen(!(GROUP&&GROUP.open));});
+// יציאה מהכיתה במכשיר הזה בלבד — הכיתה והתשובות נשארות בשרת (וקוד הניהול משחזר).
+document.getElementById('btn-switch').addEventListener('click',function(){
+  clearAll();_tempView=false;cfgCls.value='';cfgBand.value='';chkCfg();setStatus('');renderAll();checkLock();
+  if(IS_SYS)loadAllGroups();
+});
+
+// ── מנהלת המערכת: כל הכיתות ──
+let IS_SYS=false;
+try{IS_SYS=sessionStorage.getItem('sbe.session.homeUrl')==='admin.html?role=sys';}catch{}
+const allStatus=document.getElementById('all-status');
+function loadAllGroups(){
+  allStatus.style.color='var(--muted)';allStatus.textContent='טוען את כל הכיתות... (לפעמים עד דקה)';
+  api({action:'resilList',token:sessionToken()}).then(d=>{
+    const box=document.getElementById('all-groups');box.textContent='';
+    if(!d.groups){allStatus.style.color='var(--brick)';
+      allStatus.textContent=d._status===403?'תוקף הכניסה פג. צריך להיכנס מחדש כמנהלת מערכת.':'אין כרגע חיבור לשרת. נסי שוב בעוד רגע.';return;}
+    allStatus.textContent=d.groups.length?'':'עדיין לא נפתחו כיתות.';
+    if(!d.groups.length)return;
+    const tbl=document.createElement('table');tbl.className='vtable';
+    const hr=tbl.insertRow();['מוסד','כיתה','שכבה','תשובות','מצב',''].forEach(h=>{const th=document.createElement('th');th.textContent=h;hr.appendChild(th);});
+    d.groups.forEach(g=>{
+      const tr=tbl.insertRow();
+      [g.inst||'—',g.cls,(R.BANDS[g.band]||{}).label||'',String(g.responses),g.open?'פתוח':'סגור'].forEach(v=>{tr.insertCell().textContent=v;});
+      const b=document.createElement('button');b.className='btn btn-sm';b.style.width='auto';b.textContent='פתיחה';
+      b.addEventListener('click',()=>{
+        saveCfg({id:g.id,key:'',admin:true,cls:g.cls,band:g.band});
+        GROUP=null;RESP=[];_tempView=false;renderAll();refresh();window.scrollTo(0,0);
+      });
+      tr.insertCell().appendChild(b);
+    });
+    box.appendChild(tbl);
+  }).catch(()=>{allStatus.style.color='var(--brick)';allStatus.textContent='אין כרגע חיבור לשרת. נסי שוב בעוד רגע.';});
+}
+if(IS_SYS){
+  document.getElementById('all-groups-card').style.display='';
+  document.getElementById('btn-all-refresh').addEventListener('click',loadAllGroups);
+  loadAllGroups();
+}
 
 document.getElementById('btn-copy-link').addEventListener('click',function(){
   const link=document.getElementById('fill-link').textContent;
@@ -433,7 +484,8 @@ function renderSetup(){
   const link=base+'?g='+cfg.id;
   document.getElementById('fill-link').textContent=link;
   document.getElementById('lock-fill-link').href=link;
-  document.getElementById('manage-code').textContent=cfg.id+'.'+cfg.key;
+  document.getElementById('manage-code').textContent=cfg.key?cfg.id+'.'+cfg.key:'';
+  document.getElementById('manage-code-wrap').style.display=cfg.key?'':'none';
   const open=!GROUP||GROUP.open;
   document.getElementById('open-state').textContent=GROUP?(open?'השאלון פתוח למילוי':'השאלון סגור — לא מתקבלות תשובות חדשות'):'';
   document.getElementById('btn-toggle-open').textContent=open?'סגירת השאלון והצגת התוצאות':'פתיחת השאלון מחדש';
@@ -491,7 +543,7 @@ function renderScores(){
   domains.forEach(d=>{if(!groups[d.g])groups[d.g]=[];groups[d.g].push(d);});
 
   let html=`<div class="card">
-    <h2>סיכום כיתה: ${cfg.cls}</h2>
+    <h2>סיכום כיתה: ${String(cfg.cls).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';')}</h2>
     <div class="score-row" style="margin-bottom:1rem">
       <div class="score-label" style="font-weight:700">ציון כולל</div>
       <div class="score-bar-wrap"><div class="score-bar ${tierClass(ovLbl.tier)}" style="width:${Math.round(overall)}%"></div></div>

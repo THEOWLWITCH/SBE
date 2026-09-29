@@ -140,6 +140,23 @@ async function handleResilience(store, body) {
     return [200, { key, group: publicGroup(id, g) }];
   }
 
+  // כל הכיתות במערכת, עם מספר התשובות — רק למנהלת המערכת.
+  if (action === 'resilList') {
+    const t = await verifyToken(store, body.token);
+    if (!t || t.k !== 'sys') { await pause(); return [403, { error: 'unauthorized' }]; }
+    const counts = {};
+    for (const { key } of await store.list('resil:', { keysOnly: true })) {
+      const [, id, r] = key.split(':');
+      if (!validId(id)) continue;
+      counts[id] = (counts[id] || 0) + (r === 'r' ? 1 : 0);
+    }
+    const ids = Object.keys(counts);
+    const groups = await Promise.all(ids.map((id) => store.get('resil:' + id)));
+    const list = ids.map((id, i) => groups[i] && { ...publicGroup(id, groups[i]), inst: groups[i].inst, responses: counts[id] })
+      .filter(Boolean).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    return [200, { groups: list }];
+  }
+
   const g = await resilGroup(store, body.id);
   if (!g) { await pause(); return [404, { error: 'no such group' }]; }
 
