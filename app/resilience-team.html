@@ -185,6 +185,7 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
 .act-tag{font-size:.72rem;padding:.12rem .5rem;border-radius:99px;background:var(--surface-2);color:var(--muted);font-weight:700}
 .act-tag.kind{background:var(--spoken-soft);color:var(--spoken)}
 .act-tag.circle{background:var(--auto-soft);color:var(--auto)}
+.act-tag.game{background:var(--brick-soft);color:var(--brick)}
 .act-d{font-size:.88rem;line-height:1.65;margin:0}
 .act-m{font-size:.8rem;color:var(--muted);margin:.35rem 0 0;line-height:1.5}
 .sum-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem}
@@ -971,15 +972,20 @@ const SUM_SYSTEM=[
   '5. אתגרים בניסוח אופטימי: לנסח כל אתגר ככיוון צמיחה ("הכיתה יכולה לפתח..."), לא כליקוי. בלי האשמה ובלי הכללות על תלמידים.',
   '6. להישען רק על הנתונים שנמסרו. אסור להמציא ממצאים, מספרים או מקרים, ואין להתייחס לתלמיד/ה מסוים/ת. תחום עם "התנהגות פוגעת מגבילה" — ההמלצה הראשונה בו היא הפחתת הפגיעה. פער בין קבוצות — להציע גם דרך לשיחה בין הקבוצות. הרבה "לא יודע" — להציע דרך להפוך את התחום לגלוי ומדובר.',
   '7. פנייה למחנך/ת בלשון מכבדת ומעשית, בשפה פשוטה וברורה.',
-  'היקף: 3–5 חוזקות, 3–5 אתגרים, ו-3–5 פעילויות בכל אחת משלוש רשימות הפעילויות.',
+  '8. משחקים חברתיים: בכל אחת משלוש רשימות הפעילויות שלב/י לפחות 1–2 משחקים חברתיים — משחקי שיתוף פעולה (לא תחרות של יחיד נגד יחיד), מותאמים לגיל, עם הסבר קצר איך משחקים ומה המטרה. סמן/י אותם ב-"game":true.',
+  '9. סביבת הכיתה: המלצות לעיצוב המרחב הפיזי והחזותי של הכיתה שתומכות בממצאים — למשל סידור ישיבה שמאפשר עבודה בקבוצות, פינות (שיחה, הרגעה, יצירה), לוחות ותצוגות שהתלמידים מפעילים, סמלים ומוסכמות כיתתיים, תצוגת הישגים משותפים — וכל המלצה מקושרת לתחום מהממצאים.',
+  '10. המלצות נוספות: דברים שעולים מהתוצאות ואינם נכנסים לסעיפים האחרים — למשל עבודה עם ההורים, תיאום עם הצוות והיועצ/ת, שיחות עם התלמידים על הממצאים, מדידה חוזרת, או תחום שכדאי לבדוק לעומק. בלי לחזור על מה שכבר הוצע.',
+  'היקף: 3–5 חוזקות, 3–5 אתגרים, 3–5 פעילויות בכל אחת משלוש רשימות הפעילויות, 3–5 המלצות לסביבת הכיתה, ו-2–4 המלצות נוספות.',
   'החזר/י אך ורק JSON תקין, בלי טקסט נוסף, במבנה:',
   '{"intro":"2–3 משפטים — מבט-על על הכיתה",',
   ' "strengths":[{"domain":"שם התחום","text":"מה החוזקה ומה היא מאפשרת"}],',
   ' "strengthActivities":[ACT],',
   ' "leverage":[ACT + "from":"החוזקה שמשמשת מנוף","to":"האתגר שהיא מסייעת בו"],',
   ' "challenges":[{"domain":"שם התחום","text":"האתגר בניסוח אופטימי"}],',
-  ' "challengeActivities":[ACT + "for":"שם התחום"]}',
-  'כאשר ACT הוא {"title":"שם קצר","kind":"חד-פעמית" או "תהליך מתמשך","circle":"כיתה" או "בית הספר" או "קהילה","description":"מה עושים, מי מוביל/ה ואיך — 2–4 משפטים","mechanism":"איזה מנגנון חברתי / עבודת צוות / מיומנות משותפת זה מפתח"}'
+  ' "challengeActivities":[ACT + "for":"שם התחום"],',
+  ' "environment":[{"title":"שם קצר","description":"מה משנים במרחב ואיך — 1–3 משפטים","for":"התחום שזה תומך בו"}],',
+  ' "other":[{"title":"שם קצר","description":"ההמלצה ולמה היא עולה מהתוצאות — 1–3 משפטים"}]}',
+  'כאשר ACT הוא {"title":"שם קצר","kind":"חד-פעמית" או "תהליך מתמשך","game":true רק אם זה משחק חברתי,"circle":"כיתה" או "בית הספר" או "קהילה","description":"מה עושים, מי מוביל/ה ואיך (במשחק — גם איך משחקים) — 2–4 משפטים","mechanism":"איזה מנגנון חברתי / עבודת צוות / מיומנות משותפת זה מפתח"}'
 ].join('\n');
 
 async function generateSummary(){
@@ -990,7 +996,7 @@ async function generateSummary(){
   const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),300000);
   try{
     const res=await fetch(AI_SERVER+'/api/complete',{method:'POST',headers:{'content-type':'application/json'},signal:ctrl.signal,
-      body:JSON.stringify({system:SUM_SYSTEM,messages:[{role:'user',content:inp.text}],maxTokens:8000})});
+      body:JSON.stringify({system:SUM_SYSTEM,messages:[{role:'user',content:inp.text}],maxTokens:12000})});
     const data=await res.json();
     if(!res.ok||data.error)throw new Error(data.error||('שגיאת שרת '+res.status));
     const m=String(data.text||'').match(/\{[\s\S]*\}/);
@@ -1008,6 +1014,7 @@ function actCard(a,extra){
   const c=el2('div','act');
   c.appendChild(el2('div','act-t',a.title||''));
   const tags=el2('div','act-tags');
+  if(a.game)tags.appendChild(el2('span','act-tag game','🎲 משחק חברתי'));
   if(a.kind)tags.appendChild(el2('span','act-tag kind',a.kind));
   if(a.circle)tags.appendChild(el2('span','act-tag circle',a.circle));
   if(extra)tags.appendChild(el2('span','act-tag',extra));
@@ -1022,13 +1029,15 @@ function textList(items){
   return ul;
 }
 function summaryPlainText(c){
-  const d=c.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  מה זה מפתח: '+a.mechanism:'');
+  const d=c.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.game?'משחק חברתי':'',a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  מה זה מפתח: '+a.mechanism:'');
   L.push('סיכום והמלצות — כיתה '+c.cls+' ('+c.band+')','',d.intro||'','','1. חוזקות הכיתה');
   (d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','1.1 פעילויות ותהליכים להעצמת החוזקות');(d.strengthActivities||[]).forEach(a=>L.push(act(a)));
   L.push('','1.2 החוזקות כמנוף להתמודדות עם האתגרים');(d.leverage||[]).forEach(a=>L.push(act(a,a.from&&a.to?a.from+' ← '+a.to:'')));
   L.push('','2. אתגרים','','2.1 האתגרים — כיווני צמיחה');(d.challenges||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','2.2 פעילויות ותהליכים להתמודדות');(d.challengeActivities||[]).forEach(a=>L.push(act(a,a.for)));
+  if((d.environment||[]).length){L.push('','3. עיצוב סביבת הכיתה');d.environment.forEach(x=>L.push('• '+x.title+(x.for?' ['+x.for+']':'')+'\n  '+x.description));}
+  if((d.other||[]).length){L.push('','4. המלצות נוספות');d.other.forEach(x=>L.push('• '+x.title+'\n  '+x.description));}
   return L.join('\n');
 }
 
@@ -1040,7 +1049,7 @@ function renderSummary(){
   const cached=loadSummaryCache(cfg);
   const head=el2('div','card no-print');
   head.appendChild(el2('h2',null,'סיכום והמלצות למחנך/ת'));
-  head.appendChild(el2('p',null,'המודל מנתח את הממצאים ומציע: חוזקות הכיתה ואיך להעצים אותן ולהשתמש בהן כמנוף, ואתגרים בניסוח אופטימי עם פעילויות ותהליכים — בדגש על עבודת צוות ומנגנונים חברתיים, בהתאמה לשכבת הגיל.'));
+  head.appendChild(el2('p',null,'המודל מנתח את הממצאים ומציע: חוזקות הכיתה ואיך להעצים אותן ולהשתמש בהן כמנוף, אתגרים בניסוח אופטימי עם פעילויות, תהליכים ומשחקים חברתיים, עיצוב סביבת הכיתה והמלצות נוספות — בדגש על עבודת צוות ומנגנונים חברתיים, בהתאמה לשכבת הגיל.'));
   const acts=el2('div','sum-actions');
   const gen=el2('button','btn',SUM_BUSY?'מפיק את הסיכום... (דקה–שלוש)':cached?'הפקה מחדש':'הפקת סיכום והמלצות');
   gen.id='btn-sum-gen';gen.disabled=SUM_BUSY;gen.addEventListener('click',generateSummary);acts.appendChild(gen);
@@ -1072,6 +1081,16 @@ function renderSummary(){
   card.appendChild(textList(d.challenges));
   card.appendChild(el2('h3',null,'2.2 פעילויות ותהליכים להתמודדות'));
   (d.challengeActivities||[]).forEach(a=>card.appendChild(actCard(a,a.for)));
+
+  // סיכום שהופק לפני שנוספו הסעיפים האלה — בלי כותרות ריקות
+  if((d.environment||[]).length){
+    card.appendChild(el2('h2',null,'3. עיצוב סביבת הכיתה'));
+    d.environment.forEach(x=>card.appendChild(actCard({title:x.title,description:x.description},x.for)));
+  }
+  if((d.other||[]).length){
+    card.appendChild(el2('h2',null,'4. המלצות נוספות'));
+    d.other.forEach(x=>card.appendChild(actCard({title:x.title,description:x.description})));
+  }
 
   card.appendChild(el2('p',null,'הסיכום הופק על ידי מודל שפה על סמך תוצאות השאלון בלבד. הוא נקודת פתיחה לחשיבה ולשיחה עם הצוות, ולא מחליף שיקול דעת מקצועי.')).style.cssText='font-size:.78rem;color:var(--muted);margin-top:1.2rem';
   box.appendChild(card);
