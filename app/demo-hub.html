@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>S.B.E · הדגמת המערכת</title>
+<script>
+// המסך הזה פותח את כל מסכי המערכת — רק למנהלת המערכת. כל כניסה אחרת
+// חוזרת למסך הבית שלה (או למסך הכניסה, אם אין כניסה בלשונית).
+(function(){ var h = null; try { h = sessionStorage.getItem("sbe.session.homeUrl"); } catch(e){}
+  if (h !== "admin.html?role=sys") location.replace(h || "entry.html"); })();
+</script>
 <style>
   :root{
     --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
@@ -128,6 +134,10 @@ const SECTIONS = [
   { title: "תרגול עצמי", items: [
     { label: "תרגול עצמי — בחירת תרחיש", file: "practice.html" },
     { label: "חציות קווים אדומים (תצוגת מנחה)", file: "practice-crossings.html" },
+  ]},
+  { title: "חוסן חברתי", items: [
+    { label: "חוסן חברתי — מסך מחנך/כת (הגדרת קבוצה, QR, תוצאות)", file: "resilience-team.html" },
+    { label: "שאלון חוסן — מסך תלמיד/ה", file: "resilience-fill.html" },
   ]},
   { title: "ניהול וחיפוש", items: [
     { label: "חיפוש במאגר התרחישים", file: "search.html" },
