@@ -4,12 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>S.B.E · הדגמת המערכת</title>
-<script>
-// המסך הזה פותח את כל מסכי המערכת — רק למנהלת המערכת. כל כניסה אחרת
-// חוזרת למסך הבית שלה (או למסך הכניסה, אם אין כניסה בלשונית).
-(function(){ var h = null; try { h = sessionStorage.getItem("sbe.session.homeUrl"); } catch(e){}
-  if (h !== "admin.html?role=sys") location.replace(h || "entry.html"); })();
-</script>
+<script src="lib/access-guard.js"></script>
 <style>
   :root{
     --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;

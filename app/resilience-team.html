@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>חוסן חברתי — ניהול</title>
+<script src="lib/access-guard.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -173,8 +174,10 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
   <div class="lock-icon">🔒</div>
   <div class="lock-msg">השאלון פתוח למילוי</div>
   <div class="lock-sub">הצגת תוצאות נעולה כדי שתשובות הנשאלים לא יושפעו מתשובות אחרים.</div>
-  <button class="btn btn-ghost btn-sm" id="btn-unlock">הצג תוצאות זמנית (מנהל בלבד)</button>
-  <a href="resilience-fill.html" class="btn btn-sm">עבור למילוי שאלון</a>
+  <button class="btn btn-sm" id="btn-lock-close">סגירת השאלון והצגת התוצאות</button>
+  <button class="btn btn-ghost btn-sm" id="btn-unlock">הצגת התוצאות זמנית, בלי לסגור</button>
+  <a href="resilience-fill.html" class="btn btn-ghost btn-sm" id="lock-fill-link">מילוי השאלון במכשיר הזה</a>
+  <button class="btn btn-ghost btn-sm" id="btn-lock-back">חזרה</button>
 </div>
 
 <!-- ── Tab Bar ── -->
@@ -198,7 +201,12 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
     <input type="text" id="cfg-cls" placeholder='לדוגמה: ג׳2 — מחנכת: רחל' maxlength="30">
     <label for="cfg-band">שכבת גיל</label>
     <select id="cfg-band"><option value="">— בחר/י שכבה —</option></select>
-    <button class="btn" id="btn-cfg-save" disabled>שמור הגדרה</button>
+    <button class="btn" id="btn-cfg-save" disabled>פתיחת הכיתה</button>
+    <p id="cfg-msg" style="font-size:.85rem;font-weight:600;margin-top:.6rem"></p>
+    <hr style="margin:1rem 0;border:none;border-top:1px solid var(--hair)">
+    <label for="restore-code">כבר פתחת כיתה במכשיר אחר? קוד הניהול שלה</label>
+    <input type="text" id="restore-code" dir="ltr" autocomplete="off" spellcheck="false" placeholder="xxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxx">
+    <button class="btn btn-ghost btn-sm" id="btn-restore">שחזור הכיתה</button>
   </div>
 
   <div class="card" id="setup-active-card" style="display:none">
@@ -213,8 +221,14 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
       <div id="qr-canvas"></div>
     </div>
     <hr style="margin:1rem 0;border:none;border-top:1px solid var(--c-border)">
+    <p id="open-state" style="font-weight:700;margin:.25rem 0"></p>
+    <button class="btn btn-sm" id="btn-toggle-open">סגירת השאלון והצגת התוצאות</button>
     <div class="stats" id="setup-stats"></div>
-    <button class="btn btn-ghost btn-sm" id="btn-cfg-reset" style="margin-top:.5rem">אפס הגדרה (מחק נתונים)</button>
+    <button class="btn btn-ghost btn-sm" id="btn-refresh">רענון התוצאות</button>
+    <p id="srv-status" style="font-size:.8rem;margin:.4rem 0"></p>
+    <p style="font-size:.8rem;margin:.75rem 0 .25rem">קוד ניהול הכיתה — לשחזור הכיתה במכשיר אחר. לא למסור לתלמידים:</p>
+    <div class="link-box" id="manage-code"></div>
+    <button class="btn btn-ghost btn-sm" id="btn-cfg-reset" style="margin-top:.5rem">מחיקת הכיתה וכל התשובות</button>
   </div>
 </div>
 
@@ -248,9 +262,12 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
 
 const R  = window.SBE_RES;
 const SC = window.SBE_SCORE;
-const LS = 'sbe.resilience.v1';
-const LK = 'sbe.locked';
-const CFG= 'sbe.cfg';
+// הכיתה והתשובות נשמרות בשרת (Render → Supabase). במכשיר של המחנך/כת נשמרים
+// רק מזהה הכיתה ומפתח הניהול שלה, שבלעדיו אי אפשר לראות את התוצאות.
+const API = 'https://sbe-server.onrender.com/api/access';
+const CFG = 'sbe.resil.group';
+let RESP = [];          // התשובות שנטענו מהשרת
+let GROUP = null;       // { id, cls, band, open } כפי שהשרת מחזיר
 
 if(!R||!SC){document.body.innerHTML='<p style="padding:2rem;color:red">שגיאה: קובץ הנתונים לא נטען.</p>';return;}
 
@@ -261,26 +278,67 @@ const cfgBand = document.getElementById('cfg-band');
 R.BANDS.forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=b.label+' ('+b.range+')';cfgBand.appendChild(o);});
 
 // ── Storage helpers ──
-function loadStore(){try{return JSON.parse(localStorage.getItem(LS)||'{}')||{};}catch{return{};}}
-function loadCfg(){try{return JSON.parse(localStorage.getItem(CFG)||'null');}catch{return null;}}
+function loadStore(){return {resp:RESP};}
+function loadCfg(){
+  let c=null;try{c=JSON.parse(localStorage.getItem(CFG)||'null');}catch{}
+  return c&&c.id&&c.key ? c : null;
+}
 function saveCfg(c){try{localStorage.setItem(CFG,JSON.stringify(c));}catch{}}
-function clearAll(){try{localStorage.removeItem(LS);localStorage.removeItem(CFG);localStorage.removeItem(LK);}catch{}}
+function clearAll(){try{localStorage.removeItem(CFG);}catch{} RESP=[];GROUP=null;}
+
+function api(body){
+  return fetch(API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)})
+    .then(r=>r.json().catch(()=>({})).then(d=>{d._status=r.status;return d;}));
+}
+function sessionToken(){
+  try{return sessionStorage.getItem('sbe.session.token')||'';}catch{return '';}
+}
+const statusEl=document.getElementById('srv-status');
+function setStatus(t,isErr){statusEl.textContent=t;statusEl.style.color=isErr?'var(--brick)':'var(--muted)';}
+
+// טעינת התשובות מהשרת. נקרא בכניסה, בכפתור "רענון", וכל 30 שניות.
+let loading=false;
+function refresh(){
+  const cfg=loadCfg(); if(!cfg||loading) return Promise.resolve();
+  loading=true; setStatus('טוען תשובות מהשרת... (לפעמים עד דקה)');
+  return api({action:'resilResults',id:cfg.id,key:cfg.key}).then(d=>{
+    if(d.group){GROUP=d.group;RESP=d.resp||[];setStatus('עודכן: '+new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}));}
+    else if(d._status===404||d._status===403){setStatus('הכיתה הזאת כבר לא קיימת בשרת. אפשר לפתוח כיתה חדשה.',true);clearAll();}
+    else setStatus('אין כרגע חיבור לשרת. התוצאות יתעדכנו כשיחזור.',true);
+  }).catch(()=>setStatus('אין כרגע חיבור לשרת. התוצאות יתעדכנו כשיחזור.',true))
+    .finally(()=>{loading=false;renderAll();});
+}
 
 // ── Lock logic ──
-function isLocked(){return localStorage.getItem(LK)==='1'&&!_tempView;}
+// כל עוד השאלון פתוח למילוי, לשוניות התוצאות נעולות (כדי שהתשובות לא יושפעו
+// ממה שכבר נענה). "הצג זמנית" פותח לצפייה בדף הזה בלבד; "סגירת השאלון" עוצרת
+// קבלת תשובות חדשות.
+function isLocked(){return !!(GROUP&&GROUP.open)&&!_tempView;}
 
 document.getElementById('btn-unlock').addEventListener('click',function(){
   _tempView=true;
   document.getElementById('lock-overlay').style.display='none';
   renderAll();
 });
+document.getElementById('btn-lock-close').addEventListener('click',function(){
+  document.getElementById('lock-overlay').style.display='none';
+  setOpen(false);
+});
+document.getElementById('btn-lock-back').addEventListener('click',function(){
+  document.getElementById('lock-overlay').style.display='none';
+});
 
 function checkLock(){
-  if(isLocked()){
-    document.getElementById('lock-overlay').style.display='flex';
-  } else {
-    document.getElementById('lock-overlay').style.display='none';
-  }
+  if(!isLocked()) document.getElementById('lock-overlay').style.display='none';
+}
+
+function setOpen(open){
+  const cfg=loadCfg(); if(!cfg) return;
+  setStatus(open?'פותח את השאלון...':'סוגר את השאלון...');
+  api({action:'resilSetOpen',id:cfg.id,key:cfg.key,open}).then(d=>{
+    if(d.group){GROUP=d.group;setStatus(open?'השאלון פתוח למילוי.':'השאלון נסגר. אפשר לראות את התוצאות.');}
+    else setStatus('הפעולה לא הצליחה. נסו שוב.',true);
+  }).catch(()=>setStatus('אין כרגע חיבור לשרת. נסו שוב.',true)).finally(renderAll);
 }
 
 // ── Tabs ──
@@ -290,7 +348,7 @@ const LOCKED_TABS = new Set(['t-scores','t-voices','t-report']);
 tabBtns.forEach(btn=>{
   btn.addEventListener('click',function(){
     const id=this.dataset.tab;
-    if(LOCKED_TABS.has(id)&&isLocked())return;
+    if(LOCKED_TABS.has(id)&&isLocked()){document.getElementById('lock-overlay').style.display='flex';return;}
     tabBtns.forEach(b=>b.classList.remove('active'));
     this.classList.add('active');
     document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
@@ -313,17 +371,48 @@ const btnCfgSave = document.getElementById('btn-cfg-save');
 function chkCfg(){btnCfgSave.disabled=!(cfgCls.value.trim()&&cfgBand.value!=='');}
 [cfgCls,cfgBand].forEach(el=>el.addEventListener('input',chkCfg));
 
+const cfgMsg=document.getElementById('cfg-msg');
 btnCfgSave.addEventListener('click',function(){
-  saveCfg({cls:cfgCls.value.trim(),band:parseInt(cfgBand.value)});
-  renderSetup();renderAll();
+  const cls=cfgCls.value.trim(), band=parseInt(cfgBand.value);
+  btnCfgSave.disabled=true;cfgMsg.style.color='var(--muted)';cfgMsg.textContent='פותח את הכיתה בשרת... (לפעמים עד דקה)';
+  api({action:'resilCreate',token:sessionToken(),cls,band}).then(d=>{
+    if(d.group&&d.key){
+      saveCfg({id:d.group.id,key:d.key,cls:d.group.cls,band:d.group.band});
+      GROUP=d.group;RESP=[];cfgMsg.textContent='';
+      renderAll();return;
+    }
+    cfgMsg.style.color='var(--brick)';
+    cfgMsg.textContent = d.error==='module off' ? 'מודול החוסן החברתי לא פעיל במוסד שלך. פני למנהלת המערכת.'
+      : d._status===403 ? 'צריך להיכנס מחדש כמחנך/כת עם קוד המוסד, ואז לפתוח את הכיתה.'
+      : 'הפתיחה לא הצליחה. נסו שוב בעוד רגע.';
+  }).catch(()=>{cfgMsg.style.color='var(--brick)';cfgMsg.textContent='אין כרגע חיבור לשרת. נסו שוב בעוד רגע.';})
+    .finally(chkCfg);
+});
+
+// שחזור כיתה קיימת במכשיר אחר, עם קוד הניהול שמוצג במסך הכיתה.
+document.getElementById('btn-restore').addEventListener('click',function(){
+  const raw=document.getElementById('restore-code').value.trim();
+  const m=raw.match(/^([a-z0-9]{8,20})\.([a-z0-9]{8,40})$/);
+  if(!m){cfgMsg.style.color='var(--brick)';cfgMsg.textContent='קוד הניהול לא תקין. הוא נראה כך: xxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxx';return;}
+  cfgMsg.style.color='var(--muted)';cfgMsg.textContent='בודק את הקוד...';
+  api({action:'resilResults',id:m[1],key:m[2]}).then(d=>{
+    if(!d.group){cfgMsg.style.color='var(--brick)';cfgMsg.textContent='הקוד לא מתאים לאף כיתה.';return;}
+    saveCfg({id:m[1],key:m[2],cls:d.group.cls,band:d.group.band});
+    GROUP=d.group;RESP=d.resp||[];cfgMsg.textContent='';renderAll();
+  }).catch(()=>{cfgMsg.style.color='var(--brick)';cfgMsg.textContent='אין כרגע חיבור לשרת. נסו שוב בעוד רגע.';});
 });
 
 document.getElementById('btn-cfg-reset').addEventListener('click',function(){
-  if(!confirm('זה ימחק את כל נתוני הכיתה והתשובות. להמשיך?'))return;
-  clearAll();_tempView=false;
-  cfgCls.value='';cfgBand.value='';chkCfg();
-  renderSetup();renderAll();checkLock();
+  if(!confirm('זה ימחק מהשרת את הכיתה ואת כל התשובות שנאספו בה. להמשיך?'))return;
+  const cfg=loadCfg();
+  const done=()=>{clearAll();_tempView=false;cfgCls.value='';cfgBand.value='';chkCfg();renderAll();checkLock();setStatus('');};
+  if(!cfg){done();return;}
+  api({action:'resilDelete',id:cfg.id,key:cfg.key}).then(d=>{
+    if(d.ok||d._status===404)done(); else setStatus('המחיקה לא הצליחה. נסו שוב.',true);
+  }).catch(()=>setStatus('אין כרגע חיבור לשרת. נסו שוב.',true));
 });
+document.getElementById('btn-refresh').addEventListener('click',refresh);
+document.getElementById('btn-toggle-open').addEventListener('click',function(){setOpen(!(GROUP&&GROUP.open));});
 
 document.getElementById('btn-copy-link').addEventListener('click',function(){
   const link=document.getElementById('fill-link').textContent;
@@ -341,8 +430,13 @@ function renderSetup(){
   document.getElementById('setup-summary').textContent='כיתה: '+cfg.cls+' | שכבה: '+R.BANDS[cfg.band].label;
 
   const base=location.href.replace(/[^/]*$/,'resilience-fill.html');
-  const link=base+'?cls='+encodeURIComponent(cfg.cls)+'&band='+cfg.band;
+  const link=base+'?g='+cfg.id;
   document.getElementById('fill-link').textContent=link;
+  document.getElementById('lock-fill-link').href=link;
+  document.getElementById('manage-code').textContent=cfg.id+'.'+cfg.key;
+  const open=!GROUP||GROUP.open;
+  document.getElementById('open-state').textContent=GROUP?(open?'השאלון פתוח למילוי':'השאלון סגור — לא מתקבלות תשובות חדשות'):'';
+  document.getElementById('btn-toggle-open').textContent=open?'סגירת השאלון והצגת התוצאות':'פתיחת השאלון מחדש';
 
   // QR code — generated once; if library unavailable, section stays hidden
   const qrWrap=document.getElementById('qr-wrap');
@@ -614,8 +708,8 @@ function renderAll(){
 
 // ── Init ──
 renderAll();
-checkLock();
-window.addEventListener('storage',function(e){if(e.key===LK){checkLock();refreshTabLocks();}});
+refresh();
+setInterval(function(){if(!document.hidden)refresh();},30000);
 
 })();
 </script>

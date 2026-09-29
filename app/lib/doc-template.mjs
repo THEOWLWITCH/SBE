@@ -25,6 +25,10 @@ export const REPORT_WIDGET = readFileSync(join(HERE, 'report-widget.html'), 'utf
 // ידנית רק כפתור הדיווח) — עכשיו חלק מהתבנית, לא יכול להיעלם שוב.
 export const NAV_WIDGET = readFileSync(join(HERE, 'nav-widget.html'), 'utf8');
 
-const R = createRenderer({ MARK, REPORT_WIDGET, NAV_WIDGET });
+// שמירת ההרשאות לכל דף (lib/access-guard.js) — מוטמעת בראש כל תוצר, כדי
+// שתעבוד גם ב-app/ וגם ב-products/ בלי תלות בנתיב היחסי.
+export const GUARD = '<script>' + readFileSync(join(HERE, 'access-guard.js'), 'utf8') + '</script>';
+
+const R = createRenderer({ MARK, REPORT_WIDGET, NAV_WIDGET, GUARD });
 export const { page, card, renderEduDocs, renderRoleDocs, esc, sec, paras, list, rows, red, blk, tpCard, CSS, CARD_CSS, FONTS } = R;
 export default R;
