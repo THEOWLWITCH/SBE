@@ -1,11 +1,6 @@
 <meta charset="UTF-8">
 <title>תוכן עניינים — כל המערכת</title>
-<script>
-// המסך הזה פותח את כל מסכי המערכת — רק למנהלת המערכת. כל כניסה אחרת
-// חוזרת למסך הבית שלה (או למסך הכניסה, אם אין כניסה בלשונית).
-(function(){ var h = null; try { h = sessionStorage.getItem("sbe.session.homeUrl"); } catch(e){}
-  if (h !== "admin.html?role=sys") location.replace(h || "entry.html"); })();
-</script>
+<script src="lib/access-guard.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">

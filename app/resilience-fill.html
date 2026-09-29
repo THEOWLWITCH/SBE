@@ -128,6 +128,7 @@ select:focus,input:focus{outline:2px solid var(--spoken);outline-offset:1px}
     <label for="s-code" id="lbl-code">הקוד האישי שלי</label>
     <input type="text" id="s-code" placeholder="קוד סודי — רק אתה/את רואה אותו" maxlength="30" autocomplete="off" dir="ltr">
     <p style="font-size:.8rem;margin-top:-.5rem">הקוד מאפשר לאחד תשובות בין סיבובים. לא נשמרת כל זהות.</p>
+    <p id="fill-msg" style="display:none;font-size:.88rem;font-weight:600"></p>
     <button class="btn" id="btn-start" disabled>התחל/י מילוי</button>
   </div>
 </div>
@@ -148,12 +149,20 @@ select:focus,input:focus{outline:2px solid var(--spoken);outline-offset:1px}
   </div>
 </div>
 
+<!-- ── מסך שליחה ── -->
+<div id="s-send" class="scr">
+  <div class="card" id="send-box">
+    <p id="send-msg" style="text-align:center;font-weight:600"></p>
+    <button class="btn" id="btn-retry" style="display:none">שליחה חוזרת</button>
+  </div>
+</div>
+
 <!-- ── מסך 3: סיום ── -->
 <div id="s-done" class="scr">
   <div class="card">
     <div class="done-icon">✓</div>
     <div class="done-msg">תודה על המילוי!</div>
-    <div class="info-box">תשובותיך נשמרו. ניתן לסגור את הדפדפן.</div>
+    <div class="info-box">התשובות נשלחו ונשמרו. אפשר לסגור את הדפדפן.</div>
     <p style="text-align:center;font-size:.9rem;color:var(--c-muted)">
       אם ברצונך למלא סיבוב נוסף או לתקן תשובות, לחץ/י למטה.
     </p>
@@ -167,8 +176,7 @@ select:focus,input:focus{outline:2px solid var(--spoken);outline-offset:1px}
 'use strict';
 const R  = window.SBE_RES;
 const SC = window.SBE_SCORE;
-const LS = 'sbe.resilience.v1';
-const LK = 'sbe.locked';
+const API = 'https://sbe-server.onrender.com/api/access';
 
 if(!R||!SC){document.body.innerHTML='<p style="padding:2rem;color:red">שגיאה: קובץ הנתונים לא נטען.</p>';return;}
 
@@ -178,12 +186,15 @@ document.getElementById('lbl-cls').textContent    = R.FORMQ.q_class;
 document.getElementById('lbl-voice').textContent  = R.FORMQ.q_voice;
 document.getElementById('lbl-code').textContent   = R.FORMQ.q_code;
 
-// ── URL params pre-fill ──
+// התשובות נשמרות בשרת, בכיתה שהמחנך/כת פתח/ה (?g= בקישור או ב-QR) — כך הן
+// מגיעות למסך התוצאות של המחנך/כת מכל טלפון. שכבה וכיתה נקבעות לפי הכיתה.
 const qp  = new URLSearchParams(location.search);
+const gid = qp.get('g') || '';
 const sBand  = document.getElementById('s-band');
 const sVoice = document.getElementById('s-voice');
 const iCls   = document.getElementById('s-cls');
 const iCode  = document.getElementById('s-code');
+const msg    = document.getElementById('fill-msg');
 
 R.BANDS.forEach(b=>{
   const o=document.createElement('option');o.value=b.id;
@@ -193,51 +204,49 @@ R.VOICES.forEach(v=>{
   const o=document.createElement('option');o.value=v.id;
   o.textContent=v.label;sVoice.appendChild(o);
 });
+if(qp.get('v')) sVoice.value=qp.get('v');
+sBand.disabled=true; iCls.readOnly=true;
 
-if(qp.get('cls'))  iCls.value  = qp.get('cls');
-if(qp.get('band')) sBand.value = qp.get('band');
-if(qp.get('v'))    sVoice.value= qp.get('v');
+function api(body){
+  return fetch(API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)})
+    .then(r=>r.json().catch(()=>({})).then(d=>{d._status=r.status;return d;}));
+}
+function showMsg(text,isErr){msg.textContent=text;msg.style.display=text?'':'none';msg.style.color=isErr?'var(--brick)':'var(--muted)';}
 
 // ── validation ──
 const btnStart = document.getElementById('btn-start');
-function chk(){btnStart.disabled=!(sBand.value!==''&&sVoice.value!==''&&iCls.value.trim()&&iCode.value.trim());}
-[sBand,sVoice,iCls,iCode].forEach(el=>el.addEventListener('input',chk));
+let group=null;
+function chk(){btnStart.disabled=!(group&&group.open&&sVoice.value!==''&&iCode.value.trim());}
+[sVoice,iCode].forEach(el=>el.addEventListener('input',chk));
 chk();
+
+if(!gid){
+  showMsg('הקישור לא שלם. בקשו מהמחנך/כת את הקישור או את קוד ה-QR של הכיתה.',true);
+} else {
+  showMsg('טוען את פרטי הכיתה... (לפעמים עד דקה)');
+  api({action:'resilInfo',id:gid}).then(d=>{
+    if(!d.group){showMsg(d._status===404?'הכיתה הזאת לא קיימת (אולי נמחקה). בקשו קישור חדש מהמחנך/כת.':'אין כרגע חיבור לשרת. נסו לרענן בעוד רגע.',true);return;}
+    group=d.group;
+    sBand.value=String(group.band); iCls.value=group.cls;
+    if(!group.open){showMsg('השאלון של הכיתה הזאת נסגר.',true);}
+    else showMsg('');
+    chk();
+  }).catch(()=>showMsg('אין כרגע חיבור לשרת. נסו לרענן בעוד רגע.',true));
+}
 
 // ── state ──
 let bandItems=[], cursor=0, answers=[], session=null;
 
 function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
 
-function lockNow(){try{localStorage.setItem(LK,'1');}catch(e){}}
-function unlockFill(){try{localStorage.removeItem(LK);}catch(e){}}
-
-function loadStore(){try{return JSON.parse(localStorage.getItem(LS)||'{}')||{};}catch{return{};}}
-function saveRecord(rec){
-  const st=loadStore();
-  if(!st.resp)st.resp=[];
-  st.resp=st.resp.filter(r=>!(r.v===rec.v&&r.k===rec.k&&r.rd===rec.rd));
-  st.resp.push(rec);
-  try{localStorage.setItem(LS,JSON.stringify(st));}catch(e){}
-}
-
 btnStart.addEventListener('click',function(){
-  const band  = parseInt(sBand.value);
+  const band  = group.band;
   const voice = parseInt(sVoice.value);
-  const cls   = iCls.value.trim();
   const code  = iCode.value.trim();
-  const key   = SC.hashCode(voice, code);
-
-  const st    = loadStore();
-  const prev  = (st.resp||[]).filter(r=>r.v===voice&&r.k===key).map(r=>r.rd);
-  const round = prev.length ? Math.max(...prev)+1 : 1;
-
-  session   = {band, voice, cls, code, key, round};
+  session   = {band, voice, key:SC.hashCode(voice, code)};
   bandItems = R.ITEMS.filter(it=>it.b===band);
   answers   = new Array(bandItems.length).fill(null);
   cursor    = 0;
-
-  lockNow();
   show('s-q');
   renderItem();
 });
@@ -272,14 +281,27 @@ function renderItem(){
 document.getElementById('btn-next').addEventListener('click',function(){cursor++;renderItem();});
 document.getElementById('btn-prev').addEventListener('click',function(){cursor--;renderItem();});
 
+// שליחה לשרת. אם נכשלה — התשובות נשארות בדף וכפתור "שליחה חוזרת" מנסה שוב.
+const sendMsg=document.getElementById('send-msg');
+const btnRetry=document.getElementById('btn-retry');
 function finish(){
-  saveRecord({v:session.voice,k:session.key,a:answers.slice(),rd:session.round,dt:new Date().toISOString().slice(0,10),ts:Date.now()});
-  unlockFill();
-  show('s-done');
+  show('s-send');
+  sendMsg.textContent='שולח את התשובות... (לפעמים עד דקה)';sendMsg.style.color='var(--muted)';
+  btnRetry.style.display='none';
+  api({action:'resilSubmit',id:gid,v:session.voice,k:session.key,a:answers.slice()}).then(d=>{
+    if(d.ok){show('s-done');return;}
+    sendMsg.style.color='var(--brick)';
+    if(d._status===409){sendMsg.textContent='השאלון נסגר בינתיים, והתשובות לא נשמרו.';return;}
+    sendMsg.textContent='השליחה לא הצליחה. התשובות שמורות בדף — נסו שוב.';btnRetry.style.display='';
+  }).catch(()=>{
+    sendMsg.style.color='var(--brick)';
+    sendMsg.textContent='אין חיבור לשרת. התשובות שמורות בדף — נסו שוב בעוד רגע.';btnRetry.style.display='';
+  });
 }
+btnRetry.addEventListener('click',finish);
 
 document.getElementById('btn-again').addEventListener('click',function(){
-  cursor=0;answers=[];session=null;show('s-setup');
+  cursor=0;answers=[];session=null;iCode.value='';chk();show('s-setup');
 });
 
 })();

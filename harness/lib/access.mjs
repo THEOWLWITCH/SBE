@@ -2,8 +2,8 @@
 // ולא בקוד הדף — כך שאי אפשר לקרוא אותם ב"הצגת מקור".
 // סיסמאות נשמרות כ-hash (scrypt + salt). הקוד למשוב לעבודות נשמר כפי שהוא,
 // כי מנהלת המערכת צריכה לראות אותו כדי למסור אותו.
-// store: { get(key) → value|null, set(key, value), del(key) }.
-import { scryptSync, randomBytes, timingSafeEqual } from 'node:crypto';
+// store: { get(key) → value|null, set(key, value), del(key), list(prefix), delPrefix(prefix) }.
+import { scryptSync, randomBytes, timingSafeEqual, createHmac, createHash } from 'node:crypto';
 
 // בתוקף רק עד שמנהלת המערכת מחליפה סיסמה בפעם הראשונה (אלה הסיסמאות שהיו
 // כתובות עד עכשיו ב-entry.html).
@@ -66,6 +66,120 @@ async function status(store) {
   };
 }
 
+// ── אסימון כניסה חתום ──
+// אחרי כניסה מוצלחת השרת מחזיר אסימון חתום (HMAC) עם סוג הכניסה, המוסד ותוקף.
+// הדפדפן לא יכול לזייף אותו, ולכן פעולות שדורשות כניסה (למשל פתיחת כיתת חוסן)
+// נבדקות מולו כאן בשרת. המפתח נוצר פעם אחת ונשמר במאגר (token-secret).
+const TOKEN_HOURS = 12;
+const b64u = (buf) => Buffer.from(buf).toString('base64url');
+
+async function tokenSecret(store) {
+  let rec = await store.get('token-secret');
+  if (!rec) { rec = { secret: randomBytes(32).toString('hex') }; await store.set('token-secret', rec); }
+  return rec.secret;
+}
+
+async function signToken(store, payload) {
+  const body = b64u(JSON.stringify({ ...payload, exp: Date.now() + TOKEN_HOURS * 3600e3 }));
+  const sig = createHmac('sha256', await tokenSecret(store)).update(body).digest('base64url');
+  return body + '.' + sig;
+}
+
+export async function verifyToken(store, token) {
+  if (typeof token !== 'string' || !token.includes('.')) return null;
+  const [body, sig] = token.split('.');
+  const want = createHmac('sha256', await tokenSecret(store)).update(body).digest('base64url');
+  if (!same(sig, want)) return null;
+  try {
+    const p = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
+    return p.exp > Date.now() ? p : null;
+  } catch { return null; }
+}
+
+// ── חוסן חברתי: כיתות ותשובות ──
+// כיתה: resil:<id> → { inst, cls, band, open, keyHash, createdAt }.
+// תשובה: resil:<id>:r:<קול>:<מפתח נשאל>:<סבב> → { v, k, a, rd, dt, ts } — שורה
+// לכל תשובה, כדי ששני תלמידים ששולחים באותו רגע לא ידרסו זה את זה.
+// מפתח הכיתה (key) נמסר רק למחנך/כת שפתח/ה אותה, ורק איתו (או עם כניסת מנהלת
+// המערכת) אפשר לראות תוצאות, לסגור את השאלון או למחוק.
+const RESIL_ITEMS = { 0: 62, 1: 75, 2: 75, 3: 75 }; // מספר ההיגדים בכל שכבה (resilience-data.js)
+const RESIL_VOICES = 5, RESIL_LEVELS = 5, RESIL_MAX_RESP = 3000;
+const ID_ALPHABET = 'abcdefghijkmnpqrstuvwxyz23456789';
+const randId = (n) => { let s = ''; for (const b of randomBytes(n)) s += ID_ALPHABET[b % ID_ALPHABET.length]; return s; };
+const sha = (x) => createHash('sha256').update(String(x)).digest('hex');
+const validId = (id) => typeof id === 'string' && /^[a-z0-9]{8,20}$/.test(id);
+
+async function resilGroup(store, id) {
+  return validId(id) ? store.get('resil:' + id) : null;
+}
+
+async function resilCanManage(store, body, g) {
+  if (typeof body.key === 'string' && body.key && same(sha(body.key), g.keyHash)) return true;
+  const t = await verifyToken(store, body.token);
+  return !!t && t.k === 'sys';
+}
+
+const publicGroup = (id, g) => ({ id, cls: g.cls, band: g.band, open: g.open !== false, createdAt: g.createdAt });
+
+async function handleResilience(store, body) {
+  const { action } = body;
+
+  if (action === 'resilCreate') {
+    const t = await verifyToken(store, body.token);
+    if (!t || (t.k !== 'inst' && t.k !== 'sys')) { await pause(); return [403, { error: 'unauthorized' }]; }
+    if (t.k === 'inst') {
+      const mods = { ...DEFAULT_MODULES, ...((await store.get('modules:' + t.inst)) || {}) };
+      if (mods.resilience === false) return [403, { error: 'module off' }];
+    }
+    const cls = String(body.cls || '').trim().slice(0, 40);
+    const band = Number(body.band);
+    if (!cls || !(band in RESIL_ITEMS)) return [400, { error: 'missing fields' }];
+    const id = randId(12), key = randId(20);
+    const g = { inst: t.inst || '', cls, band, open: true, keyHash: sha(key), createdAt: new Date().toISOString() };
+    await store.set('resil:' + id, g);
+    return [200, { key, group: publicGroup(id, g) }];
+  }
+
+  const g = await resilGroup(store, body.id);
+  if (!g) { await pause(); return [404, { error: 'no such group' }]; }
+
+  if (action === 'resilInfo') return [200, { group: publicGroup(body.id, g) }];
+
+  if (action === 'resilSubmit') {
+    if (g.open === false) return [409, { error: 'closed' }];
+    const v = Number(body.v), k = String(body.k || ''), a = body.a;
+    if (!Number.isInteger(v) || v < 0 || v >= RESIL_VOICES) return [400, { error: 'bad voice' }];
+    if (!/^[a-z0-9]{4,24}$/.test(k)) return [400, { error: 'bad key' }];
+    if (!Array.isArray(a) || a.length !== RESIL_ITEMS[g.band]
+      || !a.every((x) => Number.isInteger(x) && x >= 0 && x < RESIL_LEVELS)) return [400, { error: 'bad answers' }];
+    const all = await store.list('resil:' + body.id + ':r:', { keysOnly: true });
+    if (all.length >= RESIL_MAX_RESP) return [429, { error: 'full' }];
+    const mine = 'resil:' + body.id + ':r:' + v + ':' + k + ':';
+    const rd = all.filter((x) => x.key.startsWith(mine)).length + 1;
+    const rec = { v, k, a, rd, dt: new Date().toISOString().slice(0, 10), ts: Date.now() };
+    await store.set(mine + rd, rec);
+    return [200, { ok: true, round: rd }];
+  }
+
+  if (!(await resilCanManage(store, body, g))) { await pause(); return [403, { error: 'unauthorized' }]; }
+
+  if (action === 'resilResults') {
+    const rows = await store.list('resil:' + body.id + ':r:');
+    return [200, { group: publicGroup(body.id, g), resp: rows.map((x) => x.value) }];
+  }
+  if (action === 'resilSetOpen') {
+    g.open = body.open !== false;
+    await store.set('resil:' + body.id, g);
+    return [200, { group: publicGroup(body.id, g) }];
+  }
+  if (action === 'resilDelete') {
+    await store.delPrefix('resil:' + body.id + ':r:');
+    await store.del('resil:' + body.id);
+    return [200, { ok: true }];
+  }
+  return [400, { error: 'unknown action' }];
+}
+
 // מחזירה [status, body].
 export async function handleAccess(store, body) {
   const { action } = body || {};
@@ -82,10 +196,10 @@ export async function handleAccess(store, body) {
       const c = normCode(secret);
       const hit = c && (await getInstitutions(store)).find((x) => same(normCode(x.code), c));
       if (hit && hit.active === false) { await pause(); return [403, { error: 'inactive' }]; }
-      if (hit) return [200, { ok: true, inst: hit.name }];
+      if (hit) return [200, { ok: true, inst: hit.name, token: await signToken(store, { k: 'inst', inst: hit.name }) }];
     }
     if (!ok) { await pause(); return [403, { error: 'wrong' }]; }
-    return [200, { ok: true }];
+    return [200, { ok: true, token: await signToken(store, { k: kind }) }];
   }
 
   // אילו מודולים פתוחים למוסד — לא סוד, נקרא בכניסה ל-system-select.html
@@ -95,6 +209,8 @@ export async function handleAccess(store, body) {
     if (!inst) return [400, { error: 'missing inst' }];
     return [200, { ...DEFAULT_MODULES, ...((await store.get('modules:' + inst)) || {}) }];
   }
+
+  if (typeof action === 'string' && action.startsWith('resil')) return handleResilience(store, body);
 
   const isSys = await checkPassword(store, 'sys', body?.auth);
 
@@ -188,6 +304,15 @@ export function supabaseStore(url, key) {
     },
     async del(k) {
       await check(await fetch(`${base}?key=eq.${encodeURIComponent(k)}`, { method: 'DELETE', headers }));
+    },
+    // כל השורות שהמפתח שלהן מתחיל ב-prefix (like של PostgREST; * הוא התו הכללי).
+    async list(prefix, { keysOnly = false } = {}) {
+      const sel = keysOnly ? 'key' : 'key,value';
+      const r = await check(await fetch(`${base}?key=like.${encodeURIComponent(prefix + '*')}&select=${sel}&order=key&limit=5000`, { headers }));
+      return r.json();
+    },
+    async delPrefix(prefix) {
+      await check(await fetch(`${base}?key=like.${encodeURIComponent(prefix + '*')}`, { method: 'DELETE', headers }));
     },
   };
 }

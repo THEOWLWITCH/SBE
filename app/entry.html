@@ -167,7 +167,12 @@ async function checkAccess(kind, secret){
     const r = await fetch(ACCESS_URL, { method:"POST", headers:{ "content-type":"application/json" },
       body: JSON.stringify({ action:"login", kind, secret }), signal: ctrl.signal });
     const data = await r.json().catch(() => ({}));
-    if (r.ok) { lastInst = data.inst || ""; return "ok"; }
+    if (r.ok) {
+      lastInst = data.inst || "";
+      // אסימון חתום מהשרת — מוכיח לשרת בפעולות הבאות (למשל פתיחת כיתת חוסן) שנכנסת.
+      try { if (data.token) sessionStorage.setItem("sbe.session.token", data.token); } catch(e){}
+      return "ok";
+    }
     if (r.status === 403) return data.error === "inactive" ? "inactive" : "wrong";
     return "down";
   } catch(e){ return "down"; }
@@ -463,7 +468,10 @@ function buildAdminField(role){
   }
   // חזרה למסך הכניסה = יציאה: שוכחים את הכניסה הקודמת בלשונית, כדי שהרשאות
   // של כניסה קודמת (למשל התפריט של מנהלת המערכת) לא יישארו לכניסה הבאה.
-  try { sessionStorage.removeItem("sbe.session.homeUrl"); } catch(e){}
+  if (!homeRole) try {
+    ["sbe.session.homeUrl", "sbe.session.token"].forEach(k => sessionStorage.removeItem(k));
+    localStorage.removeItem("sbe.session.mirror"); // העותק ללשוניות חדשות (lib/access-guard.js)
+  } catch(e){}
   renderEntry();
 })();
 </script>

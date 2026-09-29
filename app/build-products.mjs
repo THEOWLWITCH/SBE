@@ -20,7 +20,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { renderEduDocs, renderRoleDocs, NAV_WIDGET, REPORT_WIDGET, MARK, esc, FONTS } from './lib/doc-template.mjs';
+import { renderEduDocs, renderRoleDocs, NAV_WIDGET, REPORT_WIDGET, GUARD, MARK, esc, FONTS } from './lib/doc-template.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, 'products');
@@ -32,6 +32,7 @@ const PRINT_HIDE = '<style>@media print{#navBar,#navPanel,#rptFab,#rptDlg{displa
 
 function withWidgets(html) {
   const inject = PRINT_HIDE + NAV_WIDGET + REPORT_WIDGET;
+  html = /<\/title>/i.test(html) ? html.replace(/<\/title>/i, '</title>' + GUARD) : GUARD + html;
   return /<\/body>/i.test(html) ? html.replace(/<\/body>/i, inject + '</body>') : html + inject;
 }
 
@@ -99,7 +100,7 @@ for (const g of manifest.groups) {
 body += `<footer>${esc(manifest.footer || '')}</footer>`;
 
 const index = `<!doctype html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>תוצרי המערכת — S.B.E</title>${FONTS}<style>${css}</style></head><body><div class="wrap">${body}</div>${PRINT_HIDE}${NAV_WIDGET}${REPORT_WIDGET}</body></html>`;
+<title>תוצרי המערכת — S.B.E</title>${GUARD}${FONTS}<style>${css}</style></head><body><div class="wrap">${body}</div>${PRINT_HIDE}${NAV_WIDGET}${REPORT_WIDGET}</body></html>`;
 writeFileSync(join(OUT, 'index.html'), index, 'utf8');
 // הקישורים שנבנו, לפי שם התוצר — משמש את מסך הבדיקה (לשונית "תוצרים לפי מסכים")
 const linkMap = {};

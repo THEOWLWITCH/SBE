@@ -220,6 +220,7 @@ export function tpCard(t, who, other, opts = {}) {
 // ── יצירת המרנדר עם התלויות הסביבתיות ────────────────────────────
 //   config.MARK           data-URI של הלוגו
 //   config.REPORT_WIDGET  HTML של כפתור הדיווח (או "" בדפדפן/בתצוגה מקדימה)
+//   config.GUARD          סקריפט שמירת ההרשאות (או "" בדפדפן/בתצוגה מקדימה)
 export function createRenderer(config) {
   const MARK = config.MARK || '';
   // שני הרכיבים הגלובליים של app/ — תפריט הניווט ("→ חזרה / ☰ תפריט") וכפתור
@@ -227,11 +228,13 @@ export function createRenderer(config) {
   // של build-docs.mjs והוחזרו ידנית (הדיווח) או נשכחו (התפריט — נעלם מארבעת
   // המסמכים בלי שאיש שם לב). מ-print CSS הם מוסתרים, כך שה-PDF נקי.
   const WIDGET = (config.NAV_WIDGET || '') + (config.REPORT_WIDGET || '');
+  const GUARD = config.GUARD || '';
 
   function page(scn, { badge, meta, body }) {
     const byline = [scn.creator, scn.date, scn.institution].filter(Boolean).map(esc).join(' · ');
     return `<meta charset="UTF-8">
 <title>${esc(scn.name)} · ${esc(badge)}</title>
+${GUARD}
 ${FONTS}
 <style>${CSS}</style>
 <div class="sheet">
@@ -255,6 +258,7 @@ ${WIDGET}`;
   function card(scn, badge, title, inner) {
     return `<meta charset="UTF-8">
 <title>${esc(scn.name)} · ${esc(badge)}</title>
+${GUARD}
 ${FONTS}
 <style>${CARD_CSS}</style>
 <div class="card"><div class="ch"><b>${esc(title)}</b><span style="display:flex;align-items:center;gap:10px"><img class="lg" src="${MARK}" alt="S.B.E">${esc(badge)} · ${esc(scn.duration)} דק׳</span></div>
