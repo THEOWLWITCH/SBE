@@ -194,7 +194,7 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
 <div class="tab-bar">
   <button class="tab-btn active" data-tab="t-setup">⚙ הגדרה</button>
   <button class="tab-btn" data-tab="t-scores">📊 ציונים</button>
-  <button class="tab-btn" data-tab="t-voices">🗣 קולות</button>
+  <button class="tab-btn" data-tab="t-voices">👥 לפי קבוצות</button>
   <button class="tab-btn" data-tab="t-report">📄 דוח</button>
 </div>
 
@@ -280,7 +280,7 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
   <div id="scores-content"><div class="empty">אין עדיין נתונים. הגדר/י כיתה ואסוף/י תשובות.</div></div>
 </div>
 
-<!-- ── Tab: קולות ── -->
+<!-- ── Tab: לפי קבוצות נשאלים ── -->
 <div id="t-voices" class="pane">
   <div id="voices-content"><div class="empty">אין עדיין נתונים.</div></div>
 </div>
@@ -486,7 +486,7 @@ document.getElementById('btn-show-results').addEventListener('click',function(){
 
 // ── כיתת דמו ──
 // תשובות מומצאות (דטרמיניסטיות) ל-15 היגדים בשכבת ד׳–ו׳, כדי לראות מה מופיע בכל
-// לשונית: תחום ש"פוגע" מגביל בו את הציון, פער בין קולות, ותחום שרבים "לא יודעים".
+// לשונית: תחום ש"פוגע" מגביל בו את הציון, פער בין קבוצות נשאלים, ותחום שרבים "לא יודעים".
 function buildDemo(){
   const band=1, items=R.ITEMS.filter(it=>it.b===band);
   const doms=[];const byDom={};
@@ -510,7 +510,7 @@ function buildDemo(){
       if(rnd()<(v===4?pr.unk*1.6:pr.unk)){a[p]=4;return;}
       let mean=it.r?pr.harm:pr.good;
       if(k===gapDom&&!it.r)mean+=(v===0?-1.2:v===4?0.9:0.3);
-      const noise=(v===0||v===4)?(rnd()-0.5)*1.0:0; // מבוגר/ת יחיד/ה בקול — בלי רעש, כדי שלא ייווצרו פערים מקריים
+      const noise=(v===0||v===4)?(rnd()-0.5)*1.0:0; // מבוגר/ת יחיד/ה בקבוצה — בלי רעש, כדי שלא ייווצרו פערים מקריים
       a[p]=Math.max(0,Math.min(3,Math.round(mean+noise)));
     });
     resp.push({v,k:'demo'+(n++),a,rd:1,dt:new Date().toISOString().slice(0,10),ts:Date.now()});
@@ -646,7 +646,7 @@ function renderSetup(){
   const statsEl=document.getElementById('setup-stats');
   statsEl.innerHTML=[
     {n:totalRespondents,l:'נשאלים'},
-    {n:Object.keys(voices).length,l:'קולות'},
+    {n:Object.keys(voices).length,l:'קבוצות נשאלים'},
     {n:rounds,l:'סיבובים'}
   ].map(s=>`<div class="stat"><div class="stat-n">${s.n}</div><div class="stat-l">${s.l}</div></div>`).join('');
 }
@@ -657,7 +657,7 @@ function tierClassB(tier){return ['t0b','t1b','t2b','t3b'][tier];}
 
 function flagBadge(f){
   if(f==='פועל, ופוגע') return '<span class="flag flag-pog">'+f+'</span>';
-  if(f==='קולות חלוקים') return '<span class="flag flag-kol">'+f+'</span>';
+  if(f==='פער בין הקבוצות') return '<span class="flag flag-kol">'+f+'</span>';
   return '<span class="flag flag-unk">'+f+'</span>';
 }
 
@@ -731,7 +731,8 @@ function renderVoices(){
   // Domains with voice gap
   const divided=domains.filter(d=>d.gap>=30);
 
-  let html='<div class="card"><h2>ייצוג קולות</h2>';
+  let html='<div class="card"><h2>מי ענה על השאלון</h2>'+
+    '<p style="font-size:.85rem">קבוצות הנשאלים: תלמידים, מחנך/ת, מורים מקצועיים, מנהלת והורים. בלשונית הזאת רואים אם הקבוצות רואות את הכיתה אחרת.</p>';
   html+='<div class="stats">';
   R.VOICES.forEach(v=>{
     const cnt=resp.filter(r=>r.v===v.id).length;
@@ -740,10 +741,10 @@ function renderVoices(){
   html+='</div></div>';
 
   if(divided.length){
-    html+='<div class="card"><h2>קולות חלוקים (פער 30+ נקודות)</h2>';
+    html+='<div class="card"><h2>פער בין הקבוצות (30 נקודות ומעלה)</h2>';
     divided.forEach(d=>{
       html+=`<h3>${d.g} · ${d.d}</h3>`;
-      html+=`<table class="vtable"><tr><th>קול</th><th style="text-align:left">ציון</th></tr>`;
+      html+=`<table class="vtable"><tr><th>קבוצת נשאלים</th><th style="text-align:left">ציון</th></tr>`;
       Object.entries(d.vScores).forEach(([v,s])=>{
         const lbl=SC.scoreLabel(s);
         html+=`<tr><td>${voiceNames[v]||v}</td><td style="text-align:left;color:${lbl.color};font-weight:700">${Math.round(s)}</td></tr>`;
@@ -752,11 +753,11 @@ function renderVoices(){
     });
     html+='</div>';
   } else {
-    html+='<div class="card"><p>לא נמצאו תחומים עם פערים גדולים בין קולות.</p></div>';
+    html+='<div class="card"><p>לא נמצאו תחומים עם פערים גדולים בין קבוצות הנשאלים.</p></div>';
   }
 
   // Cross-voice score table
-  html+='<div class="card"><h2>ציוני תחומים לפי קול</h2>';
+  html+='<div class="card"><h2>ציוני התחומים לפי קבוצת נשאלים</h2>';
   html+=`<table class="vtable"><tr><th>תחום</th>`;
   [...presentVoices].forEach(v=>html+=`<th style="text-align:left">${voiceNames[v]}</th>`);
   html+='</tr>';
@@ -842,12 +843,12 @@ function renderReport(){
         : 'אין מספיק נתונים להמלצות.'
     },
     {
-      n:7, title:'קולות חלוקים',
+      n:7, title:'פער בין קבוצות הנשאלים',
       body: divided.length
         ? `ב-${divided.length} תחום/ים יש פערים גדולים בין קבוצות שונות של נשאלים (30+ נקודות):<br><br>`+
           divided.map(d=>`<strong>${d.d}</strong> — פער: ${Math.round(d.gap)} נקודות`).join('<br>')+
           '<br><br>פערים אלו אינם "טעות" — הם משקפים חוויות שונות של אותה מציאות. ראויים לשיחה, לא להחלטה.'
-        : 'לא נמצאו פערים גדולים בין הקולות השונים.'
+        : 'לא נמצאו פערים גדולים בין קבוצות הנשאלים.'
     },
     {
       n:8, title:'מה שרבים אינם יודעים',

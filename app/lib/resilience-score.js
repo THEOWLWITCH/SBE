@@ -129,7 +129,7 @@
 
       const flags = [];
       if (ds.capped) flags.push('פועל, ופוגע');
-      if (gap >= 30)  flags.push('קולות חלוקים');
+      if (gap >= 30)  flags.push('פער בין הקבוצות'); // פער בין קבוצות הנשאלים (resilience-team.html)
       if (unk >= 0.34) flags.push('רבים אינם יודעים');
 
       return { g: dom.g, d: dom.d, ...ds, ...lbl, unknownRate: unk, gap, vScores, flags };
