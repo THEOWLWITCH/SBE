@@ -429,16 +429,30 @@ const OTHER_SCREENS_GROUPS = [
     { href:"practice.html", t:"תרגול עצמי" },
     { href:"practice-crossings.html", t:"חציות קווים אדומים" },
   ]},
+  { title:"חוסן חברתי", items:[
+    { href:"resilience-team.html", t:"חוסן חברתי — מסך מחנך/כת" },
+    { href:"resilience-fill.html", t:"שאלון חוסן — מסך תלמיד/ה" },
+  ]},
 ];
 
-// role נקבע מ-?role= בכתובת אם קיים ותקין (מגיע מ-entry.html אחרי כניסה עם
-// סיסמה) — אותו רעיון בדיוק כמו ?maxTurns= ב-practice.html. בלי הפרמטר,
-// נשאר "inst" כברירת המחדל של מסך הדגמה שנפתח ישירות.
+// הרשאה לפי הכניסה בפועל (sessionStorage.sbe.session.homeUrl שנשמר ב-entry.html
+// אחרי בדיקת הסיסמה בשרת), לא לפי ?role= בכתובת — אחרת כל מי שמקלידה
+// admin.html?role=sys מקבלת את אזור ניהול המערכת ואת התפריט לכל המסכים.
+// מנהלת מוסדית תמיד "inst". בלי כניסת ניהול — חזרה למסך הכניסה.
+// בתוך iframe (demo-hub.html, שפתוח רק למנהלת המערכת) — כמו קודם.
 const roleParam = new URLSearchParams(location.search).get("role");
-let role = (roleParam === "sys" || roleParam === "inst") ? roleParam : "inst", tab = "codes";
+let sessionHome = null;
+try { sessionHome = sessionStorage.getItem("sbe.session.homeUrl"); } catch(e){}
+const isSysSession = sessionHome === "admin.html?role=sys";
+const isInstSession = sessionHome === "admin.html?role=inst";
+const inFrame = window.self !== window.top;
+if (!isSysSession && !isInstSession && !inFrame) location.replace("entry.html");
+let role = isInstSession ? "inst"
+  : (roleParam === "sys" || roleParam === "inst") ? roleParam
+  : isSysSession ? "sys" : "inst", tab = "codes";
 
-// Demo-only roleswitch: visible only when no ?role= param (direct access without login)
-if (roleParam === "sys" || roleParam === "inst") {
+// החלפה ידנית בין שני האזורים (להדגמה) — רק למנהלת המערכת, ורק כשנפתח בלי ?role=.
+if (!isSysSession || roleParam === "sys" || roleParam === "inst") {
   const rs = document.querySelector('.roleswitch');
   if (rs) rs.style.display = 'none';
 }
@@ -1375,12 +1389,14 @@ function ask(t, msg, ok){
 
 // ── הגדרת מודולים למוסד ──
 // מאפשרת למנהלת המערכת לבחור אילו קטגוריות נגישות למנהל.ת מוסד ספציפי.
+// "חוסן חברתי" נבדק בכניסת מחנך/כת ב-entry.html.
 // הנתון נשמר בשרת ב-Render (טבלת access_settings ב-Supabase) ונקרא בעת כניסת
 // מנהל.ת מוסד ל-system-select.html. שמירה דורשת את סיסמת מנהלת המערכת.
 const MOD_LABELS = {
   conv:     "תכנון שיחה",
   activity: "תכנון פעילות",
   academic: "ניתוח ומשוב לעבודה אקדמית",
+  resilience: "חוסן חברתי (כניסת מחנך/כת)",
 };
 
 function openModDlg(instName) {
@@ -1395,7 +1411,7 @@ function openModDlg(instName) {
 
   accessCall("getModules", { inst: instName })
     .then(cfg => ({ cfg, loaded: true }))
-    .catch(() => ({ cfg: { conv: true, activity: true, academic: true }, loaded: false }))
+    .catch(() => ({ cfg: { conv: true, activity: true, academic: true, resilience: true }, loaded: false }))
     .then(({ cfg, loaded }) => {
       body.textContent = "";
       $("modSave").disabled = false;
@@ -1456,7 +1472,7 @@ function openModDlg(instName) {
     });
 }
 
-$("role").addEventListener("change", e => { role = e.target.value; render(); });
+$("role").addEventListener("change", e => { if (!isSysSession) return; role = e.target.value; render(); });
 $("role").value = role;
 document.body.classList.add("sbe-hasnav");
 render();

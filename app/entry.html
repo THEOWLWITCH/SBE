@@ -352,6 +352,17 @@ function buildInstField(role){
       err.hidden = false; return;
     }
     const inst = lastInst;
+    // מחנך/כת: מודול "חוסן חברתי" חייב להיות פעיל במוסד (נקבע במסך הניהול).
+    // שגיאת רשת — ברירת מחדל פתוח, כמו ב-system-select.html.
+    if (role === "homeroom") {
+      const mods = await fetch(ACCESS_URL, { method:"POST", headers:{ "content-type":"application/json" },
+        body: JSON.stringify({ action:"getModules", inst }) })
+        .then(r => r.ok ? r.json() : null).catch(() => null);
+      if (mods && mods.resilience === false) {
+        err.textContent = "מודול החוסן החברתי לא פעיל במוסד הזה. פני למנהלת המערכת.";
+        err.hidden = false; return;
+      }
+    }
     err.hidden = true;
     persistSession(null, ROLE_LABEL[role] + " (" + inst + ")");
     const trackParam = roleInfo && roleInfo.track ? "&track=" + roleInfo.track : "";
@@ -450,6 +461,9 @@ function buildAdminField(role){
     renderWorkshopSuccess(homeRole, savedName);
     return;
   }
+  // חזרה למסך הכניסה = יציאה: שוכחים את הכניסה הקודמת בלשונית, כדי שהרשאות
+  // של כניסה קודמת (למשל התפריט של מנהלת המערכת) לא יישארו לכניסה הבאה.
+  try { sessionStorage.removeItem("sbe.session.homeUrl"); } catch(e){}
   renderEntry();
 })();
 </script>
