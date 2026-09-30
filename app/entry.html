@@ -254,7 +254,7 @@ function renderEntry(){
 
 // יציאה / התחלת כניסה חדשה: מוחקת את הכניסה של הלשונית ואת העותק שלה
 // ללשוניות חדשות (lib/access-guard.js).
-const SESSION_KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token"];
+const SESSION_KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules"];
 function clearSession(){
   try {
     SESSION_KEYS.forEach(k => sessionStorage.removeItem(k));
@@ -369,14 +369,15 @@ function buildInstField(role){
       err.hidden = false; return;
     }
     const inst = lastInst;
-    // מחנך/כת: מודול "חוסן חברתי" חייב להיות פעיל במוסד (נקבע במסך הניהול).
-    // שגיאת רשת — ברירת מחדל פתוח, כמו ב-system-select.html.
+    // מחנך/כת: מודול "חוסן חברתי" חייב להיות פתוח למוסד (נפתח במסך הניהול;
+    // ברירת המחדל — סגור). בלי תשובה מהשרת — לא נכנסים.
     if (role === "homeroom") {
       const mods = await fetch(ACCESS_URL, { method:"POST", headers:{ "content-type":"application/json" },
         body: JSON.stringify({ action:"getModules", inst }) })
         .then(r => r.ok ? r.json() : null).catch(() => null);
-      if (mods && mods.resilience === false) {
-        err.textContent = "מודול החוסן החברתי לא פעיל במוסד הזה. פני למנהלת המערכת.";
+      if (!mods || mods.resilience !== true) {
+        err.textContent = mods ? "מודול החוסן החברתי לא פתוח למוסד הזה. פני למנהלת המערכת."
+          : "אין כרגע חיבור לשרת הבדיקה. נסי שוב בעוד רגע.";
         err.hidden = false; return;
       }
     }

@@ -15,7 +15,7 @@
    שחייב להיות מוגן באמת (סיסמאות, נתוני החוסן) נבדק בשרת. */
 (function(){
   "use strict";
-  var KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token"];
+  var KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules"];
   var MIRROR = "sbe.session.mirror", HOURS = 12;
 
   function ss(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
@@ -68,8 +68,14 @@
                "feedback.html", "feedback-results.html"];
     if (TRACK_INPUT[track]) allowed.push(TRACK_INPUT[track]);
     else for (var t in TRACK_INPUT) allowed.push(TRACK_INPUT[t]);
-    if (track !== "parent" && track !== "youth")
-      allowed.push("conversation-planner.html", "activity-planner.html", "academic-review.html");
+    // הכלים הנוספים — רק מה שנפתח למוסד (sbe.session.modules, נשמר ב-system-select.html).
+    var mods = {};
+    try { mods = JSON.parse(ss("sbe.session.modules") || "{}") || {}; } catch(e){}
+    if (track !== "parent" && track !== "youth") {
+      if (mods.conv === true) allowed.push("conversation-planner.html");
+      if (mods.activity === true) allowed.push("activity-planner.html");
+      if (mods.academic === true) allowed.push("academic-review.html");
+    }
   } else if (/^entry\.html\?home=/.test(home)) {
     allowed = WORKSHOP[q.get("home")] || [];
   } else if (home === "academic-review.html") {
