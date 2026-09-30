@@ -349,8 +349,18 @@ function loadTaxonomyOverrides(){
 // את בעיית תת הסעיפים כדי שמושג יסווג לתת סעיף הנכון". taxonomyGroups()
 // ממזגת כל תוספת לתוך תת-הסעיף הבסיסי התואם, לא עוד דלי שטוח אחד בסוף.
 // תוספות ישנות בלי group (משמרות מלפני התאריך הזה) נופלות לדלי "ללא שיוך".
+// מיקוד "חוסן חברתי" (30/09/2026): שלוש קבוצות המיומנויות המשותפות (res_*)
+// מופיעות ברשימה ובהנחיה למודל רק בתרחיש שסומן כתרחיש לחוסן חברתי.
+const RESILIENCE_FOCUS = "חוסן חברתי";
+function isResilienceFocus(){ const n = document.getElementById("i-focus"); return !!n && n.value === RESILIENCE_FOCUS; }
+function visibleBaseGroups(name){
+  const all = TAXONOMIES[name] || [];
+  if (name !== "skills") return all;
+  const res = all.filter(g => g.id.startsWith("res_")), rest = all.filter(g => !g.id.startsWith("res_"));
+  return isResilienceFocus() ? [...res, ...rest] : rest;   // בחוסן חברתי — המשותפות ראשונות
+}
 function taxonomyGroups(name){
-  const raw = TAXONOMIES[name] || [];
+  const raw = visibleBaseGroups(name);
   const ov = loadTaxonomyOverrides()[name] || { edits:{}, deletes:[] };
   const base = raw.map(g => ({ ...g, items: g.items
     .filter(v => !(ov.deletes||[]).includes(v))
@@ -551,6 +561,8 @@ const GROUPS = [
       hint:"מהטקסונומיה הקבועה. נבחרות לפי הסיטואציה, לא באקראי" },
   ]},
   { id:"req", title:"הסיפור", open:true, fields:[
+    { k:"focus",    l:"מיקוד התרחיש", type:"select", opts:["כללי","חוסן חברתי"], deps:["skills"],
+      hint:"בחוסן חברתי נפתחות ברשימת המיומנויות גם המיומנויות המשותפות" },
     { k:"traineeRole", l:"דמות 1 - תפקיד המתנסה", req:1, hint:"מי היא בסימולציה" },
     { k:"actorRole",l:"דמות 2 - תפקיד השחקנית", req:1, hint:"את מי היא מגלמת מול המתנסה", deps:["domainMaterial","register"] },
     { k:"event",    l:"סיפור האירוע, מה הוביל לפגישה, והיכרות קודמת בין השתיים", req:1, tall:1,
@@ -738,7 +750,7 @@ async function generateProposals(required) {
       "visibleLayer/hiddenLayer (emotions/needs/fear/stated) תלויים בסוג הקונפליקט (cType) שתבחרי: ברגשי הסמוי חייב להסביר את הגלוי; בערכי הסמוי אינו מסביר את הגלוי ואינו הופך אותו לתסמין, שתי הדמויות מתכוונות למה שהן אומרות; במבני הסמוי הוא בעיקר מה שהדמות מפסידה במערכת; במידעי ייתכן שאין רובד סמוי כלל, המנוע הוא פער הידע.",
       "emotions (רגשות — שדות emotionsVisible/emotionsHidden של השחקנית): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("emotions"),
       "needs (צרכים — שדות needsVisible/needsHidden של השחקנית): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("needs"),
-      "skills (מיומנויות, כולל על מה המתנסה מתאמן/ת — שדה אחד ומשותף): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("skills"),
+      "skills (מיומנויות, כולל על מה המתנסה מתאמן/ת — שדה אחד ומשותף): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("skills") + (isResilienceFocus() ? "\nזהו תרחיש לחוסן חברתי: בחרי לפחות שתיים מהמיומנויות המשותפות (הקבוצות שמתחילות ב\"חוסן חברתי ·\"), לפי מה שהסיטואציה דורשת מהקבוצה או מהקהילה." : ""),
       "הכלל החשוב מכל לבחירת רגש/צורך/מיומנות: הבחירה חייבת להתאים לסיטואציה הספציפית ואסור שתהיה אקראית.",
       "wontSay: משפט אחד במרכאות שהיא לא תגיד בשום מצב. משפט ממשי, לא נושא כללי.",
       "valve (שדה \"תגובת הדמות כשהיא נלחצת\"): מה כן יוצא ממנה בלחץ השלישי, כשהקיר של wontSay עדיין מחזיק אבל משהו קטן יותר בורח. **אסור בהחלט שברירת המחדל תהיה הרמת קול** — אם עלה לך \"מרימה את הקול\"/\"צועקת\"/\"קולה עולה\", כתבי מחדש. חלופות: משפט קצר יותר מהרגיל שלה, שתיקה שנמשכת רגע אחד יותר מדי, חזרה על מילה אחת פעמיים, הנחת חפץ בכוח קטן, קימה כדי לצאת בלי לצאת בפועל, היפוך לגוף שלישי, משפט שנגמר באמצע — גזרי אותה מה-domainMaterial או מה-register של הדמות הזו בדיוק, לא מרשימה כללית.",
@@ -1015,7 +1027,7 @@ function render() {
         // יצירת קשר ואמון/וכו') שאליו היא שייכת מהותית. נבנית מ-TAXONOMIES
         // הבסיסי (לא מ-taxonomyGroups, כדי לא לכלול את דלי "ללא שיוך").
         const otherGroupSelI = el("select", {});
-        (TAXONOMIES[f.taxonomy] || []).forEach(g => otherGroupSelI.append(el("option",{value:g.id}, g.name)));
+        visibleBaseGroups(f.taxonomy).forEach(g => otherGroupSelI.append(el("option",{value:g.id}, g.name)));
         const otherInp = el("input", { type:"text", placeholder:"פריט חסר? הקלידי והוסיפי" });
         const otherBtn = el("button", { type:"button" }, "הוספה");
         const otherRow = el("div", { class:"combo-other" }, [
