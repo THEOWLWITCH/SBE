@@ -302,22 +302,32 @@ async function handleCodes(store, body, isSys) {
   const meOk = me ? await resolveCode(store, me, settings) : null;
   const mine = meOk && !meOk.error ? meOk : null;
 
-  // בקשת חידוש מנוי — ציבורית (גם כשהמנוי כבר הסתיים): מזהים את המוסד לפי קוד
-  // של מנהל/ת המוסד, ושומרים רק שדות חיוניים.
+  // בקשת חידוש מנוי — ציבורית (גם כשהמנוי כבר הסתיים). אין סליקה: הבקשה נשמרת,
+  // מנהלת המערכת מתקשרת להאריך ולקבל פרטי תשלום. המוסד מזוהה לפי קוד (אם
+  // הוקלד) או לפי שם מדויק; אחרת נשמר כ"לא מזוהה". בלי טקסט חופשי.
   if (action === 'renewRequest') {
-    const rec = await store.get('code:' + normCode(body.code));
-    const legacy = !rec && (await getInstitutions(store)).find((i) => normCode(i.code) === normCode(body.code));
-    const inst = rec && rec.kind === 'instadmin' ? rec.inst : legacy ? legacy.name : null;
-    if (!inst) { await pause(); return [404, { error: 'unknown code' }]; }
-    const name = String(body.name || '').trim().slice(0, 60), contact = String(body.contact || '').trim().slice(0, 80);
-    const period = ['year', 'half', 'other'].includes(body.period) ? body.period : 'year';
-    if (!name || !contact) return [400, { error: 'missing fields' }];
-    // טופס ציבורי — עד 5 בקשות פתוחות למוסד, כדי שלא אפשר יהיה להציף את המאגר.
-    const openReqs = (await store.list('renewreq:')).filter((r) => r.value && r.value.inst === inst && !r.value.done);
-    if (openReqs.length >= 5) return [429, { error: 'too many' }];
+    const list = await getInstitutions(store);
+    const code = normCode(body.code);
+    const rec = code ? await store.get('code:' + code) : null;
+    const legacy = code && !rec ? list.find((i) => normCode(i.code) === code) : null;
+    const instTyped = String(body.instName || '').trim().slice(0, 80);
+    const inst = rec && rec.kind === 'instadmin' ? rec.inst : legacy ? legacy.name
+      : (list.find((i) => i.name === instTyped) || {}).name || null;
+    const fullName = String(body.fullName || '').trim().slice(0, 60);
+    const email = String(body.email || '').trim().slice(0, 80);
+    const phone = String(body.phone || '').replace(/[^\d+]/g, '').slice(0, 15);
+    const systems = [...new Set((Array.isArray(body.systems) ? body.systems : []).filter((p) => PERMS.includes(p)))];
+    const period = ['year', 'half'].includes(body.period) ? body.period : 'year';
+    if (!fullName || !instTyped || !systems.length) return [400, { error: 'missing fields' }];
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return [400, { error: 'bad email' }];
+    if (!/^(\+972|0)5\d{8}$/.test(phone)) return [400, { error: 'bad phone' }];
+    // טופס ציבורי: עד 5 בקשות פתוחות למוסד מזוהה, ועד 30 לא-מזוהות, כדי שלא יציפו את המאגר.
+    const open = (await store.list('renewreq:')).map((r) => r.value).filter((v) => v && !v.done);
+    if (open.filter((v) => (v.inst || null) === inst).length >= (inst ? 5 : 30)) return [429, { error: 'too many' }];
     const at = new Date().toISOString();
-    await store.set('renewreq:' + at + ':' + randomBytes(3).toString('hex'), { inst, name, contact, period, at, done: false });
-    return [200, { ok: true, inst }];
+    await store.set('renewreq:' + at + ':' + randomBytes(3).toString('hex'),
+      { inst, instTyped, fullName, email, phone, systems, period, at, done: false });
+    return [200, { ok: true, at, inst: inst || instTyped }];
   }
 
   if (action === 'codesList') {
@@ -436,6 +446,14 @@ async function handleCodes(store, body, isSys) {
     const rows = (await store.list('renewreq:')).map((r) => ({ id: r.key.slice(9), ...r.value })).reverse();
     return [200, { requests: rows }];
   }
+  if (action === 'renewApplySystems') {
+    const r = await store.get('renewreq:' + String(body.id || ''));
+    if (!r || !r.inst) return [404, { error: 'no such request' }];
+    const cur = await getCeiling(store, r.inst);
+    (r.systems || []).forEach((p) => { cur[p] = true; });
+    await store.set('modules:' + r.inst, cur);
+    return [200, { ok: true, modules: cur }];
+  }
   if (action === 'renewDone') {
     const k = 'renewreq:' + String(body.id || '');
     const r = await store.get(k);
@@ -524,7 +542,7 @@ export async function handleAccess(store, body) {
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
 
   if (['renewRequest', 'codesList', 'codeCreate', 'codeRevoke', 'codeUse', 'setSubscription', 'renewSubscription',
-    'getSettings', 'setSettings', 'renewList', 'renewDone'].includes(action)) {
+    'getSettings', 'setSettings', 'renewList', 'renewDone', 'renewApplySystems'].includes(action)) {
     const out = await handleCodes(store, body, isSys);
     if (out) return out;
   }

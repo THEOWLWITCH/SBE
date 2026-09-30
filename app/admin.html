@@ -706,16 +706,36 @@ function pInsts(){
     if (!open.length) { rin.append(el("p",{class:"sub",style:"margin:0"},"אין בקשות פתוחות. הטופס לבקשה: renew.html")); return; }
     const PER = { year:"שנה", half:"חצי שנה", other:"אחר" };
     open.forEach(q => {
-      const line = el("div",{class:"irow"}, el("span",{class:"nm"}, el("b",{},q.inst),
-        el("span",{}, q.name + " · " + q.contact + " · " + (PER[q.period] || "") + " · " + new Date(q.at).toLocaleDateString("he-IL"))));
-      const renew = el("button",{class:"act p"},"חידוש לשנה וסגירה");
-      renew.addEventListener("click", async () => {
-        try { await accessCall("renewSubscription", { name: q.inst, months: q.period === "half" ? 6 : 12 }); await accessCall("renewDone", { id: q.id }); instList = null; render(); }
-        catch (e) { accessFail(e); }
-      });
+      const when = new Date(q.at).toLocaleString("he-IL", { dateStyle:"short", timeStyle:"short" });
+      const sysNames = [...new Set((q.systems || []).map(p => p === "lecturer" ? "academic" : p))].map(p => MOD_LABELS[p] ? MOD_LABELS[p].replace(/ \(.*\)$/, "") : p);
+      const box = el("div",{class:"inst"});
+      box.append(el("div",{class:"irow"},
+        el("span",{class:"nm"}, el("b",{}, q.inst || q.instTyped || "—"),
+          el("span",{}, when + " · " + (PER[q.period] || "שנה") + (q.inst ? "" : " · המוסד לא זוהה (נכתב: " + (q.instTyped || "") + ")"))),
+        el("span",{class:"pill warn"},"ממתין לשיחה")));
+      box.append(el("div",{class:"icodes"},
+        el("b",{}, q.fullName || q.name || ""), " · ",
+        el("a",{href:"tel:" + (q.phone || q.contact || ""), style:"direction:ltr;unicode-bidi:isolate"}, String(q.phone || q.contact || "").replace(/^(05\d)(\d{7})$/, "$1-$2")), " · ",
+        q.email ? el("a",{href:"mailto:" + q.email, style:"direction:ltr;unicode-bidi:isolate"}, q.email) : ""));
+      if (sysNames.length) box.append(el("div",{class:"icodes"}, "מערכות: " + sysNames.join(", ")));
+      const acts = el("div",{class:"iacts"});
+      if (q.inst) {
+        const renew = el("button",{class:"act p"}, "חידוש ל" + (q.period === "half" ? "חצי שנה" : "שנה") + " וסגירה");
+        renew.addEventListener("click", async () => {
+          try { await accessCall("renewSubscription", { name: q.inst, months: q.period === "half" ? 6 : 12 }); await accessCall("renewDone", { id: q.id }); instList = null; render(); }
+          catch (e) { accessFail(e); }
+        });
+        const apply = el("button",{class:"act"},"פתיחת המערכות שביקשו");
+        apply.title = "מוסיף למודולים של המוסד את המערכות שסומנו בבקשה";
+        apply.addEventListener("click", () => accessCall("renewApplySystems", { id: q.id })
+          .then(() => { apply.textContent = "נפתחו ✓"; apply.disabled = true; }).catch(accessFail));
+        acts.append(renew, apply);
+      }
       const done = el("button",{class:"act"},"סגירה בלי חידוש");
       done.addEventListener("click", () => accessCall("renewDone", { id: q.id }).then(() => render()).catch(accessFail));
-      line.append(renew, done); rin.append(line);
+      acts.append(done);
+      box.append(acts);
+      rin.append(box);
     });
   }).catch(() => { rin.textContent = "לא הצלחתי לטעון את הבקשות."; });
 
