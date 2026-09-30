@@ -318,8 +318,18 @@ function loadTaxonomyOverrides(){
 }
 // group על כל תוספת (22/09/2026) — ראו ההערה המלאה ב-input-screen.html:
 // בלי זה כל תוספת נפלה לדלי שטוח אחד בסוף הרשימה, לא לתת-הסעיף הנכון.
+// מיקוד "חוסן חברתי" (30/09/2026): שלוש קבוצות המיומנויות המשותפות (res_*)
+// מופיעות ברשימה ובהנחיה למודל רק בתרחיש שסומן כתרחיש לחוסן חברתי.
+const RESILIENCE_FOCUS = "חוסן חברתי";
+function isResilienceFocus(){ const n = document.getElementById("i-focus"); return !!n && n.value === RESILIENCE_FOCUS; }
+function visibleBaseGroups(name){
+  const all = TAXONOMIES[name] || [];
+  if (name !== "skills") return all;
+  const res = all.filter(g => g.id.startsWith("res_")), rest = all.filter(g => !g.id.startsWith("res_"));
+  return isResilienceFocus() ? [...res, ...rest] : rest;   // בחוסן חברתי — המשותפות ראשונות
+}
 function taxonomyGroups(name){
-  const raw = TAXONOMIES[name] || [];
+  const raw = visibleBaseGroups(name);
   const ov = loadTaxonomyOverrides()[name] || { edits:{}, deletes:[] };
   const base = raw.map(g => ({ ...g, items: g.items
     .filter(v => !(ov.deletes||[]).includes(v))
@@ -505,6 +515,8 @@ const GROUPS = [
       hint:"מהרשימה, לפי מה שמתאים לרגע הזה" },
   ]},
   { id:"req", title:"תיאור המפגש", open:true, fields:[
+    { k:"focus",    l:"מיקוד התרחיש", type:"select", opts:["כללי","חוסן חברתי"], deps:["skills"],
+      hint:"בחוסן חברתי נפתחות ברשימת המיומנויות גם המיומנויות המשותפות" },
     { k:"character1", l:"דמות 1", req:1, hint:"למשל: \"אמא\", \"אח גדול\"",
       deps:["register","tic"] },
     { k:"character2", l:"דמות 2", req:1,
@@ -715,7 +727,7 @@ async function generateProposals(required) {
       "char1Tic/tic: ביטוי או הרגל חוזר שהוא/היא, במרכאות אם זה משפט.",
       "char1EmotionsVisible/char1EmotionsHidden/emotionsVisible/emotionsHidden (רגשות): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("emotions"),
       "char1NeedsVisible/char1NeedsHidden/needsVisible/needsHidden (צרכים): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("needs"),
-      "skills (מיומנויות שתרצו לחזק): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("skills"),
+      "skills (מיומנויות שתרצו לחזק): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("skills") + (isResilienceFocus() ? "\nזהו תרחיש לחוסן חברתי: בחרי לפחות שתיים מהמיומנויות המשותפות (הקבוצות שמתחילות ב\"חוסן חברתי ·\"), לפי מה שהסיטואציה דורשת מהקבוצה או מהקהילה." : ""),
       "הבחירה מרשימות הרגשות/הצרכים/המיומנויות חייבת להתאים לסיטואציה הספציפית שנכתבה, לא בחירה אקראית שאפשר להעתיק לכל משפחה אחרת בלי לשנות מילה.",
       "char1WontSay/wontSay: משפט אחד במרכאות שהדמות לא תגיד בשום מצב. משפט ממשי, לא נושא כללי.",
       "char1Valve/valve (מה קורה כשהוא/היא באמת נלחץ/ת או מוצף/ת): ספציפי לדמות הזו, גזור מה-Anchor או ה-Register שלה — לא תגובה גנרית שמתאימה לכל אחד. תגובה ריאלית בין הורה לילד/ה יכולה לכלול קול שעולה, אבל תמיד עם פרט קונקרטי לצידה (מה קורה אחרי, מה עוצר את זה), לא כמשפט יחיד וכללי כמו \"מרים/ה את הקול\".",
@@ -941,7 +953,7 @@ function render() {
         // בחירת תת-סעיף לתוספת (22/09/2026) — כדי שהיא תמוין נכון, לא תיפול
         // לדלי שטוח בסוף הרשימה. נבנית מ-TAXONOMIES הבסיסי.
         const otherGroupSel = el("select", { class:"taxlist-other-group-sel" });
-        (TAXONOMIES[f.taxonomy] || []).forEach(g => otherGroupSel.append(el("option",{value:g.id}, g.name)));
+        visibleBaseGroups(f.taxonomy).forEach(g => otherGroupSel.append(el("option",{value:g.id}, g.name)));
         const otherGroupWrap = el("div", { class:"taxlist-other-group" }, "לתת-סעיף:", otherGroupSel);
         const otherInp = el("input", { type:"text", class:"taxlist-other-inp",
           placeholder:"פריט חסר? הקלידי והוסיפי" });
