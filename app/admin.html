@@ -711,13 +711,14 @@ function pInsts(){
       const box = el("div",{class:"inst"});
       box.append(el("div",{class:"irow"},
         el("span",{class:"nm"}, el("b",{}, q.inst || q.instTyped || "—"),
-          el("span",{}, when + " · " + (PER[q.period] || "שנה") + (q.inst ? "" : " · המוסד לא זוהה (נכתב: " + (q.instTyped || "") + ")"))),
+          el("span",{}, when + " · " + (PER[q.period] || "שנה") + (q.inst ? "" : (q.type === "new" ? " · מוסד חדש" : " · המוסד לא זוהה (נכתב: " + (q.instTyped || "") + ")")))),
+        el("span",{class:"pill " + (q.type === "new" ? "ok" : "warn")}, q.type === "new" ? "רכישה חדשה" : "חידוש"),
         el("span",{class:"pill warn"},"ממתין לשיחה")));
       box.append(el("div",{class:"icodes"},
         el("b",{}, q.fullName || q.name || ""), " · ",
         el("a",{href:"tel:" + (q.phone || q.contact || ""), style:"direction:ltr;unicode-bidi:isolate"}, String(q.phone || q.contact || "").replace(/^(05\d)(\d{7})$/, "$1-$2")), " · ",
         q.email ? el("a",{href:"mailto:" + q.email, style:"direction:ltr;unicode-bidi:isolate"}, q.email) : ""));
-      if (sysNames.length) box.append(el("div",{class:"icodes"}, "מערכות: " + sysNames.join(", ")));
+      if (sysNames.length || q.other) box.append(el("div",{class:"icodes"}, "מערכות: " + sysNames.concat(q.other ? ["אחר: " + q.other] : []).join(", ")));
       const acts = el("div",{class:"iacts"});
       if (q.inst) {
         const renew = el("button",{class:"act p"}, "חידוש ל" + (q.period === "half" ? "חצי שנה" : "שנה") + " וסגירה");
@@ -730,6 +731,14 @@ function pInsts(){
         apply.addEventListener("click", () => accessCall("renewApplySystems", { id: q.id })
           .then(() => { apply.textContent = "נפתחו ✓"; apply.disabled = true; }).catch(accessFail));
         acts.append(renew, apply);
+      }
+      if (!q.inst) {
+        const create = el("button",{class:"act p"}, "פתיחת המוסד (" + (q.period === "half" ? "חצי שנה" : "שנה") + ") וסגירה");
+        create.title = "פותח את \"" + (q.instTyped || "") + "\" כמוסד חדש, עם המערכות שביקשו ומנוי לתקופה שביקשו. אחר כך מפיקים קוד למנהל/ת המוסד.";
+        create.addEventListener("click", () => ask("פתיחת " + (q.instTyped || "") + " כמוסד חדש",
+          "המוסד ייפתח עם המערכות שסומנו בבקשה ומנוי ל" + (q.period === "half" ? "חצי שנה" : "שנה") + ". אם בחרו \"אחר\", את המערכות הנוספות פותחים ב\"מודולים\". אחר כך מפיקים קוד למנהל/ת המוסד.",
+          () => accessCall("renewCreateInst", { id: q.id }).then(() => { instList = null; render(); }).catch(accessFail)));
+        acts.append(create);
       }
       const done = el("button",{class:"act"},"סגירה בלי חידוש");
       done.addEventListener("click", () => accessCall("renewDone", { id: q.id }).then(() => render()).catch(accessFail));

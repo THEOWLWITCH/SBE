@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>בקשת חידוש מנוי</title>
+<title>מנוי — חידוש או רכישה</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -108,7 +108,7 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 <div class="wrap">
 <a class="back" href="entry.html">→ למסך הכניסה</a>
 
-<header><div><h1>בקשת חידוש מנוי</h1><p class="who">ממלאים את הפרטים ובוחרים את המערכות. אין צורך בתשלום כאן — ניצור אתכם קשר טלפוני להארכת המנוי ולהסדרת התשלום.</p></div></header>
+<header><div><h1>מנוי — חידוש או רכישה</h1><p class="who">ממלאים את הפרטים ובוחרים את המערכות. אין צורך בתשלום כאן — ניצור אתכם קשר טלפוני להשלמת המנוי ולהסדרת התשלום.</p></div></header>
 <!-- בקשת חידוש (30/09/2026): טופס בלי טקסט חופשי. אין סליקה — הבקשה נשמרת
      בשרת ומופיעה למנהלת המערכת במסך הניהול ← מוסדות ← "בקשות חידוש", והיא
      מתקשרת להאריך ולקבל פרטי תשלום. התאריך נרשם אוטומטית בשרת. -->
@@ -124,21 +124,29 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 @media(max-width:560px){.two{grid-template-columns:1fr;}}
 </style>
 <div class="card" id="form">
+  <label>סוג הבקשה</label>
+  <div class="per">
+    <label><input type="radio" name="type" value="renew" checked> חידוש מנוי קיים</label>
+    <label><input type="radio" name="type" value="new"> רכישת מנוי חדש</label>
+  </div>
   <div class="two">
     <div><label for="fullName">שם מלא *</label><input id="fullName" maxlength="60" autocomplete="name"></div>
-    <div><label for="instName">שם המוסד *</label><input id="instName" maxlength="80" autocomplete="organization"></div>
+    <div><label for="instSel">שם המוסד *</label>
+      <select id="instSel"><option value="">— טוען את רשימת המוסדות... —</option></select>
+      <input id="instName" maxlength="80" autocomplete="organization" placeholder="שם המוסד החדש" hidden style="margin-top:6px"></div>
     <div><label for="email">מייל *</label><input id="email" type="email" maxlength="80" dir="ltr" autocomplete="email"></div>
     <div><label for="phone">טלפון נייד *</label><input id="phone" type="tel" maxlength="15" dir="ltr" autocomplete="tel" placeholder="05X-XXXXXXX"></div>
   </div>
   <label>המערכות במנוי *</label>
   <div class="sys" id="systems"></div>
+  <input id="other" maxlength="80" placeholder="פרטו בקצרה (עד 80 תווים)" hidden style="margin-top:6px">
   <label>תקופה</label>
   <div class="per">
     <label><input type="radio" name="period" value="year" checked> שנה</label>
     <label><input type="radio" name="period" value="half"> חצי שנה</label>
   </div>
-  <label for="code">קוד מנהל/ת המוסד (אם יש — עוזר לזהות את המוסד)</label>
-  <input id="code" class="code" dir="ltr" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX">
+  <div id="codeWrap"><label for="code">קוד מנהל/ת המוסד (לא חובה)</label>
+  <input id="code" class="code" dir="ltr" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX"></div>
   <p class="sub" style="margin:4px 0 0">תאריך הבקשה נרשם אוטומטית.</p>
   <div style="margin-top:12px"><button class="btn" id="send">שליחת הבקשה</button></div>
   <div id="msg"></div>
@@ -156,17 +164,52 @@ SYSTEMS.forEach(([l, ps], i) => {
   cb.dataset.perms = ps.join(",");
   const lb = document.createElement("label"); lb.append(cb, l); $("systems").append(lb);
 });
+// "אחר" — קומבינציה שלא ברשימה; פותח שדה קצר.
+{
+  const cb = Object.assign(document.createElement("input"), { type: "checkbox", id: "sOther" });
+  const lb = document.createElement("label"); lb.append(cb, "אחר"); $("systems").append(lb);
+  cb.addEventListener("change", () => { $("other").hidden = !cb.checked; if (cb.checked) $("other").focus(); });
+}
+// המוסד: רשימה נפתחת של המוסדות שיש להם מנוי, ו"מוסד חדש" — שדה טקסט.
+const NEW_INST = "__new__";
+function syncType(){
+  const isNew = document.querySelector("input[name=type]:checked").value === "new";
+  if (isNew) $("instSel").value = NEW_INST;
+  $("instName").hidden = $("instSel").value !== NEW_INST;
+  $("codeWrap").hidden = isNew;
+}
+document.querySelectorAll("input[name=type]").forEach(r => r.addEventListener("change", syncType));
+$("instSel").addEventListener("change", () => {
+  if ($("instSel").value === NEW_INST) document.querySelector("input[name=type][value=new]").checked = true;
+  else if ($("instSel").value) document.querySelector("input[name=type][value=renew]").checked = true;
+  syncType();
+});
+fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "renewInstitutions" }) })
+  .then(r => r.json()).then(d => d.names || []).catch(() => [])
+  .then(names => {
+    const sel = $("instSel"); sel.textContent = "";
+    const add = (v, t) => sel.append(Object.assign(document.createElement("option"), { value: v, textContent: t }));
+    add("", "— בחרו מוסד —");
+    names.forEach(n => add(n, n));
+    add(NEW_INST, "מוסד חדש / לא ברשימה");
+    if (!names.length) sel.value = NEW_INST;
+    syncType();
+  });
 $("send").addEventListener("click", async () => {
-  const systems = [...document.querySelectorAll("#systems input:checked")].flatMap(cb => cb.dataset.perms.split(","));
+  const systems = [...document.querySelectorAll("#systems input[data-perms]:checked")].flatMap(cb => cb.dataset.perms.split(","));
   const phone = $("phone").value.replace(/[^\d+]/g, "");
-  const body = { action: "renewRequest", fullName: $("fullName").value.trim(), instName: $("instName").value.trim(),
-    email: $("email").value.trim(), phone, systems, period: document.querySelector("input[name=period]:checked").value,
-    code: $("code").value.trim() };
+  const type = document.querySelector("input[name=type]:checked").value;
+  const instName = $("instSel").value === NEW_INST ? $("instName").value.trim() : $("instSel").value;
+  const other = $("sOther").checked ? $("other").value.trim() : "";
+  const body = { action: "renewRequest", type, fullName: $("fullName").value.trim(), instName,
+    email: $("email").value.trim(), phone, systems, other, period: document.querySelector("input[name=period]:checked").value,
+    code: type === "new" ? "" : $("code").value.trim() };
   const msg = $("msg"); msg.className = "msg err";
-  if (!body.fullName || !body.instName) { msg.textContent = "צריך למלא שם מלא ושם המוסד."; return; }
+  if (!body.fullName || !body.instName) { msg.textContent = "צריך למלא שם מלא ולבחור מוסד (או להקליד מוסד חדש)."; return; }
+  if ($("sOther").checked && !other) { msg.textContent = "סימנתם \"אחר\" — צריך לפרט בקצרה."; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { msg.textContent = "כתובת המייל לא תקינה."; return; }
   if (!/^(\+972|0)5\d{8}$/.test(phone)) { msg.textContent = "מספר הטלפון הנייד לא תקין (למשל 050-1234567)."; return; }
-  if (!systems.length) { msg.textContent = "צריך לסמן לפחות מערכת אחת."; return; }
+  if (!systems.length && !other) { msg.textContent = "צריך לסמן לפחות מערכת אחת, או \"אחר\"."; return; }
   $("send").disabled = true; msg.className = "msg"; msg.textContent = "שולחת... (לפעמים עד דקה)";
   try {
     const r = await fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
@@ -175,7 +218,7 @@ $("send").addEventListener("click", async () => {
       const when = new Date(d.at).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" });
       $("form").textContent = "";
       const p = document.createElement("p"); p.className = "msg";
-      p.textContent = "בקשתך התקבלה (" + when + "). ניצור איתך קשר טלפוני בהקדם כדי להאריך את המנוי ולהסדיר את התשלום.";
+      p.textContent = "בקשתך התקבלה (" + when + "). ניצור איתך קשר טלפוני בהקדם כדי " + (type === "new" ? "לפתוח את המנוי" : "להאריך את המנוי") + " ולהסדיר את התשלום.";
       $("form").append(p); return;
     }
     msg.className = "msg err";

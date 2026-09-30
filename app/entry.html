@@ -263,7 +263,7 @@ function renderEntry(){
   wsBtn.addEventListener("click", () => { alt.hidden = false; alt.textContent = ""; alt.append(buildWorkshopPicker()); });
   admBtn.addEventListener("click", () => { alt.hidden = false; alt.textContent = ""; alt.append(buildAdminField("sys")); });
   links.append(wsBtn, el("span",{class:"sep"},"·"), admBtn, el("span",{class:"sep"},"·"),
-    el("a",{href:"about.html"},"אודות המערכת"), el("span",{class:"sep"},"·"), el("a",{href:"renew.html"},"חידוש מנוי"));
+    el("a",{href:"about.html"},"אודות המערכת"), el("span",{class:"sep"},"·"), el("a",{href:"renew.html"},"מנוי — חידוש או רכישה"));
   minn.append(links, alt);
   more.append(minn);
   view.append(more);
