@@ -1412,22 +1412,22 @@ function openModDlg(instName) {
 
   accessCall("getModules", { inst: instName })
     .then(cfg => ({ cfg, loaded: true }))
-    .catch(() => ({ cfg: { conv: true, activity: true, academic: true, resilience: true }, loaded: false }))
+    .catch(() => ({ cfg: { conv: false, activity: false, academic: false, resilience: false }, loaded: false }))
     .then(({ cfg, loaded }) => {
       body.textContent = "";
       $("modSave").disabled = false;
       if (!loaded) body.append(el("div",{class:"lock",style:"margin-top:0"},
-        "לא הצלחתי לטעון את ההגדרות השמורות מהשרת — מוצג כאן \"הכול פעיל\". שמירה תחליף את מה ששמור."));
+        "לא הצלחתי לטעון את ההגדרות השמורות מהשרת — מוצג כאן \"הכול כבוי\". שמירה תחליף את מה ששמור."));
 
       const note = el("p",{style:"margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.6"},
-        "בחרי אילו מודולים יהיו פתוחים לצוות המוסד הזה — מי שנכנסת עם קוד המוסד. ברירת מחדל: הכל פעיל.");
+        "בחרי אילו מודולים יהיו פתוחים לצוות המוסד הזה — מי שנכנסת עם קוד המוסד. ברירת מחדל: הכול כבוי — מסמנים רק את מה שהמוסד אמור להשתמש בו.");
       body.append(note);
 
       const toggles = {};
       Object.entries(MOD_LABELS).forEach(([k, label]) => {
         const row = el("div",{style:"display:flex;align-items:center;gap:12px;margin-bottom:10px;"});
         const cb = el("input",{type:"checkbox",id:"mod_"+k,style:"width:18px;height:18px;cursor:pointer;"});
-        cb.checked = cfg[k] !== false;
+        cb.checked = cfg[k] === true;
         toggles[k] = cb;
         const lbl = el("label",{"for":"mod_"+k,style:"font-size:15px;cursor:pointer;"}, label);
         row.append(cb, lbl);

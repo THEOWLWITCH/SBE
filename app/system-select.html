@@ -88,7 +88,9 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
   </div>
 </div>
 
-<div class="cat" id="catConv">
+<p class="hint" id="modMsg" hidden style="margin:0 0 14px"></p>
+
+<div class="cat" id="catConv" hidden>
   <h2><span class="ico" style="background:var(--hidden)"></span>תכנון שיחה</h2>
   <div class="in">
     <p class="hint">הכנה מובנית לשיחה מקצועית — עץ החלטות, כרטיס הנחיה וטיוטת מסר כתוב.</p>
@@ -99,7 +101,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
   </div>
 </div>
 
-<div class="cat" id="catActivity">
+<div class="cat" id="catActivity" hidden>
   <h2><span class="ico" style="background:var(--brick)"></span>תכנון פעילות</h2>
   <div class="in">
     <p class="hint">תכנון פעילות חינוכית על פי קריטריוני איכות, וניתוח פעילויות קיימות.</p>
@@ -109,7 +111,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
   </div>
 </div>
 
-<div class="cat" id="catAcademic">
+<div class="cat" id="catAcademic" hidden>
   <h2><span class="ico" style="background:var(--auto)"></span>ניתוח ומשוב עבודה אקדמית</h2>
   <div class="in">
     <p class="hint">משוב מובנה ומוקד-קריטריונים על עבודה אקדמית, פרויקט או תקציר לפני הגשה.</p>
@@ -168,30 +170,33 @@ eduItems.forEach(it => eduWrap.append(el("a",{href:it.href}, el("b",{},it.t), el
 document.getElementById("back").addEventListener("click", () => { location.href = "entry.html"; });
 
 // מנחת הורים ומנחת נוער: אין תכנון שיחה, תכנון פעילות, ניתוח ומשוב אקדמי
-if (track === "parent" || track === "youth") {
-  ["catConv", "catActivity", "catAcademic"].forEach(id => {
-    const e = document.getElementById(id);
-    if (e) e.hidden = true;
+const TRACK_HAS_TOOLS = !(track === "parent" || track === "youth");
+
+// המודולים של המוסד (נפתחים במסך הניהול; ברירת המחדל — סגור). הקטגוריות
+// מוסתרות עד שהשרת עונה, ומוצגות רק מה שנפתח במפורש. בלי מוסד בכתובת (מנהלת
+// המערכת שפותחת את המסך לתצוגה) — הכול מוצג. ההגדרות נשמרות גם בכניסה
+// (sbe.session.modules) כדי ש-lib/access-guard.js יחסום כניסה ישירה לכתובת.
+const CAT_IDS = { conv: "catConv", activity: "catActivity", academic: "catAcademic" };
+const modMsg = document.getElementById("modMsg");
+function showCats(cfg){
+  Object.entries(CAT_IDS).forEach(([key, id]) => {
+    document.getElementById(id).hidden = !(TRACK_HAS_TOOLS && cfg[key] === true);
   });
 }
-
-// כל מי שנכנסה עם קוד המוסד: קרא את הגדרות המודולים של המוסד מהשרת ב-Render
-// (נקבעות במסך הניהול), והסתר קטגוריות שבוטלו.
-if (inst) {
-  const CAT_IDS = { conv: "catConv", activity: "catActivity", academic: "catAcademic" };
+if (!inst) {
+  showCats({ conv: true, activity: true, academic: true });
+} else {
+  modMsg.hidden = false; modMsg.textContent = "טוענת את הכלים של המוסד... (לפעמים עד דקה)";
   fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" },
     body: JSON.stringify({ action: "getModules", inst }) })
     .then(r => r.ok ? r.json() : null)
     .then(cfg => {
-      if (!cfg) return; // שגיאה — ברירת מחדל הכל מוצג
-      Object.entries(CAT_IDS).forEach(([key, id]) => {
-        if (cfg[key] === false) {
-          const el = document.getElementById(id);
-          if (el) el.hidden = true;
-        }
-      });
+      if (!cfg) throw new Error("no cfg");
+      modMsg.hidden = true;
+      try { sessionStorage.setItem("sbe.session.modules", JSON.stringify(cfg)); } catch(e){}
+      showCats(cfg);
     })
-    .catch(() => {}); // שגיאת רשת — ברירת מחדל הכל מוצג
+    .catch(() => { modMsg.textContent = "לא הצלחתי לטעון את הכלים הנוספים של המוסד. אפשר לרענן את הדף בעוד רגע."; });
 }
 </script>
 

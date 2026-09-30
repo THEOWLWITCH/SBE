@@ -9,7 +9,8 @@ import { scryptSync, randomBytes, timingSafeEqual, createHmac, createHash } from
 // כתובות עד עכשיו ב-entry.html).
 const DEFAULT_PASSWORDS = { sys: '990211', inst: '550118' };
 const MIN_PASSWORD = 8;
-const DEFAULT_MODULES = { conv: true, activity: true, academic: true, resilience: true };
+// ברירת המחדל: שום מודול לא פתוח למוסד עד שמנהלת המערכת פותחת אותו במסך הניהול.
+const DEFAULT_MODULES = { conv: false, activity: false, academic: false, resilience: false };
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
 const pause = () => new Promise((r) => setTimeout(r, 400));
@@ -135,7 +136,7 @@ async function handleResilience(store, body) {
     if (!t || (t.k !== 'inst' && t.k !== 'sys')) { await pause(); return [403, { error: 'unauthorized' }]; }
     if (t.k === 'inst') {
       const mods = { ...DEFAULT_MODULES, ...((await store.get('modules:' + t.inst)) || {}) };
-      if (mods.resilience === false) return [403, { error: 'module off' }];
+      if (mods.resilience !== true) return [403, { error: 'module off' }];
     }
     const cls = String(body.cls || '').trim().slice(0, 40);
     const band = Number(body.band);
@@ -278,8 +279,8 @@ export async function handleAccess(store, body) {
     const inst = String(body.inst || '').trim();
     const m = body.modules;
     if (!inst || !m || typeof m !== 'object') return [400, { error: 'missing fields' }];
-    const safe = { conv: m.conv !== false, activity: m.activity !== false, academic: m.academic !== false,
-      resilience: m.resilience !== false };
+    const safe = { conv: m.conv === true, activity: m.activity === true, academic: m.academic === true,
+      resilience: m.resilience === true };
     await store.set('modules:' + inst, safe);
     return [200, { ok: true, modules: safe }];
   }
