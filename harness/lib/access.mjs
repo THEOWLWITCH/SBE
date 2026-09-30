@@ -494,9 +494,10 @@ async function handleCodes(store, body, isSys) {
 // רשימת המוסדות למסך הניהול — עם מצב המנוי וקוד מנהל/ת המוסד.
 async function institutionsView(store) {
   const [list, settings, codes] = await Promise.all([getInstitutions(store), getSettings(store), allCodes(store)]);
-  return list.map((x) => {
+  const ceilings = await Promise.all(list.map((x) => getCeiling(store, x.name)));
+  return list.map((x, i) => {
     const admin = codes.filter((c) => c.kind === 'instadmin' && c.inst === x.name && !c.revoked).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
-    return { ...x, sub: subState(x, settings), adminCode: admin ? admin.code : null,
+    return { ...x, sub: subState(x, settings), adminCode: admin ? admin.code : null, open: PERMS.filter((p) => ceilings[i][p]),
       staffCodes: codes.filter((c) => c.inst === x.name && c.kind === 'staff' && !c.revoked).length };
   });
 }
@@ -604,6 +605,22 @@ export async function handleAccess(store, body) {
       else x.active = body.active !== false;
     }
     await store.set('institutions', list);
+    return [200, { institutions: await institutionsView(store) }];
+  }
+
+  // מחיקת מוסד: הרשומה, התקרה, כל הקודים שלו וכיתות החוסן שלו (עם התשובות).
+  // בקשות חידוש נשארות — הן היסטוריה של פניות.
+  if (action === 'deleteInstitution') {
+    const list = await getInstitutions(store);
+    const name = String(body.name || '').trim();
+    if (!list.find((i) => i.name === name)) return [404, { error: 'no such institution' }];
+    await store.set('institutions', list.filter((i) => i.name !== name));
+    await store.del('modules:' + name);
+    for (const c of await allCodes(store)) if (c.inst === name) await store.del('code:' + normCode(c.code));
+    for (const { key, value } of await store.list('resil:')) {
+      const [, id, r] = key.split(':');
+      if (!r && value && value.inst === name) { await store.delPrefix('resil:' + id + ':r:'); await store.del('resil:' + id); }
+    }
     return [200, { institutions: await institutionsView(store) }];
   }
 
