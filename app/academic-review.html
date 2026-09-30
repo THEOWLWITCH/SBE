@@ -768,6 +768,26 @@ $("bReview").addEventListener("click", async (e) => {
   const text = val("workText");
   const age = val("i-age");
   const criteriaList = allCriteria().filter(c => selectedCriteria.has(c.v));
+  // קוד סטודנט/ית ("משוב לעבודות" שמרצה הפיק/ה): כל הפקה נספרת בשרת, לפי הקוד —
+  // לא לפי המכשיר. אחרי המכסה (3 כברירת מחדל) השרת מסרב.
+  let info = {}; try { info = JSON.parse(sessionStorage.getItem("sbe.session.info") || "{}") || {}; } catch (_) {}
+  if (info.kind === "student") {
+    e.target.disabled = true; e.target.textContent = "בודקת את הקוד...";
+    let u = null;
+    try {
+      const r = await fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "codeUse", token: sessionStorage.getItem("sbe.session.token") || "" }) });
+      u = await r.json().catch(() => ({})); u._status = r.status;
+    } catch (_) { u = { _status: 0 }; }
+    e.target.disabled = false; e.target.textContent = "קבלת משוב";
+    if (!u.ok) {
+      alert(u.error === "used-up" ? "הקוד שלך מיצה את מספר הפקות המשוב שלו. אפשר לבקש קוד חדש מהמרצה."
+        : u.error === "expired" ? "תוקף הקוד שלך הסתיים. אפשר לבקש קוד חדש מהמרצה."
+        : u._status === 403 ? "הקוד כבר לא תקף. היכנסו מחדש." : "אין כרגע חיבור לשרת. נסו שוב בעוד רגע.");
+      return;
+    }
+    if (u.left === 0) setTimeout(() => alert("זו הייתה הפקת המשוב האחרונה בקוד הזה."), 50);
+  }
   e.target.disabled = true; e.target.textContent = "קוראת... (עד כ-3 דקות)";
   try {
     let fb, mock = false;
