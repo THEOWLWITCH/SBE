@@ -305,6 +305,12 @@ async function handleCodes(store, body, isSys) {
   // בקשת חידוש מנוי — ציבורית (גם כשהמנוי כבר הסתיים). אין סליקה: הבקשה נשמרת,
   // מנהלת המערכת מתקשרת להאריך ולקבל פרטי תשלום. המוסד מזוהה לפי קוד (אם
   // הוקלד) או לפי שם מדויק; אחרת נשמר כ"לא מזוהה". בלי טקסט חופשי.
+  // שמות המוסדות שיש להם מנוי — לרשימה הנפתחת בטופס (ציבורי: שמות בלבד).
+  if (action === 'renewInstitutions') {
+    const list = await getInstitutions(store);
+    return [200, { names: list.filter((i) => i.active !== false).map((i) => i.name).sort((a, b) => a.localeCompare(b, 'he')) }];
+  }
+
   if (action === 'renewRequest') {
     const list = await getInstitutions(store);
     const code = normCode(body.code);
@@ -317,8 +323,10 @@ async function handleCodes(store, body, isSys) {
     const email = String(body.email || '').trim().slice(0, 80);
     const phone = String(body.phone || '').replace(/[^\d+]/g, '').slice(0, 15);
     const systems = [...new Set((Array.isArray(body.systems) ? body.systems : []).filter((p) => PERMS.includes(p)))];
+    const other = String(body.other || '').trim().slice(0, 80);
     const period = ['year', 'half'].includes(body.period) ? body.period : 'year';
-    if (!fullName || !instTyped || !systems.length) return [400, { error: 'missing fields' }];
+    const type = body.type === 'new' ? 'new' : 'renew';
+    if (!fullName || !instTyped || (!systems.length && !other)) return [400, { error: 'missing fields' }];
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return [400, { error: 'bad email' }];
     if (!/^(\+972|0)5\d{8}$/.test(phone)) return [400, { error: 'bad phone' }];
     // טופס ציבורי: עד 5 בקשות פתוחות למוסד מזוהה, ועד 30 לא-מזוהות, כדי שלא יציפו את המאגר.
@@ -326,7 +334,7 @@ async function handleCodes(store, body, isSys) {
     if (open.filter((v) => (v.inst || null) === inst).length >= (inst ? 5 : 30)) return [429, { error: 'too many' }];
     const at = new Date().toISOString();
     await store.set('renewreq:' + at + ':' + randomBytes(3).toString('hex'),
-      { inst, instTyped, fullName, email, phone, systems, period, at, done: false });
+      { type, inst, instTyped, fullName, email, phone, systems, other, period, at, done: false });
     return [200, { ok: true, at, inst: inst || instTyped }];
   }
 
@@ -446,6 +454,25 @@ async function handleCodes(store, body, isSys) {
     const rows = (await store.list('renewreq:')).map((r) => ({ id: r.key.slice(9), ...r.value })).reverse();
     return [200, { requests: rows }];
   }
+  // רכישה חדשה: פותחת את המוסד מהבקשה, עם המערכות שביקשו ומנוי לתקופה שביקשו.
+  if (action === 'renewCreateInst') {
+    const k = 'renewreq:' + String(body.id || '');
+    const r = await store.get(k);
+    if (!r) return [404, { error: 'no such request' }];
+    const list = await getInstitutions(store);
+    const name = r.inst || r.instTyped;
+    if (!list.find((i) => i.name === name)) list.push({ name, code: newInstCode(list), active: true, since: String(new Date().getFullYear()) });
+    const x = list.find((i) => i.name === name);
+    const d = new Date(today() + 'T00:00:00Z'); d.setUTCMonth(d.getUTCMonth() + (r.period === 'half' ? 6 : 12));
+    x.subEnd = d.toISOString().slice(0, 10);
+    await store.set('institutions', list);
+    const cur = await getCeiling(store, name);
+    (r.systems || []).forEach((p) => { cur[p] = true; });
+    await store.set('modules:' + name, cur);
+    r.inst = name; r.done = true; await store.set(k, r);
+    return [200, { institutions: await institutionsView(store) }];
+  }
+
   if (action === 'renewApplySystems') {
     const r = await store.get('renewreq:' + String(body.id || ''));
     if (!r || !r.inst) return [404, { error: 'no such request' }];
@@ -542,7 +569,7 @@ export async function handleAccess(store, body) {
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
 
   if (['renewRequest', 'codesList', 'codeCreate', 'codeRevoke', 'codeUse', 'setSubscription', 'renewSubscription',
-    'getSettings', 'setSettings', 'renewList', 'renewDone', 'renewApplySystems'].includes(action)) {
+    'getSettings', 'setSettings', 'renewList', 'renewDone', 'renewApplySystems', 'renewCreateInst', 'renewInstitutions'].includes(action)) {
     const out = await handleCodes(store, body, isSys);
     if (out) return out;
   }
