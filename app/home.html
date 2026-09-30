@@ -99,10 +99,14 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 .msg{font-size:13.5px;font-weight:600;margin-top:8px;}
 .msg.err{color:var(--brick);}
 .tablewrap{overflow-x:auto;}
+.brand{display:block;width:min(190px,48vw);height:auto;margin:14px auto 0;}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .brand{background:#EEF1F4;border-radius:12px;padding:8px 12px;} }
+:root[data-theme="dark"] .brand{background:#EEF1F4;border-radius:12px;padding:8px 12px;}
 </style>
 </head>
 <body>
 <div class="wrap">
+<img class="brand" src="assets/begood-logo.webp" alt="Begood — חינוך לחוסן">
 <header>
   <div>
     <h1>המרחב שלי</h1>

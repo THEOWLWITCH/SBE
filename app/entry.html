@@ -42,21 +42,21 @@ body{direction:rtl;background:var(--ground);color:var(--ink);margin:0;
 
 header{padding:14px 0 4px;}
 .brandrow{display:flex;align-items:center;gap:11px;margin:0 0 8px;}
-.brandrow img{height:24px;width:auto;display:block;}
+.brandrow img{height:38px;width:auto;display:block;}
 .brandrow .tagline{margin:0;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);
   letter-spacing:.02em;}
-:root[data-theme="dark"] .brandrow img{filter:brightness(1.85) saturate(.85);}
+:root[data-theme="dark"] .brandrow img{filter:none;background:#EEF1F4;border-radius:6px;padding:2px 5px;}
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]) .brandrow img{filter:brightness(1.85) saturate(.85);}
+  :root:not([data-theme="light"]) .brandrow img{filter:none;background:#EEF1F4;border-radius:6px;padding:2px 5px;}
 }
 .logo-hero{text-align:center;margin:0 0 12px;padding:10px 16px 8px;}
-.logo-hero img{width:min(220px,60vw);height:auto;display:block;margin:0 auto 10px;}
+.logo-hero img{width:min(300px,74vw);height:auto;display:block;margin:0 auto 10px;}
 .slogan{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:clamp(14px,3.5vw,17px);
   color:var(--spoken);line-height:1.4;margin:0;font-weight:700;}
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]) .logo-hero img{filter:brightness(.92) saturate(.8);}
+  :root:not([data-theme="light"]) .logo-hero img{filter:none;background:#EEF1F4;border-radius:14px;padding:10px 16px;}
 }
-:root[data-theme="dark"] .logo-hero img{filter:brightness(.92) saturate(.8);}
+:root[data-theme="dark"] .logo-hero img{filter:none;background:#EEF1F4;border-radius:14px;padding:10px 16px;}
 .credit{text-align:center;margin-top:20px;font-size:11px;color:var(--muted);line-height:1.7;}
 h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(20px,4.5vw,26px);
   line-height:1.16;margin:0 0 4px;}
@@ -143,7 +143,7 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 <div class="wrap">
 <header>
   <div class="logo-hero">
-    <img src="assets/logo.webp" alt="Begood — חינוך מבוסס סימולציה">
+    <img src="assets/begood-logo.webp" alt="Begood — חינוך מבוסס סימולציה">
     <p class="slogan">להיות מוכנים לכל מה שהשדה החינוכי מזמן  ...וגם החיים.</p>
   </div>
 </header>

@@ -13,8 +13,8 @@ import { createRenderer } from './doc-render.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
-export const MARK = 'data:image/png;base64,' +
-  readFileSync(join(HERE, '..', '..', 'assets', 'logo', 'sbe-mark.png')).toString('base64');
+export const MARK = 'data:image/webp;base64,' +
+  readFileSync(join(HERE, '..', 'assets', 'begood-mark.webp')).toString('base64');
 
 // כפתור הדיווח הגלובלי — אותו רכיב שבכל מסכי app/. מוצמד לכל תוצר בבנייה,
 // כך שאין צורך להצמיד אותו ידנית אחרי כל הרצה (עד 21/09/2026 build-docs

@@ -36,10 +36,10 @@ body{direction:rtl;background:var(--ground);color:var(--ink);
 .wrap{max-width:820px;margin:0 auto;}
 
 .brandrow{display:flex;align-items:center;gap:11px;margin:0 0 12px;}
-.brandrow img{height:25px;width:auto;display:block;}
+.brandrow img{height:38px;width:auto;display:block;}
 .brandrow .eyebrow{margin:0;}
-:root[data-theme="dark"] .brandrow img{filter:brightness(1.85) saturate(.85);}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .brandrow img{filter:brightness(1.85) saturate(.85);}}
+:root[data-theme="dark"] .brandrow img{filter:none;background:#EEF1F4;border-radius:6px;padding:2px 5px;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .brandrow img{filter:none;background:#EEF1F4;border-radius:6px;padding:2px 5px;}}
 
 header{padding:44px 0 22px;border-bottom:2px solid var(--ink);margin-bottom:26px;}
 .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.16em;
