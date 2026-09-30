@@ -143,7 +143,7 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 <div class="wrap">
 <header>
   <div class="logo-hero">
-    <img src="assets/logo.webp" alt="S.B.E — חינוך מבוסס סימולציה">
+    <img src="assets/logo.webp" alt="Begood — חינוך מבוסס סימולציה">
     <p class="slogan">להיות מוכנים לכל מה שהשדה החינוכי מזמן  ...וגם החיים.</p>
   </div>
 </header>
@@ -437,7 +437,7 @@ function buildAdminField(role){
     return;
   }
   // יציאה רק כשמבקשים אותה (?logout=1 או כפתור "יציאה"), לא בכל הגעה למסך
-  // הכניסה — אחרת קישור "S.B.E" או "מסך כניסה" ניתק את מנהלת המערכת וחסם
+  // הכניסה — אחרת קישור "Begood" או "מסך כניסה" ניתק את מנהלת המערכת וחסם
   // אותה מכל המסכים. כניסה חדשה מוחקת ממילא את הקודמת (clearSession).
   if (new URLSearchParams(location.search).get("logout")) clearSession();
   renderEntry();
@@ -619,7 +619,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     } else {
       bodyLines.push("פירוט:", details);
     }
-    var subject = "S.B.E · " + type + " · " + name;
+    var subject = "Begood · " + type + " · " + name;
     location.href = "mailto:yael.sade@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(bodyLines.join("\n"));
     dlg.close();
   });

@@ -239,7 +239,7 @@ ${FONTS}
 <style>${CSS}</style>
 <div class="sheet">
   <div class="head">
-    <img class="lg" src="${MARK}" alt="S.B.E">
+    <img class="lg" src="${MARK}" alt="Begood">
     <p class="badge">${esc(badge)}</p>
     <p class="ttl">${esc(scn.name)}</p>
     <p class="sub">${esc(scn.subtitle)}</p>
@@ -248,7 +248,7 @@ ${FONTS}
   <div class="hr"></div>
   <div class="body">${body}</div>
   <div class="foot">
-    <div class="foot-row"><span>S.B.E · חינוך מבוסס סימולציה · ${esc(scn.id)}</span><span>${esc(badge)}</span></div>
+    <div class="foot-row"><span>Begood · חינוך מבוסס סימולציה · ${esc(scn.id)}</span><span>${esc(badge)}</span></div>
     ${byline ? `<div class="foot-by">${byline}</div>` : ''}
   </div>
 </div>
@@ -261,7 +261,7 @@ ${WIDGET}`;
 ${GUARD}
 ${FONTS}
 <style>${CARD_CSS}</style>
-<div class="card"><div class="ch"><b>${esc(title)}</b><span style="display:flex;align-items:center;gap:10px"><img class="lg" src="${MARK}" alt="S.B.E">${esc(badge)} · ${esc(scn.duration)} דק׳</span></div>
+<div class="card"><div class="ch"><b>${esc(title)}</b><span style="display:flex;align-items:center;gap:10px"><img class="lg" src="${MARK}" alt="Begood">${esc(badge)} · ${esc(scn.duration)} דק׳</span></div>
 <div class="cb">${inner}</div></div>
 ${WIDGET}`;
   }

@@ -84,7 +84,7 @@ h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:18px;margin:28px 0 10p
 .links a:hover{background:#DCE7EF}
 footer{margin-top:30px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--hair);padding-top:12px}`;
 
-let body = `<header><img src="${MARK}" alt="S.B.E"><h1>תוצרי המערכת</h1>
+let body = `<header><img src="${MARK}" alt="Begood"><h1>תוצרי המערכת</h1>
 <p class="sub">${esc(manifest.intro)}</p></header>`;
 for (const g of manifest.groups) {
   body += `<h2>${esc(g.title)}</h2>`;
@@ -100,7 +100,7 @@ for (const g of manifest.groups) {
 body += `<footer>${esc(manifest.footer || '')}</footer>`;
 
 const index = `<!doctype html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>תוצרי המערכת — S.B.E</title>${GUARD}${FONTS}<style>${css}</style></head><body><div class="wrap">${body}</div>${PRINT_HIDE}${NAV_WIDGET}${REPORT_WIDGET}</body></html>`;
+<title>תוצרי המערכת — Begood</title>${GUARD}${FONTS}<style>${css}</style></head><body><div class="wrap">${body}</div>${PRINT_HIDE}${NAV_WIDGET}${REPORT_WIDGET}</body></html>`;
 writeFileSync(join(OUT, 'index.html'), index, 'utf8');
 // הקישורים שנבנו, לפי שם התוצר — משמש את מסך הבדיקה (לשונית "תוצרים לפי מסכים")
 const linkMap = {};
