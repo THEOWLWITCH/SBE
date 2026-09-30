@@ -195,11 +195,11 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;}}
 
 .brandrow{display:flex;align-items:center;gap:11px;margin:0 0 12px;}
-.brandrow img{height:25px;width:auto;display:block;}
+.brandrow img{height:38px;width:auto;display:block;}
 .brandrow .eyebrow{margin:0;}
-:root[data-theme="dark"] .brandrow img{filter:brightness(1.85) saturate(.85);}
+:root[data-theme="dark"] .brandrow img{filter:none;background:#EEF1F4;border-radius:6px;padding:2px 5px;}
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]) .brandrow img{filter:brightness(1.85) saturate(.85);}
+  :root:not([data-theme="light"]) .brandrow img{filter:none;background:#EEF1F4;border-radius:6px;padding:2px 5px;}
 }
 
 
