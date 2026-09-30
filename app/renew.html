@@ -108,36 +108,78 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 <div class="wrap">
 <a class="back" href="entry.html">→ למסך הכניסה</a>
 
-<header><div><h1>בקשת חידוש מנוי</h1><p class="who">ממלאים רק את הפרטים האלה, ונחזור אליכם לחידוש.</p></div></header>
-<!-- בקשת חידוש (30/09/2026): טופס קצר בלי טקסט חופשי. המוסד מזוהה לפי קוד
-     מנהל/ת המוסד (או קוד המוסד הישן), גם כשהמנוי כבר הסתיים. הבקשה נשמרת
-     בשרת ומופיעה למנהלת המערכת במסך הניהול ← מוסדות ← "בקשות חידוש". -->
+<header><div><h1>בקשת חידוש מנוי</h1><p class="who">ממלאים את הפרטים ובוחרים את המערכות. אין צורך בתשלום כאן — ניצור אתכם קשר טלפוני להארכת המנוי ולהסדרת התשלום.</p></div></header>
+<!-- בקשת חידוש (30/09/2026): טופס בלי טקסט חופשי. אין סליקה — הבקשה נשמרת
+     בשרת ומופיעה למנהלת המערכת במסך הניהול ← מוסדות ← "בקשות חידוש", והיא
+     מתקשרת להאריך ולקבל פרטי תשלום. התאריך נרשם אוטומטית בשרת. -->
+<style>
+.sys{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px;margin-top:4px;}
+.sys label{display:flex;gap:8px;align-items:center;margin:0;padding:8px 10px;border:1px solid var(--hair);border-radius:8px;
+  background:var(--ground);font-size:14.5px;font-weight:600;color:var(--ink);cursor:pointer;}
+.sys input{width:auto;margin:0;}
+.per{display:flex;gap:14px;margin-top:4px;}
+.per label{display:flex;gap:6px;align-items:center;margin:0;font-size:14.5px;color:var(--ink);font-weight:600;}
+.per input{width:auto;margin:0;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;}
+@media(max-width:560px){.two{grid-template-columns:1fr;}}
+</style>
 <div class="card" id="form">
-  <label for="code">קוד מנהל/ת המוסד</label>
+  <div class="two">
+    <div><label for="fullName">שם מלא *</label><input id="fullName" maxlength="60" autocomplete="name"></div>
+    <div><label for="instName">שם המוסד *</label><input id="instName" maxlength="80" autocomplete="organization"></div>
+    <div><label for="email">מייל *</label><input id="email" type="email" maxlength="80" dir="ltr" autocomplete="email"></div>
+    <div><label for="phone">טלפון נייד *</label><input id="phone" type="tel" maxlength="15" dir="ltr" autocomplete="tel" placeholder="05X-XXXXXXX"></div>
+  </div>
+  <label>המערכות במנוי *</label>
+  <div class="sys" id="systems"></div>
+  <label>תקופה</label>
+  <div class="per">
+    <label><input type="radio" name="period" value="year" checked> שנה</label>
+    <label><input type="radio" name="period" value="half"> חצי שנה</label>
+  </div>
+  <label for="code">קוד מנהל/ת המוסד (אם יש — עוזר לזהות את המוסד)</label>
   <input id="code" class="code" dir="ltr" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX">
-  <label for="name">שם איש/אשת הקשר</label>
-  <input id="name" maxlength="60" autocomplete="name">
-  <label for="contact">טלפון או מייל</label>
-  <input id="contact" maxlength="80" dir="ltr" autocomplete="email">
-  <label for="period">תקופת החידוש</label>
-  <select id="period"><option value="year">שנה</option><option value="half">חצי שנה</option><option value="other">אחר — נתאם בשיחה</option></select>
+  <p class="sub" style="margin:4px 0 0">תאריך הבקשה נרשם אוטומטית.</p>
   <div style="margin-top:12px"><button class="btn" id="send">שליחת הבקשה</button></div>
   <div id="msg"></div>
 </div>
 <script>
 "use strict";
 const $ = (id) => document.getElementById(id);
+// המערכות — אותן הרשאות כמו בשרת (PERMS). "משוב לעבודות" כולל גם הפקת קודים לסטודנטים.
+const SYSTEMS = [
+  ["הנחיית סדנאות — סטודנטים", ["fac_trainee"]], ["הנחיית סדנאות — הורים", ["fac_parent"]], ["הנחיית סדנאות — נוער", ["fac_youth"]],
+  ["חוסן חברתי", ["resilience"]], ["תכנון שיחה", ["conv"]], ["תכנון פעילות", ["activity"]], ["משוב לעבודות", ["academic", "lecturer"]],
+];
+SYSTEMS.forEach(([l, ps], i) => {
+  const cb = Object.assign(document.createElement("input"), { type: "checkbox", id: "s" + i });
+  cb.dataset.perms = ps.join(",");
+  const lb = document.createElement("label"); lb.append(cb, l); $("systems").append(lb);
+});
 $("send").addEventListener("click", async () => {
-  const body = { action: "renewRequest", code: $("code").value.trim(), name: $("name").value.trim(),
-    contact: $("contact").value.trim(), period: $("period").value };
-  const msg = $("msg");
-  if (!body.code || !body.name || !body.contact) { msg.className = "msg err"; msg.textContent = "צריך למלא קוד, שם ופרטי קשר."; return; }
+  const systems = [...document.querySelectorAll("#systems input:checked")].flatMap(cb => cb.dataset.perms.split(","));
+  const phone = $("phone").value.replace(/[^\d+]/g, "");
+  const body = { action: "renewRequest", fullName: $("fullName").value.trim(), instName: $("instName").value.trim(),
+    email: $("email").value.trim(), phone, systems, period: document.querySelector("input[name=period]:checked").value,
+    code: $("code").value.trim() };
+  const msg = $("msg"); msg.className = "msg err";
+  if (!body.fullName || !body.instName) { msg.textContent = "צריך למלא שם מלא ושם המוסד."; return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { msg.textContent = "כתובת המייל לא תקינה."; return; }
+  if (!/^(\+972|0)5\d{8}$/.test(phone)) { msg.textContent = "מספר הטלפון הנייד לא תקין (למשל 050-1234567)."; return; }
+  if (!systems.length) { msg.textContent = "צריך לסמן לפחות מערכת אחת."; return; }
   $("send").disabled = true; msg.className = "msg"; msg.textContent = "שולחת... (לפעמים עד דקה)";
   try {
     const r = await fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     const d = await r.json().catch(() => ({}));
-    if (d.ok) { $("form").textContent = ""; $("form").append(Object.assign(document.createElement("p"), { className: "msg", textContent: "הבקשה התקבלה עבור " + d.inst + ". נחזור אליכם בהקדם." })); return; }
-    msg.className = "msg err"; msg.textContent = r.status === 404 ? "הקוד לא מוכר. צריך את הקוד של מנהל/ת המוסד." : "השליחה לא הצליחה. נסו שוב.";
+    if (d.ok) {
+      const when = new Date(d.at).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" });
+      $("form").textContent = "";
+      const p = document.createElement("p"); p.className = "msg";
+      p.textContent = "בקשתך התקבלה (" + when + "). ניצור איתך קשר טלפוני בהקדם כדי להאריך את המנוי ולהסדיר את התשלום.";
+      $("form").append(p); return;
+    }
+    msg.className = "msg err";
+    msg.textContent = r.status === 429 ? "כבר התקבלו כמה בקשות מהמוסד הזה — ניצור קשר בקרוב." : "השליחה לא הצליחה. בדקו את הפרטים ונסו שוב.";
   } catch (e) { msg.className = "msg err"; msg.textContent = "אין כרגע חיבור לשרת. נסו שוב בעוד רגע."; }
   $("send").disabled = false;
 });
