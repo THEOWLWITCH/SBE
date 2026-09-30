@@ -540,7 +540,8 @@ export async function handleAccess(store, body) {
   if (action === 'login') {
     const { kind, secret } = body;
     let ok = false;
-    if (kind === 'sys' || kind === 'inst') ok = await checkPassword(store, kind, secret);
+    // הסיסמה המשותפת הישנה של מנהלות מוסדות בוטלה — לכל מוסד קוד מנהל/ת משלו.
+    if (kind === 'sys') ok = await checkPassword(store, kind, secret);
     else if (kind === 'academic') {
       const rec = await store.get('code-academic');
       ok = !!rec && normCode(secret).length > 0 && same(normCode(secret), normCode(rec.code));
@@ -576,7 +577,7 @@ export async function handleAccess(store, body) {
 
   // מנהלת מוסד רואה ומחליפה את קוד המוסד שלה (גם סיסמת מנהלת המערכת מתקבלת).
   if (action === 'instGetCode' || action === 'instNewCode') {
-    if (!isSys && !(await checkPassword(store, 'inst', body?.auth))) { await pause(); return [403, { error: 'unauthorized' }]; }
+    if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
     const list = await getInstitutions(store);
     const x = list.find((i) => i.name === String(body.inst || '').trim());
     if (!x) return [404, { error: 'no such institution' }];

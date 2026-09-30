@@ -1451,15 +1451,17 @@ function gate(w, loaded, loader, pwLabel){
 function pAccess(){
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"סיסמאות וקודים"),
-    el("p",{class:"sub"},"קוד הגישה למשוב לעבודות, והחלפת סיסמאות הניהול. הכול נשמר ונבדק בשרת, ולא מופיע בקוד של האתר."));
+    el("p",{class:"sub"},"סיסמת מנהלת המערכת, וקוד \"משוב לעבודות\" הכללי הישן. הכול נשמר ונבדק בשרת, ולא מופיע בקוד של האתר."));
 
   if (!gate(w, accessState, async () => { accessState = await accessCall("status"); }, "סיסמת מנהלת המערכת")) return w;
   const fail = accessFail;
 
   // קוד משוב לעבודות
   const c1 = el("div",{class:"card"});
-  c1.append(el("h3",{},"קוד גישה — משוב לעבודות", el("em",{},"בתוקף עד שמחליפים או מבטלים")));
+  c1.append(el("h3",{},"קוד \"משוב לעבודות\" כללי — השיטה הישנה", el("em",{},"בתוקף עד שמחליפים או מבטלים")));
   const in1 = el("div",{class:"in"});
+  in1.append(el("p",{style:"margin:0 0 10px;font-size:13.5px;color:var(--muted)"},
+    "קוד אחד לכל המערכת, בלי הגבלת זמן או שימושים. היום מרצים מפיקים לכל סטודנט/ית קוד אישי (שבוע, 3 הפקות) מ\"המרחב שלי\" — מומלץ לבטל את הקוד הכללי כשהמרצים עוברים לשיטה החדשה."));
   const code = accessState.academicCode;
   in1.append(el("div",{class:"codebox"},
     el("div",{class:"bigcode" + (code ? "" : " none")}, code || "————"),
@@ -1492,8 +1494,9 @@ function pAccess(){
   const c2 = el("div",{class:"card"});
   c2.append(el("h3",{},"החלפת סיסמאות ניהול"));
   const in2 = el("div",{class:"in"});
-  const LABELS = { sys:"מנהלת המערכת", inst:"מנהלת מוסד" };
-  ["sys","inst"].forEach((kind, i) => {
+  const LABELS = { sys:"מנהלת המערכת" };
+  // מנהלי/ות המוסדות לא נכנסים בסיסמה: לכל מוסד קוד משלו, בלשונית "מוסדות".
+  ["sys"].forEach((kind, i) => {
     const box = el("div",{style: i ? "margin-top:16px;padding-top:14px;border-top:1px solid var(--hair)" : ""});
     const isDefault = accessState.defaultPasswords[kind];
     box.append(el("b",{style:"display:block;margin-bottom:4px"}, "סיסמת " + LABELS[kind]),
@@ -1525,7 +1528,17 @@ function pAccess(){
   });
   c2.append(in2);
 
-  w.append(c1, c2, el("div",{class:"note"},
+  const c3 = el("div",{class:"card"});
+  c3.append(el("h3",{},"כניסה של מנהלי/ות מוסדות"));
+  const in3 = el("div",{class:"in"});
+  const goInsts = el("button",{class:"act p"},"ללשונית מוסדות");
+  goInsts.addEventListener("click", () => { tab = "insts"; render(); });
+  in3.append(el("p",{style:"margin:0 0 10px;font-size:14px"},
+    "אין יותר סיסמה משותפת למנהלי/ות מוסדות. לכל מוסד מפיקים קוד משלו: בלשונית \"מוסדות\" ← ליד שם המוסד ← \"הפקת קוד למנהל/ת\". עם הקוד הזה מנהל/ת המוסד נכנס/ת ומפיק/ה קודים לצוות."),
+    el("div",{class:"btnrow"}, goInsts));
+  c3.append(in3);
+
+  w.append(c3, c2, c1, el("div",{class:"note"},
     el("b",{},"טוב לדעת. "),
     "הסיסמאות נשמרות בשרת באופן מוצפן, ולכן גם כאן אי אפשר לראות אותן — רק להחליף. את קוד המשוב לעבודות אפשר לראות, כי צריך למסור אותו."));
   return w;
