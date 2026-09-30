@@ -174,7 +174,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 
 <!-- ① כניסה -->
 <section class="screen on" id="screen-join">
-  <header><p class="lead">S.B.E · הערכה יצירתית</p><h1>כניסה לסדנה</h1></header>
+  <header><p class="lead">Begood · הערכה יצירתית</p><h1>כניסה לסדנה</h1></header>
   <p class="lead">הקלידי את קוד הסדנה שמופיע על המסך, ואת שמך.</p>
   <div class="field"><label>קוד הסדנה</label>
     <input id="jCode" type="text" inputmode="numeric" maxlength="6" placeholder="שש ספרות"></div>
@@ -186,7 +186,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 
 <!-- ⓿ הגדרת תרחיש למנחה/מנהלת -->
 <section class="screen" id="screen-setup">
-  <header><p class="lead">S.B.E · הערכה יצירתית</p><h1>בחירת תרחיש להערכה</h1></header>
+  <header><p class="lead">Begood · הערכה יצירתית</p><h1>בחירת תרחיש להערכה</h1></header>
   <p class="lead">הבחירה כאן קובעת איזה תרחיש יוצג לכל מי שנכנסת מעכשיו במסך הזה, בכל המכשירים ששמורים לאותו דפדפן.
     אין עדיין חשבון מנחה אמיתי בפרויקט הזה (כמו בכל מסך אחר כאן) — כל מי שיודעת לפתוח את הקישור הזה יכולה לשנות את הבחירה.</p>
   <div class="pickgrid" id="setupGrid"></div>
@@ -195,7 +195,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 
 <!-- ② תקציר התרחיש -->
 <section class="screen" id="screen-scenario">
-  <header><p class="lead">S.B.E · הערכה יצירתית</p><h1>תקציר התרחיש</h1></header>
+  <header><p class="lead">Begood · הערכה יצירתית</p><h1>תקציר התרחיש</h1></header>
   <div class="brief">
     <h2 id="scName"></h2>
     <p class="sub" id="scSub"></p>
@@ -206,7 +206,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 
 <!-- ③ בחירת אפשרות -->
 <section class="screen" id="screen-picker">
-  <header><p class="lead">S.B.E · הערכה יצירתית</p><h1>בחרי דרך להערכה יצירתית</h1></header>
+  <header><p class="lead">Begood · הערכה יצירתית</p><h1>בחרי דרך להערכה יצירתית</h1></header>
   <p class="lead">אפשר לבחור יותר מדרך אחת, אחת אחרי השנייה.</p>
   <div class="pickgrid" id="pickgrid"></div>
 </section>
@@ -238,7 +238,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 
 <!-- ⑤ משוב -->
 <section class="screen" id="screen-feedback">
-  <header><p class="lead">S.B.E · הערכה יצירתית</p><h1>המשוב שלך</h1></header>
+  <header><p class="lead">Begood · הערכה יצירתית</p><h1>המשוב שלך</h1></header>
   <div class="mockbanner">המשוב הזה מבוסס היוריסטיקה פשוטה (אורך כתיבה, מגוון מילים, כמה מהתפניות/מיומנויות של התרחיש הוזכרו) —
     <b>לא שיפוט תוכן אמיתי</b>. כשיהיה מודל אמיתי מחובר, הוא יחליף את הפונקציה הזו בשיפוט איכותי אמיתי על מה שכתבת.</div>
   <div class="done-report" id="reportBody"></div>
@@ -933,7 +933,7 @@ let LAST = null;
 
 function buildExportText(m, answers, feedbackLines){
   const lines = [];
-  lines.push("S.B.E · הערכה יצירתית");
+  lines.push("Begood · הערכה יצירתית");
   lines.push("אפשרות " + m.n + " · " + m.title);
   lines.push("תרחיש: " + SCENARIO.name);
   lines.push("שם: " + STATE.name + " · קוד סדנה: " + STATE.code);
@@ -1233,7 +1233,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     } else {
       bodyLines.push("פירוט:", details);
     }
-    var subject = "S.B.E · " + type + " · " + name;
+    var subject = "Begood · " + type + " · " + name;
     location.href = "mailto:yael.sade@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(bodyLines.join("\n"));
     dlg.close();
   });
