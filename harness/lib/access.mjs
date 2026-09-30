@@ -9,8 +9,11 @@ import { scryptSync, randomBytes, timingSafeEqual, createHmac, createHash } from
 // כתובות עד עכשיו ב-entry.html).
 const DEFAULT_PASSWORDS = { sys: '990211', inst: '550118' };
 const MIN_PASSWORD = 8;
-// ברירת המחדל: שום מודול לא פתוח למוסד עד שמנהלת המערכת פותחת אותו במסך הניהול.
-const DEFAULT_MODULES = { conv: false, activity: false, academic: false, resilience: false };
+// ההרשאות במערכת. לכל מוסד יש "תקרה" (modules:<מוסד>) — מה שמנהלת המערכת פתחה
+// לו; ברירת המחדל: שום דבר. קודי הצוות שמנהל/ת המוסד מפיק/ה מקבלים רק צירוף
+// מתוך התקרה.
+export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience'];
+const DEFAULT_MODULES = Object.fromEntries(PERMS.map((p) => [p, false]));
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
 const pause = () => new Promise((r) => setTimeout(r, 400));
@@ -133,8 +136,9 @@ async function handleResilience(store, body) {
 
   if (action === 'resilCreate') {
     const t = await verifyToken(store, body.token);
-    if (!t || (t.k !== 'inst' && t.k !== 'sys')) { await pause(); return [403, { error: 'unauthorized' }]; }
-    if (t.k === 'inst') {
+    const byCode = t && t.k === 'code' && (t.perms || []).includes('resilience');
+    if (!t || (t.k !== 'inst' && t.k !== 'sys' && !byCode)) { await pause(); return [403, { error: 'unauthorized' }]; }
+    if (t.k === 'inst' || byCode) {
       const mods = { ...DEFAULT_MODULES, ...((await store.get('modules:' + t.inst)) || {}) };
       if (mods.resilience !== true) return [403, { error: 'module off' }];
     }
@@ -209,9 +213,284 @@ async function handleResilience(store, body) {
   return [400, { error: 'unknown action' }];
 }
 
+
+// ── קודים, הרשאות ומנויים ──
+// קוד: code:<קוד מנורמל> → { code, kind, inst, perms, label, createdBy, createdAt,
+//   expiresAt (YYYY-MM-DD או null), maxUses, uses, revoked }
+//   kind: 'instadmin' — מנהל/ת מוסד (מפיק/ה קודי צוות); 'staff' — איש/אשת צוות עם
+//   צירוף הרשאות; 'student' — קוד "משוב לעבודות" שמרצה מפיק/ה לסטודנט/ית.
+// התוקף בפועל: המוקדם מבין תוקף הקוד וסוף המנוי של המוסד + ימי החסד.
+// מוסד: { ..., subEnd: 'YYYY-MM-DD' או null (ללא הגבלה) }.
+// הגדרות: settings → { graceDays, academic: { maxActive, days, uses } }.
+const DEFAULT_SETTINGS = { graceDays: 14, academic: { maxActive: 50, days: 7, uses: 3 } };
+const DAY = 86400e3;
+const today = () => new Date().toISOString().slice(0, 10);
+const addDays = (ymd, n) => new Date(Date.parse(ymd + 'T00:00:00Z') + n * DAY).toISOString().slice(0, 10);
+const daysBetween = (a, b) => Math.round((Date.parse(b + 'T00:00:00Z') - Date.parse(a + 'T00:00:00Z')) / DAY);
+const validYmd = (d) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(d + 'T00:00:00Z'));
+const minYmd = (...ds) => ds.filter(Boolean).sort()[0] || null;
+
+async function getSettings(store) {
+  const s = (await store.get('settings')) || {};
+  return { ...DEFAULT_SETTINGS, ...s, academic: { ...DEFAULT_SETTINGS.academic, ...(s.academic || {}) } };
+}
+
+async function getCeiling(store, inst) {
+  return { ...DEFAULT_MODULES, ...((await store.get('modules:' + inst)) || {}) };
+}
+
+// מצב המנוי של מוסד: ok | warn (עד 60 יום לסיום) | grace | expired | inactive
+function subState(x, settings) {
+  if (!x) return { state: 'expired' };
+  if (x.active === false) return { state: 'inactive' };
+  if (!x.subEnd) return { state: 'ok', subEnd: null };
+  const left = daysBetween(today(), x.subEnd);
+  if (left >= 0) return { state: left <= 60 ? 'warn' : 'ok', subEnd: x.subEnd, daysLeft: left };
+  const graceEnd = addDays(x.subEnd, settings.graceDays);
+  const gl = daysBetween(today(), graceEnd);
+  return gl >= 0 ? { state: 'grace', subEnd: x.subEnd, graceEnd, daysLeft: gl } : { state: 'expired', subEnd: x.subEnd, graceEnd };
+}
+
+function newCodeUnique(existing) {
+  for (;;) { const c = newCode(); if (!existing.has(normCode(c))) return c; }
+}
+
+async function allCodes(store) {
+  return (await store.list('code:')).map((r) => r.value).filter(Boolean);
+}
+
+// מה הקוד מאפשר עכשיו: null אם הוא לא תקף, אחרת { rec, inst, perms, sub }.
+async function resolveCode(store, rec, settings) {
+  if (!rec || rec.revoked) return { error: 'revoked' };
+  const list = await getInstitutions(store);
+  const x = list.find((i) => i.name === rec.inst);
+  const sub = subState(x, settings);
+  if (sub.state === 'inactive') return { error: 'inactive' };
+  if (sub.state === 'expired') return { error: 'sub-expired', sub };
+  if (rec.expiresAt && rec.expiresAt < today()) return { error: 'expired' };
+  if (rec.kind === 'student' && rec.uses >= rec.maxUses) return { error: 'used-up' };
+  const ceiling = await getCeiling(store, rec.inst);
+  let perms;
+  if (rec.kind === 'instadmin') perms = PERMS.filter((p) => ceiling[p]);
+  else if (rec.kind === 'student') perms = ceiling.academic || ceiling.lecturer ? ['academic'] : [];
+  else perms = (rec.perms || []).filter((p) => ceiling[p]);
+  return { rec, inst: rec.inst, perms, sub };
+}
+
+// הודעות לבאנר אחרי כניסה.
+function notices(kind, sub, rec) {
+  const n = [];
+  if (sub.state === 'grace') n.push({ level: 'danger', type: 'grace', graceEnd: sub.graceEnd, daysLeft: sub.daysLeft });
+  else if (sub.state === 'warn' && (kind === 'instadmin' ? sub.daysLeft <= 60 : sub.daysLeft <= 7))
+    n.push({ level: sub.daysLeft <= 7 ? 'danger' : 'warn', type: 'sub-ending', subEnd: sub.subEnd, daysLeft: sub.daysLeft });
+  if (rec && rec.expiresAt && rec.kind !== 'student') {
+    const left = daysBetween(today(), rec.expiresAt);
+    if (left <= 7) n.push({ level: 'warn', type: 'code-ending', expiresAt: rec.expiresAt, daysLeft: left });
+  }
+  return n;
+}
+
+const publicCode = (r) => ({ code: r.code, kind: r.kind, inst: r.inst, perms: r.perms || [], label: r.label || '',
+  createdAt: r.createdAt, expiresAt: r.expiresAt || null, uses: r.uses || 0, maxUses: r.maxUses || null,
+  revoked: !!r.revoked, createdBy: r.createdBy || '' });
+
+async function handleCodes(store, body, isSys) {
+  const { action } = body;
+  const settings = await getSettings(store);
+  const t = await verifyToken(store, body.token);
+  const me = t && t.k === 'code' ? await store.get('code:' + t.c) : null;
+  const meOk = me ? await resolveCode(store, me, settings) : null;
+  const mine = meOk && !meOk.error ? meOk : null;
+
+  // בקשת חידוש מנוי — ציבורית (גם כשהמנוי כבר הסתיים): מזהים את המוסד לפי קוד
+  // של מנהל/ת המוסד, ושומרים רק שדות חיוניים.
+  if (action === 'renewRequest') {
+    const rec = await store.get('code:' + normCode(body.code));
+    const legacy = !rec && (await getInstitutions(store)).find((i) => normCode(i.code) === normCode(body.code));
+    const inst = rec && rec.kind === 'instadmin' ? rec.inst : legacy ? legacy.name : null;
+    if (!inst) { await pause(); return [404, { error: 'unknown code' }]; }
+    const name = String(body.name || '').trim().slice(0, 60), contact = String(body.contact || '').trim().slice(0, 80);
+    const period = ['year', 'half', 'other'].includes(body.period) ? body.period : 'year';
+    if (!name || !contact) return [400, { error: 'missing fields' }];
+    // טופס ציבורי — עד 5 בקשות פתוחות למוסד, כדי שלא אפשר יהיה להציף את המאגר.
+    const openReqs = (await store.list('renewreq:')).filter((r) => r.value && r.value.inst === inst && !r.value.done);
+    if (openReqs.length >= 5) return [429, { error: 'too many' }];
+    const at = new Date().toISOString();
+    await store.set('renewreq:' + at + ':' + randomBytes(3).toString('hex'), { inst, name, contact, period, at, done: false });
+    return [200, { ok: true, inst }];
+  }
+
+  if (action === 'codesList') {
+    const codes = await allCodes(store);
+    if (isSys) return [200, { codes: codes.filter((c) => !body.inst || c.inst === body.inst).map(publicCode) }];
+    if (!mine) { await pause(); return [403, { error: 'unauthorized' }]; }
+    const out = mine.rec.kind === 'instadmin'
+      ? codes.filter((c) => c.inst === mine.inst && c.kind !== 'instadmin')
+      : codes.filter((c) => c.createdBy === mine.rec.code);
+    return [200, { codes: out.map(publicCode), ceiling: await getCeiling(store, mine.inst), sub: mine.sub, settings: { academic: settings.academic } }];
+  }
+
+  if (action === 'codeCreate') {
+    const kind = body.kind;
+    const existing = new Set((await allCodes(store)).map((c) => normCode(c.code)));
+    const list = await getInstitutions(store);
+    const label = String(body.label || '').trim().slice(0, 60);
+    if (kind === 'instadmin' || (kind === 'staff' && isSys)) {
+      if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
+      const x = list.find((i) => i.name === String(body.inst || ''));
+      if (!x) return [404, { error: 'no such institution' }];
+      const rec = { code: newCodeUnique(existing), kind, inst: x.name, perms: kind === 'staff' ? (body.perms || []).filter((p) => PERMS.includes(p)) : [],
+        label: label || (kind === 'instadmin' ? 'מנהל/ת המוסד' : ''), createdBy: 'sys', createdAt: new Date().toISOString(),
+        expiresAt: validYmd(body.expiresAt) ? body.expiresAt : null, uses: 0, revoked: false };
+      await store.set('code:' + normCode(rec.code), rec);
+      return [200, { code: publicCode(rec) }];
+    }
+    if (kind === 'staff') {
+      if (!mine || mine.rec.kind !== 'instadmin') { await pause(); return [403, { error: 'unauthorized' }]; }
+      const ceiling = await getCeiling(store, mine.inst);
+      const perms = [...new Set((body.perms || []).filter((p) => PERMS.includes(p)))];
+      if (!perms.length) return [400, { error: 'no perms' }];
+      if (perms.some((p) => !ceiling[p])) return [403, { error: 'above ceiling' }];
+      const rec = { code: newCodeUnique(existing), kind, inst: mine.inst, perms, label, createdBy: mine.rec.code,
+        createdAt: new Date().toISOString(), expiresAt: validYmd(body.expiresAt) ? minYmd(body.expiresAt, mine.sub.subEnd) : null,
+        uses: 0, revoked: false };
+      await store.set('code:' + normCode(rec.code), rec);
+      return [200, { code: publicCode(rec) }];
+    }
+    if (kind === 'student') {
+      if (!mine || !mine.perms.includes('lecturer')) { await pause(); return [403, { error: 'unauthorized' }]; }
+      const lim = settings.academic;
+      const active = (await allCodes(store)).filter((c) => c.createdBy === mine.rec.code && !c.revoked
+        && (!c.expiresAt || c.expiresAt >= today()) && (c.uses || 0) < (c.maxUses || Infinity)).length;
+      const count = Math.max(1, Math.min(Number(body.count) || 1, 50));
+      if (active + count > lim.maxActive) return [429, { error: 'limit', maxActive: lim.maxActive, active }];
+      const expiresAt = minYmd(addDays(today(), lim.days), mine.sub.subEnd);
+      const made = [];
+      for (let i = 0; i < count; i++) {
+        const rec = { code: newCodeUnique(existing), kind, inst: mine.inst, perms: ['academic'], label, createdBy: mine.rec.code,
+          createdAt: new Date().toISOString(), expiresAt, maxUses: lim.uses, uses: 0, revoked: false };
+        existing.add(normCode(rec.code));
+        await store.set('code:' + normCode(rec.code), rec);
+        made.push(publicCode(rec));
+      }
+      return [200, { codes: made }];
+    }
+    return [400, { error: 'bad kind' }];
+  }
+
+  if (action === 'codeRevoke') {
+    const rec = await store.get('code:' + normCode(body.code));
+    if (!rec) return [404, { error: 'no such code' }];
+    const allowed = isSys || (mine && (rec.createdBy === mine.rec.code
+      || (mine.rec.kind === 'instadmin' && rec.inst === mine.inst && rec.kind !== 'instadmin')));
+    if (!allowed) { await pause(); return [403, { error: 'unauthorized' }]; }
+    rec.revoked = true;
+    await store.set('code:' + normCode(rec.code), rec);
+    return [200, { code: publicCode(rec) }];
+  }
+
+  // שימוש אחד בקוד סטודנט/ית (לפני הפקת משוב). לקודים אחרים — בלי מגבלה.
+  if (action === 'codeUse') {
+    if (!t || t.k !== 'code') { await pause(); return [403, { error: 'unauthorized' }]; }
+    const rec = await store.get('code:' + t.c);
+    const r = await resolveCode(store, rec, settings);
+    if (r.error) return [403, { error: r.error }];
+    if (rec.kind !== 'student') return [200, { ok: true, left: null }];
+    rec.uses = (rec.uses || 0) + 1;
+    await store.set('code:' + t.c, rec);
+    return [200, { ok: true, left: rec.maxUses - rec.uses }];
+  }
+
+  // ── מנהלת המערכת ──
+  if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
+
+  if (action === 'setSubscription' || action === 'renewSubscription') {
+    const list = await getInstitutions(store);
+    const x = list.find((i) => i.name === String(body.name || ''));
+    if (!x) return [404, { error: 'no such institution' }];
+    if (action === 'setSubscription') {
+      if (body.subEnd !== null && !validYmd(body.subEnd)) return [400, { error: 'bad date' }];
+      x.subEnd = body.subEnd;
+    } else {
+      const months = Number(body.months) || 12;
+      const from = x.subEnd && x.subEnd >= today() ? x.subEnd : today();
+      const d = new Date(from + 'T00:00:00Z'); d.setUTCMonth(d.getUTCMonth() + months);
+      x.subEnd = d.toISOString().slice(0, 10);
+    }
+    await store.set('institutions', list);
+    return [200, { institutions: await institutionsView(store) }];
+  }
+
+  if (action === 'getSettings') return [200, { settings }];
+  if (action === 'setSettings') {
+    const g = Number(body.graceDays), a = body.academic || {};
+    const clamp = (v, lo, hi, d) => (Number.isFinite(Number(v)) ? Math.max(lo, Math.min(hi, Math.round(Number(v)))) : d);
+    const next = { graceDays: clamp(g, 0, 90, settings.graceDays),
+      academic: { maxActive: clamp(a.maxActive, 1, 500, settings.academic.maxActive), days: clamp(a.days, 1, 60, settings.academic.days),
+        uses: clamp(a.uses, 1, 50, settings.academic.uses) } };
+    await store.set('settings', next);
+    return [200, { settings: next }];
+  }
+
+  if (action === 'renewList') {
+    const rows = (await store.list('renewreq:')).map((r) => ({ id: r.key.slice(9), ...r.value })).reverse();
+    return [200, { requests: rows }];
+  }
+  if (action === 'renewDone') {
+    const k = 'renewreq:' + String(body.id || '');
+    const r = await store.get(k);
+    if (!r) return [404, { error: 'no such request' }];
+    r.done = true; await store.set(k, r);
+    return [200, { ok: true }];
+  }
+  return null;
+}
+
+// רשימת המוסדות למסך הניהול — עם מצב המנוי וקוד מנהל/ת המוסד.
+async function institutionsView(store) {
+  const [list, settings, codes] = await Promise.all([getInstitutions(store), getSettings(store), allCodes(store)]);
+  return list.map((x) => {
+    const admin = codes.filter((c) => c.kind === 'instadmin' && c.inst === x.name && !c.revoked).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+    return { ...x, sub: subState(x, settings), adminCode: admin ? admin.code : null,
+      staffCodes: codes.filter((c) => c.inst === x.name && c.kind === 'staff' && !c.revoked).length };
+  });
+}
+
 // מחזירה [status, body].
 export async function handleAccess(store, body) {
   const { action } = body || {};
+
+  if (action === 'login' && body.kind === 'code') {
+    // כניסה בשדה אחד: הקוד קובע מי את/ה ומה פתוח.
+    const settings = await getSettings(store);
+    const c = normCode(body.secret);
+    const rec = c ? await store.get('code:' + c) : null;
+    if (rec) {
+      const r = await resolveCode(store, rec, settings);
+      if (r.error) { await pause(); return [403, { error: r.error }]; }
+      const token = await signToken(store, { k: 'code', c, kind: rec.kind, inst: r.inst, perms: r.perms });
+      return [200, { ok: true, token, kind: rec.kind, inst: r.inst, label: rec.label || '', perms: r.perms,
+        notices: notices(rec.kind, r.sub, rec), sub: rec.kind === 'instadmin' ? r.sub : undefined }];
+    }
+    // קוד מוסד ישן (6 ספרות): איש/אשת צוות עם כל מה שפתוח למוסד — עד שיעברו לקודים אישיים.
+    const legacy = c && (await getInstitutions(store)).find((x) => same(normCode(x.code), c));
+    if (legacy) {
+      const sub = subState(legacy, settings);
+      if (sub.state === 'inactive') { await pause(); return [403, { error: 'inactive' }]; }
+      if (sub.state === 'expired') { await pause(); return [403, { error: 'sub-expired' }]; }
+      const ceiling = await getCeiling(store, legacy.name);
+      const perms = PERMS.filter((p) => ceiling[p] && p !== 'lecturer');
+      const token = await signToken(store, { k: 'code', c: 'LEGACY', kind: 'legacy', inst: legacy.name, perms });
+      return [200, { ok: true, token, kind: 'legacy', inst: legacy.name, label: 'צוות ' + legacy.name, perms, notices: notices('staff', sub) }];
+    }
+    // קוד "משוב לעבודות" הכללי הישן.
+    const ac = await store.get('code-academic');
+    if (ac && c && same(c, normCode(ac.code))) {
+      const token = await signToken(store, { k: 'code', c: 'ACADEMIC', kind: 'academic-legacy', inst: '', perms: ['academic'] });
+      return [200, { ok: true, token, kind: 'academic-legacy', inst: '', label: 'משוב לעבודות', perms: ['academic'], notices: [] }];
+    }
+    await pause(); return [403, { error: 'wrong' }];
+  }
 
   if (action === 'login') {
     const { kind, secret } = body;
@@ -241,7 +520,14 @@ export async function handleAccess(store, body) {
 
   if (typeof action === 'string' && action.startsWith('resil')) return handleResilience(store, body);
 
-  const isSys = await checkPassword(store, 'sys', body?.auth);
+  const sysTok = await verifyToken(store, body?.token);
+  const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
+
+  if (['renewRequest', 'codesList', 'codeCreate', 'codeRevoke', 'codeUse', 'setSubscription', 'renewSubscription',
+    'getSettings', 'setSettings', 'renewList', 'renewDone'].includes(action)) {
+    const out = await handleCodes(store, body, isSys);
+    if (out) return out;
+  }
 
   // מנהלת מוסד רואה ומחליפה את קוד המוסד שלה (גם סיסמת מנהלת המערכת מתקבלת).
   if (action === 'instGetCode' || action === 'instNewCode') {
@@ -256,7 +542,7 @@ export async function handleAccess(store, body) {
   // כל שאר פעולות הניהול מחייבות את סיסמת מנהלת המערכת בבקשה עצמה.
   if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
 
-  if (action === 'listInstitutions') return [200, { institutions: await getInstitutions(store) }];
+  if (action === 'listInstitutions') return [200, { institutions: await institutionsView(store), settings: await getSettings(store) }];
 
   if (action === 'addInstitution' || action === 'newInstitutionCode' || action === 'setInstitutionActive') {
     const list = await getInstitutions(store);
@@ -272,15 +558,14 @@ export async function handleAccess(store, body) {
       else x.active = body.active !== false;
     }
     await store.set('institutions', list);
-    return [200, { institutions: list }];
+    return [200, { institutions: await institutionsView(store) }];
   }
 
   if (action === 'setModules') {
     const inst = String(body.inst || '').trim();
     const m = body.modules;
     if (!inst || !m || typeof m !== 'object') return [400, { error: 'missing fields' }];
-    const safe = { conv: m.conv === true, activity: m.activity === true, academic: m.academic === true,
-      resilience: m.resilience === true };
+    const safe = Object.fromEntries(PERMS.map((p) => [p, m[p] === true]));
     await store.set('modules:' + inst, safe);
     return [200, { ok: true, modules: safe }];
   }

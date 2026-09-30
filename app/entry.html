@@ -128,6 +128,14 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 .linklist a span{color:var(--muted);font-size:12px;}
 .whoami{font-size:13px;color:var(--muted);margin-bottom:8px;}
 .whoami b{color:var(--ink);}
+.morelinks{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:13px;}
+.morelinks a{color:var(--spoken);font-weight:600;}
+.morelinks .sep{color:var(--muted);}
+#altField{margin-top:12px;padding-top:12px;border-top:1px solid var(--hair);}
+#altField[hidden]{display:none;}
+.role-pick-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;}
+.role-pick-row button{padding:8px 6px;font-size:13.5px;background:var(--ground);}
+.role-pick-row button.on{background:var(--spoken-soft);border-color:var(--spoken);color:var(--spoken);font-weight:700;}
 .switchlink{font-size:13px;color:var(--spoken);cursor:pointer;background:none;border:none;
   padding:0;text-decoration:underline;width:auto;font-weight:600;}
 </style>
@@ -182,79 +190,107 @@ async function checkAccess(kind, secret){
 
 const view = $("entry-view");
 
-const ROLES = [
-  { key:"trainee", label:"סטודנט/ית", group:"workshop" },
-  { key:"parent",  label:"הורים",     group:"workshop" },
-  { key:"youth",   label:"נוער",      group:"workshop" },
-  { key:"actor",   label:"שחקנית",   group:"workshop" },
-  { key:"academic", label:"משוב לעבודות", group:"academic" },
-  { key:"homeroom", label:"מחנך/כת", group:"inst" },
-  { key:"fac_trainee", label:"מנחה/ת סטודנטים", group:"inst", track:"trainee" },
-  { key:"fac_parent",  label:"מנחה/ת הורים",    group:"inst", track:"parent" },
-  { key:"fac_youth",   label:"מנחה/ת נוער",     group:"inst", track:"youth" },
-  { key:"inst",    label:"מנהל.ת מוסד/תכנית",  group:"admin" },
-  { key:"sys",     label:"מנהלת מערכת",   group:"admin" },
-];
-const GROUP_LABEL = { workshop:"קוד סדנה — סטודנט/ית / הורים / נוער / שחקנית", academic:"קוד גישה — משוב לעבודות", inst:"קוד מוסד — מחנך/כת / מנחה", admin:"כניסת ניהול — סיסמה" };
-let pickedRole = null;
+// ── כניסה בשדה אחד (30/09/2026) ──
+// הקוד עצמו קובע מי את/ה ומה פתוח לך (השרת בודק: harness/lib/access.mjs,
+// login/kind:"code"). קוד סדנה וכניסת ניהול — קישורים קטנים מתחת.
+const CODE_ERRORS = {
+  wrong: "הקוד לא מוכר. בדקו שהוא הוקלד נכון.",
+  revoked: "הקוד הזה בוטל. פנו למי שנתן/ה לכם אותו.",
+  expired: "תוקף הקוד הסתיים. פנו למי שנתן/ה לכם אותו.",
+  "used-up": "הקוד מיצה את מספר ההפקות שלו. בקשו קוד חדש מהמרצה.",
+  inactive: "הכניסה למוסד מושהית כרגע.",
+  "sub-expired": "המנוי של המוסד הסתיים.",
+  down: "אין כרגע חיבור לשרת הבדיקה. נסו שוב בעוד רגע.",
+};
+async function codeLogin(code){
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 75000);
+  try {
+    const r = await fetch(ACCESS_URL, { method:"POST", headers:{ "content-type":"application/json" },
+      body: JSON.stringify({ action:"login", kind:"code", secret: code }), signal: ctrl.signal });
+    const data = await r.json().catch(() => ({}));
+    if (r.ok && data.token) return data;
+    return { error: r.status === 403 ? (data.error || "wrong") : "down" };
+  } catch(e){ return { error:"down" }; }
+  finally { clearTimeout(timer); }
+}
 
 function renderEntry(){
   view.textContent = "";
   const card = el("div",{class:"card"});
   const inn = el("div",{class:"in"});
-  inn.append(el("p",{class:"hint"},"בחרי את התפקיד שלך מהרשימה — השדה המתאים (קוד או סיסמה) יופיע מתחתיה."));
-
-  const rolesel = el("div",{class:"rolesel"});
-  const trigger = el("button",{type:"button", class:"rolesel-trigger"}, el("span",{class:"ph"},"בחירת תפקיד..."));
-  const panel = el("div",{class:"rolesel-panel"});
-  const optBtns = {};
-  ["workshop","academic","inst","admin"].forEach(g => {
-    panel.append(el("div",{class:"rolesel-grouplabel"}, GROUP_LABEL[g]));
-    ROLES.filter(r => r.group === g).forEach(r => {
-      const b = el("button",{type:"button", class:"rolesel-opt"}, r.label);
-      b.addEventListener("click", () => { selectRole(r.key); rolesel.classList.remove("open"); });
-      optBtns[r.key] = b;
-      panel.append(b);
-    });
-  });
-  trigger.addEventListener("click", () => {
-    const willOpen = !rolesel.classList.contains("open");
-    rolesel.classList.toggle("open");
-    rolesel.classList.remove("flip-up");
-    if (willOpen) {
-      const r = panel.getBoundingClientRect();
-      if (r.bottom > window.innerHeight - 8) rolesel.classList.add("flip-up");
+  const code = el("input",{class:"code", placeholder:"XXXX-XXXX", autocomplete:"off", spellcheck:"false", "aria-label":"הקוד שלך"});
+  const err = el("div",{class:"err"},""); err.hidden = true;
+  const btn = el("button",{class:"primary"},"כניסה");
+  const submit = async () => {
+    const c = code.value.replace(/[‎‏؜]/g, "").trim();
+    if (!c) { err.textContent = "צריך להקליד את הקוד."; err.hidden = false; return; }
+    btn.disabled = true; btn.textContent = "בודקת... (לפעמים עד דקה)";
+    const res = await codeLogin(c);
+    btn.disabled = false; btn.textContent = "כניסה";
+    if (res.error) {
+      err.textContent = CODE_ERRORS[res.error] || CODE_ERRORS.wrong;
+      if (res.error === "sub-expired" || res.error === "inactive") {
+        err.append(" ", el("a",{href:"renew.html"},"לבקשת חידוש"));
+      }
+      err.hidden = false; return;
     }
-  });
-  document.addEventListener("click", (ev) => { if (!ev.target.closest(".rolesel")) { rolesel.classList.remove("open"); rolesel.classList.remove("flip-up"); } });
-  document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") rolesel.classList.remove("open"); });
-  rolesel.append(trigger, panel);
-  inn.append(rolesel);
-
-  const dyn = el("div",{id:"dynField"}); dyn.hidden = true;
-  inn.append(dyn);
+    clearSession();
+    try {
+      sessionStorage.setItem("sbe.session.token", res.token);
+      sessionStorage.setItem("sbe.session.perms", JSON.stringify(res.perms || []));
+      sessionStorage.setItem("sbe.session.info", JSON.stringify({ kind:res.kind, inst:res.inst, label:res.label,
+        notices:res.notices || [], sub:res.sub || null }));
+      sessionStorage.setItem("sbe.session.role", res.label || res.inst || "");
+      sessionStorage.setItem("sbe.session.homeUrl", "home.html");
+    } catch(e){}
+    location.href = "home.html";
+  };
+  btn.addEventListener("click", submit);
+  code.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
+  inn.append(el("p",{class:"hint"},"הקלידו את הקוד שקיבלתם — מהמוסד, מהמרצה או ממנהלת המערכת. הקוד קובע מה פתוח לכם."),
+    el("label",{},"הקוד שלך"), code, err, btn);
   card.append(el("h2",{},"כניסה למערכת"), inn);
   view.append(card);
 
-  function selectRole(key){
-    pickedRole = key;
-    const roleInfo = ROLES.find(r => r.key === key);
-    trigger.textContent = "";
-    trigger.append(roleInfo.label);
-    Object.entries(optBtns).forEach(([k,b]) => b.classList.toggle("on", k===key));
-    dyn.hidden = false;
-    dyn.textContent = "";
-    if (roleInfo.group === "workshop") dyn.append(buildWorkshopField(key));
-    else if (roleInfo.group === "academic") dyn.append(buildAcademicField());
-    else if (roleInfo.group === "inst") dyn.append(buildInstField(key));
-    else dyn.append(buildAdminField(key));
-    requestAnimationFrame(() => dyn.scrollIntoView({ behavior:"smooth", block:"start" }));
-  }
+  // קישורים משניים: קוד סדנה, כניסת ניהול, אודות, חידוש מנוי
+  const more = el("div",{class:"card"});
+  const minn = el("div",{class:"in"});
+  const alt = el("div",{id:"altField"}); alt.hidden = true;
+  const links = el("div",{class:"morelinks"});
+  const wsBtn = el("button",{class:"switchlink"},"יש לי קוד סדנה");
+  const admBtn = el("button",{class:"switchlink"},"כניסת ניהול");
+  wsBtn.addEventListener("click", () => { alt.hidden = false; alt.textContent = ""; alt.append(buildWorkshopPicker()); });
+  admBtn.addEventListener("click", () => { alt.hidden = false; alt.textContent = ""; alt.append(buildAdminField("sys")); });
+  links.append(wsBtn, el("span",{class:"sep"},"·"), admBtn, el("span",{class:"sep"},"·"),
+    el("a",{href:"about.html"},"אודות המערכת"), el("span",{class:"sep"},"·"), el("a",{href:"renew.html"},"חידוש מנוי"));
+  minn.append(links, alt);
+  more.append(minn);
+  view.append(more);
+  setTimeout(() => code.focus(), 50);
 }
+
+// קוד סדנה: בוחרים תפקיד מתוך ארבעה, ואז קוד + שם (כמו קודם).
+function buildWorkshopPicker(){
+  const wrap = el("div",{});
+  const pick = el("div",{class:"role-pick-row"});
+  const field = el("div",{});
+  [["trainee","סטודנט/ית"],["actor","שחקנית"],["parent","הורים"],["youth","נוער"]].forEach(([k,l]) => {
+    const b = el("button",{type:"button"}, l);
+    b.addEventListener("click", () => {
+      pick.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+      field.textContent = ""; field.append(buildWorkshopField(k));
+    });
+    pick.append(b);
+  });
+  wrap.append(el("p",{class:"hint"},"התפקיד שלך בסדנה:"), pick, field);
+  return wrap;
+}
+
 
 // יציאה / התחלת כניסה חדשה: מוחקת את הכניסה של הלשונית ואת העותק שלה
 // ללשוניות חדשות (lib/access-guard.js).
-const SESSION_KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules"];
+const SESSION_KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules", "sbe.session.perms", "sbe.session.info"];
 function clearSession(){
   try {
     SESSION_KEYS.forEach(k => sessionStorage.removeItem(k));
@@ -350,86 +386,7 @@ function renderWorkshopSuccess(role, name){
   view.append(card);
 }
 
-function buildInstField(role){
-  const wrap = el("div",{});
-  const err = el("div",{class:"err"},""); err.hidden = true;
-  const inp = el("input",{class:"code", placeholder:"6 ספרות", maxlength:"6", inputmode:"numeric"});
-  const btn = el("button",{class:"primary"},"כניסה");
-  const roleInfo = ROLES.find(r => r.key === role);
-  const submit = async () => {
-    const c = inp.value.replace(/[‎‏؜]/g, "").trim();
-    if (!c) { err.textContent = "צריך להקליד את קוד המוסד."; err.hidden = false; return; }
-    btn.disabled = true; btn.textContent = "בודקת... (לפעמים עד דקה)";
-    const res = await checkAccess("inst-code", c);
-    btn.disabled = false; btn.textContent = "כניסה";
-    if (res !== "ok") {
-      err.textContent = res === "wrong" ? "קוד לא מוכר. בדקי שהקלדת שש ספרות נכונות."
-        : res === "inactive" ? "הכניסה למוסד הזה מושהית כרגע. פני למנהלת המערכת."
-        : "אין כרגע חיבור לשרת הבדיקה. נסי שוב בעוד רגע.";
-      err.hidden = false; return;
-    }
-    const inst = lastInst;
-    // מחנך/כת: מודול "חוסן חברתי" חייב להיות פתוח למוסד (נפתח במסך הניהול;
-    // ברירת המחדל — סגור). בלי תשובה מהשרת — לא נכנסים.
-    if (role === "homeroom") {
-      const mods = await fetch(ACCESS_URL, { method:"POST", headers:{ "content-type":"application/json" },
-        body: JSON.stringify({ action:"getModules", inst }) })
-        .then(r => r.ok ? r.json() : null).catch(() => null);
-      if (!mods || mods.resilience !== true) {
-        err.textContent = mods ? "מודול החוסן החברתי לא פתוח למוסד הזה. פני למנהלת המערכת."
-          : "אין כרגע חיבור לשרת הבדיקה. נסי שוב בעוד רגע.";
-        err.hidden = false; return;
-      }
-    }
-    err.hidden = true;
-    persistSession(null, ROLE_LABEL[role] + " (" + inst + ")");
-    const trackParam = roleInfo && roleInfo.track ? "&track=" + roleInfo.track : "";
-    // מחנך/כת מועבר/ת ישירות לכלי החוסן החברתי — לא ל-system-select.html.
-    const dest = (role === "homeroom")
-      ? "resilience-team.html"
-      : "system-select.html?role=" + role + "&inst=" + encodeURIComponent(inst) + trackParam;
-    try { sessionStorage.setItem("sbe.session.homeUrl", dest); } catch(e){}
-    location.href = dest;
-  };
-  btn.addEventListener("click", submit);
-  inp.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
-  wrap.append(
-    el("p",{class:"hint"},"קוד המוסד שלך, מנפיקה אותו מנהלת המוסד."),
-    el("label",{},"קוד מוסד"), inp, err, btn);
-  return wrap;
-}
 
-// "משוב לעבודות" — קוד שמנהלת המערכת מפיקה במסך הניהול. מוביל רק למסך
-// הניתוח והמשוב לעבודה אקדמית.
-function buildAcademicField(){
-  const wrap = el("div",{});
-  const err = el("div",{class:"err"},""); err.hidden = true;
-  const code = el("input",{class:"code", placeholder:"XXXX-XXXX", maxlength:"9", autocomplete:"off", spellcheck:"false"});
-  const btn = el("button",{class:"primary"},"כניסה");
-  const submit = async () => {
-    const c = code.value.replace(/[‎‏؜]/g, "").trim();
-    if (!c) { err.textContent = "צריך להקליד את הקוד."; err.hidden = false; return; }
-    btn.disabled = true; btn.textContent = "בודקת... (לפעמים עד דקה)";
-    const res = await checkAccess("academic", c);
-    btn.disabled = false; btn.textContent = "כניסה";
-    if (res !== "ok") {
-      err.textContent = res === "wrong"
-        ? "הקוד לא מוכר. בדקי שהקלדת אותו נכון, או בקשי קוד עדכני ממנהלת המערכת."
-        : "אין כרגע חיבור לשרת הבדיקה. נסי שוב בעוד רגע.";
-      err.hidden = false; return;
-    }
-    err.hidden = true;
-    persistSession(null, "משוב לעבודות");
-    try { sessionStorage.setItem("sbe.session.homeUrl", "academic-review.html"); } catch(e){}
-    location.href = "academic-review.html";
-  };
-  btn.addEventListener("click", submit);
-  code.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
-  wrap.append(
-    el("p",{class:"hint"},"הקוד שקיבלת לניתוח ומשוב על עבודה אקדמית או פרויקט לפני הגשה."),
-    el("label",{},"קוד גישה"), code, err, btn);
-  return wrap;
-}
 
 function buildAdminField(role){
   const wrap = el("div",{});

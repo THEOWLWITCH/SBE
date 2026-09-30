@@ -15,7 +15,8 @@
    שחייב להיות מוגן באמת (סיסמאות, נתוני החוסן) נבדק בשרת. */
 (function(){
   "use strict";
-  var KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules"];
+  var KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules",
+              "sbe.session.perms", "sbe.session.info"];
   var MIRROR = "sbe.session.mirror", HOURS = 12;
 
   function ss(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
@@ -57,8 +58,23 @@
   };
   var TRACK_INPUT = { trainee: "input-screen.html", parent: "parent-input-screen.html", youth: "student-input-screen.html" };
 
+  // כניסה בקוד (30/09/2026): הבית הוא home.html, והמסכים נגזרים מההרשאות
+  // שהשרת החזיר לקוד (sbe.session.perms).
+  var PAGES_BY_PERM = {
+    fac_trainee: ["input-screen.html"], fac_parent: ["parent-input-screen.html"], fac_youth: ["student-input-screen.html"],
+    conv: ["conversation-planner.html"], activity: ["activity-planner.html"], academic: ["academic-review.html"],
+    resilience: ["resilience-team.html", "resilience-fill.html"]
+  };
+  var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html", "doc-trainee.html"];
+
   var allowed = null; // null = הכול
-  if (home === "admin.html?role=sys") {
+  if (home === "home.html") {
+    var perms = [];
+    try { perms = JSON.parse(ss("sbe.session.perms") || "[]") || []; } catch(e){}
+    allowed = ["home.html"];
+    perms.forEach(function(p){ (PAGES_BY_PERM[p] || []).forEach(function(x){ allowed.push(x); }); });
+    if (perms.some(function(p){ return /^fac_/.test(p); })) allowed = allowed.concat(FAC_PAGES);
+  } else if (home === "admin.html?role=sys") {
     allowed = null;
   } else if (home === "admin.html?role=inst") {
     allowed = ["admin.html", "doc-facilitator.html"];

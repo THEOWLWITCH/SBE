@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>בקשת חידוש מנוי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
+  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
+  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
+  --hidden:#8F5F2E; --hidden-soft:#F5EAD9;
+  --auto:#4A6B5A; --auto-soft:#DFE9E2;
+  --brick:#8C3A34; --brick-soft:#F5E4E2;
+  --shadow:rgba(20,28,36,.09);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+    --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+    --spoken:#82AECE; --spoken-soft:#1E2E3A;
+    --hidden:#CE9C5E; --hidden-soft:#332617;
+    --auto:#83B599; --auto-soft:#1B2A22;
+    --brick:#CF7C74; --brick-soft:#331E1C;
+    --shadow:rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+  --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+  --spoken:#82AECE; --spoken-soft:#1E2E3A;
+  --hidden:#CE9C5E; --hidden-soft:#332617;
+  --auto:#83B599; --auto-soft:#1B2A22;
+  --brick:#CF7C74; --brick-soft:#331E1C;
+  --shadow:rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;}
+body{direction:rtl;background:var(--ground);color:var(--ink);margin:0;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.5;padding:0 16px 28px;}
+.wrap{max-width:760px;margin:0 auto;}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 10px;flex-wrap:wrap;}
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(22px,5vw,28px);margin:0;}
+.who{font-size:14px;color:var(--muted);margin:2px 0 0;}
+.who b{color:var(--ink);}
+.out{font-family:inherit;font-size:13.5px;font-weight:600;padding:6px 14px;border-radius:6px;border:1px solid var(--hair);
+  background:var(--surface);color:var(--ink);cursor:pointer;}
+.banner{border:1px solid var(--hair);border-inline-start:4px solid var(--hidden);background:var(--hidden-soft);color:var(--ink);
+  border-radius:8px;padding:10px 14px;margin:0 0 10px;font-size:14.5px;line-height:1.55;}
+.banner.danger{border-inline-start-color:var(--brick);background:var(--brick-soft);}
+.banner a{color:var(--spoken);font-weight:700;}
+h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:18px;margin:22px 0 10px;}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
+.tile{display:block;background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:13px 15px;
+  text-decoration:none;color:var(--ink);box-shadow:0 1px 3px var(--shadow);transition:border-color .12s;}
+.tile:hover{border-color:var(--spoken);}
+.tile b{display:block;font-size:15.5px;margin-bottom:3px;}
+.tile span{font-size:13px;color:var(--muted);line-height:1.45;display:block;}
+.empty{background:var(--surface);border:1px dashed var(--hair);border-radius:10px;padding:16px;color:var(--muted);font-size:14.5px;}
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 3px var(--shadow);}
+.card h3{margin:0 0 6px;font-size:16px;}
+.card p.sub{margin:0 0 10px;font-size:13.5px;color:var(--muted);}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:8px 0 3px;}
+input,select{font-family:inherit;font-size:14.5px;color:var(--ink);background:var(--ground);border:1px solid var(--hair);
+  border-radius:6px;padding:7px 10px;width:100%;}
+.btn{font-family:inherit;font-size:14px;font-weight:600;padding:8px 16px;border-radius:6px;border:1px solid var(--spoken);
+  background:var(--spoken);color:#fff;cursor:pointer;}
+:root[data-theme="dark"] .btn{color:#0F1418;}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .btn{color:#0F1418;} }
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--hair);}
+.btn.sm{padding:4px 10px;font-size:12.5px;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.row{display:flex;gap:8px;align-items:end;flex-wrap:wrap;}
+.row>div{flex:1;min-width:150px;}
+.perms{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 4px;}
+.perm{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--hair);border-radius:99px;padding:4px 11px;font-size:13.5px;
+  cursor:pointer;background:var(--ground);user-select:none;}
+.perm input{width:auto;margin:0;}
+.perm.dis{opacity:.4;cursor:not-allowed;}
+.presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted);}
+.chip{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--spoken-soft);color:var(--spoken);margin:1px;}
+.st{font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;}
+.st.ok{background:var(--auto-soft);color:var(--auto);}
+.st.off{background:var(--brick-soft);color:var(--brick);}
+.st.warn{background:var(--hidden-soft);color:var(--hidden);}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px;}
+th{text-align:right;font-size:12px;color:var(--muted);font-weight:700;padding:6px;border-bottom:2px solid var(--hair);}
+td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
+.code{font-family:"IBM Plex Mono",monospace;direction:ltr;unicode-bidi:isolate;font-weight:600;letter-spacing:.05em;}
+.newcodes{background:var(--auto-soft);border:1px solid var(--hair);border-radius:8px;padding:10px 12px;margin-top:10px;}
+.newcodes .code{font-size:17px;}
+.msg{font-size:13.5px;font-weight:600;margin-top:8px;}
+.msg.err{color:var(--brick);}
+.tablewrap{overflow-x:auto;}
+
+.back{font-size:13px;color:var(--spoken);font-weight:600;text-decoration:none;display:inline-block;margin-top:16px;}
+.prose p,.prose li{font-size:15px;line-height:1.7;}
+.prose ul{padding-inline-start:1.2rem;margin:.3rem 0 .8rem;}
+.lvl{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:start;}
+.lvl .n{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:22px;color:var(--spoken);line-height:1.1;}
+.lvl b{display:block;font-size:15.5px;}
+.lvl span{font-size:14px;color:var(--muted);line-height:1.6;display:block;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="entry.html">→ למסך הכניסה</a>
+
+<header><div><h1>בקשת חידוש מנוי</h1><p class="who">ממלאים רק את הפרטים האלה, ונחזור אליכם לחידוש.</p></div></header>
+<!-- בקשת חידוש (30/09/2026): טופס קצר בלי טקסט חופשי. המוסד מזוהה לפי קוד
+     מנהל/ת המוסד (או קוד המוסד הישן), גם כשהמנוי כבר הסתיים. הבקשה נשמרת
+     בשרת ומופיעה למנהלת המערכת במסך הניהול ← מוסדות ← "בקשות חידוש". -->
+<div class="card" id="form">
+  <label for="code">קוד מנהל/ת המוסד</label>
+  <input id="code" class="code" dir="ltr" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX">
+  <label for="name">שם איש/אשת הקשר</label>
+  <input id="name" maxlength="60" autocomplete="name">
+  <label for="contact">טלפון או מייל</label>
+  <input id="contact" maxlength="80" dir="ltr" autocomplete="email">
+  <label for="period">תקופת החידוש</label>
+  <select id="period"><option value="year">שנה</option><option value="half">חצי שנה</option><option value="other">אחר — נתאם בשיחה</option></select>
+  <div style="margin-top:12px"><button class="btn" id="send">שליחת הבקשה</button></div>
+  <div id="msg"></div>
+</div>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+$("send").addEventListener("click", async () => {
+  const body = { action: "renewRequest", code: $("code").value.trim(), name: $("name").value.trim(),
+    contact: $("contact").value.trim(), period: $("period").value };
+  const msg = $("msg");
+  if (!body.code || !body.name || !body.contact) { msg.className = "msg err"; msg.textContent = "צריך למלא קוד, שם ופרטי קשר."; return; }
+  $("send").disabled = true; msg.className = "msg"; msg.textContent = "שולחת... (לפעמים עד דקה)";
+  try {
+    const r = await fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    const d = await r.json().catch(() => ({}));
+    if (d.ok) { $("form").textContent = ""; $("form").append(Object.assign(document.createElement("p"), { className: "msg", textContent: "הבקשה התקבלה עבור " + d.inst + ". נחזור אליכם בהקדם." })); return; }
+    msg.className = "msg err"; msg.textContent = r.status === 404 ? "הקוד לא מוכר. צריך את הקוד של מנהל/ת המוסד." : "השליחה לא הצליחה. נסו שוב.";
+  } catch (e) { msg.className = "msg err"; msg.textContent = "אין כרגע חיבור לשרת. נסו שוב בעוד רגע."; }
+  $("send").disabled = false;
+});
+</script>
+</div>
+</body>
+</html>
