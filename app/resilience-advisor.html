@@ -106,6 +106,7 @@ textarea{min-height:64px;resize:vertical}
 ul.tl{padding-inline-start:1.2rem}
 ul.tl li{margin:.25rem 0}
 .err{color:var(--brick);font-weight:600;margin-top:.5rem}
+.chat .thinking{color:var(--muted);font-style:italic}
 .chat .msg{border-radius:9px;padding:.6rem .85rem;margin:.45rem 0;white-space:pre-wrap;font-size:.94rem}
 .chat .me{background:var(--spoken-soft);margin-inline-end:15%}
 .chat .bot{background:var(--surface-2);margin-inline-start:15%}
@@ -510,6 +511,14 @@ function withRefs(text){ // טקסט עם [מפתח] → קישורים למקו
   });
   return frag;
 }
+function richText(text){ // **מודגש** → הדגשה; סימני Markdown אחרים לא מוצגים
+  const frag=document.createDocumentFragment();
+  String(text||'').replace(/^#{1,6}\s*/gm,'').split(/\*\*([^*]+)\*\*/).forEach((part,i)=>{
+    part=part.replace(/\*\*/g,'');
+    if(i%2){const b=el('b');b.appendChild(withRefs(part));frag.appendChild(b);}else frag.appendChild(withRefs(part));
+  });
+  return frag;
+}
 function actCard(a,extra){
   const c=el('div','act');c.appendChild(el('div','act-t',a.title||''));
   const tags=el('div','act-tags');
@@ -570,19 +579,21 @@ function renderReport(){
 }
 
 // ── שיחה עם פרקטי ──
-const CHAT_MAX=10;
+const CHAT_MAX=10;let CHAT_BUSY=false;
 const askedCount=()=>STATE.chat.filter(m=>m.role==='user').length;
 function renderChat(){
   const log=F('chat-log');log.textContent='';
-  STATE.chat.forEach(m=>{const d=el('div','msg '+(m.role==='user'?'me':'bot'));d.appendChild(withRefs(m.content));log.appendChild(d);});
+  STATE.chat.forEach(m=>{const d=el('div','msg '+(m.role==='user'?'me':'bot'));d.appendChild(m.role==='user'?withRefs(m.content):richText(m.content));log.appendChild(d);});
+  if(CHAT_BUSY&&STATE.chat.length&&STATE.chat[STATE.chat.length-1].role==='user')log.appendChild(el('div','msg bot thinking','פרקטי חושבת על תשובה…'));
   const n=askedCount(),left=CHAT_MAX-n,done=left<=0;
   F('chat-in').hidden=done;F('chat-send').style.display=done?'none':'';F('chat-done').hidden=!done;
-  F('chat-in').placeholder=n?'שאלת המשך...':'השאלה שלך...';
+  F('chat-in').disabled=CHAT_BUSY;
+  F('chat-in').placeholder=CHAT_BUSY?'פרקטי חושבת… אפשר יהיה לשאול שאלת המשך כשהתשובה תגיע':(n?'שאלת המשך...':'השאלה שלך...');
   F('chat-left').textContent=done?'':(n?'אפשר לשאול עוד '+(left===1?'שאלה אחת':left+' שאלות')+' (עד '+CHAT_MAX+' בשיחה)':'אפשר לשאול עד '+CHAT_MAX+' שאלות');
 }
 F('chat-send').addEventListener('click',async()=>{
   const q=F('chat-in').value.trim();if(!q||BUSY||!STATE.report||askedCount()>=CHAT_MAX)return;
-  BUSY=true;const b=F('chat-send');b.disabled=true;b.textContent='פרקטי חושבת...';F('chat-err').hidden=true;
+  BUSY=CHAT_BUSY=true;const b=F('chat-send');b.disabled=true;b.textContent='פרקטי חושבת...';F('chat-err').hidden=true;
   STATE.chat.push({role:'user',content:q});F('chat-in').value='';renderChat();
   const sys=[PERSONA,'כעת את משוחחת עם המחנך/ת על הכיתה. תשובה קצרה וממוקדת (עד כ-200 מילים), מעשית, מותאמת לגיל ולמצב, בצורה של 2–3 חלופות פעולה שהמחנך/ת יכול/ה לבחור ביניהן — המלצות ולא קביעות. כשאת/ה נשען/ת על מקור — ציין/י את המפתח בסוגריים מרובעים, למשל [Allen2018]. טקסט רגיל, בלי JSON.',
     '','תמונת המצב שתיאר/ה המחנך/ת:',STATE.report.picture,'','הדוח שכבר נמסר לו/ה (אל תחזור/י עליו, התבסס/י עליו):',plainShort()].join('\n');
@@ -591,7 +602,7 @@ F('chat-send').addEventListener('click',async()=>{
     const ans=await complete(sys,STATE.chat.slice(-12),6000);
     STATE.chat.push({role:'assistant',content:ans.trim()});save();ok=true;
   }catch(e){STATE.chat.pop();F('chat-in').value=q;const er=F('chat-err');er.textContent='לא התקבלה תשובה ('+e.message+'). נסו שוב.';er.hidden=false;}
-  finally{BUSY=false;b.disabled=false;b.textContent='שליחה';renderChat();
+  finally{BUSY=CHAT_BUSY=false;b.disabled=false;b.textContent='שליחה';renderChat();
     if(ok){const last=F('chat-log').lastElementChild;if(last)last.scrollIntoView({behavior:'smooth',block:'start'});if(!F('chat-in').hidden)F('chat-in').focus({preventScroll:true});}}
 });
 function plainShort(){const d=STATE.report.doc||{};const t=x=>(x||[]).map(a=>a.title||a.domain).filter(Boolean).join('; ');
