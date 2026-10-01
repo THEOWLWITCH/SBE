@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="lib/resilience-data.js"></script>
 <script src="lib/resilience-score.js"></script>
+<script src="lib/resilience-demo.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
@@ -245,7 +246,7 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
     <input type="text" id="restore-code" dir="ltr" autocomplete="off" spellcheck="false" placeholder="xxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxx">
     <button class="btn btn-ghost btn-sm" id="btn-restore">שחזור הכיתה</button>
     <hr style="margin:1rem 0;border:none;border-top:1px solid var(--hair)">
-    <button class="btn btn-ghost btn-sm" id="btn-demo">כיתת דמו — לראות איך זה נראה</button>
+    <button class="btn btn-ghost btn-sm" id="btn-demo">כיתת דמו — אופק · ח׳1, עם מעקב של חצי שנה</button>
     <p style="font-size:.78rem;margin:.3rem 0 0">כיתה לדוגמה עם תשובות מומצאות, לתצוגה בלבד. לא נשמרת ולא נשלחת לאף אחד.</p>
   </div>
 
@@ -277,7 +278,7 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
       <div id="qr-canvas"></div>
     </div>
     </div>
-    <p id="demo-note" style="display:none;font-size:.85rem" class="setup-info">זו כיתת דמו: התשובות מומצאות ולא נשמרות. בכיתה אמיתית יופיעו כאן הקישור וקוד ה-QR לתלמידים.</p>
+    <p id="demo-note" style="display:none;font-size:.85rem" class="setup-info">זו כיתת דמו: בית ספר "אופק", כיתה ח׳1 — 30 תלמידים, 15 היגדים, שני סיבובי מדידה בהפרש של חצי שנה. התשובות מומצאות ולא נשמרות. בכיתה אמיתית יופיעו כאן הקישור וקוד ה-QR לתלמידים.</p>
     <hr style="margin:1rem 0;border:none;border-top:1px solid var(--c-border)">
     <p id="open-state" style="font-weight:700;margin:.25rem 0"></p>
     <button class="btn btn-sm" id="btn-toggle-open">סגירת השאלון והצגת התוצאות</button>
@@ -346,6 +347,63 @@ let GROUP = null;       // { id, cls, band, sel, open } כפי שהשרת מחז
 let DEMO = null;        // כיתת דמו: { cfg } — רק בזיכרון הדף, בלי שרת
 const MAX_SEL = 15;
 
+// ── סיבובי מדידה (01/10/2026) ──
+// כל מילוי של אותו/אותה נשאל/ת (אותה קבוצה + אותו קוד אישי) מקבל מספר סיבוב (rd).
+// התצוגה: "המילוי האחרון של כל אחד/ת" (ברירת מחדל), או סיבוב מסוים. כך שני
+// סיבובים לא מתערבבים בציון אחד, ואפשר להשוות ביניהם.
+let VIEW='latest';
+function maxRound(){return RESP.length?Math.max(...RESP.map(r=>r.rd||1)):0;}
+function roundResp(n){return RESP.filter(r=>(r.rd||1)===n);}
+function viewResp(){
+  if(maxRound()<=1)return RESP;
+  if(VIEW!=='latest')return roundResp(VIEW);
+  const last={};
+  RESP.forEach(r=>{const k=r.v+':'+r.k;if(!last[k]||(r.rd||1)>(last[k].rd||1))last[k]=r;});
+  return Object.values(last);
+}
+function roundDates(rs){
+  const ds=rs.map(r=>r.dt).filter(Boolean).sort();
+  if(!ds.length)return '';
+  const f=d=>{const [y,m,dd]=d.split('-');return +dd+'.'+(+m)+'.'+y.slice(2);};
+  // בידוד שמאל-לימין (LRI…PDI), אחרת בעמוד מימין לשמאל הטווח מתהפך (13.10–12.10)
+  return '\u2066'+(ds[0]===ds[ds.length-1]?f(ds[0]):f(ds[0])+'–'+f(ds[ds.length-1]))+'\u2069';
+}
+function viewLabel(){
+  if(maxRound()<=1)return '';
+  return VIEW==='latest'?'המילוי האחרון של כל אחד/ת':'סיבוב '+VIEW+' ('+roundDates(roundResp(VIEW))+')';
+}
+function roundBar(){
+  const n=maxRound();if(n<=1)return '';
+  let o='<option value="latest"'+(VIEW==='latest'?' selected':'')+'>המילוי האחרון של כל אחד/ת</option>';
+  for(let i=1;i<=n;i++){const rs=roundResp(i);o+='<option value="'+i+'"'+(VIEW===i?' selected':'')+'>סיבוב '+i+' · '+roundDates(rs)+' · '+rs.length+' נשאלים</option>';}
+  return '<div class="card no-print" style="padding:.7rem 1rem"><label style="font-weight:700;margin:0 0 .3rem;display:block">איזה סיבוב מוצג</label><select class="round-sel">'+o+'</select></div>';
+}
+document.addEventListener('change',e=>{
+  if(!e.target.classList||!e.target.classList.contains('round-sel'))return;
+  VIEW=e.target.value==='latest'?'latest':Number(e.target.value);renderAll();
+});
+// השוואה: הסיבוב הראשון מול האחרון — לכל תחום, ולציון הכולל.
+function roundCompare(band){
+  const n=maxRound();if(n<2)return null;
+  const a=roundResp(1),b=roundResp(n);
+  const da=SC.computeDomains(a,R.ITEMS,band),db=SC.computeDomains(b,R.ITEMS,band);
+  const map={};da.forEach(d=>{map[d.g+'|'+d.d]={g:d.g,d:d.d,a:d.score};});
+  db.forEach(d=>{const k=d.g+'|'+d.d;(map[k]=map[k]||{g:d.g,d:d.d}).b=d.score;});
+  // השינוי מחושב מהציונים המעוגלים, כדי שהטבלה תסתכם (46 ← 36 = ‎−10).
+  const rows=Object.values(map).filter(x=>x.a!=null&&x.b!=null).map(x=>({...x,delta:Math.round(x.b)-Math.round(x.a)}));
+  const avg=arr=>arr.reduce((s,x)=>s+x,0)/(arr.length||1);
+  const keysA=new Set(a.map(r=>r.v+':'+r.k));
+  return {n,rows,overallA:avg(da.map(d=>d.score)),overallB:avg(db.map(d=>d.score)),
+    countA:a.length,countB:b.length,both:b.filter(r=>keysA.has(r.v+':'+r.k)).length,
+    datesA:roundDates(a),datesB:roundDates(b)};
+}
+function deltaHtml(x){
+  const v=Math.round(x);
+  if(v>=5)return '<span style="color:var(--auto);font-weight:700">▲ '+v+'</span>';
+  if(v<=-5)return '<span style="color:var(--brick);font-weight:700">▼ '+Math.abs(v)+'</span>';
+  return '<span style="color:var(--muted)">≈ \u2066'+(v>0?'+':'')+v+'\u2069</span>';
+}
+
 if(!R||!SC){document.body.innerHTML='<p style="padding:2rem;color:red">שגיאה: קובץ הנתונים לא נטען.</p>';return;}
 
 let _tempView = false;  // in-memory unlock — NOT saved
@@ -362,7 +420,7 @@ function loadCfg(){
   return c&&c.id&&(c.key||c.admin) ? c : null; // admin: כיתה שמנהלת המערכת פתחה מהרשימה
 }
 function saveCfg(c){try{localStorage.setItem(CFG,JSON.stringify(c));}catch{}}
-function clearAll(){if(DEMO){DEMO=null;}else{try{localStorage.removeItem(CFG);}catch{}} RESP=[];GROUP=null;}
+function clearAll(){if(DEMO){DEMO=null;}else{try{localStorage.removeItem(CFG);}catch{}} RESP=[];GROUP=null;VIEW='latest';}
 
 function api(body){
   return fetch(API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)})
@@ -517,43 +575,16 @@ document.getElementById('btn-show-results').addEventListener('click',function(){
 });
 
 // ── כיתת דמו ──
-// תשובות מומצאות (דטרמיניסטיות) ל-15 היגדים בשכבת ד׳–ו׳, כדי לראות מה מופיע בכל
-// לשונית: תחום ש"פוגע" מגביל בו את הציון, פער בין קבוצות נשאלים, ותחום שרבים "לא יודעים".
-function buildDemo(){
-  const band=1, items=R.ITEMS.filter(it=>it.b===band);
-  const doms=[];const byDom={};
-  items.forEach((it,pos)=>{const k=it.g+'|'+it.d;if(!byDom[k]){byDom[k]=[];doms.push(k);}byDom[k].push(pos);});
-  const paired=doms.filter(k=>byDom[k].some(p=>items[p].r)&&byDom[k].some(p=>!items[p].r));
-  const sel=[];
-  for(const k of paired){if(sel.length+2>MAX_SEL)break;sel.push(byDom[k].find(p=>!items[p].r),byDom[k].find(p=>items[p].r));}
-  for(const k of doms){if(sel.length>=MAX_SEL)break;if(!paired.includes(k))sel.push(byDom[k][0]);}
-  sel.sort((a,b)=>a-b);
-  let seed=7;const rnd=()=>{seed=(seed*1103515245+12345)%2147483648;return seed/2147483648;};
-  const selDoms=[...new Set(sel.map(p=>items[p].g+'|'+items[p].d))];
-  // פרופיל לכל תחום: רמת ההתנהגות המיטיבה, רמת הפגיעה, שיעור "לא יודע"
-  const prof={};selDoms.forEach((k,i)=>{prof[k]={good:[2.7,2.0,2.4,1.6,2.8,1.8,2.2,2.5][i%8],harm:[0.1,2.3,0.2,0.2,0.1,1.8,0.2,0.2][i%8],unk:i===3?0.5:0.04};});
-  const gapDom=selDoms[2];
-  const voices=[[0,18],[1,1],[2,3],[3,1],[4,8]];
-  const resp=[];let n=0;
-  voices.forEach(([v,count])=>{for(let c=0;c<count;c++){
-    const a=new Array(items.length).fill(null);
-    sel.forEach(p=>{
-      const it=items[p],k=it.g+'|'+it.d,pr=prof[k];
-      if(rnd()<(v===4?pr.unk*1.6:pr.unk)){a[p]=4;return;}
-      let mean=it.r?pr.harm:pr.good;
-      if(k===gapDom&&!it.r)mean+=(v===0?-1.2:v===4?0.9:0.3);
-      const noise=(v===0||v===4)?(rnd()-0.5)*1.0:0; // מבוגר/ת יחיד/ה בקבוצה — בלי רעש, כדי שלא ייווצרו פערים מקריים
-      a[p]=Math.max(0,Math.min(3,Math.round(mean+noise)));
-    });
-    resp.push({v,k:'demo'+(n++),a,rd:1,dt:new Date().toISOString().slice(0,10),ts:Date.now()});
-  }});
-  return {band,sel,resp};
-}
+// בית ספר "אופק", כיתה ח׳1: 30 תלמידים, 15 היגדים מגוונים, ושני סיבובי מדידה
+// בהפרש של חצי שנה — עם מעקב והשוואה, ועם מסמך המלצות למחנכת שכתוב מראש
+// (lib/resilience-demo.js). הכול בזיכרון הדף בלבד, בלי שרת.
 document.getElementById('btn-demo').addEventListener('click',function(){
-  const d=buildDemo();
-  DEMO={cfg:{demo:true,id:'demo',key:'',cls:'כיתת דמו — ה׳2',band:d.band}};
+  const D=window.SBE_RESIL_DEMO;if(!D)return;
+  const d=D.build(R);
+  DEMO={cfg:{demo:true,id:'demo',key:'',cls:D.school+' · '+D.cls,band:d.band}};
   GROUP={id:'demo',cls:DEMO.cfg.cls,band:d.band,sel:d.sel,open:false};
-  RESP=d.resp;_tempView=false;cfgMsg.textContent='';
+  RESP=d.resp;VIEW='latest';_tempView=false;cfgMsg.textContent='';
+  if(D.summary)SUMMARY={cid:sumCacheId(DEMO.cfg),at:D.summaryDate+'T12:00:00Z',cls:DEMO.cfg.cls,band:R.BANDS[d.band].label,doc:D.summary};
   renderAll();window.scrollTo(0,0);
 });
 
@@ -697,8 +728,7 @@ function renderScores(){
   const cfg=loadCfg();
   const el=document.getElementById('scores-content');
   if(!cfg){el.innerHTML='<div class="empty">הגדר/י כיתה בלשונית "הגדרה" כדי לראות ציונים.</div>';return;}
-  const st=loadStore();
-  const resp=(st.resp||[]);
+  const resp=viewResp();
   if(!resp.length){el.innerHTML='<div class="empty">עדיין אין תשובות.</div>';return;}
 
   const bandItems=R.ITEMS.filter(it=>it.b===cfg.band);
@@ -712,8 +742,9 @@ function renderScores(){
   const groups={};
   domains.forEach(d=>{if(!groups[d.g])groups[d.g]=[];groups[d.g].push(d);});
 
-  let html=`<div class="card">
+  let html=roundBar()+`<div class="card">
     <h2>סיכום כיתה: ${String(cfg.cls).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';')}</h2>
+    ${viewLabel()?'<p style="font-size:.82rem;margin-top:-.4rem">'+viewLabel()+' · '+resp.length+' נשאלים</p>':''}
     <div class="score-row" style="margin-bottom:1rem">
       <div class="score-label" style="font-weight:700">ציון כולל</div>
       <div class="score-bar-wrap"><div class="score-bar ${tierClass(ovLbl.tier)}" style="width:${Math.round(overall)}%"></div></div>
@@ -741,6 +772,19 @@ function renderScores(){
     html+='</div>';
   });
 
+  const cmp=roundCompare(cfg.band);
+  if(cmp){
+    html+=`<div class="card"><h2>מעקב: סיבוב 1 מול סיבוב ${cmp.n}</h2>
+      <p style="font-size:.85rem">סיבוב 1: ${cmp.datesA} · ${cmp.countA} נשאלים &nbsp;|&nbsp; סיבוב ${cmp.n}: ${cmp.datesB} · ${cmp.countB} נשאלים (${cmp.both} מהם מילאו גם בסיבוב 1)</p>
+      <table class="vtable"><tr><th>תחום</th><th style="text-align:left">סיבוב 1</th><th style="text-align:left">סיבוב ${cmp.n}</th><th style="text-align:left">שינוי</th></tr>
+      <tr><td><b>ציון כולל</b></td><td style="text-align:left">${Math.round(cmp.overallA)}</td><td style="text-align:left">${Math.round(cmp.overallB)}</td><td style="text-align:left">${deltaHtml(Math.round(cmp.overallB)-Math.round(cmp.overallA))}</td></tr>`;
+    [...cmp.rows].sort((x,y)=>y.delta-x.delta).forEach(x=>{
+      const la=SC.scoreLabel(x.a),lb=SC.scoreLabel(x.b);
+      html+=`<tr><td>${x.d}</td><td style="text-align:left;color:${la.color}">${Math.round(x.a)}</td><td style="text-align:left;color:${lb.color};font-weight:700">${Math.round(x.b)}</td><td style="text-align:left">${deltaHtml(x.delta)}</td></tr>`;
+    });
+    html+=`</table><p style="font-size:.78rem;margin-top:.4rem">שינוי של פחות מ-5 נקודות מסומן ≈ — ייתכן שהוא מקרי.</p></div>`;
+  }
+
   el.innerHTML=html;
 }
 
@@ -749,8 +793,7 @@ function renderVoices(){
   const cfg=loadCfg();
   const el=document.getElementById('voices-content');
   if(!cfg){el.innerHTML='<div class="empty">הגדר/י כיתה תחילה.</div>';return;}
-  const st=loadStore();
-  const resp=(st.resp||[]);
+  const resp=viewResp();
   if(!resp.length){el.innerHTML='<div class="empty">עדיין אין תשובות.</div>';return;}
 
   const domains=SC.computeDomains(resp,R.ITEMS,cfg.band);
@@ -763,7 +806,7 @@ function renderVoices(){
   // Domains with voice gap
   const divided=domains.filter(d=>d.gap>=30);
 
-  let html='<div class="card"><h2>מי ענה על השאלון</h2>'+
+  let html=roundBar()+'<div class="card"><h2>מי ענה על השאלון</h2>'+
     '<p style="font-size:.85rem">קבוצות הנשאלים: תלמידים, מחנך/ת, מורים מקצועיים, מנהלת והורים. בלשונית הזאת רואים אם הקבוצות רואות את הכיתה אחרת.</p>';
   html+='<div class="stats">';
   R.VOICES.forEach(v=>{
@@ -812,12 +855,12 @@ function renderReport(){
   const cfg=loadCfg();
   const el=document.getElementById('report-content');
   if(!cfg){el.innerHTML='<div class="empty">הגדר/י כיתה תחילה.</div>';return;}
-  const st=loadStore();
-  const resp=(st.resp||[]);
+  const resp=viewResp();
   if(!resp.length){el.innerHTML='<div class="empty">עדיין אין תשובות.</div>';return;}
 
   const domains=SC.computeDomains(resp,R.ITEMS,cfg.band);
   if(!domains.length){el.innerHTML='<div class="empty">אין נתונים לדוח.</div>';return;}
+  const cmp=roundCompare(cfg.band);
 
   const sorted=[...domains].sort((a,b)=>b.score-a.score);
   const top=sorted.slice(0,3);
@@ -847,8 +890,12 @@ function renderReport(){
     },
     {
       n:3, title:'מה השתנה',
-      body: resp.some(r=>r.rd>1)
-        ? 'יש מספר סיבובי מדידה. השוואה בין סיבובים תהיה זמינה כשניתן יהיה להתאים בין רשומות.'
+      body: cmp
+        ? `סיבוב 1 (${cmp.datesA}) מול סיבוב ${cmp.n} (${cmp.datesB}). ציון כולל: ${Math.round(cmp.overallA)} ← ${Math.round(cmp.overallB)}.<br><br>`+
+          (cmp.rows.filter(x=>x.delta>=5).length?'<strong>השתפרו:</strong> '+cmp.rows.filter(x=>x.delta>=5).sort((x,y)=>y.delta-x.delta).map(x=>x.d+' (+'+Math.round(x.delta)+')').join(', ')+'<br>':'')+
+          (cmp.rows.filter(x=>x.delta<=-5).length?'<strong>ירדו:</strong> '+cmp.rows.filter(x=>x.delta<=-5).map(x=>x.d+' ('+Math.round(x.delta)+')').join(', ')+'<br>':'')+
+          (cmp.rows.filter(x=>Math.abs(x.delta)<5).length?'<strong>יציבים:</strong> '+cmp.rows.filter(x=>Math.abs(x.delta)<5).map(x=>x.d).join(', '):'')+
+          '<br><br>שינוי בציון מראה כיוון, לא סיבה. כדאי לחבר אותו למה שנעשה בכיתה בין הסיבובים.'
         : 'זהו הסיבוב הראשון של המדידה. להשוואה נדרש לפחות סיבוב נוסף.'
     },
     {
@@ -909,7 +956,7 @@ function renderReport(){
     },
   ];
 
-  let html='<div class="card">';
+  let html=roundBar()+'<div class="card">';
   chaps.forEach(c=>{
     html+=`<div class="chap">
       <div class="chap-num">פרק ${c.n}</div>
@@ -929,7 +976,7 @@ function renderReport(){
 const AI_SERVER='https://sbe-server.onrender.com';
 const SUM_KEY='sbe.resil.summary';
 let SUMMARY=null, SUM_BUSY=false;
-function sumCacheId(cfg){return (cfg.demo?'demo':cfg.id)+':'+RESP.length;}
+function sumCacheId(cfg){return (cfg.demo?'demo':cfg.id)+':'+RESP.length+(VIEW==='latest'?'':':r'+VIEW);}
 function loadSummaryCache(cfg){
   if(SUMMARY&&SUMMARY.cid===sumCacheId(cfg))return SUMMARY;
   if(cfg.demo)return null;
@@ -940,10 +987,11 @@ function saveSummaryCache(obj){SUMMARY=obj;if(obj.cid.startsWith('demo'))return;
 
 function summaryInput(cfg){
   const band=R.BANDS[cfg.band];
-  const domains=SC.computeDomains(RESP,R.ITEMS,cfg.band);
+  const VR=viewResp();
+  const domains=SC.computeDomains(VR,R.ITEMS,cfg.band);
   const vName=Object.fromEntries(R.VOICES.map(v=>[v.id,v.label]));
   const counts={};const seen={};
-  RESP.forEach(r=>{const k=r.v+':'+r.k;if(seen[k])return;seen[k]=1;counts[vName[r.v]]=(counts[vName[r.v]]||0)+1;});
+  VR.forEach(r=>{const k=r.v+':'+r.k;if(seen[k])return;seen[k]=1;counts[vName[r.v]]=(counts[vName[r.v]]||0)+1;});
   const lines=domains.sort((a,b)=>b.score-a.score).map(d=>{
     const parts=[d.g+' · '+d.d+': ציון '+Math.round(d.score)+' ('+d.label+')'];
     if(d.capped)parts.push('התנהגות פוגעת מגבילה את הציון — מיטיבה '+Math.round(d.good)+', פוגעת '+Math.round(d.harm));
@@ -951,14 +999,19 @@ function summaryInput(cfg){
     if(d.unknownRate>=0.34)parts.push(Math.round(d.unknownRate*100)+'% ענו "לא יודע"');
     return '- '+parts.join(' | ');
   });
+  const cmp=roundCompare(cfg.band);
   return {band,domains,text:[
     'כיתה: '+cfg.cls,
     'שכבת גיל: '+band.label+' ('+band.range+')',
     'מי ענה: '+Object.entries(counts).map(([n,c])=>n+' '+c).join(', '),
     'סולם: 75–100 תפקודי · 50–74 חלקי · 25–49 חלש · מתחת ל-25 בקושי תפקודי. ציון תחום = min(התנהגות מיטיבה, 100 − התנהגות פוגעת).',
     '',
-    'ממצאים לפי תחום (מהגבוה לנמוך):',
-    ...lines
+    'ממצאים לפי תחום (מהגבוה לנמוך)'+(maxRound()>1?' — '+viewLabel():'')+':',
+    ...lines,
+    ...(cmp?['',
+      'מעקב: סיבוב 1 ('+cmp.datesA+', '+cmp.countA+' נשאלים) מול סיבוב '+cmp.n+' ('+cmp.datesB+', '+cmp.countB+' נשאלים, '+cmp.both+' מהם מילאו בשניהם).',
+      'ציון כולל: '+Math.round(cmp.overallA)+' ← '+Math.round(cmp.overallB),
+      ...[...cmp.rows].sort((x,y)=>y.delta-x.delta).map(x=>'- '+x.g+' · '+x.d+': '+Math.round(x.a)+' ← '+Math.round(x.b)+' (שינוי '+(x.delta>=0?'+':'')+Math.round(x.delta)+')')]:[])
   ].join('\n')};
 }
 
@@ -975,9 +1028,11 @@ const SUM_SYSTEM=[
   '8. משחקים חברתיים: בכל אחת משלוש רשימות הפעילויות שלב/י לפחות 1–2 משחקים חברתיים — משחקי שיתוף פעולה (לא תחרות של יחיד נגד יחיד), מותאמים לגיל, עם הסבר קצר איך משחקים ומה המטרה. סמן/י אותם ב-"game":true.',
   '9. סביבת הכיתה: המלצות לעיצוב המרחב הפיזי והחזותי של הכיתה שתומכות בממצאים — למשל סידור ישיבה שמאפשר עבודה בקבוצות, פינות (שיחה, הרגעה, יצירה), לוחות ותצוגות שהתלמידים מפעילים, סמלים ומוסכמות כיתתיים, תצוגת הישגים משותפים — וכל המלצה מקושרת לתחום מהממצאים.',
   '10. המלצות נוספות: דברים שעולים מהתוצאות ואינם נכנסים לסעיפים האחרים — למשל עבודה עם ההורים, תיאום עם הצוות והיועצ/ת, שיחות עם התלמידים על הממצאים, מדידה חוזרת, או תחום שכדאי לבדוק לעומק. בלי לחזור על מה שכבר הוצע.',
+  '11. מעקב: אם בנתונים יש השוואה בין סיבובי מדידה — התייחס/י לשינוי במבט-העל, ומלא/י את "progress": מה השתפר (ומה כנראה תרם לזה, רק כהשערה), מה ירד או נשאר במקום, ומה כדאי לשמר. שינוי של פחות מ-5 נקודות — לא לפרש כשינוי. בלי השוואה — "progress" ריק.',
   'היקף: 3–5 חוזקות, 3–5 אתגרים, 3–5 פעילויות בכל אחת משלוש רשימות הפעילויות, 3–5 המלצות לסביבת הכיתה, ו-2–4 המלצות נוספות.',
   'החזר/י אך ורק JSON תקין, בלי טקסט נוסף, במבנה:',
   '{"intro":"2–3 משפטים — מבט-על על הכיתה",',
+  ' "progress":[{"domain":"שם התחום או \"ציון כולל\"","text":"מה השתנה ומה זה אומר"}],',
   ' "strengths":[{"domain":"שם התחום","text":"מה החוזקה ומה היא מאפשרת"}],',
   ' "strengthActivities":[ACT],',
   ' "leverage":[ACT + "from":"החוזקה שמשמשת מנוף","to":"האתגר שהיא מסייעת בו"],',
@@ -1030,7 +1085,9 @@ function textList(items){
 }
 function summaryPlainText(c){
   const d=c.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.game?'משחק חברתי':'',a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  מה זה מפתח: '+a.mechanism:'');
-  L.push('סיכום והמלצות — כיתה '+c.cls+' ('+c.band+')','',d.intro||'','','1. חוזקות הכיתה');
+  L.push('סיכום והמלצות — כיתה '+c.cls+' ('+c.band+')','',d.intro||'');
+  if((d.progress||[]).length){L.push('','מעקב: מה השתנה מאז המדידה הקודמת');d.progress.forEach(x=>L.push('• '+x.domain+': '+x.text));}
+  L.push('','1. חוזקות הכיתה');
   (d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','1.1 פעילויות ותהליכים להעצמת החוזקות');(d.strengthActivities||[]).forEach(a=>L.push(act(a)));
   L.push('','1.2 החוזקות כמנוף להתמודדות עם האתגרים');(d.leverage||[]).forEach(a=>L.push(act(a,a.from&&a.to?a.from+' ← '+a.to:'')));
@@ -1046,6 +1103,7 @@ function renderSummary(){
   if(!cfg){box.innerHTML='<div class="empty">הגדר/י כיתה תחילה.</div>';return;}
   if(!RESP.length){box.innerHTML='<div class="empty">עדיין אין תשובות. הסיכום יופק אחרי שייאספו תשובות.</div>';return;}
   box.textContent='';
+  box.insertAdjacentHTML('afterbegin',roundBar());
   const cached=loadSummaryCache(cfg);
   const head=el2('div','card no-print');
   head.appendChild(el2('h2',null,'סיכום והמלצות למחנך/ת'));
@@ -1068,6 +1126,10 @@ function renderSummary(){
   const t=el2('h2',null,'סיכום והמלצות — כיתה '+cached.cls);t.style.borderBottom='none';card.appendChild(t);
   card.appendChild(el2('p',null,'שכבה: '+cached.band+' · הופק: '+new Date(cached.at).toLocaleDateString('he-IL')+(cfg.demo?' · כיתת דמו':''))).style.cssText='font-size:.8rem;color:var(--muted);margin-top:-.4rem';
   if(d.intro)card.appendChild(el2('p','sum-intro',d.intro));
+  if((d.progress||[]).length){
+    card.appendChild(el2('h2',null,'מעקב: מה השתנה מאז המדידה הקודמת'));
+    card.appendChild(textList(d.progress));
+  }
 
   card.appendChild(el2('h2',null,'1. חוזקות הכיתה'));
   card.appendChild(textList(d.strengths));
