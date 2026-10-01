@@ -49,21 +49,31 @@ h1{font-family:"Frank Ruhl Libre",serif;font-size:1.9rem;margin-bottom:.4rem}
 </style>
 </head>
 <body>
-<nav class="topnav"><a href="resilience-advisor.html">→ חזרה לפרקטי</a></nav>
+<nav class="topnav"><a href="resilience-advisor.html" id="back">→ חזרה לפרקטי</a></nav>
 <div class="wrap">
-  <h1>המקורות של פרקטי: יועצת לפיתוח חוסן חברתי</h1>
-  <p class="lead">פרקטי מנתחת את תמונת המצב שהמחנך/ת מתאר/ת ומציעה המלצות על בסיס המקורות שלהלן — מחקר ישראלי ובינלאומי על חוסן קהילתי וחברתי, שייכות ואקלים כיתתי, עבודה משותפת, יישוב קונפליקטים, למידה רגשית־חברתית ובית הספר כקהילה בשגרה ובחירום. לכל מקור מופיעה התובנה המרכזית שלו עבור Begood וקישור למקור, וכל המלצה בדוח של פרקטי מפנה למקורות שעליהם היא נשענת. חלק מהמחקרים העדכניים (2024–2026) מגיעים ממאגר אתר הקהילה <a href="https://hosen-hinuch-herum.netlify.app/" style="color:var(--spoken)">חוסן | חינוך | חירום</a>.</p>
+  <h1 id="ttl">המקורות של פרקטי: יועצת לפיתוח חוסן חברתי</h1>
+  <p class="lead" id="lead-practi">פרקטי מנתחת את תמונת המצב שהמחנך/ת מתאר/ת ומציעה המלצות על בסיס המקורות שלהלן — מחקר ישראלי ובינלאומי על חוסן קהילתי וחברתי, שייכות ואקלים כיתתי, עבודה משותפת, יישוב קונפליקטים, למידה רגשית־חברתית ובית הספר כקהילה בשגרה ובחירום. לכל מקור מופיעה התובנה המרכזית שלו עבור Begood וקישור למקור, וכל המלצה בדוח של פרקטי מפנה למקורות שעליהם היא נשענת. חלק מהמחקרים העדכניים (2024–2026) מגיעים ממאגר אתר הקהילה <a href="https://hosen-hinuch-herum.netlify.app/" style="color:var(--spoken)">חוסן | חינוך | חירום</a>.</p>
+  <p class="lead" id="lead-nugi" hidden>נוגי מנתחת את תמונת המצב של ההנהגה — מנהלת, צוות הנהלה, רכזים או צוות תלמידים — ומציעה המלצות על בסיס המקורות שלהלן: מחקר ישראלי ובינלאומי על מנהיגות חינוכית, מנהיגות מבוזרת וצוותית, אמון ורווחת הצוות, מנהיגות בחירום ובמשבר, ומנהיגות תלמידים — לצד מקורות על חוסן קהילתי ובית הספר כקהילה. לכל מקור מופיעה התובנה המרכזית שלו עבור Begood וקישור למקור. הרשימה מתעדכנת מדי שבוע.</p>
   <div id="list"></div>
 </div>
 <script>
 (function(){
   'use strict';
   var A = window.SBE_ADVISOR_SOURCES, box = document.getElementById('list');
+  // ?a=nugi — בנק הידע של נוגי; ברירת מחדל — של פרקטי
+  var adv = new URLSearchParams(location.search).get('a') === 'nugi' ? 'nugi' : 'practi';
+  var LIST = A.forAdvisor(adv);
+  if (adv === 'nugi') {
+    document.title = 'נוגי — מקורות';
+    document.getElementById('ttl').textContent = 'המקורות של נוגי: יועצת למנהיגות שתומכת בחוסן חברתי';
+    document.getElementById('lead-practi').hidden = true; document.getElementById('lead-nugi').hidden = false;
+    var bk = document.getElementById('back'); bk.href = 'leadership-advisor.html'; bk.textContent = '→ חזרה לנוגי';
+  }
   // סדר אלפביתי לפי שם המחבר/ת הראשון/ה: קודם המקורות בעברית (א-ב), אחר כך באנגלית (abc).
   var isHe = function(s){ return /^[\u0590-\u05FF]/.test(s.apa); };
   var sections = [
-    ['מקורות בעברית', A.list.filter(isHe).sort(function(a,b){ return a.apa.localeCompare(b.apa, 'he'); })],
-    ['מקורות באנגלית', A.list.filter(function(s){ return !isHe(s); }).sort(function(a,b){ return a.apa.localeCompare(b.apa, 'en', {sensitivity:'base'}); })]
+    ['מקורות בעברית', LIST.filter(isHe).sort(function(a,b){ return a.apa.localeCompare(b.apa, 'he'); })],
+    ['מקורות באנגלית', LIST.filter(function(s){ return !isHe(s); }).sort(function(a,b){ return a.apa.localeCompare(b.apa, 'en', {sensitivity:'base'}); })]
   ];
   sections.forEach(function(sc){
     var items = sc[1];
