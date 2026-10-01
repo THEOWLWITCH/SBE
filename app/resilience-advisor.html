@@ -107,7 +107,18 @@ ul.tl{padding-inline-start:1.2rem}
 ul.tl li{margin:.25rem 0}
 .err{color:var(--brick);font-weight:600;margin-top:.5rem}
 .chat .thinking{color:var(--muted);font-style:italic}
-.chat .msg{border-radius:9px;padding:.6rem .85rem;margin:.45rem 0;white-space:pre-wrap;font-size:.94rem}
+.chat .msg{border-radius:9px;padding:.7rem .95rem;margin:.6rem 0;font-size:.95rem;line-height:1.65}
+.chat .me{white-space:pre-wrap}
+.rich>*:last-child{margin-bottom:0}
+.rich p{margin:0 0 .7rem}
+.rich h4{font-size:.98rem;color:var(--spoken);margin:.9rem 0 .35rem}
+.rich h4:first-child{margin-top:0}
+.rich ul,.rich ol{margin:.15rem 0 .75rem;padding-inline-start:1.35rem}
+.rich li{margin:.3rem 0}
+.rich li::marker{color:var(--spoken)}
+#report h2{margin-top:1.6rem}
+#report .card>h2:first-child{margin-top:0}
+.act-d{line-height:1.6}
 .chat .me{background:var(--spoken-soft);margin-inline-end:15%}
 .chat .bot{background:var(--surface-2);margin-inline-start:15%}
 #fb-fab{position:fixed;inset-inline-start:16px;bottom:16px;z-index:50;font:inherit;font-weight:700;font-size:.9rem;
@@ -117,7 +128,12 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 #fb-dlg .fbh{padding:.9rem 1.1rem;border-bottom:1px solid var(--hair);font-weight:700}
 #fb-dlg .fbb{padding:.6rem 1.1rem 1rem}
 #fb-dlg .fbf{padding:.7rem 1.1rem;border-top:1px solid var(--hair);display:flex;gap:.5rem}
-@media print{.topnav,.no-print,#form-area,#fb-fab{display:none!important}body{background:#fff}.card{box-shadow:none;border:none}}
+@page{size:A4;margin:20mm 22mm}
+@media print{.topnav,.no-print,#form-area,#fb-fab{display:none!important}body{background:#fff;font-size:11.5pt;line-height:1.6}
+  .wrap{max-width:none;padding:0}.card{box-shadow:none;border:none;padding:0}
+  #report{break-before:page}
+  h2,h3,h4{break-after:avoid}.act,.rich li,.intro,.lens,.score-row{break-inside:avoid}
+  .bar,.bar>div,.val,.intro,.lens,.act-tag{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head>
 <body>
@@ -440,6 +456,7 @@ const ADVISOR_SYSTEM = [
   '7. משחקים חברתיים: בכל אחת משלוש רשימות הפעילויות לפחות 1–2 משחקי שיתוף פעולה מותאמים לגיל, עם הסבר קצר איך משחקים ומה המטרה ("game":true).',
   '8. סביבת הכיתה: המלצות למרחב הפיזי והחזותי שתומכות בממצאים.',
   '9a. אם המחנך/ת כתב/ה שאלות מרכזיות — ענה/י על כל אחת מהן ישירות ובאופן מעשי ב-"answers": 2–3 חלופות פעולה לכל שאלה (מה עושים ומה כל חלופה מאפשרת), עם מפתחות מקורות בסוגריים מרובעים כשיש. אם לא נכתבו שאלות — "answers" ריק.',
+  '9b. עיצוב טקסט ארוך (answer, ולפי הצורך description): לחלק לשורות עם \\n — כל חלופה בשורה שמתחילה בכותרת מודגשת **...**, ואחריה תבליטים בשורות שמתחילות ב-"- "; הדגשה ב-**...** רק למילות מפתח. טקסטים קצרים — משפטים רגילים.',
   '9. בכל פעילות והמלצה — "basis": 1–3 מפתחות מקורות מהרשימה שעליהם היא נשענת (או מערך ריק).',
   'היקף: 3–5 חוזקות, 3–5 אתגרים, 3–5 פעילויות בכל רשימה, 3–5 המלצות לסביבה, 2–4 המלצות נוספות, 2–3 שאלות בדיקה.',
   'החזר/י אך ורק JSON תקין, בלי טקסט נוסף, במבנה:',
@@ -511,13 +528,29 @@ function withRefs(text){ // טקסט עם [מפתח] → קישורים למקו
   });
   return frag;
 }
-function richText(text){ // **מודגש** → הדגשה; סימני Markdown אחרים לא מוצגים
+function inlineRich(text){ // **מודגש** → הדגשה, [מפתח] → קישור; כוכביות בודדות לא מוצגות
   const frag=document.createDocumentFragment();
-  String(text||'').replace(/^#{1,6}\s*/gm,'').split(/\*\*([^*]+)\*\*/).forEach((part,i)=>{
+  String(text||'').split(/\*\*([^*]+)\*\*/).forEach((part,i)=>{
     part=part.replace(/\*\*/g,'');
     if(i%2){const b=el('b');b.appendChild(withRefs(part));frag.appendChild(b);}else frag.appendChild(withRefs(part));
   });
   return frag;
+}
+// טקסט ארוך → פסקאות, תבליטים, רשימות ממוספרות ותת־כותרות, עם רווח ביניהם (לקריאה נוחה)
+function richText(text){
+  const box=el('div','rich');let list=null;
+  const close=()=>{list=null;};
+  String(text||'').replace(/\r/g,'').split('\n').forEach(raw=>{
+    const line=raw.trim();
+    if(!line){close();return;}
+    let m;
+    if((m=line.match(/^#{1,6}\s*(.+)$/))){close();const h=el('h4');h.appendChild(inlineRich(m[1]));box.appendChild(h);return;}
+    if((m=line.match(/^(?:[-•*●▪]|–)\s+(.+)$/))){if(!list||list.tagName!=='UL'){list=el('ul');box.appendChild(list);}const li=el('li');li.appendChild(inlineRich(m[1]));list.appendChild(li);return;}
+    if((m=line.match(/^(\d{1,2})[.)]\s+(.+)$/))){if(!list||list.tagName!=='OL'){list=el('ol');list.start=+m[1];box.appendChild(list);}const li=el('li');li.appendChild(inlineRich(m[2]));list.appendChild(li);return;}
+    if((m=line.match(/^\*\*([^*]+)\*\*[:：]?$/))){close();const h=el('h4');h.appendChild(inlineRich(m[1]));box.appendChild(h);return;}
+    close();const p=el('p');p.appendChild(inlineRich(line));box.appendChild(p);
+  });
+  return box;
 }
 function actCard(a,extra){
   const c=el('div','act');c.appendChild(el('div','act-t',a.title||''));
@@ -527,12 +560,12 @@ function actCard(a,extra){
   if(a.circle)tags.appendChild(el('span','act-tag circle',a.circle));
   if(extra)tags.appendChild(el('span','act-tag',extra));
   if(tags.childNodes.length)c.appendChild(tags);
-  c.appendChild(el('p','act-d',a.description||''));
+  {const dd=richText(a.description||'');dd.classList.add('act-d');c.appendChild(dd);}
   if(a.mechanism)c.appendChild(el('p','act-m','מה זה מפתח: '+a.mechanism));
   const b=basisEl(a.basis);if(b)c.appendChild(b);
   return c;
 }
-function textList(items){const ul=el('ul','tl');(items||[]).forEach(it=>{const li=el('li');if(it.domain)li.appendChild(el('b',null,it.domain+': '));li.appendChild(withRefs(it.text||''));ul.appendChild(li);});return ul;}
+function textList(items){const ul=el('ul','tl');(items||[]).forEach(it=>{const li=el('li');if(it.domain)li.appendChild(el('b',null,it.domain+': '));li.appendChild(inlineRich(it.text||''));ul.appendChild(li);});return ul;}
 function plain(){
   const R=STATE.report,d=R.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.game?'משחק חברתי':'',a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  מה זה מפתח: '+a.mechanism:'')+((a.basis||[]).length?'\n  מבוסס על: '+a.basis.join(', '):'');
   L.push('פרקטי: המלצות לפיתוח חוסן חברתי — כיתה '+(R.cls||'')+' ('+R.age+')','',d.intro||'');if(d.lens)L.push('','איך המחקר קורא את התמונה',d.lens);
@@ -547,7 +580,7 @@ function plain(){
   if((d.checks||[]).length){L.push('','5. כדאי לבדוק עם התלמידים');d.checks.forEach(x=>L.push('• '+x));}
   L.push('','כל המלצה יש לבחון לאור הנהלים והחוקים, והאחריות לכך היא של המחנך/ת.');
   L.push('','המקורות: '+location.href.replace(/[^/]*$/,'resilience-advisor-sources.html'));
-  return L.join('\n');
+  return L.join('\n').replace(/\*\*/g,'');
 }
 function renderReport(){
   const box=F('report');box.textContent='';const R=STATE.report;if(!R)return;const d=R.doc||{};
@@ -560,9 +593,9 @@ function renderReport(){
   const card=el('div','card');
   card.appendChild(el('h2',null,'המלצות של פרקטי — כיתה '+(R.cls||'')));
   card.appendChild(el('p','muted','שכבה: '+R.age+' · הופק: '+new Date(R.at).toLocaleDateString('he-IL')+' · על סמך תיאור המחנך/ת'));
-  if(d.intro)card.appendChild(el('p','intro',d.intro));
-  if(d.lens){const l=el('div','lens');l.appendChild(el('b',null,'איך המחקר קורא את התמונה: '));l.appendChild(withRefs(d.lens));card.appendChild(l);}
-  if((d.answers||[]).length){card.appendChild(el('h2',null,'תשובות לשאלות שלך'));d.answers.forEach(x=>{const c=el('div','act');c.appendChild(el('div','act-t',x.question||''));const p=el('p','act-d');p.appendChild(withRefs(x.answer||''));c.appendChild(p);card.appendChild(c);});}
+  if(d.intro){const ip=el('p','intro');ip.appendChild(inlineRich(d.intro));card.appendChild(ip);}
+  if(d.lens){const l=el('div','lens');l.appendChild(el('b',null,'איך המחקר קורא את התמונה: '));l.appendChild(inlineRich(d.lens));card.appendChild(l);}
+  if((d.answers||[]).length){card.appendChild(el('h2',null,'תשובות לשאלות שלך'));d.answers.forEach(x=>{const c=el('div','act');c.appendChild(el('div','act-t',x.question||''));const dd=richText(x.answer||'');dd.classList.add('act-d');c.appendChild(dd);card.appendChild(c);});}
   card.appendChild(el('h2',null,'1. חוזקות הכיתה'));card.appendChild(textList(d.strengths));
   card.appendChild(el('h3',null,'1.1 פעילויות ותהליכים להעצמת החוזקות'));(d.strengthActivities||[]).forEach(a=>card.appendChild(actCard(a)));
   card.appendChild(el('h3',null,'1.2 החוזקות כמנוף להתמודדות עם האתגרים'));(d.leverage||[]).forEach(a=>card.appendChild(actCard(a,a.from&&a.to?a.from+' ← '+a.to:'')));
@@ -595,7 +628,7 @@ F('chat-send').addEventListener('click',async()=>{
   const q=F('chat-in').value.trim();if(!q||BUSY||!STATE.report||askedCount()>=CHAT_MAX)return;
   BUSY=CHAT_BUSY=true;const b=F('chat-send');b.disabled=true;b.textContent='פרקטי חושבת...';F('chat-err').hidden=true;
   STATE.chat.push({role:'user',content:q});F('chat-in').value='';renderChat();
-  const sys=[PERSONA,'כעת את משוחחת עם המחנך/ת על הכיתה. תשובה קצרה וממוקדת (עד כ-200 מילים), מעשית, מותאמת לגיל ולמצב, בצורה של 2–3 חלופות פעולה שהמחנך/ת יכול/ה לבחור ביניהן — המלצות ולא קביעות. כשאת/ה נשען/ת על מקור — ציין/י את המפתח בסוגריים מרובעים, למשל [Allen2018]. טקסט רגיל, בלי JSON.',
+  const sys=[PERSONA,'כעת את משוחחת עם המחנך/ת על הכיתה. תשובה קצרה וממוקדת (עד כ-200 מילים), מעשית, מותאמת לגיל ולמצב, בצורה של 2–3 חלופות פעולה שהמחנך/ת יכול/ה לבחור ביניהן — המלצות ולא קביעות. כשאת/ה נשען/ת על מקור — ציין/י את המפתח בסוגריים מרובעים, למשל [Allen2018]. עיצוב התשובה (בלי JSON): פסקאות קצרות עם שורה ריקה ביניהן; כל חלופה בשורה משלה שמתחילה בכותרת מודגשת, למשל **אפשרות א׳ — שם קצר**, ואחריה 2–3 תבליטים בשורות שמתחילות ב-"- "; הדגשה ב-**...** רק למילות המפתח החשובות; בלי כותרות #.',
     '','תמונת המצב שתיאר/ה המחנך/ת:',STATE.report.picture,'','הדוח שכבר נמסר לו/ה (אל תחזור/י עליו, התבסס/י עליו):',plainShort()].join('\n');
   let ok=false;
   try{
