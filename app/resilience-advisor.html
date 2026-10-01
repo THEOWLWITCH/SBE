@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>יועץ חוסן חברתי</title>
+<title>פרקטי — יועצת לפיתוח חוסן חברתי</title>
 <script src="lib/access-guard.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -114,14 +114,14 @@ ul.tl li{margin:.25rem 0}
 <nav class="topnav no-print">
   <button type="button" onclick="history.back()">→ חזרה</button>
   <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
-  <span class="crumb">Begood › חוסן חברתי › יועץ</span>
+  <span class="crumb">Begood › חוסן חברתי › פרקטי</span>
 </nav>
 <div class="wrap">
   <div class="card">
     <span class="demo-badge">הדגמה</span>
-    <h1>יועץ חוסן חברתי</h1>
-    <p>רוצים תמונת מצב והמלצות בלי להעביר שאלון לתלמידים? מתארים את הכיתה לפי התבחינים שלמטה, והיועץ מנתח את התמונה ומציע המלצות — בדומה לדוח שמתקבל אחרי מיפוי בשאלון: חוזקות, אתגרים, פעילויות ומשחקים חברתיים, סביבת הכיתה והמלצות נוספות. אחר כך אפשר להמשיך לשאול אותו שאלות.</p>
-    <p class="muted">היועץ נשען על מחקר עדכני מישראל ומהעולם — <a href="resilience-advisor-sources.html" target="_blank" style="color:var(--spoken);font-weight:700">רשימת המקורות</a>. התיאור הוא נקודת המבט שלך; כדי לשמוע גם את התלמידים, אפשר בהמשך להעביר את <a href="resilience-team.html" style="color:var(--spoken)">שאלון החוסן</a>.</p>
+    <h1>פרקטי: יועצת לפיתוח חוסן חברתי</h1>
+    <p>רוצים תמונת מצב והמלצות בלי להעביר שאלון לתלמידים? מתארים את הכיתה לפי התבחינים שלמטה, ופרקטי מנתחת את התמונה ומציעה המלצות — בדומה לדוח שמתקבל אחרי מיפוי בשאלון: חוזקות, אתגרים, פעילויות ומשחקים חברתיים, סביבת הכיתה והמלצות נוספות. אחר כך אפשר להמשיך לשאול אותה שאלות.</p>
+    <p class="muted">פרקטי נשענת על מחקר עדכני מישראל ומהעולם — <a href="resilience-advisor-sources.html" target="_blank" style="color:var(--spoken);font-weight:700">רשימת המקורות</a>. התיאור הוא נקודת המבט שלך; כדי לשמוע גם את התלמידים, אפשר בהמשך להעביר את <a href="resilience-team.html" style="color:var(--spoken)">שאלון החוסן</a>.</p>
   </div>
 
   <div id="form-area">
@@ -175,7 +175,7 @@ ul.tl li{margin:.25rem 0}
   <div id="report"></div>
   <div id="chat-area" hidden>
     <div class="card chat no-print">
-      <h2>שאלו את היועץ</h2>
+      <h2>שאלו את פרקטי</h2>
       <p class="muted">למשל: "איך אני פותחת שיחה על מה שקורה בקבוצת הוואטסאפ?" או "תן לי משחק לשיעור הראשון של השבוע".</p>
       <div id="chat-log"></div>
       <textarea id="chat-in" maxlength="1000" placeholder="השאלה שלך..."></textarea>
@@ -313,10 +313,10 @@ function renderPicture(a){
   box.appendChild(card);
 }
 
-// ── ההנחיה ליועץ ──
+// ── ההנחיה לפרקטי ──
 const KB = SRC.list.map(s=>'['+s.k+'] '+s.gist).join('\n');
 const PERSONA = [
-  'את/ה "יועץ החוסן החברתי" של מערכת Begood: יועץ/ת חינוכי/ת מנוסה, שמכיר/ה לעומק את המחקר על חוסן חברתי וקהילתי בכיתה ובבית הספר — בשגרה ובחירום, בישראל ובעולם. את/ה עונה בעברית, בפנייה מכבדת, פשוטה ומעשית למחנך/ת.',
+  'את "פרקטי" — היועצת לפיתוח חוסן חברתי של מערכת Begood: יועצת חינוכית מנוסה, שמכירה לעומק את המחקר על חוסן חברתי וקהילתי בכיתה ובבית הספר — בשגרה ובחירום, בישראל ובעולם. את מדברת בלשון נקבה על עצמך, ועונה בעברית, בפנייה מכבדת, פשוטה ומעשית למחנך/ת.',
   'המחנך/ת דילג/ה על שאלון התלמידים ותיאר/ה את הכיתה לפי תבחינים קבועים. זו נקודת המבט שלו/ה בלבד — התייחס/י אליה ברצינות, אבל אל תציג/י אותה כעובדה על כל התלמידים.',
   'בסיס הידע שלך הוא רשימת המקורות הבאה (מפתח בסוגריים מרובעים ועיקר הממצא). כשאת/ה נשען/ת על מקור — ציין/י את המפתח שלו בדיוק כפי שהוא. אסור להמציא מקורות, מחקרים, נתונים או ציטוטים, ואסור להפנות למפתח שאינו ברשימה. אם אין ברשימה מקור שתומך בהמלצה — הצג/י אותה כניסיון מקצועי, בלי מפתח.',
   '',KB,''
@@ -372,12 +372,12 @@ F('btn-analyze').addEventListener('click',async()=>{
     err.hidden=false;(miss[0]?F('q-'+miss[0].k):F('f-age')).scrollIntoView({behavior:'smooth',block:'center'});return;
   }
   err.hidden=true;renderPicture(a);
-  BUSY=true;const b=F('btn-analyze');b.disabled=true;b.textContent='היועץ מנתח... (דקה–שלוש)';
-  const rep=F('report');rep.textContent='';const wait=el('div','card','היועץ קורא את תמונת המצב ומכין המלצות... (דקה–שלוש)');rep.appendChild(wait);
+  BUSY=true;const b=F('btn-analyze');b.disabled=true;b.textContent='פרקטי מנתחת... (דקה–שלוש)';
+  const rep=F('report');rep.textContent='';const wait=el('div','card','פרקטי קוראת את תמונת המצב ומכינה המלצות... (דקה–שלוש)');rep.appendChild(wait);
   rep.scrollIntoView({behavior:'smooth',block:'start'});
   try{
     const txt=await complete(ADVISOR_SYSTEM,[{role:'user',content:pictureText(a)}],12000);
-    const m=txt.match(/\{[\s\S]*\}/);if(!m)throw new Error('היועץ לא החזיר מבנה תקין');
+    const m=txt.match(/\{[\s\S]*\}/);if(!m)throw new Error('פרקטי לא החזירה מבנה תקין');
     STATE.report={at:new Date().toISOString(),cls:F('f-cls').value.trim(),age:F('f-age').value,doc:JSON.parse(m[0]),picture:pictureText(a)};
     STATE.chat=[];save();renderReport();renderChat();
   }catch(e){
@@ -418,7 +418,7 @@ function actCard(a,extra){
 function textList(items){const ul=el('ul','tl');(items||[]).forEach(it=>{const li=el('li');if(it.domain)li.appendChild(el('b',null,it.domain+': '));li.appendChild(withRefs(it.text||''));ul.appendChild(li);});return ul;}
 function plain(){
   const R=STATE.report,d=R.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.game?'משחק חברתי':'',a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  מה זה מפתח: '+a.mechanism:'')+((a.basis||[]).length?'\n  מבוסס על: '+a.basis.join(', '):'');
-  L.push('יועץ חוסן חברתי — כיתה '+(R.cls||'')+' ('+R.age+')','',d.intro||'');if(d.lens)L.push('','איך המחקר קורא את התמונה',d.lens);
+  L.push('פרקטי: המלצות לפיתוח חוסן חברתי — כיתה '+(R.cls||'')+' ('+R.age+')','',d.intro||'');if(d.lens)L.push('','איך המחקר קורא את התמונה',d.lens);
   L.push('','1. חוזקות הכיתה');(d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','1.1 פעילויות להעצמת החוזקות');(d.strengthActivities||[]).forEach(a=>L.push(act(a)));
   L.push('','1.2 החוזקות כמנוף');(d.leverage||[]).forEach(a=>L.push(act(a,a.from&&a.to?a.from+' ← '+a.to:'')));
@@ -438,7 +438,7 @@ function renderReport(){
   const cp=el('button','btn btn-ghost','העתקת הטקסט');cp.addEventListener('click',()=>{navigator.clipboard&&navigator.clipboard.writeText(plain()).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הטקסט',2000);});});
   acts.appendChild(pr);acts.appendChild(cp);head.appendChild(el('h2',null,'הדוח מוכן'));head.appendChild(acts);box.appendChild(head);
   const card=el('div','card');
-  card.appendChild(el('h2',null,'המלצות היועץ — כיתה '+(R.cls||'')));
+  card.appendChild(el('h2',null,'המלצות של פרקטי — כיתה '+(R.cls||'')));
   card.appendChild(el('p','muted','שכבה: '+R.age+' · הופק: '+new Date(R.at).toLocaleDateString('he-IL')+' · על סמך תיאור המחנך/ת'));
   if(d.intro)card.appendChild(el('p','intro',d.intro));
   if(d.lens){const l=el('div','lens');l.appendChild(el('b',null,'איך המחקר קורא את התמונה: '));l.appendChild(withRefs(d.lens));card.appendChild(l);}
@@ -457,14 +457,14 @@ function renderReport(){
   F('chat-area').hidden=false;
 }
 
-// ── שיחה עם היועץ ──
+// ── שיחה עם פרקטי ──
 function renderChat(){
   const log=F('chat-log');log.textContent='';
   STATE.chat.forEach(m=>{const d=el('div','msg '+(m.role==='user'?'me':'bot'));d.appendChild(withRefs(m.content));log.appendChild(d);});
 }
 F('chat-send').addEventListener('click',async()=>{
   const q=F('chat-in').value.trim();if(!q||BUSY||!STATE.report)return;
-  BUSY=true;const b=F('chat-send');b.disabled=true;b.textContent='היועץ חושב...';F('chat-err').hidden=true;
+  BUSY=true;const b=F('chat-send');b.disabled=true;b.textContent='פרקטי חושבת...';F('chat-err').hidden=true;
   STATE.chat.push({role:'user',content:q});F('chat-in').value='';renderChat();
   const sys=[PERSONA,'כעת את/ה משוחח/ת עם המחנך/ת על הכיתה. תשובה קצרה וממוקדת (עד כ-200 מילים), מעשית, מותאמת לגיל ולמצב. כשאת/ה נשען/ת על מקור — ציין/י את המפתח בסוגריים מרובעים, למשל [Allen2018]. טקסט רגיל, בלי JSON.',
     '','תמונת המצב שתיאר/ה המחנך/ת:',STATE.report.picture,'','הדוח שכבר נמסר לו/ה (אל תחזור/י עליו, התבסס/י עליו):',plainShort()].join('\n');
