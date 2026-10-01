@@ -143,10 +143,10 @@ const fmtDate = (ymd) => ymd ? ymd.split("-").reverse().join(".") : "";
 const PERM_LABEL = {
   fac_trainee: "הנחיית סטודנטים", fac_parent: "הנחיית הורים", fac_youth: "הנחיית נוער",
   conv: "תכנון שיחה", activity: "תכנון פעילות", academic: "משוב לעבודות",
-  lecturer: "קודים לסטודנטים", resilience: "חוסן חברתי",
+  lecturer: "קודים לסטודנטים", resilience: "חוסן חברתי", leadership: "נוגי — מנהיגות",
 };
 const PRESETS = [
-  ["מחנך/ת", ["resilience"]], ["מנחה סטודנטים", ["fac_trainee"]], ["מנחה הורים", ["fac_parent"]],
+  ["מחנך/ת", ["resilience"]], ["הנהלה", ["leadership", "resilience"]], ["מנחה סטודנטים", ["fac_trainee"]], ["מנחה הורים", ["fac_parent"]],
   ["מנחה נוער", ["fac_youth"]], ["מרצה", ["lecturer", "academic"]],
 ];
 
@@ -188,6 +188,7 @@ async function api(action, extra = {}) {
     ["search.html", "חיפוש במאגר התרחישים", "תרחישי המוסד והמאגר המשותף"]);
   if (has("resilience")) T.push(["resilience-team.html", "חוסן חברתי", "פתיחת כיתה, QR לשאלון, תוצאות וסיכום והמלצות"]);
   if (has("resilience")) T.push(["resilience-advisor.html", "פרקטי: יועצת לפיתוח חוסן חברתי", "בלי שאלון: מתארים את הכיתה ומקבלים ניתוח והמלצות מבוססי מחקר"]);
+  if (has("leadership")) T.push(["leadership-advisor.html", "נוגי: יועצת למנהיגות שתומכת בחוסן חברתי", "להנהלה, לרכזים ולצוותי תלמידים: שאלון פתיחה, דוח מסכם, דוח המלצות ושיחת המשך"]);
   if (has("conv")) T.push(["conversation-planner.html", "תכנון שיחה", "הכנה לשיחה אמיתית — בעל פה או בכתב"]);
   if (has("activity")) T.push(["activity-planner.html", "תכנון פעילות", "תכנון פעילות חינוכית או ניתוח פעילות קיימת"]);
   if (has("academic")) T.push(["academic-review.html", "משוב לעבודה אקדמית", "משוב לפי קריטריונים לפני הגשה"]);
