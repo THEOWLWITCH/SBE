@@ -406,7 +406,7 @@ function saveSuggestions(list){ try { localStorage.setItem("sbe.source.suggestio
 
 const TABS = {
   inst:[["codes","קודים"],["users","משתמשות"],["feedback","מדדי המשוב"],["data","נתונים"]],
-  sys: [["insts","מוסדות"],["access","סיסמאות וקודים"],["taxonomies","רשימות"],["libs","מקורות"],["eval","בקרת איכות"],["data","נתונים"]],
+  sys: [["insts","מוסדות"],["inbox","פניות"],["access","סיסמאות וקודים"],["taxonomies","רשימות"],["libs","מקורות"],["eval","בקרת איכות"],["data","נתונים"]],
 };
 
 // קישורים למסכים אחרים בפרויקט — לא לשוניות בתוך admin.html, אלא ניווט
@@ -514,7 +514,7 @@ function render(){
   nav.append(el("a",{ class:"nlink", href:"entry.html?logout=1" }, "יציאה / החלפת תפקיד"));
 
   const p = $("panels"); p.textContent = "";
-  p.append(({ codes:pCodes, users:pUsers, feedback:pFeedback, data:pData, insts:pInsts, access:pAccess, taxonomies:pTaxonomies, libs:pLibs, eval:pEvalSet })[tab]());
+  p.append(({ codes:pCodes, users:pUsers, feedback:pFeedback, data:pData, insts:pInsts, inbox:pInbox, access:pAccess, taxonomies:pTaxonomies, libs:pLibs, eval:pEvalSet })[tab]());
 }
 
 // ── קודים ──
@@ -1417,6 +1417,7 @@ async function accessCall(action, extra = {}){
 }
 
 // נתונים שנטענו מהשרת אחרי אימות — מתאפסים כשהסיסמה כבר לא תקפה.
+let inbox = null;      // פניות מפרקטי (רעיונות / תקלות / שאלות)
 let instList = null;   // מוסדות וקודים (ניהול מערכת)
 let sysSettings = null; // ימי חסד ומגבלות קודי "משוב לעבודות"
 // מנהלת המערכת שנכנסה עם סיסמה ב-entry.html מקבלת אסימון חתום — ואז אין צורך
@@ -1429,7 +1430,7 @@ function sysToken(){
 let myInst = null;     // קוד המוסד של מנהלת המוסד
 let gateFailed = false;
 
-function resetAccessData(){ if (!accessAuth && sysToken()) tokenFailed = true; accessAuth = ""; accessState = null; instList = null; myInst = null; }
+function resetAccessData(){ if (!accessAuth && sysToken()) tokenFailed = true; accessAuth = ""; accessState = null; instList = null; myInst = null; inbox = null; }
 
 function accessFail(e){
   ask("הפעולה לא בוצעה",
@@ -1479,6 +1480,32 @@ function gate(w, loaded, loader, pwLabel){
   }
   w.append(unlockCard(pwLabel, loader));
   return false;
+}
+
+// ── פניות (01/10/2026): רעיונות, תקלות ושאלות שנשלחו מתוך פרקטי (גם מהתנסות הקהילה) ──
+function pInbox(){
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"פניות"), el("p",{class:"sub"},"רעיונות, תקלות ושאלות שנשלחו מתוך פרקטי — כולל מהתנסות חברות.י הקהילה. החדשות למעלה."));
+  if (!gate(w, inbox, async () => { inbox = (await accessCall("fbList")).items || []; }, "סיסמת מנהלת המערכת")) return w;
+  const c = el("div",{class:"card"}); const inn = el("div",{class:"in"});
+  const counts = {}; inbox.forEach(x => counts[x.type] = (counts[x.type]||0) + 1);
+  inn.append(el("p",{style:"margin:0 0 10px;font-size:13.5px;color:var(--muted)"},
+    inbox.length ? inbox.length + " פניות · " + Object.entries(counts).map(([t,n]) => n + " " + t).join(" · ") : "עדיין אין פניות."));
+  const bRef = el("button",{class:"act"},"רענון");
+  bRef.addEventListener("click", () => { inbox = null; render(); });
+  inn.append(bRef);
+  inbox.forEach(x => {
+    const box = el("div",{style:"border-top:1px solid var(--hair);padding:10px 0;margin-top:8px"});
+    box.append(el("div",{style:"font-size:12.5px;color:var(--muted)"},
+      [x.type, new Date(x.at).toLocaleString("he-IL"), x.source, x.name, x.contact].filter(Boolean).join(" · ")));
+    box.append(el("div",{style:"white-space:pre-wrap;margin:4px 0 6px"}, x.text));
+    const del = el("button",{class:"linkbtn"},"טופל — מחיקה");
+    del.addEventListener("click", () => ask("מחיקת הפנייה", "הפנייה תימחק מהשרת.",
+      async () => { try { await accessCall("fbDelete", { id: x.id }); inbox = inbox.filter(y => y.id !== x.id); render(); } catch(e){ accessFail(e); } }));
+    box.append(del); inn.append(box);
+  });
+  c.append(inn); w.append(c);
+  return w;
 }
 
 function pAccess(){
