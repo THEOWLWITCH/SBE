@@ -158,10 +158,14 @@ ul.tl li{margin:.25rem 0}
 
     <div class="card">
       <h2>3. במילים שלך (רשות)</h2>
-      <label for="f-strong">מה הכי מחזק את הכיתה הזאת?</label>
-      <textarea id="f-strong" maxlength="600"></textarea>
+      <label for="f-strong">תאר/י את חוזקות הכיתה באופן חופשי</label>
+      <textarea id="f-strong" maxlength="800"></textarea>
+      <label for="f-weak">תאר/י את חולשות הכיתה באופן חופשי</label>
+      <textarea id="f-weak" maxlength="800"></textarea>
+      <label for="f-questions">מה השאלות המרכזיות שעבורן את/ה מחפש/ת מענה?</label>
+      <textarea id="f-questions" maxlength="800"></textarea>
       <label for="f-worry">מה הכי מדאיג אותך?</label>
-      <textarea id="f-worry" maxlength="600"></textarea>
+      <textarea id="f-worry" maxlength="800"></textarea>
       <div class="btns">
         <button class="btn" id="btn-analyze">ניתוח והמלצות</button>
         <button class="btn btn-ghost" id="btn-example">מילוי לדוגמה</button>
@@ -251,7 +255,7 @@ DIMS.forEach(dm=>{
   crit.appendChild(sec);
 });
 const F = k=>document.getElementById(k);
-const TEXT_FIELDS=['f-school','f-cls','f-age','f-size','f-sit','f-recent','f-strong','f-worry'];
+const TEXT_FIELDS=['f-school','f-cls','f-age','f-size','f-sit','f-recent','f-strong','f-weak','f-questions','f-worry'];
 function answers(){const a={};ITEMS.forEach(it=>{const c=document.querySelector('input[name="a-'+it.k+'"]:checked');if(c)a[it.k]=Number(c.value);});return a;}
 function setAnswers(a){ITEMS.forEach(it=>{document.querySelectorAll('input[name="a-'+it.k+'"]').forEach(inp=>{inp.checked=a[it.k]===Number(inp.value);inp.parentElement.classList.toggle('on',inp.checked);});if(a[it.k]!=null)F('q-'+it.k).classList.remove('miss');});}
 
@@ -288,8 +292,10 @@ function pictureText(a){
   ds.forEach(d=>L.push('- '+d.d+': '+Math.round(d.score)+' ('+d.l+')'+(d.capped?' — התנהגות פוגעת מגבילה את הציון':'')));
   const unk=ITEMS.filter(it=>a[it.k]===4).map(it=>it.d);
   if(unk.length)L.push('','המחנך/ת לא יודע/ת לגבי: '+[...new Set(unk)].join(', '));
-  if(f('f-strong'))L.push('','מה הכי מחזק את הכיתה (במילים של המחנך/ת): '+f('f-strong'));
-  if(f('f-worry'))L.push('מה הכי מדאיג (במילים של המחנך/ת): '+f('f-worry'));
+  if(f('f-strong'))L.push('','חוזקות הכיתה (במילים של המחנך/ת): '+f('f-strong'));
+  if(f('f-weak'))L.push('חולשות הכיתה (במילים של המחנך/ת): '+f('f-weak'));
+  if(f('f-questions'))L.push('השאלות המרכזיות שהמחנך/ת מחפש/ת להן מענה: '+f('f-questions'));
+  if(f('f-worry'))L.push('מה הכי מדאיג את המחנך/ת: '+f('f-worry'));
   return L.join('\n');
 }
 
@@ -332,6 +338,7 @@ const ADVISOR_SYSTEM = [
   '6. תחום שבו התנהגות פוגעת מגבילה את הציון — ההמלצה הראשונה בו היא הפחתת הפגיעה. תחום שהמחנך/ת לא יודע/ת עליו — הצע/י דרך לברר עם התלמידים.',
   '7. משחקים חברתיים: בכל אחת משלוש רשימות הפעילויות לפחות 1–2 משחקי שיתוף פעולה מותאמים לגיל, עם הסבר קצר איך משחקים ומה המטרה ("game":true).',
   '8. סביבת הכיתה: המלצות למרחב הפיזי והחזותי שתומכות בממצאים.',
+  '9a. אם המחנך/ת כתב/ה שאלות מרכזיות — ענה/י על כל אחת מהן ישירות ובאופן מעשי ב-"answers" (2–5 משפטים לכל שאלה, עם מפתחות מקורות בסוגריים מרובעים כשיש). אם לא נכתבו שאלות — "answers" ריק.',
   '9. בכל פעילות והמלצה — "basis": 1–3 מפתחות מקורות מהרשימה שעליהם היא נשענת (או מערך ריק).',
   'היקף: 3–5 חוזקות, 3–5 אתגרים, 3–5 פעילויות בכל רשימה, 3–5 המלצות לסביבה, 2–4 המלצות נוספות, 2–3 שאלות בדיקה.',
   'החזר/י אך ורק JSON תקין, בלי טקסט נוסף, במבנה:',
@@ -344,7 +351,8 @@ const ADVISOR_SYSTEM = [
   ' "challengeActivities":[ACT + "for":"שם התחום"],',
   ' "environment":[{"title":"","description":"","for":"התחום","basis":[]}],',
   ' "other":[{"title":"","description":"","basis":[]}],',
-  ' "checks":["שאלה שכדאי לבדוק עם התלמידים כדי לאמת את התמונה"]}',
+  ' "checks":["שאלה שכדאי לבדוק עם התלמידים כדי לאמת את התמונה"],',
+  ' "answers":[{"question":"השאלה של המחנך/ת","answer":"תשובה ישירה ומעשית"}]}',
   'כאשר ACT הוא {"title":"שם קצר","kind":"חד-פעמית" או "תהליך מתמשך","game":true רק אם זה משחק,"circle":"כיתה" או "בית הספר" או "קהילה","description":"מה עושים, מי מוביל/ה ואיך — 2–4 משפטים","mechanism":"איזה מנגנון חברתי או מיומנות משותפת זה מפתח","basis":["מפתח"]}'
 ].join('\n');
 
@@ -419,6 +427,7 @@ function textList(items){const ul=el('ul','tl');(items||[]).forEach(it=>{const l
 function plain(){
   const R=STATE.report,d=R.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.game?'משחק חברתי':'',a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  מה זה מפתח: '+a.mechanism:'')+((a.basis||[]).length?'\n  מבוסס על: '+a.basis.join(', '):'');
   L.push('פרקטי: המלצות לפיתוח חוסן חברתי — כיתה '+(R.cls||'')+' ('+R.age+')','',d.intro||'');if(d.lens)L.push('','איך המחקר קורא את התמונה',d.lens);
+  if((d.answers||[]).length){L.push('','תשובות לשאלות שלך');d.answers.forEach(x=>L.push('• '+x.question+'\n  '+x.answer));}
   L.push('','1. חוזקות הכיתה');(d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','1.1 פעילויות להעצמת החוזקות');(d.strengthActivities||[]).forEach(a=>L.push(act(a)));
   L.push('','1.2 החוזקות כמנוף');(d.leverage||[]).forEach(a=>L.push(act(a,a.from&&a.to?a.from+' ← '+a.to:'')));
@@ -442,6 +451,7 @@ function renderReport(){
   card.appendChild(el('p','muted','שכבה: '+R.age+' · הופק: '+new Date(R.at).toLocaleDateString('he-IL')+' · על סמך תיאור המחנך/ת'));
   if(d.intro)card.appendChild(el('p','intro',d.intro));
   if(d.lens){const l=el('div','lens');l.appendChild(el('b',null,'איך המחקר קורא את התמונה: '));l.appendChild(withRefs(d.lens));card.appendChild(l);}
+  if((d.answers||[]).length){card.appendChild(el('h2',null,'תשובות לשאלות שלך'));d.answers.forEach(x=>{const c=el('div','act');c.appendChild(el('div','act-t',x.question||''));const p=el('p','act-d');p.appendChild(withRefs(x.answer||''));c.appendChild(p);card.appendChild(c);});}
   card.appendChild(el('h2',null,'1. חוזקות הכיתה'));card.appendChild(textList(d.strengths));
   card.appendChild(el('h3',null,'1.1 פעילויות ותהליכים להעצמת החוזקות'));(d.strengthActivities||[]).forEach(a=>card.appendChild(actCard(a)));
   card.appendChild(el('h3',null,'1.2 החוזקות כמנוף להתמודדות עם האתגרים'));(d.leverage||[]).forEach(a=>card.appendChild(actCard(a,a.from&&a.to?a.from+' ← '+a.to:'')));
@@ -481,7 +491,9 @@ function plainShort(){const d=STATE.report.doc||{};const t=x=>(x||[]).map(a=>a.t
 F('btn-example').addEventListener('click',()=>{
   const ex={'f-school':'אופק','f-cls':'ח׳2','f-age':'ז׳ עד ט׳','f-size':'31','f-sit':'חירום מתמשך (מלחמה, ירי, אזעקות)',
     'f-recent':'שבועיים של לימודים בהפסקות בגלל אזעקות. שני תלמידים חדשים ממשפחות מפונות הצטרפו לכיתה לפני חודש. בקבוצת הוואטסאפ התפרסם צילום מסך מביך של תלמידה.',
-    'f-strong':'יש קבוצה גדולה של ילדים שאכפת להם, ובמשימות משותפות (כמו ההכנה לטקס) הם עובדים יפה יחד.',
+    'f-strong':'יש קבוצה גדולה של ילדים שאכפת להם, ובמשימות משותפות (כמו ההכנה לטקס) הם עובדים יפה יחד. רוב הכיתה מגיעה בשמחה.',
+    'f-weak':'קבוצה קטנה ודומיננטית קובעת את האווירה, התורנויות לא מתקיימות בלי תזכורת, וקשה להם לדבר על מה שקורה ביניהם.',
+    'f-questions':'איך משלבים את שני התלמידים המפונים בחברה של הכיתה? איך מטפלים בפגיעה בקבוצת הוואטסאפ בלי לחשוף את התלמידה שנפגעה?',
     'f-worry':'התלמידים החדשים עדיין לבד בהפסקות, ויש אווירה של "מי שחזק קובע" בוויכוחים.'};
   Object.entries(ex).forEach(([k,v])=>F(k).value=v);
   setAnswers({belong:2,margin:1,margin_r:2,adult:2,task:3,roles:1,decide:1,decide_r:2,selforg:1,resolve:1,resolve_r:2,mediate:0,online_r:2,hard:1,recover:1,self:2,tradition:1,parents:2,community:4});
