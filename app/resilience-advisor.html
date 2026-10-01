@@ -110,7 +110,14 @@ ul.tl li{margin:.25rem 0}
 .chat .me{background:var(--spoken-soft);margin-inline-end:15%}
 .chat .bot{background:var(--surface-2);margin-inline-start:15%}
 .demo-badge{display:inline-block;font-size:.75rem;font-weight:700;color:var(--hidden);background:var(--hidden-soft);border-radius:99px;padding:.1rem .6rem;margin-bottom:.4rem}
-@media print{.topnav,.no-print,#form-area{display:none!important}body{background:#fff}.card{box-shadow:none;border:none}}
+#fb-fab{position:fixed;inset-inline-start:16px;bottom:16px;z-index:50;font:inherit;font-weight:700;font-size:.9rem;
+  padding:.6rem 1rem;border-radius:22px;border:none;background:var(--spoken);color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(20,28,36,.28)}
+dialog#fb-dlg{border:1px solid var(--hair);border-radius:10px;background:var(--surface);color:var(--ink);max-width:460px;width:92vw;padding:0}
+dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
+#fb-dlg .fbh{padding:.9rem 1.1rem;border-bottom:1px solid var(--hair);font-weight:700}
+#fb-dlg .fbb{padding:.6rem 1.1rem 1rem}
+#fb-dlg .fbf{padding:.7rem 1.1rem;border-top:1px solid var(--hair);display:flex;gap:.5rem}
+@media print{.topnav,.no-print,#form-area,#fb-fab{display:none!important}body{background:#fff}.card{box-shadow:none;border:none}}
 </style>
 </head>
 <body>
@@ -217,6 +224,23 @@ ul.tl li{margin:.25rem 0}
   </div>
 </div>
 
+<button type="button" id="fb-fab" class="no-print">רעיונות / תקלות / שאלות</button>
+<dialog id="fb-dlg">
+  <div class="fbh">רעיונות, תקלות ושאלות על פרקטי</div>
+  <div class="fbb">
+    <p class="muted" style="font-size:.85rem">מה עבד, מה לא, מה חסר — כל הערה עוזרת לשפר. הפנייה מגיעה ישירות לד״ר יעל שדה.</p>
+    <label for="fb-type">סוג הפנייה</label>
+    <select id="fb-type"><option>רעיון</option><option>תקלה</option><option>שאלה</option></select>
+    <label for="fb-text">מה תרצו לכתוב?</label>
+    <textarea id="fb-text" maxlength="2000" style="min-height:110px"></textarea>
+    <label for="fb-name">שם (רשות)</label>
+    <input type="text" id="fb-name" maxlength="80">
+    <label for="fb-contact">מייל או טלפון לחזרה (רשות)</label>
+    <input type="text" id="fb-contact" maxlength="120" dir="ltr">
+    <p class="err" id="fb-err" hidden></p>
+  </div>
+  <div class="fbf"><button class="btn" id="fb-send" type="button">שליחה</button><button class="btn btn-ghost" id="fb-cancel" type="button">סגירה</button></div>
+</dialog>
 <script>
 (function(){
 'use strict';
@@ -580,6 +604,25 @@ F('btn-clear').addEventListener('click',()=>{
   TEXT_FIELDS.forEach(k=>F(k).value='');setAnswers({});STATE={report:null,chat:[]};save();
   F('picture').textContent='';F('report').textContent='';F('chat-area').hidden=true;
 });
+
+// ── רעיונות / תקלות / שאלות — נשמרים בשרת ומגיעים למנהלת המערכת (לשונית "פניות") ──
+F('fb-fab').addEventListener('click',()=>{F('fb-err').hidden=true;F('fb-dlg').showModal();F('fb-text').focus();});
+F('fb-cancel').addEventListener('click',()=>F('fb-dlg').close());
+F('fb-send').addEventListener('click',()=>{
+  const text=F('fb-text').value.trim(),err=F('fb-err');
+  if(text.length<2){err.textContent='צריך לכתוב משהו.';err.hidden=false;return;}
+  const b=F('fb-send');b.disabled=true;b.textContent='שולחת...';
+  let guest=false;try{guest=JSON.parse(sessionStorage.getItem('sbe.session.info')||'{}').kind==='guest';}catch(e){}
+  accessApi({action:'fbSubmit',type:F('fb-type').value,text,name:F('fb-name').value,contact:F('fb-contact').value,
+    source:guest?'פרקטי — התנסות הקהילה':'פרקטי',page:'resilience-advisor'}).then(d=>{
+    if(!d.ok)throw new Error();
+    F('fb-text').value='';err.hidden=false;err.style.color='var(--auto)';err.textContent='נשלח, תודה! ✓';
+    setTimeout(()=>{F('fb-dlg').close();err.style.color='';},1400);
+  }).catch(()=>{err.style.color='';err.textContent='השליחה לא הצליחה. אפשר לנסות שוב, או לכתוב ל-yael.sade@gmail.com';err.hidden=false;})
+  .finally(()=>{b.disabled=false;b.textContent='שליחה';});
+});
+// אורח/ת (התנסות הקהילה): "המרחב שלי" → חזרה למסך הכניסה
+try{if(sessionStorage.getItem('sbe.session.homeUrl')==='resilience-advisor.html'){const h=F('nav-home');h.textContent='⌂ מסך הכניסה';h.href='entry.html?logout=1';}}catch(e){}
 
 load();
 loadSituations();

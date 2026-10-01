@@ -547,6 +547,41 @@ async function handleLists(store, body) {
   return [400, { error: 'bad action' }];
 }
 
+
+// ── פניות מהמשתמשים (01/10/2026): רעיונות, תקלות ושאלות מתוך פרקטי ──
+// fb:<ts>-<rand> → { type, text, name, contact, source, page, at }. שליחה פתוחה
+// (גם לאורחים בהתנסות הקהילה), קריאה ומחיקה — מנהלת המערכת בלבד.
+const FB_TYPES = ['רעיון', 'תקלה', 'שאלה'];
+const FB_MAX = 3000;
+async function handleFeedbackInbox(store, body) {
+  const { action } = body;
+  const clip = (v, n) => String(v || '').trim().slice(0, n);
+  if (action === 'fbSubmit') {
+    const text = clip(body.text, 2000);
+    if (text.length < 2) return [400, { error: 'empty' }];
+    const keys = await store.list('fb:', { keysOnly: true });
+    if (keys.length >= FB_MAX) return [429, { error: 'full' }];
+    const rec = { type: FB_TYPES.includes(body.type) ? body.type : 'רעיון', text, name: clip(body.name, 80),
+      contact: clip(body.contact, 120), source: clip(body.source, 40), page: clip(body.page, 80), at: new Date().toISOString() };
+    await store.set('fb:' + Date.now() + '-' + randomBytes(3).toString('hex'), rec);
+    return [200, { ok: true }];
+  }
+  const t = await verifyToken(store, body.token);
+  const sys = (t && t.k === 'sys') || await checkPassword(store, 'sys', body.auth);
+  if (!sys) { await pause(); return [403, { error: 'unauthorized' }]; }
+  if (action === 'fbList') {
+    const rows = await store.list('fb:');
+    return [200, { items: rows.map((r) => ({ id: r.key.slice(3), ...r.value })).sort((a, b) => String(b.at).localeCompare(String(a.at))) }];
+  }
+  if (action === 'fbDelete') {
+    const id = String(body.id || '');
+    if (!/^[0-9]+-[0-9a-f]{6}$/.test(id)) return [400, { error: 'bad id' }];
+    await store.del('fb:' + id);
+    return [200, { ok: true }];
+  }
+  return [400, { error: 'bad action' }];
+}
+
 // מחזירה [status, body].
 export async function handleAccess(store, body) {
   const { action } = body || {};
@@ -612,6 +647,7 @@ export async function handleAccess(store, body) {
 
   if (typeof action === 'string' && action.startsWith('resil')) return handleResilience(store, body);
   if (action === 'listGet' || action === 'listAdd' || action === 'listRemove') return handleLists(store, body);
+  if (action === 'fbSubmit' || action === 'fbList' || action === 'fbDelete') return handleFeedbackInbox(store, body);
 
   const sysTok = await verifyToken(store, body?.token);
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
