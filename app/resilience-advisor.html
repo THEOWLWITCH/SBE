@@ -106,6 +106,9 @@ textarea{min-height:64px;resize:vertical}
 ul.tl{padding-inline-start:1.2rem}
 ul.tl li{margin:.25rem 0}
 .err{color:var(--brick);font-weight:600;margin-top:.5rem}
+.addmore{margin:.35rem 0 .2rem}
+.addmore summary{cursor:pointer;color:var(--spoken);font-size:.85rem;font-weight:600}
+.ctag{font-size:.7rem;font-weight:700;color:var(--auto);background:var(--auto-soft);border-radius:99px;padding:.05rem .45rem;margin-inline-start:.35rem}
 .chat .thinking{color:var(--muted);font-style:italic}
 .chat .msg{border-radius:9px;padding:.7rem .95rem;margin:.6rem 0;font-size:.95rem;line-height:1.65}
 .chat .me{white-space:pre-wrap}
@@ -300,31 +303,38 @@ const DIMS = [
     {k:'community', d:'קשר לבית הספר ולקהילה', q:'הכיתה פועלת גם מחוץ לעצמה — מול שכבות אחרות, בהתנדבות ובקהילה.', look:'חונכות, פרויקט שכונתי, אירוח שכבה.'}
   ]}
 ];
-const ITEMS = DIMS.flatMap(d=>d.items.map(it=>({...it,dim:d.t})));
+let ITEMS = DIMS.flatMap(d=>d.items.map(it=>({...it,dim:d.t})));
 const SCALE = ['כמעט לא','לפעמים','לרוב','כמעט תמיד','לא יודע/ת'];
 
-// ── טופס ──
-const crit = document.getElementById('criteria');
-DIMS.forEach(dm=>{
-  const sec=document.createElement('div');sec.className='dim';
-  const h=document.createElement('h3');h.textContent=dm.t;sec.appendChild(h);
-  dm.items.forEach(it=>{
-    const q=document.createElement('div');q.className='q';q.id='q-'+it.k;
-    const t=document.createElement('div');t.className='qt';t.textContent=it.q;
-    if(it.r){const r=document.createElement('span');r.className='rev';r.textContent='היגד הפוך';t.appendChild(r);}
-    const lk=document.createElement('div');lk.className='look';lk.textContent='למשל: '+it.look;
-    const sc=document.createElement('div');sc.className='scale';
-    SCALE.forEach((s,i)=>{
-      const lb=document.createElement('label');const inp=document.createElement('input');
-      inp.type='radio';inp.name='a-'+it.k;inp.value=String(i);
-      inp.addEventListener('change',()=>{sc.querySelectorAll('label').forEach(x=>x.classList.toggle('on',x.contains(inp)&&inp.checked||x.querySelector('input').checked));q.classList.remove('miss');save();});
-      lb.appendChild(inp);lb.appendChild(document.createTextNode(s));sc.appendChild(lb);
+// ── טופס ── (ההיגדים הקבועים + היגדים שאנשי חינוך הוסיפו לכל ממד)
+function renderCriteria(){
+  ITEMS = DIMS.flatMap(d=>[...d.items,...communityItems(d)].map(it=>({...it,dim:d.t})));
+  const crit = document.getElementById('criteria');crit.textContent='';
+  DIMS.forEach(dm=>{
+    const sec=document.createElement('div');sec.className='dim';
+    const h=document.createElement('h3');h.textContent=dm.t;sec.appendChild(h);
+    [...dm.items,...communityItems(dm)].forEach(it=>{
+      const q=document.createElement('div');q.className='q';q.id='q-'+it.k;if(it.c){q.dataset.c='1';q.dataset.raw=it.raw;}
+      const t=document.createElement('div');t.className='qt';t.textContent=it.q;
+      if(it.r){const r=document.createElement('span');r.className='rev';r.textContent='היגד הפוך';t.appendChild(r);}
+      const lk=document.createElement('div');lk.className='look';lk.textContent=it.look?'למשל: '+it.look:'';
+      const sc=document.createElement('div');sc.className='scale';
+      SCALE.forEach((s,i)=>{
+        const lb=document.createElement('label');const inp=document.createElement('input');
+        inp.type='radio';inp.name='a-'+it.k;inp.value=String(i);
+        inp.addEventListener('change',()=>{sc.querySelectorAll('label').forEach(x=>x.classList.toggle('on',x.querySelector('input').checked));q.classList.remove('miss');save();});
+        lb.appendChild(inp);lb.appendChild(document.createTextNode(s));sc.appendChild(lb);
+      });
+      q.appendChild(t);q.appendChild(lk);q.appendChild(sc);sec.appendChild(q);
     });
-    q.appendChild(t);q.appendChild(lk);q.appendChild(sc);sec.appendChild(q);
+    decorateDim(sec,dm,STMT_LIST,rebuildCriteria);
+    crit.appendChild(sec);
   });
-  crit.appendChild(sec);
-});
+}
 const F = k=>document.getElementById(k);
+const STMT_LIST='advisor-stmt';
+let SAVED_ANS={};
+function rebuildCriteria(){const a=Object.assign({},SAVED_ANS,answers());renderCriteria();setAnswers(a);}
 const TEXT_FIELDS=['f-school','f-cls','f-age','f-size','f-sit','f-recent','f-strong','f-weak','f-questions','f-worry'];
 // ── "מה המצב עכשיו" — רשימה פתוחה לקהילה: כל מי שנכנס/ת עם הרשאת חוסן מוסיף/ה
 // מצב, והוא נשמר בשרת ומופיע מיד לכולם (חכמת ההמונים). מנהלת המערכת יכולה להסיר.
@@ -371,13 +381,91 @@ function sitAlert(){const t=SIT_ALERTS[F('f-sit').value];const a=F('sit-alert');
 F('f-sit').addEventListener('change',sitAlert);
 F('f-sit-new').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();F('btn-sit-add').click();}});
 
+// ── כל רשימה במסך אפשר להעשיר (חכמת ההמונים): ההוספה נשמרת בשרת ומופיעה מיד לכולם,
+// ומנהלת המערכת יכולה להסיר. addableSelect — לרשימות בחירה; היגדי קהילה — לשאלון.
+function addableSelect(id,listName,what){
+  const sel=F(id);const base=[...sel.options].map(o=>o.value).filter(Boolean);let extra=[];
+  const wrap=document.createElement('details');wrap.className='addmore no-print';
+  const sm=document.createElement('summary');sm.textContent='לא מוצאים? הוספה לרשימה';wrap.appendChild(sm);
+  const row=document.createElement('div');row.className='addrow';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+' — יתווסף לרשימה של כולם';
+  const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה לרשימה';
+  row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);
+  const msg=document.createElement('p');msg.className='muted';msg.hidden=true;wrap.appendChild(msg);
+  const adm=document.createElement('div');wrap.appendChild(adm);
+  sel.insertAdjacentElement('afterend',wrap);
+  function render(keep){
+    const cur=keep!=null?keep:sel.value;
+    [...sel.querySelectorAll('optgroup,option[data-c]')].forEach(n=>n.remove());
+    const ex=extra.filter(v=>!base.includes(v));if(cur&&!base.includes(cur)&&!ex.includes(cur))ex.push(cur);
+    if(ex.length){const g=document.createElement('optgroup');g.label='נוספו על ידי אנשי חינוך';
+      ex.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;o.dataset.c='1';g.appendChild(o);});sel.appendChild(g);}
+    sel.value=cur;
+    adm.textContent='';
+    if(IS_SYS&&extra.length){adm.appendChild(el('p','muted','מנהלת המערכת — הסרה מהרשימה:'));
+      extra.forEach(v=>{const r=el('div');r.style.cssText='display:flex;gap:.5rem;align-items:center;margin:.25rem 0';r.appendChild(el('span',null,v)).style.flex='1';
+        const b=el('button','btn btn-ghost','הסרה');b.type='button';b.style.cssText='padding:.2rem .6rem;font-size:.8rem';
+        b.addEventListener('click',()=>{if(!confirm('להסיר את "'+v+'" מהרשימה של כולם?'))return;
+          accessApi({action:'listRemove',name:listName,value:v,token:token()}).then(d=>{if(d.items){extra=d.items;render();}});});
+        r.appendChild(b);adm.appendChild(r);});}
+  }
+  btn.addEventListener('click',()=>{
+    const v=inp.value.replace(/\s+/g,' ').trim();msg.hidden=false;
+    if(v.length<2){msg.textContent='צריך להקליד ערך.';return;}
+    btn.disabled=true;msg.textContent='מוסיפה לרשימה...';
+    const done=(t)=>{render(v);inp.value='';msg.textContent=t;sel.dispatchEvent(new Event('change'));save();};
+    accessApi({action:'listAdd',name:listName,value:v,token:token()}).then(d=>{
+      if(d.items){extra=d.items;done('נוסף לרשימה של כולם ונבחר ✓');}
+      else done(d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם צריך להיות מחובר/ת עם ההרשאה המתאימה.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).');
+    }).catch(()=>done('נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).')).finally(()=>{btn.disabled=false;});
+  });
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();btn.click();}});
+  accessApi({action:'listGet',name:listName}).then(d=>{if(Array.isArray(d.items)){extra=d.items;render();}}).catch(()=>{});
+  return {ensure:v=>render(v)};
+}
+// היגדי קהילה: "שם הממד|ההיגד". מופיעים בשאלון של כולם, נשלחים לניתוח, אבל לא נכנסים לציונים
+// ולא חובה לענות עליהם — כדי שהציונים יישארו ברי השוואה.
+let STMTS=[];
+function stmtKey(q){let h=5381;for(let i=0;i<q.length;i++)h=((h<<5)+h+q.charCodeAt(i))>>>0;return 'c_'+h.toString(36);}
+function communityItems(dm){return STMTS.map(v=>{const i=v.indexOf('|');return i>0&&v.slice(0,i)===dm.t?v.slice(i+1):null;})
+  .filter(Boolean).map(q=>({k:stmtKey(q),d:'—',q,look:'',c:1,raw:dm.t+'|'+q}));}
+function loadStatements(listName,rebuild){accessApi({action:'listGet',name:listName}).then(d=>{if(Array.isArray(d.items)){STMTS=d.items;rebuild();}}).catch(()=>{});}
+// מוסיף לכל ממד בשאלון: תגית להיגדי קהילה (והסרה למנהלת המערכת), ושורת "הוספת היגד".
+function decorateDim(sec,dm,listName,rebuild){
+  sec.querySelectorAll('.q[data-c]').forEach(q=>{
+    const t=q.querySelector('.qt');t.appendChild(el('span','ctag','נוסף על ידי אנשי חינוך'));
+    if(IS_SYS){const b=el('button','btn btn-ghost','הסרה');b.type='button';b.style.cssText='padding:.1rem .5rem;font-size:.75rem;margin-inline-start:.4rem';
+      b.addEventListener('click',()=>{if(!confirm('להסיר את ההיגד מהשאלון של כולם?'))return;
+        accessApi({action:'listRemove',name:listName,value:q.dataset.raw,token:token()}).then(d=>{if(d.items){STMTS=d.items;rebuild();}});});
+      t.appendChild(b);}
+  });
+  const wrap=document.createElement('details');wrap.className='addmore no-print';
+  const sm=document.createElement('summary');sm.textContent='+ הוספת היגד לממד הזה';wrap.appendChild(sm);
+  const row=document.createElement('div');row.className='addrow';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=150;inp.placeholder='היגד נייטרלי (לא שאלה) — יתווסף לשאלון של כולם';
+  const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה';
+  row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);
+  const msg=el('p','muted');msg.hidden=true;wrap.appendChild(msg);
+  btn.addEventListener('click',()=>{
+    const v=inp.value.replace(/\s+/g,' ').replace(/\|/g,' ').trim();msg.hidden=false;
+    if(v.length<8){msg.textContent='צריך לכתוב היגד שלם.';return;}
+    if(/^האם\b/.test(v)||/\?\s*$/.test(v)){msg.textContent='כדאי לנסח היגד נייטרלי ולא שאלה — למשל "הצוות מקבל עדכון קבוע..." ולא "האם הצוות...?"';return;}
+    btn.disabled=true;msg.textContent='מוסיפה...';
+    accessApi({action:'listAdd',name:listName,value:dm.t+'|'+v,token:token()}).then(d=>{
+      if(d.items){STMTS=d.items;inp.value='';rebuild();}
+      else msg.textContent=d._status===403?'כדי להוסיף היגד לשאלון של כולם צריך להיות מחובר/ת עם ההרשאה המתאימה.':'ההיגד לא נשמר (אין חיבור לשרת).';
+    }).catch(()=>{msg.textContent='ההיגד לא נשמר (אין חיבור לשרת).';}).finally(()=>{btn.disabled=false;});
+  });
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();btn.click();}});
+  sec.appendChild(wrap);
+}
 function answers(){const a={};ITEMS.forEach(it=>{const c=document.querySelector('input[name="a-'+it.k+'"]:checked');if(c)a[it.k]=Number(c.value);});return a;}
 function setAnswers(a){ITEMS.forEach(it=>{document.querySelectorAll('input[name="a-'+it.k+'"]').forEach(inp=>{inp.checked=a[it.k]===Number(inp.value);inp.parentElement.classList.toggle('on',inp.checked);});if(a[it.k]!=null)F('q-'+it.k).classList.remove('miss');});}
 
 // ── שמירה מקומית (במכשיר הזה בלבד) ──
 let STATE={report:null,chat:[]};
 function save(){try{const f={};TEXT_FIELDS.forEach(k=>f[k]=F(k).value);localStorage.setItem(STORE,JSON.stringify({f,a:answers(),report:STATE.report,chat:STATE.chat}));}catch(e){}}
-function load(){try{const s=JSON.parse(localStorage.getItem(STORE)||'null');if(!s)return;if(s.f&&s.f['f-sit'])renderSituations(s.f['f-sit']);TEXT_FIELDS.forEach(k=>{if(s.f&&s.f[k]!=null)F(k).value=s.f[k];});setAnswers(s.a||{});STATE.report=s.report||null;STATE.chat=s.chat||[];}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem(STORE)||'null');if(!s)return;if(s.f&&s.f['f-sit'])renderSituations(s.f['f-sit']);if(s.f&&s.f['f-age'])ADD_AGE.ensure(s.f['f-age']);SAVED_ANS=s.a||{};TEXT_FIELDS.forEach(k=>{if(s.f&&s.f[k]!=null)F(k).value=s.f[k];});setAnswers(s.a||{});STATE.report=s.report||null;STATE.chat=s.chat||[];}catch(e){}}
 TEXT_FIELDS.forEach(k=>F(k).addEventListener('input',save));
 
 // ── ציונים לפי התבחינים (אותה נוסחה כמו בשאלון) ──
@@ -386,7 +474,7 @@ function label(score){
 }
 function domains(a){
   const map={};
-  ITEMS.forEach(it=>{const v=a[it.k];if(v==null||v===4)return;(map[it.d]=map[it.d]||{d:it.d,dim:it.dim,good:[],harm:[]})[it.r?'harm':'good'].push(v/3*100);});
+  ITEMS.forEach(it=>{const v=a[it.k];if(it.c||v==null||v===4)return;(map[it.d]=map[it.d]||{d:it.d,dim:it.dim,good:[],harm:[]})[it.r?'harm':'good'].push(v/3*100);});
   const avg=x=>x.reduce((s,y)=>s+y,0)/x.length;
   return Object.values(map).map(m=>{
     const good=m.good.length?avg(m.good):null, harm=m.harm.length?avg(m.harm):null;
@@ -401,7 +489,7 @@ function pictureText(a){
     'מצב: '+(f('f-sit')||'לא צוין')];
   if(f('f-recent'))L.push('מה קרה לאחרונה: '+f('f-recent'));
   L.push('','דירוג המחנך/ת להיגדים (0=כמעט לא, 3=כמעט תמיד; "הפוך" = היגד על התנהגות פוגעת):');
-  DIMS.forEach(dm=>{L.push('['+dm.t+']');dm.items.forEach(it=>{const v=a[it.k];L.push('- '+it.q+(it.r?' (הפוך)':'')+' → '+(v==null?'לא נענה':SCALE[v]));});});
+  DIMS.forEach(dm=>{L.push('['+dm.t+']');ITEMS.filter(it=>it.dim===dm.t).forEach(it=>{const v=a[it.k];if(it.c&&v==null)return;L.push('- '+it.q+(it.r?' (הפוך)':'')+(it.c?' (היגד שהוסיפו אנשי חינוך)':'')+' → '+(v==null?'לא נענה':SCALE[v]));});});
   const ds=domains(a).sort((x,y)=>y.score-x.score);
   L.push('','ציונים מחושבים לפי התבחינים (0–100; 75+ תפקודי · 50–74 חלקי · 25–49 חלש · מתחת ל-25 בקושי תפקודי):');
   ds.forEach(d=>L.push('- '+d.d+': '+Math.round(d.score)+' ('+d.l+')'+(d.capped?' — התנהגות פוגעת מגבילה את הציון':'')));
@@ -496,7 +584,7 @@ let BUSY=false;
 F('btn-analyze').addEventListener('click',async()=>{
   if(BUSY)return;
   const a=answers();const err=F('form-err');
-  const miss=ITEMS.filter(it=>a[it.k]==null);
+  const miss=ITEMS.filter(it=>!it.c&&a[it.k]==null);
   document.querySelectorAll('.q').forEach(q=>q.classList.remove('miss'));
   if(!F('f-age').value||!F('f-sit').value||miss.length){
     miss.forEach(it=>F('q-'+it.k).classList.add('miss'));
@@ -687,8 +775,11 @@ F('fb-send').addEventListener('click',()=>{
 // אורח/ת (התנסות הקהילה): "המרחב שלי" → חזרה למסך הכניסה
 try{if(sessionStorage.getItem('sbe.session.homeUrl')==='resilience-advisor.html'){const h=F('nav-home');h.textContent='⌂ מסך הכניסה';h.href='entry.html?logout=1';}}catch(e){}
 
+const ADD_AGE=addableSelect('f-age','advisor-age','שכבת גיל או מסגרת');
+renderCriteria();
 load();
 loadSituations();
+loadStatements(STMT_LIST,rebuildCriteria);
 sitAlert();
 const a0=answers();if(Object.keys(a0).length)renderPicture(a0);
 if(STATE.report){renderReport();renderChat();}

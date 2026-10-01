@@ -134,6 +134,9 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
   #report{break-before:page}
   h2,h3,h4{break-after:avoid}.act,.rich li,.intro,.lens,.score-row{break-inside:avoid}
   .bar,.bar>div,.val,.intro,.lens,.act-tag{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.addmore{margin:.35rem 0 .2rem}
+.addmore summary{cursor:pointer;color:var(--spoken);font-size:.85rem;font-weight:600}
+.ctag{font-size:.7rem;font-weight:700;color:var(--auto);background:var(--auto-soft);border-radius:99px;padding:.05rem .45rem;margin-inline-start:.35rem}
 .conv{border:1px solid var(--hair);border-inline-start:3px solid var(--auto);border-radius:9px;padding:.7rem .9rem;margin:.55rem 0}
 .conv dl{display:grid;grid-template-columns:auto 1fr;gap:.25rem .7rem;margin:.4rem 0 0;font-size:.93rem}
 .conv dt{font-weight:700;color:var(--muted)}
@@ -326,6 +329,13 @@ const STAFF_DIMS = [
     {k:'students', d:'תלמידים כשותפים', q:'לתלמידים יש תפקידי הנהגה ממשיים, וקולם משפיע על החלטות.', look:'מועצת תלמידים פעילה, צוותי תלמידים.'},
     {k:'parents', d:'קשר עם ההורים', q:'יש קשר שוטף ודו־כיווני עם ההורים.', look:'עדכונים קבועים, ערוץ לשאלות, שיתוף בהחלטות.'},
     {k:'community', d:'שותפויות בקהילה', q:'בית הספר עובד בשיתוף עם הרשות, הקהילה וגורמים בחוץ.', look:'קשר קבוע עם הרשות, עמותות ובתי ספר שכנים.'}
+  ]},
+  // לפי הפרק על מנהיגות תומכת חוסן אצל Fathi (2022)
+  {t:'שקיפות, הערכה ורשתות', items:[
+    {k:'transp', d:'שקיפות', q:'ההנהגה משתפת בגלוי במידע, בשיקולים ובהחלטות — גם כשעדיין אין תשובות.', look:'מסבירים למה הוחלט, ואומרים "עוד לא יודעים" כשזה המצב.'},
+    {k:'selfeval', d:'הערכה מתמדת של המנהיגות', q:'ההנהגה בודקת את עצמה באופן קבוע — מבקשת משוב מהצוות ומשנה בעקבותיו.', look:'משוב לצוות ההנהלה, שיחת רפלקציה, שינוי שנעשה בעקבות משוב.'},
+    {k:'network', d:'קשר עם מנהיגים אחרים', q:'ההנהגה בקשר קבוע עם מנהיגים מבתי ספר, מקהילות ומצוותים אחרים — ללמידה ולתמיכה הדדית.', look:'פורום מנהלים, שותפות עם בית ספר שכן, קהילת עמיתים.'},
+    {k:'advisors', d:'הפעלה מכוונת של יועצים', q:'ההנהגה נעזרת ביועצים ובאנשי מקצוע באופן מכוון — כשותפים לחשיבה, וההחלטה נשארת שלה.', look:'יודעים מתי, במי ולמה נעזרים, ומגדירים מטרה לליווי.'}
   ]}
 ];
 const STU_DIMS = [
@@ -352,6 +362,11 @@ const STU_DIMS = [
   {t:'חוסן וחיבור', items:[
     {k:'s_crisis', d:'עזרה בתקופה קשה', q:'המועצה או הצוות יודעים איך לעזור בתקופה קשה — לחבר תלמידים, לפרגן, להחזיק מסורות.', look:'יוזמה בזמן מלחמה, אחרי אירוע, בלמידה מרחוק.'},
     {k:'s_inclusion', d:'פעילות לכל התלמידים', q:'הפעילויות של המועצה או הצוות פונות לכל התלמידים, גם למי שבשוליים.', look:'גם מי שלא "בחבורה" משתתף/ת ומוזמן/ת.'}
+  ]},
+  {t:'שקיפות, הערכה וקשרים', items:[
+    {k:'s_transp', d:'שקיפות', q:'המועצה או הצוות מספרים לתלמידים בגלוי מה הוחלט ולמה.', look:'סיכום קצר, עדכון בכיתות.'},
+    {k:'s_eval', d:'בדיקה עצמית', q:'המועצה או הצוות בודקים מה עבד ומה לא — ומשנים בעקבות זה.', look:'שיחת סיכום אחרי כל פעילות.'},
+    {k:'s_network', d:'קשר עם צוותים אחרים', q:'המועצה או הצוות בקשר עם מועצות וצוותים בבתי ספר אחרים או בקהילה.', look:'מפגש מועצות, פרויקט משותף.'}
   ]}
 ];
 const STUDENT_WHO = ['מועצת תלמידים','צוות תלמידים מוביל','תלמיד/ה מוביל/ה'];
@@ -362,16 +377,16 @@ const isStudents = ()=>STUDENT_WHO.includes(F('f-who').value);
 
 function buildCriteria(){
   DIMS = isStudents() ? STU_DIMS : STAFF_DIMS;
-  ITEMS = DIMS.flatMap(d=>d.items.map(it=>({...it,dim:d.t})));
+  ITEMS = DIMS.flatMap(d=>[...d.items,...communityItems(d)].map(it=>({...it,dim:d.t})));
   const crit=F('criteria');crit.textContent='';
   DIMS.forEach(dm=>{
     const sec=document.createElement('div');sec.className='dim';
     const h=document.createElement('h3');h.textContent=dm.t;sec.appendChild(h);
-    dm.items.forEach(it=>{
-      const q=document.createElement('div');q.className='q';q.id='q-'+it.k;
+    [...dm.items,...communityItems(dm)].forEach(it=>{
+      const q=document.createElement('div');q.className='q';q.id='q-'+it.k;if(it.c){q.dataset.c='1';q.dataset.raw=it.raw;}
       const t=document.createElement('div');t.className='qt';t.textContent=it.q;
       if(it.r){const r=document.createElement('span');r.className='rev';r.textContent='היגד הפוך';t.appendChild(r);}
-      const lk=document.createElement('div');lk.className='look';lk.textContent='למשל: '+it.look;
+      const lk=document.createElement('div');lk.className='look';lk.textContent=it.look?'למשל: '+it.look:'';
       const sc=document.createElement('div');sc.className='scale';
       SCALE.forEach((s,i)=>{
         const lb=document.createElement('label');const inp=document.createElement('input');
@@ -381,12 +396,93 @@ function buildCriteria(){
       });
       q.appendChild(t);q.appendChild(lk);q.appendChild(sc);sec.appendChild(q);
     });
+    decorateDim(sec,dm,STMT_LIST,rebuildCriteria);
     crit.appendChild(sec);
   });
   const stu=isStudents();
   F('l-strong').textContent=stu?'תאר/י את החוזקות של המועצה או הצוות באופן חופשי':'תאר/י את החוזקות של ההנהגה ושל הצוות באופן חופשי';
   F('l-weak').textContent=stu?'תאר/י את החולשות והאתגרים של המועצה או הצוות באופן חופשי':'תאר/י את החולשות והאתגרים של ההנהגה ושל הצוות באופן חופשי';
 }
+// ── כל רשימה במסך אפשר להעשיר (חכמת ההמונים): ההוספה נשמרת בשרת ומופיעה מיד לכולם,
+// ומנהלת המערכת יכולה להסיר. addableSelect — לרשימות בחירה; היגדי קהילה — לשאלון.
+function addableSelect(id,listName,what){
+  const sel=F(id);const base=[...sel.options].map(o=>o.value).filter(Boolean);let extra=[];
+  const wrap=document.createElement('details');wrap.className='addmore no-print';
+  const sm=document.createElement('summary');sm.textContent='לא מוצאים? הוספה לרשימה';wrap.appendChild(sm);
+  const row=document.createElement('div');row.className='addrow';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+' — יתווסף לרשימה של כולם';
+  const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה לרשימה';
+  row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);
+  const msg=document.createElement('p');msg.className='muted';msg.hidden=true;wrap.appendChild(msg);
+  const adm=document.createElement('div');wrap.appendChild(adm);
+  sel.insertAdjacentElement('afterend',wrap);
+  function render(keep){
+    const cur=keep!=null?keep:sel.value;
+    [...sel.querySelectorAll('optgroup,option[data-c]')].forEach(n=>n.remove());
+    const ex=extra.filter(v=>!base.includes(v));if(cur&&!base.includes(cur)&&!ex.includes(cur))ex.push(cur);
+    if(ex.length){const g=document.createElement('optgroup');g.label='נוספו על ידי אנשי חינוך';
+      ex.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;o.dataset.c='1';g.appendChild(o);});sel.appendChild(g);}
+    sel.value=cur;
+    adm.textContent='';
+    if(IS_SYS&&extra.length){adm.appendChild(el('p','muted','מנהלת המערכת — הסרה מהרשימה:'));
+      extra.forEach(v=>{const r=el('div');r.style.cssText='display:flex;gap:.5rem;align-items:center;margin:.25rem 0';r.appendChild(el('span',null,v)).style.flex='1';
+        const b=el('button','btn btn-ghost','הסרה');b.type='button';b.style.cssText='padding:.2rem .6rem;font-size:.8rem';
+        b.addEventListener('click',()=>{if(!confirm('להסיר את "'+v+'" מהרשימה של כולם?'))return;
+          accessApi({action:'listRemove',name:listName,value:v,token:token()}).then(d=>{if(d.items){extra=d.items;render();}});});
+        r.appendChild(b);adm.appendChild(r);});}
+  }
+  btn.addEventListener('click',()=>{
+    const v=inp.value.replace(/\s+/g,' ').trim();msg.hidden=false;
+    if(v.length<2){msg.textContent='צריך להקליד ערך.';return;}
+    btn.disabled=true;msg.textContent='מוסיפה לרשימה...';
+    const done=(t)=>{render(v);inp.value='';msg.textContent=t;sel.dispatchEvent(new Event('change'));save();};
+    accessApi({action:'listAdd',name:listName,value:v,token:token()}).then(d=>{
+      if(d.items){extra=d.items;done('נוסף לרשימה של כולם ונבחר ✓');}
+      else done(d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם צריך להיות מחובר/ת עם ההרשאה המתאימה.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).');
+    }).catch(()=>done('נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).')).finally(()=>{btn.disabled=false;});
+  });
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();btn.click();}});
+  accessApi({action:'listGet',name:listName}).then(d=>{if(Array.isArray(d.items)){extra=d.items;render();}}).catch(()=>{});
+  return {ensure:v=>render(v)};
+}
+// היגדי קהילה: "שם הממד|ההיגד". מופיעים בשאלון של כולם, נשלחים לניתוח, אבל לא נכנסים לציונים
+// ולא חובה לענות עליהם — כדי שהציונים יישארו ברי השוואה.
+let STMTS=[];
+function stmtKey(q){let h=5381;for(let i=0;i<q.length;i++)h=((h<<5)+h+q.charCodeAt(i))>>>0;return 'c_'+h.toString(36);}
+function communityItems(dm){return STMTS.map(v=>{const i=v.indexOf('|');return i>0&&v.slice(0,i)===dm.t?v.slice(i+1):null;})
+  .filter(Boolean).map(q=>({k:stmtKey(q),d:'—',q,look:'',c:1,raw:dm.t+'|'+q}));}
+function loadStatements(listName,rebuild){accessApi({action:'listGet',name:listName}).then(d=>{if(Array.isArray(d.items)){STMTS=d.items;rebuild();}}).catch(()=>{});}
+// מוסיף לכל ממד בשאלון: תגית להיגדי קהילה (והסרה למנהלת המערכת), ושורת "הוספת היגד".
+function decorateDim(sec,dm,listName,rebuild){
+  sec.querySelectorAll('.q[data-c]').forEach(q=>{
+    const t=q.querySelector('.qt');t.appendChild(el('span','ctag','נוסף על ידי אנשי חינוך'));
+    if(IS_SYS){const b=el('button','btn btn-ghost','הסרה');b.type='button';b.style.cssText='padding:.1rem .5rem;font-size:.75rem;margin-inline-start:.4rem';
+      b.addEventListener('click',()=>{if(!confirm('להסיר את ההיגד מהשאלון של כולם?'))return;
+        accessApi({action:'listRemove',name:listName,value:q.dataset.raw,token:token()}).then(d=>{if(d.items){STMTS=d.items;rebuild();}});});
+      t.appendChild(b);}
+  });
+  const wrap=document.createElement('details');wrap.className='addmore no-print';
+  const sm=document.createElement('summary');sm.textContent='+ הוספת היגד לממד הזה';wrap.appendChild(sm);
+  const row=document.createElement('div');row.className='addrow';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=150;inp.placeholder='היגד נייטרלי (לא שאלה) — יתווסף לשאלון של כולם';
+  const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה';
+  row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);
+  const msg=el('p','muted');msg.hidden=true;wrap.appendChild(msg);
+  btn.addEventListener('click',()=>{
+    const v=inp.value.replace(/\s+/g,' ').replace(/\|/g,' ').trim();msg.hidden=false;
+    if(v.length<8){msg.textContent='צריך לכתוב היגד שלם.';return;}
+    if(/^האם\b/.test(v)||/\?\s*$/.test(v)){msg.textContent='כדאי לנסח היגד נייטרלי ולא שאלה — למשל "הצוות מקבל עדכון קבוע..." ולא "האם הצוות...?"';return;}
+    btn.disabled=true;msg.textContent='מוסיפה...';
+    accessApi({action:'listAdd',name:listName,value:dm.t+'|'+v,token:token()}).then(d=>{
+      if(d.items){STMTS=d.items;inp.value='';rebuild();}
+      else msg.textContent=d._status===403?'כדי להוסיף היגד לשאלון של כולם צריך להיות מחובר/ת עם ההרשאה המתאימה.':'ההיגד לא נשמר (אין חיבור לשרת).';
+    }).catch(()=>{msg.textContent='ההיגד לא נשמר (אין חיבור לשרת).';}).finally(()=>{btn.disabled=false;});
+  });
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();btn.click();}});
+  sec.appendChild(wrap);
+}
+const STMT_LIST='leader-stmt';
+function rebuildCriteria(){const a=answers();Object.assign(ALL_ANS,a);buildCriteria();setAnswers(ALL_ANS);}
 const TEXT_FIELDS=['f-who','f-mode','f-school','f-stage','f-staff','f-size','f-sit','f-recent','f-strong','f-weak','f-questions','f-worry'];
 
 // ── "מה המצב עכשיו" — רשימה פתוחה לקהילה (חכמת ההמונים), נשמרת בשרת ומופיעה לכולם.
@@ -437,6 +533,7 @@ let STATE={report:null,chat:[]};let ALL_ANS={};
 function save(){try{Object.assign(ALL_ANS,answers());ITEMS.forEach(it=>{if(answers()[it.k]==null)delete ALL_ANS[it.k];});
   const f={};TEXT_FIELDS.forEach(k=>f[k]=F(k).value);localStorage.setItem(STORE,JSON.stringify({f,a:ALL_ANS,report:STATE.report,chat:STATE.chat}));}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem(STORE)||'null');if(!s)return;if(s.f&&s.f['f-sit'])renderSituations(s.f['f-sit']);
+  if(s.f){if(s.f['f-who'])ADD_WHO.ensure(s.f['f-who']);if(s.f['f-stage'])ADD_STAGE.ensure(s.f['f-stage']);}
   TEXT_FIELDS.forEach(k=>{if(s.f&&s.f[k]!=null)F(k).value=s.f[k];});ALL_ANS=s.a||{};buildCriteria();setAnswers(ALL_ANS);STATE.report=s.report||null;STATE.chat=s.chat||[];}catch(e){}}
 TEXT_FIELDS.forEach(k=>F(k).addEventListener('input',save));
 F('f-who').addEventListener('change',()=>{save();buildCriteria();setAnswers(ALL_ANS);save();const a=answers();F('picture').textContent='';if(Object.keys(a).length)renderPicture(a);});
@@ -447,7 +544,7 @@ function label(score){
 }
 function domains(a){
   const map={};
-  ITEMS.forEach(it=>{const v=a[it.k];if(v==null||v===4)return;(map[it.d]=map[it.d]||{d:it.d,dim:it.dim,good:[],harm:[]})[it.r?'harm':'good'].push(v/3*100);});
+  ITEMS.forEach(it=>{const v=a[it.k];if(it.c||v==null||v===4)return;(map[it.d]=map[it.d]||{d:it.d,dim:it.dim,good:[],harm:[]})[it.r?'harm':'good'].push(v/3*100);});
   const avg=x=>x.reduce((s,y)=>s+y,0)/x.length;
   return Object.values(map).map(m=>{
     const good=m.good.length?avg(m.good):null, harm=m.harm.length?avg(m.harm):null;
@@ -462,7 +559,7 @@ function pictureText(a){
     'מצב: '+(f('f-sit')||'לא צוין')];
   if(f('f-recent'))L.push('מה קרה לאחרונה: '+f('f-recent'));
   L.push('','דירוג המוביל/ה להיגדים בשאלון הפתיחה (0=כמעט לא, 3=כמעט תמיד; "הפוך" = מצב שפוגע בחוסן):');
-  DIMS.forEach(dm=>{L.push('['+dm.t+']');dm.items.forEach(it=>{const v=a[it.k];L.push('- '+it.q+(it.r?' (הפוך)':'')+' → '+(v==null?'לא נענה':SCALE[v]));});});
+  DIMS.forEach(dm=>{L.push('['+dm.t+']');ITEMS.filter(it=>it.dim===dm.t).forEach(it=>{const v=a[it.k];if(it.c&&v==null)return;L.push('- '+it.q+(it.r?' (הפוך)':'')+(it.c?' (היגד שהוסיפו אנשי חינוך)':'')+' → '+(v==null?'לא נענה':SCALE[v]));});});
   const ds=domains(a).sort((x,y)=>y.score-x.score);
   L.push('','ציונים מחושבים (0–100; 75+ תפקודי · 50–74 חלקי · 25–49 חלש · מתחת ל-25 בקושי תפקודי):');
   ds.forEach(d=>L.push('- '+d.d+': '+Math.round(d.score)+' ('+d.l+')'+(d.capped?' — מצב פוגע מגביל את הציון':'')));
@@ -503,7 +600,7 @@ const PERSONA = [
   'כל המלצה כפופה לנהלים ולחוקים: אל תצטטי חוזרים, נהלים או סעיפי חוק, ואל תכריעי בשאלות משפטיות או נוהליות — כשזה רלוונטי, כתבי שיש לבדוק את ההמלצה לאור הנהלים והחוקים. האחריות היא של ההנהגה.',
   'מנהיגות היא עבודת צוות: תמיד העדיפי הובלה בצוות, עם שותפים וממלאי מקום (Spillane2005). גם כשמישהו/י מוביל/ה לבד — הציעי איך לבנות סביבו/ה צוות, שותפים וגיבוי, ולכל תפקיד מפתח — ממלא/ת מקום שמכיר/ה את העבודה.',
   'Begood מעצימה את מי שמוביל/ה ומקטינה את התלות בגורמים חיצוניים: הדרכה מעשית ולא הפניה. תמיד הציעי שיחות — עם אנשי צוות, עם תלמידים, עם הורים — ותני הנחיות: איפה ומתי (ביחידות, במקום שקט, בזמן בלי לחץ), איך לפתוח (שאלה פתוחה לדוגמה, במירכאות), שאלות המשך, מה מטרת השיחה, ואיך לסיים (סיכום קצר והסכמה על צעד הבא). שיחה מכילה, אמפתית ותומכת, שנותנת לבן/בת השיח תחושת שליטה ("איך אוכל לעזור?", "מה היה עוזר לך עכשיו?", "אני מציעה ש... מה דעתך?").',
-  'נושאי ליבה של מנהיגות תומכת חוסן — התייחסי אליהם לפי מה שעולה בתמונת המצב: תקשורת (בזמן, ברורה, דו־כיוונית, ובחירום — מי מעדכן את מי, מתי ואיך); פירגון, הכרה ועידוד; אמון וביטחון פסיכולוגי (Edmondson1999, BrykSchneider2002); גיבוי וממלאי מקום — גם בהיעדרויות בשגרה ולא רק בחירום (Miller2007); הובלה משותפת וחלוקת סמכות; רווחת הצוות ורווחת ההנהגה עצמה; ידע על מערכות תשתית וחירום ותרגול; למידה אחרי אירוע; ושותפות עם תלמידים, הורים, רשות וקהילה.',
+  'נושאי ליבה של מנהיגות תומכת חוסן — התייחסי אליהם לפי מה שעולה בתמונת המצב: תקשורת (בזמן, ברורה, דו־כיוונית, ובחירום — מי מעדכן את מי, מתי ואיך); פירגון, הכרה ועידוד; אמון וביטחון פסיכולוגי (Edmondson1999, BrykSchneider2002); גיבוי וממלאי מקום — גם בהיעדרויות בשגרה ולא רק בחירום (Miller2007); הובלה משותפת וחלוקת סמכות; רווחת הצוות ורווחת ההנהגה עצמה; ידע על מערכות תשתית וחירום ותרגול; למידה אחרי אירוע; שותפות עם תלמידים, הורים, רשות וקהילה; שקיפות במידע, בשיקולים ובהחלטות; הערכה מתמדת של המנהיגות עצמה (משוב ורפלקציה); קשר עם מנהיגים מבתי ספר, מקהילות ומצוותים אחרים; והפעלה מכוונת של יועצים ואנשי מקצוע — כשותפים לחשיבה, כשההחלטה נשארת בידי ההנהגה (Fathi2022).',
   'מצבי סיכון לתלמידים או לאנשי צוות (פגיעה עצמית, פגיעה מינית, התעללות או הזנחה, סכנה): קודם שיחה אישית מכילה ושאלה אם האדם מוכן/ה להיפגש עם איש/אשת מקצוע ואיך; כשיש חובת דיווח — לא מבטיחים סודיות ("אני לא אשאיר אותך לבד עם זה"); ובסכנה מיידית — נשארים ומזעיקים עזרה.',
   'בקיאות והתאמה: הכירי את כל מגוון האפשרויות, והתאימי לתפקיד של המוביל/ה, לשלב החינוכי, לגודל הצוות ובית הספר, למצב ולשלב המשבר — חירום, ייצוב או התאוששות (Hrynevych2026).',
   'תמונת המצב היא נקודת המבט של מי שמילא/ה את השאלון — התייחסי אליה ברצינות, אבל אל תציגי אותה כעובדה על כל הצוות או כל התלמידים.',
@@ -557,7 +654,7 @@ let BUSY=false;
 F('btn-analyze').addEventListener('click',async()=>{
   if(BUSY)return;
   const a=answers();const err=F('form-err');
-  const miss=ITEMS.filter(it=>a[it.k]==null);
+  const miss=ITEMS.filter(it=>!it.c&&a[it.k]==null);
   document.querySelectorAll('.q').forEach(q=>q.classList.remove('miss'));
   const need=[];if(!F('f-who').value)need.push('תפקיד');if(!F('f-stage').value)need.push('שלב חינוכי');if(!F('f-sit').value)need.push('מצב');
   if(need.length||miss.length){
@@ -744,7 +841,7 @@ F('btn-example').addEventListener('click',()=>{
     'f-worry':'שחיקה של רכזות השכבה, ושבחירום הבא לא נדע מי מעדכן את מי.'};
   Object.entries(ex).forEach(([k,v])=>F(k).value=v);
   buildCriteria();modeNote();
-  setAnswers({comm_info:1,comm_listen:1,comm_crisis:1,appr:1,encour:2,trust:2,psafe:2,psafe_r:1,deputy:0,absence:0,mutual:2,shared:1,owners:2,central_r:2,load:1,peer:0,selfcare:0,systems:2,drills:1,learn:1,students:2,parents:1,community:2});
+  setAnswers({comm_info:1,comm_listen:1,comm_crisis:1,appr:1,encour:2,trust:2,psafe:2,psafe_r:1,deputy:0,absence:0,mutual:2,shared:1,owners:2,central_r:2,load:1,peer:0,selfcare:0,systems:2,drills:1,learn:1,students:2,parents:1,community:2,transp:1,selfeval:0,network:2,advisors:1});
   save();renderPicture(answers());
 });
 F('btn-clear').addEventListener('click',()=>{
@@ -771,9 +868,12 @@ F('fb-send').addEventListener('click',()=>{
   .finally(()=>{b.disabled=false;b.textContent='שליחה';});
 });
 
+const ADD_WHO=addableSelect('f-who','leader-role','תפקיד');
+const ADD_STAGE=addableSelect('f-stage','leader-stage','שלב או מסגרת');
 buildCriteria();
 load();
 loadSituations();
+loadStatements(STMT_LIST,rebuildCriteria);
 modeNote();
 const a0=answers();if(Object.keys(a0).length)renderPicture(a0);
 if(STATE.report){renderReport();renderChat();}
