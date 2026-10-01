@@ -117,7 +117,7 @@ select:focus,input:focus{outline:2px solid var(--spoken);outline-offset:1px}
     <h1 id="fq-title">חוסן חברתי</h1>
     <p>השאלון מודד את ממד החוסן החברתי. אין תשובות נכונות — ענה/י על פי מה שאת/ה חווה.</p>
   </div>
-  <div class="card">
+  <div class="card" id="fill-form">
     <h2>פרטי מילוי</h2>
     <label for="s-band">שכבה</label>
     <select id="s-band"><option value="">— בחר/י שכבה —</option></select>
@@ -130,6 +130,19 @@ select:focus,input:focus{outline:2px solid var(--spoken);outline-offset:1px}
     <p style="font-size:.8rem;margin-top:-.5rem">הקוד מאפשר לאחד תשובות בין סיבובים. לא נשמרת כל זהות.</p>
     <p id="fill-msg" style="display:none;font-size:.88rem;font-weight:600"></p>
     <button class="btn" id="btn-start" disabled>התחל/י מילוי</button>
+  </div>
+  <div class="card" id="nolink" style="display:none">
+    <h2>איך נכנסים לשאלון</h2>
+    <p>השאלון נפתח מהקישור או מקוד ה-QR של הכיתה. המחנך/כת מקבל/ת אותם במסך "חוסן חברתי", אחרי פתיחת כיתה.</p>
+    <label for="nl-link">יש לכם את הקישור? הדביקו אותו כאן</label>
+    <input type="text" id="nl-link" placeholder="https://…/resilience-fill.html?g=…" autocomplete="off" dir="ltr">
+    <p id="nl-err" style="display:none;font-size:.88rem;font-weight:600;color:var(--brick)"></p>
+    <button class="btn" id="nl-go">מעבר לשאלון</button>
+    <div id="nl-staff" style="display:none;margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--hair)">
+      <p style="font-weight:600">מחנך/כת? פותחים כיתה ומקבלים קישור ו-QR כאן:</p>
+      <a class="btn btn-ghost" href="resilience-team.html" style="display:block;text-align:center;text-decoration:none">למסך החוסן החברתי</a>
+      <div id="nl-classes" style="margin-top:1rem"></div>
+    </div>
   </div>
 </div>
 
@@ -221,7 +234,39 @@ function chk(){btnStart.disabled=!(group&&group.open&&sVoice.value!==''&&iCode.v
 chk();
 
 if(!gid){
-  showMsg('הקישור לא שלם. בקשו מהמחנך/כת את הקישור או את קוד ה-QR של הכיתה.',true);
+  // נפתח בלי כיתה (מהתפריט, או בלי ?g= בקישור): במקום טופס נעול — הסבר, הדבקת קישור,
+  // ולמי שמחובר/ת עם הרשאה — מעבר למסך החוסן, ולמנהלת המערכת רשימת הכיתות הפתוחות.
+  document.getElementById('fill-form').style.display='none';
+  document.getElementById('nolink').style.display='';
+  const nlIn=document.getElementById('nl-link'), nlErr=document.getElementById('nl-err');
+  const go=()=>{
+    const raw=nlIn.value.trim(); let id='';
+    try{ id=new URL(raw).searchParams.get('g')||''; }catch(e){ const m=raw.match(/[?&]g=([a-z0-9]+)/); id=m?m[1]:(/^[a-z0-9]{8,20}$/.test(raw)?raw:''); }
+    if(!/^[a-z0-9]{8,20}$/.test(id)){ nlErr.textContent='זה לא נראה כמו קישור של כיתה. העתיקו את הקישור המלא מהמחנך/כת.'; nlErr.style.display=''; return; }
+    location.href='resilience-fill.html?g='+id;
+  };
+  document.getElementById('nl-go').addEventListener('click',go);
+  nlIn.addEventListener('keydown',e=>{if(e.key==='Enter')go();});
+  let tok='',home='',perms=[];
+  try{ tok=sessionStorage.getItem('sbe.session.token')||''; home=sessionStorage.getItem('sbe.session.homeUrl')||'';
+    perms=JSON.parse(sessionStorage.getItem('sbe.session.perms')||'[]')||[]; }catch(e){}
+  const isSys=home==='admin.html?role=sys';
+  if(tok&&(isSys||perms.includes('resilience'))){
+    document.getElementById('nl-staff').style.display='';
+    if(isSys){
+      const box=document.getElementById('nl-classes'); box.textContent='טוען את הכיתות הפתוחות...';
+      api({action:'resilList',token:tok}).then(d=>{
+        box.textContent='';
+        const open=(d.groups||[]).filter(g=>g.open);
+        if(!d.groups){box.textContent='לא הצלחתי לטעון את הכיתות.';return;}
+        if(!open.length){box.textContent='אין כרגע כיתות פתוחות.';return;}
+        const p=document.createElement('p');p.style.fontWeight='600';p.textContent='כיתות פתוחות — מילוי במכשיר הזה:';box.appendChild(p);
+        open.forEach(g=>{const a=document.createElement('a');a.href='resilience-fill.html?g='+g.id;a.className='btn btn-ghost btn-sm';
+          a.style.cssText='display:block;text-decoration:none;text-align:center;margin-bottom:.4rem';
+          a.textContent=(g.inst?g.inst+' · ':'')+g.cls+' · '+((R.BANDS[g.band]||{}).label||'');box.appendChild(a);});
+      }).catch(()=>{box.textContent='אין כרגע חיבור לשרת.';});
+    }
+  }
 } else {
   showMsg('טוען את פרטי הכיתה... (לפעמים עד דקה)');
   api({action:'resilInfo',id:gid}).then(d=>{

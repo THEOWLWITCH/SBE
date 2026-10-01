@@ -653,7 +653,7 @@ function renderSetup(){
   const base=location.href.replace(/[^/]*$/,'resilience-fill.html');
   const link=cfg.demo?'':base+'?g='+cfg.id;
   document.getElementById('fill-link').textContent=link;
-  document.getElementById('lock-fill-link').href=link;
+  const lf=document.getElementById('lock-fill-link');lf.href=link||'#';lf.style.display=link?'':'none'; // בכיתת דמו אין קישור מילוי
   document.getElementById('manage-code').textContent=cfg.key?cfg.id+'.'+cfg.key:'';
   document.getElementById('manage-code-wrap').style.display=cfg.key?'':'none';
   const open=!GROUP||GROUP.open;
