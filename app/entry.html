@@ -215,6 +215,13 @@ async function codeLogin(code){
   finally { clearTimeout(timer); }
 }
 
+// מקלדת בעברית (01/10/2026): הקודים באותיות לטיניות, ומי שמקלידה בפריסה עברית
+// מקבלת "שגכ..." במקום "ASD...". ממירים לפי מיקום המקש בפריסה הישראלית התקנית.
+const HE_KEYS = { "/":"Q", "'":"W", "ק":"E", "ר":"R", "א":"T", "ט":"Y", "ו":"U", "ן":"I", "ם":"O", "פ":"P",
+  "ש":"A", "ד":"S", "ג":"D", "כ":"F", "ע":"G", "י":"H", "ח":"J", "ל":"K", "ך":"L",
+  "ז":"Z", "ס":"X", "ב":"C", "ה":"V", "נ":"B", "מ":"N", "צ":"M" };
+function fixCodeKeys(v){ return String(v || "").replace(/[\/'א-ת]/g, ch => HE_KEYS[ch] || ch).toUpperCase(); }
+
 function renderEntry(){
   view.textContent = "";
   const card = el("div",{class:"card"});
@@ -223,7 +230,7 @@ function renderEntry(){
   const err = el("div",{class:"err"},""); err.hidden = true;
   const btn = el("button",{class:"primary"},"כניסה");
   const submit = async () => {
-    const c = code.value.replace(/[‎‏؜]/g, "").trim();
+    const c = fixCodeKeys(code.value.replace(/[‎‏؜]/g, "")).trim();
     if (!c) { err.textContent = "צריך להקליד את הקוד."; err.hidden = false; return; }
     btn.disabled = true; btn.textContent = "בודקת... (לפעמים עד דקה)";
     const res = await codeLogin(c);
@@ -248,6 +255,10 @@ function renderEntry(){
   };
   btn.addEventListener("click", submit);
   code.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
+  code.addEventListener("input", () => {
+    const v = fixCodeKeys(code.value);
+    if (v !== code.value) { code.value = v; code.setSelectionRange(v.length, v.length); }
+  });
   inn.append(el("p",{class:"hint"},"הקלידו את הקוד שקיבלתם — מהמוסד, מהמרצה או ממנהלת המערכת. הקוד קובע מה פתוח לכם."),
     el("label",{},"הקוד שלך"), code, err, btn);
   card.append(el("h2",{},"כניסה למערכת"), inn);
@@ -318,7 +329,7 @@ function buildWorkshopField(role){
   const nm = el("input",{placeholder:"השם שלך"});
   const btn = el("button",{class:"primary"},"כניסה");
   const submit = () => {
-    const c = code.value.replace(/[‎‏؜]/g, "").trim();
+    const c = fixCodeKeys(code.value.replace(/[‎‏؜]/g, "")).trim();
     const name = nm.value.trim();
     if (c.length !== 6 || !/^\d{6}$/.test(c)) { err.textContent = "הקוד הוא שש ספרות."; err.hidden = false; return; }
     if (!name) { err.textContent = "צריך גם שם."; err.hidden = false; return; }

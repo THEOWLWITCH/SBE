@@ -357,7 +357,14 @@ async function handleCodes(store, body, isSys) {
       if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
       const x = list.find((i) => i.name === String(body.inst || ''));
       if (!x) return [404, { error: 'no such institution' }];
-      const rec = { code: newCodeUnique(existing), kind, inst: x.name, perms: kind === 'staff' ? (body.perms || []).filter((p) => PERMS.includes(p)) : [],
+      // קוד אישי שמנהלת המערכת מפיקה ישירות (למשל לאדם יחיד בלי צוות): רק מתוך התקרה של המוסד.
+      if (kind === 'staff') {
+        const want = [...new Set((body.perms || []).filter((p) => PERMS.includes(p)))];
+        const ceiling = await getCeiling(store, x.name);
+        if (!want.length) return [400, { error: 'no perms' }];
+        if (want.some((p) => !ceiling[p])) return [403, { error: 'above ceiling' }];
+      }
+      const rec = { code: newCodeUnique(existing), kind, inst: x.name, perms: kind === 'staff' ? [...new Set((body.perms || []).filter((p) => PERMS.includes(p)))] : [],
         label: label || (kind === 'instadmin' ? 'מנהל/ת המוסד' : ''), createdBy: 'sys', createdAt: new Date().toISOString(),
         expiresAt: validYmd(body.expiresAt) ? body.expiresAt : null, uses: 0, revoked: false };
       await store.set('code:' + normCode(rec.code), rec);
@@ -498,7 +505,9 @@ async function institutionsView(store) {
   return list.map((x, i) => {
     const admin = codes.filter((c) => c.kind === 'instadmin' && c.inst === x.name && !c.revoked).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
     return { ...x, sub: subState(x, settings), adminCode: admin ? admin.code : null, open: PERMS.filter((p) => ceilings[i][p]),
-      staffCodes: codes.filter((c) => c.inst === x.name && c.kind === 'staff' && !c.revoked).length };
+      staffCodes: codes.filter((c) => c.inst === x.name && c.kind === 'staff' && !c.revoked).length,
+      personalCodes: codes.filter((c) => c.inst === x.name && c.kind === 'staff' && c.createdBy === 'sys' && !c.revoked)
+        .map((c) => ({ code: c.code, label: c.label || '', perms: c.perms || [], expiresAt: c.expiresAt || null })) };
   });
 }
 
