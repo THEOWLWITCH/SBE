@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>יועץ חוסן חברתי — מקורות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
+<script src="lib/resilience-advisor-sources.js"></script>
+<style>
+:root{
+  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
+  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
+  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+    --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+    --spoken:#82AECE; --spoken-soft:#1E2E3A; color-scheme:dark
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+  --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+  --spoken:#82AECE; --spoken-soft:#1E2E3A; color-scheme:dark
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.6;
+  background:var(--ground);color:var(--ink);direction:rtl}
+.wrap{max-width:860px;margin:0 auto;padding:1.4rem 1rem 3rem}
+.topnav{font-size:13px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--hair);display:flex;gap:14px}
+.topnav a{color:var(--spoken);text-decoration:none;font-weight:600}
+h1{font-family:"Frank Ruhl Libre",serif;font-size:1.9rem;margin-bottom:.4rem}
+.lead{color:var(--muted);margin-bottom:1.2rem}
+.grp{background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1rem}
+.grp h2{font-size:1.1rem;color:var(--spoken);margin-bottom:.6rem}
+.src{padding:.6rem .5rem;border-top:1px solid var(--hair);scroll-margin-top:1rem}
+.src:first-of-type{border-top:none}
+.src:target{background:var(--spoken-soft);border-radius:6px}
+.apa{font-size:.95rem}
+.apa a{color:var(--spoken);word-break:break-all}
+.gist{font-size:.88rem;color:var(--muted);margin-top:.2rem}
+.key{font-family:monospace;font-size:.75rem;color:var(--muted);direction:ltr;unicode-bidi:isolate}
+</style>
+</head>
+<body>
+<nav class="topnav"><a href="resilience-advisor.html">→ חזרה ליועץ</a></nav>
+<div class="wrap">
+  <h1>המקורות של יועץ החוסן החברתי</h1>
+  <p class="lead">היועץ מנתח את תמונת המצב שהמחנך/ת מתאר/ת ומציע המלצות על בסיס המקורות שלהלן — מחקר ישראלי ובינלאומי על חוסן קהילתי וחברתי, שייכות ואקלים כיתתי, עבודה משותפת, יישוב קונפליקטים, למידה רגשית־חברתית ובית הספר כקהילה בשגרה ובחירום. כל המלצה בדוח מפנה למקורות שעליהם היא נשענת. חלק מהמחקרים העדכניים (2024–2026) מגיעים ממאגר אתר הקהילה <a href="https://hosen-hinuch-herum.netlify.app/" style="color:var(--spoken)">חוסן | חינוך | חירום</a>.</p>
+  <div id="list"></div>
+</div>
+<script>
+(function(){
+  'use strict';
+  var A = window.SBE_ADVISOR_SOURCES, box = document.getElementById('list');
+  Object.keys(A.groups).forEach(function(g){
+    var items = A.list.filter(function(s){ return s.g === g; });
+    if (!items.length) return;
+    var sec = document.createElement('section'); sec.className = 'grp';
+    var h = document.createElement('h2'); h.textContent = A.groups[g]; sec.appendChild(h);
+    items.forEach(function(s){
+      var d = document.createElement('div'); d.className = 'src'; d.id = s.k;
+      var he = /[\u0590-\u05FF]/.test(s.apa);
+      var p = document.createElement('p'); p.className = 'apa'; p.textContent = s.apa + ' ';
+      if (!he) { p.dir = 'ltr'; p.style.textAlign = 'left'; }
+      if (s.url) { var a = document.createElement('a'); a.href = s.url; a.target = '_blank'; a.rel = 'noopener';
+        a.textContent = /doi\.org\//.test(s.url) ? 'doi:' + s.url.split('doi.org/')[1] : (he ? 'קישור' : 'Link'); p.appendChild(a); }
+      var gi = document.createElement('p'); gi.className = 'gist'; gi.textContent = s.gist;
+      var k = document.createElement('span'); k.className = 'key'; k.textContent = '[' + s.k + ']';
+      gi.appendChild(document.createTextNode(' ')); gi.appendChild(k);
+      d.appendChild(p); d.appendChild(gi); sec.appendChild(d);
+    });
+    box.appendChild(sec);
+  });
+  if (location.hash) { var t = document.getElementById(location.hash.slice(1)); if (t) t.scrollIntoView(); }
+})();
+</script>
+</body>
+</html>
