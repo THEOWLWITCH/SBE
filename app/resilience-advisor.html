@@ -58,6 +58,9 @@ label{display:block;font-weight:700;font-size:.9rem;margin:.7rem 0 .25rem}
 input[type=text],input[type=number],select,textarea{width:100%;font:inherit;font-size:.95rem;padding:.5rem .65rem;
   border:1px solid var(--hair);border-radius:7px;background:var(--ground);color:var(--ink)}
 textarea{min-height:64px;resize:vertical}
+.addrow{display:flex;gap:.5rem;margin-top:.45rem}
+.addrow input{flex:1}
+.addrow .btn{white-space:nowrap;padding:.45rem .8rem;font-size:.88rem}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
 @media (max-width:600px){.row2{grid-template-columns:1fr}}
 .btn{display:inline-block;font:inherit;font-weight:700;padding:.65rem 1.1rem;border-radius:8px;border:none;cursor:pointer;
@@ -141,11 +144,18 @@ ul.tl li{margin:.25rem 0}
         <option value="">— בחירה —</option>
         <option>שגרה</option>
         <option>חירום מתמשך (מלחמה, ירי, אזעקות)</option>
-        <option>אחרי אירוע חריג בכיתה או בבית הספר</option>
-        <option>פינוי, או קליטה של תלמידים מפונים</option>
-        <option>תחילת שנה או כיתה חדשה שהתגבשה</option>
-        <option>אחר</option>
+        <option>אחרי אירוע חריג בבית הספר</option>
+        <option>הכיתה מפונה מביתה</option>
+        <option>קליטת תלמידים מפונים בכיתה</option>
+        <option>תחילת שנה — כיתה מתגבשת</option>
+        <option>כיתה שמכירה זו את זו כבר שנתיים</option>
       </select>
+      <div class="addrow no-print">
+        <input type="text" id="f-sit-new" maxlength="80" placeholder="לא מוצאים? הקלידו מצב אחד — הוא יתווסף לרשימה של כולם">
+        <button type="button" class="btn btn-ghost" id="btn-sit-add">הוספה לרשימה</button>
+      </div>
+      <p class="muted" id="sit-msg" hidden></p>
+      <details id="sit-admin" class="no-print" hidden><summary class="muted">ניהול התוספות לרשימה (מנהלת המערכת)</summary><div id="sit-admin-list"></div></details>
       <label for="f-recent">מה קרה לאחרונה, ומה מעסיק את הכיתה? (רשות)</label>
       <textarea id="f-recent" maxlength="800"></textarea>
     </div>
@@ -256,13 +266,51 @@ DIMS.forEach(dm=>{
 });
 const F = k=>document.getElementById(k);
 const TEXT_FIELDS=['f-school','f-cls','f-age','f-size','f-sit','f-recent','f-strong','f-weak','f-questions','f-worry'];
+// ── "מה המצב עכשיו" — רשימה פתוחה לקהילה: כל מי שנכנס/ת עם הרשאת חוסן מוסיף/ה
+// מצב, והוא נשמר בשרת ומופיע מיד לכולם (חכמת ההמונים). מנהלת המערכת יכולה להסיר.
+const ACCESS='https://sbe-server.onrender.com/api/access';
+const SIT_LIST='advisor-situation';
+const SIT_BASE=[...F('f-sit').options].map(o=>o.value).filter(Boolean);
+let SIT_COMMUNITY=[];
+function accessApi(body){return fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json().catch(()=>({})).then(d=>{d._status=r.status;return d;}));}
+function token(){try{return sessionStorage.getItem('sbe.session.token')||'';}catch(e){return '';}}
+const IS_SYS=(()=>{try{return sessionStorage.getItem('sbe.session.homeUrl')==='admin.html?role=sys';}catch(e){return false;}})();
+function renderSituations(keep){
+  const sel=F('f-sit');const cur=keep!=null?keep:sel.value;
+  [...sel.querySelectorAll('optgroup,option[data-c]')].forEach(n=>n.remove());
+  const extra=SIT_COMMUNITY.filter(v=>!SIT_BASE.includes(v));
+  if(cur&&!SIT_BASE.includes(cur)&&!extra.includes(cur))extra.push(cur); // מצב שנשמר במכשיר ולא ברשימה
+  if(extra.length){const g=document.createElement('optgroup');g.label='נוספו על ידי אנשי חינוך';
+    extra.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;o.dataset.c='1';g.appendChild(o);});sel.appendChild(g);}
+  sel.value=cur;
+  if(IS_SYS){const box=F('sit-admin-list');box.textContent='';F('sit-admin').hidden=!SIT_COMMUNITY.length;
+    SIT_COMMUNITY.forEach(v=>{const r=document.createElement('div');r.style.cssText='display:flex;gap:.5rem;align-items:center;margin:.3rem 0';
+      const t=document.createElement('span');t.textContent=v;t.style.flex='1';
+      const b=document.createElement('button');b.type='button';b.className='btn btn-ghost';b.style.cssText='padding:.2rem .6rem;font-size:.8rem';b.textContent='הסרה';
+      b.addEventListener('click',()=>{if(!confirm('להסיר את "'+v+'" מהרשימה של כולם?'))return;
+        accessApi({action:'listRemove',name:SIT_LIST,value:v,token:token()}).then(d=>{if(d.items){SIT_COMMUNITY=d.items;renderSituations();}});});
+      r.appendChild(t);r.appendChild(b);box.appendChild(r);});}
+}
+function loadSituations(){accessApi({action:'listGet',name:SIT_LIST}).then(d=>{if(Array.isArray(d.items)){SIT_COMMUNITY=d.items;renderSituations();}}).catch(()=>{});}
+F('btn-sit-add').addEventListener('click',()=>{
+  const v=F('f-sit-new').value.replace(/\s+/g,' ').trim();const msg=F('sit-msg');
+  if(v.length<2){msg.textContent='צריך להקליד את המצב.';msg.hidden=false;return;}
+  const b=F('btn-sit-add');b.disabled=true;msg.hidden=false;msg.textContent='מוסיפה לרשימה...';
+  accessApi({action:'listAdd',name:SIT_LIST,value:v,token:token()}).then(d=>{
+    if(d.items){SIT_COMMUNITY=d.items;renderSituations(d.value);F('f-sit-new').value='';msg.textContent='נוסף לרשימה של כולם ונבחר ✓';save();}
+    else{renderSituations(v);msg.textContent=d._status===403?'נבחר לכיתה הזאת. כדי להוסיף לרשימה של כולם צריך להיות מחובר/ת עם הרשאת חוסן חברתי.':'נבחר לכיתה הזאת, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).';save();}
+  }).catch(()=>{renderSituations(v);msg.textContent='נבחר לכיתה הזאת, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).';save();})
+  .finally(()=>{b.disabled=false;});
+});
+F('f-sit-new').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();F('btn-sit-add').click();}});
+
 function answers(){const a={};ITEMS.forEach(it=>{const c=document.querySelector('input[name="a-'+it.k+'"]:checked');if(c)a[it.k]=Number(c.value);});return a;}
 function setAnswers(a){ITEMS.forEach(it=>{document.querySelectorAll('input[name="a-'+it.k+'"]').forEach(inp=>{inp.checked=a[it.k]===Number(inp.value);inp.parentElement.classList.toggle('on',inp.checked);});if(a[it.k]!=null)F('q-'+it.k).classList.remove('miss');});}
 
 // ── שמירה מקומית (במכשיר הזה בלבד) ──
 let STATE={report:null,chat:[]};
 function save(){try{const f={};TEXT_FIELDS.forEach(k=>f[k]=F(k).value);localStorage.setItem(STORE,JSON.stringify({f,a:answers(),report:STATE.report,chat:STATE.chat}));}catch(e){}}
-function load(){try{const s=JSON.parse(localStorage.getItem(STORE)||'null');if(!s)return;TEXT_FIELDS.forEach(k=>{if(s.f&&s.f[k]!=null)F(k).value=s.f[k];});setAnswers(s.a||{});STATE.report=s.report||null;STATE.chat=s.chat||[];}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem(STORE)||'null');if(!s)return;if(s.f&&s.f['f-sit'])renderSituations(s.f['f-sit']);TEXT_FIELDS.forEach(k=>{if(s.f&&s.f[k]!=null)F(k).value=s.f[k];});setAnswers(s.a||{});STATE.report=s.report||null;STATE.chat=s.chat||[];}catch(e){}}
 TEXT_FIELDS.forEach(k=>F(k).addEventListener('input',save));
 
 // ── ציונים לפי התבחינים (אותה נוסחה כמו בשאלון) ──
@@ -506,6 +554,7 @@ F('btn-clear').addEventListener('click',()=>{
 });
 
 load();
+loadSituations();
 const a0=answers();if(Object.keys(a0).length)renderPicture(a0);
 if(STATE.report){renderReport();renderChat();}
 })();

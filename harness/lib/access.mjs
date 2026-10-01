@@ -511,6 +511,42 @@ async function institutionsView(store) {
   });
 }
 
+
+// ── רשימות פתוחות לקהילה ("חכמת ההמונים", 01/10/2026) ──
+// list:<name> → [{ value, inst, date }]. כל אחד/ת עם הרשאה מתאימה מוסיף/ה פריט,
+// והוא מופיע מיד לכולם. מנהלת המערכת יכולה להסיר. רשימות מוכרות בלבד.
+const OPEN_LISTS = { 'advisor-situation': 'resilience' };
+const LIST_MAX = 200, ITEM_MAX = 80;
+async function handleLists(store, body) {
+  const { action } = body;
+  const name = String(body.name || '');
+  if (!(name in OPEN_LISTS)) return [404, { error: 'no such list' }];
+  const key = 'list:' + name;
+  const list = (await store.get(key)) || [];
+  if (action === 'listGet') return [200, { items: list.map((x) => x.value) }];
+  const t = await verifyToken(store, body.token);
+  const isSysTok = !!t && t.k === 'sys';
+  if (action === 'listAdd') {
+    const ok = isSysTok || (t && Array.isArray(t.perms) && t.perms.includes(OPEN_LISTS[name]));
+    if (!ok) { await pause(); return [403, { error: 'unauthorized' }]; }
+    const value = String(body.value || '').replace(/\s+/g, ' ').trim().slice(0, ITEM_MAX);
+    if (value.length < 2) return [400, { error: 'too short' }];
+    if (!list.some((x) => x.value === value)) {
+      if (list.length >= LIST_MAX) return [429, { error: 'list full' }];
+      list.push({ value, inst: t.inst || '', date: new Date().toISOString().slice(0, 10) });
+      await store.set(key, list);
+    }
+    return [200, { items: list.map((x) => x.value), value }];
+  }
+  if (action === 'listRemove') {
+    if (!isSysTok) { await pause(); return [403, { error: 'unauthorized' }]; }
+    const next = list.filter((x) => x.value !== String(body.value || ''));
+    await store.set(key, next);
+    return [200, { items: next.map((x) => x.value) }];
+  }
+  return [400, { error: 'bad action' }];
+}
+
 // מחזירה [status, body].
 export async function handleAccess(store, body) {
   const { action } = body || {};
@@ -575,6 +611,7 @@ export async function handleAccess(store, body) {
   }
 
   if (typeof action === 'string' && action.startsWith('resil')) return handleResilience(store, body);
+  if (action === 'listGet' || action === 'listAdd' || action === 'listRemove') return handleLists(store, body);
 
   const sysTok = await verifyToken(store, body?.token);
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
