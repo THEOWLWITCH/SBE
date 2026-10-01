@@ -12,7 +12,7 @@ const MIN_PASSWORD = 8;
 // ההרשאות במערכת. לכל מוסד יש "תקרה" (modules:<מוסד>) — מה שמנהלת המערכת פתחה
 // לו; ברירת המחדל: שום דבר. קודי הצוות שמנהל/ת המוסד מפיק/ה מקבלים רק צירוף
 // מתוך התקרה.
-export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience'];
+export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership'];
 const DEFAULT_MODULES = Object.fromEntries(PERMS.map((p) => [p, false]));
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
@@ -515,7 +515,7 @@ async function institutionsView(store) {
 // ── רשימות פתוחות לקהילה ("חכמת ההמונים", 01/10/2026) ──
 // list:<name> → [{ value, inst, date }]. כל אחד/ת עם הרשאה מתאימה מוסיף/ה פריט,
 // והוא מופיע מיד לכולם. מנהלת המערכת יכולה להסיר. רשימות מוכרות בלבד.
-const OPEN_LISTS = { 'advisor-situation': 'resilience' };
+const OPEN_LISTS = { 'advisor-situation': 'resilience', 'leader-situation': 'leadership' };
 const LIST_MAX = 200, ITEM_MAX = 80;
 async function handleLists(store, body) {
   const { action } = body;
