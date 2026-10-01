@@ -69,7 +69,7 @@
     {k:'Marciano2024', g:'il', apa:'Marciano, H., Kimhi, S., Eshel, Y., & Adini, B. (2024). Resilience and coping during protracted conflict: A comparative analysis of general and evacuees populations. Israel Journal of Health Policy Research, 13(1), 56.',
       url:'https://doi.org/10.1186/s13584-024-00642-8',
       gist:'במלחמת חרבות ברזל, מפונים דיווחו על חוסן קהילתי וחברתי, תקווה ומורל נמוכים יותר ועל מצוקה גבוהה יותר מכלל האוכלוסייה — קליטת תלמידים מפונים דורשת תשומת לב מיוחדת לשייכות ולתקווה.',
-      be:"מפונים מדווחים על פחות חוסן קהילתי ותקווה — כשהמחנך/ת בוחר/ת \"פינוי או קליטה\", פרקטי מתעדפת שייכות ותקווה."},
+      be:"מפונים מדווחים על פחות חוסן קהילתי ותקווה — כשהמחנך/ת בוחר/ת \"הכיתה מפונה\" או \"קליטת תלמידים מפונים\", פרקטי מתעדפת שייכות ותקווה."},
     {k:'Kaim2024', g:'il', apa:'Kaim, A., Siman-Tov, M., Kimhi, S., Marciano, H., Eshel, Y., & Adini, B. (2024). A longitudinal study of societal resilience and its predictors during the Israel-Gaza war. Applied Psychology: Health and Well-Being.',
       url:'https://doi.org/10.1111/aphw.12539',
       gist:'מחקר אורך בזמן המלחמה: חוסן חברתי משתנה לאורך זמן, ותקווה ואמון הם מהמנבאים שלו — חוסן אינו קבוע וצריך לטפח אותו לאורך זמן.',
