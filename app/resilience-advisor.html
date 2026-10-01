@@ -220,7 +220,8 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
       <p class="muted">למשל: "איך אני פותחת שיחה על מה שקורה בקבוצת הוואטסאפ?" או "תן לי משחק לשיעור הראשון של השבוע".</p>
       <div id="chat-log"></div>
       <textarea id="chat-in" maxlength="1000" placeholder="השאלה שלך..."></textarea>
-      <div class="btns"><button class="btn" id="chat-send">שליחה</button></div>
+      <div class="btns"><button class="btn" id="chat-send">שליחה</button><span class="muted" id="chat-left"></span></div>
+      <p class="intro" id="chat-done" hidden style="font-size:.92rem">הגעת ל-10 שאלות — זה המקסימום לשיחה אחת. כדי להמשיך, אפשר לעדכן את התיאור ולהפיק ניתוח חדש, ואז תיפתח שיחה חדשה.</p>
       <p class="err" id="chat-err" hidden></p>
     </div>
   </div>
@@ -545,7 +546,8 @@ function renderReport(){
   const acts=el('div','btns');
   const pr=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.print());
   const cp=el('button','btn btn-ghost','העתקת הטקסט');cp.addEventListener('click',()=>{navigator.clipboard&&navigator.clipboard.writeText(plain()).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הטקסט',2000);});});
-  acts.appendChild(pr);acts.appendChild(cp);head.appendChild(el('h2',null,'הדוח מוכן'));head.appendChild(acts);box.appendChild(head);
+  const ask=el('button','btn','לשאול את פרקטי ↓');ask.addEventListener('click',()=>{F('chat-area').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>{if(!F('chat-in').disabled)F('chat-in').focus({preventScroll:true});},500);});
+  acts.appendChild(ask);acts.appendChild(pr);acts.appendChild(cp);head.appendChild(el('h2',null,'הדוח מוכן'));head.appendChild(acts);box.appendChild(head);
   const card=el('div','card');
   card.appendChild(el('h2',null,'המלצות של פרקטי — כיתה '+(R.cls||'')));
   card.appendChild(el('p','muted','שכבה: '+R.age+' · הופק: '+new Date(R.at).toLocaleDateString('he-IL')+' · על סמך תיאור המחנך/ת'));
@@ -568,21 +570,29 @@ function renderReport(){
 }
 
 // ── שיחה עם פרקטי ──
+const CHAT_MAX=10;
+const askedCount=()=>STATE.chat.filter(m=>m.role==='user').length;
 function renderChat(){
   const log=F('chat-log');log.textContent='';
   STATE.chat.forEach(m=>{const d=el('div','msg '+(m.role==='user'?'me':'bot'));d.appendChild(withRefs(m.content));log.appendChild(d);});
+  const n=askedCount(),left=CHAT_MAX-n,done=left<=0;
+  F('chat-in').hidden=done;F('chat-send').style.display=done?'none':'';F('chat-done').hidden=!done;
+  F('chat-in').placeholder=n?'שאלת המשך...':'השאלה שלך...';
+  F('chat-left').textContent=done?'':(n?'אפשר לשאול עוד '+(left===1?'שאלה אחת':left+' שאלות')+' (עד '+CHAT_MAX+' בשיחה)':'אפשר לשאול עד '+CHAT_MAX+' שאלות');
 }
 F('chat-send').addEventListener('click',async()=>{
-  const q=F('chat-in').value.trim();if(!q||BUSY||!STATE.report)return;
+  const q=F('chat-in').value.trim();if(!q||BUSY||!STATE.report||askedCount()>=CHAT_MAX)return;
   BUSY=true;const b=F('chat-send');b.disabled=true;b.textContent='פרקטי חושבת...';F('chat-err').hidden=true;
   STATE.chat.push({role:'user',content:q});F('chat-in').value='';renderChat();
   const sys=[PERSONA,'כעת את משוחחת עם המחנך/ת על הכיתה. תשובה קצרה וממוקדת (עד כ-200 מילים), מעשית, מותאמת לגיל ולמצב, בצורה של 2–3 חלופות פעולה שהמחנך/ת יכול/ה לבחור ביניהן — המלצות ולא קביעות. כשאת/ה נשען/ת על מקור — ציין/י את המפתח בסוגריים מרובעים, למשל [Allen2018]. טקסט רגיל, בלי JSON.',
     '','תמונת המצב שתיאר/ה המחנך/ת:',STATE.report.picture,'','הדוח שכבר נמסר לו/ה (אל תחזור/י עליו, התבסס/י עליו):',plainShort()].join('\n');
+  let ok=false;
   try{
     const ans=await complete(sys,STATE.chat.slice(-12),6000);
-    STATE.chat.push({role:'assistant',content:ans.trim()});save();
+    STATE.chat.push({role:'assistant',content:ans.trim()});save();ok=true;
   }catch(e){STATE.chat.pop();F('chat-in').value=q;const er=F('chat-err');er.textContent='לא התקבלה תשובה ('+e.message+'). נסו שוב.';er.hidden=false;}
-  finally{BUSY=false;b.disabled=false;b.textContent='שליחה';renderChat();}
+  finally{BUSY=false;b.disabled=false;b.textContent='שליחה';renderChat();
+    if(ok){const last=F('chat-log').lastElementChild;if(last)last.scrollIntoView({behavior:'smooth',block:'start'});if(!F('chat-in').hidden)F('chat-in').focus({preventScroll:true});}}
 });
 function plainShort(){const d=STATE.report.doc||{};const t=x=>(x||[]).map(a=>a.title||a.domain).filter(Boolean).join('; ');
   return ['חוזקות: '+t(d.strengths),'פעילויות: '+t(d.strengthActivities)+'; '+t(d.challengeActivities),'אתגרים: '+t(d.challenges)].join('\n');}
