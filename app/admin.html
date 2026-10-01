@@ -284,6 +284,15 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <div class="df"><button class="act d" id="dok">אישור</button><button class="act" id="dno">ביטול</button></div>
 </dialog>
 
+<dialog id="pcDlg">
+  <div class="dh" id="pcDh">קוד אישי</div>
+  <div class="db" id="pcDb"></div>
+  <div class="df">
+    <button class="act p" id="pcOk">הפקת הקוד</button>
+    <button class="act" id="pcCancel">סגירה</button>
+  </div>
+</dialog>
+
 <dialog id="modDlg">
   <div class="dh" id="modDh">מערכות פתוחות</div>
   <div class="db" id="modDb"></div>
@@ -769,7 +778,7 @@ function pInsts(){
     bMod.addEventListener("click",()=> openModDlg(x.name));
     const bAdm = el("button",{class:"act"}, x.adminCode ? "קוד מנהל/ת חדש" : "הפקת קוד למנהל/ת");
     bAdm.addEventListener("click",()=> ask(x.adminCode ? "קוד חדש למנהל/ת " + x.name : "קוד למנהל/ת " + x.name,
-      x.adminCode ? "הקוד הנוכחי של מנהל/ת המוסד יבוטל ויופק חדש. קודי הצוות שכבר הופקו ממשיכים לעבוד." : "יופק קוד שאיתו מנהל/ת המוסד נכנס/ת ומפיק/ה קודים לצוות.",
+      x.adminCode ? "הקוד הנוכחי של מנהל/ת המוסד יבוטל ויופק חדש. קודי הצוות שכבר הופקו ממשיכים לעבוד." : "יופק קוד למנהל/ת המוסד: נכנס/ת עם כל המערכות שפתוחות למוסד, ויכול/ה להפיק קודים לצוות. לאדם יחיד בלי צוות עדיף \"קוד אישי\".",
       async () => {
         try {
           if (x.adminCode) await accessCall("codeRevoke", { code: x.adminCode });
@@ -777,6 +786,8 @@ function pInsts(){
           instList = null; render();
         } catch (e) { accessFail(e); }
       }));
+    const bPc = el("button",{class:"act",title:"קוד לאדם אחד שפותח רק את המערכות שבוחרים, בלי ניהול צוות"},"קוד אישי");
+    bPc.addEventListener("click",()=> openPersonalDlg(x));
     const status = el("button",{class:"act"}, active ? "השהיה" : "הפעלה מחדש");
     status.addEventListener("click",()=> active
       ? ask("השהיית " + x.name, "אף קוד של המוסד לא יאפשר כניסה עד שתפעילי אותו מחדש. הנתונים נשמרים.",
@@ -786,7 +797,7 @@ function pInsts(){
     bDel.addEventListener("click",()=> ask("מחיקת " + x.name,
       "המוסד יימחק לגמרי: כל הקודים שלו (מנהל/ת וצוות וסטודנטים) יפסיקו לעבוד, והמערכות שנפתחו לו וכיתות החוסן שלו עם כל התשובות יימחקו. אי אפשר לבטל את זה.",
       () => act("deleteInstitution", { name: x.name })));
-    acts.append(bMod, bRenew, bDate, bAdm, status, bDel);
+    acts.append(bMod, bRenew, bDate, bAdm, bPc, status, bDel);
     // מה פתוח למוסד — גלוי בשורה, בלי לפתוח את החלון
     const openNames = (x.open || []).map(p => (MOD_LABELS[p] || p).replace(/ \(.*\)$/, ""));
     box.append(el("div",{class:"icodes", style: openNames.length ? "" : "color:var(--brick);font-weight:600"},
@@ -801,6 +812,19 @@ function pInsts(){
       () => act("newInstitutionCode", { name: x.name })));
     codes.append(" ", bOld);
     box.append(codes);
+    if ((x.personalCodes || []).length) {
+      const pc = el("div",{class:"icodes"}, el("span",{}, "קודים אישיים: "));
+      x.personalCodes.forEach((c, i) => {
+        if (i) pc.append(el("span",{}," · "));
+        const what = c.perms.map(p => (MOD_LABELS[p] || p).replace(/ \(.*\)$/, "")).join(", ");
+        pc.append(el("span",{}, (c.label ? c.label + " — " : "") + what + " "), el("b",{class:"mono"}, c.code), " ");
+        const rv = el("button",{class:"linkbtn"},"ביטול");
+        rv.addEventListener("click",()=> ask("ביטול הקוד " + c.code, "הקוד יפסיק לעבוד מיד.",
+          async () => { try { await accessCall("codeRevoke", { code: c.code }); instList = null; render(); } catch (e) { accessFail(e); } }));
+        pc.append(rv);
+      });
+      box.append(pc);
+    }
     inn.append(box);
   });
   const add = el("div",{class:"addrow"});
@@ -1474,7 +1498,7 @@ function pAccess(){
   in1.append(el("div",{class:"codebox"},
     el("div",{class:"bigcode" + (code ? "" : " none")}, code || "————"),
     el("div",{class:"meta"}, code
-      ? ["נוצר ב-" + new Date(accessState.academicCreatedAt).toLocaleDateString("he-IL"), el("br"), "מי שמקלידה אותו במסך הכניסה, תחת \"משוב לעבודות\", מגיעה רק למסך המשוב לעבודות"]
+      ? ["נוצר ב-" + new Date(accessState.academicCreatedAt).toLocaleDateString("he-IL"), el("br"), "מקלידים אותו בשדה \"הקוד שלך\" במסך הכניסה — ומגיעים רק למשוב לעבודות"]
       : "אין קוד פעיל. אף אחת לא יכולה להיכנס כרגע ל\"משוב לעבודות\".")));
   const row1 = el("div",{class:"btnrow"});
   if (code) {
@@ -1574,6 +1598,46 @@ const MOD_LABELS = {
   academic:    "משוב לעבודות",
   lecturer:    "הפקת קודים לסטודנטים (משוב לעבודות)",
 };
+
+// קוד אישי (01/10/2026): לאדם יחיד — למשל מרצה שמקבלת רק "משוב לעבודות" — בלי קוד
+// מנהל/ת ובלי ניהול צוות. פותח רק את המערכות שמסומנות, ורק מתוך מה שפתוח למוסד.
+function openPersonalDlg(x) {
+  const d = $("pcDlg"), body = $("pcDb"), ok = $("pcOk");
+  $("pcDh").textContent = "קוד אישי — " + x.name;
+  body.textContent = ""; ok.hidden = false; ok.disabled = false;
+  $("pcCancel").onclick = () => d.close();
+  const open = x.open || [];
+  if (!open.length) {
+    body.append(el("p",{style:"margin:0;color:var(--brick)"}, "עדיין לא נפתחו מערכות למוסד הזה. קודם לחצי \"מערכות פתוחות\" ובחרי מה פתוח לו."));
+    ok.hidden = true; d.showModal(); return;
+  }
+  body.append(el("p",{style:"margin:0 0 12px;font-size:13.5px;color:var(--muted);line-height:1.6"},
+    "קוד לאדם אחד. מי שנכנס/ת איתו רואה רק את מה שמסומן כאן, ולא מנהל/ת צוות. אם מסמנים \"הפקת קודים לסטודנטים\" — אפשר גם לתת לסטודנטים קודים למשוב."));
+  const name = el("input",{type:"text",placeholder:"שם (למשל: ולרי)",maxlength:"60",
+    style:"width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--hair);border-radius:6px;background:var(--ground);color:var(--ink);margin-bottom:12px"});
+  body.append(name);
+  const cbs = {};
+  open.forEach(p => {
+    const cb = el("input",{type:"checkbox",id:"pc_"+p,style:"width:18px;height:18px"}); cb.checked = true; cbs[p] = cb;
+    body.append(el("div",{style:"display:flex;align-items:center;gap:10px;margin-bottom:8px"}, cb,
+      el("label",{"for":"pc_"+p,style:"font-size:15px"}, MOD_LABELS[p] || p)));
+  });
+  const out = el("div",{style:"margin-top:12px"}); body.append(out);
+  ok.onclick = async () => {
+    const perms = open.filter(p => cbs[p].checked);
+    if (!perms.length) { out.textContent = "צריך לסמן לפחות מערכת אחת."; return; }
+    ok.disabled = true; out.textContent = "מפיקה... (לפעמים עד דקה)";
+    try {
+      const r = await accessCall("codeCreate", { kind: "staff", inst: x.name, perms, label: name.value.trim(),
+        expiresAt: x.sub && x.sub.subEnd ? x.sub.subEnd : null });
+      out.textContent = "";
+      out.append(el("div",{style:"font-size:13.5px;color:var(--muted)"}, "הקוד מוכן. מעבירים אותו לאדם, והוא/היא מקלידים אותו במסך הכניסה:"),
+        el("div",{class:"bigcode",style:"margin-top:6px"}, r.code.code));
+      ok.hidden = true; instList = null; render();
+    } catch (e) { ok.disabled = false; out.textContent = "לא הצלחתי להפיק קוד. נסי שוב."; }
+  };
+  d.showModal();
+}
 
 function openModDlg(instName) {
   $("modDh").textContent = "מערכות פתוחות — " + instName;
