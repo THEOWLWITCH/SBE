@@ -515,7 +515,12 @@ async function institutionsView(store) {
 // ── רשימות פתוחות לקהילה ("חכמת ההמונים", 01/10/2026) ──
 // list:<name> → [{ value, inst, date }]. כל אחד/ת עם הרשאה מתאימה מוסיף/ה פריט,
 // והוא מופיע מיד לכולם. מנהלת המערכת יכולה להסיר. רשימות מוכרות בלבד.
-const OPEN_LISTS = { 'advisor-situation': 'resilience', 'leader-situation': 'leadership' };
+// רשימות פתוחות לקהילה (חכמת ההמונים): שם הרשימה → ההרשאה שנדרשת כדי להוסיף לה.
+// advisor-* — פרקטי (resilience); leader-* — נוגי (leadership). *-stmt — היגדים שאנשי חינוך מוסיפים
+// לשאלון ("שם הממד|ההיגד"), ולכן ארוכים יותר.
+const OPEN_LISTS = { 'advisor-situation': 'resilience', 'advisor-age': 'resilience', 'advisor-stmt': 'resilience',
+  'leader-situation': 'leadership', 'leader-role': 'leadership', 'leader-stage': 'leadership', 'leader-stmt': 'leadership' };
+const LIST_ITEM_MAX = { 'advisor-stmt': 200, 'leader-stmt': 200 };
 const LIST_MAX = 200, ITEM_MAX = 80;
 async function handleLists(store, body) {
   const { action } = body;
@@ -529,7 +534,7 @@ async function handleLists(store, body) {
   if (action === 'listAdd') {
     const ok = isSysTok || (t && Array.isArray(t.perms) && t.perms.includes(OPEN_LISTS[name]));
     if (!ok) { await pause(); return [403, { error: 'unauthorized' }]; }
-    const value = String(body.value || '').replace(/\s+/g, ' ').trim().slice(0, ITEM_MAX);
+    const value = String(body.value || '').replace(/\s+/g, ' ').trim().slice(0, LIST_ITEM_MAX[name] || ITEM_MAX);
     if (value.length < 2) return [400, { error: 'too short' }];
     if (!list.some((x) => x.value === value)) {
       if (list.length >= LIST_MAX) return [429, { error: 'list full' }];
