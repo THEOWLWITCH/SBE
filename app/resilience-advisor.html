@@ -228,15 +228,13 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 <dialog id="fb-dlg">
   <div class="fbh">רעיונות, תקלות ושאלות על פרקטי</div>
   <div class="fbb">
-    <p class="muted" style="font-size:.85rem">מה עבד, מה לא, מה חסר — כל הערה עוזרת לשפר. הפנייה מגיעה ישירות לד״ר יעל שדה.</p>
-    <label for="fb-type">סוג הפנייה</label>
-    <select id="fb-type"><option>רעיון</option><option>תקלה</option><option>שאלה</option></select>
-    <label for="fb-text">מה תרצו לכתוב?</label>
+    <p class="muted" style="font-size:.85rem">מה עבד, מה לא, מה חסר — כל הערה עוזרת לשפר. ההודעה מגיעה ישירות לד״ר יעל שדה. אני מבקשת את הפרטים שלך כדי שאוכל לחזור אלייך ולהתייעץ במידת הצורך.</p>
+    <label for="fb-name">שם</label>
+    <input type="text" id="fb-name" maxlength="80" autocomplete="name">
+    <label for="fb-contact">מייל או טלפון</label>
+    <input type="text" id="fb-contact" maxlength="120" dir="ltr" autocomplete="email">
+    <label for="fb-text">תוכן ההודעה</label>
     <textarea id="fb-text" maxlength="2000" style="min-height:110px"></textarea>
-    <label for="fb-name">שם (רשות)</label>
-    <input type="text" id="fb-name" maxlength="80">
-    <label for="fb-contact">מייל או טלפון לחזרה (רשות)</label>
-    <input type="text" id="fb-contact" maxlength="120" dir="ltr">
     <p class="err" id="fb-err" hidden></p>
   </div>
   <div class="fbf"><button class="btn" id="fb-send" type="button">שליחה</button><button class="btn btn-ghost" id="fb-cancel" type="button">סגירה</button></div>
@@ -606,14 +604,17 @@ F('btn-clear').addEventListener('click',()=>{
 });
 
 // ── רעיונות / תקלות / שאלות — נשמרים בשרת ומגיעים למנהלת המערכת (לשונית "פניות") ──
-F('fb-fab').addEventListener('click',()=>{F('fb-err').hidden=true;F('fb-dlg').showModal();F('fb-text').focus();});
+F('fb-fab').addEventListener('click',()=>{F('fb-err').hidden=true;F('fb-dlg').showModal();F('fb-name').focus();});
 F('fb-cancel').addEventListener('click',()=>F('fb-dlg').close());
 F('fb-send').addEventListener('click',()=>{
-  const text=F('fb-text').value.trim(),err=F('fb-err');
-  if(text.length<2){err.textContent='צריך לכתוב משהו.';err.hidden=false;return;}
+  const text=F('fb-text').value.trim(),name=F('fb-name').value.trim(),contact=F('fb-contact').value.trim(),err=F('fb-err');
+  const okContact=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)||contact.replace(/[^0-9]/g,'').length>=9;
+  err.style.color='';
+  if(!name||!contact||text.length<2){err.textContent='צריך למלא שם, מייל או טלפון, ותוכן ההודעה.';err.hidden=false;return;}
+  if(!okContact){err.textContent='המייל או הטלפון לא נראים תקינים.';err.hidden=false;return;}
   const b=F('fb-send');b.disabled=true;b.textContent='שולחת...';
   let guest=false;try{guest=JSON.parse(sessionStorage.getItem('sbe.session.info')||'{}').kind==='guest';}catch(e){}
-  accessApi({action:'fbSubmit',type:F('fb-type').value,text,name:F('fb-name').value,contact:F('fb-contact').value,
+  accessApi({action:'fbSubmit',type:'פנייה',text,name,contact,
     source:guest?'פרקטי — התנסות הקהילה':'פרקטי',page:'resilience-advisor'}).then(d=>{
     if(!d.ok)throw new Error();
     F('fb-text').value='';err.hidden=false;err.style.color='var(--auto)';err.textContent='נשלח, תודה! ✓';

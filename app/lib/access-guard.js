@@ -98,7 +98,8 @@
     allowed = ["academic-review.html"];
   } else if (home === "resilience-advisor.html") {
     // התנסות חברות.י הקהילה (זמני, להרצאה) — אורח/ת: רק פרקטי והמקורות שלה, עד 31.10.2026
-    allowed = new Date() <= new Date("2026-10-31T23:59:59")
+    var COMMUNITY_OPEN = false; // סגור עד שמנהלת המערכת מבקשת לפתוח (יחד עם entry.html)
+    allowed = COMMUNITY_OPEN && new Date() <= new Date("2026-10-31T23:59:59")
       ? ["resilience-advisor.html", "resilience-advisor-sources.html"] : [];
     if (!allowed.length) home = "";
   } else if (home === "resilience-team.html") {

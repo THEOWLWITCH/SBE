@@ -551,17 +551,17 @@ async function handleLists(store, body) {
 // ── פניות מהמשתמשים (01/10/2026): רעיונות, תקלות ושאלות מתוך פרקטי ──
 // fb:<ts>-<rand> → { type, text, name, contact, source, page, at }. שליחה פתוחה
 // (גם לאורחים בהתנסות הקהילה), קריאה ומחיקה — מנהלת המערכת בלבד.
-const FB_TYPES = ['רעיון', 'תקלה', 'שאלה'];
+const FB_TYPES = ['פנייה', 'רעיון', 'תקלה', 'שאלה'];
 const FB_MAX = 3000;
 async function handleFeedbackInbox(store, body) {
   const { action } = body;
   const clip = (v, n) => String(v || '').trim().slice(0, n);
   if (action === 'fbSubmit') {
     const text = clip(body.text, 2000);
-    if (text.length < 2) return [400, { error: 'empty' }];
+    if (text.length < 2 || !clip(body.name, 80) || !clip(body.contact, 120)) return [400, { error: 'missing fields' }];
     const keys = await store.list('fb:', { keysOnly: true });
     if (keys.length >= FB_MAX) return [429, { error: 'full' }];
-    const rec = { type: FB_TYPES.includes(body.type) ? body.type : 'רעיון', text, name: clip(body.name, 80),
+    const rec = { type: FB_TYPES.includes(body.type) ? body.type : 'פנייה', text, name: clip(body.name, 80),
       contact: clip(body.contact, 120), source: clip(body.source, 40), page: clip(body.page, 80), at: new Date().toISOString() };
     await store.set('fb:' + Date.now() + '-' + randomBytes(3).toString('hex'), rec);
     return [200, { ok: true }];
