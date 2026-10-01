@@ -59,11 +59,17 @@ h1{font-family:"Frank Ruhl Libre",serif;font-size:1.9rem;margin-bottom:.4rem}
 (function(){
   'use strict';
   var A = window.SBE_ADVISOR_SOURCES, box = document.getElementById('list');
-  Object.keys(A.groups).forEach(function(g){
-    var items = A.list.filter(function(s){ return s.g === g; });
+  // סדר אלפביתי לפי שם המחבר/ת הראשון/ה: קודם המקורות בעברית (א-ב), אחר כך באנגלית (abc).
+  var isHe = function(s){ return /^[\u0590-\u05FF]/.test(s.apa); };
+  var sections = [
+    ['מקורות בעברית', A.list.filter(isHe).sort(function(a,b){ return a.apa.localeCompare(b.apa, 'he'); })],
+    ['מקורות באנגלית', A.list.filter(function(s){ return !isHe(s); }).sort(function(a,b){ return a.apa.localeCompare(b.apa, 'en', {sensitivity:'base'}); })]
+  ];
+  sections.forEach(function(sc){
+    var items = sc[1];
     if (!items.length) return;
     var sec = document.createElement('section'); sec.className = 'grp';
-    var h = document.createElement('h2'); h.textContent = A.groups[g]; sec.appendChild(h);
+    var h = document.createElement('h2'); h.textContent = sc[0] + ' (' + items.length + ')'; sec.appendChild(h);
     items.forEach(function(s){
       var d = document.createElement('div'); d.className = 'src'; d.id = s.k;
       var he = /[\u0590-\u05FF]/.test(s.apa);
