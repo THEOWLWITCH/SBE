@@ -41,7 +41,10 @@ h1{font-family:"Frank Ruhl Libre",serif;font-size:1.9rem;margin-bottom:.4rem}
 .src:target{background:var(--spoken-soft);border-radius:6px}
 .apa{font-size:.95rem}
 .apa a{color:var(--spoken);word-break:break-all}
-.gist{font-size:.88rem;color:var(--muted);margin-top:.2rem}
+.be{font-size:.92rem;margin-top:.3rem;background:var(--spoken-soft);border-radius:6px;padding:.35rem .6rem}
+.be b{color:var(--spoken)}
+.lnk{font-size:.85rem;margin-top:.3rem}
+.lnk a{color:var(--spoken);font-weight:700;text-decoration:none}
 .key{font-family:monospace;font-size:.75rem;color:var(--muted);direction:ltr;unicode-bidi:isolate}
 </style>
 </head>
@@ -49,7 +52,7 @@ h1{font-family:"Frank Ruhl Libre",serif;font-size:1.9rem;margin-bottom:.4rem}
 <nav class="topnav"><a href="resilience-advisor.html">→ חזרה לפרקטי</a></nav>
 <div class="wrap">
   <h1>המקורות של פרקטי: יועצת לפיתוח חוסן חברתי</h1>
-  <p class="lead">פרקטי מנתחת את תמונת המצב שהמחנך/ת מתאר/ת ומציעה המלצות על בסיס המקורות שלהלן — מחקר ישראלי ובינלאומי על חוסן קהילתי וחברתי, שייכות ואקלים כיתתי, עבודה משותפת, יישוב קונפליקטים, למידה רגשית־חברתית ובית הספר כקהילה בשגרה ובחירום. כל המלצה בדוח מפנה למקורות שעליהם היא נשענת. חלק מהמחקרים העדכניים (2024–2026) מגיעים ממאגר אתר הקהילה <a href="https://hosen-hinuch-herum.netlify.app/" style="color:var(--spoken)">חוסן | חינוך | חירום</a>.</p>
+  <p class="lead">פרקטי מנתחת את תמונת המצב שהמחנך/ת מתאר/ת ומציעה המלצות על בסיס המקורות שלהלן — מחקר ישראלי ובינלאומי על חוסן קהילתי וחברתי, שייכות ואקלים כיתתי, עבודה משותפת, יישוב קונפליקטים, למידה רגשית־חברתית ובית הספר כקהילה בשגרה ובחירום. לכל מקור מופיעה התובנה המרכזית שלו עבור Begood וקישור למקור, וכל המלצה בדוח של פרקטי מפנה למקורות שעליהם היא נשענת. חלק מהמחקרים העדכניים (2024–2026) מגיעים ממאגר אתר הקהילה <a href="https://hosen-hinuch-herum.netlify.app/" style="color:var(--spoken)">חוסן | חינוך | חירום</a>.</p>
   <div id="list"></div>
 </div>
 <script>
@@ -64,14 +67,17 @@ h1{font-family:"Frank Ruhl Libre",serif;font-size:1.9rem;margin-bottom:.4rem}
     items.forEach(function(s){
       var d = document.createElement('div'); d.className = 'src'; d.id = s.k;
       var he = /[\u0590-\u05FF]/.test(s.apa);
-      var p = document.createElement('p'); p.className = 'apa'; p.textContent = s.apa + ' ';
+      var p = document.createElement('p'); p.className = 'apa'; p.textContent = s.apa;
       if (!he) { p.dir = 'ltr'; p.style.textAlign = 'left'; }
-      if (s.url) { var a = document.createElement('a'); a.href = s.url; a.target = '_blank'; a.rel = 'noopener';
-        a.textContent = /doi\.org\//.test(s.url) ? 'doi:' + s.url.split('doi.org/')[1] : (he ? 'קישור' : 'Link'); p.appendChild(a); }
-      var gi = document.createElement('p'); gi.className = 'gist'; gi.textContent = s.gist;
+      var bi = document.createElement('p'); bi.className = 'be';
+      var bl = document.createElement('b'); bl.textContent = 'התובנה ל-Begood: '; bi.appendChild(bl);
+      bi.appendChild(document.createTextNode(s.be || s.gist));
+      var ln = document.createElement('p'); ln.className = 'lnk';
+      if (s.url) { var a = document.createElement('a'); a.href = s.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'לקריאת המקור ↗'; ln.appendChild(a); }
+      else ln.textContent = 'אין קישור מקוון למקור';
       var k = document.createElement('span'); k.className = 'key'; k.textContent = '[' + s.k + ']';
-      gi.appendChild(document.createTextNode(' ')); gi.appendChild(k);
-      d.appendChild(p); d.appendChild(gi); sec.appendChild(d);
+      ln.appendChild(document.createTextNode(' ')); ln.appendChild(k);
+      d.appendChild(p); d.appendChild(bi); d.appendChild(ln); sec.appendChild(d);
     });
     box.appendChild(sec);
   });
