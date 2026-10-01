@@ -456,7 +456,7 @@ const ADVISOR_SYSTEM = [
 ].join('\n');
 
 async function complete(system,messages,maxTokens){
-  const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),300000);
+  const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),480000);
   try{
     const res=await fetch(AI_SERVER+'/api/complete',{method:'POST',headers:{'content-type':'application/json'},signal:ctrl.signal,
       body:JSON.stringify({system,messages,maxTokens})});
@@ -483,7 +483,7 @@ F('btn-analyze').addEventListener('click',async()=>{
   const rep=F('report');rep.textContent='';const wait=el('div','card','פרקטי קוראת את תמונת המצב ומכינה המלצות... (דקה–שלוש)');rep.appendChild(wait);
   rep.scrollIntoView({behavior:'smooth',block:'start'});
   try{
-    const txt=await complete(ADVISOR_SYSTEM,[{role:'user',content:pictureText(a)}],12000);
+    const txt=await complete(ADVISOR_SYSTEM,[{role:'user',content:pictureText(a)}],32000);
     const m=txt.match(/\{[\s\S]*\}/);if(!m)throw new Error('פרקטי לא החזירה מבנה תקין');
     STATE.report={at:new Date().toISOString(),cls:F('f-cls').value.trim(),age:F('f-age').value,doc:JSON.parse(m[0]),picture:pictureText(a)};
     STATE.chat=[];save();renderReport();renderChat();
@@ -579,7 +579,7 @@ F('chat-send').addEventListener('click',async()=>{
   const sys=[PERSONA,'כעת את משוחחת עם המחנך/ת על הכיתה. תשובה קצרה וממוקדת (עד כ-200 מילים), מעשית, מותאמת לגיל ולמצב, בצורה של 2–3 חלופות פעולה שהמחנך/ת יכול/ה לבחור ביניהן — המלצות ולא קביעות. כשאת/ה נשען/ת על מקור — ציין/י את המפתח בסוגריים מרובעים, למשל [Allen2018]. טקסט רגיל, בלי JSON.',
     '','תמונת המצב שתיאר/ה המחנך/ת:',STATE.report.picture,'','הדוח שכבר נמסר לו/ה (אל תחזור/י עליו, התבסס/י עליו):',plainShort()].join('\n');
   try{
-    const ans=await complete(sys,STATE.chat.slice(-12),1500);
+    const ans=await complete(sys,STATE.chat.slice(-12),6000);
     STATE.chat.push({role:'assistant',content:ans.trim()});save();
   }catch(e){STATE.chat.pop();F('chat-in').value=q;const er=F('chat-err');er.textContent='לא התקבלה תשובה ('+e.message+'). נסו שוב.';er.hidden=false;}
   finally{BUSY=false;b.disabled=false;b.textContent='שליחה';renderChat();}
