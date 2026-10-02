@@ -703,7 +703,7 @@ const ADVISOR_SYSTEM = [
   '8. "plan": 3–6 צעדים על ציר זמן ("השבוע", "החודש", "עד סוף המחצית", "לאורך השנה").',
   '9a. אם נכתבו שאלות מרכזיות — ענִי על כל אחת ישירות ובאופן מעשי ב-"answers": 2–3 חלופות לכל שאלה, עם מפתחות מקורות כשיש. אם לא נכתבו — "answers" ריק.',
   '9b. עיצוב טקסט ארוך (answer, description): לחלק לשורות עם \\n — כל חלופה בשורה שמתחילה בכותרת מודגשת **...**, ואחריה תבליטים בשורות שמתחילות ב-"- "; הדגשה ב-**...** רק למילות מפתח.',
-  '9d. "twoLayer": ניתוח לפי מודל האיתנות הדו־שכבתי (SadeTrust2026) — השלב, שתי השכבות והאמון כמאיץ ביניהן; אם המידע חלקי — אמרי זאת.',
+  '9d. "twoLayer" — שדה רשות: מודל האיתנות הדו־שכבתי (SadeTrust2026) הוא ידע, לא סעיף קבוע. מלאי אותו רק כשהוא באמת מאיר את תמונת המצב הזאת (למשל פער בולט בין מנגנונים ונהלים לבין יחסים ואמון, או שאלה של שלב — מוכנות, איתנות או חוסן) — השלב, שתי השכבות והאמון כמאיץ ביניהן. אחרת — השמיטי את השדה, ואפשר לשלב תובנה מהמודל בתוך סעיף אחר כשהיא רלוונטית.',
   '9. בכל פעולה והמלצה — "basis": 1–3 מפתחות מקורות מהרשימה (או מערך ריק).',
   SBE_RLEAD.relevantRule,
   SBE_WRITER.reportRule('ההנהגה עם הצוות, עם התלמידים ועם ההורים','לצוות, להורים או לתלמידים — לפי הממצאים'),
@@ -852,7 +852,7 @@ function renderReport(){
   sum.appendChild(el('h2',null,'א. תמונת המצב'));
   if(d.intro){const ip=el('p','intro');ip.appendChild(inlineRich(d.intro));sum.appendChild(ip);}
   if(d.lens){const l=el('div','lens');l.appendChild(el('b',null,'איך המחקר על חוסן חברתי קורא את התמונה: '));l.appendChild(inlineRich(d.lens));sum.appendChild(l);}
-  if(d.twoLayer){const t=d.twoLayer,box2=el('div','layers');box2.appendChild(el('h3',null,'מודל האיתנות הדו־שכבתי'));
+  if(d.twoLayer&&(d.twoLayer.phase||d.twoLayer.structural||d.twoLayer.social||d.twoLayer.trust)){const t=d.twoLayer,box2=el('div','layers');box2.appendChild(el('h3',null,'מודל האיתנות הדו־שכבתי'));
     [['השלב',t.phase],['השכבה המבנית',t.structural],['השכבה החברתית־יחסית',t.social],['האמון — המאיץ המקשר',t.trust]].forEach(([k,v])=>{if(!v)return;const r=el('div','layer');r.appendChild(el('b',null,k));const p=el('p');p.appendChild(inlineRich(v));r.appendChild(p);box2.appendChild(r);});
     sum.appendChild(box2);}
   sum.appendChild(el('h3',null,'חוזקות'));sum.appendChild(textList(d.strengths));
@@ -884,7 +884,7 @@ function plain(){
   if((d.answers||[]).length){L.push('','תשובות לשאלות שלך');d.answers.forEach(x=>L.push('• '+x.question+'\n  '+x.answer));}
   L.push('','א. תמונת המצב','',d.intro||'');
   if(d.lens)L.push('','איך המחקר קורא את התמונה',d.lens);
-  if(d.twoLayer){const t=d.twoLayer;L.push('','מודל האיתנות הדו־שכבתי','• השלב: '+(t.phase||''),'• השכבה המבנית: '+(t.structural||''),'• השכבה החברתית־יחסית: '+(t.social||''),'• האמון: '+(t.trust||''));}
+  if(d.twoLayer&&(d.twoLayer.phase||d.twoLayer.structural||d.twoLayer.social||d.twoLayer.trust)){const t=d.twoLayer;L.push('','מודל האיתנות הדו־שכבתי','• השלב: '+(t.phase||''),'• השכבה המבנית: '+(t.structural||''),'• השכבה החברתית־יחסית: '+(t.social||''),'• האמון: '+(t.trust||''));}
   L.push('','חוזקות');(d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text+rs(x)));
   L.push('','אתגרים — כיווני צמיחה');(d.challenges||[]).forEach(x=>L.push('• '+x.domain+': '+x.text+rs(x)));
   if((d.priorities||[]).length){L.push('','שלוש העדיפויות המרכזיות');d.priorities.forEach((p,i)=>{const o=typeof p==='string'?{text:p}:p;L.push((i+1)+'. '+o.text+rs(o));});}
