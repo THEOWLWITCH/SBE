@@ -406,7 +406,7 @@ function saveSuggestions(list){ try { localStorage.setItem("sbe.source.suggestio
 
 const TABS = {
   inst:[["codes","קודים"],["users","משתמשות"],["feedback","מדדי המשוב"],["data","נתונים"]],
-  sys: [["insts","מוסדות"],["inbox","פניות"],["access","סיסמאות וקודים"],["taxonomies","רשימות"],["libs","מקורות"],["eval","בקרת איכות"],["data","נתונים"]],
+  sys: [["insts","מוסדות"],["inbox","פניות"],["crit","קריטריונים לאישור"],["access","סיסמאות וקודים"],["taxonomies","רשימות"],["libs","מקורות"],["eval","בקרת איכות"],["data","נתונים"]],
 };
 
 // קישורים למסכים אחרים בפרויקט — לא לשוניות בתוך admin.html, אלא ניווט
@@ -500,6 +500,7 @@ function render(){
   list.forEach(([k,l]) => {
     const b = el("button",{ class: "nlink" + (k===tab ? " on" : "") }, l);
     if (k === "taxonomies" && unseenCount) b.append(el("span",{class:"navbadge"}, String(unseenCount)));
+    if (k === "crit" && critPendingN) b.append(el("span",{class:"navbadge"}, String(critPendingN)));
     b.addEventListener("click", () => { tab = k; nav.hidden = true; render(); });
     nav.append(b);
   });
@@ -516,7 +517,18 @@ function render(){
   nav.append(el("a",{ class:"nlink", href:"entry.html?logout=1" }, "יציאה / החלפת תפקיד"));
 
   const p = $("panels"); p.textContent = "";
-  p.append(({ codes:pCodes, users:pUsers, feedback:pFeedback, data:pData, insts:pInsts, inbox:pInbox, access:pAccess, taxonomies:pTaxonomies, libs:pLibs, eval:pEvalSet })[tab]());
+  // התראה: קריטריונים מהקהילה שממתינים לאישור (משוב לעבודות)
+  if (role === "sys" && critPendingN && tab !== "crit") {
+    const al = el("div",{class:"card",style:"border-inline-start:4px solid var(--hidden);margin-bottom:14px"});
+    const go = el("button",{class:"act p"},"לאישור");
+    go.addEventListener("click", () => { tab = "crit"; render(); });
+    al.append(el("div",{class:"in",style:"display:flex;gap:12px;align-items:center;flex-wrap:wrap"},
+      el("b",{}, critPendingN === 1 ? "ממתין לאישורך קריטריון אחד מהקהילה" : "ממתינים לאישורך " + critPendingN + " קריטריונים מהקהילה"),
+      el("span",{style:"color:var(--muted);font-size:13.5px"},"משוב לעבודות — הצעות של משתמשות לקריטריונים לבדיקה"), go));
+    p.append(al);
+  }
+  document.title = (role === "sys" && critPendingN ? "(" + critPendingN + ") " : "") + document.title.replace(/^\(\d+\) /, "");
+  p.append(({ codes:pCodes, users:pUsers, feedback:pFeedback, data:pData, insts:pInsts, inbox:pInbox, crit:pCrit, access:pAccess, taxonomies:pTaxonomies, libs:pLibs, eval:pEvalSet })[tab]());
 }
 
 // ── קודים ──
@@ -1432,7 +1444,7 @@ function sysToken(){
 let myInst = null;     // קוד המוסד של מנהלת המוסד
 let gateFailed = false;
 
-function resetAccessData(){ if (!accessAuth && sysToken()) tokenFailed = true; accessAuth = ""; accessState = null; instList = null; myInst = null; inbox = null; }
+function resetAccessData(){ if (!accessAuth && sysToken()) tokenFailed = true; accessAuth = ""; accessState = null; instList = null; myInst = null; inbox = null; critData = null; }
 
 function accessFail(e){
   ask("הפעולה לא בוצעה",
@@ -1507,6 +1519,57 @@ function pInbox(){
     box.append(del); inn.append(box);
   });
   c.append(inn); w.append(c);
+  return w;
+}
+
+// ── קריטריונים מהקהילה למשוב לעבודות (02/10/2026): הצעה מופיעה לכולן רק אחרי אישור ──
+// השרת כבר פסל כפילויות ובקשות לכתוב במקום הכותב/ת; כאן מאשרים (אפשר לתקן כותרת וקטגוריה), דוחים או מסירים.
+let critData = null, critPendingN = 0;
+async function loadCrit(){ critData = await accessCall("critAdmin"); critPendingN = (critData.pending || []).length; }
+function pCrit(){
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"קריטריונים לאישור"), el("p",{class:"sub"},"קריטריונים שמשתמשות הציעו במשוב לעבודות. אחרי אישור הם מופיעים אצל כולן, לפי קטגוריה. כפילויות ובקשות לכתוב במקום הכותבת נפסלו כבר בשרת."));
+  if (!gate(w, critData, loadCrit, "סיסמת מנהלת המערכת")) return w;
+  const cats = critData.cats || [];
+  const act = async (action, extra, okMsg) => { try { await accessCall(action, extra); await loadCrit(); render(); } catch(e){ accessFail(e); } };
+  const bRef = el("button",{class:"act"},"רענון");
+  bRef.addEventListener("click", () => { critData = null; render(); });
+  const c1 = el("div",{class:"card"}); const in1 = el("div",{class:"in"});
+  in1.append(el("h3",{style:"margin:0 0 8px"}, "ממתינים לאישור (" + critData.pending.length + ")"), bRef);
+  if (!critData.pending.length) in1.append(el("p",{style:"color:var(--muted)"},"אין הצעות שממתינות."));
+  critData.pending.forEach(x => {
+    const box = el("div",{style:"border-top:1px solid var(--hair);padding:10px 0;margin-top:8px"});
+    box.append(el("div",{style:"font-size:12.5px;color:var(--muted)"}, [new Date(x.at).toLocaleString("he-IL"), x.by, x.inst].filter(Boolean).join(" · ")));
+    const t = el("input",{type:"text",maxlength:"80",value:x.title,style:"width:100%;margin:6px 0;font:inherit;font-weight:700;padding:6px 8px"});
+    const cat = el("select",{style:"font:inherit;padding:5px 8px"}); cats.forEach(c => { const o = el("option",{value:c},c); if (c === x.cat) o.selected = true; cat.append(o); });
+    box.append(t);
+    if (x.detail) box.append(el("div",{style:"margin:2px 0 6px;white-space:pre-wrap"}, x.detail));
+    if ((x.near || []).length) box.append(el("div",{style:"font-size:12.5px;color:var(--hidden);margin-bottom:6px"}, "קרובים שכבר קיימים: " + x.near.join(" · ")));
+    const ok = el("button",{class:"act p"},"אישור — יופיע לכולן");
+    ok.addEventListener("click", () => act("critApprove", { id:x.id, title:t.value, cat:cat.value }));
+    const no = el("button",{class:"act"},"דחייה");
+    no.addEventListener("click", () => { const r = prompt("סיבת הדחייה (תוצג למציעה, לא חובה):", ""); if (r === null) return; act("critReject", { id:x.id, reason:r }); });
+    box.append(el("div",{class:"btnrow",style:"display:flex;gap:8px;align-items:center;flex-wrap:wrap"}, el("span",{},"קטגוריה:"), cat, ok, no));
+    in1.append(box);
+  });
+  c1.append(in1); w.append(c1);
+  const c2 = el("div",{class:"card"}); const in2 = el("div",{class:"in"});
+  in2.append(el("h3",{style:"margin:0 0 8px"}, "מאושרים — מופיעים לכולן (" + critData.approved.length + ")"));
+  if (!critData.approved.length) in2.append(el("p",{style:"color:var(--muted)"},"עדיין אין."));
+  critData.approved.forEach(x => {
+    const row = el("div",{style:"border-top:1px solid var(--hair);padding:8px 0;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"});
+    row.append(el("b",{}, x.title), el("span",{style:"font-size:12.5px;color:var(--muted)"}, [x.cat, "נבחר " + (x.uses || 0) + " פעמים", x.by].filter(Boolean).join(" · ")));
+    const rm = el("button",{class:"linkbtn"},"הסרה");
+    rm.addEventListener("click", () => ask("הסרת הקריטריון", "\"" + x.title + "\" יוסר מהרשימה של כולן.", () => act("critRemove", { id:x.id })));
+    row.append(rm); in2.append(row);
+  });
+  c2.append(in2); w.append(c2);
+  if ((critData.rejected || []).length) {
+    const c3 = el("div",{class:"card"}); const in3 = el("div",{class:"in"});
+    in3.append(el("h3",{style:"margin:0 0 8px"}, "נדחו לאחרונה"));
+    critData.rejected.forEach(x => in3.append(el("div",{style:"font-size:13.5px;padding:4px 0"}, x.title + (x.reason ? " — " + x.reason : ""))));
+    c3.append(in3); w.append(c3);
+  }
   return w;
 }
 
@@ -1747,6 +1810,12 @@ $("role").addEventListener("change", e => { if (!isSysSession) return; role = e.
 $("role").value = role;
 document.body.classList.add("sbe-hasnav");
 render();
+// התראה על קריטריונים שממתינים לאישור — בכניסה, ובדיקה חוזרת כל 5 דקות כשהמסך פתוח
+function checkCritPending(){
+  if (role !== "sys" || !sysToken()) return;
+  accessCall("critAdmin").then(d => { const n = (d.pending || []).length; critData = d; if (n !== critPendingN) { critPendingN = n; render(); } }).catch(() => {});
+}
+checkCritPending(); setInterval(checkCritPending, 300000);
 
 // ── סרגל הניווט הגלובלי (חזרה/תפריט) — אותו רכיב שיש לכל שאר המסכים,
 // מוטמע כאן ישירות (לא הקובץ המשותף) כי התפריט חייב לדעת להחליף tab

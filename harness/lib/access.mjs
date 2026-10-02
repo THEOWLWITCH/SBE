@@ -553,6 +553,120 @@ async function handleLists(store, body) {
 }
 
 
+// ── קריטריונים לבדיקת עבודות מהקהילה (02/10/2026) ──
+// rc:items → [{ id, title, detail, cat, status:'pending'|'approved'|'rejected', reason, by, inst, code, at, decidedAt, uses }].
+// כל מי שנכנס/ה עם קוד שפותח את "משוב לעבודות" (academic) מציע/ה; ההצעה מופיעה לכולם רק אחרי אישור
+// של מנהלת המערכת. השרת פוסל קריטריון כפול או דומה מדי, וקריטריון שמבקש מהמערכת לכתוב במקום הכותב/ת.
+export const RC_CATS = ['כללי', 'מבוא ושאלת מחקר', 'סקירת ספרות', 'שיטת מחקר', 'ממצאים', 'דיון ומסקנות', 'כתיבה אקדמית ומבנה', 'מקורות וציטוט', 'פרויקט ותוצר'];
+const RC_TITLE_MAX = 80, RC_DETAIL_MAX = 400, RC_MAX = 1000, RC_PENDING_PER_CODE = 10;
+const HEB = '֐-׿';
+// נרמול להשוואה: בלי ניקוד וסימנים, בלי תחיליות (ו/ה/ב/ל/מ/ש/כ) במילים ארוכות, בלי מילות קישור.
+const RC_STOP = new Set(['של', 'את', 'עם', 'על', 'אל', 'או', 'גם', 'כל', 'האם', 'מידת', 'רמת', 'אופן', 'בין', 'the', 'of', 'and', 'a', 'to', 'in']);
+export function rcNorm(t) {
+  return String(t || '').toLowerCase().replace(/[֑-ׇ]/g, '').replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/).filter(Boolean)
+    .map((w) => (w.length > 3 && /^[והבלמשכ]/.test(w) ? w.slice(1) : w))
+    .map((w) => w.replace(/(ים|ות)$/, (m) => (w.length > 4 ? '' : m)))
+    .filter((w) => w.length > 1 && !RC_STOP.has(w));
+}
+function bigrams(s) { const g = new Set(); for (let i = 0; i < s.length - 1; i++) g.add(s.slice(i, i + 2)); return g; }
+export function rcSimilar(a, b) {
+  const A = rcNorm(a), B = rcNorm(b);
+  if (!A.length || !B.length) return false;
+  const ja = A.join(' '), jb = B.join(' ');
+  if (ja === jb) return true;
+  if (Math.min(ja.length, jb.length) >= 4 && (ja.includes(jb) || jb.includes(ja))) return true;
+  const sa = new Set(A), sb = new Set(B);
+  const inter = [...sa].filter((x) => sb.has(x)).length;
+  if (inter / new Set([...sa, ...sb]).size >= 0.6) return true;
+  const ga = bigrams(ja.replace(/ /g, '')), gb = bigrams(jb.replace(/ /g, ''));
+  const gi = [...ga].filter((x) => gb.has(x)).length;
+  return ga.size + gb.size > 0 && (2 * gi) / (ga.size + gb.size) >= 0.8;
+}
+// בקשה מהמערכת לכתוב במקום הכותב/ת ("כתבי לי את הסעיף", "נסח את המבוא", "write the chapter").
+const RC_VERBS = ['כתוב', 'כתבי', 'כתבו', 'תכתוב', 'תכתבי', 'תכתבו', 'נסח', 'נסחי', 'נסחו', 'תנסח', 'תנסחי', 'חבר', 'חברי', 'תחבר', 'תחברי',
+  'השלם', 'השלימי', 'תשלים', 'תשלימי', 'צור', 'צרי', 'תיצור', 'תיצרי', 'הפק', 'הפיקי', 'תפיק', 'תפיקי', 'שכתב', 'שכתבי', 'תשכתב', 'תשכתבי',
+  'ערוך', 'ערכי', 'תערוך', 'תערכי', 'סכם', 'סכמי', 'תסכם', 'תסכמי', 'תקן', 'תקני', 'תתקן', 'תתקני', 'הוסף', 'הוסיפי', 'תוסיף', 'תוסיפי',
+  'מלא', 'מלאי', 'תמלא', 'תמלאי', 'פתח', 'פתחי', 'תפתח', 'תפתחי', 'הרחב', 'הרחיבי', 'תרחיב', 'תרחיבי', 'בנה', 'בני', 'תבנה', 'תבני'];
+const RC_PARTS = 'סעיף|הסעיף|פרק|הפרק|מבוא|המבוא|סיכום|הסיכום|דיון|הדיון|סקירה|הסקירה|סקירת|עבודה|העבודה|פסקה|הפסקה|פסקאות|תקציר|התקציר|מסקנות|המסקנות|טקסט|הטקסט|חלק|החלק|שאלת|השאלה|ביבליוגרפיה|רשימת';
+const B0 = '(?<![' + HEB + '\\w])', B1 = '(?![' + HEB + '\\w])';
+const RC_GHOST = [
+  new RegExp(B0 + '(?:' + RC_VERBS.join('|') + ')' + B1 + '\\s+(?:לי|עבורי|בשבילי|במקומי|לנו|עבורנו)' + B1),
+  new RegExp(B0 + '(?:' + RC_VERBS.join('|') + ')' + B1 + '\\s+(?:(?:את|עוד|גם)\\s+)?(?:' + RC_PARTS + ')' + B1),
+  new RegExp(B0 + '(?:במקומי|במקום הכותב|במקום הכותבת|במקום הסטודנט|במקום הסטודנטית)' + B1),
+  /\b(?:write|rewrite|compose|generate|draft)\b[^.]{0,40}\b(?:for me|my|the (?:section|chapter|paragraph|introduction|essay|summary|conclusion))\b/i,
+];
+export function rcGhostwrite(t) { const s = String(t || '').replace(/\s+/g, ' '); return RC_GHOST.some((r) => r.test(s)); }
+const rcPublic = (x) => ({ id: x.id, title: x.title, detail: x.detail || '', cat: x.cat, uses: x.uses || 0 });
+
+async function handleReviewCriteria(store, body) {
+  const { action } = body;
+  const items = (await store.get('rc:items')) || [];
+  if (action === 'critList') {
+    return [200, { cats: RC_CATS, items: items.filter((x) => x.status === 'approved').map(rcPublic).sort((a, b) => b.uses - a.uses) }];
+  }
+  const t = await verifyToken(store, body.token);
+  const isSys = (t && t.k === 'sys') || await checkPassword(store, 'sys', body.auth);
+  const canUse = isSys || (t && Array.isArray(t.perms) && t.perms.includes('academic'));
+  if (action === 'critPropose') {
+    if (!canUse) { await pause(); return [403, { error: 'unauthorized' }]; }
+    const title = String(body.title || '').replace(/\s+/g, ' ').trim();
+    const detail = String(body.detail || '').replace(/\s+/g, ' ').trim();
+    if (title.length < 3) return [400, { error: 'too short' }];
+    if (title.length > RC_TITLE_MAX || detail.length > RC_DETAIL_MAX) return [400, { error: 'too long', max: { title: RC_TITLE_MAX, detail: RC_DETAIL_MAX } }];
+    if (rcGhostwrite(title) || rcGhostwrite(detail)) return [422, { error: 'ghostwrite' }];
+    const live = items.filter((x) => x.status !== 'rejected');
+    const dup = live.find((x) => rcSimilar(x.title, title));
+    if (dup) return [409, { error: 'duplicate', similar: dup.title, status: dup.status }];
+    const code = t && t.c ? String(t.c) : 'sys';
+    if (items.filter((x) => x.status === 'pending' && x.code === code).length >= RC_PENDING_PER_CODE) return [429, { error: 'too many pending' }];
+    if (items.length >= RC_MAX) return [429, { error: 'full' }];
+    const rec = { id: Date.now().toString(36) + randomBytes(3).toString('hex'), title, detail, cat: RC_CATS.includes(body.cat) ? body.cat : 'כללי',
+      status: isSys ? 'approved' : 'pending', by: String(body.by || '').trim().slice(0, 60), inst: (t && t.inst) || '', code,
+      at: new Date().toISOString(), uses: 0 };
+    if (isSys) rec.decidedAt = rec.at;
+    items.push(rec); await store.set('rc:items', items);
+    return [200, { ok: true, id: rec.id, status: rec.status }];
+  }
+  if (action === 'critMine') {
+    if (!t || !t.c) return [200, { items: [] }];
+    const ids = Array.isArray(body.ids) ? body.ids.map(String).slice(0, 100) : null;
+    return [200, { items: items.filter((x) => x.code === t.c && (!ids || ids.includes(x.id)))
+      .map((x) => ({ id: x.id, title: x.title, status: x.status, reason: x.reason || '' })) }];
+  }
+  if (action === 'critUse') {
+    if (!canUse) return [200, { ok: false }];
+    const ids = new Set((Array.isArray(body.ids) ? body.ids : []).map(String).slice(0, 30));
+    let n = 0; items.forEach((x) => { if (x.status === 'approved' && ids.has(x.id)) { x.uses = (x.uses || 0) + 1; n++; } });
+    if (n) await store.set('rc:items', items);
+    return [200, { ok: true, counted: n }];
+  }
+  if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
+  if (action === 'critAdmin') {
+    const approved = items.filter((x) => x.status === 'approved');
+    return [200, { cats: RC_CATS, pending: items.filter((x) => x.status === 'pending').map((x) => ({ ...x,
+      near: approved.filter((y) => rcSimilar(y.title, x.title) || rcNorm(y.title).some((w) => rcNorm(x.title).includes(w))).slice(0, 3).map((y) => y.title) })),
+      approved: approved.sort((a, b) => (b.uses || 0) - (a.uses || 0)), rejected: items.filter((x) => x.status === 'rejected').slice(-30).reverse() }];
+  }
+  const id = String(body.id || '');
+  const it = items.find((x) => x.id === id);
+  if (!it) return [404, { error: 'not found' }];
+  if (action === 'critApprove' || action === 'critReject') {
+    it.status = action === 'critApprove' ? 'approved' : 'rejected';
+    if (body.title && action === 'critApprove') it.title = String(body.title).replace(/\s+/g, ' ').trim().slice(0, RC_TITLE_MAX) || it.title;
+    if (RC_CATS.includes(body.cat)) it.cat = body.cat;
+    it.reason = action === 'critReject' ? String(body.reason || '').trim().slice(0, 200) : '';
+    it.decidedAt = new Date().toISOString();
+    await store.set('rc:items', items);
+    return [200, { ok: true }];
+  }
+  if (action === 'critRemove') {
+    await store.set('rc:items', items.filter((x) => x.id !== id));
+    return [200, { ok: true }];
+  }
+  return [400, { error: 'bad action' }];
+}
+
 // ── פניות מהמשתמשים (01/10/2026): רעיונות, תקלות ושאלות מתוך פרקטי ──
 // fb:<ts>-<rand> → { type, text, name, contact, source, page, at }. שליחה פתוחה
 // (גם לאורחים בהתנסות הקהילה), קריאה ומחיקה — מנהלת המערכת בלבד.
@@ -653,6 +767,7 @@ export async function handleAccess(store, body) {
   if (typeof action === 'string' && action.startsWith('resil')) return handleResilience(store, body);
   if (action === 'listGet' || action === 'listAdd' || action === 'listRemove') return handleLists(store, body);
   if (action === 'fbSubmit' || action === 'fbList' || action === 'fbDelete') return handleFeedbackInbox(store, body);
+  if (/^crit(List|Propose|Mine|Use|Admin|Approve|Reject|Remove)$/.test(action || '')) return handleReviewCriteria(store, body);
 
   const sysTok = await verifyToken(store, body?.token);
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
