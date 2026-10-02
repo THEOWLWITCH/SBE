@@ -308,7 +308,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 // בנק הידע: SBE_ADVISOR_SOURCES.forAdvisor('nugi') — מתעדכן מדי שבוע.
 const SRC = window.SBE_ADVISOR_SOURCES;
 const AI_SERVER = 'https://sbe-server.onrender.com';
-const STORE = 'sbe.nugi.v1';
+const STORE = window.sbeUserKey ? sbeUserKey('sbe.nugi.v1') : 'sbe.nugi.v1:anon'; // לפי משתמש/ת (lib/access-guard.js)
 try{ const h=sessionStorage.getItem('sbe.session.homeUrl'); if(h) document.getElementById('nav-home').href=h; }catch(e){}
 
 // ── שאלון הפתיחה: היגדים נייטרליים, מקובצים לפי ממדי מנהיגות שתומכת חוסן.

@@ -278,7 +278,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 'use strict';
 const SRC = window.SBE_ADVISOR_SOURCES;
 const AI_SERVER = 'https://sbe-server.onrender.com';
-const STORE = 'sbe.advisor.v1';
+const STORE = window.sbeUserKey ? sbeUserKey('sbe.advisor.v1') : 'sbe.advisor.v1:anon'; // לפי משתמש/ת (lib/access-guard.js)
 try{ const h=sessionStorage.getItem('sbe.session.homeUrl'); if(h) document.getElementById('nav-home').href=h; }catch(e){}
 
 // ── התבחינים: היגדים נייטרליים (לא שאלות כן/לא) שהמחנך/ת מדרג/ת לפי תדירות, מקובצים לפי ממד. כל שאלה שייכת לתחום (d);
