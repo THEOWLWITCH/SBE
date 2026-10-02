@@ -12,7 +12,7 @@ const MIN_PASSWORD = 8;
 // ההרשאות במערכת. לכל מוסד יש "תקרה" (modules:<מוסד>) — מה שמנהלת המערכת פתחה
 // לו; ברירת המחדל: שום דבר. קודי הצוות שמנהל/ת המוסד מפיק/ה מקבלים רק צירוף
 // מתוך התקרה.
-export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership'];
+export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi'];
 const DEFAULT_MODULES = Object.fromEntries(PERMS.map((p) => [p, false]));
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
@@ -518,7 +518,8 @@ async function institutionsView(store) {
 // רשימות פתוחות לקהילה (חכמת ההמונים): שם הרשימה → ההרשאה שנדרשת כדי להוסיף לה.
 // advisor-* — פרקטי (resilience); leader-* — נוגי (leadership). *-stmt — היגדים שאנשי חינוך מוסיפים
 // לשאלון ("שם הממד|ההיגד"), ולכן ארוכים יותר.
-const OPEN_LISTS = { 'advisor-situation': 'resilience', 'advisor-age': 'resilience', 'advisor-stmt': 'resilience',
+// practi — פרקטי ככלי עצמאי (02/10/2026); גם resilience ממשיכה לפתוח את פרקטי.
+const OPEN_LISTS = { 'advisor-situation': ['resilience', 'practi'], 'advisor-age': ['resilience', 'practi'], 'advisor-stmt': ['resilience', 'practi'],
   'leader-situation': 'leadership', 'leader-role': 'leadership', 'leader-stage': 'leadership', 'leader-stmt': 'leadership' };
 const LIST_ITEM_MAX = { 'advisor-stmt': 200, 'leader-stmt': 200 };
 const LIST_MAX = 200, ITEM_MAX = 80;
@@ -532,7 +533,7 @@ async function handleLists(store, body) {
   const t = await verifyToken(store, body.token);
   const isSysTok = !!t && t.k === 'sys';
   if (action === 'listAdd') {
-    const ok = isSysTok || (t && Array.isArray(t.perms) && t.perms.includes(OPEN_LISTS[name]));
+    const ok = isSysTok || (t && Array.isArray(t.perms) && [].concat(OPEN_LISTS[name]).some((p) => t.perms.includes(p)));
     if (!ok) { await pause(); return [403, { error: 'unauthorized' }]; }
     const value = String(body.value || '').replace(/\s+/g, ' ').trim().slice(0, LIST_ITEM_MAX[name] || ITEM_MAX);
     if (value.length < 2) return [400, { error: 'too short' }];
