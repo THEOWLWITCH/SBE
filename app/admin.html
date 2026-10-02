@@ -303,6 +303,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 </dialog>
 
 <script src="lib/feedback-bank.js"></script>
+<script src="lib/screens-menu.js"></script>
 <script>
 "use strict";
 const $ = (id) => document.getElementById(id);
@@ -415,55 +416,7 @@ const TABS = {
 // עצמם (כבר נגישים כלשוניות בתוך admin.html), כדי שלא תצטרך להיכנס עם
 // קוד אחר כדי להגיע לשום מסך אחר במערכת — אותה רשימה שמוצגת בתפריט הצד
 // הגלובלי בכל שאר המסכים (למשל practice.html).
-const OTHER_SCREENS_GROUPS = [
-  { title:"לקראת ההצגה", items:[
-    { href:"system-toc.html", t:"תוכן עניינים — כל המערכת" },
-    { href:"products/index.html", t:"תוצרי המערכת — הופקו על ידי המודל" },
-  ]},
-  { title:"כניסה", items:[
-    { href:"entry.html", t:"מסך כניסה" },
-    { href:"system-select.html", t:"בחירת מערכת" },
-    { href:"demo-hub.html", t:"מסך הדגמה כולל" },
-  ]},
-  { title:"יצירת תרחיש", items:[
-    { href:"input-screen.html", t:"יצירת תרחיש — סטודנטים.יות" },
-    { href:"parent-input-screen.html", t:"מסך קלט הורים" },
-    { href:"student-input-screen.html", t:"מסך קלט נוער" },
-    { href:"search.html", t:"חיפוש במאגר התרחישים" },
-    { href:"sources-library.html", t:"ספריית המקורות" },
-  ]},
-  { title:"תכנון שיחה ופעילות", items:[
-    { href:"conversation-planner.html", t:"תכנון שיחה" },
-    { href:"activity-planner.html", t:"תכנון פעילות" },
-    { href:"academic-review.html", t:"ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה" },
-  ]},
-  { title:"תוצרי הסדנה", items:[
-    { href:"doc-actor.html", t:"גרסת השחקנית" },
-    { href:"card-actor.html", t:"כרטיס שחקנית" },
-    { href:"doc-trainee.html", t:"גרסת המתנסה" },
-    { href:"doc-facilitator.html", t:"גרסת המנחה" },
-  ]},
-  { title:"הרצת הסדנה", items:[
-    { href:"facilitator-screen.html", t:"מסך הסדנה" },
-    { href:"observation-sheet.html", t:"דף צפייה (טלפון)" },
-    { href:"feedback.html", t:"משוב" },
-    { href:"feedback-results.html", t:"תוצאות המשוב" },
-    { href:"creative-assessment.html", t:"הערכה יצירתית" },
-  ]},
-  { title:"תרגול עצמי", items:[
-    { href:"practice.html", t:"תרגול עצמי" },
-    { href:"practice-crossings.html", t:"חציות קווים אדומים" },
-  ]},
-  { title:"חוסן חברתי", items:[
-    { href:"resilience-team.html", t:"חוסן חברתי — מסך מחנך/כת" },
-    { href:"resilience-fill.html", t:"שאלון חוסן — מסך תלמיד/ה" },
-    { href:"resilience-advisor.html", t:"פרקטי: יועצת לפיתוח חוסן חברתי" },
-    { href:"leadership-advisor.html", t:"נוגי: יועצת למנהיגות שתומכת בחוסן חברתי" },
-    { href:"message-writer.html", t:"כתיבת הודעה או מכתב ברוח חוסן" },
-    { href:"journeys.html", t:"המסעות אל החוסן — ניהול" },
-    { href:"journey.html", t:"מסע אל החוסן — מסך המשתתפים" },
-  ]},
-];
+// רשימת כל המסכים בתפריט הצד: lib/screens-menu.js (SBE_SCREENS) — אותו מקור כמו תפריט "☰" בשאר המסכים.
 
 // הרשאה לפי הכניסה בפועל (sessionStorage.sbe.session.homeUrl שנשמר ב-entry.html
 // אחרי בדיקת הסיסמה בשרת), לא לפי ?role= בכתובת — אחרת כל מי שמקלידה
@@ -497,6 +450,7 @@ function render(){
   const list = TABS[role];
   if (!list.some(t => t[0] === tab && t[0] !== "journeys")) tab = list.find(t => t[0] !== "journeys")[0];
 
+  const addTabs = () => {
   nav.append(el("h5",{}, role==="inst" ? "ניהול המוסד" : "ניהול המערכת"));
   const unseenCount = role==="sys" ? countUnseenAdditions() : 0;
   list.forEach(([k,l]) => {
@@ -509,14 +463,12 @@ function render(){
     nav.append(b);
   });
 
-  // רשימת כל מסכי המערכת — רק לניהול המערכת; מנהלת מוסדית רואה רק את לשוניות המוסד.
-  if (role === "sys") OTHER_SCREENS_GROUPS.forEach(g => {
-    nav.append(el("h5",{}, g.title));
-    g.items.forEach(s => nav.append(el("a",{ class:"nlink", href:s.href }, s.t)));
-  });
+  };
+  // מנהלת מוסדית: רק לשוניות המוסד. מנהלת המערכת: "רק את רואה" (הלשוניות ומסכי העבודה שלה) ואז "מה שאחרים רואים".
+  if (role === "sys" && window.SBE_SCREENS_RENDER) window.SBE_SCREENS_RENDER(nav, { linkClass:"nlink", skip:["admin.html","journeys.html","eval-set.html"], afterTitle: k => { if (k === "mine") addTabs(); } });
+  else addTabs();
 
-  // "יציאה" ולא "כניסה" — הכותרת "כניסה" כבר משמשת את קבוצת מסכי הכניסה
-  // ב-OTHER_SCREENS_GROUPS למעלה; שתי כותרות זהות באותו תפריט בלבלו (21/09/2026).
+  // "יציאה" — כותרת נפרדת בסוף התפריט.
   nav.append(el("h5",{}, "יציאה"));
   nav.append(el("a",{ class:"nlink", href:"entry.html?logout=1" }, "יציאה / החלפת תפקיד"));
 
@@ -1705,6 +1657,7 @@ const MOD_LABELS = {
   leadership:  "נוגי — מנהיגות שתומכת בחוסן",
   practi:      "פרקטי — יועצת לפיתוח חוסן חברתי (כלי עצמאי)",
   journey:     "מסע אל החוסן",
+  writer:      "כתיבת הודעה או מכתב מקדמי חוסן (כלי עצמאי)",
 };
 
 // קוד אישי (01/10/2026): לאדם יחיד — למשל מרצה שמקבלת רק "משוב לעבודות" — בלי קוד

@@ -94,6 +94,7 @@ body.sbe-hasnav{padding-top:38px;}
   <button type="button" id="navMenuBtn" title="כל המסכים">☰ תפריט</button>
 </div>
 <div id="navPanel" hidden></div>
+<script src="../lib/screens-menu.js"></script>
 <script>
 (function(){
   "use strict";
@@ -105,54 +106,6 @@ body.sbe-hasnav{padding-top:38px;}
     return;
   }
   document.body.classList.add("sbe-hasnav");
-  var SCREENS = [
-    { title:"לקראת ההצגה", items:[
-      { label:"תוכן עניינים — כל המערכת", file:"system-toc.html" },
-      { label:"תוצרי המערכת — הופקו על ידי המודל", file:"products/index.html" }
-    ]},
-    { title:"כניסה", items:[
-      { label:"מסך כניסה", file:"entry.html" },
-      { label:"בחירת מערכת", file:"system-select.html" },
-      { label:"מסך הדגמה כולל", file:"demo-hub.html" }
-    ]},
-    { title:"יצירת תרחיש", items:[
-      { label:"יצירת תרחיש — סטודנטים.יות", file:"input-screen.html" },
-      { label:"מסך קלט הורים", file:"parent-input-screen.html" },
-      { label:"מסך קלט נוער", file:"student-input-screen.html" },
-      { label:"חיפוש במאגר התרחישים", file:"search.html" },
-      { label:"ספריית המקורות", file:"sources-library.html" }
-    ]},
-    { title:"תכנון שיחה ופעילות", items:[
-      { label:"תכנון שיחה", file:"conversation-planner.html" },
-      { label:"תכנון פעילות", file:"activity-planner.html" },
-      { label:"ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה", file:"academic-review.html" }
-    ]},
-    { title:"תוצרי הסדנה", items:[
-      { label:"גרסת השחקנית", file:"doc-actor.html" },
-      { label:"כרטיס שחקנית", file:"card-actor.html" },
-      { label:"גרסת המתנסה", file:"doc-trainee.html" },
-      { label:"גרסת המנחה", file:"doc-facilitator.html" }
-    ]},
-    { title:"הרצת הסדנה", items:[
-      { label:"מסך הסדנה", file:"facilitator-screen.html" },
-      { label:"דף צפייה (טלפון)", file:"observation-sheet.html" },
-      { label:"משוב", file:"feedback.html" },
-      { label:"תוצאות המשוב", file:"feedback-results.html" },
-      { label:"הערכה יצירתית", file:"creative-assessment.html" }
-    ]},
-    { title:"תרגול עצמי", items:[
-      { label:"תרגול עצמי", file:"practice.html" },
-      { label:"חציות קווים אדומים", file:"practice-crossings.html" }
-    ]},
-    { title:"חוסן חברתי", items:[
-      { label:"חוסן חברתי — מסך מחנך/כת", file:"resilience-team.html" },
-      { label:"שאלון חוסן — מסך תלמיד/ה", file:"resilience-fill.html" }
-    ]},
-    { title:"ניהול", items:[
-      { label:"מסך הניהול", file:"admin.html" },
-      { label:"בקרת איכות", file:"eval-set.html" }
-    ]}
-  ];
   var panel = document.getElementById("navPanel");
   // התפריט המלא (כל מסכי המערכת) — רק למנהלת המערכת. אצל כל משתמשת אחרת
   // הוא פתח את כל המערכת.
@@ -164,14 +117,8 @@ body.sbe-hasnav{padding-top:38px;}
   var sub = (location.pathname.match(/\/(products)\/[^\/]*$/) || [])[1];
   var base = sub ? "../" : "";
   var here = (sub ? sub + "/" : "") + (location.pathname.split("/").pop() || "index.html").toLowerCase();
-  SCREENS.forEach(function(section){
-    var h = document.createElement("h5"); h.textContent = section.title; panel.appendChild(h);
-    section.items.forEach(function(it){
-      var a = document.createElement("a"); a.href = base + it.file; a.textContent = it.label;
-      if (it.file.toLowerCase() === here) a.className = "current";
-      panel.appendChild(a);
-    });
-  });
+  // התפריט עצמו: lib/screens-menu.js — מה שרק מנהלת המערכת רואה, ומה שאחרים רואים (ומי).
+  if (window.SBE_SCREENS_RENDER) window.SBE_SCREENS_RENDER(panel, { base: base, here: here });
   document.getElementById("navMenuBtn").addEventListener("click", function(){
     panel.hidden = !panel.hidden;
   });

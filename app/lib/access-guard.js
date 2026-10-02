@@ -85,7 +85,8 @@
     resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html", "message-writer.html"],
     leadership: ["leadership-advisor.html", "resilience-advisor-sources.html", "message-writer.html"],
     practi: ["resilience-advisor.html", "resilience-advisor-sources.html", "message-writer.html"],
-    journey: ["journey.html"]
+    journey: ["journey.html"],
+    writer: ["message-writer.html"]
   };
   var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html", "doc-trainee.html"];
 
