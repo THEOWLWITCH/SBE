@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
 <script src="lib/resilience-advisor-sources.js"></script>
 <script src="lib/resilience-writer.js"></script>
+<script src="lib/resilience-leadership.js"></script>
 <style>
 :root{
   --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
@@ -161,7 +162,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
     <h1>פרקטי: יועצת לפיתוח חוסן חברתי</h1>
     <p>רוצים תמונת מצב והמלצות בלי להעביר שאלון לתלמידים? מתארים את הכיתה לפי התבחינים שלמטה, ופרקטי מנתחת את התמונה ומציעה המלצות — בדומה לדוח שמתקבל אחרי מיפוי בשאלון: חוזקות, אתגרים, פעילויות ומשחקים חברתיים, סביבת הכיתה והמלצות נוספות. אחר כך אפשר להמשיך לשאול אותה שאלות.</p>
     <p class="intro" style="border-inline-start-color:var(--hidden);background:var(--hidden-soft);font-size:.92rem;margin:.6rem 0"><b>חשוב:</b> כל המלצה של פרקטי יש לבחון לאור הנהלים והחוקים — והאחריות לכך היא של המחנך/ת. ההמלצות הן הצעות לחשיבה ולא הוראות.</p>
-    <p class="muted">פרקטי נשענת על מחקר עדכני מישראל ומהעולם — <a href="resilience-advisor-sources.html" target="_blank" style="color:var(--spoken);font-weight:700">רשימת המקורות</a>. התיאור הוא נקודת המבט שלך; כדי לשמוע גם את התלמידים, אפשר בהמשך להעביר את <a href="resilience-team.html" style="color:var(--spoken)">שאלון החוסן</a>.</p>
+    <p class="muted">פרקטי נשענת על מחקר עדכני מישראל ומהעולם — <a href="resilience-advisor-sources.html" target="_blank" style="color:var(--spoken);font-weight:700">רשימת המקורות</a> · <a href="resilience-checklist.html" target="_blank" style="color:var(--spoken)">רשימת בקרה למנהיגות מקדמת חוסן</a>. התיאור הוא נקודת המבט שלך; כדי לשמוע גם את התלמידים, אפשר בהמשך להעביר את <a href="resilience-team.html" style="color:var(--spoken)">שאלון החוסן</a>.</p>
   </div>
 
   <div id="form-area">
@@ -550,6 +551,7 @@ const PERSONA = [
   'בקיאות והתאמה: הכירי את כל מגוון האפשרויות — שיחה אישית, שיחה בקבוצה קטנה, שיחה כיתתית, מנגנונים כיתתיים, עבודה עם הורים ועם הצוות — ובחרי את המתאימות למקרה, לגיל, לגודל הכיתה, למצב ולשאר הנתונים שתיאר/ה המחנך/ת.',
   'המחנך/ת דילג/ה על שאלון התלמידים ותיאר/ה את הכיתה לפי תבחינים קבועים. זו נקודת המבט שלו/ה בלבד — התייחס/י אליה ברצינות, אבל אל תציג/י אותה כעובדה על כל התלמידים.',
   'בסיס הידע שלך הוא רשימת המקורות הבאה (מפתח בסוגריים מרובעים ועיקר הממצא). כשאת/ה נשען/ת על מקור — ציין/י את המפתח שלו בדיוק כפי שהוא. אסור להמציא מקורות, מחקרים, נתונים או ציטוטים, ואסור להפנות למפתח שאינו ברשימה. אם אין ברשימה מקור שתומך בהמלצה — הצג/י אותה כניסיון מקצועי, בלי מפתח.',
+  SBE_RLEAD.classPrompt(),
   SBE_WRITER.rule,
   '',KB,''
 ].join('\n');
