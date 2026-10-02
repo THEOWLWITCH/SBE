@@ -460,6 +460,8 @@ const OTHER_SCREENS_GROUPS = [
     { href:"resilience-advisor.html", t:"פרקטי: יועצת לפיתוח חוסן חברתי" },
     { href:"leadership-advisor.html", t:"נוגי: יועצת למנהיגות שתומכת בחוסן חברתי" },
     { href:"message-writer.html", t:"כתיבת הודעה ברוח חוסן" },
+    { href:"journeys.html", t:"המסעות אל החוסן — ניהול" },
+    { href:"journey.html", t:"מסע אל החוסן — מסך המשתתפים" },
   ]},
 ];
 
@@ -518,6 +520,14 @@ function render(){
 
   const p = $("panels"); p.textContent = "";
   // התראה: קריטריונים מהקהילה שממתינים לאישור (משוב לעבודות)
+  if (role === "sys" && jrPendingN) {
+    const al = el("div",{class:"card",style:"border-inline-start:4px solid var(--spoken);margin-bottom:14px"});
+    const go = el("a",{class:"act p",href:"journeys.html",style:"text-decoration:none;display:inline-block"},"למסעות");
+    al.append(el("div",{class:"in",style:"display:flex;gap:12px;align-items:center;flex-wrap:wrap"},
+      el("b",{}, jrPendingN === 1 ? "מסע אחד ממתין לך" : jrPendingN + " מסעות ממתינים לך"),
+      el("span",{style:"color:var(--muted);font-size:13.5px"},"מסע אל החוסן — אישור הצעות, משוב על אבני דרך, ערעורים והודעות"), go));
+    p.append(al);
+  }
   if (role === "sys" && critPendingN && tab !== "crit") {
     const al = el("div",{class:"card",style:"border-inline-start:4px solid var(--hidden);margin-bottom:14px"});
     const go = el("button",{class:"act p"},"לאישור");
@@ -1524,7 +1534,7 @@ function pInbox(){
 
 // ── קריטריונים מהקהילה למשוב לעבודות (02/10/2026): הצעה מופיעה לכולן רק אחרי אישור ──
 // השרת כבר פסל כפילויות ובקשות לכתוב במקום הכותב/ת; כאן מאשרים (אפשר לתקן כותרת וקטגוריה), דוחים או מסירים.
-let critData = null, critPendingN = 0;
+let critData = null, critPendingN = 0, jrPendingN = 0;
 async function loadCrit(){ critData = await accessCall("critAdmin"); critPendingN = (critData.pending || []).length; }
 function pCrit(){
   const w = el("div",{class:"panel on"});
@@ -1692,6 +1702,7 @@ const MOD_LABELS = {
   lecturer:    "הפקת קודים לסטודנטים (משוב לעבודות)",
   leadership:  "נוגי — מנהיגות שתומכת בחוסן",
   practi:      "פרקטי — יועצת לפיתוח חוסן חברתי (כלי עצמאי)",
+  journey:     "מסע אל החוסן",
 };
 
 // קוד אישי (01/10/2026): לאדם יחיד — למשל מרצה שמקבלת רק "משוב לעבודות" — בלי קוד
@@ -1817,6 +1828,12 @@ function checkCritPending(){
   accessCall("critAdmin").then(d => { const n = (d.pending || []).length; critData = d; if (n !== critPendingN) { critPendingN = n; render(); } }).catch(() => {});
 }
 checkCritPending(); setInterval(checkCritPending, 300000);
+// מסע אל החוסן — כמה מסעות ממתינים למנהלת המערכת
+function checkJourneys(){
+  if (role !== "sys" || !sysToken()) return;
+  accessCall("jrAll").then(d => { const n = (d.items || []).filter(x => x.pendingAdmin).length; if (n !== jrPendingN) { jrPendingN = n; render(); } }).catch(() => {});
+}
+checkJourneys(); setInterval(checkJourneys, 300000);
 
 // ── סרגל הניווט הגלובלי (חזרה/תפריט) — אותו רכיב שיש לכל שאר המסכים,
 // מוטמע כאן ישירות (לא הקובץ המשותף) כי התפריט חייב לדעת להחליף tab
