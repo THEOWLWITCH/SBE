@@ -14,19 +14,70 @@ function system(){return ['את כותבת ההודעות של מערכת Begood
   'המשימה: לכתוב, מההתחלה, הודעה לקהילת בית הספר — לפי מה שהכותב/ת רוצה לומר — כך שהיא תבטא לפחות 5–7 מעשרת העקרונות הבאים בצורה ברורה, אותנטית ונגישה, ותכלול את כל העובדות והפרטים המעשיים שנמסרו (תאריכים, שעות, מקומות, הנחיות). אם נמסרה טיוטה קיימת — כתבי אותה מחדש באותה רוח ושמרי על המסר ועל העובדות.',
   'העקרונות:',PRINCIPLES.map((p,i)=>(i+1)+'. '+p).join('\n'),
   'כללים: '+SAFE+' שלבי פרטים מקומיים רק אם נמסרו. התאימי את השפה לקהל (לתלמידים — לפי הגיל). הודעה קצרה וממוקדת שמתאימה לסוג ההודעה; פסקאות קצרות. שפה מכלילה מגדרית כשצריך. בלי אימוג׳ים, ובלי הדגשות או כוכביות בגוף ההודעה. אם נמסרה חתימה — סיימי בה.',
-  'החזירי אך ורק JSON תקין במבנה: {"message":"ההודעה — פסקאות קצרות עם שורה ריקה ביניהן","used":[{"n":1,"how":"משפט קצר: איך העיקרון בא לידי ביטוי בהודעה"}],"tips":["טיפ קצר — למשל מה כדאי למלא במקום הסוגריים או מה אפשר להוסיף"]}. ב-used — רק העקרונות שבאמת שולבו, לפי המספר שלהם.'].join('\n');}
+  'קובץ מצורף (אם יש — תמונה, ציור, שיר, מכתב, ידיעה מהעיתון או מסמך): פעלי לפי ההנחיה של הכותב/ת מה לעשות בו, ושלבי אותו בהודעה ברוח העקרונות. ציטוט — מדויק, מילה במילה, וקצר; תיאור של ציור או תמונה — רק מה שבאמת רואים, בלי לפרש מעבר לזה; ידיעה מהעיתון — להתייחס בהגינות, לציין את המקור, ולא להעתיק את כולה. יצירה של ילד/ה — רק בשם פרטי ורק אם נמסר, ובטיפים להזכיר לבקש רשות מהילד/ה ומההורים לפני השיתוף. אם אי אפשר לקרוא את הקובץ — כתבי זאת בטיפים, ואל תנחשי את תוכנו.',
+  'החזירי אך ורק JSON תקין במבנה: {"message":""ההודעה — פסקאות קצרות עם שורה ריקה ביניהן","used":[{"n":1,"how":"משפט קצר: איך העיקרון בא לידי ביטוי בהודעה"}],"tips":["טיפ קצר — למשל מה כדאי למלא במקום הסוגריים או מה אפשר להוסיף"]}. ב-used — רק העקרונות שבאמת שולבו, לפי המספר שלהם.'].join('\n');}
+// ── קובץ מצורף: תמונה (מוקטנת בדפדפן), PDF, Word או טקסט → בלוק שנשלח למודל יחד עם הבקשה ──
+const ATT_IDEAS=['לצטט שורות מהשיר או מהמכתב','לתאר את הציור ולהזכיר את היוצר/ת','להגיב לידיעה מהעיתון','להשתמש כהשראה לפתיחה','לסכם את המסמך בשפה פשוטה'];
+function toB64(buf){let s='';const b=new Uint8Array(buf);for(let i=0;i<b.length;i+=0x8000)s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(s);}
+function loadScript(src){return new Promise((ok,no)=>{const sc=document.createElement('script');sc.src=src;sc.onload=ok;sc.onerror=()=>no(new Error('טעינה נכשלה'));document.head.appendChild(sc);});}
+async function readAttachment(file){
+  const name=file.name||'קובץ',low=name.toLowerCase(),type=file.type||'';
+  if(type.startsWith('image/')){
+    const url=URL.createObjectURL(file);
+    try{const img=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>no(new Error('התמונה לא נפתחה'));i.src=url;});
+      const k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight));const cv=document.createElement('canvas');cv.width=Math.round(img.naturalWidth*k);cv.height=Math.round(img.naturalHeight*k);
+      const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(img,0,0,cv.width,cv.height);
+      const data=cv.toDataURL('image/jpeg',0.85);return {kind:'image',name,mediaType:'image/jpeg',data:data.split(',')[1],preview:data};}
+    finally{URL.revokeObjectURL(url);}
+  }
+  if(low.endsWith('.pdf')||type==='application/pdf'){
+    if(file.size>1300000)throw new Error('קובץ PDF גדול מדי (עד 1.3MB). אפשר לצלם את העמוד הרלוונטי ולצרף כתמונה.');
+    return {kind:'pdf',name,mediaType:'application/pdf',data:toB64(await file.arrayBuffer())};
+  }
+  if(low.endsWith('.docx')){
+    if(!window.mammoth)await loadScript('https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js');
+    const r=await window.mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});return {kind:'text',name,text:String(r.value||'').slice(0,15000)};
+  }
+  if(low.endsWith('.txt')||type.startsWith('text/'))return {kind:'text',name,text:(await file.text()).slice(0,15000)};
+  throw new Error('סוג הקובץ לא נתמך. אפשר לצרף תמונה, PDF, Word (docx) או טקסט.');
+}
+function attachBlocks(att,instruction){
+  if(!att)return {text:'',blocks:[]};
+  const head='\n\nקובץ מצורף: '+att.name+'\nמה לעשות עם הקובץ: '+(instruction||'לשלב בהודעה באופן שמתאים לה');
+  if(att.kind==='text')return {text:head+'\nתוכן הקובץ:\n<<<\n'+att.text+'\n>>>',blocks:[]};
+  return {text:head,blocks:[att.kind==='image'?{type:'image',source:{type:'base64',media_type:att.mediaType,data:att.data}}:{type:'document',source:{type:'base64',media_type:att.mediaType,data:att.data}}]};
+}
+function wireAttachment(h){
+  const {F,el}=h;let att=null;
+  if(!F('rw-file'))return ()=>null;
+  const st=F('rw-file-status'),pv=F('rw-file-prev'),chips=F('rw-file-chips'),todo=F('rw-file-do');
+  if(chips&&!chips.childNodes.length)ATT_IDEAS.forEach(x=>{const b=el('button','chip',x);b.type='button';b.addEventListener('click',()=>{todo.value=todo.value?todo.value.replace(/\s*$/,'')+'; '+x:x;todo.focus();});chips.appendChild(b);});
+  F('rw-file').addEventListener('change',async e=>{
+    const f=e.target.files[0];att=null;if(pv){pv.hidden=true;pv.removeAttribute('src');}
+    if(!f){st.textContent='';return;}
+    st.textContent='קוראת את הקובץ...';
+    try{att=await readAttachment(f);st.textContent='צורף: '+att.name+(att.kind==='image'?' (תמונה)':att.kind==='pdf'?' (PDF)':' (טקסט)')+' ✓';if(att.preview&&pv){pv.src=att.preview;pv.hidden=false;}}
+    catch(x){st.textContent=x.message;e.target.value='';}
+  });
+  const clr=F('rw-file-clear');if(clr)clr.addEventListener('click',()=>{att=null;F('rw-file').value='';st.textContent='';if(pv)pv.hidden=true;});
+  return ()=>att?{att,instruction:(todo&&todo.value.trim())||''}:null;
+}
 function mount(h){
   const {F,el,inlineRich,richText,complete}=h;let busy=false;const LABEL='כתיבת ההודעה';
+  const getAtt=wireAttachment(h);
   F('rw-go').addEventListener('click',async()=>{
     if(busy)return;const txt=F('rw-text').value.trim(),err=F('rw-err'),out=F('rw-out');
-    if(txt.length<10){err.textContent='צריך לכתוב בכמה מילים מה רוצים לומר (לפחות משפט אחד).';err.hidden=false;return;}
+    const A=getAtt();
+    if(txt.length<10&&!A){err.textContent='צריך לכתוב בכמה מילים מה רוצים לומר (לפחות משפט אחד), או לצרף קובץ ולכתוב מה לעשות איתו.';err.hidden=false;return;}
     err.hidden=true;busy=true;const b=F('rw-go');b.disabled=true;b.textContent='כותבת... (עד דקה)';
     out.textContent='';out.appendChild(el('p','muted','כותבת את ההודעה לפי עשרת עקרונות החוסן...'));
     if(h.onStart)h.onStart();
     try{
       const loc=F('rw-local')?F('rw-local').value.trim():'',sign=F('rw-sign')?F('rw-sign').value.trim():'';
       const user='קהל: '+F('rw-aud').value+'\nסוג ההודעה: '+F('rw-kind').value+(loc?'\nפרטים מקומיים שאפשר לשלב: '+loc:'')+(sign?'\nחתימה: '+sign:'')+'\n\nמה רוצים לומר (נקודות, עובדות או טיוטה):\n'+txt;
-      const res=await complete(system(),[{role:'user',content:user}],8000);
+      const ab=A?attachBlocks(A.att,A.instruction):{text:'',blocks:[]};
+      const content=ab.blocks.length?[...ab.blocks,{type:'text',text:user+ab.text}]:user+ab.text;
+      const res=await complete(system(),[{role:'user',content}],8000);
       const m=res.match(/\{[\s\S]*\}/);if(!m)throw new Error('לא התקבל מבנה תקין');
       const d=JSON.parse(m[0]);const msg=String(d.message||'').replace(/\*\*/g,'');if(!msg)throw new Error('לא התקבלה הודעה');
       out.textContent='';

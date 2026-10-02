@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>כתיבת הודעה ברוח חוסן</title>
+<title>כתיבת הודעה או מכתב ברוח חוסן</title>
 <script src="lib/access-guard.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -147,18 +147,26 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
   #report{break-before:page}
   h2,h3,h4{break-after:avoid}.act,.rich li,.intro,.lens,.score-row{break-inside:avoid}
   .bar,.bar>div,.val,.intro,.lens,.act-tag{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.attach{border:1px dashed var(--hair);border-radius:9px;padding:.55rem .8rem;margin:.8rem 0}
+.attach summary{cursor:pointer;font-weight:700;color:var(--spoken)}
+.attach-b{padding-top:.5rem}
+#rw-file-prev{max-height:160px;max-width:100%;border-radius:8px;border:1px solid var(--hair);margin:.4rem 0;display:block}
+#rw-file-prev[hidden]{display:none}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem;margin:.3rem 0 .4rem}
+.chip{font:inherit;font-size:.82rem;border:1px solid var(--hair);border-radius:99px;padding:.2rem .7rem;background:var(--ground);color:var(--ink);cursor:pointer}
+.chip:hover{border-color:var(--spoken);color:var(--spoken)}
 </style>
 </head>
 <body>
 <nav class="topnav no-print">
   <button type="button" onclick="history.back()">→ חזרה</button>
   <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
-  <span class="crumb">Begood › כתיבת הודעה ברוח חוסן</span>
+  <span class="crumb">Begood › כתיבת הודעה או מכתב ברוח חוסן</span>
 </nav>
 <div class="wrap">
   <div class="card">
-    <h1>כתיבת הודעה ברוח חוסן</h1>
-    <p>כותבים בכמה מילים מה רוצים לומר — לצוות, להורים, לתלמידים או לקהילת בית הספר — ומקבלים הודעה שכבר <b>כתובה מההתחלה</b> לפי עשרת עקרונות השפה המחזקת. כל העובדות והפרטים המעשיים נשמרים, ובסוף מוצג אילו עקרונות באים לידי ביטוי.</p>
+    <h1>כתיבת הודעה או מכתב ברוח חוסן</h1>
+    <p>כותבים בכמה מילים מה רוצים לומר — לצוות, להורים, לתלמידים או לקהילת בית הספר — ומקבלים הודעה או מכתב שכבר <b>כתובים מההתחלה</b> לפי עשרת עקרונות השפה המחזקת. אפשר גם <b>לצרף תמונה או קובץ</b> — שיר, ציור של ילד/ה, ידיעה מהעיתון — ולכתוב מה לעשות איתו. כל העובדות והפרטים המעשיים נשמרים, ובסוף מוצג אילו עקרונות באים לידי ביטוי.</p>
     <ol class="tl" style="font-size:.92rem;columns:2;column-gap:1.6rem" id="rw-list"></ol>
     <p class="muted">העקרונות לקוחים מארגז הכלים של ד״ר יעל שדה לחוסן חברתי בקהילה.</p>
   </div>
@@ -166,11 +174,24 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
     <div class="row2">
       <div><label for="rw-aud">למי ההודעה</label>
         <select id="rw-aud"><option>הורים</option><option>תלמידים</option><option>צוות</option><option>קהילת בית הספר</option><option>אחר</option></select></div>
-      <div><label for="rw-kind">סוג ההודעה</label>
-        <select id="rw-kind"><option>הודעה שוטפת</option><option>עדכון בזמן חירום</option><option>מכתב או עלון</option><option>הזמנה לאירוע</option><option>הודעה על אירוע קשה</option></select></div>
+      <div><label for="rw-kind">מה כותבים</label>
+        <select id="rw-kind"><option>הודעה שוטפת</option><option>מכתב</option><option>מכתב אישי</option><option>עלון או ניוזלטר</option><option>עדכון בזמן חירום</option><option>הזמנה לאירוע</option><option>הודעה על אירוע קשה</option><option>מכתב תודה והוקרה</option></select></div>
     </div>
     <label for="rw-text">מה רוצים לומר?</label>
     <textarea id="rw-text" maxlength="3000" style="min-height:140px" placeholder="העובדות והנקודות העיקריות: מה קרה או מה מתוכנן, תאריכים ושעות, מה מבקשים מהקוראים. אפשר גם להדביק טיוטה קיימת."></textarea>
+    <details class="attach" id="rw-attach">
+      <summary>📎 צירוף תמונה או קובץ (לא חובה) — שיר, ציור של ילד/ה, ידיעה מהעיתון, מכתב</summary>
+      <div class="attach-b">
+        <input type="file" id="rw-file" accept="image/*,.pdf,application/pdf,.docx,.txt,text/plain">
+        <p class="muted" id="rw-file-status"></p>
+        <img id="rw-file-prev" alt="תצוגה מקדימה" hidden>
+        <label for="rw-file-do">מה לעשות עם הקובץ?</label>
+        <div class="chips" id="rw-file-chips"></div>
+        <textarea id="rw-file-do" maxlength="500" style="min-height:60px" placeholder="למשל: לפתוח את המכתב בשתי שורות מהשיר; לתאר את הציור ולהודות ליוצרת; להגיב לכתבה ולהזמין את ההורים לשיחה"></textarea>
+        <p class="muted">יצירה של ילד/ה — רק בשם פרטי, ואחרי שביקשתם רשות מהילד/ה ומההורים. את התמונה עצמה מצרפים להודעה כששולחים אותה.</p>
+        <button class="btn btn-ghost" type="button" id="rw-file-clear">הסרת הקובץ</button>
+      </div>
+    </details>
     <div class="row2">
       <div><label for="rw-local">פרטים מקומיים לשילוב (לא חובה)</label>
         <input id="rw-local" type="text" maxlength="300" placeholder="שמות, מקום מוכר, סיפור קטן מהשבוע"></div>
