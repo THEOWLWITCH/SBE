@@ -735,7 +735,7 @@ function jrSummary(j) {
     nextTitle: (ms.find((m) => m.status !== 'approved') || {}).title || '',
     obstacles: ((j.proposal || {}).fails || []).length, bridges: ms.reduce((n, m) => n + ((m.bridges || 0)), 0),
     pendingAdmin: j.status === 'review' || ms.some((m) => m.status === 'submitted') || (j.thread || []).some((x) => x.open),
-    consent: !!(j.consent && j.consent.research), certs: ms.filter((m) => m.cert).length };
+    consent: !!(j.consent && j.consent.research), certs: ms.filter((m) => m.cert).length, demo: !!j.demo };
 }
 async function jrLoad(store, id) { return /^[a-z0-9]{6,24}$/.test(String(id || '')) ? store.get('jr:' + id) : null; }
 async function jrSave(store, j) {
@@ -768,7 +768,7 @@ async function handleJourney(store, body) {
   if (action === 'jrTick') {
     const secret = (typeof process !== 'undefined' && process.env.CRON_SECRET) || '';
     if (!secret || body.secret !== secret) { await pause(); return [403, { error: 'unauthorized' }]; }
-    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.status !== 'done');
+    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && !j.demo && j.status !== 'done');
     const today = jrDay(Date.now()), in14 = jrDay(Date.now() + 14 * 864e5);
     const soon = [], late = [], waiting = [];
     rows.forEach((j) => {
@@ -801,7 +801,7 @@ async function handleJourney(store, body) {
     const mine = (await store.list('jr:')).filter((r) => r.value && r.value.code === owner).length;
     if (mine >= 10) return [429, { error: 'too many' }];
     const id = Date.now().toString(36) + randomBytes(3).toString('hex');
-    const j = { id, code: owner, inst: (t && t.inst) || '', by: jrClip(body.by, 60), unit, unitName, created: jrNow(), status: 'mapping',
+    const j = { id, code: owner, inst: (t && t.inst) || '', by: jrClip(body.by, 60), unit, unitName, created: jrNow(), status: 'mapping', demo: !!(isSys && body.demo),
       consent: { research: !!body.research, at: jrNow() }, mapping: {}, thread: [], events: [] };
     await jrSave(store, j);
     return [200, { ok: true, id }];
@@ -821,7 +821,7 @@ async function handleJourney(store, body) {
   }
   if (action === 'jrExport') {
     if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
-    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.id && j.consent && j.consent.research);
+    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.id && !j.demo && j.consent && j.consent.research);
     // שורה לכל אירוע מחקרי (בחירה, רפלקציה, תחקיר) — בלי שם המסגרת ובלי פרטים מזהים
     const out = [];
     rows.forEach((j, n) => (j.events || []).forEach((e) => out.push({ journey: 'J' + (n + 1), unit: j.unit, at: e.at, stage: e.stage || '', type: e.type, key: e.key || '', choice: e.choice || '',
@@ -859,7 +859,7 @@ async function handleJourney(store, body) {
       j.status = 'review'; j.submittedAt = jrNow();
       Object.keys(choices).forEach((k) => ev('choice', { key: k, choice: choices[k].option, reasons: choices[k].reasons, explain: choices[k].explain, who: choices[k].who }));
       if (!(await jrSave(store, j))) return [413, { error: 'too large' }];
-      notifyAdmin('מסע חדש ממתין לאישור', j.unitName + ' — הצעת המסע והבחירות חזרו אלייך', ADMIN_J + '#' + j.id).catch(() => {});
+      (j.demo ? Promise.resolve() : notifyAdmin('מסע חדש ממתין לאישור', j.unitName + ' — הצעת המסע והבחירות חזרו אלייך', ADMIN_J + '#' + j.id)).catch(() => {});
       return [200, { ok: true }];
     }
     if (action === 'jrSubmitMilestone') {
@@ -872,18 +872,18 @@ async function handleJourney(store, body) {
       if (m.gate && sub.reflection) ev('reflection', { key: 'gate-' + m.stage, effect: sub.reflection.effect, again: sub.reflection.again, learned: sub.reflection.learned });
       if (m.gate && sub.next) Object.keys(sub.next).forEach((k) => ev('choice', { key: 'next-' + k, choice: sub.next[k].option, reasons: sub.next[k].reasons, explain: sub.next[k].explain }));
       if (!(await jrSave(store, j))) return [413, { error: 'too large' }];
-      notifyAdmin((m.gate ? 'שער הוגש' : 'אבן דרך הוגשה') + ' — ' + j.unitName, m.title, ADMIN_J + '#' + j.id).catch(() => {});
+      if (!j.demo) notifyAdmin((m.gate ? 'שער הוגש' : 'אבן דרך הוגשה') + ' — ' + j.unitName, m.title, ADMIN_J + '#' + j.id).catch(() => {});
       return [200, { ok: true }];
     }
     if (action === 'jrPost') {
       const text = jrClip(body.text, 2000).trim();
       if (text.length < 2) return [400, { error: 'empty' }];
-      const kind = isSys && !isOwner ? 'reply' : (['appeal', 'extension', 'comment'].includes(body.kind) ? body.kind : 'comment');
+      const kind = isSys && (!isOwner || body.as === 'admin') ? 'reply' : (['appeal', 'extension', 'comment'].includes(body.kind) ? body.kind : 'comment');
       const mi = body.mi === null || body.mi === undefined || body.mi === '' ? null : Number(body.mi);
       j.thread = (j.thread || []).concat([{ at: jrNow(), by: kind === 'reply' ? 'admin' : 'owner', kind, mi, text, open: kind !== 'reply' }]).slice(-300);
       if (kind === 'reply') j.thread.forEach((x) => { if (x.by === 'owner' && (x.mi === mi)) x.open = false; });
       if (!(await jrSave(store, j))) return [413, { error: 'too large' }];
-      if (kind !== 'reply') notifyAdmin({ appeal: 'ערעור', extension: 'בקשת דחייה', comment: 'הודעה' }[kind] + ' — ' + j.unitName,
+      if (kind !== 'reply' && !j.demo) notifyAdmin({ appeal: 'ערעור', extension: 'בקשת דחייה', comment: 'הודעה' }[kind] + ' — ' + j.unitName,
         mi != null && j.milestones && j.milestones[mi] ? j.milestones[mi].title : 'המסע', ADMIN_J + '#' + j.id, text).catch(() => {});
       return [200, { ok: true }];
     }

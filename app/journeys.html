@@ -11,6 +11,7 @@
 <script src="lib/resilience-advisor-sources.js"></script>
 <script src="lib/journey-model.js"></script>
 <link rel="stylesheet" href="lib/journey.css">
+<script src="lib/journey-demo.js"></script>
 <style>
 :root{
   --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
@@ -249,7 +250,15 @@ async function viewBoard(){
   const app = F('app'); app.textContent = '';
   const c = card(); c.appendChild(el('h1', null, 'המסעות אל החוסן'));
   c.appendChild(el('p', 'muted', 'כל המסעות והתקדמותם — מוצג רק לך. מה שממתין לך מופיע ראשון.'));
-  const tryA = el('a', 'btn btn-ghost', 'למסך המשתתפים — פתיחת מסע לניסיון'); tryA.href = 'journey.html'; tryA.style.textDecoration = 'none'; c.appendChild(tryA);
+  const bar0 = el('div', 'btns');
+  const tryA = el('a', 'btn btn-ghost', 'למסך המשתתפים'); tryA.href = 'journey.html'; tryA.style.textDecoration = 'none'; bar0.appendChild(tryA);
+  const demoB = btn('יצירת מסעות דמו', 'btn-ghost', async () => {
+    if (!confirm('ליצור שלושה מסעות דמו (כיתה בשלב הבחירות, בית ספר באמצע הדרך, קהילה שהשלימה את המסע)? הם מסומנים "דמו", לא נכנסים למחקר ולא שולחים מיילים.')) return;
+    demoB.disabled = true; const st = el('p', 'muted'); c.appendChild(st);
+    try { await SBE_JOURNEY_DEMO.run(api, t => { st.textContent = t; }); st.textContent = 'נוצרו שלושה מסעות דמו ✓'; setTimeout(viewBoard, 600); }
+    catch(e) { st.textContent = 'היצירה לא הושלמה: ' + e.message; demoB.disabled = false; }
+  }); bar0.appendChild(demoB);
+  c.appendChild(bar0);
   const w = el('p', 'muted', 'טוענת...'); c.appendChild(w);
   const d = await api('jrAll'); w.remove();
   if (d._status === 403) { c.appendChild(el('p', 'err', 'צריך כניסת מנהלת מערכת.')); return; }
@@ -260,6 +269,7 @@ async function viewBoard(){
   items.forEach(s => {
     const r = el('div', 'ms' + (s.pendingAdmin ? ' submitted' : s.status === 'done' ? ' approved' : '')); F('app').appendChild(r);
     const h = el('h3'); h.appendChild(document.createTextNode(s.unitName)); h.appendChild(el('span', 'tagx', unitT(s.unit)));
+    if (s.demo) h.appendChild(el('span', 'tagx gate', 'דמו'));
     if (s.pendingAdmin) h.appendChild(el('span', 'tagx sub', 'ממתין לך'));
     r.appendChild(h);
     // מפה קטנה: חמש התחנות והמקום במסע
@@ -269,9 +279,13 @@ async function viewBoard(){
     const late = s.next && s.next < today() && s.status === 'active';
     r.appendChild(el('div', 'meta', [st, s.by, s.inst, s.total ? J.ICON.done + ' ' + s.approved + '/' + s.total + ' אבני דרך' : '', s.next ? (late ? J.ICON.rest + ' עצירת התרעננות' : 'הבאה: ' + fmt(s.next)) : '',
       s.obstacles ? J.ICON.obstacle + ' ' + s.obstacles + ' מכשולים בדרך' : (s.status !== 'mapping' ? J.ICON.clear + ' לא נמצא כשל מערכתי משמעותי' : ''), s.consent ? 'מחקר ✓' : ''].filter(Boolean).join(' · ')));
-    const b = btn('פתיחה', 'btn-ghost', () => { location.hash = s.id; }); b.style.marginTop = '.4rem'; r.appendChild(b);
+    const rb = el('div', 'btns'); rb.style.marginTop = '.4rem';
+    rb.appendChild(btn('פתיחה', 'btn-ghost', () => { location.hash = s.id; }));
+    const asP = el('a', 'btn btn-ghost', 'צפייה כמשתתפים'); asP.href = 'journey.html#' + s.id; asP.target = '_blank'; asP.style.textDecoration = 'none'; rb.appendChild(asP);
+    r.appendChild(rb);
   });
   if (!items.length) c.appendChild(el('p', 'muted', 'עדיין אין מסעות.'));
+  if (items.some(x => x.demo)) { const dd = btn('מחיקת כל מסעות הדמו', 'btn-ghost', async () => { if (!confirm('למחוק את כל מסעות הדמו?')) return; for (const x of items.filter(y => y.demo)) await api('jrDelete', { id: x.id }); viewBoard(); }); dd.style.marginTop = '.6rem'; c.appendChild(dd); }
   // הגדרות: קהילת הווטסאפ + ייצוא מחקרי
   const s = card(); const sd = document.createElement('details'); s.appendChild(sd); sd.appendChild(el('summary', null, 'קהילת המסע בווטסאפ — קישורי הזמנה')); sd.firstChild.style.cssText = 'cursor:pointer;font-weight:700;color:var(--spoken)';
   sd.appendChild(el('p', 'muted', 'קישורי הזמנה (https://chat.whatsapp.com/...) שמוצגים למשתתפים. קישור לפי מסגרת גובר על הקישור הכללי.'));
@@ -408,7 +422,7 @@ function threadBox(mi, host){
   const t = el('div', 'thread');
   (JR.thread || []).filter(x => x.mi === mi).forEach(x => { const m = el('div', 'm ' + (x.by === 'admin' ? 'admin' : 'owner')); m.appendChild(el('span', 'who', (x.by === 'admin' ? 'את' : ({ appeal: '🧭 ערעור', extension: '☕ בקשת דחייה', comment: 'הם' }[x.kind] || 'הם')) + ' · ' + fmt(x.at) + (x.open ? ' · ממתין לתשובה' : ''))); m.appendChild(document.createTextNode(x.text)); t.appendChild(m); });
   const tx = ta('', 'תשובה — נשמרת במסע ומוצגת להם', '3rem'); t.appendChild(tx);
-  const go = btn('שליחת תשובה', 'btn-ghost', async () => { if (tx.value.trim().length < 2) return; go.disabled = true; const r = await api('jrPost', { id: JR.id, mi, text: tx.value.trim() }); if (r.ok) viewOne(JR.id); else go.disabled = false; }); go.style.marginTop = '.3rem'; t.appendChild(go);
+  const go = btn('שליחת תשובה', 'btn-ghost', async () => { if (tx.value.trim().length < 2) return; go.disabled = true; const r = await api('jrPost', { id: JR.id, mi, text: tx.value.trim(), as: 'admin' }); if (r.ok) viewOne(JR.id); else go.disabled = false; }); go.style.marginTop = '.3rem'; t.appendChild(go);
   c.appendChild(t);
 }
 function route(){ const id = location.hash.replace('#', ''); if (/^[a-z0-9]{6,24}$/.test(id)) viewOne(id); else viewBoard(); }
