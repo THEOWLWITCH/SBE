@@ -37,7 +37,7 @@
   } catch(e){}
 
   // ── שמירה במכשיר לפי משתמש/ת (02/10/2026) ──
-  // טופס שנשמר בדפדפן (פרקטי, נוגי, כתיבת הודעה, משוב לעבודות) נשמר תחת מפתח של מי שנכנס/ה —
+  // טופס שנשמר בדפדפן (פרקטי, נוגי, כתיבה מקדמת חוסן, משוב לעבודות) נשמר תחת מפתח של מי שנכנס/ה —
   // לפי הקוד שבאסימון — כדי שמי שנכנס/ת עם קוד אחר באותו דפדפן יקבל/תקבל טופס נקי.
   window.sbeUserKey = function(base){
     var id = "anon";
@@ -87,7 +87,7 @@
     leadership: ["leadership-advisor.html", "resilience-advisor-sources.html"],
     practi: ["resilience-advisor.html", "resilience-advisor-sources.html"],
     journey: ["journey.html"],
-    writer: ["message-writer.html", "resilience-advisor-sources.html"] // כתיבת הודעה או מכתב — רק בהרשאה הזאת (02/10/2026)
+    writer: ["message-writer.html", "resilience-advisor-sources.html"] // כתיבה מקדמת חוסן — רק בהרשאה הזאת (02/10/2026)
   };
   var SIM_DOCS = ["doc-trainee.html", "doc-actor.html", "card-actor.html", "doc-facilitator.html"];
   var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html"].concat(SIM_DOCS);
