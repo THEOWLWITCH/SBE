@@ -603,7 +603,8 @@ export function rcGhostwrite(t) { const s = String(t || '').replace(/\s+/g, ' ')
 // טלגרם (חינם, בלי פרסומות): TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID.
 // וואטסאפ דרך CallMeBot (חינם לשימוש אישי, שירות לא רשמי): WHATSAPP_PHONE + CALLMEBOT_APIKEY.
 // מייל דרך Resend (חינם עד 3,000 בחודש): RESEND_API_KEY + NOTIFY_EMAIL. בלי המשתנים — אין התראה.
-export function notifyAdmin(title, message, link) {
+// detail — פרטים מלאים (למשל תוכן פנייה ופרטי קשר): נשלחים רק במייל, לא בערוצי הצ'אט.
+export function notifyAdmin(title, message, link, detail) {
   const env = (typeof process !== 'undefined' && process.env) || {};
   const jobs = [];
   if (env.NTFY_TOPIC) {
@@ -624,7 +625,7 @@ export function notifyAdmin(title, message, link) {
     jobs.push(fetch('https://api.resend.com/emails', { method: 'POST',
       headers: { authorization: 'Bearer ' + env.RESEND_API_KEY, 'content-type': 'application/json' },
       body: JSON.stringify({ from: 'Begood <onboarding@resend.dev>', to: [env.NOTIFY_EMAIL], subject: 'Begood — ' + title,
-        text: message + (link ? '\n\n' + link : '') }) }));
+        text: message + (detail ? '\n\n' + detail : '') + (link ? '\n\n' + link : '') }) }));
   }
   return Promise.allSettled(jobs);
 }
@@ -706,19 +707,21 @@ async function handleReviewCriteria(store, body) {
 // ── פניות מהמשתמשים (01/10/2026): רעיונות, תקלות ושאלות מתוך פרקטי ──
 // fb:<ts>-<rand> → { type, text, name, contact, source, page, at }. שליחה פתוחה
 // (גם לאורחים בהתנסות הקהילה), קריאה ומחיקה — מנהלת המערכת בלבד.
-const FB_TYPES = ['פנייה', 'רעיון', 'תקלה', 'שאלה'];
+const FB_TYPES = ['פנייה', 'רעיון', 'תקלה', 'שאלה', 'רעיון לשיפור', 'בקשה', 'משוב על השימוש במערכת'];
 const FB_MAX = 3000;
 async function handleFeedbackInbox(store, body) {
   const { action } = body;
   const clip = (v, n) => String(v || '').trim().slice(0, n);
   if (action === 'fbSubmit') {
     const text = clip(body.text, 2000);
-    if (text.length < 2 || !clip(body.name, 80) || !clip(body.contact, 120)) return [400, { error: 'missing fields' }];
+    if (text.length < 2 || !clip(body.name, 80)) return [400, { error: 'missing fields' }];
     const keys = await store.list('fb:', { keysOnly: true });
     if (keys.length >= FB_MAX) return [429, { error: 'full' }];
     const rec = { type: FB_TYPES.includes(body.type) ? body.type : 'פנייה', text, name: clip(body.name, 80),
       contact: clip(body.contact, 120), source: clip(body.source, 40), page: clip(body.page, 80), at: new Date().toISOString() };
     await store.set('fb:' + Date.now() + '-' + randomBytes(3).toString('hex'), rec);
+    notifyAdmin('פנייה חדשה — ' + rec.type, 'מ' + (rec.source || 'המערכת') + (rec.page ? ' · ' + rec.page : ''),
+      ADMIN_URL, ['שם: ' + rec.name, rec.contact ? 'פרטי קשר: ' + rec.contact : '', '', rec.text].filter((x, i) => x || i === 2).join('\n')).catch(() => {});
     return [200, { ok: true }];
   }
   const t = await verifyToken(store, body.token);

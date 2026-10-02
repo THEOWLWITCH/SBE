@@ -530,8 +530,16 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
       bodyLines.push("פירוט:", details);
     }
     var subject = "Begood · " + type + " · " + name;
-    location.href = "mailto:yael.sade@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(bodyLines.join("\n"));
-    dlg.close();
+    // נשלח לתיבת הפניות בשרת (ומשם במייל למנהלת המערכת); בלי חיבור לשרת — חלון מייל כמו קודם
+    var mailto = "mailto:yael.sade@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(bodyLines.join("\n"));
+    var sendBtn = document.getElementById("rptSend");
+    sendBtn.disabled = true;
+    fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "fbSubmit", type: type, name: name, contact: "", text: bodyLines.join("\n"), source: "דיווח / רעיון", page: screenName }) })
+      .then(function(r){ return r.json(); })
+      .then(function(d){ if (!d || !d.ok) throw new Error("fail"); dlg.close(); alert("נשלח, תודה! הפנייה הגיעה למנהלת המערכת."); })
+      .catch(function(){ dlg.close(); location.href = mailto; })
+      .then(function(){ sendBtn.disabled = false; });
   });
 })();
 </script>
