@@ -520,7 +520,9 @@ async function institutionsView(store) {
 // לשאלון ("שם הממד|ההיגד"), ולכן ארוכים יותר.
 // practi — פרקטי ככלי עצמאי (02/10/2026); גם resilience ממשיכה לפתוח את פרקטי.
 const OPEN_LISTS = { 'advisor-situation': ['resilience', 'practi'], 'advisor-age': ['resilience', 'practi'], 'advisor-stmt': ['resilience', 'practi'],
-  'leader-situation': 'leadership', 'leader-role': 'leadership', 'leader-stage': 'leadership', 'leader-stmt': 'leadership' };
+  'leader-situation': 'leadership', 'leader-role': 'leadership', 'leader-stage': 'leadership', 'leader-stmt': 'leadership',
+  // כתיבת הודעה או מכתב ברוח חוסן: נמענים וסוגי הודעות שאנשי חינוך מוסיפים
+  'writer-aud': ['resilience', 'practi', 'leadership'], 'writer-kind': ['resilience', 'practi', 'leadership'] };
 const LIST_ITEM_MAX = { 'advisor-stmt': 200, 'leader-stmt': 200 };
 const LIST_MAX = 200, ITEM_MAX = 80;
 async function handleLists(store, body) {

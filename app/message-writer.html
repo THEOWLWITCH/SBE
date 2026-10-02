@@ -268,9 +268,56 @@ SBE_WRITER.mount({F,el,inlineRich,richText,complete,onStart:()=>save()});
 SBE_WRITER.PRINCIPLES.forEach(p=>F('rw-list').appendChild(el('li',null,p)));
 // ה-out נמצא בכרטיס שמוצג רק כשיש תוצאה
 new MutationObserver(()=>{F('rw-card').hidden=!F('rw-out').childNodes.length;}).observe(F('rw-out'),{childList:true});
+// ── רשימות שאפשר להעשיר: נמענים וסוגי הודעות (רשימות פתוחות בשרת: writer-aud, writer-kind) ──
+const ACCESS='https://sbe-server.onrender.com/api/access';
+function accessApi(body){return fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json().catch(()=>({})).then(d=>{d._status=r.status;return d;}));}
+function token(){try{return sessionStorage.getItem('sbe.session.token')||'';}catch(e){return '';}}
+let IS_SYS=false;try{IS_SYS=sessionStorage.getItem('sbe.session.homeUrl')==='admin.html?role=sys';}catch(e){}
+function addableSelect(id,listName,what){
+  const sel=F(id);const base=[...sel.options].map(o=>o.value).filter(Boolean);let extra=[];
+  const wrap=document.createElement('details');wrap.className='addmore no-print';
+  const sm=document.createElement('summary');sm.textContent='לא מוצאים? הוספה לרשימה';wrap.appendChild(sm);
+  const row=document.createElement('div');row.className='addrow';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+' — יתווסף לרשימה של כולם';
+  const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה לרשימה';
+  row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);
+  const msg=document.createElement('p');msg.className='muted';msg.hidden=true;wrap.appendChild(msg);
+  const adm=document.createElement('div');wrap.appendChild(adm);
+  sel.insertAdjacentElement('afterend',wrap);
+  function render(keep){
+    const cur=keep!=null?keep:sel.value;
+    [...sel.querySelectorAll('optgroup,option[data-c]')].forEach(n=>n.remove());
+    const ex=extra.filter(v=>!base.includes(v));if(cur&&!base.includes(cur)&&!ex.includes(cur))ex.push(cur);
+    if(ex.length){const g=document.createElement('optgroup');g.label='נוספו על ידי אנשי חינוך';
+      ex.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;o.dataset.c='1';g.appendChild(o);});sel.appendChild(g);}
+    sel.value=cur;
+    adm.textContent='';
+    if(IS_SYS&&extra.length){adm.appendChild(el('p','muted','מנהלת המערכת — הסרה מהרשימה:'));
+      extra.forEach(v=>{const r=el('div');r.style.cssText='display:flex;gap:.5rem;align-items:center;margin:.25rem 0';r.appendChild(el('span',null,v)).style.flex='1';
+        const b=el('button','btn btn-ghost','הסרה');b.type='button';b.style.cssText='padding:.2rem .6rem;font-size:.8rem';
+        b.addEventListener('click',()=>{if(!confirm('להסיר את "'+v+'" מהרשימה של כולם?'))return;
+          accessApi({action:'listRemove',name:listName,value:v,token:token()}).then(d=>{if(d.items){extra=d.items;render();}});});
+        r.appendChild(b);adm.appendChild(r);});}
+  }
+  btn.addEventListener('click',()=>{
+    const v=inp.value.replace(/\s+/g,' ').trim();msg.hidden=false;
+    if(v.length<2){msg.textContent='צריך להקליד ערך.';return;}
+    btn.disabled=true;msg.textContent='מוסיפה לרשימה...';
+    const done=(t)=>{render(v);inp.value='';msg.textContent=t;sel.dispatchEvent(new Event('change'));save();};
+    accessApi({action:'listAdd',name:listName,value:v,token:token()}).then(d=>{
+      if(d.items){extra=d.items;done('נוסף לרשימה של כולם ונבחר ✓');}
+      else done(d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם צריך להיות מחובר/ת עם ההרשאה המתאימה.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).');
+    }).catch(()=>done('נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).')).finally(()=>{btn.disabled=false;});
+  });
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();btn.click();}});
+  accessApi({action:'listGet',name:listName}).then(d=>{if(Array.isArray(d.items)){extra=d.items;render();}}).catch(()=>{});
+  return {ensure:v=>render(v)};
+}
+const AUD_LIST=addableSelect('rw-aud','writer-aud','נמען/ת (למשל: ועד ההורים, צוות המטבח)');
+const KIND_LIST=addableSelect('rw-kind','writer-kind','סוג הודעה (למשל: ברכה לחג, סיכום טיול)');
 function save(){try{const v={};['rw-aud','rw-kind','rw-text','rw-local','rw-sign'].forEach(k=>v[k]=F(k).value);localStorage.setItem(STORE,JSON.stringify(v));}catch(e){}}
-try{const v=JSON.parse(localStorage.getItem(STORE)||'null');if(v)['rw-aud','rw-kind','rw-text','rw-local','rw-sign'].forEach(k=>{if(v[k])F(k).value=v[k];});}catch(e){}
-['rw-aud','rw-kind','rw-text','rw-local','rw-sign'].forEach(k=>F(k).addEventListener('input',save));
+try{const v=JSON.parse(localStorage.getItem(STORE)||'null');if(v){if(v['rw-aud'])AUD_LIST.ensure(v['rw-aud']);if(v['rw-kind'])KIND_LIST.ensure(v['rw-kind']);['rw-text','rw-local','rw-sign'].forEach(k=>{if(v[k])F(k).value=v[k];});}}catch(e){}
+['rw-aud','rw-kind','rw-text','rw-local','rw-sign'].forEach(k=>{F(k).addEventListener('input',save);F(k).addEventListener('change',save);});
 F('rw-example').addEventListener('click',()=>{F('rw-aud').value='הורים';F('rw-kind').value='עדכון בזמן חירום';
   F('rw-text').value='מחר הלימודים מרחוק בגלל המצב הביטחוני. כניסה לזום ב-8:00 לפי המערכת הרגילה. מי שאין לו מחשב — לפנות למזכירות עד 18:00 היום. השאלנו כבר 12 מחשבים. המורים יתקשרו לכל תלמיד במהלך השבוע.';
   F('rw-local').value='';F('rw-sign').value='צוות בית הספר';save();});
