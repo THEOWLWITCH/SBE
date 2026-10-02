@@ -131,6 +131,15 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 #fb-dlg .fbh{padding:.9rem 1.1rem;border-bottom:1px solid var(--hair);font-weight:700}
 #fb-dlg .fbb{padding:.6rem 1.1rem 1rem}
 #fb-dlg .fbf{padding:.7rem 1.1rem;border-top:1px solid var(--hair);display:flex;gap:.5rem}
+dialog#rw-dlg{border:1px solid var(--hair);border-radius:10px;background:var(--surface);color:var(--ink);max-width:720px;width:94vw;padding:0}
+dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
+#rw-dlg .fbh{padding:.9rem 1.1rem;border-bottom:1px solid var(--hair);font-weight:700}
+#rw-dlg .fbb{padding:.6rem 1.1rem 1rem;max-height:70vh;overflow:auto}
+#rw-dlg .fbf{padding:.7rem 1.1rem;border-top:1px solid var(--hair);display:flex;gap:.5rem}
+.rw-check{list-style:none;padding:0;margin:.3rem 0;font-size:.9rem}
+.rw-check li{padding:.25rem 0;border-bottom:1px dashed var(--hair)}
+.rw-check li.on b{color:var(--auto)}.rw-check li.off b{color:var(--muted)}
+.rw-new{border:1px solid var(--hair);border-radius:8px;padding:.7rem .9rem;background:var(--surface-2)}
 @page{size:A4;margin:20mm 22mm}
 @media print{.topnav,.no-print,#form-area,#fb-fab{display:none!important}body{background:#fff;font-size:11.5pt;line-height:1.6}
   .wrap{max-width:none;padding:0}.card{box-shadow:none;border:none;padding:0}
@@ -151,6 +160,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
     <p>רוצים תמונת מצב והמלצות בלי להעביר שאלון לתלמידים? מתארים את הכיתה לפי התבחינים שלמטה, ופרקטי מנתחת את התמונה ומציעה המלצות — בדומה לדוח שמתקבל אחרי מיפוי בשאלון: חוזקות, אתגרים, פעילויות ומשחקים חברתיים, סביבת הכיתה והמלצות נוספות. אחר כך אפשר להמשיך לשאול אותה שאלות.</p>
     <p class="intro" style="border-inline-start-color:var(--hidden);background:var(--hidden-soft);font-size:.92rem;margin:.6rem 0"><b>חשוב:</b> כל המלצה של פרקטי יש לבחון לאור הנהלים והחוקים — והאחריות לכך היא של המחנך/ת. ההמלצות הן הצעות לחשיבה ולא הוראות.</p>
     <p class="muted">פרקטי נשענת על מחקר עדכני מישראל ומהעולם — <a href="resilience-advisor-sources.html" target="_blank" style="color:var(--spoken);font-weight:700">רשימת המקורות</a>. התיאור הוא נקודת המבט שלך; כדי לשמוע גם את התלמידים, אפשר בהמשך להעביר את <a href="resilience-team.html" style="color:var(--spoken)">שאלון החוסן</a>.</p>
+    <p class="no-print" style="margin-top:.6rem"><button type="button" class="btn btn-ghost" data-rw>✍ שכתוב הודעה לפי עקרונות החוסן</button></p>
   </div>
 
   <div id="form-area">
@@ -261,6 +271,23 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
     <p class="err" id="fb-err" hidden></p>
   </div>
   <div class="fbf"><button class="btn" id="fb-send" type="button">שליחה</button><button class="btn btn-ghost" id="fb-cancel" type="button">סגירה</button></div>
+</dialog>
+<dialog id="rw-dlg">
+  <div class="fbh">שכתוב הודעה לפי עקרונות החוסן</div>
+  <div class="fbb">
+    <p class="muted" style="font-size:.85rem">מדביקים הודעה (למשל לצוות, להורים או לתלמידים), והיא נבדקת מול עשרת עקרונות השפה המחזקת: גוף ראשון רבים, מסר מרגיע עם קריאה לפעולה, תחושת שליטה, קישור הפרט לכלל, סיפורים ושמות מוכרים, הומור עדין כשמתאים, הזמנה למעורבות, שפה פשוטה וסיום של תקווה. המסר המקורי נשמר.</p>
+    <div class="row2">
+      <div><label for="rw-aud">למי ההודעה</label>
+        <select id="rw-aud"><option>הורים</option><option>תלמידים</option><option>צוות</option><option>קהילת בית הספר</option><option>אחר</option></select></div>
+      <div><label for="rw-kind">סוג ההודעה</label>
+        <select id="rw-kind"><option>הודעה שוטפת</option><option>עדכון בזמן חירום</option><option>מכתב או עלון</option><option>הזמנה לאירוע</option><option>הודעה על אירוע קשה</option></select></div>
+    </div>
+    <label for="rw-text">ההודעה המקורית</label>
+    <textarea id="rw-text" maxlength="3000" style="min-height:140px"></textarea>
+    <p class="err" id="rw-err" hidden></p>
+    <div id="rw-out"></div>
+  </div>
+  <div class="fbf"><button class="btn" id="rw-go" type="button">בדיקה ושכתוב</button><button class="btn btn-ghost" id="rw-close" type="button">סגירה</button></div>
 </dialog>
 <script>
 (function(){
@@ -760,6 +787,43 @@ F('btn-clear').addEventListener('click',()=>{
   TEXT_FIELDS.forEach(k=>F(k).value='');setAnswers({});STATE={report:null,chat:[]};save();
   F('picture').textContent='';F('report').textContent='';F('chat-area').hidden=true;
 });
+
+
+// ── שכתוב הודעה לפי עקרונות החוסן (ארגז הכלים של ד״ר יעל שדה): בדיקה מול עשרה עקרונות + נוסח מוצע ──
+const RW_PRINCIPLES=['גוף ראשון רבים ("אנחנו", "כולנו") ליצירת שייכות','מסר מרגיע יחד עם קריאה לפעולה','תחושת שליטה וניהול — מה כבר נעשה ומה מתוכנן','קישור בין הפרט לכלל','דימויים או סיפורים מקומיים שמקרבים','הומור עדין ומותאם — רק כשמתאים להקשר','שמות, דמויות או מקומות מוכרים מבית הספר','קריאה להתנדבות, לשיתוף או למעורבות פעילה','שפה פשוטה, נגישה, לא פורמלית מדי ולא בירוקרטית','סיום במסר חיובי, אופטימי ומעורר תקווה'];
+function rwSystem(){return ['את עורכת לשון של מערכת Begood, ומומחית לשפה מחזקת חוסן בקהילות חינוך (ארגז הכלים של ד״ר יעל שדה). את עונה בעברית.',
+  'המשימה: לנתח הודעה שנכתבה לקהילת בית הספר לפי עשרת העקרונות הבאים, ולכתוב אותה מחדש כך שתבטא לפחות 5–7 מהם בצורה ברורה, אותנטית ונגישה — תוך שמירה מלאה על המסר המקורי, על העובדות ועל כל פרט מעשי (תאריכים, שעות, מקומות, הנחיות).',
+  'העקרונות:',RW_PRINCIPLES.map((p,i)=>(i+1)+'. '+p).join('\n'),
+  'כללים: אל תמציאי עובדות, שמות או סיפורים שלא מופיעים בהודעה — אם עיקרון דורש פרט שאין לך (שם, סיפור מקומי), השאירי מקום ממולא בסוגריים מרובעים, למשל [שם המורה], או הציעי זאת בטיפים. בהודעה על אירוע קשה או בחירום — בלי הומור, בטון רגוע, אמפתי ומכבד, עם מידע ברור על מה עושים עכשיו. התאימי את השפה לקהל (לתלמידים — לפי הגיל). אורך דומה למקור, אלא אם חסר מידע חיוני. שפה מכלילה מגדרית כשצריך. בלי אימוג׳ים, אלא אם היו במקור.',
+  'החזירי אך ורק JSON תקין במבנה: {"check":[{"n":1,"ok":true או false,"note":"משפט קצר: איך העיקרון בא לידי ביטוי במקור, או מה חסר"}],"rewrite":"הנוסח המוצע — פסקאות קצרות עם שורה ריקה ביניהן","tips":["טיפ קצר להמשך, אם יש"]}. ב-check — כל עשרת העקרונות לפי הסדר, לגבי ההודעה המקורית.'].join('\n');}
+let RW_BUSY=false;
+function rwOpen(){F('rw-err').hidden=true;F('rw-dlg').showModal();F('rw-text').focus();}
+F('rw-close').addEventListener('click',()=>F('rw-dlg').close());
+F('rw-go').addEventListener('click',async()=>{
+  if(RW_BUSY)return;const txt=F('rw-text').value.trim(),err=F('rw-err'),out=F('rw-out');
+  if(txt.length<10){err.textContent='צריך להדביק הודעה (לפחות משפט אחד).';err.hidden=false;return;}
+  err.hidden=true;RW_BUSY=true;const b=F('rw-go');b.disabled=true;b.textContent='בודקת ומשכתבת... (עד דקה)';
+  out.textContent='';out.appendChild(el('p','muted','קוראת את ההודעה ובודקת אותה מול עשרת העקרונות...'));
+  try{
+    const user='קהל: '+F('rw-aud').value+'\nסוג ההודעה: '+F('rw-kind').value+'\n\nההודעה המקורית:\n'+txt;
+    const res=await complete(rwSystem(),[{role:'user',content:user}],8000);
+    const m=res.match(/\{[\s\S]*\}/);if(!m)throw new Error('לא התקבל מבנה תקין');
+    const d=JSON.parse(m[0]);out.textContent='';
+    const ok=(d.check||[]).filter(c=>c.ok).length;
+    out.appendChild(el('h3',null,'הבדיקה של ההודעה המקורית — '+ok+' מתוך 10 עקרונות'));
+    const ul=el('ul','rw-check');(d.check||[]).forEach(c=>{const li=el('li',c.ok?'on':'off');li.appendChild(el('b',null,(c.ok?'✓ ':'○ ')+(RW_PRINCIPLES[(c.n||0)-1]||'')));if(c.note){li.appendChild(document.createTextNode(' — '));li.appendChild(inlineRich(c.note));}ul.appendChild(li);});out.appendChild(ul);
+    out.appendChild(el('h3',null,'הנוסח המוצע'));
+    const box=richText(d.rewrite||'');box.classList.add('rw-new');out.appendChild(box);
+    const acts=el('div','btns');const cp=el('button','btn','העתקת הנוסח');cp.type='button';
+    cp.addEventListener('click',()=>{const t=String(d.rewrite||'').replace(/\*\*/g,'');const done=()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הנוסח',2000);};
+      if(navigator.clipboard)navigator.clipboard.writeText(t).then(done).catch(()=>{});});
+    acts.appendChild(cp);out.appendChild(acts);
+    if((d.tips||[]).length){out.appendChild(el('h3',null,'טיפים'));const tl=el('ul','tl');d.tips.forEach(t=>{const li=el('li');li.appendChild(inlineRich(t));tl.appendChild(li);});out.appendChild(tl);}
+    out.appendChild(el('p','muted','הנוסח הוא הצעה — כדאי לקרוא, לבדוק את הפרטים ולהתאים לפני שליחה. מקומות בסוגריים מרובעים ממלאים בעצמכם.'));
+  }catch(e){out.textContent='';err.textContent='השכתוב לא הצליח ('+(e.name==='AbortError'?'לקח יותר מדי זמן':e.message)+'). נסו שוב.';err.hidden=false;}
+  finally{RW_BUSY=false;b.disabled=false;b.textContent='בדיקה ושכתוב';}
+});
+document.querySelectorAll('[data-rw]').forEach(x=>x.addEventListener('click',rwOpen));
 
 // ── רעיונות / תקלות / שאלות — נשמרים בשרת ומגיעים למנהלת המערכת (לשונית "פניות") ──
 F('fb-fab').addEventListener('click',()=>{F('fb-err').hidden=true;F('fb-dlg').showModal();F('fb-name').focus();});
