@@ -579,8 +579,10 @@ async function accessApi(body){
   const r = await fetch(AI_SERVER + "/api/access", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify(body) });
   const d = await r.json().catch(() => ({})); d._status = r.status; return d;
 }
-function myItems(){ return loadCustomLists().reviewCriteria || []; }
-function saveMyItems(list){ const cl = loadCustomLists(); cl.reviewCriteria = list; saveCustomLists(cl); }
+// הקריטריונים שלי — לפי משתמש/ת (lib/access-guard.js), כדי שמי שנכנס/ת עם קוד אחר לא יראה אותם
+const MY_CRIT_KEY = window.sbeUserKey ? sbeUserKey("sbe.review.mycrit.v1") : "sbe.review.mycrit.v1:anon";
+function myItems(){ try { return JSON.parse(localStorage.getItem(MY_CRIT_KEY)) || []; } catch(e){ return []; } }
+function saveMyItems(list){ try { localStorage.setItem(MY_CRIT_KEY, JSON.stringify(list)); } catch(e){} }
 function customCriteria(){
   const comm = new Set(COMMUNITY.map(c => c.id));
   return myItems().filter(x => !(x.pid && comm.has(x.pid)))
@@ -1091,7 +1093,7 @@ $("bSaveTxt").addEventListener("click", () => {
 // הטיוטה (העבודה, ההנחיות, הבחירות והמשוב האחרון) נשמרת בדפדפן של המכשיר בלבד. כדי לעבור
 // למכשיר אחר — "שמירת קובץ עבודה" לתיקייה של המשתמשת (למשל Drive / OneDrive), ו"פתיחת קובץ עבודה" שם.
 // שום דבר מהעבודה לא נשמר בשרת של המערכת.
-const DRAFT_KEY = "sbe.review.draft.v1";
+const DRAFT_KEY = window.sbeUserKey ? sbeUserKey("sbe.review.draft.v1") : "sbe.review.draft.v1:anon"; // לפי משתמש/ת (lib/access-guard.js)
 const WORK_APP = "begood-academic-review";
 let draftTimer = null, RESTORING = false;
 function snapshot(){

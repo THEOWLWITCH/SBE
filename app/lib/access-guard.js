@@ -36,6 +36,25 @@
     }
   } catch(e){}
 
+  // ── שמירה במכשיר לפי משתמש/ת (02/10/2026) ──
+  // טופס שנשמר בדפדפן (פרקטי, נוגי, כתיבת הודעה, משוב לעבודות) נשמר תחת מפתח של מי שנכנס/ה —
+  // לפי הקוד שבאסימון — כדי שמי שנכנס/ת עם קוד אחר באותו דפדפן יקבל/תקבל טופס נקי.
+  window.sbeUserKey = function(base){
+    var id = "anon";
+    try {
+      var t = ss("sbe.session.token") || "";
+      if (t.indexOf(".") > 0) {
+        var b = t.split(".")[0].replace(/-/g, "+").replace(/_/g, "/");
+        var bytes = Uint8Array.from(atob(b), function(ch){ return ch.charCodeAt(0); });
+        var p = JSON.parse(new TextDecoder().decode(bytes));
+        id = p.k === "code" ? "c-" + p.c : p.k === "inst" ? "inst-" + p.inst : String(p.k || "anon");
+      } else if (ss("sbe.session.homeUrl")) id = "h-" + ss("sbe.session.homeUrl");
+    } catch(e){}
+    return base + ":" + id;
+  };
+  // ניקוי חד־פעמי של שמירות ישנות שלא היו לפי משתמש/ת (הן הציגו פרטים של מישהו אחר)
+  try { ["sbe.advisor.v1", "sbe.nugi.v1", "sbe.writer.v1", "sbe.review.draft.v1"].forEach(function(k){ localStorage.removeItem(k); }); } catch(e){}
+
   var home = ss("sbe.session.homeUrl") || "";
 
   // המסך הנוכחי, יחסית ל-app/ (products/x.html לתוצרים).

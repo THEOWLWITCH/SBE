@@ -191,7 +191,7 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 // כתיבת הודעה ברוח חוסן — מסך עצמאי (הרשאת resilience, practi או leadership). אותו כלי כמו בפרקטי ובנוגי.
 const SRC = window.SBE_ADVISOR_SOURCES;
 const AI_SERVER = 'https://sbe-server.onrender.com';
-const STORE = 'sbe.writer.v1';
+const STORE = window.sbeUserKey ? sbeUserKey('sbe.writer.v1') : 'sbe.writer.v1:anon'; // לפי משתמש/ת (lib/access-guard.js)
 const F = k=>document.getElementById(k);
 try{ const h=sessionStorage.getItem('sbe.session.homeUrl'); if(h) F('nav-home').href=h; }catch(e){}
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=String(text);return n;}
