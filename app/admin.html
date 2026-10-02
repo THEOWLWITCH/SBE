@@ -1499,7 +1499,7 @@ function gate(w, loaded, loader, pwLabel){
 // ── פניות (01/10/2026): רעיונות, תקלות ושאלות שנשלחו מתוך פרקטי (גם מהתנסות הקהילה) ──
 function pInbox(){
   const w = el("div",{class:"panel on"});
-  w.append(el("h2",{},"פניות"), el("p",{class:"sub"},"רעיונות, תקלות ושאלות שנשלחו מתוך פרקטי — כולל מהתנסות חברות.י הקהילה. החדשות למעלה."));
+  w.append(el("h2",{},"פניות"), el("p",{class:"sub"},"רעיונות, תקלות, שאלות ובקשות מכל המערכת — מכפתור \"דיווח / רעיון\", מפרקטי ומנוגי (כולל התנסות הקהילה). על כל פנייה חדשה נשלח אלייך מייל. החדשות למעלה."));
   if (!gate(w, inbox, async () => { inbox = (await accessCall("fbList")).items || []; }, "סיסמת מנהלת המערכת")) return w;
   const c = el("div",{class:"card"}); const inn = el("div",{class:"in"});
   const counts = {}; inbox.forEach(x => counts[x.type] = (counts[x.type]||0) + 1);
@@ -2011,8 +2011,16 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
       bodyLines.push("פירוט:", details);
     }
     var subject = "Begood · " + type + " · " + name;
-    location.href = "mailto:yael.sade@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(bodyLines.join("\n"));
-    dlg.close();
+    // נשלח לתיבת הפניות בשרת (ומשם במייל למנהלת המערכת); בלי חיבור לשרת — חלון מייל כמו קודם
+    var mailto = "mailto:yael.sade@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(bodyLines.join("\n"));
+    var sendBtn = document.getElementById("rptSend");
+    sendBtn.disabled = true;
+    fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "fbSubmit", type: type, name: name, contact: "", text: bodyLines.join("\n"), source: "דיווח / רעיון", page: screenName }) })
+      .then(function(r){ return r.json(); })
+      .then(function(d){ if (!d || !d.ok) throw new Error("fail"); dlg.close(); alert("נשלח, תודה! הפנייה הגיעה למנהלת המערכת."); })
+      .catch(function(){ dlg.close(); location.href = mailto; })
+      .then(function(){ sendBtn.disabled = false; });
   });
 })();
 </script>
