@@ -82,9 +82,9 @@
   var PAGES_BY_PERM = {
     fac_trainee: ["input-screen.html"], fac_parent: ["parent-input-screen.html"], fac_youth: ["student-input-screen.html"],
     conv: ["conversation-planner.html"], activity: ["activity-planner.html"], academic: ["academic-review.html"],
-    resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html", "message-writer.html", "resilience-checklist.html"],
-    leadership: ["leadership-advisor.html", "resilience-advisor-sources.html", "message-writer.html", "resilience-checklist.html"],
-    practi: ["resilience-advisor.html", "resilience-advisor-sources.html", "message-writer.html", "resilience-checklist.html"]
+    resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html", "message-writer.html"],
+    leadership: ["leadership-advisor.html", "resilience-advisor-sources.html", "message-writer.html"],
+    practi: ["resilience-advisor.html", "resilience-advisor-sources.html", "message-writer.html"]
   };
   var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html", "doc-trainee.html"];
 

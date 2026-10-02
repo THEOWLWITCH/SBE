@@ -186,7 +186,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
     <h1>נוגי: יועצת למנהיגות שתומכת בחוסן חברתי</h1>
     <p><b>נוגי היא יועצת לפיתוח מנהיגות שתומכת בחוסן חברתי</b> — לא יועצת מנהיגות כללית: כל ניתוח וכל המלצה שלה מוסברים במונחי החוסן החברתי של בית הספר — שייכות, אמון, מנגנונים משותפים, רשתות תמיכה ומסוגלות קולקטיבית. נוגי עוזרת למי שמוביל/ה בבית הספר — מנהל/ת, צוות הנהלה, רכזים, וגם מועצת תלמידים וצוותי תלמידים — לבנות מנהיגות שמחזקת את החוסן החברתי: תקשורת, פירגון ועידוד, אמון, גיבוי וממלאי מקום, רווחת הצוות, ידע על מערכות החירום, ושותפות עם תלמידים, הורים וקהילה. ממלאים שאלון פתיחה, ומקבלים <b>דוח מסכם</b>, <b>דוח המלצות</b> ו<b>שיחת המשך</b>.</p>
     <p class="intro" style="border-inline-start-color:var(--hidden);background:var(--hidden-soft);font-size:.92rem;margin:.6rem 0"><b>חשוב:</b> כל המלצה של נוגי יש לבחון לאור הנהלים והחוקים — והאחריות לכך היא של ההנהגה. ההמלצות הן הצעות לחשיבה ולא הוראות.</p>
-    <p class="muted">מנהיגות טובה היא עבודת צוות — ולכן נוגי תמיד תעדיף צוות, שותפים וממלאי מקום. נוגי נשענת על מחקר עדכני מישראל ומהעולם, שמתעדכן מדי שבוע — <a href="resilience-advisor-sources.html?a=nugi" target="_blank" style="color:var(--spoken);font-weight:700">רשימת המקורות</a>. הדוח בוחן את ההנהגה גם לפי <a href="resilience-checklist.html" target="_blank" style="color:var(--spoken);font-weight:700">רשימת הבקרה למנהיגות מקדמת חוסן</a> — עשר פעולות עם מבחן ועדות.</p>
+    <p class="muted">מנהיגות טובה היא עבודת צוות — ולכן נוגי תמיד תעדיף צוות, שותפים וממלאי מקום. נוגי נשענת על מחקר עדכני מישראל ומהעולם, שמתעדכן מדי שבוע — <a href="resilience-advisor-sources.html?a=nugi" target="_blank" style="color:var(--spoken);font-weight:700">רשימת המקורות</a>.</p>
   </div>
 
   <div id="form-area">
@@ -705,7 +705,7 @@ const ADVISOR_SYSTEM = [
   '9b. עיצוב טקסט ארוך (answer, description): לחלק לשורות עם \\n — כל חלופה בשורה שמתחילה בכותרת מודגשת **...**, ואחריה תבליטים בשורות שמתחילות ב-"- "; הדגשה ב-**...** רק למילות מפתח.',
   '9d. "twoLayer": ניתוח לפי מודל האיתנות הדו־שכבתי (SadeTrust2026) — השלב, שתי השכבות והאמון כמאיץ ביניהן; אם המידע חלקי — אמרי זאת.',
   '9. בכל פעולה והמלצה — "basis": 1–3 מפתחות מקורות מהרשימה (או מערך ריק).',
-  SBE_RLEAD.checklistRule,
+  SBE_RLEAD.relevantRule,
   SBE_WRITER.reportRule('ההנהגה עם הצוות, עם התלמידים ועם ההורים','לצוות, להורים או לתלמידים — לפי הממצאים'),
   'היקף: 3–5 חוזקות, 3–5 אתגרים, 3 עדיפויות, 3–5 פעולות, 2–4 המלצות בכל אחד מ-team / communication / wellbeing / students, 1–3 שיחות, 3–6 צעדים בתוכנית, 2–3 שאלות בדיקה.',
   'החזירי אך ורק JSON תקין, בלי טקסט נוסף, במבנה:',
@@ -720,7 +720,6 @@ const ADVISOR_SYSTEM = [
   ' "conversations":[{"with":"עם מי","goal":"מטרת השיחה","resilience":"איך השיחה מחזקת את החוסן החברתי","setting":"איפה ומתי","opening":"שאלת פתיחה לדוגמה","followups":["שאלת המשך"],"closing":"איך מסיימים"}],',
   ' "plan":[{"when":"השבוע","what":"מה עושים ומי מוביל/ה"}],',
   ' "checks":["שאלה שכדאי לבדוק עם הצוות או עם התלמידים כדי לאמת את התמונה"],',
-  SBE_RLEAD.checklistSchema,
   SBE_WRITER.reportSchema,
   ' "answers":[{"question":"השאלה","answer":"תשובה ישירה ומעשית"}]}',
   'כאשר ACT הוא {"title":"שם קצר","kind":"צעד מיידי" או "תהליך מתמשך","lead":"מי מוביל/ה — עדיף צוות","for":"שם התחום","description":"מה עושים ואיך — 2–4 משפטים","mechanism":"איזה מנגנון זה בונה","resilience":"איך זה מחזק את החוסן החברתי — 1–2 משפטים","basis":["מפתח"]}',
@@ -855,7 +854,6 @@ function renderReport(){
   if(d.twoLayer){const t=d.twoLayer,box2=el('div','layers');box2.appendChild(el('h3',null,'מודל האיתנות הדו־שכבתי'));
     [['השלב',t.phase],['השכבה המבנית',t.structural],['השכבה החברתית־יחסית',t.social],['האמון — המאיץ המקשר',t.trust]].forEach(([k,v])=>{if(!v)return;const r=el('div','layer');r.appendChild(el('b',null,k));const p=el('p');p.appendChild(inlineRich(v));r.appendChild(p);box2.appendChild(r);});
     sum.appendChild(box2);}
-  sum.appendChild(SBE_RLEAD.checklistSection(d,{el,inlineRich}));
   sum.appendChild(el('h3',null,'חוזקות'));sum.appendChild(textList(d.strengths));
   sum.appendChild(el('h3',null,'אתגרים — כיווני צמיחה'));sum.appendChild(textList(d.challenges));
   if((d.priorities||[]).length){sum.appendChild(el('h3',null,'שלוש העדיפויות המרכזיות'));const ol=el('ol','prio');d.priorities.forEach(p=>{const li=el('li');const sp=el('span');const o=typeof p==='string'?{text:p}:p;sp.appendChild(inlineRich(o.text||''));const r=resEl(o.resilience);if(r)sp.appendChild(r);li.appendChild(sp);ol.appendChild(li);});sum.appendChild(ol);}
@@ -875,7 +873,6 @@ function renderReport(){
   if((d.plan||[]).length){rec.appendChild(el('h3',null,'7. תוכנית צעדים'));const ul=el('ul','plan');d.plan.forEach(p=>{const li=el('li');li.appendChild(el('span','when',p.when||''));const w=el('span');w.appendChild(inlineRich(p.what||''));li.appendChild(w);ul.appendChild(li);});rec.appendChild(ul);}
   rec.appendChild(SBE_WRITER.reportSection(d,{el,inlineRich,richText},'8. עקרונות החוסן בתקשורת של ההנהגה','הודעות מוכנות לשליחה — כתובות לפי עקרונות החוסן'));
   if((d.checks||[]).length){rec.appendChild(el('h3',null,'9. כדאי לבדוק'));const ul=el('ul','tl');d.checks.forEach(x=>ul.appendChild(el('li',null,x)));rec.appendChild(ul);}
-  rec.appendChild(SBE_RLEAD.questionsSection({el}));
   const foot=el('p','muted','הדוחות הופקו על ידי מודל שפה על סמך שאלון הפתיחה ומבוססים על ');const a=el('a',null,'רשימת המקורות');a.href='resilience-advisor-sources.html?a=nugi';a.target='_blank';a.style.color='var(--spoken)';foot.appendChild(a);
   foot.appendChild(document.createTextNode('. הם נקודת פתיחה לחשיבה ולשיחה עם הצוות, ולא מחליפים שיקול דעת מקצועי. כל המלצה יש לבחון לאור הנהלים והחוקים, והאחריות לכך היא של ההנהגה.'));foot.style.marginTop='1rem';rec.appendChild(foot);
   box.appendChild(rec);
@@ -888,7 +885,6 @@ function plain(){
   L.push('נוגי: דוח מסכם ודוח המלצות למנהיגות שתומכת בחוסן חברתי',metaLine(R),'','דוח מסכם','',d.intro||'');
   if(d.lens)L.push('','איך המחקר קורא את התמונה',d.lens);
   if(d.twoLayer){const t=d.twoLayer;L.push('','מודל האיתנות הדו־שכבתי','• השלב: '+(t.phase||''),'• השכבה המבנית: '+(t.structural||''),'• השכבה החברתית־יחסית: '+(t.social||''),'• האמון: '+(t.trust||''));}
-  L.push(...SBE_RLEAD.checklistPlain(d));
   L.push('','חוזקות');(d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text+rs(x)));
   L.push('','אתגרים — כיווני צמיחה');(d.challenges||[]).forEach(x=>L.push('• '+x.domain+': '+x.text+rs(x)));
   if((d.priorities||[]).length){L.push('','שלוש העדיפויות המרכזיות');d.priorities.forEach((p,i)=>{const o=typeof p==='string'?{text:p}:p;L.push((i+1)+'. '+o.text+rs(o));});}
@@ -900,7 +896,6 @@ function plain(){
   if((d.plan||[]).length){L.push('','7. תוכנית צעדים');d.plan.forEach(p=>L.push('• '+p.when+': '+p.what));}
   L.push(...SBE_WRITER.reportPlain(d,'8. עקרונות החוסן בתקשורת של ההנהגה','הודעות מוכנות לשליחה — כתובות לפי עקרונות החוסן'));
   if((d.checks||[]).length){L.push('','9. כדאי לבדוק');d.checks.forEach(x=>L.push('• '+x));}
-  L.push('','שבע שאלות לבדיקה תקופתית',...SBE_RLEAD.QUESTIONS.map((q,i)=>(i+1)+'. '+q));
   L.push('','כל המלצה יש לבחון לאור הנהלים והחוקים, והאחריות לכך היא של ההנהגה.');
   L.push('','המקורות: '+location.href.replace(/[^/]*$/,'resilience-advisor-sources.html?a=nugi'));
   return L.join('\n').replace(/\*\*/g,'');
