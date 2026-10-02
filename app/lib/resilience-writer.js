@@ -47,5 +47,33 @@ function mount(h){
     finally{busy=false;b.disabled=false;b.textContent=LABEL;}
   });
 }
-window.SBE_WRITER={PRINCIPLES,rule,system,mount};
+// ── בדוח עצמו: בחינה של עשרת העקרונות לפי השאלון + הודעות מוכנות שכתובות לפיהם (בלי טופס נוסף) ──
+// who — של מי התקשורת שנבחנת ("המחנך/ת והכיתה" / "ההנהגה"); aud — למי נכתבות ההודעות.
+const STATES=['קיים','חלקי','חסר','לא ידוע'];
+function reportRule(who,aud){return ['בחינת עקרונות החוסן (SadeTools2026) — חלק מהדוח, בלי לבקש מהכותב/ת מידע נוסף:',
+  '- ב-"principles": כל עשרת העקרונות של השפה המחזקת לפי הסדר — לכל אחד: "state" ('+STATES.map(x=>'"'+x+'"').join(' / ')+') — עד כמה הוא בא לידי ביטוי בתקשורת של '+who+' לפי תמונת המצב; ו-"note" — 1–2 משפטים: על מה זה נשען בתשובות, ואיך לחזק אותו בפועל (דוגמה לניסוח במירכאות). כשאין בתשובות מידע — "לא ידוע", והצעה איך לבדוק.',
+  '- ב-"messages": 1–2 הודעות מוכנות לשליחה ('+aud+') שנובעות ישירות מהממצאים ומהמצב, כתובות מההתחלה לפי העקרונות — לפחות 5–7 מהם. '+SAFE+' בגוף ההודעה — בלי הדגשות ובלי כוכביות; פסקאות קצרות עם \\n\\n ביניהן.'].join('\n');}
+const reportSchema=' "principles":[{"n":1,"state":"קיים / חלקי / חסר / לא ידוע","note":"על מה זה נשען ואיך לחזק"}],\n "messages":[{"to":"למי","purpose":"מטרת ההודעה בכמה מילים","text":"ההודעה המלאה"}],';
+function reportSection(d,h,title,msgTitle,lvl){
+  const {el,inlineRich,richText}=h;const frag=document.createDocumentFragment();
+  const pr=(d.principles||[]).filter(p=>+p.n>=1&&+p.n<=10);const ms=(d.messages||[]).filter(m=>m&&m.text);
+  if(pr.length){frag.appendChild(el(lvl||'h3',null,title));
+    frag.appendChild(el('p','muted','עשרת עקרונות השפה המחזקת — עד כמה הם באים לידי ביטוי לפי התשובות לשאלון, ואיך לחזק.'));
+    const ul=el('ul','rw-check');pr.forEach(p=>{const st=STATES.includes(p.state)?p.state:'לא ידוע';const li=el('li','st-'+STATES.indexOf(st));
+      li.appendChild(el('span','rw-st',st));li.appendChild(el('b',null,PRINCIPLES[p.n-1]));if(p.note){li.appendChild(document.createTextNode(' — '));li.appendChild(inlineRich(p.note));}ul.appendChild(li);});
+    frag.appendChild(ul);}
+  if(ms.length){frag.appendChild(el('h3',null,msgTitle));
+    ms.forEach(m=>{const c=el('div','act rw-msg');c.appendChild(el('div','act-t',[m.to?'אל: '+m.to:'',m.purpose].filter(Boolean).join(' — ')));
+      const t=String(m.text).replace(/\*\*/g,'');const box=richText(t);box.classList.add('rw-new');c.appendChild(box);
+      const cp=el('button','btn btn-ghost no-print','העתקת ההודעה');cp.type='button';cp.style.marginTop='.5rem';
+      cp.addEventListener('click',()=>{const done=()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת ההודעה',2000);};if(navigator.clipboard)navigator.clipboard.writeText(t).then(done).catch(()=>{});});
+      c.appendChild(cp);frag.appendChild(c);});
+    frag.appendChild(el('p','muted','ההודעות הן הצעה — כדאי לקרוא, לבדוק את הפרטים ולהתאים לפני שליחה. מקומות בסוגריים מרובעים ממלאים בעצמכם.'));}
+  return frag;
+}
+function reportPlain(d,title,msgTitle){const L=[];const pr=(d.principles||[]).filter(p=>+p.n>=1&&+p.n<=10);const ms=(d.messages||[]).filter(m=>m&&m.text);
+  if(pr.length){L.push('',title);pr.forEach(p=>L.push('• '+PRINCIPLES[p.n-1]+' ['+(p.state||'לא ידוע')+']'+(p.note?'\n  '+p.note:'')));}
+  if(ms.length){L.push('',msgTitle);ms.forEach(m=>L.push('• '+[m.to?'אל: '+m.to:'',m.purpose].filter(Boolean).join(' — ')+'\n'+String(m.text).replace(/\*\*/g,'')+'\n'));}
+  return L;}
+window.SBE_WRITER={PRINCIPLES,rule,system,mount,reportRule,reportSchema,reportSection,reportPlain};
 })();
