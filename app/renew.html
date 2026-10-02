@@ -161,7 +161,7 @@ const $ = (id) => document.getElementById(id);
 // המערכות — אותן הרשאות כמו בשרת (PERMS). "משוב לעבודות" כולל גם הפקת קודים לסטודנטים.
 const SYSTEMS = [
   ["הנחיית סדנאות — סטודנטים", ["fac_trainee"]], ["הנחיית סדנאות — הורים", ["fac_parent"]], ["הנחיית סדנאות — נוער", ["fac_youth"]],
-  ["חוסן חברתי", ["resilience"]], ["נוגי — מנהיגות", ["leadership"]], ["פרקטי — יועצת לחוסן", ["practi"]], ["מסע אל החוסן", ["journey"]], ["כתיבת הודעה או מכתב", ["writer"]], ["תכנון שיחה", ["conv"]], ["תכנון פעילות", ["activity"]], ["משוב לעבודות", ["academic", "lecturer"]],
+  ["חוסן חברתי", ["resilience"]], ["נוגי — מנהיגות", ["leadership"]], ["פרקטי — יועצת לחוסן", ["practi"]], ["מסע אל החוסן", ["journey"]], ["כתיבה מקדמת חוסן", ["writer"]], ["תכנון שיחה", ["conv"]], ["תכנון פעילות", ["activity"]], ["משוב לעבודות", ["academic", "lecturer"]],
 ];
 SYSTEMS.forEach(([l, ps], i) => {
   const cb = Object.assign(document.createElement("input"), { type: "checkbox", id: "s" + i });

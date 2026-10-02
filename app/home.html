@@ -143,7 +143,7 @@ const fmtDate = (ymd) => ymd ? ymd.split("-").reverse().join(".") : "";
 const PERM_LABEL = {
   fac_trainee: "הנחיית סטודנטים", fac_parent: "הנחיית הורים", fac_youth: "הנחיית נוער",
   conv: "תכנון שיחה", activity: "תכנון פעילות", academic: "משוב לעבודות",
-  lecturer: "קודים לסטודנטים", resilience: "חוסן חברתי", leadership: "נוגי — מנהיגות", practi: "פרקטי — יועצת לחוסן", journey: "מסע אל החוסן", writer: "כתיבת הודעה או מכתב",
+  lecturer: "קודים לסטודנטים", resilience: "חוסן חברתי", leadership: "נוגי — מנהיגות", practi: "פרקטי — יועצת לחוסן", journey: "מסע אל החוסן", writer: "כתיבה מקדמת חוסן",
 };
 const PRESETS = [
   ["מחנך/ת", ["resilience"]], ["פרקטי בלבד", ["practi"]], ["הנהלה", ["leadership", "resilience"]], ["מנחה סטודנטים", ["fac_trainee"]], ["מנחה הורים", ["fac_parent"]],
@@ -189,7 +189,7 @@ async function api(action, extra = {}) {
   if (has("resilience")) T.push(["resilience-team.html", "חוסן חברתי", "פתיחת כיתה, QR לשאלון, תוצאות וסיכום והמלצות"]);
   if (has("resilience") || has("practi")) T.push(["resilience-advisor.html", "פרקטי: יועצת לפיתוח חוסן חברתי", "בלי שאלון: מתארים את הכיתה ומקבלים ניתוח והמלצות מבוססי מחקר"]);
   if (has("leadership")) T.push(["leadership-advisor.html", "נוגי: יועצת למנהיגות שתומכת בחוסן חברתי", "להנהלה, לרכזים ולצוותי תלמידים: שאלון פתיחה, דוח סיכום והמלצות ושיחת המשך"]);
-  if (has("writer")) T.push(["message-writer.html", "כתיבת הודעה או מכתב ברוח חוסן", "כותבים מה רוצים לומר — אפשר גם לצרף שיר, ציור או ידיעה — ומקבלים הודעה או מכתב שכתובים מההתחלה לפי עשרת עקרונות החוסן"]);
+  if (has("writer")) T.push(["message-writer.html", "כתיבה מקדמת חוסן", "כותבים מה רוצים לומר — אפשר גם לצרף שיר, ציור או ידיעה — ומקבלים הודעה או מכתב שכתובים מההתחלה לפי עשרת עקרונות החוסן"]);
   if (has("journey")) T.push(["journey.html", "מסע אל החוסן", "מסע מלווה בשלבים אל תו חוסן לקהילת חוסן — מיפוי, הצעה עם אפשרויות, אבני דרך ותעודות"]);
   if (has("conv")) T.push(["conversation-planner.html", "תכנון שיחה", "הכנה לשיחה אמיתית — בעל פה או בכתב"]);
   if (has("activity")) T.push(["activity-planner.html", "תכנון פעילות", "תכנון פעילות חינוכית או ניתוח פעילות קיימת"]);

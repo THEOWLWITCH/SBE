@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>כתיבת הודעה או מכתב ברוח חוסן</title>
+<title>כתיבה מקדמת חוסן</title>
 <script src="lib/access-guard.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -161,11 +161,11 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 <nav class="topnav no-print">
   <button type="button" onclick="history.back()">→ חזרה</button>
   <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
-  <span class="crumb">Begood › כתיבת הודעה או מכתב ברוח חוסן</span>
+  <span class="crumb">Begood › כתיבה מקדמת חוסן</span>
 </nav>
 <div class="wrap">
   <div class="card">
-    <h1>כתיבת הודעה או מכתב ברוח חוסן</h1>
+    <h1>כתיבה מקדמת חוסן</h1>
     <p>כותבים בכמה מילים מה רוצים לומר — לצוות, להורים, לתלמידים או לקהילת בית הספר — ומקבלים הודעה או מכתב שכבר <b>כתובים מההתחלה</b> לפי עשרת עקרונות השפה המחזקת. אפשר גם <b>לצרף תמונה או קובץ</b> — שיר, ציור של ילד/ה, ידיעה מהעיתון — ולכתוב מה לעשות איתו. כל העובדות והפרטים המעשיים נשמרים, ובסוף מוצג אילו עקרונות באים לידי ביטוי.</p>
     <ol class="tl" style="font-size:.92rem;columns:2;column-gap:1.6rem" id="rw-list"></ol>
     <p class="muted">העקרונות לקוחים מארגז הכלים של ד״ר יעל שדה לחוסן חברתי בקהילה.</p>
@@ -209,7 +209,7 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 <script>
 (function(){
 'use strict';
-// כתיבת הודעה ברוח חוסן — מסך עצמאי (הרשאת writer בלבד). אותו כלי כמו בפרקטי ובנוגי.
+// כתיבה מקדמת חוסן — מסך עצמאי (הרשאת writer בלבד). אותו כלי כמו בפרקטי ובנוגי.
 const SRC = window.SBE_ADVISOR_SOURCES;
 const AI_SERVER = 'https://sbe-server.onrender.com';
 const STORE = window.sbeUserKey ? sbeUserKey('sbe.writer.v1') : 'sbe.writer.v1:anon'; // לפי משתמש/ת (lib/access-guard.js)
@@ -262,7 +262,7 @@ async function complete(system,messages,maxTokens){
 }
 
 
-// ── כתיבת הודעה ברוח חוסן (lib/resilience-writer.js) ──
+// ── כתיבה מקדמת חוסן (lib/resilience-writer.js) ──
 SBE_WRITER.mount({F,el,inlineRich,richText,complete,onStart:()=>save()});
 
 SBE_WRITER.PRINCIPLES.forEach(p=>F('rw-list').appendChild(el('li',null,p)));

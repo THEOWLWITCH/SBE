@@ -53,7 +53,7 @@ window.SBE_SCREENS = [
       { file:'resilience-fill.html', label:'שאלון חוסן — מסך תלמיד/ה', who:'תלמידים, בקישור מהמחנך/ת' },
       { file:'resilience-advisor.html', label:'פרקטי — יועצת לפיתוח חוסן חברתי', who:'הרשאת חוסן חברתי או פרקטי' },
       { file:'leadership-advisor.html', label:'נוגי — מנהיגות שתומכת בחוסן', who:'הרשאת נוגי' },
-      { file:'message-writer.html', label:'כתיבת הודעה או מכתב מקדמי חוסן', who:'הרשאת כתיבת הודעה או מכתב בלבד' },
+      { file:'message-writer.html', label:'כתיבה מקדמת חוסן', who:'הרשאת כתיבה מקדמת חוסן בלבד' },
       { file:'journey.html', label:'מסע אל החוסן — מסך המשתתפים', who:'הרשאת מסע אל החוסן' },
     ]},
   ]},
