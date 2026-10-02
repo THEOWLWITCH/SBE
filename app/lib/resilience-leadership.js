@@ -1,6 +1,6 @@
 // מנהיגות מקדמת חוסן חברתי — רשימת בקרה, רמות, גילים ושאלות לבדיקה תקופתית (02/10/2026, מד״ר יעל שדה).
-// מקור אמת אחד לנוגי (פרסונה + "רשימת הבקרה" בדוח), לפרקטי ולסיכום מיפוי החוסן (רמת הכיתה),
-// ולמסך resilience-checklist.html. המקורות — בבנק הידע (resilience-advisor-sources.js).
+// ידע רקע לנוגי, לפרקטי ולסיכום מיפוי החוסן (רמת הכיתה) — מצטרף לשאר הידע ואינו מגביל אותו.
+// אין מסך נפרד: המשתמש/ת מקבל/ת דוח אחד, ובו רק מה שרלוונטי לנתונים. המקורות — בבנק הידע.
 (function(){
 'use strict';
 const DEF = 'מנהיגות מקדמת חוסן אינה רשימת תכונות אופי. היא נבחנת בשאלה: האם היא הפכה ידע, קשרים, משאבים ואמון למנגנונים משותפים שמאפשרים לקהילה לפעול, לשמור על תפקוד ולהסתגל גם תחת לחץ ואי־ודאות. זו "קהילת חוסן" במובן של ד״ר יעל שדה (Sade2024): קהילה שבה יכולות אינן נשארות אצל יחידים, אלא נעשות מנגנונים חברתיים משותפים. המדינה והרשות נשארות בעלות האחריות הראשית להגנה, לשירותים ולתשתיות; מנהיגות קהילתית ובית־ספרית אינה תחליף להן — היא מחברת אנשים אליהן ומרחיבה את יכולת הפעולה המקומית (Sendai2015).';
@@ -45,56 +45,29 @@ const ref = s => s.replace(/\(([A-Za-z]+[0-9]{4})\)/g, '[$1]');
 const list = (arr, f) => arr.map((x, i) => (i + 1) + '. ' + f(x)).join('\n');
 
 // לנוגי — הפרסונה המלאה
+const ADDITIVE = 'זה ידע רקע שמצטרף לכל המסגרות, הממדים, הכלים והמקורות שכבר מוכרים לך — ואינו מחליף אותם. זו אינה רשימה סגורה: ההמלצות אינן מוגבלות לעשר הפעולות, ומשתמשים רק במה שרלוונטי לנתונים.';
 function nugiPrompt(){ return [
-  'רשימת בקרה למנהיגות מקדמת חוסן חברתי (Begood, ד״ר יעל שדה) — המסגרת שדרכה נוגי בוחנת כל הנהגה: ' + ref(DEF),
+  'רשימת בקרה למנהיגות מקדמת חוסן חברתי (Begood, ד״ר יעל שדה): ' + ref(DEF),
+  ADDITIVE,
   ref(ELEMENTS) + ' ' + ref(CAPACITIES),
   'עשר הפעולות — לכל אחת מבחן ביצוע ועדות שהיא מתקיימת:\n' + list(ACTIONS, a => a.t + ' — מבחן: ' + a.test + ' עדות: ' + a.ev),
   'מה עושים בפועל בכל רמה (בית הספר במרכז, והוא מחובר לכיתות, לבניינים, לשכונה ולרשות):\n' + list(LEVELS, l => l.t + ': ' + ref(l.d)),
   'התאמה לגילים:\n' + list(AGES, a => a.t + ' — ' + a.r + ' דוגמה: ' + a.ex),
   ref(MULTI),
-  'שבע שאלות שמוביל/ה שואל/ת את עצמו/ה מדי תקופה:\n' + list(QUESTIONS, q => q),
+  'שבע שאלות שמוביל/ה שואל/ת את עצמו/ה מדי תקופה (אפשר לשלב את הרלוונטיות ב"כדאי לבדוק"):\n' + list(QUESTIONS, q => q),
 ].join('\n'); }
 // לפרקטי ולסיכום מיפוי החוסן — רמת הכיתה
 // refs:false — בלי מפתחות מקורות (למסכים שלא מציגים קישורי מקורות)
 function classPrompt(opts){ const out = [
-  'חוסן בכיתה הוא מנגנון ולא תכונה: ידע, קשרים, משאבים ואמון שהופכים למנגנונים משותפים — "קהילת חוסן" [Sade2024]. פעולות שכדאי להכיר ולהציע ברמת הכיתה (כשמתאים, ולפחות אחת בכל דוח): ' + ref(LEVELS[0].d),
+  'בנוסף לכל מה שכבר מוכר לך — ולא במקומו: חוסן בכיתה הוא מנגנון ולא תכונה: ידע, קשרים, משאבים ואמון שהופכים למנגנונים משותפים — "קהילת חוסן" [Sade2024]. בין הפעולות שכדאי להכיר ולהציע ברמת הכיתה (כשמתאים; הרשימה פתוחה ואינה מגבילה): ' + ref(LEVELS[0].d),
   'התאמה לגיל: ' + AGES.slice(0, 3).map(a => a.t + ' — ' + a.r + ' (למשל: ' + a.ex + ')').join(' '),
   ref(MULTI),
   'מבחן לכל המלצה: האם היא בונה מנגנון שימשיך לפעול גם תחת לחץ — מי עושה, מתי, ומי מחליף/ה — ולא רק פעילות חד־פעמית [Patel2017].',
 ].join('\n');
   return opts && opts.refs === false ? out.replace(/\s*\[[A-Za-z]+[0-9]{4}\]/g, '') : out; }
 
-// "רשימת הבקרה" בדוח של נוגי: לכל פעולה — מצב, על מה זה נשען בתשובות, והצעד הבא
-const STATES = ['קיים','חלקי','חסר','לא ידוע'];
-const checklistRule = 'רשימת הבקרה — ב-"checklist": כל עשר הפעולות לפי הסדר. לכל אחת: "state" (' + STATES.map(x => '"' + x + '"').join(' / ') + ') לפי עדות בתשובות לשאלון (לא לפי רושם); "evidence" — משפט: על מה זה נשען בתשובות, או מה לא ידוע; "next" — צעד הבא אחד, קונקרטי, עם מי מוביל/ה (עדיף צוות) ומתי. כשאין מידע — "לא ידוע", ו-"next" הוא איך לבדוק.';
-const checklistSchema = ' "checklist":[{"n":1,"state":"קיים / חלקי / חסר / לא ידוע","evidence":"על מה זה נשען","next":"הצעד הבא"}],';
-function checklistSection(d, h, title){
-  const { el, inlineRich } = h; const frag = document.createDocumentFragment();
-  const rows = (d.checklist || []).filter(x => +x.n >= 1 && +x.n <= 10);
-  if (!rows.length) return frag;
-  frag.appendChild(el('h3', null, title || 'רשימת בקרה — עשר פעולות של מנהיגות מקדמת חוסן'));
-  frag.appendChild(el('p', 'muted', 'האם ידע, קשרים, משאבים ואמון הפכו למנגנונים משותפים? לכל פעולה — המצב לפי התשובות, על מה זה נשען, והצעד הבא.'));
-  const ul = el('ul', 'rw-check');
-  rows.forEach(x => { const st = STATES.includes(x.state) ? x.state : 'לא ידוע'; const li = el('li', 'st-' + STATES.indexOf(st));
-    li.appendChild(el('span', 'rw-st', st)); li.appendChild(el('b', null, x.n + '. ' + ACTIONS[x.n - 1].t));
-    if (x.evidence) { li.appendChild(document.createTextNode(' — ')); li.appendChild(inlineRich(x.evidence)); }
-    if (x.next) { const n = el('div', 'act-r'); n.appendChild(el('b', null, 'הצעד הבא: ')); n.appendChild(inlineRich(x.next)); li.appendChild(n); }
-    ul.appendChild(li); });
-  frag.appendChild(ul);
-  return frag;
-}
-function checklistPlain(d, title){
-  const rows = (d.checklist || []).filter(x => +x.n >= 1 && +x.n <= 10);
-  if (!rows.length) return [];
-  return ['', title || 'רשימת בקרה — עשר פעולות של מנהיגות מקדמת חוסן', ...rows.map(x => '• ' + x.n + '. ' + ACTIONS[x.n - 1].t + ' [' + (x.state || 'לא ידוע') + ']' + (x.evidence ? '\n  ' + x.evidence : '') + (x.next ? '\n  הצעד הבא: ' + x.next : ''))];
-}
-function questionsSection(h){
-  const { el } = h; const frag = document.createDocumentFragment();
-  frag.appendChild(el('h3', null, 'שבע שאלות לבדיקה תקופתית'));
-  frag.appendChild(el('p', 'muted', 'כדאי לחזור אליהן בצוות פעם בחודש או אחרי כל אירוע.'));
-  const ol = el('ol', 'tl'); QUESTIONS.forEach(q => ol.appendChild(el('li', null, q))); frag.appendChild(ol);
-  return frag;
-}
-window.SBE_RLEAD = { DEF, ELEMENTS, CAPACITIES, ACTIONS, LEVELS, AGES, QUESTIONS, MULTI, STATES,
-  nugiPrompt, classPrompt, checklistRule, checklistSchema, checklistSection, checklistPlain, questionsSection };
+// שימוש בדוח: לא מפרטים את כל הרשימה — משלבים בסעיפים הקיימים רק את מה שרלוונטי לנתונים.
+// המשתמש/ת מקבל/ת מסמך אחד מרוכז; הידע הזה מצטרף לכל שאר הידע ואינו מגביל אותו.
+const relevantRule = 'רשימת הבקרה, הרמות, הגילים ושבע השאלות הם ידע רקע שמצטרף לכל שאר הידע שלך — לא רשימה סגורה ולא תבנית לדוח. אל תפרטי את כל עשר הפעולות ואל תסמני כל אחת; בחרי רק את מה שרלוונטי לנתונים של ההנהגה הזאת, ושלבי אותו בתוך הסעיפים הקיימים (פעולות, צוות ושותפים, תקשורת, רווחה, תלמידים, שיחות, תוכנית צעדים, שאלות לבדיקה) — במבחן ביצוע מעשי ובעדות שאפשר לבדוק. ההמלצות אינן מוגבלות לפעולות האלה.';
+window.SBE_RLEAD = { DEF, ELEMENTS, CAPACITIES, ACTIONS, LEVELS, AGES, QUESTIONS, MULTI, ADDITIVE, nugiPrompt, classPrompt, relevantRule };
 })();
