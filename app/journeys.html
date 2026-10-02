@@ -249,6 +249,7 @@ async function viewBoard(){
   const app = F('app'); app.textContent = '';
   const c = card(); c.appendChild(el('h1', null, 'המסעות אל החוסן'));
   c.appendChild(el('p', 'muted', 'כל המסעות והתקדמותם — מוצג רק לך. מה שממתין לך מופיע ראשון.'));
+  const tryA = el('a', 'btn btn-ghost', 'למסך המשתתפים — פתיחת מסע לניסיון'); tryA.href = 'journey.html'; tryA.style.textDecoration = 'none'; c.appendChild(tryA);
   const w = el('p', 'muted', 'טוענת...'); c.appendChild(w);
   const d = await api('jrAll'); w.remove();
   if (d._status === 403) { c.appendChild(el('p', 'err', 'צריך כניסת מנהלת מערכת.')); return; }

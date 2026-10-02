@@ -406,7 +406,7 @@ function saveSuggestions(list){ try { localStorage.setItem("sbe.source.suggestio
 
 const TABS = {
   inst:[["codes","קודים"],["users","משתמשות"],["feedback","מדדי המשוב"],["data","נתונים"]],
-  sys: [["insts","מוסדות"],["inbox","פניות"],["crit","קריטריונים לאישור"],["access","סיסמאות וקודים"],["taxonomies","רשימות"],["libs","מקורות"],["eval","בקרת איכות"],["data","נתונים"]],
+  sys: [["journeys","🧭 מסע אל החוסן"],["insts","מוסדות"],["inbox","פניות"],["crit","קריטריונים לאישור"],["access","סיסמאות וקודים"],["taxonomies","רשימות"],["libs","מקורות"],["eval","בקרת איכות"],["data","נתונים"]],
 };
 
 // קישורים למסכים אחרים בפרויקט — לא לשוניות בתוך admin.html, אלא ניווט
@@ -495,11 +495,13 @@ function render(){
 
   const nav = $("navPanel"); nav.textContent = "";
   const list = TABS[role];
-  if (!list.some(t => t[0] === tab)) tab = list[0][0];
+  if (!list.some(t => t[0] === tab && t[0] !== "journeys")) tab = list.find(t => t[0] !== "journeys")[0];
 
   nav.append(el("h5",{}, role==="inst" ? "ניהול המוסד" : "ניהול המערכת"));
   const unseenCount = role==="sys" ? countUnseenAdditions() : 0;
   list.forEach(([k,l]) => {
+    // "מסע אל החוסן" — מסך נפרד (journeys.html), לא לשונית פנימית
+    if (k === "journeys") { const a = el("a",{ class:"nlink", href:"journeys.html" }, l); if (jrPendingN) a.append(el("span",{class:"navbadge"}, String(jrPendingN))); nav.append(a); return; }
     const b = el("button",{ class: "nlink" + (k===tab ? " on" : "") }, l);
     if (k === "taxonomies" && unseenCount) b.append(el("span",{class:"navbadge"}, String(unseenCount)));
     if (k === "crit" && critPendingN) b.append(el("span",{class:"navbadge"}, String(critPendingN)));
