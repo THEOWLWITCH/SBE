@@ -45,6 +45,7 @@ h1{font-family:"Frank Ruhl Libre",serif;font-size:1.9rem;margin-bottom:.4rem}
 .be b{color:var(--spoken);unicode-bidi:isolate}
 .lnk{font-size:.85rem;margin-top:.3rem}
 .lnk a{color:var(--spoken);font-weight:700;text-decoration:none}
+.priv{display:inline-block;font-size:.75rem;font-weight:700;color:var(--spoken);background:var(--spoken-soft);border-radius:99px;padding:.05rem .55rem;margin-bottom:.3rem}
 .key{font-family:monospace;font-size:.75rem;color:var(--muted);direction:ltr;unicode-bidi:isolate}
 </style>
 </head>
@@ -62,7 +63,10 @@ h1{font-family:"Frank Ruhl Libre",serif;font-size:1.9rem;margin-bottom:.4rem}
   var A = window.SBE_ADVISOR_SOURCES, box = document.getElementById('list');
   // ?a=nugi — בנק הידע של נוגי; ברירת מחדל — של פרקטי
   var adv = new URLSearchParams(location.search).get('a') === 'nugi' ? 'nugi' : 'practi';
-  var LIST = A.forAdvisor(adv);
+  // חומרים של ד״ר יעל שדה שטרם פורסמו (hidden) — היועצות משתמשות בהם, אבל הם לא מוצגים ברשימה
+  // רק מנהלת המערכת רואה אותם כאן (מסומנים "טרם פורסם — גלוי רק לך")
+  var IS_SYS = false; try { IS_SYS = sessionStorage.getItem('sbe.session.homeUrl') === 'admin.html?role=sys'; } catch(e){}
+  var LIST = A.forAdvisor(adv).filter(function(s){ return IS_SYS || !s.hidden; });
   if (adv === 'nugi') {
     document.title = 'נוגי — מקורות';
     document.getElementById('ttl').textContent = 'המקורות של נוגי: יועצת למנהיגות שתומכת בחוסן חברתי';
@@ -93,6 +97,7 @@ h1{font-family:"Frank Ruhl Libre",serif;font-size:1.9rem;margin-bottom:.4rem}
       else ln.textContent = 'אין קישור מקוון למקור';
       var k = document.createElement('span'); k.className = 'key'; k.textContent = '[' + s.k + ']';
       ln.appendChild(document.createTextNode(' ')); ln.appendChild(k);
+      if (s.hidden) { var tg = document.createElement('p'); tg.className = 'priv'; tg.textContent = 'טרם פורסם — גלוי רק לך (מנהלת המערכת)'; d.appendChild(tg); }
       d.appendChild(p); d.appendChild(bi); d.appendChild(ln); sec.appendChild(d);
     });
     box.appendChild(sec);
