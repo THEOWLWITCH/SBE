@@ -184,7 +184,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 <div class="wrap">
   <div class="card">
     <h1>נוגי: יועצת למנהיגות שתומכת בחוסן חברתי</h1>
-    <p><b>נוגי היא יועצת לפיתוח מנהיגות שתומכת בחוסן חברתי</b> — לא יועצת מנהיגות כללית: כל ניתוח וכל המלצה שלה מוסברים במונחי החוסן החברתי של בית הספר — שייכות, אמון, מנגנונים משותפים, רשתות תמיכה ומסוגלות קולקטיבית. נוגי עוזרת למי שמוביל/ה בבית הספר — מנהל/ת, צוות הנהלה, רכזים, וגם מועצת תלמידים וצוותי תלמידים — לבנות מנהיגות שמחזקת את החוסן החברתי: תקשורת, פירגון ועידוד, אמון, גיבוי וממלאי מקום, רווחת הצוות, ידע על מערכות החירום, ושותפות עם תלמידים, הורים וקהילה. ממלאים שאלון פתיחה, ומקבלים <b>דוח אחד מרוכז</b> — תמונת המצב והמלצות, רק מה שרלוונטי — ו<b>שיחת המשך</b>.</p>
+    <p><b>נוגי היא יועצת לפיתוח מנהיגות שתומכת בחוסן חברתי</b> — לא יועצת מנהיגות כללית: כל ניתוח וכל המלצה שלה מוסברים במונחי החוסן החברתי של בית הספר — שייכות, אמון, מנגנונים משותפים, רשתות תמיכה ומסוגלות קולקטיבית. נוגי עוזרת למי שמוביל/ה בבית הספר — מנהל/ת, צוות הנהלה, רכזים, וגם מועצת תלמידים וצוותי תלמידים — לבנות מנהיגות שמחזקת את החוסן החברתי: תקשורת, פירגון ועידוד, אמון, גיבוי וממלאי מקום, רווחת הצוות, ידע על מערכות החירום, ושותפות עם תלמידים, הורים וקהילה. ממלאים שאלון פתיחה, ומקבלים <b>דוח סיכום והמלצות</b> — רק מה שרלוונטי — ו<b>שיחת המשך</b>.</p>
     <p class="intro" style="border-inline-start-color:var(--hidden);background:var(--hidden-soft);font-size:.92rem;margin:.6rem 0"><b>חשוב:</b> כל המלצה של נוגי יש לבחון לאור הנהלים והחוקים — והאחריות לכך היא של ההנהגה. ההמלצות הן הצעות לחשיבה ולא הוראות.</p>
     <p class="muted">מנהיגות טובה היא עבודת צוות — ולכן נוגי תמיד תעדיף צוות, שותפים וממלאי מקום. נוגי נשענת על מחקר עדכני מישראל ומהעולם, שמתעדכן מדי שבוע — <a href="resilience-advisor-sources.html?a=nugi" target="_blank" style="color:var(--spoken);font-weight:700">רשימת המקורות</a>.</p>
   </div>
@@ -305,7 +305,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 (function(){
 'use strict';
 // נוגי — יועצת למנהיגות שתומכת בחוסן חברתי (01/10/2026). בנויה על אותו מנוע כמו פרקטי
-// (resilience-advisor.html): שאלון פתיחה → תמונת מצב → דוח אחד מרוכז (תמונת מצב + המלצות) → שיחת המשך (עד 10 שאלות).
+// (resilience-advisor.html): שאלון פתיחה → תמונת מצב → דוח סיכום והמלצות (תמונת מצב + המלצות) → שיחת המשך (עד 10 שאלות).
 // בנק הידע: SBE_ADVISOR_SOURCES.forAdvisor('nugi') — מתעדכן מדי שבוע.
 const SRC = window.SBE_ADVISOR_SOURCES;
 const AI_SERVER = 'https://sbe-server.onrender.com';
@@ -843,9 +843,9 @@ function renderReport(){
   const cp=el('button','btn btn-ghost','העתקת הטקסט');cp.addEventListener('click',()=>{navigator.clipboard&&navigator.clipboard.writeText(plain()).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הטקסט',2000);});});
   nav.appendChild(ask);nav.appendChild(pr);nav.appendChild(cp);head.appendChild(nav);box.appendChild(head);
 
-  // דוח אחד מרוכז: תמונת המצב ואחריה ההמלצות — רצף אחד
+  // דוח סיכום והמלצות: תמונת המצב ואחריה ההמלצות — רצף אחד
   const doc=el('div','card');doc.id='report-doc';
-  doc.appendChild(el('h2',null,'הדוח של נוגי — ההנהגה ככוח שמחזק את החוסן החברתי'));
+  doc.appendChild(el('h2',null,'דוח סיכום והמלצות — ההנהגה ככוח שמחזק את החוסן החברתי'));
   doc.appendChild(el('p','muted',metaLine(R)+' · על סמך שאלון הפתיחה'));
   if((d.answers||[]).length){doc.appendChild(el('h3',null,'תשובות לשאלות שלך'));d.answers.forEach(x=>{const c=el('div','act');c.appendChild(el('div','act-t',x.question||''));const dd=richText(x.answer||'');dd.classList.add('act-d');c.appendChild(dd);doc.appendChild(c);});}
   const sum=el('div');sum.id='report-sum';
@@ -880,7 +880,7 @@ function plain(){
   const R=STATE.report,d=R.doc||{},L=[];
   const rs=x=>x&&x.resilience?'\n  לחוסן החברתי: '+x.resilience:'';
   const rec=x=>'• '+x.title+'\n  '+(x.description||'')+rs(x)+((x.basis||[]).length?'\n  מבוסס על: '+x.basis.join(', '):'');
-  L.push('הדוח של נוגי — ההנהגה ככוח שמחזק את החוסן החברתי',metaLine(R));
+  L.push('דוח סיכום והמלצות — ההנהגה ככוח שמחזק את החוסן החברתי',metaLine(R));
   if((d.answers||[]).length){L.push('','תשובות לשאלות שלך');d.answers.forEach(x=>L.push('• '+x.question+'\n  '+x.answer));}
   L.push('','א. תמונת המצב','',d.intro||'');
   if(d.lens)L.push('','איך המחקר קורא את התמונה',d.lens);
