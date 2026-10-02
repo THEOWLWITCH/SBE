@@ -12,7 +12,7 @@ const MIN_PASSWORD = 8;
 // ההרשאות במערכת. לכל מוסד יש "תקרה" (modules:<מוסד>) — מה שמנהלת המערכת פתחה
 // לו; ברירת המחדל: שום דבר. קודי הצוות שמנהל/ת המוסד מפיק/ה מקבלים רק צירוף
 // מתוך התקרה.
-export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi'];
+export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi', 'journey'];
 const DEFAULT_MODULES = Object.fromEntries(PERMS.map((p) => [p, false]));
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
@@ -704,6 +704,239 @@ async function handleReviewCriteria(store, body) {
   return [400, { error: 'bad action' }];
 }
 
+// ── מסע אל החוסן (02/10/2026) ──
+// jr:<id> → מסע אחד: מיפוי → הצעת מסע (עם אפשרויות) → בחירות + הסבר → אישור מנהלת המערכת → אבני דרך
+// (הגשה → משוב / השלמה → תעודה) → תו חוסן. הכול מתועד בתוך המערכת (שרשור לכל אבן דרך, ערעורים ובקשות דחייה).
+// הבעלים — הקוד שבאסימון (t.c); הרשאה journey. מנהלת המערכת רואה הכול ומאשרת.
+const JR_UNITS = ['gan', 'elem', 'sec', 'school', 'community', 'other'];
+const JR_MAX_BYTES = 400000, JR_TXT = 4000;
+const jrClip = (v, n) => String(v == null ? '' : v).slice(0, n || JR_TXT);
+// ניקוי עמוק של אובייקט שמגיע מהדפדפן: מחרוזות מקוצרות, מספרים, מערכים ואובייקטים מוגבלים
+function jrClean(v, depth = 0) {
+  if (depth > 6) return null;
+  if (typeof v === 'string') return jrClip(v);
+  if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
+  if (typeof v === 'boolean' || v == null) return v;
+  if (Array.isArray(v)) return v.slice(0, 80).map((x) => jrClean(x, depth + 1));
+  if (typeof v === 'object') { const o = {}; Object.keys(v).slice(0, 60).forEach((k) => { o[jrClip(k, 40)] = jrClean(v[k], depth + 1); }); return o; }
+  return null;
+}
+const jrNow = () => new Date().toISOString();
+const jrDay = (d) => new Date(d).toISOString().slice(0, 10);
+function jrSummary(j) {
+  const ms = j.milestones || [];
+  return { id: j.id, unit: j.unit, unitName: j.unitName, by: j.by, inst: j.inst, status: j.status, created: j.created,
+    startStage: j.startStage || 1, stage: j.stage || j.startStage || 1, total: ms.length,
+    approved: ms.filter((m) => m.status === 'approved').length, submitted: ms.filter((m) => m.status === 'submitted').length,
+    needs: ms.filter((m) => m.status === 'needs').length,
+    next: (ms.find((m) => m.status !== 'approved') || {}).due || null,
+    nextTitle: (ms.find((m) => m.status !== 'approved') || {}).title || '',
+    obstacles: ((j.proposal || {}).fails || []).length, bridges: ms.reduce((n, m) => n + ((m.bridges || 0)), 0),
+    pendingAdmin: j.status === 'review' || ms.some((m) => m.status === 'submitted') || (j.thread || []).some((x) => x.open),
+    consent: !!(j.consent && j.consent.research), certs: ms.filter((m) => m.cert).length };
+}
+async function jrLoad(store, id) { return /^[a-z0-9]{6,24}$/.test(String(id || '')) ? store.get('jr:' + id) : null; }
+async function jrSave(store, j) {
+  j.updated = jrNow();
+  if (Buffer.byteLength(JSON.stringify(j)) > JR_MAX_BYTES) return false;
+  await store.set('jr:' + j.id, j); return true;
+}
+// השלב הנוכחי: השלב של אבן הדרך הראשונה שעוד לא הושלמה (או 5 כשהכול הושלם)
+function jrStage(j) { const m = (j.milestones || []).find((x) => x.status !== 'approved'); return m ? m.stage : 5; }
+
+async function handleJourney(store, body) {
+  const { action } = body;
+  const t = await verifyToken(store, body.token);
+  const isSys = (t && t.k === 'sys') || await checkPassword(store, 'sys', body.auth);
+  const ADMIN_J = ((typeof process !== 'undefined' && process.env.CORS_ORIGIN) || 'https://s-b-e.netlify.app') + '/journeys.html';
+
+  // ── ציבורי: אימות תעודה ──
+  if (action === 'jrCert') {
+    const j = await jrLoad(store, body.id);
+    const code = String(body.code || '');
+    if (!j || !code) return [404, { error: 'not found' }];
+    const ms = j.milestones || [];
+    const i = ms.findIndex((m) => m.cert && m.cert.code === code);
+    if (i < 0) return [404, { error: 'not found' }];
+    const m = ms[i], last = ms.length && ms.every((x) => x.status === 'approved') && i === ms.length - 1;
+    return [200, { unit: j.unit, unitName: j.unitName, inst: j.inst || '', title: m.title, stage: m.stage, gate: !!m.gate, n: i + 1, total: ms.length,
+      at: m.cert.at, assessment: m.cert.assessment || '', progress: m.cert.progress || [], final: !!last, code }];
+  }
+  // ── בדיקה יומית (GitHub Actions): סיכום שבועי למנהלת המערכת ──
+  if (action === 'jrTick') {
+    const secret = (typeof process !== 'undefined' && process.env.CRON_SECRET) || '';
+    if (!secret || body.secret !== secret) { await pause(); return [403, { error: 'unauthorized' }]; }
+    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.status !== 'done');
+    const today = jrDay(Date.now()), in14 = jrDay(Date.now() + 14 * 864e5);
+    const soon = [], late = [], waiting = [];
+    rows.forEach((j) => {
+      const s = jrSummary(j);
+      if (s.pendingAdmin) waiting.push(j.unitName);
+      (j.milestones || []).filter((m) => m.status === 'open' || m.status === 'needs').forEach((m) => {
+        if (m.due < today) late.push(j.unitName + ' — ' + m.title); else if (m.due <= in14) soon.push(j.unitName + ' — ' + m.title + ' (' + m.due.split('-').reverse().join('.') + ')');
+      });
+    });
+    const st = (await store.get('jr:tick')) || {};
+    const week = today.slice(0, 4) + '-' + Math.floor((Date.parse(today) / 864e5 + 4) / 7);
+    let sent = false;
+    if (new Date(today).getUTCDay() === 0 && st.week !== week && (soon.length || late.length || waiting.length)) {
+      await notifyAdmin('מסע אל החוסן — סיכום שבועי', 'ממתינים לך: ' + waiting.length + ' · מתקרבים בשבועיים: ' + soon.length + ' · בעצירת התרעננות: ' + late.length, ADMIN_J,
+        [waiting.length ? 'ממתינים לאישור או למשוב שלך:\n' + waiting.map((x) => '• ' + x).join('\n') : '', soon.length ? 'אבני דרך מתקרבות:\n' + soon.map((x) => '• ' + x).join('\n') : '',
+          late.length ? 'בעצירת התרעננות (עבר המועד):\n' + late.map((x) => '• ' + x).join('\n') : ''].filter(Boolean).join('\n\n')).catch(() => {});
+      await store.set('jr:tick', { week, at: jrNow() }); sent = true;
+    }
+    return [200, { ok: true, soon: soon.length, late: late.length, waiting: waiting.length, sent }];
+  }
+
+  const canUse = isSys || (t && Array.isArray(t.perms) && t.perms.includes('journey'));
+  if (!canUse) { await pause(); return [403, { error: 'unauthorized' }]; }
+  const owner = t && t.c ? String(t.c) : (isSys ? 'sys' : '');
+
+  if (action === 'jrCreate') {
+    const unit = JR_UNITS.includes(body.unit) ? body.unit : 'other';
+    const unitName = jrClip(body.unitName, 80).trim();
+    if (unitName.length < 2) return [400, { error: 'missing name' }];
+    const mine = (await store.list('jr:')).filter((r) => r.value && r.value.code === owner).length;
+    if (mine >= 10) return [429, { error: 'too many' }];
+    const id = Date.now().toString(36) + randomBytes(3).toString('hex');
+    const j = { id, code: owner, inst: (t && t.inst) || '', by: jrClip(body.by, 60), unit, unitName, created: jrNow(), status: 'mapping',
+      consent: { research: !!body.research, at: jrNow() }, mapping: {}, thread: [], events: [] };
+    await jrSave(store, j);
+    return [200, { ok: true, id }];
+  }
+  if (action === 'jrMine') {
+    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.id && (j.code === owner || isSys && body.all));
+    return [200, { items: rows.map(jrSummary) }];
+  }
+  if (action === 'jrAll') {
+    if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
+    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.id);
+    return [200, { items: rows.map(jrSummary).sort((a, b) => String(b.created).localeCompare(String(a.created))), settings: (await store.get('jr:settings')) || {} }];
+  }
+  if (action === 'jrSettings') {
+    if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
+    const st = jrClean(body.settings || {}); await store.set('jr:settings', st); return [200, { ok: true, settings: st }];
+  }
+  if (action === 'jrExport') {
+    if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
+    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.id && j.consent && j.consent.research);
+    // שורה לכל אירוע מחקרי (בחירה, רפלקציה, תחקיר) — בלי שם המסגרת ובלי פרטים מזהים
+    const out = [];
+    rows.forEach((j, n) => (j.events || []).forEach((e) => out.push({ journey: 'J' + (n + 1), unit: j.unit, at: e.at, stage: e.stage || '', type: e.type, key: e.key || '', choice: e.choice || '',
+      reasons: (e.reasons || []).join('; '), explain: e.explain || '', who: (e.who || []).join('; '), effect: e.effect || '', again: e.again || '', learned: e.learned || '' })));
+    return [200, { rows: out }];
+  }
+
+  const j = await jrLoad(store, body.id);
+  if (!j) return [404, { error: 'not found' }];
+  const isOwner = j.code === owner;
+  if (!isOwner && !isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
+  const ev = (type, data) => { j.events = (j.events || []).concat([{ at: jrNow(), type, stage: jrStage(j), ...data }]).slice(-400); };
+
+  if (action === 'jrGet') return [200, { journey: j, settings: (await store.get('jr:settings')) || {} }];
+
+  // ── המגישים ──
+  if (isOwner || isSys) {
+    if (action === 'jrSaveMapping') {
+      if (!['mapping', 'proposal'].includes(j.status)) return [409, { error: 'bad state' }];
+      j.mapping = jrClean(body.mapping || {}); await jrSave(store, j); return [200, { ok: true }];
+    }
+    if (action === 'jrSetProposal') {
+      if (!['mapping', 'proposal'].includes(j.status)) return [409, { error: 'bad state' }];
+      j.proposal = jrClean(body.proposal || {}); j.status = 'proposal'; j.proposalAt = jrNow();
+      if (!(await jrSave(store, j))) return [413, { error: 'too large' }];
+      return [200, { ok: true }];
+    }
+    if (action === 'jrSubmitChoices') {
+      if (j.status !== 'proposal') return [409, { error: 'bad state' }];
+      const choices = jrClean(body.choices || {});
+      const missing = Object.keys(choices).filter((k) => !String((choices[k] || {}).explain || '').trim() && !((choices[k] || {}).reasons || []).length);
+      if (!Object.keys(choices).length || missing.length) return [400, { error: 'explain required', missing }];
+      j.choices = choices; j.plan = jrClean(body.plan || {}); j.startStage = Math.min(5, Math.max(1, Number(body.startStage) || 1));
+      j.pace = ['fast', 'normal', 'calm'].includes(body.pace) ? body.pace : 'normal';
+      j.status = 'review'; j.submittedAt = jrNow();
+      Object.keys(choices).forEach((k) => ev('choice', { key: k, choice: choices[k].option, reasons: choices[k].reasons, explain: choices[k].explain, who: choices[k].who }));
+      if (!(await jrSave(store, j))) return [413, { error: 'too large' }];
+      notifyAdmin('מסע חדש ממתין לאישור', j.unitName + ' — הצעת המסע והבחירות חזרו אלייך', ADMIN_J + '#' + j.id).catch(() => {});
+      return [200, { ok: true }];
+    }
+    if (action === 'jrSubmitMilestone') {
+      const i = Number(body.mi), m = (j.milestones || [])[i];
+      if (j.status !== 'active' || !m || !['open', 'needs'].includes(m.status)) return [409, { error: 'bad state' }];
+      const sub = jrClean(body.submission || {});
+      if (String(sub.evidence || '').trim().length < 10) return [400, { error: 'evidence required' }];
+      m.submissions = (m.submissions || []).concat([{ ...sub, at: jrNow() }]).slice(-5);
+      m.status = 'submitted';
+      if (m.gate && sub.reflection) ev('reflection', { key: 'gate-' + m.stage, effect: sub.reflection.effect, again: sub.reflection.again, learned: sub.reflection.learned });
+      if (m.gate && sub.next) Object.keys(sub.next).forEach((k) => ev('choice', { key: 'next-' + k, choice: sub.next[k].option, reasons: sub.next[k].reasons, explain: sub.next[k].explain }));
+      if (!(await jrSave(store, j))) return [413, { error: 'too large' }];
+      notifyAdmin((m.gate ? 'שער הוגש' : 'אבן דרך הוגשה') + ' — ' + j.unitName, m.title, ADMIN_J + '#' + j.id).catch(() => {});
+      return [200, { ok: true }];
+    }
+    if (action === 'jrPost') {
+      const text = jrClip(body.text, 2000).trim();
+      if (text.length < 2) return [400, { error: 'empty' }];
+      const kind = isSys && !isOwner ? 'reply' : (['appeal', 'extension', 'comment'].includes(body.kind) ? body.kind : 'comment');
+      const mi = body.mi === null || body.mi === undefined || body.mi === '' ? null : Number(body.mi);
+      j.thread = (j.thread || []).concat([{ at: jrNow(), by: kind === 'reply' ? 'admin' : 'owner', kind, mi, text, open: kind !== 'reply' }]).slice(-300);
+      if (kind === 'reply') j.thread.forEach((x) => { if (x.by === 'owner' && (x.mi === mi)) x.open = false; });
+      if (!(await jrSave(store, j))) return [413, { error: 'too large' }];
+      if (kind !== 'reply') notifyAdmin({ appeal: 'ערעור', extension: 'בקשת דחייה', comment: 'הודעה' }[kind] + ' — ' + j.unitName,
+        mi != null && j.milestones && j.milestones[mi] ? j.milestones[mi].title : 'המסע', ADMIN_J + '#' + j.id, text).catch(() => {});
+      return [200, { ok: true }];
+    }
+    if (action === 'jrFinalReflection') {
+      j.final = jrClean(body.final || {}); ev('final', { learned: j.final.learned || '', explain: j.final.recommend || '' });
+      await jrSave(store, j); return [200, { ok: true }];
+    }
+  }
+
+  // ── מנהלת המערכת ──
+  if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
+  if (action === 'jrApprove') {
+    if (j.status !== 'review') return [409, { error: 'bad state' }];
+    const ms = jrClean(body.milestones || (j.plan || {}).milestones || []);
+    if (!Array.isArray(ms) || !ms.length) return [400, { error: 'no milestones' }];
+    j.milestones = ms.map((m) => ({ ...m, stage: Math.min(5, Math.max(1, Number(m.stage) || 1)), status: 'open', due: /^\d{4}-\d{2}-\d{2}$/.test(m.due || '') ? m.due : jrDay(Date.now() + 30 * 864e5) }));
+    j.status = 'active'; j.approvedAt = jrNow(); j.adminMsg = jrClip(body.message, 3000);
+    j.thread = (j.thread || []).concat([{ at: jrNow(), by: 'admin', kind: 'reply', mi: null, text: j.adminMsg || 'המסע אושר — יוצאים לדרך!', open: false }]);
+    await jrSave(store, j); return [200, { ok: true }];
+  }
+  if (action === 'jrReturn') {
+    if (j.status !== 'review') return [409, { error: 'bad state' }];
+    j.status = 'proposal';
+    j.thread = (j.thread || []).concat([{ at: jrNow(), by: 'admin', kind: 'reply', mi: null, text: jrClip(body.message, 3000) || 'נשמח לעוד כמה התאמות בבחירות.', open: false }]);
+    await jrSave(store, j); return [200, { ok: true }];
+  }
+  if (action === 'jrReview') {
+    const i = Number(body.mi), m = (j.milestones || [])[i];
+    if (!m || m.status !== 'submitted') return [409, { error: 'bad state' }];
+    const msg = jrClip(body.message, 3000);
+    if (body.decision === 'approve') {
+      m.status = 'approved'; m.approvedAt = jrNow();
+      m.cert = { code: randomBytes(5).toString('hex'), at: jrNow(), assessment: jrClip(body.assessment, 1500), progress: jrClean((body.progress || []).slice(0, 10)) };
+      m.bridges = Math.max(0, Number(body.bridges) || 0);
+    } else { m.status = 'needs'; }
+    j.thread = (j.thread || []).concat([{ at: jrNow(), by: 'admin', kind: 'reply', mi: i, text: msg || (m.status === 'approved' ? 'אבן הדרך הושלמה — כל הכבוד!' : 'השלמה קטנה בדרך.'), open: false }]);
+    j.thread.forEach((x) => { if (x.by === 'owner' && x.mi === i) x.open = false; });
+    j.stage = jrStage(j);
+    if ((j.milestones || []).every((x) => x.status === 'approved')) { j.status = 'done'; j.doneAt = jrNow(); }
+    await jrSave(store, j); return [200, { ok: true, cert: m.cert || null }];
+  }
+  if (action === 'jrEdit') {
+    const ms = jrClean(body.milestones || []);
+    if (!Array.isArray(ms) || !ms.length) return [400, { error: 'no milestones' }];
+    // שומרים מצב, הגשות ותעודות של אבני דרך קיימות לפי המיקום
+    j.milestones = ms.map((m, i) => { const old = (j.milestones || [])[i] || {}; return { ...old, ...m, stage: Math.min(5, Math.max(1, Number(m.stage) || old.stage || 1)),
+      status: old.status || 'open', submissions: old.submissions, cert: old.cert, due: /^\d{4}-\d{2}-\d{2}$/.test(m.due || '') ? m.due : (old.due || jrDay(Date.now() + 30 * 864e5)) }; });
+    j.stage = jrStage(j);
+    j.thread = (j.thread || []).concat([{ at: jrNow(), by: 'admin', kind: 'reply', mi: null, text: jrClip(body.message, 2000) || 'עדכנתי את אבני הדרך של המסע.', open: false }]);
+    await jrSave(store, j); return [200, { ok: true }];
+  }
+  if (action === 'jrDelete') { await store.del('jr:' + j.id); return [200, { ok: true }]; }
+  return [400, { error: 'bad action' }];
+}
+
 // ── פניות מהמשתמשים (01/10/2026): רעיונות, תקלות ושאלות מתוך פרקטי ──
 // fb:<ts>-<rand> → { type, text, name, contact, source, page, at }. שליחה פתוחה
 // (גם לאורחים בהתנסות הקהילה), קריאה ומחיקה — מנהלת המערכת בלבד.
@@ -807,6 +1040,7 @@ export async function handleAccess(store, body) {
   if (action === 'listGet' || action === 'listAdd' || action === 'listRemove') return handleLists(store, body);
   if (action === 'fbSubmit' || action === 'fbList' || action === 'fbDelete') return handleFeedbackInbox(store, body);
   if (/^crit(List|Propose|Mine|Use|Admin|Approve|Reject|Remove)$/.test(action || '')) return handleReviewCriteria(store, body);
+  if (/^jr[A-Z]/.test(action || '')) return handleJourney(store, body);
 
   const sysTok = await verifyToken(store, body?.token);
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);

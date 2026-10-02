@@ -84,7 +84,8 @@
     conv: ["conversation-planner.html"], activity: ["activity-planner.html"], academic: ["academic-review.html"],
     resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html", "message-writer.html"],
     leadership: ["leadership-advisor.html", "resilience-advisor-sources.html", "message-writer.html"],
-    practi: ["resilience-advisor.html", "resilience-advisor-sources.html", "message-writer.html"]
+    practi: ["resilience-advisor.html", "resilience-advisor-sources.html", "message-writer.html"],
+    journey: ["journey.html"]
   };
   var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html", "doc-trainee.html"];
 

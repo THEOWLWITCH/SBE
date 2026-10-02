@@ -1,0 +1,23 @@
+# מסע אל החוסן — בדיקה יומית: מעירה את השרת ב-Render ושולחת למנהלת המערכת סיכום שבועי (ביום ראשון)
+# על אבני דרך מתקרבות, מסעות בעצירת התרעננות ומה שממתין לה.
+# דורש סוד CRON_SECRET גם כאן (Settings → Secrets and variables → Actions) וגם ב-Render (Environment) — אותו ערך.
+name: journey-tick
+on:
+  schedule:
+    - cron: "15 5 * * *"
+  workflow_dispatch:
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Daily journey check
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then echo "CRON_SECRET is not set — skipping"; exit 0; fi
+          for i in 1 2 3; do
+            curl -sS -m 90 -X POST https://sbe-server.onrender.com/api/access \
+              -H 'content-type: application/json' \
+              -d "{\"action\":\"jrTick\",\"secret\":\"$CRON_SECRET\"}" && break
+            sleep 30
+          done

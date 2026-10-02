@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>תעודת מסע אל החוסן</title>
+<!-- עמוד ציבורי (בלי access-guard): תעודה של אבן דרך או "תו חוסן לקהילת חוסן", מאומתת בשרת לפי מזהה המסע וקוד התעודה. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Assistant:wght@400;600;700&family=Amatic+SC:wght@700&display=swap">
+<script src="lib/journey-model.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{--ink:#14212B;--muted:#5B6873;--deep:#1F4E6B;--teal:#2F7D7A;--gold:#B8893B;--gold-soft:#F4EAD7;--paper:#FFFDF8;--ground:#E9EEF1}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Assistant","Segoe UI",system-ui,sans-serif;background:var(--ground);color:var(--ink);padding:16px}
+.bar{max-width:1000px;margin:0 auto 12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.bar button{font:inherit;font-weight:700;padding:.55rem 1rem;border-radius:8px;border:1px solid #B9C6CF;background:#fff;cursor:pointer}
+.bar button.p{background:var(--deep);color:#fff;border-color:var(--deep)}
+#cert{max-width:1000px;margin:0 auto;background:var(--paper);position:relative;padding:44px 56px 36px;aspect-ratio:1.414/1;
+  border:2px solid var(--gold);box-shadow:0 10px 40px rgba(20,33,43,.18);overflow:hidden;display:flex;flex-direction:column}
+#cert::before{content:"";position:absolute;inset:12px;border:1px solid var(--gold);pointer-events:none}
+#cert::after{content:"";position:absolute;inset:18px;border:3px double rgba(184,137,59,.45);pointer-events:none}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.top img{height:56px}
+.kicker{font-size:13px;letter-spacing:.18em;color:var(--gold);font-weight:700}
+h1{font-family:"Frank Ruhl Libre",serif;font-weight:900;font-size:40px;color:var(--deep);text-align:center;margin:6px 0 2px}
+.sub{text-align:center;color:var(--teal);font-weight:700;font-size:16px}
+.to{text-align:center;margin:18px 0 4px;font-size:15px;color:var(--muted)}
+.unit{text-align:center;font-family:"Frank Ruhl Libre",serif;font-size:32px;font-weight:700;color:var(--ink)}
+.what{text-align:center;font-size:16px;margin-top:6px}
+.map{display:flex;justify-content:center;gap:0;margin:16px auto 8px;max-width:700px;width:100%}
+.map .s{flex:1;text-align:center;position:relative}
+.map .s::before{content:"";position:absolute;top:13px;inset-inline-start:-50%;width:100%;height:2px;background:#D6CDB8;z-index:0}
+.map .s:first-child::before{display:none}
+.map .s.r::before{background:var(--teal)}
+.map .d{position:relative;z-index:1;width:28px;height:28px;border-radius:50%;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;background:#EFE8D8;color:#9A8C6F;border:2px solid #D6CDB8}
+.map .s.r .d{background:var(--teal);border-color:var(--teal);color:#fff}
+.map .s.n .d{background:var(--gold);border-color:var(--gold);color:#fff;box-shadow:0 0 0 4px var(--gold-soft)}
+.map .t{font-size:11px;font-weight:700;color:var(--muted)}
+.assess{max-width:760px;margin:10px auto 6px;text-align:center;font-size:16px;line-height:1.65}
+.prog{max-width:760px;margin:8px auto 0;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.prog span{font-size:13px;background:var(--gold-soft);color:#7A5A22;border-radius:99px;padding:3px 11px;font-weight:600}
+.foot{display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto;padding:18px 10px 0}
+.sig{text-align:center;min-width:220px}
+.sig img{height:58px;display:block;margin:0 auto}
+.sig .hand{font-family:"Amatic SC",cursive;font-size:44px;color:var(--deep);line-height:1}
+.sig .line{border-top:1px solid #B8A57F;margin:2px auto 4px;width:200px}
+.sig .nm{font-weight:700;font-size:15px}
+.sig .tl{font-size:12.5px;color:var(--teal);font-weight:700;letter-spacing:.06em}
+.meta{text-align:center;font-size:11.5px;color:var(--muted);line-height:1.6}
+.seal{width:96px;height:96px;border-radius:50%;border:3px double var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;
+  font-family:"Frank Ruhl Libre",serif;font-weight:700;font-size:13px;color:var(--gold);transform:rotate(-8deg);background:radial-gradient(circle,#FFF8EA,#F4EAD7)}
+#cert.final h1{font-size:46px}
+#cert.final{border-width:3px}
+.msg{max-width:600px;margin:60px auto;text-align:center;background:#fff;padding:24px;border-radius:12px}
+@media (max-width:760px){#cert{padding:28px 22px;aspect-ratio:auto}h1{font-size:28px}.unit{font-size:24px}.foot{flex-direction:column;align-items:center;gap:14px}}
+@page{size:A4 landscape;margin:10mm}
+@media print{body{background:#fff;padding:0}.bar{display:none}#cert{box-shadow:none;max-width:none;width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<div class="bar" id="bar" hidden>
+  <button class="p" type="button" onclick="window.print()">הדפסה / שמירה כ-PDF</button>
+  <button type="button" id="b-img">תמונה לשיתוף</button>
+  <button type="button" id="b-link">העתקת קישור</button>
+</div>
+<div id="out"></div>
+<script>
+(function(){
+'use strict';
+const J = window.SBE_JOURNEY;
+const q = new URLSearchParams(location.search), id = q.get('id') || '', code = q.get('code') || '';
+const out = document.getElementById('out');
+function el(t, c, x){ const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = String(x); return n; }
+const fmt = d => d ? new Date(d).toLocaleDateString('he-IL', { day:'numeric', month:'long', year:'numeric' }) : '';
+fetch('https://sbe-server.onrender.com/api/access', { method:'POST', headers:{ 'content-type':'application/json' }, body: JSON.stringify({ action:'jrCert', id, code }) })
+  .then(r => r.json()).then(d => {
+    if (!d || !d.unitName) throw new Error();
+    document.getElementById('bar').hidden = false;
+    const c = el('div', d.final ? 'final' : ''); c.id = 'cert';
+    const top = el('div', 'top'); const logo = el('img'); logo.src = 'assets/begood-logo.png'; logo.alt = 'Begood'; top.appendChild(logo);
+    top.appendChild(el('div', 'kicker', 'מסע אל החוסן')); c.appendChild(top);
+    c.appendChild(el('h1', null, d.final ? 'תו חוסן לקהילת חוסן' : (d.gate ? 'תעודת שער' : 'תעודת אבן דרך')));
+    const stg = (J.STAGES.find(s => s.k === +d.stage) || {});
+    c.appendChild(el('div', 'sub', d.final ? 'קהילת חוסן — מנגנונים משותפים, תמונת עתיד ודרך שמחזיקה לאורך זמן' : stg.t + ' · ' + stg.sub));
+    c.appendChild(el('div', 'to', 'מוענקת בהוקרה ל'));
+    c.appendChild(el('div', 'unit', d.unitName));
+    const u = (J.UNITS.find(x => x.k === d.unit) || {}).t;
+    c.appendChild(el('div', 'what', d.final ? 'על השלמת המסע אל החוסן' + (u ? ' (' + u + ')' : '') : 'על השלמת "' + d.title + '" — אבן דרך ' + d.n + ' מתוך ' + d.total + ' במסע אל החוסן' + (u ? ' (' + u + ')' : '')));
+    const reached = k => d.final || k < d.stage || (d.gate && k === +d.stage);
+    const map = el('div', 'map'); J.STAGES.forEach(s => { const x = el('div', 's' + (reached(s.k) ? ' r' : '') + (s.k === +d.stage && !reached(s.k) ? ' n' : '')); x.appendChild(el('div', 'd', reached(s.k) ? '✓' : s.k)); x.appendChild(el('div', 't', s.t)); map.appendChild(x); }); c.appendChild(map);
+    if (d.assessment) c.appendChild(el('p', 'assess', d.assessment));
+    if ((d.progress || []).length) { const p = el('div', 'prog'); d.progress.forEach(x => p.appendChild(el('span', null, '✓ ' + x))); c.appendChild(p); }
+    const f = el('div', 'foot');
+    const sig = el('div', 'sig');
+    const img = el('img'); img.src = 'assets/signature-yael.png'; img.alt = 'חתימה';
+    img.onerror = () => { img.replaceWith(el('div', 'hand', 'יעל שדה')); };
+    sig.appendChild(img); sig.appendChild(el('div', 'line')); sig.appendChild(el('div', 'nm', 'ד״ר יעל שדה')); sig.appendChild(el('div', 'tl', 'חוסן · קהילה · חינוך'));
+    f.appendChild(sig);
+    const meta = el('div', 'meta'); meta.appendChild(el('div', null, 'הוענקה ב-' + fmt(d.at))); meta.appendChild(el('div', null, 'מספר תעודה: ' + d.code)); meta.appendChild(el('div', null, 'אימות: ' + location.host + location.pathname.replace(/[^/]*$/, '') + 'journey-cert.html')); f.appendChild(meta);
+    const seal = el('div', 'seal'); ['Begood', 'מסע אל', 'החוסן'].forEach((t, i) => { const s = el('div', null, t); if (!i) s.style.cssText = 'font-family:Assistant;font-weight:800;font-size:15px;direction:ltr'; seal.appendChild(s); }); f.appendChild(seal);
+    c.appendChild(f);
+    out.appendChild(c);
+    document.title = (d.final ? 'תו חוסן לקהילת חוסן — ' : 'תעודה — ') + d.unitName;
+  }).catch(() => { out.appendChild(el('div', 'msg', 'לא מצאנו את התעודה. כדאי לבדוק את הקישור.')); });
+document.getElementById('b-link').addEventListener('click', e => { navigator.clipboard && navigator.clipboard.writeText(location.href).then(() => { e.target.textContent = 'הועתק ✓'; }); });
+document.getElementById('b-img').addEventListener('click', async e => {
+  if (!window.html2canvas) return;
+  e.target.disabled = true; e.target.textContent = 'מכינה תמונה...';
+  try { const cv = await html2canvas(document.getElementById('cert'), { scale: 2, backgroundColor: '#FFFDF8', useCORS: true });
+    const a = document.createElement('a'); a.href = cv.toDataURL('image/png'); a.download = 'begood-certificate.png'; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 1500);
+  } catch(err) {}
+  e.target.disabled = false; e.target.textContent = 'תמונה לשיתוף';
+});
+})();
+</script>
+</body>
+</html>
