@@ -86,13 +86,18 @@ const args = process.argv.slice(2);
 const portArgIdx = args.indexOf('--port');
 const PORT = Number(portArgIdx >= 0 ? args[portArgIdx + 1] : (process.env.PORT || 8790));
 
-// CORS: ברירת מחדל לדומיין Netlify הידוע. ניתן לדריסה דרך CORS_ORIGIN.
-const CORS_ORIGIN = process.env.CORS_ORIGIN || 'https://s-b-e.netlify.app';
+// CORS: הדומיין be-good.co.il (עם www ובלי) וכתובת Netlify. CORS_ORIGIN יכול להכיל כמה כתובות מופרדות בפסיק;
+// הראשונה היא הכתובת הראשית (לקישורים במיילים). התשובה מחזירה את המקור של הבקשה אם הוא ברשימה.
+const CORS_LIST = [...new Set([...(process.env.CORS_ORIGIN || '').split(',').map((s) => s.trim().replace(/\/$/, '')).filter(Boolean),
+  'https://be-good.co.il', 'https://www.be-good.co.il', 'https://s-b-e.netlify.app'])];
+const CORS_ORIGIN = CORS_LIST[0];
+const corsFor = (res) => (res && res._origin && CORS_LIST.includes(res._origin) ? res._origin : CORS_ORIGIN);
 
 function sendJson(res, status, body) {
   res.writeHead(status, {
     'content-type': 'application/json; charset=utf-8',
-    'access-control-allow-origin': CORS_ORIGIN,
+    'access-control-allow-origin': corsFor(res),
+    'vary': 'origin',
     'access-control-allow-methods': 'POST, OPTIONS',
     'access-control-allow-headers': 'content-type',
   });
@@ -105,7 +110,8 @@ function sendJson(res, status, body) {
 function startKeepAlive(res) {
   res.writeHead(200, {
     'content-type': 'application/json; charset=utf-8',
-    'access-control-allow-origin': CORS_ORIGIN,
+    'access-control-allow-origin': corsFor(res),
+    'vary': 'origin',
     'access-control-allow-methods': 'POST, OPTIONS',
     'access-control-allow-headers': 'content-type',
   });
@@ -128,6 +134,7 @@ function readBody(req) {
 }
 
 const server = createServer(async (req, res) => {
+  res._origin = req.headers.origin || '';
   if (req.method === 'OPTIONS') return sendJson(res, 204, {});
 
   if (req.method === 'GET' && req.url === '/health') {
@@ -251,7 +258,7 @@ server.headersTimeout = 0;
 server.listen(PORT, '0.0.0.0', () => {
   const keyName = getProviderEnvKeyName();
   console.log(`שרת מנוע התרגול פועל · http://0.0.0.0:${PORT}`);
-  console.log(`CORS מוגדר ל: ${CORS_ORIGIN}`);
+  console.log(`CORS מוגדר ל: ${CORS_LIST.join(', ')}`);
   console.log(process.env[keyName]
     ? `מפתח ${keyName} נמצא.`
     : `אזהרה: אין ${keyName} מוגדר — כל בקשה תיכשל עם שגיאה ברורה.`);

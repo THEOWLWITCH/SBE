@@ -522,7 +522,7 @@ async function institutionsView(store) {
 const OPEN_LISTS = { 'advisor-situation': ['resilience', 'practi'], 'advisor-age': ['resilience', 'practi'], 'advisor-stmt': ['resilience', 'practi'],
   'leader-situation': 'leadership', 'leader-role': 'leadership', 'leader-stage': 'leadership', 'leader-stmt': 'leadership',
   // כתיבת הודעה או מכתב ברוח חוסן: נמענים וסוגי הודעות שאנשי חינוך מוסיפים
-  'writer-aud': ['resilience', 'practi', 'leadership', 'writer'], 'writer-kind': ['resilience', 'practi', 'leadership', 'writer'] };
+  'writer-aud': 'writer', 'writer-kind': 'writer' };
 const LIST_ITEM_MAX = { 'advisor-stmt': 200, 'leader-stmt': 200 };
 const LIST_MAX = 200, ITEM_MAX = 80;
 async function handleLists(store, body) {
@@ -631,7 +631,7 @@ export function notifyAdmin(title, message, link, detail) {
   }
   return Promise.allSettled(jobs);
 }
-const ADMIN_URL = ((typeof process !== 'undefined' && process.env.CORS_ORIGIN) || 'https://s-b-e.netlify.app') + '/admin.html';
+const ADMIN_URL = (((typeof process !== 'undefined' && process.env.CORS_ORIGIN) || 'https://s-b-e.netlify.app').split(',')[0].trim().replace(/\/$/, '')) + '/admin.html';
 const rcPublic = (x) => ({ id: x.id, title: x.title, detail: x.detail || '', cat: x.cat, uses: x.uses || 0 });
 
 async function handleReviewCriteria(store, body) {
@@ -750,7 +750,7 @@ async function handleJourney(store, body) {
   const { action } = body;
   const t = await verifyToken(store, body.token);
   const isSys = (t && t.k === 'sys') || await checkPassword(store, 'sys', body.auth);
-  const ADMIN_J = ((typeof process !== 'undefined' && process.env.CORS_ORIGIN) || 'https://s-b-e.netlify.app') + '/journeys.html';
+  const ADMIN_J = (((typeof process !== 'undefined' && process.env.CORS_ORIGIN) || 'https://s-b-e.netlify.app').split(',')[0].trim().replace(/\/$/, '')) + '/journeys.html';
 
   // ── ציבורי: אימות תעודה ──
   if (action === 'jrCert') {

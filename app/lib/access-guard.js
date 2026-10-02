@@ -68,9 +68,10 @@
   var q = new URLSearchParams(home.split("?")[1] || "");
   var ALL_USERS = ["entry.html", "index.html", "sources-library.html"];
   var WORKSHOP = {
-    trainee: ["doc-trainee.html", "observation-sheet.html", "practice.html", "feedback.html",
+    // תוצרי הסימולציה (גרסת המתנסה/השחקנית/המנחה, כרטיס שחקנית) — רק למנהלת המערכת ולמנחות הסימולציה (02/10/2026).
+    trainee: ["observation-sheet.html", "practice.html", "feedback.html",
               "conversation-planner.html", "activity-planner.html", "academic-review.html"],
-    actor:   ["card-actor.html", "practice.html", "feedback.html",
+    actor:   ["practice.html", "feedback.html",
               "conversation-planner.html", "activity-planner.html", "academic-review.html"],
     parent:  ["parent-input-screen.html", "practice.html", "feedback.html", "conversation-planner.html"],
     youth:   ["practice.html", "feedback.html", "conversation-planner.html"]
@@ -82,13 +83,14 @@
   var PAGES_BY_PERM = {
     fac_trainee: ["input-screen.html"], fac_parent: ["parent-input-screen.html"], fac_youth: ["student-input-screen.html"],
     conv: ["conversation-planner.html"], activity: ["activity-planner.html"], academic: ["academic-review.html"],
-    resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html", "message-writer.html"],
-    leadership: ["leadership-advisor.html", "resilience-advisor-sources.html", "message-writer.html"],
-    practi: ["resilience-advisor.html", "resilience-advisor-sources.html", "message-writer.html"],
+    resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html"],
+    leadership: ["leadership-advisor.html", "resilience-advisor-sources.html"],
+    practi: ["resilience-advisor.html", "resilience-advisor-sources.html"],
     journey: ["journey.html"],
-    writer: ["message-writer.html"]
+    writer: ["message-writer.html", "resilience-advisor-sources.html"] // כתיבת הודעה או מכתב — רק בהרשאה הזאת (02/10/2026)
   };
-  var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html", "doc-trainee.html"];
+  var SIM_DOCS = ["doc-trainee.html", "doc-actor.html", "card-actor.html", "doc-facilitator.html"];
+  var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html"].concat(SIM_DOCS);
 
   var allowed = null; // null = הכול
   if (home === "home.html") {
@@ -100,11 +102,11 @@
   } else if (home === "admin.html?role=sys") {
     allowed = null;
   } else if (home === "admin.html?role=inst") {
-    allowed = ["admin.html", "doc-facilitator.html"];
+    allowed = ["admin.html"];
   } else if (/^system-select\.html/.test(home)) {
     var track = q.get("track");
-    allowed = ["system-select.html", "search.html", "doc-trainee.html", "facilitator-screen.html",
-               "feedback.html", "feedback-results.html"];
+    allowed = ["system-select.html", "search.html", "facilitator-screen.html",
+               "feedback.html", "feedback-results.html"].concat(SIM_DOCS);
     if (TRACK_INPUT[track]) allowed.push(TRACK_INPUT[track]);
     else for (var t in TRACK_INPUT) allowed.push(TRACK_INPUT[t]);
     // הכלים הנוספים — רק מה שנפתח למוסד (sbe.session.modules, נשמר ב-system-select.html).
