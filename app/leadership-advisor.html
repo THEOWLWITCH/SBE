@@ -139,6 +139,10 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 .ctag{font-size:.7rem;font-weight:700;color:var(--auto);background:var(--auto-soft);border-radius:99px;padding:.05rem .45rem;margin-inline-start:.35rem}
 .act-r{font-size:.9rem;margin:.35rem 0 0;padding:.35rem .6rem;border-radius:6px;background:var(--auto-soft)}
 .act-r b{color:var(--auto)}
+.opt-head{margin-top:1.4rem;padding-top:.8rem;border-top:2px solid var(--hair)}
+.optdim{border:1px solid var(--hair);border-radius:9px;padding:.5rem .8rem;margin:.5rem 0;background:var(--surface)}
+.optdim>summary{cursor:pointer;font-weight:700;color:var(--spoken)}
+.optdim .dim{border-top:none;margin-top:.4rem;padding-top:0}
 .conv{border:1px solid var(--hair);border-inline-start:3px solid var(--auto);border-radius:9px;padding:.7rem .9rem;margin:.55rem 0}
 .conv dl{display:grid;grid-template-columns:auto 1fr;gap:.25rem .7rem;margin:.4rem 0 0;font-size:.93rem}
 .conv dt{font-weight:700;color:var(--muted)}
@@ -226,7 +230,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 
     <div class="card">
       <h2>2. שאלון פתיחה — תמונת המצב</h2>
-      <p class="muted" id="crit-help">לכל היגד בחרו עד כמה הוא מתאר את המצב בחודש האחרון. אם אין לך מספיק מידע — "לא יודע/ת" (גם זה מידע). היגדים שמסומנים <span class="rev">היגד הפוך</span> מתארים מצב שפוגע בחוסן.</p>
+      <p class="muted" id="crit-help">הממדים הראשונים הם ליבת השאלון; אחריהם ממדי רשות להעמקה. לכל היגד בחרו עד כמה הוא מתאר את המצב בחודש האחרון. אם אין לך מספיק מידע — "לא יודע/ת" (גם זה מידע). היגדים שמסומנים <span class="rev">היגד הפוך</span> מתארים מצב שפוגע בחוסן.</p>
       <div id="criteria"></div>
     </div>
 
@@ -322,37 +326,37 @@ const STAFF_DIMS = [
     {k:'peer', d:'תמיכת עמיתים', q:'יש מפגשים או מקומות קבועים לתמיכה הדדית בצוות.', look:'מפגש עמיתים, ליווי מורים חדשים, זמן משותף.'},
     {k:'selfcare', d:'רווחת ההנהגה', q:'גם להנהגה יש מקור תמיכה וזמן להתאושש.', look:'עמית/ה או מנטור/ית, הפסקה אמיתית.'}
   ]},
-  {t:'ידע, מערכות ולמידה', items:[
+  {t:'ידע, מערכות ולמידה', opt:1, items:[
     {k:'systems', d:'ידע על מערכות תשתית וחירום', q:'הצוות מכיר את מערכות החירום והתשתית — מרחבים מוגנים, התרעות, קשר, מערכות מידע ולמידה מרחוק.', look:'כל אחד/ת יודע/ת איפה, מה ואיך.'},
     {k:'drills', d:'נהלים ותרגול', q:'הנהלים והתרגולים מעודכנים, והצוות יודע מה תפקידו בהם.', look:'תרגול אחרון היה השנה, ויש בו תפקידים ברורים.'},
     {k:'learn', d:'למידה אחרי אירוע', q:'אחרי אירוע מתקיימת למידה משותפת — מה עבד ומה משנים.', look:'שיחת סיכום, החלטה על שינוי אחד לפחות.'}
   ]},
-  {t:'שותפות עם תלמידים, הורים וקהילה', items:[
+  {t:'שותפות עם תלמידים, הורים וקהילה', opt:1, items:[
     {k:'students', d:'תלמידים כשותפים', q:'לתלמידים יש תפקידי הנהגה ממשיים, וקולם משפיע על החלטות.', look:'מועצת תלמידים פעילה, צוותי תלמידים.'},
     {k:'parents', d:'קשר עם ההורים', q:'יש קשר שוטף ודו־כיווני עם ההורים.', look:'עדכונים קבועים, ערוץ לשאלות, שיתוף בהחלטות.'},
     {k:'community', d:'שותפויות בקהילה', q:'בית הספר עובד בשיתוף עם הרשות, הקהילה וגורמים בחוץ.', look:'קשר קבוע עם הרשות, עמותות ובתי ספר שכנים.'}
   ]},
   // לפי הפרק על מנהיגות תומכת חוסן אצל Fathi (2022)
-  {t:'שקיפות, הערכה ורשתות', items:[
+  {t:'שקיפות, הערכה ורשתות', opt:1, items:[
     {k:'transp', d:'שקיפות', q:'ההנהגה משתפת בגלוי במידע, בשיקולים ובהחלטות — גם כשעדיין אין תשובות.', look:'מסבירים למה הוחלט, ואומרים "עוד לא יודעים" כשזה המצב.'},
     {k:'selfeval', d:'הערכה מתמדת של המנהיגות', q:'ההנהגה בודקת את עצמה באופן קבוע — מבקשת משוב מהצוות ומשנה בעקבותיו.', look:'משוב לצוות ההנהלה, שיחת רפלקציה, שינוי שנעשה בעקבות משוב.'},
     {k:'network', d:'קשר עם מנהיגים אחרים', q:'ההנהגה בקשר קבוע עם מנהיגים מבתי ספר, מקהילות ומצוותים אחרים — ללמידה ולתמיכה הדדית.', look:'פורום מנהלים, שותפות עם בית ספר שכן, קהילת עמיתים.'},
     {k:'advisors', d:'הפעלה מכוונת של יועצים', q:'ההנהגה נעזרת ביועצים ובאנשי מקצוע באופן מכוון — כשותפים לחשיבה, וההחלטה נשארת שלה.', look:'יודעים מתי, במי ולמה נעזרים, ומגדירים מטרה לליווי.'}
   ]},
   // Fathi (2022): המנהיג/ה כ"מחבר/ת" (translational leader) — קשרים, תיווך וקולות שונים
-  {t:'חיבורים, גישור וקולות שונים', items:[
+  {t:'חיבורים, גישור וקולות שונים', opt:1, items:[
     {k:'connect', d:'יצירת חיבורים', q:'ההנהגה מחברת בין אנשים, צוותים וקבוצות — בתוך בית הספר ומחוצה לו.', look:'מפגישה בין מורים מתחומים שונים, בין הורים לצוות, בין בית הספר לקהילה.'},
     {k:'broker', d:'תיווך, גישור והעברת ידע', q:'ההנהגה מגשרת בין עמדות שונות — צוות, הורים, תלמידים — ומעבירה ידע בין הקבוצות.', look:'מתווכים בקונפליקט, דואגים שמה שנלמד בצוות אחד יגיע לאחרים.'},
     {k:'dissent', d:'ערוץ למתנגדים', q:'יש ערוץ — גם אנונימי — שבו אפשר להתנגד, להזהיר ולהעיר על החלטות, וההנהגה מקשיבה לו.', look:'תיבת הערות, שיחה פתוחה, "פרקליט השטן" בישיבה.'}
   ]},
   // Fathi (2022): ניסויים בטוחים לכישלון, תרבות ידידותית לטעויות והבנת מורכבות
-  {t:'ניסוי, טעות ומורכבות', items:[
+  {t:'ניסוי, טעות ומורכבות', opt:1, items:[
     {k:'safefail', d:'ניסויים בטוחים לכישלון', q:'ההנהגה מאפשרת לנסות פתרונות חדשים בקטן, כניסוי שמותר בו להיכשל וללמוד.', look:'פיילוט בשכבה אחת, בדיקה אחרי חודש, החלטה אם להרחיב.'},
     {k:'errlearn', d:'תרבות ידידותית לטעויות', q:'טעויות נבחנות יחד כדי ללמוד מהן, בלי חיפוש אשמים.', look:'שיחת למידה אחרי משהו שלא הצליח, בלי "מי אשם".'},
     {k:'complex', d:'הבנת מורכבות המערכת', q:'ההנהגה בוחנת את ההשפעות של צעדים לאורך זמן ומתאימה אותם כשמתברר מה עבד — ולא מצפה לתוצאה מיידית.', look:'בודקים שוב אחרי כמה שבועות, ומשנים בלי להתבייש.'}
   ]},
   // Fathi (2022): חמשת עקרונות החברה מרובת־החוסן — אי־ודאות, עצמאות וחיבור, אינטליגנציה קולקטיבית ותרבות למידה
-  {t:'אי־ודאות, אינטליגנציה קולקטיבית ותרבות למידה', items:[
+  {t:'אי־ודאות, אינטליגנציה קולקטיבית ותרבות למידה', opt:1, items:[
     {k:'cynefin', d:'התאמת הפעולה לסוג הבעיה', q:'ההנהגה מבחינה בין בעיה פשוטה, מסובכת, מורכבת או כאוטית — ומתאימה לה דרך פעולה.', look:'בפשוטה — נוהל; במורכבת — ניסוי קטן; בכאוטית — קודם לייצב.'},
     {k:'future', d:'למידה מהעתיד', q:'ההנהגה מתרגלת תרחישים וסימולציות כדי להתכונן גם למה שעוד לא קרה.', look:'סימולציה של יום חירום, "מה נעשה אם...".'},
     {k:'autonomy', d:'עצמאות לצד חיבור', q:'שכבות וצוותים יכולים להמשיך לתפקד בעצמם גם כשחלק אחר בבית הספר נפגע — ועדיין משתפים מידע וידע ביניהם.', look:'שכבה ממשיכה לפעול כשהרכזת חסרה; פורום משותף לכל השכבות.'},
@@ -381,11 +385,11 @@ const STU_DIMS = [
     {k:'s_adult', d:'מבוגר/ת מלווה', q:'יש מבוגר/ת מלווה זמין/ה שהצוות יכול לפנות אליו/ה.', look:'פגישה קבועה, מענה כשצריך.'},
     {k:'s_influence', d:'השפעה אמיתית', q:'להצעות של המועצה או הצוות יש השפעה אמיתית על מה שקורה בבית הספר.', look:'הצעה שהתקבלה ובוצעה.'}
   ]},
-  {t:'חוסן וחיבור', items:[
+  {t:'חוסן וחיבור', opt:1, items:[
     {k:'s_crisis', d:'עזרה בתקופה קשה', q:'המועצה או הצוות יודעים איך לעזור בתקופה קשה — לחבר תלמידים, לפרגן, להחזיק מסורות.', look:'יוזמה בזמן מלחמה, אחרי אירוע, בלמידה מרחוק.'},
     {k:'s_inclusion', d:'פעילות לכל התלמידים', q:'הפעילויות של המועצה או הצוות פונות לכל התלמידים, גם למי שבשוליים.', look:'גם מי שלא "בחבורה" משתתף/ת ומוזמן/ת.'}
   ]},
-  {t:'שקיפות, הערכה וקשרים', items:[
+  {t:'שקיפות, הערכה וקשרים', opt:1, items:[
     {k:'s_transp', d:'שקיפות', q:'המועצה או הצוות מספרים לתלמידים בגלוי מה הוחלט ולמה.', look:'סיכום קצר, עדכון בכיתות.'},
     {k:'s_eval', d:'בדיקה עצמית', q:'המועצה או הצוות בודקים מה עבד ומה לא — ומשנים בעקבות זה.', look:'שיחת סיכום אחרי כל פעילות.'},
     {k:'s_network', d:'קשר עם צוותים אחרים', q:'המועצה או הצוות בקשר עם מועצות וצוותים בבתי ספר אחרים או בקהילה.', look:'מפגש מועצות, פרויקט משותף.'},
@@ -403,8 +407,8 @@ const isStudents = ()=>STUDENT_WHO.includes(F('f-who').value);
 
 function buildCriteria(){
   DIMS = isStudents() ? STU_DIMS : STAFF_DIMS;
-  ITEMS = DIMS.flatMap(d=>[...d.items,...communityItems(d)].map(it=>({...it,dim:d.t})));
-  const crit=F('criteria');crit.textContent='';
+  ITEMS = DIMS.flatMap(d=>[...d.items,...communityItems(d)].map(it=>({...it,dim:d.t,opt:!!d.opt})));
+  const crit=F('criteria');crit.textContent='';let optHead=false;
   DIMS.forEach(dm=>{
     const sec=document.createElement('div');sec.className='dim';
     const h=document.createElement('h3');h.textContent=dm.t;sec.appendChild(h);
@@ -423,7 +427,14 @@ function buildCriteria(){
       q.appendChild(t);q.appendChild(lk);q.appendChild(sc);sec.appendChild(q);
     });
     decorateDim(sec,dm,STMT_LIST,rebuildCriteria);
-    crit.appendChild(sec);
+    if(!dm.opt){crit.appendChild(sec);return;}
+    // ממדי רשות — להעמקה: מקופלים, לא חובה למלא, ונכנסים לניתוח רק אם מולאו
+    if(!optHead){optHead=true;const oh=document.createElement('div');oh.className='opt-head';
+      oh.appendChild(el('h3',null,'ממדי רשות — להעמקה'));
+      oh.appendChild(el('p','muted','לא חובה. כל ממד שתמלאו יעשיר את הניתוח; ממד שלא מולא — נוגי לא תסיק עליו.'));crit.appendChild(oh);}
+    const det=document.createElement('details');det.className='optdim';det.dataset.dim=dm.t;
+    const sm=document.createElement('summary');sm.textContent=dm.t+' · '+sec.querySelectorAll('.q').length+' היגדים';det.appendChild(sm);
+    sec.querySelector('h3').remove();det.appendChild(sec);crit.appendChild(det);
   });
   const stu=isStudents();
   F('l-strong').textContent=stu?'תאר/י את החוזקות של המועצה או הצוות באופן חופשי':'תאר/י את החוזקות של ההנהגה ושל הצוות באופן חופשי';
@@ -551,7 +562,7 @@ function modeNote(){F('mode-note').hidden=F('f-mode').value!=='לבד';}
 F('f-mode').addEventListener('change',modeNote);
 
 function answers(){const a={};ITEMS.forEach(it=>{const c=document.querySelector('input[name="a-'+it.k+'"]:checked');if(c)a[it.k]=Number(c.value);});return a;}
-function setAnswers(a){ITEMS.forEach(it=>{document.querySelectorAll('input[name="a-'+it.k+'"]').forEach(inp=>{inp.checked=a[it.k]===Number(inp.value);inp.parentElement.classList.toggle('on',inp.checked);});if(a[it.k]!=null)F('q-'+it.k).classList.remove('miss');});}
+function setAnswers(a){setTimeout(()=>document.querySelectorAll('details.optdim').forEach(d=>{if(d.querySelector('input:checked'))d.open=true;}));ITEMS.forEach(it=>{document.querySelectorAll('input[name="a-'+it.k+'"]').forEach(inp=>{inp.checked=a[it.k]===Number(inp.value);inp.parentElement.classList.toggle('on',inp.checked);});if(a[it.k]!=null)F('q-'+it.k).classList.remove('miss');});}
 
 // ── שמירה מקומית (במכשיר הזה בלבד). התשובות של שני הסטים נשמרות יחד, כדי שמעבר בין
 // "צוות" ל"תלמידים" לא ימחק תשובות.
@@ -585,7 +596,9 @@ function pictureText(a){
     'מצב: '+(f('f-sit')||'לא צוין')];
   if(f('f-recent'))L.push('מה קרה לאחרונה: '+f('f-recent'));
   L.push('','דירוג המוביל/ה להיגדים בשאלון הפתיחה (0=כמעט לא, 3=כמעט תמיד; "הפוך" = מצב שפוגע בחוסן):');
-  DIMS.forEach(dm=>{L.push('['+dm.t+']');ITEMS.filter(it=>it.dim===dm.t).forEach(it=>{const v=a[it.k];if(it.c&&v==null)return;L.push('- '+it.q+(it.r?' (הפוך)':'')+(it.c?' (היגד שהוסיפו אנשי חינוך)':'')+' → '+(v==null?'לא נענה':SCALE[v]));});});
+  const skipped=DIMS.filter(dm=>dm.opt&&!ITEMS.some(it=>it.dim===dm.t&&a[it.k]!=null)).map(dm=>dm.t);
+  DIMS.forEach(dm=>{if(skipped.includes(dm.t))return;L.push('['+dm.t+']'+(dm.opt?' (ממד רשות)':''));ITEMS.filter(it=>it.dim===dm.t).forEach(it=>{const v=a[it.k];if((it.c||it.opt)&&v==null)return;L.push('- '+it.q+(it.r?' (הפוך)':'')+(it.c?' (היגד שהוסיפו אנשי חינוך)':'')+' → '+(v==null?'לא נענה':SCALE[v]));});});
+  if(skipped.length)L.push('','ממדי רשות שלא מולאו (אל תסיקי עליהם ואל תציגי אותם כחולשה): '+skipped.join('; '));
   const ds=domains(a).sort((x,y)=>y.score-x.score);
   L.push('','ציונים מחושבים (0–100; 75+ תפקודי · 50–74 חלקי · 25–49 חלש · מתחת ל-25 בקושי תפקודי):');
   ds.forEach(d=>L.push('- '+d.d+': '+Math.round(d.score)+' ('+d.l+')'+(d.capped?' — מצב פוגע מגביל את הציון':'')));
@@ -684,7 +697,7 @@ let BUSY=false;
 F('btn-analyze').addEventListener('click',async()=>{
   if(BUSY)return;
   const a=answers();const err=F('form-err');
-  const miss=ITEMS.filter(it=>!it.c&&a[it.k]==null);
+  const miss=ITEMS.filter(it=>!it.c&&!it.opt&&a[it.k]==null);
   document.querySelectorAll('.q').forEach(q=>q.classList.remove('miss'));
   const need=[];if(!F('f-who').value)need.push('תפקיד');if(!F('f-stage').value)need.push('שלב חינוכי');if(!F('f-sit').value)need.push('מצב');
   if(need.length||miss.length){
