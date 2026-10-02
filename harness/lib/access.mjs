@@ -600,6 +600,7 @@ const RC_GHOST = [
 export function rcGhostwrite(t) { const s = String(t || '').replace(/\s+/g, ' '); return RC_GHOST.some((r) => r.test(s)); }
 // התראה למנהלת המערכת (02/10/2026) — לא חוסמת ולא מפילה את הבקשה אם נכשלה.
 // פוש לנייד דרך ntfy.sh (חינם, בלי חשבון): משתנה הסביבה NTFY_TOPIC = שם הערוץ שנרשמים אליו באפליקציה.
+// טלגרם (חינם, בלי פרסומות): TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID.
 // מייל דרך Resend (חינם עד 3,000 בחודש): RESEND_API_KEY + NOTIFY_EMAIL. בלי המשתנים — אין התראה.
 export function notifyAdmin(title, message, link) {
   const env = (typeof process !== 'undefined' && process.env) || {};
@@ -607,6 +608,11 @@ export function notifyAdmin(title, message, link) {
   if (env.NTFY_TOPIC) {
     jobs.push(fetch('https://ntfy.sh/' + encodeURIComponent(env.NTFY_TOPIC), { method: 'POST',
       headers: { Title: 'Begood', Tags: 'bell', ...(link ? { Click: link } : {}) }, body: title + '\n' + message }));
+  }
+  if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) {
+    jobs.push(fetch('https://api.telegram.org/bot' + env.TELEGRAM_BOT_TOKEN + '/sendMessage', { method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: 'Begood — ' + title + '\n' + message + (link ? '\n' + link : '') }) }));
   }
   if (env.RESEND_API_KEY && env.NOTIFY_EMAIL) {
     jobs.push(fetch('https://api.resend.com/emails', { method: 'POST',
