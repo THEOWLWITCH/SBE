@@ -597,6 +597,25 @@ const RC_GHOST = [
   /\b(?:write|rewrite|compose|generate|draft)\b[^.]{0,40}\b(?:for me|my|the (?:section|chapter|paragraph|introduction|essay|summary|conclusion))\b/i,
 ];
 export function rcGhostwrite(t) { const s = String(t || '').replace(/\s+/g, ' '); return RC_GHOST.some((r) => r.test(s)); }
+// התראה למנהלת המערכת (02/10/2026) — לא חוסמת ולא מפילה את הבקשה אם נכשלה.
+// פוש לנייד דרך ntfy.sh (חינם, בלי חשבון): משתנה הסביבה NTFY_TOPIC = שם הערוץ שנרשמים אליו באפליקציה.
+// מייל דרך Resend (חינם עד 3,000 בחודש): RESEND_API_KEY + NOTIFY_EMAIL. בלי המשתנים — אין התראה.
+export function notifyAdmin(title, message, link) {
+  const env = (typeof process !== 'undefined' && process.env) || {};
+  const jobs = [];
+  if (env.NTFY_TOPIC) {
+    jobs.push(fetch('https://ntfy.sh/' + encodeURIComponent(env.NTFY_TOPIC), { method: 'POST',
+      headers: { Title: 'Begood', Tags: 'bell', ...(link ? { Click: link } : {}) }, body: title + '\n' + message }));
+  }
+  if (env.RESEND_API_KEY && env.NOTIFY_EMAIL) {
+    jobs.push(fetch('https://api.resend.com/emails', { method: 'POST',
+      headers: { authorization: 'Bearer ' + env.RESEND_API_KEY, 'content-type': 'application/json' },
+      body: JSON.stringify({ from: 'Begood <onboarding@resend.dev>', to: [env.NOTIFY_EMAIL], subject: 'Begood — ' + title,
+        text: message + (link ? '\n\n' + link : '') }) }));
+  }
+  return Promise.allSettled(jobs);
+}
+const ADMIN_URL = ((typeof process !== 'undefined' && process.env.CORS_ORIGIN) || 'https://s-b-e.netlify.app') + '/admin.html';
 const rcPublic = (x) => ({ id: x.id, title: x.title, detail: x.detail || '', cat: x.cat, uses: x.uses || 0 });
 
 async function handleReviewCriteria(store, body) {
@@ -626,6 +645,10 @@ async function handleReviewCriteria(store, body) {
       at: new Date().toISOString(), uses: 0 };
     if (isSys) rec.decidedAt = rec.at;
     items.push(rec); await store.set('rc:items', items);
+    if (rec.status === 'pending') {
+      const n = items.filter((x) => x.status === 'pending').length;
+      notifyAdmin('קריטריון ממתין לאישור', '"' + title + '" (' + rec.cat + ')' + (n > 1 ? '\nממתינים לאישורך: ' + n : ''), ADMIN_URL).catch(() => {});
+    }
     return [200, { ok: true, id: rec.id, status: rec.status }];
   }
   if (action === 'critMine') {
