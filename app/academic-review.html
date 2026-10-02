@@ -9,6 +9,7 @@
      ב-activity-planner.html (19/09/2026), לא תלויות בשרת. -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<script src="lib/review-testimonials.js"></script>
 
 <style>
 :root{
@@ -150,6 +151,30 @@ details.log summary{cursor:pointer;}
 .critadd-row{display:flex;gap:6px;}
 .critadd button{font-size:12.5px;padding:6px 14px;white-space:nowrap;}
 .critadd-note{font-size:11px;color:var(--muted);line-height:1.5;}
+.critadd select{font-family:inherit;font-size:13.5px;padding:7px 9px;border:1px solid var(--hair);border-radius:5px;background:var(--ground);color:var(--ink);}
+.critadd-opts{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px;}
+.critadd-opts label{display:flex;gap:6px;align-items:center;margin:0;font-weight:600;cursor:pointer;}
+.crit-msg{font-size:12.5px;line-height:1.55;border-radius:6px;padding:7px 10px;margin:0;}
+.crit-msg.ok{background:var(--auto-soft,#DFE9E2);color:var(--auto,#4A6B5A);}
+.crit-msg.bad{background:var(--brick-soft);color:var(--brick);}
+.critrow .rm{float:inline-end;font-size:11.5px;padding:2px 9px;font-weight:600;}
+.critrow .tag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:99px;padding:1px 7px;margin-inline-start:6px;background:var(--surface-2);color:var(--muted);}
+.critrow .tag.pending{background:var(--hidden-soft);color:var(--hidden);}
+.critrow .tag.rejected{background:var(--brick-soft);color:var(--brick);}
+.critrow .tag.uses{background:var(--spoken-soft);color:var(--spoken);}
+.workfile{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.workfile button{font-size:13px;padding:7px 13px;}
+.workfile .note{flex-basis:100%;margin:2px 0 0;}
+.ai-note{margin-top:14px;border:1px solid var(--hair);border-inline-start:3px solid var(--spoken);border-radius:6px;padding:10px 13px;background:var(--spoken-soft);font-size:13px;line-height:1.6;}
+#tmFab{position:fixed;top:40%;bottom:auto;inset-inline-start:0;z-index:40;writing-mode:vertical-rl;font-size:13px;font-weight:700;width:auto;height:max-content;line-height:1.2;
+  padding:14px 7px;border-radius:8px 0 0 8px;border:1px solid var(--spoken);border-inline-start:none;background:var(--spoken);color:#fff;
+  box-shadow:0 4px 14px var(--shadow);cursor:pointer;letter-spacing:.02em;}
+#tmDlg .tm{border-bottom:1px solid var(--hair);padding:12px 0;}
+#tmDlg .tm:last-child{border-bottom:none;}
+#tmDlg .tm-who{font-weight:700;font-size:14px;margin-bottom:4px;}
+#tmDlg .tm-who span{font-weight:400;color:var(--muted);font-size:12.5px;margin-inline-start:8px;unicode-bidi:isolate;}
+#tmDlg .tm p{margin:0 0 6px;line-height:1.65;}
+.ai-note q{display:block;margin-top:6px;font-style:normal;quotes:none;}
 
 /* שני סוגי משוב — מחוון מסכם (מוקבץ לפי תחום) מול משוב פדגוגי לפני הגשה
    (22/09/2026, לבקשת המשתמשת: "בנפרד" — שתי מטרות שונות, לא רשימה אחת). */
@@ -199,7 +224,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 
 @page{size:A4;margin:18mm 20mm}
 @media print{
-  .actions,header,.banner,#navBar,#rptFab{display:none!important;}
+  .actions,header,.banner,#navBar,#rptFab,#tmFab{display:none!important;}
   dialog{position:static;max-width:none;width:auto;box-shadow:none;border:none;}
   .dlg-f{display:none;}
 }
@@ -226,6 +251,14 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <div class="banner brick">
   <b>לא שיפוט, ליווי.</b> המשוב נכתב בגובה העיניים ומכוון לשיפור, לא לביקורת חדה — זו עבודה
   אמיתית של מישהי אמיתית. שמרי עותק של הטקסט המקורי לפני שאת עורכת לפיו.
+</div>
+<div class="banner workfile" id="workFileBar">
+  <b>קובץ עבודה</b>
+  <button type="button" id="bSaveWork">שמירת קובץ עבודה</button>
+  <button type="button" id="bOpenWork">פתיחת קובץ עבודה</button>
+  <button type="button" id="bLastFb" hidden>המשוב האחרון</button>
+  <input type="file" id="openWorkFile" accept=".json,application/json" hidden>
+  <p class="note" id="workFileNote">הכול נשמר אוטומטית במכשיר הזה. כדי להמשיך במכשיר אחר — שמרי קובץ עבודה בתיקייה שלך (למשל Google Drive או OneDrive) ופתחי אותו שם. הקובץ נשמר אצלך בלבד, לא בשרת של המערכת.</p>
 </div>
 
 <div class="grp-wrap">
@@ -257,8 +290,26 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 </details>
 
 <details class="grp" open>
-  <summary>קריטריונים לבדיקה<span class="count" id="n-crit"></span></summary>
+  <summary>הנחיות המשימה / מחוון — לא חובה<span class="count" id="n-task"></span></summary>
   <div class="grp-b">
+    <p class="note" style="margin:0">קיבלת מהמרצה משימה, הנחיות או מחוון? העלי או הדביקי אותם כאן. הם <b>לא נבדקים כחלק מהעבודה</b> — הם המסגרת לבדיקה — בסוג המשוב "לפי הנחיות המנחה" או "משוב משולב" (בחירה למטה), המשוב יבדוק עד כמה העבודה עונה עליהן.</p>
+    <div class="uploadbox" style="margin-bottom:0">
+      <input type="file" id="taskFile" accept=".txt,text/plain,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,application/pdf">
+      <p class="note" id="taskStatus" style="margin-top:8px;"></p>
+    </div>
+    <textarea class="pastearea" id="taskText" maxlength="20000" style="min-height:140px" placeholder="הדביקי כאן את הנחיות המשימה או את המחוון (לא חובה)..."></textarea>
+  </div>
+</details>
+
+<details class="grp" open>
+  <summary>סוג המשוב וקריטריונים<span class="count" id="n-crit"></span></summary>
+  <div class="grp-b">
+    <div>
+      <label style="font-weight:700;display:block;margin-bottom:6px">איזה משוב לבקש?</label>
+      <div class="crit-mode" id="fbKind"></div>
+      <p class="crit-mode-d" id="fbKindD" style="margin-bottom:0"></p>
+    </div>
+    <div id="critArea" style="display:flex;flex-direction:column;gap:14px">
     <div class="crit-mode" id="critMode">
       <button type="button" data-mode="formative">משוב לפני הגשה (פדגוגי)</button>
       <button type="button" data-mode="summative">הערכה מסכמת (מחוון מלא)</button>
@@ -268,11 +319,18 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
     <div class="critlist" id="critList"></div>
     <div class="critadd">
       <div class="critadd-row">
-        <input id="critNewTitle" placeholder="הוספת קריטריון — כותרת (לדוגמה: חשיבה יצירתית)">
+        <input id="critNewTitle" maxlength="80" placeholder="הוספת קריטריון — כותרת (לדוגמה: השוואה בין מחקרים בסקירה)">
         <button type="button" id="critAddBtn">הוספה</button>
       </div>
-      <textarea id="critNewDetail" placeholder="פירוט מה הקריטריון בודק (לא חובה)"></textarea>
-      <p class="critadd-note">התוספת זמינה מיד לכולן, ומיוחסת לך. ניהול המערכת רואה כל תוספת חדשה במסך הניהול ויכולה לערוך/להסיר.</p>
+      <textarea id="critNewDetail" maxlength="400" placeholder="פירוט: מה הקריטריון בודק (לא חובה, עד 400 תווים)"></textarea>
+      <div class="critadd-opts">
+        <label for="critNewCat" style="font-weight:400">קטגוריה:</label>
+        <select id="critNewCat"></select>
+        <label><input type="checkbox" id="critShare" checked> להציע לקהילה</label>
+      </div>
+      <p class="crit-msg" id="critMsg" hidden></p>
+      <p class="critadd-note" id="critAddNote">קריטריון מתאר <b>מה לבדוק</b> — הכלי נותן משוב ולא כותב במקומך, ולכן בקשות כמו "כתבי לי את הסעיף" לא מתקבלות. הקריטריון נשמר אצלך ומשמש אותך מיד, ואפשר להסיר אותו בכל עת. אם סימנת "להציע לקהילה" — הוא יופיע אצל כולן אחרי אישור של מנהלת המערכת. קריטריון כפול או דומה מדי לקיים לא יתקבל. הנחיות משימה ארוכות — בשדה "הנחיות המשימה" למעלה.</p>
+    </div>
     </div>
   </div>
 </details>
@@ -285,6 +343,13 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <button type="button" id="bReset">ניקוי</button>
   <span class="note" id="hint">מלאי את השם, הדביקי טקסט, וסמני לפחות קריטריון אחד</span>
 </div></div>
+
+<button type="button" id="tmFab" title="מה אמרו על הכלי">משובים על הכלי</button>
+<dialog id="tmDlg">
+  <div class="dlg-h">משובים על הכלי</div>
+  <div class="dlg-b" id="tmList"></div>
+  <div class="dlg-f"><button type="button" id="tmClose">סגירה</button></div>
+</dialog>
 
 <dialog id="dlg">
   <div class="dlg-h" id="dlgH">משוב</div>
@@ -466,22 +531,79 @@ const CRIT_MODE_DESC = {
 };
 let critMode = "formative"; // ברירת מחדל — תואם את כותרת הכלי "...לפני הגשה"
 
+// ── קריטריונים נוספים (02/10/2026) ──
+// "הקריטריונים שלי" — נשמרים במכשיר (sbe.lists.custom.v1.reviewCriteria), משמשים מיד ואפשר להסיר.
+// "מהקהילה" — מהשרת (critList), מופיעים לכולן רק אחרי אישור של מנהלת המערכת, מקובצים לפי קטגוריה
+// וממוינים לפי מספר הפעמים שנבחרו. הצעה לקהילה — critPropose; השרת פוסל כפילויות וכתיבה במקום הכותב/ת.
+const CRIT_CATS = ["כללי","מבוא ושאלת מחקר","סקירת ספרות","שיטת מחקר","ממצאים","דיון ומסקנות","כתיבה אקדמית ומבנה","מקורות וציטוט","פרויקט ותוצר"];
+let COMMUNITY = [];
+// אותם כללים כמו בשרת (harness/lib/access.mjs: rcNorm / rcSimilar / rcGhostwrite) — כדי לענות מיד, גם בלי שרת.
+const RC_STOP = new Set(["של","את","עם","על","אל","או","גם","כל","האם","מידת","רמת","אופן","בין","the","of","and","a","to","in"]);
+function rcNorm(t){
+  return String(t || "").toLowerCase().replace(/[֑-ׇ]/g, "").replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .split(/\s+/).filter(Boolean)
+    .map(w => (w.length > 3 && /^[והבלמשכ]/.test(w) ? w.slice(1) : w))
+    .map(w => w.replace(/(ים|ות)$/, m => (w.length > 4 ? "" : m)))
+    .filter(w => w.length > 1 && !RC_STOP.has(w));
+}
+function rcSimilar(a, b){
+  const A = rcNorm(a), B = rcNorm(b);
+  if (!A.length || !B.length) return false;
+  const ja = A.join(" "), jb = B.join(" ");
+  if (ja === jb) return true;
+  if (Math.min(ja.length, jb.length) >= 4 && (ja.includes(jb) || jb.includes(ja))) return true;
+  const sa = new Set(A), sb = new Set(B);
+  if ([...sa].filter(x => sb.has(x)).length / new Set([...sa, ...sb]).size >= 0.6) return true;
+  const bg = s => { const g = new Set(); for (let i = 0; i < s.length - 1; i++) g.add(s.slice(i, i + 2)); return g; };
+  const ga = bg(ja.replace(/ /g, "")), gb = bg(jb.replace(/ /g, ""));
+  const gi = [...ga].filter(x => gb.has(x)).length;
+  return ga.size + gb.size > 0 && (2 * gi) / (ga.size + gb.size) >= 0.8;
+}
+const RC_VERBS = ["כתוב","כתבי","כתבו","תכתוב","תכתבי","תכתבו","נסח","נסחי","נסחו","תנסח","תנסחי","חבר","חברי","תחבר","תחברי",
+  "השלם","השלימי","תשלים","תשלימי","צור","צרי","תיצור","תיצרי","הפק","הפיקי","תפיק","תפיקי","שכתב","שכתבי","תשכתב","תשכתבי",
+  "ערוך","ערכי","תערוך","תערכי","סכם","סכמי","תסכם","תסכמי","תקן","תקני","תתקן","תתקני","הוסף","הוסיפי","תוסיף","תוסיפי",
+  "מלא","מלאי","תמלא","תמלאי","פתח","פתחי","תפתח","תפתחי","הרחב","הרחיבי","תרחיב","תרחיבי","בנה","בני","תבנה","תבני"];
+const RC_PARTS = "סעיף|הסעיף|פרק|הפרק|מבוא|המבוא|סיכום|הסיכום|דיון|הדיון|סקירה|הסקירה|סקירת|עבודה|העבודה|פסקה|הפסקה|פסקאות|תקציר|התקציר|מסקנות|המסקנות|טקסט|הטקסט|חלק|החלק|שאלת|השאלה|ביבליוגרפיה|רשימת";
+const RC_B0 = "(?<![֐-׿\\w])", RC_B1 = "(?![֐-׿\\w])";
+const RC_GHOST = [
+  new RegExp(RC_B0 + "(?:" + RC_VERBS.join("|") + ")" + RC_B1 + "\\s+(?:לי|עבורי|בשבילי|במקומי|לנו|עבורנו)" + RC_B1),
+  new RegExp(RC_B0 + "(?:" + RC_VERBS.join("|") + ")" + RC_B1 + "\\s+(?:(?:את|עוד|גם)\\s+)?(?:" + RC_PARTS + ")" + RC_B1),
+  new RegExp(RC_B0 + "(?:במקומי|במקום הכותב|במקום הכותבת|במקום הסטודנט|במקום הסטודנטית)" + RC_B1),
+  /\b(?:write|rewrite|compose|generate|draft)\b[^.]{0,40}\b(?:for me|my|the (?:section|chapter|paragraph|introduction|essay|summary|conclusion))\b/i,
+];
+function rcGhostwrite(t){ const s = String(t || "").replace(/\s+/g, " "); return RC_GHOST.some(r => r.test(s)); }
+const GHOST_MSG = "הקריטריון לא התקבל: הכלי נותן משוב ולא כותב במקומך — זה העיקרון של מוכנות להגשה. נסחי קריטריון שמתאר מה לבדוק, למשל: \"האם הסקירה משווה בין מחקרים\" ולא \"כתבי לי את הסקירה\".";
+
+function token(){ try { return sessionStorage.getItem("sbe.session.token") || ""; } catch(e){ return ""; } }
+async function accessApi(body){
+  const r = await fetch(AI_SERVER + "/api/access", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify(body) });
+  const d = await r.json().catch(() => ({})); d._status = r.status; return d;
+}
+function myItems(){ return loadCustomLists().reviewCriteria || []; }
+function saveMyItems(list){ const cl = loadCustomLists(); cl.reviewCriteria = list; saveCustomLists(cl); }
 function customCriteria(){
-  return (loadCustomLists().reviewCriteria || []).map(x => ({ v:x.value, d:x.detail || "", custom:true }));
+  const comm = new Set(COMMUNITY.map(c => c.id));
+  return myItems().filter(x => !(x.pid && comm.has(x.pid)))
+    .map(x => ({ v:x.value, d:x.detail || "", custom:true, cat:x.cat || "", pid:x.pid || "", pstatus:x.pstatus || "", reason:x.reason || "" }));
+}
+function communityCriteria(){ return COMMUNITY.map(c => ({ v:c.title, d:c.detail || "", community:true, id:c.id, cat:c.cat, uses:c.uses || 0 })); }
+function builtinCriteria(){
+  if (critMode === "summative") {
+    const flat = [];
+    SUMMATIVE_GROUPS.forEach(g => g.items.forEach(it => flat.push({ v:it.v, d:it.d })));
+    return flat;
+  }
+  return FORMATIVE_CRITERIA.map(c => ({
+    v:c.v, d:c.questions.map(q => "· " + q).join("\n") + "\nנקודת התמקדות למשוב: " + c.fb,
+    questions:c.questions, fb:c.fb,
+  }));
 }
 // רשימה שטוחה אחידה {v,d,...} — נקודת המעבר היחידה בין המבנים העשירים
 // (קבוצות/שאלות מנחות) לפורמט שכבר צורך computeFeedbackAI/bReview.
 function allCriteria(){
-  if (critMode === "summative") {
-    const flat = [];
-    SUMMATIVE_GROUPS.forEach(g => g.items.forEach(it => flat.push({ v:it.v, d:it.d })));
-    return [...flat, ...customCriteria()];
-  }
-  const flat = FORMATIVE_CRITERIA.map(c => ({
-    v:c.v, d:c.questions.map(q => "· " + q).join("\n") + "\nנקודת התמקדות למשוב: " + c.fb,
-    questions:c.questions, fb:c.fb,
-  }));
-  return [...flat, ...customCriteria()];
+  const out = [...builtinCriteria(), ...customCriteria()];
+  communityCriteria().forEach(c => { if (!out.some(x => x.v === c.v)) out.push(c); });
+  return out;
 }
 const selectedCriteria = new Set();
 
@@ -492,9 +614,26 @@ function renderCritRow(parent, c){
   cb.addEventListener("change", () => {
     if (cb.checked) selectedCriteria.add(c.v); else selectedCriteria.delete(c.v);
     row.classList.toggle("on", cb.checked);
-    syncHint();
+    syncHint(); saveDraft();
   });
-  row.append(el("label", {}, cb, c.v));
+  const lab = el("label", {}, cb, c.v);
+  if (c.custom) {
+    if (c.pstatus === "pending") lab.append(el("span", { class:"tag pending" }, "ממתין לאישור לקהילה"));
+    else if (c.pstatus === "rejected") lab.append(el("span", { class:"tag rejected", title:c.reason || "" }, "לא אושר לקהילה" + (c.reason ? ": " + c.reason : "")));
+    else if (c.pstatus === "dup") lab.append(el("span", { class:"tag" }, "אצלך בלבד"));
+  }
+  if (c.community && c.uses) lab.append(el("span", { class:"tag uses" }, "נבחר " + c.uses + " פעמים"));
+  if (c.custom) {
+    const rm = el("button", { type:"button", class:"rm", title:"הסרה מהרשימה שלך" }, "הסרה");
+    rm.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      if (!confirm("להסיר את \"" + c.v + "\" מהקריטריונים שלך?")) return;
+      saveMyItems(myItems().filter(x => x.value !== c.v));
+      selectedCriteria.delete(c.v); renderCriteria(); syncHint(); saveDraft();
+    });
+    row.append(rm);
+  }
+  row.append(lab);
   if (c.questions) {
     const qBox = el("div", { class:"crit-q" });
     const ul = el("ul"); c.questions.forEach(q => ul.append(el("li",{},q)));
@@ -504,62 +643,143 @@ function renderCritRow(parent, c){
   } else if (c.d) {
     row.append(el("div", { class:"d" }, c.d));
   }
-  if (c.custom) row.append(el("div", { class:"src" }, "תוספת קהילה"));
   parent.append(row);
+}
+function critGroup(box, title, items, open){
+  const det = el("details", { class:"critgrp" });
+  if (open) det.open = true;
+  const body = el("div", { class:"critgrp-b" });
+  det.append(el("summary", {}, title));
+  items.forEach(c => renderCritRow(body, c));
+  det.append(body);
+  box.append(det);
 }
 
 function renderCriteria(){
   const box = $("critList"); box.textContent = "";
   $("critModeD").textContent = CRIT_MODE_DESC[critMode];
   [...$("critMode").children].forEach(b => b.classList.toggle("on", b.dataset.mode === critMode));
-
-  if (critMode === "summative") {
-    SUMMATIVE_GROUPS.forEach(g => {
-      const det = el("details", { class:"critgrp", open:"" });
-      const body = el("div", { class:"critgrp-b" });
-      det.append(el("summary", {}, g.g));
-      g.items.forEach(it => renderCritRow(body, { v:it.v, d:it.d }));
-      det.append(body);
-      box.append(det);
+  if (critMode === "summative") SUMMATIVE_GROUPS.forEach(g => critGroup(box, g.g, g.items.map(it => ({ v:it.v, d:it.d })), true));
+  else builtinCriteria().forEach(c => renderCritRow(box, c));
+  const mine = customCriteria();
+  if (mine.length) critGroup(box, "הקריטריונים שלי (" + mine.length + ")", mine, true);
+  const comm = communityCriteria().filter(c => !mine.some(m => m.v === c.v));
+  if (comm.length) {
+    box.append(el("div", { class:"crit-mode-d", style:"margin:10px 4px 4px;font-weight:700" }, "קריטריונים מהקהילה — לפי קטגוריה, הנבחרים ביותר למעלה"));
+    CRIT_CATS.forEach(cat => {
+      const items = comm.filter(c => (c.cat || "כללי") === cat).sort((a, b) => b.uses - a.uses);
+      if (items.length) critGroup(box, cat + " (" + items.length + ")", items, items.some(c => selectedCriteria.has(c.v)));
     });
-    const extra = customCriteria();
-    if (extra.length) {
-      const det = el("details", { class:"critgrp", open:"" });
-      const body = el("div", { class:"critgrp-b" });
-      det.append(el("summary", {}, "תוספות קהילה"));
-      extra.forEach(c => renderCritRow(body, c));
-      det.append(body);
-      box.append(det);
-    }
-  } else {
-    allCriteria().forEach(c => renderCritRow(box, c));
   }
 }
+CRIT_CATS.forEach(c => $("critNewCat").append(el("option", { value:c }, c)));
 renderCriteria();
 [...$("critMode").children].forEach(b => b.addEventListener("click", () => {
   if (b.dataset.mode === critMode) return;
   critMode = b.dataset.mode;
   selectedCriteria.clear(); // מעבר סוג מנקה בחירה — קריטריוני הסוג הקודם לא רלוונטיים כאן
   renderCriteria();
-  syncHint();
+  syncHint(); saveDraft();
 }));
-$("critAddBtn").addEventListener("click", () => {
-  const title = val("critNewTitle"); if (!title) return;
-  const detail = val("critNewDetail");
-  addCustomListItem("reviewCriteria", title, detail);
+function critMsg(text, ok){ const m = $("critMsg"); m.textContent = text; m.className = "crit-msg " + (ok ? "ok" : "bad"); m.hidden = !text; }
+$("critAddBtn").addEventListener("click", async () => {
+  const title = val("critNewTitle").replace(/\s+/g, " "); if (!title) return;
+  const detail = val("critNewDetail").replace(/\s+/g, " ");
+  const cat = $("critNewCat").value || "כללי";
+  if (title.length < 3) return critMsg("כותרת קצרה מדי.", false);
+  if (rcGhostwrite(title) || rcGhostwrite(detail)) return critMsg(GHOST_MSG, false);
+  const pool = [...builtinCriteria(), ...customCriteria(), ...communityCriteria()];
+  const twin = pool.find(c => rcSimilar(c.v, title))
+    || (critMode === "formative" ? SUMMATIVE_GROUPS.flatMap(g => g.items) : FORMATIVE_CRITERIA).find(c => rcSimilar(c.v, title));
+  if (twin) {
+    if (allCriteria().some(c => c.v === twin.v)) { selectedCriteria.add(twin.v); renderCriteria(); syncHint(); saveDraft(); }
+    return critMsg("הקריטריון לא נוסף: הוא דומה מדי לקריטריון \"" + twin.v + "\" שכבר קיים" + (allCriteria().some(c => c.v === twin.v) ? " — סימנתי אותו עבורך." : " (בסוג המשוב השני)."), false);
+  }
+  const item = { value:title, creator: val("creatorName") || null, inst:null, date:new Date().toISOString().slice(0,10), seen:false, cat };
+  if (detail) item.detail = detail;
+  saveMyItems([...myItems(), item]);
   $("critNewTitle").value = ""; $("critNewDetail").value = "";
-  selectedCriteria.add(title);
+  selectedCriteria.add(title); renderCriteria(); syncHint(); saveDraft();
+  if (!$("critShare").checked) return critMsg("נוסף לקריטריונים שלך ונבחר ✓", true);
+  if (!token()) return critMsg("נוסף לקריטריונים שלך ונבחר ✓ כדי להציע אותו לקהילה צריך להיכנס עם קוד.", true);
+  critMsg("נוסף לקריטריונים שלך ונבחר ✓ שולחת הצעה לקהילה...", true);
+  const setMine = (patch) => saveMyItems(myItems().map(x => x.value === title ? { ...x, ...patch } : x));
+  try {
+    const d = await accessApi({ action:"critPropose", token: token(), title, detail, cat, by: val("creatorName") });
+    if (d.ok) { setMine({ pid:d.id, pstatus:d.status }); critMsg(d.status === "approved" ? "נוסף לקהילה ✓" : "נוסף לקריטריונים שלך ונבחר ✓ ההצעה נשלחה לאישור מנהלת המערכת, והקריטריון יופיע אצל כולן אחרי אישור.", true); }
+    else if (d.error === "duplicate") { setMine({ pstatus:"dup" }); critMsg("נוסף לקריטריונים שלך, אבל לא נשלח לקהילה: הוא דומה מדי לקריטריון \"" + d.similar + "\"" + (d.status === "pending" ? " שכבר ממתין לאישור." : " שכבר קיים בקהילה."), false); }
+    else if (d.error === "ghostwrite") { saveMyItems(myItems().filter(x => x.value !== title)); selectedCriteria.delete(title); critMsg(GHOST_MSG, false); }
+    else if (d.error === "too many pending") critMsg("נוסף לקריטריונים שלך. יש לך כבר 10 הצעות שממתינות לאישור — אפשר להציע עוד אחרי שיאושרו.", false);
+    else critMsg("נוסף לקריטריונים שלך, אבל ההצעה לקהילה לא נשלחה (" + (d._status === 403 ? "הקוד לא פותח את משוב לעבודות" : "אין חיבור לשרת") + ").", false);
+  } catch (e) { critMsg("נוסף לקריטריונים שלך, אבל ההצעה לקהילה לא נשלחה (אין חיבור לשרת).", false); }
   renderCriteria();
-  syncHint();
 });
+// קריטריוני הקהילה + מצב ההצעות שלי (אושרה / ממתינה / לא אושרה)
+async function loadCommunity(){
+  try {
+    const d = await accessApi({ action:"critList" });
+    if (Array.isArray(d.items)) COMMUNITY = d.items;
+    const ids = myItems().filter(x => x.pid).map(x => x.pid);
+    if (ids.length && token()) {
+      const m = await accessApi({ action:"critMine", token: token(), ids });
+      if (Array.isArray(m.items)) saveMyItems(myItems().map(x => { const r = m.items.find(y => y.id === x.pid); return r ? { ...x, pstatus:r.status, reason:r.reason } : x; }));
+    }
+  } catch (e) {}
+  renderCriteria(); syncHint();
+}
 
+// ── סוג המשוב (02/10/2026): קריטריונים אקדמיים / משוב רך על סגנון, משלב וקוהרנטיות /
+// לפי הנחיות המנחה (שדה "הנחיות המשימה") / משולב — כל האפשרויות יחד.
+const FB_KINDS = [
+  { k:"criteria", t:"קריטריונים לכתיבה אקדמית", d:"משוב לפי הקריטריונים שתסמני למטה — הקבועים, שלך או מהקהילה." },
+  { k:"style", t:"משוב רך — סגנון, משלב וקוהרנטיות", d:"משוב עדין שמתמקד באיך שהעבודה כתובה: סגנון וזרימה, משלב לשון, וקוהרנטיות — החיבור בין משפטים, פסקאות ורעיונות. לא צריך לסמן קריטריונים." },
+  { k:"structure", t:"מבנה כללי, פסקאות ותחביר", d:"משוב על השלד של העבודה: המבנה הכללי (פתיחה, גוף, סיכום, פרקים וכותרות), בניית פסקאות, ותחביר — משפטים, פיסוק ומילות קישור. לא צריך לסמן קריטריונים." },
+  { k:"task", t:"לפי הנחיות המנחה", d:"משוב שבודק את העבודה מול ההנחיות או המחוון שהעלית בשדה \"הנחיות המשימה\" — דרישה אחר דרישה. לא צריך לסמן קריטריונים." },
+  { k:"combined", t:"משוב משולב", d:"כל האפשרויות יחד: הקריטריונים שתסמני, משוב רך על סגנון, משלב וקוהרנטיות, מבנה כללי, פסקאות ותחביר, ובדיקה מול הנחיות המנחה (אם הועלו)." },
+];
+const STYLE_CRITERIA = [
+  { v:"סגנון וזרימה", d:"קריאוּת, אורך משפטים, מעברים בין משפטים, חזרות ובהירות הניסוח", style:true },
+  { v:"משלב לשון", d:"משלב אקדמי מתאים ועקבי — לא דיבורי ולא מליצי מדי; מינוח מקצועי עקבי; גוף ופנייה עקביים", style:true },
+  { v:"קוהרנטיות ולכידות", d:"רצף הגיוני בין פסקאות ופרקים, משפטי מפתח ומעבר, וקשר בין הטענות לשאלה המרכזית", style:true },
+];
+const STRUCTURE_CRITERIA = [
+  { v:"מבנה כללי", d:"פתיחה, גוף וסיכום; חלוקה לפרקים ולתת־פרקים; כותרות שמתארות את התוכן; סדר הגיוני ואיזון בין החלקים" },
+  { v:"בניית פסקאות", d:"כל פסקה עוסקת ברעיון אחד, פותחת במשפט מפתח, מפתחת אותו ומתחברת לפסקה הבאה; אורך פסקאות סביר" },
+  { v:"תחביר", d:"משפטים שלמים ולא ארוכים מדי, התאם (מין, מספר וזמן), פיסוק, ושימוש נכון במילות קישור" },
+];
+let fbKind = "criteria";
+const usesCriteria = () => fbKind === "criteria" || fbKind === "combined";
+function renderKinds(){
+  const box = $("fbKind"); box.textContent = "";
+  FB_KINDS.forEach(x => {
+    const b = el("button", { type:"button", "data-kind":x.k, class: x.k === fbKind ? "on" : "" }, x.t);
+    b.addEventListener("click", () => { fbKind = x.k; renderKinds(); syncHint(); saveDraft(); });
+    box.append(b);
+  });
+  const k = FB_KINDS.find(x => x.k === fbKind);
+  $("fbKindD").textContent = k.d + (fbKind === "combined" ? " אפשר גם בלי לסמן קריטריונים." : "");
+  $("critArea").style.display = usesCriteria() ? "flex" : "none";
+}
+// הרשימה שנשלחת לבדיקה לפי סוג המשוב
+function feedbackCriteria(){
+  const picked = usesCriteria() ? allCriteria().filter(c => selectedCriteria.has(c.v)) : [];
+  const extra = fbKind === "style" ? STYLE_CRITERIA : fbKind === "structure" ? STRUCTURE_CRITERIA
+    : fbKind === "combined" ? [...STYLE_CRITERIA, ...STRUCTURE_CRITERIA] : [];
+  return [...picked, ...extra.filter(s => !picked.some(c => c.v === s.v))];
+}
 function syncHint(){
-  const ok = !!val("creatorName") && !!val("workText") && selectedCriteria.size > 0;
+  let need = "";
+  if (!val("creatorName") || !val("workText")) need = "מלאי את השם והדביקי את הטקסט";
+  else if (fbKind === "criteria" && !selectedCriteria.size) need = "סמני לפחות קריטריון אחד";
+  else if (fbKind === "task" && !val("taskText")) need = "העלי או הדביקי את הנחיות המנחה בשדה \"הנחיות המשימה\"";
+  const ok = !need;
   $("bReview").disabled = !ok;
-  $("hint").textContent = ok ? "מוכנה לקבלת משוב" : "מלאי את השם, הדביקי טקסט, וסמני לפחות קריטריון אחד";
+  $("hint").textContent = ok ? "מוכנה לקבלת משוב — " + FB_KINDS.find(x => x.k === fbKind).t : need;
   adjustActionsPadding();
 }
 $("creatorName").addEventListener("input", syncHint);
+$("taskText").addEventListener("input", syncHint);
+renderKinds();
 $("workText").addEventListener("input", syncHint);
 $("i-age").addEventListener("change", syncHint);
 syncHint();
@@ -574,7 +794,11 @@ function adjustActionsPadding(){
 window.addEventListener("resize", adjustActionsPadding);
 
 $("bReset").addEventListener("click", () => {
+  if ((val("workText") || val("taskText")) && !confirm("לנקות את הטופס? העבודה, ההנחיות והמשוב האחרון יימחקו מהמכשיר הזה (קובץ עבודה ששמרת לא נפגע).")) return;
   $("creatorName").value = ""; $("workText").value = ""; $("upStatus").textContent = "";
+  $("taskText").value = ""; $("taskStatus").textContent = ""; $("upFile").value = ""; $("taskFile").value = "";
+  LAST_FEEDBACK = null; $("bLastFb").hidden = true;
+  try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
   $("i-age").value = ""; document.querySelector("#ageSel .customsel-trigger").textContent = "בחירה";
   selectedCriteria.clear(); renderCriteria(); syncHint();
 });
@@ -593,35 +817,34 @@ async function extractPdfText(arrayBuffer) {
   }
   return pages.join("\n\n");
 }
-$("upFile").addEventListener("change", async (e) => {
-  const file = e.target.files[0];
+// קורא קובץ לתיבת טקסט: העבודה (upFile → workText) או הנחיות המשימה (taskFile → taskText).
+async function readFileInto(file, targetId, statusId){
   if (!file) return;
-  const statusEl = $("upStatus");
+  const statusEl = $(statusId);
   const name = file.name.toLowerCase();
   statusEl.textContent = "טוענת...";
   try {
     if (name.endsWith(".pdf")) {
-      const buf = await file.arrayBuffer();
-      const text = await extractPdfText(buf);
-      $("workText").value = text;
+      const text = await extractPdfText(await file.arrayBuffer());
+      $(targetId).value = text;
       statusEl.textContent = text.trim() ? "נטען מ-PDF (" + file.name + ")." : "לא נמצא טקסט ניתן לחילוץ בקובץ — ייתכן שזה PDF סרוק (תמונה). הדביקי את הטקסט ידנית.";
     } else if (name.endsWith(".docx")) {
-      const buf = await file.arrayBuffer();
-      const result = await mammoth.extractRawText({ arrayBuffer: buf });
-      $("workText").value = result.value;
+      const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+      $(targetId).value = result.value;
       statusEl.textContent = "נטען מ-Word (" + file.name + ").";
     } else if (name.endsWith(".doc")) {
       statusEl.textContent = "פורמט Word ישן (.doc) אינו נתמך — שמרי כ-.docx או הדביקי את הטקסט ידנית.";
     } else {
-      const reader = new FileReader();
-      reader.onload = () => { $("workText").value = reader.result; statusEl.textContent = "נטען מטקסט (" + file.name + ")."; };
-      reader.readAsText(file, "UTF-8");
+      $(targetId).value = await file.text();
+      statusEl.textContent = "נטען מטקסט (" + file.name + ").";
     }
   } catch (err) {
     statusEl.textContent = "שגיאה בקריאת הקובץ: " + err.message + " — נסי להדביק את הטקסט ידנית.";
   }
-  syncHint();
-});
+  syncHint(); saveDraft();
+}
+$("upFile").addEventListener("change", e => readFileInto(e.target.files[0], "workText", "upStatus"));
+$("taskFile").addEventListener("change", e => readFileInto(e.target.files[0], "taskText", "taskStatus"));
 
 // ── חיבור AI — אותו שרת proxy משותף לכל app/ (harness/practice-server.mjs) ──
 const AI_SERVER = "https://sbe-server.onrender.com";
@@ -676,16 +899,24 @@ function resolveRefs(str){
   }).replace(/\s{2,}/g, " ").trim();
   return { text, refs };
 }
-async function computeFeedbackAI(text, age, criteriaList, mode) {
+async function computeFeedbackAI(text, age, criteriaList, mode, task, kind) {
+  kind = kind || "criteria";
   const lib = await loadLibrary();
+  if (kind !== "task" && kind !== "combined") task = ""; // ההנחיות נבדקות רק ב"לפי הנחיות המנחה" וב"משולב"
   const critText = criteriaList.map(c => "- " + c.v + (c.d ? " (" + c.d + ")" : "")).join("\n");
-  const toneLine = mode === "summative"
+  const toneLine = kind === "style"
+    ? "טון: משוב רך — חם, מעודד ובגובה העיניים. מתחילים במה שכבר עובד, ומציעים 2–3 שיפורים מרכזיים בכל סעיף, בלי להציף. ההתמקדות בסגנון, במשלב ובקוהרנטיות — לא בתוכן המחקרי."
+    : (kind === "combined" ? "בסעיפי סגנון וזרימה, משלב לשון וקוהרנטיות — משוב רך, חם ומעודד. בשאר הסעיפים: " : "") + (mode === "summative"
     ? "טון: מקצועי, מדויק וקפדני, כמו חוות דעת של בוחנת אקדמית — זו הערכה מסכמת לפי סטנדרטים מחקריים ומקצועיים, לא ליווי לפני הגשה. עדיין מכבדת ולא מבזה, אבל לא ממתיקה חולשות אמיתיות."
-    : "טון: מכבד, מעודד, מכוון לשיפור — לא שיפוטי ולא חד. זו עבודה אמיתית של אדם אמיתי, והמשוב ניתן כדי לעזור לשפר לפני ההגשה הסופית, לא כשיפוט.";
+    : "טון: מכבד, מעודד, מכוון לשיפור — לא שיפוטי ולא חד. זו עבודה אמיתית של אדם אמיתי, והמשוב ניתן כדי לעזור לשפר לפני ההגשה הסופית, לא כשיפוט.");
   const system = [
     "את קוראת עבודות אקדמיות/פרויקטים של לומדים ונותנת משוב מבוסס-קריטריונים, בעברית, עבור מערכת Begood.",
     "גיל/שלב הכותב/ת: " + (age || "לא צוין") + " — כל ציפייה חייבת להתאים לגיל הזה, לא לרף גבוה יותר.",
-    "התמקדי אך ורק בקריטריונים הבאים, שנבחרו במפורש — אל תעירי על קריטריונים אחרים שלא נבחרו:\n" + critText,
+    criteriaList.length ? "התמקדי אך ורק בקריטריונים הבאים, שנבחרו במפורש — אל תעירי על קריטריונים אחרים שלא נבחרו" + (kind === "task" ? "" : (task ? " (מלבד ההתאמה להנחיות)" : "")) + ":\n" + critText : "",
+    kind === "task" ? "הנחיות המנחה (המסגרת לבדיקה — לא חלק מהעבודה):\n<<<\n" + task + "\n>>>" : "",
+    kind === "task" ? "סוג המשוב: לפי הנחיות המנחה. פרקי את ההנחיות לדרישות (עד 8 — המרכזיות), וכל דרישה היא פריט ב-\"criteria\": הכותרת היא הדרישה בכמה מילים, \"strengths\" — איך העבודה כבר עונה עליה, \"improvements\" — מה חסר או לא תואם." : "",
+    task && kind !== "task" ? "הנחיות המשימה או המחוון שהכותב/ת קיבל/ה מהמרצה — זו המסגרת לבדיקה, ולא חלק מהעבודה (אל תעירי על ניסוח ההנחיות עצמן). בכל קריטריון התייחסי גם להנחיות כשהן רלוונטיות, ובשדה \"taskFit\" — עד כמה העבודה עונה על ההנחיות: מה כבר עונה עליהן, ומה חסר או לא תואם (עם ציון ההנחיה):\n<<<\n" + task + "\n>>>" : "",
+    "את נותנת משוב בלבד ולא כותבת במקום הכותב/ת: אל תכתבי סעיפים, פסקאות, פרקים או נוסח חלופי מלא — רק הכוונה מה לחזק ואיך לגשת לזה, ודוגמה קצרה של כמה מילים לכל היותר.",
     "לכל קריטריון: נקודות חוזק אמיתיות מהטקסט הספציפי הזה (לא כלליות), ונקודות לשיפור קונקרטיות עם דוגמה מהטקסט עצמו איפה אפשר.",
     toneLine,
     "אל תצטטי קטעים ארוכים מהטקסט בחזרה — התייחסי אליהם במילים שלך, עם ציון מיקום (\"בפתיחה\", \"בפסקה השנייה\") ולא העתקה.",
@@ -693,7 +924,7 @@ async function computeFeedbackAI(text, age, criteriaList, mode) {
     lib.length
       ? "מקורות: אסור לכתוב שם של מחבר, מאמר, ספר או שנת פרסום משלך. כשאת ממליצה על מקור — אך ורק מתוך ספריית המקורות המאומתת שלמטה, בכתיב [מקור #מספר] בלבד (למשל: \"כדאי להוסיף את [מקור #12]\"). אם אין בספרייה מקור מתאים — המליצי על התיאוריה או המושג במילים, בלי ציטוט. הספרייה (id | תחום | נושא | סוג | תגיות):\n" + lib.map(x => [x.id, x.domain, x.topic, x.type, (x.tags || []).join("/")].join(" | ")).join("\n")
       : "מקורות: אסור לכתוב שם של מחבר, מאמר, ספר או שנת פרסום. אפשר להמליץ על תיאוריה או מושג במילים, בלי ציטוט.",
-    "החזירי אך ורק JSON תקין במבנה: {\"overall\":\"משפט או שניים, מבט-על כללי\",\"criteria\":[{\"title\":\"שם הקריטריון בדיוק כפי שנשלח\",\"strengths\":[\"...\"],\"improvements\":[\"...\"]}]}",
+    "החזירי אך ורק JSON תקין במבנה: {\"overall\":\"משפט או שניים, מבט-על כללי\"," + (task && kind !== "task" ? "\"taskFit\":{\"strengths\":[\"...\"],\"improvements\":[\"...\"]}," : "") + "\"criteria\":[{\"title\":\"שם הקריטריון בדיוק כפי שנשלח\",\"strengths\":[\"...\"],\"improvements\":[\"...\"]}]}",
   ].join("\n");
   // maxTokens/timeout גבוהים — עבודה אקדמית שלמה יכולה להיות ארוכה, ומשוב
   // אמיתי לכמה קריטריונים גם הוא ארוך. אותו סדר גודל שנמדד ב-activity-planner.html.
@@ -706,6 +937,7 @@ async function computeFeedbackAI(text, age, criteriaList, mode) {
   const fix = arr => (Array.isArray(arr) ? arr : []).map(t => { const r = resolveRefs(t); r.refs.forEach(x => { if (!all.includes(x)) all.push(x); }); return r.text; }).filter(Boolean);
   parsed.overall = resolveRefs(parsed.overall).text;
   (parsed.criteria || []).forEach(c => { c.strengths = fix(c.strengths); c.improvements = fix(c.improvements); });
+  if (parsed.taskFit) { parsed.taskFit.strengths = fix(parsed.taskFit.strengths); parsed.taskFit.improvements = fix(parsed.taskFit.improvements); }
   parsed.sources = all;
   setAIStatus("ok");
   return parsed;
@@ -735,7 +967,9 @@ function renderFeedback(fb, mock) {
   const body = $("dlgB"); body.textContent = "";
   if (mock) body.append(el("p", { class:"mock-note" }, "⚠ אין חיבור למודל כרגע — זה נתון טכני גולמי, לא משוב אמיתי על התוכן."));
   if (fb.overall) body.append(el("p", { style:"margin:0 0 14px;color:var(--muted);" }, fb.overall));
-  (fb.criteria || []).forEach(c => {
+  const fbList = fb.taskFit && ((fb.taskFit.strengths||[]).length || (fb.taskFit.improvements||[]).length)
+    ? [{ title:"התאמה להנחיות המשימה", ...fb.taskFit }, ...(fb.criteria || [])] : (fb.criteria || []);
+  fbList.forEach(c => {
     const sec = el("div", { class:"fb-sec" });
     sec.append(el("h4", {}, c.title));
     if (c.strengths && c.strengths.length) {
@@ -761,14 +995,29 @@ function renderFeedback(fb, mock) {
     sec.append(ul);
     body.append(sec);
   }
-  $("dlgH").textContent = "משוב · " + (val("creatorName") || "—");
-  $("dlg").showModal();
+  if (!mock) body.append(aiNoteEl());
+  const kindT = LAST_FEEDBACK && (FB_KINDS.find(x => x.k === LAST_FEEDBACK.kind) || {}).t;
+  $("dlgH").textContent = "משוב · " + (LAST_FEEDBACK && LAST_FEEDBACK.creator || val("creatorName") || "—") + (kindT ? " · " + kindT : "");
+  if (!$("dlg").open) $("dlg").showModal();
+}
+// ── תזכורת: לציין בעבודה את השימוש בכלי בינה מלאכותית ואת שם הכלי (02/10/2026) ──
+const AI_TOOL = "Begood — ניתוח ומשוב לעבודה אקדמית (מבוסס על מודל השפה Claude של Anthropic)";
+function aiNoteLines(){
+  const d = new Date().toLocaleDateString("he-IL");
+  return ["תזכורת — ציון השימוש בבינה מלאכותית:",
+    "אם שיפרת את העבודה בעקבות המשוב, ציינ/י בעבודה שנעזרת בכלי בינה מלאכותית, ואת שם הכלי: " + AI_TOOL + ".",
+    "נוסח מוצע: \"בשלב העריכה נעזרתי בכלי הבינה המלאכותית " + AI_TOOL + " לקבלת משוב על העבודה (" + d + "). הכתיבה והתיקונים נעשו על ידי.\"",
+    "כדאי לבדוק את הנחיות המרצה או המוסד לגבי אופן הציון."];
+}
+function aiNoteEl(){
+  const [h, a, b, c] = aiNoteLines();
+  return el("div", { class:"ai-note" }, el("b", {}, h), " " + a, el("q", {}, b), el("div", { style:"margin-top:6px;color:var(--muted)" }, c));
 }
 
 $("bReview").addEventListener("click", async (e) => {
   const text = val("workText");
   const age = val("i-age");
-  const criteriaList = allCriteria().filter(c => selectedCriteria.has(c.v));
+  const criteriaList = feedbackCriteria();
   // קוד סטודנט/ית ("משוב לעבודות" שמרצה הפיק/ה): כל הפקה נספרת בשרת, לפי הקוד —
   // לא לפי המכשיר. אחרי המכסה (3 כברירת מחדל) השרת מסרב.
   let info = {}; try { info = JSON.parse(sessionStorage.getItem("sbe.session.info") || "{}") || {}; } catch (_) {}
@@ -792,25 +1041,39 @@ $("bReview").addEventListener("click", async (e) => {
   e.target.disabled = true; e.target.textContent = "קוראת... (עד כ-3 דקות)";
   try {
     let fb, mock = false;
-    try { fb = await computeFeedbackAI(text, age, criteriaList, critMode); }
+    try { fb = await computeFeedbackAI(text, age, criteriaList, critMode, val("taskText"), fbKind); }
     catch (err) {
       console.warn("משוב AI לא זמין — נופלת לנתונים גולמיים. סיבה:", err.message);
       setAIStatus("mock");
-      fb = computeFeedbackMock(text, criteriaList);
+      fb = computeFeedbackMock(text, criteriaList.length ? criteriaList : [{ v:"התאמה להנחיות המנחה" }]);
       mock = true;
     }
-    LAST_FEEDBACK = { fb, mock, age, criteriaList, creator: val("creatorName") };
+    LAST_FEEDBACK = { fb, mock, age, kind: fbKind, criteriaList: criteriaList.map(c => ({ v:c.v })), creator: val("creatorName"), at: new Date().toISOString() };
     renderFeedback(fb, mock);
+    if (!mock) {
+      const ids = criteriaList.filter(c => c.community).map(c => c.id);
+      if (ids.length && token()) accessApi({ action:"critUse", token: token(), ids }).catch(() => {});
+    }
+    $("bLastFb").hidden = false; saveDraft();
   } finally { e.target.disabled = false; e.target.textContent = "קבלת משוב"; }
 });
 $("dlgX").addEventListener("click", () => $("dlg").close());
+// הורדת קובץ: הקישור נשאר בדף רגע אחרי הלחיצה — הסרה מיידית גורמת לחלק מהדפדפנים לאבד את שם הקובץ
+function downloadBlob(blob, name){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name; a.style.display = "none";
+  document.body.append(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
 $("bSaveTxt").addEventListener("click", () => {
   if (!LAST_FEEDBACK) return;
   const { fb, mock, creator } = LAST_FEEDBACK;
-  const lines = ["משוב על עבודה · " + creator + " · " + new Date().toLocaleDateString("he-IL"), ""];
+  const kindT = (FB_KINDS.find(x => x.k === LAST_FEEDBACK.kind) || {}).t;
+  const lines = ["משוב על עבודה · " + creator + " · " + new Date().toLocaleDateString("he-IL") + (kindT ? " · " + kindT : ""), ""];
   if (mock) lines.push("⚠ מצב הדגמה — לא משוב אמיתי על התוכן.", "");
   if (fb.overall) lines.push(fb.overall, "");
-  (fb.criteria || []).forEach(c => {
+  const txtList = fb.taskFit ? [{ title:"התאמה להנחיות המשימה", ...fb.taskFit }, ...(fb.criteria || [])] : (fb.criteria || []);
+  txtList.forEach(c => {
     lines.push(c.title + ":");
     (c.strengths||[]).forEach(s => lines.push("  + " + s));
     (c.improvements||[]).forEach(s => lines.push("  - " + s));
@@ -820,17 +1083,118 @@ $("bSaveTxt").addEventListener("click", () => {
     lines.push("מקורות שהוזכרו (מספריית המקורות המאומתת):");
     fb.sources.forEach(x => lines.push("  • " + x.citation + (x.url ? " " + x.url : "")));
   }
-  const blob = new Blob([lines.join("\n")], { type:"text/plain;charset=utf-8" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob); a.download = "משוב-עבודה.txt";
-  document.body.append(a); a.click(); a.remove();
+  if (!mock) lines.push("", "────────", ...aiNoteLines());
+  downloadBlob(new Blob([lines.join("\n")], { type:"text/plain;charset=utf-8" }), "משוב-עבודה.txt");
 });
+
+// ── שמירה אוטומטית במכשיר + קובץ עבודה אצל המשתמשת (02/10/2026) ──
+// הטיוטה (העבודה, ההנחיות, הבחירות והמשוב האחרון) נשמרת בדפדפן של המכשיר בלבד. כדי לעבור
+// למכשיר אחר — "שמירת קובץ עבודה" לתיקייה של המשתמשת (למשל Drive / OneDrive), ו"פתיחת קובץ עבודה" שם.
+// שום דבר מהעבודה לא נשמר בשרת של המערכת.
+const DRAFT_KEY = "sbe.review.draft.v1";
+const WORK_APP = "begood-academic-review";
+let draftTimer = null, RESTORING = false;
+function snapshot(){
+  return { app: WORK_APP, v: 1, savedAt: new Date().toISOString(), creator: val("creatorName"), age: val("i-age"), mode: critMode, kind: fbKind,
+    text: $("workText").value, task: $("taskText").value, selected: [...selectedCriteria],
+    myCriteria: myItems().map(x => ({ value:x.value, detail:x.detail || "", cat:x.cat || "" })), feedback: LAST_FEEDBACK };
+}
+function saveDraft(){
+  if (RESTORING) return;
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(() => { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(snapshot())); } catch(e){} }, 300);
+}
+function setAge(v){
+  $("i-age").value = v || "";
+  const t = document.querySelector("#ageSel .customsel-trigger"); if (t) t.textContent = v || "בחירה";
+}
+function applySnapshot(d){
+  RESTORING = true;
+  try {
+    if (d.creator) $("creatorName").value = d.creator;
+    setAge(d.age);
+    $("workText").value = d.text || ""; $("taskText").value = d.task || "";
+    if (Array.isArray(d.myCriteria)) {
+      const have = myItems();
+      d.myCriteria.forEach(x => { if (x && x.value && !have.some(y => y.value === x.value)) have.push({ value:x.value, detail:x.detail || "", cat:x.cat || "", date:new Date().toISOString().slice(0,10), seen:false }); });
+      saveMyItems(have);
+    }
+    critMode = d.mode === "summative" ? "summative" : "formative";
+    fbKind = FB_KINDS.some(x => x.k === d.kind) ? d.kind : "criteria"; renderKinds();
+    selectedCriteria.clear();
+    const known = new Set(allCriteria().map(c => c.v));
+    (d.selected || []).forEach(v => { if (known.has(v)) selectedCriteria.add(v); });
+    LAST_FEEDBACK = d.feedback && d.feedback.fb ? d.feedback : null;
+    $("bLastFb").hidden = !LAST_FEEDBACK;
+    renderCriteria(); syncHint();
+  } finally { RESTORING = false; }
+}
+["creatorName","workText","taskText"].forEach(id => $(id).addEventListener("input", saveDraft));
+$("i-age").addEventListener("change", saveDraft);
+$("bLastFb").addEventListener("click", () => { if (LAST_FEEDBACK) renderFeedback(LAST_FEEDBACK.fb, LAST_FEEDBACK.mock); });
+function workNote(t){ $("workFileNote").textContent = t; }
+$("bSaveWork").addEventListener("click", async () => {
+  const data = snapshot();
+  data.aiNote = aiNoteLines().join(" ");
+  const json = JSON.stringify(data, null, 1);
+  const safe = (val("creatorName") || "עבודה").replace(/[\\/:*?"<>|]+/g, "").slice(0, 40);
+  const name = "begood-" + safe + "-" + new Date().toISOString().slice(0, 10) + ".json";
+  try {
+    if (window.showSaveFilePicker) {
+      const h = await window.showSaveFilePicker({ suggestedName: name, types: [{ description: "קובץ עבודה של Begood", accept: { "application/json": [".json"] } }] });
+      const w = await h.createWritable(); await w.write(json); await w.close();
+    } else {
+      downloadBlob(new Blob([json], { type: "application/json" }), name);
+    }
+    workNote("קובץ העבודה נשמר אצלך (" + name + "). כדי להמשיך במכשיר אחר — פתחי אותו שם ב\"פתיחת קובץ עבודה\".");
+  } catch (e) { if (e && e.name !== "AbortError") workNote("השמירה לא הצליחה: " + e.message); }
+});
+$("bOpenWork").addEventListener("click", () => $("openWorkFile").click());
+$("openWorkFile").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if (!d || d.app !== WORK_APP) throw new Error("זה לא קובץ עבודה של משוב לעבודות");
+    if ((val("workText") || val("taskText")) && !confirm("לפתוח את קובץ העבודה? הוא יחליף את מה שכתוב עכשיו בטופס.")) return;
+    applySnapshot(d);
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(snapshot())); } catch(_){}
+    workNote("נפתח קובץ העבודה " + f.name + " (נשמר ב-" + new Date(d.savedAt).toLocaleString("he-IL") + ")." + (LAST_FEEDBACK ? " המשוב האחרון זמין בכפתור \"המשוב האחרון\"." : ""));
+  } catch (err) { workNote("לא הצלחתי לפתוח את הקובץ: " + err.message); }
+  e.target.value = "";
+});
+(function restoreDraft(){
+  let d = null; try { d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch(e){}
+  if (!d || d.app !== WORK_APP) return;
+  if (!d.text && !d.task && !d.feedback) return;
+  applySnapshot(d);
+  workNote("שוחזרה העבודה שנשמרה במכשיר הזה (" + new Date(d.savedAt).toLocaleString("he-IL") + "). \"ניקוי\" מוחק אותה. כדי להמשיך במכשיר אחר — שמרי קובץ עבודה.");
+})();
+loadCommunity().then(() => {
+  // הבחירות מהטיוטה כוללות גם קריטריונים מהקהילה — מסמנים אותם אחרי שנטענו
+  let d = null; try { d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch(e){}
+  if (d && Array.isArray(d.selected)) { const known = new Set(allCriteria().map(c => c.v)); d.selected.forEach(v => { if (known.has(v)) selectedCriteria.add(v); }); renderCriteria(); syncHint(); }
+});
+
+// ── משובים על הכלי (lib/review-testimonials.js) — כפתור בצד המסך ──
+$("tmFab").addEventListener("click", () => {
+  const box = $("tmList"); box.textContent = "";
+  const list = window.SBE_REVIEW_TESTIMONIALS || [];
+  if (!list.length) box.append(el("p", { class:"note" }, "עדיין אין משובים."));
+  list.forEach(t => {
+    const d = el("div", { class:"tm" });
+    d.append(el("div", { class:"tm-who" }, t.who, t.date ? el("span", {}, "· " + new Date(t.date).toLocaleDateString("he-IL")) : ""));
+    String(t.text || "").split("\n").filter(Boolean).forEach(line => d.append(el("p", {}, line)));
+    box.append(d);
+  });
+  $("tmDlg").showModal();
+});
+$("tmClose").addEventListener("click", () => $("tmDlg").close());
 
 // שם היוצר/ת — ממלא אוטומטית משם הכניסה (sessionStorage), אם קיים
 (function prefillCreator(){
   try {
     const n = sessionStorage.getItem("sbe.session.name");
-    if (n) { $("creatorName").value = n; syncHint(); }
+    if (n && !val("creatorName")) { $("creatorName").value = n; syncHint(); }
   } catch(e){}
 })();
 </script>
