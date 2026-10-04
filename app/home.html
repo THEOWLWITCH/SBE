@@ -102,6 +102,7 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 .brand{display:block;width:min(190px,48vw);height:auto;margin:14px auto 0;}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .brand{background:#EEF1F4;border-radius:12px;padding:8px 12px;} }
 :root[data-theme="dark"] .brand{background:#EEF1F4;border-radius:12px;padding:8px 12px;}
+.chip.off{text-decoration:line-through;opacity:.55;}
 </style>
 </head>
 <body>
@@ -244,10 +245,11 @@ async function renderAdmin() {
   const lbl = el("input", { placeholder: "שם או תיאור (למשל: רחל כהן — מחנכת ה׳2)", maxlength: "60" });
   const permsBox = el("div", { class: "perms" });
   const cbs = {};
-  Object.keys(PERM_LABEL).forEach(p => {
-    const cb = el("input", { type: "checkbox", disabled: !ceiling[p] });
+  // רק מה שפתוח למוסד מוצג — מנהל/ת מוסד לא יכול/ה לתת כלים אחרים (גם השרת חוסם, "above ceiling")
+  open.forEach(p => {
+    const cb = el("input", { type: "checkbox" });
     cbs[p] = cb;
-    permsBox.append(el("label", { class: "perm" + (ceiling[p] ? "" : " dis"), title: ceiling[p] ? "" : "לא פתוח למוסד" }, cb, PERM_LABEL[p]));
+    permsBox.append(el("label", { class: "perm" }, cb, PERM_LABEL[p]));
   });
   const presets = el("div", { class: "presets" }, "בחירה מהירה:");
   PRESETS.forEach(([name, ps]) => {
@@ -296,7 +298,7 @@ async function renderAdmin() {
       codes.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).forEach(c => {
         const [stl, stc] = statusOf(c);
         const tr = el("tr", {}, el("td", {}, c.label || (c.kind === "student" ? "סטודנט/ית" : "—")), el("td", {}, el("span", { class: "code" }, c.code)),
-          el("td", {}, ...(c.perms || []).map(p => el("span", { class: "chip" }, PERM_LABEL[p] || p))),
+          el("td", {}, ...(c.perms || []).map(p => el("span", ceiling[p] ? { class: "chip" } : { class: "chip off", title: "לא פעיל — המערכת כבר לא פתוחה למוסד" }, PERM_LABEL[p] || p))),
           el("td", {}, c.expiresAt ? fmtDate(c.expiresAt) : "סוף המנוי"), el("td", {}, el("span", { class: "st " + stc }, stl)));
         const cell = el("td", {});
         if (stc === "ok") {
