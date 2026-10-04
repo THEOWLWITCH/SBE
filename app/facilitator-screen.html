@@ -318,14 +318,20 @@ $("bOpen").addEventListener("click", () => {
   $("code").textContent = code; $("code").classList.remove("idle");
   phase = 1; drawSteps();
   $("bOpen").disabled = true; $("bStart").disabled = false; $("bProject").disabled = false;
-  $("joined").textContent = "0 נכנסו";
+  $("joined").textContent = "משובים שהתקבלו: 0";
   $("hint").textContent = "הקוד על המסך. כשכולן נכנסו, התחילי.";
   lockFb();
-  // הצטרפות מדומה. בייצור זה מגיע מהשרת.
-  joinTimer = setInterval(() => {
-    if (joined < 14 && Math.random() > .45) { joined++; $("joined").textContent = joined + " נכנסו"; sync(); }
-  }, 900);
+  // מספר המשובים שהגיעו לשרת מהסדנה הזו (אמיתי — לא מונה מדומה)
+  joinTimer = setInterval(countFeedback, 20000);
 });
+async function countFeedback(){
+  if (!WF) return;
+  try {
+    const d = await wfApi("wfList", {});
+    const ws = (d.items || []).find(x => x.w === WF);
+    if (ws) { joined = (ws.entries || []).length; $("joined").textContent = "משובים שהתקבלו: " + joined; }
+  } catch(e) {}
+}
 
 $("bStart").addEventListener("click", () => {
   clearInterval(joinTimer);
@@ -348,7 +354,8 @@ $("bEnd").addEventListener("click", () => {
   clearInterval(timer);
   phase = 3; drawSteps();
   $("bEnd").disabled = true;
-  $("hint").textContent = joined + " צופות סימנו. הניתוח מהוידאו, לפי הדקות שסומנו.";
+  $("hint").textContent = "הסדנה הסתיימה. המשובים נאספים בשרת ומופיעים במסך תוצאות המשוב.";
+  countFeedback();
   $("clk").classList.remove("run","warn","over");
 });
 
@@ -435,8 +442,20 @@ function drawFb(){
   }
 }
 
+// משוב הסדנה נשמר בשרת (04/10/2026): לכל סדנה מזהה (WF) שעובר בקישור המשוב,
+// כדי שהתוצאות יגיעו למנחה מכל מכשיר — לא רק מהדפדפן שבו נשלחו.
+let WF = null;
+function wfApi(action, extra){
+  let token = ""; try { token = sessionStorage.getItem("sbe.session.token") || ""; } catch(e){}
+  return fetch("https://sbe-server.onrender.com/api/access", { method:"POST", headers:{ "content-type":"application/json" },
+    body: JSON.stringify({ action, token, ...extra }) }).then(r => r.json());
+}
 function lockFb(){
   FB.saveWorkshop(fbSel, { scenario: S.name });
+  WF = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  let facName = "", inst = "";
+  try { facName = sessionStorage.getItem("sbe.session.name") || ""; const m = /\(([^)]+)\)\s*$/.exec(sessionStorage.getItem("sbe.session.role") || ""); if (m) inst = m[1]; } catch(e){}
+  wfApi("wfOpen", { w: WF, scenario: S.name, fac: facName, inst }).catch(() => {});
   $("fbIntro").textContent = "המדדים ננעלו עם פתיחת הסדנה. אלה המדדים שיופיעו בטפסי המשוב:";
   $("fbTabs").textContent = "";
   $("fbAdd").hidden = true;
@@ -451,7 +470,7 @@ function lockFb(){
   const url = new URL("feedback.html", location.href);
   // מדד שנוסף אינו קיים בטלפונים של המשתתפות — הניסוח שלו עובר בקישור (&c=)
   const custom = FB.encodeCustom(fbSel, FB_BANK);
-  url.search = "?m=" + FB.encode(fbSel) + (custom ? "&c=" + custom : "") + "&scenario=" + encodeURIComponent(S.name);
+  url.search = "?m=" + FB.encode(fbSel) + (custom ? "&c=" + custom : "") + "&scenario=" + encodeURIComponent(S.name) + "&w=" + WF;
   $("fbUrl").value = url.href;
   $("fbLinkCard").hidden = false;
   drawFb();

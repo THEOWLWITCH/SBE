@@ -97,22 +97,12 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 
 <header>
   <h1>תוצאות המשוב</h1>
-  <p class="lead">כל מה שנשלח דרך מסך המשוב, מפורק לפי תפקיד ושאלה — כל אחת רואה רק את מה שמותר לה.</p>
+  <p class="lead">כל מה שנשלח דרך מסך המשוב בסדנאות שלך, מפורק לפי תפקיד ושאלה. המשובים נשמרים בשרת, ונראים מכל מכשיר.</p>
 </header>
 
 <div class="viewbar">
-  <label>מציגה כ
-    <select id="viewRole">
-      <option value="fac">מנחה</option>
-      <option value="inst">מנהלת מוסד</option>
-      <option value="sys">ניהול מערכת</option>
-    </select>
-  </label>
-  <label id="wrapFac">שם המנחה (מסננת לפי הסדנאות שלה)
-    <input id="viewFac" placeholder="לדוגמה: נועה ברששת">
-  </label>
-  <label id="wrapInst" hidden>שם המוסד (מסננת לפי המוסד)
-    <input id="viewInst" placeholder="לדוגמה: מכללת אורות">
+  <label>סדנה
+    <select id="viewWs"><option value="">כל הסדנאות</option></select>
   </label>
 </div>
 
@@ -149,79 +139,54 @@ function askedCount(qid, list){
   return list.filter(resp => Array.isArray(resp._asked) ? resp._asked.includes(qid) : resp[qid] !== undefined).length;
 }
 
-// טוענת את כל הרשומות כמו שהן, בלי סינון — הסינון לפי "מציגה כ" קורה ב-render().
-function loadAllResponses(){
-  const out = { fac:[], trainee:[], obs:[] };
+// המשובים נקראים מהשרת (04/10/2026): מנהלת המערכת רואה את כל הסדנאות, מנחה — את הסדנאות שלה ושל המוסד שלה.
+// משובים ישנים שנשמרו רק בדפדפן הזה מצורפים גם הם (בלי שיוך לסדנה).
+let WORKSHOPS = [], LOAD_FAILED = false;
+function loadLocal(){
+  const out = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (!key || !key.startsWith("sbe.fb.")) continue;
     const parts = key.split(".");
-    const role = parts[2];
-    const ts = Number(parts[3]) || 0;
-    if (!out[role]) continue;
-    try { out[role].push({ ts, entry: JSON.parse(localStorage.getItem(key)) }); } catch(e){}
+    try { const entry = JSON.parse(localStorage.getItem(key)); if (!entry._w) out.push({ role: parts[2], ts: Number(parts[3]) || 0, entry }); } catch(e){}
   }
   return out;
 }
+async function loadServer(){
+  let token = ""; try { token = sessionStorage.getItem("sbe.session.token") || ""; } catch(e){}
+  try {
+    const r = await fetch("https://sbe-server.onrender.com/api/access", { method:"POST", headers:{ "content-type":"application/json" },
+      body: JSON.stringify({ action:"wfList", token }) });
+    const d = await r.json(); return d.items || [];
+  } catch(e) { return null; }
+}
 
 const bank = loadBank();
-const allResponses = loadAllResponses();
-// מדד שהמנחה הוסיפה בסדנה אולי לא קיים בבנק של המכשיר הזה — הניסוח נשמר עם המשוב
-for (const role of ["fac","trainee","obs"]) {
-  allResponses[role].forEach(({ entry }) => SBE_FB.addCustom(entry && entry._defs, bank));
-}
 const content = document.getElementById("content");
 const ROLE_ORDER = ["fac","trainee","obs"];
-
-const view = { role:"fac", fac:"", inst:"" };
-const $viewRole = document.getElementById("viewRole");
-const $viewFac = document.getElementById("viewFac");
-const $viewInst = document.getElementById("viewInst");
-const $wrapFac = document.getElementById("wrapFac");
-const $wrapInst = document.getElementById("wrapInst");
-
-function inScope(entry){
-  if (view.role === "sys") return true;
-  if (view.role === "inst") return !!view.inst && entry._inst === view.inst;
-  if (view.role === "fac") return !!view.fac && entry._fac === view.fac;
-  return false;
-}
+const view = { w: "" };
+const $viewWs = document.getElementById("viewWs");
+let LOCAL = [];
+try { LOCAL = loadLocal().filter(x => !x.entry._inst && !x.entry._fac); } catch(e) {}
 
 function scopedResponses(){
   const out = { fac:[], trainee:[], obs:[] };
-  ROLE_ORDER.forEach(role => { out[role] = allResponses[role].filter(x => inScope(x.entry)); });
+  WORKSHOPS.filter(ws => !view.w || ws.w === view.w).forEach(ws => (ws.entries || []).forEach(x => { if (out[x.role]) out[x.role].push({ ts: x.ts, entry: { ...x.entry, _scenario: x.entry._scenario || ws.scenario } }); }));
+  if (!view.w) LOCAL.forEach(x => { if (out[x.role]) out[x.role].push({ ts: x.ts, entry: x.entry }); });
   return out;
 }
-
-$viewRole.addEventListener("change", () => {
-  view.role = $viewRole.value;
-  $wrapFac.hidden = view.role !== "fac";
-  $wrapInst.hidden = view.role !== "inst";
-  render();
-});
-$viewFac.addEventListener("input", () => { view.fac = $viewFac.value.trim(); render(); });
-$viewInst.addEventListener("input", () => { view.inst = $viewInst.value.trim(); render(); });
+$viewWs.addEventListener("change", () => { view.w = $viewWs.value; render(); });
 
 function render(){
   content.innerHTML = "";
   const responses = scopedResponses();
   const totalAll = ROLE_ORDER.reduce((n,r) => n + responses[r].length, 0);
 
-  const unscopedCount = view.role !== "sys"
-    ? ROLE_ORDER.reduce((n,r) => n + allResponses[r].filter(x => !x.entry._inst && !x.entry._fac).length, 0)
-    : 0;
-  const noteEl = document.getElementById("unscopedNote");
-  if (unscopedCount > 0) {
-    noteEl.hidden = false;
-    noteEl.textContent = "יש " + unscopedCount + " משובים ללא שיוך מוסד/מנחה — גלויים רק בתצוגת ניהול המערכת.";
-  } else {
-    noteEl.hidden = true;
-  }
 
   if (totalAll === 0) {
     const div = document.createElement("div"); div.className = "empty-all";
-    div.innerHTML = "אין משוב שגלוי לתצוגה הזו.<br>אפשר למלא משוב לדוגמה במסך "
-      + "<a href=\"feedback.html\">המשוב</a> ולחזור לכאן, או לבדוק את שם המנחה/המוסד שהוזן למעלה.";
+    div.textContent = LOAD_FAILED ? "לא הצלחנו לטעון את המשובים מהשרת. כדאי לנסות שוב בעוד רגע."
+      : "עדיין אין משובים. המשובים מגיעים מקישור המשוב שמופיע במסך הסדנה אחרי פתיחתה.";
     content.appendChild(div);
     return;
   }
@@ -300,7 +265,23 @@ function render(){
   });
 }
 
+// טעינה: קודם המסך עם מה שבדפדפן, ואז המשובים מהשרת
 render();
+(async function boot(){
+  const items = await loadServer();
+  WORKSHOPS = items || [];
+  WORKSHOPS.forEach(ws => (ws.entries || []).forEach(x => SBE_FB.addCustom(x.entry && x.entry._defs, bank)));
+  LOCAL.forEach(x => SBE_FB.addCustom(x.entry && x.entry._defs, bank));
+  WORKSHOPS.forEach(ws => {
+    const o = document.createElement("option"); o.value = ws.w;
+    o.textContent = [ws.scenario || "סדנה", new Date(ws.created).toLocaleDateString("he-IL"), ws.fac, ws.inst].filter(Boolean).join(" · ") + " (" + (ws.entries || []).length + " משובים)";
+    $viewWs.appendChild(o);
+  });
+  const want = new URLSearchParams(location.search).get("w");
+  if (want && WORKSHOPS.some(ws => ws.w === want)) { view.w = want; $viewWs.value = want; }
+  LOAD_FAILED = items === null;
+  render();
+})();
 
 // ייצוא CSV בפורמט ארוך (שורה אחת לכל תשובה לשאלה בודדת) — כדי שאפשר יהיה
 // לבנות טבלאות ציר בכל חיתוך (לפי מוסד, מנחה, שאלה, תפקיד וכו') בלי לבנות

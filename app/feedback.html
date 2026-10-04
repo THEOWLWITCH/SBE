@@ -180,6 +180,7 @@ const CONTEXT = {
   inst: params.get("inst") || "",
   fac: params.get("fac") || "",
   scenario: params.get("scenario") || "",
+  w: params.get("w") || "",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -261,6 +262,9 @@ $("send").addEventListener("click", () => {
   const defs = SBE_FB.customList({ [role]: record._asked }, BANK);
   if (defs.length) record._defs = defs;
   try { localStorage.setItem("sbe.fb." + role + "." + Date.now(), JSON.stringify(record)); } catch(e){}
+  // לשרת — כדי שהמנחה תראה את המשוב מכל מכשיר (קישור מסדנה כולל ?w=)
+  if (CONTEXT.w) fetch("https://sbe-server.onrender.com/api/access", { method:"POST", headers:{ "content-type":"application/json" },
+    body: JSON.stringify({ action:"wfSubmit", w: CONTEXT.w, role, record }) }).catch(() => {});
   $("bar").style.display = "none";
   $("doneMsg").textContent = role === "fac"
     ? "המשוב נשמר ונוסף למה שנצבר על התרחיש הזה."
