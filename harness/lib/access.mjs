@@ -799,7 +799,7 @@ async function handleJourney(store, body) {
     const unitName = jrClip(body.unitName, 80).trim();
     if (unitName.length < 2) return [400, { error: 'missing name' }];
     const mine = (await store.list('jr:')).filter((r) => r.value && r.value.code === owner).length;
-    if (mine >= 10) return [429, { error: 'too many' }];
+    if (mine >= 10 && !isSys) return [429, { error: 'too many' }]; // מנהלת המערכת (מסעות דמו) — בלי מגבלה
     const id = Date.now().toString(36) + randomBytes(3).toString('hex');
     const j = { id, code: owner, inst: (t && t.inst) || '', by: jrClip(body.by, 60), unit, unitName, created: jrNow(), status: 'mapping', demo: !!(isSys && body.demo),
       consent: { research: !!body.research, at: jrNow() }, mapping: {}, thread: [], events: [] };

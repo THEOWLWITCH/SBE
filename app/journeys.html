@@ -252,13 +252,18 @@ async function viewBoard(){
   c.appendChild(el('p', 'muted', 'כל המסעות והתקדמותם — מוצג רק לך. מה שממתין לך מופיע ראשון.'));
   const bar0 = el('div', 'btns');
   const tryA = el('a', 'btn btn-ghost', 'למסך המשתתפים'); tryA.href = 'journey.html'; tryA.style.textDecoration = 'none'; bar0.appendChild(tryA);
-  const demoB = btn('יצירת מסעות דמו', 'btn-ghost', async () => {
-    if (!confirm('ליצור שלושה מסעות דמו (כיתה בשלב הבחירות, בית ספר באמצע הדרך, קהילה שהשלימה את המסע)? הם מסומנים "דמו", לא נכנסים למחקר ולא שולחים מיילים.')) return;
-    demoB.disabled = true; const st = el('p', 'muted'); c.appendChild(st);
-    try { await SBE_JOURNEY_DEMO.run(api, t => { st.textContent = t; }); st.textContent = 'נוצרו שלושה מסעות דמו ✓'; setTimeout(viewBoard, 600); }
-    catch(e) { st.textContent = 'היצירה לא הושלמה: ' + e.message; demoB.disabled = false; }
-  }); bar0.appendChild(demoB);
-  c.appendChild(bar0);
+  // אישור בתוך העמוד (ולא confirm של הדפדפן, שלפעמים חסום): לחיצה ראשונה מסבירה, השנייה יוצרת.
+  const demoBox = el('div'); demoBox.hidden = true; demoBox.style.cssText = 'margin-top:.6rem';
+  demoBox.appendChild(el('p', 'muted', 'ייווצרו שלושה מסעות דמו: כיתה בשלב הבחירות, בית ספר באמצע הדרך וקהילה שהשלימה את המסע. הם מסומנים "דמו", לא נכנסים למחקר ולא שולחים מיילים.'));
+  const demoSt = el('p', 'muted'); demoSt.setAttribute('aria-live', 'polite');
+  const demoGo = btn('כן, ליצור את מסעות הדמו', '', async () => {
+    demoGo.disabled = true; demoB.disabled = true; demoSt.className = 'muted'; demoSt.textContent = 'מתחילה... (בפעם הראשונה השרת יכול להתעורר עד דקה)';
+    try { await SBE_JOURNEY_DEMO.run(api, t => { demoSt.textContent = t; }); demoSt.textContent = 'נוצרו שלושה מסעות דמו ✓'; setTimeout(viewBoard, 600); }
+    catch(e) { demoSt.className = 'err'; demoSt.textContent = 'היצירה לא הושלמה: ' + e.message; demoGo.disabled = false; demoB.disabled = false; }
+  });
+  demoBox.appendChild(demoGo); demoBox.appendChild(demoSt);
+  const demoB = btn('יצירת מסעות דמו', 'btn-ghost', () => { demoBox.hidden = !demoBox.hidden; }); bar0.appendChild(demoB);
+  c.appendChild(bar0); c.appendChild(demoBox);
   const w = el('p', 'muted', 'טוענת...'); c.appendChild(w);
   const d = await api('jrAll'); w.remove();
   if (d._status === 403) { c.appendChild(el('p', 'err', 'צריך כניסת מנהלת מערכת.')); return; }
@@ -285,7 +290,12 @@ async function viewBoard(){
     r.appendChild(rb);
   });
   if (!items.length) c.appendChild(el('p', 'muted', 'עדיין אין מסעות.'));
-  if (items.some(x => x.demo)) { const dd = btn('מחיקת כל מסעות הדמו', 'btn-ghost', async () => { if (!confirm('למחוק את כל מסעות הדמו?')) return; for (const x of items.filter(y => y.demo)) await api('jrDelete', { id: x.id }); viewBoard(); }); dd.style.marginTop = '.6rem'; c.appendChild(dd); }
+  if (items.some(x => x.demo)) {
+    const dd = btn('מחיקת כל מסעות הדמו', 'btn-ghost', async () => {
+      if (dd.dataset.sure !== '1') { dd.dataset.sure = '1'; dd.textContent = 'לחיצה נוספת תמחק את כל מסעות הדמו'; return; }
+      dd.disabled = true; dd.textContent = 'מוחקת...'; for (const x of items.filter(y => y.demo)) await api('jrDelete', { id: x.id }); viewBoard();
+    }); dd.style.marginTop = '.6rem'; c.appendChild(dd);
+  }
   // הגדרות: קהילת הווטסאפ + ייצוא מחקרי
   const s = card(); const sd = document.createElement('details'); s.appendChild(sd); sd.appendChild(el('summary', null, 'קהילת המסע בווטסאפ — קישורי הזמנה')); sd.firstChild.style.cssText = 'cursor:pointer;font-weight:700;color:var(--spoken)';
   sd.appendChild(el('p', 'muted', 'קישורי הזמנה (https://chat.whatsapp.com/...) שמוצגים למשתתפים. קישור לפי מסגרת גובר על הקישור הכללי.'));
@@ -315,7 +325,7 @@ async function viewOne(id){
   // המיפוי והצעת המסע
   if (j.proposal) {
     const p = j.proposal; const pc = card(); pc.appendChild(el('h2', null, 'הצעת המסע'));
-    if (p.summary) pc.appendChild(el('p', 'intro', p.summary));
+    if (p.summary) { const sp = el('div', 'intro'); sp.appendChild(richText(p.summary)); pc.appendChild(sp); }
     (p.clusters || []).forEach(x => { const r = el('div', 'obst'); r.appendChild(el('span', 'cl-chip', stT(x.stage))); r.appendChild(el('div', null, clT(x.c) + (x.strength ? ' — ' + x.strength : ''))); pc.appendChild(r); });
     (p.fails || []).forEach(f => pc.appendChild(el('div', 'obst', J.ICON.obstacle + ' ' + ((J.FAILS.find(x => x.k === f.type) || {}).t || '') + ': ' + (f.seen || '') + (f.bridge ? ' ' + J.ICON.bridge + ' ' + f.bridge : ''))));
   }

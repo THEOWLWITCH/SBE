@@ -52,8 +52,16 @@ const COMMUNITY = [
 const CERT = [ ['מיפיתם את כל ערוצי התקשורת ואת מי שנשאר בשוליים — נקודת מוצא כנה ואמיצה.', ['מפת ערוצים לכל הקהילה','זיהוי מכשול התקשורת']],
   ['בניתם ערוץ חלופי ובדקתם אותו — המידע מגיע עכשיו גם למי שאינו בווטסאפ.', ['ערוץ חלופי שנבדק']],
   ['לכל תפקיד מפתח יש עכשיו ממלא/ת מקום — הדרך כבר לא נשענת על אדם אחד.', ['גיבוי לכל תפקיד מפתח']] ];
-async function run(api, log){
+const ERR = { 'too many': 'כבר יש יותר מדי מסעות. אפשר למחוק את מסעות הדמו הקודמים ולנסות שוב.', unauthorized: 'צריך להיכנס מחדש כמנהלת המערכת.', 'bad action': 'השרת עוד לא מכיר את מסע אל החוסן — כנראה שהעדכון האחרון עוד לא עלה לשרת.' };
+async function run(rawApi, log){
   const out = [];
+  // כל צעד נבדק: אם השרת מחזיר שגיאה, עוצרים ומסבירים מה קרה.
+  const api = async (action, extra) => {
+    let r;
+    try { r = await rawApi(action, extra); } catch (e) { throw new Error('אין חיבור לשרת. כדאי לבדוק את האינטרנט ולנסות שוב בעוד דקה.'); }
+    if (!r || r._status >= 400 || r.error) { const e = (r && r.error) || ('שגיאה ' + (r && r._status)); throw new Error(ERR[e] || ('השלב ' + action + ' נכשל: ' + e)); }
+    return r;
+  };
   // 1. כיתה — בשלב הבחירות
   log('כיתה ה׳2: מיפוי והצעת מסע...');
   let r = await api('jrCreate', { unit:'elem', unitName:'כיתה ה׳2 · דמו', by:'דמו — המחנכת', research:false, demo:true }); if (!r.id) throw new Error(r.error || 'יצירה נכשלה'); out.push(r.id);
