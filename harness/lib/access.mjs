@@ -605,6 +605,7 @@ export function rcGhostwrite(t) { const s = String(t || '').replace(/\s+/g, ' ')
 // טלגרם (חינם, בלי פרסומות): TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID.
 // וואטסאפ דרך CallMeBot (חינם לשימוש אישי, שירות לא רשמי): WHATSAPP_PHONE + CALLMEBOT_APIKEY.
 // מייל דרך Resend (חינם עד 3,000 בחודש): RESEND_API_KEY + NOTIFY_EMAIL. בלי המשתנים — אין התראה.
+// השולח: NOTIFY_FROM (למשל "Begood <noreply@be-good.co.il>", אחרי אימות הדומיין ב-Resend); ברירת מחדל — הכתובת הזמנית של Resend.
 // detail — פרטים מלאים (למשל תוכן פנייה ופרטי קשר): נשלחים רק במייל, לא בערוצי הצ'אט.
 export function notifyAdmin(title, message, link, detail) {
   const env = (typeof process !== 'undefined' && process.env) || {};
@@ -626,7 +627,7 @@ export function notifyAdmin(title, message, link, detail) {
   if (env.RESEND_API_KEY && env.NOTIFY_EMAIL) {
     jobs.push(fetch('https://api.resend.com/emails', { method: 'POST',
       headers: { authorization: 'Bearer ' + env.RESEND_API_KEY, 'content-type': 'application/json' },
-      body: JSON.stringify({ from: 'Begood <onboarding@resend.dev>', to: [env.NOTIFY_EMAIL], subject: 'Begood — ' + title,
+      body: JSON.stringify({ from: env.NOTIFY_FROM || 'Begood <onboarding@resend.dev>', to: [env.NOTIFY_EMAIL], subject: 'Begood — ' + title,
         text: message + (detail ? '\n\n' + detail : '') + (link ? '\n\n' + link : '') }) }));
   }
   return Promise.allSettled(jobs);

@@ -146,4 +146,5 @@
 
 ## דומיין
 
-- האתר: be-good.co.il (וגם s-b-e.netlify.app). השרת מקבל בקשות משתיהן (`CORS_LIST` ב-`harness/practice-server.mjs`). הכתובת הראשונה ב-`CORS_ORIGIN` ב-Render היא זו שמופיעה בקישורים במיילים.
+- האתר: be-good.co.il (וגם s-b-e.netlify.app, שמעבירה אליו). ה-DNS מנוהל ב-Netlify DNS. השרת מקבל בקשות משתיהן (`CORS_LIST` ב-`harness/practice-server.mjs`). הכתובת הראשונה ב-`CORS_ORIGIN` ב-Render היא זו שמופיעה בקישורים במיילים.
+- מיילים: Resend. השולח נקבע ב-`NOTIFY_FROM` ב-Render (למשל `Begood <noreply@be-good.co.il>`, אחרי אימות הדומיין ב-Resend).
