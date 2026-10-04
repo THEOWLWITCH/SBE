@@ -1,6 +1,7 @@
 <meta charset="UTF-8">
 <title>ספריית המקורות</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/resilience-advisor-sources.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -50,10 +51,10 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
   border-radius:7px;padding:13px 16px;font-size:14.5px;line-height:1.6;color:var(--ink);margin-bottom:16px;}
 
 .searchbox{position:relative;margin-bottom:12px;}
-#q{width:100%;font-family:inherit;font-size:17px;color:var(--ink);
+#q,#rq{width:100%;font-family:inherit;font-size:17px;color:var(--ink);
   background:var(--surface);border:1px solid var(--hair);border-radius:9px;
   padding:14px 46px 14px 14px;direction:rtl;box-shadow:0 1px 3px var(--shadow);}
-#q:focus{outline:2px solid var(--spoken);outline-offset:1px;}
+#q:focus,#rq:focus{outline:2px solid var(--spoken);outline-offset:1px;}
 .searchbox::before{content:"⌕";position:absolute;inset-inline-start:16px;top:11px;
   font-size:22px;color:var(--muted);pointer-events:none;}
 .clearq{position:absolute;inset-inline-start:12px;top:12px;background:none;border:none;
@@ -118,14 +119,46 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 .suggestPanel .btnrow button{font-family:inherit;font-size:14.5px;font-weight:600;padding:9px 18px;
   border-radius:6px;border:1px solid var(--hair);background:var(--surface-2);color:var(--ink);cursor:pointer;}
 .suggestPanel .btnrow button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
+.shelves{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 16px;border-bottom:1px solid var(--hair);}
+.shelves button{font:inherit;font-weight:700;font-size:14.5px;background:none;border:none;border-bottom:3px solid transparent;padding:8px 6px;cursor:pointer;color:var(--muted);}
+.shelves button[aria-selected="true"]{color:var(--spoken);border-bottom-color:var(--spoken);}
+.shelves button span{font-weight:500;font-size:12.5px;}
+.shelves button:focus-visible{outline:2px solid var(--spoken);outline-offset:2px;}
+.fchip{font:inherit;font-size:13px;border:1px solid var(--hair);background:var(--surface);color:var(--ink);border-radius:99px;padding:3px 11px;cursor:pointer;}
+.fchip.on{background:var(--spoken);border-color:var(--spoken);color:#fff;}
+.fchip:focus-visible{outline:2px solid var(--spoken);outline-offset:1px;}
+.rsrc{background:var(--surface);border:1px solid var(--hair);border-radius:8px;padding:12px 14px;margin:8px 0;break-inside:avoid;}
+.rsrc .apa{margin:0 0 6px;font-size:14px;line-height:1.55;}
+.rsrc .be{margin:0 0 6px;font-size:13.5px;color:var(--muted);line-height:1.55;}
+.rsrc .be b{color:var(--ink);}
+.rsrc .meta{font-size:12.5px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;}
+.rsrc .meta a{color:var(--spoken);font-weight:600;}
+.rsrc .tagr{background:var(--surface-2);border-radius:99px;padding:1px 9px;color:var(--muted);}
+.rsrc .priv{font-size:12px;font-weight:700;color:var(--brick,#9b3d2e);margin:0 0 4px;}
 </style>
 
 <div class="wrap">
 
 <header>
   <h1>ספריית המקורות</h1>
-  <p class="lead">חיפוש מקומי בלבד בטבלת המקורות המאומתת. מילה אחת נסרקת מול הנושא, הציטוט, התחום ומילות התיוג.</p>
+  <p class="lead">כל המקורות המאומתים שעליהם נשענת Begood, בשני מדפים. בכל מדף אפשר לחפש ולסנן.</p>
 </header>
+
+<!-- שני מדפים (04/10/2026): הסימולציות, וחוסן ומנהיגות (פרקטי ונוגי) — מקור האמת של המדף השני: lib/resilience-advisor-sources.js -->
+<div class="shelves" role="tablist" aria-label="מדפי הספרייה">
+  <button type="button" role="tab" id="shSim" aria-selected="true">🎭 סימולציות ושיחות מאתגרות <span id="nSim"></span></button>
+  <button type="button" role="tab" id="shRes" aria-selected="false">🌱 חוסן חברתי ומנהיגות — פרקטי ונוגי <span id="nRes"></span></button>
+</div>
+
+<div id="tabRes" hidden>
+  <p class="lead" style="margin-top:0">המקורות שעליהם נשענות פרקטי (חוסן בכיתה) ונוגי (מנהיגות שתומכת בחוסן). לכל מקור — התובנה המרכזית ל-Begood וקישור. המדף מתעדכן מדי שבוע.</p>
+  <div class="searchbox"><input id="rq" placeholder="חיפוש לפי מחבר/ת, נושא או מילה..."></div>
+  <div class="filters" id="rFilters"></div>
+  <div class="bar"><b id="rCount"></b></div>
+  <div id="rList"></div>
+</div>
+
+<div id="tabSim">
 
 <div class="disclosure">
   אלה מקורות נבחרים ולא סקירת ספרות. הם נבחרו ואומתו ידנית לפי התאמה לנושא, איכות ועדכניות.
@@ -175,11 +208,8 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 
 <div class="cards" id="cards"></div>
 <div class="empty" id="emptyMsg" hidden>אין מקור שמתאים לסינון הזה.</div>
-
-<div class="gap">
-  <b>פער ידוע:</b> 29 מקורות יסוד תיאורטיים חסרים מהספרייה (14 מהם ליבה) — בעיקר מחקר אמפירי וסיפורי מקרה.
-  הטבלה כאן מכילה 139 שורות מהמקורות המאומתים שכן קיימים.
 </div>
+
 
 </div>
 
@@ -3789,5 +3819,53 @@ body.sbe-hasnav{padding-top:38px;}
   document.addEventListener("keydown", function(e){
     if (e.key === "Escape" && !panel.hidden) panel.hidden = true;
   });
+})();
+
+// ── המדף השני: חוסן חברתי ומנהיגות (פרקטי ונוגי) ──
+(function(){
+  const A = window.SBE_ADVISOR_SOURCES; if (!A) return;
+  let IS_SYS = false; try { IS_SYS = sessionStorage.getItem("sbe.session.homeUrl") === "admin.html?role=sys"; } catch(e){}
+  // חומרים שטרם פורסמו — רק מנהלת המערכת רואה אותם
+  const ALL = A.list.filter(x => IS_SYS || !x.hidden);
+  const P = new Set(A.forAdvisor("practi").map(x => x.k)), N = new Set(A.forAdvisor("nugi").map(x => x.k));
+  const st = { q: "", who: "all", g: "" };
+  document.getElementById("nRes").textContent = "(" + ALL.length + ")";
+  try { document.getElementById("nSim").textContent = "(" + SOURCES.length + ")"; } catch(e){}
+  const fb = document.getElementById("rFilters");
+  const chip = (label, on, fn) => { const b = document.createElement("button"); b.type = "button"; b.className = "fchip" + (on ? " on" : ""); b.textContent = label; b.addEventListener("click", fn); return b; };
+  function drawFilters(){
+    fb.textContent = "";
+    [["all","הכול"],["practi","של פרקטי"],["nugi","של נוגי"]].forEach(([k,l]) => fb.append(chip(l, st.who === k, () => { st.who = k; draw(); })));
+    Object.entries(A.groups).forEach(([k,l]) => fb.append(chip(l, st.g === k, () => { st.g = st.g === k ? "" : k; draw(); })));
+  }
+  function draw(){
+    drawFilters();
+    const q = st.q.trim().toLowerCase();
+    const items = ALL.filter(x => (st.who === "all" || (st.who === "practi" ? P.has(x.k) : N.has(x.k))) && (!st.g || x.g === st.g)
+      && (!q || (x.apa + " " + (x.be || "") + " " + (x.gist || "") + " " + (A.groups[x.g] || "")).toLowerCase().includes(q)));
+    const isHe = s => /^[\u0590-\u05FF]/.test(s.apa);
+    items.sort((a,b) => (isHe(b) - isHe(a)) || a.apa.localeCompare(b.apa, isHe(a) ? "he" : "en", { sensitivity:"base" }));
+    document.getElementById("rCount").textContent = items.length + " מקורות";
+    const box = document.getElementById("rList"); box.textContent = "";
+    items.forEach(x => {
+      const d = document.createElement("div"); d.className = "rsrc"; d.id = x.k;
+      if (x.hidden) { const t = document.createElement("p"); t.className = "priv"; t.textContent = "טרם פורסם — גלוי רק לך"; d.append(t); }
+      const p = document.createElement("p"); p.className = "apa"; p.textContent = x.apa; if (!/[\u0590-\u05FF]/.test(x.apa)) { p.dir = "ltr"; p.style.textAlign = "left"; } d.append(p);
+      const be = document.createElement("p"); be.className = "be"; const bb = document.createElement("b"); bb.textContent = "התובנה ל-Begood: "; be.append(bb, document.createTextNode(x.be || x.gist || "")); d.append(be);
+      const m = document.createElement("div"); m.className = "meta";
+      const g = document.createElement("span"); g.className = "tagr"; g.textContent = A.groups[x.g] || ""; m.append(g);
+      const who = [P.has(x.k) ? "פרקטי" : "", N.has(x.k) ? "נוגי" : ""].filter(Boolean).join(" · ");
+      if (who) { const w = document.createElement("span"); w.className = "tagr"; w.textContent = who; m.append(w); }
+      if (x.url) { const a = document.createElement("a"); a.href = x.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "לקריאת המקור ↗"; m.append(a); }
+      d.append(m); box.append(d);
+    });
+  }
+  document.getElementById("rq").addEventListener("input", e => { st.q = e.target.value; draw(); });
+  const tabs = { shSim: "tabSim", shRes: "tabRes" };
+  const show = (id) => { Object.entries(tabs).forEach(([b, t]) => { document.getElementById(b).setAttribute("aria-selected", String(b === id)); document.getElementById(t).hidden = b !== id; });
+    try { history.replaceState(null, "", id === "shRes" ? "#resilience" : location.pathname); } catch(e){} };
+  Object.keys(tabs).forEach(b => document.getElementById(b).addEventListener("click", () => show(b)));
+  draw();
+  if (location.hash === "#resilience") show("shRes");
 })();
 </script>
