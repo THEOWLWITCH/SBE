@@ -249,18 +249,9 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <p class="sub">מסך קלט סטודנטים.יות</p>
 </header>
 
-<div class="banner">
+<!-- מצב החיבור למודל — רק למנהלת המערכת (sbe-sysonly, access-guard.js) -->
+<div class="banner sbe-sysonly">
   <span class="ai-status unknown" id="aiStatusChip"><span class="dot"></span> בודקת חיבור למודל...</span>
-  <details class="log" style="margin-top:8px;">
-    <summary>מצב פיתוח — פרטים טכניים</summary>
-    <p style="margin-top:8px;">
-      "מילוי הצעות" קורא בפועל למודל (19/09/2026), עם אילוצי ערך סגור לכל שדה שיש לו
-      רשימה קבועה (מיומנויות/רגשות/צרכים/תכונות/סוג קונפליקט/גישה וכו') — כדי שהמודל
-      לא ימציא ערך שלא קיים בטקסונומיה. שלושת שדות החובה (תפקיד השחקנית/המתנסה
-      וסיפור האירוע) מועברים כנעולים ואסור לנסח אותם מחדש. אם השרת המקומי לא רץ —
-      נופלת בשקט לתרחיש דוגמה קבוע ("יש לך גן טוב"), עם הודעה גלויה שזו הדגמה.
-    </p>
-  </details>
 </div>
 
 <div class="bar">

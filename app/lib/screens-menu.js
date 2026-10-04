@@ -10,15 +10,6 @@ window.SBE_SCREENS = [
       { file:'journeys.html', label:'המסעות אל החוסן — ניהול, אישורים ודמו' },
       { file:'eval-set.html', label:'בקרת איכות' },
     ]},
-    { title:'הצגה והדגמה', items:[
-      { file:'system-toc.html', label:'תוכן עניינים — כל המערכת' },
-      { file:'products/index.html', label:'תוצרי המערכת — הופקו על ידי המודל' },
-      { file:'demo-hub.html', label:'מסך הדגמה כולל' },
-    ]},
-    { title:'סימולציה — מסכי עבודה', items:[
-      { file:'creative-assessment.html', label:'הערכה יצירתית' },
-      { file:'practice-crossings.html', label:'חציות קווים אדומים' },
-    ]},
   ]},
   { part:'others', title:'👥 מה שאחרים רואים', groups:[
     { title:'כניסה ומקורות', items:[
@@ -57,6 +48,18 @@ window.SBE_SCREENS = [
       { file:'journey.html', label:'מסע אל החוסן — מסך המשתתפים', who:'הרשאת מסע אל החוסן' },
     ]},
   ]},
+  // דפי עזר מתהליך הבנייה — מקופלים בסוף התפריט, כדי שלא יפריעו (04/10/2026)
+  { part:'archive', collapsed:true, title:'🗄 ארכיון — דפי עזר מתהליך הבנייה', groups:[
+    { title:'הצגה והדגמה', items:[
+      { file:'system-toc.html', label:'תוכן עניינים — כל המערכת' },
+      { file:'products/index.html', label:'תוצרים לדוגמה' },
+      { file:'demo-hub.html', label:'מסך הדגמה כולל' },
+    ]},
+    { title:'סימולציה', items:[
+      { file:'creative-assessment.html', label:'הערכה יצירתית' },
+      { file:'practice-crossings.html', label:'חציות קווים אדומים' },
+    ]},
+  ]},
 ];
 // בונה את התפריט בתוך host. opts: base ("../" מתוך products/), here (הקובץ הנוכחי), linkClass, skip (קבצים שלא מציגים),
 // afterTitle(part, host) — תוספת מיד אחרי כותרת החלק (ב-admin.html: לשוניות הניהול בתוך "רק את רואה").
@@ -67,19 +70,27 @@ window.SBE_SCREENS_RENDER = function(host, opts){
     var ph = document.createElement('div'); ph.textContent = part.title;
     ph.style.cssText = 'font-weight:800;font-size:.86rem;margin:1rem 0 .2rem;padding:.35rem .6rem;border-radius:6px;' +
       (part.part === 'mine' ? 'background:rgba(184,137,59,.16);color:#7A5A22' : 'background:rgba(47,125,122,.14);color:#1F5E5B');
-    host.appendChild(ph);
+    var box = host;
+    if (part.collapsed) {
+      // חלק מקופל: נפתח בלחיצה (ופתוח מראש אם המסך הנוכחי בתוכו)
+      box = document.createElement('details');
+      var inside = part.groups.some(function(g){ return g.items.some(function(it){ return it.file.toLowerCase() === here; }); });
+      if (inside) box.open = true;
+      var sm = document.createElement('summary'); sm.textContent = part.title; sm.style.cssText = ph.style.cssText + 'cursor:pointer;background:rgba(91,104,115,.12);color:#5B6873';
+      box.appendChild(sm); host.appendChild(box);
+    } else host.appendChild(ph);
     if (opts.afterTitle) opts.afterTitle(part.part, host);
     part.groups.forEach(function(g){
       var items = g.items.filter(function(it){ return (opts.skip || []).indexOf(it.file) === -1; });
       if (!items.length) return;
-      var h = document.createElement('h5'); h.textContent = g.title; host.appendChild(h);
+      var h = document.createElement('h5'); h.textContent = g.title; box.appendChild(h);
       items.forEach(function(it){
         var a = document.createElement('a'); a.href = base + it.file;
         if (opts.linkClass) a.className = opts.linkClass;
         if (it.file.toLowerCase() === here) a.className = (a.className ? a.className + ' ' : '') + 'current';
         a.appendChild(document.createTextNode(it.label));
         if (it.who) { var w = document.createElement('span'); w.textContent = '👁 ' + it.who; w.style.cssText = 'display:block;font-size:.74em;opacity:.68;font-weight:500;margin-top:1px'; a.appendChild(w); }
-        host.appendChild(a);
+        box.appendChild(a);
       });
     });
   });

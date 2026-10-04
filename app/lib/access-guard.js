@@ -56,6 +56,12 @@
   try { ["sbe.advisor.v1", "sbe.nugi.v1", "sbe.writer.v1", "sbe.review.draft.v1"].forEach(function(k){ localStorage.removeItem(k); }); } catch(e){}
 
   var home = ss("sbe.session.homeUrl") || "";
+  // רכיבים טכניים (למשל מצב החיבור למודל) — מוצגים רק למנהלת המערכת: class="sbe-sysonly"
+  try {
+    if (home === "admin.html?role=sys") document.documentElement.classList.add("sbe-sys");
+    var st = document.createElement("style"); st.textContent = "html:not(.sbe-sys) .sbe-sysonly{display:none!important}";
+    (document.head || document.documentElement).appendChild(st);
+  } catch(e){}
 
   // המסך הנוכחי, יחסית ל-app/ (products/x.html לתוצרים).
   var parts = location.pathname.split("/");
