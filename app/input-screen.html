@@ -1269,6 +1269,9 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     samplePath: "scenario.json", setStatus: setAIStatus, show });
 });
 
+// תרחיש שהתחיל להיבנות לפני רענון או יציאה מהדף — ממשיכים לחכות לו
+SBE_BUILD.resumeEdu({ button: document.getElementById("bBuild"), server: AI_SERVER, setStatus: setAIStatus, show });
+
 document.getElementById("bReset").addEventListener("click", () => {
   FIELDS.forEach((f,k)=>{ const n=document.getElementById("i-"+k); if(n) n.value=""; state[k]="empty"; });
   traitFields.forEach(fn => fn());

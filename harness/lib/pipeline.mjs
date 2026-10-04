@@ -6,14 +6,22 @@ import { loadPrompt, fill, extractJson } from './prompts.mjs';
 // רצות ב-streaming (providers.mjs), אז תשובה ארוכה לא נחתכת על שקט בחיבור.
 const MAX_TOKENS = 64000;
 
-export async function runPipeline(input, provider, { sourceLibrary = [] } = {}) {
+export async function runPipeline(input, provider, { sourceLibrary = [], onStage = () => {} } = {}) {
   const t0 = Date.now();
   const trace = [];
   const step = async (stage, variation, prompt) => {
     const s = Date.now();
     let r;
-    try { r = await provider.complete({ prompt, variation, maxTokens: MAX_TOKENS }); }
-    catch (e) { e.message = `שלב ${stage}: ${e.message}`; throw e; }
+    onStage(stage, 'start');
+    // ניסיון חוזר אחד לשלב שנכשל בשגיאה חולפת (עומס, ניתוק, timeout) — במקום להפיל את כל התרחיש
+    for (let attempt = 1; ; attempt++) {
+      try { r = await provider.complete({ prompt, variation, maxTokens: MAX_TOKENS }); break; }
+      catch (e) {
+        if (attempt < 2 && e.retryable) { console.warn(`pipeline: ${stage} נכשל (${e.message}) — ניסיון נוסף`); onStage(stage, 'retry'); continue; }
+        e.message = `שלב ${stage}: ${e.message}`; throw e;
+      }
+    }
+    onStage(stage, 'done');
     trace.push({ stage, ms: Date.now() - s, usage: r.usage });
     return r.text;
   };

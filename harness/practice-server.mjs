@@ -133,6 +133,9 @@ function readBody(req) {
   });
 }
 
+// עבודות צינור שרצות ברקע (בזיכרון; נמחקות אחרי 3 שעות)
+const PIPE_JOBS = new Map();
+
 const server = createServer(async (req, res) => {
   res._origin = req.headers.origin || '';
   if (req.method === 'OPTIONS') return sendJson(res, 204, {});
@@ -159,7 +162,7 @@ const server = createServer(async (req, res) => {
     }
   }
 
-  const validPaths = ['/api/complete', '/api/character-turn', '/api/pipeline'];
+  const validPaths = ['/api/complete', '/api/character-turn', '/api/pipeline', '/api/pipeline-status'];
   if (req.method !== 'POST' || !validPaths.includes(req.url)) {
     return sendJson(res, 404, { error: 'נתיב לא נמצא. יש POST /api/complete ו-POST /api/pipeline' });
   }
@@ -178,6 +181,14 @@ const server = createServer(async (req, res) => {
   // ב-effort גבוה) — הלקוח חייב timeout ארוך בהתאם. requestTimeout של
   // השרת כבר 0 (ראו למטה).
   //
+  // POST /api/pipeline-status (04/10/2026) — מצב עבודה שרצה ברקע: { jobId } → { status, stages, elapsed, scenario?, error? }
+  if (req.url === '/api/pipeline-status') {
+    const job = PIPE_JOBS.get(String(payload.jobId || ''));
+    if (!job) return sendJson(res, 200, { status: 'unknown' });
+    return sendJson(res, 200, { status: job.status, stages: job.stages, elapsed: Math.round((Date.now() - job.t0) / 1000),
+      ...(job.status === 'done' ? { scenario: job.scenario } : {}), ...(job.status === 'error' ? { error: job.error } : {}) });
+  }
+
   if (req.url === '/api/pipeline') {
     if (!payload.input || !payload.input.given) {
       return sendJson(res, 400, { error: 'חסר input.given (who / whatHappened / goals)' });
@@ -185,6 +196,26 @@ const server = createServer(async (req, res) => {
     let provider;
     try { provider = getProvider(process.env.PROVIDER || 'anthropic'); }
     catch (e) { return sendJson(res, 500, { error: e.message }); }
+    // מצב רקע (04/10/2026): מחזירים מיד מזהה עבודה, והדפדפן שואל על ההתקדמות כל כמה שניות.
+    // בקשה אחת של 10–20 דקות נקטעה (טלפון שנכנס להמתנה, ניתוק רגעי, פרוקסי) — והמשתמשת ראתה "נתקע".
+    if (payload.async) {
+      const jobId = randomUUID();
+      const meta = { ...(payload.meta || {}) };
+      if (!meta.id) { const d = new Date(), p = (n) => String(n).padStart(2, '0'); meta.id = `TR-${p(d.getMonth() + 1)}${p(d.getDate())}-${randomUUID().slice(0, 8)}`; }
+      const job = { status: 'running', stages: {}, t0: Date.now() };
+      PIPE_JOBS.set(jobId, job);
+      setTimeout(() => PIPE_JOBS.delete(jobId), 3 * 3600 * 1000).unref?.();
+      sendJson(res, 200, { jobId });
+      runPipeline(payload.input, provider, { sourceLibrary: payload.sourceLibrary || [], onStage: (s, st) => { job.stages[s] = st; } })
+        .then((out) => {
+          const scenario = toScenario(out, { input: payload.input, meta });
+          job.scenario = scenario; job.status = 'done';
+          console.log(`pipeline(async): הצליח אחרי ${Math.round((Date.now() - job.t0) / 1000)} שניות`);
+          saveScenario(scenario, meta).catch(e => console.error(`supabase: השמירה נכשלה — ${e.message}`));
+        })
+        .catch((e) => { job.status = 'error'; job.error = `שגיאת ספק: ${e.message}`; console.error(`pipeline(async): נכשל — ${e.message}`); });
+      return;
+    }
     const finish = startKeepAlive(res);
     const t0 = Date.now();
     // בלי מזהה ייחודי, to-scenario נותן לכל תרחיש של אותו יום את TR-MMDD-01,
