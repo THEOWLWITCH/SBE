@@ -1006,6 +1006,57 @@ async function handleJourney(store, body) {
   return [400, { error: 'bad action' }];
 }
 
+// ── משוב הסדנה בשרת (04/10/2026) ──
+// עד עכשיו המשובים נשמרו רק בדפדפן שממנו נשלחו, ומנחה שפתחה את התוצאות במכשיר אחר לא ראתה אותם.
+// wf:<w> → סדנה אחת: נפתחת על ידי המנחה (wfOpen, עם אסימון), והמשתתפות שולחות אליה משוב בלי חשבון (wfSubmit),
+// רק כשהסדנה קיימת ועד 400 משובים. קריאה (wfList): מנהלת המערכת — הכול; מנחה — הסדנאות שלה ושל המוסד שלה.
+const WF_ROLES = ['fac', 'trainee', 'obs'];
+const WF_MAX = 400;
+function wfWho(t) { if (!t) return null; if (t.k === 'code' && (t.perms || []).some((p) => /^fac_/.test(p))) return { code: t.c, inst: t.inst || '' };
+  if (t.k === 'code' && t.kind === 'legacy') return { code: t.c, inst: t.inst || '' }; if (t.k === 'inst') return { code: '', inst: t.inst }; return null; }
+async function handleWorkshopFeedback(store, body) {
+  const { action } = body;
+  const w = String(body.w || '');
+  const wOk = /^[a-z0-9]{8,32}$/.test(w);
+  if (action === 'wfSubmit') {
+    if (!wOk) return [400, { error: 'bad workshop' }];
+    const ws = await store.get('wf:' + w);
+    if (!ws) return [404, { error: 'no such workshop' }];
+    const role = WF_ROLES.includes(body.role) ? body.role : '';
+    if (!role) return [400, { error: 'bad role' }];
+    const rec = jrClean(body.record || {});
+    if (Buffer.byteLength(JSON.stringify(rec)) > 12000) return [413, { error: 'too large' }];
+    if ((ws.entries || []).length >= WF_MAX) return [429, { error: 'full' }];
+    ws.entries = (ws.entries || []).concat([{ role, ts: Date.now(), entry: rec }]);
+    await store.set('wf:' + w, ws);
+    return [200, { ok: true }];
+  }
+  const t = await verifyToken(store, body.token);
+  const isSys = (t && t.k === 'sys') || await checkPassword(store, 'sys', body.auth);
+  const who = isSys ? { code: 'sys', inst: '' } : wfWho(t);
+  if (!who) { await pause(); return [403, { error: 'unauthorized' }]; }
+  if (action === 'wfOpen') {
+    if (!wOk) return [400, { error: 'bad workshop' }];
+    const old = await store.get('wf:' + w);
+    if (old) return [200, { ok: true, existed: true }];
+    await store.set('wf:' + w, { w, owner: who.code, inst: jrClip(body.inst || who.inst, 120), fac: jrClip(body.fac, 80), scenario: jrClip(body.scenario, 160),
+      created: new Date().toISOString(), entries: [] });
+    return [200, { ok: true }];
+  }
+  if (action === 'wfList') {
+    const rows = (await store.list('wf:')).map((r) => r.value).filter((x) => x && x.w)
+      .filter((x) => isSys || (who.code && x.owner === who.code) || (who.inst && x.inst === who.inst));
+    return [200, { items: rows.sort((a, b) => String(b.created).localeCompare(String(a.created))) }];
+  }
+  if (action === 'wfDelete') {
+    const x = wOk && await store.get('wf:' + w);
+    if (!x) return [404, { error: 'not found' }];
+    if (!isSys && x.owner !== who.code) { await pause(); return [403, { error: 'unauthorized' }]; }
+    await store.del('wf:' + w); return [200, { ok: true }];
+  }
+  return [400, { error: 'bad action' }];
+}
+
 // ── פניות מהמשתמשים (01/10/2026): רעיונות, תקלות ושאלות מתוך פרקטי ──
 // fb:<ts>-<rand> → { type, text, name, contact, source, page, at }. שליחה פתוחה
 // (גם לאורחים בהתנסות הקהילה), קריאה ומחיקה — מנהלת המערכת בלבד.
@@ -1110,6 +1161,7 @@ export async function handleAccess(store, body) {
   if (action === 'fbSubmit' || action === 'fbList' || action === 'fbDelete') return handleFeedbackInbox(store, body);
   if (/^crit(List|Propose|Mine|Use|Admin|Approve|Reject|Remove)$/.test(action || '')) return handleReviewCriteria(store, body);
   if (/^jr[A-Z]/.test(action || '')) return handleJourney(store, body);
+  if (/^wf(Open|Submit|List|Delete)$/.test(action || '')) return handleWorkshopFeedback(store, body);
 
   const sysTok = await verifyToken(store, body?.token);
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);

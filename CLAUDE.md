@@ -151,3 +151,10 @@
 
 - האתר: be-good.co.il (וגם s-b-e.netlify.app, שמעבירה אליו). ה-DNS מנוהל ב-Netlify DNS. השרת מקבל בקשות משתיהן (`CORS_LIST` ב-`harness/practice-server.mjs`). הכתובת הראשונה ב-`CORS_ORIGIN` ב-Render היא זו שמופיעה בקישורים במיילים.
 - מיילים: Resend. השולח נקבע ב-`NOTIFY_FROM` ב-Render (למשל `Begood <noreply@be-good.co.il>`, אחרי אימות הדומיין ב-Resend).
+
+## משוב הסדנה (`feedback.html`, `feedback-results.html`)
+
+- **נשמר בשרת** (`wf:<w>`, הפעולות `wf*` ב-`harness/lib/access.mjs`), כדי שהמנחה תראה אותו מכל מכשיר.
+- המנחה פותחת סדנה ב-`facilitator-screen.html` ← נוצר מזהה סדנה (`w`) שעובר בקישור המשוב. המשתתפות שולחות בלי חשבון, רק לסדנה קיימת.
+- **מי רואה:** מנהלת המערכת — הכול; מנחה — הסדנאות שלה ושל המוסד שלה.
+- במסך הסדנה מוצג **מספר המשובים שהגיעו באמת** (לא מונה מדומה).
