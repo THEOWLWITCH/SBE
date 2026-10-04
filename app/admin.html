@@ -163,6 +163,38 @@ input,select.f{font-family:inherit;font-size:15px;color:var(--ink);background:va
 input:focus,select.f:focus{outline:2px solid var(--spoken);outline-offset:1px;}
 .inst{padding:12px 0;}
 .inst+.inst{border-top:1px solid var(--hair);}
+/* מוסד מקופל: שורה אחת, ובפתיחה ארבעה חלקים ממוספרים (04/10/2026) */
+.homegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-bottom:14px;}
+.hcard{display:grid;gap:2px;text-align:start;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:12px 14px;cursor:pointer;}
+.hcard:hover{border-color:var(--spoken);}
+.hcard:focus-visible{outline:2px solid var(--spoken);outline-offset:2px;}
+.hcard .hn{font-family:"IBM Plex Mono",monospace;font-size:26px;color:var(--muted);font-variant-numeric:tabular-nums;}
+.hcard .ht{font-weight:700;font-size:15px;}
+.hcard .hd{font-size:12.5px;color:var(--muted);}
+.hcard.has{border-inline-start:4px solid var(--spoken);} .hcard.has .hn{color:var(--spoken);}
+.hcard.urgent{border-inline-start:4px solid var(--brick);background:var(--brick-soft);} .hcard.urgent .hn{color:var(--brick);}
+details.ibox>summary{list-style:none;cursor:pointer;border-radius:8px;padding:8px 10px;margin:0 -10px;}
+details.ibox>summary::-webkit-details-marker{display:none;}
+details.ibox>summary::before{content:"◂";color:var(--muted);font-size:13px;transition:transform .15s;}
+details.ibox[open]>summary::before{transform:rotate(-90deg);}
+details.ibox>summary:hover{background:var(--surface-2);}
+details.ibox>summary:focus-visible{outline:2px solid var(--spoken);outline-offset:2px;}
+.ibody{display:grid;gap:10px;padding:6px 0 10px;}
+.isec{border:1px solid var(--hair);border-radius:8px;padding:10px 12px;background:var(--surface);}
+.isec.quiet{background:transparent;}
+.isec h4{margin:0 0 6px;font-size:14.5px;color:var(--ink);}
+.isec .btnrow{margin-top:8px;}
+.hint{margin:0 0 6px;font-size:13px;color:var(--muted);}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chips .chip{font-size:12.5px;background:var(--spoken-soft);color:var(--spoken);border-radius:99px;padding:2px 10px;font-weight:600;}
+.coderow{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;padding:5px 0;border-bottom:1px dashed var(--hair);font-size:14px;}
+.coderow .cl{min-width:110px;color:var(--muted);font-size:13px;}
+.coderow .mono{font-family:"IBM Plex Mono",monospace;direction:ltr;unicode-bidi:isolate;font-size:15px;letter-spacing:.04em;}
+.coderow .what{flex-basis:100%;font-size:12.5px;color:var(--muted);}
+.linkbtn.danger{color:var(--brick);}
+details.old{margin-top:8px;font-size:13px;}
+details.old>summary{cursor:pointer;color:var(--muted);}
+details.setcard>summary{cursor:pointer;font-weight:700;padding:12px 16px;}
 .irow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 0;}
 .irow .nm{flex:1;min-width:180px;display:flex;flex-direction:column;}
 .irow .nm span{font-size:13px;color:var(--muted);}
@@ -407,7 +439,7 @@ function saveSuggestions(list){ try { localStorage.setItem("sbe.source.suggestio
 
 const TABS = {
   inst:[["codes","קודים"],["users","משתמשות"],["feedback","מדדי המשוב"],["data","נתונים"]],
-  sys: [["journeys","🧭 מסע אל החוסן"],["insts","מוסדות"],["inbox","פניות"],["crit","קריטריונים לאישור"],["access","סיסמאות וקודים"],["taxonomies","רשימות"],["libs","מקורות"],["eval","בקרת איכות"],["data","נתונים"]],
+  sys: [["home","🏠 מה מחכה לי"],["insts","🏫 מוסדות וקודים"],["journeys","🧭 מסע אל החוסן"],["inbox","✉️ פניות"],["crit","✅ קריטריונים לאישור"],["taxonomies","📋 רשימות"],["libs","📚 מקורות"],["eval","🔎 בקרת איכות"],["data","📊 נתונים"],["access","🔑 סיסמת הניהול"]],
 };
 
 // קישורים למסכים אחרים בפרויקט — לא לשוניות בתוך admin.html, אלא ניווט
@@ -432,7 +464,7 @@ const inFrame = window.self !== window.top;
 if (!isSysSession && !isInstSession && !inFrame) location.replace("entry.html");
 let role = isInstSession ? "inst"
   : (roleParam === "sys" || roleParam === "inst") ? roleParam
-  : isSysSession ? "sys" : "inst", tab = "codes";
+  : isSysSession ? "sys" : "inst", tab = isSysSession && roleParam !== "inst" ? "home" : "codes";
 
 // החלפה ידנית בין שני האזורים (להדגמה) — רק למנהלת המערכת, ורק כשנפתח בלי ?role=.
 if (!isSysSession || roleParam === "sys" || roleParam === "inst") {
@@ -444,7 +476,7 @@ function render(){
   $("title").textContent = role==="inst" ? "אזור ניהול מוסד" : "אזור ניהול כלל המערכת";
   $("lead").textContent = role==="inst"
     ? D.instName + " · ניפוק קודים, ניהול משתמשות וייצוא נתונים של המוסד שלך בלבד."
-    : "פתיחת מוסדות, עריכת הרשימות הקבועות ואישור מקורות, בקרת איכות וייצוא כולל. הרמה היחידה שרואה בין־מוסדית — גישה לכל התפריטים והספריות של המערכת.";
+    : "כל הניהול של Begood במקום אחד. מתחילים ב\"מה מחכה לי\" — שם מופיע כל מה שדורש טיפול.";
 
   const nav = $("navPanel"); nav.textContent = "";
   const list = TABS[role];
@@ -492,7 +524,48 @@ function render(){
     p.append(al);
   }
   document.title = (role === "sys" && critPendingN ? "(" + critPendingN + ") " : "") + document.title.replace(/^\(\d+\) /, "");
-  p.append(({ codes:pCodes, users:pUsers, feedback:pFeedback, data:pData, insts:pInsts, inbox:pInbox, crit:pCrit, access:pAccess, taxonomies:pTaxonomies, libs:pLibs, eval:pEvalSet })[tab]());
+  p.append(({ codes:pCodes, users:pUsers, feedback:pFeedback, data:pData, insts:pInsts, inbox:pInbox, crit:pCrit, access:pAccess, home:pHome, taxonomies:pTaxonomies, libs:pLibs, eval:pEvalSet })[tab]());
+}
+
+// ── מה מחכה לי (04/10/2026): דף הבית של ניהול המערכת — כל מה שדורש טיפול, במקום אחד ──
+let homeData = null;
+function pHome(){
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"מה מחכה לי"), el("p",{class:"sub"},"כל מה שדורש את תשומת לבך, במקום אחד. לחיצה על כרטיס מובילה למקום הטיפול."));
+  if (!gate(w, homeData, async () => {
+    const [ins, inb, ren, jr, cr] = await Promise.all([accessCall("listInstitutions"), accessCall("fbList").catch(() => ({ items: [] })),
+      accessCall("renewList").catch(() => ({ requests: [] })), accessCall("jrAll").catch(() => ({ items: [] })), accessCall("critAdmin").catch(() => ({ pending: [] }))]);
+    instList = ins.institutions; sysSettings = ins.settings; inbox = inb.items || [];
+    homeData = { renew: (ren.requests || []).filter(q => !q.done).length, jr: (jr.items || []).filter(x => x.pendingAdmin).length,
+      crit: (cr.pending || []).length, inbox: (inb.items || []).length,
+      expiring: ins.institutions.filter(x => x.sub && ["warn","grace","expired"].includes(x.sub.state)).length,
+      noSystems: ins.institutions.filter(x => !(x.open || []).length).length, insts: ins.institutions.length };
+  }, "סיסמת מנהלת המערכת")) return w;
+  const H = homeData;
+  const grid = el("div",{class:"homegrid"});
+  const card = (n, title, desc, go, urgent) => {
+    const c = el("button",{class:"hcard" + (n ? (urgent ? " urgent" : " has") : "")});
+    c.append(el("b",{class:"hn"}, String(n)), el("span",{class:"ht"}, title), el("span",{class:"hd"}, desc));
+    c.addEventListener("click", go); return c;
+  };
+  const toTab = (k) => () => { tab = k; render(); };
+  grid.append(
+    card(H.jr, "מסעות ממתינים לך", "הצעות לאישור, הגשות, ערעורים והודעות", () => { location.href = "journeys.html"; }, true),
+    card(H.crit, "קריטריונים לאישור", "הצעות מהקהילה למשוב לעבודות", toTab("crit"), true),
+    card(H.renew, "בקשות חידוש ורכישה", "מוסדות שביקשו לחדש או להצטרף", toTab("insts"), true),
+    card(H.expiring, "מנויים שמסתיימים", "בקרוב, בתקופת חסד או שהסתיימו", toTab("insts"), true),
+    card(H.noSystems, "מוסדות בלי מערכות פתוחות", "צריך לבחור להם מה פתוח", toTab("insts"), false),
+    card(H.inbox, "פניות", "רעיונות, תקלות ושאלות שנשלחו", toTab("inbox"), false));
+  w.append(grid);
+  const quick = el("div",{class:"card"});
+  quick.append(el("h3",{},"פעולות מהירות"));
+  const q = el("div",{class:"in"});
+  const b1 = el("button",{class:"act p"},"פתיחת מוסד או הפקת קוד"); b1.addEventListener("click", toTab("insts"));
+  const b2 = el("a",{class:"act",href:"journeys.html",style:"text-decoration:none;display:inline-block"},"לוח המסעות");
+  const b3 = el("button",{class:"act"},"רענון"); b3.addEventListener("click", () => { homeData = null; render(); });
+  q.append(el("div",{class:"btnrow",style:"margin-top:0"}, b1, b2, b3), el("p",{class:"hint",style:"margin-top:10px"}, H.insts + " מוסדות במערכת."));
+  quick.append(q); w.append(quick);
+  return w;
 }
 
 // ── קודים ──
@@ -644,10 +717,11 @@ function pFeedback(){
 // ── מוסדות ──
 function pInsts(){
   const w = el("div",{class:"panel on"});
-  w.append(el("h2",{},"מוסדות"), el("p",{class:"sub"},
-    "לכל מוסד: אילו מערכות פתוחות לו (\"מערכות פתוחות\"), עד מתי המנוי, וקוד למנהל/ת המוסד — שממנו הוא/היא מפיק/ה קודים לצוות."));
+  w.append(el("h2",{},"מוסדות וקודים"), el("p",{class:"sub"},
+    "לכל מוסד: אילו מערכות פתוחות לו, עד מתי המנוי, והקודים שלו. מנהל/ת מוסד מפיק/ה קודים לצוות רק מתוך המערכות הפתוחות."));
 
   if (!gate(w, instList, async () => { const d = await accessCall("listInstitutions"); instList = d.institutions; sysSettings = d.settings; }, "סיסמת מנהלת המערכת")) return w;
+  homeData = null; // כל שינוי כאן מתעדכן גם ב"מה מחכה לי"
 
   const reload = (d) => { if (d && d.institutions) instList = d.institutions; render(); };
   const act = (action, extra) => accessCall(action, extra)
@@ -683,15 +757,16 @@ function pInsts(){
     c.append(inn); w.append(c);
   }
 
-  // בקשות חידוש שהגיעו מהטופס
-  const rc = el("div",{class:"card"});
-  rc.append(el("h3",{},"בקשות חידוש"));
-  const rin = el("div",{class:"in"}, el("p",{class:"sub",style:"margin:0"},"טוענת..."));
+  // בקשות חידוש ורכישה שהגיעו מהטופס — מוצגות רק כשיש בקשה פתוחה
+  const rc = el("div",{class:"card"}); rc.hidden = true;
+  rc.append(el("h3",{},"בקשות חידוש ורכישה", el("em",{},"ממתינות לך")));
+  const rin = el("div",{class:"in"});
   rc.append(rin); w.append(rc);
   accessCall("renewList").then(d => {
     rin.textContent = "";
     const open = (d.requests || []).filter(q => !q.done);
-    if (!open.length) { rin.append(el("p",{class:"sub",style:"margin:0"},"אין בקשות פתוחות. הטופס לבקשה: renew.html")); return; }
+    if (!open.length) return;
+    rc.hidden = false;
     const PER = { year:"שנה", half:"חצי שנה", other:"אחר" };
     open.forEach(q => {
       const when = new Date(q.at).toLocaleString("he-IL", { dateStyle:"short", timeStyle:"short" });
@@ -736,28 +811,66 @@ function pInsts(){
     });
   }).catch(() => { rin.textContent = "לא הצלחתי לטעון את הבקשות."; });
 
-  // רשימת המוסדות
+  // פתיחת מוסד חדש — למעלה, פעולה אחת ברורה
+  const addC = el("div",{class:"card"});
+  addC.append(el("h3",{},"פתיחת מוסד חדש"));
+  const add = el("div",{class:"in"});
+  const nm = el("input",{placeholder:"שם המוסד", style:"flex:1;min-width:180px"});
+  const bAdd = el("button",{class:"act p"},"פתיחה");
+  bAdd.addEventListener("click",()=>{ const v=nm.value.trim(); if(!v)return; act("addInstitution", { name: v }); });
+  add.append(el("div",{class:"btnrow"}, nm, bAdd),
+    el("p",{class:"hint"},"אחרי הפתיחה: בוחרים מערכות פתוחות, ומפיקים קוד למנהל/ת המוסד או קוד אישי."));
+  addC.append(add); w.append(addC);
+
+  // רשימת המוסדות — כל מוסד מקופל לשורה אחת; בפתיחה: ארבעה חלקים ברורים
   const c = el("div",{class:"card"});
-  c.append(el("h3",{},"רשימת המוסדות"));
+  c.append(el("h3",{},"המוסדות", el("em",{}, "לחצי על מוסד כדי לנהל אותו")));
   const inn = el("div",{class:"in"});
+  if (!instList.length) inn.append(el("p",{class:"sub",style:"margin:0"},"עדיין אין מוסדות."));
+  const copyBtn = (txt) => { const b = el("button",{class:"linkbtn"},"העתקה");
+    b.addEventListener("click", async () => { try { await navigator.clipboard.writeText(txt); b.textContent = "הועתק ✓"; setTimeout(() => b.textContent = "העתקה", 1400); } catch(e){} }); return b; };
   instList.forEach(x=>{
     const active = x.active !== false;
-    const [sl, sk] = SUB[(x.sub && x.sub.state) || "ok"];
-    const box = el("div",{class:"inst"});
-    box.append(el("div",{class:"irow"},
+    const [sl, sk] = active ? SUB[(x.sub && x.sub.state) || "ok"] : SUB.inactive;
+    const openNames = (x.open || []).map(p => (MOD_LABELS[p] || p).replace(/ \(.*\)$/, ""));
+    const pcs = x.personalCodes || [];
+    const box = el("details",{class:"inst ibox"});
+    if (openInst === x.name) box.open = true;
+    box.addEventListener("toggle", () => { if (box.open) openInst = x.name; else if (openInst === x.name) openInst = null; });
+    box.append(el("summary",{class:"irow"},
       el("span",{class:"nm"}, el("b",{},x.name),
-        el("span",{}, (x.subEnd ? "מנוי עד " + fmt(x.subEnd) : "מנוי ללא תאריך סיום") + " · " + (x.staffCodes || 0) + " קודי צוות")),
+        el("span",{}, [openNames.length ? openNames.length + " מערכות פתוחות" : "עדיין בלי מערכות",
+          x.adminCode ? "יש קוד מנהל/ת" : "בלי קוד מנהל/ת", pcs.length ? pcs.length + " קודים אישיים" : "",
+          (x.staffCodes || 0) ? x.staffCodes + " קודי צוות" : ""].filter(Boolean).join(" · "))),
       el("span",{class:"pill " + sk}, sl)));
-    const acts = el("div",{class:"iacts"});
+    const body = el("div",{class:"ibody"});
+
+    // 1. מערכות פתוחות
+    const s1 = el("section",{class:"isec"}, el("h4",{},"1. מערכות פתוחות"),
+      el("p",{class:"hint"},"מנהל/ת המוסד יכול/ה לתת לצוות רק מתוך הרשימה הזו."));
+    s1.append(openNames.length ? el("div",{class:"chips"}, ...openNames.map(n => el("span",{class:"chip"}, n)))
+      : el("p",{style:"margin:0;color:var(--brick);font-weight:600"},"עדיין לא נפתחו מערכות."));
+    const bMod = el("button",{class:"act"}, openNames.length ? "עריכה" : "בחירת מערכות");
+    bMod.addEventListener("click",()=> openModDlg(x.name));
+    s1.append(el("div",{class:"btnrow"}, bMod));
+
+    // 2. מנוי
+    const s2 = el("section",{class:"isec"}, el("h4",{},"2. מנוי"),
+      el("p",{style:"margin:0"}, x.subEnd ? "בתוקף עד " + fmt(x.subEnd) : "ללא תאריך סיום"));
     const bRenew = el("button",{class:"act p"},"חידוש לשנה");
     bRenew.addEventListener("click", () => act("renewSubscription", { name: x.name, months: 12 }));
-    const bDate = el("button",{class:"act"},"תאריך סיום");
+    const bDate = el("button",{class:"act"},"שינוי תאריך");
     bDate.addEventListener("click", () => openSubDlg(x, act));
-    const bMod = el("button",{class:"act",title:"אילו מערכות פתוחות למוסד — מנהל/ת המוסד יכול/ה לתת לצוות רק מתוכן"},"מערכות פתוחות");
-    bMod.addEventListener("click",()=> openModDlg(x.name));
-    const bAdm = el("button",{class:"act"}, x.adminCode ? "קוד מנהל/ת חדש" : "הפקת קוד למנהל/ת");
+    s2.append(el("div",{class:"btnrow"}, bRenew, bDate));
+
+    // 3. קודים
+    const s3 = el("section",{class:"isec"}, el("h4",{},"3. קודים"));
+    const admRow = el("div",{class:"coderow"}, el("span",{class:"cl"},"מנהל/ת המוסד"));
+    if (x.adminCode) admRow.append(el("b",{class:"mono"}, x.adminCode), copyBtn(x.adminCode));
+    else admRow.append(el("i",{},"עדיין לא הופק"));
+    const bAdm = el("button",{class: x.adminCode ? "linkbtn" : "act p"}, x.adminCode ? "החלפה" : "הפקת קוד למנהל/ת");
     bAdm.addEventListener("click",()=> ask(x.adminCode ? "קוד חדש למנהל/ת " + x.name : "קוד למנהל/ת " + x.name,
-      x.adminCode ? "הקוד הנוכחי של מנהל/ת המוסד יבוטל ויופק חדש. קודי הצוות שכבר הופקו ממשיכים לעבוד." : "יופק קוד למנהל/ת המוסד: נכנס/ת עם כל המערכות שפתוחות למוסד, ויכול/ה להפיק קודים לצוות. לאדם יחיד בלי צוות עדיף \"קוד אישי\".",
+      x.adminCode ? "הקוד הנוכחי של מנהל/ת המוסד יבוטל ויופק חדש. קודי הצוות שכבר הופקו ממשיכים לעבוד." : "מנהל/ת המוסד נכנס/ת עם כל המערכות הפתוחות למוסד, ומפיק/ה קודים לצוות — רק מתוך המערכות האלה.",
       async () => {
         try {
           if (x.adminCode) await accessCall("codeRevoke", { code: x.adminCode });
@@ -765,57 +878,49 @@ function pInsts(){
           instList = null; render();
         } catch (e) { accessFail(e); }
       }));
-    const bPc = el("button",{class:"act",title:"קוד לאדם אחד שפותח רק את המערכות שבוחרים, בלי ניהול צוות"},"קוד אישי");
+    admRow.append(bAdm);
+    s3.append(admRow, el("p",{class:"hint"},"קוד אישי: לאדם אחד, בלי ניהול צוות — רק המערכות שבוחרים."));
+    pcs.forEach(pc => {
+      const what = pc.perms.map(p => (MOD_LABELS[p] || p).replace(/ \(.*\)$/, "")).join(", ");
+      const rv = el("button",{class:"linkbtn danger"},"ביטול");
+      rv.addEventListener("click",()=> ask("ביטול הקוד " + pc.code, "הקוד יפסיק לעבוד מיד.",
+        async () => { try { await accessCall("codeRevoke", { code: pc.code }); instList = null; render(); } catch (e) { accessFail(e); } }));
+      s3.append(el("div",{class:"coderow"}, el("span",{class:"cl"}, pc.label || "קוד אישי"), el("b",{class:"mono"}, pc.code), copyBtn(pc.code), rv,
+        el("span",{class:"what"}, what)));
+    });
+    const bPc = el("button",{class:"act"},"+ קוד אישי חדש");
     bPc.addEventListener("click",()=> openPersonalDlg(x));
+    s3.append(el("div",{class:"btnrow"}, bPc));
+    const old = el("details",{class:"old"}, el("summary",{},"קוד מוסד ישן (כל הצוות, השיטה הקודמת)"));
+    const bOld = el("button",{class:"linkbtn"},"החלפה");
+    bOld.addEventListener("click",()=> ask("קוד מוסד ישן חדש ל" + x.name,
+      "הקוד הישן — שכל הצוות נכנס איתו עד עכשיו — יוחלף מיד. עדיף לעבור לקודי צוות אישיים שמנהל/ת המוסד מפיק/ה.",
+      () => act("newInstitutionCode", { name: x.name })));
+    old.append(el("div",{class:"coderow"}, el("b",{class:"mono"}, x.code), copyBtn(x.code), bOld));
+    s3.append(old);
+
+    // 4. השהיה ומחיקה
+    const s4 = el("section",{class:"isec quiet"}, el("h4",{},"4. השהיה ומחיקה"));
     const status = el("button",{class:"act"}, active ? "השהיה" : "הפעלה מחדש");
     status.addEventListener("click",()=> active
       ? ask("השהיית " + x.name, "אף קוד של המוסד לא יאפשר כניסה עד שתפעילי אותו מחדש. הנתונים נשמרים.",
           () => act("setInstitutionActive", { name: x.name, active: false }))
       : act("setInstitutionActive", { name: x.name, active: true }));
-    const bDel = el("button",{class:"act d"},"מחיקה");
+    const bDel = el("button",{class:"act d"},"מחיקת המוסד");
     bDel.addEventListener("click",()=> ask("מחיקת " + x.name,
       "המוסד יימחק לגמרי: כל הקודים שלו (מנהל/ת וצוות וסטודנטים) יפסיקו לעבוד, והמערכות שנפתחו לו וכיתות החוסן שלו עם כל התשובות יימחקו. אי אפשר לבטל את זה.",
       () => act("deleteInstitution", { name: x.name })));
-    acts.append(bMod, bRenew, bDate, bAdm, bPc, status, bDel);
-    // מה פתוח למוסד — גלוי בשורה, בלי לפתוח את החלון
-    const openNames = (x.open || []).map(p => (MOD_LABELS[p] || p).replace(/ \(.*\)$/, ""));
-    box.append(el("div",{class:"icodes", style: openNames.length ? "" : "color:var(--brick);font-weight:600"},
-      openNames.length ? "מערכות פתוחות: " + openNames.join(" · ") : "עדיין לא נפתחו מערכות — לחצי \"מערכות פתוחות\" כדי לבחור"));
-    box.append(acts);
-    const codes = el("div",{class:"icodes"});
-    codes.append(el("span",{}, "קוד מנהל/ת המוסד: "), x.adminCode ? el("b",{class:"mono"}, x.adminCode) : el("i",{},"עדיין לא הופק"),
-      el("span",{style:"margin-inline-start:14px"}, "קוד מוסד ישן (כל הצוות): "), el("b",{class:"mono"}, x.code));
-    const bOld = el("button",{class:"linkbtn"},"החלפה");
-    bOld.addEventListener("click",()=> ask("קוד מוסד ישן חדש ל" + x.name,
-      "הקוד הישן — שכל הצוות נכנס איתו עד עכשיו — יוחלף מיד. עדיף לעבור לקודי צוות אישיים שמנהל/ת המוסד מפיק/ה.",
-      () => act("newInstitutionCode", { name: x.name })));
-    codes.append(" ", bOld);
-    box.append(codes);
-    if ((x.personalCodes || []).length) {
-      const pc = el("div",{class:"icodes"}, el("span",{}, "קודים אישיים: "));
-      x.personalCodes.forEach((c, i) => {
-        if (i) pc.append(el("span",{}," · "));
-        const what = c.perms.map(p => (MOD_LABELS[p] || p).replace(/ \(.*\)$/, "")).join(", ");
-        pc.append(el("span",{}, (c.label ? c.label + " — " : "") + what + " "), el("b",{class:"mono"}, c.code), " ");
-        const rv = el("button",{class:"linkbtn"},"ביטול");
-        rv.addEventListener("click",()=> ask("ביטול הקוד " + c.code, "הקוד יפסיק לעבוד מיד.",
-          async () => { try { await accessCall("codeRevoke", { code: c.code }); instList = null; render(); } catch (e) { accessFail(e); } }));
-        pc.append(rv);
-      });
-      box.append(pc);
-    }
+    s4.append(el("div",{class:"btnrow"}, status, bDel));
+
+    body.append(s1, s2, s3, s4); box.append(body);
     inn.append(box);
   });
-  const add = el("div",{class:"addrow"});
-  const nm = el("input",{placeholder:"שם המוסד"});
-  const bAdd = el("button",{class:"act p"},"פתיחת מוסד");
-  bAdd.addEventListener("click",()=>{ const v=nm.value.trim(); if(!v)return; act("addInstitution", { name: v }); });
-  add.append(nm,bAdd); inn.append(add); c.append(inn);
+  c.append(inn);
   w.append(c);
 
-  // הגדרות כלליות
-  const sc = el("div",{class:"card"});
-  sc.append(el("h3",{},"הגדרות מנויים וקודים"));
+  // הגדרות כלליות — מקופלות
+  const sc = el("details",{class:"card setcard"});
+  sc.append(el("summary",{},"הגדרות מנויים וקודים"));
   const sin = el("div",{class:"in"});
   const S = sysSettings || { graceDays:14, academic:{ maxActive:50, days:7, uses:3 } };
   const num = (v, min, max) => el("input",{type:"number", min:String(min), max:String(max), value:String(v), style:"width:90px"});
@@ -829,10 +934,6 @@ function pInsts(){
     .then(d => { sysSettings = d.settings; instList = null; render(); }).catch(accessFail));
   sin.append(el("div",{class:"btnrow"}, save));
   sc.append(sin); w.append(sc);
-
-  w.append(el("div",{class:"note"},
-    el("b",{},"מה שאינו נגיש לך — נגיש. "),
-    "כניהול המערכת את רואה הכול, כולל תרחישים של כל מוסד, לא רק מה ששותף מרצון למאגר המשותף — יש לך אחריות על כל המערכת. ההפרדה בין מוסדות היא ביניהם לבין עצמם, ולא בינך לבינם: מנהלת מוסדית רואה רק את המוסד שלה."));
   return w;
 }
 
@@ -1406,9 +1507,10 @@ function sysToken(){
   try { return sessionStorage.getItem("sbe.session.homeUrl") === "admin.html?role=sys" ? (sessionStorage.getItem("sbe.session.token") || "") : ""; } catch(e){ return ""; }
 }
 let myInst = null;     // קוד המוסד של מנהלת המוסד
+let openInst = null;   // המוסד שפתוח כרגע ברשימה (נשאר פתוח אחרי שמירה)
 let gateFailed = false;
 
-function resetAccessData(){ if (!accessAuth && sysToken()) tokenFailed = true; accessAuth = ""; accessState = null; instList = null; myInst = null; inbox = null; critData = null; }
+function resetAccessData(){ if (!accessAuth && sysToken()) tokenFailed = true; accessAuth = ""; accessState = null; instList = null; homeData = null; myInst = null; inbox = null; critData = null; }
 
 function accessFail(e){
   ask("הפעולה לא בוצעה",
@@ -1539,15 +1641,15 @@ function pCrit(){
 
 function pAccess(){
   const w = el("div",{class:"panel on"});
-  w.append(el("h2",{},"סיסמאות וקודים"),
-    el("p",{class:"sub"},"סיסמת מנהלת המערכת, וקוד \"משוב לעבודות\" הכללי הישן. הכול נשמר ונבדק בשרת, ולא מופיע בקוד של האתר."));
+  w.append(el("h2",{},"סיסמת הניהול"),
+    el("p",{class:"sub"},"החלפת הסיסמה שלך. הקודים של המוסדות נמצאים בלשונית \"מוסדות וקודים\"."));
 
   if (!gate(w, accessState, async () => { accessState = await accessCall("status"); }, "סיסמת מנהלת המערכת")) return w;
   const fail = accessFail;
 
   // קוד משוב לעבודות
-  const c1 = el("div",{class:"card"});
-  c1.append(el("h3",{},"קוד \"משוב לעבודות\" כללי — השיטה הישנה", el("em",{},"בתוקף עד שמחליפים או מבטלים")));
+  const c1 = el("details",{class:"card setcard"});
+  c1.append(el("summary",{},"קוד \"משוב לעבודות\" כללי — השיטה הישנה"));
   const in1 = el("div",{class:"in"});
   in1.append(el("p",{style:"margin:0 0 10px;font-size:13.5px;color:var(--muted)"},
     "קוד אחד לכל המערכת, בלי הגבלת זמן או שימושים. היום מרצים מפיקים לכל סטודנט/ית קוד אישי (שבוע, 3 הפקות) מ\"המרחב שלי\" — מומלץ לבטל את הקוד הכללי כשהמרצים עוברים לשיטה החדשה."));
@@ -1581,7 +1683,7 @@ function pAccess(){
 
   // החלפת סיסמאות
   const c2 = el("div",{class:"card"});
-  c2.append(el("h3",{},"החלפת סיסמאות ניהול"));
+  c2.append(el("h3",{},"החלפת הסיסמה"));
   const in2 = el("div",{class:"in"});
   const LABELS = { sys:"מנהלת המערכת" };
   // מנהלי/ות המוסדות לא נכנסים בסיסמה: לכל מוסד קוד משלו, בלשונית "מוסדות".
@@ -1617,17 +1719,7 @@ function pAccess(){
   });
   c2.append(in2);
 
-  const c3 = el("div",{class:"card"});
-  c3.append(el("h3",{},"כניסה של מנהלי/ות מוסדות"));
-  const in3 = el("div",{class:"in"});
-  const goInsts = el("button",{class:"act p"},"ללשונית מוסדות");
-  goInsts.addEventListener("click", () => { tab = "insts"; render(); });
-  in3.append(el("p",{style:"margin:0 0 10px;font-size:14px"},
-    "אין יותר סיסמה משותפת למנהלי/ות מוסדות. לכל מוסד מפיקים קוד משלו: בלשונית \"מוסדות\" ← ליד שם המוסד ← \"הפקת קוד למנהל/ת\". עם הקוד הזה מנהל/ת המוסד נכנס/ת ומפיק/ה קודים לצוות."),
-    el("div",{class:"btnrow"}, goInsts));
-  c3.append(in3);
-
-  w.append(c3, c2, c1, el("div",{class:"note"},
+  w.append(c2, c1, el("div",{class:"note"},
     el("b",{},"טוב לדעת. "),
     "הסיסמאות נשמרות בשרת באופן מוצפן, ולכן גם כאן אי אפשר לראות אותן — רק להחליף. את קוד המשוב לעבודות אפשר לראות, כי צריך למסור אותו."));
   return w;
