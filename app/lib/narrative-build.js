@@ -253,9 +253,72 @@
       docsPanel({ files, mock: false, saveKey: "sbe." + track + ".built.v1", meta: { id: scn.id, name: scn.name, creator: scn.creator, date: scn.date } }));
   }
 
+  // ── עבודת רקע בשרת (04/10/2026) ─────────────────────────────────
+  // הצינור רץ 10–20 דקות. במקום בקשה אחת ארוכה (שנקטעה כשהטלפון נכנס להמתנה או בניתוק רגעי),
+  // השרת מחזיר מזהה עבודה, והדף שואל כל כמה שניות מה המצב ומראה באיזה שלב הבנייה.
+  // המזהה נשמר במכשיר, כך שאפשר לרענן את הדף או לחזור אליו — והבנייה ממשיכה.
+  const JOB_KEY = "sbe.edu.job.v1";
+  const STAGE_TXT = [["stage1", "שלב 1 מתוך 3: הדמויות והקונפליקט"], ["stage2", "שלב 2 מתוך 3: נקודות התפנית ופתיחה למתנסה"], ["stage3", "שלב 3 מתוך 3: כתיבת המסמכים"]];
+  function stageLine(st, elapsed) {
+    st = st || {};
+    let cur = STAGE_TXT[0][1];
+    if (st.stage1 === "done") cur = STAGE_TXT[1][1];
+    if (st.stage2 === "done" && st.trainee === "done") cur = STAGE_TXT[2][1];
+    const retry = Object.values(st).includes("retry") ? " · ניסיון נוסף אחרי עיכוב קצר" : "";
+    return "בונה את התרחיש — " + cur + " · " + Math.max(1, Math.round((elapsed || 0) / 60)) + " דק׳" + retry;
+  }
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  async function pollJob(server, jobId, button) {
+    const t0 = Date.now(); let misses = 0;
+    while (Date.now() - t0 < 45 * 60000) {
+      await sleep(document.hidden ? 15000 : 7000);
+      let d;
+      try { d = await postJson(server + "/api/pipeline-status", { jobId }, 30000); misses = 0; }
+      catch (e) { if (++misses >= 12) throw new Error("החיבור לשרת נקטע לזמן ארוך"); continue; } // ניתוק רגעי — ממשיכים לשאול
+      if (d.status === "done" && d.scenario) return d.scenario;
+      if (d.status === "error") throw new Error(d.error || "הבנייה נכשלה");
+      if (d.status === "unknown") throw new Error("השרת הופעל מחדש באמצע הבנייה");
+      if (button) button.textContent = stageLine(d.stages, d.elapsed);
+    }
+    throw new Error("timeout: הבנייה נמשכה יותר מ-45 דקות");
+  }
+  async function runEduJob(server, body, button) {
+    let start;
+    try { start = await postJson(server + "/api/pipeline", { ...body, async: true }, 60000); }
+    catch (e) { throw e; }
+    if (!start.jobId) { // שרת ישן בלי מצב רקע — הבקשה הארוכה הרגילה
+      if (start.scenario) return start.scenario;
+      throw new Error(start.error || "הצינור לא החזיר תרחיש");
+    }
+    try { localStorage.setItem(JOB_KEY, JSON.stringify({ jobId: start.jobId, at: Date.now(), title: body.input && body.input.title || "" })); } catch (e) {}
+    try { return await pollJob(server, start.jobId, button); }
+    finally { try { localStorage.removeItem(JOB_KEY); } catch (e) {} }
+  }
+  // חזרה לדף באמצע בנייה: ממשיכים לחכות לאותה עבודה (עד 3 שעות מתחילתה)
+  async function resumeEdu({ button, server, setStatus, show }) {
+    let job = null;
+    try { job = JSON.parse(localStorage.getItem(JOB_KEY) || "null"); } catch (e) {}
+    if (!job || !job.jobId || Date.now() - job.at > 3 * 3600000) { try { localStorage.removeItem(JOB_KEY); } catch (e) {} return; }
+    const done = busy(button, "ממשיכה לבנות את התרחיש שהתחלת" + (job.title ? " (" + job.title + ")" : "") + "...");
+    let scn = null;
+    try { scn = await pollJob(server, job.jobId, button); if (setStatus) setStatus("ok"); }
+    catch (e) { if (setStatus) setStatus("mock"); show("התוצר לא נבנה", notBuilt(e.message)); return; }
+    finally { done(); try { localStorage.removeItem(JOB_KEY); } catch (e) {} }
+    showEdu(scn, show);
+  }
+  function showEdu(scn, show) {
+    const { files, leaked } = window.SBE_DOC.renderEduDocs(scn);
+    if (leaked.length) console.warn("⚠ דלף בגרסת המתנסה:", leaked[0]);
+    const prefix = (scn.id || "scenario") + "-";
+    const named = files.map(([n, h, l]) => [prefix + n, h, l]);
+    window._sbeScenarioBuilt = true;
+    show("התוצר — " + scn.name,
+      docsPanel({ files: named, mock: false, saveKey: "sbe.edu.built.v1", meta: { id: scn.id, name: scn.name } }));
+  }
+
   // ── מסלול אנשי חינוך: הצינור התלת-שלבי ───────────────────────────
   async function buildEdu({ fields, labels, button, server, samplePath, setStatus, show }) {
-    const done = busy(button, "מפיקה את התרחיש המלא... כ-15 דקות");
+    const done = busy(button, "מתחילה לבנות את התרחיש — כ-15 דקות. אפשר להשאיר את הדף פתוח, וגם לחזור אליו אחר כך.");
     let scn = null;
     try {
       const skills = String(fields.skills || "").split(",").map((s) => s.trim()).filter(Boolean);
@@ -278,8 +341,7 @@
         given_extra: fieldsText(fields, labels),
       };
       const meta = { institution: fields.inst || "", institutionId: String(fields.inst || "").trim(), eventDesc: fields.event || "", productType: "תרחיש", creator: fields.creator || "", date: fields.date || "", duration: String(fields.dur || "5").replace(/\D+/g, "") || "5", age: fields.age || "", audience: fields.audience || "" };
-      const data = await postJson(server + "/api/pipeline", { input, meta }, 1800000);
-      scn = data.scenario;
+      scn = await runEduJob(server, { input, meta }, button);
       if (!scn || !scn.actor || !scn.trainee) throw new Error("הצינור לא החזיר תרחיש");
       if (setStatus) setStatus("ok");
     } catch (e) {
@@ -288,14 +350,8 @@
       show("התוצר לא נבנה", notBuilt(e.message));
       return;
     } finally { done(); }
-    const { files, leaked } = window.SBE_DOC.renderEduDocs(scn);
-    if (leaked.length) console.warn("⚠ דלף בגרסת המתנסה:", leaked[0]);
-    const prefix = (scn.id || "scenario") + "-";
-    const named = files.map(([n, h, l]) => [prefix + n, h, l]);
-    window._sbeScenarioBuilt = true;
-    show("התוצר — " + scn.name,
-      docsPanel({ files: named, mock: false, saveKey: "sbe.edu.built.v1", meta: { id: scn.id, name: scn.name } }));
+    showEdu(scn, show);
   }
 
-  window.SBE_BUILD = { buildRole, buildEdu, docsPanel, PRINCIPLES, ROLE_SCHEMA };
+  window.SBE_BUILD = { buildRole, buildEdu, resumeEdu, docsPanel, PRINCIPLES, ROLE_SCHEMA };
 })();
