@@ -273,10 +273,18 @@ async function viewList(){
   const cb = document.createElement('input'); cb.type = 'checkbox'; cb.style.cssText = 'width:auto;margin-top:.3rem';
   cons.appendChild(cb); cons.appendChild(document.createTextNode('אני מסכים/ה שהבחירות, ההסברים והרפלקציות שלנו ישמשו למחקר על חוסן קהילתי, באופן אנונימי — בלי שם המסגרת ובלי פרטים מזהים. (רשות: אפשר לצאת למסע גם בלי הסכמה.)'));
   n.appendChild(cons);
+  // עדכונים במייל — רשות, בהסכמה מפורשת (אפשר לשנות או להפסיק בכל רגע במסך המסע)
+  n.appendChild(el('label', null, 'מייל לעדכונים (רשות)')); const em = document.createElement('input'); em.type = 'email'; em.maxLength = 254; em.dir = 'ltr'; em.placeholder = 'name@example.com'; n.appendChild(em);
+  const upl = el('label'); upl.style.cssText = 'display:flex;gap:.5rem;align-items:flex-start;font-weight:500;margin-top:.5rem';
+  const up = document.createElement('input'); up.type = 'checkbox'; up.style.cssText = 'width:auto;margin-top:.3rem';
+  upl.appendChild(up); upl.appendChild(document.createTextNode('אשמח לקבל עדכונים במייל: אישור המסע, תשובות ותעודות, ותזכורת שבוע לפני כל אבן דרך. אפשר להפסיק בכל רגע.'));
+  n.appendChild(upl);
+  const EM_RE = /^[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}$/i;
   const err = errLine(n);
   const go = btn('יוצאים לדרך', '', async () => {
     if (nm.value.trim().length < 2) return err('צריך לכתוב את שם המסגרת.');
-    go.disabled = true; const r = await api('jrCreate', { unit: sel.value, unitName: nm.value.trim(), by: by.value.trim(), research: cb.checked }); go.disabled = false;
+    if (up.checked && !EM_RE.test(em.value.trim())) return err('כדי לקבל עדכונים צריך כתובת מייל תקינה.');
+    go.disabled = true; const r = await api('jrCreate', { unit: sel.value, unitName: nm.value.trim(), by: by.value.trim(), research: cb.checked, email: em.value.trim(), updates: up.checked }); go.disabled = false;
     if (r.id) location.hash = r.id; else err(r._status === 403 ? 'אין הרשאה למסע אל החוסן.' : 'לא הצלחנו ליצור את המסע. נסו שוב.');
   }); go.style.marginTop = '.8rem'; n.appendChild(go);
 }
@@ -298,7 +306,25 @@ function header(){
     const p = el('p', 'muted'); p.appendChild(document.createTextNode('קהילת המסע בווטסאפ — תמיכה הדדית, רעיונות ועדכונים (רשות; מספרי טלפון גלויים לחברי הקבוצה): '));
     const a = el('a', null, 'הצטרפות'); a.href = link; a.target = '_blank'; a.rel = 'noopener'; a.style.color = 'var(--spoken)'; a.style.fontWeight = '700'; p.appendChild(a); c.appendChild(p);
   }
+  c.appendChild(contactBox());
   return c;
+}
+// עדכונים במייל — מצב נוכחי, שינוי כתובת והפסקה
+function contactBox(){
+  const ct = JR.contact || {}; const dt = document.createElement('details'); dt.className = 'no-print'; dt.style.marginTop = '.5rem';
+  const sm = el('summary', null, ct.updates ? '📧 עדכונים במייל: פעילים (' + ct.email + ')' : '📧 עדכונים במייל: כבויים'); sm.style.cssText = 'cursor:pointer;font-weight:600;color:var(--muted);font-size:.9rem'; dt.appendChild(sm);
+  const em = document.createElement('input'); em.type = 'email'; em.dir = 'ltr'; em.maxLength = 254; em.value = ct.email || ''; em.placeholder = 'name@example.com'; em.style.marginTop = '.4rem'; dt.appendChild(em);
+  const l = el('label'); l.style.cssText = 'display:flex;gap:.5rem;align-items:flex-start;font-weight:500;margin-top:.4rem';
+  const up = document.createElement('input'); up.type = 'checkbox'; up.checked = !!ct.updates; up.style.cssText = 'width:auto;margin-top:.3rem';
+  l.appendChild(up); l.appendChild(document.createTextNode('לקבל עדכונים במייל: אישור, תשובות, תעודות ותזכורת שבוע לפני כל אבן דרך')); dt.appendChild(l);
+  const msg = el('p', 'muted');
+  const sv = btn('שמירה', 'btn-ghost', async () => {
+    if (up.checked && !/^[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}$/i.test(em.value.trim())) { msg.textContent = 'צריך כתובת מייל תקינה.'; return; }
+    sv.disabled = true; const r = await api('jrContact', { id: JR.id, email: em.value.trim(), updates: up.checked }); sv.disabled = false;
+    if (r.ok) { JR.contact = r.contact; sm.textContent = r.contact.updates ? '📧 עדכונים במייל: פעילים (' + r.contact.email + ')' : '📧 עדכונים במייל: כבויים'; msg.textContent = 'נשמר ✓'; }
+    else msg.textContent = 'לא נשמר. נסו שוב.';
+  }); sv.style.marginTop = '.4rem'; dt.appendChild(sv); dt.appendChild(msg);
+  return dt;
 }
 function render(){
   F('app').textContent = ''; header();

@@ -633,6 +633,31 @@ export function notifyAdmin(title, message, link, detail) {
   return Promise.allSettled(jobs);
 }
 const ADMIN_URL = (((typeof process !== 'undefined' && process.env.CORS_ORIGIN) || 'https://s-b-e.netlify.app').split(',')[0].trim().replace(/\/$/, '')) + '/admin.html';
+// מייל למשתתפי מסע אל החוסן (04/10/2026) — רק בהסכמה (j.contact.updates), לא במסעות דמו, ורק כשיש
+// שולח מאומת (NOTIFY_FROM בדומיין be-good.co.il; הכתובת הזמנית של Resend שולחת רק לבעלת החשבון).
+// כתוב ברוח השפה המחזקת: חם, ענייני, מה כבר קיים ומה הצעד הבא, הזמנה לשותפות. בלי "איחור".
+const SITE_URL = (((typeof process !== 'undefined' && process.env.CORS_ORIGIN) || 'https://s-b-e.netlify.app').split(',')[0].trim().replace(/\/$/, ''));
+const JR_EMAIL_RE = /^[^\s@<>]{1,64}@[^\s@<>]{1,190}\.[a-z]{2,24}$/i;
+const jrEsc = (x) => String(x == null ? '' : x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+export function notifyParticipant(j, subject, paras, link, linkText) {
+  const env = (typeof process !== 'undefined' && process.env) || {};
+  const to = j && j.contact && j.contact.updates && j.contact.email;
+  if (!to || j.demo || !JR_EMAIL_RE.test(to) || !env.RESEND_API_KEY || !env.NOTIFY_FROM) return Promise.resolve(false);
+  const own = SITE_URL + '/journey.html#' + j.id;
+  const foot = 'קיבלתם את המייל כי ביקשתם עדכונים על "' + j.unitName + '" במסע אל החוסן. אפשר להפסיק בכל רגע במסך המסע.';
+  const text = ['שלום ' + (j.by || 'לכם') + ',', ...paras, link ? (linkText || 'לצפייה') + ': ' + link : '', 'למסך המסע: ' + own, '',
+    'ד״ר יעל שדה · Begood · חוסן · קהילה · חינוך', '', foot].filter((x) => x !== '').join('\n\n');
+  const btn = (href, label) => '<a href="' + jrEsc(href) + '" style="display:inline-block;background:#1F4E6B;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:700;margin:6px 0 6px 8px">' + jrEsc(label) + '</a>';
+  const html = '<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.7;color:#14212B;max-width:560px">' +
+    '<p>שלום ' + jrEsc(j.by || 'לכם') + ',</p>' + paras.map((p) => '<p>' + jrEsc(p).replace(/\n/g, '<br>') + '</p>').join('') +
+    '<p>' + (link ? btn(link, linkText || 'לצפייה') : '') + btn(own, 'למסך המסע') + '</p>' +
+    '<p style="color:#2F7D7A;font-weight:700">ד״ר יעל שדה · Begood<br><span style="font-weight:400">חוסן · קהילה · חינוך</span></p>' +
+    '<p style="font-size:12.5px;color:#5B6873;border-top:1px solid #ddd;padding-top:8px">' + jrEsc(foot) + '</p></div>';
+  return fetch('https://api.resend.com/emails', { method: 'POST', headers: { authorization: 'Bearer ' + env.RESEND_API_KEY, 'content-type': 'application/json' },
+    body: JSON.stringify({ from: env.NOTIFY_FROM, to: [to], subject: 'מסע אל החוסן — ' + subject, text, html }) }).then((r) => r.ok).catch(() => false);
+}
+const jrFmt = (d) => String(d || '').split('-').reverse().join('.');
+const jrContact = (body) => { const e = String(body.email || '').trim().slice(0, 254); return { email: JR_EMAIL_RE.test(e) ? e : '', updates: !!body.updates && JR_EMAIL_RE.test(e), at: new Date().toISOString() }; };
 const rcPublic = (x) => ({ id: x.id, title: x.title, detail: x.detail || '', cat: x.cat, uses: x.uses || 0 });
 
 async function handleReviewCriteria(store, body) {
@@ -736,7 +761,7 @@ function jrSummary(j) {
     nextTitle: (ms.find((m) => m.status !== 'approved') || {}).title || '',
     obstacles: ((j.proposal || {}).fails || []).length, bridges: ms.reduce((n, m) => n + ((m.bridges || 0)), 0),
     pendingAdmin: j.status === 'review' || ms.some((m) => m.status === 'submitted') || (j.thread || []).some((x) => x.open),
-    consent: !!(j.consent && j.consent.research), certs: ms.filter((m) => m.cert).length, demo: !!j.demo };
+    consent: !!(j.consent && j.consent.research), certs: ms.filter((m) => m.cert).length, demo: !!j.demo, mail: !!(j.contact && j.contact.updates) };
 }
 async function jrLoad(store, id) { return /^[a-z0-9]{6,24}$/.test(String(id || '')) ? store.get('jr:' + id) : null; }
 async function jrSave(store, j) {
@@ -779,6 +804,25 @@ async function handleJourney(store, body) {
         if (m.due < today) late.push(j.unitName + ' — ' + m.title); else if (m.due <= in14) soon.push(j.unitName + ' — ' + m.title + ' (' + m.due.split('-').reverse().join('.') + ')');
       });
     });
+    // תזכורות למשתתפים (בהסכמה): שבוע לפני המועד, ומילה חמה שלושה ימים אחריו. כל תזכורת נשלחת פעם אחת.
+    const in7 = jrDay(Date.now() + 7 * 864e5), ago3 = jrDay(Date.now() - 3 * 864e5);
+    let reminded = 0;
+    for (const j of rows) {
+      if (j.status !== 'active' || !(j.contact && j.contact.updates)) continue;
+      let changed = false;
+      for (const m of (j.milestones || [])) {
+        if (!['open', 'needs'].includes(m.status) || !m.due) continue;
+        m.remind = m.remind || {};
+        if (!m.remind.week && m.due <= in7 && m.due >= today) {
+          m.remind.week = jrNow(); changed = true;
+          if (await notifyParticipant(j, 'אבן דרך מתקרבת', ['"' + m.title + '" מתקרבת — המועד הוא ' + jrFmt(m.due) + '.', 'מה כבר קיים אצלכם? לפעמים חצי מהדרך כבר נעשתה בלי ששמנו לב.', 'צריכים עוד זמן? אפשר לבקש דחייה במסך המסע, בלי הסברים מסובכים.'])) reminded++;
+        } else if (!m.remind.rest && m.due <= ago3) {
+          m.remind.rest = jrNow(); changed = true;
+          if (await notifyParticipant(j, '☕ עצירת התרעננות', ['המועד של "' + m.title + '" עבר לפני כמה ימים, וזה בסדר — לפעמים הדרך מבקשת עצירה.', 'איך אפשר לעזור? אפשר להגיש את מה שכבר קיים, לבקש מועד חדש, או לכתוב לי מה מעכב. ביחד נתאים את המסלול.'])) reminded++;
+        }
+      }
+      if (changed) await jrSave(store, j);
+    }
     const st = (await store.get('jr:tick')) || {};
     const week = today.slice(0, 4) + '-' + Math.floor((Date.parse(today) / 864e5 + 4) / 7);
     let sent = false;
@@ -788,7 +832,7 @@ async function handleJourney(store, body) {
           late.length ? 'בעצירת התרעננות (עבר המועד):\n' + late.map((x) => '• ' + x).join('\n') : ''].filter(Boolean).join('\n\n')).catch(() => {});
       await store.set('jr:tick', { week, at: jrNow() }); sent = true;
     }
-    return [200, { ok: true, soon: soon.length, late: late.length, waiting: waiting.length, sent }];
+    return [200, { ok: true, soon: soon.length, late: late.length, waiting: waiting.length, sent, reminded }];
   }
 
   const canUse = isSys || (t && Array.isArray(t.perms) && t.perms.includes('journey'));
@@ -803,7 +847,7 @@ async function handleJourney(store, body) {
     if (mine >= 10 && !isSys) return [429, { error: 'too many' }]; // מנהלת המערכת (מסעות דמו) — בלי מגבלה
     const id = Date.now().toString(36) + randomBytes(3).toString('hex');
     const j = { id, code: owner, inst: (t && t.inst) || '', by: jrClip(body.by, 60), unit, unitName, created: jrNow(), status: 'mapping', demo: !!(isSys && body.demo),
-      consent: { research: !!body.research, at: jrNow() }, mapping: {}, thread: [], events: [] };
+      consent: { research: !!body.research, at: jrNow() }, contact: jrContact(body), mapping: {}, thread: [], events: [] };
     await jrSave(store, j);
     return [200, { ok: true, id }];
   }
@@ -884,9 +928,13 @@ async function handleJourney(store, body) {
       j.thread = (j.thread || []).concat([{ at: jrNow(), by: kind === 'reply' ? 'admin' : 'owner', kind, mi, text, open: kind !== 'reply' }]).slice(-300);
       if (kind === 'reply') j.thread.forEach((x) => { if (x.by === 'owner' && (x.mi === mi)) x.open = false; });
       if (!(await jrSave(store, j))) return [413, { error: 'too large' }];
+      if (kind === 'reply' && !isOwner) notifyParticipant(j, 'תשובה מד״ר יעל שדה', ['כתבתי לכם במסע' + (mi != null && j.milestones && j.milestones[mi] ? ', באבן הדרך "' + j.milestones[mi].title + '"' : '') + ':', text]).catch(() => {});
       if (kind !== 'reply' && !j.demo) notifyAdmin({ appeal: 'ערעור', extension: 'בקשת דחייה', comment: 'הודעה' }[kind] + ' — ' + j.unitName,
         mi != null && j.milestones && j.milestones[mi] ? j.milestones[mi].title : 'המסע', ADMIN_J + '#' + j.id, text).catch(() => {});
       return [200, { ok: true }];
+    }
+    if (action === 'jrContact') {
+      j.contact = jrContact(body); await jrSave(store, j); return [200, { ok: true, contact: j.contact }];
     }
     if (action === 'jrFinalReflection') {
       j.final = jrClean(body.final || {}); ev('final', { learned: j.final.learned || '', explain: j.final.recommend || '' });
@@ -903,13 +951,19 @@ async function handleJourney(store, body) {
     j.milestones = ms.map((m) => ({ ...m, stage: Math.min(5, Math.max(1, Number(m.stage) || 1)), status: 'open', due: /^\d{4}-\d{2}-\d{2}$/.test(m.due || '') ? m.due : jrDay(Date.now() + 30 * 864e5) }));
     j.status = 'active'; j.approvedAt = jrNow(); j.adminMsg = jrClip(body.message, 3000);
     j.thread = (j.thread || []).concat([{ at: jrNow(), by: 'admin', kind: 'reply', mi: null, text: j.adminMsg || 'המסע אושר — יוצאים לדרך!', open: false }]);
-    await jrSave(store, j); return [200, { ok: true }];
+    await jrSave(store, j);
+    const m0 = j.milestones[0];
+    notifyParticipant(j, 'המסע אושר — יוצאים לדרך!', ['הבחירות שלכם וההסברים שכתבתם עברו אצלי, והמסע של "' + j.unitName + '" אושר. 🧭',
+      j.adminMsg || '', 'במסע ' + j.milestones.length + ' אבני דרך. הראשונה: "' + m0.title + '", עד ' + jrFmt(m0.due) + '.', 'אפשר להוסיף את כל המועדים ליומן ממסך המסע. אני כאן לאורך כל הדרך.'].filter(Boolean)).catch(() => {});
+    return [200, { ok: true }];
   }
   if (action === 'jrReturn') {
     if (j.status !== 'review') return [409, { error: 'bad state' }];
     j.status = 'proposal';
     j.thread = (j.thread || []).concat([{ at: jrNow(), by: 'admin', kind: 'reply', mi: null, text: jrClip(body.message, 3000) || 'נשמח לעוד כמה התאמות בבחירות.', open: false }]);
-    await jrSave(store, j); return [200, { ok: true }];
+    await jrSave(store, j);
+    notifyParticipant(j, '🧭 מתאימים את המסלול', ['קראתי את הבחירות שלכם, ויש לי הצעה לכמה התאמות לפני שיוצאים לדרך:', j.thread[j.thread.length - 1].text, 'אפשר לעדכן את הבחירות במסך המסע.']).catch(() => {});
+    return [200, { ok: true }];
   }
   if (action === 'jrReview') {
     const i = Number(body.mi), m = (j.milestones || [])[i];
@@ -924,7 +978,17 @@ async function handleJourney(store, body) {
     j.thread.forEach((x) => { if (x.by === 'owner' && x.mi === i) x.open = false; });
     j.stage = jrStage(j);
     if ((j.milestones || []).every((x) => x.status === 'approved')) { j.status = 'done'; j.doneAt = jrNow(); }
-    await jrSave(store, j); return [200, { ok: true, cert: m.cert || null }];
+    await jrSave(store, j);
+    const said = j.thread[j.thread.length - 1].text, nx = (j.milestones || []).find((x) => x.status !== 'approved');
+    if (m.status === 'approved') {
+      const certUrl = SITE_URL + '/journey-cert.html?id=' + j.id + '&code=' + m.cert.code;
+      notifyParticipant(j, j.status === 'done' ? 'תו חוסן לקהילת חוסן 🎉' : (m.gate ? 'עברתם שער! 🎉' : 'אבן דרך הושלמה ✓'),
+        [j.status === 'done' ? 'השלמתם את המסע אל החוסן, ו"' + j.unitName + '" מקבלים תו חוסן לקהילת חוסן. זו דרך שבניתם יחד, צעד אחרי צעד.' : '"' + m.title + '" הושלמה, ומחכה לכם תעודה.',
+          said, nx ? 'הצעד הבא: "' + nx.title + '", עד ' + jrFmt(nx.due) + '.' : ''].filter(Boolean), certUrl, j.status === 'done' ? 'לתו החוסן' : 'לתעודה').catch(() => {});
+    } else {
+      notifyParticipant(j, 'השלמה קטנה בדרך', ['קראתי את מה שהגשתם ב"' + m.title + '". חסרה השלמה קטנה, ואז ממשיכים:', said, 'אפשר להגיש שוב במסך המסע. אם משהו לא ברור, כתבו לי שם.']).catch(() => {});
+    }
+    return [200, { ok: true, cert: m.cert || null }];
   }
   if (action === 'jrEdit') {
     const ms = jrClean(body.milestones || []);
@@ -934,7 +998,9 @@ async function handleJourney(store, body) {
       status: old.status || 'open', submissions: old.submissions, cert: old.cert, due: /^\d{4}-\d{2}-\d{2}$/.test(m.due || '') ? m.due : (old.due || jrDay(Date.now() + 30 * 864e5)) }; });
     j.stage = jrStage(j);
     j.thread = (j.thread || []).concat([{ at: jrNow(), by: 'admin', kind: 'reply', mi: null, text: jrClip(body.message, 2000) || 'עדכנתי את אבני הדרך של המסע.', open: false }]);
-    await jrSave(store, j); return [200, { ok: true }];
+    await jrSave(store, j);
+    notifyParticipant(j, '🧭 אבני הדרך עודכנו', [j.thread[j.thread.length - 1].text, 'המועדים המעודכנים מופיעים במסך המסע, ואפשר להוריד אותם שוב ליומן.']).catch(() => {});
+    return [200, { ok: true }];
   }
   if (action === 'jrDelete') { await store.del('jr:' + j.id); return [200, { ok: true }]; }
   return [400, { error: 'bad action' }];

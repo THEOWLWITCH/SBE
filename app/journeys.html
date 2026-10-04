@@ -283,7 +283,7 @@ async function viewBoard(){
     const st = { mapping: 'במיפוי הראשוני', proposal: 'בוחרים מתוך הצעת המסע', review: 'הצעת המסע חזרה לאישורך', active: 'בדרך — ' + stT(s.stage), done: '🎉 קהילת חוסן' }[s.status];
     const late = s.next && s.next < today() && s.status === 'active';
     r.appendChild(el('div', 'meta', [st, s.by, s.inst, s.total ? J.ICON.done + ' ' + s.approved + '/' + s.total + ' אבני דרך' : '', s.next ? (late ? J.ICON.rest + ' עצירת התרעננות' : 'הבאה: ' + fmt(s.next)) : '',
-      s.obstacles ? J.ICON.obstacle + ' ' + s.obstacles + ' מכשולים בדרך' : (s.status !== 'mapping' ? J.ICON.clear + ' לא נמצא כשל מערכתי משמעותי' : ''), s.consent ? 'מחקר ✓' : ''].filter(Boolean).join(' · ')));
+      s.obstacles ? J.ICON.obstacle + ' ' + s.obstacles + ' מכשולים בדרך' : (s.status !== 'mapping' ? J.ICON.clear + ' לא נמצא כשל מערכתי משמעותי' : ''), s.consent ? 'מחקר ✓' : '', s.mail ? '📧 מקבלים עדכונים במייל' : ''].filter(Boolean).join(' · ')));
     const rb = el('div', 'btns'); rb.style.marginTop = '.4rem';
     rb.appendChild(btn('פתיחה', 'btn-ghost', () => { location.hash = s.id; }));
     const asP = el('a', 'btn btn-ghost', 'צפייה כמשתתפים'); asP.href = 'journey.html#' + s.id; asP.target = '_blank'; asP.style.textDecoration = 'none'; rb.appendChild(asP);
