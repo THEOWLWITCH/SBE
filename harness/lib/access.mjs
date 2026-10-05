@@ -218,7 +218,10 @@ async function handleResilience(store, body) {
 // קוד: code:<קוד מנורמל> → { code, kind, inst, perms, label, createdBy, createdAt,
 //   expiresAt (YYYY-MM-DD או null), maxUses, uses, revoked }
 //   kind: 'instadmin' — מנהל/ת מוסד (מפיק/ה קודי צוות); 'staff' — איש/אשת צוות עם
-//   צירוף הרשאות; 'student' — קוד "משוב לעבודות" שמרצה מפיק/ה לסטודנט/ית.
+//   צירוף הרשאות; 'student' — קוד "משוב לעבודות" שמרצה מפיק/ה לסטודנט/ית;
+//   'course' — קוד "משוב לעבודות" אחד לכל הקורס (05/10/2026): seats מקומות, ולכל
+//   סטודנט/ית (מזהה מכשיר sid, נרשם בהפקת המשוב הראשונה) עד usesPer הפקות —
+//   taken: { [sid]: הפקות }. במקום לשלוח לכל סטודנטית קוד אחר.
 // התוקף בפועל: המוקדם מבין תוקף הקוד וסוף המנוי של המוסד + ימי החסד.
 // מוסד: { ..., subEnd: 'YYYY-MM-DD' או null (ללא הגבלה) }.
 // הגדרות: settings → { graceDays, academic: { maxActive, days, uses } }.
@@ -272,7 +275,7 @@ async function resolveCode(store, rec, settings) {
   const ceiling = await getCeiling(store, rec.inst);
   let perms;
   if (rec.kind === 'instadmin') perms = PERMS.filter((p) => ceiling[p]);
-  else if (rec.kind === 'student') perms = ceiling.academic || ceiling.lecturer ? ['academic'] : [];
+  else if (rec.kind === 'student' || rec.kind === 'course') perms = ceiling.academic || ceiling.lecturer ? ['academic'] : [];
   else perms = (rec.perms || []).filter((p) => ceiling[p]);
   return { rec, inst: rec.inst, perms, sub };
 }
@@ -283,7 +286,7 @@ function notices(kind, sub, rec) {
   if (sub.state === 'grace') n.push({ level: 'danger', type: 'grace', graceEnd: sub.graceEnd, daysLeft: sub.daysLeft });
   else if (sub.state === 'warn' && (kind === 'instadmin' ? sub.daysLeft <= 60 : sub.daysLeft <= 7))
     n.push({ level: sub.daysLeft <= 7 ? 'danger' : 'warn', type: 'sub-ending', subEnd: sub.subEnd, daysLeft: sub.daysLeft });
-  if (rec && rec.expiresAt && rec.kind !== 'student') {
+  if (rec && rec.expiresAt && rec.kind !== 'student' && rec.kind !== 'course') {
     const left = daysBetween(today(), rec.expiresAt);
     if (left <= 7) n.push({ level: 'warn', type: 'code-ending', expiresAt: rec.expiresAt, daysLeft: left });
   }
@@ -292,7 +295,11 @@ function notices(kind, sub, rec) {
 
 const publicCode = (r) => ({ code: r.code, kind: r.kind, inst: r.inst, perms: r.perms || [], label: r.label || '',
   createdAt: r.createdAt, expiresAt: r.expiresAt || null, uses: r.uses || 0, maxUses: r.maxUses || null,
-  revoked: !!r.revoked, createdBy: r.createdBy || '' });
+  revoked: !!r.revoked, createdBy: r.createdBy || '',
+  ...(r.kind === 'course' ? { seats: r.seats, usesPer: r.usesPer, seatsUsed: Object.keys(r.taken || {}).length } : {}) });
+// מקום בקורס פנוי? (מי שכבר רשום/ה — תמיד ממשיך/ה)
+const courseFull = (rec, sid) => !(sid && (rec.taken || {})[sid] !== undefined) && Object.keys(rec.taken || {}).length >= rec.seats;
+const validSid = (s) => typeof s === 'string' && /^[a-f0-9]{16}$/.test(s);
 
 async function handleCodes(store, body, isSys) {
   const { action } = body;
@@ -382,6 +389,20 @@ async function handleCodes(store, body, isSys) {
       await store.set('code:' + normCode(rec.code), rec);
       return [200, { code: publicCode(rec) }];
     }
+    if (kind === 'course') {
+      if (!mine || !mine.perms.includes('lecturer')) { await pause(); return [403, { error: 'unauthorized' }]; }
+      const lim = settings.academic;
+      const active = (await allCodes(store)).filter((c) => c.createdBy === mine.rec.code && !c.revoked
+        && (!c.expiresAt || c.expiresAt >= today()) && (c.uses || 0) < (c.maxUses || Infinity)).length;
+      if (active + 1 > lim.maxActive) return [429, { error: 'limit', maxActive: lim.maxActive, active }];
+      const seats = Math.max(1, Math.min(Math.round(Number(body.seats)) || 40, 300));
+      const days = Math.max(1, Math.min(Math.round(Number(body.days)) || 30, 180));
+      const rec = { code: newCodeUnique(existing), kind, inst: mine.inst, perms: ['academic'], label: label || 'קורס',
+        createdBy: mine.rec.code, createdAt: new Date().toISOString(), expiresAt: minYmd(addDays(today(), days), mine.sub.subEnd),
+        seats, usesPer: lim.uses, taken: {}, uses: 0, revoked: false };
+      await store.set('code:' + normCode(rec.code), rec);
+      return [200, { code: publicCode(rec) }];
+    }
     if (kind === 'student') {
       if (!mine || !mine.perms.includes('lecturer')) { await pause(); return [403, { error: 'unauthorized' }]; }
       const lim = settings.academic;
@@ -420,6 +441,18 @@ async function handleCodes(store, body, isSys) {
     const rec = await store.get('code:' + t.c);
     const r = await resolveCode(store, rec, settings);
     if (r.error) return [403, { error: r.error }];
+    if (rec.kind === 'course') {
+      // ההפקות נספרות לכל סטודנט/ית בנפרד; המקום בקורס נתפס בהפקה הראשונה.
+      const sid = validSid(t.s) ? t.s : null;
+      if (!sid) return [403, { error: 'revoked' }];
+      rec.taken = rec.taken || {};
+      if (courseFull(rec, sid)) return [403, { error: 'full' }];
+      const done = rec.taken[sid] || 0;
+      if (done >= rec.usesPer) return [403, { error: 'used-up' }];
+      rec.taken[sid] = done + 1; rec.uses = (rec.uses || 0) + 1;
+      await store.set('code:' + t.c, rec);
+      return [200, { ok: true, left: rec.usesPer - rec.taken[sid] }];
+    }
     if (rec.kind !== 'student') return [200, { ok: true, left: null }];
     rec.uses = (rec.uses || 0) + 1;
     await store.set('code:' + t.c, rec);
@@ -1131,8 +1164,14 @@ export async function handleAccess(store, body) {
     if (rec) {
       const r = await resolveCode(store, rec, settings);
       if (r.error) { await pause(); return [403, { error: r.error }]; }
-      const token = await signToken(store, { k: 'code', c, kind: rec.kind, inst: r.inst, perms: r.perms });
-      return [200, { ok: true, token, kind: rec.kind, inst: r.inst, label: rec.label || '', perms: r.perms,
+      // קוד קורס: מזהה קבוע לכל מכשיר (נשמר אצל הסטודנט/ית), כדי שהמכסה תהיה אישית.
+      let sid;
+      if (rec.kind === 'course') {
+        sid = validSid(body.sid) ? body.sid : randomBytes(8).toString('hex');
+        if (courseFull(rec, sid)) { await pause(); return [403, { error: 'full' }]; }
+      }
+      const token = await signToken(store, { k: 'code', c, kind: rec.kind, inst: r.inst, perms: r.perms, ...(sid ? { s: sid } : {}) });
+      return [200, { ok: true, token, kind: rec.kind, inst: r.inst, label: rec.label || '', perms: r.perms, ...(sid ? { sid } : {}),
         notices: notices(rec.kind, r.sub, rec), sub: rec.kind === 'instadmin' ? r.sub : undefined }];
     }
     // קוד מוסד ישן (6 ספרות): איש/אשת צוות עם כל מה שפתוח למוסד — עד שיעברו לקודים אישיים.

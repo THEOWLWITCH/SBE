@@ -1016,7 +1016,7 @@ $("bReview").addEventListener("click", async (e) => {
   // קוד סטודנט/ית ("משוב לעבודות" שמרצה הפיק/ה): כל הפקה נספרת בשרת, לפי הקוד —
   // לא לפי המכשיר. אחרי המכסה (3 כברירת מחדל) השרת מסרב.
   let info = {}; try { info = JSON.parse(sessionStorage.getItem("sbe.session.info") || "{}") || {}; } catch (_) {}
-  if (info.kind === "student") {
+  if (info.kind === "student" || info.kind === "course") {
     e.target.disabled = true; e.target.textContent = "בודקת את הקוד...";
     let u = null;
     try {
@@ -1026,12 +1026,14 @@ $("bReview").addEventListener("click", async (e) => {
     } catch (_) { u = { _status: 0 }; }
     e.target.disabled = false; e.target.textContent = "קבלת משוב";
     if (!u.ok) {
-      alert(u.error === "used-up" ? "הקוד שלך מיצה את מספר הפקות המשוב שלו. אפשר לבקש קוד חדש מהמרצה."
+      alert(u.error === "used-up" ? (info.kind === "course" ? "ניצלת את כל הפקות המשוב שלך בקורס הזה. אם צריך עוד — אפשר לפנות למרצה."
+          : "הקוד שלך מיצה את מספר הפקות המשוב שלו. אפשר לבקש קוד חדש מהמרצה.")
+        : u.error === "full" ? "כל המקומות בקורס הזה כבר תפוסים. אפשר לפנות למרצה."
         : u.error === "expired" ? "תוקף הקוד שלך הסתיים. אפשר לבקש קוד חדש מהמרצה."
         : u._status === 403 ? "הקוד כבר לא תקף. היכנסו מחדש." : "אין כרגע חיבור לשרת. נסו שוב בעוד רגע.");
       return;
     }
-    if (u.left === 0) setTimeout(() => alert("זו הייתה הפקת המשוב האחרונה בקוד הזה."), 50);
+    if (u.left === 0) setTimeout(() => alert(info.kind === "course" ? "זו הייתה הפקת המשוב האחרונה שלך בקורס הזה." : "זו הייתה הפקת המשוב האחרונה בקוד הזה."), 50);
   }
   e.target.disabled = true; e.target.textContent = "קוראת... (עד כ-3 דקות)";
   try {
