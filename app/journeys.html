@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>המסעות — ניהול</title>
+<title>לוח המסעות — אישורים ומשוב</title>
 <script src="lib/access-guard.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -248,7 +248,7 @@ function ta(v, ph, h){ const t = document.createElement('textarea'); t.value = v
 // ── הלוח: כל המסעות ──
 async function viewBoard(){
   const app = F('app'); app.textContent = '';
-  const c = card(); c.appendChild(el('h1', null, 'המסעות אל החוסן'));
+  const c = card(); c.appendChild(el('h1', null, 'לוח המסעות — אישורים ומשוב'));
   c.appendChild(el('p', 'muted', 'כל המסעות והתקדמותם — מוצג רק לך. מה שממתין לך מופיע ראשון.'));
   const bar0 = el('div', 'btns');
   const tryA = el('a', 'btn btn-ghost', 'למסך המשתתפים'); tryA.href = 'journey.html'; tryA.style.textDecoration = 'none'; bar0.appendChild(tryA);
