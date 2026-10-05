@@ -1,6 +1,7 @@
 <meta charset="UTF-8">
 <title>תכנון פעילות</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/product-doc.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -1449,7 +1450,7 @@ function downloadText(filename, text) {
 
 function buildDocView(d, creator) {
   const dv = el("div", { class:"docview" });
-  const logoRow = el("div", { class:"dv-logo" });
+  const logoRow = el("div", { class:"dv-logo no-print" });
   const img = el("img"); img.src = document.getElementById("brandLogo").src;
   logoRow.append(img, el("b",{}, "Begood"));
   dv.append(logoRow);
@@ -1524,7 +1525,7 @@ async function synthesizeActivityNarrative(d, creator) {
 }
 function buildNarrativeDocView(d, creator, narr) {
   const dv = el("div", { class:"docview" });
-  const logoRow = el("div", { class:"dv-logo" });
+  const logoRow = el("div", { class:"dv-logo no-print" });
   const img = el("img"); img.src = document.getElementById("brandLogo").src;
   logoRow.append(img, el("b",{}, "Begood"));
   dv.append(logoRow);
@@ -1553,19 +1554,23 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   if (!narr) body.append(el("p", { class:"savenote", style:"background:#FAEFDC;border-inline-start:3px solid #8F5F2E;padding:8px 11px;border-radius:6px;" },
     "⚠ אין חיבור למודל כרגע — המסמך מוצג מהשדות כפי שמולאו (מצב הדגמה). כשהשרת המקומי פועל, המודל כותב מהם מסמך רציף."));
   const doc = narr ? buildNarrativeDocView(d, creator, narr) : buildDocView(d, creator);
-  body.append(doc);
+  // עריכה על המסך (05/10/2026): ההדפסה וה-PDF כוללים את הנוסח הערוך
+  body.append(SBE_DOC.editable(doc));
   body.append(el("h4",{},"כרטיס תמציתי — לפעילות עצמה"));
   const card = buildCardView(d, creator);
+  card.setAttribute("contenteditable", "true"); card.classList.add("sbe-edit");
   body.append(card);
   // הזמנה לעריכה + שמירה — הכרעת המשתמשת (21/09/2026): "אחרי כל תוצר: שמור
   // במערכת / שמור במחשב. לפני השמירה ניתן לערוך את התוצר — הוסיפי משפט
   // הזמנה לעריכה." העריכה עצמה נשארת בשדות שמאחורי הדיאלוג, לא בתוך התצוגה.
   body.append(el("p", { class:"savenote" },
-    "אפשר לסגור, לערוך כל שדה למעלה ולבנות מחדש — התוצר כאן הוא תמיד הגרסה האחרונה שבנית. מרוצה? שמרי אותו למטה."));
+    "אפשר לערוך את המסמך ואת הכרטיס ישירות כאן, או לסגור, לשנות שדה למעלה ולבנות מחדש. מרוצה? הדפיסי או שמרי כ-PDF."));
   const dlgF = document.getElementById("dlgF");
   dlgF.textContent = "";
   const printBtn = el("button", { type:"button", class:"primary" }, "הדפסה / שמירה כ-PDF");
-  printBtn.addEventListener("click", () => window.print());
+  printBtn.addEventListener("click", () => { const h = document.createElement("h3"); h.textContent = "כרטיס תמציתי — לפעילות עצמה";
+    SBE_DOC.print({ title: "תוכנית פעילות" + ((narr && narr.title) ? " — " + narr.title : (d.domain ? " — " + d.domain : "")),
+      subtitle: [creator, d.age, d.duration].filter(Boolean).join(" · "), nodes: [doc, h, card] }); });
   const saveTextParts = () => {
     const lines = ["תוכנית פעילות — " + ((narr && narr.title) || d.domain || ""), creator || "", ""];
     if (narr) {
@@ -1590,9 +1595,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
       setTimeout(() => { sysBtn.textContent = "שמירה במערכת"; }, 2000);
     } catch (e) { console.warn("שמירה במערכת נכשלה:", e.message); }
   });
-  const dlBtn = el("button", { type:"button" }, "שמירה למחשב");
-  dlBtn.addEventListener("click", () => downloadText(`תוכנית-פעילות-${creator || "ללא-שם"}.txt`, saveTextParts()));
-  dlgF.append(printBtn, sysBtn, dlBtn, el("button",{type:"button",id:"dlgX2"},"סגירה"));
+  dlgF.append(printBtn, sysBtn, el("button",{type:"button",id:"dlgX2"},"סגירה"));
   document.getElementById("dlgX2")?.addEventListener?.("click", () => document.getElementById("dlg").close());
   show("תוצרי הפעילות", body);
 });
