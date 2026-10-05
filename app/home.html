@@ -181,7 +181,7 @@ async function api(action, extra = {}) {
 {
   const T = [];
   const fac = PERMS.some(p => /^fac_/.test(p));
-  if (has("fac_trainee")) T.push(["input-screen.html", "יצירת תרחיש — סטודנטים", "דמויות ופרמטרים; השאר מוצע על ידי המערכת"]);
+  if (has("fac_trainee")) T.push(["input-screen.html", "יצירת תרחיש — סטודנטיות.ים", "דמויות ופרמטרים; השאר מוצע על ידי המערכת"]);
   if (has("fac_parent")) T.push(["parent-input-screen.html", "יצירת תרחיש — הורים", "שתי דמויות, ארבע גישות הוריות"]);
   if (has("fac_youth")) T.push(["student-input-screen.html", "יצירת תרחיש — נוער", "משחק תפקידים בין שני בני נוער"]);
   if (fac) T.push(["facilitator-screen.html", "פתיחת סדנה", "קוד הסדנה נוצר אוטומטית"],
