@@ -145,7 +145,7 @@ const fmtDate = (ymd) => ymd ? ymd.split("-").reverse().join(".") : "";
 const PERM_LABEL = {
   fac_trainee: "הנחיית סטודנטים", fac_parent: "הנחיית הורים", fac_youth: "הנחיית נוער",
   conv: "תכנון שיחה", activity: "תכנון פעילות", academic: "משוב לעבודות",
-  lecturer: "קודים לסטודנטים", resilience: "חוסן חברתי", leadership: "נוגי — יועצת למנהיגות תומכת חוסן", practi: "פרקטי — יועצת לחוסן", journey: "מסע אל החוסן", writer: "כתיבה מקדמת חוסן",
+  lecturer: "קוד קורס לסטודנטים", resilience: "חוסן חברתי", leadership: "נוגי — יועצת למנהיגות תומכת חוסן", practi: "פרקטי — יועצת לחוסן", journey: "מסע אל החוסן", writer: "כתיבה מקדמת חוסן",
 };
 const PRESETS = [
   ["מחנך/ת", ["resilience"]], ["פרקטי בלבד", ["practi"]], ["הנהלה", ["leadership", "resilience"]], ["מנחה סטודנטים", ["fac_trainee"]], ["מנחה הורים", ["fac_parent"]],
@@ -205,6 +205,17 @@ async function api(action, extra = {}) {
       .forEach(([h, t, d]) => g.append(el("a", { class: "tile", href: h }, el("b", {}, t), el("span", {}, d))));
     box.append(g);
   }
+  // מנחת סימולציה: איך המשתתפות נכנסות (05/10/2026 — "מנחה צריכה לתת קודים לסטודנטיות — איפה זה קורה?")
+  if (PERMS.some(p => /^fac_/.test(p))) {
+    const c = el("details", { class: "card", style: "margin-top:12px" });
+    c.append(el("summary", { style: "cursor:pointer;font-weight:700" }, "🎟 איך המשתתפות בסדנה נכנסות — קוד סדנה"),
+      el("ol", { style: "margin:10px 0 4px;padding-inline-start:20px;line-height:1.8;font-size:14px" },
+        el("li", {}, "פותחים סדנה ב", el("a", { href: "facilitator-screen.html" }, "\"פתיחת סדנה\""), " — נוצר ", el("b", {}, "קוד סדנה בן 6 ספרות"), " וקישור למשוב עם QR."),
+        el("li", {}, "המשתתפות נכנסות ל-be-good.co.il ← ", el("b", {}, "\"יש לי קוד סדנה\""), " ← בוחרות תפקיד (מתנסה, שחקנית, הורה, נוער) ומקלידות את הקוד."),
+        el("li", {}, "מה פתוח להן: דף צפייה, תרגול עצמי, משוב, וכלי ההכנה של התפקיד שלהן. ", el("b", {}, "תוצרי הסימולציה"), " (גרסת המנחה, השחקנית והמתנסה) נשארים אצלך בלבד."),
+        el("li", {}, "הקוד פעיל 24 שעות. אין צורך בקוד אישי לכל משתתפת.")));
+    box.append(c);
+  }
 }
 
 function statusOf(c) {
@@ -235,6 +246,16 @@ async function renderAdmin() {
   const ceiling = d.ceiling || {};
   const open = Object.keys(PERM_LABEL).filter(p => ceiling[p]);
   const sub = d.sub || {};
+  // עץ ההרשאות במוסד (05/10/2026): מי נותן/ת קוד למי
+  const tree = el("details", { class: "card", style: "background:var(--ground)" });
+  tree.append(el("summary", { style: "cursor:pointer;font-weight:700" }, "🌳 עץ ההרשאות במוסד — מי נותן/ת קוד למי"),
+    el("ul", { style: "margin:10px 0 4px;padding-inline-start:20px;line-height:1.8;font-size:14px" },
+      el("li", {}, el("b", {}, "את/ה"), " מפיק/ה כאן ", el("b", {}, "קוד אישי לכל איש/אשת צוות"), ", ובוחר/ת לו/ה כלים — רק מתוך מה שפתוח למוסד."),
+      el("li", {}, el("b", {}, "מרצה"), " (הרשאת \"" + PERM_LABEL.lecturer + "\") יוצר/ת במסך שלו/ה ", el("b", {}, "קוד אחד לכל קורס"), " — הסטודנטים נכנסים איתו למשוב לעבודות."),
+      el("li", {}, el("b", {}, "מנחת סימולציה"), " פותחת סדנה ונותנת למשתתפות ", el("b", {}, "קוד סדנה"), " (6 ספרות, 24 שעות) — לסטודנטיות, לשחקניות, להורים ולנוער."),
+      el("li", {}, el("b", {}, "מחנך/ת עם \"חוסן חברתי\""), " פותח/ת כיתה ושולח/ת לתלמידים ", el("b", {}, "קישור או QR"), " לשאלון — בלי קודים.")),
+    el("p", { class: "sub", style: "margin:4px 0 0" }, "כך את/ה מנהל/ת רק את קודי הצוות, וכל איש/אשת צוות מעביר/ה את הגישה הלאה בעצמו/ה."));
+  card.append(tree);
   card.append(el("p", { class: "sub" },
     sub.subEnd ? "המנוי של המוסד בתוקף עד " + fmtDate(sub.subEnd) + ". קודי הצוות פוקעים לכל המאוחר אז." : "המנוי של המוסד ללא תאריך סיום.",
     " מה שפתוח למוסד: ", open.length ? open.map(p => PERM_LABEL[p]).join(", ") : "עדיין שום דבר — פנו למנהלת המערכת."));
