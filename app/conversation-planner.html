@@ -1,6 +1,7 @@
 <meta charset="UTF-8">
 <title>מסך קלט — תכנון שיחה</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/product-doc.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -225,7 +226,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 </div>
 
 <div class="redlines">
-  <b>הכלי הזה פתוח לכל מי שנכנס למערכת, בלי קשר לתפקיד — ולכן הקווים האדומים כאן מוחלטים.</b>
+  <b>הקווים האדומים כאן מוחלטים.</b>
   ארבע הגישות שממנה בוחרים הן כולן תקשורת מקרבת ומקדמת. שום המלצה במסך הזה לא תכלול
   מניפולציה, מלכודת, התחכמות, ויכוח סכום אפס, תקשורת מעגלית, או תקשורת אלימה.
 </div>
@@ -486,6 +487,7 @@ async function buildDigitalDraft(d) {
       "את עוזרת שמנסחת טיוטת הודעה כתובה (מייל/הודעת טקסט/צ'אט) עבור שיחה אמיתית שהמשתמשת מתכננת. זה לא סימולציה.",
       "הגישה שנבחרה להנחות את הניסוח: " + (d.approach || "לא נבחרה — נסחי בגישה כללית ומכבדת"),
       RED_LINES_TEXT,
+      TALK_RULE,
       "ההודעה חייבת לפתוח בברכת שלום ובמשהו טוב לומר על הצד השני, לפני מעבר לגוף העניין.",
       "כתבי בגוף ראשון, בעברית טבעית וזורמת — לא מתורגמת ולא נוסחתית. כל פועל ותואר בגוף ראשון — במגדר של הכותבת/הכותב כפי שעולה מ\"מי אני בשיחה\" (למשל \"מורה\", \"רכזת\" → \"אני מניחה\", לא \"אני מניח\"). אם המגדר לא ברור — נסחי בלי פועל מגדרי.",
       "אל תמציאי שם לצד השני. אם שמו לא נמסר בשדות — פתחי ב\"שלום,\" בלבד, בלי שם ובלי סוגריים.",
@@ -545,7 +547,7 @@ function downloadText(filename, text) {
 }
 
 const GROUPS = [
-  { id:"env", title:"מעטפת", fields:[
+  { id:"env", title:"מעטפת", open:true, fields:[
     { k:"creator",  l:"השם שלך", hint:"לצורך תיעוד וקרדיט" },
     { k:"date",     l:"תאריך", placeholder:"לדוגמה: 17.9.26", hint:"לצורך תיעוד" },
     { k:"productType", l:"סוג התוצר", type:"select", opts:PRODUCT_TYPE_OPTS,
@@ -672,6 +674,11 @@ async function callAI(system, userText, maxTokens, timeoutMs) {
   } finally { clearTimeout(timer); }
 }
 
+// העצמה (05/10/2026, משוב המשתמשת): לומדים לנהל את השיחה בעצמנו. לא מציעים להפנות ליועצ/ת, לפסיכולוג/ית
+// או להנהלה כרעיון או כעצה; ומותר לסיים שיחה כשהנושא סגור או כשאין הסכמות — בלי להאשים.
+const TALK_RULE = "את/ה מנהל/ת את השיחה בעצמך — זה כל העניין. אל תציעי להפנות ליועץ/ת, לפסיכולוג/ית, להנהלה או לגורם אחר, לא כרעיון ולא כעצה ולא כתוכנית ב'. " +
+  "מותר ולגיטימי לסיים שיחה כשהנושא סגור, או כשאין הסכמות — בלי להאשים, ועם פתח להמשך, למשל: \"אולי ניקח זמן לחשוב על הדברים? נמשיך לדבר מחר\". " +
+  "סיום כזה הוא חלק מהתכנון, לא כישלון.";
 const RED_LINES_TEXT = "קווים אדומים מוחלטים, בכל שדה: אסור מניפולציה, מלכודת, התחכמות, ויכוח סכום אפס, " +
   "תקשורת מעגלית (חוזרת על עצמה בלי להתקדם), ותקשורת אלימה. אין יוצא מן הכלל.";
 
@@ -694,6 +701,7 @@ async function generateProposals(required) {
       "מי הצד השני: " + (required.otherParty || "לא צוין"),
       "תפקידך: להציע ערכים קונקרטיים לשאר שדות התכנון, בהתאם לתיאור הזה בדיוק — לא תבנית גנרית שמתאימה לכל שיחה.",
       RED_LINES_TEXT,
+      TALK_RULE,
       "שדה 'openingLine' חייב לפתוח בברכת שלום ובמשהו טוב לומר על הצד השני, לפני מעבר לגוף העניין.",
       "ערך 'productType' חייב להיות בדיוק אחד מ: " + PRODUCT_TYPE_OPTS.join(" | "),
       "ערך 'approach' חייב להיות בדיוק אחד מ: " + APPROACH_CARDS.map(c=>c.v).join(" | "),
@@ -947,6 +955,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   FIELDS.forEach((f, k) => { d[k] = val(k); });
   const isDigital = (d.productType || "").startsWith("התכתבות");
   const body = el("div");
+  SBE_DOC.ensureStyle();
 
   if (isDigital) {
     e.target.disabled = true; e.target.textContent = "מנסחת...";
@@ -961,11 +970,13 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     if (draft.contextNote) body.append(el("div", { class:"rcard-row" },
       el("b",{},"הערת תכנון — לא חלק מההודעה"), el("div",{}, draft.contextNote)));
     body.append(el("h4", {}, `גרסה מלאה — ${d.approach || "כללי"}`));
-    body.append(el("div", { class:"draftbox" }, draft.full));
+    const fullBox = el("div", { class:"draftbox" }, draft.full);
+    body.append(SBE_DOC.editable(fullBox));
     body.append(el("h4", {}, "גרסה קצרה (הודעת טקסט / צ'אט)"));
-    body.append(el("div", { class:"draftbox" }, draft.short));
+    const shortBox = el("div", { class:"draftbox", contenteditable:"true", spellcheck:"true" }, draft.short); shortBox.classList.add("sbe-edit");
+    body.append(shortBox);
     body.append(el("p", { class:"savenote" },
-      "אפשר לסגור, לערוך כל שדה למעלה ולבנות מחדש — הטיוטה כאן היא תמיד הגרסה האחרונה שבנית. מרוצה? שמרי אותה למטה."));
+      "אפשר לערוך את הטיוטות ישירות כאן, או לסגור, לשנות שדה למעלה ולבנות מחדש. מרוצה? העתיקי, הדפיסי או שמרי כ-PDF."));
     const sysBtn = el("button", { type:"button", class:"dlg-dl" }, "שמירה במערכת");
     sysBtn.addEventListener("click", () => {
       try {
@@ -977,12 +988,13 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
         setTimeout(() => { sysBtn.textContent = "שמירה במערכת"; }, 2000);
       } catch (e2) { console.warn("שמירה במערכת נכשלה:", e2.message); }
     });
-    const dl = el("button", { type:"button", class:"dlg-dl" }, "שמירה למחשב");
-    dl.addEventListener("click", () => downloadText(
-      `טיוטת-התכתבות-${d.creator || "תכנון-שיחה"}.txt`,
-      `טיוטת התכתבות — ${d.date || ""}\n\nגרסה מלאה (${d.approach || "כללי"}):\n${draft.full}\n\nגרסה קצרה:\n${draft.short}`
-    ));
-    body.append(sysBtn, dl);
+    const dl = el("button", { type:"button", class:"dlg-dl" }, "🖨 הדפסה / שמירה כ-PDF");
+    const h = (t) => { const x = document.createElement("h3"); x.textContent = t; return x; };
+    dl.addEventListener("click", () => SBE_DOC.print({ title: "טיוטת הודעה", subtitle: [d.myself, d.otherParty].filter(Boolean).join(" · אל "),
+      nodes: [h("גרסה מלאה — " + (d.approach || "כללי")), fullBox, h("גרסה קצרה"), shortBox] }));
+    const cp = el("button", { type:"button", class:"dlg-dl" }, "העתקת הגרסה המלאה");
+    cp.addEventListener("click", () => navigator.clipboard && navigator.clipboard.writeText(fullBox.innerText).then(() => { cp.textContent = "הועתק ✓"; setTimeout(() => cp.textContent = "העתקת הגרסה המלאה", 1800); }));
+    body.append(dl, cp, sysBtn);
     show("טיוטת ההתכתבות", body);
   } else {
     const branches = parseRiskBranches(d.riskBranches);
@@ -996,36 +1008,44 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     // והקו התחתון + תוכנית ב'. כרטיס התזכורת נשאר ככלי תפעולי קצר. בלי מודל —
     // הכרטיס ועץ האפשרויות מהשדות, מסומנים כמצב הדגמה. prompts/narrative-products.md.
     e.target.disabled = true; e.target.textContent = "כותבת את התדריך... עד כ-2 דקות";
-    let briefing = null;
+    let briefing = null, briefNode = null;
     try {
       const raw = Object.entries(d).filter(([k, v]) => v && String(v).trim() && !["myTraits","otherTraits"].includes(k))
         .map(([k, v]) => (FIELDS.get(k)?.l || k) + ": " + v).join("\n");
       const traitsNote = [traitsLine(d.myTraits) ? "המאפיינים שלי: " + traitsLine(d.myTraits) : "", traitsLine(d.otherTraits) ? "המאפיינים של הצד השני: " + traitsLine(d.otherTraits) : ""].filter(Boolean).join("\n");
       const system = [ "אסור לכתוב שם של מחבר, מאמר, ספר, מחקר או שנת פרסום. אפשר להזכיר תיאוריה או גישה במילים. מקורות מגיעים רק מספריית המקורות המאומתת של המערכת.",
         "את כותבת תדריך אישי קצר למי שעומדת לפני שיחה חשובה, בעברית, מתוך שדות שמילאה במסך תכנון השיחה של מערכת Begood. היא תקרא אותו פעם אחת לפני שהיא נכנסת לחדר ותרגיש מוכנה.",
-        "התוצר הוא טקסט רציף בגוף שני — לא רשימת שדות, לא כותרות-משנה, לא תוויות ונקודתיים, לא עץ \"אם...אז\" גלוי. שלוש פסקאות: (1) ההקשר האנושי מאחורי המטרה — מי היא בשיחה הזאת, מי הצד השני, מה קרה עד כה ומה באמת על הכף; (2) איך השיחה יכולה להתפתח בפועל — הפתיחה (תמיד ברכת שלום ומשהו טוב לומר לפני גוף העניין), ומה לעשות אם הצד השני מתגונן, מסכים-אבל-לא-משתנה, או לוקח את זה אישית — משולב בזרימה מתוך \"מה עלול להשתבש\"; (3) הקו התחתון שלה, מה יקרה אם המטרה תתממש, ותוכנית ב'.",
+        "כתבי בגוף שני, בפסקאות קצרות ומרווחות, עם כותרת מודגשת לכל חלק — כדי שיהיה קל לקרוא, במיוחד בנושא רגיש. ארבעה חלקים, בכותרות האלה בדיוק:",
+        "**מה על הכף** — ההקשר האנושי: מי את בשיחה הזאת, מי הצד השני, מה קרה עד כה ומה באמת חשוב. שתיים-שלוש פסקאות קצרות.",
+        "**איך לפתוח** — ברכת שלום ומשהו טוב לומר לפני גוף העניין, ומשפט פתיחה לדוגמה במרכאות.",
+        "**אם השיחה מסתבכת** — תבליטים (שורה שמתחילה ב-\"- \"): מה לעשות אם הצד השני מתגונן, מסכים-אבל-לא-משתנה, או לוקח את זה אישית — מתוך \"מה עלול להשתבש\". בכל תבליט: מילת מפתח מודגשת, ומשפט לדוגמה במרכאות.",
+        "**איך לסיים** — הקו התחתון שלך, מה יקרה אם המטרה תתממש, ותוכנית ב'. כולל איך לסיים בכבוד גם בלי הסכמה, ועם פתח להמשך.",
+        "הדגשה רק למילות מפתח (**כך**). בלי סימני #, בלי טבלאות.",
+        TALK_RULE,
         "התיאוריה שנבחרה (" + (d.approach || "לא נבחרה") + ") נשמעת בהצעות עצמן — לא כהגדרה. המאפיינים של שני הצדדים (תכונות ומזג) משפיעים על הניסוח: מה יעבוד עם מי שכזה, וממה להיזהר.",
         "חוק הספציפיות: שם, מקום, משפט במרכאות. אין מניפולציה, מלכודת, התחכמות, סכום אפס או תקשורת אלימה — בשום הצעה.",
-        "החזירי אך ורק JSON: {\"paragraphs\":[\"...\",\"...\",\"...\"]}",
+        "החזירי רק את טקסט התדריך, בלי JSON ובלי הקדמה.",
       ].join("\n\n");
       const text = await callAI(system, "השדות:\n" + raw + (traitsNote ? "\n" + traitsNote : "") + "\n\nכתבי את התדריך.", 8000, 240000);
-      const m = text.match(/\{[\s\S]*\}/); if (!m) throw new Error("לא התקבל JSON");
-      const out = JSON.parse(m[0]);
-      if (Array.isArray(out.paragraphs) && out.paragraphs.length >= 2) { briefing = out.paragraphs; setAIStatus("ok"); }
-      else throw new Error("מבנה חסר");
+      let t = String(text || "").trim();
+      // תאימות: אם המודל בכל זאת החזיר JSON עם פסקאות
+      const jm = t.match(/^\{[\s\S]*\}$/);
+      if (jm) { try { const o = JSON.parse(t); if (Array.isArray(o.paragraphs)) t = o.paragraphs.join("\n\n"); else if (o.text) t = o.text; } catch (_) {} }
+      if (t.length > 150) { briefing = t; setAIStatus("ok"); }
+      else throw new Error("התדריך שחזר קצר מדי");
     } catch (e2) { console.warn("תדריך נרטיבי לא זמין — מציגה מהשדות:", e2.message); setAIStatus("mock"); }
     finally { e.target.disabled = false; e.target.textContent = "בנייה"; }
 
     if (briefing) {
-      body.append(el("div", { class:"banner-mini" }, "התדריך נכתב על ידי המודל מתוך השדות שמילאת. קראי, ואם משהו לא מדויק — ערכי את השדה למעלה ובני מחדש."));
+      body.append(el("div", { class:"banner-mini" }, "התדריך נכתב על ידי המודל מתוך השדות שמילאת. קראי, ואם משהו לא מדויק — ערכי ישירות כאן, או ערכי את השדה למעלה ובני מחדש."));
       body.append(el("h4", {}, "לפני שאת נכנסת לחדר"));
-      const bx = el("div", { class:"draftbox" }, briefing.join("\n\n"));
-      body.append(bx);
+      briefNode = SBE_DOC.rich(briefing);
+      body.append(SBE_DOC.editable(briefNode));
     } else {
       body.append(el("div", { class:"banner-mini" }, "⚠ אין חיבור למודל כרגע — מוצגים כרטיס התזכורת ועץ האפשרויות מהשדות כפי שמולאו (מצב הדגמה). כשהשרת המקומי פועל, המודל כותב מהם תדריך רציף."));
     }
     body.append(el("h4", {}, "כרטיס תזכורת"));
-    const rc = el("div", { class:"rcard" });
+    const rc = el("div", { class:"rcard", contenteditable:"true", spellcheck:"true" }); rc.classList.add("sbe-edit");
     rc.append(el("div", { class:"rcard-meta" }, `${d.creator || ""} · ${d.date || ""}`));
     if (d.goal) rc.append(el("div",{class:"rcard-row"}, el("b",{},"המטרה שלי"), el("div",{},d.goal)));
     if (d.nonNegotiables) rc.append(el("div",{class:"rcard-row"}, el("b",{},"קו תחתון"), el("div",{},d.nonNegotiables)));
@@ -1053,7 +1073,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     if (!briefing) body.append(tree);
 
     body.append(el("p", { class:"savenote" },
-      "אפשר לסגור, לערוך כל שדה למעלה ולבנות מחדש — התוצר כאן הוא תמיד הגרסה האחרונה שבנית. מרוצה? שמרי אותו למטה."));
+      "אפשר לערוך את התדריך ואת הכרטיס ישירות כאן, או לסגור, לשנות שדה למעלה ולבנות מחדש. מרוצה? הדפיסי או שמרי כ-PDF."));
     const sysBtn = el("button", { type:"button", class:"dlg-dl" }, "שמירה במערכת");
     sysBtn.addEventListener("click", () => {
       try {
@@ -1065,11 +1085,14 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
         setTimeout(() => { sysBtn.textContent = "שמירה במערכת"; }, 2000);
       } catch (e2) { console.warn("שמירה במערכת נכשלה:", e2.message); }
     });
-    const dl = el("button", { type:"button", class:"dlg-dl" }, "שמירה למחשב");
-    dl.addEventListener("click", () => downloadText(
-      briefing ? `תדריך-לפני-שיחה-${d.creator || "תכנון-שיחה"}.txt` : `כרטיס-תזכורת-${d.creator || "תכנון-שיחה"}.txt`,
-      briefing ? "לפני שאת נכנסת לחדר\n\n" + briefing.join("\n\n") + "\n\n— כרטיס תזכורת —\n" + reminderCardText(d) : reminderCardText(d)));
-    body.append(sysBtn, dl);
+    const dl = el("button", { type:"button", class:"dlg-dl" }, "🖨 הדפסה / שמירה כ-PDF");
+    const h = (t) => { const x = document.createElement("h3"); x.textContent = t; return x; };
+    dl.addEventListener("click", () => SBE_DOC.print({
+      title: briefing ? "תדריך לפני שיחה" : "כרטיס תזכורת לשיחה",
+      subtitle: [d.myself, d.otherParty].filter(Boolean).join(" · מול ") ,
+      nodes: (() => { const card = rc.querySelector(".rcard-row") ? [h("כרטיס תזכורת"), rc] : [];
+        return briefing ? [h("לפני שאת נכנסת לחדר"), briefNode, ...card] : [...card, h("עץ אפשרויות"), tree]; })() }));
+    body.append(dl, sysBtn);
     show(briefing ? "התדריך לפני השיחה" : "כרטיס התזכורת ועץ האפשרויות", body);
   }
 });
