@@ -138,6 +138,46 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 .combo-max-note.show{color:var(--brick);font-weight:600;}
 
 /* רשימה פשוטה (select רב-בחירה) לשדות רגשות/צרכים/מיומנויות — 16/09/2026 */
+/* combo: תפריט נפתח לבחירה מרובה, במקום צ'יפים גלויים תמיד */
+.combo{position:relative;}
+.combo-trigger{width:100%;text-align:inherit;font-family:inherit;font-size:14px;
+  padding:9px 11px;border:1px solid var(--hair);border-radius:6px;background:var(--ground);
+  color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.combo-trigger:hover{border-color:var(--muted);}
+.combo-trigger .ph{color:var(--muted);}
+.combo-trigger .caret{margin-inline-start:auto;color:var(--muted);font-size:11px;transition:transform .12s;}
+.combo.open .combo-trigger .caret{transform:rotate(180deg);}
+.combo-trigger .cnt{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#fff;
+  background:var(--spoken);border-radius:10px;padding:1px 7px;flex:0 0 auto;}
+.f[data-state="stale"] .combo-trigger{border-color:var(--brick);background:var(--brick-soft);}
+.combo-panel{position:absolute;inset-inline:0;top:calc(100% + 4px);z-index:20;
+  background:var(--surface);border:1px solid var(--hair);border-radius:8px;
+  box-shadow:0 8px 24px var(--shadow);padding:8px 10px;max-height:min(400px,70vh);
+  display:flex;flex-direction:column;gap:6px;}
+.combo-panel[hidden]{display:none;}
+/* נפתח כלפי מעלה כשאין מקום למטה עד תחתית המסך — positionPanel() בודקת
+   getBoundingClientRect() בכל פתיחה ומוסיפה את המחלקה הזאת בהתאם (22/09/2026,
+   בעקבות דיווח שרשימות ליד תחתית העמוד נחתכות ולא ניתן לגלול אליהן). */
+.combo-panel.flip-up{top:auto;bottom:calc(100% + 4px);}
+.combo-search{width:100%;font-family:inherit;font-size:13.5px;padding:6px 9px;
+  border:1px solid var(--hair);border-radius:5px;background:var(--ground);color:var(--ink);
+  direction:rtl;flex:0 0 auto;}
+.combo-body{overflow-y:auto;flex:1 1 auto;}
+.combo-empty{font-size:12.5px;color:var(--muted);padding:6px 2px;}
+/* flex-wrap:wrap (22/09/2026) — בלעדיו combo-other-note (flex:0 0 100%, לא
+   מתכווץ) היה נדחס לאותה שורה כמו השדה והכפתור בלי wrap, ודוחק אותם
+   לרוחב כמעט אפסי (דיווח: "לא רואים את המילה שמקלידים"). order:-1 על
+   ההערה מציג אותה קודם ויזואלית בלי לשנות את סדר ה-DOM/הלוגיקה. */
+.combo-other{display:flex;flex-wrap:wrap;gap:6px;flex:0 0 auto;border-top:1px solid var(--hair);
+  padding-top:7px;align-items:center;}
+.combo-other-group{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);flex:0 0 auto;}
+.combo-other-group select{font-family:inherit;font-size:12px;padding:4px 6px;max-width:130px;
+  border:1px solid var(--hair);border-radius:5px;background:var(--ground);color:var(--ink);}
+.combo-other input{flex:1 1 110px;min-width:100px;font-family:inherit;font-size:12.5px;padding:5px 8px;
+  border:1px solid var(--hair);border-radius:5px;background:var(--ground);color:var(--ink);
+  direction:rtl;}
+.combo-other button{font-size:12px;padding:5px 11px;flex:0 0 auto;}
+.combo-other-note{font-size:11px;color:var(--muted);flex:0 0 100%;line-height:1.5;order:-1;}
 .taxlist-wrap{display:flex;flex-direction:column;gap:6px;}
 .taxlist{width:100%;font-family:inherit;font-size:13.5px;color:var(--ink);
   background:var(--ground);border:1px solid var(--hair);border-radius:6px;padding:3px;}
@@ -909,6 +949,17 @@ function closeAllCombos(){
 document.addEventListener("click", e => { if (!e.target.closest(".combo")) closeAllCombos(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeAllCombos(); });
 
+// נפתחת ליד שדה שקרוב לתחתית העמוד — הפאנל, שממוקם position:absolute
+// ביחס לשדה, יכול להימשך מתחת לתחתית חלון הדפדפן בלי אפשרות לגלול אליו
+// (הפאנל עצמו לא הוא זה שגולש, הדף לא גולל אליו). נבדקת בכל פתיחה, אחרי
+// ש-hidden הוסר, ואם התחתית שלו חורגת מגובה החלון — נפתחת כלפי מעלה
+// במקום כלפי מטה (22/09/2026, דיווח: "לא ניתן לראות את רשימת הבחירה למטה").
+function positionPanel(panel){
+  panel.classList.remove("flip-up");
+  const r = panel.getBoundingClientRect();
+  if (r.bottom > window.innerHeight - 8) panel.classList.add("flip-up");
+}
+
 function render() {
   const form = document.getElementById("form");
   form.textContent = "";
@@ -1085,60 +1136,108 @@ function render() {
         wrap.append(container);
       }
 
+      // 05/10/2026: רשימה נפתחת (כמו במסך הסטודנטים), במקום רשימת בחירה מרובה שנגללת בתוך עצמה.
       if (f.type === "chips") {
-        // רשימה פשוטה — לבקשת המשתמשת (16/09/2026): "ביקשתי רשימה של רגשות
-        // ורשימה של צרכים. אל תהיי יצירתית כשלא צריך." select רב-בחירה רגיל
-        // של הדפדפן, מקובץ לפי קטגוריות, במקום רכיב חיפוש/צ'יפים מותאם.
-        const listWrap = el("div", { class:"taxlist-wrap" });
-        const list = el("select", { multiple:"multiple", size:"10", class:"taxlist" });
-        // בחירת תת-סעיף לתוספת (22/09/2026) — כדי שהיא תמוין נכון, לא תיפול
-        // לדלי שטוח בסוף הרשימה. נבנית מ-TAXONOMIES הבסיסי.
-        const otherGroupSel = el("select", { class:"taxlist-other-group-sel" });
-        visibleBaseGroups(f.taxonomy).forEach(g => otherGroupSel.append(el("option",{value:g.id}, g.name)));
-        const otherGroupWrap = el("div", { class:"taxlist-other-group" }, "לתת-סעיף:", otherGroupSel);
-        const otherInp = el("input", { type:"text", class:"taxlist-other-inp",
-          placeholder:"פריט חסר? הקלידי והוסיפי" });
-        const otherBtn = el("button", { type:"button", class:"taxlist-other-btn" }, "הוספה");
-        const otherRow = el("div", { class:"taxlist-other" }, [otherGroupWrap, otherInp, otherBtn]);
-        const note = el("div", { class:"taxlist-note" },
-          "אפשר לבחור כמה שרוצים (Ctrl או Cmd + קליק). תוספת חדשה זמינה מיד לכולן, ומיוחסת לך.");
+        const combo = el("div", { class:"combo" });
+        const trigger = el("button", { type:"button", class:"combo-trigger" });
+        const panel = el("div", { class:"combo-panel" });
+        panel.hidden = true;
+        const search = el("input", { type:"text", class:"combo-search", placeholder:"חיפוש ברשימה..." });
+        const bodyBox = el("div", { class:"combo-body" });
+        // בחירת קבוצה לתוספת (22/09/2026) — בלי זה כל תוספת נפלה לדלי שטוח
+        // אחד "תוספות מהקהילה" בסוף הרשימה, ולא לתת-הסעיף הנכון (תקשורת/
+        // יצירת קשר ואמון/וכו') שאליו היא שייכת מהותית. נבנית מ-TAXONOMIES
+        // הבסיסי (לא מ-taxonomyGroups, כדי לא לכלול את דלי "ללא שיוך").
+        const otherGroupSelI = el("select", {});
+        visibleBaseGroups(f.taxonomy).forEach(g => otherGroupSelI.append(el("option",{value:g.id}, g.name)));
+        const otherInp = el("input", { type:"text", placeholder:"פריט חסר? הקלידי והוסיפי" });
+        const otherBtn = el("button", { type:"button" }, "הוספה");
+        const otherRow = el("div", { class:"combo-other" }, [
+          el("div", { class:"combo-other-group" }, "לתת-סעיף:", otherGroupSelI),
+          otherInp, otherBtn,
+          el("div", { class:"combo-other-note" },
+            "התוספת זמינה מיד לכל היוצרות, ומיוחסת לך (שם ותאריך שמולאו למעלה)."),
+        ]);
+        panel.append(search, bodyBox, otherRow);
 
-        function renderOptions(){
-          const sel = inp.value ? inp.value.split(",") : [];
-          list.textContent = "";
-          taxonomyGroups(f.taxonomy).forEach(g => {
-            const og = el("optgroup", { label:g.name });
-            g.items.forEach(item => {
-              const op = el("option", { value:item }, item);
-              if (sel.includes(item)) op.selected = true;
-              og.append(op);
-            });
-            list.append(og);
-          });
+        const selected = () => inp.value ? inp.value.split(",") : [];
+
+        function updateTrigger(){
+          const sel = selected();
+          trigger.textContent = "";
+          if (!sel.length) {
+            trigger.append(el("span",{class:"ph"}, "בחירה מהרשימה..."));
+          } else {
+            const shown = sel.length > 2 ? sel.slice(0,2).join("، ") + ` ועוד ${sel.length-2}` : sel.join("، ");
+            trigger.append(document.createTextNode(shown));
+            trigger.append(el("span",{class:"cnt"}, String(sel.length)));
+          }
+          trigger.append(el("span",{class:"caret"}, "▾"));
         }
 
-        list.addEventListener("change", () => {
-          const sel = Array.from(list.selectedOptions).map(o => o.value);
+        const toggle = (item, btn) => {
+          const sel = selected();
+          const i = sel.indexOf(item);
+          if (i >= 0) sel.splice(i, 1); else sel.push(item);
           inp.value = sel.join(",");
+          btn.classList.toggle("on", sel.includes(item));
+          updateTrigger();
           inp.dispatchEvent(new Event("input"));
-        });
+        };
+
+        function renderGroups(filterText){
+          bodyBox.textContent = "";
+          const q = (filterText || "").trim();
+          const sel = selected();
+          let any = false;
+          taxonomyGroups(f.taxonomy).forEach(g => {
+            const items = q ? g.items.filter(it => it.includes(q)) : g.items;
+            if (!items.length) return;
+            any = true;
+            const grp = el("div", { class:"chipgrp" });
+            grp.append(el("span",{class:"chipgrp-l"}, g.name));
+            items.forEach(item => {
+              const btn = el("button", { type:"button", class:"chip" }, item);
+              if (sel.includes(item)) btn.classList.add("on");
+              btn.addEventListener("click", () => toggle(item, btn));
+              grp.append(btn);
+            });
+            bodyBox.append(grp);
+          });
+          if (!any) bodyBox.append(el("div", { class:"combo-empty" }, "אין תוצאה תואמת."));
+        }
 
         function submitOther(){
           const v = otherInp.value.trim();
           if (!v) return;
-          addCustomTaxonomyItem(f.taxonomy, v, otherGroupSel.value);
+          addCustomTaxonomyItem(f.taxonomy, v, otherGroupSelI.value);
           otherInp.value = "";
-          const sel = inp.value ? inp.value.split(",") : [];
+          const sel = selected();
           if (!sel.includes(v)) { sel.push(v); inp.value = sel.join(","); inp.dispatchEvent(new Event("input")); }
-          renderOptions();
+          updateTrigger();
+          renderGroups(search.value);
         }
         otherBtn.addEventListener("click", submitOther);
         otherInp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); submitOther(); } });
+        search.addEventListener("input", () => renderGroups(search.value));
 
-        renderOptions();
-        comboUpdaters.set(f.k, renderOptions);
-        listWrap.append(list, otherRow, note);
-        wrap.append(listWrap);
+        trigger.addEventListener("click", () => {
+          const willOpen = panel.hidden;
+          closeAllCombos();
+          if (willOpen) {
+            panel.hidden = false;
+            combo.classList.add("open");
+            search.value = "";
+            renderGroups("");
+            positionPanel(panel);
+            search.focus();
+          }
+        });
+
+        updateTrigger();
+        comboUpdaters.set(f.k, updateTrigger);
+        combo.append(trigger, panel);
+        wrap.append(combo);
       }
 
       wrap.append(el("div", { class:"state", id:"s-"+f.k }));
