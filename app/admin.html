@@ -561,9 +561,8 @@ function pHome(){
   quick.append(el("h3",{},"פעולות מהירות"));
   const q = el("div",{class:"in"});
   const b1 = el("button",{class:"act p"},"פתיחת מוסד או הפקת קוד"); b1.addEventListener("click", toTab("insts"));
-  const b2 = el("a",{class:"act",href:"journeys.html",style:"text-decoration:none;display:inline-block"},"לוח המסעות");
   const b3 = el("button",{class:"act"},"רענון"); b3.addEventListener("click", () => { homeData = null; render(); });
-  q.append(el("div",{class:"btnrow",style:"margin-top:0"}, b1, b2, b3), el("p",{class:"hint",style:"margin-top:10px"}, H.insts + " מוסדות במערכת."));
+  q.append(el("div",{class:"btnrow",style:"margin-top:0"}, b1, b3), el("p",{class:"hint",style:"margin-top:10px"}, H.insts + " מוסדות במערכת."));
   quick.append(q); w.append(quick);
   return w;
 }
