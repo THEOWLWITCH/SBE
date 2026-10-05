@@ -7,7 +7,7 @@ window.SBE_SCREENS = [
   { part:'mine', title:'🔒 רק את רואה — מסכי העבודה שלך', groups:[
     { title:'ניהול ובקרה', items:[
       { file:'admin.html', label:'מסך הניהול' },
-      { file:'journeys.html', label:'המסעות אל החוסן — ניהול, אישורים ודמו' },
+      { file:'journeys.html', label:'🧭 לוח המסעות — אישורים ומשוב' },
       { file:'eval-set.html', label:'בקרת איכות' },
     ]},
   ]},
