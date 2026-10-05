@@ -177,6 +177,14 @@ button:disabled{opacity:.4;cursor:not-allowed;}
 
 <div class="steps" id="steps"></div>
 
+<!-- בחירת התרחיש לסדנה (05/10/2026): מהתרחישים שהמנחה בנתה — סטודנטים, הורים או נוער -->
+<div class="card" id="scnCard"><h2>התרחיש לסדנה<em id="scnTrack"></em></h2>
+  <div class="in">
+    <select id="scnSel" aria-label="התרחיש לסדנה" style="width:100%;font:inherit;font-size:15px;padding:8px 10px;border:1px solid var(--hair);border-radius:8px;background:var(--surface);color:var(--ink)"></select>
+    <p class="hint" style="margin:8px 0 0" id="scnHint">התרחישים שבנית במסכי "יצירת תרחיש" מופיעים כאן. אפשר גם לפתוח סדנה עם התרחיש לדוגמה.</p>
+  </div>
+</div>
+
 <div class="card" id="fbCard"><h2>הכנה: מדדי המשוב לסדנה<em id="fbSum"></em></h2>
   <div class="in">
     <p class="hint" style="margin:0 0 12px" id="fbIntro">בכל אחד משלושת שאלוני המשוב בחרי 5–10 מדדים שמתאימים לסדנה הזו. רק הם יופיעו בטפסים של המנחה, של המתנסה ושל הצופות. הסימון הראשוני הוא ברירת המחדל של המוסד.</p>
@@ -212,10 +220,13 @@ button:disabled{opacity:.4;cursor:not-allowed;}
   </div>
 </div>
 
-<div class="card" id="fbLinkCard" hidden><h2>קישור לטפסי המשוב<em>עם המדדים שנבחרו</em></h2>
-  <div class="in">
-    <p class="hint" style="margin:0 0 10px">שלחי את הקישור למשתתפות בסוף התחקיר, או הציגי אותו במקרן. הקוד של הסדנה לא נכלל בו.</p>
-    <div class="fblink"><input id="fbUrl" readonly aria-label="קישור לטפסי המשוב"><button type="button" id="bCopy">העתקה</button></div>
+<div class="card" id="fbLinkCard" hidden><h2>משוב על הסדנה<em>QR וקישור קצר</em></h2>
+  <div class="in" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
+    <div id="fbQr" style="background:#fff;padding:10px;border-radius:8px;line-height:0" aria-label="קוד QR לטופס המשוב"></div>
+    <div style="flex:1;min-width:220px">
+      <p class="hint" style="margin:0 0 10px">בסוף התחקיר: המשתתפות סורקות את הקוד בטלפון, או פותחות את הקישור. מי שנכנסה עם קוד הסדנה תמצא את המשוב גם ב"משוב" במסך שלה.</p>
+      <div class="fblink"><input id="fbUrl" readonly aria-label="קישור לטפסי המשוב"><button type="button" id="bCopy">העתקה</button></div>
+    </div>
   </div>
 </div>
 
@@ -252,6 +263,7 @@ button:disabled{opacity:.4;cursor:not-allowed;}
 </div>
 
 <script src="lib/feedback-bank.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 "use strict";
 
@@ -311,10 +323,23 @@ function fill(){
   ).join("");
 }
 
-$("bOpen").addEventListener("click", () => {
+$("bOpen").addEventListener("click", async () => {
   if (!fbAllValid()) { drawFb(); return; }
-  fbLocked = true;
-  code = String(Math.floor(100000 + Math.random() * 900000));
+  // קוד הסדנה נרשם בשרת: רק עם קוד פעיל המשתתפות נכנסות, והמשוב שלהן משויך לסדנה הזו
+  $("bOpen").disabled = true; $("hint").textContent = "פותחת את הסדנה... (בפעם הראשונה השרת יכול להתעורר עד דקה)";
+  WF = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  let facName = "", inst = "";
+  try { facName = sessionStorage.getItem("sbe.session.name") || ""; const mm = /\(([^)]+)\)\s*$/.exec(sessionStorage.getItem("sbe.session.role") || ""); if (mm) inst = mm[1]; } catch(e){}
+  let opened = false;
+  for (let i = 0; i < 6 && !opened; i++) {
+    code = String(Math.floor(100000 + Math.random() * 900000));
+    try {
+      const r = await wfApi("wfOpen", { w: WF, code, scenario: S.name, track: S.track || "edu", fac: facName, inst, m: FB.encode(fbSel), c: FB.encodeCustom(fbSel, FB_BANK) || "" });
+      if (r.ok) opened = true; else if (r.error !== "code taken") break;
+    } catch(e) { break; }
+  }
+  if (!opened) { $("bOpen").disabled = false; $("hint").textContent = "לא הצלחנו לפתוח את הסדנה בשרת. כדאי לנסות שוב בעוד רגע."; return; }
+  fbLocked = true; $("scnSel").disabled = true;
   $("code").textContent = code; $("code").classList.remove("idle");
   phase = 1; drawSteps();
   $("bOpen").disabled = true; $("bStart").disabled = false; $("bProject").disabled = false;
@@ -452,10 +477,6 @@ function wfApi(action, extra){
 }
 function lockFb(){
   FB.saveWorkshop(fbSel, { scenario: S.name });
-  WF = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  let facName = "", inst = "";
-  try { facName = sessionStorage.getItem("sbe.session.name") || ""; const m = /\(([^)]+)\)\s*$/.exec(sessionStorage.getItem("sbe.session.role") || ""); if (m) inst = m[1]; } catch(e){}
-  wfApi("wfOpen", { w: WF, scenario: S.name, fac: facName, inst }).catch(() => {});
   $("fbIntro").textContent = "המדדים ננעלו עם פתיחת הסדנה. אלה המדדים שיופיעו בטפסי המשוב:";
   $("fbTabs").textContent = "";
   $("fbAdd").hidden = true;
@@ -467,12 +488,14 @@ function lockFb(){
     fbSel[r].forEach(id => { const li = document.createElement("li"); li.textContent = FB_BANK[r].bank[id].l; ul.append(li); });
     d.append(ul); list.append(d);
   });
+  // קישור קצר: המדדים שנבחרו (וגם מדד שנוסף) שמורים בשרת עם הסדנה, ו-feedback.html טוען אותם לפי w
   const url = new URL("feedback.html", location.href);
-  // מדד שנוסף אינו קיים בטלפונים של המשתתפות — הניסוח שלו עובר בקישור (&c=)
-  const custom = FB.encodeCustom(fbSel, FB_BANK);
-  url.search = "?m=" + FB.encode(fbSel) + (custom ? "&c=" + custom : "") + "&scenario=" + encodeURIComponent(S.name) + "&w=" + WF;
+  url.search = "?w=" + WF;
   $("fbUrl").value = url.href;
   $("fbLinkCard").hidden = false;
+  const qr = $("fbQr"); qr.textContent = "";
+  if (window.QRCode) { try { new QRCode(qr, { text: url.href, width: 168, height: 168, correctLevel: QRCode.CorrectLevel.M }); } catch(e) { qr.hidden = true; } }
+  else qr.hidden = true;
   drawFb();
 }
 // ── מדד חסר (24/09/2026): "להוסיף אפשרות למנחה להוסיף מדד שחסר בעיניה" ──
@@ -512,6 +535,24 @@ $("bCopy").addEventListener("click", async () => {
   setTimeout(() => { $("bCopy").textContent = "העתקה"; }, 2200);
 });
 
+// ── בחירת התרחיש (05/10/2026): התרחישים שנבנו במכשיר הזה (narrative-build.js שומר אותם) + התרחיש לדוגמה ──
+const TRACK_T = { edu:"סטודנטיות.ים", parents:"הורים", youth:"נוער" };
+const SAMPLE = { ...S, id:"sample", track:"edu" };
+let SAVED = []; try { SAVED = JSON.parse(localStorage.getItem("sbe.workshop.scenarios.v1") || "[]"); } catch(e){}
+(function scnInit(){
+  const sel = $("scnSel");
+  SAVED.forEach(x => { const o = document.createElement("option"); o.value = x.id; o.textContent = x.name + " · " + (TRACK_T[x.track] || "") + (x.sub ? " — " + x.sub : ""); sel.append(o); });
+  const o = document.createElement("option"); o.value = "sample"; o.textContent = "יש לך גן טוב · סטודנטיות.ים — תרחיש לדוגמה"; sel.append(o);
+  const pick = (id) => {
+    const x = id === "sample" ? SAMPLE : SAVED.find(y => y.id === id) || SAMPLE;
+    Object.assign(S, { name:x.name, sub:x.sub || "", lang:x.lang || "עברית", minutes:x.minutes || 5, pre:x.pre || [], core:x.core || [], watch:x.watch || [], debrief:x.debrief || [], track:x.track || "edu" });
+    $("scnTrack").textContent = TRACK_T[S.track] || "";
+    fill();
+  };
+  sel.addEventListener("change", () => pick(sel.value));
+  pick(sel.value);
+  if (!SAVED.length) $("scnHint").textContent = "עדיין לא נבנו תרחישים במכשיר הזה. אפשר לבנות במסכי \"יצירת תרחיש\", או לפתוח סדנה עם התרחיש לדוגמה.";
+})();
 fill(); phase = 0; drawSteps(); $("joined").textContent = "טרם נפתחה";
 drawFb();
 </script>

@@ -146,6 +146,26 @@ button.act.primary{background:var(--spoken);border-color:var(--spoken);color:#ff
 
 <script src="lib/feedback-bank.js"></script>
 <script>
+// קישור קצר מסדנה (05/10/2026): feedback.html?w=<מזהה>, או משתתפת שנכנסה עם קוד הסדנה (sbe.session.wf).
+// המדדים שהמנחה בחרה שמורים בשרת עם הסדנה — טוענים אותם ופותחים את הטופס עם הכתובת המלאה.
+(function(){
+  const p = new URLSearchParams(location.search);
+  let w = p.get("w") || ""; try { if (!w) w = sessionStorage.getItem("sbe.session.wf") || ""; } catch(e){}
+  if (!w || p.get("m") || !/^[a-z0-9]{8,32}$/.test(w)) return;
+  document.documentElement.style.visibility = "hidden";
+  const show = () => { document.documentElement.style.visibility = ""; };
+  fetch("https://sbe-server.onrender.com/api/access", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ action:"wfGet", w }) })
+    .then(r => r.json()).then(d => {
+      if (!d.m) { show(); return; }
+      const q = new URLSearchParams({ m: d.m, w });
+      if (d.c) q.set("c", d.c);
+      if (d.scenario) q.set("scenario", d.scenario);
+      location.replace(location.pathname + "?" + q.toString());
+    }).catch(show);
+  setTimeout(show, 20000);
+})();
+</script>
+<script>
 "use strict";
 
 // בנק המדדים: lib/feedback-bank.js (מקור אמת יחיד, 24/09/2026). הטופס מציג רק את
@@ -180,7 +200,7 @@ const CONTEXT = {
   inst: params.get("inst") || "",
   fac: params.get("fac") || "",
   scenario: params.get("scenario") || "",
-  w: params.get("w") || "",
+  w: params.get("w") || (function(){ try { return sessionStorage.getItem("sbe.session.wf") || ""; } catch(e){ return ""; } })(),
 };
 
 const $ = (id) => document.getElementById(id);
