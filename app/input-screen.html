@@ -163,8 +163,10 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 .card-opt-h{font-weight:700;font-size:14.5px;margin-bottom:3px;}
 .card-opt-d{font-size:13px;color:var(--muted);line-height:1.5;}
 .card-opt-ex{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:4px;line-height:1.5;}
-.traitfield{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;}
-.traitgrp{border:1px solid var(--hair);border-radius:6px;overflow:hidden;background:var(--surface);}
+.traitfield{display:flex;flex-direction:column;gap:5px;}
+.traitgrp{border:1px solid var(--hair);border-radius:6px;overflow:hidden;background:var(--surface);flex:0 0 auto;}
+.traitrow label input[type=checkbox]{width:auto;flex:0 0 auto;margin:0;}
+.traitrow label{flex-wrap:wrap;}
 .traitgrp>summary{padding:6px 9px;background:var(--ground);font-size:13.5px;font-weight:700;
   cursor:pointer;color:var(--muted);list-style:none;}
 .traitgrp>summary::-webkit-details-marker{display:none;}
