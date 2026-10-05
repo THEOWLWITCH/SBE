@@ -203,7 +203,7 @@ const server = createServer(async (req, res) => {
     }
     if (!job) return sendJson(res, 200, { status: 'unknown' });
     return sendJson(res, 200, { status: job.status, stages: job.stages, elapsed: Math.round((Date.now() - job.t0) / 1000),
-      ...(job.status === 'done' ? { scenario: job.scenario } : {}), ...(job.status === 'error' ? { error: job.error } : {}) });
+      ...(job.status === 'done' ? { scenario: job.scenario, text: job.text } : {}), ...(job.status === 'error' ? { error: job.error } : {}) });
   }
 
   if (req.url === '/api/pipeline') {
@@ -273,6 +273,26 @@ const server = createServer(async (req, res) => {
     provider = getProvider(process.env.PROVIDER || 'anthropic');
   } catch (e) {
     return sendJson(res, 500, { error: e.message });
+  }
+
+  // מצב רקע גם כאן (05/10/2026): תוצרי ההורים והנוער נכתבים בקריאה אחת ארוכה (עד ~9 דקות),
+  // והחיבור נקטע באמצע ("Unexpected end of JSON input"). מחזירים מזהה עבודה, והדפדפן שואל ב-/api/pipeline-status.
+  if (payload.async) {
+    const jobId = randomUUID();
+    const job = { status: 'running', stages: {}, t0: Date.now() };
+    PIPE_JOBS.set(jobId, job);
+    jobSave(jobId, { status: 'running', t0: job.t0, boot: BOOT_ID, stages: {} });
+    setTimeout(() => PIPE_JOBS.delete(jobId), 3 * 3600 * 1000).unref?.();
+    sendJson(res, 200, { jobId });
+    provider.complete({ system, messages: messages || [{ role: 'user', content: '' }], tools, toolChoice, variation: 'medium', maxTokens: maxTokens || 220 })
+      .then((result) => {
+        job.text = result.text; job.status = 'done';
+        jobSave(jobId, { status: 'done', t0: job.t0, boot: BOOT_ID, stages: {}, text: result.text });
+        console.log(`complete(async): הצליח אחרי ${Math.round((Date.now() - job.t0) / 1000)} שניות (maxTokens ${maxTokens || 220})`);
+      })
+      .catch((e) => { job.status = 'error'; job.error = `שגיאת ספק: ${e.message}`; console.error(`complete(async): נכשל — ${e.message}`);
+        jobSave(jobId, { status: 'error', t0: job.t0, boot: BOOT_ID, error: job.error }); });
+    return;
   }
 
   const finish = startKeepAlive(res);
