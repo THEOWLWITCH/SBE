@@ -198,18 +198,22 @@ const CODE_ERRORS = {
   revoked: "הקוד הזה בוטל. פנו למי שנתן/ה לכם אותו.",
   expired: "תוקף הקוד הסתיים. פנו למי שנתן/ה לכם אותו.",
   "used-up": "הקוד מיצה את מספר ההפקות שלו. בקשו קוד חדש מהמרצה.",
+  full: "כל המקומות בקורס הזה כבר תפוסים. פנו למרצה.",
   inactive: "הכניסה למוסד מושהית כרגע.",
   "sub-expired": "המנוי של המוסד הסתיים.",
   down: "אין כרגע חיבור לשרת הבדיקה. נסו שוב בעוד רגע.",
 };
+// קוד קורס: מזהה קבוע למכשיר הזה, כדי שלכל סטודנט/ית תהיה מכסת משוב משלה.
+const SID_KEY = c => "sbe.course.sid." + c.replace(/[^A-Z0-9]/g, "");
 async function codeLogin(code){
+  let sid = ""; try { sid = localStorage.getItem(SID_KEY(code)) || ""; } catch(e){}
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 75000);
   try {
     const r = await fetch(ACCESS_URL, { method:"POST", headers:{ "content-type":"application/json" },
-      body: JSON.stringify({ action:"login", kind:"code", secret: code }), signal: ctrl.signal });
+      body: JSON.stringify({ action:"login", kind:"code", secret: code, sid }), signal: ctrl.signal });
     const data = await r.json().catch(() => ({}));
-    if (r.ok && data.token) return data;
+    if (r.ok && data.token) { if (data.sid) try { localStorage.setItem(SID_KEY(code), data.sid); } catch(e){} return data; }
     return { error: r.status === 403 ? (data.error || "wrong") : "down" };
   } catch(e){ return { error:"down" }; }
   finally { clearTimeout(timer); }
@@ -259,6 +263,9 @@ function renderEntry(){
     const v = fixCodeKeys(code.value);
     if (v !== code.value) { code.value = v; code.setSelectionRange(v.length, v.length); }
   });
+  // קישור מהמרצה (entry.html?c=קוד) — הקוד כבר ממולא, נשאר רק ללחוץ "כניסה"
+  const pre = fixCodeKeys(new URLSearchParams(location.search).get("c") || "").replace(/[^A-Z0-9-]/g, "").slice(0, 12);
+  if (pre) code.value = pre;
   inn.append(el("p",{class:"hint"},"הקלידו את הקוד שקיבלתם — מהמוסד, מהמרצה או ממנהלת המערכת. הקוד קובע מה פתוח לכם."),
     el("label",{},"הקוד שלך"), code, err, btn);
   card.append(el("h2",{},"כניסה למערכת"), inn);

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>המרחב שלי</title>
 <script src="lib/access-guard.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -161,7 +162,7 @@ async function api(action, extra = {}) {
 // ── כותרת ובאנרים ──
 {
   const who = $("who");
-  const kindLabel = { instadmin: "מנהל/ת מוסד", staff: "צוות", student: "סטודנט/ית", legacy: "צוות (קוד מוסד)", "academic-legacy": "משוב לעבודות" }[INFO.kind] || "";
+  const kindLabel = { instadmin: "מנהל/ת מוסד", staff: "צוות", student: "סטודנט/ית", course: "סטודנט/ית בקורס", legacy: "צוות (קוד מוסד)", "academic-legacy": "משוב לעבודות" }[INFO.kind] || "";
   who.append(INFO.label ? el("b", {}, INFO.label) : "", INFO.label && (INFO.inst || kindLabel) ? " · " : "",
     INFO.inst || "", INFO.inst && kindLabel ? " · " : "", kindLabel);
   if (INFO.inst) { try { sessionStorage.setItem("sbe_inst", INFO.inst); } catch (e) {} } // search.html — "התרחישים של המוסד"
@@ -319,43 +320,79 @@ async function renderAdmin() {
   loadList(d.codes.filter(c => c.kind === "staff"));
 }
 
-// ── מרצה: קודים לסטודנטים (משוב לעבודות) ──
+// ── מרצה: "משוב לעבודות" ──
+// קוד קורס (05/10/2026): קוד אחד לכל הקורס, עם קישור, QR והודעה מוכנה — ולכל סטודנט/ית מכסה משלו/ה
+// (השרת סופר לפי מכשיר). הקודים האישיים נשארו כאפשרות משנית, מקופלת.
 async function renderLecturer() {
   if (!has("lecturer")) return;
   const box = $("lecturer"); box.textContent = "";
-  box.append(el("h2", {}, "קודים לסטודנטים — משוב לעבודות"));
+  box.append(el("h2", {}, "משוב לעבודות — קוד לקורס"));
   const card = el("div", { class: "card" });
   card.append(el("p", { class: "sub" }, "טוען..."));
   box.append(card);
   let d = await api("codesList").catch(() => ({}));
+  let fresh = "";
+  const reload = async () => { d = await api("codesList").catch(() => d); draw(); };
   const draw = () => {
     card.textContent = "";
     if (!d.codes) { card.append(el("p", { class: "msg err" }, "אין כרגע חיבור לשרת. נסו לרענן בעוד רגע.")); return; }
     const lim = (d.settings && d.settings.academic) || { maxActive: 50, days: 7, uses: 3 };
-    const mine = d.codes.filter(c => c.kind === "student");
-    const active = mine.filter(c => statusOf(c)[1] === "ok").length;
-    card.append(el("p", { class: "sub" }, "כל קוד מיועד לסטודנט/ית אחד/ת: בתוקף " + lim.days + " ימים ומאפשר עד " + lim.uses +
-      " הפקות משוב. אפשר להחזיק עד " + lim.maxActive + " קודים פעילים בו-זמנית. פעילים עכשיו: " + active + "."));
+    const active = d.codes.filter(c => (c.kind === "student" || c.kind === "course") && statusOf(c)[1] === "ok").length;
     const room = Math.max(0, lim.maxActive - active);
-    const cnt = el("input", { type: "number", min: "1", max: String(Math.max(1, room)), value: String(Math.min(room || 1, 10)) });
-    const lbl = el("input", { placeholder: "קורס או קבוצה (לא חובה)", maxlength: "60" });
-    const go = el("button", { class: "btn", disabled: room === 0 }, "הפקת קודים");
+
+    // ── קוד חדש לקורס ──
+    card.append(el("h3", {}, "קוד אחד לכל הקורס"),
+      el("p", { class: "sub" }, "שולחים לסטודנטים קישור אחד או QR. כל סטודנט/ית מקבל/ת עד " + lim.uses +
+        " הפקות משוב משלו/ה, וכשכל המקומות נתפסים — הקוד נסגר לסטודנטים חדשים."));
+    const name = el("input", { placeholder: "למשל: סמינר בהוראה, תשפ״ז", maxlength: "60" });
+    const seats = el("input", { type: "number", min: "1", max: "300", value: "40" });
+    const days = el("select", {}, ...[["7", "שבוע"], ["14", "שבועיים"], ["30", "חודש"], ["60", "חודשיים"], ["120", "סמסטר (4 חודשים)"]]
+      .map(([v, t]) => el("option", { value: v }, t)));
+    days.value = "30";
+    const go = el("button", { class: "btn", disabled: room === 0 }, "יצירת קוד לקורס");
     const msg = el("div", {});
     go.addEventListener("click", async () => {
+      if (!name.value.trim()) { msg.className = "msg err"; msg.textContent = "כדאי לתת שם לקורס, כדי שתזהי אותו ברשימה."; name.focus(); return; }
+      go.disabled = true; msg.className = "msg"; msg.textContent = "יוצרת...";
+      const r = await api("codeCreate", { kind: "course", label: name.value.trim(), seats: Number(seats.value) || 40, days: Number(days.value) || 30 }).catch(() => ({}));
+      if (!r.code) { msg.className = "msg err"; msg.textContent = r.error === "limit" ? "הגעת למספר הקודים הפעילים המרבי." : "היצירה לא הצליחה. נסו שוב."; go.disabled = false; return; }
+      fresh = r.code.code;
+      await reload();
+    });
+    card.append(el("div", { class: "row" }, el("div", {}, el("label", {}, "שם הקורס"), name),
+      el("div", { style: "flex:0 0 120px;min-width:110px" }, el("label", {}, "מספר סטודנטים"), seats),
+      el("div", { style: "flex:0 0 160px;min-width:140px" }, el("label", {}, "תוקף"), days),
+      el("div", { style: "flex:0" }, go)), msg);
+
+    // ── הקורסים שלי ──
+    const courses = d.codes.filter(c => c.kind === "course").sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    courses.forEach(c => card.append(courseBox(c, lim, c.code === fresh, reload)));
+
+    // ── קודים אישיים (משני) ──
+    const det = el("details", { style: "margin-top:16px" });
+    det.append(el("summary", { style: "cursor:pointer;font-weight:700;font-size:14px" }, "קודים אישיים — לסטודנט/ית יחיד/ה (למשל השלמה או הארכה)"));
+    const mine = d.codes.filter(c => c.kind === "student");
+    det.append(el("p", { class: "sub", style: "margin-top:8px" }, "כל קוד אישי מיועד לסטודנט/ית אחד/ת: בתוקף " + lim.days + " ימים ומאפשר עד " + lim.uses +
+      " הפקות משוב. אפשר להחזיק עד " + lim.maxActive + " קודים פעילים בו-זמנית (קוד קורס נספר כקוד אחד). פעילים עכשיו: " + active + "."));
+    const cnt = el("input", { type: "number", min: "1", max: String(Math.max(1, room)), value: String(Math.min(room || 1, 1)) });
+    const lbl = el("input", { placeholder: "שם או קורס (לא חובה)", maxlength: "60" });
+    const go2 = el("button", { class: "btn ghost", disabled: room === 0 }, "הפקת קודים אישיים");
+    const msg2 = el("div", {});
+    go2.addEventListener("click", async () => {
       const n = Math.max(1, Math.min(room, Number(cnt.value) || 1));
-      go.disabled = true; msg.className = "msg"; msg.textContent = "מפיקה...";
+      go2.disabled = true; msg2.className = "msg"; msg2.textContent = "מפיקה...";
       const r = await api("codeCreate", { kind: "student", count: n, label: lbl.value.trim() }).catch(() => ({}));
-      if (!r.codes) { msg.className = "msg err"; msg.textContent = r.error === "limit" ? "הגעת למספר הקודים הפעילים המרבי." : "ההפקה לא הצליחה. נסו שוב."; go.disabled = false; return; }
+      if (!r.codes) { msg2.className = "msg err"; msg2.textContent = r.error === "limit" ? "הגעת למספר הקודים הפעילים המרבי." : "ההפקה לא הצליחה. נסו שוב."; go2.disabled = false; return; }
       d = await api("codesList").catch(() => d);
       draw();
+      const det2 = card.querySelector("details"); if (det2) det2.open = true;
       const list = r.codes.map(c => c.code).join("\n");
       const nb = el("div", { class: "newcodes" }, el("b", {}, r.codes.length + " קודים חדשים (תוקף עד " + fmtDate(r.codes[0].expiresAt) + "):"),
         el("div", { class: "code", style: "white-space:pre-wrap;margin:6px 0" }, list), copyBtn(list, "העתקת כל הקודים"));
-      card.insertBefore(nb, card.children[2] || null);
+      det2.insertBefore(nb, det2.children[3] || null);
     });
-    card.append(el("div", { class: "row" }, el("div", {}, el("label", {}, "כמה קודים"), cnt), el("div", {}, el("label", {}, "תיאור"), lbl),
-      el("div", { style: "flex:0" }, go)), msg);
-    if (room === 0) card.append(el("p", { class: "msg err" }, "הגעת ל-" + lim.maxActive + " קודים פעילים. קודים חדשים יתאפשרו כשקודים יפוגו או ינוצלו."));
+    det.append(el("div", { class: "row" }, el("div", { style: "flex:0 0 110px;min-width:100px" }, el("label", {}, "כמה קודים"), cnt), el("div", {}, el("label", {}, "תיאור"), lbl),
+      el("div", { style: "flex:0" }, go2)), msg2);
     if (mine.length) {
       const t = el("table", {}, el("tr", {}, ...["הקוד", "תיאור", "הפקות", "תוקף", "מצב", ""].map(h => el("th", {}, h))));
       mine.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 200).forEach(c => {
@@ -363,16 +400,54 @@ async function renderLecturer() {
         const cell = el("td", {});
         if (stc === "ok") {
           const rv = el("button", { class: "btn ghost sm" }, "ביטול");
-          rv.addEventListener("click", async () => { await api("codeRevoke", { code: c.code }); d = await api("codesList"); draw(); });
+          rv.addEventListener("click", async () => { await api("codeRevoke", { code: c.code }); await reload(); });
           cell.append(rv);
         }
         t.append(el("tr", {}, el("td", {}, el("span", { class: "code" }, c.code)), el("td", {}, c.label || "—"),
           el("td", {}, (c.uses || 0) + " / " + c.maxUses), el("td", {}, fmtDate(c.expiresAt)), el("td", {}, el("span", { class: "st " + stc }, stl)), cell));
       });
-      card.append(el("div", { class: "tablewrap" }, t));
+      det.append(el("div", { class: "tablewrap" }, t));
     }
+    card.append(det);
+    if (room === 0) card.append(el("p", { class: "msg err" }, "הגעת ל-" + lim.maxActive + " קודים פעילים. קודים חדשים יתאפשרו כשקודים יפוגו, ינוצלו או יבוטלו."));
   };
   draw();
+}
+
+// כרטיס של קוד קורס: הקוד, קישור, QR והודעה מוכנה לשליחה.
+function courseBox(c, lim, isNew, reload) {
+  let [stl, stc] = statusOf(c);
+  const full = stc === "ok" && c.seatsUsed >= c.seats;
+  if (full) { stl = "כל המקומות תפוסים"; stc = "warn"; }
+  const link = new URL("entry.html?c=" + encodeURIComponent(c.code), location.href).href;
+  const text = "שלום לכולן ולכולם,\n" +
+    "לקראת הגשת העבודה בקורס \"" + (c.label || "") + "\" אפשר לקבל משוב על הטיוטה בכלי \"משוב לעבודות\" של Begood.\n" +
+    "כניסה בקישור: " + link + "\n(או בהקלדת הקוד " + c.code + " באתר be-good.co.il)\n" +
+    "לכל אחד ואחת יש עד " + (c.usesPer || lim.uses) + " הפקות משוב, עד " + fmtDate(c.expiresAt) + ".\n" +
+    "המשוב נועד לעזור לכם לשפר את העבודה — הכתיבה נשארת שלכם. זכרו לציין בעבודה שנעזרתם בכלי בינה מלאכותית ואת שם הכלי.\n" +
+    "בהצלחה!";
+  const b = el("div", { class: isNew ? "newcodes" : "card", style: "margin:12px 0 0;box-shadow:none" + (stc === "off" ? ";opacity:.6" : "") });
+  b.append(el("div", { style: "display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center" },
+    el("b", { style: "font-size:15px" }, (isNew ? "✓ נוצר: " : "") + (c.label || "קורס")),
+    el("span", { class: "st " + stc }, stl)));
+  b.append(el("p", { class: "sub", style: "margin:6px 0" }, "הקוד: ", el("span", { class: "code", style: "font-size:16px;color:var(--ink)" }, c.code),
+    " · התחילו להשתמש: " + (c.seatsUsed || 0) + " מתוך " + c.seats + " סטודנטים · בתוקף עד " + fmtDate(c.expiresAt)));
+  if (stc === "off") return b;
+  const qr = el("div", { style: "margin-top:8px;background:#fff;padding:8px;border-radius:8px;width:max-content" }); qr.hidden = true;
+  const qrBtn = el("button", { class: "btn ghost sm" }, "הצגת QR");
+  qrBtn.addEventListener("click", () => {
+    if (!qr.childNodes.length && window.QRCode) { try { new QRCode(qr, { text: link, width: 168, height: 168, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {} }
+    qr.hidden = !qr.hidden; qrBtn.textContent = qr.hidden ? "הצגת QR" : "הסתרת QR";
+  });
+  const rv = el("button", { class: "btn ghost sm" }, "סגירת הקוד");
+  rv.addEventListener("click", async () => {
+    if (!confirm("לסגור את הקוד של \"" + (c.label || "הקורס") + "\"? סטודנטים לא יוכלו להיכנס איתו יותר.")) return;
+    await api("codeRevoke", { code: c.code }); await reload();
+  });
+  const wa = el("a", { class: "btn ghost sm", href: "https://wa.me/?text=" + encodeURIComponent(text), target: "_blank", rel: "noopener", style: "text-decoration:none" }, "שליחה בוואטסאפ");
+  b.append(el("div", { style: "display:flex;gap:6px;flex-wrap:wrap" }, copyBtn(text, "העתקת הודעה לסטודנטים"), copyBtn(link, "העתקת הקישור"), wa, qrBtn, rv), qr);
+  if (full) b.append(el("p", { class: "msg", style: "color:var(--hidden)" }, "כל המקומות נתפסו. סטודנטים שכבר התחילו ממשיכים כרגיל; לסטודנטים נוספים אפשר ליצור קוד נוסף לאותו קורס."));
+  return b;
 }
 
 renderAdmin();

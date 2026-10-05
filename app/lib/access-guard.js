@@ -47,7 +47,8 @@
         var b = t.split(".")[0].replace(/-/g, "+").replace(/_/g, "/");
         var bytes = Uint8Array.from(atob(b), function(ch){ return ch.charCodeAt(0); });
         var p = JSON.parse(new TextDecoder().decode(bytes));
-        id = p.k === "code" ? "c-" + p.c : p.k === "inst" ? "inst-" + p.inst : String(p.k || "anon");
+        // קוד קורס: כל הסטודנטים עם אותו קוד — מבדילים לפי מזהה המכשיר (s)
+        id = p.k === "code" ? "c-" + p.c + (p.s ? "-" + p.s : "") : p.k === "inst" ? "inst-" + p.inst : String(p.k || "anon");
       } else if (ss("sbe.session.homeUrl")) id = "h-" + ss("sbe.session.homeUrl");
     } catch(e){}
     return base + ":" + id;
