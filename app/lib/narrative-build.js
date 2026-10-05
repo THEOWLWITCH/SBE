@@ -32,7 +32,10 @@
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
       const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
-      const data = await res.json();
+      // תשובה ריקה או קטועה (החיבור נותק באמצע) — הודעה ברורה במקום "Unexpected end of JSON input"
+      const raw = await res.text();
+      let data;
+      try { data = JSON.parse(raw); } catch (e) { const x = new Error("החיבור לשרת נקטע באמצע (" + res.status + ")"); x.cut = true; throw x; }
       if (!res.ok || data.error) throw new Error(data.error || ("שגיאת שרת " + res.status));
       return data;
     } finally { clearTimeout(timer); }
@@ -212,8 +215,8 @@
         "החזירי אך ורק JSON תקין אחד, בלי טקסט לפני או אחרי. הסכימה:\n" + ROLE_SCHEMA,
       ].join("\n\n");
       const user = "השדות:\n" + fieldsText(fields, labels) + "\n\nכתבי את התוצר.";
-      const data = await postJson(server + "/api/complete", { system, messages: [{ role: "user", content: user }], maxTokens: 24000 }, 540000);
-      scn = extractJson(data.text);
+      const text = await runCompleteJob(server, { system, messages: [{ role: "user", content: user }], maxTokens: 24000 }, button);
+      scn = extractJson(text);
       if (!scn.characters || scn.characters.length !== 2 || !Array.isArray(scn.turningPoints)) throw new Error("המבנה שחזר מהמודל חסר");
       if (setStatus) setStatus("ok");
     } catch (e) {
@@ -290,19 +293,32 @@
     return "בונה את התרחיש — " + cur + " · " + Math.max(1, Math.round((elapsed || 0) / 60)) + " דק׳" + retry;
   }
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  async function pollJob(server, jobId, button) {
+  async function pollJob(server, jobId, button, want) {
     const t0 = Date.now(); let misses = 0;
     while (Date.now() - t0 < 45 * 60000) {
       await sleep(document.hidden ? 15000 : 7000);
       let d;
       try { d = await postJson(server + "/api/pipeline-status", { jobId }, 30000); misses = 0; }
       catch (e) { if (++misses >= 12) throw new Error("החיבור לשרת נקטע לזמן ארוך"); continue; } // ניתוק רגעי — ממשיכים לשאול
+      if (want === "text" && d.status === "done" && typeof d.text === "string") return d.text;
       if (d.status === "done" && d.scenario) return d.scenario;
       if (d.status === "error") throw new Error(d.error || "הבנייה נכשלה");
       if (d.status === "unknown" || d.status === "lost") { const e = new Error("השרת הופעל מחדש באמצע הבנייה"); e.lost = true; throw e; }
-      if (button) button.textContent = stageLine(d.stages, d.elapsed);
+      if (button) button.textContent = want === "text"
+        ? "כותבת את התוצר · " + Math.max(1, Math.round((d.elapsed || 0) / 60)) + " דק׳ (בדרך כלל 5–9)"
+        : stageLine(d.stages, d.elapsed);
     }
     throw new Error("timeout: הבנייה נמשכה יותר מ-45 דקות");
+  }
+  // קריאה ארוכה אחת למודל (תוצרי הורים ונוער) — ברקע, עם שאילת התקדמות. השרת הופעל מחדש באמצע → מתחילים שוב פעם אחת.
+  async function runCompleteJob(server, body, button, retried) {
+    const start = await postJson(server + "/api/complete", { ...body, async: true }, 90000);
+    if (!start.jobId) { if (typeof start.text === "string") return start.text; throw new Error(start.error || "המודל לא החזיר תשובה"); } // שרת ישן
+    try { return await pollJob(server, start.jobId, button, "text"); }
+    catch (e) {
+      if (e.lost && !retried) { if (button) button.textContent = "השרת התחיל מחדש — מתחילה שוב את הכתיבה..."; return await runCompleteJob(server, body, button, true); }
+      throw e;
+    }
   }
   async function runEduJob(server, body, button, retried) {
     const start = await postJson(server + "/api/pipeline", { ...body, async: true }, 90000);
