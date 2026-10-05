@@ -135,6 +135,15 @@ function readBody(req) {
 
 // עבודות צינור שרצות ברקע (בזיכרון; נמחקות אחרי 3 שעות)
 const PIPE_JOBS = new Map();
+// גם במאגר (05/10/2026): אם השרת מופעל מחדש באמצע בנייה (Deploy, עומס), מצב העבודה לא הולך לאיבוד —
+// עבודה שהסתיימה נשמרת, ועבודה שנקטעה מסומנת "lost" כדי שהדפדפן יתחיל אותה מחדש לבד.
+const BOOT_ID = randomUUID();
+const jobStore = () => (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) ? supabaseStore(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY) : null;
+const jobSave = (id, rec) => { const st = jobStore(); return st ? st.set('pj:' + id, rec).catch(e => console.error(`pipeline: שמירת מצב נכשלה — ${e.message}`)) : Promise.resolve(); };
+(async () => { // ניקוי עבודות ישנות (יותר מיממה)
+  const st = jobStore(); if (!st) return;
+  try { for (const r of await st.list('pj:')) if (r.value && Date.now() - (r.value.t0 || 0) > 864e5) await st.del(r.key); } catch {}
+})();
 
 const server = createServer(async (req, res) => {
   res._origin = req.headers.origin || '';
@@ -183,7 +192,15 @@ const server = createServer(async (req, res) => {
   //
   // POST /api/pipeline-status (04/10/2026) — מצב עבודה שרצה ברקע: { jobId } → { status, stages, elapsed, scenario?, error? }
   if (req.url === '/api/pipeline-status') {
-    const job = PIPE_JOBS.get(String(payload.jobId || ''));
+    const id = String(payload.jobId || '');
+    let job = PIPE_JOBS.get(id);
+    if (!job && /^[0-9a-f-]{36}$/.test(id) && jobStore()) {
+      try {
+        const rec = await jobStore().get('pj:' + id);
+        if (rec && rec.status === 'running' && rec.boot !== BOOT_ID) return sendJson(res, 200, { status: 'lost' });
+        if (rec) job = rec;
+      } catch {}
+    }
     if (!job) return sendJson(res, 200, { status: 'unknown' });
     return sendJson(res, 200, { status: job.status, stages: job.stages, elapsed: Math.round((Date.now() - job.t0) / 1000),
       ...(job.status === 'done' ? { scenario: job.scenario } : {}), ...(job.status === 'error' ? { error: job.error } : {}) });
@@ -204,16 +221,19 @@ const server = createServer(async (req, res) => {
       if (!meta.id) { const d = new Date(), p = (n) => String(n).padStart(2, '0'); meta.id = `TR-${p(d.getMonth() + 1)}${p(d.getDate())}-${randomUUID().slice(0, 8)}`; }
       const job = { status: 'running', stages: {}, t0: Date.now() };
       PIPE_JOBS.set(jobId, job);
+      jobSave(jobId, { status: 'running', t0: job.t0, boot: BOOT_ID, stages: {} });
       setTimeout(() => PIPE_JOBS.delete(jobId), 3 * 3600 * 1000).unref?.();
       sendJson(res, 200, { jobId });
       runPipeline(payload.input, provider, { sourceLibrary: payload.sourceLibrary || [], onStage: (s, st) => { job.stages[s] = st; } })
         .then((out) => {
           const scenario = toScenario(out, { input: payload.input, meta });
           job.scenario = scenario; job.status = 'done';
+          jobSave(jobId, { status: 'done', t0: job.t0, boot: BOOT_ID, stages: job.stages, scenario });
           console.log(`pipeline(async): הצליח אחרי ${Math.round((Date.now() - job.t0) / 1000)} שניות`);
           saveScenario(scenario, meta).catch(e => console.error(`supabase: השמירה נכשלה — ${e.message}`));
         })
-        .catch((e) => { job.status = 'error'; job.error = `שגיאת ספק: ${e.message}`; console.error(`pipeline(async): נכשל — ${e.message}`); });
+        .catch((e) => { job.status = 'error'; job.error = `שגיאת ספק: ${e.message}`; console.error(`pipeline(async): נכשל — ${e.message}`);
+          jobSave(jobId, { status: 'error', t0: job.t0, boot: BOOT_ID, error: job.error }); });
       return;
     }
     const finish = startKeepAlive(res);
