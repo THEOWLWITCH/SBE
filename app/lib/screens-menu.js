@@ -18,9 +18,9 @@ window.SBE_SCREENS = [
       { file:'sources-library.html', label:'ספריית המקורות', who:'כל מי שנכנס/ה' },
     ]},
     { title:'סימולציה — שיחות מאתגרות', items:[
-      { file:'input-screen.html', label:'יצירת תרחיש — סטודנטים.יות', who:'מנחות סטודנטים' },
-      { file:'parent-input-screen.html', label:'מסך קלט הורים', who:'מנחות הורים' },
-      { file:'student-input-screen.html', label:'מסך קלט נוער', who:'מנחות נוער' },
+      { file:'input-screen.html', label:'יצירת תרחיש — סטודנטיות.ים', who:'מנחות סטודנטים' },
+      { file:'parent-input-screen.html', label:'יצירת תרחיש — הורים', who:'מנחות הורים' },
+      { file:'student-input-screen.html', label:'יצירת תרחיש — נוער', who:'מנחות נוער' },
       { file:'search.html', label:'חיפוש במאגר התרחישים', who:'מנחות' },
       { file:'facilitator-screen.html', label:'מסך הסדנה', who:'מנחות' },
       { file:'observation-sheet.html', label:'דף צפייה (טלפון)', who:'מתנסות בסדנה' },
