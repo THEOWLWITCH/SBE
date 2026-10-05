@@ -299,21 +299,25 @@
       catch (e) { if (++misses >= 12) throw new Error("החיבור לשרת נקטע לזמן ארוך"); continue; } // ניתוק רגעי — ממשיכים לשאול
       if (d.status === "done" && d.scenario) return d.scenario;
       if (d.status === "error") throw new Error(d.error || "הבנייה נכשלה");
-      if (d.status === "unknown") throw new Error("השרת הופעל מחדש באמצע הבנייה");
+      if (d.status === "unknown" || d.status === "lost") { const e = new Error("השרת הופעל מחדש באמצע הבנייה"); e.lost = true; throw e; }
       if (button) button.textContent = stageLine(d.stages, d.elapsed);
     }
     throw new Error("timeout: הבנייה נמשכה יותר מ-45 דקות");
   }
-  async function runEduJob(server, body, button) {
-    let start;
-    try { start = await postJson(server + "/api/pipeline", { ...body, async: true }, 60000); }
-    catch (e) { throw e; }
+  async function runEduJob(server, body, button, retried) {
+    const start = await postJson(server + "/api/pipeline", { ...body, async: true }, 90000);
     if (!start.jobId) { // שרת ישן בלי מצב רקע — הבקשה הארוכה הרגילה
       if (start.scenario) return start.scenario;
       throw new Error(start.error || "הצינור לא החזיר תרחיש");
     }
-    try { localStorage.setItem(JOB_KEY, JSON.stringify({ jobId: start.jobId, at: Date.now(), title: body.input && body.input.title || "" })); } catch (e) {}
+    // גם הבקשה עצמה נשמרת, כדי שאפשר יהיה להתחיל מחדש גם אחרי רענון של הדף
+    try { localStorage.setItem(JOB_KEY, JSON.stringify({ jobId: start.jobId, at: Date.now(), title: body.input && body.input.title || "", body, retried: !!retried })); } catch (e) {}
     try { return await pollJob(server, start.jobId, button); }
+    catch (e) {
+      // השרת הופעל מחדש באמצע (Deploy, עומס): מתחילים שוב לבד — פעם אחת
+      if (e.lost && !retried) { if (button) button.textContent = "השרת התחיל מחדש — מתחילה שוב את הבנייה..."; return await runEduJob(server, body, button, true); }
+      throw e;
+    }
     finally { try { localStorage.removeItem(JOB_KEY); } catch (e) {} }
   }
   // חזרה לדף באמצע בנייה: ממשיכים לחכות לאותה עבודה (עד 3 שעות מתחילתה)
@@ -323,7 +327,15 @@
     if (!job || !job.jobId || Date.now() - job.at > 3 * 3600000) { try { localStorage.removeItem(JOB_KEY); } catch (e) {} return; }
     const done = busy(button, "ממשיכה לבנות את התרחיש שהתחלת" + (job.title ? " (" + job.title + ")" : "") + "...");
     let scn = null;
-    try { scn = await pollJob(server, job.jobId, button); if (setStatus) setStatus("ok"); }
+    try {
+      try { scn = await pollJob(server, job.jobId, button); }
+      catch (e) {
+        if (e.lost && job.body && !job.retried) { button.textContent = "השרת התחיל מחדש — מתחילה שוב את הבנייה..."; scn = await runEduJob(server, job.body, button, true); }
+        else if (e.lost) { done(); try { localStorage.removeItem(JOB_KEY); } catch (x) {} return; } // בנייה ישנה שכבר לא קיימת — מנקים בשקט, בלי הודעת שגיאה
+        else throw e;
+      }
+      if (setStatus) setStatus("ok");
+    }
     catch (e) { if (setStatus) setStatus("mock"); show("התוצר לא נבנה", notBuilt(e.message)); return; }
     finally { done(); try { localStorage.removeItem(JOB_KEY); } catch (e) {} }
     showEdu(scn, show);
