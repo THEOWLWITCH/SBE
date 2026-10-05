@@ -571,7 +571,7 @@ function pHome(){
 function pCodes(){
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"קודים"),
-    el("p",{class:"sub"},"שני סוגים. קוד המוסד מנפיקה את, וקוד הסדנה נוצר לבד כשמנחה פותחת סדנה."));
+    el("p",{class:"sub"},"שני סוגים. קוד המוסד מנפיקה את, והקוד לקבוצה של סדנה נוצר לבד כשמנחה פותחת סדנה."));
 
   // קוד המוסד נשמר ונבדק בשרת — מוצג רק אחרי סיסמת מנהלת המוסד.
   if (!gate(w, myInst, async () => { myInst = await accessCall("instGetCode", { inst: D.instName }); }, "סיסמת מנהלת המוסד")) return w;

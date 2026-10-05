@@ -230,12 +230,14 @@ function renderEntry(){
   view.textContent = "";
   const card = el("div",{class:"card"});
   const inn = el("div",{class:"in"});
-  const code = el("input",{class:"code", placeholder:"XXXX-XXXX", autocomplete:"off", spellcheck:"false", "aria-label":"הקוד שלך"});
+  const code = el("input",{class:"code", placeholder:"XXXX-XXXX או 6 ספרות", autocomplete:"off", spellcheck:"false", "aria-label":"הקוד שלך"});
   const err = el("div",{class:"err"},""); err.hidden = true;
   const btn = el("button",{class:"primary"},"כניסה");
   const submit = async () => {
     const c = fixCodeKeys(code.value.replace(/[‎‏؜]/g, "")).trim();
     if (!c) { err.textContent = "צריך להקליד את הקוד."; err.hidden = false; return; }
+    // קוד לקבוצה של סדנה (6 ספרות, 05/10/2026): אותו שדה — ממשיכים לבחירת תפקיד ושם
+    if (/^\d{6}$/.test(c)) { err.hidden = true; const alt = $("altField"); alt.hidden = false; alt.textContent = ""; alt.append(buildWorkshopPicker(c)); alt.scrollIntoView({ behavior:"smooth", block:"center" }); return; }
     btn.disabled = true; btn.textContent = "בודקת... (לפעמים עד דקה)";
     const res = await codeLogin(c);
     btn.disabled = false; btn.textContent = "כניסה";
@@ -266,21 +268,19 @@ function renderEntry(){
   // קישור מהמרצה (entry.html?c=קוד) — הקוד כבר ממולא, נשאר רק ללחוץ "כניסה"
   const pre = fixCodeKeys(new URLSearchParams(location.search).get("c") || "").replace(/[^A-Z0-9-]/g, "").slice(0, 12);
   if (pre) code.value = pre;
-  inn.append(el("p",{class:"hint"},"הקלידו את הקוד שקיבלתם — מהמוסד, מהמרצה או ממנהלת המערכת. הקוד קובע מה פתוח לכם."),
+  inn.append(el("p",{class:"hint"},"הקלידו את הקוד שקיבלתם: קוד אישי, או קוד לקבוצה מהמרצה או מהמנחה (גם 6 ספרות מהסדנה). הקוד קובע מה פתוח לכם."),
     el("label",{},"הקוד שלך"), code, err, btn);
   card.append(el("h2",{},"כניסה למערכת"), inn);
   view.append(card);
 
-  // קישורים משניים: קוד סדנה, כניסת ניהול, אודות, חידוש מנוי
+  // קישורים משניים: כניסת ניהול, אודות, חידוש מנוי (קוד לקבוצה של סדנה נכנס בשדה הראשי)
   const more = el("div",{class:"card"});
   const minn = el("div",{class:"in"});
   const alt = el("div",{id:"altField"}); alt.hidden = true;
   const links = el("div",{class:"morelinks"});
-  const wsBtn = el("button",{class:"switchlink"},"יש לי קוד סדנה");
   const admBtn = el("button",{class:"switchlink"},"כניסת ניהול");
-  wsBtn.addEventListener("click", () => { alt.hidden = false; alt.textContent = ""; alt.append(buildWorkshopPicker()); });
   admBtn.addEventListener("click", () => { alt.hidden = false; alt.textContent = ""; alt.append(buildAdminField("sys")); });
-  links.append(wsBtn, el("span",{class:"sep"},"·"), admBtn, el("span",{class:"sep"},"·"),
+  links.append(admBtn, el("span",{class:"sep"},"·"),
     el("a",{href:"about.html"},"אודות המערכת"), el("span",{class:"sep"},"·"), el("a",{href:"renew.html"},"מנוי — חידוש או רכישה"));
   minn.append(links, alt);
   more.append(minn);
@@ -313,8 +313,8 @@ function enterGuest(){
   location.href = "resilience-advisor.html";
 }
 
-// קוד סדנה: בוחרים תפקיד מתוך ארבעה, ואז קוד + שם (כמו קודם).
-function buildWorkshopPicker(){
+// קוד לקבוצה של סדנה: בוחרים תפקיד מתוך ארבעה, ואז קוד + שם.
+function buildWorkshopPicker(prefill){
   const wrap = el("div",{});
   const pick = el("div",{class:"role-pick-row"});
   const field = el("div",{});
@@ -322,11 +322,11 @@ function buildWorkshopPicker(){
     const b = el("button",{type:"button"}, l);
     b.addEventListener("click", () => {
       pick.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
-      field.textContent = ""; field.append(buildWorkshopField(k));
+      field.textContent = ""; field.append(buildWorkshopField(k, prefill));
     });
     pick.append(b);
   });
-  wrap.append(el("p",{class:"hint"},"התפקיד שלך בסדנה:"), pick, field);
+  wrap.append(el("p",{class:"hint"}, prefill ? "קוד לקבוצה של סדנה ✓ — מה התפקיד שלך בסדנה?" : "התפקיד שלך בסדנה:"), pick, field);
   return wrap;
 }
 
@@ -354,11 +354,12 @@ const ROLE_LABEL = { trainee:"סטודנט/ית", actor:"שחקנית", parent:"
 
 const WORKSHOP_ROLES = ["trainee","parent","youth","actor"];
 
-function buildWorkshopField(role){
+function buildWorkshopField(role, prefill){
   const wrap = el("div",{});
   const err = el("div",{class:"err"},""); err.hidden = true;
   const code = el("input",{class:"code", placeholder:"6 ספרות", maxlength:"6", inputmode:"numeric"});
   const nm = el("input",{placeholder:"השם שלך"});
+  if (prefill) code.value = prefill;
   const btn = el("button",{class:"primary"},"כניסה");
   const submit = () => {
     const c = fixCodeKeys(code.value.replace(/[‎‏؜]/g, "")).trim();
@@ -381,8 +382,8 @@ function buildWorkshopField(role){
   btn.addEventListener("click", submit);
   nm.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
   wrap.append(
-    el("p",{class:"hint"},"הקוד שהמנחה הציגה בסדנה. בלי חשבון ובלי הרשמה — הקוד פג בסוף היום."),
-    el("label",{},"קוד הסדנה"), code,
+    el("p",{class:"hint"},"הקוד לקבוצה שהמנחה הציגה בסדנה. בלי חשבון ובלי הרשמה — הקוד פג בסוף היום."),
+    el("label",{},"קוד לקבוצה"), code,
     el("label",{},"שם"), nm, err, btn);
   return wrap;
 }

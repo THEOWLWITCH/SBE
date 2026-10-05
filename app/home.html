@@ -145,7 +145,7 @@ const fmtDate = (ymd) => ymd ? ymd.split("-").reverse().join(".") : "";
 const PERM_LABEL = {
   fac_trainee: "הנחיית סטודנטים", fac_parent: "הנחיית הורים", fac_youth: "הנחיית נוער",
   conv: "תכנון שיחה", activity: "תכנון פעילות", academic: "משוב לעבודות",
-  lecturer: "קוד קורס לסטודנטים", resilience: "חוסן חברתי", leadership: "נוגי — יועצת למנהיגות תומכת חוסן", practi: "פרקטי — יועצת לחוסן", journey: "מסע אל החוסן", writer: "כתיבה מקדמת חוסן",
+  lecturer: "קוד לקבוצה — משוב לעבודות", resilience: "חוסן חברתי", leadership: "נוגי — יועצת למנהיגות תומכת חוסן", practi: "פרקטי — יועצת לחוסן", journey: "מסע אל החוסן", writer: "כתיבה מקדמת חוסן",
 };
 const PRESETS = [
   ["מחנך/ת", ["resilience"]], ["פרקטי בלבד", ["practi"]], ["הנהלה", ["leadership", "resilience"]], ["מנחה סטודנטים", ["fac_trainee"]], ["מנחה הורים", ["fac_parent"]],
@@ -185,7 +185,7 @@ async function api(action, extra = {}) {
   if (has("fac_trainee")) T.push(["input-screen.html", "יצירת תרחיש — סטודנטיות.ים", "דמויות ופרמטרים; השאר מוצע על ידי המערכת"]);
   if (has("fac_parent")) T.push(["parent-input-screen.html", "יצירת תרחיש — הורים", "שתי דמויות, ארבע גישות הוריות"]);
   if (has("fac_youth")) T.push(["student-input-screen.html", "יצירת תרחיש — נוער", "משחק תפקידים בין שני בני נוער"]);
-  if (fac) T.push(["facilitator-screen.html", "פתיחת סדנה", "קוד הסדנה נוצר אוטומטית"],
+  if (fac) T.push(["facilitator-screen.html", "פתיחת סדנה", "נוצר קוד לקבוצה לסדנה"],
     ["feedback-results.html", "תוצאות משוב", "משוב מנחה, מתנסה וצופה על הסדנאות"],
     ["search.html", "חיפוש במאגר התרחישים", "תרחישי המוסד והמאגר המשותף"]);
   if (has("resilience")) T.push(["resilience-team.html", "חוסן חברתי", "פתיחת כיתה, QR לשאלון, תוצאות וסיכום והמלצות"]);
@@ -204,17 +204,6 @@ async function api(action, extra = {}) {
     T.concat([["sources-library.html", "ספריית המקורות", "המקורות התיאורטיים של המערכת"]])
       .forEach(([h, t, d]) => g.append(el("a", { class: "tile", href: h }, el("b", {}, t), el("span", {}, d))));
     box.append(g);
-  }
-  // מנחת סימולציה: איך המשתתפות נכנסות (05/10/2026 — "מנחה צריכה לתת קודים לסטודנטיות — איפה זה קורה?")
-  if (PERMS.some(p => /^fac_/.test(p))) {
-    const c = el("details", { class: "card", style: "margin-top:12px" });
-    c.append(el("summary", { style: "cursor:pointer;font-weight:700" }, "🎟 איך המשתתפות בסדנה נכנסות — קוד סדנה"),
-      el("ol", { style: "margin:10px 0 4px;padding-inline-start:20px;line-height:1.8;font-size:14px" },
-        el("li", {}, "פותחים סדנה ב", el("a", { href: "facilitator-screen.html" }, "\"פתיחת סדנה\""), " — נוצר ", el("b", {}, "קוד סדנה בן 6 ספרות"), " וקישור למשוב עם QR."),
-        el("li", {}, "המשתתפות נכנסות ל-be-good.co.il ← ", el("b", {}, "\"יש לי קוד סדנה\""), " ← בוחרות תפקיד (מתנסה, שחקנית, הורה, נוער) ומקלידות את הקוד."),
-        el("li", {}, "מה פתוח להן: דף צפייה, תרגול עצמי, משוב, וכלי ההכנה של התפקיד שלהן. ", el("b", {}, "תוצרי הסימולציה"), " (גרסת המנחה, השחקנית והמתנסה) נשארים אצלך בלבד."),
-        el("li", {}, "הקוד פעיל 24 שעות. אין צורך בקוד אישי לכל משתתפת.")));
-    box.append(c);
   }
 }
 
@@ -251,8 +240,8 @@ async function renderAdmin() {
   tree.append(el("summary", { style: "cursor:pointer;font-weight:700" }, "🌳 עץ ההרשאות במוסד — מי נותן/ת קוד למי"),
     el("ul", { style: "margin:10px 0 4px;padding-inline-start:20px;line-height:1.8;font-size:14px" },
       el("li", {}, el("b", {}, "את/ה"), " מפיק/ה כאן ", el("b", {}, "קוד אישי לכל איש/אשת צוות"), ", ובוחר/ת לו/ה כלים — רק מתוך מה שפתוח למוסד."),
-      el("li", {}, el("b", {}, "מרצה"), " (הרשאת \"" + PERM_LABEL.lecturer + "\") יוצר/ת במסך שלו/ה ", el("b", {}, "קוד אחד לכל קורס"), " — הסטודנטים נכנסים איתו למשוב לעבודות."),
-      el("li", {}, el("b", {}, "מנחת סימולציה"), " פותחת סדנה ונותנת למשתתפות ", el("b", {}, "קוד סדנה"), " (6 ספרות, 24 שעות) — לסטודנטיות, לשחקניות, להורים ולנוער."),
+      el("li", {}, el("b", {}, "מרצה"), " (הרשאת \"" + PERM_LABEL.lecturer + "\") יוצר/ת ", el("b", {}, "קוד לקבוצה לקורס"), " — הסטודנטים נכנסים איתו למשוב לעבודות."),
+      el("li", {}, el("b", {}, "מנחת סימולציה"), " פותחת סדנה ונותנת למשתתפות ", el("b", {}, "קוד לקבוצה לסדנה"), " (6 ספרות, 24 שעות) — לסטודנטיות, לשחקניות, להורים ולנוער."),
       el("li", {}, el("b", {}, "מחנך/ת עם \"חוסן חברתי\""), " פותח/ת כיתה ושולח/ת לתלמידים ", el("b", {}, "קישור או QR"), " לשאלון — בלי קודים.")),
     el("p", { class: "sub", style: "margin:4px 0 0" }, "כך את/ה מנהל/ת רק את קודי הצוות, וכל איש/אשת צוות מעביר/ה את הגישה הלאה בעצמו/ה."));
   card.append(tree);
@@ -342,12 +331,44 @@ async function renderAdmin() {
 }
 
 // ── מרצה: "משוב לעבודות" ──
-// קוד קורס (05/10/2026): קוד אחד לכל הקורס, עם קישור, QR והודעה מוכנה — ולכל סטודנט/ית מכסה משלו/ה
+// קוד לקבוצה לקורס (05/10/2026): קוד אחד לכל הקורס, עם קישור, QR והודעה מוכנה — ולכל סטודנט/ית מכסה משלו/ה
 // (השרת סופר לפי מכשיר). הקודים האישיים נשארו כאפשרות משנית, מקופלת.
-async function renderLecturer() {
-  if (!has("lecturer")) return;
+// ── קוד לקבוצה (05/10/2026): כרטיס אחד — לסדנה (היום) או לקורס (לאורך זמן) ──
+// "קוד אחד לכל הקבוצה, לא קוד לכל משתתפת". לסדנה: נוצר כשפותחים סדנה (facilitator-screen.html, 6 ספרות,
+// 24 שעות, בחירת תפקיד בכניסה). לקורס: משוב לעבודות, עם מכסת משובים לכל סטודנט/ית.
+function renderGroupCode() {
+  const fac = PERMS.some(p => /^fac_/.test(p)), lect = has("lecturer");
+  if (!fac && !lect) return;
   const box = $("lecturer"); box.textContent = "";
-  box.append(el("h2", {}, "משוב לעבודות — קוד לקורס"));
+  box.append(el("h2", {}, "🎟 קוד לקבוצה"));
+  box.append(el("p", { class: "sub", style: "margin:-4px 0 10px;color:var(--muted)" }, "קוד אחד לכל הקבוצה — לא קוד לכל משתתפת. כולן נכנסות איתו באותו שדה במסך הכניסה."));
+  const panes = {};
+  const seg = el("div", { class: "row", style: "gap:8px;margin-bottom:10px" });
+  const opts = [];
+  if (fac) opts.push(["ws", "לסדנה — היום", "סימולציה: 6 ספרות, 24 שעות"]);
+  if (lect) opts.push(["course", "לקורס — לאורך זמן", "משוב לעבודות: עד סמסטר"]);
+  const show = (k) => { Object.entries(panes).forEach(([kk, pn]) => { pn.hidden = kk !== k; }); seg.querySelectorAll("button").forEach(b => b.classList.toggle("ghost", b.dataset.k !== k)); };
+  if (opts.length > 1) {
+    opts.forEach(([k, t, d]) => { const b = el("button", { class: "btn", type: "button", style: "flex:1;min-width:160px;text-align:start" }, el("b", {}, t), el("div", { style: "font-size:12px;font-weight:500;opacity:.8" }, d));
+      b.dataset.k = k; b.addEventListener("click", () => show(k)); seg.append(b); });
+    box.append(seg);
+  }
+  if (fac) {
+    const pn = el("div", { class: "card" }); panes.ws = pn;
+    pn.append(el("h3", {}, "קוד לקבוצה — לסדנה"),
+      el("ol", { style: "margin:6px 0 10px;padding-inline-start:20px;line-height:1.8;font-size:14px" },
+        el("li", {}, "פותחים סדנה — נוצר ", el("b", {}, "קוד לקבוצה בן 6 ספרות"), ", וקישור למשוב עם QR."),
+        el("li", {}, "המשתתפות מקלידות את הקוד במסך הכניסה של be-good.co.il, ובוחרות תפקיד: מתנסה, שחקנית, הורה או נוער."),
+        el("li", {}, "פתוח להן: דף צפייה, תרגול עצמי, משוב וכלי ההכנה של התפקיד. ", el("b", {}, "תוצרי הסימולציה"), " נשארים אצלך בלבד."),
+        el("li", {}, "הקוד פעיל 24 שעות.")),
+      el("a", { class: "btn", href: "facilitator-screen.html", style: "text-decoration:none;display:inline-block" }, "פתיחת סדנה ויצירת קוד לקבוצה"));
+    box.append(pn);
+  }
+  if (lect) { const pn = el("div", {}); panes.course = pn; box.append(pn); renderLecturer(pn); }
+  show(opts[0][0]);
+}
+
+async function renderLecturer(box) {
   const card = el("div", { class: "card" });
   card.append(el("p", { class: "sub" }, "טוען..."));
   box.append(card);
@@ -362,7 +383,7 @@ async function renderLecturer() {
     const room = Math.max(0, lim.maxActive - active);
 
     // ── קוד חדש לקורס ──
-    card.append(el("h3", {}, "קוד אחד לכל הקורס"),
+    card.append(el("h3", {}, "קוד לקבוצה — לקורס (משוב לעבודות)"),
       el("p", { class: "sub" }, "שולחים לסטודנטים קישור אחד או QR. כל סטודנט/ית מקבל/ת עד " + lim.uses +
         " הפקות משוב משלו/ה, וכשכל המקומות נתפסים — הקוד נסגר לסטודנטים חדשים."));
     const name = el("input", { placeholder: "למשל: סמינר בהוראה, תשפ״ז", maxlength: "60" });
@@ -370,7 +391,7 @@ async function renderLecturer() {
     const days = el("select", {}, ...[["7", "שבוע"], ["14", "שבועיים"], ["30", "חודש"], ["60", "חודשיים"], ["120", "סמסטר (4 חודשים)"]]
       .map(([v, t]) => el("option", { value: v }, t)));
     days.value = "30";
-    const go = el("button", { class: "btn", disabled: room === 0 }, "יצירת קוד לקורס");
+    const go = el("button", { class: "btn", disabled: room === 0 }, "יצירת קוד לקבוצה");
     const msg = el("div", {});
     go.addEventListener("click", async () => {
       if (!name.value.trim()) { msg.className = "msg err"; msg.textContent = "כדאי לתת שם לקורס, כדי שתזהי אותו ברשימה."; name.focus(); return; }
@@ -394,7 +415,7 @@ async function renderLecturer() {
     det.append(el("summary", { style: "cursor:pointer;font-weight:700;font-size:14px" }, "קודים אישיים — לסטודנט/ית יחיד/ה (למשל השלמה או הארכה)"));
     const mine = d.codes.filter(c => c.kind === "student");
     det.append(el("p", { class: "sub", style: "margin-top:8px" }, "כל קוד אישי מיועד לסטודנט/ית אחד/ת: בתוקף " + lim.days + " ימים ומאפשר עד " + lim.uses +
-      " הפקות משוב. אפשר להחזיק עד " + lim.maxActive + " קודים פעילים בו-זמנית (קוד קורס נספר כקוד אחד). פעילים עכשיו: " + active + "."));
+      " הפקות משוב. אפשר להחזיק עד " + lim.maxActive + " קודים פעילים בו-זמנית (קוד לקבוצה נספר כקוד אחד). פעילים עכשיו: " + active + "."));
     const cnt = el("input", { type: "number", min: "1", max: String(Math.max(1, room)), value: String(Math.min(room || 1, 1)) });
     const lbl = el("input", { placeholder: "שם או קורס (לא חובה)", maxlength: "60" });
     const go2 = el("button", { class: "btn ghost", disabled: room === 0 }, "הפקת קודים אישיים");
@@ -435,7 +456,7 @@ async function renderLecturer() {
   draw();
 }
 
-// כרטיס של קוד קורס: הקוד, קישור, QR והודעה מוכנה לשליחה.
+// כרטיס של קוד לקבוצה לקורס: הקוד, קישור, QR והודעה מוכנה לשליחה.
 function courseBox(c, lim, isNew, reload) {
   let [stl, stc] = statusOf(c);
   const full = stc === "ok" && c.seatsUsed >= c.seats;
@@ -472,7 +493,7 @@ function courseBox(c, lim, isNew, reload) {
 }
 
 renderAdmin();
-renderLecturer();
+renderGroupCode();
 </script>
 </body>
 </html>
