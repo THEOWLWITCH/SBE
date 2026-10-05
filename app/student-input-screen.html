@@ -162,7 +162,9 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
   border:1px solid var(--hair);border-radius:6px;padding:7px;background:var(--surface);}
 .traits-combo.open .traits-panel{display:block;}
 .traitfield{display:flex;flex-direction:column;gap:5px;}
-.traitgrp{border:1px solid var(--hair);border-radius:6px;overflow:hidden;background:var(--surface);}
+.traitgrp{border:1px solid var(--hair);border-radius:6px;overflow:hidden;background:var(--surface);flex:0 0 auto;}
+.traitrow label input[type=checkbox]{width:auto;flex:0 0 auto;margin:0;}
+.traitrow label{flex-wrap:wrap;}
 .traitgrp>summary{padding:6px 9px;background:var(--ground);font-size:13.5px;font-weight:700;
   cursor:pointer;color:var(--muted);list-style:none;}
 .traitgrp>summary::-webkit-details-marker{display:none;}
