@@ -1018,6 +1018,23 @@ async function handleWorkshopFeedback(store, body) {
   const { action } = body;
   const w = String(body.w || '');
   const wOk = /^[a-z0-9]{8,32}$/.test(w);
+  // כניסת משתתפת עם קוד הסדנה (6 ספרות) — ציבורי: מחזיר את מזהה הסדנה רק לקוד פעיל (24 שעות)
+  if (action === 'wfJoin') {
+    const code = String(body.code || '').replace(/\D/g, '');
+    if (code.length !== 6) return [400, { error: 'bad code' }];
+    const map = await store.get('wfc:' + code);
+    if (!map || Date.now() - Date.parse(map.at) > 864e5) { await pause(); return [404, { error: 'no such workshop' }]; }
+    const ws = await store.get('wf:' + map.w);
+    if (!ws) return [404, { error: 'no such workshop' }];
+    return [200, { ok: true, w: ws.w, track: ws.track || 'edu', scenario: ws.scenario || '' }];
+  }
+  // הגדרות טופס המשוב של סדנה (המדדים שנבחרו) — ציבורי, בלי המשובים עצמם. כך הקישור והקוד ה-QR קצרים.
+  if (action === 'wfGet') {
+    if (!wOk) return [400, { error: 'bad workshop' }];
+    const ws = await store.get('wf:' + w);
+    if (!ws) return [404, { error: 'no such workshop' }];
+    return [200, { w: ws.w, m: ws.m || '', c: ws.c || '', scenario: ws.scenario || '', track: ws.track || 'edu' }];
+  }
   if (action === 'wfSubmit') {
     if (!wOk) return [400, { error: 'bad workshop' }];
     const ws = await store.get('wf:' + w);
@@ -1039,7 +1056,16 @@ async function handleWorkshopFeedback(store, body) {
     if (!wOk) return [400, { error: 'bad workshop' }];
     const old = await store.get('wf:' + w);
     if (old) return [200, { ok: true, existed: true }];
+    // קוד הסדנה (6 ספרות) — ייחודי בין הסדנאות הפעילות; אם תפוס, הדפדפן מגריל קוד אחר
+    const code = String(body.code || '').replace(/\D/g, '');
+    if (code) {
+      if (code.length !== 6) return [400, { error: 'bad code' }];
+      const taken = await store.get('wfc:' + code);
+      if (taken && Date.now() - Date.parse(taken.at) < 864e5) return [409, { error: 'code taken' }];
+      await store.set('wfc:' + code, { w, at: new Date().toISOString() });
+    }
     await store.set('wf:' + w, { w, owner: who.code, inst: jrClip(body.inst || who.inst, 120), fac: jrClip(body.fac, 80), scenario: jrClip(body.scenario, 160),
+      track: ['edu', 'parents', 'youth'].includes(body.track) ? body.track : 'edu', code, m: jrClip(body.m, 600), c: jrClip(body.c, 3000),
       created: new Date().toISOString(), entries: [] });
     return [200, { ok: true }];
   }
@@ -1161,7 +1187,7 @@ export async function handleAccess(store, body) {
   if (action === 'fbSubmit' || action === 'fbList' || action === 'fbDelete') return handleFeedbackInbox(store, body);
   if (/^crit(List|Propose|Mine|Use|Admin|Approve|Reject|Remove)$/.test(action || '')) return handleReviewCriteria(store, body);
   if (/^jr[A-Z]/.test(action || '')) return handleJourney(store, body);
-  if (/^wf(Open|Submit|List|Delete)$/.test(action || '')) return handleWorkshopFeedback(store, body);
+  if (/^wf(Open|Submit|List|Delete|Join|Get)$/.test(action || '')) return handleWorkshopFeedback(store, body);
 
   const sysTok = await verifyToken(store, body?.token);
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);

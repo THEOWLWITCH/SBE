@@ -248,9 +248,31 @@
     scn.characters.forEach((c) => { c.badge = c.badge || ("כרטיס דמות · " + c.name); c.pronoun = c.pronoun || "את"; });
     scn.turningPoints.forEach((t, i) => { t.n = t.n || i + 1; if (!keys.includes(t.who)) t.who = keys[0]; });
 
+    saveWorkshopScenario(scn, track);
     const { files } = window.SBE_DOC.renderRoleDocs(scn);
     show("התוצר — " + scn.name,
       docsPanel({ files, mock: false, saveKey: "sbe." + track + ".built.v1", meta: { id: scn.id, name: scn.name, creator: scn.creator, date: scn.date } }));
+  }
+
+  // ── תרחישים לסדנה (05/10/2026) ──────────────────────────────────
+  // כל תרחיש שנבנה נשמר במכשיר כ"כרטיס סדנה" (שם, שאלות פתיחה, תפניות, מה לראות, תחקיר),
+  // כדי שהמנחה תבחר אותו במסך הסדנה (facilitator-screen.html) — סטודנטים, הורים או נוער.
+  const WS_KEY = "sbe.workshop.scenarios.v1";
+  const GENERIC_PRE = ["מתי לאחרונה הייתם בשיחה שבה שני הצדדים צדקו?", "מה עוזר לכם להישאר בשיחה כשהיא נעשית קשה?"];
+  function saveWorkshopScenario(scn, track) {
+    try {
+      const f = scn.facilitator || {};
+      const card = {
+        id: scn.id || (track + "-" + Date.now()), track, name: scn.name || "תרחיש", sub: scn.subtitle || "",
+        lang: scn.language || "עברית", minutes: Number(String(scn.duration || "5").replace(/\D+/g, "")) || 5,
+        pre: (f.preQuestions && f.preQuestions.length ? f.preQuestions : GENERIC_PRE).slice(0, 4),
+        core: (scn.turningPoints || []).filter((t) => t.core).slice(0, 3).map((t) => ({ n: t.n, name: t.name || "", demands: t.demands || "" })),
+        watch: (f.watchFor || scn.watch || []).slice(0, 6), debrief: (f.debrief || scn.debrief || []).slice(0, 6), at: Date.now(),
+      };
+      const list = JSON.parse(localStorage.getItem(WS_KEY) || "[]").filter((x) => x.id !== card.id);
+      list.unshift(card);
+      localStorage.setItem(WS_KEY, JSON.stringify(list.slice(0, 15)));
+    } catch (e) {}
   }
 
   // ── עבודת רקע בשרת (04/10/2026) ─────────────────────────────────
@@ -307,6 +329,7 @@
     showEdu(scn, show);
   }
   function showEdu(scn, show) {
+    saveWorkshopScenario(scn, "edu");
     const { files, leaked } = window.SBE_DOC.renderEduDocs(scn);
     if (leaked.length) console.warn("⚠ דלף בגרסת המתנסה:", leaked[0]);
     const prefix = (scn.id || "scenario") + "-";

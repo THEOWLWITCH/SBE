@@ -326,7 +326,7 @@ function buildWorkshopPicker(){
 
 // יציאה / התחלת כניסה חדשה: מוחקת את הכניסה של הלשונית ואת העותק שלה
 // ללשוניות חדשות (lib/access-guard.js).
-const SESSION_KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules", "sbe.session.perms", "sbe.session.info"];
+const SESSION_KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules", "sbe.session.perms", "sbe.session.info", "sbe.session.wf"];
 function clearSession(){
   try {
     SESSION_KEYS.forEach(k => sessionStorage.removeItem(k));
@@ -359,10 +359,17 @@ function buildWorkshopField(role){
     if (c.length !== 6 || !/^\d{6}$/.test(c)) { err.textContent = "הקוד הוא שש ספרות."; err.hidden = false; return; }
     if (!name) { err.textContent = "צריך גם שם."; err.hidden = false; return; }
     err.hidden = true;
-    clearSession();
-    persistSession(name, ROLE_LABEL[role]);
-    try { sessionStorage.setItem("sbe.session.homeUrl", "entry.html?home=" + role); } catch(e){}
-    renderWorkshopSuccess(role, name);
+    // הקוד נבדק בשרת (05/10/2026): רק סדנה שהמנחה פתחה היום. כך גם המשוב משויך לסדנה הנכונה.
+    btn.disabled = true; btn.textContent = "בודקת את הקוד...";
+    fetch("https://sbe-server.onrender.com/api/access", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ action:"wfJoin", code: c }) })
+      .then(r => r.json().then(d => ({ st: r.status, d }))).then(({ st, d }) => {
+        btn.disabled = false; btn.textContent = "כניסה";
+        if (!d.w) { err.textContent = st === 404 ? "לא מצאנו סדנה פתוחה עם הקוד הזה. כדאי לבדוק את הספרות מול המסך של המנחה." : "אין כרגע חיבור לשרת. נסו שוב בעוד רגע."; err.hidden = false; return; }
+        clearSession();
+        persistSession(name, ROLE_LABEL[role]);
+        try { sessionStorage.setItem("sbe.session.homeUrl", "entry.html?home=" + role); sessionStorage.setItem("sbe.session.wf", d.w); } catch(e){}
+        renderWorkshopSuccess(role, name);
+      }).catch(() => { btn.disabled = false; btn.textContent = "כניסה"; err.textContent = "אין כרגע חיבור לשרת. נסו שוב בעוד רגע."; err.hidden = false; });
   };
   btn.addEventListener("click", submit);
   nm.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
