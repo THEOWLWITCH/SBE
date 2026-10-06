@@ -25,6 +25,7 @@ function generated(b = brief()) {
   const a = studio.exampleActivity(b);
   delete a.schemaVersion; delete a.catalogueVersion; delete a.evidenceStatus;
   a.professionalBasis=[facilitationBasis()];
+  a.learningGuide.learnBefore=[{sourceId:'IAFFacilitation',focus:'פרק התכנון והשתתפות: איך מכינים תהליך שבו כל אחד יכול לתרום.'}];
   a.clarificationQuestions=[];
   return a;
 }

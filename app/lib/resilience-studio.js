@@ -6,13 +6,24 @@
 })(typeof window === 'undefined' ? globalThis : window, function () {
   'use strict';
   const VERSION = '1.0';
-  const CONSULTATION_STAGES = ['starting','focus','activity','step','adaptation','facilitation','mechanism'];
+  const CONSULTATION_STAGES = ['starting','focus','activity','step','adaptation','facilitation','mechanism','learning'];
   const MECHANISM_TYPES = {none:'עוד לא בחרנו',routine:'שגרה חוזרת',board:'לוח משותף', 'monthly-day':'יום חוסן קבוע',agreement:'הסכמות ותקנון', 'action-team':'צוות פעולה',committee:'ועדה',other:'מנגנון אחר'};
   const MECHANISM_FIELDS = ['name','cadence','roles','participation','firstAction','review','mechanism'];
   const FACILITATION_FIELDS = ['preparation','opening','participation','questions','difficulties','closing','followUp'];
   function socialMechanism(value) {
     const v=value&&typeof value==='object'?value:{};
     return {type:Object.hasOwn(MECHANISM_TYPES,v.type)?v.type:'none',...Object.fromEntries(MECHANISM_FIELDS.map(k=>[k,typeof v[k]==='string'?v[k]:'']))};
+  }
+  // Facilitator learning guide: why the activity is expected to work (a design hypothesis, not proven efficacy),
+  // what to study first (public bank sources only — the server checks sourceId), how to apply, what to observe and the limits.
+  const LEARNING_FIELDS = ['mechanism','apply','watchFor','limits'];
+  const LEARN_SOURCE_FIELDS = ['sourceId','focus','name','url','version','status'];
+  function learningGuide(value) {
+    const v=value&&typeof value==='object'?value:{};
+    const out=Object.fromEntries(LEARNING_FIELDS.map(k=>[k,typeof v[k]==='string'?v[k]:'']));
+    out.learnBefore=(Array.isArray(v.learnBefore)?v.learnBefore:[]).filter(x=>x&&typeof x==='object'&&typeof x.sourceId==='string'&&x.sourceId.trim())
+      .map(x=>Object.fromEntries(LEARN_SOURCE_FIELDS.map(k=>[k,typeof x[k]==='string'?x[k]:''])));
+    return out;
   }
   function facilitationPlan(value) { const v=value&&typeof value==='object'?value:{};return Object.fromEntries(FACILITATION_FIELDS.map(k=>[k,typeof v[k]==='string'?v[k]:''])); }
   // Proposed practice targets, not a validated scale or approved intervention catalogue.
@@ -115,14 +126,15 @@
     }));
     return {schemaVersion:VERSION,title:'צעד קטן — '+c.label,purpose:b.goal||'תרגול '+c.label,focus:c.id,selectionReason:recommendFocus(b).rationale,evidenceStatus:'example-draft',catalogueVersion:VERSION,professionalBasis:[],sessions,participationAlternative:'אפשר לתרום בכתב, בציור או באמצעות דמות בדויה; אפשר לבחור התבוננות ללא חשיפה אישית.',leaderGuidance:'זו דוגמת פיתוח שטרם אושרה לשימוש מקצועי. בחרו משימה פשוטה המתאימה לגיל ולתנאים; בני נוער אינם אחראים לניהול סכנה.',adaptationExplanation:'',goalChanged:false,
       socialMechanism:socialMechanism({type:'routine',name:'שגרת פעולה משותפת',cadence:'פעם בשבוע במועד שהקבוצה תבחר',roles:'מובילת השגרה מתאמת זמן; משתתפים בוחרים תרומה וגיבוי',participation:'בחירה בתרומה בדיבור, בכתב או בציור; אפשר לדלג',firstAction:'בוחרים יחד משימה קטנה ומועד לניסיון ראשון',review:'אחרי שני ניסיונות בודקים מה היה ישים ומה צריך לשנות',mechanism:c.mechanism}),
+      learningGuide:learningGuide({mechanism:'ההשערה שמאחורי הפעילות: '+c.mechanism+'. זו השערת תכנון לתרגול '+c.label+' — לא ממצא שנבדק על הפעילות הזאת.',learnBefore:[],apply:'לפני המפגש נסו את המשימה בעצמכם, וכתבו משפט אחד: איזו פעולה של המשתתפים תראה שהמנגנון פועל. במפגש הזמינו את הפעולה הזו במפורש, ותנו לה זמן.',watchFor:'פעולות נצפות: מי תרם, האם תרומות שולבו בתוצר המשותף, האם התבקשה או ניתנה עזרה. לא מסיקים מכך על חוסן של אדם.',limits:'דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.'}),
       facilitationPlan:facilitationPlan({preparation:'נסו בעצמכם את המשימה והכינו חלופה ללא ציוד. תכננו עבודה בקבוצות קטנות לפי הזמן הזמין.',opening:'הציגו מטרה, זמן ודרך להשתתף בלי לחשוף סיפור אישי. בדקו שההוראה מובנת לפני שמתחילים.',participation:'אפשרו חשיבה שקטה לפני שיחה. הזמינו תרומות שונות בלי לכפות דיבור.',questions:'שאלו: מה אפשר לנו להתקדם יחד? איזה שינוי קטן ננסה?',difficulties:'בשתיקה תנו זמן או כתיבה. במחלוקת החזירו להקשבה ולהסכמות. בפגיעה עצרו את הפעולה ובקשו תמיכה מתאימה.',closing:'סכמו פעולה שנלמדה ובחרו צעד המשך אחד עם אחריות ברורה.',followUp:'במועד שנבחר בדקו מה נעשה בפועל והתאימו את השגרה יחד.'})};
   }
   function publicActivity(a) {
-    const fields=['schemaVersion','title','purpose','focus','evidenceStatus','catalogueVersion','professionalBasis','sessions','participationAlternative','leaderGuidance','adaptationExplanation','goalChanged','socialMechanism','facilitationPlan'];
+    const fields=['schemaVersion','title','purpose','focus','evidenceStatus','catalogueVersion','professionalBasis','sessions','participationAlternative','leaderGuidance','adaptationExplanation','goalChanged','socialMechanism','facilitationPlan','learningGuide'];
     const out=Object.fromEntries(fields.filter(k=>a[k]!==undefined).map(k=>[k,clone(a[k])]));
     // Context used for selection is private. Public kit explains the mechanism only.
     return out;
   }
   function workFile(state) { return Object.assign({type:'begood-resilience-studio',schemaVersion:VERSION,savedAt:new Date().toISOString()},clone(state)); }
-  return {VERSION,CONSULTATION_STAGES,MECHANISM_TYPES,MECHANISM_FIELDS,FACILITATION_FIELDS,socialMechanism,facilitationPlan,COMPONENTS,component,newBrief,recommendFocus,claims,validateActivity,exampleActivity,publicActivity,workFile};
+  return {VERSION,CONSULTATION_STAGES,MECHANISM_TYPES,MECHANISM_FIELDS,FACILITATION_FIELDS,LEARNING_FIELDS,socialMechanism,facilitationPlan,learningGuide,COMPONENTS,component,newBrief,recommendFocus,claims,validateActivity,exampleActivity,publicActivity,workFile};
 });

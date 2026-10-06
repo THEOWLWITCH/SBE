@@ -14,6 +14,7 @@
   const NUMBERS = new Set(['count','duration','sessions']);
   const EVIDENCE = {'example-draft':'דוגמת פיתוח — טרם אושרה','new-ai':'פעילות חדשה בבינה מלאכותית — טיוטה; יעילותה לא נבדקה'};
   const MECHANISM_LABELS={name:'שם המנגנון',cadence:'מתי ובאיזו תדירות?',roles:'מי אחראית, מי שותף ומי מגבה?',participation:'איך משתתפים ומשפיעים?',firstAction:'הפעולה הראשונה',review:'מתי ואיך בודקים ומשפרים?',mechanism:'איך המנגנון מתרגל את מוקד החוסן?'};
+  const LEARNING_LABELS={mechanism:'איך הפעילות אמורה לעבוד (השערת התכנון)',apply:'איך מיישמים במפגש',watchFor:'מה נראה בפועל אם המנגנון פועל',limits:'גבולות: מה הפעילות אינה, ומתי עוצרים'};
   const FACILITATION_LABELS={preparation:'לפני המפגש: הכנה וחזרה',opening:'פתיחה והסכמות',participation:'הזמנת השתתפות',questions:'שאלות והקשבה',difficulties:'שתיקה, התנגדות או מחלוקת',closing:'סגירה ועיבוד',followUp:'המשך ולמידה מההנחיה'};
   const IDEAS = [
     {id:'education',audience:'חינוך',title:'מידע חסר, פתרון משותף',focus:'support',purpose:'לתרגל בקשת עזרה והחלפת מידע במשימה משותפת.',individual:['זיהוי מידע חסר','בקשת עזרה והבהרה'],shared:['החלפת מידע ועזרה','בניית תכנית משולבת'],steps:['בקבוצות קטנות כל משתתף מקבל חלק אחר של משימה בדויה.','שואלים ומחליפים מידע כדי לבנות תכנית אחת.','מזהים איזו בקשת עזרה אפשרה להתקדם.'],participants:'קבוצת תלמידים',age:'לפי גיל הקבוצה',goal:'לבקש מידע ועזרה ולבנות פתרון משותף',duration:40},
@@ -157,7 +158,7 @@
     // Work-file imports have the same explicit data boundary as generated activities.
     const text = key => typeof value[key]==='string'?value[key]:'';
     const a={schemaVersion:text('schemaVersion'),title:text('title'),purpose:text('purpose'),focus:text('focus'),selectionReason:text('selectionReason'),evidenceStatus:text('evidenceStatus'),catalogueVersion:text('catalogueVersion'),participationAlternative:text('participationAlternative'),leaderGuidance:text('leaderGuidance'),adaptationExplanation:text('adaptationExplanation'),goalChanged:value.goalChanged===true};
-    a.socialMechanism=D.socialMechanism(value.socialMechanism);a.facilitationPlan=D.facilitationPlan(value.facilitationPlan);
+    a.socialMechanism=D.socialMechanism(value.socialMechanism);a.facilitationPlan=D.facilitationPlan(value.facilitationPlan);a.learningGuide=D.learningGuide(value.learningGuide);
     const array = input => (Array.isArray(input)?input:[]).map(String);
     a.professionalBasis=(Array.isArray(value.professionalBasis)?value.professionalBasis:[]).map(s=>typeof s==='string'?s:{sourceId:String(s.sourceId||''),explanation:String(s.explanation||''),name:String(s.name||''),url:String(s.url||''),version:String(s.version||''),status:String(s.status||'')});
     a.sessions=(Array.isArray(value.sessions)?value.sessions:[]).map(s=>({id:String(s.id||''),title:String(s.title||''),purpose:String(s.purpose||''),link:String(s.link||''),debrief:array(s.debrief),nextStep:String(s.nextStep||''),participantMaterials:String(s.participantMaterials||''),steps:(Array.isArray(s.steps)?s.steps:[]).map(step=>({id:String(step.id||''),title:String(step.title||''),minutes:Number(step.minutes),instructions:String(step.instructions||''),requiresReview:step.requiresReview===true,materials:array(step.materials),components:array(step.components),individualSkills:array(step.individualSkills),sharedSkills:array(step.sharedSkills)}))}));
@@ -334,12 +335,33 @@
     else {const ul=el('ul');basis.forEach(s=>{const li=el('li');if(typeof s==='string')li.textContent=s;else {const link=safeLink(s.url,s.name||s.sourceId||s.title||'מקור');li.append(link||el('b','',s.name||s.sourceId||s.title||'מקור'),el('p','',s.explanation||s.mechanism||''),el('span','muted','גרסה '+(s.version||'לא צוינה')+' · '+(s.status==='existing-bank'?'מקור מבנק הידע הקיים':s.status||'מעמד לא צוין')));}ul.append(li);});box.append(ul);}
     return box;
   }
+  // מדריך למידה למנחה — לכל פעילות: מנגנון, מה ללמוד לפני (מקורות מבנק הידע בלבד), יישום, מה לראות וגבולות.
+  // למוביל/ה בלבד: לא נכנס לחומרי המשתתפים.
+  function learnSourcesList(guide,isCandidate) {
+    const box=el('div','learn-sources');
+    if(!guide.learnBefore.length){box.append(el('p','muted','עוד לא נבחרו מקורות ללמידה. אפשר לבקש בשיחה עם ה-AI מקורות מתוך בנק הידע.'));return box;}
+    const ol=el('ol');guide.learnBefore.forEach(src=>{const li=el('li');const link=safeLink(src.url,src.name||src.sourceId);li.append(link||el('b','',src.name||src.sourceId));
+      li.append(field('מה ללמוד במקור הזה ולמה',src.focus,v=>{prepareActivityEdit(isCandidate);src.focus=v;persist();updateControls();},{multiline:true,rows:2}));
+      li.append(el('span','muted',src.status==='existing-bank'?'מקור מבנק הידע הקיים · גרסה '+(src.version||'לא צוינה'):'מקור שלא אומת בבנק'));ol.append(li);});
+    box.append(ol);return box;
+  }
+  function renderLearningGuide(activity,isCandidate) {
+    const guide=activity.learningGuide, box=el('details','activity-guide learning-guide');
+    box.append(el('summary','','מדריך למידה למנחה — לפני שמנחים את הפעילות הזאת'));
+    box.append(el('p','muted','המדריך מסביר את ההיגיון של הפעילות ומפנה למקורות מבנק הידע. זו השערת תכנון — לא הוכחה שהפעילות יעילה, ולא תחליף להכשרה בהנחיה.'));
+    box.append(editField(guide,LEARNING_LABELS.mechanism,'mechanism',isCandidate,{multiline:true}));
+    box.append(el('h4','','מה כדאי ללמוד לפני ההנחיה'),learnSourcesList(guide,isCandidate));
+    ['apply','watchFor','limits'].forEach(k=>box.append(editField(guide,LEARNING_LABELS[k],k,isCandidate,{multiline:true})));
+    box.append(button('שאלות על המדריך',()=>openCoach('learning',null,isCandidate)));
+    return box;
+  }
   function renderActivityEditor(activity,brief,host,isCandidate) {
     clear(host);const prefix=isCandidate?'candidate':'activity';
     const overview=el('div','activity-overview');overview.append(editField(activity,'שם הפעילות','title',isCandidate),editField(activity,'המטרה שלנו','purpose',isCandidate,{multiline:true}),labelText('רכיב המוקד:',componentLabel(activity.focus)));
     const claims=claimsBox(activity,null,prefix);claims.id=prefix+'-claims';overview.append(claims);
     const privateDetails=el('details');privateDetails.append(el('summary','','מה הוביל לבחירת הפעילות?'),editField(activity,'הסבר הבחירה לפי הקלט שלכם','selectionReason',isCandidate,{multiline:true}));overview.append(privateDetails,renderBasis(activity),editField(activity,'הנחיה למוביל/ה','leaderGuidance',isCandidate,{multiline:true}),editField(activity,'חלופות להשתתפות בלי חשיפה אישית','participationAlternative',isCandidate,{multiline:true}));
-    activity.facilitationPlan=D.facilitationPlan(activity.facilitationPlan);activity.socialMechanism=D.socialMechanism(activity.socialMechanism);
+    activity.facilitationPlan=D.facilitationPlan(activity.facilitationPlan);activity.socialMechanism=D.socialMechanism(activity.socialMechanism);activity.learningGuide=D.learningGuide(activity.learningGuide);
+    overview.append(renderLearningGuide(activity,isCandidate));
     const guide=el('details','activity-guide');guide.append(el('summary','','תכנית ההנחיה לפעילות הזאת'));D.FACILITATION_FIELDS.forEach(k=>guide.append(editField(activity.facilitationPlan,FACILITATION_LABELS[k],k,isCandidate,{multiline:true})));guide.append(button('שאלות על ההנחיה',()=>openCoach('facilitation',null,isCandidate)));overview.append(guide);
     const mechanism=el('section','social-mechanism');mechanism.append(el('h3','','מהפעילות למנגנון חברתי'),el('p','','בחרו יחד שגרה או מבנה שיעזרו להמשיך לתרגל: יום ראשון קבוע, לוח מודעות, יום חוסן חודשי, הסכמות, צוות פעולה או ועדה. מגדירים אחריות, השתתפות וקצב שמתאימים לקבוצה.'));
     const type=el('select');type.setAttribute('aria-label','סוג המנגנון החברתי');Object.entries(D.MECHANISM_TYPES).forEach(([value,label])=>{const option=el('option','',label);option.value=value;type.append(option);});type.value=activity.socialMechanism.type;type.addEventListener('change',()=>{prepareActivityEdit(isCandidate);activity.socialMechanism.type=type.value;persist();renderValidation(isCandidate);updateControls();});mechanism.append(type);
@@ -448,7 +470,8 @@
   function printDocument(activity,participantOnly,includeReason) {
     const a=D.publicActivity(activity),n=el('div','print-document');n.append(el('h2','',a.title),labelText('מטרה:',a.purpose),labelText('רכיב המוקד:',componentLabel(a.focus)),el('p','',evidenceLabel(a)),claimsBox(a,null,'print'));
     n.querySelectorAll('.claims-box a').forEach(link=>{link.replaceWith(document.createTextNode(' [שלב '+link.textContent.replace('↳ ','')+']'));});
-    if(!participantOnly){n.append(renderBasis(a));if(includeReason)paragraph(n,'הסבר הבחירה האישי',activity.selectionReason);paragraph(n,'הנחיה למוביל/ה',a.leaderGuidance);const guide=el('section','session-card');guide.append(el('h3','','תכנית הנחיית הקבוצה'));D.FACILITATION_FIELDS.forEach(k=>paragraph(guide,FACILITATION_LABELS[k],a.facilitationPlan?.[k]));n.append(guide);}
+    if(!participantOnly){n.append(renderBasis(a));if(includeReason)paragraph(n,'הסבר הבחירה האישי',activity.selectionReason);paragraph(n,'הנחיה למוביל/ה',a.leaderGuidance);const guide=el('section','session-card');guide.append(el('h3','','תכנית הנחיית הקבוצה'));D.FACILITATION_FIELDS.forEach(k=>paragraph(guide,FACILITATION_LABELS[k],a.facilitationPlan?.[k]));n.append(guide);
+      const lg=D.learningGuide(a.learningGuide);if(D.LEARNING_FIELDS.some(k=>lg[k].trim())||lg.learnBefore.length){const learn=el('section','session-card');learn.append(el('h3','','מדריך למידה למנחה'));paragraph(learn,LEARNING_LABELS.mechanism,lg.mechanism);if(lg.learnBefore.length){learn.append(el('h4','','מה ללמוד לפני ההנחיה'));const ul=el('ul');lg.learnBefore.forEach(src=>{const li=el('li');li.append(safeLink(src.url,src.name||src.sourceId)||el('b','',src.name||src.sourceId));if(src.focus)li.append(el('p','',src.focus));ul.append(li);});learn.append(ul);}['apply','watchFor','limits'].forEach(k=>paragraph(learn,LEARNING_LABELS[k],lg[k]));n.append(learn);}}
     if(a.socialMechanism&&a.socialMechanism.type!=='none'){const mechanism=el('section','session-card');mechanism.append(el('h3','','מנגנון חברתי להמשך'),labelText('סוג:',D.MECHANISM_TYPES[a.socialMechanism.type]));D.MECHANISM_FIELDS.forEach(k=>mechanism.append(labelText(MECHANISM_LABELS[k]+':',a.socialMechanism[k])));n.append(mechanism);}
     paragraph(n,'דרכים להשתתף ללא חשיפה אישית',a.participationAlternative);
     (a.sessions||[]).forEach((session,si)=>{

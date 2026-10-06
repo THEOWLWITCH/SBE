@@ -21,10 +21,12 @@ const basisSchema = object({ sourceId:STR, explanation:STR });
 const mechanismSchema = object({ type:{type:'string',enum:Object.keys(studio.MECHANISM_TYPES)},
   ...Object.fromEntries(studio.MECHANISM_FIELDS.map(field=>[field,STR])) });
 const facilitationSchema = object(Object.fromEntries(studio.FACILITATION_FIELDS.map(field=>[field,STR])));
+const learningSchema = object({ ...Object.fromEntries(studio.LEARNING_FIELDS.map(field=>[field,STR])),
+  learnBefore:{type:'array',items:object({ sourceId:STR, focus:STR })} });
 export const ACTIVITY_SCHEMA = object({ title:STR, purpose:STR, focus, selectionReason:STR,
   sessions:{type:'array',items:sessionSchema}, participationAlternative:STR, leaderGuidance:STR,
   adaptationExplanation:STR, goalChanged:{type:'boolean'}, professionalBasis:{type:'array',items:basisSchema}, clarificationQuestions:strings,
-  socialMechanism:mechanismSchema, facilitationPlan:facilitationSchema });
+  socialMechanism:mechanismSchema, facilitationPlan:facilitationSchema, learningGuide:learningSchema });
 const RECOMMENDATION_SCHEMA = object({ focus, rationale:STR,
   alternatives:{type:'array',items:focus}, questions:strings });
 export const CONSULTATION_SCHEMA = object({ answer:STR, encouragement:STR, nextSteps:strings,
@@ -149,11 +151,13 @@ function previousActivity(previous) {
   // Defaults apply to missing sections; malformed supplied sections still fail.
   const compatible={...previous,
     socialMechanism:previous.socialMechanism===undefined?studio.socialMechanism():previous.socialMechanism,
-    facilitationPlan:previous.facilitationPlan===undefined?studio.facilitationPlan():previous.facilitationPlan};
+    facilitationPlan:previous.facilitationPlan===undefined?studio.facilitationPlan():previous.facilitationPlan,
+    learningGuide:previous.learningGuide===undefined?studio.learningGuide():previous.learningGuide};
   const safe=projectSchema(compatible,ACTIVITY_SCHEMA);
   if(!matchesSchema(safe,ACTIVITY_SCHEMA)) return null;
   // An old client snapshot cannot promote invented sources or hidden manuscripts.
   safe.professionalBasis=safe.professionalBasis.filter(s=>publicSourceById.has(s.sourceId));
+  safe.learningGuide.learnBefore=safe.learningGuide.learnBefore.filter(s=>publicSourceById.has(s.sourceId));
   return safe;
 }
 
@@ -184,6 +188,8 @@ function consultationInput(body) {
   const previous=body.previous===undefined?undefined:projectPartialSchema(body.previous,ACTIVITY_SCHEMA);
   if(body.previous!==undefined && !previous) return [422,{error:'טיוטת הפעילות להתייעצות אינה תקינה.'}];
   if(previous?.professionalBasis) previous.professionalBasis=previous.professionalBasis
+    .filter(b=>publicSourceById.has(b.sourceId));
+  if(previous?.learningGuide?.learnBefore) previous.learningGuide.learnBefore=previous.learningGuide.learnBefore
     .filter(b=>publicSourceById.has(b.sourceId));
   let selectedStep;
   if(body.stepId!==undefined) {
@@ -221,6 +227,7 @@ const INSTRUCTIONS = `את/ה מסייע/ת בסטודיו חוסן של Begood:
 מיפוי הוא תקציר מצרפי מאומת בלבד: selectedStatements הם ההיגדים שנבחרו, לפי מזהה, נוסח וקוטביות; coverage מציין אילו צדדים נמדדו בפועל. ערך good או harm כאשר הצד לא נמדד אינו עדות לתפקוד או לפגיעה. אין להסיק היעדר חוזקה מהיעדר היגד חיובי. שמור על סמנטיקת הכיתה, קולות המשיבים, ההיגדים שנבחרו, תאריך וסבב. אם מיפוי ישן, היקף לא מתאים או תיאור חדש סותר אותו — בקש הבהרה ממוקדת; אין סיבתיות, אבחון או ניבוי התנהגות. אין להפוך תצפיות לציון חוסן אישי.
 ביצירת פעילות: הצג מטרה, מוקד, רכיבים, מיומנויות אישיות ומשותפות דרך שלבים שמתרגלים אותם בפועל. מפגש קבוצתי לבדו אינו תרגול שייכות; כל רכיב נוסף דורש מנגנון מפורש. אחרי התאמה עדכן את מיפוי המיומנויות ולא רק את הכותרת.
 בכל ערכה כלול facilitationPlan מעשי המבוסס על מקור הנחיה שניתן: הכנה לפי התנאים, פתיחה שאפשר לומר, דרכי השתתפות, שאלות עיבוד, טיפול בשתיקה ובמחלוקת וגבולות לעצירה, סגירה ובדיקת המשך. קשר את הנחיית הקבוצה למקור IAFFacilitation או UNICEFFacilitation בשדה professionalBasis; מקור UNICEF מתאים רק להקשר של ילדים או נוער. הנחיות אלה מסייעות להכנה, והכשרה מקצועית וניסיון בהנחיה עדיין חשובים; אל תציג את המערכת כתחליף להכשרה.
+בכל ערכה כלול learningGuide — מדריך למידה למנחה, המבוסס על המקורות שניתנו: mechanism — איך הפעילות אמורה לתרגל את מוקד החוסן (השערת תכנון, לא ממצא על הפעילות הזאת); learnBefore — אחד עד שלושה מקורות מתוך professionalSources בלבד (sourceId), ולכל אחד focus: מה ללמוד בו לפני ההנחיה ולמה זה רלוונטי לפעילות; apply — איך ליישם בפועל במפגש; watchFor — פעולות נצפות שיראו אם המנגנון פועל, בלי ציון אישי ובלי הסקה על אדם; limits — מה הפעילות אינה (טיפול, אבחון, פעילות שיעילותה נבדקה) ומתי עוצרים ומשוחחים באופן אישי. אל תמציא מקור ואל תציג מחקר על מנגנון כהוכחה ליעילות הפעילות.
 הצע socialMechanism מתאים שיכול להמשיך אחרי הפעילות: שגרה, לוח משותף, יום קבוע, הסכמה, צוות פעולה או ועדה רק לפי הצורך והתנאים. קבע שם, קצב, תפקידים וגיבוי, השתתפות נגישה, פעולה ראשונה, בדיקת המשך והסבר למנגנון המשותף. כשלא מתאים להוסיף מנגנון, בחר type=none והסבר בשדה mechanism; אל תכפה שגרה או תפקידים.
 זמנים לכל מפגש אינם חורגים מהזמן הזמין; מספר המפגשים תואם לתקציר. גודל הקבוצה מחייב חלוקה מעשית: למשל 28 משתתפים ב-15 דקות לא מאפשרים דקת דיבור לכל אחד במליאה. תאם תפקידים, מרחב וחומרים למה שזמין, ותן חלופות ללא ציוד כשאין חומרים.
 אין חובה לחשיפה אישית. תן השתתפות בדמות בדויה, כתיבה, ציור או התבוננות, חומרי משתתפים, הוראות הנחיה, שאלות עיבוד וצעד המשך. בתהליך, לכל מפגש מטרה וקשר לקודמו ותנאים לשינוי. תצפיות הן למידה על הפעולה.
@@ -324,6 +331,10 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
   if(!result.professionalBasis.some(b=>['IAFFacilitation','UNICEFFacilitation'].includes(b.sourceId) && available.has(b.sourceId)))
     errors.push('חסר בסיס מקצועי לתכנית ההנחיה');
   if(studio.FACILITATION_FIELDS.some(field=>!result.facilitationPlan[field].trim())) errors.push('חסרה תכנית הנחיה מעשית מלאה');
+  const guide=result.learningGuide;
+  if(studio.LEARNING_FIELDS.some(field=>!guide[field].trim())) errors.push('חסר מדריך למידה למנחה: מנגנון, יישום, מה לראות וגבולות');
+  if(!guide.learnBefore.length || guide.learnBefore.some(s=>!available.has(s.sourceId) || !s.focus.trim()))
+    errors.push('מדריך הלמידה דורש מקורות מבנק הידע, ולכל אחד מה ללמוד בו');
   if(result.socialMechanism.type==='none' && !result.socialMechanism.mechanism.trim()) errors.push('נדרש הסבר כאשר לא מוצע מנגנון חברתי');
   if(action==='adapt' && !result.adaptationExplanation.trim()) errors.push('חסר הסבר להתאמה');
   if(claimsProvenActivity(result)) errors.push('טענה לא מבוססת על יעילות הפעילות');
@@ -331,6 +342,8 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
   const {clarificationQuestions,...kit}=result;
   const activity={...kit,schemaVersion:studio.VERSION,catalogueVersion:studio.VERSION,evidenceStatus:'new-ai',
     leaderGuidance:'טיוטה: פעילות חדשה שנוצרה בבינה מלאכותית, שטרם אושרה מקצועית; יעילות הפעילות לא נבדקה. '+result.leaderGuidance,
-    professionalBasis:enrichBasis(result.professionalBasis,available)};
+    professionalBasis:enrichBasis(result.professionalBasis,available),
+    learningGuide:{...guide,learnBefore:guide.learnBefore.map(s=>{const src=available.get(s.sourceId);
+      return {sourceId:src.sourceId,focus:s.focus,name:src.name,url:src.url,version:src.version,status:src.status};})}};
   return [200,{activity,...(mapping?{mapping}:{})}];
 }
