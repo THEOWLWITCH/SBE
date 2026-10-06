@@ -2,7 +2,7 @@
 // professional sources and a dedicated GPT-6 Responses request.
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import vm from 'node:vm';
 import { authorizePermission, handleAccess } from './access.mjs';
 
@@ -346,4 +346,40 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
     learningGuide:{...guide,learnBefore:guide.learnBefore.map(s=>{const src=available.get(s.sourceId);
       return {sourceId:src.sourceId,focus:s.focus,name:src.name,url:src.url,version:src.version,status:src.status};})}};
   return [200,{activity,...(mapping?{mapping}:{})}];
+}
+
+// Background mode: a single request that waits minutes for the model was cut by proxies, sleeping
+// phones and redeploys. With async:true every check (permissions, mapping, brief) still runs first;
+// only the model call continues in the background and the browser polls {action:'status',jobId}.
+// Jobs stay in this process's memory only (they may carry private concerns), are bound to a hash of
+// the token that started them and expire; after a restart the browser gets 'unknown' and retries once.
+const JOBS = new Map();
+const JOB_TTL = 15*60*1000, JOB_MAX_AGE = 30*60*1000, MAX_RUNNING = 3;
+const owner = token => createHash('sha256').update(String(token||'')).digest('hex');
+function sweepJobs(now=Date.now()) {
+  for(const [id,job] of JOBS) if(job.status==='running' ? now-job.t0>JOB_MAX_AGE : now-job.t>JOB_TTL) JOBS.delete(id);
+}
+export async function studioRequest(store, body, options={}) {
+  if(!body || typeof body!=='object' || Array.isArray(body) || (body.action!=='status' && !body.async)) return handleStudio(store,body,options);
+  sweepJobs();
+  if(body.action==='status') {
+    const job=JOBS.get(String(body.jobId||''));
+    if(!job || job.owner!==owner(body.token)) return [200,{status:'unknown'}];
+    if(job.status==='running') return [200,{status:'running',elapsed:Math.round((Date.now()-job.t0)/1000)}];
+    return [200,{status:'done',httpStatus:job.result[0],result:job.result[1]}];
+  }
+  const who=owner(body.token);
+  if([...JOBS.values()].filter(job=>job.owner===who && job.status==='running').length>=MAX_RUNNING)
+    return [429,{error:'כבר רצות כמה בקשות מהכניסה הזאת. אפשר לחכות שהן יסתיימו ולנסות שוב.'}];
+  const {async:_async,...request}=body;
+  let ready;
+  const started=new Promise(resolve=>{ready=resolve;});
+  const run=handleStudio(store,request,{...options,onReady:()=>ready()});
+  const first=await Promise.race([run.then(result=>({result})),started.then(()=>null)]);
+  if(first) return first.result; // finished before reaching the model: errors, authorize, mapping
+  const jobId=randomUUID(), job={owner:who,status:'running',t0:Date.now()};
+  JOBS.set(jobId,job);
+  run.then(result=>{job.result=result;},()=>{job.result=[503,{error:'הסטודיו אינו זמין כעת.'}];})
+    .finally(()=>{job.status='done';job.t=Date.now();});
+  return [200,{jobId}];
 }

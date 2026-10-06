@@ -36,7 +36,7 @@ import { getProvider } from './lib/providers.mjs';
 import { runPipeline } from './lib/pipeline.mjs';
 import { toScenario } from './lib/to-scenario.mjs';
 import { handleAccess, supabaseStore } from './lib/access.mjs';
-import { handleStudio } from './lib/studio.mjs';
+import { studioRequest } from './lib/studio.mjs';
 
 // שמירת תרחיש ב-Supabase. נקראת רק כשיש SUPABASE_SERVICE_KEY בסביבה.
 // scenario הוא הפלט של toScenario(); meta הוא payload.meta מהלקוח.
@@ -181,7 +181,8 @@ const server = createServer(async (req, res) => {
     catch { return sendJson(res, 400, { error: 'invalid JSON' }); }
     let finish;
     try {
-      const [status, out] = await handleStudio(supabaseStore(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY), body,
+      // async:true ← jobId מיד, והדפדפן שואל {action:'status'}; בלעדיו — הבקשה הארוכה הישנה עם רווחי keep-alive
+      const [status, out] = await studioRequest(supabaseStore(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY), body,
         { onReady: () => { finish = startKeepAlive(res); } });
       if (finish) return finish(out);
       return sendJson(res, status, out);

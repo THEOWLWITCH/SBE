@@ -44,29 +44,54 @@
     authorized=false; state=emptyState(); saved=[]; setCandidate(null); mappingCredentials=null; coachTarget=null;coachProposal=null;render();
     $('saved-work-list').replaceChildren(el('p','muted','כדי לפתוח עבודה שמורה נדרשת כניסה פעילה והרשאה לסטודיו.'));
   }
-  async function api(body) {
-    const ctrl=new AbortController(), timeout=setTimeout(()=>ctrl.abort(),9*60*1000);
+  // Model actions run as a background job on the server: one long request was cut by proxies, sleeping
+  // phones and redeploys. The server checks permissions first, returns a jobId and keeps the result in
+  // memory; we ask for its status every few seconds. A server restart mid-job ('unknown') retries once.
+  const MODEL_ACTIONS=['analyze','generate','adapt','consult'];
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  async function post(body, ms) {
+    const ctrl=new AbortController(), timeout=setTimeout(()=>ctrl.abort(),ms);
     try {
       const response=await fetch(API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...body,token:token()}),signal:ctrl.signal});
       const data=await response.json().catch(()=>({error:'השרת לא החזיר תשובה תקינה'}));
-      if(!response.ok||data.error) {
-        if(data.code==='mapping_forbidden') {
-          mappingCredentials=null;state.mapping=null;state.confirmed=false;
-          $('brief-confirmed').checked=false;renderMapping();updateControls();persist();
-          throw new Error(data.error+' העבודה נשמרה; אפשר להמשיך ללא מיפוי או לחבר מיפוי מורשה ממסך המיפוי.');
-        }
-        if(response.status===401||response.status===403)lockWorkspace();
-        if(Array.isArray(data.questions)&&data.questions.length) {
-          state.recommendation={focus:data.focus||state.brief.focus,rationale:data.rationale||'נדרשת הבהרה על הקלט לפני בחירת הפעולה.',alternatives:[],questions:data.questions.map(String)};
-          state.brief.clarifications='';$('clarifications').value='';state.confirmed=false;$('brief-confirmed').checked=false;
-          renderRecommendation();updateControls();persist();$('clarification-panel').scrollIntoView({block:'start'});
-        }
-        throw new Error(data.error||'שגיאת שרת '+response.status);
+      return {ok:response.ok,status:response.status,data};
+    } finally{clearTimeout(timeout);}
+  }
+  async function background(body, retried) {
+    const started=await post({...body,async:true},90*1000);
+    if(!started.ok||!started.data.jobId) return started;
+    const t0=Date.now(); let misses=0;
+    while(Date.now()-t0<9*60*1000) {
+      await sleep(document.hidden?8000:3000);
+      let d;
+      try { const r=await post({action:'status',jobId:started.data.jobId},30*1000); if(!r.ok)throw new Error(); d=r.data; misses=0; }
+      catch { if(++misses>=20)throw new Error('החיבור לשרת נקטע לזמן ארוך. התוכן הקיים נשמר; אפשר לנסות שוב.'); continue; }
+      if(d.status==='done') return {ok:d.httpStatus>=200&&d.httpStatus<300,status:d.httpStatus,data:d.result||{}};
+      if(d.status==='unknown') { if(!retried)return background(body,true); throw new Error('השרת הופעל מחדש באמצע. התוכן הקיים נשמר; אפשר לנסות שוב.'); }
+    }
+    throw new Error('הבנייה נמשכה מעבר לזמן ההמתנה. התוכן הקיים נשמר; אפשר לנסות שוב.');
+  }
+  async function api(body) {
+    let reply;
+    try { reply=MODEL_ACTIONS.includes(body.action)?await background(body,false):await post(body,90*1000); }
+    catch(e) { if(e.name==='AbortError')throw new Error('השרת לא ענה בזמן. התוכן הקיים נשמר; אפשר לנסות שוב.'); throw e; }
+    const {ok,status,data}=reply;
+    if(!ok||data.error) {
+      if(data.code==='mapping_forbidden') {
+        mappingCredentials=null;state.mapping=null;state.confirmed=false;
+        $('brief-confirmed').checked=false;renderMapping();updateControls();persist();
+        throw new Error(data.error+' העבודה נשמרה; אפשר להמשיך ללא מיפוי או לחבר מיפוי מורשה ממסך המיפוי.');
       }
-      authorized=true;
-      return data;
-    } catch(e) { if(e.name==='AbortError')throw new Error('הבנייה נמשכה מעבר לזמן ההמתנה. התוכן הקיים נשמר; אפשר לנסות שוב.'); throw e; }
-    finally{clearTimeout(timeout);}
+      if(status===401||status===403)lockWorkspace();
+      if(Array.isArray(data.questions)&&data.questions.length) {
+        state.recommendation={focus:data.focus||state.brief.focus,rationale:data.rationale||'נדרשת הבהרה על הקלט לפני בחירת הפעולה.',alternatives:[],questions:data.questions.map(String)};
+        state.brief.clarifications='';$('clarifications').value='';state.confirmed=false;$('brief-confirmed').checked=false;
+        renderRecommendation();updateControls();persist();$('clarification-panel').scrollIntoView({block:'start'});
+      }
+      throw new Error(data.error||'שגיאת שרת '+status);
+    }
+    authorized=true;
+    return data;
   }
   async function ensureAuthorized() { const d=await api({action:'authorize'}); if(d.ok!==true)throw new Error('לא ניתן לאמת הרשאה לפתיחת העבודה.'); return true; }
   async function operation(message, fn) {
