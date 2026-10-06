@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>לוח המסעות — אישורים ומשוב</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
@@ -204,14 +205,8 @@ function richText(text){
   return box;
 }
 async function complete(system,messages,maxTokens){
-  const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),480000);
-  try{
-    const res=await fetch(AI_SERVER+'/api/complete',{method:'POST',headers:{'content-type':'application/json'},signal:ctrl.signal,
-      body:JSON.stringify({system,messages,maxTokens})});
-    const data=await res.json();
-    if(!res.ok||data.error)throw new Error(data.error||('שגיאת שרת '+res.status));
-    return String(data.text||'');
-  }finally{clearTimeout(timer);}
+  // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
+  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens},480000)||'');
 }
 
 
