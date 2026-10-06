@@ -1,6 +1,7 @@
 <meta charset="UTF-8">
 <title>תכנון פעילות</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/ai-call.js"></script>
 <script src="lib/product-doc.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -820,19 +821,8 @@ function setAIStatus(status){
 }
 
 async function callAI(system, userText, maxTokens, timeoutMs) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs || 60000);
-  try {
-    const res = await fetch(AI_SERVER + "/api/complete", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200 }),
-      signal: ctrl.signal,
-    });
-    const data = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error || ("שגיאת שרת " + res.status));
-    return data.text;
-  } finally { clearTimeout(timer); }
+  // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך
+  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200 }, timeoutMs || 60000);
 }
 
 async function generateProposals(ctx) {
@@ -2678,19 +2668,34 @@ const TIME_RULE = "חובה בכל מפגש: openingMin + mainMin + closingMin �
 // מנה אחת, לא ארבע ברצף. כל מנה עדיין רואה את התכנון כולו.
 const CHUNK = 4, PARALLEL = 4, CHUNK_TOKENS = 16000, CHUNK_TIMEOUT = 420000;
 function ranges(n){ const r = []; for (let a = 0; a < n; a += CHUNK) r.push([a, Math.min(n, a + CHUNK)]); return r; }
+// מנות במקביל, ואחר כך סבב שני — אחת-אחת — למנות שנכשלו או חזרו חסרות (06/10/2026: רצף של 14
+// נעצר אחרי מפגש 8, כי שתי מנות במקביל נכשלו ולא נוסו שוב). missing — טווחי המפגשים שלא הושלמו.
 async function runChunks(n, worker, onStep){
-  const rs = ranges(n); let next = 0, done = 0, failed = null;
+  const rs = ranges(n); let next = 0, done = 0, failed = null; const bad = [];
   async function lane(){
     while (next < rs.length) {
       const k = next++; const [a, b] = rs[k];
-      try { await worker(a, b, k); } catch (e) { failed = failed || e; }
+      try { await worker(a, b, k); } catch (e) { bad.push(k); failed = failed || e; }
       done++; if (onStep) onStep(done, rs.length);
     }
   }
   if (onStep) onStep(0, rs.length);
   await Promise.all(Array.from({ length: Math.min(PARALLEL, rs.length) }, lane));
-  return { failed, total: rs.length };
+  const missing = [];
+  if (bad.length) {
+    failed = null; bad.sort((x, y) => x - y);
+    for (let i = 0; i < bad.length; i++) {
+      const k = bad[i], [a, b] = rs[k];
+      if (onStep) onStep(rs.length - bad.length + i, rs.length, rangeLabel(a, b));
+      try { await worker(a, b, k); } catch (e) { failed = failed || e; missing.push([a, b]); }
+    }
+    if (onStep) onStep(rs.length - missing.length, rs.length);
+  }
+  return { failed, total: rs.length, missing };
 }
+// מיקום מפגש שחזר מהמודל: לפי n כשהוא בטווח, ואם המודל מספר מ-1 בכל מנה — לפי הסדר בתוך המנה
+function idxIn(x, j, a, b){ const n = x && Number.isInteger(x.n) ? x.n - 1 : -1; return n >= a && n < b ? n : a + j; }
+function missingLabel(m){ return (m || []).map(([a, b]) => rangeLabel(a, b)).join(", "); }
 function rangeLabel(a, b){ return b - a === 1 ? `מפגש ${a + 1}` : `מפגשים ${a + 1}–${b}`; }
 async function aiFillRange(a, b, first){
   const system = [preamble(),
@@ -2710,8 +2715,9 @@ async function aiFillAll(onStep){
   const r = await runChunks(seq.sessions.length, async (a, b, k) => {
     total += mergeFill(await aiFillRange(a, b, k === 0), a, b);
     renderSeq(); touch();
+    for (let i = a; i < b; i++) if (isEmptySession(seq.sessions[i])) throw new Error("המודל לא החזיר את " + rangeLabel(i, i + 1));
   }, onStep);
-  if (r.failed) { const e = new Error(r.failed.message); e.partial = total; throw e; }
+  if (r.failed) { const e = new Error(r.failed.message); e.partial = total; e.missing = missingLabel(r.missing); throw e; }
   return total;
 }
 async function aiReport(facts){
@@ -2751,9 +2757,10 @@ async function aiImproveAll(onStep){
     if (k === 0) { agg.goals = p.goals; agg.finalProduct = p.finalProduct; agg.assessment = p.assessment; }
     p.sessions.forEach((x, j) => {
       if (!x) return;
-      const idx = Number.isInteger(x.n) ? x.n - 1 : a + j;
+      const idx = idxIn(x, j, a, b);
       if (idx >= a && idx < b) agg.sessions[idx] = x;
     });
+    for (let i = a; i < b; i++) if (!agg.sessions[i]) throw new Error("המודל לא החזיר את " + rangeLabel(i, i + 1));
     (Array.isArray(out.changes) ? out.changes : []).forEach(c => changes.push(c));
   }, onStep);
   const got = agg.sessions.filter(Boolean).length;
@@ -2812,7 +2819,7 @@ function mergeFill(res, a, b){
   put("finalProduct", res.finalProduct); put("assessment", res.assessment);
   (Array.isArray(res.sessions) ? res.sessions : []).forEach((rs, j) => {
     if (!rs) return;
-    const i = Number.isInteger(rs.n) ? rs.n - 1 : a + j;
+    const i = idxIn(rs, j, a, b);
     if (i < a || i >= b || i >= seq.sessions.length) return;
     const P = "sessions." + i, s = seq.sessions[i];
     S_KEYS.forEach(k => put(P + "." + k, rs[k]));
@@ -2893,7 +2900,7 @@ document.getElementById("bSeqFill").addEventListener("click", async (e) => {
   const done = busy(btnEl, "משלימה...");
   let n = 0;
   try {
-    n = await aiFillAll((d, t) => { btnEl.textContent = t > 1 ? `משלימה — ${d} מתוך ${t} מנות הושלמו (במקביל, עד כ-8 דקות)` : "משלימה... עד כ-8 דקות"; });
+    n = await aiFillAll((d, t, again) => { btnEl.textContent = again ? `משלימה שוב את ${again} — ${d} מתוך ${t} מנות הושלמו` : t > 1 ? `משלימה — ${d} מתוך ${t} מנות הושלמו (במקביל, עד כ-8 דקות)` : "משלימה... עד כ-8 דקות"; });
     setAIStatus("ok");
     seqDialog("השלמת נתונים חסרים", el("p", {}, n
       ? `הושלמו ${n} שדות. הם מסומנים בקו מקווקו — הצעה של המערכת שנשארת כך אלא אם תשני אותה. שדות שכבר מילאת לא שונו, ועובדות על המציאות שלך (מרחב, תקציב, העדפות, מספר משתתפים) לא הומצאו.`
@@ -2902,7 +2909,7 @@ document.getElementById("bSeqFill").addEventListener("click", async (e) => {
     console.warn("השלמה לא זמינה:", err.message);
     n = err.partial || 0;
     if (n) {
-      seqDialog("השלמת נתונים חסרים", el("p", {}, `הושלמו ${n} שדות, ואז הקריאה למודל נעצרה (${err.message}). מה שהושלם נשאר בטופס — אפשר ללחוץ שוב כדי להשלים את השאר.`));
+      seqDialog("השלמת נתונים חסרים", el("p", {}, `הושלמו ${n} שדות. ${err.missing ? "לא הושלמו גם בניסיון השני: " + err.missing + "." : "הקריאה למודל נעצרה (" + err.message + ")."} מה שהושלם נשאר בטופס — לחצי שוב על ״השלמת נתונים חסרים״, והמערכת תשלים רק את מה שחסר.`));
       return;
     }
     setAIStatus("mock");
@@ -2940,7 +2947,7 @@ document.getElementById("bSeqImprove").addEventListener("click", async (e) => {
   const done = busy(btnEl, "מנסחת גרסה משופרת...");
   let out = null;
   try {
-    out = await aiImproveAll((d, t) => { btnEl.textContent = t > 1 ? `מנסחת — ${d} מתוך ${t} מנות הושלמו (במקביל, עד כ-8 דקות)` : "מנסחת גרסה משופרת... עד כ-8 דקות"; });
+    out = await aiImproveAll((d, t, again) => { btnEl.textContent = again ? `מנסחת שוב את ${again} — ${d} מתוך ${t}` : t > 1 ? `מנסחת — ${d} מתוך ${t} מנות הושלמו (במקביל, עד כ-8 דקות)` : "מנסחת גרסה משופרת... עד כ-8 דקות"; });
     setAIStatus("ok");
   }
   catch (err) { console.warn("נוסח משופר לא זמין:", err.message); setAIStatus("mock"); }
@@ -3148,16 +3155,19 @@ document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
     built = outline.map(o => { const s = emptySession(); s.main = [str(o.title), str(o.focus)].filter(Boolean).join(" — "); if (sessLen) s.duration = sessLen; return s; });
     const r = await runChunks(built.length, async (a, b) => {
       const res = await aiImportExpand(text, head, outline, a, b, sessLen);
+      const got = new Set();
       (Array.isArray(res.sessions) ? res.sessions : []).forEach((x, j) => {
-        const idx = x && Number.isInteger(x.n) ? x.n - 1 : a + j;
-        if (idx >= a && idx < b) { built[idx] = sessionFromAI(x); if (sessLen && !str(built[idx].duration)) built[idx].duration = sessLen; }
+        if (!x) return;
+        const idx = idxIn(x, j, a, b);
+        if (idx >= a && idx < b) { built[idx] = sessionFromAI(x); got.add(idx); if (sessLen && !str(built[idx].duration)) built[idx].duration = sessLen; }
       });
-    }, (d, t) => { btnEl.textContent = `פורסת ${built.length} מפגשים — ${d} מתוך ${t} מנות הושלמו (עד ${PARALLEL} במקביל, עד כ-8 דקות)`; });
+      for (let i = a; i < b; i++) if (!got.has(i)) throw new Error("המודל לא החזיר את " + rangeLabel(i, i + 1));
+    }, (d, t, again) => { btnEl.textContent = again ? `פורסת שוב את ${again} — ${d} מתוך ${t} מנות הושלמו` : `פורסת ${built.length} מפגשים — ${d} מתוך ${t} מנות הושלמו (עד ${PARALLEL} במקביל, עד כ-8 דקות)`; });
     const failed = r.failed ? r.failed.message : null;
     const creator = seq.creator, date = seq.date;
     seq = normalize(Object.assign({}, head, { goals: head.goals.length ? head.goals : [""], sessions: built }));
     seq.creator = creator; seq.date = date; seq._imported = true;
-    seq._importNotes = str(outl.notes) + (failed ? ` הפריסה המפורטת נעצרה באמצע (${failed}) — במפגשים שלא פורטו מופיע רק נושא המפגש בשדה ״פעילות מרכזית״; אפשר להשלים אותם ב״השלמת נתונים חסרים״.` : "");
+    seq._importNotes = str(outl.notes) + (failed ? ` לא הצלחתי לפרט את ${missingLabel(r.missing)} גם בניסיון השני — בהם מופיע רק נושא המפגש בשדה ״פעילות מרכזית״. לחצי ״השלמת נתונים חסרים״ כדי להשלים אותם.` : "");
     markAllProposals(); snapshot = null;
     openSess.clear(); openSess.add(0);
     setAIStatus("ok");
