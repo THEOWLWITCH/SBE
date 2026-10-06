@@ -293,16 +293,28 @@
     return "בונה את התרחיש — " + cur + " · " + Math.max(1, Math.round((elapsed || 0) / 60)) + " דק׳" + retry;
   }
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  // תקלה זמנית אצל ספק המודל (עומס, זמן, שגיאת שרת) — שווה לנסות שוב פעם אחת
+  const TRANSIENT = /overload|529|503|502|500|rate.?limit|timeout|timed out|ECONNRESET|socket|fetch failed|עומס|נקטע/i;
+  async function pollOnce(server, jobId) {
+    const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 30000);
+    try {
+      const res = await fetch(server + "/api/pipeline-status", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobId }), signal: ctrl.signal });
+      if (!res.ok) throw new Error("status " + res.status);
+      return await res.json();
+    } finally { clearTimeout(timer); }
+  }
   async function pollJob(server, jobId, button, want) {
     const t0 = Date.now(); let misses = 0;
     while (Date.now() - t0 < 45 * 60000) {
       await sleep(document.hidden ? 15000 : 7000);
       let d;
-      try { d = await postJson(server + "/api/pipeline-status", { jobId }, 30000); misses = 0; }
+      // לא דרך postJson: עבודה שנכשלה מחזירה status:"error" עם שדה error, ו-postJson זרק אותה כ"ניתוק" —
+      // הסיבה האמיתית הוסתרה עד "החיבור לשרת נקטע לזמן ארוך" (06/10/2026).
+      try { d = await pollOnce(server, jobId); misses = 0; }
       catch (e) { if (++misses >= 12) throw new Error("החיבור לשרת נקטע לזמן ארוך"); continue; } // ניתוק רגעי — ממשיכים לשאול
       if (want === "text" && d.status === "done" && typeof d.text === "string") return d.text;
       if (d.status === "done" && d.scenario) return d.scenario;
-      if (d.status === "error") throw new Error(d.error || "הבנייה נכשלה");
+      if (d.status === "error") { const e = new Error(d.error || "הבנייה נכשלה"); e.transient = TRANSIENT.test(e.message); throw e; }
       if (d.status === "unknown" || d.status === "lost") { const e = new Error("השרת הופעל מחדש באמצע הבנייה"); e.lost = true; throw e; }
       if (button) button.textContent = want === "text"
         ? "כותבת את התוצר · " + Math.max(1, Math.round((d.elapsed || 0) / 60)) + " דק׳ (בדרך כלל 5–9)"
@@ -316,7 +328,7 @@
     if (!start.jobId) { if (typeof start.text === "string") return start.text; throw new Error(start.error || "המודל לא החזיר תשובה"); } // שרת ישן
     try { return await pollJob(server, start.jobId, button, "text"); }
     catch (e) {
-      if (e.lost && !retried) { if (button) button.textContent = "השרת התחיל מחדש — מתחילה שוב את הכתיבה..."; return await runCompleteJob(server, body, button, true); }
+      if ((e.lost || e.transient) && !retried) { if (button) button.textContent = (e.lost ? "השרת התחיל מחדש" : "עומס זמני אצל המודל") + " — מתחילה שוב את הכתיבה..."; return await runCompleteJob(server, body, button, true); }
       throw e;
     }
   }
@@ -331,7 +343,7 @@
     try { return await pollJob(server, start.jobId, button); }
     catch (e) {
       // השרת הופעל מחדש באמצע (Deploy, עומס): מתחילים שוב לבד — פעם אחת
-      if (e.lost && !retried) { if (button) button.textContent = "השרת התחיל מחדש — מתחילה שוב את הבנייה..."; return await runEduJob(server, body, button, true); }
+      if ((e.lost || e.transient) && !retried) { if (button) button.textContent = (e.lost ? "השרת התחיל מחדש" : "עומס זמני אצל המודל") + " — מתחילה שוב את הבנייה..."; return await runEduJob(server, body, button, true); }
       throw e;
     }
     finally { try { localStorage.removeItem(JOB_KEY); } catch (e) {} }
