@@ -147,7 +147,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 <!-- שני מדפים (04/10/2026): הסימולציות, וחוסן ומנהיגות (פרקטי ונוגי) — מקור האמת של המדף השני: lib/resilience-advisor-sources.js -->
 <div class="shelves" role="tablist" aria-label="מדפי הספרייה">
   <button type="button" role="tab" id="shSim" aria-selected="true">🎭 סימולציות ושיחות מאתגרות <span id="nSim"></span></button>
-  <button type="button" role="tab" id="shRes" aria-selected="false">🌱 חוסן חברתי ומנהיגות — פרקטי ונוגי <span id="nRes"></span></button>
+  <button type="button" role="tab" id="shRes" aria-selected="false">🌱 חוסן חברתי, מנהיגות והנחיה — פרקטי, נוגי וננה <span id="nRes"></span></button>
 </div>
 
 <div id="tabRes" hidden>
@@ -3828,7 +3828,8 @@ body.sbe-hasnav{padding-top:38px;}
   let IS_SYS = false; try { IS_SYS = sessionStorage.getItem("sbe.session.homeUrl") === "admin.html?role=sys"; } catch(e){}
   // חומרים שטרם פורסמו — רק מנהלת המערכת רואה אותם
   const ALL = A.list.filter(x => IS_SYS || !x.hidden);
-  const P = new Set(A.forAdvisor("practi").map(x => x.k)), N = new Set(A.forAdvisor("nugi").map(x => x.k));
+  const P = new Set(A.forAdvisor("practi").map(x => x.k)), N = new Set(A.forAdvisor("nugi").map(x => x.k)), NN = new Set(A.forAdvisor("nana").map(x => x.k));
+  const BY = { practi: P, nugi: N, nana: NN };
   const st = { q: "", who: "all", g: "" };
   document.getElementById("nRes").textContent = "(" + ALL.length + ")";
   try { document.getElementById("nSim").textContent = "(" + SOURCES.length + ")"; } catch(e){}
@@ -3836,13 +3837,13 @@ body.sbe-hasnav{padding-top:38px;}
   const chip = (label, on, fn) => { const b = document.createElement("button"); b.type = "button"; b.className = "fchip" + (on ? " on" : ""); b.textContent = label; b.addEventListener("click", fn); return b; };
   function drawFilters(){
     fb.textContent = "";
-    [["all","הכול"],["practi","של פרקטי"],["nugi","של נוגי"]].forEach(([k,l]) => fb.append(chip(l, st.who === k, () => { st.who = k; draw(); })));
+    [["all","הכול"],["practi","של פרקטי"],["nugi","של נוגי"],["nana","של ננה"]].forEach(([k,l]) => fb.append(chip(l, st.who === k, () => { st.who = k; draw(); })));
     Object.entries(A.groups).forEach(([k,l]) => fb.append(chip(l, st.g === k, () => { st.g = st.g === k ? "" : k; draw(); })));
   }
   function draw(){
     drawFilters();
     const q = st.q.trim().toLowerCase();
-    const items = ALL.filter(x => (st.who === "all" || (st.who === "practi" ? P.has(x.k) : N.has(x.k))) && (!st.g || x.g === st.g)
+    const items = ALL.filter(x => (st.who === "all" || BY[st.who].has(x.k)) && (!st.g || x.g === st.g)
       && (!q || (x.apa + " " + (x.be || "") + " " + (x.gist || "") + " " + (A.groups[x.g] || "")).toLowerCase().includes(q)));
     const isHe = s => /^[\u0590-\u05FF]/.test(s.apa);
     items.sort((a,b) => (isHe(b) - isHe(a)) || a.apa.localeCompare(b.apa, isHe(a) ? "he" : "en", { sensitivity:"base" }));
@@ -3855,7 +3856,7 @@ body.sbe-hasnav{padding-top:38px;}
       const be = document.createElement("p"); be.className = "be"; const bb = document.createElement("b"); bb.textContent = "התובנה ל-Begood: "; be.append(bb, document.createTextNode(x.be || x.gist || "")); d.append(be);
       const m = document.createElement("div"); m.className = "meta";
       const g = document.createElement("span"); g.className = "tagr"; g.textContent = A.groups[x.g] || ""; m.append(g);
-      const who = [P.has(x.k) ? "פרקטי" : "", N.has(x.k) ? "נוגי" : ""].filter(Boolean).join(" · ");
+      const who = [P.has(x.k) ? "פרקטי" : "", N.has(x.k) ? "נוגי" : "", NN.has(x.k) ? "ננה" : ""].filter(Boolean).join(" · ");
       if (who) { const w = document.createElement("span"); w.className = "tagr"; w.textContent = who; m.append(w); }
       if (x.url) { const a = document.createElement("a"); a.href = x.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "לקריאת המקור ↗"; m.append(a); }
       d.append(m); box.append(d);
