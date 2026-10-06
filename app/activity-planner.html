@@ -158,6 +158,8 @@ details.log summary{cursor:pointer;}
   padding:7px 10px;border:none;border-radius:4px;background:transparent;color:var(--ink);
   cursor:pointer;}
 .customsel-opt:hover{background:var(--spoken-soft);}
+/* "חסר משהו?" בראש הרשימה ונשאר גלוי בגלילה (06/10/2026: "לתת אפשרות להוסיף מה שחסר") */
+.customsel-panel .customsel-other{position:sticky;top:-4px;z-index:1;background:var(--surface);border-top:none;border-bottom:1px solid var(--hair);margin:-4px -4px 4px;padding:8px;}
 .customsel-other{display:flex;gap:6px;padding:7px 6px 4px;border-top:1px solid var(--hair);margin-top:4px;}
 .customsel-other input{flex:1;font-family:inherit;font-size:13px;padding:6px 8px;
   border:1px solid var(--hair);border-radius:5px;background:var(--ground);color:var(--ink);}
@@ -1750,7 +1752,7 @@ const FRAMEWORK_OPTS = ["בית ספר","גן ילדים","מכללה / אוני
   "מתנ״ס / מרכז קהילתי","תנועת נוער / חינוך בלתי פורמלי","ארגון / מקום עבודה"];
 const AUDIENCE_OPTS = ["תלמידים","סטודנטים","מורים / צוות חינוכי","הורים","נוער","בוגרים","גיל שלישי","משפחות"];
 const AGE_RANGE_OPTS = ["גן","כיתה א-ג","כיתה ד-ה","חטיבת ביניים","חטיבה עליונה",
-  "18–25","25–45","45–65","65 ומעלה","גילאים מעורבים"];
+  "18–25","25–45","45–65","65 ומעלה"];
 const COURSE_LEVEL_OPTS = ["קורס ראשון בתחום","קורס המשך"];
 // העדפות ומגבלות — מילה במילה מהמסמך שלה, באותו סדר.
 const PREF_ITEMS = ["צורת ישיבה","עבודת צוות","עבודה עצמאית","הוראה פרונטלית (הרצאה)",
@@ -2058,12 +2060,12 @@ function selF(label, path, baseOpts, listKey, o){
       panel.append(b);
     });
     const row = el("div", { class:"customsel-other" });
-    const oi = el("input", { type:"text", placeholder:"אפשרות משלך — נשמרת לכולן" });
+    const oi = el("input", { type:"text", placeholder:"חסר משהו? כתבי כאן והוסיפי" });
     const ob = el("button", { type:"button" }, "הוספה");
     const add = () => { const t = str(oi.value); if (!t) return; seqAddCustom(listKey, t); choose(t); };
     oi.addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); add(); } });
     ob.addEventListener("click", add);
-    row.append(oi, ob); panel.append(row);
+    row.append(oi, ob); panel.prepend(row);
   }
   trigger.addEventListener("click", () => {
     const willOpen = !csel.classList.contains("open");
@@ -3176,7 +3178,7 @@ function smartJSON(S, M, A, R, T){
   return JSON.stringify({ S:{text:S,checked:true}, M:{text:M,checked:true}, A:{text:A,checked:true}, R:{text:R,checked:true}, T:{text:T,checked:true} });
 }
 const SEQ_SAMPLE = {
-  framework:"השתלמות / פיתוח מקצועי", audience:"מורים / צוות חינוכי", ageRange:"גילאים מעורבים",
+  framework:"השתלמות / פיתוח מקצועי", audience:"מורים / צוות חינוכי", ageRange:"25–45",
   participants:"18", space:"חדר סדנאות בבית הספר, שולחנות ניידים",
   prefs:[{item:"צורת ישיבה", note:"מעגל, בלי שולחנות באמצע"}, {item:"עבודת צוות", note:""},
     {item:"שיחות להחלפת דעות והעמקה", note:""}, {item:"תרגול במהלך המפגשים", note:"סימולציות קצרות בשלישיות"},
