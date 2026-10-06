@@ -73,7 +73,7 @@ const J = window.SBE_JOURNEY;
 const q = new URLSearchParams(location.search), id = q.get('id') || '', code = q.get('code') || '';
 const out = document.getElementById('out');
 function el(t, c, x){ const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = String(x); return n; }
-const fmt = d => d ? new Date(d).toLocaleDateString('he-IL', { day:'numeric', month:'long', year:'numeric' }) : '';
+const fmt = d => d ? new Date(d).toLocaleDateString('he-IL', { day:'2-digit', month:'2-digit', year:'2-digit' }) : '';
 fetch('https://sbe-server.onrender.com/api/access', { method:'POST', headers:{ 'content-type':'application/json' }, body: JSON.stringify({ action:'jrCert', id, code }) })
   .then(r => r.json()).then(d => {
     if (!d || !d.unitName) throw new Error();
