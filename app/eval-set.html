@@ -135,7 +135,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 </header>
 
 <div class="runmeta">
-  <label>תאריך הריצה<input id="mDate" type="text" placeholder="לדוגמה 05.09.2026"></label>
+  <label>תאריך הריצה<input id="mDate" type="text" placeholder="לדוגמה 06.10.26"></label>
   <label>גרסת פרומפט<input id="mPrompt" type="text" placeholder="לדוגמה stage1 v3"></label>
   <label>מודל<input id="mModel" type="text" placeholder="לדוגמה claude-opus-5"></label>
 </div>
@@ -282,7 +282,7 @@ function itemState(n){
 }
 
 const $ = (id) => document.getElementById(id);
-$("mDate").value = RUN.meta.date || "";
+$("mDate").value = RUN.meta.date || new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
 $("mPrompt").value = RUN.meta.prompt || "";
 $("mModel").value = RUN.meta.model || "";
 ["mDate","mPrompt","mModel"].forEach(id => {
@@ -530,7 +530,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
   typeEl.addEventListener("change", syncType);
 
   function openDlg(presetType){
-    dateEl.value = new Date().toLocaleDateString("he-IL");
+    dateEl.value = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
     if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
     try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
     errEl.hidden = true;

@@ -1128,7 +1128,7 @@ function renderSummary(){
   const d=cached.doc||{};
   const card=el2('div','card sum-doc');
   const t=el2('h2',null,'סיכום והמלצות — כיתה '+cached.cls);t.style.borderBottom='none';card.appendChild(t);
-  card.appendChild(el2('p',null,'שכבה: '+cached.band+' · הופק: '+new Date(cached.at).toLocaleDateString('he-IL')+(cfg.demo?' · כיתת דמו':''))).style.cssText='font-size:.8rem;color:var(--muted);margin-top:-.4rem';
+  card.appendChild(el2('p',null,'שכבה: '+cached.band+' · הופק: '+new Date(cached.at).toLocaleDateString('he-IL',{day:"2-digit",month:"2-digit",year:"2-digit"})+(cfg.demo?' · כיתת דמו':''))).style.cssText='font-size:.8rem;color:var(--muted);margin-top:-.4rem';
   if(d.intro)card.appendChild(el2('p','sum-intro',d.intro));
   if((d.progress||[]).length){
     card.appendChild(el2('h2',null,'מעקב: מה השתנה מאז המדידה הקודמת'));

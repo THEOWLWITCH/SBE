@@ -551,7 +551,7 @@ function downloadText(filename, text) {
 const GROUPS = [
   { id:"env", title:"מעטפת", open:true, fields:[
     { k:"creator",  l:"השם שלך", hint:"לצורך תיעוד וקרדיט" },
-    { k:"date",     l:"תאריך", placeholder:"לדוגמה: 17.9.26", hint:"לצורך תיעוד" },
+    { k:"date",     l:"תאריך", placeholder:"לדוגמה: 06.10.26", hint:"התאריך של היום — אפשר לשנות" },
     { k:"productType", l:"סוג התוצר", type:"select", opts:PRODUCT_TYPE_OPTS,
       hint:"שיחה בעל פה מפיקה עץ החלטות וכרטיס תזכורת לשיחה חיה. התכתבות דיגיטלית מפיקה טיוטת הודעה עם חלופות ניסוח" },
     { k:"approach", l:"הגישה שתנחה את התכנון", type:"cards", cards:APPROACH_CARDS,
@@ -854,6 +854,8 @@ function render() {
       }
       if (f.placeholder) inp.placeholder = f.placeholder;
       inp.id = "i-" + f.k;
+      // תאריך: התאריך של היום, בסגנון הישראלי (06.10.26) — אפשר לשנות
+      if (f.k === "date" && !inp.value) inp.value = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
       inp.addEventListener("input", () => onEdit(f.k));
       inp.addEventListener("change", () => onEdit(f.k));
       wrap.append(inp);
@@ -1232,7 +1234,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
   typeEl.addEventListener("change", syncType);
 
   function openDlg(presetType){
-    dateEl.value = new Date().toLocaleDateString("he-IL");
+    dateEl.value = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
     if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
     try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
     errEl.hidden = true;

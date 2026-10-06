@@ -87,7 +87,7 @@
       return c.outerHTML;
     }).join("");
     const logo = logoSrc();
-    const date = new Date().toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" });
+    const date = new Date().toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "2-digit" });
     const w = window.open("", "_blank");
     if (!w) { alert("הדפדפן חסם את חלון ההדפסה. אפשרי חלונות קופצים לאתר ונסי שוב."); return; }
     w.document.write(`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(title)} — Begood</title>

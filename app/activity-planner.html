@@ -1456,7 +1456,7 @@ function buildDocView(d, creator) {
   const img = el("img"); img.src = document.getElementById("brandLogo").src;
   logoRow.append(img, el("b",{}, "Begood"));
   dv.append(logoRow);
-  dv.append(el("div", { class:"dv-by" }, "תוכנית פעילות · " + (creator || "—") + " · " + new Date().toLocaleDateString("he-IL")));
+  dv.append(el("div", { class:"dv-by" }, "תוכנית פעילות · " + (creator || "—") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
   dv.append(creditNode());
   dv.append(el("h2", {}, d.domain || "פעילות"));
   dv.append(el("div", { class:"dv-meta" }, [d.age, d.duration, approachList(d.approach).join(" + ")].filter(Boolean).join(" · ")));
@@ -1531,7 +1531,7 @@ function buildNarrativeDocView(d, creator, narr) {
   const img = el("img"); img.src = document.getElementById("brandLogo").src;
   logoRow.append(img, el("b",{}, "Begood"));
   dv.append(logoRow);
-  dv.append(el("div", { class:"dv-by" }, "תוכנית פעילות · " + (creator || "—") + " · " + new Date().toLocaleDateString("he-IL")));
+  dv.append(el("div", { class:"dv-by" }, "תוכנית פעילות · " + (creator || "—") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
   dv.append(creditNode());
   dv.append(el("h2", {}, narr.title || d.domain || "פעילות"));
   dv.append(el("div", { class:"dv-meta" }, [d.domain, d.age, d.duration, approachList(d.approach).join(" + ")].filter(Boolean).join(" · ")));
@@ -1801,13 +1801,15 @@ const REPORT_CRITERIA = [
 ];
 
 function today(){ return new Date().toISOString().slice(0,10); }
+// התאריך שמוצג ומוזן בטופס — בסגנון הישראלי 06.10.26 (06/10/2026)
+function todayHe(){ return new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"}); }
 function emptySub(){ return { t:"", min:"" }; }
 function emptySession(){
   return { smart:"", product:"", resources:"", duration:"", opening:"", openingMin:"",
     main:"", mainMin:"", subs:[emptySub(), emptySub(), emptySub()], closing:"", closingMin:"" };
 }
 function emptySeq(){
-  return { creator:"", date:today(), framework:"", audience:"", ageRange:"", participants:"", space:"",
+  return { creator:"", date:todayHe(), framework:"", audience:"", ageRange:"", participants:"", space:"",
     prefs:[], limits:[], domain:"", approaches:[], topic:"", goals:[""], courseLevel:"", finalProduct:"", assessment:"",
     sessions:[emptySession(), emptySession(), emptySession()], _sample:false, _imported:false, _importNotes:"" };
 }
@@ -2480,7 +2482,8 @@ function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&
 function nl(s){ return esc(str(s)).replace(/\n/g, "<br>"); }
 function fmtDate(iso){
   const d = new Date(str(iso) || Date.now());
-  return isNaN(d) ? str(iso) : d.toLocaleDateString("he-IL", { day:"numeric", month:"long", year:"numeric" });
+  if (/^\d{1,2}\.\d{1,2}\.\d{2,4}$/.test(str(iso))) return str(iso);
+  return isNaN(d) ? str(iso) : d.toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
 }
 const DOC_CSS = `
 @page{size:A4;margin:16mm 15mm;}
@@ -3234,7 +3237,7 @@ function loadSample(){
   if (nonEmpty && !seq._sample && !confirm("הטעינה תחליף את מה שמילאת בטופס הרצף בדוגמה מלאה. להמשיך?")) return;
   const creator = seq.creator;
   seq = normalize(JSON.parse(JSON.stringify(SEQ_SAMPLE)));
-  seq.creator = creator; seq.date = today(); seq._sample = true; seq._imported = false;
+  seq.creator = creator; seq.date = todayHe(); seq._sample = true; seq._imported = false;
   props = new Set(); snapshot = null;
   openSess.clear(); openSess.add(0);
   renderSeq(); touch();
@@ -3366,7 +3369,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
   typeEl.addEventListener("change", syncType);
 
   function openDlg(presetType){
-    dateEl.value = new Date().toLocaleDateString("he-IL");
+    dateEl.value = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
     if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
     try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
     errEl.hidden = true;
