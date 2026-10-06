@@ -166,6 +166,8 @@ const eduItems = [...inputItems, ...FAC_ITEMS, SOURCES_ITEM];
 
 const eduWrap = document.getElementById("eduLinks");
 eduItems.forEach(it => eduWrap.append(el("a",{href:it.href}, el("b",{},it.t), el("span",{},it.d))));
+const studioLink=el("a",{href:"resilience-studio.html",hidden:""},el("b",{},"סטודיו חוסן"),el("span",{},"השראה ופעולה לקבוצות, נוער, משפחות וצוותים"));
+eduWrap.append(studioLink);
 
 document.getElementById("back").addEventListener("click", () => { location.href = "entry.html"; });
 
@@ -179,12 +181,13 @@ const TRACK_HAS_TOOLS = !(track === "parent" || track === "youth");
 const CAT_IDS = { conv: "catConv", activity: "catActivity", academic: "catAcademic" };
 const modMsg = document.getElementById("modMsg");
 function showCats(cfg){
+  studioLink.hidden = !["studio","activity","resilience","practi","leadership"].some(p=>cfg[p]===true);
   Object.entries(CAT_IDS).forEach(([key, id]) => {
     document.getElementById(id).hidden = !(TRACK_HAS_TOOLS && cfg[key] === true);
   });
 }
 if (!inst) {
-  showCats({ conv: true, activity: true, academic: true });
+  showCats({ conv: true, activity: true, academic: true, studio: true });
 } else {
   modMsg.hidden = false; modMsg.textContent = "טוענת את הכלים של המוסד... (לפעמים עד דקה)";
   fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" },

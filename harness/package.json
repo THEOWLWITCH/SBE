@@ -4,6 +4,7 @@
   "type": "module",
   "description": "רתמת הרצה לסט ההערכה",
   "scripts": {
+    "test": "node --test tests",
     "run": "node run.mjs",
     "gates": "node run.mjs --gates-only"
   },
