@@ -60,7 +60,7 @@ export function toScenario(out, { input = {}, meta = {} } = {}) {
     subtitle: str(out.scenarioSubtitle),
     institution: str(meta.institution || 'מכללה לחינוך'),
     creator: str(meta.creator || ''),
-    date: str(meta.date || today.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })),
+    date: str(meta.date || today.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' })),
     language: str(input.language || 'עברית'),
     duration: str(meta.duration || '5'),
     age: str(meta.age || input.age || ''),

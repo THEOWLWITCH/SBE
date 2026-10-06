@@ -689,7 +689,8 @@ export function notifyParticipant(j, subject, paras, link, linkText) {
   return fetch('https://api.resend.com/emails', { method: 'POST', headers: { authorization: 'Bearer ' + env.RESEND_API_KEY, 'content-type': 'application/json' },
     body: JSON.stringify({ from: env.NOTIFY_FROM, to: [to], subject: 'מסע אל החוסן — ' + subject, text, html }) }).then((r) => r.ok).catch(() => false);
 }
-const jrFmt = (d) => String(d || '').split('-').reverse().join('.');
+// תאריך בסגנון הישראלי 06.10.26 (06/10/2026)
+const jrFmt = (d) => String(d || '').slice(0, 10).split('-').reverse().map((x, i) => (i === 2 ? x.slice(2) : x)).join('.');
 const jrContact = (body) => { const e = String(body.email || '').trim().slice(0, 254); return { email: JR_EMAIL_RE.test(e) ? e : '', updates: !!body.updates && JR_EMAIL_RE.test(e), at: new Date().toISOString() }; };
 const rcPublic = (x) => ({ id: x.id, title: x.title, detail: x.detail || '', cat: x.cat, uses: x.uses || 0 });
 
@@ -834,7 +835,7 @@ async function handleJourney(store, body) {
       const s = jrSummary(j);
       if (s.pendingAdmin) waiting.push(j.unitName);
       (j.milestones || []).filter((m) => m.status === 'open' || m.status === 'needs').forEach((m) => {
-        if (m.due < today) late.push(j.unitName + ' — ' + m.title); else if (m.due <= in14) soon.push(j.unitName + ' — ' + m.title + ' (' + m.due.split('-').reverse().join('.') + ')');
+        if (m.due < today) late.push(j.unitName + ' — ' + m.title); else if (m.due <= in14) soon.push(j.unitName + ' — ' + m.title + ' (' + jrFmt(m.due) + ')');
       });
     });
     // תזכורות למשתתפים (בהסכמה): שבוע לפני המועד, ומילה חמה שלושה ימים אחריו. כל תזכורת נשלחת פעם אחת.
