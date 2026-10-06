@@ -1,6 +1,7 @@
 <meta charset="UTF-8">
 <title>ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/ai-status.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -244,16 +245,8 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <span class="ai-status unknown" id="aiStatusChip"><span class="dot"></span> בודקת חיבור למודל...</span>
 </div>
 <div class="banner brick">
-  <b>לא שיפוט, ליווי.</b> המשוב נכתב בגובה העיניים ומכוון לשיפור, לא לביקורת חדה — זו עבודה
-  אמיתית של מישהי אמיתית. שמרי עותק של הטקסט המקורי לפני שאת עורכת לפיו.
-</div>
-<div class="banner workfile" id="workFileBar">
-  <b>קובץ עבודה</b>
-  <button type="button" id="bSaveWork">שמירת קובץ עבודה</button>
-  <button type="button" id="bOpenWork">פתיחת קובץ עבודה</button>
-  <button type="button" id="bLastFb" hidden>המשוב האחרון</button>
-  <input type="file" id="openWorkFile" accept=".json,application/json" hidden>
-  <p class="note" id="workFileNote">הכול נשמר אוטומטית במכשיר הזה. כדי להמשיך במכשיר אחר — שמרי קובץ עבודה בתיקייה שלך (למשל Google Drive או OneDrive) ופתחי אותו שם. הקובץ נשמר אצלך בלבד, לא בשרת של המערכת.</p>
+  <b>לא שיפוט — ליווי.</b> המשוב שתקבל.י נכתב בגובה העיניים, כדי לעזור לך לשפר את העבודה שלך — לא כדי לבקר אותה.
+  לפני שאת.ה עורכ.ת לפיו, כדאי לשמור עותק של הטקסט המקורי.
 </div>
 
 <div class="grp-wrap">
@@ -329,6 +322,16 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
     </div>
   </div>
 </details>
+</div>
+
+<!-- שמירת העבודה — למטה, אחרי הטופס (06/10/2026) -->
+<div class="banner workfile" id="workFileBar" style="margin-top:16px">
+  <b>קובץ עבודה</b>
+  <button type="button" id="bSaveWork">שמירת קובץ עבודה</button>
+  <button type="button" id="bOpenWork">פתיחת קובץ עבודה</button>
+  <button type="button" id="bLastFb" hidden>המשוב האחרון</button>
+  <input type="file" id="openWorkFile" accept=".json,application/json" hidden>
+  <p class="note" id="workFileNote">הכול נשמר אוטומטית במכשיר הזה. כדי להמשיך במכשיר אחר — שמרי קובץ עבודה בתיקייה שלך (למשל Google Drive או OneDrive) ופתחי אותו שם. הקובץ נשמר אצלך בלבד, לא בשרת של המערכת.</p>
 </div>
 
 </div>
