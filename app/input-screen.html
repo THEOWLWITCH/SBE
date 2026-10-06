@@ -87,6 +87,8 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
   width:100%;font-family:inherit;font-size:15.5px;line-height:1.55;color:var(--ink);
   background:var(--ground);border:1px solid var(--hair);border-radius:5px;
   padding:10px 12px;resize:vertical;direction:rtl;}
+/* sbe-cbfix (06/10/2026): תיבות סימון וכפתורי בחירה לא נמתחים לרוחב מלא — אחרת השורה נדחפת והמסך נחתך */
+.f input[type=checkbox],.f input[type=radio]{width:auto;flex:none;padding:0;margin:0;}
 .f textarea{min-height:46px;}
 .f textarea:focus,.f input:focus,.f select:focus{outline:2px solid var(--spoken);outline-offset:1px;}
 .f[data-state="proposal"] textarea,.f[data-state="proposal"] input,.f[data-state="proposal"] select{
