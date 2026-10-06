@@ -1,2 +1,5 @@
 harness/api-key.txt
 node_modules/
+
+# צילומי מסך מבדיקות — לא נכנסים למאגר
+/*.png

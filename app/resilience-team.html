@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>חוסן חברתי — ניהול</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -1052,13 +1053,10 @@ async function generateSummary(){
   const inp=summaryInput(cfg);
   if(!inp.domains.length)return;
   SUM_BUSY=true;renderSummary();
-  const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),300000);
+  const timer=null; // ברקע, עם שאילת מצב (lib/ai-call.js, 06/10/2026)
   try{
-    const res=await fetch(AI_SERVER+'/api/complete',{method:'POST',headers:{'content-type':'application/json'},signal:ctrl.signal,
-      body:JSON.stringify({system:SUM_SYSTEM,messages:[{role:'user',content:inp.text}],maxTokens:12000})});
-    const data=await res.json();
-    if(!res.ok||data.error)throw new Error(data.error||('שגיאת שרת '+res.status));
-    const m=String(data.text||'').match(/\{[\s\S]*\}/);
+    const text=await sbeCallAI(AI_SERVER,{system:SUM_SYSTEM,messages:[{role:'user',content:inp.text}],maxTokens:12000},300000);
+    const m=String(text||'').match(/\{[\s\S]*\}/);
     if(!m)throw new Error('המודל לא החזיר מבנה תקין');
     const doc=JSON.parse(m[0]);
     saveSummaryCache({cid:sumCacheId(cfg),at:new Date().toISOString(),cls:cfg.cls,band:inp.band.label,doc});
