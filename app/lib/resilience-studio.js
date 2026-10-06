@@ -6,6 +6,15 @@
 })(typeof window === 'undefined' ? globalThis : window, function () {
   'use strict';
   const VERSION = '1.0';
+  const CONSULTATION_STAGES = ['starting','focus','activity','step','adaptation','facilitation','mechanism'];
+  const MECHANISM_TYPES = {none:'עוד לא בחרנו',routine:'שגרה חוזרת',board:'לוח משותף', 'monthly-day':'יום חוסן קבוע',agreement:'הסכמות ותקנון', 'action-team':'צוות פעולה',committee:'ועדה',other:'מנגנון אחר'};
+  const MECHANISM_FIELDS = ['name','cadence','roles','participation','firstAction','review','mechanism'];
+  const FACILITATION_FIELDS = ['preparation','opening','participation','questions','difficulties','closing','followUp'];
+  function socialMechanism(value) {
+    const v=value&&typeof value==='object'?value:{};
+    return {type:Object.hasOwn(MECHANISM_TYPES,v.type)?v.type:'none',...Object.fromEntries(MECHANISM_FIELDS.map(k=>[k,typeof v[k]==='string'?v[k]:'']))};
+  }
+  function facilitationPlan(value) { const v=value&&typeof value==='object'?value:{};return Object.fromEntries(FACILITATION_FIELDS.map(k=>[k,typeof v[k]==='string'?v[k]:''])); }
   // Proposed practice targets, not a validated scale or approved intervention catalogue.
   const rows = [
     ['awareness','מודעות עצמית וחוזקות','לזהות משאב אישי ולהציע איך להשתמש בו יחד','זיהוי חוזקות','שילוב משאבים'],
@@ -52,6 +61,7 @@
   function claims(a) {
     const maps = {components:new Map(),individual:new Map(),shared:new Map()};
     (a.sessions||[]).forEach(s=>(s.steps||[]).forEach(step=>{
+      if(step.requiresReview)return;
       [['components','components'],['individual','individualSkills'],['shared','sharedSkills']].forEach(([kind,field])=>(step[field]||[]).forEach(label=>{
         const key = String(label), value = maps[kind].get(key)||{label:key,stepIds:[]};
         value.stepIds.push(step.id); maps[kind].set(key,value);
@@ -75,6 +85,7 @@
         if (!Number.isFinite(step.minutes)||step.minutes<=0) errors.push('משך שלב אינו תקין');
         minutes+=Number(step.minutes)||0;
         if (!step.title||!step.instructions) errors.push('חסרות הוראות שלב');
+        if (step.requiresReview) errors.push('נדרשת בדיקה מחודשת של רכיבים ומיומנויות לאחר שינוי המטרה או ההוראות');
         for(const f of ['materials','components','individualSkills','sharedSkills']) if(!Array.isArray(step[f])) errors.push('חסר מיפוי '+f);
         if ((step.components||[]).some(id=>!component(id))) errors.push('רכיב שאינו בקטלוג');
       });
@@ -85,6 +96,9 @@
     if (!c.components.some(x=>x.label===a.focus)) errors.push('רכיב המוקד אינו מתורגל בשלבים');
     if (!c.individual.length || !c.shared.length) errors.push('חסר תרגול של מיומנות אישית או משותפת');
     if (!a.participationAlternative) errors.push('חסרה חלופת השתתפות ללא חשיפה אישית');
+    if(a.socialMechanism&&a.socialMechanism.type!=='none') {
+      if(!Object.hasOwn(MECHANISM_TYPES,a.socialMechanism.type)||MECHANISM_FIELDS.some(k=>!String(a.socialMechanism[k]||'').trim()))errors.push('השלימו את המנגנון החברתי: תפקידים, השתתפות, פעולה ראשונה, קצב ובחינת ההמשך');
+    }
     return [...new Set(errors)];
   }
   function exampleActivity(input) {
@@ -99,15 +113,16 @@
         {id:'s'+i+'-reflect',title:'לומדים ובוחרים צעד המשך',minutes:last,instructions:'בכל קבוצה מציינים מה עבד בפעולה ואיזה שינוי קטן כדאי לנסות. מתעדים פעולות נצפות, ללא ציון חוסן אישי.',materials:[],components:[],individualSkills:['רפלקציה'],sharedSkills:['בחירת צעד משותף']}
       ],debrief:['איזו פעולה אפשרה לנו להתקדם יחד?','מה נרצה לשנות בניסיון הבא?'],nextStep:'מנסים את הצעד שנבחר במצב יומיומי ובודקים אם היה ישים.',participantMaterials:'משימה בדויה: בנו דרך לבצע משימה קטנה יחד. סמנו תרומה אפשרית, מידע חסר, בקשת עזרה וצעד המשך. אפשר לענות בדיבור, בכתב או בציור.'
     }));
-    return {schemaVersion:VERSION,title:'צעד קטן — '+c.label,purpose:b.goal||'תרגול '+c.label,focus:c.id,selectionReason:recommendFocus(b).rationale,evidenceStatus:'example-draft',catalogueVersion:VERSION,professionalBasis:[],sessions,participationAlternative:'אפשר לתרום בכתב, בציור או באמצעות דמות בדויה; אפשר לבחור התבוננות ללא חשיפה אישית.',leaderGuidance:'זו דוגמת פיתוח שטרם אושרה לשימוש מקצועי. בחרו משימה פשוטה המתאימה לגיל ולתנאים; בני נוער אינם אחראים לניהול סכנה.',adaptationExplanation:'',goalChanged:false};
+    return {schemaVersion:VERSION,title:'צעד קטן — '+c.label,purpose:b.goal||'תרגול '+c.label,focus:c.id,selectionReason:recommendFocus(b).rationale,evidenceStatus:'example-draft',catalogueVersion:VERSION,professionalBasis:[],sessions,participationAlternative:'אפשר לתרום בכתב, בציור או באמצעות דמות בדויה; אפשר לבחור התבוננות ללא חשיפה אישית.',leaderGuidance:'זו דוגמת פיתוח שטרם אושרה לשימוש מקצועי. בחרו משימה פשוטה המתאימה לגיל ולתנאים; בני נוער אינם אחראים לניהול סכנה.',adaptationExplanation:'',goalChanged:false,
+      socialMechanism:socialMechanism({type:'routine',name:'שגרת פעולה משותפת',cadence:'פעם בשבוע במועד שהקבוצה תבחר',roles:'מובילת השגרה מתאמת זמן; משתתפים בוחרים תרומה וגיבוי',participation:'בחירה בתרומה בדיבור, בכתב או בציור; אפשר לדלג',firstAction:'בוחרים יחד משימה קטנה ומועד לניסיון ראשון',review:'אחרי שני ניסיונות בודקים מה היה ישים ומה צריך לשנות',mechanism:c.mechanism}),
+      facilitationPlan:facilitationPlan({preparation:'נסו בעצמכם את המשימה והכינו חלופה ללא ציוד. תכננו עבודה בקבוצות קטנות לפי הזמן הזמין.',opening:'הציגו מטרה, זמן ודרך להשתתף בלי לחשוף סיפור אישי. בדקו שההוראה מובנת לפני שמתחילים.',participation:'אפשרו חשיבה שקטה לפני שיחה. הזמינו תרומות שונות בלי לכפות דיבור.',questions:'שאלו: מה אפשר לנו להתקדם יחד? איזה שינוי קטן ננסה?',difficulties:'בשתיקה תנו זמן או כתיבה. במחלוקת החזירו להקשבה ולהסכמות. בפגיעה עצרו את הפעולה ובקשו תמיכה מתאימה.',closing:'סכמו פעולה שנלמדה ובחרו צעד המשך אחד עם אחריות ברורה.',followUp:'במועד שנבחר בדקו מה נעשה בפועל והתאימו את השגרה יחד.'})};
   }
   function publicActivity(a) {
-    const fields=['schemaVersion','title','purpose','focus','selectionReason','evidenceStatus','catalogueVersion','professionalBasis','sessions','participationAlternative','leaderGuidance','adaptationExplanation','goalChanged'];
+    const fields=['schemaVersion','title','purpose','focus','evidenceStatus','catalogueVersion','professionalBasis','sessions','participationAlternative','leaderGuidance','adaptationExplanation','goalChanged','socialMechanism','facilitationPlan'];
     const out=Object.fromEntries(fields.filter(k=>a[k]!==undefined).map(k=>[k,clone(a[k])]));
     // Context used for selection is private. Public kit explains the mechanism only.
-    delete out.selectionReason;
     return out;
   }
   function workFile(state) { return Object.assign({type:'begood-resilience-studio',schemaVersion:VERSION,savedAt:new Date().toISOString()},clone(state)); }
-  return {VERSION,COMPONENTS,component,newBrief,recommendFocus,claims,validateActivity,exampleActivity,publicActivity,workFile};
+  return {VERSION,CONSULTATION_STAGES,MECHANISM_TYPES,MECHANISM_FIELDS,FACILITATION_FIELDS,socialMechanism,facilitationPlan,COMPONENTS,component,newBrief,recommendFocus,claims,validateActivity,exampleActivity,publicActivity,workFile};
 });

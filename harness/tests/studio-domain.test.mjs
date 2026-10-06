@@ -39,3 +39,12 @@ test('AE18,23: sources have no count cap and unreviewed sources remain context',
   assert.equal(b.sources.length,70);
   assert.ok(b.sources.every(s=>s.status==='unreviewed'&&s.role==='context'));
 });
+
+test('R35: revised instructions cannot carry unchecked skill claims into an export', () => {
+  const brief=studio.newBrief({focus:'support'}), activity=studio.exampleActivity(brief);
+  activity.sessions[0].steps.forEach(step=>{step.instructions='תוכן ששונה';step.requiresReview=true;});
+  assert.deepEqual(studio.claims(activity),{components:[],individual:[],shared:[]});
+  assert.ok(studio.validateActivity(activity,brief).some(error=>error.includes('בדיקה מחודשת')));
+  activity.sessions[0].steps.forEach(step=>step.requiresReview=false);
+  assert.deepEqual(studio.validateActivity(activity,brief),[]);
+});

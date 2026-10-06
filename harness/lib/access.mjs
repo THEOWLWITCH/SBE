@@ -12,7 +12,7 @@ const MIN_PASSWORD = 8;
 // ההרשאות במערכת. לכל מוסד יש "תקרה" (modules:<מוסד>) — מה שמנהלת המערכת פתחה
 // לו; ברירת המחדל: שום דבר. קודי הצוות שמנהל/ת המוסד מפיק/ה מקבלים רק צירוף
 // מתוך התקרה.
-export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi', 'journey', 'writer'];
+export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi', 'journey', 'writer', 'studio'];
 const DEFAULT_MODULES = Object.fromEntries(PERMS.map((p) => [p, false]));
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
@@ -278,6 +278,31 @@ async function resolveCode(store, rec, settings) {
   else if (rec.kind === 'student' || rec.kind === 'course') perms = ceiling.academic || ceiling.lecturer ? ['academic'] : [];
   else perms = (rec.perms || []).filter((p) => ceiling[p]);
   return { rec, inst: rec.inst, perms, sub };
+}
+
+// Recheck access at the moment protected Studio data or AI is used. A signed
+// token proves entry, but its cached permissions do not prove a live entitlement.
+export async function authorizePermission(store, token, permissions) {
+  const t = await verifyToken(store, token);
+  if (!t) return null;
+  const wanted = (Array.isArray(permissions) ? permissions : [permissions]).filter(p => PERMS.includes(p));
+  if (!wanted.length) return null;
+  if (t.k === 'sys') return { ...t, perms: [...PERMS] };
+  const settings = await getSettings(store);
+  let live;
+  if (t.k === 'code' && t.c !== 'LEGACY') {
+    const rec = await store.get('code:' + t.c);
+    if (!rec || rec.inst !== t.inst || rec.kind !== t.kind) return null;
+    live = await resolveCode(store, rec, settings);
+    if (live.error) return null;
+  } else if (t.k === 'inst' || (t.k === 'code' && t.c === 'LEGACY' && t.kind === 'legacy')) {
+    const inst = (await getInstitutions(store)).find(x => x.name === t.inst);
+    const sub = subState(inst, settings);
+    if (!inst || ['inactive', 'expired'].includes(sub.state)) return null;
+    const ceiling = await getCeiling(store, inst.name);
+    live = { perms: PERMS.filter(p => ceiling[p] && p !== 'lecturer') };
+  } else return null;
+  return wanted.some(p => live.perms.includes(p)) ? { ...t, perms: live.perms } : null;
 }
 
 // הודעות לבאנר אחרי כניסה.
