@@ -274,7 +274,7 @@ render();
   LOCAL.forEach(x => SBE_FB.addCustom(x.entry && x.entry._defs, bank));
   WORKSHOPS.forEach(ws => {
     const o = document.createElement("option"); o.value = ws.w;
-    o.textContent = [ws.scenario || "סדנה", new Date(ws.created).toLocaleDateString("he-IL"), ws.fac, ws.inst].filter(Boolean).join(" · ") + " (" + (ws.entries || []).length + " משובים)";
+    o.textContent = [ws.scenario || "סדנה", new Date(ws.created).toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"}), ws.fac, ws.inst].filter(Boolean).join(" · ") + " (" + (ws.entries || []).length + " משובים)";
     $viewWs.appendChild(o);
   });
   const want = new URLSearchParams(location.search).get("w");
@@ -426,7 +426,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
   typeEl.addEventListener("change", syncType);
 
   function openDlg(presetType){
-    dateEl.value = new Date().toLocaleDateString("he-IL");
+    dateEl.value = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
     if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
     try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
     errEl.hidden = true;

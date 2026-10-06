@@ -833,7 +833,7 @@ function convCard(c){
   box.appendChild(dl);return box;
 }
 function section(card,title,items,fn){if(!(items||[]).length)return;card.appendChild(el('h3',null,title));items.forEach(x=>card.appendChild(fn(x)));}
-function metaLine(R){return [R.who,R.mode,R.school?'בית ספר '+R.school:'',R.stage,R.sit?'מצב: '+R.sit:'','הופק: '+new Date(R.at).toLocaleDateString('he-IL')].filter(Boolean).join(' · ');}
+function metaLine(R){return [R.who,R.mode,R.school?'בית ספר '+R.school:'',R.stage,R.sit?'מצב: '+R.sit:'','הופק: '+new Date(R.at).toLocaleDateString('he-IL',{day:"2-digit",month:"2-digit",year:"2-digit"})].filter(Boolean).join(' · ');}
 function renderReport(){
   const box=F('report');box.textContent='';const R=STATE.report;if(!R)return;const d=R.doc||{};
   const head=el('div','card no-print');head.appendChild(el('h2',null,'הדוח מוכן'));

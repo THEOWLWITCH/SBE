@@ -219,7 +219,7 @@ async function complete(system,messages,maxTokens){
 function accessApi(body){return fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json().catch(()=>({})).then(d=>{d._status=r.status;return d;}));}
 function token(){try{return sessionStorage.getItem('sbe.session.token')||'';}catch(e){return '';}}
 const api = (action, extra) => accessApi({ action, token: token(), ...(extra || {}) });
-const fmt = d => d ? String(d).slice(0,10).split('-').reverse().join('.') : '';
+const fmt = d => d ? String(d).slice(0,10).split('-').reverse().map((x,i)=>i===2?x.slice(2):x).join('.') : '';
 const today = () => new Date().toISOString().slice(0,10);
 const daysTo = d => Math.round((Date.parse(d) - Date.parse(today())) / 864e5);
 const unitT = k => (J.UNITS.find(u => u.k === k) || {}).t || '';

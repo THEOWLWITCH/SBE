@@ -158,6 +158,8 @@ details.log summary{cursor:pointer;}
   padding:7px 10px;border:none;border-radius:4px;background:transparent;color:var(--ink);
   cursor:pointer;}
 .customsel-opt:hover{background:var(--spoken-soft);}
+/* "חסר משהו?" בראש הרשימה ונשאר גלוי בגלילה (06/10/2026: "לתת אפשרות להוסיף מה שחסר") */
+.customsel-panel .customsel-other{position:sticky;top:-4px;z-index:1;background:var(--surface);border-top:none;border-bottom:1px solid var(--hair);margin:-4px -4px 4px;padding:8px;}
 .customsel-other{display:flex;gap:6px;padding:7px 6px 4px;border-top:1px solid var(--hair);margin-top:4px;}
 .customsel-other input{flex:1;font-family:inherit;font-size:13px;padding:6px 8px;
   border:1px solid var(--hair);border-radius:5px;background:var(--ground);color:var(--ink);}
@@ -1456,7 +1458,7 @@ function buildDocView(d, creator) {
   const img = el("img"); img.src = document.getElementById("brandLogo").src;
   logoRow.append(img, el("b",{}, "Begood"));
   dv.append(logoRow);
-  dv.append(el("div", { class:"dv-by" }, "תוכנית פעילות · " + (creator || "—") + " · " + new Date().toLocaleDateString("he-IL")));
+  dv.append(el("div", { class:"dv-by" }, "תוכנית פעילות · " + (creator || "—") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
   dv.append(creditNode());
   dv.append(el("h2", {}, d.domain || "פעילות"));
   dv.append(el("div", { class:"dv-meta" }, [d.age, d.duration, approachList(d.approach).join(" + ")].filter(Boolean).join(" · ")));
@@ -1531,7 +1533,7 @@ function buildNarrativeDocView(d, creator, narr) {
   const img = el("img"); img.src = document.getElementById("brandLogo").src;
   logoRow.append(img, el("b",{}, "Begood"));
   dv.append(logoRow);
-  dv.append(el("div", { class:"dv-by" }, "תוכנית פעילות · " + (creator || "—") + " · " + new Date().toLocaleDateString("he-IL")));
+  dv.append(el("div", { class:"dv-by" }, "תוכנית פעילות · " + (creator || "—") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
   dv.append(creditNode());
   dv.append(el("h2", {}, narr.title || d.domain || "פעילות"));
   dv.append(el("div", { class:"dv-meta" }, [d.domain, d.age, d.duration, approachList(d.approach).join(" + ")].filter(Boolean).join(" · ")));
@@ -1750,7 +1752,7 @@ const FRAMEWORK_OPTS = ["בית ספר","גן ילדים","מכללה / אוני
   "מתנ״ס / מרכז קהילתי","תנועת נוער / חינוך בלתי פורמלי","ארגון / מקום עבודה"];
 const AUDIENCE_OPTS = ["תלמידים","סטודנטים","מורים / צוות חינוכי","הורים","נוער","בוגרים","גיל שלישי","משפחות"];
 const AGE_RANGE_OPTS = ["גן","כיתה א-ג","כיתה ד-ה","חטיבת ביניים","חטיבה עליונה",
-  "18–25","25–45","45–65","65 ומעלה","גילאים מעורבים"];
+  "18–25","25–45","45–65","65 ומעלה"];
 const COURSE_LEVEL_OPTS = ["קורס ראשון בתחום","קורס המשך"];
 // העדפות ומגבלות — מילה במילה מהמסמך שלה, באותו סדר.
 const PREF_ITEMS = ["צורת ישיבה","עבודת צוות","עבודה עצמאית","הוראה פרונטלית (הרצאה)",
@@ -1801,13 +1803,15 @@ const REPORT_CRITERIA = [
 ];
 
 function today(){ return new Date().toISOString().slice(0,10); }
+// התאריך שמוצג ומוזן בטופס — בסגנון הישראלי 06.10.26 (06/10/2026)
+function todayHe(){ return new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"}); }
 function emptySub(){ return { t:"", min:"" }; }
 function emptySession(){
   return { smart:"", product:"", resources:"", duration:"", opening:"", openingMin:"",
     main:"", mainMin:"", subs:[emptySub(), emptySub(), emptySub()], closing:"", closingMin:"" };
 }
 function emptySeq(){
-  return { creator:"", date:today(), framework:"", audience:"", ageRange:"", participants:"", space:"",
+  return { creator:"", date:todayHe(), framework:"", audience:"", ageRange:"", participants:"", space:"",
     prefs:[], limits:[], domain:"", approaches:[], topic:"", goals:[""], courseLevel:"", finalProduct:"", assessment:"",
     sessions:[emptySession(), emptySession(), emptySession()], _sample:false, _imported:false, _importNotes:"" };
 }
@@ -2056,12 +2060,12 @@ function selF(label, path, baseOpts, listKey, o){
       panel.append(b);
     });
     const row = el("div", { class:"customsel-other" });
-    const oi = el("input", { type:"text", placeholder:"אפשרות משלך — נשמרת לכולן" });
+    const oi = el("input", { type:"text", placeholder:"חסר משהו? כתבי כאן והוסיפי" });
     const ob = el("button", { type:"button" }, "הוספה");
     const add = () => { const t = str(oi.value); if (!t) return; seqAddCustom(listKey, t); choose(t); };
     oi.addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); add(); } });
     ob.addEventListener("click", add);
-    row.append(oi, ob); panel.append(row);
+    row.append(oi, ob); panel.prepend(row);
   }
   trigger.addEventListener("click", () => {
     const willOpen = !csel.classList.contains("open");
@@ -2480,7 +2484,8 @@ function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&
 function nl(s){ return esc(str(s)).replace(/\n/g, "<br>"); }
 function fmtDate(iso){
   const d = new Date(str(iso) || Date.now());
-  return isNaN(d) ? str(iso) : d.toLocaleDateString("he-IL", { day:"numeric", month:"long", year:"numeric" });
+  if (/^\d{1,2}\.\d{1,2}\.\d{2,4}$/.test(str(iso))) return str(iso);
+  return isNaN(d) ? str(iso) : d.toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
 }
 const DOC_CSS = `
 @page{size:A4;margin:16mm 15mm;}
@@ -3173,7 +3178,7 @@ function smartJSON(S, M, A, R, T){
   return JSON.stringify({ S:{text:S,checked:true}, M:{text:M,checked:true}, A:{text:A,checked:true}, R:{text:R,checked:true}, T:{text:T,checked:true} });
 }
 const SEQ_SAMPLE = {
-  framework:"השתלמות / פיתוח מקצועי", audience:"מורים / צוות חינוכי", ageRange:"גילאים מעורבים",
+  framework:"השתלמות / פיתוח מקצועי", audience:"מורים / צוות חינוכי", ageRange:"25–45",
   participants:"18", space:"חדר סדנאות בבית הספר, שולחנות ניידים",
   prefs:[{item:"צורת ישיבה", note:"מעגל, בלי שולחנות באמצע"}, {item:"עבודת צוות", note:""},
     {item:"שיחות להחלפת דעות והעמקה", note:""}, {item:"תרגול במהלך המפגשים", note:"סימולציות קצרות בשלישיות"},
@@ -3234,7 +3239,7 @@ function loadSample(){
   if (nonEmpty && !seq._sample && !confirm("הטעינה תחליף את מה שמילאת בטופס הרצף בדוגמה מלאה. להמשיך?")) return;
   const creator = seq.creator;
   seq = normalize(JSON.parse(JSON.stringify(SEQ_SAMPLE)));
-  seq.creator = creator; seq.date = today(); seq._sample = true; seq._imported = false;
+  seq.creator = creator; seq.date = todayHe(); seq._sample = true; seq._imported = false;
   props = new Set(); snapshot = null;
   openSess.clear(); openSess.add(0);
   renderSeq(); touch();
@@ -3366,7 +3371,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
   typeEl.addEventListener("change", syncType);
 
   function openDlg(presetType){
-    dateEl.value = new Date().toLocaleDateString("he-IL");
+    dateEl.value = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
     if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
     try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
     errEl.hidden = true;

@@ -228,7 +228,7 @@
 
     // השלמת שדות המעטפת מהמסך, וקביעת שמות קבצים
     const stamp = new Date();
-    const dateHe = stamp.toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" });
+    const dateHe = stamp.toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "2-digit" });
     const keys = scn.characters.map((c) => c.key || "");
     scn.id = scn.id || (track === "parents" ? "PR" : "YT") + "-" + String(stamp.getMonth() + 1).padStart(2, "0") + String(stamp.getDate()).padStart(2, "0") + "-" + String(stamp.getHours()).padStart(2, "0") + String(stamp.getMinutes()).padStart(2, "0");
     scn.track = track;

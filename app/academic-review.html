@@ -1000,7 +1000,7 @@ function renderFeedback(fb, mock) {
 // ── תזכורת: לציין בעבודה את השימוש בכלי בינה מלאכותית ואת שם הכלי (02/10/2026) ──
 const AI_TOOL = "Begood — ניתוח ומשוב לעבודה אקדמית (מבוסס על מודל השפה Claude של Anthropic)";
 function aiNoteLines(){
-  const d = new Date().toLocaleDateString("he-IL");
+  const d = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
   return ["תזכורת — ציון השימוש בבינה מלאכותית:",
     "אם שיפרת את העבודה בעקבות המשוב, ציינ/י בעבודה שנעזרת בכלי בינה מלאכותית, ואת שם הכלי: " + AI_TOOL + ".",
     "נוסח מוצע: \"בשלב העריכה נעזרתי בכלי הבינה המלאכותית " + AI_TOOL + " לקבלת משוב על העבודה (" + d + "). הכתיבה והתיקונים נעשו על ידי.\"",
@@ -1068,7 +1068,7 @@ $("bSaveTxt").addEventListener("click", () => {
   if (!LAST_FEEDBACK) return;
   const { fb, mock, creator } = LAST_FEEDBACK;
   const kindT = (FB_KINDS.find(x => x.k === LAST_FEEDBACK.kind) || {}).t;
-  const lines = ["משוב על עבודה · " + creator + " · " + new Date().toLocaleDateString("he-IL") + (kindT ? " · " + kindT : ""), ""];
+  const lines = ["משוב על עבודה · " + creator + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"}) + (kindT ? " · " + kindT : ""), ""];
   if (mock) lines.push("⚠ מצב הדגמה — לא משוב אמיתי על התוכן.", "");
   if (fb.overall) lines.push(fb.overall, "");
   const txtList = fb.taskFit ? [{ title:"התאמה להנחיות המשימה", ...fb.taskFit }, ...(fb.criteria || [])] : (fb.criteria || []);
@@ -1181,7 +1181,7 @@ $("tmFab").addEventListener("click", () => {
   if (!list.length) box.append(el("p", { class:"note" }, "עדיין אין משובים."));
   list.forEach(t => {
     const d = el("div", { class:"tm" });
-    d.append(el("div", { class:"tm-who" }, t.who, t.date ? el("span", {}, "· " + new Date(t.date).toLocaleDateString("he-IL")) : ""));
+    d.append(el("div", { class:"tm-who" }, t.who, t.date ? el("span", {}, "· " + new Date(t.date).toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})) : ""));
     String(t.text || "").split("\n").filter(Boolean).forEach(line => d.append(el("p", {}, line)));
     box.append(d);
   });
@@ -1392,7 +1392,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
   }
   typeEl.addEventListener("change", syncType);
   function openDlg(presetType){
-    dateEl.value = new Date().toLocaleDateString("he-IL");
+    dateEl.value = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
     if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
     try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
     errEl.hidden = true;

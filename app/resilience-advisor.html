@@ -711,7 +711,7 @@ function renderReport(){
   acts.appendChild(ask);acts.appendChild(pr);acts.appendChild(cp);head.appendChild(el('h2',null,'הדוח מוכן'));head.appendChild(acts);box.appendChild(head);
   const card=el('div','card');
   card.appendChild(el('h2',null,'המלצות של פרקטי — כיתה '+(R.cls||'')));
-  card.appendChild(el('p','muted','שכבה: '+R.age+' · הופק: '+new Date(R.at).toLocaleDateString('he-IL')+' · על סמך תיאור המחנך/ת'));
+  card.appendChild(el('p','muted','שכבה: '+R.age+' · הופק: '+new Date(R.at).toLocaleDateString('he-IL',{day:"2-digit",month:"2-digit",year:"2-digit"})+' · על סמך תיאור המחנך/ת'));
   if(d.intro){const ip=el('p','intro');ip.appendChild(inlineRich(d.intro));card.appendChild(ip);}
   if(d.lens){const l=el('div','lens');l.appendChild(el('b',null,'איך המחקר קורא את התמונה: '));l.appendChild(inlineRich(d.lens));card.appendChild(l);}
   if((d.answers||[]).length){card.appendChild(el('h2',null,'תשובות לשאלות שלך'));d.answers.forEach(x=>{const c=el('div','act');c.appendChild(el('div','act-t',x.question||''));const dd=richText(x.answer||'');dd.classList.add('act-d');c.appendChild(dd);card.appendChild(c);});}

@@ -139,7 +139,7 @@ const TOKEN = ss("sbe.session.token") || "";
 const PERMS = jparse(ss("sbe.session.perms"), []);
 const INFO = jparse(ss("sbe.session.info"), {});
 const has = (p) => PERMS.includes(p);
-const fmtDate = (ymd) => ymd ? ymd.split("-").reverse().join(".") : "";
+const fmtDate = (ymd) => ymd ? ymd.slice(0,10).split("-").reverse().map((x,i)=>i===2?x.slice(2):x).join(".") : "";
 
 // מה כל הרשאה אומרת — בשפה פשוטה (אותה רשימה כמו PERMS בשרת).
 const PERM_LABEL = {

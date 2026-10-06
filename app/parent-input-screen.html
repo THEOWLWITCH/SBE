@@ -1411,7 +1411,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
   typeEl.addEventListener("change", syncType);
 
   function openDlg(presetType){
-    dateEl.value = new Date().toLocaleDateString("he-IL");
+    dateEl.value = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
     if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
     try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
     errEl.hidden = true;

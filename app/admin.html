@@ -728,7 +728,7 @@ function pInsts(){
     .catch(e => e.status === 409
       ? ask("המוסד כבר קיים", "יש כבר מוסד בשם הזה ברשימה.", () => {})
       : accessFail(e));
-  const fmt = (ymd) => ymd ? ymd.split("-").reverse().join(".") : "";
+  const fmt = (ymd) => ymd ? ymd.slice(0,10).split("-").reverse().map((x,i)=>i===2?x.slice(2):x).join(".") : "";
   const SUB = { ok:["בתוקף","ok"], warn:["מסתיים בקרוב","warn"], grace:["בתקופת חסד","danger"], expired:["הסתיים","danger"], inactive:["מושהה","danger"] };
 
   const st = el("div",{class:"stat"});
@@ -1656,7 +1656,7 @@ function pAccess(){
   in1.append(el("div",{class:"codebox"},
     el("div",{class:"bigcode" + (code ? "" : " none")}, code || "————"),
     el("div",{class:"meta"}, code
-      ? ["נוצר ב-" + new Date(accessState.academicCreatedAt).toLocaleDateString("he-IL"), el("br"), "מקלידים אותו בשדה \"הקוד שלך\" במסך הכניסה — ומגיעים רק למשוב לעבודות"]
+      ? ["נוצר ב-" + new Date(accessState.academicCreatedAt).toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"}), el("br"), "מקלידים אותו בשדה \"הקוד שלך\" במסך הכניסה — ומגיעים רק למשוב לעבודות"]
       : "אין קוד פעיל. אף אחת לא יכולה להיכנס כרגע ל\"משוב לעבודות\".")));
   const row1 = el("div",{class:"btnrow"});
   if (code) {
@@ -2017,7 +2017,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
   typeEl.addEventListener("change", syncType);
 
   function openDlg(presetType){
-    dateEl.value = new Date().toLocaleDateString("he-IL");
+    dateEl.value = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
     if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
     try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
     errEl.hidden = true;
