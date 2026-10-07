@@ -283,8 +283,10 @@
   function renderIdeas() {
     const box=clear($('inspiration-cards'));
     IDEAS.forEach(idea=>{
-      const n=el('article','idea-card'); n.append(el('p','eyebrow',idea.audience),el('h3','',idea.title),el('span','tag draft','דוגמת פיתוח'),labelText('מטרה:',idea.purpose),labelText('רכיב:',componentLabel(idea.focus)),labelText('מיומנויות אישיות:',idea.individual.join(' · ')),labelText('מיומנויות משותפות:',idea.shared.join(' · ')),list(idea.steps,true));
-      const actions=el('div','actions'); actions.append(button('התאמה לקבוצה שלי',()=>personalize(idea)),button(state.ideas.includes(idea.id)?'הרעיון שמור':'שמירת רעיון',()=>operation('בודקים הרשאה ושומרים את הרעיון…',async()=>{
+      // כרטיס מצומצם בצד (07/10/2026): קהל, שם ומטרה; שאר הפרטים נפתחים בלחיצה
+      const n=el('article','idea-card'); n.append(el('p','eyebrow',idea.audience),el('h3','',idea.title),el('p','idea-purpose',idea.purpose));
+      const more=el('details','idea-more'); more.append(el('summary','','פרטים'),el('span','tag draft','דוגמת פיתוח'),labelText('רכיב:',componentLabel(idea.focus)),labelText('מיומנויות אישיות:',idea.individual.join(' · ')),labelText('מיומנויות משותפות:',idea.shared.join(' · ')),list(idea.steps,true));n.append(more);
+      const actions=el('div','actions'); actions.append(button('התאמה לקבוצה שלי',()=>personalize(idea),'btn small'),button(state.ideas.includes(idea.id)?'הרעיון שמור':'שמירת רעיון',()=>operation('בודקים הרשאה ושומרים את הרעיון…',async()=>{
         await ensureAuthorized();if(!state.ideas.includes(idea.id))state.ideas.push(idea.id);const stored=persist();renderIdeas();renderSavedIdeas();if(stored)notice('הרעיון נשמר. אפשר לחזור אליו ולהתאים אותו בהמשך.');
       })));n.append(actions);box.append(n);
     });

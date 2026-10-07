@@ -36,15 +36,9 @@
 
     <div class="studio-layout">
       <div class="studio-main">
-        <section id="inspiration-section" class="card" aria-labelledby="inspiration-title">
-          <div class="section-head"><div><p class="eyebrow">אפשר להתחיל בלי מיפוי ובלי צורך מוגדר</p><h2 id="inspiration-title">מה נרצה לנסות?</h2></div><button id="new-work" class="btn secondary" type="button">התחלה חדשה</button></div>
-          <p>בחרו רעיון, שמרו אותו למועד אחר או התחילו מהתיאור שלכם. פרטי המשתתפים נדרשים כשמתאימים פעילות לקבוצה.</p>
-          <div id="inspiration-cards" class="inspiration-grid"></div>
-          <details class="saved-ideas"><summary>הרעיונות ששמרתי <span id="idea-count">(0)</span></summary><div id="saved-ideas"></div></details>
-        </section>
-
         <section id="brief-section" class="card" aria-labelledby="brief-title">
-          <p class="eyebrow">1 · התקציר שלנו</p><h2 id="brief-title">נקודת מוצא ותנאים לפעולה</h2>
+          <div class="section-head"><div><p class="eyebrow">1 · התקציר שלנו</p><h2 id="brief-title">נקודת מוצא ותנאים לפעולה</h2></div><button id="new-work" class="btn secondary" type="button">התחלה חדשה</button></div>
+          <p class="fill-note"><b>אין צורך למלא את כל השדות.</b> מה שלא תמלאו — המערכת תשלים לבד. שדות שמסומנים ב-<span class="req">*</span> נדרשים כדי לבנות ערכה.</p>
           <p class="muted">התקציר ניתן לעריכה. אוכלוסיית המשתתפים ותפקיד המוביל/ה נשמרים בנפרד; אין צורך להשתייך לכיתה או לבית ספר.</p>
           <form id="brief-form" novalidate>
             <label for="startingPoint">מה הביא אותנו לכאן?</label>
@@ -55,11 +49,11 @@
               <label>תפקיד המוביל/ה<input id="leaderRole" name="leaderRole" type="text" placeholder="מחנכת, הורה, נערה מובילה, ראש צוות…"></label>
               <label>גיל המוביל/ה, אם רלוונטי<input id="leaderAge" name="leaderAge" type="text" placeholder="נפרד מגיל המשתתפים"></label>
               <label>ניסיון בהנחיה<select id="experience" name="experience"><option value="">לבחירה</option><option value="first">זו התנסות ראשונה</option><option value="some">יש מעט ניסיון</option><option value="experienced">יש ניסיון בהנחיה</option></select></label>
-              <label>מי המשתתפים?<input id="participants" name="participants" type="text" placeholder="משפחה, נוער, צוות עבודה, קהילה…" required></label>
-              <label>גיל המשתתפים<input id="participantAge" name="participantAge" type="text" placeholder="טווח גיל או קבוצת גיל" required></label>
-              <label>מספר משתתפים<input id="count" name="count" type="number" min="2" step="1" value="8" required></label>
-              <label>זמן לכל מפגש, בדקות<input id="duration" name="duration" type="number" min="5" step="1" value="40" required></label>
-              <label>מספר מפגשים<input id="sessions" name="sessions" type="number" min="1" step="1" value="1" required></label>
+              <label>מי המשתתפים? <span class="req" aria-hidden="true">*</span><input id="participants" name="participants" type="text" placeholder="משפחה, נוער, צוות עבודה, קהילה…" required></label>
+              <label>גיל המשתתפים <span class="req" aria-hidden="true">*</span><input id="participantAge" name="participantAge" type="text" placeholder="טווח גיל או קבוצת גיל" required></label>
+              <label>מספר משתתפים <span class="req" aria-hidden="true">*</span><input id="count" name="count" type="number" min="2" step="1" value="8" required></label>
+              <label>זמן לכל מפגש, בדקות <span class="req" aria-hidden="true">*</span><input id="duration" name="duration" type="number" min="5" step="1" value="40" required></label>
+              <label>מספר מפגשים <span class="req" aria-hidden="true">*</span><input id="sessions" name="sessions" type="number" min="1" step="1" value="1" required></label>
               <label>צורת הפעולה<select id="format" name="format"><option value="activity">פעילות</option><option value="mission">משימה יומיומית</option><option value="process">תהליך של כמה מפגשים</option></select></label>
               <label>מידת ההיכרות<input id="familiarity" name="familiarity" type="text" placeholder="קבוצה חדשה או ותיקה, היכרות חלקית…"></label>
               <label>תפקידים וקשרים<input id="relationships" name="relationships" type="text" placeholder="משתתפים, מובילים, שותפים, תלות בתפקידים…"></label>
@@ -142,6 +136,12 @@
         </section>
       </div>
       <aside class="studio-aside" aria-label="העבודה שלי">
+        <section id="inspiration-section" class="card ideas-side" aria-labelledby="inspiration-title">
+          <div class="section-head"><div><p class="eyebrow">השראה — אפשר גם להתחיל מהתקציר</p><h2 id="inspiration-title">רעיונות לדוגמה</h2></div></div>
+          <p class="muted">אפשר לבחור רעיון ולהתאים אותו לקבוצה שלכם.</p>
+          <div id="inspiration-cards" class="inspiration-grid"></div>
+          <details class="saved-ideas"><summary>הרעיונות ששמרתי <span id="idea-count">(0)</span></summary><div id="saved-ideas"></div></details>
+        </section>
         <section class="card saved-card"><h2>העבודה שלי</h2><p class="muted">שמירה לפי המשתמש/ת במכשיר הזה. אפשר להעביר קובץ עבודה אישי למכשיר אחר ולהמשיך ללא הפקה מחדש.</p><div id="saved-work-list"><p class="muted">בודקים את ההרשאה לפתיחת עבודות שמורות…</p></div><label class="btn secondary file-label">פתיחת קובץ עבודה<input id="import-work" type="file" accept=".json,application/json"></label></section>
         <section class="card compact"><h2>מה רואים בכל פעילות?</h2><ul><li>מטרה ורכיב מוקד אחד.</li><li>מיומנויות אישיות ומשותפות.</li><li>הצעד שמתרגל כל רכיב ומיומנות.</li><li>זמנים, חומרים והנחיה.</li><li>עיבוד, למידה וצעד המשך.</li></ul><p class="muted">אפשר לבחור דרך להשתתף בלי לספר סיפור אישי. מתעדים פעולות ולמידה; אין ציון חוסן אישי.</p></section>
       </aside>
