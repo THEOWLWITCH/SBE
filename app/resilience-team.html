@@ -452,7 +452,7 @@ function refresh(){
   loading=true; setStatus('טוען תשובות מהשרת... (לפעמים עד דקה)');
   return api({action:'resilResults',id:cfg.id,key:cfg.key,token:sessionToken()}).then(d=>{
     if(d.group){GROUP=d.group;RESP=d.resp||[];setStatus('עודכן: '+new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}));}
-    else if(d._status===403&&cfg.admin){setStatus('תוקף הכניסה פג. צריך להיכנס מחדש כמנהלת מערכת.',true);}
+    else if(d._status===403&&cfg.admin){setStatus('תוקף הכניסה פג. אפשר להיכנס מחדש כמנהלת מערכת.',true);}
     else if(d._status===404||d._status===403){setStatus('הכיתה הזאת כבר לא קיימת בשרת. אפשר לפתוח כיתה חדשה.',true);clearAll();}
     else setStatus('אין כרגע חיבור לשרת. התוצאות יתעדכנו כשיחזור.',true);
   }).catch(()=>setStatus('אין כרגע חיבור לשרת. התוצאות יתעדכנו כשיחזור.',true))
@@ -572,7 +572,7 @@ document.getElementById('btn-sel-create').addEventListener('click',function(){
     }
     selMsg.style.color='var(--brick)';
     selMsg.textContent = d.error==='module off' ? 'מודול החוסן החברתי לא פעיל במוסד שלך. פני למנהלת המערכת.'
-      : d._status===403 ? 'צריך להיכנס מחדש (כמחנך/כת עם קוד המוסד, או כמנהלת מערכת), ואז לפתוח את השאלון.'
+      : d._status===403 ? 'אפשר להיכנס מחדש (כמחנך/כת עם קוד המוסד, או כמנהלת מערכת), ואז לפתוח את השאלון.'
       : 'הפתיחה לא הצליחה. נסו שוב בעוד רגע.';
   }).catch(()=>{selMsg.style.color='var(--brick)';selMsg.textContent='אין כרגע חיבור לשרת. נסו שוב בעוד רגע.';})
     .finally(()=>{btn.disabled=!(SEL.size>=1&&SEL.size<=MAX_SEL);});
@@ -641,7 +641,7 @@ function loadAllGroups(){
   api({action:'resilList',token:sessionToken()}).then(d=>{
     const box=document.getElementById('all-groups');box.textContent='';
     if(!d.groups){allStatus.style.color='var(--brick)';
-      allStatus.textContent=d._status===403?'תוקף הכניסה פג. צריך להיכנס מחדש כמנהלת מערכת.':'אין כרגע חיבור לשרת. נסי שוב בעוד רגע.';return;}
+      allStatus.textContent=d._status===403?'תוקף הכניסה פג. אפשר להיכנס מחדש כמנהלת מערכת.':'אין כרגע חיבור לשרת. נסי שוב בעוד רגע.';return;}
     allStatus.textContent=d.groups.length?'':'עדיין לא נפתחו כיתות.';
     if(!d.groups.length)return;
     const tbl=document.createElement('table');tbl.className='vtable';
@@ -922,7 +922,7 @@ function renderReport(){
       body: capped.length
         ? `ב-${capped.length} תחום/ים, התנהגויות מזיקות מגבילות את הציון גם כשההתנהגות המיטיבה גבוהה:<br><br>`+
           capped.map(d=>`<strong>${d.d}</strong>: מיטיב=${Math.round(d.good)}, מזיק=${Math.round(d.harm)}, ציון=${Math.round(d.score)}`).join('<br>')+
-          '<br><br>עדיפות לטיפול: לפני שמחזקים את הטוב, צריך להפחית את הנזק.'
+          '<br><br>עדיפות לטיפול: כדאי להתחיל בהפחתת הנזק, ואחר כך לחזק את הטוב.'
         : 'לא נמצאו תחומים שבהם ההתנהגות המזיקה מגבילה את הציון.'
     },
     {

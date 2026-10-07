@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ננה — מהוראה להנחיה</title>
+<script src="lib/access-guard.js"></script>
+<script src="lib/ai-call.js"></script>
+<script src="lib/ai-status.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
+<script src="lib/resilience-advisor-sources.js"></script>
+<script src="lib/resilience-writer.js"></script>
+<script src="lib/invite-language.js"></script>
+<script src="lib/facilitation-model.js"></script>
+<script src="lib/product-doc.js"></script>
+<style>
+:root{
+  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
+  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
+  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
+  --hidden:#8F5F2E; --hidden-soft:#F5EAD9;
+  --auto:#4A6B5A; --auto-soft:#DFE9E2;
+  --brick:#8C3A34; --brick-soft:#F5E4E2;
+  --deep:#5B2D8E; --deep-soft:#EDE3F7;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+    --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+    --spoken:#82AECE; --spoken-soft:#1E2E3A;
+    --hidden:#CE9C5E; --hidden-soft:#332617;
+    --auto:#83B599; --auto-soft:#1B2A22;
+    --brick:#CF7C74; --brick-soft:#331E1C;
+    --deep:#A97FCC; --deep-soft:#2A1A42; color-scheme:dark
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+  --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+  --spoken:#82AECE; --spoken-soft:#1E2E3A;
+  --hidden:#CE9C5E; --hidden-soft:#332617;
+  --auto:#83B599; --auto-soft:#1B2A22;
+  --brick:#CF7C74; --brick-soft:#331E1C;
+  --deep:#A97FCC; --deep-soft:#2A1A42; color-scheme:dark
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.55;
+  background:var(--ground);color:var(--ink);direction:rtl}
+.topnav{font-size:13px;padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--hair);
+  display:flex;gap:8px;align-items:center;position:sticky;top:0;z-index:10}
+.topnav button,.topnav a{font:inherit;font-weight:600;padding:4px 10px;border-radius:12px;border:1px solid var(--hair);
+  background:var(--surface);color:var(--ink);text-decoration:none;cursor:pointer}
+.topnav .crumb{margin-inline-start:auto;color:var(--muted);font-size:12px}
+.wrap{max-width:860px;margin:0 auto;padding:1.2rem 1rem 4rem}
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:1.1rem 1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(20,28,36,.07)}
+h1{font-family:"Frank Ruhl Libre",serif;font-size:1.8rem;line-height:1.2;margin-bottom:.2rem}
+.tag{color:var(--spoken);font-weight:700;margin-bottom:.6rem}
+h2{font-size:1.12rem;color:var(--spoken);margin-bottom:.6rem}
+h3{font-size:1rem;margin:1rem 0 .45rem}
+p{margin-bottom:.5rem}
+.muted{color:var(--muted);font-size:.9rem}
+label{display:block;font-weight:700;font-size:.9rem;margin:.7rem 0 .25rem}
+label .opt{font-weight:400;color:var(--muted)}
+input[type=text],input[type=number],select,textarea{width:100%;font:inherit;font-size:.95rem;padding:.5rem .65rem;
+  border:1px solid var(--hair);border-radius:7px;background:var(--ground);color:var(--ink)}
+textarea{min-height:64px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem}
+@media (max-width:640px){.row2,.row3{grid-template-columns:1fr}}
+.btn{display:inline-block;font:inherit;font-weight:700;padding:.65rem 1.1rem;border-radius:8px;border:none;cursor:pointer;
+  background:var(--spoken);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-ghost{background:transparent;border:1px solid var(--hair);color:var(--ink);font-weight:600}
+.btn-sm{padding:.35rem .75rem;font-size:.85rem}
+.btns{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.8rem}
+.err{color:var(--brick);font-weight:600;margin-top:.5rem}
+.miss{outline:2px solid var(--brick);outline-offset:1px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.8rem 0 .2rem;list-style:none}
+.steps li{background:var(--spoken-soft);border-radius:8px;padding:.6rem .75rem;font-size:.9rem}
+.steps b{display:block;color:var(--spoken)}
+@media (max-width:640px){.steps{grid-template-columns:1fr}}
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:.6rem;align-items:center;margin:.6rem 0}
+.vs div{border-radius:8px;padding:.55rem .75rem;font-size:.9rem}
+.vs .from{background:var(--surface-2)}.vs .to{background:var(--auto-soft)}
+.vs .arrow{color:var(--muted);font-weight:700}
+@media (max-width:640px){.vs{grid-template-columns:1fr}.vs .arrow{text-align:center}}
+fieldset{border:none}
+legend{font-weight:700;font-size:1.05rem;color:var(--spoken);margin-bottom:.2rem}
+.sec{border-top:1px solid var(--hair);padding-top:.9rem;margin-top:1rem}
+.sec:first-of-type{border-top:none;margin-top:0;padding-top:0}
+.habits{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.3rem}
+@media (max-width:640px){.habits{grid-template-columns:1fr}}
+.habits label{margin:0;font-weight:500;font-size:.9rem;display:flex;gap:.45rem;align-items:flex-start;border:1px solid var(--hair);
+  border-radius:8px;padding:.45rem .6rem;cursor:pointer;background:var(--ground)}
+.habits input{margin-top:.25rem;flex:0 0 auto;width:16px;height:16px}
+.habits label.on{border-color:var(--spoken);background:var(--spoken-soft)}
+.addmore{margin:.35rem 0 .2rem}
+.addmore summary{cursor:pointer;color:var(--spoken);font-size:.85rem;font-weight:600}
+.addrow{display:flex;gap:.5rem;margin-top:.45rem}
+.addrow input{flex:1}
+.addrow .btn{white-space:nowrap;padding:.45rem .8rem;font-size:.88rem}
+/* המדריך */
+.toolbar{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.8rem}
+.meta{font-size:.85rem;color:var(--muted);margin-bottom:.6rem}
+.intro{background:var(--spoken-soft);border-inline-start:3px solid var(--spoken);border-radius:6px;padding:.75rem 1rem;margin-bottom:.8rem}
+.rcard{border:1px solid var(--hair);border-radius:9px;padding:.75rem .95rem;margin:.55rem 0;background:var(--surface)}
+.rcard-t{font-weight:700;margin-bottom:.2rem}
+.rcard-t .min{font-weight:600;color:var(--muted);font-size:.85rem;margin-inline-start:.4rem}
+.rrow{margin:.25rem 0;font-size:.93rem}
+.rrow b{color:var(--spoken)}
+.say{background:var(--surface-2);border-radius:6px;padding:.35rem .6rem;margin:.3rem 0;font-size:.93rem}
+.lens{font-size:.86rem;color:var(--auto);margin-top:.3rem}
+.lens b{color:var(--auto)}
+.avoid{font-size:.88rem;color:var(--brick)}
+.basis{font-size:.78rem;color:var(--muted);margin-top:.3rem}
+.basis a,a.ref{color:var(--spoken);font-weight:600;text-decoration:none;direction:ltr;unicode-bidi:isolate}
+ul.tl{padding-inline-start:1.2rem;margin:.2rem 0 .5rem}
+ul.tl li{margin:.25rem 0}
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+@media (max-width:640px){.qgrid{grid-template-columns:1fr}}
+.qgrid .rcard{margin:0}
+.pocket{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:.35rem}
+.pocket li{background:var(--hidden-soft);border-radius:6px;padding:.35rem .6rem;font-size:.9rem;font-weight:600}
+@media (max-width:640px){.pocket{grid-template-columns:1fr}}
+.rich>*:last-child{margin-bottom:0}
+.rich p{margin:0 0 .7rem}
+.rich h4{font-size:.98rem;color:var(--spoken);margin:.9rem 0 .35rem}
+.rich h4:first-child{margin-top:0}
+.rich ul,.rich ol{margin:.15rem 0 .75rem;padding-inline-start:1.35rem}
+.rich li{margin:.3rem 0}
+/* המשך: שאלה, תרגול, אחרי המפגש */
+.tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.8rem;border-bottom:1px solid var(--hair)}
+.tabs button{font:inherit;font-weight:700;font-size:.92rem;padding:.5rem .9rem;border:none;background:transparent;color:var(--muted);
+  cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--spoken);border-bottom-color:var(--spoken)}
+.chat .msg{border-radius:9px;padding:.7rem .95rem;margin:.6rem 0;font-size:.95rem;line-height:1.65}
+.chat .me{white-space:pre-wrap;background:var(--spoken-soft);margin-inline-end:15%}
+.chat .bot{background:var(--surface-2);margin-inline-start:15%}
+.chat .group{background:var(--hidden-soft);margin-inline-start:15%}
+.chat .who{font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:.2rem}
+.chat .thinking{color:var(--muted);font-style:italic}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem;margin:.3rem 0 .5rem}
+.chip{font:inherit;font-size:.82rem;border:1px solid var(--hair);border-radius:99px;padding:.2rem .7rem;background:var(--ground);color:var(--ink);cursor:pointer}
+.chip:hover{border-color:var(--spoken);color:var(--spoken)}
+.banner{margin-bottom:.8rem}
+.ai-status{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
+.ai-status .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.ai-status.ok .dot{background:#2e8b57}.ai-status.ok{color:#2e8b57}
+.ai-status.mock .dot{background:#b8860b}.ai-status.mock{color:#b8860b}
+@page{size:A4;margin:18mm 20mm}
+@media print{.topnav,.no-print,#form-card,#intro-card,#more-card,.banner{display:none!important}
+  body{background:#fff;font-size:11.5pt;line-height:1.6}.wrap{max-width:none;padding:0}.card{box-shadow:none;border:none;padding:0}
+  h2,h3,h4{break-after:avoid}.rcard,.intro,.vs,.pocket li{break-inside:avoid}}
+</style>
+</head>
+<body>
+<nav class="topnav no-print">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › ננה</span>
+</nav>
+<div class="wrap">
+  <!-- מצב החיבור למודל — רק למנהלת המערכת (sbe-sysonly, access-guard.js) -->
+  <div class="banner sbe-sysonly">
+    <span class="ai-status unknown" id="aiStatusChip"><span class="dot"></span> בודקת חיבור למודל...</span>
+  </div>
+
+  <div class="card" id="intro-card">
+    <h1>ננה</h1>
+    <p class="tag">מנחה את המנחים — מהוראה מול הקבוצה להנחיה שמחזקת אותה</p>
+    <p>מספרים לננה על הקבוצה, על הנושא ועל המטרה, ומקבלים <b>מדריך הנחיה אישי</b>: לא עוד פעילות, אלא <b>איך להנחות</b>. איך לפתוח, אילו שאלות לשאול, מה לומר ברגעים הקשים, ואיך לסיים כך שהקבוצה תמשיך לפעול יחד גם אחרי המפגש.</p>
+    <div class="vs" aria-label="המעבר">
+      <div class="from"><b>הוראה</b><br>העברת ידע: הסבר, תרגול ובדיקת הבנה.</div>
+      <div class="arrow">←</div>
+      <div class="to"><b>הנחיה</b><br>בניית ידע משותף: שאלות פתוחות, שיח בין המשתתפים והחלטות משותפות.</div>
+    </div>
+    <ol class="steps">
+      <li><b>1. מספרים</b>על הקבוצה, על המפגש ועל עצמך כמנחה</li>
+      <li><b>2. מקבלים מדריך</b>שאפשר לערוך, להדפיס ולשמור כ-PDF, וגם כרטיס כיס</li>
+      <li><b>3. מתרגלים וחוזרים</b>תרגול רגע מאתגר מול "הקבוצה", ורפלקציה אחרי המפגש</li>
+    </ol>
+  </div>
+
+  <div class="card" id="form-card">
+    <fieldset class="sec">
+      <legend>הקבוצה</legend>
+      <div class="row2">
+        <div><label for="f-group">מי בקבוצה</label><select id="f-group"><option value="">בחירה...</option></select></div>
+        <div><label for="f-age">גיל</label><select id="f-age"><option value="">בחירה...</option></select></div>
+      </div>
+      <div class="row3">
+        <div><label for="f-size">כמה משתתפים <span class="opt">(לא חובה)</span></label><input id="f-size" type="number" min="2" max="400" placeholder="למשל 32"></div>
+        <div><label for="f-familiar">כמה הם מכירים זה את זה</label><select id="f-familiar"><option value="">לא ידוע</option></select></div>
+        <div><label for="f-role">התפקיד שלי מול הקבוצה</label><select id="f-role"><option value="">בחירה...</option></select></div>
+      </div>
+      <label for="f-about">מה עוד חשוב לדעת על הקבוצה? <span class="opt">(לא חובה)</span></label>
+      <textarea id="f-about" maxlength="1500" placeholder="למשל: יש כמה תלמידים שקטים מאוד ושניים שתמיד מדברים; לאחרונה היה ריב בקבוצת הווטסאפ; חלק מהתלמידים חדשים בכיתה. בלי שמות מלאים."></textarea>
+    </fieldset>
+
+    <fieldset class="sec">
+      <legend>המפגש</legend>
+      <label for="f-topic">הנושא</label>
+      <input id="f-topic" type="text" maxlength="200" placeholder="למשל: חזרה לשגרה אחרי החופשה / עזרה הדדית / מה עושים כשמישהו נשאר בחוץ">
+      <label for="f-goal">המטרה: מה היית רוצה שיקרה לקבוצה בעקבות המפגש?</label>
+      <textarea id="f-goal" maxlength="800" placeholder="למשל: שכל אחד ירגיש שיש לו מקום ושישמעו גם את השקטים; שהקבוצה תחליט יחד על דרך לעזור זה לזה"></textarea>
+      <div class="row3">
+        <div><label for="f-sit">המצב עכשיו</label><select id="f-sit"><option value="">בחירה...</option></select></div>
+        <div><label for="f-duration">משך</label><select id="f-duration"><option value="">בחירה...</option></select></div>
+        <div><label for="f-space">המרחב</label><select id="f-space"><option value="">לא ידוע</option></select></div>
+      </div>
+    </fieldset>
+
+    <fieldset class="sec">
+      <legend>אני כמנחה</legend>
+      <label for="f-exp">הניסיון שלי בהנחיית קבוצה</label>
+      <select id="f-exp"><option value="">בחירה...</option></select>
+      <label>באיזו מיומנות תרצו שאתמקד? <span class="opt">(לא חובה — אפשר לבחור כמה)</span></label>
+      <div class="habits" id="f-habits"></div>
+      <label for="f-worry">מה מדאיג אותך לקראת המפגש? <span class="opt">(לא חובה)</span></label>
+      <textarea id="f-worry" maxlength="800" placeholder="למשל: שתהיה שתיקה ולא אדע מה לעשות; שאאבד שליטה; שמישהו יתחיל לבכות"></textarea>
+      <label for="f-question">שאלה מרכזית לננה <span class="opt">(לא חובה)</span></label>
+      <textarea id="f-question" maxlength="600" placeholder="למשל: איך אני מנחה שיחה על נושא שגם אני מתרגשת ממנו?"></textarea>
+    </fieldset>
+
+    <div class="btns">
+      <button class="btn" id="btn-go" type="button">הכנת מדריך ההנחיה</button>
+      <button class="btn btn-ghost" id="btn-example" type="button">דוגמה</button>
+      <button class="btn btn-ghost" id="btn-clear" type="button">טופס חדש</button>
+    </div>
+    <p class="err" id="form-err" hidden></p>
+  </div>
+
+  <div id="guide"></div>
+
+  <div class="card no-print" id="more-card" hidden>
+    <h2>ממשיכים עם ננה</h2>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="tab-ask" aria-selected="true">💬 שאלה לננה</button>
+      <button type="button" role="tab" id="tab-practice" aria-selected="false">🎭 תרגול רגע מאתגר</button>
+      <button type="button" role="tab" id="tab-after" aria-selected="false">🔁 אחרי המפגש</button>
+    </div>
+    <div id="pane-ask">
+      <div class="chips" id="ask-chips"></div>
+      <div class="chat" id="ask-log"></div>
+      <label for="ask-in" class="muted" style="font-weight:600">השאלה שלך</label>
+      <textarea id="ask-in" maxlength="1200" placeholder="למשל: איך אני מגיבה אם מישהו אומר שזה סתם בזבוז זמן?"></textarea>
+      <div class="btns"><button class="btn" id="ask-go" type="button">שליחה</button><button class="btn btn-ghost" id="ask-clear" type="button">שיחה חדשה</button></div>
+    </div>
+    <div id="pane-practice" hidden>
+      <p class="muted">ננה משחקת את הקבוצה ברגע מאתגר, ואת/ה מתרגל/ת: כותבים מה אומרים או עושים, והקבוצה מגיבה. בסוף — משוב מננה.</p>
+      <label for="pr-moment">איזה רגע לתרגל?</label>
+      <select id="pr-moment"></select>
+      <div class="btns"><button class="btn" id="pr-start" type="button">התחלת תרגול</button></div>
+      <div class="chat" id="pr-log"></div>
+      <div id="pr-reply" hidden>
+        <label for="pr-in" class="muted" style="font-weight:600">מה את/ה אומר/ת או עושה עכשיו?</label>
+        <textarea id="pr-in" maxlength="800" placeholder="כתבו כמו שהייתם אומרים בחדר"></textarea>
+        <div class="btns"><button class="btn" id="pr-go" type="button">שליחה</button><button class="btn btn-ghost" id="pr-end" type="button">סיום תרגול ומשוב</button></div>
+      </div>
+    </div>
+    <div id="pane-after" hidden>
+      <p class="muted">אחרי המפגש: ספרו מה קרה — מה עבד, מה הפתיע, איפה היה קשה. ננה תחזיר משוב, מה זה אומר על הקבוצה, והצעד הבא.</p>
+      <label for="af-in">מה קרה במפגש?</label>
+      <textarea id="af-in" maxlength="2500" style="min-height:120px" placeholder="למשל: הפתיחה בסבב עבדה, אבל בהעמקה שלושה דיברו כל הזמן. כשחיכיתי בשקט — דנה דיברה בפעם הראשונה."></textarea>
+      <div class="btns"><button class="btn" id="af-go" type="button">משוב מננה</button></div>
+      <div id="af-out"></div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+'use strict';
+const SRC = window.SBE_ADVISOR_SOURCES, N = window.SBE_NANA;
+const AI_SERVER = 'https://sbe-server.onrender.com';
+const STORE = window.sbeUserKey ? sbeUserKey('sbe.nana.v1') : 'sbe.nana.v1:anon'; // לפי משתמש/ת (lib/access-guard.js)
+const F = k=>document.getElementById(k);
+try{ const h=sessionStorage.getItem('sbe.session.homeUrl'); if(h) F('nav-home').href=h; }catch(e){}
+function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=String(text);return n;}
+
+// ── בנק הידע של ננה ──
+const BANK = SRC.forAdvisor('nana');
+const KEYS = BANK.map(s=>s.k);
+const KB = BANK.map(s=>'['+s.k+'] '+s.gist).join('\n');
+const RULE = window.SBE_WRITER ? SBE_WRITER.rule : '';
+
+// ── טקסט מהמודל: [מפתח] → קישור, **מודגש**, תבליטים ורשימות ──
+function withRefs(text){
+  const frag=document.createDocumentFragment();
+  String(text||'').split(/(\[[A-Za-z]+[0-9]{4}\])/).forEach(part=>{
+    const m=part.match(/^\[([A-Za-z]+[0-9]{4})\]$/);
+    if(m&&SRC.byKey[m[1]]&&SRC.byKey[m[1]].hidden){frag.appendChild(document.createTextNode('[ד״ר יעל שדה, Begood]'));}
+    else if(m&&SRC.byKey[m[1]]){const a=el('a','ref',m[1]);a.href='resilience-advisor-sources.html?a=nana#'+m[1];a.target='_blank';a.title=SRC.byKey[m[1]].apa;frag.appendChild(document.createTextNode('['));frag.appendChild(a);frag.appendChild(document.createTextNode(']'));}
+    else if(!m)frag.appendChild(document.createTextNode(part));
+  });
+  return frag;
+}
+function inlineRich(text){
+  const frag=document.createDocumentFragment();
+  String(text||'').split(/\*\*([^*]+)\*\*/).forEach((part,i)=>{
+    part=part.replace(/\*\*/g,'');
+    if(i%2){const b=el('b');b.appendChild(withRefs(part));frag.appendChild(b);}else frag.appendChild(withRefs(part));
+  });
+  return frag;
+}
+function richText(text){
+  const box=el('div','rich');let list=null;
+  String(text||'').replace(/\r/g,'').split('\n').forEach(raw=>{
+    const line=raw.trim();
+    if(!line){list=null;return;}
+    let m;
+    if((m=line.match(/^#{1,6}\s*(.+)$/))||(m=line.match(/^\*\*([^*]+)\*\*[:：]?$/))){list=null;const h=el('h4');h.appendChild(inlineRich(m[1]));box.appendChild(h);return;}
+    if((m=line.match(/^(?:[-•*●▪]|–)\s+(.+)$/))){if(!list||list.tagName!=='UL'){list=el('ul');box.appendChild(list);}const li=el('li');li.appendChild(inlineRich(m[1]));list.appendChild(li);return;}
+    if((m=line.match(/^(\d{1,2})[.)]\s+(.+)$/))){if(!list||list.tagName!=='OL'){list=el('ol');list.start=+m[1];box.appendChild(list);}const li=el('li');li.appendChild(inlineRich(m[2]));list.appendChild(li);return;}
+    list=null;const p=el('p');p.appendChild(inlineRich(line));box.appendChild(p);
+  });
+  return box;
+}
+function basisEl(keys){
+  const ks=(keys||[]).filter(k=>SRC.byKey[k]);if(!ks.length)return null;
+  const p=el('p','basis','על בסיס: ');
+  ks.forEach((k,i)=>{if(i)p.appendChild(document.createTextNode(' · '));p.appendChild(withRefs('['+k+']'));});
+  return p;
+}
+function row(label,text){if(!text)return null;const p=el('p','rrow');p.appendChild(el('b',null,label+': '));p.appendChild(inlineRich(text));return p;}
+function lensEl(t){if(!t)return null;const p=el('p','lens');p.appendChild(el('b',null,'לחוסן החברתי: '));p.appendChild(inlineRich(t));return p;}
+function sayEl(t){if(!t)return null;const p=el('p','say');p.appendChild(inlineRich(/^["“״]/.test(t)?t:'"'+t+'"'));return p;}
+function put(parent,...kids){kids.forEach(k=>{if(k)parent.appendChild(k);});return parent;}
+
+// ── הטופס ──
+const FIELDS=['f-group','f-age','f-size','f-familiar','f-role','f-about','f-topic','f-goal','f-sit','f-duration','f-space','f-exp','f-worry','f-question'];
+function fill(id,items){const s=F(id);items.forEach(v=>{const o=el('option',null,v);o.value=v;s.appendChild(o);});}
+fill('f-group',N.GROUPS);fill('f-age',N.AGES);fill('f-familiar',N.FAMILIAR);fill('f-role',N.ROLES);
+fill('f-sit',N.SITUATIONS);fill('f-duration',N.DURATIONS);fill('f-space',N.SPACES);fill('f-exp',N.EXPERIENCE);
+N.SHIFTS.forEach(s=>{
+  const lb=el('label');const cb=el('input');cb.type='checkbox';cb.value=s.k;cb.name='habit';
+  cb.addEventListener('change',()=>{lb.classList.toggle('on',cb.checked);save();});
+  lb.appendChild(cb);lb.appendChild(el('span',null,s.skill));F('f-habits').appendChild(lb);
+});
+function habits(){return [...document.querySelectorAll('input[name=habit]:checked')].map(c=>c.value);}
+function setHabits(list){document.querySelectorAll('input[name=habit]').forEach(c=>{c.checked=(list||[]).includes(c.value);c.parentNode.classList.toggle('on',c.checked);});}
+function form(){
+  return {group:F('f-group').value,age:F('f-age').value,size:F('f-size').value,familiar:F('f-familiar').value,role:F('f-role').value,
+    about:F('f-about').value,topic:F('f-topic').value,goal:F('f-goal').value,situation:F('f-sit').value,duration:F('f-duration').value,
+    space:F('f-space').value,experience:F('f-exp').value,habits:habits(),worry:F('f-worry').value,question:F('f-question').value};
+}
+
+// ── רשימות שאפשר להעשיר (רשימות פתוחות בשרת: nana-group, nana-age, nana-sit) ──
+const ACCESS='https://sbe-server.onrender.com/api/access';
+function accessApi(body){return fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json().catch(()=>({})).then(d=>{d._status=r.status;return d;}));}
+function token(){try{return sessionStorage.getItem('sbe.session.token')||'';}catch(e){return '';}}
+let IS_SYS=false;try{IS_SYS=sessionStorage.getItem('sbe.session.homeUrl')==='admin.html?role=sys';}catch(e){}
+function addableSelect(id,listName,what){
+  const sel=F(id);const base=[...sel.options].map(o=>o.value).filter(Boolean);let extra=[];
+  const wrap=document.createElement('details');wrap.className='addmore no-print';
+  const sm=document.createElement('summary');sm.textContent='חסר משהו? הוספה לרשימה';wrap.appendChild(sm);
+  const r=document.createElement('div');r.className='addrow';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+' — יתווסף לרשימה של כולם';
+  const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה לרשימה';
+  r.appendChild(inp);r.appendChild(btn);wrap.appendChild(r);
+  const msg=document.createElement('p');msg.className='muted';msg.hidden=true;wrap.appendChild(msg);
+  const adm=document.createElement('div');wrap.appendChild(adm);
+  sel.insertAdjacentElement('afterend',wrap);
+  function render(keep){
+    const cur=keep!=null?keep:sel.value;
+    [...sel.querySelectorAll('optgroup,option[data-c]')].forEach(n=>n.remove());
+    const ex=extra.filter(v=>!base.includes(v));if(cur&&!base.includes(cur)&&!ex.includes(cur))ex.push(cur);
+    if(ex.length){const g=document.createElement('optgroup');g.label='נוספו על ידי מנחים';
+      ex.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;o.dataset.c='1';g.appendChild(o);});sel.appendChild(g);}
+    sel.value=cur;
+    adm.textContent='';
+    if(IS_SYS&&extra.length){adm.appendChild(el('p','muted','מנהלת המערכת — הסרה מהרשימה:'));
+      extra.forEach(v=>{const rr=el('div');rr.style.cssText='display:flex;gap:.5rem;align-items:center;margin:.25rem 0';rr.appendChild(el('span',null,v)).style.flex='1';
+        const b=el('button','btn btn-ghost btn-sm','הסרה');b.type='button';
+        b.addEventListener('click',()=>{if(!confirm('להסיר את "'+v+'" מהרשימה של כולם?'))return;
+          accessApi({action:'listRemove',name:listName,value:v,token:token()}).then(d=>{if(d.items){extra=d.items;render();}});});
+        rr.appendChild(b);adm.appendChild(rr);});}
+  }
+  btn.addEventListener('click',()=>{
+    const v=inp.value.replace(/\s+/g,' ').trim();msg.hidden=false;
+    if(v.length<2){msg.textContent='אפשר להקליד ערך ואז ללחוץ על "הוספה לרשימה".';return;}
+    btn.disabled=true;msg.textContent='מוסיפה לרשימה...';
+    const done=t=>{render(v);inp.value='';msg.textContent=t;sel.dispatchEvent(new Event('change'));save();};
+    accessApi({action:'listAdd',name:listName,value:v,token:token()}).then(d=>{
+      if(d.items){extra=d.items;done('נוסף לרשימה של כולם ונבחר ✓');}
+      else done(d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם, אפשר להיכנס עם ההרשאה המתאימה.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).');
+    }).catch(()=>done('נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).')).finally(()=>{btn.disabled=false;});
+  });
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();btn.click();}});
+  accessApi({action:'listGet',name:listName}).then(d=>{if(Array.isArray(d.items)){extra=d.items;render();}}).catch(()=>{});
+  return {ensure:v=>render(v)};
+}
+const LISTS={'f-group':addableSelect('f-group','nana-group','קבוצה (למשל: צוות חינוך מיוחד)'),
+  'f-age':addableSelect('f-age','nana-age','גיל או שכבה'),
+  'f-sit':addableSelect('f-sit','nana-sit','מצב (למשל: אחרי מעבר דירה של בית הספר)')};
+
+// ── שמירה במכשיר ──
+let STATE={f:{},report:null,chat:[],practice:null,after:null};
+function save(){try{const v={};FIELDS.forEach(k=>v[k]=F(k).value);v.habits=habits();STATE.f=v;localStorage.setItem(STORE,JSON.stringify(STATE));}catch(e){}}
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem(STORE)||'null');if(!s)return;
+    STATE=Object.assign(STATE,s);const v=STATE.f||{};
+    FIELDS.forEach(k=>{if(v[k]==null||v[k]==='')return;if(LISTS[k])LISTS[k].ensure(v[k]);F(k).value=v[k];});
+    setHabits(v.habits);
+  }catch(e){}
+}
+FIELDS.forEach(k=>{const clear=()=>{F(k).classList.remove('miss');save();};F(k).addEventListener('input',clear);F(k).addEventListener('change',clear);});
+
+// ── מודל: ברקע, עם שאילת מצב (lib/ai-call.js) ──
+// ההודעות האחרונות — תמיד מתחילות בהודעה של המשתמש/ת (המודל לא מקבל שיחה שמתחילה בתשובה)
+function tail(list,n){let s=Math.max(0,list.length-n);while(s<list.length&&list[s].role!=='user')s++;return list.slice(s);}
+async function complete(system,messages,maxTokens){return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens},300000)||'');}
+function waiting(node,text){
+  const t0=Date.now();node.textContent=text;
+  const id=setInterval(()=>{const s=Math.round((Date.now()-t0)/1000);node.textContent=text+' · '+s+' שניות';},1000);
+  return ()=>clearInterval(id);
+}
+
+// ── הפקת המדריך ──
+const REQUIRED=[['f-group','מי בקבוצה'],['f-age','גיל'],['f-topic','הנושא'],['f-goal','המטרה']];
+let BUSY=false;
+F('btn-go').addEventListener('click',async()=>{
+  if(BUSY)return;
+  const err=F('form-err');REQUIRED.forEach(([id])=>F(id).classList.remove('miss'));
+  const miss=REQUIRED.filter(([id])=>!String(F(id).value).trim());
+  if(miss.length){miss.forEach(([id])=>F(id).classList.add('miss'));err.textContent='כדי שננה תוכל להתאים את המדריך, חסר: '+miss.map(m=>m[1]).join(', ')+'.';err.hidden=false;
+    F(miss[0][0]).scrollIntoView({behavior:'smooth',block:'center'});F(miss[0][0]).focus();return;}
+  err.hidden=true;save();
+  BUSY=true;const b=F('btn-go');b.disabled=true;
+  const g=F('guide');g.textContent='';const c=el('div','card');const msg=el('p');c.appendChild(msg);g.appendChild(c);
+  const stop=waiting(msg,'ננה קוראת את הקבוצה ומכינה את מדריך ההנחיה... (דקה–שתיים)');
+  g.scrollIntoView({behavior:'smooth',block:'start'});
+  const input=N.inputText(form());
+  try{
+    const sys=N.reportSystem(KB,RULE);
+    let txt=await complete(sys,[{role:'user',content:input}],16000),doc;
+    try{doc=N.normalize(N.parse(txt),KEYS);}catch(e){doc=null;}
+    if(!N.valid(doc)){ // ניסיון שני אחד: תיקון המבנה
+      txt=await complete(sys,[{role:'user',content:input},{role:'assistant',content:txt.slice(0,30000)},{role:'user',content:'המבנה לא היה JSON תקין ומלא. החזירי את אותו מדריך כ-JSON תקין בלבד, במבנה שהוגדר, עם 5–7 שלבים ב-arc.'}],16000);
+      doc=N.normalize(N.parse(txt),KEYS);
+      if(!N.valid(doc))throw new Error('המדריך חזר חלקי');
+    }
+    STATE.report={at:new Date().toISOString(),input,f:form(),doc};STATE.chat=[];STATE.practice=null;STATE.after=null;save();
+    renderGuide();renderMore();
+  }catch(e){
+    g.textContent='';const cc=el('div','card');cc.appendChild(el('p','err','המדריך לא הוכן ('+(e.message||'שגיאה')+'). מה שמילאת נשמר — אפשר לנסות שוב בעוד רגע.'));g.appendChild(cc);
+  }finally{stop();BUSY=false;b.disabled=false;}
+});
+
+function fmtDate(iso){return new Date(iso).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'});}
+function subtitle(R){const f=R.f||{};return [f.group,f.age,f.topic?'נושא: '+f.topic:''].filter(Boolean).join(' · ');}
+
+function renderGuide(){
+  const g=F('guide');g.textContent='';const R=STATE.report;if(!R)return;const d=R.doc;
+  const card=el('div','card');
+  const bar=el('div','toolbar no-print');
+  const pr=el('button','btn','🖨 הדפסה / שמירה כ-PDF');pr.type='button';
+  const pk=el('button','btn btn-ghost','🗂 כרטיס כיס להדפסה');pk.type='button';
+  const nw=el('button','btn btn-ghost','מדריך חדש');nw.type='button';
+  put(bar,pr,pk,nw);card.appendChild(bar);
+  const doc=el('div');doc.id='guide-doc';
+  doc.appendChild(el('h2',null,'מדריך ההנחיה של ננה'));
+  doc.appendChild(el('p','meta',subtitle(R)+' · '+fmtDate(R.at)));
+  if(d.intro){const i=el('div','intro');i.appendChild(inlineRich(d.intro));doc.appendChild(i);}
+
+  // העמדה
+  if(d.stance.to){
+    doc.appendChild(el('h3',null,'העמדה שלך במפגש'));
+    const vs=el('div','vs');
+    const a=el('div','from');a.appendChild(el('b',null,'מהוראה'));a.appendChild(el('br'));a.appendChild(inlineRich(d.stance.from));
+    const b=el('div','to');b.appendChild(el('b',null,'להנחיה'));b.appendChild(el('br'));b.appendChild(inlineRich(d.stance.to));
+    put(vs,a,el('div','arrow','←'),b);doc.appendChild(vs);
+    if(d.stance.why)doc.appendChild(lensEl(d.stance.why));
+  }
+  // קריאת הקבוצה
+  if(d.read.stage||d.read.needs.length){
+    doc.appendChild(el('h3',null,'קריאת הקבוצה'));
+    const c=el('div','rcard');
+    put(c,row('איפה הקבוצה עכשיו',d.read.stage));
+    if(d.read.needs.length){c.appendChild(el('p','rrow')).appendChild(el('b',null,'מה יכול לחזק אותה:'));const ul=el('ul','tl');d.read.needs.forEach(n=>{const li=el('li');li.appendChild(inlineRich(n));ul.appendChild(li);});c.appendChild(ul);}
+    put(c,lensEl(d.read.lens));doc.appendChild(c);
+  }
+  // המיומנויות לחזק
+  if(d.shifts.length){
+    doc.appendChild(el('h3',null,'המיומנויות שלך במפגש הזה'));
+    d.shifts.forEach(s=>{const c=el('div','rcard');
+      c.appendChild(el('p','rcard-t',s.skill));put(c,row('איך',s.move),sayEl(s.say),lensEl(s.lens),basisEl(s.basis));doc.appendChild(c);});
+  }
+  // קשת המפגש
+  if(d.arc.length){
+    doc.appendChild(el('h3',null,'קשת המפגש'));
+    d.arc.forEach(a=>{const c=el('div','rcard');const t=el('p','rcard-t',a.phase);if(a.minutes)t.appendChild(el('span','min',a.minutes));c.appendChild(t);
+      if(a.facilitator)c.appendChild(richText(a.facilitator));
+      a.say.forEach(s=>put(c,sayEl(s)));
+      put(c,row('מבנה',a.structure),row('מה לראות',a.watch),lensEl(a.lens),basisEl(a.basis));doc.appendChild(c);});
+  }
+  // סולם שאלות
+  const Q=d.questions,QL=[['open','שאלות פתיחה'],['deepen','שאלות להעמקה'],['connect','חיבור לחיים ולקבוצה'],['close','שאלות סיום']].filter(([k])=>Q[k].length);
+  if(QL.length){
+    doc.appendChild(el('h3',null,'סולם שאלות'));
+    const grid=el('div','qgrid');
+    QL.forEach(([k,t])=>{const c=el('div','rcard');c.appendChild(el('p','rcard-t',t));const ul=el('ul','tl');Q[k].forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));ul.appendChild(li);});c.appendChild(ul);grid.appendChild(c);});
+    doc.appendChild(grid);
+  }
+  // רגעים מאתגרים
+  if(d.moments.length){
+    doc.appendChild(el('h3',null,'רגעים שעלולים לקרות — ומה עושים'));
+    d.moments.forEach(m=>{const c=el('div','rcard');c.appendChild(el('p','rcard-t',m.moment));
+      put(c,row('איך מזהים',m.signs),row('מה עושים',m.do),sayEl(m.say));
+      if(m.avoid){const p=el('p','avoid');p.appendChild(el('b',null,'כדאי להימנע: '));p.appendChild(inlineRich(m.avoid));c.appendChild(p);}
+      put(c,basisEl(m.basis));doc.appendChild(c);});
+  }
+  // שיחה אישית
+  const cv=d.conversation;
+  if(cv){
+    doc.appendChild(el('h3',null,'שיחה אישית אחרי המפגש'));
+    const c=el('div','rcard');
+    put(c,row('עם מי',cv.with),row('המטרה',cv.goal),row('איפה ומתי',cv.setting),row('פותחים',cv.opening));
+    if(cv.followups.length){c.appendChild(el('p','rrow')).appendChild(el('b',null,'שאלות המשך:'));const ul=el('ul','tl');cv.followups.forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));ul.appendChild(li);});c.appendChild(ul);}
+    put(c,row('מסיימים',cv.closing),lensEl(cv.lens));doc.appendChild(c);
+  }
+  // מנגנון
+  const mc=d.mechanism;
+  if(mc){
+    doc.appendChild(el('h3',null,'מה ממשיך אחרי המפגש — מנגנון חוזר'));
+    const c=el('div','rcard');if(mc.title)c.appendChild(el('p','rcard-t',mc.title));
+    put(c,row('מה קורה',mc.what),row('מי מוביל/ה',mc.who),row('באיזה קצב',mc.rhythm),row('איך יודעים שזה פועל',mc.sign),lensEl(mc.lens),basisEl(mc.basis));doc.appendChild(c);
+  }
+  // חששות ושאלות
+  if(d.worries.length){
+    doc.appendChild(el('h3',null,'על מה שמדאיג אותך'));
+    d.worries.forEach(w=>{const c=el('div','rcard');c.appendChild(el('p','rcard-t',w.worry));c.appendChild(richText(w.answer));doc.appendChild(c);});
+  }
+  if(d.answers.length){
+    doc.appendChild(el('h3',null,'תשובה לשאלה שלך'));
+    d.answers.forEach(a=>{const c=el('div','rcard');c.appendChild(el('p','rcard-t',a.question));c.appendChild(richText(a.answer));doc.appendChild(c);});
+  }
+  // כרטיס כיס ורפלקציה
+  if(d.pocket.length){
+    doc.appendChild(el('h3',null,'כרטיס כיס — לזמן המפגש'));
+    const ul=el('ul','pocket');ul.id='guide-pocket';d.pocket.forEach(p=>ul.appendChild(el('li',null,p)));doc.appendChild(ul);
+  }
+  if(d.reflect.length){
+    doc.appendChild(el('h3',null,'אחרי המפגש — שאלות לעצמך'));
+    const ul=el('ul','tl');d.reflect.forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));ul.appendChild(li);});doc.appendChild(ul);
+  }
+  doc.appendChild(el('p','muted','ננה מציעה, ואת/ה מחליט/ה: המדריך הוא נקודת פתיחה שמתאימים לקבוצה שלך. המקורות — בקישורים שבסוגריים.'));
+  card.appendChild(window.SBE_DOC?SBE_DOC.editable(doc):doc);
+  g.appendChild(card);
+  pr.addEventListener('click',()=>SBE_DOC.print({title:'מדריך הנחיה — ננה',subtitle:subtitle(R),node:doc}));
+  pk.addEventListener('click',()=>SBE_DOC.print({title:'כרטיס כיס — ננה',subtitle:subtitle(R),node:pocketNode(d)}));
+  nw.addEventListener('click',()=>{if(!confirm('להתחיל מדריך חדש? המדריך הנוכחי והשיחות יימחקו מהמכשיר. הטופס נשאר.'))return;
+    STATE.report=null;STATE.chat=[];STATE.practice=null;STATE.after=null;save();renderGuide();renderMore();F('form-card').scrollIntoView({behavior:'smooth'});});
+}
+// כרטיס כיס: מה שכדאי שיהיה ביד בזמן המפגש — עמדה, תזכורות, שאלות, ומשפט אחד לכל רגע קשה
+function pocketNode(d){
+  const box=el('div');
+  if(d.stance.to){const p=el('p','say');p.appendChild(el('b',null,'העמדה: '));p.appendChild(document.createTextNode(d.stance.to));box.appendChild(p);}
+  if(d.pocket.length){box.appendChild(el('h4',null,'תזכורות'));const ul=el('ul');d.pocket.forEach(x=>ul.appendChild(el('li',null,x)));box.appendChild(ul);}
+  const qs=[...d.questions.open.slice(0,2),...d.questions.deepen.slice(0,2),...d.questions.close.slice(0,1)];
+  if(qs.length){box.appendChild(el('h4',null,'שאלות'));const ul=el('ul');qs.forEach(x=>ul.appendChild(el('li',null,x.replace(/\*\*/g,''))));box.appendChild(ul);}
+  if(d.moments.length){box.appendChild(el('h4',null,'ברגע קשה'));const ul=el('ul');d.moments.forEach(m=>{const li=el('li');li.appendChild(el('b',null,m.moment+': '));li.appendChild(document.createTextNode((m.say||m.do).replace(/\*\*/g,'')));ul.appendChild(li);});box.appendChild(ul);}
+  return box;
+}
+
+// ── המשך: שאלה לננה, תרגול, אחרי המפגש ──
+const TABS=['ask','practice','after'];
+TABS.forEach(t=>F('tab-'+t).addEventListener('click',()=>showTab(t)));
+function showTab(t){TABS.forEach(x=>{F('tab-'+x).setAttribute('aria-selected',String(x===t));F('pane-'+x).hidden=x!==t;});}
+function guideText(){return STATE.report?N.plain(STATE.report.doc):'';}
+function inputNow(){return STATE.report?STATE.report.input:N.inputText(form());}
+function bubble(cls,text,who){const m=el('div','msg '+cls);if(who)m.appendChild(el('div','who',who));if(cls==='me')m.appendChild(document.createTextNode(text));else m.appendChild(richText(text));return m;}
+
+const ASK_CHIPS=['איך פותחים את המפגש?','מה עושים אם יש שתיקה?','איך מזמינים את השקטים לדבר?','איך מסיימים כך שזה ימשיך?','איך מנסחים הסכמות עם הקבוצה?'];
+ASK_CHIPS.forEach(q=>{const b=el('button','chip',q);b.type='button';b.addEventListener('click',()=>{F('ask-in').value=q;F('ask-go').click();});F('ask-chips').appendChild(b);});
+function renderAsk(){const log=F('ask-log');log.textContent='';STATE.chat.forEach(m=>log.appendChild(bubble(m.role==='user'?'me':'bot',m.content,m.role==='user'?null:'ננה')));}
+F('ask-go').addEventListener('click',async()=>{
+  const q=F('ask-in').value.trim();if(!q||BUSY)return;
+  BUSY=true;F('ask-go').disabled=true;STATE.chat.push({role:'user',content:q});F('ask-in').value='';renderAsk();
+  const th=el('div','msg bot thinking');F('ask-log').appendChild(th);const stop=waiting(th,'ננה חושבת...');
+  try{const ans=await complete(N.chatSystem(inputNow(),guideText(),KB,RULE),tail(STATE.chat,12),5000);STATE.chat.push({role:'assistant',content:ans});save();}
+  catch(e){STATE.chat.pop();F('ask-in').value=q;th.remove();F('ask-log').appendChild(el('p','err','התשובה לא הגיעה ('+e.message+'). אפשר לנסות שוב.'));stop();BUSY=false;F('ask-go').disabled=false;return;}
+  stop();BUSY=false;F('ask-go').disabled=false;renderAsk();
+});
+F('ask-clear').addEventListener('click',()=>{STATE.chat=[];save();renderAsk();});
+
+function renderMoments(){
+  const s=F('pr-moment');const cur=s.value;s.textContent='';
+  const fromGuide=STATE.report?STATE.report.doc.moments.map(m=>m.moment):[];
+  if(fromGuide.length){const g=el('optgroup');g.label='מהמדריך שלך';fromGuide.forEach(m=>{const o=el('option',null,m);o.value=m;g.appendChild(o);});s.appendChild(g);}
+  const g2=el('optgroup');g2.label='רגעים נפוצים';N.MOMENTS.forEach(m=>{const o=el('option',null,m.t);o.value=m.t;g2.appendChild(o);});s.appendChild(g2);
+  if(cur)s.value=cur;
+}
+function renderPractice(){
+  const P=STATE.practice,log=F('pr-log');log.textContent='';F('pr-reply').hidden=!P;
+  if(!P)return;
+  log.appendChild(el('p','muted','תרגול: '+P.moment));
+  P.msgs.forEach((m,i)=>{if(i===0)return;log.appendChild(m.role==='user'?bubble('me',m.content):bubble(/משוב מננה/.test(m.content)?'bot':'group',m.content,/משוב מננה/.test(m.content)?'ננה':'הקבוצה'));});
+  if(P.done)F('pr-reply').hidden=true;
+}
+async function practiceTurn(text){
+  const P=STATE.practice;if(!P||BUSY)return;
+  BUSY=true;['pr-go','pr-end','pr-start'].forEach(id=>F(id).disabled=true);
+  P.msgs.push({role:'user',content:text});renderPractice();
+  const th=el('div','msg group thinking');F('pr-log').appendChild(th);const stop=waiting(th,'הקבוצה מגיבה...');
+  try{
+    const ans=await complete(N.practiceSystem(P.moment,inputNow(),guideText(),KB,RULE),tail(P.msgs,16),3000);
+    P.msgs.push({role:'assistant',content:ans});if(/משוב מננה/.test(ans))P.done=true;save();
+  }catch(e){P.msgs.pop();th.remove();F('pr-log').appendChild(el('p','err','התגובה לא הגיעה ('+e.message+'). אפשר לנסות שוב.'));}
+  finally{stop();BUSY=false;['pr-go','pr-end','pr-start'].forEach(id=>F(id).disabled=false);}
+  renderPractice();F('pr-log').lastElementChild&&F('pr-log').lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+F('pr-start').addEventListener('click',()=>{if(BUSY)return;STATE.practice={moment:F('pr-moment').value,msgs:[]};practiceTurn('התחילי את התרגול: הציגי את הרגע בחדר.');});
+F('pr-go').addEventListener('click',()=>{const t=F('pr-in').value.trim();if(!t)return;F('pr-in').value='';practiceTurn(t);});
+F('pr-end').addEventListener('click',()=>practiceTurn('סיום תרגול'));
+
+function renderAfter(){const o=F('af-out');o.textContent='';const A=STATE.after;if(!A||!A.answer)return;
+  const c=el('div','rcard');c.appendChild(el('p','rcard-t','משוב מננה · '+fmtDate(A.at)));c.appendChild(richText(A.answer));o.appendChild(c);
+  const b=el('button','btn btn-ghost btn-sm','🖨 הדפסה / PDF');b.type='button';b.style.marginTop='.4rem';
+  b.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h4',null,'מה קרה במפגש'));n.appendChild(richText(A.text));n.appendChild(el('h4',null,'משוב מננה'));n.appendChild(richText(A.answer));
+    SBE_DOC.print({title:'רפלקציה אחרי המפגש — ננה',subtitle:STATE.report?subtitle(STATE.report):'',node:n});});
+  o.appendChild(b);}
+F('af-go').addEventListener('click',async()=>{
+  const t=F('af-in').value.trim();if(!t||BUSY)return;
+  BUSY=true;F('af-go').disabled=true;const o=F('af-out');o.textContent='';const th=el('p','muted');o.appendChild(th);const stop=waiting(th,'ננה קוראת ומכינה משוב...');
+  try{const ans=await complete(N.debriefSystem(inputNow(),guideText(),KB,RULE),[{role:'user',content:t}],5000);STATE.after={text:t,answer:ans,at:new Date().toISOString()};save();renderAfter();}
+  catch(e){o.textContent='';o.appendChild(el('p','err','המשוב לא הגיע ('+e.message+'). מה שכתבת נשמר — אפשר לנסות שוב.'));}
+  finally{stop();BUSY=false;F('af-go').disabled=false;}
+});
+F('af-in').addEventListener('input',()=>{STATE.after=Object.assign({},STATE.after||{},{text:F('af-in').value});save();});
+
+function renderMore(){F('more-card').hidden=!STATE.report;renderAsk();renderMoments();renderPractice();if(STATE.after&&STATE.after.text)F('af-in').value=STATE.after.text;renderAfter();}
+
+// ── דוגמה וטופס חדש ──
+F('btn-example').addEventListener('click',()=>{
+  const v={'f-group':'כיתה בבית הספר','f-age':'חטיבת ביניים','f-size':'31','f-familiar':'קבוצה ותיקה','f-role':'מחנך/ת הכיתה',
+    'f-about':'כיתה ח׳. יש כמה תלמידים שקטים מאוד ושלושה שמדברים כל הזמן. לאחרונה היה ריב בקבוצת הווטסאפ של הכיתה, ושתי תלמידות לא מדברות זו עם זו.',
+    'f-topic':'איך אנחנו מדברים זה עם זה — בכיתה וברשת','f-goal':'שהתלמידים ינסחו יחד הסכמות לשיחה מכבדת, שישמעו גם את השקטים, ושהכיתה תחליט על דרך קבועה לפתור מחלוקות.',
+    'f-sit':'קונפליקט או מתח בקבוצה','f-duration':'שיעור (45 דקות)','f-space':'כיתה בשורות — אפשר להזיז','f-exp':'הנחיתי קצת',
+    'f-worry':'שהריב יתפרץ שוב באמצע השיעור ושאני לא אדע איך לעצור בלי להרים את הקול.','f-question':''};
+  Object.keys(v).forEach(k=>{if(LISTS[k])LISTS[k].ensure(v[k]);F(k).value=v[k];F(k).classList.remove('miss');});F('form-err').hidden=true;setHabits(['answer','judge','conflict']);save();
+});
+F('btn-clear').addEventListener('click',()=>{if(!confirm('לנקות את הטופס?'))return;FIELDS.forEach(k=>{F(k).value='';});setHabits([]);save();});
+
+load();renderGuide();renderMore();
+})();
+</script>
+</body>
+</html>

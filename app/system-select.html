@@ -329,7 +329,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }

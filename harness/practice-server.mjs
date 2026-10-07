@@ -202,7 +202,7 @@ const server = createServer(async (req, res) => {
   try {
     payload = JSON.parse(await readBody(req));
   } catch {
-    return sendJson(res, 400, { error: 'גוף הבקשה חייב להיות JSON תקין' });
+    return sendJson(res, 400, { error: 'גוף הבקשה אינו JSON תקין' });
   }
 
   // POST /api/pipeline (21/09/2026) — הצינור התלת-שלבי המלא ממסך הקלט של
@@ -287,7 +287,7 @@ const server = createServer(async (req, res) => {
     return sendJson(res, 400, { error: 'חסר system או messages בבקשה' });
   }
   if (messages && !Array.isArray(messages)) {
-    return sendJson(res, 400, { error: 'messages חייב להיות מערך' });
+    return sendJson(res, 400, { error: 'messages אינו מערך' });
   }
 
   let provider;

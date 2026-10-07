@@ -1,4 +1,7 @@
 // מתאם ספקים. הלוגיקה למעלה לא יודעת מול מי היא מדברת.
+import { createRequire } from 'node:module';
+// שפה של הזמנה, לא של חובה — כלל של Begood לכל קריאה למודל (מקור אמת: app/lib/invite-language.js)
+const INVITE = createRequire(import.meta.url)('../../app/lib/invite-language.js');
 // עוצמת הווריאציה מופשטת: כל ספק ממפה אותה אחרת.
 
 const VARIATION = {
@@ -223,7 +226,7 @@ export function getProvider(name) {
     async complete(opts) {
       let lastErr;
       for (let attempt = 0; attempt < 3; attempt++) {
-        try { return await p.complete({ ...opts, apiKey, model: opts.model || this.model }); }
+        try { return await p.complete({ ...opts, system: INVITE.apply(opts.system), apiKey, model: opts.model || this.model }); }
         catch (e) {
           lastErr = e;
           if (!(e instanceof ProviderError) || !e.retryable) throw e;

@@ -19,7 +19,7 @@
     lead: 'מנהיגות חינוכית: צוות, אמון ורווחה',
     leadcr: 'מנהיגות בחירום ובמשבר',
     stu:  'מנהיגות תלמידים וקול התלמידים',
-    facil: 'הנחיית קבוצות והשתתפות'
+    facil: 'הנחיית קבוצות ושיח בכיתה'
   };
   var S = [
     // ── ישראל ──
@@ -626,16 +626,41 @@
     {k:'ACUPrincipals2026', g:'lead', apa:'Institute for Positive Psychology and Education, Australian Catholic University. (2026). The Australian Principal Occupational Health, Safety and Wellbeing Survey: Annual report (2025 data). ACU.',
       url:'https://www.acu.edu.au/about-acu/news/2026/march/violence-against-principals-nearly-doubles-in-15-years-as-workload-soars-stress-and-burnout-deepens',
       gist:'דוח ארגוני (לא מאמר בכתב עת) על כ-2,000 מנהלים באוסטרליה: 47.8% חוו אלימות פיזית ב-2025 (27.3% ב-2011), כ-54 שעות עבודה בשבוע, ועלייה בחרדה ובשחיקה. עומס ושחיקה הם בעיה מערכתית.',
-      be:'שחיקת מנהלים היא בעיה של המערכת ולא של האדם — תמיכה בצוות וחלוקת אחריות הם תנאי לחוסן.'}
+      be:'שחיקת מנהלים היא בעיה של המערכת ולא של האדם — תמיכה בצוות וחלוקת אחריות הם תנאי לחוסן.'},
+    // ── הנחיית קבוצות ושיח בכיתה (07/10/2026) — הבסיס של ננה (מהוראה להנחיה). כל מקור אומת: DOI, ISBN או אתר הארגון ──
+    {k:'Rowe1986', g:'facil', apa:'Rowe, M. B. (1986). Wait time: Slowing down may be a way of speeding up! Journal of Teacher Education, 37(1), 43–50.',
+      url:'https://doi.org/10.1177/002248718603700110',
+      gist:'מורים מחכים בממוצע פחות משנייה אחרי שאלה. כשזמן ההמתנה מתארך ל-3 שניות ויותר — אחרי השאלה ואחרי התשובה — התשובות ארוכות יותר, יותר תלמידים עונים, יש יותר נימוקים, שאלות ותגובות של תלמידים זה לזה.',
+      be:'שתיקה אחרי שאלה היא זמן חשיבה ולא כישלון. מנחה שמחכה מזמינה יותר קולות — גם את השקטים.'},
+    {k:'Tuckman1965', g:'facil', apa:'Tuckman, B. W. (1965). Developmental sequence in small groups. Psychological Bulletin, 63(6), 384–399.',
+      url:'https://doi.org/10.1037/h0022100',
+      gist:'סקירה של 50 מחקרים על קבוצות קטנות: קבוצה עוברת שלבים — התהוות (forming), התנגשות (storming), נורמות (norming) ותפקוד (performing). ב-1977 נוסף שלב הפרידה (adjourning). המודל תיאורי, והשלבים אינם תמיד ליניאריים.',
+      be:'קריאה של שלב הקבוצה מכוונת את ההנחיה: בהתחלה — ביטחון והיכרות; בהתנגשות — מחלוקת כחלק טבעי; אחר כך — הסכמות ואחריות משותפת.'},
+    {k:'HoweAbedin2013', g:'facil', apa:'Howe, C., & Abedin, M. (2013). Classroom dialogue: A systematic review across four decades of research. Cambridge Journal of Education, 43(3), 325–356.',
+      url:'https://doi.org/10.1080/0305764X.2013.786024',
+      gist:'סקירה שיטתית של ארבעה עשורי מחקר על דיאלוג בכיתה: רוב השיח עדיין במבנה שאלה של מורה — תשובה של תלמיד — הערכה. שיח פתוח יותר — שאלות אמיתיות, הרחבה, תגובה של תלמידים זה לזה ונימוק — קשור ללמידה ולהשתתפות, אבל הידע על מה בדיוק משפיע עדיין חלקי.',
+      be:'המעבר מ"שאלה–תשובה–ציון" לשיח שבו התלמידים מגיבים זה לזה הוא לב המעבר מהוראה להנחיה.'},
+    {k:'Resnick2015', g:'facil', apa:'Resnick, L. B., Asterhan, C. S. C., & Clarke, S. N. (Eds.). (2015). Socializing intelligence through academic talk and dialogue. American Educational Research Association.',
+      url:'https://doi.org/10.3102/978-0-935302-43-1',
+      gist:'34 פרקים על שיח אקדמי ודיאלוגי בכיתה ומחוצה לה (עורכת שותפה ישראלית — כריסטה אסטרהן). שיח מובנה ומכבד, שבו תלמידים מנמקים, מקשיבים ובונים על דברי אחרים, מפתח חשיבה ויכולת השתתפות; המורה מעצב/ת נורמות שיח ומהלכי שיח.',
+      be:'מהלכי שיח פשוטים — "מי יכול להוסיף?", "מי רואה אחרת?", "תגיד במילים שלך מה היא אמרה" — הופכים את הכיתה לקהילה חושבת.'},
+    {k:'MercerLittleton2007', g:'facil', apa:'Mercer, N., & Littleton, K. (2007). Dialogue and the development of children\'s thinking: A sociocultural approach. Routledge.',
+      url:'https://www.routledge.com/products/9780415404785',
+      gist:'שלושה סוגי שיח בקבוצה: מתנגח (כל אחד על עמדתו), מצטבר (מסכימים בלי לבחון) וחוקר (exploratory) — מציעים, מנמקים, מאתגרים בכבוד ומגיעים להסכמה. שיח חוקר נלמד דרך כללי שיח שהקבוצה מסכימה עליהם.',
+      be:'כללי שיח שהקבוצה מנסחת בעצמה ("כל אחד מוזמן לדבר", "מבקשים הסבר", "מחפשים הסכמה") הם מנגנון שממשיך לפעול גם בלי המנחה.'},
+    {k:'Kaner2014', g:'facil', apa:'Kaner, S. (2014). Facilitator\'s guide to participatory decision-making (3rd ed.). Jossey-Bass.',
+      url:'https://www.wiley-vch.de/en/areas-interest/finance-economics-law/facilitator-39-s-guide-to-participatory-decision-making-978-1-118-40495-9',
+      gist:'מדריך מעשי להנחיית קבוצות: השתתפות מלאה, הבנה הדדית, פתרונות מכלילים ואחריות משותפת. שלב "אזור הקושי" (groan zone) בין פתיחת רעיונות להתכנסות הוא טבעי; המנחה מחזיקה את התהליך ולא את התוכן, ונעזרת בכלים כמו סבב, שיקוף, הזמנת קולות שקטים ורישום משותף.',
+      be:'אי־נוחות באמצע הדיון היא סימן לעבודה אמיתית ולא לכישלון. המנחה שומרת על התהליך, והקבוצה אחראית לתוכן ולהחלטות.'},
+    {k:'IAFCompetencies2026', g:'facil', apa:'International Association of Facilitators. (n.d.). The IAF core competencies. Retrieved October 7, 2026, from iaf-world.org',
+      url:'https://iaf-world.org/the-iaf-core-competencies/',
+      gist:'מסגרת מקצועית בינלאומית לשש מיומנויות הנחיה: שיתוף פעולה עם מזמיני התהליך, תכנון תהליך מתאים, יצירת סביבה משתפת ושמירה עליה, הובלת הקבוצה לתוצאה מועילה, ידע מקצועי מתעדכן ועמדה מקצועית חיובית. מסגרת מקצועית — לא מחקר יעילות.',
+      be:'הנחיה היא מקצוע עם מיומנויות שאפשר ללמוד: לתכנן תהליך, ליצור השתתפות, ולהוביל לתוצאה — בלי להחליט במקום הקבוצה.'},
+    {k:'UnicefAdolescentKit2026', g:'facil', apa:'UNICEF. (n.d.). Adolescent Kit for Expression and Innovation: Facilitation resources. Retrieved October 7, 2026, from unicef.org',
+      url:'https://www.unicef.org/adolescentkit/facilitation-resources',
+      gist:'ערכה של UNICEF למתבגרים (10–18) במשבר הומניטרי או בהקשר פגיע, שמטרתה לטפח חוסן: הנחיה שנשענת על חוזקות, מרחב בטוח, בחירה, יצירה וביטוי, קשרים חיוביים ותרומה לקהילה; מדריכים והדרכה עצמית למנחים.',
+      be:'עם בני נוער במצבי לחץ: מבנה קבוע וצפוי, בחירה ויצירה, והזדמנות לתרום לאחרים — כל אלה בונים חוסן.'}
   ];
-  S.push(
-    {k:'IAFFacilitation',g:'facil',apa:'International Association of Facilitators. Core Competencies.',url:'https://iaf-world.org/discover-the-iaf/',
-      gist:'מסגרת מקצועית למיומנויות הנחיה: תכנון תהליך מותאם, השתתפות מגוונת, הקשבה, התמודדות עם מחלוקת, והובלה לתוצאה שימושית. זו מסגרת מקצועית ולא מחקר יעילות של פעילות חוסן.',
-      be:'מכינים את המרחב והזמן, מאפשרים דרכי השתתפות שונות ומסייעים לקבוצה לברר ולעבוד יחד. המנחה מנהלת את התהליך בלי להחליט במקום הקבוצה.'},
-    {k:'UNICEFFacilitation',g:'facil',apa:'UNICEF. Adolescent Kit: Facilitation guides.',url:'https://www.unicef.org/adolescentkit/facilitation-guides',
-      gist:'מדריכי הנחיה לעבודה עם מתבגרים: תכנון פעילויות מתאימות, מבנה ושגרה, תמיכה בהשתתפות וקבוצה בטוחה. ההקשר הוא עבודה עם מתבגרים; אין להכליל אוטומטית לכל אוכלוסייה.',
-      be:'משלבים מבנה קבוע עם בחירה ויצירתיות, בודקים מי יכול להשתתף ואיך, ומתאימים את הפעילות לגיל, למקום ולתמיכה הזמינה.'}
-  );
   var byKey = {}; S.forEach(function(s){ byKey[s.k] = s; });
   // לכל יועצת בנק משלה: פרקטי (הכיתה) — בלי קבוצות המנהיגות; נוגי (מנהיגות) — קבוצות המנהיגות,
   // ישראל, חוסן קהילתי, בית הספר כקהילה, ומקורות נבחרים על אקלים, צוות ורווחה.
@@ -643,9 +668,14 @@
   var NUGI_G = { lead: 1, leadcr: 1, stu: 1, il: 1, comm: 1, sys: 1 };
   var NUGI_K = { Edmondson1999: 1, Frazier2017: 1, JenningsGreenberg2009: 1, Allen2018: 1, WangDegol2016: 1,
     Battistich1997: 1, RyanDeci2017: 1, Moore2026: 1, Gregory2016: 1, Augustine2018: 1, Miao2023: 1, Brookings2026: 1 };
+  // ננה (הנחיה מקדמת חוסן) — הנחיית קבוצות, הכיתה, קול התלמידים, למידה רגשית־חברתית וקונפליקט,
+  // ומקורות נבחרים על חוסן קהילתי ועל משבר.
+  var NANA_G = { facil: 1, cls: 1, stu: 1, sel: 1, conf: 1 };
+  var NANA_K = { Sade2024: 1, SadeTools2026: 1, Hobfoll2007: 1, Norris2008: 1, Masten2001: 1, Shoshani2016: 1, Wolmer2011: 1 };
   var ADV = {
     practi: function(s){ return !LEAD_G[s.g]; },
-    nugi:   function(s){ return !!(NUGI_G[s.g] || NUGI_K[s.k]); }
+    nugi:   function(s){ return !!(NUGI_G[s.g] || NUGI_K[s.k]); },
+    nana:   function(s){ return !!(NANA_G[s.g] || NANA_K[s.k]); }
   };
   function forAdvisor(name){ var f = ADV[name]; return f ? S.filter(f) : S.slice(); }
   window.SBE_ADVISOR_SOURCES = { groups: G, list: S, byKey: byKey, forAdvisor: forAdvisor };

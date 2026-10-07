@@ -1,0 +1,20 @@
+# "ביקור" אוטומטי בשרת (06/10/2026): בתוכנית Free של Render השרת נרדם אחרי כרבע שעה בלי שימוש,
+# והפנייה הראשונה מחכה עד דקה ("השרת מתעורר"). פנייה קלה ל-/health כל 10 דקות משאירה אותו ער.
+# GitHub לא מבטיח תזמון מדויק — לפעמים הריצה מתעכבת, ואז השרת עלול להירדם לזמן קצר.
+# במעבר לתוכנית Starter ב-Render אין צורך בזה — אפשר למחוק את הקובץ.
+name: keep-awake
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Ping sbe-server
+        run: |
+          for i in 1 2 3; do
+            curl -sS -m 90 -o /dev/null -w "health: %{http_code} in %{time_total}s\n" https://sbe-server.onrender.com/health && break
+            sleep 20
+          done

@@ -296,12 +296,12 @@ function addableSelect(id,listName,what){
   }
   btn.addEventListener('click',()=>{
     const v=inp.value.replace(/\s+/g,' ').trim();msg.hidden=false;
-    if(v.length<2){msg.textContent='צריך להקליד ערך.';return;}
+    if(v.length<2){msg.textContent='אפשר להקליד ערך ואז ללחוץ על "הוספה לרשימה".';return;}
     btn.disabled=true;msg.textContent='מוסיפה לרשימה...';
     const done=(t)=>{render(v);inp.value='';msg.textContent=t;sel.dispatchEvent(new Event('change'));save();};
     accessApi({action:'listAdd',name:listName,value:v,token:token()}).then(d=>{
       if(d.items){extra=d.items;done('נוסף לרשימה של כולם ונבחר ✓');}
-      else done(d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם צריך להיות מחובר/ת עם ההרשאה המתאימה.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).');
+      else done(d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם, אפשר להיכנס עם ההרשאה המתאימה.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).');
     }).catch(()=>done('נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).')).finally(()=>{btn.disabled=false;});
   });
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();btn.click();}});

@@ -255,11 +255,11 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <summary>פרטי העבודה<span class="count" id="n-details"></span></summary>
   <div class="grp-b">
     <div class="f" data-req="1">
-      <label>שם היוצר/ת <span class="reqmark">· שדה חובה</span> <span class="hint">מופיע על גבי המשוב</span></label>
+      <label>שם היוצר/ת <span class="reqmark">· שדה עיקרי</span> <span class="hint">מופיע על גבי המשוב</span></label>
       <input id="creatorName" placeholder="השם שלך">
     </div>
     <div class="f" data-req="1">
-      <label>גיל / שלב הכותב/ת <span class="reqmark">· שדה חובה</span> <span class="hint">קובע את רף הציפייה — שפה, מורכבות, מבנה</span></label>
+      <label>גיל / שלב הכותב/ת <span class="reqmark">· שדה עיקרי</span> <span class="hint">קובע את רף הציפייה — שפה, מורכבות, מבנה</span></label>
       <div class="customsel" id="ageSel"></div>
       <input type="hidden" id="i-age">
     </div>
@@ -702,7 +702,7 @@ $("critAddBtn").addEventListener("click", async () => {
   $("critNewTitle").value = ""; $("critNewDetail").value = "";
   selectedCriteria.add(title); renderCriteria(); syncHint(); saveDraft();
   if (!$("critShare").checked) return critMsg("נוסף לקריטריונים שלך ונבחר ✓", true);
-  if (!token()) return critMsg("נוסף לקריטריונים שלך ונבחר ✓ כדי להציע אותו לקהילה צריך להיכנס עם קוד.", true);
+  if (!token()) return critMsg("נוסף לקריטריונים שלך ונבחר ✓ כדי להציע אותו לקהילה, אפשר להיכנס עם קוד.", true);
   critMsg("נוסף לקריטריונים שלך ונבחר ✓ שולחת הצעה לקהילה...", true);
   const setMine = (patch) => saveMyItems(myItems().map(x => x.value === title ? { ...x, ...patch } : x));
   try {
@@ -733,9 +733,9 @@ async function loadCommunity(){
 // לפי הנחיות המנחה (שדה "הנחיות המשימה") / משולב — כל האפשרויות יחד.
 const FB_KINDS = [
   { k:"criteria", t:"קריטריונים לכתיבה אקדמית", d:"משוב לפי הקריטריונים שתסמני למטה — הקבועים, שלך או מהקהילה." },
-  { k:"style", t:"משוב רך — סגנון, משלב וקוהרנטיות", d:"משוב עדין שמתמקד באיך שהעבודה כתובה: סגנון וזרימה, משלב לשון, וקוהרנטיות — החיבור בין משפטים, פסקאות ורעיונות. לא צריך לסמן קריטריונים." },
-  { k:"structure", t:"מבנה כללי, פסקאות ותחביר", d:"משוב על השלד של העבודה: המבנה הכללי (פתיחה, גוף, סיכום, פרקים וכותרות), בניית פסקאות, ותחביר — משפטים, פיסוק ומילות קישור. לא צריך לסמן קריטריונים." },
-  { k:"task", t:"לפי הנחיות המנחה", d:"משוב שבודק את העבודה מול ההנחיות או המחוון שהעלית בשדה \"הנחיות המשימה\" — דרישה אחר דרישה. לא צריך לסמן קריטריונים." },
+  { k:"style", t:"משוב רך — סגנון, משלב וקוהרנטיות", d:"משוב עדין שמתמקד באיך שהעבודה כתובה: סגנון וזרימה, משלב לשון, וקוהרנטיות — החיבור בין משפטים, פסקאות ורעיונות. אין צורך לסמן קריטריונים." },
+  { k:"structure", t:"מבנה כללי, פסקאות ותחביר", d:"משוב על השלד של העבודה: המבנה הכללי (פתיחה, גוף, סיכום, פרקים וכותרות), בניית פסקאות, ותחביר — משפטים, פיסוק ומילות קישור. אין צורך לסמן קריטריונים." },
+  { k:"task", t:"לפי הנחיות המנחה", d:"משוב שבודק את העבודה מול ההנחיות או המחוון שהעלית בשדה \"הנחיות המשימה\" — דרישה אחר דרישה. אין צורך לסמן קריטריונים." },
   { k:"combined", t:"משוב משולב", d:"כל האפשרויות יחד: הקריטריונים שתסמני, משוב רך על סגנון, משלב וקוהרנטיות, מבנה כללי, פסקאות ותחביר, ובדיקה מול הנחיות המנחה (אם הועלו)." },
 ];
 const STYLE_CRITERIA = [
@@ -1022,7 +1022,7 @@ $("bReview").addEventListener("click", async (e) => {
     } catch (_) { u = { _status: 0 }; }
     e.target.disabled = false; e.target.textContent = "קבלת משוב";
     if (!u.ok) {
-      alert(u.error === "used-up" ? (info.kind === "course" ? "ניצלת את כל הפקות המשוב שלך בקורס הזה. אם צריך עוד — אפשר לפנות למרצה."
+      alert(u.error === "used-up" ? (info.kind === "course" ? "ניצלת את כל הפקות המשוב שלך בקורס הזה. אם תרצו עוד — אפשר לפנות למרצה."
           : "הקוד שלך מיצה את מספר הפקות המשוב שלו. אפשר לבקש קוד חדש מהמרצה.")
         : u.error === "full" ? "כל המקומות בקורס הזה כבר תפוסים. אפשר לפנות למרצה."
         : u.error === "expired" ? "תוקף הקוד שלך הסתיים. אפשר לבקש קוד חדש מהמרצה."
@@ -1404,7 +1404,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }

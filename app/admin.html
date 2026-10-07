@@ -554,7 +554,7 @@ function pHome(){
     card(H.crit, "קריטריונים לאישור", "הצעות מהקהילה למשוב לעבודות", toTab("crit"), true),
     card(H.renew, "בקשות חידוש ורכישה", "מוסדות שביקשו לחדש או להצטרף", toTab("insts"), true),
     card(H.expiring, "מנויים שמסתיימים", "בקרוב, בתקופת חסד או שהסתיימו", toTab("insts"), true),
-    card(H.noSystems, "מוסדות בלי מערכות פתוחות", "צריך לבחור להם מה פתוח", toTab("insts"), false),
+    card(H.noSystems, "מוסדות בלי מערכות פתוחות", "אפשר לבחור להם מה פתוח", toTab("insts"), false),
     card(H.inbox, "פניות", "רעיונות, תקלות ושאלות שנשלחו", toTab("inbox"), false));
   w.append(grid);
   const quick = el("div",{class:"card"});
@@ -664,7 +664,7 @@ function pFeedback(){
     const c = el("div",{class:"card"});
     c.append(el("h3",{}, "שאלון " + FB.ROLE_LABEL[role], el("em",{}, n + " בברירת המחדל · " + total + " מדדים בבנק")));
     const inn = el("div",{class:"in"});
-    if (!FB.valid(n)) inn.append(el("div",{class:"note"}, "ברירת המחדל צריכה לכלול " + FB.MIN + "–" + FB.MAX + " מדדים, כדי שהמנחה תוכל לפתוח סדנה בלי לשנות דבר."));
+    if (!FB.valid(n)) inn.append(el("div",{class:"note"}, "בברירת המחדל אפשר לבחור " + FB.MIN + "–" + FB.MAX + " מדדים, כדי שהמנחה תוכל לפתוח סדנה בלי לשנות דבר."));
     const full = n >= FB.MAX;
     FB.grouped(role, bank).forEach(({ g, items })=>{
       inn.append(el("div",{style:"font-size:12.5px;font-weight:700;color:var(--muted);margin:12px 0 4px"}, g));
@@ -1004,7 +1004,7 @@ function renderCommunityRows(lib, loadFn, saveFn, groupKey, filterFn){
 function pTaxonomies(){
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"רשימות"), el("p",{class:"sub"},
-    "מיומנויות, רגשות וצרכים — אוצר המילים הקבוע שנפתח כאפשרויות בחירה בזמן יצירת תרחיש. הניסוח חייב להישאר זהה בין מוסדות כדי לאפשר הצלבת נתוני מחקר."));
+    "מיומנויות, רגשות וצרכים — אוצר המילים הקבוע שנפתח כאפשרויות בחירה בזמן יצירת תרחיש. הניסוח נשאר זהה בין מוסדות כדי לאפשר הצלבת נתוני מחקר."));
 
   const unseenNow = countUnseenAdditions();
   w.append(el("div",{class:"note"},
@@ -1137,7 +1137,7 @@ function pLibs(){
 
   w.append(el("div",{class:"lock"},
     el("b",{},"למה מקור טעון אישור, בניגוד לשאלת משוב. "),
-    "המערכת לעולם לא כותבת מקור מעצמה — כל מקור חייב להיבדק שהוא באמת קיים ומצוטט נכון לפני שהוא זמין למודל לבחור ממנו. שאלת משוב היא רק ניסוח, ולכן נפתחת מיידית."));
+    "המערכת לעולם לא כותבת מקור מעצמה — כל מקור נבדק שהוא באמת קיים ומצוטט נכון לפני שהוא זמין למודל לבחור ממנו. שאלת משוב היא רק ניסוח, ולכן נפתחת מיידית."));
 
   const pending = loadSuggestions().filter(s => s.status === "pending");
   if (pending.length) {
@@ -1701,7 +1701,7 @@ function pAccess(){
     bSet.addEventListener("click", () => {
       const a = p1.value.replace(/[‎‏؜]/g, "").trim(), b = p2.value.replace(/[‎‏؜]/g, "").trim();
       msg.hidden = true;
-      if (a.length < 8) { msg.textContent = "הסיסמה צריכה להיות באורך 8 תווים לפחות."; msg.hidden = false; return; }
+      if (a.length < 8) { msg.textContent = "אפשר לבחור סיסמה באורך 8 תווים לפחות."; msg.hidden = false; return; }
       if (a !== b) { msg.textContent = "שתי ההקלדות לא זהות."; msg.hidden = false; return; }
       ask("החלפת סיסמת " + LABELS[kind],
         "הסיסמה הקודמת תפסיק לעבוד מיד. שמרי את החדשה במקום בטוח — אי אפשר לשחזר אותה, רק להחליף שוב.",
@@ -1720,7 +1720,7 @@ function pAccess(){
 
   w.append(c2, c1, el("div",{class:"note"},
     el("b",{},"טוב לדעת. "),
-    "הסיסמאות נשמרות בשרת באופן מוצפן, ולכן גם כאן אי אפשר לראות אותן — רק להחליף. את קוד המשוב לעבודות אפשר לראות, כי צריך למסור אותו."));
+    "הסיסמאות נשמרות בשרת באופן מוצפן, ולכן גם כאן אי אפשר לראות אותן — רק להחליף. את קוד המשוב לעבודות אפשר לראות, כי מוסרים אותו לסטודנטים."));
   return w;
 }
 
@@ -1750,6 +1750,7 @@ const MOD_LABELS = {
   journey:     "מסע אל החוסן",
   writer:      "כתיבה מקדמת חוסן",
   studio:      "סטודיו חוסן — השראה ופעולה",
+  nana:        "ננה — מהוראה להנחיה",
 };
 
 // קוד אישי (01/10/2026): לאדם יחיד — למשל מרצה שמקבלת רק "משוב לעבודות" — בלי קוד
@@ -1778,7 +1779,7 @@ function openPersonalDlg(x) {
   const out = el("div",{style:"margin-top:12px"}); body.append(out);
   ok.onclick = async () => {
     const perms = open.filter(p => cbs[p].checked);
-    if (!perms.length) { out.textContent = "צריך לסמן לפחות מערכת אחת."; return; }
+    if (!perms.length) { out.textContent = "כדי להמשיך, סמנו לפחות מערכת אחת."; return; }
     ok.disabled = true; out.textContent = "מפיקה... (לפעמים עד דקה)";
     try {
       const r = await accessCall("codeCreate", { kind: "staff", inst: x.name, perms, label: name.value.trim(),
@@ -1812,7 +1813,7 @@ function openModDlg(instName) {
         "לא הצלחתי לטעון את ההגדרות השמורות מהשרת — מוצג כאן \"הכול כבוי\". שמירה תחליף את מה ששמור."));
 
       const note = el("p",{style:"margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.6"},
-        "התקרה של המוסד: רק מה שמסומן כאן מנהל/ת המוסד יכול/ה לתת לצוות. ברירת מחדל: הכול כבוי — מסמנים רק את מה שהמוסד צריך.");
+        "התקרה של המוסד: רק מה שמסומן כאן מנהל/ת המוסד יכול/ה לתת לצוות. ברירת מחדל: הכול כבוי — מסמנים רק את מה שהמוסד רוצה.");
       body.append(note);
 
       const toggles = {};
@@ -2039,7 +2040,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }

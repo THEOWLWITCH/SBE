@@ -136,6 +136,7 @@ const SECTIONS = [
     { label: "פרקטי: יועצת לפיתוח חוסן חברתי", file: "resilience-advisor.html" },
     { label: "נוגי: יועצת למנהיגות תומכת חוסן", file: "leadership-advisor.html" },
     { label: "כתיבה מקדמת חוסן", file: "message-writer.html" },
+    { label: "ננה: מהוראה להנחיה", file: "facilitation-advisor.html" },
     { label: "מסע אל החוסן", file: "journey.html" },
     { label: "המסעות אל החוסן — ניהול", file: "journeys.html" },
   ]},
@@ -350,7 +351,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }

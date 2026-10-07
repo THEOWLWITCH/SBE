@@ -98,7 +98,8 @@
     practi: ["resilience-advisor.html", "resilience-advisor-sources.html", "resilience-studio.html"],
     studio: ["resilience-studio.html"],
     journey: ["journey.html"],
-    writer: ["message-writer.html", "resilience-advisor-sources.html"] // כתיבה מקדמת חוסן — רק בהרשאה הזאת (02/10/2026)
+    writer: ["message-writer.html", "resilience-advisor-sources.html"], // כתיבה מקדמת חוסן — רק בהרשאה הזאת (02/10/2026)
+    nana: ["facilitation-advisor.html", "resilience-advisor-sources.html"] // ננה — מהוראה להנחיה (07/10/2026)
   };
   var SIM_DOCS = ["doc-trainee.html", "doc-actor.html", "card-actor.html", "doc-facilitator.html"];
   var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html"].concat(SIM_DOCS);

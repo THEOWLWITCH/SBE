@@ -235,7 +235,7 @@ function renderEntry(){
   const btn = el("button",{class:"primary"},"כניסה");
   const submit = async () => {
     const c = fixCodeKeys(code.value.replace(/[‎‏؜]/g, "")).trim();
-    if (!c) { err.textContent = "צריך להקליד את הקוד."; err.hidden = false; return; }
+    if (!c) { err.textContent = "הקלידו את הקוד כדי להיכנס."; err.hidden = false; return; }
     // קוד לקבוצה של סדנה (6 ספרות, 05/10/2026): אותו שדה — ממשיכים לבחירת תפקיד ושם
     if (/^\d{6}$/.test(c)) { err.hidden = true; const alt = $("altField"); alt.hidden = false; alt.textContent = ""; alt.append(buildWorkshopPicker(c)); alt.scrollIntoView({ behavior:"smooth", block:"center" }); return; }
     btn.disabled = true; btn.textContent = "בודקת... (לפעמים עד דקה)";
@@ -365,7 +365,7 @@ function buildWorkshopField(role, prefill){
     const c = fixCodeKeys(code.value.replace(/[‎‏؜]/g, "")).trim();
     const name = nm.value.trim();
     if (c.length !== 6 || !/^\d{6}$/.test(c)) { err.textContent = "הקוד הוא שש ספרות."; err.hidden = false; return; }
-    if (!name) { err.textContent = "צריך גם שם."; err.hidden = false; return; }
+    if (!name) { err.textContent = "נשמח גם לשם."; err.hidden = false; return; }
     err.hidden = true;
     // הקוד נבדק בשרת (05/10/2026): רק סדנה שהמנחה פתחה היום. כך גם המשוב משויך לסדנה הנכונה.
     btn.disabled = true; btn.textContent = "בודקת את הקוד...";
@@ -453,7 +453,7 @@ function buildAdminField(role){
   const btn = el("button",{class:"primary"},"כניסה");
   const submit = async () => {
     const clean = pass.value.replace(/[‎‏؜]/g, "").trim();
-    if (!clean) { err.textContent = "צריך להקליד סיסמה."; err.hidden = false; return; }
+    if (!clean) { err.textContent = "הקלידו סיסמה כדי להיכנס."; err.hidden = false; return; }
     btn.disabled = true; btn.textContent = "בודקת... (לפעמים עד דקה)";
     const res = await checkAccess(role, clean);
     btn.disabled = false; btn.textContent = "כניסה";
@@ -635,7 +635,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }
