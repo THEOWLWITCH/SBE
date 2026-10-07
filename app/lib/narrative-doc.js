@@ -478,18 +478,24 @@ ${WIDGET}`;
     const isParents = s.track === 'parents';
     const otherOf = (key) => s.characters.find((c) => c.key !== key);
 
-    const tpThird = (t) => tpCard(t, byKey[t.who].name, otherOf(t.who).name);
 
     const scenario = page(s, {
       badge: s.scenarioBadge,
       meta,
       body:
-        sec('מה קורה כאן', paras(s.background)) +
-        s.characters.map((c) => sec(c.name, paras(c.summary))).join('') +
-        sec(isParents ? 'מה הגישה אומרת בערב הזה' : 'מה הגישה אומרת בשיחה הזאת', paras(s.approachText), approachShort) +
-        sec('איך חמש הדקות יכולות להתגלגל', paras(s.arc)) +
-        sec('חמש נקודות התפנית', (s.turningPoints || []).map(tpThird).join(''), 'מלאי, לא רצף') +
-        sec('איך זה יכול להיגמר', `<p>${esc(s.endingsProse)}</p>`) +
+        sec('תמצית התרחיש', dtable(null, [
+          ['מה קורה כאן', paras(s.background)],
+          ...s.characters.map((c) => [esc(c.name), paras(c.summary)]),
+          [isParents ? 'מה הגישה אומרת בערב הזה' : 'מה הגישה אומרת בשיחה הזאת', paras(s.approachText)],
+        ].filter((r) => r[1])), approachShort) +
+        sec('חמש נקודות התפנית', tpTables(s.turningPoints, {
+          whoOf: (t) => byKey[t.who].name, otherOf: (t) => otherOf(t.who).name,
+          doLabel: 'מה קורה מצד הדמות', askLabel: 'מה זה מבקש',
+        }), 'מלאי, לא רצף') +
+        sec('איך זה מתגלגל ואיך זה נגמר', dtable(null, [
+          ['איך חמש הדקות יכולות להתגלגל', paras(s.arc)],
+          ['איך זה יכול להיגמר', paras(s.endingsProse)],
+        ].filter((r) => r[1]))) +
         sec('מה לראות ומה לשאול', dtable(['נקודה לצפייה', 'מה ראיתי'], (s.watch || []).map((w) => [esc(w), ''])) +
           ((s.debrief || []).length ? dtable(['מתי', 'השאלות'], [['<b>תחקיר — אחרי הצפייה</b>', ol(s.debrief)]]) : '')) +
         red(s.redLine),

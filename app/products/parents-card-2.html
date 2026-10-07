@@ -95,20 +95,49 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .marks>div:nth-child(2n){text-align:center;color:var(--muted);font-size:12.5px;
   border-inline-start:1px solid var(--hair);white-space:nowrap;}
 .marks>div:nth-last-child(-n+2){border-bottom:none;}
+.dt{width:100%;border-collapse:collapse;font-size:14px;line-height:1.6;margin:0 0 4px;}
+.dt th,.dt td{border:1px solid var(--hair);padding:8px 11px;text-align:right;vertical-align:top;}
+.dt thead th{background:#2E5A7D;color:#fff;font-weight:700;font-size:13px;}
+.dt tbody th{background:var(--sub);width:22%;font-weight:700;font-size:13px;}
+.dt p{margin:0 0 6px;} .dt p:last-child{margin:0;}
+.dt ol,.dt ul{margin:0;padding-inline-start:17px;} .dt li{margin-bottom:4px;}
+.dt td.n{width:32px;text-align:center;font-weight:700;}
+.dt td.ck{width:64px;text-align:center;color:var(--muted);font-size:16px;}
+.dt td.w{width:38%;}
+.dt .tag{margin-inline-start:6px;}
+.sec:has(.dt){break-inside:auto;}
+.dt .write{min-height:4.6em;outline:none;border-radius:3px;}
+.dt .write:focus{background:var(--spoken-bg);}
+.dt-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+.dt-cap{font-size:12.5px;font-weight:700;color:var(--muted);margin:14px 0 6px;}
+.dt .eff{margin-inline-start:0;}
 .red{border:1px solid #E0C4C1;background:#FAF0EF;border-radius:4px;
   padding:12px 15px;font-size:14px;color:#7A322D;}
 .foot{border-top:1px solid var(--hair);padding:11px 36px;font-size:11.5px;
-  color:var(--muted);display:flex;justify-content:space-between;background:var(--sub);}
+  color:var(--muted);display:flex;flex-direction:column;gap:3px;background:var(--sub);}
+.foot-row{display:flex;justify-content:space-between;}
+.foot-by{font-size:10px;}
 @media(max-width:640px){
+  .dt thead{display:none;}
+  .dt,.dt tbody,.dt tr,.dt td,.dt tbody th{display:block;width:auto!important;}
+  .dt tr{border:1px solid var(--hair);border-radius:6px;margin:0 0 8px;overflow:hidden;}
+  .dt td,.dt tbody th{border:0;border-bottom:1px solid var(--hair);text-align:right!important;}
+  .dt td.w{display:none;}
+  .dt td.n{display:inline-block;border:0;padding-bottom:0;} .dt td.n::before{display:none!important;}
+  .dt td.ck{display:inline-block;width:49%!important;border:0;} .dt td.ck::before{display:inline!important;margin-inline-end:8px;}
+  .dt td[data-label]::before{content:attr(data-label);display:block;font-weight:700;font-size:12px;color:var(--muted);}
   .two{grid-template-columns:1fr;} .row,.tp-b,.br{grid-template-columns:1fr;gap:3px;}
   .head,.body,.foot{padding-inline:20px;}
 }
-@page{size:A4;margin:14mm;}
+@page{size:A4;margin:18mm 20mm;}
 @media print{
   body{background:#fff;padding:0;}
   .sheet{box-shadow:none;max-width:none;border-radius:0;font-size:11pt;}
   .head,.body,.foot{padding-inline:0;}
   .sec{break-inside:avoid;}
+  .dt{font-size:10pt;} .dt tr{break-inside:avoid;page-break-inside:avoid;} .dt thead{display:table-header-group;}
+  .dt thead th,.dt tbody th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .dt td.w{height:3.2em;}
   .no-print,#rptFab,#rptDlg,#navBar,#navPanel{display:none!important;}
   body.sbe-hasnav{padding-top:0;}
 }
@@ -122,113 +151,11 @@ ol.list li,ul.list li{margin-bottom:7px;}
     <div class="meta"><span><b>ד״ר יעל שדה</b></span><span>סדנת הורים במתנ״ס השכונתי</span><span>23.9.26</span><span><b>5</b> דקות</span><span>12-14</span><span>גישת המבנה והעקביות (ניתוח התנהגות ו-CBT)</span><span>PR-0923-2339</span></div>
   </div>
   <div class="hr"></div>
-  <div class="body"><div class="sec"><div class="h"><span>מי את היום</span></div><p>את מאיה, בת שלוש עשרה, כיתה ח׳2. מ-22:30 מתנהלת בקבוצת הכיתה מריבה על סידור החדרים בטיול השנתי, שתי חברות שלך כבר כתבו שהן ביחד, ואת היחידה שעוד לא כתבה שם מילה — ואם תירדמי, בבוקר כולן יידעו משהו שאת לא. את מדברת במשפטים של שלוש-ארבע מילים כשאת בעניין, ו"מה" או "כלום" כשלא. את יושבת עם הברכיים אל החזה על כיסא המטבח, מגלגלת את חוט האוזניות סביב האצבע ומסתכלת על המסך גם כשהוא כבוי. "רגע, שנייה אחת" יוצא לך מהפה לפני שאת מחליטה, ואז עוברות עוד חמש דקות — לא מרד, פשוט אי אפשר להניח את זה באמצע.</p><p>בקול יש תסכול ועייפות; מתחת יש חרדה ובדידות וגעגוע. מחר ב-8:15 מבחן במתמטיקה ואת לא הבנת שני נושאים בפרק, ומחקת שלוש פעמים את אותו תרגיל עד שהמספרים יצאו ישרים ואז סגרת את המחברת בלי לסיים. מה שאת רוצה גלוי זה שיעזבו אותך — אוטונומיה, בלי שיפוט; מה שאת צריכה ולא תבקשי זה תמיכה, ביטחון, ושמישהו ישים לב. המשפט שלא תגידי בשום מצב הוא "אני מפחדת להיכשל מחר במבחן כי לא הבנתי את כל הפרק" — כי את בטוחה שאם תגידי, הוא יתקשר למחנכת ויהפוך את זה לעניין שכל הכיתה תדע עליו. מספיק שהוא יגיד "שוב?" בטון ההוא כדי שהעיניים יתמלאו, ואת מותחת את השרוול על כף היד כדי שלא יראו. וכשזה באמת נהיה כבד את אומרת "סבבה, מה שאתה אומר" בטון שטוח, לוקחת את הטלפון והאוזניות ונועלת את הדלת — ובבוקר יוצאת בלי שלום.</p><p>מה שלא מסתדר: את באמת רוצה לישון וגם באמת לא מצליחה להניח את הטלפון לפני שהמריבה בקבוצה נרגעת, ושתי האמיתות האלה קיימות בבת אחת. וגם — את יודעת שהאור מתחת לדלת שלו דולק עד אחת בלילה, כי הוא עונה להודעות מסידור העבודה. זה יכול לעלות בשיחה כמשפט חד, "אתה בכלל לא פה, מה אכפת לך מתי אני ישנה", והוא ישמע כמו התקפה. אבל זה הפתח האמיתי שלך: אם הוא לא יכחיש, פתאום זה לא כלל שהוא מטיל עלייך אלא בעיה שיש לשניכם. ומה שמחזיק אותך על הכיסא זה כשהוא מנמיך את האור הגדול, מוזג לשניכם קקאו ושואל שאלה אחת על המבחן במקום על הטלפון — אז את מוציאה אוזנייה אחת ונשארת.</p></div><div class="sec"><div class="h"><span>מי מולך</span></div><p>מולך רועי, בן ארבעים וארבע, שזה עתה חזר ממשמרת ערב שלישית ברצף והמפתחות עוד בידו. הוא ידבר קצר, יישען על השיש בשתי ידיים ויציץ בשעון של המיקרוגל. כשהוא מתעצבן הקול שלו יורד ונעשה שטוח לפני שהוא עולה, והמשפט שיחזור אצלו הוא "סגרנו על משהו או לא סגרנו?". אם תסובבי לו את הגב, סביר שהקול יעלה בבת אחת ודלת המקרר תיטרק, ואז הוא ייקח כוס מים וידבר שקט מדי — בדיוק כמו בערב שנגמר ביומיים בלי מילה.</p><p>מה שאת יכולה לתת לו בלי לוותר על עצמך: להגיד באיזה נושא לא הבנת, אפילו בלי לומר שאת מפחדת; להציע בעצמך איפה הטלפון ישן ועד מתי; ולהסכים על שעה מדויקת למחר. הוא נרגע כשמישהו אומר לו במפורש מה קורה עכשיו ומתי מדברים שוב — אז הוא מוריד את הידיים מהשיש ומתיישב.</p></div><div class="sec"><div class="h"><span>איך הערב יכול להתגלגל</span></div><p>בדקה הראשונה רועי מרים את קצה השמיכה ורואה את המסך, והשאלה היחידה היא באיזה טון תיפול המילה הראשונה. משם זה יכול לנוע לשני כיוונים: אם הוא סופר את שלוש הפעמים לפני שמאיה אמרה מילה, היא נסגרת ומשם הכול טכני; אם הוא נותן לה שלושים שניות, עולה המשפט החד שלה על האור מתחת לדלת שלו, וזה הרגע שבו השיחה יכולה להתהפך לטובה — או להישבר. אמצע הדרך הוא לרוב הגב אל הקיר ו"סבבה" שטוח, ואז הכול תלוי במה שרועי עושה עם הגב הזה: רודף אחריו, או מנמיך את האור ומתיישב.</p><p>אם מישהו שם אומר משהו על עצמו ולא על השני — "גם אני לא נרדם לפני משמרת בוקר" — נפתח חלון קצר שבו אפשר לשמוע שני נושאים שלא הובנו במתמטיקה, ומשם אפשר להגיע להסדר שמאיה עצמה מנסחת. התפניות האלה הן מלאי ולא רצף: אפשר להגיע לאחת מהן בדקה השנייה ולא להגיע לאחרות בכלל, וסדר אחר הוא סדר לגיטימי. חמש הדקות נגמרות איפה שהן נגמרות, לא במקום שתוכנן.</p></div><div class="sec"><div class="h"><span>חמש נקודות התפנית</span><em>מלאי, לא רצף</em></div>
-<div class="tp">
-  <div class="tp-h"><b>1 · קצה השמיכה</b>
-    
-    <span class="tag t-open">פתיחה</span>
+  <div class="body"><div class="sec"><div class="h"><span>מי את</span></div><table class="dt"><tbody><tr><th>מי את היום</th><td><p>את מאיה, בת שלוש עשרה, כיתה ח׳2. מ-22:30 מתנהלת בקבוצת הכיתה מריבה על סידור החדרים בטיול השנתי, שתי חברות שלך כבר כתבו שהן ביחד, ואת היחידה שעוד לא כתבה שם מילה — ואם תירדמי, בבוקר כולן יידעו משהו שאת לא. את מדברת במשפטים של שלוש-ארבע מילים כשאת בעניין, ו"מה" או "כלום" כשלא. את יושבת עם הברכיים אל החזה על כיסא המטבח, מגלגלת את חוט האוזניות סביב האצבע ומסתכלת על המסך גם כשהוא כבוי. "רגע, שנייה אחת" יוצא לך מהפה לפני שאת מחליטה, ואז עוברות עוד חמש דקות — לא מרד, פשוט אי אפשר להניח את זה באמצע.</p><p>בקול יש תסכול ועייפות; מתחת יש חרדה ובדידות וגעגוע. מחר ב-8:15 מבחן במתמטיקה ואת לא הבנת שני נושאים בפרק, ומחקת שלוש פעמים את אותו תרגיל עד שהמספרים יצאו ישרים ואז סגרת את המחברת בלי לסיים. מה שאת רוצה גלוי זה שיעזבו אותך — אוטונומיה, בלי שיפוט; מה שאת צריכה ולא תבקשי זה תמיכה, ביטחון, ושמישהו ישים לב. המשפט שלא תגידי בשום מצב הוא "אני מפחדת להיכשל מחר במבחן כי לא הבנתי את כל הפרק" — כי את בטוחה שאם תגידי, הוא יתקשר למחנכת ויהפוך את זה לעניין שכל הכיתה תדע עליו. מספיק שהוא יגיד "שוב?" בטון ההוא כדי שהעיניים יתמלאו, ואת מותחת את השרוול על כף היד כדי שלא יראו. וכשזה באמת נהיה כבד את אומרת "סבבה, מה שאתה אומר" בטון שטוח, לוקחת את הטלפון והאוזניות ונועלת את הדלת — ובבוקר יוצאת בלי שלום.</p><p>מה שלא מסתדר: את באמת רוצה לישון וגם באמת לא מצליחה להניח את הטלפון לפני שהמריבה בקבוצה נרגעת, ושתי האמיתות האלה קיימות בבת אחת. וגם — את יודעת שהאור מתחת לדלת שלו דולק עד אחת בלילה, כי הוא עונה להודעות מסידור העבודה. זה יכול לעלות בשיחה כמשפט חד, "אתה בכלל לא פה, מה אכפת לך מתי אני ישנה", והוא ישמע כמו התקפה. אבל זה הפתח האמיתי שלך: אם הוא לא יכחיש, פתאום זה לא כלל שהוא מטיל עלייך אלא בעיה שיש לשניכם. ומה שמחזיק אותך על הכיסא זה כשהוא מנמיך את האור הגדול, מוזג לשניכם קקאו ושואל שאלה אחת על המבחן במקום על הטלפון — אז את מוציאה אוזנייה אחת ונשארת.</p></td></tr><tr><th>מי מולך</th><td><p>מולך רועי, בן ארבעים וארבע, שזה עתה חזר ממשמרת ערב שלישית ברצף והמפתחות עוד בידו. הוא ידבר קצר, יישען על השיש בשתי ידיים ויציץ בשעון של המיקרוגל. כשהוא מתעצבן הקול שלו יורד ונעשה שטוח לפני שהוא עולה, והמשפט שיחזור אצלו הוא "סגרנו על משהו או לא סגרנו?". אם תסובבי לו את הגב, סביר שהקול יעלה בבת אחת ודלת המקרר תיטרק, ואז הוא ייקח כוס מים וידבר שקט מדי — בדיוק כמו בערב שנגמר ביומיים בלי מילה.</p><p>מה שאת יכולה לתת לו בלי לוותר על עצמך: להגיד באיזה נושא לא הבנת, אפילו בלי לומר שאת מפחדת; להציע בעצמך איפה הטלפון ישן ועד מתי; ולהסכים על שעה מדויקת למחר. הוא נרגע כשמישהו אומר לו במפורש מה קורה עכשיו ומתי מדברים שוב — אז הוא מוריד את הידיים מהשיש ומתיישב.</p></td></tr></tbody></table></div><div class="sec"><div class="h"><span>חמש נקודות התפנית</span><em>מלאי, לא רצף</em></div><table class="dt"><thead><tr><th>#</th><th>התפנית והרגע</th><th>מה קורה מצד הדמות</th><th>מה זה מבקש</th><th>אם זה לא קורה</th></tr></thead><tbody><tr><td class="n" data-label="#">1</td><td data-label="התפנית והרגע"><b>קצה השמיכה</b> <span class="tag t-open">פתיחה</span><div class="dt-sub">רועי עובר במסדרון ב-23:40 עם המפתחות עוד ביד ורואה אור כחלחל זולג מתחת לשמיכה.</div></td><td data-label="מה קורה מצד הדמות"><b>רועי:</b> <span class="said">מרים את קצה השמיכה, רואה את המסך דולק על קבוצת ח׳2, ואומר בקול שטוח: "סגרנו על משהו או לא סגרנו?"</span></td><td data-label="מה זה מבקש">להחליט בשנייה אם נכנסים בעובדה או בשאלה, ולהוריד את הטון מתחת לרמת ההאשמה עוד לפני שמאיה עונה מילה.</td><td data-label="אם זה לא קורה">אם הוא מונה את שלוש הפעמים של השבוע ואת השעה 8:15 לפני שהיא אמרה משהו, הוא הפך את זה לגזר דין, וכל מה שיבוא אחר כך ייקרא כעונש.</td></tr><tr><td class="n" data-label="#">2</td><td data-label="התפנית והרגע"><b>אתה בכלל לא פה</b> <span class="tag t-core">ליבה</span><span class="tag t-open">היפוך</span><div class="dt-sub">רועי מצביע על הפתק מעל הכיור ואומר את השעה בקול.</div></td><td data-label="מה קורה מצד הדמות"><span class="said">מאיה מרימה את הראש ואומרת חד: "אתה בכלל לא פה, מה אכפת לך מתי אני ישנה" — ומוסיפה שהיא רואה את האור מתחת לדלת שלו עד אחת.</span></td><td data-label="מה זה מבקש">ממאיה — להגיד את זה ולא למחוק את עצמה מיד אחר כך. מרועי — לספוג את זה כמידע ולא כתקיפה.</td><td data-label="אם זה לא קורה">אם היא נסוגה ל"לא אמרתי כלום" או אם הוא עונה "זה לא אותו דבר, אני עובד", נסגר הרגע היחיד שבו שני הטלפונים מונחים על אותו שולחן.</td></tr><tr><td class="n" data-label="#">3</td><td data-label="התפנית והרגע"><b>הכיסא אל הקיר</b> <span class="tag t-close">סגירה</span><div class="dt-sub">רועי אומר "שוב?" בטון שמאיה מזהה מיד.</div></td><td data-label="מה קורה מצד הדמות"><span class="said">מסובבת את הכיסא לכיוון הקיר, מותחת את השרוול על כף היד ועונה "סבבה" בטון שטוח.</span></td><td data-label="מה זה מבקש">מרועי — לא לרדוף אחרי הגב, לתקן את המילה שנפלה, ולומר מה קורה לו במקום מה קרה לה.</td><td data-label="אם זה לא קורה">אם הוא קורא את הגב כחוצפה ומעלה את הקול, הערב חוזר בדיוק לתסריט שנגמר בשני ימים בלי מילה.</td></tr><tr><td class="n" data-label="#">4</td><td data-label="התפנית והרגע"><b>גם אני לא נרדם</b> <span class="tag t-core">ליבה</span><span class="tag t-open">פתיחה עמוקה</span><div class="dt-sub">כמה שניות של שקט אחרי שהאור הגדול כבוי ורק מנורת התנור דולקת.</div></td><td data-label="מה קורה מצד הדמות"><b>רועי:</b> <span class="said">רועי מתיישב מולה, מוריד את הידיים מהשיש ואומר: "גם אני לא נרדם לפני משמרת בוקר."</span></td><td data-label="מה זה מבקש">להישאר במשפט אחד על עצמו בלי להפוך אותו למוסר השכל, ולהשאיר את השאלה הבאה על המבחן ולא על הטלפון.</td><td data-label="אם זה לא קורה">אם הוא מצרף מיד "ולכן את מבינה למה הכלל חשוב", הוא לוקח בחזרה את הדבר היחיד שנתן, והיא חוזרת למסך הכבוי.</td></tr><tr><td class="n" data-label="#">5</td><td data-label="התפנית והרגע"><b>הטלפון על המיקרוגל</b> <span class="tag t-open">מותנה</span><div class="dt-sub">אחרי שנאמר משהו אמיתי נשאר הדבר שעדיין לא נסגר: איפה הטלפון ישן הלילה.</div></td><td data-label="מה קורה מצד הדמות"><span class="said">מאיה מציעה בעצמה שהטלפון יישאר על המיקרוגל עד 7:00 — לא בסלון, במטבח, במקום שהיא רואה.</span></td><td data-label="מה זה מבקש">מרועי — להחליט אם הסכם שהיא שינתה הוא ויתור או שדרוג, ולנסח אותו בקול עם שעה ומקום.</td><td data-label="אם זה לא קורה">אם הוא אומר "סגרנו על הסלון" ולא זז, ההצעה היחידה שהיא יזמה מתבטלת, ומחר ב-22:00 אין שום דבר חדש.</td></tr></tbody></table><div class="dt-cap">אם… אז… — איך כל תפנית יכולה להתגלגל</div><table class="dt"><thead><tr><th>#</th><th>אם…</th><th>אז…</th><th>לאן זה מוביל</th></tr></thead><tbody><tr><td class="n" data-label="#">1</td><td data-label="אם…"><b>אם את</b> מורידה את הטלפון על הברכיים ואומרת: "רגע, שנייה אחת."</td><td data-label="אז…"><b>רועי:</b> <span class="said">"שנייה אחת זה עד שאני מוזג מים. אחר כך אני רוצה לשמוע מה קורה שם."</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>מקדם</em></td></tr><tr><td class="n" data-label="#">1</td><td data-label="אם…"><b>אם את</b> מכסה את המסך בשרוול הסווטשירט ולא עונה.</td><td data-label="אז…"><b>רועי:</b> <span class="said">"שלוש פעמים השבוע, מאיה. יש לך מבחן ב-8:15. את מבינה מה את עושה לעצמך?"</span></td><td data-label="לאן זה מוביל"><span class="eff e-c">סוגר</span> <em>שגוי</em></td></tr><tr><td class="n" data-label="#">2</td><td data-label="אם…"><b>אם רועי</b> מניח את כוס המים על השיש, לא מכחיש ואומר: "צודקת. גם אני עם הטלפון עד אחת."</td><td data-label="אז…"><b>את מגיבה:</b> <span class="said">"אז למה רק לי יש שעה?"</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>מקדם</em></td></tr><tr><td class="n" data-label="#">2</td><td data-label="אם…"><b>אם רועי</b> מרים את הקול: "אל תדברי אליי ככה, אני עובד בשביל הבית הזה."</td><td data-label="אז…"><b>את מגיבה:</b> <span class="said">"סבבה. מה שאתה אומר."</span></td><td data-label="לאן זה מוביל"><span class="eff e-c">סוגר</span> <em>שגוי</em></td></tr><tr><td class="n" data-label="#">3</td><td data-label="אם…"><b>אם רועי</b> מנמיך את האור הגדול, מתיישב על הכיסא השני ואומר: "אמרתי שוב, וזה יצא רע. אני עייף, אני לא כועס עלייך."</td><td data-label="אז…"><b>את מגיבה:</b> <span class="said">"נו, מה אתה רוצה שאני אגיד" — ומסובבת את הכיסא רבע סיבוב חזרה.</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>נכון אך כואב</em></td></tr><tr><td class="n" data-label="#">3</td><td data-label="אם…"><b>אם רועי</b> טורק את דלת המקרר, ואז מדבר שקט מדי: "תלכי לישון. נדבר מחר."</td><td data-label="אז…"><b>את מגיבה:</b> <span class="said">"אמרתי סבבה" — קמה עם הטלפון והאוזניות.</span></td><td data-label="לאן זה מוביל"><span class="eff e-c">סוגר</span> <em>שגוי</em></td></tr><tr><td class="n" data-label="#">4</td><td data-label="אם…"><b>אם את</b> שותקת, מוציאה אוזנייה אחת ואומרת: "לא הבנתי שני נושאים."</td><td data-label="אז…"><b>רועי:</b> <span class="said">"איזה שניים?" — ומושך אליו את מחברת המתמטיקה בלי להוציא טלפון.</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>מקדם</em></td></tr><tr><td class="n" data-label="#">4</td><td data-label="אם…"><b>אם את</b> "טוב, מגניב" — ומחזירה את העיניים למסך הכבוי.</td><td data-label="אז…"><b>רועי:</b> <span class="said">"אני לא הולך לשום מקום. יש לי עוד עשר דקות לפני שאני נופל."</span></td><td data-label="לאן זה מוביל"><span class="eff e-h">מחזיק</span> <em>נכון אך כואב</em></td></tr><tr><td class="n" data-label="#">5</td><td data-label="אם…"><b>אם רועי</b> מוריד את הפתק מעל הכיור, מוחק ורושם: "מיקרוגל, 22:00, עד 7:00 — שנינו."</td><td data-label="אז…"><b>את מגיבה:</b> <span class="said">"גם שלך?" — ומניחה שם את הטלפון עוד לפני שהוא עונה.</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>מקדם</em></td></tr><tr><td class="n" data-label="#">5</td><td data-label="אם…"><b>אם רועי</b> "נראה. בואי נדבר על זה מחר, אני לא מחליט עכשיו."</td><td data-label="אז…"><b>את מגיבה:</b> <span class="said">"אז זה לא. לילה טוב."</span></td><td data-label="לאן זה מוביל"><span class="eff e-c">סוגר</span> <em>שגוי</em></td></tr></tbody></table></div><div class="sec"><div class="h"><span>איך זה מתגלגל ואיך זה נגמר</span></div><table class="dt"><tbody><tr><th>איך הערב יכול להתגלגל</th><td><p>בדקה הראשונה רועי מרים את קצה השמיכה ורואה את המסך, והשאלה היחידה היא באיזה טון תיפול המילה הראשונה. משם זה יכול לנוע לשני כיוונים: אם הוא סופר את שלוש הפעמים לפני שמאיה אמרה מילה, היא נסגרת ומשם הכול טכני; אם הוא נותן לה שלושים שניות, עולה המשפט החד שלה על האור מתחת לדלת שלו, וזה הרגע שבו השיחה יכולה להתהפך לטובה — או להישבר. אמצע הדרך הוא לרוב הגב אל הקיר ו"סבבה" שטוח, ואז הכול תלוי במה שרועי עושה עם הגב הזה: רודף אחריו, או מנמיך את האור ומתיישב.</p><p>אם מישהו שם אומר משהו על עצמו ולא על השני — "גם אני לא נרדם לפני משמרת בוקר" — נפתח חלון קצר שבו אפשר לשמוע שני נושאים שלא הובנו במתמטיקה, ומשם אפשר להגיע להסדר שמאיה עצמה מנסחת. התפניות האלה הן מלאי ולא רצף: אפשר להגיע לאחת מהן בדקה השנייה ולא להגיע לאחרות בכלל, וסדר אחר הוא סדר לגיטימי. חמש הדקות נגמרות איפה שהן נגמרות, לא במקום שתוכנן.</p></td></tr><tr><th>איך זה יכול להיגמר</th><td><p>חמש הדקות יכולות להיגמר בשלוש צורות: בהסכם חדש וכתוב על הפתק מעל הכיור — מיקרוגל, 22:00, עד 7:00, לשניהם — עם שעה למחר לעבור על שני הנושאים שלא הובנו; בהחזקה זהירה שבה שום דבר לא נפתר אבל גם שום דבר לא נשבר, מאיה נשארת על הכיסא עד שהיא קמה לבד והם אומרים לילה טוב; או בדלת נעולה, אוזניות באוזניים ובוקר בלי שלום. השלישית אינה סיום טוב, גם אם הטלפון נשאר בסלון — כי היא מלמדת בדיוק את מה שאף אחד לא רצה ללמד: שכדאי להסתיר טוב יותר.</p></td></tr></tbody></table></div><div class="sec"><div class="h"><span>קו אדום</span></div><div class="red">קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים. ילד שצועק, טורק דלת או אומר "את הכי גרועה" — זה חלק מהתרחיש, לא חצייה של קו אדום. הקו האדום חל על המבוגר. אם זה קורה בכל זאת, המנחה עוצרת — וזה רגע ללמידה, לא כישלון.</div></div></div>
+  <div class="foot">
+    <div class="foot-row"><span>Begood · חינוך מבוסס סימולציה · PR-0923-2339</span><span>כרטיס דמות · מאיה</span></div>
+    <div class="foot-by">ד״ר יעל שדה · 23.9.26 · סדנת הורים במתנ״ס השכונתי</div>
   </div>
-  <div class="tp-b">
-    <span class="k">הרגע</span><span>רועי עובר במסדרון ב-23:40 עם המפתחות עוד ביד ורואה אור כחלחל זולג מתחת לשמיכה.</span>
-    <span class="k">רועי</span><span class="said">מרים את קצה השמיכה, רואה את המסך דולק על קבוצת ח׳2, ואומר בקול שטוח: "סגרנו על משהו או לא סגרנו?"</span>
-    <span class="k">מבקש ממך</span><span>להחליט בשנייה אם נכנסים בעובדה או בשאלה, ולהוריד את הטון מתחת לרמת ההאשמה עוד לפני שמאיה עונה מילה.</span>
-    <span class="k">אם זה לא קורה</span><span>אם הוא מונה את שלוש הפעמים של השבוע ואת השעה 8:15 לפני שהיא אמרה משהו, הוא הפך את זה לגזר דין, וכל מה שיבוא אחר כך ייקרא כעונש.</span>
-    
-    <div class="br" style="grid-column:1/-1">
-      <div class="br-if"><span class="br-who">אם את</span> מורידה את הטלפון על הברכיים ואומרת: "רגע, שנייה אחת."</div>
-      <div class="br-then"><span class="br-who">אז רועי</span> "שנייה אחת זה עד שאני מוזג מים. אחר כך אני רוצה לשמוע מה קורה שם."<span class="eff e-o">פותח</span> · <em>מקדם</em></div>
-    </div>
-    <div class="br" style="grid-column:1/-1">
-      <div class="br-if"><span class="br-who">אם את</span> מכסה את המסך בשרוול הסווטשירט ולא עונה.</div>
-      <div class="br-then"><span class="br-who">אז רועי</span> "שלוש פעמים השבוע, מאיה. יש לך מבחן ב-8:15. את מבינה מה את עושה לעצמך?"<span class="eff e-c">סוגר</span> · <em>שגוי</em></div>
-    </div>
-  </div>
-</div>
-<div class="tp">
-  <div class="tp-h"><b>2 · אתה בכלל לא פה</b>
-    <span class="tag t-core">ליבה</span>
-    <span class="tag t-open">היפוך</span>
-  </div>
-  <div class="tp-b">
-    <span class="k">הרגע</span><span>רועי מצביע על הפתק מעל הכיור ואומר את השעה בקול.</span>
-    <span class="k">את</span><span class="said">מאיה מרימה את הראש ואומרת חד: "אתה בכלל לא פה, מה אכפת לך מתי אני ישנה" — ומוסיפה שהיא רואה את האור מתחת לדלת שלו עד אחת.</span>
-    <span class="k">מבקש מרועי</span><span>ממאיה — להגיד את זה ולא למחוק את עצמה מיד אחר כך. מרועי — לספוג את זה כמידע ולא כתקיפה.</span>
-    <span class="k">אם זה לא קורה</span><span>אם היא נסוגה ל"לא אמרתי כלום" או אם הוא עונה "זה לא אותו דבר, אני עובד", נסגר הרגע היחיד שבו שני הטלפונים מונחים על אותו שולחן.</span>
-    
-    <div class="br" style="grid-column:1/-1">
-      <div class="br-if"><span class="br-who">אם רועי</span> מניח את כוס המים על השיש, לא מכחיש ואומר: "צודקת. גם אני עם הטלפון עד אחת."</div>
-      <div class="br-then"><span class="br-who">אז את מגיבה:</span> "אז למה רק לי יש שעה?"<span class="eff e-o">פותח</span> · <em>מקדם</em></div>
-    </div>
-    <div class="br" style="grid-column:1/-1">
-      <div class="br-if"><span class="br-who">אם רועי</span> מרים את הקול: "אל תדברי אליי ככה, אני עובד בשביל הבית הזה."</div>
-      <div class="br-then"><span class="br-who">אז את מגיבה:</span> "סבבה. מה שאתה אומר."<span class="eff e-c">סוגר</span> · <em>שגוי</em></div>
-    </div>
-  </div>
-</div>
-<div class="tp">
-  <div class="tp-h"><b>3 · הכיסא אל הקיר</b>
-    
-    <span class="tag t-close">סגירה</span>
-  </div>
-  <div class="tp-b">
-    <span class="k">הרגע</span><span>רועי אומר "שוב?" בטון שמאיה מזהה מיד.</span>
-    <span class="k">את</span><span class="said">מסובבת את הכיסא לכיוון הקיר, מותחת את השרוול על כף היד ועונה "סבבה" בטון שטוח.</span>
-    <span class="k">מבקש מרועי</span><span>מרועי — לא לרדוף אחרי הגב, לתקן את המילה שנפלה, ולומר מה קורה לו במקום מה קרה לה.</span>
-    <span class="k">אם זה לא קורה</span><span>אם הוא קורא את הגב כחוצפה ומעלה את הקול, הערב חוזר בדיוק לתסריט שנגמר בשני ימים בלי מילה.</span>
-    
-    <div class="br" style="grid-column:1/-1">
-      <div class="br-if"><span class="br-who">אם רועי</span> מנמיך את האור הגדול, מתיישב על הכיסא השני ואומר: "אמרתי שוב, וזה יצא רע. אני עייף, אני לא כועס עלייך."</div>
-      <div class="br-then"><span class="br-who">אז את מגיבה:</span> "נו, מה אתה רוצה שאני אגיד" — ומסובבת את הכיסא רבע סיבוב חזרה.<span class="eff e-o">פותח</span> · <em>נכון אך כואב</em></div>
-    </div>
-    <div class="br" style="grid-column:1/-1">
-      <div class="br-if"><span class="br-who">אם רועי</span> טורק את דלת המקרר, ואז מדבר שקט מדי: "תלכי לישון. נדבר מחר."</div>
-      <div class="br-then"><span class="br-who">אז את מגיבה:</span> "אמרתי סבבה" — קמה עם הטלפון והאוזניות.<span class="eff e-c">סוגר</span> · <em>שגוי</em></div>
-    </div>
-  </div>
-</div>
-<div class="tp">
-  <div class="tp-h"><b>4 · גם אני לא נרדם</b>
-    <span class="tag t-core">ליבה</span>
-    <span class="tag t-open">פתיחה עמוקה</span>
-  </div>
-  <div class="tp-b">
-    <span class="k">הרגע</span><span>כמה שניות של שקט אחרי שהאור הגדול כבוי ורק מנורת התנור דולקת.</span>
-    <span class="k">רועי</span><span class="said">רועי מתיישב מולה, מוריד את הידיים מהשיש ואומר: "גם אני לא נרדם לפני משמרת בוקר."</span>
-    <span class="k">מבקש ממך</span><span>להישאר במשפט אחד על עצמו בלי להפוך אותו למוסר השכל, ולהשאיר את השאלה הבאה על המבחן ולא על הטלפון.</span>
-    <span class="k">אם זה לא קורה</span><span>אם הוא מצרף מיד "ולכן את מבינה למה הכלל חשוב", הוא לוקח בחזרה את הדבר היחיד שנתן, והיא חוזרת למסך הכבוי.</span>
-    
-    <div class="br" style="grid-column:1/-1">
-      <div class="br-if"><span class="br-who">אם את</span> שותקת, מוציאה אוזנייה אחת ואומרת: "לא הבנתי שני נושאים."</div>
-      <div class="br-then"><span class="br-who">אז רועי</span> "איזה שניים?" — ומושך אליו את מחברת המתמטיקה בלי להוציא טלפון.<span class="eff e-o">פותח</span> · <em>מקדם</em></div>
-    </div>
-    <div class="br" style="grid-column:1/-1">
-      <div class="br-if"><span class="br-who">אם את</span> "טוב, מגניב" — ומחזירה את העיניים למסך הכבוי.</div>
-      <div class="br-then"><span class="br-who">אז רועי</span> "אני לא הולך לשום מקום. יש לי עוד עשר דקות לפני שאני נופל."<span class="eff e-h">מחזיק</span> · <em>נכון אך כואב</em></div>
-    </div>
-  </div>
-</div>
-<div class="tp">
-  <div class="tp-h"><b>5 · הטלפון על המיקרוגל</b>
-    
-    <span class="tag t-open">מותנה</span>
-  </div>
-  <div class="tp-b">
-    <span class="k">הרגע</span><span>אחרי שנאמר משהו אמיתי נשאר הדבר שעדיין לא נסגר: איפה הטלפון ישן הלילה.</span>
-    <span class="k">את</span><span class="said">מאיה מציעה בעצמה שהטלפון יישאר על המיקרוגל עד 7:00 — לא בסלון, במטבח, במקום שהיא רואה.</span>
-    <span class="k">מבקש מרועי</span><span>מרועי — להחליט אם הסכם שהיא שינתה הוא ויתור או שדרוג, ולנסח אותו בקול עם שעה ומקום.</span>
-    <span class="k">אם זה לא קורה</span><span>אם הוא אומר "סגרנו על הסלון" ולא זז, ההצעה היחידה שהיא יזמה מתבטלת, ומחר ב-22:00 אין שום דבר חדש.</span>
-    
-    <div class="br" style="grid-column:1/-1">
-      <div class="br-if"><span class="br-who">אם רועי</span> מוריד את הפתק מעל הכיור, מוחק ורושם: "מיקרוגל, 22:00, עד 7:00 — שנינו."</div>
-      <div class="br-then"><span class="br-who">אז את מגיבה:</span> "גם שלך?" — ומניחה שם את הטלפון עוד לפני שהוא עונה.<span class="eff e-o">פותח</span> · <em>מקדם</em></div>
-    </div>
-    <div class="br" style="grid-column:1/-1">
-      <div class="br-if"><span class="br-who">אם רועי</span> "נראה. בואי נדבר על זה מחר, אני לא מחליט עכשיו."</div>
-      <div class="br-then"><span class="br-who">אז את מגיבה:</span> "אז זה לא. לילה טוב."<span class="eff e-c">סוגר</span> · <em>שגוי</em></div>
-    </div>
-  </div>
-</div></div><div class="sec"><div class="h"><span>איך זה יכול להיגמר</span></div><p>חמש הדקות יכולות להיגמר בשלוש צורות: בהסכם חדש וכתוב על הפתק מעל הכיור — מיקרוגל, 22:00, עד 7:00, לשניהם — עם שעה למחר לעבור על שני הנושאים שלא הובנו; בהחזקה זהירה שבה שום דבר לא נפתר אבל גם שום דבר לא נשבר, מאיה נשארת על הכיסא עד שהיא קמה לבד והם אומרים לילה טוב; או בדלת נעולה, אוזניות באוזניים ובוקר בלי שלום. השלישית אינה סיום טוב, גם אם הטלפון נשאר בסלון — כי היא מלמדת בדיוק את מה שאף אחד לא רצה ללמד: שכדאי להסתיר טוב יותר.</p></div><div class="sec"><div class="h"><span>קו אדום</span></div><div class="red">קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים. ילד שצועק, טורק דלת או אומר "את הכי גרועה" — זה חלק מהתרחיש, לא חצייה של קו אדום. הקו האדום חל על המבוגר. אם זה קורה בכל זאת, המנחה עוצרת — וזה רגע ללמידה, לא כישלון.</div></div></div>
-  <div class="foot"><span>Begood · חינוך מבוסס סימולציה · PR-0923-2339</span><span>כרטיס דמות · מאיה</span></div>
 </div>
 <!-- ── ניווט גלובלי: חזרה + הבית + תפריט (09/09/2026, הוקטן 09/09/2026,
      נוסף כפתור "הבית" 22/09/2026) ──
@@ -274,7 +201,7 @@ body.sbe-hasnav{padding-top:38px;}
   <button type="button" id="navMenuBtn" title="כל המסכים">☰ תפריט</button>
 </div>
 <div id="navPanel" hidden></div>
-<script src="../lib/screens-menu.js"></script>
+<script src="lib/screens-menu.js"></script>
 <script>
 (function(){
   "use strict";
@@ -432,7 +359,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
   typeEl.addEventListener("change", syncType);
 
   function openDlg(presetType){
-    dateEl.value = new Date().toLocaleDateString("he-IL");
+    dateEl.value = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
     if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
     try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
     errEl.hidden = true;
@@ -453,7 +380,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }
@@ -489,8 +416,16 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
       bodyLines.push("פירוט:", details);
     }
     var subject = "Begood · " + type + " · " + name;
-    location.href = "mailto:yael.sade@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(bodyLines.join("\n"));
-    dlg.close();
+    // נשלח לתיבת הפניות בשרת (ומשם במייל למנהלת המערכת); בלי חיבור לשרת — חלון מייל כמו קודם
+    var mailto = "mailto:yael.sade@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(bodyLines.join("\n"));
+    var sendBtn = document.getElementById("rptSend");
+    sendBtn.disabled = true;
+    fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "fbSubmit", type: type, name: name, contact: "", text: bodyLines.join("\n"), source: "דיווח / רעיון", page: screenName }) })
+      .then(function(r){ return r.json(); })
+      .then(function(d){ if (!d || !d.ok) throw new Error("fail"); dlg.close(); alert("נשלח, תודה! הפנייה הגיעה למנהלת המערכת."); })
+      .catch(function(){ dlg.close(); location.href = mailto; })
+      .then(function(){ sendBtn.disabled = false; });
   });
 })();
 </script>
