@@ -336,8 +336,10 @@ ${WIDGET}`;
       badge: 'גרסת המתנסה',
       meta: [`<b>${esc(tr.role)}</b>`, ...baseMeta],
       body:
-        sec('סיפור המקרה ונתוני פתיחה', paras(tr.opening)) +
-        (tr.stakesForTrainee ? sec('מה על הפרק בשבילך', `<p>${esc(tr.stakesForTrainee)}</p>`) : '') +
+        sec('לפני השיחה', dtable(null, [
+          ['סיפור המקרה ונתוני פתיחה', paras(tr.opening)],
+          ['מה על הפרק בשבילך', paras(tr.stakesForTrainee)],
+        ].filter((r) => r[1]))) +
         redLine(),
     });
 
