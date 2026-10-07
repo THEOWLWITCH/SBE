@@ -70,7 +70,7 @@ window.SBE_SCREENS_RENDER = function(host, opts){
   var base = opts.base || '', here = (opts.here || '').toLowerCase();
   window.SBE_SCREENS.forEach(function(part){
     var ph = document.createElement('div'); ph.textContent = part.title;
-    ph.style.cssText = 'font-weight:800;font-size:.86rem;margin:1rem 0 .2rem;padding:.35rem .6rem;border-radius:6px;' +
+    ph.style.cssText = 'font-weight:800;font-size:.86rem;margin:.6rem 0 .15rem;padding:.35rem .6rem;border-radius:6px;' +
       (part.part === 'mine' ? 'background:rgba(184,137,59,.16);color:#7A5A22' : 'background:rgba(47,125,122,.14);color:#1F5E5B');
     var box = host;
     if (part.collapsed) {
@@ -82,17 +82,25 @@ window.SBE_SCREENS_RENDER = function(host, opts){
       box.appendChild(sm); host.appendChild(box);
     } else host.appendChild(ph);
     if (opts.afterTitle) opts.afterTitle(part.part, host);
+    // תפריט מצומצם (07/10/2026): כל קבוצה מקופלת, ונפתחת בלחיצה (פתוחה מראש רק כשהמסך הנוכחי בתוכה).
+    // "מי רואה" — בריחוף על הקישור (title), בלי שורה אפורה מתחת לכל מסך.
     part.groups.forEach(function(g){
       var items = g.items.filter(function(it){ return (opts.skip || []).indexOf(it.file) === -1; });
       if (!items.length) return;
-      var h = document.createElement('h5'); h.textContent = g.title; box.appendChild(h);
+      var d = document.createElement('details'); d.className = 'sbe-menu-grp';
+      if (items.some(function(it){ return it.file.toLowerCase() === here; })) d.open = true;
+      var sm = document.createElement('summary'); sm.style.cssText = 'cursor:pointer;list-style:none';
+      var h = document.createElement('h5'); h.style.display = 'inline';
+      var mark = function(){ h.textContent = (d.open ? '▾ ' : '▸ ') + g.title; };
+      mark(); d.addEventListener('toggle', mark);
+      sm.appendChild(h); d.appendChild(sm); box.appendChild(d);
       items.forEach(function(it){
         var a = document.createElement('a'); a.href = base + it.file;
         if (opts.linkClass) a.className = opts.linkClass;
         if (it.file.toLowerCase() === here) a.className = (a.className ? a.className + ' ' : '') + 'current';
         a.appendChild(document.createTextNode(it.label));
-        if (it.who) { var w = document.createElement('span'); w.textContent = '👁 ' + it.who; w.style.cssText = 'display:block;font-size:.74em;opacity:.68;font-weight:500;margin-top:1px'; a.appendChild(w); }
-        box.appendChild(a);
+        if (it.who) a.title = 'מי רואה: ' + it.who;
+        d.appendChild(a);
       });
     });
   });
