@@ -261,7 +261,7 @@ async function viewBoard(){
   c.appendChild(bar0); c.appendChild(demoBox);
   const w = el('p', 'muted', 'טוענת...'); c.appendChild(w);
   const d = await api('jrAll'); w.remove();
-  if (d._status === 403) { c.appendChild(el('p', 'err', 'צריך כניסת מנהלת מערכת.')); return; }
+  if (d._status === 403) { c.appendChild(el('p', 'err', 'המסך הזה נפתח בכניסת מנהלת מערכת.')); return; }
   const items = (d.items || []).sort((a, b) => (b.pendingAdmin - a.pendingAdmin) || String(b.created).localeCompare(String(a.created)));
   const sum = el('div', 'chips'); const cnt = (f) => items.filter(f).length;
   [['במסע', cnt(x => x.status === 'active')], ['ממתינים לך', cnt(x => x.pendingAdmin)], ['בהכנה', cnt(x => ['mapping', 'proposal'].includes(x.status))], ['קהילות חוסן', cnt(x => x.status === 'done')], ['תעודות שניתנו', items.reduce((n, x) => n + (x.certs || 0), 0)]]

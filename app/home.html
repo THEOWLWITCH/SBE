@@ -279,7 +279,7 @@ async function renderAdmin() {
   const msg = el("div", {});
   go.addEventListener("click", async () => {
     const perms = Object.keys(cbs).filter(p => cbs[p].checked);
-    if (!perms.length) { msg.className = "msg err"; msg.textContent = "צריך לסמן לפחות הרשאה אחת."; return; }
+    if (!perms.length) { msg.className = "msg err"; msg.textContent = "כדי להמשיך, סמנו לפחות הרשאה אחת."; return; }
     let expiresAt = null;
     if (exp.value === "date") expiresAt = expDate.value || null;
     else if (exp.value) expiresAt = new Date(Date.now() + Number(exp.value) * 864e5).toISOString().slice(0, 10);

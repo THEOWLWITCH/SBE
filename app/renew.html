@@ -209,11 +209,11 @@ $("send").addEventListener("click", async () => {
     email: $("email").value.trim(), phone, systems, other, period: document.querySelector("input[name=period]:checked").value,
     code: type === "new" ? "" : $("code").value.trim() };
   const msg = $("msg"); msg.className = "msg err";
-  if (!body.fullName || !body.instName) { msg.textContent = "צריך למלא שם מלא ולבחור מוסד (או להקליד מוסד חדש)."; return; }
-  if ($("sOther").checked && !other) { msg.textContent = "סימנתם \"אחר\" — צריך לפרט בקצרה."; return; }
+  if (!body.fullName || !body.instName) { msg.textContent = "כדי לשלוח, נשמח לשם מלא ולמוסד (או להקליד מוסד חדש)."; return; }
+  if ($("sOther").checked && !other) { msg.textContent = "סימנתם \"אחר\" — נשמח לפירוט קצר."; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { msg.textContent = "כתובת המייל לא תקינה."; return; }
   if (!/^(\+972|0)5\d{8}$/.test(phone)) { msg.textContent = "מספר הטלפון הנייד לא תקין (למשל 050-1234567)."; return; }
-  if (!systems.length && !other) { msg.textContent = "צריך לסמן לפחות מערכת אחת, או \"אחר\"."; return; }
+  if (!systems.length && !other) { msg.textContent = "כדי לשלוח, סמנו לפחות מערכת אחת, או \"אחר\"."; return; }
   $("send").disabled = true; msg.className = "msg"; msg.textContent = "שולחת... (לפעמים עד דקה)";
   try {
     const r = await fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
