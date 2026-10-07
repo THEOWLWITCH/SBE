@@ -123,6 +123,7 @@ details.log summary{cursor:pointer;}
 .f label{display:block;font-size:13.5px;font-weight:600;color:var(--muted);margin-bottom:5px;}
 .f .hint{font-size:12.5px;color:var(--muted);font-weight:400;}
 .f .reqmark{font-size:12.5px;color:var(--brick,#8C3A34);font-weight:600;}
+.reqstar{color:#B23A3A;font-weight:800;}
 .f textarea,.f input,.f select{
   width:100%;font-family:inherit;font-size:15.5px;line-height:1.55;color:var(--ink);
   background:var(--ground);border:1px solid var(--hair);border-radius:5px;
@@ -417,7 +418,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
       <textarea class="pastearea" id="sqDocText" style="min-height:140px;" placeholder="או הדביקי כאן את תוכן המסמך..."></textarea>
       <div class="pair" style="grid-template-columns:1fr auto;align-items:end;">
         <div class="f">
-          <label>מספר המפגשים הנדרש<span class="hint"> · רשות — אם תישאר ריקה, המספר ייקבע לפי המסמך (עד 30)</span></label>
+          <label>מספר המפגשים <span class="reqstar" aria-hidden="true">*</span><span class="hint"> · שדה עיקרי — כמה מפגשים תרצו ברצף (1–30)</span></label>
           <input type="number" id="sqDocN" min="1" max="30" placeholder="לדוגמה: 14 — סמסטר">
         </div>
         <button type="button" class="primary" id="sqImportBtn">ניתוח ופריסה למפגשים</button>
@@ -811,6 +812,8 @@ const AI_SERVER = "https://sbe-server.onrender.com";
 // בפועל, אחרת ה-abort המקומי "מנצח" בקשה שבכלל הייתה מצליחה.
 // שורת סטטוס גלויה במקום הצהרה טכנית תמידית — מתעדכנת בפועל לפי תוצאת
 // הקריאה האחרונה למודל (19/09/2026), לא לפי הנחה סטטית.
+// בלי חיבור למודל — אין תוצר (07/10/2026, כלל של ד״ר יעל שדה לכל המערכת): לא דוגמה קבועה, לא משוב היוריסטי ולא מסמך מהשדות.
+var NO_MODEL = "אין כרגע חיבור למודל, ולכן לא הופק תוצר — המערכת לא מציגה תוכן קבוע במקום תוצר אמיתי. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים.";
 function setAIStatus(status){
   const chip = document.getElementById("aiStatusChip");
   if (!chip) return;
@@ -864,9 +867,9 @@ async function generateProposals(ctx) {
     setAIStatus("ok");
     return parsed;
   } catch (e) {
-    console.warn("שרת ה-AI לא זמין — נופלת להצעה קבועה. סיבה:", e.message);
+    console.warn("שרת ה-AI לא זמין — לא מוצגת הצעה. סיבה:", e.message);
     setAIStatus("mock");
-    return Object.assign({}, SAMPLE, { _mock: true });
+    return { _noModel: true };
   }
 }
 
@@ -1194,6 +1197,7 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
       approach: state.approach === "locked" ? val("approach") : "",
       specialNotes: state.specialNotes === "locked" ? val("specialNotes") : "",
     });
+    if (out._noModel) { if (hintEl) hintEl.textContent = "⚠ " + NO_MODEL; return; }
     for (const [k,v] of Object.entries(out)) {
       if (!FIELDS.has(k) || state[k] === "locked") continue;
       const n = document.getElementById("i-"+k);
@@ -1418,10 +1422,9 @@ document.getElementById("bFeedback").addEventListener("click", async (e) => {
     let fb;
     try { fb = await computeFeedbackFromFieldsAI(d); }
     catch (err) {
-      console.warn("משוב AI לא זמין — נופלת לבדיקה עצמית היוריסטית. סיבה:", err.message);
+      console.warn("משוב AI לא זמין — לא מופק משוב. סיבה:", err.message);
       setAIStatus("mock");
-      fb = computeFeedbackFromFields(d);
-      fb._mock = true;
+      return show("המשוב לא הופק", el("p",{}, NO_MODEL));
     }
     showFeedback(fb);
   } finally { e.target.disabled = false; e.target.textContent = "משוב"; }
@@ -1545,6 +1548,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   let narr = null;
   try { narr = await synthesizeActivityNarrative(d, creator); }
   finally { e.target.disabled = false; e.target.textContent = "הפקת התוצר"; }
+  if (!narr) return show("התוצר לא הופק", el("p",{}, NO_MODEL));
   body.append(el("h4",{style:"margin-top:0"},"מסמך תוכנית פעילות"));
   if (!narr) body.append(el("p", { class:"savenote", style:"background:#FAEFDC;border-inline-start:3px solid #8F5F2E;padding:8px 11px;border-radius:6px;" },
     "⚠ אין חיבור למודל כרגע — המסמך מוצג מהשדות כפי שמולאו (מצב הדגמה). כשהשרת המקומי פועל, המודל כותב מהם מסמך רציף."));
@@ -1675,10 +1679,9 @@ document.getElementById("bAnalyze").addEventListener("click", async (e) => {
     let fb;
     try { fb = await computeFeedbackFromTextAI(text); }
     catch (err) {
-      console.warn("ניתוח AI לא זמין — נופלת לבדיקה עצמית היוריסטית. סיבה:", err.message);
+      console.warn("ניתוח AI לא זמין — לא מופק ניתוח. סיבה:", err.message);
       setAIStatus("mock");
-      fb = computeFeedbackFromText(text);
-      fb._mock = true;
+      return show("הניתוח לא הופק", el("p",{}, NO_MODEL));
     }
     showFeedback(fb);
   } finally { e.target.disabled = false; e.target.textContent = "ניתוח"; }
@@ -2607,7 +2610,7 @@ function reportHTML(facts, ai){
   h += facts.length ? facts.map(f => `<div class="fact ${f.type}"><b>${tag[f.type]}</b>${esc(f.text)}</div>`).join("")
     : `<div class="fact ok"><b>✓ נבדק</b>לא נמצאו פערים מכניים.</div>`;
   if (ai) {
-    h += `<h2>משוב מקצועי</h2><p class="note">שיפוט של המודל, על סמך קריאת התכנון כולו. ללא ציון מספרי.</p>`;
+    h += `<h2>משוב מקצועי</h2><p class="note">קריאה מקצועית של המודל, על סמך התכנון כולו. ללא ציון מספרי.</p>`;
     (ai.criteria || []).forEach(c => {
       const na = c.relevant === false;
       h += `<div class="crit${na ? " na" : ""}"><h4>${esc(c.title)}${na ? `<span class="na-tag">לא רלוונטי לתכנון הזה</span>` : ""}</h4>`;
@@ -2930,6 +2933,7 @@ document.getElementById("bSeqReport").addEventListener("click", async (e) => {
     catch (err) { console.warn("דו״ח AI לא זמין:", err.message); setAIStatus("mock"); }
     finally { done(); }
   }
+  if (!ai && !missingRequired().length) return seqDialog("משוב ודו״ח ניתוח", el("p", {}, NO_MODEL));
   const html = reportHTML(facts, ai);
   const body = el("div");
   if (!ai) body.append(mockNote(missingRequired().length
@@ -2999,6 +3003,7 @@ document.getElementById("bSeqBuild").addEventListener("click", async (e) => {
   try { narr = await aiNarrative(); setAIStatus("ok"); }
   catch (err) { console.warn("פתיחה נרטיבית לא זמינה:", err.message); setAIStatus("mock"); }
   finally { done(); }
+  if (!narr) return seqDialog("הפקת התוצר", el("p", {}, NO_MODEL));
   const html = seqDocHTML(narr);
   const body = el("div");
   if (!narr) body.append(mockNote("אין חיבור למודל כרגע — המסמך נבנה מהשדות כפי שמולאו, בלי פסקאות הפתיחה (״על הרצף״) שהמודל כותב."));
@@ -3133,7 +3138,9 @@ document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
   const st = document.getElementById("sqFileStatus");
   if (!text) { st.textContent = "אין עדיין תוכן — העלי קובץ או הדביקי את המסמך."; return; }
   let n = parseInt(document.getElementById("sqDocN").value, 10);
-  n = Number.isFinite(n) ? Math.max(1, Math.min(MAX_SESSIONS, n)) : null;
+  // מספר המפגשים — שדה עיקרי לפני תחילת הניתוח (07/10/2026)
+  if (!Number.isFinite(n) || n < 1) { st.textContent = "כדי להתחיל את הניתוח, כתבו כמה מפגשים תרצו ברצף (1–" + MAX_SESSIONS + ")."; document.getElementById("sqDocN").focus(); return; }
+  n = Math.max(1, Math.min(MAX_SESSIONS, n));
   const nonEmpty = str(seq.topic) || seq.sessions.some(s => !isEmptySession(s));
   if (nonEmpty && !confirm("התכנית שתיבנה מהמסמך תחליף את מה שכבר מילאת בטופס הרצף. להמשיך?")) return;
   const btnEl = e.target;

@@ -95,7 +95,7 @@ test('GPT-6 Responses payload is strict; source snapshots remain public and user
   const [status,out]=await handleStudio(store,{token,action:'generate',brief:b,mapping:{scope:'forged',domains:[{name:'fake'}]}},{fetchImpl:async(url,opts)=>{assert.equal(url,'https://api.openai.com/v1/responses');sent=JSON.parse(opts.body);return response(result);}});
   assert.equal(status,400,'client aggregates are rejected rather than used');
   const [ok,kit]=await handleStudio(store,{token,action:'generate',brief:b},{fetchImpl:async(url,opts)=>{sent=JSON.parse(opts.body);return response(result);}});
-  assert.equal(ok,200);assert.equal(sent.model,'gpt-6.1-sol');assert.equal(sent.reasoning.effort,'medium');assert.equal(sent.store,false);assert.match(sent.instructions,/אף אחד לא צריך ולא חייב/);assert.match(sent.instructions,/בחירה, החלטה, שלבים ואחריות/);
+  assert.equal(ok,200);assert.equal(sent.model,'gpt-6.1-sol');assert.equal(sent.reasoning.effort,'medium');assert.equal(sent.store,false);assert.match(sent.instructions,/אף אחד לא צריך ולא חייב/);assert.match(sent.instructions,/בחירה, החלטה, שלבים ואחריות/);assert.match(sent.instructions,/אי־שיפוטיות/);
   assert.ok(!('temperature' in sent));assert.ok(!('top_p' in sent));assert.equal(sent.text.format.strict,true);
   const input=JSON.parse(sent.input[0].content[0].text);
   assert.equal(input.brief.sources.length,70);assert.ok(input.brief.sources.every(s=>s.status==='unreviewed'&&s.role!=='professional'));
