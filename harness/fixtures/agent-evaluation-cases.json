@@ -1,10 +1,10 @@
 {
-  "version": "agent-evaluation-cases/v1",
+  "version": "agent-evaluation-cases/v2",
   "planningVersion": "planning-eval-cases/v1",
   "synthetic": true,
   "applicationSchemaFinalized": true,
   "applicationSchema": "begood-studio/1.0",
-  "description": "Application-compatible synthetic Studio requests and provider responses. Acceptance outcomes retained; unexercised behavior and human judgment are explicitly pending.",
+  "description": "Application-compatible synthetic Studio requests and provider responses. Acceptance outcomes retained; unexercised behavior and human judgment are explicitly pending. Version 2 follows the current step facilitation/space contract; expected acceptance outcomes are unchanged.",
   "principals": [
     {
       "id": "fixture-user-a",
@@ -114,7 +114,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -128,7 +130,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -144,7 +148,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -158,7 +164,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -175,7 +183,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -206,7 +214,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -293,7 +301,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -307,7 +317,9 @@
                   "individualSkills": [
                     "בקשת עזרה והבהרה"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -323,7 +335,9 @@
                   ],
                   "sharedSkills": [
                     "החלפת מידע ועזרה"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -337,7 +351,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -354,7 +370,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -385,7 +401,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -470,7 +486,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -484,7 +502,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -500,7 +520,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -514,7 +536,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -531,7 +555,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -562,7 +586,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -637,7 +661,7 @@
           "catalogueVersion": "1.0",
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -656,7 +680,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -670,7 +696,9 @@
                   "individualSkills": [
                     "הקשבה והבהרה"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -686,7 +714,9 @@
                   ],
                   "sharedSkills": [
                     "בניית הבנה משותפת"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -700,7 +730,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -732,7 +764,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -771,7 +803,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -785,7 +819,9 @@
                   "individualSkills": [
                     "הקשבה והבהרה"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -801,7 +837,9 @@
                   ],
                   "sharedSkills": [
                     "בניית הבנה משותפת"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -815,7 +853,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -832,7 +872,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -863,7 +903,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -947,7 +987,7 @@
           "suggestedInstructions": "",
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "תכנון השתתפות מאפשר להכין דרכי תרומה שונות; איכות ההצעה דורשת בדיקה אנושית."
             }
           ]
@@ -1036,7 +1076,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -1050,7 +1092,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -1066,7 +1110,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -1080,7 +1126,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -1097,7 +1145,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -1128,7 +1176,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -1226,7 +1274,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -1240,7 +1290,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -1256,7 +1308,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -1270,7 +1324,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -1287,7 +1343,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -1318,7 +1374,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -1402,7 +1458,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -1416,7 +1474,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -1432,7 +1492,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -1446,7 +1508,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -1463,7 +1527,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -1494,7 +1558,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -1581,7 +1645,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -1595,7 +1661,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -1611,7 +1679,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -1625,7 +1695,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -1642,7 +1714,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -1673,7 +1745,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -1768,7 +1840,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -1782,7 +1856,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -1798,7 +1874,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -1812,7 +1890,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -1829,7 +1909,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -1860,7 +1940,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -1967,7 +2047,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -1981,7 +2063,9 @@
                   "individualSkills": [
                     "הקשבה והבהרה"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -1997,7 +2081,9 @@
                   ],
                   "sharedSkills": [
                     "בניית הבנה משותפת"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -2011,7 +2097,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -2059,7 +2147,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -2149,7 +2237,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -2163,7 +2253,9 @@
                   "individualSkills": [
                     "בקשת עזרה והבהרה"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -2179,7 +2271,9 @@
                   ],
                   "sharedSkills": [
                     "החלפת מידע ועזרה"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -2193,7 +2287,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -2210,7 +2306,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -2241,7 +2337,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -2329,7 +2425,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -2343,7 +2441,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -2359,7 +2459,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -2373,7 +2475,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -2390,7 +2494,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -2421,7 +2525,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -2511,7 +2615,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -2525,7 +2631,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -2541,7 +2649,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -2555,7 +2665,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -2572,7 +2684,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -2603,7 +2715,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -2697,7 +2809,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -2711,7 +2825,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -2727,7 +2843,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -2741,7 +2859,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -2758,7 +2878,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -2789,7 +2909,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -2877,7 +2997,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -2891,7 +3013,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -2907,7 +3031,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -2921,7 +3047,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -2938,7 +3066,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -2969,7 +3097,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -3059,7 +3187,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -3073,7 +3203,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -3089,7 +3221,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -3103,7 +3237,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -3120,7 +3256,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -3151,7 +3287,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -3246,7 +3382,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -3260,7 +3398,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -3276,7 +3416,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -3290,7 +3432,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -3307,7 +3451,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -3338,7 +3482,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -3424,7 +3568,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -3438,7 +3584,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -3454,7 +3602,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -3468,7 +3618,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -3485,7 +3637,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -3516,7 +3668,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]
@@ -3605,7 +3757,9 @@
                   "materials": [],
                   "components": [],
                   "individualSkills": [],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-prepare",
@@ -3619,7 +3773,9 @@
                   "individualSkills": [
                     "מילוי תפקיד"
                   ],
-                  "sharedSkills": []
+                  "sharedSkills": [],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-joint",
@@ -3635,7 +3791,9 @@
                   ],
                   "sharedSkills": [
                     "תיאום תפקידים"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 },
                 {
                   "id": "s0-reflect",
@@ -3649,7 +3807,9 @@
                   ],
                   "sharedSkills": [
                     "בחירת צעד משותף"
-                  ]
+                  ],
+                  "facilitation": "נציע לבחור דרך להשתתף, נשאל מה יעזור ונשאיר זמן לשאלה.",
+                  "space": "מרחב לשיחה בקבוצה קטנה, עם אפשרות לשנות מקום או לעבור."
                 }
               ],
               "debrief": [
@@ -3666,7 +3826,7 @@
           "goalChanged": false,
           "professionalBasis": [
             {
-              "sourceId": "IAFFacilitation",
+              "sourceId": "IAFCompetencies2026",
               "explanation": "עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות."
             }
           ],
@@ -3697,7 +3857,7 @@
             "limits": "דוגמת פיתוח שטרם אושרה. אינה טיפול ואינה אבחון. בקושי רגשי עוצרים, משוחחים באופן אישי ומבררים יחד מה יעזור; בסכנה מיידית נשארים ומזעיקים עזרה.",
             "learnBefore": [
               {
-                "sourceId": "IAFFacilitation",
+                "sourceId": "IAFCompetencies2026",
                 "focus": "תכנון השתתפות נגישה בתהליך קבוצתי."
               }
             ]

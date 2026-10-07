@@ -101,10 +101,13 @@
   async function operation(message, fn) {
     if(busy)return;
     error(''); setBusy(true,message);
-    const began=Date.now(), tick=setInterval(()=>{if(busy)notice(message+' · חלפו '+Math.floor((Date.now()-began)/1000)+' שניות');},1000);
+    const line=$('focus-busy'),show=t=>{if(line){line.textContent=t;line.hidden=!t;}};
+    const elapsed=()=>{const t=Math.floor((Date.now()-began)/1000);return t<60?t+' שניות':Math.floor(t/60)+':'+String(t%60).padStart(2,'0')+' דקות';};
+    const began=Date.now(), tick=setInterval(()=>{if(busy){notice(message+' · חלפו '+elapsed());show(message+' · חלפו '+elapsed()+'. היצירה לוקחת זמן — אפשר להשאיר את המסך פתוח.');}},1000);
+    show(message+' היצירה לוקחת זמן — אפשר להשאיר את המסך פתוח.');
     try { await fn(); }
     catch(e) { notice(''); error(e.message||'הפעולה לא הצליחה. אפשר לנסות שוב.'); }
-    finally {clearInterval(tick);setBusy(false);}
+    finally {clearInterval(tick);show('');setBusy(false);}
   }
   function cleanBrief(value) {
     const input={}; BRIEF_FIELDS.forEach(k=>{if(value&&value[k]!==undefined)input[k]=NUMBERS.has(k)?Number(value[k]):String(value[k]);});
@@ -171,17 +174,10 @@
     if(p.isCandidate)renderCandidate();else renderActivity();renderCoach();updateControls();notice('הנוסח נבחר. בדקי מחדש את רכיבי החוסן והמיומנויות של השלב לפני הייצוא.');
   }
   function renderFacilitationGuide() {
-    const host=clear($('facilitation-guide'));
-    const topics=[
-      ['מכינים תהליך, לא רק תוכן','בחרי תוצאה אפשרית, בדקי זמן ומרחב ונסי את ההוראות בעצמך. הגדירי מה אפשר לבחור ואיך משתתפים.','IAFFacilitation'],
-      ['פותחים בהסכמות ובהוראה קצרה','הציגי את המטרה, הזמן ודרכי ההשתתפות. בקשי ממשתתפת לנסח את ההוראה במילים שלה ובדקי שהקבוצה מבינה.','IAFFacilitation'],
-      ['מזמינים קול בלי לכפות חשיפה','שלבי חשיבה שקטה, כתיבה וזוגות. תני מקום לקולות שונים ואפשרי לבחור לא לשתף סיפור אישי.','IAFFacilitation'],
-      ['מקשיבים ומבררים','שאלי מה קרה בפעולה ומה אפשר ללמוד. שקפי את מה ששמעת ובדקי עם הקבוצה אם הבנת.','IAFFacilitation'],
-      ['מתמודדים עם קושי בתהליך','בשתיקה אפשר לתת זמן או דרך כתובה. במחלוקת הזמיני הקשבה והחזירי להסכמות; בפגיעה עצרי ובקשי תמיכה מתאימה.','IAFFacilitation'],
-      ['סוגרים ומכינים המשך','סכמי עם הקבוצה פעולה שנלמדה, תפקידים וצעד ראשון. בהמשך בדקו מה היה ישים ומה כדאי לשנות.','IAFFacilitation'],
-      ['כשהמשתתפים בני נוער','התאימי גיל, מבנה, בחירה ותמיכה. בדקי שההשתתפות נגישה ובטוחה והיעזרי במבוגר ובנהלי המסגרת לפי הצורך.','UNICEFFacilitation']
-    ];
-    topics.forEach(([title,text,key])=>{const card=el('details','guide-topic');card.append(el('summary','',title),el('p','',text));const source=window.SBE_ADVISOR_SOURCES?.byKey[key];if(source)card.append(safeLink(source.url,source.apa));host.append(card);});
+    // איך להנחות קבוצה — כלי נפרד (ננה). מציגים קישור רק למי שננה פתוחה לה/לו, או למנהלת המערכת.
+    const n=$('nana-link');if(!n)return;let ok=false;
+    try{ok=sessionStorage.getItem('sbe.session.homeUrl')==='admin.html?role=sys'||(JSON.parse(sessionStorage.getItem('sbe.session.perms')||'[]')||[]).includes('nana');}catch(e){}
+    n.hidden=!ok;
   }
   function cleanActivity(value) {
     // Work-file imports have the same explicit data boundary as generated activities.
@@ -190,7 +186,7 @@
     a.socialMechanism=D.socialMechanism(value.socialMechanism);a.facilitationPlan=D.facilitationPlan(value.facilitationPlan);a.learningGuide=D.learningGuide(value.learningGuide);
     const array = input => (Array.isArray(input)?input:[]).map(String);
     a.professionalBasis=(Array.isArray(value.professionalBasis)?value.professionalBasis:[]).map(s=>typeof s==='string'?s:{sourceId:String(s.sourceId||''),explanation:String(s.explanation||''),name:String(s.name||''),url:String(s.url||''),version:String(s.version||''),status:String(s.status||'')});
-    a.sessions=(Array.isArray(value.sessions)?value.sessions:[]).map(s=>({id:String(s.id||''),title:String(s.title||''),purpose:String(s.purpose||''),link:String(s.link||''),debrief:array(s.debrief),nextStep:String(s.nextStep||''),participantMaterials:String(s.participantMaterials||''),steps:(Array.isArray(s.steps)?s.steps:[]).map(step=>({id:String(step.id||''),title:String(step.title||''),minutes:Number(step.minutes),instructions:String(step.instructions||''),requiresReview:step.requiresReview===true,materials:array(step.materials),components:array(step.components),individualSkills:array(step.individualSkills),sharedSkills:array(step.sharedSkills)}))}));
+    a.sessions=(Array.isArray(value.sessions)?value.sessions:[]).map(s=>({id:String(s.id||''),title:String(s.title||''),purpose:String(s.purpose||''),link:String(s.link||''),debrief:array(s.debrief),nextStep:String(s.nextStep||''),participantMaterials:String(s.participantMaterials||''),steps:(Array.isArray(s.steps)?s.steps:[]).map(step=>({id:String(step.id||''),title:String(step.title||''),minutes:Number(step.minutes),instructions:String(step.instructions||''),facilitation:String(step.facilitation||''),space:String(step.space||''),requiresReview:step.requiresReview===true,materials:array(step.materials),components:array(step.components),individualSkills:array(step.individualSkills),sharedSkills:array(step.sharedSkills)}))}));
     return a;
   }
   function safeMapping(value) {
@@ -237,7 +233,8 @@
     s.mapping=safeMapping(value.mapping); s.currentId=typeof value.currentId==='string'?value.currentId:null;
     return s;
   }
-  function fillBrief() { BRIEF_FIELDS.forEach(k=>{const n=$(k);if(n)n.value=state.brief[k]===undefined?'':state.brief[k];}); $('brief-confirmed').checked=state.confirmed; }
+  function fillBrief() { const OLD_FORMAT={activity:'פעילות',mission:'משימה יומיומית',process:'תהליך של כמה מפגשים'}; if(OLD_FORMAT[state.brief.format])state.brief.format=OLD_FORMAT[state.brief.format]; // צורת הפעולה — שדה פתוח (07/10/2026)
+    BRIEF_FIELDS.forEach(k=>{const n=$(k);if(n)n.value=state.brief[k]===undefined?'':state.brief[k];}); $('brief-confirmed').checked=state.confirmed; }
   function collectBrief() { BRIEF_FIELDS.forEach(k=>{const n=$(k);if(n)state.brief[k]=NUMBERS.has(k)?Number(n.value):n.value;}); return state.brief; }
   function markBriefChanged(field) {
     collectBrief(); state.confirmed=false; $('brief-confirmed').checked=false;
@@ -248,7 +245,7 @@
     const problems=[];
     if(!String(brief.participants||'').trim())problems.push('מי המשתתפים?');
     if(!String(brief.participantAge||'').trim())problems.push('מה גיל המשתתפים?');
-    if(!Number.isInteger(brief.count)||brief.count<2)problems.push('מספר המשתתפים צריך להיות מספר שלם, לפחות שניים.');
+    if(!Number.isInteger(brief.count)||brief.count<2)problems.push('אפשר להזין מספר משתתפים שלם — שניים לפחות.');
     if(!Number.isFinite(brief.duration)||brief.duration<5)problems.push('נדרש זמן של לפחות חמש דקות לכל מפגש.');
     if(!Number.isInteger(brief.sessions)||brief.sessions<1)problems.push('נדרש לפחות מפגש אחד, במספר שלם.');
     if(brief.crisis==='active-danger')problems.push('בסכנה מיידית עוצרים את הפעילות ופועלים לפי הנחיות הבטיחות המוסמכות למקום. חוזרים לתכנון לאחר שהמצב בטוח.');
@@ -259,13 +256,14 @@
     const questions=(state.recommendation&&state.recommendation.questions)||[];
     const answered=!questions.length||String(state.brief.clarifications||'').trim().length>0;
     $('generate-activity').disabled=busy||!state.confirmed||!answered;
+    $('to-build').disabled=busy;$('to-build').textContent=busy?'עובדים על זה… זה לוקח כמה דקות':'יצירת הפעילות ←';
     $('adapt-activity').disabled=busy||!state.activity;
     $('generate-variant').disabled=busy||!state.activity||!$('variant-opt-in').checked;
     $('accept-candidate').disabled=busy||!candidate||D.validateActivity(candidate.activity,candidate.brief).length>0;
     ['save-activity','print-kit','print-participant','download-work'].forEach(id=>$(id).disabled=busy||!state.activity);
     $('brief-confirmed').disabled=busy||!answered;
     $('ask-coach').disabled=busy||!authorized;
-    $('generation-hint').textContent=questions.length&&!answered?'נדרשת התייחסות לשאלות שלמעלה לפני אישור התקציר והבנייה.':'הפעילות נבנית לפי התקציר שאישרתם. דוגמת הפיתוח נפרדת מהפקה בבינה מלאכותית ומסומנת כטיוטה.';
+    $('generation-hint').textContent=questions.length&&!answered?'כדי להמשיך, אפשר להתייחס לשאלות שלמעלה — ואז לאשר את התקציר ולבנות.':'הפעילות נבנית לפי התקציר שאישרתם. הבנייה לוקחת כמה דקות — אפשר להשאיר את המסך פתוח ולהמשיך לקרוא. דוגמת הפיתוח נפרדת מהפקה בבינה מלאכותית ומסומנת כטיוטה.';
   }
   function renderFocus() {
     const c=D.component(state.brief.focus), box=clear($('focus-description'));
@@ -287,8 +285,10 @@
   function renderIdeas() {
     const box=clear($('inspiration-cards'));
     IDEAS.forEach(idea=>{
-      const n=el('article','idea-card'); n.append(el('p','eyebrow',idea.audience),el('h3','',idea.title),el('span','tag draft','דוגמת פיתוח'),labelText('מטרה:',idea.purpose),labelText('רכיב:',componentLabel(idea.focus)),labelText('מיומנויות אישיות:',idea.individual.join(' · ')),labelText('מיומנויות משותפות:',idea.shared.join(' · ')),list(idea.steps,true));
-      const actions=el('div','actions'); actions.append(button('התאמה לקבוצה שלי',()=>personalize(idea)),button(state.ideas.includes(idea.id)?'הרעיון שמור':'שמירת רעיון',()=>operation('בודקים הרשאה ושומרים את הרעיון…',async()=>{
+      // כרטיס מצומצם בצד (07/10/2026): קהל, שם ומטרה; שאר הפרטים נפתחים בלחיצה
+      const n=el('article','idea-card'); n.append(el('p','eyebrow',idea.audience),el('h3','',idea.title),el('p','idea-purpose',idea.purpose));
+      const more=el('details','idea-more'); more.append(el('summary','','פרטים'),el('span','tag draft','דוגמת פיתוח'),labelText('רכיב:',componentLabel(idea.focus)),labelText('מיומנויות אישיות:',idea.individual.join(' · ')),labelText('מיומנויות משותפות:',idea.shared.join(' · ')),list(idea.steps,true));n.append(more);
+      const actions=el('div','actions'); actions.append(button('התאמה לקבוצה שלי',()=>personalize(idea),'btn small'),button(state.ideas.includes(idea.id)?'הרעיון שמור':'שמירת רעיון',()=>operation('בודקים הרשאה ושומרים את הרעיון…',async()=>{
         await ensureAuthorized();if(!state.ideas.includes(idea.id))state.ideas.push(idea.id);const stored=persist();renderIdeas();renderSavedIdeas();if(stored)notice('הרעיון נשמר. אפשר לחזור אליו ולהתאים אותו בהמשך.');
       })));n.append(actions);box.append(n);
     });
@@ -400,12 +400,12 @@
       const time=el('p','session-time','');time.dataset.sessionTime=si;n.append(time);const sc=claimsBox(activity,session,prefix);sc.id=prefix+'-session-claims-'+si;n.append(sc);
       (session.steps||[]).forEach((step,sti)=>{
         const st=el('article','step-card');st.id=prefix+'-'+step.id;const sh=el('div','section-head');sh.append(el('span','step-code','שלב '+(sti+1)),button('מחיקת שלב',()=>{prepareActivityEdit(isCandidate);session.steps.splice(sti,1);persist();renderActivityEditor(activity,brief,host,isCandidate);renderValidation(isCandidate);updateControls();renderCoach();},'btn danger small'));st.append(sh,button('שאלות ושיפור לשלב',()=>openCoach('step',step,isCandidate)));
-        const fields=el('div','step-fields');fields.append(editField(step,'שם השלב','title',isCandidate),editField(step,'דקות','minutes',isCandidate,{type:'number',min:1}));st.append(fields,editField(step,'מה עושים ואיך?','instructions',isCandidate,{multiline:true,rows:3}));
+        const fields=el('div','step-fields');fields.append(editField(step,'שם השלב','title',isCandidate),editField(step,'דקות','minutes',isCandidate,{type:'number',min:1}));st.append(fields,editField(step,'מה עושים?','instructions',isCandidate,{multiline:true,rows:3}),editField(step,'איך מנחים את השלב','facilitation',isCandidate,{multiline:true,rows:2}),editField(step,'מרחב וסידור','space',isCandidate));
         const review=el('div','privacy-note');review.dataset.reviewStep=step.id;review.hidden=!step.requiresReview;review.append(el('p','','המטרה או ההוראות השתנו. בדקו את רכיבי החוסן והמיומנויות של השלב לפני שיוצגו שוב כיעדי תרגול.'),button('אישור יעדי התרגול של השלב',()=>{step.requiresReview=false;persist();refreshClaims(isCandidate);refreshReviewControls(isCandidate);renderValidation(isCandidate);updateControls();}));st.append(review);
         const details=el('details');details.append(el('summary','','רכיבים, מיומנויות וחומרים של השלב'));const componentChecks=el('div','step-components');
         D.COMPONENTS.forEach(c=>{const label=el('label','component-check'),check=el('input');check.type='checkbox';check.checked=(step.components||[]).includes(c.id);check.addEventListener('change',()=>{prepareActivityEdit(isCandidate);step.components=check.checked?[...new Set([...(step.components||[]),c.id])]:(step.components||[]).filter(id=>id!==c.id);persist();refreshClaims(isCandidate);renderValidation(isCandidate);});label.append(check,document.createTextNode(c.label));componentChecks.append(label);});details.append(el('h4','','רכיבים שהשלב מתרגל בפועל'),componentChecks,editArray(step,'מיומנויות אישיות — מיומנות אחת בשורה','individualSkills',isCandidate),editArray(step,'מיומנויות משותפות — מיומנות אחת בשורה','sharedSkills',isCandidate),editArray(step,'חומרים לשלב — פריט אחד בשורה','materials',isCandidate));st.append(details);n.append(st);
       });
-      const actions=el('div','actions');actions.append(button('+ הוספת שלב',()=>{prepareActivityEdit(isCandidate);session.steps.push({id:uid('step'),title:'שלב נוסף',minutes:1,instructions:'',materials:[],components:[],individualSkills:[],sharedSkills:[]});persist();renderActivityEditor(activity,brief,host,isCandidate);renderValidation(isCandidate);updateControls();}));n.append(actions,editField(session,'חומרי המשתתפים','participantMaterials',isCandidate,{multiline:true,rows:3}),editArray(session,'שאלות לעיבוד — שאלה אחת בשורה','debrief',isCandidate),editField(session,'צעד המשך','nextStep',isCandidate,{multiline:true}));host.append(n);
+      const actions=el('div','actions');actions.append(button('+ הוספת שלב',()=>{prepareActivityEdit(isCandidate);session.steps.push({id:uid('step'),title:'שלב נוסף',minutes:1,instructions:'',facilitation:'',space:'',materials:[],components:[],individualSkills:[],sharedSkills:[]});persist();renderActivityEditor(activity,brief,host,isCandidate);renderValidation(isCandidate);updateControls();}));n.append(actions,editField(session,'חומרי המשתתפים','participantMaterials',isCandidate,{multiline:true,rows:3}),editArray(session,'שאלות לעיבוד — שאלה אחת בשורה','debrief',isCandidate),editField(session,'צעד המשך','nextStep',isCandidate,{multiline:true}));host.append(n);
     });
     refreshClaims(isCandidate);
   }
@@ -458,7 +458,7 @@
     await operation('בודקים הרשאה ומביאים ממצאים מצטברים מהמיפוי…',async()=>{const data=await api({action:'mapping',mapping:copy(mappingCredentials)});if(!data.mapping)throw new Error('לא התקבלו ממצאי מיפוי.');state.mapping=safeMapping(data.mapping);state.confirmed=false;$('brief-confirmed').checked=false;state.recommendation=null;renderMapping();renderRecommendation();updateControls();persist();notice('המיפוי מחובר. בדקו את המועד, האוכלוסייה והיקף המדידה ביחס לפעילות המתוכננת.');});
   }
   function analyze() {
-    collectBrief();operation('בודקים את התקציר ואת אפשרויות התרגול…',async()=>{
+    collectBrief();operation('בודקים את התקציר ואת אפשרויות התרגול (דקה–שתיים)…',async()=>{
       const data=await api(requestBody('analyze',state.brief));if(!data.recommendation)throw new Error('לא התקבלה הצעת מוקד מהשרת.');
       state.recommendation=data.recommendation;state.confirmed=false;$('brief-confirmed').checked=false;if(!D.component(state.brief.focus)&&D.component(data.recommendation.focus)){state.brief.focus=data.recommendation.focus;$('focus').value=state.brief.focus;}
       if(data.mapping)state.mapping=safeMapping(data.mapping);renderRecommendation();renderFocus();renderMapping();updateControls();persist();notice('התקציר נבדק. בחרו מוקד, השלימו הבהרות אם נדרשו ואשרו את התקציר.');
@@ -470,7 +470,7 @@
   function generate() {
     collectBrief();const problems=briefProblems(state.brief);if(problems.length){error(problems.join('\n'));return;}if(!state.confirmed){error('קראו ואשרו את התקציר לפני הבנייה.');return;}
     if((state.recommendation&&state.recommendation.questions||[]).length&&!String(state.brief.clarifications||'').trim()){error('השיבו לשאלות ההבהרה לפני הבנייה.');return;}
-    const b=cleanBrief(state.brief);operation('בונים פעילות לפי התקציר שאישרתם…',async()=>{const data=await api(requestBody('generate',b));if(!data.activity)throw new Error('לא התקבלה פעילות מהשרת.');const failures=D.validateActivity(data.activity,b);if(failures.length)throw new Error('הפעילות שהתקבלה דורשת תיקון: '+failures.join('; '));if(data.mapping)state.mapping=safeMapping(data.mapping);installActivity(data.activity,b);notice('הפעילות נבנתה. אפשר לערוך את ההנחיה, השלבים והחומרים, ולבדוק את הקשר בין התרגול למטרה.');});
+    const b=cleanBrief(state.brief);operation('בונים פעילות לפי התקציר שאישרתם (כמה דקות)…',async()=>{const data=await api(requestBody('generate',b));if(!data.activity)throw new Error('לא התקבלה פעילות מהשרת.');const failures=D.validateActivity(data.activity,b);if(failures.length)throw new Error('הפעילות שהתקבלה דורשת תיקון: '+failures.join('; '));if(data.mapping)state.mapping=safeMapping(data.mapping);installActivity(data.activity,b);notice('הפעילות נבנתה. אפשר לערוך את ההנחיה, השלבים והחומרים, ולבדוק את הקשר בין התרגול למטרה.');});
   }
   function example() {
     collectBrief();if(!D.component(state.brief.focus)){const r=D.recommendFocus(state.brief);state.brief.focus=r.focus;state.recommendation=r;fillBrief();renderFocus();renderRecommendation();}
@@ -483,7 +483,7 @@
   }
   function generateVariant() {
     if(!state.activity||!$('variant-opt-in').checked){error('בחרו במפורש להכין גרסה מקושרת.');return;}
-    const b=D.newBrief({goal:state.activity.purpose,focus:state.activity.focus,participants:$('variant-participants').value,participantAge:$('variant-age').value,count:Number($('variant-count').value),duration:Number($('variant-duration').value),sessions:1,format:'activity',language:state.brief.language||'עברית',youthMode:'adult-supported',startingPoint:'גרסה מקושרת לתרגול המטרה המשותפת'});
+    const b=D.newBrief({goal:state.activity.purpose,focus:state.activity.focus,participants:$('variant-participants').value,participantAge:$('variant-age').value,count:Number($('variant-count').value),duration:Number($('variant-duration').value),sessions:1,format:'פעילות',language:state.brief.language||'עברית',youthMode:'adult-supported',startingPoint:'גרסה מקושרת לתרגול המטרה המשותפת'});
     const problems=briefProblems(b);if(problems.length){error(problems.join('\n'));return;}
     operation('בונים הצעה לגרסה המקושרת מהמטרה המשותפת…',async()=>{const data=await api({action:'generate',brief:b});if(!data.activity)throw new Error('לא התקבלה גרסה מקושרת.');setCandidate({kind:'variant',brief:b,activity:D.publicActivity(data.activity)});renderCandidate();notice('הגרסה המקושרת מוכנה לבדיקה ולעריכה. היא תישמר רק אם תאשרו אותה.');$('candidate-panel').scrollIntoView({block:'start'});});
   }
@@ -496,22 +496,66 @@
     }
   }
   function checkExport(activity,brief) { const problems=D.validateActivity(activity,brief);if(problems.length)throw new Error('נדרש תיקון לפני יצוא: '+problems.join('; ')); }
-  function printDocument(activity,participantOnly,includeReason) {
-    const a=D.publicActivity(activity),n=el('div','print-document');n.append(el('h2','',a.title),labelText('מטרה:',a.purpose),labelText('רכיב המוקד:',componentLabel(a.focus)),el('p','',evidenceLabel(a)),claimsBox(a,null,'print'));
-    n.querySelectorAll('.claims-box a').forEach(link=>{link.replaceWith(document.createTextNode(' [שלב '+link.textContent.replace('↳ ','')+']'));});
-    if(!participantOnly){n.append(renderBasis(a));if(includeReason)paragraph(n,'הסבר הבחירה האישי',activity.selectionReason);paragraph(n,'הנחיה למוביל/ה',a.leaderGuidance);const guide=el('section','session-card');guide.append(el('h3','','תכנית הנחיית הקבוצה'));D.FACILITATION_FIELDS.forEach(k=>paragraph(guide,FACILITATION_LABELS[k],a.facilitationPlan?.[k]));n.append(guide);
-      const lg=D.learningGuide(a.learningGuide);if(D.LEARNING_FIELDS.some(k=>lg[k].trim())||lg.learnBefore.length){const learn=el('section','session-card');learn.append(el('h3','','מדריך למידה למנחה'));paragraph(learn,LEARNING_LABELS.mechanism,lg.mechanism);if(lg.learnBefore.length){learn.append(el('h4','','מה ללמוד לפני ההנחיה'));const ul=el('ul');lg.learnBefore.forEach(src=>{const li=el('li');li.append(safeLink(src.url,src.name||src.sourceId)||el('b','',src.name||src.sourceId));if(src.focus)li.append(el('p','',src.focus));ul.append(li);});learn.append(ul);}['apply','watchFor','limits'].forEach(k=>paragraph(learn,LEARNING_LABELS[k],lg[k]));n.append(learn);}}
-    if(a.socialMechanism&&a.socialMechanism.type!=='none'){const mechanism=el('section','session-card');mechanism.append(el('h3','','מנגנון חברתי להמשך'),labelText('סוג:',D.MECHANISM_TYPES[a.socialMechanism.type]));D.MECHANISM_FIELDS.forEach(k=>mechanism.append(labelText(MECHANISM_LABELS[k]+':',a.socialMechanism[k])));n.append(mechanism);}
-    paragraph(n,'דרכים להשתתף ללא חשיפה אישית',a.participationAlternative);
+  // ערכה להדפסה (07/10/2026): טבלה לכל מפגש — שלב וזמן, מה עושים, איך מנחים, מרחב ועזרים, מה מתרגלים —
+  // במקום הרבה שורות קצרות. גרסת המנחה לרוחב הדף; חומרי המשתתפים — רק מה שמשותף.
+  function printDocument(activity,participantOnly,includeReason,brief) {
+    const a=D.publicActivity(activity),n=el('div','print-document kit');brief=brief||{};
+    const rich=v=>window.SBE_DOC?SBE_DOC.rich(v||''):el('p','',v||'');
+    const cell=(tag,content,cls)=>{const c=el(tag,cls||'');if(content instanceof Node)c.append(content);else c.textContent=String(content==null||content===''?'—':content);return c;};
+    const table=(cls,head,rows)=>{const t=el('table','kit-table '+(cls||''));if(head){const tr=el('tr');head.forEach(h=>tr.append(cell('th',h)));const th=el('thead');th.append(tr);t.append(th);}const tb=el('tbody');rows.forEach(r=>{const tr=el('tr');r.forEach((c,i)=>tr.append(cell(!head&&(i===0||(r.length===4&&i===2))?'th':'td',c)));tb.append(tr);});t.append(tb);return t;};
+    const join=xs=>(xs||[]).filter(x=>String(x||'').trim()).join(' · ');
+    const section=t=>n.append(el('h2','kit-h',t));
+    // תמצית
+    const who=join([brief.participants,brief.participantAge,brief.count?brief.count+' משתתפים':'']);
+    const time=join([(a.sessions||[]).length>1?(a.sessions.length+' מפגשים'):'',brief.duration?brief.duration+' דקות למפגש':'']);
+    const facts=[['מטרה',a.purpose],['מוקד החוסן',componentLabel(a.focus)]];
+    if(!participantOnly){facts.push(['משתתפים',who],['זמן',time],['מרחב',brief.space],['עזרים',brief.materials],['בסיס',evidenceLabel(a)]);}
+    const pairs=[];for(let i=0;i<facts.length;i+=2)pairs.push(facts.slice(i,i+2));
+    n.append(table('kit-facts',null,pairs.map(p=>p.length===2?[p[0][0],p[0][1],p[1][0],p[1][1]]:[p[0][0],p[0][1],' ',' '])));
+    if(!participantOnly){
+      const before=[['הנחיה למוביל/ה',rich(a.leaderGuidance)],['השתתפות בלי חשיפה אישית',rich(a.participationAlternative)]];
+      if(includeReason&&activity.selectionReason)before.unshift(['הסבר הבחירה',rich(activity.selectionReason)]);
+      section('לפני שמתחילים');n.append(table('kit-two',null,before));
+      const fp=a.facilitationPlan||{};section('תכנית ההנחיה');n.append(table('kit-two',null,D.FACILITATION_FIELDS.filter(k=>String(fp[k]||'').trim()).map(k=>[FACILITATION_LABELS[k],rich(fp[k])])));
+    } else if(String(a.participationAlternative||'').trim()) n.append(table('kit-two',null,[['דרכים להשתתף ללא חשיפה אישית',rich(a.participationAlternative)]]));
     (a.sessions||[]).forEach((session,si)=>{
-      const block=el('section','session-card');block.append(el('h3','','מפגש '+(si+1)+': '+(session.title||'')),labelText('מטרת המפגש:',session.purpose),labelText('קשר לתהליך:',session.link));const claims=claimsBox(a,session,'print');claims.querySelectorAll('a').forEach(link=>link.replaceWith(document.createTextNode(' [שלב '+link.textContent.replace('↳ ','')+']')));block.append(claims);
-      if(!participantOnly) (session.steps||[]).forEach((step,stepIndex)=>{const st=el('article','step-card');st.append(el('h4','',step.title+' · '+step.minutes+' דקות'),el('p','muted','שלב '+(stepIndex+1)),window.SBE_DOC?SBE_DOC.rich(step.instructions):el('p','',step.instructions),labelText('רכיבים:',(step.components||[]).map(componentLabel).join(' · ')),labelText('מיומנויות אישיות:',(step.individualSkills||[]).join(' · ')),labelText('מיומנויות משותפות:',(step.sharedSkills||[]).join(' · ')));if((step.materials||[]).length)st.append(labelText('חומרים:',step.materials.join(' · ')));block.append(st);});
-      paragraph(block,'חומרי המשתתפים',session.participantMaterials);block.append(el('h4','','שאלות לעיבוד'),list(session.debrief),labelText('צעד המשך:',session.nextStep));n.append(block);
-    });return n;
+      const block=el('section','kit-session');
+      const mins=(session.steps||[]).reduce((t,x)=>t+(Number(x.minutes)||0),0);
+      block.append(el('h2','kit-h','מפגש '+(si+1)+': '+(session.title||'')+(mins&&!participantOnly?' · '+mins+' דקות':'')));
+      const sub=el('p','kit-sub');sub.append(el('b','','מטרת המפגש: '),document.createTextNode(session.purpose||'—'));if(session.link&&!participantOnly){sub.append(document.createTextNode(' · '));sub.append(el('b','','קשר לתהליך: '),document.createTextNode(session.link));}block.append(sub);
+      if(!participantOnly){
+        const rows=(session.steps||[]).map((step,i)=>{
+          const name=el('div');name.append(el('b','',(i+1)+'. '+(step.title||'')),el('div','kit-min',(step.minutes||'—')+' דק׳'));
+          const aids=el('div');if(String(step.space||'').trim())aids.append(el('div','',step.space));if((step.materials||[]).length)aids.append(el('div','kit-muted',step.materials.join(' · ')));if(!aids.childNodes.length)aids.textContent='—';
+          const prac=el('div');const comp=(step.components||[]).map(componentLabel);if(comp.length)prac.append(el('div','',comp.join(' · ')));const sk=[...(step.individualSkills||[]),...(step.sharedSkills||[])];if(sk.length)prac.append(el('div','kit-muted',sk.join(' · ')));if(!prac.childNodes.length)prac.textContent='—';
+          return [name,rich(step.instructions),step.facilitation?rich(step.facilitation):'—',aids,prac];
+        });
+        block.append(table('kit-steps',['שלב','מה עושים','איך מנחים','מרחב ועזרים','מה מתרגלים'],rows));
+      }
+      block.append(table('kit-close',['חומרי המשתתפים','שאלות לעיבוד','צעד המשך'],[[rich(session.participantMaterials),list(session.debrief),rich(session.nextStep)]]));
+      n.append(block);
+    });
+    if(a.socialMechanism&&a.socialMechanism.type!=='none'){section('מנגנון חברתי להמשך · '+(D.MECHANISM_TYPES[a.socialMechanism.type]||''));n.append(table('kit-two',null,D.MECHANISM_FIELDS.filter(k=>String(a.socialMechanism[k]||'').trim()).map(k=>[MECHANISM_LABELS[k],a.socialMechanism[k]])));}
+    if(!participantOnly){
+      const lg=D.learningGuide(a.learningGuide);
+      if(D.LEARNING_FIELDS.some(k=>lg[k].trim())||lg.learnBefore.length){
+        section('מדריך למידה למנחה');const rows=lg.mechanism.trim()?[[LEARNING_LABELS.mechanism,rich(lg.mechanism)]]:[];
+        if(lg.learnBefore.length){const ul=el('ul');lg.learnBefore.forEach(src=>{const li=el('li');li.append(safeLink(src.url,src.name||src.sourceId)||el('b','',src.name||src.sourceId));if(src.focus)li.append(document.createTextNode(' — '+src.focus));ul.append(li);});rows.push(['מה ללמוד לפני ההנחיה',ul]);}
+        ['apply','watchFor','limits'].forEach(k=>{if(lg[k].trim())rows.push([LEARNING_LABELS[k],rich(lg[k])]);});
+        n.append(table('kit-two',null,rows));
+      }
+      section('מה מתרגלים ועל מה זה נשען');const cb=claimsBox(a,null,'print');cb.querySelectorAll('a').forEach(link=>link.replaceWith(document.createTextNode(' [שלב '+link.textContent.replace('↳ ','')+']')));
+      // רשימות הרכיבים והמיומנויות — כטבלה: כותרת בעמודה אחת, הפריטים בשנייה
+      const crow=[];let cur=null;[...cb.children].forEach(ch=>{if(/^H[2-4]$/.test(ch.tagName)){cur=[ch.textContent,el('div')];crow.push(cur);}else if(cur)cur[1].append(ch);});
+      n.append(crow.length?table('kit-two',null,crow):cb);const basis=renderBasis(a);basis.querySelectorAll('h3,h4').forEach(h=>{h.className='kit-sub';});n.append(basis);
+    } else {const cb=claimsBox(a,null,'print');cb.querySelectorAll('a').forEach(link=>link.replaceWith(document.createTextNode('')));
+      const crow=[];let cur=null;[...cb.children].forEach(ch=>{if(/^H[2-4]$/.test(ch.tagName)){cur=[ch.textContent,el('div')];crow.push(cur);}else if(cur)cur[1].append(ch);});
+      if(crow.length){section('מה מתרגלים');n.append(table('kit-two',null,crow));}else n.append(cb);}
+    return n;
   }
   function printActivity(participantOnly,activity,brief) {
     activity=activity||state.activity;brief=brief||state.activityBrief||state.brief;if(!activity)return;
-    operation('בודקים הרשאה ותקינות לפני ההדפסה…',async()=>{await ensureAuthorized();checkExport(activity,brief);const node=printDocument(activity,participantOnly,!participantOnly&&$('include-selection-reason').checked);SBE_DOC.print({title:activity.title,subtitle:participantOnly?'חומרי משתתפים · מטרה, תרגול וחומרים משותפים':'ערכת הנחיה · '+evidenceLabel(activity),node,inline:true});notice('נפתחה תצוגה מקדימה עם הנוסח הערוך להדפסה או לשמירה כ-PDF.');});
+    operation('בודקים הרשאה ותקינות לפני ההדפסה…',async()=>{await ensureAuthorized();checkExport(activity,brief);const node=printDocument(activity,participantOnly,!participantOnly&&$('include-selection-reason').checked,brief);SBE_DOC.print({landscape:!participantOnly,title:activity.title,subtitle:participantOnly?'חומרי משתתפים · מטרה, תרגול וחומרים משותפים':'ערכת הנחיה · '+evidenceLabel(activity),node,inline:true});notice('נפתחה תצוגה מקדימה עם הנוסח הערוך להדפסה או לשמירה כ-PDF.');});
   }
   function downloadJson(name,value) {const blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=el('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
   function saveActivity() {
@@ -544,9 +588,9 @@
     $('brief-form').addEventListener('submit',e=>e.preventDefault());$('brief-form').addEventListener('input',e=>{if(BRIEF_FIELDS.includes(e.target.id))markBriefChanged(e.target.id);});$('brief-form').addEventListener('change',e=>{if(e.target.tagName==='SELECT')markBriefChanged(e.target.id);});
     $('focus').addEventListener('change',()=>chooseFocus($('focus').value));$('clarifications').addEventListener('input',()=>markBriefChanged('clarifications'));
     $('coach-stage').addEventListener('change',()=>{state.coach.stage=$('coach-stage').value;coachTarget=coachTarget?.isCandidate&&candidate?{stepId:null,isCandidate:true}:null;coachProposal=null;renderCoach();persist();});
-    $('coach-concerns').addEventListener('input',()=>{setCoachConcerns($('coach-concerns').value);persist();});$('ask-coach').addEventListener('click',askCoach);$('ask-facilitation').addEventListener('click',()=>openCoach('facilitation'));renderFacilitationGuide();
+    $('coach-concerns').addEventListener('input',()=>{setCoachConcerns($('coach-concerns').value);persist();});$('ask-coach').addEventListener('click',askCoach);renderFacilitationGuide();
     $('brief-confirmed').addEventListener('change',()=>{collectBrief();const problems=briefProblems(state.brief);if($('brief-confirmed').checked&&problems.length){error(problems.join('\n'));$('brief-confirmed').checked=false;}state.confirmed=$('brief-confirmed').checked;updateControls();});
-    $('analyze-brief').addEventListener('click',analyze);$('generate-activity').addEventListener('click',generate);$('example-activity').addEventListener('click',example);
+    $('analyze-brief').addEventListener('click',analyze);$('to-build').addEventListener('click',()=>{$('focus-section').scrollIntoView({behavior:'smooth',block:'start'});analyze();});$('generate-activity').addEventListener('click',generate);$('example-activity').addEventListener('click',example);
     $('add-source').addEventListener('click',()=>{state.brief.sources.push({id:uid('source'),name:'',role:'context',content:'',url:'',date:'',scope:'',population:'',version:'1'});state.confirmed=false;$('brief-confirmed').checked=false;state.recommendation=null;renderSources();renderRecommendation();updateControls();persist();});$('source-file').addEventListener('change',()=>importSource($('source-file').files[0]));
     $('save-activity').addEventListener('click',saveActivity);$('download-work').addEventListener('click',downloadWork);$('import-work').addEventListener('change',()=>importWork($('import-work').files[0]));$('print-kit').addEventListener('click',()=>printActivity(false));$('print-participant').addEventListener('click',()=>printActivity(true));
     $('adapt-activity').addEventListener('click',adapt);$('generate-variant').addEventListener('click',generateVariant);$('variant-opt-in').addEventListener('change',updateControls);$('accept-candidate').addEventListener('click',acceptCandidate);$('reject-candidate').addEventListener('click',()=>{setCandidate(null);renderCandidate();notice('הגרסה הקיימת נשארה.');});

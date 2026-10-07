@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { createAtomicMemoryStore } from '../lib/principal.mjs';
 import { handleArtifacts } from '../lib/activity-artifact.mjs';
 import { getProvider, ProviderError } from '../lib/providers.mjs';
+import {agentEnvelope,validateProposal} from '../lib/agent-contract.mjs';
 
 const baseline = JSON.parse(readFileSync(new URL('../fixtures/baseline-cases.json', import.meta.url), 'utf8')).cases[0];
 const principal = {ownerId:'fixture-user-a',tenantId:'fixture-tenant-a',permissions:['activity']};
@@ -63,6 +64,21 @@ test('specialists receive distinct trusted responsibilities and traces hash the 
   assert.ok(systems.every(system=>!system.includes('UNTRUSTED ROLE OVERRIDE')));
   assert.ok(requests.every(request=>request.request.question==='UNTRUSTED ROLE OVERRIDE'));
   assert.equal(new Set(out.review.traces.map(trace=>trace.promptVersion)).size,4);
+});
+
+test('compact reviewers keep structured context but only readers of full prose may replace it',async()=>{
+  const store=createAtomicMemoryStore(),a=await created(store);
+  a.content.pipelineOutput.documents={facilitator:'full prose for privacy review'};
+  const proposal={artifactId:a.id,baseVersion:a.version,changes:[{path:'pipelineOutput',value:a.content.pipelineOutput}],rationale:'synthetic review',sourceIds:[],unknowns:[],riskFlags:[]};
+  for(const agent of ['pedagogy','resilience_facilitation','safety_sources','synthesis','single']) {
+    const envelope=agentEnvelope(a,agent),compact=['pedagogy','resilience_facilitation'].includes(agent);
+    assert.equal(Object.hasOwn(envelope.content.pipelineOutput,'documents'),!compact);
+    assert.deepEqual(envelope.content.context,a.content.context);assert.deepEqual(envelope.content.steps,a.content.steps);
+    assert.equal(envelope.allowedPaths.includes('pipelineOutput'),!compact);
+    if(compact)assert.throws(()=>validateProposal(proposal,{artifact:a,agent}),{code:'agent_scope'});
+    else assert.equal(validateProposal(proposal,{artifact:a,agent}).changes.length,1);
+  }
+  assert.equal(a.content.pipelineOutput.documents.facilitator,'full prose for privacy review');
 });
 
 test('partial reviewer failures persist valid candidates and retry only missing work',async()=>{

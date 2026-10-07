@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
 <script src="lib/resilience-advisor-sources.js"></script>
 <script src="lib/resilience-writer.js"></script>
+<script src="lib/invite-language.js"></script>
 <script src="lib/facilitation-model.js"></script>
 <script src="lib/product-doc.js"></script>
 <style>
@@ -117,6 +118,25 @@ legend{font-weight:700;font-size:1.05rem;color:var(--spoken);margin-bottom:.2rem
 .basis a,a.ref{color:var(--spoken);font-weight:600;text-decoration:none;direction:ltr;unicode-bidi:isolate}
 ul.tl{padding-inline-start:1.2rem;margin:.2rem 0 .5rem}
 ul.tl li{margin:.25rem 0}
+/* טבלאות המדריך (07/10/2026) */
+.kit-table{width:100%;border-collapse:collapse;margin:.4rem 0 1rem;font-size:.9rem;line-height:1.55}
+.kit-table th,.kit-table td{border:1px solid var(--hair);padding:.45rem .6rem;text-align:right;vertical-align:top}
+.kit-table thead th{background:var(--spoken);color:#fff;font-weight:700}
+.kstance td:nth-child(2){background:var(--auto-soft)}
+:root[data-theme="dark"] .kit-table thead th{color:#0F1418}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .kit-table thead th{color:#0F1418}}
+.kit-table tbody th{background:var(--surface-2);width:20%;font-weight:700}
+.kit-table p{margin:0 0 .3rem}.kit-table ul{margin:0;padding-inline-start:1.1rem}
+.kit-table .say{margin:.1rem 0 .3rem}.kit-table .basis{margin:.3rem 0 0;font-size:.8rem}.kit-table .min{color:var(--muted);font-size:.82rem}
+.kit-table tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--surface-2) 35%,transparent)}
+@media (max-width:640px){
+  .kit-table thead{display:none}
+  .kit-table,.kit-table tbody,.kit-table tr,.kit-table td,.kit-table tbody th{display:block;width:auto}
+  .kit-table tr{border:1px solid var(--hair);border-radius:8px;margin:.5rem 0;overflow:hidden}
+  .kit-table td,.kit-table tbody th{border:0;border-bottom:1px solid var(--hair)}
+  .kit-table td.empty{display:none}
+  .kit-table td[data-label]::before{content:attr(data-label);display:block;font-weight:700;font-size:.8rem;color:var(--muted)}
+}
 .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
 @media (max-width:640px){.qgrid{grid-template-columns:1fr}}
 .qgrid .rcard{margin:0}
@@ -171,9 +191,9 @@ ul.tl li{margin:.25rem 0}
     <p class="tag">מנחה את המנחים — מהוראה מול הקבוצה להנחיה שמחזקת אותה</p>
     <p>מספרים לננה על הקבוצה, על הנושא ועל המטרה, ומקבלים <b>מדריך הנחיה אישי</b>: לא עוד פעילות, אלא <b>איך להנחות</b>. איך לפתוח, אילו שאלות לשאול, מה לומר ברגעים הקשים, ואיך לסיים כך שהקבוצה תמשיך לפעול יחד גם אחרי המפגש.</p>
     <div class="vs" aria-label="המעבר">
-      <div class="from"><b>בהוראה</b><br>המורה במרכז: מסבירה, שואלת, מעריכה ומסכמת.</div>
+      <div class="from"><b>הוראה</b><br>העברת ידע: הסבר, תרגול ובדיקת הבנה.</div>
       <div class="arrow">←</div>
-      <div class="to"><b>בהנחיה</b><br>הקבוצה במרכז: המנחה מחזיקה את התהליך, והקבוצה חושבת, מדברת ומחליטה.</div>
+      <div class="to"><b>הנחיה</b><br>בניית ידע משותף: שאלות פתוחות, שיח בין המשתתפים והחלטות משותפות.</div>
     </div>
     <ol class="steps">
       <li><b>1. מספרים</b>על הקבוצה, על המפגש ועל עצמך כמנחה</li>
@@ -215,7 +235,7 @@ ul.tl li{margin:.25rem 0}
       <legend>אני כמנחה</legend>
       <label for="f-exp">הניסיון שלי בהנחיית קבוצה</label>
       <select id="f-exp"><option value="">בחירה...</option></select>
-      <label>מה מוכר לך מההוראה שלך? <span class="opt">(לא חובה — ננה תתמקד במה שתסמנו)</span></label>
+      <label>באיזו מיומנות תרצו שאתמקד? <span class="opt">(לא חובה — אפשר לבחור כמה)</span></label>
       <div class="habits" id="f-habits"></div>
       <label for="f-worry">מה מדאיג אותך לקראת המפגש? <span class="opt">(לא חובה)</span></label>
       <textarea id="f-worry" maxlength="800" placeholder="למשל: שתהיה שתיקה ולא אדע מה לעשות; שאאבד שליטה; שמישהו יתחיל לבכות"></textarea>
@@ -326,6 +346,13 @@ function row(label,text){if(!text)return null;const p=el('p','rrow');p.appendChi
 function lensEl(t){if(!t)return null;const p=el('p','lens');p.appendChild(el('b',null,'לחוסן החברתי: '));p.appendChild(inlineRich(t));return p;}
 function sayEl(t){if(!t)return null;const p=el('p','say');p.appendChild(inlineRich(/^["“״]/.test(t)?t:'"'+t+'"'));return p;}
 function put(parent,...kids){kids.forEach(k=>{if(k)parent.appendChild(k);});return parent;}
+// טבלה למדריך: head — כותרות עמודות (לכל תא data-label, לתצוגה מוערמת בטלפון); בלי head — תווית בעמודה הראשונה
+function ktable(head,rows,cls){
+  const t=el('table','kit-table '+(cls||''));
+  const fill=(c,v)=>{if(v==null||v===''){c.textContent='—';c.classList.add('empty');}else if(v instanceof Node)c.appendChild(v);else c.textContent=String(v);return c;};
+  if(head){const th=el('thead'),tr=el('tr');head.forEach(h=>tr.appendChild(el('th',null,h)));th.appendChild(tr);t.appendChild(th);}
+  const tb=el('tbody');rows.forEach(r=>{const tr=el('tr');r.forEach((v,i)=>{const c=fill(el(!head&&i===0?'th':'td'),v);if(head)c.dataset.label=head[i];tr.appendChild(c);});tb.appendChild(tr);});t.appendChild(tb);return t;
+}
 
 // ── הטופס ──
 const FIELDS=['f-group','f-age','f-size','f-familiar','f-role','f-about','f-topic','f-goal','f-sit','f-duration','f-space','f-exp','f-worry','f-question'];
@@ -335,7 +362,7 @@ fill('f-sit',N.SITUATIONS);fill('f-duration',N.DURATIONS);fill('f-space',N.SPACE
 N.SHIFTS.forEach(s=>{
   const lb=el('label');const cb=el('input');cb.type='checkbox';cb.value=s.k;cb.name='habit';
   cb.addEventListener('change',()=>{lb.classList.toggle('on',cb.checked);save();});
-  lb.appendChild(cb);lb.appendChild(el('span',null,s.habit));F('f-habits').appendChild(lb);
+  lb.appendChild(cb);lb.appendChild(el('span',null,s.skill));F('f-habits').appendChild(lb);
 });
 function habits(){return [...document.querySelectorAll('input[name=habit]:checked')].map(c=>c.value);}
 function setHabits(list){document.querySelectorAll('input[name=habit]').forEach(c=>{c.checked=(list||[]).includes(c.value);c.parentNode.classList.toggle('on',c.checked);});}
@@ -378,12 +405,12 @@ function addableSelect(id,listName,what){
   }
   btn.addEventListener('click',()=>{
     const v=inp.value.replace(/\s+/g,' ').trim();msg.hidden=false;
-    if(v.length<2){msg.textContent='צריך להקליד ערך.';return;}
+    if(v.length<2){msg.textContent='אפשר להקליד ערך ואז ללחוץ על "הוספה לרשימה".';return;}
     btn.disabled=true;msg.textContent='מוסיפה לרשימה...';
     const done=t=>{render(v);inp.value='';msg.textContent=t;sel.dispatchEvent(new Event('change'));save();};
     accessApi({action:'listAdd',name:listName,value:v,token:token()}).then(d=>{
       if(d.items){extra=d.items;done('נוסף לרשימה של כולם ונבחר ✓');}
-      else done(d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם צריך להיות מחובר/ת עם ההרשאה המתאימה.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).');
+      else done(d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם, אפשר להיכנס עם ההרשאה המתאימה.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).');
     }).catch(()=>done('נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).')).finally(()=>{btn.disabled=false;});
   });
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();btn.click();}});
@@ -460,81 +487,69 @@ function renderGuide(){
   const nw=el('button','btn btn-ghost','מדריך חדש');nw.type='button';
   put(bar,pr,pk,nw);card.appendChild(bar);
   const doc=el('div');doc.id='guide-doc';
-  doc.appendChild(el('h2',null,'מדריך ההנחיה של ננה'));
-  doc.appendChild(el('p','meta',subtitle(R)+' · '+fmtDate(R.at)));
+  doc.appendChild(el('h2','no-print','מדריך ההנחיה של ננה')); // ב-PDF הכותרת והתאריך כבר בראש הדף
+  doc.appendChild(el('p','meta no-print',subtitle(R)+' · '+fmtDate(R.at)));
   if(d.intro){const i=el('div','intro');i.appendChild(inlineRich(d.intro));doc.appendChild(i);}
 
   // העמדה
   if(d.stance.to){
     doc.appendChild(el('h3',null,'העמדה שלך במפגש'));
-    const vs=el('div','vs');
-    const a=el('div','from');a.appendChild(el('b',null,'במקום'));a.appendChild(el('br'));a.appendChild(inlineRich(d.stance.from));
-    const b=el('div','to');b.appendChild(el('b',null,'נסו'));b.appendChild(el('br'));b.appendChild(inlineRich(d.stance.to));
-    put(vs,a,el('div','arrow','←'),b);doc.appendChild(vs);
-    if(d.stance.why)doc.appendChild(lensEl(d.stance.why));
+    doc.appendChild(ktable(['מהוראה','להנחיה','לחוסן החברתי'],[[d.stance.from?inlineRich(d.stance.from):null,inlineRich(d.stance.to),d.stance.why?inlineRich(d.stance.why):null]],'kstance'));
   }
+  // טבלאות (07/10/2026): במקום הרבה שורות קצרות — טבלה לכל חלק. עריכה ישירה בתאים; ב-PDF לרוחב הדף.
+  const ul=(xs)=>{const u=el('ul','tl');xs.forEach(x=>{const li=el('li');li.appendChild(inlineRich(x));u.appendChild(li);});return u;};
+  const txt=(t)=>t?inlineRich(t):null;
+  const lensTxt=(t,basis)=>{const box=el('div');if(t)box.appendChild(inlineRich(t));const bs=basisEl(basis);if(bs)box.appendChild(bs);return box.childNodes.length?box:null;};
   // קריאת הקבוצה
   if(d.read.stage||d.read.needs.length){
     doc.appendChild(el('h3',null,'קריאת הקבוצה'));
-    const c=el('div','rcard');
-    put(c,row('איפה הקבוצה עכשיו',d.read.stage));
-    if(d.read.needs.length){c.appendChild(el('p','rrow')).appendChild(el('b',null,'מה היא צריכה:'));const ul=el('ul','tl');d.read.needs.forEach(n=>{const li=el('li');li.appendChild(inlineRich(n));ul.appendChild(li);});c.appendChild(ul);}
-    put(c,lensEl(d.read.lens));doc.appendChild(c);
+    doc.appendChild(ktable(null,[['איפה הקבוצה עכשיו',txt(d.read.stage)],['מה יכול לחזק אותה',d.read.needs.length?ul(d.read.needs):null],['לחוסן החברתי',txt(d.read.lens)]].filter(r=>r[1]),'k2'));
   }
-  // המעברים
+  // המיומנויות לחזק
   if(d.shifts.length){
-    doc.appendChild(el('h3',null,'מהוראה להנחיה — המעברים שלך'));
-    d.shifts.forEach(s=>{const c=el('div','rcard');
-      put(c,row('במקום',s.habit),row('נסו',s.move),sayEl(s.say),lensEl(s.lens),basisEl(s.basis));doc.appendChild(c);});
+    doc.appendChild(el('h3',null,'המיומנויות שלך במפגש הזה'));
+    doc.appendChild(ktable(['המיומנות','איך','מה אומרים','לחוסן החברתי'],d.shifts.map(x=>[el('b',null,x.skill),txt(x.move),sayEl(x.say),lensTxt(x.lens,x.basis)]),'kshifts'));
   }
   // קשת המפגש
   if(d.arc.length){
     doc.appendChild(el('h3',null,'קשת המפגש'));
-    d.arc.forEach(a=>{const c=el('div','rcard');const t=el('p','rcard-t',a.phase);if(a.minutes)t.appendChild(el('span','min',a.minutes));c.appendChild(t);
-      if(a.facilitator)c.appendChild(richText(a.facilitator));
-      a.say.forEach(s=>put(c,sayEl(s)));
-      put(c,row('מבנה',a.structure),row('מה לראות',a.watch),lensEl(a.lens),basisEl(a.basis));doc.appendChild(c);});
+    doc.appendChild(ktable(['שלב וזמן','מה עושה המנחה','מה אומרים','מבנה ומה לראות','לחוסן החברתי'],d.arc.map(x=>{
+      const nm=el('div');nm.appendChild(el('b',null,x.phase));if(x.minutes)nm.appendChild(el('div','min',x.minutes));
+      const sy=el('div');x.say.forEach(t=>put(sy,sayEl(t)));
+      const st=el('div');put(st,row('מבנה',x.structure),row('מה לראות',x.watch));
+      return [nm,x.facilitator?richText(x.facilitator):null,sy.childNodes.length?sy:null,st.childNodes.length?st:null,lensTxt(x.lens,x.basis)];}),'karc'));
   }
-  // סולם שאלות
+  // סולם שאלות — טבלה אחת, עמודה לכל שלב
   const Q=d.questions,QL=[['open','שאלות פתיחה'],['deepen','שאלות להעמקה'],['connect','חיבור לחיים ולקבוצה'],['close','שאלות סיום']].filter(([k])=>Q[k].length);
   if(QL.length){
     doc.appendChild(el('h3',null,'סולם שאלות'));
-    const grid=el('div','qgrid');
-    QL.forEach(([k,t])=>{const c=el('div','rcard');c.appendChild(el('p','rcard-t',t));const ul=el('ul','tl');Q[k].forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));ul.appendChild(li);});c.appendChild(ul);grid.appendChild(c);});
-    doc.appendChild(grid);
+    doc.appendChild(ktable(QL.map(q=>q[1]),[QL.map(([k])=>ul(Q[k]))],'kq'));
   }
   // רגעים מאתגרים
   if(d.moments.length){
     doc.appendChild(el('h3',null,'רגעים שעלולים לקרות — ומה עושים'));
-    d.moments.forEach(m=>{const c=el('div','rcard');c.appendChild(el('p','rcard-t',m.moment));
-      put(c,row('איך מזהים',m.signs),row('מה עושים',m.do),sayEl(m.say));
-      if(m.avoid){const p=el('p','avoid');p.appendChild(el('b',null,'כדאי להימנע: '));p.appendChild(inlineRich(m.avoid));c.appendChild(p);}
-      put(c,basisEl(m.basis));doc.appendChild(c);});
+    doc.appendChild(ktable(['הרגע','איך מזהים','מה עושים','מה אומרים','כדאי להימנע'],d.moments.map(m=>{const r=el('div');r.appendChild(el('b',null,m.moment));const bs=basisEl(m.basis);if(bs)r.appendChild(bs);return [r,txt(m.signs),txt(m.do),sayEl(m.say),txt(m.avoid)];}),'kmom'));
   }
   // שיחה אישית
   const cv=d.conversation;
   if(cv){
     doc.appendChild(el('h3',null,'שיחה אישית אחרי המפגש'));
-    const c=el('div','rcard');
-    put(c,row('עם מי',cv.with),row('המטרה',cv.goal),row('איפה ומתי',cv.setting),row('פותחים',cv.opening));
-    if(cv.followups.length){c.appendChild(el('p','rrow')).appendChild(el('b',null,'שאלות המשך:'));const ul=el('ul','tl');cv.followups.forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));ul.appendChild(li);});c.appendChild(ul);}
-    put(c,row('מסיימים',cv.closing),lensEl(cv.lens));doc.appendChild(c);
+    doc.appendChild(ktable(null,[['עם מי',txt(cv.with)],['המטרה',txt(cv.goal)],['איפה ומתי',txt(cv.setting)],['פותחים',sayEl(cv.opening)],['שאלות המשך',cv.followups.length?ul(cv.followups):null],['מסיימים',txt(cv.closing)],['לחוסן החברתי',txt(cv.lens)]].filter(r=>r[1]),'k2'));
   }
   // מנגנון
   const mc=d.mechanism;
   if(mc){
-    doc.appendChild(el('h3',null,'מה ממשיך אחרי המפגש — מנגנון חוזר'));
-    const c=el('div','rcard');if(mc.title)c.appendChild(el('p','rcard-t',mc.title));
-    put(c,row('מה קורה',mc.what),row('מי מוביל/ה',mc.who),row('באיזה קצב',mc.rhythm),row('איך יודעים שזה פועל',mc.sign),lensEl(mc.lens),basisEl(mc.basis));doc.appendChild(c);
+    doc.appendChild(el('h3',null,'מה ממשיך אחרי המפגש — מנגנון חוזר'+(mc.title?': '+mc.title:'')));
+    doc.appendChild(ktable(null,[['מה קורה',txt(mc.what)],['מי מוביל/ה',txt(mc.who)],['באיזה קצב',txt(mc.rhythm)],['איך יודעים שזה פועל',txt(mc.sign)],['לחוסן החברתי',lensTxt(mc.lens,mc.basis)]].filter(r=>r[1]),'k2'));
   }
   // חששות ושאלות
   if(d.worries.length){
     doc.appendChild(el('h3',null,'על מה שמדאיג אותך'));
-    d.worries.forEach(w=>{const c=el('div','rcard');c.appendChild(el('p','rcard-t',w.worry));c.appendChild(richText(w.answer));doc.appendChild(c);});
+    doc.appendChild(ktable(null,d.worries.map(w=>[w.worry,richText(w.answer)]),'k2'));
   }
   if(d.answers.length){
     doc.appendChild(el('h3',null,'תשובה לשאלה שלך'));
-    d.answers.forEach(a=>{const c=el('div','rcard');c.appendChild(el('p','rcard-t',a.question));c.appendChild(richText(a.answer));doc.appendChild(c);});
+    doc.appendChild(ktable(null,d.answers.map(x=>[x.question,richText(x.answer)]),'k2'));
   }
   // כרטיס כיס ורפלקציה
   if(d.pocket.length){
@@ -548,12 +563,12 @@ function renderGuide(){
   doc.appendChild(el('p','muted','ננה מציעה, ואת/ה מחליט/ה: המדריך הוא נקודת פתיחה שמתאימים לקבוצה שלך. המקורות — בקישורים שבסוגריים.'));
   card.appendChild(window.SBE_DOC?SBE_DOC.editable(doc):doc);
   g.appendChild(card);
-  pr.addEventListener('click',()=>SBE_DOC.print({title:'מדריך הנחיה — ננה',subtitle:subtitle(R),node:doc}));
+  pr.addEventListener('click',()=>SBE_DOC.print({landscape:true,title:'מדריך הנחיה — ננה',subtitle:subtitle(R),node:doc}));
   pk.addEventListener('click',()=>SBE_DOC.print({title:'כרטיס כיס — ננה',subtitle:subtitle(R),node:pocketNode(d)}));
   nw.addEventListener('click',()=>{if(!confirm('להתחיל מדריך חדש? המדריך הנוכחי והשיחות יימחקו מהמכשיר. הטופס נשאר.'))return;
     STATE.report=null;STATE.chat=[];STATE.practice=null;STATE.after=null;save();renderGuide();renderMore();F('form-card').scrollIntoView({behavior:'smooth'});});
 }
-// כרטיס כיס: מה שצריך ביד בזמן המפגש — עמדה, תזכורות, שאלות, ומשפט אחד לכל רגע קשה
+// כרטיס כיס: מה שכדאי שיהיה ביד בזמן המפגש — עמדה, תזכורות, שאלות, ומשפט אחד לכל רגע קשה
 function pocketNode(d){
   const box=el('div');
   if(d.stance.to){const p=el('p','say');p.appendChild(el('b',null,'העמדה: '));p.appendChild(document.createTextNode(d.stance.to));box.appendChild(p);}
@@ -596,7 +611,17 @@ function renderPractice(){
   const P=STATE.practice,log=F('pr-log');log.textContent='';F('pr-reply').hidden=!P;
   if(!P)return;
   log.appendChild(el('p','muted','תרגול: '+P.moment));
-  P.msgs.forEach((m,i)=>{if(i===0)return;log.appendChild(m.role==='user'?bubble('me',m.content):bubble(/משוב מננה/.test(m.content)?'bot':'group',m.content,/משוב מננה/.test(m.content)?'ננה':'הקבוצה'));});
+  P.msgs.forEach((m,i)=>{if(i===0)return;
+    // משוב מננה בסוף התרגול — טבלה (חלק בכל שורה) והדפסה עם השיחה (07/10/2026, "קו אחיד")
+    if(m.role!=='user'&&/משוב מננה/.test(m.content)){const parts=m.content.split(/\*\*משוב מננה\*\*[:：]?/);
+      if(parts[0].trim())log.appendChild(bubble('group',parts[0],'הקבוצה'));
+      const fb=(parts[1]||m.content).trim(),c=el('div','rcard');c.appendChild(el('p','rcard-t','משוב מננה'));c.appendChild(SBE_DOC.sections(fb)||richText(fb));log.appendChild(c);
+      const b=el('button','btn btn-ghost btn-sm','🖨 הדפסה / PDF');b.type='button';b.style.marginTop='.4rem';
+      b.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h4',null,'המשוב'));n.appendChild(SBE_DOC.sections(fb)||richText(fb));n.appendChild(el('h4',null,'השיחה'));
+        n.appendChild(SBE_DOC.table(P.msgs.slice(1,i).map(x=>[x.role==='user'?'אני':'הקבוצה',richText(x.content)])));
+        SBE_DOC.print({title:'תרגול רגע מאתגר — ננה',subtitle:P.moment,node:n});});
+      log.appendChild(b);return;}
+    log.appendChild(m.role==='user'?bubble('me',m.content):bubble('group',m.content,'הקבוצה'));});
   if(P.done)F('pr-reply').hidden=true;
 }
 async function practiceTurn(text){
@@ -616,9 +641,9 @@ F('pr-go').addEventListener('click',()=>{const t=F('pr-in').value.trim();if(!t)r
 F('pr-end').addEventListener('click',()=>practiceTurn('סיום תרגול'));
 
 function renderAfter(){const o=F('af-out');o.textContent='';const A=STATE.after;if(!A||!A.answer)return;
-  const c=el('div','rcard');c.appendChild(el('p','rcard-t','משוב מננה · '+fmtDate(A.at)));c.appendChild(richText(A.answer));o.appendChild(c);
+  const c=el('div','rcard');c.appendChild(el('p','rcard-t','משוב מננה · '+fmtDate(A.at)));c.appendChild(SBE_DOC.sections(A.answer)||richText(A.answer));o.appendChild(c);
   const b=el('button','btn btn-ghost btn-sm','🖨 הדפסה / PDF');b.type='button';b.style.marginTop='.4rem';
-  b.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h4',null,'מה קרה במפגש'));n.appendChild(richText(A.text));n.appendChild(el('h4',null,'משוב מננה'));n.appendChild(richText(A.answer));
+  b.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h4',null,'מה קרה במפגש'));n.appendChild(richText(A.text));n.appendChild(el('h4',null,'משוב מננה'));n.appendChild(SBE_DOC.sections(A.answer)||richText(A.answer));
     SBE_DOC.print({title:'רפלקציה אחרי המפגש — ננה',subtitle:STATE.report?subtitle(STATE.report):'',node:n});});
   o.appendChild(b);}
 F('af-go').addEventListener('click',async()=>{
@@ -638,7 +663,7 @@ F('btn-example').addEventListener('click',()=>{
     'f-about':'כיתה ח׳. יש כמה תלמידים שקטים מאוד ושלושה שמדברים כל הזמן. לאחרונה היה ריב בקבוצת הווטסאפ של הכיתה, ושתי תלמידות לא מדברות זו עם זו.',
     'f-topic':'איך אנחנו מדברים זה עם זה — בכיתה וברשת','f-goal':'שהתלמידים ינסחו יחד הסכמות לשיחה מכבדת, שישמעו גם את השקטים, ושהכיתה תחליט על דרך קבועה לפתור מחלוקות.',
     'f-sit':'קונפליקט או מתח בקבוצה','f-duration':'שיעור (45 דקות)','f-space':'כיתה בשורות — אפשר להזיז','f-exp':'הנחיתי קצת',
-    'f-worry':'שהריב יתפרץ שוב באמצע השיעור ושאני לא אדע איך לעצור בלי להיות "המורה שצועקת".','f-question':''};
+    'f-worry':'שהריב יתפרץ שוב באמצע השיעור ושאני לא אדע איך לעצור בלי להרים את הקול.','f-question':''};
   Object.keys(v).forEach(k=>{if(LISTS[k])LISTS[k].ensure(v[k]);F(k).value=v[k];F(k).classList.remove('miss');});F('form-err').hidden=true;setHabits(['answer','judge','conflict']);save();
 });
 F('btn-clear').addEventListener('click',()=>{if(!confirm('לנקות את הטופס?'))return;FIELDS.forEach(k=>{F(k).value='';});setHabits([]);save();});
@@ -646,5 +671,6 @@ F('btn-clear').addEventListener('click',()=>{if(!confirm('לנקות את הטו
 load();renderGuide();renderMore();
 })();
 </script>
+<script src="lib/demo-hook.js"></script>
 </body>
 </html>

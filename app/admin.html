@@ -554,7 +554,7 @@ function pHome(){
     card(H.crit, "קריטריונים לאישור", "הצעות מהקהילה למשוב לעבודות", toTab("crit"), true),
     card(H.renew, "בקשות חידוש ורכישה", "מוסדות שביקשו לחדש או להצטרף", toTab("insts"), true),
     card(H.expiring, "מנויים שמסתיימים", "בקרוב, בתקופת חסד או שהסתיימו", toTab("insts"), true),
-    card(H.noSystems, "מוסדות בלי מערכות פתוחות", "צריך לבחור להם מה פתוח", toTab("insts"), false),
+    card(H.noSystems, "מוסדות בלי מערכות פתוחות", "אפשר לבחור להם מה פתוח", toTab("insts"), false),
     card(H.inbox, "פניות", "רעיונות, תקלות ושאלות שנשלחו", toTab("inbox"), false));
   w.append(grid);
   const quick = el("div",{class:"card"});
@@ -664,7 +664,7 @@ function pFeedback(){
     const c = el("div",{class:"card"});
     c.append(el("h3",{}, "שאלון " + FB.ROLE_LABEL[role], el("em",{}, n + " בברירת המחדל · " + total + " מדדים בבנק")));
     const inn = el("div",{class:"in"});
-    if (!FB.valid(n)) inn.append(el("div",{class:"note"}, "ברירת המחדל צריכה לכלול " + FB.MIN + "–" + FB.MAX + " מדדים, כדי שהמנחה תוכל לפתוח סדנה בלי לשנות דבר."));
+    if (!FB.valid(n)) inn.append(el("div",{class:"note"}, "בברירת המחדל אפשר לבחור " + FB.MIN + "–" + FB.MAX + " מדדים, כדי שהמנחה תוכל לפתוח סדנה בלי לשנות דבר."));
     const full = n >= FB.MAX;
     FB.grouped(role, bank).forEach(({ g, items })=>{
       inn.append(el("div",{style:"font-size:12.5px;font-weight:700;color:var(--muted);margin:12px 0 4px"}, g));
@@ -750,7 +750,7 @@ function pInsts(){
         el("span",{}, "עד " + fmt(x.subEnd) + (x.sub.state === "warn" ? " · עוד " + x.sub.daysLeft + " ימים" : x.sub.state === "grace" ? " · חסד עד " + fmt(x.sub.graceEnd) : ""))),
         el("span",{class:"pill " + k}, l));
       const r = el("button",{class:"act p"},"חידוש לשנה");
-      r.addEventListener("click", () => act("renewSubscription", { name: x.name, months: 12 }));
+      r.addEventListener("click", () => ask("חידוש המנוי של " + x.name + " לשנה", "לפני החידוש: וידאת שהתשלום התקבל, ושהמערכות הפתוחות למוסד מתאימות לתשלום? (המערכות נבדקות ב\"מערכות פתוחות\" שבתוך המוסד.)", () => act("renewSubscription", { name: x.name, months: 12 })));
       line.append(r); inn.append(line);
     });
     c.append(inn); w.append(c);
@@ -766,46 +766,130 @@ function pInsts(){
     const open = (d.requests || []).filter(q => !q.done);
     if (!open.length) return;
     rc.hidden = false;
-    const PER = { year:"שנה", half:"חצי שנה", other:"אחר" };
+    // בדיקה לפני אישור (07/10/2026): הטופס ציבורי — כל אחד/ת יכול/ה לכתוב שם של מוסד קיים ולסמן כל מערכת.
+    // לכן שום דבר לא נפתח מהבקשה עצמה. פותחים את הבקשה, מוודאים בשיחה מי פנה ומה הבקשה, מוודאים תשלום,
+    // ובוחרים בעצמך את המערכות שמתאימות לתשלום. רק אז "אישור ופתיחה" (renewApprove בשרת בודק את כל אלה שוב).
+    const PER = { year:"שנה", half:"חצי שנה" };
+    const z2 = n => String(n).padStart(2, "0");
+    const ilDate = s => { const t = new Date(s); return z2(t.getDate()) + "." + z2(t.getMonth() + 1) + "." + String(t.getFullYear()).slice(2) + ", " + z2(t.getHours()) + ":" + z2(t.getMinutes()); };
     open.forEach(q => {
-      const when = new Date(q.at).toLocaleString("he-IL", { dateStyle:"short", timeStyle:"short" });
       const sysNames = [...new Set((q.systems || []).map(p => p === "lecturer" ? "academic" : p))].map(p => MOD_LABELS[p] ? MOD_LABELS[p].replace(/ \(.*\)$/, "") : p);
       const box = el("div",{class:"inst"});
+      const typed = q.instTyped || q.inst || "—";
       box.append(el("div",{class:"irow"},
-        el("span",{class:"nm"}, el("b",{}, q.inst || q.instTyped || "—"),
-          el("span",{}, when + " · " + (PER[q.period] || "שנה") + (q.inst ? "" : (q.type === "new" ? " · מוסד חדש" : " · המוסד לא זוהה (נכתב: " + (q.instTyped || "") + ")")))),
-        el("span",{class:"pill " + (q.type === "new" ? "ok" : "warn")}, q.type === "new" ? "רכישה חדשה" : "חידוש"),
-        el("span",{class:"pill warn"},"ממתין לשיחה")));
+        el("span",{class:"nm"}, el("b",{}, typed),
+          el("span",{}, ilDate(q.at) + " · ביקשו: " + (PER[q.period] || "שנה"))),
+        el("span",{class:"pill warn"}, q.type === "new" ? "לפי הטופס: רכישה חדשה" : "לפי הטופס: חידוש"),
+        el("span",{class:"pill danger"},"ממתין לבדיקה")));
       box.append(el("div",{class:"icodes"},
         el("b",{}, q.fullName || q.name || ""), " · ",
         el("a",{href:"tel:" + (q.phone || q.contact || ""), style:"direction:ltr;unicode-bidi:isolate"}, String(q.phone || q.contact || "").replace(/^(05\d)(\d{7})$/, "$1-$2")), " · ",
         q.email ? el("a",{href:"mailto:" + q.email, style:"direction:ltr;unicode-bidi:isolate"}, q.email) : ""));
-      if (sysNames.length || q.other) box.append(el("div",{class:"icodes"}, "מערכות: " + sysNames.concat(q.other ? ["אחר: " + q.other] : []).join(", ")));
+      if (sysNames.length || q.other) box.append(el("div",{class:"icodes"}, "סומנו בטופס: " + sysNames.concat(q.other ? ["אחר: " + q.other] : []).join(", ")));
+
       const acts = el("div",{class:"iacts"});
-      if (q.inst) {
-        const renew = el("button",{class:"act p"}, "חידוש ל" + (q.period === "half" ? "חצי שנה" : "שנה") + " וסגירה");
-        renew.addEventListener("click", async () => {
-          try { await accessCall("renewSubscription", { name: q.inst, months: q.period === "half" ? 6 : 12 }); await accessCall("renewDone", { id: q.id }); instList = null; render(); }
-          catch (e) { accessFail(e); }
-        });
-        const apply = el("button",{class:"act"},"פתיחת המערכות שביקשו");
-        apply.title = "מוסיף למערכות הפתוחות של המוסד את מה שסומן בבקשה";
-        apply.addEventListener("click", () => accessCall("renewApplySystems", { id: q.id })
-          .then(() => { apply.textContent = "נפתחו ✓"; apply.disabled = true; }).catch(accessFail));
-        acts.append(renew, apply);
+      const bOpen = el("button",{class:"act p"},"פתיחת הבקשה לבדיקה");
+      const done = el("button",{class:"act"},"סגירה בלי פתיחה");
+      done.addEventListener("click", () => ask("סגירת הבקשה בלי פתיחה", "הבקשה תיסגר, ושום מערכת או מנוי לא ייפתחו. אפשר תמיד לפתוח ידנית מתוך המוסד.",
+        () => accessCall("renewDone", { id: q.id }).then(() => render()).catch(accessFail)));
+      acts.append(bOpen, done); box.append(acts);
+
+      // ── טופס הבדיקה ──
+      const rv = el("div",{class:"isec", style:"margin-top:8px"}); rv.hidden = true;
+      bOpen.addEventListener("click", () => { rv.hidden = !rv.hidden; bOpen.textContent = rv.hidden ? "פתיחת הבקשה לבדיקה" : "סגירת הבדיקה"; });
+      const step = (n, t) => el("h4",{}, n + ". " + t);
+      const radio = (name, v, label) => { const i = el("input",{type:"radio", name, value:v}); return [el("label",{style:"display:inline-flex;gap:6px;align-items:center;margin-inline-end:14px"}, i, label), i]; };
+      const nm = "rk-" + q.id;
+
+      // 1. סוג הבקשה — ההחלטה שלך, לא מה שסומן בטופס
+      rv.append(step(1, "מה הבקשה? (לפי השיחה עם הפונה)"));
+      const [lN, rN] = radio(nm, "new", "פנייה חדשה — מוסד חדש");
+      const [lR, rR] = radio(nm, "renew", "חידוש — מוסד קיים");
+      const [lO, rO] = radio(nm, "other", "משהו אחר");
+      rv.append(el("div",{}, lN, lR, lO));
+
+      // 2. המוסד
+      const instWrap = el("div",{style:"margin:6px 0"});
+      const selInst = el("select",{style:"min-width:220px"});
+      selInst.append(el("option",{value:""},"— בחרי את המוסד —"));
+      instList.slice().sort((a, b) => a.name.localeCompare(b.name, "he")).forEach(x => selInst.append(el("option",{value:x.name}, x.name)));
+      const newName = el("input",{placeholder:"שם המוסד החדש", value: q.instTyped || "", style:"min-width:220px"});
+      const instNote = el("p",{class:"hint"});
+      const curOpen = el("p",{class:"hint"});
+      instWrap.append(selInst, newName, instNote, curOpen);
+      rv.append(step(2, "המוסד"), instWrap);
+
+      // 3. זהות הפונה
+      const cbWho = el("input",{type:"checkbox"});
+      rv.append(step(3, "מי פנה/תה"), el("label",{style:"display:flex;gap:8px;align-items:center"}, cbWho,
+        "דיברתי עם " + (q.fullName || "הפונה") + " ווידאתי שהוא/היא מוסמך/ת לבקש בשם המוסד"));
+
+      // 4. תשלום
+      const cbPaid = el("input",{type:"checkbox"});
+      const payRef = el("input",{placeholder:"אסמכתה — מספר קבלה / חשבונית / העברה", maxlength:"60", style:"min-width:260px"});
+      rv.append(step(4, "תשלום"), el("label",{style:"display:flex;gap:8px;align-items:center"}, cbPaid, "וידאתי שהתשלום התקבל"), payRef);
+
+      // 5. תקופה
+      const pn = "rp-" + q.id;
+      const [lY, rY] = radio(pn, "12", "שנה"); const [lH, rH] = radio(pn, "6", "חצי שנה");
+      rv.append(step(5, "תקופת המנוי — לפי התשלום"), el("div",{}, lY, lH));
+
+      // 6. המערכות — את בוחרת לפי התשלום; שום דבר לא מסומן מראש
+      const asked = new Set(q.systems || []);
+      const sysBox = el("div",{style:"display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px"});
+      const sysCbs = {};
+      Object.keys(MOD_LABELS).forEach(p => {
+        const c = el("input",{type:"checkbox"}); sysCbs[p] = c;
+        sysBox.append(el("label",{style:"display:flex;gap:6px;align-items:center;font-size:14px"}, c, MOD_LABELS[p] + (asked.has(p) ? " · סומן בטופס" : "")));
+      });
+      rv.append(step(6, "המערכות שייפתחו — רק מה ששולם"), el("p",{class:"hint"}, "שום מערכת לא מסומנת מראש. מה שתסמני כאן הוא בדיוק מה שיהיה פתוח למוסד אחרי האישור (גם בחידוש)."), sysBox);
+
+      const err = el("p",{class:"hint", style:"color:var(--brick);font-weight:600"});
+      const bOk = el("button",{class:"act p", disabled:""},"אישור ופתיחה");
+      const bOther = el("button",{class:"act"},"טיפלתי ידנית — סגירה");
+      bOther.hidden = true;
+      rv.append(el("div",{class:"iacts", style:"margin-top:8px"}, bOk, bOther), err);
+
+      const kind = () => rN.checked ? "new" : rR.checked ? "renew" : rO.checked ? "other" : "";
+      const chosen = () => Object.keys(sysCbs).filter(p => sysCbs[p].checked);
+      const months = () => rY.checked ? 12 : rH.checked ? 6 : 0;
+      function sync() {
+        const k = kind();
+        selInst.hidden = k !== "renew"; newName.hidden = k !== "new";
+        instNote.textContent = k === "renew" ? (q.inst ? "בטופס נכתב \"" + typed + "\" — כדאי לוודא בשיחה שזה אכן המוסד." : "בטופס נכתב \"" + typed + "\", והשם לא זוהה כמוסד קיים. בחרי את המוסד הנכון.")
+          : k === "new" ? (instList.some(x => x.name === newName.value.trim()) ? "⚠ מוסד בשם הזה כבר קיים — אם זה אותו מוסד, בחרי \"חידוש\"." : "המוסד ייפתח כמוסד חדש. אחר כך מפיקים קוד למנהל/ת המוסד.")
+          : k === "other" ? "בקשה שאינה פתיחה או חידוש — מטפלים ידנית, ואז סוגרים את הבקשה." : "";
+        const x = instList.find(i => i.name === selInst.value);
+        curOpen.textContent = k === "renew" && x ? "פתוחות היום: " + ((x.open || []).map(p => MOD_LABELS[p] || p).join(", ") || "אין") + (x.subEnd ? " · מנוי עד " + fmt(x.subEnd) : "") : "";
+        [cbWho, cbPaid, payRef, rY, rH].concat(Object.values(sysCbs)).forEach(n => n.disabled = k === "other");
+        bOther.hidden = k !== "other"; bOk.hidden = k === "other";
+        const instOk = k === "renew" ? !!selInst.value : k === "new" ? !!newName.value.trim() && !instList.some(i => i.name === newName.value.trim()) : false;
+        const missing = [];
+        if (!k) missing.push("סוג הבקשה");
+        else if (!instOk) missing.push("המוסד");
+        if (!cbWho.checked) missing.push("וידוא הפונה");
+        if (!cbPaid.checked || payRef.value.trim().length < 2) missing.push("וידוא התשלום ואסמכתה");
+        if (!months()) missing.push("תקופה");
+        if (!chosen().length) missing.push("מערכות");
+        bOk.disabled = k === "other" || missing.length > 0;
+        err.textContent = k === "other" || !missing.length ? "" : "כדי לאשר, חסר: " + missing.join(", ") + ".";
       }
-      if (!q.inst) {
-        const create = el("button",{class:"act p"}, "פתיחת המוסד (" + (q.period === "half" ? "חצי שנה" : "שנה") + ") וסגירה");
-        create.title = "פותח את \"" + (q.instTyped || "") + "\" כמוסד חדש, עם המערכות שביקשו ומנוי לתקופה שביקשו. אחר כך מפיקים קוד למנהל/ת המוסד.";
-        create.addEventListener("click", () => ask("פתיחת " + (q.instTyped || "") + " כמוסד חדש",
-          "המוסד ייפתח עם המערכות שסומנו בבקשה ומנוי ל" + (q.period === "half" ? "חצי שנה" : "שנה") + ". אם בחרו \"אחר\", את המערכות הנוספות פותחים ב\"מערכות פתוחות\". אחר כך מפיקים קוד למנהל/ת המוסד.",
-          () => accessCall("renewCreateInst", { id: q.id }).then(() => { instList = null; render(); }).catch(accessFail)));
-        acts.append(create);
-      }
-      const done = el("button",{class:"act"},"סגירה בלי חידוש");
-      done.addEventListener("click", () => accessCall("renewDone", { id: q.id }).then(() => render()).catch(accessFail));
-      acts.append(done);
-      box.append(acts);
+      if (q.inst) selInst.value = q.inst;
+      rv.addEventListener("input", sync); rv.addEventListener("change", sync); sync();
+
+      bOk.addEventListener("click", () => {
+        const k = kind(), name = k === "renew" ? selInst.value : newName.value.trim();
+        const list = chosen().map(p => MOD_LABELS[p] || p).join(", ");
+        ask((k === "new" ? "פתיחת " : "חידוש ") + name,
+          "מנוי ל" + (months() === 6 ? "חצי שנה" : "שנה") + ". המערכות שיהיו פתוחות למוסד: " + list + ". אסמכתה: " + payRef.value.trim() + ".",
+          () => accessCall("renewApprove", { id: q.id, kind: k, inst: k === "renew" ? name : "", instName: k === "new" ? name : "",
+              verified: cbWho.checked, paid: cbPaid.checked, payRef: payRef.value.trim(), months: months(), systems: chosen() })
+            .then(() => { instList = null; render(); }).catch(accessFail));
+      });
+      bOther.addEventListener("click", () => ask("סגירת הבקשה", "טיפלת בבקשה ידנית. הבקשה תיסגר, ושום דבר לא ייפתח אוטומטית.",
+        () => accessCall("renewDone", { id: q.id, note: "אחר — טופל ידנית" }).then(() => render()).catch(accessFail)));
+
+      box.append(rv);
       rin.append(box);
     });
   }).catch(() => { rin.textContent = "לא הצלחתי לטעון את הבקשות."; });
@@ -857,7 +941,7 @@ function pInsts(){
     const s2 = el("section",{class:"isec"}, el("h4",{},"2. מנוי"),
       el("p",{style:"margin:0"}, x.subEnd ? "בתוקף עד " + fmt(x.subEnd) : "ללא תאריך סיום"));
     const bRenew = el("button",{class:"act p"},"חידוש לשנה");
-    bRenew.addEventListener("click", () => act("renewSubscription", { name: x.name, months: 12 }));
+    bRenew.addEventListener("click", () => ask("חידוש המנוי של " + x.name + " לשנה", "לפני החידוש: וידאת שהתשלום התקבל, ושהמערכות הפתוחות למוסד מתאימות לתשלום? (המערכות נבדקות ב\"מערכות פתוחות\" שבתוך המוסד.)", () => act("renewSubscription", { name: x.name, months: 12 })));
     const bDate = el("button",{class:"act"},"שינוי תאריך");
     bDate.addEventListener("click", () => openSubDlg(x, act));
     s2.append(el("div",{class:"btnrow"}, bRenew, bDate));
@@ -1004,7 +1088,7 @@ function renderCommunityRows(lib, loadFn, saveFn, groupKey, filterFn){
 function pTaxonomies(){
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"רשימות"), el("p",{class:"sub"},
-    "מיומנויות, רגשות וצרכים — אוצר המילים הקבוע שנפתח כאפשרויות בחירה בזמן יצירת תרחיש. הניסוח חייב להישאר זהה בין מוסדות כדי לאפשר הצלבת נתוני מחקר."));
+    "מיומנויות, רגשות וצרכים — אוצר המילים הקבוע שנפתח כאפשרויות בחירה בזמן יצירת תרחיש. הניסוח נשאר זהה בין מוסדות כדי לאפשר הצלבת נתוני מחקר."));
 
   const unseenNow = countUnseenAdditions();
   w.append(el("div",{class:"note"},
@@ -1137,7 +1221,7 @@ function pLibs(){
 
   w.append(el("div",{class:"lock"},
     el("b",{},"למה מקור טעון אישור, בניגוד לשאלת משוב. "),
-    "המערכת לעולם לא כותבת מקור מעצמה — כל מקור חייב להיבדק שהוא באמת קיים ומצוטט נכון לפני שהוא זמין למודל לבחור ממנו. שאלת משוב היא רק ניסוח, ולכן נפתחת מיידית."));
+    "המערכת לעולם לא כותבת מקור מעצמה — כל מקור נבדק שהוא באמת קיים ומצוטט נכון לפני שהוא זמין למודל לבחור ממנו. שאלת משוב היא רק ניסוח, ולכן נפתחת מיידית."));
 
   const pending = loadSuggestions().filter(s => s.status === "pending");
   if (pending.length) {
@@ -1701,7 +1785,7 @@ function pAccess(){
     bSet.addEventListener("click", () => {
       const a = p1.value.replace(/[‎‏؜]/g, "").trim(), b = p2.value.replace(/[‎‏؜]/g, "").trim();
       msg.hidden = true;
-      if (a.length < 8) { msg.textContent = "הסיסמה צריכה להיות באורך 8 תווים לפחות."; msg.hidden = false; return; }
+      if (a.length < 8) { msg.textContent = "אפשר לבחור סיסמה באורך 8 תווים לפחות."; msg.hidden = false; return; }
       if (a !== b) { msg.textContent = "שתי ההקלדות לא זהות."; msg.hidden = false; return; }
       ask("החלפת סיסמת " + LABELS[kind],
         "הסיסמה הקודמת תפסיק לעבוד מיד. שמרי את החדשה במקום בטוח — אי אפשר לשחזר אותה, רק להחליף שוב.",
@@ -1720,7 +1804,7 @@ function pAccess(){
 
   w.append(c2, c1, el("div",{class:"note"},
     el("b",{},"טוב לדעת. "),
-    "הסיסמאות נשמרות בשרת באופן מוצפן, ולכן גם כאן אי אפשר לראות אותן — רק להחליף. את קוד המשוב לעבודות אפשר לראות, כי צריך למסור אותו."));
+    "הסיסמאות נשמרות בשרת באופן מוצפן, ולכן גם כאן אי אפשר לראות אותן — רק להחליף. את קוד המשוב לעבודות אפשר לראות, כי מוסרים אותו לסטודנטים."));
   return w;
 }
 
@@ -1779,7 +1863,7 @@ function openPersonalDlg(x) {
   const out = el("div",{style:"margin-top:12px"}); body.append(out);
   ok.onclick = async () => {
     const perms = open.filter(p => cbs[p].checked);
-    if (!perms.length) { out.textContent = "צריך לסמן לפחות מערכת אחת."; return; }
+    if (!perms.length) { out.textContent = "כדי להמשיך, סמנו לפחות מערכת אחת."; return; }
     ok.disabled = true; out.textContent = "מפיקה... (לפעמים עד דקה)";
     try {
       const r = await accessCall("codeCreate", { kind: "staff", inst: x.name, perms, label: name.value.trim(),
@@ -1813,7 +1897,7 @@ function openModDlg(instName) {
         "לא הצלחתי לטעון את ההגדרות השמורות מהשרת — מוצג כאן \"הכול כבוי\". שמירה תחליף את מה ששמור."));
 
       const note = el("p",{style:"margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.6"},
-        "התקרה של המוסד: רק מה שמסומן כאן מנהל/ת המוסד יכול/ה לתת לצוות. ברירת מחדל: הכול כבוי — מסמנים רק את מה שהמוסד צריך.");
+        "התקרה של המוסד: רק מה שמסומן כאן מנהל/ת המוסד יכול/ה לתת לצוות. ברירת מחדל: הכול כבוי — מסמנים רק את מה שהמוסד רוצה.");
       body.append(note);
 
       const toggles = {};
@@ -2040,7 +2124,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }

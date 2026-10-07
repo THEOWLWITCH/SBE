@@ -93,7 +93,8 @@ test('F07: OpenAI preserves ordered history, system, files and forced tools thro
     files: [{ name: 'brief.pdf', mediaType: 'application/pdf', data: 'cGRm' }],
     tools: [{ name: 'report_turn', description: 'Reports', input_schema: { type: 'object', properties: { turn: { type: 'number' } }, required: ['turn'] } }],
     toolChoice: { type: 'tool', name: 'report_turn' }, variation: 'medium', maxTokens: 100 });
-  assert.equal(request.body.instructions, 'system separated');
+  assert.ok(request.body.instructions.startsWith('system separated'));assert.match(request.body.instructions,/שפה של הזמנה/);
+  assert.match(request.body.instructions,/בחירה, החלטה, שלבים ואחריות/);assert.match(request.body.instructions,/אי־שיפוטיות/);
   assert.equal(request.body.input[0].content[0].text, 'first');
   assert.equal(request.body.input[1].type, 'function_call');
   assert.equal(request.body.input[2].type, 'function_call_output');
@@ -115,7 +116,7 @@ test('Anthropic keeps adaptive thinking and prompt calls, including normalized f
   assert.deepEqual(captured[0].body.messages, [{ role: 'user', content: [{ type: 'text', text: 'old prompt' }] }]);
   assert.deepEqual(captured[0].body.thinking, { type: 'adaptive' });
   assert.deepEqual(captured[0].body.output_config, { effort: 'xhigh' });
-  assert.equal(captured[0].body.system, 'separate');
+  assert.ok(captured[0].body.system.startsWith('separate'));assert.match(captured[0].body.system,/שפה של הזמנה/);
   assert.equal(promptResult.usage.totalTokens, 5);
   await p.complete({ messages: [{ role: 'user', content: 'read' }], files: [
     { name: 'brief.pdf', mediaType: 'application/pdf', data: 'cGRm' },

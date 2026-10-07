@@ -1,4 +1,8 @@
 // מתאם ספקים. הלוגיקה למעלה לא יודעת מול מי היא מדברת.
+import { createRequire } from 'node:module';
+// שפה של הזמנה, לא של חובה — כלל של Begood לכל קריאה למודל (מקור אמת: app/lib/invite-language.js)
+const INVITE = createRequire(import.meta.url)('../../app/lib/invite-language.js');
+export const applyProductPolicy = system => INVITE.apply(system);
 // עוצמת הווריאציה מופשטת: כל ספק ממפה אותה אחרת.
 
 const VARIATION = {
@@ -403,7 +407,7 @@ export function getProvider(name, { apiKey: injectedKey, model: configuredModel,
     model: configuredModel || process.env.MODEL || p.defaultModel,
     get maxOutputTokens() { return p.id === 'openai' && /^gpt-4\.1(?:-|$)/.test(this.model) ? 32768 : 64000; },
     async complete(opts = {}) {
-      const request = normalizeRequest(opts), signal = opts.signal;
+      const request = normalizeRequest({...opts,system:applyProductPolicy(opts.system)}), signal = opts.signal;
       const model = opts.model || this.model;
       if (typeof model !== 'string' || !model.trim()) throw configurationError('model חסר');
       if (signal?.aborted) throw new ProviderError('הבקשה בוטלה', { code: 'aborted' });

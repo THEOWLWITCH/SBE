@@ -7,7 +7,7 @@ const id='art-11111111-1111-1111-1111-111111111111';
 const approved=()=>({artifactId:id,version:3,observations:[],content:{scenario:{name:'תרחיש סינתטי'},purpose:'בחירה משותפת',resilienceComponents:['שייכות'],individualSkills:['הקשבה'],sharedSkills:['תכנון יחד'],
   facilitatorGuide:'פותחים בהצעה להשתתף.',socialMechanism:'נבחר בירור שבועי.',steps:[{id:'one',title:'פתיחה',instructions:'מציעים בחירה.',minutes:3}]}});
 function fixture(fetcher,query='?artifactId='+id+'&version=3') {
-  const elements=[],calls=[];let serial=0;
+  const elements=[],calls=[],prints=[];let serial=0;
   class Element {
     constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.attrs={};this.style={};this.value='';elements.push(this);}
     append(...items){this.children.push(...items);}
@@ -23,13 +23,24 @@ function fixture(fetcher,query='?artifactId='+id+'&version=3') {
   const document={querySelector:()=>wrap,getElementById:name=>name==='composerBar'?composer:name==='scenarioName'?header:name==='scenarioSubtitle'?subtitle:null,
     createElement:tag=>new Element(tag)};
   vm.runInNewContext(script,{document,location:{search:query},URLSearchParams,crypto:{randomUUID:()=> 'observation-'+(++serial)},
-    window:{sbeAIOrigin:()=> 'http://localhost:fixture',sbeAIHeaders:()=> ({authorization:'Bearer synthetic'})},
+    window:{sbeAIOrigin:()=> 'http://localhost:fixture',sbeAIHeaders:()=> ({authorization:'Bearer synthetic'}),SBE_DOC:{print:out=>prints.push(out)}},
     fetch:async(url,options)=>{const body=JSON.parse(options.body);calls.push({url,body,headers:options.headers});return fetcher(body);}});
-  return {elements,calls,wrap,header,subtitle,banner};
+  return {elements,calls,prints,wrap,header,subtitle,banner};
 }
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const response=value=>({ok:true,json:async()=>structuredClone(value)});
 const textOf=node=>[node.textContent||'',...node.children.map(textOf)].join(' ');
+test('print uses approved tables, treats markup as text and excludes private observations and unsaved form values',async()=>{
+  const saved=approved();saved.content.facilitatorGuide='<img src=x onerror=alert(1)>';saved.observations=[{id:'old',observation:'private observation',chosenNextStep:'private choice'}];
+  const {elements,prints}=fixture(async()=>response(saved));await tick();
+  elements.find(item=>item.tagName==='TEXTAREA').value='unsaved private observation';
+  elements.find(item=>item.tagName==='BUTTON'&&item.textContent==='הדפסת הגרסה שאושרה').listeners.click();
+  assert.equal(prints.length,1);assert.equal(prints[0].subtitle,'גרסה מאושרת 3');assert.equal(prints[0].inline,true);
+  const tables=prints[0].node.children.filter(item=>item.tagName==='TABLE');assert.equal(tables.length,2);
+  assert.equal(tables[0].children[1].children.length,6);assert.equal(tables[1].children[1].children.length,1);
+  const printed=textOf(prints[0].node);assert.ok(printed.includes('<img src=x onerror=alert(1)>'));assert.ok(printed.includes('מציעים בחירה.'));
+  assert.ok(!printed.includes('private'));assert.ok(!elements.some(item=>item.tagName==='IMG'));
+});
 test('approved rehearsal fetches the exact version, shows its explanations and reopens its observations without generation',async()=>{
   const saved=approved();saved.observations=[{id:'old',version:3,observation:'תצפית קודמת',chosenNextStep:'בחירה קודמת'}];
   const {wrap,calls,header,subtitle,banner}=fixture(async()=>response(saved));await tick();

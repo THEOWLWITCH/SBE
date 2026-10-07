@@ -248,7 +248,7 @@ $("join").addEventListener("click", () => {
   const c = $("code").value.replace(/\D/g,""), n = $("nick").value.trim();
   const err = $("joinerr");
   if (c.length !== 6) { err.textContent = "הקוד הוא שש ספרות"; err.hidden = false; return; }
-  if (!n) { err.textContent = "צריך שם"; err.hidden = false; return; }
+  if (!n) { err.textContent = "נשמח לשם"; err.hidden = false; return; }
   err.hidden = true;
   st.code = c; st.name = n; save();
   $("me").textContent = n;
@@ -494,7 +494,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }

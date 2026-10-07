@@ -68,6 +68,9 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 .bar-row .cnt{text-align:start;color:var(--muted);font-size:13px;}
 
 .quotes{display:flex;flex-direction:column;gap:8px;}
+.fb-res-table td:first-child{width:28%;} .fb-res-table .bar-row{grid-template-columns:minmax(70px,38%) 1fr 26px;font-size:13.5px;}
+.fb-res-table .quote{font-size:13.5px;padding:7px 10px;} .fb-res-table .asked{margin-top:3px;}
+@media print{.bar-fill{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
 .quote{background:var(--surface-2);border-radius:6px;padding:9px 13px;font-size:14.5px;line-height:1.55;}
 
 .empty-role{color:var(--muted);font-size:14px;padding:10px 0;}
@@ -118,6 +121,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 </div>
 
 <script src="lib/feedback-bank.js"></script>
+<script src="lib/report-table.js"></script>
 <script>
 "use strict";
 
@@ -203,14 +207,18 @@ function render(){
       e.textContent = "אין עדיין משוב מהתפקיד הזה.";
       sec.appendChild(e);
     } else {
+      // טבלה לכל תפקיד (07/10/2026, "קו אחיד"): השאלה · התשובות · נימוקים חופשיים.
+      const rows = [];
       metricsFor(role, list).forEach(qid => {
         const q = r.bank[qid];
-        const card = document.createElement("div"); card.className = "card";
-        const h3 = document.createElement("h3"); h3.textContent = q.l; card.appendChild(h3);
+        const qc = document.createElement("div");
+        const h3 = document.createElement("b"); h3.textContent = q.l; qc.appendChild(h3);
         const asked = document.createElement("div"); asked.className = "asked";
         const na = askedCount(qid, list);
         asked.textContent = q.g + " · " + (na === 1 ? "נשאל במשוב אחד" : "נשאל ב-" + na + " משובים");
-        card.appendChild(asked);
+        qc.appendChild(asked);
+        const ans = document.createElement("div");
+        let why = null;
 
         if (q.type === "opts" || q.type === "scale") {
           const counts = {}; let answered = 0;
@@ -221,7 +229,10 @@ function render(){
             if (label === undefined) return;
             counts[label] = (counts[label]||0) + 1; answered++;
           });
-          q.opts.forEach(opt => {
+          if (!answered) {
+            const e = document.createElement("div"); e.className = "empty-role"; e.textContent = "אין תשובות עדיין.";
+            ans.appendChild(e);
+          } else q.opts.forEach(opt => {
             const n = counts[opt] || 0;
             const pct = answered ? Math.round(n/answered*100) : 0;
             const row = document.createElement("div"); row.className = "bar-row";
@@ -231,20 +242,13 @@ function render(){
             track.appendChild(fill);
             const cnt = document.createElement("span"); cnt.className = "cnt"; cnt.textContent = n;
             row.append(lbl, track, cnt);
-            card.appendChild(row);
+            ans.appendChild(row);
           });
-          if (!answered) {
-            const e = document.createElement("div"); e.className = "empty-role"; e.textContent = "אין תשובות עדיין.";
-            card.appendChild(e);
-          }
           if (q.reason) {
             const reasons = list.map(resp => resp[qid+"_why"]).filter(Boolean);
             if (reasons.length) {
-              const rw = document.createElement("div"); rw.className = "reasonwrap";
-              rw.innerHTML = "<b>נימוקים חופשיים</b>";
-              const qs = document.createElement("div"); qs.className = "quotes";
-              reasons.forEach(txt => { const d = document.createElement("div"); d.className="quote"; d.textContent = txt; qs.appendChild(d); });
-              rw.appendChild(qs); card.appendChild(rw);
+              why = document.createElement("div"); why.className = "quotes";
+              reasons.forEach(txt => { const d = document.createElement("div"); d.className="quote"; d.textContent = txt; why.appendChild(d); });
             }
           }
         } else if (q.type === "text") {
@@ -252,14 +256,15 @@ function render(){
           if (answers.length) {
             const qs = document.createElement("div"); qs.className = "quotes";
             answers.forEach(txt => { const d = document.createElement("div"); d.className="quote"; d.textContent = txt; qs.appendChild(d); });
-            card.appendChild(qs);
+            ans.appendChild(qs);
           } else {
             const e = document.createElement("div"); e.className = "empty-role"; e.textContent = "אין תשובות עדיין.";
-            card.appendChild(e);
+            ans.appendChild(e);
           }
         }
-        sec.appendChild(card);
+        rows.push([qc, ans, why]);
       });
+      sec.appendChild(SBE_TABLE(["השאלה", "התשובות", "נימוקים חופשיים"], rows, "fb-res-table"));
     }
     content.appendChild(sec);
   });
@@ -447,7 +452,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }

@@ -110,6 +110,22 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .marks>div:nth-child(2n){text-align:center;color:var(--muted);font-size:12.5px;
   border-inline-start:1px solid var(--hair);white-space:nowrap;}
 .marks>div:nth-last-child(-n+2){border-bottom:none;}
+.dt{width:100%;border-collapse:collapse;font-size:14px;line-height:1.6;margin:0 0 4px;}
+.dt th,.dt td{border:1px solid var(--hair);padding:8px 11px;text-align:right;vertical-align:top;}
+.dt thead th{background:#2E5A7D;color:#fff;font-weight:700;font-size:13px;}
+.dt tbody th{background:var(--sub);width:22%;font-weight:700;font-size:13px;}
+.dt p{margin:0 0 6px;} .dt p:last-child{margin:0;}
+.dt ol,.dt ul{margin:0;padding-inline-start:17px;} .dt li{margin-bottom:4px;}
+.dt td.n{width:32px;text-align:center;font-weight:700;}
+.dt td.ck{width:64px;text-align:center;color:var(--muted);font-size:16px;}
+.dt td.w{width:38%;}
+.dt .tag{margin-inline-start:6px;}
+.sec:has(.dt){break-inside:auto;}
+.dt .write{min-height:4.6em;outline:none;border-radius:3px;}
+.dt .write:focus{background:var(--spoken-bg);}
+.dt-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+.dt-cap{font-size:12.5px;font-weight:700;color:var(--muted);margin:14px 0 6px;}
+.dt .eff{margin-inline-start:0;}
 .red{border:1px solid #E0C4C1;background:#FAF0EF;border-radius:4px;
   padding:12px 15px;font-size:14px;color:#7A322D;}
 .foot{border-top:1px solid var(--hair);padding:11px 36px;font-size:11.5px;
@@ -117,15 +133,26 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .foot-row{display:flex;justify-content:space-between;}
 .foot-by{font-size:10px;}
 @media(max-width:640px){
+  .dt thead{display:none;}
+  .dt,.dt tbody,.dt tr,.dt td,.dt tbody th{display:block;width:auto!important;}
+  .dt tr{border:1px solid var(--hair);border-radius:6px;margin:0 0 8px;overflow:hidden;}
+  .dt td,.dt tbody th{border:0;border-bottom:1px solid var(--hair);text-align:right!important;}
+  .dt td.w{display:none;}
+  .dt td.n{display:inline-block;border:0;padding-bottom:0;} .dt td.n::before{display:none!important;}
+  .dt td.ck{display:inline-block;width:49%!important;border:0;} .dt td.ck::before{display:inline!important;margin-inline-end:8px;}
+  .dt td[data-label]::before{content:attr(data-label);display:block;font-weight:700;font-size:12px;color:var(--muted);}
   .two{grid-template-columns:1fr;} .row,.tp-b,.br{grid-template-columns:1fr;gap:3px;}
   .head,.body,.foot{padding-inline:20px;}
 }
-@page{size:A4;margin:14mm;}
+@page{size:A4;margin:18mm 20mm;}
 @media print{
   body{background:#fff;padding:0;}
   .sheet{box-shadow:none;max-width:none;border-radius:0;font-size:11pt;}
   .head,.body,.foot{padding-inline:0;}
   .sec{break-inside:avoid;}
+  .dt{font-size:10pt;} .dt tr{break-inside:avoid;page-break-inside:avoid;} .dt thead{display:table-header-group;}
+  .dt thead th,.dt tbody th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .dt td.w{height:3.2em;}
   .no-print,#rptFab,#rptDlg,#navBar,#navPanel{display:none!important;}
   body.sbe-hasnav{padding-top:0;}
 }
@@ -169,8 +196,24 @@ ol.q,ul.q{margin:0;padding-inline-start:18px;font-size:13.5px;line-height:1.5;}
 ol.q li,ul.q li{margin-bottom:5px;}
 .free{border-top:1px solid var(--hair);margin-top:12px;padding-top:10px;
  font-size:12.5px;color:var(--muted);line-height:1.5;}
+.dt{width:100%;border-collapse:collapse;font-size:13.5px;line-height:1.45;margin:0 0 10px;}
+.dt th,.dt td{border:1px solid var(--hair);padding:6px 9px;text-align:right;vertical-align:top;}
+.dt thead th{background:#2E5A7D;color:#fff;font-weight:700;font-size:12px;}
+.dt tbody th{background:var(--sub);width:27%;font-weight:700;font-size:12px;color:var(--ink);}
+.dt p{margin:0;} .dt td.n{width:26px;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);}
+.dt td.ty{width:1%;white-space:nowrap;}
+.dt-cap{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.12em;color:var(--muted);margin:4px 0 4px;}
+@media(max-width:520px){
+  .dt thead{display:none;}
+  .dt,.dt tbody,.dt tr,.dt td,.dt tbody th{display:block;width:auto!important;}
+  .dt tr{border:1px solid var(--hair);border-radius:6px;margin:0 0 7px;overflow:hidden;}
+  .dt td,.dt tbody th{border:0;border-bottom:1px solid var(--hair);}
+  .dt td.n,.dt td.ty{display:inline-block;border:0;}
+  .dt td[data-label]:not([data-label="#"])::before{content:attr(data-label);display:block;font-weight:700;font-size:11px;color:var(--muted);}
+}
 @page{size:A5;margin:10mm;}
 @media print{body{background:#fff;padding:0;}.card{box-shadow:none;max-width:none;border-radius:0;font-size:10.5pt;}
+ .dt tr{break-inside:avoid;} .dt thead th,.dt tbody th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
  #rptFab,#rptDlg,#navBar,#navPanel{display:none!important;} body.sbe-hasnav{padding-top:0;}}
 `;
 
@@ -184,6 +227,13 @@ export const list = (items, ordered = false) => {
 };
 export const rows = (pairs) =>
   `<div class="rows">${pairs.map(([k, v]) => `<div class="row"><span class="k">${esc(k)}</span><span>${v}</span></div>`).join('')}</div>`;
+// טבלה במסמך (07/10/2026, "קו אחיד"): head — כותרות (ולכל תא data-label, כדי שבטלפון שורה
+// תיערם לכרטיס), או null — אז העמודה הראשונה היא תווית. התאים הם HTML מוכן (כבר עבר esc).
+export const dtable = (head, trs) =>
+  `<table class="dt">${head ? `<thead><tr>${head.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead>` : ''}<tbody>${trs.map((r) =>
+    `<tr>${r.map((v, i) => (!head && i === 0 ? `<th>${v}</th>` :
+      `<td${head ? ` data-label="${esc(head[i])}"` : ''}${v === '' ? ' class="w"' : ''}>${v}</td>`)).join('')}</tr>`).join('')}</tbody></table>`;
+const ol = (items) => list(items, true);
 export const red = (text) => sec('קו אדום', `<div class="red">${esc(text)}</div>`);
 export const blk = (l, html) => `<div class="blk"><div class="lbl">${esc(l)}</div>${html}</div>`;
 
@@ -215,6 +265,32 @@ export function tpCard(t, who, other, opts = {}) {
     </div>`).join('')}
   </div>
 </div>`;
+}
+
+// נקודות התפנית בטבלאות (07/10/2026, "קו אחיד") — לגרסת השחקנית ולכרטיסי הדמות.
+//   טבלה 1: # · התפנית והרגע · מה עושה · מה זה מבקש · אם זה לא קורה.
+//   טבלה 2 (הענפים): # · אם… · אז… · לאן זה מוביל.
+//   whoOf(t) / otherOf(t): מי עושה את "does" ומגיבה, ומי עושה את "move" ("את" / "אתה" / שם).
+export function tpTables(tps, { whoOf, otherOf, doLabel = 'מה את עושה', askLabel = 'מה זה מבקש ממנה' }) {
+  const isPronoun = (x) => x === 'את' || x === 'אתה';
+  const tag = (t) => (t.core ? '<span class="tag t-core">ליבה</span>' : '') +
+    `<span class="tag ${/סגירה|ניתוק/.test(t.type || '') ? 't-close' : 't-open'}">${esc(t.type)}</span>`;
+  const effCls = (e) => (e === 'פותח' ? 'e-o' : e === 'סוגר' ? 'e-c' : 'e-h');
+  const num = (h) => h.replace(/<td data-label="#">/g, '<td class="n" data-label="#">');
+  const main = dtable(['#', 'התפנית והרגע', doLabel, askLabel, 'אם זה לא קורה'], (tps || []).map((t) => {
+    const who = whoOf(t);
+    return [esc(t.n), `<b>${esc(t.name)}</b> ${tag(t)}<div class="dt-sub">${esc(t.trigger)}</div>`,
+      `${isPronoun(who) ? '' : `<b>${esc(who)}:</b> `}<span class="said">${esc(t.does)}</span>`, esc(t.demands), esc(t.missed)];
+  }));
+  const br = [];
+  (tps || []).forEach((t) => (t.branches || []).forEach((b) => {
+    const who = whoOf(t), other = otherOf(t);
+    const then = who === 'את' ? 'את מגיבה:' : who === 'אתה' ? 'אתה מגיב:' : `${who}:`;
+    br.push([esc(t.n), `<b>אם ${esc(other)}</b> ${esc(b.move)}`, `<b>${esc(then)}</b> <span class="said">${esc(b.says)}</span>`,
+      `<span class="eff ${effCls(b.effect)}">${esc(b.effect)}</span> ${b.quality ? `<em>${esc(b.quality)}</em>` : ''}`]);
+  }));
+  return num(main) + (br.length ? `<div class="dt-cap">אם… אז… — איך כל תפנית יכולה להתגלגל</div>` +
+    num(dtable(['#', 'אם…', 'אז…', 'לאן זה מוביל'], br)) : '');
 }
 
 // ── יצירת המרנדר עם התלויות הסביבתיות ────────────────────────────
@@ -278,8 +354,15 @@ ${WIDGET}`;
       badge: 'גרסת המתנסה',
       meta: [`<b>${esc(tr.role)}</b>`, ...baseMeta],
       body:
-        sec('סיפור המקרה ונתוני פתיחה', paras(tr.opening)) +
-        (tr.stakesForTrainee ? sec('מה על הפרק בשבילך', `<p>${esc(tr.stakesForTrainee)}</p>`) : '') +
+        sec('לפני השיחה', dtable(null, [
+          ['סיפור המקרה ונתוני פתיחה', paras(tr.opening)],
+          ['מה על הפרק בשבילך', paras(tr.stakesForTrainee)],
+        ].filter((r) => r[1]))) +
+        sec('ההכנה שלי', dtable(null, [
+          ['מה הייתי רוצה שיקרה', '<div class="write" contenteditable="true"></div>'],
+          ['איך אפתח', '<div class="write" contenteditable="true"></div>'],
+          ['מה אשאל', '<div class="write" contenteditable="true"></div>'],
+        ]), 'למילוי לפני הסימולציה — על המסך או בדף המודפס') +
         redLine(),
     });
 
@@ -287,19 +370,25 @@ ${WIDGET}`;
       badge: 'גרסת השחקנית',
       meta: [`<b>${esc(a.nameAndAge)}</b>`, esc(a.role), `קונפליקט ${esc(s.conflictType)}`, ...baseMeta],
       body:
-        sec('מי את היום', paras(a.portrait)) +
-        sec('מה קרה, מנקודת מבטך', paras(a.story)) +
-        sec('מה את מבקשת, ומה את לא אומרת', paras(a.askAndBeneath)) +
-        sec('מי יושבת מולך', paras(tr.portraitForActor), 'לדעת מי היא — לא כדי לרחם עליה, כדי להוביל') +
-        sec('מה פותח אותך, ומה סוגר', `<p>${esc(a.opens)}</p>
-      <p>מה שאת יודעת והיא לא: ${esc(a.knows)} ומה שהיא יודעת ואת לא: ${esc(a.doesntKnow)}</p>
-      <p>${esc(a.contradiction)}</p>`) +
-        sec('איך חמש הדקות יכולות להתגלגל', paras(a.arc)) +
-        sec('חמש נקודות התפנית', (s.turningPoints || []).map((t) => tpCard(t, 'את', tr.role, { ask: 'מבקש ממנה' })).join(''),
+        sec('מי את', dtable(null, [
+          ['מי את היום', paras(a.portrait)],
+          ['מה קרה, מנקודת מבטך', paras(a.story)],
+          ['מה את מבקשת, ומה את לא אומרת', paras(a.askAndBeneath)],
+          ['מי יושבת מולך', paras(tr.portraitForActor)],
+        ]), 'לדעת מי היא — לא כדי לרחם עליה, כדי להוביל') +
+        sec('מה פותח אותך, ומה סוגר', dtable(null, [
+          ['מה פותח אותך', paras(a.opens)],
+          ['מה שאת יודעת והיא לא', paras(a.knows)],
+          ['מה שהיא יודעת ואת לא', paras(a.doesntKnow)],
+          ['הסתירה שבך', paras(a.contradiction)],
+        ].filter((r) => r[1]))) +
+        sec('חמש נקודות התפנית', tpTables(s.turningPoints, { whoOf: () => 'את', otherOf: () => tr.role }),
           'מלאי, לא רצף. בחמש דקות יקרו שתיים') +
-        sec('איך זה יכול להיגמר', `<p>${esc(a.endingsProse)}</p>`) +
-        sec('אם היא עושה משהו שאינו כאן',
-          `<p>שאלי את עצמך מה ${esc(actorFirstName)} תעשה לנוכח החשש שלה, ולכי לשם. חמש התפניות הן מלאי ולא כלוב.</p>`) +
+        sec('איך זה מתגלגל ואיך זה נגמר', dtable(null, [
+          ['איך חמש הדקות יכולות להתגלגל', paras(a.arc)],
+          ['איך זה יכול להיגמר', paras(a.endingsProse)],
+          ['אם היא עושה משהו שאינו כאן', `<p>שאלי את עצמך מה ${esc(actorFirstName)} תעשה לנוכח החשש שלה, ולכי לשם. חמש התפניות הן מלאי ולא כלוב.</p>`],
+        ].filter((r) => r[1]))) +
         redLine(),
     });
 
@@ -307,20 +396,27 @@ ${WIDGET}`;
       badge: 'גרסת המנחה',
       meta: [`<b>${esc(s.creator)}</b>`, esc(s.date), esc(s.audience), esc(s.experience), ...baseMeta],
       body:
-        sec('רקע מלא', `<p>${esc(f.background)}</p>`) +
-        sec('שתי הדמויות', paras(f.charactersProse)) +
-        sec('מה הגישה החינוכית אומרת בתרחיש הזה', `<p>${esc(f.approachInScenario)}</p>`, esc(s.approach)) +
-        sec('הדינמיקה הצפויה', paras(f.dynamics), 'מה מכריע את חמש הדקות') +
-        sec('מיומנויות לאימון',
-          `<div class="marks">${(f.skills || []).map((k, i) => `<div><b>${i + 1}.</b> ${esc(k)}</div><div>נצפה · לא נצפה</div>`).join('')}</div>`,
-          'מיומנויות מהטקסונומיה. אלה שיופיעו בדף הצפייה') +
-        sec('נקודות לצפייה', list(f.watchFor)) +
-        sec('שתי שאלות לשיחה המקדימה', list(f.preQuestions, true), 'לפני הצפייה, לא אחריה') +
-        sec('שתי תפניות הליבה',
-          `<ul class="list">${(s.turningPoints || []).filter((t) => t.core).map((t) => `<li><b>${t.n} · ${esc(t.name)}</b> — ${esc(t.demands)}</li>`).join('')}</ul>`,
-          'בחמש דקות יקרו שתיים, אולי שלוש') +
-        sec('שאלות לתחקיר', list((f.debrief || []).concat(['מה קידם את המפגש?', 'מה גרע מהמפגש?']), true)) +
-        sec('שאלות לרפלקציה', list(f.reflection, true)) +
+        sec('תמצית התרחיש', dtable(null, [
+          ['רקע מלא', paras(f.background)],
+          ['שתי הדמויות', paras(f.charactersProse)],
+          ['מה הגישה החינוכית אומרת', paras(f.approachInScenario)],
+          ['הדינמיקה הצפויה', paras(f.dynamics)],
+        ]), s.approach) +
+        sec('נקודות התפנית',
+          dtable(['#', 'התפנית', 'הרגע', 'מה זה מבקש מהמתנסה', 'אם זה לא קורה'], (s.turningPoints || []).map((t) => [
+            esc(t.n), `<b>${esc(t.name)}</b>${t.core ? '<span class="tag t-core">ליבה</span>' : ''}`, esc(t.trigger), esc(t.demands), esc(t.missed),
+          ])).replace(/<td data-label="#">/g, '<td class="n" data-label="#">'),
+          'תפניות הליבה מסומנות. בחמש דקות יקרו שתיים, אולי שלוש') +
+        sec('מה לראות בצפייה',
+          dtable(['#', 'מיומנות לאימון', 'נצפה', 'לא נצפה'], (f.skills || []).map((k, i) => [String(i + 1), esc(k), '☐', '☐']))
+            .replace(/<td data-label="#">/g, '<td class="n" data-label="#">').replace(/<td data-label="(נצפה|לא נצפה)">/g, '<td class="ck" data-label="$1">') +
+          ((f.watchFor || []).length ? dtable(['נקודה לצפייה', 'מה ראיתי'], f.watchFor.map((w) => [esc(w), ''])) : ''),
+          'המיומנויות מהטקסונומיה — אלה שיופיעו בדף הצפייה') +
+        sec('שאלות לשיחה', dtable(['מתי', 'השאלות'], [
+          ['לפני הצפייה — שיחה מקדימה', ol(f.preQuestions)],
+          ['תחקיר — אחרי הצפייה', ol((f.debrief || []).concat(['מה קידם את המפגש?', 'מה גרע מהמפגש?']))],
+          ['רפלקציה', ol(f.reflection)],
+        ].filter((r) => /<li>/.test(r[1])).map(([k, v]) => [`<b>${esc(k)}</b>`, v]))) +
         sec('מקורות להרחבה',
           (f.sources || []).length
             ? list(f.sources)
@@ -328,22 +424,25 @@ ${WIDGET}`;
         redLine(),
     });
 
-    const tline = (t) => `<div><span class="n">${t.n}</span><span>${esc(t.name)} — ${esc(t.demands)}</span>` +
-      `<span class="t ${t.core ? 'core' : /סגירה|ניתוק/.test(t.type || '') ? 'cl' : 'op'}">${t.core ? 'ליבה' : esc(t.type)}</span></div>`;
     const tic = (a.visible || []).find((v) => String(v).includes('"')) || '';
     const wontSay = ((a.hidden || []).find((h) => String(h).startsWith('לא תגידי')) || '').replace(/^לא תגידי:\s*/, '');
     const entrance = a.entrance || {};
+    // כרטיס הכיס בטבלאות (07/10/2026, "קו אחיד") — שורה לכל מה שתופסים במבט.
+    const tpType = (t) => `<span class="t ${t.core ? 'core' : /סגירה|ניתוק/.test(t.type || '') ? 'cl' : 'op'}">${t.core ? 'ליבה' : esc(t.type)}</span>`;
     const cardActor = card(s, 'כרטיס שחקנית', a.nameAndAge,
-      blk('פתיחה', `<p style="margin:0">${esc(entrance.posture)} · ${esc(entrance.doing)}</p>
-    <p style="margin:5px 0 0" class="big">${esc(entrance.firstLine)}</p>`) +
-      blk('הביטוי החוזר שלך', `<div class="big">${esc(tic)}</div>`) +
-      blk('לא תגידי בשום מצב', `<div class="stop">${esc(wontSay)}</div>`) +
-      blk('בלחץ שלישי יוצא רק זה', `<div class="warm">${esc(a.valve)}</div>`) +
-      blk('נפתחת כש', `<p style="margin:0">${esc(a.opens)}</p>`) +
-      blk('מולך', `<p style="margin:0">${esc(tr.role)}${tr.seniority ? ', ' + esc(tr.seniority) : ''}. ${esc((tr.traits || [])[1] || (tr.traits || [])[0] || '')}</p>
-    <ul class="q" style="margin-top:5px">${(tr.likelyMoves || []).map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`) +
-      blk('חמש התפניות', `<div class="tl">${(s.turningPoints || []).map(tline).join('')}</div>`) +
-      blk('סיומים', `<ul class="q">${(s.endings || []).map((e) => `<li>${esc(e)}</li>`).join('')}</ul>`) +
+      dtable(null, [
+        ['פתיחה', `<p style="margin:0">${esc(entrance.posture)} · ${esc(entrance.doing)}</p><p style="margin:5px 0 0" class="big">${esc(entrance.firstLine)}</p>`],
+        ['הביטוי החוזר שלך', tic ? `<div class="big">${esc(tic)}</div>` : ''],
+        ['לא תגידי בשום מצב', wontSay ? `<div class="stop">${esc(wontSay)}</div>` : ''],
+        ['בלחץ שלישי יוצא רק זה', a.valve ? `<div class="warm">${esc(a.valve)}</div>` : ''],
+        ['נפתחת כש', a.opens ? esc(a.opens) : ''],
+        ['מולך', `${esc(tr.role)}${tr.seniority ? ', ' + esc(tr.seniority) : ''}. ${esc((tr.traits || [])[1] || (tr.traits || [])[0] || '')}` +
+          ((tr.likelyMoves || []).length ? `<ul class="q" style="margin-top:5px">${tr.likelyMoves.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '')],
+      ].filter((r) => r[1])) +
+      `<div class="dt-cap">חמש התפניות</div>` +
+      dtable(['#', 'התפנית', 'מה זה מבקש ממנה', ''], (s.turningPoints || []).map((t) => [esc(t.n), `<b>${esc(t.name)}</b>`, esc(t.demands), tpType(t)]))
+        .replace(/<td data-label="#">/g, '<td class="n" data-label="#">').replace(/<td data-label="">/g, '<td class="ty">') +
+      ((s.endings || []).length ? dtable(null, [['סיומים', `<ul class="q">${s.endings.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>`]]) : '') +
       `<div class="free">אם היא עושה משהו שאינו כאן: שאלי מה ${esc(actorFirstName)} תעשה לנוכח החשש שלה, ולכי לשם. <b>המפה היא מלאי ולא כלוב.</b></div>`);
 
     // בדיקת דלף על גרסת המתנסה — אותה בדיקה שרצה ברתמה.
@@ -376,24 +475,26 @@ ${WIDGET}`;
     const isParents = s.track === 'parents';
     const otherOf = (key) => s.characters.find((c) => c.key !== key);
 
-    const tpThird = (t) => tpCard(t, byKey[t.who].name, otherOf(t.who).name);
-    const tpFor = (x) => (t) => {
-      const who = byKey[t.who], other = otherOf(t.who);
-      return tpCard(t, who.key === x.key ? x.pronoun : who.name, other.key === x.key ? x.pronoun : other.name);
-    };
 
     const scenario = page(s, {
       badge: s.scenarioBadge,
       meta,
       body:
-        sec('מה קורה כאן', paras(s.background)) +
-        s.characters.map((c) => sec(c.name, paras(c.summary))).join('') +
-        sec(isParents ? 'מה הגישה אומרת בערב הזה' : 'מה הגישה אומרת בשיחה הזאת', paras(s.approachText), approachShort) +
-        sec('איך חמש הדקות יכולות להתגלגל', paras(s.arc)) +
-        sec('חמש נקודות התפנית', (s.turningPoints || []).map(tpThird).join(''), 'מלאי, לא רצף') +
-        sec('איך זה יכול להיגמר', `<p>${esc(s.endingsProse)}</p>`) +
-        sec('נקודות לצפייה', list(s.watch)) +
-        sec('שאלות לתחקיר', list(s.debrief, true)) +
+        sec('תמצית התרחיש', dtable(null, [
+          ['מה קורה כאן', paras(s.background)],
+          ...s.characters.map((c) => [esc(c.name), paras(c.summary)]),
+          [isParents ? 'מה הגישה אומרת בערב הזה' : 'מה הגישה אומרת בשיחה הזאת', paras(s.approachText)],
+        ].filter((r) => r[1])), approachShort) +
+        sec('חמש נקודות התפנית', tpTables(s.turningPoints, {
+          whoOf: (t) => byKey[t.who].name, otherOf: (t) => otherOf(t.who).name,
+          doLabel: 'מה קורה מצד הדמות', askLabel: 'מה זה מבקש',
+        }), 'מלאי, לא רצף') +
+        sec('איך זה מתגלגל ואיך זה נגמר', dtable(null, [
+          ['איך חמש הדקות יכולות להתגלגל', paras(s.arc)],
+          ['איך זה יכול להיגמר', paras(s.endingsProse)],
+        ].filter((r) => r[1]))) +
+        sec('מה לראות ומה לשאול', dtable(['נקודה לצפייה', 'מה ראיתי'], (s.watch || []).map((w) => [esc(w), ''])) +
+          ((s.debrief || []).length ? dtable(['מתי', 'השאלות'], [['<b>תחקיר — אחרי הצפייה</b>', ol(s.debrief)]]) : '')) +
         red(s.redLine),
     });
     const files = [[`${s.outputs.scenario}.html`, scenario, s.scenarioBadge]];
@@ -403,12 +504,20 @@ ${WIDGET}`;
         badge: c.badge,
         meta,
         body:
-          sec(c.pronoun === 'אתה' ? 'מי אתה היום' : 'מי את היום', paras(c.portrait)) +
-          (c.extra ? sec(c.extra.title, paras(c.extra.paras)) : '') +
-          (c.facing ? sec('מי מולך', paras(c.facing)) : '') +
-          sec(isParents ? 'איך הערב יכול להתגלגל' : 'איך השיחה יכולה להתגלגל', paras(s.arc)) +
-          sec('חמש נקודות התפנית', (s.turningPoints || []).map(tpFor(c)).join(''), 'מלאי, לא רצף') +
-          sec('איך זה יכול להיגמר', `<p>${esc(s.endingsProse)}</p>`) +
+          sec(c.pronoun === 'אתה' ? 'מי אתה' : 'מי את', dtable(null, [
+            [c.pronoun === 'אתה' ? 'מי אתה היום' : 'מי את היום', paras(c.portrait)],
+            ...(c.extra ? [[esc(c.extra.title), paras(c.extra.paras)]] : []),
+            ...(c.facing ? [['מי מולך', paras(c.facing)]] : []),
+          ])) +
+          sec('חמש נקודות התפנית', tpTables(s.turningPoints, {
+            whoOf: (t) => (t.who === c.key ? c.pronoun : byKey[t.who].name),
+            otherOf: (t) => (otherOf(t.who).key === c.key ? c.pronoun : otherOf(t.who).name),
+            doLabel: 'מה קורה מצד הדמות', askLabel: 'מה זה מבקש',
+          }), 'מלאי, לא רצף') +
+          sec('איך זה מתגלגל ואיך זה נגמר', dtable(null, [
+            [isParents ? 'איך הערב יכול להתגלגל' : 'איך השיחה יכולה להתגלגל', paras(s.arc)],
+            ['איך זה יכול להיגמר', paras(s.endingsProse)],
+          ])) +
           red(s.redLine),
       });
       files.push([`${s.outputs.cards[c.key]}.html`, html, c.badge]);
@@ -416,5 +525,5 @@ ${WIDGET}`;
     return { files };
   }
 
-  return { page, card, renderEduDocs, renderRoleDocs, esc, sec, paras, list, rows, red, blk, tpCard, CSS, CARD_CSS, FONTS };
+  return { page, card, renderEduDocs, renderRoleDocs, esc, sec, paras, list, rows, dtable, tpTables, red, blk, tpCard, CSS, CARD_CSS, FONTS };
 }

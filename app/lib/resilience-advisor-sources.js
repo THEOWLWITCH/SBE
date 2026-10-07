@@ -19,7 +19,7 @@
     lead: 'מנהיגות חינוכית: צוות, אמון ורווחה',
     leadcr: 'מנהיגות בחירום ובמשבר',
     stu:  'מנהיגות תלמידים וקול התלמידים',
-    facil: 'הנחיית קבוצות, השתתפות ושיח בכיתה'
+    facil: 'הנחיית קבוצות ושיח בכיתה'
   };
   var S = [
     // ── ישראל ──
@@ -659,16 +659,37 @@
     {k:'UnicefAdolescentKit2026', g:'facil', apa:'UNICEF. (n.d.). Adolescent Kit for Expression and Innovation: Facilitation resources. Retrieved October 7, 2026, from unicef.org',
       url:'https://www.unicef.org/adolescentkit/facilitation-resources',
       gist:'ערכה של UNICEF למתבגרים (10–18) במשבר הומניטרי או בהקשר פגיע, שמטרתה לטפח חוסן: הנחיה שנשענת על חוזקות, מרחב בטוח, בחירה, יצירה וביטוי, קשרים חיוביים ותרומה לקהילה; מדריכים והדרכה עצמית למנחים.',
-      be:'עם בני נוער במצבי לחץ: מבנה קבוע וצפוי, בחירה ויצירה, והזדמנות לתרום לאחרים — כל אלה בונים חוסן.'}
+      be:'עם בני נוער במצבי לחץ: מבנה קבוע וצפוי, בחירה ויצירה, והזדמנות לתרום לאחרים — כל אלה בונים חוסן.'},
+    // ── תוספת (07/10/2026), לבקשת ד״ר יעל שדה: הידהוד, גבולות, הומור, מישחוק, שיחה ודיון, פרוטוקול. כל מקור אומת ──
+    {k:'Weger2010', g:'facil', apa:'Weger, H., Jr., Castle, G. R., & Emmett, M. C. (2010). Active listening in peer interviews: The influence of message paraphrasing on perceptions of listening skill. International Journal of Listening, 24(1), 34–49.',
+      url:'https://stars.library.ucf.edu/scopus2010/1477',
+      gist:'ניסוי עם 180 סטודנטים: מי שקיבלו שיקוף (פרפרזה) של דבריהם תפסו את המקשיב/ה כאדם שנעים יותר לדבר איתו, לעומת מי שקיבלו אישור פשוט ("אהה"). השיקוף לבדו לא הגביר את תחושת "הבינו אותי" — לשם כך הוא משתלב בשאלת בדיקה ובהמשך שיחה.',
+      be:'הידהוד: חוזרים על הדברים במילים פשוטות ושואלים "הבנתי נכון?". כשכמה דיברו — מסכמים את הקולות ומציעים את הצעד או השאלה הבאים.'},
+    {k:'Emmer2001', g:'facil', apa:'Emmer, E. T., & Stough, L. M. (2001). Classroom management: A critical part of educational psychology, with implications for teacher education. Educational Psychologist, 36(2), 103–112.',
+      url:'https://doi.org/10.1207/S15326985EP3602_5',
+      gist:'סקירת מחקר על ניהול כיתה: גישות מונעות וקבוצתיות עדיפות על תגובה בדיעבד — ציפיות ברורות שמלמדים במפורש, כללים ושגרות שנבנים מראש, מעקב ומשוב שוטף. מומחיות של מורים כוללת קריאה מהירה של הכיתה והחזרה עדינה למשימה.',
+      be:'גבול טוב הוא צפוי ומכבד: "זה נושא חשוב ונחזור אליו, היום אנחנו עוסקים ב..."; "סליחה, רגע — בואו נשאיר את סגנון הדיבור הזה בחוץ"; "גם כאן המבוגרים הם מודל".'},
+    {k:'Banas2011', g:'facil', apa:'Banas, J. A., Dunbar, N., Rodriguez, D., & Liu, S.-J. (2011). A review of humor in educational settings: Four decades of research. Communication Education, 60(1), 115–144.',
+      url:'https://doi.org/10.1080/03634523.2010.496867',
+      gist:'סקירה של ארבעה עשורי מחקר: הומור שקשור לנושא ומותאם לקהל מגביר קשב, עניין ותחושת קרבה, ויכול לסייע ללמידה. הומור פוגע, עוקצני או על חשבון משתתפים פוגע באקלים ובאמון. ההשפעה תלויה בסוג ההומור, בהקשר ובקהל.',
+      be:'הומור בהתאמה: קשור לנושא, מכליל ולא פוגע, אף פעם לא על חשבון משתתף/ת — ולא באירוע קשה.'},
+    {k:'Sailer2020', g:'facil', apa:'Sailer, M., & Homner, L. (2020). The gamification of learning: A meta-analysis. Educational Psychology Review, 32(1), 77–112.',
+      url:'https://doi.org/10.1007/s10648-019-09498-w',
+      gist:'מטה־אנליזה: למישחוק (שילוב רכיבי משחק כמו אתגר, נקודות, התקדמות ומשוב) יש השפעה חיובית קטנה־בינונית על למידה קוגניטיבית, ועל מוטיבציה והתנהגות (פחות יציבה). שילוב של תחרות עם שיתוף פעולה ושל סיפור מסגרת נמצא מועיל במיוחד להתנהגות.',
+      be:'מישחוק משרת את המטרה: אתגר משותף, בחירה ומשוב מיידי — ועדיף שיתוף פעולה בקבוצה על פני תחרות שמשאירה מישהו בחוץ.'},
+    {k:'Bohm1996', g:'facil', apa:'Bohm, D. (1996). On dialogue (L. Nichol, Ed.). Routledge.',
+      url:'https://www.routledge.com/On-Dialogue/Bohm-Nichol/p/book/9780415149112',
+      gist:'בוהם מבחין בין דיאלוג (שיחה) לדיון: בדיון מכוונים להכרעה, לנצח או להחליט; בדיאלוג אף אחד לא מנסה לנצח — משעים הנחות, מקשיבים ויוצרים יחד הבנה חדשה. שני הסוגים לגיטימיים, אבל ערבוב ביניהם מבלבל.',
+      be:'אומרים לקבוצה מה עושים עכשיו: שיחה — מקשיבים ומבינים, בלי להכריע; דיון — שוקלים חלופות ומחליטים, ואומרים מראש איך תתקבל ההחלטה.'},
+    {k:'Schnackenberg2016', g:'facil', apa:'Schnackenberg, A. K., & Tomlinson, E. C. (2016). Organizational transparency: A new perspective on managing trust in organization-stakeholder relationships. Journal of Management, 42(7), 1784–1810.',
+      url:'https://doi.org/10.1177/0149206314525202',
+      gist:'סקירה מושגית: שקיפות ארגונית בנויה משלושה ממדים — חשיפה של מידע רלוונטי, בהירות ודיוק — והיא תורמת לאמון בין הארגון לבין מי שקשורים אליו (תפיסות של יכולת, יושרה ורצון טוב).',
+      be:'פרוטוקול קצר, ברור ומדויק שמופץ לכולם (מה הוחלט, מי אחראי/ת, עד מתי) הוא מנגנון חברתי של שקיפות שבונה אמון.'},
+    {k:'Rogelberg2019', g:'facil', apa:'Rogelberg, S. G. (2019). The surprising science of meetings: How you can lead your team to peak performance. Oxford University Press.',
+      url:'https://www.porchlightbooks.com/products/surprising-science-of-meetings-steven-g-rogelberg-9780190689216',
+      gist:'ספר שמסכם מחקר על ישיבות (סקרים עם יותר מ-5,000 עובדים): ישיבה טובה מתוכננת סביב שאלות ומטרה ולא רק סדר יום, מזמינה השתתפות של כולם, נגמרת בזמן ובסיכום של החלטות וצעדים, ומבקשת משוב על הישיבה עצמה.',
+      be:'סוף ישיבה טוב: מקריאים מה הוחלט ומי עושה מה, ושולחים לכולם — כך ההחלטות לא נשארות רק בזיכרון של מי שהיה.'}
   ];
-  S.push(
-    {k:'IAFFacilitation',g:'facil',apa:'International Association of Facilitators. Core Competencies.',url:'https://iaf-world.org/discover-the-iaf/',
-      gist:'מסגרת מקצועית למיומנויות הנחיה: תכנון תהליך מותאם, השתתפות מגוונת, הקשבה, התמודדות עם מחלוקת, והובלה לתוצאה שימושית. זו מסגרת מקצועית ולא מחקר יעילות של פעילות חוסן.',
-      be:'מכינים את המרחב והזמן, מאפשרים דרכי השתתפות שונות ומסייעים לקבוצה לברר ולעבוד יחד. המנחה מנהלת את התהליך בלי להחליט במקום הקבוצה.'},
-    {k:'UNICEFFacilitation',g:'facil',apa:'UNICEF. Adolescent Kit: Facilitation guides.',url:'https://www.unicef.org/adolescentkit/facilitation-guides',
-      gist:'מדריכי הנחיה לעבודה עם מתבגרים: תכנון פעילויות מתאימות, מבנה ושגרה, תמיכה בהשתתפות וקבוצה בטוחה. ההקשר הוא עבודה עם מתבגרים; אין להכליל אוטומטית לכל אוכלוסייה.',
-      be:'משלבים מבנה קבוע עם בחירה ויצירתיות, בודקים מי יכול להשתתף ואיך, ומתאימים את הפעילות לגיל, למקום ולתמיכה הזמינה.'}
-  );
   var byKey = {}; S.forEach(function(s){ byKey[s.k] = s; });
   // לכל יועצת בנק משלה: פרקטי (הכיתה) — בלי קבוצות המנהיגות; נוגי (מנהיגות) — קבוצות המנהיגות,
   // ישראל, חוסן קהילתי, בית הספר כקהילה, ומקורות נבחרים על אקלים, צוות ורווחה.
@@ -676,14 +697,10 @@
   var NUGI_G = { lead: 1, leadcr: 1, stu: 1, il: 1, comm: 1, sys: 1 };
   var NUGI_K = { Edmondson1999: 1, Frazier2017: 1, JenningsGreenberg2009: 1, Allen2018: 1, WangDegol2016: 1,
     Battistich1997: 1, RyanDeci2017: 1, Moore2026: 1, Gregory2016: 1, Augustine2018: 1, Miao2023: 1, Brookings2026: 1 };
-  // ננה (הנחיה מקדמת חוסן) — הנחיית קבוצות, הכיתה, קול התלמידים, למידה רגשית־חברתית וקונפליקט,
-  // ומקורות נבחרים על חוסן קהילתי ועל משבר.
-  var NANA_G = { facil: 1, cls: 1, stu: 1, sel: 1, conf: 1 };
-  var NANA_K = { Sade2024: 1, SadeTools2026: 1, Hobfoll2007: 1, Norris2008: 1, Masten2001: 1, Shoshani2016: 1, Wolmer2011: 1 };
   var ADV = {
     practi: function(s){ return !LEAD_G[s.g]; },
     nugi:   function(s){ return !!(NUGI_G[s.g] || NUGI_K[s.k]); },
-    nana:   function(s){ return !!(NANA_G[s.g] || NANA_K[s.k]); }
+    nana:   function(){ return true; } // ננה — כל בנק הידע (07/10/2026): ההמלצות והמשוב שלה נשענים על כל מקורות החוסן
   };
   function forAdvisor(name){ var f = ADV[name]; return f ? S.filter(f) : S.slice(); }
   window.SBE_ADVISOR_SOURCES = { groups: G, list: S, byKey: byKey, forAdvisor: forAdvisor };

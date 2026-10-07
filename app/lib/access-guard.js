@@ -97,7 +97,7 @@
   var base = inProducts ? "../" : "";
 
   var q = new URLSearchParams(home.split("?")[1] || "");
-  var ALL_USERS = ["entry.html", "index.html", "sources-library.html"];
+  var ALL_USERS = ["entry.html", "index.html", "sources-library.html", "examples.html"];
   var WORKSHOP = {
     // תוצרי הסימולציה (גרסת המתנסה/השחקנית/המנחה, כרטיס שחקנית) — רק למנהלת המערכת ולמנחות הסימולציה (02/10/2026).
     trainee: ["observation-sheet.html", "practice.html", "feedback.html",
@@ -113,11 +113,11 @@
   // שהשרת החזיר לקוד (sbe.session.perms).
   var PAGES_BY_PERM = {
     fac_trainee: ["input-screen.html"], fac_parent: ["parent-input-screen.html"], fac_youth: ["student-input-screen.html"],
-    conv: ["conversation-planner.html"], activity: ["activity-planner.html", "resilience-studio.html"], academic: ["academic-review.html"],
-    resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html", "resilience-studio.html"],
-    leadership: ["leadership-advisor.html", "resilience-advisor-sources.html", "resilience-studio.html"],
-    practi: ["resilience-advisor.html", "resilience-advisor-sources.html", "resilience-studio.html"],
-    studio: ["resilience-studio.html"],
+    conv: ["conversation-planner.html"], activity: ["activity-planner.html"], academic: ["academic-review.html"],
+    resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html"],
+    leadership: ["leadership-advisor.html", "resilience-advisor-sources.html"],
+    practi: ["resilience-advisor.html", "resilience-advisor-sources.html"],
+    studio: ["resilience-studio.html"], // עד לאישור המקצועי — רק בהרשאה הזאת (studio.mjs: STUDIO_PERMS)
     practice: ["practice.html"],
     journey: ["journey.html"],
     writer: ["message-writer.html", "resilience-advisor-sources.html"], // כתיבה מקדמת חוסן — רק בהרשאה הזאת (02/10/2026)
@@ -146,7 +146,7 @@
     // הכלים הנוספים — רק מה שנפתח למוסד (sbe.session.modules, נשמר ב-system-select.html).
     var mods = {};
     try { mods = JSON.parse(ss("sbe.session.modules") || "{}") || {}; } catch(e){}
-    if (["studio", "activity", "resilience", "practi", "leadership"].some(function(p){return mods[p] === true;})) allowed.push("resilience-studio.html");
+    if (mods.studio === true) allowed.push("resilience-studio.html");
     if (track !== "parent" && track !== "youth") {
       if (mods.conv === true) allowed.push("conversation-planner.html");
       if (mods.activity === true) allowed.push("activity-planner.html");
@@ -163,7 +163,7 @@
       ? ["resilience-advisor.html", "resilience-advisor-sources.html"] : [];
     if (!allowed.length) home = "";
   } else if (home === "resilience-team.html") {
-    allowed = ["resilience-team.html", "resilience-fill.html", "resilience-studio.html"];
+    allowed = ["resilience-team.html", "resilience-fill.html"];
   } else {
     allowed = [];
     home = "";
@@ -171,7 +171,27 @@
 
   // טופס המשוב מקישור/QR של סדנה (?w=) — פתוח גם בלי כניסה: המשתתפות סורקות בטלפון בסוף התחקיר.
   // השרת מקבל משוב רק לסדנה שנפתחה (wfSubmit), ולא חושף משובים של אחרים.
+  // ספריית התוצרים לדוגמה — פתוחה לכל מי שמתעניין/ת, גם בלי כניסה (רק מה שמנהלת המערכת סימנה להצגה).
+  if (page === "examples.html") return;
   if (page === "feedback.html" && /[?&]w=[a-z0-9]{8,32}(&|$)/.test(location.search)) return;
+  // כניסה שהסתיימה (07/10/2026): האסימון החתום תקף 12 שעות, אבל לשונית פתוחה שומרת אותו גם אחר כך —
+  // והשרת דוחה אותו ("אין הרשאה פעילה"). חוזרים למסך הכניסה עם הסבר, במקום הודעת הרשאה מבלבלת.
+  if (ALL_USERS.indexOf(page) === -1) {
+    try {
+      var tk = ss("sbe.session.token") || "";
+      if (tk.indexOf(".") > 0) {
+        var raw = Uint8Array.from(atob(tk.split(".")[0].replace(/-/g, "+").replace(/_/g, "/")), function(ch){ return ch.charCodeAt(0); });
+        var pl = JSON.parse(new TextDecoder().decode(raw));
+        if (pl.exp && pl.exp < Date.now()) {
+          KEYS.forEach(function(k){ sessionStorage.removeItem(k); });
+          localStorage.removeItem(MIRROR);
+          document.documentElement.style.display = "none";
+          location.replace(base + "entry.html?expired=1");
+          return;
+        }
+      }
+    } catch(e){}
+  }
   if (allowed === null || (home && ALL_USERS.indexOf(page) !== -1) || allowed.indexOf(page) !== -1) return;
 
   // אין הרשאה — לא מציגים את הדף, וחוזרים למסך הבית (או למסך הכניסה).

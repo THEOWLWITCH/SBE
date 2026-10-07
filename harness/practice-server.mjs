@@ -6,7 +6,7 @@ import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
 import {runInNewContext} from 'node:vm';
-import {getProvider, assertCompletionResult} from './lib/providers.mjs';
+import {getProvider, assertCompletionResult,applyProductPolicy} from './lib/providers.mjs';
 import {runPipeline} from './lib/pipeline.mjs';
 import {toScenario} from './lib/to-scenario.mjs';
 import {handleAccess, supabaseStore, resolvePrincipal, reserveAIUsage, settleAIUsage} from './lib/access.mjs';
@@ -14,7 +14,7 @@ import {handleStudio} from './lib/studio.mjs';
 import {handleArtifacts,artifactReviewRunId} from './lib/activity-artifact.mjs';
 
 const AI_PERMS = ['fac_trainee','fac_parent','fac_youth','practice','conv','activity','academic','resilience','leadership','practi','writer','studio','nana'];
-const STUDIO_PERMS = ['studio','activity','resilience','leadership','practi'];
+const STUDIO_PERMS = ['studio'];
 const CORS = [...new Set([...(process.env.CORS_ORIGIN || '').split(',').map(s=>s.trim().replace(/\/$/, '')).filter(Boolean),
   'https://be-good.co.il','https://www.be-good.co.il','https://s-b-e.netlify.app'])];
 const BOOT = randomUUID(), TTL = 3 * 3600000;
@@ -29,6 +29,7 @@ export function approvedSources() {
 }
 
 function requestBudget(request,attempts=2) {
+  request={...request,system:applyProductPolicy(request.system || request.instructions)};
   const maxTokens=request.maxTokens ?? request.max_output_tokens ?? 220;
   const {signal,...input}=request;
   return attempts*(Buffer.byteLength(JSON.stringify(input))+maxTokens+2048);

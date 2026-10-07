@@ -26,7 +26,7 @@
   <main id="main" class="studio-wrap">
     <header class="hero">
       <div><p class="eyebrow">מחשבה טובה, פעולה משותפת</p><h1>סטודיו חוסן</h1>
-        <p class="hero-intro">מרעיון לפעילות, למשימה יומיומית או לתהליך. בכל צעד רואים מה רוצים לפתח ואיך מתרגלים את זה יחד.</p>
+        <p class="hero-intro">מרעיון לפעילות, למשימה יומיומית או לתהליך. בכל שלב מחליטים מחדש מה רוצים לפתח ואיך מתרגלים את זה יחד.</p>
       </div>
       <img src="assets/begood-logo.webp" alt="Begood — חינוך לחוסן" width="160" height="74">
     </header>
@@ -36,15 +36,9 @@
 
     <div class="studio-layout">
       <div class="studio-main">
-        <section id="inspiration-section" class="card" aria-labelledby="inspiration-title">
-          <div class="section-head"><div><p class="eyebrow">אפשר להתחיל בלי מיפוי ובלי צורך מוגדר</p><h2 id="inspiration-title">מה נרצה לנסות?</h2></div><button id="new-work" class="btn secondary" type="button">התחלה חדשה</button></div>
-          <p>בחרו רעיון, שמרו אותו למועד אחר או התחילו מהתיאור שלכם. פרטי המשתתפים נדרשים כשמתאימים פעילות לקבוצה.</p>
-          <div id="inspiration-cards" class="inspiration-grid"></div>
-          <details class="saved-ideas"><summary>הרעיונות ששמרתי <span id="idea-count">(0)</span></summary><div id="saved-ideas"></div></details>
-        </section>
-
         <section id="brief-section" class="card" aria-labelledby="brief-title">
-          <p class="eyebrow">1 · התקציר שלנו</p><h2 id="brief-title">נקודת מוצא ותנאים לפעולה</h2>
+          <div class="section-head"><div><p class="eyebrow">1 · התקציר שלנו</p><h2 id="brief-title">נקודת מוצא ותנאים לפעולה</h2></div><button id="new-work" class="btn secondary" type="button">התחלה חדשה</button></div>
+          <p class="fill-note"><b>אין צורך למלא את כל השדות.</b> מה שלא תמלאו — המערכת תשלים לבד. שדות שמסומנים ב-<span class="req">*</span> נדרשים כדי לבנות ערכה.</p>
           <p class="muted">התקציר ניתן לעריכה. אוכלוסיית המשתתפים ותפקיד המוביל/ה נשמרים בנפרד; אין צורך להשתייך לכיתה או לבית ספר.</p>
           <form id="brief-form" novalidate>
             <label for="startingPoint">מה הביא אותנו לכאן?</label>
@@ -55,12 +49,12 @@
               <label>תפקיד המוביל/ה<input id="leaderRole" name="leaderRole" type="text" placeholder="מחנכת, הורה, נערה מובילה, ראש צוות…"></label>
               <label>גיל המוביל/ה, אם רלוונטי<input id="leaderAge" name="leaderAge" type="text" placeholder="נפרד מגיל המשתתפים"></label>
               <label>ניסיון בהנחיה<select id="experience" name="experience"><option value="">לבחירה</option><option value="first">זו התנסות ראשונה</option><option value="some">יש מעט ניסיון</option><option value="experienced">יש ניסיון בהנחיה</option></select></label>
-              <label>מי המשתתפים?<input id="participants" name="participants" type="text" placeholder="משפחה, נוער, צוות עבודה, קהילה…" required></label>
-              <label>גיל המשתתפים<input id="participantAge" name="participantAge" type="text" placeholder="טווח גיל או קבוצת גיל" required></label>
-              <label>מספר משתתפים<input id="count" name="count" type="number" min="2" step="1" value="8" required></label>
-              <label>זמן לכל מפגש, בדקות<input id="duration" name="duration" type="number" min="5" step="1" value="40" required></label>
-              <label>מספר מפגשים<input id="sessions" name="sessions" type="number" min="1" step="1" value="1" required></label>
-              <label>צורת הפעולה<select id="format" name="format"><option value="activity">פעילות</option><option value="mission">משימה יומיומית</option><option value="process">תהליך של כמה מפגשים</option></select></label>
+              <label>מי המשתתפים? <span class="req" aria-hidden="true">*</span><input id="participants" name="participants" type="text" placeholder="משפחה, נוער, צוות עבודה, קהילה…" required></label>
+              <label>גיל המשתתפים <span class="req" aria-hidden="true">*</span><input id="participantAge" name="participantAge" type="text" placeholder="טווח גיל או קבוצת גיל" required></label>
+              <label>מספר משתתפים <span class="req" aria-hidden="true">*</span><input id="count" name="count" type="number" min="2" step="1" value="8" required></label>
+              <label>זמן לכל מפגש, בדקות <span class="req" aria-hidden="true">*</span><input id="duration" name="duration" type="number" min="5" step="1" value="40" required></label>
+              <label>מספר מפגשים <span class="req" aria-hidden="true">*</span><input id="sessions" name="sessions" type="number" min="1" step="1" value="1" required></label>
+              <label>צורת הפעולה<input id="format" name="format" type="text" list="format-list" maxlength="80" placeholder="בוחרים מהרשימה או כותבים — למשל טקס"><datalist id="format-list"><option value="פעילות"><option value="משימה יומיומית"><option value="תהליך של כמה מפגשים"><option value="טקס"><option value="אירוע קהילתי"><option value="מפגש הורים"></datalist></label>
               <label>מידת ההיכרות<input id="familiarity" name="familiarity" type="text" placeholder="קבוצה חדשה או ותיקה, היכרות חלקית…"></label>
               <label>תפקידים וקשרים<input id="relationships" name="relationships" type="text" placeholder="משתתפים, מובילים, שותפים, תלות בתפקידים…"></label>
               <label>הקשר הפעולה<input id="context" name="context" type="text" placeholder="בבית, בעבודה, במסגרת קהילתית…"></label>
@@ -81,6 +75,8 @@
             <div class="actions"><button id="add-source" class="btn secondary" type="button">+ מקור נוסף</button><label class="btn secondary file-label">צירוף טקסט<input id="source-file" type="file" accept=".txt,.md,.json,text/plain,text/markdown,application/json"></label></div>
             <p class="muted">ייבוא תוכן: TXT, Markdown או JSON. לקובץ אחר העתיקו לכאן את הטקסט הרלוונטי. הקבצים אינם נשמרים בשרת.</p>
           </details>
+          <div class="actions"><button id="to-build" class="btn" type="button">יצירת הפעילות ←</button></div>
+          <p id="to-build-hint" class="muted"><b>היצירה לוקחת זמן.</b> קודם בודקים את התקציר ומקבלים הצעה למוקד החוסן (בערך דקה–שתיים), ואז בוחרים, מאשרים ובונים את הפעילות (עוד כמה דקות). מה שמילאת נשמר בינתיים.</p>
         </section>
 
         <section id="coach-section" class="card" aria-labelledby="coach-title">
@@ -96,12 +92,8 @@
           <p class="muted">השיחה והחששות נשמרים בקובץ העבודה האישי ונשלחים ל-AI כשמבקשים תשובה. הם אינם מצורפים לחומרי המשתתפים. הצעה של ה-AI משנה שלב רק אחרי אישור מפורש שלך.</p>
         </section>
 
-        <section id="facilitation-section" class="card" aria-labelledby="facilitation-title">
-          <p class="eyebrow">הנחיה היא מיומנות שלומדים ומתרגלים</p><h2 id="facilitation-title">איך להנחות קבוצה</h2>
-          <p>המנחה מכינה תהליך, מאפשרת השתתפות ומסייעת לקבוצה לעבוד יחד. אפשר להתחיל מתרגול קטן, להכין משפטי פתיחה ולבקש ליווי. המדריך מסייע בהכנה; הוא אינו הכשרה או הסמכה מקצועית.</p>
-          <div id="facilitation-guide"></div>
-          <button id="ask-facilitation" class="btn secondary" type="button">נחשוב יחד על ההנחיה שלי</button>
-        </section>
+        <!-- איך להנחות קבוצה — כלי נפרד: ננה (facilitation-advisor.html, 07/10/2026). כאן רק קישור, למי שיש לה/לו ננה. -->
+        <p id="nana-link" class="muted" hidden>להנחיית הקבוצה עצמה — עמדה, שפה, מהלכי שיחה ורגעים מאתגרים — יש כלי נפרד: <a href="facilitation-advisor.html">ננה — מהוראה להנחיה</a>.</p>
 
         <section id="focus-section" class="card" aria-labelledby="focus-title">
           <p class="eyebrow">2 · בוחרים מה לתרגל</p><h2 id="focus-title">מוקד החוסן</h2>
@@ -109,6 +101,7 @@
           <label for="focus">רכיב המוקד</label><select id="focus"></select>
           <div id="focus-description" class="focus-description"></div>
           <button id="analyze-brief" class="btn secondary" type="button">בדיקת התקציר והצעת מוקד</button>
+          <p id="focus-busy" class="busy-line" role="status" hidden></p>
           <div id="recommendation" class="recommendation" hidden></div>
           <div id="clarification-panel" hidden><h3>נחדד לפני שממשיכים</h3><ol id="clarification-questions"></ol><label for="clarifications">התשובות שלנו</label><textarea id="clarifications" rows="3" placeholder="התייחסו לשאלות שמעל, או ציינו איזה מקור משקף את המצב כיום"></textarea></div>
           <label class="check-row"><input id="brief-confirmed" type="checkbox">קראנו את התקציר, בחרנו מוקד והוא מתאים למשתתפים ולתנאים</label>
@@ -127,7 +120,7 @@
         </section>
 
         <section id="adapt-section" class="card" aria-labelledby="adapt-title" hidden>
-          <p class="eyebrow">4 · לומדים ומתאימים</p><h2 id="adapt-title">מה צריך להשתנות?</h2>
+          <p class="eyebrow">4 · לומדים ומתאימים</p><h2 id="adapt-title">מה כדאי לשנות?</h2>
           <p>עדכנו למעלה את התקציר, הזמן, המשתתפים, המרחב או התצפיות. אפשר גם לחבר מיפוי חדש ממסך המיפוי. לפני אישור השינוי נראה את ההסבר ואת השפעתו על המטרה והתרגול.</p>
           <button id="adapt-activity" class="btn secondary" type="button">הצעת התאמה לתנאים המעודכנים</button>
           <details class="linked-option"><summary>גרסה מקושרת למשפחה או לאוכלוסייה נוספת</summary>
@@ -142,11 +135,18 @@
         </section>
       </div>
       <aside class="studio-aside" aria-label="העבודה שלי">
+        <section id="inspiration-section" class="card ideas-side" aria-labelledby="inspiration-title">
+          <div class="section-head"><div><p class="eyebrow">השראה — אפשר גם להתחיל מהתקציר</p><h2 id="inspiration-title">רעיונות לדוגמה</h2></div></div>
+          <p class="muted">אפשר לבחור רעיון ולהתאים אותו לקבוצה שלכם.</p>
+          <div id="inspiration-cards" class="inspiration-grid"></div>
+          <details class="saved-ideas"><summary>הרעיונות ששמרתי <span id="idea-count">(0)</span></summary><div id="saved-ideas"></div></details>
+        </section>
         <section class="card saved-card"><h2>העבודה שלי</h2><p class="muted">שמירה לפי המשתמש/ת במכשיר הזה. אפשר להעביר קובץ עבודה אישי למכשיר אחר ולהמשיך ללא הפקה מחדש.</p><div id="saved-work-list"><p class="muted">בודקים את ההרשאה לפתיחת עבודות שמורות…</p></div><label class="btn secondary file-label">פתיחת קובץ עבודה<input id="import-work" type="file" accept=".json,application/json"></label></section>
         <section class="card compact"><h2>מה רואים בכל פעילות?</h2><ul><li>מטרה ורכיב מוקד אחד.</li><li>מיומנויות אישיות ומשותפות.</li><li>הצעד שמתרגל כל רכיב ומיומנות.</li><li>זמנים, חומרים והנחיה.</li><li>עיבוד, למידה וצעד המשך.</li></ul><p class="muted">אפשר לבחור דרך להשתתף בלי לספר סיפור אישי. מתעדים פעולות ולמידה; אין ציון חוסן אישי.</p></section>
       </aside>
     </div>
   </main>
   <footer class="studio-footer">Begood · חוסן נבנה בפעולות ובמנגנונים משותפים</footer>
+<script src="lib/demo-hook.js"></script>
 </body>
 </html>

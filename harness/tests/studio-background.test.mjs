@@ -26,8 +26,8 @@ const brief = () => studio.newBrief({startingPoint:'משימה משותפת',goa
 function generated() {
   const a = studio.exampleActivity(brief());
   delete a.schemaVersion; delete a.catalogueVersion; delete a.evidenceStatus;
-  a.professionalBasis=[{sourceId:'IAFFacilitation',explanation:'עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות.'}];
-  a.learningGuide.learnBefore=[{sourceId:'IAFFacilitation',focus:'פרק התכנון וההשתתפות: איך מכינים תהליך שבו כל אחד יכול לתרום.'}];
+  a.professionalBasis=[{sourceId:'IAFCompetencies2026',explanation:'עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות.'}];
+  a.learningGuide.learnBefore=[{sourceId:'IAFCompetencies2026',focus:'פרק התכנון וההשתתפות: איך מכינים תהליך שבו כל אחד יכול לתרום.'}];
   a.clarificationQuestions=[];
   return a;
 }
@@ -52,7 +52,7 @@ test('async generate returns a job id, runs the model in the background and only
   const [,done]=await studioRequest(store,{token,action:'status',jobId:out.jobId});
   assert.equal(done.status,'done'); assert.equal(done.httpStatus,200);
   assert.equal(done.result.activity.evidenceStatus,'new-ai');
-  assert.equal(done.result.activity.learningGuide.learnBefore[0].sourceId,'IAFFacilitation');
+  assert.equal(done.result.activity.learningGuide.learnBefore[0].sourceId,'IAFCompetencies2026');
   assert.deepEqual([...store.data.keys()].sort(),before,'the job and its result are not written to storage');
   assert.deepEqual(await studioRequest(store,{token,action:'status',jobId:'no-such-job'}),[200,{status:'unknown'}]);
 }));

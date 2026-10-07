@@ -123,6 +123,7 @@ details.log summary{cursor:pointer;}
 .f label{display:block;font-size:13.5px;font-weight:600;color:var(--muted);margin-bottom:5px;}
 .f .hint{font-size:12.5px;color:var(--muted);font-weight:400;}
 .f .reqmark{font-size:12.5px;color:var(--brick,#8C3A34);font-weight:600;}
+.reqstar{color:#B23A3A;font-weight:800;}
 .f textarea,.f input,.f select{
   width:100%;font-family:inherit;font-size:15.5px;line-height:1.55;color:var(--ink);
   background:var(--ground);border:1px solid var(--hair);border-radius:5px;
@@ -403,7 +404,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
     <span class="spacer"></span>
     <span class="note" id="sqReady"></span>
   </div>
-  <p class="seq-note" id="sqIntro">כל שדה מסומן: חובה, רשות שהמערכת תשלים אם תישאר ריקה, או רשות שהמערכת לא ממציאה אלא רק מתחשבת בה (עובדות על המציאות שלך — מרחב, תקציב, העדפות).
+  <p class="seq-note" id="sqIntro">כל שדה מסומן: עיקרי, רשות שהמערכת תשלים אם תישאר ריקה, או רשות שהמערכת לא ממציאה אלא רק מתחשבת בה (עובדות על המציאות שלך — מרחב, תקציב, העדפות).
     <button type="button" class="linkbtn" id="sqLoadSample">טעינת רצף לדוגמה</button></p>
   <div class="banner" id="sqSampleNote" hidden></div>
   <details class="grp" id="sqImport">
@@ -417,7 +418,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
       <textarea class="pastearea" id="sqDocText" style="min-height:140px;" placeholder="או הדביקי כאן את תוכן המסמך..."></textarea>
       <div class="pair" style="grid-template-columns:1fr auto;align-items:end;">
         <div class="f">
-          <label>מספר המפגשים הנדרש<span class="hint"> · רשות — אם תישאר ריקה, המספר ייקבע לפי המסמך (עד 30)</span></label>
+          <label>מספר המפגשים <span class="reqstar" aria-hidden="true">*</span><span class="hint"> · שדה עיקרי — כמה מפגשים תרצו ברצף (1–30)</span></label>
           <input type="number" id="sqDocN" min="1" max="30" placeholder="לדוגמה: 14 — סמסטר">
         </div>
         <button type="button" class="primary" id="sqImportBtn">ניתוח ופריסה למפגשים</button>
@@ -456,7 +457,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
   <button type="button" id="bFeedback">משוב</button>
   <button type="button" id="bBuild" disabled>הפקת התוצר</button>
   <button type="button" id="bReset">ניקוי</button>
-  <span class="note" id="hint">מלאי את שדות החובה</span>
+  <span class="note" id="hint">מלאי את השדות העיקריים</span>
 </div></div>
 
 <div class="actions" id="actionsSeq" style="display:none"><div class="inner">
@@ -526,7 +527,7 @@ const APPROACH_CARDS = [
   { v:"מישחוק", en:"Gamification",
     who:"המונח החל להופיע בראשית שנות ה־2000 (Nick Pelling); התבסס סביב 2008–2011, וב־2011 Deterding ועמיתיו ניסחו הגדרה אקדמית משפיעה.",
     d:"שימוש ברכיבים מעולם המשחק בתוך פעילות שאינה משחק: משימות, שלבים, נקודות, בחירה, משוב מיידי, הישגים, סיפור מסגרת. מישחוק אינו פשוט \"לשחק משחק בכיתה\".",
-    when:"למי ומתי כדאי: כשצריך לחזק התמדה, מעורבות, תרגול או התקדמות לאורך זמן — ומתאים במיוחד לכישורי חיים ולאינטראקציות חברתיות דינמיות.",
+    when:"למי ומתי כדאי: כשרוצים לחזק התמדה, מעורבות, תרגול או התקדמות לאורך זמן — ומתאים במיוחד לכישורי חיים ולאינטראקציות חברתיות דינמיות.",
     ex:"הכיתה הופכת ל\"יחידת הצלה של הספרייה האבודה\". כל משימת קריאה או חקר חושפת פיסה מארכיון שנעלם. נקודות ניתנות גם על שיפור גרסה קודמת, מתן רמז לקבוצה אחרת או גילוי טעות בטיעון — לא רק על תשובה נכונה.",
     source:[
       { t:"סאבס וגרי, 2024, הזדמנויות לשילוב משחוק בהשכלה הגבוהה — האוניברסיטה הפתוחה", u:"https://cris.openu.ac.il/en/publications/%D7%94%D7%96%D7%93%D7%9E%D7%A0%D7%95%D7%99%D7%95%D7%AA-%D7%9C%D7%A9%D7%99%D7%9C%D7%95%D7%91-%D7%9E%D7%A9%D7%97%D7%95%D7%A7-gamification-%D7%91%D7%94%D7%A9%D7%9B%D7%9C%D7%94-%D7%94%D7%92%D7%91%D7%95%D7%94%D7%94-%D7%A0%D7%99%D7%AA%D7%95%D7%97-%D7%9E%D7%92%D7%9E%D7%95%D7%AA-%D7%95%D7%AA%D7%99/" },
@@ -558,9 +559,9 @@ const APPROACH_CARDS = [
     source:[ { t:"מכון מופ\"ת — שילוב אמנויות בהוראה והדרכה באקדמיה", u:"https://prof.mofet.macam.ac.il/program/amanuyot/" } ] },
   { v:"למידה מבוססת בעיות", en:"Problem-Based Learning",
     who:"פותחה בבית הספר לרפואה של אוניברסיטת McMaster בקנדה בסוף שנות ה־1960 (Howard Barrows ועמיתיו, החל מ־1969); הנרי שמידט ועמיתיו פיתחו גרסה משמעותית באוניברסיטת Maastricht.",
-    d:"בניגוד ללמידה מבוססת פרויקטים, אין חובה לבנות תוצר — הבעיה עצמה מניעה את הלמידה. התלמידים מקבלים מצב מורכב לפני שלמדו את כל החומר ושואלים: מה אנחנו כבר יודעים? מה חסר לנו? מה עלינו ללמוד כדי להבין את הבעיה?",
+    d:"בניגוד ללמידה מבוססת פרויקטים, לא בונים בהכרח תוצר — הבעיה עצמה מניעה את הלמידה. התלמידים מקבלים מצב מורכב לפני שלמדו את כל החומר ושואלים: מה אנחנו כבר יודעים? מה חסר לנו? מה עלינו ללמוד כדי להבין את הבעיה?",
     when:"למי ומתי כדאי: כשרוצים לפתח אבחון, קבלת החלטות, חשיבה מערכתית וחיבור בין ידע תאורטי למצב ממשי — חזקה במיוחד ברפואה, מדעים, הנדסה ומקצועות עם מצבים בלי פתרון יחיד ופשוט.",
-    ex:"התלמידים מקבלים הודעה שבמאגר מים סמוך הופיעה פריחת אצות חריגה, עם נתונים חלקיים בלבד. הם צריכים להחליט מה עליהם ללמוד ולבדוק — טמפרטורה? דשנים? חמצן? אוכלוסיית דגים? — לפני שיוכלו אפילו להציע הסבר.",
+    ex:"התלמידים מקבלים הודעה שבמאגר מים סמוך הופיעה פריחת אצות חריגה, עם נתונים חלקיים בלבד. הם מחליטים מה ללמוד ולבדוק — טמפרטורה? דשנים? חמצן? אוכלוסיית דגים? — לפני שיוכלו אפילו להציע הסבר.",
     source:[
       { t:"Problem solving skills versus knowledge acquisition: the historical dispute that split PBL", u:"https://pmc.ncbi.nlm.nih.gov/articles/PMC6647442/" },
       { t:"Wijnia et al., Educational Psychology Review, 2024", u:"https://doi.org/10.1007/s10648-024-09864-3" },
@@ -811,6 +812,8 @@ const AI_SERVER = "https://sbe-server.onrender.com";
 // בפועל, אחרת ה-abort המקומי "מנצח" בקשה שבכלל הייתה מצליחה.
 // שורת סטטוס גלויה במקום הצהרה טכנית תמידית — מתעדכנת בפועל לפי תוצאת
 // הקריאה האחרונה למודל (19/09/2026), לא לפי הנחה סטטית.
+// בלי חיבור למודל — אין תוצר (07/10/2026, כלל של ד״ר יעל שדה לכל המערכת): לא דוגמה קבועה, לא משוב היוריסטי ולא מסמך מהשדות.
+var NO_MODEL = "אין כרגע חיבור למודל, ולכן לא הופק תוצר — המערכת לא מציגה תוכן קבוע במקום תוצר אמיתי. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים.";
 function setAIStatus(status){
   const chip = document.getElementById("aiStatusChip");
   if (!chip) return;
@@ -864,9 +867,9 @@ async function generateProposals(ctx) {
     setAIStatus("ok");
     return parsed;
   } catch (e) {
-    console.warn("שרת ה-AI לא זמין — נופלת להצעה קבועה. סיבה:", e.message);
+    console.warn("שרת ה-AI לא זמין — לא מוצגת הצעה. סיבה:", e.message);
     setAIStatus("mock");
-    return Object.assign({}, SAMPLE, { _mock: true });
+    return { _noModel: true };
   }
 }
 
@@ -890,7 +893,7 @@ function render() {
       const lab = el("label"); lab.append(f.l);
       // סטטוס השדה (חובה / רשות-תמולא / רשות-לא-תמולא) חייב להופיע תמיד,
       // גם כשיש hint מותאם — ראו ההערה המלאה ב-input-screen.html (22/09/2026).
-      if (f.req) lab.append(el("span",{class:"reqmark"}, " · שדה חובה"));
+      if (f.req) lab.append(el("span",{class:"reqmark"}, " · שדה עיקרי"));
       else if (f.noAutoFill) lab.append(el("span",{class:"hint"}, " · רשות — לא תמולא אוטומטית, אך המערכת תתחשב במה שתכתבי בה"));
       else lab.append(el("span",{class:"hint"}, " · רשות — תמולא על-ידי המערכת אם תישאר ריקה"));
       if (f.hint) lab.append(el("span",{class:"hint"}, " · " + f.hint));
@@ -1130,8 +1133,8 @@ function refresh() {
   document.getElementById("bBuild").disabled = !ok;
   document.getElementById("hint").textContent = ok
     ? "אפשר להפיק משוב או תוצר"
-    : `חסרים ${missing.length} שדות חובה`;
-  document.getElementById("ready").textContent = ok ? "" : "טרם מולאו שדות החובה";
+    : `נשארו ${missing.length} שדות עיקריים למילוי`;
+  document.getElementById("ready").textContent = ok ? "" : "השדות העיקריים עוד לא מולאו";
   adjustActionsPadding();
 }
 
@@ -1180,7 +1183,7 @@ function renderIdeas() {
 document.getElementById("bSuggest").addEventListener("click", async (e) => {
   const reqKeys = [...FIELDS.values()].filter(f => f.req).map(f => f.k);
   if (reqKeys.some(k => !val(k))) {
-    return show("חסרים שדות חובה", el("p",{},"שני השדות הראשונים (המטרה וה-S.M.A.R.T) נדרשים לפני שאפשר לייצר הצעות."));
+    return show("נשארו שדות עיקריים למילוי", el("p",{},"שני השדות הראשונים (המטרה וה-S.M.A.R.T) נדרשים לפני שאפשר לייצר הצעות."));
   }
   e.target.disabled = true; e.target.textContent = "מייצרת...";
   const hintEl = document.getElementById("hint");
@@ -1194,6 +1197,7 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
       approach: state.approach === "locked" ? val("approach") : "",
       specialNotes: state.specialNotes === "locked" ? val("specialNotes") : "",
     });
+    if (out._noModel) { if (hintEl) hintEl.textContent = "⚠ " + NO_MODEL; return; }
     for (const [k,v] of Object.entries(out)) {
       if (!FIELDS.has(k) || state[k] === "locked") continue;
       const n = document.getElementById("i-"+k);
@@ -1418,10 +1422,9 @@ document.getElementById("bFeedback").addEventListener("click", async (e) => {
     let fb;
     try { fb = await computeFeedbackFromFieldsAI(d); }
     catch (err) {
-      console.warn("משוב AI לא זמין — נופלת לבדיקה עצמית היוריסטית. סיבה:", err.message);
+      console.warn("משוב AI לא זמין — לא מופק משוב. סיבה:", err.message);
       setAIStatus("mock");
-      fb = computeFeedbackFromFields(d);
-      fb._mock = true;
+      return show("המשוב לא הופק", el("p",{}, NO_MODEL));
     }
     showFeedback(fb);
   } finally { e.target.disabled = false; e.target.textContent = "משוב"; }
@@ -1474,22 +1477,16 @@ function buildDocView(d, creator) {
 }
 
 function buildCardView(d, creator) {
+  // כרטיס תמציתי — טבלה קצרה לזמן הפעילות (07/10/2026)
   const cv = el("div", { class:"cardview" });
   cv.append(el("h3", {}, "כרטיס תמציתי · " + (d.domain || "פעילות")));
-  const row = (label, v) => { if (!v) return; cv.append(el("div",{class:"cv-row"}, el("b",{},label), el("div",{},v))); };
-  row("מטרה", d.goal);
-  if (d.specialNotes) cv.append(el("div",{class:"cv-row", style:"background:#F5E4E2;border-radius:5px;padding:7px 9px;"},
-    el("b",{},"לשים לב"), el("div",{},d.specialNotes)));
-  const steps = el("div", { class:"cv-row" });
-  steps.append(el("b",{},"שלבים"));
-  const ol = el("ol", { class:"cv-steps" });
+  const ol = el("ol", { class:"cv-steps", style:"margin:0;padding-inline-start:18px" });
   if (d.opening) ol.append(el("li",{},"פתיחה" + (d.openingMin ? ` (${d.openingMin})` : "") + ": " + d.opening));
   if (d.mainActivity) ol.append(el("li",{},"מרכזית" + (d.mainMin ? ` (${d.mainMin})` : "") + ": " + d.mainActivity));
   if (d.closing) ol.append(el("li",{},"סיכום" + (d.closingMin ? ` (${d.closingMin})` : "") + ": " + d.closing));
-  steps.append(ol); cv.append(steps);
-  row("שילוב תנועה", d.movement);
-  row("משאבים", d.resources);
-  cv.append(el("div",{class:"cv-row", style:"margin-top:8px;font-size:11px;color:#5C6771"}, creator || ""));
+  cv.append(SBE_DOC.table([["מטרה", d.goal], ["לשים לב", d.specialNotes], ["שלבים", ol.childNodes.length ? ol : ""],
+    ["שילוב תנועה", d.movement], ["משאבים", d.resources]]));
+  if (creator) cv.append(el("div",{style:"margin-top:6px;font-size:11px;color:#5C6771"}, creator));
   return cv;
 }
 
@@ -1529,10 +1526,23 @@ function buildNarrativeDocView(d, creator, narr) {
   dv.append(el("h2", {}, narr.title || d.domain || "פעילות"));
   dv.append(el("div", { class:"dv-meta" }, [d.domain, d.age, d.duration, approachList(d.approach).join(" + ")].filter(Boolean).join(" · ")));
   const srcLine = renderSourcesLine(d); if (srcLine) dv.append(srcLine);
-  narr.paragraphs.forEach(p => dv.append(el("p", { style:"margin:0 0 11px;line-height:1.7;font-size:14.5px;" }, p)));
-  if (Array.isArray(narr.prepare) && narr.prepare.length) {
-    dv.append(el("div",{class:"dv-sec", style:"margin-top:14px;"}, el("b",{},"מה להכין מראש"),
-      (() => { const ul = el("ul", { style:"margin:4px 0 0;padding-inline-start:18px;" }); narr.prepare.forEach(x => ul.append(el("li",{},x))); return ul; })()));
+  // טבלאות (07/10/2026), כמו ברצף המפגשים: הפסקאות של המודל כשורות (כותרת | תוכן), ומהלך הפעילות בטבלה
+  const str = (x) => (x == null ? "" : String(x)).trim();
+  const LBL = ["למה הפעילות הזאת", "איך זה נראה בפועל", "למה הגישה משרתת את המטרה", "טיפ למורה"];
+  const ul = (xs) => { const u = el("ul", { style:"margin:0;padding-inline-start:18px;" }); xs.forEach(x => u.append(el("li",{},x))); return u; };
+  dv.append(SBE_DOC.table(narr.paragraphs.map((p, i) => [LBL[i] || "ועוד", p])
+    .concat([["התוצר", d.outcome], ["מה להכין מראש", Array.isArray(narr.prepare) && narr.prepare.length ? ul(narr.prepare) : ""]])));
+  const flow = [["פתיחה", d.openingMin, d.opening], ["פעילות מרכזית", d.mainMin, d.mainActivity], ["סיכום", d.closingMin, d.closing]].filter(r => str(r[2]));
+  if (flow.length) {
+    dv.append(el("h3", { style:"font-size:15px;margin:16px 0 4px" }, "מהלך הפעילות"));
+    const t = el("table", { class:"kit-table" });
+    const th = el("thead"); th.append(el("tr", {}, el("th",{},"שלב"), el("th",{},"זמן"), el("th",{},"מה עושים"))); t.append(th);
+    const tb = el("tbody");
+    flow.forEach(([n, m, txt]) => { const lines = str(txt).split(/\n+/).filter(Boolean);
+      tb.append(el("tr", {}, el("th",{},n), el("td",{style:"white-space:nowrap"}, str(m) || "—"), el("td",{}, lines.length > 1 ? ul(lines.map(x => x.replace(/^\d+[.)]\s*/, ""))) : str(txt)))); });
+    const extra = [["שילוב תנועה", d.movement], ["משאבים ועזרים", d.resources]].filter(r => str(r[1]));
+    extra.forEach(([n, v]) => { const td = el("td", {}, str(v)); td.colSpan = 2; tb.append(el("tr", {}, el("th",{},n), td)); });
+    t.append(tb); dv.append(t);
   }
   return dv;
 }
@@ -1545,6 +1555,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   let narr = null;
   try { narr = await synthesizeActivityNarrative(d, creator); }
   finally { e.target.disabled = false; e.target.textContent = "הפקת התוצר"; }
+  if (!narr) return show("התוצר לא הופק", el("p",{}, NO_MODEL));
   body.append(el("h4",{style:"margin-top:0"},"מסמך תוכנית פעילות"));
   if (!narr) body.append(el("p", { class:"savenote", style:"background:#FAEFDC;border-inline-start:3px solid #8F5F2E;padding:8px 11px;border-radius:6px;" },
     "⚠ אין חיבור למודל כרגע — המסמך מוצג מהשדות כפי שמולאו (מצב הדגמה). כשהשרת המקומי פועל, המודל כותב מהם מסמך רציף."));
@@ -1675,10 +1686,9 @@ document.getElementById("bAnalyze").addEventListener("click", async (e) => {
     let fb;
     try { fb = await computeFeedbackFromTextAI(text); }
     catch (err) {
-      console.warn("ניתוח AI לא זמין — נופלת לבדיקה עצמית היוריסטית. סיבה:", err.message);
+      console.warn("ניתוח AI לא זמין — לא מופק ניתוח. סיבה:", err.message);
       setAIStatus("mock");
-      fb = computeFeedbackFromText(text);
-      fb._mock = true;
+      return show("הניתוח לא הופק", el("p",{}, NO_MODEL));
     }
     showFeedback(fb);
   } finally { e.target.disabled = false; e.target.textContent = "ניתוח"; }
@@ -1939,7 +1949,7 @@ function missingRequired(){
 function mechanicalChecks(){
   const facts = [];
   const miss = missingRequired();
-  if (miss.length) facts.push({ type:"gap", text:"שדות חובה חסרים: " + miss.join(", ") + "." });
+  if (miss.length) facts.push({ type:"gap", text:"שדות עיקריים שעוד לא מולאו: " + miss.join(", ") + "." });
   let okT = 0;
   seq.sessions.forEach((s, i) => {
     const n = i + 1;
@@ -1976,7 +1986,7 @@ function mechanicalChecks(){
 
 // ── רכיבי שדה ──
 function statusLabel(kind){
-  if (kind === "req") return el("span", { class:"reqmark" }, " · שדה חובה");
+  if (kind === "req") return el("span", { class:"reqmark" }, " · שדה עיקרי");
   if (kind === "noauto") return el("span", { class:"hint" }, " · רשות — לא תמולא אוטומטית, אך המערכת תתחשב במה שתכתבי בה");
   if (kind === "short") return el("span", { class:"hint" }, " · רשות — תושלם אם ריקה");
   return el("span", { class:"hint" }, " · רשות — תמולא על-ידי המערכת אם תישאר ריקה");
@@ -2433,8 +2443,8 @@ function updateStatus(){
   document.getElementById("sqTime").textContent = (ok || bad) ? `${ok} תואמות · ${bad} לא` : "—";
   const miss = missingRequired();
   const hint = document.getElementById("sqHint");
-  hint.textContent = miss.length ? "חסרים שדות חובה: " + miss.join(", ") : "אפשר להשלים, לקבל משוב ולהפיק תוצר";
-  document.getElementById("sqReady").textContent = miss.length ? `חסרים ${miss.length} שדות חובה` : "";
+  hint.textContent = miss.length ? "נשארו למילוי: " + miss.join(", ") : "אפשר להשלים, לקבל משוב ולהפיק תוצר";
+  document.getElementById("sqReady").textContent = miss.length ? `נשארו ${miss.length} שדות עיקריים למילוי` : "";
   ["bSeqFill", "bSeqImprove", "bSeqBuild"].forEach(id => { document.getElementById(id).disabled = !!miss.length; });
   document.getElementById("bSeqUndo").hidden = !snapshot;
   adjustActionsPadding();
@@ -2501,13 +2511,22 @@ table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 4px;}
 th,td{border:1px solid #CDD3D8;padding:6px 8px;text-align:start;vertical-align:top;}
 th{background:#EDEFF1;font-weight:700;}
 td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;}
-.sess{border:1px solid #CDD3D8;border-radius:8px;padding:14px 16px;margin:0 0 12px;break-inside:avoid;page-break-inside:avoid;}
+.sess{margin:0 0 18px;}
+.sess h3{border-bottom:1px solid #CDD3D8;padding-bottom:4px;break-after:avoid;}
+.goal{font-size:13.5px;margin:4px 0 6px;}
+tr{break-inside:avoid;page-break-inside:avoid;} thead{display:table-header-group;}
+thead th{background:#2E5A7D;color:#fff;}
+table.kv th{width:22%;background:#EDEFF1;}
+table.flow tbody th{width:15%;background:#EDEFF1;} table.flow td.n{width:9%;}
+table.crit-t tbody th{width:22%;background:#EDEFF1;} table.crit-t tr.na td{color:#5C6771;} tr.fact-row.gap th{color:#8C3A34;} tr.fact-row.check th{color:#8F5F2E;} tr.fact-row.ok th{color:#3F6B52;}
+table.end thead th{background:#4A6B5A;}
+td p{margin:0 0 4px;} td ol,td ul{margin:0;}
 .fact{padding:5px 9px;border-radius:5px;margin-bottom:5px;font-size:13.5px;}
 .fact b{font-size:11.5px;margin-inline-end:6px;}
 .fact.ok{background:#DFE9E2;color:#2F4F3E;} .fact.gap{background:#F5E4E2;color:#6E2B26;} .fact.check{background:#F5EAD9;color:#6B4520;}
 .crit{border-bottom:1px solid #E4E7EA;padding:8px 0 10px;break-inside:avoid;page-break-inside:avoid;}
 .crit.na h4{color:#5C6771;}
-.crit .na-tag{font-size:11px;font-weight:600;color:#5C6771;background:#EDEFF1;border-radius:9px;padding:1px 7px;margin-inline-start:6px;}
+.na-tag{display:block;margin-top:3px;width:max-content;font-size:11px;font-weight:600;color:#5C6771;background:#EDEFF1;border-radius:9px;padding:1px 7px;margin-inline-start:6px;}
 .note{font-size:12.5px;color:#5C6771;background:#EDEFF1;border-radius:6px;padding:8px 11px;margin:6px 0 12px;}
 .warn{font-size:12.5px;color:#6B4520;background:#F5EAD9;border-radius:6px;padding:8px 11px;margin:6px 0 12px;}
 .ft{margin-top:26px;font-size:11px;color:#5C6771;border-top:1px solid #CDD3D8;padding-top:8px;}
@@ -2516,7 +2535,8 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;}
 function docShell(title, inner){
   return `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(title)}</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
-<style>${DOC_CSS}</style></head><body><article>${inner}</article></body></html>`;
+<style>${DOC_CSS}</style></head><body><article>${inner}</article>
+</body></html>`;
 }
 function docHeader(kind, title){
   const logo = document.getElementById("brandLogo").src;
@@ -2537,18 +2557,19 @@ function seqDocHTML(narr){
   if (narr && narr.paragraphs && narr.paragraphs.length) {
     h += `<h2>על הרצף</h2>` + narr.paragraphs.map(p => `<p>${nl(p)}</p>`).join("");
   }
+  // תמצית הרצף בטבלה (07/10/2026) — במקום רצף של כותרות קטנות ושורות קצרות
   const goals = seq.goals.map(str).filter(Boolean);
-  if (goals.length) h += `<h2>מטרות</h2><ol>${goals.map(g => `<li>${nl(g)}</li>`).join("")}</ol>`;
-  if (seq.approaches.length) h += `<div class="lbl">גישות ושיטות למידה</div><p>${esc(seq.approaches.join(" · "))}</p>`;
-  if (str(seq.finalProduct)) h += `<div class="lbl">תוצר סופי</div><p>${nl(seq.finalProduct)}</p>`;
-  if (str(seq.assessment)) h += `<div class="lbl">דרכי המדידה, ההערכה והמשוב</div><p>${nl(seq.assessment)}</p>`;
-  const cond = [];
-  if (str(seq.framework)) cond.push(`<div class="lbl">המסגרת</div><p>${nl(seq.framework)}</p>`);
-  if (str(seq.space)) cond.push(`<div class="lbl">המרחב</div><p>${nl(seq.space)}</p>`);
   const li = arr => `<ul>${arr.map(x => `<li>${esc(x.item)}${str(x.note) ? " — " + esc(str(x.note)) : ""}</li>`).join("")}</ul>`;
-  if (seq.prefs.length) cond.push(`<div class="lbl">העדפות</div>${li(seq.prefs)}`);
-  if (seq.limits.length) cond.push(`<div class="lbl">מגבלות</div>${li(seq.limits)}`);
-  if (cond.length) h += `<h2>תנאי המפגשים</h2>` + cond.join("");
+  const facts = [];
+  if (goals.length) facts.push(["מטרות", `<ol>${goals.map(g => `<li>${nl(g)}</li>`).join("")}</ol>`]);
+  if (seq.approaches.length) facts.push(["גישות ושיטות למידה", esc(seq.approaches.join(" · "))]);
+  if (str(seq.finalProduct)) facts.push(["תוצר סופי", nl(seq.finalProduct)]);
+  if (str(seq.assessment)) facts.push(["מדידה, הערכה ומשוב", nl(seq.assessment)]);
+  if (str(seq.framework)) facts.push(["המסגרת", nl(seq.framework)]);
+  if (str(seq.space)) facts.push(["המרחב", nl(seq.space)]);
+  if (seq.prefs.length) facts.push(["העדפות", li(seq.prefs)]);
+  if (seq.limits.length) facts.push(["מגבלות", li(seq.limits)]);
+  if (facts.length) h += `<h2>תמצית הרצף</h2><table class="kv">${facts.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</table>`;
   const filled = seq.sessions.map((s, i) => ({ s, i })).filter(x => !isEmptySession(x.s));
   if (filled.length) {
     h += `<h2>מבט על הרצף</h2><table><thead><tr><th>מפגש</th><th>יעד</th><th>משך</th><th>תוצר המפגש</th></tr></thead><tbody>`;
@@ -2557,24 +2578,20 @@ function seqDocHTML(narr){
       h += `<tr><td class="n">${i + 1}</td><td>${nl(goal)}</td><td class="n">${esc(str(s.duration) || "—")}</td><td>${nl(s.product)}</td></tr>`;
     });
     h += `</tbody></table><h2>המפגשים</h2>`;
+    // לכל מפגש: יעד, טבלת מהלך (שלב · זמן · מה עושים), וטבלת סיום (תוצר והערכה · משאבים ועזרים · מקורות)
     filled.forEach(({ s, i }) => {
-      const withMin = (label, m) => str(m) ? `${label} (${esc(str(m))})` : label;
-      let fl = "";
-      if (str(s.opening)) fl += `<li><b>${withMin("פתיחה", s.openingMin)}:</b> ${nl(s.opening)}</li>`;
+      const rows = [];
+      if (str(s.opening)) rows.push(["פתיחה", s.openingMin, nl(s.opening)]);
       const subs = s.subs.filter(x => str(x.t));
-      if (str(s.main) || subs.length) {
-        fl += `<li><b>${withMin("פעילות מרכזית", s.mainMin)}:</b> ${nl(s.main)}`;
-        if (subs.length) fl += `<ol>${subs.map(x => `<li>${nl(x.t)}${str(x.min) ? ` <span class="meta">(${esc(str(x.min))})</span>` : ""}</li>`).join("")}</ol>`;
-        fl += `</li>`;
-      }
-      if (str(s.closing)) fl += `<li><b>${withMin("סיכום", s.closingMin)}:</b> ${nl(s.closing)}</li>`;
+      if (str(s.main) || subs.length) rows.push(["פעילות מרכזית", s.mainMin, (str(s.main) ? `<p>${nl(s.main)}</p>` : "") +
+        (subs.length ? `<ol>${subs.map(x => `<li>${nl(x.t)}${str(x.min) ? ` <span class="meta">(${esc(str(x.min))})</span>` : ""}</li>`).join("")}</ol>` : "")]);
+      if (str(s.closing)) rows.push(["סיכום", s.closingMin, nl(s.closing)]);
       h += `<section class="sess"><h3>מפגש ${i + 1}<span class="t">${esc(str(s.duration))}</span></h3>`;
-      if (smartSentence(s)) h += `<div class="lbl">יעד המפגש</div><p>${nl(smartSentence(s))}</p>`;
-      if (fl) h += `<div class="lbl">מהלך הפעילות</div><ol>${fl}</ol>`;
-      if (str(s.product)) h += `<div class="lbl">תוצר המפגש והערכתו</div><p>${nl(s.product)}</p>`;
-      if (str(s.resources)) h += `<div class="lbl">משאבים ועזרים</div><p>${nl(s.resources)}</p>`;
+      if (smartSentence(s)) h += `<p class="goal"><b>יעד המפגש:</b> ${nl(smartSentence(s))}</p>`;
+      if (rows.length) h += `<table class="flow"><thead><tr><th>שלב</th><th>זמן</th><th>מה עושים</th></tr></thead><tbody>${rows.map(([t, m, c]) => `<tr><th>${t}</th><td class="n">${esc(str(m) || "—")}</td><td>${c}</td></tr>`).join("")}</tbody></table>`;
       const ss = narr && narr.sessionSources ? narr.sessionSources[i + 1] : null;
-      if (ss && ss.length) h += `<div class="lbl">מקורות להרחבה למפגש</div>${sourceList(ss)}`;
+      const end = [["תוצר המפגש והערכתו", str(s.product) ? nl(s.product) : ""], ["משאבים ועזרים", str(s.resources) ? nl(s.resources) : ""], ["מקורות להרחבה", ss && ss.length ? sourceList(ss) : ""]].filter(x => x[1]);
+      if (end.length) h += `<table class="end"><thead><tr>${end.map(x => `<th>${x[0]}</th>`).join("")}</tr></thead><tbody><tr>${end.map(x => `<td>${x[1]}</td>`).join("")}</tr></tbody></table>`;
       h += `</section>`;
     });
   }
@@ -2603,27 +2620,31 @@ function reportHTML(facts, ai){
   const title = str(seq.topic) || "תכנון רצף מפגשים";
   let h = docHeader("דו״ח ניתוח · תכנון רצף מפגשים", title);
   const tag = { ok:"✓ נבדק", gap:"לתיקון", check:"לבדיקה" };
+  // טבלאות (07/10/2026, "קו אחיד"): בדיקה · מה נמצא; קריטריון · מה עולה · הצעות; סיכום — כותרת | תוכן
   h += `<h2>בדיקות מכניות</h2><p class="note">עובדות שהמערכת בודקת בעצמה — שדות, סכומי זמנים, ואזכורים של דברים שהוגדרו כמגבלה. ״לבדיקה״ פירושו שנמצא משהו שכדאי לוודא, לא הכרעה.</p>`;
-  h += facts.length ? facts.map(f => `<div class="fact ${f.type}"><b>${tag[f.type]}</b>${esc(f.text)}</div>`).join("")
-    : `<div class="fact ok"><b>✓ נבדק</b>לא נמצאו פערים מכניים.</div>`;
+  const fx = facts.length ? facts : [{ type:"ok", text:"לא נמצאו פערים מכניים." }];
+  h += `<table class="kv"><tbody>${fx.map(f => `<tr class="fact-row ${f.type}"><th>${tag[f.type]}</th><td>${esc(f.text)}</td></tr>`).join("")}</tbody></table>`;
   if (ai) {
-    h += `<h2>משוב מקצועי</h2><p class="note">שיפוט של המודל, על סמך קריאת התכנון כולו. ללא ציון מספרי.</p>`;
-    (ai.criteria || []).forEach(c => {
-      const na = c.relevant === false;
-      h += `<div class="crit${na ? " na" : ""}"><h4>${esc(c.title)}${na ? `<span class="na-tag">לא רלוונטי לתכנון הזה</span>` : ""}</h4>`;
-      if (str(c.assessment)) h += `<p>${nl(c.assessment)}</p>`;
-      if (!na && Array.isArray(c.suggestions) && c.suggestions.length) h += `<div class="lbl">הצעות לשיפור</div><ul>${c.suggestions.map(x => `<li>${nl(x)}</li>`).join("")}</ul>`;
-      h += `</div>`;
-    });
+    h += `<h2>משוב מקצועי</h2><p class="note">קריאה מקצועית של המודל, על סמך התכנון כולו. ללא ציון מספרי.</p>`;
+    const crit = (ai.criteria || []);
+    if (crit.length) {
+      h += `<table class="crit-t"><thead><tr><th>הקריטריון</th><th>מה עולה מהתכנון</th><th>הצעות לשיפור</th></tr></thead><tbody>`;
+      crit.forEach(c => {
+        const na = c.relevant === false;
+        const sug = !na && Array.isArray(c.suggestions) && c.suggestions.length ? `<ul>${c.suggestions.map(x => `<li>${nl(x)}</li>`).join("")}</ul>` : "—";
+        h += `<tr${na ? ' class="na"' : ""}><th>${esc(c.title)}${na ? `<span class="na-tag">לא רלוונטי לתכנון הזה</span>` : ""}</th><td>${str(c.assessment) ? nl(c.assessment) : "—"}</td><td>${sug}</td></tr>`;
+      });
+      h += `</tbody></table>`;
+    }
     const sm = ai.summary || {};
-    h += `<h2>סיכום — ללמידה לתכנון הבא</h2>`;
-    if (str(sm.impression)) h += `<div class="lbl">התרשמות כללית</div><p>${nl(sm.impression)}</p>`;
-    const ul = (label, arr) => { if (Array.isArray(arr) && arr.length) h += `<div class="lbl">${label}</div><ul>${arr.map(x => `<li>${nl(x)}</li>`).join("")}</ul>`; };
-    ul("חוזקות התכנון", sm.strengths); ul("חולשות התכנון", sm.weaknesses); ul("הצעות כלליות לשיפור התכנון", sm.suggestions);
+    const rows = [];
+    if (str(sm.impression)) rows.push(["התרשמות כללית", nl(sm.impression)]);
+    const ul = (label, arr) => { if (Array.isArray(arr) && arr.length) rows.push([label, `<ul>${arr.map(x => `<li>${nl(x)}</li>`).join("")}</ul>`]); };
+    ul("חוזקות התכנון", sm.strengths); ul("מה אפשר לחזק בתכנון", sm.weaknesses); ul("הצעות כלליות לשיפור התכנון", sm.suggestions);
+    if (rows.length) h += `<h2>סיכום — ללמידה לתכנון הבא</h2><table class="kv"><tbody>${rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</tbody></table>`;
   } else {
-    h += `<h2>משוב מקצועי</h2><p class="warn">אין חיבור למודל כרגע. המשוב על הקריטריונים דורש קריאה אמיתית של התוכן, ולכן לא מוצג כאן שום ״✓ תקין״ שלא נבדק. במקומו — שאלות לבדיקה עצמית, לפי אותם קריטריונים:</p><ul>`;
-    REPORT_CRITERIA.forEach(c => { h += `<li><b>${esc(c.t)}:</b> ${esc(c.ask)}</li>`; });
-    h += `</ul>`;
+    h += `<h2>משוב מקצועי</h2><p class="warn">אין חיבור למודל כרגע. המשוב על הקריטריונים דורש קריאה אמיתית של התוכן, ולכן לא מוצג כאן שום ״✓ תקין״ שלא נבדק. במקומו — שאלות לבדיקה עצמית, לפי אותם קריטריונים:</p>`;
+    h += `<table class="kv"><tbody>${REPORT_CRITERIA.map(c => `<tr><th>${esc(c.t)}</th><td>${esc(c.ask)}</td></tr>`).join("")}</tbody></table>`;
   }
   h += `<div class="ft">${SBE_CREDIT_HTML} · ${esc(fmtDate(today()))}</div>`;
   return docShell("דו״ח ניתוח — " + title, h);
@@ -2930,10 +2951,11 @@ document.getElementById("bSeqReport").addEventListener("click", async (e) => {
     catch (err) { console.warn("דו״ח AI לא זמין:", err.message); setAIStatus("mock"); }
     finally { done(); }
   }
+  if (!ai && !missingRequired().length) return seqDialog("משוב ודו״ח ניתוח", el("p", {}, NO_MODEL));
   const html = reportHTML(facts, ai);
   const body = el("div");
   if (!ai) body.append(mockNote(missingRequired().length
-    ? "הבדיקות המכניות מוצגות במלואן. המשוב המקצועי ייכתב אחרי שיושלמו שדות החובה (ויהיה חיבור למודל)."
+    ? "הבדיקות המכניות מוצגות במלואן. המשוב המקצועי ייכתב אחרי שיושלמו השדות העיקריים (ויהיה חיבור למודל)."
     : "אין חיבור למודל כרגע — הבדיקות המכניות אמיתיות; במקום משוב מקצועי מוצגות שאלות לבדיקה עצמית."));
   const fr = frameOf(html);
   body.append(fr);
@@ -2999,6 +3021,7 @@ document.getElementById("bSeqBuild").addEventListener("click", async (e) => {
   try { narr = await aiNarrative(); setAIStatus("ok"); }
   catch (err) { console.warn("פתיחה נרטיבית לא זמינה:", err.message); setAIStatus("mock"); }
   finally { done(); }
+  if (!narr) return seqDialog("הפקת התוצר", el("p", {}, NO_MODEL));
   const html = seqDocHTML(narr);
   const body = el("div");
   if (!narr) body.append(mockNote("אין חיבור למודל כרגע — המסמך נבנה מהשדות כפי שמולאו, בלי פסקאות הפתיחה (״על הרצף״) שהמודל כותב."));
@@ -3133,7 +3156,9 @@ document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
   const st = document.getElementById("sqFileStatus");
   if (!text) { st.textContent = "אין עדיין תוכן — העלי קובץ או הדביקי את המסמך."; return; }
   let n = parseInt(document.getElementById("sqDocN").value, 10);
-  n = Number.isFinite(n) ? Math.max(1, Math.min(MAX_SESSIONS, n)) : null;
+  // מספר המפגשים — שדה עיקרי לפני תחילת הניתוח (07/10/2026)
+  if (!Number.isFinite(n) || n < 1) { st.textContent = "כדי להתחיל את הניתוח, כתבו כמה מפגשים תרצו ברצף (1–" + MAX_SESSIONS + ")."; document.getElementById("sqDocN").focus(); return; }
+  n = Math.max(1, Math.min(MAX_SESSIONS, n));
   const nonEmpty = str(seq.topic) || seq.sessions.some(s => !isEmptySession(s));
   if (nonEmpty && !confirm("התכנית שתיבנה מהמסמך תחליף את מה שכבר מילאת בטופס הרצף. להמשיך?")) return;
   const btnEl = e.target;
@@ -3403,7 +3428,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }
@@ -3550,3 +3575,4 @@ body.sbe-hasnav{padding-top:38px;}
   });
 })();
 </script>
+<script src="lib/demo-hook.js"></script>

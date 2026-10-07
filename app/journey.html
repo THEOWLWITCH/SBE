@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
 <script src="lib/resilience-advisor-sources.js"></script>
 <script src="lib/journey-model.js"></script>
+<script src="lib/report-table.js"></script>
 <link rel="stylesheet" href="lib/journey.css">
 <style>
 :root{
@@ -249,7 +250,7 @@ async function viewList(){
   const tmp = el('div', 'jmap'); J.STAGES.forEach(s => { const st = el('div', 'st'); st.appendChild(el('div', 'dot', s.k)); st.appendChild(el('div', 'nm', s.t)); st.appendChild(el('div', 'sb', s.sub)); tmp.appendChild(st); }); c.appendChild(tmp);
   const list = card(); list.appendChild(el('h2', null, 'המסעות שלי')); const lw = el('p', 'muted', 'טוענת...'); list.appendChild(lw);
   const d = await api('jrMine'); lw.remove();
-  if (d._status === 403) { list.appendChild(el('p', 'err', 'כדי לצאת למסע צריך קוד עם הרשאת "מסע אל החוסן".')); return; }
+  if (d._status === 403) { list.appendChild(el('p', 'err', 'כדי לצאת למסע, אפשר להיכנס עם קוד שיש בו הרשאת "מסע אל החוסן".')); return; }
   (d.items || []).forEach(s => {
     const r = el('div', 'ms'); const h = el('h3'); h.appendChild(document.createTextNode(s.unitName)); h.appendChild(el('span', 'tagx', unitT(s.unit))); r.appendChild(h);
     const st = { mapping: 'מיפוי ראשוני', proposal: 'הצעת המסע מחכה לבחירות שלכם', review: 'ההצעה אצל ד״ר יעל שדה', active: 'בדרך — ' + stT(s.stage), done: 'קהילת חוסן — המסע הושלם 🎉' }[s.status] || '';
@@ -277,8 +278,8 @@ async function viewList(){
   const EM_RE = /^[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}$/i;
   const err = errLine(n);
   const go = btn('יוצאים לדרך', '', async () => {
-    if (nm.value.trim().length < 2) return err('צריך לכתוב את שם המסגרת.');
-    if (up.checked && !EM_RE.test(em.value.trim())) return err('כדי לקבל עדכונים צריך כתובת מייל תקינה.');
+    if (nm.value.trim().length < 2) return err('כדי להמשיך, כתבו את שם המסגרת.');
+    if (up.checked && !EM_RE.test(em.value.trim())) return err('כדי לקבל עדכונים, נשמח לכתובת מייל תקינה.');
     go.disabled = true; const r = await api('jrCreate', { unit: sel.value, unitName: nm.value.trim(), by: by.value.trim(), research: cb.checked, email: em.value.trim(), updates: up.checked }); go.disabled = false;
     if (r.id) location.hash = r.id; else err(r._status === 403 ? 'אין הרשאה למסע אל החוסן.' : 'לא הצלחנו ליצור את המסע. נסו שוב.');
   }); go.style.marginTop = '.8rem'; n.appendChild(go);
@@ -314,7 +315,7 @@ function contactBox(){
   l.appendChild(up); l.appendChild(document.createTextNode('לקבל עדכונים במייל: אישור, תשובות, תעודות ותזכורת שבוע לפני כל אבן דרך')); dt.appendChild(l);
   const msg = el('p', 'muted');
   const sv = btn('שמירה', 'btn-ghost', async () => {
-    if (up.checked && !/^[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}$/i.test(em.value.trim())) { msg.textContent = 'צריך כתובת מייל תקינה.'; return; }
+    if (up.checked && !/^[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}$/i.test(em.value.trim())) { msg.textContent = 'נשמח לכתובת מייל תקינה.'; return; }
     sv.disabled = true; const r = await api('jrContact', { id: JR.id, email: em.value.trim(), updates: up.checked }); sv.disabled = false;
     if (r.ok) { JR.contact = r.contact; sm.textContent = r.contact.updates ? '📧 עדכונים במייל: פעילים (' + r.contact.email + ')' : '📧 עדכונים במייל: כבויים'; msg.textContent = 'נשמר ✓'; }
     else msg.textContent = 'לא נשמר. נסו שוב.';
@@ -380,6 +381,13 @@ function mappingText(m){
   return L.join('\n');
 }
 
+
+// טבלאות (07/10/2026), בקו אחיד עם שאר התוצרים: אשכולות, מכשולים ואבני דרך
+function clusterTable(p){ return SBE_TABLE(['האשכול','איפה אתם','מה כבר יש','הצעד הבא'], (p.clusters || []).map(x => [el('b', null, clT(x.c)), el('span', 'cl-chip', stT(x.stage)), x.strength || null, x.next || null]), 'jr-cl'); }
+function failTable(p){ return SBE_TABLE(['מכשול בדרך','מה ראינו','הגשר שאפשר לבנות'], (p.fails || []).map(f => [el('b', null, J.ICON.obstacle + ' ' + ((J.FAILS.find(x => x.k === f.type) || {}).t || 'מכשול') + (f.critical ? ' — חשוב לטפל' : '')), f.seen || null, f.bridge ? J.ICON.bridge + ' ' + f.bridge : null]), 'jr-fl'); }
+function milestoneTable(ms){ return SBE_TABLE(['#','אבן הדרך','שלב','יעדים ואיך יודעים שהושגו'], ms.map((m, i) => { const ul = el('ul'); (m.goals || []).forEach(g => { const li = el('li'); li.appendChild(el('b', null, clT(g.c) + ': ')); li.appendChild(document.createTextNode((g.goal || '') + (g.measure ? ' — ' + g.measure : ''))); ul.appendChild(li); });
+  return [String(i + 1), el('b', null, (m.gate ? J.ICON.gate + ' ' : '') + (m.title || '')), stT(m.stage), ul.childNodes.length ? ul : null]; }), 'jr-ms'); }
+
 // שלב 2: הצעת המסע — אפשרויות, בחירה והסבר
 function decisionBlock(dec, state, onChange){
   const box = el('div', 'dec'); box.appendChild(el('h3', null, dec.q));
@@ -408,11 +416,11 @@ function viewProposal(){
   const c = card(); c.appendChild(el('h2', null, 'הצעת המסע שלכם'));
   if (p.summary) { const ip = el('p', 'intro'); ip.appendChild(inlineRich(p.summary)); c.appendChild(ip); }
   c.appendChild(el('h3', null, 'איפה אתם בכל אשכול'));
-  (p.clusters || []).forEach(x => { const r = el('div', 'obst'); r.appendChild(el('span', 'cl-chip', stT(x.stage))); const t = el('div'); t.appendChild(el('b', null, clT(x.c))); if (x.strength) { t.appendChild(el('div', null, '✓ ' + x.strength)); } if (x.next) t.appendChild(el('div', 'muted', '➜ ' + x.next)); r.appendChild(t); c.appendChild(r); });
+  c.appendChild(clusterTable(p));
   const start = J.journeyStage(Object.fromEntries((p.clusters || []).map(x => [x.c, x.stage])));
   c.appendChild(el('p', 'banner-soft', 'נקודת היציאה של המסע: ' + stT(start) + ' — לפי האשכול שעוד בדרך (אין קיזוז בין אשכולות).'));
   if ((p.fails || []).length) { c.appendChild(el('h3', null, 'מכשולים בדרך — וגשרים שאפשר לבנות'));
-    p.fails.forEach(f => { const r = el('div', 'obst'); r.appendChild(el('span', 'ic', J.ICON.obstacle)); const t = el('div'); t.appendChild(el('b', null, ((J.FAILS.find(x => x.k === f.type) || {}).t || 'מכשול') + (f.critical ? ' — חשוב לטפל' : ''))); if (f.seen) t.appendChild(el('div', null, f.seen)); if (f.bridge) t.appendChild(el('div', 'muted', J.ICON.bridge + ' ' + f.bridge)); r.appendChild(t); c.appendChild(r); });
+    c.appendChild(failTable(p));
   } else c.appendChild(el('p', 'obst', J.ICON.clear + ' לא נמצא כשל מערכתי משמעותי.'));
   const ch = card(); ch.appendChild(el('h2', null, 'ההחלטות שלכם'));
   ch.appendChild(el('p', 'muted', 'זו הצעה ולא הוראה: בחרו בכל החלטה את האפשרות שמתאימה לכם, וספרו מה הוביל אתכם אליה. אפשר להתייעץ עם הצוות לפני השליחה — הבחירות נשמרות במכשיר.'));
@@ -422,7 +430,7 @@ function viewProposal(){
   const err = errLine(ch);
   const go = btn('שליחת הבחירות לד״ר יעל שדה', '', async () => {
     const ids = (p.decisions || []).map(x => x.id).concat('pace');
-    const miss = ids.filter(k => !state[k] || !state[k].option); if (miss.length) return err('צריך לבחור אפשרות בכל החלטה.');
+    const miss = ids.filter(k => !state[k] || !state[k].option); if (miss.length) return err('כדי להמשיך, בחרו אפשרות בכל החלטה.');
     const noEx = ids.filter(k => !state[k].reasons.length && !state[k].explain.trim()); if (noEx.length) return err('נשמח להסבר קצר בכל החלטה — סמנו סיבה או כתבו כמה מילים.');
     err(''); go.disabled = true; go.textContent = 'בונה את אבני הדרך לפי הבחירות שלכם... (עד שתי דקות)';
     try {
@@ -443,7 +451,7 @@ function viewReview(){
   const c = card(); c.appendChild(el('h2', null, 'ההצעה והבחירות אצל ד״ר יעל שדה'));
   c.appendChild(el('p', 'banner-soft', 'קיבלנו! ד״ר יעל שדה תעבור על הבחירות שלכם ותחזור אליכם כאן, במסך הזה. אחרי האישור — יוצאים לדרך.'));
   const ms = (JR.plan || {}).milestones || [];
-  if (ms.length) { c.appendChild(el('h3', null, 'טיוטת אבני הדרך (' + ms.length + ')')); const ol = el('ol', 'tl'); ms.forEach(m => ol.appendChild(el('li', null, (m.gate ? J.ICON.gate + ' ' : '') + m.title + ' — ' + stT(m.stage)))); c.appendChild(ol); }
+  if (ms.length) { c.appendChild(el('h3', null, 'טיוטת אבני הדרך (' + ms.length + ')')); c.appendChild(milestoneTable(ms)); }
 }
 
 // שלב 4: בדרך — אבני דרך, הגשות, תעודות
@@ -475,9 +483,12 @@ function milestoneCard(m, i){
   if (m.gate) h.appendChild(el('span', 'tagx gate', J.ICON.gate + ' שער — סיום ' + stT(m.stage)));
   h.appendChild(el('span', 'tagx ' + ({ approved: 'ok', submitted: 'sub', needs: 'need' }[m.status] || ''), (m.status === 'approved' ? J.ICON.done + ' ' : '') + J.MS_LABEL[m.status]));
   c.appendChild(h); c.appendChild(el('div', 'meta', stT(m.stage) + ' · עד ' + fmt(m.due)));
-  if ((m.goals || []).length) { const ul = el('ul'); m.goals.forEach(g => { const li = el('li'); li.appendChild(el('span', 'cl-chip', clT(g.c))); li.appendChild(document.createTextNode(g.goal)); if (g.measure) li.appendChild(el('div', 'muted', 'איך נדע: ' + g.measure)); ul.appendChild(li); }); c.appendChild(ul); }
-  if ((m.submit || []).length) { c.appendChild(el('b', null, 'מה מגישים:')); const ul = el('ul'); m.submit.forEach(s => ul.appendChild(el('li', null, s))); c.appendChild(ul); }
-  if (m.tip) c.appendChild(el('p', 'muted', '💡 ' + m.tip));
+  // טבלה (07/10/2026, "קו אחיד"): יעדים · מה מגישים · טיפ
+  const rows = [];
+  if ((m.goals || []).length) { const ul = el('ul'); m.goals.forEach(g => { const li = el('li'); li.appendChild(el('span', 'cl-chip', clT(g.c))); li.appendChild(document.createTextNode(g.goal)); if (g.measure) li.appendChild(el('div', 'muted', 'איך נדע: ' + g.measure)); ul.appendChild(li); }); rows.push(['יעדים ואיך נדע', ul]); }
+  if ((m.submit || []).length) { const ul = el('ul'); m.submit.forEach(s => ul.appendChild(el('li', null, s))); rows.push(['מה מגישים', ul]); }
+  if (m.tip) rows.push(['💡 טיפ', m.tip]);
+  if (rows.length) c.appendChild(SBE_TABLE(null, rows, 'ms-table'));
   if (m.status === 'approved' && m.cert) { const a = el('a', 'btn btn-ghost', '🏅 לתעודה'); a.href = 'journey-cert.html?id=' + JR.id + '&code=' + m.cert.code; a.target = '_blank'; a.style.textDecoration = 'none'; c.appendChild(a); }
   if (JR.status === 'active' && (m.status === 'open' || m.status === 'needs')) submitForm(c, m, i);
   threadInline(c, i);
@@ -519,7 +530,7 @@ function threadInline(c, mi){
     if (mi !== null) det.appendChild(kind);
     const tx = document.createElement('textarea'); tx.maxLength = 2000; tx.placeholder = 'כתבו כאן — ההודעה נשמרת במסע ומגיעה לד״ר יעל שדה'; det.appendChild(tx);
     const err = errLine(det);
-    const go = btn('שליחה', 'btn-ghost', async () => { if (tx.value.trim().length < 2) return err('צריך לכתוב משהו.'); go.disabled = true;
+    const go = btn('שליחה', 'btn-ghost', async () => { if (tx.value.trim().length < 2) return err('אפשר לכתוב כאן כמה מילים ואז לשלוח.'); go.disabled = true;
       const r = await api('jrPost', { id: JR.id, mi, kind: mi === null ? 'comment' : kind.value, text: tx.value.trim() }); if (r.ok) await viewJourney(JR.id); else { err('לא נשלח. נסו שוב.'); go.disabled = false; } });
     go.style.marginTop = '.4rem'; det.appendChild(go); t.appendChild(det);
   }
@@ -538,5 +549,6 @@ function route(){ const id = location.hash.replace('#', ''); if (/^[a-z0-9]{6,24
 window.addEventListener('hashchange', route); route();
 })();
 </script>
+<script src="lib/demo-hook.js"></script>
 </body>
 </html>

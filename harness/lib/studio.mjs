@@ -7,13 +7,17 @@ import vm from 'node:vm';
 import { authorizePermission, handleAccess } from './access.mjs';
 
 const studio = createRequire(import.meta.url)('../../app/lib/resilience-studio.js');
-const STUDIO_PERMS = ['studio', 'activity', 'resilience', 'practi', 'leadership'];
+// שפה של הזמנה, לא של חובה — כלל של Begood לכל קריאה למודל (גם לסטודיו, שפונה ל-OpenAI ישירות)
+const INVITE = createRequire(import.meta.url)('../../app/lib/invite-language.js');
+// עד לאישור המקצועי (07/10/2026): רק הרשאת studio (ומנהלת המערכת). כשמאשרים — מוסיפים את
+// 'activity', 'resilience', 'practi', 'leadership' כאן, ב-access-guard.js וב-home.html.
+const STUDIO_PERMS = ['studio'];
 const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
 const STR = { type:'string' };
 const strings = { type:'array', items:STR };
 const focus = { type:'string', enum:studio.COMPONENTS.map(c=>c.id) };
 const object = properties => ({ type:'object', properties, required:Object.keys(properties), additionalProperties:false });
-const stepSchema = object({ id:STR, title:STR, minutes:{type:'number'}, instructions:STR,
+const stepSchema = object({ id:STR, title:STR, minutes:{type:'number'}, instructions:STR, facilitation:STR, space:STR,
   materials:strings, components:{type:'array',items:focus}, individualSkills:strings, sharedSkills:strings });
 const sessionSchema = object({ id:STR, title:STR, purpose:STR, link:STR,
   steps:{type:'array',items:stepSchema}, debrief:strings, nextStep:STR, participantMaterials:STR });
@@ -72,22 +76,14 @@ function safeBrief(input) {
   brief.sources=fields.sources;
   return brief;
 }
+// כל מקורות החוסן הציבוריים (07/10/2026, לבקשת ד״ר יעל שדה) — כמו בננה. מקורות hidden לא נשלחים לעולם.
+// החריג היחיד: מדריכי UNICEF למתבגרים נשמרים להקשר גיל מתאים (נוער, ילדים או גיל עד 17).
 function contextualSources(b, extraContext='') {
   const text=[b.context,b.participants,b.leaderRole,b.goal,b.startingPoint,extraContext].join(' ');
-  const education=/כית|תלמיד|מחנ|בית ספר|גנן|גן ילדים|school|classroom/i.test(text);
-  const leadership=/מנהיג|מנהל|צוות|עובד|קהיל|leader|team|community/i.test(text);
   const ages=b.participantAge+' '+b.leaderAge;
   const youth=/נוער|תלמיד|צעיר|ילד|מתבגר|youth|teen|child|adolescent/i.test(text+' '+ages)
     || /\b(?:[1-9]|1[0-7])\b/.test(ages);
-  const crisis=b.crisis && b.crisis!=='routine';
-  const groups=new Set(['comm']);
-  if(education) ['cls','sel','il'].forEach(g=>groups.add(g));
-  if(leadership) groups.add('lead');
-  if(youth) groups.add('stu');
-  if(crisis) ['sys','leadcr'].forEach(g=>groups.add(g));
-  const selected = PUBLIC_SOURCES.filter(s=>s.sourceId==='IAFFacilitation'
-    || (s.sourceId==='UNICEFFacilitation'?youth:s.sourceId==='Sade2024' || groups.has(s.group)));
-  return selected.map(s=>({...s}));
+  return PUBLIC_SOURCES.filter(s=>youth || s.sourceId!=='UnicefAdolescentKit2026').map(s=>({...s}));
 }
 
 async function mappingAggregate(store, token, mapping, actor) {
@@ -225,8 +221,8 @@ const INSTRUCTIONS = `את/ה מסייע/ת בסטודיו חוסן של Begood:
 גם בבנייה או בהתאמה, אם חסר מידע מהותי או יש סתירה המשנה את הפעולה, החזר שאלות ממוקדות בשדה clarificationQuestions וערכי מצייני מקום בשאר שדות הפעילות; לא מציגים אז ערכה. התחשב בתשובות brief.clarifications. כשהמידע מספיק, clarificationQuestions הוא מערך ריק.
 מוקד שנבחר במפורש נשמר. גיל ותפקיד המוביל נפרדים מגיל והרכב המשתתפים; צוותי עבודה, משפחות וקהילות אינם חייבים להיות כיתה.
 מיפוי הוא תקציר מצרפי מאומת בלבד: selectedStatements הם ההיגדים שנבחרו, לפי מזהה, נוסח וקוטביות; coverage מציין אילו צדדים נמדדו בפועל. ערך good או harm כאשר הצד לא נמדד אינו עדות לתפקוד או לפגיעה. אין להסיק היעדר חוזקה מהיעדר היגד חיובי. שמור על סמנטיקת הכיתה, קולות המשיבים, ההיגדים שנבחרו, תאריך וסבב. אם מיפוי ישן, היקף לא מתאים או תיאור חדש סותר אותו — בקש הבהרה ממוקדת; אין סיבתיות, אבחון או ניבוי התנהגות. אין להפוך תצפיות לציון חוסן אישי.
-ביצירת פעילות: הצג מטרה, מוקד, רכיבים, מיומנויות אישיות ומשותפות דרך שלבים שמתרגלים אותם בפועל. מפגש קבוצתי לבדו אינו תרגול שייכות; כל רכיב נוסף דורש מנגנון מפורש. אחרי התאמה עדכן את מיפוי המיומנויות ולא רק את הכותרת.
-בכל ערכה כלול facilitationPlan מעשי המבוסס על מקור הנחיה שניתן: הכנה לפי התנאים, פתיחה שאפשר לומר, דרכי השתתפות, שאלות עיבוד, טיפול בשתיקה ובמחלוקת וגבולות לעצירה, סגירה ובדיקת המשך. קשר את הנחיית הקבוצה למקור IAFFacilitation או UNICEFFacilitation בשדה professionalBasis; מקור UNICEF מתאים רק להקשר של ילדים או נוער. הנחיות אלה מסייעות להכנה, והכשרה מקצועית וניסיון בהנחיה עדיין חשובים; אל תציג את המערכת כתחליף להכשרה.
+ביצירת פעילות: הצג מטרה, מוקד, רכיבים, מיומנויות אישיות ומשותפות דרך שלבים שמתרגלים אותם בפועל. מפגש קבוצתי לבדו אינו תרגול שייכות; כל רכיב נוסף דורש מנגנון מפורש. אחרי התאמה עדכן את מיפוי המיומנויות ולא רק את הכותרת. לכל שלב: instructions — מה עושים, בקצרה; facilitation — איך מנחים את השלב (משפט פתיחה במרכאות, איך מזמינים להשתתף ולמה שמים לב), בשניים–שלושה משפטים; space — סידור המרחב והקבוצה (למשל מעגל, זוגות, שולחנות של ארבעה), בכמה מילים; materials — עזרים קצרים. הניסוח תמציתי: הערכה מודפסת כטבלה לכל מפגש.
+בכל ערכה כלול facilitationPlan מעשי המבוסס על מקור הנחיה שניתן: הכנה לפי התנאים, פתיחה שאפשר לומר, דרכי השתתפות, שאלות עיבוד, טיפול בשתיקה ובמחלוקת וגבולות לעצירה, סגירה ובדיקת המשך. קשר את הנחיית הקבוצה למקור IAFCompetencies2026 או UnicefAdolescentKit2026 בשדה professionalBasis; מקור UNICEF מתאים רק להקשר של ילדים או נוער. הנחיות אלה מסייעות להכנה, והכשרה מקצועית וניסיון בהנחיה עדיין חשובים; אל תציג את המערכת כתחליף להכשרה.
 בכל ערכה כלול learningGuide — מדריך למידה למנחה, המבוסס על המקורות שניתנו: mechanism — איך הפעילות אמורה לתרגל את מוקד החוסן (השערת תכנון, לא ממצא על הפעילות הזאת); learnBefore — אחד עד שלושה מקורות מתוך professionalSources בלבד (sourceId), ולכל אחד focus: מה ללמוד בו לפני ההנחיה ולמה זה רלוונטי לפעילות; apply — איך ליישם בפועל במפגש; watchFor — פעולות נצפות שיראו אם המנגנון פועל, בלי ציון אישי ובלי הסקה על אדם; limits — מה הפעילות אינה (טיפול, אבחון, פעילות שיעילותה נבדקה) ומתי עוצרים ומשוחחים באופן אישי. אל תמציא מקור ואל תציג מחקר על מנגנון כהוכחה ליעילות הפעילות.
 הצע socialMechanism מתאים שיכול להמשיך אחרי הפעילות: שגרה, לוח משותף, יום קבוע, הסכמה, צוות פעולה או ועדה רק לפי הצורך והתנאים. קבע שם, קצב, תפקידים וגיבוי, השתתפות נגישה, פעולה ראשונה, בדיקת המשך והסבר למנגנון המשותף. כשלא מתאים להוסיף מנגנון, בחר type=none והסבר בשדה mechanism; אל תכפה שגרה או תפקידים.
 זמנים לכל מפגש אינם חורגים מהזמן הזמין; מספר המפגשים תואם לתקציר. גודל הקבוצה מחייב חלוקה מעשית: למשל 28 משתתפים ב-15 דקות לא מאפשרים דקת דיבור לכל אחד במליאה. תאם תפקידים, מרחב וחומרים למה שזמין, ותן חלופות ללא ציוד כשאין חומרים.
@@ -270,7 +266,7 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
   }
   if(brief.crisis==='active-danger') return [422,{error:'בסכנה מיידית עוצרים את הפעילות ופועלים לפי הנחיות הבטיחות המוסמכות למקום. נשארים עם מי שבסכנה ומזעיקים עזרה; חוזרים לתכנון לאחר שהמצב בטוח.'}];
   const apiKey=process.env.OPENAI_API_KEY;
-  if(!apiKey) return [503,{error:'יצירת AI אינה זמינה כעת. אפשר לעבוד עם דוגמת טיוטה ולשמור אותה.'}];
+  if(!apiKey) return [503,{error:'אין כרגע חיבור למודל, ולכן לא הופק תוצר. מה שמילאת נשמר. אפשר לנסות שוב בהמשך.'}];
   const model=process.env.STUDIO_MODEL || 'gpt-6.1-sol';
   const effort=process.env.STUDIO_REASONING_EFFORT || 'medium';
   if(!EFFORTS.includes(effort)) return [503,{error:'הגדרת המודל אינה תקינה.'}];
@@ -279,7 +275,7 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
   const input={action,brief,components:studio.COMPONENTS,professionalSources,
     ...(mapping?{mapping}:{}),...(previous?{previous}: {}),...(consultation || {})};
   const schema=action==='analyze'?RECOMMENDATION_SCHEMA:action==='consult'?CONSULTATION_SCHEMA:ACTIVITY_SCHEMA;
-  const payload={model,reasoning:{effort},store:false,max_output_tokens:16000,instructions:INSTRUCTIONS,
+  const payload={model,reasoning:{effort},store:false,max_output_tokens:16000,instructions:INVITE.apply(INSTRUCTIONS),
     input:[{role:'user',content:[{type:'input_text',text:JSON.stringify(input)}]}],
     text:{format:{type:'json_schema',name:action==='analyze'?'studio_focus':action==='consult'?'studio_consultation':'studio_activity',strict:true,schema}}};
   let provider;
@@ -334,7 +330,7 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
     }
   }
   if(result.professionalBasis.some(b=>!available.has(b.sourceId) || !b.explanation.trim())) errors.push('מקור מקצועי לא מוכר או חסר הסבר');
-  if(!result.professionalBasis.some(b=>['IAFFacilitation','UNICEFFacilitation'].includes(b.sourceId) && available.has(b.sourceId)))
+  if(!result.professionalBasis.some(b=>['IAFCompetencies2026','UnicefAdolescentKit2026'].includes(b.sourceId) && available.has(b.sourceId)))
     errors.push('חסר בסיס מקצועי לתכנית ההנחיה');
   if(studio.FACILITATION_FIELDS.some(field=>!result.facilitationPlan[field].trim())) errors.push('חסרה תכנית הנחיה מעשית מלאה');
   const guide=result.learningGuide;

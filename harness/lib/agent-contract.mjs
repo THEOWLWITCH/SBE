@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import {applyProductPolicy} from './providers.mjs';
 
 export const AGENT_SCHEMA_VERSION = 'agent-proposal/v1';
 export const REVIEWERS = Object.freeze(['pedagogy','resilience_facilitation','safety_sources']);
@@ -10,6 +11,7 @@ const text = x => typeof x==='string' && x.trim().length>0;
 const arrayText = x => Array.isArray(x) && x.length<=100 && x.every(text);
 const forbidden = /(?:^|\/)(?:__proto__|constructor|prototype)(?:\/|$)/;
 const ROOT_PATHS = new Set(['purpose','resilienceComponents','individualSkills','sharedSkills','facilitatorGuide','socialMechanism','steps','pipelineOutput']);
+const compactRole = agent => ['pedagogy','resilience_facilitation'].includes(agent);
 
 export function validateProposal(value,{artifact,sourceLibrary=[],agent}) {
   const keys=['artifactId','baseVersion','changes','rationale','sourceIds','unknowns','riskFlags'];
@@ -23,6 +25,7 @@ export function validateProposal(value,{artifact,sourceLibrary=[],agent}) {
     if(!object(change)||Object.keys(change).some(k=>!['path','value'].includes(k))||!Object.hasOwn(change,'value')||!text(change.path)||forbidden.test(change.path)) throw contractError('proposal_patch');
     const allowed=ROOT_PATHS.has(change.path)||/^steps\/[a-zA-Z0-9_-]{1,80}\/(title|instructions|minutes)$/.test(change.path);
     if(!allowed||paths.has(change.path))throw contractError('proposal_patch');
+    if(compactRole(agent)&&change.path==='pipelineOutput')throw contractError('agent_scope');
     if(Object.hasOwn(artifact.locks||{},change.path)&&JSON.stringify(change.value)!==JSON.stringify(artifact.locks[change.path]))throw contractError('locked_field');
     if(change.path.startsWith('steps/')&&!artifact.content.steps.some(step=>step.id===change.path.split('/')[1])) throw contractError('missing_step');
     paths.add(change.path);
@@ -46,10 +49,14 @@ export function agentEnvelope(artifact,agent,{runId,question='',stepId='',reques
   const content=structuredClone(artifact.content);
   // Converted rendering data is derived again after a patch; avoid two model-editable truths.
   delete content.scenario;
+  // Pedagogy and facilitation review the structured situation and editable
+  // steps. Safety keeps full prose for privacy checks; only roles that see the
+  // full original output may propose replacing it.
+  if(compactRole(agent))delete content.pipelineOutput.documents;
   const envelope={artifactId:artifact.id,baseVersion:artifact.version,runId,agent,schemaVersion:AGENT_SCHEMA_VERSION,
     request:{question:requestType==='concern'&&!['resilience_facilitation','single'].includes(agent)?'':question,stepId,requestType},content,
     sourceCatalogue:sourceLibrary.filter(s=>s.approved===true&&!s.hidden).map(({sourceId,title,citation,version})=>({sourceId,title,citation,version})),
-    allowedPaths:[...ROOT_PATHS,'steps/<stable-id>/title','steps/<stable-id>/instructions','steps/<stable-id>/minutes'],
+    allowedPaths:[...Array.from(ROOT_PATHS).filter(path=>!compactRole(agent)||path!=='pipelineOutput'),'steps/<stable-id>/title','steps/<stable-id>/instructions','steps/<stable-id>/minutes'],
     locks:structuredClone(artifact.locks||{})};
   if(['resilience_facilitation','single'].includes(agent))envelope.privateConcerns=artifact.privateConcerns;
   if(agent==='synthesis') {
@@ -69,4 +76,4 @@ const ROLE_INSTRUCTIONS=Object.freeze({
   synthesis:'Compare the supplied valid proposals and produce one coherent private suggestion. Reconcile compatible changes. If reviewers conflict on a field or recommendation, explain the unresolved choice in unknowns or riskFlags for the human planner rather than silently selecting a majority. Preserve evidence limits and missing-reviewer warnings. You receive no private coaching context and must not infer it.',
   single:'Perform the combined educational, social resilience, group facilitation, privacy and source review. Check goal/age/audience, timing, participation choice, individual/shared skills, facilitator moves and a shared recurring mechanism. Encourage through practical options and peer support without promising success or offering treatment. Put private coaching only in rationale, never in changes, unknowns or riskFlags. Identify missing evidence and context for human review.'
 });
-export const AGENT_SYSTEMS=Object.freeze(Object.fromEntries(Object.entries(ROLE_INSTRUCTIONS).map(([agent,instruction])=>[agent,AGENT_SYSTEM+'\n\nYour responsibility: '+instruction])));
+export const AGENT_SYSTEMS=Object.freeze(Object.fromEntries(Object.entries(ROLE_INSTRUCTIONS).map(([agent,instruction])=>[agent,applyProductPolicy(AGENT_SYSTEM+'\n\nYour responsibility: '+instruction)])));

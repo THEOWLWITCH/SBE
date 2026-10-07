@@ -154,7 +154,7 @@
       state.message = 'שוחזרה הטיוטה המקומית הפרטית.';
     }
     function edited() {
-      state.revision++; state.dirty = true; state.message = 'עריכה מקומית — צריך לשמור לפני אימוץ הצעה או אישור.';
+      state.revision++; state.dirty = true; state.message = 'עריכה מקומית — כדי לאמץ הצעה או לאשר גרסה, אפשר לשמור את העריכה בשרת.';
       persist(); emit('edited');
     }
     function adopt(artifact, revision, type = 'saved', preserveDraft = false) {

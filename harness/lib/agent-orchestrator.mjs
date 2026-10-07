@@ -52,7 +52,7 @@ export async function runAgentReview({artifact,runId,provider,sourceLibrary=[],t
       if(agent==='synthesis'&&extra.missing.length)proposal.riskFlags=[...new Set([...proposal.riskFlags,'missing_reviewers:'+extra.missing.join(',')])];
       result=finish('valid',{proposal,usage:completion.usage||null});
     } catch(error) {
-      const code=['proposal_schema','proposal_sources','proposal_patch','missing_step','locked_field','timeout','aborted','budget_exceeded','invalid_artifact','private_leak'].includes(error.code)?error.code:'provider_error';
+      const code=['proposal_schema','proposal_sources','proposal_patch','agent_scope','missing_step','locked_field','timeout','aborted','budget_exceeded','invalid_artifact','private_leak'].includes(error.code)?error.code:'provider_error';
       result=finish(code==='timeout'?'timeout':code==='aborted'?'cancelled':code==='budget_exceeded'?'budget_exceeded':'failed',{errorCode:code,usage:completion?.usage||error.usage||null});
     } finally {clearTimeout(timer);signal?.removeEventListener('abort',abort);}
     const trace=agentTrace({runId,artifactId:artifact.id,baseVersion:artifact.version,agent,model:provider.model,promptVersion:digest(AGENT_SYSTEMS[agent]),

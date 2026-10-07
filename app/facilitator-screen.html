@@ -455,7 +455,7 @@ function drawFb(){
   });
   const n = chosen.length;
   const st = document.createElement("p"); st.className = "fbstatus" + (FB.valid(n) ? "" : " bad");
-  st.textContent = n < FB.MIN ? "נבחרו " + n + " מדדים. צריך לפחות " + FB.MIN + "."
+  st.textContent = n < FB.MIN ? "נבחרו " + n + " מדדים. אפשר לבחור לפחות " + FB.MIN + "."
     : n >= FB.MAX ? "נבחרו " + FB.MAX + " מדדים — המספר המרבי. כדי להוסיף מדד, הסירי מדד אחר."
     : "נבחרו " + n + " מדדים. אפשר עד " + FB.MAX + ".";
   list.append(st);
@@ -683,7 +683,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }

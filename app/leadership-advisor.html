@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>נוגי — יועצת למנהיגות תומכת חוסן</title>
+<script src="lib/report-table.js"></script>
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -418,7 +419,7 @@ const STU_DIMS = [
     {k:'s_backup', d:'גיבוי בצוות', q:'כשמישהו לא יכול, מישהו אחר יודע להחליף אותו.', look:'הפעילות מתקיימת גם כשחסר מישהו.'}
   ]},
   {t:'קשר עם המבוגרים והשפעה', items:[
-    {k:'s_adult', d:'מבוגר/ת מלווה', q:'יש מבוגר/ת מלווה זמין/ה שהצוות יכול לפנות אליו/ה.', look:'פגישה קבועה, מענה כשצריך.'},
+    {k:'s_adult', d:'מבוגר/ת מלווה', q:'יש מבוגר/ת מלווה זמין/ה שהצוות יכול לפנות אליו/ה.', look:'פגישה קבועה, מענה בזמן אמת.'},
     {k:'s_influence', d:'השפעה אמיתית', q:'להצעות של המועצה או הצוות יש השפעה אמיתית על מה שקורה בבית הספר.', look:'הצעה שהתקבלה ובוצעה.'}
   ]},
   {t:'חוסן וחיבור', opt:1, items:[
@@ -506,12 +507,12 @@ function addableSelect(id,listName,what){
   }
   btn.addEventListener('click',()=>{
     const v=inp.value.replace(/\s+/g,' ').trim();msg.hidden=false;
-    if(v.length<2){msg.textContent='צריך להקליד ערך.';return;}
+    if(v.length<2){msg.textContent='אפשר להקליד ערך ואז ללחוץ על "הוספה לרשימה".';return;}
     btn.disabled=true;msg.textContent='מוסיפה לרשימה...';
     const done=(t)=>{render(v);inp.value='';msg.textContent=t;sel.dispatchEvent(new Event('change'));save();};
     accessApi({action:'listAdd',name:listName,value:v,token:token()}).then(d=>{
       if(d.items){extra=d.items;done('נוסף לרשימה של כולם ונבחר ✓');}
-      else done(d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם צריך להיות מחובר/ת עם ההרשאה המתאימה.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).');
+      else done(d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם, אפשר להיכנס עם ההרשאה המתאימה.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).');
     }).catch(()=>done('נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).')).finally(()=>{btn.disabled=false;});
   });
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();btn.click();}});
@@ -543,12 +544,12 @@ function decorateDim(sec,dm,listName,rebuild){
   const msg=el('p','muted');msg.hidden=true;wrap.appendChild(msg);
   btn.addEventListener('click',()=>{
     const v=inp.value.replace(/\s+/g,' ').replace(/\|/g,' ').trim();msg.hidden=false;
-    if(v.length<8){msg.textContent='צריך לכתוב היגד שלם.';return;}
+    if(v.length<8){msg.textContent='אפשר לכתוב היגד שלם — משפט אחד.';return;}
     if(/^האם\b/.test(v)||/\?\s*$/.test(v)){msg.textContent='כדאי לנסח היגד נייטרלי ולא שאלה — למשל "הצוות מקבל עדכון קבוע..." ולא "האם הצוות...?"';return;}
     btn.disabled=true;msg.textContent='מוסיפה...';
     accessApi({action:'listAdd',name:listName,value:dm.t+'|'+v,token:token()}).then(d=>{
       if(d.items){STMTS=d.items;inp.value='';rebuild();}
-      else msg.textContent=d._status===403?'כדי להוסיף היגד לשאלון של כולם צריך להיות מחובר/ת עם ההרשאה המתאימה.':'ההיגד לא נשמר (אין חיבור לשרת).';
+      else msg.textContent=d._status===403?'כדי להוסיף היגד לשאלון של כולם, אפשר להיכנס עם ההרשאה המתאימה.':'ההיגד לא נשמר (אין חיבור לשרת).';
     }).catch(()=>{msg.textContent='ההיגד לא נשמר (אין חיבור לשרת).';}).finally(()=>{btn.disabled=false;});
   });
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();btn.click();}});
@@ -585,11 +586,11 @@ function renderSituations(keep){
 function loadSituations(){accessApi({action:'listGet',name:SIT_LIST}).then(d=>{if(Array.isArray(d.items)){SIT_COMMUNITY=d.items;renderSituations();}}).catch(()=>{});}
 F('btn-sit-add').addEventListener('click',()=>{
   const v=F('f-sit-new').value.replace(/\s+/g,' ').trim();const msg=F('sit-msg');
-  if(v.length<2){msg.textContent='צריך להקליד את המצב.';msg.hidden=false;return;}
+  if(v.length<2){msg.textContent='אפשר להקליד את המצב ואז ללחוץ על הוספה.';msg.hidden=false;return;}
   const b=F('btn-sit-add');b.disabled=true;msg.hidden=false;msg.textContent='מוסיפה לרשימה...';
   accessApi({action:'listAdd',name:SIT_LIST,value:v,token:token()}).then(d=>{
     if(d.items){SIT_COMMUNITY=d.items;renderSituations(d.value);F('f-sit-new').value='';msg.textContent='נוסף לרשימה של כולם ונבחר ✓';save();}
-    else{renderSituations(v);msg.textContent=d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם צריך להיות מחובר/ת עם הרשאת נוגי.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).';save();}
+    else{renderSituations(v);msg.textContent=d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם, אפשר להיכנס עם הרשאת נוגי.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).';save();}
   }).catch(()=>{renderSituations(v);msg.textContent='נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).';save();})
   .finally(()=>{b.disabled=false;});
 });
@@ -680,7 +681,7 @@ const PERSONA = [
   'חמשת עקרונות החברה מרובת־החוסן (Fathi2022), כשמשברים הם רב־ממדיים, גורמי הגנה עלולים להפוך לגורמי סיכון, והמציאות תנודתית, לא ודאית, מורכבת ועמומה (VUCA): (1) חוסן אישי הוא הבסיס לחוסן הקולקטיבי — ויסות רגשי, דחיית סיפוקים, ניתוח סיבתי, אמפתיה, אופטימיות מציאותית, מסוגלות עצמית, מיקוד במטרה ותחושת קוהרנטיות; אפשר לקדם אותם בשיטתיות, גם אצל אנשי הצוות (למידה מתמשכת, קשיבות). (2) התמודדות נינוחה עם אי־ודאות — להבחין בין בעיה פשוטה, מסובכת, מורכבת או כאוטית (מודל Cynefin) ולהתאים לה דרך פעולה: בפשוטה — נוהל; במסובכת — מומחיות וניתוח; במורכבת — ניסויים קטנים ולמידה; בכאוטית — קודם לפעול ולייצב. וללמוד גם "מהעבר" (מה שעבד) וגם "מהעתיד" — תכנון תרחישים וסימולציות. (3) איזון בין אוטונומיה לחיבור — שכבות, צוותים וכיתות שיכולים להמשיך לתפקד גם כשחלק אחר נפגע, לצד זרימת מידע וידע בין כל החלקים ועם גורמים מחוץ לבית הספר; החלטות מתקבלות ברמה הנמוכה ביותר שיכולה לקבל אותן (סובסידיאריות), ובפורומים משותפים. (4) החלטות מתוך אינטליגנציה קולקטיבית — גיוון דעות, חשיבה עצמאית, ביזור כוח ואמון, והימנעות מ"טיפשות העדר" (חשיבה אחידה, הליכה אחרי הרוב, חוסר שקיפות); בלחץ זמן — שיטה מובנית שמאזנת בין אינטואיציה לחשיבה שקולה של המשתתפים. (5) תרבות למידה עמוקה — למידה מתמדת, גם מניסיון העבר וגם מתרחישים עתידיים, כדי להסתגל ולהתפתח בהתמדה; ערכי ליבה ברורים שמגדירים את הזהות, לצד פתיחות להשתנות ולהסתגל; תפיסה משותפת של האיומים ולכידות.',
   'מודל האיתנות הדו־שכבתי של ד״ר יעל שדה (SadeTrust2026) — מסגרת ניתוח מרכזית לנוגי: (1) שלושה שלבים ושלושה מושגים — מוכנות (לפני המשבר: משאבים, הכשרות, נהלים, תרגול); איתנות (במהלך המשבר: היכולת להמשיך לתפקד, לקבל החלטות ולספק שירות למרות השיבוש); וחוסן (אחרי המשבר: הסתגלות, התאוששות, למידה, צמיחה ותמונת עתיד). זהי באיזה שלב בית הספר נמצא והתאימי את ההמלצות לשלב — בזמן משבר מתמשך המבחן הוא איתנות, לא חוסן במלואו. (2) שתי שכבות — שכבה מבנית (מנגנונים, נהלים, תשתיות) שמייצרת יכולת; ושכבה חברתית־יחסית (שייכות, ערכים, מיומנויות משותפות, אופטימיות, התנדבות, השתתפות ושיתוף פעולה) שמייצרת נכונות ולגיטימציה. (3) האמון הוא המאיץ המקשר: בלי אמון התשתיות נשארות פוטנציאל, הנהלים נשארים מסמכים, ההתנדבות נשארת רצון והשייכות נשארת רגש; עם אמון — הם הופכים לפעולה מתואמת ומהירה. אמון נבנה מהתאמה בין מסר, אמינות, מהירות, נגישות ותגובה בפועל. (4) קהילה חזקה יכולה "לקנות זמן" ולהחזיק מעמד, אבל בלי שכבה מבנית — מיגון, תיאום, תרגול, כוח אדם ומידע — גם המשאב החברתי החזק ביותר נשחק; ושחיקת אמון מצטברת בשקט. (5) יש מצבי ביניים — "איתנות על תנאי" ו"איתנות מתוחה" (ממשיכים לתפקד במחיר צמצום ודחייה) — ולא רק "יש" או "אין". (6) השפה של ההנהגה היא חלק מהמערכת: היא גם משקפת את המצב וגם משפיעה על אמון, ציפיות והיענות. תפקיד ההנהגה: להשקיע באמון כבר בשגרה, לחזק את השכבה המבנית, לזהות מוקדם סימני שחיקה, ולקשר בין היכולת הארגונית לבין ההיענות של הצוות, התלמידים וההורים.',
   'יכולת מוסדית כמפתח לחוסן קהילתי (Fuchs2025): הפער הוא לרוב לא בידע אלא ביישום. כדאי להתייחס ל: תקשורת סיכונים ממוקדת, נגישה ומותאמת שמגיעה לכל הקהילה, כולל אוכלוסיות פגיעות, בכמה ערוצים; הגדרת תפקידים ואחריות ברורה ותיאום בין הגורמים; הכשרה ורשתות שיתוף ידע; קבלת החלטות מכלילה שמגבירה בעלות; תמריצים ומובילי שינוי; ומודעות להטיות כמו "הטיית הנורמליות", ביטחון־יתר ודחיית סיכונים עתידיים.',
-  'ארגז הכלים של ד״ר יעל שדה (SadeTools2026) — כלים לחוסן חברתי בקהילה, מותאמים לבית הספר כקהילה. השתמשי בהם כשהם מתאימים, והתאימי לגיל ולהקשר: (א) שפה מחזקת — כל הודעה של בית הספר (לצוות, להורים, לתלמידים) בגוף ראשון רבים ("אנחנו", "כולנו"); מסר מרגיע יחד עם קריאה לפעולה; תחושת שליטה וניהול (מה כבר נעשה ומה מתוכנן); קישור בין הפרט לכלל; סיפורים, שמות ומקומות מוכרים מבית הספר; הומור עדין כשמתאים; הזמנה למעורבות; שפה פשוטה ולא בירוקרטית; וסיום במסר אופטימי של תקווה. (ב) פעולות לחוסן חברתי בקהילת בית הספר — מכתב חודשי של ההנהלה בגוף ראשון רבים; פתיחת כל ישיבת צוות או אספת הורים במסר מעודד; פינת "פנים מבית הספר"; סיפור אישי של איש/אשת צוות, תלמיד/ה או הורה בעלון; קבוצת תקשורת עם תוכן חברתי ולא רק לוגיסטי; פרסום יוזמות עם הזמנה להצטרף; עדכון חירום בגובה העיניים; קיר פרגון פיזי או דיגיטלי; תעודות הוקרה למתנדבים; שילוב תלמידים ביוזמות; פרסום חגיגי של הצלחות קטנות; סמל או סלוגן חוזר של חוסן; סקרים ושיתוף בהחלטות. (ג) קירוב קבוצות מודרות וחיזוק השייכות שלהן (משפחות חדשות, מפונים, תלמידים ואנשי צוות עם צרכים מיוחדים, רקע תרבותי או אידיאולוגי שונה, צוות חדש) — רפרנט/ית לכל קבוצה; מיפוי עדין של מי לא משתתף/ת ולמה; מפגשי היכרות בין חדשים לוותיקים; מעגלי שיח רב־תרבותיים או בין־דוריים; שילוב נציגים בצוותי התכנון; ציון מועדים של קהילות שונות; תרגום הודעות לשפה נוספת כשצריך; התאמות נגישות; פנייה אישית ישירה, ותודה יזומה לקבוצות שנשכחות. (ד) חוסן רגולטורי — נהלים בשפה ברורה, נגישה ותמציתית; בחינה תקופתית של הנהלים; "נהלים זמניים" למצבים משתנים (משבר, פינוי, שינוי אוכלוסייה); מסמך ערכים וזהות קצר שנכתב יחד עם הצוות, התלמידים וההורים; "תמונת עתיד" של בית הספר; אמנה משותפת (כמו "אמנת שכנים") ליחסי כבוד וסולידריות; שקיפות בנהלים ובתקציבים; ושיתוף בכתיבת נהלים חדשים — כדי להגביר ודאות ואמון ולצמצם קונפליקטים בשינוי ובמשבר. (ה) ועדת חוסן בית־ספרית קבועה — מטרות: לקדם חוסן חברתי, רגשי וקהילתי, לזהות נקודות תורפה וחוזק וליזום מהלכים, ולייעץ להנהלה; תחומים: פעילויות שייכות וסולידריות, נהלים תומכי חוסן, שפה מחברת, קשר עם קבוצות בשוליים, הכנה ותגובה למשבר בתיאום עם צוותי החירום, שיח על זהות וחזון, ואיסוף משוב; הרכב: נציג/ת הנהלה, אנשי חינוך, נציגי תלמידים והורים, ונציגות רגשית אם יש; הוועדה אינה גוף מחליט אלא גוף יוזם, מלווה, מגשר ומניע לפעולה.',
+  'ארגז הכלים של ד״ר יעל שדה (SadeTools2026) — כלים לחוסן חברתי בקהילה, מותאמים לבית הספר כקהילה. השתמשי בהם כשהם מתאימים, והתאימי לגיל ולהקשר: (א) שפה מחזקת — כל הודעה של בית הספר (לצוות, להורים, לתלמידים) בגוף ראשון רבים ("אנחנו", "כולנו"); מסר מרגיע יחד עם קריאה לפעולה; תחושת שליטה וניהול (מה כבר נעשה ומה מתוכנן); קישור בין הפרט לכלל; סיפורים, שמות ומקומות מוכרים מבית הספר; הומור עדין כשמתאים; הזמנה למעורבות; שפה פשוטה ולא בירוקרטית; וסיום במסר אופטימי של תקווה. (ב) פעולות לחוסן חברתי בקהילת בית הספר — מכתב חודשי של ההנהלה בגוף ראשון רבים; פתיחת כל ישיבת צוות או אספת הורים במסר מעודד; פינת "פנים מבית הספר"; סיפור אישי של איש/אשת צוות, תלמיד/ה או הורה בעלון; קבוצת תקשורת עם תוכן חברתי ולא רק לוגיסטי; פרסום יוזמות עם הזמנה להצטרף; עדכון חירום בגובה העיניים; קיר פרגון פיזי או דיגיטלי; תעודות הוקרה למתנדבים; שילוב תלמידים ביוזמות; פרסום חגיגי של הצלחות קטנות; סמל או סלוגן חוזר של חוסן; סקרים ושיתוף בהחלטות. (ג) קירוב קבוצות מודרות וחיזוק השייכות שלהן (משפחות חדשות, מפונים, תלמידים ואנשי צוות עם צרכים מיוחדים, רקע תרבותי או אידיאולוגי שונה, צוות חדש) — רפרנט/ית לכל קבוצה; מיפוי עדין של מי לא משתתף/ת ולמה; מפגשי היכרות בין חדשים לוותיקים; מעגלי שיח רב־תרבותיים או בין־דוריים; שילוב נציגים בצוותי התכנון; ציון מועדים של קהילות שונות; תרגום הודעות לשפה נוספת כשמתאים; התאמות נגישות; פנייה אישית ישירה, ותודה יזומה לקבוצות שנשכחות. (ד) חוסן רגולטורי — נהלים בשפה ברורה, נגישה ותמציתית; בחינה תקופתית של הנהלים; "נהלים זמניים" למצבים משתנים (משבר, פינוי, שינוי אוכלוסייה); מסמך ערכים וזהות קצר שנכתב יחד עם הצוות, התלמידים וההורים; "תמונת עתיד" של בית הספר; אמנה משותפת (כמו "אמנת שכנים") ליחסי כבוד וסולידריות; שקיפות בנהלים ובתקציבים; ושיתוף בכתיבת נהלים חדשים — כדי להגביר ודאות ואמון ולצמצם קונפליקטים בשינוי ובמשבר. (ה) ועדת חוסן בית־ספרית קבועה — מטרות: לקדם חוסן חברתי, רגשי וקהילתי, לזהות נקודות תורפה וחוזק וליזום מהלכים, ולייעץ להנהלה; תחומים: פעילויות שייכות וסולידריות, נהלים תומכי חוסן, שפה מחברת, קשר עם קבוצות בשוליים, הכנה ותגובה למשבר בתיאום עם צוותי החירום, שיח על זהות וחזון, ואיסוף משוב; הרכב: נציג/ת הנהלה, אנשי חינוך, נציגי תלמידים והורים, ונציגות רגשית אם יש; הוועדה אינה גוף מחליט אלא גוף יוזם, מלווה, מגשר ומניע לפעולה.',
   'מנהיגות מסתגלת ומקדמת חוסן (Fathi2022) — מנהיגות ומשילות הן קריטריונים מרכזיים לחוסן קהילתי: המנהיג/ה כ"מחבר/ת" (translational leader) שיוצר/ת קשרים בין אנשים וקבוצות; מתווך/ת, מגשר/ת בקונפליקטים ומעביר/ה ידע בין בעלי עניין; פותח/ת ערוצי תקשורת (גם אנונימיים) למתנגדים, כדי שיזהירו מפני שאננות או מפני החלטות שאינן מתאימות; עורך/ת ניסויים "בטוחים לכישלון" (safe-to-fail) שמאפשרים לפתרונות ולדפוסים חדשים לצמוח מהשטח; מבין/ה שלמערכת מורכבת יש דינמיקה משלה, ולכן תוצאות של התערבות מתבררות לעיתים רק בדיעבד; מטפח/ת תרבות ידידותית לטעויות וניתוח שגיאות; ומבזר/ת את קבלת ההחלטות. הישענות על מנהיג/ה כריזמטי/ת בלבד היא סיכון — כדאי להמליץ על תהליכים מוסדיים שממשיכים לפעול גם בלי האדם הזה.',
   'מצבי סיכון לתלמידים או לאנשי צוות (פגיעה עצמית, פגיעה מינית, התעללות או הזנחה, סכנה): קודם שיחה אישית מכילה ושאלה אם האדם מוכן/ה להיפגש עם איש/אשת מקצוע ואיך; כשיש חובת דיווח — לא מבטיחים סודיות ("אני לא אשאיר אותך לבד עם זה"); ובסכנה מיידית — נשארים ומזעיקים עזרה.',
   'בקיאות והתאמה: הכירי את כל מגוון האפשרויות, והתאימי לתפקיד של המוביל/ה, לשלב החינוכי, לגודל הצוות ובית הספר, למצב ולשלב המשבר — חירום, ייצוב או התאוששות (Hrynevych2026).',
@@ -742,7 +743,7 @@ F('btn-analyze').addEventListener('click',async()=>{
   const need=[];if(!F('f-who').value)need.push('תפקיד');if(!F('f-stage').value)need.push('שלב חינוכי');if(!F('f-sit').value)need.push('מצב');
   if(need.length||miss.length){
     miss.forEach(it=>F('q-'+it.k).classList.add('miss'));
-    err.textContent=(need.length?'צריך לבחור: '+need.join(', ')+'. ':'')+(miss.length?'חסרות תשובות ל-'+miss.length+' היגדים (מסומנים באדום). אפשר לבחור "לא יודע/ת".':'');
+    err.textContent=(need.length?'כדי להמשיך, בחרו: '+need.join(', ')+'. ':'')+(miss.length?'חסרות תשובות ל-'+miss.length+' היגדים (מסומנים באדום). אפשר לבחור "לא יודע/ת".':'');
     err.hidden=false;(need.length?F(!F('f-who').value?'f-who':!F('f-stage').value?'f-stage':'f-sit'):F('q-'+miss[0].k)).scrollIntoView({behavior:'smooth',block:'center'});return;
   }
   err.hidden=true;renderPicture(a);
@@ -827,6 +828,14 @@ function convCard(c){
     if(!v)return;dl.appendChild(el('dt',null,k));const dd=el('dd');dd.appendChild(inlineRich(v));dl.appendChild(dd);});
   box.appendChild(dl);return box;
 }
+// טבלאות בדוח (07/10/2026): המלצה בכל שורה — ההמלצה · מה עושים · לחוסן החברתי
+function titleCell(a,extra){const c=el('div');c.appendChild(el('div','rt-title',a.title||''));const tags=el('div','act-tags');
+  if(a.kind)tags.appendChild(el('span','act-tag kind',a.kind));if(a.lead)tags.appendChild(el('span','act-tag circle','מוביל/ה: '+a.lead));if(extra)tags.appendChild(el('span','act-tag',extra));if(tags.childNodes.length)c.appendChild(tags);return c;}
+function resCell(a){const c=el('div');if(a.mechanism){const p=el('p');p.appendChild(el('b',null,'מה זה בונה: '));p.appendChild(document.createTextNode(a.mechanism));c.appendChild(p);}
+  if(a.resilience){const p=el('p');p.appendChild(inlineRich(a.resilience));c.appendChild(p);}const b=basisEl(a.basis);if(b)c.appendChild(b);return c.childNodes.length?c:null;}
+function recTable(rec,title,items,first){if(!(items||[]).length)return;rec.appendChild(el('h3',null,title));
+  rec.appendChild(SBE_TABLE([first||'ההמלצה','מה עושים','לחוסן החברתי'],items.map(a=>{const dd=richText(a.description||'');dd.classList.add('act-d');return [titleCell(a,a.for),dd,resCell(a)];}),'acts'));}
+function domTable(items){if(!(items||[]).length)return el('p','muted','—');return SBE_TABLE(null,items.map(it=>{const c=el('div');c.appendChild(inlineRich(it.text||''));const r=resEl(it.resilience);if(r)c.appendChild(r);return [it.domain||'',c];}));}
 function section(card,title,items,fn){if(!(items||[]).length)return;card.appendChild(el('h3',null,title));items.forEach(x=>card.appendChild(fn(x)));}
 function metaLine(R){return [R.who,R.mode,R.school?'בית ספר '+R.school:'',R.stage,R.sit?'מצב: '+R.sit:'','הופק: '+new Date(R.at).toLocaleDateString('he-IL',{day:"2-digit",month:"2-digit",year:"2-digit"})].filter(Boolean).join(' · ');}
 function renderReport(){
@@ -842,28 +851,29 @@ function renderReport(){
   const doc=el('div','card');doc.id='report-doc';
   doc.appendChild(el('h2',null,'דוח סיכום והמלצות — ההנהגה ככוח שמחזק את החוסן החברתי'));
   doc.appendChild(el('p','muted',metaLine(R)+' · על סמך שאלון הפתיחה'));
-  if((d.answers||[]).length){doc.appendChild(el('h3',null,'תשובות לשאלות שלך'));d.answers.forEach(x=>{const c=el('div','act');c.appendChild(el('div','act-t',x.question||''));const dd=richText(x.answer||'');dd.classList.add('act-d');c.appendChild(dd);doc.appendChild(c);});}
+  if((d.answers||[]).length){doc.appendChild(el('h3',null,'תשובות לשאלות שלך'));doc.appendChild(SBE_TABLE(null,d.answers.map(x=>[x.question||'',richText(x.answer||'')])));}
   const sum=el('div');sum.id='report-sum';
   sum.appendChild(el('h2',null,'א. תמונת המצב'));
   if(d.intro){const ip=el('p','intro');ip.appendChild(inlineRich(d.intro));sum.appendChild(ip);}
   if(d.lens){const l=el('div','lens');l.appendChild(el('b',null,'איך המחקר על חוסן חברתי קורא את התמונה: '));l.appendChild(inlineRich(d.lens));sum.appendChild(l);}
   if(d.twoLayer&&(d.twoLayer.phase||d.twoLayer.structural||d.twoLayer.social||d.twoLayer.trust)){const t=d.twoLayer,box2=el('div','layers');box2.appendChild(el('h3',null,'מודל האיתנות הדו־שכבתי'));
-    [['השלב',t.phase],['השכבה המבנית',t.structural],['השכבה החברתית־יחסית',t.social],['האמון — המאיץ המקשר',t.trust]].forEach(([k,v])=>{if(!v)return;const r=el('div','layer');r.appendChild(el('b',null,k));const p=el('p');p.appendChild(inlineRich(v));r.appendChild(p);box2.appendChild(r);});
+    box2.appendChild(SBE_TABLE(null,[['השלב',t.phase],['השכבה המבנית',t.structural],['השכבה החברתית־יחסית',t.social],['האמון — המאיץ המקשר',t.trust]].filter(([,v])=>v).map(([k,v])=>[k,inlineRich(v)])));
     sum.appendChild(box2);}
-  sum.appendChild(el('h3',null,'חוזקות'));sum.appendChild(textList(d.strengths));
-  sum.appendChild(el('h3',null,'אתגרים — כיווני צמיחה'));sum.appendChild(textList(d.challenges));
+  sum.appendChild(el('h3',null,'חוזקות'));sum.appendChild(domTable(d.strengths));
+  sum.appendChild(el('h3',null,'אתגרים — כיווני צמיחה'));sum.appendChild(domTable(d.challenges));
   if((d.priorities||[]).length){sum.appendChild(el('h3',null,'שלוש העדיפויות המרכזיות'));const ol=el('ol','prio');d.priorities.forEach(p=>{const li=el('li');const sp=el('span');const o=typeof p==='string'?{text:p}:p;sp.appendChild(inlineRich(o.text||''));const r=resEl(o.resilience);if(r)sp.appendChild(r);li.appendChild(sp);ol.appendChild(li);});sum.appendChild(ol);}
   doc.appendChild(sum);
 
   const rec=el('div');rec.id='report-rec';
   rec.appendChild(el('h2',null,'ב. המלצות — לפיתוח מנהיגות תומכת חוסן'));
-  section(rec,'1. פעולות מרכזיות',d.actions,a=>withRes(actCard({title:a.title,kind:a.kind,circle:a.lead?'מוביל/ה: '+a.lead:'',description:a.description,mechanism:a.mechanism,basis:a.basis},a.for),a.resilience));
-  section(rec,'2. צוות, שותפים וממלאי מקום',d.team,recCard);
-  section(rec,'3. תקשורת, פירגון ועידוד',d.communication,recCard);
-  section(rec,'4. רווחת הצוות וההנהגה',d.wellbeing,recCard);
-  section(rec,'5. שותפות עם תלמידים',d.students,recCard);
-  section(rec,'6. שיחות מומלצות — עם הנחיות',d.conversations,convCard);
-  if((d.plan||[]).length){rec.appendChild(el('h3',null,'7. תוכנית צעדים'));const ul=el('ul','plan');d.plan.forEach(p=>{const li=el('li');li.appendChild(el('span','when',p.when||''));const w=el('span');w.appendChild(inlineRich(p.what||''));li.appendChild(w);ul.appendChild(li);});rec.appendChild(ul);}
+  recTable(rec,'1. פעולות מרכזיות',d.actions,'הפעולה');
+  recTable(rec,'2. צוות, שותפים וממלאי מקום',d.team);
+  recTable(rec,'3. תקשורת, פירגון ועידוד',d.communication);
+  recTable(rec,'4. רווחת הצוות וההנהגה',d.wellbeing);
+  recTable(rec,'5. שותפות עם תלמידים',d.students);
+  if((d.conversations||[]).length){rec.appendChild(el('h3',null,'6. שיחות מומלצות — עם הנחיות'));d.conversations.forEach(c=>{rec.appendChild(el('h4',null,'שיחה עם '+(c.with||'')));
+    rec.appendChild(SBE_TABLE(null,[['מטרה',c.goal],['לחוסן החברתי',c.resilience],['איפה ומתי',c.setting],['פתיחה',c.opening],['שאלות המשך',(c.followups||[]).length?(()=>{const u=el('ul');c.followups.forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));u.appendChild(li);});return u;})():''],['סיום',c.closing]].filter(([,v])=>v).map(([k,v])=>[k,v instanceof Node?v:inlineRich(v)])));});}
+  if((d.plan||[]).length){rec.appendChild(el('h3',null,'7. תוכנית צעדים'));rec.appendChild(SBE_TABLE(['מתי','מה עושים'],d.plan.map(p=>[el('b',null,p.when||''),inlineRich(p.what||'')]),'plan-t'));}
   rec.appendChild(SBE_WRITER.reportSection(d,{el,inlineRich,richText},'8. עקרונות החוסן בתקשורת של ההנהגה','הודעות מוכנות לשליחה — כתובות לפי עקרונות החוסן'));
   if((d.checks||[]).length){rec.appendChild(el('h3',null,'9. כדאי לבדוק'));const ul=el('ul','tl');d.checks.forEach(x=>ul.appendChild(el('li',null,x)));rec.appendChild(ul);}
   const foot=el('p','muted','הדוח הופק על ידי מודל שפה על סמך שאלון הפתיחה ומבוססים על ');const a=el('a',null,'רשימת המקורות');a.href='resilience-advisor-sources.html?a=nugi';a.target='_blank';a.style.color='var(--spoken)';foot.appendChild(a);
@@ -953,7 +963,7 @@ F('fb-send').addEventListener('click',()=>{
   const text=F('fb-text').value.trim(),name=F('fb-name').value.trim(),contact=F('fb-contact').value.trim(),err=F('fb-err');
   const okContact=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)||contact.replace(/[^0-9]/g,'').length>=9;
   err.style.color='';
-  if(!name||!contact||text.length<2){err.textContent='צריך למלא שם, מייל או טלפון, ותוכן ההודעה.';err.hidden=false;return;}
+  if(!name||!contact||text.length<2){err.textContent='כדי לשלוח, נשמח לשם, למייל או לטלפון, ולתוכן ההודעה.';err.hidden=false;return;}
   if(!okContact){err.textContent='המייל או הטלפון לא נראים תקינים.';err.hidden=false;return;}
   const b=F('fb-send');b.disabled=true;b.textContent='שולחת...';
   accessApi({action:'fbSubmit',type:'פנייה',text,name,contact,source:'נוגי',page:'leadership-advisor'}).then(d=>{
@@ -975,5 +985,6 @@ const a0=answers();if(Object.keys(a0).length)renderPicture(a0);
 if(STATE.report){renderReport();renderChat();}
 })();
 </script>
+<script src="lib/demo-hook.js"></script>
 </body>
 </html>

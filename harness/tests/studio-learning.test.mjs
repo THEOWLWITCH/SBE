@@ -25,8 +25,8 @@ const FOCUS = 'פרק התכנון וההשתתפות: איך מכינים תה�
 function generated() {
   const a = studio.exampleActivity(brief());
   delete a.schemaVersion; delete a.catalogueVersion; delete a.evidenceStatus;
-  a.professionalBasis=[{sourceId:'IAFFacilitation',explanation:'עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות.'}];
-  a.learningGuide.learnBefore=[{sourceId:'IAFFacilitation',focus:FOCUS}];
+  a.professionalBasis=[{sourceId:'IAFCompetencies2026',explanation:'עקרונות הכנת תהליך והשתתפות; אין בכך הוכחה ליעילות הפעילות.'}];
+  a.learningGuide.learnBefore=[{sourceId:'IAFCompetencies2026',focus:FOCUS}];
   a.clarificationQuestions=[];
   return a;
 }
@@ -49,7 +49,7 @@ test('a generated kit links the guide to bank sources (name, link, version, stat
   const [status,out]=await run(generated());
   assert.equal(status,200);
   const lb=out.activity.learningGuide.learnBefore;
-  assert.equal(lb.length,1);assert.equal(lb[0].sourceId,'IAFFacilitation');assert.equal(lb[0].focus,FOCUS);
+  assert.equal(lb.length,1);assert.equal(lb[0].sourceId,'IAFCompetencies2026');assert.equal(lb[0].focus,FOCUS);
   assert.match(lb[0].url,/iaf-world\.org/);assert.equal(lb[0].status,'existing-bank');assert.match(lb[0].version,/^sha256:/);
   assert.ok(studio.LEARNING_FIELDS.every(k=>out.activity.learningGuide[k].trim()));
 });
@@ -80,10 +80,10 @@ test('older work files without a guide adapt; hidden sources in a saved guide ne
   assert.equal(status,200);
   assert.deepEqual(input.previous.learningGuide,{mechanism:'',apply:'',watchFor:'',limits:'',learnBefore:[]});
   const withHidden=studio.exampleActivity(brief());
-  withHidden.learningGuide.learnBefore=[{sourceId:'SadeTools2026',focus:'כתב יד'},{sourceId:'IAFFacilitation',focus:FOCUS}];
+  withHidden.learningGuide.learnBefore=[{sourceId:'SadeTools2026',focus:'כתב יד'},{sourceId:'IAFCompetencies2026',focus:FOCUS}];
   [status]=await handleStudio(store,{token,action:'adapt',brief:brief(),previous:withHidden},{fetchImpl});
   assert.equal(status,200);
-  assert.deepEqual(input.previous.learningGuide.learnBefore.map(s=>s.sourceId),['IAFFacilitation']);
+  assert.deepEqual(input.previous.learningGuide.learnBefore.map(s=>s.sourceId),['IAFCompetencies2026']);
   [status]=await handleStudio(store,{token,action:'consult',brief:brief(),stage:'learning',question:'מה כדאי לקרוא קודם?',previous:withHidden},
     {fetchImpl:async(url,opts)=>{input=JSON.parse(JSON.parse(opts.body).input[0].content[0].text);
       return response({answer:'כדאי להתחיל בפרק ההשתתפות.',encouragement:'',nextSteps:[],questions:[],suggestedInstructions:'',professionalBasis:[]});}});
@@ -94,7 +94,7 @@ test('older work files without a guide adapt; hidden sources in a saved guide ne
 
 test('the guide is kept in the shared version but contains no private coaching material',()=>{
   const a=studio.exampleActivity(brief());
-  a.learningGuide=studio.learningGuide({...a.learningGuide,learnBefore:[{sourceId:'IAFFacilitation',focus:FOCUS,name:'IAF',url:'https://iaf-world.org/discover-the-iaf/'}]});
+  a.learningGuide=studio.learningGuide({...a.learningGuide,learnBefore:[{sourceId:'IAFCompetencies2026',focus:FOCUS,name:'IAF',url:'https://iaf-world.org/discover-the-iaf/'}]});
   a.coach={concerns:'חשש פרטי',messages:[{role:'user',text:'שיחה פרטית'}]};
   const shared=studio.publicActivity(a);
   assert.equal(shared.learningGuide.learnBefore[0].focus,FOCUS);

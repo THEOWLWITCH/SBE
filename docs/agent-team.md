@@ -65,6 +65,8 @@ The model output is a strict patch proposal:
 
 Allowed paths are purpose, resilience components, individual/shared skills, facilitator guide, social mechanism, the complete step list, the gated pipeline output, and a known step's title/instructions/minutes. Identity, tenant, status, approval, locked context, history, and publication are not editable by the model. Prototype paths and extra contract keys are rejected. Source IDs must come from the separately supplied server-approved catalogue; a user source cannot approve itself. The patched candidate must pass the real domain gate before it becomes a stored proposal and again before human acceptance.
 
+Pedagogy and resilience/facilitation reviewers receive the structured situation and editable steps without the duplicated `pipelineOutput.documents` prose. These two roles cannot replace `pipelineOutput`. Safety/source review, single review and synthesis retain the full original prose for their checks. Server product-language policy is part of the actual prompt budget and trace hash. This keeps the shipped document-size fixture within the shared team budget without hiding a larger reservation.
+
 Successful reviewer proposals are stored as they finish, even if another reviewer fails. Retrying the same request with `retry:true` reuses successful reviewers and invokes missing work only. A recovered reviewer may produce a fresh synthesis while preserving the older partial candidate. Reusing an idempotency key with different request content returns 409. Repeating a finished review without `retry` returns its stored result without another provider call.
 
 ## Bounds, cancellation and traces

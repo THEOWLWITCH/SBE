@@ -3,6 +3,8 @@
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/ai-status.js"></script>
+<script src="lib/report-table.js"></script>
+<script src="lib/product-doc.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -255,11 +257,11 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <summary>פרטי העבודה<span class="count" id="n-details"></span></summary>
   <div class="grp-b">
     <div class="f" data-req="1">
-      <label>שם היוצר/ת <span class="reqmark">· שדה חובה</span> <span class="hint">מופיע על גבי המשוב</span></label>
+      <label>שם היוצר/ת <span class="reqmark">· שדה עיקרי</span> <span class="hint">מופיע על גבי המשוב</span></label>
       <input id="creatorName" placeholder="השם שלך">
     </div>
     <div class="f" data-req="1">
-      <label>גיל / שלב הכותב/ת <span class="reqmark">· שדה חובה</span> <span class="hint">קובע את רף הציפייה — שפה, מורכבות, מבנה</span></label>
+      <label>גיל / שלב הכותב/ת <span class="reqmark">· שדה עיקרי</span> <span class="hint">קובע את רף הציפייה — שפה, מורכבות, מבנה</span></label>
       <div class="customsel" id="ageSel"></div>
       <input type="hidden" id="i-age">
     </div>
@@ -355,6 +357,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <div class="dlg-b" id="dlgB"></div>
   <div class="dlg-f" id="dlgF">
     <button type="button" class="primary" id="bSaveTxt">שמירה למחשב</button>
+    <button type="button" id="bPrintFb">הדפסה / שמירה כ-PDF</button>
     <button type="button" id="dlgX">סגירה</button>
   </div>
 </dialog>
@@ -702,7 +705,7 @@ $("critAddBtn").addEventListener("click", async () => {
   $("critNewTitle").value = ""; $("critNewDetail").value = "";
   selectedCriteria.add(title); renderCriteria(); syncHint(); saveDraft();
   if (!$("critShare").checked) return critMsg("נוסף לקריטריונים שלך ונבחר ✓", true);
-  if (!token()) return critMsg("נוסף לקריטריונים שלך ונבחר ✓ כדי להציע אותו לקהילה צריך להיכנס עם קוד.", true);
+  if (!token()) return critMsg("נוסף לקריטריונים שלך ונבחר ✓ כדי להציע אותו לקהילה, אפשר להיכנס עם קוד.", true);
   critMsg("נוסף לקריטריונים שלך ונבחר ✓ שולחת הצעה לקהילה...", true);
   const setMine = (patch) => saveMyItems(myItems().map(x => x.value === title ? { ...x, ...patch } : x));
   try {
@@ -733,9 +736,9 @@ async function loadCommunity(){
 // לפי הנחיות המנחה (שדה "הנחיות המשימה") / משולב — כל האפשרויות יחד.
 const FB_KINDS = [
   { k:"criteria", t:"קריטריונים לכתיבה אקדמית", d:"משוב לפי הקריטריונים שתסמני למטה — הקבועים, שלך או מהקהילה." },
-  { k:"style", t:"משוב רך — סגנון, משלב וקוהרנטיות", d:"משוב עדין שמתמקד באיך שהעבודה כתובה: סגנון וזרימה, משלב לשון, וקוהרנטיות — החיבור בין משפטים, פסקאות ורעיונות. לא צריך לסמן קריטריונים." },
-  { k:"structure", t:"מבנה כללי, פסקאות ותחביר", d:"משוב על השלד של העבודה: המבנה הכללי (פתיחה, גוף, סיכום, פרקים וכותרות), בניית פסקאות, ותחביר — משפטים, פיסוק ומילות קישור. לא צריך לסמן קריטריונים." },
-  { k:"task", t:"לפי הנחיות המנחה", d:"משוב שבודק את העבודה מול ההנחיות או המחוון שהעלית בשדה \"הנחיות המשימה\" — דרישה אחר דרישה. לא צריך לסמן קריטריונים." },
+  { k:"style", t:"משוב רך — סגנון, משלב וקוהרנטיות", d:"משוב עדין שמתמקד באיך שהעבודה כתובה: סגנון וזרימה, משלב לשון, וקוהרנטיות — החיבור בין משפטים, פסקאות ורעיונות. אין צורך לסמן קריטריונים." },
+  { k:"structure", t:"מבנה כללי, פסקאות ותחביר", d:"משוב על השלד של העבודה: המבנה הכללי (פתיחה, גוף, סיכום, פרקים וכותרות), בניית פסקאות, ותחביר — משפטים, פיסוק ומילות קישור. אין צורך לסמן קריטריונים." },
+  { k:"task", t:"לפי הנחיות המנחה", d:"משוב שבודק את העבודה מול ההנחיות או המחוון שהעלית בשדה \"הנחיות המשימה\" — דרישה אחר דרישה. אין צורך לסמן קריטריונים." },
   { k:"combined", t:"משוב משולב", d:"כל האפשרויות יחד: הקריטריונים שתסמני, משוב רך על סגנון, משלב וקוהרנטיות, מבנה כללי, פסקאות ותחביר, ובדיקה מול הנחיות המנחה (אם הועלו)." },
 ];
 const STYLE_CRITERIA = [
@@ -934,25 +937,6 @@ async function computeFeedbackAI(text, age, criteriaList, mode, task, kind) {
   return parsed;
 }
 
-// נפילה חזרה היוריסטית — כנה ומינימלית בכוונה (לא מתיימרת לקרוא תוכן),
-// אותו עיקרון כמו כל מנגנון מוקאפ אחר בפרויקט: מתויגת בגלוי, לא מזויפת.
-function computeFeedbackMock(text, criteriaList) {
-  const words = text.trim().split(/\s+/).filter(Boolean);
-  const sentences = text.split(/[.!?]/).filter(s => s.trim());
-  const avgWordsPerSentence = sentences.length ? (words.length / sentences.length).toFixed(1) : "0";
-  return {
-    overall: "מצב הדגמה — זו לא קריאה אמיתית של התוכן, רק נתונים גולמיים על הטקסט.",
-    criteria: criteriaList.map(c => ({
-      title: c.v,
-      strengths: [],
-      improvements: [
-        "אין חיבור למודל כרגע, ולכן אי אפשר לתת משוב אמיתי על \"" + c.v + "\".",
-        "נתון טכני בלבד: " + words.length + " מילים, " + sentences.length + " משפטים, בממוצע כ-" + avgWordsPerSentence + " מילים למשפט.",
-      ],
-    })),
-  };
-}
-
 let LAST_FEEDBACK = null;
 function renderFeedback(fb, mock) {
   const body = $("dlgB"); body.textContent = "";
@@ -960,19 +944,10 @@ function renderFeedback(fb, mock) {
   if (fb.overall) body.append(el("p", { style:"margin:0 0 14px;color:var(--muted);" }, fb.overall));
   const fbList = fb.taskFit && ((fb.taskFit.strengths||[]).length || (fb.taskFit.improvements||[]).length)
     ? [{ title:"התאמה להנחיות המשימה", ...fb.taskFit }, ...(fb.criteria || [])] : (fb.criteria || []);
-  fbList.forEach(c => {
-    const sec = el("div", { class:"fb-sec" });
-    sec.append(el("h4", {}, c.title));
-    if (c.strengths && c.strengths.length) {
-      sec.append(el("b", { class:"fb-l" }, "מה עובד טוב"));
-      const ul = el("ul"); c.strengths.forEach(s => ul.append(el("li",{},s))); sec.append(ul);
-    }
-    if (c.improvements && c.improvements.length) {
-      sec.append(el("b", { class:"fb-l gap" }, "כדאי לחזק"));
-      const ul = el("ul"); c.improvements.forEach(s => ul.append(el("li",{},s))); sec.append(ul);
-    }
-    body.append(sec);
-  });
+  // טבלה (07/10/2026), בקו אחיד עם שאר התוצרים: קריטריון בכל שורה — הקריטריון · מה עובד · מה אפשר לחזק
+  const ul = (xs) => { if (!xs || !xs.length) return null; const u = el("ul"); xs.forEach(s => u.append(el("li",{},s))); return u; };
+  if (fbList.length) body.append(SBE_TABLE(["הקריטריון", "מה עובד", "מה אפשר לחזק"],
+    fbList.map(c => [el("b", {}, c.title || ""), ul(c.strengths), ul(c.improvements)]), "fb-table"));
   if (fb.sources && fb.sources.length) {
     const sec = el("div", { class:"fb-sec" });
     sec.append(el("h4", {}, "מקורות שהוזכרו במשוב — מספריית המקורות המאומתת"));
@@ -987,6 +962,7 @@ function renderFeedback(fb, mock) {
     body.append(sec);
   }
   if (!mock) body.append(aiNoteEl());
+  $("bPrintFb").hidden = false;
   const kindT = LAST_FEEDBACK && (FB_KINDS.find(x => x.k === LAST_FEEDBACK.kind) || {}).t;
   $("dlgH").textContent = "משוב · " + (LAST_FEEDBACK && LAST_FEEDBACK.creator || val("creatorName") || "—") + (kindT ? " · " + kindT : "");
   if (!$("dlg").open) $("dlg").showModal();
@@ -1022,7 +998,7 @@ $("bReview").addEventListener("click", async (e) => {
     } catch (_) { u = { _status: 0 }; }
     e.target.disabled = false; e.target.textContent = "קבלת משוב";
     if (!u.ok) {
-      alert(u.error === "used-up" ? (info.kind === "course" ? "ניצלת את כל הפקות המשוב שלך בקורס הזה. אם צריך עוד — אפשר לפנות למרצה."
+      alert(u.error === "used-up" ? (info.kind === "course" ? "ניצלת את כל הפקות המשוב שלך בקורס הזה. אם תרצו עוד — אפשר לפנות למרצה."
           : "הקוד שלך מיצה את מספר הפקות המשוב שלו. אפשר לבקש קוד חדש מהמרצה.")
         : u.error === "full" ? "כל המקומות בקורס הזה כבר תפוסים. אפשר לפנות למרצה."
         : u.error === "expired" ? "תוקף הקוד שלך הסתיים. אפשר לבקש קוד חדש מהמרצה."
@@ -1036,10 +1012,14 @@ $("bReview").addEventListener("click", async (e) => {
     let fb, mock = false;
     try { fb = await computeFeedbackAI(text, age, criteriaList, critMode, val("taskText"), fbKind); }
     catch (err) {
-      console.warn("משוב AI לא זמין — נופלת לנתונים גולמיים. סיבה:", err.message);
+      // בלי חיבור למודל — אין משוב (לא נתונים גולמיים במקום משוב אמיתי). העבודה נשארת בטופס.
+      console.warn("משוב AI לא זמין:", err.message);
       setAIStatus("mock");
-      fb = computeFeedbackMock(text, criteriaList.length ? criteriaList : [{ v:"התאמה להנחיות המנחה" }]);
-      mock = true;
+      $("dlgH").textContent = "המשוב לא הופק"; $("bPrintFb").hidden = true;
+      const b = $("dlgB"); b.textContent = "";
+      b.append(el("p", {}, "אין כרגע חיבור למודל, ולכן המשוב לא הופק — המערכת לא מציגה נתונים טכניים במקום משוב אמיתי. העבודה שלך נשמרה בטופס. אפשר לנסות שוב בעוד דקה–שתיים."));
+      if (!$("dlg").open) $("dlg").showModal();
+      return;
     }
     LAST_FEEDBACK = { fb, mock, age, kind: fbKind, criteriaList: criteriaList.map(c => ({ v:c.v })), creator: val("creatorName"), at: new Date().toISOString() };
     renderFeedback(fb, mock);
@@ -1051,6 +1031,9 @@ $("bReview").addEventListener("click", async (e) => {
   } finally { e.target.disabled = false; e.target.textContent = "קבלת משוב"; }
 });
 $("dlgX").addEventListener("click", () => $("dlg").close());
+// הדפסה / PDF (07/10/2026) — כמו בשאר התוצרים: לוגו, כותרת, תאריך, והטבלה
+$("bPrintFb").addEventListener("click", () => { if (!LAST_FEEDBACK) return;
+  SBE_DOC.print({ title: "משוב לעבודה — " + (LAST_FEEDBACK.creator || ""), subtitle: $("dlgH").textContent, node: $("dlgB") }); });
 // הורדת קובץ: הקישור נשאר בדף רגע אחרי הלחיצה — הסרה מיידית גורמת לחלק מהדפדפנים לאבד את שם הקובץ
 function downloadBlob(blob, name){
   const a = document.createElement("a");
@@ -1404,7 +1387,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }
@@ -1449,3 +1432,4 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
   });
 })();
 </script>
+<script src="lib/demo-hook.js"></script>

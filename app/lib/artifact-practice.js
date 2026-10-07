@@ -28,6 +28,29 @@
     var box = node("label", label), input = node("textarea"); input.name = name; input.rows = 4; input.maxLength = 12000;
     input.style.cssText = "display:block;width:100%;font:inherit;margin:8px 0 16px"; box.append(input); return {box:box,input:input};
   }
+  function printTable(headers, rows) {
+    var table = node("table"), head = node("thead"), body = node("tbody"), heading = node("tr");
+    table.className = "kit-table";
+    headers.forEach(function (label) { var cell = node("th", label); cell.setAttribute("scope", "col"); heading.append(cell); });
+    head.append(heading);
+    rows.forEach(function (values) {
+      var row = node("tr");
+      values.forEach(function (value, index) { var cell = node("td", value); cell.style.whiteSpace = "pre-wrap"; cell.setAttribute("data-label", headers[index]); row.append(cell); });
+      body.append(row);
+    });
+    table.append(head, body); return table;
+  }
+  function printableActivity(content) {
+    var printable = node("div"), labels = ["מטרת הפעילות", "רכיבי החוסן", "מיומנויות אישיות", "מיומנויות משותפות", "איך להנחות", "המנגנון החברתי שנבחר"];
+    var values = [content.purpose, content.resilienceComponents, content.individualSkills, content.sharedSkills, content.facilitatorGuide, content.socialMechanism];
+    printable.append(node("h2", "תמצית הפעילות"), printTable(["התחום", "הנוסח שאושר"], labels.map(function (label, index) {
+      return [label, Array.isArray(values[index]) ? values[index].join("\n") : values[index]];
+    })));
+    printable.append(node("h2", "מהלך הפעילות"), printTable(["שלב", "זמן", "מה עושים"], content.steps.map(function (step) {
+      return [step.title, step.minutes === 1 ? "דקה אחת" : step.minutes + " דקות", step.instructions];
+    })));
+    return printable;
+  }
   async function request(body) {
     var response = await fetch(window.sbeAIOrigin() + "/api/artifacts", {method:"POST", headers:window.sbeAIHeaders(), body:JSON.stringify(body)});
     var out = await response.json();
@@ -54,8 +77,7 @@
     stepSelect.addEventListener("change", showStep); rehearsal.append(stepSelect, prompt); showStep();
     var print = node("button", "הדפסת הגרסה שאושרה"); print.type = "button";
     print.addEventListener("click", function () {
-      var printable = root.cloneNode(true); printable.querySelectorAll("button,form,select,[data-observations]").forEach(function (item) { item.remove(); });
-      window.SBE_DOC.print({title:scenario.name, subtitle:"גרסה מאושרת " + out.version, node:printable});
+      window.SBE_DOC.print({title:scenario.name, subtitle:"גרסה מאושרת " + out.version, node:printableActivity(content), inline:true});
     }); root.append(print);
     var observationBox = section("אחרי התרגול", "תעדי מה ראית ובחרי את הצעד הבא. זו תצפית שלך; היא אינה מדידה של שיפור חוסן.");
     var form = node("form"), observation = field("מה ראית או שמעת?", "observation"), next = field("מה בחרת לעשות במפגש הבא?", "chosenNextStep"), submissionId = crypto.randomUUID();

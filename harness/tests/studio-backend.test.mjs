@@ -25,11 +25,11 @@ function generated(b = brief()) {
   const a = studio.exampleActivity(b);
   delete a.schemaVersion; delete a.catalogueVersion; delete a.evidenceStatus;
   a.professionalBasis=[facilitationBasis()];
-  a.learningGuide.learnBefore=[{sourceId:'IAFFacilitation',focus:'פרק התכנון והשתתפות: איך מכינים תהליך שבו כל אחד יכול לתרום.'}];
+  a.learningGuide.learnBefore=[{sourceId:'IAFCompetencies2026',focus:'פרק התכנון והשתתפות: איך מכינים תהליך שבו כל אחד יכול לתרום.'}];
   a.clarificationQuestions=[];
   return a;
 }
-function facilitationBasis() { return {sourceId:'IAFFacilitation',explanation:'הכנת תהליך, השתתפות נגישה וסיכום מעשי לפי עקרונות ההנחיה; אין בכך הוכחה ליעילות הפעילות.'}; }
+function facilitationBasis() { return {sourceId:'IAFCompetencies2026',explanation:'הכנת תהליך, השתתפות נגישה וסיכום מעשי לפי עקרונות ההנחיה; אין בכך הוכחה ליעילות הפעילות.'}; }
 function consultation(fields={}) {
   return {answer:'אפשר להתחיל מצעד קטן ולהכין מראש דרך השתתפות ברורה.',encouragement:'מובן שיש חשש לפני הנחיה חדשה; אפשר להתכונן בהדרגה.',
     nextSteps:['נסו את ההוראה עם שותפה ובדקו אם היא מובנת.'],questions:[],suggestedInstructions:'',professionalBasis:[facilitationBasis()],...fields};
@@ -57,7 +57,10 @@ test('AE22: legacy access rechecks institution and ceiling; activity access cann
   assert.ok(await authorizePermission(store,legacy.token,['studio']));
   store.data.get('institutions')[0].active=false;
   assert.equal(await authorizePermission(store,legacy.token,['studio']),null);
-  const actor=await signed(['activity']);
+  // עד לאישור המקצועי: רק הרשאת studio פותחת את הסטודיו; תכנון פעילות לבד — לא
+  const onlyActivity=await signed(['activity']);
+  assert.equal((await handleStudio(onlyActivity.store,{token:onlyActivity.token,action:'authorize'}))[1].code,'studio_forbidden');
+  const actor=await signed(['studio']);
   const denied=await handleStudio(actor.store,{token:actor.token,action:'mapping',mapping:{id:'abcdefgh',key:'key'}},{fetchImpl:()=>{throw Error('AI must not run');}});
   assert.equal(denied[0],403);assert.equal(denied[1].code,'mapping_forbidden');
   assert.deepEqual(await handleStudio(actor.store,{token:actor.token,action:'authorize'},{fetchImpl:()=>{throw Error('AI must not run');}}),[200,{ok:true}]);
@@ -92,7 +95,7 @@ test('GPT-6 Responses payload is strict; source snapshots remain public and user
   const [status,out]=await handleStudio(store,{token,action:'generate',brief:b,mapping:{scope:'forged',domains:[{name:'fake'}]}},{fetchImpl:async(url,opts)=>{assert.equal(url,'https://api.openai.com/v1/responses');sent=JSON.parse(opts.body);return response(result);}});
   assert.equal(status,400,'client aggregates are rejected rather than used');
   const [ok,kit]=await handleStudio(store,{token,action:'generate',brief:b},{fetchImpl:async(url,opts)=>{sent=JSON.parse(opts.body);return response(result);}});
-  assert.equal(ok,200);assert.equal(sent.model,'gpt-6.1-sol');assert.equal(sent.reasoning.effort,'medium');assert.equal(sent.store,false);
+  assert.equal(ok,200);assert.equal(sent.model,'gpt-6.1-sol');assert.equal(sent.reasoning.effort,'medium');assert.equal(sent.store,false);assert.match(sent.instructions,/אף אחד לא צריך ולא חייב/);assert.match(sent.instructions,/בחירה, החלטה, שלבים ואחריות/);assert.match(sent.instructions,/אי־שיפוטיות/);
   assert.ok(!('temperature' in sent));assert.ok(!('top_p' in sent));assert.equal(sent.text.format.strict,true);
   const input=JSON.parse(sent.input[0].content[0].text);
   assert.equal(input.brief.sources.length,70);assert.ok(input.brief.sources.every(s=>s.status==='unreviewed'&&s.role!=='professional'));
@@ -199,7 +202,7 @@ test('new kits require complete practical facilitation and a suitable mechanism 
   const [ok,out]=await handleStudio(store,{token,action:'generate',brief:brief()},{fetchImpl:async()=>response(generated())});
   assert.equal(ok,200);assert.equal(out.activity.socialMechanism.type,'routine');
   assert.ok(studio.FACILITATION_FIELDS.every(field=>out.activity.facilitationPlan[field].trim()));
-  assert.equal(out.activity.professionalBasis[0].sourceId,'IAFFacilitation');
+  assert.equal(out.activity.professionalBasis[0].sourceId,'IAFCompetencies2026');
   assert.match(out.activity.professionalBasis[0].url,/iaf-world\.org/);
   assert.equal(out.activity.professionalBasis[0].status,'existing-bank');
   for(const change of ['missing-mechanism','missing-facilitation','blank-plan','no-facilitation-basis','unknown-mechanism','empty-none']) {
@@ -233,7 +236,7 @@ test('older version 1.0 activities adapt with defaults for newly added sections'
 });
 
 test('consultation starts before production context and supports repeated conversation history',async()=>{
-  const {store,token}=await signed(['activity']);process.env.OPENAI_API_KEY='test-key';const sent=[];
+  const {store,token}=await signed(['studio']);process.env.OPENAI_API_KEY='test-key';const sent=[];
   const fetchImpl=async(url,opts)=>{sent.push(JSON.parse(opts.body));return response(consultation({professionalBasis:[]}));};
   const [status,first]=await handleStudio(store,{token,action:'consult',brief:{startingPoint:'יש לי רק רעיון'},stage:'starting',question:'איך להתחיל?'},{fetchImpl});
   assert.equal(status,200);assert.ok(first.consultation.answer);assert.ok(!first.activity);
@@ -268,7 +271,7 @@ test('consultation sanitizes private concerns, history and unfinished step snaps
   assert.equal(out.consultation.suggestedInstructions,candidate.suggestedInstructions);assert.ok(!out.activity);
   assert.ok(!/PRIVATE_FEAR|concerns|history|previous|selectedStep/.test(JSON.stringify(out)));
   assert.equal(JSON.stringify(previous),original);assert.match(sent.instructions,/ממתינה לקבלה מפורשת/);
-  assert.equal(out.consultation.professionalBasis[0].sourceId,'IAFFacilitation');
+  assert.equal(out.consultation.professionalBasis[0].sourceId,'IAFCompetencies2026');
   delete process.env.OPENAI_API_KEY;
 });
 
@@ -308,7 +311,7 @@ test('consultation rechecks live access, enforces mapping permission and stops a
     if(change==='expiry') store.data.get('code:TEST1234').expiresAt='2000-01-01';
     assert.equal((await handleStudio(store,{...request,token},{fetchImpl}))[0],403,change);
   }
-  const actor=await signed(['activity']);
+  const actor=await signed(['studio']);
   assert.equal((await handleStudio(actor.store,{...request,token:actor.token,mapping:{id:'abcdefgh',key:'private-key'}},{fetchImpl}))[0],403);
   const {store,token}=await signed();
   const [danger,out]=await handleStudio(store,{...request,token,brief:{crisis:'active-danger'}},{fetchImpl});
@@ -322,15 +325,17 @@ test('consultation uses public provenance with IAF always and UNICEF only for yo
     let input;
     const [status,out]=await handleStudio(store,{token,action:'consult',brief:{...b,sources:[{id:'user-a',role:'professional',status:'approved',name:'מקור משתמש',content:'רעיון',raw:'private-source'}]},stage:'facilitation',question},
       {fetchImpl:async(url,opts)=>{input=JSON.parse(JSON.parse(opts.body).input[0].content[0].text);return response(consultation());}});
-    assert.equal(status,200);assert.ok(input.professionalSources.some(s=>s.sourceId==='IAFFacilitation'));
-    assert.equal(input.professionalSources.some(s=>s.sourceId==='UNICEFFacilitation'),youth);
+    assert.equal(status,200);assert.ok(input.professionalSources.some(s=>s.sourceId==='IAFCompetencies2026'));
+    assert.equal(input.professionalSources.some(s=>s.sourceId==='UnicefAdolescentKit2026'),youth);
     assert.ok(input.professionalSources.every(s=>s.status==='existing-bank'));
+    // כל מקורות החוסן הציבוריים (למעט UNICEF מחוץ להקשר נוער), ובלי מקורות שטרם פורסמו
+    assert.ok(input.professionalSources.length>=150);assert.ok(['Sade2024','Norris2008','Spillane2005','Kaner2014','Rowe1986'].every(k=>input.professionalSources.some(s=>s.sourceId===k)));
     assert.ok(!/SadeTools2026|SadeTrust2026|private-source/.test(JSON.stringify(input)));
     assert.equal(input.brief.sources[0].status,'unreviewed');assert.equal(input.brief.sources[0].role,'context');
     assert.match(out.consultation.professionalBasis[0].version,/^sha256:/);
   }
   const request={token,action:'consult',brief:{participants:'צוות',participantAge:'מבוגרים'},stage:'facilitation',question:'איך להנחות?'};
-  for(const sourceId of ['invented-source','SadeTools2026','user-a','UNICEFFacilitation'])
+  for(const sourceId of ['invented-source','SadeTools2026','user-a','UnicefAdolescentKit2026'])
     assert.equal((await handleStudio(store,request,{fetchImpl:async()=>response(consultation({professionalBasis:[{sourceId,explanation:'טענה מקצועית'}]}))}))[0],422,sourceId);
   delete process.env.OPENAI_API_KEY;
 });

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>תוצרים לדוגמה — Begood</title>
+<meta name="description" content="תוצרים אמיתיים שהפיקו הכלים של Begood — לחוסן חברתי, להנחיה, לתכנון שיחות ופעילויות ולסימולציות.">
+<script src="lib/access-guard.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
+<style>
+:root{
+  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
+  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
+  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
+  --hidden:#8F5F2E; --hidden-soft:#F5EAD9;
+  --auto:#4A6B5A; --auto-soft:#DFE9E2;
+  --shadow:rgba(20,28,36,.09);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+    --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+    --spoken:#82AECE; --spoken-soft:#1E2E3A;
+    --hidden:#CE9C5E; --hidden-soft:#332617;
+    --auto:#83B599; --auto-soft:#1B2A22;
+    --shadow:rgba(0,0,0,.5); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+  --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+  --spoken:#82AECE; --spoken-soft:#1E2E3A;
+  --hidden:#CE9C5E; --hidden-soft:#332617;
+  --auto:#83B599; --auto-soft:#1B2A22;
+  --shadow:rgba(0,0,0,.5); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{direction:rtl;background:var(--ground);color:var(--ink);margin:0;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.6;padding:0 16px 40px}
+.wrap{max-width:860px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 6px;flex-wrap:wrap}
+header img{height:44px;width:auto}
+header a{font-size:14px;color:var(--spoken);font-weight:600;text-decoration:none}
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(24px,5.5vw,32px);margin:14px 0 6px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 18px;max-width:640px}
+h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:20px;margin:30px 0 4px}
+.about{color:var(--muted);font-size:14.5px;margin:0 0 10px;max-width:640px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.ex{display:block;text-align:start;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--hair);border-radius:10px;
+  padding:13px 15px;cursor:pointer;box-shadow:0 1px 3px var(--shadow);transition:border-color .12s}
+.ex:hover,.ex:focus-visible{border-color:var(--spoken);outline:none}
+.ex b{display:block;font-size:15.5px;margin-bottom:3px}
+.ex span{display:block;font-size:13px;color:var(--muted)}
+.ex .open{color:var(--spoken);font-weight:700;margin-top:6px}
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:14px 16px;margin:24px 0 0;box-shadow:0 1px 3px var(--shadow)}
+.note{border-inline-start:4px solid var(--hidden);background:var(--hidden-soft);font-size:14.5px}
+.empty{background:var(--surface);border:1px dashed var(--hair);border-radius:10px;padding:16px;color:var(--muted)}
+.contact a{color:var(--spoken);font-weight:700}
+dialog{width:min(980px,96vw);height:92vh;border:1px solid var(--hair);border-radius:12px;padding:0;background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:rgba(10,14,18,.55)}
+.dlg{display:flex;flex-direction:column;height:100%}
+.dlg-h{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--hair);flex-wrap:wrap}
+.dlg-h b{flex:1}
+.btn{font-family:inherit;font-size:13.5px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--hair);background:transparent;color:var(--ink);cursor:pointer}
+.dlg details{padding:6px 14px;border-bottom:1px solid var(--hair);font-size:14px}
+.dlg pre{white-space:pre-wrap;font-family:inherit;margin:6px 0;color:var(--muted)}
+.dlg iframe{flex:1;width:100%;border:0;background:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <img src="assets/begood-logo.webp" alt="Begood — חינוך מבוסס סימולציה">
+  <a href="about.html">אודות המערכת ←</a>
+</header>
+
+<h1>תוצרים לדוגמה</h1>
+<p class="lead">כך נראים תוצרים אמיתיים של הכלים — כפי שהם יוצאים מהמערכת, בלי עריכה. מוזמנות ומוזמנים לפתוח, לקרוא ולהתרשם.</p>
+
+<div id="lib"><p class="empty">טוען את הדוגמאות...</p></div>
+
+<div class="card note">
+  <p style="margin:0">כל הדוגמאות נבנו על מקרים בדויים — בלי תלמידים, מורים או מוסדות אמיתיים. בעבודה עצמה, כל תוצר נפתח לעריכה על המסך ונשמר כ-PDF מעוצב.</p>
+</div>
+
+<div class="card contact" id="contact">
+  <p style="margin:0">מוזמנות ומוזמנים ליצור קשר<br><b>ד״ר יעל שדה</b> — <a href="mailto:yael.sade@gmail.com">yael.sade@gmail.com</a> · <a href="tel:0523969417">052-3969417</a></p>
+</div>
+</div>
+
+<dialog id="dlg"><div class="dlg">
+  <div class="dlg-h"><b id="dlgT"></b><button class="btn" id="dlgX">סגירה</button></div>
+  <details id="dlgIn"><summary>מה הוזן לכלי</summary><pre id="dlgInT"></pre></details>
+  <iframe id="dlgF" sandbox="allow-popups allow-popups-to-escape-sandbox" title="התוצר לדוגמה"></iframe>
+</div></dialog>
+
+<script>
+(function(){
+'use strict';
+// ספריית התוצרים לדוגמה (07/10/2026) — פתוחה לכל מי שמתעניין/ת. מציגה רק את מה שמנהלת המערכת סימנה
+// "מוצג בספרייה" במעבדת הדמו (demo-lab.html). המסמכים מוצגים במסגרת סגורה, בלי סקריפטים.
+const ACCESS='https://sbe-server.onrender.com/api/access';
+const F=id=>document.getElementById(id);
+function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=String(text);return n;}
+async function api(body){const r=await fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw new Error(String(r.status));return r.json();}
+const TOOLS=[
+  ['studio','סטודיו חוסן — ערכת פעולה','מהשראה לערכת פעולה: מטרה, מוקד חוסן, טבלה לכל מפגש עם איך מנחים, מרחב ועזרים, וחומרים למשתתפים.'],
+  ['practi','פרקטי — יועצת לחוסן בכיתה','המחנך/ת מתארים את הכיתה, ופרקטי מציעה תמונת מצב והמלצות מעשיות, עם שלבים, אפשרויות בחירה והודעות מוכנות.'],
+  ['nugi','נוגי — מנהיגות תומכת חוסן','להנהלה, לרכזים ולצוותי תלמידים: תמונת מצב של המנהיגות בבית הספר והמלצות שבונות מנגנונים משותפים.'],
+  ['nana','ננה — מהוראה להנחיה','מדריך הנחיה למפגש: עמדה, שפה, מהלכי שיחה, רגעים מאתגרים וסיום שהופך למנגנון חוזר.'],
+  ['writer','כתיבה מקדמת חוסן','הודעות ומכתבים לתלמידים, להורים ולצוות — לפי עשרת עקרונות השפה המחזקת.'],
+  ['resil','מיפוי חוסן — סיכום לכיתה','סיכום והמלצות על בסיס שאלון החוסן שהתלמידים ממלאים.'],
+  ['conv','תכנון שיחה','תוכנית לשיחה מאתגרת: איך פותחים, שאלות המשך, ואיך מסיימים.'],
+  ['act-single','תכנון פעילות — מפגש אחד','מערך מפגש מלא, עם מטרות, מהלך וזמנים.'],
+  ['act-seq','תכנון פעילות — רצף מפגשים','רצף מפגשים, עם משוב ודו״ח ניתוח לרצף כולו.'],
+  ['review','משוב לעבודות','משוב לעבודה אקדמית — הכלי נותן משוב ולא כותב במקום הכותב/ת.'],
+  ['journey','מסע אל החוסן','הצעת מסע מותאמת לאחר מיפוי — אשכולות, מכשולים וגשרים, החלטות לבחירה, ואבני דרך.'],
+  ['practice','תרגול עצמי בסימולציה','שיחה מול דמות שמגיבה כמו אדם אמיתי, ומשוב בסוף — בלי ציון.'],
+  ['edu','סימולציה — סטודנטים/ות','תרחיש לסימולציה עם גרסת המתנסה, גרסת השחקנית, כרטיס השחקנית וגרסת המנחה.'],
+  ['parents','סימולציה — הורים','תרחיש לסדנת הורים, עם כל המסמכים לסדנה.'],
+  ['youth','סימולציה — נוער','תרחיש לסדנת נוער, עם כל המסמכים לסדנה.']];
+async function load(){
+  const box=F('lib');
+  let items=[];
+  try{items=(await api({action:'demoPublicList'})).items||[];}
+  catch(e){box.textContent='';box.appendChild(el('p','empty','לא הצלחנו לטעון את הדוגמאות כרגע. אפשר לנסות שוב בעוד רגע.'));return;}
+  box.textContent='';
+  if(!items.length){box.appendChild(el('p','empty','הדוגמאות בהכנה — מוזמנות ומוזמנים לחזור בקרוב, או ליצור קשר ונשמח להראות.'));return;}
+  const known=TOOLS.map(t=>t[0]);
+  const groups=TOOLS.concat([['_other','תוצרים נוספים','']]);
+  groups.forEach(([id,name,about])=>{
+    const its=items.filter(d=>id==='_other'?!known.includes(d.tool):d.tool===id).sort((a,b)=>String(a.title).localeCompare(String(b.title),'he'));
+    if(!its.length)return;
+    box.appendChild(el('h2',null,name));
+    if(about)box.appendChild(el('p','about',about));
+    const g=el('div','grid');
+    its.forEach(d=>{
+      const b=el('button','ex');b.type='button';
+      b.appendChild(el('b',null,d.title));
+      if(d.label&&d.label!==name)b.appendChild(el('span',null,d.label));
+      b.appendChild(el('span','open','לצפייה ←'));
+      b.onclick=()=>view(d);g.appendChild(b);
+    });
+    box.appendChild(g);
+  });
+}
+async function view(d){
+  F('dlgT').textContent=d.title;F('dlgInT').textContent=d.input||'';F('dlgIn').hidden=!d.input;
+  F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:20px">טוען...</p>';F('dlg').showModal();
+  try{const full=await api({action:'demoGet',id:d.id});F('dlgF').srcdoc=full.html;}
+  catch(e){F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:20px">לא הצלחנו לטעון את התוצר. אפשר לנסות שוב.</p>';}
+}
+F('dlgX').onclick=()=>F('dlg').close();
+load();
+})();
+</script>
+</body>
+</html>
