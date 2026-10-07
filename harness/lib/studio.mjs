@@ -9,7 +9,9 @@ import { authorizePermission, handleAccess } from './access.mjs';
 const studio = createRequire(import.meta.url)('../../app/lib/resilience-studio.js');
 // שפה של הזמנה, לא של חובה — כלל של Begood לכל קריאה למודל (גם לסטודיו, שפונה ל-OpenAI ישירות)
 const INVITE = createRequire(import.meta.url)('../../app/lib/invite-language.js');
-const STUDIO_PERMS = ['studio', 'activity', 'resilience', 'practi', 'leadership'];
+// עד לאישור המקצועי (07/10/2026): רק הרשאת studio (ומנהלת המערכת). כשמאשרים — מוסיפים את
+// 'activity', 'resilience', 'practi', 'leadership' כאן, ב-access-guard.js וב-home.html.
+const STUDIO_PERMS = ['studio'];
 const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
 const STR = { type:'string' };
 const strings = { type:'array', items:STR };

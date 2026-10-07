@@ -57,7 +57,10 @@ test('AE22: legacy access rechecks institution and ceiling; activity access cann
   assert.ok(await authorizePermission(store,legacy.token,['studio']));
   store.data.get('institutions')[0].active=false;
   assert.equal(await authorizePermission(store,legacy.token,['studio']),null);
-  const actor=await signed(['activity']);
+  // עד לאישור המקצועי: רק הרשאת studio פותחת את הסטודיו; תכנון פעילות לבד — לא
+  const onlyActivity=await signed(['activity']);
+  assert.equal((await handleStudio(onlyActivity.store,{token:onlyActivity.token,action:'authorize'}))[1].code,'studio_forbidden');
+  const actor=await signed(['studio']);
   const denied=await handleStudio(actor.store,{token:actor.token,action:'mapping',mapping:{id:'abcdefgh',key:'key'}},{fetchImpl:()=>{throw Error('AI must not run');}});
   assert.equal(denied[0],403);assert.equal(denied[1].code,'mapping_forbidden');
   assert.deepEqual(await handleStudio(actor.store,{token:actor.token,action:'authorize'},{fetchImpl:()=>{throw Error('AI must not run');}}),[200,{ok:true}]);
@@ -233,7 +236,7 @@ test('older version 1.0 activities adapt with defaults for newly added sections'
 });
 
 test('consultation starts before production context and supports repeated conversation history',async()=>{
-  const {store,token}=await signed(['activity']);process.env.OPENAI_API_KEY='test-key';const sent=[];
+  const {store,token}=await signed(['studio']);process.env.OPENAI_API_KEY='test-key';const sent=[];
   const fetchImpl=async(url,opts)=>{sent.push(JSON.parse(opts.body));return response(consultation({professionalBasis:[]}));};
   const [status,first]=await handleStudio(store,{token,action:'consult',brief:{startingPoint:'יש לי רק רעיון'},stage:'starting',question:'איך להתחיל?'},{fetchImpl});
   assert.equal(status,200);assert.ok(first.consultation.answer);assert.ok(!first.activity);
@@ -308,7 +311,7 @@ test('consultation rechecks live access, enforces mapping permission and stops a
     if(change==='expiry') store.data.get('code:TEST1234').expiresAt='2000-01-01';
     assert.equal((await handleStudio(store,{...request,token},{fetchImpl}))[0],403,change);
   }
-  const actor=await signed(['activity']);
+  const actor=await signed(['studio']);
   assert.equal((await handleStudio(actor.store,{...request,token:actor.token,mapping:{id:'abcdefgh',key:'private-key'}},{fetchImpl}))[0],403);
   const {store,token}=await signed();
   const [danger,out]=await handleStudio(store,{...request,token,brief:{crisis:'active-danger'}},{fetchImpl});
