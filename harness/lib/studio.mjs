@@ -76,22 +76,14 @@ function safeBrief(input) {
   brief.sources=fields.sources;
   return brief;
 }
+// כל מקורות החוסן הציבוריים (07/10/2026, לבקשת ד״ר יעל שדה) — כמו בננה. מקורות hidden לא נשלחים לעולם.
+// החריג היחיד: מדריכי UNICEF למתבגרים נשמרים להקשר גיל מתאים (נוער, ילדים או גיל עד 17).
 function contextualSources(b, extraContext='') {
   const text=[b.context,b.participants,b.leaderRole,b.goal,b.startingPoint,extraContext].join(' ');
-  const education=/כית|תלמיד|מחנ|בית ספר|גנן|גן ילדים|school|classroom/i.test(text);
-  const leadership=/מנהיג|מנהל|צוות|עובד|קהיל|leader|team|community/i.test(text);
   const ages=b.participantAge+' '+b.leaderAge;
   const youth=/נוער|תלמיד|צעיר|ילד|מתבגר|youth|teen|child|adolescent/i.test(text+' '+ages)
     || /\b(?:[1-9]|1[0-7])\b/.test(ages);
-  const crisis=b.crisis && b.crisis!=='routine';
-  const groups=new Set(['comm']);
-  if(education) ['cls','sel','il'].forEach(g=>groups.add(g));
-  if(leadership) groups.add('lead');
-  if(youth) groups.add('stu');
-  if(crisis) ['sys','leadcr'].forEach(g=>groups.add(g));
-  const selected = PUBLIC_SOURCES.filter(s=>s.sourceId==='IAFCompetencies2026'
-    || (s.sourceId==='UnicefAdolescentKit2026'?youth:s.sourceId==='Sade2024' || groups.has(s.group)));
-  return selected.map(s=>({...s}));
+  return PUBLIC_SOURCES.filter(s=>youth || s.sourceId!=='UnicefAdolescentKit2026').map(s=>({...s}));
 }
 
 async function mappingAggregate(store, token, mapping, actor) {

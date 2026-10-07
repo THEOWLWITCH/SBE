@@ -83,7 +83,7 @@ window.SBE_SCREENS_RENDER = function(host, opts){
     } else host.appendChild(ph);
     if (opts.afterTitle) opts.afterTitle(part.part, host);
     // תפריט מצומצם (07/10/2026): כל קבוצה מקופלת, ונפתחת בלחיצה (פתוחה מראש רק כשהמסך הנוכחי בתוכה).
-    // "מי רואה" — בריחוף על הקישור (title), בלי שורה אפורה מתחת לכל מסך.
+    // "מי רואה" (who) לא מוצג בתפריט — הוא תיעוד בלבד, לבדיקה מול access-guard.js.
     part.groups.forEach(function(g){
       var items = g.items.filter(function(it){ return (opts.skip || []).indexOf(it.file) === -1; });
       if (!items.length) return;
@@ -99,7 +99,6 @@ window.SBE_SCREENS_RENDER = function(host, opts){
         if (opts.linkClass) a.className = opts.linkClass;
         if (it.file.toLowerCase() === here) a.className = (a.className ? a.className + ' ' : '') + 'current';
         a.appendChild(document.createTextNode(it.label));
-        if (it.who) a.title = 'מי רואה: ' + it.who;
         d.appendChild(a);
       });
     });
