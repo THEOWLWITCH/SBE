@@ -215,7 +215,7 @@ ul.tl li{margin:.25rem 0}
       <legend>אני כמנחה</legend>
       <label for="f-exp">הניסיון שלי בהנחיית קבוצה</label>
       <select id="f-exp"><option value="">בחירה...</option></select>
-      <label>מה מוכר לך מההוראה שלך? <span class="opt">(לא חובה — ננה תתמקד במה שתסמנו)</span></label>
+      <label>באיזו מיומנות תרצו שאתמקד? <span class="opt">(לא חובה — אפשר לבחור כמה)</span></label>
       <div class="habits" id="f-habits"></div>
       <label for="f-worry">מה מדאיג אותך לקראת המפגש? <span class="opt">(לא חובה)</span></label>
       <textarea id="f-worry" maxlength="800" placeholder="למשל: שתהיה שתיקה ולא אדע מה לעשות; שאאבד שליטה; שמישהו יתחיל לבכות"></textarea>
@@ -335,7 +335,7 @@ fill('f-sit',N.SITUATIONS);fill('f-duration',N.DURATIONS);fill('f-space',N.SPACE
 N.SHIFTS.forEach(s=>{
   const lb=el('label');const cb=el('input');cb.type='checkbox';cb.value=s.k;cb.name='habit';
   cb.addEventListener('change',()=>{lb.classList.toggle('on',cb.checked);save();});
-  lb.appendChild(cb);lb.appendChild(el('span',null,s.habit));F('f-habits').appendChild(lb);
+  lb.appendChild(cb);lb.appendChild(el('span',null,s.skill));F('f-habits').appendChild(lb);
 });
 function habits(){return [...document.querySelectorAll('input[name=habit]:checked')].map(c=>c.value);}
 function setHabits(list){document.querySelectorAll('input[name=habit]').forEach(c=>{c.checked=(list||[]).includes(c.value);c.parentNode.classList.toggle('on',c.checked);});}
@@ -468,8 +468,8 @@ function renderGuide(){
   if(d.stance.to){
     doc.appendChild(el('h3',null,'העמדה שלך במפגש'));
     const vs=el('div','vs');
-    const a=el('div','from');a.appendChild(el('b',null,'במקום'));a.appendChild(el('br'));a.appendChild(inlineRich(d.stance.from));
-    const b=el('div','to');b.appendChild(el('b',null,'נסו'));b.appendChild(el('br'));b.appendChild(inlineRich(d.stance.to));
+    const a=el('div','from');a.appendChild(el('b',null,'מהוראה'));a.appendChild(el('br'));a.appendChild(inlineRich(d.stance.from));
+    const b=el('div','to');b.appendChild(el('b',null,'להנחיה'));b.appendChild(el('br'));b.appendChild(inlineRich(d.stance.to));
     put(vs,a,el('div','arrow','←'),b);doc.appendChild(vs);
     if(d.stance.why)doc.appendChild(lensEl(d.stance.why));
   }
@@ -481,11 +481,11 @@ function renderGuide(){
     if(d.read.needs.length){c.appendChild(el('p','rrow')).appendChild(el('b',null,'מה היא צריכה:'));const ul=el('ul','tl');d.read.needs.forEach(n=>{const li=el('li');li.appendChild(inlineRich(n));ul.appendChild(li);});c.appendChild(ul);}
     put(c,lensEl(d.read.lens));doc.appendChild(c);
   }
-  // המעברים
+  // המיומנויות לחזק
   if(d.shifts.length){
-    doc.appendChild(el('h3',null,'מהוראה להנחיה — המעברים שלך'));
+    doc.appendChild(el('h3',null,'המיומנויות שלך במפגש הזה'));
     d.shifts.forEach(s=>{const c=el('div','rcard');
-      put(c,row('במקום',s.habit),row('נסו',s.move),sayEl(s.say),lensEl(s.lens),basisEl(s.basis));doc.appendChild(c);});
+      c.appendChild(el('p','rcard-t',s.skill));put(c,row('איך',s.move),sayEl(s.say),lensEl(s.lens),basisEl(s.basis));doc.appendChild(c);});
   }
   // קשת המפגש
   if(d.arc.length){
