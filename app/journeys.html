@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
 <script src="lib/resilience-advisor-sources.js"></script>
 <script src="lib/journey-model.js"></script>
+<script src="lib/report-table.js"></script>
 <link rel="stylesheet" href="lib/journey.css">
 <script src="lib/journey-demo.js"></script>
 <style>
@@ -220,6 +221,12 @@ const daysTo = d => Math.round((Date.parse(d) - Date.parse(today())) / 864e5);
 const unitT = k => (J.UNITS.find(u => u.k === k) || {}).t || '';
 const clT = c => (J.CLUSTERS.find(x => x.k === +c) || {}).t || '';
 const stT = s => (J.STAGES.find(x => x.k === +s) || {}).t || '';
+// טבלאות (07/10/2026), בקו אחיד עם שאר התוצרים: אשכולות, מכשולים ואבני דרך
+function clusterTable(p){ return SBE_TABLE(['האשכול','איפה אתם','מה כבר יש','הצעד הבא'], (p.clusters || []).map(x => [el('b', null, clT(x.c)), el('span', 'cl-chip', stT(x.stage)), x.strength || null, x.next || null]), 'jr-cl'); }
+function failTable(p){ return SBE_TABLE(['מכשול בדרך','מה ראינו','הגשר שאפשר לבנות'], (p.fails || []).map(f => [el('b', null, J.ICON.obstacle + ' ' + ((J.FAILS.find(x => x.k === f.type) || {}).t || 'מכשול') + (f.critical ? ' — חשוב לטפל' : '')), f.seen || null, f.bridge ? J.ICON.bridge + ' ' + f.bridge : null]), 'jr-fl'); }
+function milestoneTable(ms){ return SBE_TABLE(['#','אבן הדרך','שלב','יעדים ואיך יודעים שהושגו'], ms.map((m, i) => { const ul = el('ul'); (m.goals || []).forEach(g => { const li = el('li'); li.appendChild(el('b', null, clT(g.c) + ': ')); li.appendChild(document.createTextNode((g.goal || '') + (g.measure ? ' — ' + g.measure : ''))); ul.appendChild(li); });
+  return [String(i + 1), el('b', null, (m.gate ? J.ICON.gate + ' ' : '') + (m.title || '')), stT(m.stage), ul.childNodes.length ? ul : null]; }), 'jr-ms'); }
+
 const draftKey = id => window.sbeUserKey ? sbeUserKey('sbe.journey.draft.' + id) : 'sbe.journey.draft.' + id;
 function loadDraft(id){ try { return JSON.parse(localStorage.getItem(draftKey(id)) || '{}') || {}; } catch(e){ return {}; } }
 function saveDraft(id, d){ try { localStorage.setItem(draftKey(id), JSON.stringify(d)); } catch(e){} }
@@ -321,8 +328,8 @@ async function viewOne(id){
   if (j.proposal) {
     const p = j.proposal; const pc = card(); pc.appendChild(el('h2', null, 'הצעת המסע'));
     if (p.summary) { const sp = el('div', 'intro'); sp.appendChild(richText(p.summary)); pc.appendChild(sp); }
-    (p.clusters || []).forEach(x => { const r = el('div', 'obst'); r.appendChild(el('span', 'cl-chip', stT(x.stage))); r.appendChild(el('div', null, clT(x.c) + (x.strength ? ' — ' + x.strength : ''))); pc.appendChild(r); });
-    (p.fails || []).forEach(f => pc.appendChild(el('div', 'obst', J.ICON.obstacle + ' ' + ((J.FAILS.find(x => x.k === f.type) || {}).t || '') + ': ' + (f.seen || '') + (f.bridge ? ' ' + J.ICON.bridge + ' ' + f.bridge : ''))));
+    pc.appendChild(clusterTable(p));
+    if ((p.fails || []).length) pc.appendChild(failTable(p));
   }
   if (j.choices) {
     const cc = card(); cc.appendChild(el('h2', null, 'הבחירות שלהם והשיקולים'));

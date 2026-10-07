@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
 <script src="lib/resilience-advisor-sources.js"></script>
 <script src="lib/journey-model.js"></script>
+<script src="lib/report-table.js"></script>
 <link rel="stylesheet" href="lib/journey.css">
 <style>
 :root{
@@ -380,6 +381,13 @@ function mappingText(m){
   return L.join('\n');
 }
 
+
+// טבלאות (07/10/2026), בקו אחיד עם שאר התוצרים: אשכולות, מכשולים ואבני דרך
+function clusterTable(p){ return SBE_TABLE(['האשכול','איפה אתם','מה כבר יש','הצעד הבא'], (p.clusters || []).map(x => [el('b', null, clT(x.c)), el('span', 'cl-chip', stT(x.stage)), x.strength || null, x.next || null]), 'jr-cl'); }
+function failTable(p){ return SBE_TABLE(['מכשול בדרך','מה ראינו','הגשר שאפשר לבנות'], (p.fails || []).map(f => [el('b', null, J.ICON.obstacle + ' ' + ((J.FAILS.find(x => x.k === f.type) || {}).t || 'מכשול') + (f.critical ? ' — חשוב לטפל' : '')), f.seen || null, f.bridge ? J.ICON.bridge + ' ' + f.bridge : null]), 'jr-fl'); }
+function milestoneTable(ms){ return SBE_TABLE(['#','אבן הדרך','שלב','יעדים ואיך יודעים שהושגו'], ms.map((m, i) => { const ul = el('ul'); (m.goals || []).forEach(g => { const li = el('li'); li.appendChild(el('b', null, clT(g.c) + ': ')); li.appendChild(document.createTextNode((g.goal || '') + (g.measure ? ' — ' + g.measure : ''))); ul.appendChild(li); });
+  return [String(i + 1), el('b', null, (m.gate ? J.ICON.gate + ' ' : '') + (m.title || '')), stT(m.stage), ul.childNodes.length ? ul : null]; }), 'jr-ms'); }
+
 // שלב 2: הצעת המסע — אפשרויות, בחירה והסבר
 function decisionBlock(dec, state, onChange){
   const box = el('div', 'dec'); box.appendChild(el('h3', null, dec.q));
@@ -408,11 +416,11 @@ function viewProposal(){
   const c = card(); c.appendChild(el('h2', null, 'הצעת המסע שלכם'));
   if (p.summary) { const ip = el('p', 'intro'); ip.appendChild(inlineRich(p.summary)); c.appendChild(ip); }
   c.appendChild(el('h3', null, 'איפה אתם בכל אשכול'));
-  (p.clusters || []).forEach(x => { const r = el('div', 'obst'); r.appendChild(el('span', 'cl-chip', stT(x.stage))); const t = el('div'); t.appendChild(el('b', null, clT(x.c))); if (x.strength) { t.appendChild(el('div', null, '✓ ' + x.strength)); } if (x.next) t.appendChild(el('div', 'muted', '➜ ' + x.next)); r.appendChild(t); c.appendChild(r); });
+  c.appendChild(clusterTable(p));
   const start = J.journeyStage(Object.fromEntries((p.clusters || []).map(x => [x.c, x.stage])));
   c.appendChild(el('p', 'banner-soft', 'נקודת היציאה של המסע: ' + stT(start) + ' — לפי האשכול שעוד בדרך (אין קיזוז בין אשכולות).'));
   if ((p.fails || []).length) { c.appendChild(el('h3', null, 'מכשולים בדרך — וגשרים שאפשר לבנות'));
-    p.fails.forEach(f => { const r = el('div', 'obst'); r.appendChild(el('span', 'ic', J.ICON.obstacle)); const t = el('div'); t.appendChild(el('b', null, ((J.FAILS.find(x => x.k === f.type) || {}).t || 'מכשול') + (f.critical ? ' — חשוב לטפל' : ''))); if (f.seen) t.appendChild(el('div', null, f.seen)); if (f.bridge) t.appendChild(el('div', 'muted', J.ICON.bridge + ' ' + f.bridge)); r.appendChild(t); c.appendChild(r); });
+    c.appendChild(failTable(p));
   } else c.appendChild(el('p', 'obst', J.ICON.clear + ' לא נמצא כשל מערכתי משמעותי.'));
   const ch = card(); ch.appendChild(el('h2', null, 'ההחלטות שלכם'));
   ch.appendChild(el('p', 'muted', 'זו הצעה ולא הוראה: בחרו בכל החלטה את האפשרות שמתאימה לכם, וספרו מה הוביל אתכם אליה. אפשר להתייעץ עם הצוות לפני השליחה — הבחירות נשמרות במכשיר.'));
@@ -443,7 +451,7 @@ function viewReview(){
   const c = card(); c.appendChild(el('h2', null, 'ההצעה והבחירות אצל ד״ר יעל שדה'));
   c.appendChild(el('p', 'banner-soft', 'קיבלנו! ד״ר יעל שדה תעבור על הבחירות שלכם ותחזור אליכם כאן, במסך הזה. אחרי האישור — יוצאים לדרך.'));
   const ms = (JR.plan || {}).milestones || [];
-  if (ms.length) { c.appendChild(el('h3', null, 'טיוטת אבני הדרך (' + ms.length + ')')); const ol = el('ol', 'tl'); ms.forEach(m => ol.appendChild(el('li', null, (m.gate ? J.ICON.gate + ' ' : '') + m.title + ' — ' + stT(m.stage)))); c.appendChild(ol); }
+  if (ms.length) { c.appendChild(el('h3', null, 'טיוטת אבני הדרך (' + ms.length + ')')); c.appendChild(milestoneTable(ms)); }
 }
 
 // שלב 4: בדרך — אבני דרך, הגשות, תעודות
