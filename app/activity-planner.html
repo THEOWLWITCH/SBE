@@ -1477,22 +1477,16 @@ function buildDocView(d, creator) {
 }
 
 function buildCardView(d, creator) {
+  // כרטיס תמציתי — טבלה קצרה לזמן הפעילות (07/10/2026)
   const cv = el("div", { class:"cardview" });
   cv.append(el("h3", {}, "כרטיס תמציתי · " + (d.domain || "פעילות")));
-  const row = (label, v) => { if (!v) return; cv.append(el("div",{class:"cv-row"}, el("b",{},label), el("div",{},v))); };
-  row("מטרה", d.goal);
-  if (d.specialNotes) cv.append(el("div",{class:"cv-row", style:"background:#F5E4E2;border-radius:5px;padding:7px 9px;"},
-    el("b",{},"לשים לב"), el("div",{},d.specialNotes)));
-  const steps = el("div", { class:"cv-row" });
-  steps.append(el("b",{},"שלבים"));
-  const ol = el("ol", { class:"cv-steps" });
+  const ol = el("ol", { class:"cv-steps", style:"margin:0;padding-inline-start:18px" });
   if (d.opening) ol.append(el("li",{},"פתיחה" + (d.openingMin ? ` (${d.openingMin})` : "") + ": " + d.opening));
   if (d.mainActivity) ol.append(el("li",{},"מרכזית" + (d.mainMin ? ` (${d.mainMin})` : "") + ": " + d.mainActivity));
   if (d.closing) ol.append(el("li",{},"סיכום" + (d.closingMin ? ` (${d.closingMin})` : "") + ": " + d.closing));
-  steps.append(ol); cv.append(steps);
-  row("שילוב תנועה", d.movement);
-  row("משאבים", d.resources);
-  cv.append(el("div",{class:"cv-row", style:"margin-top:8px;font-size:11px;color:#5C6771"}, creator || ""));
+  cv.append(SBE_DOC.table([["מטרה", d.goal], ["לשים לב", d.specialNotes], ["שלבים", ol.childNodes.length ? ol : ""],
+    ["שילוב תנועה", d.movement], ["משאבים", d.resources]]));
+  if (creator) cv.append(el("div",{style:"margin-top:6px;font-size:11px;color:#5C6771"}, creator));
   return cv;
 }
 
@@ -1532,10 +1526,23 @@ function buildNarrativeDocView(d, creator, narr) {
   dv.append(el("h2", {}, narr.title || d.domain || "פעילות"));
   dv.append(el("div", { class:"dv-meta" }, [d.domain, d.age, d.duration, approachList(d.approach).join(" + ")].filter(Boolean).join(" · ")));
   const srcLine = renderSourcesLine(d); if (srcLine) dv.append(srcLine);
-  narr.paragraphs.forEach(p => dv.append(el("p", { style:"margin:0 0 11px;line-height:1.7;font-size:14.5px;" }, p)));
-  if (Array.isArray(narr.prepare) && narr.prepare.length) {
-    dv.append(el("div",{class:"dv-sec", style:"margin-top:14px;"}, el("b",{},"מה להכין מראש"),
-      (() => { const ul = el("ul", { style:"margin:4px 0 0;padding-inline-start:18px;" }); narr.prepare.forEach(x => ul.append(el("li",{},x))); return ul; })()));
+  // טבלאות (07/10/2026), כמו ברצף המפגשים: הפסקאות של המודל כשורות (כותרת | תוכן), ומהלך הפעילות בטבלה
+  const str = (x) => (x == null ? "" : String(x)).trim();
+  const LBL = ["למה הפעילות הזאת", "איך זה נראה בפועל", "למה הגישה משרתת את המטרה", "טיפ למורה"];
+  const ul = (xs) => { const u = el("ul", { style:"margin:0;padding-inline-start:18px;" }); xs.forEach(x => u.append(el("li",{},x))); return u; };
+  dv.append(SBE_DOC.table(narr.paragraphs.map((p, i) => [LBL[i] || "ועוד", p])
+    .concat([["התוצר", d.outcome], ["מה להכין מראש", Array.isArray(narr.prepare) && narr.prepare.length ? ul(narr.prepare) : ""]])));
+  const flow = [["פתיחה", d.openingMin, d.opening], ["פעילות מרכזית", d.mainMin, d.mainActivity], ["סיכום", d.closingMin, d.closing]].filter(r => str(r[2]));
+  if (flow.length) {
+    dv.append(el("h3", { style:"font-size:15px;margin:16px 0 4px" }, "מהלך הפעילות"));
+    const t = el("table", { class:"kit-table" });
+    const th = el("thead"); th.append(el("tr", {}, el("th",{},"שלב"), el("th",{},"זמן"), el("th",{},"מה עושים"))); t.append(th);
+    const tb = el("tbody");
+    flow.forEach(([n, m, txt]) => { const lines = str(txt).split(/\n+/).filter(Boolean);
+      tb.append(el("tr", {}, el("th",{},n), el("td",{style:"white-space:nowrap"}, str(m) || "—"), el("td",{}, lines.length > 1 ? ul(lines.map(x => x.replace(/^\d+[.)]\s*/, ""))) : str(txt)))); });
+    const extra = [["שילוב תנועה", d.movement], ["משאבים ועזרים", d.resources]].filter(r => str(r[1]));
+    extra.forEach(([n, v]) => { const td = el("td", {}, str(v)); td.colSpan = 2; tb.append(el("tr", {}, el("th",{},n), td)); });
+    t.append(tb); dv.append(t);
   }
   return dv;
 }
