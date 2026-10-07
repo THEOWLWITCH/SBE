@@ -94,6 +94,7 @@
   - **רשימות פתוחות:** `nana-group`, `nana-age`, `nana-sit`. נשמר במכשיר לפי משתמש/ת (`sbe.nana.v1`).
 - **סטודיו חוסן** (`app/resilience-studio.html`, שרת: `harness/lib/studio.mjs`, ספק: OpenAI): מהשראה לתקציר ולערכת פעולה. תיעוד: `docs/resilience-studio*.md`.
   - **עד לאישור המקצועי — רק הרשאת `studio`** (ומנהלת המערכת): `STUDIO_PERMS` בשרת, `access-guard.js`, `home.html`, `system-select.html` והכפתור ב-`resilience-team.html`. כשמאשרים — מוסיפים שוב את `activity`, `resilience`, `practi` ו-`leadership` בכל המקומות האלה.
+  - **מקורות:** כל מקורות החוסן הציבוריים מבנק הידע (כמו ננה); מקורות שטרם פורסמו (`hidden`) לא נשלחים לעולם, ומדריכי UNICEF למתבגרים — רק בהקשר נוער.
   - בדיקות: `cd harness && npm test` (גם ב-GitHub Actions).
 - **בנק הידע:** `app/lib/resilience-advisor-sources.js` הוא מקור אמת יחיד. הפונקציה `forAdvisor('practi'|'nugi'|'nana')` קובעת אילו מקורות כל יועצת מקבלת. ננה מקבלת את כל הבנק. הקבוצה `facil` (הנחיית קבוצות ושיח בכיתה — כולל הידהוד, גבולות, הומור, מישחוק, שיחה ודיון ופרוטוקול) מגיעה גם לפרקטי.
 - **עדכון שבועי:** הבנק מתעדכן אוטומטית כל יום ראשון. מוסיפים רק מקורות שאומתו, ולא מוסיפים חוזרי מנכ"ל.

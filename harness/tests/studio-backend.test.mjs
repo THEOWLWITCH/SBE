@@ -328,6 +328,8 @@ test('consultation uses public provenance with IAF always and UNICEF only for yo
     assert.equal(status,200);assert.ok(input.professionalSources.some(s=>s.sourceId==='IAFCompetencies2026'));
     assert.equal(input.professionalSources.some(s=>s.sourceId==='UnicefAdolescentKit2026'),youth);
     assert.ok(input.professionalSources.every(s=>s.status==='existing-bank'));
+    // כל מקורות החוסן הציבוריים (למעט UNICEF מחוץ להקשר נוער), ובלי מקורות שטרם פורסמו
+    assert.ok(input.professionalSources.length>=150);assert.ok(['Sade2024','Norris2008','Spillane2005','Kaner2014','Rowe1986'].every(k=>input.professionalSources.some(s=>s.sourceId===k)));
     assert.ok(!/SadeTools2026|SadeTrust2026|private-source/.test(JSON.stringify(input)));
     assert.equal(input.brief.sources[0].status,'unreviewed');assert.equal(input.brief.sources[0].role,'context');
     assert.match(out.consultation.professionalBasis[0].version,/^sha256:/);
