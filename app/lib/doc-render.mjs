@@ -121,6 +121,9 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .dt td.w{width:38%;}
 .dt .tag{margin-inline-start:6px;}
 .sec:has(.dt){break-inside:auto;}
+.dt-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+.dt-cap{font-size:12.5px;font-weight:700;color:var(--muted);margin:14px 0 6px;}
+.dt .eff{margin-inline-start:0;}
 .red{border:1px solid #E0C4C1;background:#FAF0EF;border-radius:4px;
   padding:12px 15px;font-size:14px;color:#7A322D;}
 .foot{border-top:1px solid var(--hair);padding:11px 36px;font-size:11.5px;
@@ -246,6 +249,32 @@ export function tpCard(t, who, other, opts = {}) {
 </div>`;
 }
 
+// נקודות התפנית בטבלאות (07/10/2026, "קו אחיד") — לגרסת השחקנית ולכרטיסי הדמות.
+//   טבלה 1: # · התפנית והרגע · מה עושה · מה זה מבקש · אם זה לא קורה.
+//   טבלה 2 (הענפים): # · אם… · אז… · לאן זה מוביל.
+//   whoOf(t) / otherOf(t): מי עושה את "does" ומגיבה, ומי עושה את "move" ("את" / "אתה" / שם).
+export function tpTables(tps, { whoOf, otherOf, doLabel = 'מה את עושה', askLabel = 'מה זה מבקש ממנה' }) {
+  const isPronoun = (x) => x === 'את' || x === 'אתה';
+  const tag = (t) => (t.core ? '<span class="tag t-core">ליבה</span>' : '') +
+    `<span class="tag ${/סגירה|ניתוק/.test(t.type || '') ? 't-close' : 't-open'}">${esc(t.type)}</span>`;
+  const effCls = (e) => (e === 'פותח' ? 'e-o' : e === 'סוגר' ? 'e-c' : 'e-h');
+  const num = (h) => h.replace(/<td data-label="#">/g, '<td class="n" data-label="#">');
+  const main = dtable(['#', 'התפנית והרגע', doLabel, askLabel, 'אם זה לא קורה'], (tps || []).map((t) => {
+    const who = whoOf(t);
+    return [esc(t.n), `<b>${esc(t.name)}</b> ${tag(t)}<div class="dt-sub">${esc(t.trigger)}</div>`,
+      `${isPronoun(who) ? '' : `<b>${esc(who)}:</b> `}<span class="said">${esc(t.does)}</span>`, esc(t.demands), esc(t.missed)];
+  }));
+  const br = [];
+  (tps || []).forEach((t) => (t.branches || []).forEach((b) => {
+    const who = whoOf(t), other = otherOf(t);
+    const then = who === 'את' ? 'את מגיבה:' : who === 'אתה' ? 'אתה מגיב:' : `${who}:`;
+    br.push([esc(t.n), `<b>אם ${esc(other)}</b> ${esc(b.move)}`, `<b>${esc(then)}</b> <span class="said">${esc(b.says)}</span>`,
+      `<span class="eff ${effCls(b.effect)}">${esc(b.effect)}</span> ${b.quality ? `<em>${esc(b.quality)}</em>` : ''}`]);
+  }));
+  return num(main) + (br.length ? `<div class="dt-cap">אם… אז… — איך כל תפנית יכולה להתגלגל</div>` +
+    num(dtable(['#', 'אם…', 'אז…', 'לאן זה מוביל'], br)) : '');
+}
+
 // ── יצירת המרנדר עם התלויות הסביבתיות ────────────────────────────
 //   config.MARK           data-URI של הלוגו
 //   config.REPORT_WIDGET  HTML של כפתור הדיווח (או "" בדפדפן/בתצוגה מקדימה)
@@ -316,19 +345,25 @@ ${WIDGET}`;
       badge: 'גרסת השחקנית',
       meta: [`<b>${esc(a.nameAndAge)}</b>`, esc(a.role), `קונפליקט ${esc(s.conflictType)}`, ...baseMeta],
       body:
-        sec('מי את היום', paras(a.portrait)) +
-        sec('מה קרה, מנקודת מבטך', paras(a.story)) +
-        sec('מה את מבקשת, ומה את לא אומרת', paras(a.askAndBeneath)) +
-        sec('מי יושבת מולך', paras(tr.portraitForActor), 'לדעת מי היא — לא כדי לרחם עליה, כדי להוביל') +
-        sec('מה פותח אותך, ומה סוגר', `<p>${esc(a.opens)}</p>
-      <p>מה שאת יודעת והיא לא: ${esc(a.knows)} ומה שהיא יודעת ואת לא: ${esc(a.doesntKnow)}</p>
-      <p>${esc(a.contradiction)}</p>`) +
-        sec('איך חמש הדקות יכולות להתגלגל', paras(a.arc)) +
-        sec('חמש נקודות התפנית', (s.turningPoints || []).map((t) => tpCard(t, 'את', tr.role, { ask: 'מבקש ממנה' })).join(''),
+        sec('מי את', dtable(null, [
+          ['מי את היום', paras(a.portrait)],
+          ['מה קרה, מנקודת מבטך', paras(a.story)],
+          ['מה את מבקשת, ומה את לא אומרת', paras(a.askAndBeneath)],
+          ['מי יושבת מולך', paras(tr.portraitForActor)],
+        ]), 'לדעת מי היא — לא כדי לרחם עליה, כדי להוביל') +
+        sec('מה פותח אותך, ומה סוגר', dtable(null, [
+          ['מה פותח אותך', paras(a.opens)],
+          ['מה שאת יודעת והיא לא', paras(a.knows)],
+          ['מה שהיא יודעת ואת לא', paras(a.doesntKnow)],
+          ['הסתירה שבך', paras(a.contradiction)],
+        ].filter((r) => r[1]))) +
+        sec('חמש נקודות התפנית', tpTables(s.turningPoints, { whoOf: () => 'את', otherOf: () => tr.role }),
           'מלאי, לא רצף. בחמש דקות יקרו שתיים') +
-        sec('איך זה יכול להיגמר', `<p>${esc(a.endingsProse)}</p>`) +
-        sec('אם היא עושה משהו שאינו כאן',
-          `<p>שאלי את עצמך מה ${esc(actorFirstName)} תעשה לנוכח החשש שלה, ולכי לשם. חמש התפניות הן מלאי ולא כלוב.</p>`) +
+        sec('איך זה מתגלגל ואיך זה נגמר', dtable(null, [
+          ['איך חמש הדקות יכולות להתגלגל', paras(a.arc)],
+          ['איך זה יכול להיגמר', paras(a.endingsProse)],
+          ['אם היא עושה משהו שאינו כאן', `<p>שאלי את עצמך מה ${esc(actorFirstName)} תעשה לנוכח החשש שלה, ולכי לשם. חמש התפניות הן מלאי ולא כלוב.</p>`],
+        ].filter((r) => r[1]))) +
         redLine(),
     });
 
@@ -413,10 +448,6 @@ ${WIDGET}`;
     const otherOf = (key) => s.characters.find((c) => c.key !== key);
 
     const tpThird = (t) => tpCard(t, byKey[t.who].name, otherOf(t.who).name);
-    const tpFor = (x) => (t) => {
-      const who = byKey[t.who], other = otherOf(t.who);
-      return tpCard(t, who.key === x.key ? x.pronoun : who.name, other.key === x.key ? x.pronoun : other.name);
-    };
 
     const scenario = page(s, {
       badge: s.scenarioBadge,
@@ -439,12 +470,20 @@ ${WIDGET}`;
         badge: c.badge,
         meta,
         body:
-          sec(c.pronoun === 'אתה' ? 'מי אתה היום' : 'מי את היום', paras(c.portrait)) +
-          (c.extra ? sec(c.extra.title, paras(c.extra.paras)) : '') +
-          (c.facing ? sec('מי מולך', paras(c.facing)) : '') +
-          sec(isParents ? 'איך הערב יכול להתגלגל' : 'איך השיחה יכולה להתגלגל', paras(s.arc)) +
-          sec('חמש נקודות התפנית', (s.turningPoints || []).map(tpFor(c)).join(''), 'מלאי, לא רצף') +
-          sec('איך זה יכול להיגמר', `<p>${esc(s.endingsProse)}</p>`) +
+          sec(c.pronoun === 'אתה' ? 'מי אתה' : 'מי את', dtable(null, [
+            [c.pronoun === 'אתה' ? 'מי אתה היום' : 'מי את היום', paras(c.portrait)],
+            ...(c.extra ? [[esc(c.extra.title), paras(c.extra.paras)]] : []),
+            ...(c.facing ? [['מי מולך', paras(c.facing)]] : []),
+          ])) +
+          sec('חמש נקודות התפנית', tpTables(s.turningPoints, {
+            whoOf: (t) => (t.who === c.key ? c.pronoun : byKey[t.who].name),
+            otherOf: (t) => (otherOf(t.who).key === c.key ? c.pronoun : otherOf(t.who).name),
+            doLabel: 'מה קורה מצד הדמות', askLabel: 'מה זה מבקש',
+          }), 'מלאי, לא רצף') +
+          sec('איך זה מתגלגל ואיך זה נגמר', dtable(null, [
+            [isParents ? 'איך הערב יכול להתגלגל' : 'איך השיחה יכולה להתגלגל', paras(s.arc)],
+            ['איך זה יכול להיגמר', paras(s.endingsProse)],
+          ])) +
           red(s.redLine),
       });
       files.push([`${s.outputs.cards[c.key]}.html`, html, c.badge]);
@@ -452,5 +491,5 @@ ${WIDGET}`;
     return { files };
   }
 
-  return { page, card, renderEduDocs, renderRoleDocs, esc, sec, paras, list, rows, dtable, red, blk, tpCard, CSS, CARD_CSS, FONTS };
+  return { page, card, renderEduDocs, renderRoleDocs, esc, sec, paras, list, rows, dtable, tpTables, red, blk, tpCard, CSS, CARD_CSS, FONTS };
 }
