@@ -299,9 +299,9 @@ async function viewBoard(){
   const msg = el('p', 'muted'); const sv = btn('שמירה', 'btn-ghost', async () => { const w2 = {}; Object.keys(inputs).forEach(k => { w2[k] = inputs[k].value.trim(); }); const r = await api('jrSettings', { settings: { ...(d.settings || {}), wa: w2 } }); msg.textContent = r.ok ? 'נשמר ✓' : 'לא נשמר'; });
   sv.style.marginTop = '.5rem'; sd.appendChild(sv); sd.appendChild(msg);
   const x = card(); x.appendChild(el('h2', null, 'ייצוא מחקרי'));
-  x.appendChild(el('p', 'muted', 'הבחירות, ההסברים והרפלקציות — רק ממסעות שהסכימו למחקר, בלי שם המסגרת ובלי פרטים מזהים. קובץ CSV לאקסל.'));
+  x.appendChild(el('p', 'muted', 'נתונים מובנים בלבד ממסעות שהסכימו למחקר: בלי טקסט חופשי, שם המסגרת או פרטי קשר. התאריך מצומצם לחודש. קובץ CSV לאקסל.'));
   x.appendChild(btn('הורדת הקובץ', 'btn-ghost', async () => {
-    const r = await api('jrExport'); const rows = r.rows || []; const cols = ['journey','unit','at','stage','type','key','choice','reasons','explain','who','effect','again','learned'];
+    const r = await api('jrExport'); const rows = r.rows || []; const cols = ['journey','unit','at','stage','type','key','reasons'];
     const csv = '﻿' + [cols.join(','), ...rows.map(o => cols.map(k => '"' + String(o[k] ?? '').replace(/"/g, '""') + '"').join(','))].join('\n');
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'begood-journeys-research.csv'; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 1500);
   }));

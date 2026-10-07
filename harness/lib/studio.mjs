@@ -239,7 +239,7 @@ const INSTRUCTIONS = `את/ה מסייע/ת בסטודיו חוסן של Begood:
 התייעצות לעולם אינה משנה פעילות. suggestedInstructions יכול להכיל רק הצעת הוראות לשלב selectedStep שנבחר במפורש; ההצעה ממתינה לקבלה מפורשת של המשתמש. בלי selectedStep החזר suggestedInstructions ריק. אל תציע החלפה שקטה של מטרה, רכיבים, מיומנויות או שלבים, ואל תעתיק חששות פרטיים, היסטוריית שיחה או פרטים מזהים להוראות למשתתפים. answer והעידוד מיועדים רק למוביל/ה ואינם תוכן ערכת המשתתפים.
 עברית פשוטה, פסקאות קצרות והוראות מעשיות; שפה תומכת, בחירה, שליטה ומסר אפשרי של תקווה. אין להמציא עובדות, אנשים או סיפורים אמיתיים. אין לשאול 'למה'; בקש 'ספרו לנו מה הוביל אתכם לבחירה'.`;
 
-export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onReady}={}) {
+export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onReady,signal}={}) {
   const actor=await authorizePermission(store,body?.token,STUDIO_PERMS);
   if(!actor) return [403,{code:'studio_forbidden',error:'אין הרשאה פעילה לסטודיו. יש להיכנס מחדש עם קוד מתאים.'}];
   if(!body || typeof body!=='object' || Array.isArray(body)) return [400,{error:'בקשה לא תקינה.'}];
@@ -279,18 +279,24 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
   const input={action,brief,components:studio.COMPONENTS,professionalSources,
     ...(mapping?{mapping}:{}),...(previous?{previous}: {}),...(consultation || {})};
   const schema=action==='analyze'?RECOMMENDATION_SCHEMA:action==='consult'?CONSULTATION_SCHEMA:ACTIVITY_SCHEMA;
-  const payload={model,reasoning:{effort},store:false,instructions:INSTRUCTIONS,
+  const payload={model,reasoning:{effort},store:false,max_output_tokens:16000,instructions:INSTRUCTIONS,
     input:[{role:'user',content:[{type:'input_text',text:JSON.stringify(input)}]}],
     text:{format:{type:'json_schema',name:action==='analyze'?'studio_focus':action==='consult'?'studio_consultation':'studio_activity',strict:true,schema}}};
   let provider;
+  const requestController=new AbortController();
+  const abortRequest=()=>requestController.abort();
+  const requestTimer=setTimeout(abortRequest,180000);
+  if(signal?.aborted) abortRequest();
+  signal?.addEventListener('abort',abortRequest,{once:true});
   try {
     if(onReady) onReady();
     const r=await fetchImpl('https://api.openai.com/v1/responses',{method:'POST',
       headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify(payload),
-      signal:AbortSignal.timeout(180000)});
+      signal:requestController.signal});
     if(!r.ok) return [503,{error:'שירות היצירה וההתייעצות אינו זמין כעת. אפשר לנסות שוב.'}];
     provider=await r.json();
   } catch { return [503,{error:'הבקשה לא הסתיימה. אפשר לנסות שוב.'}]; }
+  finally {clearTimeout(requestTimer);signal?.removeEventListener('abort',abortRequest);}
   if(!provider || provider.status!=='completed' || !Array.isArray(provider.output)) return [422,{error:'המודל לא השלים תשובה; לא נוצרה ערכה.'}];
   const content=provider.output.flatMap(item=>Array.isArray(item?.content)?item.content:[]);
   if(content.some(c=>c.type==='refusal')) return [422,{error:'המודל לא יכול ליצור פעילות מהבקשה הזו. אפשר לערוך את התקציר.'}];

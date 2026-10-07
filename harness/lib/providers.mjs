@@ -77,6 +77,11 @@ function postStream(url, headers, body, timeoutMs = 600000, signal) {
   return new Promise((resolve, reject) => {
     const u = new URL(url);
     const data = JSON.stringify({ ...body, stream: true });
+    const streamedUsage = {};
+    const partial = () => ({text:'',toolCalls:[],usage:usageOf(streamedUsage),status:'failed',refusal:null,truncation:null});
+    const streamError = e => new ProviderError(e instanceof ProviderError ? e.message : signal?.aborted ? 'הבקשה בוטלה' : 'חיבור הספק נכשל', {
+      status:e.status,retryable:e instanceof ProviderError ? e.retryable : !signal?.aborted,
+      code:e instanceof ProviderError ? e.code : signal?.aborted ? 'aborted' : 'transport',result:e.result || partial()});
     const request = u.protocol === 'http:' ? httpRequest : httpsRequest;
     const req = request({
       hostname: u.hostname, port: u.port || undefined, path: u.pathname + u.search, method: 'POST', signal,
@@ -94,7 +99,7 @@ function postStream(url, headers, body, timeoutMs = 600000, signal) {
         return;
       }
       const blocks = [];
-      const msg = { content: blocks, stop_reason: null, usage: {} };
+      const msg = { content: blocks, stop_reason: null, usage: streamedUsage };
       let buf = '', failed = false;
       const handle = (ev) => {
         switch (ev.type) {
@@ -150,10 +155,10 @@ function postStream(url, headers, body, timeoutMs = 600000, signal) {
         if (!msg.stop_reason) return reject(new ProviderError('החיבור לספק נסגר לפני סוף התשובה', { retryable: true, code: 'transport', result: normalizeResult('anthropic', msg) }));
         resolve(msg);
       });
-      res.on('error', e => reject(e instanceof ProviderError ? e : new ProviderError('חיבור הספק נכשל', { retryable: !signal?.aborted, code: signal?.aborted ? 'aborted' : 'transport' })));
+      res.on('error', e => reject(streamError(e)));
     });
-    req.on('timeout', () => req.destroy(new ProviderError(`אין נתונים מהספק ${timeoutMs / 1000} שניות`, { retryable: true, code: 'timeout', result: normalizeResult('anthropic', { content: [], usage: {}, stop_reason: null }) })));
-    req.on('error', e => reject(e instanceof ProviderError ? e : new ProviderError('חיבור הספק נכשל', { retryable: !signal?.aborted, code: signal?.aborted ? 'aborted' : 'transport' })));
+    req.on('timeout', () => req.destroy(new ProviderError(`אין נתונים מהספק ${timeoutMs / 1000} שניות`, { retryable: true, code: 'timeout', result: partial() })));
+    req.on('error', e => reject(streamError(e)));
     req.write(data);
     req.end();
   });
@@ -402,13 +407,16 @@ export function getProvider(name, { apiKey: injectedKey, model: configuredModel,
       const model = opts.model || this.model;
       if (typeof model !== 'string' || !model.trim()) throw configurationError('model חסר');
       if (signal?.aborted) throw new ProviderError('הבקשה בוטלה', { code: 'aborted' });
+      const maxAttempts = opts.maxAttempts ?? 2;
+      if (![1, 2].includes(maxAttempts)) throw configurationError('maxAttempts צריך להיות 1 או 2');
       let lastErr;
-      for (let attempt = 0; attempt < 2; attempt++) {
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        await opts.beforeAttempt?.();
         try { return assertCompletionResult(await p.complete({ request, apiKey, model, transport, signal, timeoutMs: opts.timeoutMs || 600000 })); }
         catch (e) {
           lastErr = e;
           if (!(e instanceof ProviderError) || !e.retryable) throw e;
-          if (signal?.aborted || attempt === 1) break;
+          if (signal?.aborted || attempt + 1 >= maxAttempts) break;
           await new Promise((resolve, reject) => {
             const timer = setTimeout(done, retryDelayMs);
             const abort = () => { clearTimeout(timer); signal?.removeEventListener('abort', abort); reject(new ProviderError('הבקשה בוטלה', { code: 'aborted' })); };

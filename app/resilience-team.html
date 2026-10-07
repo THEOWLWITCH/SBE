@@ -607,7 +607,7 @@ document.getElementById('btn-restore').addEventListener('click',function(){
   const m=raw.match(/^([a-z0-9]{8,20})\.([a-z0-9]{8,40})$/);
   if(!m){cfgMsg.style.color='var(--brick)';cfgMsg.textContent='קוד הניהול לא תקין. הוא נראה כך: xxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxx';return;}
   cfgMsg.style.color='var(--muted)';cfgMsg.textContent='בודק את הקוד...';
-  api({action:'resilResults',id:m[1],key:m[2]}).then(d=>{
+  api({action:'resilResults',id:m[1],key:m[2],token:sessionToken()}).then(d=>{
     if(!d.group){cfgMsg.style.color='var(--brick)';cfgMsg.textContent='הקוד לא מתאים לאף כיתה.';return;}
     saveCfg({id:m[1],key:m[2],cls:d.group.cls,band:d.group.band});
     GROUP=d.group;RESP=d.resp||[];cfgMsg.textContent='';renderAll();

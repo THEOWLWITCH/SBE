@@ -905,7 +905,7 @@ function selectScenario(id){
 function init(){
   document.getElementById("scenarioName").textContent = SCENARIO.name;
   document.getElementById("scenarioSubtitle").textContent = SCENARIO.subtitle;
-  document.getElementById("redlineBanner").innerHTML = "<b>קו אדום</b> · " + SCENARIO.redLine;
+  document.getElementById("redlineBanner").textContent = "קו אדום · " + SCENARIO.redLine;
   document.getElementById("maxTurnsChip").textContent = String(MAX_TURNS);
   const ot = document.getElementById("openingText");
   ot.textContent = "";
@@ -1310,14 +1310,15 @@ function checkCrossings(traineeText){
 // (מזוהה במספר, לא בשם) — עקבי עם ההכרעה מ-05/09/2026.
 function getTraineeId(){
   try {
-    let id = localStorage.getItem("sbe.practice.traineeId");
-    if (!id) { id = "מ" + Math.floor(100000 + Math.random()*900000); localStorage.setItem("sbe.practice.traineeId", id); }
+    const key = window.sbeUserKey("sbe.practice.traineeId");
+    let id = localStorage.getItem(key);
+    if (!id) { id = "מ" + Math.floor(100000 + Math.random()*900000); localStorage.setItem(key, id); }
     return id;
   } catch (e) { return "לא ידוע"; }
 }
 function logCrossing(entry){
   try {
-    const key = "sbe.practice.crossings.v1";
+    const key = window.sbeUserKey("sbe.practice.crossings.v1");
     const list = JSON.parse(localStorage.getItem(key) || "[]");
     list.push({
       ...entry,
@@ -1450,7 +1451,7 @@ async function callAI(system, messages, timeoutMs){
   try {
     const res = await fetch(AI_SERVER + "/api/character-turn", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: window.sbeAIHeaders(),
       body: JSON.stringify({
         system, messages,
         tools: [REPORT_TURN_TOOL],
@@ -2108,6 +2109,8 @@ body.sbe-hasnav{padding-top:38px;}
 </div>
 <div id="navPanel" hidden></div>
 <script src="lib/screens-menu.js"></script>
+<script src="lib/product-doc.js"></script>
+<script src="lib/artifact-practice.js"></script>
 <script>
 (function(){
   "use strict";

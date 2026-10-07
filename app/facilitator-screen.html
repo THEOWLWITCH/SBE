@@ -538,7 +538,7 @@ $("bCopy").addEventListener("click", async () => {
 // ── בחירת התרחיש (05/10/2026): התרחישים שנבנו במכשיר הזה (narrative-build.js שומר אותם) + התרחיש לדוגמה ──
 const TRACK_T = { edu:"סטודנטיות.ים", parents:"הורים", youth:"נוער" };
 const SAMPLE = { ...S, id:"sample", track:"edu" };
-let SAVED = []; try { SAVED = JSON.parse(localStorage.getItem("sbe.workshop.scenarios.v1") || "[]"); } catch(e){}
+let SAVED = []; try { SAVED = JSON.parse(localStorage.getItem(window.sbeUserKey("sbe.workshop.scenarios.v1")) || "[]"); } catch(e){}
 (function scnInit(){
   const sel = $("scnSel");
   SAVED.forEach(x => { const o = document.createElement("option"); o.value = x.id; o.textContent = x.name + " · " + (TRACK_T[x.track] || "") + (x.sub ? " — " + x.sub : ""); sel.append(o); });

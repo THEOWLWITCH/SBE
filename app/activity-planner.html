@@ -1736,8 +1736,8 @@ setMode(new URLSearchParams(location.search).get("mode") || "single", false);
 "use strict";
 
 const MAX_SESSIONS = 30, MAX_GOALS = 5;
-const DRAFT_KEY = "sbe.seqplanner.draft.v1";
-const SAVED_KEY = "sbe.seqplanner.saved.v1";
+const DRAFT_KEY = window.sbeUserKey("sbe.seqplanner.draft.v1");
+const SAVED_KEY = window.sbeUserKey("sbe.seqplanner.saved.v1");
 
 const FRAMEWORK_OPTS = ["בית ספר","גן ילדים","מכללה / אוניברסיטה","השתלמות / פיתוח מקצועי",
   "מתנ״ס / מרכז קהילתי","תנועת נוער / חינוך בלתי פורמלי","ארגון / מקום עבודה"];

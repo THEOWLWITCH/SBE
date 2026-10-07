@@ -39,7 +39,7 @@ export function approvedSources(sourceLibrary = []) {
   if (!Array.isArray(sourceLibrary)) throw new OutputContractError('sources', ['בנק המקורות אינו מערך']);
   const sources = sourceLibrary.filter(s => object(s) && s.approved === true && s.hidden !== true && text(s.sourceId) && text(s.citation || s.title));
   if (new Set(sources.map(s => s.sourceId)).size !== sources.length) throw new OutputContractError('sources', ['sourceId כפול בבנק המאושר']);
-  return sources.map(s => ({ sourceId: s.sourceId, title: s.title || s.citation, citation: s.citation || s.title }));
+  return sources.map(s => ({ sourceId: s.sourceId, title: s.title || s.citation, citation: s.citation || s.title, version: s.version || 'unversioned' }));
 }
 
 function fields(value, names, prefix, errors) {

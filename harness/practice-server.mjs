@@ -1,358 +1,245 @@
 #!/usr/bin/env node
-// שרת proxy מינימלי משותף — כל מסכי app/ שצריכים קריאה אמיתית למודל
-// (practice.html, input-screen.html, parent-input-screen.html,
-// conversation-planner.html, activity-planner.html) קוראים לשרת הזה,
-// לא כל אחד בונה משהו משלו. (הורחב 19/09/2026 — היה ספציפי ל-practice.html
-// בלבד תחת השם /api/character-turn; השם נשאר לתאימות לאחור, אבל הלוגיקה
-// עצמה תמיד הייתה גנרית לחלוטין — לא ידעה שהיא "מדברת עם דמות".)
-//
-// למה זה קיים: כל קבצי app/ הם צד-לקוח טהור בלי שרת. מפתח API לא יכול
-// לשבת בבטחה בקוד JS שרץ בדפדפן — כל אחת יכולה לראות אותו ב-view-source
-// ולגנוב אותו. השרת הזה הוא השכבה הדקה היחידה שמחזיקה את המפתח, מקבלת
-// בקשה מהדפדפן, קוראת למודל בצד השרת, ומחזירה רק את התשובה. שום דבר
-// אחר לא עובר דרכו — לוגיקת התפניות/הצעות/משוב וכו' נשארת בקוד הלקוח
-// של כל מסך, בדיוק כמו היום.
-//
-// הרצה מקומית:
-//   ANTHROPIC_API_KEY=... node harness/practice-server.mjs [--port 8790]
-//
-// פריסה ב-Render: CORS נעול לדומיין CORS_ORIGIN (ברירת מחדל: s-b-e.netlify.app).
-// השרת מאזין על 0.0.0.0 כדי לקבל חיבורים מרשת.
-//
-// חוזה הבקשה, POST /api/complete (וגם /api/character-turn — כינוי זהה
-// לתאימות לאחור עם practice-engine.md):
-//   { system: "<פרומפט המערכת>",
-//     messages: [{role:"user"|"assistant", content:"..."}, ...],
-//     tools: [...],           // אופציונלי, function calling
-//     toolChoice: {...},      // אופציונלי, כופה קריאה לכלי
-//     maxTokens: 800 }        // אופציונלי, ברירת מחדל 220 (טורים קצרים
-//                             // בתרגול) — מסכים אחרים ששולחים מסמך שלם
-//                             // חייבים לציין maxTokens גבוה יותר במפורש.
-// חוזה התשובה: { text: "...", toolCalls: [{name, input}] }
+// Shared authenticated model boundary. Importing this module never opens a port.
+import {createServer} from 'node:http';
+import {createHash, randomUUID} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import {resolve} from 'node:path';
+import {runInNewContext} from 'node:vm';
+import {getProvider, assertCompletionResult} from './lib/providers.mjs';
+import {runPipeline} from './lib/pipeline.mjs';
+import {toScenario} from './lib/to-scenario.mjs';
+import {handleAccess, supabaseStore, resolvePrincipal, reserveAIUsage, settleAIUsage} from './lib/access.mjs';
+import {handleStudio} from './lib/studio.mjs';
+import {handleArtifacts,artifactReviewRunId} from './lib/activity-artifact.mjs';
 
-import { createServer } from 'node:http';
-import { randomUUID } from 'node:crypto';
-import { getProvider } from './lib/providers.mjs';
-import { runPipeline } from './lib/pipeline.mjs';
-import { toScenario } from './lib/to-scenario.mjs';
-import { handleAccess, supabaseStore } from './lib/access.mjs';
-import { studioRequest } from './lib/studio.mjs';
+const AI_PERMS = ['fac_trainee','fac_parent','fac_youth','practice','conv','activity','academic','resilience','leadership','practi','writer','studio','nana'];
+const STUDIO_PERMS = ['studio','activity','resilience','leadership','practi'];
+const CORS = [...new Set([...(process.env.CORS_ORIGIN || '').split(',').map(s=>s.trim().replace(/\/$/, '')).filter(Boolean),
+  'https://be-good.co.il','https://www.be-good.co.il','https://s-b-e.netlify.app'])];
+const BOOT = randomUUID(), TTL = 3 * 3600000;
+const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
+const failure = (message,status=400) => Object.assign(new Error(message),{status});
 
-// שמירת תרחיש ב-Supabase. נקראת רק כשיש SUPABASE_SERVICE_KEY בסביבה.
-// scenario הוא הפלט של toScenario(); meta הוא payload.meta מהלקוח.
-async function saveScenario(scenario, meta) {
-  const supaUrl = process.env.SUPABASE_URL;
-  const supaKey = process.env.SUPABASE_SERVICE_KEY;
-  if (!supaUrl || !supaKey) return;
-
-  const roles = [scenario.trainee?.role, scenario.actor?.role].filter(Boolean);
-  const skills = scenario.facilitator?.skills || [];
-
-  const row = {
-    id:             scenario.id,
-    institution_id: meta.institutionId || 'unknown',
-    name:           scenario.name,
-    subtitle:       scenario.subtitle || '',
-    roles,
-    event_desc:     meta.eventDesc || '',
-    broad_topic:    meta.broadTopic || '',
-    domain:         meta.domain || '',
-    content_type:   scenario.conflictType || '',
-    approach:       scenario.approach || '',
-    age_group:      scenario.age || '',
-    product_type:   meta.productType || 'תרחיש',
-    skills:         Array.isArray(skills) ? skills : [],
-    language:       scenario.language || 'עברית',
-    duration_min:   parseInt(scenario.duration) || 5,
-    creator:        scenario.creator || meta.creator || '',
-    scenario_json:  scenario,
-  };
-  const r = await fetch(`${supaUrl}/rest/v1/scenarios`, {
-    method: 'POST',
-    headers: {
-      apikey:         supaKey,
-      Authorization:  `Bearer ${supaKey}`,
-      'Content-Type': 'application/json',
-      Prefer:         'return=minimal',
-    },
-    body: JSON.stringify(row),
-  });
-  if (!r.ok) {
-    const body = await r.text().catch(() => '');
-    throw new Error(`Supabase ${r.status}: ${body}`);
-  }
+export function approvedSources() {
+  const sandbox = {window:{}};
+  runInNewContext(readFileSync(new URL('../app/lib/resilience-advisor-sources.js',import.meta.url),'utf8'),sandbox,{timeout:1000});
+  return sandbox.window.SBE_ADVISOR_SOURCES.list.filter(s=>!s.hidden && s.url?.startsWith('https://'))
+    .map(s=>({sourceId:s.k,title:s.apa,citation:s.apa,url:s.url,version:s.version || 'unversioned',approved:true,hidden:false}));
 }
 
-const args = process.argv.slice(2);
-const portArgIdx = args.indexOf('--port');
-const PORT = Number(portArgIdx >= 0 ? args[portArgIdx + 1] : (process.env.PORT || 8790));
+function requestBudget(request,attempts=2) {
+  const maxTokens=request.maxTokens ?? request.max_output_tokens ?? 220;
+  const {signal,...input}=request;
+  return attempts*(Buffer.byteLength(JSON.stringify(input))+maxTokens+2048);
+}
 
-// CORS: הדומיין be-good.co.il (עם www ובלי) וכתובת Netlify. CORS_ORIGIN יכול להכיל כמה כתובות מופרדות בפסיק;
-// הראשונה היא הכתובת הראשית (לקישורים במיילים). התשובה מחזירה את המקור של הבקשה אם הוא ברשימה.
-const CORS_LIST = [...new Set([...(process.env.CORS_ORIGIN || '').split(',').map((s) => s.trim().replace(/\/$/, '')).filter(Boolean),
-  'https://be-good.co.il', 'https://www.be-good.co.il', 'https://s-b-e.netlify.app'])];
-const CORS_ORIGIN = CORS_LIST[0];
-const corsFor = (res) => (res && res._origin && CORS_LIST.includes(res._origin) ? res._origin : CORS_ORIGIN);
+function boundedProvider(provider,budget,maxAttempts,assertCurrent) {
+  let reserved=0;
+  return {...provider,async complete(request) {
+    await assertCurrent();
+    if(maxAttempts)request={...request,maxAttempts};
+    const amount=requestBudget(request,request.maxAttempts ?? 2);
+    if(reserved+amount>budget) throw failure('generation budget exceeded',413);
+    reserved+=amount;
+    const result=await provider.complete({...request,beforeAttempt:assertCurrent});
+    await assertCurrent();return result;
+  }};
+}
 
-function sendJson(res, status, body) {
-  res.writeHead(status, {
-    'content-type': 'application/json; charset=utf-8',
-    'access-control-allow-origin': corsFor(res),
-    'vary': 'origin',
-    'access-control-allow-methods': 'POST, OPTIONS',
-    'access-control-allow-headers': 'content-type',
-  });
+async function persistScenario(scenario,principal,store) {
+  // A generated candidate has no publication approval. Keep it out of the
+  // legacy shared scenarios table and its separately managed RLS policies.
+  const key='sd:'+hash(principal.ownerId)+':'+scenario.id;
+  const row={ownerId:principal.ownerId,tenantId:principal.tenantId,status:'draft',scenario};
+  const result=await store.putIfAbsent({key,value:row});
+  if(!result.created && hash(result.value)!==hash(row)) throw failure('scenario conflict',409);
+}
+
+function send(req,res,status,body) {
+  res.writeHead(status,{'content-type':'application/json; charset=utf-8',
+    'access-control-allow-origin':CORS.includes(req.headers.origin)?req.headers.origin:CORS[0],vary:'origin',
+    'access-control-allow-methods':'POST, OPTIONS','access-control-allow-headers':'content-type, authorization, x-sbe-permission',
+    'cache-control':'no-store'});
   res.end(JSON.stringify(body));
 }
 
-// ה-proxy של Render סוגר חיבור שלא עוברים בו נתונים ~30 שניות, וקריאה ארוכה
-// למודל שותקת דקות. שולחים כותרות 200 מיד ורווח כל 25 שניות (JSON.parse
-// מתעלם מרווחים מובילים); שגיאה מאוחרת חוזרת כ-{error} בגוף עם 200.
-function startKeepAlive(res) {
-  res.writeHead(200, {
-    'content-type': 'application/json; charset=utf-8',
-    'access-control-allow-origin': corsFor(res),
-    'vary': 'origin',
-    'access-control-allow-methods': 'POST, OPTIONS',
-    'access-control-allow-headers': 'content-type',
-  });
-  const timer = setInterval(() => {
-    try { if (!res.writableEnded) res.write(' '); } catch {}
-  }, 25000);
-  return (body) => { clearInterval(timer); if (!res.writableEnded) res.end(JSON.stringify(body)); };
+async function readBody(req) {
+  let raw='',length=0;
+  req.setEncoding('utf8');
+  for await (const chunk of req) { length+=Buffer.byteLength(chunk); if(length>2000000) throw failure('request too large',413); raw+=chunk; }
+  try {const value=JSON.parse(raw);if(!value || typeof value!=='object' || Array.isArray(value)) throw Error();return value;}
+  catch {throw failure('invalid JSON');}
 }
 
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    // setEncoding: אותו תיקון כמו ב-providers.mjs — בלעדיו אות עברית שנחתכת בין
-    // מנות של גוף הבקשה (תכנון ארוך) מגיעה למודל כ-"??".
-    req.setEncoding('utf8');
-    let raw = '';
-    req.on('data', chunk => { raw += chunk; if (raw.length > 2_000_000) req.destroy(); });
-    req.on('end', () => resolve(raw));
-    req.on('error', reject);
-  });
+function allowed(actor,path,permission) {
+  if (actor.k==='sys') return true;
+  const wanted=path==='/api/pipeline'?AI_PERMS.filter(p=>p.startsWith('fac_'))
+    : path==='/api/character-turn'?['practice','fac_trainee','fac_parent','fac_youth']
+    : path==='/api/studio'?STUDIO_PERMS:AI_PERMS;
+  return permission?wanted.includes(permission) && actor.permissions.includes(permission):wanted.some(p=>actor.permissions.includes(p));
 }
 
-// עבודות צינור שרצות ברקע (בזיכרון; נמחקות אחרי 3 שעות)
-const PIPE_JOBS = new Map();
-// גם במאגר (05/10/2026): אם השרת מופעל מחדש באמצע בנייה (Deploy, עומס), מצב העבודה לא הולך לאיבוד —
-// עבודה שהסתיימה נשמרת, ועבודה שנקטעה מסומנת "lost" כדי שהדפדפן יתחיל אותה מחדש לבד.
-const BOOT_ID = randomUUID();
-const jobStore = () => (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) ? supabaseStore(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY) : null;
-const jobSave = (id, rec) => { const st = jobStore(); return st ? st.set('pj:' + id, rec).catch(e => console.error(`pipeline: שמירת מצב נכשלה — ${e.message}`)) : Promise.resolve(); };
-(async () => { // ניקוי עבודות ישנות (יותר מיממה)
-  const st = jobStore(); if (!st) return;
-  try { for (const r of await st.list('pj:')) if (r.value && Date.now() - (r.value.t0 || 0) > 864e5) await st.del(r.key); } catch {}
-})();
-
-const server = createServer(async (req, res) => {
-  res._origin = req.headers.origin || '';
-  if (req.method === 'OPTIONS') return sendJson(res, 204, {});
-
-  if (req.method === 'GET' && req.url === '/health') {
-    const hasKey = !!process.env[getProviderEnvKeyName()];
-    const hasWorkspace = !!(process.env.ANTHROPIC_WORKSPACE_ID || '').trim();
-    const hasSupabase = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
-    return sendJson(res, 200, { ok: true, hasKey, hasWorkspace, hasSupabase });
+export function createPracticeServer({store,providerFactory=()=>getProvider(process.env.PROVIDER || 'anthropic'),
+  saveScenario=persistScenario,clock=Date.now,jobTtlMs=TTL,sourceLibrary=approvedSources(),studioHandler=handleStudio,
+  teamEnabled=process.env.AGENT_TEAM_ENABLED==='true'}={}) {
+  const getStore=()=>store || (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY?supabaseStore(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_KEY):null);
+  const controllers=new Map(),running=new Set();
+  async function transition(st,key,next) {
+    const prior=await st.get(key);
+    if (!prior || prior.status!=='running' || prior.expiresAt<=clock()) return false;
+    return (await st.compareAndSet({key,expected:prior,value:{...prior,...next}})).updated;
   }
-
-  // POST /api/access — סיסמאות הניהול וקוד "משוב לעבודות" (lib/access.mjs).
-  if (req.method === 'POST' && req.url === '/api/access') {
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return sendJson(res, 503, { error: 'storage unavailable' });
-    let body;
-    try { body = JSON.parse(await readBody(req)); }
-    catch { return sendJson(res, 400, { error: 'invalid JSON' }); }
-    try {
-      const [status, out] = await handleAccess(supabaseStore(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY), body);
-      return sendJson(res, status, out);
-    } catch (e) {
-      console.error(`access: ${e.message}`);
-      return sendJson(res, 503, { error: 'storage unavailable' });
-    }
-  }
-
-  // Studio is a separate authenticated boundary; client prompts never bypass
-  // its live permissions, source filtering or server-side mapping aggregation.
-  if (req.method === 'POST' && req.url === '/api/studio') {
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return sendJson(res, 503, { error: 'storage unavailable' });
-    let body;
-    try { body = JSON.parse(await readBody(req)); }
-    catch { return sendJson(res, 400, { error: 'invalid JSON' }); }
-    let finish;
-    try {
-      // async:true ← jobId מיד, והדפדפן שואל {action:'status'}; בלעדיו — הבקשה הארוכה הישנה עם רווחי keep-alive
-      const [status, out] = await studioRequest(supabaseStore(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY), body,
-        { onReady: () => { finish = startKeepAlive(res); } });
-      if (finish) return finish(out);
-      return sendJson(res, status, out);
-    } catch (e) {
-      console.error('studio: request failed');
-      if (finish) return finish({ error: 'הסטודיו אינו זמין כעת.' });
-      return sendJson(res, 503, { error: 'הסטודיו אינו זמין כעת.' });
-    }
-  }
-
-  const validPaths = ['/api/complete', '/api/character-turn', '/api/pipeline', '/api/pipeline-status'];
-  if (req.method !== 'POST' || !validPaths.includes(req.url)) {
-    return sendJson(res, 404, { error: 'נתיב לא נמצא. יש POST /api/complete ו-POST /api/pipeline' });
-  }
-
-  let payload;
-  try {
-    payload = JSON.parse(await readBody(req));
-  } catch {
-    return sendJson(res, 400, { error: 'גוף הבקשה חייב להיות JSON תקין' });
-  }
-
-  // POST /api/pipeline (21/09/2026) — הצינור התלת-שלבי המלא ממסך הקלט של
-  // אנשי החינוך: { input: {given, locked, approach, skills, ...}, meta: {...} }
-  // → { scenario } בפורמט scenario.json (דרך to-scenario.mjs), מוכן
-  // לרינדור ב-lib/doc-render.mjs. אורך: 10-20 דקות (ארבע קריאות רצופות
-  // ב-effort גבוה) — הלקוח חייב timeout ארוך בהתאם. requestTimeout של
-  // השרת כבר 0 (ראו למטה).
-  //
-  // POST /api/pipeline-status (04/10/2026) — מצב עבודה שרצה ברקע: { jobId } → { status, stages, elapsed, scenario?, error? }
-  if (req.url === '/api/pipeline-status') {
-    const id = String(payload.jobId || '');
-    let job = PIPE_JOBS.get(id);
-    if (!job && /^[0-9a-f-]{36}$/.test(id) && jobStore()) {
+  async function finishJob(st,key,actor,next,outcome) {
+    let lastError;
+    for(let attempt=0;attempt<3;attempt++) {
       try {
-        const rec = await jobStore().get('pj:' + id);
-        if (rec && rec.status === 'running' && rec.boot !== BOOT_ID) return sendJson(res, 200, { status: 'lost' });
-        if (rec) job = rec;
-      } catch {}
+        const prior=await st.get(key);
+        if(!prior || prior.status!=='running') return false;
+        const result=await st.finalizeAIJob({key,expected:prior,value:{...prior,...next},
+          principal:{ownerId:actor.ownerId,tenantId:actor.tenantId},requestId:prior.requestId,outcome});
+        if(result.updated) return true;
+      } catch(error) {lastError=error;}
     }
-    if (!job) return sendJson(res, 200, { status: 'unknown' });
-    return sendJson(res, 200, { status: job.status, stages: job.stages, elapsed: Math.round((Date.now() - job.t0) / 1000),
-      ...(job.status === 'done' ? { scenario: job.scenario, text: job.text } : {}), ...(job.status === 'error' ? { error: job.error } : {}) });
+    throw lastError || failure('job conflict',409);
   }
-
-  if (req.url === '/api/pipeline') {
-    if (!payload.input || !payload.input.given) {
-      return sendJson(res, 400, { error: 'חסר input.given (who / whatHappened / goals)' });
-    }
-    let provider;
-    try { provider = getProvider(process.env.PROVIDER || 'anthropic'); }
-    catch (e) { return sendJson(res, 500, { error: e.message }); }
-    // מצב רקע (04/10/2026): מחזירים מיד מזהה עבודה, והדפדפן שואל על ההתקדמות כל כמה שניות.
-    // בקשה אחת של 10–20 דקות נקטעה (טלפון שנכנס להמתנה, ניתוק רגעי, פרוקסי) — והמשתמשת ראתה "נתקע".
-    if (payload.async) {
-      const jobId = randomUUID();
-      const meta = { ...(payload.meta || {}) };
-      if (!meta.id) { const d = new Date(), p = (n) => String(n).padStart(2, '0'); meta.id = `TR-${p(d.getMonth() + 1)}${p(d.getDate())}-${randomUUID().slice(0, 8)}`; }
-      const job = { status: 'running', stages: {}, t0: Date.now() };
-      PIPE_JOBS.set(jobId, job);
-      jobSave(jobId, { status: 'running', t0: job.t0, boot: BOOT_ID, stages: {} });
-      setTimeout(() => PIPE_JOBS.delete(jobId), 3 * 3600 * 1000).unref?.();
-      sendJson(res, 200, { jobId });
-      runPipeline(payload.input, provider, { sourceLibrary: payload.sourceLibrary || [], onStage: (s, st) => { job.stages[s] = st; } })
-        .then((out) => {
-          const scenario = toScenario(out, { input: payload.input, meta });
-          job.scenario = scenario; job.status = 'done';
-          jobSave(jobId, { status: 'done', t0: job.t0, boot: BOOT_ID, stages: job.stages, scenario });
-          console.log(`pipeline(async): הצליח אחרי ${Math.round((Date.now() - job.t0) / 1000)} שניות`);
-          saveScenario(scenario, meta).catch(e => console.error(`supabase: השמירה נכשלה — ${e.message}`));
-        })
-        .catch((e) => { job.status = 'error'; job.error = `שגיאת ספק: ${e.message}`; console.error(`pipeline(async): נכשל — ${e.message}`);
-          jobSave(jobId, { status: 'error', t0: job.t0, boot: BOOT_ID, error: job.error }); });
-      return;
-    }
-    const finish = startKeepAlive(res);
-    const t0 = Date.now();
-    // בלי מזהה ייחודי, to-scenario נותן לכל תרחיש של אותו יום את TR-MMDD-01,
-    // וכל שמירה במאגר הייתה מתנגשת בקודמת.
-    const meta = { ...(payload.meta || {}) };
-    if (!meta.id) {
-      const d = new Date(), p = (n) => String(n).padStart(2, '0');
-      meta.id = `TR-${p(d.getMonth() + 1)}${p(d.getDate())}-${randomUUID().slice(0, 8)}`;
-    }
+  async function execute(st,key,job,actor,payload,path,token) {
+    const controller=new AbortController();controllers.set(key,controller);
+    const timer=setTimeout(()=>controller.abort(),Math.min(jobTtlMs,45*60000));timer.unref?.();
+    const heartbeat=setInterval(()=>transition(st,key,{leaseUntil:clock()+90000}).catch(()=>controller.abort()),30000);
+    heartbeat.unref?.();
+    let committed=false;
+    const assertCurrent=async()=>{
+      const [live,current]=await Promise.all([resolvePrincipal(st,token),st.get(key)]);
+      if(controller.signal.aborted||!live||live.ownerId!==actor.ownerId||live.tenantId!==actor.tenantId
+        ||!allowed(live,path,payload.permission)||current?.status!=='running'||current.expiresAt<=clock())
+        throw Object.assign(failure('access ended or job stopped',403),{code:'access_denied'});
+    };
     try {
-      const out = await runPipeline(payload.input, provider, { sourceLibrary: payload.sourceLibrary || [] });
-      const scenario = toScenario(out, { input: payload.input, meta });
-      console.log(`pipeline: הצליח אחרי ${Math.round((Date.now() - t0) / 1000)} שניות`);
-      saveScenario(scenario, meta)
-        .then(() => console.log(`supabase: נשמר ${scenario.id}`))
-        .catch(e => console.error(`supabase: השמירה נכשלה — ${e.message}`));
-      finish({ scenario, _ms: out._ms });
-    } catch (e) {
-      console.error(`pipeline: נכשל אחרי ${Math.round((Date.now() - t0) / 1000)} שניות — ${e.message}`);
-      finish({ error: `שגיאת ספק: ${e.message}` });
-    }
-    return;
+      let output;
+      const provider=path==='/api/studio'?null:boundedProvider(providerFactory(),job.tokenBudget,path==='/api/pipeline'?1:undefined,assertCurrent);
+      if(path==='/api/artifacts') {
+        const [status,result]=await handleArtifacts(st,actor,payload,{provider,sourceLibrary,teamEnabled,signal:controller.signal,clock,jobKey:key,assertCurrent});
+        if(status!==200) throw Object.assign(failure(result.error || 'artifact review failed',status),{code:result.code});
+        if(!['complete','partial','fallback'].includes(result.review?.status) || !result.review.proposal) throw failure('artifact review failed',422);
+        output=result;
+      } else if(path==='/api/studio') {
+        let spent=0;
+        const fetchImpl=async(url,options)=>{
+          await assertCurrent();
+          const request=JSON.parse(options.body),amount=requestBudget(request,1);
+          if(spent+amount>job.tokenBudget)throw failure('generation budget exceeded',413);
+          spent+=amount;const response=await fetch(url,options),readJson=response.json.bind(response);
+          response.json=async()=>{const value=await readJson();await assertCurrent();return value;};return response;
+        };
+        const [status,result]=await studioHandler(st,{...payload,token,async:false},{signal:controller.signal,fetchImpl});
+        if(status!==200) throw Object.assign(failure(result.error || 'studio failed',status),{result});
+        output=result;
+      } else if(path==='/api/pipeline') {
+        const meta={...payload.meta,id:randomUUID(),institutionId:actor.tenantId};
+        const out=await runPipeline(payload.input,provider,{sourceLibrary,maxTokens:32000,signal:controller.signal,
+          onStage:async(stage,state)=>{try {const prior=await st.get(key);if(prior?.status==='running') await transition(st,key,{stages:{...prior.stages,[stage]:state}});} catch {controller.abort();}}});
+        const scenario=toScenario(out,{input:payload.input,meta,sourceLibrary});
+        scenario._generation={pipelineOutput:out,context:payload.input};
+        output={scenario,usage:out.usage,_ms:out._ms};
+      } else {
+        const result=assertCompletionResult(await provider.complete({...payload,variation:'medium',signal:controller.signal}));
+        output={text:result.text || '',toolCalls:result.toolCalls || [],usage:result.usage};
+      }
+      const live=await resolvePrincipal(st,token),current=await st.get(key);
+      if(controller.signal.aborted || !live || live.ownerId!==actor.ownerId || !allowed(live,path,payload.permission)
+        || current?.status!=='running' || current.expiresAt<=clock()) throw failure('request cancelled or access ended',403);
+      if(output.scenario) await saveScenario(output.scenario,actor,st);
+      committed=await finishJob(st,key,actor,{status:'done',output},'commit');
+    } catch(error) {
+      controller.abort();
+      await finishJob(st,key,actor,{status:'error',error:'לא ניתן להשלים את הבקשה. העבודה הקודמת נשמרה.',errorCode:error.code || 'generation_failed',
+        httpStatus:error.status || 503,...(path==='/api/studio' && error.result?{failureOutput:error.result}:{})},'release').catch(()=>{});
+      if(!committed) await settleAIUsage(st,actor,{requestId:job.requestId,outcome:'release'}).catch(()=>{});
+    } finally {clearTimeout(timer);clearInterval(heartbeat);controllers.delete(key);}
   }
-
-  const { system, messages, tools, toolChoice, maxTokens } = payload;
-  if (!system && !messages) {
-    return sendJson(res, 400, { error: 'חסר system או messages בבקשה' });
-  }
-  if (messages && !Array.isArray(messages)) {
-    return sendJson(res, 400, { error: 'messages חייב להיות מערך' });
-  }
-
-  let provider;
-  try {
-    provider = getProvider(process.env.PROVIDER || 'anthropic');
-  } catch (e) {
-    return sendJson(res, 500, { error: e.message });
-  }
-
-  // מצב רקע גם כאן (05/10/2026): תוצרי ההורים והנוער נכתבים בקריאה אחת ארוכה (עד ~9 דקות),
-  // והחיבור נקטע באמצע ("Unexpected end of JSON input"). מחזירים מזהה עבודה, והדפדפן שואל ב-/api/pipeline-status.
-  if (payload.async) {
-    const jobId = randomUUID();
-    const job = { status: 'running', stages: {}, t0: Date.now() };
-    PIPE_JOBS.set(jobId, job);
-    jobSave(jobId, { status: 'running', t0: job.t0, boot: BOOT_ID, stages: {} });
-    setTimeout(() => PIPE_JOBS.delete(jobId), 3 * 3600 * 1000).unref?.();
-    sendJson(res, 200, { jobId });
-    provider.complete({ system, messages: messages || [{ role: 'user', content: '' }], tools, toolChoice, variation: 'medium', maxTokens: maxTokens || 220 })
-      .then((result) => {
-        job.text = result.text; job.status = 'done';
-        jobSave(jobId, { status: 'done', t0: job.t0, boot: BOOT_ID, stages: {}, text: result.text });
-        console.log(`complete(async): הצליח אחרי ${Math.round((Date.now() - job.t0) / 1000)} שניות (maxTokens ${maxTokens || 220})`);
-      })
-      .catch((e) => { job.status = 'error'; job.error = `שגיאת ספק: ${e.message}`; console.error(`complete(async): נכשל — ${e.message}`);
-        jobSave(jobId, { status: 'error', t0: job.t0, boot: BOOT_ID, error: job.error }); });
-    return;
-  }
-
-  const finish = startKeepAlive(res);
-  const t0 = Date.now();
-  try {
-    const result = await provider.complete({
-      system,
-      messages: messages || [{ role: 'user', content: '' }],
-      tools,
-      toolChoice,
-      variation: 'medium',
-      maxTokens: maxTokens || 220,
-    });
-    console.log(`complete: הצליח אחרי ${Math.round((Date.now() - t0) / 1000)} שניות (maxTokens ${maxTokens || 220})`);
-    finish({ text: result.text, toolCalls: result.toolCalls || [] });
-  } catch (e) {
-    console.error(`complete: נכשל אחרי ${Math.round((Date.now() - t0) / 1000)} שניות — ${e.message}`);
-    finish({ error: `שגיאת ספק: ${e.message}` });
-  }
-});
-
-function getProviderEnvKeyName() {
-  return (process.env.PROVIDER || 'anthropic') === 'openai' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY';
+  const server=createServer(async(req,res)=>{
+    try {
+      if(req.method==='OPTIONS') return send(req,res,204,{});
+      if(req.method==='GET' && req.url==='/health') return send(req,res,200,{ok:true,hasSupabase:!!getStore(),
+        hasKey:!!process.env[(process.env.PROVIDER || 'anthropic')==='openai'?'OPENAI_API_KEY':'ANTHROPIC_API_KEY'],agentTeamEnabled:teamEnabled});
+      const paths=['/api/access','/api/artifacts','/api/studio','/api/complete','/api/character-turn','/api/pipeline','/api/pipeline-status','/api/pipeline-cancel'];
+      if(req.method!=='POST' || !paths.includes(req.url)) return send(req,res,404,{error:'נתיב לא נמצא.'});
+      const payload=await readBody(req),st=getStore();
+      if(!st) return send(req,res,503,{error:'storage unavailable'});
+      if(req.url==='/api/access') {const [status,out]=await handleAccess(st,payload);return send(req,res,status,out);}
+      const token=String(req.headers.authorization || '').replace(/^Bearer\s+/i,'') || payload.token;
+      const actor=await resolvePrincipal(st,token),permission=req.headers['x-sbe-permission'] || payload.permission;
+      if(!actor || !allowed(actor,req.url,permission)) return send(req,res,403,{error:'נדרשת כניסה עם הרשאה פעילה.',code:'access_denied'});
+      if(req.url==='/api/pipeline-status' || req.url==='/api/pipeline-cancel' || (req.url==='/api/studio' && payload.action==='status')) {
+        const key='pj:'+String(payload.jobId || ''),job=await st.get(key);
+        if(!job || job.ownerId!==actor.ownerId || job.tenantId!==actor.tenantId) return send(req,res,404,{status:'unknown'});
+        if(!allowed(actor,job.path,job.permission)) return send(req,res,403,{error:'אין הרשאה פעילה לעבודה.'});
+        if(job.expiresAt<=clock()) {await finishJob(st,key,actor,{status:'expired'},'release');return send(req,res,410,{status:'expired'});}
+        if(req.url==='/api/pipeline-cancel') {
+          const cancelled=await finishJob(st,key,actor,{status:'cancelled'},'release');controllers.get(key)?.abort();
+          return send(req,res,200,{status:cancelled?'cancelled':job.status});
+        }
+        if(job.status==='running' && (job.boot!==BOOT || !controllers.has(key)) && job.leaseUntil<=clock()) {
+          await finishJob(st,key,actor,{status:'lost'},'release');
+          return send(req,res,200,{status:'lost'});
+        }
+        if(job.path==='/api/studio' && ['done','error'].includes(job.status)) return send(req,res,200,{status:'done',
+          httpStatus:job.status==='done'?200:(job.httpStatus || 503),result:job.status==='done'?job.output:
+            (job.failureOutput || {error:job.error,code:job.errorCode})});
+        return send(req,res,200,{status:job.status,stages:job.stages,elapsed:Math.round((clock()-job.t0)/1000),
+          ...(job.status==='done'?job.output:{}),...(job.status==='error'?{error:job.error,code:job.errorCode}:{})});
+      }
+      if(req.url==='/api/studio' && ['authorize','mapping'].includes(payload.action)) {
+        const [status,out]=await studioHandler(st,{...payload,token});return send(req,res,status,out);
+      }
+      if(req.url==='/api/artifacts' && payload.action!=='review') {
+        const [status,out]=await handleArtifacts(st,actor,payload,{sourceLibrary,teamEnabled,clock});
+        return send(req,res,status,out);
+      }
+      if(req.url==='/api/pipeline' && !payload.input?.given) return send(req,res,400,{error:'חסר input.given.'});
+      if(!['/api/pipeline','/api/studio','/api/artifacts'].includes(req.url) && (!Array.isArray(payload.messages) || !payload.messages.length))
+        return send(req,res,400,{error:'נדרשות הודעות למודל.'});
+      const maxTokens=payload.maxTokens ?? 220;
+      if(!Number.isInteger(maxTokens) || maxTokens<1 || maxTokens>32000) return send(req,res,400,{error:'תקרת הפלט צריכה להיות בין 1 ל־32000.'});
+      const requestId=payload.requestId || randomUUID();
+      if(typeof requestId!=='string' || !/^[a-zA-Z0-9_-]{8,100}$/.test(requestId)) return send(req,res,400,{error:'מזהה בקשה לא תקין.'});
+      const input={...payload,maxTokens,permission};
+      for(const field of ['token','async','requestId','sourceLibrary']) delete input[field];
+      if(req.url==='/api/artifacts')input.idempotencyKey ||= requestId;
+      const requestHash=hash({path:req.url,input}),jobId=hash([actor.ownerId,actor.tenantId,req.url,requestId]).slice(0,32),key='pj:'+jobId;
+      if(!st.putIfAbsent || !st.compareAndSet || !st.finalizeAIJob) return send(req,res,503,{error:'נדרשת תשתית אחסון אטומית.'});
+      const tokenBudget=req.url==='/api/pipeline'?256000:req.url==='/api/studio'?128000:req.url==='/api/artifacts'?100000:requestBudget({...input,variation:'medium'});
+      if(tokenBudget>512000)return send(req,res,413,{error:'הקלט גדול מדי לתקציב הבקשה.'});
+      const usage=await reserveAIUsage(st,actor,{requestId,requestHash,maxTokens,tokenBudget});
+      if(usage.state!=='reserved') {
+        const existing=await st.get(key);
+        if(!existing || existing.requestHash!==requestHash)return send(req,res,409,{error:'הבקשה הקודמת הסתיימה. נסי בקשה חדשה.',code:'reservation_closed'});
+        if(payload.async)return send(req,res,200,{jobId});
+        return send(req,res,existing.status==='done'?200:409,existing.status==='done'?existing.output:{error:existing.error || 'הבקשה הקודמת הסתיימה.'});
+      }
+      const record={ownerId:actor.ownerId,tenantId:actor.tenantId,permission,path:req.url,requestId,requestHash,
+        ...(req.url==='/api/artifacts'?{artifactId:input.artifactId,baseVersion:input.expectedVersion,
+          reviewRunId:artifactReviewRunId(input.artifactId,input.expectedVersion,input.idempotencyKey)}:{}),
+        tokenBudget,status:'running',stages:{},t0:clock(),expiresAt:clock()+jobTtlMs,leaseUntil:clock()+90000,boot:BOOT};
+      const claim=await st.putIfAbsent({key,value:record});
+      if(!claim.created && claim.value.requestHash!==requestHash) return send(req,res,409,{error:'מזהה הבקשה כבר שימש לתוכן אחר.'});
+      if(claim.created) {const task=execute(st,key,record,actor,input,req.url,token);running.add(task);task.finally(()=>running.delete(task));}
+      if(payload.async) return send(req,res,200,{jobId});
+      while(!res.destroyed) {
+        const job=await st.get(key);
+        if(job.status!=='running') return send(req,res,job.status==='done'?200:422,job.status==='done'?job.output:{error:job.error || 'הבקשה נעצרה.'});
+        await new Promise(resolve=>setTimeout(resolve,100));
+      }
+    } catch(error) {if(!res.headersSent && !res.destroyed) send(req,res,error.status || 503,{error:error.status===400?error.message:'לא ניתן להשלים את הבקשה.',code:error.code || 'request_failed'});}
+  });
+  server.requestTimeout=60000;server.headersTimeout=30000;
+  server.on('close',()=>{for(const controller of controllers.values()) controller.abort();});
+  server.waitForJobs=()=>Promise.allSettled([...running]);
+  return server;
 }
 
-// Node 18+ מגדיר ברירת מחדל של http.Server.requestTimeout ל-300000ms (5
-// דקות) — עצמאי לגמרי מה-timeout הפנימי של post() ב-providers.mjs, וחוסם
-// את כל הבקשה גם אחרי שתוקן שם. נתפס חי (19/09/2026): שלב 3 של הצינור
-// (כתיבת מסמכים ארוכה) חצה את זה ונחתך. מוגדר ל-0 (בלי הגבלה) — הלקוח
-// קובע timeout לפי הצורך שלו.
-server.requestTimeout = 0;
-server.headersTimeout = 0;
-
-server.listen(PORT, '0.0.0.0', () => {
-  const keyName = getProviderEnvKeyName();
-  console.log(`שרת מנוע התרגול פועל · http://0.0.0.0:${PORT}`);
-  console.log(`CORS מוגדר ל: ${CORS_LIST.join(', ')}`);
-  console.log(process.env[keyName]
-    ? `מפתח ${keyName} נמצא.`
-    : `אזהרה: אין ${keyName} מוגדר — כל בקשה תיכשל עם שגיאה ברורה.`);
-});
+if(process.argv[1] && resolve(process.argv[1])===fileURLToPath(import.meta.url)) {
+  const index=process.argv.indexOf('--port'),port=Number(index>=0?process.argv[index+1]:process.env.PORT || 8790);
+  createPracticeServer().listen(port,'0.0.0.0',()=>console.log(`Begood server listening on ${port}`));
+}

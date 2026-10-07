@@ -36,6 +36,19 @@ function fixture() {
 }
 const result = (text) => ({ text, toolCalls: [], usage: {}, status: 'completed', refusal: null, truncation: null });
 
+test('authorization hook is rechecked before an internal provider retry',async()=>{
+  for(const name of ['openai','anthropic']) {
+    let allowed=true,calls=0,checks=0;
+    const provider=getProvider(name,{apiKey:'synthetic-only',retryDelayMs:0,transport:async()=>{
+      calls++;allowed=false;throw new ProviderError('synthetic transient',{retryable:true,code:'http',status:503});
+    }});
+    await assert.rejects(provider.complete({prompt:'synthetic',maxTokens:100,beforeAttempt:async()=>{
+      checks++;if(!allowed)throw Object.assign(new Error('access ended'),{code:'access_denied'});
+    }}),/access ended/);
+    assert.equal(calls,1);assert.equal(checks,2);
+  }
+});
+
 test('F08: empty and partial scenarios fail required schema gates', () => {
   assert.equal(runGates({}, {}).passed, false);
   assert.equal(runGates({ scenarioName: 'only a title' }, {}).passed, false);

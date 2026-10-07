@@ -1,6 +1,6 @@
 // Provider-free contract runner. Fixture success is not a model or human quality score.
 import { readFileSync, writeFileSync } from 'node:fs';
-import { createHash } from 'node:crypto';
+import { digest as hash } from './lib/agent-contract.mjs';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
@@ -10,7 +10,6 @@ import { handleAccess } from './lib/access.mjs';
 import { ACTIVITY_SCHEMA, CONSULTATION_SCHEMA, handleStudio, studioRequest } from './lib/studio.mjs';
 
 const studio = createRequire(import.meta.url)('../app/lib/resilience-studio.js');
-const hash = value => 'sha256:' + createHash('sha256').update(typeof value === 'string' ? value : JSON.stringify(value)).digest('hex');
 const load = name => JSON.parse(readFileSync(new URL('./fixtures/' + name, import.meta.url), 'utf8'));
 const clone = value => JSON.parse(JSON.stringify(value));
 const opaque = value => value == null ? null : hash(String(value));
@@ -51,7 +50,10 @@ export async function runBaseline(dataset = load('baseline-cases.json'), {gatesO
         let lowCalls = 0;
         const provider = {async complete({variation}) {
           fixtureProviderCalls++;
-          const stage = variation === 'high' ? 'stage1' : variation === 'medium' ? 'stage2' : ++lowCalls === 1 ? 'trainee' : 'stage3';
+          let stage;
+          if (variation === 'high') stage = 'stage1';
+          else if (variation === 'medium') stage = 'stage2';
+          else stage = ++lowCalls === 1 ? 'trainee' : 'stage3';
           const response = row.pipelineResponses[stage];
           return {status:'completed',text:typeof response === 'string' ? response : JSON.stringify(response), usage:null};
         }};
