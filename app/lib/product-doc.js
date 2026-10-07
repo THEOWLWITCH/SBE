@@ -1,6 +1,8 @@
 // תוצר מעוצב — רכיב משותף לכל הכלים (05/10/2026).
 // SBE_DOC.rich(text)        — טקסט מהמודל ← פסקאות, כותרות, תבליטים והדגשות (בלי כוכביות וסימני #).
 // SBE_DOC.editable(node)    — הופך את התוצר לניתן לעריכה על המסך, עם הסבר קצר.
+// SBE_DOC.sections(text)    — טקסט עם כותרות מודגשות ← טבלה: כותרת | תוכן (null כשיש פחות משני חלקים).
+// SBE_DOC.table(rows)       — טבלת תווית | תוכן (תוכן: טקסט או צומת).
 // SBE_DOC.print({title, subtitle, node}) — פותח מסמך להדפסה / שמירה כ-PDF: לוגו, כותרת, תאריך,
 //   שוליים נדיבים ו-break-inside:avoid (הנחיות העיצוב ב-CLAUDE.md).
 (function () {
@@ -38,7 +40,39 @@
     return box;
   }
 
-  const STYLE = `.sbe-rich{line-height:1.75;font-size:15px}
+  // טבלה במקום שורות קצרות (07/10/2026): כל חלק בטקסט (כותרת מודגשת בשורה משלה) הופך לשורה בטבלה
+  function sections(text) {
+    const parts = []; let cur = null;
+    String(text || "").replace(/\r/g, "").split("\n").forEach((raw) => {
+      const line = raw.trim(); let m;
+      if ((m = line.match(/^#{1,6}\s*(.+)$/)) || (m = line.match(/^\*\*([^*]+)\*\*[:：]?$/))) { cur = { t: m[1].replace(/\*\*/g, "").trim(), b: [] }; parts.push(cur); return; }
+      if (!cur) { if (!line) return; cur = { t: "", b: [] }; parts.push(cur); }
+      cur.b.push(raw);
+    });
+    const real = parts.filter((p) => p.t);
+    if (real.length < 2) return null;
+    return table(parts.map((p) => [p.t, rich(p.b.join("\n"))]));
+  }
+  function table(rows) {
+    ensureStyle();
+    const t = document.createElement("table"); t.className = "kit-table kit-two";
+    const tb = document.createElement("tbody");
+    rows.forEach(([label, content]) => {
+      if (content == null || content === "") return;
+      const tr = document.createElement("tr");
+      if (label) { const th = document.createElement("th"); th.textContent = label; tr.append(th); }
+      const td = document.createElement("td"); if (!label) td.colSpan = 2;
+      if (content instanceof Node) td.append(content); else td.textContent = String(content);
+      tr.append(td); tb.append(tr);
+    });
+    t.append(tb); return t;
+  }
+  const STYLE = `.kit-table{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:14.5px;line-height:1.6}
+.kit-table th,.kit-table td{border:1px solid #CDD3D8;padding:8px 10px;text-align:right;vertical-align:top}
+.kit-table tbody th{background:rgba(46,90,125,.08);width:22%;font-weight:700}
+.kit-table .sbe-rich{font-size:14.5px;line-height:1.65}.kit-table .sbe-rich p:last-child,.kit-table .sbe-rich ul:last-child{margin-bottom:0}
+@media (max-width:640px){.kit-table,.kit-table tbody,.kit-table tr,.kit-table th,.kit-table td{display:block;width:auto}.kit-table tr{border:1px solid #CDD3D8;border-radius:8px;margin:8px 0;overflow:hidden}.kit-table th,.kit-table td{border:0}}
+.sbe-rich{line-height:1.75;font-size:15px}
 .sbe-rich h4{font-size:15.5px;margin:18px 0 6px;font-weight:800}
 .sbe-rich h4:first-child{margin-top:0}
 .sbe-rich p{margin:0 0 10px}
@@ -153,5 +187,5 @@ ${parts}
     w.document.close();
   }
 
-  window.SBE_DOC = { rich, editable, print, ensureStyle };
+  window.SBE_DOC = { rich, editable, print, ensureStyle, sections, table };
 })();
