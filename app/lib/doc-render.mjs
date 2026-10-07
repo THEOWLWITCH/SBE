@@ -121,6 +121,8 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .dt td.w{width:38%;}
 .dt .tag{margin-inline-start:6px;}
 .sec:has(.dt){break-inside:auto;}
+.dt .write{min-height:4.6em;outline:none;border-radius:3px;}
+.dt .write:focus{background:var(--spoken-bg);}
 .dt-sub{font-size:13px;color:var(--muted);margin-top:4px;}
 .dt-cap{font-size:12.5px;font-weight:700;color:var(--muted);margin:14px 0 6px;}
 .dt .eff{margin-inline-start:0;}
@@ -340,6 +342,11 @@ ${WIDGET}`;
           ['סיפור המקרה ונתוני פתיחה', paras(tr.opening)],
           ['מה על הפרק בשבילך', paras(tr.stakesForTrainee)],
         ].filter((r) => r[1]))) +
+        sec('ההכנה שלי', dtable(null, [
+          ['מה הייתי רוצה שיקרה', '<div class="write" contenteditable="true"></div>'],
+          ['איך אפתח', '<div class="write" contenteditable="true"></div>'],
+          ['מה אשאל', '<div class="write" contenteditable="true"></div>'],
+        ]), 'למילוי לפני הסימולציה — על המסך או בדף המודפס') +
         redLine(),
     });
 
