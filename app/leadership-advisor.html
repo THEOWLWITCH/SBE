@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>נוגי — יועצת למנהיגות תומכת חוסן</title>
+<script src="lib/report-table.js"></script>
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -827,6 +828,14 @@ function convCard(c){
     if(!v)return;dl.appendChild(el('dt',null,k));const dd=el('dd');dd.appendChild(inlineRich(v));dl.appendChild(dd);});
   box.appendChild(dl);return box;
 }
+// טבלאות בדוח (07/10/2026): המלצה בכל שורה — ההמלצה · מה עושים · לחוסן החברתי
+function titleCell(a,extra){const c=el('div');c.appendChild(el('div','rt-title',a.title||''));const tags=el('div','act-tags');
+  if(a.kind)tags.appendChild(el('span','act-tag kind',a.kind));if(a.lead)tags.appendChild(el('span','act-tag circle','מוביל/ה: '+a.lead));if(extra)tags.appendChild(el('span','act-tag',extra));if(tags.childNodes.length)c.appendChild(tags);return c;}
+function resCell(a){const c=el('div');if(a.mechanism){const p=el('p');p.appendChild(el('b',null,'מה זה בונה: '));p.appendChild(document.createTextNode(a.mechanism));c.appendChild(p);}
+  if(a.resilience){const p=el('p');p.appendChild(inlineRich(a.resilience));c.appendChild(p);}const b=basisEl(a.basis);if(b)c.appendChild(b);return c.childNodes.length?c:null;}
+function recTable(rec,title,items,first){if(!(items||[]).length)return;rec.appendChild(el('h3',null,title));
+  rec.appendChild(SBE_TABLE([first||'ההמלצה','מה עושים','לחוסן החברתי'],items.map(a=>{const dd=richText(a.description||'');dd.classList.add('act-d');return [titleCell(a,a.for),dd,resCell(a)];}),'acts'));}
+function domTable(items){if(!(items||[]).length)return el('p','muted','—');return SBE_TABLE(null,items.map(it=>{const c=el('div');c.appendChild(inlineRich(it.text||''));const r=resEl(it.resilience);if(r)c.appendChild(r);return [it.domain||'',c];}));}
 function section(card,title,items,fn){if(!(items||[]).length)return;card.appendChild(el('h3',null,title));items.forEach(x=>card.appendChild(fn(x)));}
 function metaLine(R){return [R.who,R.mode,R.school?'בית ספר '+R.school:'',R.stage,R.sit?'מצב: '+R.sit:'','הופק: '+new Date(R.at).toLocaleDateString('he-IL',{day:"2-digit",month:"2-digit",year:"2-digit"})].filter(Boolean).join(' · ');}
 function renderReport(){
@@ -842,28 +851,29 @@ function renderReport(){
   const doc=el('div','card');doc.id='report-doc';
   doc.appendChild(el('h2',null,'דוח סיכום והמלצות — ההנהגה ככוח שמחזק את החוסן החברתי'));
   doc.appendChild(el('p','muted',metaLine(R)+' · על סמך שאלון הפתיחה'));
-  if((d.answers||[]).length){doc.appendChild(el('h3',null,'תשובות לשאלות שלך'));d.answers.forEach(x=>{const c=el('div','act');c.appendChild(el('div','act-t',x.question||''));const dd=richText(x.answer||'');dd.classList.add('act-d');c.appendChild(dd);doc.appendChild(c);});}
+  if((d.answers||[]).length){doc.appendChild(el('h3',null,'תשובות לשאלות שלך'));doc.appendChild(SBE_TABLE(null,d.answers.map(x=>[x.question||'',richText(x.answer||'')])));}
   const sum=el('div');sum.id='report-sum';
   sum.appendChild(el('h2',null,'א. תמונת המצב'));
   if(d.intro){const ip=el('p','intro');ip.appendChild(inlineRich(d.intro));sum.appendChild(ip);}
   if(d.lens){const l=el('div','lens');l.appendChild(el('b',null,'איך המחקר על חוסן חברתי קורא את התמונה: '));l.appendChild(inlineRich(d.lens));sum.appendChild(l);}
   if(d.twoLayer&&(d.twoLayer.phase||d.twoLayer.structural||d.twoLayer.social||d.twoLayer.trust)){const t=d.twoLayer,box2=el('div','layers');box2.appendChild(el('h3',null,'מודל האיתנות הדו־שכבתי'));
-    [['השלב',t.phase],['השכבה המבנית',t.structural],['השכבה החברתית־יחסית',t.social],['האמון — המאיץ המקשר',t.trust]].forEach(([k,v])=>{if(!v)return;const r=el('div','layer');r.appendChild(el('b',null,k));const p=el('p');p.appendChild(inlineRich(v));r.appendChild(p);box2.appendChild(r);});
+    box2.appendChild(SBE_TABLE(null,[['השלב',t.phase],['השכבה המבנית',t.structural],['השכבה החברתית־יחסית',t.social],['האמון — המאיץ המקשר',t.trust]].filter(([,v])=>v).map(([k,v])=>[k,inlineRich(v)])));
     sum.appendChild(box2);}
-  sum.appendChild(el('h3',null,'חוזקות'));sum.appendChild(textList(d.strengths));
-  sum.appendChild(el('h3',null,'אתגרים — כיווני צמיחה'));sum.appendChild(textList(d.challenges));
+  sum.appendChild(el('h3',null,'חוזקות'));sum.appendChild(domTable(d.strengths));
+  sum.appendChild(el('h3',null,'אתגרים — כיווני צמיחה'));sum.appendChild(domTable(d.challenges));
   if((d.priorities||[]).length){sum.appendChild(el('h3',null,'שלוש העדיפויות המרכזיות'));const ol=el('ol','prio');d.priorities.forEach(p=>{const li=el('li');const sp=el('span');const o=typeof p==='string'?{text:p}:p;sp.appendChild(inlineRich(o.text||''));const r=resEl(o.resilience);if(r)sp.appendChild(r);li.appendChild(sp);ol.appendChild(li);});sum.appendChild(ol);}
   doc.appendChild(sum);
 
   const rec=el('div');rec.id='report-rec';
   rec.appendChild(el('h2',null,'ב. המלצות — לפיתוח מנהיגות תומכת חוסן'));
-  section(rec,'1. פעולות מרכזיות',d.actions,a=>withRes(actCard({title:a.title,kind:a.kind,circle:a.lead?'מוביל/ה: '+a.lead:'',description:a.description,mechanism:a.mechanism,basis:a.basis},a.for),a.resilience));
-  section(rec,'2. צוות, שותפים וממלאי מקום',d.team,recCard);
-  section(rec,'3. תקשורת, פירגון ועידוד',d.communication,recCard);
-  section(rec,'4. רווחת הצוות וההנהגה',d.wellbeing,recCard);
-  section(rec,'5. שותפות עם תלמידים',d.students,recCard);
-  section(rec,'6. שיחות מומלצות — עם הנחיות',d.conversations,convCard);
-  if((d.plan||[]).length){rec.appendChild(el('h3',null,'7. תוכנית צעדים'));const ul=el('ul','plan');d.plan.forEach(p=>{const li=el('li');li.appendChild(el('span','when',p.when||''));const w=el('span');w.appendChild(inlineRich(p.what||''));li.appendChild(w);ul.appendChild(li);});rec.appendChild(ul);}
+  recTable(rec,'1. פעולות מרכזיות',d.actions,'הפעולה');
+  recTable(rec,'2. צוות, שותפים וממלאי מקום',d.team);
+  recTable(rec,'3. תקשורת, פירגון ועידוד',d.communication);
+  recTable(rec,'4. רווחת הצוות וההנהגה',d.wellbeing);
+  recTable(rec,'5. שותפות עם תלמידים',d.students);
+  if((d.conversations||[]).length){rec.appendChild(el('h3',null,'6. שיחות מומלצות — עם הנחיות'));d.conversations.forEach(c=>{rec.appendChild(el('h4',null,'שיחה עם '+(c.with||'')));
+    rec.appendChild(SBE_TABLE(null,[['מטרה',c.goal],['לחוסן החברתי',c.resilience],['איפה ומתי',c.setting],['פתיחה',c.opening],['שאלות המשך',(c.followups||[]).length?(()=>{const u=el('ul');c.followups.forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));u.appendChild(li);});return u;})():''],['סיום',c.closing]].filter(([,v])=>v).map(([k,v])=>[k,v instanceof Node?v:inlineRich(v)])));});}
+  if((d.plan||[]).length){rec.appendChild(el('h3',null,'7. תוכנית צעדים'));rec.appendChild(SBE_TABLE(['מתי','מה עושים'],d.plan.map(p=>[el('b',null,p.when||''),inlineRich(p.what||'')]),'plan-t'));}
   rec.appendChild(SBE_WRITER.reportSection(d,{el,inlineRich,richText},'8. עקרונות החוסן בתקשורת של ההנהגה','הודעות מוכנות לשליחה — כתובות לפי עקרונות החוסן'));
   if((d.checks||[]).length){rec.appendChild(el('h3',null,'9. כדאי לבדוק'));const ul=el('ul','tl');d.checks.forEach(x=>ul.appendChild(el('li',null,x)));rec.appendChild(ul);}
   const foot=el('p','muted','הדוח הופק על ידי מודל שפה על סמך שאלון הפתיחה ומבוססים על ');const a=el('a',null,'רשימת המקורות');a.href='resilience-advisor-sources.html?a=nugi';a.target='_blank';a.style.color='var(--spoken)';foot.appendChild(a);
