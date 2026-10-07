@@ -172,7 +172,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 
 <div class="suggestPanel" id="suggestPanel" hidden>
   <h3>הצעת מקור</h3>
-  <p class="hint">כל מי שנכנסה למערכת יכולה להציע מקור. ניהול המערכת בודק שהוא באמת קיים ומצוטט נכון, ורק אז הוא נכנס לספרייה. חובה להסביר למי ולמה המקור רלוונטי — זה מה שעוזר למי שתבוא אחרייך למצוא אותו.</p>
+  <p class="hint">כל מי שנכנסה למערכת יכולה להציע מקור. ניהול המערכת בודק שהוא באמת קיים ומצוטט נכון, ורק אז הוא נכנס לספרייה. נשמח להסבר למי ולמה המקור רלוונטי — זה מה שעוזר למי שתבוא אחרייך למצוא אותו.</p>
   <div class="err" id="sgErr" hidden></div>
   <div class="ok" id="sgOk" hidden>הוצע. תודה — ניהול המערכת יבדוק ותאשר.</div>
   <label>שם מלא <span class="req">*</span></label>
@@ -3471,7 +3471,7 @@ document.getElementById("sgSend").addEventListener("click", () => {
   const ok = document.getElementById("sgOk");
   ok.hidden = true;
   if (!name || !text || !whom || !why) {
-    err.textContent = "שם מלא, המקור, למי רלוונטי ולמה רלוונטי — כל השדות המסומנים חובה.";
+    err.textContent = "שם מלא, המקור, למי רלוונטי ולמה רלוונטי — נשמח לכל השדות המסומנים.";
     err.hidden = false;
     return;
   }
@@ -3675,7 +3675,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }

@@ -403,7 +403,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
     <span class="spacer"></span>
     <span class="note" id="sqReady"></span>
   </div>
-  <p class="seq-note" id="sqIntro">כל שדה מסומן: חובה, רשות שהמערכת תשלים אם תישאר ריקה, או רשות שהמערכת לא ממציאה אלא רק מתחשבת בה (עובדות על המציאות שלך — מרחב, תקציב, העדפות).
+  <p class="seq-note" id="sqIntro">כל שדה מסומן: עיקרי, רשות שהמערכת תשלים אם תישאר ריקה, או רשות שהמערכת לא ממציאה אלא רק מתחשבת בה (עובדות על המציאות שלך — מרחב, תקציב, העדפות).
     <button type="button" class="linkbtn" id="sqLoadSample">טעינת רצף לדוגמה</button></p>
   <div class="banner" id="sqSampleNote" hidden></div>
   <details class="grp" id="sqImport">
@@ -456,7 +456,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
   <button type="button" id="bFeedback">משוב</button>
   <button type="button" id="bBuild" disabled>הפקת התוצר</button>
   <button type="button" id="bReset">ניקוי</button>
-  <span class="note" id="hint">מלאי את שדות החובה</span>
+  <span class="note" id="hint">מלאי את השדות העיקריים</span>
 </div></div>
 
 <div class="actions" id="actionsSeq" style="display:none"><div class="inner">
@@ -526,7 +526,7 @@ const APPROACH_CARDS = [
   { v:"מישחוק", en:"Gamification",
     who:"המונח החל להופיע בראשית שנות ה־2000 (Nick Pelling); התבסס סביב 2008–2011, וב־2011 Deterding ועמיתיו ניסחו הגדרה אקדמית משפיעה.",
     d:"שימוש ברכיבים מעולם המשחק בתוך פעילות שאינה משחק: משימות, שלבים, נקודות, בחירה, משוב מיידי, הישגים, סיפור מסגרת. מישחוק אינו פשוט \"לשחק משחק בכיתה\".",
-    when:"למי ומתי כדאי: כשצריך לחזק התמדה, מעורבות, תרגול או התקדמות לאורך זמן — ומתאים במיוחד לכישורי חיים ולאינטראקציות חברתיות דינמיות.",
+    when:"למי ומתי כדאי: כשרוצים לחזק התמדה, מעורבות, תרגול או התקדמות לאורך זמן — ומתאים במיוחד לכישורי חיים ולאינטראקציות חברתיות דינמיות.",
     ex:"הכיתה הופכת ל\"יחידת הצלה של הספרייה האבודה\". כל משימת קריאה או חקר חושפת פיסה מארכיון שנעלם. נקודות ניתנות גם על שיפור גרסה קודמת, מתן רמז לקבוצה אחרת או גילוי טעות בטיעון — לא רק על תשובה נכונה.",
     source:[
       { t:"סאבס וגרי, 2024, הזדמנויות לשילוב משחוק בהשכלה הגבוהה — האוניברסיטה הפתוחה", u:"https://cris.openu.ac.il/en/publications/%D7%94%D7%96%D7%93%D7%9E%D7%A0%D7%95%D7%99%D7%95%D7%AA-%D7%9C%D7%A9%D7%99%D7%9C%D7%95%D7%91-%D7%9E%D7%A9%D7%97%D7%95%D7%A7-gamification-%D7%91%D7%94%D7%A9%D7%9B%D7%9C%D7%94-%D7%94%D7%92%D7%91%D7%95%D7%94%D7%94-%D7%A0%D7%99%D7%AA%D7%95%D7%97-%D7%9E%D7%92%D7%9E%D7%95%D7%AA-%D7%95%D7%AA%D7%99/" },
@@ -558,9 +558,9 @@ const APPROACH_CARDS = [
     source:[ { t:"מכון מופ\"ת — שילוב אמנויות בהוראה והדרכה באקדמיה", u:"https://prof.mofet.macam.ac.il/program/amanuyot/" } ] },
   { v:"למידה מבוססת בעיות", en:"Problem-Based Learning",
     who:"פותחה בבית הספר לרפואה של אוניברסיטת McMaster בקנדה בסוף שנות ה־1960 (Howard Barrows ועמיתיו, החל מ־1969); הנרי שמידט ועמיתיו פיתחו גרסה משמעותית באוניברסיטת Maastricht.",
-    d:"בניגוד ללמידה מבוססת פרויקטים, אין חובה לבנות תוצר — הבעיה עצמה מניעה את הלמידה. התלמידים מקבלים מצב מורכב לפני שלמדו את כל החומר ושואלים: מה אנחנו כבר יודעים? מה חסר לנו? מה עלינו ללמוד כדי להבין את הבעיה?",
+    d:"בניגוד ללמידה מבוססת פרויקטים, לא בונים בהכרח תוצר — הבעיה עצמה מניעה את הלמידה. התלמידים מקבלים מצב מורכב לפני שלמדו את כל החומר ושואלים: מה אנחנו כבר יודעים? מה חסר לנו? מה עלינו ללמוד כדי להבין את הבעיה?",
     when:"למי ומתי כדאי: כשרוצים לפתח אבחון, קבלת החלטות, חשיבה מערכתית וחיבור בין ידע תאורטי למצב ממשי — חזקה במיוחד ברפואה, מדעים, הנדסה ומקצועות עם מצבים בלי פתרון יחיד ופשוט.",
-    ex:"התלמידים מקבלים הודעה שבמאגר מים סמוך הופיעה פריחת אצות חריגה, עם נתונים חלקיים בלבד. הם צריכים להחליט מה עליהם ללמוד ולבדוק — טמפרטורה? דשנים? חמצן? אוכלוסיית דגים? — לפני שיוכלו אפילו להציע הסבר.",
+    ex:"התלמידים מקבלים הודעה שבמאגר מים סמוך הופיעה פריחת אצות חריגה, עם נתונים חלקיים בלבד. הם מחליטים מה ללמוד ולבדוק — טמפרטורה? דשנים? חמצן? אוכלוסיית דגים? — לפני שיוכלו אפילו להציע הסבר.",
     source:[
       { t:"Problem solving skills versus knowledge acquisition: the historical dispute that split PBL", u:"https://pmc.ncbi.nlm.nih.gov/articles/PMC6647442/" },
       { t:"Wijnia et al., Educational Psychology Review, 2024", u:"https://doi.org/10.1007/s10648-024-09864-3" },
@@ -890,7 +890,7 @@ function render() {
       const lab = el("label"); lab.append(f.l);
       // סטטוס השדה (חובה / רשות-תמולא / רשות-לא-תמולא) חייב להופיע תמיד,
       // גם כשיש hint מותאם — ראו ההערה המלאה ב-input-screen.html (22/09/2026).
-      if (f.req) lab.append(el("span",{class:"reqmark"}, " · שדה חובה"));
+      if (f.req) lab.append(el("span",{class:"reqmark"}, " · שדה עיקרי"));
       else if (f.noAutoFill) lab.append(el("span",{class:"hint"}, " · רשות — לא תמולא אוטומטית, אך המערכת תתחשב במה שתכתבי בה"));
       else lab.append(el("span",{class:"hint"}, " · רשות — תמולא על-ידי המערכת אם תישאר ריקה"));
       if (f.hint) lab.append(el("span",{class:"hint"}, " · " + f.hint));
@@ -1130,8 +1130,8 @@ function refresh() {
   document.getElementById("bBuild").disabled = !ok;
   document.getElementById("hint").textContent = ok
     ? "אפשר להפיק משוב או תוצר"
-    : `חסרים ${missing.length} שדות חובה`;
-  document.getElementById("ready").textContent = ok ? "" : "טרם מולאו שדות החובה";
+    : `נשארו ${missing.length} שדות עיקריים למילוי`;
+  document.getElementById("ready").textContent = ok ? "" : "השדות העיקריים עוד לא מולאו";
   adjustActionsPadding();
 }
 
@@ -1180,7 +1180,7 @@ function renderIdeas() {
 document.getElementById("bSuggest").addEventListener("click", async (e) => {
   const reqKeys = [...FIELDS.values()].filter(f => f.req).map(f => f.k);
   if (reqKeys.some(k => !val(k))) {
-    return show("חסרים שדות חובה", el("p",{},"שני השדות הראשונים (המטרה וה-S.M.A.R.T) נדרשים לפני שאפשר לייצר הצעות."));
+    return show("נשארו שדות עיקריים למילוי", el("p",{},"שני השדות הראשונים (המטרה וה-S.M.A.R.T) נדרשים לפני שאפשר לייצר הצעות."));
   }
   e.target.disabled = true; e.target.textContent = "מייצרת...";
   const hintEl = document.getElementById("hint");
@@ -1939,7 +1939,7 @@ function missingRequired(){
 function mechanicalChecks(){
   const facts = [];
   const miss = missingRequired();
-  if (miss.length) facts.push({ type:"gap", text:"שדות חובה חסרים: " + miss.join(", ") + "." });
+  if (miss.length) facts.push({ type:"gap", text:"שדות עיקריים שעוד לא מולאו: " + miss.join(", ") + "." });
   let okT = 0;
   seq.sessions.forEach((s, i) => {
     const n = i + 1;
@@ -1976,7 +1976,7 @@ function mechanicalChecks(){
 
 // ── רכיבי שדה ──
 function statusLabel(kind){
-  if (kind === "req") return el("span", { class:"reqmark" }, " · שדה חובה");
+  if (kind === "req") return el("span", { class:"reqmark" }, " · שדה עיקרי");
   if (kind === "noauto") return el("span", { class:"hint" }, " · רשות — לא תמולא אוטומטית, אך המערכת תתחשב במה שתכתבי בה");
   if (kind === "short") return el("span", { class:"hint" }, " · רשות — תושלם אם ריקה");
   return el("span", { class:"hint" }, " · רשות — תמולא על-ידי המערכת אם תישאר ריקה");
@@ -2433,8 +2433,8 @@ function updateStatus(){
   document.getElementById("sqTime").textContent = (ok || bad) ? `${ok} תואמות · ${bad} לא` : "—";
   const miss = missingRequired();
   const hint = document.getElementById("sqHint");
-  hint.textContent = miss.length ? "חסרים שדות חובה: " + miss.join(", ") : "אפשר להשלים, לקבל משוב ולהפיק תוצר";
-  document.getElementById("sqReady").textContent = miss.length ? `חסרים ${miss.length} שדות חובה` : "";
+  hint.textContent = miss.length ? "נשארו למילוי: " + miss.join(", ") : "אפשר להשלים, לקבל משוב ולהפיק תוצר";
+  document.getElementById("sqReady").textContent = miss.length ? `נשארו ${miss.length} שדות עיקריים למילוי` : "";
   ["bSeqFill", "bSeqImprove", "bSeqBuild"].forEach(id => { document.getElementById(id).disabled = !!miss.length; });
   document.getElementById("bSeqUndo").hidden = !snapshot;
   adjustActionsPadding();
@@ -2933,7 +2933,7 @@ document.getElementById("bSeqReport").addEventListener("click", async (e) => {
   const html = reportHTML(facts, ai);
   const body = el("div");
   if (!ai) body.append(mockNote(missingRequired().length
-    ? "הבדיקות המכניות מוצגות במלואן. המשוב המקצועי ייכתב אחרי שיושלמו שדות החובה (ויהיה חיבור למודל)."
+    ? "הבדיקות המכניות מוצגות במלואן. המשוב המקצועי ייכתב אחרי שיושלמו השדות העיקריים (ויהיה חיבור למודל)."
     : "אין חיבור למודל כרגע — הבדיקות המכניות אמיתיות; במקום משוב מקצועי מוצגות שאלות לבדיקה עצמית."));
   const fr = frameOf(html);
   body.append(fr);
@@ -3403,7 +3403,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }

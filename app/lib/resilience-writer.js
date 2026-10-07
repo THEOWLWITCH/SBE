@@ -68,7 +68,7 @@ function mount(h){
   F('rw-go').addEventListener('click',async()=>{
     if(busy)return;const txt=F('rw-text').value.trim(),err=F('rw-err'),out=F('rw-out');
     const A=getAtt();
-    if(txt.length<10&&!A){err.textContent='צריך לכתוב בכמה מילים מה רוצים לומר (לפחות משפט אחד), או לצרף קובץ ולכתוב מה לעשות איתו.';err.hidden=false;return;}
+    if(txt.length<10&&!A){err.textContent='כדי להתחיל, כתבו בכמה מילים מה רוצים לומר (לפחות משפט אחד), או לצרף קובץ ולכתוב מה לעשות איתו.';err.hidden=false;return;}
     err.hidden=true;busy=true;const b=F('rw-go');b.disabled=true;b.textContent='כותבת... (עד דקה)';
     out.textContent='';out.appendChild(el('p','muted','כותבת את ההודעה לפי עשרת עקרונות החוסן...'));
     if(h.onStart)h.onStart();

@@ -249,7 +249,7 @@ async function viewList(){
   const tmp = el('div', 'jmap'); J.STAGES.forEach(s => { const st = el('div', 'st'); st.appendChild(el('div', 'dot', s.k)); st.appendChild(el('div', 'nm', s.t)); st.appendChild(el('div', 'sb', s.sub)); tmp.appendChild(st); }); c.appendChild(tmp);
   const list = card(); list.appendChild(el('h2', null, 'המסעות שלי')); const lw = el('p', 'muted', 'טוענת...'); list.appendChild(lw);
   const d = await api('jrMine'); lw.remove();
-  if (d._status === 403) { list.appendChild(el('p', 'err', 'כדי לצאת למסע צריך קוד עם הרשאת "מסע אל החוסן".')); return; }
+  if (d._status === 403) { list.appendChild(el('p', 'err', 'כדי לצאת למסע, אפשר להיכנס עם קוד שיש בו הרשאת "מסע אל החוסן".')); return; }
   (d.items || []).forEach(s => {
     const r = el('div', 'ms'); const h = el('h3'); h.appendChild(document.createTextNode(s.unitName)); h.appendChild(el('span', 'tagx', unitT(s.unit))); r.appendChild(h);
     const st = { mapping: 'מיפוי ראשוני', proposal: 'הצעת המסע מחכה לבחירות שלכם', review: 'ההצעה אצל ד״ר יעל שדה', active: 'בדרך — ' + stT(s.stage), done: 'קהילת חוסן — המסע הושלם 🎉' }[s.status] || '';
@@ -277,8 +277,8 @@ async function viewList(){
   const EM_RE = /^[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}$/i;
   const err = errLine(n);
   const go = btn('יוצאים לדרך', '', async () => {
-    if (nm.value.trim().length < 2) return err('צריך לכתוב את שם המסגרת.');
-    if (up.checked && !EM_RE.test(em.value.trim())) return err('כדי לקבל עדכונים צריך כתובת מייל תקינה.');
+    if (nm.value.trim().length < 2) return err('כדי להמשיך, כתבו את שם המסגרת.');
+    if (up.checked && !EM_RE.test(em.value.trim())) return err('כדי לקבל עדכונים, נשמח לכתובת מייל תקינה.');
     go.disabled = true; const r = await api('jrCreate', { unit: sel.value, unitName: nm.value.trim(), by: by.value.trim(), research: cb.checked, email: em.value.trim(), updates: up.checked }); go.disabled = false;
     if (r.id) location.hash = r.id; else err(r._status === 403 ? 'אין הרשאה למסע אל החוסן.' : 'לא הצלחנו ליצור את המסע. נסו שוב.');
   }); go.style.marginTop = '.8rem'; n.appendChild(go);
@@ -314,7 +314,7 @@ function contactBox(){
   l.appendChild(up); l.appendChild(document.createTextNode('לקבל עדכונים במייל: אישור, תשובות, תעודות ותזכורת שבוע לפני כל אבן דרך')); dt.appendChild(l);
   const msg = el('p', 'muted');
   const sv = btn('שמירה', 'btn-ghost', async () => {
-    if (up.checked && !/^[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}$/i.test(em.value.trim())) { msg.textContent = 'צריך כתובת מייל תקינה.'; return; }
+    if (up.checked && !/^[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}$/i.test(em.value.trim())) { msg.textContent = 'נשמח לכתובת מייל תקינה.'; return; }
     sv.disabled = true; const r = await api('jrContact', { id: JR.id, email: em.value.trim(), updates: up.checked }); sv.disabled = false;
     if (r.ok) { JR.contact = r.contact; sm.textContent = r.contact.updates ? '📧 עדכונים במייל: פעילים (' + r.contact.email + ')' : '📧 עדכונים במייל: כבויים'; msg.textContent = 'נשמר ✓'; }
     else msg.textContent = 'לא נשמר. נסו שוב.';
@@ -422,7 +422,7 @@ function viewProposal(){
   const err = errLine(ch);
   const go = btn('שליחת הבחירות לד״ר יעל שדה', '', async () => {
     const ids = (p.decisions || []).map(x => x.id).concat('pace');
-    const miss = ids.filter(k => !state[k] || !state[k].option); if (miss.length) return err('צריך לבחור אפשרות בכל החלטה.');
+    const miss = ids.filter(k => !state[k] || !state[k].option); if (miss.length) return err('כדי להמשיך, בחרו אפשרות בכל החלטה.');
     const noEx = ids.filter(k => !state[k].reasons.length && !state[k].explain.trim()); if (noEx.length) return err('נשמח להסבר קצר בכל החלטה — סמנו סיבה או כתבו כמה מילים.');
     err(''); go.disabled = true; go.textContent = 'בונה את אבני הדרך לפי הבחירות שלכם... (עד שתי דקות)';
     try {
@@ -519,7 +519,7 @@ function threadInline(c, mi){
     if (mi !== null) det.appendChild(kind);
     const tx = document.createElement('textarea'); tx.maxLength = 2000; tx.placeholder = 'כתבו כאן — ההודעה נשמרת במסע ומגיעה לד״ר יעל שדה'; det.appendChild(tx);
     const err = errLine(det);
-    const go = btn('שליחה', 'btn-ghost', async () => { if (tx.value.trim().length < 2) return err('צריך לכתוב משהו.'); go.disabled = true;
+    const go = btn('שליחה', 'btn-ghost', async () => { if (tx.value.trim().length < 2) return err('אפשר לכתוב כאן כמה מילים ואז לשלוח.'); go.disabled = true;
       const r = await api('jrPost', { id: JR.id, mi, kind: mi === null ? 'comment' : kind.value, text: tx.value.trim() }); if (r.ok) await viewJourney(JR.id); else { err('לא נשלח. נסו שוב.'); go.disabled = false; } });
     go.style.marginTop = '.4rem'; det.appendChild(go); t.appendChild(det);
   }

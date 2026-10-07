@@ -348,7 +348,7 @@ $("jGo").addEventListener("click", () => {
   const code = $("jCode").value.replace(/\D/g,"");
   const name = $("jName").value.trim();
   if (code.length !== 6) { $("jErr").textContent = "הקוד הוא שש ספרות"; $("jErr").hidden = false; return; }
-  if (!name) { $("jErr").textContent = "צריך שם"; $("jErr").hidden = false; return; }
+  if (!name) { $("jErr").textContent = "נשמח לשם"; $("jErr").hidden = false; return; }
   $("jErr").hidden = true;
   STATE.code = code; STATE.name = name;
   SCENARIO = SCENARIOS[currentScenarioId()];
@@ -514,7 +514,7 @@ METHODS = [
 
 // 3 · ניתוח דילמות קבוצתי
 { id:3, n:3, title:"ניתוח דילמות קבוצתי", desc:"עץ אם/אז משותף, לפחות עשרה סבבים",
-  instr:"מספר סטודנטיות מנתחות יחד את התרחיש וממלאות עץ התקדמות — אם... אז.... חובה לפחות עשרה סבבים, אפשר להוסיף עוד.",
+  instr:"מספר סטודנטיות מנתחות יחד את התרחיש וממלאות עץ התקדמות — אם... אז.... לפחות עשרה סבבים, ואפשר להוסיף עוד.",
   render(container, answers, onProgress){ buildTree(container, answers, onProgress, { min:10, group:true }); }},
 
 // 4 · ניתוח דילמות ליחיד
@@ -580,7 +580,7 @@ METHODS = [
       src = imageSourceField(() => {});
       const titleI = document.createElement("input"); titleI.type="text"; titleI.placeholder="כותרת התמונה";
       const expl = document.createElement("textarea"); expl.rows=2; expl.placeholder="הסבר";
-      const addErr = el("p",{class:"err"},"צריך למלא שם, ליצור או להעלות תמונה, ולמלא כותרת לפני ההוספה."); addErr.hidden = true;
+      const addErr = el("p",{class:"err"},"כדי להמשיך, מלאו שם, צרו או העלו תמונה, ומלאו כותרת לפני ההוספה."); addErr.hidden = true;
       const add = el("button",{class:"act ghost"},"הוספה לגלריה");
       add.addEventListener("click", () => {
         if (!nameI.value.trim() || !src.hasImage() || !titleI.value.trim()) { addErr.hidden = false; return; }
@@ -705,7 +705,7 @@ METHODS = [
     const src = imageSourceField(() => { answers.metaphorImage = src.getRecord(); check(); });
     container.append(el("div",{class:"qbox"}, el("label",{},"החפץ או הדימוי"), src.el));
     textField(container, "why", answers, "הסבירי מדוע בחרת דווקא בדימוי זה", { onInput: check });
-    textField(container, "change", answers, "איזה שינוי צריך לקרות למטאפורה כדי שהקונפליקט ייפתר?", { onInput: check });
+    textField(container, "change", answers, "איזה שינוי יכול לקרות למטאפורה כדי שהקונפליקט ייפתר?", { onInput: check });
     function check(){ onProgress(!!answers.metaphorImage && !!answers.why && !!answers.change); }
   }},
 ];
@@ -805,7 +805,7 @@ function imageSourceField(onChange){
     bMock.setAttribute("aria-pressed","true"); bUp.setAttribute("aria-pressed","false");
     body.textContent = "";
     const seedI = document.createElement("input"); seedI.type="text"; seedI.placeholder="מילת מפתח או תיאור לתמונה";
-    const genErr = el("p",{class:"err"},"צריך למלא מילת מפתח או תיאור לפני היצירה."); genErr.hidden = true;
+    const genErr = el("p",{class:"err"},"כדי ליצור, כתבו מילת מפתח או תיאור."); genErr.hidden = true;
     const genBtn = el("button",{class:"act ghost"},"יצירת תמונה (הדמיה)");
     const imgWrap = el("div");
     genBtn.addEventListener("click", () => {
@@ -926,7 +926,7 @@ const FORMATTERS = {
     "המשקפיים האפורים — מה היה רגע השפל: " + (a.gray||""),
     "המשקפיים השקופים — מה לא נאמר במפורש: " + (a.clear||""),
   ]; },
-  14(a){ return [describeImage(a.metaphorImage), "מדוע נבחרה: " + (a.why||""), "מה צריך להשתנות: " + (a.change||"")]; },
+  14(a){ return [describeImage(a.metaphorImage), "מדוע נבחרה: " + (a.why||""), "מה יכול להשתנות: " + (a.change||"")]; },
 };
 
 let LAST = null;
@@ -982,7 +982,7 @@ const IMAGE_PREVIEWERS = {
     if (answers.metaphorImage) frag.append(renderImageRecord(answers.metaphorImage));
     else frag.append(el("p",{},"עדיין לא נוצרה תמונה."));
     frag.append(el("p",{}, el("b",{},"מדוע נבחרה: "), answers.why || "—"));
-    frag.append(el("p",{}, el("b",{},"מה צריך להשתנות: "), answers.change || "—"));
+    frag.append(el("p",{}, el("b",{},"מה יכול להשתנות: "), answers.change || "—"));
     return frag;
   },
 };
@@ -1198,7 +1198,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
     var isUsage = type === "משוב על השימוש במערכת";
     var details = document.getElementById("rptDetails").value.trim();
     if (!name || (!isUsage && !details)) {
-      errEl.textContent = isUsage ? "שם מלא הוא שדה חובה." : "שם מלא ופירוט הם שדות חובה.";
+      errEl.textContent = isUsage ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולפירוט.";
       errEl.hidden = false;
       return;
     }
