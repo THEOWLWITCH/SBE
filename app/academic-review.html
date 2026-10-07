@@ -3,6 +3,8 @@
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/ai-status.js"></script>
+<script src="lib/report-table.js"></script>
+<script src="lib/product-doc.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -355,6 +357,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <div class="dlg-b" id="dlgB"></div>
   <div class="dlg-f" id="dlgF">
     <button type="button" class="primary" id="bSaveTxt">שמירה למחשב</button>
+    <button type="button" id="bPrintFb">הדפסה / שמירה כ-PDF</button>
     <button type="button" id="dlgX">סגירה</button>
   </div>
 </dialog>
@@ -941,19 +944,10 @@ function renderFeedback(fb, mock) {
   if (fb.overall) body.append(el("p", { style:"margin:0 0 14px;color:var(--muted);" }, fb.overall));
   const fbList = fb.taskFit && ((fb.taskFit.strengths||[]).length || (fb.taskFit.improvements||[]).length)
     ? [{ title:"התאמה להנחיות המשימה", ...fb.taskFit }, ...(fb.criteria || [])] : (fb.criteria || []);
-  fbList.forEach(c => {
-    const sec = el("div", { class:"fb-sec" });
-    sec.append(el("h4", {}, c.title));
-    if (c.strengths && c.strengths.length) {
-      sec.append(el("b", { class:"fb-l" }, "מה עובד טוב"));
-      const ul = el("ul"); c.strengths.forEach(s => ul.append(el("li",{},s))); sec.append(ul);
-    }
-    if (c.improvements && c.improvements.length) {
-      sec.append(el("b", { class:"fb-l gap" }, "כדאי לחזק"));
-      const ul = el("ul"); c.improvements.forEach(s => ul.append(el("li",{},s))); sec.append(ul);
-    }
-    body.append(sec);
-  });
+  // טבלה (07/10/2026), בקו אחיד עם שאר התוצרים: קריטריון בכל שורה — הקריטריון · מה עובד · מה אפשר לחזק
+  const ul = (xs) => { if (!xs || !xs.length) return null; const u = el("ul"); xs.forEach(s => u.append(el("li",{},s))); return u; };
+  if (fbList.length) body.append(SBE_TABLE(["הקריטריון", "מה עובד", "מה אפשר לחזק"],
+    fbList.map(c => [el("b", {}, c.title || ""), ul(c.strengths), ul(c.improvements)]), "fb-table"));
   if (fb.sources && fb.sources.length) {
     const sec = el("div", { class:"fb-sec" });
     sec.append(el("h4", {}, "מקורות שהוזכרו במשוב — מספריית המקורות המאומתת"));
@@ -968,6 +962,7 @@ function renderFeedback(fb, mock) {
     body.append(sec);
   }
   if (!mock) body.append(aiNoteEl());
+  $("bPrintFb").hidden = false;
   const kindT = LAST_FEEDBACK && (FB_KINDS.find(x => x.k === LAST_FEEDBACK.kind) || {}).t;
   $("dlgH").textContent = "משוב · " + (LAST_FEEDBACK && LAST_FEEDBACK.creator || val("creatorName") || "—") + (kindT ? " · " + kindT : "");
   if (!$("dlg").open) $("dlg").showModal();
@@ -1020,7 +1015,7 @@ $("bReview").addEventListener("click", async (e) => {
       // בלי חיבור למודל — אין משוב (לא נתונים גולמיים במקום משוב אמיתי). העבודה נשארת בטופס.
       console.warn("משוב AI לא זמין:", err.message);
       setAIStatus("mock");
-      $("dlgH").textContent = "המשוב לא הופק";
+      $("dlgH").textContent = "המשוב לא הופק"; $("bPrintFb").hidden = true;
       const b = $("dlgB"); b.textContent = "";
       b.append(el("p", {}, "אין כרגע חיבור למודל, ולכן המשוב לא הופק — המערכת לא מציגה נתונים טכניים במקום משוב אמיתי. העבודה שלך נשמרה בטופס. אפשר לנסות שוב בעוד דקה–שתיים."));
       if (!$("dlg").open) $("dlg").showModal();
@@ -1036,6 +1031,9 @@ $("bReview").addEventListener("click", async (e) => {
   } finally { e.target.disabled = false; e.target.textContent = "קבלת משוב"; }
 });
 $("dlgX").addEventListener("click", () => $("dlg").close());
+// הדפסה / PDF (07/10/2026) — כמו בשאר התוצרים: לוגו, כותרת, תאריך, והטבלה
+$("bPrintFb").addEventListener("click", () => { if (!LAST_FEEDBACK) return;
+  SBE_DOC.print({ title: "משוב לעבודה — " + (LAST_FEEDBACK.creator || ""), subtitle: $("dlgH").textContent, node: $("dlgB") }); });
 // הורדת קובץ: הקישור נשאר בדף רגע אחרי הלחיצה — הסרה מיידית גורמת לחלק מהדפדפנים לאבד את שם הקובץ
 function downloadBlob(blob, name){
   const a = document.createElement("a");
