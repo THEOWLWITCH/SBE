@@ -143,7 +143,6 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
   </div>
   <label>המערכות במנוי *</label>
   <div class="sys" id="systems"></div>
-  <input id="other" maxlength="80" placeholder="פרטו בקצרה (עד 80 תווים)" hidden style="margin-top:6px">
   <label>תקופה</label>
   <div class="per">
     <label><input type="radio" name="period" value="year" checked> שנה</label>
@@ -168,12 +167,6 @@ SYSTEMS.forEach(([l, ps], i) => {
   cb.dataset.perms = ps.join(",");
   const lb = document.createElement("label"); lb.append(cb, l); $("systems").append(lb);
 });
-// "אחר" — קומבינציה שלא ברשימה; פותח שדה קצר.
-{
-  const cb = Object.assign(document.createElement("input"), { type: "checkbox", id: "sOther" });
-  const lb = document.createElement("label"); lb.append(cb, "אחר"); $("systems").append(lb);
-  cb.addEventListener("change", () => { $("other").hidden = !cb.checked; if (cb.checked) $("other").focus(); });
-}
 // המוסד: רשימה נפתחת של המוסדות שיש להם מנוי, ו"מוסד חדש" — שדה טקסט.
 const NEW_INST = "__new__";
 function syncType(){
@@ -204,25 +197,25 @@ $("send").addEventListener("click", async () => {
   const phone = $("phone").value.replace(/[^\d+]/g, "");
   const type = document.querySelector("input[name=type]:checked").value;
   const instName = $("instSel").value === NEW_INST ? $("instName").value.trim() : $("instSel").value;
-  const other = $("sOther").checked ? $("other").value.trim() : "";
   const body = { action: "renewRequest", type, fullName: $("fullName").value.trim(), instName,
-    email: $("email").value.trim(), phone, systems, other, period: document.querySelector("input[name=period]:checked").value,
+    email: $("email").value.trim(), phone, systems, other: "", period: document.querySelector("input[name=period]:checked").value,
     code: type === "new" ? "" : $("code").value.trim() };
   const msg = $("msg"); msg.className = "msg err";
   if (!body.fullName || !body.instName) { msg.textContent = "כדי לשלוח, נשמח לשם מלא ולמוסד (או להקליד מוסד חדש)."; return; }
-  if ($("sOther").checked && !other) { msg.textContent = "סימנתם \"אחר\" — נשמח לפירוט קצר."; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { msg.textContent = "כתובת המייל לא תקינה."; return; }
   if (!/^(\+972|0)5\d{8}$/.test(phone)) { msg.textContent = "מספר הטלפון הנייד לא תקין (למשל 050-1234567)."; return; }
-  if (!systems.length && !other) { msg.textContent = "כדי לשלוח, סמנו לפחות מערכת אחת, או \"אחר\"."; return; }
+  if (!systems.length) { msg.textContent = "כדי לשלוח, סמנו לפחות מערכת אחת."; return; }
   $("send").disabled = true; msg.className = "msg"; msg.textContent = "שולחת... (לפעמים עד דקה)";
   try {
     const r = await fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     const d = await r.json().catch(() => ({}));
     if (d.ok) {
-      const when = new Date(d.at).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" });
+      // תאריך בפורמט ישראלי: 07.10.26, 12:01
+      const t = new Date(d.at), z = (n) => String(n).padStart(2, "0");
+      const when = z(t.getDate()) + "." + z(t.getMonth() + 1) + "." + String(t.getFullYear()).slice(2) + ", " + z(t.getHours()) + ":" + z(t.getMinutes());
       $("form").textContent = "";
       const p = document.createElement("p"); p.className = "msg";
-      p.textContent = "בקשתך התקבלה (" + when + "). ניצור איתך קשר טלפוני בהקדם כדי " + (type === "new" ? "לפתוח את המנוי" : "להאריך את המנוי") + " ולהסדיר את התשלום.";
+      p.textContent = "בקשתך התקבלה (" + when + "). ניצור איתך קשר טלפוני בהקדם.";
       $("form").append(p); return;
     }
     msg.className = "msg err";
