@@ -611,7 +611,17 @@ function renderPractice(){
   const P=STATE.practice,log=F('pr-log');log.textContent='';F('pr-reply').hidden=!P;
   if(!P)return;
   log.appendChild(el('p','muted','תרגול: '+P.moment));
-  P.msgs.forEach((m,i)=>{if(i===0)return;log.appendChild(m.role==='user'?bubble('me',m.content):bubble(/משוב מננה/.test(m.content)?'bot':'group',m.content,/משוב מננה/.test(m.content)?'ננה':'הקבוצה'));});
+  P.msgs.forEach((m,i)=>{if(i===0)return;
+    // משוב מננה בסוף התרגול — טבלה (חלק בכל שורה) והדפסה עם השיחה (07/10/2026, "קו אחיד")
+    if(m.role!=='user'&&/משוב מננה/.test(m.content)){const parts=m.content.split(/\*\*משוב מננה\*\*[:：]?/);
+      if(parts[0].trim())log.appendChild(bubble('group',parts[0],'הקבוצה'));
+      const fb=(parts[1]||m.content).trim(),c=el('div','rcard');c.appendChild(el('p','rcard-t','משוב מננה'));c.appendChild(SBE_DOC.sections(fb)||richText(fb));log.appendChild(c);
+      const b=el('button','btn btn-ghost btn-sm','🖨 הדפסה / PDF');b.type='button';b.style.marginTop='.4rem';
+      b.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h4',null,'המשוב'));n.appendChild(SBE_DOC.sections(fb)||richText(fb));n.appendChild(el('h4',null,'השיחה'));
+        n.appendChild(SBE_DOC.table(P.msgs.slice(1,i).map(x=>[x.role==='user'?'אני':'הקבוצה',richText(x.content)])));
+        SBE_DOC.print({title:'תרגול רגע מאתגר — ננה',subtitle:P.moment,node:n});});
+      log.appendChild(b);return;}
+    log.appendChild(m.role==='user'?bubble('me',m.content):bubble('group',m.content,'הקבוצה'));});
   if(P.done)F('pr-reply').hidden=true;
 }
 async function practiceTurn(text){
@@ -631,9 +641,9 @@ F('pr-go').addEventListener('click',()=>{const t=F('pr-in').value.trim();if(!t)r
 F('pr-end').addEventListener('click',()=>practiceTurn('סיום תרגול'));
 
 function renderAfter(){const o=F('af-out');o.textContent='';const A=STATE.after;if(!A||!A.answer)return;
-  const c=el('div','rcard');c.appendChild(el('p','rcard-t','משוב מננה · '+fmtDate(A.at)));c.appendChild(richText(A.answer));o.appendChild(c);
+  const c=el('div','rcard');c.appendChild(el('p','rcard-t','משוב מננה · '+fmtDate(A.at)));c.appendChild(SBE_DOC.sections(A.answer)||richText(A.answer));o.appendChild(c);
   const b=el('button','btn btn-ghost btn-sm','🖨 הדפסה / PDF');b.type='button';b.style.marginTop='.4rem';
-  b.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h4',null,'מה קרה במפגש'));n.appendChild(richText(A.text));n.appendChild(el('h4',null,'משוב מננה'));n.appendChild(richText(A.answer));
+  b.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h4',null,'מה קרה במפגש'));n.appendChild(richText(A.text));n.appendChild(el('h4',null,'משוב מננה'));n.appendChild(SBE_DOC.sections(A.answer)||richText(A.answer));
     SBE_DOC.print({title:'רפלקציה אחרי המפגש — ננה',subtitle:STATE.report?subtitle(STATE.report):'',node:n});});
   o.appendChild(b);}
 F('af-go').addEventListener('click',async()=>{

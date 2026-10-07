@@ -483,9 +483,12 @@ function milestoneCard(m, i){
   if (m.gate) h.appendChild(el('span', 'tagx gate', J.ICON.gate + ' שער — סיום ' + stT(m.stage)));
   h.appendChild(el('span', 'tagx ' + ({ approved: 'ok', submitted: 'sub', needs: 'need' }[m.status] || ''), (m.status === 'approved' ? J.ICON.done + ' ' : '') + J.MS_LABEL[m.status]));
   c.appendChild(h); c.appendChild(el('div', 'meta', stT(m.stage) + ' · עד ' + fmt(m.due)));
-  if ((m.goals || []).length) { const ul = el('ul'); m.goals.forEach(g => { const li = el('li'); li.appendChild(el('span', 'cl-chip', clT(g.c))); li.appendChild(document.createTextNode(g.goal)); if (g.measure) li.appendChild(el('div', 'muted', 'איך נדע: ' + g.measure)); ul.appendChild(li); }); c.appendChild(ul); }
-  if ((m.submit || []).length) { c.appendChild(el('b', null, 'מה מגישים:')); const ul = el('ul'); m.submit.forEach(s => ul.appendChild(el('li', null, s))); c.appendChild(ul); }
-  if (m.tip) c.appendChild(el('p', 'muted', '💡 ' + m.tip));
+  // טבלה (07/10/2026, "קו אחיד"): יעדים · מה מגישים · טיפ
+  const rows = [];
+  if ((m.goals || []).length) { const ul = el('ul'); m.goals.forEach(g => { const li = el('li'); li.appendChild(el('span', 'cl-chip', clT(g.c))); li.appendChild(document.createTextNode(g.goal)); if (g.measure) li.appendChild(el('div', 'muted', 'איך נדע: ' + g.measure)); ul.appendChild(li); }); rows.push(['יעדים ואיך נדע', ul]); }
+  if ((m.submit || []).length) { const ul = el('ul'); m.submit.forEach(s => ul.appendChild(el('li', null, s))); rows.push(['מה מגישים', ul]); }
+  if (m.tip) rows.push(['💡 טיפ', m.tip]);
+  if (rows.length) c.appendChild(SBE_TABLE(null, rows, 'ms-table'));
   if (m.status === 'approved' && m.cert) { const a = el('a', 'btn btn-ghost', '🏅 לתעודה'); a.href = 'journey-cert.html?id=' + JR.id + '&code=' + m.cert.code; a.target = '_blank'; a.style.textDecoration = 'none'; c.appendChild(a); }
   if (JR.status === 'active' && (m.status === 'open' || m.status === 'needs')) submitForm(c, m, i);
   threadInline(c, i);

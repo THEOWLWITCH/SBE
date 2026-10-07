@@ -1055,18 +1055,13 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     body.append(el("p", { class:"rcard-meta" }, `${d.creator || ""} · ${d.date || ""}`), rc);
 
     if (!briefing) body.append(el("h4", {}, "עץ אפשרויות"));
-    const tree = el("div", { class:"tree2" });
-    tree.append(el("div", { class:"tree2-root" }, el("b",{},"פתיחה: "), d.openingLine || "—"));
-    branches.forEach(b => {
-      const row = el("div", { class:"tree2-row" });
-      row.append(el("div",{}, el("b",{},"אם: "), b.cond));
-      row.append(el("div",{}, el("b",{},"אז: "), b.resp || "—"));
-      tree.append(row);
-    });
-    const ends = el("div", { class:"tree2-ends" });
-    ends.append(el("div", { class:"tree2-end good" }, el("b",{},"אם המטרה מתממשת: "), d.ifGoalAchieved || "—"));
-    ends.append(el("div", { class:"tree2-end alt" }, el("b",{},"אם לא: "), d.backupPlan || "—"));
-    tree.append(ends);
+    // עץ האפשרויות כטבלה (07/10/2026, "קו אחיד"): אם… | אז…
+    const tree = SBE_DOC.table([
+      ["פתיחה", d.openingLine || "—"],
+      ...branches.map(b => ["אם: " + b.cond, b.resp || "—"]),
+      ["אם המטרה מתממשת", d.ifGoalAchieved || "—"],
+      ["אם לא", d.backupPlan || "—"],
+    ]);
     if (!briefing) body.append(tree);
 
     body.append(el("p", { class:"savenote" },

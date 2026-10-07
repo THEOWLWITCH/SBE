@@ -89,10 +89,18 @@ function mount(h){
       acts.appendChild(cp);out.appendChild(acts);
       const used={};(d.used||[]).forEach(u=>{const n=+u.n;if(n>=1&&n<=10)used[n]=u.how||'';});
       out.appendChild(el('h3',null,'עקרונות החוסן בהודעה — '+Object.keys(used).length+' מתוך 10'));
-      const ul=el('ul','rw-check');PRINCIPLES.forEach((p,i)=>{const on=(i+1) in used;const li=el('li',on?'on':'off');
+      // טבלה (07/10/2026, "קו אחיד"): העיקרון · איך הוא בא לידי ביטוי בהודעה
+      const prTable=window.SBE_TABLE?SBE_TABLE(['העיקרון','בהודעה'],PRINCIPLES.map((p,i)=>{const on=(i+1) in used;
+        return [el('b',null,(on?'✓ ':'○ ')+p),on?(used[i+1]?inlineRich(used[i+1]):'✓'):el('span','muted','לא שולב הפעם')];}),'rw-table'):null;
+      if(prTable)out.appendChild(prTable);else{const ul=el('ul','rw-check');PRINCIPLES.forEach((p,i)=>{const on=(i+1) in used;const li=el('li',on?'on':'off');
         li.appendChild(el('b',null,(on?'✓ ':'○ ')+p));if(on&&used[i+1]){li.appendChild(document.createTextNode(' — '));li.appendChild(inlineRich(used[i+1]));}ul.appendChild(li);});
-      out.appendChild(ul);
+      out.appendChild(ul);}
       if((d.tips||[]).length){out.appendChild(el('h3',null,'טיפים'));const tl=el('ul','tl');d.tips.forEach(t=>{const li=el('li');li.appendChild(inlineRich(t));tl.appendChild(li);});out.appendChild(tl);}
+      if(window.SBE_DOC&&SBE_DOC.print){const pb=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pb.type='button';
+        pb.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h3',null,'ההודעה'));n.appendChild(richText(msg));
+          if(prTable){n.appendChild(el('h3',null,'עקרונות החוסן בהודעה'));n.appendChild(prTable.cloneNode(true));}
+          SBE_DOC.print({title:'כתיבה מקדמת חוסן — '+F('rw-kind').value,subtitle:'קהל: '+F('rw-aud').value,node:n});});
+        acts.appendChild(pb);}
       out.appendChild(el('p','muted','ההודעה היא הצעה — כדאי לקרוא, לבדוק את הפרטים ולהתאים לפני שליחה. מקומות בסוגריים מרובעים ממלאים בעצמכם.'));
     }catch(e){out.textContent='';err.textContent='הכתיבה לא הצליחה ('+(e.name==='AbortError'?'לקח יותר מדי זמן':e.message)+'). נסו שוב.';err.hidden=false;}
     finally{busy=false;b.disabled=false;b.textContent=LABEL;}
@@ -110,15 +118,21 @@ function reportSection(d,h,title,msgTitle,lvl){
   const pr=(d.principles||[]).filter(p=>+p.n>=1&&+p.n<=10&&p.state!=='לא ידוע');const ms=(d.messages||[]).filter(m=>m&&m.text);
   if(pr.length){frag.appendChild(el(lvl||'h3',null,title));
     frag.appendChild(el('p','muted','עקרונות השפה המחזקת שרלוונטיים לתמונת המצב — מה כבר קיים ומה כדאי לחזק.'));
-    const ul=el('ul','rw-check');pr.forEach(p=>{const st=STATES.includes(p.state)?p.state:'לא ידוע';const li=el('li','st-'+STATES.indexOf(st));
+    if(window.SBE_TABLE){frag.appendChild(SBE_TABLE(['העיקרון','מצב','על מה זה נשען ואיך לחזק'],pr.map(p=>{const st=STATES.includes(p.state)?p.state:'לא ידוע';
+      const w=el('span','rw-st-wrap st-'+STATES.indexOf(st));w.appendChild(el('span','rw-st',st));return [el('b',null,PRINCIPLES[p.n-1]),w,p.note?inlineRich(p.note):null];}),'rw-table'));}
+    else{const ul=el('ul','rw-check');pr.forEach(p=>{const st=STATES.includes(p.state)?p.state:'לא ידוע';const li=el('li','st-'+STATES.indexOf(st));
       li.appendChild(el('span','rw-st',st));li.appendChild(el('b',null,PRINCIPLES[p.n-1]));if(p.note){li.appendChild(document.createTextNode(' — '));li.appendChild(inlineRich(p.note));}ul.appendChild(li);});
-    frag.appendChild(ul);}
+    frag.appendChild(ul);}}
   if(ms.length){frag.appendChild(el('h3',null,msgTitle));
-    ms.forEach(m=>{const c=el('div','act rw-msg');c.appendChild(el('div','act-t',[m.to?'אל: '+m.to:'',m.purpose].filter(Boolean).join(' — ')));
+    const mrows=[];
+    ms.forEach(m=>{const c=el('div','rw-msg');
       const t=String(m.text).replace(/\*\*/g,'');const box=richText(t);box.classList.add('rw-new');c.appendChild(box);
       const cp=el('button','btn btn-ghost no-print','העתקת ההודעה');cp.type='button';cp.style.marginTop='.5rem';
       cp.addEventListener('click',()=>{const done=()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת ההודעה',2000);};if(navigator.clipboard)navigator.clipboard.writeText(t).then(done).catch(()=>{});});
-      c.appendChild(cp);frag.appendChild(c);});
+      c.appendChild(cp);
+      const who=el('div');if(m.to)who.appendChild(el('b',null,m.to));if(m.purpose)who.appendChild(el('div','muted',m.purpose));
+      if(window.SBE_TABLE)mrows.push([who,c]);else{const a=el('div','act rw-msg');a.appendChild(el('div','act-t',[m.to?'אל: '+m.to:'',m.purpose].filter(Boolean).join(' — ')));a.appendChild(c);frag.appendChild(a);}});
+    if(mrows.length)frag.appendChild(SBE_TABLE(['אל · מטרה','ההודעה'],mrows,'rw-table'));
     frag.appendChild(el('p','muted','ההודעות הן הצעה — כדאי לקרוא, לבדוק את הפרטים ולהתאים לפני שליחה. מקומות בסוגריים מרובעים ממלאים בעצמכם.'));}
   return frag;
 }
