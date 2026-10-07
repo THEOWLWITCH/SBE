@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מעבדת הדמו</title>
+<script src="lib/access-guard.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
+<style>
+:root{
+  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
+  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
+  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
+  --hidden:#8F5F2E; --hidden-soft:#F5EAD9;
+  --auto:#4A6B5A; --auto-soft:#DFE9E2;
+  --brick:#8C3A34; --brick-soft:#F5E4E2;
+  --shadow:rgba(20,28,36,.09);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+    --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+    --spoken:#82AECE; --spoken-soft:#1E2E3A;
+    --hidden:#CE9C5E; --hidden-soft:#332617;
+    --auto:#83B599; --auto-soft:#1B2A22;
+    --brick:#CF7C74; --brick-soft:#331E1C;
+    --shadow:rgba(0,0,0,.5); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
+  --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
+  --spoken:#82AECE; --spoken-soft:#1E2E3A;
+  --hidden:#CE9C5E; --hidden-soft:#332617;
+  --auto:#83B599; --auto-soft:#1B2A22;
+  --brick:#CF7C74; --brick-soft:#331E1C;
+  --shadow:rgba(0,0,0,.5); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{direction:rtl;background:var(--ground);color:var(--ink);margin:0;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.55;padding:0 16px 40px}
+.topnav{font-size:13px;padding:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.topnav a,.topnav button{font:inherit;font-weight:600;padding:4px 10px;border-radius:12px;border:1px solid var(--hair);
+  background:var(--surface);color:var(--ink);text-decoration:none;cursor:pointer}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(22px,5vw,28px);margin:10px 0 4px}
+h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:19px;margin:26px 0 10px}
+p{margin:0 0 .6rem}
+.muted{color:var(--muted);font-size:14px}
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 3px var(--shadow);break-inside:avoid}
+.note{border-inline-start:4px solid var(--hidden);background:var(--hidden-soft)}
+.btn{font-family:inherit;font-size:14px;font-weight:600;padding:8px 16px;border-radius:6px;border:1px solid var(--spoken);
+  background:var(--spoken);color:#fff;cursor:pointer}
+:root[data-theme="dark"] .btn{color:#0F1418}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .btn{color:#0F1418} }
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--hair)}
+.btn.sm{padding:4px 10px;font-size:13px}
+.btn.danger{background:transparent;color:var(--brick);border-color:var(--brick)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.runs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.run{display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--hair);border-radius:8px;padding:8px 10px}
+.run label{flex:1;display:flex;gap:8px;align-items:center;cursor:pointer;font-weight:600;font-size:14.5px}
+.run .st{font-size:12.5px;color:var(--muted);display:block;font-weight:400}
+.run.running{border-color:var(--spoken)} .run.done{border-color:var(--auto)} .run.error{border-color:var(--brick)}
+.run.error .st{color:var(--brick)} .run.done .st{color:var(--auto)}
+.tool-h{font-weight:700;color:var(--spoken);margin:18px 0 6px;font-size:15.5px}
+.item{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.item .t{flex:1;min-width:200px}
+.item .t b{display:block}
+.pub{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;border:1px solid var(--hair);border-radius:99px;padding:3px 10px;cursor:pointer;user-select:none}
+.pub.on{border-color:var(--auto);background:var(--auto-soft);color:var(--auto);font-weight:700}
+.warn{color:var(--brick);font-size:13px;font-weight:600}
+#frames{position:fixed;left:-3000px;top:0;width:1200px;height:900px;overflow:hidden;visibility:hidden}
+#frames iframe{width:1200px;height:900px;border:0}
+dialog{width:min(980px,96vw);height:92vh;border:1px solid var(--hair);border-radius:12px;padding:0;background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:rgba(10,14,18,.55)}
+.dlg{display:flex;flex-direction:column;height:100%}
+.dlg-h{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--hair);flex-wrap:wrap}
+.dlg-h b{flex:1}
+.dlg details{padding:6px 14px;border-bottom:1px solid var(--hair);font-size:14px}
+.dlg pre{white-space:pre-wrap;font-family:inherit;margin:6px 0;color:var(--muted)}
+.dlg iframe{flex:1;width:100%;border:0;background:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="topnav">
+  <a href="admin.html?role=sys">⌂ מסך הניהול</a>
+  <a href="examples.html" target="_blank">📚 ספריית התוצרים לדוגמה ↗</a>
+</nav>
+<h1>🧪 מעבדת הדמו</h1>
+<p class="muted">רק את רואה את המסך הזה ואת התיקייה שבו.</p>
+
+<div class="card">
+  <p><b>מה קורה כאן:</b> המעבדה פותחת כל כלי ברקע, טוענת את הדוגמה שלו, ומפיקה תוצר <b>מול המודל האמיתי</b> — בדיוק כמו משתמש/ת. כל תוצר נשמר בתיקייה שלמטה.</p>
+  <p><b>מה בודקים:</b> עיצוב, ניסוחים, הדדיות עם הדמות השנייה, התאמת השפה לגיל ולקהל, ושלושת העקרונות (הזמנה, בחירה ואחריות, אי־שיפוטיות).</p>
+  <p><b>ספרייה למתעניינים:</b> תוצר שתסמני "מוצג בספרייה" יופיע ב<a href="examples.html" target="_blank">ספריית התוצרים לדוגמה</a> — פתוחה לכל אחד, בלי כניסה. תוצר שלא סימנת — נשאר רק אצלך.</p>
+  <p class="muted">משך משוער: הדוחות — דקה עד שלוש כל אחד; תרחיש סימולציה — עד 20 דקות. אפשר להמשיך לעבוד בלשונית אחרת, ולהשאיר את הלשונית הזאת פתוחה עד הסוף.</p>
+</div>
+
+<h2>הפקה</h2>
+<div class="row" style="margin-bottom:10px">
+  <button class="btn" id="go">הפקת הדמו שסומנו</button>
+  <button class="btn ghost sm" id="all">סימון הכול</button>
+  <button class="btn ghost sm" id="none">ניקוי הסימון</button>
+  <span class="muted" id="prog"></span>
+</div>
+<div class="runs" id="runs"></div>
+<p class="muted" style="margin-top:10px">לא נכללים כאן (בינתיים): סטודיו חוסן — עד שמפתח OpenAI יוגדר ב-Render; מסע אל החוסן ותרגול עצמי בסימולציה — תוצרים שנבנים בתהליך עם משתתפים.</p>
+
+<h2>התיקייה שלי</h2>
+<div id="list"><p class="muted">טוען...</p></div>
+</div>
+
+<div id="frames" aria-hidden="true"></div>
+<dialog id="dlg"><div class="dlg">
+  <div class="dlg-h"><b id="dlgT"></b><button class="btn ghost sm" id="dlgPrint">הדפסה / PDF</button><button class="btn ghost sm" id="dlgX">סגירה</button></div>
+  <details id="dlgIn"><summary>מה הוזן לכלי</summary><pre id="dlgInT"></pre></details>
+  <iframe id="dlgF" sandbox="allow-popups allow-popups-to-escape-sandbox allow-modals" title="התוצר"></iframe>
+</div></dialog>
+
+<script>
+(function(){
+'use strict';
+// מעבדת הדמו (07/10/2026) — מנהלת המערכת בלבד. כל "מתכון" נמצא ב-lib/demo-hook.js; כאן רק מריצים, שומרים ומציגים.
+// השמירה בשרת: הפעולות demo* ב-harness/lib/access.mjs. מה שמסומן "מוצג בספרייה" מופיע ב-examples.html.
+let IS_SYS=false;try{IS_SYS=sessionStorage.getItem('sbe.session.homeUrl')==='admin.html?role=sys';}catch(e){}
+if(!IS_SYS){document.documentElement.style.display='none';location.replace('entry.html');return;}
+const ACCESS='https://sbe-server.onrender.com/api/access';
+const F=id=>document.getElementById(id);
+function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=String(text);return n;}
+function token(){try{return sessionStorage.getItem('sbe.session.token')||'';}catch(e){return '';}}
+async function api(body){
+  const r=await fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(Object.assign({token:token()},body))});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(r.status===403?'הכניסה הסתיימה — כדאי להיכנס מחדש':(d.error||('שגיאה '+r.status)));
+  return d;
+}
+const date=s=>{const t=new Date(s),z=n=>String(n).padStart(2,'0');return z(t.getDate())+'.'+z(t.getMonth()+1)+'.'+String(t.getFullYear()).slice(2)+', '+z(t.getHours())+':'+z(t.getMinutes());};
+
+// הכלים, לפי סדר ההצגה בתיקייה ובספרייה
+const TOOLS={practi:'פרקטי — יועצת לחוסן בכיתה',nugi:'נוגי — מנהיגות תומכת חוסן',nana:'ננה — מהוראה להנחיה',writer:'כתיבה מקדמת חוסן',
+  resil:'מיפוי חוסן — סיכום לכיתה',conv:'תכנון שיחה','act-single':'תכנון פעילות — מפגש אחד','act-seq':'תכנון פעילות — רצף מפגשים',
+  review:'משוב לעבודות',edu:'סימולציה — סטודנטים/ות',parents:'סימולציה — הורים',youth:'סימולציה — נוער'};
+const RUNS=[
+  ['practi','resilience-advisor.html',20],['nugi','leadership-advisor.html',20],['nana','facilitation-advisor.html',20],['writer','message-writer.html',10],
+  ['resil','resilience-team.html',20],['conv','conversation-planner.html',20],['act-single','activity-planner.html',20],['act-seq','activity-planner.html?part=seq',35],
+  ['review','academic-review.html',20],['edu','input-screen.html',50],['parents','parent-input-screen.html',50],['youth','student-input-screen.html',50]];
+const ORDER=Object.keys(TOOLS);
+const state={};
+
+// ── רשימת ההפקה ──
+RUNS.forEach(([id])=>{
+  const r=el('div','run');r.id='run-'+id;
+  const lab=el('label');const cb=el('input');cb.type='checkbox';cb.checked=true;cb.id='cb-'+id;
+  const tx=el('span',null,TOOLS[id]);const st=el('span','st','');st.id='st-'+id;tx.appendChild(st);
+  lab.append(cb,tx);r.appendChild(lab);
+  const one=el('button','btn ghost sm','הפקה');one.addEventListener('click',()=>runAll([id]));r.appendChild(one);
+  F('runs').appendChild(r);
+});
+F('all').onclick=()=>RUNS.forEach(([id])=>F('cb-'+id).checked=true);
+F('none').onclick=()=>RUNS.forEach(([id])=>F('cb-'+id).checked=false);
+F('go').onclick=()=>runAll(RUNS.map(r=>r[0]).filter(id=>F('cb-'+id).checked));
+function setRun(id,cls,text){const r=F('run-'+id);r.className='run '+(cls||'');F('st-'+id).textContent=text||'';}
+
+let BUSY=false;
+async function runAll(ids){
+  if(BUSY||!ids.length)return;BUSY=true;F('go').disabled=true;
+  const batch=Date.now().toString(36);let i=0,done=0;
+  ids.forEach(id=>setRun(id,'','בתור'));
+  F('prog').textContent='0 מתוך '+ids.length;
+  const worker=async()=>{while(i<ids.length){const id=ids[i++];await runOne(id,batch);done++;F('prog').textContent=done+' מתוך '+ids.length;}};
+  await Promise.all([worker(),worker(),worker()]);
+  BUSY=false;F('go').disabled=false;F('prog').textContent='הסתיים — '+done+' מתוך '+ids.length;
+  loadList();
+}
+function runOne(id,batch){
+  const [,url,mins]=RUNS.find(r=>r[0]===id);
+  return new Promise(resolve=>{
+    const fr=document.createElement('iframe');fr.src=url+(url.includes('?')?'&':'?')+'demolab=1';
+    const t0=Date.now();setRun(id,'running','נפתח...');
+    let finished=false;
+    const tick=setInterval(()=>{if(!finished)F('st-'+id).textContent='מפיק... '+Math.round((Date.now()-t0)/60000)+' דק׳';},30000);
+    const end=(cls,text)=>{if(finished)return;finished=true;clearInterval(tick);clearTimeout(guard);window.removeEventListener('message',onMsg);fr.remove();setRun(id,cls,text);resolve();};
+    const guard=setTimeout(()=>end('error','הזמן עבר ('+mins+' דק׳) — אפשר לנסות שוב'),mins*60000);
+    async function onMsg(e){
+      if(e.source!==fr.contentWindow||e.origin!==location.origin||!e.data||!e.data.sbeDemo)return;
+      const m=e.data;
+      if(m.status==='running'){F('st-'+id).textContent='מפיק מול המודל...';return;}
+      if(m.status==='error'){end('error',m.message||'לא הופק');return;}
+      if(m.status==='done'){
+        F('st-'+id).textContent='שומר...';
+        let saved=0,err='';
+        for(const it of (m.items||[])){
+          try{await api({action:'demoSave',tool:it.tool||id,title:it.title,label:it.label,html:it.html,input:it.input||'',run:batch,order:ORDER.indexOf(id)});saved++;}
+          catch(x){err=x.message;}
+        }
+        end(saved?'done':'error',saved?'נשמר ✓ ('+saved+' '+(saved>1?'מסמכים':'מסמך')+', '+Math.max(1,Math.round((Date.now()-t0)/60000))+' דק׳)':('השמירה לא הצליחה: '+err));
+      }
+    }
+    window.addEventListener('message',onMsg);
+    F('frames').appendChild(fr);
+  });
+}
+
+// ── התיקייה ──
+let ITEMS=[];
+// "טרם פורסם" — רמז לחומר שעוד לא פורסם; מזהירים לפני הצגה בספרייה
+const HIDDEN_HINT=/טרם פורסם|SadeTools2026|SadeTrust2026/;
+async function loadList(){
+  const box=F('list');
+  try{ITEMS=(await api({action:'demoList'})).items||[];}
+  catch(e){box.textContent='';box.appendChild(el('p','warn','לא הצלחנו לטעון את התיקייה ('+e.message+').'));return;}
+  box.textContent='';
+  if(!ITEMS.length){box.appendChild(el('p','muted','התיקייה ריקה. אפשר להתחיל בהפקה למעלה.'));return;}
+  const groups={};ITEMS.forEach(d=>{(groups[d.tool]=groups[d.tool]||[]).push(d);});
+  Object.keys(groups).sort((a,b)=>(ORDER.indexOf(a)+99)%99-(ORDER.indexOf(b)+99)%99).forEach(tool=>{
+    box.appendChild(el('div','tool-h',TOOLS[tool]||tool));
+    groups[tool].forEach(d=>{
+      const c=el('div','card item');
+      const t=el('div','t');t.appendChild(el('b',null,d.title));t.appendChild(el('span','muted','הופק: '+date(d.at)));c.appendChild(t);
+      const v=el('button','btn ghost sm','צפייה');v.onclick=()=>view(d);c.appendChild(v);
+      const p=el('label','pub'+(d.public?' on':''));const cb=el('input');cb.type='checkbox';cb.checked=!!d.public;
+      p.append(cb,document.createTextNode(d.public?'מוצג בספרייה':'רק אצלי'));
+      cb.onchange=async()=>{
+        if(cb.checked){
+          try{const full=await api({action:'demoGet',id:d.id});
+            if(HIDDEN_HINT.test(full.html)&&!confirm('בתוצר מופיע אזכור לחומר שטרם פורסם. להציג אותו בכל זאת בספרייה הפתוחה?')){cb.checked=false;return;}
+          }catch(e){}
+        }
+        try{await api({action:'demoPublish',id:d.id,public:cb.checked});d.public=cb.checked;p.className='pub'+(cb.checked?' on':'');p.lastChild.textContent=cb.checked?'מוצג בספרייה':'רק אצלי';}
+        catch(e){cb.checked=!cb.checked;alert('השינוי לא נשמר: '+e.message);}
+      };
+      c.appendChild(p);
+      const x=el('button','btn danger sm','מחיקה');x.onclick=async()=>{if(!confirm('למחוק את "'+d.title+'"?'))return;try{await api({action:'demoDelete',id:d.id});loadList();}catch(e){alert('המחיקה לא הצליחה: '+e.message);}};
+      c.appendChild(x);
+      box.appendChild(c);
+    });
+  });
+}
+async function view(d){
+  F('dlgT').textContent=d.title;F('dlgInT').textContent=d.input||'—';F('dlgIn').hidden=!d.input;
+  F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:20px">טוען...</p>';F('dlg').showModal();
+  try{const full=await api({action:'demoGet',id:d.id});F('dlgF').srcdoc=full.html;}
+  catch(e){F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:20px">לא הצלחנו לטעון את התוצר.</p>';}
+}
+F('dlgX').onclick=()=>F('dlg').close();
+// הדפסה: עותק נקי של המסמך (בלי סקריפטים ובלי מאזיני אירועים) בחלון חדש
+function clean(html){
+  const d=new DOMParser().parseFromString(html,'text/html');
+  d.querySelectorAll('script,iframe,object,embed').forEach(n=>n.remove());
+  d.querySelectorAll('*').forEach(n=>[...n.attributes].forEach(a=>{if(/^on/i.test(a.name)||/^\s*javascript:/i.test(a.value))n.removeAttribute(a.name);}));
+  return '<!doctype html>'+d.documentElement.outerHTML;
+}
+F('dlgPrint').onclick=()=>{const w=window.open('','_blank');if(!w)return;w.document.open();w.document.write(clean(F('dlgF').srcdoc));w.document.close();setTimeout(()=>w.print(),900);};
+loadList();
+})();
+</script>
+</body>
+</html>

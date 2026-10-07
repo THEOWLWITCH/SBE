@@ -167,17 +167,10 @@
     if(p.isCandidate)renderCandidate();else renderActivity();renderCoach();updateControls();notice('הנוסח נבחר. בדקי מחדש את רכיבי החוסן והמיומנויות של השלב לפני הייצוא.');
   }
   function renderFacilitationGuide() {
-    const host=clear($('facilitation-guide'));
-    const topics=[
-      ['מכינים תהליך, לא רק תוכן','בחרי תוצאה אפשרית, בדקי זמן ומרחב ונסי את ההוראות בעצמך. הגדירי מה אפשר לבחור ואיך משתתפים.','IAFCompetencies2026'],
-      ['פותחים בהסכמות ובהוראה קצרה','הציגי את המטרה, הזמן ודרכי ההשתתפות. בקשי ממשתתפת לנסח את ההוראה במילים שלה ובדקי שהקבוצה מבינה.','IAFCompetencies2026'],
-      ['מזמינים קול בלי לכפות חשיפה','שלבי חשיבה שקטה, כתיבה וזוגות. תני מקום לקולות שונים ואפשרי לבחור לא לשתף סיפור אישי.','IAFCompetencies2026'],
-      ['מקשיבים ומבררים','שאלי מה קרה בפעולה ומה אפשר ללמוד. שקפי את מה ששמעת ובדקי עם הקבוצה אם הבנת.','IAFCompetencies2026'],
-      ['מתמודדים עם קושי בתהליך','בשתיקה אפשר לתת זמן או דרך כתובה. במחלוקת הזמיני הקשבה והחזירי להסכמות; בפגיעה עצרי ובקשי תמיכה מתאימה.','IAFCompetencies2026'],
-      ['סוגרים ומכינים המשך','סכמי עם הקבוצה פעולה שנלמדה, תפקידים וצעד ראשון. בהמשך בדקו מה היה ישים ומה כדאי לשנות.','IAFCompetencies2026'],
-      ['כשהמשתתפים בני נוער','התאימי גיל, מבנה, בחירה ותמיכה. בדקי שההשתתפות נגישה ובטוחה והיעזרי במבוגר ובנהלי המסגרת לפי הצורך.','UnicefAdolescentKit2026']
-    ];
-    topics.forEach(([title,text,key])=>{const card=el('details','guide-topic');card.append(el('summary','',title),el('p','',text));const source=window.SBE_ADVISOR_SOURCES?.byKey[key];if(source)card.append(safeLink(source.url,source.apa));host.append(card);});
+    // איך להנחות קבוצה — כלי נפרד (ננה). מציגים קישור רק למי שננה פתוחה לה/לו, או למנהלת המערכת.
+    const n=$('nana-link');if(!n)return;let ok=false;
+    try{ok=sessionStorage.getItem('sbe.session.homeUrl')==='admin.html?role=sys'||(JSON.parse(sessionStorage.getItem('sbe.session.perms')||'[]')||[]).includes('nana');}catch(e){}
+    n.hidden=!ok;
   }
   function cleanActivity(value) {
     // Work-file imports have the same explicit data boundary as generated activities.
@@ -233,7 +226,8 @@
     s.mapping=safeMapping(value.mapping); s.currentId=typeof value.currentId==='string'?value.currentId:null;
     return s;
   }
-  function fillBrief() { BRIEF_FIELDS.forEach(k=>{const n=$(k);if(n)n.value=state.brief[k]===undefined?'':state.brief[k];}); $('brief-confirmed').checked=state.confirmed; }
+  function fillBrief() { const OLD_FORMAT={activity:'פעילות',mission:'משימה יומיומית',process:'תהליך של כמה מפגשים'}; if(OLD_FORMAT[state.brief.format])state.brief.format=OLD_FORMAT[state.brief.format]; // צורת הפעולה — שדה פתוח (07/10/2026)
+    BRIEF_FIELDS.forEach(k=>{const n=$(k);if(n)n.value=state.brief[k]===undefined?'':state.brief[k];}); $('brief-confirmed').checked=state.confirmed; }
   function collectBrief() { BRIEF_FIELDS.forEach(k=>{const n=$(k);if(n)state.brief[k]=NUMBERS.has(k)?Number(n.value):n.value;}); return state.brief; }
   function markBriefChanged(field) {
     collectBrief(); state.confirmed=false; $('brief-confirmed').checked=false;
@@ -255,6 +249,7 @@
     const questions=(state.recommendation&&state.recommendation.questions)||[];
     const answered=!questions.length||String(state.brief.clarifications||'').trim().length>0;
     $('generate-activity').disabled=busy||!state.confirmed||!answered;
+    $('to-build').disabled=busy;
     $('adapt-activity').disabled=busy||!state.activity;
     $('generate-variant').disabled=busy||!state.activity||!$('variant-opt-in').checked;
     $('accept-candidate').disabled=busy||!candidate||D.validateActivity(candidate.activity,candidate.brief).length>0;
@@ -481,7 +476,7 @@
   }
   function generateVariant() {
     if(!state.activity||!$('variant-opt-in').checked){error('בחרו במפורש להכין גרסה מקושרת.');return;}
-    const b=D.newBrief({goal:state.activity.purpose,focus:state.activity.focus,participants:$('variant-participants').value,participantAge:$('variant-age').value,count:Number($('variant-count').value),duration:Number($('variant-duration').value),sessions:1,format:'activity',language:state.brief.language||'עברית',youthMode:'adult-supported',startingPoint:'גרסה מקושרת לתרגול המטרה המשותפת'});
+    const b=D.newBrief({goal:state.activity.purpose,focus:state.activity.focus,participants:$('variant-participants').value,participantAge:$('variant-age').value,count:Number($('variant-count').value),duration:Number($('variant-duration').value),sessions:1,format:'פעילות',language:state.brief.language||'עברית',youthMode:'adult-supported',startingPoint:'גרסה מקושרת לתרגול המטרה המשותפת'});
     const problems=briefProblems(b);if(problems.length){error(problems.join('\n'));return;}
     operation('בונים הצעה לגרסה המקושרת מהמטרה המשותפת…',async()=>{const data=await api({action:'generate',brief:b});if(!data.activity)throw new Error('לא התקבלה גרסה מקושרת.');setCandidate({kind:'variant',brief:b,activity:D.publicActivity(data.activity)});renderCandidate();notice('הגרסה המקושרת מוכנה לבדיקה ולעריכה. היא תישמר רק אם תאשרו אותה.');$('candidate-panel').scrollIntoView({block:'start'});});
   }
@@ -542,9 +537,9 @@
     $('brief-form').addEventListener('submit',e=>e.preventDefault());$('brief-form').addEventListener('input',e=>{if(BRIEF_FIELDS.includes(e.target.id))markBriefChanged(e.target.id);});$('brief-form').addEventListener('change',e=>{if(e.target.tagName==='SELECT')markBriefChanged(e.target.id);});
     $('focus').addEventListener('change',()=>chooseFocus($('focus').value));$('clarifications').addEventListener('input',()=>markBriefChanged('clarifications'));
     $('coach-stage').addEventListener('change',()=>{state.coach.stage=$('coach-stage').value;coachTarget=coachTarget?.isCandidate&&candidate?{stepId:null,isCandidate:true}:null;coachProposal=null;renderCoach();persist();});
-    $('coach-concerns').addEventListener('input',()=>{setCoachConcerns($('coach-concerns').value);persist();});$('ask-coach').addEventListener('click',askCoach);$('ask-facilitation').addEventListener('click',()=>openCoach('facilitation'));renderFacilitationGuide();
+    $('coach-concerns').addEventListener('input',()=>{setCoachConcerns($('coach-concerns').value);persist();});$('ask-coach').addEventListener('click',askCoach);renderFacilitationGuide();
     $('brief-confirmed').addEventListener('change',()=>{collectBrief();const problems=briefProblems(state.brief);if($('brief-confirmed').checked&&problems.length){error(problems.join('\n'));$('brief-confirmed').checked=false;}state.confirmed=$('brief-confirmed').checked;updateControls();});
-    $('analyze-brief').addEventListener('click',analyze);$('generate-activity').addEventListener('click',generate);$('example-activity').addEventListener('click',example);
+    $('analyze-brief').addEventListener('click',analyze);$('to-build').addEventListener('click',()=>{$('focus-section').scrollIntoView({behavior:'smooth',block:'start'});analyze();});$('generate-activity').addEventListener('click',generate);$('example-activity').addEventListener('click',example);
     $('add-source').addEventListener('click',()=>{state.brief.sources.push({id:uid('source'),name:'',role:'context',content:'',url:'',date:'',scope:'',population:'',version:'1'});state.confirmed=false;$('brief-confirmed').checked=false;state.recommendation=null;renderSources();renderRecommendation();updateControls();persist();});$('source-file').addEventListener('change',()=>importSource($('source-file').files[0]));
     $('save-activity').addEventListener('click',saveActivity);$('download-work').addEventListener('click',downloadWork);$('import-work').addEventListener('change',()=>importWork($('import-work').files[0]));$('print-kit').addEventListener('click',()=>printActivity(false));$('print-participant').addEventListener('click',()=>printActivity(true));
     $('adapt-activity').addEventListener('click',adapt);$('generate-variant').addEventListener('click',generateVariant);$('variant-opt-in').addEventListener('change',updateControls);$('accept-candidate').addEventListener('click',acceptCandidate);$('reject-candidate').addEventListener('click',()=>{setCandidate(null);renderCandidate();notice('הגרסה הקיימת נשארה.');});

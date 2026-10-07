@@ -283,7 +283,7 @@ function renderEntry(){
   const admBtn = el("button",{class:"switchlink"},"כניסת ניהול");
   admBtn.addEventListener("click", () => { alt.hidden = false; alt.textContent = ""; alt.append(buildAdminField("sys")); });
   links.append(admBtn, el("span",{class:"sep"},"·"),
-    el("a",{href:"about.html"},"אודות המערכת"), el("span",{class:"sep"},"·"), el("a",{href:"renew.html"},"מנוי — חידוש או רכישה"));
+    el("a",{href:"about.html"},"אודות המערכת"), el("span",{class:"sep"},"·"), el("a",{href:"examples.html"},"תוצרים לדוגמה"), el("span",{class:"sep"},"·"), el("a",{href:"renew.html"},"מנוי — חידוש או רכישה"));
   minn.append(links, alt);
   more.append(minn);
   view.append(more);

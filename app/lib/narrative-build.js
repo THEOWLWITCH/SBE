@@ -253,6 +253,7 @@
 
     saveWorkshopScenario(scn, track);
     const { files } = window.SBE_DOC.renderRoleDocs(scn);
+    if (window.SBE_DEMO_FILES) window.SBE_DEMO_FILES(files, scn); // מעבדת הדמו (lib/demo-hook.js)
     show("התוצר — " + scn.name,
       docsPanel({ files, mock: false, saveKey: "sbe." + track + ".built.v1", meta: { id: scn.id, name: scn.name, creator: scn.creator, date: scn.date } }));
   }
@@ -375,6 +376,7 @@
     const prefix = (scn.id || "scenario") + "-";
     const named = files.map(([n, h, l]) => [prefix + n, h, l]);
     window._sbeScenarioBuilt = true;
+    if (window.SBE_DEMO_FILES) window.SBE_DEMO_FILES(named, scn); // מעבדת הדמו (lib/demo-hook.js)
     show("התוצר — " + scn.name,
       docsPanel({ files: named, mock: false, saveKey: "sbe.edu.built.v1", meta: { id: scn.id, name: scn.name } }));
   }

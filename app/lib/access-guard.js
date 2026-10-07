@@ -76,7 +76,7 @@
   var base = inProducts ? "../" : "";
 
   var q = new URLSearchParams(home.split("?")[1] || "");
-  var ALL_USERS = ["entry.html", "index.html", "sources-library.html"];
+  var ALL_USERS = ["entry.html", "index.html", "sources-library.html", "examples.html"];
   var WORKSHOP = {
     // תוצרי הסימולציה (גרסת המתנסה/השחקנית/המנחה, כרטיס שחקנית) — רק למנהלת המערכת ולמנחות הסימולציה (02/10/2026).
     trainee: ["observation-sheet.html", "practice.html", "feedback.html",
@@ -149,6 +149,8 @@
 
   // טופס המשוב מקישור/QR של סדנה (?w=) — פתוח גם בלי כניסה: המשתתפות סורקות בטלפון בסוף התחקיר.
   // השרת מקבל משוב רק לסדנה שנפתחה (wfSubmit), ולא חושף משובים של אחרים.
+  // ספריית התוצרים לדוגמה — פתוחה לכל מי שמתעניין/ת, גם בלי כניסה (רק מה שמנהלת המערכת סימנה להצגה).
+  if (page === "examples.html") return;
   if (page === "feedback.html" && /[?&]w=[a-z0-9]{8,32}(&|$)/.test(location.search)) return;
   // כניסה שהסתיימה (07/10/2026): האסימון החתום תקף 12 שעות, אבל לשונית פתוחה שומרת אותו גם אחר כך —
   // והשרת דוחה אותו ("אין הרשאה פעילה"). חוזרים למסך הכניסה עם הסבר, במקום הודעת הרשאה מבלבלת.
