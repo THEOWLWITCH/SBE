@@ -135,9 +135,8 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
   </div>
   <div class="two">
     <div><label for="fullName">שם מלא *</label><input id="fullName" maxlength="60" autocomplete="name"></div>
-    <div><label for="instSel">שם המוסד *</label>
-      <select id="instSel"><option value="">— טוען את רשימת המוסדות... —</option></select>
-      <input id="instName" maxlength="80" autocomplete="organization" placeholder="שם המוסד החדש" hidden style="margin-top:6px"></div>
+    <div><label for="instName">שם המוסד *</label>
+      <input id="instName" maxlength="80" autocomplete="organization" placeholder="השם המלא של המוסד"></div>
     <div><label for="email">מייל *</label><input id="email" type="email" maxlength="80" dir="ltr" autocomplete="email"></div>
     <div><label for="phone">טלפון נייד *</label><input id="phone" type="tel" maxlength="15" dir="ltr" autocomplete="tel" placeholder="05X-XXXXXXX"></div>
   </div>
@@ -167,41 +166,20 @@ SYSTEMS.forEach(([l, ps], i) => {
   cb.dataset.perms = ps.join(",");
   const lb = document.createElement("label"); lb.append(cb, l); $("systems").append(lb);
 });
-// המוסד: רשימה נפתחת של המוסדות שיש להם מנוי, ו"מוסד חדש" — שדה טקסט.
-const NEW_INST = "__new__";
-function syncType(){
-  const isNew = document.querySelector("input[name=type]:checked").value === "new";
-  if (isNew) $("instSel").value = NEW_INST;
-  $("instName").hidden = $("instSel").value !== NEW_INST;
-  $("codeWrap").hidden = isNew;
-}
+// המוסד — שדה טקסט חופשי. אין רשימה ציבורית של המוסדות (07/10/2026): מנהלת המערכת מזהה את המוסד בבדיקה.
+function syncType(){ $("codeWrap").hidden = document.querySelector("input[name=type]:checked").value === "new"; }
 document.querySelectorAll("input[name=type]").forEach(r => r.addEventListener("change", syncType));
-$("instSel").addEventListener("change", () => {
-  if ($("instSel").value === NEW_INST) document.querySelector("input[name=type][value=new]").checked = true;
-  else if ($("instSel").value) document.querySelector("input[name=type][value=renew]").checked = true;
-  syncType();
-});
-fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "renewInstitutions" }) })
-  .then(r => r.json()).then(d => d.names || []).catch(() => [])
-  .then(names => {
-    const sel = $("instSel"); sel.textContent = "";
-    const add = (v, t) => sel.append(Object.assign(document.createElement("option"), { value: v, textContent: t }));
-    add("", "— בחרו מוסד —");
-    names.forEach(n => add(n, n));
-    add(NEW_INST, "מוסד חדש / לא ברשימה");
-    if (!names.length) sel.value = NEW_INST;
-    syncType();
-  });
+syncType();
 $("send").addEventListener("click", async () => {
   const systems = [...document.querySelectorAll("#systems input[data-perms]:checked")].flatMap(cb => cb.dataset.perms.split(","));
   const phone = $("phone").value.replace(/[^\d+]/g, "");
   const type = document.querySelector("input[name=type]:checked").value;
-  const instName = $("instSel").value === NEW_INST ? $("instName").value.trim() : $("instSel").value;
+  const instName = $("instName").value.trim();
   const body = { action: "renewRequest", type, fullName: $("fullName").value.trim(), instName,
     email: $("email").value.trim(), phone, systems, other: "", period: document.querySelector("input[name=period]:checked").value,
     code: type === "new" ? "" : $("code").value.trim() };
   const msg = $("msg"); msg.className = "msg err";
-  if (!body.fullName || !body.instName) { msg.textContent = "כדי לשלוח, נשמח לשם מלא ולמוסד (או להקליד מוסד חדש)."; return; }
+  if (!body.fullName || !body.instName) { msg.textContent = "כדי לשלוח, נשמח לשם מלא ולשם המוסד."; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { msg.textContent = "כתובת המייל לא תקינה."; return; }
   if (!/^(\+972|0)5\d{8}$/.test(phone)) { msg.textContent = "מספר הטלפון הנייד לא תקין (למשל 050-1234567)."; return; }
   if (!systems.length) { msg.textContent = "כדי לשלוח, סמנו לפחות מערכת אחת."; return; }

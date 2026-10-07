@@ -337,11 +337,7 @@ async function handleCodes(store, body, isSys) {
   // בקשת חידוש מנוי — ציבורית (גם כשהמנוי כבר הסתיים). אין סליקה: הבקשה נשמרת,
   // מנהלת המערכת מתקשרת להאריך ולקבל פרטי תשלום. המוסד מזוהה לפי קוד (אם
   // הוקלד) או לפי שם מדויק; אחרת נשמר כ"לא מזוהה". בלי טקסט חופשי.
-  // שמות המוסדות שיש להם מנוי — לרשימה הנפתחת בטופס (ציבורי: שמות בלבד).
-  if (action === 'renewInstitutions') {
-    const list = await getInstitutions(store);
-    return [200, { names: list.filter((i) => i.active !== false).map((i) => i.name).sort((a, b) => a.localeCompare(b, 'he')) }];
-  }
+  // אין רשימה ציבורית של שמות המוסדות (07/10/2026) — שם המוסד בטופס הוא טקסט חופשי.
 
   if (action === 'renewRequest') {
     const list = await getInstitutions(store);
@@ -1319,7 +1315,7 @@ export async function handleAccess(store, body) {
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
 
   if (['renewRequest', 'codesList', 'codeCreate', 'codeRevoke', 'codeUse', 'setSubscription', 'renewSubscription',
-    'getSettings', 'setSettings', 'renewList', 'renewDone', 'renewApprove', 'renewInstitutions'].includes(action)) {
+    'getSettings', 'setSettings', 'renewList', 'renewDone', 'renewApprove'].includes(action)) {
     const out = await handleCodes(store, body, isSys);
     if (out) return out;
   }
