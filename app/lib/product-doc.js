@@ -45,7 +45,9 @@
     const parts = []; let cur = null;
     String(text || "").replace(/\r/g, "").split("\n").forEach((raw) => {
       const line = raw.trim(); let m;
-      if ((m = line.match(/^#{1,6}\s*(.+)$/)) || (m = line.match(/^\*\*([^*]+)\*\*[:：]?$/))) { cur = { t: m[1].replace(/\*\*/g, "").trim(), b: [] }; parts.push(cur); return; }
+      if ((m = line.match(/^#{1,6}\s*(.+)$/)) || (m = line.match(/^\*\*([^*]+)\*\*[:：]?$/))) { cur = { t: m[1].replace(/\*\*/g, "").trim().replace(/[:：]$/, ""), b: [] }; parts.push(cur); return; }
+      // "**כותרת** — תוכן" / "**כותרת**: תוכן" בשורה אחת — גם זו כותרת (קצרה), והתוכן נכנס לשורה שלה
+      if ((m = line.match(/^\*\*([^*]{2,40})\*\*\s*[:：—–-]\s*(.+)$/))) { cur = { t: m[1].replace(/[:：]$/, "").trim(), b: [m[2]] }; parts.push(cur); return; }
       if (!cur) { if (!line) return; cur = { t: "", b: [] }; parts.push(cur); }
       cur.b.push(raw);
     });

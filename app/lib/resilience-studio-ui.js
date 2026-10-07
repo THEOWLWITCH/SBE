@@ -513,7 +513,7 @@
       if(includeReason&&activity.selectionReason)before.unshift(['הסבר הבחירה',rich(activity.selectionReason)]);
       section('לפני שמתחילים');n.append(table('kit-two',null,before));
       const fp=a.facilitationPlan||{};section('תכנית ההנחיה');n.append(table('kit-two',null,D.FACILITATION_FIELDS.filter(k=>String(fp[k]||'').trim()).map(k=>[FACILITATION_LABELS[k],rich(fp[k])])));
-    } else paragraph(n,'דרכים להשתתף ללא חשיפה אישית',a.participationAlternative);
+    } else if(String(a.participationAlternative||'').trim()) n.append(table('kit-two',null,[['דרכים להשתתף ללא חשיפה אישית',rich(a.participationAlternative)]]));
     (a.sessions||[]).forEach((session,si)=>{
       const block=el('section','kit-session');
       const mins=(session.steps||[]).reduce((t,x)=>t+(Number(x.minutes)||0),0);
@@ -544,7 +544,9 @@
       // רשימות הרכיבים והמיומנויות — כטבלה: כותרת בעמודה אחת, הפריטים בשנייה
       const crow=[];let cur=null;[...cb.children].forEach(ch=>{if(/^H[2-4]$/.test(ch.tagName)){cur=[ch.textContent,el('div')];crow.push(cur);}else if(cur)cur[1].append(ch);});
       n.append(crow.length?table('kit-two',null,crow):cb);const basis=renderBasis(a);basis.querySelectorAll('h3,h4').forEach(h=>{h.className='kit-sub';});n.append(basis);
-    } else {const cb=claimsBox(a,null,'print');cb.querySelectorAll('a').forEach(link=>link.replaceWith(document.createTextNode('')));n.append(cb);}
+    } else {const cb=claimsBox(a,null,'print');cb.querySelectorAll('a').forEach(link=>link.replaceWith(document.createTextNode('')));
+      const crow=[];let cur=null;[...cb.children].forEach(ch=>{if(/^H[2-4]$/.test(ch.tagName)){cur=[ch.textContent,el('div')];crow.push(cur);}else if(cur)cur[1].append(ch);});
+      if(crow.length){section('מה מתרגלים');n.append(table('kit-two',null,crow));}else n.append(cb);}
     return n;
   }
   function printActivity(participantOnly,activity,brief) {

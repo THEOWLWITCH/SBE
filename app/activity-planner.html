@@ -2518,6 +2518,7 @@ tr{break-inside:avoid;page-break-inside:avoid;} thead{display:table-header-group
 thead th{background:#2E5A7D;color:#fff;}
 table.kv th{width:22%;background:#EDEFF1;}
 table.flow tbody th{width:15%;background:#EDEFF1;} table.flow td.n{width:9%;}
+table.crit-t tbody th{width:22%;background:#EDEFF1;} table.crit-t tr.na td{color:#5C6771;} tr.fact-row.gap th{color:#8C3A34;} tr.fact-row.check th{color:#8F5F2E;} tr.fact-row.ok th{color:#3F6B52;}
 table.end thead th{background:#4A6B5A;}
 td p{margin:0 0 4px;} td ol,td ul{margin:0;}
 .fact{padding:5px 9px;border-radius:5px;margin-bottom:5px;font-size:13.5px;}
@@ -2525,7 +2526,7 @@ td p{margin:0 0 4px;} td ol,td ul{margin:0;}
 .fact.ok{background:#DFE9E2;color:#2F4F3E;} .fact.gap{background:#F5E4E2;color:#6E2B26;} .fact.check{background:#F5EAD9;color:#6B4520;}
 .crit{border-bottom:1px solid #E4E7EA;padding:8px 0 10px;break-inside:avoid;page-break-inside:avoid;}
 .crit.na h4{color:#5C6771;}
-.crit .na-tag{font-size:11px;font-weight:600;color:#5C6771;background:#EDEFF1;border-radius:9px;padding:1px 7px;margin-inline-start:6px;}
+.na-tag{display:block;margin-top:3px;width:max-content;font-size:11px;font-weight:600;color:#5C6771;background:#EDEFF1;border-radius:9px;padding:1px 7px;margin-inline-start:6px;}
 .note{font-size:12.5px;color:#5C6771;background:#EDEFF1;border-radius:6px;padding:8px 11px;margin:6px 0 12px;}
 .warn{font-size:12.5px;color:#6B4520;background:#F5EAD9;border-radius:6px;padding:8px 11px;margin:6px 0 12px;}
 .ft{margin-top:26px;font-size:11px;color:#5C6771;border-top:1px solid #CDD3D8;padding-top:8px;}
@@ -2619,27 +2620,31 @@ function reportHTML(facts, ai){
   const title = str(seq.topic) || "תכנון רצף מפגשים";
   let h = docHeader("דו״ח ניתוח · תכנון רצף מפגשים", title);
   const tag = { ok:"✓ נבדק", gap:"לתיקון", check:"לבדיקה" };
+  // טבלאות (07/10/2026, "קו אחיד"): בדיקה · מה נמצא; קריטריון · מה עולה · הצעות; סיכום — כותרת | תוכן
   h += `<h2>בדיקות מכניות</h2><p class="note">עובדות שהמערכת בודקת בעצמה — שדות, סכומי זמנים, ואזכורים של דברים שהוגדרו כמגבלה. ״לבדיקה״ פירושו שנמצא משהו שכדאי לוודא, לא הכרעה.</p>`;
-  h += facts.length ? facts.map(f => `<div class="fact ${f.type}"><b>${tag[f.type]}</b>${esc(f.text)}</div>`).join("")
-    : `<div class="fact ok"><b>✓ נבדק</b>לא נמצאו פערים מכניים.</div>`;
+  const fx = facts.length ? facts : [{ type:"ok", text:"לא נמצאו פערים מכניים." }];
+  h += `<table class="kv"><tbody>${fx.map(f => `<tr class="fact-row ${f.type}"><th>${tag[f.type]}</th><td>${esc(f.text)}</td></tr>`).join("")}</tbody></table>`;
   if (ai) {
     h += `<h2>משוב מקצועי</h2><p class="note">קריאה מקצועית של המודל, על סמך התכנון כולו. ללא ציון מספרי.</p>`;
-    (ai.criteria || []).forEach(c => {
-      const na = c.relevant === false;
-      h += `<div class="crit${na ? " na" : ""}"><h4>${esc(c.title)}${na ? `<span class="na-tag">לא רלוונטי לתכנון הזה</span>` : ""}</h4>`;
-      if (str(c.assessment)) h += `<p>${nl(c.assessment)}</p>`;
-      if (!na && Array.isArray(c.suggestions) && c.suggestions.length) h += `<div class="lbl">הצעות לשיפור</div><ul>${c.suggestions.map(x => `<li>${nl(x)}</li>`).join("")}</ul>`;
-      h += `</div>`;
-    });
+    const crit = (ai.criteria || []);
+    if (crit.length) {
+      h += `<table class="crit-t"><thead><tr><th>הקריטריון</th><th>מה עולה מהתכנון</th><th>הצעות לשיפור</th></tr></thead><tbody>`;
+      crit.forEach(c => {
+        const na = c.relevant === false;
+        const sug = !na && Array.isArray(c.suggestions) && c.suggestions.length ? `<ul>${c.suggestions.map(x => `<li>${nl(x)}</li>`).join("")}</ul>` : "—";
+        h += `<tr${na ? ' class="na"' : ""}><th>${esc(c.title)}${na ? `<span class="na-tag">לא רלוונטי לתכנון הזה</span>` : ""}</th><td>${str(c.assessment) ? nl(c.assessment) : "—"}</td><td>${sug}</td></tr>`;
+      });
+      h += `</tbody></table>`;
+    }
     const sm = ai.summary || {};
-    h += `<h2>סיכום — ללמידה לתכנון הבא</h2>`;
-    if (str(sm.impression)) h += `<div class="lbl">התרשמות כללית</div><p>${nl(sm.impression)}</p>`;
-    const ul = (label, arr) => { if (Array.isArray(arr) && arr.length) h += `<div class="lbl">${label}</div><ul>${arr.map(x => `<li>${nl(x)}</li>`).join("")}</ul>`; };
-    ul("חוזקות התכנון", sm.strengths); ul("חולשות התכנון", sm.weaknesses); ul("הצעות כלליות לשיפור התכנון", sm.suggestions);
+    const rows = [];
+    if (str(sm.impression)) rows.push(["התרשמות כללית", nl(sm.impression)]);
+    const ul = (label, arr) => { if (Array.isArray(arr) && arr.length) rows.push([label, `<ul>${arr.map(x => `<li>${nl(x)}</li>`).join("")}</ul>`]); };
+    ul("חוזקות התכנון", sm.strengths); ul("מה אפשר לחזק בתכנון", sm.weaknesses); ul("הצעות כלליות לשיפור התכנון", sm.suggestions);
+    if (rows.length) h += `<h2>סיכום — ללמידה לתכנון הבא</h2><table class="kv"><tbody>${rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</tbody></table>`;
   } else {
-    h += `<h2>משוב מקצועי</h2><p class="warn">אין חיבור למודל כרגע. המשוב על הקריטריונים דורש קריאה אמיתית של התוכן, ולכן לא מוצג כאן שום ״✓ תקין״ שלא נבדק. במקומו — שאלות לבדיקה עצמית, לפי אותם קריטריונים:</p><ul>`;
-    REPORT_CRITERIA.forEach(c => { h += `<li><b>${esc(c.t)}:</b> ${esc(c.ask)}</li>`; });
-    h += `</ul>`;
+    h += `<h2>משוב מקצועי</h2><p class="warn">אין חיבור למודל כרגע. המשוב על הקריטריונים דורש קריאה אמיתית של התוכן, ולכן לא מוצג כאן שום ״✓ תקין״ שלא נבדק. במקומו — שאלות לבדיקה עצמית, לפי אותם קריטריונים:</p>`;
+    h += `<table class="kv"><tbody>${REPORT_CRITERIA.map(c => `<tr><th>${esc(c.t)}</th><td>${esc(c.ask)}</td></tr>`).join("")}</tbody></table>`;
   }
   h += `<div class="ft">${SBE_CREDIT_HTML} · ${esc(fmtDate(today()))}</div>`;
   return docShell("דו״ח ניתוח — " + title, h);
