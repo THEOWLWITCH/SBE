@@ -934,25 +934,6 @@ async function computeFeedbackAI(text, age, criteriaList, mode, task, kind) {
   return parsed;
 }
 
-// נפילה חזרה היוריסטית — כנה ומינימלית בכוונה (לא מתיימרת לקרוא תוכן),
-// אותו עיקרון כמו כל מנגנון מוקאפ אחר בפרויקט: מתויגת בגלוי, לא מזויפת.
-function computeFeedbackMock(text, criteriaList) {
-  const words = text.trim().split(/\s+/).filter(Boolean);
-  const sentences = text.split(/[.!?]/).filter(s => s.trim());
-  const avgWordsPerSentence = sentences.length ? (words.length / sentences.length).toFixed(1) : "0";
-  return {
-    overall: "מצב הדגמה — זו לא קריאה אמיתית של התוכן, רק נתונים גולמיים על הטקסט.",
-    criteria: criteriaList.map(c => ({
-      title: c.v,
-      strengths: [],
-      improvements: [
-        "אין חיבור למודל כרגע, ולכן אי אפשר לתת משוב אמיתי על \"" + c.v + "\".",
-        "נתון טכני בלבד: " + words.length + " מילים, " + sentences.length + " משפטים, בממוצע כ-" + avgWordsPerSentence + " מילים למשפט.",
-      ],
-    })),
-  };
-}
-
 let LAST_FEEDBACK = null;
 function renderFeedback(fb, mock) {
   const body = $("dlgB"); body.textContent = "";
@@ -1036,10 +1017,14 @@ $("bReview").addEventListener("click", async (e) => {
     let fb, mock = false;
     try { fb = await computeFeedbackAI(text, age, criteriaList, critMode, val("taskText"), fbKind); }
     catch (err) {
-      console.warn("משוב AI לא זמין — נופלת לנתונים גולמיים. סיבה:", err.message);
+      // בלי חיבור למודל — אין משוב (לא נתונים גולמיים במקום משוב אמיתי). העבודה נשארת בטופס.
+      console.warn("משוב AI לא זמין:", err.message);
       setAIStatus("mock");
-      fb = computeFeedbackMock(text, criteriaList.length ? criteriaList : [{ v:"התאמה להנחיות המנחה" }]);
-      mock = true;
+      $("dlgH").textContent = "המשוב לא הופק";
+      const b = $("dlgB"); b.textContent = "";
+      b.append(el("p", {}, "אין כרגע חיבור למודל, ולכן המשוב לא הופק — המערכת לא מציגה נתונים טכניים במקום משוב אמיתי. העבודה שלך נשמרה בטופס. אפשר לנסות שוב בעוד דקה–שתיים."));
+      if (!$("dlg").open) $("dlg").showModal();
+      return;
     }
     LAST_FEEDBACK = { fb, mock, age, kind: fbKind, criteriaList: criteriaList.map(c => ({ v:c.v })), creator: val("creatorName"), at: new Date().toISOString() };
     renderFeedback(fb, mock);
@@ -1449,3 +1434,4 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
   });
 })();
 </script>
+<script src="lib/demo-hook.js"></script>

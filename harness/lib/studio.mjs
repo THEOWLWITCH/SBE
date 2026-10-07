@@ -266,7 +266,7 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
   }
   if(brief.crisis==='active-danger') return [422,{error:'בסכנה מיידית עוצרים את הפעילות ופועלים לפי הנחיות הבטיחות המוסמכות למקום. נשארים עם מי שבסכנה ומזעיקים עזרה; חוזרים לתכנון לאחר שהמצב בטוח.'}];
   const apiKey=process.env.OPENAI_API_KEY;
-  if(!apiKey) return [503,{error:'יצירת AI אינה זמינה כעת. אפשר לעבוד עם דוגמת טיוטה ולשמור אותה.'}];
+  if(!apiKey) return [503,{error:'אין כרגע חיבור למודל, ולכן לא הופק תוצר. מה שמילאת נשמר. אפשר לנסות שוב בהמשך.'}];
   const model=process.env.STUDIO_MODEL || 'gpt-6.1-sol';
   const effort=process.env.STUDIO_REASONING_EFFORT || 'medium';
   if(!EFFORTS.includes(effort)) return [503,{error:'הגדרת המודל אינה תקינה.'}];

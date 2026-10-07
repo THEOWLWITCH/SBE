@@ -2519,7 +2519,8 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;}
 function docShell(title, inner){
   return `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(title)}</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
-<style>${DOC_CSS}</style></head><body><article>${inner}</article></body></html>`;
+<style>${DOC_CSS}</style></head><body><article>${inner}</article>
+</body></html>`;
 }
 function docHeader(kind, title){
   const logo = document.getElementById("brandLogo").src;
@@ -3557,3 +3558,4 @@ body.sbe-hasnav{padding-top:38px;}
   });
 })();
 </script>
+<script src="lib/demo-hook.js"></script>

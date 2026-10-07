@@ -54,7 +54,7 @@
               <label>מספר משתתפים <span class="req" aria-hidden="true">*</span><input id="count" name="count" type="number" min="2" step="1" value="8" required></label>
               <label>זמן לכל מפגש, בדקות <span class="req" aria-hidden="true">*</span><input id="duration" name="duration" type="number" min="5" step="1" value="40" required></label>
               <label>מספר מפגשים <span class="req" aria-hidden="true">*</span><input id="sessions" name="sessions" type="number" min="1" step="1" value="1" required></label>
-              <label>צורת הפעולה<select id="format" name="format"><option value="activity">פעילות</option><option value="mission">משימה יומיומית</option><option value="process">תהליך של כמה מפגשים</option></select></label>
+              <label>צורת הפעולה<input id="format" name="format" type="text" list="format-list" maxlength="80" placeholder="בוחרים מהרשימה או כותבים — למשל טקס"><datalist id="format-list"><option value="פעילות"><option value="משימה יומיומית"><option value="תהליך של כמה מפגשים"><option value="טקס"><option value="אירוע קהילתי"><option value="מפגש הורים"></datalist></label>
               <label>מידת ההיכרות<input id="familiarity" name="familiarity" type="text" placeholder="קבוצה חדשה או ותיקה, היכרות חלקית…"></label>
               <label>תפקידים וקשרים<input id="relationships" name="relationships" type="text" placeholder="משתתפים, מובילים, שותפים, תלות בתפקידים…"></label>
               <label>הקשר הפעולה<input id="context" name="context" type="text" placeholder="בבית, בעבודה, במסגרת קהילתית…"></label>
@@ -75,6 +75,8 @@
             <div class="actions"><button id="add-source" class="btn secondary" type="button">+ מקור נוסף</button><label class="btn secondary file-label">צירוף טקסט<input id="source-file" type="file" accept=".txt,.md,.json,text/plain,text/markdown,application/json"></label></div>
             <p class="muted">ייבוא תוכן: TXT, Markdown או JSON. לקובץ אחר העתיקו לכאן את הטקסט הרלוונטי. הקבצים אינם נשמרים בשרת.</p>
           </details>
+          <div class="actions"><button id="to-build" class="btn" type="button">יצירת הפעילות ←</button></div>
+          <p class="muted">בודקים את התקציר, מקבלים הצעה למוקד החוסן — ואז בוחרים, מאשרים ובונים את הפעילות.</p>
         </section>
 
         <section id="coach-section" class="card" aria-labelledby="coach-title">
@@ -90,12 +92,8 @@
           <p class="muted">השיחה והחששות נשמרים בקובץ העבודה האישי ונשלחים ל-AI כשמבקשים תשובה. הם אינם מצורפים לחומרי המשתתפים. הצעה של ה-AI משנה שלב רק אחרי אישור מפורש שלך.</p>
         </section>
 
-        <section id="facilitation-section" class="card" aria-labelledby="facilitation-title">
-          <p class="eyebrow">הנחיה היא מיומנות שלומדים ומתרגלים</p><h2 id="facilitation-title">איך להנחות קבוצה</h2>
-          <p>המנחה מכינה תהליך, מאפשרת השתתפות ומסייעת לקבוצה לעבוד יחד. אפשר להתחיל מתרגול קטן, להכין משפטי פתיחה ולבקש ליווי. המדריך מסייע בהכנה; הוא אינו הכשרה או הסמכה מקצועית.</p>
-          <div id="facilitation-guide"></div>
-          <button id="ask-facilitation" class="btn secondary" type="button">נחשוב יחד על ההנחיה שלי</button>
-        </section>
+        <!-- איך להנחות קבוצה — כלי נפרד: ננה (facilitation-advisor.html, 07/10/2026). כאן רק קישור, למי שיש לה/לו ננה. -->
+        <p id="nana-link" class="muted" hidden>להנחיית הקבוצה עצמה — עמדה, שפה, מהלכי שיחה ורגעים מאתגרים — יש כלי נפרד: <a href="facilitation-advisor.html">ננה — מהוראה להנחיה</a>.</p>
 
         <section id="focus-section" class="card" aria-labelledby="focus-title">
           <p class="eyebrow">2 · בוחרים מה לתרגל</p><h2 id="focus-title">מוקד החוסן</h2>

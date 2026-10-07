@@ -9,6 +9,7 @@ window.SBE_SCREENS = [
       { file:'admin.html', label:'מסך הניהול' },
       { file:'journeys.html', label:'🧭 לוח המסעות — אישורים ומשוב' },
       { file:'eval-set.html', label:'בקרת איכות' },
+      { file:'demo-lab.html', label:'🧪 מעבדת הדמו — תוצר מכל כלי' },
     ]},
   ]},
   { part:'others', title:'👥 מה שאחרים רואים', groups:[
@@ -16,6 +17,7 @@ window.SBE_SCREENS = [
       { file:'entry.html', label:'מסך כניסה', who:'כולם' },
       { file:'system-select.html', label:'בחירת מערכת', who:'כניסה בקוד מוסד (הדרך הישנה)' },
       { file:'sources-library.html', label:'ספריית המקורות', who:'כל מי שנכנס/ה' },
+      { file:'examples.html', label:'🗂 ספריית תוצרים לדוגמה', who:'כולם, גם בלי כניסה (רק מה שסומן במעבדת הדמו)' },
     ]},
     { title:'סימולציה — שיחות מאתגרות', items:[
       { file:'input-screen.html', label:'יצירת תרחיש — סטודנטיות.ים', who:'מנחות סטודנטים' },

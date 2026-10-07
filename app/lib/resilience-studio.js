@@ -58,7 +58,7 @@
   const component = id => COMPONENTS.find(c=>c.id===id);
   const clone = x => JSON.parse(JSON.stringify(x));
   function newBrief(input) {
-    const b = Object.assign({ startingPoint:'', goal:'', leaderRole:'', leaderAge:'', experience:'', participants:'', participantAge:'', count:8, duration:40, sessions:1, format:'activity', familiarity:'', relationships:'', context:'', materials:'', space:'', language:'עברית', accessibility:'', crisis:'routine', youthMode:'adult-supported', focus:'', observations:'', sources:[] }, input || {});
+    const b = Object.assign({ startingPoint:'', goal:'', leaderRole:'', leaderAge:'', experience:'', participants:'', participantAge:'', count:8, duration:40, sessions:1, format:'פעילות', familiarity:'', relationships:'', context:'', materials:'', space:'', language:'עברית', accessibility:'', crisis:'routine', youthMode:'adult-supported', focus:'', observations:'', sources:[] }, input || {});
     b.sources = (Array.isArray(b.sources)?b.sources:[]).map((s,i)=>({id:String(s.id||'user-'+i),name:String(s.name||'מקור נוסף'),role:s.role==='inspiration'?'inspiration':'context',status:'unreviewed',content:String(s.content||''),url:String(s.url||''),date:String(s.date||''),scope:String(s.scope||''),population:String(s.population||''),version:String(s.version||'1')}));
     return b;
   }

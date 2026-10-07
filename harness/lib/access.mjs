@@ -519,38 +519,53 @@ async function handleCodes(store, body, isSys) {
     const rows = (await store.list('renewreq:')).map((r) => ({ id: r.key.slice(9), ...r.value })).reverse();
     return [200, { requests: rows }];
   }
-  // רכישה חדשה: פותחת את המוסד מהבקשה, עם המערכות שביקשו ומנוי לתקופה שביקשו.
-  if (action === 'renewCreateInst') {
+  // אישור בקשה (07/10/2026) — רק אחרי בדיקה של מנהלת המערכת. שום דבר מהטופס הציבורי לא נפתח אוטומטית:
+  // הפונה יכול/ה לכתוב כל שם מוסד ולסמן כל מערכת. מנהלת המערכת מחליטה בעצמה — סוג הבקשה, המוסד,
+  // המערכות שמתאימות לתשלום (בדיוק אותן, ולא מה שסומן בטופס), התקופה ואסמכתת התשלום — ורק אז נפתח.
+  if (action === 'renewApprove') {
     const k = 'renewreq:' + String(body.id || '');
     const r = await store.get(k);
     if (!r) return [404, { error: 'no such request' }];
+    if (r.done) return [409, { error: 'already handled' }];
+    const kind = body.kind === 'new' ? 'new' : body.kind === 'renew' ? 'renew' : null;
+    if (!kind) return [400, { error: 'choose kind' }];
+    if (body.verified !== true) return [400, { error: 'requester not verified' }];
+    if (body.paid !== true) return [400, { error: 'payment not confirmed' }];
+    const payRef = String(body.payRef || '').trim().slice(0, 60);
+    if (payRef.length < 2) return [400, { error: 'missing payment reference' }];
+    const months = [6, 12].includes(Number(body.months)) ? Number(body.months) : 0;
+    if (!months) return [400, { error: 'choose period' }];
+    const systems = [...new Set((Array.isArray(body.systems) ? body.systems : []).filter((p) => PERMS.includes(p)))];
+    if (!systems.length) return [400, { error: 'choose systems' }];
     const list = await getInstitutions(store);
-    const name = r.inst || r.instTyped;
-    if (!list.find((i) => i.name === name)) list.push({ name, code: newInstCode(list), active: true, since: String(new Date().getFullYear()) });
+    let name;
+    if (kind === 'renew') {
+      name = String(body.inst || '');
+      if (!list.find((i) => i.name === name)) return [404, { error: 'no such institution' }];
+    } else {
+      name = String(body.instName || '').trim().slice(0, 80);
+      if (!name) return [400, { error: 'missing institution name' }];
+      if (list.find((i) => i.name === name)) return [409, { error: 'institution exists' }];
+      list.push({ name, code: newInstCode(list), active: true, since: String(new Date().getFullYear()) });
+    }
     const x = list.find((i) => i.name === name);
-    const d = new Date(today() + 'T00:00:00Z'); d.setUTCMonth(d.getUTCMonth() + (r.period === 'half' ? 6 : 12));
+    const from = x.subEnd && x.subEnd >= today() ? x.subEnd : today();
+    const d = new Date(from + 'T00:00:00Z'); d.setUTCMonth(d.getUTCMonth() + months);
     x.subEnd = d.toISOString().slice(0, 10);
     await store.set('institutions', list);
-    const cur = await getCeiling(store, name);
-    (r.systems || []).forEach((p) => { cur[p] = true; });
-    await store.set('modules:' + name, cur);
-    r.inst = name; r.done = true; await store.set(k, r);
-    return [200, { institutions: await institutionsView(store) }];
-  }
-
-  if (action === 'renewApplySystems') {
-    const r = await store.get('renewreq:' + String(body.id || ''));
-    if (!r || !r.inst) return [404, { error: 'no such request' }];
-    const cur = await getCeiling(store, r.inst);
-    (r.systems || []).forEach((p) => { cur[p] = true; });
-    await store.set('modules:' + r.inst, cur);
-    return [200, { ok: true, modules: cur }];
+    // המערכות הפתוחות למוסד = בדיוק מה שמנהלת המערכת סימנה כמתאים לתשלום
+    await store.set('modules:' + name, Object.fromEntries(PERMS.map((p) => [p, systems.includes(p)])));
+    r.inst = name; r.done = true;
+    r.decision = { kind, inst: name, systems, months, payRef, subEnd: x.subEnd, at: new Date().toISOString() };
+    await store.set(k, r);
+    return [200, { institutions: await institutionsView(store), decision: r.decision }];
   }
   if (action === 'renewDone') {
     const k = 'renewreq:' + String(body.id || '');
     const r = await store.get(k);
     if (!r) return [404, { error: 'no such request' }];
-    r.done = true; await store.set(k, r);
+    r.done = true; r.decision = { kind: 'closed', note: String(body.note || '').trim().slice(0, 200), at: new Date().toISOString() };
+    await store.set(k, r);
     return [200, { ok: true }];
   }
   return null;
@@ -585,6 +600,49 @@ const OPEN_LISTS = { 'advisor-situation': ['resilience', 'practi'], 'advisor-age
   'nana-group': 'nana', 'nana-age': 'nana', 'nana-sit': 'nana' };
 const LIST_ITEM_MAX = { 'advisor-stmt': 200, 'leader-stmt': 200 };
 const LIST_MAX = 200, ITEM_MAX = 80;
+// ── תוצרי דמו (07/10/2026): מעבדת הדמו של מנהלת המערכת מפיקה תוצר אחד מכל כלי מול המודל האמיתי,
+// ושומרת אותו כאן. רק מנהלת המערכת רואה את התיקייה; מה שהיא מסמנת "להצגה" מופיע בספריית התוצרים
+// לדוגמה (examples.html) לכל מי שמתעניין/ת — בלי כניסה. demo:index — רשימה בלי ה-HTML; demo:<id> — המסמך.
+const DEMO_MAX = 1_500_000, DEMO_LIMIT = 200;
+async function handleDemos(store, body) {
+  const t = await verifyToken(store, body.token);
+  const isSys = !!t && t.k === 'sys';
+  const action = body.action;
+  const index = (await store.get('demo:index')) || [];
+  const clean = (v, n) => String(v || '').replace(/\s+/g, ' ').trim().slice(0, n);
+  if (action === 'demoPublicList') return [200, { items: index.filter((d) => d.public).map(({ id, tool, title, label, at, input, order }) => ({ id, tool, title, label, at, input, order })) }];
+  if (action === 'demoGet') {
+    const id = String(body.id || '');
+    const meta = index.find((d) => d.id === id);
+    if (!meta || (!meta.public && !isSys)) { await pause(); return [404, { error: 'not found' }]; }
+    const doc = await store.get('demo:' + id);
+    return doc ? [200, { ...meta, html: doc.html }] : [404, { error: 'not found' }];
+  }
+  if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
+  if (action === 'demoList') return [200, { items: index }];
+  if (action === 'demoSave') {
+    const html = String(body.html || '');
+    if (!html || html.length > DEMO_MAX) return [400, { error: 'bad html' }];
+    const id = (Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).slice(0, 16);
+    const meta = { id, tool: clean(body.tool, 40), title: clean(body.title, 120), label: clean(body.label, 80), input: String(body.input || '').replace(/[ \t]+/g, ' ').trim().slice(0, 3000),
+      run: clean(body.run, 40), order: Number(body.order) || 0, at: new Date().toISOString(), public: false };
+    await store.set('demo:' + id, { html });
+    const next = [meta, ...index].slice(0, DEMO_LIMIT);
+    for (const old of index.slice(DEMO_LIMIT - 1)) await store.del('demo:' + old.id);
+    await store.set('demo:index', next);
+    return [200, { item: meta }];
+  }
+  if (action === 'demoPublish' || action === 'demoDelete') {
+    const id = String(body.id || '');
+    if (!index.some((d) => d.id === id)) return [404, { error: 'not found' }];
+    if (action === 'demoDelete') { await store.del('demo:' + id); await store.set('demo:index', index.filter((d) => d.id !== id)); return [200, { ok: true }]; }
+    const next = index.map((d) => d.id === id ? { ...d, public: !!body.public } : d);
+    await store.set('demo:index', next);
+    return [200, { ok: true }];
+  }
+  return [400, { error: 'bad action' }];
+}
+
 async function handleLists(store, body) {
   const { action } = body;
   const name = String(body.name || '');
@@ -1251,6 +1309,7 @@ export async function handleAccess(store, body) {
 
   if (typeof action === 'string' && action.startsWith('resil')) return handleResilience(store, body);
   if (action === 'listGet' || action === 'listAdd' || action === 'listRemove') return handleLists(store, body);
+  if (/^demo(Save|List|Get|Publish|Delete|PublicList)$/.test(action || '')) return handleDemos(store, body);
   if (action === 'fbSubmit' || action === 'fbList' || action === 'fbDelete') return handleFeedbackInbox(store, body);
   if (/^crit(List|Propose|Mine|Use|Admin|Approve|Reject|Remove)$/.test(action || '')) return handleReviewCriteria(store, body);
   if (/^jr[A-Z]/.test(action || '')) return handleJourney(store, body);
@@ -1260,7 +1319,7 @@ export async function handleAccess(store, body) {
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
 
   if (['renewRequest', 'codesList', 'codeCreate', 'codeRevoke', 'codeUse', 'setSubscription', 'renewSubscription',
-    'getSettings', 'setSettings', 'renewList', 'renewDone', 'renewApplySystems', 'renewCreateInst', 'renewInstitutions'].includes(action)) {
+    'getSettings', 'setSettings', 'renewList', 'renewDone', 'renewApprove', 'renewInstitutions'].includes(action)) {
     const out = await handleCodes(store, body, isSys);
     if (out) return out;
   }

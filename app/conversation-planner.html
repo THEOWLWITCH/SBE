@@ -714,9 +714,9 @@ async function generateProposals(required) {
     setAIStatus("ok");
     return parsed;
   } catch (e) {
-    console.warn("שרת ה-AI לא זמין — נופלת להצעה קבועה. סיבה:", e.message);
+    console.warn("שרת ה-AI לא זמין — לא מוצגת הצעה. סיבה:", e.message);
     setAIStatus("mock");
-    return Object.assign({}, SAMPLE, { _mock: true });
+    return { _noModel: true }; // בלי חיבור למודל — אין תוצר (07/10/2026)
   }
 }
 
@@ -929,6 +929,7 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
   e.target.disabled = true; e.target.textContent = "מייצר... (עד כ-3 דקות)";
   try {
     const out = await generateProposals(Object.fromEntries(reqKeys.map(k => [k, val(k)])));
+    if (out._noModel) return show("ההצעות לא הופקו", el("p",{}, "אין כרגע חיבור למודל, ולכן לא הופקו הצעות — המערכת לא ממלאת את הטופס בתוכן קבוע במקום הצעה אמיתית. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים."));
     for (const [k,v] of Object.entries(out)) {
       if (!FIELDS.has(k) || state[k] === "locked") continue;
       const n = document.getElementById("i-"+k);
@@ -951,12 +952,14 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   const isDigital = (d.productType || "").startsWith("התכתבות");
   const body = el("div");
   SBE_DOC.ensureStyle();
+  const noModel = () => show("התוצר לא הופק", el("p",{}, "אין כרגע חיבור למודל, ולכן התוצר לא הופק — המערכת לא בונה מסמך מהשדות במקום תוצר אמיתי. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים."));
 
   if (isDigital) {
     e.target.disabled = true; e.target.textContent = "מנסחת...";
     let draft;
     try { draft = await buildDigitalDraft(d); }
     finally { e.target.disabled = false; e.target.textContent = "בנייה"; }
+    if (!draft || !draft.isAI) return noModel(); // בלי חיבור למודל — אין תוצר (לא תבנית קבועה)
     body.append(el("div", { class:"banner-mini" },
       draft.isAI
         ? "הטיוטה נוסחה על ידי המודל לפי השדות שמילאת. קראי ותאימי לפני שליחה בפועל. "
@@ -1030,6 +1033,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
       else throw new Error("התדריך שחזר קצר מדי");
     } catch (e2) { console.warn("תדריך נרטיבי לא זמין — מציגה מהשדות:", e2.message); setAIStatus("mock"); }
     finally { e.target.disabled = false; e.target.textContent = "בנייה"; }
+    if (!briefing) return noModel(); // בלי חיבור למודל — אין תוצר (לא כרטיס ועץ מהשדות)
 
     if (briefing) {
       body.append(el("div", { class:"banner-mini" }, "התדריך נכתב על ידי המודל מתוך השדות שמילאת. קראי, ואם משהו לא מדויק — ערכי ישירות כאן, או ערכי את השדה למעלה ובני מחדש."));
@@ -1393,3 +1397,4 @@ body.sbe-hasnav{padding-top:38px;}
   });
 })();
 </script>
+<script src="lib/demo-hook.js"></script>

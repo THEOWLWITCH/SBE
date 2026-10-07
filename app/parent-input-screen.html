@@ -831,9 +831,9 @@ async function generateProposals(required) {
     setAIStatus("ok");
     return parsed;
   } catch (e) {
-    console.warn("שרת ה-AI לא זמין — נופלת לתרחיש הדוגמה הקבוע. סיבה:", e.message);
+    console.warn("שרת ה-AI לא זמין — לא מוצגת הצעה. סיבה:", e.message);
     setAIStatus("mock");
-    return Object.assign({}, SAMPLE, { _mock: true });
+    return { _noModel: true }; // בלי חיבור למודל — אין תוצר (07/10/2026)
   }
 }
 
@@ -1236,6 +1236,7 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
   e.target.disabled = true; e.target.textContent = "מייצר...";
   try {
     const out = await generateProposals(Object.fromEntries(reqKeys.map(k => [k, val(k)])));
+    if (out._noModel) return show("ההצעות לא הופקו", el("p",{}, "אין כרגע חיבור למודל, ולכן לא הופקו הצעות — המערכת לא ממלאת את הטופס בתוכן קבוע במקום הצעה אמיתית. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים."));
     for (const [k,v] of Object.entries(out)) {
       if (!FIELDS.has(k) || state[k] === "locked") continue;
       const n = document.getElementById("i-"+k);
@@ -1570,3 +1571,4 @@ body.sbe-hasnav{padding-top:38px;}
   });
 })();
 </script>
+<script src="lib/demo-hook.js"></script>
