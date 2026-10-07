@@ -110,6 +110,17 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .marks>div:nth-child(2n){text-align:center;color:var(--muted);font-size:12.5px;
   border-inline-start:1px solid var(--hair);white-space:nowrap;}
 .marks>div:nth-last-child(-n+2){border-bottom:none;}
+.dt{width:100%;border-collapse:collapse;font-size:14px;line-height:1.6;margin:0 0 4px;}
+.dt th,.dt td{border:1px solid var(--hair);padding:8px 11px;text-align:right;vertical-align:top;}
+.dt thead th{background:#2E5A7D;color:#fff;font-weight:700;font-size:13px;}
+.dt tbody th{background:var(--sub);width:22%;font-weight:700;font-size:13px;}
+.dt p{margin:0 0 6px;} .dt p:last-child{margin:0;}
+.dt ol,.dt ul{margin:0;padding-inline-start:17px;} .dt li{margin-bottom:4px;}
+.dt td.n{width:32px;text-align:center;font-weight:700;}
+.dt td.ck{width:64px;text-align:center;color:var(--muted);font-size:16px;}
+.dt td.w{width:38%;}
+.dt .tag{margin-inline-start:6px;}
+.sec:has(.dt){break-inside:auto;}
 .red{border:1px solid #E0C4C1;background:#FAF0EF;border-radius:4px;
   padding:12px 15px;font-size:14px;color:#7A322D;}
 .foot{border-top:1px solid var(--hair);padding:11px 36px;font-size:11.5px;
@@ -117,15 +128,26 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .foot-row{display:flex;justify-content:space-between;}
 .foot-by{font-size:10px;}
 @media(max-width:640px){
+  .dt thead{display:none;}
+  .dt,.dt tbody,.dt tr,.dt td,.dt tbody th{display:block;width:auto!important;}
+  .dt tr{border:1px solid var(--hair);border-radius:6px;margin:0 0 8px;overflow:hidden;}
+  .dt td,.dt tbody th{border:0;border-bottom:1px solid var(--hair);text-align:right!important;}
+  .dt td.w{display:none;}
+  .dt td.n{display:inline-block;border:0;padding-bottom:0;} .dt td.n::before{display:none!important;}
+  .dt td.ck{display:inline-block;width:49%!important;border:0;} .dt td.ck::before{display:inline!important;margin-inline-end:8px;}
+  .dt td[data-label]::before{content:attr(data-label);display:block;font-weight:700;font-size:12px;color:var(--muted);}
   .two{grid-template-columns:1fr;} .row,.tp-b,.br{grid-template-columns:1fr;gap:3px;}
   .head,.body,.foot{padding-inline:20px;}
 }
-@page{size:A4;margin:14mm;}
+@page{size:A4;margin:18mm 20mm;}
 @media print{
   body{background:#fff;padding:0;}
   .sheet{box-shadow:none;max-width:none;border-radius:0;font-size:11pt;}
   .head,.body,.foot{padding-inline:0;}
   .sec{break-inside:avoid;}
+  .dt{font-size:10pt;} .dt tr{break-inside:avoid;page-break-inside:avoid;} .dt thead{display:table-header-group;}
+  .dt thead th,.dt tbody th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .dt td.w{height:3.2em;}
   .no-print,#rptFab,#rptDlg,#navBar,#navPanel{display:none!important;}
   body.sbe-hasnav{padding-top:0;}
 }
@@ -184,6 +206,13 @@ export const list = (items, ordered = false) => {
 };
 export const rows = (pairs) =>
   `<div class="rows">${pairs.map(([k, v]) => `<div class="row"><span class="k">${esc(k)}</span><span>${v}</span></div>`).join('')}</div>`;
+// טבלה במסמך (07/10/2026, "קו אחיד"): head — כותרות (ולכל תא data-label, כדי שבטלפון שורה
+// תיערם לכרטיס), או null — אז העמודה הראשונה היא תווית. התאים הם HTML מוכן (כבר עבר esc).
+export const dtable = (head, trs) =>
+  `<table class="dt">${head ? `<thead><tr>${head.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead>` : ''}<tbody>${trs.map((r) =>
+    `<tr>${r.map((v, i) => (!head && i === 0 ? `<th>${v}</th>` :
+      `<td${head ? ` data-label="${esc(head[i])}"` : ''}${v === '' ? ' class="w"' : ''}>${v}</td>`)).join('')}</tr>`).join('')}</tbody></table>`;
+const ol = (items) => list(items, true);
 export const red = (text) => sec('קו אדום', `<div class="red">${esc(text)}</div>`);
 export const blk = (l, html) => `<div class="blk"><div class="lbl">${esc(l)}</div>${html}</div>`;
 
@@ -307,20 +336,27 @@ ${WIDGET}`;
       badge: 'גרסת המנחה',
       meta: [`<b>${esc(s.creator)}</b>`, esc(s.date), esc(s.audience), esc(s.experience), ...baseMeta],
       body:
-        sec('רקע מלא', `<p>${esc(f.background)}</p>`) +
-        sec('שתי הדמויות', paras(f.charactersProse)) +
-        sec('מה הגישה החינוכית אומרת בתרחיש הזה', `<p>${esc(f.approachInScenario)}</p>`, esc(s.approach)) +
-        sec('הדינמיקה הצפויה', paras(f.dynamics), 'מה מכריע את חמש הדקות') +
-        sec('מיומנויות לאימון',
-          `<div class="marks">${(f.skills || []).map((k, i) => `<div><b>${i + 1}.</b> ${esc(k)}</div><div>נצפה · לא נצפה</div>`).join('')}</div>`,
-          'מיומנויות מהטקסונומיה. אלה שיופיעו בדף הצפייה') +
-        sec('נקודות לצפייה', list(f.watchFor)) +
-        sec('שתי שאלות לשיחה המקדימה', list(f.preQuestions, true), 'לפני הצפייה, לא אחריה') +
-        sec('שתי תפניות הליבה',
-          `<ul class="list">${(s.turningPoints || []).filter((t) => t.core).map((t) => `<li><b>${t.n} · ${esc(t.name)}</b> — ${esc(t.demands)}</li>`).join('')}</ul>`,
-          'בחמש דקות יקרו שתיים, אולי שלוש') +
-        sec('שאלות לתחקיר', list((f.debrief || []).concat(['מה קידם את המפגש?', 'מה גרע מהמפגש?']), true)) +
-        sec('שאלות לרפלקציה', list(f.reflection, true)) +
+        sec('תמצית התרחיש', dtable(null, [
+          ['רקע מלא', paras(f.background)],
+          ['שתי הדמויות', paras(f.charactersProse)],
+          ['מה הגישה החינוכית אומרת', paras(f.approachInScenario)],
+          ['הדינמיקה הצפויה', paras(f.dynamics)],
+        ]), s.approach) +
+        sec('נקודות התפנית',
+          dtable(['#', 'התפנית', 'הרגע', 'מה זה מבקש מהמתנסה', 'אם זה לא קורה'], (s.turningPoints || []).map((t) => [
+            esc(t.n), `<b>${esc(t.name)}</b>${t.core ? '<span class="tag t-core">ליבה</span>' : ''}`, esc(t.trigger), esc(t.demands), esc(t.missed),
+          ])).replace(/<td data-label="#">/g, '<td class="n" data-label="#">'),
+          'תפניות הליבה מסומנות. בחמש דקות יקרו שתיים, אולי שלוש') +
+        sec('מה לראות בצפייה',
+          dtable(['#', 'מיומנות לאימון', 'נצפה', 'לא נצפה'], (f.skills || []).map((k, i) => [String(i + 1), esc(k), '☐', '☐']))
+            .replace(/<td data-label="#">/g, '<td class="n" data-label="#">').replace(/<td data-label="(נצפה|לא נצפה)">/g, '<td class="ck" data-label="$1">') +
+          ((f.watchFor || []).length ? dtable(['נקודה לצפייה', 'מה ראיתי'], f.watchFor.map((w) => [esc(w), ''])) : ''),
+          'המיומנויות מהטקסונומיה — אלה שיופיעו בדף הצפייה') +
+        sec('שאלות לשיחה', dtable(['מתי', 'השאלות'], [
+          ['לפני הצפייה — שיחה מקדימה', ol(f.preQuestions)],
+          ['תחקיר — אחרי הצפייה', ol((f.debrief || []).concat(['מה קידם את המפגש?', 'מה גרע מהמפגש?']))],
+          ['רפלקציה', ol(f.reflection)],
+        ].filter((r) => /<li>/.test(r[1])).map(([k, v]) => [`<b>${esc(k)}</b>`, v]))) +
         sec('מקורות להרחבה',
           (f.sources || []).length
             ? list(f.sources)
@@ -392,8 +428,8 @@ ${WIDGET}`;
         sec('איך חמש הדקות יכולות להתגלגל', paras(s.arc)) +
         sec('חמש נקודות התפנית', (s.turningPoints || []).map(tpThird).join(''), 'מלאי, לא רצף') +
         sec('איך זה יכול להיגמר', `<p>${esc(s.endingsProse)}</p>`) +
-        sec('נקודות לצפייה', list(s.watch)) +
-        sec('שאלות לתחקיר', list(s.debrief, true)) +
+        sec('מה לראות ומה לשאול', dtable(['נקודה לצפייה', 'מה ראיתי'], (s.watch || []).map((w) => [esc(w), ''])) +
+          ((s.debrief || []).length ? dtable(['מתי', 'השאלות'], [['<b>תחקיר — אחרי הצפייה</b>', ol(s.debrief)]]) : '')) +
         red(s.redLine),
     });
     const files = [[`${s.outputs.scenario}.html`, scenario, s.scenarioBadge]];
@@ -416,5 +452,5 @@ ${WIDGET}`;
     return { files };
   }
 
-  return { page, card, renderEduDocs, renderRoleDocs, esc, sec, paras, list, rows, red, blk, tpCard, CSS, CARD_CSS, FONTS };
+  return { page, card, renderEduDocs, renderRoleDocs, esc, sec, paras, list, rows, dtable, red, blk, tpCard, CSS, CARD_CSS, FONTS };
 }
