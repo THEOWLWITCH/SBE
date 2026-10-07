@@ -32,3 +32,6 @@
 .ideas-side .actions{gap:.35rem;margin:.35rem 0 0;padding-top:0}
 @media(max-width:1050px){.studio-layout{grid-template-columns:minmax(0,1fr) 260px}}
 @media(max-width:800px){.studio-layout{grid-template-columns:1fr}}
+
+/* התקדמות ליד הפעולה — היצירה לוקחת זמן (07/10/2026) */
+.busy-line{margin:.6rem 0;padding:.6rem .8rem;border-radius:8px;background:var(--hidden-soft,#F5EAD9);color:var(--ink,#141C24);font-weight:600;border-inline-start:4px solid var(--hidden,#8F5F2E)}

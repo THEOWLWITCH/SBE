@@ -97,10 +97,13 @@
   async function operation(message, fn) {
     if(busy)return;
     error(''); setBusy(true,message);
-    const began=Date.now(), tick=setInterval(()=>{if(busy)notice(message+' · חלפו '+Math.floor((Date.now()-began)/1000)+' שניות');},1000);
+    const line=$('focus-busy'),show=t=>{if(line){line.textContent=t;line.hidden=!t;}};
+    const elapsed=()=>{const t=Math.floor((Date.now()-began)/1000);return t<60?t+' שניות':Math.floor(t/60)+':'+String(t%60).padStart(2,'0')+' דקות';};
+    const began=Date.now(), tick=setInterval(()=>{if(busy){notice(message+' · חלפו '+elapsed());show(message+' · חלפו '+elapsed()+'. היצירה לוקחת זמן — אפשר להשאיר את המסך פתוח.');}},1000);
+    show(message+' היצירה לוקחת זמן — אפשר להשאיר את המסך פתוח.');
     try { await fn(); }
     catch(e) { notice(''); error(e.message||'הפעולה לא הצליחה. אפשר לנסות שוב.'); }
-    finally {clearInterval(tick);setBusy(false);}
+    finally {clearInterval(tick);show('');setBusy(false);}
   }
   function cleanBrief(value) {
     const input={}; BRIEF_FIELDS.forEach(k=>{if(value&&value[k]!==undefined)input[k]=NUMBERS.has(k)?Number(value[k]):String(value[k]);});
@@ -249,14 +252,14 @@
     const questions=(state.recommendation&&state.recommendation.questions)||[];
     const answered=!questions.length||String(state.brief.clarifications||'').trim().length>0;
     $('generate-activity').disabled=busy||!state.confirmed||!answered;
-    $('to-build').disabled=busy;
+    $('to-build').disabled=busy;$('to-build').textContent=busy?'עובדים על זה… זה לוקח כמה דקות':'יצירת הפעילות ←';
     $('adapt-activity').disabled=busy||!state.activity;
     $('generate-variant').disabled=busy||!state.activity||!$('variant-opt-in').checked;
     $('accept-candidate').disabled=busy||!candidate||D.validateActivity(candidate.activity,candidate.brief).length>0;
     ['save-activity','print-kit','print-participant','download-work'].forEach(id=>$(id).disabled=busy||!state.activity);
     $('brief-confirmed').disabled=busy||!answered;
     $('ask-coach').disabled=busy||!authorized;
-    $('generation-hint').textContent=questions.length&&!answered?'נדרשת התייחסות לשאלות שלמעלה לפני אישור התקציר והבנייה.':'הפעילות נבנית לפי התקציר שאישרתם. דוגמת הפיתוח נפרדת מהפקה בבינה מלאכותית ומסומנת כטיוטה.';
+    $('generation-hint').textContent=questions.length&&!answered?'כדי להמשיך, אפשר להתייחס לשאלות שלמעלה — ואז לאשר את התקציר ולבנות.':'הפעילות נבנית לפי התקציר שאישרתם. הבנייה לוקחת כמה דקות — אפשר להשאיר את המסך פתוח ולהמשיך לקרוא. דוגמת הפיתוח נפרדת מהפקה בבינה מלאכותית ומסומנת כטיוטה.';
   }
   function renderFocus() {
     const c=D.component(state.brief.focus), box=clear($('focus-description'));
@@ -451,7 +454,7 @@
     await operation('בודקים הרשאה ומביאים ממצאים מצטברים מהמיפוי…',async()=>{const data=await api({action:'mapping',mapping:copy(mappingCredentials)});if(!data.mapping)throw new Error('לא התקבלו ממצאי מיפוי.');state.mapping=safeMapping(data.mapping);state.confirmed=false;$('brief-confirmed').checked=false;state.recommendation=null;renderMapping();renderRecommendation();updateControls();persist();notice('המיפוי מחובר. בדקו את המועד, האוכלוסייה והיקף המדידה ביחס לפעילות המתוכננת.');});
   }
   function analyze() {
-    collectBrief();operation('בודקים את התקציר ואת אפשרויות התרגול…',async()=>{
+    collectBrief();operation('בודקים את התקציר ואת אפשרויות התרגול (דקה–שתיים)…',async()=>{
       const data=await api(requestBody('analyze',state.brief));if(!data.recommendation)throw new Error('לא התקבלה הצעת מוקד מהשרת.');
       state.recommendation=data.recommendation;state.confirmed=false;$('brief-confirmed').checked=false;if(!D.component(state.brief.focus)&&D.component(data.recommendation.focus)){state.brief.focus=data.recommendation.focus;$('focus').value=state.brief.focus;}
       if(data.mapping)state.mapping=safeMapping(data.mapping);renderRecommendation();renderFocus();renderMapping();updateControls();persist();notice('התקציר נבדק. בחרו מוקד, השלימו הבהרות אם נדרשו ואשרו את התקציר.');
@@ -463,7 +466,7 @@
   function generate() {
     collectBrief();const problems=briefProblems(state.brief);if(problems.length){error(problems.join('\n'));return;}if(!state.confirmed){error('קראו ואשרו את התקציר לפני הבנייה.');return;}
     if((state.recommendation&&state.recommendation.questions||[]).length&&!String(state.brief.clarifications||'').trim()){error('השיבו לשאלות ההבהרה לפני הבנייה.');return;}
-    const b=cleanBrief(state.brief);operation('בונים פעילות לפי התקציר שאישרתם…',async()=>{const data=await api(requestBody('generate',b));if(!data.activity)throw new Error('לא התקבלה פעילות מהשרת.');const failures=D.validateActivity(data.activity,b);if(failures.length)throw new Error('הפעילות שהתקבלה דורשת תיקון: '+failures.join('; '));if(data.mapping)state.mapping=safeMapping(data.mapping);installActivity(data.activity,b);notice('הפעילות נבנתה. אפשר לערוך את ההנחיה, השלבים והחומרים, ולבדוק את הקשר בין התרגול למטרה.');});
+    const b=cleanBrief(state.brief);operation('בונים פעילות לפי התקציר שאישרתם (כמה דקות)…',async()=>{const data=await api(requestBody('generate',b));if(!data.activity)throw new Error('לא התקבלה פעילות מהשרת.');const failures=D.validateActivity(data.activity,b);if(failures.length)throw new Error('הפעילות שהתקבלה דורשת תיקון: '+failures.join('; '));if(data.mapping)state.mapping=safeMapping(data.mapping);installActivity(data.activity,b);notice('הפעילות נבנתה. אפשר לערוך את ההנחיה, השלבים והחומרים, ולבדוק את הקשר בין התרגול למטרה.');});
   }
   function example() {
     collectBrief();if(!D.component(state.brief.focus)){const r=D.recommendFocus(state.brief);state.brief.focus=r.focus;state.recommendation=r;fillBrief();renderFocus();renderRecommendation();}

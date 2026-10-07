@@ -76,7 +76,7 @@
             <p class="muted">ייבוא תוכן: TXT, Markdown או JSON. לקובץ אחר העתיקו לכאן את הטקסט הרלוונטי. הקבצים אינם נשמרים בשרת.</p>
           </details>
           <div class="actions"><button id="to-build" class="btn" type="button">יצירת הפעילות ←</button></div>
-          <p class="muted">בודקים את התקציר, מקבלים הצעה למוקד החוסן — ואז בוחרים, מאשרים ובונים את הפעילות.</p>
+          <p id="to-build-hint" class="muted"><b>היצירה לוקחת זמן.</b> קודם בודקים את התקציר ומקבלים הצעה למוקד החוסן (בערך דקה–שתיים), ואז בוחרים, מאשרים ובונים את הפעילות (עוד כמה דקות). מה שמילאת נשמר בינתיים.</p>
         </section>
 
         <section id="coach-section" class="card" aria-labelledby="coach-title">
@@ -101,6 +101,7 @@
           <label for="focus">רכיב המוקד</label><select id="focus"></select>
           <div id="focus-description" class="focus-description"></div>
           <button id="analyze-brief" class="btn secondary" type="button">בדיקת התקציר והצעת מוקד</button>
+          <p id="focus-busy" class="busy-line" role="status" hidden></p>
           <div id="recommendation" class="recommendation" hidden></div>
           <div id="clarification-panel" hidden><h3>נחדד לפני שממשיכים</h3><ol id="clarification-questions"></ol><label for="clarifications">התשובות שלנו</label><textarea id="clarifications" rows="3" placeholder="התייחסו לשאלות שמעל, או ציינו איזה מקור משקף את המצב כיום"></textarea></div>
           <label class="check-row"><input id="brief-confirmed" type="checkbox">קראנו את התקציר, בחרנו מוקד והוא מתאים למשתתפים ולתנאים</label>
