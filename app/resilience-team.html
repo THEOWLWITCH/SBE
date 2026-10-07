@@ -270,6 +270,7 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
   <div class="card" id="setup-active-card" style="display:none">
     <div class="setup-info" id="setup-summary"></div>
     <button class="btn" id="btn-show-results" style="margin-bottom:1rem">📊 הצגת התוצאות</button>
+    <button class="btn btn-ghost" id="btn-studio" style="margin-bottom:1rem">מהמיפוי לפעולה — סטודיו חוסן</button>
     <details id="sel-details" style="margin-bottom:1rem"><summary style="cursor:pointer;font-weight:600" id="sel-summary"></summary><ol id="sel-view" style="font-size:.85rem;line-height:1.6;margin:.5rem 0 0"></ol></details>
     <div id="share-wrap">
     <h2>קישור למילוי שאלון</h2>
@@ -424,6 +425,14 @@ function loadCfg(){
   return c&&c.id&&(c.key||c.admin) ? c : null; // admin: כיתה שמנהלת המערכת פתחה מהרשימה
 }
 function saveCfg(c){try{localStorage.setItem(CFG,JSON.stringify(c));}catch{}}
+document.getElementById('btn-studio').addEventListener('click',function(){
+  if(DEMO){alert('זהו מיפוי הדגמה. בסטודיו אפשר לפתוח דוגמת פעילות ללא העברת נתוני כיתה.');location.href='resilience-studio.html';return;}
+  const c=loadCfg();
+  if(!c||!c.id||(!c.key&&!c.admin)){alert('יש לפתוח או לשחזר כיתה לפני חיבור המיפוי.');return;}
+  // Explicit, user-scoped handoff. Studio verifies server access and sends only aggregate findings to AI.
+  sessionStorage.setItem(sbeUserKey('sbe.studio.mapping'),JSON.stringify({id:c.id,key:c.key||'',round:VIEW}));
+  location.href='resilience-studio.html';
+});
 function clearAll(){if(DEMO){DEMO=null;}else{try{localStorage.removeItem(CFG);}catch{}} RESP=[];GROUP=null;VIEW='latest';}
 
 function api(body){

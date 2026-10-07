@@ -48,7 +48,10 @@
         var bytes = Uint8Array.from(atob(b), function(ch){ return ch.charCodeAt(0); });
         var p = JSON.parse(new TextDecoder().decode(bytes));
         // קוד קורס: כל הסטודנטים עם אותו קוד — מבדילים לפי מזהה המכשיר (s)
-        id = p.k === "code" ? "c-" + p.c + (p.s ? "-" + p.s : "") : p.k === "inst" ? "inst-" + p.inst : String(p.k || "anon");
+        // Legacy institutional sessions share c=LEGACY; scope by the signed institution instead.
+        // Ambiguous old c-LEGACY records are deliberately not migrated between institutions.
+        id = p.k === "code" && p.c === "LEGACY" ? "legacy-inst-" + encodeURIComponent(p.inst || "")
+          : p.k === "code" ? "c-" + p.c + (p.s ? "-" + p.s : "") : p.k === "inst" ? "inst-" + p.inst : String(p.k || "anon");
       } else if (ss("sbe.session.homeUrl")) id = "h-" + ss("sbe.session.homeUrl");
     } catch(e){}
     return base + ":" + id;
@@ -89,10 +92,11 @@
   // שהשרת החזיר לקוד (sbe.session.perms).
   var PAGES_BY_PERM = {
     fac_trainee: ["input-screen.html"], fac_parent: ["parent-input-screen.html"], fac_youth: ["student-input-screen.html"],
-    conv: ["conversation-planner.html"], activity: ["activity-planner.html"], academic: ["academic-review.html"],
-    resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html"],
-    leadership: ["leadership-advisor.html", "resilience-advisor-sources.html"],
-    practi: ["resilience-advisor.html", "resilience-advisor-sources.html"],
+    conv: ["conversation-planner.html"], activity: ["activity-planner.html", "resilience-studio.html"], academic: ["academic-review.html"],
+    resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html", "resilience-studio.html"],
+    leadership: ["leadership-advisor.html", "resilience-advisor-sources.html", "resilience-studio.html"],
+    practi: ["resilience-advisor.html", "resilience-advisor-sources.html", "resilience-studio.html"],
+    studio: ["resilience-studio.html"],
     journey: ["journey.html"],
     writer: ["message-writer.html", "resilience-advisor-sources.html"], // כתיבה מקדמת חוסן — רק בהרשאה הזאת (02/10/2026)
     nana: ["facilitation-advisor.html", "resilience-advisor-sources.html"] // ננה — מהוראה להנחיה (07/10/2026)
@@ -120,6 +124,7 @@
     // הכלים הנוספים — רק מה שנפתח למוסד (sbe.session.modules, נשמר ב-system-select.html).
     var mods = {};
     try { mods = JSON.parse(ss("sbe.session.modules") || "{}") || {}; } catch(e){}
+    if (["studio", "activity", "resilience", "practi", "leadership"].some(function(p){return mods[p] === true;})) allowed.push("resilience-studio.html");
     if (track !== "parent" && track !== "youth") {
       if (mods.conv === true) allowed.push("conversation-planner.html");
       if (mods.activity === true) allowed.push("activity-planner.html");
@@ -136,7 +141,7 @@
       ? ["resilience-advisor.html", "resilience-advisor-sources.html"] : [];
     if (!allowed.length) home = "";
   } else if (home === "resilience-team.html") {
-    allowed = ["resilience-team.html", "resilience-fill.html"];
+    allowed = ["resilience-team.html", "resilience-fill.html", "resilience-studio.html"];
   } else {
     allowed = [];
     home = "";

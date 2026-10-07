@@ -79,7 +79,7 @@
   function esc(s) { return String(s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
   // node: אלמנט (או כמה) עם התוכן. העותק מנוקה מכפתורים, מהסברים ומ-contenteditable.
-  function print({ title, subtitle, node, nodes }) {
+  function print({ title, subtitle, node, nodes, inline = false }) {
     const parts = (nodes || [node]).filter(Boolean).map((n) => {
       const c = n.cloneNode(true);
       c.querySelectorAll("button,.sbe-edit-hint,.no-print,style,script").forEach((x) => x.remove());
@@ -88,7 +88,25 @@
     }).join("");
     const logo = logoSrc();
     const date = new Date().toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "2-digit" });
-    const w = window.open("", "_blank");
+    let w;
+    if (inline) {
+      // An authenticated export can finish after the browser's popup gesture expires.
+      const preview = document.createElement("dialog");
+      preview.setAttribute("aria-label", "תצוגה מקדימה להדפסה");
+      preview.style.cssText = "width:min(900px,94vw);height:90vh;padding:12px;border:1px solid #CDD3D8;border-radius:10px";
+      const close = document.createElement("button");
+      close.type = "button"; close.textContent = "סגירת התצוגה";
+      close.style.cssText = "font:inherit;padding:6px 12px;margin-bottom:8px";
+      close.addEventListener("click", () => preview.close());
+      preview.addEventListener("close", () => preview.remove(), { once: true });
+      const frame = document.createElement("iframe");
+      frame.title = "מסמך להדפסה: " + String(title || "Begood");
+      frame.style.cssText = "display:block;width:100%;height:calc(100% - 48px);border:0";
+      preview.append(close, frame); document.body.append(preview); preview.showModal();
+      w = frame.contentWindow;
+    } else {
+      w = window.open("", "_blank");
+    }
     if (!w) { alert("הדפדפן חסם את חלון ההדפסה. אפשרי חלונות קופצים לאתר ונסי שוב."); return; }
     w.document.write(`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(title)} — Begood</title>
 <style>
@@ -99,9 +117,9 @@ body{font-family:"Assistant","Segoe UI",Arial,sans-serif;color:#141C24;max-width
 .hd .dt{font-size:12.5px;color:#5C6771}
 h1{font-size:22px;margin:0 0 4px;break-after:avoid}
 .sub{color:#5C6771;margin:0 0 18px;font-size:13.5px}
-h4,h3{break-after:avoid;font-size:15px;margin:18px 0 6px}
+h4,h3,h2{break-after:avoid;font-size:15px;margin:18px 0 6px}
 p,li{orphans:3;widows:3}
-.draftbox,.rcard,.sbe-rich,.card,.act,li{break-inside:avoid}
+.draftbox,.rcard,.sbe-rich,.card,.act,.session-card,.step-card,.claims-box,li{break-inside:avoid}
 .draftbox{white-space:pre-line;border:1px solid #CDD3D8;border-radius:6px;padding:12px 14px;margin-bottom:12px}
 .rcard{border:1px solid #CDD3D8;border-radius:8px;padding:12px 14px;background:#F3F6F8}
 .rcard-row{margin-bottom:8px}.rcard-row b{display:block;font-size:12px;color:#5C6771}
@@ -118,7 +136,7 @@ p,li{orphans:3;widows:3}
 <div class="hd"><div><h1>${esc(title)}</h1>${subtitle ? `<p class="sub">${esc(subtitle)}</p>` : ""}<div class="dt">${esc(date)}</div></div><img src="${logo}" alt="Begood"></div>
 ${parts}
 <div class="ft">הופק ב-Begood · be-good.co.il</div>
-<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script>
+<script>${inline ? "" : "window.onload=function(){setTimeout(function(){window.print()},300)}"}<\/script>
 </body></html>`);
     w.document.close();
   }

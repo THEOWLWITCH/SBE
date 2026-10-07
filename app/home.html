@@ -145,7 +145,7 @@ const fmtDate = (ymd) => ymd ? ymd.slice(0,10).split("-").reverse().map((x,i)=>i
 const PERM_LABEL = {
   fac_trainee: "הנחיית סטודנטים", fac_parent: "הנחיית הורים", fac_youth: "הנחיית נוער",
   conv: "תכנון שיחה", activity: "תכנון פעילות", academic: "משוב לעבודות",
-  lecturer: "קוד לקבוצה — משוב לעבודות", resilience: "חוסן חברתי", leadership: "נוגי — יועצת למנהיגות תומכת חוסן", practi: "פרקטי — יועצת לחוסן", journey: "מסע אל החוסן", writer: "כתיבה מקדמת חוסן", nana: "ננה — מהוראה להנחיה",
+  lecturer: "קוד לקבוצה — משוב לעבודות", resilience: "חוסן חברתי", leadership: "נוגי — יועצת למנהיגות תומכת חוסן", practi: "פרקטי — יועצת לחוסן", journey: "מסע אל החוסן", writer: "כתיבה מקדמת חוסן", nana: "ננה — מהוראה להנחיה", studio: "סטודיו חוסן",
 };
 const PRESETS = [
   ["מחנך/ת", ["resilience"]], ["פרקטי בלבד", ["practi"]], ["הנהלה", ["leadership", "resilience"]], ["מנחה סטודנטים", ["fac_trainee"]], ["מנחה הורים", ["fac_parent"]],
@@ -189,6 +189,7 @@ async function api(action, extra = {}) {
     ["feedback-results.html", "תוצאות משוב", "משוב מנחה, מתנסה וצופה על הסדנאות"],
     ["search.html", "חיפוש במאגר התרחישים", "תרחישי המוסד והמאגר המשותף"]);
   if (has("resilience")) T.push(["resilience-team.html", "חוסן חברתי", "פתיחת כיתה, QR לשאלון, תוצאות וסיכום והמלצות"]);
+  if (["studio", "activity", "resilience", "practi", "leadership"].some(has)) T.push(["resilience-studio.html", "סטודיו חוסן", "השראה, תקציר וערכת פעולה: מטרה, רכיבי חוסן ומיומנויות אישיות ומשותפות"]);
   if (has("resilience") || has("practi")) T.push(["resilience-advisor.html", "פרקטי: יועצת לפיתוח חוסן חברתי", "בלי שאלון: מתארים את הכיתה ומקבלים ניתוח והמלצות מבוססי מחקר"]);
   if (has("leadership")) T.push(["leadership-advisor.html", "נוגי: יועצת למנהיגות תומכת חוסן", "להנהלה, לרכזים ולצוותי תלמידים: שאלון פתיחה, דוח סיכום והמלצות ושיחת המשך"]);
   if (has("nana")) T.push(["facilitation-advisor.html", "ננה: מהוראה להנחיה", "מספרים על הקבוצה, הנושא והמטרה, ומקבלים מדריך הנחיה אישי שמחזק את החוסן החברתי — עם תרגול רגעים מאתגרים ורפלקציה אחרי המפגש"]);

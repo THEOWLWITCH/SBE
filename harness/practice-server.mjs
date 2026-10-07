@@ -36,6 +36,7 @@ import { getProvider } from './lib/providers.mjs';
 import { runPipeline } from './lib/pipeline.mjs';
 import { toScenario } from './lib/to-scenario.mjs';
 import { handleAccess, supabaseStore } from './lib/access.mjs';
+import { studioRequest } from './lib/studio.mjs';
 
 // שמירת תרחיש ב-Supabase. נקראת רק כשיש SUPABASE_SERVICE_KEY בסביבה.
 // scenario הוא הפלט של toScenario(); meta הוא payload.meta מהלקוח.
@@ -168,6 +169,27 @@ const server = createServer(async (req, res) => {
     } catch (e) {
       console.error(`access: ${e.message}`);
       return sendJson(res, 503, { error: 'storage unavailable' });
+    }
+  }
+
+  // Studio is a separate authenticated boundary; client prompts never bypass
+  // its live permissions, source filtering or server-side mapping aggregation.
+  if (req.method === 'POST' && req.url === '/api/studio') {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return sendJson(res, 503, { error: 'storage unavailable' });
+    let body;
+    try { body = JSON.parse(await readBody(req)); }
+    catch { return sendJson(res, 400, { error: 'invalid JSON' }); }
+    let finish;
+    try {
+      // async:true ← jobId מיד, והדפדפן שואל {action:'status'}; בלעדיו — הבקשה הארוכה הישנה עם רווחי keep-alive
+      const [status, out] = await studioRequest(supabaseStore(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY), body,
+        { onReady: () => { finish = startKeepAlive(res); } });
+      if (finish) return finish(out);
+      return sendJson(res, status, out);
+    } catch (e) {
+      console.error('studio: request failed');
+      if (finish) return finish({ error: 'הסטודיו אינו זמין כעת.' });
+      return sendJson(res, 503, { error: 'הסטודיו אינו זמין כעת.' });
     }
   }
 

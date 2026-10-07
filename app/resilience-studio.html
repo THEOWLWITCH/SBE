@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>סטודיו חוסן — Begood</title>
+  <script src="lib/access-guard.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="lib/resilience-studio.css">
+  <script src="lib/product-doc.js" defer></script>
+  <script src="lib/screens-menu.js" defer></script>
+  <script src="lib/resilience-studio.js" defer></script>
+  <script src="lib/resilience-advisor-sources.js" defer></script>
+  <script src="lib/resilience-studio-ui.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">דילוג לתוכן</a>
+  <nav class="topnav" aria-label="ניווט ב-Begood">
+    <a id="studio-home" href="home.html">⌂ המרחב שלי</a>
+    <a href="sources-library.html">ספריית המקורות</a>
+    <details id="studio-sys-menu" class="sbe-sysonly"><summary>☰ כל המסכים</summary><div id="studio-screens"></div></details>
+    <span class="nav-title">Begood · סטודיו חוסן</span>
+  </nav>
+  <main id="main" class="studio-wrap">
+    <header class="hero">
+      <div><p class="eyebrow">מחשבה טובה, פעולה משותפת</p><h1>סטודיו חוסן</h1>
+        <p class="hero-intro">מרעיון לפעילות, למשימה יומיומית או לתהליך. בכל צעד רואים מה רוצים לפתח ואיך מתרגלים את זה יחד.</p>
+      </div>
+      <img src="assets/begood-logo.webp" alt="Begood — חינוך לחוסן" width="160" height="74">
+    </header>
+    <div class="catalogue-note"><b>מרחב לפיתוח ולבחינה מקצועית.</b> קטלוג הרכיבים ודוגמאות הפעילות הם טיוטות. בסיס מחקרי לרכיב אינו הוכחה ליעילות של פעילות חדשה. הסטודיו מיועד לחינוך, להנחיה ולעשייה משותפת.</div>
+    <div id="studio-status" class="status" role="status" aria-live="polite" hidden></div>
+    <div id="studio-error" class="error" role="alert" hidden></div>
+
+    <div class="studio-layout">
+      <div class="studio-main">
+        <section id="inspiration-section" class="card" aria-labelledby="inspiration-title">
+          <div class="section-head"><div><p class="eyebrow">אפשר להתחיל בלי מיפוי ובלי צורך מוגדר</p><h2 id="inspiration-title">מה נרצה לנסות?</h2></div><button id="new-work" class="btn secondary" type="button">התחלה חדשה</button></div>
+          <p>בחרו רעיון, שמרו אותו למועד אחר או התחילו מהתיאור שלכם. פרטי המשתתפים נדרשים כשמתאימים פעילות לקבוצה.</p>
+          <div id="inspiration-cards" class="inspiration-grid"></div>
+          <details class="saved-ideas"><summary>הרעיונות ששמרתי <span id="idea-count">(0)</span></summary><div id="saved-ideas"></div></details>
+        </section>
+
+        <section id="brief-section" class="card" aria-labelledby="brief-title">
+          <p class="eyebrow">1 · התקציר שלנו</p><h2 id="brief-title">נקודת מוצא ותנאים לפעולה</h2>
+          <p class="muted">התקציר ניתן לעריכה. אוכלוסיית המשתתפים ותפקיד המוביל/ה נשמרים בנפרד; אין צורך להשתייך לכיתה או לבית ספר.</p>
+          <form id="brief-form" novalidate>
+            <label for="startingPoint">מה הביא אותנו לכאן?</label>
+            <textarea id="startingPoint" name="startingPoint" rows="3" placeholder="רעיון, מצב, משימה, תצפית או כיוון מסקרן"></textarea>
+            <label for="goal">מה נרצה שאפשר יהיה לעשות בעקבות הפעילות?</label>
+            <textarea id="goal" name="goal" rows="2" placeholder="למשל: לבנות דרך לבקש עזרה ולחלק אחריות"></textarea>
+            <div class="field-grid">
+              <label>תפקיד המוביל/ה<input id="leaderRole" name="leaderRole" type="text" placeholder="מחנכת, הורה, נערה מובילה, ראש צוות…"></label>
+              <label>גיל המוביל/ה, אם רלוונטי<input id="leaderAge" name="leaderAge" type="text" placeholder="נפרד מגיל המשתתפים"></label>
+              <label>ניסיון בהנחיה<select id="experience" name="experience"><option value="">לבחירה</option><option value="first">זו התנסות ראשונה</option><option value="some">יש מעט ניסיון</option><option value="experienced">יש ניסיון בהנחיה</option></select></label>
+              <label>מי המשתתפים?<input id="participants" name="participants" type="text" placeholder="משפחה, נוער, צוות עבודה, קהילה…" required></label>
+              <label>גיל המשתתפים<input id="participantAge" name="participantAge" type="text" placeholder="טווח גיל או קבוצת גיל" required></label>
+              <label>מספר משתתפים<input id="count" name="count" type="number" min="2" step="1" value="8" required></label>
+              <label>זמן לכל מפגש, בדקות<input id="duration" name="duration" type="number" min="5" step="1" value="40" required></label>
+              <label>מספר מפגשים<input id="sessions" name="sessions" type="number" min="1" step="1" value="1" required></label>
+              <label>צורת הפעולה<select id="format" name="format"><option value="activity">פעילות</option><option value="mission">משימה יומיומית</option><option value="process">תהליך של כמה מפגשים</option></select></label>
+              <label>מידת ההיכרות<input id="familiarity" name="familiarity" type="text" placeholder="קבוצה חדשה או ותיקה, היכרות חלקית…"></label>
+              <label>תפקידים וקשרים<input id="relationships" name="relationships" type="text" placeholder="משתתפים, מובילים, שותפים, תלות בתפקידים…"></label>
+              <label>הקשר הפעולה<input id="context" name="context" type="text" placeholder="בבית, בעבודה, במסגרת קהילתית…"></label>
+              <label>מרחב זמין<input id="space" name="space" type="text" placeholder="חדר, בחוץ, מפגש מקוון…"></label>
+              <label>חומרים ומשאבים<input id="materials" name="materials" type="text" placeholder="אפשר גם ללא ציוד"></label>
+              <label>שפה<input id="language" name="language" type="text" value="עברית"></label>
+              <label>נגישות והתאמות<input id="accessibility" name="accessibility" type="text" placeholder="קריאה, תנועה, שמיעה, הפסקות, חלופה לכתיבה…"></label>
+              <label>המצב כרגע<select id="crisis" name="crisis"><option value="routine">שגרה</option><option value="disruption">שיבוש בשגרה</option><option value="return">חזרה לשגרה</option><option value="active-danger">סכנה פעילה</option></select></label>
+              <label>אם בני נוער מובילים<select id="youthMode" name="youthMode"><option value="adult-supported">עם תמיכה או הנחיה של מבוגר/ת</option><option value="independent">הובלה עצמאית של נוער</option><option value="not-applicable">לא רלוונטי</option></select></label>
+            </div>
+            <label for="observations">מה השתנה או מה שמנו לב אליו?</label>
+            <textarea id="observations" name="observations" rows="2" placeholder="תצפיות, משוב, תנאים חדשים או מיפוי נוסף — אפשר לעדכן גם בהמשך התהליך"></textarea>
+          </form>
+          <div id="mapping-panel" class="mapping-panel" hidden></div>
+          <details id="source-details" class="source-details"><summary>מקורות ונקודות מוצא נוספות</summary>
+            <p class="muted">אפשר לצרף עוד מקורות לפי הצורך. רעיון, סיפור ותיאור מצב נשארים נפרדים מהבסיס המקצועי. כתובת קישור לבדה אינה מאפשרת לסטודיו לקרוא את תוכנו.</p>
+            <div id="source-cards"></div>
+            <div class="actions"><button id="add-source" class="btn secondary" type="button">+ מקור נוסף</button><label class="btn secondary file-label">צירוף טקסט<input id="source-file" type="file" accept=".txt,.md,.json,text/plain,text/markdown,application/json"></label></div>
+            <p class="muted">ייבוא תוכן: TXT, Markdown או JSON. לקובץ אחר העתיקו לכאן את הטקסט הרלוונטי. הקבצים אינם נשמרים בשרת.</p>
+          </details>
+        </section>
+
+        <section id="coach-section" class="card" aria-labelledby="coach-title">
+          <p class="eyebrow">אפשר לעצור ולחשוב יחד בכל שלב</p><h2 id="coach-title">שותפה לתכנון ולהנחיה</h2>
+          <p>אפשר לשאול, לבקש שיפור או לספר מה מעורר חשש. ה-AI יציע הסבר, צעד הכנה קטן או נוסח חלופי; את בוחרת מה לקבל ומתי להמשיך.</p>
+          <label for="coach-stage">על מה נדבר עכשיו?</label><select id="coach-stage"><option value="starting">נקודת המוצא והתקציר</option><option value="focus">בחירת המטרה ומוקד החוסן</option><option value="activity">הפעילות כולה</option><option value="step">שלב מסוים בפעילות</option><option value="facilitation">איך להנחות את הקבוצה</option><option value="mechanism">עיגון בשגרה ובמנגנון חברתי</option><option value="adaptation">למידה והתאמה להמשך</option><option value="learning">מדריך הלמידה: מה ללמוד לפני ההנחיה</option></select>
+          <p id="coach-target" class="privacy-note" hidden></p>
+          <label for="coach-concerns">מה מדאיג אותך לקראת ההנחיה? (אפשר להשאיר ריק)</label><textarea id="coach-concerns" rows="2" placeholder="למשל: אני חוששת שלא יקשיבו לי או שלא אדע מה לעשות אם תהיה שתיקה"></textarea>
+          <div id="coach-messages" aria-live="polite"></div>
+          <label for="coach-question">השאלה או השיפור שנרצה לחשוב עליהם</label><textarea id="coach-question" rows="3" placeholder="אפשר לשאול גם לפני שכל פרטי הפעילות מוכנים"></textarea>
+          <div class="actions"><button id="ask-coach" class="btn secondary" type="button">שיחה עם ה-AI</button></div>
+          <div id="coach-proposal" hidden></div>
+          <p class="muted">השיחה והחששות נשמרים בקובץ העבודה האישי ונשלחים ל-AI כשמבקשים תשובה. הם אינם מצורפים לחומרי המשתתפים. הצעה של ה-AI משנה שלב רק אחרי אישור מפורש שלך.</p>
+        </section>
+
+        <section id="facilitation-section" class="card" aria-labelledby="facilitation-title">
+          <p class="eyebrow">הנחיה היא מיומנות שלומדים ומתרגלים</p><h2 id="facilitation-title">איך להנחות קבוצה</h2>
+          <p>המנחה מכינה תהליך, מאפשרת השתתפות ומסייעת לקבוצה לעבוד יחד. אפשר להתחיל מתרגול קטן, להכין משפטי פתיחה ולבקש ליווי. המדריך מסייע בהכנה; הוא אינו הכשרה או הסמכה מקצועית.</p>
+          <div id="facilitation-guide"></div>
+          <button id="ask-facilitation" class="btn secondary" type="button">נחשוב יחד על ההנחיה שלי</button>
+        </section>
+
+        <section id="focus-section" class="card" aria-labelledby="focus-title">
+          <p class="eyebrow">2 · בוחרים מה לתרגל</p><h2 id="focus-title">מוקד החוסן</h2>
+          <p>מוקד אחד מוביל את הפעילות. רכיבים נוספים מופיעים רק כשהם מתורגלים בצעד ממשי.</p>
+          <label for="focus">רכיב המוקד</label><select id="focus"></select>
+          <div id="focus-description" class="focus-description"></div>
+          <button id="analyze-brief" class="btn secondary" type="button">בדיקת התקציר והצעת מוקד</button>
+          <div id="recommendation" class="recommendation" hidden></div>
+          <div id="clarification-panel" hidden><h3>נחדד לפני שממשיכים</h3><ol id="clarification-questions"></ol><label for="clarifications">התשובות שלנו</label><textarea id="clarifications" rows="3" placeholder="התייחסו לשאלות שמעל, או ציינו איזה מקור משקף את המצב כיום"></textarea></div>
+          <label class="check-row"><input id="brief-confirmed" type="checkbox">קראנו את התקציר, בחרנו מוקד והוא מתאים למשתתפים ולתנאים</label>
+          <div class="actions"><button id="generate-activity" class="btn" type="button">בנייה של פעילות</button><button id="example-activity" class="btn secondary" type="button">פתיחת דוגמת פיתוח</button></div>
+          <p id="generation-hint" class="muted">הפעילות נבנית לפי התקציר שאישרתם. דוגמת הפיתוח נפרדת מהפקה בבינה מלאכותית ומסומנת כטיוטה.</p>
+        </section>
+
+        <section id="activity-section" class="card" aria-labelledby="activity-heading" hidden>
+          <div class="section-head"><div><p class="eyebrow">3 · הערכה שלנו</p><h2 id="activity-heading">פעילות שאפשר לערוך ולהפעיל</h2></div><span id="activity-badge" class="tag"></span></div>
+          <p class="muted">הנוסח, השלבים והזמנים ניתנים לעריכה. רכיבי החוסן והמיומנויות מתעדכנים לפי השלבים שנשארו בפעילות.</p>
+          <div id="activity-content"></div>
+          <div id="activity-validation" role="status" aria-live="polite"></div>
+          <div class="actions"><button id="save-activity" class="btn" type="button">שמירת הפעילות במכשיר</button><button id="print-kit" class="btn secondary" type="button">הערכה להדפסה / PDF</button><button id="print-participant" class="btn secondary" type="button">חומרי משתתפים להדפסה</button><button id="download-work" class="btn secondary" type="button">קובץ עבודה להמשך עריכה</button></div>
+          <p class="muted">קובץ עבודה אישי כולל את התקציר, המקורות והגרסאות. חומרי המשתתפים כוללים את המטרה, התרגול והחומרים המשותפים בלבד.</p>
+          <label class="check-row"><input id="include-selection-reason" type="checkbox">לצרף לערכת ההנחיה את הסבר הבחירה האישי (עשוי לכלול הקשר מהתקציר)</label>
+        </section>
+
+        <section id="adapt-section" class="card" aria-labelledby="adapt-title" hidden>
+          <p class="eyebrow">4 · לומדים ומתאימים</p><h2 id="adapt-title">מה כדאי לשנות?</h2>
+          <p>עדכנו למעלה את התקציר, הזמן, המשתתפים, המרחב או התצפיות. אפשר גם לחבר מיפוי חדש ממסך המיפוי. לפני אישור השינוי נראה את ההסבר ואת השפעתו על המטרה והתרגול.</p>
+          <button id="adapt-activity" class="btn secondary" type="button">הצעת התאמה לתנאים המעודכנים</button>
+          <details class="linked-option"><summary>גרסה מקושרת למשפחה או לאוכלוסייה נוספת</summary>
+            <p class="muted">גרסה נוספת נוצרת רק בבחירה מפורשת. היא מקבלת את המטרה והמוקד המשותפים ותנאי ההשתתפות החדשים; תיאורים פרטיים ומיפויים אינם מועברים אליה.</p>
+            <label class="check-row"><input id="variant-opt-in" type="checkbox">נרצה להכין גרסה מקושרת</label>
+            <div class="field-grid"><label>מי ישתתף בגרסה הנוספת?<input id="variant-participants" type="text" placeholder="למשל משפחה או צוות שותף"></label><label>גיל המשתתפים<input id="variant-age" type="text"></label><label>כמה משתתפים?<input id="variant-count" type="number" min="2" step="1" value="4"></label><label>זמן לפעולה, בדקות<input id="variant-duration" type="number" min="5" step="1" value="15"></label></div>
+            <button id="generate-variant" class="btn secondary" type="button">הצעת הגרסה המקושרת</button>
+          </details>
+          <div id="candidate-panel" class="candidate-panel" hidden><h3 id="candidate-title">הצעת התאמה לבדיקה</h3><div id="candidate-explanation"></div><div id="candidate-content"></div><div id="candidate-validation"></div><div class="actions"><button id="accept-candidate" class="btn" type="button">אישור ההצעה</button><button id="reject-candidate" class="btn secondary" type="button">השארת הגרסה הקיימת</button></div></div>
+          <div id="linked-variants"></div>
+          <details><summary>היסטוריית הגרסאות <span id="version-count">(0)</span></summary><div id="versions-list"></div></details>
+        </section>
+      </div>
+      <aside class="studio-aside" aria-label="העבודה שלי">
+        <section class="card saved-card"><h2>העבודה שלי</h2><p class="muted">שמירה לפי המשתמש/ת במכשיר הזה. אפשר להעביר קובץ עבודה אישי למכשיר אחר ולהמשיך ללא הפקה מחדש.</p><div id="saved-work-list"><p class="muted">בודקים את ההרשאה לפתיחת עבודות שמורות…</p></div><label class="btn secondary file-label">פתיחת קובץ עבודה<input id="import-work" type="file" accept=".json,application/json"></label></section>
+        <section class="card compact"><h2>מה רואים בכל פעילות?</h2><ul><li>מטרה ורכיב מוקד אחד.</li><li>מיומנויות אישיות ומשותפות.</li><li>הצעד שמתרגל כל רכיב ומיומנות.</li><li>זמנים, חומרים והנחיה.</li><li>עיבוד, למידה וצעד המשך.</li></ul><p class="muted">אפשר לבחור דרך להשתתף בלי לספר סיפור אישי. מתעדים פעולות ולמידה; אין ציון חוסן אישי.</p></section>
+      </aside>
+    </div>
+  </main>
+  <footer class="studio-footer">Begood · חוסן נבנה בפעולות ובמנגנונים משותפים</footer>
+</body>
+</html>
