@@ -46,6 +46,7 @@ window.SBE_SCREENS = [
       { file:'resilience-advisor.html', label:'פרקטי — יועצת לפיתוח חוסן חברתי', who:'הרשאת חוסן חברתי או פרקטי' },
       { file:'leadership-advisor.html', label:'נוגי — יועצת למנהיגות תומכת חוסן', who:'הרשאת נוגי' },
       { file:'message-writer.html', label:'כתיבה מקדמת חוסן', who:'הרשאת כתיבה מקדמת חוסן בלבד' },
+      { file:'facilitation-advisor.html', label:'ננה — מהוראה להנחיה', who:'הרשאת ננה' },
       { file:'journey.html', label:'מסע אל החוסן — מסך המשתתפים', who:'הרשאת מסע אל החוסן' },
     ]},
   ]},
