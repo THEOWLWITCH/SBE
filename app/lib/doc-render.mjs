@@ -196,8 +196,24 @@ ol.q,ul.q{margin:0;padding-inline-start:18px;font-size:13.5px;line-height:1.5;}
 ol.q li,ul.q li{margin-bottom:5px;}
 .free{border-top:1px solid var(--hair);margin-top:12px;padding-top:10px;
  font-size:12.5px;color:var(--muted);line-height:1.5;}
+.dt{width:100%;border-collapse:collapse;font-size:13.5px;line-height:1.45;margin:0 0 10px;}
+.dt th,.dt td{border:1px solid var(--hair);padding:6px 9px;text-align:right;vertical-align:top;}
+.dt thead th{background:#2E5A7D;color:#fff;font-weight:700;font-size:12px;}
+.dt tbody th{background:var(--sub);width:27%;font-weight:700;font-size:12px;color:var(--ink);}
+.dt p{margin:0;} .dt td.n{width:26px;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);}
+.dt td.ty{width:1%;white-space:nowrap;}
+.dt-cap{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.12em;color:var(--muted);margin:4px 0 4px;}
+@media(max-width:520px){
+  .dt thead{display:none;}
+  .dt,.dt tbody,.dt tr,.dt td,.dt tbody th{display:block;width:auto!important;}
+  .dt tr{border:1px solid var(--hair);border-radius:6px;margin:0 0 7px;overflow:hidden;}
+  .dt td,.dt tbody th{border:0;border-bottom:1px solid var(--hair);}
+  .dt td.n,.dt td.ty{display:inline-block;border:0;}
+  .dt td[data-label]:not([data-label="#"])::before{content:attr(data-label);display:block;font-weight:700;font-size:11px;color:var(--muted);}
+}
 @page{size:A5;margin:10mm;}
 @media print{body{background:#fff;padding:0;}.card{box-shadow:none;max-width:none;border-radius:0;font-size:10.5pt;}
+ .dt tr{break-inside:avoid;} .dt thead th,.dt tbody th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
  #rptFab,#rptDlg,#navBar,#navPanel{display:none!important;} body.sbe-hasnav{padding-top:0;}}
 `;
 
@@ -408,22 +424,25 @@ ${WIDGET}`;
         redLine(),
     });
 
-    const tline = (t) => `<div><span class="n">${t.n}</span><span>${esc(t.name)} — ${esc(t.demands)}</span>` +
-      `<span class="t ${t.core ? 'core' : /סגירה|ניתוק/.test(t.type || '') ? 'cl' : 'op'}">${t.core ? 'ליבה' : esc(t.type)}</span></div>`;
     const tic = (a.visible || []).find((v) => String(v).includes('"')) || '';
     const wontSay = ((a.hidden || []).find((h) => String(h).startsWith('לא תגידי')) || '').replace(/^לא תגידי:\s*/, '');
     const entrance = a.entrance || {};
+    // כרטיס הכיס בטבלאות (07/10/2026, "קו אחיד") — שורה לכל מה שתופסים במבט.
+    const tpType = (t) => `<span class="t ${t.core ? 'core' : /סגירה|ניתוק/.test(t.type || '') ? 'cl' : 'op'}">${t.core ? 'ליבה' : esc(t.type)}</span>`;
     const cardActor = card(s, 'כרטיס שחקנית', a.nameAndAge,
-      blk('פתיחה', `<p style="margin:0">${esc(entrance.posture)} · ${esc(entrance.doing)}</p>
-    <p style="margin:5px 0 0" class="big">${esc(entrance.firstLine)}</p>`) +
-      blk('הביטוי החוזר שלך', `<div class="big">${esc(tic)}</div>`) +
-      blk('לא תגידי בשום מצב', `<div class="stop">${esc(wontSay)}</div>`) +
-      blk('בלחץ שלישי יוצא רק זה', `<div class="warm">${esc(a.valve)}</div>`) +
-      blk('נפתחת כש', `<p style="margin:0">${esc(a.opens)}</p>`) +
-      blk('מולך', `<p style="margin:0">${esc(tr.role)}${tr.seniority ? ', ' + esc(tr.seniority) : ''}. ${esc((tr.traits || [])[1] || (tr.traits || [])[0] || '')}</p>
-    <ul class="q" style="margin-top:5px">${(tr.likelyMoves || []).map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`) +
-      blk('חמש התפניות', `<div class="tl">${(s.turningPoints || []).map(tline).join('')}</div>`) +
-      blk('סיומים', `<ul class="q">${(s.endings || []).map((e) => `<li>${esc(e)}</li>`).join('')}</ul>`) +
+      dtable(null, [
+        ['פתיחה', `<p style="margin:0">${esc(entrance.posture)} · ${esc(entrance.doing)}</p><p style="margin:5px 0 0" class="big">${esc(entrance.firstLine)}</p>`],
+        ['הביטוי החוזר שלך', tic ? `<div class="big">${esc(tic)}</div>` : ''],
+        ['לא תגידי בשום מצב', wontSay ? `<div class="stop">${esc(wontSay)}</div>` : ''],
+        ['בלחץ שלישי יוצא רק זה', a.valve ? `<div class="warm">${esc(a.valve)}</div>` : ''],
+        ['נפתחת כש', a.opens ? esc(a.opens) : ''],
+        ['מולך', `${esc(tr.role)}${tr.seniority ? ', ' + esc(tr.seniority) : ''}. ${esc((tr.traits || [])[1] || (tr.traits || [])[0] || '')}` +
+          ((tr.likelyMoves || []).length ? `<ul class="q" style="margin-top:5px">${tr.likelyMoves.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '')],
+      ].filter((r) => r[1])) +
+      `<div class="dt-cap">חמש התפניות</div>` +
+      dtable(['#', 'התפנית', 'מה זה מבקש ממנה', ''], (s.turningPoints || []).map((t) => [esc(t.n), `<b>${esc(t.name)}</b>`, esc(t.demands), tpType(t)]))
+        .replace(/<td data-label="#">/g, '<td class="n" data-label="#">').replace(/<td data-label="">/g, '<td class="ty">') +
+      ((s.endings || []).length ? dtable(null, [['סיומים', `<ul class="q">${s.endings.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>`]]) : '') +
       `<div class="free">אם היא עושה משהו שאינו כאן: שאלי מה ${esc(actorFirstName)} תעשה לנוכח החשש שלה, ולכי לשם. <b>המפה היא מלאי ולא כלוב.</b></div>`);
 
     // בדיקת דלף על גרסת המתנסה — אותה בדיקה שרצה ברתמה.
