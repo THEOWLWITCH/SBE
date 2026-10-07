@@ -2504,7 +2504,15 @@ table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 4px;}
 th,td{border:1px solid #CDD3D8;padding:6px 8px;text-align:start;vertical-align:top;}
 th{background:#EDEFF1;font-weight:700;}
 td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;}
-.sess{border:1px solid #CDD3D8;border-radius:8px;padding:14px 16px;margin:0 0 12px;break-inside:avoid;page-break-inside:avoid;}
+.sess{margin:0 0 18px;}
+.sess h3{border-bottom:1px solid #CDD3D8;padding-bottom:4px;break-after:avoid;}
+.goal{font-size:13.5px;margin:4px 0 6px;}
+tr{break-inside:avoid;page-break-inside:avoid;} thead{display:table-header-group;}
+thead th{background:#2E5A7D;color:#fff;}
+table.kv th{width:22%;background:#EDEFF1;}
+table.flow tbody th{width:15%;background:#EDEFF1;} table.flow td.n{width:9%;}
+table.end thead th{background:#4A6B5A;}
+td p{margin:0 0 4px;} td ol,td ul{margin:0;}
 .fact{padding:5px 9px;border-radius:5px;margin-bottom:5px;font-size:13.5px;}
 .fact b{font-size:11.5px;margin-inline-end:6px;}
 .fact.ok{background:#DFE9E2;color:#2F4F3E;} .fact.gap{background:#F5E4E2;color:#6E2B26;} .fact.check{background:#F5EAD9;color:#6B4520;}
@@ -2541,18 +2549,19 @@ function seqDocHTML(narr){
   if (narr && narr.paragraphs && narr.paragraphs.length) {
     h += `<h2>על הרצף</h2>` + narr.paragraphs.map(p => `<p>${nl(p)}</p>`).join("");
   }
+  // תמצית הרצף בטבלה (07/10/2026) — במקום רצף של כותרות קטנות ושורות קצרות
   const goals = seq.goals.map(str).filter(Boolean);
-  if (goals.length) h += `<h2>מטרות</h2><ol>${goals.map(g => `<li>${nl(g)}</li>`).join("")}</ol>`;
-  if (seq.approaches.length) h += `<div class="lbl">גישות ושיטות למידה</div><p>${esc(seq.approaches.join(" · "))}</p>`;
-  if (str(seq.finalProduct)) h += `<div class="lbl">תוצר סופי</div><p>${nl(seq.finalProduct)}</p>`;
-  if (str(seq.assessment)) h += `<div class="lbl">דרכי המדידה, ההערכה והמשוב</div><p>${nl(seq.assessment)}</p>`;
-  const cond = [];
-  if (str(seq.framework)) cond.push(`<div class="lbl">המסגרת</div><p>${nl(seq.framework)}</p>`);
-  if (str(seq.space)) cond.push(`<div class="lbl">המרחב</div><p>${nl(seq.space)}</p>`);
   const li = arr => `<ul>${arr.map(x => `<li>${esc(x.item)}${str(x.note) ? " — " + esc(str(x.note)) : ""}</li>`).join("")}</ul>`;
-  if (seq.prefs.length) cond.push(`<div class="lbl">העדפות</div>${li(seq.prefs)}`);
-  if (seq.limits.length) cond.push(`<div class="lbl">מגבלות</div>${li(seq.limits)}`);
-  if (cond.length) h += `<h2>תנאי המפגשים</h2>` + cond.join("");
+  const facts = [];
+  if (goals.length) facts.push(["מטרות", `<ol>${goals.map(g => `<li>${nl(g)}</li>`).join("")}</ol>`]);
+  if (seq.approaches.length) facts.push(["גישות ושיטות למידה", esc(seq.approaches.join(" · "))]);
+  if (str(seq.finalProduct)) facts.push(["תוצר סופי", nl(seq.finalProduct)]);
+  if (str(seq.assessment)) facts.push(["מדידה, הערכה ומשוב", nl(seq.assessment)]);
+  if (str(seq.framework)) facts.push(["המסגרת", nl(seq.framework)]);
+  if (str(seq.space)) facts.push(["המרחב", nl(seq.space)]);
+  if (seq.prefs.length) facts.push(["העדפות", li(seq.prefs)]);
+  if (seq.limits.length) facts.push(["מגבלות", li(seq.limits)]);
+  if (facts.length) h += `<h2>תמצית הרצף</h2><table class="kv">${facts.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</table>`;
   const filled = seq.sessions.map((s, i) => ({ s, i })).filter(x => !isEmptySession(x.s));
   if (filled.length) {
     h += `<h2>מבט על הרצף</h2><table><thead><tr><th>מפגש</th><th>יעד</th><th>משך</th><th>תוצר המפגש</th></tr></thead><tbody>`;
@@ -2561,24 +2570,20 @@ function seqDocHTML(narr){
       h += `<tr><td class="n">${i + 1}</td><td>${nl(goal)}</td><td class="n">${esc(str(s.duration) || "—")}</td><td>${nl(s.product)}</td></tr>`;
     });
     h += `</tbody></table><h2>המפגשים</h2>`;
+    // לכל מפגש: יעד, טבלת מהלך (שלב · זמן · מה עושים), וטבלת סיום (תוצר והערכה · משאבים ועזרים · מקורות)
     filled.forEach(({ s, i }) => {
-      const withMin = (label, m) => str(m) ? `${label} (${esc(str(m))})` : label;
-      let fl = "";
-      if (str(s.opening)) fl += `<li><b>${withMin("פתיחה", s.openingMin)}:</b> ${nl(s.opening)}</li>`;
+      const rows = [];
+      if (str(s.opening)) rows.push(["פתיחה", s.openingMin, nl(s.opening)]);
       const subs = s.subs.filter(x => str(x.t));
-      if (str(s.main) || subs.length) {
-        fl += `<li><b>${withMin("פעילות מרכזית", s.mainMin)}:</b> ${nl(s.main)}`;
-        if (subs.length) fl += `<ol>${subs.map(x => `<li>${nl(x.t)}${str(x.min) ? ` <span class="meta">(${esc(str(x.min))})</span>` : ""}</li>`).join("")}</ol>`;
-        fl += `</li>`;
-      }
-      if (str(s.closing)) fl += `<li><b>${withMin("סיכום", s.closingMin)}:</b> ${nl(s.closing)}</li>`;
+      if (str(s.main) || subs.length) rows.push(["פעילות מרכזית", s.mainMin, (str(s.main) ? `<p>${nl(s.main)}</p>` : "") +
+        (subs.length ? `<ol>${subs.map(x => `<li>${nl(x.t)}${str(x.min) ? ` <span class="meta">(${esc(str(x.min))})</span>` : ""}</li>`).join("")}</ol>` : "")]);
+      if (str(s.closing)) rows.push(["סיכום", s.closingMin, nl(s.closing)]);
       h += `<section class="sess"><h3>מפגש ${i + 1}<span class="t">${esc(str(s.duration))}</span></h3>`;
-      if (smartSentence(s)) h += `<div class="lbl">יעד המפגש</div><p>${nl(smartSentence(s))}</p>`;
-      if (fl) h += `<div class="lbl">מהלך הפעילות</div><ol>${fl}</ol>`;
-      if (str(s.product)) h += `<div class="lbl">תוצר המפגש והערכתו</div><p>${nl(s.product)}</p>`;
-      if (str(s.resources)) h += `<div class="lbl">משאבים ועזרים</div><p>${nl(s.resources)}</p>`;
+      if (smartSentence(s)) h += `<p class="goal"><b>יעד המפגש:</b> ${nl(smartSentence(s))}</p>`;
+      if (rows.length) h += `<table class="flow"><thead><tr><th>שלב</th><th>זמן</th><th>מה עושים</th></tr></thead><tbody>${rows.map(([t, m, c]) => `<tr><th>${t}</th><td class="n">${esc(str(m) || "—")}</td><td>${c}</td></tr>`).join("")}</tbody></table>`;
       const ss = narr && narr.sessionSources ? narr.sessionSources[i + 1] : null;
-      if (ss && ss.length) h += `<div class="lbl">מקורות להרחבה למפגש</div>${sourceList(ss)}`;
+      const end = [["תוצר המפגש והערכתו", str(s.product) ? nl(s.product) : ""], ["משאבים ועזרים", str(s.resources) ? nl(s.resources) : ""], ["מקורות להרחבה", ss && ss.length ? sourceList(ss) : ""]].filter(x => x[1]);
+      if (end.length) h += `<table class="end"><thead><tr>${end.map(x => `<th>${x[0]}</th>`).join("")}</tr></thead><tbody><tr>${end.map(x => `<td>${x[1]}</td>`).join("")}</tr></tbody></table>`;
       h += `</section>`;
     });
   }
