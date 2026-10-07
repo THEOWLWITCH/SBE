@@ -92,11 +92,11 @@
   // שהשרת החזיר לקוד (sbe.session.perms).
   var PAGES_BY_PERM = {
     fac_trainee: ["input-screen.html"], fac_parent: ["parent-input-screen.html"], fac_youth: ["student-input-screen.html"],
-    conv: ["conversation-planner.html"], activity: ["activity-planner.html", "resilience-studio.html"], academic: ["academic-review.html"],
-    resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html", "resilience-studio.html"],
-    leadership: ["leadership-advisor.html", "resilience-advisor-sources.html", "resilience-studio.html"],
-    practi: ["resilience-advisor.html", "resilience-advisor-sources.html", "resilience-studio.html"],
-    studio: ["resilience-studio.html"],
+    conv: ["conversation-planner.html"], activity: ["activity-planner.html"], academic: ["academic-review.html"],
+    resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html"],
+    leadership: ["leadership-advisor.html", "resilience-advisor-sources.html"],
+    practi: ["resilience-advisor.html", "resilience-advisor-sources.html"],
+    studio: ["resilience-studio.html"], // עד לאישור המקצועי — רק בהרשאה הזאת (studio.mjs: STUDIO_PERMS)
     journey: ["journey.html"],
     writer: ["message-writer.html", "resilience-advisor-sources.html"], // כתיבה מקדמת חוסן — רק בהרשאה הזאת (02/10/2026)
     nana: ["facilitation-advisor.html", "resilience-advisor-sources.html"] // ננה — מהוראה להנחיה (07/10/2026)
@@ -124,7 +124,7 @@
     // הכלים הנוספים — רק מה שנפתח למוסד (sbe.session.modules, נשמר ב-system-select.html).
     var mods = {};
     try { mods = JSON.parse(ss("sbe.session.modules") || "{}") || {}; } catch(e){}
-    if (["studio", "activity", "resilience", "practi", "leadership"].some(function(p){return mods[p] === true;})) allowed.push("resilience-studio.html");
+    if (mods.studio === true) allowed.push("resilience-studio.html");
     if (track !== "parent" && track !== "youth") {
       if (mods.conv === true) allowed.push("conversation-planner.html");
       if (mods.activity === true) allowed.push("activity-planner.html");
@@ -141,7 +141,7 @@
       ? ["resilience-advisor.html", "resilience-advisor-sources.html"] : [];
     if (!allowed.length) home = "";
   } else if (home === "resilience-team.html") {
-    allowed = ["resilience-team.html", "resilience-fill.html", "resilience-studio.html"];
+    allowed = ["resilience-team.html", "resilience-fill.html"];
   } else {
     allowed = [];
     home = "";

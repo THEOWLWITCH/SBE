@@ -189,7 +189,7 @@ async function api(action, extra = {}) {
     ["feedback-results.html", "תוצאות משוב", "משוב מנחה, מתנסה וצופה על הסדנאות"],
     ["search.html", "חיפוש במאגר התרחישים", "תרחישי המוסד והמאגר המשותף"]);
   if (has("resilience")) T.push(["resilience-team.html", "חוסן חברתי", "פתיחת כיתה, QR לשאלון, תוצאות וסיכום והמלצות"]);
-  if (["studio", "activity", "resilience", "practi", "leadership"].some(has)) T.push(["resilience-studio.html", "סטודיו חוסן", "השראה, תקציר וערכת פעולה: מטרה, רכיבי חוסן ומיומנויות אישיות ומשותפות"]);
+  if (has("studio")) T.push(["resilience-studio.html", "סטודיו חוסן", "השראה, תקציר וערכת פעולה: מטרה, רכיבי חוסן ומיומנויות אישיות ומשותפות"]);
   if (has("resilience") || has("practi")) T.push(["resilience-advisor.html", "פרקטי: יועצת לפיתוח חוסן חברתי", "בלי שאלון: מתארים את הכיתה ומקבלים ניתוח והמלצות מבוססי מחקר"]);
   if (has("leadership")) T.push(["leadership-advisor.html", "נוגי: יועצת למנהיגות תומכת חוסן", "להנהלה, לרכזים ולצוותי תלמידים: שאלון פתיחה, דוח סיכום והמלצות ושיחת המשך"]);
   if (has("nana")) T.push(["facilitation-advisor.html", "ננה: מהוראה להנחיה", "מספרים על הקבוצה, הנושא והמטרה, ומקבלים מדריך הנחיה אישי שמחזק את החוסן החברתי — עם תרגול רגעים מאתגרים ורפלקציה אחרי המפגש"]);

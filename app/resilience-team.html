@@ -425,6 +425,10 @@ function loadCfg(){
   return c&&c.id&&(c.key||c.admin) ? c : null; // admin: כיתה שמנהלת המערכת פתחה מהרשימה
 }
 function saveCfg(c){try{localStorage.setItem(CFG,JSON.stringify(c));}catch{}}
+// סטודיו חוסן — עד לאישור המקצועי רק למי שיש לו הרשאת studio, ולמנהלת המערכת (access-guard.js)
+(function(){let ok=false;try{const h=sessionStorage.getItem('sbe.session.homeUrl');const ps=JSON.parse(sessionStorage.getItem('sbe.session.perms')||'[]')||[];
+  const ms=JSON.parse(sessionStorage.getItem('sbe.session.modules')||'{}')||{};ok=h==='admin.html?role=sys'||ps.includes('studio')||ms.studio===true;}catch(e){}
+  document.getElementById('btn-studio').hidden=!ok;})();
 document.getElementById('btn-studio').addEventListener('click',function(){
   if(DEMO){alert('זהו מיפוי הדגמה. בסטודיו אפשר לפתוח דוגמת פעילות ללא העברת נתוני כיתה.');location.href='resilience-studio.html';return;}
   const c=loadCfg();
