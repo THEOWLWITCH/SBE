@@ -232,6 +232,8 @@ function renderEntry(){
   const inn = el("div",{class:"in"});
   const code = el("input",{class:"code", placeholder:"XXXX-XXXX או 6 ספרות", autocomplete:"off", spellcheck:"false", "aria-label":"הקוד שלך"});
   const err = el("div",{class:"err"},""); err.hidden = true;
+  // הגעה מכניסה שהסתיימה (access-guard.js, ?expired=1)
+  if (new URLSearchParams(location.search).get("expired")) { err.textContent = "הכניסה הקודמת הסתיימה (כניסה תקפה ל-12 שעות). אפשר להיכנס שוב — מה ששמרת במכשיר מחכה לך."; err.hidden = false; err.style.color = "var(--ink, #14212B)"; }
   const btn = el("button",{class:"primary"},"כניסה");
   const submit = async () => {
     const c = fixCodeKeys(code.value.replace(/[‎‏؜]/g, "")).trim();

@@ -150,6 +150,24 @@
   // טופס המשוב מקישור/QR של סדנה (?w=) — פתוח גם בלי כניסה: המשתתפות סורקות בטלפון בסוף התחקיר.
   // השרת מקבל משוב רק לסדנה שנפתחה (wfSubmit), ולא חושף משובים של אחרים.
   if (page === "feedback.html" && /[?&]w=[a-z0-9]{8,32}(&|$)/.test(location.search)) return;
+  // כניסה שהסתיימה (07/10/2026): האסימון החתום תקף 12 שעות, אבל לשונית פתוחה שומרת אותו גם אחר כך —
+  // והשרת דוחה אותו ("אין הרשאה פעילה"). חוזרים למסך הכניסה עם הסבר, במקום הודעת הרשאה מבלבלת.
+  if (ALL_USERS.indexOf(page) === -1) {
+    try {
+      var tk = ss("sbe.session.token") || "";
+      if (tk.indexOf(".") > 0) {
+        var raw = Uint8Array.from(atob(tk.split(".")[0].replace(/-/g, "+").replace(/_/g, "/")), function(ch){ return ch.charCodeAt(0); });
+        var pl = JSON.parse(new TextDecoder().decode(raw));
+        if (pl.exp && pl.exp < Date.now()) {
+          KEYS.forEach(function(k){ sessionStorage.removeItem(k); });
+          localStorage.removeItem(MIRROR);
+          document.documentElement.style.display = "none";
+          location.replace(base + "entry.html?expired=1");
+          return;
+        }
+      }
+    } catch(e){}
+  }
   if (allowed === null || (home && ALL_USERS.indexOf(page) !== -1) || allowed.indexOf(page) !== -1) return;
 
   // אין הרשאה — לא מציגים את הדף, וחוזרים למסך הבית (או למסך הכניסה).

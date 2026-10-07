@@ -13,3 +13,22 @@
 .social-mechanism{border:1px solid #CDD3D8;border-radius:10px;padding:16px;margin-top:18px;background:#F3F6F8}
 #coach-proposal{border:2px solid #2E5A7D;border-radius:10px;padding:16px;margin:16px 0}
 .card,.step-card{scroll-margin-top:84px}
+
+/* 07/10/2026: רעיונות לדוגמה בעמודת הצד, מצומצמים ובצבע מבחין; התקציר בראש העמוד. שדות נדרשים — כוכבית אדומה. */
+.req{color:#B23A3A;font-weight:800}
+.fill-note{background:var(--spoken-soft);border-radius:8px;padding:.6rem .85rem;font-size:.93rem}
+.studio-layout{grid-template-columns:minmax(0,1fr) 300px}
+.ideas-side{background:#FBF3E4;border-color:#E3C892}
+.ideas-side h2{color:#7A5A22;font-size:1.08rem}
+.ideas-side .eyebrow{color:#8F5F2E}
+.ideas-side .inspiration-grid{grid-template-columns:1fr;gap:.55rem;margin-top:.6rem}
+.ideas-side .idea-card{background:var(--surface);border:1px solid #E3C892;border-inline-start:4px solid #B8893B;padding:.6rem .75rem}
+.ideas-side .idea-card:last-child:nth-child(odd){grid-column:auto}
+.ideas-side .idea-card h3{font-size:.96rem;margin:.1rem 0 .25rem}
+.ideas-side .idea-card .eyebrow{font-size:.74rem;margin:0}
+.ideas-side .idea-purpose{font-size:.84rem;color:var(--muted);margin:0 0 .3rem}
+.ideas-side .idea-more{margin:.2rem 0;font-size:.84rem}
+.ideas-side .idea-more summary{font-size:.82rem}
+.ideas-side .actions{gap:.35rem;margin:.35rem 0 0;padding-top:0}
+@media(max-width:1050px){.studio-layout{grid-template-columns:minmax(0,1fr) 260px}}
+@media(max-width:800px){.studio-layout{grid-template-columns:1fr}}
