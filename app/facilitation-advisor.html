@@ -378,12 +378,12 @@ function addableSelect(id,listName,what){
   }
   btn.addEventListener('click',()=>{
     const v=inp.value.replace(/\s+/g,' ').trim();msg.hidden=false;
-    if(v.length<2){msg.textContent='צריך להקליד ערך.';return;}
+    if(v.length<2){msg.textContent='אפשר להקליד ערך ואז ללחוץ על "הוספה לרשימה".';return;}
     btn.disabled=true;msg.textContent='מוסיפה לרשימה...';
     const done=t=>{render(v);inp.value='';msg.textContent=t;sel.dispatchEvent(new Event('change'));save();};
     accessApi({action:'listAdd',name:listName,value:v,token:token()}).then(d=>{
       if(d.items){extra=d.items;done('נוסף לרשימה של כולם ונבחר ✓');}
-      else done(d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם צריך להיות מחובר/ת עם ההרשאה המתאימה.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).');
+      else done(d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם, אפשר להיכנס עם ההרשאה המתאימה.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).');
     }).catch(()=>done('נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).')).finally(()=>{btn.disabled=false;});
   });
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();btn.click();}});
@@ -478,7 +478,7 @@ function renderGuide(){
     doc.appendChild(el('h3',null,'קריאת הקבוצה'));
     const c=el('div','rcard');
     put(c,row('איפה הקבוצה עכשיו',d.read.stage));
-    if(d.read.needs.length){c.appendChild(el('p','rrow')).appendChild(el('b',null,'מה היא צריכה:'));const ul=el('ul','tl');d.read.needs.forEach(n=>{const li=el('li');li.appendChild(inlineRich(n));ul.appendChild(li);});c.appendChild(ul);}
+    if(d.read.needs.length){c.appendChild(el('p','rrow')).appendChild(el('b',null,'מה יכול לחזק אותה:'));const ul=el('ul','tl');d.read.needs.forEach(n=>{const li=el('li');li.appendChild(inlineRich(n));ul.appendChild(li);});c.appendChild(ul);}
     put(c,lensEl(d.read.lens));doc.appendChild(c);
   }
   // המיומנויות לחזק
@@ -553,7 +553,7 @@ function renderGuide(){
   nw.addEventListener('click',()=>{if(!confirm('להתחיל מדריך חדש? המדריך הנוכחי והשיחות יימחקו מהמכשיר. הטופס נשאר.'))return;
     STATE.report=null;STATE.chat=[];STATE.practice=null;STATE.after=null;save();renderGuide();renderMore();F('form-card').scrollIntoView({behavior:'smooth'});});
 }
-// כרטיס כיס: מה שצריך ביד בזמן המפגש — עמדה, תזכורות, שאלות, ומשפט אחד לכל רגע קשה
+// כרטיס כיס: מה שכדאי שיהיה ביד בזמן המפגש — עמדה, תזכורות, שאלות, ומשפט אחד לכל רגע קשה
 function pocketNode(d){
   const box=el('div');
   if(d.stance.to){const p=el('p','say');p.appendChild(el('b',null,'העמדה: '));p.appendChild(document.createTextNode(d.stance.to));box.appendChild(p);}
