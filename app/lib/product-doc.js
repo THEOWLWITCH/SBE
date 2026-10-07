@@ -70,6 +70,7 @@
   const STYLE = `.kit-table{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:14.5px;line-height:1.6}
 .kit-table th,.kit-table td{border:1px solid #CDD3D8;padding:8px 10px;text-align:right;vertical-align:top}
 .kit-table tbody th{background:rgba(46,90,125,.08);width:22%;font-weight:700}
+.kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700}
 .kit-table .sbe-rich{font-size:14.5px;line-height:1.65}.kit-table .sbe-rich p:last-child,.kit-table .sbe-rich ul:last-child{margin-bottom:0}
 @media (max-width:640px){.kit-table,.kit-table tbody,.kit-table tr,.kit-table th,.kit-table td{display:block;width:auto}.kit-table tr{border:1px solid #CDD3D8;border-radius:8px;margin:8px 0;overflow:hidden}.kit-table th,.kit-table td{border:0}}
 .sbe-rich{line-height:1.75;font-size:15px}
