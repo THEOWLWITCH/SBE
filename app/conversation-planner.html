@@ -1038,23 +1038,21 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     if (briefing) {
       body.append(el("div", { class:"banner-mini" }, "התדריך נכתב על ידי המודל מתוך השדות שמילאת. קראי, ואם משהו לא מדויק — ערכי ישירות כאן, או ערכי את השדה למעלה ובני מחדש."));
       body.append(el("h4", {}, "לפני שאת נכנסת לחדר"));
-      briefNode = SBE_DOC.rich(briefing);
+      briefNode = SBE_DOC.sections(briefing) || SBE_DOC.rich(briefing); // טבלה: חלק בכל שורה (07/10/2026)
       body.append(SBE_DOC.editable(briefNode));
     } else {
       body.append(el("div", { class:"banner-mini" }, "⚠ אין חיבור למודל כרגע — מוצגים כרטיס התזכורת ועץ האפשרויות מהשדות כפי שמולאו (מצב הדגמה). כשהשרת המקומי פועל, המודל כותב מהם תדריך רציף."));
     }
     body.append(el("h4", {}, "כרטיס תזכורת"));
-    const rc = el("div", { class:"rcard", contenteditable:"true", spellcheck:"true" }); rc.classList.add("sbe-edit");
-    rc.append(el("div", { class:"rcard-meta" }, `${d.creator || ""} · ${d.date || ""}`));
-    if (d.goal) rc.append(el("div",{class:"rcard-row"}, el("b",{},"המטרה שלי"), el("div",{},d.goal)));
-    if (d.nonNegotiables) rc.append(el("div",{class:"rcard-row"}, el("b",{},"קו תחתון"), el("div",{},d.nonNegotiables)));
-    if (d.openingLine) rc.append(el("div",{class:"rcard-row"}, el("b",{},"איך לפתוח"), el("div",{},d.openingLine)));
-    if (d.approach) rc.append(el("div",{class:"rcard-row"}, el("b",{},"הגישה"), el("div",{}, d.approach + (info ? " — " + info.when.replace(/^מתי כדאי לבחור בה:\s*/,"") : ""))));
-    if (d.backupPlan) rc.append(el("div",{class:"rcard-row"}, el("b",{},"תוכנית ב׳"), el("div",{},d.backupPlan)));
+    // כרטיס התזכורת — טבלה (07/10/2026)
     const myLine = traitsLine(d.myTraits), otherLine = traitsLine(d.otherTraits);
-    if (myLine) rc.append(el("div",{class:"rcard-row"}, el("b",{},"המאפיינים שלי"), el("div",{},myLine)));
-    if (otherLine) rc.append(el("div",{class:"rcard-row"}, el("b",{}, `המאפיינים של ${d.otherParty || "הצד השני"}`), el("div",{},otherLine)));
-    body.append(rc);
+    const rc = SBE_DOC.table([
+      ["המטרה שלי", d.goal], ["קו תחתון", d.nonNegotiables], ["איך לפתוח", d.openingLine],
+      ["הגישה", d.approach ? d.approach + (info ? " — " + info.when.replace(/^מתי כדאי לבחור בה:\s*/,"") : "") : ""],
+      ["תוכנית ב׳", d.backupPlan], ["המאפיינים שלי", myLine], [`המאפיינים של ${d.otherParty || "הצד השני"}`, otherLine],
+    ]);
+    rc.classList.add("rcard-table", "sbe-edit"); rc.setAttribute("contenteditable", "true"); rc.setAttribute("spellcheck", "true");
+    body.append(el("p", { class:"rcard-meta" }, `${d.creator || ""} · ${d.date || ""}`), rc);
 
     if (!briefing) body.append(el("h4", {}, "עץ אפשרויות"));
     const tree = el("div", { class:"tree2" });
@@ -1089,7 +1087,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     dl.addEventListener("click", () => SBE_DOC.print({
       title: briefing ? "תדריך לפני שיחה" : "כרטיס תזכורת לשיחה",
       subtitle: [d.myself, d.otherParty].filter(Boolean).join(" · מול ") ,
-      nodes: (() => { const card = rc.querySelector(".rcard-row") ? [h("כרטיס תזכורת"), rc] : [];
+      nodes: (() => { const card = rc.querySelector("tr") ? [h("כרטיס תזכורת"), rc] : [];
         return briefing ? [h("לפני שאת נכנסת לחדר"), briefNode, ...card] : [...card, h("עץ אפשרויות"), tree]; })() }));
     body.append(dl, sysBtn);
     show(briefing ? "התדריך לפני השיחה" : "כרטיס התזכורת ועץ האפשרויות", body);
