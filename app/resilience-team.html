@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>חוסן חברתי — ניהול</title>
+<script src="lib/report-table.js"></script>
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1093,6 +1094,14 @@ function actCard(a,extra){
   if(a.mechanism)c.appendChild(el2('p','act-m','מה זה מפתח: '+a.mechanism));
   return c;
 }
+// טבלאות בסיכום (07/10/2026), כמו בדוח של פרקטי: פעילות בכל שורה; חוזקות ואתגרים — תחום | מה רואים
+function actTable(items,extraFn,mechLabel){if(!(items||[]).length)return el2('p',null,'—');
+  const mech=items.some(a=>a.mechanism);
+  return SBE_TABLE(mech?['הפעילות','מה עושים',mechLabel||'מה זה מפתח']:['הפעילות','מה עושים'],items.map(a=>{const t=el2('div');t.appendChild(el2('div','rt-title',a.title||''));const tags=el2('div','act-tags');
+    if(a.game)tags.appendChild(el2('span','act-tag game','🎲 משחק חברתי'));if(a.kind)tags.appendChild(el2('span','act-tag kind',a.kind));if(a.circle)tags.appendChild(el2('span','act-tag circle',a.circle));
+    const x=extraFn?extraFn(a):'';if(x)tags.appendChild(el2('span','act-tag',x));if(tags.childNodes.length)t.appendChild(tags);
+    return mech?[t,a.description||'',a.mechanism||null]:[t,a.description||''];}),'acts');}
+function domTable(items){if(!(items||[]).length)return el2('p',null,'—');return SBE_TABLE(null,items.map(it=>[it.domain||'',it.text||'']));}
 function textList(items){
   const ul=el2('ul');
   (items||[]).forEach(it=>{const li=el2('li');if(it.domain){li.appendChild(el2('b',null,it.domain+': '));}li.appendChild(document.createTextNode(it.text||''));ul.appendChild(li);});
@@ -1143,30 +1152,30 @@ function renderSummary(){
   if(d.intro)card.appendChild(el2('p','sum-intro',d.intro));
   if((d.progress||[]).length){
     card.appendChild(el2('h2',null,'מעקב: מה השתנה מאז המדידה הקודמת'));
-    card.appendChild(textList(d.progress));
+    card.appendChild(domTable(d.progress));
   }
 
   card.appendChild(el2('h2',null,'1. חוזקות הכיתה'));
-  card.appendChild(textList(d.strengths));
+  card.appendChild(domTable(d.strengths));
   card.appendChild(el2('h3',null,'1.1 פעילויות ותהליכים להעצמת החוזקות'));
-  (d.strengthActivities||[]).forEach(a=>card.appendChild(actCard(a)));
+  card.appendChild(actTable(d.strengthActivities));
   card.appendChild(el2('h3',null,'1.2 החוזקות כמנוף להתמודדות עם האתגרים'));
-  (d.leverage||[]).forEach(a=>card.appendChild(actCard(a,a.from&&a.to?a.from+' ← '+a.to:'')));
+  card.appendChild(actTable(d.leverage,a=>a.from&&a.to?a.from+' ← '+a.to:''));
 
   card.appendChild(el2('h2',null,'2. אתגרים'));
   card.appendChild(el2('h3',null,'2.1 האתגרים — כיווני צמיחה'));
-  card.appendChild(textList(d.challenges));
+  card.appendChild(domTable(d.challenges));
   card.appendChild(el2('h3',null,'2.2 פעילויות ותהליכים להתמודדות'));
-  (d.challengeActivities||[]).forEach(a=>card.appendChild(actCard(a,a.for)));
+  card.appendChild(actTable(d.challengeActivities,a=>a.for));
 
   // סיכום שהופק לפני שנוספו הסעיפים האלה — בלי כותרות ריקות
   if((d.environment||[]).length){
     card.appendChild(el2('h2',null,'3. עיצוב סביבת הכיתה'));
-    d.environment.forEach(x=>card.appendChild(actCard({title:x.title,description:x.description},x.for)));
+    card.appendChild(actTable(d.environment,a=>a.for));
   }
   if((d.other||[]).length){
     card.appendChild(el2('h2',null,'4. המלצות נוספות'));
-    d.other.forEach(x=>card.appendChild(actCard({title:x.title,description:x.description})));
+    card.appendChild(actTable(d.other));
   }
 
   card.appendChild(el2('p',null,'הסיכום הופק על ידי מודל שפה על סמך תוצאות השאלון בלבד. הוא נקודת פתיחה לחשיבה ולשיחה עם הצוות, ולא מחליף שיקול דעת מקצועי.')).style.cssText='font-size:.78rem;color:var(--muted);margin-top:1.2rem';
