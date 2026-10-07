@@ -64,7 +64,7 @@
     var base = location.href.replace(/[^/]*$/, "");
     return '<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
       '<base href="' + base + '"><title>' + String(title).replace(/</g, "&lt;") + ' — Begood</title>' + links + "<style>" + css +
-      "\nbody{padding:18px 16px 40px}html.sbe-sysonly,.sbe-sysonly{display:none!important}</style></head><body><main style=\"max-width:880px;margin:0 auto\">" +
+      "\nbody{padding:18px 16px 40px}html.sbe-sysonly,.sbe-sysonly{display:none!important}\n/* התוכן הועתק מתוך חלון (dialog) — בלי גובה קבוע וגלילה פנימית, כדי שלא ייחתך במסמך וב-PDF */\nhtml,body{height:auto!important;overflow:visible!important}main,main *{max-height:none!important;overflow:visible!important}</style></head><body><main style=\"max-width:880px;margin:0 auto\">" +
       c.outerHTML + "</main></body></html>";
   }
   function withBase(html) {
@@ -96,7 +96,7 @@
       var b = openDialogBody(); if (!b) return null;
       var t = vis(b);
       if (/אין כרגע חיבור למודל|לא הופק|לא נבנה/.test(t) && t.length < 600) return { fail: t };
-      return t.length > 400 ? b : null;
+      return (t.length > 400 || dialogFrameHtml()) ? b : null; // תוצר בתוך מסגרת (רצף, דו״ח) — הטקסט שלו לא נספר ב-innerText
     }, 15 * 60e3, title);
     if (body.fail) throw new Error(body.fail.trim().slice(0, 300));
     var html = dialogFrameHtml() ? withBase(dialogFrameHtml()) : standalone(body, title);
@@ -130,6 +130,10 @@
     "activity-planner.html": async function () {
       if (q.get("part") === "seq") {
         click("#mSeq"); await sleep(600); click("#sqLoadSample"); await sleep(1500);
+        // שם היוצר/ת הוא שדה עיקרי — בלעדיו דו״ח הניתוח לא נשלח למודל
+        var cf = Array.prototype.slice.call(document.querySelectorAll("#screen-seq .f[data-req]")).filter(function (x) { return /שם היוצר/.test(x.textContent); })[0];
+        var ci = cf && cf.querySelector("input,textarea");
+        if (ci && !ci.value.trim()) { var nm = ""; try { nm = sessionStorage.getItem("sbe.session.name") || ""; } catch (e) {} ci.value = nm || "מעבדת הדמו"; ci.dispatchEvent(new Event("input", { bubbles: true })); await sleep(300); }
         var a = await dialogProduct("act-seq", "תכנון פעילות — רצף מפגשים", "רצף מפגשים", function () { click("#bSeqBuild"); });
         await sleep(800);
         var b = await dialogProduct("act-seq", "תכנון פעילות — משוב ודו״ח ניתוח לרצף", "רצף מפגשים · משוב", function () { click("#bSeqReport"); });
