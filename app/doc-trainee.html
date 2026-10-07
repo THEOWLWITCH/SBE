@@ -95,20 +95,47 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .marks>div:nth-child(2n){text-align:center;color:var(--muted);font-size:12.5px;
   border-inline-start:1px solid var(--hair);white-space:nowrap;}
 .marks>div:nth-last-child(-n+2){border-bottom:none;}
+.dt{width:100%;border-collapse:collapse;font-size:14px;line-height:1.6;margin:0 0 4px;}
+.dt th,.dt td{border:1px solid var(--hair);padding:8px 11px;text-align:right;vertical-align:top;}
+.dt thead th{background:#2E5A7D;color:#fff;font-weight:700;font-size:13px;}
+.dt tbody th{background:var(--sub);width:22%;font-weight:700;font-size:13px;}
+.dt p{margin:0 0 6px;} .dt p:last-child{margin:0;}
+.dt ol,.dt ul{margin:0;padding-inline-start:17px;} .dt li{margin-bottom:4px;}
+.dt td.n{width:32px;text-align:center;font-weight:700;}
+.dt td.ck{width:64px;text-align:center;color:var(--muted);font-size:16px;}
+.dt td.w{width:38%;}
+.dt .tag{margin-inline-start:6px;}
+.sec:has(.dt){break-inside:auto;}
+.dt-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+.dt-cap{font-size:12.5px;font-weight:700;color:var(--muted);margin:14px 0 6px;}
+.dt .eff{margin-inline-start:0;}
 .red{border:1px solid #E0C4C1;background:#FAF0EF;border-radius:4px;
   padding:12px 15px;font-size:14px;color:#7A322D;}
 .foot{border-top:1px solid var(--hair);padding:11px 36px;font-size:11.5px;
-  color:var(--muted);display:flex;justify-content:space-between;background:var(--sub);}
+  color:var(--muted);display:flex;flex-direction:column;gap:3px;background:var(--sub);}
+.foot-row{display:flex;justify-content:space-between;}
+.foot-by{font-size:10px;}
 @media(max-width:640px){
+  .dt thead{display:none;}
+  .dt,.dt tbody,.dt tr,.dt td,.dt tbody th{display:block;width:auto!important;}
+  .dt tr{border:1px solid var(--hair);border-radius:6px;margin:0 0 8px;overflow:hidden;}
+  .dt td,.dt tbody th{border:0;border-bottom:1px solid var(--hair);text-align:right!important;}
+  .dt td.w{display:none;}
+  .dt td.n{display:inline-block;border:0;padding-bottom:0;} .dt td.n::before{display:none!important;}
+  .dt td.ck{display:inline-block;width:49%!important;border:0;} .dt td.ck::before{display:inline!important;margin-inline-end:8px;}
+  .dt td[data-label]::before{content:attr(data-label);display:block;font-weight:700;font-size:12px;color:var(--muted);}
   .two{grid-template-columns:1fr;} .row,.tp-b,.br{grid-template-columns:1fr;gap:3px;}
   .head,.body,.foot{padding-inline:20px;}
 }
-@page{size:A4;margin:14mm;}
+@page{size:A4;margin:18mm 20mm;}
 @media print{
   body{background:#fff;padding:0;}
   .sheet{box-shadow:none;max-width:none;border-radius:0;font-size:11pt;}
   .head,.body,.foot{padding-inline:0;}
   .sec{break-inside:avoid;}
+  .dt{font-size:10pt;} .dt tr{break-inside:avoid;page-break-inside:avoid;} .dt thead{display:table-header-group;}
+  .dt thead th,.dt tbody th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .dt td.w{height:3.2em;}
   .no-print,#rptFab,#rptDlg,#navBar,#navPanel{display:none!important;}
   body.sbe-hasnav{padding-top:0;}
 }
@@ -122,8 +149,11 @@ ol.list li,ul.list li{margin-bottom:7px;}
     <div class="meta"><span><b>גננת בגן טרום חובה</b></span><span><b>5</b> דקות</span><span>גן</span><span>גישה חינוכית: דיאלוג ומפגש</span><span>TR-0209-01</span></div>
   </div>
   <div class="hr"></div>
-  <div class="body"><div class="sec"><div class="h"><span>סיפור המקרה ונתוני פתיחה</span></div><p>את גננת בגן טרום חובה, עשרים ושישה ילדים וסייעת אחת. השבוע התחלתם יחידה על מים, ובגללה הרצפה רטובה בין עשר לשתים עשרה כל יום.</p><p>לפני שבוע, ליד הברז, ילד דחף ילד אחר ואת הפרדת ביניהם. שני הילדים חזרו לשחק אחרי כמה דקות, ולא דיווחת על כך הביתה.</p><p>אתמול פנתה אלייך רננה, אמו של אחד מהם, וביקשה להיפגש היום. רננה היא מרפאה בעיסוק במכון להתפתחות הילד, ובתקופה הזו של השנה, עונת ועדות ההשמה, היא עמוסה מהרגיל. היא מדברת במשפטים ארוכים ומדויקים, מהסוג של מי שרגילה לכתוב דוחות, ונוטה להתקצר מאוד כשמשהו לא נוח לה. לפני חודשיים היא נשארה אחרי אספת ההורים ועזרה לך לסדר את פינת המוטוריקה, ובסוף אמרה "יש לך גן טוב".</p><p>בהודעה שלה כתוב שהיא רוצה לדבר על סידור הישיבה של בנה. את לא יודעת מה בדיוק היא ראתה או שמעה.</p><p>כעת תיפגשי עם רננה בחדר הצוות. לרשותך חמש דקות.</p></div><div class="sec"><div class="h"><span>מה על הפרק בשבילך</span></div><p>מה שעל הפרק בשבילך הוא שני דברים שקשה להחזיק יחד בחמש דקות: האמון של אמא שכבר הראתה לך שהיא מעריכה את הגן שלך, והגבול המקצועי שלך — מה את באמת יכולה להבטיח לה עם עשרים ושישה ילדים וסייעת אחת, ומה לא. רננה ביקשה לדבר על סידור הישיבה של בנה, ואת עדיין לא יודעת מה בדיוק היא ראתה או שמעה, וגם לא מה גרם לה לבקש פגישה דווקא עכשיו. אם תרגיעי מהר מדי או תבטיחי משהו כדי שהשיחה תיגמר יפה, היא תצא מרוצה היום ואת תשלמי על זה בשבוע הבא, והיחסים שנבנו כאן מאז שנשארה לעזור לך אחרי אספת ההורים ואמרה "יש לך גן טוב" ייסדקו במקום הכי לא נוח — במקום שבו הבטחת. ואם תגני על עצמך יותר מדי, תצאי עם הגבול ובלי האמון. את רוצה לצאת מהחדר הזה עם שניהם: עם אמירה ברורה מה בידך לעשות, ועם אמא שעדיין רוצה לדבר איתך.</p></div><div class="sec"><div class="h"><span>קו אדום</span></div><div class="red">קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים. אם זה קורה בכל זאת בסימולציה חיה, המנחה עוצרת את התרגיל ומתערבת — זה לא נרשם כישלון אישי, אלא רגע ללמידה משותפת.</div></div></div>
-  <div class="foot"><span>Begood · חינוך מבוסס סימולציה · TR-0209-01</span><span>גרסת המתנסה</span></div>
+  <div class="body"><div class="sec"><div class="h"><span>לפני השיחה</span></div><table class="dt"><tbody><tr><th>סיפור המקרה ונתוני פתיחה</th><td><p>את גננת בגן טרום חובה, עשרים ושישה ילדים וסייעת אחת. השבוע התחלתם יחידה על מים, ובגללה הרצפה רטובה בין עשר לשתים עשרה כל יום.</p><p>לפני שבוע, ליד הברז, ילד דחף ילד אחר ואת הפרדת ביניהם. שני הילדים חזרו לשחק אחרי כמה דקות, ולא דיווחת על כך הביתה.</p><p>אתמול פנתה אלייך רננה, אמו של אחד מהם, וביקשה להיפגש היום. רננה היא מרפאה בעיסוק במכון להתפתחות הילד, ובתקופה הזו של השנה, עונת ועדות ההשמה, היא עמוסה מהרגיל. היא מדברת במשפטים ארוכים ומדויקים, מהסוג של מי שרגילה לכתוב דוחות, ונוטה להתקצר מאוד כשמשהו לא נוח לה. לפני חודשיים היא נשארה אחרי אספת ההורים ועזרה לך לסדר את פינת המוטוריקה, ובסוף אמרה "יש לך גן טוב".</p><p>בהודעה שלה כתוב שהיא רוצה לדבר על סידור הישיבה של בנה. את לא יודעת מה בדיוק היא ראתה או שמעה.</p><p>כעת תיפגשי עם רננה בחדר הצוות. לרשותך חמש דקות.</p></td></tr><tr><th>מה על הפרק בשבילך</th><td><p>מה שעל הפרק בשבילך הוא שני דברים שקשה להחזיק יחד בחמש דקות: האמון של אמא שכבר הראתה לך שהיא מעריכה את הגן שלך, והגבול המקצועי שלך — מה את באמת יכולה להבטיח לה עם עשרים ושישה ילדים וסייעת אחת, ומה לא. רננה ביקשה לדבר על סידור הישיבה של בנה, ואת עדיין לא יודעת מה בדיוק היא ראתה או שמעה, וגם לא מה גרם לה לבקש פגישה דווקא עכשיו. אם תרגיעי מהר מדי או תבטיחי משהו כדי שהשיחה תיגמר יפה, היא תצא מרוצה היום ואת תשלמי על זה בשבוע הבא, והיחסים שנבנו כאן מאז שנשארה לעזור לך אחרי אספת ההורים ואמרה "יש לך גן טוב" ייסדקו במקום הכי לא נוח — במקום שבו הבטחת. ואם תגני על עצמך יותר מדי, תצאי עם הגבול ובלי האמון. את רוצה לצאת מהחדר הזה עם שניהם: עם אמירה ברורה מה בידך לעשות, ועם אמא שעדיין רוצה לדבר איתך.</p></td></tr></tbody></table></div><div class="sec"><div class="h"><span>קו אדום</span></div><div class="red">קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים. אם זה קורה בכל זאת בסימולציה חיה, המנחה עוצרת את התרגיל ומתערבת — זה לא נרשם כישלון אישי, אלא רגע ללמידה משותפת.</div></div></div>
+  <div class="foot">
+    <div class="foot-row"><span>Begood · חינוך מבוסס סימולציה · TR-0209-01</span><span>גרסת המתנסה</span></div>
+    <div class="foot-by">ד"ר יעל שדה · 2 בספטמבר 2026 · מכללה לחינוך</div>
+  </div>
 </div>
 <!-- ── ניווט גלובלי: חזרה + הבית + תפריט (09/09/2026, הוקטן 09/09/2026,
      נוסף כפתור "הבית" 22/09/2026) ──
