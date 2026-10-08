@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
 <script src="lib/resilience-advisor-sources.js"></script>
+<script src="lib/ref-collect.js"></script>
 <script src="lib/resilience-writer.js"></script>
 <script src="lib/invite-language.js"></script>
 <script src="lib/facilitation-model.js"></script>
@@ -149,6 +150,16 @@ ul.tl li{margin:.25rem 0}
 .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
 @media (max-width:640px){.qgrid{grid-template-columns:1fr}}
 .qgrid .rcard{margin:0}
+.wait-t{font-weight:600}.wait-s{font-size:.85rem;color:var(--muted);margin-top:.2rem}
+.wait-bar{height:6px;border-radius:99px;background:var(--hair);overflow:hidden;margin-top:.45rem;max-width:320px}.wait-bar i{display:block;height:100%;width:0;background:var(--spoken);transition:width .9s linear}
+@media (prefers-reduced-motion:reduce){.wait-bar i{transition:none}}
+.pocket-card{border:2px solid var(--spoken)}
+.pocket-head{display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap}.pocket-head h2{margin:0}
+.pocket-doc{display:grid;gap:.7rem;margin-top:.6rem}
+.pocket-doc .pk-sec{border:1px solid var(--hair);border-radius:10px;padding:.7rem 1rem;font-size:1.12rem;line-height:1.6}
+.pocket-doc .pk-sec h4{margin:0 0 .3rem;color:var(--spoken);font-size:1.15rem}
+.pocket-doc .pk-sec ul{margin:0;padding-inline-start:1.3rem}.pocket-doc .pk-sec li{margin-bottom:.3rem}
+.pocket-doc .pk-stance{background:var(--spoken-soft);font-weight:700}
 .pocket{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:.35rem}
 .pocket li{background:var(--hidden-soft);border-radius:6px;padding:.35rem .6rem;font-size:.9rem;font-weight:600}
 @media (max-width:640px){.pocket{grid-template-columns:1fr}}
@@ -197,9 +208,9 @@ ul.tl li{margin:.25rem 0}
 
   <div class="card" id="intro-card">
     <h1>ננה</h1>
-    <p class="tag">מנחה את המנחים — מהוראה מול הקבוצה להנחיה שמחזקת אותה</p>
+    <p class="tag">ננה מנחה את המנחים: מהוראה מול הקבוצה להנחיה שמחזקת אותה.</p>
     <p>מספרים לננה על הקבוצה, על הנושא ועל המטרה, ומקבלים <b>מדריך הנחיה אישי</b>: לא עוד פעילות, אלא <b>איך להנחות</b>. איך לפתוח, אילו שאלות לשאול, מה לומר ברגעים הקשים, ואיך לסיים כך שהקבוצה תמשיך לפעול יחד גם אחרי המפגש.</p>
-    <p class="article-link" style="font-size:.9rem;margin:.45rem 0 0">📖 <a href="about.html?from=facilitation-advisor.html#article" target="_blank" rel="noopener" style="color:var(--spoken,var(--accent,#2E5A7D));font-weight:700">לבחור בחוסן שלנו</a> — מאמר קצר על המושגים שבבסיס הכלי: מנגנונים חברתיים, קהילת חוסן ותו חוסן.</p>
+    <p class="article-link" style="font-size:.9rem;margin:.45rem 0 0">📖 <a href="about.html?from=facilitation-advisor.html#article" target="_blank" rel="noopener" style="color:var(--spoken,var(--accent,#2E5A7D));font-weight:700">לבחור בחוסן שלנו</a>. מאמר קצר על המושגים שבבסיס הכלי: מנגנונים חברתיים, קהילת חוסן ותו חוסן.</p>
     <div class="vs" aria-label="המעבר">
       <div class="from"><b>הוראה</b><br>העברת ידע: הסבר, תרגול ובדיקת הבנה.</div>
       <div class="arrow">←</div>
@@ -208,7 +219,7 @@ ul.tl li{margin:.25rem 0}
     <ol class="steps">
       <li><b>1. מספרים</b>על הקבוצה, על המפגש ועל עצמך כמנחה</li>
       <li><b>2. מקבלים מדריך</b>שאפשר לערוך, להדפיס ולשמור כ-PDF, וגם כרטיס כיס</li>
-      <li class="step-opt"><b>ואם תרצו — מתרגלים וחוזרים</b>אפשרות: תרגול רגע מאתגר מול "הקבוצה", ורפלקציה אחרי המפגש</li>
+      <li class="step-opt"><b>ואם תרצו, מתרגלים וחוזרים</b>זו אפשרות: תרגול רגע מאתגר מול "הקבוצה", ורפלקציה אחרי המפגש</li>
     </ol>
   </div>
 
@@ -245,7 +256,7 @@ ul.tl li{margin:.25rem 0}
       <legend>אני כמנחה</legend>
       <label for="f-exp">הניסיון שלי בהנחיית קבוצה</label>
       <select id="f-exp"><option value="">בחירה...</option></select>
-      <label>באיזו מיומנות תרצו שאתמקד? <span class="opt">(לא חובה — אפשר לבחור כמה)</span></label>
+      <label>באיזו מיומנות תרצו שאתמקד? <span class="opt">(לא חובה, אפשר לבחור כמה)</span></label>
       <details class="habits-dd" id="habits-dd"><summary id="habits-sum">בחירה...</summary><div class="habits" id="f-habits"></div></details>
       <label for="f-worry">מה מדאיג אותך לקראת המפגש? <span class="opt">(לא חובה)</span></label>
       <textarea id="f-worry" maxlength="800" placeholder="למשל: שתהיה שתיקה ולא אדע מה לעשות; שאאבד שליטה; שמישהו יתחיל לבכות"></textarea>
@@ -278,7 +289,7 @@ ul.tl li{margin:.25rem 0}
       <div class="btns"><button class="btn" id="ask-go" type="button">שליחה</button><button class="btn btn-ghost" id="ask-clear" type="button">שיחה חדשה</button></div>
     </div>
     <div id="pane-practice" hidden>
-      <p class="muted">ננה משחקת את הקבוצה ברגע מאתגר, ואת/ה מתרגל/ת: כותבים מה אומרים או עושים, והקבוצה מגיבה. בסוף — משוב מננה.</p>
+      <p class="muted">ננה משחקת את הקבוצה ברגע מאתגר, ואת/ה מתרגל/ת: כותבים מה אומרים או עושים, והקבוצה מגיבה. בסוף מקבלים משוב מננה.</p>
       <label for="pr-moment">איזה רגע לתרגל?</label>
       <select id="pr-moment"></select>
       <div class="btns"><button class="btn" id="pr-start" type="button">התחלת תרגול</button></div>
@@ -315,15 +326,8 @@ const KB = BANK.map(s=>'['+s.k+'] '+s.gist).join('\n');
 const RULE = window.SBE_WRITER ? SBE_WRITER.rule : '';
 
 // ── טקסט מהמודל: [מפתח] → קישור, **מודגש**, תבליטים ורשימות ──
-function withRefs(text){
-  const frag=document.createDocumentFragment();
-  String(text||'').split(/(\[[A-Za-z]+[0-9]{4}\])/).forEach(part=>{
-    const m=part.match(/^\[([A-Za-z]+[0-9]{4})\]$/);
-    if(m&&SRC.byKey[m[1]]&&SRC.byKey[m[1]].hidden){frag.appendChild(document.createTextNode('[ד״ר יעל שדה, Begood]'));}
-    else if(m&&SRC.byKey[m[1]]){const a=el('a','ref',m[1]);a.href='resilience-advisor-sources.html?a=nana#'+m[1];a.target='_blank';a.title=SRC.byKey[m[1]].apa;frag.appendChild(document.createTextNode('['));frag.appendChild(a);frag.appendChild(document.createTextNode(']'));}
-    else if(!m)frag.appendChild(document.createTextNode(part));
-  });
-  return frag;
+function withRefs(text){ // מקורות בסוף המסמך (08/10/2026): [מפתח] ו-(מפתח, מפתח) יוצאים מהטקסט ונאספים לרשימה
+  return document.createTextNode(SBE_REFS.strip(text));
 }
 function inlineRich(text){
   const frag=document.createDocumentFragment();
@@ -346,7 +350,8 @@ function richText(text){
   });
   return box;
 }
-function basisEl(keys){
+function basisEl(keys){SBE_REFS.add(keys);return null;
+
   const ks=(keys||[]).filter(k=>SRC.byKey[k]);if(!ks.length)return null;
   const p=el('p','basis','על בסיס: ');
   ks.forEach((k,i)=>{if(i)p.appendChild(document.createTextNode(' · '));p.appendChild(withRefs('['+k+']'));});
@@ -453,9 +458,14 @@ FIELDS.forEach(k=>{const clear=()=>{F(k).classList.remove('miss');save();};F(k).
 // ההודעות האחרונות — תמיד מתחילות בהודעה של המשתמש/ת (המודל לא מקבל שיחה שמתחילה בתשובה)
 function tail(list,n){let s=Math.max(0,list.length-n);while(s<list.length&&list[s].role!=='user')s++;return list.slice(s);}
 async function complete(system,messages,maxTokens){return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens},300000)||'');}
-function waiting(node,text){
-  const t0=Date.now();node.textContent=text;
-  const id=setInterval(()=>{const s=Math.round((Date.now()-t0)/1000);node.textContent=text+' · '+s+' שניות';},1000);
+// המתנה עם ציפייה ברורה (08/10/2026): כמה זמן זה לוקח בדרך כלל, כמה עבר, ופס התקדמות
+function waiting(node,text,exp){
+  exp=exp||45;const t0=Date.now();node.textContent='';
+  const t=el('div','wait-t',text);const sub=el('div','wait-s','');const bar=el('div','wait-bar');const fill=el('i');bar.appendChild(fill);
+  node.appendChild(t);node.appendChild(bar);node.appendChild(sub);
+  const tick=()=>{const s=Math.round((Date.now()-t0)/1000);fill.style.width=Math.min(95,Math.round(s/exp*90))+'%';
+    sub.textContent=s<=exp?'בדרך כלל זה לוקח כ-'+exp+' שניות. עברו '+s+' שניות.':'לוקח קצת יותר מהרגיל. עוד רגע. עברו '+s+' שניות.';};
+  tick();const id=setInterval(tick,1000);
   return ()=>clearInterval(id);
 }
 
@@ -470,8 +480,8 @@ F('btn-go').addEventListener('click',async()=>{
     F(miss[0][0]).scrollIntoView({behavior:'smooth',block:'center'});F(miss[0][0]).focus();return;}
   err.hidden=true;save();
   BUSY=true;const b=F('btn-go');b.disabled=true;
-  const g=F('guide');g.textContent='';const c=el('div','card');const msg=el('p');c.appendChild(msg);g.appendChild(c);
-  const stop=waiting(msg,'ננה קוראת את הקבוצה ומכינה את מדריך ההנחיה... (דקה–שתיים)');
+  const g=F('guide');g.textContent='';const c=el('div','card');const msg=el('div');c.appendChild(msg);g.appendChild(c);
+  const stop=waiting(msg,'ננה קוראת את הקבוצה ומכינה את מדריך ההנחיה.',100);
   g.scrollIntoView({behavior:'smooth',block:'start'});
   const input=N.inputText(form());
   try{
@@ -494,11 +504,12 @@ function fmtDate(iso){return new Date(iso).toLocaleDateString('he-IL',{day:'2-di
 function subtitle(R){const f=R.f||{};return [f.group,f.age,f.topic?'נושא: '+f.topic:''].filter(Boolean).join(' · ');}
 
 function renderGuide(){
+  SBE_REFS.begin(SRC,'resilience-advisor-sources.html?a=nana');
   const g=F('guide');g.textContent='';const R=STATE.report;if(!R)return;const d=R.doc;
   const card=el('div','card');
   const bar=el('div','toolbar no-print');
   const pr=el('button','btn','🖨 הדפסה / שמירה כ-PDF');pr.type='button';
-  const pk=el('button','btn btn-ghost','🗂 כרטיס כיס להדפסה');pk.type='button';
+  const pk=el('button','btn btn-ghost','🗂 לכרטיס הכיס');pk.type='button';
   const nw=el('button','btn btn-ghost','מדריך חדש');nw.type='button';
   put(bar,pr,pk,nw);card.appendChild(bar);
   const doc=el('div');doc.id='guide-doc';
@@ -508,8 +519,8 @@ function renderGuide(){
 
   // העמדה
   if(d.stance.to){
-    doc.appendChild(el('h3',null,'העמדה שלך במפגש'));
-    doc.appendChild(ktable(['מהוראה','להנחיה','לחוסן החברתי'],[[d.stance.from?inlineRich(d.stance.from):null,inlineRich(d.stance.to),d.stance.why?inlineRich(d.stance.why):null]],'kstance'));
+    doc.appendChild(el('h3',null,'התפקיד שלך במפגש'));
+    doc.appendChild(ktable(['כשמלמדים (הוראה)','כשמנחים (הנחיה)','מה זה בונה בחוסן החברתי'],[[d.stance.from?inlineRich(d.stance.from):null,inlineRich(d.stance.to),d.stance.why?inlineRich(d.stance.why):null]],'kstance'));
   }
   // טבלאות (07/10/2026): במקום הרבה שורות קצרות — טבלה לכל חלק. עריכה ישירה בתאים; ב-PDF לרוחב הדף.
   const ul=(xs)=>{const u=el('ul','tl');xs.forEach(x=>{const li=el('li');li.appendChild(inlineRich(x));u.appendChild(li);});return u;};
@@ -517,18 +528,18 @@ function renderGuide(){
   const lensTxt=(t,basis)=>{const box=el('div');if(t)box.appendChild(inlineRich(t));const bs=basisEl(basis);if(bs)box.appendChild(bs);return box.childNodes.length?box:null;};
   // קריאת הקבוצה
   if(d.read.stage||d.read.needs.length){
-    doc.appendChild(el('h3',null,'קריאת הקבוצה'));
-    doc.appendChild(ktable(null,[['איפה הקבוצה עכשיו',txt(d.read.stage)],['מה יכול לחזק אותה',d.read.needs.length?ul(d.read.needs):null],['לחוסן החברתי',txt(d.read.lens)]].filter(r=>r[1]),'k2'));
+    doc.appendChild(el('h3',null,'מצב הקבוצה'));
+    doc.appendChild(ktable(null,[['מה המצב עכשיו',txt(d.read.stage)],['מה יכול לחזק אותה',d.read.needs.length?ul(d.read.needs):null],['מה זה בונה בחוסן החברתי',txt(d.read.lens)]].filter(r=>r[1]),'k2'));
   }
   // המיומנויות לחזק
   if(d.shifts.length){
-    doc.appendChild(el('h3',null,'המיומנויות שלך במפגש הזה'));
-    doc.appendChild(ktable(['המיומנות','איך','מה אומרים','לחוסן החברתי'],d.shifts.map(x=>[el('b',null,x.skill),txt(x.move),sayEl(x.say),lensTxt(x.lens,x.basis)]),'kshifts'));
+    doc.appendChild(el('h3',null,'מיומנויות למפגש'));
+    doc.appendChild(ktable(['המיומנות','מה עושים','מה אומרים','מה זה בונה בחוסן החברתי'],d.shifts.map(x=>[el('b',null,x.skill),txt(x.move),sayEl(x.say),lensTxt(x.lens,x.basis)]),'kshifts'));
   }
   // קשת המפגש
   if(d.arc.length){
-    doc.appendChild(el('h3',null,'קשת המפגש'));
-    doc.appendChild(ktable(['שלב וזמן','מה עושה המנחה','מה אומרים','מבנה ומה לראות','לחוסן החברתי'],d.arc.map(x=>{
+    doc.appendChild(el('h3',null,'מהלך המפגש'));
+    doc.appendChild(ktable(['שלב וזמן','מה עושה המנחה','מה אומרים','מבנה ומה לראות','מה זה בונה בחוסן החברתי'],d.arc.map(x=>{
       const nm=el('div');nm.appendChild(el('b',null,x.phase));if(x.minutes)nm.appendChild(el('div','min',x.minutes));
       const sy=el('div');x.say.forEach(t=>put(sy,sayEl(t)));
       const st=el('div');put(st,row('מבנה',x.structure),row('מה לראות',x.watch));
@@ -537,25 +548,25 @@ function renderGuide(){
   // סולם שאלות — טבלה אחת, עמודה לכל שלב
   const Q=d.questions,QL=[['open','שאלות פתיחה'],['deepen','שאלות להעמקה'],['connect','חיבור לחיים ולקבוצה'],['close','שאלות סיום']].filter(([k])=>Q[k].length);
   if(QL.length){
-    doc.appendChild(el('h3',null,'סולם שאלות'));
+    doc.appendChild(el('h3',null,'שאלות למפגש'));
     doc.appendChild(ktable(QL.map(q=>q[1]),[QL.map(([k])=>ul(Q[k]))],'kq'));
   }
   // רגעים מאתגרים
   if(d.moments.length){
-    doc.appendChild(el('h3',null,'רגעים שעלולים לקרות — ומה עושים'));
+    doc.appendChild(el('h3',null,'רגעים מאתגרים ומה עושים'));
     doc.appendChild(ktable(['הרגע','איך מזהים','מה עושים','מה אומרים','כדאי להימנע'],d.moments.map(m=>{const r=el('div');r.appendChild(el('b',null,m.moment));const bs=basisEl(m.basis);if(bs)r.appendChild(bs);return [r,txt(m.signs),txt(m.do),sayEl(m.say),txt(m.avoid)];}),'kmom'));
   }
   // שיחה אישית
   const cv=d.conversation;
   if(cv){
     doc.appendChild(el('h3',null,'שיחה אישית אחרי המפגש'));
-    doc.appendChild(ktable(null,[['עם מי',txt(cv.with)],['המטרה',txt(cv.goal)],['איפה ומתי',txt(cv.setting)],['פותחים',sayEl(cv.opening)],['שאלות המשך',cv.followups.length?ul(cv.followups):null],['מסיימים',txt(cv.closing)],['לחוסן החברתי',txt(cv.lens)]].filter(r=>r[1]),'k2'));
+    doc.appendChild(ktable(null,[['עם מי',txt(cv.with)],['המטרה',txt(cv.goal)],['איפה ומתי',txt(cv.setting)],['פותחים',sayEl(cv.opening)],['שאלות המשך',cv.followups.length?ul(cv.followups):null],['מסיימים',txt(cv.closing)],['מה זה בונה בחוסן החברתי',txt(cv.lens)]].filter(r=>r[1]),'k2'));
   }
   // מנגנון
   const mc=d.mechanism;
   if(mc){
-    doc.appendChild(el('h3',null,'מה ממשיך אחרי המפגש — מנגנון חוזר'+(mc.title?': '+mc.title:'')));
-    doc.appendChild(ktable(null,[['מה קורה',txt(mc.what)],['מי מוביל/ה',txt(mc.who)],['באיזה קצב',txt(mc.rhythm)],['איך יודעים שזה פועל',txt(mc.sign)],['לחוסן החברתי',lensTxt(mc.lens,mc.basis)]].filter(r=>r[1]),'k2'));
+    doc.appendChild(el('h3',null,'מה ממשיך אחרי המפגש'+(mc.title?': '+mc.title:'')));
+    doc.appendChild(ktable(null,[['מה קורה',txt(mc.what)],['מי מוביל/ה',txt(mc.who)],['באיזה קצב',txt(mc.rhythm)],['איך יודעים שזה פועל',txt(mc.sign)],['מה זה בונה בחוסן החברתי',lensTxt(mc.lens,mc.basis)]].filter(r=>r[1]),'k2'));
   }
   // חששות ושאלות
   if(d.worries.length){
@@ -567,30 +578,37 @@ function renderGuide(){
     doc.appendChild(ktable(null,d.answers.map(x=>[x.question,richText(x.answer)]),'k2'));
   }
   // כרטיס כיס ורפלקציה
-  if(d.pocket.length){
-    doc.appendChild(el('h3',null,'כרטיס כיס — לזמן המפגש'));
-    const ul=el('ul','pocket');ul.id='guide-pocket';d.pocket.forEach(p=>ul.appendChild(el('li',null,p)));doc.appendChild(ul);
-  }
   if(d.reflect.length){
-    doc.appendChild(el('h3',null,'אחרי המפגש — שאלות לעצמך'));
+    doc.appendChild(el('h3',null,'שאלות לעצמך אחרי המפגש'));
     const ul=el('ul','tl');d.reflect.forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));ul.appendChild(li);});doc.appendChild(ul);
   }
-  doc.appendChild(el('p','muted','ננה מציעה, ואת/ה מחליט/ה: המדריך הוא נקודת פתיחה שמתאימים לקבוצה שלך. המקורות — בקישורים שבסוגריים.'));
+  doc.appendChild(el('p','muted','ננה מציעה, ואת/ה מחליט/ה: המדריך הוא נקודת פתיחה שמתאימים לקבוצה שלך. המקורות מופיעים בסוף המסמך.'));
+  {const rs=SBE_REFS.end();if(rs)doc.appendChild(rs);}
   card.appendChild(window.SBE_DOC?SBE_DOC.editable(doc):doc);
   g.appendChild(card);
+  // כרטיס כיס — תוצר נפרד (08/10/2026): בעיצוב משלו, באותיות גדולות, ובהדפסה בעמוד נפרד
+  if(d.pocket.length||d.questions.open.length||d.moments.length){
+    const pc=el('div','card pocket-card');pc.id='pocket-card';
+    const ph=el('div','pocket-head');ph.appendChild(el('h2',null,'🗂 כרטיס כיס למפגש'));
+    const pp=el('button','btn','הדפסה / שמירה כ-PDF');pp.type='button';ph.appendChild(pp);pc.appendChild(ph);
+    pc.appendChild(el('p','muted no-print','דף אחד באותיות גדולות, להחזיק ביד בזמן המפגש.'));
+    pc.appendChild(pocketNode(d));g.appendChild(pc);
+    pp.addEventListener('click',()=>SBE_DOC.print({title:'כרטיס כיס למפגש',subtitle:subtitle(R),node:pocketNode(d),pocket:true}));
+  }
   pr.addEventListener('click',()=>SBE_DOC.print({landscape:true,title:'מדריך הנחיה — ננה',subtitle:subtitle(R),node:doc}));
-  pk.addEventListener('click',()=>SBE_DOC.print({title:'כרטיס כיס — ננה',subtitle:subtitle(R),node:pocketNode(d)}));
+  pk.addEventListener('click',()=>F('pocket-card')&&F('pocket-card').scrollIntoView({behavior:'smooth',block:'start'}));
   nw.addEventListener('click',()=>{if(!confirm('להתחיל מדריך חדש? המדריך הנוכחי והשיחות יימחקו מהמכשיר. הטופס נשאר.'))return;
     STATE.report=null;STATE.chat=[];STATE.practice=null;STATE.after=null;save();renderGuide();renderMore();F('form-card').scrollIntoView({behavior:'smooth'});});
 }
 // כרטיס כיס: מה שכדאי שיהיה ביד בזמן המפגש — עמדה, תזכורות, שאלות, ומשפט אחד לכל רגע קשה
 function pocketNode(d){
-  const box=el('div');
-  if(d.stance.to){const p=el('p','say');p.appendChild(el('b',null,'העמדה: '));p.appendChild(document.createTextNode(d.stance.to));box.appendChild(p);}
-  if(d.pocket.length){box.appendChild(el('h4',null,'תזכורות'));const ul=el('ul');d.pocket.forEach(x=>ul.appendChild(el('li',null,x)));box.appendChild(ul);}
+  const box=el('div','pocket-doc');const sec=(t,cls)=>{const x=el('section','pk-sec'+(cls?' '+cls:''));if(t)x.appendChild(el('h4',null,t));box.appendChild(x);return x;};
+  const clean=t=>SBE_REFS.strip(String(t||'').replace(/\*\*/g,''));
+  if(d.stance.to){const x=sec('התפקיד שלי במפגש','pk-stance');x.appendChild(el('p',null,clean(d.stance.to)));}
+  if(d.pocket.length){const x=sec('לזכור');const ul=el('ul');d.pocket.forEach(t=>ul.appendChild(el('li',null,clean(t))));x.appendChild(ul);}
   const qs=[...d.questions.open.slice(0,2),...d.questions.deepen.slice(0,2),...d.questions.close.slice(0,1)];
-  if(qs.length){box.appendChild(el('h4',null,'שאלות'));const ul=el('ul');qs.forEach(x=>ul.appendChild(el('li',null,x.replace(/\*\*/g,''))));box.appendChild(ul);}
-  if(d.moments.length){box.appendChild(el('h4',null,'ברגע קשה'));const ul=el('ul');d.moments.forEach(m=>{const li=el('li');li.appendChild(el('b',null,m.moment+': '));li.appendChild(document.createTextNode((m.say||m.do).replace(/\*\*/g,'')));ul.appendChild(li);});box.appendChild(ul);}
+  if(qs.length){const x=sec('שאלות לקבוצה');const ul=el('ul');qs.forEach(t=>ul.appendChild(el('li',null,clean(t))));x.appendChild(ul);}
+  if(d.moments.length){const x=sec('ברגע קשה');const ul=el('ul');d.moments.forEach(m=>{const li=el('li','pk-moment');li.appendChild(el('b',null,clean(m.moment)+': '));li.appendChild(document.createTextNode(clean(m.say||m.do)));ul.appendChild(li);});x.appendChild(ul);}
   return box;
 }
 
@@ -600,7 +618,7 @@ TABS.forEach(t=>F('tab-'+t).addEventListener('click',()=>showTab(t)));
 function showTab(t){TABS.forEach(x=>{F('tab-'+x).setAttribute('aria-selected',String(x===t));F('pane-'+x).hidden=x!==t;});}
 function guideText(){return STATE.report?N.plain(STATE.report.doc):'';}
 function inputNow(){return STATE.report?STATE.report.input:N.inputText(form());}
-function bubble(cls,text,who){const m=el('div','msg '+cls);if(who)m.appendChild(el('div','who',who));if(cls==='me')m.appendChild(document.createTextNode(text));else m.appendChild(richText(text));return m;}
+function bubble(cls,text,who){const m=el('div','msg '+cls);if(who)m.appendChild(el('div','who',who));if(cls==='me')m.appendChild(document.createTextNode(text));else{SBE_REFS.begin(SRC,'resilience-advisor-sources.html?a=nana');m.appendChild(richText(text));const rs=SBE_REFS.end();if(rs)m.appendChild(rs);}return m;}
 
 const ASK_CHIPS=['איך פותחים את המפגש?','מה עושים אם יש שתיקה?','איך מזמינים את השקטים לדבר?','איך מסיימים כך שזה ימשיך?','איך מנסחים הסכמות עם הקבוצה?'];
 ASK_CHIPS.forEach(q=>{const b=el('button','chip',q);b.type='button';b.addEventListener('click',()=>{F('ask-in').value=q;F('ask-go').click();});F('ask-chips').appendChild(b);});
@@ -608,7 +626,7 @@ function renderAsk(){const log=F('ask-log');log.textContent='';STATE.chat.forEac
 F('ask-go').addEventListener('click',async()=>{
   const q=F('ask-in').value.trim();if(!q||BUSY)return;
   BUSY=true;F('ask-go').disabled=true;STATE.chat.push({role:'user',content:q});F('ask-in').value='';renderAsk();
-  const th=el('div','msg bot thinking');F('ask-log').appendChild(th);const stop=waiting(th,'ננה חושבת...');
+  const th=el('div','msg bot thinking');F('ask-log').appendChild(th);const stop=waiting(th,'ננה חושבת על תשובה.',40);
   try{const ans=await complete(N.chatSystem(inputNow(),guideText(),KB,RULE),tail(STATE.chat,12),5000);STATE.chat.push({role:'assistant',content:ans});save();}
   catch(e){STATE.chat.pop();F('ask-in').value=q;th.remove();F('ask-log').appendChild(el('p','err','התשובה לא הגיעה ('+e.message+'). אפשר לנסות שוב.'));stop();BUSY=false;F('ask-go').disabled=false;return;}
   stop();BUSY=false;F('ask-go').disabled=false;renderAsk();
@@ -630,9 +648,9 @@ function renderPractice(){
     // משוב מננה בסוף התרגול — טבלה (חלק בכל שורה) והדפסה עם השיחה (07/10/2026, "קו אחיד")
     if(m.role!=='user'&&/משוב מננה/.test(m.content)){const parts=m.content.split(/\*\*משוב מננה\*\*[:：]?/);
       if(parts[0].trim())log.appendChild(bubble('group',parts[0],'הקבוצה'));
-      const fb=(parts[1]||m.content).trim(),c=el('div','rcard');c.appendChild(el('p','rcard-t','משוב מננה'));c.appendChild(SBE_DOC.sections(fb)||richText(fb));log.appendChild(c);
+      SBE_REFS.begin(SRC,'resilience-advisor-sources.html?a=nana');const fb=SBE_REFS.strip((parts[1]||m.content).trim()),fbRefs=SBE_REFS.end(),c=el('div','rcard');c.appendChild(el('p','rcard-t','משוב מננה'));c.appendChild(SBE_DOC.sections(fb)||richText(fb));if(fbRefs)c.appendChild(fbRefs);log.appendChild(c);
       const b=el('button','btn btn-ghost btn-sm','🖨 הדפסה / PDF');b.type='button';b.style.marginTop='.4rem';
-      b.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h4',null,'המשוב'));n.appendChild(SBE_DOC.sections(fb)||richText(fb));n.appendChild(el('h4',null,'השיחה'));
+      b.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h4',null,'המשוב'));n.appendChild(SBE_DOC.sections(fb)||richText(fb));if(fbRefs)n.appendChild(fbRefs.cloneNode(true));n.appendChild(el('h4',null,'השיחה'));
         n.appendChild(SBE_DOC.table(P.msgs.slice(1,i).map(x=>[x.role==='user'?'אני':'הקבוצה',richText(x.content)])));
         SBE_DOC.print({title:'תרגול רגע מאתגר — ננה',subtitle:P.moment,node:n});});
       log.appendChild(b);return;}
@@ -643,7 +661,7 @@ async function practiceTurn(text){
   const P=STATE.practice;if(!P||BUSY)return;
   BUSY=true;['pr-go','pr-end','pr-start'].forEach(id=>F(id).disabled=true);
   P.msgs.push({role:'user',content:text});renderPractice();
-  const th=el('div','msg group thinking');F('pr-log').appendChild(th);const stop=waiting(th,'הקבוצה מגיבה...');
+  const th=el('div','msg group thinking');F('pr-log').appendChild(th);const stop=waiting(th,'הקבוצה מגיבה.',30);
   try{
     const ans=await complete(N.practiceSystem(P.moment,inputNow(),guideText(),KB,RULE),tail(P.msgs,16),3000);
     P.msgs.push({role:'assistant',content:ans});if(/משוב מננה/.test(ans))P.done=true;save();
@@ -656,14 +674,14 @@ F('pr-go').addEventListener('click',()=>{const t=F('pr-in').value.trim();if(!t)r
 F('pr-end').addEventListener('click',()=>practiceTurn('סיום תרגול'));
 
 function renderAfter(){const o=F('af-out');o.textContent='';const A=STATE.after;if(!A||!A.answer)return;
-  const c=el('div','rcard');c.appendChild(el('p','rcard-t','משוב מננה · '+fmtDate(A.at)));c.appendChild(SBE_DOC.sections(A.answer)||richText(A.answer));o.appendChild(c);
+  const c=el('div','rcard');c.appendChild(el('p','rcard-t','משוב מננה · '+fmtDate(A.at)));SBE_REFS.begin(SRC,'resilience-advisor-sources.html?a=nana');const ans=SBE_REFS.strip(A.answer);c.appendChild(SBE_DOC.sections(ans)||richText(ans));{const rs=SBE_REFS.end();if(rs)c.appendChild(rs);}o.appendChild(c);
   const b=el('button','btn btn-ghost btn-sm','🖨 הדפסה / PDF');b.type='button';b.style.marginTop='.4rem';
-  b.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h4',null,'מה קרה במפגש'));n.appendChild(richText(A.text));n.appendChild(el('h4',null,'משוב מננה'));n.appendChild(SBE_DOC.sections(A.answer)||richText(A.answer));
+  b.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h4',null,'מה קרה במפגש'));n.appendChild(richText(A.text));n.appendChild(el('h4',null,'משוב מננה'));n.appendChild(c.cloneNode(true));
     SBE_DOC.print({title:'רפלקציה אחרי המפגש — ננה',subtitle:STATE.report?subtitle(STATE.report):'',node:n});});
   o.appendChild(b);}
 F('af-go').addEventListener('click',async()=>{
   const t=F('af-in').value.trim();if(!t||BUSY)return;
-  BUSY=true;F('af-go').disabled=true;const o=F('af-out');o.textContent='';const th=el('p','muted');o.appendChild(th);const stop=waiting(th,'ננה קוראת ומכינה משוב...');
+  BUSY=true;F('af-go').disabled=true;const o=F('af-out');o.textContent='';const th=el('div','muted');o.appendChild(th);const stop=waiting(th,'ננה קוראת ומכינה משוב.',45);
   try{const ans=await complete(N.debriefSystem(inputNow(),guideText(),KB,RULE),[{role:'user',content:t}],5000);STATE.after={text:t,answer:ans,at:new Date().toISOString()};save();renderAfter();}
   catch(e){o.textContent='';o.appendChild(el('p','err','המשוב לא הגיע ('+e.message+'). מה שכתבת נשמר — אפשר לנסות שוב.'));}
   finally{stop();BUSY=false;F('af-go').disabled=false;}

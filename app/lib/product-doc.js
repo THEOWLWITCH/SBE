@@ -115,13 +115,38 @@
 
   function esc(s) { return String(s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
+  // מעבר דף במקום הנכון (08/10/2026): כותרת לא נשארת לבד בתחתית עמוד, ורשימה או טבלה קצרה לא נחתכות.
+  // כותרת + התוכן הקצר שאחריה עוטפים יחד ב-.keep (break-inside:avoid). תוכן ארוך — נשאר עם כותרתו לפחות בשורה הראשונה.
+  function keepWithHeadings(root) {
+    root.querySelectorAll("h2,h3,h4,.kit-h").forEach((h) => {
+      const nx = h.nextElementSibling; if (!nx || h.parentNode.classList.contains("keep")) return;
+      const rows = nx.matches("table") ? nx.querySelectorAll("tr").length : 0;
+      const items = nx.matches("ul,ol") ? nx.children.length : 0;
+      const short = (nx.matches("table") && rows <= 7) || (nx.matches("ul,ol") && items <= 14) || (nx.matches("p,div") && (nx.textContent || "").length < 900);
+      const wrap = document.createElement("div"); wrap.className = short ? "keep" : "keep-start";
+      h.parentNode.insertBefore(wrap, h); wrap.append(h); if (short) wrap.append(nx);
+    });
+  }
+
+  // כרטיס כיס (08/10/2026): תוצר נפרד, אותיות גדולות שקל לקרוא בזמן המפגש
+  const POCKET_CSS = `
+body{font-size:20px;line-height:1.55;max-width:760px}
+h1{font-size:26px}.hd img{height:44px}
+.pk-sec{border:2px solid #2E5A7D;border-radius:12px;padding:12px 18px;margin:0 0 14px;break-inside:avoid}
+.pk-sec h4{font-size:22px;color:#2E5A7D;margin:0 0 6px}
+.pk-sec ul{margin:0;padding-inline-start:24px}.pk-sec li{margin-bottom:6px}
+.pk-stance{background:#EEF4F8;font-weight:700;font-size:22px}
+.pk-moment b{color:#8C3A34}
+`;
+
   // node: אלמנט (או כמה) עם התוכן. העותק מנוקה מכפתורים, מהסברים ומ-contenteditable.
-  function print({ title, subtitle, node, nodes, inline = false, landscape = false }) {
+  function print({ title, subtitle, node, nodes, inline = false, landscape = false, pocket = false }) {
     const parts = (nodes || [node]).filter(Boolean).map((n) => {
       const c = n.cloneNode(true);
       c.querySelectorAll("button,.sbe-edit-hint,.no-print,style,script").forEach((x) => x.remove());
       c.querySelectorAll("table.rtable").forEach((t) => t.classList.add("kit-table")); // טבלאות SBE_TABLE — אותו עיצוב בהדפסה
       [c, ...c.querySelectorAll("[contenteditable]")].forEach((x) => { x.removeAttribute("contenteditable"); x.removeAttribute("spellcheck"); x.classList.remove("sbe-edit"); });
+      keepWithHeadings(c);
       return c.outerHTML;
     }).join("");
     const logo = logoSrc();
@@ -155,7 +180,11 @@ body{font-family:"Assistant","Segoe UI",Arial,sans-serif;color:#141C24;max-width
 .hd .dt{font-size:12.5px;color:#5C6771}
 h1{font-size:22px;margin:0 0 4px;break-after:avoid}
 .sub{color:#5C6771;margin:0 0 18px;font-size:13.5px}
-h4,h3,h2{break-after:avoid;font-size:15px;margin:18px 0 6px}
+h4,h3,h2{break-after:avoid;break-inside:avoid;font-size:15px;margin:18px 0 6px}
+.keep{break-inside:avoid;page-break-inside:avoid}
+.keep-start+*{break-before:avoid;page-break-before:avoid}
+h2+table tr:first-child,h3+table tr:first-child{break-before:avoid}
+ul,ol{orphans:3;widows:3}
 p,li{orphans:3;widows:3}
 .draftbox,.rcard,.sbe-rich,.card,.act,.session-card,.step-card,.claims-box,li{break-inside:avoid}
 .draftbox{white-space:pre-line;border:1px solid #CDD3D8;border-radius:6px;padding:12px 14px;margin-bottom:12px}
@@ -181,7 +210,7 @@ p,li{orphans:3;widows:3}
 .bar{position:sticky;top:0;background:#fff;padding:8px 0;margin-bottom:10px;text-align:left}
 .bar button{font:inherit;font-weight:700;padding:7px 16px;border-radius:6px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;cursor:pointer}
 @media print{.bar{display:none}body{margin:0;max-width:none}}
-</style></head><body>
+${pocket ? POCKET_CSS : ""}</style></head><body>
 <div class="bar"><button onclick="window.print()">הדפסה / שמירה כ-PDF</button></div>
 <div class="hd"><div><h1>${esc(title)}</h1>${subtitle ? `<p class="sub">${esc(subtitle)}</p>` : ""}<div class="dt">${esc(date)}</div></div><img src="${logo}" alt="Begood"></div>
 ${parts}
