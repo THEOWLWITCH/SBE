@@ -123,7 +123,8 @@ h3.grp{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:18px;margin:22px 0
 .lib b{font-size:16px;}.lib p{margin:4px 0 0;font-size:14.5px;line-height:1.7;}
 section.card h3{font-size:17px;margin-bottom:8px;}
 .toc{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:4px 0 14px;}
-.toc a.toc-art{color:var(--hidden);background:var(--hidden-soft);}
+.art-back{text-align:center;margin:18px 0 0;} .art-back .back{margin-top:0;font-size:14.5px;}
+.toc a.toc-art{color:var(--auto);background:var(--auto-soft);}
 .toc a{font-size:13px;font-weight:600;color:var(--spoken);background:var(--spoken-soft);border-radius:99px;padding:4px 11px;text-decoration:none;}
 .prose h4{font-size:14.5px;margin:16px 0 4px;color:var(--spoken);}
 .prose ul ul{margin:.2rem 0 .5rem;}
@@ -153,7 +154,7 @@ section.card h3{font-size:17px;margin-bottom:8px;}
 </head>
 <body>
 <div class="wrap">
-<a class="back" href="entry.html">→ למסך הכניסה</a>
+<a class="back" id="back" href="entry.html">→ למסך הכניסה</a>
 <img class="brand" src="assets/begood-logo.webp" alt="Begood — חינוך לחוסן">
 
 <header class="hero">
@@ -319,7 +320,26 @@ section.card h3{font-size:17px;margin-bottom:8px;}
 <li dir="ltr">Norris, F. H., Stevens, S. P., Pfefferbaum, B., Wyche, K. F., &amp; Pfefferbaum, R. L. (2008). Community resilience as a metaphor, theory, set of capacities, and strategy for disaster readiness. American Journal of Community Psychology, 41(1–2), 127–150. <a href="https://doi.org/10.1007/s10464-007-9156-6" target="_blank" rel="noopener">https://doi.org/10.1007/s10464-007-9156-6</a></li>
 <li dir="ltr">Sade, Y., &amp; Lewin, E. (2020). The use of internal governance in the kibbutz as a tool for social maintenance and development. Comparative Sociology, 19, 69–87. <a href="https://doi.org/10.1163/15691330-BJA10002" target="_blank" rel="noopener">https://doi.org/10.1163/15691330-BJA10002</a></li>
 </ul>
+  <p class="art-back" hidden><a class="back js-back" href="entry.html"></a></p>
 </section>
 </div>
+<script>
+// חזרה לכלי שממנו הגיעו למאמר (07/10/2026): ?from=<דף>. הקישור נפתח בלשונית חדשה — אז סוגרים אותה
+// וחוזרים ללשונית של הכלי, כשהעבודה שם שלמה. אם אי אפשר לסגור — עוברים לכלי.
+(function(){
+  var NAMES={"facilitation-advisor.html":"ננה","leadership-advisor.html":"נוגי","resilience-advisor.html":"פרקטי","message-writer.html":"כתיבה מקדמת חוסן",
+    "resilience-studio.html":"סטודיו חוסן","resilience-team.html":"מיפוי החוסן","journey.html":"מסע אל החוסן"};
+  var from=new URLSearchParams(location.search).get("from")||"";
+  if(!NAMES[from])return;
+  var ab=document.querySelector(".art-back");if(ab)ab.hidden=false;
+  [document.getElementById("back")].concat([].slice.call(document.querySelectorAll(".js-back"))).forEach(function(a){
+  a.textContent="→ חזרה ל"+NAMES[from];a.href=from;
+  a.addEventListener("click",function(e){
+    if(history.length<=1){e.preventDefault();window.close();setTimeout(function(){location.href=from;},300);}
+    else if(document.referrer&&document.referrer.indexOf(location.origin+"/")===0&&document.referrer.indexOf(from)!==-1){e.preventDefault();history.back();}
+  });
+  });
+})();
+</script>
 </body>
 </html>
