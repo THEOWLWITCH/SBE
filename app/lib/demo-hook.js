@@ -62,9 +62,12 @@
     var css = [].map.call(document.querySelectorAll("style"), function (s) { return s.textContent; }).join("\n");
     var links = [].map.call(document.querySelectorAll('link[rel="stylesheet"]'), function (l) { return '<link rel="stylesheet" href="' + l.href + '">'; }).join("");
     var base = location.href.replace(/[^/]*$/, "");
+    // הכלי ומטרתו בראש התוצר (08/10/2026: "חייב להיות הקשר"), ושם קובץ ברור
+    var D = window.SBE_DOC, t = D && D.toolInfo ? D.toolInfo() : null;
+    var ctx = t ? '<div style="border-bottom:2px solid #2E5A7D;padding-bottom:8px;margin-bottom:14px;font-family:Assistant,Arial,sans-serif"><div style="font-size:13px;color:#2E5A7D"><b>' + t.name + '</b> · ' + t.purpose + '</div><div style="font-size:21px;font-weight:700;color:#141C24">' + String(title).replace(/</g, "&lt;") + '</div></div>' : '';
     return '<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
-      '<base href="' + base + '"><title>' + String(title).replace(/</g, "&lt;") + ' — Begood</title>' + links + "<style>" + css +
-      "\nbody{padding:18px 16px 40px}html.sbe-sysonly,.sbe-sysonly{display:none!important}\n/* התוכן הועתק מתוך חלון (dialog), בלי גובה קבוע וגלילה פנימית, כדי שלא ייחתך במסמך וב-PDF */\nhtml,body{height:auto!important;overflow:visible!important}main,main *{max-height:none!important;overflow:visible!important}</style></head><body><main style=\"max-width:880px;margin:0 auto\">" +
+      '<base href="' + base + '"><title>' + String(D && D.fileTitle ? D.fileTitle(title) : title + ' · Begood').replace(/</g, "&lt;") + '</title>' + links + "<style>" + css +
+      "\nbody{padding:18px 16px 40px}html.sbe-sysonly,.sbe-sysonly{display:none!important}\n/* התוכן הועתק מתוך חלון (dialog), בלי גובה קבוע וגלילה פנימית, כדי שלא ייחתך במסמך וב-PDF */\nhtml,body{height:auto!important;overflow:visible!important}main,main *{max-height:none!important;overflow:visible!important}</style></head><body><main style=\"max-width:880px;margin:0 auto\">" + ctx +
       c.outerHTML + "</main></body></html>";
   }
   function withBase(html) {

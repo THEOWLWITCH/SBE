@@ -6,6 +6,7 @@
 <title>מיפוי חוסן חברתי: ניהול</title>
 <script src="lib/report-table.js"></script>
 <script src="lib/access-guard.js"></script>
+<script src="lib/product-doc.js"></script>
 <script src="lib/example-peek.js" data-tool="resil" defer></script>
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1247,7 +1248,7 @@ function renderSummary(){
   const gen=el2('button','btn',SUM_BUSY?'מפיק את הסיכום... (דקה–שלוש)':cached?'הפקה מחדש':'הפקת סיכום והמלצות');
   gen.id='btn-sum-gen';gen.disabled=SUM_BUSY;gen.addEventListener('click',generateSummary);acts.appendChild(gen);
   if(cached&&!SUM_BUSY){
-    const pr=el2('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.print());acts.appendChild(pr);
+    const pr=el2('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'סיכום והמלצות לכיתה'}):window.print());acts.appendChild(pr);
     const cp=el2('button','btn btn-ghost','העתקת הטקסט');cp.addEventListener('click',()=>{navigator.clipboard&&navigator.clipboard.writeText(summaryPlainText(cached)).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הטקסט',2000);}).catch(()=>{});});acts.appendChild(cp);
   }
   head.appendChild(acts);

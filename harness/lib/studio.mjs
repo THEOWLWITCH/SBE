@@ -17,18 +17,27 @@ const STR = { type:'string' };
 const strings = { type:'array', items:STR };
 const focus = { type:'string', enum:studio.COMPONENTS.map(c=>c.id) };
 const object = properties => ({ type:'object', properties, required:Object.keys(properties), additionalProperties:false });
-const stepSchema = object({ id:STR, title:STR, minutes:{type:'number'}, instructions:STR, facilitation:STR, space:STR,
+// כל שדה מקבל את הכותרת שמתחתיה הוא מוצג בערכה, כדי שהתוכן יענה בדיוק על הכותרת (08/10/2026:
+// "הכותרת: דרכים להשתתף ללא חשיפה אישית. בתוכן כתוב: בכל שלב אפשר לדבר. זה לא סביר").
+const UNDER = (label, extra='') => ({ type:'string', description:'מוצג בערכה תחת הכותרת "'+label+'". כתבו רק מה שעונה בדיוק על הכותרת הזאת.'+(extra?' '+extra:'') });
+const UNDER_LIST = (label) => ({ type:'array', items:STR, description:'מוצג בערכה תחת הכותרת "'+label+'". כל פריט עונה בדיוק על הכותרת.' });
+const FACIL_LABELS = {preparation:'לפני המפגש: הכנה וחזרה',opening:'פתיחה והסכמות',participation:'הזמנת השתתפות',questions:'שאלות והקשבה',difficulties:'שתיקה, התנגדות או מחלוקת',closing:'סגירה ועיבוד',followUp:'המשך ולמידה מההנחיה'};
+const MECH_LABELS = {name:'שם המנגנון',cadence:'מתי ובאיזו תדירות?',roles:'מי אחראית, מי שותף ומי מגבה?',participation:'איך משתתפים ומשפיעים?',firstAction:'הפעולה הראשונה',review:'מתי ואיך בודקים ומשפרים?',mechanism:'איך המנגנון מתרגל את מוקד החוסן?'};
+const LEARN_LABELS = {mechanism:'איך הפעילות אמורה לעבוד (השערת התכנון)',apply:'איך מיישמים במפגש',watchFor:'מה נראה בפועל אם המנגנון פועל',limits:'גבולות: מה הפעילות אינה, ומתי עוצרים'};
+const stepSchema = object({ id:STR, title:STR, minutes:{type:'number'}, instructions:UNDER('מה עושים'), facilitation:UNDER('איך מנחים'), space:UNDER('מרחב ועזרים'),
   materials:strings, components:{type:'array',items:focus}, individualSkills:strings, sharedSkills:strings });
-const sessionSchema = object({ id:STR, title:STR, purpose:STR, link:STR,
-  steps:{type:'array',items:stepSchema}, debrief:strings, nextStep:STR, participantMaterials:STR });
+const sessionSchema = object({ id:STR, title:STR, purpose:UNDER('מטרת המפגש'), link:UNDER('קשר לתהליך'),
+  steps:{type:'array',items:stepSchema}, debrief:UNDER_LIST('שאלות לעיבוד'), nextStep:UNDER('צעד המשך'), participantMaterials:UNDER('חומרי המשתתפים') });
 const basisSchema = object({ sourceId:STR, explanation:STR });
 const mechanismSchema = object({ type:{type:'string',enum:Object.keys(studio.MECHANISM_TYPES)},
-  ...Object.fromEntries(studio.MECHANISM_FIELDS.map(field=>[field,STR])) });
-const facilitationSchema = object(Object.fromEntries(studio.FACILITATION_FIELDS.map(field=>[field,STR])));
-const learningSchema = object({ ...Object.fromEntries(studio.LEARNING_FIELDS.map(field=>[field,STR])),
+  ...Object.fromEntries(studio.MECHANISM_FIELDS.map(field=>[field,MECH_LABELS[field]?UNDER(MECH_LABELS[field]):STR])) });
+const facilitationSchema = object(Object.fromEntries(studio.FACILITATION_FIELDS.map(field=>[field,FACIL_LABELS[field]?UNDER(FACIL_LABELS[field]):STR])));
+const learningSchema = object({ ...Object.fromEntries(studio.LEARNING_FIELDS.map(field=>[field,LEARN_LABELS[field]?UNDER(LEARN_LABELS[field]):STR])),
   learnBefore:{type:'array',items:object({ sourceId:STR, focus:STR })} });
-export const ACTIVITY_SCHEMA = object({ title:STR, purpose:STR, focus, selectionReason:STR,
-  sessions:{type:'array',items:sessionSchema}, participationAlternative:STR, leaderGuidance:STR,
+export const ACTIVITY_SCHEMA = object({ title:STR, purpose:UNDER('מטרה'), focus, selectionReason:UNDER('הסבר הבחירה'),
+  sessions:{type:'array',items:sessionSchema},
+  participationAlternative:UNDER('דרכים להשתתף ללא חשיפה אישית','דרכים מעשיות להשתתף בלי לספר על עצמי: לפחות שתיים, כמו כתיבה, ציור, דמות בדויה, תפקיד מעשי או התבוננות, וגם "בכל שלב אפשר לבחור לא לדבר". לא הזמנה לדבר או לשתף.'),
+  leaderGuidance:UNDER('הנחיה למוביל/ה'),
   adaptationExplanation:STR, goalChanged:{type:'boolean'}, professionalBasis:{type:'array',items:basisSchema}, clarificationQuestions:strings,
   socialMechanism:mechanismSchema, facilitationPlan:facilitationSchema, learningGuide:learningSchema });
 const RECOMMENDATION_SCHEMA = object({ focus, rationale:STR,

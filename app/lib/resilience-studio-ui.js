@@ -598,7 +598,7 @@
   }
   function printActivity(participantOnly,activity,brief) {
     activity=activity||state.activity;brief=brief||state.activityBrief||state.brief;if(!activity)return;
-    operation('בודקים הרשאה ותקינות לפני ההדפסה…',async()=>{await ensureAuthorized();checkExport(activity,brief);const node=printDocument(activity,participantOnly,!participantOnly&&$('include-selection-reason').checked,brief);SBE_DOC.print({landscape:!participantOnly,title:activity.title,subtitle:participantOnly?'חומרי משתתפים · מטרה, תרגול וחומרים משותפים':'ערכת הנחיה · '+evidenceLabel(activity),node,inline:true});notice('נפתחה תצוגה מקדימה עם הנוסח הערוך להדפסה או לשמירה כ-PDF.');});
+    operation('בודקים הרשאה ותקינות לפני ההדפסה…',async()=>{await ensureAuthorized();checkExport(activity,brief);const node=printDocument(activity,participantOnly,!participantOnly&&$('include-selection-reason').checked,brief);SBE_DOC.print({landscape:!participantOnly,title:activity.title,kind:participantOnly?'חומרי המשתתפים':'ערכת המנחה',subtitle:participantOnly?'חומרי משתתפים · מטרה, תרגול וחומרים משותפים':'ערכת הנחיה · '+evidenceLabel(activity),node,inline:true});notice('נפתחה תצוגה מקדימה עם הנוסח הערוך להדפסה או לשמירה כ-PDF.');});
   }
   function downloadJson(name,value) {const blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=el('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
   function saveActivity() {

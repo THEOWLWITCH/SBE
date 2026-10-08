@@ -443,8 +443,8 @@ ${WIDGET}`;
           ((tr.likelyMoves || []).length ? `<ul class="q" style="margin-top:5px">${tr.likelyMoves.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '')],
       ].filter((r) => r[1])) +
       `<div class="dt-cap">חמש התפניות</div>` +
-      dtable(['#', 'התפנית', 'מה זה מבקש ממנה', ''], (s.turningPoints || []).map((t) => [esc(t.n), `<b>${esc(t.name)}</b>`, esc(t.demands), tpType(t)]))
-        .replace(/<td data-label="#">/g, '<td class="n" data-label="#">').replace(/<td data-label="">/g, '<td class="ty">') +
+      dtable(['#', 'התפנית', 'מה זה מבקש ממנה', 'ליבה או סוג'], (s.turningPoints || []).map((t) => [esc(t.n), `<b>${esc(t.name)}</b>`, esc(t.demands), tpType(t)]))
+        .replace(/<td data-label="#">/g, '<td class="n" data-label="#">').replace(/<td data-label="ליבה או סוג">/g, '<td class="ty" data-label="ליבה או סוג">') +
       ((s.endings || []).length ? dtable(null, [['סיומים', `<ul class="q">${s.endings.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>`]]) : '') +
       `<div class="free">אם היא עושה משהו שאינו כאן: שאלי מה ${esc(actorFirstName)} תעשה לנוכח החשש שלה, ולכי לשם. <b>המפה היא מלאי ולא כלוב.</b></div>`);
 
