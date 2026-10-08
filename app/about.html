@@ -123,6 +123,8 @@ h3.grp{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:18px;margin:22px 0
 .lib b{font-size:16px;}.lib p{margin:4px 0 0;font-size:14.5px;line-height:1.7;}
 section.card h3{font-size:17px;margin-bottom:8px;}
 .toc{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:4px 0 14px;}
+.art-back{text-align:center;margin:18px 0 0;} .art-back .back{margin-top:0;font-size:14.5px;}
+.toc a.toc-art{color:var(--auto);background:var(--auto-soft);}
 .toc a{font-size:13px;font-weight:600;color:var(--spoken);background:var(--spoken-soft);border-radius:99px;padding:4px 11px;text-decoration:none;}
 .prose h4{font-size:14.5px;margin:16px 0 4px;color:var(--spoken);}
 .prose ul ul{margin:.2rem 0 .5rem;}
@@ -131,38 +133,48 @@ section.card h3{font-size:17px;margin-bottom:8px;}
 .brand{display:block;width:min(190px,48vw);height:auto;margin:14px auto 0;}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .brand{background:#EEF1F4;border-radius:12px;padding:8px 12px;} }
 :root[data-theme="dark"] .brand{background:#EEF1F4;border-radius:12px;padding:8px 12px;}
-.article h4{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:17px;margin:20px 0 6px;color:var(--spoken);break-after:avoid;}
-.article h5{font-size:15px;margin:14px 0 4px;break-after:avoid;}
-.article .byline{font-size:13.5px;color:var(--muted);margin:0 0 12px;}
-.article p{max-width:68ch;}
-.article ul{margin:4px 0 10px;padding-inline-start:20px;} .article li{margin-bottom:5px;}
-.article h4:last-of-type + ul{font-size:13.5px;color:var(--muted);} .article a{color:var(--spoken);word-break:break-all;}
+.article{padding:28px clamp(18px,5vw,44px) 30px;}
+.article .art-head{display:block;text-align:center;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--hair);}
+.art-kicker{font-size:12px;letter-spacing:.14em;color:var(--muted);margin:0 0 4px;}
+.article .art-head h3{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(26px,5.5vw,32px);line-height:1.2;margin:0 0 8px;text-wrap:balance;}
+.article .byline{font-size:15px;font-weight:600;color:var(--ink);margin:0 0 4px;}
+.art-sub{font-size:14px;color:var(--muted);margin:0 auto;max-width:46ch;text-wrap:balance;}
+.article p,.article li{text-align:justify;text-justify:inter-word;font-size:16px;line-height:1.85;}
+.article p{margin:0 0 14px;}
+.article h4{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:21px;font-weight:700;color:var(--spoken);margin:30px 0 12px;padding-top:14px;border-top:1px solid var(--hair);break-after:avoid;text-wrap:balance;}
+.article h5{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:17px;font-weight:700;margin:20px 0 6px;break-after:avoid;}
+.article ul{margin:4px 0 16px;padding-inline-start:22px;} .article li{margin-bottom:8px;}
+.article li::marker{color:var(--spoken);}
+.article .art-refs li{font-size:13.5px;line-height:1.6;text-align:start;color:var(--muted);}
+.article a{color:var(--spoken);word-break:break-all;}
+.article .art-head p{text-align:center;margin-inline:auto;}
+@media (max-width:560px){.article p,.article li{text-align:start;}}
 @media print{.article{break-inside:auto;} .article li{break-inside:avoid;}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<a class="back" href="entry.html">→ למסך הכניסה</a>
-<img class="brand" src="assets/begood-logo.webp" alt="Begood — חינוך לחוסן">
+<a class="back" id="back" href="entry.html">→ למסך הכניסה</a>
+<img class="brand" src="assets/begood-logo.webp" alt="Begood: חינוך לחוסן">
 
 <header class="hero">
   <h1>להיות מוכנים לאתגרי החיים</h1>
   <p class="lead">השיחה הקשה עם הורה שמחכה מחר בבוקר. כיתה שמשהו בה לא מסתדר, ואי אפשר לשים על זה את האצבע. הודעה לצוות אחרי אירוע קשה, שכל מילה בה חשובה.</p>
-  <p class="lead"><b>Begood</b> נבנתה בשביל הרגעים האלה — כדי שאנשי חינוך יגיעו אליהם מוכנים, בטוחים ועם כלים ביד. בשגרה, במשבר ובשעת חירום.</p>
+  <p class="lead"><b>Begood</b> נבנתה בשביל הרגעים האלה, כדי שאנשי חינוך יגיעו אליהם מוכנים, בטוחים ועם כלים ביד. בשגרה, במשבר ובשעת חירום.</p>
   <p class="by">פיתוח: ד״ר יעל שדה</p>
 </header>
 
 <nav class="toc" aria-label="תוכן העמוד">
-  <a href="#value">מה מקבלים</a><a href="#tools">הכלים</a><a href="#ai">בינה מלאכותית</a><a href="#start">איך מתחילים</a><a href="#privacy">פרטיות</a><a href="#contact">יצירת קשר</a>
+  <a href="#value">מה מקבלים</a><a href="#tools">הכלים</a><a href="#ai">בינה מלאכותית</a><a href="#start">איך מתחילים</a><a href="#privacy">פרטיות</a><a href="#contact">יצירת קשר</a><a href="#article" class="toc-art">📖 המאמר: לבחור בחוסן שלנו</a>
 </nav>
 
 <section id="value">
   <h2>מה Begood נותנת לכם</h2>
   <div class="values">
     <div class="val"><div class="ic">🎭</div><b>מתאמנים לפני שזה אמיתי</b><p>שיחה מאתגרת היא מיומנות, ואפשר לתרגל אותה. בסימולציה טועים בלי מחיר, מנסים שוב, ומגיעים לשיחה האמיתית עם ביטחון.</p></div>
-    <div class="val"><div class="ic">🔍</div><b>רואים את התמונה כולה</b><p>מה התלמידים מרגישים באמת? מה מחזיק את הצוות בזמן משבר? Begood הופכת תחושות לתמונת מצב ברורה — ולהמלצות שאפשר ליישם כבר מחר.</p></div>
-    <div class="val"><div class="ic">✍️</div><b>יוצאים עם משהו ביד</b><p>לא עוד המלצות כלליות: תדריך לשיחה, תוכנית פעילות, הודעה מוכנה לשליחה — כתובים בשפה מחזקת, מותאמים בדיוק למקרה שלכם.</p></div>
-    <div class="val"><div class="ic">🌱</div><b>אתם במרכז</b><p>Begood לא מחליפה את איש/אשת החינוך — היא מעצימה אותם. במקום "להפנות הלאה", היא נותנת הדרכה מעשית לשיחה אישית, מכילה ותומכת.</p></div>
+    <div class="val"><div class="ic">🔍</div><b>רואים את התמונה כולה</b><p>מה התלמידים מרגישים באמת? מה מחזיק את הצוות בזמן משבר? Begood הופכת תחושות לתמונת מצב ברורה, ולהמלצות שאפשר ליישם כבר מחר.</p></div>
+    <div class="val"><div class="ic">✍️</div><b>יוצאים עם משהו ביד</b><p>לא עוד המלצות כלליות: תדריך לשיחה, תוכנית פעילות, הודעה מוכנה לשליחה. כולם כתובים בשפה מחזקת, ומותאמים בדיוק למקרה שלכם.</p></div>
+    <div class="val"><div class="ic">🌱</div><b>אתם במרכז</b><p>Begood לא מחליפה את איש/אשת החינוך. היא מעצימה אותם. במקום "להפנות הלאה", היא נותנת הדרכה מעשית לשיחה אישית, מכילה ותומכת.</p></div>
   </div>
 </section>
 
@@ -172,28 +184,28 @@ section.card h3{font-size:17px;margin-bottom:8px;}
   <h3 class="grp">🎭 סימולציות ושיחות מאתגרות</h3>
   <p class="grp-lead">המקום להתאמן על השיחות שהכי קשה לנהל.</p>
   <div class="tools">
-    <div class="tool"><b>יצירת תרחיש</b><p>יש שיחה שאתם חוששים ממנה? תארו במשפט מי, מול מי ומה קרה — והמערכת תבנה ממנה תרחיש שלם: דמויות חיות, נקודות תפנית, ותוצרים מוכנים למנחה, למתנסה ולשחקנית. לסטודנטיות.ים בהכשרה להוראה, להורים ולנוער.</p></div>
-    <div class="tool"><b>משחק תפקידים</b><p>שני משתתפים, גובה עיניים, ושתי נקודות מבט: הורה וילד/ה, או שני בני נוער. כל אחד נכנס לנעליים של השני — ומגלה כמה זה משנה.</p></div>
-    <div class="tool"><b>סדנה</b><p>המנחה פותחת סדנה בלחיצה, והמשתתפות מצטרפות מהטלפון עם קוד אחד. צופות, מתנסות, נותנות משוב — והמנחה רואה הכול, מכל מכשיר.</p></div>
-    <div class="tool"><b>תרגול עצמי</b><p>להתאמן לבד, מתי שנוח, מול דמות שמגיבה כמו אדם אמיתי — ולקבל משוב בסוף.</p></div>
+    <div class="tool"><b>יצירת תרחיש</b><p>יש שיחה שאתם חוששים ממנה? תארו במשפט מי, מול מי ומה קרה, והמערכת תבנה ממנה תרחיש שלם: דמויות חיות, נקודות תפנית, ותוצרים מוכנים למנחה, למתנסה ולשחקנית. לסטודנטיות.ים בהכשרה להוראה, להורים ולנוער.</p></div>
+    <div class="tool"><b>משחק תפקידים</b><p>שני משתתפים, גובה עיניים, ושתי נקודות מבט: הורה וילד/ה, או שני בני נוער. כל אחד נכנס לנעליים של השני, ומגלה כמה זה משנה.</p></div>
+    <div class="tool"><b>סדנה</b><p>המנחה פותחת סדנה בלחיצה, והמשתתפות מצטרפות מהטלפון עם קוד אחד. צופות, מתנסות, נותנות משוב, והמנחה רואה הכול, מכל מכשיר.</p></div>
+    <div class="tool"><b>תרגול עצמי</b><p>להתאמן לבד, מתי שנוח, מול דמות שמגיבה כמו אדם אמיתי, ולקבל משוב בסוף.</p></div>
   </div>
 
   <h3 class="grp">🤝 חוסן חברתי ומנהיגות</h3>
-  <p class="grp-lead">לבנות כיתה, בית ספר וקהילה שמחזיקים מעמד — ושמתחזקים — גם כשקשה.</p>
+  <p class="grp-lead">לבנות כיתה, בית ספר וקהילה שמחזיקים מעמד ומתחזקים גם כשקשה.</p>
   <div class="tools">
-    <div class="tool"><b>מיפוי חוסן</b><p>מה קורה בכיתה מתחת לפני השטח? תלמידים, הורים ומורים עונים על שאלון קצר מהטלפון, בלי להזדהות. התוצאה: תמונת מצב לפי תחומים ולפי קבוצות — וסיכום עם המלצות למחנך/ת.</p></div>
-    <div class="tool"><b>פרקטי — יועצת לפיתוח חוסן חברתי</b><p>יועצת שמכירה את המחקר, וזמינה בכל רגע שתרצו. מספרים לה על הכיתה במילים שלכם, ומקבלים ניתוח, פעולות מותאמות לגיל, הדרכה לשיחה אישית עם תלמידים, והודעות מוכנות לשליחה. ואם עולה שאלה — ממשיכים לשוחח.</p></div>
-    <div class="tool"><b>נוגי — יועצת למנהיגות תומכת חוסן</b><p>להנהלה, לרכזים ולצוותי תלמידים. נוגי עוזרת לבנות מנהיגות שמחזיקה גם ביום שבו הכול משתבש: תמונת מצב, המלצות שמוסברות בהקשר של החוסן, ותמיד — עבודת צוות, שותפים וממלאי מקום.</p></div>
-    <div class="tool"><b>כתיבה מקדמת חוסן</b><p>כשכל מילה חשובה. כותבים מה רוצים לומר — לתלמידים, להורים או לצוות — ומקבלים נוסח שנכתב מההתחלה בשפה מחזקת. אפשר לצרף תמונה, ציור או ידיעה, והמערכת לא ממציאה דבר.</p></div>
-    <div class="tool"><b>מסע אל החוסן</b><p>דרך מלווה, צעד אחר צעד, מבית ספר לקהילת חוסן. חמישה שלבים, מסלול שאתם בוחרים, אבני דרך עם משוב ותעודות — ובסוף, <b>תו חוסן לקהילת חוסן</b>.</p></div>
+    <div class="tool"><b>מיפוי חוסן</b><p>מה קורה בכיתה מתחת לפני השטח? תלמידים, הורים ומורים עונים על שאלון קצר מהטלפון, בלי להזדהות. התוצאה: תמונת מצב לפי תחומים ולפי קבוצות, וסיכום עם המלצות למחנך/ת.</p></div>
+    <div class="tool"><b>פרקטי: יועצת לפיתוח חוסן חברתי</b><p>יועצת שמכירה את המחקר, וזמינה בכל רגע שתרצו. מספרים לה על הכיתה במילים שלכם, ומקבלים ניתוח, פעולות מותאמות לגיל, הדרכה לשיחה אישית עם תלמידים, והודעות מוכנות לשליחה. ואם עולה שאלה, ממשיכים לשוחח.</p></div>
+    <div class="tool"><b>נוגי: יועצת למנהיגות תומכת חוסן</b><p>להנהלה, לרכזים ולצוותי תלמידים. נוגי עוזרת לבנות מנהיגות שמחזיקה גם ביום שבו הכול משתבש: תמונת מצב, המלצות שמוסברות בהקשר של החוסן, ותמיד: עבודת צוות, שותפים וממלאי מקום.</p></div>
+    <div class="tool"><b>כתיבה מקדמת חוסן</b><p>כשכל מילה חשובה. כותבים מה רוצים לומר (לתלמידים, להורים או לצוות) ומקבלים נוסח שנכתב מההתחלה בשפה מחזקת. אפשר לצרף תמונה, ציור או ידיעה, והמערכת לא ממציאה דבר.</p></div>
+    <div class="tool"><b>מסע אל החוסן</b><p>דרך מלווה, צעד אחר צעד, מבית ספר לקהילת חוסן. חמישה שלבים, מסלול שאתם בוחרים, אבני דרך עם משוב ותעודות, ובסוף: <b>תו חוסן לקהילת חוסן</b>.</p></div>
   </div>
 
   <h3 class="grp">🧭 כלים לא.נשי חינוך, סטודנטיות.ים ותלמידות.ים</h3>
-  <p class="grp-lead">לעבודה היומיומית — להתכונן, לתכנן ולהשתפר.</p>
+  <p class="grp-lead">לעבודה היומיומית: להתכונן, לתכנן ולהשתפר.</p>
   <div class="tools">
-    <div class="tool"><b>תכנון שיחה</b><p>לפני שיחה חשובה, בעל פה או בכתב: תדריך קצר וברור, כרטיס תזכורת לשיחה עצמה, או טיוטת הודעה — כולל מה לעשות אם השיחה מסתבכת, ואיך לסיים בכבוד גם בלי הסכמה.</p></div>
-    <div class="tool"><b>תכנון פעילות</b><p>מרעיון לפעילות חינוכית מלאה ומוכנה להפעלה — או מבט מקצועי ורענן על פעילות שכבר קיימת.</p></div>
-    <div class="tool"><b>משוב לעבודות</b><p>משוב מדויק, לפי קריטריונים, לפני ההגשה. הכלי מראה מה לחזק ואיך — אבל הכתיבה נשארת שלכם.</p></div>
+    <div class="tool"><b>תכנון שיחה</b><p>לפני שיחה חשובה, בעל פה או בכתב: תדריך קצר וברור, כרטיס תזכורת לשיחה עצמה, או טיוטת הודעה, כולל מה לעשות אם השיחה מסתבכת, ואיך לסיים בכבוד גם בלי הסכמה.</p></div>
+    <div class="tool"><b>תכנון פעילות</b><p>מרעיון לפעילות חינוכית מלאה ומוכנה להפעלה, או מבט מקצועי ורענן על פעילות שכבר קיימת.</p></div>
+    <div class="tool"><b>משוב לעבודות</b><p>משוב מדויק, לפי קריטריונים, לפני ההגשה. הכלי מראה מה לחזק ואיך, אבל הכתיבה נשארת שלכם.</p></div>
   </div>
 
   <div class="lib">
@@ -202,13 +214,42 @@ section.card h3{font-size:17px;margin-bottom:8px;}
   </div>
   <div class="lib" style="background:var(--spoken-soft)">
     <b>🗂 תוצרים לדוגמה</b>
-    <p>רוצים לראות איך זה נראה בפועל? ב<a href="examples.html">ספריית התוצרים לדוגמה</a> — דוחות, מדריכים, תוכניות ותרחישים, כפי שהם יוצאים מהמערכת.</p>
+    <p>רוצים לראות איך זה נראה בפועל? ב<a href="examples.html">ספריית התוצרים לדוגמה</a>, דוחות, מדריכים, תוכניות ותרחישים, כפי שהם יוצאים מהמערכת.</p>
   </div>
 </section>
 
+<section id="ai" class="card prose">
+  <h3>בינה מלאכותית שעובדת בשבילכם, לא במקומכם</h3>
+  <p><b>המערכת מציעה, ואתם מחליטים.</b> כל תוצר אפשר לערוך על המסך, להתאים, ולשמור כ-PDF מעוצב.</p>
+  <p><b>מבוססת מקורות.</b> היועצות נשענות על מקורות מאומתים, והמערכת לא ממציאה מקורות, שמות או עובדות.</p>
+</section>
+
+<section id="start" class="card prose">
+  <h3>איך מתחילים</h3>
+  <p><b>בלי חשבונות ובלי סיסמאות.</b> מקבלים קוד, מקלידים אותו במסך הכניסה, ונכנסים ל"מרחב שלי", שבו מחכים רק הכלים שפתוחים לכם.</p>
+  <p><b>מהמוסד ועד הכיתה.</b> המוסד מקבל את הכלים שבחר. מנהל/ת המוסד נותנים לכל איש/אשת צוות קוד עם הכלים שלו/ה. ואנשי הצוות נותנים <b>קוד לקבוצה</b>, קוד אחד לכל הקבוצה: לסדנה של היום, או לקורס לאורך הסמסטר. לשאלון החוסן התלמידים נכנסים בקישור או ב-QR.</p>
+  <p><b>מנוי.</b> המנוי הוא למוסד, לתקופה קבועה. לקראת הסיום מגיעה תזכורת, ואחריו יש תקופת חסד קצרה, ושום נתון לא נמחק. לחידוש או למנוי חדש: <a href="renew.html">טופס קצר</a>, ואנחנו חוזרים אליכם.</p>
+</section>
+
+<section id="privacy" class="card prose">
+  <h3>הפרטיות שלכם ושל התלמידים</h3>
+  <p>Begood לא אוספת שמות משתמש, סיסמאות או כתובות מייל של משתתפים. שאלון החוסן אנונימי, והתוצאות מוצגות ברמת הכיתה בלבד.</p>
+  <p>עבודות וקבצים שנשלחים לבקשה לא נשמרים בשרת, וטיוטות נשמרות רק במכשיר שלכם. התרחישים לסימולציה נשמרים במאגר: מוסדי או שיתופי. מיילים ומחקר: רק בהסכמה, ומחקר תמיד באופן אנונימי.</p>
+</section>
+
+<section id="contact" class="card prose">
+  <h3>נשמח לשמוע מכם</h3>
+  <p>מוזמנות ומוזמנים ליצור קשר<br><b>ד״ר יעל שדה</b> — <a href="mailto:yael.sade@gmail.com">yael.sade@gmail.com</a> · <a href="tel:0523969417">052-3969417</a></p>
+  <p>ובתוך המערכת, בכל מסכי העבודה, כפתור <b>"דיווח / רעיון"</b> מגיע ישירות אלינו.</p>
+</section>
+
 <section id="article" class="card prose article">
-  <h3>לבחור בחוסן שלנו</h3>
-  <p class="byline">ד״ר יעל שדה · מאמר קצר על המושגים שבבסיס כלי החוסן החברתי: מנגנונים חברתיים, קהילת חוסן ותו חוסן</p>
+  <header class="art-head">
+    <p class="art-kicker">מאמר</p>
+    <h3>לבחור בחוסן שלנו</h3>
+    <p class="byline">ד״ר יעל שדה</p>
+    <p class="art-sub">המושגים שבבסיס כלי החוסן החברתי: מנגנונים חברתיים, קהילת חוסן ותו חוסן</p>
+  </header>
 <p>חוסן אינו נכס שנרכש פעם אחת ונשמר במגירה. הוא מצב חי ומשתנה, שנבנה מרכיבים רבים כמו אמון, שייכות, תקשורת, מנהיגות, אופטימיות, נרטיב משותף ומוכנות. מידת ההשפעה של כל אחד מהרכיבים משתנה בהתאם לזמן ולנסיבות.</p>
 <p>חוסן של חברה לאורך תקופה הוא תהליך רב ערוצי שאחד הדברים המרכזיים בו הן פעולות משותפות, גדולות וקטנות, שחוזרות על עצמן, כך שחברי הקהילה מפתחים מיומנויות משותפות. כדי שהחזרה הזאת תקרה והפרטים ירכשו את המיומנויות, מתפתחים בכל חברה מנגנונים חברתיים. שימוש מודע ומושכל בהם הופך מנגנונים אלה לתומכי חוסן. למשל: קבלת החלטה בשקיפות (פעולה משותפת), באספה (מנגנון חברתי); חבר קהילה שפונה (מיומנות משותפת) אל ועדת תרבות (מנגנון חברתי); פינוי הכיתה באזעקה (פעולה משותפת) לפי נהלי בית הספר (מנגנון חברתי) – כך, החברה פועלת בעקביות ומתוך הסכמה לטובת עצמה, יום אחר יום, שנה אחר שנה והמנגנונים החברתיים הם המתווים את דרכי הפעולה ואת גבולות ההסכמה.</p>
 <p>כך, כשמגיע המשבר, אין מה להמציא מחדש. כל אחד ואחת יודעים היטב מה תפקידם, מה לעשות או לא לעשות ולמי להישמע - הקהילה פועלת בתיאום כפי שהתרגלה לפעול תמיד, בשגרה, כדי לשמור על חבריה ועל החיים המשותפים.</p>
@@ -274,37 +315,31 @@ section.card h3{font-size:17px;margin-bottom:8px;}
 <h5>מי מעניק את התו?</h5>
 <p>הגוף המעניק יהיה משולב: המדינה או מי מטעמה (פיקוד העורף? המשרד לביטחון פנים?) קובעת את הרף ומעניקה את ההכרה באמצעות גוף עצמאי מעריך, וקהילות עמיתות שותפות בהערכה. כך נהנה התו ממעמד ציבורי, ושומר על מבט רחב: חוסן כחלק מאיכות החיים, ולא רק כמוכנות לחירום.</p>
 <h4>מקורות</h4>
-<ul>
+<ul class="art-refs">
 <li>שדה, י' (2024). קהילת חוסן: גישה חדשה לפיתוח חוסן קהילתי המבוסס על מנגנונים חברתיים קיימים [עבודת דוקטורט, אוניברסיטת אריאל].</li>
-<li>Norris, F. H., Stevens, S. P., Pfefferbaum, B., Wyche, K. F., &amp; Pfefferbaum, R. L. (2008). Community resilience as a metaphor, theory, set of capacities, and strategy for disaster readiness. American Journal of Community Psychology, 41(1–2), 127–150. <a href="https://doi.org/10.1007/s10464-007-9156-6" target="_blank" rel="noopener">https://doi.org/10.1007/s10464-007-9156-6</a></li>
-<li>Sade, Y., &amp; Lewin, E. (2020). The use of internal governance in the kibbutz as a tool for social maintenance and development. Comparative Sociology, 19, 69–87. <a href="https://doi.org/10.1163/15691330-BJA10002" target="_blank" rel="noopener">https://doi.org/10.1163/15691330-BJA10002</a></li>
+<li dir="ltr">Norris, F. H., Stevens, S. P., Pfefferbaum, B., Wyche, K. F., &amp; Pfefferbaum, R. L. (2008). Community resilience as a metaphor, theory, set of capacities, and strategy for disaster readiness. American Journal of Community Psychology, 41(1–2), 127–150. <a href="https://doi.org/10.1007/s10464-007-9156-6" target="_blank" rel="noopener">https://doi.org/10.1007/s10464-007-9156-6</a></li>
+<li dir="ltr">Sade, Y., &amp; Lewin, E. (2020). The use of internal governance in the kibbutz as a tool for social maintenance and development. Comparative Sociology, 19, 69–87. <a href="https://doi.org/10.1163/15691330-BJA10002" target="_blank" rel="noopener">https://doi.org/10.1163/15691330-BJA10002</a></li>
 </ul>
-</section>
-
-<section id="ai" class="card prose">
-  <h3>בינה מלאכותית שעובדת בשבילכם — לא במקומכם</h3>
-  <p><b>המערכת מציעה, ואתם מחליטים.</b> כל תוצר אפשר לערוך על המסך, להתאים, ולשמור כ-PDF מעוצב.</p>
-  <p><b>מבוססת מקורות.</b> היועצות נשענות על מקורות מאומתים, והמערכת לא ממציאה מקורות, שמות או עובדות.</p>
-</section>
-
-<section id="start" class="card prose">
-  <h3>איך מתחילים</h3>
-  <p><b>בלי חשבונות ובלי סיסמאות.</b> מקבלים קוד, מקלידים אותו במסך הכניסה, ונכנסים ל"מרחב שלי" — שבו מחכים רק הכלים שפתוחים לכם.</p>
-  <p><b>מהמוסד ועד הכיתה.</b> המוסד מקבל את הכלים שבחר. מנהל/ת המוסד נותנים לכל איש/אשת צוות קוד עם הכלים שלו/ה. ואנשי הצוות נותנים <b>קוד לקבוצה</b> — קוד אחד לכל הקבוצה: לסדנה של היום, או לקורס לאורך הסמסטר. לשאלון החוסן התלמידים נכנסים בקישור או ב-QR.</p>
-  <p><b>מנוי.</b> המנוי הוא למוסד, לתקופה קבועה. לקראת הסיום מגיעה תזכורת, ואחריו יש תקופת חסד קצרה — ושום נתון לא נמחק. לחידוש או למנוי חדש: <a href="renew.html">טופס קצר</a>, ואנחנו חוזרים אליכם.</p>
-</section>
-
-<section id="privacy" class="card prose">
-  <h3>הפרטיות שלכם ושל התלמידים</h3>
-  <p>Begood לא אוספת שמות משתמש, סיסמאות או כתובות מייל של משתתפים. שאלון החוסן אנונימי, והתוצאות מוצגות ברמת הכיתה בלבד.</p>
-  <p>עבודות וקבצים שנשלחים לבקשה לא נשמרים בשרת, וטיוטות נשמרות רק במכשיר שלכם. התרחישים לסימולציה נשמרים במאגר — מוסדי או שיתופי. מיילים ומחקר — רק בהסכמה, ומחקר תמיד באופן אנונימי.</p>
-</section>
-
-<section id="contact" class="card prose">
-  <h3>נשמח לשמוע מכם</h3>
-  <p>מוזמנות ומוזמנים ליצור קשר<br><b>ד״ר יעל שדה</b> — <a href="mailto:yael.sade@gmail.com">yael.sade@gmail.com</a> · <a href="tel:0523969417">052-3969417</a></p>
-  <p>ובתוך המערכת, בכל מסכי העבודה, כפתור <b>"דיווח / רעיון"</b> מגיע ישירות אלינו.</p>
+  <p class="art-back" hidden><a class="back js-back" href="entry.html"></a></p>
 </section>
 </div>
+<script>
+// חזרה לכלי שממנו הגיעו למאמר (07/10/2026): ?from=<דף>. הקישור נפתח בלשונית חדשה — אז סוגרים אותה
+// וחוזרים ללשונית של הכלי, כשהעבודה שם שלמה. אם אי אפשר לסגור — עוברים לכלי.
+(function(){
+  var NAMES={"facilitation-advisor.html":"ננה","leadership-advisor.html":"נוגי","resilience-advisor.html":"פרקטי","message-writer.html":"כתיבה מקדמת חוסן",
+    "resilience-studio.html":"סטודיו חוסן","resilience-team.html":"מיפוי החוסן","journey.html":"מסע אל החוסן"};
+  var from=new URLSearchParams(location.search).get("from")||"";
+  if(!NAMES[from])return;
+  var ab=document.querySelector(".art-back");if(ab)ab.hidden=false;
+  [document.getElementById("back")].concat([].slice.call(document.querySelectorAll(".js-back"))).forEach(function(a){
+  a.textContent="→ חזרה ל"+NAMES[from];a.href=from;
+  a.addEventListener("click",function(e){
+    if(history.length<=1){e.preventDefault();window.close();setTimeout(function(){location.href=from;},300);}
+    else if(document.referrer&&document.referrer.indexOf(location.origin+"/")===0&&document.referrer.indexOf(from)!==-1){e.preventDefault();history.back();}
+  });
+  });
+})();
+</script>
 </body>
 </html>

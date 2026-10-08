@@ -93,7 +93,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 <div class="cat" id="catConv" hidden>
   <h2><span class="ico" style="background:var(--hidden)"></span>תכנון שיחה</h2>
   <div class="in">
-    <p class="hint">הכנה מובנית לשיחה מקצועית — עץ החלטות, כרטיס הנחיה וטיוטת מסר כתוב.</p>
+    <p class="hint">הכנה מובנית לשיחה מקצועית: עץ החלטות, כרטיס הנחיה וטיוטת מסר כתוב.</p>
     <div class="linklist">
       <a href="conversation-planner.html?product=oral"><b>שיחה בעל פה</b><span>עץ החלטות וכרטיס הנחיה לשיחה</span></a>
       <a href="conversation-planner.html?product=digital"><b>התכתבות דיגיטלית</b><span>טיוטת הודעה עם חלופות ניסוח למייל, להודעה ולצ'אט</span></a>
@@ -146,16 +146,16 @@ if (inst) {
 }
 
 const ALL_INPUT_ITEMS = [
-  { href:"input-screen.html",        t:"יצירת תרחיש — סטודנטיות.ים", d:"הגדרת דמויות ופרמטרי תרחיש — שלושה שדות ידניים, השאר מוצעים על ידי המערכת", track:"trainee" },
-  { href:"parent-input-screen.html", t:"יצירת תרחיש — הורים",        d:"תרחיש להורים — שתי דמויות שוות, ארבע גישות הוריות",                         track:"parent"  },
-  { href:"student-input-screen.html",t:"יצירת תרחיש — נוער",         d:"תרחיש למשחק תפקידים בין שני בני נוער — 34 נושאי שיחה בשישה פרקים",          track:"youth"   },
+  { href:"input-screen.html",        t:"יצירת תרחיש: סטודנטיות.ים", d:"הגדרת דמויות ופרמטרי תרחיש, שלושה שדות ידניים, השאר מוצעים על ידי המערכת", track:"trainee" },
+  { href:"parent-input-screen.html", t:"יצירת תרחיש: הורים",        d:"תרחיש להורים, שתי דמויות שוות, ארבע גישות הוריות",                         track:"parent"  },
+  { href:"student-input-screen.html",t:"יצירת תרחיש: נוער",         d:"תרחיש למשחק תפקידים בין שני בני נוער — 34 נושאי שיחה בשישה פרקים",          track:"youth"   },
 ];
 const FAC_ITEMS = [
   { href:"search.html",            t:"חיפוש במאגר התרחישים", d:"תרחישים של המוסד ותרחישים במאגר הבין-מוסדי" },
-  { href:"facilitator-screen.html",t:"פתיחת סדנה",           d:"נוצר קוד לקבוצה לסדנה — אוטומטית" },
+  { href:"facilitator-screen.html",t:"פתיחת סדנה",           d:"נוצר אוטומטית קוד לקבוצה לסדנה" },
   { href:"feedback-results.html",  t:"משוב והערכה",          d:"תוצאות משוב מנחה, מתנסה.ת וצופה.ה על סדנאות המוסד" },
 ];
-const SOURCES_ITEM = { href:"sources-library.html", t:"ספריית המקורות", d:"חיפוש וגישה למקורות תיאורטיים — פתוח לכל המשתמשים" };
+const SOURCES_ITEM = { href:"sources-library.html", t:"ספריית המקורות", d:"חיפוש וגישה למקורות תיאורטיים: פתוח לכל המשתמשים" };
 
 // מנחה/ת רואה רק את מסך הקלט של המסלול שלה/שלו + כלים משותפים + מקורות.
 // ללא track (כניסה ישירה לקובץ) — מוצגת הרשימה המלאה.
@@ -236,7 +236,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
 <dialog id="rptDlg">
   <h3>דיווח על תקלה, שאלה, רעיון או בקשה</h3>
   <div class="rb">
-    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח — לא ניתן לצרף קובץ אוטומטית למייל.</p>
+    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח, לא ניתן לצרף קובץ אוטומטית למייל.</p>
     <div class="rerr" id="rptErr" hidden></div>
     <label>שם מלא <span class="req">*</span></label>
     <input id="rptName">

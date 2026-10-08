@@ -95,10 +95,10 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 <p class="muted">רק את רואה את המסך הזה ואת התיקייה שבו.</p>
 
 <div class="card">
-  <p><b>מה קורה כאן:</b> המעבדה פותחת כל כלי ברקע, טוענת את הדוגמה שלו, ומפיקה תוצר <b>מול המודל האמיתי</b> — בדיוק כמו משתמש/ת. כל תוצר נשמר בתיקייה שלמטה.</p>
+  <p><b>מה קורה כאן:</b> המעבדה פותחת כל כלי ברקע, טוענת את הדוגמה שלו, ומפיקה תוצר <b>מול המודל האמיתי</b>, בדיוק כמו משתמש/ת. כל תוצר נשמר בתיקייה שלמטה.</p>
   <p><b>מה בודקים:</b> עיצוב, ניסוחים, הדדיות עם הדמות השנייה, התאמת השפה לגיל ולקהל, ושלושת העקרונות (הזמנה, בחירה ואחריות, אי־שיפוטיות).</p>
-  <p><b>ספרייה למתעניינים:</b> תוצר שתסמני "מוצג בספרייה" יופיע ב<a href="examples.html" target="_blank">ספריית התוצרים לדוגמה</a> — פתוחה לכל אחד, בלי כניסה. תוצר שלא סימנת — נשאר רק אצלך.</p>
-  <p class="muted">משך משוער: הדוחות — דקה עד שלוש כל אחד; תרחיש סימולציה — עד 20 דקות. אפשר להמשיך לעבוד בלשונית אחרת, ולהשאיר את הלשונית הזאת פתוחה עד הסוף.</p>
+  <p><b>ספרייה למתעניינים:</b> תוצר שתסמני "מוצג בספרייה" יופיע ב<a href="examples.html" target="_blank">ספריית התוצרים לדוגמה</a>, פתוחה לכל אחד, בלי כניסה. תוצר שלא סימנת נשאר רק אצלך.</p>
+  <p class="muted">משך משוער: הדוחות, דקה עד שלוש כל אחד; תרחיש סימולציה, עד 20 דקות. אפשר להמשיך לעבוד בלשונית אחרת, ולהשאיר את הלשונית הזאת פתוחה עד הסוף.</p>
 </div>
 
 <h2>הפקה</h2>
@@ -109,7 +109,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
   <span class="muted" id="prog"></span>
 </div>
 <div class="runs" id="runs"></div>
-<p class="muted" style="margin-top:10px">מסע אל החוסן נוצר כמסע דמו — בלי מיילים, ולא נספר בדוחות ובמחקר. אפשר למחוק אותו בלוח המסעות.</p>
+<p class="muted" style="margin-top:10px">מסע אל החוסן נוצר כמסע דמו (בלי מיילים, ולא נספר בדוחות ובמחקר). אפשר למחוק אותו בלוח המסעות.</p>
 
 <h2>התיקייה שלי</h2>
 <div id="list"><p class="muted">טוען...</p></div>
@@ -136,15 +136,15 @@ function token(){try{return sessionStorage.getItem('sbe.session.token')||'';}cat
 async function api(body){
   const r=await fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(Object.assign({token:token()},body))});
   const d=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(r.status===403?'הכניסה הסתיימה — כדאי להיכנס מחדש':(d.error||('שגיאה '+r.status)));
+  if(!r.ok)throw new Error(r.status===403?'הכניסה הסתיימה: כדאי להיכנס מחדש':(d.error||('שגיאה '+r.status)));
   return d;
 }
 const date=s=>{const t=new Date(s),z=n=>String(n).padStart(2,'0');return z(t.getDate())+'.'+z(t.getMonth()+1)+'.'+String(t.getFullYear()).slice(2)+', '+z(t.getHours())+':'+z(t.getMinutes());};
 
 // הכלים, לפי סדר ההצגה בתיקייה ובספרייה
-const TOOLS={studio:'סטודיו חוסן — ערכת פעולה',practi:'פרקטי — יועצת לחוסן בכיתה',nugi:'נוגי — מנהיגות תומכת חוסן',nana:'ננה — מהוראה להנחיה',writer:'כתיבה מקדמת חוסן',
-  resil:'מיפוי חוסן — סיכום לכיתה',conv:'תכנון שיחה','act-single':'תכנון פעילות — מפגש אחד','act-seq':'תכנון פעילות — רצף מפגשים',
-  review:'משוב לעבודות',journey:'מסע אל החוסן',practice:'תרגול עצמי בסימולציה',edu:'סימולציה — סטודנטים/ות',parents:'סימולציה — הורים',youth:'סימולציה — נוער'};
+const TOOLS={studio:'סטודיו חוסן: ערכת פעולה',practi:'פרקטי: יועצת לחוסן בכיתה',nugi:'נוגי: מנהיגות תומכת חוסן',nana:'ננה: מהוראה להנחיה',writer:'כתיבה מקדמת חוסן',
+  resil:'מיפוי חוסן: סיכום לכיתה',conv:'תכנון שיחה','act-single':'תכנון פעילות: מפגש אחד','act-seq':'תכנון פעילות: רצף מפגשים',
+  review:'משוב לעבודות',journey:'מסע אל החוסן',practice:'תרגול עצמי בסימולציה',edu:'סימולציה: סטודנטים/ות',parents:'סימולציה: הורים',youth:'סימולציה: נוער'};
 const RUNS=[
   ['studio','resilience-studio.html',40],['practi','resilience-advisor.html',20],['nugi','leadership-advisor.html',20],['nana','facilitation-advisor.html',20],['writer','message-writer.html',10],
   ['resil','resilience-team.html',20],['conv','conversation-planner.html',20],['act-single','activity-planner.html',20],['act-seq','activity-planner.html?part=seq',35],
@@ -174,7 +174,7 @@ async function runAll(ids){
   F('prog').textContent='0 מתוך '+ids.length;
   const worker=async()=>{while(i<ids.length){const id=ids[i++];await runOne(id,batch);done++;F('prog').textContent=done+' מתוך '+ids.length;}};
   await Promise.all([worker(),worker(),worker()]);
-  BUSY=false;F('go').disabled=false;F('prog').textContent='הסתיים — '+done+' מתוך '+ids.length;
+  BUSY=false;F('go').disabled=false;F('prog').textContent='הסתיים: '+done+' מתוך '+ids.length;
   loadList();
 }
 function runOne(id,batch){
@@ -185,7 +185,7 @@ function runOne(id,batch){
     let finished=false;
     const tick=setInterval(()=>{if(!finished)F('st-'+id).textContent='מפיק... '+Math.round((Date.now()-t0)/60000)+' דק׳';},30000);
     const end=(cls,text)=>{if(finished)return;finished=true;clearInterval(tick);clearTimeout(guard);window.removeEventListener('message',onMsg);fr.remove();setRun(id,cls,text);resolve();};
-    const guard=setTimeout(()=>end('error','הזמן עבר ('+mins+' דק׳) — אפשר לנסות שוב'),mins*60000);
+    const guard=setTimeout(()=>end('error','הזמן עבר ('+mins+' דק׳): אפשר לנסות שוב'),mins*60000);
     async function onMsg(e){
       if(e.source!==fr.contentWindow||e.origin!==location.origin||!e.data||!e.data.sbeDemo)return;
       const m=e.data;

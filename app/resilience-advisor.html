@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>פרקטי — יועצת לפיתוח חוסן חברתי</title>
+<title>פרקטי: יועצת לפיתוח חוסן חברתי</title>
 <script src="lib/report-table.js"></script>
 <script src="lib/access-guard.js"></script>
+<script src="lib/open-select.js"></script>
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
 <script src="lib/resilience-advisor-sources.js"></script>
+<script src="lib/ref-collect.js"></script>
 <script src="lib/resilience-writer.js"></script>
 <script src="lib/resilience-leadership.js"></script>
 <style>
@@ -162,10 +164,10 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 <div class="wrap">
   <div class="card">
     <h1>פרקטי: יועצת לפיתוח חוסן חברתי</h1>
-    <p>רוצים תמונת מצב והמלצות בלי להעביר שאלון לתלמידים? מתארים את הכיתה לפי התבחינים שלמטה, ופרקטי מנתחת את התמונה ומציעה המלצות — בדומה לדוח שמתקבל אחרי מיפוי בשאלון: חוזקות, אתגרים, פעילויות ומשחקים חברתיים, סביבת הכיתה והמלצות נוספות. אחר כך אפשר להמשיך לשאול אותה שאלות.</p>
-    <p class="intro" style="border-inline-start-color:var(--hidden);background:var(--hidden-soft);font-size:.92rem;margin:.6rem 0"><b>חשוב:</b> כל המלצה של פרקטי יש לבחון לאור הנהלים והחוקים — והאחריות לכך היא של המחנך/ת. ההמלצות הן הצעות לחשיבה ולא הוראות.</p>
-    <p class="muted">פרקטי נשענת על מחקר עדכני מישראל ומהעולם — <a href="resilience-advisor-sources.html" target="_blank" style="color:var(--spoken);font-weight:700">רשימת המקורות</a>. התיאור הוא נקודת המבט שלך; כדי לשמוע גם את התלמידים, אפשר בהמשך להעביר את <a href="resilience-team.html" style="color:var(--spoken)">שאלון החוסן</a>.</p>
-    <p class="article-link" style="font-size:.9rem;margin:.45rem 0 0">📖 <a href="about.html#article" target="_blank" rel="noopener" style="color:var(--spoken,var(--accent,#2E5A7D));font-weight:700">לבחור בחוסן שלנו</a> — מאמר קצר על המושגים שבבסיס הכלי: מנגנונים חברתיים, קהילת חוסן ותו חוסן.</p>
+    <p>רוצים תמונת מצב והמלצות בלי להעביר שאלון לתלמידים? מתארים את הכיתה לפי התבחינים שלמטה, ופרקטי מנתחת את התמונה ומציעה המלצות, בדומה לדוח שמתקבל אחרי מיפוי בשאלון: חוזקות, אתגרים, פעילויות ומשחקים חברתיים, סביבת הכיתה והמלצות נוספות. אחר כך אפשר להמשיך לשאול אותה שאלות.</p>
+    <p class="intro" style="border-inline-start-color:var(--hidden);background:var(--hidden-soft);font-size:.92rem;margin:.6rem 0"><b>חשוב:</b> כל המלצה של פרקטי יש לבחון לאור הנהלים והחוקים, והאחריות לכך היא של המחנך/ת. ההמלצות הן הצעות לחשיבה ולא הוראות.</p>
+    <p class="muted">פרקטי נשענת על מחקר עדכני מישראל ומהעולם: <a href="resilience-advisor-sources.html" target="_blank" style="color:var(--spoken);font-weight:700">רשימת המקורות</a>. התיאור הוא נקודת המבט שלך; כדי לשמוע גם את התלמידים, אפשר בהמשך להעביר את <a href="resilience-team.html" style="color:var(--spoken)">שאלון החוסן</a>.</p>
+    <p class="article-link" style="font-size:.9rem;margin:.45rem 0 0">📖 <a href="about.html?from=resilience-advisor.html#article" target="_blank" rel="noopener" style="color:var(--spoken,var(--accent,#2E5A7D));font-weight:700">לבחור בחוסן שלנו</a>. מאמר קצר על המושגים שבבסיס הכלי: מנגנונים חברתיים, קהילת חוסן ותו חוסן.</p>
   </div>
 
   <div id="form-area">
@@ -205,14 +207,14 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
         <option>הכיתה מפונה מביתה</option>
         <option>קליטת תלמידים מפונים בכיתה</option>
         <option>תלמיד/ה חדש/ה בכיתה</option>
-        <option>תחילת שנה — כיתה מתגבשת</option>
+        <option>תחילת שנה: כיתה מתגבשת</option>
         <option>כיתה שמכירה זו את זו כבר שנתיים</option>
         <option>חזרה מחופשה ארוכה</option>
         <option>חרדה לפני מבחנים</option>
         <option>מעבר לבית ספר חדש</option>
       </select>
       <div class="addrow no-print">
-        <input type="text" id="f-sit-new" maxlength="80" placeholder="לא מוצאים? הקלידו מצב אחד — הוא יתווסף לרשימה של כולם">
+        <input type="text" id="f-sit-new" maxlength="80" placeholder="לא מוצאים? הקלידו מצב אחד: הוא יתווסף לרשימה של כולם">
         <button type="button" class="btn btn-ghost" id="btn-sit-add">הוספה לרשימה</button>
       </div>
       <p class="muted" id="sit-msg" hidden></p>
@@ -223,8 +225,8 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
     </div>
 
     <div class="card">
-      <h2>2. תמונת המצב — תבחינים</h2>
-      <p class="muted">לכל היגד בחרו עד כמה הוא מתאר את הכיתה בחודש האחרון. אם אין לך מספיק מידע — "לא יודע/ת" (גם זה מידע). היגדים שמסומנים <span class="rev">היגד הפוך</span> מתארים התנהגות פוגעת.</p>
+      <h2>2. תמונת המצב: תבחינים</h2>
+      <p class="muted">לכל היגד בחרו עד כמה הוא מתאר את הכיתה בחודש האחרון. אם אין לך מספיק מידע, "לא יודע/ת" (גם זה מידע). היגדים שמסומנים <span class="rev">היגד הפוך</span> מתארים התנהגות פוגעת.</p>
       <div id="criteria"></div>
     </div>
 
@@ -256,7 +258,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
       <div id="chat-log"></div>
       <textarea id="chat-in" maxlength="1000" placeholder="השאלה שלך..."></textarea>
       <div class="btns"><button class="btn" id="chat-send">שליחה</button><span class="muted" id="chat-left"></span></div>
-      <p class="intro" id="chat-done" hidden style="font-size:.92rem">הגעת ל-10 שאלות — זה המקסימום לשיחה אחת. כדי להמשיך, אפשר לעדכן את התיאור ולהפיק ניתוח חדש, ואז תיפתח שיחה חדשה.</p>
+      <p class="intro" id="chat-done" hidden style="font-size:.92rem">הגעת ל-10 שאלות: זה המקסימום לשיחה אחת. כדי להמשיך, אפשר לעדכן את התיאור ולהפיק ניתוח חדש, ואז תיפתח שיחה חדשה.</p>
       <p class="err" id="chat-err" hidden></p>
     </div>
   </div>
@@ -266,7 +268,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 <dialog id="fb-dlg">
   <div class="fbh">רעיונות, תקלות ושאלות על פרקטי</div>
   <div class="fbb">
-    <p class="muted" style="font-size:.85rem">מה עבד, מה לא, מה חסר — כל הערה עוזרת לשפר. ההודעה מגיעה ישירות לד״ר יעל שדה. אני מבקשת את הפרטים שלך כדי שאוכל לחזור אלייך ולהתייעץ במידת הצורך.</p>
+    <p class="muted" style="font-size:.85rem">מה עבד, מה לא, מה חסר: כל הערה עוזרת לשפר. ההודעה מגיעה ישירות לד״ר יעל שדה. אני מבקשת את הפרטים שלך כדי שאוכל לחזור אלייך ולהתייעץ במידת הצורך.</p>
     <label for="fb-name">שם</label>
     <input type="text" id="fb-name" maxlength="80" autocomplete="name">
     <label for="fb-contact">מייל או טלפון</label>
@@ -296,7 +298,7 @@ const DIMS = [
   ]},
   {t:'עבודה משותפת ומנגנונים חברתיים', items:[
     {k:'task', d:'היכולת לבצע משימה יחד', q:'במשימה קבוצתית עם כמה שלבים, התלמידים מתאמים ביניהם.', look:'מחלקים עבודה, עוזרים זה לזה, מסיימים יחד.'},
-    {k:'roles', d:'תפקידים ותורנויות', q:'התפקידים, הוועדות והתורנויות בכיתה פועלים בפועל, גם בלי תזכורת.', look:'תורנות ניקיון, ועדת אירועים, נציגות — שעובדות ולא רק רשומות.'},
+    {k:'roles', d:'תפקידים ותורנויות', q:'התפקידים, הוועדות והתורנויות בכיתה פועלים בפועל, גם בלי תזכורת.', look:'תורנות ניקיון, ועדת אירועים, נציגות, שעובדות ולא רק רשומות.'},
     {k:'decide', d:'קבלת החלטות קבוצתית', q:'החלטות שנוגעות לכל הכיתה מתקבלות בדרך ידועה שבה כולם שותפים.', look:'הצבעה, מועצת כיתה, שיחה מסודרת.'},
     {k:'decide_r', d:'קבלת החלטות קבוצתית', r:1, q:'ההחלטות בכיתה נקבעות בפועל על ידי קבוצה קטנה.', look:'אותם שלושה־ארבעה קובעים לכולם.'},
     {k:'selforg', d:'התארגנות בלי מבוגר', q:'הכיתה מתארגנת ומתפקדת גם כשאין מבוגר בחדר.', look:'שיעור עם ממלא/ת מקום, הפסקה בכיתה, משימה עצמאית.'}
@@ -304,7 +306,7 @@ const DIMS = [
   {t:'קונפליקט ופגיעה', items:[
     {k:'resolve', d:'יישוב מחלוקות', q:'הריבים בכיתה נפתרים ללא התערבות מבוגר.', look:'מדברים, מתפשרים, מתנצלים.'},
     {k:'resolve_r', d:'יישוב מחלוקות', r:1, q:'בריב בכיתה, מי שחזק יותר הוא שצודק בסוף.', look:'כוח, מעמד או קול רם מכריעים.'},
-    {k:'mediate', d:'כתובת מוכרת לסכסוך', q:'לתלמידים יש כתובת מוכרת לסכסוך — מגשרים, תלמידים שאפשר לפנות אליהם או נוהל ידוע.', look:'יודעים למי פונים לפני שזה מסלים.'},
+    {k:'mediate', d:'כתובת מוכרת לסכסוך', q:'לתלמידים יש כתובת מוכרת לסכסוך: מגשרים, תלמידים שאפשר לפנות אליהם או נוהל ידוע.', look:'יודעים למי פונים לפני שזה מסלים.'},
     {k:'online_r', d:'הקבוצה הכיתתית ברשת', r:1, q:'תלמידים נפגעים בקבוצת הוואטסאפ או ברשתות של הכיתה.', look:'לעג, הוצאה מהקבוצה, צילומי מסך, השתקה.'}
   ]},
   {t:'דיבור, עיבוד והתאוששות', items:[
@@ -315,7 +317,7 @@ const DIMS = [
   {t:'תרבות, הורים וקהילה', items:[
     {k:'tradition', d:'מסורות וטקסים כיתתיים', q:'לכיתה יש מסורות וטקסים שהתלמידים יצרו או שותפים להם.', look:'ימי הולדת, פתיחת שבוע, ציון הצלחות ומעברים.'},
     {k:'parents', d:'קשר עם ההורים', q:'ההורים מעורבים ויודעים מה באמת קורה בכיתה, באופן שמועיל לתלמידים.', look:'ועד פעיל, קשר שוטף, מעורבות באירועים.'},
-    {k:'community', d:'קשר לבית הספר ולקהילה', q:'הכיתה פועלת גם מחוץ לעצמה — מול שכבות אחרות, בהתנדבות ובקהילה.', look:'חונכות, פרויקט שכונתי, אירוח שכבה.'}
+    {k:'community', d:'קשר לבית הספר ולקהילה', q:'הכיתה פועלת גם מחוץ לעצמה (מול שכבות אחרות, בהתנדבות ובקהילה).', look:'חונכות, פרויקט שכונתי, אירוח שכבה.'}
   ]}
 ];
 let ITEMS = DIMS.flatMap(d=>d.items.map(it=>({...it,dim:d.t})));
@@ -403,7 +405,7 @@ function addableSelect(id,listName,what){
   const wrap=document.createElement('details');wrap.className='addmore no-print';
   const sm=document.createElement('summary');sm.textContent='לא מוצאים? הוספה לרשימה';wrap.appendChild(sm);
   const row=document.createElement('div');row.className='addrow';
-  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+' — יתווסף לרשימה של כולם';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+', יתווסף לרשימה של כולם';
   const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה לרשימה';
   row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);
   const msg=document.createElement('p');msg.className='muted';msg.hidden=true;wrap.appendChild(msg);
@@ -417,7 +419,7 @@ function addableSelect(id,listName,what){
       ex.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;o.dataset.c='1';g.appendChild(o);});sel.appendChild(g);}
     sel.value=cur;
     adm.textContent='';
-    if(IS_SYS&&extra.length){adm.appendChild(el('p','muted','מנהלת המערכת — הסרה מהרשימה:'));
+    if(IS_SYS&&extra.length){adm.appendChild(el('p','muted','מנהלת המערכת: הסרה מהרשימה:'));
       extra.forEach(v=>{const r=el('div');r.style.cssText='display:flex;gap:.5rem;align-items:center;margin:.25rem 0';r.appendChild(el('span',null,v)).style.flex='1';
         const b=el('button','btn btn-ghost','הסרה');b.type='button';b.style.cssText='padding:.2rem .6rem;font-size:.8rem';
         b.addEventListener('click',()=>{if(!confirm('להסיר את "'+v+'" מהרשימה של כולם?'))return;
@@ -457,14 +459,14 @@ function decorateDim(sec,dm,listName,rebuild){
   const wrap=document.createElement('details');wrap.className='addmore no-print';
   const sm=document.createElement('summary');sm.textContent='+ הוספת היגד לממד הזה';wrap.appendChild(sm);
   const row=document.createElement('div');row.className='addrow';
-  const inp=document.createElement('input');inp.type='text';inp.maxLength=150;inp.placeholder='היגד נייטרלי (לא שאלה) — יתווסף לשאלון של כולם';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=150;inp.placeholder='היגד נייטרלי (לא שאלה): יתווסף לשאלון של כולם';
   const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה';
   row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);
   const msg=el('p','muted');msg.hidden=true;wrap.appendChild(msg);
   btn.addEventListener('click',()=>{
     const v=inp.value.replace(/\s+/g,' ').replace(/\|/g,' ').trim();msg.hidden=false;
-    if(v.length<8){msg.textContent='אפשר לכתוב היגד שלם — משפט אחד.';return;}
-    if(/^האם\b/.test(v)||/\?\s*$/.test(v)){msg.textContent='כדאי לנסח היגד נייטרלי ולא שאלה — למשל "הצוות מקבל עדכון קבוע..." ולא "האם הצוות...?"';return;}
+    if(v.length<8){msg.textContent='אפשר לכתוב היגד שלם: משפט אחד.';return;}
+    if(/^האם\b/.test(v)||/\?\s*$/.test(v)){msg.textContent='כדאי לנסח היגד נייטרלי ולא שאלה, למשל "הצוות מקבל עדכון קבוע..." ולא "האם הצוות...?"';return;}
     btn.disabled=true;msg.textContent='מוסיפה...';
     accessApi({action:'listAdd',name:listName,value:dm.t+'|'+v,token:token()}).then(d=>{
       if(d.items){STMTS=d.items;inp.value='';rebuild();}
@@ -507,7 +509,7 @@ function pictureText(a){
   DIMS.forEach(dm=>{L.push('['+dm.t+']');ITEMS.filter(it=>it.dim===dm.t).forEach(it=>{const v=a[it.k];if(it.c&&v==null)return;L.push('- '+it.q+(it.r?' (הפוך)':'')+(it.c?' (היגד שהוסיפו אנשי חינוך)':'')+' → '+(v==null?'לא נענה':SCALE[v]));});});
   const ds=domains(a).sort((x,y)=>y.score-x.score);
   L.push('','ציונים מחושבים לפי התבחינים (0–100; 75+ תפקודי · 50–74 חלקי · 25–49 חלש · מתחת ל-25 בקושי תפקודי):');
-  ds.forEach(d=>L.push('- '+d.d+': '+Math.round(d.score)+' ('+d.l+')'+(d.capped?' — התנהגות פוגעת מגבילה את הציון':'')));
+  ds.forEach(d=>L.push('- '+d.d+': '+Math.round(d.score)+' ('+d.l+')'+(d.capped?', התנהגות פוגעת מגבילה את הציון':'')));
   const unk=ITEMS.filter(it=>a[it.k]===4).map(it=>it.d);
   if(unk.length)L.push('','המחנך/ת לא יודע/ת לגבי: '+[...new Set(unk)].join(', '));
   if(f('f-strong'))L.push('','חוזקות הכיתה (במילים של המחנך/ת): '+f('f-strong'));
@@ -523,7 +525,7 @@ function renderPicture(a){
   const box=F('picture');box.textContent='';
   const ds=domains(a);if(!ds.length)return;
   const card=el('div','card');card.appendChild(el('h2',null,'תמונת המצב לפי התיאור שלך'));
-  card.appendChild(el('p','muted','ציון לכל תחום לפי התשובות שלך, באותו סולם של שאלון החוסן. זו נקודת מבט אחת — של המחנך/ת.'));
+  card.appendChild(el('p','muted','ציון לכל תחום לפי התשובות שלך, באותו סולם של שאלון החוסן. זו נקודת מבט אחת, של המחנך/ת.'));
   DIMS.forEach(dm=>{
     const mine=ds.filter(d=>d.dim===dm.t);if(!mine.length)return;
     card.appendChild(el('h3',null,dm.t));
@@ -543,7 +545,7 @@ const PERSONA = [
   'את "פרקטי" — היועצת לפיתוח חוסן חברתי של מערכת Begood: יועצת חינוכית מנוסה, שמכירה לעומק את המחקר על חוסן חברתי וקהילתי בכיתה ובבית הספר — בשגרה ובחירום, בישראל ובעולם. את מדברת בלשון נקבה על עצמך, ועונה בעברית, בפנייה מכבדת, פשוטה ומעשית למחנך/ת.',
   'פרקטי ממליצה ולא קובעת: היא מציעה חלופות פעולה, וההחלטה תמיד בידי המחנך/ת. ניסוח של המלצה והצעה — "אפשר…", "כדאי לשקול…", "אפשרות אחת… ואפשרות אחרת…", "מומלץ…" — ולא של קביעה או הוראה ("חייבים", "צריך", "יש ל…", "הכיתה היא…"). גם תיאור הכיתה מנוסח בזהירות ("נראה ש…", "ייתכן ש…"). בכל אתגר, בכל שאלה של המחנך/ת ובכל תשובה בשיחה — לפחות שתי חלופות שונות, עם מה כל אחת מאפשרת ומתי היא מתאימה. גם במצבי ביטחון — "מומלץ קודם כול…" ולא פקודה.',
   'כל המלצה כפופה לנהלים ולחוקים: אל תצטטי חוזרים, נהלים או סעיפי חוק, ואל תכריעי בשאלות משפטיות או נוהליות — כשזה רלוונטי, כתבי שיש לבדוק את ההמלצה לאור הנהלים והחוקים.',
-  'Begood נועדה להעצים את המחנכים ולהקטין את התלות ביועצים, במנהלים ובפסיכולוגים: המחנך/ת הוא/היא הדמות המשמעותית בכיתה, ושיחה אישית עם תלמיד/ה — שנפגע/ה, שהוריו/ה התגרשו, שמתקשה, שחרד/ה או שנשאר/ה בשוליים — היא מיומנות של מחנך/ת.',
+  'Begood נועדה להעצים את המחנכים ולהקטין את התלות ביועצים, במנהלים ובפסיכולוגים: המחנך/ת הוא/היא הדמות המשמעותית בכיתה, ושיחה אישית עם תלמיד/ה (שנפגע/ה, שהוריו/ה התגרשו, שמתקשה, שחרד/ה או שנשאר/ה בשוליים) היא מיומנות של מחנך/ת.',
   'תמיד הציעי שיחה עם התלמיד/ה או עם התלמידים, ותני הנחיות מעשיות לשיחה: איפה ומתי (ביחידות, במקום שקט, בזמן בלי לחץ); איך לפתוח (שאלה פתוחה לדוגמה, במירכאות); 2–3 שאלות המשך לדוגמה; מה מטרת השיחה; ואיך לסיים (סיכום קצר והסכמה על צעד הבא). השיחה מכילה, אמפתית ותומכת: הקשבה, הבעת הבנה, בלי שיפוט ובלי חקירה.',
   'תחושת שליטה: חשוב מאוד שהתלמיד/ה — ובמיוחד מי שנפגע/ה — ירגיש/תרגיש שליטה על מה שקורה. שאלות על ההמשך, למשל "איך אוכל לעזור לך?" ו"מה היית רוצה שיקרה עכשיו?"; ניסוח של הצעה ולא של החלטה — "אני מציעה ש... מה דעתך?"; ובחירה משותפת של הצעד הבא.',
   'גם במצבי סיכון (פגיעה עצמית או מחשבות אובדניות, פגיעה מינית, התעללות או הזנחה, סכנה לתלמיד/ה או לאחרים) לא רצים מיד ליועץ/ת, להנהלה או לפסיכולוג/ית: רגע לפני ההפניה יש מקום לשיחה אישית מכילה — תמיכה והבנה, הכרה באומץ לשתף, ושאלה אם התלמיד/ה מוכן/ה להיפגש עם איש/אשת מקצוע ואיך היה/הייתה רוצה שזה ייעשה (מי, מתי, מה יסופר). שתי הבהרות שיופיעו בעדינות במצבים אלה: כשהנהלים או החוק מחייבים לדווח או ליידע — לא מבטיחים סודיות, ואומרים זאת בכנות ובחום ("אני לא אשאיר אותך לבד עם זה, ויחד נחליט איך לעשות את הצעד הבא"); וכשיש סכנה מיידית — נשארים עם התלמיד/ה ומזעיקים עזרה מיד.',
@@ -625,7 +627,8 @@ F('btn-analyze').addEventListener('click',async()=>{
 });
 
 // ── הדוח ──
-function basisEl(keys){
+function basisEl(keys){SBE_REFS.add(keys);return null;
+
   const ks=(Array.isArray(keys)?keys:[]).filter(k=>SRC.byKey[k]);
   const HID=k=>SRC.byKey[k].hidden;
   if(!ks.length)return null;
@@ -633,15 +636,8 @@ function basisEl(keys){
   ks.forEach((k,i)=>{if(i)p.appendChild(document.createTextNode(' · '));if(HID(k)){p.appendChild(document.createTextNode('ד״ר יעל שדה (Begood)'));return;}const a=el('a',null,k);a.href='resilience-advisor-sources.html#'+k;a.target='_blank';a.title=SRC.byKey[k].apa;p.appendChild(a);});
   return p;
 }
-function withRefs(text){ // טקסט עם [מפתח] → קישורים למקורות; מפתח לא מוכר נשאר טקסט
-  const frag=document.createDocumentFragment();
-  String(text||'').split(/(\[[A-Za-z]+[0-9]{4}\])/).forEach(part=>{
-    const m=part.match(/^\[([A-Za-z]+[0-9]{4})\]$/);
-    if(m&&SRC.byKey[m[1]]&&SRC.byKey[m[1]].hidden){frag.appendChild(document.createTextNode('[ד״ר יעל שדה, Begood]'));}
-    else if(m&&SRC.byKey[m[1]]){const a=el('a','ref',m[1]);a.href='resilience-advisor-sources.html#'+m[1];a.target='_blank';a.title=SRC.byKey[m[1]].apa;frag.appendChild(document.createTextNode('['));frag.appendChild(a);frag.appendChild(document.createTextNode(']'));}
-    else if(!m)frag.appendChild(document.createTextNode(part)); // מפתח שאינו ברשימה — לא מוצג
-  });
-  return frag;
+function withRefs(text){ // מקורות בסוף המסמך (08/10/2026): [מפתח] ו-(מפתח, מפתח) יוצאים מהטקסט ונאספים לרשימה
+  return document.createTextNode(SBE_REFS.strip(text));
 }
 function inlineRich(text){ // **מודגש** → הדגשה, [מפתח] → קישור; כוכביות בודדות לא מוצגות
   const frag=document.createDocumentFragment();
@@ -691,7 +687,7 @@ function domTable(items){if(!(items||[]).length)return el('p','muted','—');ret
 function textList(items){const ul=el('ul','tl');(items||[]).forEach(it=>{const li=el('li');if(it.domain)li.appendChild(el('b',null,it.domain+': '));li.appendChild(inlineRich(it.text||''));ul.appendChild(li);});return ul;}
 function plain(){
   const R=STATE.report,d=R.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.game?'משחק חברתי':'',a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  מה זה מפתח: '+a.mechanism:'')+((a.basis||[]).length?'\n  מבוסס על: '+a.basis.join(', '):'');
-  L.push('פרקטי: המלצות לפיתוח חוסן חברתי — כיתה '+(R.cls||'')+' ('+R.age+')','',d.intro||'');if(d.lens)L.push('','איך המחקר קורא את התמונה',d.lens);
+  L.push('פרקטי: המלצות לפיתוח חוסן חברתי, כיתה '+(R.cls||'')+' ('+R.age+')','',d.intro||'');if(d.lens)L.push('','איך המחקר קורא את התמונה',d.lens);
   if((d.answers||[]).length){L.push('','תשובות לשאלות שלך');d.answers.forEach(x=>L.push('• '+x.question+'\n  '+x.answer));}
   L.push('','1. חוזקות הכיתה');(d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','1.1 פעילויות להעצמת החוזקות');(d.strengthActivities||[]).forEach(a=>L.push(act(a)));
@@ -700,13 +696,14 @@ function plain(){
   L.push('','2.2 פעילויות להתמודדות');(d.challengeActivities||[]).forEach(a=>L.push(act(a,a.for)));
   if((d.environment||[]).length){L.push('','3. סביבת הכיתה');d.environment.forEach(x=>L.push('• '+x.title+(x.for?' ['+x.for+']':'')+'\n  '+x.description));}
   if((d.other||[]).length){L.push('','4. המלצות נוספות');d.other.forEach(x=>L.push('• '+x.title+'\n  '+x.description));}
-  L.push(...SBE_WRITER.reportPlain(d,'5. עקרונות החוסן בתקשורת של הכיתה','הודעות מוכנות לשליחה — כתובות לפי עקרונות החוסן','h2'));
+  L.push(...SBE_WRITER.reportPlain(d,'5. עקרונות החוסן בתקשורת של הכיתה','הודעות מוכנות לשליחה: כתובות לפי עקרונות החוסן','h2'));
   if((d.checks||[]).length){L.push('','6. כדאי לבדוק עם התלמידים');d.checks.forEach(x=>L.push('• '+x));}
   L.push('','כל המלצה יש לבחון לאור הנהלים והחוקים, והאחריות לכך היא של המחנך/ת.');
   L.push('','המקורות: '+location.href.replace(/[^/]*$/,'resilience-advisor-sources.html'));
   return L.join('\n').replace(/\*\*/g,'');
 }
 function renderReport(){
+  SBE_REFS.begin(SRC,'resilience-advisor-sources.html');
   const box=F('report');box.textContent='';const R=STATE.report;if(!R)return;const d=R.doc||{};
   const head=el('div','card no-print');
   const acts=el('div','btns');
@@ -715,7 +712,7 @@ function renderReport(){
   const ask=el('button','btn','לשאול את פרקטי ↓');ask.addEventListener('click',()=>{F('chat-area').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>{if(!F('chat-in').disabled)F('chat-in').focus({preventScroll:true});},500);});
   acts.appendChild(ask);acts.appendChild(pr);acts.appendChild(cp);head.appendChild(el('h2',null,'הדוח מוכן'));head.appendChild(acts);box.appendChild(head);
   const card=el('div','card');
-  card.appendChild(el('h2',null,'המלצות של פרקטי — כיתה '+(R.cls||'')));
+  card.appendChild(el('h2',null,'המלצות של פרקטי: כיתה '+(R.cls||'')));
   card.appendChild(el('p','muted','שכבה: '+R.age+' · הופק: '+new Date(R.at).toLocaleDateString('he-IL',{day:"2-digit",month:"2-digit",year:"2-digit"})+' · על סמך תיאור המחנך/ת'));
   if(d.intro){const ip=el('p','intro');ip.appendChild(inlineRich(d.intro));card.appendChild(ip);}
   if(d.lens){const l=el('div','lens');l.appendChild(el('b',null,'איך המחקר קורא את התמונה: '));l.appendChild(inlineRich(d.lens));card.appendChild(l);}
@@ -724,14 +721,15 @@ function renderReport(){
   card.appendChild(el('h3',null,'1.1 פעילויות ותהליכים להעצמת החוזקות'));card.appendChild(actTable(d.strengthActivities));
   card.appendChild(el('h3',null,'1.2 החוזקות כמנוף להתמודדות עם האתגרים'));card.appendChild(actTable(d.leverage,a=>a.from&&a.to?a.from+' ← '+a.to:''));
   card.appendChild(el('h2',null,'2. אתגרים'));
-  card.appendChild(el('h3',null,'2.1 האתגרים — כיווני צמיחה'));card.appendChild(domTable(d.challenges));
+  card.appendChild(el('h3',null,'2.1 האתגרים: כיווני צמיחה'));card.appendChild(domTable(d.challenges));
   card.appendChild(el('h3',null,'2.2 פעילויות ותהליכים להתמודדות'));card.appendChild(actTable(d.challengeActivities,a=>a.for));
   if((d.environment||[]).length){card.appendChild(el('h2',null,'3. עיצוב סביבת הכיתה'));card.appendChild(actTable(d.environment.map(x=>({title:x.title,description:x.description,basis:x.basis,for:x.for})),a=>a.for,'על מה זה נשען'));}
   if((d.other||[]).length){card.appendChild(el('h2',null,'4. המלצות נוספות'));card.appendChild(actTable(d.other.map(x=>({title:x.title,description:x.description,basis:x.basis})),null,'על מה זה נשען'));}
-  card.appendChild(SBE_WRITER.reportSection(d,{el,inlineRich,richText},'5. עקרונות החוסן בתקשורת של הכיתה','הודעות מוכנות לשליחה — כתובות לפי עקרונות החוסן'));
+  card.appendChild(SBE_WRITER.reportSection(d,{el,inlineRich,richText},'5. עקרונות החוסן בתקשורת של הכיתה','הודעות מוכנות לשליחה: כתובות לפי עקרונות החוסן'));
   if((d.checks||[]).length){card.appendChild(el('h2',null,'6. כדאי לבדוק עם התלמידים'));const ul=el('ul','tl');d.checks.forEach(x=>ul.appendChild(el('li',null,x)));card.appendChild(ul);}
   const foot=el('p','muted','הדוח הופק על ידי מודל שפה על סמך תיאור המחנך/ת ומבוסס על ');const a=el('a',null,'רשימת המקורות');a.href='resilience-advisor-sources.html';a.target='_blank';a.style.color='var(--spoken)';foot.appendChild(a);
   foot.appendChild(document.createTextNode('. הוא נקודת פתיחה לחשיבה ולשיחה עם הצוות, ולא מחליף שיקול דעת מקצועי או את קולם של התלמידים. כל המלצה יש לבחון לאור הנהלים והחוקים, והאחריות לכך היא של המחנך/ת.'));foot.style.marginTop='1rem';card.appendChild(foot);
+  {const rs=SBE_REFS.end();if(rs)card.insertBefore(rs,foot);}
   box.appendChild(card);
   F('chat-area').hidden=false;
 }
@@ -741,7 +739,7 @@ const CHAT_MAX=10;let CHAT_BUSY=false;
 const askedCount=()=>STATE.chat.filter(m=>m.role==='user').length;
 function renderChat(){
   const log=F('chat-log');log.textContent='';
-  STATE.chat.forEach(m=>{const d=el('div','msg '+(m.role==='user'?'me':'bot'));d.appendChild(m.role==='user'?withRefs(m.content):richText(m.content));log.appendChild(d);});
+  STATE.chat.forEach(m=>{const d=el('div','msg '+(m.role==='user'?'me':'bot'));if(m.role==='user')d.appendChild(withRefs(m.content));else{SBE_REFS.begin(SRC,'resilience-advisor-sources.html');d.appendChild(richText(m.content));const rs=SBE_REFS.end();if(rs)d.appendChild(rs);}log.appendChild(d);});
   if(CHAT_BUSY&&STATE.chat.length&&STATE.chat[STATE.chat.length-1].role==='user')log.appendChild(el('div','msg bot thinking','פרקטי חושבת על תשובה…'));
   const n=askedCount(),left=CHAT_MAX-n,done=left<=0;
   F('chat-in').hidden=done;F('chat-send').style.display=done?'none':'';F('chat-done').hidden=!done;
@@ -798,7 +796,7 @@ F('fb-send').addEventListener('click',()=>{
   const b=F('fb-send');b.disabled=true;b.textContent='שולחת...';
   let guest=false;try{guest=JSON.parse(sessionStorage.getItem('sbe.session.info')||'{}').kind==='guest';}catch(e){}
   accessApi({action:'fbSubmit',type:'פנייה',text,name,contact,
-    source:guest?'פרקטי — התנסות הקהילה':'פרקטי',page:'resilience-advisor'}).then(d=>{
+    source:guest?'פרקטי: התנסות הקהילה':'פרקטי',page:'resilience-advisor'}).then(d=>{
     if(!d.ok)throw new Error();
     F('fb-text').value='';err.hidden=false;err.style.color='var(--auto)';err.textContent='נשלח, תודה! ✓';
     setTimeout(()=>{F('fb-dlg').close();err.style.color='';},1400);

@@ -143,7 +143,7 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 <div class="wrap">
 <header>
   <div class="logo-hero">
-    <img src="assets/begood-logo.webp" alt="Begood — חינוך מבוסס סימולציה">
+    <img src="assets/begood-logo.webp" alt="Begood: חינוך מבוסס סימולציה">
     <p class="slogan">להיות מוכנים לכל מה שהשדה החינוכי מזמן  ...וגם החיים.</p>
   </div>
 </header>
@@ -233,7 +233,7 @@ function renderEntry(){
   const code = el("input",{class:"code", placeholder:"XXXX-XXXX או 6 ספרות", autocomplete:"off", spellcheck:"false", "aria-label":"הקוד שלך"});
   const err = el("div",{class:"err"},""); err.hidden = true;
   // הגעה מכניסה שהסתיימה (access-guard.js, ?expired=1)
-  if (new URLSearchParams(location.search).get("expired")) { err.textContent = "הכניסה הקודמת הסתיימה (כניסה תקפה ל-12 שעות). אפשר להיכנס שוב — מה ששמרת במכשיר מחכה לך."; err.hidden = false; err.style.color = "var(--ink, #14212B)"; }
+  if (new URLSearchParams(location.search).get("expired")) { err.textContent = "הכניסה הקודמת הסתיימה (כניסה תקפה ל-12 שעות). אפשר להיכנס שוב: מה ששמרת במכשיר מחכה לך."; err.hidden = false; err.style.color = "var(--ink, #14212B)"; }
   const btn = el("button",{class:"primary"},"כניסה");
   const submit = async () => {
     const c = fixCodeKeys(code.value.replace(/[‎‏؜]/g, "")).trim();
@@ -283,7 +283,7 @@ function renderEntry(){
   const admBtn = el("button",{class:"switchlink"},"כניסת ניהול");
   admBtn.addEventListener("click", () => { alt.hidden = false; alt.textContent = ""; alt.append(buildAdminField("sys")); });
   links.append(admBtn, el("span",{class:"sep"},"·"),
-    el("a",{href:"about.html"},"אודות המערכת"), el("span",{class:"sep"},"·"), el("a",{href:"examples.html"},"תוצרים לדוגמה"), el("span",{class:"sep"},"·"), el("a",{href:"renew.html"},"מנוי — חידוש או רכישה"));
+    el("a",{href:"about.html"},"אודות המערכת"), el("span",{class:"sep"},"·"), el("a",{href:"examples.html"},"תוצרים לדוגמה"), el("span",{class:"sep"},"·"), el("a",{href:"renew.html"},"מנוי: חידוש או רכישה"));
   minn.append(links, alt);
   more.append(minn);
   view.append(more);
@@ -293,7 +293,7 @@ function renderEntry(){
     const gi = el("div",{class:"in"});
     const gb = el("button",{class:"primary", type:"button"},"התנסות חברות.י הקהילה");
     gb.addEventListener("click", enterGuest);
-    gi.append(el("p",{class:"hint"},"כניסה להתנסות בפרקטי: יועצת לפיתוח חוסן חברתי — בלי קוד."), gb);
+    gi.append(el("p",{class:"hint"},"כניסה להתנסות בפרקטי: יועצת לפיתוח חוסן חברתי, בלי קוד."), gb);
     gc.append(gi); view.append(gc);
   }
   setTimeout(() => code.focus(), 50);
@@ -328,7 +328,7 @@ function buildWorkshopPicker(prefill){
     });
     pick.append(b);
   });
-  wrap.append(el("p",{class:"hint"}, prefill ? "קוד לקבוצה של סדנה ✓ — מה התפקיד שלך בסדנה?" : "התפקיד שלך בסדנה:"), pick, field);
+  wrap.append(el("p",{class:"hint"}, prefill ? "קוד לקבוצה של סדנה ✓: מה התפקיד שלך בסדנה?" : "התפקיד שלך בסדנה:"), pick, field);
   return wrap;
 }
 
@@ -389,7 +389,7 @@ function buildWorkshopField(role, prefill){
   btn.addEventListener("click", submit);
   nm.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
   wrap.append(
-    el("p",{class:"hint"},"הקוד לקבוצה שהמנחה הציגה בסדנה. בלי חשבון ובלי הרשמה — הקוד פג בסוף היום."),
+    el("p",{class:"hint"},"הקוד לקבוצה שהמנחה הציגה בסדנה. בלי חשבון ובלי הרשמה. הקוד פג בסוף היום."),
     el("label",{},"קוד לקבוצה"), code,
     el("label",{},"שם"), nm, err, btn);
   return wrap;
@@ -403,8 +403,8 @@ function renderWorkshopSuccess(role, name){
   inn.append(el("p",{class:"whoami"}, "שם: ", el("b",{},name), " · תפקיד: ", el("b",{},ROLE_LABEL[role])));
 
   const links = el("div",{class:"linklist"});
-  const CONV_LINK = { href:"conversation-planner.html", t:"תכנון שיחה", d:"כלי הכנה לשיחה אמיתית — לא סימולציה, פתוח לכל תפקיד" };
-  const ACTIVITY_LINK = { href:"activity-planner.html", t:"תכנון פעילות", d:"הדרכה לבניית פעילות חינוכית, או ניתוח פעילות קיימת — פתוח לכל תפקיד" };
+  const CONV_LINK = { href:"conversation-planner.html", t:"תכנון שיחה", d:"כלי הכנה לשיחה אמיתית (לא סימולציה). פתוח לכל תפקיד" };
+  const ACTIVITY_LINK = { href:"activity-planner.html", t:"תכנון פעילות", d:"הדרכה לבניית פעילות חינוכית, או ניתוח פעילות קיימת: פתוח לכל תפקיד" };
   const ACADEMIC_LINK = { href:"academic-review.html", t:"ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה", d:"משוב ממוקד-קריטריונים על עבודה או פרויקט לפני הגשה" };
   const PRACTICE_LINK = { href:"practice.html", t:"תרגול עצמי", d:"תרגול מול AI שמגלם דמות" };
   const SOURCES_LINK = { href:"sources-library.html", t:"ספריית המקורות", d:"חיפוש במקורות התיאורטיים" };
@@ -420,7 +420,7 @@ function renderWorkshopSuccess(role, name){
     CONV_LINK, ACTIVITY_LINK, ACADEMIC_LINK, SOURCES_LINK,
   ];
   const PARENT_LINKS = [
-    { href:"parent-input-screen.html", t:"יצירת תרחיש — הורים", d:"מתארים את המצב האישי שלכם, המערכת מציעה תרחיש לתרגול" },
+    { href:"parent-input-screen.html", t:"יצירת תרחיש: הורים", d:"מתארים את המצב האישי שלכם, המערכת מציעה תרחיש לתרגול" },
     PRACTICE_LINK,
     { href:"feedback.html", t:"משוב", d:"משוב על השימוש במערכת" },
     CONV_LINK, SOURCES_LINK,
@@ -479,7 +479,7 @@ function buildAdminField(role){
   btn.addEventListener("click", submit);
   pass.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
   wrap.append(
-    el("p",{class:"hint"},"סיסמה, לא קוד — נכנסת ברמת מוסד אחד או ברמת כל המערכת."),
+    el("p",{class:"hint"},"סיסמה, לא קוד: נכנסת ברמת מוסד אחד או ברמת כל המערכת."),
     el("label",{},"סיסמה"), passWrap, err, btn);
   return wrap;
 }
@@ -558,7 +558,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
 <dialog id="rptDlg">
   <h3>דיווח על תקלה, שאלה, רעיון או בקשה</h3>
   <div class="rb">
-    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח — לא ניתן לצרף קובץ אוטומטית למייל.</p>
+    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח, לא ניתן לצרף קובץ אוטומטית למייל.</p>
     <div class="rerr" id="rptErr" hidden></div>
     <label>שם מלא <span class="req">*</span></label>
     <input id="rptName">
