@@ -60,6 +60,7 @@ p{margin:0 0 .6rem}
 .btn.danger{background:transparent;color:var(--brick);border-color:var(--brick)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+a.btn{text-decoration:none;display:inline-block}
 .runs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
 .run{display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--hair);border-radius:8px;padding:8px 10px}
 .run label{flex:1;display:flex;gap:8px;align-items:center;cursor:pointer;font-weight:600;font-size:14.5px}
@@ -113,12 +114,13 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 <p class="muted" style="margin-top:10px">מסע אל החוסן נוצר כמסע דמו (בלי מיילים, ולא נספר בדוחות ובמחקר). אפשר למחוק אותו בלוח המסעות.</p>
 
 <h2 id="list-h">התיקייה שלי: התוצרים שהופקו</h2>
+<div class="row" style="margin-bottom:10px"><a href="examples.html" target="_blank" rel="noopener" class="btn ghost sm">📚 לספריית התוצרים לדוגמה ←</a><span class="muted">שם מופיע רק מה שסימנת "מוצג בספרייה".</span></div>
 <div id="list"><p class="muted">טוען...</p></div>
 </div>
 
 <div id="frames" aria-hidden="true"></div>
 <dialog id="dlg"><div class="dlg">
-  <div class="dlg-h"><b id="dlgT"></b><button class="btn ghost sm" id="dlgPrint">הדפסה / PDF</button><button class="btn ghost sm" id="dlgX">סגירה</button></div>
+  <div class="dlg-h"><b id="dlgT"></b><a class="btn ghost sm" id="dlgLib" href="examples.html" target="_blank" rel="noopener">📚 ספריית הדוגמאות</a><button class="btn ghost sm" id="dlgPrint">הדפסה / PDF</button><button class="btn ghost sm" id="dlgX">סגירה</button></div>
   <details id="dlgIn"><summary>מה הוזן לכלי</summary><pre id="dlgInT"></pre></details>
   <iframe id="dlgF" sandbox="allow-popups allow-popups-to-escape-sandbox allow-modals" title="התוצר"></iframe>
 </div></dialog>
@@ -251,11 +253,19 @@ async function loadList(){
     });
   });
 }
+// צפייה: הודעות הטעינה מימין, ובאמצע; אחרי 8 שניות מסבירים שהשרת מתעורר; שגיאה עם "לנסות שוב". (08/10/2026: "ריק...")
+let VIEW_N=0;
+function vmsg(t){return '<!doctype html><html dir="rtl" lang="he"><body style="font-family:Assistant,Arial,sans-serif;font-size:17px;color:#5C6771;text-align:center;padding:60px 20px">'+t+'</body></html>';}
 async function view(d){
-  F('dlgT').textContent=d.title;F('dlgInT').textContent=d.input||'—';F('dlgIn').hidden=!d.input;
-  F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:20px">טוען...</p>';F('dlg').showModal();
-  try{const full=await api({action:'demoGet',id:d.id});F('dlgF').srcdoc=full.html;}
-  catch(e){F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:20px">לא הצלחנו לטעון את התוצר.</p>';}
+  const n=++VIEW_N;
+  F('dlgT').textContent=d.title;F('dlgLib').href='examples.html?tool='+encodeURIComponent(d.tool||'');F('dlgInT').textContent=d.input||'';F('dlgIn').hidden=!d.input;
+  F('dlgF').srcdoc=vmsg('טוען את התוצר...');if(!F('dlg').open)F('dlg').showModal();
+  const slow=setTimeout(()=>{if(n===VIEW_N)F('dlgF').srcdoc=vmsg('טוען את התוצר... השרת מתעורר, זה יכול לקחת עד דקה.');},8000);
+  try{
+    const full=await api({action:'demoGet',id:d.id});clearTimeout(slow);if(n!==VIEW_N)return;
+    const txt=String(full.html||'').replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>|<[^>]+>|\s+/g,' ').trim();
+    F('dlgF').srcdoc=txt.length>40?full.html:vmsg('התוצר נשמר בלי תוכן. אפשר להפיק אותו שוב בכפתור "הפקה" בשורה של הכלי, ולמחוק את העותק הזה.');
+  }catch(e){clearTimeout(slow);if(n!==VIEW_N)return;F('dlgF').srcdoc=vmsg('לא הצלחנו לטעון את התוצר ('+e.message+'). אפשר לסגור ולנסות שוב בעוד רגע.');}
 }
 F('dlgX').onclick=()=>F('dlg').close();
 // הדפסה: עותק נקי של המסמך (בלי סקריפטים ובלי מאזיני אירועים) בחלון חדש

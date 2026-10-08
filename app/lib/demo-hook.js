@@ -196,7 +196,7 @@
       if ($("#activity-section").hidden) throw new Error("הפעילות לא נבנתה");
       var printed = async function (sel, title, label) {
         await busyOp(sel, title);
-        var fr = await waitFor(function () { var d = $("dialog[open] iframe"); return d && d.contentDocument && d.contentDocument.body && d.contentDocument.body.innerHTML.length > 300 ? d : null; }, 60e3, title);
+        var fr = await waitFor(function () { var d = $("dialog[open] iframe"); return d && d.contentDocument && d.contentDocument.body && String(d.contentDocument.body.innerText || "").trim().length > 150 ? d : null; }, 60e3, title);
         var html = "<!doctype html>" + fr.contentDocument.documentElement.outerHTML;
         var dlg = fr.closest("dialog"); if (dlg) dlg.close();
         await sleep(600);

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>מסע אל החוסן</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/example-peek.js" data-tool="journey" data-manual></script>
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -248,6 +249,7 @@ async function viewList(){
   c.appendChild(el('h1', null, 'מסע אל החוסן'));
   const p = el('p'); p.appendChild(inlineRich('מסע מלווה בשלבים אל **תו חוסן לקהילת חוסן** — מגן ומכיתה ועד בית ספר וקהילה. מתחילים במיפוי קצר, מקבלים הצעת מסע עם אפשרויות, בוחרים יחד, ויוצאים לדרך עם אבני דרך ברורות ותעודה על כל אחת מהן. לאורך כל הדרך — ליווי אישי של ד״ר יעל שדה.')); c.appendChild(p);
   { const ar = el('p', 'muted'); ar.style.cssText = 'font-size:.9rem;margin:.45rem 0 0'; ar.appendChild(document.createTextNode('📖 ')); const a = el('a', null, 'לבחור בחוסן שלנו'); a.href = 'about.html?from=journey.html#article'; a.target = '_blank'; a.rel = 'noopener'; a.style.fontWeight = '700'; ar.appendChild(a); ar.appendChild(document.createTextNode('. מאמר קצר על המושגים שבבסיס המסע: מנגנונים חברתיים, קהילת חוסן ותו חוסן.')); c.appendChild(ar); }
+  if (window.SBE_PEEK) SBE_PEEK.mount(null, c.lastElementChild); // תוצר לדוגמה (lib/example-peek.js)
   const tmp = el('div', 'jmap'); J.STAGES.forEach(s => { const st = el('div', 'st'); st.appendChild(el('div', 'dot', s.k)); st.appendChild(el('div', 'nm', s.t)); st.appendChild(el('div', 'sb', s.sub)); tmp.appendChild(st); }); c.appendChild(tmp);
   const list = card(); list.appendChild(el('h2', null, 'המסעות שלי')); const lw = el('p', 'muted', 'טוענת...'); list.appendChild(lw);
   const d = await api('jrMine'); lw.remove();
