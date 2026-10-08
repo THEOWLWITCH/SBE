@@ -74,8 +74,9 @@
       return clone(record);
     }
     function restore(record) { assertOwner(); return restoreDocument(record.document); }
+    function copy(nodes) { assertOwner(); return restoreDocument(capture(nodes)); }
     function print({title,subtitle,nodes}) {
-      assertOwner(); window.SBE_DOC.print({title,subtitle,nodes:restoreDocument(capture(nodes))});
+      window.SBE_DOC.print({title,subtitle,nodes:copy(nodes)});
     }
     function saveButton({title, subtitle, fields, nodes, record}) {
       let saved = record;
@@ -137,7 +138,7 @@
       dialog.append(close,heading,notice,body,status); dialog.addEventListener("close", () => dialog.remove(),{once:true});
       document.body.append(dialog); showList(); dialog.showModal(); return dialog;
     }
-    return {list,get,save,restore,saveButton,print,open};
+    return {list,get,save,restore,copy,saveButton,print,open};
   }
   function createWork(readState) {
     let active;

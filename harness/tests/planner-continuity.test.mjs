@@ -69,6 +69,7 @@ test('Save errors keep the product and never report success; reopened and printe
   env.setFailWrite(false);button.fire('click');assert.match(button.textContent,/נשמר.*✓/);
   const record=archive.list()[0],restored=archive.restore(record);assert.equal(restored[0].textContent,'עריכה שנשארת');
   assert.equal(restored[0].childNodes[0].childNodes[0].getAttribute('onclick'),null);
+  assert.equal(archive.copy([node])[0].textContent,'עריכה שנשארת');
   archive.print({title:'כותרת',nodes:[node]});assert.equal(env.prints[0].nodes[0].textContent,'עריכה שנשארת');
 });
 
