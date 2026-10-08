@@ -30,8 +30,22 @@
   }
 
   async function sbeCallAI(server, body, timeoutMs, options = {}) {
+    const cancelled = () => new DOMException("הבקשה בוטלה","AbortError");
+    if (options.signal?.aborted) throw cancelled();
     const requestId = body.requestId || crypto.randomUUID();
-    const start = await post(server + "/api/complete", {...body,requestId,async:true},90000,options.signal);
+    // Keep the bounded acknowledgment readable so a late accepted job can be cancelled.
+    const acknowledgment = post(server + "/api/complete", {...body,requestId,async:true},90000).then(async start => {
+      if (options.signal?.aborted && start.jobId)
+        await post(server + "/api/pipeline-cancel",{jobId:start.jobId},10000).catch(() => {});
+      return start;
+    });
+    const start = await new Promise((resolve,reject) => {
+      const abort = () => reject(cancelled());
+      options.signal?.addEventListener("abort",abort,{once:true});
+      if (options.signal?.aborted) abort();
+      acknowledgment.then(value => {options.signal?.removeEventListener("abort",abort); resolve(value);},
+        error => {options.signal?.removeEventListener("abort",abort); reject(error);});
+    });
     if (!start.jobId) {
       if (typeof start.text === "string") return start.text;
       throw new Error("המודל לא החזיר תשובה");
