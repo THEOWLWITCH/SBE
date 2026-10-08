@@ -167,7 +167,21 @@ RUNS.forEach(([id])=>{
 F('all').onclick=()=>RUNS.forEach(([id])=>F('cb-'+id).checked=true);
 F('none').onclick=()=>RUNS.forEach(([id])=>F('cb-'+id).checked=false);
 F('go').onclick=()=>runAll(RUNS.map(r=>r[0]).filter(id=>F('cb-'+id).checked));
-function setRun(id,cls,text){const r=F('run-'+id);r.className='run '+(cls||'');F('st-'+id).textContent=text||'';const v=r.querySelector('.view-btn');if(v&&cls!=='done')v.remove();}
+// הסטטוס האחרון של כל כלי נשמר במכשיר, כדי שאחרי רענון יופיע למה לא הופק תוצר (08/10/2026: "לפרקטי אין כפתור צפייה")
+const ST_KEY='sbe.demolab.status.v1';
+function stLoad(){try{return JSON.parse(localStorage.getItem(ST_KEY)||'{}')||{};}catch(e){return {};}}
+function stSave(id,cls,text){if(cls==='running')return;try{const o=stLoad();o[id]={cls,text,at:Date.now()};localStorage.setItem(ST_KEY,JSON.stringify(o));}catch(e){}}
+function setRun(id,cls,text){const r=F('run-'+id);r.className='run '+(cls||'');F('st-'+id).textContent=text||'';const v=r.querySelector('.view-btn');if(v&&cls!=='done')v.remove();stSave(id,cls,text);}
+function restoreStatus(){
+  const o=stLoad();
+  RUNS.forEach(([id])=>{
+    const r=F('run-'+id);if(!r||/running/.test(r.className))return;
+    const has=ITEMS.some(x=>x.tool===id);const s=o[id];
+    if(s&&s.cls==='error'){r.className='run error';F('st-'+id).textContent='בפעם האחרונה: '+s.text;}
+    else if(!has){r.className='run';F('st-'+id).textContent='עוד אין תוצר בתיקייה';}
+    else if(!/done|error/.test(r.className))F('st-'+id).textContent='';
+  });
+}
 function it0(m){return ((m.items||[])[0]||{}).tool;}
 function showView(id,tool){
   const r=F('run-'+id);if(!r||r.querySelector('.view-btn'))return;
@@ -226,6 +240,7 @@ async function loadList(){
   try{ITEMS=(await api({action:'demoList'})).items||[];}
   catch(e){box.textContent='';box.appendChild(el('p','warn','לא הצלחנו לטעון את התיקייה ('+e.message+').'));return;}
   box.textContent='';F('nItems').textContent=ITEMS.length;
+  restoreStatus();
   RUNS.forEach(([id])=>{const r=F('run-'+id);if(r&&!/running/.test(r.className))showView(id);});
   if(!ITEMS.length){box.appendChild(el('p','muted','התיקייה ריקה. אפשר להתחיל בהפקה למעלה.'));return;}
   const groups={};ITEMS.forEach(d=>{(groups[d.tool]=groups[d.tool]||[]).push(d);});
@@ -264,7 +279,7 @@ async function view(d){
   try{
     const full=await api({action:'demoGet',id:d.id});clearTimeout(slow);if(n!==VIEW_N)return;
     const txt=String(full.html||'').replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>|<[^>]+>|\s+/g,' ').trim();
-    F('dlgF').srcdoc=txt.length>40?full.html:vmsg('התוצר נשמר בלי תוכן. אפשר להפיק אותו שוב בכפתור "הפקה" בשורה של הכלי, ולמחוק את העותק הזה.');
+    F('dlgF').srcdoc=txt.length>40?String(full.html||'').replace(/<\/head>/i,'<style>.bar{display:none!important}</style></head>'):vmsg('התוצר נשמר בלי תוכן. אפשר להפיק אותו שוב בכפתור "הפקה" בשורה של הכלי, ולמחוק את העותק הזה.');
   }catch(e){clearTimeout(slow);if(n!==VIEW_N)return;F('dlgF').srcdoc=vmsg('לא הצלחנו לטעון את התוצר ('+e.message+'). אפשר לסגור ולנסות שוב בעוד רגע.');}
 }
 F('dlgX').onclick=()=>F('dlg').close();
