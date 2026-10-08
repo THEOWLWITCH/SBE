@@ -1716,7 +1716,7 @@ function pCrit(){
   if ((critData.rejected || []).length) {
     const c3 = el("div",{class:"card"}); const in3 = el("div",{class:"in"});
     in3.append(el("h3",{style:"margin:0 0 8px"}, "נדחו לאחרונה"));
-    critData.rejected.forEach(x => in3.append(el("div",{style:"font-size:13.5px;padding:4px 0"}, x.title + (x.reason ? " — " + x.reason : ""))));
+    critData.rejected.forEach(x => in3.append(el("div",{style:"font-size:13.5px;padding:4px 0"}, x.title + (x.reason ? ": " + x.reason : ""))));
     c3.append(in3); w.append(c3);
   }
   return w;

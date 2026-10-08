@@ -290,7 +290,7 @@
     });
   }
   function personalize(idea) {
-    state.brief=D.newBrief({...state.brief,startingPoint:idea.title+' — '+idea.steps.join(' '),goal:idea.goal,participants:idea.participants,participantAge:idea.age,leaderRole:idea.leaderRole||'',duration:idea.duration,count:idea.count||state.brief.count,focus:idea.focus});
+    state.brief=D.newBrief({...state.brief,startingPoint:idea.title+': '+idea.steps.join(' '),goal:idea.goal,participants:idea.participants,participantAge:idea.age,leaderRole:idea.leaderRole||'',duration:idea.duration,count:idea.count||state.brief.count,focus:idea.focus});
     state.confirmed=false;state.recommendation={focus:idea.focus,rationale:'בחרתם ברעיון הזה כנקודת מוצא. הוא אינו מעיד על קושי או על אבחון של הקבוצה; כעת מתאימים אותו לתנאים שלכם.',alternatives:[],questions:[]};
     fillBrief();renderFocus();renderRecommendation();updateControls();persist();$('brief-section').scrollIntoView({behavior:'smooth',block:'start'});$('participants').focus({preventScroll:true});notice('התאימו את גיל המשתתפים, מספרם ותנאי הפעולה לפני הבנייה.');
   }

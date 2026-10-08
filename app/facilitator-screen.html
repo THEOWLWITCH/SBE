@@ -541,7 +541,7 @@ const SAMPLE = { ...S, id:"sample", track:"edu" };
 let SAVED = []; try { SAVED = JSON.parse(localStorage.getItem("sbe.workshop.scenarios.v1") || "[]"); } catch(e){}
 (function scnInit(){
   const sel = $("scnSel");
-  SAVED.forEach(x => { const o = document.createElement("option"); o.value = x.id; o.textContent = x.name + " · " + (TRACK_T[x.track] || "") + (x.sub ? " — " + x.sub : ""); sel.append(o); });
+  SAVED.forEach(x => { const o = document.createElement("option"); o.value = x.id; o.textContent = x.name + " · " + (TRACK_T[x.track] || "") + (x.sub ? " · " + x.sub : ""); sel.append(o); });
   const o = document.createElement("option"); o.value = "sample"; o.textContent = "יש לך גן טוב · סטודנטיות.ים: תרחיש לדוגמה"; sel.append(o);
   const pick = (id) => {
     const x = id === "sample" ? SAMPLE : SAVED.find(y => y.id === id) || SAMPLE;

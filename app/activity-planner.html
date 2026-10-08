@@ -908,7 +908,7 @@ function render() {
         (f.cards || []).forEach(c => {
           const box = el("div", { class:"cardopt", tabindex:"0", role:"button" });
           box.dataset.v = c.v;
-          box.append(el("h4", {}, c.v + (c.en ? " — " + c.en : "")));
+          box.append(el("h4", {}, c.v + (c.en ? " (" + c.en + ")" : "")));
           if (c.who) box.append(el("div", { class:"who" }, c.who));
           if (c.d) box.append(el("div", { class:"d" }, c.d));
           if (c.when) box.append(el("div", { class:"when" }, c.when));
@@ -1047,7 +1047,7 @@ function render() {
           const row = el("div", { class:"smartrow" });
           const badge = el("div", { class:"smartbadge" }, it.letter);
           const main = el("div", { class:"smartmain" });
-          main.append(el("div", { class:"smartlabel" }, it.label + " — " + it.ask));
+          main.append(el("div", { class:"smartlabel" }, it.label + ": " + it.ask));
           const ta = el("textarea", { rows:"2" });
           ta.addEventListener("input", commitSmart);
           main.append(ta);
@@ -1164,7 +1164,7 @@ function renderIdeas() {
   box.append(el("h5", {}, "הצעות רעיון לפעילות" + (val("age") ? " · " + val("age") : "") + " (היוריסטי, לא AI)"));
   ideas.forEach(idea => {
     const row = el("div", { class:"idea" });
-    row.append(el("b",{}, idea.t + " — " + idea.approach), idea.d);
+    row.append(el("b",{}, idea.t + ": " + idea.approach), idea.d);
     const useBtn = el("button", { type:"button" }, "השתמשי כבסיס");
     useBtn.addEventListener("click", () => {
       const n = document.getElementById("i-mainActivity");
@@ -1576,7 +1576,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   dlgF.textContent = "";
   const printBtn = el("button", { type:"button", class:"primary" }, "הדפסה / שמירה כ-PDF");
   printBtn.addEventListener("click", () => { const h = document.createElement("h3"); h.textContent = "כרטיס תמציתי לפעילות עצמה";
-    SBE_DOC.print({ title: "תוכנית פעילות" + ((narr && narr.title) ? " — " + narr.title : (d.domain ? " — " + d.domain : "")),
+    SBE_DOC.print({ title: "תוכנית פעילות" + ((narr && narr.title) ? ": " + narr.title : (d.domain ? ": " + d.domain : "")),
       subtitle: [creator, d.age, d.duration].filter(Boolean).join(" · "), nodes: [doc, h, card] }); });
   const saveTextParts = () => {
     const lines = ["תוכנית פעילות: " + ((narr && narr.title) || d.domain || ""), creator || "", ""];
@@ -2218,7 +2218,7 @@ function smartF(path, onChange){
   SMART_ITEMS.forEach(it => {
     const row = el("div", { class:"smartrow" });
     const main = el("div", { class:"smartmain" });
-    main.append(el("div", { class:"smartlabel" }, it.label + " — " + it.ask));
+    main.append(el("div", { class:"smartlabel" }, it.label + ": " + it.ask));
     const ta = el("textarea", { rows:"2" });
     ta.value = (obj0[it.key] && obj0[it.key].text) || "";
     ta.addEventListener("input", commit);
@@ -2560,7 +2560,7 @@ function seqDocHTML(narr){
   }
   // תמצית הרצף בטבלה (07/10/2026) — במקום רצף של כותרות קטנות ושורות קצרות
   const goals = seq.goals.map(str).filter(Boolean);
-  const li = arr => `<ul>${arr.map(x => `<li>${esc(x.item)}${str(x.note) ? " — " + esc(str(x.note)) : ""}</li>`).join("")}</ul>`;
+  const li = arr => `<ul>${arr.map(x => `<li>${esc(x.item)}${str(x.note) ? ": " + esc(str(x.note)) : ""}</li>`).join("")}</ul>`;
   const facts = [];
   if (goals.length) facts.push(["מטרות", `<ol>${goals.map(g => `<li>${nl(g)}</li>`).join("")}</ol>`]);
   if (seq.approaches.length) facts.push(["גישות ושיטות למידה", esc(seq.approaches.join(" · "))]);
@@ -3179,7 +3179,7 @@ document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
       courseLevel: str(outl.courseLevel), finalProduct: str(outl.finalProduct), assessment: str(outl.assessment),
     };
     const sessLen = str(outl.sessionLength);
-    built = outline.map(o => { const s = emptySession(); s.main = [str(o.title), str(o.focus)].filter(Boolean).join(" — "); if (sessLen) s.duration = sessLen; return s; });
+    built = outline.map(o => { const s = emptySession(); s.main = [str(o.title), str(o.focus)].filter(Boolean).join(": "); if (sessLen) s.duration = sessLen; return s; });
     const r = await runChunks(built.length, async (a, b) => {
       const res = await aiImportExpand(text, head, outline, a, b, sessLen);
       const got = new Set();

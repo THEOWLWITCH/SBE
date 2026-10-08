@@ -1049,7 +1049,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     const myLine = traitsLine(d.myTraits), otherLine = traitsLine(d.otherTraits);
     const rc = SBE_DOC.table([
       ["המטרה שלי", d.goal], ["קו תחתון", d.nonNegotiables], ["איך לפתוח", d.openingLine],
-      ["הגישה", d.approach ? d.approach + (info ? " — " + info.when.replace(/^מתי כדאי לבחור בה:\s*/,"") : "") : ""],
+      ["הגישה", d.approach ? d.approach + (info ? ": " + info.when.replace(/^מתי כדאי לבחור בה:\s*/,"") : "") : ""],
       ["תוכנית ב׳", d.backupPlan], ["המאפיינים שלי", myLine], [`המאפיינים של ${d.otherParty || "הצד השני"}`, otherLine],
     ]);
     rc.classList.add("rcard-table", "sbe-edit"); rc.setAttribute("contenteditable", "true"); rc.setAttribute("spellcheck", "true");

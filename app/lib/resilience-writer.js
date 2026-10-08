@@ -93,7 +93,7 @@ function mount(h){
       const prTable=window.SBE_TABLE?SBE_TABLE(['העיקרון','בהודעה'],PRINCIPLES.map((p,i)=>{const on=(i+1) in used;
         return [el('b',null,(on?'✓ ':'○ ')+p),on?(used[i+1]?inlineRich(used[i+1]):'✓'):el('span','muted','לא שולב הפעם')];}),'rw-table'):null;
       if(prTable)out.appendChild(prTable);else{const ul=el('ul','rw-check');PRINCIPLES.forEach((p,i)=>{const on=(i+1) in used;const li=el('li',on?'on':'off');
-        li.appendChild(el('b',null,(on?'✓ ':'○ ')+p));if(on&&used[i+1]){li.appendChild(document.createTextNode(' — '));li.appendChild(inlineRich(used[i+1]));}ul.appendChild(li);});
+        li.appendChild(el('b',null,(on?'✓ ':'○ ')+p));if(on&&used[i+1]){li.appendChild(document.createTextNode(': '));li.appendChild(inlineRich(used[i+1]));}ul.appendChild(li);});
       out.appendChild(ul);}
       if((d.tips||[]).length){out.appendChild(el('h3',null,'טיפים'));const tl=el('ul','tl');d.tips.forEach(t=>{const li=el('li');li.appendChild(inlineRich(t));tl.appendChild(li);});out.appendChild(tl);}
       if(window.SBE_DOC&&SBE_DOC.print){const pb=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pb.type='button';
@@ -121,7 +121,7 @@ function reportSection(d,h,title,msgTitle,lvl){
     if(window.SBE_TABLE){frag.appendChild(SBE_TABLE(['העיקרון','מצב','על מה זה נשען ואיך לחזק'],pr.map(p=>{const st=STATES.includes(p.state)?p.state:'לא ידוע';
       const w=el('span','rw-st-wrap st-'+STATES.indexOf(st));w.appendChild(el('span','rw-st',st));return [el('b',null,PRINCIPLES[p.n-1]),w,p.note?inlineRich(p.note):null];}),'rw-table'));}
     else{const ul=el('ul','rw-check');pr.forEach(p=>{const st=STATES.includes(p.state)?p.state:'לא ידוע';const li=el('li','st-'+STATES.indexOf(st));
-      li.appendChild(el('span','rw-st',st));li.appendChild(el('b',null,PRINCIPLES[p.n-1]));if(p.note){li.appendChild(document.createTextNode(' — '));li.appendChild(inlineRich(p.note));}ul.appendChild(li);});
+      li.appendChild(el('span','rw-st',st));li.appendChild(el('b',null,PRINCIPLES[p.n-1]));if(p.note){li.appendChild(document.createTextNode(': '));li.appendChild(inlineRich(p.note));}ul.appendChild(li);});
     frag.appendChild(ul);}}
   if(ms.length){frag.appendChild(el('h3',null,msgTitle));
     const mrows=[];
@@ -131,14 +131,14 @@ function reportSection(d,h,title,msgTitle,lvl){
       cp.addEventListener('click',()=>{const done=()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת ההודעה',2000);};if(navigator.clipboard)navigator.clipboard.writeText(t).then(done).catch(()=>{});});
       c.appendChild(cp);
       const who=el('div');if(m.to)who.appendChild(el('b',null,m.to));if(m.purpose)who.appendChild(el('div','muted',m.purpose));
-      if(window.SBE_TABLE)mrows.push([who,c]);else{const a=el('div','act rw-msg');a.appendChild(el('div','act-t',[m.to?'אל: '+m.to:'',m.purpose].filter(Boolean).join(' — ')));a.appendChild(c);frag.appendChild(a);}});
+      if(window.SBE_TABLE)mrows.push([who,c]);else{const a=el('div','act rw-msg');a.appendChild(el('div','act-t',[m.to?'אל: '+m.to:'',m.purpose].filter(Boolean).join(' · ')));a.appendChild(c);frag.appendChild(a);}});
     if(mrows.length)frag.appendChild(SBE_TABLE(['אל · מטרה','ההודעה'],mrows,'rw-table'));
     frag.appendChild(el('p','muted','ההודעות הן הצעה: כדאי לקרוא, לבדוק את הפרטים ולהתאים לפני שליחה. מקומות בסוגריים מרובעים ממלאים בעצמכם.'));}
   return frag;
 }
 function reportPlain(d,title,msgTitle){const L=[];const pr=(d.principles||[]).filter(p=>+p.n>=1&&+p.n<=10&&p.state!=='לא ידוע');const ms=(d.messages||[]).filter(m=>m&&m.text);
   if(pr.length){L.push('',title);pr.forEach(p=>L.push('• '+PRINCIPLES[p.n-1]+' ['+(p.state||'לא ידוע')+']'+(p.note?'\n  '+p.note:'')));}
-  if(ms.length){L.push('',msgTitle);ms.forEach(m=>L.push('• '+[m.to?'אל: '+m.to:'',m.purpose].filter(Boolean).join(' — ')+'\n'+String(m.text).replace(/\*\*/g,'')+'\n'));}
+  if(ms.length){L.push('',msgTitle);ms.forEach(m=>L.push('• '+[m.to?'אל: '+m.to:'',m.purpose].filter(Boolean).join(' · ')+'\n'+String(m.text).replace(/\*\*/g,'')+'\n'));}
   return L;}
 window.SBE_WRITER={PRINCIPLES,rule,system,mount,reportRule,reportSchema,reportSection,reportPlain};
 })();

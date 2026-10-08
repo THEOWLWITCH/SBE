@@ -460,7 +460,7 @@ function ics(){
   const ms = JR.milestones || []; const esc = s => String(s).replace(/[,;\\]/g, m => '\\' + m).replace(/\n/g, '\\n');
   const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Begood//Journey//HE'];
   ms.forEach((m, i) => { const d = String(m.due).replace(/-/g, ''); L.push('BEGIN:VEVENT', 'UID:' + JR.id + '-' + i + '@begood', 'DTSTAMP:' + d + 'T080000Z', 'DTSTART;VALUE=DATE:' + d,
-    'SUMMARY:' + esc((m.gate ? 'שער: ' : 'אבן דרך: ') + m.title + ' — ' + JR.unitName), 'DESCRIPTION:' + esc('מסע אל החוסן · ' + stT(m.stage)),
+    'SUMMARY:' + esc((m.gate ? 'שער: ' : 'אבן דרך: ') + m.title + ' · ' + JR.unitName), 'DESCRIPTION:' + esc('מסע אל החוסן · ' + stT(m.stage)),
     'BEGIN:VALARM', 'TRIGGER:-P7D', 'ACTION:DISPLAY', 'DESCRIPTION:' + esc('בעוד שבוע: ' + m.title), 'END:VALARM', 'BEGIN:VALARM', 'TRIGGER:-P2D', 'ACTION:DISPLAY', 'DESCRIPTION:' + esc('בעוד יומיים: ' + m.title), 'END:VALARM', 'END:VEVENT'); });
   L.push('END:VCALENDAR');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([L.join('\r\n')], { type: 'text/calendar' })); a.download = 'begood-journey.ics'; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 1500);
@@ -510,7 +510,7 @@ function submitForm(c, m, i){
     const ag = document.createElement('textarea'); ag.maxLength = 800; ag.style.minHeight = '3rem'; det.appendChild(ag);
     det.appendChild(el('label', null, 'מה גיליתם על עצמכם כקהילה?'));
     const lr = document.createElement('textarea'); lr.maxLength = 800; lr.style.minHeight = '3rem'; det.appendChild(lr);
-    refl = () => ({ effect: [eff.value, effT.value.trim()].filter(Boolean).join(' — '), again: ag.value.trim(), learned: lr.value.trim() });
+    refl = () => ({ effect: [eff.value, effT.value.trim()].filter(Boolean).join(': '), again: ag.value.trim(), learned: lr.value.trim() });
   }
   const err = errLine(det);
   const go = btn('הגשה', '', async () => {

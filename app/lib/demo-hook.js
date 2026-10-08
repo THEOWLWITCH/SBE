@@ -87,7 +87,7 @@
     var r = await waitFor(function () { return gotFiles || (openDialogBody() && /לא נבנה|לא הופק|אין כרגע חיבור/.test(vis($("dialog[open]"))) && { fail: true }); }, 40 * 60e3, "בניית התרחיש");
     if (r.fail) throw new Error(vis(openDialogBody()).slice(0, 300) || "התרחיש לא נבנה");
     var name = (r.scn && r.scn.name) || label;
-    return r.files.map(function (f) { return { tool: tool, title: name + " — " + (f[2] || f[0]), label: label + " · " + (f[2] || ""), html: withBase(f[1]), input: inp }; });
+    return r.files.map(function (f) { return { tool: tool, title: name + ": " + (f[2] || f[0]), label: label + " · " + (f[2] || ""), html: withBase(f[1]), input: inp }; });
   }
   async function dialogProduct(tool, title, label, trigger) {
     var inp = inputSummary();
