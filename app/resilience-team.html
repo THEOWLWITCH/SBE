@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>חוסן חברתי — ניהול</title>
+<title>חוסן חברתי: ניהול</title>
 <script src="lib/report-table.js"></script>
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
@@ -234,14 +234,14 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
 <div id="t-setup" class="pane on">
   <div class="card">
     <h1>חוסן חברתי</h1>
-    <p>כלי לאיסוף ועיבוד נתוני חוסן חברתי — מתוך עיניי תלמידים, הורים, ומורים.</p>
+    <p>כלי לאיסוף ועיבוד נתוני חוסן חברתי (מתוך עיניי תלמידים, הורים, ומורים).</p>
     <p class="article-link" style="font-size:.9rem;margin:.45rem 0 0">📖 <a href="about.html?from=resilience-team.html#article" target="_blank" rel="noopener" style="color:var(--spoken,var(--accent,#2E5A7D));font-weight:700">לבחור בחוסן שלנו</a>. מאמר קצר על המושגים שבבסיס הכלי: מנגנונים חברתיים, קהילת חוסן ותו חוסן.</p>
   </div>
 
   <div class="card" id="setup-form-card">
     <h2>הגדרת כיתה</h2>
     <label for="cfg-cls">שם הכיתה</label>
-    <input type="text" id="cfg-cls" placeholder='לדוגמה: ג׳2 — מחנכת: רחל' maxlength="30">
+    <input type="text" id="cfg-cls" placeholder='לדוגמה: ג׳2, מחנכת: רחל' maxlength="30">
     <label for="cfg-band">שכבת גיל</label>
     <select id="cfg-band"><option value="">— בחר/י שכבה —</option></select>
     <button class="btn" id="btn-cfg-save" disabled>המשך לבחירת השאלות</button>
@@ -251,8 +251,8 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
     <input type="text" id="restore-code" dir="ltr" autocomplete="off" spellcheck="false" placeholder="xxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxx">
     <button class="btn btn-ghost btn-sm" id="btn-restore">שחזור הכיתה</button>
     <hr style="margin:1rem 0;border:none;border-top:1px solid var(--hair)">
-    <a class="btn btn-ghost btn-sm" href="resilience-advisor.html" style="display:block;text-align:center;text-decoration:none;margin-bottom:.5rem">רוצים לדלג על השאלון? פרקטי: יועצת לפיתוח חוסן חברתי — מתארים את הכיתה ומקבלים המלצות</a>
-    <button class="btn btn-ghost btn-sm" id="btn-demo">כיתת דמו — אופק · ח׳1, עם מעקב של חצי שנה</button>
+    <a class="btn btn-ghost btn-sm" href="resilience-advisor.html" style="display:block;text-align:center;text-decoration:none;margin-bottom:.5rem">רוצים לדלג על השאלון? פרקטי, היועצת לפיתוח חוסן חברתי: מתארים את הכיתה ומקבלים המלצות</a>
+    <button class="btn btn-ghost btn-sm" id="btn-demo">כיתת דמו: אופק · ח׳1, עם מעקב של חצי שנה</button>
     <p style="font-size:.78rem;margin:.3rem 0 0">כיתה לדוגמה עם תשובות מומצאות, לתצוגה בלבד. לא נשמרת ולא נשלחת לאף אחד.</p>
   </div>
 
@@ -272,7 +272,7 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
   <div class="card" id="setup-active-card" style="display:none">
     <div class="setup-info" id="setup-summary"></div>
     <button class="btn" id="btn-show-results" style="margin-bottom:1rem">📊 הצגת התוצאות</button>
-    <button class="btn btn-ghost" id="btn-studio" style="margin-bottom:1rem">מהמיפוי לפעולה — סטודיו חוסן</button>
+    <button class="btn btn-ghost" id="btn-studio" style="margin-bottom:1rem">מהמיפוי לפעולה: סטודיו חוסן</button>
     <details id="sel-details" style="margin-bottom:1rem"><summary style="cursor:pointer;font-weight:600" id="sel-summary"></summary><ol id="sel-view" style="font-size:.85rem;line-height:1.6;margin:.5rem 0 0"></ol></details>
     <div id="share-wrap">
     <h2>קישור למילוי שאלון</h2>
@@ -285,7 +285,7 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
       <div id="qr-canvas"></div>
     </div>
     </div>
-    <p id="demo-note" style="display:none;font-size:.85rem" class="setup-info">זו כיתת דמו: בית ספר "אופק", כיתה ח׳1 — 30 תלמידים, 15 היגדים, שני סיבובי מדידה בהפרש של חצי שנה. התשובות מומצאות ולא נשמרות. בכיתה אמיתית יופיעו כאן הקישור וקוד ה-QR לתלמידים.</p>
+    <p id="demo-note" style="display:none;font-size:.85rem" class="setup-info">זו כיתת דמו: בית ספר "אופק", כיתה ח׳1, 30 תלמידים, 15 היגדים, שני סיבובי מדידה בהפרש של חצי שנה. התשובות מומצאות ולא נשמרות. בכיתה אמיתית יופיעו כאן הקישור וקוד ה-QR לתלמידים.</p>
     <hr style="margin:1rem 0;border:none;border-top:1px solid var(--c-border)">
     <p id="open-state" style="font-weight:700;margin:.25rem 0"></p>
     <button class="btn btn-sm" id="btn-toggle-open">סגירת השאלון והצגת התוצאות</button>
@@ -293,7 +293,7 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
     <button class="btn btn-ghost btn-sm" id="btn-refresh">רענון התוצאות</button>
     <p id="srv-status" style="font-size:.8rem;margin:.4rem 0"></p>
     <div id="manage-code-wrap">
-      <p style="font-size:.8rem;margin:.75rem 0 .25rem">קוד ניהול הכיתה — לשחזור הכיתה במכשיר אחר. לא למסור לתלמידים:</p>
+      <p style="font-size:.8rem;margin:.75rem 0 .25rem">קוד ניהול הכיתה: לשחזור הכיתה במכשיר אחר. לא למסור לתלמידים:</p>
       <div class="link-box" id="manage-code"></div>
     </div>
     <button class="btn btn-ghost btn-sm" id="btn-switch" style="margin-top:.5rem">מעבר לכיתה אחרת (בלי מחיקה)</button>
@@ -338,7 +338,7 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
 (function secCheck(){
   const src = document.documentElement.innerHTML;
   if(/unlocked\s*=\s*o\.|ST\.unlocked/.test(src)){
-    document.body.innerHTML='<p dir="rtl" style="padding:2rem;color:red">⚠️ שגיאת אבטחה — הדף אינו תקין.</p>';
+    document.body.innerHTML='<p dir="rtl" style="padding:2rem;color:red">⚠️ שגיאת אבטחה, הדף אינו תקין.</p>';
     throw new Error('security-check-failed');
   }
 })();
@@ -707,7 +707,7 @@ function renderSetup(){
   document.getElementById('manage-code').textContent=cfg.key?cfg.id+'.'+cfg.key:'';
   document.getElementById('manage-code-wrap').style.display=cfg.key?'':'none';
   const open=!GROUP||GROUP.open;
-  document.getElementById('open-state').textContent=GROUP?(open?'השאלון פתוח למילוי':'השאלון סגור — לא מתקבלות תשובות חדשות'):'';
+  document.getElementById('open-state').textContent=GROUP?(open?'השאלון פתוח למילוי':'השאלון סגור, לא מתקבלות תשובות חדשות'):'';
   document.getElementById('btn-toggle-open').textContent=open?'סגירת השאלון (לא יתקבלו עוד תשובות)':'פתיחת השאלון מחדש';
 
   // QR code — generated once; if library unavailable, section stays hidden
@@ -801,7 +801,7 @@ function renderScores(){
       const la=SC.scoreLabel(x.a),lb=SC.scoreLabel(x.b);
       html+=`<tr><td>${x.d}</td><td style="text-align:left;color:${la.color}">${Math.round(x.a)}</td><td style="text-align:left;color:${lb.color};font-weight:700">${Math.round(x.b)}</td><td style="text-align:left">${deltaHtml(x.delta)}</td></tr>`;
     });
-    html+=`</table><p style="font-size:.78rem;margin-top:.4rem">שינוי של פחות מ-5 נקודות מסומן ≈ — ייתכן שהוא מקרי.</p></div>`;
+    html+=`</table><p style="font-size:.78rem;margin-top:.4rem">שינוי של פחות מ-5 נקודות מסומן ≈. ייתכן שהוא מקרי.</p></div>`;
   }
 
   el.innerHTML=html;
@@ -900,11 +900,11 @@ function renderReport(){
 הציון משקף את הממוצע של כל הנשאלים לאחר תיקון עבור היגדים הפוכים (התנהגויות מזיקות).
 טווח 75–100 = תפקודי · 50–74 = חלקי · 25–49 = חלש · מתחת ל-25 = בקושי תפקודי.
 <br><br>כלל חשוב: כשהתנהגות מזיקה גבוהה, היא <strong>מגבילה</strong> את ציון התחום גם אם ההתנהגות המיטיבה גבוהה.
-זה לא ממוצע — זה מחסום.`
+זה לא ממוצע: זה מחסום.`
     },
     {
       n:2, title:'הציונים',
-      body:`<strong>ציון כולל: ${Math.round(overall)} — ${ovLbl.label}</strong><br><br>`+
+      body:`<strong>ציון כולל: ${Math.round(overall)}, ${ovLbl.label}</strong><br><br>`+
         sorted.map(d=>`${d.d}: ${Math.round(d.score)} (${d.label})`).join('<br>')
     },
     {
@@ -944,8 +944,8 @@ function renderReport(){
       n:7, title:'פער בין קבוצות הנשאלים',
       body: divided.length
         ? `ב-${divided.length} תחום/ים יש פערים גדולים בין קבוצות שונות של נשאלים (30+ נקודות):<br><br>`+
-          divided.map(d=>`<strong>${d.d}</strong> — פער: ${Math.round(d.gap)} נקודות`).join('<br>')+
-          '<br><br>פערים אלו אינם "טעות" — הם משקפים חוויות שונות של אותה מציאות. ראויים לשיחה, לא להחלטה.'
+          divided.map(d=>`<strong>${d.d}</strong>: פער: ${Math.round(d.gap)} נקודות`).join('<br>')+
+          '<br><br>פערים אלו אינם "טעות": הם משקפים חוויות שונות של אותה מציאות. ראויים לשיחה, לא להחלטה.'
         : 'לא נמצאו פערים גדולים בין קבוצות הנשאלים.'
     },
     {
@@ -954,23 +954,23 @@ function renderReport(){
         ? `ב-${unknown.length} תחום/ים יותר משליש מהנשאלים בחרו "לא יודע":<br><br>`+
           unknown.map(d=>`<strong>${d.d}</strong> (${Math.round(d.unknownRate*100)}% לא יודעים)`).join('<br>')+
           '<br><br>אי-ידיעה גבוהה יכולה להצביע על חוסר חשיפה, חוסר בטחון, או שאלה לא מובנת.'
-        : 'אחוז ה"לא יודע" נמוך — הנשאלים הרגישו שהם יכולים להשיב.'
+        : 'אחוז ה"לא יודע" נמוך: הנשאלים הרגישו שהם יכולים להשיב.'
     },
     {
       n:9, title:'הצעד הראשון',
       body: firstStep
         ? `דבר אחד בלבד.<br><br>הצעד המומלץ הוא לטפל ב<strong>${firstStep.d}</strong> (ציון: ${Math.round(firstStep.score)}).`+
-          (firstStep.capped?'<br>מכיוון שמדובר בתחום עם התנהגות מזיקה מגבילה, הצעד הראשון הוא <strong>הפחתת</strong> ההתנהגות המזיקה — לפני שמנסים לחזק.'
+          (firstStep.capped?'<br>מכיוון שמדובר בתחום עם התנהגות מזיקה מגבילה, הצעד הראשון הוא <strong>הפחתת</strong> ההתנהגות המזיקה: לפני שמנסים לחזק.'
             :'<br>הצעד הוא שיחה קצרה עם הצוות: מה דבר אחד שניתן לשנות השבוע בנוגע לתחום זה?')+
           '<br><br>לא שני דברים. לא תוכנית. דבר אחד.'
         : 'אין עדיין מספיק נתונים לצעד ראשון.'
     },
     {
       n:10, title:'מה שהדוח אינו יודע',
-      body:`הדוח אינו יודע למה. הוא יודע מה — ועד כמה.<br><br>
+      body:`הדוח אינו יודע למה. הוא יודע מה, ועד כמה.<br><br>
 הדוח אינו מדיד עבור תלמידים ספציפיים ואינו חושף זהויות.<br>
 הדוח אינו מחליף שיחה, תצפית, או שיפוט מקצועי.<br>
-הדוח אינו מציג עלויות, אומדן זמן, או ספירה אנושית — אלה אינם ידועים לו.<br><br>
+הדוח אינו מציג עלויות, אומדן זמן, או ספירה אנושית: אלה אינם ידועים לו.<br><br>
 השתמש/י בדוח כנקודת פתיחה לשיחה, לא כמסקנה.`
     },
   ];
@@ -1013,7 +1013,7 @@ function summaryInput(cfg){
   VR.forEach(r=>{const k=r.v+':'+r.k;if(seen[k])return;seen[k]=1;counts[vName[r.v]]=(counts[vName[r.v]]||0)+1;});
   const lines=domains.sort((a,b)=>b.score-a.score).map(d=>{
     const parts=[d.g+' · '+d.d+': ציון '+Math.round(d.score)+' ('+d.label+')'];
-    if(d.capped)parts.push('התנהגות פוגעת מגבילה את הציון — מיטיבה '+Math.round(d.good)+', פוגעת '+Math.round(d.harm));
+    if(d.capped)parts.push('התנהגות פוגעת מגבילה את הציון: מיטיבה '+Math.round(d.good)+', פוגעת '+Math.round(d.harm));
     if(d.gap>=30)parts.push('פער בין קבוצות הנשאלים: '+Object.entries(d.vScores).map(([v,sc])=>vName[v]+' '+Math.round(sc)).join(', '));
     if(d.unknownRate>=0.34)parts.push(Math.round(d.unknownRate*100)+'% ענו "לא יודע"');
     return '- '+parts.join(' | ');
@@ -1110,13 +1110,13 @@ function textList(items){
 }
 function summaryPlainText(c){
   const d=c.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.game?'משחק חברתי':'',a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  מה זה מפתח: '+a.mechanism:'');
-  L.push('סיכום והמלצות — כיתה '+c.cls+' ('+c.band+')','',d.intro||'');
+  L.push('סיכום והמלצות: כיתה '+c.cls+' ('+c.band+')','',d.intro||'');
   if((d.progress||[]).length){L.push('','מעקב: מה השתנה מאז המדידה הקודמת');d.progress.forEach(x=>L.push('• '+x.domain+': '+x.text));}
   L.push('','1. חוזקות הכיתה');
   (d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','1.1 פעילויות ותהליכים להעצמת החוזקות');(d.strengthActivities||[]).forEach(a=>L.push(act(a)));
   L.push('','1.2 החוזקות כמנוף להתמודדות עם האתגרים');(d.leverage||[]).forEach(a=>L.push(act(a,a.from&&a.to?a.from+' ← '+a.to:'')));
-  L.push('','2. אתגרים','','2.1 האתגרים — כיווני צמיחה');(d.challenges||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
+  L.push('','2. אתגרים','','2.1 האתגרים: כיווני צמיחה');(d.challenges||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','2.2 פעילויות ותהליכים להתמודדות');(d.challengeActivities||[]).forEach(a=>L.push(act(a,a.for)));
   if((d.environment||[]).length){L.push('','3. עיצוב סביבת הכיתה');d.environment.forEach(x=>L.push('• '+x.title+(x.for?' ['+x.for+']':'')+'\n  '+x.description));}
   if((d.other||[]).length){L.push('','4. המלצות נוספות');d.other.forEach(x=>L.push('• '+x.title+'\n  '+x.description));}
@@ -1132,7 +1132,7 @@ function renderSummary(){
   const cached=loadSummaryCache(cfg);
   const head=el2('div','card no-print');
   head.appendChild(el2('h2',null,'סיכום והמלצות למחנך/ת'));
-  head.appendChild(el2('p',null,'המודל מנתח את הממצאים ומציע: חוזקות הכיתה ואיך להעצים אותן ולהשתמש בהן כמנוף, אתגרים בניסוח אופטימי עם פעילויות, תהליכים ומשחקים חברתיים, עיצוב סביבת הכיתה והמלצות נוספות — בדגש על עבודת צוות ומנגנונים חברתיים, בהתאמה לשכבת הגיל.'));
+  head.appendChild(el2('p',null,'המודל מנתח את הממצאים ומציע: חוזקות הכיתה ואיך להעצים אותן ולהשתמש בהן כמנוף, אתגרים בניסוח אופטימי עם פעילויות, תהליכים ומשחקים חברתיים, עיצוב סביבת הכיתה והמלצות נוספות, בדגש על עבודת צוות ומנגנונים חברתיים, בהתאמה לשכבת הגיל.'));
   const acts=el2('div','sum-actions');
   const gen=el2('button','btn',SUM_BUSY?'מפיק את הסיכום... (דקה–שלוש)':cached?'הפקה מחדש':'הפקת סיכום והמלצות');
   gen.id='btn-sum-gen';gen.disabled=SUM_BUSY;gen.addEventListener('click',generateSummary);acts.appendChild(gen);
@@ -1142,13 +1142,13 @@ function renderSummary(){
   }
   head.appendChild(acts);
   if(window._sumErr&&!SUM_BUSY){const e=el2('p',null,window._sumErr);e.style.cssText='color:var(--brick);font-weight:600;margin-top:.6rem';head.appendChild(e);}
-  if(cached&&cached.cid!==sumCacheId(cfg))head.appendChild(el2('p',null,'נוספו תשובות מאז ההפקה — אפשר להפיק מחדש.'));
+  if(cached&&cached.cid!==sumCacheId(cfg))head.appendChild(el2('p',null,'נוספו תשובות מאז ההפקה. אפשר להפיק מחדש.'));
   box.appendChild(head);
   if(!cached)return;
 
   const d=cached.doc||{};
   const card=el2('div','card sum-doc');
-  const t=el2('h2',null,'סיכום והמלצות — כיתה '+cached.cls);t.style.borderBottom='none';card.appendChild(t);
+  const t=el2('h2',null,'סיכום והמלצות: כיתה '+cached.cls);t.style.borderBottom='none';card.appendChild(t);
   card.appendChild(el2('p',null,'שכבה: '+cached.band+' · הופק: '+new Date(cached.at).toLocaleDateString('he-IL',{day:"2-digit",month:"2-digit",year:"2-digit"})+(cfg.demo?' · כיתת דמו':''))).style.cssText='font-size:.8rem;color:var(--muted);margin-top:-.4rem';
   if(d.intro)card.appendChild(el2('p','sum-intro',d.intro));
   if((d.progress||[]).length){
@@ -1164,7 +1164,7 @@ function renderSummary(){
   card.appendChild(actTable(d.leverage,a=>a.from&&a.to?a.from+' ← '+a.to:''));
 
   card.appendChild(el2('h2',null,'2. אתגרים'));
-  card.appendChild(el2('h3',null,'2.1 האתגרים — כיווני צמיחה'));
+  card.appendChild(el2('h3',null,'2.1 האתגרים: כיווני צמיחה'));
   card.appendChild(domTable(d.challenges));
   card.appendChild(el2('h3',null,'2.2 פעילויות ותהליכים להתמודדות'));
   card.appendChild(actTable(d.challengeActivities,a=>a.for));

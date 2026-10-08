@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>חוסן חברתי — מילוי שאלון</title>
+<title>חוסן חברתי: מילוי שאלון</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -115,7 +115,7 @@ select:focus,input:focus{outline:2px solid var(--spoken);outline-offset:1px}
 <div id="s-setup" class="scr on">
   <div class="card">
     <h1 id="fq-title">חוסן חברתי</h1>
-    <p>השאלון מודד את ממד החוסן החברתי. אין תשובות נכונות — ענה/י על פי מה שאת/ה חווה.</p>
+    <p>השאלון מודד את ממד החוסן החברתי. אין תשובות נכונות: ענה/י על פי מה שאת/ה חווה.</p>
   </div>
   <div class="card" id="fill-form">
     <h2>פרטי מילוי</h2>
@@ -127,7 +127,7 @@ select:focus,input:focus{outline:2px solid var(--spoken);outline-offset:1px}
     <select id="s-voice"><option value="">— בחר/י תפקיד —</option></select>
     <label for="s-code" id="lbl-code">הקוד האישי שלי</label>
     <input type="text" id="s-code" placeholder="מילה או מספר שרק את/ה יודע/ת" maxlength="30" autocomplete="off" dir="ltr">
-    <p style="font-size:.8rem;margin-top:-.5rem">בחרו מילה או מספר שתזכרו גם בפעם הבאה — כך נוכל לראות שינוי לאורך זמן, בלי לדעת מי אתם. לא השם שלכם, כדי לשמור על אנונימיות.</p>
+    <p style="font-size:.8rem;margin-top:-.5rem">בחרו מילה או מספר שתזכרו גם בפעם הבאה. כך נוכל לראות שינוי לאורך זמן, בלי לדעת מי אתם. לא השם שלכם, כדי לשמור על אנונימיות.</p>
     <p id="fill-msg" style="display:none;font-size:.88rem;font-weight:600"></p>
     <button class="btn" id="btn-start" disabled>התחל/י מילוי</button>
   </div>
@@ -260,7 +260,7 @@ if(!gid){
         const open=(d.groups||[]).filter(g=>g.open);
         if(!d.groups){box.textContent='לא הצלחתי לטעון את הכיתות.';return;}
         if(!open.length){box.textContent='אין כרגע כיתות פתוחות.';return;}
-        const p=document.createElement('p');p.style.fontWeight='600';p.textContent='כיתות פתוחות — מילוי במכשיר הזה:';box.appendChild(p);
+        const p=document.createElement('p');p.style.fontWeight='600';p.textContent='כיתות פתוחות: מילוי במכשיר הזה:';box.appendChild(p);
         open.forEach(g=>{const a=document.createElement('a');a.href='resilience-fill.html?g='+g.id;a.className='btn btn-ghost btn-sm';
           a.style.cssText='display:block;text-decoration:none;text-align:center;margin-bottom:.4rem';
           a.textContent=(g.inst?g.inst+' · ':'')+g.cls+' · '+((R.BANDS[g.band]||{}).label||'');box.appendChild(a);});
@@ -344,10 +344,10 @@ function finish(){
     if(d.ok){show('s-done');return;}
     sendMsg.style.color='var(--brick)';
     if(d._status===409){sendMsg.textContent='השאלון נסגר בינתיים, והתשובות לא נשמרו.';return;}
-    sendMsg.textContent='השליחה לא הצליחה. התשובות שמורות בדף — נסו שוב.';btnRetry.style.display='';
+    sendMsg.textContent='השליחה לא הצליחה. התשובות שמורות בדף: נסו שוב.';btnRetry.style.display='';
   }).catch(()=>{
     sendMsg.style.color='var(--brick)';
-    sendMsg.textContent='אין חיבור לשרת. התשובות שמורות בדף — נסו שוב בעוד רגע.';btnRetry.style.display='';
+    sendMsg.textContent='אין חיבור לשרת. התשובות שמורות בדף: נסו שוב בעוד רגע.';btnRetry.style.display='';
   });
 }
 btnRetry.addEventListener('click',finish);

@@ -83,11 +83,11 @@ fetch('https://sbe-server.onrender.com/api/access', { method:'POST', headers:{ '
     top.appendChild(el('div', 'kicker', 'מסע אל החוסן')); c.appendChild(top);
     c.appendChild(el('h1', null, d.final ? 'תו חוסן לקהילת חוסן' : (d.gate ? 'תעודת שער' : 'תעודת אבן דרך')));
     const stg = (J.STAGES.find(s => s.k === +d.stage) || {});
-    c.appendChild(el('div', 'sub', d.final ? 'קהילת חוסן — מנגנונים משותפים, תמונת עתיד ודרך שמחזיקה לאורך זמן' : stg.t + ' · ' + stg.sub));
+    c.appendChild(el('div', 'sub', d.final ? 'קהילת חוסן: מנגנונים משותפים, תמונת עתיד ודרך שמחזיקה לאורך זמן' : stg.t + ' · ' + stg.sub));
     c.appendChild(el('div', 'to', 'מוענקת בהוקרה ל'));
     c.appendChild(el('div', 'unit', d.unitName));
     const u = (J.UNITS.find(x => x.k === d.unit) || {}).t;
-    c.appendChild(el('div', 'what', d.final ? 'על השלמת המסע אל החוסן' + (u ? ' (' + u + ')' : '') : 'על השלמת "' + d.title + '" — אבן דרך ' + d.n + ' מתוך ' + d.total + ' במסע אל החוסן' + (u ? ' (' + u + ')' : '')));
+    c.appendChild(el('div', 'what', d.final ? 'על השלמת המסע אל החוסן' + (u ? ' (' + u + ')' : '') : 'על השלמת "' + d.title + '": אבן דרך ' + d.n + ' מתוך ' + d.total + ' במסע אל החוסן' + (u ? ' (' + u + ')' : '')));
     const reached = k => d.final || k < d.stage || (d.gate && k === +d.stage);
     const map = el('div', 'map'); J.STAGES.forEach(s => { const x = el('div', 's' + (reached(s.k) ? ' r' : '') + (s.k === +d.stage && !reached(s.k) ? ' n' : '')); x.appendChild(el('div', 'd', reached(s.k) ? '✓' : s.k)); x.appendChild(el('div', 't', s.t)); map.appendChild(x); }); c.appendChild(map);
     if (d.assessment) c.appendChild(el('p', 'assess', d.assessment));
@@ -102,7 +102,7 @@ fetch('https://sbe-server.onrender.com/api/access', { method:'POST', headers:{ '
     const seal = el('div', 'seal'); ['Begood', 'מסע אל', 'החוסן'].forEach((t, i) => { const s = el('div', null, t); if (!i) s.style.cssText = 'font-family:Assistant;font-weight:800;font-size:15px;direction:ltr'; seal.appendChild(s); }); f.appendChild(seal);
     c.appendChild(f);
     out.appendChild(c);
-    document.title = (d.final ? 'תו חוסן לקהילת חוסן — ' : 'תעודה — ') + d.unitName;
+    document.title = (d.final ? 'תו חוסן לקהילת חוסן: ' : 'תעודה: ') + d.unitName;
   }).catch(() => { out.appendChild(el('div', 'msg', 'לא מצאנו את התעודה. כדאי לבדוק את הקישור.')); });
 document.getElementById('b-link').addEventListener('click', e => { navigator.clipboard && navigator.clipboard.writeText(location.href).then(() => { e.target.textContent = 'הועתק ✓'; }); });
 document.getElementById('b-img').addEventListener('click', async e => {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>מנוי — חידוש או רכישה</title>
+<title>מנוי: חידוש או רכישה</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -110,9 +110,9 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 <body>
 <div class="wrap">
 <a class="back" href="entry.html">→ למסך הכניסה</a>
-<img class="brand" src="assets/begood-logo.webp" alt="Begood — חינוך לחוסן">
+<img class="brand" src="assets/begood-logo.webp" alt="Begood: חינוך לחוסן">
 
-<header><div><h1>מנוי — חידוש או רכישה</h1><p class="who">ממלאים את הפרטים ובוחרים את המערכות. אין צורך בתשלום כאן — ניצור אתכם קשר טלפוני להשלמת המנוי ולהסדרת התשלום.</p></div></header>
+<header><div><h1>מנוי: חידוש או רכישה</h1><p class="who">ממלאים את הפרטים ובוחרים את המערכות. אין צורך בתשלום כאן: ניצור אתכם קשר טלפוני להשלמת המנוי ולהסדרת התשלום.</p></div></header>
 <!-- בקשת חידוש (30/09/2026): טופס בלי טקסט חופשי. אין סליקה — הבקשה נשמרת
      בשרת ומופיעה למנהלת המערכת במסך הניהול ← מוסדות ← "בקשות חידוש", והיא
      מתקשרת להאריך ולקבל פרטי תשלום. התאריך נרשם אוטומטית בשרת. -->
@@ -158,8 +158,8 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 const $ = (id) => document.getElementById(id);
 // המערכות — אותן הרשאות כמו בשרת (PERMS). "משוב לעבודות" כולל גם הפקת קודים לסטודנטים.
 const SYSTEMS = [
-  ["הנחיית סדנאות — סטודנטים", ["fac_trainee"]], ["הנחיית סדנאות — הורים", ["fac_parent"]], ["הנחיית סדנאות — נוער", ["fac_youth"]],
-  ["חוסן חברתי", ["resilience"]], ["נוגי — יועצת למנהיגות תומכת חוסן", ["leadership"]], ["פרקטי — יועצת לחוסן", ["practi"]], ["מסע אל החוסן", ["journey"]], ["כתיבה מקדמת חוסן", ["writer"]], ["ננה — מהוראה להנחיה", ["nana"]], ["סטודיו חוסן", ["studio"]], ["תכנון שיחה", ["conv"]], ["תכנון פעילות", ["activity"]], ["משוב לעבודות", ["academic", "lecturer"]],
+  ["הנחיית סדנאות: סטודנטים", ["fac_trainee"]], ["הנחיית סדנאות: הורים", ["fac_parent"]], ["הנחיית סדנאות: נוער", ["fac_youth"]],
+  ["חוסן חברתי", ["resilience"]], ["נוגי: יועצת למנהיגות תומכת חוסן", ["leadership"]], ["פרקטי: יועצת לחוסן", ["practi"]], ["מסע אל החוסן", ["journey"]], ["כתיבה מקדמת חוסן", ["writer"]], ["ננה: מהוראה להנחיה", ["nana"]], ["סטודיו חוסן", ["studio"]], ["תכנון שיחה", ["conv"]], ["תכנון פעילות", ["activity"]], ["משוב לעבודות", ["academic", "lecturer"]],
 ];
 SYSTEMS.forEach(([l, ps], i) => {
   const cb = Object.assign(document.createElement("input"), { type: "checkbox", id: "s" + i });
@@ -197,7 +197,7 @@ $("send").addEventListener("click", async () => {
       $("form").append(p); return;
     }
     msg.className = "msg err";
-    msg.textContent = r.status === 429 ? "כבר התקבלו כמה בקשות מהמוסד הזה — ניצור קשר בקרוב." : "השליחה לא הצליחה. בדקו את הפרטים ונסו שוב.";
+    msg.textContent = r.status === 429 ? "כבר התקבלו כמה בקשות מהמוסד הזה: ניצור קשר בקרוב." : "השליחה לא הצליחה. בדקו את הפרטים ונסו שוב.";
   } catch (e) { msg.className = "msg err"; msg.textContent = "אין כרגע חיבור לשרת. נסו שוב בעוד רגע."; }
   $("send").disabled = false;
 });

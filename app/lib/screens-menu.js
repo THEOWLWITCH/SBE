@@ -4,12 +4,12 @@
 (function(){
 'use strict';
 window.SBE_SCREENS = [
-  { part:'mine', title:'🔒 רק את רואה — מסכי העבודה שלך', groups:[
+  { part:'mine', title:'🔒 רק את רואה: מסכי העבודה שלך', groups:[
     { title:'ניהול ובקרה', items:[
       { file:'admin.html', label:'מסך הניהול' },
-      { file:'journeys.html', label:'🧭 לוח המסעות — אישורים ומשוב' },
+      { file:'journeys.html', label:'🧭 לוח המסעות: אישורים ומשוב' },
       { file:'eval-set.html', label:'בקרת איכות' },
-      { file:'demo-lab.html', label:'🧪 מעבדת הדמו — תוצר מכל כלי' },
+      { file:'demo-lab.html', label:'🧪 מעבדת הדמו: תוצר מכל כלי' },
     ]},
   ]},
   { part:'others', title:'👥 מה שאחרים רואים', groups:[
@@ -19,10 +19,10 @@ window.SBE_SCREENS = [
       { file:'sources-library.html', label:'ספריית המקורות', who:'כל מי שנכנס/ה' },
       { file:'examples.html', label:'🗂 ספריית תוצרים לדוגמה', who:'כולם, גם בלי כניסה (רק מה שסומן במעבדת הדמו)' },
     ]},
-    { title:'סימולציה — שיחות מאתגרות', items:[
-      { file:'input-screen.html', label:'יצירת תרחיש — סטודנטיות.ים', who:'מנחות סטודנטים' },
-      { file:'parent-input-screen.html', label:'יצירת תרחיש — הורים', who:'מנחות הורים' },
-      { file:'student-input-screen.html', label:'יצירת תרחיש — נוער', who:'מנחות נוער' },
+    { title:'סימולציה, שיחות מאתגרות', items:[
+      { file:'input-screen.html', label:'יצירת תרחיש: סטודנטיות.ים', who:'מנחות סטודנטים' },
+      { file:'parent-input-screen.html', label:'יצירת תרחיש: הורים', who:'מנחות הורים' },
+      { file:'student-input-screen.html', label:'יצירת תרחיש: נוער', who:'מנחות נוער' },
       { file:'search.html', label:'חיפוש במאגר התרחישים', who:'מנחות' },
       { file:'facilitator-screen.html', label:'מסך הסדנה', who:'מנחות' },
       { file:'observation-sheet.html', label:'דף צפייה (טלפון)', who:'מתנסות בסדנה' },
@@ -42,20 +42,20 @@ window.SBE_SCREENS = [
       { file:'academic-review.html', label:'משוב לעבודה אקדמית או פרויקט', who:'הרשאת משוב לעבודות' },
     ]},
     { title:'חוסן חברתי', items:[
-      { file:'resilience-studio.html', label:'סטודיו חוסן — השראה ופעולה', who:'הרשאת סטודיו בלבד (עד לאישור המקצועי)' },
-      { file:'resilience-team.html', label:'מיפוי חוסן — מסך מחנך/ת', who:'הרשאת חוסן חברתי' },
-      { file:'resilience-fill.html', label:'שאלון חוסן — מסך תלמיד/ה', who:'תלמידים, בקישור מהמחנך/ת' },
-      { file:'resilience-advisor.html', label:'פרקטי — יועצת לפיתוח חוסן חברתי', who:'הרשאת חוסן חברתי או פרקטי' },
-      { file:'leadership-advisor.html', label:'נוגי — יועצת למנהיגות תומכת חוסן', who:'הרשאת נוגי' },
+      { file:'resilience-studio.html', label:'סטודיו חוסן: השראה ופעולה', who:'הרשאת סטודיו בלבד (עד לאישור המקצועי)' },
+      { file:'resilience-team.html', label:'מיפוי חוסן: מסך מחנך/ת', who:'הרשאת חוסן חברתי' },
+      { file:'resilience-fill.html', label:'שאלון חוסן: מסך תלמיד/ה', who:'תלמידים, בקישור מהמחנך/ת' },
+      { file:'resilience-advisor.html', label:'פרקטי: יועצת לפיתוח חוסן חברתי', who:'הרשאת חוסן חברתי או פרקטי' },
+      { file:'leadership-advisor.html', label:'נוגי: יועצת למנהיגות תומכת חוסן', who:'הרשאת נוגי' },
       { file:'message-writer.html', label:'כתיבה מקדמת חוסן', who:'הרשאת כתיבה מקדמת חוסן בלבד' },
-      { file:'facilitation-advisor.html', label:'ננה — מהוראה להנחיה', who:'הרשאת ננה' },
-      { file:'journey.html', label:'מסע אל החוסן — מסך המשתתפים', who:'הרשאת מסע אל החוסן' },
+      { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
+      { file:'journey.html', label:'מסע אל החוסן: מסך המשתתפים', who:'הרשאת מסע אל החוסן' },
     ]},
   ]},
   // דפי עזר מתהליך הבנייה — מקופלים בסוף התפריט, כדי שלא יפריעו (04/10/2026)
-  { part:'archive', collapsed:true, title:'🗄 ארכיון — דפי עזר מתהליך הבנייה', groups:[
+  { part:'archive', collapsed:true, title:'🗄 ארכיון: דפי עזר מתהליך הבנייה', groups:[
     { title:'הצגה והדגמה', items:[
-      { file:'system-toc.html', label:'תוכן עניינים — כל המערכת' },
+      { file:'system-toc.html', label:'תוכן עניינים: כל המערכת' },
       { file:'products/index.html', label:'תוצרים לדוגמה' },
       { file:'demo-hub.html', label:'מסך הדגמה כולל' },
     ]},

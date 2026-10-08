@@ -64,7 +64,7 @@
     var base = location.href.replace(/[^/]*$/, "");
     return '<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
       '<base href="' + base + '"><title>' + String(title).replace(/</g, "&lt;") + ' — Begood</title>' + links + "<style>" + css +
-      "\nbody{padding:18px 16px 40px}html.sbe-sysonly,.sbe-sysonly{display:none!important}\n/* התוכן הועתק מתוך חלון (dialog) — בלי גובה קבוע וגלילה פנימית, כדי שלא ייחתך במסמך וב-PDF */\nhtml,body{height:auto!important;overflow:visible!important}main,main *{max-height:none!important;overflow:visible!important}</style></head><body><main style=\"max-width:880px;margin:0 auto\">" +
+      "\nbody{padding:18px 16px 40px}html.sbe-sysonly,.sbe-sysonly{display:none!important}\n/* התוכן הועתק מתוך חלון (dialog), בלי גובה קבוע וגלילה פנימית, כדי שלא ייחתך במסמך וב-PDF */\nhtml,body{height:auto!important;overflow:visible!important}main,main *{max-height:none!important;overflow:visible!important}</style></head><body><main style=\"max-width:880px;margin:0 auto\">" +
       c.outerHTML + "</main></body></html>";
   }
   function withBase(html) {
@@ -87,7 +87,7 @@
     var r = await waitFor(function () { return gotFiles || (openDialogBody() && /לא נבנה|לא הופק|אין כרגע חיבור/.test(vis($("dialog[open]"))) && { fail: true }); }, 40 * 60e3, "בניית התרחיש");
     if (r.fail) throw new Error(vis(openDialogBody()).slice(0, 300) || "התרחיש לא נבנה");
     var name = (r.scn && r.scn.name) || label;
-    return r.files.map(function (f) { return { tool: tool, title: name + " — " + (f[2] || f[0]), label: label + " · " + (f[2] || ""), html: withBase(f[1]), input: inp }; });
+    return r.files.map(function (f) { return { tool: tool, title: name + ": " + (f[2] || f[0]), label: label + " · " + (f[2] || ""), html: withBase(f[1]), input: inp }; });
   }
   async function dialogProduct(tool, title, label, trigger) {
     var inp = inputSummary();
@@ -122,11 +122,11 @@
   }
 
   var RECIPES = {
-    "resilience-advisor.html": function () { return inPage("practi", "פרקטי — דוח לכיתה", "פרקטי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
-    "leadership-advisor.html": function () { return inPage("nugi", "נוגי — דוח סיכום והמלצות", "נוגי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
-    "facilitation-advisor.html": function () { return inPage("nana", "ננה — מדריך הנחיה", "ננה", "#btn-example", "#btn-go", "#guide-doc", "#guide-doc", "#guide"); },
-    "message-writer.html": function () { return inPage("writer", "כתיבה מקדמת חוסן — הודעה", "כתיבה מקדמת חוסן", "#rw-example", "#rw-go", "#rw-out .rw-new", "#rw-out", "#rw-err"); },
-    "conversation-planner.html": function () { fillSample(); return dialogProduct("conv", "תכנון שיחה — התוצר", "תכנון שיחה", function () { click("#bBuild"); }); },
+    "resilience-advisor.html": function () { return inPage("practi", "פרקטי: דוח לכיתה", "פרקטי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
+    "leadership-advisor.html": function () { return inPage("nugi", "נוגי: דוח סיכום והמלצות", "נוגי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
+    "facilitation-advisor.html": function () { return inPage("nana", "ננה: מדריך הנחיה", "ננה", "#btn-example", "#btn-go", "#guide-doc", "#guide-doc", "#guide"); },
+    "message-writer.html": function () { return inPage("writer", "כתיבה מקדמת חוסן: הודעה", "כתיבה מקדמת חוסן", "#rw-example", "#rw-go", "#rw-out .rw-new", "#rw-out", "#rw-err"); },
+    "conversation-planner.html": function () { fillSample(); return dialogProduct("conv", "תכנון שיחה: התוצר", "תכנון שיחה", function () { click("#bBuild"); }); },
     "activity-planner.html": async function () {
       if (q.get("part") === "seq") {
         click("#mSeq"); await sleep(600); click("#sqLoadSample"); await sleep(1500);
@@ -134,13 +134,13 @@
         var cf = Array.prototype.slice.call(document.querySelectorAll("#screen-seq .f[data-req]")).filter(function (x) { return /שם היוצר/.test(x.textContent); })[0];
         var ci = cf && cf.querySelector("input,textarea");
         if (ci && !ci.value.trim()) { var nm = ""; try { nm = sessionStorage.getItem("sbe.session.name") || ""; } catch (e) {} ci.value = nm || "מעבדת הדמו"; ci.dispatchEvent(new Event("input", { bubbles: true })); await sleep(300); }
-        var a = await dialogProduct("act-seq", "תכנון פעילות — רצף מפגשים", "רצף מפגשים", function () { click("#bSeqBuild"); });
+        var a = await dialogProduct("act-seq", "תכנון פעילות: רצף מפגשים", "רצף מפגשים", function () { click("#bSeqBuild"); });
         await sleep(800);
-        var b = await dialogProduct("act-seq", "תכנון פעילות — משוב ודו״ח ניתוח לרצף", "רצף מפגשים · משוב", function () { click("#bSeqReport"); });
+        var b = await dialogProduct("act-seq", "תכנון פעילות: משוב ודו״ח ניתוח לרצף", "רצף מפגשים · משוב", function () { click("#bSeqReport"); });
         return a.concat(b);
       }
       fillSample();
-      return dialogProduct("act-single", "תכנון פעילות — מפגש אחד", "מפגש אחד", function () { click("#bBuild"); });
+      return dialogProduct("act-single", "תכנון פעילות: מפגש אחד", "מפגש אחד", function () { click("#bBuild"); });
     },
     "academic-review.html": async function () {
       setVal("creatorName", "נועה (סטודנטית לדוגמה)");
@@ -149,7 +149,7 @@
       var k = [].find.call(document.querySelectorAll("#fbKind button"), function (b) { return /רך/.test(b.textContent); });
       if (k) k.click();
       await sleep(600);
-      return dialogProduct("review", "משוב לעבודה — משוב רך", "משוב לעבודות", function () { click("#bReview"); });
+      return dialogProduct("review", "משוב לעבודה: משוב רך", "משוב לעבודות", function () { click("#bReview"); });
     },
     "resilience-team.html": async function () {
       click("#btn-demo"); await sleep(1500);
@@ -166,12 +166,12 @@
         var err = [].find.call(box.querySelectorAll("p"), function (p) { return /ההפקה לא הצליחה|לקחה יותר מדי זמן/.test(p.textContent); });
         if (seenBusy && err) return { fail: err.textContent };
         if (seenBusy) return true;
-        if (Date.now() - t1 > 30000) return { fail: "הסיכום לא התחיל — כנראה כיתת הדמו לא נטענה" };
+        if (Date.now() - t1 > 30000) return { fail: "הסיכום לא התחיל: כנראה כיתת הדמו לא נטענה" };
         return null;
       }, 15 * 60e3, "סיכום החוסן");
       if (r.fail) throw new Error(r.fail.slice(0, 300));
       await sleep(800);
-      return [{ tool: "resil", title: "מיפוי חוסן — סיכום והמלצות לכיתה", label: "מיפוי חוסן", html: standalone($("#summary-content"), "מיפוי חוסן — סיכום והמלצות"), input: inp }];
+      return [{ tool: "resil", title: "מיפוי חוסן: סיכום והמלצות לכיתה", label: "מיפוי חוסן", html: standalone($("#summary-content"), "מיפוי חוסן: סיכום והמלצות"), input: inp }];
     },
     // סטודיו חוסן (07/10/2026): תקציר לדוגמה ← בדיקה והצעת מוקד ← אישור ← בניית הפעילות ← ערכת המנחה וחומרי המשתתפים כמסמכי הדפסה
     "resilience-studio.html": async function () {
@@ -190,7 +190,7 @@
       var inp = inputSummary($("#brief-form"));
       await busyOp("#to-build", "בדיקת התקציר");
       var f = $("#focus"); if (f && !f.value) { var o = [].find.call(f.options, function (x) { return x.value; }); if (o) setVal("focus", o.value); }
-      var cp = $("#clarification-panel"); if (cp && !cp.hidden) setVal("clarifications", "אין הבהרות נוספות — אפשר להמשיך לפי התקציר.");
+      var cp = $("#clarification-panel"); if (cp && !cp.hidden) setVal("clarifications", "אין הבהרות נוספות: אפשר להמשיך לפי התקציר.");
       var bc = $("#brief-confirmed"); if (bc && !bc.checked) { bc.disabled = false; bc.checked = true; bc.dispatchEvent(new Event("change", { bubbles: true })); }
       await busyOp("#generate-activity", "בניית הפעילות");
       if ($("#activity-section").hidden) throw new Error("הפעילות לא נבנתה");
@@ -202,8 +202,8 @@
         await sleep(600);
         return { tool: "studio", title: title, label: label, html: withBase(html), input: inp };
       };
-      var kit = await printed("#print-kit", "סטודיו חוסן — ערכת המנחה", "סטודיו חוסן · ערכת המנחה");
-      var part = await printed("#print-participant", "סטודיו חוסן — חומרי המשתתפים", "סטודיו חוסן · חומרי המשתתפים");
+      var kit = await printed("#print-kit", "סטודיו חוסן: ערכת המנחה", "סטודיו חוסן · ערכת המנחה");
+      var part = await printed("#print-participant", "סטודיו חוסן: חומרי המשתתפים", "סטודיו חוסן · חומרי המשתתפים");
       return [kit, part];
     },
     // מסע אל החוסן (07/10/2026): מסע דמו (בלי מיילים, לא נספר בדוחות ובמחקר) ← מיפוי לדוגמה ← הצעת מסע ← בחירות ← טיוטת אבני הדרך
@@ -230,7 +230,7 @@
       await sleep(600);
       var wrap = document.createElement("div");
       [].forEach.call(document.querySelectorAll("#app .card"), function (c) { var h = c.querySelector("h2"); if (h && /הצעת המסע שלכם|ההחלטות שלכם/.test(h.textContent)) wrap.appendChild(c.cloneNode(true)); });
-      var items = [{ tool: "journey", title: "מסע אל החוסן — הצעת המסע", label: "מסע אל החוסן · הצעה", html: standalone(wrap, "מסע אל החוסן — הצעת המסע"), input: inp }];
+      var items = [{ tool: "journey", title: "מסע אל החוסן: הצעת המסע", label: "מסע אל החוסן · הצעה", html: standalone(wrap, "מסע אל החוסן: הצעת המסע"), input: inp }];
       // בחירות לדוגמה: האפשרות הראשונה בכל החלטה, סיבה אחת והסבר קצר
       [].forEach.call(document.querySelectorAll("#app .dec"), function (box) {
         var r = box.querySelector("input[type=radio]"); if (r) { r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true })); }
@@ -251,9 +251,9 @@
           return "<tr><td>" + (i + 1) + "</td><td><b>" + (m.gate ? "🚪 " : "") + esc(m.title) + "</b></td><td>" + esc(stT(m.stage)) + "</td><td><ul>" + goals + "</ul></td></tr>";
         }).join("");
         var t = document.createElement("div");
-        t.innerHTML = "<h2>טיוטת אבני הדרך — " + ms.length + "</h2><table class=\"jr-plan\" style=\"width:100%;border-collapse:collapse\"><thead><tr><th>#</th><th>אבן הדרך</th><th>שלב</th><th>יעדים ואיך יודעים שהושגו</th></tr></thead><tbody>" + rows + "</tbody></table>" +
+        t.innerHTML = "<h2>טיוטת אבני הדרך: " + ms.length + "</h2><table class=\"jr-plan\" style=\"width:100%;border-collapse:collapse\"><thead><tr><th>#</th><th>אבן הדרך</th><th>שלב</th><th>יעדים ואיך יודעים שהושגו</th></tr></thead><tbody>" + rows + "</tbody></table>" +
           "<style>.jr-plan th,.jr-plan td{border:1px solid #CDD3D8;padding:6px 8px;text-align:right;vertical-align:top}.jr-plan thead th{background:#2E5A7D;color:#fff}.jr-plan ul{margin:0;padding-inline-start:18px}.jr-plan tr{break-inside:avoid}</style>";
-        items.push({ tool: "journey", title: "מסע אל החוסן — טיוטת אבני הדרך", label: "מסע אל החוסן · אבני דרך", html: standalone(t, "מסע אל החוסן — טיוטת אבני הדרך").replace("</main>", t.querySelector("style").outerHTML + "</main>"), input: inp });
+        items.push({ tool: "journey", title: "מסע אל החוסן: טיוטת אבני הדרך", label: "מסע אל החוסן · אבני דרך", html: standalone(t, "מסע אל החוסן: טיוטת אבני הדרך").replace("</main>", t.querySelector("style").outerHTML + "</main>"), input: inp });
       }
       return items;
     },
@@ -277,14 +277,14 @@
       if ($("#screen-feedback").hidden) { var be = $("#bEndChat"); be.disabled = false; be.click(); }
       await waitFor(function () { return !$("#screen-feedback").hidden ? true : null; }, 30e3, "המשוב");
       var wrap = document.createElement("div");
-      var h1 = document.createElement("h2"); h1.textContent = "השיחה — " + scName; wrap.appendChild(h1); wrap.appendChild($("#transcript").cloneNode(true));
+      var h1 = document.createElement("h2"); h1.textContent = "השיחה: " + scName; wrap.appendChild(h1); wrap.appendChild($("#transcript").cloneNode(true));
       var h2 = document.createElement("h2"); h2.textContent = "המשוב"; wrap.appendChild(h2); wrap.appendChild($("#screen-feedback").cloneNode(true));
       wrap.querySelectorAll("[hidden]").forEach(function (x) { x.removeAttribute("hidden"); });
-      return [{ tool: "practice", title: "תרגול עצמי — " + scName, label: "תרגול עצמי בסימולציה", html: standalone(wrap, "תרגול עצמי — " + scName), input: "התרחיש: " + scName + "\nתורות אשת החינוך:\n" + lines.join("\n") }];
+      return [{ tool: "practice", title: "תרגול עצמי: " + scName, label: "תרגול עצמי בסימולציה", html: standalone(wrap, "תרגול עצמי: " + scName), input: "התרחיש: " + scName + "\nתורות אשת החינוך:\n" + lines.join("\n") }];
     },
-    "input-screen.html": function () { return scenario("edu", "סימולציה — סטודנטים/ות"); },
-    "parent-input-screen.html": function () { return scenario("parents", "סימולציה — הורים"); },
-    "student-input-screen.html": function () { return scenario("youth", "סימולציה — נוער"); }
+    "input-screen.html": function () { return scenario("edu", "סימולציה: סטודנטים/ות"); },
+    "parent-input-screen.html": function () { return scenario("parents", "סימולציה: הורים"); },
+    "student-input-screen.html": function () { return scenario("youth", "סימולציה: נוער"); }
   };
 
   // עבודה סמינריונית קצרה לדוגמה — קלט בלבד, לבדיקת המשוב (לא תוצר של המערכת)

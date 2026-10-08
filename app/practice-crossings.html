@@ -1,5 +1,5 @@
 <meta charset="UTF-8">
-<title>חציות קווים אדומים — תרגול עצמי</title>
+<title>חציות קווים אדומים: תרגול עצמי</title>
 <script src="lib/access-guard.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -94,14 +94,13 @@ h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:700;font-size:21px;m
 
 <header>
   <h1>חציות קווים אדומים</h1>
-  <p class="lead">מה שנרשם בתרגול העצמי כשמתרגלת חצתה קו אדום — לפי מדיניות הקווים האדומים (19/09/2026).</p>
+  <p class="lead">מה שנרשם בתרגול העצמי כשמתרגלת חצתה קו אדום, לפי מדיניות הקווים האדומים (19/09/2026).</p>
 </header>
 
 <div class="disclosure">
-  <b>מה זה בפועל:</b> הנתונים כאן נקראים ישירות מ-<code>localStorage</code> בדפדפן הזה בלבד —
-  לא הצלבה בין מכשירים או מוסדות. <b>בחירת "מציגה כ" למטה מדמה התחברות</b> (אין עדיין login
-  אמיתי בפרויקט הזה, בדיוק כמו ב-<code>admin.html</code>) — היא לא אכיפת הרשאות אמיתית, רק
-  הדגמה של מי אמורה לראות מה. כל מתרגלת מזוהה כאן <b>במספר פסאודונימי, לא בשם</b> — עקבי עם
+  <b>מה זה בפועל:</b> הנתונים כאן נקראים ישירות מ-<code>localStorage</code> בדפדפן הזה בלבד, לא הצלבה בין מכשירים או מוסדות. <b>בחירת "מציגה כ" למטה מדמה התחברות</b> (אין עדיין login
+  אמיתי בפרויקט הזה, בדיוק כמו ב-<code>admin.html</code>): היא לא אכיפת הרשאות אמיתית, רק
+  הדגמה של מי אמורה לראות מה. כל מתרגלת מזוהה כאן <b>במספר פסאודונימי, לא בשם</b>, עקבי עם
   מדיניות הפרטיות שהוכרעה 05/09/2026.
 </div>
 
@@ -188,7 +187,7 @@ function render(){
   const noteEl = document.getElementById("unscopedNote");
   if (unscopedCount > 0) {
     noteEl.hidden = false;
-    noteEl.textContent = "יש " + unscopedCount + " חציות ללא שיוך מוסד/מנחה (למשל תרגול שנפתח בלי קוד סדנה) — גלויות רק בתצוגת ניהול המערכת.";
+    noteEl.textContent = "יש " + unscopedCount + " חציות ללא שיוך מוסד/מנחה (למשל תרגול שנפתח בלי קוד סדנה): גלויות רק בתצוגת ניהול המערכת.";
   } else {
     noteEl.hidden = true;
   }
@@ -321,7 +320,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
 <dialog id="rptDlg">
   <h3>דיווח על תקלה, שאלה, רעיון או בקשה</h3>
   <div class="rb">
-    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח — לא ניתן לצרף קובץ אוטומטית למייל.</p>
+    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח, לא ניתן לצרף קובץ אוטומטית למייל.</p>
     <div class="rerr" id="rptErr" hidden></div>
     <label>שם מלא <span class="req">*</span></label>
     <input id="rptName">

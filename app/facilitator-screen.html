@@ -456,7 +456,7 @@ function drawFb(){
   const n = chosen.length;
   const st = document.createElement("p"); st.className = "fbstatus" + (FB.valid(n) ? "" : " bad");
   st.textContent = n < FB.MIN ? "נבחרו " + n + " מדדים. אפשר לבחור לפחות " + FB.MIN + "."
-    : n >= FB.MAX ? "נבחרו " + FB.MAX + " מדדים — המספר המרבי. כדי להוסיף מדד, הסירי מדד אחר."
+    : n >= FB.MAX ? "נבחרו " + FB.MAX + " מדדים: המספר המרבי. כדי להוסיף מדד, הסירי מדד אחר."
     : "נבחרו " + n + " מדדים. אפשר עד " + FB.MAX + ".";
   list.append(st);
   $("fbAddTtl").textContent = "חסר מדד בשאלון ה" + FB.ROLE_LABEL[fbRole] + "?";
@@ -520,7 +520,7 @@ $("fbAddBtn").addEventListener("click", () => {
   let note;
   if (sel.includes(id)) note = "המדד הזה כבר קיים ומסומן לסדנה.";
   else if (sel.length < FB.MAX) { sel.push(id); note = "המדד נוסף לשאלון ה" + FB.ROLE_LABEL[fbRole] + " וסומן לסדנה הזו."; }
-  else note = "המדד נוסף לבנק. כבר נבחרו " + FB.MAX + " מדדים — כדי לסמן אותו, הסירי מדד אחר.";
+  else note = "המדד נוסף לבנק. כבר נבחרו " + FB.MAX + " מדדים, כדי לסמן אותו, הסירי מדד אחר.";
   FB.saveWorkshop(fbSel, { scenario: S.name });
   $("fbAddText").value = "";
   drawFb();
@@ -541,8 +541,8 @@ const SAMPLE = { ...S, id:"sample", track:"edu" };
 let SAVED = []; try { SAVED = JSON.parse(localStorage.getItem("sbe.workshop.scenarios.v1") || "[]"); } catch(e){}
 (function scnInit(){
   const sel = $("scnSel");
-  SAVED.forEach(x => { const o = document.createElement("option"); o.value = x.id; o.textContent = x.name + " · " + (TRACK_T[x.track] || "") + (x.sub ? " — " + x.sub : ""); sel.append(o); });
-  const o = document.createElement("option"); o.value = "sample"; o.textContent = "יש לך גן טוב · סטודנטיות.ים — תרחיש לדוגמה"; sel.append(o);
+  SAVED.forEach(x => { const o = document.createElement("option"); o.value = x.id; o.textContent = x.name + " · " + (TRACK_T[x.track] || "") + (x.sub ? " · " + x.sub : ""); sel.append(o); });
+  const o = document.createElement("option"); o.value = "sample"; o.textContent = "יש לך גן טוב · סטודנטיות.ים: תרחיש לדוגמה"; sel.append(o);
   const pick = (id) => {
     const x = id === "sample" ? SAMPLE : SAVED.find(y => y.id === id) || SAMPLE;
     Object.assign(S, { name:x.name, sub:x.sub || "", lang:x.lang || "עברית", minutes:x.minutes || 5, pre:x.pre || [], core:x.core || [], watch:x.watch || [], debrief:x.debrief || [], track:x.track || "edu" });
@@ -590,7 +590,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
 <dialog id="rptDlg">
   <h3>דיווח על תקלה, שאלה, רעיון או בקשה</h3>
   <div class="rb">
-    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח — לא ניתן לצרף קובץ אוטומטית למייל.</p>
+    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח, לא ניתן לצרף קובץ אוטומטית למייל.</p>
     <div class="rerr" id="rptErr" hidden></div>
     <label>שם מלא <span class="req">*</span></label>
     <input id="rptName">

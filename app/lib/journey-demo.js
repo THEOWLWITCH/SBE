@@ -29,7 +29,7 @@ const CHOICES = { startCluster:{ option:'תקשורת ואמון', reasons:['ז�
   pace:{ option:'קצב רגיל', reasons:['זה מתאים ללוח הזמנים שלנו'], explain:'', who:[], hard:'' } };
 // אבני דרך לבית ספר (נקודת יציאה: שלב 1) — 13
 const SCHOOL = [
-  [1,1,'יוצאים לדרך — מפת קשרים וערוצים',[[3,'מיפוי כל ערוצי התקשורת ומי לא מקבל מידע','מפה כתובה'],[1,'מיפוי מי בשוליים','רשימה דיסקרטית']],['מפת ערוצים','מפת קשרים']],
+  [1,1,'יוצאים לדרך: מפת קשרים וערוצים',[[3,'מיפוי כל ערוצי התקשורת ומי לא מקבל מידע','מפה כתובה'],[1,'מיפוי מי בשוליים','רשימה דיסקרטית']],['מפת ערוצים','מפת קשרים']],
   [2,0,'ערוץ חלופי לתקשורת',[[3,'ערוץ SMS או שרשרת טלפונים למצבי שיבוש','בדיקה שהודעה הגיעה לכולם']],['תיאור הערוץ ותוצאות בדיקה']],
   [2,0,'ממלאי מקום לתפקידי המפתח',[[2,'ממלא/ת מקום לכל תפקיד מפתח, כולל עץ הקשר','טבלת תפקידים']],['טבלת תפקידים וגיבויים']],
   [2,1,'שער: מניחים יסודות',[[1,'שגרת חיבור שבועית','תיעוד'],[4,'נוהל המשך תפקוד','נוהל כתוב'],[5,'יעדים למסע','מסמך יעדים']],['ראיות לכל אשכול','רפלקציה']],
@@ -44,15 +44,15 @@ const SCHOOL = [
   [5,1,'שער: קהילת חוסן',[[1,'אתוס שמחזיק לאורך זמן ומקבל חדשים','קליטת משפחות חדשות'],[5,'מלמדים בית ספר אחר','מפגש עמיתים']],['ראיות לכל אשכול','תחקיר מסכם']] ];
 const msFrom = rows => rows.map(([stage, gate, title, goals, submit]) => ({ stage, gate: !!gate, title, goals: goals.map(([c, goal, measure]) => ({ c, goal, measure })), submit, tip:'' }));
 const COMMUNITY = [
-  [1,1,'יוצאים לדרך — מפת קשרים בשכונה',[[1,'מיפוי קבוצות וקשרים בין קבוצות','מפה']],['מפת קשרים']],
-  [2,1,'מניחים יסודות — רשת נציגי רחוב',[[2,'נציג/ה וגיבוי לכל רחוב','טבלה']],['רשימת נציגים']],
-  [3,1,'דרך סלולה — מוקד קהילתי ומידע בכמה שפות',[[3,'מידע בשלוש שפות ובערוץ לא דיגיטלי','בדיקת הגעה']],['תיעוד']],
-  [4,1,'מנווטים יחד — יום הפסקת חשמל',[[4,'המוקד פעל והקשישים קיבלו מענה','תחקיר']],['תחקיר']],
-  [5,1,'קהילת חוסן — תמונת עתיד ושותפות עם הרשות',[[5,'תמונת עתיד ושולחן תיאום קבוע','מסמך']],['מסמך ותמונת עתיד']] ];
-const CERT = [ ['מיפיתם את כל ערוצי התקשורת ואת מי שנשאר בשוליים — נקודת מוצא כנה ואמיצה.', ['מפת ערוצים לכל הקהילה','זיהוי מכשול התקשורת']],
-  ['בניתם ערוץ חלופי ובדקתם אותו — המידע מגיע עכשיו גם למי שאינו בווטסאפ.', ['ערוץ חלופי שנבדק']],
-  ['לכל תפקיד מפתח יש עכשיו ממלא/ת מקום — הדרך כבר לא נשענת על אדם אחד.', ['גיבוי לכל תפקיד מפתח']] ];
-const ERR = { 'too many': 'כבר יש יותר מדי מסעות. אפשר למחוק את מסעות הדמו הקודמים ולנסות שוב.', unauthorized: 'אפשר להיכנס מחדש כמנהלת המערכת.', 'bad action': 'השרת עוד לא מכיר את מסע אל החוסן — כנראה שהעדכון האחרון עוד לא עלה לשרת.' };
+  [1,1,'יוצאים לדרך: מפת קשרים בשכונה',[[1,'מיפוי קבוצות וקשרים בין קבוצות','מפה']],['מפת קשרים']],
+  [2,1,'מניחים יסודות: רשת נציגי רחוב',[[2,'נציג/ה וגיבוי לכל רחוב','טבלה']],['רשימת נציגים']],
+  [3,1,'דרך סלולה: מוקד קהילתי ומידע בכמה שפות',[[3,'מידע בשלוש שפות ובערוץ לא דיגיטלי','בדיקת הגעה']],['תיעוד']],
+  [4,1,'מנווטים יחד: יום הפסקת חשמל',[[4,'המוקד פעל והקשישים קיבלו מענה','תחקיר']],['תחקיר']],
+  [5,1,'קהילת חוסן: תמונת עתיד ושותפות עם הרשות',[[5,'תמונת עתיד ושולחן תיאום קבוע','מסמך']],['מסמך ותמונת עתיד']] ];
+const CERT = [ ['מיפיתם את כל ערוצי התקשורת ואת מי שנשאר בשוליים: נקודת מוצא כנה ואמיצה.', ['מפת ערוצים לכל הקהילה','זיהוי מכשול התקשורת']],
+  ['בניתם ערוץ חלופי ובדקתם אותו: המידע מגיע עכשיו גם למי שאינו בווטסאפ.', ['ערוץ חלופי שנבדק']],
+  ['לכל תפקיד מפתח יש עכשיו ממלא/ת מקום: הדרך כבר לא נשענת על אדם אחד.', ['גיבוי לכל תפקיד מפתח']] ];
+const ERR = { 'too many': 'כבר יש יותר מדי מסעות. אפשר למחוק את מסעות הדמו הקודמים ולנסות שוב.', unauthorized: 'אפשר להיכנס מחדש כמנהלת המערכת.', 'bad action': 'השרת עוד לא מכיר את מסע אל החוסן: כנראה שהעדכון האחרון עוד לא עלה לשרת.' };
 async function run(rawApi, log){
   const out = [];
   // כל צעד נבדק: אם השרת מחזיר שגיאה, עוצרים ומסבירים מה קרה.
@@ -64,42 +64,42 @@ async function run(rawApi, log){
   };
   // 1. כיתה — בשלב הבחירות
   log('כיתה ה׳2: מיפוי והצעת מסע...');
-  let r = await api('jrCreate', { unit:'elem', unitName:'כיתה ה׳2 · דמו', by:'דמו — המחנכת', research:false, demo:true }); if (!r.id) throw new Error(r.error || 'יצירה נכשלה'); out.push(r.id);
+  let r = await api('jrCreate', { unit:'elem', unitName:'כיתה ה׳2 · דמו', by:'דמו: המחנכת', research:false, demo:true }); if (!r.id) throw new Error(r.error || 'יצירה נכשלה'); out.push(r.id);
   await api('jrSaveMapping', { id:r.id, mapping:{ answers:ANS, fails:FAILS, notes:'כיתה עם תחושת שייכות טובה; שתי משפחות חדשות שעוד לא מחוברות.' } });
   await api('jrSetProposal', { id:r.id, proposal:PROPOSAL('המחנכת') });
   // 2. בית ספר — באמצע הדרך
   log('בית ספר הדר: מסע פעיל באמצע הדרך...');
-  r = await api('jrCreate', { unit:'school', unitName:'בית ספר הדר · דמו', by:'דמו — צוות ההנהלה', research:false, demo:true }); const sid = r.id; out.push(sid);
+  r = await api('jrCreate', { unit:'school', unitName:'בית ספר הדר · דמו', by:'דמו: צוות ההנהלה', research:false, demo:true }); const sid = r.id; out.push(sid);
   await api('jrSaveMapping', { id:sid, mapping:{ answers:ANS, fails:FAILS } });
   await api('jrSetProposal', { id:sid, proposal:PROPOSAL('הסגנית') });
   const ms = msFrom(SCHOOL); const dues = [-90,-60,-35,-14,-3,20,45,75,110,140,170,230,300];
   ms.forEach((m, i) => { m.due = day(dues[i]); });
   await api('jrSubmitChoices', { id:sid, choices:CHOICES, plan:{ milestones:ms }, startStage:1, pace:'normal' });
-  await api('jrApprove', { id:sid, milestones:ms, message:'קראתי את הבחירות שלכם — הבחירה לפתוח בתקשורת נראית לי מדויקת, בדיוק בגלל מה שסיפרתם על שינוי מערכת השעות. יוצאים לדרך! אבן הדרך הראשונה: מפת קשרים וערוצים.' });
+  await api('jrApprove', { id:sid, milestones:ms, message:'קראתי את הבחירות שלכם: הבחירה לפתוח בתקשורת נראית לי מדויקת, בדיוק בגלל מה שסיפרתם על שינוי מערכת השעות. יוצאים לדרך! אבן הדרך הראשונה: מפת קשרים וערוצים.' });
   for (let i = 0; i < 3; i++) {
-    await api('jrSubmitMilestone', { id:sid, mi:i, submission:{ evidence:'תיאור לדוגמה: ' + ms[i].title + ' — מה עשינו, מי השתתף ומה רואים היום.', links:['https://example.com/demo'], reflection: ms[i].gate ? { effect:'קידמו — הבחירה לפתוח בתקשורת חשפה מהר את המכשולים', again:'כן', learned:'אנחנו יודעים לעבוד יחד מהר כשהמטרה ברורה' } : undefined } });
+    await api('jrSubmitMilestone', { id:sid, mi:i, submission:{ evidence:'תיאור לדוגמה: ' + ms[i].title + ', מה עשינו, מי השתתף ומה רואים היום.', links:['https://example.com/demo'], reflection: ms[i].gate ? { effect:'קידמו: הבחירה לפתוח בתקשורת חשפה מהר את המכשולים', again:'כן', learned:'אנחנו יודעים לעבוד יחד מהר כשהמטרה ברורה' } : undefined } });
     await api('jrReview', { id:sid, mi:i, decision:'approve', message:'כל הכבוד! ההתקדמות שלכם נראית בבירור.', assessment:CERT[i][0], progress:CERT.slice(0, i + 1).flatMap(x => x[1]) });
   }
   await api('jrSubmitMilestone', { id:sid, mi:3, submission:{ evidence:'שגרת חיבור שבועית בשכבות ז׳–ח׳, נוהל המשך תפקוד בטיוטה, ומסמך יעדים.', reflection:{ effect:'קידמו', again:'היינו מתחילים גם בגיבויים', learned:'אנחנו טובים בתכנון ופחות בתיעוד' } } });
-  await api('jrReview', { id:sid, mi:3, decision:'needs', message:'השלמה קטנה בדרך: הנוהל להמשך תפקוד עוד בטיוטה. אפשר להשלים בשתי דרכים — לאשר אותו בישיבת צוות, או לתרגל אותו פעם אחת ולתעד.' });
+  await api('jrReview', { id:sid, mi:3, decision:'needs', message:'השלמה קטנה בדרך: הנוהל להמשך תפקוד עוד בטיוטה. אפשר להשלים בשתי דרכים: לאשר אותו בישיבת צוות, או לתרגל אותו פעם אחת ולתעד.' });
   await api('jrSubmitMilestone', { id:sid, mi:3, submission:{ evidence:'הנוהל אושר בישיבת צוות ותורגל ביום שלישי; מצורף תיעוד קצר.', reflection:{ effect:'קידמו מאוד', again:'כן', learned:'התרגול הראה שהנוהל עובד' } } });
-  await api('jrPost', { id:sid, mi:5, kind:'appeal', text:'מועצת התלמידים מתחלפת בדיוק בתקופה הזאת — אפשר להעביר את אבן הדרך לאחרי הבחירות למועצה?' });
+  await api('jrPost', { id:sid, mi:5, kind:'appeal', text:'מועצת התלמידים מתחלפת בדיוק בתקופה הזאת. אפשר להעביר את אבן הדרך לאחרי הבחירות למועצה?' });
   await api('jrPost', { id:sid, mi:4, kind:'comment', text:'יש לנו שתי משפחות שלא רצו נאמן קשר. איך כדאי לגשת אליהן?' });
   // 3. קהילה — מסע שהושלם
   log('קהילת נווה ים: מסע שהושלם, עם תו חוסן...');
-  r = await api('jrCreate', { unit:'community', unitName:'קהילת נווה ים · דמו', by:'דמו — מנהלת הקהילה', research:false, demo:true }); const cid = r.id; out.push(cid);
+  r = await api('jrCreate', { unit:'community', unitName:'קהילת נווה ים · דמו', by:'דמו: מנהלת הקהילה', research:false, demo:true }); const cid = r.id; out.push(cid);
   await api('jrSaveMapping', { id:cid, mapping:{ answers:ANS, fails:FAILS } });
   await api('jrSetProposal', { id:cid, proposal:PROPOSAL('מנהלת הקהילה') });
   const cm = msFrom(COMMUNITY); cm.forEach((m, i) => { m.due = day(-600 + i * 130); });
   await api('jrSubmitChoices', { id:cid, choices:CHOICES, plan:{ milestones:cm }, startStage:1, pace:'normal' });
-  await api('jrApprove', { id:cid, milestones:cm, message:'יוצאים לדרך — בהצלחה!' });
+  await api('jrApprove', { id:cid, milestones:cm, message:'יוצאים לדרך: בהצלחה!' });
   const prog = [];
   for (let i = 0; i < cm.length; i++) {
     prog.push(['מפת קשרים בין קבוצות','רשת נציגי רחוב עם גיבוי','מידע בשלוש שפות ובערוץ לא דיגיטלי','המוקד פעל ביום הפסקת החשמל','תמונת עתיד ושולחן תיאום עם הרשות'][i]);
     await api('jrSubmitMilestone', { id:cid, mi:i, submission:{ evidence:'תיאור לדוגמה: ' + cm[i].title, reflection:{ effect:'קידמו', again:'כן', learned:'שהקהילה יודעת לפעול יחד' } } });
-    await api('jrReview', { id:cid, mi:i, decision:'approve', message:'מרגש לראות את הדרך שעשיתם.', assessment: i === cm.length - 1 ? 'עברתם יחד את כל הדרך: מפת קשרים, רשת נציגים, מידע שמגיע לכולם, מוקד שפעל ביום שיבוש אמיתי ותמונת עתיד משותפת. אתם קהילת חוסן.' : 'עוד צעד משמעותי בדרך — ' + cm[i].title + '.', progress: prog.slice() });
+    await api('jrReview', { id:cid, mi:i, decision:'approve', message:'מרגש לראות את הדרך שעשיתם.', assessment: i === cm.length - 1 ? 'עברתם יחד את כל הדרך: מפת קשרים, רשת נציגים, מידע שמגיע לכולם, מוקד שפעל ביום שיבוש אמיתי ותמונת עתיד משותפת. אתם קהילת חוסן.' : 'עוד צעד משמעותי בדרך: ' + cm[i].title + '.', progress: prog.slice() });
   }
-  await api('jrFinalReflection', { id:cid, final:{ learned:'גילינו שהכוח שלנו הוא בחיבורים בין הקבוצות.', recommend:'להתחיל במפת קשרים — היא פותחת הכול.' } });
+  await api('jrFinalReflection', { id:cid, final:{ learned:'גילינו שהכוח שלנו הוא בחיבורים בין הקבוצות.', recommend:'להתחיל במפת קשרים: היא פותחת הכול.' } });
   return out;
 }
 window.SBE_JOURNEY_DEMO = { run };
