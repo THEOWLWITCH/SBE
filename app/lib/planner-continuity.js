@@ -2,7 +2,7 @@
 (function () {
   "use strict";
   const SCHEMA = "planner-document/v1";
-  const TAGS = new Set("article div span p h1 h2 h3 h4 h5 h6 table thead tbody tfoot tr th td ul ol li strong b em i u br blockquote".split(" "));
+  const TAGS = new Set("article div span p h1 h2 h3 h4 h5 h6 table thead tbody tfoot tr th td ul ol li strong b em i u br blockquote a bdi".split(" "));
   const DROP = new Set("script style iframe object embed svg math img input textarea select button video audio canvas template".split(" "));
   const CLASSES = new Set("kit-table kit-two kit-facts kit-steps kit-close kit-h kit-sub kit-min kit-muted kit-session sbe-rich draftbox rcard rcard-row rcard-meta tree2-root tree2-row tree2-end card act session-card step-card claims-box".split(" "));
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -19,6 +19,12 @@
       const value = String(source(name) || "");
       if (/^\d{1,3}$/.test(value) && +value > 0 && +value <= 100) attrs[name] = value;
     });
+    if (tag === "a") {
+      try {
+        const url = new URL(String(source("href") || ""));
+        if (url.protocol === "http:" || url.protocol === "https:") attrs.href = url.href;
+      } catch {}
+    }
     return attrs;
   }
   function captureNode(node) {
@@ -61,17 +67,23 @@
     }
     function get(id) { return list().find(r => r.id === id); }
     function save({id, expectedVersion, title, subtitle = "", fields = {}, nodes}) {
-      const records = list(), index = records.findIndex(r => r.id === id), previous = records[index];
-      if (id && (!previous || previous.version !== expectedVersion)) throw new Error("הגרסה השמורה השתנתה. פתחי את הגרסה האחרונה לפני שמירה.");
+      assertOwner();
       const documentSnapshot = capture(nodes);
       restoreDocument(documentSnapshot); // Validate before touching storage.
-      const record = {id:id || window.crypto.randomUUID(), version:previous ? previous.version + 1 : 1,
-        privacy:"private", status:"draft", scopeKey:owner, title:String(title || "תוצר"), subtitle:String(subtitle),
-        fields:clone(fields), document:documentSnapshot, savedAt:new Date().toISOString(), history:previous ? [...previous.history || [],
-          {version:previous.version,title:previous.title,subtitle:previous.subtitle,fields:previous.fields,document:previous.document,savedAt:previous.savedAt}] : []};
-      if (previous) records[index] = record; else records.unshift(record);
-      assertOwner(); localStorage.setItem(owner,JSON.stringify(records));
-      return clone(record);
+      const input = {title:String(title || "תוצר"),subtitle:String(subtitle),fields:clone(fields)};
+      if (!window.navigator?.locks?.request) throw new Error("שמירה בטוחה אינה זמינה בדפדפן הזה. פתחי את האתר בדפדפן מעודכן; הנוסח נשאר כאן לעריכה.");
+      // Re-read and check the version inside an origin-wide exclusive lock.
+      return window.navigator.locks.request(owner, () => {
+        const records = list(), index = records.findIndex(r => r.id === id), previous = records[index];
+        if (id && (!previous || previous.version !== expectedVersion)) throw new Error("הגרסה השמורה השתנתה. פתחי את הגרסה האחרונה לפני שמירה.");
+        const record = {id:id || window.crypto.randomUUID(), version:previous ? previous.version + 1 : 1,
+          privacy:"private", status:"draft", scopeKey:owner, ...input,
+          document:documentSnapshot, savedAt:new Date().toISOString(), history:previous ? [...previous.history || [],
+            {version:previous.version,title:previous.title,subtitle:previous.subtitle,fields:previous.fields,document:previous.document,savedAt:previous.savedAt}] : []};
+        if (previous) records[index] = record; else records.unshift(record);
+        assertOwner(); localStorage.setItem(owner,JSON.stringify(records));
+        return clone(record);
+      });
     }
     function restore(record) { assertOwner(); return restoreDocument(record.document); }
     function copy(nodes) { assertOwner(); return restoreDocument(capture(nodes)); }
@@ -82,11 +94,14 @@
       let saved = record;
       const button = document.createElement("button"); button.type = "button"; button.className = "btn";
       button.textContent = "שמירה פרטית במכשיר"; button.setAttribute("aria-live","polite");
-      button.addEventListener("click", () => {
+      button.addEventListener("click", async () => {
+        if (button.disabled) return;
+        button.disabled = true;
         try {
-          saved = save({id:saved?.id,expectedVersion:saved?.version,title,subtitle,fields:typeof fields === "function" ? fields() : fields,
+          saved = await save({id:saved?.id,expectedVersion:saved?.version,title,subtitle,fields:typeof fields === "function" ? fields() : fields,
             nodes:typeof nodes === "function" ? nodes() : nodes});
         } catch (error) { button.textContent = "לא נשמר · " + error.message; return; }
+        finally { button.disabled = false; }
         button.textContent = "נשמר במכשיר ✓ · גרסה " + saved.version;
         onSave?.(saved);
       });

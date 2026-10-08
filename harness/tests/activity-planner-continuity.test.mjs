@@ -31,7 +31,7 @@ function environment(){
     getElementById:id=>{const found=descendants(document.body).find(x=>x.getAttribute('id')===id);if(found)return found;if(!ids.has(id)){const n=new Node(id==='dlg'?'dialog':'div');n.setAttribute('id',id);ids.set(id,n);}return ids.get(id);},querySelectorAll:()=>[]};
   ['dlgB','dlgF','dlgH'].forEach(id=>document.getElementById('dlg').append(document.getElementById(id)));document.body.append(document.getElementById('dlg'));
   const el=(tag,attrs={},...xs)=>{const n=document.createElement(tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));n.append(...xs);return n;};
-  const window={sbeUserKey:k=>k+':'+owner,crypto:{randomUUID:()=>`product-${++serial}`},addEventListener(){},scrollTo(){},SBE_DOC:{editable:n=>{n.setAttribute('contenteditable','true');return n;},print:x=>printed.push(x)}};
+  const window={sbeUserKey:k=>k+':'+owner,crypto:{randomUUID:()=>`product-${++serial}`},navigator:{locks:{request:(_name,callback)=>Promise.resolve().then(callback)}},addEventListener(){},scrollTo(){},SBE_DOC:{editable:n=>{n.setAttribute('contenteditable','true');return n;},print:x=>printed.push(x)}};
   const localStorage={getItem:k=>storage.get(k)??null,setItem:(k,v)=>{if(failWrite)throw Error('quota');storage.set(k,v);}};
   const fields=new Map(['goal','smart','domain','opening','mainActivity'].map(k=>[k,{k}]));
   const ctx=vm.createContext({window,document,localStorage,AbortController,DOMException,Date,console:{warn(){}},setTimeout:()=>0,clearTimeout(){},el,SBE_DOC:window.SBE_DOC,FIELDS:fields,GROUPS:[],SMART_ITEMS:[],state:{},smartFields:new Map(),selectFields:new Map(),NO_MODEL:'אין חיבור',SBE_CREDIT:'Begood',str:x=>String(x??'').trim(),val:k=>document.getElementById('i-'+k).value.trim(),smartLines:x=>x,
@@ -75,6 +75,11 @@ test('Sequence deletion/reset rejects a late fill while owned incremental chunks
 test('Sequence improved proposal keeps comparison and declines adoption after a newer human edit',async()=>{
   const e=environment();sequence(e);e.ctx.next.resolve(JSON.stringify({plan:{sessions:[{n:1,main:'הצעת AI'},{n:2,main:'שני'}]},changes:[]}));await e.document.getElementById('bSeqImprove').fire('click');assert.match(e.ctx.shown.body.textContent,/הנוסח שלך.*א.*נוסח משופר.*הצעת AI/);
   e.run("seq.sessions[0].main='עריכה חדשה';touch();");await e.ctx.shown.tools[0].fire('click');assert.equal(e.ctx.seq.sessions[0].main,'עריכה חדשה');assert.equal(e.ctx.snapshot,null);
+});
+
+test('Fresh sequence improvement can be adopted and undo restores the original plan',async()=>{
+  const e=environment();sequence(e);e.ctx.next.resolve(JSON.stringify({plan:{sessions:[{n:1,main:'הצעת AI'},{n:2,main:'שני'}]},changes:[]}));await e.document.getElementById('bSeqImprove').fire('click');await e.ctx.shown.tools[0].fire('click');assert.equal(e.ctx.seq.sessions[0].main,'הצעת AI');assert.equal(e.ctx.snapshot.seq.sessions[0].main,'א');
+  await e.document.getElementById('bSeqUndo').fire('click');assert.equal(e.ctx.seq.sessions[0].main,'א');assert.equal(e.ctx.snapshot,null);
 });
 test('Sequence document saves, reopens, prints and downloads the actual edited table without active pasted markup',async()=>{
   const e=environment();sequence(e);const article=e.el('article',{},e.el('h1',{},'כותרת'),e.el('table',{},e.el('tr',{},e.el('td',{},'לפני עריכה'))));

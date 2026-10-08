@@ -1,13 +1,13 @@
 // Shared authenticated background call. Caller may cancel with {signal}.
 (function () {
   "use strict";
-  async function post(url, body, ms, signal) {
+  async function post(url, body, ms, signal, headers) {
     const ctrl = new AbortController(), abort = () => ctrl.abort();
     const timer = setTimeout(abort, ms);
     if (signal?.aborted) abort();
     signal?.addEventListener("abort", abort, {once:true});
     try {
-      const res = await fetch(url, {method:"POST", headers:window.sbeAIHeaders(), body:JSON.stringify(body), signal:ctrl.signal});
+      const res = await fetch(url, {method:"POST", headers:headers || window.sbeAIHeaders(), body:JSON.stringify(body), signal:ctrl.signal});
       const raw = await res.text();
       let data;
       try {data = JSON.parse(raw);} catch {throw new Error("החיבור לשרת נקטע באמצע (" + res.status + ")");}
@@ -33,10 +33,11 @@
     const cancelled = () => new DOMException("הבקשה בוטלה","AbortError");
     if (options.signal?.aborted) throw cancelled();
     const requestId = body.requestId || crypto.randomUUID();
+    const requestHeaders = {...window.sbeAIHeaders()};
     // Keep the bounded acknowledgment readable so a late accepted job can be cancelled.
-    const acknowledgment = post(server + "/api/complete", {...body,requestId,async:true},90000).then(async start => {
+    const acknowledgment = post(server + "/api/complete", {...body,requestId,async:true},90000,undefined,requestHeaders).then(async start => {
       if (options.signal?.aborted && start.jobId)
-        await post(server + "/api/pipeline-cancel",{jobId:start.jobId},10000).catch(() => {});
+        await post(server + "/api/pipeline-cancel",{jobId:start.jobId},10000,undefined,requestHeaders).catch(() => {});
       return start;
     });
     const start = await new Promise((resolve,reject) => {
@@ -70,7 +71,7 @@
       }
       throw new Error("timeout: הקריאה למודל נמשכה יותר מדי");
     } catch (error) {
-      await post(server + "/api/pipeline-cancel",{jobId:start.jobId},10000).catch(() => {});
+      await post(server + "/api/pipeline-cancel",{jobId:start.jobId},10000,undefined,requestHeaders).catch(() => {});
       throw error;
     }
   }
