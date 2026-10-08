@@ -170,7 +170,14 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
 .sel-bar{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:.5rem 0}
 .sel-bottom{position:sticky;bottom:0;background:var(--surface);padding:.6rem 0;border-top:1px solid var(--hair)}
 #sel-count{font-weight:700;color:var(--spoken)}
-.sel-dom{font-size:.8rem;font-weight:700;color:var(--muted);margin:.9rem 0 .3rem}
+.sel-grp{border:1px solid var(--hair);border-radius:10px;margin:.5rem 0;background:var(--surface);overflow:hidden}
+.sel-dom{font-size:.95rem;font-weight:700;color:var(--ink);padding:.6rem .8rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:.6rem;list-style-position:inside}
+.sel-grp[open]>.sel-dom{border-bottom:1px solid var(--hair);background:var(--surface-2)}
+.sel-cnt{font-size:.78rem;font-weight:600;color:var(--muted);white-space:nowrap}
+.sel-cnt.on{color:#fff;background:var(--auto,#4A6B5A);border-radius:999px;padding:.05rem .55rem}
+.sel-grp .sel-item{margin:0 .4rem}
+.sel-grp .sel-item:first-of-type{margin-top:.35rem}
+.sel-grp .sel-item:last-child{margin-bottom:.4rem}
 .sel-item{display:flex;gap:.5rem;align-items:flex-start;padding:.35rem .25rem;border-radius:6px;font-size:.88rem;line-height:1.45;cursor:pointer;color:var(--ink)}
 .sel-item:hover{background:var(--surface-2)}
 .sel-item input{margin-top:.2rem;width:17px;height:17px;flex-shrink:0}
@@ -533,7 +540,7 @@ const cfgMsg=document.getElementById('cfg-msg');
 // ── בחירת השאלות ──
 // SEL: מיקומי ההיגדים בתוך היגדי השכבה (כמו a[] בתשובות). רק אחרי 1–15 בחירות
 // אפשר לפתוח את השאלון בשרת ולקבל קישור ו-QR.
-let SEL=new Set(), selBand=null;
+let SEL=new Set(), selBand=null; const SEL_OPEN=new Set();
 const selMsg=document.getElementById('sel-msg');
 function showSelect(on){
   document.getElementById('setup-form-card').style.display=on?'none':'';
@@ -542,11 +549,18 @@ function showSelect(on){
 function renderSelect(){
   const items=R.ITEMS.filter(it=>it.b===selBand);
   const box=document.getElementById('sel-list');box.textContent='';
-  let lastDom=null;
-  items.forEach((it,pos)=>{
-    const dom=it.g+' · '+it.d;
-    if(dom!==lastDom){const h=document.createElement('div');h.className='sel-dom';h.textContent=dom;box.appendChild(h);lastDom=dom;}
-    const lbl=document.createElement('label');lbl.className='sel-item';
+  // אשכול פעם אחת, כקבוצה מתקפלת עם מונה (08/10/2026: "אשכול השאלות לא צריך להופיע בכל שורה")
+  const groups=[];items.forEach((it,pos)=>{let g=groups.find(x=>x.g===it.g);if(!g){g={g:it.g,list:[]};groups.push(g);}g.list.push([it,pos]);});
+  groups.forEach((grp,gi)=>{
+    const det=document.createElement('details');det.className='sel-grp';
+    det.open=SEL_OPEN.has(grp.g)||(SEL_OPEN.size===0&&gi===0);if(det.open)SEL_OPEN.add(grp.g);
+    det.addEventListener('toggle',()=>{if(det.open)SEL_OPEN.add(grp.g);else SEL_OPEN.delete(grp.g);});
+    const n=grp.list.filter(([,pos])=>SEL.has(pos)).length;
+    const sm=document.createElement('summary');sm.className='sel-dom';sm.textContent=grp.g;
+    const cnt=document.createElement('span');cnt.className='sel-cnt'+(n?' on':'');cnt.textContent=n?n+' נבחרו':grp.list.length+' היגדים';sm.appendChild(cnt);
+    det.appendChild(sm);box.appendChild(det);
+    grp.list.forEach(([it,pos])=>{
+    const lbl=document.createElement('label');lbl.className='sel-item';lbl.title=it.d;
     const cb=document.createElement('input');cb.type='checkbox';cb.checked=SEL.has(pos);
     const full=SEL.size>=MAX_SEL&&!SEL.has(pos);
     cb.disabled=full;if(full)lbl.classList.add('dis');
@@ -554,7 +568,8 @@ function renderSelect(){
     const txt=document.createElement('span');txt.textContent=it.t;
     lbl.append(cb,txt);
     if(it.r){const rv=document.createElement('span');rv.className='sel-rev';rv.textContent='↕ הפוך';lbl.appendChild(rv);}
-    box.appendChild(lbl);
+    det.appendChild(lbl);
+    });
   });
   document.getElementById('sel-count').textContent='נבחרו '+SEL.size+' מתוך '+MAX_SEL+' (מתוך '+items.length+' היגדים)';
   document.getElementById('btn-sel-create').disabled=!(SEL.size>=1&&SEL.size<=MAX_SEL);
