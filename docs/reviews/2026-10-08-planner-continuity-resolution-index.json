@@ -1,0 +1,122 @@
+{
+  "kind": "planner-continuity-verification",
+  "reviewDirectory": "C:/Users/yaels/AppData/Local/Temp/compound-engineering-yaels/ce-code-review/20261008-planner-bafa1cc9",
+  "reviewRunId": "20261008-planner-bafa1cc9",
+  "reviewedSnapshotHead": "bafa1cc9a8c550b6451744a45a22a9aa75e760bf",
+  "baseHead": "66c56e3e3a14300b2112585d32cfb8cc87ac67d7",
+  "verifiedImplementationHead": "e2f6bd9412531e8d3ec32a53767829903de8d546",
+  "outcome": {
+    "openConcreteDefects": 0,
+    "concreteRegressionsFound": 0
+  },
+  "resolutions": [
+    {
+      "finding": "1",
+      "status": "resolved",
+      "reason": "Anchors are now whitelisted. Shared safeAttrs parses absolute URLs and retains only http: or https: href; capture and restore both sanitize, dropping event and unsafe URL attributes. Existing copy/save/restore/print paths use the same sanitizer. Added test verifies source and library links survive and javascript/data hrefs and onclick are inert.",
+      "paths": [
+        "app/lib/planner-continuity.js",
+        "harness/tests/planner-continuity.test.mjs"
+      ],
+      "tests": [
+        "Source links survive copy, save, reopen and print while active URLs stay inert"
+      ]
+    },
+    {
+      "finding": "2",
+      "status": "resolved",
+      "reason": "Separate fresh sequence environment resolves the proposal, clicks its real adoption callback, asserts improved text and original undo snapshot, then clicks bSeqUndo and asserts original text restored and snapshot cleared. Existing newer-human-edit refusal test remains.",
+      "paths": [
+        "harness/tests/activity-planner-continuity.test.mjs",
+        "app/activity-planner.html"
+      ],
+      "tests": [
+        "Fresh sequence improvement can be adopted and undo restores the original plan",
+        "Sequence improved proposal keeps comparison and declines adoption after a newer human edit"
+      ]
+    },
+    {
+      "finding": "3",
+      "status": "resolved",
+      "reason": "Submitting headers are spread-copied once before start. Startup and both cancellation paths use this copy. Polling omits the optional headers argument and therefore calls current sbeAIHeaders. Deferred acknowledgment A-to-B test proves original-owner cancellation, and polling test proves B is denied while cleanup uses A. Server still resolves live principal and checks owner, tenant and permissions.",
+      "paths": [
+        "app/lib/ai-call.js",
+        "harness/tests/ai-call-cancellation.test.mjs",
+        "app/lib/access-guard.js",
+        "harness/practice-server.mjs"
+      ],
+      "tests": [
+        "Late acknowledged cancellation keeps copied credentials of the submitting owner after A to B",
+        "Polling uses live identity and cleans up with original-owner credentials when B cannot read A"
+      ]
+    },
+    {
+      "finding": "4",
+      "status": "resolved",
+      "reason": "Archive captures input immediately, then invokes owner-keyed navigator.locks.request with default exclusive mode. Fresh list read, expected-version validation and whole-archive write are inside the synchronous lock callback. list checks the captured owner after a queued wait and owner is rechecked before write. Save button awaits completion and never reports early success. Missing locks fail visibly before mutation; there is no unprotected fallback. Shared deterministic mutex/interleaving tests verify version conflict, overlapping new products retention and queued identity change.",
+      "paths": [
+        "app/lib/planner-continuity.js",
+        "harness/tests/planner-continuity.test.mjs",
+        "harness/tests/conversation-planner-continuity.test.mjs",
+        "harness/tests/activity-planner-continuity.test.mjs"
+      ],
+      "tests": [
+        "Two window saves of the same version conflict instead of silently losing one edit",
+        "Two overlapping new products both remain in the private archive",
+        "Queued save rechecks ownership and fails visibly when locking is unavailable"
+      ]
+    }
+  ],
+  "fullTests": {
+    "file": "planner-continuity-node-tests.txt",
+    "sha256": "211c4b5c07f0cf4ea476b486e6b27c2d4fe7b779f2d73a05afe8b4c0aaf991a9",
+    "counts": {
+      "tests": 193,
+      "pass": 193,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    }
+  },
+  "focusedTests": {
+    "file": "planner-continuity-focused-tests.txt",
+    "sha256": "4ba20fc3e1c2869e5c0e2d055eae0cd44dcebe124301a12d634bb7857c9b1329",
+    "counts": {
+      "tests": 30,
+      "pass": 30,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    }
+  },
+  "syntax": {
+    "file": "syntax-check.json",
+    "sha256": "44ec38183bb8638258d964d19dbd6a3a5cfe0e96e4595e986038c092063d9541"
+  },
+  "browserEvidence": {
+    "file": "planner-browser-check.json",
+    "sha256": "3ceacd72bb4a48673af0a3fd6245d2585c7a1b54d2c8f503502b1f117f81cd22"
+  },
+  "targetedIndependentFixCheck": {
+    "file": "planner-fix-check.json",
+    "sha256": "4392c950b2b037b2180273aa4b83268baaa8538d32ab5a0d66347cf520614eb0",
+    "pathBlobsVerifiedAtImplementationHead": true
+  },
+  "integration": {
+    "mainHead": "16ea416ff841144c42bf85132fe924244bbbe9c8",
+    "mergeCommit": "e2f6bd9412531e8d3ec32a53767829903de8d546",
+    "mainIsAncestor": true,
+    "note": "Approved article and links from PR171/172 integrated without changing the frozen nine-path planner delta."
+  },
+  "redEvidence": {
+    "file": "planner-review-fixes-before.txt",
+    "sha256": "604f29258b6a3259264fb6613fe9c03981a229e36c492613107ecfedb50ca1cb",
+    "note": "Seven behavioral failures were observed on pre-fix source. Positive fresh adoption/undo passed before the fix; its absence was a coverage finding."
+  },
+  "boundaries": [
+    "Local device-scoped private drafts; no server synchronization.",
+    "Formal verdict belongs only to frozen bafa. Checked fixes are a separate hash-bound inspection.",
+    "Physical download and print/PDF delivery remain unverified in IAB.",
+    "Server typed activity/conversation adapters, approved rehearsal, Studio integration and live-pilot gates remain pending."
+  ]
+}
