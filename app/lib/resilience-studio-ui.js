@@ -360,7 +360,7 @@
     if(state.mapping) {
       const m=state.mapping;
       const dates=m.dates&&typeof m.dates==='object'?[m.dates.from,m.dates.to].filter(Boolean).join(' – '):m.date||m.createdAt;
-      [['היקף:',m.scope==='classroom'?'מיפוי כיתתי':m.scope||'מיפוי החוסן של הקבוצה'],['אוכלוסייה:',m.population||m.ageBand||m.band],['מועד:',dates],['סבב:',m.roundLabel||(m.round==='latest'?'המילוי האחרון של כל משיב/ה':m.round)],['משתתפים במיפוי:',m.respondents===undefined?m.respondentCount||m.count:m.respondents]].forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')box.append(labelText(k,mappingText(v)));});
+      [['היקף:',m.scope==='classroom'?'מיפוי כיתתי':m.scope||'מיפוי החוסן החברתי של הקבוצה'],['אוכלוסייה:',m.population||m.ageBand||m.band],['מועד:',dates],['סבב:',m.roundLabel||(m.round==='latest'?'המילוי האחרון של כל משיב/ה':m.round)],['משתתפים במיפוי:',m.respondents===undefined?m.respondentCount||m.count:m.respondents]].forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')box.append(labelText(k,mappingText(v)));});
       if(Array.isArray(m.voices))box.append(labelText('קבוצות המשיבים:',m.voices.filter(v=>v.count).map(v=>v.label+' '+v.count).join(' · ')));
       if(Array.isArray(m.selectedStatements)&&m.selectedStatements.length){const questions=el('details');questions.append(el('summary','','ההיגדים שנכללו במיפוי'),list(m.selectedStatements.map(s=>s.text+' · '+(s.polarity==='reverse'?'היגד על פגיעה או קושי':'היגד על פעולה או חוזקה'))));box.append(questions);}
       if(Array.isArray(m.domains)&&m.domains.length) {
@@ -489,7 +489,13 @@
   function requestBody(action,brief,previous) { const body={action,brief:cleanBrief(brief)};if(previous)body.previous=copy(previous);if(mappingCredentials)body.mapping=copy(mappingCredentials);return body; }
   async function loadMapping() {
     if(!mappingCredentials)return;
-    await operation('בודקים הרשאה ומביאים ממצאים מצטברים מהמיפוי…',async()=>{const data=await api({action:'mapping',mapping:copy(mappingCredentials)});if(!data.mapping)throw new Error('לא התקבלו ממצאי מיפוי.');state.mapping=safeMapping(data.mapping);state.confirmed=false;$('brief-confirmed').checked=false;state.recommendation=null;renderMapping();renderRecommendation();updateControls();persist();notice('המיפוי מחובר. בדקו את המועד, האוכלוסייה והיקף המדידה ביחס לפעילות המתוכננת.');});
+    await operation('בודקים הרשאה ומביאים ממצאים מצטברים מהמיפוי…',async()=>{const data=await api({action:'mapping',mapping:copy(mappingCredentials)});if(!data.mapping)throw new Error('לא התקבלו ממצאי מיפוי.');state.mapping=safeMapping(data.mapping);state.confirmed=false;$('brief-confirmed').checked=false;state.recommendation=null;
+      // נתוני הכיתה מגיעים אוטומטית (08/10/2026): ממלאים את מה שידוע ועדיין ריק, ואפשר לשנות.
+      const m=state.mapping,b=state.brief;
+      if(!String(b.participants||'').trim())b.participants='תלמידי הכיתה';
+      if(!String(b.participantAge||'').trim()&&m.band)b.participantAge=String(m.band);
+      if(!String(b.startingPoint||'').trim())b.startingPoint='ממצאי מיפוי החוסן החברתי של הכיתה'+(m.respondents?' ('+m.respondents+' משיבים)':'')+'. נרצה לבנות פעילות שמחזקת את מה שעולה מהם.';
+      fillBrief();renderMapping();renderRecommendation();updateControls();persist();goStep(1,true);notice('מיפוי החוסן החברתי של הכיתה מחובר. הממצאים עוברים לתכנון אוטומטית (סיכום קבוצתי, בלי שמות). השלמנו את מה שידוע; אפשר לשנות.');});
   }
   function analyze() {
     collectBrief();operation('בודקים את התקציר ואת אפשרויות התרגול (דקה–שתיים)…',async()=>{

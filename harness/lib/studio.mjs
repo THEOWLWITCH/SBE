@@ -92,7 +92,7 @@ async function mappingAggregate(store, token, mapping, actor) {
     || (mapping.round!==undefined && mapping.round!=='latest' && (!Number.isInteger(mapping.round)||mapping.round<1))) {
     return [400,{error:'נדרש מזהה מיפוי וסבב תקין; תקציר מיפוי מהדפדפן אינו מתקבל.'}];
   }
-  if (!await authorizePermission(store,token,['resilience'])) return [403,{code:'mapping_forbidden',error:'אין הרשאה למיפוי חוסן.'}];
+  if (!await authorizePermission(store,token,['resilience'])) return [403,{code:'mapping_forbidden',error:'אין הרשאה למיפוי החוסן החברתי.'}];
   const group=await store.get('resil:'+mapping.id);
   if(!group) return [400,{error:'המיפוי אינו זמין.'}];
   if(actor.k!=='sys' && group.inst!==actor.inst) return [403,{code:'mapping_forbidden',error:'אין הרשאה למיפוי הזה.'}];

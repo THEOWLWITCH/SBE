@@ -171,7 +171,7 @@
       }, 15 * 60e3, "סיכום החוסן");
       if (r.fail) throw new Error(r.fail.slice(0, 300));
       await sleep(800);
-      return [{ tool: "resil", title: "מיפוי חוסן: סיכום והמלצות לכיתה", label: "מיפוי חוסן", html: standalone($("#summary-content"), "מיפוי חוסן: סיכום והמלצות"), input: inp }];
+      return [{ tool: "resil", title: "מיפוי חוסן חברתי: סיכום והמלצות לכיתה", label: "מיפוי חוסן חברתי", html: standalone($("#summary-content"), "מיפוי חוסן חברתי: סיכום והמלצות"), input: inp }];
     },
     // סטודיו חוסן (07/10/2026): תקציר לדוגמה ← בדיקה והצעת מוקד ← אישור ← בניית הפעילות ← ערכת המנחה וחומרי המשתתפים כמסמכי הדפסה
     "resilience-studio.html": async function () {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>חוסן חברתי: ניהול</title>
+<title>מיפוי חוסן חברתי: ניהול</title>
 <script src="lib/report-table.js"></script>
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
@@ -170,6 +170,9 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
 .sel-bar{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:.5rem 0}
 .sel-bottom{position:sticky;bottom:0;background:var(--surface);padding:.6rem 0;border-top:1px solid var(--hair)}
 #sel-count{font-weight:700;color:var(--spoken)}
+.next-step{border-top:1px solid var(--c-border,#CDD3D8);margin-top:1rem;padding-top:1rem;display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.next-step .btn{width:auto;margin:0}
+.next-note{flex-basis:100%;font-size:.82rem;color:var(--muted);margin:.1rem 0 0}
 .sel-grp{border:1px solid var(--hair);border-radius:10px;margin:.5rem 0;background:var(--surface);overflow:hidden}
 .sel-dom{font-size:.95rem;font-weight:700;color:var(--ink);padding:.6rem .8rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:.6rem;list-style-position:inside}
 .sel-grp[open]>.sel-dom{border-bottom:1px solid var(--hair);background:var(--surface-2)}
@@ -215,7 +218,7 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
 </style>
 </head>
 <body>
-<nav class="topnav"><a href="entry.html">Begood</a><span class="sep">›</span><span>חוסן חברתי</span></nav>
+<nav class="topnav"><a href="entry.html">Begood</a><span class="sep">›</span><span>מיפוי חוסן חברתי</span></nav>
 
 <!-- ── Lock Overlay ── -->
 <div id="lock-overlay" class="lock-overlay" style="display:none">
@@ -240,7 +243,7 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
 <!-- ── Tab: הגדרה ── -->
 <div id="t-setup" class="pane on">
   <div class="card">
-    <h1>חוסן חברתי</h1>
+    <h1>מיפוי חוסן חברתי</h1>
     <p>כלי לאיסוף ועיבוד נתוני חוסן חברתי (מתוך עיניי תלמידים, הורים, ומורים).</p>
     <p class="article-link" style="font-size:.9rem;margin:.45rem 0 0">📖 <a href="about.html?from=resilience-team.html#article" target="_blank" rel="noopener" style="color:var(--spoken,var(--accent,#2E5A7D));font-weight:700">לבחור בחוסן שלנו</a>. מאמר קצר על המושגים שבבסיס הכלי: מנגנונים חברתיים, קהילת חוסן ותו חוסן.</p>
   </div>
@@ -278,8 +281,6 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
 
   <div class="card" id="setup-active-card" style="display:none">
     <div class="setup-info" id="setup-summary"></div>
-    <button class="btn" id="btn-show-results" style="margin-bottom:1rem">📊 הצגת התוצאות</button>
-    <button class="btn btn-ghost" id="btn-studio" style="margin-bottom:1rem">מהמיפוי לפעולה: סטודיו חוסן</button>
     <details id="sel-details" style="margin-bottom:1rem"><summary style="cursor:pointer;font-weight:600" id="sel-summary"></summary><ol id="sel-view" style="font-size:.85rem;line-height:1.6;margin:.5rem 0 0"></ol></details>
     <div id="share-wrap">
     <h2>קישור למילוי שאלון</h2>
@@ -299,6 +300,12 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
     <div class="stats" id="setup-stats"></div>
     <button class="btn btn-ghost btn-sm" id="btn-refresh">רענון התוצאות</button>
     <p id="srv-status" style="font-size:.8rem;margin:.4rem 0"></p>
+    <!-- אחרי השאלון והקישור — מה עושים עם התוצאות (08/10/2026: כפתור התוצאות בראש הכרטיס בלבל) -->
+    <div class="next-step">
+      <button class="btn" id="btn-show-results">📊 הצגת התוצאות</button>
+      <button class="btn btn-ghost" id="btn-studio">מהמיפוי לפעולה: סטודיו חוסן</button>
+      <p class="next-note" id="studio-note">בסטודיו, נתוני הכיתה מתחברים אוטומטית: סיכום קבוצתי של הממצאים, בלי שמות ובלי תשובות של תלמיד/ה.</p>
+    </div>
     <div id="manage-code-wrap">
       <p style="font-size:.8rem;margin:.75rem 0 .25rem">קוד ניהול הכיתה: לשחזור הכיתה במכשיר אחר. לא למסור לתלמידים:</p>
       <div class="link-box" id="manage-code"></div>
@@ -437,9 +444,9 @@ function saveCfg(c){try{localStorage.setItem(CFG,JSON.stringify(c));}catch{}}
 // סטודיו חוסן — עד לאישור המקצועי רק למי שיש לו הרשאת studio, ולמנהלת המערכת (access-guard.js)
 (function(){let ok=false;try{const h=sessionStorage.getItem('sbe.session.homeUrl');const ps=JSON.parse(sessionStorage.getItem('sbe.session.perms')||'[]')||[];
   const ms=JSON.parse(sessionStorage.getItem('sbe.session.modules')||'{}')||{};ok=h==='admin.html?role=sys'||ps.includes('studio')||ms.studio===true;}catch(e){}
-  document.getElementById('btn-studio').hidden=!ok;})();
+  document.getElementById('btn-studio').hidden=!ok;document.getElementById('studio-note').hidden=!ok;})();
 document.getElementById('btn-studio').addEventListener('click',function(){
-  if(DEMO){alert('זהו מיפוי הדגמה. בסטודיו אפשר לפתוח דוגמת פעילות ללא העברת נתוני כיתה.');location.href='resilience-studio.html';return;}
+  if(DEMO){alert('זו כיתת דמו, ולכן הנתונים שלה לא עוברים לסטודיו. בכיתה אמיתית הם מתחברים אוטומטית.');return;}
   const c=loadCfg();
   if(!c||!c.id||(!c.key&&!c.admin)){alert('יש לפתוח או לשחזר כיתה לפני חיבור המיפוי.');return;}
   // Explicit, user-scoped handoff. Studio verifies server access and sends only aggregate findings to AI.
