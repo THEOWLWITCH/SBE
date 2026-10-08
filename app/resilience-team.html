@@ -213,6 +213,61 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
   .card{box-shadow:none;border:none}
   .act{break-inside:avoid}
 }
+
+/* ── עיצוב מחדש (08/10/2026): מסלול ברור, סקירה עם תוצרים, ומה עושים עכשיו ── */
+.journey{display:flex;align-items:center;gap:.35rem;max-width:760px;margin:.9rem auto .2rem;padding:.4rem .5rem;background:var(--surface);border:1px solid var(--hair);border-radius:999px;box-shadow:0 2px 8px var(--shadow)}
+.j-step{display:flex;align-items:center;gap:.4rem;background:none;border:0;border-radius:999px;padding:.3rem .65rem;font:inherit;font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+.j-step:disabled{opacity:.45;cursor:default}
+.j-num{display:inline-grid;place-items:center;width:1.55rem;height:1.55rem;border-radius:50%;border:2px solid var(--hair);font-size:.8rem;font-weight:800;background:var(--surface)}
+.j-step.current{background:var(--spoken-soft);color:var(--spoken)}
+.j-step.current .j-num{background:var(--spoken);border-color:var(--spoken);color:#fff}
+.j-step.done .j-num{border-color:var(--auto);color:var(--auto)}
+.j-line{flex:1;height:2px;background:var(--hair);min-width:8px}
+body[data-mode="setup"] .tab-bar,body[data-mode="collect"] .tab-bar{display:none}
+.tab-bar{margin-top:.6rem}
+.pane{max-width:760px}
+.btn-big{font-size:1.02rem;padding:.75rem 1.4rem;border-radius:10px}
+.collect-hero{background:var(--auto-soft);border:1px solid var(--hair);border-radius:12px;padding:1rem 1.1rem;margin-bottom:1.2rem}
+.ch-state{font-size:1.1rem;font-weight:800;color:var(--ink);margin:0 0 .3rem}
+.ch-actions{display:flex;flex-wrap:wrap;gap:.6rem;margin:.6rem 0 .3rem}
+.ch-actions .btn{width:auto}
+.ch-note{font-size:.84rem;margin:.3rem 0}
+#btn-refresh{width:auto}
+.share-grid{display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:start}
+.share-grid .qr-wrap{margin:0;padding:0;border:0}
+.manage{margin-top:1.2rem;border-top:1px solid var(--hair);padding-top:.8rem}
+.manage>summary{cursor:pointer;font-weight:700;color:var(--spoken)}
+.manage .btn{width:auto}
+.peek-note{background:var(--hidden-soft);color:var(--ink);border-radius:10px;padding:.65rem .9rem;margin-bottom:.8rem;font-size:.9rem}
+.linkish{background:none;border:0;color:var(--spoken);font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;padding:0}
+.eyebrow{font-size:.78rem;font-weight:700;color:var(--muted);margin:0 0 .2rem}
+.home-hero h2{font-size:1.25rem}
+.glance{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:.9rem}
+.g-col{border-radius:10px;padding:.75rem .9rem}
+.g-strong{background:var(--auto-soft)}.g-grow{background:var(--hidden-soft)}
+.g-col h3{margin:0 0 .4rem;font-size:.95rem}
+.g-col ul{list-style:none;margin:0;padding:0}
+.g-col li{display:flex;justify-content:space-between;gap:.5rem;font-size:.9rem;padding:.2rem 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.g-col li:last-child{border-bottom:0}
+.g-col li span{font-weight:800;color:var(--muted)}
+.home-h{font-size:1.1rem;margin:1.4rem 0 .6rem}
+.prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+.prod{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:.25rem;text-align:right;background:var(--surface);border:1px solid var(--hair);border-radius:12px;padding:1rem;font:inherit;color:var(--ink);cursor:pointer;box-shadow:0 1px 3px var(--shadow);transition:border-color .15s,transform .15s}
+.prod:hover{border-color:var(--spoken);transform:translateY(-1px)}
+.prod.main{grid-column:1/-1;background:var(--spoken-soft);border-color:var(--spoken)}
+.p-ic{font-size:1.5rem;line-height:1}
+.p-t{display:block;font-weight:800;font-size:1rem}
+.p-d{display:block;font-size:.86rem;color:var(--muted);line-height:1.45}
+.p-badge{position:absolute;top:.8rem;inset-inline-end:.8rem;font-size:.74rem;font-weight:800;background:var(--spoken);color:#fff;border-radius:999px;padding:.1rem .6rem}
+.p-go{margin-top:.3rem;font-size:.84rem;font-weight:700;color:var(--spoken)}
+.next-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.nextc{display:flex;gap:.7rem;align-items:flex-start;text-align:right;background:var(--surface);border:1px dashed var(--hair);border-radius:12px;padding:.8rem .9rem;font:inherit;color:var(--ink);cursor:pointer}
+.nextc:hover{border-style:solid;border-color:var(--auto)}
+.home-empty{text-align:center}
+.pane-nav{display:flex;justify-content:space-between;gap:.6rem;margin:1rem 0 2rem;flex-wrap:wrap}
+.pane-nav .btn{width:auto}
+@media(max-width:600px){.j-lbl{display:none}.j-step.current .j-lbl{display:inline}.glance,.prod-grid,.next-grid,.share-grid{grid-template-columns:1fr}.journey{border-radius:14px;margin:.6rem .6rem 0}}
+@media print{.journey{display:none!important}}
 /* empty */
 .empty{text-align:center;color:var(--muted);padding:2rem;font-size:.9rem}
 </style>
@@ -231,13 +286,30 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
   <button class="btn btn-ghost btn-sm" id="btn-lock-back">חזרה</button>
 </div>
 
-<!-- ── Tab Bar ── -->
+<!-- ── המסלול: ארבעה צעדים (08/10/2026: "אחרי שאני סוגרת שאלון אני מרגישה אבודה") ── -->
+<nav class="journey" id="journey" aria-label="השלבים">
+  <button type="button" class="j-step" data-j="1"><span class="j-num">1</span><span class="j-lbl">הכיתה</span></button>
+  <span class="j-line"></span>
+  <button type="button" class="j-step" data-j="2"><span class="j-num">2</span><span class="j-lbl">איסוף תשובות</span></button>
+  <span class="j-line"></span>
+  <button type="button" class="j-step" data-j="3"><span class="j-num">3</span><span class="j-lbl">התוצאות</span></button>
+  <span class="j-line"></span>
+  <button type="button" class="j-step" data-j="4"><span class="j-num">4</span><span class="j-lbl">מה עושים עכשיו</span></button>
+</nav>
+
+<!-- ── Tab Bar: רק כשיש תוצאות ── -->
 <div class="tab-bar">
-  <button class="tab-btn active" data-tab="t-setup">⚙ הגדרה</button>
-  <button class="tab-btn" data-tab="t-scores">📊 ציונים</button>
+  <button class="tab-btn" data-tab="t-home">🏠 סקירה</button>
+  <button class="tab-btn" data-tab="t-scores">📊 תמונת המצב</button>
   <button class="tab-btn" data-tab="t-voices">👥 לפי קבוצות</button>
-  <button class="tab-btn" data-tab="t-report">📄 דוח</button>
+  <button class="tab-btn" data-tab="t-report">📄 דוח מפורט</button>
   <button class="tab-btn" data-tab="t-summary">📝 סיכום והמלצות</button>
+  <button class="tab-btn active" data-tab="t-setup">⚙ הכיתה</button>
+</div>
+
+<!-- ── סקירה: התוצאות במבט אחד, התוצרים, ומה עושים עכשיו ── -->
+<div id="t-home" class="pane">
+  <div id="home-content"><div class="empty">אין עדיין נתונים.</div></div>
 </div>
 
 <!-- ── Tab: הגדרה ── -->
@@ -281,37 +353,47 @@ input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px}
 
   <div class="card" id="setup-active-card" style="display:none">
     <div class="setup-info" id="setup-summary"></div>
-    <details id="sel-details" style="margin-bottom:1rem"><summary style="cursor:pointer;font-weight:600" id="sel-summary"></summary><ol id="sel-view" style="font-size:.85rem;line-height:1.6;margin:.5rem 0 0"></ol></details>
+    <!-- מצב האיסוף: כמה ענו, ומה הצעד הבא -->
+    <div class="collect-hero" id="collect-hero">
+      <p id="open-state" class="ch-state"></p>
+      <div class="stats" id="setup-stats"></div>
+      <div class="ch-actions">
+        <button class="btn btn-big" id="btn-toggle-open">סגירת השאלון והצגת התוצאות</button>
+        <button class="btn btn-ghost" id="btn-show-results">📊 הצצה בתוצאות בלי לסגור</button>
+      </div>
+      <p class="ch-note" id="ch-note"></p>
+      <button class="btn btn-ghost btn-sm" id="btn-refresh">רענון</button>
+      <p id="srv-status" style="font-size:.8rem;margin:.4rem 0"></p>
+    </div>
     <div id="share-wrap">
-    <h2>קישור למילוי שאלון</h2>
-    <p>שלח/י את הקישור הזה לנשאלים (תלמידים, הורים, מורים):</p>
-    <div class="link-box" id="fill-link"></div>
-    <button class="btn btn-copy btn-sm" id="btn-copy-link" style="margin-bottom:.75rem">העתק קישור</button>
-    <p style="font-size:.8rem">הנשאל/ת בוחר/ת את התפקיד והקוד שלו/ה בשאלון עצמו.</p>
-    <div class="qr-wrap" id="qr-wrap" style="display:none">
-      <p>סרקו את הקוד כדי למלא את השאלון</p>
-      <div id="qr-canvas"></div>
+    <h2>הקישור לשאלון</h2>
+    <div class="share-grid">
+      <div>
+        <p>שלחו את הקישור לתלמידים, להורים ולמורים. כל אחד/ת בוחר/ת תפקיד וקוד בשאלון עצמו.</p>
+        <div class="link-box" id="fill-link"></div>
+        <button class="btn btn-copy btn-sm" id="btn-copy-link">העתק קישור</button>
+      </div>
+      <div class="qr-wrap" id="qr-wrap" style="display:none">
+        <div id="qr-canvas"></div>
+        <p>אפשר להציג בכיתה ולסרוק</p>
+      </div>
     </div>
     </div>
-    <p id="demo-note" style="display:none;font-size:.85rem" class="setup-info">זו כיתת דמו: בית ספר "אופק", כיתה ח׳1, 30 תלמידים, 15 היגדים, שני סיבובי מדידה בהפרש של חצי שנה. התשובות מומצאות ולא נשמרות. בכיתה אמיתית יופיעו כאן הקישור וקוד ה-QR לתלמידים.</p>
-    <hr style="margin:1rem 0;border:none;border-top:1px solid var(--c-border)">
-    <p id="open-state" style="font-weight:700;margin:.25rem 0"></p>
-    <button class="btn btn-sm" id="btn-toggle-open">סגירת השאלון והצגת התוצאות</button>
-    <div class="stats" id="setup-stats"></div>
-    <button class="btn btn-ghost btn-sm" id="btn-refresh">רענון התוצאות</button>
-    <p id="srv-status" style="font-size:.8rem;margin:.4rem 0"></p>
-    <!-- אחרי השאלון והקישור — מה עושים עם התוצאות (08/10/2026: כפתור התוצאות בראש הכרטיס בלבל) -->
-    <div class="next-step">
-      <button class="btn" id="btn-show-results">📊 הצגת התוצאות</button>
+    <p id="demo-note" style="display:none;font-size:.85rem" class="setup-info">זו כיתת דמו: בית ספר "אופק", כיתה ח׳1, 30 תלמידים, 15 היגדים, שני סיבובי מדידה בהפרש של חצי שנה. התשובות מומצאות ולא נשמרות.</p>
+    <div class="next-step" hidden>
       <button class="btn btn-ghost" id="btn-studio">מהמיפוי לפעולה: סטודיו חוסן</button>
       <p class="next-note" id="studio-note">בסטודיו, נתוני הכיתה מתחברים אוטומטית: סיכום קבוצתי של הממצאים, בלי שמות ובלי תשובות של תלמיד/ה.</p>
     </div>
-    <div id="manage-code-wrap">
-      <p style="font-size:.8rem;margin:.75rem 0 .25rem">קוד ניהול הכיתה: לשחזור הכיתה במכשיר אחר. לא למסור לתלמידים:</p>
-      <div class="link-box" id="manage-code"></div>
-    </div>
-    <button class="btn btn-ghost btn-sm" id="btn-switch" style="margin-top:.5rem">מעבר לכיתה אחרת (בלי מחיקה)</button>
-    <button class="btn btn-ghost btn-sm" id="btn-cfg-reset" style="margin-top:.5rem">מחיקת הכיתה וכל התשובות</button>
+    <details class="manage">
+      <summary>ניהול הכיתה</summary>
+      <details id="sel-details" style="margin:.6rem 0"><summary style="cursor:pointer;font-weight:600" id="sel-summary"></summary><ol id="sel-view" style="font-size:.85rem;line-height:1.6;margin:.5rem 0 0"></ol></details>
+      <div id="manage-code-wrap">
+        <p style="font-size:.8rem;margin:.75rem 0 .25rem">קוד ניהול הכיתה: לשחזור הכיתה במכשיר אחר. לא למסור לתלמידים:</p>
+        <div class="link-box" id="manage-code"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="btn-switch" style="margin-top:.5rem">מעבר לכיתה אחרת (בלי מחיקה)</button>
+      <button class="btn btn-ghost btn-sm" id="btn-cfg-reset" style="margin-top:.5rem">מחיקת הכיתה וכל התשובות</button>
+    </details>
   </div>
 
   <!-- מנהלת המערכת: כל הכיתות בכל המוסדות -->
@@ -514,7 +596,7 @@ function setOpen(open){
 
 // ── Tabs ──
 const tabBtns = document.querySelectorAll('.tab-btn');
-const LOCKED_TABS = new Set(['t-scores','t-voices','t-report','t-summary']);
+const LOCKED_TABS = new Set(['t-home','t-scores','t-voices','t-report','t-summary']);
 
 tabBtns.forEach(btn=>{
   btn.addEventListener('click',function(){
@@ -612,7 +694,7 @@ function showTab(id){
   document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id===id));
 }
 document.getElementById('btn-show-results').addEventListener('click',function(){
-  _tempView=true;renderAll();showTab('t-scores');window.scrollTo(0,0);
+  if(GROUP&&GROUP.open)_tempView=true;renderAll();showTab('t-home');window.scrollTo(0,0);
 });
 
 // ── כיתת דמו ──
@@ -729,8 +811,13 @@ function renderSetup(){
   document.getElementById('manage-code').textContent=cfg.key?cfg.id+'.'+cfg.key:'';
   document.getElementById('manage-code-wrap').style.display=cfg.key?'':'none';
   const open=!GROUP||GROUP.open;
-  document.getElementById('open-state').textContent=GROUP?(open?'השאלון פתוח למילוי':'השאלון סגור, לא מתקבלות תשובות חדשות'):'';
-  document.getElementById('btn-toggle-open').textContent=open?'סגירת השאלון (לא יתקבלו עוד תשובות)':'פתיחת השאלון מחדש';
+  const nAns=new Set((RESP||[]).map(r=>r.v+':'+r.k)).size;
+  document.getElementById('open-state').textContent=GROUP?(open?'🟢 השאלון פתוח · '+nAns+' ענו עד עכשיו':'השאלון סגור · '+nAns+' ענו'):'';
+  const tg=document.getElementById('btn-toggle-open'),sr=document.getElementById('btn-show-results');
+  tg.textContent=open?'סיימנו לאסוף: סגירה והצגת התוצאות':'פתיחת השאלון מחדש (סבב נוסף)';
+  tg.className=open?'btn btn-big':'btn btn-ghost';
+  sr.textContent=open?'📊 הצצה בתוצאות בלי לסגור':'📊 לתוצאות';sr.className=open?'btn btn-ghost':'btn btn-big';
+  document.getElementById('ch-note').textContent=cfg.demo?'':open?'כל עוד השאלון פתוח, התוצאות מוסתרות כדי שהתשובות לא יושפעו. כשמספיק ענו, סוגרים ועוברים לתוצאות.':'אפשר לפתוח את השאלון שוב בעוד כמה חודשים, ולראות מה השתנה.';
 
   // QR code — generated once; if library unavailable, section stays hidden
   const qrWrap=document.getElementById('qr-wrap');
@@ -1206,12 +1293,77 @@ function renderSummary(){
 }
 
 // ── Main render ──
+let LAST_MODE=null;
+function screenMode(){const cfg=loadCfg();if(!cfg||!GROUP&&!cfg.demo)return cfg?'collect':'setup';return isLocked()?'collect':'results';}
+function renderJourney(mode){
+  const cur={setup:1,collect:2,results:3}[mode]||1;
+  document.querySelectorAll('.j-step').forEach(b=>{const k=Number(b.dataset.j);
+    b.classList.toggle('current',k===cur);b.classList.toggle('done',k<cur);
+    b.disabled=(k>=3&&mode!=='results')||(k===2&&mode==='setup');});
+}
 function renderAll(){
   refreshTabLocks();
   renderSetup();
   const cfg=loadCfg();
-  if(cfg&&!isLocked()){renderScores();renderVoices();renderReport();renderSummary();}
+  const mode=screenMode();document.body.dataset.mode=mode;
+  if(cfg&&!isLocked()){renderHome();renderScores();renderVoices();renderReport();renderSummary();}
+  // מעבר לתוצאות (סגירת השאלון או הצצה) — פותחים את הסקירה; ביציאה מהתוצאות — חוזרים לכיתה
+  if(mode==='results'&&LAST_MODE&&LAST_MODE!=='results')showTab('t-home');
+  if(mode!=='results'){const act=document.querySelector('.tab-btn.active');if(!act||act.dataset.tab!=='t-setup')showTab('t-setup');}
+  LAST_MODE=mode;renderJourney(mode);
 }
+// ── סקירה: התוצאות במבט אחד, התוצרים, ומה עושים עכשיו (08/10/2026) ──
+function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');}
+function renderHome(){
+  const cfg=loadCfg(),box=document.getElementById('home-content');if(!cfg)return;
+  const resp=viewResp();
+  if(!resp.length){box.innerHTML='<div class="card home-empty"><h2>עדיין אין תשובות</h2><p>שלחו את הקישור לשאלון (בלשונית "⚙ הכיתה"). כשיגיעו תשובות, התוצאות יופיעו כאן.</p></div>';return;}
+  const domains=SC.computeDomains(resp,R.ITEMS,cfg.band);
+  const n=new Set(resp.map(r=>r.v+':'+r.k)).size;
+  const sorted=[...domains].sort((a,b)=>b.score-a.score);
+  const strong=sorted.filter(d=>d.score>=60&&!d.capped).slice(0,3);
+  const grow=[...domains].sort((a,b)=>(b.capped-a.capped)||(a.score-b.score)).filter(d=>d.score<75||d.capped).slice(0,3);
+  const overall=domains.length?domains.reduce((s,d)=>s+d.score,0)/domains.length:0,ov=SC.scoreLabel(overall);
+  const cached=loadSummaryCache(cfg);
+  let h='';
+  if(GROUP&&GROUP.open&&_tempView)h+='<div class="peek-note">👀 זו הצצה: השאלון עדיין פתוח, והתוצאות עשויות להשתנות. <button class="linkish" data-act="close">סגירת השאלון</button></div>';
+  h+=roundBar()+'<div class="card home-hero"><p class="eyebrow">התוצאות של כיתה '+esc(cfg.cls)+' · '+n+' ענו'+(viewLabel()?' · '+esc(viewLabel()):'')+'</p>'+
+    '<h2>תמונת המצב במבט אחד</h2>'+
+    '<div class="score-row"><div class="score-label" style="font-weight:700">ציון כולל</div><div class="score-bar-wrap"><div class="score-bar '+tierClass(ov.tier)+'" style="width:'+Math.round(overall)+'%"></div></div><div class="score-val '+tierClassB(ov.tier)+'">'+Math.round(overall)+'</div></div>'+
+    '<div class="glance"><div class="g-col g-strong"><h3>💪 מה חזק בכיתה</h3>'+(strong.length?'<ul>'+strong.map(d=>'<li>'+esc(d.d)+' <span>'+Math.round(d.score)+'</span></li>').join('')+'</ul>':'<p>עדיין אין תחום שבולט כחוזק. זה מידע, ונקודת פתיחה.</p>')+'</div>'+
+    '<div class="g-col g-grow"><h3>🌱 מה אפשר לחזק</h3>'+(grow.length?'<ul>'+grow.map(d=>'<li>'+esc(d.d)+' <span>'+Math.round(d.score)+'</span></li>').join('')+'</ul>':'<p>כל התחומים במצב תפקודי.</p>')+'</div></div></div>';
+  h+='<h2 class="home-h">התוצרים</h2><div class="prod-grid">'+
+    prod('t-summary','📝','סיכום והמלצות','חוזקות, אתגרים ופעילויות מותאמות לכיתה. מוכן להדפסה.',cached?'מוכן ✓':'מומלץ להתחיל כאן',true)+
+    prod('t-scores','📊','תמונת המצב','ציון לכל תחום, ומה עומד מאחוריו.')+
+    prod('t-voices','👥','לפי קבוצות','איך תלמידים, הורים ומורים רואים את הכיתה, ואיפה יש פערים.')+
+    prod('t-report','📄','דוח מפורט','עשרה פרקים קצרים, לשיחת צוות או לתיק הכיתה.')+'</div>';
+  const studioOk=!document.getElementById('btn-studio').hidden&&!cfg.demo;
+  h+='<h2 class="home-h" id="next-section">מה עושים עכשיו?</h2><div class="next-grid">'+
+    nextCard('practi','💬','לשוחח עם פרקטי','שואלים שאלה על הכיתה ומקבלים הנחיה מעשית, למשל לשיחה עם התלמידים.')+
+    (studioOk?nextCard('studio','🎨','לבנות פעילות בסטודיו','נתוני הכיתה עוברים אוטומטית, ובונים יחד פעילות שמחזקת את מה שעלה.'):'')+
+    nextCard('print','🖨','להדפיס את הסיכום','לשיחת צוות, לפגישה עם ההנהלה או לתיק הכיתה.')+
+    (cfg.demo?'':nextCard('again','🔁','סבב מדידה נוסף','בעוד כמה חודשים פותחים את השאלון שוב, ורואים מה השתנה.'))+'</div>';
+  box.innerHTML=h;
+  box.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{showTab(b.dataset.go);window.scrollTo(0,0);}));
+  box.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click',()=>{const a=b.dataset.act;
+    if(a==='close')setOpen(false);
+    else if(a==='practi')location.href='resilience-advisor.html';
+    else if(a==='studio')document.getElementById('btn-studio').click();
+    else if(a==='print'){showTab('t-summary');window.scrollTo(0,0);if(!loadSummaryCache(cfg))setTimeout(()=>{const g=document.getElementById('btn-sum-gen');if(g)g.focus();},50);}
+    else if(a==='again'){if(confirm('לפתוח את השאלון שוב לסבב מדידה נוסף? התשובות הקודמות נשמרות, ואפשר יהיה להשוות.'))setOpen(true);}
+  }));
+  function prod(tab,ic,t,d,badge,main){return '<button type="button" class="prod'+(main?' main':'')+'" data-go="'+tab+'"><span class="p-ic">'+ic+'</span><span class="p-t">'+t+'</span><span class="p-d">'+d+'</span>'+(badge?'<span class="p-badge">'+badge+'</span>':'')+'<span class="p-go">פתיחה ←</span></button>';}
+  function nextCard(act,ic,t,d){return '<button type="button" class="nextc" data-act="'+act+'"><span class="p-ic">'+ic+'</span><span><span class="p-t">'+t+'</span><span class="p-d">'+d+'</span></span></button>';}
+}
+// מעבר בין התוצרים: "הצעד הבא" בסוף כל תוצר
+const PANE_FLOW=[['t-home','🏠 סקירה'],['t-scores','📊 תמונת המצב'],['t-voices','👥 לפי קבוצות'],['t-report','📄 דוח מפורט'],['t-summary','📝 סיכום והמלצות']];
+PANE_FLOW.slice(1).forEach(([id],i)=>{const pane=document.getElementById(id);const nav=document.createElement('div');nav.className='pane-nav no-print';
+  const back=document.createElement('button');back.className='btn btn-ghost btn-sm';back.textContent='→ חזרה לסקירה';back.addEventListener('click',()=>{showTab('t-home');window.scrollTo(0,0);});nav.appendChild(back);
+  const nx=PANE_FLOW[i+2];if(nx){const b=document.createElement('button');b.className='btn btn-sm';b.textContent='הבא: '+nx[1]+' ←';b.addEventListener('click',()=>{showTab(nx[0]);window.scrollTo(0,0);});nav.appendChild(b);}
+  pane.appendChild(nav);});
+document.querySelectorAll('.j-step').forEach(b=>b.addEventListener('click',()=>{const k=Number(b.dataset.j);
+  if(k<=2){showTab('t-setup');}else{showTab('t-home');if(k===4)setTimeout(()=>{const n=document.getElementById('next-section');if(n)n.scrollIntoView({behavior:'smooth',block:'start'});},30);}
+  if(k===3)window.scrollTo(0,0);}));
 
 // ── Init ──
 renderAll();
