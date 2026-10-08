@@ -248,7 +248,7 @@
     const L = [];
     if (d.stance.to) L.push('העמדה: ' + d.stance.from + ' ← ' + d.stance.to);
     if (d.shifts.length) L.push('מעברים: ' + d.shifts.map(s => s.move).join('; '));
-    if (d.arc.length) L.push('קשת המפגש: ' + d.arc.map(a => a.phase + (a.minutes ? ' (' + a.minutes + ')' : '')).join(' ← '));
+    if (d.arc.length) L.push('מהלך המפגש: ' + d.arc.map(a => a.phase + (a.minutes ? ' (' + a.minutes + ')' : '')).join(' ← '));
     if (d.moments.length) L.push('רגעים מאתגרים: ' + d.moments.map(m => m.moment).join('; '));
     if (d.mechanism) L.push('מנגנון: ' + d.mechanism.title);
     return L.join('\n');
