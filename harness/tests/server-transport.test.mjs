@@ -127,3 +127,42 @@ test('A same-boot job without a local executor is reconciled after its lease exp
   assert.equal((await post('/api/pipeline-status',a,{jobId:start.body.jobId})).body.status,'lost');
   assert.equal((await store.get('pj:'+start.body.jobId)).status,'lost');assert.equal((await store.list('aiq:'))[0].value.state,'released');
 });
+
+test('The authenticated artifact boundary reconciles single-attempt usage before admitting queued reviewers',async t=>{
+  const baseline=JSON.parse(readFileSync(new URL('../fixtures/baseline-cases.json',import.meta.url),'utf8')).cases[0];
+  const edu=JSON.parse(readFileSync(new URL('../../app/products/data/edu.json',import.meta.url),'utf8'));
+  const {store,a,b}=await account(),calls=[];
+  let release,ready;
+  const blocked=new Promise(resolve=>release=resolve),firstTwo=new Promise(resolve=>ready=resolve);
+  t.after(()=>release());
+  const provider={complete:async request=>{
+    await request.beforeAttempt();
+    const input=JSON.parse(request.messages[0].content);calls.push(input.agent);
+    assert.equal(request.maxAttempts,1);
+    if(calls.length===2)ready();
+    if(['pedagogy','resilience_facilitation'].includes(input.agent))await blocked;
+    return {status:'completed',text:JSON.stringify({artifactId:input.artifactId,baseVersion:input.baseVersion,changes:[],
+      rationale:'הצעה סינתטית לבדיקה אנושית.',sourceIds:['fixture-approved-source'],unknowns:[],riskFlags:[]}),
+      usage:{inputTokens:9000,outputTokens:40,totalTokens:9040}};
+  }};
+  const {server,post}=await serving(t,{store,teamEnabled:true,sourceLibrary:baseline.sourceLibrary,providerFactory:()=>provider});
+  const content={kind:'narrative',pipelineOutput:baseline.scenario,context:baseline.input,purpose:'תרגול בחירה בשיחה',
+    resilienceComponents:['תקשורת ואמון'],individualSkills:['שאלה פתוחה'],sharedSkills:['בירור בחירה'],
+    facilitatorGuide:JSON.stringify(edu.facilitator),socialMechanism:'מפגש שבועי עם שותפה.',
+    steps:[{id:'step-a',title:'פתיחה',instructions:'מציעים לבחור דרך להשתתף.',minutes:5}]};
+  const created=await post('/api/artifacts',a,{action:'create',content,privateConcerns:'חשש פרטי סינתטי'});
+  assert.equal(created.status,201);const artifactId=created.body.artifact.id;
+  const started=await post('/api/artifacts',a,{action:'review',artifactId,expectedVersion:1,requestId:'http-large-artifact',async:true});
+  assert.equal(started.status,200);await firstTwo;
+  assert.deepEqual(calls,['pedagogy','resilience_facilitation']);
+  assert.equal((await post('/api/pipeline-status',b,{jobId:started.body.jobId})).status,404);
+  release();await server.waitForJobs();
+  const done=await post('/api/pipeline-status',a,{jobId:started.body.jobId});
+  assert.equal(done.body.status,'done',JSON.stringify(done.body));assert.equal(done.body.review.status,'complete');
+  assert.deepEqual(calls,['pedagogy','resilience_facilitation','safety_sources','synthesis']);
+  assert.equal(done.body.review.totalTokens,4*9040);assert.equal(done.body.review.fallback,false);
+  assert.equal(done.body.artifact.version,1);assert.equal(done.body.artifact.status,'review_required');
+  assert.equal(done.body.artifact.approvedVersions.length,0);
+  const job=await store.get('pj:'+started.body.jobId);
+  assert.equal(job.tokenBudget,100000);assert.equal((await store.list('aiq:'))[0].value.state,'committed');
+});

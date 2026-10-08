@@ -1,6 +1,7 @@
 import { assertCompletionResult } from './providers.mjs';
 import { AGENT_LIMITS,AGENT_SCHEMA_VERSION,AGENT_SYSTEMS,REVIEWERS,agentEnvelope,validateProposal,digest,contractError } from './agent-contract.mjs';
 import { agentTrace } from './trace.mjs';
+import { completionUsageCharge } from './token-budget.mjs';
 const SYSTEM_BYTES=Object.fromEntries(Object.entries(AGENT_SYSTEMS).map(([agent,system])=>[agent,Buffer.byteLength(system)]));
 
 export async function runAgentReview({artifact,runId,provider,sourceLibrary=[],teamEnabled=false,signal,limits={},priorResults={},question='',stepId='',requestType='refine',validateCandidate,onResult=async()=>{},assertCurrent=async()=>{}}) {
@@ -52,15 +53,8 @@ export async function runAgentReview({artifact,runId,provider,sourceLibrary=[],t
         maxTokens:cap.maxTokensPerCall,maxAttempts:1,variation:'low',signal:controller.signal,tools:[],toolChoice:'none'}),waiting]));
       if(signal?.aborted||controller.signal.aborted)throw contractError('aborted');
       if(completion.toolCalls?.length)throw contractError('proposal_patch');
-      const usage=completion.usage||{};
-      const measured=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0;
-      for(const key of ['inputTokens','outputTokens','totalTokens'])
-        if(usage[key]!=null&&!measured(usage[key]))throw contractError('budget_exceeded');
-      if(usage.outputTokens>cap.maxTokensPerCall)throw contractError('budget_exceeded');
-      if(measured(usage.totalTokens)&&usage.totalTokens<(usage.inputTokens||0)+(usage.outputTokens||0))throw contractError('budget_exceeded');
-      const used=measured(usage.totalTokens)?usage.totalTokens:
-        measured(usage.inputTokens)&&measured(usage.outputTokens)?usage.inputTokens+usage.outputTokens:reservation;
-      if(!Number.isFinite(used))throw contractError('budget_exceeded');
+      const used=completionUsageCharge(completion.usage,{reservation,maxOutputTokens:cap.maxTokensPerCall});
+      if(used===null)throw contractError('budget_exceeded');
       // Incomplete usage keeps the full reservation; a partial count is not a total.
       reservedTokens-=reservation;totalTokens+=used;
       if(totalTokens>cap.totalTokens)throw contractError('budget_exceeded');

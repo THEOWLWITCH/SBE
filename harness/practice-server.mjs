@@ -12,6 +12,7 @@ import {toScenario} from './lib/to-scenario.mjs';
 import {handleAccess, supabaseStore, resolvePrincipal, reserveAIUsage, settleAIUsage} from './lib/access.mjs';
 import {handleStudio} from './lib/studio.mjs';
 import {handleArtifacts,artifactReviewRunId} from './lib/activity-artifact.mjs';
+import {completionUsageCharge} from './lib/token-budget.mjs';
 
 const AI_PERMS = ['fac_trainee','fac_parent','fac_youth','practice','conv','activity','academic','resilience','leadership','practi','writer','studio','nana'];
 const STUDIO_PERMS = ['studio'];
@@ -40,11 +41,22 @@ function boundedProvider(provider,budget,maxAttempts,assertCurrent) {
   return {...provider,async complete(request) {
     await assertCurrent();
     if(maxAttempts)request={...request,maxAttempts};
-    const amount=requestBudget(request,request.maxAttempts ?? 2);
+    const attempts=request.maxAttempts ?? 2;
+    const amount=requestBudget(request,attempts);
     if(reserved+amount>budget) throw failure('generation budget exceeded',413);
     reserved+=amount;
     const result=await provider.complete({...request,beforeAttempt:assertCurrent});
-    await assertCurrent();return result;
+    await assertCurrent();
+    // Failed attempts retain their reservation. Multi-attempt adapters report
+    // final-attempt usage only, so they cannot safely discount earlier attempts.
+    if(result?.status==='completed') {
+      const charge=completionUsageCharge(result.usage,{reservation:amount,
+        maxOutputTokens:request.maxTokens ?? request.max_output_tokens ?? 220,attempts});
+      if(charge===null)throw failure('invalid generation usage',413);
+      reserved+=charge-amount;
+      if(reserved>budget)throw failure('generation budget exceeded',413);
+    }
+    return result;
   }};
 }
 
