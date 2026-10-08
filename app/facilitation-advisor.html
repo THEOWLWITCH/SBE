@@ -457,7 +457,7 @@ FIELDS.forEach(k=>{const clear=()=>{F(k).classList.remove('miss');save();};F(k).
 // ── מודל: ברקע, עם שאילת מצב (lib/ai-call.js) ──
 // ההודעות האחרונות — תמיד מתחילות בהודעה של המשתמש/ת (המודל לא מקבל שיחה שמתחילה בתשובה)
 function tail(list,n){let s=Math.max(0,list.length-n);while(s<list.length&&list[s].role!=='user')s++;return list.slice(s);}
-async function complete(system,messages,maxTokens,quick){return String(await sbeCallAI(AI_SERVER,Object.assign({system,messages,maxTokens},quick?{speed:'quick'}:{}),300000)||'');}
+async function complete(system,messages,maxTokens){return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens},300000)||'');}
 // המתנה עם ציפייה ברורה (08/10/2026): כמה זמן זה לוקח בדרך כלל, כמה עבר, ופס התקדמות
 function waiting(node,text,exp){
   exp=exp||45;const t0=Date.now();node.textContent='';
@@ -626,8 +626,8 @@ function renderAsk(){const log=F('ask-log');log.textContent='';STATE.chat.forEac
 F('ask-go').addEventListener('click',async()=>{
   const q=F('ask-in').value.trim();if(!q||BUSY)return;
   BUSY=true;F('ask-go').disabled=true;STATE.chat.push({role:'user',content:q});F('ask-in').value='';renderAsk();
-  const th=el('div','msg bot thinking');F('ask-log').appendChild(th);const stop=waiting(th,'ננה חושבת על תשובה.',25);
-  try{const ans=await complete(N.chatSystem(inputNow(),guideText(),KB,RULE),tail(STATE.chat,12),4000,true);STATE.chat.push({role:'assistant',content:ans});save();}
+  const th=el('div','msg bot thinking');F('ask-log').appendChild(th);const stop=waiting(th,'ננה חושבת על תשובה.',30);
+  try{const ans=await complete(N.chatSystem(inputNow(),guideText(),KB,RULE),tail(STATE.chat,12),5000);STATE.chat.push({role:'assistant',content:ans});save();}
   catch(e){STATE.chat.pop();F('ask-in').value=q;th.remove();F('ask-log').appendChild(el('p','err','התשובה לא הגיעה ('+e.message+'). אפשר לנסות שוב.'));stop();BUSY=false;F('ask-go').disabled=false;return;}
   stop();BUSY=false;F('ask-go').disabled=false;renderAsk();
 });
@@ -661,9 +661,9 @@ async function practiceTurn(text){
   const P=STATE.practice;if(!P||BUSY)return;
   BUSY=true;['pr-go','pr-end','pr-start'].forEach(id=>F(id).disabled=true);
   P.msgs.push({role:'user',content:text});renderPractice();
-  const th=el('div','msg group thinking');F('pr-log').appendChild(th);const stop=waiting(th,'הקבוצה מגיבה.',20);
+  const th=el('div','msg group thinking');F('pr-log').appendChild(th);const stop=waiting(th,'הקבוצה מגיבה.',25);
   try{
-    const ans=await complete(N.practiceSystem(P.moment,inputNow(),guideText(),KB,RULE),tail(P.msgs,16),3000,true);
+    const ans=await complete(N.practiceSystem(P.moment,inputNow(),guideText(),KB,RULE),tail(P.msgs,16),3000);
     P.msgs.push({role:'assistant',content:ans});if(/משוב מננה/.test(ans))P.done=true;save();
   }catch(e){P.msgs.pop();th.remove();F('pr-log').appendChild(el('p','err','התגובה לא הגיעה ('+e.message+'). אפשר לנסות שוב.'));}
   finally{stop();BUSY=false;['pr-go','pr-end','pr-start'].forEach(id=>F(id).disabled=false);}
@@ -681,8 +681,8 @@ function renderAfter(){const o=F('af-out');o.textContent='';const A=STATE.after;
   o.appendChild(b);}
 F('af-go').addEventListener('click',async()=>{
   const t=F('af-in').value.trim();if(!t||BUSY)return;
-  BUSY=true;F('af-go').disabled=true;const o=F('af-out');o.textContent='';const th=el('div','muted');o.appendChild(th);const stop=waiting(th,'ננה קוראת ומכינה משוב.',35);
-  try{const ans=await complete(N.debriefSystem(inputNow(),guideText(),KB,RULE),[{role:'user',content:t}],4000,true);STATE.after={text:t,answer:ans,at:new Date().toISOString()};save();renderAfter();}
+  BUSY=true;F('af-go').disabled=true;const o=F('af-out');o.textContent='';const th=el('div','muted');o.appendChild(th);const stop=waiting(th,'ננה קוראת ומכינה משוב.',40);
+  try{const ans=await complete(N.debriefSystem(inputNow(),guideText(),KB,RULE),[{role:'user',content:t}],5000);STATE.after={text:t,answer:ans,at:new Date().toISOString()};save();renderAfter();}
   catch(e){o.textContent='';o.appendChild(el('p','err','המשוב לא הגיע ('+e.message+'). מה שכתבת נשמר — אפשר לנסות שוב.'));}
   finally{stop();BUSY=false;F('af-go').disabled=false;}
 });
