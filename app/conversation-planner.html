@@ -4,6 +4,7 @@
 <script src="lib/ai-status.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/product-doc.js"></script>
+<script src="lib/planner-continuity.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -264,7 +265,8 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <button type="button" class="primary" id="bSuggest">מילוי הצעות</button>
   <button type="button" id="bBuild" disabled>בנייה</button>
   <button type="button" id="bReset">ניקוי</button>
-  <span class="note" id="hint">מלאי את שני השדות העיקריים</span>
+  <button type="button" id="bSaved">התוצרים הפרטיים שלי</button>
+  <span class="note" id="hint" role="status">מלאי את שני השדות העיקריים</span>
 </div></div>
 
 <dialog id="dlg">
@@ -479,7 +481,7 @@ function buildDigitalDraftMock(d) {
 // למודל (19/09/2026). נופלת בשקט לתבנית הקבועה (buildDigitalDraftMock)
 // אם השרת לא זמין. contextNote (הדהוד התכונות) נשאר תמיד הרכבה
 // דטרמיניסטית מהשדות, לא ניסוח — אין בו שום שיפוט תוכן.
-async function buildDigitalDraft(d) {
+async function buildDigitalDraft(d, run) {
   const otherLine = traitsLine(d.otherTraits);
   // תווית קצרה לצד השני: רק החלק שלפני הפסיק הראשון ("סגנית המנהלת"), לא כל
   // התיאור — נתפס 23/09/2026, התיאור המלא הופיע בהערה כאילו היה שם.
@@ -512,7 +514,8 @@ async function buildDigitalDraft(d) {
     // פעמים בפרויקט הזה: thinking:adaptive+effort:high צורכים חלק ניכר
     // מהתקציב על חשיבה פנימית לפני הטקסט הגלוי, ו-2000 נקטע בבדיקה חיה
     // מול השרת האמיתי ("שגיאת ספק: התוצר נקטע. max_tokens נמוך מדי").
-    const raw = await callAI(system, userText, 8000, 240000);
+    const raw = await callAI(system, userText, 8000, 240000, run);
+    run.assertCurrent();
     const m = raw.match(/\{[\s\S]*\}/);
     if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
     const parsed = JSON.parse(m[0]);
@@ -520,6 +523,7 @@ async function buildDigitalDraft(d) {
     setAIStatus("ok");
     return { full: parsed.full, short: parsed.short, contextNote, isAI:true };
   } catch (e) {
+    if (!run.current()) throw e;
     console.warn("ניסוח AI לא זמין — נופלת לתבנית קבועה. סיבה:", e.message);
     setAIStatus("mock");
     return { ...buildDigitalDraftMock(d), contextNote };
@@ -606,6 +610,29 @@ GROUPS.forEach(g => g.fields.forEach(f => FIELDS.set(f.k, { ...f, group:g.id }))
 const state = {};
 const cardGrids = new Map();
 const traitFields = new Map();
+const plannerArchive = SBE_PLANNER.createArchive("sbe.conversationplanner.saved.v2");
+const plannerOwner = window.sbeUserKey("sbe.planner.work");
+const plannerWork = SBE_PLANNER.createWork(() => ({fields:Object.fromEntries([...FIELDS.keys()].map(k => [k,val(k)])),state}));
+let pendingRun = null;
+function finishWork(run) {
+  if (!run.owns()) return;
+  pendingRun = null;
+  document.getElementById("bSuggest").textContent = "מילוי הצעות";
+  document.getElementById("bBuild").textContent = "בנייה";
+  refresh();
+}
+function invalidateWork() {
+  plannerWork.invalidate();
+  if (pendingRun) finishWork(pendingRun);
+}
+function startWork() {
+  invalidateWork();
+  if (window.sbeUserKey("sbe.planner.work") !== plannerOwner) {
+    document.getElementById("hint").textContent = "הכניסה למערכת השתנתה. אפשר לרענן את המסך לפני המשך העבודה.";
+    return null;
+  }
+  const run = plannerWork.start(); pendingRun = run; refresh(); return run;
+}
 
 function syncCardVisual(k) {
   const boxes = cardGrids.get(k);
@@ -648,7 +675,7 @@ const SAMPLE = {
 // ── חיבור אמיתי למודל (19/09/2026) — אותו שרת proxy משותף כמו
 // activity-planner.html/practice.html. נופל בשקט להצעה קבועה (SAMPLE)
 // אם השרת לא זמין, בלי להציג שגיאה מפחידה.
-const AI_SERVER = "https://sbe-server.onrender.com";
+const AI_SERVER = window.sbeAIOrigin ? window.sbeAIOrigin() : "https://sbe-server.onrender.com";
 
 // שורת סטטוס גלויה במקום הצהרה טכנית תמידית — מתעדכנת בפועל לפי תוצאת
 // הקריאה האחרונה למודל (19/09/2026), לא לפי הנחה סטטית.
@@ -662,9 +689,11 @@ function setAIStatus(status){
   else chip.innerHTML = dot + "בודקת חיבור למודל...";
 }
 
-async function callAI(system, userText, maxTokens, timeoutMs) {
+async function callAI(system, userText, maxTokens, timeoutMs, run) {
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך
-  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200 }, timeoutMs || 60000);
+  run.assertCurrent();
+  const result = await sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200 }, timeoutMs || 60000, {signal:run.signal});
+  run.assertCurrent(); return result;
 }
 
 // העצמה (05/10/2026, משוב המשתמשת): לומדים לנהל את השיחה בעצמנו. לא מציעים להפנות ליועצ/ת, לפסיכולוג/ית
@@ -686,7 +715,7 @@ function traitsAxisPromptText(){
 // ב-input-screen.html/parent-input-screen.html.
 const AI_TRAIT_KEYS = ["myTraits","otherTraits"];
 
-async function generateProposals(required) {
+async function generateProposals(required, run) {
   try {
     const system = [ "אסור לכתוב שם של מחבר, מאמר, ספר, מחקר או שנת פרסום. אפשר להזכיר תיאוריה או גישה במילים. מקורות מגיעים רק מספריית המקורות המאומתת של המערכת.",
       "את עוזרת שמסייעת לתכנון שיחה אמיתית עבור מערכת Begood. זה לא סימולציה — זה כלי הכנה למישהי שהולכת לקיים שיחה אמיתית.",
@@ -706,7 +735,7 @@ async function generateProposals(required) {
     // ("max_tokens נמוך מדי"), אותה תקלה שכבר תוקנה ב-activity-planner.html.
     // הצעה מלאה (16 שדות) דורשת תקציב דומה, כי thinking:adaptive+effort גבוה
     // צורך המון טוקנים על חשיבה פנימית לפני שהמודל מתחיל להפיק טקסט גלוי.
-    const raw = await callAI(system, "בני הצעת תכנון שיחה מלאה, בעברית.", 16000, 300000);
+    const raw = await callAI(system, "בני הצעת תכנון שיחה מלאה, בעברית.", 16000, 300000, run);
     const m = raw.match(/\{[\s\S]*\}/);
     if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
     const parsed = JSON.parse(m[0]);
@@ -714,6 +743,7 @@ async function generateProposals(required) {
     setAIStatus("ok");
     return parsed;
   } catch (e) {
+    if (!run.current()) throw e;
     console.warn("שרת ה-AI לא זמין — לא מוצגת הצעה. סיבה:", e.message);
     setAIStatus("mock");
     return { _noModel: true }; // בלי חיבור למודל — אין תוצר (07/10/2026)
@@ -868,6 +898,7 @@ function render() {
 function val(k){ const n = document.getElementById("i-"+k); return n ? n.value.trim() : ""; }
 
 function onEdit(k) {
+  invalidateWork();
   const f = FIELDS.get(k);
   const v = val(k);
   if (!v) { state[k] = "empty"; }
@@ -914,7 +945,11 @@ function refresh() {
   const reqKeys = [...FIELDS.values()].filter(f => f.req).map(f => f.k);
   const missing = reqKeys.filter(k => !val(k));
   const ok = missing.length === 0;
-  document.getElementById("bBuild").disabled = !ok || p+w === reqKeys.length;
+  const busy = !!pendingRun?.current();
+  document.getElementById("bBuild").setAttribute("aria-busy",String(busy));
+  document.getElementById("bSuggest").setAttribute("aria-busy",String(busy));
+  document.getElementById("bSuggest").disabled = busy;
+  document.getElementById("bBuild").disabled = busy || !ok || p+w === reqKeys.length;
   document.getElementById("hint").textContent = ok
     ? (p ? "אפשר לבנות. שדות בהצעה יישארו כפי שהם." : "מלאי הצעות או כתבי בעצמך")
     : `נשארו ${missing.length} שדות עיקריים למילוי`;
@@ -926,9 +961,11 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
   if (reqKeys.some(k => !val(k))) {
     return show("נשארו שדות עיקריים למילוי", el("p",{},"יש למלא את \"מי אני בשיחה הזאת\" ו\"מי הצד השני\" לפני שאפשר לייצר הצעות."));
   }
-  e.target.disabled = true; e.target.textContent = "מייצר... (עד כ-3 דקות)";
+  const run = startWork(); if (!run) return;
+  e.target.textContent = "מייצר... (עד כ-3 דקות)";
   try {
-    const out = await generateProposals(Object.fromEntries(reqKeys.map(k => [k, val(k)])));
+    const out = await generateProposals(Object.fromEntries(reqKeys.map(k => [k, val(k)])), run);
+    run.assertCurrent();
     if (out._noModel) return show("ההצעות לא הופקו", el("p",{}, "אין כרגע חיבור למודל, ולכן לא הופקו הצעות — המערכת לא ממלאת את הטופס בתוכן קבוע במקום הצעה אמיתית. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים."));
     for (const [k,v] of Object.entries(out)) {
       if (!FIELDS.has(k) || state[k] === "locked") continue;
@@ -937,28 +974,32 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
     }
     syncAllCardVisuals();
     traitFields.forEach(fn => fn());
+    run.checkpoint();
     document.querySelectorAll("details.grp").forEach(d => d.setAttribute("open",""));
     refresh();
     // תיוג לא-שקט: אם הופקה מהתבנית הקבועה (אין חיבור למודל), לא להציג
     // את זה כאילו הותאם אישית למה שתיארה (19/09/2026).
     if (out._mock) document.getElementById("hint").textContent =
       "⚠ אין חיבור למודל כרגע — זו הצעת דוגמה קבועה (הדגמה), לא הצעה שהותאמה למה שתיארת.";
-  } finally { e.target.disabled = false; e.target.textContent = "מילוי הצעות"; }
+  } catch (error) {
+    if (run.current()) show("ההצעות לא הופקו", el("p",{},"ההצעות לא הופקו כרגע. אפשר לנסות שוב; מה שמילאת נשאר במסך."));
+  } finally { finishWork(run); }
 });
 
 document.getElementById("bBuild").addEventListener("click", async (e) => {
+  const run = startWork(); if (!run) return;
   const d = {};
   FIELDS.forEach((f, k) => { d[k] = val(k); });
   const isDigital = (d.productType || "").startsWith("התכתבות");
   const body = el("div");
   SBE_DOC.ensureStyle();
   const noModel = () => show("התוצר לא הופק", el("p",{}, "אין כרגע חיבור למודל, ולכן התוצר לא הופק — המערכת לא בונה מסמך מהשדות במקום תוצר אמיתי. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים."));
-
+  try {
   if (isDigital) {
     e.target.disabled = true; e.target.textContent = "מנסחת...";
     let draft;
-    try { draft = await buildDigitalDraft(d); }
-    finally { e.target.disabled = false; e.target.textContent = "בנייה"; }
+    draft = await buildDigitalDraft(d, run);
+    run.assertCurrent();
     if (!draft || !draft.isAI) return noModel(); // בלי חיבור למודל — אין תוצר (לא תבנית קבועה)
     body.append(el("div", { class:"banner-mini" },
       draft.isAI
@@ -975,21 +1016,13 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     body.append(shortBox);
     body.append(el("p", { class:"savenote" },
       "אפשר לערוך את הטיוטות ישירות כאן, או לסגור, לשנות שדה למעלה ולבנות מחדש. מרוצה? העתיקי, הדפיסי או שמרי כ-PDF."));
-    const sysBtn = el("button", { type:"button", class:"dlg-dl" }, "שמירה במערכת");
-    sysBtn.addEventListener("click", () => {
-      try {
-        const key = "sbe.conversationplanner.saved.v1";
-        const list = JSON.parse(localStorage.getItem(key) || "[]");
-        list.push({ creator: d.creator || null, date: d.date || null, productType: d.productType, fields: d, draft, savedAt: new Date().toISOString() });
-        localStorage.setItem(key, JSON.stringify(list));
-        sysBtn.textContent = "נשמר ✓";
-        setTimeout(() => { sysBtn.textContent = "שמירה במערכת"; }, 2000);
-      } catch (e2) { console.warn("שמירה במערכת נכשלה:", e2.message); }
-    });
     const dl = el("button", { type:"button", class:"dlg-dl" }, "🖨 הדפסה / שמירה כ-PDF");
     const h = (t) => { const x = document.createElement("h3"); x.textContent = t; return x; };
-    dl.addEventListener("click", () => SBE_DOC.print({ title: "טיוטת הודעה", subtitle: [d.myself, d.otherParty].filter(Boolean).join(" · אל "),
-      nodes: [h("גרסה מלאה — " + (d.approach || "כללי")), fullBox, h("גרסה קצרה"), shortBox] }));
+    const title = "טיוטת הודעה", subtitle = [d.myself,d.otherParty].filter(Boolean).join(" · אל ");
+    const currentNodes = () => [h("גרסה מלאה — " + (d.approach || "כללי")),fullBox,h("גרסה קצרה"),shortBox];
+    const sysBtn = plannerArchive.saveButton({title,subtitle,fields:d,nodes:currentNodes}); sysBtn.className = "dlg-dl";
+    body.append(el("p", {class:"savenote"}, "השמירה היא טיוטה פרטית במכשיר ובדפדפן הזה. אפשר לפתוח אותה שוב בכפתור התוצרים הפרטיים שלי."));
+    dl.addEventListener("click", () => printProduct({title,subtitle,nodes:currentNodes()}));
     const cp = el("button", { type:"button", class:"dlg-dl" }, "העתקת הגרסה המלאה");
     cp.addEventListener("click", () => navigator.clipboard && navigator.clipboard.writeText(fullBox.innerText).then(() => { cp.textContent = "הועתק ✓"; setTimeout(() => cp.textContent = "העתקת הגרסה המלאה", 1800); }));
     body.append(dl, cp, sysBtn);
@@ -1024,15 +1057,15 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
         "חוק הספציפיות: שם, מקום, משפט במרכאות. אין מניפולציה, מלכודת, התחכמות, סכום אפס או תקשורת אלימה — בשום הצעה.",
         "החזירי רק את טקסט התדריך, בלי JSON ובלי הקדמה.",
       ].join("\n\n");
-      const text = await callAI(system, "השדות:\n" + raw + (traitsNote ? "\n" + traitsNote : "") + "\n\nכתבי את התדריך.", 8000, 240000);
+      const text = await callAI(system, "השדות:\n" + raw + (traitsNote ? "\n" + traitsNote : "") + "\n\nכתבי את התדריך.", 8000, 240000, run);
       let t = String(text || "").trim();
       // תאימות: אם המודל בכל זאת החזיר JSON עם פסקאות
       const jm = t.match(/^\{[\s\S]*\}$/);
       if (jm) { try { const o = JSON.parse(t); if (Array.isArray(o.paragraphs)) t = o.paragraphs.join("\n\n"); else if (o.text) t = o.text; } catch (_) {} }
       if (t.length > 150) { briefing = t; setAIStatus("ok"); }
       else throw new Error("התדריך שחזר קצר מדי");
-    } catch (e2) { console.warn("תדריך נרטיבי לא זמין — מציגה מהשדות:", e2.message); setAIStatus("mock"); }
-    finally { e.target.disabled = false; e.target.textContent = "בנייה"; }
+    } catch (e2) { if (!run.current()) throw e2; console.warn("תדריך נרטיבי לא זמין:", e2.message); setAIStatus("mock"); }
+    run.assertCurrent();
     if (!briefing) return noModel(); // בלי חיבור למודל — אין תוצר (לא כרטיס ועץ מהשדות)
 
     if (briefing) {
@@ -1066,30 +1099,23 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
 
     body.append(el("p", { class:"savenote" },
       "אפשר לערוך את התדריך ואת הכרטיס ישירות כאן, או לסגור, לשנות שדה למעלה ולבנות מחדש. מרוצה? הדפיסי או שמרי כ-PDF."));
-    const sysBtn = el("button", { type:"button", class:"dlg-dl" }, "שמירה במערכת");
-    sysBtn.addEventListener("click", () => {
-      try {
-        const key = "sbe.conversationplanner.saved.v1";
-        const list = JSON.parse(localStorage.getItem(key) || "[]");
-        list.push({ creator: d.creator || null, date: d.date || null, productType: d.productType, fields: d, savedAt: new Date().toISOString() });
-        localStorage.setItem(key, JSON.stringify(list));
-        sysBtn.textContent = "נשמר ✓";
-        setTimeout(() => { sysBtn.textContent = "שמירה במערכת"; }, 2000);
-      } catch (e2) { console.warn("שמירה במערכת נכשלה:", e2.message); }
-    });
     const dl = el("button", { type:"button", class:"dlg-dl" }, "🖨 הדפסה / שמירה כ-PDF");
     const h = (t) => { const x = document.createElement("h3"); x.textContent = t; return x; };
-    dl.addEventListener("click", () => SBE_DOC.print({
-      title: briefing ? "תדריך לפני שיחה" : "כרטיס תזכורת לשיחה",
-      subtitle: [d.myself, d.otherParty].filter(Boolean).join(" · מול ") ,
-      nodes: (() => { const card = rc.querySelector("tr") ? [h("כרטיס תזכורת"), rc] : [];
-        return briefing ? [h("לפני שאת נכנסת לחדר"), briefNode, ...card] : [...card, h("עץ אפשרויות"), tree]; })() }));
+    const title = "תדריך לפני שיחה", subtitle = [d.myself,d.otherParty].filter(Boolean).join(" · מול ");
+    const currentNodes = () => [h("לפני שאת נכנסת לחדר"),briefNode,h("כרטיס תזכורת"),rc];
+    const sysBtn = plannerArchive.saveButton({title,subtitle,fields:d,nodes:currentNodes}); sysBtn.className = "dlg-dl";
+    body.append(el("p", {class:"savenote"}, "השמירה היא טיוטה פרטית במכשיר ובדפדפן הזה. אפשר לפתוח אותה שוב בכפתור התוצרים הפרטיים שלי."));
+    dl.addEventListener("click", () => printProduct({title,subtitle,nodes:currentNodes()}));
     body.append(dl, sysBtn);
     show(briefing ? "התדריך לפני השיחה" : "כרטיס התזכורת ועץ האפשרויות", body);
   }
+  } catch (error) {
+    if (run.current()) noModel();
+  } finally { finishWork(run); }
 });
 
 document.getElementById("bReset").addEventListener("click", () => {
+  invalidateWork();
   FIELDS.forEach((f,k)=>{ const n=document.getElementById("i-"+k); if(n) n.value=""; state[k]="empty"; });
   syncAllCardVisuals();
   traitFields.forEach(fn => fn());
@@ -1097,11 +1123,25 @@ document.getElementById("bReset").addEventListener("click", () => {
 });
 
 function show(title, node) {
+  invalidateWork();
   document.getElementById("dlgH").textContent = title;
   const b = document.getElementById("dlgB"); b.textContent = ""; b.append(node);
   document.getElementById("dlg").showModal();
 }
-document.getElementById("dlgX").addEventListener("click", () => document.getElementById("dlg").close());
+function printProduct(product) {
+  try { plannerArchive.print(product); }
+  catch (error) { document.getElementById("hint").textContent = "ההדפסה לא נפתחה · " + error.message; }
+}
+document.getElementById("dlgX").addEventListener("click", () => {invalidateWork(); document.getElementById("dlg").close();});
+document.getElementById("dlg").addEventListener("close", invalidateWork);
+document.getElementById("dlg").addEventListener("cancel", invalidateWork);
+document.getElementById("dlgB").addEventListener("input", invalidateWork);
+document.getElementById("bSaved").addEventListener("click", () => {
+  invalidateWork();
+  document.getElementById("dlg").close();
+  try { plannerArchive.open(); }
+  catch (error) { document.getElementById("hint").textContent = error.message; }
+});
 
 render();
 
