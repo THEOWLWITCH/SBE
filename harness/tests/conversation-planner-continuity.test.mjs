@@ -51,6 +51,17 @@ const digital=label=>JSON.stringify({full:'שלום, '+label+' — תודה על
 const oral='**מה על הכף**\nהעמיתה והמורה מבקשות לבחור צעד משותף, להקשיב לצרכים ולקבל החלטה יחד. אפשר לעצור ולחשוב לפני שמציעים דבר.\n\n**איך לפתוח**\nשלום, תודה על השותפות. מה חשוב לך שנשיג היום?\n\n**איך לסיים**\nאפשר לבחור יחד מי תעדכן ובאיזה מועד נשוב לשיחה.';
 async function startDigital(env,label){env.edit('productType','התכתבות דיגיטלית (הודעה, מייל או צ\'אט)');const pending=env.byId('bBuild').fire('click');env.calls.at(-1).resolve(digital(label));await pending;}
 
+test('Open-select leaves the conversation output mode closed and its two routes keep the intended products',async()=>{
+  const env=page(),mode=env.byId('i-productType'),before=mode.childNodes.map(n=>n.value).join('|');
+  assert.equal(mode.getAttribute('data-closed'),'');mode.hasAttribute=name=>mode.getAttribute(name)!==null;mode.isConnected=true;
+  const plugin={window:{addEventListener(){}},HTMLSelectElement:Element,location:{pathname:'/conversation-planner.html'},document:{readyState:'loading',addEventListener(){},querySelectorAll:()=>[mode],createElement(){throw Error('Closed output mode must not receive custom options');}},setTimeout:()=>0};
+  vm.runInNewContext(readFileSync(new URL('../../app/lib/open-select.js',import.meta.url),'utf8'),plugin);plugin.window.SBE_OPEN.scan();
+  assert.equal(mode.childNodes.map(n=>n.value).join('|'),before);assert.equal(mode.childNodes.length,2);
+  await startDigital(env,'בדיקת מסלול');assert.equal(env.byId('dlgB').querySelectorAll('.draftbox').length,2);
+  const oralEnv=page();oralEnv.edit('productType','שיחה בעל פה');const pending=oralEnv.byId('bBuild').fire('click');oralEnv.calls[0].resolve(oral);await pending;
+  assert.equal(oralEnv.byId('dlgB').querySelectorAll('table').length,2);assert.equal(oralEnv.byId('dlgB').querySelectorAll('.draftbox').length,0);
+});
+
 test('Digital page saves actual edited full and short text, reopens, prints and versions without another AI call',async()=>{
   const env=page();await startDigital(env,'טיוטה');const boxes=env.byId('dlgB').querySelectorAll('.draftbox');boxes[0].textContent='מלאה שערכתי\nהצעד שלנו';boxes[1].textContent='קצרה שערכתי';
   await env.clickText('שמירה',env.byId('dlgB'));env.byId('dlgX').fire('click');
