@@ -78,7 +78,7 @@
     function print({title,subtitle,nodes}) {
       window.SBE_DOC.print({title,subtitle,nodes:copy(nodes)});
     }
-    function saveButton({title, subtitle, fields, nodes, record}) {
+    function saveButton({title, subtitle, fields, nodes, record, onSave}) {
       let saved = record;
       const button = document.createElement("button"); button.type = "button"; button.className = "btn";
       button.textContent = "שמירה פרטית במכשיר"; button.setAttribute("aria-live","polite");
@@ -86,8 +86,9 @@
         try {
           saved = save({id:saved?.id,expectedVersion:saved?.version,title,subtitle,fields:typeof fields === "function" ? fields() : fields,
             nodes:typeof nodes === "function" ? nodes() : nodes});
-          button.textContent = "נשמר במכשיר ✓ · גרסה " + saved.version;
-        } catch (error) { button.textContent = "לא נשמר · " + error.message; }
+        } catch (error) { button.textContent = "לא נשמר · " + error.message; return; }
+        button.textContent = "נשמר במכשיר ✓ · גרסה " + saved.version;
+        onSave?.(saved);
       });
       return button;
     }
@@ -105,21 +106,27 @@
       function showRecord(record, revision = record) {
         try {
           assertOwner(); const nodes = restore(revision); body.textContent = "";
+          const editor = nodes.length === 1 && nodes[0].tagName === "DIV" ? nodes[0] : document.createElement("div");
+          if (editor !== nodes[0]) editor.append(...nodes);
           const back = document.createElement("button"); back.type = "button"; back.textContent = "חזרה לרשימה"; back.addEventListener("click", showList);
           const title = document.createElement("h3"); title.textContent = revision.title + " · גרסה " + revision.version;
           const tools = document.createElement("div"); tools.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;margin:12px 0";
-          const saveCurrent = saveButton({title:revision.title,subtitle:revision.subtitle,fields:revision.fields,nodes:()=>nodes,record});
-          const printCurrent = document.createElement("button"); printCurrent.type = "button"; printCurrent.textContent = "הדפסה / PDF";
-          printCurrent.addEventListener("click", () => {try {print({title:revision.title,subtitle:revision.subtitle,nodes});} catch(error) {showError(error);}});
-          tools.append(back,saveCurrent,printCurrent); body.append(title,tools);
-          nodes.forEach(node => body.append(window.SBE_DOC.editable(node)));
-          if (record.history?.length) {
-            const history = document.createElement("div"), label = document.createElement("h4"); label.textContent = "גרסאות קודמות"; history.append(label);
+          const history = document.createElement("div");
+          function showHistory() {
+            history.textContent = "";
+            if (!record.history?.length) return;
+            const label = document.createElement("h4"); label.textContent = "גרסאות קודמות"; history.append(label);
             [...record.history].reverse().forEach(old => {
               const button = document.createElement("button"); button.type = "button"; button.textContent = "פתיחת גרסה " + old.version;
               button.addEventListener("click", () => showRecord(record,old)); history.append(button);
-            }); body.append(history);
+            });
           }
+          const saveCurrent = saveButton({title:revision.title,subtitle:revision.subtitle,fields:revision.fields,nodes:()=>[editor],record,
+            onSave:saved => {record = saved; title.textContent = saved.title + " · גרסה " + saved.version; showHistory();}});
+          const printCurrent = document.createElement("button"); printCurrent.type = "button"; printCurrent.textContent = "הדפסה / PDF";
+          printCurrent.addEventListener("click", () => {try {print({title:revision.title,subtitle:revision.subtitle,nodes:[editor]});} catch(error) {showError(error);}});
+          tools.append(back,saveCurrent,printCurrent); body.append(title,tools);
+          body.append(window.SBE_DOC.editable(editor),history); showHistory();
           status.textContent = "";
         } catch (error) {showError(error);}
       }

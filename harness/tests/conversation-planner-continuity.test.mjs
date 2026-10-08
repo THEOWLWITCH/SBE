@@ -56,7 +56,8 @@ test('Digital page saves actual edited full and short text, reopens, prints and 
   env.clickText('שמירה',env.byId('dlgB'));env.byId('dlgX').fire('click');
   const reloaded=page(env.storage);reloaded.byId('bSaved').fire('click');reloaded.clickText('טיוטת הודעה');
   const archive=reloaded.document.body.querySelectorAll('dialog').at(-1);assert.match(archive.textContent,/מלאה שערכתי/);assert.match(archive.textContent,/קצרה שערכתי/);assert.equal(reloaded.calls.length,0);
-  const restored=archive.querySelectorAll('.draftbox');restored[0].textContent='גרסה שנייה';reloaded.clickText('שמירה פרטית',archive);assert.match(archive.textContent,/גרסה 2/);reloaded.clickText('הדפסה',archive);assert.match(reloaded.prints[0],/גרסה שנייה/);assert.match(reloaded.prints[0],/קצרה שערכתי/);
+  assert.equal(archive.querySelectorAll('.sbe-edit-hint').length,1,'one editing instruction for the whole saved product');
+  const restored=archive.querySelectorAll('.draftbox');restored[0].textContent='גרסה שנייה';reloaded.clickText('שמירה פרטית',archive);assert.match(archive.querySelector('h3').textContent,/גרסה 2/);assert.ok(archive.querySelectorAll('button').some(b=>b.textContent==='פתיחת גרסה 1'));reloaded.clickText('הדפסה',archive);assert.match(reloaded.prints[0],/גרסה שנייה/);assert.match(reloaded.prints[0],/קצרה שערכתי/);
   const records=reloaded.context.SBE_PLANNER.createArchive('sbe.conversationplanner.saved.v2').list();assert.equal(records[0].version,2);assert.match(JSON.stringify(records[0].history[0].document),/מלאה שערכתי/);
 });
 test('Oral briefing and reminder save current edited table cells and show failed storage writes',async()=>{
