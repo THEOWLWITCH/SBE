@@ -24,17 +24,17 @@ const UNDER_LIST = (label) => ({ type:'array', items:STR, description:'מוצג 
 const FACIL_LABELS = {preparation:'לפני המפגש: הכנה וחזרה',opening:'פתיחה והסכמות',participation:'הזמנת השתתפות',questions:'שאלות והקשבה',difficulties:'שתיקה, התנגדות או מחלוקת',closing:'סגירה ועיבוד',followUp:'המשך ולמידה מההנחיה'};
 const MECH_LABELS = {name:'שם המנגנון',cadence:'מתי ובאיזו תדירות?',roles:'מי אחראית, מי שותף ומי מגבה?',participation:'איך משתתפים ומשפיעים?',firstAction:'הפעולה הראשונה',review:'מתי ואיך בודקים ומשפרים?',mechanism:'איך המנגנון מתרגל את מוקד החוסן?'};
 const LEARN_LABELS = {mechanism:'איך הפעילות אמורה לעבוד (השערת התכנון)',apply:'איך מיישמים במפגש',watchFor:'מה נראה בפועל אם המנגנון פועל',limits:'גבולות: מה הפעילות אינה, ומתי עוצרים'};
-const stepSchema = object({ id:STR, title:STR, minutes:{type:'number'}, instructions:UNDER('מה עושים'), facilitation:UNDER('איך מנחים'), space:UNDER('מרחב ועזרים'),
+const stepSchema = object({ id:STR, title:STR, minutes:{type:'number'}, instructions:UNDER('מה עושים','מי עושה, מה עושים, עם מה, ומה יוצא בסוף. משפטים קצרים ופשוטים.'), facilitation:UNDER('איך מנחים'), space:UNDER('מרחב ועזרים'),
   materials:strings, components:{type:'array',items:focus}, individualSkills:strings, sharedSkills:strings });
-const sessionSchema = object({ id:STR, title:STR, purpose:UNDER('מטרת המפגש'), link:UNDER('קשר לתהליך'),
-  steps:{type:'array',items:stepSchema}, debrief:UNDER_LIST('שאלות לעיבוד'), nextStep:UNDER('צעד המשך'), participantMaterials:UNDER('חומרי המשתתפים') });
+const sessionSchema = object({ id:STR, title:STR, purpose:UNDER('מטרת המפגש','משפט קצר אחד של פעולה ותוצר, למשל "לנסח אמנה לעזרה הדדית בכיתה". לא רשימת מושגים.'), link:UNDER('קשר לתהליך'),
+  steps:{type:'array',items:stepSchema}, debrief:UNDER_LIST('שאלות לעיבוד'), nextStep:UNDER('צעד המשך','פעולה אחת ברורה אחרי המפגש: מי, מה ומתי.'), participantMaterials:UNDER('חומרי המשתתפים','מה המשתתפים מקבלים ומה עושים בו, במילים פשוטות כמו שמסבירים בכיתה. למשל: "הכיתה מקבלת משימה לתכנן מיפוי של עזרה הדדית בקהילה. בדף המשימה מתכננים את הפעילות כך שלכל אחת ואחד יהיה תפקיד." אחר כך, אם צריך, מה כתוב בדף בכמה שורות קצרות. בלי מונחים מופשטים ובלי שרשרת שאלות.') });
 const basisSchema = object({ sourceId:STR, explanation:STR });
 const mechanismSchema = object({ type:{type:'string',enum:Object.keys(studio.MECHANISM_TYPES)},
   ...Object.fromEntries(studio.MECHANISM_FIELDS.map(field=>[field,MECH_LABELS[field]?UNDER(MECH_LABELS[field]):STR])) });
 const facilitationSchema = object(Object.fromEntries(studio.FACILITATION_FIELDS.map(field=>[field,FACIL_LABELS[field]?UNDER(FACIL_LABELS[field]):STR])));
 const learningSchema = object({ ...Object.fromEntries(studio.LEARNING_FIELDS.map(field=>[field,LEARN_LABELS[field]?UNDER(LEARN_LABELS[field]):STR])),
   learnBefore:{type:'array',items:object({ sourceId:STR, focus:STR })} });
-export const ACTIVITY_SCHEMA = object({ title:STR, purpose:UNDER('מטרה'), focus, selectionReason:UNDER('הסבר הבחירה'),
+export const ACTIVITY_SCHEMA = object({ title:STR, purpose:UNDER('מטרה','משפט קצר אחד של פעולה ותוצר, במילים פשוטות.'), focus, selectionReason:UNDER('הסבר הבחירה'),
   sessions:{type:'array',items:sessionSchema},
   participationAlternative:UNDER('דרכים להשתתף ללא חשיפה אישית','דרכים מעשיות להשתתף בלי לספר על עצמי: לפחות שתיים, כמו כתיבה, ציור, דמות בדויה, תפקיד מעשי או התבוננות, וגם "בכל שלב אפשר לבחור לא לדבר". לא הזמנה לדבר או לשתף.'),
   leaderGuidance:UNDER('הנחיה למוביל/ה'),
@@ -242,7 +242,7 @@ const INSTRUCTIONS = `את/ה מסייע/ת בסטודיו חוסן של Begood:
 בשינוי החזר מועמד שהמשתמש יבחר אם לקבל. הסבר מה השתנה, איזה מנגנון נשמר, תנאי ההמשך, והאם היעד השתנה; שינוי יעד נחשף במפורש בשדה goalChanged. אין לכתוב פרטים מזהים או מידע פרטי מחומרי הקשר בערכת המשתתפים.
 בהתייעצות (consult), אפשר לסייע כבר מרעיון או מטיוטה חלקית, לפני מילוי כל פרטי ההפקה. השב לשאלה ולשלב שניתנו, בהתחשב בשיחה הקודמת ובחששות פרטיים; אל תחזור על שאלות שכבר נענו. תן עידוד חם ומעשי, הבע הבנה לחשש בלי לבטל אותו, ושתי פעולות קטנות כשזה מתאים. אל תבטיח הצלחה, תקטין פחדים, תאבחן או תמציא ניסיון אישי. שאל רק מה שנדרש כדי להתקדם. לצורך הסבר מקצועי השתמש רק במקורות שסופקו; עידוד קצר או שאלת בירור אינם חייבים בציטוט. הכשרה מקצועית חשובה במיוחד להנחיית קבוצה או פעילות רגישה.
 התייעצות לעולם אינה משנה פעילות. suggestedInstructions יכול להכיל רק הצעת הוראות לשלב selectedStep שנבחר במפורש; ההצעה ממתינה לקבלה מפורשת של המשתמש. בלי selectedStep החזר suggestedInstructions ריק. אל תציע החלפה שקטה של מטרה, רכיבים, מיומנויות או שלבים, ואל תעתיק חששות פרטיים, היסטוריית שיחה או פרטים מזהים להוראות למשתתפים. answer והעידוד מיועדים רק למוביל/ה ואינם תוכן ערכת המשתתפים.
-עברית פשוטה, פסקאות קצרות והוראות מעשיות; שפה תומכת, בחירה, שליטה ומסר אפשרי של תקווה. אין להמציא עובדות, אנשים או סיפורים אמיתיים. אין לשאול 'למה'; בקש 'ספרו לנו מה הוביל אתכם לבחירה'.`;
+עברית פשוטה, פסקאות קצרות והוראות מעשיות. כל הנחיה ברורה מיד: מי עושה, מה עושים, עם מה, ומה יוצא בסוף. מטרה היא משפט קצר של פעולה ותוצר, וחומרי המשתתפים מתארים את המשימה כמו שמסבירים אותה בכיתה; שפה תומכת, בחירה, שליטה ומסר אפשרי של תקווה. אין להמציא עובדות, אנשים או סיפורים אמיתיים. אין לשאול 'למה'; בקש 'ספרו לנו מה הוביל אתכם לבחירה'.`;
 
 export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onReady}={}) {
   const actor=await authorizePermission(store,body?.token,STUDIO_PERMS);
