@@ -8,17 +8,19 @@ export async function runAgentReview({artifact,runId,provider,sourceLibrary=[],t
   if(!provider?.complete)throw contractError('provider_unavailable',503);
   for(const key of ['maxCalls','maxTokensPerCall','totalTokens','timeoutMs','maxInputBytes'])if(!Number.isInteger(cap[key])||cap[key]<1||cap[key]>AGENT_LIMITS[key])throw contractError('invalid_limits',400);
   const deadline=Date.now()+cap.timeoutMs;
-  let calls=0,totalTokens=0,reservedTokens=0;
+  let calls=0,totalTokens=0,reservedTokens=0,pendingCalls=0,notifyBudget;
+  let budgetChanged=new Promise(resolve=>notifyBudget=resolve);
   const results=structuredClone(priorResults),traces=[];
   const mode=teamEnabled?'team':'single';
   const call=async(agent,extra={})=>{
-    const started=performance.now();let timer,abort;
+    const started=performance.now();let timer,abort,reservationStarted=false;
     const controller=new AbortController();
     const finish=(status,result={})=>({agent,status,...result});
     let result,completion;
     try {
       if(signal?.aborted)throw contractError('aborted');
       await assertCurrent();
+      if(signal?.aborted||controller.signal.aborted)throw contractError('aborted');
       if(calls>=cap.maxCalls||totalTokens>=cap.totalTokens||Date.now()>=deadline)throw contractError('budget_exceeded');
       const envelope=agentEnvelope(artifact,agent,{runId,sourceLibrary,question,stepId,requestType,...extra});
       const input=JSON.stringify(envelope);
@@ -27,22 +29,40 @@ export async function runAgentReview({artifact,runId,provider,sourceLibrary=[],t
       // Reserve input as UTF-8 bytes (a conservative token estimate), output,
       // and protocol overhead before starting parallel requests. No hidden retry.
       const reservation=inputBytes+SYSTEM_BYTES[agent]+cap.maxTokensPerCall+2048;
-      if(totalTokens+reservedTokens+reservation>cap.totalTokens)throw contractError('budget_exceeded');
-      calls++;reservedTokens+=reservation;
       const waiting=new Promise((_,reject)=>{
         timer=setTimeout(()=>{controller.abort();reject(contractError('timeout'));},Math.max(1,deadline-Date.now()));
         abort=()=>{controller.abort();reject(contractError('aborted'));};
         signal?.addEventListener('abort',abort,{once:true});
       });
+      // A pending call may settle below its conservative reservation. Wait for
+      // that accounting before declining another reviewer; retain every cap.
+      while(totalTokens+reservedTokens+reservation>cap.totalTokens) {
+        if(signal?.aborted||controller.signal.aborted)throw contractError('aborted');
+        if(Date.now()>=deadline)throw contractError('timeout');
+        if(!pendingCalls||totalTokens+reservation>cap.totalTokens)throw contractError('budget_exceeded');
+        await Promise.race([budgetChanged,waiting]);
+        await assertCurrent();
+        if(signal?.aborted||controller.signal.aborted)throw contractError('aborted');
+        if(Date.now()>=deadline)throw contractError('timeout');
+        if(calls>=cap.maxCalls||totalTokens>=cap.totalTokens)throw contractError('budget_exceeded');
+      }
+      if(signal?.aborted||controller.signal.aborted)throw contractError('aborted');
+      calls++;reservedTokens+=reservation;pendingCalls++;reservationStarted=true;
       completion=assertCompletionResult(await Promise.race([provider.complete({system:AGENT_SYSTEMS[agent],messages:[{role:'user',content:input}],
         maxTokens:cap.maxTokensPerCall,maxAttempts:1,variation:'low',signal:controller.signal,tools:[],toolChoice:'none'}),waiting]));
       if(signal?.aborted||controller.signal.aborted)throw contractError('aborted');
       if(completion.toolCalls?.length)throw contractError('proposal_patch');
       const usage=completion.usage||{};
-      const used=usage.totalTokens??((usage.inputTokens||0)+(usage.outputTokens||0));
-      if(!Number.isFinite(used)||used<0||usage.outputTokens>cap.maxTokensPerCall)throw contractError('budget_exceeded');
-      // Unknown usage keeps the entire reservation, never measured zero.
-      reservedTokens-=reservation;totalTokens+=used||reservation;
+      const measured=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0;
+      for(const key of ['inputTokens','outputTokens','totalTokens'])
+        if(usage[key]!=null&&!measured(usage[key]))throw contractError('budget_exceeded');
+      if(usage.outputTokens>cap.maxTokensPerCall)throw contractError('budget_exceeded');
+      if(measured(usage.totalTokens)&&usage.totalTokens<(usage.inputTokens||0)+(usage.outputTokens||0))throw contractError('budget_exceeded');
+      const used=measured(usage.totalTokens)?usage.totalTokens:
+        measured(usage.inputTokens)&&measured(usage.outputTokens)?usage.inputTokens+usage.outputTokens:reservation;
+      if(!Number.isFinite(used))throw contractError('budget_exceeded');
+      // Incomplete usage keeps the full reservation; a partial count is not a total.
+      reservedTokens-=reservation;totalTokens+=used;
       if(totalTokens>cap.totalTokens)throw contractError('budget_exceeded');
       let value;try{value=JSON.parse(completion.text);}catch{throw contractError('proposal_schema');}
       const proposal=validateProposal(value,{artifact,sourceLibrary,agent});
@@ -54,7 +74,15 @@ export async function runAgentReview({artifact,runId,provider,sourceLibrary=[],t
     } catch(error) {
       const code=['proposal_schema','proposal_sources','proposal_patch','agent_scope','missing_step','locked_field','timeout','aborted','budget_exceeded','invalid_artifact','private_leak'].includes(error.code)?error.code:'provider_error';
       result=finish(code==='timeout'?'timeout':code==='aborted'?'cancelled':code==='budget_exceeded'?'budget_exceeded':'failed',{errorCode:code,usage:completion?.usage||error.usage||null});
-    } finally {clearTimeout(timer);signal?.removeEventListener('abort',abort);}
+    } finally {
+      clearTimeout(timer);signal?.removeEventListener('abort',abort);
+      if(reservationStarted) {
+        pendingCalls--;
+        const notify=notifyBudget;
+        budgetChanged=new Promise(resolve=>notifyBudget=resolve);
+        notify();
+      }
+    }
     const trace=agentTrace({runId,artifactId:artifact.id,baseVersion:artifact.version,agent,model:provider.model,promptVersion:digest(AGENT_SYSTEMS[agent]),
       schemaVersion:AGENT_SCHEMA_VERSION,sourceVersion:digest(sourceLibrary),ms:performance.now()-started,usage:result.usage,status:result.status,errorCode:result.errorCode||'none'});
     traces.push(trace);results[agent]=result;

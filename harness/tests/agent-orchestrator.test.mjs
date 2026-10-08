@@ -5,6 +5,7 @@ import { createAtomicMemoryStore } from '../lib/principal.mjs';
 import { handleArtifacts } from '../lib/activity-artifact.mjs';
 import { getProvider, ProviderError } from '../lib/providers.mjs';
 import {agentEnvelope,validateProposal} from '../lib/agent-contract.mjs';
+import { runAgentReview } from '../lib/agent-orchestrator.mjs';
 
 const baseline = JSON.parse(readFileSync(new URL('../fixtures/baseline-cases.json', import.meta.url), 'utf8')).cases[0];
 const principal = {ownerId:'fixture-user-a',tenantId:'fixture-tenant-a',permissions:['activity']};
@@ -195,6 +196,78 @@ test('shipped-document-sized narrative reviews fit single and team bounds withou
     assert.ok(Buffer.byteLength(JSON.stringify(log[0]))>16000);
     assert.ok(out.review.totalTokens<=100000);assert.equal(out.review.fallback,false);
   }
+});
+
+async function reservedTeam({usedTokens=9040,partialUsage=false,signal,limits={}}={}) {
+  const store=createAtomicMemoryStore(),draft=content();
+  draft.facilitatorGuide=JSON.stringify(JSON.parse(readFileSync(new URL('../../app/products/data/edu.json',import.meta.url),'utf8')).facilitator);
+  const a=await created(store,{content:draft}),log=[],events=[];let active=0,spent=0,maxCommitted=0,release,ready;
+  const blocked=new Promise(resolve=>release=resolve),firstTwo=new Promise(resolve=>ready=resolve);
+  const actual={complete:async request=>{
+    const input=JSON.parse(request.messages[0].content),reservation=Buffer.byteLength(request.messages[0].content)+Buffer.byteLength(request.system)+request.maxTokens+2048;
+    active+=reservation;maxCommitted=Math.max(maxCommitted,active+spent);log.push(input.agent);events.push('start:'+input.agent);
+    assert.equal(request.maxAttempts,1);assert.ok(active+spent<=100000,'physical work stays within outstanding reservations and spent tokens');
+    if(log.length===2)ready();
+    if(['pedagogy','resilience_facilitation'].includes(input.agent))await blocked;
+    const response=await provider([]).complete(request);active-=reservation;spent+=partialUsage?reservation:usedTokens;events.push('settled:'+input.agent);
+    response.usage=partialUsage?{inputTokens:null,outputTokens:40,totalTokens:null}:{inputTokens:usedTokens-40,outputTokens:40,totalTokens:usedTokens};return response;
+  }};
+  const pending=handleArtifacts(store,principal,{action:'review',artifactId:a.id,expectedVersion:1},options({provider:actual,teamEnabled:true,signal,limits}));
+  return{pending,firstTwo,release,log,events,maxCommitted:()=>maxCommitted};
+}
+
+test('Reviewers wait for conservative reservations to settle instead of losing the queued safety review',async()=>{
+  const run=await reservedTeam();
+  await run.firstTwo;assert.deepEqual(run.log,['pedagogy','resilience_facilitation']);run.release();
+  const [status,out]=await run.pending;assert.equal(status,200);assert.equal(out.review.status,'complete');
+  assert.deepEqual(run.log,['pedagogy','resilience_facilitation','safety_sources','synthesis']);assert.ok(run.maxCommitted()<=100000);
+  assert.ok(run.events.indexOf('start:safety_sources')>run.events.indexOf('settled:pedagogy'));assert.equal(out.review.totalTokens,4*9040);
+});
+
+test('Measured exhaustion after queued reviewers still blocks synthesis without an extra physical call',async()=>{
+  const run=await reservedTeam({usedTokens:31000});await run.firstTwo;run.release();
+  const [status,out]=await run.pending;assert.equal(status,200);assert.equal(out.review.status,'failed');
+  assert.deepEqual(run.log,['pedagogy','resilience_facilitation','safety_sources']);assert.equal(out.review.results.synthesis.status,'budget_exceeded');
+  assert.equal(out.review.totalTokens,93000);assert.ok(run.maxCommitted()<=100000);assert.equal(out.review.proposal,null);
+});
+
+test('Cancellation and the shared deadline stop queued reviewer dispatch when active adapters do not settle',async()=>{
+  for(const action of ['cancel','timeout']){
+    const controller=new AbortController(),run=await reservedTeam({signal:controller.signal,limits:{timeoutMs:200}});
+    await run.firstTwo;if(action==='cancel')controller.abort();
+    const [status,out]=await run.pending;run.release();assert.equal(status,200);assert.deepEqual(run.log,['pedagogy','resilience_facilitation']);
+    assert.equal(out.review.results.safety_sources.status,action==='cancel'?'cancelled':'timeout');assert.equal(out.review.proposal,null);
+    assert.equal(out.review.status,action==='cancel'?'cancelled':'failed');assert.equal(out.artifact.proposals.length,0);
+  }
+});
+
+test('Partial token usage keeps whole reservations and cannot admit otherwise over-budget queued work',async()=>{
+  const run=await reservedTeam({partialUsage:true});await run.firstTwo;run.release();
+  const [status,out]=await run.pending;assert.equal(status,200);assert.equal(out.review.status,'failed');
+  assert.deepEqual(run.log,['pedagogy','resilience_facilitation']);assert.equal(out.review.results.safety_sources.status,'budget_exceeded');
+  assert.equal(out.review.results.synthesis.status,'budget_exceeded');assert.ok(out.review.totalTokens>60000);assert.ok(run.maxCommitted()<=100000);
+});
+
+test('Complete token measurements are charged while invalid counts and excessive output remain budget failures',async()=>{
+  for(const [usage,expected] of [[{inputTokens:5,outputTokens:2,totalTokens:null},'complete'],[{inputTokens:null,outputTokens:2,totalTokens:7},'complete'],
+    [{inputTokens:-1,outputTokens:2,totalTokens:7},'failed'],[{inputTokens:null,outputTokens:2401,totalTokens:2401},'failed'],
+    [{inputTokens:5,outputTokens:2,totalTokens:3},'failed'],[{inputTokens:5,outputTokens:2,totalTokens:'7'},'failed']]){
+    const store=createAtomicMemoryStore(),a=await created(store);
+    const actual={complete:async request=>({...await provider([]).complete(request),usage})};
+    const [,out]=await handleArtifacts(store,principal,{action:'review',artifactId:a.id,expectedVersion:1},options({provider:actual}));
+    assert.equal(out.review.status,expected);if(expected==='complete')assert.equal(out.review.totalTokens,7);else assert.equal(out.review.results.single.status,'budget_exceeded');
+  }
+});
+
+test('Aborting during a suspended ownership check prevents queued dispatch after that check resumes',async()=>{
+  const store=createAtomicMemoryStore(),draft=content();draft.facilitatorGuide=JSON.stringify(JSON.parse(readFileSync(new URL('../../app/products/data/edu.json',import.meta.url),'utf8')).facilitator);
+  const artifact=await created(store,{content:draft}),controller=new AbortController(),log=[];let checks=0,resume,parked,started,release;
+  const currentGate=new Promise(resolve=>resume=resolve),parkedReady=new Promise(resolve=>parked=resolve),firstTwo=new Promise(resolve=>started=resolve),blocked=new Promise(resolve=>release=resolve);
+  const actual={complete:async request=>{log.push(JSON.parse(request.messages[0].content).agent);if(log.length===2)started();await blocked;return provider([]).complete(request);}};
+  const pending=runAgentReview({artifact,runId:'suspended-check',provider:actual,sourceLibrary:baseline.sourceLibrary,teamEnabled:true,signal:controller.signal,limits:{timeoutMs:200},
+    validateCandidate:async()=>{},assertCurrent:async()=>{if(++checks===3){parked();await currentGate;}}});
+  await Promise.all([firstTwo,parkedReady]);controller.abort();resume();const out=await pending;release();
+  assert.deepEqual(log,['pedagogy','resilience_facilitation']);assert.equal(out.results.safety_sources.status,'cancelled');assert.equal(out.status,'cancelled');assert.equal(out.proposal,null);
 });
 
 test('a lost review lease can retry its base version and fences a response from the abandoned attempt',async()=>{

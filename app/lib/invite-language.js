@@ -1,8 +1,8 @@
-// שלושת העקרונות של Begood לכל תוצר (07/10/2026) — מקור אמת יחיד:
-//  1. שפה של הזמנה, לא של חובה.  2. בחירה, החלטה, שלבים ואחריות (agency).  3. אי־שיפוטיות (nonjudging).
+// ארבעת העקרונות של Begood לכל תוצר (08/10/2026). מקור אמת יחיד:
+//  1. שפה של הזמנה, לא של חובה. 2. בחירה, החלטה, שלבים ואחריות. 3. אי־שיפוטיות. 4. ניסוח פשוט, ישיר וברור.
 //  - rule: הכלל למודל. השרת מוסיף אותו לכל קריאה למודל (getProvider ב-harness/lib/providers.mjs),
 //    כך שכל הכלים מקבלים אותו — פרקטי, נוגי, ננה, תכנון שיחה ופעילות, משוב לעבודות, הסימולציות ועוד.
-//  - apply(system): מוסיף את שני העקרונות להנחיה (מחרוזת או מערך בלוקים), כל אחד פעם אחת בלבד.
+//  - apply(system): מוסיף את ארבעת העקרונות להנחיה (מחרוזת או מערך בלוקים), כל נוסח מלא פעם אחת בלבד.
 //  - WORDS / find(text): המילים שנמנעים מהן, לבדיקות.
 // אף אחד לא צריך ולא חייב: מציעים, רוצים, מבקשים, מזמינים.
 // חריגים: דמויות בסימולציה ובתרחיש מדברות בקולן הטבעי; "חובת דיווח" הוא מונח קבוע.
@@ -38,11 +38,11 @@
   const RULES = [[TITLE, rule], [AGENCY_TITLE, agency], [JUDGE_TITLE, nonjudging], [PLAIN_TITLE, plain]];
   function apply(system) {
     if (Array.isArray(system)) {
-      const has = t => system.some(b => b && typeof b.text === 'string' && b.text.includes(t));
-      return system.concat(RULES.filter(([t]) => !has(t)).map(([, r]) => ({ type: 'text', text: r })));
+      const has = r => system.some(b => b && typeof b.text === 'string' && b.text.includes(r));
+      return system.concat(RULES.filter(([, r]) => !has(r)).map(([, r]) => ({ type: 'text', text: r })));
     }
     let s = typeof system === 'string' ? system : '';
-    RULES.forEach(([t, r]) => { if (!s.includes(t)) s = s ? s + '\n\n' + r : r; });
+    RULES.forEach(([, r]) => { if (!s.includes(r)) s = s ? s + '\n\n' + r : r; });
     return s;
   }
   const RE = new RegExp('(^|[^\\u0590-\\u05FF])([ולשהמכב]{0,3})(' + WORDS.join('|') + ')(?=$|[^\\u0590-\\u05FF])', 'g');

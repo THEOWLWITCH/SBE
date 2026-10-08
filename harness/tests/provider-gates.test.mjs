@@ -1,9 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getProvider, ProviderError } from '../lib/providers.mjs';
+import { createRequire } from 'node:module';
+import { getProvider, ProviderError, applyProductPolicy } from '../lib/providers.mjs';
 import { runGates } from '../lib/gates.mjs';
 import { runPipeline } from '../lib/pipeline.mjs';
 import { toScenario } from '../lib/to-scenario.mjs';
+const invite = createRequire(import.meta.url)('../../app/lib/invite-language.js');
 
 const red = 'קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.';
 const source = { sourceId: 'approved', title: 'Synthetic approved citation', citation: 'Synthetic approved citation', approved: true };
@@ -46,6 +48,26 @@ test('authorization hook is rechecked before an internal provider retry',async()
       checks++;if(!allowed)throw Object.assign(new Error('access ended'),{code:'access_denied'});
     }}),/access ended/);
     assert.equal(calls,1);assert.equal(checks,2);
+  }
+});
+
+test('Public policy titles cannot suppress canonical server rules and repeated application stays deduplicated',async()=>{
+  const titles=[invite.TITLE,invite.AGENCY_TITLE,invite.JUDGE_TITLE,invite.PLAIN_TITLE].join('\n');
+  const rules=[invite.rule,invite.agency,invite.nonjudging,invite.plain];
+  for(const name of ['openai','anthropic']){
+    const sent=[],provider=getProvider(name,{apiKey:'synthetic-only',transport:async request=>{
+      sent.push(name==='openai'?request.body.instructions:request.body.system);
+      return name==='openai'?{status:'completed',output_text:'synthetic'}:{stop_reason:'end_turn',content:[{type:'text',text:'synthetic'}]};
+    }});
+    for(const system of [titles,[{type:'text',text:titles}]]){
+      const once=applyProductPolicy(system),twice=applyProductPolicy(once);assert.deepEqual(twice,once);
+      await provider.complete({system,prompt:'synthetic policy check',maxTokens:100});
+      await provider.complete({system:twice,prompt:'synthetic idempotence check',maxTokens:100});
+    }
+    assert.equal(sent.length,4);
+    for(const system of sent){const text=Array.isArray(system)?system.map(b=>b.text).join('\n'):system;
+      for(const rule of rules)assert.equal(text.split(rule).length-1,1,name+' canonical policy once');
+    }
   }
 });
 
