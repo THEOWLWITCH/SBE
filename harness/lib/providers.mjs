@@ -8,8 +8,6 @@ const VARIATION = {
   high:   { anthropic: { effort: 'xhigh' }, openai: { temperature: 1.0 } },
   medium: { anthropic: { effort: 'high'  }, openai: { temperature: 0.7 } },
   low:    { anthropic: { effort: 'high'  }, openai: { temperature: 0.3 } },
-  // תשובות שיחה קצרות (ננה: שאלה, תרגול, רפלקציה). פחות חשיבה, תשובה מהירה יותר.
-  quick:  { anthropic: { effort: 'medium' }, openai: { temperature: 0.5 } },
 };
 
 class ProviderError extends Error {
