@@ -9,6 +9,8 @@ import { authorizePermission, handleAccess } from './access.mjs';
 const studio = createRequire(import.meta.url)('../../app/lib/resilience-studio.js');
 // שפה של הזמנה, לא של חובה — כלל של Begood לכל קריאה למודל (גם לסטודיו, שפונה ל-OpenAI ישירות)
 const INVITE = createRequire(import.meta.url)('../../app/lib/invite-language.js');
+// הסוכנת-הלקוחה (08/10/2026): קוראת כל ערכה כמו מי שתשתמש בה, ואם משהו לא ברור, הערכה מתוקנת פעם אחת
+const CUSTOMER = createRequire(import.meta.url)('../../app/lib/customer-review.js');
 // עד לאישור המקצועי (07/10/2026): רק הרשאת studio (ומנהלת המערכת). כשמאשרים — מוסיפים את
 // 'activity', 'resilience', 'practi', 'leadership' כאן, ב-access-guard.js וב-home.html.
 const STUDIO_PERMS = ['studio'];
@@ -21,13 +23,13 @@ const object = properties => ({ type:'object', properties, required:Object.keys(
 // "הכותרת: דרכים להשתתף ללא חשיפה אישית. בתוכן כתוב: בכל שלב אפשר לדבר. זה לא סביר").
 const UNDER = (label, extra='') => ({ type:'string', description:'מוצג בערכה תחת הכותרת "'+label+'". כתבו רק מה שעונה בדיוק על הכותרת הזאת.'+(extra?' '+extra:'') });
 const UNDER_LIST = (label) => ({ type:'array', items:STR, description:'מוצג בערכה תחת הכותרת "'+label+'". כל פריט עונה בדיוק על הכותרת.' });
-const FACIL_LABELS = {preparation:'לפני המפגש: הכנה וחזרה',opening:'פתיחה והסכמות',participation:'הזמנת השתתפות',questions:'שאלות והקשבה',difficulties:'שתיקה, התנגדות או מחלוקת',closing:'סגירה ועיבוד',followUp:'המשך ולמידה מההנחיה'};
+const FACIL_LABELS = {preparation:'לפני המפגש: הכנה וחזרה',opening:'פתיחה והסכמות',participation:'הזמנת השתתפות',questions:'שאלות והקשבה',difficulties:'שתיקה, התנגדות או מחלוקת',closing:'סיכום: מה שואלים בסוף ואיך מסיימים',followUp:'המשך ולמידה מההנחיה'};
 const MECH_LABELS = {name:'שם המנגנון',cadence:'מתי ובאיזו תדירות?',roles:'מי אחראית, מי שותף ומי מגבה?',participation:'איך משתתפים ומשפיעים?',firstAction:'הפעולה הראשונה',review:'מתי ואיך בודקים ומשפרים?',mechanism:'איך המנגנון מתרגל את מוקד החוסן?'};
 const LEARN_LABELS = {mechanism:'איך הפעילות אמורה לעבוד (השערת התכנון)',apply:'איך מיישמים במפגש',watchFor:'מה נראה בפועל אם המנגנון פועל',limits:'גבולות: מה הפעילות אינה, ומתי עוצרים'};
-const stepSchema = object({ id:STR, title:STR, minutes:{type:'number'}, instructions:UNDER('מה עושים','מי עושה, מה עושים, עם מה, ומה יוצא בסוף. משפטים קצרים ופשוטים.'), facilitation:UNDER('איך מנחים'), space:UNDER('מרחב ועזרים'),
+const stepSchema = object({ id:STR, title:STR, phase:{type:'string',enum:['פתיחה','פעילות מרכזית','סיכום','אחרי המפגש'],description:'החלק במפגש שאליו השלב שייך. כל מפגש: פתיחה, פעילות מרכזית (אפשר כמה שלבים ברצף), סיכום, ולפעמים משהו אחרי המפגש.'}, minutes:{type:'number'}, instructions:UNDER('תיאור הפעילות','מה קורה בשלב: מי עושה, מה עושים, עם מה, ומה יוצא בסוף. משפטים קצרים ופשוטים.'), facilitation:UNDER('הנחיה למנחה','מה המנחה אומר/ת ועושה בשלב הזה: משפט פתיחה במרכאות, ושאלות שהמנחה שואל/ת את הקבוצה עם המטרה שלהן (למשל "כדי שכל אחד יבחר תפקיד, שואלים: ...").'), space:UNDER('עזרים ומשאבים','סידור המרחב בשלב הזה.'),
   materials:strings, components:{type:'array',items:focus}, individualSkills:strings, sharedSkills:strings });
 const sessionSchema = object({ id:STR, title:STR, purpose:UNDER('מטרת המפגש','משפט קצר אחד של פעולה ותוצר, למשל "לנסח אמנה לעזרה הדדית בכיתה". לא רשימת מושגים.'), link:UNDER('קשר לתהליך'),
-  steps:{type:'array',items:stepSchema}, debrief:UNDER_LIST('שאלות לעיבוד'), nextStep:UNDER('צעד המשך','פעולה אחת ברורה אחרי המפגש: מי, מה ומתי.'), participantMaterials:UNDER('חומרי המשתתפים','מה המשתתפים מקבלים ומה עושים בו, במילים פשוטות כמו שמסבירים בכיתה. למשל: "הכיתה מקבלת משימה לתכנן מיפוי של עזרה הדדית בקהילה. בדף המשימה מתכננים את הפעילות כך שלכל אחת ואחד יהיה תפקיד." אחר כך, אם צריך, מה כתוב בדף בכמה שורות קצרות. בלי מונחים מופשטים ובלי שרשרת שאלות.') });
+  steps:{type:'array',items:stepSchema}, debrief:{type:'array',items:STR,description:'שאלות שהמנחה שואל/ת את כל הקבוצה בסיכום המפגש, כדי לחשוב יחד מה עבד ומה ננסה בפעם הבאה. מוצגות בעמודה "הנחיה למנחה" של הסיכום. כל שאלה מובנת בלי הסבר נוסף ואומרת על מה בדיוק שואלים, למשל "מה עזר לנו לסיים את התכנית בזמן?", ולא "איזו דרך השתתפות אפשרה לרעיון נוסף להיכנס?".'}, nextStep:UNDER('אחרי המפגש','פעולה אחת ברורה אחרי המפגש: מי עושה, מה ומתי.'), participantMaterials:UNDER('חומרי המשתתפים','מה המשתתפים מקבלים ומה עושים בו, במילים פשוטות כמו שמסבירים בכיתה. למשל: "הכיתה מקבלת משימה לתכנן מיפוי של עזרה הדדית בקהילה. בדף המשימה מתכננים את הפעילות כך שלכל אחת ואחד יהיה תפקיד." אחר כך, אם צריך, מה כתוב בדף בכמה שורות קצרות. בלי מונחים מופשטים ובלי שרשרת שאלות.') });
 const basisSchema = object({ sourceId:STR, explanation:STR });
 const mechanismSchema = object({ type:{type:'string',enum:Object.keys(studio.MECHANISM_TYPES)},
   ...Object.fromEntries(studio.MECHANISM_FIELDS.map(field=>[field,MECH_LABELS[field]?UNDER(MECH_LABELS[field]):STR])) });
@@ -230,7 +232,7 @@ const INSTRUCTIONS = `את/ה מסייע/ת בסטודיו חוסן של Begood:
 גם בבנייה או בהתאמה, אם חסר מידע מהותי או יש סתירה המשנה את הפעולה, החזר שאלות ממוקדות בשדה clarificationQuestions וערכי מצייני מקום בשאר שדות הפעילות; לא מציגים אז ערכה. התחשב בתשובות brief.clarifications. כשהמידע מספיק, clarificationQuestions הוא מערך ריק.
 מוקד שנבחר במפורש נשמר. גיל ותפקיד המוביל נפרדים מגיל והרכב המשתתפים; צוותי עבודה, משפחות וקהילות אינם חייבים להיות כיתה.
 מיפוי הוא תקציר מצרפי מאומת בלבד: selectedStatements הם ההיגדים שנבחרו, לפי מזהה, נוסח וקוטביות; coverage מציין אילו צדדים נמדדו בפועל. ערך good או harm כאשר הצד לא נמדד אינו עדות לתפקוד או לפגיעה. אין להסיק היעדר חוזקה מהיעדר היגד חיובי. שמור על סמנטיקת הכיתה, קולות המשיבים, ההיגדים שנבחרו, תאריך וסבב. אם מיפוי ישן, היקף לא מתאים או תיאור חדש סותר אותו — בקש הבהרה ממוקדת; אין סיבתיות, אבחון או ניבוי התנהגות. אין להפוך תצפיות לציון חוסן אישי.
-ביצירת פעילות: הצג מטרה, מוקד, רכיבים, מיומנויות אישיות ומשותפות דרך שלבים שמתרגלים אותם בפועל. מפגש קבוצתי לבדו אינו תרגול שייכות; כל רכיב נוסף דורש מנגנון מפורש. אחרי התאמה עדכן את מיפוי המיומנויות ולא רק את הכותרת. לכל שלב: instructions — מה עושים, בקצרה; facilitation — איך מנחים את השלב (משפט פתיחה במרכאות, איך מזמינים להשתתף ולמה שמים לב), בשניים–שלושה משפטים; space — סידור המרחב והקבוצה (למשל מעגל, זוגות, שולחנות של ארבעה), בכמה מילים; materials — עזרים קצרים. הניסוח תמציתי: הערכה מודפסת כטבלה לכל מפגש.
+מבנה כל מפגש: פתיחה, פעילות מרכזית (אפשר כמה שלבים ברצף), סיכום, ואחרי המפגש. לכל שלב phase. שאלות הסיכום (debrief) הן שאלות שהמנחה שואל/ת את הקבוצה בסיכום, וכל שאלה מובנת בלי הסבר נוסף. ביצירת פעילות: הצג מטרה, מוקד, רכיבים, מיומנויות אישיות ומשותפות דרך שלבים שמתרגלים אותם בפועל. מפגש קבוצתי לבדו אינו תרגול שייכות; כל רכיב נוסף דורש מנגנון מפורש. אחרי התאמה עדכן את מיפוי המיומנויות ולא רק את הכותרת. לכל שלב: instructions — מה עושים, בקצרה; facilitation — איך מנחים את השלב (משפט פתיחה במרכאות, איך מזמינים להשתתף ולמה שמים לב), בשניים–שלושה משפטים; space — סידור המרחב והקבוצה (למשל מעגל, זוגות, שולחנות של ארבעה), בכמה מילים; materials — עזרים קצרים. הניסוח תמציתי: הערכה מודפסת כטבלה לכל מפגש.
 בכל ערכה כלול facilitationPlan מעשי המבוסס על מקור הנחיה שניתן: הכנה לפי התנאים, פתיחה שאפשר לומר, דרכי השתתפות, שאלות עיבוד, טיפול בשתיקה ובמחלוקת וגבולות לעצירה, סגירה ובדיקת המשך. קשר את הנחיית הקבוצה למקור IAFCompetencies2026 או UnicefAdolescentKit2026 בשדה professionalBasis; מקור UNICEF מתאים רק להקשר של ילדים או נוער. הנחיות אלה מסייעות להכנה, והכשרה מקצועית וניסיון בהנחיה עדיין חשובים; אל תציג את המערכת כתחליף להכשרה.
 בכל ערכה כלול learningGuide — מדריך למידה למנחה, המבוסס על המקורות שניתנו: mechanism — איך הפעילות אמורה לתרגל את מוקד החוסן (השערת תכנון, לא ממצא על הפעילות הזאת); learnBefore — אחד עד שלושה מקורות מתוך professionalSources בלבד (sourceId), ולכל אחד focus: מה ללמוד בו לפני ההנחיה ולמה זה רלוונטי לפעילות; apply — איך ליישם בפועל במפגש; watchFor — פעולות נצפות שיראו אם המנגנון פועל, בלי ציון אישי ובלי הסקה על אדם; limits — מה הפעילות אינה (טיפול, אבחון, פעילות שיעילותה נבדקה) ומתי עוצרים ומשוחחים באופן אישי. אל תמציא מקור ואל תציג מחקר על מנגנון כהוכחה ליעילות הפעילות.
 הצע socialMechanism מתאים שיכול להמשיך אחרי הפעילות: שגרה, לוח משותף, יום קבוע, הסכמה, צוות פעולה או ועדה רק לפי הצורך והתנאים. קבע שם, קצב, תפקידים וגיבוי, השתתפות נגישה, פעולה ראשונה, בדיקת המשך והסבר למנגנון המשותף. כשלא מתאים להוסיף מנגנון, בחר type=none והסבר בשדה mechanism; אל תכפה שגרה או תפקידים.
@@ -243,6 +245,47 @@ const INSTRUCTIONS = `את/ה מסייע/ת בסטודיו חוסן של Begood:
 בהתייעצות (consult), אפשר לסייע כבר מרעיון או מטיוטה חלקית, לפני מילוי כל פרטי ההפקה. השב לשאלה ולשלב שניתנו, בהתחשב בשיחה הקודמת ובחששות פרטיים; אל תחזור על שאלות שכבר נענו. תן עידוד חם ומעשי, הבע הבנה לחשש בלי לבטל אותו, ושתי פעולות קטנות כשזה מתאים. אל תבטיח הצלחה, תקטין פחדים, תאבחן או תמציא ניסיון אישי. שאל רק מה שנדרש כדי להתקדם. לצורך הסבר מקצועי השתמש רק במקורות שסופקו; עידוד קצר או שאלת בירור אינם חייבים בציטוט. הכשרה מקצועית חשובה במיוחד להנחיית קבוצה או פעילות רגישה.
 התייעצות לעולם אינה משנה פעילות. suggestedInstructions יכול להכיל רק הצעת הוראות לשלב selectedStep שנבחר במפורש; ההצעה ממתינה לקבלה מפורשת של המשתמש. בלי selectedStep החזר suggestedInstructions ריק. אל תציע החלפה שקטה של מטרה, רכיבים, מיומנויות או שלבים, ואל תעתיק חששות פרטיים, היסטוריית שיחה או פרטים מזהים להוראות למשתתפים. answer והעידוד מיועדים רק למוביל/ה ואינם תוכן ערכת המשתתפים.
 עברית פשוטה, פסקאות קצרות והוראות מעשיות. כל הנחיה ברורה מיד: מי עושה, מה עושים, עם מה, ומה יוצא בסוף. מטרה היא משפט קצר של פעולה ותוצר, וחומרי המשתתפים מתארים את המשימה כמו שמסבירים אותה בכיתה; שפה תומכת, בחירה, שליטה ומסר אפשרי של תקווה. אין להמציא עובדות, אנשים או סיפורים אמיתיים. אין לשאול 'למה'; בקש 'ספרו לנו מה הוביל אתכם לבחירה'.`;
+
+// הערכה כטקסט קריא, כמו בדף המודפס, לקריאה של הסוכנת-הלקוחה
+function kitText(a) {
+  const L=[], add=(h,v)=>{const t=Array.isArray(v)?v.filter(Boolean).map(x=>'- '+x).join('\n'):String(v||'').trim();if(t)L.push(h+': '+t);};
+  L.push('# '+a.title); add('מטרה',a.purpose); add('הנחיה למוביל/ה',a.leaderGuidance); add('דרכים להשתתף ללא חשיפה אישית',a.participationAlternative);
+  (a.sessions||[]).forEach((s,i)=>{
+    L.push('\n# מפגש '+(i+1)+': '+s.title); add('מטרת המפגש',s.purpose);
+    (s.steps||[]).forEach(st=>{L.push('\n## '+(st.phase||'')+' · '+st.title+' ('+st.minutes+' דק׳)'); add('[תיאור הפעילות]',st.instructions); add('[הנחיה למנחה]',st.facilitation); add('[עזרים ומשאבים]',[st.space,...(st.materials||[])].filter(Boolean).join(' · '));});
+    add('דף למשתתפים',s.participantMaterials); add('שאלות לסיכום (המנחה שואל/ת את הקבוצה)',s.debrief); add('אחרי המפגש',s.nextStep);
+  });
+  const fp=a.facilitationPlan||{}; Object.keys(fp).forEach(k=>add('תכנית ההנחיה · '+k,fp[k]));
+  const m=a.socialMechanism||{}; if(m.type&&m.type!=='none') Object.keys(m).filter(k=>k!=='type').forEach(k=>add('מנגנון להמשך · '+k,m[k]));
+  return L.join('\n');
+}
+
+function kitErrors(result,brief,action,available) {
+  const errors=studio.validateActivity(result,brief);
+  const sessionIds=new Set();
+  for(const session of result.sessions) {
+    if(!session.id.trim() || sessionIds.has(session.id) || !session.title.trim()) errors.push('נדרשים מזהה ייחודי ושם לכל מפגש');
+    sessionIds.add(session.id);
+    if(!session.purpose.trim() || !session.participantMaterials.trim() || !session.nextStep.trim()
+      || !session.debrief.length || session.debrief.some(s=>!s.trim())) errors.push('חסרות הוראות שימוש במפגש');
+    for(const step of session.steps) {
+      if(!step.id.trim() || !step.title.trim() || !step.instructions.trim()
+        || ['materials','individualSkills','sharedSkills'].some(field=>step[field].some(s=>!s.trim()))) errors.push('חסר תרגול מפורש של מיומנות בשלב');
+    }
+  }
+  if(result.professionalBasis.some(b=>!available.has(b.sourceId) || !b.explanation.trim())) errors.push('מקור מקצועי לא מוכר או חסר הסבר');
+  if(!result.professionalBasis.some(b=>['IAFCompetencies2026','UnicefAdolescentKit2026'].includes(b.sourceId) && available.has(b.sourceId)))
+    errors.push('חסר בסיס מקצועי לתכנית ההנחיה');
+  if(studio.FACILITATION_FIELDS.some(field=>!result.facilitationPlan[field].trim())) errors.push('חסרה תכנית הנחיה מעשית מלאה');
+  const guide=result.learningGuide;
+  if(studio.LEARNING_FIELDS.some(field=>!guide[field].trim())) errors.push('חסר מדריך למידה למנחה: מנגנון, יישום, מה לראות וגבולות');
+  if(!guide.learnBefore.length || guide.learnBefore.some(s=>!available.has(s.sourceId) || !s.focus.trim()))
+    errors.push('מדריך הלמידה דורש מקורות מבנק הידע, ולכל אחד מה ללמוד בו');
+  if(result.socialMechanism.type==='none' && !result.socialMechanism.mechanism.trim()) errors.push('נדרש הסבר כאשר לא מוצע מנגנון חברתי');
+  if(action==='adapt' && !result.adaptationExplanation.trim()) errors.push('חסר הסבר להתאמה');
+  if(claimsProvenActivity(result)) errors.push('טענה לא מבוססת על יעילות הפעילות');
+  return errors;
+}
 
 export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onReady}={}) {
   const actor=await authorizePermission(store,body?.token,STUDIO_PERMS);
@@ -320,37 +363,38 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
   }
   if(result.clarificationQuestions.length) return [422,{error:'יש לנו כמה שאלות קצרות לפני שבונים את הפעילות.',
     questions:result.clarificationQuestions.map(q=>q.trim()).filter(Boolean),focus:result.focus,rationale:result.selectionReason}];
-  const errors=studio.validateActivity(result,brief);
-  const sessionIds=new Set();
-  for(const session of result.sessions) {
-    if(!session.id.trim() || sessionIds.has(session.id) || !session.title.trim()) errors.push('נדרשים מזהה ייחודי ושם לכל מפגש');
-    sessionIds.add(session.id);
-    if(!session.purpose.trim() || !session.participantMaterials.trim() || !session.nextStep.trim()
-      || !session.debrief.length || session.debrief.some(s=>!s.trim())) errors.push('חסרות הוראות שימוש במפגש');
-    for(const step of session.steps) {
-      if(!step.id.trim() || !step.title.trim() || !step.instructions.trim()
-        || ['materials','individualSkills','sharedSkills'].some(field=>step[field].some(s=>!s.trim()))) errors.push('חסר תרגול מפורש של מיומנות בשלב');
+  const errors=kitErrors(result,brief,action,available);
+  if(errors.length) return [422,{error:'הערכה דורשת תיקון לפני שימוש: '+errors.join('; ')}];
+  let review=null;
+  if(process.env.STUDIO_CUSTOMER_REVIEW!=='off') {
+    const ask=async(instructions,text,schema,name)=>{
+      try {
+        const r=await fetchImpl('https://api.openai.com/v1/responses',{method:'POST',
+          headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},
+          body:JSON.stringify({model,reasoning:{effort},store:false,instructions,input:[{role:'user',content:[{type:'input_text',text}]}],
+            text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});
+        if(!r.ok) return null;
+        const out=await r.json();
+        if(!out || out.status!=='completed' || !Array.isArray(out.output)) return null;
+        const v=JSON.parse(out.output.flatMap(item=>Array.isArray(item?.content)?item.content:[]).filter(c=>c.type==='output_text').map(c=>c.text).join(''));
+        return matchesSchema(v,schema)?v:null;
+      } catch { return null; }
+    };
+    review=await ask(INVITE.apply(CUSTOMER.system),'מה ביקשתי (הקלט):\n'+JSON.stringify(brief)+'\n\nהתוצר שקיבלתי:\n'+kitText(result),CUSTOMER.schema,'customer_review');
+    if(review && !review.ready && review.issues.length) {
+      const fixed=await ask(INVITE.apply(INSTRUCTIONS)+'\n'+CUSTOMER.reviseNote(review.issues),
+        JSON.stringify({...input,previousDraft:result,customerIssues:review.issues}),ACTIVITY_SCHEMA,'studio_activity');
+      if(fixed && !fixed.clarificationQuestions.length && !kitErrors(fixed,brief,action,available).length) { result=fixed; review={...review,revised:true}; }
     }
   }
-  if(result.professionalBasis.some(b=>!available.has(b.sourceId) || !b.explanation.trim())) errors.push('מקור מקצועי לא מוכר או חסר הסבר');
-  if(!result.professionalBasis.some(b=>['IAFCompetencies2026','UnicefAdolescentKit2026'].includes(b.sourceId) && available.has(b.sourceId)))
-    errors.push('חסר בסיס מקצועי לתכנית ההנחיה');
-  if(studio.FACILITATION_FIELDS.some(field=>!result.facilitationPlan[field].trim())) errors.push('חסרה תכנית הנחיה מעשית מלאה');
   const guide=result.learningGuide;
-  if(studio.LEARNING_FIELDS.some(field=>!guide[field].trim())) errors.push('חסר מדריך למידה למנחה: מנגנון, יישום, מה לראות וגבולות');
-  if(!guide.learnBefore.length || guide.learnBefore.some(s=>!available.has(s.sourceId) || !s.focus.trim()))
-    errors.push('מדריך הלמידה דורש מקורות מבנק הידע, ולכל אחד מה ללמוד בו');
-  if(result.socialMechanism.type==='none' && !result.socialMechanism.mechanism.trim()) errors.push('נדרש הסבר כאשר לא מוצע מנגנון חברתי');
-  if(action==='adapt' && !result.adaptationExplanation.trim()) errors.push('חסר הסבר להתאמה');
-  if(claimsProvenActivity(result)) errors.push('טענה לא מבוססת על יעילות הפעילות');
-  if(errors.length) return [422,{error:'הערכה דורשת תיקון לפני שימוש: '+errors.join('; ')}];
   const {clarificationQuestions,...kit}=result;
   const activity={...kit,schemaVersion:studio.VERSION,catalogueVersion:studio.VERSION,evidenceStatus:'new-ai',
     leaderGuidance:'טיוטה: פעילות חדשה שנוצרה בבינה מלאכותית, שטרם אושרה מקצועית; יעילות הפעילות לא נבדקה. '+result.leaderGuidance,
     professionalBasis:enrichBasis(result.professionalBasis,available),
     learningGuide:{...guide,learnBefore:guide.learnBefore.map(s=>{const src=available.get(s.sourceId);
       return {sourceId:src.sourceId,focus:s.focus,name:src.name,url:src.url,version:src.version,status:src.status};})}};
-  return [200,{activity,...(mapping?{mapping}:{})}];
+  return [200,{activity,...(review?{customerReview:{ready:review.ready,summary:review.summary,issues:review.issues,revised:!!review.revised}}:{}),...(mapping?{mapping}:{})}];
 }
 
 // Background mode: a single request that waits minutes for the model was cut by proxies, sleeping

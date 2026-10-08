@@ -101,7 +101,7 @@
         if ((step.components||[]).some(id=>!component(id))) errors.push('רכיב שאינו בקטלוג');
       });
       if(minutes>Number(b.duration)) errors.push('סך זמני מפגש '+(i+1)+' חורג מהזמן הזמין');
-      if (!(session.debrief||[]).length || !session.nextStep || !session.participantMaterials) errors.push('חסרים חומרי משתתפים, עיבוד או צעד המשך');
+      if (!(session.debrief||[]).length || !session.nextStep || !session.participantMaterials) errors.push('חסרים דף למשתתפים, שאלות לסיכום או מה עושים אחרי המפגש');
     });
     const c=claims(a);
     if (!c.components.some(x=>x.label===a.focus)) errors.push('רכיב המוקד אינו מתורגל בשלבים');
@@ -118,10 +118,10 @@
     const sessions=Array.from({length:Math.max(1,Number(b.sessions)||1)},(_,i)=>({
       id:'session-'+(i+1),title:i?'מנסים, לומדים ומתאימים':'צעד ראשון יחד',purpose:b.goal||'לתרגל '+c.label+' בפעולה משותפת',link:i?'מתחילים מהתצפית והצעד שנבחרו במפגש הקודם.':'תחילת התהליך',
       steps:[
-        {id:'s'+i+'-intro',title:'בוחרים דרך להשתתף',minutes:first,instructions:'מציגים את היעד ואת המשימה. אפשר לדבר, לכתוב, לצייר או להתבונן. סיפור אישי: רק למי שרוצה.',facilitation:'פותחים: "היום נבנה יחד משהו קטן. כל אחד בוחר איך להשתתף." מראים את דרכי ההשתתפות ומחכים לבחירה, בלי לחץ.',space:'מעגל, כולם רואים את כולם',materials:[],components:[],individualSkills:[],sharedSkills:[]},
-        {id:'s'+i+'-prepare',title:'מכינים תרומה',minutes:second,instructions:'כל משתתף בוחר תרומה קטנה למשימה: '+c.mechanism+'. משתמשים במקרה בדוי או במשימה יומיומית ללא פרטים מזהים.',facilitation:'מזמינים חשיבה שקטה של דקה, ושואלים: "מה התרומה הקטנה שלך?" עוברים בין המשתתפים ומקשיבים.',space:'כל אחד במקומו, עם דף',materials:[],components:[c.id],individualSkills:[c.individual],sharedSkills:[]},
-        {id:'s'+i+'-joint',title:'בונים תכנית משותפת',minutes:joint,instructions:'עובדים בזוגות או בקבוצות של עד ארבעה. '+c.mechanism+'. כותבים יחד תכנית אחת, שבה רואים מה כל אחת ואחד תורמים. '+(Number(b.count)>4?'אין סבב אישי במליאה; כל קבוצה בוחרת דוגמה אחת.':''),facilitation:'מזכירים שכל תרומה נכנסת לתכנית. שמים לב למי שלא נשמע, ומזמינים: "מה עוד חסר כאן?"',space:'זוגות או שולחנות של ארבעה',materials:[],components:[c.id],individualSkills:[c.individual],sharedSkills:[c.shared]},
-        {id:'s'+i+'-reflect',title:'לומדים ובוחרים צעד המשך',minutes:last,instructions:'בכל קבוצה מציינים מה עבד בפעולה ואיזה שינוי קטן כדאי לנסות. מתעדים פעולות נצפות, ללא ציון חוסן אישי.',facilitation:'שואלים: "מה עבד לנו?" ו"מה ננסה אחרת?" מסכמים בקול את הצעד שנבחר, מי אחראי ועד מתי.',space:'חוזרים למעגל',materials:[],components:[],individualSkills:['רפלקציה'],sharedSkills:['בחירת צעד משותף']}
+        {id:'s'+i+'-intro',title:'בוחרים דרך להשתתף',phase:'פתיחה',minutes:first,instructions:'מציגים את היעד ואת המשימה. אפשר לדבר, לכתוב, לצייר או להתבונן. סיפור אישי: רק למי שרוצה.',facilitation:'פותחים: "היום נבנה יחד משהו קטן. כל אחד בוחר איך להשתתף." מראים את דרכי ההשתתפות ומחכים לבחירה, בלי לחץ.',space:'מעגל, כולם רואים את כולם',materials:[],components:[],individualSkills:[],sharedSkills:[]},
+        {id:'s'+i+'-prepare',title:'מכינים תרומה',phase:'פעילות מרכזית',minutes:second,instructions:'כל משתתף בוחר תרומה קטנה למשימה: '+c.mechanism+'. משתמשים במקרה בדוי או במשימה יומיומית ללא פרטים מזהים.',facilitation:'מזמינים חשיבה שקטה של דקה, ושואלים: "מה התרומה הקטנה שלך?" עוברים בין המשתתפים ומקשיבים.',space:'כל אחד במקומו, עם דף',materials:[],components:[c.id],individualSkills:[c.individual],sharedSkills:[]},
+        {id:'s'+i+'-joint',title:'בונים תכנית משותפת',phase:'פעילות מרכזית',minutes:joint,instructions:'עובדים בזוגות או בקבוצות של עד ארבעה. '+c.mechanism+'. כותבים יחד תכנית אחת, שבה רואים מה כל אחת ואחד תורמים. '+(Number(b.count)>4?'אין סבב אישי במליאה; כל קבוצה בוחרת דוגמה אחת.':''),facilitation:'מזכירים שכל תרומה נכנסת לתכנית. שמים לב למי שלא נשמע, ומזמינים: "מה עוד חסר כאן?"',space:'זוגות או שולחנות של ארבעה',materials:[],components:[c.id],individualSkills:[c.individual],sharedSkills:[c.shared]},
+        {id:'s'+i+'-reflect',title:'לומדים ובוחרים צעד המשך',phase:'סיכום',minutes:last,instructions:'בכל קבוצה מציינים מה עבד בפעולה ואיזה שינוי קטן כדאי לנסות. מתעדים פעולות נצפות, ללא ציון חוסן אישי.',facilitation:'שואלים: "מה עבד לנו?" ו"מה ננסה אחרת?" מסכמים בקול את הצעד שנבחר, מי אחראי ועד מתי.',space:'חוזרים למעגל',materials:[],components:[],individualSkills:['רפלקציה'],sharedSkills:['בחירת צעד משותף']}
       ],debrief:['איזו פעולה אפשרה לנו להתקדם יחד?','מה נרצה לשנות בניסיון הבא?'],nextStep:'מנסים את הצעד שנבחר במצב יומיומי ובודקים אם היה ישים.',participantMaterials:'הקבוצה מקבלת משימה קטנה לעשות יחד, למשל לתכנן פינת עזרה בכיתה. על הדף כל אחת ואחד כותבים או מציירים מה הם יכולים לתרום ומה הם צריכים כדי להצליח. בסוף בוחרים יחד צעד אחד שעושים השבוע.'
     }));
     return {schemaVersion:VERSION,title:'צעד קטן: '+c.label,purpose:b.goal||'תרגול '+c.label,focus:c.id,selectionReason:recommendFocus(b).rationale,evidenceStatus:'example-draft',catalogueVersion:VERSION,professionalBasis:[],sessions,participationAlternative:'אפשר לתרום בכתב, בציור או באמצעות דמות בדויה; אפשר לבחור התבוננות ללא חשיפה אישית.',leaderGuidance:'זו דוגמת פיתוח שטרם אושרה לשימוש מקצועי. בחרו משימה פשוטה המתאימה לגיל ולתנאים; בני נוער אינם אחראים לניהול סכנה.',adaptationExplanation:'',goalChanged:false,
@@ -136,5 +136,6 @@
     return out;
   }
   function workFile(state) { return Object.assign({type:'begood-resilience-studio',schemaVersion:VERSION,savedAt:new Date().toISOString()},clone(state)); }
-  return {VERSION,CONSULTATION_STAGES,MECHANISM_TYPES,MECHANISM_FIELDS,FACILITATION_FIELDS,LEARNING_FIELDS,socialMechanism,facilitationPlan,learningGuide,COMPONENTS,component,newBrief,recommendFocus,claims,validateActivity,exampleActivity,publicActivity,workFile};
+  const STEP_PHASES=['פתיחה','פעילות מרכזית','סיכום','אחרי המפגש'];
+  return {STEP_PHASES,VERSION,CONSULTATION_STAGES,MECHANISM_TYPES,MECHANISM_FIELDS,FACILITATION_FIELDS,LEARNING_FIELDS,socialMechanism,facilitationPlan,learningGuide,COMPONENTS,component,newBrief,recommendFocus,claims,validateActivity,exampleActivity,publicActivity,workFile};
 });

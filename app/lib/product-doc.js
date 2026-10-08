@@ -70,10 +70,51 @@
     });
     t.append(tb); return t;
   }
+  // מהלך מפגש אחיד בכל התוצרים (08/10/2026): פתיחה · פעילות מרכזית · סיכום · אחרי המפגש, ושלוש עמודות:
+  // תיאור הפעילות · הנחיה למנחה (כולל השאלות) · עזרים ומשאבים. עמודה בלי תוכן לא מוצגת.
+  // rows: [{phase, time, title, minutes, desc, guide, res}] (desc/guide/res: טקסט או צומת)
+  const PHASES = ["לפני המפגש", "פתיחה", "פעילות מרכזית", "סיכום", "אחרי המפגש"];
+  function flowTable(rows, columns) {
+    ensureStyle();
+    const has = (v) => v instanceof Node ? (v.textContent || "").trim() !== "" || !!v.querySelector("img,table") : String(v == null ? "" : v).trim() !== "";
+    const cols = (columns || [["desc", "תיאור הפעילות"], ["guide", "הנחיה למנחה"], ["res", "עזרים ומשאבים"]]).filter(([k]) => rows.some((r) => has(r[k])));
+    const t = document.createElement("table"); t.className = "kit-table kit-flow";
+    const thead = document.createElement("thead"); const htr = document.createElement("tr");
+    cols.forEach(([, h]) => { const th = document.createElement("th"); th.textContent = h; htr.append(th); });
+    thead.append(htr); t.append(thead);
+    const tb = document.createElement("tbody");
+    const order = (p) => { const i = PHASES.indexOf(p); return i < 0 ? 2 : i; };
+    const sorted = rows.map((r, i) => ({ r, i })).sort((a, b) => order(a.r.phase) - order(b.r.phase) || a.i - b.i).map((x) => x.r);
+    let cur = null;
+    sorted.forEach((r) => {
+      if (r.phase !== cur) {
+        cur = r.phase;
+        const tr = document.createElement("tr"); tr.className = "ph";
+        const th = document.createElement("th"); th.colSpan = cols.length;
+        const mins = sorted.filter((x) => x.phase === cur).reduce((s, x) => s + (Number(x.minutes) || 0), 0);
+        th.textContent = (cur || "פעילות מרכזית") + (mins ? " · " + mins + " דקות" : (sorted.find((x) => x.phase === cur && x.time) || {}).time ? " · " + sorted.find((x) => x.phase === cur && x.time).time : "");
+        tr.append(th); tb.append(tr);
+      }
+      const tr = document.createElement("tr");
+      cols.forEach(([k]) => {
+        const td = document.createElement("td"); td.setAttribute("data-label", cols.find((c) => c[0] === k)[1]);
+        if (k === "desc" && r.title) { const b = document.createElement("b"); b.textContent = r.title + (r.minutes ? " (" + (typeof r.minutes === "number" ? r.minutes + " דק׳" : r.minutes) + ")" : ""); const d = document.createElement("div"); d.append(b); td.append(d); }
+        const v = r[k];
+        if (v instanceof Node) td.append(v); else if (has(v)) { const d = document.createElement("div"); d.style.whiteSpace = "pre-line"; d.textContent = String(v); td.append(d); }
+        if (!td.childNodes.length) td.textContent = "—";
+        tr.append(td);
+      });
+      tb.append(tr);
+    });
+    t.append(tb); return t;
+  }
+
   const STYLE = `.kit-table{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:14.5px;line-height:1.6}
 .kit-table th,.kit-table td{border:1px solid #CDD3D8;padding:8px 10px;text-align:right;vertical-align:top}
 .kit-table tbody th{background:rgba(46,90,125,.08);width:22%;font-weight:700}
 .kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700}
+.kit-flow tr.ph th{background:#DCE7EF;color:#1E3F5A;text-align:right;font-size:15px;width:auto}
+.kit-flow td{width:33%}
 .kit-table .sbe-rich{font-size:14.5px;line-height:1.65}.kit-table .sbe-rich p:last-child,.kit-table .sbe-rich ul:last-child{margin-bottom:0}
 @media (max-width:640px){.kit-table,.kit-table tbody,.kit-table tr,.kit-table th,.kit-table td{display:block;width:auto}.kit-table tr{border:1px solid #CDD3D8;border-radius:8px;margin:8px 0;overflow:hidden}.kit-table th,.kit-table td{border:0}}
 .sbe-rich{line-height:1.75;font-size:15px}
@@ -261,6 +302,7 @@ p,li{orphans:3;widows:3}
 .kit-steps td:nth-child(1){width:13%}.kit-steps td:nth-child(2){width:27%}.kit-steps td:nth-child(3){width:27%}.kit-steps td:nth-child(4){width:15%}.kit-steps td:nth-child(5){width:18%}
 .kit-steps tbody tr:nth-child(even) td{background:#FAFBFC}
 .kit-close td{width:33%}.kit-close thead th{background:#4A6B5A}
+.kit-flow td{width:33%}.kit-flow tr.ph th{background:#DCE7EF;color:#1E3F5A;text-align:right;font-size:14px;width:auto}.kit-flow tr.ph{break-after:avoid;page-break-after:avoid}
 .kit-h{font-size:16px;color:#2E5A7D;margin:20px 0 4px}.kit-sub{margin:0 0 6px;font-size:13.5px}
 .kit-min,.kit-muted{color:#5C6771;font-size:12px}.kit-session{break-before:auto}
 .ft{margin-top:26px;border-top:1px solid #CDD3D8;padding-top:8px;font-size:11.5px;color:#5C6771}
@@ -277,5 +319,5 @@ ${parts}
     w.document.close();
   }
 
-  window.SBE_DOC = { rich, editable, print, ensureStyle, sections, table, toolInfo, fileTitle, ctxHTML, printPage };
+  window.SBE_DOC = { rich, editable, print, ensureStyle, sections, table, flowTable, PHASES, toolInfo, fileTitle, ctxHTML, printPage };
 })();

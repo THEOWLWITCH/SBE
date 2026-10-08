@@ -1507,7 +1507,8 @@ async function synthesizeActivityNarrative(d, creator) {
       "התוצר הוא טקסט רציף — לא רשימת שדות, לא כותרות-משנה, לא תוויות ונקודתיים, לא \"S.M.A.R.T\" גלוי. ארבע פסקאות: (1) למה נבחרה הפעילות ומה המשמעות מאחוריה — המטרה והיעד משולבים כסיפור; (2) איך היא נראית בפועל מרגע הכניסה לחדר ועד הסיכום, עם משכי הזמן שזורים במשפטים (\"חמש הדקות הראשונות...\"); (3) למה גישת הלמידה, התנועה, דרכי ההבעה והטכנולוגיה משרתות את המטרה ולא רק מתלוות אליה; (4) פסקה קצרה בגוף שני למורה עם טיפ מעשי אחד שנגזר מהתוכן.",
       "חוק הספציפיות: שם, מספר, חפץ, מקום. משפט שאפשר להעתיק לפעילות אחרת בלי לשנות מילה נפסל. אל תמציאי תוכן שלא נמסר; אם שדה חסר, כתבי סביבו.",
       "בנוסף, רשימת \"מה להכין מראש\": לוח זמנים בשורה, מרחב, ציוד, ניסוחים שכדאי להכין מראש, 4-8 פריטים קצרים, זו הרשימה היחידה שנשארת רשימה.",
-      "החזירי אך ורק JSON: {\"title\":\"כותרת קצרה לפעילות (לא שם המקצוע)\",\"paragraphs\":[\"...\",\"...\",\"...\",\"...\"],\"prepare\":[\"...\"]}",
+      "בנוסף, \"flow\": מהלך המפגש לפי השדות פתיחה, פעילות מרכזית וסיכום שמולאו (ואם יש, משהו קצר שעושים אחרי המפגש). לכל שלב: phase (אחד מ: פתיחה, פעילות מרכזית, סיכום, אחרי המפגש; בפעילות המרכזית אפשר כמה שלבים ברצף), title (שם קצר), minutes (מספר), description (תיאור הפעילות: מי עושה, מה עושים, עם מה ומה יוצא בסוף), guide (הנחיה למורה: מה אומרת, ואילו שאלות שואלת את הקבוצה ובשביל מה), resources (עזרים ומשאבים לשלב, או מחרוזת ריקה). בלי להמציא תוכן שלא נמסר.",
+      "החזירי אך ורק JSON: {\"title\":\"כותרת קצרה לפעילות (לא שם המקצוע)\",\"paragraphs\":[\"...\",\"...\",\"...\",\"...\"],\"prepare\":[\"...\"],\"flow\":[{\"phase\":\"פתיחה\",\"title\":\"\",\"minutes\":5,\"description\":\"\",\"guide\":\"\",\"resources\":\"\"}]}",
     ].join("\n\n");
     const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 8000, 240000);
     const m = text.match(/\{[\s\S]*\}/); if (!m) throw new Error("לא התקבל JSON");
@@ -1534,17 +1535,18 @@ function buildNarrativeDocView(d, creator, narr) {
   const ul = (xs) => { const u = el("ul", { style:"margin:0;padding-inline-start:18px;" }); xs.forEach(x => u.append(el("li",{},x))); return u; };
   dv.append(SBE_DOC.table(narr.paragraphs.map((p, i) => [LBL[i] || "ועוד", p])
     .concat([["התוצר", d.outcome], ["מה להכין מראש", Array.isArray(narr.prepare) && narr.prepare.length ? ul(narr.prepare) : ""]])));
-  const flow = [["פתיחה", d.openingMin, d.opening], ["פעילות מרכזית", d.mainMin, d.mainActivity], ["סיכום", d.closingMin, d.closing]].filter(r => str(r[2]));
-  if (flow.length) {
+  // מהלך הפעילות (08/10/2026): פתיחה · פעילות מרכזית · סיכום · אחרי המפגש, בשלוש עמודות (SBE_DOC.flowTable)
+  const num = (x) => { const m = String(x == null ? "" : x).match(/\d+/); return m ? Number(m[0]) : 0; };
+  let rows = Array.isArray(narr.flow) ? narr.flow.filter(r => r && (str(r.description) || str(r.guide))).map(r => ({
+    phase: SBE_DOC.PHASES.includes(r.phase) ? r.phase : "פעילות מרכזית", title: str(r.title), minutes: num(r.minutes),
+    desc: str(r.description), guide: str(r.guide), res: str(r.resources) })) : [];
+  if (!rows.length) rows = [["פתיחה", d.openingMin, d.opening], ["פעילות מרכזית", d.mainMin, d.mainActivity], ["סיכום", d.closingMin, d.closing]]
+    .filter(r => str(r[2])).map(([phase, m, txt]) => ({ phase, title: "", minutes: num(m), desc: str(txt), guide: "", res: phase === "פעילות מרכזית" ? str(d.resources) : "" }));
+  if (rows.length && str(d.resources) && !rows.some(r => r.res)) { const mr = rows.find(r => r.phase === "פעילות מרכזית") || rows[0]; mr.res = str(d.resources); }
+  if (rows.length) {
     dv.append(el("h3", { style:"font-size:15px;margin:16px 0 4px" }, "מהלך הפעילות"));
-    const t = el("table", { class:"kit-table" });
-    const th = el("thead"); th.append(el("tr", {}, el("th",{},"שלב"), el("th",{},"זמן"), el("th",{},"מה עושים"))); t.append(th);
-    const tb = el("tbody");
-    flow.forEach(([n, m, txt]) => { const lines = str(txt).split(/\n+/).filter(Boolean);
-      tb.append(el("tr", {}, el("th",{},n), el("td",{style:"white-space:nowrap"}, str(m) || "—"), el("td",{}, lines.length > 1 ? ul(lines.map(x => x.replace(/^\d+[.)]\s*/, ""))) : str(txt)))); });
-    const extra = [["שילוב תנועה", d.movement], ["משאבים ועזרים", d.resources]].filter(r => str(r[1]));
-    extra.forEach(([n, v]) => { const td = el("td", {}, str(v)); td.colSpan = 2; tb.append(el("tr", {}, el("th",{},n), td)); });
-    t.append(tb); dv.append(t);
+    dv.append(SBE_DOC.flowTable(rows));
+    if (str(d.movement)) dv.append(SBE_DOC.table([["שילוב תנועה", str(d.movement)]]));
   }
   return dv;
 }
@@ -2519,7 +2521,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;}
 tr{break-inside:avoid;page-break-inside:avoid;} thead{display:table-header-group;}
 thead th{background:#2E5A7D;color:#fff;}
 table.kv th{width:22%;background:#EDEFF1;}
-table.flow tbody th{width:15%;background:#EDEFF1;} table.flow td.n{width:9%;}
+table.flow tbody th{width:15%;background:#EDEFF1;} table.flow td.n{width:9%;} table.flow tr.ph th{width:auto;background:#DCE7EF;color:#1E3F5A;text-align:right;} table.flow tr.ph{break-after:avoid;page-break-after:avoid;}
 table.crit-t tbody th{width:22%;background:#EDEFF1;} table.crit-t tr.na td{color:#5C6771;} tr.fact-row.gap th{color:#8C3A34;} tr.fact-row.check th{color:#8F5F2E;} tr.fact-row.ok th{color:#3F6B52;}
 table.end thead th{background:#4A6B5A;}
 td p{margin:0 0 4px;} td ol,td ul{margin:0;}
@@ -2590,9 +2592,12 @@ function seqDocHTML(narr){
       if (str(s.closing)) rows.push(["סיכום", s.closingMin, nl(s.closing)]);
       h += `<section class="sess"><h3>מפגש ${i + 1}<span class="t">${esc(str(s.duration))}</span></h3>`;
       if (smartSentence(s)) h += `<p class="goal"><b>יעד המפגש:</b> ${nl(smartSentence(s))}</p>`;
-      if (rows.length) h += `<table class="flow"><thead><tr><th>שלב</th><th>זמן</th><th>מה עושים</th></tr></thead><tbody>${rows.map(([t, m, c]) => `<tr><th>${t}</th><td class="n">${esc(str(m) || "—")}</td><td>${c}</td></tr>`).join("")}</tbody></table>`;
+      // מהלך המפגש (08/10/2026): פתיחה · פעילות מרכזית · סיכום, כשורת כותרת לכל חלק; עמודות: תיאור הפעילות · עזרים ומשאבים
+      if (rows.length) { const hasRes = !!str(s.resources);
+        h += `<table class="flow"><thead><tr><th>תיאור הפעילות</th>${hasRes ? "<th>עזרים ומשאבים</th>" : ""}</tr></thead><tbody>${rows.map(([t, m, c]) =>
+          `<tr class="ph"><th colspan="${hasRes ? 2 : 1}">${t}${str(m) ? " · " + esc(str(m)) : ""}</th></tr><tr><td>${c}</td>${hasRes ? `<td>${t === "פעילות מרכזית" ? nl(s.resources) : "—"}</td>` : ""}</tr>`).join("")}</tbody></table>`; }
       const ss = narr && narr.sessionSources ? narr.sessionSources[i + 1] : null;
-      const end = [["תוצר המפגש והערכתו", str(s.product) ? nl(s.product) : ""], ["משאבים ועזרים", str(s.resources) ? nl(s.resources) : ""], ["מקורות להרחבה", ss && ss.length ? sourceList(ss) : ""]].filter(x => x[1]);
+      const end = [["תוצר המפגש והערכתו", str(s.product) ? nl(s.product) : ""], ["משאבים ועזרים", str(s.resources) && !rows.some(r => r[0] === "פעילות מרכזית") ? nl(s.resources) : ""], ["מקורות להרחבה", ss && ss.length ? sourceList(ss) : ""]].filter(x => x[1]);
       if (end.length) h += `<table class="end"><thead><tr>${end.map(x => `<th>${x[0]}</th>`).join("")}</tr></thead><tbody><tr>${end.map(x => `<td>${x[1]}</td>`).join("")}</tr></tbody></table>`;
       h += `</section>`;
     });
