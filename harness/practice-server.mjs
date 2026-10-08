@@ -283,6 +283,7 @@ const server = createServer(async (req, res) => {
   }
 
   const { system, messages, tools, toolChoice, maxTokens } = payload;
+  const variation = payload.speed === 'quick' ? 'quick' : 'medium';
   if (!system && !messages) {
     return sendJson(res, 400, { error: 'חסר system או messages בבקשה' });
   }
@@ -306,7 +307,7 @@ const server = createServer(async (req, res) => {
     jobSave(jobId, { status: 'running', t0: job.t0, boot: BOOT_ID, stages: {} });
     setTimeout(() => PIPE_JOBS.delete(jobId), 3 * 3600 * 1000).unref?.();
     sendJson(res, 200, { jobId });
-    provider.complete({ system, messages: messages || [{ role: 'user', content: '' }], tools, toolChoice, variation: 'medium', maxTokens: maxTokens || 220 })
+    provider.complete({ system, messages: messages || [{ role: 'user', content: '' }], tools, toolChoice, variation, maxTokens: maxTokens || 220 })
       .then((result) => {
         job.text = result.text; job.status = 'done';
         jobSave(jobId, { status: 'done', t0: job.t0, boot: BOOT_ID, stages: {}, text: result.text });
@@ -325,7 +326,7 @@ const server = createServer(async (req, res) => {
       messages: messages || [{ role: 'user', content: '' }],
       tools,
       toolChoice,
-      variation: 'medium',
+      variation,
       maxTokens: maxTokens || 220,
     });
     console.log(`complete: הצליח אחרי ${Math.round((Date.now() - t0) / 1000)} שניות (maxTokens ${maxTokens || 220})`);
