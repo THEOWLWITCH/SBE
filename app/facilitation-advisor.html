@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ננה — מהוראה להנחיה</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/open-select.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/ai-status.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -80,6 +81,7 @@ textarea{min-height:64px;resize:vertical}
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.8rem 0 .2rem;list-style:none}
 .steps li{background:var(--spoken-soft);border-radius:8px;padding:.6rem .75rem;font-size:.9rem}
 .steps b{display:block;color:var(--spoken)}
+.steps li.step-opt{background:transparent;border:1px dashed var(--spoken)}
 @media (max-width:640px){.steps{grid-template-columns:1fr}}
 .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:.6rem;align-items:center;margin:.6rem 0}
 .vs div{border-radius:8px;padding:.55rem .75rem;font-size:.9rem}
@@ -90,6 +92,13 @@ fieldset{border:none}
 legend{font-weight:700;font-size:1.05rem;color:var(--spoken);margin-bottom:.2rem}
 .sec{border-top:1px solid var(--hair);padding-top:.9rem;margin-top:1rem}
 .sec:first-of-type{border-top:none;margin-top:0;padding-top:0}
+.habits-dd{position:relative;margin-top:.3rem}
+.habits-dd>summary{list-style:none;cursor:pointer;border:1px solid var(--hair);border-radius:8px;padding:.55rem 2rem .55rem .75rem;background:var(--surface,#fff);font-size:.95rem;position:relative}
+.habits-dd>summary::-webkit-details-marker{display:none}
+.habits-dd>summary::after{content:"▾";position:absolute;inset-inline-end:.75rem;top:50%;transform:translateY(-50%);color:var(--muted)}
+.habits-dd[open]>summary::after{content:"▴"}
+.habits-dd>summary.has{border-color:var(--spoken)}
+.habits-dd .habits{grid-template-columns:1fr;max-height:20rem;overflow:auto;border:1px solid var(--hair);border-top:0;border-radius:0 0 8px 8px;padding:.4rem;margin-top:0}
 .habits{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.3rem}
 @media (max-width:640px){.habits{grid-template-columns:1fr}}
 .habits label{margin:0;font-weight:500;font-size:.9rem;display:flex;gap:.45rem;align-items:flex-start;border:1px solid var(--hair);
@@ -199,7 +208,7 @@ ul.tl li{margin:.25rem 0}
     <ol class="steps">
       <li><b>1. מספרים</b>על הקבוצה, על המפגש ועל עצמך כמנחה</li>
       <li><b>2. מקבלים מדריך</b>שאפשר לערוך, להדפיס ולשמור כ-PDF, וגם כרטיס כיס</li>
-      <li><b>3. מתרגלים וחוזרים</b>תרגול רגע מאתגר מול "הקבוצה", ורפלקציה אחרי המפגש</li>
+      <li class="step-opt"><b>ואם תרצו — מתרגלים וחוזרים</b>אפשרות: תרגול רגע מאתגר מול "הקבוצה", ורפלקציה אחרי המפגש</li>
     </ol>
   </div>
 
@@ -237,7 +246,7 @@ ul.tl li{margin:.25rem 0}
       <label for="f-exp">הניסיון שלי בהנחיית קבוצה</label>
       <select id="f-exp"><option value="">בחירה...</option></select>
       <label>באיזו מיומנות תרצו שאתמקד? <span class="opt">(לא חובה — אפשר לבחור כמה)</span></label>
-      <div class="habits" id="f-habits"></div>
+      <details class="habits-dd" id="habits-dd"><summary id="habits-sum">בחירה...</summary><div class="habits" id="f-habits"></div></details>
       <label for="f-worry">מה מדאיג אותך לקראת המפגש? <span class="opt">(לא חובה)</span></label>
       <textarea id="f-worry" maxlength="800" placeholder="למשל: שתהיה שתיקה ולא אדע מה לעשות; שאאבד שליטה; שמישהו יתחיל לבכות"></textarea>
       <label for="f-question">שאלה מרכזית לננה <span class="opt">(לא חובה)</span></label>
@@ -362,11 +371,16 @@ fill('f-group',N.GROUPS);fill('f-age',N.AGES);fill('f-familiar',N.FAMILIAR);fill
 fill('f-sit',N.SITUATIONS);fill('f-duration',N.DURATIONS);fill('f-space',N.SPACES);fill('f-exp',N.EXPERIENCE);
 N.SHIFTS.forEach(s=>{
   const lb=el('label');const cb=el('input');cb.type='checkbox';cb.value=s.k;cb.name='habit';
-  cb.addEventListener('change',()=>{lb.classList.toggle('on',cb.checked);save();});
+  cb.addEventListener('change',()=>{lb.classList.toggle('on',cb.checked);habitsSummary();save();});
   lb.appendChild(cb);lb.appendChild(el('span',null,s.skill));F('f-habits').appendChild(lb);
 });
 function habits(){return [...document.querySelectorAll('input[name=habit]:checked')].map(c=>c.value);}
-function setHabits(list){document.querySelectorAll('input[name=habit]').forEach(c=>{c.checked=(list||[]).includes(c.value);c.parentNode.classList.toggle('on',c.checked);});}
+function setHabits(list){document.querySelectorAll('input[name=habit]').forEach(c=>{c.checked=(list||[]).includes(c.value);c.parentNode.classList.toggle('on',c.checked);});habitsSummary();}
+// רשימה נפתחת (08/10/2026): הכותרת מראה מה נבחר; לחיצה מחוץ לרשימה סוגרת אותה
+function habitsSummary(){const on=[...document.querySelectorAll('input[name=habit]:checked')].map(c=>c.parentNode.textContent.trim());const sm=F('habits-sum');
+  sm.textContent=on.length?('נבחרו '+on.length+': '+on.join(' · ')):'בחירה... (אפשר לבחור כמה)';sm.classList.toggle('has',!!on.length);}
+document.addEventListener('click',e=>{const d=F('habits-dd');if(d.open&&!d.contains(e.target))d.open=false;});
+habitsSummary();
 function form(){
   return {group:F('f-group').value,age:F('f-age').value,size:F('f-size').value,familiar:F('f-familiar').value,role:F('f-role').value,
     about:F('f-about').value,topic:F('f-topic').value,goal:F('f-goal').value,situation:F('f-sit').value,duration:F('f-duration').value,
