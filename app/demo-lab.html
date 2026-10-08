@@ -107,11 +107,12 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
   <button class="btn ghost sm" id="all">סימון הכול</button>
   <button class="btn ghost sm" id="none">ניקוי הסימון</button>
   <span class="muted" id="prog"></span>
+  <a href="#list-h" class="btn ghost sm" id="toFolder">📁 לתיקייה (<span id="nItems">0</span>)</a>
 </div>
 <div class="runs" id="runs"></div>
 <p class="muted" style="margin-top:10px">מסע אל החוסן נוצר כמסע דמו (בלי מיילים, ולא נספר בדוחות ובמחקר). אפשר למחוק אותו בלוח המסעות.</p>
 
-<h2>התיקייה שלי</h2>
+<h2 id="list-h">התיקייה שלי: התוצרים שהופקו</h2>
 <div id="list"><p class="muted">טוען...</p></div>
 </div>
 
@@ -164,7 +165,13 @@ RUNS.forEach(([id])=>{
 F('all').onclick=()=>RUNS.forEach(([id])=>F('cb-'+id).checked=true);
 F('none').onclick=()=>RUNS.forEach(([id])=>F('cb-'+id).checked=false);
 F('go').onclick=()=>runAll(RUNS.map(r=>r[0]).filter(id=>F('cb-'+id).checked));
-function setRun(id,cls,text){const r=F('run-'+id);r.className='run '+(cls||'');F('st-'+id).textContent=text||'';}
+function setRun(id,cls,text){const r=F('run-'+id);r.className='run '+(cls||'');F('st-'+id).textContent=text||'';const v=r.querySelector('.view-btn');if(v&&cls!=='done')v.remove();}
+function it0(m){return ((m.items||[])[0]||{}).tool;}
+function showView(id,tool){
+  const r=F('run-'+id);if(!r||r.querySelector('.view-btn'))return;
+  const d=ITEMS.filter(x=>x.tool===(tool||id)).sort((a,b)=>String(b.at).localeCompare(String(a.at)))[0];if(!d)return;
+  const b=el('button','btn sm view-btn','צפייה ←');b.addEventListener('click',()=>view(d));r.insertBefore(b,r.lastChild);
+}
 
 let BUSY=false;
 async function runAll(ids){
@@ -199,6 +206,8 @@ function runOne(id,batch){
           catch(x){err=x.message;}
         }
         end(saved?'done':'error',saved?'נשמר ✓ ('+saved+' '+(saved>1?'מסמכים':'מסמך')+', '+Math.max(1,Math.round((Date.now()-t0)/60000))+' דק׳)':('השמירה לא הצליחה: '+err));
+        // התיקייה מתעדכנת מיד, וכפתור "צפייה" בשורה פותח את התוצר האחרון של הכלי (08/10/2026: "איפה אני רואה אותם?")
+        if(saved){await loadList();showView(id,it0(m));}
       }
     }
     window.addEventListener('message',onMsg);
@@ -214,7 +223,8 @@ async function loadList(){
   const box=F('list');
   try{ITEMS=(await api({action:'demoList'})).items||[];}
   catch(e){box.textContent='';box.appendChild(el('p','warn','לא הצלחנו לטעון את התיקייה ('+e.message+').'));return;}
-  box.textContent='';
+  box.textContent='';F('nItems').textContent=ITEMS.length;
+  RUNS.forEach(([id])=>{const r=F('run-'+id);if(r&&!/running/.test(r.className))showView(id);});
   if(!ITEMS.length){box.appendChild(el('p','muted','התיקייה ריקה. אפשר להתחיל בהפקה למעלה.'));return;}
   const groups={};ITEMS.forEach(d=>{(groups[d.tool]=groups[d.tool]||[]).push(d);});
   Object.keys(groups).sort((a,b)=>(ORDER.indexOf(a)+99)%99-(ORDER.indexOf(b)+99)%99).forEach(tool=>{
