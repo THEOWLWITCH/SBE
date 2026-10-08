@@ -826,7 +826,7 @@ function recCard(x){return withRes(actCard({title:x.title,description:x.descript
 function convCard(c){
   const box=el('div','conv');box.appendChild(el('div','act-t','שיחה עם '+(c.with||'')));
   const dl=el('dl');
-  [['מטרה',c.goal],['לחוסן החברתי',c.resilience],['איפה ומתי',c.setting],['פתיחה',c.opening],['שאלות המשך',(c.followups||[]).join(' · ')],['סיום',c.closing]].forEach(([k,v])=>{
+  [['מטרה',c.goal],['מה זה בונה בחוסן החברתי',c.resilience],['איפה ומתי',c.setting],['פתיחה',c.opening],['שאלות המשך',(c.followups||[]).join(' · ')],['סיום',c.closing]].forEach(([k,v])=>{
     if(!v)return;dl.appendChild(el('dt',null,k));const dd=el('dd');dd.appendChild(inlineRich(v));dl.appendChild(dd);});
   box.appendChild(dl);return box;
 }
@@ -836,7 +836,7 @@ function titleCell(a,extra){const c=el('div');c.appendChild(el('div','rt-title',
 function resCell(a){const c=el('div');if(a.mechanism){const p=el('p');p.appendChild(el('b',null,'מה זה בונה: '));p.appendChild(document.createTextNode(a.mechanism));c.appendChild(p);}
   if(a.resilience){const p=el('p');p.appendChild(inlineRich(a.resilience));c.appendChild(p);}const b=basisEl(a.basis);if(b)c.appendChild(b);return c.childNodes.length?c:null;}
 function recTable(rec,title,items,first){if(!(items||[]).length)return;rec.appendChild(el('h3',null,title));
-  rec.appendChild(SBE_TABLE([first||'ההמלצה','מה עושים','לחוסן החברתי'],items.map(a=>{const dd=richText(a.description||'');dd.classList.add('act-d');return [titleCell(a,a.for),dd,resCell(a)];}),'acts'));}
+  rec.appendChild(SBE_TABLE([first||'ההמלצה','מה עושים','מה זה בונה בחוסן החברתי'],items.map(a=>{const dd=richText(a.description||'');dd.classList.add('act-d');return [titleCell(a,a.for),dd,resCell(a)];}),'acts'));}
 function domTable(items){if(!(items||[]).length)return el('p','muted','—');return SBE_TABLE(null,items.map(it=>{const c=el('div');c.appendChild(inlineRich(it.text||''));const r=resEl(it.resilience);if(r)c.appendChild(r);return [it.domain||'',c];}));}
 function section(card,title,items,fn){if(!(items||[]).length)return;card.appendChild(el('h3',null,title));items.forEach(x=>card.appendChild(fn(x)));}
 function metaLine(R){return [R.who,R.mode,R.school?'בית ספר '+R.school:'',R.stage,R.sit?'מצב: '+R.sit:'','הופק: '+new Date(R.at).toLocaleDateString('he-IL',{day:"2-digit",month:"2-digit",year:"2-digit"})].filter(Boolean).join(' · ');}
@@ -874,7 +874,7 @@ function renderReport(){
   recTable(rec,'4. רווחת הצוות וההנהגה',d.wellbeing);
   recTable(rec,'5. שותפות עם תלמידים',d.students);
   if((d.conversations||[]).length){rec.appendChild(el('h3',null,'6. שיחות מומלצות — עם הנחיות'));d.conversations.forEach(c=>{rec.appendChild(el('h4',null,'שיחה עם '+(c.with||'')));
-    rec.appendChild(SBE_TABLE(null,[['מטרה',c.goal],['לחוסן החברתי',c.resilience],['איפה ומתי',c.setting],['פתיחה',c.opening],['שאלות המשך',(c.followups||[]).length?(()=>{const u=el('ul');c.followups.forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));u.appendChild(li);});return u;})():''],['סיום',c.closing]].filter(([,v])=>v).map(([k,v])=>[k,v instanceof Node?v:inlineRich(v)])));});}
+    rec.appendChild(SBE_TABLE(null,[['מטרה',c.goal],['מה זה בונה בחוסן החברתי',c.resilience],['איפה ומתי',c.setting],['פתיחה',c.opening],['שאלות המשך',(c.followups||[]).length?(()=>{const u=el('ul');c.followups.forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));u.appendChild(li);});return u;})():''],['סיום',c.closing]].filter(([,v])=>v).map(([k,v])=>[k,v instanceof Node?v:inlineRich(v)])));});}
   if((d.plan||[]).length){rec.appendChild(el('h3',null,'7. תוכנית צעדים'));rec.appendChild(SBE_TABLE(['מתי','מה עושים'],d.plan.map(p=>[el('b',null,p.when||''),inlineRich(p.what||'')]),'plan-t'));}
   rec.appendChild(SBE_WRITER.reportSection(d,{el,inlineRich,richText},'8. עקרונות החוסן בתקשורת של ההנהגה','הודעות מוכנות לשליחה — כתובות לפי עקרונות החוסן'));
   if((d.checks||[]).length){rec.appendChild(el('h3',null,'9. כדאי לבדוק'));const ul=el('ul','tl');d.checks.forEach(x=>ul.appendChild(el('li',null,x)));rec.appendChild(ul);}
