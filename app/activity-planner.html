@@ -406,7 +406,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
     <span class="note" id="sqReady"></span>
   </div>
   <p class="seq-note" id="sqIntro">כל שדה מסומן: עיקרי, רשות שהמערכת תשלים אם תישאר ריקה, או רשות שהמערכת לא ממציאה אלא רק מתחשבת בה (עובדות על המציאות שלך: מרחב, תקציב, העדפות).
-    <button type="button" class="linkbtn" id="sqLoadSample">טעינת רצף לדוגמה</button></p>
+    <button type="button" class="linkbtn sbe-sysonly" id="sqLoadSample">טעינת רצף לדוגמה</button></p>
   <div class="banner" id="sqSampleNote" hidden></div>
   <details class="grp" id="sqImport">
     <summary>יש לך כבר מסמך תכנון? סילבוס, תכנית קורס, רשימת נושאים<span class="count">ניתוח ופריסה למפגשים</span></summary>
@@ -2938,8 +2938,10 @@ document.getElementById("bSeqFill").addEventListener("click", async (e) => {
     setAIStatus("mock");
     const body = el("div");
     body.append(mockNote("אין חיבור למודל כרגע: השלמת נתונים דורשת מודל אמיתי, והמערכת לא ממלאת את התכנון שלך בתוכן קבוע שלא נכתב עבורו."),
-      el("p", {}, "אפשר לטעון רצף לדוגמה כדי לראות איך נראה תכנון מלא, כולל הבדיקות והתוצר."));
-    seqDialog("השלמת נתונים חסרים", body, [btn("טעינת רצף לדוגמה", () => { document.getElementById("dlg").close(); loadSample(); }, "primary")]);
+      el("p", {}, "מה שמילאת נשמר, ואפשר לנסות שוב בעוד רגע."));
+    // דוגמה — רק למנהלת המערכת (08/10/2026)
+    const sys = document.documentElement.classList.contains("sbe-sys");
+    seqDialog("השלמת נתונים חסרים", body, sys ? [btn("טעינת רצף לדוגמה", () => { document.getElementById("dlg").close(); loadSample(); }, "primary")] : []);
   } finally { done(); }
 });
 
@@ -3291,7 +3293,7 @@ renderSeq();
 // מהכתובת אחרי ההרצה, כדי שרענון לא יטען את הדוגמה שוב.
 (function runDemo(){
   const q = new URLSearchParams(location.search);
-  if (q.get("demo") !== "1") return;
+  if (q.get("demo") !== "1" || !document.documentElement.classList.contains("sbe-sys")) return;
   try { const u = new URL(location.href); u.searchParams.delete("demo"); history.replaceState(null, "", u); } catch(e){}
   loadSample();
   if (!seq._sample) return;

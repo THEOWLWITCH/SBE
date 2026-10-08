@@ -309,7 +309,7 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
     if(claimsProvenActivity(result)) return [422,{error:'ההתייעצות כוללת טענה לא מבוססת על יעילות או אישור מקצועי.'}];
     return [200,{consultation:{...result,professionalBasis:enrichBasis(result.professionalBasis,available)},...(mapping?{mapping}:{})}];
   }
-  if(result.clarificationQuestions.length) return [422,{error:'נדרשת הבהרה לפני הפעילות.',
+  if(result.clarificationQuestions.length) return [422,{error:'יש לנו כמה שאלות קצרות לפני שבונים את הפעילות.',
     questions:result.clarificationQuestions.map(q=>q.trim()).filter(Boolean),focus:result.focus,rationale:result.selectionReason}];
   const errors=studio.validateActivity(result,brief);
   const sessionIds=new Set();
