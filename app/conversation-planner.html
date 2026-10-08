@@ -1002,9 +1002,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     run.assertCurrent();
     if (!draft || !draft.isAI) return noModel(); // בלי חיבור למודל — אין תוצר (לא תבנית קבועה)
     body.append(el("div", { class:"banner-mini" },
-      draft.isAI
-        ? "הטיוטה נוסחה על ידי המודל לפי השדות שמילאת. קראי ותאימי לפני שליחה בפועל. "
-        : "השרת המקומי לא זמין — הטיוטה מורכבת מתבנית קבועה לפי הגישה שנבחרה, לא ניסוח AI אמיתי. קראי ותאימי לפני שליחה בפועל. ",
+      "הטיוטה נוסחה על ידי המודל לפי השדות שמילאת. קראי ותאימי לפני שליחה בפועל. ",
       el("b",{}, "לפני שליחה: ודאי שההודעה פותחת בברכת שלום ובמשהו טוב לומר, לפני גוף העניין.")));
     if (draft.contextNote) body.append(el("div", { class:"rcard-row" },
       el("b",{},"הערת תכנון — לא חלק מההודעה"), el("div",{}, draft.contextNote)));
@@ -1028,7 +1026,6 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     body.append(dl, cp, sysBtn);
     show("טיוטת ההתכתבות", body);
   } else {
-    const branches = parseRiskBranches(d.riskBranches);
     const info = APPROACH_CARDS.find(c => c.v === d.approach);
     // ── תדריך נרטיבי לפני שיחה בעל פה (21/09/2026) ──
     // המשתמשת: "הלקוחות אינם צריכים לראות את הרשימות. הרשימות הן חומר הגלם
@@ -1039,7 +1036,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     // והקו התחתון + תוכנית ב'. כרטיס התזכורת נשאר ככלי תפעולי קצר. בלי מודל —
     // הכרטיס ועץ האפשרויות מהשדות, מסומנים כמצב הדגמה. prompts/narrative-products.md.
     e.target.disabled = true; e.target.textContent = "כותבת את התדריך... עד כ-2 דקות";
-    let briefing = null, briefNode = null;
+    let briefing = null;
     try {
       const raw = Object.entries(d).filter(([k, v]) => v && String(v).trim() && !["myTraits","otherTraits"].includes(k))
         .map(([k, v]) => (FIELDS.get(k)?.l || k) + ": " + v).join("\n");
@@ -1068,14 +1065,10 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     run.assertCurrent();
     if (!briefing) return noModel(); // בלי חיבור למודל — אין תוצר (לא כרטיס ועץ מהשדות)
 
-    if (briefing) {
-      body.append(el("div", { class:"banner-mini" }, "התדריך נכתב על ידי המודל מתוך השדות שמילאת. קראי, ואם משהו לא מדויק — ערכי ישירות כאן, או ערכי את השדה למעלה ובני מחדש."));
-      body.append(el("h4", {}, "לפני שאת נכנסת לחדר"));
-      briefNode = SBE_DOC.sections(briefing) || SBE_DOC.rich(briefing); // טבלה: חלק בכל שורה (07/10/2026)
-      body.append(SBE_DOC.editable(briefNode));
-    } else {
-      body.append(el("div", { class:"banner-mini" }, "⚠ אין חיבור למודל כרגע — מוצגים כרטיס התזכורת ועץ האפשרויות מהשדות כפי שמולאו (מצב הדגמה). כשהשרת המקומי פועל, המודל כותב מהם תדריך רציף."));
-    }
+    body.append(el("div", { class:"banner-mini" }, "התדריך נכתב על ידי המודל מתוך השדות שמילאת. קראי, ואם משהו לא מדויק — ערכי ישירות כאן, או ערכי את השדה למעלה ובני מחדש."));
+    body.append(el("h4", {}, "לפני שאת נכנסת לחדר"));
+    const briefNode = SBE_DOC.sections(briefing) || SBE_DOC.rich(briefing);
+    body.append(SBE_DOC.editable(briefNode));
     body.append(el("h4", {}, "כרטיס תזכורת"));
     // כרטיס התזכורת — טבלה (07/10/2026)
     const myLine = traitsLine(d.myTraits), otherLine = traitsLine(d.otherTraits);
@@ -1087,16 +1080,6 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     rc.classList.add("rcard-table", "sbe-edit"); rc.setAttribute("contenteditable", "true"); rc.setAttribute("spellcheck", "true");
     body.append(el("p", { class:"rcard-meta" }, `${d.creator || ""} · ${d.date || ""}`), rc);
 
-    if (!briefing) body.append(el("h4", {}, "עץ אפשרויות"));
-    // עץ האפשרויות כטבלה (07/10/2026, "קו אחיד"): אם… | אז…
-    const tree = SBE_DOC.table([
-      ["פתיחה", d.openingLine || "—"],
-      ...branches.map(b => ["אם: " + b.cond, b.resp || "—"]),
-      ["אם המטרה מתממשת", d.ifGoalAchieved || "—"],
-      ["אם לא", d.backupPlan || "—"],
-    ]);
-    if (!briefing) body.append(tree);
-
     body.append(el("p", { class:"savenote" },
       "אפשר לערוך את התדריך ואת הכרטיס ישירות כאן, או לסגור, לשנות שדה למעלה ולבנות מחדש. מרוצה? הדפיסי או שמרי כ-PDF."));
     const dl = el("button", { type:"button", class:"dlg-dl" }, "🖨 הדפסה / שמירה כ-PDF");
@@ -1107,7 +1090,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     body.append(el("p", {class:"savenote"}, "השמירה היא טיוטה פרטית במכשיר ובדפדפן הזה. אפשר לפתוח אותה שוב בכפתור התוצרים הפרטיים שלי."));
     dl.addEventListener("click", () => printProduct({title,subtitle,nodes:currentNodes()}));
     body.append(dl, sysBtn);
-    show(briefing ? "התדריך לפני השיחה" : "כרטיס התזכורת ועץ האפשרויות", body);
+    show("התדריך לפני השיחה", body);
   }
   } catch (error) {
     if (run.current()) noModel();

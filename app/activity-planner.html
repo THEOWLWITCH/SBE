@@ -1496,36 +1496,6 @@ function downloadText(filename, text) {
   document.body.append(a); a.click(); a.remove();
 }
 
-function buildDocView(d, creator) {
-  const dv = el("div", { class:"docview" });
-  const logoRow = el("div", { class:"dv-logo no-print" });
-  const img = el("img"); img.src = document.getElementById("brandLogo").src;
-  logoRow.append(img, el("b",{}, "Begood"));
-  dv.append(logoRow);
-  dv.append(el("div", { class:"dv-by" }, "תוכנית פעילות · " + (creator || "—") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
-  dv.append(creditNode());
-  dv.append(el("h2", {}, d.domain || "פעילות"));
-  dv.append(el("div", { class:"dv-meta" }, [d.age, d.duration, approachList(d.approach).join(" + ")].filter(Boolean).join(" · ")));
-  const srcLine = renderSourcesLine(d); if (srcLine) dv.append(srcLine);
-  const sec = (label, v) => { if (!v) return; dv.append(el("div",{class:"dv-sec"}, el("b",{},label), el("div",{},v))); };
-  // משך הזמן מוצמד לכותרת הפעולה עצמה, לא לסעיף נפרד — הכרעת המשתמשת
-  // (21/09/2026): "להצמיד את משך הזמן לפעולה ולא כסעיף נפרד. פתיחה (17 דקות)".
-  const withMin = (label, min) => min ? `${label} (${min})` : label;
-  sec("מטרה", d.goal);
-  sec("S.M.A.R.T", smartLines(d.smart));
-  sec("הערות מיוחדות על הקבוצה", d.specialNotes);
-  sec(withMin("פתיחה", d.openingMin), d.opening);
-  sec(withMin("פעילות מרכזית", d.mainMin), d.mainActivity);
-  sec(withMin("סיכום ורפלקציה", d.closingMin), d.closing);
-  sec("תוצר", d.outcome);
-  sec("שילוב תנועה", d.movement);
-  sec("גיוון דרכי הבעה", d.expression);
-  sec("שילוב טכנולוגיה", d.technology);
-  sec("משאבים ועזרים", d.resources);
-  sec("אופי הפעילות", d.groupStyle);
-  return dv;
-}
-
 function buildCardView(d, creator) {
   // כרטיס תמציתי — טבלה קצרה לזמן הפעילות (07/10/2026)
   const cv = el("div", { class:"cardview" });
