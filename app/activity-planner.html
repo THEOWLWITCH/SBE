@@ -4,6 +4,7 @@
 <script src="lib/ai-status.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/product-doc.js"></script>
+<script src="lib/planner-continuity.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -457,6 +458,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
   <button type="button" id="bFeedback">משוב</button>
   <button type="button" id="bBuild" disabled>הפקת התוצר</button>
   <button type="button" id="bReset">ניקוי</button>
+  <button type="button" id="bSaved">התוצרים הפרטיים שלי</button>
   <span class="note" id="hint">מלאי את השדות העיקריים</span>
 </div></div>
 
@@ -467,6 +469,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
   <button type="button" id="bSeqBuild">הפקת התוצר</button>
   <button type="button" id="bSeqUndo" hidden>ביטול אימוץ הנוסח המשופר</button>
   <button type="button" id="bSeqReset">ניקוי</button>
+  <button type="button" id="bSeqSaved">התוצרים הפרטיים שלי</button>
   <span class="note" id="sqHint"></span>
 </div></div>
 
@@ -756,6 +759,40 @@ const state = {};
 const cardGrids = new Map();
 const smartFields = new Map();
 const selectFields = new Map();
+const singleArchive = SBE_PLANNER.createArchive("sbe.activityplanner.saved.v2");
+const PLANNER_OWNER = window.sbeUserKey("sbe.activityplanner.owner");
+const singleWork = SBE_PLANNER.createWork(() => ({
+  fields:Object.fromEntries([...FIELDS.keys()].map(k => [k,val(k)])),
+  creator:document.getElementById("creatorName").value,
+  upload:document.getElementById("upText").value,
+}));
+let invalidateSequence = () => {};
+function invalidatePlannerWork(){ singleWork.invalidate(); invalidateSequence(); }
+function plannerBusy(button,run,text,label,after){
+  const marker = {}, old = label || button.textContent;
+  button._plannerBusy = marker; button.disabled = true; button.textContent = text;
+  const done = () => {
+    if (button._plannerBusy !== marker) return;
+    button._plannerBusy = null; button.disabled = false; button.textContent = old;
+    after?.();
+  };
+  run.signal.addEventListener("abort",done,{once:true});
+  return done;
+}
+function plannerOwnerCurrent(){ return window.sbeUserKey("sbe.activityplanner.owner") === PLANNER_OWNER; }
+function startSingleWork(){
+  invalidatePlannerWork();
+  if (!plannerOwnerCurrent()) { show("הכניסה השתנתה",el("p",{},"הכניסה למערכת השתנתה. אפשר לרענן את המסך כדי להמשיך עם התכנון של הכניסה הנוכחית.")); return null; }
+  return singleWork.start();
+}
+document.getElementById("creatorName").addEventListener("input", invalidatePlannerWork);
+document.getElementById("upText").addEventListener("input", invalidatePlannerWork);
+document.getElementById("dlg").addEventListener("close", invalidatePlannerWork);
+document.getElementById("dlgB").addEventListener("input", invalidatePlannerWork);
+document.getElementById("bSaved").addEventListener("click", () => {
+  invalidatePlannerWork();
+  try { singleArchive.open(); } catch(error) { show("פתיחת תוצר פרטי",el("p",{},error.message)); }
+});
 
 function syncCardVisual(k) {
   const boxes = cardGrids.get(k);
@@ -824,12 +861,14 @@ function setAIStatus(status){
   else chip.innerHTML = dot + "בודקת חיבור למודל...";
 }
 
-async function callAI(system, userText, maxTokens, timeoutMs) {
+async function callAI(system, userText, maxTokens, timeoutMs, run) {
+  run?.assertCurrent();
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך
-  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200 }, timeoutMs || 60000);
+  const result = await sbeCallAI(window.sbeAIOrigin?.() || AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200 }, timeoutMs || 60000, {signal:run?.signal});
+  run?.assertCurrent(); return result;
 }
 
-async function generateProposals(ctx) {
+async function generateProposals(ctx, run) {
   ctx = ctx || {};
   try {
     // שדות שהיוצרת כבר קבעה ידנית (locked) לפני "מילוי הצעות" — עד
@@ -860,13 +899,14 @@ async function generateProposals(ctx) {
     ].filter(Boolean).join("\n");
     // maxTokens=16000, timeout=200 שניות — נמדד חי (19/09/2026): גם 4000
     // גרם לקטיעה בפועל, וגם עם 16000 ההפקה לקחה כ-2 דקות 18 שניות.
-    const raw = await callAI(system, "בני הצעת פעילות מלאה, בעברית.", 16000, 300000);
+    const raw = await callAI(system, "בני הצעת פעילות מלאה, בעברית.", 16000, 300000, run);
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("לא התקבל JSON תקין מהמודל");
     const parsed = JSON.parse(jsonMatch[0]);
     setAIStatus("ok");
     return parsed;
   } catch (e) {
+    if (run && !run.current()) throw e;
     console.warn("שרת ה-AI לא זמין — לא מוצגת הצעה. סיבה:", e.message);
     setAIStatus("mock");
     return { _noModel: true };
@@ -1093,6 +1133,7 @@ function render() {
 function val(k){ const n = document.getElementById("i-"+k); return n ? n.value.trim() : ""; }
 
 function onEdit(k) {
+  invalidatePlannerWork();
   const f = FIELDS.get(k);
   const v = val(k);
   if (!v) { state[k] = "empty"; }
@@ -1130,7 +1171,7 @@ function refresh() {
   const reqKeys = [...FIELDS.values()].filter(f => f.req).map(f => f.k);
   const missing = reqKeys.filter(k => !val(k));
   const ok = missing.length === 0;
-  document.getElementById("bBuild").disabled = !ok;
+  document.getElementById("bBuild").disabled = !ok || !!document.getElementById("bBuild")._plannerBusy;
   document.getElementById("hint").textContent = ok
     ? "אפשר להפיק משוב או תוצר"
     : `נשארו ${missing.length} שדות עיקריים למילוי`;
@@ -1185,7 +1226,9 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
   if (reqKeys.some(k => !val(k))) {
     return show("נשארו שדות עיקריים למילוי", el("p",{},"שני השדות הראשונים (המטרה וה-S.M.A.R.T) נדרשים לפני שאפשר לייצר הצעות."));
   }
-  e.target.disabled = true; e.target.textContent = "מייצרת...";
+  const run = startSingleWork();
+  if (!run) return;
+  const done = plannerBusy(e.target,run,"מייצרת...","מילוי הצעות");
   const hintEl = document.getElementById("hint");
   if (hintEl) hintEl.textContent = "יוצרת הצעה מלאה מול המודל — זה יכול לקחת עד כ-3 דקות.";
   try {
@@ -1196,7 +1239,8 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
       duration: state.duration === "locked" ? val("duration") : "",
       approach: state.approach === "locked" ? val("approach") : "",
       specialNotes: state.specialNotes === "locked" ? val("specialNotes") : "",
-    });
+    }, run);
+    run.assertCurrent();
     if (out._noModel) { if (hintEl) hintEl.textContent = "⚠ " + NO_MODEL; return; }
     for (const [k,v] of Object.entries(out)) {
       if (!FIELDS.has(k) || state[k] === "locked") continue;
@@ -1214,10 +1258,13 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
     if (hintEl) hintEl.textContent = out._mock
       ? "⚠ אין חיבור למודל כרגע — זו הצעת דוגמה קבועה (הדגמה), לא הצעה שנוצרה במיוחד עבור המטרה שכתבת."
       : "ההצעות הופקו על ידי המודל, בהתאם למטרה ולניסוח ה-S.M.A.R.T שכתבת.";
-  } finally { e.target.disabled = false; e.target.textContent = "מילוי הצעות"; }
+  } catch(error) {
+    if (run.current()) show("ההצעות לא הופקו",el("p",{},NO_MODEL));
+  } finally { done(); }
 });
 
 document.getElementById("bReset").addEventListener("click", () => {
+  invalidatePlannerWork();
   FIELDS.forEach((f,k)=>{ const n=document.getElementById("i-"+k); if(n) n.value=""; state[k]="empty"; });
   syncAllCardVisuals();
   smartFields.forEach(fn => fn());
@@ -1393,7 +1440,7 @@ function showFeedback(fb) {
 // כשהשרת המקומי זמין. זה בדיוק המקום שהבדיקה העצמית ("check") נבנתה
 // כדי לפנות אליו: היוריסטיקה לא יכולה לשפוט תוכן, אבל מודל אמיתי יכול.
 // אם השרת לא זמין — נופל בשקט לפונקציה ההיוריסטית הקיימת, בלי לשבור כלום.
-async function computeFeedbackFromFieldsAI(d) {
+async function computeFeedbackFromFieldsAI(d, run) {
   const approachHint = approachList(d.approach)
     .filter(a => APPROACH_CHECKS[a])
     .map(a => "בדיקה ספציפית לגישת \"" + a + "\": " + APPROACH_CHECKS[a])
@@ -1407,7 +1454,7 @@ async function computeFeedbackFromFieldsAI(d) {
   ].filter(Boolean).join("\n");
   // maxTokens=8000, timeout=150 שניות — נמדד חי (19/09/2026): משוב אמיתי
   // על תוכנית לקח כ-60 שניות; 2500 גרם לקטיעה.
-  const raw = await callAI(system, "תוכנית הפעילות:\n" + JSON.stringify(d, null, 2), 8000, 240000);
+  const raw = await callAI(system, "תוכנית הפעילות:\n" + JSON.stringify(d, null, 2), 8000, 240000, run);
   const m = raw.match(/\{[\s\S]*\}/);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
@@ -1416,18 +1463,21 @@ async function computeFeedbackFromFieldsAI(d) {
 }
 
 document.getElementById("bFeedback").addEventListener("click", async (e) => {
+  const run = startSingleWork();
+  if (!run) return;
   const d = {}; FIELDS.forEach((f,k) => { d[k] = val(k); });
-  e.target.disabled = true; e.target.textContent = "בודקת... (עד כ-3 דקות)";
+  const done = plannerBusy(e.target,run,"בודקת... (עד כ-3 דקות)","משוב");
   try {
     let fb;
-    try { fb = await computeFeedbackFromFieldsAI(d); }
+    try { fb = await computeFeedbackFromFieldsAI(d, run); run.assertCurrent(); }
     catch (err) {
+      if (!run.current()) return;
       console.warn("משוב AI לא זמין — לא מופק משוב. סיבה:", err.message);
       setAIStatus("mock");
       return show("המשוב לא הופק", el("p",{}, NO_MODEL));
     }
     showFeedback(fb);
-  } finally { e.target.disabled = false; e.target.textContent = "משוב"; }
+  } finally { done(); }
 });
 
 // שורת הקרדיט על כל תוצר (23/09/2026, בקשת המשתמשת: "צרי תבנית לתוצר ובו ציון
@@ -1496,7 +1546,7 @@ function buildCardView(d, creator) {
 // שהמודל כותב מתוך השדות; רשימת "מה להכין מראש" נשארת רשימה בכוונה (ציוד
 // שבודקים מול העיניים). בלי מודל — התצוגה מהשדות נשארת כמצב הדגמה מסומן.
 // העקרונות המלאים: prompts/narrative-products.md.
-async function synthesizeActivityNarrative(d, creator) {
+async function synthesizeActivityNarrative(d, creator, run) {
   try {
     const raw = Object.entries(d).filter(([k, v]) => v && String(v).trim())
       .map(([k, v]) => (FIELDS.get(k)?.l || k) + ": " + (k === "smart" ? smartLines(v) : v)).join("\n");
@@ -1507,13 +1557,13 @@ async function synthesizeActivityNarrative(d, creator) {
       "בנוסף, רשימת \"מה להכין מראש\": לוח זמנים בשורה, מרחב, ציוד, ניסוחים שכדאי להכין מראש — 4-8 פריטים קצרים, זו הרשימה היחידה שנשארת רשימה.",
       "החזירי אך ורק JSON: {\"title\":\"כותרת קצרה לפעילות (לא שם המקצוע)\",\"paragraphs\":[\"...\",\"...\",\"...\",\"...\"],\"prepare\":[\"...\"]}",
     ].join("\n\n");
-    const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 8000, 240000);
+    const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 8000, 240000, run);
     const m = text.match(/\{[\s\S]*\}/); if (!m) throw new Error("לא התקבל JSON");
     const out = JSON.parse(m[0]);
     if (!Array.isArray(out.paragraphs) || out.paragraphs.length < 3) throw new Error("מבנה חסר");
     setAIStatus("ok");
     return out;
-  } catch (e) { console.warn("סינתזה נרטיבית לא זמינה — מציגה מהשדות:", e.message); setAIStatus("mock"); return null; }
+  } catch (e) { if (run && !run.current()) throw e; console.warn("סינתזה נרטיבית לא זמינה:", e.message); setAIStatus("mock"); return null; }
 }
 function buildNarrativeDocView(d, creator, narr) {
   const dv = el("div", { class:"docview" });
@@ -1548,74 +1598,57 @@ function buildNarrativeDocView(d, creator, narr) {
 }
 
 document.getElementById("bBuild").addEventListener("click", async (e) => {
+  const run = startSingleWork();
+  if (!run) return;
   const d = {}; FIELDS.forEach((f,k) => { d[k] = val(k); });
   const creator = document.getElementById("creatorName").value.trim();
   const body = el("div");
-  e.target.disabled = true; e.target.textContent = "מנסחת את התוצר... עד כ-3 דקות";
+  const done = plannerBusy(e.target,run,"מנסחת את התוצר... עד כ-3 דקות","הפקת התוצר");
   let narr = null;
-  try { narr = await synthesizeActivityNarrative(d, creator); }
-  finally { e.target.disabled = false; e.target.textContent = "הפקת התוצר"; }
+  try { narr = await synthesizeActivityNarrative(d, creator, run); run.assertCurrent(); }
+  catch(error) { if (!run.current()) return; }
+  finally { done(); }
   if (!narr) return show("התוצר לא הופק", el("p",{}, NO_MODEL));
   body.append(el("h4",{style:"margin-top:0"},"מסמך תוכנית פעילות"));
-  if (!narr) body.append(el("p", { class:"savenote", style:"background:#FAEFDC;border-inline-start:3px solid #8F5F2E;padding:8px 11px;border-radius:6px;" },
-    "⚠ אין חיבור למודל כרגע — המסמך מוצג מהשדות כפי שמולאו (מצב הדגמה). כשהשרת המקומי פועל, המודל כותב מהם מסמך רציף."));
-  const doc = narr ? buildNarrativeDocView(d, creator, narr) : buildDocView(d, creator);
+  const doc = buildNarrativeDocView(d, creator, narr);
   // עריכה על המסך (05/10/2026): ההדפסה וה-PDF כוללים את הנוסח הערוך
   body.append(SBE_DOC.editable(doc));
   body.append(el("h4",{},"כרטיס תמציתי — לפעילות עצמה"));
   const card = buildCardView(d, creator);
   card.setAttribute("contenteditable", "true"); card.classList.add("sbe-edit");
   body.append(card);
-  // הזמנה לעריכה + שמירה — הכרעת המשתמשת (21/09/2026): "אחרי כל תוצר: שמור
-  // במערכת / שמור במחשב. לפני השמירה ניתן לערוך את התוצר — הוסיפי משפט
-  // הזמנה לעריכה." העריכה עצמה נשארת בשדות שמאחורי הדיאלוג, לא בתוך התצוגה.
+  // השמירה וההדפסה קוראות את המסמך ואת הכרטיס לאחר העריכה על המסך.
   body.append(el("p", { class:"savenote" },
     "אפשר לערוך את המסמך ואת הכרטיס ישירות כאן, או לסגור, לשנות שדה למעלה ולבנות מחדש. מרוצה? הדפיסי או שמרי כ-PDF."));
   const dlgF = document.getElementById("dlgF");
   dlgF.textContent = "";
+  const title = "תוכנית פעילות — " + (narr.title || d.domain || "פעילות");
+  const subtitle = [creator, d.age, d.duration].filter(Boolean).join(" · ");
+  const cardHeading = el("h3",{},"כרטיס תמציתי — לפעילות עצמה");
+  const nodes = () => [doc,cardHeading,card];
   const printBtn = el("button", { type:"button", class:"primary" }, "הדפסה / שמירה כ-PDF");
-  printBtn.addEventListener("click", () => { const h = document.createElement("h3"); h.textContent = "כרטיס תמציתי — לפעילות עצמה";
-    SBE_DOC.print({ title: "תוכנית פעילות" + ((narr && narr.title) ? " — " + narr.title : (d.domain ? " — " + d.domain : "")),
-      subtitle: [creator, d.age, d.duration].filter(Boolean).join(" · "), nodes: [doc, h, card] }); });
-  const saveTextParts = () => {
-    const lines = ["תוכנית פעילות — " + ((narr && narr.title) || d.domain || ""), creator || "", ""];
-    if (narr) {
-      narr.paragraphs.forEach(p => lines.push(p, ""));
-      if (Array.isArray(narr.prepare) && narr.prepare.length) { lines.push("מה להכין מראש:"); narr.prepare.forEach(x => lines.push("- " + x)); }
-      return lines.join("\n");
-    }
-    GROUPS.forEach(g => g.fields.forEach(f => {
-      if (f.k === "smart") { const sl = smartLines(d.smart); if (sl) lines.push(f.l + ":\n" + sl); return; }
-      if (d[f.k]) lines.push(f.l + ": " + d[f.k]);
-    }));
-    return lines.join("\n");
-  };
-  const sysBtn = el("button", { type:"button" }, "שמירה במערכת");
-  sysBtn.addEventListener("click", () => {
-    try {
-      const key = "sbe.activityplanner.saved.v1";
-      const list = JSON.parse(localStorage.getItem(key) || "[]");
-      list.push({ creator: creator || null, domain: d.domain || null, date: new Date().toISOString().slice(0,10), fields: d });
-      localStorage.setItem(key, JSON.stringify(list));
-      sysBtn.textContent = "נשמר ✓";
-      setTimeout(() => { sysBtn.textContent = "שמירה במערכת"; }, 2000);
-    } catch (e) { console.warn("שמירה במערכת נכשלה:", e.message); }
+  printBtn.addEventListener("click", () => {
+    try { singleArchive.print({title,subtitle,nodes:nodes()}); }
+    catch(error) { printBtn.textContent = error.message; }
   });
+  const sysBtn = singleArchive.saveButton({title,subtitle,fields:d,nodes});
+  body.append(el("p",{class:"savenote"},"טיוטה פרטית. השמירה כוללת את הנוסח הערוך ונמצאת במכשיר ובדפדפן הזה, לפי הכניסה שלך."));
   dlgF.append(printBtn, sysBtn, el("button",{type:"button",id:"dlgX2"},"סגירה"));
   document.getElementById("dlgX2")?.addEventListener?.("click", () => document.getElementById("dlg").close());
-  show("תוצרי הפעילות", body);
+  show("תוצרי הפעילות", body, true);
 });
 
-function show(title, node) {
+function show(title, node, keepActions = false) {
+  invalidatePlannerWork();
   document.getElementById("dlgH").textContent = title;
   const b = document.getElementById("dlgB"); b.textContent = ""; b.append(node);
   const dlgF = document.getElementById("dlgF");
-  if (!dlgF.querySelector("#dlgX2")) {
+  if (!keepActions) {
     dlgF.textContent = "";
     dlgF.append(el("button",{type:"button",id:"dlgX"},"סגירה"));
     document.getElementById("dlgX").addEventListener("click", () => document.getElementById("dlg").close());
   }
-  document.getElementById("dlg").showModal();
+  if (!document.getElementById("dlg").open) document.getElementById("dlg").showModal();
 }
 
 // ── מצב 2: ניתוח פעילות קיימת — טקסט, Word (.docx) או PDF (19/09/2026) ──
@@ -1635,6 +1668,8 @@ async function extractPdfText(arrayBuffer) {
 document.getElementById("upFile").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
+  const run = startSingleWork();
+  if (!run) return;
   const statusEl = document.getElementById("upStatus");
   const name = file.name.toLowerCase();
   statusEl.textContent = "טוענת...";
@@ -1642,11 +1677,13 @@ document.getElementById("upFile").addEventListener("change", async (e) => {
     if (name.endsWith(".pdf")) {
       const buf = await file.arrayBuffer();
       const text = await extractPdfText(buf);
+      run.assertCurrent();
       document.getElementById("upText").value = text;
       statusEl.textContent = text.trim() ? "נטען מ-PDF (" + file.name + ")." : "לא נמצא טקסט ניתן לחילוץ בקובץ — ייתכן שזה PDF סרוק (תמונה). הדביקי את הטקסט ידנית.";
     } else if (name.endsWith(".docx")) {
       const buf = await file.arrayBuffer();
       const result = await mammoth.extractRawText({ arrayBuffer: buf });
+      run.assertCurrent();
       document.getElementById("upText").value = result.value;
       statusEl.textContent = "נטען מ-Word (" + file.name + ").";
     } else if (name.endsWith(".doc")) {
@@ -1654,23 +1691,25 @@ document.getElementById("upFile").addEventListener("change", async (e) => {
     } else {
       const reader = new FileReader();
       reader.onload = () => {
+        if (!run.current()) return;
         document.getElementById("upText").value = reader.result;
         statusEl.textContent = "נטען מטקסט (" + file.name + ").";
       };
       reader.readAsText(file, "UTF-8");
     }
   } catch (err) {
+    if (!run.current()) return;
     statusEl.textContent = "לא הצלחנו לקרוא את הקובץ (" + err.message + ") — הדביקי את הטקסט ידנית.";
   }
 });
-async function computeFeedbackFromTextAI(text) {
+async function computeFeedbackFromTextAI(text, run) {
   const system = [ "אסור לכתוב שם של מחבר, מאמר, ספר, מחקר או שנת פרסום. אפשר להזכיר תיאוריה או גישה במילים. מקורות מגיעים רק מספריית המקורות המאומתת של המערכת.",
     "את בודקת תוכניות פעילות חינוכיות עבור מערכת Begood, בעברית.",
     "קיבלת טקסט חופשי של פעילות קיימת (לא שדות מובנים). קראי אותו וכתבי משוב אמיתי, ספציפי לתוכן הזה בדיוק.",
     "בדקי בפרט: האם יש מטרה ברורה; מבנה (פתיחה/גוף/סיכום); קשר אמיתי בין המטרה לפעילות עצמה; שילוב תנועה שמשרת את המטרה (אם קיים); מעורבות פעילה של התלמידים לעומת האזנה פסיבית; חלוקת זמן וריאליזם.",
     "החזירי אך ורק JSON תקין במבנה: {\"good\":[\"...\"],\"gaps\":[\"...\"]} — עם הסבר קונקרטי לכל פריט, מצטט מהטקסט כשרלוונטי. בלי טקסט נוסף מסביב.",
   ].join("\n");
-  const raw = await callAI(system, "טקסט הפעילות:\n" + text, 8000, 240000);
+  const raw = await callAI(system, "טקסט הפעילות:\n" + text, 8000, 240000, run);
   const m = raw.match(/\{[\s\S]*\}/);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
@@ -1681,17 +1720,20 @@ async function computeFeedbackFromTextAI(text) {
 document.getElementById("bAnalyze").addEventListener("click", async (e) => {
   const text = document.getElementById("upText").value.trim();
   if (!text) return show("חסר טקסט", el("p",{},"הדביקי או העלי טקסט פעילות לפני הניתוח."));
-  e.target.disabled = true; e.target.textContent = "מנתחת... (עד כ-3 דקות)";
+  const run = startSingleWork();
+  if (!run) return;
+  const done = plannerBusy(e.target,run,"מנתחת... (עד כ-3 דקות)","ניתוח");
   try {
     let fb;
-    try { fb = await computeFeedbackFromTextAI(text); }
+    try { fb = await computeFeedbackFromTextAI(text, run); run.assertCurrent(); }
     catch (err) {
+      if (!run.current()) return;
       console.warn("ניתוח AI לא זמין — לא מופק ניתוח. סיבה:", err.message);
       setAIStatus("mock");
       return show("הניתוח לא הופק", el("p",{}, NO_MODEL));
     }
     showFeedback(fb);
-  } finally { e.target.disabled = false; e.target.textContent = "ניתוח"; }
+  } finally { done(); }
 });
 
 // ── מיתוג בין שלושת המצבים ── (23/09/2026: נוסף "רצף מפגשים" — "בתחילת
@@ -1701,6 +1743,7 @@ const mPlan = document.getElementById("mPlan"), mSeq = document.getElementById("
 const screenPlan = document.getElementById("screen-plan"), screenSeq = document.getElementById("screen-seq"), screenUpload = document.getElementById("screen-upload");
 const actionsPlan = document.getElementById("actionsPlan"), actionsSeq = document.getElementById("actionsSeq");
 function setMode(m, updateUrl) {
+  invalidatePlannerWork();
   if (!["single","seq","upload"].includes(m)) m = "single";
   mPlan.className = m === "single" ? "on" : "";
   mSeq.className = m === "seq" ? "on" : "";
@@ -1747,7 +1790,7 @@ setMode(new URLSearchParams(location.search).get("mode") || "single", false);
 
 const MAX_SESSIONS = 30, MAX_GOALS = 5;
 const DRAFT_KEY = window.sbeUserKey("sbe.seqplanner.draft.v1");
-const SAVED_KEY = window.sbeUserKey("sbe.seqplanner.saved.v1");
+const seqArchive = SBE_PLANNER.createArchive("sbe.seqplanner.saved.v2");
 
 const FRAMEWORK_OPTS = ["בית ספר","גן ילדים","מכללה / אוניברסיטה","השתלמות / פיתוח מקצועי",
   "מתנ״ס / מרכז קהילתי","תנועת נוער / חינוך בלתי פורמלי","ארגון / מקום עבודה"];
@@ -1842,12 +1885,30 @@ let seq, props;
 })();
 const openSess = new Set([0]);
 let snapshot = null;
+const seqWork = SBE_PLANNER.createWork(() => ({seq,
+  importText:document.getElementById("sqDocText").value,
+  importCount:document.getElementById("sqDocN").value,
+  question:document.getElementById("sqQ").value,
+}));
+invalidateSequence = () => seqWork.invalidate();
+function startSeqWork(){
+  invalidatePlannerWork();
+  if (!plannerOwnerCurrent()) { seqDialog("הכניסה השתנתה",el("p",{},"הכניסה למערכת השתנתה. אפשר לרענן את המסך כדי להמשיך עם התכנון של הכניסה הנוכחית.")); return null; }
+  return seqWork.start();
+}
+["sqDocText","sqDocN","sqQ"].forEach(id => document.getElementById(id).addEventListener("input",invalidatePlannerWork));
+document.getElementById("bSeqSaved").addEventListener("click", () => {
+  invalidatePlannerWork();
+  try { seqArchive.open(); } catch(error) { seqDialog("פתיחת תוצר פרטי",el("p",{},error.message)); }
+});
 
 let saveTimer = null;
 function saveDraft(){
-  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(Object.assign({}, seq, { _props:[...props] }))); } catch(e){}
+  if (window.sbeUserKey("sbe.seqplanner.draft.v1") !== DRAFT_KEY) return;
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(Object.assign({}, seq, { _props:[...props] }))); }
+  catch(e) { document.getElementById("sqHint").textContent = "הטיוטה לא נשמרה במכשיר. אפשר לשמור את התוצר למחשב ולנסות שוב."; }
 }
-function touch(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveDraft, 300); updateStatus(); }
+function touch(human = true){ if (human) invalidatePlannerWork(); clearTimeout(saveTimer); saveTimer = setTimeout(saveDraft, 300); updateStatus(); }
 
 function getP(path){ return path.split(".").reduce((o, k) => (o == null ? undefined : o[k]), seq); }
 function setP(path, v){
@@ -2445,13 +2506,14 @@ function updateStatus(){
   const hint = document.getElementById("sqHint");
   hint.textContent = miss.length ? "נשארו למילוי: " + miss.join(", ") : "אפשר להשלים, לקבל משוב ולהפיק תוצר";
   document.getElementById("sqReady").textContent = miss.length ? `נשארו ${miss.length} שדות עיקריים למילוי` : "";
-  ["bSeqFill", "bSeqImprove", "bSeqBuild"].forEach(id => { document.getElementById(id).disabled = !!miss.length; });
+  ["bSeqFill", "bSeqImprove", "bSeqBuild"].forEach(id => { const b = document.getElementById(id); b.disabled = !!miss.length || !!b._plannerBusy; });
   document.getElementById("bSeqUndo").hidden = !snapshot;
   adjustActionsPadding();
 }
 
 // ── דיאלוג ותצוגת מסמך ──
 function seqDialog(title, node, buttons, wide){
+  singleWork.invalidate();
   const dlg = document.getElementById("dlg");
   dlg.classList.toggle("wide", !!wide);
   document.getElementById("dlgH").textContent = title;
@@ -2477,7 +2539,7 @@ function downloadHTML(filename, html){
   document.body.append(a); a.click(); a.remove();
 }
 function btn(text, fn, cls){ const b = el("button", { type:"button" }, text); if (cls) b.className = cls; b.addEventListener("click", fn); return b; }
-function busy(b, text){ const old = b.textContent; b.disabled = true; b.textContent = text; return () => { b.textContent = old; b.disabled = false; updateStatus(); }; }
+function busy(b, text, run){ return plannerBusy(b,run,text,null,updateStatus); }
 function mockNote(text){ return el("div", { class:"mock-note" }, "⚠ " + text); }
 function safeName(s){ return (str(s) || "ללא-שם").replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, "-").slice(0, 60); }
 
@@ -2489,7 +2551,7 @@ function fmtDate(iso){
   return isNaN(d) ? str(iso) : d.toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
 }
 const DOC_CSS = `
-@page{size:A4;margin:16mm 15mm;}
+@page{size:A4;margin:18mm 20mm;}
 *{box-sizing:border-box;}
 body{margin:0;background:#fff;color:#141C24;font-family:"Assistant","Segoe UI",Arial,sans-serif;font-size:14.5px;line-height:1.65;}
 article{max-width:760px;margin:0 auto;padding:34px 34px 26px;}
@@ -2692,12 +2754,13 @@ const CHUNK = 4, PARALLEL = 4, CHUNK_TOKENS = 16000, CHUNK_TIMEOUT = 420000;
 function ranges(n){ const r = []; for (let a = 0; a < n; a += CHUNK) r.push([a, Math.min(n, a + CHUNK)]); return r; }
 // מנות במקביל, ואחר כך סבב שני — אחת-אחת — למנות שנכשלו או חזרו חסרות (06/10/2026: רצף של 14
 // נעצר אחרי מפגש 8, כי שתי מנות במקביל נכשלו ולא נוסו שוב). missing — טווחי המפגשים שלא הושלמו.
-async function runChunks(n, worker, onStep){
+async function runChunks(n, worker, onStep, run){
   const rs = ranges(n); let next = 0, done = 0, failed = null; const bad = [];
   async function lane(){
     while (next < rs.length) {
+      run?.assertCurrent();
       const k = next++; const [a, b] = rs[k];
-      try { await worker(a, b, k); } catch (e) { bad.push(k); failed = failed || e; }
+      try { await worker(a, b, k); run?.assertCurrent(); } catch (e) { if (run && !run.current()) throw e; bad.push(k); failed = failed || e; }
       done++; if (onStep) onStep(done, rs.length);
     }
   }
@@ -2707,9 +2770,10 @@ async function runChunks(n, worker, onStep){
   if (bad.length) {
     failed = null; bad.sort((x, y) => x - y);
     for (let i = 0; i < bad.length; i++) {
+      run?.assertCurrent();
       const k = bad[i], [a, b] = rs[k];
       if (onStep) onStep(rs.length - bad.length + i, rs.length, rangeLabel(a, b));
-      try { await worker(a, b, k); } catch (e) { failed = failed || e; missing.push([a, b]); }
+      try { await worker(a, b, k); run?.assertCurrent(); } catch (e) { if (run && !run.current()) throw e; failed = failed || e; missing.push([a, b]); }
     }
     if (onStep) onStep(rs.length - missing.length, rs.length);
   }
@@ -2719,7 +2783,7 @@ async function runChunks(n, worker, onStep){
 function idxIn(x, j, a, b){ const n = x && Number.isInteger(x.n) ? x.n - 1 : -1; return n >= a && n < b ? n : a + j; }
 function missingLabel(m){ return (m || []).map(([a, b]) => rangeLabel(a, b)).join(", "); }
 function rangeLabel(a, b){ return b - a === 1 ? `מפגש ${a + 1}` : `מפגשים ${a + 1}–${b}`; }
-async function aiFillRange(a, b, first){
+async function aiFillRange(a, b, first, run){
   const system = [preamble(),
     "להלן תכנון רצף מפגשים (JSON). חלק מהשדות ריקים. השלימי אך ורק שדות תוכן ריקים — אסור לשנות שדה שכבר מולא.",
     "אל תמציאי עובדות על המציאות של היוצרת: creator, date, framework, audience, ageRange, participants, space, prefs, limits, domain, approaches, topic, goals, courseLevel נשארים בדיוק כפי שהם, גם אם הם ריקים.",
@@ -2730,19 +2794,20 @@ async function aiFillRange(a, b, first){
   ].join("\n\n");
   // 20000/300 שניות למנה של עד 7 מפגשים, כולל חשיבה פנימית (thinking:adaptive
   // + effort גבוה בשרת המשותף). לכייל מול מודל אמיתי ברצף של 14 מפגשים.
-  return parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), CHUNK_TOKENS, CHUNK_TIMEOUT));
+  return parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), CHUNK_TOKENS, CHUNK_TIMEOUT, run));
 }
-async function aiFillAll(onStep){
+async function aiFillAll(onStep, run){
   let total = 0;
   const r = await runChunks(seq.sessions.length, async (a, b, k) => {
-    total += mergeFill(await aiFillRange(a, b, k === 0), a, b);
-    renderSeq(); touch();
+    const result = await aiFillRange(a, b, k === 0, run); run.assertCurrent();
+    total += mergeFill(result, a, b);
+    renderSeq(); touch(false); run.checkpoint();
     for (let i = a; i < b; i++) if (isEmptySession(seq.sessions[i])) throw new Error("המודל לא החזיר את " + rangeLabel(i, i + 1));
-  }, onStep);
+  }, onStep, run);
   if (r.failed) { const e = new Error(r.failed.message); e.partial = total; e.missing = missingLabel(r.missing); throw e; }
   return total;
 }
-async function aiReport(facts){
+async function aiReport(facts, run){
   const system = [preamble(),
     "כתבי דו״ח ניתוח מקצועי על תכנון רצף המפגשים המצורף. אין לתת ציון מספרי בשום מקום.",
     "הקריטריונים — בדיוק בשמות האלה ובסדר הזה:\n" + REPORT_CRITERIA.map((c, i) => (i + 1) + ". " + c.t).join("\n"),
@@ -2753,11 +2818,11 @@ async function aiReport(facts){
   ].join("\n\n");
   const user = "התכנון:\n" + JSON.stringify(planForAI()) +
     "\n\nבדיקות מכניות שכבר מוצגות ליוצרת בנפרד (אל תחזרי עליהן כלשונן; אפשר להתייחס למשמעותן):\n" + facts.map(f => "- " + f.text).join("\n");
-  const out = parseJSON(await callAI(system, user, 24000, 540000));
+  const out = parseJSON(await callAI(system, user, 24000, 540000, run));
   if (!Array.isArray(out.criteria) || !out.criteria.length) throw new Error("מבנה דו״ח חסר");
   return out;
 }
-async function aiImproveRange(a, b, first){
+async function aiImproveRange(a, b, first, run){
   const system = [preamble(),
     "שכתבי את תכנון רצף המפגשים המצורף לגרסה משופרת, שהיוצרת תוכל לעבור עליה ולערוך.",
     "שמרי על כוונת היוצרת, על מספר המפגשים ועל העובדות: creator, date, framework, audience, ageRange, participants, space, prefs, limits, domain, approaches, topic, courseLevel — ללא שינוי.",
@@ -2766,15 +2831,15 @@ async function aiImproveRange(a, b, first){
     SESSION_SCHEMA, TIME_RULE,
     "החזירי אך ורק JSON: {\"plan\":{" + (first ? "\"goals\":[\"...\"],\"finalProduct\":\"...\",\"assessment\":\"...\"," : "") + "\"sessions\":[{\"n\":" + (a + 1) + ", ...כל שדות המפגש...}]},\"changes\":[{\"where\":\"מפגש " + (a + 1) + " · פתיחה\",\"why\":\"...\"}]} — changes: השינויים העיקריים בטווח הזה ולמה (עד 6).",
   ].join("\n\n");
-  const out = parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), CHUNK_TOKENS, CHUNK_TIMEOUT));
+  const out = parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), CHUNK_TOKENS, CHUNK_TIMEOUT, run));
   if (!out.plan || !Array.isArray(out.plan.sessions)) throw new Error("מבנה חסר");
   return out;
 }
-async function aiImproveAll(onStep){
+async function aiImproveAll(onStep, run){
   const agg = { goals:null, finalProduct:"", assessment:"", sessions: new Array(seq.sessions.length).fill(null) };
   const changes = [];
   const r = await runChunks(seq.sessions.length, async (a, b, k) => {
-    const out = await aiImproveRange(a, b, k === 0);
+    const out = await aiImproveRange(a, b, k === 0, run); run.assertCurrent();
     const p = out.plan;
     if (k === 0) { agg.goals = p.goals; agg.finalProduct = p.finalProduct; agg.assessment = p.assessment; }
     p.sessions.forEach((x, j) => {
@@ -2784,7 +2849,7 @@ async function aiImproveAll(onStep){
     });
     for (let i = a; i < b; i++) if (!agg.sessions[i]) throw new Error("המודל לא החזיר את " + rangeLabel(i, i + 1));
     (Array.isArray(out.changes) ? out.changes : []).forEach(c => changes.push(c));
-  }, onStep);
+  }, onStep, run);
   const got = agg.sessions.filter(Boolean).length;
   if (r.failed && !got) throw r.failed;
   return { plan: agg, changes, failedMsg: r.failed ? r.failed.message : null, missing: agg.sessions.length - got };
@@ -2804,14 +2869,15 @@ async function loadLibrary(){
 function libCatalog(lib){
   return lib.map(x => [x.id, x.domain, x.topic, x.type, (x.tags || []).join("/"), (x.approach || []).join("/")].join(" | ")).join("\n");
 }
-async function aiNarrative(){
+async function aiNarrative(run){
   const lib = await loadLibrary();
+  run.assertCurrent();
   const system = [preamble(),
     "כתבי שלוש פסקאות רציפות שיפתחו את מסמך תכנון הרצף — לא רשימות, לא כותרות: (1) הסיפור של הרצף — מה הלומדים עוברים מהמפגש הראשון ועד התוצר הסופי; (2) למה הוא בנוי כך — ההדרגתיות, הגישות שנבחרו, וההתאמה לקהל, לגיל ולתנאים; (3) פסקה קצרה בגוף שני, ליוצרת, עם עצה מעשית אחת להנחיית הרצף.",
     lib.length ? "מקורות להרחבה — בחרי אך ורק מתוך ספריית המקורות המאומתת שלמטה, לפי המספר (id) בלבד. אסור לכתוב מקור, שם מחבר או כותרת משלך. לכל מפגש 1–2 מקורות שמתאימים לנושא שלו; ולרצף כולו 3–5 מקורות, כולל מקורות לגישות שנבחרו אם יש כאלה בספרייה. אם אין מקור מתאים — מערך ריק. הספרייה (id | תחום | נושא | סוג | תגיות | גישה):\n" + libCatalog(lib) : "",
     "אל תמציאי תוכן שלא נמסר. החזירי אך ורק JSON: {\"paragraphs\":[\"...\",\"...\",\"...\"]" + (lib.length ? ",\"sources\":{\"overall\":[12,40],\"sessions\":[{\"n\":1,\"ids\":[3]}]}" : "") + "}",
   ].filter(Boolean).join("\n\n");
-  const out = parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), 12000, 300000));
+  const out = parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), 12000, 300000, run));
   if (!Array.isArray(out.paragraphs) || out.paragraphs.length < 2) throw new Error("מבנה חסר");
   // רק מזהים שקיימים בספרייה — כל דבר אחר נזרק
   const byId = new Map(lib.map(x => [x.id, x]));
@@ -2822,10 +2888,10 @@ async function aiNarrative(){
   (Array.isArray(src.sessions) ? src.sessions : []).forEach(x => { if (x && Number.isInteger(x.n)) out.sessionSources[x.n] = pick(x.ids).slice(0, 3); });
   return out;
 }
-async function aiAsk(q){
+async function aiAsk(q, run){
   const system = [preamble(),
     "היוצרת שואלת שאלה תוך כדי מילוי התכנון. עני ישירות, מעשית ובקצרה (עד כ-150 מילים), בהתייחס לתכנון הנוכחי המצורף. אם השאלה אינה קשורה לתכנון — עני בקצרה והחזירי את השיחה לתכנון. טקסט רגיל, בלי JSON."].join("\n\n");
-  return await callAI(system, "התכנון הנוכחי:\n" + JSON.stringify(planForAI()) + "\n\nהשאלה:\n" + q, 6000, 300000);
+  return await callAI(system, "התכנון הנוכחי:\n" + JSON.stringify(planForAI()) + "\n\nהשאלה:\n" + q, 6000, 300000, run);
 }
 
 // ── מיזוג תוצאות המודל ──
@@ -2918,16 +2984,19 @@ function applyImproved(imp){
 
 // ── כפתורים ──
 document.getElementById("bSeqFill").addEventListener("click", async (e) => {
+  const run = startSeqWork(); if (!run) return;
   const btnEl = e.target;
-  const done = busy(btnEl, "משלימה...");
+  const done = busy(btnEl, "משלימה...",run);
   let n = 0;
   try {
-    n = await aiFillAll((d, t, again) => { btnEl.textContent = again ? `משלימה שוב את ${again} — ${d} מתוך ${t} מנות הושלמו` : t > 1 ? `משלימה — ${d} מתוך ${t} מנות הושלמו (במקביל, עד כ-8 דקות)` : "משלימה... עד כ-8 דקות"; });
+    n = await aiFillAll((d, t, again) => { btnEl.textContent = again ? `משלימה שוב את ${again} — ${d} מתוך ${t} מנות הושלמו` : t > 1 ? `משלימה — ${d} מתוך ${t} מנות הושלמו (במקביל, עד כ-8 דקות)` : "משלימה... עד כ-8 דקות"; }, run);
+    run.assertCurrent();
     setAIStatus("ok");
     seqDialog("השלמת נתונים חסרים", el("p", {}, n
       ? `הושלמו ${n} שדות. הם מסומנים בקו מקווקו — הצעה של המערכת שנשארת כך אלא אם תשני אותה. שדות שכבר מילאת לא שונו, ועובדות על המציאות שלך (מרחב, תקציב, העדפות, מספר משתתפים) לא הומצאו.`
       : "לא נמצאו שדות תוכן ריקים להשלמה."));
   } catch (err) {
+    if (!run.current()) return;
     console.warn("השלמה לא זמינה:", err.message);
     n = err.partial || 0;
     if (n) {
@@ -2943,12 +3012,13 @@ document.getElementById("bSeqFill").addEventListener("click", async (e) => {
 });
 
 document.getElementById("bSeqReport").addEventListener("click", async (e) => {
+  const run = startSeqWork(); if (!run) return;
   const facts = mechanicalChecks();
   let ai = null;
   if (!missingRequired().length) {
-    const done = busy(e.target, "מנתחת... עד כ-7 דקות");
-    try { ai = await aiReport(facts); setAIStatus("ok"); }
-    catch (err) { console.warn("דו״ח AI לא זמין:", err.message); setAIStatus("mock"); }
+    const done = busy(e.target, "מנתחת... עד כ-7 דקות",run);
+    try { ai = await aiReport(facts, run); run.assertCurrent(); setAIStatus("ok"); }
+    catch (err) { if (!run.current()) return; console.warn("דו״ח AI לא זמין:", err.message); setAIStatus("mock"); }
     finally { done(); }
   }
   if (!ai && !missingRequired().length) return seqDialog("משוב ודו״ח ניתוח", el("p", {}, NO_MODEL));
@@ -2966,14 +3036,16 @@ document.getElementById("bSeqReport").addEventListener("click", async (e) => {
 });
 
 document.getElementById("bSeqImprove").addEventListener("click", async (e) => {
+  const run = startSeqWork(); if (!run) return;
   const btnEl = e.target;
-  const done = busy(btnEl, "מנסחת גרסה משופרת...");
+  const done = busy(btnEl, "מנסחת גרסה משופרת...",run);
   let out = null;
   try {
-    out = await aiImproveAll((d, t, again) => { btnEl.textContent = again ? `מנסחת שוב את ${again} — ${d} מתוך ${t}` : t > 1 ? `מנסחת — ${d} מתוך ${t} מנות הושלמו (במקביל, עד כ-8 דקות)` : "מנסחת גרסה משופרת... עד כ-8 דקות"; });
+    out = await aiImproveAll((d, t, again) => { btnEl.textContent = again ? `מנסחת שוב את ${again} — ${d} מתוך ${t}` : t > 1 ? `מנסחת — ${d} מתוך ${t} מנות הושלמו (במקביל, עד כ-8 דקות)` : "מנסחת גרסה משופרת... עד כ-8 דקות"; }, run);
+    run.assertCurrent();
     setAIStatus("ok");
   }
-  catch (err) { console.warn("נוסח משופר לא זמין:", err.message); setAIStatus("mock"); }
+  catch (err) { if (!run.current()) return; console.warn("נוסח משופר לא זמין:", err.message); setAIStatus("mock"); }
   finally { done(); }
   const body = el("div");
   if (!out) {
@@ -3000,60 +3072,72 @@ document.getElementById("bSeqImprove").addEventListener("click", async (e) => {
     body.append(box);
   });
   seqDialog("נוסח משופר", body, diffs.length ? [btn("אימוץ הנוסח המשופר לטופס", () => {
+    if (!run.current()) {
+      const notice = el("p",{role:"status"},"התכנון השתנה מאז ההצעה. הנוסח שלך נשמר; אפשר לבקש הצעה חדשה לפני האימוץ.");
+      body.append(notice); return;
+    }
     applyImproved(out.plan);
     document.getElementById("dlg").close();
   }, "primary")] : [], true);
 });
 
 document.getElementById("bSeqUndo").addEventListener("click", () => {
+  invalidatePlannerWork();
   if (!snapshot) return;
   seq = normalize(snapshot.seq); props = new Set(snapshot.props); snapshot = null;
   renderSeq(); touch();
 });
 
 document.getElementById("bSeqBuild").addEventListener("click", async (e) => {
+  const run = startSeqWork(); if (!run) return;
   if (!seq.sessions.some(s => !isEmptySession(s))) {
     seqDialog("הפקת התוצר", el("p", {}, "עוד אין אף מפגש עם יעד או מהלך. מלאי לפחות מפגש אחד, או השתמשי ב״השלמת נתונים חסרים״."));
     return;
   }
-  const done = busy(e.target, "מנסחת את פתיחת המסמך ובוחרת מקורות... עד כ-4 דקות");
+  const done = busy(e.target, "מנסחת את פתיחת המסמך ובוחרת מקורות... עד כ-4 דקות",run);
   let narr = null;
-  try { narr = await aiNarrative(); setAIStatus("ok"); }
-  catch (err) { console.warn("פתיחה נרטיבית לא זמינה:", err.message); setAIStatus("mock"); }
+  try { narr = await aiNarrative(run); run.assertCurrent(); setAIStatus("ok"); }
+  catch (err) { if (!run.current()) return; console.warn("פתיחה נרטיבית לא זמינה:", err.message); setAIStatus("mock"); }
   finally { done(); }
   if (!narr) return seqDialog("הפקת התוצר", el("p", {}, NO_MODEL));
   const html = seqDocHTML(narr);
+  const sourcePlan = normalize(seq);
+  const title = "תכנון רצף מפגשים — " + (str(sourcePlan.topic) || "רצף מפגשים");
+  const subtitle = [str(sourcePlan.creator),str(sourcePlan.audience),sourcePlan.sessions.length + " מפגשים"].filter(Boolean).join(" · ");
   const body = el("div");
-  if (!narr) body.append(mockNote("אין חיבור למודל כרגע — המסמך נבנה מהשדות כפי שמולאו, בלי פסקאות הפתיחה (״על הרצף״) שהמודל כותב."));
-  const fr = frameOf(html);
-  body.append(fr, el("p", { class:"savenote" },
-    "אפשר לסגור, לערוך כל שדה ולהפיק מחדש — התוצר כאן הוא תמיד הגרסה האחרונה. מרוצה? שמרי, הדפיסי או העבירי."));
-  const sysBtn = btn("שמירה במערכת", () => {
-    try {
-      const list = JSON.parse(localStorage.getItem(SAVED_KEY) || "[]");
-      list.push({ creator: str(seq.creator) || null, topic: str(seq.topic) || null, date: today(), plan: normalize(seq) });
-      localStorage.setItem(SAVED_KEY, JSON.stringify(list));
-      sysBtn.textContent = "נשמר ✓"; setTimeout(() => { sysBtn.textContent = "שמירה במערכת"; }, 2000);
-    } catch (err) { console.warn("שמירה במערכת נכשלה:", err.message); }
-  });
-  const fname = `רצף-מפגשים-${safeName(seq.topic)}.html`;
+  const parsed = new DOMParser().parseFromString(html,"text/html");
+  const article = parsed.querySelector("article");
+  article.querySelectorAll("table").forEach(table => table.classList.add("kit-table"));
+  const doc = seqArchive.copy([article])[0]; doc.className = "docview sequence-product";
+  body.append(SBE_DOC.editable(doc),el("p",{class:"savenote"},
+    "אפשר לערוך את המסמך ישירות כאן. שמירה, הדפסה והורדה כוללות את הנוסח הערוך. זו טיוטה פרטית שנשמרת במכשיר ובדפדפן הזה, לפי הכניסה שלך."));
+  const sysBtn = seqArchive.saveButton({title,subtitle,fields:sourcePlan,nodes:()=>[doc]});
+  const fname = `רצף-מפגשים-${safeName(sourcePlan.topic)}.html`;
   const mailBtn = btn("העברה במייל", () => {
-    const goals = seq.goals.map(str).filter(Boolean);
-    const text = [`תכנון רצף מפגשים: ${str(seq.topic)}`, [str(seq.audience), str(seq.ageRange), seq.sessions.length + " מפגשים"].filter(Boolean).join(" · "), "",
+    const goals = sourcePlan.goals.map(str).filter(Boolean);
+    const text = [`תכנון רצף מפגשים: ${str(sourcePlan.topic)}`, [str(sourcePlan.audience), str(sourcePlan.ageRange), sourcePlan.sessions.length + " מפגשים"].filter(Boolean).join(" · "), "",
       goals.length ? "מטרות:\n" + goals.map((g, i) => `${i + 1}. ${g}`).join("\n") : "", "",
       `המסמך המלא נשמר במחשב בשם ${fname} — מומלץ לצרף אותו להודעה.`, "", SBE_CREDIT].join("\n");
-    location.href = "mailto:?subject=" + encodeURIComponent("תכנון רצף מפגשים — " + str(seq.topic)) + "&body=" + encodeURIComponent(text);
+    location.href = "mailto:?subject=" + encodeURIComponent("תכנון רצף מפגשים — " + str(sourcePlan.topic)) + "&body=" + encodeURIComponent(text);
   });
+  const productError = error => body.append(el("p",{role:"status"},error.message));
   seqDialog("תוצר — תכנון רצף מפגשים", body, [
-    btn("הדפסה / שמירה כ-PDF", () => printFrame(fr), "primary"),
+    btn("הדפסה / שמירה כ-PDF", () => {try {seqArchive.print({title,subtitle,nodes:[doc]});} catch(error) {productError(error);}}, "primary"),
     sysBtn,
-    btn("שמירה למחשב", () => downloadHTML(fname, html)),
+    btn("שמירה למחשב", () => {
+      try {
+        const safe = seqArchive.copy([doc])[0];
+        const logo = '<div class="hd"><img src="' + esc(document.getElementById("brandLogo").src) + '" alt="Begood"></div>';
+        downloadHTML(fname,docShell(title,logo + safe.innerHTML));
+      } catch(error) {productError(error);}
+    }),
     mailBtn,
   ], true);
 });
 
 function resetSeq(){
   if (!confirm("לנקות את כל תכנון הרצף ולהתחיל מחדש?")) return;
+  invalidatePlannerWork();
   const creator = seq.creator;
   seq = emptySeq(); seq.creator = creator; props = new Set(); snapshot = null;
   openSess.clear(); openSess.add(0);
@@ -3064,17 +3148,19 @@ document.getElementById("bSeqReset").addEventListener("click", resetSeq);
 document.getElementById("sqAsk").addEventListener("click", async (e) => {
   const qi = document.getElementById("sqQ");
   const q = str(qi.value); if (!q) return;
+  const run = startSeqWork(); if (!run) return;
   const box = document.getElementById("sqAnswers");
   const item = el("div", { class:"qa" });
   const a = el("div", { class:"a" }, "חושבת...");
   item.append(el("div", { class:"q" }, q), a);
   box.prepend(item);
-  const old = e.target.textContent; e.target.disabled = true; e.target.textContent = "עונה...";
-  try { a.textContent = str(await aiAsk(q)); setAIStatus("ok"); qi.value = ""; }
+  const done = busy(e.target,"עונה...",run);
+  try { const answer = await aiAsk(q, run); run.assertCurrent(); a.textContent = str(answer); setAIStatus("ok"); qi.value = ""; }
   catch (err) {
+    if (!run.current()) { a.textContent = "התכנון השתנה במהלך הבקשה. אפשר לשאול שוב על הנוסח הנוכחי."; return; }
     console.warn("שאלה ליועצת לא זמינה:", err.message); setAIStatus("mock");
     a.textContent = ""; a.append(mockNote("אין חיבור למודל כרגע — תשובה לשאלה חופשית דורשת מודל אמיתי. השאלה נשארה בתיבה, כדי שתוכלי לשלוח אותה שוב כשהשרת פועל."));
-  } finally { e.target.disabled = false; e.target.textContent = old; }
+  } finally { done(); }
 });
 
 // ── ייבוא מסמך תכנון קיים (23/09/2026, בקשת המשתמשת: "יתכן והם יעלו מסמך כמו
@@ -3092,15 +3178,17 @@ async function readDocFile(file){
 }
 document.getElementById("sqFile").addEventListener("change", async (e) => {
   const file = e.target.files[0]; if (!file) return;
+  const run = startSeqWork(); if (!run) return;
   const st = document.getElementById("sqFileStatus");
   st.textContent = "טוענת...";
   try {
     const text = await readDocFile(file);
+    run.assertCurrent();
     document.getElementById("sqDocText").value = text;
     st.textContent = str(text) ? `נטען מ-${file.name} — ${text.length.toLocaleString("he-IL")} תווים.` : "לא נמצא טקסט ניתן לחילוץ — ייתכן שזה PDF סרוק (תמונה). הדביקי את הטקסט ידנית.";
-  } catch (err) { st.textContent = "לא הצלחנו לקרוא את הקובץ (" + err.message + ") — הדביקי את הטקסט ידנית."; }
+  } catch (err) { if (run.current()) st.textContent = "לא הצלחנו לקרוא את הקובץ (" + err.message + ") — הדביקי את הטקסט ידנית."; }
 });
-async function aiImportOutline(text, n){
+async function aiImportOutline(text, n, run){
   const system = [preamble({}),
     "קיבלת מסמך תכנון קיים — סילבוס, תכנית קורס, רשימת נושאים או תכנון חלקי. נתחי אותו והפכי אותו לבסיס של תכנית רצף מפגשים.",
     n ? `מספר המפגשים הנדרש: ${n}. אם המסמך מפרט מספר אחר של נושאים או שיעורים — פצלי, אחדי או פרסי אותם כך שייווצר רצף הדרגתי ומאוזן של ${n} מפגשים בדיוק.`
@@ -3115,11 +3203,11 @@ async function aiImportOutline(text, n){
     "notes — שניים-שלושה משפטים ליוצרת: מה נלקח מהמסמך, מה הושלם, ומה כדאי לה לבדוק.",
     "החזירי אך ורק JSON: {\"sessionLength\":\"\",\"approaches\":[],\"framework\":\"\",\"audience\":\"\",\"ageRange\":\"\",\"participants\":\"\",\"space\":\"\",\"prefs\":[],\"limits\":[],\"domain\":\"\",\"topic\":\"\",\"goals\":[],\"courseLevel\":\"\",\"finalProduct\":\"\",\"assessment\":\"\",\"outline\":[],\"notes\":\"\"}",
   ].join("\n\n");
-  const out = parseJSON(await callAI(system, "המסמך:\n" + text.slice(0, DOC_MAX_CHARS), 12000, 360000));
+  const out = parseJSON(await callAI(system, "המסמך:\n" + text.slice(0, DOC_MAX_CHARS), 12000, 360000, run));
   if (!Array.isArray(out.outline) || !out.outline.length) throw new Error("לא התקבל מתווה מפגשים");
   return out;
 }
-async function aiImportExpand(text, head, outline, a, b, sessLen){
+async function aiImportExpand(text, head, outline, a, b, sessLen, run){
   const system = [preamble(head),
     `פרטי את ${rangeLabel(a, b)} (n=${a + 1} עד n=${b}) של רצף המפגשים — לפי המסמך המקורי, לפי פרטי הרקע ולפי מתווה הרצף המצורפים. כל מפגש ממשיך את קודמו ומוביל לבא אחריו.`,
     SESSION_SCHEMA, TIME_RULE,
@@ -3127,7 +3215,7 @@ async function aiImportExpand(text, head, outline, a, b, sessLen){
     "התחשבי בהעדפות ובמגבלות שבפרטי הרקע. החזירי אך ורק JSON: {\"sessions\":[{\"n\":" + (a + 1) + ", ...כל שדות המפגש...}]} — רק המפגשים שבטווח.",
   ].join("\n\n");
   const user = "המסמך:\n" + text.slice(0, DOC_MAX_CHARS) + "\n\nפרטי הרקע:\n" + JSON.stringify(head) + "\n\nמתווה הרצף:\n" + JSON.stringify(outline);
-  return parseJSON(await callAI(system, user, CHUNK_TOKENS, CHUNK_TIMEOUT));
+  return parseJSON(await callAI(system, user, CHUNK_TOKENS, CHUNK_TIMEOUT, run));
 }
 function sessionFromAI(x){
   const s = emptySession();
@@ -3161,11 +3249,12 @@ document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
   n = Math.max(1, Math.min(MAX_SESSIONS, n));
   const nonEmpty = str(seq.topic) || seq.sessions.some(s => !isEmptySession(s));
   if (nonEmpty && !confirm("התכנית שתיבנה מהמסמך תחליף את מה שכבר מילאת בטופס הרצף. להמשיך?")) return;
+  const run = startSeqWork(); if (!run) return;
   const btnEl = e.target;
-  const done = busy(btnEl, "קוראת את המסמך ובונה מתווה... עד כ-4 דקות");
+  const done = busy(btnEl, "קוראת את המסמך ובונה מתווה... עד כ-4 דקות",run);
   let head = null, built = null;
   try {
-    const outl = await aiImportOutline(text, n);
+    const outl = await aiImportOutline(text, n, run); run.assertCurrent();
     const outline = outl.outline.slice(0, MAX_SESSIONS);
     head = {
       framework: str(outl.framework), audience: str(outl.audience), ageRange: str(outl.ageRange),
@@ -3180,7 +3269,7 @@ document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
     const sessLen = str(outl.sessionLength);
     built = outline.map(o => { const s = emptySession(); s.main = [str(o.title), str(o.focus)].filter(Boolean).join(" — "); if (sessLen) s.duration = sessLen; return s; });
     const r = await runChunks(built.length, async (a, b) => {
-      const res = await aiImportExpand(text, head, outline, a, b, sessLen);
+      const res = await aiImportExpand(text, head, outline, a, b, sessLen, run); run.assertCurrent();
       const got = new Set();
       (Array.isArray(res.sessions) ? res.sessions : []).forEach((x, j) => {
         if (!x) return;
@@ -3188,7 +3277,8 @@ document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
         if (idx >= a && idx < b) { built[idx] = sessionFromAI(x); got.add(idx); if (sessLen && !str(built[idx].duration)) built[idx].duration = sessLen; }
       });
       for (let i = a; i < b; i++) if (!got.has(i)) throw new Error("המודל לא החזיר את " + rangeLabel(i, i + 1));
-    }, (d, t, again) => { btnEl.textContent = again ? `פורסת שוב את ${again} — ${d} מתוך ${t} מנות הושלמו` : `פורסת ${built.length} מפגשים — ${d} מתוך ${t} מנות הושלמו (עד ${PARALLEL} במקביל, עד כ-8 דקות)`; });
+    }, (d, t, again) => { btnEl.textContent = again ? `פורסת שוב את ${again} — ${d} מתוך ${t} מנות הושלמו` : `פורסת ${built.length} מפגשים — ${d} מתוך ${t} מנות הושלמו (עד ${PARALLEL} במקביל, עד כ-8 דקות)`; }, run);
+    run.assertCurrent();
     const failed = r.failed ? r.failed.message : null;
     const creator = seq.creator, date = seq.date;
     seq = normalize(Object.assign({}, head, { goals: head.goals.length ? head.goals : [""], sessions: built }));
@@ -3198,9 +3288,10 @@ document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
     openSess.clear(); openSess.add(0);
     setAIStatus("ok");
     document.getElementById("sqImport").open = false;
-    renderSeq(); touch();
+    renderSeq(); touch(false); run.checkpoint();
     window.scrollTo({ top: document.getElementById("screen-seq").offsetTop - 10, behavior:"smooth" });
   } catch (err) {
+    if (!run.current()) return;
     console.warn("ייבוא מסמך לא זמין:", err.message);
     setAIStatus("mock");
     st.textContent = "";
