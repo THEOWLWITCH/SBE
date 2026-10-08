@@ -96,7 +96,7 @@
     node.setAttribute("contenteditable", "true");
     node.setAttribute("spellcheck", "true");
     const hint = document.createElement("p"); hint.className = "sbe-edit-hint";
-    hint.textContent = "✎ אפשר לערוך את הטקסט ישירות כאן — למחוק, להוסיף ולנסח מחדש. ההדפסה ושמירת ה-PDF יכללו את הנוסח הערוך.";
+    hint.textContent = "✎ אפשר לערוך את הטקסט ישירות כאן (למחוק, להוסיף ולנסח מחדש). ההדפסה ושמירת ה-PDF יכללו את הנוסח הערוך.";
     const wrap = document.createElement("div"); wrap.append(hint, node);
     return wrap;
   }
@@ -171,7 +171,7 @@ h1{font-size:26px}.hd img{height:44px}
       w = window.open("", "_blank");
     }
     if (!w) { alert("הדפדפן חסם את חלון ההדפסה. אפשרי חלונות קופצים לאתר ונסי שוב."); return; }
-    w.document.write(`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(title)} — Begood</title>
+    w.document.write(`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(title)}: Begood</title>
 <style>
 @page{size:A4${landscape ? " landscape" : ""};margin:18mm 20mm}
 body{font-family:"Assistant","Segoe UI",Arial,sans-serif;color:#141C24;max-width:${landscape ? 1040 : 720}px;margin:24px auto;padding:0 16px;line-height:1.7;font-size:14.5px}

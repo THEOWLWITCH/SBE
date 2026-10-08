@@ -193,11 +193,11 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <div class="banner" id="redlineBanner"></div>
 
 <div class="banner">
-  <b>מה קורה אם חוצים קו אדום.</b> <b>שפה אלימה</b> — עצירה מיידית של התרגול, ללא התראה
-  ובלי אפשרות לנסח מחדש, מהמופע הראשון. <b>מניפולציה או אולטימטום</b> — הערה מיידית עם הצעת
+  <b>מה קורה אם חוצים קו אדום.</b> <b>שפה אלימה</b>, עצירה מיידית של התרגול, ללא התראה
+  ובלי אפשרות לנסח מחדש, מהמופע הראשון. <b>מניפולציה או אולטימטום</b>, הערה מיידית עם הצעת
   ניסוח חלופי, וחזרה אחורה שמאפשרת לנסות שוב מיד; אם זה חוזר שלוש פעמים באותה שיחה, המערכת
   (לא הדמות) מסיימת את התרגול ומציגה משוב על מה שכן קרה עד כאן. חצייה נרשמת ומוצגת למנחה
-  של הסדנה — פסאודונימית (מזוהה במספר, לא בשם).
+  של הסדנה: פסאודונימית (מזוהה במספר, לא בשם).
 </div>
 
 <!-- מצב החיבור למודל — רק למנהלת המערכת (sbe-sysonly, access-guard.js) -->
@@ -224,10 +224,9 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 </dialog>
 
 <section id="screen-select">
-  <p class="sub" style="margin-bottom:10px;">בחרי תרחיש לתרגול עצמי. כל תרחיש שאושר לסדנה זמין גם כאן —
-    לתרגול על התרחיש שהיה בסדנה, או כתחליף למפגש שלא יצא לפועל.</p>
+  <p class="sub" style="margin-bottom:10px;">בחרי תרחיש לתרגול עצמי. כל תרחיש שאושר לסדנה זמין גם כאן: לתרגול על התרחיש שהיה בסדנה, או כתחליף למפגש שלא יצא לפועל.</p>
   <span class="chip muted" style="display:inline-flex;margin-bottom:16px;"
-    title="השיחה נשמרת עם כל הפרטים שלה, אבל תחת מספר שהמערכת נותנת — לא תחת השם שלך">
+    title="השיחה נשמרת עם כל הפרטים שלה, אבל תחת מספר שהמערכת נותנת, לא תחת השם שלך">
     מזוהה במספר, לא בשם
   </span>
   <div class="filters" id="filterBar"></div>
@@ -260,10 +259,10 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <div id="fbSkills"></div>
   <div class="fb-h">רגע אחד שכמעט נפתח</div>
   <div class="fb-note" id="fbAlmost"></div>
-  <button type="button" class="primary" id="bRetrySecond" hidden style="margin-top:8px;">ניסיון שני — לנסות שוב את הרגע הזה</button>
+  <button type="button" class="primary" id="bRetrySecond" hidden style="margin-top:8px;">ניסיון שני: לנסות שוב את הרגע הזה</button>
   <div class="fb-h">איך השיחה נסגרה</div>
   <div class="fb-note" id="fbEnding"></div>
-  <p class="no-score">בלי ציון ובלי דירוג. את מתרגלת לבד — זה משוב ללמידה, לא בחינה.</p>
+  <p class="no-score">בלי ציון ובלי דירוג. את מתרגלת לבד: זה משוב ללמידה, לא בחינה.</p>
   <details class="log">
     <summary>מה נרשם (לצורכי מחקר ואיכות)</summary>
     <pre id="fbLog"></pre>
@@ -278,7 +277,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <section id="screen-distress" hidden>
   <div class="card">
     <p><b>יצאת מהתרגול. זה בסדר גמור.</b></p>
-    <p>זו לא רשומה ככישלון ולא נשמרת כתוצאה. אם משהו בתרגול הזה נגע במקום רגיש — כדאי
+    <p>זו לא רשומה ככישלון ולא נשמרת כתוצאה. אם משהו בתרגול הזה נגע במקום רגיש, כדאי
       לדבר עם מנחת הסדנה או עם גורם מקצועי אחר לפני שממשיכות.</p>
   </div>
   <div style="margin-top:14px;"><button type="button" id="bBack">חזרה למסך הראשי</button></div>
@@ -438,7 +437,7 @@ const SCENARIOS = {
     { text:"החזקת שתיקה בלי מיהור למילויה", detectShort:true },
     { text:"טון קול מותאם למצב", undetectable:true },
     { text:"גוף פתוח ולא מתגונן", undetectable:true },
-    { text:"סימני מתח בגוף", note:"מתייחס לדמות, לא למתנסה — לא רלוונטי לזיהוי מטקסט שלה." },
+    { text:"סימני מתח בגוף", note:"מתייחס לדמות, לא למתנסה, לא רלוונטי לזיהוי מטקסט שלה." },
   ],
  },
 
@@ -484,7 +483,7 @@ const SCENARIOS = {
     ],
     knows: "שזה קורה בעיקר בשיעורי חשבון, ובדרך כלל כשמחלקים דף עבודה.",
     doesntKnow: "שעידן מתקשה בקריאת הוראות כתובות, ושבדף עבודה הוא נתקע כבר בשורה הראשונה.",
-    trustCondition: "כשהרכזת מכירה במאמץ ובעומס שלך, ושואלת מה ראית — בלי להאשים ובלי לקפוץ לפתרון.",
+    trustCondition: "כשהרכזת מכירה במאמץ ובעומס שלך, ושואלת מה ראית, בלי להאשים ובלי לקפוץ לפתרון.",
     speech: {
       answerLength: "קצר, ענייני, לפעמים חותך. משפט או שניים.",
       insteadOfAnswering: "חוזרת לעומס: \"יש לי עוד עשרים ושבעה ילדים\".",
@@ -567,7 +566,7 @@ const SCENARIOS = {
     { text:"חזרה למיקוד אחרי סטייה", keywords:["בואי נחזור","נחזור לנושא","בחזרה ל"] },
     { text:"התאמת רמת הישירות למצב", detectShort:true },
     { text:"טון קול מותאם למצב", undetectable:true },
-    { text:"סימני מתח בגוף", note:"מתייחס לדמות, לא למתנסה — לא רלוונטי לזיהוי מטקסט שלה." },
+    { text:"סימני מתח בגוף", note:"מתייחס לדמות, לא למתנסה, לא רלוונטי לזיהוי מטקסט שלה." },
   ],
  },
 
@@ -581,7 +580,7 @@ const SCENARIOS = {
     opening: [
       "את רכזת פדגוגית בחטיבת ביניים, אחראית על ליווי מורות בשנה הראשונה שלהן.",
       "מאיה, מורה לספרות בשנה הראשונה שלה, שלחה לך אתמול הודעה: \"אני לא בטוחה שאני ממשיכה בזה בשנה הבאה.\"",
-      "לפני שבועיים היה אירוע קשה בכיתה שלה — תלמיד צעק עליה מול הכיתה, והיא לא ידעה איך להגיב.",
+      "לפני שבועיים היה אירוע קשה בכיתה שלה: תלמיד צעק עליה מול הכיתה, והיא לא ידעה איך להגיב.",
       "מאז היא מגיעה לבית הספר אבל כמעט לא מדברת בחדר המורים.",
       "כעת תיפגשי עם מאיה בחדר הרכזת. לרשותך חמש דקות.",
     ],
@@ -653,7 +652,7 @@ const SCENARIOS = {
   endingNotes: [
     "היא מצאה משהו משלה להחזיק בו. זה לא הבטחה, אבל זו בחירה שלה.",
     "לא נסגר ולא נפתח. אותה עמדה בדיוק כמו בתחילת השיחה.",
-    "לא הגיעה להחלטה, אבל הקשר נפתח — יש כאן משהו להמשיך ממנו.",
+    "לא הגיעה להחלטה, אבל הקשר נפתח. יש כאן משהו להמשיך ממנו.",
     "ההחלטה כבר כמעט התקבלה. סימן שההקשבה הגיעה מאוחר מדי.",
   ],
   skills: [
@@ -951,7 +950,7 @@ document.getElementById("bEndChat").addEventListener("click", () => {
   state.ended = true; state.endingType = "trainee-ended";
   state.closingLine = "בחרת לסיים את השיחה כאן.";
   state.closingNote = "זו בחירה לגיטימית ולא כישלון. חלק מהתפניות לא הגיעו כי השיחה " +
-    "נעצרה לפני שמוצה הזמן שהיה — זה מידע, בדיוק כמו כל סיום אחר.";
+    "נעצרה לפני שמוצה הזמן שהיה. זה מידע, בדיוק כמו כל סיום אחר.";
   showFeedback();
 });
 document.getElementById("bBack").addEventListener("click", resetAll);
@@ -963,7 +962,7 @@ document.getElementById("bPrintFb").addEventListener("click", () => {
     .map(m => [m.who === "trainee" ? "אני" : (SCENARIO.actor.name || "הדמות"), m.line])));
   const fb = document.getElementById("screen-feedback").cloneNode(true);
   fb.querySelectorAll("button,details").forEach(x => x.remove());
-  SBE_DOC.print({ title: "תרגול עצמי — " + SCENARIO.name, subtitle: SCENARIO.subtitle || "", nodes: [fb, conv] });
+  SBE_DOC.print({ title: "תרגול עצמי: " + SCENARIO.name, subtitle: SCENARIO.subtitle || "", nodes: [fb, conv] });
 });
 document.getElementById("bEndedAgain").addEventListener("click", resetAll);
 document.getElementById("bBackToSelect").addEventListener("click", backToSelect);
@@ -1028,7 +1027,7 @@ function buildMessageEl(t, extraClass){
   if (t.stage) bubble.append(el("span", { class:"stage" }, "(" + t.stage + ")"));
   // תיוג גלוי, לא שקט: תגובה שהופקה מהמנוע ההיוריסטי (נפילה חזרה כשאין
   // חיבור למודל) מסומנת בפירוש — לא מוצגת כאילו המודל ניסח אותה (19/09/2026).
-  if (t.mock) bubble.append(el("span", { class:"mock-tag", title:"רננה הגיבה כאן מהמנוע ההיוריסטי המקומי, לא מהמודל — כנראה שהשרת לא היה זמין" }, "הדגמה"));
+  if (t.mock) bubble.append(el("span", { class:"mock-tag", title:"רננה הגיבה כאן מהמנוע ההיוריסטי המקומי, לא מהמודל: כנראה שהשרת לא היה זמין" }, "הדגמה"));
   group.append(bubble);
   return group;
 }
@@ -1040,8 +1039,8 @@ function setAIStatus(status){
   if (!chip) return;
   chip.className = "ai-status " + status;
   const dot = '<span class="dot"></span> ';
-  if (status === "ok") chip.innerHTML = dot + "AI פעיל — רננה מגיבה בזמן אמת";
-  else if (status === "mock") chip.innerHTML = dot + "מצב הדגמה — אין חיבור למודל כרגע, רננה מגיבה מהמנוע ההיוריסטי המקומי";
+  if (status === "ok") chip.innerHTML = dot + "AI פעיל: רננה מגיבה בזמן אמת";
+  else if (status === "mock") chip.innerHTML = dot + "מצב הדגמה: אין חיבור למודל כרגע. רננה מגיבה מהמנוע ההיוריסטי המקומי";
   else chip.innerHTML = dot + "בודקת חיבור למודל...";
 }
 
@@ -1202,13 +1201,13 @@ function fillTemplate(tpl, vars){
 }
 
 function formatTurningPoint(tp){
-  let s = `תפנית ${tp.n} — "${tp.name}" (${tp.type}${tp.core ? ", תפנית ליבה" : ""})\n`;
+  let s = `תפנית ${tp.n}: "${tp.name}" (${tp.type}${tp.core ? ", תפנית ליבה" : ""})\n`;
   s += `טריגר: ${tp.trigger}\n`;
   s += `מה שאת עושה: "${tp.does.line}"` + (tp.does.stage ? ` (${tp.does.stage})` : "") + "\n";
   s += `אם הוחמץ: ${tp.missed}`;
   if (tp.branches && tp.branches.length) {
     s += "\n" + tp.branches.map(b =>
-      `  ענף — אם המתנסה ${b.move}: אפקט "${b.effect}", את אומרת "${b.line}"` + (b.stage ? ` (${b.stage})` : "")
+      `  ענף: אם המתנסה ${b.move}: אפקט "${b.effect}", את אומרת "${b.line}"` + (b.stage ? ` (${b.stage})` : "")
     ).join("\n");
   }
   return s;
@@ -1442,7 +1441,7 @@ const AI_SERVER = "https://sbe-server.onrender.com";
 // כך יש קריאה אחת, לא שתיים, כפי שהוכרע ב-05/09/2026.
 const REPORT_TURN_TOOL = {
   name: "report_turn",
-  description: "התגובה שלך בתור הזה — גם מה שנאמר בקול וגם דיווח מבני על מה שקרה.",
+  description: "התגובה שלך בתור הזה, גם מה שנאמר בקול וגם דיווח מבני על מה שקרה.",
   input_schema: {
     type: "object",
     properties: {
@@ -1543,7 +1542,7 @@ async function getCharacterTurn(traineeText){
     }
     return applied;
   } catch (e) {
-    console.warn("שרת ה-AI לא זמין — נופלת למנוע ההיוריסטי המקומי. סיבה:", e.message);
+    console.warn("שרת ה-AI לא זמין: נופלת למנוע ההיוריסטי המקומי. סיבה:", e.message);
     setAIStatus("mock");
     const res = mockTurningPointEngine(traineeText, harsh, detectedTechnique);
     res.mock = true;
@@ -1607,7 +1606,7 @@ function startRetry(tp, logEntry){
   document.getElementById("barWrap").hidden = true; // אין תור/התקדמות/יציאה בחלון הקצר הזה
   renderFullTranscript(state.transcript.length);
   addSystemNote("ניסיון שני",
-    `הזדמנות קצרה וממוקדת לנסות שוב את הרגע ב"${tp.name}" — עד שלושה תורים, לא כל השיחה מחדש.`);
+    `הזדמנות קצרה וממוקדת לנסות שוב את הרגע ב"${tp.name}", עד שלושה תורים, לא כל השיחה מחדש.`);
   document.getElementById("composerActive").hidden = false;
   document.getElementById("composerEnded").hidden = true;
   document.getElementById("composerRetryEnded").hidden = true;
@@ -1639,7 +1638,7 @@ async function handleRetrySend(){
     return; // חזרה אחורה, גם כאן: התור לא נספר
   }
   if (result.type === "manipulation-close") {
-    addSystemNote("התרגול נעצר כאן", "חזרה על מניפולציה גם בחלון הקצר הזה — לא ממשיכות.");
+    addSystemNote("התרגול נעצר כאן", "חזרה על מניפולציה גם בחלון הקצר הזה, לא ממשיכות.");
     markCrossedLastTrainee();
     endRetry(null);
     return;
@@ -1666,7 +1665,7 @@ function endRetry(newEffect){
       `עכשיו, באותו רגע בדיוק, היא נפתחה בפועל ("${newEffect}"). זה בדיוק ההבדל שניסיון שני נועד להראות.`;
   } else {
     compareText = `בפעם הראשונה והשנייה כאחד, התפנית "${tp.name}" נשארה "מחזיקה" ולא התקדמה. ` +
-      `זה עדיין מידע שימושי: הרגע הזה קשה באמת, לא מקרי — שווה לחזור אליו שוב בתרגול נפרד.`;
+      `זה עדיין מידע שימושי: הרגע הזה קשה באמת, לא מקרי, שווה לחזור אליו שוב בתרגול נפרד.`;
   }
   addSystemNote("השוואה", compareText);
   document.getElementById("composerActive").hidden = true;
@@ -1748,11 +1747,11 @@ async function handleSend(){
     // משוב), חזרה על מניפולציה מסתיימת עם משוב מלא — זו תוצאה לימודית
     // אמיתית (דפוס חוזר), לא כישלון חד-פעמי שצריך להיעלם בלי הסבר.
     addSystemNote("התרגול נעצר כאן",
-      `זו הפעם ה-${MANIPULATION_CLOSE_THRESHOLD} שבה הופיע מהלך של מניפולציה או אולטימטום באותה שיחה — ` +
+      `זו הפעם ה-${MANIPULATION_CLOSE_THRESHOLD} שבה הופיע מהלך של מניפולציה או אולטימטום באותה שיחה: ` +
       "לא ניסוח בודד שאפשר לתקן תוך כדי, אלא דפוס חוזר. המערכת עוצרת את התרגול כאן.");
     markCrossedLastTrainee();
     state.ended = true; state.endingType = "manipulation-close";
-    state.closingNote = "התרגול הופסק על ידי המערכת בעקבות חזרה על מהלכים של מניפולציה/אולטימטום — " +
+    state.closingNote = "התרגול הופסק על ידי המערכת בעקבות חזרה על מהלכים של מניפולציה/אולטימטום: " +
       "לא בגלל הדמות ולא בגלל טון קשה בלבד. זה נרשם כחצייה חוזרת של קו אדום, ולא ככישלון חד-פעמי " +
       "שאפשר להתעלם ממנו.";
     endChatInline("התרגול נעצר כאן בעקבות חזרה על חציית קו אדום. אפשר לראות משוב על מה שכן קרה עד כה.");
@@ -1791,7 +1790,7 @@ async function handleSend(){
   if (result.type === "initiated-close") {
     state.ended = true; state.endingType = "initiated-close";
     state.closingLine = INITIATED_CLOSE_LINE.line;
-    state.closingNote = "השיחה לא הגיעה לסיום טבעי בתוך הזמן שהיה — הדמות בחרה לסיים אותה " +
+    state.closingNote = "השיחה לא הגיעה לסיום טבעי בתוך הזמן שהיה: הדמות בחרה לסיים אותה " +
       "ביוזמתה, בגלל טון חוזר שלא היה מקובל עליה. זה מידע לגיטימי: גם תגובות שלא חוצות " +
       "קו אדום יכולות לשחוק אמון עד שהצד השני מפסיק לרצות להמשיך.";
     setTimeout(showFeedback, 300);
@@ -1847,7 +1846,7 @@ function showFeedback(){
 
   const almostTP = SCENARIO.turningPoints.find(tp => state.firedTPs[tp.n] && state.firedTPs[tp.n].effect === "מחזיק");
   document.getElementById("fbAlmost").textContent = almostTP
-    ? `בתפנית "${almostTP.name}" — נפתח כיוון, אבל המשיכה שלך החזיקה אותו במקום לקדם אותו.`
+    ? `בתפנית "${almostTP.name}": נפתח כיוון, אבל המשיכה שלך החזיקה אותו במקום לקדם אותו.`
     : "לא זוהה רגע כזה בתרגול הזה.";
 
   // ── "ניסיון שני" (19/09/2026, הכרעת המשתמשת: המערכת מציעה, המתרגלת
@@ -1921,7 +1920,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
 <dialog id="rptDlg">
   <h3>דיווח על תקלה, שאלה, רעיון או בקשה</h3>
   <div class="rb">
-    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח — לא ניתן לצרף קובץ אוטומטית למייל.</p>
+    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח, לא ניתן לצרף קובץ אוטומטית למייל.</p>
     <div class="rerr" id="rptErr" hidden></div>
     <label>שם מלא <span class="req">*</span></label>
     <input id="rptName">

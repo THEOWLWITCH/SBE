@@ -170,7 +170,7 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 <div class="wrap">
   <div class="card">
     <h1>כתיבה מקדמת חוסן</h1>
-    <p>כותבים בכמה מילים מה רוצים לומר — לצוות, להורים, לתלמידים או לקהילת בית הספר — ומקבלים הודעה או מכתב שכבר <b>כתובים מההתחלה</b> לפי עשרת עקרונות השפה המחזקת. אפשר גם <b>לצרף תמונה או קובץ</b> — שיר, ציור של ילד/ה, ידיעה מהעיתון — ולכתוב מה לעשות איתו. כל העובדות והפרטים המעשיים נשמרים, ובסוף מוצג אילו עקרונות באים לידי ביטוי.</p>
+    <p>כותבים בכמה מילים מה רוצים לומר (לצוות, להורים, לתלמידים או לקהילת בית הספר) ומקבלים הודעה או מכתב שכבר <b>כתובים מההתחלה</b> לפי עשרת עקרונות השפה המחזקת. אפשר גם <b>לצרף תמונה או קובץ</b> (שיר, ציור של ילד/ה, ידיעה מהעיתון) ולכתוב מה לעשות איתו. כל העובדות והפרטים המעשיים נשמרים, ובסוף מוצג אילו עקרונות באים לידי ביטוי.</p>
     <ol class="tl" style="font-size:.92rem;columns:2;column-gap:1.6rem" id="rw-list"></ol>
     <p class="muted">העקרונות לקוחים מארגז הכלים של ד״ר יעל שדה לחוסן חברתי בקהילה.</p>
     <p class="article-link" style="font-size:.9rem;margin:.45rem 0 0">📖 <a href="about.html?from=message-writer.html#article" target="_blank" rel="noopener" style="color:var(--spoken,var(--accent,#2E5A7D));font-weight:700">לבחור בחוסן שלנו</a>. מאמר קצר על המושגים שבבסיס הכלי: מנגנונים חברתיים, קהילת חוסן ותו חוסן.</p>
@@ -185,7 +185,7 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
     <label for="rw-text">מה רוצים לומר?</label>
     <textarea id="rw-text" maxlength="3000" style="min-height:140px" placeholder="העובדות והנקודות העיקריות: מה קרה או מה מתוכנן, תאריכים ושעות, מה מבקשים מהקוראים. אפשר גם להדביק טיוטה קיימת."></textarea>
     <details class="attach" id="rw-attach">
-      <summary>📎 צירוף תמונה או קובץ (לא חובה) — שיר, ציור של ילד/ה, ידיעה מהעיתון, מכתב</summary>
+      <summary>📎 צירוף תמונה או קובץ (לא חובה): שיר, ציור של ילד/ה, ידיעה מהעיתון, מכתב</summary>
       <div class="attach-b">
         <input type="file" id="rw-file" accept="image/*,.pdf,application/pdf,.docx,.txt,text/plain">
         <p class="muted" id="rw-file-status"></p>
@@ -193,7 +193,7 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
         <label for="rw-file-do">מה לעשות עם הקובץ?</label>
         <div class="chips" id="rw-file-chips"></div>
         <textarea id="rw-file-do" maxlength="500" style="min-height:60px" placeholder="למשל: לפתוח את המכתב בשתי שורות מהשיר; לתאר את הציור ולהודות ליוצרת; להגיב לכתבה ולהזמין את ההורים לשיחה"></textarea>
-        <p class="muted">יצירה של ילד/ה — רק בשם פרטי, ואחרי שביקשתם רשות מהילד/ה ומההורים. את התמונה עצמה מצרפים להודעה כששולחים אותה.</p>
+        <p class="muted">יצירה של ילד/ה: רק בשם פרטי, ואחרי שביקשתם רשות מהילד/ה ומההורים. את התמונה עצמה מצרפים להודעה כששולחים אותה.</p>
         <button class="btn btn-ghost" type="button" id="rw-file-clear">הסרת הקובץ</button>
       </div>
     </details>
@@ -277,7 +277,7 @@ function addableSelect(id,listName,what){
   const wrap=document.createElement('details');wrap.className='addmore no-print';
   const sm=document.createElement('summary');sm.textContent='לא מוצאים? הוספה לרשימה';wrap.appendChild(sm);
   const row=document.createElement('div');row.className='addrow';
-  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+' — יתווסף לרשימה של כולם';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+', יתווסף לרשימה של כולם';
   const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה לרשימה';
   row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);
   const msg=document.createElement('p');msg.className='muted';msg.hidden=true;wrap.appendChild(msg);
@@ -291,7 +291,7 @@ function addableSelect(id,listName,what){
       ex.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;o.dataset.c='1';g.appendChild(o);});sel.appendChild(g);}
     sel.value=cur;
     adm.textContent='';
-    if(IS_SYS&&extra.length){adm.appendChild(el('p','muted','מנהלת המערכת — הסרה מהרשימה:'));
+    if(IS_SYS&&extra.length){adm.appendChild(el('p','muted','מנהלת המערכת: הסרה מהרשימה:'));
       extra.forEach(v=>{const r=el('div');r.style.cssText='display:flex;gap:.5rem;align-items:center;margin:.25rem 0';r.appendChild(el('span',null,v)).style.flex='1';
         const b=el('button','btn btn-ghost','הסרה');b.type='button';b.style.cssText='padding:.2rem .6rem;font-size:.8rem';
         b.addEventListener('click',()=>{if(!confirm('להסיר את "'+v+'" מהרשימה של כולם?'))return;

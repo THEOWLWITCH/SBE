@@ -6,10 +6,10 @@
 //    בעזרת פונקציות העזר של הדף: {F, el, inlineRich, richText, complete, onStart}.
 (function(){
 'use strict';
-const PRINCIPLES=['גוף ראשון רבים ("אנחנו", "כולנו") ליצירת שייכות','מסר מרגיע יחד עם קריאה לפעולה','תחושת שליטה וניהול — מה כבר נעשה ומה מתוכנן','קישור בין הפרט לכלל','דימויים או סיפורים מקומיים שמקרבים','הומור עדין ומותאם — רק כשמתאים להקשר','שמות, דמויות או מקומות מוכרים מבית הספר','קריאה להתנדבות, לשיתוף או למעורבות פעילה','שפה פשוטה, נגישה, לא פורמלית מדי ולא בירוקרטית','סיום במסר חיובי, אופטימי ומעורר תקווה'];
+const PRINCIPLES=['גוף ראשון רבים ("אנחנו", "כולנו") ליצירת שייכות','מסר מרגיע יחד עם קריאה לפעולה','תחושת שליטה וניהול — מה כבר נעשה ומה מתוכנן','קישור בין הפרט לכלל','דימויים או סיפורים מקומיים שמקרבים','הומור עדין ומותאם: רק כשמתאים להקשר','שמות, דמויות או מקומות מוכרים מבית הספר','קריאה להתנדבות, לשיתוף או למעורבות פעילה','שפה פשוטה, נגישה, לא פורמלית מדי ולא בירוקרטית','סיום במסר חיובי, אופטימי ומעורר תקווה'];
 const LIST=PRINCIPLES.map((p,i)=>(i+1)+'. '+p).join('; ');
 const SAFE='אל תמציאי עובדות, שמות או סיפורים — כשעיקרון דורש פרט שאין לך (שם, מקום, סיפור קטן מבית הספר), השאירי מקום למילוי בסוגריים מרובעים בעברית, למשל [שם התלמיד/ה] או [סיפור קטן מהשבוע]. בהודעה על אירוע קשה, על אבל או בחירום — בלי הומור, בטון רגוע, אמפתי ומכבד, עם מידע ברור על מה עושים עכשיו.';
-const rule='כתיבה ברוח חוסן — תמיד, ומההתחלה: כל נוסח שאת מציעה כדי שיישלח או ייאמר (הודעה או מכתב להורים, עדכון לצוות, פנייה לתלמידים, פתיח לשיחה כיתתית או לישיבה, הודעה בקבוצה, עלון) נכתב כבר בטיוטה הראשונה לפי עשרת העקרונות של השפה המחזקת (SadeTools2026), ולא כטיוטה רגילה שצריך לשכתב אחר כך: '+LIST+'. בכל נוסח — לפחות 5–7 עקרונות, באופן טבעי ואותנטי ובהתאמה לקהל ולגיל. '+SAFE+' גם הדוחות והתשובות שלך עצמן כתובים ברוח הזאת: שפה פשוטה, תחושת שליטה (מה כבר קיים ומה הצעד הבא), הזמנה לשותפות, וסיום בכיוון של תקווה.';
+const rule='כתיבה ברוח חוסן — תמיד, ומההתחלה: כל נוסח שאת מציעה כדי שיישלח או ייאמר (הודעה או מכתב להורים, עדכון לצוות, פנייה לתלמידים, פתיח לשיחה כיתתית או לישיבה, הודעה בקבוצה, עלון) נכתב כבר בטיוטה הראשונה לפי עשרת העקרונות של השפה המחזקת (SadeTools2026), ולא כטיוטה רגילה שצריך לשכתב אחר כך: '+LIST+'. בכל נוסח: לפחות 5–7 עקרונות, באופן טבעי ואותנטי ובהתאמה לקהל ולגיל. '+SAFE+' גם הדוחות והתשובות שלך עצמן כתובים ברוח הזאת: שפה פשוטה, תחושת שליטה (מה כבר קיים ומה הצעד הבא), הזמנה לשותפות, וסיום בכיוון של תקווה.';
 function system(){return ['את כותבת ההודעות של מערכת Begood, ומומחית לשפה מחזקת חוסן בקהילות חינוך (ארגז הכלים של ד״ר יעל שדה). את עונה בעברית.',
   'המשימה: לכתוב, מההתחלה, הודעה לקהילת בית הספר — לפי מה שהכותב/ת רוצה לומר — כך שהיא תבטא לפחות 5–7 מעשרת העקרונות הבאים בצורה ברורה, אותנטית ונגישה, ותכלול את כל העובדות והפרטים המעשיים שנמסרו (תאריכים, שעות, מקומות, הנחיות). אם נמסרה טיוטה קיימת — כתבי אותה מחדש באותה רוח ושמרי על המסר ועל העובדות.',
   'העקרונות:',PRINCIPLES.map((p,i)=>(i+1)+'. '+p).join('\n'),
@@ -88,7 +88,7 @@ function mount(h){
         if(navigator.clipboard)navigator.clipboard.writeText(msg).then(done).catch(()=>{});});
       acts.appendChild(cp);out.appendChild(acts);
       const used={};(d.used||[]).forEach(u=>{const n=+u.n;if(n>=1&&n<=10)used[n]=u.how||'';});
-      out.appendChild(el('h3',null,'עקרונות החוסן בהודעה — '+Object.keys(used).length+' מתוך 10'));
+      out.appendChild(el('h3',null,'עקרונות החוסן בהודעה: '+Object.keys(used).length+' מתוך 10'));
       // טבלה (07/10/2026, "קו אחיד"): העיקרון · איך הוא בא לידי ביטוי בהודעה
       const prTable=window.SBE_TABLE?SBE_TABLE(['העיקרון','בהודעה'],PRINCIPLES.map((p,i)=>{const on=(i+1) in used;
         return [el('b',null,(on?'✓ ':'○ ')+p),on?(used[i+1]?inlineRich(used[i+1]):'✓'):el('span','muted','לא שולב הפעם')];}),'rw-table'):null;
@@ -99,9 +99,9 @@ function mount(h){
       if(window.SBE_DOC&&SBE_DOC.print){const pb=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pb.type='button';
         pb.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h3',null,'ההודעה'));n.appendChild(richText(msg));
           if(prTable){n.appendChild(el('h3',null,'עקרונות החוסן בהודעה'));n.appendChild(prTable.cloneNode(true));}
-          SBE_DOC.print({title:'כתיבה מקדמת חוסן — '+F('rw-kind').value,subtitle:'קהל: '+F('rw-aud').value,node:n});});
+          SBE_DOC.print({title:'כתיבה מקדמת חוסן: '+F('rw-kind').value,subtitle:'קהל: '+F('rw-aud').value,node:n});});
         acts.appendChild(pb);}
-      out.appendChild(el('p','muted','ההודעה היא הצעה — כדאי לקרוא, לבדוק את הפרטים ולהתאים לפני שליחה. מקומות בסוגריים מרובעים ממלאים בעצמכם.'));
+      out.appendChild(el('p','muted','ההודעה היא הצעה: כדאי לקרוא, לבדוק את הפרטים ולהתאים לפני שליחה. מקומות בסוגריים מרובעים ממלאים בעצמכם.'));
     }catch(e){out.textContent='';err.textContent='הכתיבה לא הצליחה ('+(e.name==='AbortError'?'לקח יותר מדי זמן':e.message)+'). נסו שוב.';err.hidden=false;}
     finally{busy=false;b.disabled=false;b.textContent=LABEL;}
   });
@@ -110,14 +110,14 @@ function mount(h){
 // who — של מי התקשורת שנבחנת ("המחנך/ת והכיתה" / "ההנהגה"); aud — למי נכתבות ההודעות.
 const STATES=['קיים','חלקי','חסר','לא ידוע'];
 function reportRule(who,aud){return ['בחינת עקרונות החוסן (SadeTools2026) — חלק מהדוח, בלי לבקש מהכותב/ת מידע נוסף:',
-  '- ב-"principles": רק העקרונות של השפה המחזקת שרלוונטיים לתמונת המצב (בדרך כלל 2–5) — אלה שכבר בולטים כחוזקה או שחיזוקם חשוב כאן; לא את כל העשרה ולא עקרונות שאין עליהם מידע. לכל אחד: "state" ('+STATES.map(x=>'"'+x+'"').join(' / ')+') — עד כמה הוא בא לידי ביטוי בתקשורת של '+who+' לפי תמונת המצב; ו-"note" — 1–2 משפטים: על מה זה נשען בתשובות, ואיך לחזק אותו בפועל (דוגמה לניסוח במירכאות).',
-  '- ב-"messages": 1–2 הודעות מוכנות לשליחה ('+aud+') שנובעות ישירות מהממצאים ומהמצב, כתובות מההתחלה לפי העקרונות — לפחות 5–7 מהם. '+SAFE+' בגוף ההודעה — בלי הדגשות ובלי כוכביות; פסקאות קצרות עם \\n\\n ביניהן.'].join('\n');}
+  '- ב-"principles": רק העקרונות של השפה המחזקת שרלוונטיים לתמונת המצב (בדרך כלל 2–5) — אלה שכבר בולטים כחוזקה או שחיזוקם חשוב כאן; לא את כל העשרה ולא עקרונות שאין עליהם מידע. לכל אחד: "state" ('+STATES.map(x=>'"'+x+'"').join(' / ')+'), עד כמה הוא בא לידי ביטוי בתקשורת של '+who+' לפי תמונת המצב; ו-"note", 1–2 משפטים: על מה זה נשען בתשובות, ואיך לחזק אותו בפועל (דוגמה לניסוח במירכאות).',
+  '- ב-"messages": 1–2 הודעות מוכנות לשליחה ('+aud+') שנובעות ישירות מהממצאים ומהמצב, כתובות מההתחלה לפי העקרונות: לפחות 5–7 מהם. '+SAFE+' בגוף ההודעה, בלי הדגשות ובלי כוכביות; פסקאות קצרות עם \\n\\n ביניהן.'].join('\n');}
 const reportSchema=' "principles":[{"n":1,"state":"קיים / חלקי / חסר / לא ידוע","note":"על מה זה נשען ואיך לחזק"}],\n "messages":[{"to":"למי","purpose":"מטרת ההודעה בכמה מילים","text":"ההודעה המלאה"}],';
 function reportSection(d,h,title,msgTitle,lvl){
   const {el,inlineRich,richText}=h;const frag=document.createDocumentFragment();
   const pr=(d.principles||[]).filter(p=>+p.n>=1&&+p.n<=10&&p.state!=='לא ידוע');const ms=(d.messages||[]).filter(m=>m&&m.text);
   if(pr.length){frag.appendChild(el(lvl||'h3',null,title));
-    frag.appendChild(el('p','muted','עקרונות השפה המחזקת שרלוונטיים לתמונת המצב — מה כבר קיים ומה כדאי לחזק.'));
+    frag.appendChild(el('p','muted','עקרונות השפה המחזקת שרלוונטיים לתמונת המצב: מה כבר קיים ומה כדאי לחזק.'));
     if(window.SBE_TABLE){frag.appendChild(SBE_TABLE(['העיקרון','מצב','על מה זה נשען ואיך לחזק'],pr.map(p=>{const st=STATES.includes(p.state)?p.state:'לא ידוע';
       const w=el('span','rw-st-wrap st-'+STATES.indexOf(st));w.appendChild(el('span','rw-st',st));return [el('b',null,PRINCIPLES[p.n-1]),w,p.note?inlineRich(p.note):null];}),'rw-table'));}
     else{const ul=el('ul','rw-check');pr.forEach(p=>{const st=STATES.includes(p.state)?p.state:'לא ידוע';const li=el('li','st-'+STATES.indexOf(st));
@@ -133,7 +133,7 @@ function reportSection(d,h,title,msgTitle,lvl){
       const who=el('div');if(m.to)who.appendChild(el('b',null,m.to));if(m.purpose)who.appendChild(el('div','muted',m.purpose));
       if(window.SBE_TABLE)mrows.push([who,c]);else{const a=el('div','act rw-msg');a.appendChild(el('div','act-t',[m.to?'אל: '+m.to:'',m.purpose].filter(Boolean).join(' — ')));a.appendChild(c);frag.appendChild(a);}});
     if(mrows.length)frag.appendChild(SBE_TABLE(['אל · מטרה','ההודעה'],mrows,'rw-table'));
-    frag.appendChild(el('p','muted','ההודעות הן הצעה — כדאי לקרוא, לבדוק את הפרטים ולהתאים לפני שליחה. מקומות בסוגריים מרובעים ממלאים בעצמכם.'));}
+    frag.appendChild(el('p','muted','ההודעות הן הצעה: כדאי לקרוא, לבדוק את הפרטים ולהתאים לפני שליחה. מקומות בסוגריים מרובעים ממלאים בעצמכם.'));}
   return frag;
 }
 function reportPlain(d,title,msgTitle){const L=[];const pr=(d.principles||[]).filter(p=>+p.n>=1&&+p.n<=10&&p.state!=='לא ידוע');const ms=(d.messages||[]).filter(m=>m&&m.text);

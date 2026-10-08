@@ -147,11 +147,11 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 <!-- שני מדפים (04/10/2026): הסימולציות, וחוסן ומנהיגות (פרקטי ונוגי) — מקור האמת של המדף השני: lib/resilience-advisor-sources.js -->
 <div class="shelves" role="tablist" aria-label="מדפי הספרייה">
   <button type="button" role="tab" id="shSim" aria-selected="true">🎭 סימולציות ושיחות מאתגרות <span id="nSim"></span></button>
-  <button type="button" role="tab" id="shRes" aria-selected="false">🌱 חוסן חברתי, מנהיגות והנחיה — פרקטי, נוגי וננה <span id="nRes"></span></button>
+  <button type="button" role="tab" id="shRes" aria-selected="false">🌱 חוסן חברתי, מנהיגות והנחיה (פרקטי, נוגי וננה)<span id="nRes"></span></button>
 </div>
 
 <div id="tabRes" hidden>
-  <p class="lead" style="margin-top:0">המקורות שעליהם נשענות פרקטי (חוסן בכיתה) ונוגי (מנהיגות שתומכת בחוסן). לכל מקור — התובנה המרכזית ל-Begood וקישור. המדף מתעדכן מדי שבוע.</p>
+  <p class="lead" style="margin-top:0">המקורות שעליהם נשענות פרקטי (חוסן בכיתה) ונוגי (מנהיגות שתומכת בחוסן). לכל מקור: התובנה המרכזית ל-Begood וקישור. המדף מתעדכן מדי שבוע.</p>
   <div class="searchbox"><input id="rq" placeholder="חיפוש לפי מחבר/ת, נושא או מילה..."></div>
   <div class="filters" id="rFilters"></div>
   <div class="bar"><b id="rCount"></b></div>
@@ -172,9 +172,9 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 
 <div class="suggestPanel" id="suggestPanel" hidden>
   <h3>הצעת מקור</h3>
-  <p class="hint">כל מי שנכנסה למערכת יכולה להציע מקור. ניהול המערכת בודק שהוא באמת קיים ומצוטט נכון, ורק אז הוא נכנס לספרייה. נשמח להסבר למי ולמה המקור רלוונטי — זה מה שעוזר למי שתבוא אחרייך למצוא אותו.</p>
+  <p class="hint">כל מי שנכנסה למערכת יכולה להציע מקור. ניהול המערכת בודק שהוא באמת קיים ומצוטט נכון, ורק אז הוא נכנס לספרייה. נשמח להסבר למי ולמה המקור רלוונטי. זה מה שעוזר למי שתבוא אחרייך למצוא אותו.</p>
   <div class="err" id="sgErr" hidden></div>
-  <div class="ok" id="sgOk" hidden>הוצע. תודה — ניהול המערכת יבדוק ותאשר.</div>
+  <div class="ok" id="sgOk" hidden>הוצע. תודה: ניהול המערכת יבדוק ותאשר.</div>
   <label>שם מלא <span class="req">*</span></label>
   <input id="sgName" placeholder="לקרדיט על ההצעה">
   <label>מוסד</label>
@@ -184,7 +184,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
   <label>למי רלוונטי <span class="req">*</span></label>
   <textarea id="sgWhom" placeholder="למשל: יוצרות שבונות תרחישי גן, מנחות שמלמדות על ויסות רגשי"></textarea>
   <label>למה רלוונטי <span class="req">*</span></label>
-  <textarea id="sgWhy" placeholder="מה במקור הזה ספציפית עוזר — לא רק שהוא קשור לנושא"></textarea>
+  <textarea id="sgWhy" placeholder="מה במקור הזה ספציפית עוזר, לא רק שהוא קשור לנושא"></textarea>
   <div class="btnrow">
     <button type="button" class="primary" id="sgSend">שליחה לאישור</button>
     <button type="button" id="sgCancel">ביטול</button>
@@ -229,7 +229,7 @@ const SOURCES = [
 "כללי"
 ],
 "quality": "גבוהה",
-"recency": "מקור יסוד — לשמור לצד מקורות עדכניים",
+"recency": "מקור יסוד: לשמור לצד מקורות עדכניים",
 "tags": [
 "מודעות עצמית",
 "אינטליגנציה רגשית",
@@ -630,7 +630,7 @@ const SOURCES = [
 "כללי"
 ],
 "quality": "גבוהה",
-"recency": "מקור יסוד — לא חדש",
+"recency": "מקור יסוד, לא חדש",
 "tags": [
 "הון חברתי",
 "קשרים חלשים",
@@ -742,7 +742,7 @@ const SOURCES = [
 "דיאלוג ומפגש"
 ],
 "quality": "גבוהה",
-"recency": "מקור יסוד — לא חדש",
+"recency": "מקור יסוד, לא חדש",
 "tags": [
 "רושם ראשוני",
 "היכרות",
@@ -763,7 +763,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — גוף מקצועי מוכר למנהיגות בית־ספרית",
+"quality": "גבוה: גוף מקצועי מוכר למנהיגות בית־ספרית",
 "recency": "עדכני לשימוש מקצועי; דף פעיל ומתוחזק",
 "tags": [
 "יחסי הורים-בית ספר",
@@ -786,7 +786,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — אבני ראשה; רלוונטי למנהיגות יחסים",
+"quality": "גבוה: אבני ראשה; רלוונטי למנהיגות יחסים",
 "recency": "עדכני לשימוש מקצועי; מקור יסוד מתמשך",
 "tags": [
 "כינון יחסים",
@@ -809,7 +809,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — מקור מקצועי ממוקד נושא",
+"quality": "גבוה: מקור מקצועי ממוקד נושא",
 "recency": "עדכני לשימוש מקצועי; דף פעיל",
 "tags": [
 "שותפות",
@@ -832,7 +832,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — מקור ממשלתי מבוסס מחקר",
+"quality": "גבוה: מקור ממשלתי מבוסס מחקר",
 "recency": "עדכני מאוד",
 "tags": [
 "בית ספר-משפחה",
@@ -855,7 +855,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — משרד החינוך, סיכום מחקר יישומי",
+"quality": "גבוה: משרד החינוך, סיכום מחקר יישומי",
 "recency": "עדכני ורלוונטי",
 "tags": [
 "מורה-הורים",
@@ -878,7 +878,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — גוף ממשלתי מקצועי",
+"quality": "גבוה: גוף ממשלתי מקצועי",
 "recency": "עדכני לשימוש; דף פעיל",
 "tags": [
 "מעורבות הורים",
@@ -901,7 +901,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — שפ״י, משרד החינוך",
+"quality": "גבוה: שפ״י, משרד החינוך",
 "recency": "עדכני ומתעדכן",
 "tags": [
 "שפ״י",
@@ -924,7 +924,7 @@ const SOURCES = [
 "approach": [
 "כללי"
 ],
-"quality": "גבוה — גוף מקצועי רשמי",
+"quality": "גבוה: גוף מקצועי רשמי",
 "recency": "עדכני ומתעדכן",
 "tags": [
 "חוסן הורי",
@@ -947,7 +947,7 @@ const SOURCES = [
 "approach": [
 "כללי"
 ],
-"quality": "גבוה — שפ״י, משרד החינוך",
+"quality": "גבוה: שפ״י, משרד החינוך",
 "recency": "עדכני מאוד",
 "tags": [
 "חוסן",
@@ -970,7 +970,7 @@ const SOURCES = [
 "approach": [
 "כללי"
 ],
-"quality": "גבוה — אבני ראשה",
+"quality": "גבוה: אבני ראשה",
 "recency": "עדכני לשימוש מקצועי; דף פעיל",
 "tags": [
 "קהילה",
@@ -1149,7 +1149,7 @@ const SOURCES = [
 "כללי"
 ],
 "quality": "גבוהה",
-"recency": "מקור יסוד — לשמור לצד מקורות עדכניים",
+"recency": "מקור יסוד: לשמור לצד מקורות עדכניים",
 "tags": [
 "EI",
 "מודעות עצמית",
@@ -1437,7 +1437,7 @@ const SOURCES = [
 "כללי"
 ],
 "quality": "גבוהה",
-"recency": "מקור יסוד — לא חדש",
+"recency": "מקור יסוד, לא חדש",
 "tags": [
 "רושם ראשוני",
 "הצגה עצמית",
@@ -1481,7 +1481,7 @@ const SOURCES = [
 "כללי"
 ],
 "quality": "גבוהה",
-"recency": "מקור יסוד — לא חדש",
+"recency": "מקור יסוד, לא חדש",
 "tags": [
 "הון חברתי",
 "רשתות",
@@ -1547,7 +1547,7 @@ const SOURCES = [
 "דיאלוג ומפגש"
 ],
 "quality": "גבוהה",
-"recency": "מקור יסוד — לשמור לצד מקורות עדכניים",
+"recency": "מקור יסוד: לשמור לצד מקורות עדכניים",
 "tags": [
 "אינטליגנציה רגשית",
 "קריאת מצבים",
@@ -1656,7 +1656,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — מכון מופ״ת והתוכנית הארצית לסימולציות",
+"quality": "גבוה: מכון מופ״ת והתוכנית הארצית לסימולציות",
 "recency": "עדכני מאוד",
 "tags": [
 "הקשבה",
@@ -1679,7 +1679,7 @@ const SOURCES = [
 "approach": [
 "כללי"
 ],
-"quality": "גבוה — מכון מופ״ת",
+"quality": "גבוה: מכון מופ״ת",
 "recency": "עדכני ומתוחזק",
 "tags": [
 "סימולציה",
@@ -1702,7 +1702,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — שפ״י, משרד החינוך",
+"quality": "גבוה: שפ״י, משרד החינוך",
 "recency": "עדכני ומתעדכן",
 "tags": [
 "SEL",
@@ -1725,7 +1725,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — משרד החינוך",
+"quality": "גבוה: משרד החינוך",
 "recency": "עדכני ומתעדכן",
 "tags": [
 "כישורי חיים",
@@ -1748,7 +1748,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "בינוני-גבוה — מקור מקצועי חינוכי מוכר",
+"quality": "בינוני-גבוה: מקור מקצועי חינוכי מוכר",
 "recency": "עדכני לשימוש מקצועי; דף פעיל",
 "tags": [
 "שיח",
@@ -1772,7 +1772,7 @@ const SOURCES = [
 "ניתוח התנהגות ו-CBT",
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — אבני ראשה",
+"quality": "גבוה: אבני ראשה",
 "recency": "עדכני לשימוש מקצועי; דף פעיל",
 "tags": [
 "משוב",
@@ -1795,7 +1795,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — אבני ראשה",
+"quality": "גבוה: אבני ראשה",
 "recency": "עדכני לשימוש מקצועי; דף פעיל",
 "tags": [
 "דיאלוג",
@@ -1819,7 +1819,7 @@ const SOURCES = [
 "הכלה, קשיבות והתנסות",
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — אבני ראשה; מבוסס על Hattie",
+"quality": "גבוה: אבני ראשה; מבוסס על Hattie",
 "recency": "עדכני לשימוש מקצועי; מקור יסוד",
 "tags": [
 "הקשבה",
@@ -1842,7 +1842,7 @@ const SOURCES = [
 "approach": [
 "כללי"
 ],
-"quality": "גבוה — משרד החינוך",
+"quality": "גבוה: משרד החינוך",
 "recency": "עדכני ורלוונטי",
 "tags": [
 "תקשורת",
@@ -1866,7 +1866,7 @@ const SOURCES = [
 "חינוך למשמעות",
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — משרד החינוך",
+"quality": "גבוה: משרד החינוך",
 "recency": "עדכני ורלוונטי",
 "tags": [
 "מורה-תלמיד",
@@ -2422,7 +2422,7 @@ const SOURCES = [
 "כללי"
 ],
 "quality": "גבוהה",
-"recency": "מקור יסוד — לא חדש",
+"recency": "מקור יסוד, לא חדש",
 "tags": [
 "אסתטיקה",
 "אמנות",
@@ -2553,7 +2553,7 @@ const SOURCES = [
 "approach": [
 "חינוך למשמעות"
 ],
-"quality": "גבוה — יוזמה, האקדמיה הלאומית הישראלית למדעים",
+"quality": "גבוה: יוזמה, האקדמיה הלאומית הישראלית למדעים",
 "recency": "עדכני ורלוונטי",
 "tags": [
 "חינוך לערכים",
@@ -2576,7 +2576,7 @@ const SOURCES = [
 "approach": [
 "חינוך למשמעות"
 ],
-"quality": "גבוה — יוזמה, גוף אקדמי-מקצועי",
+"quality": "גבוה: יוזמה, גוף אקדמי-מקצועי",
 "recency": "עדכני כמסמך מדיניות/ידע",
 "tags": [
 "SEL",
@@ -2599,7 +2599,7 @@ const SOURCES = [
 "approach": [
 "כללי"
 ],
-"quality": "גבוה — יוזמה",
+"quality": "גבוה: יוזמה",
 "recency": "עדכני לשימוש במדיניות ותכנון לימודים",
 "tags": [
 "מאה 21",
@@ -2622,7 +2622,7 @@ const SOURCES = [
 "approach": [
 "חינוך למשמעות"
 ],
-"quality": "גבוה — יוזמה",
+"quality": "גבוה: יוזמה",
 "recency": "עדכני ורלוונטי",
 "tags": [
 "חינוך לערכים",
@@ -2646,7 +2646,7 @@ const SOURCES = [
 "חינוך למשמעות",
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — משרד החינוך",
+"quality": "גבוה: משרד החינוך",
 "recency": "עדכני ורלוונטי",
 "tags": [
 "חינוך דיאלוגי",
@@ -2669,7 +2669,7 @@ const SOURCES = [
 "approach": [
 "כללי"
 ],
-"quality": "גבוה — משרד החינוך",
+"quality": "גבוה: משרד החינוך",
 "recency": "עדכני מאוד",
 "tags": [
 "ממוקד לומד",
@@ -2692,7 +2692,7 @@ const SOURCES = [
 "approach": [
 "כללי"
 ],
-"quality": "גבוה — משרד החינוך",
+"quality": "גבוה: משרד החינוך",
 "recency": "עדכני מאוד",
 "tags": [
 "גיל רך",
@@ -2715,7 +2715,7 @@ const SOURCES = [
 "approach": [
 "כללי"
 ],
-"quality": "גבוה — משרד החינוך",
+"quality": "גבוה: משרד החינוך",
 "recency": "עדכני מאוד לתחום משתנה",
 "tags": [
 "AI",
@@ -2738,7 +2738,7 @@ const SOURCES = [
 "approach": [
 "חינוך למשמעות"
 ],
-"quality": "גבוה — אבני ראשה",
+"quality": "גבוה: אבני ראשה",
 "recency": "עדכני לשימוש מקצועי; דף פעיל",
 "tags": [
 "חזון",
@@ -2761,7 +2761,7 @@ const SOURCES = [
 "approach": [
 "כללי"
 ],
-"quality": "גבוה — מרכז מחקר מדיניות מוכר",
+"quality": "גבוה: מרכז מחקר מדיניות מוכר",
 "recency": "עדכני מאוד",
 "tags": [
 "מערכת החינוך",
@@ -3027,7 +3027,7 @@ const SOURCES = [
 "כללי"
 ],
 "quality": "בינונית-גבוהה",
-"recency": "מקור יסוד — לא חדש",
+"recency": "מקור יסוד, לא חדש",
 "tags": [
 "Role Play",
 "משחק",
@@ -3113,7 +3113,7 @@ const SOURCES = [
 "approach": [
 "כללי"
 ],
-"quality": "גבוה — מכון מופ״ת",
+"quality": "גבוה: מכון מופ״ת",
 "recency": "עדכני ומתוחזק",
 "tags": [
 "סימולציה",
@@ -3136,7 +3136,7 @@ const SOURCES = [
 "approach": [
 "כללי"
 ],
-"quality": "גבוה — התוכנית הארצית למרכזי סימולציה",
+"quality": "גבוה: התוכנית הארצית למרכזי סימולציה",
 "recency": "עדכני מאוד",
 "tags": [
 "סימולציות בחינוך",
@@ -3159,7 +3159,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — מכון מופ״ת",
+"quality": "גבוה: מכון מופ״ת",
 "recency": "עדכני מאוד",
 "tags": [
 "תקשורת",
@@ -3182,7 +3182,7 @@ const SOURCES = [
 "approach": [
 "חינוך למשמעות"
 ],
-"quality": "גבוה — מכון מופ״ת",
+"quality": "גבוה: מכון מופ״ת",
 "recency": "עדכני מאוד",
 "tags": [
 "רגשות פדגוגיים",
@@ -3205,7 +3205,7 @@ const SOURCES = [
 "approach": [
 "כללי"
 ],
-"quality": "גבוה — מכון מופ״ת",
+"quality": "גבוה: מכון מופ״ת",
 "recency": "עדכני ורלוונטי",
 "tags": [
 "חוסן",
@@ -3228,7 +3228,7 @@ const SOURCES = [
 "approach": [
 "חינוך למשמעות"
 ],
-"quality": "גבוה — כתב עת אקדמי של מכון מופ״ת",
+"quality": "גבוה: כתב עת אקדמי של מכון מופ״ת",
 "recency": "עדכני ביותר",
 "tags": [
 "SBL",
@@ -3251,7 +3251,7 @@ const SOURCES = [
 "approach": [
 "דיאלוג ומפגש"
 ],
-"quality": "גבוה — כתב העת דפים",
+"quality": "גבוה: כתב העת דפים",
 "recency": "עדכני מאוד",
 "tags": [
 "סימולציות קליניות",
@@ -3274,7 +3274,7 @@ const SOURCES = [
 "approach": [
 "חינוך למשמעות"
 ],
-"quality": "גבוה — כתב העת דפים",
+"quality": "גבוה: כתב העת דפים",
 "recency": "עדכני ביותר",
 "tags": [
 "יועצות חינוכיות",
@@ -3297,7 +3297,7 @@ const SOURCES = [
 "approach": [
 "חינוך למשמעות"
 ],
-"quality": "גבוה — כתב העת דפים",
+"quality": "גבוה: כתב העת דפים",
 "recency": "עדכני מאוד",
 "tags": [
 "חוסן מקצועי",
@@ -3320,7 +3320,7 @@ const SOURCES = [
 "approach": [
 "ניתוח התנהגות ו-CBT"
 ],
-"quality": "בינוני-גבוה — מכללה אקדמית לחינוך",
+"quality": "בינוני-גבוה: מכללה אקדמית לחינוך",
 "recency": "עדכני לשימוש מקצועי; דף פעיל",
 "tags": [
 "סימולציה מצולמת",
@@ -3343,7 +3343,7 @@ const SOURCES = [
 "approach": [
 "חינוך למשמעות"
 ],
-"quality": "גבוהה — Springer",
+"quality": "גבוהה: Springer",
 "recency": "עדכני",
 "tags": [
 "חוסן",
@@ -3367,7 +3367,7 @@ const SOURCES = [
 "approach": [
 "חינוך למשמעות"
 ],
-"quality": "גבוהה — אוניברסיטת אריאל",
+"quality": "גבוהה: אוניברסיטת אריאל",
 "recency": "עדכני מאוד",
 "tags": [
 "חוסן קהילתי",
@@ -3471,7 +3471,7 @@ document.getElementById("sgSend").addEventListener("click", () => {
   const ok = document.getElementById("sgOk");
   ok.hidden = true;
   if (!name || !text || !whom || !why) {
-    err.textContent = "שם מלא, המקור, למי רלוונטי ולמה רלוונטי — נשמח לכל השדות המסומנים.";
+    err.textContent = "שם מלא, המקור, למי רלוונטי ולמה רלוונטי: נשמח לכל השדות המסומנים.";
     err.hidden = false;
     return;
   }
@@ -3582,7 +3582,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
 <dialog id="rptDlg">
   <h3>דיווח על תקלה, שאלה, רעיון או בקשה</h3>
   <div class="rb">
-    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח — לא ניתן לצרף קובץ אוטומטית למייל.</p>
+    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח, לא ניתן לצרף קובץ אוטומטית למייל.</p>
     <div class="rerr" id="rptErr" hidden></div>
     <label>שם מלא <span class="req">*</span></label>
     <input id="rptName">
@@ -3851,7 +3851,7 @@ body.sbe-hasnav{padding-top:38px;}
     const box = document.getElementById("rList"); box.textContent = "";
     items.forEach(x => {
       const d = document.createElement("div"); d.className = "rsrc"; d.id = x.k;
-      if (x.hidden) { const t = document.createElement("p"); t.className = "priv"; t.textContent = "טרם פורסם — גלוי רק לך"; d.append(t); }
+      if (x.hidden) { const t = document.createElement("p"); t.className = "priv"; t.textContent = "טרם פורסם: גלוי רק לך"; d.append(t); }
       const p = document.createElement("p"); p.className = "apa"; p.textContent = x.apa; if (!/[\u0590-\u05FF]/.test(x.apa)) { p.dir = "ltr"; p.style.textAlign = "left"; } d.append(p);
       const be = document.createElement("p"); be.className = "be"; const bb = document.createElement("b"); bb.textContent = "התובנה ל-Begood: "; be.append(bb, document.createTextNode(x.be || x.gist || "")); d.append(be);
       const m = document.createElement("div"); m.className = "meta";

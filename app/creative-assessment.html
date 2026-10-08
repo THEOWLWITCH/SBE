@@ -181,14 +181,14 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <div class="field"><label>שם</label><input id="jName" type="text" placeholder="שמך"></div>
   <p class="err" id="jErr" hidden></p>
   <button class="act primary" id="jGo">כניסה</button>
-  <p class="facilitator-link"><button class="linklike" id="openSetup">מנחה או מנהלת מוסד — בחירת תרחיש להערכה</button></p>
+  <p class="facilitator-link"><button class="linklike" id="openSetup">מנחה או מנהלת מוסד: בחירת תרחיש להערכה</button></p>
 </section>
 
 <!-- ⓿ הגדרת תרחיש למנחה/מנהלת -->
 <section class="screen" id="screen-setup">
   <header><p class="lead">Begood · הערכה יצירתית</p><h1>בחירת תרחיש להערכה</h1></header>
   <p class="lead">הבחירה כאן קובעת איזה תרחיש יוצג לכל מי שנכנסת מעכשיו במסך הזה, בכל המכשירים ששמורים לאותו דפדפן.
-    אין עדיין חשבון מנחה אמיתי בפרויקט הזה (כמו בכל מסך אחר כאן) — כל מי שיודעת לפתוח את הקישור הזה יכולה לשנות את הבחירה.</p>
+    אין עדיין חשבון מנחה אמיתי בפרויקט הזה (כמו בכל מסך אחר כאן): כל מי שיודעת לפתוח את הקישור הזה יכולה לשנות את הבחירה.</p>
   <div class="pickgrid" id="setupGrid"></div>
   <button class="act" id="backFromSetup">חזרה למסך הכניסה</button>
 </section>
@@ -239,14 +239,13 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <!-- ⑤ משוב -->
 <section class="screen" id="screen-feedback">
   <header><p class="lead">Begood · הערכה יצירתית</p><h1>המשוב שלך</h1></header>
-  <div class="mockbanner">המשוב הזה מבוסס היוריסטיקה פשוטה (אורך כתיבה, מגוון מילים, כמה מהתפניות/מיומנויות של התרחיש הוזכרו) —
-    <b>לא שיפוט תוכן אמיתי</b>. כשיהיה מודל אמיתי מחובר, הוא יחליף את הפונקציה הזו בשיפוט איכותי אמיתי על מה שכתבת.</div>
+  <div class="mockbanner">המשוב הזה מבוסס היוריסטיקה פשוטה (אורך כתיבה, מגוון מילים, כמה מהתפניות/מיומנויות של התרחיש הוזכרו): <b>לא שיפוט תוכן אמיתי</b>. כשיהיה מודל אמיתי מחובר, הוא יחליף את הפונקציה הזו בשיפוט איכותי אמיתי על מה שכתבת.</div>
   <div class="done-report" id="reportBody"></div>
   <div class="btnrow">
     <button class="act" id="bDownload">שמירה למחשב</button>
     <button class="act" id="bMailSelf">שליחה במייל לעצמי</button>
   </div>
-  <p class="hint" id="mailHint" hidden>המייל נפתח עם התוכן מוכן, אבל בתוכן ארוך תוכניות מייל עלולות לחתוך אותו — אם זה קרה, כדאי להשתמש ב"שמירה למחשב" לעותק המלא.</p>
+  <p class="hint" id="mailHint" hidden>המייל נפתח עם התוכן מוכן, אבל בתוכן ארוך תוכניות מייל עלולות לחתוך אותו: אם זה קרה, כדאי להשתמש ב"שמירה למחשב" לעותק המלא.</p>
   <div class="btnrow">
     <button class="act primary" id="anotherMethod">לבחור דרך נוספת</button>
   </div>
@@ -309,7 +308,7 @@ const SCENARIOS = {
     opening: [
       "את רכזת פדגוגית בחטיבת ביניים, אחראית על ליווי מורות בשנה הראשונה שלהן.",
       "מאיה, מורה לספרות בשנה הראשונה שלה, שלחה לך אתמול הודעה: \"אני לא בטוחה שאני ממשיכה בזה בשנה הבאה.\"",
-      "לפני שבועיים היה אירוע קשה בכיתה שלה — תלמיד צעק עליה מול הכיתה, והיא לא ידעה איך להגיב.",
+      "לפני שבועיים היה אירוע קשה בכיתה שלה: תלמיד צעק עליה מול הכיתה, והיא לא ידעה איך להגיב.",
       "כעת תיפגשי עם מאיה בחדר הרכזת. לרשותך חמש דקות.",
     ],
     skills: [
@@ -514,7 +513,7 @@ METHODS = [
 
 // 3 · ניתוח דילמות קבוצתי
 { id:3, n:3, title:"ניתוח דילמות קבוצתי", desc:"עץ אם/אז משותף, לפחות עשרה סבבים",
-  instr:"מספר סטודנטיות מנתחות יחד את התרחיש וממלאות עץ התקדמות — אם... אז.... לפחות עשרה סבבים, ואפשר להוסיף עוד.",
+  instr:"מספר סטודנטיות מנתחות יחד את התרחיש וממלאות עץ התקדמות: אם... אז.... לפחות עשרה סבבים, ואפשר להוסיף עוד.",
   render(container, answers, onProgress){ buildTree(container, answers, onProgress, { min:10, group:true }); }},
 
 // 4 · ניתוח דילמות ליחיד
@@ -524,7 +523,7 @@ METHODS = [
 
 // 5 · זבוב על הקיר
 { id:5, n:5, title:"זבוב על הקיר", desc:"לחישות, עקיצות, וסיפור לחברה הטובה",
-  instr:"לו היית זבוב על הקיר בעת הסימולציה — מה היית לוחשת, מתי היית עוקצת, ומה סיפר הזבוב לחברתו הטובה בסוף.",
+  instr:"לו היית זבוב על הקיר בעת הסימולציה: מה היית לוחשת, מתי היית עוקצת, ומה סיפר הזבוב לחברתו הטובה בסוף.",
   render(container, answers, onProgress){
     answers.whispersTrainee = []; answers.whispersActor = [];
     function whisperGroup(label, key, minN){
@@ -626,7 +625,7 @@ METHODS = [
   instr:"כתבי תרחיש להמשך השיחה בין הדמויות.",
   render(container, answers, onProgress){
     textField(container, "whenWhere", answers, "מתי ואיפה נערכה הפגישה?", { rows:2, onInput: check });
-    const treeWrap = el("div"); container.append(el("div",{class:"qbox"}, el("label",{},"עץ שיחה — אם... אז...")), treeWrap);
+    const treeWrap = el("div"); container.append(el("div",{class:"qbox"}, el("label",{},"עץ שיחה: אם... אז...")), treeWrap);
     buildTreeRows(treeWrap, answers, "tree10", 1, check);
     textField(container, "howEnded", answers, "איך הסתיימה השיחה?", { rows:2, onInput: check });
     function check(){ onProgress(!!answers.whenWhere && !!answers.howEnded && (answers.tree10||[]).length>0); }
@@ -661,11 +660,11 @@ METHODS = [
 { id:12, n:12, title:"מדור שאלות ותשובות בעיתון", desc:"מכתב אנונימי ותשובת מומחית",
   instr:"אחת הדמויות בסימולציה מרגישה אבודה ופונה לכתוב מכתב אנונימי למדור ייעוץ, בסגנון \"קוראת יקרה\".",
   render(container, answers, onProgress){
-    const c1 = el("div",{class:"clipping"}, el("label",{},"המכתב האנונימי — הדילמה, התסכול או הקונפליקט מנקודת המבט של הדמות"));
+    const c1 = el("div",{class:"clipping"}, el("label",{},"המכתב האנונימי: הדילמה, התסכול או הקונפליקט מנקודת המבט של הדמות"));
     const t1 = document.createElement("textarea"); t1.rows=5;
     t1.addEventListener("input", () => { answers.letter = t1.value.trim(); check(); });
     c1.append(t1);
-    const c2 = el("div",{class:"clipping"}, el("label",{},"תשובת המומחית — מקצועית, אמפתית ומעשית"));
+    const c2 = el("div",{class:"clipping"}, el("label",{},"תשובת המומחית: מקצועית, אמפתית ומעשית"));
     const t2 = document.createElement("textarea"); t2.rows=5;
     t2.addEventListener("input", () => { answers.reply = t2.value.trim(); check(); });
     c2.append(t2);
@@ -713,7 +712,7 @@ METHODS = [
 // ── בונה עץ אם/אז משותף לאפשרות 3 ולאפשרות 4 ──
 function buildTree(container, answers, onProgress, {min, group}){
   if (group) shortField(container, "participants", answers, "שמות המשתתפות בקבוצה (מופרדות בפסיק)", check);
-  const wrap = el("div"); container.append(el("div",{class:"qbox"}, el("label",{},"עץ ההתקדמות — אם... אז...")), wrap);
+  const wrap = el("div"); container.append(el("div",{class:"qbox"}, el("label",{},"עץ ההתקדמות: אם... אז...")), wrap);
   buildTreeRows(wrap, answers, "tree", min, check);
   textField(container, "insights", answers, "תובנות משותפות ו\"לקחת הביתה\"", { rows:4, onInput: check });
   function check(){
@@ -768,7 +767,7 @@ function mockImage(seed){
   const circ = document.createElementNS("http://www.w3.org/2000/svg","circle");
   circ.setAttribute("cx", 30 + (h%40)); circ.setAttribute("cy", 30 + ((h>>4)%40)); circ.setAttribute("r", 18 + (h%20));
   circ.setAttribute("fill","#fff");
-  shape.append(circ); box.append(shape, el("div",{class:"tag"},"הדמיה — לא תמונה שנוצרה על ידי AI אמיתי"));
+  shape.append(circ); box.append(shape, el("div",{class:"tag"},"הדמיה, לא תמונה שנוצרה על ידי AI אמיתי"));
   return box;
 }
 function renderImageRecord(rec){
@@ -883,7 +882,7 @@ const FORMATTERS = {
   treeFmt(a, treeKey){
     const lines = [];
     if (a.participants) lines.push("משתתפות: " + a.participants, "");
-    (a[treeKey]||[]).forEach((r,i) => { if (r.if || r.then) lines.push("סבב " + (i+1) + " — אם: " + r.if + " / אז: " + r.then); });
+    (a[treeKey]||[]).forEach((r,i) => { if (r.if || r.then) lines.push("סבב " + (i+1) + ", אם: " + r.if + " / אז: " + r.then); });
     if (a.insights) lines.push("", "תובנות משותפות ולקחת הביתה:", a.insights);
     return lines;
   },
@@ -913,7 +912,7 @@ const FORMATTERS = {
   9(a){ return ["כותרת: " + (a.title||""), "", "התרחיש:", a.story||""]; },
   10(a){
     const lines = ["מתי ואיפה נערכה הפגישה: " + (a.whenWhere||"")];
-    (a.tree10||[]).forEach((r,i) => { if (r.if || r.then) lines.push("סבב " + (i+1) + " — אם: " + r.if + " / אז: " + r.then); });
+    (a.tree10||[]).forEach((r,i) => { if (r.if || r.then) lines.push("סבב " + (i+1) + ", אם: " + r.if + " / אז: " + r.then); });
     lines.push("", "איך הסתיימה השיחה: " + (a.howEnded||""));
     return lines;
   },
@@ -922,9 +921,9 @@ const FORMATTERS = {
     "השאלה הקשה מביניהן: שאלה " + (a.harder||""), "תשובת הדמות: " + (a.answer||"")]; },
   12(a){ return ["המכתב האנונימי:", a.letter||"", "", "תשובת המומחית:", a.reply||""]; },
   13(a){ return [
-    "המשקפיים הוורודים — מה עבד בצורה יוצאת מן הכלל: " + (a.pink||""),
-    "המשקפיים האפורים — מה היה רגע השפל: " + (a.gray||""),
-    "המשקפיים השקופים — מה לא נאמר במפורש: " + (a.clear||""),
+    "המשקפיים הוורודים: מה עבד בצורה יוצאת מן הכלל: " + (a.pink||""),
+    "המשקפיים האפורים: מה היה רגע השפל: " + (a.gray||""),
+    "המשקפיים השקופים: מה לא נאמר במפורש: " + (a.clear||""),
   ]; },
   14(a){ return [describeImage(a.metaphorImage), "מדוע נבחרה: " + (a.why||""), "מה יכול להשתנות: " + (a.change||"")]; },
 };
@@ -1046,11 +1045,11 @@ function computeFeedback(answers){
   const mentionsSkill = SCENARIO.skills.some(s => text.includes(s.split(" ").slice(0,2).join(" ")));
   const strengths = [];
   const growth = [];
-  if (words >= 120) strengths.push("כתבת בהיקף משמעותי — יש כאן חומר אמיתי לחשוב עליו, לא רק משפט או שניים.");
-  else growth.push("הכתיבה קצרה יחסית. פירוט נוסף — דוגמה קונקרטית אחת, משפט שנאמר בפועל — היה מעשיר את מה שאפשר ללמוד מזה.");
+  if (words >= 120) strengths.push("כתבת בהיקף משמעותי: יש כאן חומר אמיתי לחשוב עליו, לא רק משפט או שניים.");
+  else growth.push("הכתיבה קצרה יחסית. פירוט נוסף (דוגמה קונקרטית אחת, משפט שנאמר בפועל) היה מעשיר את מה שאפשר ללמוד מזה.");
   if (uniqueWords / Math.max(words,1) > 0.6) strengths.push("השפה מגוונת ולא חוזרת על עצמה, סימן לחשיבה פעילה ולא לניסוח אוטומטי.");
   if (mentionsSkill) strengths.push("יש התייחסות ישירה למיומנויות שהתרחיש התמקד בהן, לא רק תיאור כללי של מה שקרה.");
-  else growth.push("כדאי לנסות לקשור את מה שכתבת ישירות למיומנות ספציפית מהתרחיש — זה מה שהופך רפלקציה למשהו שאפשר ליישם בפעם הבאה.");
+  else growth.push("כדאי לנסות לקשור את מה שכתבת ישירות למיומנות ספציפית מהתרחיש. זה מה שהופך רפלקציה למשהו שאפשר ליישם בפעם הבאה.");
   if (!growth.length) growth.push("נסי בפעם הבאה להוסיף גם את מה שהיה קשה או לא ברור, לא רק את מה שעבד.");
   const recommendation = "בהערכה הבאה, נסי להתמקד ב" + (mentionsSkill
     ? "תיאור של רגע קונקרטי אחד לעומק, במקום כמה רגעים בקצרה."
@@ -1105,7 +1104,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
 <dialog id="rptDlg">
   <h3>דיווח על תקלה, שאלה, רעיון או בקשה</h3>
   <div class="rb">
-    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח — לא ניתן לצרף קובץ אוטומטית למייל.</p>
+    <p class="rnote">נפתחת הודעת מייל עם הפרטים, ונשמר גם עותק במכשיר הזה. אם צירפת צילום מסך, יש לגרור או להדביק אותו ידנית לתוך ההודעה שתיפתח, לא ניתן לצרף קובץ אוטומטית למייל.</p>
     <div class="rerr" id="rptErr" hidden></div>
     <label>שם מלא <span class="req">*</span></label>
     <input id="rptName">

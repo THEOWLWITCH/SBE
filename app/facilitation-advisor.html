@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ננה — מהוראה להנחיה</title>
+<title>ננה: מהוראה להנחיה</title>
 <script src="lib/access-guard.js"></script>
 <script src="lib/open-select.js"></script>
 <script src="lib/ai-call.js"></script>
@@ -301,9 +301,9 @@ ul.tl li{margin:.25rem 0}
       </div>
     </div>
     <div id="pane-after" hidden>
-      <p class="muted">אחרי המפגש: ספרו מה קרה — מה עבד, מה הפתיע, איפה היה קשה. ננה תחזיר משוב, מה זה אומר על הקבוצה, והצעד הבא.</p>
+      <p class="muted">אחרי המפגש, ספרו מה קרה: מה עבד, מה הפתיע, איפה היה קשה. ננה תחזיר משוב, מה זה אומר על הקבוצה, והצעד הבא.</p>
       <label for="af-in">מה קרה במפגש?</label>
-      <textarea id="af-in" maxlength="2500" style="min-height:120px" placeholder="למשל: הפתיחה בסבב עבדה, אבל בהעמקה שלושה דיברו כל הזמן. כשחיכיתי בשקט — דנה דיברה בפעם הראשונה."></textarea>
+      <textarea id="af-in" maxlength="2500" style="min-height:120px" placeholder="למשל: הפתיחה בסבב עבדה, אבל בהעמקה שלושה דיברו כל הזמן. כשחיכיתי בשקט, דנה דיברה בפעם הראשונה."></textarea>
       <div class="btns"><button class="btn" id="af-go" type="button">משוב מננה</button></div>
       <div id="af-out"></div>
     </div>
@@ -402,7 +402,7 @@ function addableSelect(id,listName,what){
   const wrap=document.createElement('details');wrap.className='addmore no-print';
   const sm=document.createElement('summary');sm.textContent='חסר משהו? הוספה לרשימה';wrap.appendChild(sm);
   const r=document.createElement('div');r.className='addrow';
-  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+' — יתווסף לרשימה של כולם';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+', יתווסף לרשימה של כולם';
   const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה לרשימה';
   r.appendChild(inp);r.appendChild(btn);wrap.appendChild(r);
   const msg=document.createElement('p');msg.className='muted';msg.hidden=true;wrap.appendChild(msg);
@@ -416,7 +416,7 @@ function addableSelect(id,listName,what){
       ex.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;o.dataset.c='1';g.appendChild(o);});sel.appendChild(g);}
     sel.value=cur;
     adm.textContent='';
-    if(IS_SYS&&extra.length){adm.appendChild(el('p','muted','מנהלת המערכת — הסרה מהרשימה:'));
+    if(IS_SYS&&extra.length){adm.appendChild(el('p','muted','מנהלת המערכת: הסרה מהרשימה:'));
       extra.forEach(v=>{const rr=el('div');rr.style.cssText='display:flex;gap:.5rem;align-items:center;margin:.25rem 0';rr.appendChild(el('span',null,v)).style.flex='1';
         const b=el('button','btn btn-ghost btn-sm','הסרה');b.type='button';
         b.addEventListener('click',()=>{if(!confirm('להסיר את "'+v+'" מהרשימה של כולם?'))return;
@@ -496,7 +496,7 @@ F('btn-go').addEventListener('click',async()=>{
     STATE.report={at:new Date().toISOString(),input,f:form(),doc};STATE.chat=[];STATE.practice=null;STATE.after=null;save();
     renderGuide();renderMore();
   }catch(e){
-    g.textContent='';const cc=el('div','card');cc.appendChild(el('p','err','המדריך לא הוכן ('+(e.message||'שגיאה')+'). מה שמילאת נשמר — אפשר לנסות שוב בעוד רגע.'));g.appendChild(cc);
+    g.textContent='';const cc=el('div','card');cc.appendChild(el('p','err','המדריך לא הוכן ('+(e.message||'שגיאה')+'). מה שמילאת נשמר: אפשר לנסות שוב בעוד רגע.'));g.appendChild(cc);
   }finally{stop();BUSY=false;b.disabled=false;}
 });
 
@@ -595,7 +595,7 @@ function renderGuide(){
     pc.appendChild(pocketNode(d));g.appendChild(pc);
     pp.addEventListener('click',()=>SBE_DOC.print({title:'כרטיס כיס למפגש',subtitle:subtitle(R),node:pocketNode(d),pocket:true}));
   }
-  pr.addEventListener('click',()=>SBE_DOC.print({landscape:true,title:'מדריך הנחיה — ננה',subtitle:subtitle(R),node:doc}));
+  pr.addEventListener('click',()=>SBE_DOC.print({landscape:true,title:'מדריך הנחיה של ננה',subtitle:subtitle(R),node:doc}));
   pk.addEventListener('click',()=>F('pocket-card')&&F('pocket-card').scrollIntoView({behavior:'smooth',block:'start'}));
   nw.addEventListener('click',()=>{if(!confirm('להתחיל מדריך חדש? המדריך הנוכחי והשיחות יימחקו מהמכשיר. הטופס נשאר.'))return;
     STATE.report=null;STATE.chat=[];STATE.practice=null;STATE.after=null;save();renderGuide();renderMore();F('form-card').scrollIntoView({behavior:'smooth'});});
@@ -652,7 +652,7 @@ function renderPractice(){
       const b=el('button','btn btn-ghost btn-sm','🖨 הדפסה / PDF');b.type='button';b.style.marginTop='.4rem';
       b.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h4',null,'המשוב'));n.appendChild(SBE_DOC.sections(fb)||richText(fb));if(fbRefs)n.appendChild(fbRefs.cloneNode(true));n.appendChild(el('h4',null,'השיחה'));
         n.appendChild(SBE_DOC.table(P.msgs.slice(1,i).map(x=>[x.role==='user'?'אני':'הקבוצה',richText(x.content)])));
-        SBE_DOC.print({title:'תרגול רגע מאתגר — ננה',subtitle:P.moment,node:n});});
+        SBE_DOC.print({title:'תרגול רגע מאתגר עם ננה',subtitle:P.moment,node:n});});
       log.appendChild(b);return;}
     log.appendChild(m.role==='user'?bubble('me',m.content):bubble('group',m.content,'הקבוצה'));});
   if(P.done)F('pr-reply').hidden=true;
@@ -677,13 +677,13 @@ function renderAfter(){const o=F('af-out');o.textContent='';const A=STATE.after;
   const c=el('div','rcard');c.appendChild(el('p','rcard-t','משוב מננה · '+fmtDate(A.at)));SBE_REFS.begin(SRC,'resilience-advisor-sources.html?a=nana');const ans=SBE_REFS.strip(A.answer);c.appendChild(SBE_DOC.sections(ans)||richText(ans));{const rs=SBE_REFS.end();if(rs)c.appendChild(rs);}o.appendChild(c);
   const b=el('button','btn btn-ghost btn-sm','🖨 הדפסה / PDF');b.type='button';b.style.marginTop='.4rem';
   b.addEventListener('click',()=>{const n=el('div');n.appendChild(el('h4',null,'מה קרה במפגש'));n.appendChild(richText(A.text));n.appendChild(el('h4',null,'משוב מננה'));n.appendChild(c.cloneNode(true));
-    SBE_DOC.print({title:'רפלקציה אחרי המפגש — ננה',subtitle:STATE.report?subtitle(STATE.report):'',node:n});});
+    SBE_DOC.print({title:'רפלקציה אחרי המפגש עם ננה',subtitle:STATE.report?subtitle(STATE.report):'',node:n});});
   o.appendChild(b);}
 F('af-go').addEventListener('click',async()=>{
   const t=F('af-in').value.trim();if(!t||BUSY)return;
   BUSY=true;F('af-go').disabled=true;const o=F('af-out');o.textContent='';const th=el('div','muted');o.appendChild(th);const stop=waiting(th,'ננה קוראת ומכינה משוב.',40);
   try{const ans=await complete(N.debriefSystem(inputNow(),guideText(),KB,RULE),[{role:'user',content:t}],5000);STATE.after={text:t,answer:ans,at:new Date().toISOString()};save();renderAfter();}
-  catch(e){o.textContent='';o.appendChild(el('p','err','המשוב לא הגיע ('+e.message+'). מה שכתבת נשמר — אפשר לנסות שוב.'));}
+  catch(e){o.textContent='';o.appendChild(el('p','err','המשוב לא הגיע ('+e.message+'). מה שכתבת נשמר: אפשר לנסות שוב.'));}
   finally{stop();BUSY=false;F('af-go').disabled=false;}
 });
 F('af-in').addEventListener('input',()=>{STATE.after=Object.assign({},STATE.after||{},{text:F('af-in').value});save();});
@@ -694,8 +694,8 @@ function renderMore(){F('more-card').hidden=!STATE.report;renderAsk();renderMome
 F('btn-example').addEventListener('click',()=>{
   const v={'f-group':'כיתה בבית הספר','f-age':'חטיבת ביניים','f-size':'31','f-familiar':'קבוצה ותיקה','f-role':'מחנך/ת הכיתה',
     'f-about':'כיתה ח׳. יש כמה תלמידים שקטים מאוד ושלושה שמדברים כל הזמן. לאחרונה היה ריב בקבוצת הווטסאפ של הכיתה, ושתי תלמידות לא מדברות זו עם זו.',
-    'f-topic':'איך אנחנו מדברים זה עם זה — בכיתה וברשת','f-goal':'שהתלמידים ינסחו יחד הסכמות לשיחה מכבדת, שישמעו גם את השקטים, ושהכיתה תחליט על דרך קבועה לפתור מחלוקות.',
-    'f-sit':'קונפליקט או מתח בקבוצה','f-duration':'שיעור (45 דקות)','f-space':'כיתה בשורות — אפשר להזיז','f-exp':'הנחיתי קצת',
+    'f-topic':'איך אנחנו מדברים זה עם זה: בכיתה וברשת','f-goal':'שהתלמידים ינסחו יחד הסכמות לשיחה מכבדת, שישמעו גם את השקטים, ושהכיתה תחליט על דרך קבועה לפתור מחלוקות.',
+    'f-sit':'קונפליקט או מתח בקבוצה','f-duration':'שיעור (45 דקות)','f-space':'כיתה בשורות: אפשר להזיז','f-exp':'הנחיתי קצת',
     'f-worry':'שהריב יתפרץ שוב באמצע השיעור ושאני לא אדע איך לעצור בלי להרים את הקול.','f-question':''};
   Object.keys(v).forEach(k=>{if(LISTS[k])LISTS[k].ensure(v[k]);F(k).value=v[k];F(k).classList.remove('miss');});F('form-err').hidden=true;setHabits(['answer','judge','conflict']);save();
 });

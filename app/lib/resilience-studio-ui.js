@@ -12,14 +12,14 @@
   const API = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) ? 'http://localhost:8790/api/studio' : 'https://sbe-server.onrender.com/api/studio';
   const BRIEF_FIELDS = ['startingPoint','goal','leaderRole','leaderAge','experience','participants','participantAge','count','duration','sessions','format','familiarity','relationships','context','materials','space','language','accessibility','crisis','youthMode','focus','observations','clarifications'];
   const NUMBERS = new Set(['count','duration','sessions']);
-  const EVIDENCE = {'example-draft':'דוגמת פיתוח — טרם אושרה','new-ai':'פעילות חדשה בבינה מלאכותית — טיוטה; יעילותה לא נבדקה'};
+  const EVIDENCE = {'example-draft':'דוגמת פיתוח: טרם אושרה','new-ai':'פעילות חדשה בבינה מלאכותית: טיוטה; יעילותה לא נבדקה'};
   const MECHANISM_LABELS={name:'שם המנגנון',cadence:'מתי ובאיזו תדירות?',roles:'מי אחראית, מי שותף ומי מגבה?',participation:'איך משתתפים ומשפיעים?',firstAction:'הפעולה הראשונה',review:'מתי ואיך בודקים ומשפרים?',mechanism:'איך המנגנון מתרגל את מוקד החוסן?'};
   const LEARNING_LABELS={mechanism:'איך הפעילות אמורה לעבוד (השערת התכנון)',apply:'איך מיישמים במפגש',watchFor:'מה נראה בפועל אם המנגנון פועל',limits:'גבולות: מה הפעילות אינה, ומתי עוצרים'};
   const FACILITATION_LABELS={preparation:'לפני המפגש: הכנה וחזרה',opening:'פתיחה והסכמות',participation:'הזמנת השתתפות',questions:'שאלות והקשבה',difficulties:'שתיקה, התנגדות או מחלוקת',closing:'סגירה ועיבוד',followUp:'המשך ולמידה מההנחיה'};
   const IDEAS = [
     {id:'education',audience:'חינוך',title:'מידע חסר, פתרון משותף',focus:'support',purpose:'לתרגל בקשת עזרה והחלפת מידע במשימה משותפת.',individual:['זיהוי מידע חסר','בקשת עזרה והבהרה'],shared:['החלפת מידע ועזרה','בניית תכנית משולבת'],steps:['בקבוצות קטנות כל משתתף מקבל חלק אחר של משימה בדויה.','שואלים ומחליפים מידע כדי לבנות תכנית אחת.','מזהים איזו בקשת עזרה אפשרה להתקדם.'],participants:'קבוצת תלמידים',age:'לפי גיל הקבוצה',goal:'לבקש מידע ועזרה ולבנות פתרון משותף',duration:40},
     {id:'youth',audience:'נוער מוביל',title:'יוזמה קטנה שאנחנו מובילים',focus:'direction',purpose:'לבחור יעד חיובי ולחבר תרומות של שותפים בדרך אליו.',individual:['הצעת יעד','בחירת תרומה'],shared:['תיאום יעד ומדד פעולה','חלוקת אחריות'],steps:['מציעים יוזמה פשוטה לשיפור דבר יומיומי.','בוחרים יעד ומחלקים תפקידים עם שותף וגיבוי.','קובעים פעולה ראשונה וסימן שניתן לראות שהתקדמנו.'],participants:'בני ובנות נוער ושותפים ליוזמה',age:'נוער',goal:'לקדם יוזמה קטנה באמצעות יעד ותפקידים משותפים',duration:40,leaderRole:'נער/ה שמוביל/ה יוזמה'},
-    {id:'family',audience:'הורים ומשפחה',title:'רבע שעה של עזרה הדדית',focus:'support',purpose:'לתאם עזרה הדדית במשימה קצרה שמתאימה לבית.',individual:['בקשת עזרה והבהרה'],shared:['החלפת מידע ועזרה'],steps:['בוחרים יחד משימה ביתית קטנה ללא חשיפה אישית.','כל אחד מציע תרומה ומבקש מידע או עזרה שחסרים לו.','מבצעים חלק קטן ומציינים מה עזר לנו להתקדם יחד.'],participants:'בני משפחה',age:'ילדים ומבוגרים — לפי המשפחה',goal:'לבקש ולהציע עזרה במשימה יומיומית בבית',duration:15,count:4,leaderRole:'הורה או בן/בת משפחה'},
+    {id:'family',audience:'הורים ומשפחה',title:'רבע שעה של עזרה הדדית',focus:'support',purpose:'לתאם עזרה הדדית במשימה קצרה שמתאימה לבית.',individual:['בקשת עזרה והבהרה'],shared:['החלפת מידע ועזרה'],steps:['בוחרים יחד משימה ביתית קטנה ללא חשיפה אישית.','כל אחד מציע תרומה ומבקש מידע או עזרה שחסרים לו.','מבצעים חלק קטן ומציינים מה עזר לנו להתקדם יחד.'],participants:'בני משפחה',age:'ילדים ומבוגרים, לפי המשפחה',goal:'לבקש ולהציע עזרה במשימה יומיומית בבית',duration:15,count:4,leaderRole:'הורה או בן/בת משפחה'},
     {id:'work',audience:'צוות עבודה',title:'מישהו יכול להמשיך במקומי',focus:'backup',purpose:'ליצור גיבוי למשימה שבה יש תלות בבעל תפקיד אחד.',individual:['העברת ידע'],shared:['תיאום גיבוי'],steps:['בוחרים משימה יומיומית בלי מידע ארגוני רגיש.','בזוגות כותבים הוראות קצרות ומנסים להחליף תפקיד.','מעדכנים יחד את ההוראות ובוחרים דרך לבדוק את הגיבוי.'],participants:'צוות עבודה',age:'מבוגרים',goal:'לבנות ולנסות גיבוי למשימה יומיומית',duration:30,leaderRole:'מוביל/ת צוות'},
     {id:'community',audience:'קהילה',title:'מפת עזרה שאפשר להשתמש בה',focus:'resources',purpose:'לחבר בין צרכים לבין דרכים נגישות לבקש ולהציע עזרה.',individual:['איתור משאבים','בירור צורך'],shared:['בניית מפת עזרה','תיאום דרך פנייה'],steps:['עובדים עם צרכים בדויים או כלליים ללא פרטים מזהים.','בקבוצות מציעים משאב זמין ודרך פנייה נגישה.','בודקים יחד חסם אחד ומתקנים את דרך קבלת העזרה.'],participants:'קבוצה קהילתית',age:'לפי קבוצת המשתתפים',goal:'לבנות מפת עזרה נגישה ולבחון כיצד משתמשים בה',duration:40,leaderRole:'מוביל/ת קבוצה קהילתית'}
   ];
@@ -34,7 +34,7 @@
   function paragraph(parent, title, value) { if(title)parent.append(el('h3','',title));parent.append(window.SBE_DOC ? SBE_DOC.rich(value||'') : el('p','',value||'')); }
   function safeLink(url, name) { try{const u=new URL(url); if(!['https:','http:'].includes(u.protocol))return null; const a=el('a','',name||url); a.href=u.href; a.target='_blank'; a.rel='noopener noreferrer'; return a;}catch{return null;} }
   function componentLabel(id) { return (D.component(id)||{}).label||id; }
-  function evidenceLabel(a) { return EVIDENCE[a.evidenceStatus] || 'פעילות חדשה או מותאמת — יעילותה לא נבדקה'; }
+  function evidenceLabel(a) { return EVIDENCE[a.evidenceStatus] || 'פעילות חדשה או מותאמת: יעילותה לא נבדקה'; }
   function dateLabel(date) { const n=new Date(date); return Number.isNaN(n.getTime())?'':n.toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'}); }
   function notice(text) { const n=$('studio-status'); n.textContent=text ? text+(persistenceFailed?' השינויים האחרונים קיימים רק במסך; השמירה במכשיר לא הצליחה.':'') : ''; n.hidden=!text; }
   function error(text) { const n=$('studio-error'); n.textContent=text||''; n.hidden=!text; if(text)n.scrollIntoView({block:'nearest'}); }
@@ -99,8 +99,8 @@
     error(''); setBusy(true,message);
     const line=$('focus-busy'),show=t=>{if(line){line.textContent=t;line.hidden=!t;}};
     const elapsed=()=>{const t=Math.floor((Date.now()-began)/1000);return t<60?t+' שניות':Math.floor(t/60)+':'+String(t%60).padStart(2,'0')+' דקות';};
-    const began=Date.now(), tick=setInterval(()=>{if(busy){notice(message+' · חלפו '+elapsed());show(message+' · חלפו '+elapsed()+'. היצירה לוקחת זמן — אפשר להשאיר את המסך פתוח.');}},1000);
-    show(message+' היצירה לוקחת זמן — אפשר להשאיר את המסך פתוח.');
+    const began=Date.now(), tick=setInterval(()=>{if(busy){notice(message+' · חלפו '+elapsed());show(message+' · חלפו '+elapsed()+'. היצירה לוקחת זמן: אפשר להשאיר את המסך פתוח.');}},1000);
+    show(message+' היצירה לוקחת זמן: אפשר להשאיר את המסך פתוח.');
     try { await fn(); }
     catch(e) { notice(''); error(e.message||'הפעולה לא הצליחה. אפשר לנסות שוב.'); }
     finally {clearInterval(tick);show('');setBusy(false);}
@@ -141,9 +141,9 @@
     if(!authorized)$('coach-question').value='';
     const step=selectedCoachStep(),target=$('coach-target');target.hidden=!coachTarget;target.textContent=(step?'השיחה עוסקת בשלב: '+step.title:coachTarget?.isCandidate&&!coachTarget.stepId?'השיחה עוסקת בגרסה המוצעת של הפעילות.':'השלב הקודם אינו פתוח כעת. בחרי שלב מתוך הפעילות כדי לבקש שיפור.')+(linkedCoach()?' התקציר והשיחה של הפעילות המקורית אינם מצורפים. אפשר לכתוב כאן חשש חדש לגרסה הזאת.':'');
     const messages=clear($('coach-messages'));
-    state.coach.messages.forEach(m=>{const item=el('article',m.role==='user'?'coach-message coach-user':'coach-message');item.append(el('b','',m.role==='user'?'את · '+(m.context||'התכנון שלנו'):'שותפה לתכנון'));paragraph(item,'',m.text);if(m.reply){const r=m.reply;if(r.encouragement)paragraph(item,'לקראת הצעד הבא',r.encouragement);if(r.suggestedInstructions.trim()&&(!coachProposal||coachProposal.instructions!==r.suggestedInstructions))paragraph(item,'נוסח שהוצע בשיחה — לעיון, ללא שינוי אוטומטי',r.suggestedInstructions);if(r.nextSteps.length)item.append(el('h4','','צעדים שאפשר לנסות'),list(r.nextSteps));if(r.questions.length)item.append(el('h4','','אפשר להמשיך מכאן'),list(r.questions));if(r.professionalBasis.length)item.append(renderBasis({consultation:true,professionalBasis:r.professionalBasis}));}messages.append(item);});
+    state.coach.messages.forEach(m=>{const item=el('article',m.role==='user'?'coach-message coach-user':'coach-message');item.append(el('b','',m.role==='user'?'את · '+(m.context||'התכנון שלנו'):'שותפה לתכנון'));paragraph(item,'',m.text);if(m.reply){const r=m.reply;if(r.encouragement)paragraph(item,'לקראת הצעד הבא',r.encouragement);if(r.suggestedInstructions.trim()&&(!coachProposal||coachProposal.instructions!==r.suggestedInstructions))paragraph(item,'נוסח שהוצע בשיחה: לעיון, ללא שינוי אוטומטי',r.suggestedInstructions);if(r.nextSteps.length)item.append(el('h4','','צעדים שאפשר לנסות'),list(r.nextSteps));if(r.questions.length)item.append(el('h4','','אפשר להמשיך מכאן'),list(r.questions));if(r.professionalBasis.length)item.append(renderBasis({consultation:true,professionalBasis:r.professionalBasis}));}messages.append(item);});
     const proposal=clear($('coach-proposal'));proposal.hidden=!coachProposal;
-    if(coachProposal){proposal.append(el('h3','','נוסח מוצע לשלב — לבחירתך'),el('p','',coachProposal.instructions),button('קבלת הנוסח המוצע לשלב',acceptCoachProposal),button('המשך בלי לשנות את השלב',()=>{coachProposal=null;renderCoach();}));}
+    if(coachProposal){proposal.append(el('h3','','נוסח מוצע לשלב: לבחירתך'),el('p','',coachProposal.instructions),button('קבלת הנוסח המוצע לשלב',acceptCoachProposal),button('המשך בלי לשנות את השלב',()=>{coachProposal=null;renderCoach();}));}
     $('ask-coach').disabled=busy||!authorized;
   }
   function askCoach() {
@@ -241,7 +241,7 @@
     const problems=[];
     if(!String(brief.participants||'').trim())problems.push('מי המשתתפים?');
     if(!String(brief.participantAge||'').trim())problems.push('מה גיל המשתתפים?');
-    if(!Number.isInteger(brief.count)||brief.count<2)problems.push('אפשר להזין מספר משתתפים שלם — שניים לפחות.');
+    if(!Number.isInteger(brief.count)||brief.count<2)problems.push('אפשר להזין מספר משתתפים שלם, שניים לפחות.');
     if(!Number.isFinite(brief.duration)||brief.duration<5)problems.push('נדרש זמן של לפחות חמש דקות לכל מפגש.');
     if(!Number.isInteger(brief.sessions)||brief.sessions<1)problems.push('נדרש לפחות מפגש אחד, במספר שלם.');
     if(brief.crisis==='active-danger')problems.push('בסכנה מיידית עוצרים את הפעילות ופועלים לפי הנחיות הבטיחות המוסמכות למקום. חוזרים לתכנון לאחר שהמצב בטוח.');
@@ -259,7 +259,7 @@
     ['save-activity','print-kit','print-participant','download-work'].forEach(id=>$(id).disabled=busy||!state.activity);
     $('brief-confirmed').disabled=busy||!answered;
     $('ask-coach').disabled=busy||!authorized;
-    $('generation-hint').textContent=questions.length&&!answered?'כדי להמשיך, אפשר להתייחס לשאלות שלמעלה — ואז לאשר את התקציר ולבנות.':'הפעילות נבנית לפי התקציר שאישרתם. הבנייה לוקחת כמה דקות — אפשר להשאיר את המסך פתוח ולהמשיך לקרוא. דוגמת הפיתוח נפרדת מהפקה בבינה מלאכותית ומסומנת כטיוטה.';
+    $('generation-hint').textContent=questions.length&&!answered?'כדי להמשיך, אפשר להתייחס לשאלות שלמעלה, ואז לאשר את התקציר ולבנות.':'הפעילות נבנית לפי התקציר שאישרתם. הבנייה לוקחת כמה דקות. אפשר להשאיר את המסך פתוח ולהמשיך לקרוא. דוגמת הפיתוח נפרדת מהפקה בבינה מלאכותית ומסומנת כטיוטה.';
   }
   function renderFocus() {
     const c=D.component(state.brief.focus), box=clear($('focus-description'));
@@ -372,8 +372,8 @@
   }
   function renderLearningGuide(activity,isCandidate) {
     const guide=activity.learningGuide, box=el('details','activity-guide learning-guide');
-    box.append(el('summary','','מדריך למידה למנחה — לפני שמנחים את הפעילות הזאת'));
-    box.append(el('p','muted','המדריך מסביר את ההיגיון של הפעילות ומפנה למקורות מבנק הידע. זו השערת תכנון — לא הוכחה שהפעילות יעילה, ולא תחליף להכשרה בהנחיה.'));
+    box.append(el('summary','','מדריך למידה למנחה: לפני שמנחים את הפעילות הזאת'));
+    box.append(el('p','muted','המדריך מסביר את ההיגיון של הפעילות ומפנה למקורות מבנק הידע. זו השערת תכנון, לא הוכחה שהפעילות יעילה, ולא תחליף להכשרה בהנחיה.'));
     box.append(editField(guide,LEARNING_LABELS.mechanism,'mechanism',isCandidate,{multiline:true}));
     box.append(el('h4','','מה כדאי ללמוד לפני ההנחיה'),learnSourcesList(guide,isCandidate));
     ['apply','watchFor','limits'].forEach(k=>box.append(editField(guide,LEARNING_LABELS[k],k,isCandidate,{multiline:true})));
@@ -399,9 +399,9 @@
         const fields=el('div','step-fields');fields.append(editField(step,'שם השלב','title',isCandidate),editField(step,'דקות','minutes',isCandidate,{type:'number',min:1}));st.append(fields,editField(step,'מה עושים?','instructions',isCandidate,{multiline:true,rows:3}),editField(step,'איך מנחים את השלב','facilitation',isCandidate,{multiline:true,rows:2}),editField(step,'מרחב וסידור','space',isCandidate));
         const review=el('div','privacy-note');review.dataset.reviewStep=step.id;review.hidden=!step.requiresReview;review.append(el('p','','המטרה או ההוראות השתנו. בדקו את רכיבי החוסן והמיומנויות של השלב לפני שיוצגו שוב כיעדי תרגול.'),button('אישור יעדי התרגול של השלב',()=>{step.requiresReview=false;persist();refreshClaims(isCandidate);refreshReviewControls(isCandidate);renderValidation(isCandidate);updateControls();}));st.append(review);
         const details=el('details');details.append(el('summary','','רכיבים, מיומנויות וחומרים של השלב'));const componentChecks=el('div','step-components');
-        D.COMPONENTS.forEach(c=>{const label=el('label','component-check'),check=el('input');check.type='checkbox';check.checked=(step.components||[]).includes(c.id);check.addEventListener('change',()=>{prepareActivityEdit(isCandidate);step.components=check.checked?[...new Set([...(step.components||[]),c.id])]:(step.components||[]).filter(id=>id!==c.id);persist();refreshClaims(isCandidate);renderValidation(isCandidate);});label.append(check,document.createTextNode(c.label));componentChecks.append(label);});details.append(el('h4','','רכיבים שהשלב מתרגל בפועל'),componentChecks,editArray(step,'מיומנויות אישיות — מיומנות אחת בשורה','individualSkills',isCandidate),editArray(step,'מיומנויות משותפות — מיומנות אחת בשורה','sharedSkills',isCandidate),editArray(step,'חומרים לשלב — פריט אחד בשורה','materials',isCandidate));st.append(details);n.append(st);
+        D.COMPONENTS.forEach(c=>{const label=el('label','component-check'),check=el('input');check.type='checkbox';check.checked=(step.components||[]).includes(c.id);check.addEventListener('change',()=>{prepareActivityEdit(isCandidate);step.components=check.checked?[...new Set([...(step.components||[]),c.id])]:(step.components||[]).filter(id=>id!==c.id);persist();refreshClaims(isCandidate);renderValidation(isCandidate);});label.append(check,document.createTextNode(c.label));componentChecks.append(label);});details.append(el('h4','','רכיבים שהשלב מתרגל בפועל'),componentChecks,editArray(step,'מיומנויות אישיות: מיומנות אחת בשורה','individualSkills',isCandidate),editArray(step,'מיומנויות משותפות: מיומנות אחת בשורה','sharedSkills',isCandidate),editArray(step,'חומרים לשלב: פריט אחד בשורה','materials',isCandidate));st.append(details);n.append(st);
       });
-      const actions=el('div','actions');actions.append(button('+ הוספת שלב',()=>{prepareActivityEdit(isCandidate);session.steps.push({id:uid('step'),title:'שלב נוסף',minutes:1,instructions:'',facilitation:'',space:'',materials:[],components:[],individualSkills:[],sharedSkills:[]});persist();renderActivityEditor(activity,brief,host,isCandidate);renderValidation(isCandidate);updateControls();}));n.append(actions,editField(session,'חומרי המשתתפים','participantMaterials',isCandidate,{multiline:true,rows:3}),editArray(session,'שאלות לעיבוד — שאלה אחת בשורה','debrief',isCandidate),editField(session,'צעד המשך','nextStep',isCandidate,{multiline:true}));host.append(n);
+      const actions=el('div','actions');actions.append(button('+ הוספת שלב',()=>{prepareActivityEdit(isCandidate);session.steps.push({id:uid('step'),title:'שלב נוסף',minutes:1,instructions:'',facilitation:'',space:'',materials:[],components:[],individualSkills:[],sharedSkills:[]});persist();renderActivityEditor(activity,brief,host,isCandidate);renderValidation(isCandidate);updateControls();}));n.append(actions,editField(session,'חומרי המשתתפים','participantMaterials',isCandidate,{multiline:true,rows:3}),editArray(session,'שאלות לעיבוד, שאלה אחת בשורה','debrief',isCandidate),editField(session,'צעד המשך','nextStep',isCandidate,{multiline:true}));host.append(n);
     });
     refreshClaims(isCandidate);
   }
