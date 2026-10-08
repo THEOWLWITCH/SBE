@@ -344,8 +344,10 @@ async function handleCodes(store, body, isSys) {
     const code = normCode(body.code);
     const rec = code ? await store.get('code:' + code) : null;
     const legacy = code && !rec ? list.find((i) => normCode(i.code) === code) : null;
-    const instTyped = String(body.instName || '').trim().slice(0, 80);
-    const inst = rec && rec.kind === 'instadmin' ? rec.inst : legacy ? legacy.name
+    // בקשה לשימוש פרטי (08/10/2026): בלי מוסד; בשורת המוסד מוצג "פרטי · שם"
+    const priv = body.forWho === 'private';
+    const instTyped = priv ? ('פרטי · ' + String(body.fullName || '').trim()).slice(0, 80) : String(body.instName || '').trim().slice(0, 80);
+    const inst = priv ? null : rec && rec.kind === 'instadmin' ? rec.inst : legacy ? legacy.name
       : (list.find((i) => i.name === instTyped) || {}).name || null;
     const fullName = String(body.fullName || '').trim().slice(0, 60);
     const email = String(body.email || '').trim().slice(0, 80);
@@ -362,7 +364,7 @@ async function handleCodes(store, body, isSys) {
     if (open.filter((v) => (v.inst || null) === inst).length >= (inst ? 5 : 30)) return [429, { error: 'too many' }];
     const at = new Date().toISOString();
     await store.set('renewreq:' + at + ':' + randomBytes(3).toString('hex'),
-      { type, inst, instTyped, fullName, email, phone, systems, other, period, at, done: false });
+      { type, forWho: priv ? 'private' : 'inst', inst, instTyped, fullName, email, phone, systems, other, period, at, done: false });
     return [200, { ok: true, at, inst: inst || instTyped }];
   }
 

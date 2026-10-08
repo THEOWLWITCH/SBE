@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>מנוי: חידוש או רכישה</title>
+<title>בקשת כלים: Begood</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -112,7 +112,7 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 <a class="back" href="entry.html">→ למסך הכניסה</a>
 <img class="brand" src="assets/begood-logo.webp" alt="Begood: חינוך לחוסן">
 
-<header><div><h1>מנוי: חידוש או רכישה</h1><p class="who">ממלאים את הפרטים ובוחרים את המערכות. אין צורך בתשלום כאן: ניצור אתכם קשר טלפוני להשלמת המנוי ולהסדרת התשלום.</p></div></header>
+<header><div><h1>בקשה לכלים של Begood</h1><p class="who">מסמנים את הכלים שתרצו לבקש, למוסד או לשימוש פרטי. זו בקשה בלבד: שום כלי לא נפתח מהטופס. הבקשה מגיעה לד״ר יעל שדה, והיא תיצור איתכם קשר להשלמת המנוי ולהסדרת התשלום.</p></div></header>
 <!-- בקשת חידוש (30/09/2026): טופס בלי טקסט חופשי. אין סליקה — הבקשה נשמרת
      בשרת ומופיעה למנהלת המערכת במסך הניהול ← מוסדות ← "בקשות חידוש", והיא
      מתקשרת להאריך ולקבל פרטי תשלום. התאריך נרשם אוטומטית בשרת. -->
@@ -128,19 +128,25 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 @media(max-width:560px){.two{grid-template-columns:1fr;}}
 </style>
 <div class="card" id="form">
+  <label>הבקשה עבור</label>
+  <div class="per">
+    <label><input type="radio" name="for" value="inst" checked> מוסד</label>
+    <label><input type="radio" name="for" value="private"> שימוש פרטי</label>
+  </div>
   <label>סוג הבקשה</label>
   <div class="per">
     <label><input type="radio" name="type" value="renew" checked> חידוש מנוי קיים</label>
-    <label><input type="radio" name="type" value="new"> רכישת מנוי חדש</label>
+    <label><input type="radio" name="type" value="new"> מנוי חדש</label>
   </div>
   <div class="two">
     <div><label for="fullName">שם מלא *</label><input id="fullName" maxlength="60" autocomplete="name"></div>
-    <div><label for="instName">שם המוסד *</label>
+    <div id="instWrap"><label for="instName">שם המוסד *</label>
       <input id="instName" maxlength="80" autocomplete="organization" placeholder="השם המלא של המוסד"></div>
     <div><label for="email">מייל *</label><input id="email" type="email" maxlength="80" dir="ltr" autocomplete="email"></div>
     <div><label for="phone">טלפון נייד *</label><input id="phone" type="tel" maxlength="15" dir="ltr" autocomplete="tel" placeholder="05X-XXXXXXX"></div>
   </div>
-  <label>המערכות במנוי *</label>
+  <label>אילו כלים תרצו לבקש? *</label>
+  <p class="sub" style="margin:0 0 4px">הסימון הוא בקשה. ד״ר יעל שדה תעבור על הבקשה ותחזור אליכם.</p>
   <div class="sys" id="systems"></div>
   <label>תקופה</label>
   <div class="per">
@@ -150,7 +156,7 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
   <div id="codeWrap"><label for="code">קוד מנהל/ת המוסד (לא חובה)</label>
   <input id="code" class="code" dir="ltr" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX"></div>
   <p class="sub" style="margin:4px 0 0">תאריך הבקשה נרשם אוטומטית.</p>
-  <div style="margin-top:12px"><button class="btn" id="send">שליחת הבקשה</button></div>
+  <div style="margin-top:12px"><button class="btn" id="send">שליחת הבקשה לד״ר יעל שדה</button></div>
   <div id="msg"></div>
 </div>
 <script>
@@ -167,22 +173,26 @@ SYSTEMS.forEach(([l, ps], i) => {
   const lb = document.createElement("label"); lb.append(cb, l); $("systems").append(lb);
 });
 // המוסד — שדה טקסט חופשי. אין רשימה ציבורית של המוסדות (07/10/2026): מנהלת המערכת מזהה את המוסד בבדיקה.
-function syncType(){ $("codeWrap").hidden = document.querySelector("input[name=type]:checked").value === "new"; }
-document.querySelectorAll("input[name=type]").forEach(r => r.addEventListener("change", syncType));
+// עבור מוסד או לשימוש פרטי (08/10/2026). בפרטי אין שם מוסד ואין קוד מנהל/ת מוסד.
+const forWho = () => document.querySelector("input[name=for]:checked").value;
+function syncType(){ const priv = forWho() === "private"; $("instWrap").hidden = priv;
+  $("codeWrap").hidden = priv || document.querySelector("input[name=type]:checked").value === "new"; }
+document.querySelectorAll("input[name=type],input[name=for]").forEach(r => r.addEventListener("change", syncType));
 syncType();
 $("send").addEventListener("click", async () => {
   const systems = [...document.querySelectorAll("#systems input[data-perms]:checked")].flatMap(cb => cb.dataset.perms.split(","));
   const phone = $("phone").value.replace(/[^\d+]/g, "");
   const type = document.querySelector("input[name=type]:checked").value;
-  const instName = $("instName").value.trim();
-  const body = { action: "renewRequest", type, fullName: $("fullName").value.trim(), instName,
+  const priv = forWho() === "private";
+  const instName = priv ? "" : $("instName").value.trim();
+  const body = { action: "renewRequest", type, forWho: priv ? "private" : "inst", fullName: $("fullName").value.trim(), instName,
     email: $("email").value.trim(), phone, systems, other: "", period: document.querySelector("input[name=period]:checked").value,
-    code: type === "new" ? "" : $("code").value.trim() };
+    code: (type === "new" || priv) ? "" : $("code").value.trim() };
   const msg = $("msg"); msg.className = "msg err";
-  if (!body.fullName || !body.instName) { msg.textContent = "כדי לשלוח, נשמח לשם מלא ולשם המוסד."; return; }
+  if (!body.fullName || (!priv && !body.instName)) { msg.textContent = priv ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולשם המוסד."; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { msg.textContent = "כתובת המייל לא תקינה."; return; }
   if (!/^(\+972|0)5\d{8}$/.test(phone)) { msg.textContent = "מספר הטלפון הנייד לא תקין (למשל 050-1234567)."; return; }
-  if (!systems.length) { msg.textContent = "כדי לשלוח, סמנו לפחות מערכת אחת."; return; }
+  if (!systems.length) { msg.textContent = "כדי לשלוח, סמנו לפחות כלי אחד."; return; }
   $("send").disabled = true; msg.className = "msg"; msg.textContent = "שולחת... (לפעמים עד דקה)";
   try {
     const r = await fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
@@ -193,7 +203,7 @@ $("send").addEventListener("click", async () => {
       const when = z(t.getDate()) + "." + z(t.getMonth() + 1) + "." + String(t.getFullYear()).slice(2) + ", " + z(t.getHours()) + ":" + z(t.getMinutes());
       $("form").textContent = "";
       const p = document.createElement("p"); p.className = "msg";
-      p.textContent = "בקשתך התקבלה (" + when + "). ניצור איתך קשר טלפוני בהקדם.";
+      p.textContent = "הבקשה נשלחה לד״ר יעל שדה (" + when + "). היא תיצור איתך קשר בהקדם. שום כלי לא נפתח עד שהיא תאשר.";
       $("form").append(p); return;
     }
     msg.className = "msg err";
