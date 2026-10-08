@@ -111,7 +111,7 @@ const TOOLS=[
   ['nugi','נוגי: מנהיגות תומכת חוסן','להנהלה, לרכזים ולצוותי תלמידים: תמונת מצב של המנהיגות בבית הספר והמלצות שבונות מנגנונים משותפים.'],
   ['nana','ננה: מהוראה להנחיה','מדריך הנחיה למפגש: עמדה, שפה, מהלכי שיחה, רגעים מאתגרים וסיום שהופך למנגנון חוזר.'],
   ['writer','כתיבה מקדמת חוסן','הודעות ומכתבים לתלמידים, להורים ולצוות, לפי עשרת עקרונות השפה המחזקת.'],
-  ['resil','מיפוי חוסן: סיכום לכיתה','סיכום והמלצות על בסיס שאלון החוסן שהתלמידים ממלאים.'],
+  ['resil','מיפוי חוסן חברתי: סיכום לכיתה','סיכום והמלצות על בסיס שאלון החוסן שהתלמידים ממלאים.'],
   ['conv','תכנון שיחה','תוכנית לשיחה מאתגרת: איך פותחים, שאלות המשך, ואיך מסיימים.'],
   ['act-single','תכנון פעילות: מפגש אחד','מערך מפגש מלא, עם מטרות, מהלך וזמנים.'],
   ['act-seq','תכנון פעילות: רצף מפגשים','רצף מפגשים, עם משוב ודו״ח ניתוח לרצף כולו.'],
@@ -128,6 +128,12 @@ async function load(){
   catch(e){box.textContent='';box.appendChild(el('p','empty','לא הצלחנו לטעון את הדוגמאות כרגע. אפשר לנסות שוב בעוד רגע.'));return;}
   box.textContent='';
   if(!items.length){box.appendChild(el('p','empty','הדוגמאות בהכנה: מוזמנות ומוזמנים לחזור בקרוב, או ליצור קשר ונשמח להראות.'));return;}
+  // ?tool=nana (מהקישור "איך נראה התוצר?" בכלי) — רק הדוגמאות של הכלי, וקישור לכל השאר
+  const only=(new URLSearchParams(location.search).get('tool')||'').split(',').filter(Boolean);
+  if(only.length&&items.some(d=>only.includes(d.tool))){
+    items=items.filter(d=>only.includes(d.tool));
+    const all=el('p','about');const a=el('a',null,'לכל התוצרים לדוגמה ←');a.href='examples.html';a.style.cssText='color:var(--spoken);font-weight:700';all.appendChild(a);box.appendChild(all);
+  }
   const known=TOOLS.map(t=>t[0]);
   const groups=TOOLS.concat([['_other','תוצרים נוספים','']]);
   groups.forEach(([id,name,about])=>{
@@ -148,9 +154,9 @@ async function load(){
 }
 async function view(d){
   F('dlgT').textContent=d.title;F('dlgInT').textContent=d.input||'';F('dlgIn').hidden=!d.input;
-  F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:20px">טוען...</p>';F('dlg').showModal();
+  F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:40px;text-align:center" dir="rtl">טוען את התוצר... בפעם הראשונה זה יכול לקחת עד דקה.</p>';F('dlg').showModal();
   try{const full=await api({action:'demoGet',id:d.id});F('dlgF').srcdoc=full.html;}
-  catch(e){F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:20px">לא הצלחנו לטעון את התוצר. אפשר לנסות שוב.</p>';}
+  catch(e){F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:40px;text-align:center" dir="rtl">לא הצלחנו לטעון את התוצר. אפשר לנסות שוב.</p>';}
 }
 F('dlgX').onclick=()=>F('dlg').close();
 load();

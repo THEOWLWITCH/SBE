@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ננה: מהוראה להנחיה</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/example-peek.js" data-tool="nana" defer></script>
 <script src="lib/open-select.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/ai-status.js"></script>
@@ -266,7 +267,7 @@ ul.tl li{margin:.25rem 0}
 
     <div class="btns">
       <button class="btn" id="btn-go" type="button">הכנת מדריך ההנחיה</button>
-      <button class="btn btn-ghost" id="btn-example" type="button">דוגמה</button>
+      <button class="btn btn-ghost sbe-sysonly" id="btn-example" type="button">דוגמה</button>
       <button class="btn btn-ghost" id="btn-clear" type="button">טופס חדש</button>
     </div>
     <p class="err" id="form-err" hidden></p>
@@ -520,7 +521,7 @@ function renderGuide(){
   // העמדה
   if(d.stance.to){
     doc.appendChild(el('h3',null,'התפקיד שלך במפגש'));
-    doc.appendChild(ktable(['כשמלמדים (הוראה)','כשמנחים (הנחיה)','מה זה בונה בחוסן החברתי'],[[d.stance.from?inlineRich(d.stance.from):null,inlineRich(d.stance.to),d.stance.why?inlineRich(d.stance.why):null]],'kstance'));
+    doc.appendChild(ktable(['כשמלמדים (הוראה)','כשמנחים (הנחיה)','מה זה בונה בחוסן החברתי'],[[d.stance.from?inlineRich(N.trimLead(d.stance.from)):null,inlineRich(N.trimLead(d.stance.to)),d.stance.why?inlineRich(d.stance.why):null]],'kstance'));
   }
   // טבלאות (07/10/2026): במקום הרבה שורות קצרות — טבלה לכל חלק. עריכה ישירה בתאים; ב-PDF לרוחב הדף.
   const ul=(xs)=>{const u=el('ul','tl');xs.forEach(x=>{const li=el('li');li.appendChild(inlineRich(x));u.appendChild(li);});return u;};
@@ -604,7 +605,7 @@ function renderGuide(){
 function pocketNode(d){
   const box=el('div','pocket-doc');const sec=(t,cls)=>{const x=el('section','pk-sec'+(cls?' '+cls:''));if(t)x.appendChild(el('h4',null,t));box.appendChild(x);return x;};
   const clean=t=>SBE_REFS.strip(String(t||'').replace(/\*\*/g,''));
-  if(d.stance.to){const x=sec('התפקיד שלי במפגש','pk-stance');x.appendChild(el('p',null,clean(d.stance.to)));}
+  if(d.stance.to){const x=sec('התפקיד שלי במפגש','pk-stance');x.appendChild(el('p',null,clean(N.trimLead(d.stance.to))));}
   if(d.pocket.length){const x=sec('לזכור');const ul=el('ul');d.pocket.forEach(t=>ul.appendChild(el('li',null,clean(t))));x.appendChild(ul);}
   const qs=[...d.questions.open.slice(0,2),...d.questions.deepen.slice(0,2),...d.questions.close.slice(0,1)];
   if(qs.length){const x=sec('שאלות לקבוצה');const ul=el('ul');qs.forEach(t=>ul.appendChild(el('li',null,clean(t))));x.appendChild(ul);}

@@ -92,7 +92,7 @@ async function mappingAggregate(store, token, mapping, actor) {
     || (mapping.round!==undefined && mapping.round!=='latest' && (!Number.isInteger(mapping.round)||mapping.round<1))) {
     return [400,{error:'נדרש מזהה מיפוי וסבב תקין; תקציר מיפוי מהדפדפן אינו מתקבל.'}];
   }
-  if (!await authorizePermission(store,token,['resilience'])) return [403,{code:'mapping_forbidden',error:'אין הרשאה למיפוי חוסן.'}];
+  if (!await authorizePermission(store,token,['resilience'])) return [403,{code:'mapping_forbidden',error:'אין הרשאה למיפוי החוסן החברתי.'}];
   const group=await store.get('resil:'+mapping.id);
   if(!group) return [400,{error:'המיפוי אינו זמין.'}];
   if(actor.k!=='sys' && group.inst!==actor.inst) return [403,{code:'mapping_forbidden',error:'אין הרשאה למיפוי הזה.'}];
@@ -309,7 +309,7 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
     if(claimsProvenActivity(result)) return [422,{error:'ההתייעצות כוללת טענה לא מבוססת על יעילות או אישור מקצועי.'}];
     return [200,{consultation:{...result,professionalBasis:enrichBasis(result.professionalBasis,available)},...(mapping?{mapping}:{})}];
   }
-  if(result.clarificationQuestions.length) return [422,{error:'נדרשת הבהרה לפני הפעילות.',
+  if(result.clarificationQuestions.length) return [422,{error:'יש לנו כמה שאלות קצרות לפני שבונים את הפעילות.',
     questions:result.clarificationQuestions.map(q=>q.trim()).filter(Boolean),focus:result.focus,rationale:result.selectionReason}];
   const errors=studio.validateActivity(result,brief);
   const sessionIds=new Set();

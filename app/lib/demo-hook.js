@@ -171,7 +171,7 @@
       }, 15 * 60e3, "סיכום החוסן");
       if (r.fail) throw new Error(r.fail.slice(0, 300));
       await sleep(800);
-      return [{ tool: "resil", title: "מיפוי חוסן: סיכום והמלצות לכיתה", label: "מיפוי חוסן", html: standalone($("#summary-content"), "מיפוי חוסן: סיכום והמלצות"), input: inp }];
+      return [{ tool: "resil", title: "מיפוי חוסן חברתי: סיכום והמלצות לכיתה", label: "מיפוי חוסן חברתי", html: standalone($("#summary-content"), "מיפוי חוסן חברתי: סיכום והמלצות"), input: inp }];
     },
     // סטודיו חוסן (07/10/2026): תקציר לדוגמה ← בדיקה והצעת מוקד ← אישור ← בניית הפעילות ← ערכת המנחה וחומרי המשתתפים כמסמכי הדפסה
     "resilience-studio.html": async function () {
@@ -196,7 +196,7 @@
       if ($("#activity-section").hidden) throw new Error("הפעילות לא נבנתה");
       var printed = async function (sel, title, label) {
         await busyOp(sel, title);
-        var fr = await waitFor(function () { var d = $("dialog[open] iframe"); return d && d.contentDocument && d.contentDocument.body && d.contentDocument.body.innerHTML.length > 300 ? d : null; }, 60e3, title);
+        var fr = await waitFor(function () { var d = $("dialog[open] iframe"); return d && d.contentDocument && d.contentDocument.body && String(d.contentDocument.body.innerText || "").trim().length > 150 ? d : null; }, 60e3, title);
         var html = "<!doctype html>" + fr.contentDocument.documentElement.outerHTML;
         var dlg = fr.closest("dialog"); if (dlg) dlg.close();
         await sleep(600);
