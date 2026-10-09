@@ -630,6 +630,12 @@ async function handleDemos(store, body) {
     await store.set('demo:index', next);
     return [200, { item: meta }];
   }
+  // מחיקת כל התיקייה (09/10/2026), לפני סבב הפקה חדש. גם מה שמוצג בספרייה נמחק.
+  if (action === 'demoClear') {
+    for (const d of index) await store.del('demo:' + d.id);
+    await store.set('demo:index', []);
+    return [200, { ok: true, deleted: index.length }];
+  }
   if (action === 'demoPublish' || action === 'demoDelete') {
     const id = String(body.id || '');
     if (!index.some((d) => d.id === id)) return [404, { error: 'not found' }];
@@ -1307,7 +1313,7 @@ export async function handleAccess(store, body) {
 
   if (typeof action === 'string' && action.startsWith('resil')) return handleResilience(store, body);
   if (action === 'listGet' || action === 'listAdd' || action === 'listRemove') return handleLists(store, body);
-  if (/^demo(Save|List|Get|Publish|Delete|PublicList)$/.test(action || '')) return handleDemos(store, body);
+  if (/^demo(Save|List|Get|Publish|Delete|Clear|PublicList)$/.test(action || '')) return handleDemos(store, body);
   if (action === 'fbSubmit' || action === 'fbList' || action === 'fbDelete') return handleFeedbackInbox(store, body);
   if (/^crit(List|Propose|Mine|Use|Admin|Approve|Reject|Remove)$/.test(action || '')) return handleReviewCriteria(store, body);
   if (/^jr[A-Z]/.test(action || '')) return handleJourney(store, body);
