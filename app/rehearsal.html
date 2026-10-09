@@ -21,6 +21,8 @@ h2{font-size:18px;margin:0 0 8px}
 .sub{color:var(--muted);margin:0 0 18px}
 .card{background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px var(--shadow)}
 button,select,textarea{font:inherit;color:inherit}
+button:disabled{opacity:.55;cursor:default}
+[hidden]{display:none!important}
 button{padding:8px 16px;border-radius:6px;border:1px solid var(--spoken);background:var(--spoken);color:#fff;font-weight:600;cursor:pointer;margin:6px 0 16px}
 select,textarea{background:var(--surface);border:1px solid var(--hair);border-radius:6px;padding:7px 9px}
 a.back{color:var(--spoken);font-weight:600;text-decoration:none}
@@ -34,6 +36,8 @@ a.back{color:var(--spoken);font-weight:600;text-decoration:none}
   <p class="sub" id="scenarioSubtitle">פותחים רק גרסה שאישרת. עריכה חדשה לא משנה אותה.</p>
   <div id="composerBar" hidden></div>
 </div>
+<script src="lib/ai-call.js"></script>
+<script src="lib/rehearsal-model.js"></script>
 <script src="lib/artifact-practice.js"></script>
 </body>
 </html>

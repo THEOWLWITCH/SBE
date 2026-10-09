@@ -73,8 +73,8 @@
     current = out; root.replaceChildren(status);
     status.textContent = "גרסה " + out.version + " שאישרת · נשמרת בנפרד מטיוטות ושינויים חדשים";
     var content = out.content, L = labelsFor(out);
-    if (out.kind === "conversation") { document.getElementById("scenarioName").textContent = "תרגול השיחה שאישרת"; document.getElementById("scenarioSubtitle").textContent = "תרגול השיחה עם עמיתה ותיעוד הצעד הבא"; }
-    else if (out.kind === "activity") document.getElementById("scenarioSubtitle").textContent = "תרגול המפגש עם עמיתה ותיעוד הצעד הבא";
+    if (out.kind === "conversation") { document.getElementById("scenarioName").textContent = "תרגול השיחה שאישרת"; document.getElementById("scenarioSubtitle").textContent = "תרגול עם עמיתה או מול המודל, ותיעוד הצעד הבא"; }
+    else if (out.kind === "activity") document.getElementById("scenarioSubtitle").textContent = "תרגול עם עמיתה או מול המודל, ותיעוד הצעד הבא";
     var title = content.scenario && content.scenario.name || content.purpose || "התוצר שאישרת";
     root.append(node("h1", title));
     section(L.purpose, content.purpose);
@@ -88,6 +88,7 @@
     var prompt = node("p"); prompt.style.whiteSpace = "pre-wrap";
     function showStep() { var step = content.steps.find(function (item) { return item.id === stepSelect.value; }); prompt.textContent = step ? step.instructions : ""; }
     stepSelect.addEventListener("change", showStep); rehearsal.append(stepSelect, prompt); showStep();
+    if (out.kind === "activity" || out.kind === "conversation") liveRehearsal(rehearsal, out, stepSelect, title);
     var print = node("button", "הדפסת הגרסה שאושרה"); print.type = "button";
     print.addEventListener("click", function () {
       window.SBE_DOC.print({title:title, subtitle:"גרסה מאושרת " + out.version, node:printableActivity(content, L), inline:true});
@@ -116,6 +117,100 @@
       } catch (error) { status.textContent = "השמירה לא הושלמה. הטקסט שלך נשאר כאן; נסי שוב אחרי בדיקת החיבור והכניסה."; }
       finally { saving = false; submit.disabled = false; observation.input.disabled = false; next.input.disabled = false; }
     });
+  }
+  // תרגול חי מול המודל (9 באוקטובר 2026): בפעילות המודל משחק את הקבוצה, ובשיחה את הצד השני.
+  // ההנחיות ב-lib/rehearsal-model.js. התרגול נשמר רק במכשיר, לפי משתמש/ת ולפי הגרסה.
+  function liveRehearsal(box, out, stepSelect, title) {
+    var M = window.SBE_REHEARSAL;
+    if (!M || typeof window.sbeCallAI !== "function") return;
+    var conv = out.kind === "conversation", content = out.content;
+    var storeKey = (window.sbeUserKey ? window.sbeUserKey("sbe.rehearsal.v1") : "sbe.rehearsal.v1") + "." + id + "." + out.version;
+    var state = load() || {stepId: stepSelect.value, turns: [], feedback: ""}, busy = null;
+    function load() { try { var v = JSON.parse(localStorage.getItem(storeKey) || "null"); return v && Array.isArray(v.turns) ? v : null; } catch (e) { return null; } }
+    function save() { try { localStorage.setItem(storeKey, JSON.stringify(state)); } catch (e) {} }
+    var live = node("div"); live.className = "card"; live.style.cssText = "margin:16px 0;border-color:var(--spoken)";
+    live.setAttribute("data-live-rehearsal", "");
+    live.append(node("h3", "תרגול חי מול המודל"));
+    live.append(node("p", conv ? "המודל משחק את הצד השני בשיחה. את כותבת מה היית אומרת, והוא עונה. אחרי כמה תורות לוחצים \"סיום ומשוב\"." :
+      "המודל משחק את הקבוצה. את כותבת מה היית אומרת או עושה כמנחה, והקבוצה מגיבה. אחרי כמה תורות לוחצים \"סיום ומשוב\"."));
+    var log = node("div"); log.setAttribute("aria-live", "polite"); log.style.cssText = "display:flex;flex-direction:column;gap:8px;margin:10px 0";
+    var wait = node("p"); wait.setAttribute("role", "status"); wait.style.color = "var(--muted)";
+    var say = node("textarea"); say.rows = 3; say.maxLength = 2000; say.setAttribute("aria-label", conv ? "מה את אומרת?" : "מה את אומרת או עושה?");
+    say.placeholder = conv ? "מה את אומרת?" : "מה את אומרת או עושה?"; say.style.cssText = "display:block;width:100%;margin:6px 0";
+    var start = node("button", "מתחילים לתרגל"), send = node("button", "שליחה"), finish = node("button", "סיום ומשוב"), restart = node("button", "תרגול חדש"), printBtn = node("button", "🖨 הדפסה / שמירה כ-PDF");
+    [start, send, finish, restart, printBtn].forEach(function (b) { b.type = "button"; b.style.marginInlineEnd = "8px"; });
+    [finish, restart, printBtn].forEach(function (b) { b.style.background = "transparent"; b.style.color = "var(--spoken)"; });
+    var fb = node("div"); fb.setAttribute("data-live-feedback", "");
+    var controls = node("div"); controls.append(say, send, finish);
+    live.append(log, wait, start, controls, fb, restart, printBtn); box.append(live);
+    function bubble(t) {
+      var mine = t.role === "user", item = node("div");
+      item.style.cssText = "padding:8px 12px;border-radius:8px;white-space:pre-wrap;max-width:90%;" + (mine ? "align-self:flex-start;background:var(--ground)" : "align-self:flex-end;border:1px solid var(--hair)");
+      var who = node("b", (mine ? (conv ? "אני" : "המנחה") : (conv ? "הצד השני" : "הקבוצה")) + ": ");
+      item.append(who); item.append(window.SBE_DOC && !mine ? window.SBE_DOC.rich(t.content) : document.createTextNode(t.content)); return item;
+    }
+    function mine() { return state.turns.filter(function (t) { return t.role === "user"; }).length; }
+    function draw() {
+      log.replaceChildren(); state.turns.slice(1).forEach(function (t) { log.append(bubble(t)); });
+      var started = state.turns.length > 0, done = !!state.feedback;
+      start.hidden = started; controls.hidden = !started || done; restart.hidden = !started; printBtn.hidden = !done;
+      say.disabled = send.disabled = finish.disabled = start.disabled = restart.disabled = !!busy;
+      stepSelect.disabled = started;
+      finish.textContent = mine() - 1 >= M.MAX_TURNS ? "סיום ומשוב (מומלץ עכשיו)" : "סיום ומשוב";
+      fb.replaceChildren();
+      if (done) { fb.append(node("h3", "משוב על התרגול")); var t = window.SBE_DOC && (window.SBE_DOC.sections(state.feedback) || window.SBE_DOC.rich(state.feedback)); fb.append(t || node("p", state.feedback)); }
+    }
+    function waiting(text, expect) {
+      var t0 = Date.now(); wait.textContent = text + " בדרך כלל " + expect + ".";
+      var timer = setInterval(function () { wait.textContent = text + " בדרך כלל " + expect + ". עברו " + Math.round((Date.now() - t0) / 1000) + " שניות."; }, 1000);
+      return function () { clearInterval(timer); wait.textContent = ""; };
+    }
+    async function ask(system, messages, maxTokens, text, expect) {
+      var ctrl = new AbortController(); busy = ctrl; draw(); var stop = waiting(text, expect);
+      try { return String(await window.sbeCallAI(window.sbeAIOrigin(), {system: system, messages: messages, maxTokens: maxTokens}, 120000, {signal: ctrl.signal}) || "").trim(); }
+      finally { stop(); busy = null; }
+    }
+    function noModel() { wait.textContent = "אין כרגע חיבור למודל. מה שכתבת נשמר כאן, ואפשר לנסות שוב בעוד דקה או שתיים."; }
+    async function turn() {
+      try {
+        var reply = await ask(M.turnSystem(out.kind, content, state.stepId), state.turns.slice(-16), 900, conv ? "הצד השני עונה." : "הקבוצה מגיבה.", "כ-20 שניות");
+        if (!reply) throw new Error("empty");
+        state.turns.push({role: "assistant", content: reply}); save(); draw(); say.focus();
+      } catch (e) { draw(); noModel(); }
+    }
+    start.addEventListener("click", function () {
+      state = {stepId: stepSelect.value, turns: [{role: "user", content: "מתחילים לתרגל."}], feedback: ""}; save(); draw(); turn();
+    });
+    send.addEventListener("click", function () {
+      var t = say.value.trim(); if (!t || busy) return;
+      // אם התשובה הקודמת לא הגיעה, שולחים שוב את אותו תור בלי להכפיל
+      if (state.turns.length && state.turns[state.turns.length - 1].role === "user") state.turns[state.turns.length - 1].content += "\n" + t;
+      else state.turns.push({role: "user", content: t});
+      say.value = ""; save(); draw(); turn();
+    });
+    say.addEventListener("keydown", function (e) { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) send.click(); });
+    finish.addEventListener("click", async function () {
+      if (busy || mine() < 2) { if (!busy) wait.textContent = "כדאי לכתוב לפחות תור אחד לפני המשוב."; return; }
+      try {
+        var text = await ask(M.feedbackSystem(out.kind, content, state.stepId),
+          [{role: "user", content: "התרגול:\n" + M.transcript(state.turns.slice(1), out.kind) + "\n\nכתבי את המשוב."}], 1500, "כותבת משוב.", "כ-30 שניות");
+        if (!text) throw new Error("empty");
+        state.feedback = text; save(); draw();
+      } catch (e) { draw(); noModel(); }
+    });
+    restart.addEventListener("click", function () { if (busy) return; state = {stepId: stepSelect.value, turns: [], feedback: ""}; save(); draw(); });
+    printBtn.addEventListener("click", function () {
+      var doc = node("div");
+      doc.append(node("h2", "התרגול"), printTable(["מי", "מה נאמר"], state.turns.slice(1).map(function (t) {
+        return [t.role === "user" ? (conv ? "אני" : "המנחה") : (conv ? "הצד השני" : "הקבוצה"), t.content.replace(/\*\*/g, "")];
+      })));
+      doc.append(node("h2", "משוב על התרגול"), window.SBE_DOC.sections(state.feedback) || window.SBE_DOC.rich(state.feedback));
+      var step = (content.steps || []).find(function (s) { return s.id === state.stepId; });
+      window.SBE_DOC.print({title: title, subtitle: "תרגול חי" + (step ? " · " + step.title : "") + " · גרסה " + out.version, kind: "תרגול ומשוב", node: doc, inline: true});
+    });
+    if (state.stepId) stepSelect.value = state.stepId;
+    stepSelect.dispatchEvent(new Event("change"));
+    draw();
   }
   if (!/^art-[a-f0-9-]{36}$/.test(id || "") || !Number.isInteger(version) || version < 1) {
     status.textContent = "יש לפתוח קישור לגרסה שאושרה מתוך מסך ההכנה."; return;
