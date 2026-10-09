@@ -112,7 +112,7 @@
   const STYLE = `.kit-table{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:14.5px;line-height:1.6}
 .kit-table th,.kit-table td{border:1px solid #CDD3D8;padding:8px 10px;text-align:right;vertical-align:top}
 .kit-table tbody th{background:rgba(46,90,125,.08);width:22%;font-weight:700}
-.kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700}
+.kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .kit-flow tr.ph th{background:#DCE7EF;color:#1E3F5A;text-align:right;font-size:15px;width:auto}
 .kit-flow td{width:33%}
 .kit-table .sbe-rich{font-size:14.5px;line-height:1.65}.kit-table .sbe-rich p:last-child,.kit-table .sbe-rich ul:last-child{margin-bottom:0}
@@ -205,6 +205,7 @@ h1{font-size:26px}.hd img{height:44px}
     "leadership-advisor.html": ["נוגי", "יועצת למנהיגות תומכת חוסן: תמונת מצב והמלצות להנהלה ולצוותים"],
     "facilitation-advisor.html": ["ננה", "מהוראה להנחיה: הנחיית קבוצה שמקדמת חוסן חברתי"],
     "message-writer.html": ["כתיבה מקדמת חוסן", "הודעות ומכתבים לפי עשרת עקרונות השפה המחזקת"],
+    "continuity-kit.html": ["תיק רציפות", "תיק הפעלה קצר למי שתחליף אותך: שגרות, תפקידים וגיבוי, ומה מחליטים בעצמם"],
     "resilience-team.html": ["מיפוי חוסן חברתי", "שאלון לכיתה, תמונת מצב והמלצות"],
     "conversation-planner.html": ["תכנון שיחה", "הכנה לשיחה מאתגרת: איך פותחים, מה שואלים ואיך מסיימים"],
     "activity-planner.html": ["תכנון פעילות", "מערך למפגש או לרצף מפגשים: מטרות, מהלך וזמנים"],

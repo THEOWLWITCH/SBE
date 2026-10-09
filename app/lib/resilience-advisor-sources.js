@@ -19,7 +19,8 @@
     lead: 'מנהיגות חינוכית: צוות, אמון ורווחה',
     leadcr: 'מנהיגות בחירום ובמשבר',
     stu:  'מנהיגות תלמידים וקול התלמידים',
-    facil: 'הנחיית קבוצות ושיח בכיתה'
+    facil: 'הנחיית קבוצות ושיח בכיתה',
+    cont: 'רציפות, מסירה וגיבוי בצוות'
   };
   var S = [
     // ── ישראל ──
@@ -688,7 +689,52 @@
     {k:'Rogelberg2019', g:'facil', apa:'Rogelberg, S. G. (2019). The surprising science of meetings: How you can lead your team to peak performance. Oxford University Press.',
       url:'https://www.porchlightbooks.com/products/surprising-science-of-meetings-steven-g-rogelberg-9780190689216',
       gist:'ספר שמסכם מחקר על ישיבות (סקרים עם יותר מ-5,000 עובדים): ישיבה טובה מתוכננת סביב שאלות ומטרה ולא רק סדר יום, מזמינה השתתפות של כולם, נגמרת בזמן ובסיכום של החלטות וצעדים, ומבקשת משוב על הישיבה עצמה.',
-      be:'סוף ישיבה טוב: מקריאים מה הוחלט ומי עושה מה, ושולחים לכולם. כך ההחלטות לא נשארות רק בזיכרון של מי שהיה.'}
+      be:'סוף ישיבה טוב: מקריאים מה הוחלט ומי עושה מה, ושולחים לכולם. כך ההחלטות לא נשארות רק בזיכרון של מי שהיה.'},
+    // ── רציפות, מסירה וגיבוי בצוות (09/10/2026, לתיק הרציפות) ──
+    {k:'Argote2000', g:'cont', apa:'Argote, L., & Ingram, P. (2000). Knowledge transfer: A basis for competitive advantage in firms. Organizational Behavior and Human Decision Processes, 82(1), 150–169.',
+      url:'https://doi.org/10.1006/obhd.2000.2893',
+      gist:'ידע עובר בארגון בעיקר כשהוא מגולם באנשים, בכלים ובשגרות. העברת ידע מוצלחת מחייבת להעביר גם את השגרות והכלים, ולא רק הסבר; ידע שנשאר אצל אדם אחד הולך לאיבוד כשהוא לא זמין.',
+      be:'תיק רציפות טוב מעביר שגרות וכלים מוכנים (לוח, כרטיס תפקיד, משפטי פתיחה), ולא רק תיאור של הכיתה.'},
+    {k:'NonakaTakeuchi1995', g:'cont', apa:'Nonaka, I., & Takeuchi, H. (1995). The knowledge-creating company: How Japanese companies create the dynamics of innovation. Oxford University Press.',
+      url:'https://scholar.google.com/scholar?q=The+knowledge-creating+company+Nonaka+Takeuchi+1995',
+      gist:'הבחנה בין ידע סמוי (ניסיון, תחושה, "איך עושים אצלנו") לידע גלוי (כתוב ומפורש). ידע סמוי עובר דרך התנסות משותפת ונעשה גלוי כשמנסחים אותו במילים, בדוגמאות ובמטאפורות.',
+      be:'הבסיס לשלב "עמיתה מנסה את התיק": ההתנסות חושפת ידע סמוי שלא נכתב, ואז מוסיפים אותו לתיק.'},
+    {k:'FinkBrayman2006', g:'cont', apa:'Fink, D., & Brayman, C. (2006). School leadership succession and the challenges of change. Educational Administration Quarterly, 42(1), 62–89.',
+      url:'https://doi.org/10.1177/0013161X05278186',
+      gist:'מחקר רב־שנתי בבתי ספר: חילופי בעלי תפקיד תכופים ולא מתוכננים פוגעים ברציפות של שינויים ושגרות. מסירה מתוכננת, עם זמן חפיפה ושיתוף הצוות, שומרת על מה שנבנה.',
+      be:'תיק רציפות הוא תכנון מסירה מראש: מה שנבנה בכיתה או בתפקיד ממשיך גם כשמי שהובילה לא שם.'},
+    {k:'HargreavesFink2006', g:'cont', apa:'Hargreaves, A., & Fink, D. (2006). Sustainable leadership. Jossey-Bass.',
+      url:'https://scholar.google.com/scholar?q=Sustainable+leadership+Hargreaves+Fink+2006',
+      gist:'מנהיגות בת־קיימא נמשכת מעבר לאדם אחד: מפיצים אחריות, מתכננים ירושה ומעגנים את מה שחשוב בשגרות ובאנשים רבים.',
+      be:'העיקרון שמאחורי תפקידי הגיבוי בתיק: אחריות משותפת ומתחלפת במקום תלות באדם אחד.'},
+    {k:'Clotfelter2009', g:'cont', apa:'Clotfelter, C. T., Ladd, H. F., & Vigdor, J. L. (2009). Are teacher absences worth worrying about in the United States? Education Finance and Policy, 4(2), 115–149.',
+      url:'https://doi.org/10.1162/edfp.2009.4.2.115',
+      gist:'נתוני צפון קרוליינה: היעדרויות מורים קשורות לירידה בהישגי התלמידים, והשפעתן מצטברת. לימי ההחלפה יש מחיר לימודי שאפשר לצמצם בהכנה.',
+      be:'הסיבה לתכנן מראש את ימי ההחלפה: תיק מוכן מצמצם את הפגיעה ברצף הלמידה.'},
+    {k:'Ronfeldt2013', g:'cont', apa:'Ronfeldt, M., Loeb, S., & Wyckoff, J. (2013). How teacher turnover harms student achievement. American Educational Research Journal, 50(1), 4–36.',
+      url:'https://doi.org/10.3102/0002831212463813',
+      gist:'תחלופת מורים פוגעת בהישגים גם של תלמידים שהמורה שלהם לא התחלפה, כי היא משבשת את הקשרים, את שיתוף הפעולה ואת הידע המשותף בצוות.',
+      be:'רציפות היא עניין של כל הצוות: תיק מעודכן שומר על הידע המשותף גם כשאנשים מתחלפים.'},
+    {k:'Starmer2014', g:'cont', apa:'Starmer, A. J., Spector, N. D., Srivastava, R., West, D. C., Rosenbluth, G., Allen, A. D., … Landrigan, C. P. (2014). Changes in medical errors after implementation of a handoff program. New England Journal of Medicine, 371(19), 1803–1812.',
+      url:'https://doi.org/10.1056/NEJMsa1405556',
+      gist:'תוכנית מסירה מובנית (I-PASS) בבתי חולים: תבנית קבועה, מסירה פנים אל פנים ובדיקה שהמקבל הבין הפחיתו טעויות בכ־23% בלי להאריך את זמן המסירה.',
+      be:'מבנה קבוע ובדיקה שהמקבלת הבינה: לכן לתיק יש תבנית קבועה ודף תרגול שבו העמיתה מנסה ומחזירה מה היה חסר.'},
+    {k:'Riesenberg2009', g:'cont', apa:'Riesenberg, L. A., Leitzsch, J., & Little, B. W. (2009). Systematic review of handoff mnemonics literature. American Journal of Medical Quality, 24(3), 196–204.',
+      url:'https://scholar.google.com/scholar?q=Systematic+review+of+handoff+mnemonics+literature+Riesenberg+2009',
+      gist:'סקירה שיטתית של תבניות מסירה: תבנית קצרה וקבועה עוזרת לא לשכוח מידע חיוני, בתנאי שהיא מותאמת למקום ומלווה בהדרכה.',
+      be:'כרטיס הפתיחה של התיק הוא תבנית מסירה קצרה וקבועה, מותאמת לכיתה ולבית הספר.'},
+    {k:'WeickSutcliffe2007', g:'cont', apa:'Weick, K. E., & Sutcliffe, K. M. (2007). Managing the unexpected: Resilient performance in an age of uncertainty (2nd ed.). Jossey-Bass.',
+      url:'https://scholar.google.com/scholar?q=Managing+the+unexpected+Weick+Sutcliffe+2007',
+      gist:'ארגונים אמינים מאוד מתכוננים להפתעות: שמים לב לסימנים קטנים, לא מפשטים יתר על המידה, ומעבירים החלטות למי שמכיר את המצב מקרוב. מחויבות לחוסן היא תרגול מראש של מה עושים כשמשהו משתבש.',
+      be:'הבסיס לטבלת "אם... אז..." ולגבולות ההחלטה: ממלאת המקום יודעת מה היא מחליטה בעצמה ומה מעבירים הלאה.'},
+    {k:'Gawande2009', g:'cont', apa:'Gawande, A. (2009). The checklist manifesto: How to get things right. Metropolitan Books.',
+      url:'https://scholar.google.com/scholar?q=The+checklist+manifesto+Gawande+2009',
+      gist:'רשימת בדיקה קצרה בנקודות קריטיות מפחיתה השמטות גם אצל אנשי מקצוע מנוסים, כשהיא קצרה, ממוקדת במה שקל לשכוח, ונבדקת ומתוקנת בשימוש.',
+      be:'לכן התיק קצר וממוקד במה שקל לשכוח, ומתעדכן אחרי כל שימוש.'},
+    {k:'Doyle1986', g:'cont', apa:'Doyle, W. (1986). Classroom organization and management. In M. C. Wittrock (Ed.), Handbook of research on teaching (3rd ed., pp. 392–431). Macmillan.',
+      url:'https://scholar.google.com/scholar?q=Doyle+1986+Classroom+organization+and+management',
+      gist:'הסדר בכיתה נשען על שגרות ועל מעברים מוכרים. מעברים ותחילת שיעור הם הרגעים הרגישים ביותר, ושגרה ברורה מפנה קשב ללמידה.',
+      be:'השגרות והמעברים הם לב התיק: כשממלאת המקום מכירה אותם, הכיתה ממשיכה במסלול המוכר.'}
   ];
   var byKey = {}; S.forEach(function(s){ byKey[s.k] = s; });
   // לכל יועצת בנק משלה: פרקטי (הכיתה) — בלי קבוצות המנהיגות; נוגי (מנהיגות) — קבוצות המנהיגות,
@@ -697,9 +743,12 @@
   var NUGI_G = { lead: 1, leadcr: 1, stu: 1, il: 1, comm: 1, sys: 1 };
   var NUGI_K = { Edmondson1999: 1, Frazier2017: 1, JenningsGreenberg2009: 1, Allen2018: 1, WangDegol2016: 1,
     Battistich1997: 1, RyanDeci2017: 1, Moore2026: 1, Gregory2016: 1, Augustine2018: 1, Miao2023: 1, Brookings2026: 1 };
+  var CONT_K = { EvenZahav2024: 1, Hazzan2026: 1, Miller2007: 1, Spillane2005: 1, Hobfoll2007: 1, Emmer2001: 1, BrykSchneider2002: 1, Sade2024: 1, Fuchs2025: 1 };
   var ADV = {
-    practi: function(s){ return !LEAD_G[s.g]; },
+    practi: function(s){ return !LEAD_G[s.g] && s.g !== 'cont'; },
     nugi:   function(s){ return !!(NUGI_G[s.g] || NUGI_K[s.k]); },
+    // תיק הרציפות (09/10/2026): קבוצת הרציפות ומקורות קיימים על רציפות חינוכית, מנהיגות מבוזרת, שגרה ואמון
+    continuity: function(s){ return s.g === 'cont' || !!CONT_K[s.k]; },
     nana:   function(){ return true; } // ננה — כל בנק הידע (07/10/2026): ההמלצות והמשוב שלה נשענים על כל מקורות החוסן
   };
   function forAdvisor(name){ var f = ADV[name]; return f ? S.filter(f) : S.slice(); }
