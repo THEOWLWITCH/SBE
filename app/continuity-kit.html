@@ -180,6 +180,31 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 .wait{margin:.6rem 0;color:var(--muted);font-size:.9rem}.wait .bar{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-top:.3rem}
 .wait .bar>div{height:100%;width:0;background:var(--spoken);transition:width 1s linear}
 .privacy{font-size:.85rem;color:var(--hidden);background:var(--hidden-soft);border-radius:6px;padding:.4rem .7rem;margin:.2rem 0 .8rem}
+
+.more{border:1px solid var(--hair);border-radius:10px;padding:.5rem .8rem;margin:.6rem 0}.more summary{cursor:pointer;font-weight:700}
+.tabs{display:flex;flex-wrap:wrap;gap:.3rem;border-bottom:2px solid var(--hair);margin:1rem 0 .6rem}
+.tab{font:inherit;font-weight:700;border:1px solid var(--hair);border-bottom:none;border-radius:8px 8px 0 0;padding:.45rem .9rem;background:var(--surface-2);color:var(--muted);cursor:pointer}
+.tab[aria-selected=true]{background:var(--spoken);color:#fff;border-color:var(--spoken)}
+.status{border:1px solid var(--hair);border-radius:10px;padding:.7rem .9rem;background:var(--surface);margin-bottom:.6rem}
+.st-top{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem}.st-top .bar{flex:1 1 160px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.st-top .bar>div{height:100%;background:var(--auto)}
+.st-list{display:flex;flex-wrap:wrap;gap:.3rem .9rem;list-style:none;padding:0;margin:.5rem 0 0;font-size:.88rem}.st-list .ok{color:var(--auto)}.st-list .miss{color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:.4rem 0 .2rem}.actions label.filebtn{cursor:pointer}
+.actions input[type=date]{width:auto;padding:.4rem .5rem}
+.btn.sm{padding:.4rem .75rem;font-size:.88rem}
+.etable{margin:.3rem 0 .8rem}
+.kit-table select{min-width:9.5rem;font:inherit;padding:.25rem .3rem}.etable input,.etable textarea{width:100%;border:1px solid transparent;background:transparent;padding:.2rem;font:inherit;min-height:0}
+.etable input:focus,.etable textarea:focus{border-color:var(--spoken);background:var(--surface)}.etable textarea{min-height:52px}
+.etable .xbtn{font:inherit;border:none;background:none;color:var(--brick);cursor:pointer;padding:.2rem .4rem}
+.kit h3 .tag{font-size:.72rem;font-weight:600;color:var(--hidden);background:var(--hidden-soft);border-radius:99px;padding:.05rem .5rem;margin-inline-start:.5rem}
+.redbox{border:3px solid #B3261E;border-radius:10px;padding:.4rem .8rem .6rem;margin:.6rem 0 1rem;background:rgba(179,38,30,.05)}
+.redbox h3{color:#B3261E!important}
+label.none{display:block;font-size:.88rem;color:var(--muted);margin-top:.3rem}
+.teamcard{border:2px dashed var(--spoken);border-radius:10px;padding:.6rem 2rem;margin:.3rem 0 .8rem}
+tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:first-child{border-inline-start:4px solid var(--hidden)}tr.st-3 td:first-child{border-inline-start:4px solid var(--brick)}
+.linkline{display:inline-block;margin:.2rem 0 .6rem;color:var(--spoken);font-weight:700}
+.sens-note{border:2px solid #B3261E;color:#B3261E;padding:.4rem .7rem;border-radius:6px;font-weight:700}
+@media print{.redbox{border:3px solid #B3261E;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tabs,.status,.actions{display:none!important}}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -192,13 +217,13 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 <div class="wrap">
   <div class="card no-print">
     <h1>תיק רציפות</h1>
-    <p>מכינים תיק הפעלה קצר למי שתחליף אותך: ממלאת מקום, עמיתה שמגבה או בעלת תפקיד חדשה. בתיק: כרטיס פתיחה, השגרות, תפקידים וגיבוי, מה היא מחליטה בעצמה, רגעים שכדאי להתכונן אליהם ומה אומרים לכיתה. אחר כך עמיתה מנסה להשתמש בתיק, ומתקנים יחד את מה שחסר.</p>
+    <p>מכינים תיק הפעלה למי שתחליף אותך: ממלאת מקום, עמיתה שמגבה או בעלת תפקיד חדשה. בתיק שתי תיקיות: <b>שגרה</b>, ו<b>חירום ולמידה מרחוק</b>. מה שלא פועל בשגרה יקרוס בחירום, ולכן מה שמכינים לחירום מתורגל גם בשגרה. המחליפה ממשיכה לעדכן את התיק, ועמיתה יכולה לנסות אותו מראש.</p>
     <p class="muted">התיק נשען על מחקר על מסירה, גיבוי ורציפות חינוכית. המקורות בסוף התיק, בכפתור "📚 מקורות".</p>
     <p class="article-link" style="font-size:.9rem;margin:.45rem 0 0">📖 <a href="about.html?from=continuity-kit.html#article" target="_blank" rel="noopener" style="color:var(--spoken);font-weight:700">לבחור בחוסן שלנו</a>. מאמר קצר על המושגים שבבסיס הכלי: מנגנונים חברתיים, קהילת חוסן ותו חוסן.</p>
   </div>
   <ol class="steps no-print" id="steps">
-    <li data-step="1"><b>1. מספרים</b>על הכיתה והשגרות</li>
-    <li data-step="2"><b>2. התיק</b>קוראים, עורכים ומדפיסים</li>
+    <li data-step="1"><b>1. מספרים</b>התפקיד, הכיתה והשגרות</li>
+    <li data-step="2"><b>2. התיק</b>שגרה, חירום, תלמידים ועדכונים</li>
     <li data-step="3"><b>3. עמיתה מנסה</b>ומתקנים את מה שחסר</li>
   </ol>
   <section class="card no-print" id="s1">
@@ -211,9 +236,19 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
     <p class="err" id="err1" hidden></p>
   </section>
   <section class="card" id="s2" hidden>
+    <div class="status no-print" id="status"></div>
+    <div class="actions no-print">
+      <button class="btn sm" id="print" type="button">🖨 הדפסת התיק המלא</button>
+      <button class="btn btn-ghost sm" id="printShare" type="button">🖨 עותק לשיתוף, בלי מידע רגיש</button>
+      <button class="btn btn-ghost sm" id="saveFile" type="button">💾 שמירת קובץ התיק</button>
+      <label class="btn btn-ghost sm filebtn">📂 פתיחת קובץ תיק<input id="openFile" type="file" accept=".json,application/json" hidden></label>
+    </div>
+    <div class="actions no-print">
+      <label for="reviewDate">מועד העדכון הבא</label><input id="reviewDate" type="date">
+      <button class="btn btn-ghost sm" id="remind" type="button">📅 תזכורת ליומן</button>
+    </div>
     <div id="kit"></div>
     <div class="btns no-print">
-      <button class="btn" id="print" type="button">🖨 הדפסה / שמירה כ-PDF</button>
       <button class="btn btn-ghost" id="toTrial" type="button">עמיתה מנסה את התיק ←</button>
       <button class="btn btn-ghost" id="back1" type="button">→ חזרה לטופס</button>
     </div>

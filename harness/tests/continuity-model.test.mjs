@@ -20,8 +20,12 @@ test('the continuity bank has several academic sources, all with a key, citation
 
 test('the prompt asks for the kit parts, privacy, conversation guidance and cites only the bank', () => {
   const kb = SRC.forAdvisor('continuity'), s = C.system(kb, 'WRITER-RULE');
-  for (const part of ['opening', 'routines', 'roles', 'decisions', 'moments', 'classTalk', 'trial', 'upkeep', 'resilience', 'sources']) assert.ok(s.includes('"' + part + '"') || s.includes('- ' + part), part);
-  assert.match(s, /בלי שמות מלאים של תלמידים ובלי מידע רפואי/);
+  for (const part of ['opening', 'routines', 'roles', 'decisions', 'procedures', 'moments', 'classTalk', 'trial', 'upkeep', 'resilience', 'sources']) assert.ok(s.includes('"' + part + '"') || s.includes('- ' + part), part);
+  const e = C.emergSystem(kb, '');
+  for (const part of ['readiness', 'remote', 'chain', 'emergTalk', 'drill', 'parentLetter']) assert.ok(e.includes('- ' + part), part);
+  for (const tag of C.LETTER_FIELDS.map((f) => f.tag)) assert.ok(e.includes(tag), tag);
+  assert.match(e, /מה שלא פועל בשגרה יקרוס בחירום/);
+  assert.match(s, /אין לך את רשימת התלמידים, את פרטי ההורים או מידע רפואי/);
   assert.match(s, /לא מפנים ליועצת כברירת מחדל/);
   assert.match(s, /איך אוכל לעזור לך/);
   assert.match(s, /WRITER-RULE/);
@@ -30,8 +34,10 @@ test('the prompt asks for the kit parts, privacy, conversation guidance and cite
 });
 
 test('input text, parsing and validity', () => {
-  assert.equal(C.inputText({ kitFor: 'הכיתה שלי', routines: 'מעגל בוקר', roles: '' }), 'על מה התיק: הכיתה שלי\nהשגרות החשובות: מעגל בוקר');
-  assert.deepEqual(C.FIELDS.filter((f) => f.main).map((f) => f.k), ['kitFor', 'receiver', 'routines']);
+  assert.equal(C.inputText({ role: 'מחנכת כיתה', routines: 'מעגל בוקר', roles: '' }), 'התפקיד שלי: מחנכת כיתה\nהשגרות החשובות: מעגל בוקר');
+  assert.deepEqual(C.FIELDS.filter((f) => f.main).map((f) => f.k), ['role', 'receiver', 'routines']);
+  // מידע רגיש לא נכנס למה שנשלח למודל, גם אם הוא נמצא באותו אובייקט
+  assert.doesNotMatch(C.inputText({ role: 'גננת', students: [{ c0: 'דנה' }], red: 'אלרגיה', local: { students: [1] } }), /דנה|אלרגיה/);
   const kit = { opening: [{ h: 'א', t: 'ב' }], routines: [{ name: 'ג' }], trial: [{ task: 'ד' }] };
   assert.ok(C.valid(C.parse('הנה: ' + JSON.stringify(kit))));
   assert.ok(!C.valid(C.parse('אין JSON')));
@@ -45,4 +51,25 @@ test('screen text is written as an invitation (no "חייב", "צריך", "אס�
   for (const t of [html, ui, labels, Object.values(C.SECTIONS).map((x) => [x.h, x.sub, ...(x.cols || [])].join(' ')).join(' ')])
     assert.deepEqual(invite.find(t), []);
   assert.doesNotMatch(html + ui, /—/, 'no long dash in fixed screen text');
+});
+
+test('the readiness list, the parent letter and the emergency check', () => {
+  assert.ok(C.DEFAULT_READINESS.length >= 6);
+  assert.match(C.DEFAULT_READINESS.join(' '), /צוותי עבודה של 3 עד 5/);
+  assert.deepEqual(invite.find(C.DEFAULT_READINESS.join(' ')), []);
+  assert.equal(C.fillLetter('תלמד [שם המחליפה] עד [משך ההחלפה]. [הנחיות מיוחדות]', { sub: 'מיכל', duration: 'סוף החודש' }), 'תלמד מיכל עד סוף החודש. [הנחיות מיוחדות]');
+  assert.ok(C.validEmerg({ remote: [{}], chain: [{}], parentLetter: 'x'.repeat(50) }));
+  assert.ok(!C.validEmerg({ remote: [], chain: [{}], parentLetter: 'x'.repeat(50) }));
+  assert.ok(C.ROLES.includes('מחנכת כיתה') && C.ROLES.includes('גננת'));
+});
+
+test('the student list is read in the browser: headers, no headers, quotes and teams', () => {
+  const withHead = C.parseRoster('שם התלמיד\tשם ההורה\tטלפון\tהורה נוסף\tנייד\tדוא"ל\nדנה\tרונית\t050-1234567\tיוסי\t052-7654321\td@x.org');
+  assert.deepEqual(withHead, [{ name: 'דנה', parent: 'רונית', phone: '050-1234567', parent2: 'יוסי', phone2: '052-7654321', email: 'd@x.org' }]);
+  const noHead = C.parseRoster('אור, מיכל, 054-1112223, m@y.org\nנועם,"דוד, אבא",053-3334445');
+  assert.equal(noHead.length, 2); assert.equal(noHead[0].phone, '054-1112223'); assert.equal(noHead[0].email, 'm@y.org'); assert.equal(noHead[1].parent, 'דוד, אבא');
+  assert.deepEqual(C.parseRoster(''), []);
+  const teams = C.splitTeams(Array.from({ length: 31 }, (_, i) => 'ת' + i), 4);
+  assert.ok(teams.every((t) => t.length >= 3 && t.length <= 5)); assert.equal(teams.flat().length, 31);
+  assert.deepEqual(C.splitTeams(['א', 'ב'], 4), [['א', 'ב']]);
 });
