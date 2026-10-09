@@ -67,6 +67,47 @@
     (document.head || document.documentElement).appendChild(st);
   } catch(e){}
 
+  // בלי הערות מערכת במסכים (09/10/2026: "ההנחיות האלה אינן למשתמשים"):
+  //  - הסבר מתחת לבחירה או לשדה (.hint, .crit-mode-d, .critadd-note, .seq-note, [data-info]) הופך לסימן ⓘ:
+  //    הטקסט מופיע בריחוף או בלחיצה. [data-keep] נשאר גלוי (למשל ההנחיה במסך הכניסה).
+  //  - שורות מצב (#ready, #hint, #sqReady, #sqHint, .fbstatus, [data-status-line]) לא מוצגות.
+  //    כשהכפתור לידן כבוי, הטקסט עובר לריחוף על הכפתור, כדי שיהיה ברור למה.
+  try {
+    var qs = document.createElement("style");
+    qs.textContent = ".sbe-q{display:none!important}.sbe-q.sbe-q-open{display:block!important;background:#F4F7FA;border:1px solid #CDD3D8;border-radius:8px;padding:.35rem .6rem;margin:.25rem 0;font-size:.88rem;color:#3C4650}" +
+      "span.sbe-q.sbe-q-open{display:inline-block!important}" +
+      ".sbe-i{font:inherit;font-size:.9em;line-height:1;border:none;background:none;color:#2E5A7D;cursor:pointer;padding:0 .3em;vertical-align:baseline}.sbe-i:focus-visible{outline:2px solid #2E5A7D;border-radius:4px}" +
+      ".sbe-status-off{display:none!important}@media print{.sbe-i{display:none!important}}";
+    (document.head || document.documentElement).appendChild(qs);
+    var INFO = ".hint:not(.note):not([data-keep]),.crit-mode-d,.critadd-note,.seq-note,[data-info]";
+    var STATUS = "#ready.note,#hint.note,#sqReady,#sqHint,.fbstatus,[data-status-line]";
+    // במסך הכניסה ההנחיות הן העיקר, ולכן נשארות גלויות
+    var keepInfo = /(^|\/)entry(\.html)?$/.test(location.pathname);
+    var quiet = function(){
+      if (!keepInfo) document.querySelectorAll(INFO).forEach(function(el){
+        if (el.getAttribute("data-quiet") || el.closest(".sbe-sysonly")) return;
+        el.setAttribute("data-quiet", "1");
+        var b = document.createElement("button"); b.type = "button"; b.className = "sbe-i"; b.textContent = "ⓘ";
+        b.setAttribute("aria-label", "הסבר"); b.setAttribute("aria-expanded", "false");
+        var sync = function(){ b.title = (el.textContent || "").replace(/\s+/g, " ").replace(/^\s*·\s*/, "").trim(); b.hidden = !b.title; };
+        sync(); try { new MutationObserver(sync).observe(el, {childList: true, characterData: true, subtree: true}); } catch(e){}
+        b.addEventListener("click", function(e){ e.preventDefault(); e.stopPropagation(); var o = el.classList.toggle("sbe-q-open"); b.setAttribute("aria-expanded", String(o)); });
+        el.classList.add("sbe-q"); el.parentNode.insertBefore(b, el);
+      });
+      document.querySelectorAll(STATUS).forEach(function(el){
+        if (el.getAttribute("data-quiet")) return;
+        el.setAttribute("data-quiet", "1"); el.classList.add("sbe-status-off");
+        var box = el.parentNode;
+        var sync = function(){ var t = (el.textContent || "").trim(); if (!box) return;
+          box.querySelectorAll("button").forEach(function(btn){ if (btn.disabled && t) btn.title = t; else if (btn.getAttribute("data-status-title")) btn.removeAttribute("title"); if (btn.disabled && t) btn.setAttribute("data-status-title", "1"); }); };
+        sync(); try { new MutationObserver(sync).observe(el, {childList: true, characterData: true, subtree: true}); } catch(e){}
+      });
+    };
+    var pending = 0;
+    var later = function(){ if (pending) return; pending = setTimeout(function(){ pending = 0; quiet(); }, 60); };
+    document.addEventListener("DOMContentLoaded", function(){ quiet(); try { new MutationObserver(later).observe(document.body, {childList: true, subtree: true}); } catch(e){} });
+  } catch(e){}
+
   // המסך הנוכחי, יחסית ל-app/ (products/x.html לתוצרים).
   var parts = location.pathname.split("/");
   var file = (parts.pop() || "index.html").toLowerCase();

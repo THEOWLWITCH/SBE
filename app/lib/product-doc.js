@@ -138,7 +138,7 @@
     node.setAttribute("contenteditable", "true");
     node.setAttribute("spellcheck", "true");
     const hint = document.createElement("p"); hint.className = "sbe-edit-hint";
-    hint.textContent = "✎ אפשר לערוך את הטקסט ישירות כאן (למחוק, להוסיף ולנסח מחדש). ההדפסה ושמירת ה-PDF יכללו את הנוסח הערוך.";
+    hint.textContent = "✎ אפשר לערוך את הטקסט כאן.";
     const wrap = document.createElement("div"); wrap.append(hint, node);
     return wrap;
   }

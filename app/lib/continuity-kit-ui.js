@@ -11,7 +11,7 @@
   const STORE = window.sbeUserKey ? sbeUserKey('sbe.continuity.v2') : 'sbe.continuity.v2:anon';
   const SERVER = window.sbeAIOrigin ? window.sbeAIOrigin() : 'https://sbe-server.onrender.com';
   const F = (id) => document.getElementById(id);
-  const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התיק לא הוכן. המערכת לא בונה תיק מהשדות במקום תוצר אמיתי. מה שמילאת נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
+  const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התיק לא הוכן. מה שמילאת נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
   try { const h = sessionStorage.getItem('sbe.session.homeUrl'); if (h) F('nav-home').href = h; } catch (e) {}
   function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = String(text); return n; }
   function btn(text, cls, fn) { const b = el('button', cls || 'btn btn-ghost', text); b.type = 'button'; if (fn) b.addEventListener('click', fn); return b; }
@@ -57,7 +57,7 @@
     em.appendChild(el('summary', null, '🚨 חירום ולמידה מרחוק'));
     C.EMERG_FIELDS.forEach((f) => fieldBox(f, em));
     form.appendChild(em);
-    form.appendChild(el('p', 'privacy', 'את רשימת התלמידים, פרטי ההורים, המידע הרפואי והמענה הפרטני ממלאים בתיק עצמו, בצעד הבא. המידע הזה נשמר במכשיר בלבד, ולא נשלח למודל או לשרת.'));
+    form.appendChild(el('p', 'privacy', 'את רשימת התלמידים, פרטי ההורים, המידע הרפואי והמענה הפרטני ממלאים בתיק עצמו, בצעד הבא. המידע הזה נשמר במכשיר בלבד.'));
   })();
   function readForm() { const d = {}; C.FIELDS.concat(C.EMERG_FIELDS).forEach((f) => { d[f.k] = (F('f-' + f.k).value || '').trim(); }); return d; }
 
@@ -273,7 +273,7 @@
     li.addEventListener('input', () => { S.local.studentsLink = li.value.trim(); save(); }); lk.append(ll, li); sec.appendChild(lk);
     if (/^https?:\/\//.test(S.local.studentsLink || '')) { const a = el('a', 'linkline', 'פתיחת הרשימה במערכת בית הספר ←'); a.href = S.local.studentsLink; a.target = '_blank'; a.rel = 'noopener'; sec.appendChild(a); }
     const up = el('details', 'more no-print'); up.appendChild(el('summary', null, '📥 העלאת רשימה או הדבקה מגיליון'));
-    up.appendChild(el('p', 'muted', 'קובץ Excel, CSV או Word עם טבלה, או הדבקה ישירה מגיליון. הקובץ נקרא בדפדפן בלבד, לא עולה לשרת ולא נשלח למודל. עמודות שמזוהות: שם, הורה, טלפון, דוא״ל.'));
+    up.appendChild(el('p', 'muted', 'קובץ Excel, CSV או Word עם טבלה, או הדבקה ישירה מגיליון: שם, הורה, טלפון, דוא״ל. הקובץ נשאר במכשיר.'));
     const file = el('input'); file.type = 'file'; file.accept = '.xlsx,.xls,.csv,.txt,.docx';
     const paste = el('textarea'); paste.placeholder = 'אפשר להדביק כאן שורות מגיליון: שם, הורה, טלפון…'; paste.setAttribute('aria-label', 'הדבקת רשימה');
     const msg = el('p', 'muted');

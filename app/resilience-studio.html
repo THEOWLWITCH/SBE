@@ -49,7 +49,6 @@
       <div class="studio-main">
         <section id="brief-section" class="card" data-step="1" aria-labelledby="brief-title">
           <div class="section-head"><div><p class="eyebrow">צעד 1 מתוך 3</p><h2 id="brief-title">ספרו לנו על הקבוצה</h2></div><button id="new-work" class="btn ghost small" type="button">התחלה חדשה</button></div>
-          <p class="fill-note">מספיק למלא את <b>השדות העיקריים</b> (<span class="req">*</span>). את כל השאר אפשר להשאיר, והסטודיו ישלים.</p>
           <form id="brief-form" novalidate>
             <label for="startingPoint">מה הביא אתכם לכאן?</label>
             <textarea id="startingPoint" name="startingPoint" rows="3" placeholder="רעיון, מצב, משימה או משהו ששמתם לב אליו"></textarea>
@@ -81,7 +80,7 @@
               <label for="observations">מה השתנה או מה שמתם לב אליו?</label>
               <textarea id="observations" name="observations" rows="2" placeholder="תצפיות, משוב או תנאים חדשים"></textarea>
               <div id="source-details" class="source-details"><h3>מקורות ונקודות מוצא</h3>
-                <p class="muted">אפשר לצרף סיפור, תיאור מצב או טקסט להשראה. קישור לבדו לא נקרא, אז כדאי להדביק את התוכן הרלוונטי.</p>
+                <p class="muted" data-info>אפשר לצרף סיפור, תיאור מצב או טקסט להשראה. קישור לבדו לא נקרא, אז כדאי להדביק את התוכן הרלוונטי.</p>
                 <div id="source-cards"></div>
                 <div class="actions"><button id="add-source" class="btn secondary small" type="button">+ מקור נוסף</button><label class="btn secondary small file-label">צירוף טקסט<input id="source-file" type="file" accept=".txt,.md,.json,text/plain,text/markdown,application/json"></label></div>
               </div>
@@ -89,7 +88,6 @@
           </form>
           <div id="mapping-panel" class="mapping-panel" hidden></div>
           <div class="step-foot"><span class="muted">מה שמילאתם נשמר במכשיר.</span><button id="to-build" class="btn" type="button">המשך: הצעה למוקד ←</button></div>
-          <p id="to-build-hint" class="muted small-note">הסטודיו יקרא את מה שכתבתם ויציע במה כדאי להתמקד. זה לוקח בערך דקה.</p>
         </section>
 
         <section id="focus-section" class="card" data-step="2" aria-labelledby="focus-title">
@@ -149,7 +147,7 @@
           <details class="saved-ideas"><summary>הרעיונות ששמרתי <span id="idea-count">(0)</span></summary><div id="saved-ideas"></div></details>
         </section>
         <details class="card saved-card"><summary><b>העבודות שלי</b></summary><div id="saved-work-list"><p class="muted">בודקים את ההרשאה…</p></div><label class="btn secondary small file-label">פתיחת קובץ עבודה<input id="import-work" type="file" accept=".json,application/json"></label></details>
-        <p class="catalogue-note">הסטודיו בפיתוח ובבחינה מקצועית. הפעילויות הן טיוטות: בסיס מחקרי לרכיב אינו הוכחה ליעילות של פעילות חדשה.</p>
+        <p class="catalogue-note sbe-sysonly">הסטודיו בפיתוח ובבחינה מקצועית. הפעילויות הן טיוטות: בסיס מחקרי לרכיב אינו הוכחה ליעילות של פעילות חדשה.</p>
       </aside>
     </div>
 

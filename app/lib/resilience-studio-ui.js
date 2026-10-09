@@ -351,7 +351,6 @@
       const grid=el('div','field-grid');grid.append(sourceField(source,'שם המקור','name'));
       const roleLabel=el('label','','לשם מה הוא מצורף?'), role=el('select');[['context','תיאור מצב / הקשר'],['inspiration','השראה']].forEach(([value,text])=>{const option=el('option','',text);option.value=value;role.append(option);});role.value=source.role;role.addEventListener('change',()=>{source.role=role.value;markBriefChanged('source');});roleLabel.append(role);grid.append(roleLabel,sourceField(source,'קישור, אם יש','url',{type:'url'}),sourceField(source,'תאריך / תקופה','date'),sourceField(source,'היקף המקור','scope'),sourceField(source,'האוכלוסייה שאליה הוא מתייחס','population'));n.append(grid,sourceField(source,'התוכן הרלוונטי שנמסר לנו','content',{multiline:true,rows:3}),el('p','source-read-note','המקור צורף על ידכם וטרם נבדק מקצועית. קישור לבדו אינו נקרא; תוכן שסיפקתם ישמש כהקשר או כהשראה בלבד.'));box.append(n);
     });
-    if(!state.brief.sources.length)box.append(el('p','muted','אפשר להתחיל גם מהתיאור שלכם, בלי מקור נוסף.'));
   }
   function mappingText(value) { if(value===null||value===undefined)return '';if(typeof value==='object')return Object.entries(value).map(([k,v])=>k+': '+(typeof v==='object'?JSON.stringify(v):v)).join(' · ');return String(value); }
   function renderMapping() {
@@ -677,7 +676,7 @@
         if(handoff&&typeof handoff.id==='string'&&typeof handoff.key==='string'){mappingCredentials={id:handoff.id,key:handoff.key,round:handoff.round==='latest'?'latest':Number(handoff.round)||'latest'};}
       }catch{}
       render();goStep(state.activity?3:state.recommendation?2:1,true);if(mappingCredentials)await loadMapping();
-    }catch(e){error('לא הצלחנו לבדוק את ההרשאה לפתיחת העבודה: '+e.message);$('saved-work-list').replaceChildren(el('p','muted','העבודות השמורות יוצגו לאחר בדיקת הרשאה מוצלחת.'));}
+    }catch(e){error('לא הצלחנו לבדוק את ההרשאה לפתיחת העבודה: '+e.message);$('saved-work-list').replaceChildren(el('p','muted','כדי לראות את העבודות השמורות, אפשר לרענן את הדף בעוד רגע.'));}
   }
   function snapshotFromWork(value) {const s=readWork(value,false);return {brief:s.brief,activity:s.activity,activityBrief:s.activityBrief,versions:s.versions,ideas:s.ideas,variants:s.variants,mapping:s.mapping,currentId:s.currentId,coach:s.coach};}
   initialize();

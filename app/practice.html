@@ -203,7 +203,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 
 <!-- מצב החיבור למודל — רק למנהלת המערכת (sbe-sysonly, access-guard.js) -->
 <div class="banner sbe-sysonly">
-  <span class="ai-status unknown" id="aiStatusChip"><span class="dot"></span> בודקת חיבור למודל...</span>
+  <span class="ai-status unknown sbe-sysonly" id="aiStatusChip"><span class="dot"></span> בודקת חיבור למודל...</span>
 </div>
 
 <div class="bar-wrap" id="barWrap">
@@ -225,11 +225,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 </dialog>
 
 <section id="screen-select">
-  <p class="sub" style="margin-bottom:10px;">בחרי תרחיש לתרגול עצמי. כל תרחיש שאושר לסדנה זמין גם כאן: לתרגול על התרחיש שהיה בסדנה, או כתחליף למפגש שלא יצא לפועל.</p>
-  <span class="chip muted" style="display:inline-flex;margin-bottom:16px;"
-    title="השיחה נשמרת עם כל הפרטים שלה, אבל תחת מספר שהמערכת נותנת, לא תחת השם שלך">
-    מזוהה במספר, לא בשם
-  </span>
+  <p class="sub" style="margin-bottom:10px;">בחרי תרחיש לתרגול עצמי.</p>
   <div class="filters" id="filterBar"></div>
   <p class="note" id="filterCount" style="margin-bottom:10px;"></p>
   <div id="scenarioList"></div>
@@ -891,7 +887,7 @@ function renderScenarioList(){
       el("div", { class:"sc-name" }, sc.name),
       el("div", { class:"sc-sub" }, sc.subtitle),
       // מי מי: המתנסה היא אשת החינוך שמובילה את השיחה, והמערכת משחקת את הדמות שמולה (כמו השחקנית בסדנה)
-      el("div", { class:"sc-sub" }, [el("b", {}, "את: "), sc.trainee.roleLabel, " · ", el("b", {}, "המערכת משחקת: "), (sc.actor.name || "") + ", " + sc.actor.roleLabel]),
+      el("div", { class:"sc-sub" }, [el("b", {}, "את: "), sc.trainee.roleLabel, " · ", el("b", {}, "מולך: "), (sc.actor.name || "") + ", " + sc.actor.roleLabel]),
       el("div", { class:"sc-tags" }, tags.map(t => el("span", { class:"sc-tag" }, t))),
     ]);
     const pick = () => selectScenario(id);
@@ -1038,7 +1034,7 @@ function buildMessageEl(t, extraClass){
 function setAIStatus(status){
   const chip = document.getElementById("aiStatusChip");
   if (!chip) return;
-  chip.className = "ai-status " + status;
+  chip.className = "ai-status sbe-sysonly " + status;
   const dot = '<span class="dot"></span> ';
   if (status === "ok") chip.innerHTML = dot + "AI פעיל: רננה מגיבה בזמן אמת";
   else if (status === "mock") chip.innerHTML = dot + "מצב הדגמה: אין חיבור למודל כרגע. רננה מגיבה מהמנוע ההיוריסטי המקומי";

@@ -472,8 +472,7 @@ function buildCriteria(){
     if(!dm.opt){crit.appendChild(sec);return;}
     // ממדי רשות — להעמקה: מקופלים, לא חובה למלא, ונכנסים לניתוח רק אם מולאו
     if(!optHead){optHead=true;const oh=document.createElement('div');oh.className='opt-head';
-      oh.appendChild(el('h3',null,'ממדי רשות: להעמקה'));
-      oh.appendChild(el('p','muted','לא חובה. כל ממד שתמלאו יעשיר את הניתוח; ממד שלא מולא: נוגי לא תסיק עליו.'));crit.appendChild(oh);}
+      oh.appendChild(el('h3',null,'ממדי רשות: להעמקה'));crit.appendChild(oh);}
     const det=document.createElement('details');det.className='optdim';det.dataset.dim=dm.t;
     const sm=document.createElement('summary');sm.textContent=dm.t+' · '+sec.querySelectorAll('.q').length+' היגדים';det.appendChild(sm);
     sec.querySelector('h3').remove();det.appendChild(sec);crit.appendChild(det);
