@@ -25,6 +25,9 @@ export const CONVERSATION_ROUTES = Object.freeze({'שיחה בעל פה':'oral',
 export const PRACTICE_MODES = Object.freeze({narrative:'simulation-rehearsal',activity:'meeting-rehearsal',conversation:'conversation-rehearsal'});
 // What approval requires for each kind. A conversation is one personal talk: a social
 // mechanism and group skills are welcome but not required (decision recorded in docs).
+// What the planner may choose to continue without, explicitly, when approving (Yael, 9 Oct 2026:
+// "בפעילות ניתן יהיה לבחור להמשיך בלי מנגנון חברתי ובלי הנחיה למנחה"). The choice is stored with the version.
+export const OPTIONAL_BY_CHOICE = Object.freeze({activity: ['socialMechanism','facilitatorGuide'], conversation: []});
 export const COMPLETE_FIELDS = Object.freeze({
   activity: ['purpose','resilienceComponents','individualSkills','sharedSkills','facilitatorGuide','socialMechanism','steps'],
   conversation: ['purpose','facilitatorGuide','steps']
@@ -162,7 +165,7 @@ export function plannerContentFromDraft(kind, draft, planning) {
 }
 
 // Gate for stored planner content. `complete` is the approval gate.
-export function validatePlannerContent(input, {complete = false} = {}) {
+export function validatePlannerContent(input, {complete = false, waived = []} = {}) {
   if (!object(input) || !PLANNER_KINDS.includes(input.kind)) throw contractError('unsupported_artifact_kind');
   const allowed = ['kind','purpose','resilienceComponents','individualSkills','sharedSkills','facilitatorGuide','socialMechanism','steps','document','fields','estimates',
     ...(input.kind === 'conversation' ? ['route'] : [])];
@@ -188,6 +191,7 @@ export function validatePlannerContent(input, {complete = false} = {}) {
     if (content[field] !== undefined && (!Array.isArray(content[field]) || content[field].length > 40 || content[field].some(x => !text(x)))) throw contractError('invalid_explanation');
   if (complete) for (const field of COMPLETE_FIELDS[input.kind]) {
     const value = content[field];
+    if (waived.includes(field) && OPTIONAL_BY_CHOICE[input.kind].includes(field) && !(typeof value === 'string' && value.trim())) continue;
     if (field === 'steps' ? !value.length : Array.isArray(value) ? !value.length : !text(value))
       throw contractError(field === 'steps' ? 'missing_steps' : 'missing_explanation');
   }

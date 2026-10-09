@@ -123,3 +123,23 @@ test('reviewers stay in scope for planner kinds: no pipeline output, conversatio
   assert.throws(()=>validateProposal(proposal([{path:'purpose',value:'מטרה אחרת'}]),{artifact,agent:'single'}),{code:'locked_field'});
   assert.ok(validateProposal(proposal([{path:'steps/opening/instructions',value:'פותחים בשאלה: מה היה לך קשה השבוע?'}]),{artifact,agent:'single'}));
 });
+
+test('an activity may be approved without a social mechanism or facilitator guide only by an explicit choice, kept with the version',async()=>{
+  const store=createAtomicMemoryStore();
+  const {facilitatorGuide,socialMechanism,...rest}=professional;
+  const [,out]=await create(store,teacher,{kind:'activity',draft:activityDraft(),planning:rest});const id=out.artifact.id;
+  assert.equal((await handleArtifacts(store,teacher,{action:'approve',artifactId:id,expectedVersion:1},options()))[1].code,'missing_explanation','no silent skipping');
+  assert.equal((await handleArtifacts(store,teacher,{action:'approve',artifactId:id,expectedVersion:1,proceedWithout:['socialMechanism']},options()))[1].code,'missing_explanation','each field is its own choice');
+  assert.equal((await handleArtifacts(store,teacher,{action:'approve',artifactId:id,expectedVersion:1,proceedWithout:['purpose']},options()))[0],400,'goal and resilience fields cannot be skipped');
+  const [as,approved]=await handleArtifacts(store,teacher,{action:'approve',artifactId:id,expectedVersion:1,proceedWithout:['socialMechanism','facilitatorGuide']},options());
+  assert.equal(as,200);assert.deepEqual(approved.artifact.approvedVersions[0].proceedWithout,['socialMechanism','facilitatorGuide']);
+  const [,practice]=await handleArtifacts(store,teacher,{action:'practice',artifactId:id,version:1},options());
+  assert.deepEqual(practice.proceedWithout,['socialMechanism','facilitatorGuide']);
+  // When the field is filled, the choice is not recorded: there is nothing to skip.
+  const [,full]=await create(store,teacher,{kind:'activity',draft:activityDraft(),planning:professional});
+  const [,approvedFull]=await handleArtifacts(store,teacher,{action:'approve',artifactId:full.artifact.id,expectedVersion:1,proceedWithout:['socialMechanism']},options());
+  assert.ok(!('proceedWithout' in approvedFull.artifact.approvedVersions[0]));
+  // A conversation has no such choice.
+  const [,conv]=await create(store,talker,{kind:'conversation',draft:conversationDraft()});
+  assert.equal((await handleArtifacts(store,talker,{action:'approve',artifactId:conv.artifact.id,expectedVersion:1,proceedWithout:['facilitatorGuide']},options()))[0],400);
+});
