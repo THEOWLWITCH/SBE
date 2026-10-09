@@ -597,9 +597,9 @@ const ADVISOR_SYSTEM = [
   'כאשר ACT הוא {"title":"שם קצר","kind":"חד-פעמית" או "תהליך מתמשך","game":true רק אם זה משחק,"circle":"כיתה" או "בית הספר" או "קהילה","description":"מה עושים, מי מוביל/ה ואיך — 2–4 משפטים","mechanism":"איזה מנגנון חברתי או מיומנות משותפת זה מפתח","basis":["מפתח"]}'
 ].join('\n');
 
-async function complete(system,messages,maxTokens){
+async function complete(system,messages,maxTokens,review){
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
-  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens},480000)||'');
+  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},480000)||'');
 }
 
 // ── ניתוח ──
@@ -615,11 +615,11 @@ F('btn-analyze').addEventListener('click',async()=>{
     err.hidden=false;(miss[0]?F('q-'+miss[0].k):F('f-age')).scrollIntoView({behavior:'smooth',block:'center'});return;
   }
   err.hidden=true;renderPicture(a);
-  BUSY=true;const b=F('btn-analyze');b.disabled=true;b.textContent='פרקטי מנתחת... (דקה–שלוש)';
-  const rep=F('report');rep.textContent='';const wait=el('div','card','פרקטי קוראת את תמונת המצב ומכינה המלצות... (דקה–שלוש)');rep.appendChild(wait);
+  BUSY=true;const b=F('btn-analyze');b.disabled=true;b.textContent='פרקטי מנתחת... (עד כ-5 דקות)';
+  const rep=F('report');rep.textContent='';const wait=el('div','card','פרקטי קוראת את תמונת המצב ומכינה המלצות, ואז בודקת שהכול ברור... (עד כ-5 דקות)');rep.appendChild(wait);
   rep.scrollIntoView({behavior:'smooth',block:'start'});
   try{
-    const txt=await complete(ADVISOR_SYSTEM,[{role:'user',content:pictureText(a)}],32000);
+    const txt=await complete(ADVISOR_SYSTEM,[{role:'user',content:pictureText(a)}],32000,true);
     const m=txt.match(/\{[\s\S]*\}/);if(!m)throw new Error('פרקטי לא החזירה מבנה תקין');
     STATE.report={at:new Date().toISOString(),cls:F('f-cls').value.trim(),age:F('f-age').value,doc:JSON.parse(m[0]),picture:pictureText(a)};
     STATE.chat=[];save();renderReport();renderChat();

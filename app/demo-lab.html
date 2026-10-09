@@ -116,7 +116,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 <p class="muted" style="margin-top:10px">מסע אל החוסן נוצר כמסע דמו (בלי מיילים, ולא נספר בדוחות ובמחקר). אפשר למחוק אותו בלוח המסעות.</p>
 
 <h2 id="list-h">התיקייה שלי: התוצרים שהופקו</h2>
-<div class="row" style="margin-bottom:10px"><button class="btn sm" id="rvAll" type="button">🧐 בדיקת הלקוחה לכל התוצרים</button><a href="examples.html" target="_blank" rel="noopener" class="btn ghost sm">📚 לספריית התוצרים לדוגמה ←</a><span class="muted">שם מופיע רק מה שסימנת "מוצג בספרייה".</span></div>
+<div class="row" style="margin-bottom:10px"><button class="btn sm" id="rvAll" type="button">🧐 בדיקת הלקוחה לכל התוצרים</button><button class="btn danger sm" id="clearAll" type="button">🗑 מחיקת כל התוצרים</button><a href="examples.html" target="_blank" rel="noopener" class="btn ghost sm">📚 לספריית התוצרים לדוגמה ←</a><span class="muted">שם מופיע רק מה שסימנת "מוצג בספרייה".</span></div>
 <div id="list"><p class="muted">טוען...</p></div>
 </div>
 
@@ -272,6 +272,13 @@ function showReview(d,r){
   F('rvDlg').showModal();
 }
 F('rvX').onclick=()=>F('rvDlg').close();
+F('clearAll').onclick=async()=>{
+  if(!ITEMS.length){alert('התיקייה כבר ריקה.');return;}
+  const pub=ITEMS.filter(d=>d.public).length;
+  if(!confirm('למחוק את כל '+ITEMS.length+' התוצרים בתיקייה?'+(pub?' '+pub+' מהם מוצגים עכשיו בספרייה, וגם הם יימחקו.':'')+' אי אפשר לשחזר.'))return;
+  try{const r=await api({action:'demoClear'});try{localStorage.removeItem(RV_KEY);localStorage.removeItem(ST_KEY);}catch(e){}await loadList();alert('נמחקו '+r.deleted+' תוצרים. אפשר להתחיל הפקה חדשה.');}
+  catch(e){alert('המחיקה לא הצליחה: '+e.message);}
+};
 F('rvAll').onclick=async()=>{
   const btn=F('rvAll');if(btn.disabled)return;btn.disabled=true;let n=0;
   for(const d of ITEMS){btn.textContent='🧐 בודקת '+(++n)+' מתוך '+ITEMS.length+'...';const c=[...document.querySelectorAll('#list .item')].find(x=>x.querySelector('b')&&x.querySelector('b').textContent===d.title&&x.querySelector('.rv-btn'));await review(d,c?c.querySelector('.rv-btn'):el('button'),false);}

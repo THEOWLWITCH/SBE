@@ -205,9 +205,9 @@ function richText(text){
   });
   return box;
 }
-async function complete(system,messages,maxTokens){
+async function complete(system,messages,maxTokens,review){
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
-  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens},480000)||'');
+  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},480000)||'');
 }
 
 
@@ -365,7 +365,7 @@ function msEditor(list, withDue){
 }
 async function draftReply(kind, ctx, target, b){
   b.disabled = true; const old = b.textContent; b.textContent = 'כותבת טיוטה...';
-  try { target.value = (await complete(J.replySystem(kind), [{ role: 'user', content: ctx }], 4000)).trim(); } catch(e) { alert('הטיוטה לא נכתבה: ' + e.message); }
+  try { target.value = (await complete(J.replySystem(kind), [{ role: 'user', content: ctx }], 4000, true)).trim(); } catch(e) { alert('הטיוטה לא נכתבה: ' + e.message); }
   b.disabled = false; b.textContent = old;
 }
 function reviewPlan(j){

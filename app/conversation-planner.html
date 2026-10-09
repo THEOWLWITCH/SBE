@@ -514,7 +514,7 @@ async function buildDigitalDraft(d) {
     // פעמים בפרויקט הזה: thinking:adaptive+effort:high צורכים חלק ניכר
     // מהתקציב על חשיבה פנימית לפני הטקסט הגלוי, ו-2000 נקטע בבדיקה חיה
     // מול השרת האמיתי ("שגיאת ספק: התוצר נקטע. max_tokens נמוך מדי").
-    const raw = await callAI(system, userText, 8000, 240000);
+    const raw = await callAI(system, userText, 8000, 240000, true);
     const m = raw.match(/\{[\s\S]*\}/);
     if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
     const parsed = JSON.parse(m[0]);
@@ -664,9 +664,9 @@ function setAIStatus(status){
   else chip.innerHTML = dot + "בודקת חיבור למודל...";
 }
 
-async function callAI(system, userText, maxTokens, timeoutMs) {
+async function callAI(system, userText, maxTokens, timeoutMs, review) { // review: תוצר, עובר דרך הסוכנת-הלקוחה (harness/lib/customer-pass.mjs)
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך
-  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200 }, timeoutMs || 60000);
+  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, customerReview: !!review }, timeoutMs || 60000);
 }
 
 // העצמה (05/10/2026, משוב המשתמשת): לומדים לנהל את השיחה בעצמנו. לא מציעים להפנות ליועצ/ת, לפסיכולוג/ית
@@ -928,7 +928,7 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
   if (reqKeys.some(k => !val(k))) {
     return show("נשארו שדות עיקריים למילוי", el("p",{},"יש למלא את \"מי אני בשיחה הזאת\" ו\"מי הצד השני\" לפני שאפשר לייצר הצעות."));
   }
-  e.target.disabled = true; e.target.textContent = "מייצר... (עד כ-3 דקות)";
+  e.target.disabled = true; e.target.textContent = "מייצר... (עד כ-5 דקות)";
   try {
     const out = await generateProposals(Object.fromEntries(reqKeys.map(k => [k, val(k)])));
     if (out._noModel) return show("ההצעות לא הופקו", el("p",{}, "אין כרגע חיבור למודל, ולכן לא הופקו הצעות. המערכת לא ממלאת את הטופס בתוכן קבוע במקום הצעה אמיתית. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים."));
@@ -1026,7 +1026,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
         "חוק הספציפיות: שם, מקום, משפט במרכאות. אין מניפולציה, מלכודת, התחכמות, סכום אפס או תקשורת אלימה — בשום הצעה.",
         "החזירי רק את טקסט התדריך, בלי JSON ובלי הקדמה.",
       ].join("\n\n");
-      const text = await callAI(system, "השדות:\n" + raw + (traitsNote ? "\n" + traitsNote : "") + "\n\nכתבי את התדריך.", 8000, 240000);
+      const text = await callAI(system, "השדות:\n" + raw + (traitsNote ? "\n" + traitsNote : "") + "\n\nכתבי את התדריך.", 8000, 240000, true);
       let t = String(text || "").trim();
       // תאימות: אם המודל בכל זאת החזיר JSON עם פסקאות
       const jm = t.match(/^\{[\s\S]*\}$/);

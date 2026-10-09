@@ -37,7 +37,7 @@
     issues: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['where', 'quote', 'problem', 'fix'],
       properties: { where: S, quote: S, problem: S, fix: S } } } } };
   function reviseNote(issues) {
-    return 'הלקוחה קראה את הגרסה הקודמת (previousDraft) ומצאה את הבעיות האלה (customerIssues). תקני בדיוק אותן, ושמרי את כל השאר כפי שהוא: אותו מבנה, אותו מוקד, אותם מקורות ואותם מזהים. ' +
+    return 'הלקוחה קראה את הגרסה הקודמת ומצאה את הבעיות האלה. תקני בדיוק אותן, ושמרי את כל השאר כפי שהוא: אותו מבנה, אותו תוכן, אותם מקורות ואותם מזהים. ' +
       (issues || []).map((x, i) => (i + 1) + '. ' + [x.where, x.problem, x.fix && ('הצעה: ' + x.fix)].filter(Boolean).join(' · ')).join(' ');
   }
   function textOf(x) {

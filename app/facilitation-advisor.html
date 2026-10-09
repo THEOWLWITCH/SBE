@@ -458,7 +458,7 @@ FIELDS.forEach(k=>{const clear=()=>{F(k).classList.remove('miss');save();};F(k).
 // ── מודל: ברקע, עם שאילת מצב (lib/ai-call.js) ──
 // ההודעות האחרונות — תמיד מתחילות בהודעה של המשתמש/ת (המודל לא מקבל שיחה שמתחילה בתשובה)
 function tail(list,n){let s=Math.max(0,list.length-n);while(s<list.length&&list[s].role!=='user')s++;return list.slice(s);}
-async function complete(system,messages,maxTokens){return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens},300000)||'');}
+async function complete(system,messages,maxTokens,review){return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},300000)||'');}
 // המתנה עם ציפייה ברורה (08/10/2026): כמה זמן זה לוקח בדרך כלל, כמה עבר, ופס התקדמות
 function waiting(node,text,exp){
   exp=exp||45;const t0=Date.now();node.textContent='';
@@ -482,12 +482,12 @@ F('btn-go').addEventListener('click',async()=>{
   err.hidden=true;save();
   BUSY=true;const b=F('btn-go');b.disabled=true;
   const g=F('guide');g.textContent='';const c=el('div','card');const msg=el('div');c.appendChild(msg);g.appendChild(c);
-  const stop=waiting(msg,'ננה קוראת את הקבוצה ומכינה את מדריך ההנחיה.',100);
+  const stop=waiting(msg,'ננה קוראת את הקבוצה, מכינה את מדריך ההנחיה ובודקת שהוא ברור.',180);
   g.scrollIntoView({behavior:'smooth',block:'start'});
   const input=N.inputText(form());
   try{
     const sys=N.reportSystem(KB,RULE);
-    let txt=await complete(sys,[{role:'user',content:input}],16000),doc;
+    let txt=await complete(sys,[{role:'user',content:input}],16000,true),doc;
     try{doc=N.normalize(N.parse(txt),KEYS);}catch(e){doc=null;}
     if(!N.valid(doc)){ // ניסיון שני אחד: תיקון המבנה
       txt=await complete(sys,[{role:'user',content:input},{role:'assistant',content:txt.slice(0,30000)},{role:'user',content:'המבנה לא היה JSON תקין ומלא. החזירי את אותו מדריך כ-JSON תקין בלבד, במבנה שהוגדר, עם 5–7 שלבים ב-arc.'}],16000);
@@ -686,8 +686,8 @@ function renderAfter(){const o=F('af-out');o.textContent='';const A=STATE.after;
   o.appendChild(b);}
 F('af-go').addEventListener('click',async()=>{
   const t=F('af-in').value.trim();if(!t||BUSY)return;
-  BUSY=true;F('af-go').disabled=true;const o=F('af-out');o.textContent='';const th=el('div','muted');o.appendChild(th);const stop=waiting(th,'ננה קוראת ומכינה משוב.',40);
-  try{const ans=await complete(N.debriefSystem(inputNow(),guideText(),KB,RULE),[{role:'user',content:t}],5000);STATE.after={text:t,answer:ans,at:new Date().toISOString()};save();renderAfter();}
+  BUSY=true;F('af-go').disabled=true;const o=F('af-out');o.textContent='';const th=el('div','muted');o.appendChild(th);const stop=waiting(th,'ננה קוראת ומכינה משוב.',80);
+  try{const ans=await complete(N.debriefSystem(inputNow(),guideText(),KB,RULE),[{role:'user',content:t}],5000,true);STATE.after={text:t,answer:ans,at:new Date().toISOString()};save();renderAfter();}
   catch(e){o.textContent='';o.appendChild(el('p','err','המשוב לא הגיע ('+e.message+'). מה שכתבת נשמר: אפשר לנסות שוב.'));}
   finally{stop();BUSY=false;F('af-go').disabled=false;}
 });
