@@ -6,6 +6,7 @@
 <script src="lib/ai-status.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/product-doc.js"></script>
+<script src="lib/ref-collect.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -2555,7 +2556,8 @@ function docHeader(kind, title){
 <div class="credit">${SBE_CREDIT_HTML} · ${esc(fmtDate(today()))}</div>`;
 }
 function smartSentence(s){ return smartLines(s.smart); }
-function seqDocHTML(narr){
+// attach: המקורות בתוך המסמך (09/10/2026: "רשימת המקורות לא תהיה פתוחה"). בלי attach הם רק בכפתור "📚 מקורות" בחלון התוצר.
+function seqDocHTML(narr, attach){
   const title = str(seq.topic) || "תכנון רצף מפגשים";
   let h = docHeader("תכנון רצף מפגשים", title);
   if (narr && narr.paragraphs && narr.paragraphs.length) {
@@ -2597,7 +2599,7 @@ function seqDocHTML(narr){
         h += `<table class="flow"><thead><tr><th>תיאור הפעילות</th>${hasRes ? "<th>עזרים ומשאבים</th>" : ""}</tr></thead><tbody>${rows.map(([t, m, c]) =>
           `<tr class="ph"><th colspan="${hasRes ? 2 : 1}">${t}${str(m) ? " · " + esc(str(m)) : ""}</th></tr><tr><td>${c}</td>${hasRes ? `<td>${t === "פעילות מרכזית" ? nl(s.resources) : "—"}</td>` : ""}</tr>`).join("")}</tbody></table>`; }
       const ss = narr && narr.sessionSources ? narr.sessionSources[i + 1] : null;
-      const end = [["תוצר המפגש והערכתו", str(s.product) ? nl(s.product) : ""], ["משאבים ועזרים", str(s.resources) && !rows.some(r => r[0] === "פעילות מרכזית") ? nl(s.resources) : ""], ["מקורות להרחבה", ss && ss.length ? sourceList(ss) : ""]].filter(x => x[1]);
+      const end = [["תוצר המפגש והערכתו", str(s.product) ? nl(s.product) : ""], ["משאבים ועזרים", str(s.resources) && !rows.some(r => r[0] === "פעילות מרכזית") ? nl(s.resources) : ""], ["מקורות להרחבה", attach && ss && ss.length ? sourceList(ss) : ""]].filter(x => x[1]);
       if (end.length) h += `<table class="end"><thead><tr>${end.map(x => `<th>${x[0]}</th>`).join("")}</tr></thead><tbody><tr>${end.map(x => `<td>${x[1]}</td>`).join("")}</tr></tbody></table>`;
       h += `</section>`;
     });
@@ -2606,7 +2608,7 @@ function seqDocHTML(narr){
   const overall = narr && narr.overallSources ? narr.overallSources : [];
   const libLinks = [...seq.approaches, str(seq.domain)].filter(Boolean)
     .map(q => `<a href="${LIB_URL}?q=${encodeURIComponent(q)}">${esc(q)}</a>`);
-  if (overall.length || libLinks.length) {
+  if (attach && (overall.length || libLinks.length)) {
     h += `<h2>מקורות להרחבה לרצף כולו</h2>`;
     if (overall.length) h += sourceList(overall);
     if (libLinks.length) h += `<p class="note">חיפוש נוסף בספריית המקורות המאומתת של Begood: ${libLinks.join(" · ")}</p>`;
@@ -2617,6 +2619,22 @@ function seqDocHTML(narr){
 }
 // המסמך נפתח גם כקובץ שמור, לכן קישור מלא ולא יחסי
 const LIB_URL = new URL("sources-library.html", location.href).href;
+// המקורות של הרצף במסך: סעיף סגור עם "צירוף המקורות לקובץ" (SBE_REFS.fold)
+function seqRefsPanel(narr, onAttach){
+  if (!window.SBE_REFS || !narr) return null;
+  const parts = [], per = narr.sessionSources || {};
+  Object.keys(per).sort((a, b) => a - b).forEach(n => { if (per[n] && per[n].length) parts.push(["מפגש " + n, per[n]]); });
+  if (narr.overallSources && narr.overallSources.length) parts.push(["לרצף כולו", narr.overallSources]);
+  const count = parts.reduce((t, x) => t + x[1].length, 0);
+  if (!count) return null;
+  const sec = el("section");
+  sec.append(el("h3", {}, "מקורות להרחבה"));
+  parts.forEach(([t, arr]) => { const box = el("div"); box.innerHTML = "<b>" + esc(t) + "</b>" + sourceList(arr); sec.append(box); });
+  sec.append(el("p", { class:"savenote" }, "המקורות נבחרו מתוך ספריית המקורות המאומתת בלבד."));
+  const f = SBE_REFS.fold(sec, count);
+  f.querySelector(".refs-attach").addEventListener("click", () => onAttach(f.classList.contains("attach")));
+  return f;
+}
 function sourceList(arr){
   return `<ul>${arr.map(x => {
     const href = x.linkOk !== false && x.url ? x.url : x.scholar;
@@ -3031,12 +3049,14 @@ document.getElementById("bSeqBuild").addEventListener("click", async (e) => {
   catch (err) { console.warn("פתיחה נרטיבית לא זמינה:", err.message); setAIStatus("mock"); }
   finally { done(); }
   if (!narr) return seqDialog("הפקת התוצר", el("p", {}, NO_MODEL));
-  const html = seqDocHTML(narr);
+  let html = seqDocHTML(narr, false);
   const body = el("div");
   if (!narr) body.append(mockNote("אין חיבור למודל כרגע. המסמך נבנה מהשדות כפי שמולאו, בלי פסקאות הפתיחה (״על הרצף״) שהמודל כותב."));
   const fr = frameOf(html);
   body.append(fr, el("p", { class:"savenote" },
     "אפשר לסגור, לערוך כל שדה ולהפיק מחדש. התוצר כאן הוא תמיד הגרסה האחרונה. מרוצה? שמרי, הדפיסי או העבירי."));
+  const refs = seqRefsPanel(narr, on => { html = seqDocHTML(narr, on); fr.srcdoc = html; });
+  if (refs) body.append(refs);
   const sysBtn = btn("שמירה במערכת", () => {
     try {
       const list = JSON.parse(localStorage.getItem(SAVED_KEY) || "[]");
@@ -3056,7 +3076,7 @@ document.getElementById("bSeqBuild").addEventListener("click", async (e) => {
   seqDialog("תוצר: תכנון רצף מפגשים", body, [
     btn("הדפסה / שמירה כ-PDF", () => printFrame(fr), "primary"),
     sysBtn,
-    btn("שמירה למחשב", () => downloadHTML(fname, html)),
+    btn("שמירה למחשב", () => downloadHTML(fname, html)), // html מתעדכן כשבוחרים לצרף מקורות
     mailBtn,
   ], true);
 });

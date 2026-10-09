@@ -257,6 +257,8 @@ h1{font-size:26px}.hd img{height:44px}
   function print({ title, subtitle, kind, node, nodes, inline = false, landscape = false, pocket = false }) {
     const parts = (nodes || [node]).filter(Boolean).map((n) => {
       const c = n.cloneNode(true);
+      if (window.SBE_REFS && SBE_REFS.forPrint) SBE_REFS.forPrint(c); // מקורות: רק כשבחרו "צירוף המקורות לקובץ"
+      else c.querySelectorAll(".sbe-refs:not(.attach)").forEach((x) => x.remove());
       c.querySelectorAll("button,.sbe-edit-hint,.no-print,style,script").forEach((x) => x.remove());
       c.querySelectorAll("table.rtable").forEach((t) => t.classList.add("kit-table")); // טבלאות SBE_TABLE — אותו עיצוב בהדפסה
       [c, ...c.querySelectorAll("[contenteditable]")].forEach((x) => { x.removeAttribute("contenteditable"); x.removeAttribute("spellcheck"); x.classList.remove("sbe-edit"); });

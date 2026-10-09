@@ -7,6 +7,7 @@
 <script src="lib/ai-status.js"></script>
 <script src="lib/report-table.js"></script>
 <script src="lib/product-doc.js"></script>
+<script src="lib/ref-collect.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -961,7 +962,8 @@ function renderFeedback(fb, mock) {
       ul.append(li);
     });
     sec.append(ul);
-    body.append(sec);
+    // סגור כברירת מחדל, עם בחירה לצרף לקובץ (09/10/2026)
+    body.append(window.SBE_REFS ? SBE_REFS.fold(sec, fb.sources.length) : sec);
   }
   if (!mock) body.append(aiNoteEl());
   $("bPrintFb").hidden = false;
@@ -1057,7 +1059,7 @@ $("bSaveTxt").addEventListener("click", () => {
     (c.improvements||[]).forEach(s => lines.push("  - " + s));
     lines.push("");
   });
-  if (fb.sources && fb.sources.length) {
+  if (fb.sources && fb.sources.length && document.querySelector("#dlgB .sbe-refs.attach")) { // רק כשבחרו לצרף
     lines.push("מקורות שהוזכרו (מספריית המקורות המאומתת):");
     fb.sources.forEach(x => lines.push("  • " + x.citation + (x.url ? " " + x.url : "")));
   }
