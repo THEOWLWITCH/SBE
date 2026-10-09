@@ -1,0 +1,416 @@
+{
+  "kind": "planner-main-integration-check",
+  "status": "complete",
+  "checkedAtUtc": "2026-10-08T16:49:41.5950907Z",
+  "reviewer": "/root/planner_fix_check",
+  "implementationHead": "7c9b2cbbf6a41c6fc47a9a2a4daea59855eeacfd",
+  "mainHead": "8cc4ffa55b3b21e01e24fc8f6809fde8c70fec7e",
+  "repositoryRoot": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\begood",
+  "scope": "Targeted integration compatibility and regression checks for the approved main merge, preserving planner ownership, edited products, cancellation and private proposals. This is not a new full formal review.",
+  "paths": [
+    {
+      "path": "CLAUDE.md",
+      "gitBlobIdNormalized": "4e21318fd15fcea88936fe6e55e6621015fdec2c",
+      "workingTreeBlobIdNormalized": "4e21318fd15fcea88936fe6e55e6621015fdec2c",
+      "matchesImplementationHead": true,
+      "sha256Raw": "2c6c2aa8a78222fdc4d58da144d8a3a4d54849f339a8f488eb5388c73bb8b7c5"
+    },
+    {
+      "path": "app/activity-planner.html",
+      "gitBlobIdNormalized": "ab35a171b0c76693ca671ce39aa15719d4aa1075",
+      "workingTreeBlobIdNormalized": "ab35a171b0c76693ca671ce39aa15719d4aa1075",
+      "matchesImplementationHead": true,
+      "sha256Raw": "514c1ec9b677deb2b3a775043da7afb8659b4c67f6d35109528426e0f19b3c68"
+    },
+    {
+      "path": "app/conversation-planner.html",
+      "gitBlobIdNormalized": "9dcbc98c141329709a57adc7298765bbe78cfe33",
+      "workingTreeBlobIdNormalized": "9dcbc98c141329709a57adc7298765bbe78cfe33",
+      "matchesImplementationHead": true,
+      "sha256Raw": "14078fd18497726e667b34f3c6d0a5c365fba76e6ae088e35c2e84a9485eba85"
+    },
+    {
+      "path": "app/lib/narrative-build.js",
+      "gitBlobIdNormalized": "c151e98e8ca76835f73e37651fc78bfac85e6baa",
+      "workingTreeBlobIdNormalized": "c151e98e8ca76835f73e37651fc78bfac85e6baa",
+      "matchesImplementationHead": true,
+      "sha256Raw": "8d6c83a33368991972fd257be50f658c958c1d617b944baa7a3872fdd9c923a1"
+    },
+    {
+      "path": "app/journeys.html",
+      "gitBlobIdNormalized": "c106e0e7f717c51ff71a2788c37e8ef260d1baf5",
+      "workingTreeBlobIdNormalized": "c106e0e7f717c51ff71a2788c37e8ef260d1baf5",
+      "matchesImplementationHead": true,
+      "sha256Raw": "46230516887804e3bd39dd73855003b6fca163d056d8a60a102253e04f2f7a67"
+    },
+    {
+      "path": "app/lib/planner-continuity.js",
+      "gitBlobIdNormalized": "9731717b4b0c22b4a9f169821647da3a8113431d",
+      "workingTreeBlobIdNormalized": "9731717b4b0c22b4a9f169821647da3a8113431d",
+      "matchesImplementationHead": true,
+      "sha256Raw": "4416fc9cf8ce675ff26c08e2be356d48037441838e534c6f6ae784ea5ee630f0"
+    },
+    {
+      "path": "app/lib/ai-call.js",
+      "gitBlobIdNormalized": "b7eff88b344038dfb11ef593f20ec9daa5681ea3",
+      "workingTreeBlobIdNormalized": "b7eff88b344038dfb11ef593f20ec9daa5681ea3",
+      "matchesImplementationHead": true,
+      "sha256Raw": "86f790dc6743d0057539b8d90bb6a4cd9d4c70cd1e10232e48c53568186a32b6"
+    },
+    {
+      "path": "app/lib/product-doc.js",
+      "gitBlobIdNormalized": "c4b1445579edf71492676152bd07fd5a409c4c60",
+      "workingTreeBlobIdNormalized": "c4b1445579edf71492676152bd07fd5a409c4c60",
+      "matchesImplementationHead": true,
+      "sha256Raw": "a54e578354cf0e8c37fedc1988ee451a7186a4eec5d62de900fae05515780d2c"
+    },
+    {
+      "path": "app/lib/invite-language.js",
+      "gitBlobIdNormalized": "1a0b6521a810f56400e53dacba7d6e7192a8738f",
+      "workingTreeBlobIdNormalized": "1a0b6521a810f56400e53dacba7d6e7192a8738f",
+      "matchesImplementationHead": true,
+      "sha256Raw": "80b5147af4681a6b9f64dde5aee756ebd8dc9f3fa9c4c009edf316e0ffbe563e"
+    },
+    {
+      "path": "app/lib/open-select.js",
+      "gitBlobIdNormalized": "7c71ef003846685df1afdfa5f1e07dce638bd1f6",
+      "workingTreeBlobIdNormalized": "7c71ef003846685df1afdfa5f1e07dce638bd1f6",
+      "matchesImplementationHead": true,
+      "sha256Raw": "d11c911d7bbaa694ed5acb87ccf60bb867bd93076db6e2bab32ccdfc09ef89fc"
+    },
+    {
+      "path": "app/lib/ref-collect.js",
+      "gitBlobIdNormalized": "c585f63f90ba18a2690690333dfe1fa507a93a94",
+      "workingTreeBlobIdNormalized": "c585f63f90ba18a2690690333dfe1fa507a93a94",
+      "matchesImplementationHead": true,
+      "sha256Raw": "5fe938427d558fb606a90bf0a4c9f47a6b7cd4c8236e415d2051bdf3b711fbc0"
+    },
+    {
+      "path": "app/about.html",
+      "gitBlobIdNormalized": "6348ee94236e3762512476bd0cc8110339301753",
+      "workingTreeBlobIdNormalized": "6348ee94236e3762512476bd0cc8110339301753",
+      "matchesImplementationHead": true,
+      "sha256Raw": "34788a23cf6cc702c4c22c6c7b6ba224f9653cf753678efe5ffcfc55a1971ff5"
+    },
+    {
+      "path": "app/facilitation-advisor.html",
+      "gitBlobIdNormalized": "df2f7b6055c56c4c39d0c5b0764ec356d786d676",
+      "workingTreeBlobIdNormalized": "df2f7b6055c56c4c39d0c5b0764ec356d786d676",
+      "matchesImplementationHead": true,
+      "sha256Raw": "83d3d2ccdf4054699a44d9651eace0a04a20a02a241e9f8f1f75e15021caa049"
+    },
+    {
+      "path": "harness/lib/providers.mjs",
+      "gitBlobIdNormalized": "053dee25d849131c46f6cc8cb233f67da0f0450c",
+      "workingTreeBlobIdNormalized": "053dee25d849131c46f6cc8cb233f67da0f0450c",
+      "matchesImplementationHead": true,
+      "sha256Raw": "0aa5fad2e01ae9c16c9fb06ec66786892324c0848f6b8f41929d4765cc84eaef"
+    },
+    {
+      "path": "harness/lib/studio.mjs",
+      "gitBlobIdNormalized": "64245272bd03677b36713d08ef9a9b89dd556db4",
+      "workingTreeBlobIdNormalized": "64245272bd03677b36713d08ef9a9b89dd556db4",
+      "matchesImplementationHead": true,
+      "sha256Raw": "cd854941ffe08e986f6dd00b5f63ede93178eb083e6eb332a2336bdfa594323a"
+    },
+    {
+      "path": "harness/lib/agent-contract.mjs",
+      "gitBlobIdNormalized": "b95558ffd0f24559a20a29aa1f22088764ee3f64",
+      "workingTreeBlobIdNormalized": "b95558ffd0f24559a20a29aa1f22088764ee3f64",
+      "matchesImplementationHead": true,
+      "sha256Raw": "1cfba2606842a95b35c4a9c60c83a02e6c314a8fee381d1fcae5541a3c2f2fc8"
+    },
+    {
+      "path": "harness/lib/agent-orchestrator.mjs",
+      "gitBlobIdNormalized": "9ebf64c1408ab8a050353aa70a58334b60926bbc",
+      "workingTreeBlobIdNormalized": "9ebf64c1408ab8a050353aa70a58334b60926bbc",
+      "matchesImplementationHead": true,
+      "sha256Raw": "cc02f291064865314904d9f8c9602293e16b0d177b3d2af7bb8d27dee0c09607"
+    },
+    {
+      "path": "harness/lib/token-budget.mjs",
+      "gitBlobIdNormalized": "aaa12049c65425da1b3ab97e5c01b0c4f6d6ff36",
+      "workingTreeBlobIdNormalized": "aaa12049c65425da1b3ab97e5c01b0c4f6d6ff36",
+      "matchesImplementationHead": true,
+      "sha256Raw": "97b867d553e7fcb1cf8e15d5c716f962d9b854cf517eb6f0555c78ae258c8da3"
+    },
+    {
+      "path": "harness/practice-server.mjs",
+      "gitBlobIdNormalized": "b8d8c47f43e4ff99196b55a548aaa3e5757d02ab",
+      "workingTreeBlobIdNormalized": "b8d8c47f43e4ff99196b55a548aaa3e5757d02ab",
+      "matchesImplementationHead": true,
+      "sha256Raw": "12e08691eabb2a3eff27e6e34ca388eafc02367b67362ecceb4a0d53fa35a422"
+    },
+    {
+      "path": "harness/tests/planner-continuity.test.mjs",
+      "gitBlobIdNormalized": "6a70c21f2e21f22c9d1d5cd9749c860e97cdc522",
+      "workingTreeBlobIdNormalized": "6a70c21f2e21f22c9d1d5cd9749c860e97cdc522",
+      "matchesImplementationHead": true,
+      "sha256Raw": "e063dc7edff65d668c07c319696d4a0db78555a3169a876feb47ea9dc98fbd58"
+    },
+    {
+      "path": "harness/tests/ai-call-cancellation.test.mjs",
+      "gitBlobIdNormalized": "ecff8257cd9bde8b7e5f5099f4f98620a797a16d",
+      "workingTreeBlobIdNormalized": "ecff8257cd9bde8b7e5f5099f4f98620a797a16d",
+      "matchesImplementationHead": true,
+      "sha256Raw": "65447ff37bab1ae4a3ea03169921989a6d547601288696351a9ebdb6c9d64e91"
+    },
+    {
+      "path": "harness/tests/activity-planner-continuity.test.mjs",
+      "gitBlobIdNormalized": "040a29f92ad597de564097bcc662bb70648cf02d",
+      "workingTreeBlobIdNormalized": "040a29f92ad597de564097bcc662bb70648cf02d",
+      "matchesImplementationHead": true,
+      "sha256Raw": "b1474db6fb18d1c4e5829b154d0399ec1d59bfe48df5ee5d444051150f686246"
+    },
+    {
+      "path": "harness/tests/conversation-planner-continuity.test.mjs",
+      "gitBlobIdNormalized": "2808d08dac688d511df2a0871f1a598fb24b3af4",
+      "workingTreeBlobIdNormalized": "2808d08dac688d511df2a0871f1a598fb24b3af4",
+      "matchesImplementationHead": true,
+      "sha256Raw": "6871de5076f2d24cb3cc227a665e05afc767d24469869c2b52323331d36c1de6"
+    },
+    {
+      "path": "harness/tests/provider-gates.test.mjs",
+      "gitBlobIdNormalized": "dd6360ba9a68c84fd36a805a51df4fb1dc2e9e13",
+      "workingTreeBlobIdNormalized": "dd6360ba9a68c84fd36a805a51df4fb1dc2e9e13",
+      "matchesImplementationHead": true,
+      "sha256Raw": "2ecb33500d553fa253964bbea6b8a4970b9bb1c7a6a3dcd47d34d00ee2fbdff6"
+    },
+    {
+      "path": "harness/tests/agent-orchestrator.test.mjs",
+      "gitBlobIdNormalized": "5ac7077fcd09816bd940ac87f81fefcba679afb7",
+      "workingTreeBlobIdNormalized": "5ac7077fcd09816bd940ac87f81fefcba679afb7",
+      "matchesImplementationHead": true,
+      "sha256Raw": "abece5dd577f8d49e4cdcac4c4ddc5dce543212ce33d91fb89c091befc979dce"
+    },
+    {
+      "path": "harness/tests/token-budget.test.mjs",
+      "gitBlobIdNormalized": "e9983f1b723fa15ff4209809d3c3605f13faa302",
+      "workingTreeBlobIdNormalized": "e9983f1b723fa15ff4209809d3c3605f13faa302",
+      "matchesImplementationHead": true,
+      "sha256Raw": "ea89f62709616fb7022a1a350e7bce8b3950a6aa0f9f01065f8b094cf5de648a"
+    },
+    {
+      "path": "harness/tests/server-transport.test.mjs",
+      "gitBlobIdNormalized": "ccb532ac4ab1d6ebb03a8cac76f82c444a01577d",
+      "workingTreeBlobIdNormalized": "ccb532ac4ab1d6ebb03a8cac76f82c444a01577d",
+      "matchesImplementationHead": true,
+      "sha256Raw": "0ffeec235a3bf3e0ba633925e029430123606917ba8cd3e32ec369b07beae1c8"
+    },
+    {
+      "path": "docs/agent-team.md",
+      "gitBlobIdNormalized": "52a2fa67408be40cfccac29669b64334e1f125e2",
+      "workingTreeBlobIdNormalized": "52a2fa67408be40cfccac29669b64334e1f125e2",
+      "matchesImplementationHead": true,
+      "sha256Raw": "32ddc0ef4d621c6ee3227188ac8f52f589ca7088975d19f8b280e4a0e5e81577"
+    },
+    {
+      "path": "docs/planner-continuity.md",
+      "gitBlobIdNormalized": "ad8e67e4baafc6faeeb5cf128415dd9f28493f6d",
+      "workingTreeBlobIdNormalized": "ad8e67e4baafc6faeeb5cf128415dd9f28493f6d",
+      "matchesImplementationHead": true,
+      "sha256Raw": "d9699a3b05d65741c78e1a21bd9c6c1b0884851e7a2cf96f4b5a50457d3e3733"
+    }
+  ],
+  "authoredPaths": [
+    "app/conversation-planner.html",
+    "harness/tests/conversation-planner-continuity.test.mjs",
+    "app/lib/invite-language.js",
+    "harness/tests/provider-gates.test.mjs",
+    "harness/lib/agent-orchestrator.mjs",
+    "harness/tests/agent-orchestrator.test.mjs",
+    "harness/lib/token-budget.mjs",
+    "harness/tests/token-budget.test.mjs",
+    "harness/practice-server.mjs",
+    "harness/tests/server-transport.test.mjs"
+  ],
+  "authorship": {
+    "note": "The reviewer authored the listed changes with explicit root authorization; their inspection and execution are self-validation, not independent review of those edits. Root independently inspected and accepted their semantics. Independent peer probes and root browser checks are attributed separately.",
+    "changes": [
+      "Resolved conversation planner conflicts preserving source/owner/work fences and actual edited private snapshots; adopted main wording and open-select, closed its oral/digital dispatch enum, and exercised both routes.",
+      "Changed policy deduplication from bare titles to full canonical rule bodies; preserved all four rules and tested both synthetic provider transports and repeated application.",
+      "Added bounded reservation-aware inner scheduling without hidden retries; retained every hard cap and stopped queued dispatch on cancellation/deadlines, including abort during an ownership assertion.",
+      "Conservatively accounted incomplete/invalid usage; shared one pure charge helper between the inner scheduler and outer server boundary.",
+      "Reconciled complete successful single-attempt outer usage while retaining full unknown/failed/multi-attempt reservations; added an authenticated large-guide HTTP regression. Studio, quota reservation and job ownership were preserved."
+    ]
+  },
+  "independentChecks": [
+    {
+      "id": "planner-owner-cancel-private",
+      "status": "passed",
+      "authorship": "Independent inspection of root-authored planner/helper integration; conversation resolution itself is authored and independently inspected by root",
+      "evidence": "Planner-continuity and ai-call production blobs still match the original targeted correction; root-resolved activity/narrative/journeys retain current-source, original-owner, cancelled-work and actual edited product guards. Startup/cancel use copied submitting authorization; polling still uses live authorization."
+    },
+    {
+      "id": "approved-main-preservation",
+      "status": "passed",
+      "authorship": "Read-only comparison",
+      "evidence": "The five checked shared/about/Nana paths exactly preserve approved main blobs. CLAUDE retains the approved plain-language, source-at-end and closed-code-selector requirements, adding only the pre-existing quality handoff paragraph.",
+      "exactMainPaths": [
+        {
+          "path": "app/lib/product-doc.js",
+          "mainBlobId": "c4b1445579edf71492676152bd07fd5a409c4c60",
+          "exactMainBlobPreserved": true
+        },
+        {
+          "path": "app/lib/open-select.js",
+          "mainBlobId": "7c71ef003846685df1afdfa5f1e07dce638bd1f6",
+          "exactMainBlobPreserved": true
+        },
+        {
+          "path": "app/lib/ref-collect.js",
+          "mainBlobId": "c585f63f90ba18a2690690333dfe1fa507a93a94",
+          "exactMainBlobPreserved": true
+        },
+        {
+          "path": "app/about.html",
+          "mainBlobId": "6348ee94236e3762512476bd0cc8110339301753",
+          "exactMainBlobPreserved": true
+        },
+        {
+          "path": "app/facilitation-advisor.html",
+          "mainBlobId": "df2f7b6055c56c4c39d0c5b0764ec356d786d676",
+          "exactMainBlobPreserved": true
+        }
+      ]
+    },
+    {
+      "id": "shared-print-api",
+      "status": "passed",
+      "authorship": "Read-only API compatibility inspection",
+      "evidence": "Product-doc keeps node/nodes/title/subtitle inputs and clones/sanitizes print nodes; new heading/pocket options do not alter live edited documents. Planner save/reopen/print use actual structured edited copies."
+    },
+    {
+      "id": "public-policy-server-path",
+      "status": "passed",
+      "authorship": "Read-only provider/Studio call-path inspection; policy fix and transport tests authored",
+      "evidence": "The server adapters and Studio dynamically use the canonical four-rule INVITE.apply policy. Bare rule titles no longer suppress complete canonical policy. No production provider transport or Studio fetch-budget changes were made."
+    },
+    {
+      "id": "outer-budget-independent-negative",
+      "status": "confirmed-and-resolved",
+      "authorship": "Independent peer reproduction before the authored correction; root independently inspected the ready wrapper/helper",
+      "evidence": "Peer loopback artifact at a3ded7f dispatched only pedagogy/resilience and ended error, demonstrating that permanent outer conservative reservations blocked queued safety/synthesis. The final-HEAD authored loopback regression dispatches exactly four maxAttempts=1 calls and completes at measured 36160 under the unchanged 100000 job cap.",
+      "historicalProbe": "outputs/quality-evidence/planner-integration-outer-budget-probe.json"
+    },
+    {
+      "id": "partial-usage-independent-negative",
+      "status": "confirmed-and-resolved",
+      "authorship": "Independent peer reproduction; charge/scheduling correction authored",
+      "evidence": "Peer measured a pre-correction path charging only outputTokens=40 when input/total were null. The final helper retains the full reservation for partial or unknown counts, rejects invalid/inconsistent counts and never discounts retry-capable final-attempt measurements.",
+      "historicalProbe": "outputs/quality-evidence/planner-integration-partial-usage-probe.json"
+    }
+  ],
+  "additionalIntegrationFindings": {
+    "separateFromFrozenFour": true,
+    "resolved": [
+      "Open-select exposed unsupported custom conversation dispatch values.",
+      "Bare policy titles could suppress canonical public-language rules.",
+      "Immediate reservation rejection dropped a reviewer after canonical policy enlarged parallel prompts.",
+      "Partial usage could undercount conservative spend.",
+      "The authenticated outer boundary permanently reserved successful single-attempt work, blocking the deferred inner review."
+    ]
+  },
+  "testExecution": {
+    "ownFinalHeadRun": {
+      "command": "node --preserve-symlinks --preserve-symlinks-main --test harness/tests/token-budget.test.mjs harness/tests/agent-orchestrator.test.mjs harness/tests/server-transport.test.mjs",
+      "headBefore": "7c9b2cbbf6a41c6fc47a9a2a4daea59855eeacfd",
+      "headAfter": "7c9b2cbbf6a41c6fc47a9a2a4daea59855eeacfd",
+      "cleanBefore": true,
+      "cleanAfter": true,
+      "exitCode": 0,
+      "tests": 34,
+      "passed": 34,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1072.9273,
+      "toolChunk": "6977bb",
+      "output": "outputs/quality-evidence/planner-integration-targeted-tests.txt",
+      "outputSha256": "1e62bd522f7849dc8fbe4d648b19f0508fdd7c5f0f964c2289e33deed1a4062e",
+      "classification": "Authored-change self-validation at the final clean code HEAD"
+    },
+    "authoredPreFixRed": {
+      "test": "The authenticated artifact boundary reconciles single-attempt usage before admitting queued reviewers",
+      "toolChunk": "1e7ae7",
+      "exitCode": 1,
+      "failed": 1,
+      "skipped": 7,
+      "observed": "Terminal error instead of done on unchanged a3ded7f production",
+      "scope": "Test added before production correction"
+    },
+    "authoredPostFixRun": {
+      "toolChunk": "7991d8",
+      "exitCode": 0,
+      "tests": 34,
+      "passed": 34,
+      "failed": 0,
+      "durationMs": 1040.6935,
+      "scope": "Working delta subsequently committed at the implementation HEAD; final HEAD was separately rerun"
+    },
+    "earlierOwnedIntegrationRuns": [
+      {
+        "area": "conversation closure/routing",
+        "tests": 9,
+        "passed": 9,
+        "exitCode": 0,
+        "chunks": [
+          "95466b",
+          "dde5bd"
+        ]
+      },
+      {
+        "area": "canonical policy/provider transports",
+        "tests": 14,
+        "passed": 14,
+        "exitCode": 0,
+        "chunk": "0f6e27"
+      }
+    ],
+    "rootExecutionObservedOutputs": {
+      "attribution": "Root executed; this reviewer read complete TAP totals from these artifacts. Exact-head/exit attestation belongs to the root evidence.",
+      "full": {
+        "output": "outputs/quality-evidence/planner-continuity-node-tests.txt",
+        "tests": 205,
+        "passed": 205,
+        "failed": 0,
+        "durationMs": 9286.5297
+      },
+      "focused": {
+        "output": "outputs/quality-evidence/planner-continuity-focused-tests.txt",
+        "tests": 31,
+        "passed": 31,
+        "failed": 0,
+        "durationMs": 8513.7333
+      }
+    }
+  },
+  "browserEvidence": {
+    "executor": "/root",
+    "headAtExercise": "307298ab6fbc184ef30ce7fede935d002688d3b3",
+    "classification": "Root browser attestation, not this reviewer execution; code after this merge changed policy/scheduling/server/tests/docs, not planner page behavior",
+    "observed": [
+      "Reopened sequence source links 3 and bdi nodes 4.",
+      "Saved actual edited v3, reloaded/reopened, and inspected v1/v2 history and mobile 350/375 widths, then saved v4.",
+      "Conversation output selector retained two closed options, reopened full/short v2 products and checked mobile."
+    ]
+  },
+  "historicalReceipt": {
+    "path": "outputs/quality-evidence/planner-fix-check.json",
+    "sha256": "4392c950b2b037b2180273aa4b83268baaa8538d32ab5a0d66347cf520614eb0",
+    "preservedUntouched": true,
+    "originalReviewHead": "bafa1cc9a8c550b6451744a45a22a9aa75e760bf",
+    "note": "The frozen original review has four confirmed findings. The historical receipt checks their earlier fixes; this integration receipt neither relabels that snapshot nor replaces its formal verdict."
+  },
+  "outcome": {
+    "openConcreteDefects": 0,
+    "scope": "No remaining concrete defect observed in this targeted integration scope; the original and additional findings described here are resolved."
+  },
+  "limits": [
+    "Authored conversation, policy and budget edits are not represented as independent self-review. Root and independent peer evidence is explicitly attributed.",
+    "Only listed integration paths and scenarios were checked; this is not certification of every change across the approved main merge.",
+    "All model responses in executed tests were synthetic; HTTP used local loopback. No paid/live model calls, production data, deployment or cross-model review were performed.",
+    "Native physical printing/download dialog and unavailable Web Locks behavior are limited by the existing browser/test scope; Web Locks deliberately fails closed.",
+    "Private planner saves remain local owner-bound drafts. Server artifact review remains a separate approval/version/practice contract; no automatic publication or human approval bypass.",
+    "Operational rollout, database migration, live-provider evaluation, educational validation and deletion policy remain documented root handoff work."
+  ]
+}

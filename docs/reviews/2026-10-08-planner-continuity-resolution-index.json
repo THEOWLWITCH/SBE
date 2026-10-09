@@ -4,7 +4,7 @@
   "reviewRunId": "20261008-planner-bafa1cc9",
   "reviewedSnapshotHead": "bafa1cc9a8c550b6451744a45a22a9aa75e760bf",
   "baseHead": "66c56e3e3a14300b2112585d32cfb8cc87ac67d7",
-  "verifiedImplementationHead": "e2f6bd9412531e8d3ec32a53767829903de8d546",
+  "verifiedImplementationHead": "7c9b2cbbf6a41c6fc47a9a2a4daea59855eeacfd",
   "outcome": {
     "openConcreteDefects": 0,
     "concreteRegressionsFound": 0
@@ -69,10 +69,10 @@
   ],
   "fullTests": {
     "file": "planner-continuity-node-tests.txt",
-    "sha256": "211c4b5c07f0cf4ea476b486e6b27c2d4fe7b779f2d73a05afe8b4c0aaf991a9",
+    "sha256": "8c64a3fadfc0485f0ce18655cd20a23c47adf3c9cca1b8580ab717d8da0530c5",
     "counts": {
-      "tests": 193,
-      "pass": 193,
+      "tests": 205,
+      "pass": 205,
       "fail": 0,
       "cancelled": 0,
       "skipped": 0
@@ -80,33 +80,72 @@
   },
   "focusedTests": {
     "file": "planner-continuity-focused-tests.txt",
-    "sha256": "4ba20fc3e1c2869e5c0e2d055eae0cd44dcebe124301a12d634bb7857c9b1329",
+    "sha256": "b4a9f21af65cddc3758fc1c99ca1603d4e7a3953e787965bbbca0bbf4f2404e7",
     "counts": {
-      "tests": 30,
-      "pass": 30,
+      "tests": 31,
+      "pass": 31,
       "fail": 0,
       "cancelled": 0,
       "skipped": 0
-    }
+    },
+    "executionSourceHead": "a3ded7fd6d990e08bf694fd45015d67b0da9abc0",
+    "sourceBlobsUnchangedAtImplementationHead": true,
+    "includedInFinalExactHeadFullRun": true
   },
   "syntax": {
     "file": "syntax-check.json",
-    "sha256": "44ec38183bb8638258d964d19dbd6a3a5cfe0e96e4595e986038c092063d9541"
+    "sha256": "e88f9c3dcee5351261a9fd664c5eff19fd1277078377d4764d04bf7ddf49c547"
   },
   "browserEvidence": {
     "file": "planner-browser-check.json",
-    "sha256": "3ceacd72bb4a48673af0a3fd6245d2585c7a1b54d2c8f503502b1f117f81cd22"
+    "sha256": "6c9809f1380caf3ba1d31899e1c65ba9f813864c22043951676e6c996b1e579f"
   },
   "targetedIndependentFixCheck": {
     "file": "planner-fix-check.json",
     "sha256": "4392c950b2b037b2180273aa4b83268baaa8538d32ab5a0d66347cf520614eb0",
-    "pathBlobsVerifiedAtImplementationHead": true
+    "pathBlobsVerifiedAtImplementationHead": false,
+    "pathBlobsVerifiedAtHistoricalFixHead": "7d6424c50d96b6ab8756b63153dbe3b0dd2f30cc",
+    "note": "Approved latest-main wording changed planner HTML and its test. The original seven-blob receipt remains immutable; integration checks cover the resulting source separately."
+  },
+  "latestMainIntegrationCheck": {
+    "file": "planner-main-integration-check.json",
+    "sha256": "1121493d1d6619a0b265c6ad5a1da9043526de6f0e500a5ccf4b567ad6fcc23d",
+    "authoredPaths": [
+      "app/conversation-planner.html",
+      "harness/tests/conversation-planner-continuity.test.mjs",
+      "app/lib/invite-language.js",
+      "harness/tests/provider-gates.test.mjs",
+      "harness/lib/agent-orchestrator.mjs",
+      "harness/tests/agent-orchestrator.test.mjs",
+      "harness/lib/token-budget.mjs",
+      "harness/tests/token-budget.test.mjs",
+      "harness/practice-server.mjs",
+      "harness/tests/server-transport.test.mjs"
+    ],
+    "hostSupplementalBoundaries": [
+      "Native activity-dialog button/Escape dismissal while an AI completion is queued remains a browser acceptance gap; synchronous VM close events do not establish that timing. No concrete defect was reproduced."
+    ],
+    "note": "Authored conversation/policy/scheduling fixes are disclosed; the host separately inspected them and executed the final full tests. This is a targeted integration check, not a new formal full-source review."
+  },
+  "independentPolicySchedulingCheck": {
+    "file": "planner-integration-independent-check.json",
+    "sha256": "a02ccab0e5925877bff5f2fceebd9bb5fd0033ee3cbb3918d888ebb3158399eb",
+    "authoredPaths": [],
+    "note": "Separate read-only peer check of policy and scheduling; not a formal whole-repository review or cross-model corroboration."
   },
   "integration": {
-    "mainHead": "16ea416ff841144c42bf85132fe924244bbbe9c8",
-    "mergeCommit": "e2f6bd9412531e8d3ec32a53767829903de8d546",
+    "mainHead": "8cc4ffa55b3b21e01e24fc8f6809fde8c70fec7e",
+    "mergeCommit": "307298ab6fbc184ef30ce7fede935d002688d3b3",
     "mainIsAncestor": true,
-    "note": "Approved article and links from PR171/172 integrated without changing the frozen nine-path planner delta."
+    "note": "Approved main through PR179 integrated, preserving Nana, plain-writing policy, sources, printing and editable choices. Functional planner guards and scoped actual-edited saves are retained; output-mode enum stays closed. Title-only policy suppression, partial-usage accounting and inner/outer reservation scheduling were corrected separately. Real loopback synthetic artifact review covers the server wrapper; multi-attempt calls retain conservative reservations.",
+    "upstreamObservation": {
+      "ref": "origin/main",
+      "head": "23d9d49f58fc6cdda350fefdba5ee55d952d77b1",
+      "recordedAt": "2026-10-09T04:37:08.852424+00:00",
+      "integrationPending": true,
+      "deltaFromIntegratedMain": "45 files changed, 1203 insertions(+), 321 deletions(-)",
+      "note": "Read-only fetched ref. Later PR180/181 changes, including customer review, Studio flow/schema and product documents, have not been integrated or tested in this frozen delivery. Read current CLAUDE.md and integrate on the work branch, then repeat affected acceptance checks before declaring the combined version verified. No merge to main or deployment is authorized by this receipt."
+    }
   },
   "redEvidence": {
     "file": "planner-review-fixes-before.txt",
@@ -117,6 +156,8 @@
     "Local device-scoped private drafts; no server synchronization.",
     "Formal verdict belongs only to frozen bafa. Checked fixes are a separate hash-bound inspection.",
     "Physical download and print/PDF delivery remain unverified in IAB.",
-    "Server typed activity/conversation adapters, approved rehearsal, Studio integration and live-pilot gates remain pending."
+    "Native activity-dialog button/Escape dismissal while an AI completion is queued remains a browser acceptance gap; synchronous VM close events do not establish that timing. No concrete defect was reproduced.",
+    "Server typed activity/conversation adapters, approved rehearsal, Studio integration and live-pilot gates remain pending.",
+    "Upstream main 23d9d49f58fc6cdda350fefdba5ee55d952d77b1 contains later changes pending integration and verification; tested main ancestry stops at 8cc4ffa55b3b21e01e24fc8f6809fde8c70fec7e."
   ]
 }
