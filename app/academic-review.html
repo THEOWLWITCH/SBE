@@ -1,6 +1,7 @@
 <meta charset="UTF-8">
 <title>ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/example-peek.js" data-tool="review" defer></script>
 <script src="lib/open-select.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/ai-status.js"></script>
@@ -862,9 +863,9 @@ function setAIStatus(status){
   else if (status === "mock") chip.innerHTML = dot + "מצב הדגמה: אין חיבור למודל כרגע";
   else chip.innerHTML = dot + "בודקת חיבור למודל...";
 }
-async function callAI(system, userText, maxTokens, timeoutMs) {
+async function callAI(system, userText, maxTokens, timeoutMs, review) { // review: תוצר, עובר דרך הסוכנת-הלקוחה (harness/lib/customer-pass.mjs)
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
-  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200 }, timeoutMs || 60000);
+  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, customerReview: !!review }, timeoutMs || 60000);
 }
 
 // משוב מבוסס-קריטריונים אמיתי (לא היוריסטיקה) — המודל מקבל את הטקסט המלא,
@@ -923,7 +924,7 @@ async function computeFeedbackAI(text, age, criteriaList, mode, task, kind) {
   ].join("\n");
   // maxTokens/timeout גבוהים — עבודה אקדמית שלמה יכולה להיות ארוכה, ומשוב
   // אמיתי לכמה קריטריונים גם הוא ארוך. אותו סדר גודל שנמדד ב-activity-planner.html.
-  const raw = await callAI(system, "הטקסט לבדיקה:\n\n" + text, 14000, 360000);
+  const raw = await callAI(system, "הטקסט לבדיקה:\n\n" + text, 14000, 360000, true);
   const m = raw.match(/\{[\s\S]*\}/);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
@@ -1008,7 +1009,7 @@ $("bReview").addEventListener("click", async (e) => {
     }
     if (u.left === 0) setTimeout(() => alert(info.kind === "course" ? "זו הייתה הפקת המשוב האחרונה שלך בקורס הזה." : "זו הייתה הפקת המשוב האחרונה בקוד הזה."), 50);
   }
-  e.target.disabled = true; e.target.textContent = "קוראת... (עד כ-3 דקות)";
+  e.target.disabled = true; e.target.textContent = "קוראת... (עד כ-5 דקות)";
   try {
     let fb, mock = false;
     try { fb = await computeFeedbackAI(text, age, criteriaList, critMode, val("taskText"), fbKind); }

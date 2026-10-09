@@ -1,6 +1,7 @@
 <meta charset="UTF-8">
 <title>תרגול עצמי</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/example-peek.js" data-tool="practice" defer></script>
 <script src="lib/ai-status.js"></script>
 <script src="lib/report-table.js"></script>
 <script src="lib/product-doc.js"></script>
@@ -1837,7 +1838,7 @@ function showFeedback(){
   tpBox.textContent = "";
   tpBox.append(SBE_TABLE(["#", "התפנית", "מה קרה", "מה מוביל אליה"], SCENARIO.turningPoints.map(tp => {
     const fired = state.firedTPs[tp.n];
-    return [String(tp.n), el("b", {}, tp.name), el("span", { class:"fb-st " + (fired ? "reached" : "missed") }, fired ? "✓ נפתחה · " + fired.effect : "עוד לא נפתחה"), fired ? tp.trigger : tp.missed];
+    return [String(tp.n), el("b", {}, tp.name), el("span", { class:"fb-st " + (fired ? "reached" : "missed") }, fired ? "✓ נפתחה · " + fired.effect : "עוד לא נפתחה" + (tp.missed ? " · " + tp.missed : "")), tp.trigger || "—"]; // העמודה "מה מוביל אליה" תמיד מראה מה פותח את התפנית (08/10/2026: התאמה בין כותרת לתוכן)
   }), "fb-tp-table"));
 
   const skBox = document.getElementById("fbSkills");

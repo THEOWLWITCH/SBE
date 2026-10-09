@@ -120,10 +120,13 @@ export async function runEvaluation(dataset = load('agent-evaluation-cases.json'
   const promptVersion = hash(readFileSync(new URL('./lib/studio.mjs', import.meta.url), 'utf8'));
   const results = [];
   // Every provider access is intercepted. These placeholders never leave this process.
-  const previousEnv = Object.fromEntries(['OPENAI_API_KEY','STUDIO_MODEL','STUDIO_REASONING_EFFORT'].map(k=>[k,process.env[k]]));
+  const previousEnv = Object.fromEntries(['OPENAI_API_KEY','STUDIO_MODEL','STUDIO_REASONING_EFFORT','STUDIO_CUSTOMER_REVIEW'].map(k=>[k,process.env[k]]));
   process.env.OPENAI_API_KEY = 'synthetic-fixture-no-network';
   process.env.STUDIO_MODEL = 'synthetic-no-model';
   process.env.STUDIO_REASONING_EFFORT = 'medium';
+  // This baseline supplies one activity response per case. Customer review has
+  // its own schema-aware tests; repeating activity JSON is not a review fixture.
+  process.env.STUDIO_CUSTOMER_REVIEW = 'off';
   try {
     for (const row of dataset.cases) {
       const started = performance.now();

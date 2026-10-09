@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>מסע אל החוסן</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/product-doc.js"></script>
+<script src="lib/example-peek.js" data-tool="journey" data-manual></script>
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -202,9 +204,9 @@ function richText(text){
   });
   return box;
 }
-async function complete(system,messages,maxTokens){
+async function complete(system,messages,maxTokens,review){
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
-  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens},480000)||'');
+  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},480000)||'');
 }
 
 
@@ -248,6 +250,7 @@ async function viewList(){
   c.appendChild(el('h1', null, 'מסע אל החוסן'));
   const p = el('p'); p.appendChild(inlineRich('מסע מלווה בשלבים אל **תו חוסן לקהילת חוסן** — מגן ומכיתה ועד בית ספר וקהילה. מתחילים במיפוי קצר, מקבלים הצעת מסע עם אפשרויות, בוחרים יחד, ויוצאים לדרך עם אבני דרך ברורות ותעודה על כל אחת מהן. לאורך כל הדרך — ליווי אישי של ד״ר יעל שדה.')); c.appendChild(p);
   { const ar = el('p', 'muted'); ar.style.cssText = 'font-size:.9rem;margin:.45rem 0 0'; ar.appendChild(document.createTextNode('📖 ')); const a = el('a', null, 'לבחור בחוסן שלנו'); a.href = 'about.html?from=journey.html#article'; a.target = '_blank'; a.rel = 'noopener'; a.style.fontWeight = '700'; ar.appendChild(a); ar.appendChild(document.createTextNode('. מאמר קצר על המושגים שבבסיס המסע: מנגנונים חברתיים, קהילת חוסן ותו חוסן.')); c.appendChild(ar); }
+  if (window.SBE_PEEK) SBE_PEEK.mount(null, c.lastElementChild); // תוצר לדוגמה (lib/example-peek.js)
   const tmp = el('div', 'jmap'); J.STAGES.forEach(s => { const st = el('div', 'st'); st.appendChild(el('div', 'dot', s.k)); st.appendChild(el('div', 'nm', s.t)); st.appendChild(el('div', 'sb', s.sub)); tmp.appendChild(st); }); c.appendChild(tmp);
   const list = card(); list.appendChild(el('h2', null, 'המסעות שלי')); const lw = el('p', 'muted', 'טוענת...'); list.appendChild(lw);
   const d = await api('jrMine'); lw.remove();
@@ -366,7 +369,7 @@ function viewMapping(){
     err(''); go.disabled = true; go.textContent = 'מכינה הצעת מסע... (עד שתי דקות)';
     try {
       await api('jrSaveMapping', { id: JR.id, mapping: m });
-      const txt = await complete(J.proposalSystem(JR.unit), [{ role: 'user', content: mappingText(m) }], 16000);
+      const txt = await complete(J.proposalSystem(JR.unit), [{ role: 'user', content: mappingText(m) }], 16000, true);
       const prop = parseJSON(txt);
       const r = await api('jrSetProposal', { id: JR.id, proposal: prop });
       if (!r.ok) throw new Error('השמירה לא הצליחה');
@@ -438,7 +441,7 @@ function viewProposal(){
       const counts = J.plannedCounts(JR.unit, start);
       const ctx = ['המיפוי:', mappingText(JR.mapping || { answers: {}, fails: {} }), '', 'הצעת המסע:', JSON.stringify(p), '', 'הבחירות והשיקולים:',
         ...ids.map(k => '- ' + k + ': ' + state[k].option + ' | שיקולים: ' + state[k].reasons.concat(state[k].explain ? [state[k].explain] : []).join('; ') + (state[k].who.length ? ' | שותפים: ' + state[k].who.join(', ') : ''))].join('\n');
-      const plan = parseJSON(await complete(J.planSystem(JR.unit, counts), [{ role: 'user', content: ctx }], 20000));
+      const plan = parseJSON(await complete(J.planSystem(JR.unit, counts), [{ role: 'user', content: ctx }], 20000, true));
       const paceK = (J.PACES.find(x => x.t === state.pace.option) || J.PACES[1]).k;
       const r = await api('jrSubmitChoices', { id: JR.id, choices: state, plan, startStage: start, pace: paceK });
       if (!r.ok) throw new Error(r.error === 'explain required' ? 'חסר הסבר באחת ההחלטות' : 'השליחה לא הצליחה');

@@ -13,6 +13,7 @@ import {handleAccess, supabaseStore, resolvePrincipal, reserveAIUsage, settleAIU
 import {handleStudio} from './lib/studio.mjs';
 import {handleArtifacts,artifactReviewRunId} from './lib/activity-artifact.mjs';
 import {completionUsageCharge} from './lib/token-budget.mjs';
+import {customerPass,reviewEnabled} from './lib/customer-pass.mjs';
 
 const AI_PERMS = ['fac_trainee','fac_parent','fac_youth','practice','conv','activity','academic','resilience','leadership','practi','writer','studio','nana'];
 const STUDIO_PERMS = ['studio'];
@@ -130,7 +131,8 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
     };
     try {
       let output;
-      const provider=path==='/api/studio'?null:boundedProvider(providerFactory(),job.tokenBudget,path==='/api/pipeline'?1:undefined,assertCurrent);
+      const reviewProduct=path==='/api/complete' && reviewEnabled(payload);
+      const provider=path==='/api/studio'?null:boundedProvider(providerFactory(),job.tokenBudget,path==='/api/pipeline'||reviewProduct?1:undefined,assertCurrent);
       if(path==='/api/artifacts') {
         const [status,result]=await handleArtifacts(st,actor,payload,{provider,sourceLibrary,teamEnabled,signal:controller.signal,clock,jobKey:key,assertCurrent});
         if(status!==200) throw Object.assign(failure(result.error || 'artifact review failed',status),{code:result.code});
@@ -157,7 +159,10 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
         output={scenario,usage:out.usage,_ms:out._ms};
       } else {
         const result=assertCompletionResult(await provider.complete({...payload,variation:'medium',signal:controller.signal}));
-        output={text:result.text || '',toolCalls:result.toolCalls || [],usage:result.usage};
+        const pass=reviewProduct?await customerPass({complete:async request=>assertCompletionResult(await provider.complete({...request,signal:controller.signal}))},
+          {...payload,text:result.text || ''}):null;
+        output={text:pass?.text ?? result.text ?? '',toolCalls:result.toolCalls || [],usage:result.usage,
+          ...(pass?.review?{review:pass.review}:{})};
       }
       const live=await resolvePrincipal(st,token),current=await st.get(key);
       if(controller.signal.aborted || !live || live.ownerId!==actor.ownerId || !allowed(live,path,payload.permission)
@@ -222,7 +227,10 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
       if(req.url==='/api/artifacts')input.idempotencyKey ||= requestId;
       const requestHash=hash({path:req.url,input}),jobId=hash([actor.ownerId,actor.tenantId,req.url,requestId]).slice(0,32),key='pj:'+jobId;
       if(!st.putIfAbsent || !st.compareAndSet || !st.finalizeAIJob) return send(req,res,503,{error:'נדרשת תשתית אחסון אטומית.'});
-      const tokenBudget=req.url==='/api/pipeline'?256000:req.url==='/api/studio'?128000:req.url==='/api/artifacts'?100000:requestBudget({...input,variation:'medium'});
+      // Review and optional repair share the same bounded provider. Reserve their
+      // allowance before admitting the job; large passes may keep the original.
+      const tokenBudget=req.url==='/api/pipeline'?256000:req.url==='/api/studio'?128000:req.url==='/api/artifacts'?100000:
+        req.url==='/api/complete'&&reviewEnabled(input)?requestBudget({...input,variation:'medium'},1)+128000:requestBudget({...input,variation:'medium'});
       if(tokenBudget>512000)return send(req,res,413,{error:'הקלט גדול מדי לתקציב הבקשה.'});
       const usage=await reserveAIUsage(st,actor,{requestId,requestHash,maxTokens,tokenBudget});
       if(usage.state!=='reserved') {

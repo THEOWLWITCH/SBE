@@ -35,3 +35,78 @@
 
 /* התקדמות ליד הפעולה — היצירה לוקחת זמן (07/10/2026) */
 .busy-line{margin:.6rem 0;padding:.6rem .8rem;border-radius:8px;background:var(--hidden-soft,#F5EAD9);color:var(--ink,#141C24);font-weight:600;border-inline-start:4px solid var(--hidden,#8F5F2E)}
+
+/* ── עיצוב מחדש (08/10/2026): שלושה צעדים, אחד בכל פעם; שותפה לתכנון בחלונית צד ── */
+.studio-wrap{max-width:1080px}
+.hero{padding-bottom:.6rem}
+.hero-intro{font-size:1.08rem;max-width:44ch}
+.stepper{display:flex;align-items:center;gap:.4rem;margin:.4rem 0 1.1rem;background:var(--surface);border:1px solid var(--hair);border-radius:999px;padding:.4rem .5rem;position:sticky;top:.4rem;z-index:20;box-shadow:0 4px 14px #141c240d;scroll-margin-top:.5rem}
+.step-tab{display:flex;align-items:center;gap:.5rem;background:none;border:0;border-radius:999px;padding:.35rem .8rem .35rem .9rem;color:var(--muted);font-weight:600;cursor:pointer}
+.step-tab .num{display:inline-grid;place-items:center;width:1.75rem;height:1.75rem;border-radius:50%;border:2px solid var(--hair);font-size:.92rem;font-weight:800;background:var(--surface)}
+.step-tab.current{background:var(--spoken-soft);color:var(--spoken)}
+.step-tab.current .num{background:var(--spoken);border-color:var(--spoken);color:#fff}
+.step-tab.done .num{border-color:var(--auto);color:var(--auto)}
+.step-tab:disabled{opacity:.45;cursor:default}
+.step-line{flex:1;height:2px;background:var(--hair);border-radius:2px;min-width:12px}
+.studio-layout[data-step="1"] [data-step]:not([data-step="1"]),
+.studio-layout[data-step="2"] [data-step]:not([data-step="2"]),
+.studio-layout[data-step="3"] [data-step]:not([data-step="3"]){display:none!important}
+.studio-layout:not([data-step="1"]){grid-template-columns:minmax(0,1fr) 250px}
+.card{border-radius:16px;padding:1.4rem 1.5rem}
+.card h2{margin-top:.1rem}
+.card.soft{background:#F6F8F9}
+.fill-note{background:transparent;padding:0;color:var(--muted)}
+.more-details{margin:1rem 0 .4rem;border-top:1px solid var(--hair);padding-top:.7rem}
+.more-details>summary{cursor:pointer;font-weight:700;color:var(--spoken)}
+.more-details[open]>summary{margin-bottom:.6rem}
+.source-details h3{font-size:1rem;margin:1rem 0 .2rem}
+.step-foot{display:flex;justify-content:space-between;align-items:center;gap:.8rem;flex-wrap:wrap;margin-top:1.3rem;padding-top:1rem;border-top:1px solid var(--hair)}
+.step-foot .btn:not(.ghost){font-size:1.05rem;padding:.7rem 1.4rem;border-radius:10px}
+.small-note{font-size:.88rem;margin:.5rem 0 0}
+.btn.ghost{background:transparent;color:var(--spoken);border-color:transparent}
+.btn.ghost:hover{background:var(--spoken-soft)}
+.linkish{background:none;border:0;padding:0;color:var(--spoken);text-decoration:underline;font-weight:700;cursor:pointer}
+.recommendation{border:1px solid #C9DCCF;background:var(--auto-soft);border-radius:14px;padding:1rem 1.2rem;margin:.8rem 0}
+.recommendation h3{font-size:1.35rem;margin:.1rem 0 .3rem;color:var(--auto)}
+.recommendation .eyebrow{margin:0;color:var(--auto)}
+.choice-row{display:flex;flex-wrap:wrap;gap:.5rem;margin:.6rem 0}
+.btn.choice{background:var(--surface);color:var(--ink);border:2px solid var(--hair);border-radius:999px;padding:.45rem 1rem}
+.btn.choice:hover{border-color:var(--auto)}
+.btn.choice.on{background:var(--auto);border-color:var(--auto);color:#fff}
+.chosen-line{font-weight:700;color:var(--auto);margin:.4rem 0}
+.clarify{border:2px solid var(--hidden);background:var(--hidden-soft);border-radius:14px;padding:1rem 1.2rem;margin:1rem 0}
+.clarify h3{margin:.1rem 0 .3rem;color:#6E4520}
+.clarify ol{margin:.4rem 0 .8rem;padding-inline-start:1.3rem}
+.clarify li{margin:.3rem 0;font-weight:600}
+.clarify textarea{background:#fff}
+.other-focus{margin:.8rem 0}
+.other-focus>summary{cursor:pointer;color:var(--spoken);font-weight:700}
+.top-actions{margin:.2rem 0 .8rem}
+.catalogue-note{font-size:.82rem;color:var(--muted);background:transparent;border:0;padding:.2rem .3rem;margin:0}
+.saved-card>summary{cursor:pointer}
+.saved-card[open]>summary{margin-bottom:.5rem}
+.busy-line{position:sticky;top:4.2rem;z-index:19}
+/* חלונית "לחשוב יחד" */
+.coach-fab{position:fixed;inset-inline-start:1.2rem;bottom:1.2rem;z-index:40;background:var(--spoken);color:#fff;border:0;border-radius:999px;padding:.75rem 1.2rem;font-weight:700;box-shadow:0 6px 20px #141c2433;cursor:pointer}
+.coach-open .coach-fab{display:none}
+.coach-drawer{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(440px,100vw);z-index:50;background:var(--surface);border-inline-end:1px solid var(--hair);box-shadow:0 0 40px #141c2433;padding:1.1rem 1.2rem 1.5rem;overflow:auto;transform:translateX(105%);visibility:hidden;transition:transform .25s ease,visibility .25s}
+[dir="rtl"] .coach-drawer{transform:translateX(105%)}
+.coach-open .coach-drawer{transform:none;visibility:visible}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+.drawer-head h2{margin:0}
+.coach-drawer #coach-messages{max-height:none}
+.concerns{margin:.5rem 0}
+.concerns>summary{cursor:pointer;color:var(--spoken);font-size:.92rem}
+@media(max-width:800px){.studio-layout:not([data-step="1"]){grid-template-columns:1fr}.stepper{border-radius:14px}.step-tab{padding:.3rem .45rem}.step-tab .lbl{font-size:.88rem}}
+@media(max-width:560px){.step-tab .lbl{display:none}.step-tab.current .lbl{display:inline}.coach-fab{inset-inline-start:.7rem;bottom:.7rem}.card{padding:1rem}}
+@media print{.stepper,.coach-fab,.coach-drawer{display:none!important}}
+.clarify-q{margin:.5rem 0 .9rem}.clarify-q .q-text{margin:0 0 .35rem;font-weight:600}.clarify-q .q-answer{width:100%;background:#fff;border:1px solid #D8C3A6;border-radius:8px;padding:.5rem .65rem;font-weight:400}
+.stepper{top:3.6rem;z-index:14}
+.busy-line{top:7.4rem}
+.coach-fab{inset-inline-start:auto;inset-inline-end:1.2rem}
+@media(max-width:560px){.stepper{top:3rem}.coach-fab{inset-inline-end:.7rem}}
+/* רעיונות בצד — קומפקטי */
+.ideas-side .idea-card{padding:.5rem .7rem}
+.ideas-side .idea-card .actions .btn.secondary{border-color:transparent;padding-inline:.4rem}
+.ideas-side .idea-card .actions .btn{font-size:.82rem;padding:.3rem .65rem}
+.ideas-side .idea-purpose{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}

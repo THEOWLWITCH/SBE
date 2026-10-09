@@ -108,12 +108,13 @@ test('The actual Studio browser client consumes server success and clarification
   const start=source.indexOf('  const MODEL_ACTIONS'),end=source.indexOf('  async function ensureAuthorized()',start);
   const state={brief:{focus:'שייכות'},confirmed:true};
   const context={state,API:'http://127.0.0.1:'+server.address().port+'/api/studio',token:()=>a,
-    AbortController,Date,fetch,setTimeout:(fn,ms)=>setTimeout(fn,ms<10000?0:ms),clearTimeout,document:{hidden:false},
-    $:()=>({checked:true,scrollIntoView(){}}),lockWorkspace(){},renderRecommendation(){},updateControls(){},persist(){}};
+    AbortController,Date,fetch,setTimeout:(fn,ms)=>setTimeout(fn,ms<10000?0:ms),clearTimeout,
+    document:{hidden:false,querySelectorAll:()=>[],querySelector:()=>null},
+    $:()=>({checked:true,dataset:{},value:'',scrollIntoView(){}}),lockWorkspace(){},renderRecommendation(){},updateControls(){},persist(){}};
   const api=vm.runInNewContext('(function(){'+source.slice(start,end)+';return api;})()',context);
   assert.equal((await api({action:'consult',requestId:'actual-studio-client'})).consultation.answer,'תשובה סינתטית');
   outcome=[422,{error:'נדרשת הבהרה',questions:['מה גיל המשתתפים?'],focus:'שייכות'}];
-  await assert.rejects(api({action:'generate',requestId:'actual-studio-clarify'}),/נדרשת הבהרה/);
+  await assert.rejects(api({action:'generate',requestId:'actual-studio-clarify'}),error=>error.clarify===true&&/שאלות קצרות/.test(error.message));
   assert.deepEqual(Array.from(state.recommendation.questions),['מה גיל המשתתפים?']);assert.equal(state.confirmed,false);
 });
 
@@ -165,4 +166,42 @@ test('The authenticated artifact boundary reconciles single-attempt usage before
   assert.equal(done.body.artifact.approvedVersions.length,0);
   const job=await store.get('pj:'+started.body.jobId);
   assert.equal(job.tokenBudget,100000);assert.equal((await store.list('aiq:'))[0].value.state,'committed');
+});
+
+test('Product customer review and one repair use the authenticated job and a reserved bounded allowance',async t=>{
+  const {store,a}=await account(['nana']);const calls=[];
+  const answers=['{"title":"original","flow":[]}',
+    JSON.stringify({ready:false,summary:'Clarify the instruction',issues:[{where:'flow',problem:'Unclear',fix:'Give an action'}]}),
+    '{"title":"revised","flow":[]}'];
+  const {server,post}=await serving(t,{store,providerFactory:()=>({complete:async request=>{
+    calls.push(request);return {status:'completed',text:answers.shift(),usage:{inputTokens:30,outputTokens:20,totalTokens:50}};
+  }})});
+  const started=await post('/api/complete',a,{async:true,requestId:'reviewed-product',permission:'nana',customerReview:true,
+    system:'A synthetic product',messages:[{role:'user',content:'Create a synthetic plan'}],maxTokens:1000});
+  assert.equal(started.status,200);await server.waitForJobs();
+  const done=await post('/api/pipeline-status',a,{jobId:started.body.jobId});
+  assert.equal(done.body.status,'done');assert.equal(JSON.parse(done.body.text).title,'revised');
+  assert.equal(done.body.review.revised,true);assert.equal(calls.length,3);
+  assert.ok(calls.every(r=>r.signal instanceof AbortSignal&&r.maxAttempts===1));
+  const job=await store.get('pj:'+started.body.jobId);
+  assert.ok(job.tokenBudget>100000&&job.tokenBudget<=512000);
+  assert.equal((await store.list('aiq:'))[0].value.state,'committed');
+});
+
+test('An incomplete customer reviewer keeps the original product; revocation cannot publish a fallback',async t=>{
+  for(const revoke of [false,true]) {
+    const {store,a}=await account(['nana']);let calls=0;
+    const {server,post}=await serving(t,{store,providerFactory:()=>({complete:async()=>{
+      calls++;
+      if(calls===1)return {status:'completed',text:'original product',usage:{inputTokens:20,outputTokens:10,totalTokens:30}};
+      if(revoke) {const code=await store.get('code:STAFF111');await store.set('code:STAFF111',{...code,revoked:true});}
+      return {status:'incomplete',text:JSON.stringify({ready:false,issues:[{problem:'x'}]}),usage:{inputTokens:20,outputTokens:10,totalTokens:30}};
+    }})});
+    const started=await post('/api/complete',a,{async:true,requestId:'review-incomplete-'+revoke,permission:'nana',
+      customerReview:true,system:'S',messages:[{role:'user',content:'synthetic'}],maxTokens:1000});
+    await server.waitForJobs();const job=await store.get('pj:'+started.body.jobId);
+    assert.equal(calls,2);
+    if(revoke) {assert.equal(job.status,'error');assert.equal(job.output,undefined);}
+    else {assert.equal(job.status,'done');assert.equal(job.output.text,'original product');assert.equal(job.output.review,undefined);}
+  }
 });

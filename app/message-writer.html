@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>כתיבה מקדמת חוסן</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/example-peek.js" data-tool="writer" defer></script>
 <script src="lib/open-select.js"></script>
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -205,7 +206,7 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
     </div>
     <div class="btns">
       <button class="btn" id="rw-go" type="button">כתיבת ההודעה</button>
-      <button class="btn btn-ghost" id="rw-example" type="button">דוגמה</button>
+      <button class="btn btn-ghost sbe-sysonly" id="rw-example" type="button">דוגמה</button>
     </div>
     <p class="err" id="rw-err" hidden></p>
   </div>
@@ -255,9 +256,9 @@ function richText(text){
   });
   return box;
 }
-async function complete(system,messages,maxTokens){
+async function complete(system,messages,maxTokens,review){
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
-  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens},480000)||'');
+  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},480000)||'');
 }
 
 

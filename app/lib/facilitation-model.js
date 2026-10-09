@@ -171,7 +171,7 @@
       'החזירי אך ורק JSON תקין, בלי טקסט נוסף, במבנה:',
       '{"intro":"2–3 משפטים: מה המפגש הזה יכול להיות עבור הקבוצה, מנקודת המבט של החוסן החברתי",',
       ' "read":{"stage":"באיזה שלב הקבוצה נמצאת ומה זה אומר להנחיה","needs":["מה יכול לחזק את הקבוצה עכשיו"],"lens":"מה המפגש יכול לבנות בחוסן החברתי שלה"},',
-      ' "stance":{"from":"דרך העבודה של הוראה במפגש הזה — במשפט, כמתודולוגיה ולא כתיאור של המורה","to":"דרך העבודה של הנחיה במפגש הזה — במשפט","why":"מה זה מאפשר לקבוצה"},',
+      ' "stance":{"from":"דרך העבודה של הוראה במפגש הזה — במשפט שמתחיל ישר במה שעושים (למשל \"מסבירה את הנושא ומציגה את הפתרון\"), כמתודולוגיה ולא כתיאור של המורה","to":"דרך העבודה של הנחיה במפגש הזה — במשפט שמתחיל ישר במה שעושים (למשל \"מחזיקה את המבנה ואת הזמן, והקבוצה...\"); בלי פתיח כמו \"ההנחיה כאן היא\" או \"המפגש הזה הוא\"","why":"מה זה מאפשר לקבוצה"},',
       ' "shifts":[{"skill":"המיומנות, בניסוח חיובי","move":"איך עושים את זה במפגש הזה","say":"משפט לדוגמה","lens":"מה זה בונה","basis":["מפתח"]}],',
       ' "arc":[{"phase":"שם השלב","minutes":"זמן משוער","facilitator":"מה המנחה עושה ומה הקבוצה עושה","say":["משפט לדוגמה"],"structure":"מבנה השתתפות או ריק","watch":"מה לראות","lens":"מה זה בונה","basis":["מפתח"]}],',
       ' "questions":{"open":["שאלה"],"deepen":["שאלה"],"connect":["שאלה"],"close":["שאלה"]},',
@@ -205,6 +205,9 @@
   const arr = v => Array.isArray(v) ? v : [];
   const str = v => typeof v === 'string' ? v : (v == null ? '' : String(v));
   const strs = v => arr(v).map(str).filter(x => x.trim());
+  // פתיח שחוזר על הכותרת (08/10/2026: "לא להתחיל ב'הנחיה כאן היא...'") — מסירים, ומתחילים ישר בתוכן.
+  const LEAD = /^\s*(?:ה?(?:הנחיה|הוראה)|ה(?:מפגש|פעילות|תפקיד שלי|תפקיד שלך)|דרך העבודה)(?:\s+(?:כאן|הזה|הזאת|הזו|במפגש הזה|במפגש))*\s+(?:היא|הוא|היה|תהיה)\s+/;
+  function trimLead(t) { const v = str(t); const m = v.match(LEAD); return m && v.length - m[0].length > 12 ? v.slice(m[0].length) : v; }
   // מנרמל את תשובת המודל: שדה חסר → ריק, כדי שהמסך לא יישבר; מפתחות מקורות שאינם בבנק מסוננים.
   function normalize(doc, knownKeys) {
     const d = doc && typeof doc === 'object' ? doc : {};
@@ -218,7 +221,7 @@
     return {
       intro: str(d.intro),
       read: { stage: str(r.stage), needs: strs(r.needs), lens: str(r.lens) },
-      stance: { from: str(s.from), to: str(s.to), why: str(s.why) },
+      stance: { from: trimLead(s.from), to: trimLead(s.to), why: str(s.why) },
       shifts: arr(d.shifts).filter(x => x && (x.skill || x.habit || x.move)).map(x => ({ skill: str(x.skill || x.habit), move: str(x.move), say: str(x.say), lens: str(x.lens), basis: basis(x.basis) })),
       arc: arr(d.arc).filter(x => x && x.phase).map(x => ({ phase: str(x.phase), minutes: str(x.minutes), facilitator: str(x.facilitator),
         say: strs(x.say), structure: str(x.structure), watch: str(x.watch), lens: str(x.lens), basis: basis(x.basis) })),
@@ -300,6 +303,6 @@
     ].filter(Boolean).join('\n');
   }
 
-  return { SHIFTS, LENS, ARC, MOMENTS, GROUPS, AGES, SITUATIONS, SPACES, DURATIONS, FAMILIAR, ROLES, EXPERIENCE,
+  return { trimLead, SHIFTS, LENS, ARC, MOMENTS, GROUPS, AGES, SITUATIONS, SPACES, DURATIONS, FAMILIAR, ROLES, EXPERIENCE,
     persona, reportSystem, inputText, normalize, parse, valid, plain, practiceSystem, debriefSystem, chatSystem };
 });

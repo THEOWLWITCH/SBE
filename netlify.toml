@@ -1,6 +1,8 @@
 [build]
   publish = "app"
   command = ""
+  # חיסכון (08/10/2026): בונים רק מ-main. דחיפה לענף אחר או PR לא מפעילים בנייה.
+  ignore = "test \"$BRANCH\" != \"main\""
 
 [functions]
   directory = "netlify/functions"

@@ -225,10 +225,12 @@ test('Reviewers wait for conservative reservations to settle instead of losing t
 });
 
 test('Measured exhaustion after queued reviewers still blocks synthesis without an extra physical call',async()=>{
-  const run=await reservedTeam({usedTokens:31000});await run.firstTwo;run.release();
+  // The shared language/customer policies now reserve a larger prompt. Leave
+  // enough for the queued safety review, but not for synthesis after it settles.
+  const run=await reservedTeam({usedTokens:26000});await run.firstTwo;run.release();
   const [status,out]=await run.pending;assert.equal(status,200);assert.equal(out.review.status,'failed');
   assert.deepEqual(run.log,['pedagogy','resilience_facilitation','safety_sources']);assert.equal(out.review.results.synthesis.status,'budget_exceeded');
-  assert.equal(out.review.totalTokens,93000);assert.ok(run.maxCommitted()<=100000);assert.equal(out.review.proposal,null);
+  assert.equal(out.review.totalTokens,78000);assert.ok(run.maxCommitted()<=100000);assert.equal(out.review.proposal,null);
 });
 
 test('Cancellation and the shared deadline stop queued reviewer dispatch when active adapters do not settle',async()=>{

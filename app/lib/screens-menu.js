@@ -43,7 +43,7 @@ window.SBE_SCREENS = [
     ]},
     { title:'חוסן חברתי', items:[
       { file:'resilience-studio.html', label:'סטודיו חוסן: השראה ופעולה', who:'הרשאת סטודיו בלבד (עד לאישור המקצועי)' },
-      { file:'resilience-team.html', label:'מיפוי חוסן: מסך מחנך/ת', who:'הרשאת חוסן חברתי' },
+      { file:'resilience-team.html', label:'מיפוי חוסן חברתי: מסך מחנך/ת', who:'הרשאת מיפוי חוסן חברתי' },
       { file:'resilience-fill.html', label:'שאלון חוסן: מסך תלמיד/ה', who:'תלמידים, בקישור מהמחנך/ת' },
       { file:'resilience-advisor.html', label:'פרקטי: יועצת לפיתוח חוסן חברתי', who:'הרשאת חוסן חברתי או פרקטי' },
       { file:'leadership-advisor.html', label:'נוגי: יועצת למנהיגות תומכת חוסן', who:'הרשאת נוגי' },
