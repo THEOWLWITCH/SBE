@@ -6,6 +6,7 @@
 <title>פרקטי: יועצת לפיתוח חוסן חברתי</title>
 <script src="lib/report-table.js"></script>
 <script src="lib/access-guard.js"></script>
+<script src="lib/product-doc.js"></script>
 <script src="lib/example-peek.js" data-tool="practi" defer></script>
 <script src="lib/open-select.js"></script>
 <script src="lib/ai-call.js"></script>
@@ -683,7 +684,10 @@ function titleCell(a,extra){const c=el('div');c.appendChild(el('div','rt-title',
   if(a.circle)tags.appendChild(el('span','act-tag circle',a.circle));if(extra)tags.appendChild(el('span','act-tag',extra));if(tags.childNodes.length)c.appendChild(tags);return c;}
 function mechCell(a){const c=el('div');if(a.mechanism)c.appendChild(el('p',null,a.mechanism));const b=basisEl(a.basis);if(b)c.appendChild(b);return c.childNodes.length?c:null;}
 function actTable(items,extraFn,mechLabel){if(!(items||[]).length)return el('p','muted','—');
-  return SBE_TABLE(['הפעילות','מה עושים',mechLabel||'מה זה מפתח'],items.map(a=>{const dd=richText(a.description||'');dd.classList.add('act-d');return [titleCell(a,extraFn?extraFn(a):''),dd,mechCell(a)];}),'acts');}
+  // עמודה בלי תוכן לא מוצגת (08/10/2026: התאמה בין כותרת לתוכן). המקורות עברו לסוף הדוח, ולכן בהמלצות בלי "mechanism" אין מה להראות בה.
+  const rows=items.map(a=>{const dd=richText(a.description||'');dd.classList.add('act-d');return [titleCell(a,extraFn?extraFn(a):''),dd,mechCell(a)];});
+  if(rows.every(r=>!r[2]))return SBE_TABLE(['ההמלצה','מה עושים'],rows.map(r=>r.slice(0,2)),'acts');
+  return SBE_TABLE(['הפעילות','מה עושים',mechLabel||'מה זה מפתח'],rows,'acts');}
 function domTable(items){if(!(items||[]).length)return el('p','muted','—');return SBE_TABLE(null,items.map(it=>[it.domain||'',inlineRich(it.text||'')]));}
 function textList(items){const ul=el('ul','tl');(items||[]).forEach(it=>{const li=el('li');if(it.domain)li.appendChild(el('b',null,it.domain+': '));li.appendChild(inlineRich(it.text||''));ul.appendChild(li);});return ul;}
 function plain(){
@@ -708,7 +712,7 @@ function renderReport(){
   const box=F('report');box.textContent='';const R=STATE.report;if(!R)return;const d=R.doc||{};
   const head=el('div','card no-print');
   const acts=el('div','btns');
-  const pr=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.print());
+  const pr=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'דוח המלצות לכיתה'+(R.cls?' '+R.cls:'')}):window.print());
   const cp=el('button','btn btn-ghost','העתקת הטקסט');cp.addEventListener('click',()=>{navigator.clipboard&&navigator.clipboard.writeText(plain()).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הטקסט',2000);});});
   const ask=el('button','btn','לשאול את פרקטי ↓');ask.addEventListener('click',()=>{F('chat-area').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>{if(!F('chat-in').disabled)F('chat-in').focus({preventScroll:true});},500);});
   acts.appendChild(ask);acts.appendChild(pr);acts.appendChild(cp);head.appendChild(el('h2',null,'הדוח מוכן'));head.appendChild(acts);box.appendChild(head);
@@ -724,8 +728,8 @@ function renderReport(){
   card.appendChild(el('h2',null,'2. אתגרים'));
   card.appendChild(el('h3',null,'2.1 האתגרים: כיווני צמיחה'));card.appendChild(domTable(d.challenges));
   card.appendChild(el('h3',null,'2.2 פעילויות ותהליכים להתמודדות'));card.appendChild(actTable(d.challengeActivities,a=>a.for));
-  if((d.environment||[]).length){card.appendChild(el('h2',null,'3. עיצוב סביבת הכיתה'));card.appendChild(actTable(d.environment.map(x=>({title:x.title,description:x.description,basis:x.basis,for:x.for})),a=>a.for,'על מה זה נשען'));}
-  if((d.other||[]).length){card.appendChild(el('h2',null,'4. המלצות נוספות'));card.appendChild(actTable(d.other.map(x=>({title:x.title,description:x.description,basis:x.basis})),null,'על מה זה נשען'));}
+  if((d.environment||[]).length){card.appendChild(el('h2',null,'3. עיצוב סביבת הכיתה'));card.appendChild(actTable(d.environment.map(x=>({title:x.title,description:x.description,basis:x.basis,for:x.for})),a=>a.for));}
+  if((d.other||[]).length){card.appendChild(el('h2',null,'4. המלצות נוספות'));card.appendChild(actTable(d.other.map(x=>({title:x.title,description:x.description,basis:x.basis})),null));}
   card.appendChild(SBE_WRITER.reportSection(d,{el,inlineRich,richText},'5. עקרונות החוסן בתקשורת של הכיתה','הודעות מוכנות לשליחה: כתובות לפי עקרונות החוסן'));
   if((d.checks||[]).length){card.appendChild(el('h2',null,'6. כדאי לבדוק עם התלמידים'));const ul=el('ul','tl');d.checks.forEach(x=>ul.appendChild(el('li',null,x)));card.appendChild(ul);}
   const foot=el('p','muted','הדוח הופק על ידי מודל שפה על סמך תיאור המחנך/ת ומבוסס על ');const a=el('a',null,'רשימת המקורות');a.href='resilience-advisor-sources.html';a.target='_blank';a.style.color='var(--spoken)';foot.appendChild(a);

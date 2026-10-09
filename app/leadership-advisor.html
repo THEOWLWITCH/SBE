@@ -6,6 +6,7 @@
 <title>נוגי: יועצת למנהיגות תומכת חוסן</title>
 <script src="lib/report-table.js"></script>
 <script src="lib/access-guard.js"></script>
+<script src="lib/product-doc.js"></script>
 <script src="lib/example-peek.js" data-tool="nugi" defer></script>
 <script src="lib/open-select.js"></script>
 <script src="lib/ai-call.js"></script>
@@ -842,7 +843,7 @@ function renderReport(){
   const head=el('div','card no-print');head.appendChild(el('h2',null,'הדוח מוכן'));
   const nav=el('div','rep-nav');
   const ask=el('button','btn','לשאול את נוגי ↓');ask.addEventListener('click',()=>{F('chat-area').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>{if(!F('chat-in').disabled)F('chat-in').focus({preventScroll:true});},500);});
-  const pr=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.print());
+  const pr=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'דוח סיכום והמלצות'+(STATE.report&&STATE.report.school?': '+STATE.report.school:'')}):window.print());
   const cp=el('button','btn btn-ghost','העתקת הטקסט');cp.addEventListener('click',()=>{navigator.clipboard&&navigator.clipboard.writeText(plain()).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הטקסט',2000);});});
   nav.appendChild(ask);nav.appendChild(pr);nav.appendChild(cp);head.appendChild(nav);box.appendChild(head);
 

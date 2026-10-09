@@ -81,7 +81,7 @@
   function msg(t) { return '<p style="font-family:sans-serif;padding:40px;text-align:center" dir="rtl">' + t + '</p>'; }
   function show(d) {
     var fr = dlg._fr; fr.srcdoc = msg('טוען את התוצר... בפעם הראשונה זה יכול לקחת עד דקה.');
-    api({ action: 'demoGet', id: d.id }).then(function (full) { fr.srcdoc = full.html; })
+    api({ action: 'demoGet', id: d.id }).then(function (full) { fr.srcdoc = String(full.html||'').replace(/<\/head>/i,'<style>.bar{display:none!important}</style></head>'); })
       .catch(function () { fr.srcdoc = msg('לא הצלחנו לטעון את התוצר. אפשר לנסות שוב בעוד רגע.'); });
   }
 

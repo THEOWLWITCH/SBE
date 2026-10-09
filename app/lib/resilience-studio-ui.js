@@ -15,7 +15,7 @@
   const EVIDENCE = {'example-draft':'דוגמת פיתוח: טרם אושרה','new-ai':'פעילות חדשה בבינה מלאכותית: טיוטה; יעילותה לא נבדקה'};
   const MECHANISM_LABELS={name:'שם המנגנון',cadence:'מתי ובאיזו תדירות?',roles:'מי אחראית, מי שותף ומי מגבה?',participation:'איך משתתפים ומשפיעים?',firstAction:'הפעולה הראשונה',review:'מתי ואיך בודקים ומשפרים?',mechanism:'איך המנגנון מתרגל את מוקד החוסן?'};
   const LEARNING_LABELS={mechanism:'איך הפעילות אמורה לעבוד (השערת התכנון)',apply:'איך מיישמים במפגש',watchFor:'מה נראה בפועל אם המנגנון פועל',limits:'גבולות: מה הפעילות אינה, ומתי עוצרים'};
-  const FACILITATION_LABELS={preparation:'לפני המפגש: הכנה וחזרה',opening:'פתיחה והסכמות',participation:'הזמנת השתתפות',questions:'שאלות והקשבה',difficulties:'שתיקה, התנגדות או מחלוקת',closing:'סגירה ועיבוד',followUp:'המשך ולמידה מההנחיה'};
+  const FACILITATION_LABELS={preparation:'לפני המפגש: הכנה וחזרה',opening:'פתיחה והסכמות',participation:'הזמנת השתתפות',questions:'שאלות והקשבה',difficulties:'שתיקה, התנגדות או מחלוקת',closing:'סיכום: מה שואלים בסוף ואיך מסיימים',followUp:'המשך ולמידה מההנחיה'};
   const IDEAS = [
     {id:'education',audience:'חינוך',title:'מידע חסר, פתרון משותף',focus:'support',purpose:'לתרגל בקשת עזרה והחלפת מידע במשימה משותפת.',individual:['זיהוי מידע חסר','בקשת עזרה והבהרה'],shared:['החלפת מידע ועזרה','בניית תכנית משולבת'],steps:['בקבוצות קטנות כל משתתף מקבל חלק אחר של משימה בדויה.','שואלים ומחליפים מידע כדי לבנות תכנית אחת.','מזהים איזו בקשת עזרה אפשרה להתקדם.'],participants:'קבוצת תלמידים',age:'לפי גיל הקבוצה',goal:'לבקש מידע ועזרה ולבנות פתרון משותף',duration:40},
     {id:'youth',audience:'נוער מוביל',title:'יוזמה קטנה שאנחנו מובילים',focus:'direction',purpose:'לבחור יעד חיובי ולחבר תרומות של שותפים בדרך אליו.',individual:['הצעת יעד','בחירת תרומה'],shared:['תיאום יעד ומדד פעולה','חלוקת אחריות'],steps:['מציעים יוזמה פשוטה לשיפור דבר יומיומי.','בוחרים יעד ומחלקים תפקידים עם שותף וגיבוי.','קובעים פעולה ראשונה וסימן שניתן לראות שהתקדמנו.'],participants:'בני ובנות נוער ושותפים ליוזמה',age:'נוער',goal:'לקדם יוזמה קטנה באמצעות יעד ותפקידים משותפים',duration:40,leaderRole:'נער/ה שמוביל/ה יוזמה'},
@@ -197,7 +197,7 @@
     a.socialMechanism=D.socialMechanism(value.socialMechanism);a.facilitationPlan=D.facilitationPlan(value.facilitationPlan);a.learningGuide=D.learningGuide(value.learningGuide);
     const array = input => (Array.isArray(input)?input:[]).map(String);
     a.professionalBasis=(Array.isArray(value.professionalBasis)?value.professionalBasis:[]).map(s=>typeof s==='string'?s:{sourceId:String(s.sourceId||''),explanation:String(s.explanation||''),name:String(s.name||''),url:String(s.url||''),version:String(s.version||''),status:String(s.status||'')});
-    a.sessions=(Array.isArray(value.sessions)?value.sessions:[]).map(s=>({id:String(s.id||''),title:String(s.title||''),purpose:String(s.purpose||''),link:String(s.link||''),debrief:array(s.debrief),nextStep:String(s.nextStep||''),participantMaterials:String(s.participantMaterials||''),steps:(Array.isArray(s.steps)?s.steps:[]).map(step=>({id:String(step.id||''),title:String(step.title||''),minutes:Number(step.minutes),instructions:String(step.instructions||''),facilitation:String(step.facilitation||''),space:String(step.space||''),requiresReview:step.requiresReview===true,materials:array(step.materials),components:array(step.components),individualSkills:array(step.individualSkills),sharedSkills:array(step.sharedSkills)}))}));
+    a.sessions=(Array.isArray(value.sessions)?value.sessions:[]).map(s=>({id:String(s.id||''),title:String(s.title||''),purpose:String(s.purpose||''),link:String(s.link||''),debrief:array(s.debrief),nextStep:String(s.nextStep||''),participantMaterials:String(s.participantMaterials||''),steps:(Array.isArray(s.steps)?s.steps:[]).map(step=>({id:String(step.id||''),title:String(step.title||''),phase:String(step.phase||''),minutes:Number(step.minutes),instructions:String(step.instructions||''),facilitation:String(step.facilitation||''),space:String(step.space||''),requiresReview:step.requiresReview===true,materials:array(step.materials),components:array(step.components),individualSkills:array(step.individualSkills),sharedSkills:array(step.sharedSkills)}))}));
     return a;
   }
   function safeMapping(value) {
@@ -434,12 +434,13 @@
       const time=el('p','session-time','');time.dataset.sessionTime=si;n.append(time);const sc=claimsBox(activity,session,prefix);sc.id=prefix+'-session-claims-'+si;n.append(sc);
       (session.steps||[]).forEach((step,sti)=>{
         const st=el('article','step-card');st.id=prefix+'-'+step.id;const sh=el('div','section-head');sh.append(el('span','step-code','שלב '+(sti+1)),button('מחיקת שלב',()=>{prepareActivityEdit(isCandidate);session.steps.splice(sti,1);persist();renderActivityEditor(activity,brief,host,isCandidate);renderValidation(isCandidate);updateControls();renderCoach();},'btn danger small'));st.append(sh,button('שאלות ושיפור לשלב',()=>openCoach('step',step,isCandidate)));
-        const fields=el('div','step-fields');fields.append(editField(step,'שם השלב','title',isCandidate),editField(step,'דקות','minutes',isCandidate,{type:'number',min:1}));st.append(fields,editField(step,'מה עושים?','instructions',isCandidate,{multiline:true,rows:3}),editField(step,'איך מנחים את השלב','facilitation',isCandidate,{multiline:true,rows:2}),editField(step,'מרחב וסידור','space',isCandidate));
+        const fields=el('div','step-fields');const ph=el('label','','חלק במפגש');const phs=document.createElement('select');phs.setAttribute('data-closed','');D.STEP_PHASES.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;phs.append(o);});phs.value=D.STEP_PHASES.includes(step.phase)?step.phase:'פעילות מרכזית';phs.addEventListener('change',()=>{prepareActivityEdit(isCandidate);step.phase=phs.value;persist();});ph.append(phs);
+        fields.append(ph,editField(step,'שם השלב','title',isCandidate),editField(step,'דקות','minutes',isCandidate,{type:'number',min:1}));st.append(fields,editField(step,'תיאור הפעילות','instructions',isCandidate,{multiline:true,rows:3}),editField(step,'הנחיה למנחה: מה אומרים ומה שואלים','facilitation',isCandidate,{multiline:true,rows:2}),editField(step,'עזרים ומשאבים: סידור המרחב','space',isCandidate));
         const review=el('div','privacy-note');review.dataset.reviewStep=step.id;review.hidden=!step.requiresReview;review.append(el('p','','המטרה או ההוראות השתנו. בדקו את רכיבי החוסן והמיומנויות של השלב לפני שיוצגו שוב כיעדי תרגול.'),button('אישור יעדי התרגול של השלב',()=>{step.requiresReview=false;persist();refreshClaims(isCandidate);refreshReviewControls(isCandidate);renderValidation(isCandidate);updateControls();}));st.append(review);
         const details=el('details');details.append(el('summary','','רכיבים, מיומנויות וחומרים של השלב'));const componentChecks=el('div','step-components');
         D.COMPONENTS.forEach(c=>{const label=el('label','component-check'),check=el('input');check.type='checkbox';check.checked=(step.components||[]).includes(c.id);check.addEventListener('change',()=>{prepareActivityEdit(isCandidate);step.components=check.checked?[...new Set([...(step.components||[]),c.id])]:(step.components||[]).filter(id=>id!==c.id);persist();refreshClaims(isCandidate);renderValidation(isCandidate);});label.append(check,document.createTextNode(c.label));componentChecks.append(label);});details.append(el('h4','','רכיבים שהשלב מתרגל בפועל'),componentChecks,editArray(step,'מיומנויות אישיות: מיומנות אחת בשורה','individualSkills',isCandidate),editArray(step,'מיומנויות משותפות: מיומנות אחת בשורה','sharedSkills',isCandidate),editArray(step,'חומרים לשלב: פריט אחד בשורה','materials',isCandidate));st.append(details);n.append(st);
       });
-      const actions=el('div','actions');actions.append(button('+ הוספת שלב',()=>{prepareActivityEdit(isCandidate);session.steps.push({id:uid('step'),title:'שלב נוסף',minutes:1,instructions:'',facilitation:'',space:'',materials:[],components:[],individualSkills:[],sharedSkills:[]});persist();renderActivityEditor(activity,brief,host,isCandidate);renderValidation(isCandidate);updateControls();}));n.append(actions,editField(session,'חומרי המשתתפים','participantMaterials',isCandidate,{multiline:true,rows:3}),editArray(session,'שאלות לעיבוד, שאלה אחת בשורה','debrief',isCandidate),editField(session,'צעד המשך','nextStep',isCandidate,{multiline:true}));host.append(n);
+      const actions=el('div','actions');actions.append(button('+ הוספת שלב',()=>{prepareActivityEdit(isCandidate);session.steps.push({id:uid('step'),title:'שלב נוסף',phase:'פעילות מרכזית',minutes:1,instructions:'',facilitation:'',space:'',materials:[],components:[],individualSkills:[],sharedSkills:[]});persist();renderActivityEditor(activity,brief,host,isCandidate);renderValidation(isCandidate);updateControls();}));n.append(actions,editField(session,'דף למשתתפים: מה מקבלים ומה עושים בו','participantMaterials',isCandidate,{multiline:true,rows:3}),editArray(session,'שאלות לסיכום: המנחה שואל/ת את הקבוצה בסוף המפגש. שאלה אחת בשורה','debrief',isCandidate),editField(session,'אחרי המפגש: מי עושה, מה ומתי','nextStep',isCandidate,{multiline:true}));host.append(n);
     });
     refreshClaims(isCandidate);
   }
@@ -513,7 +514,7 @@
     if(problems.length){const onlyFocus=problems.length===1&&!D.component(state.brief.focus);if(!onlyFocus)goStep(1);else{$('focus').closest('details').open=true;}error('כדי לבנות, חסרים עוד כמה פרטים:\n'+problems.join('\n'));return;}
     if((state.recommendation&&state.recommendation.questions||[]).length&&!String(state.brief.clarifications||'').trim()){notice('נשמח לתשובה קצרה לשאלות, ואז אפשר לבנות.');const f=document.querySelector('.q-answer');if(f)f.focus();return;}
     state.confirmed=true;$('brief-confirmed').checked=true;
-    const b=cleanBrief(state.brief);operation('בונים פעילות לפי התקציר שאישרתם (כמה דקות)…',async()=>{const data=await api(requestBody('generate',b));if(!data.activity)throw new Error('לא התקבלה פעילות מהשרת.');const failures=D.validateActivity(data.activity,b);if(failures.length)throw new Error('הפעילות שהתקבלה דורשת תיקון: '+failures.join('; '));if(data.mapping)state.mapping=safeMapping(data.mapping);installActivity(data.activity,b);notice('הפעילות נבנתה. אפשר לערוך את ההנחיה, השלבים והחומרים, ולבדוק את הקשר בין התרגול למטרה.');});
+    const b=cleanBrief(state.brief);operation('בונים פעילות לפי התקציר שאישרתם (כמה דקות)…',async()=>{const data=await api(requestBody('generate',b));if(!data.activity)throw new Error('לא התקבלה פעילות מהשרת.');const failures=D.validateActivity(data.activity,b);if(failures.length)throw new Error('הפעילות שהתקבלה דורשת תיקון: '+failures.join('; '));if(data.mapping)state.mapping=safeMapping(data.mapping);installActivity(data.activity,b);const cr=data.customerReview;notice('הפעילות נבנתה.'+(cr?(cr.revised?' 🧐 קראנו אותה כמו מי שתשתמש בה, ותיקנו מה שלא היה ברור.':cr.ready?' 🧐 קראנו אותה כמו מי שתשתמש בה: היא ברורה.':' 🧐 קראנו אותה כמו מי שתשתמש בה. כדאי לבדוק: '+cr.issues.slice(0,3).map(x=>x.problem).join(' · ')):'')+' אפשר לערוך את ההנחיה, השלבים והחומרים.');});
   }
   function example() {
     collectBrief();if(!D.component(state.brief.focus)){const r=D.recommendFocus(state.brief);state.brief.focus=r.focus;state.recommendation=r;fillBrief();renderFocus();renderRecommendation();}
@@ -539,7 +540,7 @@
     }
   }
   function checkExport(activity,brief) { const problems=D.validateActivity(activity,brief);if(problems.length)throw new Error('נדרש תיקון לפני יצוא: '+problems.join('; ')); }
-  // ערכה להדפסה (07/10/2026): טבלה לכל מפגש — שלב וזמן, מה עושים, איך מנחים, מרחב ועזרים, מה מתרגלים —
+  // ערכה להדפסה (08/10/2026): לכל מפגש טבלת מהלך לפי פתיחה, פעילות מרכזית, סיכום ואחרי המפגש: תיאור הפעילות · הנחיה למנחה · עזרים ומשאבים.
   // במקום הרבה שורות קצרות. גרסת המנחה לרוחב הדף; חומרי המשתתפים — רק מה שמשותף.
   function printDocument(activity,participantOnly,includeReason,brief) {
     const a=D.publicActivity(activity),n=el('div','print-document kit');brief=brief||{};
@@ -566,16 +567,36 @@
       const mins=(session.steps||[]).reduce((t,x)=>t+(Number(x.minutes)||0),0);
       block.append(el('h2','kit-h','מפגש '+(si+1)+': '+(session.title||'')+(mins&&!participantOnly?' · '+mins+' דקות':'')));
       const sub=el('p','kit-sub');sub.append(el('b','','מטרת המפגש: '),document.createTextNode(session.purpose||'—'));if(session.link&&!participantOnly){sub.append(document.createTextNode(' · '));sub.append(el('b','','קשר לתהליך: '),document.createTextNode(session.link));}block.append(sub);
+      // מהלך המפגש (08/10/2026): פתיחה · פעילות מרכזית · סיכום · אחרי המפגש, בשלוש עמודות:
+      // תיאור הפעילות · הנחיה למנחה (כולל שאלות הסיכום) · עזרים ומשאבים
+      const steps=session.steps||[];
+      const phaseOf=(step,i)=>D.STEP_PHASES&&D.STEP_PHASES.includes(step.phase)?step.phase:(i===0&&steps.length>1?'פתיחה':(i===steps.length-1&&steps.length>2?'סיכום':'פעילות מרכזית'));
       if(!participantOnly){
-        const rows=(session.steps||[]).map((step,i)=>{
-          const name=el('div');name.append(el('b','',(i+1)+'. '+(step.title||'')),el('div','kit-min',(step.minutes||'—')+' דק׳'));
-          const aids=el('div');if(String(step.space||'').trim())aids.append(el('div','',step.space));if((step.materials||[]).length)aids.append(el('div','kit-muted',step.materials.join(' · ')));if(!aids.childNodes.length)aids.textContent='—';
-          const prac=el('div');const comp=(step.components||[]).map(componentLabel);if(comp.length)prac.append(el('div','',comp.join(' · ')));const sk=[...(step.individualSkills||[]),...(step.sharedSkills||[])];if(sk.length)prac.append(el('div','kit-muted',sk.join(' · ')));if(!prac.childNodes.length)prac.textContent='—';
-          return [name,rich(step.instructions),step.facilitation?rich(step.facilitation):'—',aids,prac];
+        let matsPlaced=false;
+        const rows=steps.map((step,i)=>{
+          const phase=phaseOf(step,i);
+          const res=el('div');if(String(step.space||'').trim())res.append(el('div','',step.space));if((step.materials||[]).length)res.append(el('div','kit-muted',step.materials.join(' · ')));
+          if(!matsPlaced&&phase==='פעילות מרכזית'&&String(session.participantMaterials||'').trim()){matsPlaced=true;const m=el('div');m.append(el('b','','דף למשתתפים: '));m.append(rich(session.participantMaterials));res.append(m);}
+          return {phase,title:step.title,minutes:step.minutes,desc:rich(step.instructions),guide:step.facilitation?rich(step.facilitation):'',res};
         });
-        block.append(table('kit-steps',['שלב','מה עושים','איך מנחים','מרחב ועזרים','מה מתרגלים'],rows));
+        const qs=(session.debrief||[]).filter(x=>String(x||'').trim());
+        if(qs.length){
+          const box=el('div');box.append(el('b','','שאלות לסיכום: המנחה שואל/ת את הקבוצה, כדי לחשוב יחד מה עבד ומה ננסה בפעם הבאה'),list(qs));
+          let last=[...rows].reverse().find(r=>r.phase==='סיכום');
+          if(!last){last={phase:'סיכום',title:'סיכום',desc:'',guide:'',res:''};rows.push(last);}
+          const g=el('div');if(last.guide)g.append(last.guide);g.append(box);last.guide=g;
+        }
+        if(!matsPlaced&&String(session.participantMaterials||'').trim()){const m=el('div');m.append(el('b','','דף למשתתפים: '));m.append(rich(session.participantMaterials));rows.push({phase:'פעילות מרכזית',title:'',desc:'',guide:'',res:m});}
+        if(String(session.nextStep||'').trim())rows.push({phase:'אחרי המפגש',title:'',desc:rich(session.nextStep),guide:'',res:''});
+        block.append(SBE_DOC.flowTable(rows));
+      } else {
+        const rows=[];
+        if(String(session.participantMaterials||'').trim())rows.push(['מה מקבלים ומה עושים',rich(session.participantMaterials)]);
+        const qs=(session.debrief||[]).filter(x=>String(x||'').trim());
+        if(qs.length)rows.push(['בסוף המפגש נחשוב יחד',list(qs)]);
+        if(String(session.nextStep||'').trim())rows.push(['אחרי המפגש',rich(session.nextStep)]);
+        if(rows.length)block.append(table('kit-two',null,rows));
       }
-      block.append(table('kit-close',['חומרי המשתתפים','שאלות לעיבוד','צעד המשך'],[[rich(session.participantMaterials),list(session.debrief),rich(session.nextStep)]]));
       n.append(block);
     });
     if(a.socialMechanism&&a.socialMechanism.type!=='none'){section('מנגנון חברתי להמשך · '+(D.MECHANISM_TYPES[a.socialMechanism.type]||''));n.append(table('kit-two',null,D.MECHANISM_FIELDS.filter(k=>String(a.socialMechanism[k]||'').trim()).map(k=>[MECHANISM_LABELS[k],a.socialMechanism[k]])));}
@@ -598,7 +619,7 @@
   }
   function printActivity(participantOnly,activity,brief) {
     activity=activity||state.activity;brief=brief||state.activityBrief||state.brief;if(!activity)return;
-    operation('בודקים הרשאה ותקינות לפני ההדפסה…',async()=>{await ensureAuthorized();checkExport(activity,brief);const node=printDocument(activity,participantOnly,!participantOnly&&$('include-selection-reason').checked,brief);SBE_DOC.print({landscape:!participantOnly,title:activity.title,subtitle:participantOnly?'חומרי משתתפים · מטרה, תרגול וחומרים משותפים':'ערכת הנחיה · '+evidenceLabel(activity),node,inline:true});notice('נפתחה תצוגה מקדימה עם הנוסח הערוך להדפסה או לשמירה כ-PDF.');});
+    operation('בודקים הרשאה ותקינות לפני ההדפסה…',async()=>{await ensureAuthorized();checkExport(activity,brief);const node=printDocument(activity,participantOnly,!participantOnly&&$('include-selection-reason').checked,brief);SBE_DOC.print({landscape:!participantOnly,title:activity.title,kind:participantOnly?'חומרי המשתתפים':'ערכת המנחה',subtitle:participantOnly?'חומרי משתתפים · מטרה, תרגול וחומרים משותפים':'ערכת הנחיה · '+evidenceLabel(activity),node,inline:true});notice('נפתחה תצוגה מקדימה עם הנוסח הערוך להדפסה או לשמירה כ-PDF.');});
   }
   function downloadJson(name,value) {const blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=el('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
   function saveActivity() {

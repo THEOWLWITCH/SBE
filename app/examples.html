@@ -155,7 +155,7 @@ async function load(){
 async function view(d){
   F('dlgT').textContent=d.title;F('dlgInT').textContent=d.input||'';F('dlgIn').hidden=!d.input;
   F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:40px;text-align:center" dir="rtl">טוען את התוצר... בפעם הראשונה זה יכול לקחת עד דקה.</p>';F('dlg').showModal();
-  try{const full=await api({action:'demoGet',id:d.id});F('dlgF').srcdoc=full.html;}
+  try{const full=await api({action:'demoGet',id:d.id});F('dlgF').srcdoc=String(full.html||'').replace(/<\/head>/i,'<style>.bar{display:none!important}</style></head>');}
   catch(e){F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:40px;text-align:center" dir="rtl">לא הצלחנו לטעון את התוצר. אפשר לנסות שוב.</p>';}
 }
 F('dlgX').onclick=()=>F('dlg').close();

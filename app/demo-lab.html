@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>מעבדת הדמו</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/ai-call.js"></script>
+<script src="lib/customer-review.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
@@ -114,11 +116,15 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 <p class="muted" style="margin-top:10px">מסע אל החוסן נוצר כמסע דמו (בלי מיילים, ולא נספר בדוחות ובמחקר). אפשר למחוק אותו בלוח המסעות.</p>
 
 <h2 id="list-h">התיקייה שלי: התוצרים שהופקו</h2>
-<div class="row" style="margin-bottom:10px"><a href="examples.html" target="_blank" rel="noopener" class="btn ghost sm">📚 לספריית התוצרים לדוגמה ←</a><span class="muted">שם מופיע רק מה שסימנת "מוצג בספרייה".</span></div>
+<div class="row" style="margin-bottom:10px"><button class="btn sm" id="rvAll" type="button">🧐 בדיקת הלקוחה לכל התוצרים</button><a href="examples.html" target="_blank" rel="noopener" class="btn ghost sm">📚 לספריית התוצרים לדוגמה ←</a><span class="muted">שם מופיע רק מה שסימנת "מוצג בספרייה".</span></div>
 <div id="list"><p class="muted">טוען...</p></div>
 </div>
 
 <div id="frames" aria-hidden="true"></div>
+<dialog id="rvDlg"><div class="dlg">
+  <div class="dlg-h"><b id="rvT"></b><button class="btn ghost sm" id="rvX">סגירה</button></div>
+  <div id="rvB" style="padding:12px 16px;overflow:auto;flex:1"></div>
+</div></dialog>
 <dialog id="dlg"><div class="dlg">
   <div class="dlg-h"><b id="dlgT"></b><a class="btn ghost sm" id="dlgLib" href="examples.html" target="_blank" rel="noopener">📚 ספריית הדוגמאות</a><button class="btn ghost sm" id="dlgPrint">הדפסה / PDF</button><button class="btn ghost sm" id="dlgX">סגירה</button></div>
   <details id="dlgIn"><summary>מה הוזן לכלי</summary><pre id="dlgInT"></pre></details>
@@ -167,7 +173,21 @@ RUNS.forEach(([id])=>{
 F('all').onclick=()=>RUNS.forEach(([id])=>F('cb-'+id).checked=true);
 F('none').onclick=()=>RUNS.forEach(([id])=>F('cb-'+id).checked=false);
 F('go').onclick=()=>runAll(RUNS.map(r=>r[0]).filter(id=>F('cb-'+id).checked));
-function setRun(id,cls,text){const r=F('run-'+id);r.className='run '+(cls||'');F('st-'+id).textContent=text||'';const v=r.querySelector('.view-btn');if(v&&cls!=='done')v.remove();}
+// הסטטוס האחרון של כל כלי נשמר במכשיר, כדי שאחרי רענון יופיע למה לא הופק תוצר (08/10/2026: "לפרקטי אין כפתור צפייה")
+const ST_KEY='sbe.demolab.status.v1';
+function stLoad(){try{return JSON.parse(localStorage.getItem(ST_KEY)||'{}')||{};}catch(e){return {};}}
+function stSave(id,cls,text){if(cls==='running')return;try{const o=stLoad();o[id]={cls,text,at:Date.now()};localStorage.setItem(ST_KEY,JSON.stringify(o));}catch(e){}}
+function setRun(id,cls,text){const r=F('run-'+id);r.className='run '+(cls||'');F('st-'+id).textContent=text||'';const v=r.querySelector('.view-btn');if(v&&cls!=='done')v.remove();stSave(id,cls,text);}
+function restoreStatus(){
+  const o=stLoad();
+  RUNS.forEach(([id])=>{
+    const r=F('run-'+id);if(!r||/running/.test(r.className))return;
+    const has=ITEMS.some(x=>x.tool===id);const s=o[id];
+    if(s&&s.cls==='error'){r.className='run error';F('st-'+id).textContent='בפעם האחרונה: '+s.text;}
+    else if(!has){r.className='run';F('st-'+id).textContent='עוד אין תוצר בתיקייה';}
+    else if(!/done|error/.test(r.className))F('st-'+id).textContent='';
+  });
+}
 function it0(m){return ((m.items||[])[0]||{}).tool;}
 function showView(id,tool){
   const r=F('run-'+id);if(!r||r.querySelector('.view-btn'))return;
@@ -221,11 +241,48 @@ function runOne(id,batch){
 let ITEMS=[];
 // "טרם פורסם" — רמז לחומר שעוד לא פורסם; מזהירים לפני הצגה בספרייה
 const HIDDEN_HINT=/טרם פורסם|SadeTools2026|SadeTrust2026/;
+// 🧐 הסוכנת-הלקוחה (08/10/2026): קוראת כל תוצר כמו מי שתשתמש בו ובודקת שהוא ברור ועונה לבקשה (lib/customer-review.js).
+// התוצאה נשמרת במכשיר לפי התוצר, כדי לראות אותה גם אחרי רענון.
+const AI_SERVER='https://sbe-server.onrender.com', RV_KEY='sbe.demolab.review.v1';
+function rvGet(id){try{return (JSON.parse(localStorage.getItem(RV_KEY)||'{}')||{})[id]||null;}catch(e){return null;}}
+function rvSet(id,v){try{const o=JSON.parse(localStorage.getItem(RV_KEY)||'{}')||{};o[id]=v;localStorage.setItem(RV_KEY,JSON.stringify(o));}catch(e){}}
+function rvLabel(d){const r=rvGet(d.id);return !r?'🧐 בדיקת הלקוחה':r.ready&&!(r.issues||[]).length?'🧐 ברור ✓':((r.issues||[]).length===1?'🧐 הערה אחת':'🧐 '+(r.issues||[]).length+' הערות');}
+async function review(d,btn,show){
+  const old=btn.textContent;btn.disabled=true;btn.textContent='🧐 קוראת... (עד 2 דק׳)';
+  try{
+    const full=await api({action:'demoGet',id:d.id});
+    const text=SBE_CUSTOMER.textOf(full.html).slice(0,60000);
+    const raw=await sbeCallAI(AI_SERVER,{system:SBE_CUSTOMER.system,messages:[{role:'user',content:'מה ביקשתי (הקלט):\n'+(d.input||'לא נשמר')+'\n\nהתוצר שקיבלתי ('+d.title+'):\n'+text}],maxTokens:6000},240000);
+    const m=String(raw).match(/\{[\s\S]*\}/);if(!m)throw new Error('לא התקבלה תשובה במבנה הנכון');
+    const r=JSON.parse(m[0]);r.issues=Array.isArray(r.issues)?r.issues:[];r.at=new Date().toISOString();rvSet(d.id,r);
+    btn.textContent=rvLabel(d);if(show)showReview(d,r);return r;
+  }catch(e){btn.textContent=old;if(show)alert('הבדיקה לא הצליחה: '+e.message);return null;}
+  finally{btn.disabled=false;}
+}
+function showReview(d,r){
+  F('rvT').textContent='🧐 בדיקת הלקוחה: '+d.title;const b=F('rvB');b.textContent='';
+  b.appendChild(el('p',null,(r.ready&&!r.issues.length?'✓ ':'')+(r.summary||'')));
+  if(r.issues.length){
+    const t=el('table','kit-table');t.style.cssText='width:100%;border-collapse:collapse;font-size:14px';
+    const h=el('tr');['איפה','מה כתוב','מה לא ברור','הצעה לתיקון'].forEach(x=>{const th=el('th',null,x);th.style.cssText='background:#2E5A7D;color:#fff;padding:6px 8px;text-align:right';h.appendChild(th);});t.appendChild(h);
+    r.issues.forEach(x=>{const tr=el('tr');[x.where,x.quote,x.problem,x.fix].forEach(v=>{const td=el('td',null,v||'');td.style.cssText='border:1px solid var(--hair);padding:6px 8px;vertical-align:top';tr.appendChild(td);});t.appendChild(tr);});
+    b.appendChild(t);
+    b.appendChild(el('p','muted','הבדיקה עוזרת לראות מה כדאי לשפר בכלי עצמו. התוצר בתיקייה לא משתנה.'));
+  }
+  F('rvDlg').showModal();
+}
+F('rvX').onclick=()=>F('rvDlg').close();
+F('rvAll').onclick=async()=>{
+  const btn=F('rvAll');if(btn.disabled)return;btn.disabled=true;let n=0;
+  for(const d of ITEMS){btn.textContent='🧐 בודקת '+(++n)+' מתוך '+ITEMS.length+'...';const c=[...document.querySelectorAll('#list .item')].find(x=>x.querySelector('b')&&x.querySelector('b').textContent===d.title&&x.querySelector('.rv-btn'));await review(d,c?c.querySelector('.rv-btn'):el('button'),false);}
+  btn.disabled=false;btn.textContent='🧐 בדיקת הלקוחה לכל התוצרים';
+};
 async function loadList(){
   const box=F('list');
   try{ITEMS=(await api({action:'demoList'})).items||[];}
   catch(e){box.textContent='';box.appendChild(el('p','warn','לא הצלחנו לטעון את התיקייה ('+e.message+').'));return;}
   box.textContent='';F('nItems').textContent=ITEMS.length;
+  restoreStatus();
   RUNS.forEach(([id])=>{const r=F('run-'+id);if(r&&!/running/.test(r.className))showView(id);});
   if(!ITEMS.length){box.appendChild(el('p','muted','התיקייה ריקה. אפשר להתחיל בהפקה למעלה.'));return;}
   const groups={};ITEMS.forEach(d=>{(groups[d.tool]=groups[d.tool]||[]).push(d);});
@@ -235,6 +292,7 @@ async function loadList(){
       const c=el('div','card item');
       const t=el('div','t');t.appendChild(el('b',null,d.title));t.appendChild(el('span','muted','הופק: '+date(d.at)));c.appendChild(t);
       const v=el('button','btn ghost sm','צפייה');v.onclick=()=>view(d);c.appendChild(v);
+      const rv=el('button','btn ghost sm rv-btn',rvLabel(d));rv.onclick=()=>review(d,rv,true);c.appendChild(rv);
       const p=el('label','pub'+(d.public?' on':''));const cb=el('input');cb.type='checkbox';cb.checked=!!d.public;
       p.append(cb,document.createTextNode(d.public?'מוצג בספרייה':'רק אצלי'));
       cb.onchange=async()=>{
@@ -264,7 +322,7 @@ async function view(d){
   try{
     const full=await api({action:'demoGet',id:d.id});clearTimeout(slow);if(n!==VIEW_N)return;
     const txt=String(full.html||'').replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>|<[^>]+>|\s+/g,' ').trim();
-    F('dlgF').srcdoc=txt.length>40?full.html:vmsg('התוצר נשמר בלי תוכן. אפשר להפיק אותו שוב בכפתור "הפקה" בשורה של הכלי, ולמחוק את העותק הזה.');
+    F('dlgF').srcdoc=txt.length>40?String(full.html||'').replace(/<\/head>/i,'<style>.bar{display:none!important}</style></head>'):vmsg('התוצר נשמר בלי תוכן. אפשר להפיק אותו שוב בכפתור "הפקה" בשורה של הכלי, ולמחוק את העותק הזה.');
   }catch(e){clearTimeout(slow);if(n!==VIEW_N)return;F('dlgF').srcdoc=vmsg('לא הצלחנו לטעון את התוצר ('+e.message+'). אפשר לסגור ולנסות שוב בעוד רגע.');}
 }
 F('dlgX').onclick=()=>F('dlg').close();
