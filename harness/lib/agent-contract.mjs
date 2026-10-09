@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import {applyProductPolicy} from './providers.mjs';
+import {documentText} from './planner-artifact.mjs';
 
 export const AGENT_SCHEMA_VERSION = 'agent-proposal/v1';
 export const REVIEWERS = Object.freeze(['pedagogy','resilience_facilitation','safety_sources']);
@@ -26,6 +27,8 @@ export function validateProposal(value,{artifact,sourceLibrary=[],agent}) {
     const allowed=ROOT_PATHS.has(change.path)||/^steps\/[a-zA-Z0-9_-]{1,80}\/(title|instructions|minutes)$/.test(change.path);
     if(!allowed||paths.has(change.path))throw contractError('proposal_patch');
     if(compactRole(agent)&&change.path==='pipelineOutput')throw contractError('agent_scope');
+    // Planner artifacts (activity, conversation) carry the planner's own document, not pipeline output.
+    if(change.path==='pipelineOutput'&&artifact.content?.kind!=='narrative')throw contractError('proposal_patch');
     if(Object.hasOwn(artifact.locks||{},change.path)&&JSON.stringify(change.value)!==JSON.stringify(artifact.locks[change.path]))throw contractError('locked_field');
     if(change.path.startsWith('steps/')&&!artifact.content.steps.some(step=>step.id===change.path.split('/')[1])) throw contractError('missing_step');
     paths.add(change.path);
@@ -49,14 +52,22 @@ export function agentEnvelope(artifact,agent,{runId,question='',stepId='',reques
   const content=structuredClone(artifact.content);
   // Converted rendering data is derived again after a patch; avoid two model-editable truths.
   delete content.scenario;
+  const planner=content.kind!=='narrative';
   // Pedagogy and facilitation review the structured situation and editable
   // steps. Safety keeps full prose for privacy checks; only roles that see the
   // full original output may propose replacing it.
-  if(compactRole(agent))delete content.pipelineOutput.documents;
+  if(compactRole(agent)&&content.pipelineOutput)delete content.pipelineOutput.documents;
+  // Planner documents are the planner's edited text. Reviewers read it as text and
+  // propose changes to structured fields and steps only; compact roles skip it.
+  if(planner) {
+    const document=content.document;delete content.document;
+    if(!compactRole(agent))content.documentText=documentText(document);
+  }
   const envelope={artifactId:artifact.id,baseVersion:artifact.version,runId,agent,schemaVersion:AGENT_SCHEMA_VERSION,
     request:{question:requestType==='concern'&&!['resilience_facilitation','single'].includes(agent)?'':question,stepId,requestType},content,
     sourceCatalogue:sourceLibrary.filter(s=>s.approved===true&&!s.hidden).map(({sourceId,title,citation,version})=>({sourceId,title,citation,version})),
-    allowedPaths:[...Array.from(ROOT_PATHS).filter(path=>!compactRole(agent)||path!=='pipelineOutput'),'steps/<stable-id>/title','steps/<stable-id>/instructions','steps/<stable-id>/minutes'],
+    ...(content.kind==='conversation'?{kindGuidance:'This is one personal conversation, not a group activity. Steps are its stages. Review listening, open questions, the other person\'s sense of choice and control, safety, and a clear closing. A social mechanism and group skills are optional here.'}:{}),
+    allowedPaths:[...Array.from(ROOT_PATHS).filter(path=>path!=='pipelineOutput'||(!compactRole(agent)&&!planner)),'steps/<stable-id>/title','steps/<stable-id>/instructions','steps/<stable-id>/minutes'],
     locks:structuredClone(artifact.locks||{})};
   if(['resilience_facilitation','single'].includes(agent))envelope.privateConcerns=artifact.privateConcerns;
   if(agent==='synthesis') {
