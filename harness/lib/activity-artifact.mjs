@@ -8,7 +8,8 @@ import { PLANNER_KINDS,PRACTICE_MODES,OPTIONAL_BY_CHOICE,validatePlannerContent,
 const PERMISSIONS=['fac_trainee','fac_parent','fac_youth','activity','conv','studio','resilience','leadership','practi'];
 // Each kind is opened only by the tools that produce it. A conversation draft needs the conversation planner.
 const KIND_PERMISSIONS=Object.freeze({narrative:['fac_trainee','fac_parent','fac_youth','activity','studio','resilience','leadership','practi'],
-  activity:['activity','studio','resilience','leadership','practi'],conversation:['conv']});
+  activity:['activity','studio','resilience','leadership','practi'],conversation:['conv'],
+  sequence:['activity','studio','resilience','leadership','practi']});
 const VERSION='activity-artifact/v1';
 const now=()=>new Date().toISOString();
 const clone=value=>structuredClone(value);

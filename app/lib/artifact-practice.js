@@ -46,11 +46,15 @@
       rehearsal:"אפשר לתרגל עם עמיתה: אחת מנחה ואחת מגלמת משתתפת. בחרו שלב, קראו את ההוראות, נסו פתיחה ושאלת המשך, ואז החליפו תפקידים."},
     activity: {purpose:"מטרת הפעילות", guide:"הנחיה למנחה", mechanism:"המנגנון החברתי שנבחר", steps:"מהלך המפגש", summary:"תמצית הפעילות",
       rehearsal:"תרגול המפגש עם עמיתה: אחת מנחה ואחת משחקת משתתפת. בוחרים שלב, קוראים מה עושים בו, מנסים את הפתיחה ואת השאלות, ואז מחליפים תפקידים."},
+    sequence: {purpose:"מטרות הרצף", guide:"הנחיה למנחה", mechanism:"המנגנון החברתי: מה חוזר ממפגש למפגש", steps:"מהלך המפגשים", summary:"תמצית הרצף",
+      rehearsal:"תרגול מפגש מהרצף עם עמיתה: אחת מנחה ואחת משחקת משתתפת. בוחרים מפגש ושלב, קוראים מה עושים בו, מנסים את הפתיחה ואת השאלות, ואז מחליפים תפקידים."},
     conversation: {purpose:"מטרת השיחה", guide:"הנחיה לשיחה", mechanism:"מה ממשיך אחרי השיחה", steps:"שלבי השיחה", summary:"תמצית השיחה",
       rehearsal:"תרגול השיחה עם עמיתה: את אומרת את דברי הפתיחה, והעמיתה משחקת את הצד השני. בוחרים שלב, מנסים אותו, ואז שואלות זו את זו מה עבד ומה אפשר לנסות אחרת."}
   };
   var SKIPPED = {socialMechanism:"מנגנון חברתי", facilitatorGuide:"הנחיה למנחה"};
   function labelsFor(out) { return LABELS[out.kind] || LABELS.narrative; }
+  // ברצף מפגשים כל שלב מסומן במספר המפגש שלו
+  function stepLabel(step) { return (step.session ? "מפגש " + step.session + " · " : "") + (step.phase && step.phase !== step.title ? step.phase + " · " : "") + step.title; }
   function present(value) { return Array.isArray(value) ? value.length > 0 : !!(value && String(value).trim()); }
   function printableActivity(content, L) {
     var printable = node("div"), labels = [L.purpose, "רכיבי החוסן", "מיומנויות אישיות", "מיומנויות משותפות", L.guide, L.mechanism];
@@ -58,8 +62,11 @@
     printable.append(node("h2", L.summary), printTable(["התחום", "הנוסח שאושר"], labels.map(function (label, index) {
       return [label, Array.isArray(values[index]) ? values[index].join("\n") : values[index]];
     }).filter(function (row, index) { return present(values[index]); })));
+    if ((content.sessions || []).length) printable.append(node("h2", "המפגשים"), printTable(["מפגש", "היעד", "התוצר"], content.sessions.map(function (x) {
+      return ["מפגש " + x.n, x.goal || "", x.product || ""];
+    })));
     printable.append(node("h2", L.steps), printTable(["שלב", "זמן", "מה עושים"], content.steps.map(function (step) {
-      return [(step.phase && step.phase !== step.title ? step.phase + " · " : "") + step.title, step.minutes === 1 ? "דקה אחת" : step.minutes + " דקות", step.instructions];
+      return [stepLabel(step), step.minutes === 1 ? "דקה אחת" : step.minutes + " דקות", step.instructions];
     })));
     return printable;
   }
@@ -74,21 +81,23 @@
     status.textContent = "גרסה " + out.version + " שאישרת · נשמרת בנפרד מטיוטות ושינויים חדשים";
     var content = out.content, L = labelsFor(out);
     if (out.kind === "conversation") { document.getElementById("scenarioName").textContent = "תרגול השיחה שאישרת"; document.getElementById("scenarioSubtitle").textContent = "תרגול עם עמיתה או מול המודל, ותיעוד הצעד הבא"; }
-    else if (out.kind === "activity") document.getElementById("scenarioSubtitle").textContent = "תרגול עם עמיתה או מול המודל, ותיעוד הצעד הבא";
-    var title = content.scenario && content.scenario.name || content.purpose || "התוצר שאישרת";
+    if (out.kind === "sequence") document.getElementById("scenarioName").textContent = "תרגול רצף המפגשים שאישרת";
+    if (out.kind === "activity" || out.kind === "sequence") document.getElementById("scenarioSubtitle").textContent = "תרגול עם עמיתה או מול המודל, ותיעוד הצעד הבא";
+    var title = content.scenario && content.scenario.name || out.kind === "sequence" && content.fields && content.fields.topic || content.purpose || "התוצר שאישרת";
     root.append(node("h1", title));
     section(L.purpose, content.purpose);
     [["רכיבי החוסן", content.resilienceComponents], ["מיומנויות אישיות", content.individualSkills], ["מיומנויות משותפות", content.sharedSkills],
       [L.guide, content.facilitatorGuide], [L.mechanism, content.socialMechanism]].forEach(function (pair) { if (present(pair[1])) section(pair[0], pair[1]); });
     if ((out.proceedWithout || []).length) section("בחרת להמשיך בלי", out.proceedWithout.map(function (k) { return SKIPPED[k] || k; }));
-    section(L.steps, content.steps.map(function (step) { return (step.phase && step.phase !== step.title ? step.phase + " · " : "") + step.title + " · " + (step.minutes === 1 ? "דקה אחת" : step.minutes + " דקות") + "\n" + step.instructions; }));
+    if ((content.sessions || []).length) section("המפגשים", content.sessions.map(function (x) { return "מפגש " + x.n + (x.goal ? ": " + x.goal : "") + (x.product ? "\nהתוצר: " + x.product : ""); }));
+    section(L.steps, content.steps.map(function (step) { return stepLabel(step) + " · " + (step.minutes === 1 ? "דקה אחת" : step.minutes + " דקות") + "\n" + step.instructions; }));
     var rehearsal = section(out.kind === "conversation" ? "תרגול השיחה" : "תרגול ההנחיה", L.rehearsal || "אפשר לתרגל עם עמיתה: אחת מנחה ואחת מגלמת משתתפת. בחרו שלב, קראו את ההוראות, נסו פתיחה ושאלת המשך, ואז החליפו תפקידים. מותר לעצור או לבחור דרך השתתפות אחרת. התרגול הזה משתמש בתוצר שאישרת.");
     var stepSelect = node("select"); stepSelect.setAttribute("aria-label", "שלב לתרגול");
-    content.steps.forEach(function (step) { var option = node("option", step.title); option.value = step.id; stepSelect.append(option); });
+    content.steps.forEach(function (step) { var option = node("option", step.session ? stepLabel(step) : step.title); option.value = step.id; stepSelect.append(option); });
     var prompt = node("p"); prompt.style.whiteSpace = "pre-wrap";
     function showStep() { var step = content.steps.find(function (item) { return item.id === stepSelect.value; }); prompt.textContent = step ? step.instructions : ""; }
     stepSelect.addEventListener("change", showStep); rehearsal.append(stepSelect, prompt); showStep();
-    if (out.kind === "activity" || out.kind === "conversation") liveRehearsal(rehearsal, out, stepSelect, title);
+    if (out.kind === "activity" || out.kind === "sequence" || out.kind === "conversation") liveRehearsal(rehearsal, out, stepSelect, title);
     var print = node("button", "הדפסת הגרסה שאושרה"); print.type = "button";
     print.addEventListener("click", function () {
       window.SBE_DOC.print({title:title, subtitle:"גרסה מאושרת " + out.version, node:printableActivity(content, L), inline:true});

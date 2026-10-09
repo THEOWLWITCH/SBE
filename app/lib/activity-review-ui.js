@@ -14,16 +14,18 @@
     activity: FIELDS,
     conversation: {purpose: 'מטרת השיחה', facilitatorGuide: 'הנחיה לשיחה: איפה ומתי, איך פותחים, מה שואלים ואיך מסיימים',
       resilienceComponents: 'רכיבי החוסן (רשות)', individualSkills: 'מיומנויות אישיות (רשות)', sharedSkills: 'מיומנויות משותפות (רשות)',
-      socialMechanism: 'מה ממשיך אחרי השיחה (רשות)'}
+      socialMechanism: 'מה ממשיך אחרי השיחה (רשות)'},
+    sequence: {...FIELDS, purpose: 'מטרות הרצף', socialMechanism: 'המנגנון החברתי: מה חוזר ממפגש למפגש'}
   };
   const REQUIRED = {conversation: ['purpose', 'facilitatorGuide']};
   // בפעילות אפשר לבחור במפורש להמשיך בלי מנגנון חברתי או בלי הנחיה למנחה (החלטת יעל, 09/10/2026).
-  const OPTIONAL_BY_CHOICE = {activity: ['socialMechanism', 'facilitatorGuide']};
+  const OPTIONAL_BY_CHOICE = {activity: ['socialMechanism', 'facilitatorGuide'], sequence: ['socialMechanism', 'facilitatorGuide']};
   const fieldsFor = kind => PLANNER_FIELDS[kind] || FIELDS;
   const KIND_TEXT = {
     narrative: {title: 'הכנה, סקירה ואישור של הפעילות', steps: 'שלבי הפעילות', approve: 'קראתי את הפעילות, המידע החסר והסיכונים, ואני מאשר/ת את הגרסה לשימוש בהנחייתי.'},
     activity: {title: 'בדיקה ואישור של הפעילות', steps: 'שלבי המפגש', approve: 'קראתי את הפעילות, המידע החסר והסיכונים, ואני מאשרת את הגרסה לשימוש בהנחייתי.'},
-    conversation: {title: 'בדיקה ואישור של השיחה', steps: 'שלבי השיחה', approve: 'קראתי את תכנון השיחה, המידע החסר והסיכונים, ואני מאשרת את הגרסה לשימוש.'}
+    conversation: {title: 'בדיקה ואישור של השיחה', steps: 'שלבי השיחה', approve: 'קראתי את תכנון השיחה, המידע החסר והסיכונים, ואני מאשרת את הגרסה לשימוש.'},
+    sequence: {title: 'בדיקה ואישור של רצף המפגשים', steps: 'מהלך המפגשים', approve: 'קראתי את רצף המפגשים, המידע החסר והסיכונים, ואני מאשרת את הגרסה לשימוש בהנחייתי.'}
   };
   const activeSessions = new Map();
   const error = (message, code, status) => Object.assign(new Error(message), {code, status});
@@ -326,7 +328,16 @@
       edit(field, value) { if (!Object.hasOwn(fieldsFor(kind), field)) throw error('שדה לא נתמך', 'invalid_field'); state.draft[field] = clone(value); edited(); },
       setConcerns(value) { state.concerns = String(value); edited(); },
       editStep(id, field, value) { const step = state.draft.steps.find(s => s.id === id); if (!step || !['title', 'instructions', 'minutes'].includes(field)) return; step[field] = value; edited(); },
-      addStep() { const id = 'step-' + uuid(); state.draft.steps.push({id, title: '', instructions: '', minutes: 1, ...(kind !== 'narrative' ? {phase: 'פעילות מרכזית'} : {})}); edited(); emit('steps'); return id; },
+      // ברצף מפגשים כל שלב שייך למפגש: השלב החדש נכנס בסוף המפגש שנבחר
+      addStep(sessionN) {
+        const id = 'step-' + uuid(), step = {id, title: '', instructions: '', minutes: 1, ...(kind !== 'narrative' ? {phase: 'פעילות מרכזית'} : {})};
+        if (kind === 'sequence') {
+          const n = sessionN || state.draft.sessions?.at(-1)?.n; if (!n) throw error('אין מפגש להוסיף אליו שלב', 'invalid_steps');
+          step.session = n; const last = state.draft.steps.map(s => s.session).lastIndexOf(n);
+          state.draft.steps.splice(last < 0 ? state.draft.steps.length : last + 1, 0, step);
+        } else state.draft.steps.push(step);
+        edited(); emit('steps'); return id;
+      },
       removeStep(id) { state.draft.steps = state.draft.steps.filter(s => s.id !== id); edited(); emit('steps'); },
       restoreRecovery() { if (!state.recovery) return; state.draft = clone(state.recovery.draft); state.concerns = state.recovery.concerns; state.recovery = null; edited(); emit('loaded'); },
       backup() { return JSON.stringify({privacy: 'private', artifactId: state.artifact?.id, baseVersion: state.artifact?.version, content: state.draft, privateConcerns: state.concerns}, null, 2); }
@@ -394,7 +405,15 @@
         field(form, label, LISTS.has(key) ? (draft[key] || []).join('\n') : draft[key] || '', value => session.edit(key, LISTS.has(key) ? value.split('\n').map(s => s.trim()).filter(Boolean) : value));
       }
       form.append(node('h4', T.steps));
+      const sessionOf = n => (draft.sessions || []).find(x => x.n === n);
+      let shown = null;
+      const addTo = n => form.append(button('הוספת שלב למפגש ' + n, () => session.addStep(n)));
       for (const step of draft.steps || []) {
+        if (kind === 'sequence' && step.session !== shown) {
+          if (shown != null) addTo(shown);
+          shown = step.session; const info = sessionOf(shown);
+          form.append(node('h5', 'מפגש ' + shown + (info?.goal ? ': ' + info.goal : '')));
+        }
         const box = node('section', undefined, {class: 'ar-step', 'aria-label': 'שלב ' + (step.title || step.id)});
         if (step.phase) box.append(node('p', 'חלק במפגש: ' + step.phase + ((draft.estimates || []).includes(step.id) ? ' · הזמן הוא אומדן' : '')));
         field(box, 'שם השלב', step.title, v => session.editStep(step.id, 'title', v), {type: 'text'});
@@ -407,7 +426,8 @@
           button('הסרת השלב', () => session.removeStep(step.id)));
         form.append(box);
       }
-      form.append(button('הוספת שלב', () => session.addStep()));
+      if (kind === 'sequence') { if (shown != null) addTo(shown); }
+      else form.append(button('הוספת שלב', () => session.addStep()));
       field(form, 'חשש פרטי למנחה. משמש לשיחה תומכת, ולא מופיע בפעילות למשתתפים', session.state.concerns, v => session.setConcerns(v));
       form.append(button('שאלה ועידוד בנוגע לחשש הפרטי', () => run(() => session.review({requestType: 'concern', question: 'עזרי לי לבחור איך להתמודד עם החשש הפרטי, במילים מעודדות ובלי לכלול אותו בנוסח הפעילות.'}))));
     }
@@ -472,14 +492,16 @@
     if (artifactId) run(() => session.load());
     return session;
   }
-  function mountSaved(container, {server, show, kind} = {}) {
-    const box = node('div', undefined, {dir: 'rtl'});
+  // kinds: כמה סוגים ברשימה אחת (בתכנון פעילות: מפגש אחד ורצף מפגשים)
+  function mountSaved(container, {server, show, kind, kinds} = {}) {
+    const box = node('div', undefined, {dir: 'rtl'}), all = kinds || [kind];
     container.append(box);
     function render() {
-      box.replaceChildren(); const list = savedArtifacts(kind); if (!list.length) return;
-      box.append(node('p', kind && kind !== 'narrative' ? 'טיוטות ששמרת בשרת לבדיקה ולאישור:' : 'פעילויות פרטיות שנשמרו בשרת. אפשר לפתוח אותן מחדש בכניסה עם אותו קוד.'));
+      box.replaceChildren(); const list = all.flatMap(k => savedArtifacts(k).map(item => ({...item, kind: item.kind || k}))); if (!list.length) return;
+      const planner = kind && kind !== 'narrative' || !!kinds;
+      box.append(node('p', planner ? 'טיוטות ששמרת בשרת לבדיקה ולאישור:' : 'פעילויות פרטיות שנשמרו בשרת. אפשר לפתוח אותן מחדש בכניסה עם אותו קוד.'));
       for (const item of list) box.append(button(item.name + ' · גרסה ' + item.version + ({approved: ' · מאושרת'}[item.status] || '') + ' · פתיחה', () => {
-        const panel = node('div'); mount(panel, {artifactId: item.id, server, kind}); show((kind && kind !== 'narrative' ? 'בדיקה ואישור: ' : 'הכנה פרטית: ') + item.name, panel);
+        const panel = node('div'); mount(panel, {artifactId: item.id, server, kind: item.kind}); show((planner ? 'בדיקה ואישור: ' : 'הכנה פרטית: ') + item.name, panel);
       }));
     }
     window.addEventListener?.('sbe-artifact-saved', render); render();

@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { createAtomicMemoryStore } from '../lib/principal.mjs';
 import { handleArtifacts } from '../lib/activity-artifact.mjs';
 import { agentEnvelope, validateProposal } from '../lib/agent-contract.mjs';
-import { validatePlannerDocument, documentText, activityFromDraft, conversationFromDraft, PRACTICE_MODES } from '../lib/planner-artifact.mjs';
+import { validatePlannerDocument, documentText, activityFromDraft, conversationFromDraft, sequenceFromDraft, PRACTICE_MODES } from '../lib/planner-artifact.mjs';
 
 const baseline = JSON.parse(readFileSync(new URL('../fixtures/baseline-cases.json', import.meta.url), 'utf8')).cases[0];
 const options = extra => ({sourceLibrary:baseline.sourceLibrary,...extra});
@@ -154,4 +154,45 @@ test('with the real source bank, every reviewer envelope fits the input cap (the
     assert.ok(Buffer.byteLength(JSON.stringify(envelope))<=AGENT_LIMITS.maxInputBytes,agent+' envelope fits');
     assert.ok(envelope.sourceCatalogue.every(s=>Object.keys(s).join()==='sourceId,title'&&s.title.length<=90));
   }
+});
+
+// A sequence of sessions (9 Oct 2026): its own kind, with each session as opening, main activity and closing steps.
+const sequenceDraft = () => ({id:'local-3',version:2,title:'רצף',fields:{topic:'עזרה הדדית',goals:['לבנות פינת עזרה','לקבוע תורנות שבועית',''],audience:'כיתה ה',ageRange:'10-11',
+  sessions:[{smart:JSON.stringify({S:{text:'להכיר את הרעיון',checked:true},M:{text:'רשימה'}}),product:'רשימת רעיונות',duration:'45',opening:'סבב שמות',openingMin:'5',main:'בזוגות',mainMin:'',subs:[{t:'מיפוי צרכים',min:'10'},{t:'',min:''}],closing:'כל זוג משתף',closingMin:'10'},
+    {smart:'',opening:'',main:'',closing:'',subs:[]},
+    {smart:'לקבוע תורנות',opening:'תזכורת',main:'בונים לוח תורנות',closing:'מסכמים מי מתחיל',closingMin:'5'}],secretField:'x'},document:doc()});
+test('a sequence becomes its own kind: steps per session, stable IDs, and the activity gates',async()=>{
+  const s=sequenceFromDraft(sequenceDraft());
+  assert.equal(s.kind,'sequence');assert.equal(s.purpose,'לבנות פינת עזרה\nלקבוע תורנות שבועית');
+  assert.deepEqual(s.steps.map(x=>[x.id,x.session,x.phase]),[['m1-opening',1,'פתיחה'],['m1-main',1,'פעילות מרכזית'],['m1-closing',1,'סיכום'],
+    ['m3-opening',3,'פתיחה'],['m3-main',3,'פעילות מרכזית'],['m3-closing',3,'סיכום']],'an empty session is skipped; numbers stay as in the planner');
+  assert.match(s.steps[1].instructions,/1\. מיפוי צרכים · 10 דקות/);
+  assert.deepEqual(s.sessions.map(x=>[x.n,x.goal]),[[1,'להכיר את הרעיון'],[3,'לקבוע תורנות']]);assert.ok(!('secretField' in s.fields)&&!('sessions' in s.fields));
+  assert.deepEqual(s.estimates,['m1-main','m3-opening','m3-main']);
+  assert.equal(PRACTICE_MODES.sequence,'meeting-rehearsal');
+  assert.throws(()=>sequenceFromDraft(activityDraft()),{code:'unsupported_planner_shape'});
+  assert.throws(()=>sequenceFromDraft({fields:{sessions:Array.from({length:13},()=>({}))},document:doc()}),{code:'artifact_too_large'});
+
+  const store=createAtomicMemoryStore();
+  assert.equal((await create(store,talker,{kind:'sequence',draft:sequenceDraft()}))[0],403,'a sequence needs an activity tool');
+  const [st,out]=await create(store,teacher,{kind:'sequence',draft:sequenceDraft()});
+  assert.equal(st,201);const art=out.artifact;assert.equal(art.content.kind,'sequence');
+  const update=content=>handleArtifacts(store,teacher,{action:'update',artifactId:art.id,expectedVersion:art.version,content},options());
+  const orphan=structuredClone(art.content);orphan.steps[0].session=2;
+  assert.equal((await update(orphan))[1].code,'invalid_steps','every step belongs to a listed session');
+  const noSession=structuredClone(art.content);delete noSession.steps[0].session;
+  assert.equal((await update(noSession))[1].code,'invalid_steps');
+  const badSessions=structuredClone(art.content);badSessions.sessions=[{n:3},{n:1}];
+  assert.equal((await update(badSessions))[1].code,'invalid_sessions','sessions are in order');
+  assert.equal((await update({...art.content,kind:'activity'}))[1].code,'invalid_steps','an activity step cannot carry a session number');
+  const approve=(version,proceedWithout)=>handleArtifacts(store,teacher,{action:'approve',artifactId:art.id,expectedVersion:version,acknowledgeRisk:true,proceedWithout},options());
+  assert.equal((await approve(1))[1].code,'missing_explanation','approval needs the resilience fields');
+  const [us,upd]=await update({...art.content,...professional,socialMechanism:undefined});
+  assert.equal(us,200);
+  const [as,approved]=await approve(upd.artifact.version,['socialMechanism']);
+  assert.equal(as,200,JSON.stringify(approved));
+  const [ps,practice]=await handleArtifacts(store,teacher,{action:'practice',artifactId:art.id,version:upd.artifact.version},options());
+  assert.equal(ps,200);assert.equal(practice.kind,'sequence');assert.deepEqual(practice.proceedWithout,['socialMechanism']);
+  const env=agentEnvelope(upd.artifact,'pedagogy',{sourceLibrary:baseline.sourceLibrary});
+  assert.match(env.kindGuidance,/sequence of group sessions/);assert.equal(env.content.sessions.length,2);
 });

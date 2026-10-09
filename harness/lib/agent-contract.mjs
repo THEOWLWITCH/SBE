@@ -70,6 +70,7 @@ export function agentEnvelope(artifact,agent,{runId,question='',stepId='',reques
     // ID against the approved bank and records the version itself.
     sourceCatalogue:sourceLibrary.filter(s=>s.approved===true&&!s.hidden).map(({sourceId,title,citation})=>({sourceId,title:String(title||citation||'').slice(0,90)})),
     ...(content.kind==='conversation'?{kindGuidance:'This is one personal conversation, not a group activity. Steps are its stages. Review listening, open questions, the other person\'s sense of choice and control, safety, and a clear closing. A social mechanism and group skills are optional here.'}:{}),
+    ...(content.kind==='sequence'?{kindGuidance:'This is a sequence of group sessions. Each step belongs to one session (step.session) and keeps it; sessions lists each session goal and product. Review progression across sessions, a shared mechanism that recurs between sessions, and a clear opening, main activity and closing in each session. Change steps through their stable IDs; do not replace the whole steps list.'}:{}),
     allowedPaths:[...Array.from(ROOT_PATHS).filter(path=>path!=='pipelineOutput'||(!compactRole(agent)&&!planner)),'steps/<stable-id>/title','steps/<stable-id>/instructions','steps/<stable-id>/minutes'],
     locks:structuredClone(artifact.locks||{})};
   if(['resilience_facilitation','single'].includes(agent))envelope.privateConcerns=artifact.privateConcerns;

@@ -474,6 +474,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
   <button type="button" id="bSeqUndo" hidden>ביטול אימוץ הנוסח המשופר</button>
   <button type="button" id="bSeqReset">ניקוי</button>
   <button type="button" id="bSeqSaved">התוצרים הפרטיים שלי</button>
+  <button type="button" id="bSeqReviewed">בדיקה ואישור</button>
   <span class="note" id="sqHint"></span>
 </div></div>
 
@@ -798,14 +799,17 @@ document.getElementById("bSaved").addEventListener("click", () => {
   try { singleArchive.open(); } catch(error) { show("פתיחת תוצר פרטי",el("p",{},error.message)); }
 });
 // הפעילויות ששלחת לבדיקה ולאישור בשרת: פתיחה מחדש, אישור ותרגול
-document.getElementById("bReviewed")?.addEventListener("click", () => {
+// גם רצפי מפגשים (09/10/2026): רשימה אחת, מכל אחד משני המסלולים
+function openReviewed(){
   const box = el("div");
   const list = el("div");
-  box.append(el("p",{},"כאן מופיעות הפעילויות ששמרת בשרת לבדיקה ולאישור. כדי להוסיף פעילות: מפיקים תוצר ולוחצים ״✓ בדיקה ואישור״."), list);
-  SBE_ACTIVITY_REVIEW.mountSaved(list,{kind:"activity",show:(title,panel)=>{ box.replaceChildren(panel); }});
-  if (!list.childNodes.length && !list.textContent) list.append(el("p",{class:"savenote"},"עוד אין פעילויות ששלחת לבדיקה."));
+  box.append(el("p",{},"כאן מופיעות הפעילויות ורצפי המפגשים ששמרת בשרת לבדיקה ולאישור. כדי להוסיף: מפיקים תוצר ולוחצים ״✓ בדיקה ואישור״."), list);
+  SBE_ACTIVITY_REVIEW.mountSaved(list,{kinds:["activity","sequence"],show:(title,panel)=>{ box.replaceChildren(panel); }});
+  if (!list.childNodes.length && !list.textContent) list.append(el("p",{class:"savenote"},"עוד אין פעילויות או רצפים ששלחת לבדיקה."));
   show("בדיקה ואישור", box);
-});
+}
+document.getElementById("bReviewed")?.addEventListener("click", openReviewed);
+document.getElementById("bSeqReviewed")?.addEventListener("click", () => { invalidatePlannerWork(); openReviewed(); });
 
 function syncCardVisual(k) {
   const boxes = cardGrids.get(k);
@@ -3113,9 +3117,12 @@ document.getElementById("bSeqBuild").addEventListener("click", async (e) => {
     location.href = "mailto:?subject=" + encodeURIComponent("תכנון רצף מפגשים: " + str(sourcePlan.topic)) + "&body=" + encodeURIComponent(text);
   });
   const productError = error => body.append(el("p",{role:"status"},error.message));
+  // בדיקה, אישור ותרגול בשרת (09/10/2026), כטיוטה פרטית מסוג רצף מפגשים
+  const reviewBtn = window.SBE_ACTIVITY_REVIEW ? SBE_ACTIVITY_REVIEW.plannerButton({kind:"sequence",title,fields:sourcePlan,nodes:()=>[doc],archive:seqArchive,container:body}) : null;
   seqDialog("תוצר: תכנון רצף מפגשים", body, [
     btn("הדפסה / שמירה כ-PDF", () => {try {seqArchive.print({title,subtitle,nodes:[doc]});} catch(error) {productError(error);}}, "primary"),
     sysBtn,
+    ...(reviewBtn ? [reviewBtn] : []),
     btn("שמירה למחשב", () => {
       try {
         const safe = seqArchive.copy([doc])[0];

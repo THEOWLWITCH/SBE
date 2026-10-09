@@ -37,3 +37,12 @@ test('approved version text is bounded and the transcript names each side', () =
   assert.equal(M.transcript([{role:'user',content:'שלום'},{role:'assistant',content:'היי'}],'conversation'),'אני: שלום\n\nהצד השני: היי');
   assert.equal(M.transcript([{role:'user',content:'נתחיל'}],'activity'),'המנחה: נתחיל');
 });
+
+test('sequence rehearsal sends only the session of the chosen step', () => {
+  const seq={kind:'sequence',purpose:'מטרה',fields:{topic:'עזרה הדדית'},sessions:[{n:1,goal:'להכיר',product:'רשימה'},{n:2,goal:'לקבוע תורנות',product:'לוח'}],
+    steps:[{id:'m1-opening',session:1,phase:'פתיחה',title:'פתיחה',instructions:'ONE-OPEN',minutes:5},{id:'m2-main',session:2,phase:'פעילות מרכזית',title:'פעילות מרכזית',instructions:'TWO-MAIN',minutes:20}]};
+  const s=M.turnSystem('sequence',seq,'m2-main');
+  assert.match(s,/את משחקת את הקבוצה/);assert.match(s,/TWO-MAIN/);assert.doesNotMatch(s,/ONE-OPEN/);
+  assert.match(s,/מפגש 2 מתוך 2/);assert.match(s,/היעד של המפגש: לקבוע תורנות/);assert.match(s,/נושא הרצף: עזרה הדדית/);
+  assert.match(M.feedbackSystem('sequence',seq,'m2-main'),/\*\*לפני המפגש האמיתי\*\*/);
+});
