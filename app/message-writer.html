@@ -256,9 +256,9 @@ function richText(text){
   });
   return box;
 }
-async function complete(system,messages,maxTokens){
+async function complete(system,messages,maxTokens,review){
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
-  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens},480000)||'');
+  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},480000)||'');
 }
 
 

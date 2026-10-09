@@ -37,6 +37,7 @@ import { runPipeline } from './lib/pipeline.mjs';
 import { toScenario } from './lib/to-scenario.mjs';
 import { handleAccess, supabaseStore } from './lib/access.mjs';
 import { studioRequest } from './lib/studio.mjs';
+import { customerPass, reviewEnabled } from './lib/customer-pass.mjs';
 
 // שמירת תרחיש ב-Supabase. נקראת רק כשיש SUPABASE_SERVICE_KEY בסביבה.
 // scenario הוא הפלט של toScenario(); meta הוא payload.meta מהלקוח.
@@ -225,7 +226,7 @@ const server = createServer(async (req, res) => {
     }
     if (!job) return sendJson(res, 200, { status: 'unknown' });
     return sendJson(res, 200, { status: job.status, stages: job.stages, elapsed: Math.round((Date.now() - job.t0) / 1000),
-      ...(job.status === 'done' ? { scenario: job.scenario, text: job.text } : {}), ...(job.status === 'error' ? { error: job.error } : {}) });
+      ...(job.status === 'done' ? { scenario: job.scenario, text: job.text, ...(job.review ? { review: job.review } : {}) } : {}), ...(job.status === 'error' ? { error: job.error } : {}) });
   }
 
   if (req.url === '/api/pipeline') {
@@ -307,9 +308,11 @@ const server = createServer(async (req, res) => {
     setTimeout(() => PIPE_JOBS.delete(jobId), 3 * 3600 * 1000).unref?.();
     sendJson(res, 200, { jobId });
     provider.complete({ system, messages: messages || [{ role: 'user', content: '' }], tools, toolChoice, variation: 'medium', maxTokens: maxTokens || 220 })
+      // הסוכנת-הלקוחה (lib/customer-pass.mjs): רק בקריאות שמפיקות תוצר
+      .then((result) => reviewEnabled(payload) ? customerPass(provider, { system, messages, maxTokens, text: result.text }) : { text: result.text, review: null })
       .then((result) => {
-        job.text = result.text; job.status = 'done';
-        jobSave(jobId, { status: 'done', t0: job.t0, boot: BOOT_ID, stages: {}, text: result.text });
+        job.text = result.text; job.review = result.review; job.status = 'done';
+        jobSave(jobId, { status: 'done', t0: job.t0, boot: BOOT_ID, stages: {}, text: result.text, review: result.review });
         console.log(`complete(async): הצליח אחרי ${Math.round((Date.now() - job.t0) / 1000)} שניות (maxTokens ${maxTokens || 220})`);
       })
       .catch((e) => { job.status = 'error'; job.error = `שגיאת ספק: ${e.message}`; console.error(`complete(async): נכשל — ${e.message}`);
@@ -328,8 +331,9 @@ const server = createServer(async (req, res) => {
       variation: 'medium',
       maxTokens: maxTokens || 220,
     });
+    const pass = reviewEnabled(payload) ? await customerPass(provider, { system, messages, maxTokens, text: result.text }) : null;
     console.log(`complete: הצליח אחרי ${Math.round((Date.now() - t0) / 1000)} שניות (maxTokens ${maxTokens || 220})`);
-    finish({ text: result.text, toolCalls: result.toolCalls || [] });
+    finish({ text: pass ? pass.text : result.text, toolCalls: result.toolCalls || [], ...(pass && pass.review ? { review: pass.review } : {}) });
   } catch (e) {
     console.error(`complete: נכשל אחרי ${Math.round((Date.now() - t0) / 1000)} שניות — ${e.message}`);
     finish({ error: `שגיאת ספק: ${e.message}` });

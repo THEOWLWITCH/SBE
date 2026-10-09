@@ -826,9 +826,9 @@ function setAIStatus(status){
   else chip.innerHTML = dot + "בודקת חיבור למודל...";
 }
 
-async function callAI(system, userText, maxTokens, timeoutMs) {
+async function callAI(system, userText, maxTokens, timeoutMs, review) { // review: תוצר, עובר דרך הסוכנת-הלקוחה (harness/lib/customer-pass.mjs)
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך
-  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200 }, timeoutMs || 60000);
+  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, customerReview: !!review }, timeoutMs || 60000);
 }
 
 async function generateProposals(ctx) {
@@ -1409,7 +1409,7 @@ async function computeFeedbackFromFieldsAI(d) {
   ].filter(Boolean).join("\n");
   // maxTokens=8000, timeout=150 שניות — נמדד חי (19/09/2026): משוב אמיתי
   // על תוכנית לקח כ-60 שניות; 2500 גרם לקטיעה.
-  const raw = await callAI(system, "תוכנית הפעילות:\n" + JSON.stringify(d, null, 2), 8000, 240000);
+  const raw = await callAI(system, "תוכנית הפעילות:\n" + JSON.stringify(d, null, 2), 8000, 240000, true);
   const m = raw.match(/\{[\s\S]*\}/);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
@@ -1419,7 +1419,7 @@ async function computeFeedbackFromFieldsAI(d) {
 
 document.getElementById("bFeedback").addEventListener("click", async (e) => {
   const d = {}; FIELDS.forEach((f,k) => { d[k] = val(k); });
-  e.target.disabled = true; e.target.textContent = "בודקת... (עד כ-3 דקות)";
+  e.target.disabled = true; e.target.textContent = "בודקת... (עד כ-5 דקות)";
   try {
     let fb;
     try { fb = await computeFeedbackFromFieldsAI(d); }
@@ -1510,7 +1510,7 @@ async function synthesizeActivityNarrative(d, creator) {
       "בנוסף, \"flow\": מהלך המפגש לפי השדות פתיחה, פעילות מרכזית וסיכום שמולאו (ואם יש, משהו קצר שעושים אחרי המפגש). לכל שלב: phase (אחד מ: פתיחה, פעילות מרכזית, סיכום, אחרי המפגש; בפעילות המרכזית אפשר כמה שלבים ברצף), title (שם קצר), minutes (מספר), description (תיאור הפעילות: מי עושה, מה עושים, עם מה ומה יוצא בסוף), guide (הנחיה למורה: מה אומרת, ואילו שאלות שואלת את הקבוצה ובשביל מה), resources (עזרים ומשאבים לשלב, או מחרוזת ריקה). בלי להמציא תוכן שלא נמסר.",
       "החזירי אך ורק JSON: {\"title\":\"כותרת קצרה לפעילות (לא שם המקצוע)\",\"paragraphs\":[\"...\",\"...\",\"...\",\"...\"],\"prepare\":[\"...\"],\"flow\":[{\"phase\":\"פתיחה\",\"title\":\"\",\"minutes\":5,\"description\":\"\",\"guide\":\"\",\"resources\":\"\"}]}",
     ].join("\n\n");
-    const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 8000, 240000);
+    const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 8000, 240000, true);
     const m = text.match(/\{[\s\S]*\}/); if (!m) throw new Error("לא התקבל JSON");
     const out = JSON.parse(m[0]);
     if (!Array.isArray(out.paragraphs) || out.paragraphs.length < 3) throw new Error("מבנה חסר");
@@ -1555,7 +1555,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   const d = {}; FIELDS.forEach((f,k) => { d[k] = val(k); });
   const creator = document.getElementById("creatorName").value.trim();
   const body = el("div");
-  e.target.disabled = true; e.target.textContent = "מנסחת את התוצר... עד כ-3 דקות";
+  e.target.disabled = true; e.target.textContent = "מנסחת את התוצר... עד כ-5 דקות";
   let narr = null;
   try { narr = await synthesizeActivityNarrative(d, creator); }
   finally { e.target.disabled = false; e.target.textContent = "הפקת התוצר"; }
@@ -1674,7 +1674,7 @@ async function computeFeedbackFromTextAI(text) {
     "בדקי בפרט: האם יש מטרה ברורה; מבנה (פתיחה/גוף/סיכום); קשר אמיתי בין המטרה לפעילות עצמה; שילוב תנועה שמשרת את המטרה (אם קיים); מעורבות פעילה של התלמידים לעומת האזנה פסיבית; חלוקת זמן וריאליזם.",
     "החזירי אך ורק JSON תקין במבנה: {\"good\":[\"...\"],\"gaps\":[\"...\"]} — עם הסבר קונקרטי לכל פריט, מצטט מהטקסט כשרלוונטי. בלי טקסט נוסף מסביב.",
   ].join("\n");
-  const raw = await callAI(system, "טקסט הפעילות:\n" + text, 8000, 240000);
+  const raw = await callAI(system, "טקסט הפעילות:\n" + text, 8000, 240000, true);
   const m = raw.match(/\{[\s\S]*\}/);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
@@ -1685,7 +1685,7 @@ async function computeFeedbackFromTextAI(text) {
 document.getElementById("bAnalyze").addEventListener("click", async (e) => {
   const text = document.getElementById("upText").value.trim();
   if (!text) return show("חסר טקסט", el("p",{},"הדביקי או העלי טקסט פעילות לפני הניתוח."));
-  e.target.disabled = true; e.target.textContent = "מנתחת... (עד כ-3 דקות)";
+  e.target.disabled = true; e.target.textContent = "מנתחת... (עד כ-5 דקות)";
   try {
     let fb;
     try { fb = await computeFeedbackFromTextAI(text); }
@@ -2760,7 +2760,7 @@ async function aiReport(facts){
   ].join("\n\n");
   const user = "התכנון:\n" + JSON.stringify(planForAI()) +
     "\n\nבדיקות מכניות שכבר מוצגות ליוצרת בנפרד (אל תחזרי עליהן כלשונן; אפשר להתייחס למשמעותן):\n" + facts.map(f => "- " + f.text).join("\n");
-  const out = parseJSON(await callAI(system, user, 24000, 540000));
+  const out = parseJSON(await callAI(system, user, 24000, 540000, true));
   if (!Array.isArray(out.criteria) || !out.criteria.length) throw new Error("מבנה דו״ח חסר");
   return out;
 }
@@ -2818,7 +2818,7 @@ async function aiNarrative(){
     lib.length ? "מקורות להרחבה — בחרי אך ורק מתוך ספריית המקורות המאומתת שלמטה, לפי המספר (id) בלבד. אסור לכתוב מקור, שם מחבר או כותרת משלך. לכל מפגש 1–2 מקורות שמתאימים לנושא שלו; ולרצף כולו 3–5 מקורות, כולל מקורות לגישות שנבחרו אם יש כאלה בספרייה. אם אין מקור מתאים — מערך ריק. הספרייה (id | תחום | נושא | סוג | תגיות | גישה):\n" + libCatalog(lib) : "",
     "אל תמציאי תוכן שלא נמסר. החזירי אך ורק JSON: {\"paragraphs\":[\"...\",\"...\",\"...\"]" + (lib.length ? ",\"sources\":{\"overall\":[12,40],\"sessions\":[{\"n\":1,\"ids\":[3]}]}" : "") + "}",
   ].filter(Boolean).join("\n\n");
-  const out = parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), 12000, 300000));
+  const out = parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), 12000, 300000, true));
   if (!Array.isArray(out.paragraphs) || out.paragraphs.length < 2) throw new Error("מבנה חסר");
   // רק מזהים שקיימים בספרייה — כל דבר אחר נזרק
   const byId = new Map(lib.map(x => [x.id, x]));
