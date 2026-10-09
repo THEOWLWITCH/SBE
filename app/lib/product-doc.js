@@ -170,6 +170,22 @@
     });
   }
 
+  // בלי עמוד ריק (09/10/2026: "אין להשאיר עמוד ריק"): בלוק שמסומן "לא לחתוך" (break-inside:avoid) ושגבוה
+  // מרוב העמוד נדחף כולו לעמוד הבא ומשאיר אחריו עמוד ריק או כמעט ריק. לפני ההדפסה מודדים ברוחב של הדף המודפס,
+  // ובלוק כזה מקבל .sbe-brk, שמתיר לו להיחתך. כותרות וטבלאות קצרות ממשיכים להישמר יחד.
+  const BRK_CSS = "@media print{.sbe-brk{break-inside:auto!important;page-break-inside:auto!important}}";
+  function relaxTall(doc, { widthMm = 170, heightMm = 261 } = {}) {
+    const root = doc.documentElement, body = doc.body; if (!body) return;
+    const px = (mm) => mm * 96 / 25.4, limit = px(heightMm) * 0.6;
+    const prev = [root.style.width, body.style.maxWidth];
+    root.style.width = widthMm + "mm"; body.style.maxWidth = "none";
+    try {
+      body.querySelectorAll(".sbe-brk").forEach((el) => el.classList.remove("sbe-brk"));
+      body.querySelectorAll("*").forEach((el) => { if (el.getBoundingClientRect().height > limit) el.classList.add("sbe-brk"); });
+    } finally { root.style.width = prev[0]; body.style.maxWidth = prev[1]; }
+    if (!doc.getElementById("sbe-brk-css")) { const st = doc.createElement("style"); st.id = "sbe-brk-css"; st.textContent = BRK_CSS; doc.head.appendChild(st); }
+  }
+
   // כרטיס כיס (08/10/2026): תוצר נפרד, אותיות גדולות שקל לקרוא בזמן המפגש
   const POCKET_CSS = `
 body{font-size:20px;line-height:1.55;max-width:760px}
@@ -230,6 +246,7 @@ h1{font-size:26px}.hd img{height:44px}
       head = document.createElement("div"); head.id = "sbe-print-ctx"; document.body.prepend(head);
     }
     head.innerHTML = ctxHTML(t) + `<div class="ttl">${esc(title || "")}</div><div class="dt">${esc(today())}</div>`;
+    relaxTall(document, { widthMm: 166, heightMm: 257 });
     const old = document.title; document.title = fileTitle(title, t);
     const back = () => { document.title = old; window.removeEventListener("afterprint", back); };
     window.addEventListener("afterprint", back);
@@ -314,10 +331,13 @@ ${pocket ? POCKET_CSS : ""}</style></head><body>
 <div class="hd"><div>${ctxHTML()}<h1>${esc(title)}</h1>${subtitle ? `<p class="sub">${esc(subtitle)}</p>` : ""}<div class="dt">${esc(date)}</div></div><img src="${logo}" alt="Begood"></div>
 ${parts}
 <div class="ft">הופק ב-Begood · be-good.co.il</div>
-<script>${inline ? "" : "window.onload=function(){setTimeout(function(){window.print()},300)}"}<\/script>
+<script>var relaxTall=${relaxTall.toString()};var BRK_CSS=${JSON.stringify(BRK_CSS)};function sbeRelax(){relaxTall(document,{widthMm:${landscape ? 257 : 170},heightMm:${landscape ? 174 : 261}})}
+window.addEventListener("beforeprint",sbeRelax);${inline ? "window.addEventListener('load',sbeRelax);" : "window.onload=function(){sbeRelax();setTimeout(function(){window.print()},300)}"}<\/script>
 </body></html>`);
     w.document.close();
   }
 
+  // גם בהדפסה ישירה מהדפדפן (Ctrl+P) בכל דף שטוען את הקובץ הזה
+  if (typeof window !== "undefined" && window.addEventListener) window.addEventListener("beforeprint", () => { try { relaxTall(document, { widthMm: 166, heightMm: 257 }); } catch (e) {} });
   window.SBE_DOC = { rich, editable, print, ensureStyle, sections, table, flowTable, PHASES, toolInfo, fileTitle, ctxHTML, printPage };
 })();

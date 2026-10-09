@@ -74,6 +74,8 @@ a.btn{text-decoration:none;display:inline-block}
 .item .t{flex:1;min-width:200px}
 .item .t b{display:block}
 .pub{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;border:1px solid var(--hair);border-radius:99px;padding:3px 10px;cursor:pointer;user-select:none}
+/* כפתור הספרייה */
+.pub-btn.on{border-color:var(--auto);background:var(--auto-soft);color:var(--auto);font-weight:700}
 .pub.on{border-color:var(--auto);background:var(--auto-soft);color:var(--auto);font-weight:700}
 .warn{color:var(--brick);font-size:13px;font-weight:600}
 #frames{position:fixed;left:-3000px;top:0;width:1200px;height:900px;overflow:hidden;visibility:hidden}
@@ -100,7 +102,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 <div class="card">
   <p><b>מה קורה כאן:</b> המעבדה פותחת כל כלי ברקע, טוענת את הדוגמה שלו, ומפיקה תוצר <b>מול המודל האמיתי</b>, בדיוק כמו משתמש/ת. כל תוצר נשמר בתיקייה שלמטה.</p>
   <p><b>מה בודקים:</b> עיצוב, ניסוחים, הדדיות עם הדמות השנייה, התאמת השפה לגיל ולקהל, ושלושת העקרונות (הזמנה, בחירה ואחריות, אי־שיפוטיות).</p>
-  <p><b>ספרייה למתעניינים:</b> תוצר שתסמני "מוצג בספרייה" יופיע ב<a href="examples.html" target="_blank">ספריית התוצרים לדוגמה</a>, פתוחה לכל אחד, בלי כניסה. תוצר שלא סימנת נשאר רק אצלך.</p>
+  <p><b>ספרייה למתעניינים:</b> לוחצים "📚 שמירה בספריית הדוגמאות" בשורה של התוצר או בחלון הצפייה, והתוצר יופיע ב<a href="examples.html" target="_blank">ספריית התוצרים לדוגמה</a>, פתוחה לכל אחד, בלי כניסה. תוצר שלא שמרת שם נשאר רק אצלך.</p>
   <p class="muted">משך משוער: הדוחות, דקה עד שלוש כל אחד; תרחיש סימולציה, עד 20 דקות. אפשר להמשיך לעבוד בלשונית אחרת, ולהשאיר את הלשונית הזאת פתוחה עד הסוף.</p>
 </div>
 
@@ -116,7 +118,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 <p class="muted" style="margin-top:10px">מסע אל החוסן נוצר כמסע דמו (בלי מיילים, ולא נספר בדוחות ובמחקר). אפשר למחוק אותו בלוח המסעות.</p>
 
 <h2 id="list-h">התיקייה שלי: התוצרים שהופקו</h2>
-<div class="row" style="margin-bottom:10px"><button class="btn sm" id="rvAll" type="button">🧐 בדיקת הלקוחה לכל התוצרים</button><button class="btn danger sm" id="clearAll" type="button">🗑 מחיקת כל התוצרים</button><a href="examples.html" target="_blank" rel="noopener" class="btn ghost sm">📚 לספריית התוצרים לדוגמה ←</a><span class="muted">שם מופיע רק מה שסימנת "מוצג בספרייה".</span></div>
+<div class="row" style="margin-bottom:10px"><button class="btn sm" id="rvAll" type="button">🧐 בדיקת הלקוחה לכל התוצרים</button><button class="btn danger sm" id="clearAll" type="button">🗑 מחיקת כל התוצרים</button><a href="examples.html" target="_blank" rel="noopener" class="btn ghost sm">📚 לספריית התוצרים לדוגמה ←</a><span class="muted">שם מופיע רק מה ששמרת בספרייה.</span></div>
 <div id="list"><p class="muted">טוען...</p></div>
 </div>
 
@@ -126,7 +128,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
   <div id="rvB" style="padding:12px 16px;overflow:auto;flex:1"></div>
 </div></dialog>
 <dialog id="dlg"><div class="dlg">
-  <div class="dlg-h"><b id="dlgT"></b><a class="btn ghost sm" id="dlgLib" href="examples.html" target="_blank" rel="noopener">📚 ספריית הדוגמאות</a><button class="btn ghost sm" id="dlgPrint">הדפסה / PDF</button><button class="btn ghost sm" id="dlgX">סגירה</button></div>
+  <div class="dlg-h"><b id="dlgT"></b><button class="btn sm pub-btn" id="dlgPub" type="button">📚 שמירה בספריית הדוגמאות</button><a class="btn ghost sm" id="dlgLib" href="examples.html" target="_blank" rel="noopener">פתיחת הספרייה ←</a><button class="btn ghost sm" id="dlgPrint">הדפסה / PDF</button><button class="btn ghost sm" id="dlgX">סגירה</button></div>
   <details id="dlgIn"><summary>מה הוזן לכלי</summary><pre id="dlgInT"></pre></details>
   <iframe id="dlgF" sandbox="allow-popups allow-popups-to-escape-sandbox allow-modals" title="התוצר"></iframe>
 </div></dialog>
@@ -300,17 +302,8 @@ async function loadList(){
       const t=el('div','t');t.appendChild(el('b',null,d.title));t.appendChild(el('span','muted','הופק: '+date(d.at)));c.appendChild(t);
       const v=el('button','btn ghost sm','צפייה');v.onclick=()=>view(d);c.appendChild(v);
       const rv=el('button','btn ghost sm rv-btn',rvLabel(d));rv.onclick=()=>review(d,rv,true);c.appendChild(rv);
-      const p=el('label','pub'+(d.public?' on':''));const cb=el('input');cb.type='checkbox';cb.checked=!!d.public;
-      p.append(cb,document.createTextNode(d.public?'מוצג בספרייה':'רק אצלי'));
-      cb.onchange=async()=>{
-        if(cb.checked){
-          try{const full=await api({action:'demoGet',id:d.id});
-            if(HIDDEN_HINT.test(full.html)&&!confirm('בתוצר מופיע אזכור לחומר שטרם פורסם. להציג אותו בכל זאת בספרייה הפתוחה?')){cb.checked=false;return;}
-          }catch(e){}
-        }
-        try{await api({action:'demoPublish',id:d.id,public:cb.checked});d.public=cb.checked;p.className='pub'+(cb.checked?' on':'');p.lastChild.textContent=cb.checked?'מוצג בספרייה':'רק אצלי';}
-        catch(e){cb.checked=!cb.checked;alert('השינוי לא נשמר: '+e.message);}
-      };
+      // שמירה בספריית הדוגמאות (09/10/2026: "אין כפתור ששומר בספריית הדוגמאות"): כפתור ברור במקום תיבת סימון
+      const p=el('button','btn sm pub-btn');p.type='button';p.dataset.id=d.id;pubLabel(p,d);p.onclick=()=>togglePublic(d);
       c.appendChild(p);
       const x=el('button','btn danger sm','מחיקה');x.onclick=async()=>{if(!confirm('למחוק את "'+d.title+'"?'))return;try{await api({action:'demoDelete',id:d.id});loadList();}catch(e){alert('המחיקה לא הצליחה: '+e.message);}};
       c.appendChild(x);
@@ -321,7 +314,26 @@ async function loadList(){
 // צפייה: הודעות הטעינה מימין, ובאמצע; אחרי 8 שניות מסבירים שהשרת מתעורר; שגיאה עם "לנסות שוב". (08/10/2026: "ריק...")
 let VIEW_N=0;
 function vmsg(t){return '<!doctype html><html dir="rtl" lang="he"><body style="font-family:Assistant,Arial,sans-serif;font-size:17px;color:#5C6771;text-align:center;padding:60px 20px">'+t+'</body></html>';}
+// כפתור הספרייה: אותו מצב בשורה ובחלון הצפייה
+function pubLabel(b,d){b.textContent=d.public?'✓ בספריית הדוגמאות · הסרה':'📚 שמירה בספריית הדוגמאות';b.classList.toggle('on',!!d.public);
+  b.title=d.public?'התוצר מוצג בספריית הדוגמאות הפתוחה. לחיצה מסירה אותו משם (הוא נשאר בתיקייה).':'התוצר יוצג בספריית הדוגמאות הפתוחה לכולם, וגם בחלונית "איך נראה התוצר?" בראש הכלי.';}
+let VIEWED=null;
+async function togglePublic(d){
+  const on=!d.public;
+  if(on){
+    try{const full=await api({action:'demoGet',id:d.id});
+      if(HIDDEN_HINT.test(full.html)&&!confirm('בתוצר מופיע אזכור לחומר שטרם פורסם. להציג אותו בכל זאת בספרייה הפתוחה?'))return;
+    }catch(e){}
+  }
+  const btns=[...document.querySelectorAll('.pub-btn[data-id="'+d.id+'"]'),...(VIEWED===d?[F('dlgPub')]:[])];
+  btns.forEach(b=>{b.disabled=true;b.textContent='שומרת...';});
+  try{await api({action:'demoPublish',id:d.id,public:on});d.public=on;}
+  catch(e){alert('השינוי לא נשמר: '+e.message);}
+  finally{btns.forEach(b=>{b.disabled=false;pubLabel(b,d);});}
+}
+F('dlgPub').onclick=()=>{if(VIEWED)togglePublic(VIEWED);};
 async function view(d){
+  VIEWED=d;F('dlgPub').dataset.id=d.id;pubLabel(F('dlgPub'),d);
   const n=++VIEW_N;
   F('dlgT').textContent=d.title;F('dlgLib').href='examples.html?tool='+encodeURIComponent(d.tool||'');F('dlgInT').textContent=d.input||'';F('dlgIn').hidden=!d.input;
   F('dlgF').srcdoc=vmsg('טוען את התוצר...');if(!F('dlg').open)F('dlg').showModal();
