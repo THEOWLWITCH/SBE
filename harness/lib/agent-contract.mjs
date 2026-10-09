@@ -65,7 +65,10 @@ export function agentEnvelope(artifact,agent,{runId,question='',stepId='',reques
   }
   const envelope={artifactId:artifact.id,baseVersion:artifact.version,runId,agent,schemaVersion:AGENT_SCHEMA_VERSION,
     request:{question:requestType==='concern'&&!['resilience_facilitation','single'].includes(agent)?'':question,stepId,requestType},content,
-    sourceCatalogue:sourceLibrary.filter(s=>s.approved===true&&!s.hidden).map(({sourceId,title,citation,version})=>({sourceId,title,citation,version})),
+    // Compact catalogue (9 Oct 2026): the full bank (162 sources, title and citation identical) took ~70KB,
+    // above maxInputBytes, so every live review was rejected. Reviewers only cite IDs; the server checks the
+    // ID against the approved bank and records the version itself.
+    sourceCatalogue:sourceLibrary.filter(s=>s.approved===true&&!s.hidden).map(({sourceId,title,citation})=>({sourceId,title:String(title||citation||'').slice(0,90)})),
     ...(content.kind==='conversation'?{kindGuidance:'This is one personal conversation, not a group activity. Steps are its stages. Review listening, open questions, the other person\'s sense of choice and control, safety, and a clear closing. A social mechanism and group skills are optional here.'}:{}),
     allowedPaths:[...Array.from(ROOT_PATHS).filter(path=>path!=='pipelineOutput'||(!compactRole(agent)&&!planner)),'steps/<stable-id>/title','steps/<stable-id>/instructions','steps/<stable-id>/minutes'],
     locks:structuredClone(artifact.locks||{})};

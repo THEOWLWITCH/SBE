@@ -7,6 +7,7 @@
 <script src="lib/ai-call.js"></script>
 <script src="lib/product-doc.js"></script>
 <script src="lib/planner-continuity.js"></script>
+<script src="lib/activity-review-ui.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -461,6 +462,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
   <button type="button" id="bBuild" disabled>הפקת התוצר</button>
   <button type="button" id="bReset">ניקוי</button>
   <button type="button" id="bSaved">התוצרים הפרטיים שלי</button>
+  <button type="button" id="bReviewed">בדיקה ואישור</button>
   <span class="note" id="hint">מלאי את השדות העיקריים</span>
 </div></div>
 
@@ -794,6 +796,15 @@ document.getElementById("dlgB").addEventListener("input", invalidatePlannerWork)
 document.getElementById("bSaved").addEventListener("click", () => {
   invalidatePlannerWork();
   try { singleArchive.open(); } catch(error) { show("פתיחת תוצר פרטי",el("p",{},error.message)); }
+});
+// הפעילויות ששלחת לבדיקה ולאישור בשרת: פתיחה מחדש, אישור ותרגול
+document.getElementById("bReviewed")?.addEventListener("click", () => {
+  const box = el("div");
+  const list = el("div");
+  box.append(el("p",{},"כאן מופיעות הפעילויות ששמרת בשרת לבדיקה ולאישור. כדי להוסיף פעילות: מפיקים תוצר ולוחצים ״✓ בדיקה ואישור״."), list);
+  SBE_ACTIVITY_REVIEW.mountSaved(list,{kind:"activity",show:(title,panel)=>{ box.replaceChildren(panel); }});
+  if (!list.childNodes.length && !list.textContent) list.append(el("p",{class:"savenote"},"עוד אין פעילויות ששלחת לבדיקה."));
+  show("בדיקה ואישור", box);
 });
 
 function syncCardVisual(k) {
@@ -1607,7 +1618,9 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   });
   const sysBtn = singleArchive.saveButton({title,subtitle,fields:d,nodes});
   body.append(el("p",{class:"savenote"},"טיוטה פרטית. השמירה כוללת את הנוסח הערוך ונמצאת במכשיר ובדפדפן הזה, לפי הכניסה שלך."));
-  dlgF.append(printBtn, sysBtn, el("button",{type:"button",id:"dlgX2"},"סגירה"));
+  // בדיקה, אישור ותרגול בשרת (09/10/2026): הנוסח הערוך נשלח רק בלחיצה, כטיוטה פרטית מסוג פעילות
+  const reviewBtn = window.SBE_ACTIVITY_REVIEW ? SBE_ACTIVITY_REVIEW.plannerButton({kind:"activity",title,fields:d,nodes,archive:singleArchive,container:body}) : document.createTextNode("");
+  dlgF.append(printBtn, sysBtn, reviewBtn, el("button",{type:"button",id:"dlgX2"},"סגירה"));
   document.getElementById("dlgX2")?.addEventListener?.("click", () => document.getElementById("dlg").close());
   show("תוצרי הפעילות", body, true);
 });

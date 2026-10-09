@@ -7,6 +7,7 @@
 <script src="lib/ai-call.js"></script>
 <script src="lib/product-doc.js"></script>
 <script src="lib/planner-continuity.js"></script>
+<script src="lib/activity-review-ui.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -268,6 +269,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <button type="button" id="bBuild" disabled>בנייה</button>
   <button type="button" id="bReset">ניקוי</button>
   <button type="button" id="bSaved">התוצרים הפרטיים שלי</button>
+  <button type="button" id="bReviewed">בדיקה ואישור</button>
   <span class="note" id="hint" role="status">מלאי את שני השדות העיקריים</span>
 </div></div>
 
@@ -1024,9 +1026,11 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     const sysBtn = plannerArchive.saveButton({title,subtitle,fields:d,nodes:currentNodes}); sysBtn.className = "dlg-dl";
     body.append(el("p", {class:"savenote"}, "השמירה היא טיוטה פרטית במכשיר ובדפדפן הזה. אפשר לפתוח אותה שוב בכפתור התוצרים הפרטיים שלי."));
     dl.addEventListener("click", () => printProduct({title,subtitle,nodes:currentNodes()}));
+    // בדיקה, אישור ותרגול בשרת (09/10/2026), כטיוטה פרטית מסוג שיחה
+    const reviewBtn = window.SBE_ACTIVITY_REVIEW ? SBE_ACTIVITY_REVIEW.plannerButton({kind:"conversation",title,fields:d,nodes:currentNodes,archive:plannerArchive,container:body}) : document.createTextNode(""); if (reviewBtn.className !== undefined) reviewBtn.className = "dlg-dl";
     const cp = el("button", { type:"button", class:"dlg-dl" }, "העתקת הגרסה המלאה");
     cp.addEventListener("click", () => navigator.clipboard && navigator.clipboard.writeText(fullBox.innerText).then(() => { cp.textContent = "הועתק ✓"; setTimeout(() => cp.textContent = "העתקת הגרסה המלאה", 1800); }));
-    body.append(dl, cp, sysBtn);
+    body.append(dl, cp, sysBtn, reviewBtn);
     show("טיוטת ההתכתבות", body);
   } else {
     const info = APPROACH_CARDS.find(c => c.v === d.approach);
@@ -1092,7 +1096,8 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     const sysBtn = plannerArchive.saveButton({title,subtitle,fields:d,nodes:currentNodes}); sysBtn.className = "dlg-dl";
     body.append(el("p", {class:"savenote"}, "השמירה היא טיוטה פרטית במכשיר ובדפדפן הזה. אפשר לפתוח אותה שוב בכפתור התוצרים הפרטיים שלי."));
     dl.addEventListener("click", () => printProduct({title,subtitle,nodes:currentNodes()}));
-    body.append(dl, sysBtn);
+    const reviewBtn = window.SBE_ACTIVITY_REVIEW ? SBE_ACTIVITY_REVIEW.plannerButton({kind:"conversation",title,fields:d,nodes:currentNodes,archive:plannerArchive,container:body}) : document.createTextNode(""); if (reviewBtn.className !== undefined) reviewBtn.className = "dlg-dl";
+    body.append(dl, sysBtn, reviewBtn);
     show("התדריך לפני השיחה", body);
   }
   } catch (error) {
@@ -1127,6 +1132,14 @@ document.getElementById("bSaved").addEventListener("click", () => {
   document.getElementById("dlg").close();
   try { plannerArchive.open(); }
   catch (error) { document.getElementById("hint").textContent = error.message; }
+});
+// השיחות ששלחת לבדיקה ולאישור בשרת: פתיחה מחדש, אישור ותרגול (09/10/2026)
+document.getElementById("bReviewed")?.addEventListener("click", () => {
+  const box = el("div"), list = el("div");
+  box.append(el("p", {}, "כאן מופיעות השיחות ששמרת בשרת לבדיקה ולאישור. כדי להוסיף שיחה: בונים תוצר ולוחצים ״✓ בדיקה ואישור״."), list);
+  SBE_ACTIVITY_REVIEW.mountSaved(list, {kind:"conversation", show:(title, panel) => { box.replaceChildren(panel); }});
+  if (!list.textContent) list.append(el("p", {class:"savenote"}, "עוד אין שיחות ששלחת לבדיקה."));
+  show("בדיקה ואישור", box);
 });
 
 render();

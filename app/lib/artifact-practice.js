@@ -40,14 +40,26 @@
     });
     table.append(head, body); return table;
   }
-  function printableActivity(content) {
-    var printable = node("div"), labels = ["מטרת הפעילות", "רכיבי החוסן", "מיומנויות אישיות", "מיומנויות משותפות", "איך להנחות", "המנגנון החברתי שנבחר"];
+  // כותרות לפי סוג התוצר (9 באוקטובר 2026): פעילות, שיחה או תרחיש סימולציה
+  var LABELS = {
+    narrative: {purpose:"מטרת הפעילות", guide:"איך להנחות", mechanism:"המנגנון החברתי שנבחר", steps:"מהלך הפעילות", summary:"תמצית הפעילות",
+      rehearsal:"אפשר לתרגל עם עמיתה: אחת מנחה ואחת מגלמת משתתפת. בחרו שלב, קראו את ההוראות, נסו פתיחה ושאלת המשך, ואז החליפו תפקידים."},
+    activity: {purpose:"מטרת הפעילות", guide:"הנחיה למנחה", mechanism:"המנגנון החברתי שנבחר", steps:"מהלך המפגש", summary:"תמצית הפעילות",
+      rehearsal:"תרגול המפגש עם עמיתה: אחת מנחה ואחת משחקת משתתפת. בוחרים שלב, קוראים מה עושים בו, מנסים את הפתיחה ואת השאלות, ואז מחליפים תפקידים."},
+    conversation: {purpose:"מטרת השיחה", guide:"הנחיה לשיחה", mechanism:"מה ממשיך אחרי השיחה", steps:"שלבי השיחה", summary:"תמצית השיחה",
+      rehearsal:"תרגול השיחה עם עמיתה: את אומרת את דברי הפתיחה, והעמיתה משחקת את הצד השני. בוחרים שלב, מנסים אותו, ואז שואלות זו את זו מה עבד ומה אפשר לנסות אחרת."}
+  };
+  var SKIPPED = {socialMechanism:"מנגנון חברתי", facilitatorGuide:"הנחיה למנחה"};
+  function labelsFor(out) { return LABELS[out.kind] || LABELS.narrative; }
+  function present(value) { return Array.isArray(value) ? value.length > 0 : !!(value && String(value).trim()); }
+  function printableActivity(content, L) {
+    var printable = node("div"), labels = [L.purpose, "רכיבי החוסן", "מיומנויות אישיות", "מיומנויות משותפות", L.guide, L.mechanism];
     var values = [content.purpose, content.resilienceComponents, content.individualSkills, content.sharedSkills, content.facilitatorGuide, content.socialMechanism];
-    printable.append(node("h2", "תמצית הפעילות"), printTable(["התחום", "הנוסח שאושר"], labels.map(function (label, index) {
+    printable.append(node("h2", L.summary), printTable(["התחום", "הנוסח שאושר"], labels.map(function (label, index) {
       return [label, Array.isArray(values[index]) ? values[index].join("\n") : values[index]];
-    })));
-    printable.append(node("h2", "מהלך הפעילות"), printTable(["שלב", "זמן", "מה עושים"], content.steps.map(function (step) {
-      return [step.title, step.minutes === 1 ? "דקה אחת" : step.minutes + " דקות", step.instructions];
+    }).filter(function (row, index) { return present(values[index]); })));
+    printable.append(node("h2", L.steps), printTable(["שלב", "זמן", "מה עושים"], content.steps.map(function (step) {
+      return [(step.phase && step.phase !== step.title ? step.phase + " · " : "") + step.title, step.minutes === 1 ? "דקה אחת" : step.minutes + " דקות", step.instructions];
     })));
     return printable;
   }
@@ -60,16 +72,17 @@
   function render(out) {
     current = out; root.replaceChildren(status);
     status.textContent = "גרסה " + out.version + " שאישרת · נשמרת בנפרד מטיוטות ושינויים חדשים";
-    var content = out.content, scenario = content.scenario;
-    root.append(node("h1", scenario.name));
-    section("מטרת הפעילות", content.purpose);
-    section("רכיבי החוסן", content.resilienceComponents);
-    section("מיומנויות אישיות", content.individualSkills);
-    section("מיומנויות משותפות", content.sharedSkills);
-    section("איך להנחות", content.facilitatorGuide);
-    section("המנגנון החברתי שנבחר", content.socialMechanism);
-    section("מהלך הפעילות", content.steps.map(function (step) { return step.title + " · " + (step.minutes === 1 ? "דקה אחת" : step.minutes + " דקות") + "\n" + step.instructions; }));
-    var rehearsal = section("תרגול ההנחיה", "אפשר לתרגל עם עמיתה: אחת מנחה ואחת מגלמת משתתפת. בחרו שלב, קראו את ההוראות, נסו פתיחה ושאלת המשך, ואז החליפו תפקידים. מותר לעצור או לבחור דרך השתתפות אחרת. התרגול הזה משתמש בתוצר שאישרת.");
+    var content = out.content, L = labelsFor(out);
+    if (out.kind === "conversation") { document.getElementById("scenarioName").textContent = "תרגול השיחה שאישרת"; document.getElementById("scenarioSubtitle").textContent = "תרגול השיחה עם עמיתה ותיעוד הצעד הבא"; }
+    else if (out.kind === "activity") document.getElementById("scenarioSubtitle").textContent = "תרגול המפגש עם עמיתה ותיעוד הצעד הבא";
+    var title = content.scenario && content.scenario.name || content.purpose || "התוצר שאישרת";
+    root.append(node("h1", title));
+    section(L.purpose, content.purpose);
+    [["רכיבי החוסן", content.resilienceComponents], ["מיומנויות אישיות", content.individualSkills], ["מיומנויות משותפות", content.sharedSkills],
+      [L.guide, content.facilitatorGuide], [L.mechanism, content.socialMechanism]].forEach(function (pair) { if (present(pair[1])) section(pair[0], pair[1]); });
+    if ((out.proceedWithout || []).length) section("בחרת להמשיך בלי", out.proceedWithout.map(function (k) { return SKIPPED[k] || k; }));
+    section(L.steps, content.steps.map(function (step) { return (step.phase && step.phase !== step.title ? step.phase + " · " : "") + step.title + " · " + (step.minutes === 1 ? "דקה אחת" : step.minutes + " דקות") + "\n" + step.instructions; }));
+    var rehearsal = section(out.kind === "conversation" ? "תרגול השיחה" : "תרגול ההנחיה", L.rehearsal || "אפשר לתרגל עם עמיתה: אחת מנחה ואחת מגלמת משתתפת. בחרו שלב, קראו את ההוראות, נסו פתיחה ושאלת המשך, ואז החליפו תפקידים. מותר לעצור או לבחור דרך השתתפות אחרת. התרגול הזה משתמש בתוצר שאישרת.");
     var stepSelect = node("select"); stepSelect.setAttribute("aria-label", "שלב לתרגול");
     content.steps.forEach(function (step) { var option = node("option", step.title); option.value = step.id; stepSelect.append(option); });
     var prompt = node("p"); prompt.style.whiteSpace = "pre-wrap";
@@ -77,10 +90,10 @@
     stepSelect.addEventListener("change", showStep); rehearsal.append(stepSelect, prompt); showStep();
     var print = node("button", "הדפסת הגרסה שאושרה"); print.type = "button";
     print.addEventListener("click", function () {
-      window.SBE_DOC.print({title:scenario.name, subtitle:"גרסה מאושרת " + out.version, node:printableActivity(content), inline:true});
+      window.SBE_DOC.print({title:title, subtitle:"גרסה מאושרת " + out.version, node:printableActivity(content, L), inline:true});
     }); root.append(print);
     var observationBox = section("אחרי התרגול", "תעדי מה ראית ובחרי את הצעד הבא. זו תצפית שלך; היא אינה מדידה של שיפור חוסן.");
-    var form = node("form"), observation = field("מה ראית או שמעת?", "observation"), next = field("מה בחרת לעשות במפגש הבא?", "chosenNextStep"), submissionId = crypto.randomUUID();
+    var form = node("form"), observation = field("מה ראית או שמעת?", "observation"), next = field(out.kind === "conversation" ? "מה בחרת לעשות אחרי השיחה?" : "מה בחרת לעשות במפגש הבא?", "chosenNextStep"), submissionId = crypto.randomUUID();
     form.addEventListener("input", function () { submissionId = crypto.randomUUID(); });
     observation.input.required = true; next.input.required = true;
     var submit = node("button", "שמירת התצפית והצעד שבחרתי"); submit.type = "submit";

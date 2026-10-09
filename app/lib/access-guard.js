@@ -113,7 +113,7 @@
   // שהשרת החזיר לקוד (sbe.session.perms).
   var PAGES_BY_PERM = {
     fac_trainee: ["input-screen.html"], fac_parent: ["parent-input-screen.html"], fac_youth: ["student-input-screen.html"],
-    conv: ["conversation-planner.html"], activity: ["activity-planner.html"], academic: ["academic-review.html"],
+    conv: ["conversation-planner.html", "rehearsal.html"], activity: ["activity-planner.html", "rehearsal.html"], academic: ["academic-review.html"], // rehearsal.html: תרגול הגרסה שאושרה (09/10/2026)
     resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html"],
     leadership: ["leadership-advisor.html", "resilience-advisor-sources.html"],
     practi: ["resilience-advisor.html", "resilience-advisor-sources.html"],
@@ -148,8 +148,8 @@
     try { mods = JSON.parse(ss("sbe.session.modules") || "{}") || {}; } catch(e){}
     if (mods.studio === true) allowed.push("resilience-studio.html");
     if (track !== "parent" && track !== "youth") {
-      if (mods.conv === true) allowed.push("conversation-planner.html");
-      if (mods.activity === true) allowed.push("activity-planner.html");
+      if (mods.conv === true) allowed.push("conversation-planner.html", "rehearsal.html");
+      if (mods.activity === true) allowed.push("activity-planner.html", "rehearsal.html");
       if (mods.academic === true) allowed.push("academic-review.html");
     }
   } else if (/^entry\.html\?home=/.test(home)) {

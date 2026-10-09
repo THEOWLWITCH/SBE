@@ -143,3 +143,15 @@ test('an activity may be approved without a social mechanism or facilitator guid
   const [,conv]=await create(store,talker,{kind:'conversation',draft:conversationDraft()});
   assert.equal((await handleArtifacts(store,talker,{action:'approve',artifactId:conv.artifact.id,expectedVersion:1,proceedWithout:['facilitatorGuide']},options()))[0],400);
 });
+
+test('with the real source bank, every reviewer envelope fits the input cap (the full catalogue alone used to exceed it)',async()=>{
+  const {approvedSources}=await import('../practice-server.mjs');const {AGENT_LIMITS,REVIEWERS}=await import('../lib/agent-contract.mjs');
+  const bank=approvedSources();assert.ok(bank.length>100,'the real bank is used');
+  const store=createAtomicMemoryStore();
+  const [,out]=await handleArtifacts(store,teacher,{action:'create',kind:'activity',draft:activityDraft(),planning:professional},{sourceLibrary:bank});
+  for(const agent of ['single',...REVIEWERS]) {
+    const envelope=agentEnvelope(out.artifact,agent,{runId:'r1',sourceLibrary:bank});
+    assert.ok(Buffer.byteLength(JSON.stringify(envelope))<=AGENT_LIMITS.maxInputBytes,agent+' envelope fits');
+    assert.ok(envelope.sourceCatalogue.every(s=>Object.keys(s).join()==='sourceId,title'&&s.title.length<=90));
+  }
+});

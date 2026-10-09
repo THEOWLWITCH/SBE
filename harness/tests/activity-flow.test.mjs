@@ -203,7 +203,7 @@ test('proposal comparison uses its historical base after a deleted step and a ne
   session.state.draft.steps=[];session.state.artifact.content.steps=[];
   session.edit('socialMechanism','עדכון להצגת ההיסטוריה');
   assert.ok(container.textContent.includes(step.instructions));
-  assert.ok(container.textContent.includes(step.title+' — הנחיות השלב'));
+  assert.ok(container.textContent.includes(step.title+': הנחיות השלב'));
   assert.ok(!container.textContent.includes('steps/'+step.id+'/instructions'));
   assert.ok(!container.textContent.includes('מזהה קבוע:'));
 });

@@ -160,7 +160,9 @@
       dialog.append(close,heading,notice,body,status); dialog.addEventListener("close", () => dialog.remove(),{once:true});
       document.body.append(dialog); showList(); dialog.showModal(); return dialog;
     }
-    return {list,get,save,restore,copy,saveButton,print,open};
+    // צילום של הנוסח הערוך שעל המסך, בלי שמירה. משמש לשליחה לבדיקה ולאישור בשרת (planner-artifact).
+    function snapshot(nodes) { assertOwner(); const doc = capture(nodes); restoreDocument(doc); return doc; }
+    return {list,get,save,restore,copy,saveButton,print,open,snapshot};
   }
   function createWork(readState) {
     let active;
