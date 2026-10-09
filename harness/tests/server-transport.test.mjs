@@ -107,13 +107,17 @@ test('The actual Studio browser client consumes server success and clarification
   const source=readFileSync(new URL('../../app/lib/resilience-studio-ui.js',import.meta.url),'utf8');
   const start=source.indexOf('  const MODEL_ACTIONS'),end=source.indexOf('  async function ensureAuthorized()',start);
   const state={brief:{focus:'שייכות'},confirmed:true};
+  const els={};
   const context={state,API:'http://127.0.0.1:'+server.address().port+'/api/studio',token:()=>a,
-    AbortController,Date,fetch,setTimeout:(fn,ms)=>setTimeout(fn,ms<10000?0:ms),clearTimeout,document:{hidden:false},
-    $:()=>({checked:true,scrollIntoView(){}}),lockWorkspace(){},renderRecommendation(){},updateControls(){},persist(){}};
+    AbortController,Date,fetch,setTimeout:(fn,ms)=>setTimeout(fn,ms<10000?0:ms),clearTimeout,
+    document:{hidden:false,querySelectorAll:()=>[],querySelector:()=>null},
+    $:id=>(els[id]||={checked:true,value:'',dataset:{},scrollIntoView(){}}),lockWorkspace(){},renderRecommendation(){},updateControls(){},persist(){}};
   const api=vm.runInNewContext('(function(){'+source.slice(start,end)+';return api;})()',context);
   assert.equal((await api({action:'consult',requestId:'actual-studio-client'})).consultation.answer,'תשובה סינתטית');
   outcome=[422,{error:'נדרשת הבהרה',questions:['מה גיל המשתתפים?'],focus:'שייכות'}];
-  await assert.rejects(api({action:'generate',requestId:'actual-studio-clarify'}),/נדרשת הבהרה/);
+  // שאלות הבהרה (main, 08/10/2026): לא שגיאה אדומה, אלא הודעה ידידותית ומעבר לצעד 2 עם תיבת תשובה לכל שאלה
+  await assert.rejects(api({action:'generate',requestId:'actual-studio-clarify'}),e=>e.clarify===true && /יש לנו כמה שאלות קצרות/.test(e.message));
+  assert.equal(els['studio-layout'].dataset.step,'2');
   assert.deepEqual(Array.from(state.recommendation.questions),['מה גיל המשתתפים?']);assert.equal(state.confirmed,false);
 });
 
@@ -165,4 +169,23 @@ test('The authenticated artifact boundary reconciles single-attempt usage before
   assert.equal(done.body.artifact.approvedVersions.length,0);
   const job=await store.get('pj:'+started.body.jobId);
   assert.equal(job.tokenBudget,100000);assert.equal((await store.list('aiq:'))[0].value.state,'committed');
+});
+
+test('Customer review runs only for marked products, inside the job budget, and keeps the original on its own failure',async t=>{
+  const {store,a}=await account(['activity']);const calls=[];
+  const issue={where:'סיכום',quote:'שאלות לעיבוד',problem:'לא ברור מי שואל',fix:'המנחה שואלת את הקבוצה'};
+  let reviewAnswer=JSON.stringify({ready:false,summary:'לא ברור',issues:[issue]});
+  const {post}=await serving(t,{store,providerFactory:()=>({complete:async request=>{
+    await request.beforeAttempt?.();const who=/את הלקוחה של Begood/.test(request.system)?'review':request.messages.length>1?'fix':'product';calls.push(who);
+    return {status:'completed',text:who==='review'?reviewAnswer:who==='fix'?'{"title":"ברור","flow":[]}':'{"title":"א","flow":[]}',usage:{inputTokens:10,outputTokens:10,totalTokens:20}};}})});
+  const body={messages:[{role:'user',content:'בני פעילות'}],system:'S',maxTokens:2000,permission:'activity'};
+  const plain=await post('/api/complete',a,{...body,requestId:'plain-product-0001'});
+  assert.equal(plain.status,200);assert.deepEqual(calls,['product']);assert.ok(!plain.body.review);
+  calls.length=0;
+  const reviewed=await post('/api/complete',a,{...body,requestId:'reviewed-product-01',customerReview:true});
+  assert.equal(reviewed.status,200);assert.deepEqual(calls,['product','review','fix']);
+  assert.equal(reviewed.body.text,'{"title":"ברור","flow":[]}');assert.equal(reviewed.body.review.revised,true);
+  calls.length=0;reviewAnswer='לא JSON';
+  const failed=await post('/api/complete',a,{...body,requestId:'review-fails-0001',customerReview:true});
+  assert.equal(failed.status,200);assert.equal(failed.body.text,'{"title":"א","flow":[]}');assert.ok(!failed.body.review);
 });

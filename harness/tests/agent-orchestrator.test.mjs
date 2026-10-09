@@ -225,10 +225,12 @@ test('Reviewers wait for conservative reservations to settle instead of losing t
 });
 
 test('Measured exhaustion after queued reviewers still blocks synthesis without an extra physical call',async()=>{
-  const run=await reservedTeam({usedTokens:31000});await run.firstTwo;run.release();
+  // 09/10/2026: כללי הניסוח שנוספו ב-main (plain) הגדילו כל הנחיה בכ-2,700 בתים, ולכן תרחיש הקצה כויל מ-31,000 ל-30,000.
+  // ההיגיון נשאר: שלושת הבודקים נכנסים, והסינתזה נחסמת בתקציב בלי קריאה פיזית נוספת.
+  const run=await reservedTeam({usedTokens:30000});await run.firstTwo;run.release();
   const [status,out]=await run.pending;assert.equal(status,200);assert.equal(out.review.status,'failed');
   assert.deepEqual(run.log,['pedagogy','resilience_facilitation','safety_sources']);assert.equal(out.review.results.synthesis.status,'budget_exceeded');
-  assert.equal(out.review.totalTokens,93000);assert.ok(run.maxCommitted()<=100000);assert.equal(out.review.proposal,null);
+  assert.equal(out.review.totalTokens,90000);assert.ok(run.maxCommitted()<=100000);assert.equal(out.review.proposal,null);
 });
 
 test('Cancellation and the shared deadline stop queued reviewer dispatch when active adapters do not settle',async()=>{

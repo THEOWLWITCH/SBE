@@ -1,6 +1,7 @@
 <meta charset="UTF-8">
 <title>תכנון פעילות</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/example-peek.js" data-tool="act-single,act-seq" defer></script>
 <script src="lib/open-select.js"></script>
 <script src="lib/ai-status.js"></script>
 <script src="lib/ai-call.js"></script>
@@ -407,7 +408,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
     <span class="note" id="sqReady"></span>
   </div>
   <p class="seq-note" id="sqIntro">כל שדה מסומן: עיקרי, רשות שהמערכת תשלים אם תישאר ריקה, או רשות שהמערכת לא ממציאה אלא רק מתחשבת בה (עובדות על המציאות שלך: מרחב, תקציב, העדפות).
-    <button type="button" class="linkbtn" id="sqLoadSample">טעינת רצף לדוגמה</button></p>
+    <button type="button" class="linkbtn sbe-sysonly" id="sqLoadSample">טעינת רצף לדוגמה</button></p>
   <div class="banner" id="sqSampleNote" hidden></div>
   <details class="grp" id="sqImport">
     <summary>יש לך כבר מסמך תכנון? סילבוס, תכנית קורס, רשימת נושאים<span class="count">ניתוח ופריסה למפגשים</span></summary>
@@ -862,10 +863,10 @@ function setAIStatus(status){
   else chip.innerHTML = dot + "בודקת חיבור למודל...";
 }
 
-async function callAI(system, userText, maxTokens, timeoutMs, run) {
+async function callAI(system, userText, maxTokens, timeoutMs, run, review) { // review: תוצר, עובר דרך הסוכנת-הלקוחה (harness/lib/customer-pass.mjs)
   run?.assertCurrent();
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך
-  const result = await sbeCallAI(window.sbeAIOrigin?.() || AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200 }, timeoutMs || 60000, {signal:run?.signal});
+  const result = await sbeCallAI(window.sbeAIOrigin?.() || AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, customerReview: !!review }, timeoutMs || 60000, {signal:run?.signal});
   run?.assertCurrent(); return result;
 }
 
@@ -1455,7 +1456,7 @@ async function computeFeedbackFromFieldsAI(d, run) {
   ].filter(Boolean).join("\n");
   // maxTokens=8000, timeout=150 שניות — נמדד חי (19/09/2026): משוב אמיתי
   // על תוכנית לקח כ-60 שניות; 2500 גרם לקטיעה.
-  const raw = await callAI(system, "תוכנית הפעילות:\n" + JSON.stringify(d, null, 2), 8000, 240000, run);
+  const raw = await callAI(system, "תוכנית הפעילות:\n" + JSON.stringify(d, null, 2), 8000, 240000, run, true);
   const m = raw.match(/\{[\s\S]*\}/);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
@@ -1467,7 +1468,7 @@ document.getElementById("bFeedback").addEventListener("click", async (e) => {
   const run = startSingleWork();
   if (!run) return;
   const d = {}; FIELDS.forEach((f,k) => { d[k] = val(k); });
-  const done = plannerBusy(e.target,run,"בודקת... (עד כ-3 דקות)","משוב");
+  const done = plannerBusy(e.target,run,"בודקת... (עד כ-5 דקות)","משוב");
   try {
     let fb;
     try { fb = await computeFeedbackFromFieldsAI(d, run); run.assertCurrent(); }
@@ -1526,9 +1527,10 @@ async function synthesizeActivityNarrative(d, creator, run) {
       "התוצר הוא טקסט רציף — לא רשימת שדות, לא כותרות-משנה, לא תוויות ונקודתיים, לא \"S.M.A.R.T\" גלוי. ארבע פסקאות: (1) למה נבחרה הפעילות ומה המשמעות מאחוריה — המטרה והיעד משולבים כסיפור; (2) איך היא נראית בפועל מרגע הכניסה לחדר ועד הסיכום, עם משכי הזמן שזורים במשפטים (\"חמש הדקות הראשונות...\"); (3) למה גישת הלמידה, התנועה, דרכי ההבעה והטכנולוגיה משרתות את המטרה ולא רק מתלוות אליה; (4) פסקה קצרה בגוף שני למורה עם טיפ מעשי אחד שנגזר מהתוכן.",
       "חוק הספציפיות: שם, מספר, חפץ, מקום. משפט שאפשר להעתיק לפעילות אחרת בלי לשנות מילה נפסל. אל תמציאי תוכן שלא נמסר; אם שדה חסר, כתבי סביבו.",
       "בנוסף, רשימת \"מה להכין מראש\": לוח זמנים בשורה, מרחב, ציוד, ניסוחים שכדאי להכין מראש, 4-8 פריטים קצרים, זו הרשימה היחידה שנשארת רשימה.",
-      "החזירי אך ורק JSON: {\"title\":\"כותרת קצרה לפעילות (לא שם המקצוע)\",\"paragraphs\":[\"...\",\"...\",\"...\",\"...\"],\"prepare\":[\"...\"]}",
+      "בנוסף, \"flow\": מהלך המפגש לפי השדות פתיחה, פעילות מרכזית וסיכום שמולאו (ואם יש, משהו קצר שעושים אחרי המפגש). לכל שלב: phase (אחד מ: פתיחה, פעילות מרכזית, סיכום, אחרי המפגש; בפעילות המרכזית אפשר כמה שלבים ברצף), title (שם קצר), minutes (מספר), description (תיאור הפעילות: מי עושה, מה עושים, עם מה ומה יוצא בסוף), guide (הנחיה למורה: מה אומרת, ואילו שאלות שואלת את הקבוצה ובשביל מה), resources (עזרים ומשאבים לשלב, או מחרוזת ריקה). בלי להמציא תוכן שלא נמסר.",
+      "החזירי אך ורק JSON: {\"title\":\"כותרת קצרה לפעילות (לא שם המקצוע)\",\"paragraphs\":[\"...\",\"...\",\"...\",\"...\"],\"prepare\":[\"...\"],\"flow\":[{\"phase\":\"פתיחה\",\"title\":\"\",\"minutes\":5,\"description\":\"\",\"guide\":\"\",\"resources\":\"\"}]}",
     ].join("\n\n");
-    const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 8000, 240000, run);
+    const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 8000, 240000, run, true);
     const m = text.match(/\{[\s\S]*\}/); if (!m) throw new Error("לא התקבל JSON");
     const out = JSON.parse(m[0]);
     if (!Array.isArray(out.paragraphs) || out.paragraphs.length < 3) throw new Error("מבנה חסר");
@@ -1553,17 +1555,18 @@ function buildNarrativeDocView(d, creator, narr) {
   const ul = (xs) => { const u = el("ul", { style:"margin:0;padding-inline-start:18px;" }); xs.forEach(x => u.append(el("li",{},x))); return u; };
   dv.append(SBE_DOC.table(narr.paragraphs.map((p, i) => [LBL[i] || "ועוד", p])
     .concat([["התוצר", d.outcome], ["מה להכין מראש", Array.isArray(narr.prepare) && narr.prepare.length ? ul(narr.prepare) : ""]])));
-  const flow = [["פתיחה", d.openingMin, d.opening], ["פעילות מרכזית", d.mainMin, d.mainActivity], ["סיכום", d.closingMin, d.closing]].filter(r => str(r[2]));
-  if (flow.length) {
+  // מהלך הפעילות (08/10/2026): פתיחה · פעילות מרכזית · סיכום · אחרי המפגש, בשלוש עמודות (SBE_DOC.flowTable)
+  const num = (x) => { const m = String(x == null ? "" : x).match(/\d+/); return m ? Number(m[0]) : 0; };
+  let rows = Array.isArray(narr.flow) ? narr.flow.filter(r => r && (str(r.description) || str(r.guide))).map(r => ({
+    phase: SBE_DOC.PHASES.includes(r.phase) ? r.phase : "פעילות מרכזית", title: str(r.title), minutes: num(r.minutes),
+    desc: str(r.description), guide: str(r.guide), res: str(r.resources) })) : [];
+  if (!rows.length) rows = [["פתיחה", d.openingMin, d.opening], ["פעילות מרכזית", d.mainMin, d.mainActivity], ["סיכום", d.closingMin, d.closing]]
+    .filter(r => str(r[2])).map(([phase, m, txt]) => ({ phase, title: "", minutes: num(m), desc: str(txt), guide: "", res: phase === "פעילות מרכזית" ? str(d.resources) : "" }));
+  if (rows.length && str(d.resources) && !rows.some(r => r.res)) { const mr = rows.find(r => r.phase === "פעילות מרכזית") || rows[0]; mr.res = str(d.resources); }
+  if (rows.length) {
     dv.append(el("h3", { style:"font-size:15px;margin:16px 0 4px" }, "מהלך הפעילות"));
-    const t = el("table", { class:"kit-table" });
-    const th = el("thead"); th.append(el("tr", {}, el("th",{},"שלב"), el("th",{},"זמן"), el("th",{},"מה עושים"))); t.append(th);
-    const tb = el("tbody");
-    flow.forEach(([n, m, txt]) => { const lines = str(txt).split(/\n+/).filter(Boolean);
-      tb.append(el("tr", {}, el("th",{},n), el("td",{style:"white-space:nowrap"}, str(m) || "—"), el("td",{}, lines.length > 1 ? ul(lines.map(x => x.replace(/^\d+[.)]\s*/, ""))) : str(txt)))); });
-    const extra = [["שילוב תנועה", d.movement], ["משאבים ועזרים", d.resources]].filter(r => str(r[1]));
-    extra.forEach(([n, v]) => { const td = el("td", {}, str(v)); td.colSpan = 2; tb.append(el("tr", {}, el("th",{},n), td)); });
-    t.append(tb); dv.append(t);
+    dv.append(SBE_DOC.flowTable(rows));
+    if (str(d.movement)) dv.append(SBE_DOC.table([["שילוב תנועה", str(d.movement)]]));
   }
   return dv;
 }
@@ -1574,7 +1577,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   const d = {}; FIELDS.forEach((f,k) => { d[k] = val(k); });
   const creator = document.getElementById("creatorName").value.trim();
   const body = el("div");
-  const done = plannerBusy(e.target,run,"מנסחת את התוצר... עד כ-3 דקות","הפקת התוצר");
+  const done = plannerBusy(e.target,run,"מנסחת את התוצר... עד כ-5 דקות","הפקת התוצר");
   let narr = null;
   try { narr = await synthesizeActivityNarrative(d, creator, run); run.assertCurrent(); }
   catch(error) { if (!run.current()) return; }
@@ -1680,7 +1683,7 @@ async function computeFeedbackFromTextAI(text, run) {
     "בדקי בפרט: האם יש מטרה ברורה; מבנה (פתיחה/גוף/סיכום); קשר אמיתי בין המטרה לפעילות עצמה; שילוב תנועה שמשרת את המטרה (אם קיים); מעורבות פעילה של התלמידים לעומת האזנה פסיבית; חלוקת זמן וריאליזם.",
     "החזירי אך ורק JSON תקין במבנה: {\"good\":[\"...\"],\"gaps\":[\"...\"]} — עם הסבר קונקרטי לכל פריט, מצטט מהטקסט כשרלוונטי. בלי טקסט נוסף מסביב.",
   ].join("\n");
-  const raw = await callAI(system, "טקסט הפעילות:\n" + text, 8000, 240000, run);
+  const raw = await callAI(system, "טקסט הפעילות:\n" + text, 8000, 240000, run, true);
   const m = raw.match(/\{[\s\S]*\}/);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
@@ -1693,7 +1696,7 @@ document.getElementById("bAnalyze").addEventListener("click", async (e) => {
   if (!text) return show("חסר טקסט", el("p",{},"הדביקי או העלי טקסט פעילות לפני הניתוח."));
   const run = startSingleWork();
   if (!run) return;
-  const done = plannerBusy(e.target,run,"מנתחת... (עד כ-3 דקות)","ניתוח");
+  const done = plannerBusy(e.target,run,"מנתחת... (עד כ-5 דקות)","ניתוח");
   try {
     let fb;
     try { fb = await computeFeedbackFromTextAI(text, run); run.assertCurrent(); }
@@ -2550,7 +2553,7 @@ td.n{font-family:"IBM Plex Mono",monospace;white-space:nowrap;}
 tr{break-inside:avoid;page-break-inside:avoid;} thead{display:table-header-group;}
 thead th{background:#2E5A7D;color:#fff;}
 table.kv th{width:22%;background:#EDEFF1;}
-table.flow tbody th{width:15%;background:#EDEFF1;} table.flow td.n{width:9%;}
+table.flow tbody th{width:15%;background:#EDEFF1;} table.flow td.n{width:9%;} table.flow tr.ph th{width:auto;background:#DCE7EF;color:#1E3F5A;text-align:right;} table.flow tr.ph{break-after:avoid;page-break-after:avoid;}
 table.crit-t tbody th{width:22%;background:#EDEFF1;} table.crit-t tr.na td{color:#5C6771;} tr.fact-row.gap th{color:#8C3A34;} tr.fact-row.check th{color:#8F5F2E;} tr.fact-row.ok th{color:#3F6B52;}
 table.end thead th{background:#4A6B5A;}
 td p{margin:0 0 4px;} td ol,td ul{margin:0;}
@@ -2621,9 +2624,12 @@ function seqDocHTML(narr){
       if (str(s.closing)) rows.push(["סיכום", s.closingMin, nl(s.closing)]);
       h += `<section class="sess"><h3>מפגש ${i + 1}<span class="t">${esc(str(s.duration))}</span></h3>`;
       if (smartSentence(s)) h += `<p class="goal"><b>יעד המפגש:</b> ${nl(smartSentence(s))}</p>`;
-      if (rows.length) h += `<table class="flow"><thead><tr><th>שלב</th><th>זמן</th><th>מה עושים</th></tr></thead><tbody>${rows.map(([t, m, c]) => `<tr><th>${t}</th><td class="n">${esc(str(m) || "—")}</td><td>${c}</td></tr>`).join("")}</tbody></table>`;
+      // מהלך המפגש (08/10/2026): פתיחה · פעילות מרכזית · סיכום, כשורת כותרת לכל חלק; עמודות: תיאור הפעילות · עזרים ומשאבים
+      if (rows.length) { const hasRes = !!str(s.resources);
+        h += `<table class="flow"><thead><tr><th>תיאור הפעילות</th>${hasRes ? "<th>עזרים ומשאבים</th>" : ""}</tr></thead><tbody>${rows.map(([t, m, c]) =>
+          `<tr class="ph"><th colspan="${hasRes ? 2 : 1}">${t}${str(m) ? " · " + esc(str(m)) : ""}</th></tr><tr><td>${c}</td>${hasRes ? `<td>${t === "פעילות מרכזית" ? nl(s.resources) : "—"}</td>` : ""}</tr>`).join("")}</tbody></table>`; }
       const ss = narr && narr.sessionSources ? narr.sessionSources[i + 1] : null;
-      const end = [["תוצר המפגש והערכתו", str(s.product) ? nl(s.product) : ""], ["משאבים ועזרים", str(s.resources) ? nl(s.resources) : ""], ["מקורות להרחבה", ss && ss.length ? sourceList(ss) : ""]].filter(x => x[1]);
+      const end = [["תוצר המפגש והערכתו", str(s.product) ? nl(s.product) : ""], ["משאבים ועזרים", str(s.resources) && !rows.some(r => r[0] === "פעילות מרכזית") ? nl(s.resources) : ""], ["מקורות להרחבה", ss && ss.length ? sourceList(ss) : ""]].filter(x => x[1]);
       if (end.length) h += `<table class="end"><thead><tr>${end.map(x => `<th>${x[0]}</th>`).join("")}</tr></thead><tbody><tr>${end.map(x => `<td>${x[1]}</td>`).join("")}</tr></tbody></table>`;
       h += `</section>`;
     });
@@ -2789,7 +2795,7 @@ async function aiReport(facts, run){
   ].join("\n\n");
   const user = "התכנון:\n" + JSON.stringify(planForAI()) +
     "\n\nבדיקות מכניות שכבר מוצגות ליוצרת בנפרד (אל תחזרי עליהן כלשונן; אפשר להתייחס למשמעותן):\n" + facts.map(f => "- " + f.text).join("\n");
-  const out = parseJSON(await callAI(system, user, 24000, 540000, run));
+  const out = parseJSON(await callAI(system, user, 24000, 540000, run, true));
   if (!Array.isArray(out.criteria) || !out.criteria.length) throw new Error("מבנה דו״ח חסר");
   return out;
 }
@@ -2848,7 +2854,7 @@ async function aiNarrative(run){
     lib.length ? "מקורות להרחבה — בחרי אך ורק מתוך ספריית המקורות המאומתת שלמטה, לפי המספר (id) בלבד. אסור לכתוב מקור, שם מחבר או כותרת משלך. לכל מפגש 1–2 מקורות שמתאימים לנושא שלו; ולרצף כולו 3–5 מקורות, כולל מקורות לגישות שנבחרו אם יש כאלה בספרייה. אם אין מקור מתאים — מערך ריק. הספרייה (id | תחום | נושא | סוג | תגיות | גישה):\n" + libCatalog(lib) : "",
     "אל תמציאי תוכן שלא נמסר. החזירי אך ורק JSON: {\"paragraphs\":[\"...\",\"...\",\"...\"]" + (lib.length ? ",\"sources\":{\"overall\":[12,40],\"sessions\":[{\"n\":1,\"ids\":[3]}]}" : "") + "}",
   ].filter(Boolean).join("\n\n");
-  const out = parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), 12000, 300000, run));
+  const out = parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), 12000, 300000, run, true));
   if (!Array.isArray(out.paragraphs) || out.paragraphs.length < 2) throw new Error("מבנה חסר");
   // רק מזהים שקיימים בספרייה — כל דבר אחר נזרק
   const byId = new Map(lib.map(x => [x.id, x]));
@@ -2977,8 +2983,10 @@ document.getElementById("bSeqFill").addEventListener("click", async (e) => {
     setAIStatus("mock");
     const body = el("div");
     body.append(mockNote("אין חיבור למודל כרגע: השלמת נתונים דורשת מודל אמיתי, והמערכת לא ממלאת את התכנון שלך בתוכן קבוע שלא נכתב עבורו."),
-      el("p", {}, "אפשר לטעון רצף לדוגמה כדי לראות איך נראה תכנון מלא, כולל הבדיקות והתוצר."));
-    seqDialog("השלמת נתונים חסרים", body, [btn("טעינת רצף לדוגמה", () => { document.getElementById("dlg").close(); loadSample(); }, "primary")]);
+      el("p", {}, "מה שמילאת נשמר, ואפשר לנסות שוב בעוד רגע."));
+    // דוגמה — רק למנהלת המערכת (08/10/2026)
+    const sys = document.documentElement.classList.contains("sbe-sys");
+    seqDialog("השלמת נתונים חסרים", body, sys ? [btn("טעינת רצף לדוגמה", () => { document.getElementById("dlg").close(); loadSample(); }, "primary")] : []);
   } finally { done(); }
 });
 
@@ -3352,7 +3360,7 @@ renderSeq();
 // מהכתובת אחרי ההרצה, כדי שרענון לא יטען את הדוגמה שוב.
 (function runDemo(){
   const q = new URLSearchParams(location.search);
-  if (q.get("demo") !== "1") return;
+  if (q.get("demo") !== "1" || !document.documentElement.classList.contains("sbe-sys")) return;
   try { const u = new URL(location.href); u.searchParams.delete("demo"); history.replaceState(null, "", u); } catch(e){}
   loadSample();
   if (!seq._sample) return;

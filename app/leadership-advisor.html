@@ -6,6 +6,8 @@
 <title>נוגי: יועצת למנהיגות תומכת חוסן</title>
 <script src="lib/report-table.js"></script>
 <script src="lib/access-guard.js"></script>
+<script src="lib/product-doc.js"></script>
+<script src="lib/example-peek.js" data-tool="nugi" defer></script>
 <script src="lib/open-select.js"></script>
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -269,7 +271,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
       <textarea id="f-worry" maxlength="800"></textarea>
       <div class="btns">
         <button class="btn" id="btn-analyze">ניתוח והמלצות</button>
-        <button class="btn btn-ghost" id="btn-example">מילוי לדוגמה</button>
+        <button class="btn btn-ghost sbe-sysonly" id="btn-example">מילוי לדוגמה</button>
         <button class="btn btn-ghost" id="btn-clear">ניקוי</button>
       </div>
       <p class="err" id="form-err" hidden></p>
@@ -731,9 +733,9 @@ const ADVISOR_SYSTEM = [
   'ו-REC הוא {"title":"שם קצר","description":"מה עושים ואיך","resilience":"איך זה מחזק את החוסן החברתי — 1–2 משפטים","basis":["מפתח"]}'
 ].join('\n');
 
-async function complete(system,messages,maxTokens){
+async function complete(system,messages,maxTokens,review){
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
-  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens},480000)||'');
+  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},480000)||'');
 }
 
 // ── ניתוח ──
@@ -750,11 +752,11 @@ F('btn-analyze').addEventListener('click',async()=>{
     err.hidden=false;(need.length?F(!F('f-who').value?'f-who':!F('f-stage').value?'f-stage':'f-sit'):F('q-'+miss[0].k)).scrollIntoView({behavior:'smooth',block:'center'});return;
   }
   err.hidden=true;renderPicture(a);
-  BUSY=true;const b=F('btn-analyze');b.disabled=true;b.textContent='נוגי מנתחת... (דקה–שלוש)';
-  const rep=F('report');rep.textContent='';rep.appendChild(el('div','card','נוגי קוראת את תמונת המצב ומכינה את הדוח... (דקה–שלוש)'));
+  BUSY=true;const b=F('btn-analyze');b.disabled=true;b.textContent='נוגי מנתחת... (עד כ-5 דקות)';
+  const rep=F('report');rep.textContent='';rep.appendChild(el('div','card','נוגי קוראת את תמונת המצב ומכינה את הדוח, ואז בודקת שהכול ברור... (עד כ-5 דקות)'));
   rep.scrollIntoView({behavior:'smooth',block:'start'});
   try{
-    const txt=await complete(ADVISOR_SYSTEM,[{role:'user',content:pictureText(a)}],32000);
+    const txt=await complete(ADVISOR_SYSTEM,[{role:'user',content:pictureText(a)}],32000,true);
     const m=txt.match(/\{[\s\S]*\}/);if(!m)throw new Error('נוגי לא החזירה מבנה תקין');
     STATE.report={at:new Date().toISOString(),who:F('f-who').value,mode:F('f-mode').value,school:F('f-school').value.trim(),stage:F('f-stage').value,sit:F('f-sit').value,doc:JSON.parse(m[0]),picture:pictureText(a)};
     STATE.chat=[];save();renderReport();renderChat();
@@ -841,7 +843,7 @@ function renderReport(){
   const head=el('div','card no-print');head.appendChild(el('h2',null,'הדוח מוכן'));
   const nav=el('div','rep-nav');
   const ask=el('button','btn','לשאול את נוגי ↓');ask.addEventListener('click',()=>{F('chat-area').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>{if(!F('chat-in').disabled)F('chat-in').focus({preventScroll:true});},500);});
-  const pr=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.print());
+  const pr=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'דוח סיכום והמלצות'+(STATE.report&&STATE.report.school?': '+STATE.report.school:'')}):window.print());
   const cp=el('button','btn btn-ghost','העתקת הטקסט');cp.addEventListener('click',()=>{navigator.clipboard&&navigator.clipboard.writeText(plain()).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הטקסט',2000);});});
   nav.appendChild(ask);nav.appendChild(pr);nav.appendChild(cp);head.appendChild(nav);box.appendChild(head);
 

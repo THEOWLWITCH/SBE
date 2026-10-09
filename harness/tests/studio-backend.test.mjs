@@ -94,7 +94,7 @@ test('GPT-6 Responses payload is strict; source snapshots remain public and user
   process.env.OPENAI_API_KEY='test-key';
   const [status,out]=await handleStudio(store,{token,action:'generate',brief:b,mapping:{scope:'forged',domains:[{name:'fake'}]}},{fetchImpl:async(url,opts)=>{assert.equal(url,'https://api.openai.com/v1/responses');sent=JSON.parse(opts.body);return response(result);}});
   assert.equal(status,400,'client aggregates are rejected rather than used');
-  const [ok,kit]=await handleStudio(store,{token,action:'generate',brief:b},{fetchImpl:async(url,opts)=>{sent=JSON.parse(opts.body);return response(result);}});
+  sent=undefined;const [ok,kit]=await handleStudio(store,{token,action:'generate',brief:b},{fetchImpl:async(url,opts)=>{const body=JSON.parse(opts.body);if(!sent)sent=body;return response(result);}});
   assert.equal(ok,200);assert.equal(sent.model,'gpt-6.1-sol');assert.equal(sent.reasoning.effort,'medium');assert.equal(sent.store,false);assert.match(sent.instructions,/אף אחד לא צריך ולא חייב/);assert.match(sent.instructions,/בחירה, החלטה, שלבים ואחריות/);assert.match(sent.instructions,/אי־שיפוטיות/);
   assert.ok(!('temperature' in sent));assert.ok(!('top_p' in sent));assert.equal(sent.text.format.strict,true);
   const input=JSON.parse(sent.input[0].content[0].text);
@@ -358,5 +358,27 @@ test('provider errors make no claim that a local draft was saved',async()=>{
     const [status,out]=await handleStudio(store,{token,action,brief:action==='generate'?brief():{},stage:'starting',question:'איך מתחילים?'},{fetchImpl});
     assert.equal(status,503);assert.ok(!/נשמר|השמור|saved|stored/i.test(out.error));
   }
+  delete process.env.OPENAI_API_KEY;
+});
+
+test('the customer agent reads every kit; unclear kits are revised once and the review is returned', async () => {
+  const {store,token}=await signed();process.env.OPENAI_API_KEY='test-key';
+  const first=generated(), fixed=generated();fixed.title='גרסה ברורה';
+  const names=[];let reviewText='';
+  const mock=async(url,opts)=>{const body=JSON.parse(opts.body);const name=body.text.format.name;names.push(name);
+    if(name==='customer_review'){reviewText=body.input[0].content[0].text;assert.match(body.instructions,/את הלקוחה של Begood/);
+      return response({ready:false,summary:'לא ברור מתי שואלים את השאלות',issues:[{where:'מפגש 1 · סיכום',quote:'שאלות לעיבוד',problem:'לא ברור מי שואל ומתי',fix:'שאלות לסיכום: המנחה שואלת את הקבוצה בסוף המפגש'}]});}
+    if(names.filter(n=>n==='studio_activity').length===2){assert.match(body.instructions,/הלקוחה קראה את הגרסה הקודמת/);const input=JSON.parse(body.input[0].content[0].text);assert.ok(input.previousDraft&&input.customerIssues.length===1);return response(fixed);}
+    return response(first);};
+  const [ok,out]=await handleStudio(store,{token,action:'generate',brief:brief()},{fetchImpl:mock});
+  assert.equal(ok,200);assert.deepEqual(names,['studio_activity','customer_review','studio_activity']);
+  assert.equal(out.activity.title,'גרסה ברורה');assert.equal(out.customerReview.revised,true);assert.equal(out.customerReview.issues.length,1);
+  assert.match(reviewText,/\[תיאור הפעילות\]/);
+  // סוכנת שאומרת שהערכה מוכנה: בלי תיקון; וכשהסוכנת לא זמינה, הערכה המקורית חוזרת כרגיל
+  names.length=0;
+  const [ok2,out2]=await handleStudio(store,{token,action:'generate',brief:brief()},{fetchImpl:async(url,opts)=>{const name=JSON.parse(opts.body).text.format.name;names.push(name);return name==='customer_review'?response({ready:true,summary:'ברור',issues:[]}):response(first);}});
+  assert.equal(ok2,200);assert.deepEqual(names,['studio_activity','customer_review']);assert.equal(out2.customerReview.revised,false);
+  const [ok3,out3]=await handleStudio(store,{token,action:'generate',brief:brief()},{fetchImpl:async(url,opts)=>JSON.parse(opts.body).text.format.name==='customer_review'?{ok:false,json:async()=>({})}:response(first)});
+  assert.equal(ok3,200);assert.ok(!out3.customerReview);
   delete process.env.OPENAI_API_KEY;
 });

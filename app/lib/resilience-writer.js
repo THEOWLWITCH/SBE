@@ -77,7 +77,7 @@ function mount(h){
       const user='קהל: '+F('rw-aud').value+'\nסוג ההודעה: '+F('rw-kind').value+(loc?'\nפרטים מקומיים שאפשר לשלב: '+loc:'')+(sign?'\nחתימה: '+sign:'')+'\n\nמה רוצים לומר (נקודות, עובדות או טיוטה):\n'+txt;
       const ab=A?attachBlocks(A.att,A.instruction):{text:'',blocks:[]};
       const content=ab.blocks.length?[...ab.blocks,{type:'text',text:user+ab.text}]:user+ab.text;
-      const res=await complete(system(),[{role:'user',content}],8000);
+      const res=await complete(system(),[{role:'user',content}],8000,true);
       const m=res.match(/\{[\s\S]*\}/);if(!m)throw new Error('לא התקבל מבנה תקין');
       const d=JSON.parse(m[0]);const msg=String(d.message||'').replace(/\*\*/g,'');if(!msg)throw new Error('לא התקבלה הודעה');
       out.textContent='';

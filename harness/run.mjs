@@ -128,8 +128,15 @@ export async function runEvaluation(dataset = load('agent-evaluation-cases.json'
     for (const row of dataset.cases) {
       const started = performance.now();
       const {store,token} = await fixturePrincipal(dataset,row.principalId);
-      let fixtureProviderCalls = 0, auxiliaryProviderCalls = 0;
-      const fetchImpl = async () => {fixtureProviderCalls++; return fixtureResponse(row.providerFixture);};
+      let fixtureProviderCalls = 0, auxiliaryProviderCalls = 0, customerReviewCalls = 0;
+      // הסוכנת-הלקוחה (main, 09/10/2026) קוראת כל ערכה. בהערכה הסינתטית היא נספרת בנפרד ועונה "ברור",
+      // כדי שספירת הקריאות הראשיות והתוצר יישארו דטרמיניסטיים. איכות הבדיקה שלה נמדדת רק בהערכה אנושית.
+      const fetchImpl = async (url, options) => {
+        if (JSON.parse(options?.body || '{}').text?.format?.name === 'customer_review') {
+          customerReviewCalls++; return fixtureResponse({response:{ready:true,summary:'synthetic',issues:[]}});
+        }
+        fixtureProviderCalls++; return fixtureResponse(row.providerFixture);
+      };
       const request = {...clone(row.request),token};
       const boundary = request.action === 'status' ? studioRequest : handleStudio;
       const [status,out] = await boundary(store,request,{fetchImpl});
@@ -147,12 +154,12 @@ export async function runEvaluation(dataset = load('agent-evaluation-cases.json'
       if (row.automatedChecks.includes('bank_source_provenance')) checks.push({id:'bank_source_provenance',
         pass:out.activity?.professionalBasis.every(s=>s.sourceId && /^sha256:/.test(s.version) && s.status==='existing-bank') === true});
       if (row.automatedChecks.includes('truncation_rejected')) {
-        const [truncatedStatus,truncatedOut] = await boundary(store,request,{fetchImpl:async()=>{auxiliaryProviderCalls++;return fixtureResponse({behavior:'truncated'});}});
+        const [truncatedStatus,truncatedOut] = await boundary(store,request,{fetchImpl:async(url,options)=>{if(JSON.parse(options?.body || '{}').text?.format?.name === 'customer_review'){customerReviewCalls++;return fixtureResponse({response:{ready:true,summary:'synthetic',issues:[]}});}auxiliaryProviderCalls++;return fixtureResponse({behavior:'truncated'});}});
         checks.push({id:'truncation_rejected',pass:truncatedStatus===422 && !truncatedOut.activity});
       }
       const matched = checks.every(c=>c.pass);
       results.push({id:row.id,focus:row.focus,httpStatus:status,fixtureProviderCalls:fixtureProviderCalls+auxiliaryProviderCalls,
-        primaryProviderCalls:fixtureProviderCalls,auxiliaryProviderCalls,responseHash:hash(out),
+        primaryProviderCalls:fixtureProviderCalls,auxiliaryProviderCalls,customerReviewCalls,responseHash:hash(out),
         checks,matched,humanQuality:'pending',unexercisedChecks:row.unexercisedChecks,
         expectedSafetyOutcome:row.expectedSafetyOutcome,
         trace:redactTrace({runId:dataset.version+':'+row.id,jobId:request.jobId,artifactId:row.id,artifactVersion:1,

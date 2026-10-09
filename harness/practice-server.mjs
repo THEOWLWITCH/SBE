@@ -13,6 +13,9 @@ import {handleAccess, supabaseStore, resolvePrincipal, reserveAIUsage, settleAIU
 import {handleStudio} from './lib/studio.mjs';
 import {handleArtifacts,artifactReviewRunId} from './lib/activity-artifact.mjs';
 import {completionUsageCharge} from './lib/token-budget.mjs';
+// הסוכנת-הלקוחה (main, 09/10/2026): קריאה שמפיקה תוצר נבדקת ומתוקנת פעם אחת. הקריאות שלה עוברות דרך
+// boundedProvider, ולכן נספרות בתקציב ונבדקות מול ההרשאה החיה כמו כל קריאה אחרת.
+import {customerPass,reviewEnabled} from './lib/customer-pass.mjs';
 
 const AI_PERMS = ['fac_trainee','fac_parent','fac_youth','practice','conv','activity','academic','resilience','leadership','practi','writer','studio','nana'];
 const STUDIO_PERMS = ['studio'];
@@ -156,8 +159,14 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
         scenario._generation={pipelineOutput:out,context:payload.input};
         output={scenario,usage:out.usage,_ms:out._ms};
       } else {
-        const result=assertCompletionResult(await provider.complete({...payload,variation:'medium',signal:controller.signal}));
+        const {customerReview,...request}=payload;
+        const result=assertCompletionResult(await provider.complete({...request,variation:'medium',signal:controller.signal}));
         output={text:result.text || '',toolCalls:result.toolCalls || [],usage:result.usage};
+        // כשל של הסוכנת (כולל תקציב) לא עוצר את התוצר; ביטול הרשאה נבדק שוב לפני השמירה
+        if(reviewEnabled(payload) && output.text && !output.toolCalls.length) {
+          const pass=await customerPass({complete:r=>provider.complete({...r,signal:controller.signal})},{system:request.system,messages:request.messages,maxTokens:request.maxTokens,text:output.text});
+          output={...output,text:pass.text,...(pass.review?{review:pass.review}:{})};
+        }
       }
       const live=await resolvePrincipal(st,token),current=await st.get(key);
       if(controller.signal.aborted || !live || live.ownerId!==actor.ownerId || !allowed(live,path,payload.permission)
@@ -222,8 +231,10 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
       if(req.url==='/api/artifacts')input.idempotencyKey ||= requestId;
       const requestHash=hash({path:req.url,input}),jobId=hash([actor.ownerId,actor.tenantId,req.url,requestId]).slice(0,32),key='pj:'+jobId;
       if(!st.putIfAbsent || !st.compareAndSet || !st.finalizeAIJob) return send(req,res,503,{error:'נדרשת תשתית אחסון אטומית.'});
-      const tokenBudget=req.url==='/api/pipeline'?256000:req.url==='/api/studio'?128000:req.url==='/api/artifacts'?100000:requestBudget({...input,variation:'medium'});
-      if(tokenBudget>512000)return send(req,res,413,{error:'הקלט גדול מדי לתקציב הבקשה.'});
+      const baseBudget=req.url==='/api/pipeline'?256000:req.url==='/api/studio'?128000:req.url==='/api/artifacts'?100000:requestBudget({...input,variation:'medium'});
+      if(baseBudget>512000)return send(req,res,413,{error:'הקלט גדול מדי לתקציב הבקשה.'});
+      // הסוכנת-הלקוחה מקבלת מקום בתקציב עד אותה תקרה. כשאין מקום, התוצר המקורי נשמר בלי בדיקה.
+      const tokenBudget=reviewEnabled(input) && !['/api/pipeline','/api/studio','/api/artifacts'].includes(req.url)?Math.min(baseBudget*4,512000):baseBudget;
       const usage=await reserveAIUsage(st,actor,{requestId,requestHash,maxTokens,tokenBudget});
       if(usage.state!=='reserved') {
         const existing=await st.get(key);

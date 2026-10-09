@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ננה: מהוראה להנחיה</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/example-peek.js" data-tool="nana" defer></script>
 <script src="lib/open-select.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/ai-status.js"></script>
@@ -266,7 +267,7 @@ ul.tl li{margin:.25rem 0}
 
     <div class="btns">
       <button class="btn" id="btn-go" type="button">הכנת מדריך ההנחיה</button>
-      <button class="btn btn-ghost" id="btn-example" type="button">דוגמה</button>
+      <button class="btn btn-ghost sbe-sysonly" id="btn-example" type="button">דוגמה</button>
       <button class="btn btn-ghost" id="btn-clear" type="button">טופס חדש</button>
     </div>
     <p class="err" id="form-err" hidden></p>
@@ -457,7 +458,7 @@ FIELDS.forEach(k=>{const clear=()=>{F(k).classList.remove('miss');save();};F(k).
 // ── מודל: ברקע, עם שאילת מצב (lib/ai-call.js) ──
 // ההודעות האחרונות — תמיד מתחילות בהודעה של המשתמש/ת (המודל לא מקבל שיחה שמתחילה בתשובה)
 function tail(list,n){let s=Math.max(0,list.length-n);while(s<list.length&&list[s].role!=='user')s++;return list.slice(s);}
-async function complete(system,messages,maxTokens){return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens},300000)||'');}
+async function complete(system,messages,maxTokens,review){return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},300000)||'');}
 // המתנה עם ציפייה ברורה (08/10/2026): כמה זמן זה לוקח בדרך כלל, כמה עבר, ופס התקדמות
 function waiting(node,text,exp){
   exp=exp||45;const t0=Date.now();node.textContent='';
@@ -481,12 +482,12 @@ F('btn-go').addEventListener('click',async()=>{
   err.hidden=true;save();
   BUSY=true;const b=F('btn-go');b.disabled=true;
   const g=F('guide');g.textContent='';const c=el('div','card');const msg=el('div');c.appendChild(msg);g.appendChild(c);
-  const stop=waiting(msg,'ננה קוראת את הקבוצה ומכינה את מדריך ההנחיה.',100);
+  const stop=waiting(msg,'ננה קוראת את הקבוצה, מכינה את מדריך ההנחיה ובודקת שהוא ברור.',180);
   g.scrollIntoView({behavior:'smooth',block:'start'});
   const input=N.inputText(form());
   try{
     const sys=N.reportSystem(KB,RULE);
-    let txt=await complete(sys,[{role:'user',content:input}],16000),doc;
+    let txt=await complete(sys,[{role:'user',content:input}],16000,true),doc;
     try{doc=N.normalize(N.parse(txt),KEYS);}catch(e){doc=null;}
     if(!N.valid(doc)){ // ניסיון שני אחד: תיקון המבנה
       txt=await complete(sys,[{role:'user',content:input},{role:'assistant',content:txt.slice(0,30000)},{role:'user',content:'המבנה לא היה JSON תקין ומלא. החזירי את אותו מדריך כ-JSON תקין בלבד, במבנה שהוגדר, עם 5–7 שלבים ב-arc.'}],16000);
@@ -520,7 +521,7 @@ function renderGuide(){
   // העמדה
   if(d.stance.to){
     doc.appendChild(el('h3',null,'התפקיד שלך במפגש'));
-    doc.appendChild(ktable(['כשמלמדים (הוראה)','כשמנחים (הנחיה)','מה זה בונה בחוסן החברתי'],[[d.stance.from?inlineRich(d.stance.from):null,inlineRich(d.stance.to),d.stance.why?inlineRich(d.stance.why):null]],'kstance'));
+    doc.appendChild(ktable(['כשמלמדים (הוראה)','כשמנחים (הנחיה)','מה זה בונה בחוסן החברתי'],[[d.stance.from?inlineRich(N.trimLead(d.stance.from)):null,inlineRich(N.trimLead(d.stance.to)),d.stance.why?inlineRich(d.stance.why):null]],'kstance'));
   }
   // טבלאות (07/10/2026): במקום הרבה שורות קצרות — טבלה לכל חלק. עריכה ישירה בתאים; ב-PDF לרוחב הדף.
   const ul=(xs)=>{const u=el('ul','tl');xs.forEach(x=>{const li=el('li');li.appendChild(inlineRich(x));u.appendChild(li);});return u;};
@@ -539,11 +540,15 @@ function renderGuide(){
   // קשת המפגש
   if(d.arc.length){
     doc.appendChild(el('h3',null,'מהלך המפגש'));
-    doc.appendChild(ktable(['שלב וזמן','מה עושה המנחה','מה אומרים','מבנה ומה לראות','מה זה בונה בחוסן החברתי'],d.arc.map(x=>{
-      const nm=el('div');nm.appendChild(el('b',null,x.phase));if(x.minutes)nm.appendChild(el('div','min',x.minutes));
-      const sy=el('div');x.say.forEach(t=>put(sy,sayEl(t)));
-      const st=el('div');put(st,row('מבנה',x.structure),row('מה לראות',x.watch));
-      return [nm,x.facilitator?richText(x.facilitator):null,sy.childNodes.length?sy:null,st.childNodes.length?st:null,lensTxt(x.lens,x.basis)];}),'karc'));
+    // מהלך המפגש (08/10/2026), בקו אחיד עם שאר התוצרים: לפני המפגש · פתיחה · פעילות מרכזית · סיכום · אחרי המפגש
+    const phaseOf=(p)=>{p=String(p||'');return /לפני/.test(p)?'לפני המפגש':/אחרי/.test(p)?'אחרי המפגש':/פתיח/.test(p)?'פתיחה':/סיו|סיכום|התכנס|סגיר|המשך/.test(p)?'סיכום':'פעילות מרכזית';};
+    const t=SBE_DOC.flowTable(d.arc.map(x=>{
+      const g=el('div');if(x.facilitator)g.appendChild(richText(x.facilitator));
+      if(x.say.length){const sy=el('div');sy.appendChild(el('b',null,'מה אומרים: '));x.say.forEach(t=>put(sy,sayEl(t)));g.appendChild(sy);}
+      put(g,row('מה לראות',x.watch));
+      return {phase:phaseOf(x.phase),title:x.phase,minutes:x.minutes||'',desc:x.structure?inlineRich(x.structure):'',guide:g,lens:lensTxt(x.lens,x.basis)};
+    }),[['desc','מה קורה בשלב'],['guide','הנחיה למנחה'],['lens','מה זה בונה בחוסן החברתי']]);
+    t.classList.add('karc');doc.appendChild(t);
   }
   // סולם שאלות — טבלה אחת, עמודה לכל שלב
   const Q=d.questions,QL=[['open','שאלות פתיחה'],['deepen','שאלות להעמקה'],['connect','חיבור לחיים ולקבוצה'],['close','שאלות סיום']].filter(([k])=>Q[k].length);
@@ -604,7 +609,7 @@ function renderGuide(){
 function pocketNode(d){
   const box=el('div','pocket-doc');const sec=(t,cls)=>{const x=el('section','pk-sec'+(cls?' '+cls:''));if(t)x.appendChild(el('h4',null,t));box.appendChild(x);return x;};
   const clean=t=>SBE_REFS.strip(String(t||'').replace(/\*\*/g,''));
-  if(d.stance.to){const x=sec('התפקיד שלי במפגש','pk-stance');x.appendChild(el('p',null,clean(d.stance.to)));}
+  if(d.stance.to){const x=sec('התפקיד שלי במפגש','pk-stance');x.appendChild(el('p',null,clean(N.trimLead(d.stance.to))));}
   if(d.pocket.length){const x=sec('לזכור');const ul=el('ul');d.pocket.forEach(t=>ul.appendChild(el('li',null,clean(t))));x.appendChild(ul);}
   const qs=[...d.questions.open.slice(0,2),...d.questions.deepen.slice(0,2),...d.questions.close.slice(0,1)];
   if(qs.length){const x=sec('שאלות לקבוצה');const ul=el('ul');qs.forEach(t=>ul.appendChild(el('li',null,clean(t))));x.appendChild(ul);}
@@ -681,8 +686,8 @@ function renderAfter(){const o=F('af-out');o.textContent='';const A=STATE.after;
   o.appendChild(b);}
 F('af-go').addEventListener('click',async()=>{
   const t=F('af-in').value.trim();if(!t||BUSY)return;
-  BUSY=true;F('af-go').disabled=true;const o=F('af-out');o.textContent='';const th=el('div','muted');o.appendChild(th);const stop=waiting(th,'ננה קוראת ומכינה משוב.',40);
-  try{const ans=await complete(N.debriefSystem(inputNow(),guideText(),KB,RULE),[{role:'user',content:t}],5000);STATE.after={text:t,answer:ans,at:new Date().toISOString()};save();renderAfter();}
+  BUSY=true;F('af-go').disabled=true;const o=F('af-out');o.textContent='';const th=el('div','muted');o.appendChild(th);const stop=waiting(th,'ננה קוראת ומכינה משוב.',80);
+  try{const ans=await complete(N.debriefSystem(inputNow(),guideText(),KB,RULE),[{role:'user',content:t}],5000,true);STATE.after={text:t,answer:ans,at:new Date().toISOString()};save();renderAfter();}
   catch(e){o.textContent='';o.appendChild(el('p','err','המשוב לא הגיע ('+e.message+'). מה שכתבת נשמר: אפשר לנסות שוב.'));}
   finally{stop();BUSY=false;F('af-go').disabled=false;}
 });
