@@ -104,3 +104,15 @@ test('Background job errors keep the same handling, and a lost job is retried on
   const lost=backgroundApi([[200,{jobId:'j1'}],[200,{status:'unknown'}],[200,{jobId:'j2'}],[200,{status:'unknown'}]]);
   await assert.rejects(lost.api({action:'analyze',brief:{}}),/הופעל מחדש/);
 });
+
+test('Durable lost/cancelled/expired jobs and revoked polling stop Studio waiting immediately',async()=>{
+  for(const status of ['lost','cancelled','expired','error']) {
+    const terminal=backgroundApi([[200,{jobId:'j1'}],[200,{status}]]);
+    await assert.rejects(terminal.api({action:'generate',brief:{}}),/נעצרה/);assert.equal(terminal.sent.length,2);
+  }
+  for(const status of [403,410]) {
+    const denied=backgroundApi([[200,{jobId:'j1'}],[status,{error:status===403?'אין הרשאה':'המשימה פגה'}]]);
+    await assert.rejects(denied.api({action:'consult',brief:{}}),/הרשאה|פגה/);assert.equal(denied.sent.length,2);
+    assert.equal(denied.locks(),status===403?1:0);
+  }
+});

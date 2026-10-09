@@ -371,13 +371,18 @@ function buildWorkshopField(role, prefill){
     err.hidden = true;
     // הקוד נבדק בשרת (05/10/2026): רק סדנה שהמנחה פתחה היום. כך גם המשוב משויך לסדנה הנכונה.
     btn.disabled = true; btn.textContent = "בודקת את הקוד...";
-    fetch("https://sbe-server.onrender.com/api/access", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ action:"wfJoin", code: c }) })
+    fetch("https://sbe-server.onrender.com/api/access", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ action:"wfJoin", code: c, role }) })
       .then(r => r.json().then(d => ({ st: r.status, d }))).then(({ st, d }) => {
         btn.disabled = false; btn.textContent = "כניסה";
         if (!d.w) { err.textContent = st === 404 ? "לא מצאנו סדנה פתוחה עם הקוד הזה. כדאי לבדוק את הספרות מול המסך של המנחה." : "אין כרגע חיבור לשרת. נסו שוב בעוד רגע."; err.hidden = false; return; }
         clearSession();
         persistSession(name, ROLE_LABEL[role]);
-        try { sessionStorage.setItem("sbe.session.homeUrl", "entry.html?home=" + role); sessionStorage.setItem("sbe.session.wf", d.w); } catch(e){}
+        try {
+          sessionStorage.setItem("sbe.session.homeUrl", "entry.html?home=" + role);
+          sessionStorage.setItem("sbe.session.wf", d.w);
+          sessionStorage.setItem("sbe.session.token", d.token || "");
+          sessionStorage.setItem("sbe.session.perms", JSON.stringify(d.perms || []));
+        } catch(e){}
         renderWorkshopSuccess(role, name);
       }).catch(() => { btn.disabled = false; btn.textContent = "כניסה"; err.textContent = "אין כרגע חיבור לשרת. נסו שוב בעוד רגע."; err.hidden = false; });
   };

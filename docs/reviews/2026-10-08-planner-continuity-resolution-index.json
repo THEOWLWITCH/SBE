@@ -1,0 +1,163 @@
+{
+  "kind": "planner-continuity-verification",
+  "reviewDirectory": "C:/Users/yaels/AppData/Local/Temp/compound-engineering-yaels/ce-code-review/20261008-planner-bafa1cc9",
+  "reviewRunId": "20261008-planner-bafa1cc9",
+  "reviewedSnapshotHead": "bafa1cc9a8c550b6451744a45a22a9aa75e760bf",
+  "baseHead": "66c56e3e3a14300b2112585d32cfb8cc87ac67d7",
+  "verifiedImplementationHead": "7c9b2cbbf6a41c6fc47a9a2a4daea59855eeacfd",
+  "outcome": {
+    "openConcreteDefects": 0,
+    "concreteRegressionsFound": 0
+  },
+  "resolutions": [
+    {
+      "finding": "1",
+      "status": "resolved",
+      "reason": "Anchors are now whitelisted. Shared safeAttrs parses absolute URLs and retains only http: or https: href; capture and restore both sanitize, dropping event and unsafe URL attributes. Existing copy/save/restore/print paths use the same sanitizer. Added test verifies source and library links survive and javascript/data hrefs and onclick are inert.",
+      "paths": [
+        "app/lib/planner-continuity.js",
+        "harness/tests/planner-continuity.test.mjs"
+      ],
+      "tests": [
+        "Source links survive copy, save, reopen and print while active URLs stay inert"
+      ]
+    },
+    {
+      "finding": "2",
+      "status": "resolved",
+      "reason": "Separate fresh sequence environment resolves the proposal, clicks its real adoption callback, asserts improved text and original undo snapshot, then clicks bSeqUndo and asserts original text restored and snapshot cleared. Existing newer-human-edit refusal test remains.",
+      "paths": [
+        "harness/tests/activity-planner-continuity.test.mjs",
+        "app/activity-planner.html"
+      ],
+      "tests": [
+        "Fresh sequence improvement can be adopted and undo restores the original plan",
+        "Sequence improved proposal keeps comparison and declines adoption after a newer human edit"
+      ]
+    },
+    {
+      "finding": "3",
+      "status": "resolved",
+      "reason": "Submitting headers are spread-copied once before start. Startup and both cancellation paths use this copy. Polling omits the optional headers argument and therefore calls current sbeAIHeaders. Deferred acknowledgment A-to-B test proves original-owner cancellation, and polling test proves B is denied while cleanup uses A. Server still resolves live principal and checks owner, tenant and permissions.",
+      "paths": [
+        "app/lib/ai-call.js",
+        "harness/tests/ai-call-cancellation.test.mjs",
+        "app/lib/access-guard.js",
+        "harness/practice-server.mjs"
+      ],
+      "tests": [
+        "Late acknowledged cancellation keeps copied credentials of the submitting owner after A to B",
+        "Polling uses live identity and cleans up with original-owner credentials when B cannot read A"
+      ]
+    },
+    {
+      "finding": "4",
+      "status": "resolved",
+      "reason": "Archive captures input immediately, then invokes owner-keyed navigator.locks.request with default exclusive mode. Fresh list read, expected-version validation and whole-archive write are inside the synchronous lock callback. list checks the captured owner after a queued wait and owner is rechecked before write. Save button awaits completion and never reports early success. Missing locks fail visibly before mutation; there is no unprotected fallback. Shared deterministic mutex/interleaving tests verify version conflict, overlapping new products retention and queued identity change.",
+      "paths": [
+        "app/lib/planner-continuity.js",
+        "harness/tests/planner-continuity.test.mjs",
+        "harness/tests/conversation-planner-continuity.test.mjs",
+        "harness/tests/activity-planner-continuity.test.mjs"
+      ],
+      "tests": [
+        "Two window saves of the same version conflict instead of silently losing one edit",
+        "Two overlapping new products both remain in the private archive",
+        "Queued save rechecks ownership and fails visibly when locking is unavailable"
+      ]
+    }
+  ],
+  "fullTests": {
+    "file": "planner-continuity-node-tests.txt",
+    "sha256": "8c64a3fadfc0485f0ce18655cd20a23c47adf3c9cca1b8580ab717d8da0530c5",
+    "counts": {
+      "tests": 205,
+      "pass": 205,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    }
+  },
+  "focusedTests": {
+    "file": "planner-continuity-focused-tests.txt",
+    "sha256": "b4a9f21af65cddc3758fc1c99ca1603d4e7a3953e787965bbbca0bbf4f2404e7",
+    "counts": {
+      "tests": 31,
+      "pass": 31,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "executionSourceHead": "a3ded7fd6d990e08bf694fd45015d67b0da9abc0",
+    "sourceBlobsUnchangedAtImplementationHead": true,
+    "includedInFinalExactHeadFullRun": true
+  },
+  "syntax": {
+    "file": "syntax-check.json",
+    "sha256": "e88f9c3dcee5351261a9fd664c5eff19fd1277078377d4764d04bf7ddf49c547"
+  },
+  "browserEvidence": {
+    "file": "planner-browser-check.json",
+    "sha256": "6c9809f1380caf3ba1d31899e1c65ba9f813864c22043951676e6c996b1e579f"
+  },
+  "targetedIndependentFixCheck": {
+    "file": "planner-fix-check.json",
+    "sha256": "4392c950b2b037b2180273aa4b83268baaa8538d32ab5a0d66347cf520614eb0",
+    "pathBlobsVerifiedAtImplementationHead": false,
+    "pathBlobsVerifiedAtHistoricalFixHead": "7d6424c50d96b6ab8756b63153dbe3b0dd2f30cc",
+    "note": "Approved latest-main wording changed planner HTML and its test. The original seven-blob receipt remains immutable; integration checks cover the resulting source separately."
+  },
+  "latestMainIntegrationCheck": {
+    "file": "planner-main-integration-check.json",
+    "sha256": "1121493d1d6619a0b265c6ad5a1da9043526de6f0e500a5ccf4b567ad6fcc23d",
+    "authoredPaths": [
+      "app/conversation-planner.html",
+      "harness/tests/conversation-planner-continuity.test.mjs",
+      "app/lib/invite-language.js",
+      "harness/tests/provider-gates.test.mjs",
+      "harness/lib/agent-orchestrator.mjs",
+      "harness/tests/agent-orchestrator.test.mjs",
+      "harness/lib/token-budget.mjs",
+      "harness/tests/token-budget.test.mjs",
+      "harness/practice-server.mjs",
+      "harness/tests/server-transport.test.mjs"
+    ],
+    "hostSupplementalBoundaries": [
+      "Native activity-dialog button/Escape dismissal while an AI completion is queued remains a browser acceptance gap; synchronous VM close events do not establish that timing. No concrete defect was reproduced."
+    ],
+    "note": "Authored conversation/policy/scheduling fixes are disclosed; the host separately inspected them and executed the final full tests. This is a targeted integration check, not a new formal full-source review."
+  },
+  "independentPolicySchedulingCheck": {
+    "file": "planner-integration-independent-check.json",
+    "sha256": "a02ccab0e5925877bff5f2fceebd9bb5fd0033ee3cbb3918d888ebb3158399eb",
+    "authoredPaths": [],
+    "note": "Separate read-only peer check of policy and scheduling; not a formal whole-repository review or cross-model corroboration."
+  },
+  "integration": {
+    "mainHead": "8cc4ffa55b3b21e01e24fc8f6809fde8c70fec7e",
+    "mergeCommit": "307298ab6fbc184ef30ce7fede935d002688d3b3",
+    "mainIsAncestor": true,
+    "note": "Approved main through PR179 integrated, preserving Nana, plain-writing policy, sources, printing and editable choices. Functional planner guards and scoped actual-edited saves are retained; output-mode enum stays closed. Title-only policy suppression, partial-usage accounting and inner/outer reservation scheduling were corrected separately. Real loopback synthetic artifact review covers the server wrapper; multi-attempt calls retain conservative reservations.",
+    "upstreamObservation": {
+      "ref": "origin/main",
+      "head": "23d9d49f58fc6cdda350fefdba5ee55d952d77b1",
+      "recordedAt": "2026-10-09T04:37:08.852424+00:00",
+      "integrationPending": true,
+      "deltaFromIntegratedMain": "45 files changed, 1203 insertions(+), 321 deletions(-)",
+      "note": "Read-only fetched ref. Later PR180/181 changes, including customer review, Studio flow/schema and product documents, have not been integrated or tested in this frozen delivery. Read current CLAUDE.md and integrate on the work branch, then repeat affected acceptance checks before declaring the combined version verified. No merge to main or deployment is authorized by this receipt."
+    }
+  },
+  "redEvidence": {
+    "file": "planner-review-fixes-before.txt",
+    "sha256": "604f29258b6a3259264fb6613fe9c03981a229e36c492613107ecfedb50ca1cb",
+    "note": "Seven behavioral failures were observed on pre-fix source. Positive fresh adoption/undo passed before the fix; its absence was a coverage finding."
+  },
+  "boundaries": [
+    "Local device-scoped private drafts; no server synchronization.",
+    "Formal verdict belongs only to frozen bafa. Checked fixes are a separate hash-bound inspection.",
+    "Physical download and print/PDF delivery remain unverified in IAB.",
+    "Native activity-dialog button/Escape dismissal while an AI completion is queued remains a browser acceptance gap; synchronous VM close events do not establish that timing. No concrete defect was reproduced.",
+    "Server typed activity/conversation adapters, approved rehearsal, Studio integration and live-pilot gates remain pending.",
+    "Upstream main 23d9d49f58fc6cdda350fefdba5ee55d952d77b1 contains later changes pending integration and verification; tested main ancestry stops at 8cc4ffa55b3b21e01e24fc8f6809fde8c70fec7e."
+  ]
+}

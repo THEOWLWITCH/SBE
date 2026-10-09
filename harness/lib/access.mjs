@@ -4,6 +4,8 @@
 // כי מנהלת המערכת צריכה לראות אותו כדי למסור אותו.
 // store: { get(key) → value|null, set(key, value), del(key), list(prefix), delPrefix(prefix) }.
 import { scryptSync, randomBytes, timingSafeEqual, createHmac, createHash } from 'node:crypto';
+import { usageError } from './principal.mjs';
+export { createAtomicMemoryStore } from './principal.mjs';
 
 // בתוקף רק עד שמנהלת המערכת מחליפה סיסמה בפעם הראשונה (אלה הסיסמאות שהיו
 // כתובות עד עכשיו ב-entry.html).
@@ -79,20 +81,26 @@ const b64u = (buf) => Buffer.from(buf).toString('base64url');
 
 async function tokenSecret(store) {
   let rec = await store.get('token-secret');
-  if (!rec) { rec = { secret: randomBytes(32).toString('hex') }; await store.set('token-secret', rec); }
+  if (!rec) {
+    rec = { secret: randomBytes(32).toString('hex') };
+    if(typeof store.putIfAbsent==='function') rec=(await store.putIfAbsent({key:'token-secret',value:rec})).value;
+    else await store.set('token-secret', rec);
+  }
   return rec.secret;
 }
 
 async function signToken(store, payload) {
-  const body = b64u(JSON.stringify({ ...payload, exp: Date.now() + TOKEN_HOURS * 3600e3 }));
+  if(payload.k==='sys') payload={...payload,av:sha(JSON.stringify((await store.get('pw-sys'))||'default'))};
+  const body = b64u(JSON.stringify({ ...payload, iat:Date.now(), exp: payload.exp || Date.now() + TOKEN_HOURS * 3600e3 }));
   const sig = createHmac('sha256', await tokenSecret(store)).update(body).digest('base64url');
   return body + '.' + sig;
 }
 
 export async function verifyToken(store, token) {
-  if (typeof token !== 'string' || !token.includes('.')) return null;
+  if (typeof token !== 'string' || !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token)) return null;
   const [body, sig] = token.split('.');
-  const want = createHmac('sha256', await tokenSecret(store)).update(body).digest('base64url');
+  const secret=await store.get('token-secret');if(!secret?.secret) return null;
+  const want = createHmac('sha256', secret.secret).update(body).digest('base64url');
   if (!same(sig, want)) return null;
   try {
     const p = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
@@ -124,9 +132,9 @@ async function resilGroup(store, id) {
 }
 
 async function resilCanManage(store, body, g) {
-  if (typeof body.key === 'string' && body.key && same(sha(body.key), g.keyHash)) return true;
-  const t = await verifyToken(store, body.token);
-  return !!t && t.k === 'sys';
+  const t = await resolvePrincipal(store, body.token);
+  if(t?.k==='sys'||await checkPassword(store,'sys',body.auth)) return true;
+  return !!t&&t.permissions.includes('resilience')&&g.inst===t.tenantId&&typeof body.key==='string'&&body.key&&same(sha(body.key),g.keyHash);
 }
 
 const publicGroup = (id, g) => ({ id, cls: g.cls, band: g.band, sel: g.sel || null, open: g.open !== false, createdAt: g.createdAt });
@@ -135,7 +143,7 @@ async function handleResilience(store, body) {
   const { action } = body;
 
   if (action === 'resilCreate') {
-    const t = await verifyToken(store, body.token);
+    const t = await resolvePrincipal(store, body.token);
     const byCode = t && t.k === 'code' && (t.perms || []).includes('resilience');
     if (!t || (t.k !== 'inst' && t.k !== 'sys' && !byCode)) { await pause(); return [403, { error: 'unauthorized' }]; }
     if (t.k === 'inst' || byCode) {
@@ -155,7 +163,7 @@ async function handleResilience(store, body) {
 
   // כל הכיתות במערכת, עם מספר התשובות — רק למנהלת המערכת.
   if (action === 'resilList') {
-    const t = await verifyToken(store, body.token);
+    const t = await resolvePrincipal(store, body.token);
     if (!t || t.k !== 'sys') { await pause(); return [403, { error: 'unauthorized' }]; }
     const counts = {};
     for (const { key } of await store.list('resil:', { keysOnly: true })) {
@@ -263,7 +271,7 @@ async function allCodes(store) {
 }
 
 // מה הקוד מאפשר עכשיו: null אם הוא לא תקף, אחרת { rec, inst, perms, sub }.
-async function resolveCode(store, rec, settings) {
+async function resolveCode(store, rec, settings, {checkUsage=true}={}) {
   if (!rec || rec.revoked) return { error: 'revoked' };
   const list = await getInstitutions(store);
   const x = list.find((i) => i.name === rec.inst);
@@ -271,7 +279,7 @@ async function resolveCode(store, rec, settings) {
   if (sub.state === 'inactive') return { error: 'inactive' };
   if (sub.state === 'expired') return { error: 'sub-expired', sub };
   if (rec.expiresAt && rec.expiresAt < today()) return { error: 'expired' };
-  if (rec.kind === 'student' && rec.uses >= rec.maxUses) return { error: 'used-up' };
+  if (checkUsage && rec.kind === 'student' && rec.uses >= rec.maxUses) return { error: 'used-up' };
   const ceiling = await getCeiling(store, rec.inst);
   let perms;
   if (rec.kind === 'instadmin') perms = PERMS.filter((p) => ceiling[p]);
@@ -280,29 +288,82 @@ async function resolveCode(store, rec, settings) {
   return { rec, inst: rec.inst, perms, sub };
 }
 
-// Recheck access at the moment protected Studio data or AI is used. A signed
-// token proves entry, but its cached permissions do not prove a live entitlement.
-export async function authorizePermission(store, token, permissions) {
+// Identity and entitlements are derived from the current credential records.
+// The credential is non-enumerable so job records/logging cannot serialize it.
+export async function resolvePrincipal(store, token) {
   const t = await verifyToken(store, token);
   if (!t) return null;
-  const wanted = (Array.isArray(permissions) ? permissions : [permissions]).filter(p => PERMS.includes(p));
-  if (!wanted.length) return null;
-  if (t.k === 'sys') return { ...t, perms: [...PERMS] };
   const settings = await getSettings(store);
-  let live;
-  if (t.k === 'code' && t.c !== 'LEGACY') {
+  let live,ownerId,tenantId,quota=null;
+  if(t.k==='sys') {
+    const password=await store.get('pw-sys');
+    if(t.av ? !same(t.av,sha(JSON.stringify(password||'default'))) : !!password) return null;
+    live={perms:[...PERMS,'practice']};ownerId='sys';tenantId='system';
+  } else if(t.k==='academic'||t.k==='code'&&t.kind==='academic-legacy') {
+    const ac=await store.get('code-academic');if(!ac) return null;
+    if(t.av ? !same(t.av,sha(JSON.stringify(ac))) : !Number.isFinite(Date.parse(ac.createdAt||''))||Date.parse(ac.createdAt)>(t.iat||t.exp-TOKEN_HOURS*3600e3)) return null;
+    live={perms:['academic']};ownerId='academic-legacy:'+sha(normCode(ac.code));tenantId='academic-legacy';
+  } else if(t.k==='workshop') {
+    const ws=await store.get('wf:'+t.w),map=await store.get('wfc:'+t.wc);
+    if(!ws||!map||map.w!==t.w||map.at!==t.wa||ws.inst!==t.inst||!Number.isFinite(Date.parse(map.at))||Date.now()-Date.parse(map.at)>=864e5||!validSid(t.s)||!WORKSHOP_PERMISSIONS[t.role]) return null;
+    // Revoking the institution or the facilitator's module also closes AI entry.
+    const inst=(await getInstitutions(store)).find(x=>x.name===ws.inst);
+    if(ws.inst&&(!inst||['inactive','expired'].includes(subState(inst,settings).state))) return null;
+    if(ws.inst) {
+      const ownerCode=ws.ownerId?.startsWith('code:')?ws.ownerId.slice(5):ws.owner&&!['sys','LEGACY'].includes(ws.owner)?ws.owner:null;
+      if(ownerCode) {
+        const owner=await resolveCode(store,await store.get('code:'+ownerCode),settings,{checkUsage:false});
+        if(owner.error||owner.inst!==ws.inst||!owner.perms.some(p=>/^fac_/.test(p))) return null;
+      } else if(!Object.entries(await getCeiling(store,ws.inst)).some(([p,on])=>on&&/^fac_/.test(p))) return null;
+    }
+    live={perms:[...WORKSHOP_PERMISSIONS[t.role]]};ownerId='workshop:'+t.w+':'+t.s;tenantId=ws.tenantId||ws.inst||'system';
+  } else if (t.k === 'code' && t.c !== 'LEGACY') {
     const rec = await store.get('code:' + t.c);
     if (!rec || rec.inst !== t.inst || rec.kind !== t.kind) return null;
-    live = await resolveCode(store, rec, settings);
+    live = await resolveCode(store, rec, settings,{checkUsage:false});
     if (live.error) return null;
+    if(rec.kind==='course'&&!validSid(t.s)) return null;
+    ownerId='code:'+t.c+(rec.kind==='course'?':'+t.s:'');tenantId=rec.inst;
+    if(['student','course'].includes(rec.kind)) quota={kind:rec.kind,codeKey:'code:'+t.c,sid:rec.kind==='course'?t.s:null};
   } else if (t.k === 'inst' || (t.k === 'code' && t.c === 'LEGACY' && t.kind === 'legacy')) {
     const inst = (await getInstitutions(store)).find(x => x.name === t.inst);
     const sub = subState(inst, settings);
     if (!inst || ['inactive', 'expired'].includes(sub.state)) return null;
+    if(t.ic ? !same(t.ic,sha(normCode(inst.code))) : inst.codeChangedAt) return null;
     const ceiling = await getCeiling(store, inst.name);
     live = { perms: PERMS.filter(p => ceiling[p] && p !== 'lecturer') };
+    ownerId='legacy-inst:'+inst.name;tenantId=inst.name;
   } else return null;
-  return wanted.some(p => live.perms.includes(p)) ? { ...t, perms: live.perms } : null;
+  const p={...t,perms:live.perms,permissions:live.perms,ownerId,tenantId,quota};
+  Object.defineProperty(p,'token',{value:token,enumerable:false});return p;
+}
+
+export async function authorizePermission(store, token, permissions) {
+  const p=await resolvePrincipal(store,token);
+  const wanted=(Array.isArray(permissions)?permissions:[permissions]).filter(x=>PERMS.includes(x)||x==='practice');
+  return p&&wanted.some(x=>p.permissions.includes(x))?p:null;
+}
+
+export const AI_LIMITS=Object.freeze({concurrent:3,tenantConcurrent:12,dailyRequests:100,tenantDailyRequests:1000,dailyTokens:1000000,tenantDailyTokens:10000000,maxTokens:32000,maxTokenBudget:512000,reservationMs:60*60000});
+export async function reserveAIUsage(store,principal,{requestId,maxTokens=220,tokenBudget=maxTokens,requestHash=''}={}) {
+  const live=principal?.token&&await resolvePrincipal(store,principal.token);
+  if(!live||live.ownerId!==principal.ownerId||live.tenantId!==principal.tenantId) throw usageError('unauthorized',403);
+  if(typeof requestId!=='string'||! /^[A-Za-z0-9_.:-]{1,128}$/.test(requestId)) throw usageError('bad_request_id',400);
+  if(!Number.isInteger(maxTokens)||maxTokens<1||maxTokens>AI_LIMITS.maxTokens) throw usageError('token_limit',400);
+  if(!Number.isInteger(tokenBudget)||tokenBudget<maxTokens||tokenBudget>AI_LIMITS.maxTokenBudget) throw usageError('token_budget_limit',400);
+  if(typeof requestHash!=='string'||requestHash.length>128) throw usageError('bad_request_hash',400);
+  if(typeof store.atomicReserveUsage!=='function') throw usageError('atomic_storage_required');
+  const now=new Date().toISOString(),expiresAt=new Date(Date.now()+AI_LIMITS.reservationMs).toISOString();
+  return store.atomicReserveUsage({ownerId:live.ownerId,tenantId:live.tenantId,requestId,requestHash,maxTokens,tokenBudget,now,expiresAt,limits:AI_LIMITS,quota:live.quota});
+}
+export async function settleAIUsage(store,principal,{requestId,outcome}={}) {
+  if(!principal?.ownerId||!['commit','release'].includes(outcome)) throw usageError('bad_settlement',400);
+  if(outcome==='commit') {
+    const live=principal.token&&await resolvePrincipal(store,principal.token);
+    if(!live||live.ownerId!==principal.ownerId||live.tenantId!==principal.tenantId) throw usageError('unauthorized',403);
+  }
+  if(typeof store.atomicSettleUsage!=='function') throw usageError('atomic_storage_required');
+  return store.atomicSettleUsage({ownerId:principal.ownerId,tenantId:principal.tenantId,requestId,outcome,now:new Date().toISOString()});
 }
 
 // הודעות לבאנר אחרי כניסה.
@@ -329,7 +390,7 @@ const validSid = (s) => typeof s === 'string' && /^[a-f0-9]{16}$/.test(s);
 async function handleCodes(store, body, isSys) {
   const { action } = body;
   const settings = await getSettings(store);
-  const t = await verifyToken(store, body.token);
+  const t = await resolvePrincipal(store, body.token);
   const me = t && t.k === 'code' ? await store.get('code:' + t.c) : null;
   const meOk = me ? await resolveCode(store, me, settings) : null;
   const mine = meOk && !meOk.error ? meOk : null;
@@ -472,14 +533,10 @@ async function handleCodes(store, body, isSys) {
       if (courseFull(rec, sid)) return [403, { error: 'full' }];
       const done = rec.taken[sid] || 0;
       if (done >= rec.usesPer) return [403, { error: 'used-up' }];
-      rec.taken[sid] = done + 1; rec.uses = (rec.uses || 0) + 1;
-      await store.set('code:' + t.c, rec);
-      return [200, { ok: true, left: rec.usesPer - rec.taken[sid] }];
+      return [200, { ok: true, left: rec.usesPer - done, preflight:true }];
     }
     if (rec.kind !== 'student') return [200, { ok: true, left: null }];
-    rec.uses = (rec.uses || 0) + 1;
-    await store.set('code:' + t.c, rec);
-    return [200, { ok: true, left: rec.maxUses - rec.uses }];
+    return [200, { ok: true, left: rec.maxUses - (rec.uses||0), preflight:true }];
   }
 
   // ── מנהלת המערכת ──
@@ -603,7 +660,7 @@ const LIST_MAX = 200, ITEM_MAX = 80;
 // לדוגמה (examples.html) לכל מי שמתעניין/ת — בלי כניסה. demo:index — רשימה בלי ה-HTML; demo:<id> — המסמך.
 const DEMO_MAX = 1_500_000, DEMO_LIMIT = 200;
 async function handleDemos(store, body) {
-  const t = await verifyToken(store, body.token);
+  const t = await resolvePrincipal(store, body.token);
   const isSys = !!t && t.k === 'sys';
   const action = body.action;
   const index = (await store.get('demo:index')) || [];
@@ -653,9 +710,11 @@ async function handleLists(store, body) {
   if (!(name in OPEN_LISTS)) return [404, { error: 'no such list' }];
   const key = 'list:' + name;
   const list = (await store.get(key)) || [];
+  const t = await resolvePrincipal(store, body.token);
+  const isSysTok = !!t && t.k === 'sys'||await checkPassword(store,'sys',body.auth);
+  const permitted=isSysTok||await checkPassword(store,'sys',body.auth)||(t&&[].concat(OPEN_LISTS[name]).some(p=>t.perms.includes(p)));
+  if(!permitted) return [403,{error:'unauthorized'}];
   if (action === 'listGet') return [200, { items: list.map((x) => x.value) }];
-  const t = await verifyToken(store, body.token);
-  const isSysTok = !!t && t.k === 'sys';
   if (action === 'listAdd') {
     const ok = isSysTok || (t && Array.isArray(t.perms) && [].concat(OPEN_LISTS[name]).some((p) => t.perms.includes(p)));
     if (!ok) { await pause(); return [403, { error: 'unauthorized' }]; }
@@ -663,7 +722,7 @@ async function handleLists(store, body) {
     if (value.length < 2) return [400, { error: 'too short' }];
     if (!list.some((x) => x.value === value)) {
       if (list.length >= LIST_MAX) return [429, { error: 'list full' }];
-      list.push({ value, inst: t.inst || '', date: new Date().toISOString().slice(0, 10) });
+      list.push({ value, inst: t?.inst || '', date: new Date().toISOString().slice(0, 10) });
       await store.set(key, list);
     }
     return [200, { items: list.map((x) => x.value), value }];
@@ -786,12 +845,11 @@ const rcPublic = (x) => ({ id: x.id, title: x.title, detail: x.detail || '', cat
 async function handleReviewCriteria(store, body) {
   const { action } = body;
   const items = (await store.get('rc:items')) || [];
-  if (action === 'critList') {
-    return [200, { cats: RC_CATS, items: items.filter((x) => x.status === 'approved').map(rcPublic).sort((a, b) => b.uses - a.uses) }];
-  }
-  const t = await verifyToken(store, body.token);
+  const t = await resolvePrincipal(store, body.token);
   const isSys = (t && t.k === 'sys') || await checkPassword(store, 'sys', body.auth);
   const canUse = isSys || (t && Array.isArray(t.perms) && t.perms.includes('academic'));
+  if(!canUse) return [403,{error:'unauthorized'}];
+  if (action === 'critList') return [200, { cats: RC_CATS, items: items.filter((x) => x.status === 'approved').map(rcPublic).sort((a, b) => b.uses - a.uses) }];
   if (action === 'critPropose') {
     if (!canUse) { await pause(); return [403, { error: 'unauthorized' }]; }
     const title = String(body.title || '').replace(/\s+/g, ' ').trim();
@@ -802,7 +860,7 @@ async function handleReviewCriteria(store, body) {
     const live = items.filter((x) => x.status !== 'rejected');
     const dup = live.find((x) => rcSimilar(x.title, title));
     if (dup) return [409, { error: 'duplicate', similar: dup.title, status: dup.status }];
-    const code = t && t.c ? String(t.c) : 'sys';
+    const code = t?.ownerId||'sys';
     if (items.filter((x) => x.status === 'pending' && x.code === code).length >= RC_PENDING_PER_CODE) return [429, { error: 'too many pending' }];
     if (items.length >= RC_MAX) return [429, { error: 'full' }];
     const rec = { id: Date.now().toString(36) + randomBytes(3).toString('hex'), title, detail, cat: RC_CATS.includes(body.cat) ? body.cat : 'כללי',
@@ -817,9 +875,9 @@ async function handleReviewCriteria(store, body) {
     return [200, { ok: true, id: rec.id, status: rec.status }];
   }
   if (action === 'critMine') {
-    if (!t || !t.c) return [200, { items: [] }];
+    if (!t) return [200, { items: [] }];
     const ids = Array.isArray(body.ids) ? body.ids.map(String).slice(0, 100) : null;
-    return [200, { items: items.filter((x) => x.code === t.c && (!ids || ids.includes(x.id)))
+    return [200, { items: items.filter((x) => (x.code===t.ownerId||x.code===t.c&&x.inst===t.tenantId) && (!ids || ids.includes(x.id)))
       .map((x) => ({ id: x.id, title: x.title, status: x.status, reason: x.reason || '' })) }];
   }
   if (action === 'critUse') {
@@ -886,18 +944,50 @@ function jrSummary(j) {
     pendingAdmin: j.status === 'review' || ms.some((m) => m.status === 'submitted') || (j.thread || []).some((x) => x.open),
     consent: !!(j.consent && j.consent.research), certs: ms.filter((m) => m.cert).length, demo: !!j.demo, mail: !!(j.contact && j.contact.updates) };
 }
-async function jrLoad(store, id) { return /^[a-z0-9]{6,24}$/.test(String(id || '')) ? store.get('jr:' + id) : null; }
+const JOURNEY_BASE=Symbol('journey-base');
+const snapshotJourney=j=>{if(j) Object.defineProperty(j,JOURNEY_BASE,{value:structuredClone(j),configurable:true});return j;};
+async function jrLoad(store, id) {
+  const j=/^[a-z0-9]{6,24}$/.test(String(id || ''))?await store.get('jr:'+id):null;
+  return snapshotJourney(j);
+}
 async function jrSave(store, j) {
   j.updated = jrNow();
-  if (Buffer.byteLength(JSON.stringify(j)) > JR_MAX_BYTES) return false;
-  await store.set('jr:' + j.id, j); return true;
+  const expected=j[JOURNEY_BASE];j.version=(expected?.version||0)+1;
+  if (Buffer.byteLength(JSON.stringify(j)) > JR_MAX_BYTES) throw usageError('too large',413);
+  if(expected) {
+    if(typeof store.compareAndSet!=='function') throw usageError('atomic_storage_required');
+    const result=await store.compareAndSet({key:'jr:'+j.id,expected,value:j});
+    if(!result.updated) throw usageError('version_conflict',409);
+  } else await store.set('jr:'+j.id,j);
+  Object.defineProperty(j,JOURNEY_BASE,{value:structuredClone(j),configurable:true});return true;
+}
+
+function ownsRecord(p,record,ownerField='code') {
+  if(!p||!record) return false;
+  const tenant=record.tenantId||record.inst;
+  if(tenant!==p.tenantId) return false;
+  if(record.ownerId) return record.ownerId===p.ownerId;
+  const oldOwner=record[ownerField];
+  if(p.ownerId==='legacy-inst:'+p.tenantId) return oldOwner==='LEGACY'||oldOwner==='';
+  return !!p.c&&oldOwner===p.c;
+}
+
+const RESEARCH_REASONS=['זה הכי דחוף אצלנו עכשיו','יש לנו כבר בסיס בזה','זה מה שהצוות מוכן לו עכשיו','זו בקשה של המשתתפים (תלמידים, הורים, תושבים)','זה יפתח את הדרך לשאר','זה מתאים ללוח הזמנים שלנו'];
+export function closedResearchEvent(e,journey,unit) {
+  const stage=Number.isInteger(e.stage)&&e.stage>=1&&e.stage<=5?e.stage:null;
+  const type=['choice','reflection','final'].includes(e.type)?e.type:'unknown';
+  const keys=['startCluster','lead','obstacle','drill'];
+  const key=keys.includes(e.key)||/^gate-[1-5]$/.test(e.key||'')||keys.some(k=>e.key==='next-'+k)?e.key:'';
+  const at=typeof e.at==='string'&&/^\d{4}-\d{2}-\d{2}T/.test(e.at)?e.at.slice(0,7):'';
+  return {journey,unit:JR_UNITS.includes(unit)?unit:'other',at,stage,type,key,
+    reasons:(Array.isArray(e.reasons)?e.reasons:[]).map(v=>RESEARCH_REASONS.indexOf(v)+1).filter(v=>v>0)};
 }
 // השלב הנוכחי: השלב של אבן הדרך הראשונה שעוד לא הושלמה (או 5 כשהכול הושלם)
 function jrStage(j) { const m = (j.milestones || []).find((x) => x.status !== 'approved'); return m ? m.stage : 5; }
 
 async function handleJourney(store, body) {
   const { action } = body;
-  const t = await verifyToken(store, body.token);
+  const t = await resolvePrincipal(store, body.token);
   const isSys = (t && t.k === 'sys') || await checkPassword(store, 'sys', body.auth);
   const ADMIN_J = (((typeof process !== 'undefined' && process.env.CORS_ORIGIN) || 'https://s-b-e.netlify.app').split(',')[0].trim().replace(/\/$/, '')) + '/journeys.html';
 
@@ -917,7 +1007,7 @@ async function handleJourney(store, body) {
   if (action === 'jrTick') {
     const secret = (typeof process !== 'undefined' && process.env.CRON_SECRET) || '';
     if (!secret || body.secret !== secret) { await pause(); return [403, { error: 'unauthorized' }]; }
-    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && !j.demo && j.status !== 'done');
+    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.id && !j.demo && j.status !== 'done').map(snapshotJourney);
     const today = jrDay(Date.now()), in14 = jrDay(Date.now() + 14 * 864e5);
     const soon = [], late = [], waiting = [];
     rows.forEach((j) => {
@@ -960,22 +1050,23 @@ async function handleJourney(store, body) {
 
   const canUse = isSys || (t && Array.isArray(t.perms) && t.perms.includes('journey'));
   if (!canUse) { await pause(); return [403, { error: 'unauthorized' }]; }
-  const owner = t && t.c ? String(t.c) : (isSys ? 'sys' : '');
+  const principal=t||(isSys?{ownerId:'sys',tenantId:'system',k:'sys'}:null);
+  const owner=principal.ownerId;
 
   if (action === 'jrCreate') {
     const unit = JR_UNITS.includes(body.unit) ? body.unit : 'other';
     const unitName = jrClip(body.unitName, 80).trim();
     if (unitName.length < 2) return [400, { error: 'missing name' }];
-    const mine = (await store.list('jr:')).filter((r) => r.value && r.value.code === owner).length;
+    const mine = (await store.list('jr:')).filter((r) => ownsRecord(principal,r.value)).length;
     if (mine >= 10 && !isSys) return [429, { error: 'too many' }]; // מנהלת המערכת (מסעות דמו) — בלי מגבלה
     const id = Date.now().toString(36) + randomBytes(3).toString('hex');
-    const j = { id, code: owner, inst: (t && t.inst) || '', by: jrClip(body.by, 60), unit, unitName, created: jrNow(), status: 'mapping', demo: !!(isSys && body.demo),
+    const j = { id, code: t?.c||owner, ownerId:owner,tenantId:principal.tenantId,inst: (t && t.inst) || '', by: jrClip(body.by, 60), unit, unitName, created: jrNow(), status: 'mapping', demo: !!(isSys && body.demo),
       consent: { research: !!body.research, at: jrNow() }, contact: jrContact(body), mapping: {}, thread: [], events: [] };
     await jrSave(store, j);
     return [200, { ok: true, id }];
   }
   if (action === 'jrMine') {
-    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.id && (j.code === owner || isSys && body.all));
+    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.id && (ownsRecord(principal,j) || isSys && body.all));
     return [200, { items: rows.map(jrSummary) }];
   }
   if (action === 'jrAll') {
@@ -990,16 +1081,16 @@ async function handleJourney(store, body) {
   if (action === 'jrExport') {
     if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
     const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.id && !j.demo && j.consent && j.consent.research);
-    // שורה לכל אירוע מחקרי (בחירה, רפלקציה, תחקיר) — בלי שם המסגרת ובלי פרטים מזהים
+    // Closed research fields only. Qualitative text needs a separate reviewed export.
     const out = [];
-    rows.forEach((j, n) => (j.events || []).forEach((e) => out.push({ journey: 'J' + (n + 1), unit: j.unit, at: e.at, stage: e.stage || '', type: e.type, key: e.key || '', choice: e.choice || '',
-      reasons: (e.reasons || []).join('; '), explain: e.explain || '', who: (e.who || []).join('; '), effect: e.effect || '', again: e.again || '', learned: e.learned || '' })));
-    return [200, { rows: out }];
+    rows.forEach((j, n) => (j.events || []).forEach((e) => out.push(closedResearchEvent(e,'J'+(n+1),j.unit))));
+    return [200, { rows: out, schemaVersion:2,dataClass:'closed-research-fields' }];
   }
 
   const j = await jrLoad(store, body.id);
   if (!j) return [404, { error: 'not found' }];
-  const isOwner = j.code === owner;
+  const isOwner = ownsRecord(principal,j);
+  if(body.baseVersion!==undefined&&body.baseVersion!==(j.version||0)) return [409,{error:'version_conflict',version:j.version||0}];
   if (!isOwner && !isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
   const ev = (type, data) => { j.events = (j.events || []).concat([{ at: jrNow(), type, stage: jrStage(j), ...data }]).slice(-400); };
 
@@ -1135,8 +1226,8 @@ async function handleJourney(store, body) {
 // רק כשהסדנה קיימת ועד 400 משובים. קריאה (wfList): מנהלת המערכת — הכול; מנחה — הסדנאות שלה ושל המוסד שלה.
 const WF_ROLES = ['fac', 'trainee', 'obs'];
 const WF_MAX = 400;
-function wfWho(t) { if (!t) return null; if (t.k === 'code' && (t.perms || []).some((p) => /^fac_/.test(p))) return { code: t.c, inst: t.inst || '' };
-  if (t.k === 'code' && t.kind === 'legacy') return { code: t.c, inst: t.inst || '' }; if (t.k === 'inst') return { code: '', inst: t.inst }; return null; }
+const WORKSHOP_PERMISSIONS={trainee:['practice','conv','activity','academic'],actor:['practice','conv','activity','academic'],parent:['practice','conv'],youth:['practice','conv']};
+function wfWho(t) { return t&&(t.perms||[]).some(p=>/^fac_/.test(p))?{code:t.c||'',inst:t.inst||'',ownerId:t.ownerId,tenantId:t.tenantId}:null; }
 async function handleWorkshopFeedback(store, body) {
   const { action } = body;
   const w = String(body.w || '');
@@ -1146,10 +1237,13 @@ async function handleWorkshopFeedback(store, body) {
     const code = String(body.code || '').replace(/\D/g, '');
     if (code.length !== 6) return [400, { error: 'bad code' }];
     const map = await store.get('wfc:' + code);
-    if (!map || Date.now() - Date.parse(map.at) > 864e5) { await pause(); return [404, { error: 'no such workshop' }]; }
+    if (!map || !Number.isFinite(Date.parse(map.at))||Date.now() - Date.parse(map.at) >= 864e5) { await pause(); return [404, { error: 'no such workshop' }]; }
     const ws = await store.get('wf:' + map.w);
     if (!ws) return [404, { error: 'no such workshop' }];
-    return [200, { ok: true, w: ws.w, track: ws.track || 'edu', scenario: ws.scenario || '' }];
+    const role=body.role||'trainee';if(!WORKSHOP_PERMISSIONS[role]) return [400,{error:'bad role'}];
+    const sid=validSid(body.sid)?body.sid:randomBytes(8).toString('hex');
+    const token=await signToken(store,{k:'workshop',kind:'workshop',w:ws.w,wc:code,wa:map.at,inst:ws.inst||'',role,s:sid,exp:Math.min(Date.now()+TOKEN_HOURS*3600e3,Date.parse(map.at)+864e5)});
+    return [200, { ok: true, w: ws.w, track: ws.track || 'edu', scenario: ws.scenario || '',token,perms:WORKSHOP_PERMISSIONS[role],sid }];
   }
   // הגדרות טופס המשוב של סדנה (המדדים שנבחרו) — ציבורי, בלי המשובים עצמם. כך הקישור והקוד ה-QR קצרים.
   if (action === 'wfGet') {
@@ -1166,41 +1260,39 @@ async function handleWorkshopFeedback(store, body) {
     if (!role) return [400, { error: 'bad role' }];
     const rec = jrClean(body.record || {});
     if (Buffer.byteLength(JSON.stringify(rec)) > 12000) return [413, { error: 'too large' }];
-    if ((ws.entries || []).length >= WF_MAX) return [429, { error: 'full' }];
-    ws.entries = (ws.entries || []).concat([{ role, ts: Date.now(), entry: rec }]);
-    await store.set('wf:' + w, ws);
-    return [200, { ok: true }];
+    const submissionId=body.submissionId||randomBytes(16).toString('hex');
+    if(typeof submissionId!=='string'||! /^[A-Za-z0-9_.:-]{1,128}$/.test(submissionId)) return [400,{error:'bad submission id'}];
+    if(typeof store.atomicAppendWorkshop!=='function') throw usageError('atomic_storage_required');
+    const result=await store.atomicAppendWorkshop({workshopId:w,submissionId,entry:{role,ts:Date.now(),entry:rec},maxEntries:WF_MAX});
+    return [200, { ok: true,submissionId,duplicate:result.duplicate }];
   }
-  const t = await verifyToken(store, body.token);
+  const t = await resolvePrincipal(store, body.token);
   const isSys = (t && t.k === 'sys') || await checkPassword(store, 'sys', body.auth);
-  const who = isSys ? { code: 'sys', inst: '' } : wfWho(t);
+  const who = isSys ? { code: 'sys', inst: '',ownerId:'sys',tenantId:'system' } : wfWho(t);
   if (!who) { await pause(); return [403, { error: 'unauthorized' }]; }
   if (action === 'wfOpen') {
     if (!wOk) return [400, { error: 'bad workshop' }];
     const old = await store.get('wf:' + w);
-    if (old) return [200, { ok: true, existed: true }];
+    if (old) return isSys||ownsRecord(t,old,'owner')?[200, { ok: true, existed: true }]:[403,{error:'unauthorized'}];
     // קוד הסדנה (6 ספרות) — ייחודי בין הסדנאות הפעילות; אם תפוס, הדפדפן מגריל קוד אחר
     const code = String(body.code || '').replace(/\D/g, '');
-    if (code) {
-      if (code.length !== 6) return [400, { error: 'bad code' }];
-      const taken = await store.get('wfc:' + code);
-      if (taken && Date.now() - Date.parse(taken.at) < 864e5) return [409, { error: 'code taken' }];
-      await store.set('wfc:' + code, { w, at: new Date().toISOString() });
-    }
-    await store.set('wf:' + w, { w, owner: who.code, inst: jrClip(body.inst || who.inst, 120), fac: jrClip(body.fac, 80), scenario: jrClip(body.scenario, 160),
+    if (code&&code.length !== 6) return [400, { error: 'bad code' }];
+    if(typeof store.atomicOpenWorkshop!=='function') throw usageError('atomic_storage_required');
+    const workshop={ w, owner: who.code,ownerId:who.ownerId,tenantId:who.tenantId, inst: who.inst, fac: jrClip(body.fac, 80), scenario: jrClip(body.scenario, 160),
       track: ['edu', 'parents', 'youth'].includes(body.track) ? body.track : 'edu', code, m: jrClip(body.m, 600), c: jrClip(body.c, 3000),
-      created: new Date().toISOString(), entries: [] });
-    return [200, { ok: true }];
+      created: new Date().toISOString(), entries: [] };
+    const result=await store.atomicOpenWorkshop({workshop,code,now:new Date().toISOString()});
+    return [200, { ok: true,existed:result.existed }];
   }
   if (action === 'wfList') {
     const rows = (await store.list('wf:')).map((r) => r.value).filter((x) => x && x.w)
-      .filter((x) => isSys || (who.code && x.owner === who.code) || (who.inst && x.inst === who.inst));
+      .filter((x) => isSys || ownsRecord(t,x,'owner') || (who.inst && (x.tenantId||x.inst)===who.tenantId));
     return [200, { items: rows.sort((a, b) => String(b.created).localeCompare(String(a.created))) }];
   }
   if (action === 'wfDelete') {
     const x = wOk && await store.get('wf:' + w);
     if (!x) return [404, { error: 'not found' }];
-    if (!isSys && x.owner !== who.code) { await pause(); return [403, { error: 'unauthorized' }]; }
+    if (!isSys && !ownsRecord(t,x,'owner')) { await pause(); return [403, { error: 'unauthorized' }]; }
     await store.del('wf:' + w); return [200, { ok: true }];
   }
   return [400, { error: 'bad action' }];
@@ -1226,7 +1318,7 @@ async function handleFeedbackInbox(store, body) {
       ADMIN_URL, ['שם: ' + rec.name, rec.contact ? 'פרטי קשר: ' + rec.contact : '', '', rec.text].filter((x, i) => x || i === 2).join('\n')).catch(() => {});
     return [200, { ok: true }];
   }
-  const t = await verifyToken(store, body.token);
+  const t = await resolvePrincipal(store, body.token);
   const sys = (t && t.k === 'sys') || await checkPassword(store, 'sys', body.auth);
   if (!sys) { await pause(); return [403, { error: 'unauthorized' }]; }
   if (action === 'fbList') {
@@ -1243,7 +1335,12 @@ async function handleFeedbackInbox(store, body) {
 }
 
 // מחזירה [status, body].
-export async function handleAccess(store, body) {
+export const PUBLIC_ACCESS_ACTIONS=Object.freeze(['jrCert','wfJoin','wfGet','wfSubmit','resilInfo','resilSubmit','renewRequest','demoPublicList','demoGet']);
+export async function handleAccess(store,body) {
+  try { return await dispatchAccess(store,body); }
+  catch(error) { if(error.status) return [error.status,{error:error.code||error.message}];throw error; }
+}
+async function dispatchAccess(store, body) {
   const { action } = body || {};
 
   if (action === 'login' && body.kind === 'code') {
@@ -1272,13 +1369,13 @@ export async function handleAccess(store, body) {
       if (sub.state === 'expired') { await pause(); return [403, { error: 'sub-expired' }]; }
       const ceiling = await getCeiling(store, legacy.name);
       const perms = PERMS.filter((p) => ceiling[p] && p !== 'lecturer');
-      const token = await signToken(store, { k: 'code', c: 'LEGACY', kind: 'legacy', inst: legacy.name, perms });
+      const token = await signToken(store, { k: 'code', c: 'LEGACY', kind: 'legacy', inst: legacy.name, perms,ic:sha(normCode(legacy.code)) });
       return [200, { ok: true, token, kind: 'legacy', inst: legacy.name, label: 'צוות ' + legacy.name, perms, notices: notices('staff', sub) }];
     }
     // קוד "משוב לעבודות" הכללי הישן.
     const ac = await store.get('code-academic');
     if (ac && c && same(c, normCode(ac.code))) {
-      const token = await signToken(store, { k: 'code', c: 'ACADEMIC', kind: 'academic-legacy', inst: '', perms: ['academic'] });
+      const token = await signToken(store, { k: 'code', c: 'ACADEMIC', kind: 'academic-legacy', inst: '', perms: ['academic'],av:sha(JSON.stringify(ac)) });
       return [200, { ok: true, token, kind: 'academic-legacy', inst: '', label: 'משוב לעבודות', perms: ['academic'], notices: [] }];
     }
     await pause(); return [403, { error: 'wrong' }];
@@ -1297,10 +1394,23 @@ export async function handleAccess(store, body) {
       const c = normCode(secret);
       const hit = c && (await getInstitutions(store)).find((x) => same(normCode(x.code), c));
       if (hit && hit.active === false) { await pause(); return [403, { error: 'inactive' }]; }
-      if (hit) return [200, { ok: true, inst: hit.name, token: await signToken(store, { k: 'inst', inst: hit.name }) }];
+      if (hit) {
+        if(['inactive','expired'].includes(subState(hit,await getSettings(store)).state)) return [403,{error:'sub-expired'}];
+        return [200, { ok: true, inst: hit.name, token: await signToken(store, { k: 'inst', inst: hit.name,ic:sha(normCode(hit.code)) }) }];
+      }
     }
     if (!ok) { await pause(); return [403, { error: 'wrong' }]; }
-    return [200, { ok: true, token: await signToken(store, { k: kind }) }];
+    const academic=kind==='academic'?await store.get('code-academic'):null;
+    return [200, { ok: true, token: await signToken(store, { k: kind,...(academic?{av:sha(JSON.stringify(academic))}:{}) }) }];
+  }
+
+  // Authentication bootstrap and the cron service above are separate contracts.
+  // Every other action requires a current principal unless explicitly allowlisted.
+  if(!PUBLIC_ACCESS_ACTIONS.includes(action)) {
+    if(action==='jrTick') {
+      const cron=process.env.CRON_SECRET;
+      if(!cron||!same(body.secret||'',cron)) return [403,{error:'unauthorized'}];
+    } else if(!await resolvePrincipal(store,body?.token)&&!await checkPassword(store,'sys',body?.auth)) return [403,{error:'unauthorized'}];
   }
 
   // אילו מודולים פתוחים למוסד — לא סוד, נקרא בכניסה ל-system-select.html
@@ -1308,6 +1418,8 @@ export async function handleAccess(store, body) {
   if (action === 'getModules') {
     const inst = String(body.inst || '').trim();
     if (!inst) return [400, { error: 'missing inst' }];
+    const principal=await resolvePrincipal(store,body.token);
+    if(principal?.k!=='sys'&&principal?.tenantId!==inst&&!await checkPassword(store,'sys',body.auth)) return [403,{error:'unauthorized'}];
     return [200, { ...DEFAULT_MODULES, ...((await store.get('modules:' + inst)) || {}) }];
   }
 
@@ -1319,7 +1431,7 @@ export async function handleAccess(store, body) {
   if (/^jr[A-Z]/.test(action || '')) return handleJourney(store, body);
   if (/^wf(Open|Submit|List|Delete|Join|Get)$/.test(action || '')) return handleWorkshopFeedback(store, body);
 
-  const sysTok = await verifyToken(store, body?.token);
+  const sysTok = await resolvePrincipal(store, body?.token);
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
 
   if (['renewRequest', 'codesList', 'codeCreate', 'codeRevoke', 'codeUse', 'setSubscription', 'renewSubscription',
@@ -1334,7 +1446,7 @@ export async function handleAccess(store, body) {
     const list = await getInstitutions(store);
     const x = list.find((i) => i.name === String(body.inst || '').trim());
     if (!x) return [404, { error: 'no such institution' }];
-    if (action === 'instNewCode') { x.code = newInstCode(list); await store.set('institutions', list); }
+    if (action === 'instNewCode') { x.code = newInstCode(list);x.codeChangedAt=new Date().toISOString(); await store.set('institutions', list); }
     return [200, { name: x.name, code: x.code, active: x.active !== false }];
   }
 
@@ -1353,7 +1465,7 @@ export async function handleAccess(store, body) {
       list.push({ name, code: newInstCode(list), active: true, since: String(new Date().getFullYear()) });
     } else {
       if (!x) return [404, { error: 'no such institution' }];
-      if (action === 'newInstitutionCode') x.code = newInstCode(list);
+      if (action === 'newInstitutionCode') { x.code = newInstCode(list);x.codeChangedAt=new Date().toISOString(); }
       else x.active = body.active !== false;
     }
     await store.set('institutions', list);
@@ -1411,37 +1523,66 @@ export async function handleAccess(store, body) {
 
 // מאגר ב-Supabase: טבלת access_settings (key text PK, value jsonb), עם RLS בלי
 // שום policy — כך שרק השרת, עם ה-service key, יכול לקרוא ולכתוב.
-export function supabaseStore(url, key) {
+export function supabaseStore(url, key, {fetchImpl=globalThis.fetch}={}) {
   const base = `${url.replace(/\/+$/, '')}/rest/v1/access_settings`;
+  const rpcBase=`${url.replace(/\/+$/, '')}/rest/v1/rpc/`;
   const headers = { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' };
   const check = async (r) => {
     if (!r.ok) throw new Error(`Supabase ${r.status}: ${(await r.text().catch(() => '')).slice(0, 200)}`);
     return r;
   };
+  const rpc=async(name,args)=>{
+    const response=await fetchImpl(rpcBase+name,{method:'POST',headers,body:JSON.stringify({p_input:args})});
+    if(!response.ok) {
+      if([404,405].includes(response.status)) throw usageError('atomic_storage_required');
+      throw usageError('atomic_storage_failed');
+    }
+    const result=await response.json();
+    if(result?.error) throw usageError(result.error,result.status||503);
+    if(!result||typeof result!=='object') throw usageError('atomic_storage_invalid');
+    return result;
+  };
+  const reservationInput=args=>({...args,reservationKey:'aiq:'+sha(args.ownerId+'\0'+args.requestId)});
   return {
+    putIfAbsent(args) { return rpc('be_good_put_if_absent',args); },
+    compareAndSet(args) { return rpc('be_good_compare_and_set',args); },
+    atomicAppendWorkshop(args) { return rpc('be_good_append_workshop_feedback',args); },
+    atomicOpenWorkshop(args) { return rpc('be_good_open_workshop',args); },
+    atomicReserveUsage(args) { return rpc('be_good_reserve_ai_usage',reservationInput(args)); },
+    atomicSettleUsage(args) { return rpc('be_good_settle_ai_usage',reservationInput(args)); },
+    finalizeAIJob(args) { return rpc('be_good_finalize_ai_job',{...args,reservationKey:'aiq:'+sha(args.principal.ownerId+'\0'+args.requestId),now:new Date().toISOString()}); },
     async get(k) {
-      const r = await check(await fetch(`${base}?key=eq.${encodeURIComponent(k)}&select=value`, { headers }));
+      const r = await check(await fetchImpl(`${base}?key=eq.${encodeURIComponent(k)}&select=value`, { headers }));
       const rows = await r.json();
       return rows.length ? rows[0].value : null;
     },
     async set(k, value) {
-      await check(await fetch(base, {
+      await check(await fetchImpl(base, {
         method: 'POST',
         headers: { ...headers, Prefer: 'resolution=merge-duplicates,return=minimal' },
         body: JSON.stringify({ key: k, value, updated_at: new Date().toISOString() }),
       }));
     },
     async del(k) {
-      await check(await fetch(`${base}?key=eq.${encodeURIComponent(k)}`, { method: 'DELETE', headers }));
+      await check(await fetchImpl(`${base}?key=eq.${encodeURIComponent(k)}`, { method: 'DELETE', headers }));
     },
     // כל השורות שהמפתח שלהן מתחיל ב-prefix (like של PostgREST; * הוא התו הכללי).
     async list(prefix, { keysOnly = false } = {}) {
       const sel = keysOnly ? 'key' : 'key,value';
-      const r = await check(await fetch(`${base}?key=like.${encodeURIComponent(prefix + '*')}&select=${sel}&order=key&limit=5000`, { headers }));
-      return r.json();
+      const rows=[];let last=null;
+      for(;;) {
+        const cursor=last?`&key=gt.${encodeURIComponent(last)}`:'';
+        const r=await check(await fetchImpl(`${base}?key=like.${encodeURIComponent(prefix+'*')}${cursor}&select=${sel}&order=key.asc&limit=500`,{headers}));
+        const page=await r.json();
+        if(!Array.isArray(page)) throw usageError('storage_page_invalid');
+        if(!page.length) return rows;
+        const next=page[page.length-1].key;
+        if(typeof next!=='string'||last&&next<=last||page.some(row=>typeof row.key!=='string'||!row.key.startsWith(prefix))) throw usageError('storage_page_invalid');
+        rows.push(...page);last=next;
+      }
     },
     async delPrefix(prefix) {
-      await check(await fetch(`${base}?key=like.${encodeURIComponent(prefix + '*')}`, { method: 'DELETE', headers }));
+      await check(await fetchImpl(`${base}?key=like.${encodeURIComponent(prefix + '*')}`, { method: 'DELETE', headers }));
     },
   };
 }

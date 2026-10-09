@@ -27,18 +27,57 @@
   };
 
   // ── קריאה למודל ──────────────────────────────────────────────────
-  async function postJson(url, body, timeoutMs) {
+  async function postJson(url, body, timeoutMs, signal) {
     const ctrl = new AbortController();
+    if (signal?.aborted) throw staleBuild();
+    const stop = () => ctrl.abort();
+    signal?.addEventListener('abort', stop, { once: true });
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
-      const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
+      const res = await fetch(url, { method: "POST", headers: window.sbeAIHeaders(), body: JSON.stringify(body), signal: ctrl.signal });
       // תשובה ריקה או קטועה (החיבור נותק באמצע) — הודעה ברורה במקום "Unexpected end of JSON input"
       const raw = await res.text();
       let data;
       try { data = JSON.parse(raw); } catch (e) { const x = new Error("החיבור לשרת נקטע באמצע (" + res.status + ")"); x.cut = true; throw x; }
-      if (!res.ok || data.error) throw new Error(data.error || ("שגיאת שרת " + res.status));
+      if (!res.ok || data.error) throw Object.assign(new Error(data.error || ("שגיאת שרת " + res.status)), { status: res.status, code: data.code });
       return data;
-    } finally { clearTimeout(timer); }
+    } catch (e) { if (signal?.aborted) throw staleBuild(); throw e; }
+    finally { clearTimeout(timer); signal?.removeEventListener('abort', stop); }
+  }
+  let activeEdu = null;
+  function staleBuild() { return Object.assign(new Error('הבנייה בוטלה לאחר ביטול, ניקוי או שינוי בשדות. הטיוטה הקודמת נשמרת.'), { cancelled: true }); }
+  function cancelEduJob(run) {
+    if (run.jobId) postJson(run.server + '/api/pipeline-cancel', { jobId: run.jobId }, 30000).catch(() => {});
+  }
+  function awaitEduStart(acknowledgment, run) {
+    if (!run) return acknowledgment;
+    return new Promise((resolve, reject) => {
+      const stop = () => reject(staleBuild());
+      run.ctrl.signal.addEventListener('abort', stop, { once: true });
+      if (run.ctrl.signal.aborted) stop();
+      acknowledgment.then(value => { run.ctrl.signal.removeEventListener('abort', stop); resolve(value); },
+        error => { run.ctrl.signal.removeEventListener('abort', stop); reject(error); });
+    });
+  }
+  function invalidateEdu() {
+    const run = activeEdu;
+    if (!run) return;
+    run.ctrl.abort();
+    cancelEduJob(run);
+    try { localStorage.removeItem(JOB_KEY); } catch (_) {}
+  }
+  function beginEdu(server) {
+    invalidateEdu();
+    const run = { ctrl: new AbortController(), server, jobId: null };
+    activeEdu = run;
+    const cancel = document.getElementById('bCancelBuild'); if (cancel) cancel.hidden = false;
+    return run;
+  }
+  function checkEdu(run) { if (run && (activeEdu !== run || run.ctrl.signal.aborted)) throw staleBuild(); }
+  function endEdu(run) {
+    if (activeEdu !== run) return;
+    activeEdu = null;
+    const cancel = document.getElementById('bCancelBuild'); if (cancel) cancel.hidden = true;
   }
   function extractJson(text) {
     const fenced = String(text).match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -102,7 +141,8 @@
 
   // ── תצוגת התוצר בדיאלוג ───────────────────────────────────────────
   // files: [[filename, html, label], ...]
-  function docsPanel({ files, mock, mockNote, saveKey, meta }) {
+  function docsPanel({ files, mock, mockNote, saveKey, meta, scenario, server }) {
+    saveKey = window.sbeUserKey(saveKey);
     // הדיאלוג של מסכי הקלט צר (כ-640px) — המסמך רחב יותר, אז מרחיבים אותו
     // לתצוגת התוצר. לא משנה שום דיאלוג אחר.
     const dlg = document.getElementById("dlg");
@@ -124,8 +164,15 @@
     wrap.append(el("div", { class: "sb-banner " + (mock ? "mock" : "ai") },
       mock ? (mockNote || "⚠ אין חיבור למודל כרגע, מוצג תרחיש הדוגמה של המסלול הזה, באותה תבנית בדיוק שבה ייבנה התרחיש שלך כשהשרת המקומי פועל.")
            : "התוצר נכתב על ידי המודל מתוך השדות שמילאת. קראי, ואם משהו לא מדויק, ערכי את השדה למעלה ובני מחדש."));
+    if (scenario && window.SBE_ACTIVITY_REVIEW) {
+      const editor = el('div'); wrap.append(editor);
+      window.SBE_ACTIVITY_REVIEW.mount(editor, { scenario, server, onApproved: artifact => {
+        // Workshop choices only come from the server-derived, explicitly approved snapshot.
+        saveWorkshopScenario(artifact.content.scenario, 'edu');
+      } });
+    }
     const tabs = el("div", { class: "sb-tabs" });
-    const frame = el("iframe", { title: "תצוגת התוצר" });
+    const frame = el("iframe", { title: scenario ? "תצוגת המסמכים המקוריים: גיבוי פרטי" : "תצוגת התוצר", sandbox: "allow-same-origin allow-modals" });
     let current = 0;
     const select = (i) => {
       current = i;
@@ -161,14 +208,15 @@
         a.download = name; document.body.append(a); a.click(); a.remove();
       }, i * 400));
     });
-    const sysBtn = el("button", { type: "button" }, "שמירה במערכת");
+    if (scenario) wrap.append(el('p', { class: 'sb-note' }, 'המסמכים כאן הם גיבוי פרטי של הנוסח המקורי. שלבים והסברים ערוכים נשמרים בהכנה הפרטית למעלה; לתרגול השתמשי בקישור של הגרסה שאישרת.'));
+    const sysBtn = el("button", { type: "button" }, scenario ? "שמירת המסמכים המקוריים במכשיר: גיבוי פרטי" : "שמירה במכשיר");
     sysBtn.addEventListener("click", () => {
       try {
         const list = JSON.parse(localStorage.getItem(saveKey) || "[]");
         list.push({ savedAt: new Date().toISOString(), mock: !!mock, meta: meta || null, files: files.map(([n, h, l]) => ({ name: n, label: l, html: h })) });
         localStorage.setItem(saveKey, JSON.stringify(list));
-        sysBtn.textContent = "נשמר ✓"; setTimeout(() => { sysBtn.textContent = "שמירה במערכת"; }, 2000);
-      } catch (e) { console.warn("שמירה במערכת נכשלה:", e.message); }
+        sysBtn.textContent = "הגיבוי הפרטי נשמר במכשיר ✓";
+      } catch (e) { sysBtn.textContent = 'הגיבוי לא נשמר. אפשר להוריד קובץ למחשב'; }
     });
     actions.append(openBtn, dlBtn, dlAll, sysBtn);
     wrap.append(actions);
@@ -261,7 +309,7 @@
   // ── תרחישים לסדנה (05/10/2026) ──────────────────────────────────
   // כל תרחיש שנבנה נשמר במכשיר כ"כרטיס סדנה" (שם, שאלות פתיחה, תפניות, מה לראות, תחקיר),
   // כדי שהמנחה תבחר אותו במסך הסדנה (facilitator-screen.html) — סטודנטים, הורים או נוער.
-  const WS_KEY = "sbe.workshop.scenarios.v1";
+  const WS_KEY = window.sbeUserKey("sbe.workshop.scenarios.v1");
   const GENERIC_PRE = ["מתי לאחרונה הייתם בשיחה שבה שני הצדדים צדקו?", "מה עוזר לכם להישאר בשיחה כשהיא נעשית קשה?"];
   function saveWorkshopScenario(scn, track) {
     try {
@@ -283,7 +331,7 @@
   // הצינור רץ 10–20 דקות. במקום בקשה אחת ארוכה (שנקטעה כשהטלפון נכנס להמתנה או בניתוק רגעי),
   // השרת מחזיר מזהה עבודה, והדף שואל כל כמה שניות מה המצב ומראה באיזה שלב הבנייה.
   // המזהה נשמר במכשיר, כך שאפשר לרענן את הדף או לחזור אליו — והבנייה ממשיכה.
-  const JOB_KEY = "sbe.edu.job.v1";
+  const JOB_KEY = window.sbeUserKey("sbe.edu.job.v1");
   const STAGE_TXT = [["stage1", "שלב 1 מתוך 3: הדמויות והקונפליקט"], ["stage2", "שלב 2 מתוך 3: נקודות התפנית ופתיחה למתנסה"], ["stage3", "שלב 3 מתוך 3: כתיבת המסמכים"]];
   function stageLine(st, elapsed) {
     st = st || {};
@@ -293,29 +341,38 @@
     const retry = Object.values(st).includes("retry") ? " · ניסיון נוסף אחרי עיכוב קצר" : "";
     return "בונה את התרחיש: " + cur + " · " + Math.max(1, Math.round((elapsed || 0) / 60)) + " דק׳" + retry;
   }
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const sleep = (ms, signal) => new Promise((resolve, reject) => {
+    if (signal?.aborted) { reject(staleBuild()); return; }
+    const stop = () => { clearTimeout(timer); reject(staleBuild()); };
+    const timer = setTimeout(() => { signal?.removeEventListener('abort', stop); resolve(); }, ms);
+    signal?.addEventListener('abort', stop, { once: true });
+  });
   // תקלה זמנית אצל ספק המודל (עומס, זמן, שגיאת שרת) — שווה לנסות שוב פעם אחת
   const TRANSIENT = /overload|529|503|502|500|rate.?limit|timeout|timed out|ECONNRESET|socket|fetch failed|עומס|נקטע/i;
-  async function pollOnce(server, jobId) {
+  async function pollOnce(server, jobId, signal) {
     const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 30000);
+    const stop = () => ctrl.abort(); signal?.addEventListener('abort', stop, { once: true });
     try {
-      const res = await fetch(server + "/api/pipeline-status", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobId }), signal: ctrl.signal });
-      if (!res.ok) throw new Error("status " + res.status);
+      const res = await fetch(server + "/api/pipeline-status", { method: "POST", headers: window.sbeAIHeaders(), body: JSON.stringify({ jobId }), signal: ctrl.signal });
+      if (!res.ok) throw Object.assign(new Error("status " + res.status), { status: res.status });
       return await res.json();
-    } finally { clearTimeout(timer); }
+    } catch (e) { if (signal?.aborted) throw staleBuild(); throw e; }
+    finally { clearTimeout(timer); signal?.removeEventListener('abort', stop); }
   }
-  async function pollJob(server, jobId, button, want) {
+  async function pollJob(server, jobId, button, want, run) {
     const t0 = Date.now(); let misses = 0;
     while (Date.now() - t0 < 45 * 60000) {
-      await sleep(document.hidden ? 15000 : 7000);
+      checkEdu(run);
+      await sleep(document.hidden ? 15000 : 7000, run?.ctrl.signal);
       let d;
       // לא דרך postJson: עבודה שנכשלה מחזירה status:"error" עם שדה error, ו-postJson זרק אותה כ"ניתוק" —
       // הסיבה האמיתית הוסתרה עד "החיבור לשרת נקטע לזמן ארוך" (06/10/2026).
-      try { d = await pollOnce(server, jobId); misses = 0; }
-      catch (e) { if (++misses >= 12) throw new Error("החיבור לשרת נקטע לזמן ארוך"); continue; } // ניתוק רגעי — ממשיכים לשאול
+      try { d = await pollOnce(server, jobId, run?.ctrl.signal); checkEdu(run); misses = 0; }
+      catch (e) { if (e.cancelled) throw e; if ([401,403,404].includes(e.status)) throw e; if (++misses >= 12) throw new Error("החיבור לשרת נקטע לזמן ארוך"); continue; }
       if (want === "text" && d.status === "done" && typeof d.text === "string") return d.text;
       if (d.status === "done" && d.scenario) return d.scenario;
       if (d.status === "error") { const e = new Error(d.error || "הבנייה נכשלה"); e.transient = TRANSIENT.test(e.message); throw e; }
+      if (d.status === 'cancelled') throw staleBuild();
       if (d.status === "unknown" || d.status === "lost") { const e = new Error("השרת הופעל מחדש באמצע הבנייה"); e.lost = true; throw e; }
       if (button) button.textContent = want === "text"
         ? "כותבת את התוצר · " + Math.max(1, Math.round((d.elapsed || 0) / 60)) + " דק׳ (בדרך כלל 5–9)"
@@ -325,26 +382,39 @@
   }
   // קריאה ארוכה אחת למודל (תוצרי הורים ונוער) — ברקע, עם שאילת התקדמות. השרת הופעל מחדש באמצע → מתחילים שוב פעם אחת.
   async function runCompleteJob(server, body, button, retried) {
+    body = { ...body, requestId: body.requestId || window.crypto.randomUUID() };
     const start = await postJson(server + "/api/complete", { ...body, async: true }, 90000);
     if (!start.jobId) { if (typeof start.text === "string") return start.text; throw new Error(start.error || "המודל לא החזיר תשובה"); } // שרת ישן
     try { return await pollJob(server, start.jobId, button, "text"); }
     catch (e) {
-      if ((e.lost || e.transient) && !retried) { if (button) button.textContent = (e.lost ? "השרת התחיל מחדש" : "עומס זמני אצל המודל") + ", מתחילה שוב את הכתיבה..."; return await runCompleteJob(server, body, button, true); }
+      if ((e.lost || e.transient) && !retried) { if (button) button.textContent = (e.lost ? "השרת התחיל מחדש" : "עומס זמני אצל המודל") + ", מתחילה שוב את הכתיבה..."; return await runCompleteJob(server, {...body, requestId: window.crypto.randomUUID()}, button, true); }
       throw e;
     }
   }
-  async function runEduJob(server, body, button, retried) {
-    const start = await postJson(server + "/api/pipeline", { ...body, async: true }, 90000);
+  async function runEduJob(server, body, button, retried, run) {
+    checkEdu(run);
+    body = { ...body, requestId: body.requestId || window.crypto.randomUUID() };
+    // UI cancellation ends immediately, while the bounded startup connection
+    // can still receive the accepted job ID and cancel that specific job.
+    const acknowledgment = postJson(server + "/api/pipeline", { ...body, async: true }, 90000).then(start => {
+      if (run && start.jobId) {
+        run.jobId = start.jobId;
+        if (activeEdu !== run || run.ctrl.signal.aborted) cancelEduJob(run);
+      }
+      checkEdu(run); return start;
+    });
+    const start = await awaitEduStart(acknowledgment, run);
     if (!start.jobId) { // שרת ישן בלי מצב רקע — הבקשה הארוכה הרגילה
       if (start.scenario) return start.scenario;
       throw new Error(start.error || "הצינור לא החזיר תרחיש");
     }
+    if (run) run.jobId = start.jobId;
     // גם הבקשה עצמה נשמרת, כדי שאפשר יהיה להתחיל מחדש גם אחרי רענון של הדף
     try { localStorage.setItem(JOB_KEY, JSON.stringify({ jobId: start.jobId, at: Date.now(), title: body.input && body.input.title || "", body, retried: !!retried })); } catch (e) {}
-    try { return await pollJob(server, start.jobId, button); }
+    try { return await pollJob(server, start.jobId, button, undefined, run); }
     catch (e) {
       // השרת הופעל מחדש באמצע (Deploy, עומס): מתחילים שוב לבד — פעם אחת
-      if ((e.lost || e.transient) && !retried) { if (button) button.textContent = (e.lost ? "השרת התחיל מחדש" : "עומס זמני אצל המודל") + ", מתחילה שוב את הבנייה..."; return await runEduJob(server, body, button, true); }
+      if ((e.lost || e.transient) && !retried) { checkEdu(run); if (button) button.textContent = (e.lost ? "השרת התחיל מחדש" : "עומס זמני אצל המודל") + ", מתחילה שוב את הבנייה..."; return await runEduJob(server, {...body, requestId: window.crypto.randomUUID()}, button, true, run); }
       throw e;
     }
     finally { try { localStorage.removeItem(JOB_KEY); } catch (e) {} }
@@ -354,35 +424,36 @@
     let job = null;
     try { job = JSON.parse(localStorage.getItem(JOB_KEY) || "null"); } catch (e) {}
     if (!job || !job.jobId || Date.now() - job.at > 3 * 3600000) { try { localStorage.removeItem(JOB_KEY); } catch (e) {} return; }
+    const run = beginEdu(server); run.jobId = job.jobId;
     const done = busy(button, "ממשיכה לבנות את התרחיש שהתחלת" + (job.title ? " (" + job.title + ")" : "") + "...");
     let scn = null;
     try {
-      try { scn = await pollJob(server, job.jobId, button); }
+      try { scn = await pollJob(server, job.jobId, button, undefined, run); }
       catch (e) {
-        if (e.lost && job.body && !job.retried) { button.textContent = "השרת התחיל מחדש: מתחילה שוב את הבנייה..."; scn = await runEduJob(server, job.body, button, true); }
+        if (e.lost && job.body && !job.retried) { checkEdu(run); button.textContent = "השרת התחיל מחדש, מתחילה שוב את הבנייה..."; scn = await runEduJob(server, {...job.body, requestId: window.crypto.randomUUID()}, button, true, run); }
         else if (e.lost) { done(); try { localStorage.removeItem(JOB_KEY); } catch (x) {} return; } // בנייה ישנה שכבר לא קיימת — מנקים בשקט, בלי הודעת שגיאה
         else throw e;
       }
-      if (setStatus) setStatus("ok");
+      checkEdu(run); if (setStatus) setStatus("ok");
     }
-    catch (e) { if (setStatus) setStatus("mock"); show("התוצר לא נבנה", notBuilt(e.message)); return; }
-    finally { done(); try { localStorage.removeItem(JOB_KEY); } catch (e) {} }
-    showEdu(scn, show);
+    catch (e) { if (e.cancelled) return; if (setStatus) setStatus("mock"); show("התוצר לא נבנה", notBuilt(e.message)); return; }
+    finally { done(); endEdu(run); try { localStorage.removeItem(JOB_KEY); } catch (e) {} }
+    showEdu(scn, show, server);
   }
-  function showEdu(scn, show) {
-    saveWorkshopScenario(scn, "edu");
+  function showEdu(scn, show, server) {
     const { files, leaked } = window.SBE_DOC.renderEduDocs(scn);
-    if (leaked.length) console.warn("⚠ דלף בגרסת המתנסה:", leaked[0]);
+    if (leaked.length) throw new Error('בדיקת פרטיות נכשלה. המסמכים לא יוצגו.');
     const prefix = (scn.id || "scenario") + "-";
     const named = files.map(([n, h, l]) => [prefix + n, h, l]);
     window._sbeScenarioBuilt = true;
     if (window.SBE_DEMO_FILES) window.SBE_DEMO_FILES(named, scn); // מעבדת הדמו (lib/demo-hook.js)
     show("התוצר: " + scn.name,
-      docsPanel({ files: named, mock: false, saveKey: "sbe.edu.built.v1", meta: { id: scn.id, name: scn.name } }));
+      docsPanel({ files: named, mock: false, saveKey: "sbe.edu.built.v1", meta: { id: scn.id, name: scn.name }, scenario: scn, server }));
   }
 
   // ── מסלול אנשי חינוך: הצינור התלת-שלבי ───────────────────────────
   async function buildEdu({ fields, labels, button, server, samplePath, setStatus, show }) {
+    const run = beginEdu(server);
     const done = busy(button, "מתחילה לבנות את התרחיש: כ-15 דקות. אפשר להשאיר את הדף פתוח, וגם לחזור אליו אחר כך.");
     let scn = null;
     try {
@@ -401,22 +472,24 @@
           whatHappened: fields.event || "",
           goals: [fields.tGoal ? "המתנסה: " + fields.tGoal : "", fields.actorGoal ? "הדמות: " + fields.actorGoal : ""].filter(Boolean).join(". "),
         },
-        locked: { traineeRole: fields.traineeRole || "", actorRole: fields.actorRole || "", event: fields.event || "" },
+        locked: Object.fromEntries([['characters.trainee.role', fields.traineeRole], ['characters.actor.role', fields.actorRole], ['given.whatHappened', fields.event]].filter(([,v]) => v && String(v).trim())),
         // שאר השדות שמולאו במסך — חומר גלם שהצינור רשאי להישען עליו
         given_extra: fieldsText(fields, labels),
       };
       const meta = { institution: fields.inst || "", institutionId: String(fields.inst || "").trim(), eventDesc: fields.event || "", productType: "תרחיש", creator: fields.creator || "", date: fields.date || "", duration: String(fields.dur || "5").replace(/\D+/g, "") || "5", age: fields.age || "", audience: fields.audience || "" };
-      scn = await runEduJob(server, { input, meta }, button);
+      scn = await runEduJob(server, { input, meta }, button, false, run);
+      checkEdu(run);
       if (!scn || !scn.actor || !scn.trainee) throw new Error("הצינור לא החזיר תרחיש");
       if (setStatus) setStatus("ok");
     } catch (e) {
+      if (e.cancelled) return;
       console.warn("בנייה: התוצר לא נבנה. סיבה:", e.message);
       if (setStatus) setStatus("mock");
       show("התוצר לא נבנה", notBuilt(e.message));
       return;
-    } finally { done(); }
-    showEdu(scn, show);
+    } finally { done(); endEdu(run); }
+    showEdu(scn, show, server);
   }
 
-  window.SBE_BUILD = { buildRole, buildEdu, resumeEdu, docsPanel, PRINCIPLES, ROLE_SCHEMA };
+  window.SBE_BUILD = { buildRole, buildEdu, resumeEdu, docsPanel, invalidateEdu, PRINCIPLES, ROLE_SCHEMA };
 })();

@@ -1,0 +1,196 @@
+{
+  "kind": "planner-continuity-targeted-fix-check",
+  "status": "complete",
+  "checkedAtUtc": "2026-10-08T16:00:32.001196+00:00",
+  "reviewer": "/root/planner_fix_check",
+  "scope": "Independent targeted inspection of the four validated frozen-review findings and the current seven-file correction only; not a new full code review.",
+  "originalReview": {
+    "runId": "20261008-planner-bafa1cc9",
+    "directory": "C:\\Users\\yaels\\AppData\\Local\\Temp\\compound-engineering-yaels\\ce-code-review\\20261008-planner-bafa1cc9",
+    "reviewedSnapshotHead": "bafa1cc9a8c550b6451744a45a22a9aa75e760bf",
+    "baseHead": "66c56e3e3a14300b2112585d32cfb8cc87ac67d7",
+    "confirmedFindingIds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "validatorFileSha256": "958f4d0981a1372133847554bc45e40af55806c0c9e02aba45471783684f48ea",
+    "synthesizedFindingsFileSha256": "8629bb54b65f6c0be934b41f11fdeb4cf30c20b72b63ab880f8c33f405516401",
+    "finalFormalReceiptPresentAtCheck": false,
+    "provenanceNote": "The frozen snapshot still has the four confirmed defects. This receipt checks their current fixes and does not rewrite the frozen review verdict."
+  },
+  "implementation": {
+    "headAtStart": "bafa1cc9a8c550b6451744a45a22a9aa75e760bf",
+    "headAtEnd": "bafa1cc9a8c550b6451744a45a22a9aa75e760bf",
+    "workingTreeFixes": true,
+    "paths": [
+      {
+        "path": "app/lib/planner-continuity.js",
+        "absolutePath": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\begood\\app\\lib\\planner-continuity.js",
+        "sha256Before": "4416fc9cf8ce675ff26c08e2be356d48037441838e534c6f6ae784ea5ee630f0",
+        "sha256After": "4416fc9cf8ce675ff26c08e2be356d48037441838e534c6f6ae784ea5ee630f0",
+        "normalizedSha256": "4416fc9cf8ce675ff26c08e2be356d48037441838e534c6f6ae784ea5ee630f0",
+        "gitBlobIdNormalized": "9731717b4b0c22b4a9f169821647da3a8113431d",
+        "unchangedContentDuringCheck": true
+      },
+      {
+        "path": "app/lib/ai-call.js",
+        "absolutePath": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\begood\\app\\lib\\ai-call.js",
+        "sha256Before": "86f790dc6743d0057539b8d90bb6a4cd9d4c70cd1e10232e48c53568186a32b6",
+        "sha256After": "86f790dc6743d0057539b8d90bb6a4cd9d4c70cd1e10232e48c53568186a32b6",
+        "normalizedSha256": "86f790dc6743d0057539b8d90bb6a4cd9d4c70cd1e10232e48c53568186a32b6",
+        "gitBlobIdNormalized": "b7eff88b344038dfb11ef593f20ec9daa5681ea3",
+        "unchangedContentDuringCheck": true
+      },
+      {
+        "path": "harness/tests/planner-continuity.test.mjs",
+        "absolutePath": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\begood\\harness\\tests\\planner-continuity.test.mjs",
+        "sha256Before": "e063dc7edff65d668c07c319696d4a0db78555a3169a876feb47ea9dc98fbd58",
+        "sha256After": "e063dc7edff65d668c07c319696d4a0db78555a3169a876feb47ea9dc98fbd58",
+        "normalizedSha256": "e063dc7edff65d668c07c319696d4a0db78555a3169a876feb47ea9dc98fbd58",
+        "gitBlobIdNormalized": "6a70c21f2e21f22c9d1d5cd9749c860e97cdc522",
+        "unchangedContentDuringCheck": true
+      },
+      {
+        "path": "harness/tests/ai-call-cancellation.test.mjs",
+        "absolutePath": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\begood\\harness\\tests\\ai-call-cancellation.test.mjs",
+        "sha256Before": "65447ff37bab1ae4a3ea03169921989a6d547601288696351a9ebdb6c9d64e91",
+        "sha256After": "65447ff37bab1ae4a3ea03169921989a6d547601288696351a9ebdb6c9d64e91",
+        "normalizedSha256": "65447ff37bab1ae4a3ea03169921989a6d547601288696351a9ebdb6c9d64e91",
+        "gitBlobIdNormalized": "ecff8257cd9bde8b7e5f5099f4f98620a797a16d",
+        "unchangedContentDuringCheck": true
+      },
+      {
+        "path": "harness/tests/activity-planner-continuity.test.mjs",
+        "absolutePath": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\begood\\harness\\tests\\activity-planner-continuity.test.mjs",
+        "sha256Before": "b1474db6fb18d1c4e5829b154d0399ec1d59bfe48df5ee5d444051150f686246",
+        "sha256After": "b1474db6fb18d1c4e5829b154d0399ec1d59bfe48df5ee5d444051150f686246",
+        "normalizedSha256": "b1474db6fb18d1c4e5829b154d0399ec1d59bfe48df5ee5d444051150f686246",
+        "gitBlobIdNormalized": "040a29f92ad597de564097bcc662bb70648cf02d",
+        "unchangedContentDuringCheck": true
+      },
+      {
+        "path": "harness/tests/conversation-planner-continuity.test.mjs",
+        "absolutePath": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\begood\\harness\\tests\\conversation-planner-continuity.test.mjs",
+        "sha256Before": "0e5db93c90103f8e4bc29335ecdb8f41c5703c2021bd556f8e4881f209249e87",
+        "sha256After": "0e5db93c90103f8e4bc29335ecdb8f41c5703c2021bd556f8e4881f209249e87",
+        "normalizedSha256": "0e5db93c90103f8e4bc29335ecdb8f41c5703c2021bd556f8e4881f209249e87",
+        "gitBlobIdNormalized": "4c5f1eaff357bf1954d7d8cb3ac779a7bdaa9ed1",
+        "unchangedContentDuringCheck": true
+      },
+      {
+        "path": "docs/planner-continuity.md",
+        "absolutePath": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\begood\\docs\\planner-continuity.md",
+        "sha256Before": "6d0bf76069cada814f5fc4c89905bb2571a80fbe0242065af252c75e62896712",
+        "sha256After": "6d0bf76069cada814f5fc4c89905bb2571a80fbe0242065af252c75e62896712",
+        "normalizedSha256": "6d0bf76069cada814f5fc4c89905bb2571a80fbe0242065af252c75e62896712",
+        "gitBlobIdNormalized": "ea3cc9ebba95ce82873ca7aefc59a9971dfd8507",
+        "unchangedContentDuringCheck": true
+      }
+    ]
+  },
+  "findings": [
+    {
+      "finding": "1",
+      "status": "resolved",
+      "reason": "Anchors are now whitelisted. Shared safeAttrs parses absolute URLs and retains only http: or https: href; capture and restore both sanitize, dropping event and unsafe URL attributes. Existing copy/save/restore/print paths use the same sanitizer. Added test verifies source and library links survive and javascript/data hrefs and onclick are inert.",
+      "paths": [
+        "app/lib/planner-continuity.js",
+        "harness/tests/planner-continuity.test.mjs"
+      ],
+      "tests": [
+        "Source links survive copy, save, reopen and print while active URLs stay inert"
+      ]
+    },
+    {
+      "finding": "2",
+      "status": "resolved",
+      "reason": "Separate fresh sequence environment resolves the proposal, clicks its real adoption callback, asserts improved text and original undo snapshot, then clicks bSeqUndo and asserts original text restored and snapshot cleared. Existing newer-human-edit refusal test remains.",
+      "paths": [
+        "harness/tests/activity-planner-continuity.test.mjs",
+        "app/activity-planner.html"
+      ],
+      "tests": [
+        "Fresh sequence improvement can be adopted and undo restores the original plan",
+        "Sequence improved proposal keeps comparison and declines adoption after a newer human edit"
+      ]
+    },
+    {
+      "finding": "3",
+      "status": "resolved",
+      "reason": "Submitting headers are spread-copied once before start. Startup and both cancellation paths use this copy. Polling omits the optional headers argument and therefore calls current sbeAIHeaders. Deferred acknowledgment A-to-B test proves original-owner cancellation, and polling test proves B is denied while cleanup uses A. Server still resolves live principal and checks owner, tenant and permissions.",
+      "paths": [
+        "app/lib/ai-call.js",
+        "harness/tests/ai-call-cancellation.test.mjs",
+        "app/lib/access-guard.js",
+        "harness/practice-server.mjs"
+      ],
+      "tests": [
+        "Late acknowledged cancellation keeps copied credentials of the submitting owner after A to B",
+        "Polling uses live identity and cleans up with original-owner credentials when B cannot read A"
+      ]
+    },
+    {
+      "finding": "4",
+      "status": "resolved",
+      "reason": "Archive captures input immediately, then invokes owner-keyed navigator.locks.request with default exclusive mode. Fresh list read, expected-version validation and whole-archive write are inside the synchronous lock callback. list checks the captured owner after a queued wait and owner is rechecked before write. Save button awaits completion and never reports early success. Missing locks fail visibly before mutation; there is no unprotected fallback. Shared deterministic mutex/interleaving tests verify version conflict, overlapping new products retention and queued identity change.",
+      "paths": [
+        "app/lib/planner-continuity.js",
+        "harness/tests/planner-continuity.test.mjs",
+        "harness/tests/conversation-planner-continuity.test.mjs",
+        "harness/tests/activity-planner-continuity.test.mjs"
+      ],
+      "tests": [
+        "Two window saves of the same version conflict instead of silently losing one edit",
+        "Two overlapping new products both remain in the private archive",
+        "Queued save rechecks ownership and fails visibly when locking is unavailable"
+      ]
+    }
+  ],
+  "additionalCheck": {
+    "bdi": "Safe bdi elements now survive save/reopen/print; covered by the dedicated synthetic phone/email credit test. No new active attributes are retained."
+  },
+  "testExecution": {
+    "executedBy": "/root/planner_fix_check",
+    "runtime": "Node v20.19.1",
+    "command": "node --preserve-symlinks --preserve-symlinks-main --test harness/tests/planner-continuity.test.mjs harness/tests/ai-call-cancellation.test.mjs harness/tests/activity-planner-continuity.test.mjs harness/tests/conversation-planner-continuity.test.mjs",
+    "exitCode": 0,
+    "counts": {
+      "tests": 30,
+      "pass": 30,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "durationMs": 14269.1107,
+    "toolChunkIds": [
+      "10e519",
+      "ab44d9"
+    ],
+    "corroboratingRootEvidence": {
+      "path": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\outputs\\quality-evidence\\planner-continuity-focused-tests.txt",
+      "sha256": "4ba20fc3e1c2869e5c0e2d055eae0cd44dcebe124301a12d634bb7857c9b1329",
+      "counts": {
+        "tests": 30,
+        "pass": 30,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "note": "Persisted root run is separate from this independent execution."
+    }
+  },
+  "outcome": {
+    "openConcreteDefects": 0,
+    "concreteRegressionsFound": 0
+  },
+  "limits": [
+    "Local same-family independent inspection; no cross-model corroboration claimed.",
+    "Focused synthetic VM checks only; no live/paid provider, production deployment or real student data.",
+    "Default-exclusive Web Locks behavior inspected in code and simulated by shared mutex tests; no simultaneous actual-browser interleaving measured by this reviewer.",
+    "Inherited browser physical download/print delivery and native dialog-dismissal scheduling gaps remain coverage limits.",
+    "Failclosed missing-Web-Locks behavior is deliberate and documented; browser must support API in secure context.",
+    "A later implementation HEAD requires root to verify inspected path contents remain unchanged; this receipt does not relabel disjoint main merges as independently reviewed."
+  ]
+}

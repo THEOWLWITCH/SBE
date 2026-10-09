@@ -46,7 +46,7 @@
   }
   // Model actions run as a background job on the server: one long request was cut by proxies, sleeping
   // phones and redeploys. The server checks permissions first, returns a jobId and keeps the result in
-  // memory; we ask for its status every few seconds. A server restart mid-job ('unknown') retries once.
+  // durable private storage; we ask for its status every few seconds. Unknown legacy jobs retry once.
   const MODEL_ACTIONS=['analyze','generate','adapt','consult'];
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   async function post(body, ms) {
@@ -64,10 +64,14 @@
     while(Date.now()-t0<9*60*1000) {
       await sleep(document.hidden?8000:3000);
       let d;
-      try { const r=await post({action:'status',jobId:started.data.jobId},30*1000); if(!r.ok)throw new Error(); d=r.data; misses=0; }
+      try { const r=await post({action:'status',jobId:started.data.jobId},30*1000);
+        if(!r.ok && [401,403,404,410].includes(r.status))return r;
+        if(!r.ok)throw new Error(); d=r.data; misses=0; }
       catch { if(++misses>=20)throw new Error('החיבור לשרת נקטע לזמן ארוך. התוכן הקיים נשמר; אפשר לנסות שוב.'); continue; }
       if(d.status==='done') return {ok:d.httpStatus>=200&&d.httpStatus<300,status:d.httpStatus,data:d.result||{}};
       if(d.status==='unknown') { if(!retried)return background(body,true); throw new Error('השרת הופעל מחדש באמצע. התוכן הקיים נשמר; אפשר לנסות שוב.'); }
+      if(['error','lost','cancelled','expired'].includes(d.status)) return {ok:false,status:422,
+        data:{error:d.error || 'המשימה נעצרה. התוכן הקיים נשמר; אפשר להתחיל בקשה חדשה.',code:d.code || d.status}};
     }
     throw new Error('הבנייה נמשכה מעבר לזמן ההמתנה. התוכן הקיים נשמר; אפשר לנסות שוב.');
   }

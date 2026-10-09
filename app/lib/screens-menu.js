@@ -39,6 +39,7 @@ window.SBE_SCREENS = [
     { title:'כלים לאנשי חינוך', items:[
       { file:'conversation-planner.html', label:'תכנון שיחה', who:'הרשאת תכנון שיחה' },
       { file:'activity-planner.html', label:'תכנון פעילות', who:'הרשאת תכנון פעילות' },
+      { file:'rehearsal.html', label:'תרגול הגרסה שאושרה (פעילות ושיחה)', who:'הרשאת תכנון פעילות או תכנון שיחה, עם קישור לגרסה מאושרת' },
       { file:'academic-review.html', label:'משוב לעבודה אקדמית או פרויקט', who:'הרשאת משוב לעבודות' },
     ]},
     { title:'חוסן חברתי', items:[
