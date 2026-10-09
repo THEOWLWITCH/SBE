@@ -755,12 +755,12 @@ F('btn-analyze').addEventListener('click',async()=>{
   const rep=F('report');rep.textContent='';rep.appendChild(el('div','card','נוגי קוראת את תמונת המצב ומכינה את הדוח, ואז בודקת שהכול ברור... (עד כ-5 דקות)'));
   rep.scrollIntoView({behavior:'smooth',block:'start'});
   try{
-    const txt=await complete(ADVISOR_SYSTEM,[{role:'user',content:pictureText(a)}],32000,true);
-    const m=txt.match(/\{[\s\S]*\}/);if(!m)throw new Error('נוגי לא החזירה מבנה תקין');
-    STATE.report={at:new Date().toISOString(),who:F('f-who').value,mode:F('f-mode').value,school:F('f-school').value.trim(),stage:F('f-stage').value,sit:F('f-sit').value,doc:JSON.parse(m[0]),picture:pictureText(a)};
+    // מבנה לא תקין: ניסיון נוסף אחד (sbeCallAIJson ב-lib/ai-call.js)
+    const doc=await sbeCallAIJson(AI_SERVER,{system:ADVISOR_SYSTEM,messages:[{role:'user',content:pictureText(a)}],maxTokens:32000,customerReview:true},480000);
+    STATE.report={at:new Date().toISOString(),who:F('f-who').value,mode:F('f-mode').value,school:F('f-school').value.trim(),stage:F('f-stage').value,sit:F('f-sit').value,doc,picture:pictureText(a)};
     STATE.chat=[];save();renderReport();renderChat();
   }catch(e){
-    rep.textContent='';const c=el('div','card');c.appendChild(el('p','err',e.name==='AbortError'?'הניתוח לקח יותר מדי זמן. נסו שוב.':'הניתוח לא הצליח ('+e.message+'). נסו שוב בעוד רגע.'));rep.appendChild(c);
+    rep.textContent='';const c=el('div','card');c.appendChild(el('p','err',e.name==='AbortError'?'הניתוח לקח יותר מדי זמן. נסו שוב.':(e.code==='incomplete'?'הדוח חזר חלקי. נסו שוב בעוד רגע.':'הניתוח לא הצליח ('+e.message+'). נסו שוב בעוד רגע.')));rep.appendChild(c);
   }finally{BUSY=false;b.disabled=false;b.textContent='ניתוח והמלצות';}
 });
 

@@ -34,4 +34,24 @@
     throw new Error("timeout: הקריאה למודל נמשכה יותר מדי");
   }
   window.sbeCallAI = sbeCallAI;
+  // תוצר במבנה JSON (09/10/2026: "לוודא שלא תחזור תקלה כזאת בכלים אחרים"): כשהתשובה לא נקראת או חסרים בה
+  // חלקים (check), מבקשים פעם אחת נוספת עם הערה למודל, ורק אז מציגים שגיאה (code: 'incomplete').
+  function parseLoose(t) {
+    const x = String(t || "").trim();
+    try { return JSON.parse(x); } catch (e) {}
+    const m = x.match(/\{[\s\S]*\}/); if (m) { try { return JSON.parse(m[0]); } catch (e) {} }
+    return null;
+  }
+  async function sbeCallAIJson(server, body, timeoutMs, check) {
+    const ok = (v) => v && typeof v === "object" && (!check || check(v));
+    let v = parseLoose(await sbeCallAI(server, body, timeoutMs));
+    if (ok(v)) return v;
+    const again = Object.assign({}, body, { system: String(body.system || "") + "\n\nהתשובה הקודמת לא הגיעה במבנה המלא שביקשתי (JSON חסר, חלקי או לא תקין). החזירי עכשיו רק JSON תקין ומלא, בדיוק במבנה שביקשתי." });
+    delete again.requestId;
+    v = parseLoose(await sbeCallAI(server, again, timeoutMs));
+    if (ok(v)) return v;
+    throw Object.assign(new Error("התוצר חזר חלקי"), { code: "incomplete" });
+  }
+  window.sbeCallAIJson = sbeCallAIJson;
+  window.sbeParseJSON = parseLoose;
 })();

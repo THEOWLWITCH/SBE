@@ -78,13 +78,16 @@
     tick(); const iv = setInterval(tick, 1000);
     return { set: (t) => { text = t; tick(); }, stop: () => { clearInterval(iv); node.hidden = true; } };
   }
-  async function ask(system, content) {
-    return String(await window.sbeCallAI(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 7000, customerReview: true }, 300000) || '');
+  // תשובה חלקית או לא תקינה: ניסיון נוסף אחד (sbeCallAIJson ב-lib/ai-call.js), ואחר כך הודעה שונה מ"אין חיבור"
+  const PARTIAL = 'התיק חזר חלקי. מה שמילאת נשמר, ואפשר לנסות שוב.';
+  async function ask(system, content, check) {
+    return window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 7000, customerReview: true }, 300000, check);
   }
+  const why = (e) => (e && e.code === 'incomplete') ? PARTIAL : NO_MODEL;
   const plansText = () => (S.local.plans || []).filter((p) => p.c0 || p.c1).map((p) => '- ' + [p.c0, p.c1, p.c2].filter(Boolean).join(' · ')).join('\n');
   async function makeEmerg() {
     const plans = plansText();
-    return C.parse(await ask(C.emergSystem(KB, WRITER), 'השדות:\n' + C.inputText(S.form) + (plans ? '\n\nתכניות הלימודים החודש:\n' + plans : '') + '\n\nהכיני את תיקיית החירום והלמידה מרחוק.'));
+    return ask(C.emergSystem(KB, WRITER), 'השדות:\n' + C.inputText(S.form) + (plans ? '\n\nתכניות הלימודים החודש:\n' + plans : '') + '\n\nהכיני את תיקיית החירום והלמידה מרחוק.', C.validEmerg);
   }
 
   // ── טבלאות עריכה מקומיות (נשמרות במכשיר) ──
@@ -224,9 +227,9 @@
       root.appendChild(el('p', null, 'תיקיית החירום עוד לא הוכנה.'));
       const w = el('div', 'wait'); w.hidden = true; const er = el('p', 'err'); er.hidden = true;
       root.appendChild(btn('הכנת תיקיית החירום', 'btn', async (e) => {
-        e.target.disabled = true; const wt = waiting(w, 'מכינה את תיקיית החירום.', 80); let x = null;
-        try { x = await makeEmerg(); } catch (err) { console.warn(err.message); } finally { wt.stop(); e.target.disabled = false; }
-        if (!C.validEmerg(x)) { er.textContent = NO_MODEL; er.hidden = false; return; }
+        e.target.disabled = true; const wt = waiting(w, 'מכינה את תיקיית החירום.', 80); let x = null, bad = null;
+        try { x = await makeEmerg(); } catch (err) { bad = err; console.warn(err.message); } finally { wt.stop(); e.target.disabled = false; }
+        if (!C.validEmerg(x)) { er.textContent = why(bad); er.hidden = false; return; }
         S.emerg = x; save(); showKit();
       }));
       root.append(w, er); return root;
@@ -356,13 +359,14 @@
     if (missing.length) return fail(F('err1'), 'כדי להמשיך, נשמח למלא: ' + missing.join(', ') + '.');
     const b = F('go'); b.disabled = true;
     const w = waiting(F('wait1'), 'מכינה את תיקיית השגרה (1 מתוך 2).', 90);
-    let k = null, e2 = null;
+    let k = null, e2 = null, bad = null;
     try {
-      k = C.parse(await ask(C.system(KB, WRITER), 'השדות:\n' + C.inputText(d) + '\n\nהכיני את תיקיית השגרה.'));
-      if (C.valid(k)) { S.kit = k; w.set('מכינה את תיקיית החירום והלמידה מרחוק (2 מתוך 2).'); e2 = await makeEmerg(); }
-    } catch (e) { console.warn('תיק רציפות:', e.message); }
+      k = await ask(C.system(KB, WRITER), 'השדות:\n' + C.inputText(d) + '\n\nהכיני את תיקיית השגרה.', C.valid);
+      S.kit = k; w.set('מכינה את תיקיית החירום והלמידה מרחוק (2 מתוך 2).');
+      try { e2 = await makeEmerg(); } catch (e) { console.warn('תיק רציפות, חירום:', e.message); }
+    } catch (e) { bad = e; console.warn('תיק רציפות:', e.message); }
     finally { w.stop(); b.disabled = false; }
-    if (!C.valid(k)) return fail(F('err1'), NO_MODEL);
+    if (!C.valid(k)) return fail(F('err1'), why(bad));
     S.emerg = C.validEmerg(e2) ? e2 : null;
     S.version = (S.version || 0) + 1; S.at = today(); S.history = []; save();
     showKit(); goStep(2);
@@ -429,13 +433,13 @@
     if (!note) return fail(F('err3'), 'כדי לתקן, נשמח לשמוע מה עלה בניסיון: מה היה חסר, מה לא היה ברור ומה עבד.');
     const b = F('revise'); b.disabled = true;
     const w = waiting(F('wait3'), 'מתקנת את התיק לפי הניסיון.', 90);
-    let k = null;
+    let k = null, bad = null;
     try {
-      k = C.parse(await ask(C.reviseSystem(KB, WRITER), 'השדות:\n' + C.inputText(S.form) + '\n\nתיקיית השגרה הנוכחית (JSON):\n' + JSON.stringify(S.kit) +
-        '\n\nמה עלה בניסיון של העמיתה' + (F('trialWho').value.trim() ? ' (' + F('trialWho').value.trim() + ')' : '') + ':\n' + note + '\n\nתקני את התיק.'));
-    } catch (e) { console.warn('תיק רציפות, תיקון:', e.message); }
+      k = await ask(C.reviseSystem(KB, WRITER), 'השדות:\n' + C.inputText(S.form) + '\n\nתיקיית השגרה הנוכחית (JSON):\n' + JSON.stringify(S.kit) +
+        '\n\nמה עלה בניסיון של העמיתה' + (F('trialWho').value.trim() ? ' (' + F('trialWho').value.trim() + ')' : '') + ':\n' + note + '\n\nתקני את התיק.', C.valid);
+    } catch (e) { bad = e; console.warn('תיק רציפות, תיקון:', e.message); }
     finally { w.stop(); b.disabled = false; }
-    if (!C.valid(k)) return fail(F('err3'), NO_MODEL);
+    if (!C.valid(k)) return fail(F('err3'), why(bad));
     const changes = Array.isArray(k.changes) ? k.changes : []; delete k.changes;
     S.history.push({ version: S.version, at: S.at, note }); S.kit = k; S.version += 1; S.at = today(); save();
     const box = F('changes'); box.textContent = '';
