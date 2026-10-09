@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>מעבדת תרגול ולמידה בצוות · Begood</title>
+  <script src="lib/access-guard.js"></script>
+  <script src="lib/open-select.js"></script>
+  <link rel="stylesheet" href="lib/team-learning-lab.css">
+</head>
+<body data-tool="team-lab">
+  <a class="lab-skip" href="#lab-main">למרחב העבודה</a>
+  <header class="lab-header">
+    <a href="home.html" id="lab-home" class="lab-brand" aria-label="Begood, חזרה לבית"><img id="brandLogo" src="assets/begood-logo.webp" alt="Begood"></a>
+    <nav class="lab-toplinks" aria-label="קישורים"><a href="about.html?from=team-learning-lab.html#article" target="_blank" rel="noopener">📖 לבחור בחוסן שלנו</a><a href="home.html" id="lab-back">חזרה לבית</a></nav>
+  </header>
+  <main id="lab-main" class="lab-shell">
+    <section class="lab-hero">
+      <div><p class="lab-eyebrow">מהתכנון לניסיון משותף</p><h1>מעבדת תרגול ולמידה בצוות</h1><p class="lab-lead">מתכננים פעילות, מתרגלים עם עמיתים ולומדים ממה שקרה במפגש. כל מחזור משאיר צעד קטן שאפשר לנסות שוב.</p></div>
+      <div class="lab-privacy"><span aria-hidden="true">◌</span><b>העבודה שלכם פרטית</b><p>נשמרת בחשבון הכניסה בדפדפן ובמכשיר הזה. תיק לשיתוף נוצר רק לפי בחירה שלכם.</p></div>
+    </section>
+    <nav id="lab-stages" class="lab-stages" aria-label="צעדי העבודה">
+      <button type="button" data-stage="0" aria-current="step"><span>1</span>מתכננים</button>
+      <button type="button" data-stage="1"><span>2</span>הפעילות שלנו</button>
+      <button type="button" data-stage="2"><span>3</span>מתרגלים</button>
+      <button type="button" data-stage="3"><span>4</span>לומדים מהניסיון</button>
+    </nav>
+    <div class="lab-savebar"><p id="lab-save-status" role="status">פותחים את העבודה הפרטית…</p><div class="lab-actions"><button type="button" id="lab-save">שמירת טיוטה במכשיר</button><button type="button" id="lab-reload" hidden>פתיחת הגרסה השמורה</button></div></div>
+    <p id="lab-message" role="status" class="lab-message" hidden></p>
+    <aside id="lab-danger" class="lab-danger" role="alert" hidden><h2>קודם בטיחות</h2><p>בסכנה גופנית מיידית נשארים עם מי שנמצא בסיכון ומזעיקים עזרה מתאימה. עוצרים את תכנון הפעילות ואת האישור עד שהמצב בטוח.</p></aside>
+    <div id="lab-wait" class="lab-wait" role="status" hidden><div><b id="lab-wait-title">חושבים יחד</b><p id="lab-wait-time"></p><progress id="lab-progress" max="100" value="0" aria-label="המתנה לתשובה"></progress></div><button type="button" id="lab-cancel">ביטול הבקשה</button></div>
+    <section id="lab-panel-0" class="lab-panel" aria-labelledby="lab-title-0"><div class="lab-sectionhead"><div><p class="lab-eyebrow">צעד 1</p><h2 id="lab-title-0" tabindex="-1">מה נרצה לבנות יחד?</h2><p>מטרה מעשית, קבוצה והקשר. גם בפעילות לתלמידים, המבוגר מכין, בוחר ומנחה.</p></div></div><div id="lab-context" class="lab-card"></div><section class="lab-card"><h3>אילו גישות מתאימות לכם?</h3><p class="lab-muted">אפשר לבחור גישה אחת או לשלב כמה. הגישות מציעות כיווני תכנון, ואינן מסווגות אנשים לסגנונות למידה.</p><div id="lab-models" class="lab-models"></div></section><div class="lab-footeractions"><button type="button" id="lab-generate" class="lab-primary">בונים פעילות עם AI</button><button type="button" id="lab-demo" class="sbe-sysonly">מילוי לדוגמה</button></div></section>
+    <section id="lab-panel-1" class="lab-panel" aria-labelledby="lab-title-1" hidden><div class="lab-sectionhead"><div><p class="lab-eyebrow">צעד 2</p><h2 id="lab-title-1" tabindex="-1">הפעילות שלנו</h2><p>קוראים, עורכים ושואלים. הצעת שינוי נשארת הצעה עד שבוחרים לאמץ אותה.</p></div><button type="button" id="lab-regenerate">הפקת טיוטה חדשה</button></div><div id="lab-editor"></div><div id="lab-approval" class="lab-card" hidden><h3>גרסה מוכנה לחזרה</h3><p>האישור שומר את הנוסח הזה בנפרד. עריכה בהמשך משאירה את הגרסה המאושרת כפי שהייתה.</p><div class="lab-checks"><label><input type="checkbox" id="lab-check-safety"> בדקנו בטיחות, גבולות וחלופות השתתפות.</label><label><input type="checkbox" id="lab-check-privacy"> בדקנו פרטיות והסרנו פרטים מזהים מהפעילות.</label><label><input type="checkbox" id="lab-check-professional"> מחנך או מחנכת בדקו התאמה מקצועית לקבוצה ולהקשר.</label></div><button type="button" id="lab-approve" class="lab-primary">שמירת גרסה מאושרת לחזרה</button></div></section>
+    <section id="lab-panel-2" class="lab-panel" aria-labelledby="lab-title-2" hidden><div class="lab-sectionhead"><div><p class="lab-eyebrow">צעד 3</p><h2 id="lab-title-2" tabindex="-1">חזרה עם עמיתים</h2><p>בוחרים גרסה מאושרת ושלב, מחלקים תפקידי הנחיה וצפייה ומתנסים יחד. זו חזרה, והיא אינה תיעוד של מפגש אמיתי.</p></div></div><div id="lab-rehearsal" class="lab-card"></div><div id="lab-rehearsal-history"></div></section>
+    <section id="lab-panel-3" class="lab-panel" aria-labelledby="lab-title-3" hidden><div class="lab-sectionhead"><div><p class="lab-eyebrow">צעד 4</p><h2 id="lab-title-3" tabindex="-1">מה למדנו מהמפגש?</h2><p>מתעדים פעולות שנצפו, בלי ציונים לאנשים. מהלך נכנס לארכיון רק אחרי תצפית שנשמרה ממפגש אמיתי.</p></div></div><div id="lab-meeting" class="lab-card"></div><div id="lab-observation-history"></div><section id="lab-move" class="lab-card"></section><section class="lab-card"><h3>מהלכים שנוסו</h3><p class="lab-muted">בוחרים במפורש אילו מהלכים לצרף לתיק. תצפיות גולמיות וחששות פרטיים נשארים כאן.</p><div id="lab-moves"></div><div id="lab-export"></div></section></section>
+    <section class="lab-card lab-question" aria-labelledby="lab-question-title"><div><p class="lab-eyebrow">לחשוב יחד</p><h2 id="lab-question-title">שאלה על התכנון</h2><p id="lab-question-hint"></p></div><label for="lab-question-input">מה תרצו לשאול או לשפר?</label><textarea id="lab-question-input" rows="3" placeholder="אפשר לשאול על התאמה, הנחיה, בחירה או המפגש הבא."></textarea><button type="button" id="lab-ask">שליחת שאלה</button><div id="lab-question-answer" class="lab-answer"></div></section>
+    <details class="lab-card lab-private"><summary>מקום פרטי לחששות ולתמיכה</summary><p>החששות נשמרים אצלכם ואינם נכנסים לפעילות או לתיק לשיתוף. רק לחיצה על בקשת תמיכה שולחת אותם ל-AI לתשובה תומכת.</p><label for="lab-concerns">מה מטריד אתכם לקראת ההנחיה?</label><textarea id="lab-concerns" rows="3" placeholder="אפשר לכתוב בלי שמות או פרטים מזהים."></textarea><button type="button" id="lab-support">בקשת תמיכה על החשש</button><div id="lab-support-answer" class="lab-answer"></div></details>
+    <details class="lab-card lab-redlines" open><summary>גבולות ששומרים על המשתתפים</summary><ul id="lab-redlines"></ul></details>
+    <section id="lab-related" class="lab-card" hidden><h2>ממשיכים ב-Begood</h2><div id="lab-related-links" class="lab-related"></div></section>
+  </main>
+  <footer class="lab-foot">Begood · בוחרים, מתנסים ולומדים יחד</footer>
+  <script src="lib/product-doc.js"></script>
+  <script src="lib/ai-call.js"></script>
+  <script src="lib/planner-continuity.js"></script>
+  <script src="lib/team-learning-lab.js"></script>
+  <script src="lib/team-learning-lab-ui.js"></script>
+  <script src="lib/example-peek.js" data-tool="team-lab"></script>
+  <script src="lib/screens-menu.js"></script>
+  <script src="lib/demo-hook.js"></script>
+</body>
+</html>

@@ -49,6 +49,7 @@ window.SBE_SCREENS = [
       { file:'leadership-advisor.html', label:'נוגי: יועצת למנהיגות תומכת חוסן', who:'הרשאת נוגי' },
       { file:'message-writer.html', label:'כתיבה מקדמת חוסן', who:'הרשאת כתיבה מקדמת חוסן בלבד' },
       { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
+      { file:'team-learning-lab.html', label:'מעבדת תרגול ולמידה בצוות', who:'הרשאת ננה' },
       { file:'journey.html', label:'מסע אל החוסן: מסך המשתתפים', who:'הרשאת מסע אל החוסן' },
     ]},
   ]},

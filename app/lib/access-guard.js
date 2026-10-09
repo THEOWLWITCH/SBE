@@ -121,7 +121,7 @@
     practice: ["practice.html"],
     journey: ["journey.html"],
     writer: ["message-writer.html", "resilience-advisor-sources.html"], // כתיבה מקדמת חוסן — רק בהרשאה הזאת (02/10/2026)
-    nana: ["facilitation-advisor.html", "resilience-advisor-sources.html"] // ננה — מהוראה להנחיה (07/10/2026)
+    nana: ["facilitation-advisor.html", "team-learning-lab.html", "resilience-advisor-sources.html"] // learning and rehearsal extend Nana; Studio remains separate.
   };
   var SIM_DOCS = ["doc-trainee.html", "doc-actor.html", "card-actor.html", "doc-facilitator.html"];
   var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html", "practice.html"].concat(SIM_DOCS);

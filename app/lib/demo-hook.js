@@ -125,6 +125,15 @@
   }
 
   var RECIPES = {
+    "team-learning-lab.html": async function () {
+      var ui = await waitFor(function () { return window.SBE_TEAM_UI; }, 30000, "פתיחת מעבדת הצוות");
+      await ui.demoFill();
+      await ui.generate(); // Uses the authenticated live model, never a canned activity.
+      var doc = ui.printableNode();
+      if (!doc || !doc.textContent.trim()) throw new Error("הפעילות לא הופקה. הקלט נשמר ואפשר לנסות שוב.");
+      return [{ tool:"team-lab", title:"מעבדת תרגול ולמידה בצוות: הפעילות שלנו", label:"מעבדת תרגול ולמידה בצוות",
+        html:standalone(doc,"הפעילות שלנו"), input:"הכנת פעילות בחינוך לפי גישות משלימות. זהו תוצר AI, ולא תיעוד של מפגש שהתקיים." }];
+    },
     "resilience-advisor.html": function () { return inPage("practi", "פרקטי: דוח לכיתה", "פרקטי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
     "leadership-advisor.html": function () { return inPage("nugi", "נוגי: דוח סיכום והמלצות", "נוגי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
     "facilitation-advisor.html": function () { return inPage("nana", "ננה: מדריך הנחיה", "ננה", "#btn-example", "#btn-go", "#guide-doc", "#guide-doc", "#guide"); },
