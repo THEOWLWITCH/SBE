@@ -149,7 +149,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 @page{size:A4;margin:20mm 22mm}
 @media print{.topnav,.no-print,#form-area,#fb-fab{display:none!important}body{background:#fff;font-size:11.5pt;line-height:1.6}
   .wrap{max-width:none;padding:0}.card{box-shadow:none;border:none;padding:0}
-  #report{break-before:page}
+  #report{break-before:auto}
   h2,h3,h4{break-after:avoid}.act,.rich li,.intro,.lens,.score-row{break-inside:avoid}
   .bar,.bar>div,.val,.intro,.lens,.act-tag{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 .addmore{margin:.35rem 0 .2rem}
@@ -178,7 +178,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 .prio li::before{content:counter(p);flex:0 0 1.6rem;height:1.6rem;border-radius:50%;background:var(--spoken);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.85rem}
 .rep-nav{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.6rem}
 #mode-note{margin-top:.35rem}
-@media print{#report-doc{break-before:page}#report-rec{break-before:auto}.conv,.plan li{break-inside:avoid}}
+@media print{#report-doc{break-before:auto}#report-rec{break-before:auto}.conv,.plan li{break-inside:avoid}}
 </style>
 </head>
 <body>
