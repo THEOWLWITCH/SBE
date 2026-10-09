@@ -6,6 +6,7 @@
 <script src="lib/ai-status.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/product-doc.js"></script>
+<script src="lib/ref-collect.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -366,11 +367,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
 
 <!-- מצב החיבור למודל — רק למנהלת המערכת (sbe-sysonly, access-guard.js) -->
 <div class="banner sbe-sysonly">
-  <span class="ai-status unknown" id="aiStatusChip"><span class="dot"></span> בודקת חיבור למודל...</span>
-</div>
-<div class="banner brick" id="rubricNote">
-  <b>רובריקת הקריטריונים טיוטה.</b> מבוססת על מה שסיכמנו, עדיין לא סגורה. אפשר להמשיך
-  לחדד אותה אחרי שרואים אותה בפעולה.
+  <span class="ai-status unknown sbe-sysonly" id="aiStatusChip"><span class="dot"></span> בודקת חיבור למודל...</span>
 </div>
 
 <div class="modepick">
@@ -412,7 +409,6 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
   <details class="grp" id="sqImport">
     <summary>יש לך כבר מסמך תכנון? סילבוס, תכנית קורס, רשימת נושאים<span class="count">ניתוח ופריסה למפגשים</span></summary>
     <div class="grp-b">
-      <p class="note" style="margin:0;">המערכת קוראת את המסמך, מחלצת ממנו את מה שכתוב בו (נושא, מטרות, קהל, תוצר, דרכי הערכה), ופורסת אותו לרצף מפגשים מלא במספר המפגשים שתבחרי: כל מפגש עם יעד, מהלך וזמנים. מה שלא כתוב במסמך מושלם כהצעה, ועובדות שלא מופיעות בו (מרחב, תקציב, מספר משתתפים) לא מומצאות.</p>
       <div class="uploadbox" style="margin:0;">
         <input type="file" id="sqFile" accept=".txt,text/plain,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,application/pdf">
         <p class="note" id="sqFileStatus" style="margin:8px 0 0;">קובץ Word (.docx), PDF או טקסט, או הדביקי את התוכן למטה. קובץ Word ישן (.doc) אינו נתמך.</p>
@@ -430,7 +426,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
   <details class="grp advisor" id="sqAdvisor">
     <summary>שאלה ליועצת המקצועית<span class="count">תוך כדי מילוי</span></summary>
     <div class="grp-b">
-      <p class="note" style="margin:0;">אפשר לשאול כל שאלה על התכנון. המערכת עונה כיועצת אקדמית ומקצועית בתחום שבחרת, על סמך מה שכבר מילאת.</p>
+      <p class="note" style="margin:0;">אפשר לשאול כל שאלה על התכנון.</p>
       <textarea id="sqQ" rows="2" placeholder="לדוגמה: איך לבנות את המפגש השלישי כך שיהיה קשה יותר מהשני, בלי לאבד את מי שמתקשות?"></textarea>
       <div><button type="button" class="primary" id="sqAsk">שאלי</button></div>
       <div id="sqAnswers"></div>
@@ -815,11 +811,11 @@ const AI_SERVER = "https://sbe-server.onrender.com";
 // שורת סטטוס גלויה במקום הצהרה טכנית תמידית — מתעדכנת בפועל לפי תוצאת
 // הקריאה האחרונה למודל (19/09/2026), לא לפי הנחה סטטית.
 // בלי חיבור למודל — אין תוצר (07/10/2026, כלל של ד״ר יעל שדה לכל המערכת): לא דוגמה קבועה, לא משוב היוריסטי ולא מסמך מהשדות.
-var NO_MODEL = "אין כרגע חיבור למודל, ולכן לא הופק תוצר. המערכת לא מציגה תוכן קבוע במקום תוצר אמיתי. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים.";
+var NO_MODEL = "אין כרגע חיבור למודל, ולכן לא הופק תוצר. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים.";
 function setAIStatus(status){
   const chip = document.getElementById("aiStatusChip");
   if (!chip) return;
-  chip.className = "ai-status " + status;
+  chip.className = "ai-status sbe-sysonly " + status;
   const dot = '<span class="dot"></span> ';
   if (status === "ok") chip.innerHTML = dot + "AI פעיל";
   else if (status === "mock") chip.innerHTML = dot + "מצב הדגמה: אין חיבור למודל כרגע";
@@ -897,7 +893,7 @@ function render() {
       // גם כשיש hint מותאם — ראו ההערה המלאה ב-input-screen.html (22/09/2026).
       if (f.req) lab.append(el("span",{class:"reqmark"}, " · שדה עיקרי"));
       else if (f.noAutoFill) lab.append(el("span",{class:"hint"}, " · רשות — לא תמולא אוטומטית, אך המערכת תתחשב במה שתכתבי בה"));
-      else lab.append(el("span",{class:"hint"}, " · רשות: תמולא על-ידי המערכת אם תישאר ריקה"));
+      else lab.append(el("span",{class:"hint"}, " · אפשר להשאיר ריק"));
       if (f.hint) lab.append(el("span",{class:"hint"}, " · " + f.hint));
       wrap.append(lab);
 
@@ -1215,7 +1211,7 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
     // צריכה לדעת שזו לא הצעה שנוצרה במיוחד עבור המטרה שהיא כתבה (19/09/2026).
     if (hintEl) hintEl.textContent = out._mock
       ? "⚠ אין חיבור למודל כרגע. זו הצעת דוגמה קבועה (הדגמה), לא הצעה שנוצרה במיוחד עבור המטרה שכתבת."
-      : "ההצעות הופקו על ידי המודל, בהתאם למטרה ולניסוח ה-S.M.A.R.T שכתבת.";
+      : "";
   } finally { e.target.disabled = false; e.target.textContent = "מילוי הצעות"; }
 });
 
@@ -1716,7 +1712,7 @@ function setMode(m, updateUrl) {
   actionsSeq.style.display = m === "seq" ? "" : "none";
   // באנר "רובריקת הקריטריונים טיוטה" שייך לרובריקה של המפגש הבודד ושל הניתוח;
   // לרצף יש קריטריונים משלו (מהמסמך של המשתמשת), ולכן הוא לא מוצג שם.
-  document.getElementById("rubricNote").style.display = m === "seq" ? "none" : "";
+  
   if (m === "upload") document.body.style.paddingBottom = ""; else adjustActionsPadding();
   if (updateUrl) { try { const u = new URL(location.href); u.searchParams.set("mode", m); history.replaceState(null, "", u); } catch(e){} }
 }
@@ -1993,7 +1989,7 @@ function statusLabel(kind){
   if (kind === "req") return el("span", { class:"reqmark" }, " · שדה עיקרי");
   if (kind === "noauto") return el("span", { class:"hint" }, " · רשות — לא תמולא אוטומטית, אך המערכת תתחשב במה שתכתבי בה");
   if (kind === "short") return el("span", { class:"hint" }, " · רשות: תושלם אם ריקה");
-  return el("span", { class:"hint" }, " · רשות: תמולא על-ידי המערכת אם תישאר ריקה");
+  return el("span", { class:"hint" }, " · אפשר להשאיר ריק");
 }
 function labelFor(text, kind, hint){
   const lab = el("label");
@@ -2277,7 +2273,7 @@ function sessionEl(i){
   const subsBox = el("div");
   function buildSubs(){
     subsBox.textContent = "";
-    subsBox.append(el("div", { class:"subs-h" }, "תת-פעילויות · רשות: תושלמנה על-ידי המערכת אם תישארנה ריקות · לכל אחת משך משלה"));
+    subsBox.append(el("div", { class:"subs-h" }, "תת-פעילויות"));
     s.subs.forEach((sb, j) => {
       const row = el("div", { class:"sub-row" });
       const tp = P + ".subs." + j + ".t", mp = P + ".subs." + j + ".min";
@@ -2416,7 +2412,6 @@ function renderSeq(){
   });
   sessWrap.append(addS);
   const ss = grp("רצף המפגשים", isOpen("sess", true), [
-    el("p", { class:"note", style:"margin:0;" }, "כל מפגש נפתח ונסגר בלחיצה על הכותרת. בכותרת: תחילת היעד ובדיקת הזמן (מתוכנן/מוגדר)."),
     sessWrap,
   ]);
   ss.dataset.g = "sess";
@@ -2555,7 +2550,8 @@ function docHeader(kind, title){
 <div class="credit">${SBE_CREDIT_HTML} · ${esc(fmtDate(today()))}</div>`;
 }
 function smartSentence(s){ return smartLines(s.smart); }
-function seqDocHTML(narr){
+// attach: המקורות בתוך המסמך (09/10/2026: "רשימת המקורות לא תהיה פתוחה"). בלי attach הם רק בכפתור "📚 מקורות" בחלון התוצר.
+function seqDocHTML(narr, attach){
   const title = str(seq.topic) || "תכנון רצף מפגשים";
   let h = docHeader("תכנון רצף מפגשים", title);
   if (narr && narr.paragraphs && narr.paragraphs.length) {
@@ -2597,7 +2593,7 @@ function seqDocHTML(narr){
         h += `<table class="flow"><thead><tr><th>תיאור הפעילות</th>${hasRes ? "<th>עזרים ומשאבים</th>" : ""}</tr></thead><tbody>${rows.map(([t, m, c]) =>
           `<tr class="ph"><th colspan="${hasRes ? 2 : 1}">${t}${str(m) ? " · " + esc(str(m)) : ""}</th></tr><tr><td>${c}</td>${hasRes ? `<td>${t === "פעילות מרכזית" ? nl(s.resources) : "—"}</td>` : ""}</tr>`).join("")}</tbody></table>`; }
       const ss = narr && narr.sessionSources ? narr.sessionSources[i + 1] : null;
-      const end = [["תוצר המפגש והערכתו", str(s.product) ? nl(s.product) : ""], ["משאבים ועזרים", str(s.resources) && !rows.some(r => r[0] === "פעילות מרכזית") ? nl(s.resources) : ""], ["מקורות להרחבה", ss && ss.length ? sourceList(ss) : ""]].filter(x => x[1]);
+      const end = [["תוצר המפגש והערכתו", str(s.product) ? nl(s.product) : ""], ["משאבים ועזרים", str(s.resources) && !rows.some(r => r[0] === "פעילות מרכזית") ? nl(s.resources) : ""], ["מקורות להרחבה", attach && ss && ss.length ? sourceList(ss) : ""]].filter(x => x[1]);
       if (end.length) h += `<table class="end"><thead><tr>${end.map(x => `<th>${x[0]}</th>`).join("")}</tr></thead><tbody><tr>${end.map(x => `<td>${x[1]}</td>`).join("")}</tr></tbody></table>`;
       h += `</section>`;
     });
@@ -2606,17 +2602,31 @@ function seqDocHTML(narr){
   const overall = narr && narr.overallSources ? narr.overallSources : [];
   const libLinks = [...seq.approaches, str(seq.domain)].filter(Boolean)
     .map(q => `<a href="${LIB_URL}?q=${encodeURIComponent(q)}">${esc(q)}</a>`);
-  if (overall.length || libLinks.length) {
+  if (attach && (overall.length || libLinks.length)) {
     h += `<h2>מקורות להרחבה לרצף כולו</h2>`;
     if (overall.length) h += sourceList(overall);
     if (libLinks.length) h += `<p class="note">חיפוש נוסף בספריית המקורות המאומתת של Begood: ${libLinks.join(" · ")}</p>`;
-    h += `<p class="note">המקורות נבחרו מתוך ספריית המקורות המאומתת בלבד. המערכת אינה כותבת מקורות משלה.</p>`;
   }
   h += `<div class="ft">${SBE_CREDIT_HTML} · ${esc(fmtDate(today()))}</div>`;
   return docShell(title, h);
 }
 // המסמך נפתח גם כקובץ שמור, לכן קישור מלא ולא יחסי
 const LIB_URL = new URL("sources-library.html", location.href).href;
+// המקורות של הרצף במסך: סעיף סגור עם "צירוף המקורות לקובץ" (SBE_REFS.fold)
+function seqRefsPanel(narr, onAttach){
+  if (!window.SBE_REFS || !narr) return null;
+  const parts = [], per = narr.sessionSources || {};
+  Object.keys(per).sort((a, b) => a - b).forEach(n => { if (per[n] && per[n].length) parts.push(["מפגש " + n, per[n]]); });
+  if (narr.overallSources && narr.overallSources.length) parts.push(["לרצף כולו", narr.overallSources]);
+  const count = parts.reduce((t, x) => t + x[1].length, 0);
+  if (!count) return null;
+  const sec = el("section");
+  sec.append(el("h3", {}, "מקורות להרחבה"));
+  parts.forEach(([t, arr]) => { const box = el("div"); box.innerHTML = "<b>" + esc(t) + "</b>" + sourceList(arr); sec.append(box); });
+  const f = SBE_REFS.fold(sec, count);
+  f.querySelector(".refs-attach").addEventListener("click", () => onAttach(f.classList.contains("attach")));
+  return f;
+}
 function sourceList(arr){
   return `<ul>${arr.map(x => {
     const href = x.linkOk !== false && x.url ? x.url : x.scholar;
@@ -2943,7 +2953,7 @@ document.getElementById("bSeqFill").addEventListener("click", async (e) => {
     }
     setAIStatus("mock");
     const body = el("div");
-    body.append(mockNote("אין חיבור למודל כרגע: השלמת נתונים דורשת מודל אמיתי, והמערכת לא ממלאת את התכנון שלך בתוכן קבוע שלא נכתב עבורו."),
+    body.append(mockNote("אין כרגע חיבור למודל, ולכן הנתונים לא הושלמו. מה שמילאת נשמר, ואפשר לנסות שוב בעוד דקה או שתיים."),
       el("p", {}, "מה שמילאת נשמר, ואפשר לנסות שוב בעוד רגע."));
     // דוגמה — רק למנהלת המערכת (08/10/2026)
     const sys = document.documentElement.classList.contains("sbe-sys");
@@ -3031,12 +3041,14 @@ document.getElementById("bSeqBuild").addEventListener("click", async (e) => {
   catch (err) { console.warn("פתיחה נרטיבית לא זמינה:", err.message); setAIStatus("mock"); }
   finally { done(); }
   if (!narr) return seqDialog("הפקת התוצר", el("p", {}, NO_MODEL));
-  const html = seqDocHTML(narr);
+  let html = seqDocHTML(narr, false);
   const body = el("div");
   if (!narr) body.append(mockNote("אין חיבור למודל כרגע. המסמך נבנה מהשדות כפי שמולאו, בלי פסקאות הפתיחה (״על הרצף״) שהמודל כותב."));
   const fr = frameOf(html);
   body.append(fr, el("p", { class:"savenote" },
     "אפשר לסגור, לערוך כל שדה ולהפיק מחדש. התוצר כאן הוא תמיד הגרסה האחרונה. מרוצה? שמרי, הדפיסי או העבירי."));
+  const refs = seqRefsPanel(narr, on => { html = seqDocHTML(narr, on); fr.srcdoc = html; });
+  if (refs) body.append(refs);
   const sysBtn = btn("שמירה במערכת", () => {
     try {
       const list = JSON.parse(localStorage.getItem(SAVED_KEY) || "[]");
@@ -3056,7 +3068,7 @@ document.getElementById("bSeqBuild").addEventListener("click", async (e) => {
   seqDialog("תוצר: תכנון רצף מפגשים", body, [
     btn("הדפסה / שמירה כ-PDF", () => printFrame(fr), "primary"),
     sysBtn,
-    btn("שמירה למחשב", () => downloadHTML(fname, html)),
+    btn("שמירה למחשב", () => downloadHTML(fname, html)), // html מתעדכן כשבוחרים לצרף מקורות
     mailBtn,
   ], true);
 });

@@ -26,7 +26,7 @@ const UNDER_LIST = (label) => ({ type:'array', items:STR, description:'מוצג 
 const FACIL_LABELS = {preparation:'לפני המפגש: הכנה וחזרה',opening:'פתיחה והסכמות',participation:'הזמנת השתתפות',questions:'שאלות והקשבה',difficulties:'שתיקה, התנגדות או מחלוקת',closing:'סיכום: מה שואלים בסוף ואיך מסיימים',followUp:'המשך ולמידה מההנחיה'};
 const MECH_LABELS = {name:'שם המנגנון',cadence:'מתי ובאיזו תדירות?',roles:'מי אחראית, מי שותף ומי מגבה?',participation:'איך משתתפים ומשפיעים?',firstAction:'הפעולה הראשונה',review:'מתי ואיך בודקים ומשפרים?',mechanism:'איך המנגנון מתרגל את מוקד החוסן?'};
 const LEARN_LABELS = {mechanism:'איך הפעילות אמורה לעבוד (השערת התכנון)',apply:'איך מיישמים במפגש',watchFor:'מה נראה בפועל אם המנגנון פועל',limits:'גבולות: מה הפעילות אינה, ומתי עוצרים'};
-const stepSchema = object({ id:STR, title:STR, phase:{type:'string',enum:['פתיחה','פעילות מרכזית','סיכום','אחרי המפגש'],description:'החלק במפגש שאליו השלב שייך. כל מפגש: פתיחה, פעילות מרכזית (אפשר כמה שלבים ברצף), סיכום, ולפעמים משהו אחרי המפגש.'}, minutes:{type:'number'}, instructions:UNDER('תיאור הפעילות','מה קורה בשלב: מי עושה, מה עושים, עם מה, ומה יוצא בסוף. משפטים קצרים ופשוטים.'), facilitation:UNDER('הנחיה למנחה','מה המנחה אומר/ת ועושה בשלב הזה: משפט פתיחה במרכאות, ושאלות שהמנחה שואל/ת את הקבוצה עם המטרה שלהן (למשל "כדי שכל אחד יבחר תפקיד, שואלים: ...").'), space:UNDER('עזרים ומשאבים','סידור המרחב בשלב הזה.'),
+const stepSchema = object({ id:STR, title:STR, phase:{type:'string',enum:['פתיחה','פעילות מרכזית','סיכום','אחרי המפגש'],description:'החלק במפגש שאליו השלב שייך. כל מפגש: פתיחה, פעילות מרכזית (אפשר כמה שלבים ברצף), סיכום, ולפעמים משהו אחרי המפגש.'}, minutes:{type:'number',description:'משך השלב בדקות, מספר שלם וחיובי. בשלב "אחרי המפגש" אפשר 0, והוא לא נספר בזמן המפגש. סך הדקות של שלבי המפגש לא עובר את הזמן הזמין.'}, instructions:UNDER('תיאור הפעילות','מה קורה בשלב: מי עושה, מה עושים, עם מה, ומה יוצא בסוף. משפטים קצרים ופשוטים.'), facilitation:UNDER('הנחיה למנחה','מה המנחה אומר/ת ועושה בשלב הזה: משפט פתיחה במרכאות, ושאלות שהמנחה שואל/ת את הקבוצה עם המטרה שלהן (למשל "כדי שכל אחד יבחר תפקיד, שואלים: ...").'), space:UNDER('עזרים ומשאבים','סידור המרחב בשלב הזה.'),
   materials:strings, components:{type:'array',items:focus}, individualSkills:strings, sharedSkills:strings });
 const sessionSchema = object({ id:STR, title:STR, purpose:UNDER('מטרת המפגש','משפט קצר אחד של פעולה ותוצר, למשל "לנסח אמנה לעזרה הדדית בכיתה". לא רשימת מושגים.'), link:UNDER('קשר לתהליך'),
   steps:{type:'array',items:stepSchema}, debrief:{type:'array',items:STR,description:'שאלות שהמנחה שואל/ת את כל הקבוצה בסיכום המפגש, כדי לחשוב יחד מה עבד ומה ננסה בפעם הבאה. מוצגות בעמודה "הנחיה למנחה" של הסיכום. כל שאלה מובנת בלי הסבר נוסף ואומרת על מה בדיוק שואלים, למשל "מה עזר לנו לסיים את התכנית בזמן?", ולא "איזו דרך השתתפות אפשרה לרעיון נוסף להיכנס?".'}, nextStep:UNDER('אחרי המפגש','פעולה אחת ברורה אחרי המפגש: מי עושה, מה ומתי.'), participantMaterials:UNDER('חומרי המשתתפים','מה המשתתפים מקבלים ומה עושים בו, במילים פשוטות כמו שמסבירים בכיתה. למשל: "הכיתה מקבלת משימה לתכנן מיפוי של עזרה הדדית בקהילה. בדף המשימה מתכננים את הפעילות כך שלכל אחת ואחד יהיה תפקיד." אחר כך, אם צריך, מה כתוב בדף בכמה שורות קצרות. בלי מונחים מופשטים ובלי שרשרת שאלות.') });
@@ -363,23 +363,30 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
   }
   if(result.clarificationQuestions.length) return [422,{error:'יש לנו כמה שאלות קצרות לפני שבונים את הפעילות.',
     questions:result.clarificationQuestions.map(q=>q.trim()).filter(Boolean),focus:result.focus,rationale:result.selectionReason}];
-  const errors=kitErrors(result,brief,action,available);
+  // בדיקה ותיקון אחד (09/10/2026: "לוודא שלא תחזור תקלה כזאת"): ערכה שלא עברה את הבדיקה חוזרת פעם אחת
+  // למודל עם רשימת הבעיות, לפני שמציגים הודעת שגיאה.
+  const ask=async(instructions,text,schema,name)=>{
+    try {
+      const r=await fetchImpl('https://api.openai.com/v1/responses',{method:'POST',
+        headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},
+        body:JSON.stringify({model,reasoning:{effort},store:false,instructions,input:[{role:'user',content:[{type:'input_text',text}]}],
+          text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});
+      if(!r.ok) return null;
+      const out=await r.json();
+      if(!out || out.status!=='completed' || !Array.isArray(out.output)) return null;
+      const v=JSON.parse(out.output.flatMap(item=>Array.isArray(item?.content)?item.content:[]).filter(c=>c.type==='output_text').map(c=>c.text).join(''));
+      return matchesSchema(v,schema)?v:null;
+    } catch { return null; }
+  };
+  let errors=kitErrors(result,brief,action,available);
+  if(errors.length) {
+    const repaired=await ask(INVITE.apply(INSTRUCTIONS)+'\nהגרסה הקודמת לא עברה את הבדיקה. תקני בדיוק את הבעיות האלה, ושמרי את כל השאר כפי שהוא: '+errors.join('; '),
+      JSON.stringify({...input,previousDraft:result,validationErrors:errors}),ACTIVITY_SCHEMA,'studio_activity');
+    if(repaired && !repaired.clarificationQuestions.length && !kitErrors(repaired,brief,action,available).length) { result=repaired; errors=[]; }
+  }
   if(errors.length) return [422,{error:'הערכה דורשת תיקון לפני שימוש: '+errors.join('; ')}];
   let review=null;
   if(process.env.STUDIO_CUSTOMER_REVIEW!=='off') {
-    const ask=async(instructions,text,schema,name)=>{
-      try {
-        const r=await fetchImpl('https://api.openai.com/v1/responses',{method:'POST',
-          headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},
-          body:JSON.stringify({model,reasoning:{effort},store:false,instructions,input:[{role:'user',content:[{type:'input_text',text}]}],
-            text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});
-        if(!r.ok) return null;
-        const out=await r.json();
-        if(!out || out.status!=='completed' || !Array.isArray(out.output)) return null;
-        const v=JSON.parse(out.output.flatMap(item=>Array.isArray(item?.content)?item.content:[]).filter(c=>c.type==='output_text').map(c=>c.text).join(''));
-        return matchesSchema(v,schema)?v:null;
-      } catch { return null; }
-    };
     review=await ask(INVITE.apply(CUSTOMER.system),'מה ביקשתי (הקלט):\n'+JSON.stringify(brief)+'\n\nהתוצר שקיבלתי:\n'+kitText(result),CUSTOMER.schema,'customer_review');
     if(review && !review.ready && review.issues.length) {
       const fixed=await ask(INVITE.apply(INSTRUCTIONS)+'\n'+CUSTOMER.reviseNote(review.issues),

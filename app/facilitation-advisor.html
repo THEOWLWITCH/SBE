@@ -204,7 +204,7 @@ ul.tl li{margin:.25rem 0}
 <div class="wrap">
   <!-- מצב החיבור למודל — רק למנהלת המערכת (sbe-sysonly, access-guard.js) -->
   <div class="banner sbe-sysonly">
-    <span class="ai-status unknown" id="aiStatusChip"><span class="dot"></span> בודקת חיבור למודל...</span>
+    <span class="ai-status unknown sbe-sysonly" id="aiStatusChip"><span class="dot"></span> בודקת חיבור למודל...</span>
   </div>
 
   <div class="card" id="intro-card">
@@ -587,7 +587,7 @@ function renderGuide(){
     doc.appendChild(el('h3',null,'שאלות לעצמך אחרי המפגש'));
     const ul=el('ul','tl');d.reflect.forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));ul.appendChild(li);});doc.appendChild(ul);
   }
-  doc.appendChild(el('p','muted','ננה מציעה, ואת/ה מחליט/ה: המדריך הוא נקודת פתיחה שמתאימים לקבוצה שלך. המקורות מופיעים בסוף המסמך.'));
+  doc.appendChild(el('p','muted','ננה מציעה, ואת/ה מחליט/ה: המדריך הוא נקודת פתיחה שמתאימים לקבוצה שלך. המקורות בכפתור "📚 מקורות" בסוף המסמך, ואפשר לבחור לצרף אותם לקובץ.'));
   {const rs=SBE_REFS.end();if(rs)doc.appendChild(rs);}
   card.appendChild(window.SBE_DOC?SBE_DOC.editable(doc):doc);
   g.appendChild(card);

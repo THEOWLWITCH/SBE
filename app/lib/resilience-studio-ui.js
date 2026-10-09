@@ -351,7 +351,6 @@
       const grid=el('div','field-grid');grid.append(sourceField(source,'שם המקור','name'));
       const roleLabel=el('label','','לשם מה הוא מצורף?'), role=el('select');[['context','תיאור מצב / הקשר'],['inspiration','השראה']].forEach(([value,text])=>{const option=el('option','',text);option.value=value;role.append(option);});role.value=source.role;role.addEventListener('change',()=>{source.role=role.value;markBriefChanged('source');});roleLabel.append(role);grid.append(roleLabel,sourceField(source,'קישור, אם יש','url',{type:'url'}),sourceField(source,'תאריך / תקופה','date'),sourceField(source,'היקף המקור','scope'),sourceField(source,'האוכלוסייה שאליה הוא מתייחס','population'));n.append(grid,sourceField(source,'התוכן הרלוונטי שנמסר לנו','content',{multiline:true,rows:3}),el('p','source-read-note','המקור צורף על ידכם וטרם נבדק מקצועית. קישור לבדו אינו נקרא; תוכן שסיפקתם ישמש כהקשר או כהשראה בלבד.'));box.append(n);
     });
-    if(!state.brief.sources.length)box.append(el('p','muted','אפשר להתחיל גם מהתיאור שלכם, בלי מקור נוסף.'));
   }
   function mappingText(value) { if(value===null||value===undefined)return '';if(typeof value==='object')return Object.entries(value).map(([k,v])=>k+': '+(typeof v==='object'?JSON.stringify(v):v)).join(' · ');return String(value); }
   function renderMapping() {
@@ -435,7 +434,7 @@
       (session.steps||[]).forEach((step,sti)=>{
         const st=el('article','step-card');st.id=prefix+'-'+step.id;const sh=el('div','section-head');sh.append(el('span','step-code','שלב '+(sti+1)),button('מחיקת שלב',()=>{prepareActivityEdit(isCandidate);session.steps.splice(sti,1);persist();renderActivityEditor(activity,brief,host,isCandidate);renderValidation(isCandidate);updateControls();renderCoach();},'btn danger small'));st.append(sh,button('שאלות ושיפור לשלב',()=>openCoach('step',step,isCandidate)));
         const fields=el('div','step-fields');const ph=el('label','','חלק במפגש');const phs=document.createElement('select');phs.setAttribute('data-closed','');D.STEP_PHASES.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;phs.append(o);});phs.value=D.STEP_PHASES.includes(step.phase)?step.phase:'פעילות מרכזית';phs.addEventListener('change',()=>{prepareActivityEdit(isCandidate);step.phase=phs.value;persist();});ph.append(phs);
-        fields.append(ph,editField(step,'שם השלב','title',isCandidate),editField(step,'דקות','minutes',isCandidate,{type:'number',min:1}));st.append(fields,editField(step,'תיאור הפעילות','instructions',isCandidate,{multiline:true,rows:3}),editField(step,'הנחיה למנחה: מה אומרים ומה שואלים','facilitation',isCandidate,{multiline:true,rows:2}),editField(step,'עזרים ומשאבים: סידור המרחב','space',isCandidate));
+        fields.append(ph,editField(step,'שם השלב','title',isCandidate),editField(step,'דקות','minutes',isCandidate,{type:'number',min:step.phase==='אחרי המפגש'?0:1}));st.append(fields,editField(step,'תיאור הפעילות','instructions',isCandidate,{multiline:true,rows:3}),editField(step,'הנחיה למנחה: מה אומרים ומה שואלים','facilitation',isCandidate,{multiline:true,rows:2}),editField(step,'עזרים ומשאבים: סידור המרחב','space',isCandidate));
         const review=el('div','privacy-note');review.dataset.reviewStep=step.id;review.hidden=!step.requiresReview;review.append(el('p','','המטרה או ההוראות השתנו. בדקו את רכיבי החוסן והמיומנויות של השלב לפני שיוצגו שוב כיעדי תרגול.'),button('אישור יעדי התרגול של השלב',()=>{step.requiresReview=false;persist();refreshClaims(isCandidate);refreshReviewControls(isCandidate);renderValidation(isCandidate);updateControls();}));st.append(review);
         const details=el('details');details.append(el('summary','','רכיבים, מיומנויות וחומרים של השלב'));const componentChecks=el('div','step-components');
         D.COMPONENTS.forEach(c=>{const label=el('label','component-check'),check=el('input');check.type='checkbox';check.checked=(step.components||[]).includes(c.id);check.addEventListener('change',()=>{prepareActivityEdit(isCandidate);step.components=check.checked?[...new Set([...(step.components||[]),c.id])]:(step.components||[]).filter(id=>id!==c.id);persist();refreshClaims(isCandidate);renderValidation(isCandidate);});label.append(check,document.createTextNode(c.label));componentChecks.append(label);});details.append(el('h4','','רכיבים שהשלב מתרגל בפועל'),componentChecks,editArray(step,'מיומנויות אישיות: מיומנות אחת בשורה','individualSkills',isCandidate),editArray(step,'מיומנויות משותפות: מיומנות אחת בשורה','sharedSkills',isCandidate),editArray(step,'חומרים לשלב: פריט אחד בשורה','materials',isCandidate));st.append(details);n.append(st);
@@ -564,7 +563,7 @@
     } else if(String(a.participationAlternative||'').trim()) n.append(table('kit-two',null,[['דרכים להשתתף ללא חשיפה אישית',rich(a.participationAlternative)]]));
     (a.sessions||[]).forEach((session,si)=>{
       const block=el('section','kit-session');
-      const mins=(session.steps||[]).reduce((t,x)=>t+(Number(x.minutes)||0),0);
+      const mins=(session.steps||[]).reduce((t,x)=>t+(x.phase==='אחרי המפגש'?0:(Number(x.minutes)||0)),0);
       block.append(el('h2','kit-h','מפגש '+(si+1)+': '+(session.title||'')+(mins&&!participantOnly?' · '+mins+' דקות':'')));
       const sub=el('p','kit-sub');sub.append(el('b','','מטרת המפגש: '),document.createTextNode(session.purpose||'—'));if(session.link&&!participantOnly){sub.append(document.createTextNode(' · '));sub.append(el('b','','קשר לתהליך: '),document.createTextNode(session.link));}block.append(sub);
       // מהלך המפגש (08/10/2026): פתיחה · פעילות מרכזית · סיכום · אחרי המפגש, בשלוש עמודות:
@@ -677,7 +676,7 @@
         if(handoff&&typeof handoff.id==='string'&&typeof handoff.key==='string'){mappingCredentials={id:handoff.id,key:handoff.key,round:handoff.round==='latest'?'latest':Number(handoff.round)||'latest'};}
       }catch{}
       render();goStep(state.activity?3:state.recommendation?2:1,true);if(mappingCredentials)await loadMapping();
-    }catch(e){error('לא הצלחנו לבדוק את ההרשאה לפתיחת העבודה: '+e.message);$('saved-work-list').replaceChildren(el('p','muted','העבודות השמורות יוצגו לאחר בדיקת הרשאה מוצלחת.'));}
+    }catch(e){error('לא הצלחנו לבדוק את ההרשאה לפתיחת העבודה: '+e.message);$('saved-work-list').replaceChildren(el('p','muted','כדי לראות את העבודות השמורות, אפשר לרענן את הדף בעוד רגע.'));}
   }
   function snapshotFromWork(value) {const s=readWork(value,false);return {brief:s.brief,activity:s.activity,activityBrief:s.activityBrief,versions:s.versions,ideas:s.ideas,variants:s.variants,mapping:s.mapping,currentId:s.currentId,coach:s.coach};}
   initialize();

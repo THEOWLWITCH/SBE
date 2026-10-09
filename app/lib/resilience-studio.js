@@ -93,8 +93,10 @@
       (session.steps||[]).forEach(step=>{
         if (!step.id || ids.has(step.id)) errors.push('מזהי שלבים אינם ייחודיים');
         ids.add(step.id);
-        if (!Number.isFinite(step.minutes)||step.minutes<=0) errors.push('משך שלב אינו תקין');
-        minutes+=Number(step.minutes)||0;
+        // "אחרי המפגש" קורה מחוץ למפגש: אפשר 0 דקות, ולא נספר בזמן המפגש (09/10/2026, תקלה בהפקה)
+        const after=step.phase==='אחרי המפגש', m=Number(step.minutes);
+        if (!Number.isFinite(m)||m<0||(!after&&m===0)) errors.push('משך שלב אינו תקין');
+        if (!after) minutes+=Number.isFinite(m)?m:0;
         if (!step.title||!step.instructions) errors.push('חסרות הוראות שלב');
         if (step.requiresReview) errors.push('נדרשת בדיקה מחודשת של רכיבים ומיומנויות לאחר שינוי המטרה או ההוראות');
         for(const f of ['materials','components','individualSkills','sharedSkills']) if(!Array.isArray(step[f])) errors.push('חסר מיפוי '+f);
