@@ -12,21 +12,21 @@
 <!-- מפת הכלים (10/10/2026): דף ציבורי. "מה תרצו לעשות?" ← המלצה ממה להתחיל ומה בהמשך, על נהר בסגנון הלוגו. בלי מודל ובלי כניסה. -->
 <style>
 :root{
-  --navy:#0B3A6B; --blue:#1C6FA8; --teal:#1A9BB5; --aqua:#7FD0DE; --green:#3A9E6B; --leaf:#8CC63F; --sun:#FFC95C; --sun-soft:#FFF1CF; --earth1:#B98B5F; --earth2:#7E5A3C; --earth-line:#D9B48A; --land-soft:rgba(140,198,63,.18); --sand:#EAD9B0; --meadow1:#B9DD8A; --meadow2:#7FC07A; --grass-line:#4E9A55;
+  --navy:#0B3A6B; --blue:#1C6FA8; --teal:#1A9BB5; --aqua:#7FD0DE; --green:#3A9E6B; --leaf:#8CC63F; --sun:#FFC95C; --sun-soft:#FFF1CF; --earth1:#B98B5F; --earth2:#7E5A3C; --earth-line:#D9B48A; --land-soft:rgba(140,198,63,.18); --sand:#EAD9B0; --deep1:#163F5C; --deep2:#3B7F9E; --deep3:#A9D8E4; --meadow1:#B9DD8A; --meadow2:#7FC07A; --grass-line:#4E9A55;
   --ink:#10283F; --muted:#56697A; --paper:#FFFFFF; --card:rgba(255,255,255,.82); --line:rgba(16,40,63,.12);
   --sky1:#F4FBFD; --sky2:#E3F3F7; --dawn:#FFF6E2; --hill1:#CFEBE0; --hill2:#B5DFE8; --fade:.34;
   --shadow:0 10px 30px rgba(11,58,107,.12);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --navy:#9CC8F0; --blue:#6FB3E6; --teal:#5CCBDD; --aqua:#2E7F90; --green:#6CC895; --leaf:#A7DB66; --sun:#FFD27A; --sun-soft:#3A3220; --earth1:#8A6A4C; --earth2:#5A4130; --earth-line:#A9845F; --land-soft:rgba(108,200,149,.12); --sand:#8C7B57; --meadow1:#3F6B3A; --meadow2:#2C5233; --grass-line:#7CC07F;
+    --navy:#9CC8F0; --blue:#6FB3E6; --teal:#5CCBDD; --aqua:#2E7F90; --green:#6CC895; --leaf:#A7DB66; --sun:#FFD27A; --sun-soft:#3A3220; --earth1:#8A6A4C; --earth2:#5A4130; --earth-line:#A9845F; --land-soft:rgba(108,200,149,.12); --sand:#8C7B57; --deep1:#04101A; --deep2:#0E2A3D; --deep3:#1D4A5C; --meadow1:#3F6B3A; --meadow2:#2C5233; --grass-line:#7CC07F;
     --ink:#E6EEF5; --muted:#9DB0C0; --paper:#0E1A26; --card:rgba(20,36,52,.86); --line:rgba(230,238,245,.14);
     --sky1:#0B1622; --sky2:#10263A; --dawn:#2A2618; --hill1:#163A33; --hill2:#14384A; --fade:.28;
     --shadow:0 10px 30px rgba(0,0,0,.45);
   }
 }
 :root[data-theme="dark"]{
-  --navy:#9CC8F0; --blue:#6FB3E6; --teal:#5CCBDD; --aqua:#2E7F90; --green:#6CC895; --leaf:#A7DB66; --sun:#FFD27A; --sun-soft:#3A3220; --earth1:#8A6A4C; --earth2:#5A4130; --earth-line:#A9845F; --land-soft:rgba(108,200,149,.12); --sand:#8C7B57; --meadow1:#3F6B3A; --meadow2:#2C5233; --grass-line:#7CC07F;
+  --navy:#9CC8F0; --blue:#6FB3E6; --teal:#5CCBDD; --aqua:#2E7F90; --green:#6CC895; --leaf:#A7DB66; --sun:#FFD27A; --sun-soft:#3A3220; --earth1:#8A6A4C; --earth2:#5A4130; --earth-line:#A9845F; --land-soft:rgba(108,200,149,.12); --sand:#8C7B57; --deep1:#04101A; --deep2:#0E2A3D; --deep3:#1D4A5C; --meadow1:#3F6B3A; --meadow2:#2C5233; --grass-line:#7CC07F;
   --ink:#E6EEF5; --muted:#9DB0C0; --paper:#0E1A26; --card:rgba(20,36,52,.86); --line:rgba(230,238,245,.14);
   --sky1:#0B1622; --sky2:#10263A; --dawn:#2A2618; --hill1:#163A33; --hill2:#14384A; --fade:.28;
   --shadow:0 10px 30px rgba(0,0,0,.45);
@@ -340,8 +340,13 @@ footer a{margin:0 6px}
       '<linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--teal)"/><stop offset="1" stop-color="var(--blue)"/></linearGradient>';
     svg.appendChild(defs);
     // שמש וגבעות
-    L.hills.forEach((d, i) => svg.appendChild(S('path', { d, fill: i ? 'url(#h2)' : 'url(#h1)' })));
+    // עומק המים (10/10/2026: "הצבע הכהה יהיה למטה, והוא ילך ויתבהר לכיוון הקרקע")
+    const dg = S('linearGradient', { id: 'depth', x1: m === 'wide' ? '.9' : '.5', y1: '1', x2: m === 'wide' ? '.1' : '.5', y2: '0' });
+    [['0', 'var(--deep1)', '1'], ['.4', 'var(--deep2)', '.85'], ['.75', 'var(--deep3)', '.35'], ['1', 'var(--deep3)', '0']].forEach(([o, c, a]) => dg.appendChild(S('stop', { offset: o, 'stop-color': c, 'stop-opacity': a })));
+    defs.appendChild(dg);
+    svg.appendChild(S('rect', { x: 0, y: 0, width: L.w, height: L.h, fill: 'url(#depth)' }));
     // הנהר: פס רחב, ועליו זרם בהיר שזורם
+    svg.appendChild(S('path', { d: L.river, fill: 'none', stroke: '#fff', 'stroke-opacity': '.35', 'stroke-width': (m === 'wide' ? 26 : 22) + 6, 'stroke-linecap': 'round' }));
     svg.appendChild(S('path', { d: L.river, fill: 'none', stroke: 'url(#rv)', 'stroke-width': m === 'wide' ? 26 : 22, 'stroke-linecap': 'round', opacity: '.9' }));
     const probe = S('path', { d: L.river }); svg.appendChild(probe); probe.setAttribute('fill', 'none');
     waves(svg, probe, m === 'wide' ? 26 : 22);
@@ -349,7 +354,7 @@ footer a{margin:0 6px}
     // אתם כאן: שתי דמויות כמו בלוגו
     const [sx, sy] = L.start, me = S('g', { transform: 'translate(' + (sx - 30) + ',' + (sy - 78) + ')' });
     me.innerHTML = '<circle cx="14" cy="10" r="10" fill="url(#fg)"/><path d="M0 52 C 4 28, 24 26, 28 52 Z" fill="url(#fg)"/><circle cx="36" cy="22" r="7.5" fill="url(#wk)"/><path d="M26 54 C 29 36, 44 34, 47 54 Z" fill="url(#wk)"/>' +
-      '<text x="24" y="74" text-anchor="middle" font-family="Assistant" font-weight="800" font-size="15" fill="var(--navy)">אתם כאן</text>';
+      '<text x="24" y="74" text-anchor="middle" font-family="Assistant" font-weight="800" font-size="15" fill="#fff" stroke="var(--deep1)" stroke-width="4" paint-order="stroke">אתם כאן</text>';
     svg.appendChild(me);
     box.appendChild(svg);
     routeG = S('g'); svg.appendChild(routeG);
