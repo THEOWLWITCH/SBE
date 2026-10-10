@@ -107,6 +107,19 @@
     return [{ tool: tool, title: title, label: label, html: html, input: inp }];
   }
   // הפקה בתוך הדף: טוענים את הדוגמה של הכלי, מנקים תוצר קודם, ומחכים לתוצר — או לכפתור שחזר לפעול בלי תוצר (שגיאה)
+  // נוהל עבודה בכלים שלכם (SBE_PROC): בוחרים סוגי כלים, כותבים את הנוהל ומחכים לטבלאות
+  async function procDemo(root, tool, title, label, tools) {
+    if (!root) throw new Error("לא נמצא החלק נוהל עבודה");
+    root.querySelectorAll(".proc-tool").forEach(function (l) { var c = l.querySelector("input"); if (tools.some(function (t) { return l.textContent.indexOf(t) >= 0; }) && !c.checked) c.click(); });
+    var who = root.querySelector("select"); if (who && who.options[2]) { who.value = who.options[2].value; who.dispatchEvent(new Event("change", { bubbles: true })); }
+    var inp = "סוגי הכלים: " + tools.join(", ") + (who ? "\nמי משתמש: " + who.value : "");
+    var b = [].slice.call(root.querySelectorAll("button")).filter(function (x) { return /כתיבת הנוהל|כתיבה מחדש/.test(x.textContent); })[0]; click(b);
+    var doc = await waitFor(function () { var d = root.querySelector(".proc-doc .lvl"); if (d) return root.querySelector(".proc-doc");
+      var e = root.querySelector(".err:not([hidden])"); return e && e.textContent ? { fail: e.textContent } : null; }, 15 * 60e3, title);
+    if (doc.fail) throw new Error(doc.fail);
+    await sleep(600);
+    return [{ tool: tool, title: title, label: label, html: standalone(doc, title), input: inp }];
+  }
   async function inPage(tool, title, label, example, go, ready, capture, area) {
     click(example); await sleep(1200);
     var inp = inputSummary();
@@ -128,8 +141,31 @@
     "resilience-advisor.html": function () { return inPage("practi", "פרקטי: דוח לכיתה", "פרקטי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
     "leadership-advisor.html": function () { return inPage("nugi", "נוגי: דוח סיכום והמלצות", "נוגי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
     "facilitation-advisor.html": function () { return inPage("nana", "ננה: מדריך הנחיה", "ננה", "#btn-example", "#btn-go", "#guide-doc", "#guide-doc", "#guide"); },
-    "continuity-kit.html": function () { return inPage("continuity", "תיק רציפות", "תיק רציפות", "#example", "#go", "#kit .kit h2", "#kit", "#err1"); },
-    "routines-hub.html": function () { return inPage("routines", "מרכז שגרות: לוח ביצוע והסכם", "מרכז שגרות ויוזמות חברתיות", "#example", "#go", "#out2 .roles", "#out2", "#err1"); },
+    "continuity-kit.html": async function () {
+      var part = q.get("part");
+      var kit = await inPage("continuity", "תיק רציפות", "תיק רציפות", "#example", "#go", "#kit .kit h2", "#kit", "#err1");
+      if (!part) return kit;
+      if (part === "join") { // ערכת הצטרפות וחזרה (לשונית "הצטרפות וחזרה")
+        click('[data-tab="join"]'); await sleep(800);
+        var J = $('[data-pane="join"]'), sels = J.querySelectorAll("select");
+        if (sels[0]) { sels[0].value = sels[0].options[2] ? sels[0].options[2].value : sels[0].value; sels[0].dispatchEvent(new Event("change", { bubbles: true })); }
+        if (sels[1] && sels[1].options[2]) { sels[1].value = sels[1].options[2].value; sels[1].dispatchEvent(new Event("change", { bubbles: true })); }
+        var ta = J.querySelector("textarea"); if (ta) { ta.value = "חוזרים אחרי היעדרות ארוכה, ושמחים לקראתם."; ta.dispatchEvent(new Event("input", { bubbles: true })); }
+        var inp = inputSummary(J);
+        var jb = [].slice.call(J.querySelectorAll("button")).filter(function (b) { return /הכנת ערכת ההצטרפות/.test(b.textContent); })[0]; click(jb);
+        await waitFor(function () { return [].some.call(J.querySelectorAll("h3"), function (h) { return /תיק כניסה קבוצתי/.test(h.textContent); }) || null; }, 15 * 60e3, "ערכת ההצטרפות");
+        await sleep(800);
+        return [{ tool: "cont-join", title: "תיק רציפות: ערכת הצטרפות וחזרה", label: "הצטרפות וחזרה", html: standalone(J, "ערכת הצטרפות וחזרה"), input: inp }];
+      }
+      // נוהל עבודה בכלים שלכם (לשונית "נוהל עבודה")
+      click('[data-tab="proc"]'); await sleep(800);
+      return procDemo($('[data-pane="proc"]'), "cont-proc", "תיק רציפות: נוהל עבודה בכלים שלכם", "נוהל עבודה · תיק רציפות", ["תיקייה משותפת", "מערכת בית הספר", "קלסר"]);
+    },
+    "routines-hub.html": async function () {
+      var plan = await inPage("routines", "מרכז שגרות: לוח ביצוע והסכם", "מרכז שגרות ויוזמות חברתיות", "#example", "#go", "#out2 .roles", "#out2", "#err1");
+      if (q.get("part") !== "proc") return plan;
+      return procDemo($("#procR"), "routines-proc", "מרכז שגרות: נוהל עבודה בכלים שלכם", "נוהל עבודה · מרכז שגרות", ["גיליון משותף", "לוח מודפס"]);
+    },
     "family-bridge.html": function () { return inPage("bridge", "גשר בין הבית לכיתה: כרטיס בחירה", "גשר בין הבית לכיתה", "#example", "#go", "#out2 .card-family", "#out2", "#err1"); },
     "message-writer.html": function () { return inPage("writer", "כתיבה מקדמת חוסן: הודעה", "כתיבה מקדמת חוסן", "#rw-example", "#rw-go", "#rw-out .rw-new", "#rw-out", "#rw-err"); },
     "conversation-planner.html": function () { fillSample(); return dialogProduct("conv", "תכנון שיחה: התוצר", "תכנון שיחה", function () { click("#bBuild"); }); },
@@ -146,6 +182,15 @@
         return a.concat(b);
       }
       fillSample();
+      if (q.get("part") === "paths") { // מסלולי השתתפות בלמידה
+        await sleep(800); var box = $("#pathsSingle details.paths"); if (!box) throw new Error("לא נמצאה החלונית מסלולי השתתפות");
+        if (!box.open) box.querySelector("summary").click(); await sleep(600);
+        var inp = inputSummary();
+        var sb = [].slice.call(box.querySelectorAll("button")).filter(function (b) { return /הצעת מסלולים למטרה|הצעה חדשה למטרה/.test(b.textContent); })[0]; click(sb);
+        await waitFor(function () { if (box.querySelector(".pcard")) return true; var e = box.querySelector(".perr:not([hidden])"); if (e && e.textContent) throw new Error(e.textContent); return null; }, 15 * 60e3, "מסלולי ההשתתפות");
+        await sleep(800);
+        return [{ tool: "paths", title: "מסלולי השתתפות בלמידה", label: "מסלולי השתתפות · תכנון פעילות", html: standalone(box, "מסלולי השתתפות בלמידה"), input: inp }];
+      }
       return dialogProduct("act-single", "תכנון פעילות: מפגש אחד", "מפגש אחד", function () { click("#bBuild"); });
     },
     "academic-review.html": async function () {
@@ -266,8 +311,26 @@
     // תרגול עצמי בסימולציה (07/10/2026): התרחיש הראשון ← ארבעה תורות של אשת החינוך ← סיום ← השיחה והמשוב
     "practice.html": async function () {
       var card = await waitFor(".scenario-card", 30e3, "רשימת התרחישים");
-      var scName = (card.querySelector(".sc-name") || {}).textContent || "תרחיש";
-      card.click(); await sleep(600); click("#bStart");
+      var scName = (card.querySelector(".sc-name") || {}).textContent || "תרחיש", story = null, ownInput = "";
+      if (q.get("part") === "own") { // תרגול על מקרה משלך: המקרה, שאלות ההבהרה, הסיפור, ואז השיחה והמשוב
+        click("#bOwnCase"); await sleep(500);
+        setVal("ownStory", "אבא של תלמיד בכיתה ו׳ כתב לי שהבן שלו לא רוצה לבוא לבית הספר בגלל ילדים בכיתה, ומבקש להיפגש מחר אחרי הצהריים.");
+        setVal("ownRole", "מחנכת"); setVal("ownOther", "אבא של תלמיד"); setVal("ownGoal", "שנסכים על צעד אחד לשבוע הקרוב"); setVal("ownHard", "אני חוששת שהוא יאשים את בית הספר");
+        ownInput = inputSummary($("#own1"));
+        click("#ownNext");
+        var st = await waitFor(function () { if (!$("#own2").hidden) return "q"; if (!$("#own3").hidden) return "s"; var e = $("#ownErr"); return !e.hidden && e.textContent ? { fail: e.textContent } : null; }, 10 * 60e3, "שאלות ההבהרה");
+        if (st.fail) throw new Error(st.fail);
+        if (st === "q") {
+          document.querySelectorAll("#ownQs .own-q").forEach(function (w) { var o = w.querySelector(".own-opts button"); if (o) o.click(); else { var i = w.querySelector("input"); i.value = "לא ידוע לי"; i.dispatchEvent(new Event("input", { bubbles: true })); } });
+          ownInput += "\n" + [].map.call(document.querySelectorAll("#ownQs .own-q"), function (w) { return w.querySelector("b").textContent + " " + w.querySelector("input").value; }).join("\n");
+          click("#ownBuild");
+        }
+        var pv = await waitFor(function () { if (!$("#own3").hidden && $("#ownPreview .own-prev")) return true; var e = $("#ownErr"); return !e.hidden && e.textContent ? { fail: e.textContent } : null; }, 15 * 60e3, "הסיפור");
+        if (pv.fail) throw new Error(pv.fail);
+        story = $("#ownPreview").cloneNode(true); scName = ($("#ownPreview h3") || {}).textContent || "מקרה משלי";
+        click("#ownApprove"); await sleep(800);
+      } else card.click();
+      await sleep(600); click("#bStart");
       await waitFor(function () { var s = $("#screen-chat"); return s && !s.hidden && $("#transcript").children.length ? true : null; }, 120e3, "פתיחת השיחה");
       var lines = ["שלום, תודה שבאת. חשוב לי לשמוע איך את/ה רואה את מה שקרה.",
         "אני שומעת שזה מטריד אותך. מה הכי חשוב לך שיקרה עכשיו?",
@@ -283,9 +346,11 @@
       if ($("#screen-feedback").hidden) { var be = $("#bEndChat"); be.disabled = false; be.click(); }
       await waitFor(function () { return !$("#screen-feedback").hidden ? true : null; }, 30e3, "המשוב");
       var wrap = document.createElement("div");
+      if (story) { var h0 = document.createElement("h2"); h0.textContent = "הסיפור שאושר"; wrap.appendChild(h0); wrap.appendChild(story); }
       var h1 = document.createElement("h2"); h1.textContent = "השיחה: " + scName; wrap.appendChild(h1); wrap.appendChild($("#transcript").cloneNode(true));
       var h2 = document.createElement("h2"); h2.textContent = "המשוב"; wrap.appendChild(h2); wrap.appendChild($("#screen-feedback").cloneNode(true));
       wrap.querySelectorAll("[hidden]").forEach(function (x) { x.removeAttribute("hidden"); });
+      if (story) return [{ tool: "practice-own", title: "תרגול על מקרה משלך: " + scName, label: "תרגול עצמי · מקרה משלך", html: standalone(wrap, "תרגול על מקרה משלך: " + scName), input: ownInput + "\n\nתורות אשת החינוך:\n" + lines.join("\n") }];
       return [{ tool: "practice", title: "תרגול עצמי: " + scName, label: "תרגול עצמי בסימולציה", html: standalone(wrap, "תרגול עצמי: " + scName), input: "התרחיש: " + scName + "\nתורות אשת החינוך:\n" + lines.join("\n") }];
     },
     "input-screen.html": function () { return scenario("edu", "סימולציה: סטודנטים/ות"); },
