@@ -22,7 +22,8 @@
     facil: 'הנחיית קבוצות ושיח בכיתה',
     cont: 'רציפות, מסירה וגיבוי בצוות',
     routine: 'שגרות, מנגנונים חברתיים ויוזמות תלמידים',
-    family: 'שותפות עם משפחות'
+    family: 'שותפות עם משפחות',
+    paths: 'מסלולי השתתפות, בחירה ועדות ללמידה'
   };
   var S = [
     // ── ישראל ──
@@ -906,7 +907,72 @@
     {k:'Smith2020', g:'family', apa:'Smith, T. E., Sheridan, S. M., Kim, E. M., Park, S., & Beretvas, S. N. (2020). The effects of family-school partnership interventions on academic and social-emotional functioning: A meta-analysis exploring what works for whom. Educational Psychology Review, 32, 511–544.',
       url:'https://doi.org/10.1007/s10648-019-09509-w',
       gist:'שותפות בין משפחה לבית ספר שיפרה הישגים ותפקוד חברתי־רגשי, אצל ילדים מרקעים שונים. היא עבדה גם כשהמשפחות השתתפו בדרכים שונות ובמידות שונות.',
-      be:'יש יותר מדרך אחת להיות שותפים, וכל מידת מעורבות היא נקודת פתיחה לגיטימית.'}
+      be:'יש יותר מדרך אחת להיות שותפים, וכל מידת מעורבות היא נקודת פתיחה לגיטימית.'},
+    // ── מסלולי השתתפות, בחירה ועדות ללמידה (10/10/2026, למסלולי ההשתתפות בתכנון פעילות) ──
+    {k:'RoseMeyer2002', g:'paths', apa:'Rose, D. H., & Meyer, A. (2002). Teaching every student in the digital age: Universal design for learning. ASCD.',
+      url:'https://scholar.google.com/scholar?q=Rose+Meyer+2002+Teaching+every+student+in+the+digital+age',
+      gist:'עיצוב אוניברסלי ללמידה (UDL): במקום להתאים את התלמיד לשיעור, מתכננים מראש כמה דרכים להתעניין, לקבל מידע ולהביע הבנה, כך שהחסמים נמצאים בתכנון ולא בתלמיד.',
+      be:'מסלולי ההשתתפות מתוכננים מראש לכל הכיתה, ולא כהתאמה לתלמיד אחד.'},
+    {k:'Meyer2014', g:'paths', apa:'Meyer, A., Rose, D. H., & Gordon, D. (2014). Universal design for learning: Theory and practice. CAST Professional Publishing.',
+      url:'https://scholar.google.com/scholar?q=Meyer+Rose+Gordon+2014+Universal+design+for+learning+theory+and+practice',
+      gist:'מטרה ברורה היא הבסיס לגמישות: כשברור מה יעד הלמידה, אפשר לגוון את הדרכים להגיע אליו ולהראות אותו בלי לוותר על היעד.',
+      be:'המורה קובעת מה כולם מדגימים, ורק הדרך להדגים היא בבחירה.'},
+    {k:'Capp2017', g:'paths', apa:'Capp, M. J. (2017). The effectiveness of universal design for learning: A meta-analysis of literature between 2013 and 2016. International Journal of Inclusive Education, 21(8), 791–807.',
+      url:'https://doi.org/10.1080/13603116.2017.1325074',
+      gist:'סקירה של מחקרי UDL מצאה שהגישה משפרת את תהליך הלמידה של כל התלמידים, וממליצה למדוד יותר את ההשפעה על הישגים.',
+      be:'דף התצפית בודק עדות להבנה בכל מסלול, ולא רק אם התלמידים נהנו.'},
+    {k:'AlAzawei2016', g:'paths', apa:'Al-Azawei, A., Serenelli, F., & Lundqvist, K. (2016). Universal Design for Learning (UDL): A content analysis of peer-reviewed journal papers from 2012 to 2015. Journal of the Scholarship of Teaching and Learning, 16(3), 39–56.',
+      url:'https://doi.org/10.14434/josotl.v16i3.19295',
+      gist:'ניתוח של מחקרים על UDL מצא השפעה חיובית על למידה בהקשרים שונים, ומדגיש שהיישום דורש תכנון מכוון ובדיקה בכיתה.',
+      be:'אחרי השיעור בודקים מה אפשר השתתפות ולמידה, ובוחרים התאמה אחת לשיעור הבא.'},
+    {k:'Tomlinson2014', g:'paths', apa:'Tomlinson, C. A. (2014). The differentiated classroom: Responding to the needs of all learners (2nd ed.). ASCD.',
+      url:'https://scholar.google.com/scholar?q=Tomlinson+2014+The+differentiated+classroom',
+      gist:'הוראה מותאמת מגוונת תוכן, תהליך ותוצר לפי מוכנות, עניין ודרך למידה של התלמידים, סביב אותם יעדים מרכזיים.',
+      be:'אותה מטרה, כמה תהליכים ותוצרים אפשריים.'},
+    {k:'Patall2008', g:'paths', apa:'Patall, E. A., Cooper, H., & Robinson, J. C. (2008). The effects of choice on intrinsic motivation and related outcomes: A meta-analysis of research findings. Psychological Bulletin, 134(2), 270–300.',
+      url:'https://doi.org/10.1037/0033-2909.134.2.270',
+      gist:'מתן בחירה מגביר מוטיבציה פנימית, מאמץ ותחושת מסוגלות. ההשפעה הטובה ביותר כשיש מספר קטן של אפשרויות (שתיים עד ארבע), ולא בחירה עמוסה.',
+      be:'מציעים לתלמידים שתיים עד ארבע דרכים, לא רשימה ארוכה.'},
+    {k:'KatzAssor2007', g:'paths', apa:'Katz, I., & Assor, A. (2007). When choice motivates and when it does not. Educational Psychology Review, 19(4), 429–442.',
+      url:'https://doi.org/10.1007/s10648-006-9027-y',
+      gist:'בחירה מניעה כשהיא רלוונטית לתלמיד, מתאימה ליכולת שלו, תואמת את הערכים והתרבות שלו, ולא מעמיסה. בחירה בין אפשרויות שאינן משמעותיות אינה מקדמת מוטיבציה.',
+      be:'בחירה אמיתית: כל מסלול משמעותי ומאפשר להראות הבנה, ולא רק "צבע אחר" של אותה משימה.'},
+    {k:'ReeveJang2006', g:'paths', apa:'Reeve, J., & Jang, H. (2006). What teachers say and do to support students’ autonomy during a learning activity. Journal of Educational Psychology, 98(1), 209–218.',
+      url:'https://doi.org/10.1037/0022-0663.98.1.209',
+      gist:'מורים תומכי אוטונומיה מקשיבים, נותנים זמן לעבודה בדרך של התלמיד, מסבירים למה, ומשתמשים בשפה של הזמנה ולא של שליטה. זה קשור למעורבות גבוהה יותר.',
+      be:'הכרטיסים מנוסחים כהזמנה, עם הסבר קצר למה כל דרך מתאימה.'},
+    {k:'BlackWiliam1998', g:'paths', apa:'Black, P., & Wiliam, D. (1998). Assessment and classroom learning. Assessment in Education: Principles, Policy & Practice, 5(1), 7–74.',
+      url:'https://doi.org/10.1080/0969595980050102',
+      gist:'הערכה מעצבת, שבה המורה אוספת עדות ללמידה במהלך השיעור ומשתמשת בה כדי להתאים את ההוראה, משפרת למידה באופן משמעותי.',
+      be:'דף התצפית אוסף עדות ללמידה, וההחלטה לשיעור הבא נשענת עליה.'},
+    {k:'Wiliam2011', g:'paths', apa:'Wiliam, D. (2011). Embedded formative assessment. Solution Tree Press.',
+      url:'https://scholar.google.com/scholar?q=Wiliam+2011+Embedded+formative+assessment',
+      gist:'חמש אסטרטגיות להערכה מעצבת, ובהן הבהרת קריטריונים להצלחה, יצירת עדויות ללמידה, ושימוש בתלמידים כמשאב זה לזה.',
+      be:'לכל מסלול קריטריון שהמורה מאשרת: איך נראית הבנה בדרך הזאת.'},
+    {k:'WigginsMcTighe2005', g:'paths', apa:'Wiggins, G., & McTighe, J. (2005). Understanding by design (2nd ed.). ASCD.',
+      url:'https://scholar.google.com/scholar?q=Wiggins+McTighe+2005+Understanding+by+design',
+      gist:'תכנון לאחור: קודם מגדירים את יעד ההבנה ואת העדות שתראה אותו, ורק אז את הפעילות. יש כמה פנים להבנה: להסביר, ליישם, לפרש, לראות מנקודת מבט אחרת.',
+      be:'קודם מה כולם מדגימים, ואז כמה דרכים להדגים אותו.'},
+    {k:'ChiWylie2014', g:'paths', apa:'Chi, M. T. H., & Wylie, R. (2014). The ICAP framework: Linking cognitive engagement to active learning outcomes. Educational Psychologist, 49(4), 219–243.',
+      url:'https://doi.org/10.1080/00461520.2014.965823',
+      gist:'ארבע רמות מעורבות: סבילה, פעילה, בונה ואינטראקטיבית. ככל שהתלמיד יוצר משהו חדש, ובמיוחד יחד עם אחר, הלמידה עמוקה יותר.',
+      be:'המסלולים מעדיפים יצירה והסבר על פני העתקה, לבד או בזוג.'},
+    {k:'CohenLotan2014', g:'paths', apa:'Cohen, E. G., & Lotan, R. A. (2014). Designing groupwork: Strategies for the heterogeneous classroom (3rd ed.). Teachers College Press.',
+      url:'https://scholar.google.com/scholar?q=Cohen+Lotan+2014+Designing+groupwork',
+      gist:'עבודה קבוצתית בכיתה הטרוגנית מצליחה כשהמשימה דורשת יכולות רבות, לכל אחד תפקיד, והמורה מטפלת בפערי מעמד ומדגישה את התרומה של כל אחד.',
+      be:'תפקיד קבוצתי הוא מסלול השתתפות בפני עצמו, ומנגיש השתתפות לעמיתים.'},
+    {k:'Kagan2009', g:'paths', apa:'Kagan, S., & Kagan, M. (2009). Kagan cooperative learning. Kagan Publishing.',
+      url:'https://scholar.google.com/scholar?q=Kagan+2009+Kagan+cooperative+learning',
+      gist:'מבנים קצרים ללמידה שיתופית (כמו חשוב־זוג־שתף, ראשים ממוספרים, סבב) מבטיחים השתתפות שווה ותלות הדדית חיובית.',
+      be:'רבים מהמסלולים בזוג ובקבוצה הם מבנים קצרים שאפשר לשלב בכל שיעור.'},
+    {k:'Fredricks2004', g:'paths', apa:'Fredricks, J. A., Blumenfeld, P. C., & Paris, A. H. (2004). School engagement: Potential of the concept, state of the evidence. Review of Educational Research, 74(1), 59–109.',
+      url:'https://doi.org/10.3102/00346543074001059',
+      gist:'מעורבות בלמידה כוללת שלושה ממדים: התנהגותי (משתתף), רגשי (שייך ומתעניין) וקוגניטיבי (משקיע מחשבה). כולם מושפעים מהתנאים בכיתה.',
+      be:'התצפית בודקת את התנאים והפעולות שאפשרו השתתפות, ולא את התלמידים.'},
+    {k:'Pashler2008', g:'paths', apa:'Pashler, H., McDaniel, M., Rohrer, D., & Bjork, R. (2008). Learning styles: Concepts and evidence. Psychological Science in the Public Interest, 9(3), 105–119.',
+      url:'https://doi.org/10.1111/j.1539-6053.2009.01038.x',
+      gist:'אין עדות לכך שהתאמת ההוראה ל"סגנון למידה" של תלמיד (חזותי, שמיעתי וכדומה) משפרת למידה. הדרך המתאימה תלויה בתוכן וביעד.',
+      be:'מסלולים אינם "סגנונות למידה": התלמידים בוחרים, והמורה בודקת אם יש עדות להבנה. לא כל דרך מתאימה לכל יעד.'}
   ];
   var byKey = {}; S.forEach(function(s){ byKey[s.k] = s; });
   // לכל יועצת בנק משלה: פרקטי (הכיתה) — בלי קבוצות המנהיגות; נוגי (מנהיגות) — קבוצות המנהיגות,
@@ -921,13 +987,16 @@
     MitraGross2009: 1, Spillane2005: 1, Edmondson1999: 1, Kaner2014: 1, Rogelberg2019: 1 };
   // המעבדה לבניית גשר שותפות בין הבית לכיתה (10/10/2026): קבוצת המשפחות ומקורות קיימים על שותפות, אמון והשתתפות
   var FAM_K = { HendersonMapp2002: 1, Epstein2011: 1, BrykSchneider2002: 1, Lundy2007: 1, Sade2024: 1, SadeTools2026: 1, Hobfoll2007: 1, Ungar2011: 1 };
+  // מסלולי השתתפות בלמידה (10/10/2026): קבוצת המסלולים ומקורות קיימים על UDL, למידה שיתופית ושיח
+  var PATHS_K = { CAST2024: 1, Johnson2009: 1, RyanDeci2017: 1, Topping2005: 1, HoweAbedin2013: 1, MercerLittleton2007: 1, Resnick2015: 1, Sade2024: 1 };
   var ADV = {
-    practi: function(s){ return !LEAD_G[s.g] && s.g !== 'cont' && s.g !== 'routine' && s.g !== 'family'; },
+    practi: function(s){ return !LEAD_G[s.g] && s.g !== 'cont' && s.g !== 'routine' && s.g !== 'family' && s.g !== 'paths'; },
     nugi:   function(s){ return !!(NUGI_G[s.g] || NUGI_K[s.k]); },
     // תיק הרציפות (09/10/2026): קבוצת הרציפות ומקורות קיימים על רציפות חינוכית, מנהיגות מבוזרת, שגרה ואמון
     continuity: function(s){ return s.g === 'cont' || !!CONT_K[s.k]; },
     routines: function(s){ return s.g === 'routine' || !!ROUT_K[s.k]; },
     bridge: function(s){ return s.g === 'family' || !!FAM_K[s.k]; },
+    paths: function(s){ return s.g === 'paths' || !!PATHS_K[s.k]; },
     nana:   function(){ return true; } // ננה — כל בנק הידע (07/10/2026): ההמלצות והמשוב שלה נשענים על כל מקורות החוסן
   };
   function forAdvisor(name){ var f = ADV[name]; return f ? S.filter(f) : S.slice(); }
