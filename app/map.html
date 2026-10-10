@@ -128,6 +128,16 @@ footer a{margin:0 6px}
 .step5{font-weight:700;color:var(--navy);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 12px}
 #steps5{margin-top:12px}
 .zone{font-family:"Assistant",sans-serif;font-weight:800;fill:var(--navy);paint-order:stroke;stroke:var(--sky1);stroke-width:6px;stroke-linejoin:round;opacity:.85}
+.quick{margin-top:14px}
+.q-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-radius:18px;padding:12px 16px;color:#fff;background:linear-gradient(100deg,#2E8F62,#1A9BB5 55%,#1C5F99)}
+.q-line .q-sun{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:21px;background:radial-gradient(circle at 35% 35%,#FFF1C9,#FFC95C)}
+.q-line div{flex:1 1 220px}.q-line b{display:block;font-size:17px}.q-line span{font-size:14.5px;opacity:.95}
+.q-line .go{background:#fff;color:#14506F}
+.links{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:4px}
+.ask-tool{font-size:14px;color:var(--muted)}
+.route-acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 14px}
+.ghost{font:inherit;font-size:14.5px;font-weight:700;cursor:pointer;border-radius:999px;padding:7px 14px;border:1.5px solid var(--line);background:var(--card);color:var(--navy)}
+@media print{.route-acts,.links .ask-tool,.quick{display:none}.route-out{margin:0}}
 </style>
 </head>
 <body>
@@ -151,6 +161,7 @@ footer a{margin:0 6px}
       <button class="clear" type="button" id="clear">ניקוי</button>
     </form>
     <p class="heard" id="heard" aria-live="polite"></p>
+    <div class="quick" id="quick" hidden aria-live="polite"></div>
   </section>
 
   <div class="mapbox" id="mapbox"></div>
@@ -170,19 +181,19 @@ footer a{margin:0 6px}
   'use strict';
   // הכלים שפתוחים למשתמשים, לפי סדר הדרך על הנהר: חמש שאלות של מוכנות יומיומית (SBE_READY), ובסוף השמש: קהילת חוסן.
   const TOOLS = [
-    { id: 'mapping', g: 'see', n: 'מיפוי חוסן חברתי', i: '📊', k: 'work', page: 'resilience-team.html', goal: 'תלמידים, הורים ומורים עונים על שאלון קצר, ומקבלים תמונת מצב של הכיתה והמלצות.' },
-    { id: 'practi', g: 'see', n: 'פרקטי', i: '🌱', k: 'work', page: 'resilience-advisor.html', goal: 'יועצת לחוסן החברתי בכיתה: ניתוח, פעולות מותאמות לגיל והדרכה לשיחה אישית.' },
-    { id: 'nugi', g: 'see', n: 'נוגי', i: '🏛', k: 'work', page: 'leadership-advisor.html', goal: 'יועצת למנהיגות תומכת חוסן, להנהלה, לרכזים ולצוותי תלמידים.' },
-    { id: 'scenario', g: 'practice', n: 'יצירת תרחיש', i: '🎭', k: 'lab', page: 'input-screen.html', goal: 'לבנות מתיאור קצר תרחיש שלם לשיחה מאתגרת, עם דמויות, נקודות תפנית ותוצרים למנחה.' },
-    { id: 'workshop', g: 'practice', n: 'סדנה', i: '👥', k: 'lab', page: 'facilitator-screen.html', goal: 'לפתוח סדנה בלחיצה: המשתתפות מצטרפות מהטלפון, מתנסות ונותנות משוב.' },
-    { id: 'roleplay', g: 'practice', n: 'משחק תפקידים', i: '🔄', k: 'lab', page: 'parent-input-screen.html', goal: 'הורה וילד/ה, או שני בני נוער: כל אחד נכנס לנעליים של השני.' },
-    { id: 'practice', g: 'practice', n: 'תרגול עצמי', i: '🎧', k: 'lab', page: 'practice.html', goal: 'להתאמן לבד, מתי שנוח, מול דמות שמגיבה כמו אדם אמיתי, ולקבל משוב.' },
-    { id: 'conv', g: 'practice', n: 'תכנון שיחה', i: '💬', k: 'lab', page: 'conversation-planner.html', goal: 'להתכונן לשיחה חשובה: תדריך קצר, כרטיס תזכורת, ומה עושים אם השיחה מסתבכת.' },
-    { id: 'nana', g: 'practice', n: 'ננה: מהוראה להנחיה', i: '🧭', k: 'lab', page: 'facilitation-advisor.html', goal: 'מדריך הנחיה וכרטיס כיס למפגש, תרגול רגע מאתגר ורפלקציה אחרי המפגש.' },
-    { id: 'activity', g: 'act', n: 'תכנון פעילות', i: '🗓', k: 'work', page: 'activity-planner.html', goal: 'מרעיון לפעילות חינוכית מוכנה להפעלה, או לרצף של מפגשים.' },
-    { id: 'writer', g: 'act', n: 'כתיבה מקדמת חוסן', i: '✍️', k: 'work', page: 'message-writer.html', goal: 'כתיבה יומיומית מכוונת חוסן חברתי: הודעה או מכתב לתלמידים, להורים או לצוות, בשפה מחזקת מהטיוטה הראשונה.' },
-    { id: 'review', g: 'learn', n: 'משוב לעבודות', i: '📝', k: 'work', page: 'academic-review.html', goal: 'להתכונן להגשת עבודה: משוב לפי קריטריונים. הכתיבה נשארת שלכם.' },
-    { id: 'journey', g: 'anchor', n: 'מסע אל החוסן', i: '☀️', k: 'work', page: 'journey.html', goal: 'דרך מלווה בחמישה שלבים, עם אבני דרך ומשוב, עד תו חוסן לקהילת חוסן.' }
+    { id: 'mapping', perm: 'resilience', g: 'see', n: 'מיפוי חוסן חברתי', i: '📊', k: 'work', page: 'resilience-team.html', goal: 'תלמידים, הורים ומורים עונים על שאלון קצר, ומקבלים תמונת מצב של הכיתה והמלצות.' },
+    { id: 'practi', perm: 'practi', g: 'see', n: 'פרקטי', i: '🌱', k: 'work', page: 'resilience-advisor.html', goal: 'יועצת לחוסן החברתי בכיתה: ניתוח, פעולות מותאמות לגיל והדרכה לשיחה אישית.' },
+    { id: 'nugi', perm: 'leadership', g: 'see', n: 'נוגי', i: '🏛', k: 'work', page: 'leadership-advisor.html', goal: 'יועצת למנהיגות תומכת חוסן, להנהלה, לרכזים ולצוותי תלמידים.' },
+    { id: 'scenario', perm: 'fac_trainee', g: 'practice', n: 'יצירת תרחיש', i: '🎭', k: 'lab', page: 'input-screen.html', goal: 'לבנות מתיאור קצר תרחיש שלם לשיחה מאתגרת, עם דמויות, נקודות תפנית ותוצרים למנחה.' },
+    { id: 'workshop', perm: 'fac_trainee', g: 'practice', n: 'סדנה', i: '👥', k: 'lab', page: 'facilitator-screen.html', goal: 'לפתוח סדנה בלחיצה: המשתתפות מצטרפות מהטלפון, מתנסות ונותנות משוב.' },
+    { id: 'roleplay', perm: 'fac_parent', g: 'practice', n: 'משחק תפקידים', i: '🔄', k: 'lab', page: 'parent-input-screen.html', goal: 'הורה וילד/ה, או שני בני נוער: כל אחד נכנס לנעליים של השני.' },
+    { id: 'practice', perm: 'fac_trainee', g: 'practice', n: 'תרגול עצמי', i: '🎧', k: 'lab', page: 'practice.html', goal: 'להתאמן לבד, מתי שנוח, מול דמות שמגיבה כמו אדם אמיתי, ולקבל משוב.' },
+    { id: 'conv', perm: 'conv', g: 'practice', n: 'תכנון שיחה', i: '💬', k: 'lab', page: 'conversation-planner.html', goal: 'להתכונן לשיחה חשובה: תדריך קצר, כרטיס תזכורת, ומה עושים אם השיחה מסתבכת.' },
+    { id: 'nana', perm: 'nana', g: 'practice', n: 'ננה: מהוראה להנחיה', i: '🧭', k: 'lab', page: 'facilitation-advisor.html', goal: 'מדריך הנחיה וכרטיס כיס למפגש, תרגול רגע מאתגר ורפלקציה אחרי המפגש.' },
+    { id: 'activity', perm: 'activity', g: 'act', n: 'תכנון פעילות', i: '🗓', k: 'work', page: 'activity-planner.html', goal: 'מרעיון לפעילות חינוכית מוכנה להפעלה, או לרצף של מפגשים.' },
+    { id: 'writer', perm: 'writer', g: 'act', n: 'כתיבה מקדמת חוסן', i: '✍️', k: 'work', page: 'message-writer.html', goal: 'כתיבה יומיומית מכוונת חוסן חברתי: הודעה או מכתב לתלמידים, להורים או לצוות, בשפה מחזקת מהטיוטה הראשונה.' },
+    { id: 'review', perm: 'academic', g: 'learn', n: 'משוב לעבודות', i: '📝', k: 'work', page: 'academic-review.html', goal: 'להתכונן להגשת עבודה: משוב לפי קריטריונים. הכתיבה נשארת שלכם.' },
+    { id: 'journey', perm: 'journey', g: 'anchor', n: 'מסע אל החוסן', i: '☀️', k: 'work', page: 'journey.html', goal: 'דרך מלווה בחמישה שלבים, עם אבני דרך ומשוב, עד תו חוסן לקהילת חוסן.' }
   ];
   const T = Object.fromEntries(TOOLS.map((t) => [t.id, t]));
   const R = window.SBE_READY, GR = (id) => R && R.GROUPS.find((g) => g.id === id);
@@ -317,7 +328,7 @@ footer a{margin:0 6px}
   // ── עדכון ──
   function update() {
     needsBox.querySelectorAll('.need').forEach((b) => b.setAttribute('aria-pressed', String(chosen.has(b.dataset.id))));
-    paint(); renderRoute();
+    paint(); renderRoute(); renderQuick();
   }
   function paint() {
     if (!routeG) return;
@@ -335,14 +346,40 @@ footer a{margin:0 6px}
     c.appendChild(tags);
     c.appendChild(el('p', null, t.goal));
     if (why) c.appendChild(el('p', { class: 'why' }, 'בדרך שלכם: ' + why));
-    const a = el('a', { class: 'open', href: t.page }, 'לכלי ←'); c.appendChild(a);
+    const links = el('div', { class: 'links' });
+    links.appendChild(el('a', { class: 'open', href: t.page }, 'יש לי קוד: כניסה לכלי ←'));
+    links.appendChild(el('a', { class: 'ask-tool', href: 'renew.html?perms=' + t.perm }, 'אין לי עדיין: בקשה לכלי'));
+    c.appendChild(links);
     return c;
+  }
+  const shareUrl = () => location.origin + location.pathname + '?need=' + [...chosen].join(',');
+  // התשובה מיד מתחת לבחירה: באיזה כלי מתחילים ומה אחר כך, וכפתור לדרך המלאה
+  function renderQuick() {
+    const q = $('#quick'); q.textContent = ''; q.hidden = !chosen.size; if (!chosen.size) return;
+    const pl = plan(), first = T[pl.first[0].id];
+    const line = el('div', { class: 'q-line' });
+    line.appendChild(el('span', { class: 'q-sun' }, '☀️'));
+    const tx = el('div'); tx.appendChild(el('b', null, 'מתחילים ב: ' + first.i + ' ' + first.n));
+    const rest = pl.next.concat(pl.later).map((x) => T[x.id].n);
+    if (rest.length) tx.appendChild(el('span', null, 'אחר כך: ' + rest.join(' · ')));
+    line.appendChild(tx);
+    const go = el('button', { type: 'button', class: 'go' }, 'לדרך המלאה ↓'); go.addEventListener('click', () => $('#route').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    line.appendChild(go); q.appendChild(line);
   }
   function renderRoute() {
     const out = $('#route'); out.textContent = '';
     if (!chosen.size) { out.appendChild(el('p', { class: 'empty' }, 'בחרו למעלה מה תרצו לעשות, והדרך תופיע על המפה ובכרטיסים כאן.')); return; }
     const pl = plan(); let k = 0;
     out.appendChild(el('h2', null, 'הדרך שלכם'));
+    const acts = el('div', { class: 'route-acts' });
+    const pr = el('button', { type: 'button', class: 'ghost' }, '🖨 הדפסה או PDF'); pr.addEventListener('click', () => window.print());
+    const cp = el('button', { type: 'button', class: 'ghost' }, '🔗 העתקת קישור לדרך');
+    cp.addEventListener('click', () => { const u = shareUrl(); const done = () => { cp.textContent = '✓ הקישור הועתק'; setTimeout(() => { cp.textContent = '🔗 העתקת קישור לדרך'; }, 2200); };
+      try { navigator.clipboard.writeText(u).then(done, () => prompt('להעתקה:', u)); } catch (e) { prompt('להעתקה:', u); } });
+    acts.append(pr, cp);
+    if (navigator.share) { const sh = el('button', { type: 'button', class: 'ghost' }, '📤 שליחה'); sh.addEventListener('click', () => navigator.share({ title: 'הדרך שלנו ב-Begood', url: shareUrl() }).catch(() => {})); acts.appendChild(sh); }
+    out.appendChild(acts);
+    out.appendChild(el('p', { class: 'sub' }, 'מה רצינו לעשות: ' + NEEDS.filter((nd) => chosen.has(nd.id)).map((nd) => nd.n).join(' · ')));
     out.appendChild(el('p', { class: 'sub' }, 'הצעה לסדר. הבחירה שלכם: אפשר להתחיל מכל תחנה, ולדלג על מה שכבר יש לכם.'));
     const steps = el('div', { class: 'steps' });
     [['1', 'מתחילים כאן', pl.first], ['2', 'אחר כך', pl.next], ['3', 'בהמשך', pl.later]].forEach(([i, h, xs]) => {
