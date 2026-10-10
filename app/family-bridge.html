@@ -118,6 +118,7 @@ ul.tl li{margin:.25rem 0}
 .addmore summary{cursor:pointer;color:var(--spoken);font-size:.85rem;font-weight:600}
 .ctag{font-size:.7rem;font-weight:700;color:var(--auto);background:var(--auto-soft);border-radius:99px;padding:.05rem .45rem;margin-inline-start:.35rem}
 .chat .thinking{color:var(--muted);font-style:italic}
+.remind{font-size:.9rem;background:var(--hidden-soft);border-radius:6px;padding:.35rem .6rem;margin:.4rem 0}
 .chat .msg{border-radius:9px;padding:.7rem .95rem;margin:.6rem 0;font-size:.95rem;line-height:1.65}
 .chat .me{white-space:pre-wrap}
 .rich>*:last-child{margin-bottom:0}
@@ -247,6 +248,10 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
 .yearform{border:1px solid var(--hair);border-radius:10px;padding:.4rem 1rem;background:var(--surface)}
 .yearform .yq{font-weight:700;margin:.6rem 0 .2rem}.yearform .yo{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:.2rem 1rem;margin:0}
 .cardedit textarea{min-height:0}
+.next{border:2px solid var(--spoken);border-radius:10px;padding:.3rem .9rem .7rem;margin:.8rem 0 .2rem;background:var(--spoken-soft)}.next>h4{margin:.3rem 0 .4rem;color:var(--spoken);font-size:1.05rem}
+.nextlist{margin:0;padding-inline-start:1.3rem}.nextlist>li{margin:.35rem 0 .6rem;padding:.35rem .6rem;background:var(--surface);border-radius:8px}.nextlist>li.done>b{color:var(--auto)}
+.nextlist .btn{margin:.3rem 0 0 .3rem}.linkbtn{font:inherit;font-size:.85rem;background:none;border:none;color:var(--spoken);text-decoration:underline;cursor:pointer;padding:0;margin:0 0 .3rem}
+.chat .msg{border-radius:8px;padding:.45rem .7rem;margin:.35rem 0;white-space:pre-wrap}.filebtn{cursor:pointer}
 .story{background:var(--hidden-soft);border:1px dashed var(--hidden);border-radius:8px;padding:.3rem .8rem .5rem;margin:.4rem 0 .7rem}.story h4{margin:.2rem 0 .3rem;color:var(--hidden)}
 .feel{border-inline-start:4px solid var(--hidden);background:var(--hidden-soft);padding:.45rem .8rem;border-radius:6px}
 .cf-q{font-weight:700;margin:.6rem 0 .15rem}.cf-qopts{list-style:none;padding:0;margin:0 0 .3rem;display:flex;flex-wrap:wrap;gap:.15rem 1rem}
@@ -297,6 +302,8 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
     <div class="btns no-print">
       <button class="btn" type="button" data-go="4">בדיקה ולמידה ←</button>
       <button class="btn btn-ghost" type="button" data-go="2">→ חזרה</button>
+      <button class="btn btn-ghost sm" type="button" data-savework>💾 שמירת קובץ עבודה</button>
+      <label class="btn btn-ghost sm filebtn">📂 פתיחת קובץ עבודה<input type="file" accept=".json,application/json" data-openwork hidden></label>
     </div>
   </section>
 
@@ -309,6 +316,8 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
     <div class="btns no-print">
       <button class="btn btn-ghost sm" type="button" data-print="all">🖨 הסבב כולו</button>
       <button class="btn btn-ghost" type="button" data-go="3">→ חזרה</button>
+      <button class="btn btn-ghost sm" type="button" data-savework>💾 שמירת קובץ עבודה</button>
+      <label class="btn btn-ghost sm filebtn">📂 פתיחת קובץ עבודה<input type="file" accept=".json,application/json" data-openwork hidden></label>
       <button class="btn btn-ghost" id="newRound" type="button">סבב חדש</button>
     </div>
   </section>

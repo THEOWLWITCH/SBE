@@ -19,6 +19,8 @@
   const today = () => new Date().toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' });
   const txt = (x) => window.SBE_REFS ? SBE_REFS.strip(String(x == null ? '' : x)) : String(x || '');
   const arr = (x) => Array.isArray(x) ? x : [];
+  const D = (iso) => window.sbeDateIL ? sbeDateIL(iso) : iso;
+  const isoPlus = (n) => window.sbeIsoPlus ? sbeIsoPlus(n) : '';
 
   const FAMILY = (n) => ({ id: 'f' + Date.now().toString(36) + n, label: 'משפחה ' + 'אבגדהוזחטיכלמנ'[n % 14], status: '', chosen: '', adapt: '', notNow: '', how: '',
     clear: '', doable: '', decision: null, pick: '', checkWhen: '', result: '', story: {} });
@@ -191,16 +193,142 @@
     c.appendChild(g);
     if (f.status === 'הציעה התאמה') { const d = el('div', 'f'); d.appendChild(el('label', null, 'ההתאמה שהציעו')); d.appendChild(field(f, 'adapt', 'ההתאמה שהציעו', true, 'במילים שלהם, בלי שמות.')); c.appendChild(d); }
     if (f.status === 'לא מעשי כרגע') { const d = el('div', 'f'); d.appendChild(el('label', null, 'מה כתבו (אם כתבו)')); d.appendChild(field(f, 'notNow', 'מה כתבו', true, 'בלי שמות.')); c.appendChild(d); }
-    const b = btn(f.decision ? 'הצעה מחדש להמשך' : 'הצעה להמשך בכיתה ובבית', f.decision ? 'btn btn-ghost sm' : 'btn sm', () => decide(f, b));
     const err = el('p', 'err'); err.hidden = true; err.id = 'err-' + f.id;
     const wait = el('div', 'wait'); wait.hidden = true; wait.id = 'wait-' + f.id;
-    c.append(b, wait, err);
-    if (f.decision) c.appendChild(decisionView(f));
+    if (!f.decision) { const b = btn('קבלת הצעה להמשך עם המשפחה', 'btn sm', () => decide(f, b)); c.append(b, wait, err); }
+    else { c.append(wait, err); c.appendChild(decisionView(f)); c.appendChild(nextGuide(f)); }
     return c;
+  }
+  // ── מה עכשיו? חמישה צעדים לכל משפחה, אחד אחרי השני ──
+  function nextGuide(f) {
+    const box = el('section', 'next'); box.appendChild(el('h4', null, 'מה עכשיו?'));
+    const ol = el('ol', 'nextlist'), d = f.decision;
+    const done = [!!(f.pick && f.checkWhen), !!f.sent, !!(f.practice && f.practice.feedback), !!f.planNext, !!f.summary];
+    const item = (i, body) => { const li = el('li', done[i] ? 'done' : ''); li.appendChild(el('b', null, (done[i] ? '✓ ' : '') + M.NEXT[i])); if (body) li.appendChild(body); ol.appendChild(li); };
+    item(0, el('p', 'sub', done[0] ? 'בחרת: ' + f.pick : 'בחרי למעלה את ההמשך ואת תאריך נקודת הבדיקה.'));
+    const s2 = el('div'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!f.sent; cb.id = 'sent-' + f.id;
+    const l2 = el('label', 'okline'); l2.htmlFor = cb.id; l2.append(cb, document.createTextNode(' שלחתי את ההודעה, בדרך שהמשפחה בחרה'));
+    cb.addEventListener('change', () => { f.sent = cb.checked; save(); draw(3); }); s2.appendChild(l2); item(1, s2);
+    item(2, practiceBlock(f));
+    const s4 = el('div');
+    if (f.planNext) s4.appendChild(planNextView(f));
+    const pb = btn(f.planNext ? 'תכנון מחדש' : 'תכנון הקשר בחודשיים הקרובים', f.planNext ? 'btn btn-ghost sm' : 'btn sm', () => planNext(f, pb)); s4.appendChild(pb); item(3, s4);
+    const s5 = el('div');
+    if (f.summary) s5.appendChild(summaryView(f));
+    const sb = btn(f.summary ? 'סיכום מעודכן' : 'הכנת סיכום', f.summary ? 'btn btn-ghost sm' : 'btn sm', () => summarize(f, sb)); s5.appendChild(sb);
+    s5.appendChild(el('p', 'remind', '📌 כדאי להוסיף את דרך הקשר המוסכמת עם המשפחה לתיק הרציפות, כדי שמי שתחליף אותך תדע איך להיות בקשר.'));
+    if (f.summary) { s5.appendChild(btn('🖨 הדפסה / PDF', 'btn btn-ghost sm', () => printSummary(f))); s5.appendChild(btn('💾 שמירה במחשב', 'btn btn-ghost sm', () => downloadSummary(f))); }
+    item(4, s5);
+    box.appendChild(ol);
+    const w = el('div', 'wait'); w.hidden = true; w.id = 'wait2-' + f.id; const e = el('p', 'err'); e.hidden = true; e.id = 'err2-' + f.id; box.append(w, e);
+    return box;
+  }
+  function caseText(f) {
+    const way = arr(S.plan.ways).find((w) => txt(w.name) === f.chosen), o = arr(f.decision && f.decision.options).find((x) => txt(x.name) === f.pick);
+    return M.anonymize([M.storyText(f.story), f.status && 'מה המשפחה ענתה לכרטיס: ' + f.status, way && 'הדרך שבחרו: ' + txt(way.name) + ': ' + txt(way.what), f.adapt && 'ההתאמה שהציעו: ' + f.adapt,
+      f.notNow && 'מה כתבו: ' + f.notNow, o && 'ההמשך שהמורה בחרה: ' + txt(o.name) + '. בבית: ' + txt(o.atHome) + '. בכיתה: ' + txt(o.inClass), f.checkWhen && 'נקודת הבדיקה: ' + D(f.checkWhen)].filter(Boolean).join('\n'), labels());
+  }
+  // תרגול השיחה: המודל משחק את ההורה, המורה כותבת, ובסוף משוב קצר
+  function practiceBlock(f) {
+    const P = f.practice || (f.practice = { turns: [], feedback: null, open: false }), box = el('div');
+    if (!P.open && !P.turns.length) { box.appendChild(el('p', 'sub', 'אפשר להתאמן על השיחה לפני שמדברים באמת. המודל משחק את ההורה.')); box.appendChild(btn('▶ תרגול השיחה', 'btn btn-ghost sm', () => { P.open = true; save(); draw(3); })); return box; }
+    const chat = el('div', 'chat');
+    P.turns.forEach((t) => chat.appendChild(el('div', 'msg ' + (t.me ? 'me' : 'bot'), (t.me ? 'את: ' : 'ההורה: ') + t.text)));
+    box.appendChild(chat);
+    const mine = P.turns.filter((t) => t.me).length;
+    if (!P.feedback && mine < M.PRACTICE_TURNS) {
+      const ta = el('textarea'); ta.rows = 2; ta.placeholder = mine ? 'מה תעני?' : 'איך תפתחי את השיחה?'; ta.setAttribute('aria-label', 'מה את אומרת');
+      const send = btn('שליחה', 'btn sm', async () => {
+        const v = ta.value.trim(); if (!v) return;
+        P.turns.push({ me: true, text: v }); save(); send.disabled = true;
+        const msgs = P.turns.map((t) => ({ role: t.me ? 'user' : 'assistant', content: M.anonymize(t.text, labels()) }));
+        let reply = null;
+        try { reply = await window.sbeCallAI(SERVER, { system: M.practiceSystem(caseText(f)), messages: msgs, maxTokens: 300 }, 90000); } catch (e) { console.warn('גשר, תרגול:', e.message); }
+        if (!reply) { P.turns.pop(); save(); draw(3); return fail(F('err2-' + f.id), NO_MODEL); }
+        P.turns.push({ me: false, text: String(reply).trim() }); save(); draw(3);
+      });
+      box.append(ta, send);
+    }
+    if (mine && !P.feedback) box.appendChild(btn('סיום התרגול ומשוב', 'btn btn-ghost sm', (ev) => feedback(f, ev.target)));
+    if (P.feedback) {
+      box.appendChild(window.SBE_TABLE(null, [['מה עבד', (() => { const u = el('ul'); arr(P.feedback.worked).forEach((x) => u.appendChild(el('li', null, txt(x)))); return u; })()],
+        ['מה אפשר לנסות', (() => { const u = el('ul'); arr(P.feedback.try).forEach((x) => u.appendChild(el('li', null, txt(x)))); return u; })()], ['הצעד הבא', txt(P.feedback.next)]], 'kit-t'));
+      box.appendChild(btn('תרגול נוסף', 'btn btn-ghost sm', () => { f.practice = { turns: [], feedback: null, open: true }; save(); draw(3); }));
+    }
+    return box;
+  }
+  async function feedback(f, b) {
+    const P = f.practice, log = P.turns.map((t) => (t.me ? 'המחנכת: ' : 'ההורה: ') + t.text).join('\n');
+    b.disabled = true; const stop = waiting(F('wait2-' + f.id), 'מכינה משוב קצר על השיחה.', 25);
+    let k = null, bad = null;
+    try { k = await window.sbeCallAIJson(SERVER, { system: M.feedbackSystem(KB), messages: [{ role: 'user', content: M.anonymize('מה שידוע:\n' + caseText(f) + '\n\nהשיחה:\n' + log, labels()) }], maxTokens: 1200 }, 120000, M.validFeedback); }
+    catch (e) { bad = e; } finally { stop(); b.disabled = false; }
+    if (!M.validFeedback(k)) return fail(F('err2-' + f.id), why(bad));
+    P.feedback = k; save(); draw(3);
+  }
+  function planNextView(f) {
+    const k = f.planNext, box = el('div');
+    box.appendChild(window.SBE_TABLE(['מתי', 'מה עושים', 'באיזו דרך', 'מי'], arr(k.steps).map((x) => [txt(x.when), txt(x.what), txt(x.how), txt(x.who)]), 'kit-t'));
+    box.appendChild(KV([['אם אין תגובה', txt(k.noReply)], ['נקודת הבדיקה', txt(k.check && k.check.look) + (k.check && k.check.when ? ' (' + txt(k.check.when) + ')' : '')], ['כדי שזה לא יעמיס', txt(k.light)]]));
+    if (f.checkWhen) box.appendChild(btn('📅 נקודת הבדיקה ליומן', 'btn btn-ghost sm', () => ics(f)));
+    return box;
+  }
+  async function planNext(f, b) {
+    F('err2-' + f.id).hidden = true;
+    if (!f.pick) return fail(F('err2-' + f.id), 'כדי לתכנן, בחרי קודם את ההמשך (צעד 1).');
+    b.disabled = true; const stop = waiting(F('wait2-' + f.id), 'מתכננת את הקשר בחודשיים הקרובים.', 30);
+    let k = null, bad = null;
+    try { k = await ask(M.planNextSystem(KB, WRITER), 'השדות:\n' + M.inputText(S.form) + '\n\n' + caseText(f) + '\n\nתכנני את הקשר בהמשך.', M.validPlanNext); }
+    catch (e) { bad = e; } finally { stop(); b.disabled = false; }
+    if (!M.validPlanNext(k)) return fail(F('err2-' + f.id), why(bad));
+    f.planNext = k; save(); draw(3);
+  }
+  function ics(f) {
+    const dt = f.checkWhen.replace(/-/g, ''), body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Begood//Bridge//HE', 'BEGIN:VEVENT', 'UID:' + Date.now() + '@be-good.co.il',
+      'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, ''), 'DTSTART;VALUE=DATE:' + dt, 'SUMMARY:נקודת בדיקה · גשר עם ' + f.label,
+      'DESCRIPTION:בודקים אם הקשר שהוסכם עובד\\, ומחליטים על הצעד הבא.', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+    fileOut(body, 'text/calendar', 'נקודת-בדיקה.ics');
+  }
+  function summaryView(f) {
+    const k = f.summary, box = el('div', 'summary');
+    box.appendChild(el('h4', null, txt(k.title) || 'סיכום'));
+    box.appendChild(KV(arr(k.rows).map((x) => [txt(x.label), txt(x.text)]).concat([['הצעד הבא', txt(k.next)]])));
+    return box;
+  }
+  async function summarize(f, b) {
+    F('err2-' + f.id).hidden = true;
+    const P = f.practice || {}, pl = f.planNext;
+    const extra = [P.feedback && 'מה עלה בתרגול: עבד: ' + arr(P.feedback.worked).join('; ') + '. לנסות: ' + arr(P.feedback.try).join('; '),
+      pl && 'תכנון הקשר: ' + arr(pl.steps).map((x) => x.when + ': ' + x.what).join('; '), f.result && 'בנקודת הבדיקה: ' + f.result, f.sent && 'ההודעה נשלחה.'].filter(Boolean).join('\n');
+    b.disabled = true; const stop = waiting(F('wait2-' + f.id), 'מכינה סיכום לשמירה.', 30);
+    let k = null, bad = null;
+    try { k = await ask(M.summarySystem(KB), M.anonymize('השדות:\n' + M.inputText(S.form) + '\n\n' + caseText(f) + (extra ? '\n' + extra : '') + '\n\nסכמי.', labels()), M.validSummary); }
+    catch (e) { bad = e; } finally { stop(); b.disabled = false; }
+    if (!M.validSummary(k)) return fail(F('err2-' + f.id), why(bad));
+    f.summary = k; save(); draw(3);
+  }
+  function summaryNode(f) {
+    const out = el('div'); out.appendChild(summaryView(f));
+    if (f.planNext) { out.appendChild(el('h3', null, 'תכנון הקשר בהמשך')); const v = planNextView(f); v.querySelectorAll('button').forEach((x) => x.remove()); out.appendChild(v); }
+    return out;
+  }
+  function printSummary(f) { window.SBE_DOC.print({ title: (txt(f.summary.title) || 'סיכום').replace(/\[משפחה\]/g, f.label), subtitle: [S.form.age, S.form.lang].filter(Boolean).join(' · '), kind: 'סיכום הגשר עם משפחה', node: summaryNode(f) }); }
+  function fileOut(text, type, name) {
+    const a = el('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+  function downloadSummary(f) {
+    const node = summaryNode(f), title = (txt(f.summary.title) || 'סיכום').replace(/\[משפחה\]/g, f.label);
+    const html = '<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>' + title.replace(/</g, '&lt;') + '</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:24px auto;padding:0 16px;line-height:1.6;color:#141C24}' +
+      'table{width:100%;border-collapse:collapse;margin:8px 0 16px}th,td{border:1px solid #CDD3D8;padding:6px 8px;text-align:right;vertical-align:top}thead th{background:#2E5A7D;color:#fff}tbody th{background:#F3F6F8;width:22%}</style></head><body>' +
+      '<p style="color:#2E5A7D">Begood · גשר בין הבית לכיתה · ' + today() + '</p>' + node.innerHTML + '</body></html>';
+    fileOut(html, 'text/html', 'גשר-' + f.label.replace(/[^\p{L}\p{N}]+/gu, '-') + '-סיכום.html');
   }
   function decisionView(f) {
     const d = f.decision, box = el('div', 'decision');
-    head(box, 'options'); box.appendChild(T('options', arr(d.options).map((o) => [txt(o.name), txt(o.inClass), txt(o.atHome), txt(o.why)])));
+    head(box, 'options');
+    const again = btn('רוצה הצעה אחרת?', 'linkbtn', () => decide(f, again)); box.appendChild(again);
+    box.appendChild(T('options', arr(d.options).map((o) => [txt(o.name), txt(o.inClass), txt(o.atHome), txt(o.why)])));
     const g = el('div', 'grid2'), a = el('div', 'f'), b = el('div', 'f');
     a.appendChild(el('label', null, 'מה בחרת')); a.appendChild(choice(f, 'pick', 'מה בחרת', arr(d.options).map((o) => txt(o.name)), () => { const c = F('checks'); if (c) c.replaceWith(checksBlock()); }));
     b.appendChild(el('label', null, 'נקודת בדיקה')); const ci = el('input'); ci.type = 'date'; ci.value = f.checkWhen || ''; ci.setAttribute('aria-label', 'נקודת בדיקה');
@@ -230,7 +358,7 @@
     try { k = await ask(M.decideSystem(KB, WRITER, S.form.lang, S.form.focus), content, M.validDecision); } catch (e) { bad = e; console.warn('גשר, החלטה:', e.message); }
     finally { stop(); b.disabled = false; }
     if (!M.validDecision(k)) return fail(err, why(bad));
-    f.decision = k; f.pick = ''; save(); draw(3);
+    f.decision = k; f.pick = ''; if (!f.checkWhen) f.checkWhen = isoPlus(14); save(); draw(3);
   }
 
   // ── צעד 4 ──
@@ -281,7 +409,7 @@
         box.appendChild(el('h3', null, 'בנקודת הבדיקה'));
         box.appendChild(window.SBE_TABLE(['המשפחה', 'הצעד המוסכם', 'מתי', 'מה קרה'], picked.map((f) => {
           const o = arr(f.decision && f.decision.options).find((x) => txt(x.name) === f.pick) || {};
-          return [f.label, txt(o.atHome) + (o.inClass ? ' · בכיתה: ' + txt(o.inClass) : ''), f.checkWhen ? f.checkWhen.split('-').reverse().join('.') : '', field(f, 'result', 'מה קרה: ' + f.label, true, 'מה ראית בכיתה')];
+          return [f.label, txt(o.atHome) + (o.inClass ? ' · בכיתה: ' + txt(o.inClass) : ''), f.checkWhen ? D(f.checkWhen) : '', field(f, 'result', 'מה קרה: ' + f.label, true, 'מה ראית בכיתה')];
         }), 'kit-t'));
       }
       const r = el('div', 'f'); r.appendChild(el('label', null, 'מה למדתי על בניית הגשר')); r.appendChild(field(S, 'reflect', 'מה למדתי', true, 'מה עבד, מה הפתיע, ומה אעשה אחרת עם המשפחה הבאה.')); box.appendChild(r);
@@ -334,7 +462,7 @@
         [goalBlock(P), stylesBlock(P)].forEach((x) => r.appendChild(x));
         const cs = el('section'); head(cs, 'card'); cs.appendChild(cardView(P.card, otherLang() ? 'auto' : null)); r.appendChild(cs);
         const picked = S.families.filter((f) => f.status);
-        if (picked.length) { head(r, 'families'); r.appendChild(window.SBE_TABLE(['המשפחה', 'מה ענתה', 'ההמשך שנבחר', 'נקודת בדיקה', 'מה קרה'], picked.map((f) => [f.label, f.status + (f.chosen ? ': ' + f.chosen : ''), f.pick, f.checkWhen ? f.checkWhen.split('-').reverse().join('.') : '', f.result]), 'kit-t')); }
+        if (picked.length) { head(r, 'families'); r.appendChild(window.SBE_TABLE(['המשפחה', 'מה ענתה', 'ההמשך שנבחר', 'נקודת בדיקה', 'מה קרה'], picked.map((f) => [f.label, f.status + (f.chosen ? ': ' + f.chosen : ''), f.pick, f.checkWhen ? D(f.checkWhen) : '', f.result]), 'kit-t')); }
         r.appendChild(meaning(P));
         if (S.reflect) { r.appendChild(el('h3', null, 'מה למדתי על בניית הגשר')); r.appendChild(el('p', null, S.reflect)); }
       }));
@@ -344,6 +472,17 @@
     window.SBE_DOC.print({ title: what === 'year' ? M.YEAR_FORM.title : (txt(P.title).replace(/^גשר:?\s*/, '') || 'גשר שותפות'), subtitle: [S.form.forWho, S.form.age, S.form.lang].filter(Boolean).join(' · ') + ' · גרסה ' + S.version, kind, node: out });
   }
   document.querySelectorAll('[data-print]').forEach((b) => b.addEventListener('click', () => { if (S.plan) doPrint(b.dataset.print); }));
+  // קובץ עבודה: כל המעבדה, כדי להמשיך במכשיר אחר (כולל הכינויים והסיפורים: נשמר רק אצלך)
+  document.querySelectorAll('[data-savework]').forEach((b) => b.addEventListener('click', () => {
+    if (!confirm('בקובץ יש גם את הכינויים ואת הסיפורים של המשפחות. כדאי לשמור אותו רק במקום פרטי. להמשיך?')) return;
+    fileOut(JSON.stringify({ type: 'begood-bridge', v: 1, savedAt: new Date().toISOString(), state: S }), 'application/json', 'גשר-קובץ-עבודה.json');
+  }));
+  document.querySelectorAll('[data-openwork]').forEach((inp) => inp.addEventListener('change', async () => {
+    const file = inp.files[0]; if (!file) return;
+    try { const o = JSON.parse(await file.text()); if (!o || o.type !== 'begood-bridge' || !o.state || !o.state.form) throw new Error('זה לא קובץ עבודה של מעבדת הגשר');
+      if (S.plan && !confirm('לפתוח את הקובץ במקום הסבב הנוכחי?')) return; S = Object.assign(EMPTY(), o.state); save(); location.reload(); }
+    catch (e) { alert('לא הצלחנו לפתוח את הקובץ: ' + e.message); } finally { inp.value = ''; }
+  }));
   F('newRound').addEventListener('click', () => { if (!confirm('לפתוח סבב חדש? הסבב הנוכחי יימחק מהמכשיר.')) return; const f = S.form; S = EMPTY(); S.form = f; save(); goStep(1); });
 
   F('example').addEventListener('click', () => {

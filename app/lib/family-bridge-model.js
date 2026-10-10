@@ -163,6 +163,49 @@
       'הוסיפי לשורש ה-JSON: "changes": [{"where":"","what":"","why":""}] (עד 6), ו-"learned": שניים או שלושה משפטים על מה שהמורה למדה על בניית הגשר, בלי שיפוט של משפחות.'
     ].join('\n\n');
   }
+  // ── אחרי ההחלטה: המורה מובלת בחמישה צעדים לכל משפחה (10/10/2026: "המערכת צריכה להוביל את המורה בתהליך") ──
+  const NEXT = ['בוחרים המשך ונקודת בדיקה', 'שולחים את ההודעה למשפחה', 'מתרגלים את השיחה (אם תרצי)', 'מתכננים את הקשר בהמשך', 'סיכום ושמירה במחשב'];
+  const PRACTICE_TURNS = 6;
+  // תרגול: המודל משחק את ההורה (או את בן/בת המשפחה שבקשר). דמות מדברת בקולה הטבעי.
+  function practiceSystem(caseText) {
+    return [
+      'את משחקת הורה (או בן או בת משפחה שבקשר עם בית הספר) בשיחה עם המחנכת של הילד או הילדה. זה תרגול: המחנכת מתאמנת על שיחה אחת קצרה לבניית קשר.',
+      'מה שידוע על המשפחה ועל השיחה:\n' + caseText,
+      'מה שהמחנכת חושבת שאת מרגישה הוא השערה שלה בלבד. אפשר שתרגישי כך, ואפשר שמשהו אחר: עייפות, עומס, חוויה קודמת עם בית הספר, או פשוט שהקבוצה לא נוחה לך. בחרי משהו אמין, ואל תגלי אותו מיד.',
+      'עני בקצרה, משפט עד שלושה, בשפה יומיומית ובקול טבעי. לא קלה מדי ולא קשה מדי. כשהמחנכת מתחילה מהילד/ה, מקשיבה, שואלת שאלה פתוחה ומציעה בחירה, את נפתחת קצת. כשהיא מאשימה, מטיפה או מניחה מה את מרגישה, את נסגרת קצת.',
+      'אל תצאי מהדמות, אל תתני משוב ואל תסבירי. רק התשובה של ההורה.'
+    ].join('\n\n');
+  }
+  const FEEDBACK_SHAPE = '{"worked":[""],"try":[""],"next":""}';
+  function feedbackSystem(kb) {
+    return BASE.concat([
+      'עכשיו: משוב קצר על תרגול שיחה של המחנכת עם הורה (שהמודל שיחק). משוב על הפעולות בשיחה, לא על המחנכת כאדם, ובלי ציון. עד 120 מילים בסך הכול.',
+      'worked: 2 או 3 דברים שעבדו בשיחה, עם ציטוט קצר ממה שהמחנכת אמרה. try: 1 או 2 דברים שאפשר לנסות אחרת, עם משפט לדוגמה. next: משפט אחד: מה הצעד הבא בקשר עם המשפחה.',
+      'בלי מקורות ובלי מפתחות בסוגריים.',
+      'החזירי אך ורק JSON במבנה הזה: ' + FEEDBACK_SHAPE
+    ]).join('\n\n');
+  }
+  const PLAN_NEXT_SHAPE = '{"steps":[{"when":"","what":"","how":"","who":""}],"noReply":"","check":{"when":"","look":""},"light":""}';
+  function planNextSystem(kb, writerRule) {
+    return BASE.concat([
+      'עכשיו: תכנון הקשר בהמשך עם משפחה אחת, לחודשיים הקרובים, לפי ההמשך שהמורה בחרה ודרך הקשר שהוסכמה. קל ומעשי: מעט נקודות קשר, קצרות, בדרך שהמשפחה בחרה.',
+      'steps: 3 או 4 נקודות קשר לפי הסדר {when: מתי, למשל "בעוד שבוע, ביום חמישי", what: מה עושים או אומרים, במשפט אחד, how: באיזו דרך קשר, who: מי (המורה, או מי שהוסכם)}. לפחות אחת מהן משתפת משהו טוב על הילד/ה.',
+      'noReply: מה עושים אם אין תגובה, בלי לחץ ובלי שיפוט (החלופה בכיתה, ודרך קשר קלה יותר).',
+      'check: נקודת הבדיקה {when, look: מה נראה בכיתה או בקשר שיגיד שזה עובד}.',
+      'light: משפט אחד: איך שומרים שזה לא יעמיס על המורה.',
+      writerRule ? 'משפטים שנאמרים למשפחה נכתבים לפי עקרונות השפה המחזקת:\n' + writerRule : '',
+      'החזירי אך ורק JSON במבנה הזה: ' + PLAN_NEXT_SHAPE
+    ]).filter(Boolean).join('\n\n');
+  }
+  const SUMMARY_SHAPE = '{"title":"","rows":[{"label":"","text":""}],"next":""}';
+  function summarySystem(kb) {
+    return BASE.concat([
+      'עכשיו: סיכום קצר של העבודה של המורה עם משפחה אחת, כדי שתשמור אותו במחשב ותחזור אליו. בגוף שני, למורה. בלי שמות.',
+      'rows: 5 עד 7 שורות {label: כותרת קצרה, text: שניים או שלושה משפטים}, לפי מה שנמסר: הסיפור בקצרה (בלי לחזור על הרגשות מילה במילה), מה המשפחה ענתה, ההמשך שנבחר ונקודת הבדיקה, מה עלה בתרגול (אם היה), תכנון הקשר בהמשך (אם היה), ומה למדת על הגשר עם המשפחה הזאת. השורה האחרונה תמיד {label: "לתיק הרציפות", text: דרך הקשר המוסכמת במשפט אחד או שניים (איך, כמה ומתי, ומי בקשר), כך שמחליפה תוכל להמשיך אותה}. next: הצעד הבא, במשפט אחד, עם תאריך אם נמסר.',
+      'title: שם קצר, למשל "גשר עם [משפחה]: סיכום".',
+      'החזירי אך ורק JSON במבנה הזה: ' + SUMMARY_SHAPE
+    ]).join('\n\n');
+  }
   function parse(text) {
     const t = String(text || '').trim();
     try { return JSON.parse(t); } catch (e) {}
@@ -174,7 +217,10 @@
   function valid(o) {
     return !!(o && typeof o === 'object' && o.goal && o.goal.text && arr(o.ways).length >= 2 && o.school && o.school.what && o.card && (arr(o.card.options).length || arr(o.card.questions).length));
   }
+  const validFeedback = (o) => !!(o && arr(o.worked).length);
+  const validPlanNext = (o) => !!(o && arr(o.steps).length);
+  const validSummary = (o) => !!(o && arr(o.rows).length);
   function validDecision(o) { return !!(o && arr(o.options).length >= 1 && o.reply && o.reply.text && o.check); }
-  return { STAGES, STORY, storyText, FOCUS, isGoal, RESILIENCE, PERSONAL, SHARED, RESPONSES, FIELDS, SECTIONS, YEAR_FORM,
+  return { NEXT, PRACTICE_TURNS, practiceSystem, feedbackSystem, planNextSystem, summarySystem, validFeedback, validPlanNext, validSummary, STAGES, STORY, storyText, FOCUS, isGoal, RESILIENCE, PERSONAL, SHARED, RESPONSES, FIELDS, SECTIONS, YEAR_FORM,
     inputText, anonymize, planSystem, decideSystem, reviseSystem, parse, valid, validDecision };
 });

@@ -18,7 +18,8 @@
   function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = String(text); return n; }
   function btn(text, cls, fn) { const b = el('button', cls || 'btn btn-ghost', text); b.type = 'button'; if (fn) b.addEventListener('click', fn); return b; }
   const today = () => new Date().toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' });
-  const fmtDate = (v) => v ? v.split('-').reverse().join('.') : '';
+  const fmtDate = (v) => v ? (window.sbeDateIL ? sbeDateIL(v) : v) : '';
+  const isoPlus = (n) => window.sbeIsoPlus ? sbeIsoPlus(n) : '';
   const txt = (x) => window.SBE_REFS ? SBE_REFS.strip(String(x == null ? '' : x)) : String(x || '');
   const arr = (x) => Array.isArray(x) ? x : [];
   const copy = (x) => JSON.parse(JSON.stringify(x));
@@ -286,7 +287,7 @@
   // ── צעד 3: שתי הפעלות ──
   function runCard(run, n) {
     const c = el('section', 'runcard'); c.appendChild(el('h3', null, 'הפעלה ' + n));
-    const d = el('div', 'f'), dl = el('label', null, 'תאריך'), di = el('input'); di.type = 'date'; di.value = run.date || ''; di.id = 'rd' + n; dl.htmlFor = di.id;
+    const d = el('div', 'f'), dl = el('label', null, 'תאריך'), di = el('input'); di.type = 'date'; if (!run.date) { run.date = isoPlus(n === 1 ? 0 : 7); save(); } di.value = run.date; di.id = 'rd' + n; dl.htmlFor = di.id;
     di.addEventListener('change', () => { run.date = di.value; save(); }); d.append(dl, di); c.appendChild(d);
     c.appendChild(window.SBE_TABLE(['המשימה', 'תפקיד', 'מה קרה'], arr(I.plan.board).map((t, i) => {
       const s = el('select'); s.setAttribute('data-closed', ''); s.setAttribute('aria-label', 'מה קרה: ' + txt(t.task)); s.appendChild(new Option('בחירה…', ''));
@@ -496,7 +497,7 @@
 
   function openItem() {
     buildForm(); F('err1').hidden = true; F('err4').hidden = true;
-    F('reviewDate').value = I.reviewDate || '';
+    F('reviewDate').value = I.reviewDate || isoPlus(14);
     goStep(I.plan ? (I.step || 2) : 1);
   }
   openItem();
