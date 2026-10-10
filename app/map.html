@@ -79,10 +79,9 @@ svg.map{display:block;width:100%;height:auto;overflow:visible}
 .st.on .badge{opacity:1}
 .st.on .halo{animation:pulse 2.2s ease-out infinite}
 @keyframes pulse{0%{opacity:.55;transform:scale(1)}100%{opacity:0;transform:scale(1.7)}}
-.flow{animation:flow 6s linear infinite}
 @keyframes flow{to{stroke-dashoffset:-240}}
 .route{stroke-dasharray:6 10;animation:flow 3s linear infinite}
-@media (prefers-reduced-motion: reduce){.flow,.route,.st.on .halo{animation:none}}
+@media (prefers-reduced-motion: reduce){.route,.st.on .halo{animation:none}}
 .legend{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;font-size:14.5px;color:var(--muted);margin:6px 0 0}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .dot{width:14px;height:14px;border-radius:50%;display:inline-block}
@@ -267,7 +266,35 @@ footer a{margin:0 6px}
       return { w: 400, h, river: d, pts, sun: [205, 82, 50], start: [372, h - 40], hills: ['M0 ' + h + ' L0 ' + (h - 420) + ' C 120 ' + (h - 470) + ', 260 ' + (h - 400) + ', 400 ' + (h - 450) + ' L400 ' + h + ' Z', 'M0 ' + h + ' L0 ' + (h - 180) + ' C 140 ' + (h - 220) + ', 260 ' + (h - 160) + ', 400 ' + (h - 200) + ' L400 ' + h + ' Z'], fs: 16, r: 24 };
     })()
   };
-  let mode = '', nodes = {}, routeG = null, L = null;
+  let mode = '', nodes = {}, routeG = null, L = null, waveRAF = 0;
+  // גלים זורמים על הנהר (10/10/2026: "שהקווים שזזים יהיו כמו גל זורם"): שלושה קווים דקים ובהירים
+  // שמתפתלים לאורך הנהר בגל רך, והגל נע לכיוון השמש. בלי תנועה למי שביקש פחות תנועה.
+  function waves(svg, probe, width) {
+    cancelAnimationFrame(waveRAF);
+    const len = probe.getTotalLength(), step = 7, pts = [];
+    for (let d = 0; d <= len; d += step) {
+      const a = probe.getPointAtLength(Math.max(0, d - 1)), b = probe.getPointAtLength(Math.min(len, d + 1)), c = probe.getPointAtLength(d);
+      const dx = b.x - a.x, dy = b.y - a.y, n = Math.hypot(dx, dy) || 1;
+      pts.push({ x: c.x, y: c.y, nx: -dy / n, ny: dx / n, d });
+    }
+    const lines = [
+      { off: -width * 0.2, amp: width * 0.12, k: 0.045, sp: 1.6, ph: 0, w: 2.4, o: 0.7, dash: [70, 55], v: 38 },
+      { off: width * 0.04, amp: width * 0.14, k: 0.032, sp: 1.15, ph: 2.1, w: 1.8, o: 0.5, dash: [45, 75], v: 30 },
+      { off: width * 0.24, amp: width * 0.09, k: 0.058, sp: 2.0, ph: 4.0, w: 1.5, o: 0.6, dash: [90, 65], v: 46 }
+    ].map((ln) => Object.assign(ln, { el: svg.appendChild(S('path', { fill: 'none', stroke: '#fff', 'stroke-opacity': ln.o, 'stroke-width': ln.w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-dasharray': ln.dash.join(' ') })) }));
+    const fade = (d) => Math.min(1, d / 60, (len - d) / 60);
+    const draw = (t) => lines.forEach((ln) => {
+      let path = '';
+      pts.forEach((p, i) => { const o = (ln.off + ln.amp * Math.sin(ln.k * p.d - t * ln.sp + ln.ph)) * fade(p.d);
+        path += (i ? ' L ' : 'M ') + (p.x + p.nx * o).toFixed(1) + ' ' + (p.y + p.ny * o).toFixed(1); });
+      ln.el.setAttribute('d', path); ln.el.setAttribute('stroke-dashoffset', (-t * ln.v).toFixed(1));
+    });
+    const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (still) { draw(0); return; }
+    const t0 = performance.now(); let last = 0;
+    const tick = (now) => { if (now - last > 33) { last = now; draw((now - t0) / 1000); } waveRAF = requestAnimationFrame(tick); };
+    waveRAF = requestAnimationFrame(tick);
+  }
   function draw() {
     const m = box.clientWidth < 640 ? 'tall' : 'wide'; if (m === mode) return; mode = m; L = LAYOUT[m];
     box.textContent = ''; nodes = {};
@@ -286,8 +313,8 @@ footer a{margin:0 6px}
     L.hills.forEach((d, i) => svg.appendChild(S('path', { d, fill: i ? 'url(#h2)' : 'url(#h1)' })));
     // הנהר: פס רחב, ועליו זרם בהיר שזורם
     svg.appendChild(S('path', { d: L.river, fill: 'none', stroke: 'url(#rv)', 'stroke-width': m === 'wide' ? 26 : 22, 'stroke-linecap': 'round', opacity: '.9' }));
-    svg.appendChild(S('path', { class: 'flow', d: L.river, fill: 'none', stroke: '#fff', 'stroke-opacity': '.55', 'stroke-width': 4, 'stroke-linecap': 'round', 'stroke-dasharray': '40 80' }));
     const probe = S('path', { d: L.river }); svg.appendChild(probe); probe.setAttribute('fill', 'none');
+    waves(svg, probe, m === 'wide' ? 26 : 22);
     // אתם כאן: שתי דמויות כמו בלוגו
     const [sx, sy] = L.start, me = S('g', { transform: 'translate(' + (sx - 30) + ',' + (sy - 78) + ')' });
     me.innerHTML = '<circle cx="14" cy="10" r="10" fill="url(#fg)"/><path d="M0 52 C 4 28, 24 26, 28 52 Z" fill="url(#fg)"/><circle cx="36" cy="22" r="7.5" fill="url(#wk)"/><path d="M26 54 C 29 36, 44 34, 47 54 Z" fill="url(#wk)"/>' +
