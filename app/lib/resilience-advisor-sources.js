@@ -20,7 +20,8 @@
     leadcr: 'מנהיגות בחירום ובמשבר',
     stu:  'מנהיגות תלמידים וקול התלמידים',
     facil: 'הנחיית קבוצות ושיח בכיתה',
-    cont: 'רציפות, מסירה וגיבוי בצוות'
+    cont: 'רציפות, מסירה וגיבוי בצוות',
+    team: 'למידה מקצועית בצוות, תרגול עמיתים ותכנון קדימה'
   };
   var S = [
     // ── ישראל ──
@@ -766,7 +767,68 @@
     {k:'Epstein2011', g:'cont', apa:'Epstein, J. L. (2011). School, family, and community partnerships: Preparing educators and improving schools (2nd ed.). Westview Press.',
       url:'https://scholar.google.com/scholar?q=Epstein+2011+School+family+and+community+partnerships',
       gist:'שש דרכים לשותפות בין בית הספר למשפחה, ובהן תקשורת דו־כיוונית ברורה ולמידה בבית. שותפות טובה מתוכננת ומתעדכנת, ולא נשענת על אדם אחד.',
-      be:'המכתב והשרשרת להורים הם חלק מתוכנית קבועה, ולא פנייה חד־פעמית.'}
+      be:'המכתב והשרשרת להורים הם חלק מתוכנית קבועה, ולא פנייה חד־פעמית.'},
+    // ── למידה מקצועית בצוות, תרגול עמיתים ותכנון קדימה (10/10/2026, למעבדת הצוות) ──
+    {k:'EEF2021', g:'team', apa:'Education Endowment Foundation. (2021). Effective professional development: Guidance report. EEF.',
+      url:'https://d2tic4wvo1iusb.cloudfront.net/production/eef-guidance-reports/effective-professional-development/EEF-Effective-PD-Recommendations-Poster.pdf',
+      gist:'פיתוח מקצועי אפקטיבי נשען על ארבעה מנגנונים: לבנות ידע, להניע (מטרה, משוב, אמינות), לפתח טכניקה (הדגמה, תרגול מודרך, משוב) ולעגן בפרקטיקה (תכנון פעולה, תזכורות בהקשר, הרגל וחזרה). שילוב של כמה מנגנונים עובד יותר ממנגנון בודד.',
+      be:'השלבים של מעבדת הצוות בנויים על המנגנונים האלה: בוחרים מהלך, מתרגלים עם משוב, מנסים בהקשר האמיתי, ומתכננים את הפעם הבאה.'},
+    {k:'Sims2021', g:'team', apa:'Sims, S., Fletcher-Wood, H., O\u2019Mara-Eves, A., Cottingham, S., Stansfield, C., Van Herwegen, J., & Anders, J. (2021). What are the characteristics of teacher professional development that increase pupil achievement? A systematic review and meta-analysis. Education Endowment Foundation.',
+      url:'https://scholar.google.com/scholar?q=Sims+2021+characteristics+of+teacher+professional+development+meta-analysis',
+      gist:'סקירה ומטה-אנליזה: תכניות פיתוח מקצועי שכוללות יותר מנגנונים מאוזנים (בניית ידע, הנעה, פיתוח טכניקה ועיגון בפרקטיקה) קשורות להישגים גבוהים יותר של התלמידים.',
+      be:'לכן התוצר כולל גם כרטיס מהלך, גם תרגול ומשוב, גם ניסיון אמיתי, וגם החלטה לסבב הבא.'},
+    {k:'DarlingHammond2017', g:'team', apa:'Darling-Hammond, L., Hyler, M. E., & Gardner, M. (2017). Effective teacher professional development. Learning Policy Institute.',
+      url:'https://learningpolicyinstitute.org/product/effective-teacher-professional-development-report',
+      gist:'פיתוח מקצועי אפקטיבי ממוקד בתוכן, כולל למידה פעילה, שיתוף פעולה בין עמיתים, דוגמאות לפרקטיקה טובה, ליווי ומשוב, זמן לרפלקציה, ומשך מתמשך ולא אירוע חד־פעמי.',
+      be:'מעבדת הצוות היא סבב חוזר ולא אירוע אחד: אותו צוות חוזר לאותו מהלך, משפר ושומר.'},
+    {k:'Kraft2018', g:'team', apa:'Kraft, M. A., Blazar, D., & Hogan, D. (2018). The effect of teacher coaching on instruction and achievement: A meta-analysis of the causal evidence. Review of Educational Research, 88(4), 547–588.',
+      url:'https://doi.org/10.3102/0034654318759268',
+      gist:'מטה-אנליזה של מחקרים סיבתיים: ליווי פרטני וממוקד של מורים משפר את ההוראה ואת הישגי התלמידים, בעיקר כשהוא ממוקד בפרקטיקה מסוימת וכולל תצפית ומשוב חוזרים.',
+      be:'התצפית והמשוב בין עמיתים ממוקדים במהלך אחד, כמו בליווי מקצועי.'},
+    {k:'Grossman2009', g:'team', apa:'Grossman, P., Compton, C., Igra, D., Ronfeldt, M., Shahan, E., & Williamson, P. W. (2009). Teaching practice: A cross-professional perspective. Teachers College Record, 111(9), 2055–2100.',
+      url:'https://scholar.google.com/scholar?q=Grossman+2009+Teaching+practice+A+cross-professional+perspective',
+      gist:'במקצועות אנושיים לומדים פרקטיקה דרך ייצוגים שלה (דוגמאות), פירוק לרכיבים, והתנסויות מקורבות (approximations): תרגול בתנאים מפושטים לפני העבודה האמיתית.',
+      be:'החזרה עם עמיתים היא התנסות מקורבת: מתרגלים את המהלך בתנאים בטוחים לפני המפגש האמיתי.'},
+    {k:'Lampert2013', g:'team', apa:'Lampert, M., Franke, M. L., Kazemi, E., Ghousseini, H., Turrou, A. C., Beasley, H., Cunard, A., & Crowe, K. (2013). Keeping it complex: Using rehearsals to support novice teacher learning of ambitious teaching. Journal of Teacher Education, 64(3), 226–243.',
+      url:'https://doi.org/10.1177/0022487112473837',
+      gist:'חזרות (rehearsals) שבהן מורים מתרגלים מהלך הוראה מול עמיתים, והמלווה עוצר, מעיר ומבקש לנסות שוב, עוזרות ללמוד מהלכים מורכבים בלי לפשט אותם.',
+      be:'תסריט החזרה בנוי כך: סבב קצר, עצירה, משוב ממוקד וניסיון חוזר.'},
+    {k:'Ronfeldt2015', g:'team', apa:'Ronfeldt, M., Farmer, S. O., McQueen, K., & Grissom, J. A. (2015). Teacher collaboration in instructional teams and student achievement. American Educational Research Journal, 52(3), 475–514.',
+      url:'https://doi.org/10.3102/0002831215585562',
+      gist:'שיתוף פעולה איכותי בצוותי הוראה קשור להישגים גבוהים יותר של תלמידים ולשיפור של המורים לאורך זמן, ובמיוחד שיתוף פעולה סביב הוראה והערכה.',
+      be:'הצוות לומד יחד סביב מהלך אמיתי, ולא רק נפגש: זה סוג שיתוף הפעולה שמשפר.'},
+    {k:'Vescio2008', g:'team', apa:'Vescio, V., Ross, D., & Adams, A. (2008). A review of research on the impact of professional learning communities on teaching practice and student learning. Teaching and Teacher Education, 24(1), 80–91.',
+      url:'https://doi.org/10.1016/j.tate.2007.01.004',
+      gist:'קהילות למידה מקצועיות משפרות את ההוראה ואת הלמידה כשהן ממוקדות בלמידת התלמידים, שומרות על התמדה, ומקבלות החלטות על סמך מה שנצפה בפועל.',
+      be:'ההחלטה לסבב הבא נשענת על מה שנצפה במפגש, ולא על תחושה.'},
+    {k:'HattieTimperley2007', g:'team', apa:'Hattie, J., & Timperley, H. (2007). The power of feedback. Review of Educational Research, 77(1), 81–112.',
+      url:'https://doi.org/10.3102/003465430298487',
+      gist:'משוב יעיל עונה על שלוש שאלות: לאן אני הולך, איך אני מתקדם, ומה הצעד הבא. משוב על המשימה ועל התהליך מועיל יותר ממשוב על האדם.',
+      be:'המשוב בין עמיתים הוא על הפעולה: מה עבד, מה אפשר לנסות, ומה הצעד הבא, בלי ציון ובלי שיפוט של אדם.'},
+    {k:'Lewis2006', g:'team', apa:'Lewis, C., Perry, R., & Murata, A. (2006). How should research contribute to instructional improvement? The case of lesson study. Educational Researcher, 35(3), 3–14.',
+      url:'https://doi.org/10.3102/0013189X035003003',
+      gist:'חקר שיעור (lesson study): צוות מתכנן יחד, אחד מלמד והשאר צופים לפי מוקד שנבחר, ואז משפרים ומתעדים. הידע נשמר בצוות ועובר הלאה.',
+      be:'מהלך שנוסה נשמר ברפרטואר הצוות עם ההקשר וההתאמות, כמו בחקר שיעור.'},
+    {k:'Snyder2002', g:'team', apa:'Snyder, C. R. (2002). Hope theory: Rainbows in the mind. Psychological Inquiry, 13(4), 249–275.',
+      url:'https://doi.org/10.1207/S15327965PLI1304_01',
+      gist:'תקווה בנויה משלושה רכיבים: מטרה ברורה, דרכים להגיע אליה, ותחושה שאפשר ללכת בהן. אפשר לטפח אותה בתכנון של מטרות, מסלולים וחלופות.',
+      be:'"מתכננים קדימה" בונה תקווה מעשית: תמונת עתיד, צעדים ודרך חלופית.'},
+    {k:'Oettingen2012', g:'team', apa:'Oettingen, G. (2012). Future thought and behaviour change. European Review of Social Psychology, 23(1), 1–63.',
+      url:'https://doi.org/10.1080/10463283.2011.643698',
+      gist:'חשיבה על עתיד רצוי מקדמת שינוי כשמצמידים אליה את המכשול שבדרך ותוכנית למכשול (mental contrasting). פנטזיה חיובית לבדה פחות מניעה לפעולה.',
+      be:'בתכנון קדימה כותבים גם את התמונה הטובה וגם את המכשול האפשרי ומה עושים אז.'},
+    {k:'Gollwitzer1999', g:'team', apa:'Gollwitzer, P. M. (1999). Implementation intentions: Strong effects of simple plans. American Psychologist, 54(7), 493–503.',
+      url:'https://doi.org/10.1037/0003-066X.54.7.493',
+      gist:'תוכנית בצורת "אם... אז..." (מתי, איפה ומה אעשה) מגבירה מאוד את הסיכוי שהכוונה תתבצע בפועל.',
+      be:'הניסיון במפגש מנוסח כ"מתי, איפה ומה נעשה", כדי שהשינוי באמת יקרה.'},
+    {k:'Hackman2002', g:'team', apa:'Hackman, J. R. (2002). Leading teams: Setting the stage for great performances. Harvard Business School Press.',
+      url:'https://scholar.google.com/scholar?q=Hackman+2002+Leading+teams',
+      gist:'צוות מצליח כשיש לו מטרה משותפת מאתגרת, מבנה ותפקידים ברורים, הקשר תומך וליווי בזמן הנכון. הובלה היא יצירת התנאים, לא רק הנחיה.',
+      be:'גם צוות תלמידים שמוביל את עצמו מקבל מבנה: מטרה, תפקידים מתחלפים והחלטה מתי בודקים.'},
+    {k:'Bandura1997', g:'team', apa:'Bandura, A. (1997). Self-efficacy: The exercise of control. W. H. Freeman.',
+      url:'https://scholar.google.com/scholar?q=Bandura+1997+Self-efficacy+The+exercise+of+control',
+      gist:'מסוגלות נבנית בעיקר מחוויות הצלחה, מצפייה בעמיתים שמצליחים, משכנוע מעודד ומהבנת התגובה הרגשית. מסוגלות קבוצתית נבנית כשהקבוצה מצליחה יחד.',
+      be:'סבב קצר עם הצלחה קטנה ונראית, וצפייה בעמיתה שמנסה, בונים מסוגלות אישית וצוותית.'}
   ];
   var byKey = {}; S.forEach(function(s){ byKey[s.k] = s; });
   // לכל יועצת בנק משלה: פרקטי (הכיתה) — בלי קבוצות המנהיגות; נוגי (מנהיגות) — קבוצות המנהיגות,
@@ -776,11 +838,14 @@
   var NUGI_K = { Edmondson1999: 1, Frazier2017: 1, JenningsGreenberg2009: 1, Allen2018: 1, WangDegol2016: 1,
     Battistich1997: 1, RyanDeci2017: 1, Moore2026: 1, Gregory2016: 1, Augustine2018: 1, Miao2023: 1, Brookings2026: 1 };
   var CONT_K = { EvenZahav2024: 1, Hazzan2026: 1, Miller2007: 1, Spillane2005: 1, Hobfoll2007: 1, Emmer2001: 1, BrykSchneider2002: 1, Sade2024: 1, Fuchs2025: 1 };
+  var TEAM_K = { Edmondson1999: 1, Johnson2009: 1, RyanDeci2017: 1, Spillane2005: 1, BrykSchneider2002: 1, Tuckman1965: 1, Kaner2014: 1, Rogelberg2019: 1, Topping2005: 1, Sade2024: 1 };
   var ADV = {
-    practi: function(s){ return !LEAD_G[s.g] && s.g !== 'cont'; },
+    practi: function(s){ return !LEAD_G[s.g] && s.g !== 'cont' && s.g !== 'team'; },
     nugi:   function(s){ return !!(NUGI_G[s.g] || NUGI_K[s.k]); },
     // תיק הרציפות (09/10/2026): קבוצת הרציפות ומקורות קיימים על רציפות חינוכית, מנהיגות מבוזרת, שגרה ואמון
     continuity: function(s){ return s.g === 'cont' || !!CONT_K[s.k]; },
+    // מעבדת הצוות (10/10/2026): הקבוצה הזאת ועוד מקורות קיימים על ביטחון פסיכולוגי, שיתוף פעולה, הנחיה וקבוצות
+    teamlab: function(s){ return s.g === 'team' || !!TEAM_K[s.k]; },
     nana:   function(){ return true; } // ננה — כל בנק הידע (07/10/2026): ההמלצות והמשוב שלה נשענים על כל מקורות החוסן
   };
   function forAdvisor(name){ var f = ADV[name]; return f ? S.filter(f) : S.slice(); }
