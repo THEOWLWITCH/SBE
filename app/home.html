@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>המרחב שלי</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/readiness-groups.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -58,6 +59,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 .banner.danger{border-inline-start-color:var(--brick);background:var(--brick-soft);}
 .banner a{color:var(--spoken);font-weight:700;}
 h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:18px;margin:22px 0 10px;}
+.rgroup{font-size:15.5px;margin:18px 0 8px;color:var(--spoken);}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
 .tile{display:block;background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:13px 15px;
   text-decoration:none;color:var(--ink);box-shadow:0 1px 3px var(--shadow);transition:border-color .12s;}
@@ -197,15 +199,22 @@ async function api(action, extra = {}) {
   if (has("journey")) T.push(["journey.html", "מסע אל החוסן", "מסע מלווה בשלבים אל תו חוסן לקהילת חוסן (מיפוי, הצעה עם אפשרויות, אבני דרך ותעודות)"]);
   if (has("conv")) T.push(["conversation-planner.html", "תכנון שיחה", "הכנה לשיחה אמיתית: בעל פה או בכתב"]);
   if (has("activity")) T.push(["activity-planner.html", "תכנון פעילות", "תכנון פעילות חינוכית או ניתוח פעילות קיימת"]);
-  if (has("academic")) T.push(["academic-review.html", "משוב לעבודה אקדמית", "משוב לפי קריטריונים לפני הגשה"]);
+  if (has("academic")) T.push(["academic-review.html", "משוב לעבודות", "להתכונן להגשת עבודה: משוב לפי קריטריונים"]);
   const box = $("tiles");
   if (!T.length && INFO.kind !== "instadmin" && !has("lecturer")) {
     box.append(el("div", { class: "empty" }, "עדיין לא נפתחו לך כלים. פנו למי שנתן/ה לך את הקוד."));
   } else {
+    // הכלים לפי חמש שאלות של מוכנות יומיומית (SBE_READY), ובסוף ספריית המקורות
+    const R = window.SBE_READY, tile = ([h, t, d]) => el("a", { class: "tile", href: h }, el("b", {}, t), el("span", {}, d));
+    const rest = T.filter(x => !(R && R.groupOf(x[0])));
+    (R ? R.GROUPS : []).forEach(gr => {
+      const its = T.filter(x => R.groupOf(x[0]) === gr); if (!its.length) return;
+      box.append(el("h3", { class: "rgroup" }, R.title(gr)));
+      const g = el("div", { class: "tiles" }); its.forEach(x => g.append(tile(x))); box.append(g);
+    });
     const g = el("div", { class: "tiles" });
-    T.concat([["sources-library.html", "ספריית המקורות", "המקורות התיאורטיים של המערכת"]])
-      .forEach(([h, t, d]) => g.append(el("a", { class: "tile", href: h }, el("b", {}, t), el("span", {}, d))));
-    box.append(g);
+    rest.concat([["sources-library.html", "ספריית המקורות", "המקורות התיאורטיים של המערכת"]]).forEach(x => g.append(tile(x)));
+    box.append(el("h3", { class: "rgroup" }, "📚 לעיון"), g);
   }
 }
 

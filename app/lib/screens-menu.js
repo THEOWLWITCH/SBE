@@ -13,14 +13,20 @@ window.SBE_SCREENS = [
     ]},
   ]},
   { part:'others', title:'👥 מה שאחרים רואים', groups:[
-    { title:'כניסה ומקורות', items:[
+    { title:'🌅 השער: מתחילים כאן', items:[
       { file:'entry.html', label:'מסך כניסה', who:'כולם' },
-      { file:'system-select.html', label:'בחירת מערכת', who:'כניסה בקוד מוסד (הדרך הישנה)' },
-      { file:'sources-library.html', label:'ספריית המקורות', who:'כל מי שנכנס/ה' },
-      { file:'examples.html', label:'🗂 ספריית תוצרים לדוגמה', who:'כולם, גם בלי כניסה (רק מה שסומן במעבדת הדמו)' },
       { file:'map.html', label:'🗺 מפת הכלים', who:'כולם, גם בלי כניסה' },
+      { file:'examples.html', label:'🗂 ספריית תוצרים לדוגמה', who:'כולם, גם בלי כניסה (רק מה שסומן במעבדת הדמו)' },
+      { file:'sources-library.html', label:'ספריית המקורות', who:'כל מי שנכנס/ה' },
+      { file:'system-select.html', label:'בחירת מערכת', who:'כניסה בקוד מוסד (הדרך הישנה)' },
     ]},
-    { title:'סימולציה, שיחות מאתגרות', items:[
+    { title:'🔍 1. לראות: איפה אנחנו היום?', items:[
+      { file:'resilience-team.html', label:'מיפוי חוסן חברתי: מסך מחנך/ת', who:'הרשאת מיפוי חוסן חברתי' },
+      { file:'resilience-fill.html', label:'שאלון חוסן: מסך תלמיד/ה', who:'תלמידים, בקישור מהמחנך/ת' },
+      { file:'resilience-advisor.html', label:'פרקטי: יועצת לפיתוח חוסן חברתי', who:'הרשאת חוסן חברתי או פרקטי' },
+      { file:'leadership-advisor.html', label:'נוגי: יועצת למנהיגות תומכת חוסן', who:'הרשאת נוגי' },
+    ]},
+    { title:'🎭 2. להתאמן: מוכנים לרגע המאתגר?', items:[
       { file:'input-screen.html', label:'יצירת תרחיש: סטודנטיות.ים', who:'מנחות סטודנטים' },
       { file:'parent-input-screen.html', label:'יצירת תרחיש: הורים', who:'מנחות הורים' },
       { file:'student-input-screen.html', label:'יצירת תרחיש: נוער', who:'מנחות נוער' },
@@ -28,31 +34,29 @@ window.SBE_SCREENS = [
       { file:'facilitator-screen.html', label:'מסך הסדנה', who:'מנחות' },
       { file:'observation-sheet.html', label:'דף צפייה (טלפון)', who:'מתנסות בסדנה' },
       { file:'practice.html', label:'תרגול עצמי', who:'משתתפות בסדנה' },
-      { file:'feedback.html', label:'משוב', who:'משתתפות ומנחות' },
-      { file:'feedback-results.html', label:'תוצאות המשוב', who:'מנחות' },
+      { file:'conversation-planner.html', label:'תכנון שיחה', who:'הרשאת תכנון שיחה' },
+      { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
+      { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה bridge)' },
     ]},
-    { title:'תוצרי הסימולציה', items:[
+    { title:'🎭 2. להתאמן: תוצרי הסימולציה', items:[
       { file:'doc-facilitator.html', label:'גרסת המנחה', who:'רק את ומנחות הסימולציה' },
       { file:'doc-trainee.html', label:'גרסת המתנסה', who:'רק את ומנחות הסימולציה' },
       { file:'doc-actor.html', label:'גרסת השחקנית', who:'רק את ומנחות הסימולציה' },
       { file:'card-actor.html', label:'כרטיס שחקנית', who:'רק את ומנחות הסימולציה' },
     ]},
-    { title:'כלים לאנשי חינוך', items:[
-      { file:'conversation-planner.html', label:'תכנון שיחה', who:'הרשאת תכנון שיחה' },
+    { title:'🛠 3. לתכנן ולפעול: מה עושים מחר בבוקר?', items:[
       { file:'activity-planner.html', label:'תכנון פעילות', who:'הרשאת תכנון פעילות' },
-      { file:'academic-review.html', label:'משוב לעבודה אקדמית או פרויקט', who:'הרשאת משוב לעבודות' },
-    ]},
-    { title:'חוסן חברתי', items:[
       { file:'resilience-studio.html', label:'סטודיו חוסן: השראה ופעולה', who:'הרשאת סטודיו בלבד (עד לאישור המקצועי)' },
-      { file:'resilience-team.html', label:'מיפוי חוסן חברתי: מסך מחנך/ת', who:'הרשאת מיפוי חוסן חברתי' },
-      { file:'resilience-fill.html', label:'שאלון חוסן: מסך תלמיד/ה', who:'תלמידים, בקישור מהמחנך/ת' },
-      { file:'resilience-advisor.html', label:'פרקטי: יועצת לפיתוח חוסן חברתי', who:'הרשאת חוסן חברתי או פרקטי' },
-      { file:'leadership-advisor.html', label:'נוגי: יועצת למנהיגות תומכת חוסן', who:'הרשאת נוגי' },
       { file:'message-writer.html', label:'כתיבה מקדמת חוסן', who:'הרשאת כתיבה מקדמת חוסן בלבד' },
-      { file:'continuity-kit.html', label:'תיק רציפות', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה continuity)' },
+    ]},
+    { title:'📖 4. ללמוד מהעשייה: מה למדנו?', items:[
+      { file:'academic-review.html', label:'משוב לעבודות: להתכונן להגשה', who:'הרשאת משוב לעבודות' },
+      { file:'feedback.html', label:'משוב', who:'משתתפות ומנחות' },
+      { file:'feedback-results.html', label:'תוצאות המשוב', who:'מנחות' },
+    ]},
+    { title:'🔁 5. לעגן בשגרה: מה ימשיך לפעול גם כשמשהו משתבש?', items:[
       { file:'routines-hub.html', label:'מרכז שגרות ויוזמות חברתיות', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה routines)' },
-      { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה bridge)' },
-      { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
+      { file:'continuity-kit.html', label:'תיק רציפות', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה continuity)' },
       { file:'journey.html', label:'מסע אל החוסן: מסך המשתתפים', who:'הרשאת מסע אל החוסן' },
     ]},
   ]},

@@ -170,6 +170,9 @@ SYSTEMS.forEach(([l, ps], i) => {
   cb.dataset.perms = ps.join(",");
   const lb = document.createElement("label"); lb.append(cb, l); $("systems").append(lb);
 });
+// מפת הכלים: "אין לי עדיין: בקשה לכלי" מגיע עם renew.html?perms=conv — הכלי כבר מסומן
+{ const want = (new URLSearchParams(location.search).get("perms") || "").split(",").filter(Boolean);
+  document.querySelectorAll("#systems input[type=checkbox]").forEach(cb => { if (cb.dataset.perms.split(",").some(p => want.includes(p))) cb.checked = true; }); }
 // המוסד — שדה טקסט חופשי. אין רשימה ציבורית של המוסדות (07/10/2026): מנהלת המערכת מזהה את המוסד בבדיקה.
 // עבור מוסד או לשימוש פרטי (08/10/2026). בפרטי אין שם מוסד ואין קוד מנהל/ת מוסד.
 const forWho = () => document.querySelector("input[name=for]:checked").value;

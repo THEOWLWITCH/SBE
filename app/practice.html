@@ -5,6 +5,8 @@
 <script src="lib/ai-status.js"></script>
 <script src="lib/report-table.js"></script>
 <script src="lib/product-doc.js"></script>
+<script src="lib/ai-call.js"></script>
+<script src="lib/practice-custom.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -182,6 +184,23 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 .dlg-f{padding:12px 20px;border-top:1px solid var(--hair);display:flex;gap:9px;justify-content:flex-start;}
 
 [hidden]{display:none!important;}
+.own-card{display:flex;gap:14px;align-items:center;flex-wrap:wrap;border:1px solid var(--spoken);background:var(--spoken-soft);border-radius:10px;padding:14px 16px;margin:0 0 16px}
+.own-card div{flex:1 1 260px}.own-card b{display:block;font-size:17px;margin-bottom:2px}.own-card span{font-size:14.5px;color:var(--muted)}
+.own-steps{list-style:none;display:flex;gap:8px;flex-wrap:wrap;padding:0;margin:0 0 12px}
+.own-steps li{border:1px solid var(--hair);border-radius:999px;padding:4px 12px;font-size:14px;color:var(--muted)}
+.own-steps li.on{border-color:var(--spoken);color:var(--spoken);font-weight:700}
+#screen-custom .f{margin:0 0 12px}#screen-custom label{display:block;font-weight:700;margin-bottom:4px}
+#screen-custom textarea,#screen-custom input{width:100%;font:inherit;font-size:15px;padding:8px 10px;border:1px solid var(--hair);border-radius:6px;background:var(--surface);color:var(--ink);box-sizing:border-box}
+#screen-custom .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){#screen-custom .grid2{grid-template-columns:1fr}}
+.own-acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.own-q{margin:0 0 14px}.own-q b{display:block;margin-bottom:6px}.own-opts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.own-opts button{font-size:13.5px;padding:4px 12px;border-radius:999px}.own-opts button[aria-pressed="true"]{background:var(--spoken);border-color:var(--spoken);color:#fff}
+.own-wait{color:var(--muted);margin-top:10px}.own-err{color:var(--brick);font-weight:600;margin-top:10px}
+.own-change{margin-top:14px}.own-change summary{cursor:pointer;font-weight:700;color:var(--spoken)}.own-change textarea{margin:8px 0}
+.own-prev h3{margin:0 0 4px}.own-prev .who{color:var(--muted);margin:0 0 10px}.own-prev p{margin:0 0 8px}
+.own-prev .first{border-inline-start:3px solid var(--spoken);padding:6px 10px;background:var(--spoken-soft);border-radius:4px}
+.my-case{display:flex;gap:8px;align-items:center}
 </style>
 
 <div class="wrap">
@@ -225,10 +244,46 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 </dialog>
 
 <section id="screen-select">
-  <p class="sub" style="margin-bottom:10px;">בחרי תרחיש לתרגול עצמי.</p>
+  <div class="own-card">
+    <div><b>✍️ מקרה משלך</b><span>יש שיחה מאתגרת שלא נמצאת כאן? מספרים עליה, עונים על כמה שאלות, מאשרים את הסיפור ומתחילים להתאמן.</span></div>
+    <button type="button" class="primary" id="bOwnCase">לתרגול על מקרה משלי</button>
+  </div>
+  <div id="myCases"></div>
+  <p class="sub" style="margin-bottom:10px;">או בחרי תרחיש מהמאגר.</p>
   <div class="filters" id="filterBar"></div>
   <p class="note" id="filterCount" style="margin-bottom:10px;"></p>
   <div id="scenarioList"></div>
+</section>
+
+<section id="screen-custom" hidden>
+  <ol class="own-steps" id="ownSteps"><li data-s="1">1. מספרים על המקרה</li><li data-s="2">2. עוד כמה פרטים</li><li data-s="3">3. מאשרים את הסיפור</li></ol>
+  <div class="card" id="own1">
+    <div class="f"><label for="ownStory">על איזו שיחה תרצי להתאמן? מה קרה?</label>
+      <textarea id="ownStory" rows="5" placeholder="למשל: אבא של תלמיד בכיתה ו׳ כתב לי שהבן שלו לא רוצה לבוא לבית הספר בגלל ילדים בכיתה, ומבקש להיפגש מחר. בלי שמות אמיתיים."></textarea></div>
+    <div class="grid2">
+      <div class="f"><label for="ownRole">התפקיד שלי</label><input id="ownRole" list="ownRoles" placeholder="למשל: מחנכת"></div>
+      <div class="f"><label for="ownOther">מי מולי בשיחה</label><input id="ownOther" list="ownOthers" placeholder="למשל: אבא של תלמיד"></div>
+    </div>
+    <div class="f"><label for="ownGoal">מה הייתי רוצה שיקרה בסוף השיחה</label><input id="ownGoal" placeholder="למשל: שנסכים על צעד אחד לשבוע הקרוב"></div>
+    <div class="f"><label for="ownHard">מה מאתגר אותי בשיחה הזאת (אם תרצי)</label><input id="ownHard" placeholder="למשל: אני חוששת שהוא יכעס"></div>
+    <datalist id="ownRoles"></datalist><datalist id="ownOthers"></datalist>
+    <div class="own-acts"><button type="button" class="primary" id="ownNext">המשך</button><button type="button" id="ownCancel">חזרה לתרחישים</button></div>
+  </div>
+  <div class="card" id="own2" hidden>
+    <p><b>עוד כמה פרטים, כדי שהסיפור יהיה קרוב למה שקרה:</b></p>
+    <div id="ownQs"></div>
+    <div class="own-acts"><button type="button" class="primary" id="ownBuild">יוצרים את הסיפור</button><button type="button" id="ownBack1">חזרה</button></div>
+  </div>
+  <div class="card" id="own3" hidden>
+    <div id="ownPreview"></div>
+    <div class="own-acts"><button type="button" class="primary" id="ownApprove">✓ מאשרת, מתחילים להתאמן</button></div>
+    <details class="own-change"><summary>לשנות משהו בסיפור</summary>
+      <textarea id="ownChange" rows="2" placeholder="למשל: היא לא כועסת, היא בעיקר מודאגת. השיחה בטלפון ולא בפגישה."></textarea>
+      <button type="button" id="ownRevise">עדכון הסיפור</button></details>
+    <div class="own-acts"><button type="button" id="ownBack2">חזרה לפרטים</button></div>
+  </div>
+  <p class="own-wait" id="ownWait" hidden></p>
+  <p class="own-err" id="ownErr" hidden></p>
 </section>
 
 <section id="screen-intro" hidden>
@@ -797,7 +852,7 @@ const el = (t, a={}, ...kids) => {
 };
 
 function show(id){
-  ["screen-select","screen-intro","screen-chat","screen-feedback","screen-distress"].forEach(s => {
+  ["screen-select","screen-custom","screen-intro","screen-chat","screen-feedback","screen-distress"].forEach(s => {
     document.getElementById(s).hidden = (s !== id);
   });
   document.getElementById("composerBar").hidden = (id !== "screen-chat");
@@ -1024,7 +1079,7 @@ function buildMessageEl(t, extraClass){
   if (t.stage) bubble.append(el("span", { class:"stage" }, "(" + t.stage + ")"));
   // תיוג גלוי, לא שקט: תגובה שהופקה מהמנוע ההיוריסטי (נפילה חזרה כשאין
   // חיבור למודל) מסומנת בפירוש — לא מוצגת כאילו המודל ניסח אותה (19/09/2026).
-  if (t.mock) bubble.append(el("span", { class:"mock-tag", title:"רננה הגיבה כאן מהמנוע ההיוריסטי המקומי, לא מהמודל: כנראה שהשרת לא היה זמין" }, "הדגמה"));
+  if (t.mock) bubble.append(el("span", { class:"mock-tag", title:"הדמות הגיבה כאן מהמנוע ההיוריסטי המקומי, לא מהמודל: כנראה שהשרת לא היה זמין" }, "הדגמה"));
   group.append(bubble);
   return group;
 }
@@ -1036,8 +1091,8 @@ function setAIStatus(status){
   if (!chip) return;
   chip.className = "ai-status sbe-sysonly " + status;
   const dot = '<span class="dot"></span> ';
-  if (status === "ok") chip.innerHTML = dot + "AI פעיל: רננה מגיבה בזמן אמת";
-  else if (status === "mock") chip.innerHTML = dot + "מצב הדגמה: אין חיבור למודל כרגע. רננה מגיבה מהמנוע ההיוריסטי המקומי";
+  if (status === "ok") chip.innerHTML = dot + "AI פעיל: הדמות מגיבה בזמן אמת";
+  else if (status === "mock") chip.innerHTML = dot + "מצב הדגמה: אין חיבור למודל כרגע. הדמות מגיבה מהמנוע ההיוריסטי המקומי";
   else chip.innerHTML = dot + "בודקת חיבור למודל...";
 }
 
@@ -1795,7 +1850,7 @@ async function handleSend(){
   }
 
   if (state.turn === WARN_TURN) {
-    addNarration("מישהי נכנסת לרגע ולוחשת שיש עוד חמש דקות. רננה מהנהנת ולא אומרת כלום.");
+    addNarration("מישהי נכנסת לרגע ולוחשת שיש עוד חמש דקות. " + (SCENARIO.actor.name || "הדמות") + " מהנהנת ולא אומרת כלום.");
   }
 
   if (state.turn >= MAX_TURNS) {
@@ -1878,6 +1933,121 @@ function showFeedback(){
 
   show("screen-feedback");
 }
+
+// ── מקרה משלך (10/10/2026): מספרים על המקרה · עוד כמה פרטים · מאשרים את הסיפור ומתחילים ──
+// התרחיש נבנה במודל באותו מבנה כמו SCENARIOS (SBE_PCUSTOM), ונשמר במכשיר לפי משתמשת ("המקרים שלי").
+// בלי חיבור למודל אין סיפור: מה שנכתב נשמר, ואפשר לנסות שוב.
+(function(){
+  const PC = window.SBE_PCUSTOM; if (!PC) return;
+  const $ = (id) => document.getElementById(id);
+  const KEY = window.sbeUserKey ? sbeUserKey("sbe.practice.custom.v1") : "sbe.practice.custom.v1";
+  let mine = []; try { mine = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) {}
+  const saveMine = () => { try { localStorage.setItem(KEY, JSON.stringify(mine)); } catch (e) {} };
+  const draft = { form: {}, questions: [], answers: {}, scenario: null };
+  try { Object.assign(draft, JSON.parse(localStorage.getItem(KEY + ".draft") || "{}")); } catch (e) {}
+  const saveDraft = () => { try { localStorage.setItem(KEY + ".draft", JSON.stringify(draft)); } catch (e) {} };
+  PC.ROLES.forEach(r => $("ownRoles").append(el("option", { value: r })));
+  PC.OTHERS.forEach(r => $("ownOthers").append(el("option", { value: r })));
+  const FIELDS = { story: "ownStory", role: "ownRole", other: "ownOther", goal: "ownGoal", hard: "ownHard" };
+  Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; $(id).addEventListener("input", () => { draft.form[k] = $(id).value; saveDraft(); }); });
+
+  function step(n){
+    [1, 2, 3].forEach(i => { $("own" + i).hidden = i !== n; });
+    $("ownSteps").querySelectorAll("li").forEach(li => li.classList.toggle("on", Number(li.dataset.s) === n));
+    $("ownErr").hidden = true; show("screen-custom"); window.scrollTo(0, 0);
+    $("scenarioName").textContent = "תרגול על מקרה משלך"; $("scenarioSubtitle").textContent = "";
+  }
+  function wait(text, sec){
+    const w = $("ownWait"), t0 = Date.now(); w.hidden = false;
+    const tick = () => { w.textContent = text + " זה לוקח בדרך כלל כ-" + sec + " שניות. עברו " + Math.round((Date.now() - t0) / 1000) + " שניות."; };
+    tick(); const iv = setInterval(tick, 1000); return () => { clearInterval(iv); w.hidden = true; };
+  }
+  const fail = (e) => { $("ownErr").textContent = (e && e.code === "incomplete") ? "הסיפור חזר חלקי. אפשר לנסות שוב." :
+    "אין כרגע חיבור למודל, ולכן הסיפור לא נוצר. מה שכתבת נשמר, ואפשר לנסות שוב בעוד דקה."; $("ownErr").hidden = false; };
+  const answersList = () => draft.questions.map((q, i) => ({ q: q.q, a: draft.answers[i] || "" }));
+  const caseText = () => PC.caseText(Object.assign({}, draft.form, { answers: answersList() }));
+
+  $("bOwnCase").addEventListener("click", () => step(draft.scenario ? 3 : 1));
+  $("ownCancel").addEventListener("click", () => { $("scenarioName").textContent = "בחרי תרחיש לתרגול"; show("screen-select"); });
+  $("ownBack1").addEventListener("click", () => step(1));
+  $("ownBack2").addEventListener("click", () => draft.questions.length ? (renderQs(), step(2)) : step(1));
+
+  // 1 → 2: שאלות הבהרה, רק מה שחסר
+  $("ownNext").addEventListener("click", async () => {
+    if (!(draft.form.story || "").trim()) { $("ownErr").textContent = "כדי להמשיך, ספרי בכמה משפטים על המקרה."; $("ownErr").hidden = false; $("ownStory").focus(); return; }
+    const b = $("ownNext"); b.disabled = true; const stop = wait("קוראת את המקרה.", 20); let r = null, bad = null;
+    try { r = await sbeCallAIJson(AI_SERVER, { system: PC.clarifySystem(), messages: [{ role: "user", content: PC.caseText(draft.form) }], maxTokens: 900 }, 90000, PC.validQuestions); }
+    catch (e) { bad = e; } finally { stop(); b.disabled = false; }
+    if (!PC.validQuestions(r)) return fail(bad);
+    draft.questions = r.questions.filter(q => q && q.q).slice(0, 4); draft.answers = {}; draft.scenario = null; saveDraft();
+    if (!draft.questions.length) return build(false);
+    renderQs(); step(2);
+  });
+  function renderQs(){
+    const box = $("ownQs"); box.textContent = "";
+    draft.questions.forEach((q, i) => {
+      const w = el("div", { class: "own-q" }, el("b", {}, q.q));
+      const inp = el("input", { "aria-label": q.q, placeholder: "אפשר לבחור או לכתוב" }); inp.value = draft.answers[i] || "";
+      inp.addEventListener("input", () => { draft.answers[i] = inp.value; saveDraft(); paint(); });
+      const opts = el("div", { class: "own-opts" });
+      const paint = () => opts.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.textContent === inp.value)));
+      (q.options || []).slice(0, 4).forEach(o => { const ob = el("button", { type: "button" }, o); ob.addEventListener("click", () => { inp.value = o; draft.answers[i] = o; saveDraft(); paint(); }); opts.append(ob); });
+      paint(); w.append(opts, inp); box.append(w);
+    });
+  }
+  $("ownBuild").addEventListener("click", () => build(false));
+  $("ownRevise").addEventListener("click", () => { if (!$("ownChange").value.trim()) { $("ownChange").focus(); return; } build(true); });
+
+  // 2 → 3: הסיפור
+  async function build(revise){
+    const b = revise ? $("ownRevise") : $("ownBuild"); b.disabled = true;
+    const stop = wait(revise ? "מעדכנת את הסיפור." : "כותבת את הסיפור ואת הדמות שמולך.", 60); let r = null, bad = null;
+    const content = caseText() + (revise && draft.scenario ? "\n\nהתרחיש הנוכחי (JSON):\n" + JSON.stringify(draft.scenario) + "\n\nמה לשנות: " + $("ownChange").value.trim() : "");
+    try { r = await sbeCallAIJson(AI_SERVER, { system: revise ? PC.reviseSystem() : PC.buildSystem(), messages: [{ role: "user", content }], maxTokens: 6000 }, 240000, PC.valid); }
+    catch (e) { bad = e; } finally { stop(); b.disabled = false; }
+    if (!PC.valid(r)) { if (!revise) step(draft.questions.length ? 2 : 1); return fail(bad); }
+    draft.scenario = PC.normalize(r); saveDraft(); $("ownChange").value = ""; preview(); step(3);
+  }
+  function preview(){
+    const sc = draft.scenario, box = $("ownPreview"); box.textContent = "";
+    const d = el("div", { class: "own-prev" }, el("h3", {}, sc.name), el("p", { class: "who" }, sc.subtitle),
+      el("p", { class: "who" }, el("b", {}, "את: "), sc.trainee.roleLabel || sc.trainee.role, " · ", el("b", {}, "מולך: "), sc.actor.name + ", " + (sc.actor.roleLabel || sc.actor.role)));
+    sc.trainee.opening.forEach(p => d.append(el("p", {}, p)));
+    d.append(el("p", { class: "first" }, el("b", {}, sc.actor.name + (/זכר|גבר/.test(sc.actor.gender || "") ? " פותח: " : " פותחת: ")), "״" + sc.actor.entrance.firstLine + "״"));
+    box.append(d);
+  }
+  if (draft.scenario) preview();
+
+  // אישור: נשמר ב"המקרים שלי" ומתחילים
+  $("ownApprove").addEventListener("click", () => {
+    const id = "my-" + Date.now().toString(36);
+    mine.unshift({ id, at: new Date().toISOString().slice(0, 10), sc: draft.scenario }); mine = mine.slice(0, 12); saveMine();
+    Object.assign(draft, { form: {}, questions: [], answers: {}, scenario: null }); saveDraft();
+    Object.values(FIELDS).forEach(f => { $(f).value = ""; });
+    renderMine(); SCENARIOS[id] = mine[0].sc; selectScenario(id);
+  });
+  function renderMine(){
+    const box = $("myCases"); box.textContent = "";
+    if (!mine.length) return;
+    box.append(el("p", { class: "sub", style: "margin:0 0 8px;font-weight:700" }, "המקרים שלי"));
+    mine.forEach(m => {
+      SCENARIOS[m.id] = m.sc;
+      const del = el("button", { type: "button", title: "מחיקה מהמכשיר", "aria-label": "מחיקה" }, "🗑");
+      del.addEventListener("click", (e) => { e.stopPropagation(); if (!confirm("למחוק את המקרה מהמכשיר?")) return; mine = mine.filter(x => x.id !== m.id); delete SCENARIOS[m.id]; saveMine(); renderMine(); });
+      const card = el("div", { class: "scenario-card", tabindex: "0" },
+        el("div", { class: "my-case" }, el("div", { class: "sc-name", style: "flex:1" }, "✍️ " + m.sc.name), del),
+        el("div", { class: "sc-sub" }, m.sc.subtitle),
+        el("div", { class: "sc-sub" }, el("b", {}, "את: "), m.sc.trainee.roleLabel || "", " · ", el("b", {}, "מולך: "), m.sc.actor.name + ", " + (m.sc.actor.roleLabel || "")));
+      const pick = () => selectScenario(m.id);
+      card.addEventListener("click", pick); card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+      box.append(card);
+    });
+  }
+  renderMine();
+  // המקרים שלי לא נכנסים לרשימת המאגר
+  const _match = matchesFilters;
+  matchesFilters = (sc) => !(sc.meta && sc.meta.approach === "המקרה שלי") && _match(sc);
+})();
 
 renderFilters();
 renderScenarioList();

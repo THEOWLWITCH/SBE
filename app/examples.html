@@ -6,6 +6,7 @@
 <title>תוצרים לדוגמה: Begood</title>
 <meta name="description" content="תוצרים אמיתיים שהפיקו הכלים של Begood (לחוסן חברתי, להנחיה, לתכנון שיחות ופעילויות ולסימולציות).">
 <script src="lib/access-guard.js"></script>
+<script src="lib/readiness-groups.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
@@ -67,6 +68,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 .dlg details{padding:6px 14px;border-bottom:1px solid var(--hair);font-size:14px}
 .dlg pre{white-space:pre-wrap;font-family:inherit;margin:6px 0;color:var(--muted)}
 .dlg iframe{flex:1;width:100%;border:0;background:#fff}
+.rgroup{font-weight:800;font-size:1.15rem;color:var(--spoken);margin:28px 0 0;padding-top:10px;border-top:2px solid var(--hair)}
 </style>
 </head>
 <body>
@@ -138,10 +140,16 @@ async function load(){
     const all=el('p','about');const a=el('a',null,'לכל התוצרים לדוגמה ←');a.href='examples.html';a.style.cssText='color:var(--spoken);font-weight:700';all.appendChild(a);box.appendChild(all);
   }
   const known=TOOLS.map(t=>t[0]);
-  const groups=TOOLS.concat([['_other','תוצרים נוספים','']]);
+  // לפי חמש שאלות של מוכנות יומיומית (SBE_READY)
+  const RG={"studio": "act", "practi": "see", "nugi": "see", "nana": "practice", "writer": "act", "continuity": "anchor", "routines": "anchor", "bridge": "practice", "resil": "see", "conv": "practice", "act-single": "act", "act-seq": "act", "review": "learn", "journey": "anchor", "practice": "practice", "edu": "practice", "parents": "practice", "youth": "practice"}, R=window.SBE_READY, order=R?R.GROUPS.map(g=>g.id):[];
+  const sorted=TOOLS.slice().sort((a,b)=>order.indexOf(RG[a[0]])-order.indexOf(RG[b[0]]));
+  const groups=sorted.concat([['_other','תוצרים נוספים','']]);
+  let lastG=null;
   groups.forEach(([id,name,about])=>{
     const its=items.filter(d=>id==='_other'?!known.includes(d.tool):d.tool===id).sort((a,b)=>String(a.title).localeCompare(String(b.title),'he'));
     if(!its.length)return;
+    const gr=R&&RG[id]?R.GROUPS.find(g=>g.id===RG[id]):null;
+    if(gr&&gr!==lastG){box.appendChild(el('p','rgroup',R.title(gr)));lastG=gr;}
     box.appendChild(el('h2',null,name));
     if(about)box.appendChild(el('p','about',about));
     const g=el('div','grid');
