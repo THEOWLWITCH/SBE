@@ -769,7 +769,20 @@
     {k:'Epstein2011', g:'cont', apa:'Epstein, J. L. (2011). School, family, and community partnerships: Preparing educators and improving schools (2nd ed.). Westview Press.',
       url:'https://scholar.google.com/scholar?q=Epstein+2011+School+family+and+community+partnerships',
       gist:'שש דרכים לשותפות בין בית הספר למשפחה, ובהן תקשורת דו־כיוונית ברורה ולמידה בבית. שותפות טובה מתוכננת ומתעדכנת, ולא נשענת על אדם אחד.',
-      be:'המכתב והשרשרת להורים הם חלק מתוכנית קבועה, ולא פנייה חד־פעמית.'},
+      be:'המכתב והשרשרת להורים הם חלק מתוכנית קבועה, ולא פנייה חד־פעמית.'},    // הצטרפות וחזרה לקבוצה (10/10/2026)
+    {k:'Goodenow1993', g:'cont', apa:'Goodenow, C. (1993). The psychological sense of school membership among adolescents: Scale development and educational correlates. Psychology in the Schools, 30(1), 79–90.',
+      url:'https://doi.org/10.1002/1520-6807(199301)30:1%3C79::AID-PITS2310300113%3E3.0.CO;2-X',
+      gist:'תחושת שייכות לבית הספר (שמקבלים, מכבדים וכוללים אותי) קשורה למוטיבציה, למאמץ ולהשתתפות בלמידה.',
+      be:'ערכת ההצטרפות בונה שייכות כבר מהיום הראשון: תפקיד, משימה ראשונה ודרך כניסה לבחירה.'},
+    {k:'WaltonCohen2011', g:'cont', apa:'Walton, G. M., & Cohen, G. L. (2011). A brief social-belonging intervention improves academic and health outcomes of minority students. Science, 331(6023), 1447–1451.',
+      url:'https://doi.org/10.1126/science.1198364',
+      gist:'מסר קצר שקשיי הסתגלות בהתחלה הם נפוצים וזמניים, ושהשייכות נבנית עם הזמן, שיפר הישגים ובריאות לאורך שנים.',
+      be:'בשיחה עם המצטרף/ת אומרים שההתחלה לוקחת זמן אצל כולם, ושיש מסלול ותמיכה.'},
+    {k:'Evans2018', g:'cont', apa:'Evans, D., Borriello, G. A., & Field, A. P. (2018). A review of the academic and psychological impact of the transition to secondary education. Frontiers in Psychology, 9, 1482.',
+      url:'https://doi.org/10.3389/fpsyg.2018.01482',
+      gist:'מעברים בין מסגרות קשורים לירידה זמנית בהישגים ובתחושת השייכות. תמיכה חברתית ומידע ברור מראש מקלים על המעבר.',
+      be:'תיק הכניסה הקבוצתי נותן מידע ברור, ותפקידי העמיתים נותנים תמיכה חברתית בשבועיים הראשונים.'},
+
     // ── שגרות, מנגנונים חברתיים ויוזמות תלמידים (10/10/2026, למרכז השגרות והיוזמות החברתיות) ──
     {k:'Ostrom1990', g:'routine', apa:'Ostrom, E. (1990). Governing the commons: The evolution of institutions for collective action. Cambridge University Press.',
       url:'https://doi.org/10.1017/CBO9780511807763',
@@ -981,7 +994,7 @@
   var NUGI_G = { lead: 1, leadcr: 1, stu: 1, il: 1, comm: 1, sys: 1 };
   var NUGI_K = { Edmondson1999: 1, Frazier2017: 1, JenningsGreenberg2009: 1, Allen2018: 1, WangDegol2016: 1,
     Battistich1997: 1, RyanDeci2017: 1, Moore2026: 1, Gregory2016: 1, Augustine2018: 1, Miao2023: 1, Brookings2026: 1 };
-  var CONT_K = { EvenZahav2024: 1, Hazzan2026: 1, Miller2007: 1, Spillane2005: 1, Hobfoll2007: 1, Emmer2001: 1, BrykSchneider2002: 1, Sade2024: 1, Fuchs2025: 1 };
+  var CONT_K = { Allen2018: 1, Topping2005: 1, EvenZahav2024: 1, Hazzan2026: 1, Miller2007: 1, Spillane2005: 1, Hobfoll2007: 1, Emmer2001: 1, BrykSchneider2002: 1, Sade2024: 1, Fuchs2025: 1 };
   // מרכז השגרות והיוזמות החברתיות (10/10/2026): קבוצת השגרות ומקורות קיימים על השתתפות, קהילה דואגת, אחריות משותפת ואמון
   var ROUT_K = { Sade2024: 1, SadeTools2026: 1, Battistich1997: 1, Durlak2011: 1, Hobfoll2007: 1, Johnson2009: 1, RyanDeci2017: 1,
     MitraGross2009: 1, Spillane2005: 1, Edmondson1999: 1, Kaner2014: 1, Rogelberg2019: 1 };
