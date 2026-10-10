@@ -138,6 +138,11 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 .role-pick-row button.on{background:var(--spoken-soft);border-color:var(--spoken);color:var(--spoken);font-weight:700;}
 .switchlink{font-size:13px;color:var(--spoken);cursor:pointer;background:none;border:none;
   padding:0;text-decoration:underline;width:auto;font-weight:600;}
+.maplink{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff;border-radius:18px;padding:14px 18px;margin:0 0 14px;
+  background:linear-gradient(100deg,#2E8F62,#1A9BB5 55%,#1C5F99);box-shadow:0 8px 22px rgba(11,58,107,.18);transition:transform .15s}
+.maplink:hover{transform:translateY(-2px)}
+.maplink .sun{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:radial-gradient(circle at 35% 35%,#FFF1C9,#FFC95C)}
+.maplink b{display:block;font-size:17px}.maplink span{font-size:14px;opacity:.92}
 </style>
 
 <div class="wrap">
@@ -274,6 +279,11 @@ function renderEntry(){
     el("label",{},"הקוד שלך"), code, err, btn);
   card.append(el("h2",{},"כניסה למערכת"), inn);
   view.append(card);
+  // מפת הכלים: לא בטוחים מאיפה להתחיל? (map.html, פתוח לכולם)
+  const ml = el("a",{class:"maplink",href:"map.html"}), mt = el("div",{});
+  mt.append(el("b",{},"מאיפה מתחילים? מפת הכלים"), el("span",{},"ספרו מה תרצו לעשות, וקבלו דרך: באיזה כלי מתחילים ומה בהמשך."));
+  ml.append(el("span",{class:"sun"},"☀️"), mt);
+  view.append(ml);
 
   // קישורים משניים: כניסת ניהול, אודות, חידוש מנוי (קוד לקבוצה של סדנה נכנס בשדה הראשי)
   const more = el("div",{class:"card"});
@@ -283,7 +293,7 @@ function renderEntry(){
   const admBtn = el("button",{class:"switchlink"},"כניסת ניהול");
   admBtn.addEventListener("click", () => { alt.hidden = false; alt.textContent = ""; alt.append(buildAdminField("sys")); });
   links.append(admBtn, el("span",{class:"sep"},"·"),
-    el("a",{href:"about.html"},"אודות המערכת"), el("span",{class:"sep"},"·"), el("a",{href:"examples.html"},"תוצרים לדוגמה"), el("span",{class:"sep"},"·"), el("a",{href:"renew.html"},"בקשה לכלים של Begood"));
+    el("a",{href:"about.html"},"אודות המערכת"), el("span",{class:"sep"},"·"), el("a",{href:"map.html"},"מפת הכלים"), el("span",{class:"sep"},"·"), el("a",{href:"examples.html"},"תוצרים לדוגמה"), el("span",{class:"sep"},"·"), el("a",{href:"renew.html"},"בקשה לכלים של Begood"));
   minn.append(links, alt);
   more.append(minn);
   view.append(more);
