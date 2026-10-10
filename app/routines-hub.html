@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>תיק רציפות</title>
+<title>מרכז שגרות ויוזמות חברתיות</title>
 <script src="lib/access-guard.js"></script>
-<script src="lib/example-peek.js" data-tool="continuity" defer></script>
+<script src="lib/example-peek.js" data-tool="routines" defer></script>
 <script src="lib/open-select.js"></script>
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +16,7 @@
 <script src="lib/product-doc.js"></script>
 <script src="lib/ref-collect.js"></script>
 <script src="lib/resilience-writer.js"></script>
-<script src="lib/continuity-model.js"></script>
+<script src="lib/routines-model.js"></script>
 <style>
 :root{
   --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
@@ -195,8 +195,6 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 .etable{margin:.3rem 0 .8rem}
 .kit-table select{min-width:9.5rem;font:inherit;padding:.25rem .3rem}.etable input,.etable textarea{width:100%;border:1px solid transparent;background:transparent;padding:.2rem;font:inherit;min-height:0}
 .etable input:focus,.etable textarea:focus{border-color:var(--spoken);background:var(--surface)}.etable textarea{min-height:52px}
-.remind{font-size:.92rem;background:var(--hidden-soft);border-radius:6px;padding:.4rem .7rem;margin:.6rem 0}
-.join .etable td>div{display:flex;gap:.2rem;align-items:flex-start}.join .etable td>div>textarea{flex:1;min-height:0}
 .etable .xbtn{font:inherit;border:none;background:none;color:var(--brick);cursor:pointer;padding:.2rem .4rem}
 .kit h3 .tag{font-size:.72rem;font-weight:600;color:var(--hidden);background:var(--hidden-soft);border-radius:99px;padding:.05rem .5rem;margin-inline-start:.5rem}
 .redbox{border:3px solid #B3261E;border-radius:10px;padding:.4rem .8rem .6rem;margin:.6rem 0 1rem;background:rgba(179,38,30,.05)}
@@ -208,73 +206,114 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
 .sens-note{border:2px solid #B3261E;color:#B3261E;padding:.4rem .7rem;border-radius:6px;font-weight:700}
 @media print{.redbox{border:3px solid #B3261E;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tabs,.status,.actions{display:none!important}}
 [hidden]{display:none!important}
+.f.private{border:1px dashed var(--hidden);border-radius:8px;padding:.5rem .7rem;background:var(--hidden-soft)}
+.support{border:2px solid var(--hidden);border-radius:10px;padding:.4rem .9rem .6rem;margin:.4rem 0 1rem;background:var(--hidden-soft)}
+.card-move{border:2px solid var(--spoken);border-radius:10px;padding:.3rem .9rem .6rem;margin:.4rem 0 1rem}
+.recommend{border-inline-start:4px solid var(--auto);background:var(--auto-soft);padding:.5rem .8rem;border-radius:6px;font-weight:600}
+.kit h4{margin:.8rem 0 .2rem;font-size:.98rem}
+#steps li{flex:1 1 150px}
+.hubcard h2{margin-bottom:.4rem}
+.hub{display:flex;flex-wrap:wrap;gap:.45rem}
+.mech{font:inherit;text-align:right;border:1px solid var(--hair);border-radius:10px;padding:.45rem .75rem;background:var(--ground);color:var(--ink);cursor:pointer;min-width:170px}
+.mech b{display:block;font-size:.95rem}.mech span{font-size:.8rem;color:var(--muted)}
+.mech.on{border-color:var(--spoken);background:var(--spoken-soft)}.mech.on b{color:var(--spoken)}
+.mech.add{color:var(--spoken);font-weight:700;border-style:dashed;background:transparent}
+.hubtools{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.6rem}.hubtools label.btn{cursor:pointer}
+.roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.7rem}
+.rcard{border:1px solid var(--hair);border-radius:10px;padding:.6rem .8rem;background:var(--surface-2);break-inside:avoid}
+.rcard.ok{border-color:var(--auto);box-shadow:inset 4px 0 0 var(--auto)}
+.rcard h4{margin:0 0 .4rem;color:var(--spoken)}.rcard.ok h4{color:var(--auto)}
+.rcard-row{margin:.25rem 0}.rcard-row b{display:block;font-size:.78rem;color:var(--muted)}
+.rcard textarea,.rcard input{background:var(--surface);min-height:0}
+.ppl{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;border:1px dashed var(--hidden);background:var(--hidden-soft);border-radius:8px;padding:.35rem .5rem;margin-bottom:.4rem}
+.ppl label{margin:0;font-size:.78rem;color:var(--hidden)}
+.okline{display:flex;gap:.4rem;align-items:center;font-weight:600;font-size:.88rem;margin:.5rem 0 0}
+.runs{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}@media (max-width:760px){.runs{grid-template-columns:1fr}}
+.runcard{border:1px solid var(--hair);border-radius:10px;padding:.5rem .8rem;background:var(--surface)}
+.runcard h3{margin-top:.2rem;color:var(--spoken)}
+.balance{border-inline-start:4px solid var(--auto);background:var(--auto-soft);padding:.5rem .8rem;border-radius:6px}
+.proposal{border:2px solid var(--spoken);border-radius:10px;padding:.2rem .9rem .7rem;margin:1rem 0}
+.etable td>div{display:flex;gap:.2rem;align-items:flex-start}.etable td>div>*:first-child{flex:1}
+.runcard table select{min-width:7.5rem}
+#opts{border-top:1px solid var(--hair);margin-top:1rem;padding-top:.6rem}
+
 </style>
 </head>
 <body>
 <nav class="topnav no-print">
   <button type="button" onclick="history.back()">→ חזרה</button>
   <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
-  <span class="crumb">Begood › חוסן חברתי › תיק רציפות</span>
+  <span class="crumb">Begood › חוסן חברתי › מרכז שגרות ויוזמות חברתיות</span>
 </nav>
 <div class="wrap">
   <div class="card no-print">
-    <h1>תיק רציפות</h1>
-    <p>מכינים תיק הפעלה למי שתחליף אותך: ממלאת מקום, עמיתה שמגבה או בעלת תפקיד חדשה. בתיק שתי תיקיות: <b>שגרה</b>, ו<b>חירום ולמידה מרחוק</b>. מה שלא פועל בשגרה יקרוס בחירום, ולכן מה שמכינים לחירום מתורגל גם בשגרה. המחליפה ממשיכה לעדכן את התיק, ועמיתה יכולה לנסות אותו מראש.</p>
-    <p class="article-link" style="font-size:.9rem;margin:.45rem 0 0">📖 <a href="about.html?from=continuity-kit.html#article" target="_blank" rel="noopener" style="color:var(--spoken);font-weight:700">לבחור בחוסן שלנו</a>. מאמר קצר על המושגים שבבסיס הכלי: מנגנונים חברתיים, קהילת חוסן ותו חוסן.</p>
+    <h1>מרכז שגרות ויוזמות חברתיות</h1>
+    <p>סביבת עבודה להפעלה מתמשכת של מועצת כיתה, לוח עזרה, ועדה, צוות פעולה או מפגש חוסן קבוע. הקבוצה בוחרת פעולה, מחלקת אחריות, מנסה אותה פעמיים, ופותחת את ההסכם לשינוי במועד שנבחר, לאור תמונת העתיד ואיכות החיים עכשיו.</p>
+    <p class="article-link" style="font-size:.9rem;margin:.45rem 0 0">📖 <a href="about.html?from=routines-hub.html#article" target="_blank" rel="noopener" style="color:var(--spoken);font-weight:700">לבחור בחוסן שלנו</a>. מאמר קצר על המושגים שבבסיס הכלי: מנגנונים חברתיים, קהילת חוסן ותו חוסן.</p>
   </div>
-  <ol class="steps no-print" id="steps">
-    <li data-step="1"><b>1. מספרים</b>התפקיד, הכיתה והשגרות</li>
-    <li data-step="2"><b>2. התיק</b>שגרה, חירום, תלמידים ועדכונים</li>
-    <li data-step="3"><b>3. עמיתה מנסה</b>ומתקנים את מה שחסר</li>
-  </ol>
+
+  <div class="card no-print hubcard">
+    <h2>המנגנונים שלנו</h2>
+    <div class="hub" id="hub"></div>
+    <div class="hubtools">
+      <button class="btn btn-ghost sm" id="saveFile" type="button">💾 שמירת קובץ</button>
+      <label class="btn btn-ghost sm">📂 פתיחת קובץ<input id="openFile" type="file" accept=".json,application/json" hidden></label>
+      <button class="btn btn-ghost sm" id="delItem" type="button">🗑 מחיקת המנגנון הפתוח</button>
+    </div>
+  </div>
+
+  <ol class="steps no-print" id="steps"></ol>
+
   <section class="card no-print" id="s1">
+    <h2>בוחרים פעולה</h2>
+    <button class="btn btn-ghost sm" id="fromStudio" type="button" hidden>ייבוא המנגנון שתוכנן בסטודיו חוסן</button>
     <div id="form"></div>
     <div class="btns">
-      <button class="btn" id="go" type="button">הכנת התיק</button>
+      <button class="btn" id="go" type="button">הצעת אפשרויות לבחירה</button>
       <button class="btn btn-ghost sbe-sysonly" id="example" type="button">דוגמה</button>
     </div>
     <div class="wait" id="wait1" hidden></div>
     <p class="err" id="err1" hidden></p>
+    <div id="opts" hidden></div>
   </section>
+
   <section class="card" id="s2" hidden>
-    <div class="status no-print" id="status"></div>
-    <div class="actions no-print">
-      <button class="btn sm" id="print" type="button">🖨 הדפסת התיק המלא</button>
-      <button class="btn btn-ghost sm" id="printShare" type="button">🖨 עותק לשיתוף, בלי מידע רגיש</button>
-      <button class="btn btn-ghost sm" id="saveFile" type="button">💾 שמירת קובץ התיק</button>
-      <label class="btn btn-ghost sm filebtn">📂 פתיחת קובץ תיק<input id="openFile" type="file" accept=".json,application/json" hidden></label>
-    </div>
-    <div class="actions no-print">
-      <label for="reviewDate">מועד העדכון הבא</label><input id="reviewDate" type="date">
-      <button class="btn btn-ghost sm" id="remind" type="button">📅 תזכורת ליומן</button>
-    </div>
-    <div id="kit"></div>
+    <h2 class="no-print">מאשרים אחריות</h2>
+    <p class="hint no-print">השמות בכרטיסי התפקיד נשמרים רק במכשיר הזה ומופיעים רק בהדפסה. הם לא נשלחים לשום מקום.</p>
+    <div id="out2"></div>
     <div class="btns no-print">
-      <button class="btn btn-ghost" id="toTrial" type="button">עמיתה מנסה את התיק ←</button>
-      <button class="btn btn-ghost" id="back1" type="button">→ חזרה לטופס</button>
+      <button class="btn btn-ghost sm" type="button" data-print="board">🖨 לוח ביצוע, כרטיסי תפקיד והסכם</button>
+      <button class="btn btn-ghost sm" type="button" data-print="all">🖨 תיק המנגנון</button>
+      <button class="btn btn-ghost" type="button" data-go="1">→ חזרה</button>
     </div>
   </section>
-  <section class="card no-print" id="s3" hidden>
-    <h2>עמיתה מנסה את התיק</h2>
-    <ol class="tl">
-      <li>מדפיסים את התיק, או שולחים אותו לעמיתה. בסוף התיק יש <b>דף תרגול</b> עם משימות קצרות.</li>
-      <li>העמיתה מנסה כמה משימות לפי התיק בלבד, בלי לשאול אותך, ומסמנת מה היה חסר או לא ברור.</li>
-      <li>כותבים כאן מה עלה, והתיק מתעדכן לגרסה חדשה. אפשר לחזור על זה כמה פעמים.</li>
-    </ol>
-    <div class="f"><label for="trialNote">מה עלה בניסיון <span class="main-tag">שדה עיקרי</span></label>
-      <textarea id="trialNote" maxlength="4000" placeholder="למשל: לא היה ברור איפה רשימת התורנויות; פתיחת הבוקר עבדה; לא ידעתי אם מותר לצאת לחצר בגשם."></textarea></div>
-    <div class="f"><label for="trialWho">מי ניסתה ומתי (אם רוצים)</label>
-      <input id="trialWho" type="text" maxlength="120" placeholder="למשל: המחנכת של ו׳1, ביום שלישי"></div>
-    <div class="btns">
-      <button class="btn" id="revise" type="button">תיקון התיק</button>
-      <button class="btn btn-ghost" id="back2" type="button">→ חזרה לתיק</button>
+
+  <section class="card" id="s3" hidden>
+    <h2 class="no-print">מנסים פעמיים</h2>
+    <div id="out3"></div>
+    <div class="btns no-print">
+      <button class="btn btn-ghost sm" type="button" data-print="sheet">🖨 לוח מודפס להפעלה</button>
+      <button class="btn" type="button" data-go="4">פותחים לשינוי ←</button>
+      <button class="btn btn-ghost" type="button" data-go="2">→ חזרה</button>
     </div>
-    <div class="wait" id="wait3" hidden></div>
-    <p class="err" id="err3" hidden></p>
-    <div id="changes"></div>
+  </section>
+
+  <section class="card" id="s4" hidden>
+    <h2 class="no-print">פותחים לשינוי</h2>
+    <div class="btns no-print"><button class="btn" id="revise" type="button">הצעה לגרסה הבאה של ההסכם</button></div>
+    <div class="wait" id="wait4" hidden></div>
+    <p class="err" id="err4" hidden></p>
+    <div id="out4"></div>
+    <div class="actions no-print">
+      <label for="reviewDate">מתי פותחים שוב</label><input id="reviewDate" type="date">
+      <button class="btn btn-ghost sm" id="remind" type="button">📅 תזכורת ליומן</button>
+      <button class="btn btn-ghost sm" type="button" data-print="log">🖨 יומן החלטות וההסכם</button>
+      <button class="btn sm" type="button" data-print="all">🖨 תיק המנגנון</button>
+    </div>
+    <div class="btns no-print"><button class="btn btn-ghost" type="button" data-go="3">→ חזרה</button></div>
   </section>
 </div>
-<script src="lib/continuity-kit-ui.js"></script>
+<script src="lib/routines-ui.js"></script>
 <script src="lib/screens-menu.js"></script>
 <script src="lib/demo-hook.js"></script>
 </body>

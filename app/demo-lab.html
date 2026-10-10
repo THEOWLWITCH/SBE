@@ -153,11 +153,11 @@ async function api(body){
 const date=s=>{const t=new Date(s),z=n=>String(n).padStart(2,'0');return z(t.getDate())+'.'+z(t.getMonth()+1)+'.'+String(t.getFullYear()).slice(2)+', '+z(t.getHours())+':'+z(t.getMinutes());};
 
 // הכלים, לפי סדר ההצגה בתיקייה ובספרייה
-const TOOLS={studio:'סטודיו חוסן: ערכת פעולה',practi:'פרקטי: יועצת לחוסן בכיתה',nugi:'נוגי: מנהיגות תומכת חוסן',nana:'ננה: מהוראה להנחיה',writer:'כתיבה מקדמת חוסן',continuity:'תיק רציפות',
+const TOOLS={studio:'סטודיו חוסן: ערכת פעולה',practi:'פרקטי: יועצת לחוסן בכיתה',nugi:'נוגי: מנהיגות תומכת חוסן',nana:'ננה: מהוראה להנחיה',writer:'כתיבה מקדמת חוסן',continuity:'תיק רציפות',routines:'מרכז שגרות ויוזמות חברתיות',bridge:'גשר בין הבית לכיתה',
   resil:'מיפוי חוסן חברתי: סיכום לכיתה',conv:'תכנון שיחה','act-single':'תכנון פעילות: מפגש אחד','act-seq':'תכנון פעילות: רצף מפגשים',
   review:'משוב לעבודות',journey:'מסע אל החוסן',practice:'תרגול עצמי בסימולציה',edu:'סימולציה: סטודנטים/ות',parents:'סימולציה: הורים',youth:'סימולציה: נוער'};
 const RUNS=[
-  ['studio','resilience-studio.html',40],['practi','resilience-advisor.html',20],['nugi','leadership-advisor.html',20],['nana','facilitation-advisor.html',20],['writer','message-writer.html',10],['continuity','continuity-kit.html',15],
+  ['studio','resilience-studio.html',40],['practi','resilience-advisor.html',20],['nugi','leadership-advisor.html',20],['nana','facilitation-advisor.html',20],['writer','message-writer.html',10],['continuity','continuity-kit.html',15],['routines','routines-hub.html',10],['bridge','family-bridge.html',10],
   ['resil','resilience-team.html',20],['conv','conversation-planner.html',20],['act-single','activity-planner.html',20],['act-seq','activity-planner.html?part=seq',35],
   ['review','academic-review.html',20],['journey','journey.html',30],['practice','practice.html?minTurns=3',20],['edu','input-screen.html',50],['parents','parent-input-screen.html',50],['youth','student-input-screen.html',50]];
 const ORDER=Object.keys(TOOLS);

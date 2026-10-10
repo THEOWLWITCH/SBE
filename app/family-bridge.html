@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>תיק רציפות</title>
+<title>גשר בין הבית לכיתה</title>
 <script src="lib/access-guard.js"></script>
-<script src="lib/example-peek.js" data-tool="continuity" defer></script>
+<script src="lib/example-peek.js" data-tool="bridge" defer></script>
 <script src="lib/open-select.js"></script>
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +16,7 @@
 <script src="lib/product-doc.js"></script>
 <script src="lib/ref-collect.js"></script>
 <script src="lib/resilience-writer.js"></script>
-<script src="lib/continuity-model.js"></script>
+<script src="lib/family-bridge-model.js"></script>
 <style>
 :root{
   --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
@@ -118,6 +118,7 @@ ul.tl li{margin:.25rem 0}
 .addmore summary{cursor:pointer;color:var(--spoken);font-size:.85rem;font-weight:600}
 .ctag{font-size:.7rem;font-weight:700;color:var(--auto);background:var(--auto-soft);border-radius:99px;padding:.05rem .45rem;margin-inline-start:.35rem}
 .chat .thinking{color:var(--muted);font-style:italic}
+.remind{font-size:.9rem;background:var(--hidden-soft);border-radius:6px;padding:.35rem .6rem;margin:.4rem 0}
 .chat .msg{border-radius:9px;padding:.7rem .95rem;margin:.6rem 0;font-size:.95rem;line-height:1.65}
 .chat .me{white-space:pre-wrap}
 .rich>*:last-child{margin-bottom:0}
@@ -195,8 +196,6 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 .etable{margin:.3rem 0 .8rem}
 .kit-table select{min-width:9.5rem;font:inherit;padding:.25rem .3rem}.etable input,.etable textarea{width:100%;border:1px solid transparent;background:transparent;padding:.2rem;font:inherit;min-height:0}
 .etable input:focus,.etable textarea:focus{border-color:var(--spoken);background:var(--surface)}.etable textarea{min-height:52px}
-.remind{font-size:.92rem;background:var(--hidden-soft);border-radius:6px;padding:.4rem .7rem;margin:.6rem 0}
-.join .etable td>div{display:flex;gap:.2rem;align-items:flex-start}.join .etable td>div>textarea{flex:1;min-height:0}
 .etable .xbtn{font:inherit;border:none;background:none;color:var(--brick);cursor:pointer;padding:.2rem .4rem}
 .kit h3 .tag{font-size:.72rem;font-weight:600;color:var(--hidden);background:var(--hidden-soft);border-radius:99px;padding:.05rem .5rem;margin-inline-start:.5rem}
 .redbox{border:3px solid #B3261E;border-radius:10px;padding:.4rem .8rem .6rem;margin:.6rem 0 1rem;background:rgba(179,38,30,.05)}
@@ -208,73 +207,122 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
 .sens-note{border:2px solid #B3261E;color:#B3261E;padding:.4rem .7rem;border-radius:6px;font-weight:700}
 @media print{.redbox{border:3px solid #B3261E;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tabs,.status,.actions{display:none!important}}
 [hidden]{display:none!important}
+.f.private{border:1px dashed var(--hidden);border-radius:8px;padding:.5rem .7rem;background:var(--hidden-soft)}
+.support{border:2px solid var(--hidden);border-radius:10px;padding:.4rem .9rem .6rem;margin:.4rem 0 1rem;background:var(--hidden-soft)}
+.card-move{border:2px solid var(--spoken);border-radius:10px;padding:.3rem .9rem .6rem;margin:.4rem 0 1rem}
+.recommend{border-inline-start:4px solid var(--auto);background:var(--auto-soft);padding:.5rem .8rem;border-radius:6px;font-weight:600}
+.kit h4{margin:.8rem 0 .2rem;font-size:.98rem}
+#steps li{flex:1 1 150px}
+.hubcard h2{margin-bottom:.4rem}
+.hub{display:flex;flex-wrap:wrap;gap:.45rem}
+.mech{font:inherit;text-align:right;border:1px solid var(--hair);border-radius:10px;padding:.45rem .75rem;background:var(--ground);color:var(--ink);cursor:pointer;min-width:170px}
+.mech b{display:block;font-size:.95rem}.mech span{font-size:.8rem;color:var(--muted)}
+.mech.on{border-color:var(--spoken);background:var(--spoken-soft)}.mech.on b{color:var(--spoken)}
+.mech.add{color:var(--spoken);font-weight:700;border-style:dashed;background:transparent}
+.hubtools{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.6rem}.hubtools label.btn{cursor:pointer}
+.roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.7rem}
+.rcard{border:1px solid var(--hair);border-radius:10px;padding:.6rem .8rem;background:var(--surface-2);break-inside:avoid}
+.rcard.ok{border-color:var(--auto);box-shadow:inset 4px 0 0 var(--auto)}
+.rcard h4{margin:0 0 .4rem;color:var(--spoken)}.rcard.ok h4{color:var(--auto)}
+.rcard-row{margin:.25rem 0}.rcard-row b{display:block;font-size:.78rem;color:var(--muted)}
+.rcard textarea,.rcard input{background:var(--surface);min-height:0}
+.ppl{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;border:1px dashed var(--hidden);background:var(--hidden-soft);border-radius:8px;padding:.35rem .5rem;margin-bottom:.4rem}
+.ppl label{margin:0;font-size:.78rem;color:var(--hidden)}
+.okline{display:flex;gap:.4rem;align-items:center;font-weight:600;font-size:.88rem;margin:.5rem 0 0}
+.runs{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}@media (max-width:760px){.runs{grid-template-columns:1fr}}
+.runcard{border:1px solid var(--hair);border-radius:10px;padding:.5rem .8rem;background:var(--surface)}
+.runcard h3{margin-top:.2rem;color:var(--spoken)}
+.balance{border-inline-start:4px solid var(--auto);background:var(--auto-soft);padding:.5rem .8rem;border-radius:6px}
+.proposal{border:2px solid var(--spoken);border-radius:10px;padding:.2rem .9rem .7rem;margin:1rem 0}
+.etable td>div{display:flex;gap:.2rem;align-items:flex-start}.etable td>div>*:first-child{flex:1}
+.runcard table select{min-width:7.5rem}
+
+.card-family{border:2px solid var(--spoken);border-radius:12px;padding:.8rem 1.1rem;background:var(--surface);max-width:560px;margin:.4rem 0 .8rem;font-size:1.02rem;break-inside:avoid}
+.card-family p{margin:.35rem 0}.cf-greet{font-weight:700}.cf-goal{font-weight:700;color:var(--spoken)}
+.cf-opts{list-style:none;padding:0;margin:.4rem 0}.cf-opts li{padding:.3rem 0;border-bottom:1px dashed var(--hair)}
+.cf-respond{background:var(--spoken-soft);border-radius:6px;padding:.35rem .6rem}.cf-line{color:var(--muted)}
+.famcard{border:1px solid var(--hair);border-radius:10px;padding:.5rem .9rem .8rem;margin:.6rem 0;background:var(--surface)}
+.famtop{display:flex;gap:.5rem;align-items:center}.famlabel{font-weight:700;max-width:240px}
+.decision{border-top:1px dashed var(--hair);margin-top:.6rem;padding-top:.3rem}
+.reply{background:var(--auto-soft);border-radius:8px;padding:.4rem .7rem .6rem;margin:.5rem 0}
+.yearform{border:1px solid var(--hair);border-radius:10px;padding:.4rem 1rem;background:var(--surface)}
+.yearform .yq{font-weight:700;margin:.6rem 0 .2rem}.yearform .yo{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:.2rem 1rem;margin:0}
+.cardedit textarea{min-height:0}
+.next{border:2px solid var(--spoken);border-radius:10px;padding:.3rem .9rem .7rem;margin:.8rem 0 .2rem;background:var(--spoken-soft)}.next>h4{margin:.3rem 0 .4rem;color:var(--spoken);font-size:1.05rem}
+.nextlist{margin:0;padding-inline-start:1.3rem}.nextlist>li{margin:.35rem 0 .6rem;padding:.35rem .6rem;background:var(--surface);border-radius:8px}.nextlist>li.done>b{color:var(--auto)}
+.nextlist .btn{margin:.3rem 0 0 .3rem}.linkbtn{font:inherit;font-size:.85rem;background:none;border:none;color:var(--spoken);text-decoration:underline;cursor:pointer;padding:0;margin:0 0 .3rem}
+.chat .msg{border-radius:8px;padding:.45rem .7rem;margin:.35rem 0;white-space:pre-wrap}.filebtn{cursor:pointer}
+.story{background:var(--hidden-soft);border:1px dashed var(--hidden);border-radius:8px;padding:.3rem .8rem .5rem;margin:.4rem 0 .7rem}.story h4{margin:.2rem 0 .3rem;color:var(--hidden)}
+.feel{border-inline-start:4px solid var(--hidden);background:var(--hidden-soft);padding:.45rem .8rem;border-radius:6px}
+.cf-q{font-weight:700;margin:.6rem 0 .15rem}.cf-qopts{list-style:none;padding:0;margin:0 0 .3rem;display:flex;flex-wrap:wrap;gap:.15rem 1rem}
+#out4 .kit-t td textarea{min-width:13rem}
+#opts{border-top:1px solid var(--hair);margin-top:1rem;padding-top:.6rem}
+
 </style>
 </head>
 <body>
 <nav class="topnav no-print">
   <button type="button" onclick="history.back()">→ חזרה</button>
   <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
-  <span class="crumb">Begood › חוסן חברתי › תיק רציפות</span>
+  <span class="crumb">Begood › חוסן חברתי › גשר בין הבית לכיתה</span>
 </nav>
 <div class="wrap">
   <div class="card no-print">
-    <h1>תיק רציפות</h1>
-    <p>מכינים תיק הפעלה למי שתחליף אותך: ממלאת מקום, עמיתה שמגבה או בעלת תפקיד חדשה. בתיק שתי תיקיות: <b>שגרה</b>, ו<b>חירום ולמידה מרחוק</b>. מה שלא פועל בשגרה יקרוס בחירום, ולכן מה שמכינים לחירום מתורגל גם בשגרה. המחליפה ממשיכה לעדכן את התיק, ועמיתה יכולה לנסות אותו מראש.</p>
-    <p class="article-link" style="font-size:.9rem;margin:.45rem 0 0">📖 <a href="about.html?from=continuity-kit.html#article" target="_blank" rel="noopener" style="color:var(--spoken);font-weight:700">לבחור בחוסן שלנו</a>. מאמר קצר על המושגים שבבסיס הכלי: מנגנונים חברתיים, קהילת חוסן ותו חוסן.</p>
+    <h1>מעבדה לבניית גשר בין הבית לכיתה</h1>
+    <p>קודם בונים את הקשר עצמו: איך, כמה ובאילו דרכים תהיי בקשר עם כל משפחה. בהמשך, כשהקשר קיים, אפשר לבנות גשר סביב מטרה לילד או לילדה. המשפחה בוחרת, מציעה התאמה או אומרת מה לא מעשי כרגע, ואת מחליטה על ההמשך. כל סגנון קשר וכל מידת מעורבות מתקבלים, ותמיד יש חלופה מלאה בכיתה.</p>
+    <p class="article-link" style="font-size:.9rem;margin:.45rem 0 0">📖 <a href="about.html?from=family-bridge.html#article" target="_blank" rel="noopener" style="color:var(--spoken);font-weight:700">לבחור בחוסן שלנו</a>. מאמר קצר על המושגים שבבסיס הכלי: מנגנונים חברתיים, קהילת חוסן ותו חוסן.</p>
   </div>
-  <ol class="steps no-print" id="steps">
-    <li data-step="1"><b>1. מספרים</b>התפקיד, הכיתה והשגרות</li>
-    <li data-step="2"><b>2. התיק</b>שגרה, חירום, תלמידים ועדכונים</li>
-    <li data-step="3"><b>3. עמיתה מנסה</b>ומתקנים את מה שחסר</li>
-  </ol>
+
+  <ol class="steps no-print" id="steps"></ol>
+
   <section class="card no-print" id="s1">
+    <h2>על מה הגשר</h2>
     <div id="form"></div>
     <div class="btns">
-      <button class="btn" id="go" type="button">הכנת התיק</button>
+      <button class="btn" id="go" type="button">הכנת הכרטיס למשפחה</button>
       <button class="btn btn-ghost sbe-sysonly" id="example" type="button">דוגמה</button>
     </div>
     <div class="wait" id="wait1" hidden></div>
     <p class="err" id="err1" hidden></p>
   </section>
+
   <section class="card" id="s2" hidden>
-    <div class="status no-print" id="status"></div>
-    <div class="actions no-print">
-      <button class="btn sm" id="print" type="button">🖨 הדפסת התיק המלא</button>
-      <button class="btn btn-ghost sm" id="printShare" type="button">🖨 עותק לשיתוף, בלי מידע רגיש</button>
-      <button class="btn btn-ghost sm" id="saveFile" type="button">💾 שמירת קובץ התיק</button>
-      <label class="btn btn-ghost sm filebtn">📂 פתיחת קובץ תיק<input id="openFile" type="file" accept=".json,application/json" hidden></label>
-    </div>
-    <div class="actions no-print">
-      <label for="reviewDate">מועד העדכון הבא</label><input id="reviewDate" type="date">
-      <button class="btn btn-ghost sm" id="remind" type="button">📅 תזכורת ליומן</button>
-    </div>
-    <div id="kit"></div>
+    <h2 class="no-print">כרטיס בחירה</h2>
+    <div id="out2"></div>
     <div class="btns no-print">
-      <button class="btn btn-ghost" id="toTrial" type="button">עמיתה מנסה את התיק ←</button>
-      <button class="btn btn-ghost" id="back1" type="button">→ חזרה לטופס</button>
+      <button class="btn" type="button" data-go="3">התגובות ←</button>
+      <button class="btn btn-ghost" type="button" data-go="1">→ חזרה</button>
     </div>
   </section>
-  <section class="card no-print" id="s3" hidden>
-    <h2>עמיתה מנסה את התיק</h2>
-    <ol class="tl">
-      <li>מדפיסים את התיק, או שולחים אותו לעמיתה. בסוף התיק יש <b>דף תרגול</b> עם משימות קצרות.</li>
-      <li>העמיתה מנסה כמה משימות לפי התיק בלבד, בלי לשאול אותך, ומסמנת מה היה חסר או לא ברור.</li>
-      <li>כותבים כאן מה עלה, והתיק מתעדכן לגרסה חדשה. אפשר לחזור על זה כמה פעמים.</li>
-    </ol>
-    <div class="f"><label for="trialNote">מה עלה בניסיון <span class="main-tag">שדה עיקרי</span></label>
-      <textarea id="trialNote" maxlength="4000" placeholder="למשל: לא היה ברור איפה רשימת התורנויות; פתיחת הבוקר עבדה; לא ידעתי אם מותר לצאת לחצר בגשם."></textarea></div>
-    <div class="f"><label for="trialWho">מי ניסתה ומתי (אם רוצים)</label>
-      <input id="trialWho" type="text" maxlength="120" placeholder="למשל: המחנכת של ו׳1, ביום שלישי"></div>
-    <div class="btns">
-      <button class="btn" id="revise" type="button">תיקון התיק</button>
-      <button class="btn btn-ghost" id="back2" type="button">→ חזרה לתיק</button>
+
+  <section class="card" id="s3" hidden>
+    <h2 class="no-print">תגובה והחלטה</h2>
+    <p class="hint no-print">כינויי המשפחות נשמרים רק במכשיר הזה. Begood לא שולחת דבר למשפחות: את מעתיקה או מדפיסה ושולחת בדרך שבחרת.</p>
+    <div id="out3"></div>
+    <div class="btns no-print">
+      <button class="btn" type="button" data-go="4">בדיקה ולמידה ←</button>
+      <button class="btn btn-ghost" type="button" data-go="2">→ חזרה</button>
+      <button class="btn btn-ghost sm" type="button" data-savework>💾 שמירת קובץ עבודה</button>
+      <label class="btn btn-ghost sm filebtn">📂 פתיחת קובץ עבודה<input type="file" accept=".json,application/json" data-openwork hidden></label>
     </div>
-    <div class="wait" id="wait3" hidden></div>
-    <p class="err" id="err3" hidden></p>
-    <div id="changes"></div>
+  </section>
+
+  <section class="card" id="s4" hidden>
+    <h2 class="no-print">בדיקה ולמידה</h2>
+    <div id="out4"></div>
+    <div class="btns no-print"><button class="btn" id="revise" type="button">שיפור הכרטיס לפי התגובות</button></div>
+    <div class="wait" id="wait4" hidden></div>
+    <p class="err" id="err4" hidden></p>
+    <div class="btns no-print">
+      <button class="btn btn-ghost sm" type="button" data-print="all">🖨 הסבב כולו</button>
+      <button class="btn btn-ghost" type="button" data-go="3">→ חזרה</button>
+      <button class="btn btn-ghost sm" type="button" data-savework>💾 שמירת קובץ עבודה</button>
+      <label class="btn btn-ghost sm filebtn">📂 פתיחת קובץ עבודה<input type="file" accept=".json,application/json" data-openwork hidden></label>
+      <button class="btn btn-ghost" id="newRound" type="button">סבב חדש</button>
+    </div>
   </section>
 </div>
-<script src="lib/continuity-kit-ui.js"></script>
+<script src="lib/family-bridge-ui.js"></script>
 <script src="lib/screens-menu.js"></script>
 <script src="lib/demo-hook.js"></script>
 </body>

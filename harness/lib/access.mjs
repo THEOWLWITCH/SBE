@@ -305,6 +305,42 @@ export async function authorizePermission(store, token, permissions) {
   return wanted.some(p => live.perms.includes(p)) ? { ...t, perms: live.perms } : null;
 }
 
+// ── מי יכול/ה לפנות למודל (10/10/2026: "לחסום אפשרות פרצה שאנשים מקבלים גישה לכלי אחד ויכולים להגיע לכלים אחרים") ──
+// כל פנייה ל-/api/complete, /api/character-turn ו-/api/pipeline נושאת _auth: {token, page, w} (access-guard.js מוסיף אותו).
+// מותר: מנהלת המערכת (הכול); מי שנכנס/ה בקוד, רק לכלי שההרשאה שלו פעילה עכשיו (authorizePermission בודק גם קוד שבוטל
+// או מנוי שפג); ומשתתפות סדנה, רק לכלי הסדנה ורק בסדנה שנפתחה ב-48 השעות האחרונות.
+// כלי חדש שקורא למודל: מוסיפים כאן את הדף ואת ההרשאה (כמו PAGES_BY_PERM ב-access-guard.js). דף שאינו כאן: מנהלת המערכת בלבד.
+export const MODEL_PAGES = {
+  'input-screen.html': ['fac_trainee'], 'parent-input-screen.html': ['fac_parent'], 'student-input-screen.html': ['fac_youth'],
+  'practice.html': ['fac_trainee', 'fac_parent', 'fac_youth'], 'facilitator-screen.html': ['fac_trainee', 'fac_parent', 'fac_youth'],
+  'conversation-planner.html': ['conv'], 'activity-planner.html': ['activity'], 'academic-review.html': ['academic'],
+  'resilience-team.html': ['resilience'], 'resilience-advisor.html': ['resilience', 'practi'], 'leadership-advisor.html': ['leadership'],
+  'resilience-studio.html': ['studio'], 'journey.html': ['journey'], 'message-writer.html': ['writer'], 'facilitation-advisor.html': ['nana']
+};
+export const WORKSHOP_MODEL_PAGES = ['practice.html', 'conversation-planner.html', 'activity-planner.html', 'academic-review.html', 'parent-input-screen.html'];
+const WORKSHOP_HOURS = 48;
+export function modelPage(page) {
+  let f = String(page || '').split('?')[0].split('#')[0].split('/').pop().toLowerCase();
+  if (f && !/\.html$/.test(f)) f += '.html';
+  return /^[a-z0-9-]+\.html$/.test(f) ? f : '';
+}
+export async function authorizeModel(store, auth) {
+  const a = auth && typeof auth === 'object' ? auth : {};
+  const page = modelPage(a.page);
+  if (a.token) {
+    const t = await verifyToken(store, a.token);
+    if (t && t.k === 'sys') return { ok: true, who: 'sys' };
+    const perms = MODEL_PAGES[page];
+    if (t && perms && await authorizePermission(store, a.token, perms)) return { ok: true, who: 'code' };
+  }
+  const w = String(a.w || '');
+  if (/^[a-z0-9]{8,32}$/.test(w) && WORKSHOP_MODEL_PAGES.includes(page)) {
+    const ws = await store.get('wf:' + w);
+    if (ws && Date.now() - Date.parse(ws.created || 0) < WORKSHOP_HOURS * 3600e3) return { ok: true, who: 'workshop' };
+  }
+  return { ok: false };
+}
+
 // הודעות לבאנר אחרי כניסה.
 function notices(kind, sub, rec) {
   const n = [];

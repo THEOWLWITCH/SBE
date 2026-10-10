@@ -73,3 +73,13 @@ test('the student list is read in the browser: headers, no headers, quotes and t
   assert.ok(teams.every((t) => t.length >= 3 && t.length <= 5)); assert.equal(teams.flat().length, 31);
   assert.deepEqual(C.splitTeams(['א', 'ב'], 4), [['א', 'ב']]);
 });
+
+test('joining and return kit: choice, rotating peers, adult responsibility, and no reason for absence', () => {
+  const C2 = require('../../app/lib/continuity-model.js');
+  assert.deepEqual(C2.JOIN_FIELDS[0].opts, ['תלמיד/ה חדש/ה בכיתה', 'תלמיד/ה שחוזר/ת אחרי היעדרות', 'כל הכיתה חוזרת ללמידה']);
+  const s = C2.joinSystem([{ k: 'Goodenow1993', gist: 'x' }], '');
+  for (const part of ['info', 'ways', 'first', 'roles', 'board', 'group', 'check', 'adult']) assert.ok(s.includes('- ' + part + ':'), part);
+  assert.match(s, /לעולם לא את סיבת ההיעדרות/); assert.match(s, /תפקידי העמיתים מתחלפים/); assert.match(s, /אחריות המבוגר נשארת ברורה/);
+  assert.ok(C2.validJoin({ info: [{}], ways: [{}], first: { task: 'x' }, board: [{}] })); assert.ok(!C2.validJoin({ info: [{}], ways: [], first: { task: 'x' }, board: [{}] }));
+  assert.ok(!C2.JOIN_FIELDS.some((f) => /סיבה/.test(f.l)));
+});

@@ -49,6 +49,8 @@ window.SBE_SCREENS = [
       { file:'leadership-advisor.html', label:'נוגי: יועצת למנהיגות תומכת חוסן', who:'הרשאת נוגי' },
       { file:'message-writer.html', label:'כתיבה מקדמת חוסן', who:'הרשאת כתיבה מקדמת חוסן בלבד' },
       { file:'continuity-kit.html', label:'תיק רציפות', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה continuity)' },
+      { file:'routines-hub.html', label:'מרכז שגרות ויוזמות חברתיות', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה routines)' },
+      { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה bridge)' },
       { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
       { file:'journey.html', label:'מסע אל החוסן: מסך המשתתפים', who:'הרשאת מסע אל החוסן' },
     ]},

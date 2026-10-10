@@ -7,6 +7,10 @@
 <script src="lib/ai-call.js"></script>
 <script src="lib/product-doc.js"></script>
 <script src="lib/ref-collect.js"></script>
+<script src="lib/report-table.js"></script>
+<script src="lib/resilience-advisor-sources.js"></script>
+<script src="lib/participation-model.js"></script>
+<script src="lib/participation-ui.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -392,6 +396,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
 </div>
 
 <form id="form"></form>
+<div id="pathsSingle" class="sbe-sysonly"></div>
 </section>
 
 <!-- ═══ מסך רצף מפגשים (23/09/2026) — התוכן נבנה ב-SeqPlanner למטה ═══ -->
@@ -433,6 +438,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
     </div>
   </details>
   <div id="seqForm"></div>
+  <div id="pathsSeq" class="sbe-sysonly"></div>
 </section>
 
 <!-- ═══ מסך 2: ניתוח פעילות קיימת ═══ -->
@@ -1833,6 +1839,7 @@ function normalize(d){
 }
 
 let seq, props;
+window.sbeSeqData = () => seq; // מסלולי השתתפות קוראים את הרצף (נושא, מטרות, מפגשים)
 (function loadDraft(){
   let d = null;
   try { d = JSON.parse(localStorage.getItem(DRAFT_KEY)); } catch(e){}
@@ -3543,6 +3550,19 @@ body.sbe-hasnav{padding-top:38px;}
   <button type="button" id="navMenuBtn" title="כל המסכים">☰ תפריט</button>
 </div>
 <div id="navPanel" hidden></div>
+<script>
+// מסלולי השתתפות בלמידה (10/10/2026): שלב בתכנון הפעילות ובתכנון הרצף. lib/participation-ui.js. עד לאישור: מנהלת המערכת בלבד (sbe-sysonly).
+(function(){
+  if (!window.SBE_PATHS_UI) return;
+  SBE_PATHS_UI.mount(document.getElementById("pathsSingle"), { mode:"single",
+    context: () => ({ goal: val("goal"), smart: val("smart"), age: val("age"), domain: val("domain"), duration: val("duration"), group: val("groupStyle") }),
+    insert: (text) => { const n = document.getElementById("i-expression"); if (!n) return; n.value = n.value.trim() ? n.value.trim() + "\n" + text : text; n.dispatchEvent(new Event("input", { bubbles:true })); n.scrollIntoView({ behavior:"smooth", block:"center" }); } });
+  SBE_PATHS_UI.mount(document.getElementById("pathsSeq"), { mode:"seq",
+    context: () => { const q = window.sbeSeqData && window.sbeSeqData(); if (!q) return {};
+      return { topic: q.topic, goals: (q.goals || []).filter(Boolean), age: q.ageRange, audience: q.audience, domain: q.domain,
+        sessions: (q.sessions || []).map((x, i) => "מפגש " + (i + 1) + (x.smart ? ": " + x.smart : "")) }; } });
+})();
+</script>
 <script src="lib/screens-menu.js"></script>
 <script>
 (function(){
