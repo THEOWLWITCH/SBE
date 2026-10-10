@@ -198,3 +198,86 @@ test('atomic repository rejects competing stale saves and checks owner again ins
   await assert.rejects(async () => { await callback(); }, /כניסה|בעל/);
   assert.equal(storage.getItem('owner-B'), null); void pending;
 });
+
+test('follow-up sends only the bounded explicitly chosen conversation', () => {
+  const w = workspace();
+  w.private.threads.step_main = Array.from({length:20}, (_,i) => ({role:i % 2 ? 'assistant' : 'user',content:'TURN_'+i+' '+ 'x'.repeat(5000)}));
+  w.private.threads.support = [{role:'assistant',content:'PRIVATE_SUPPORT'}];
+  const input = JSON.parse(TEAM.buildRequest(w,'question',{question:'מה לגבי האפשרות השנייה?',stepId:'main',threadKey:'step_main'}).messages[0].content);
+  assert.equal(input.conversation.length,12);
+  assert.match(input.conversation[0].content,/TURN_8/);
+  assert.ok(input.conversation.every(turn => turn.content.length<=4000));
+  for (const marker of ['PRIVATE_CONCERN','PRIVATE_THREAD','PRIVATE_SUPPORT']) assert.ok(!JSON.stringify(input).includes(marker));
+  assert.throws(() => TEAM.buildRequest(w,'question',{question:'שאלה',stepId:'main',threadKey:'support'}),/שיחה/);
+  assert.throws(() => TEAM.buildRequest(w,'question',{question:'שאלה',stepId:'main',threadKey:'step_open'}),/שיחה/);
+});
+
+test('rehearsal and meeting questions use explicitly selected frozen context and step', () => {
+  let w = approved(); const a = w.approvals[0];
+  w = TEAM.update(w,draft => {draft.activity.title='DRAFT_B'; draft.context.goal='NEW_DRAFT_GOAL';});
+  const key='stage_2_approval_'+a.id;
+  w.private.threads[key]=[{role:'assistant',content:'PREVIOUS_APPROVED_ANSWER'}];
+  const request = TEAM.buildRequest(w,'question',{question:'איך נתרגל?',approvalId:a.id,stepId:'main',threadKey:key});
+  const input = JSON.parse(request.messages[0].content);
+  assert.equal(input.activity.title,a.activity.title);
+  assert.equal(input.context.goal,a.context.goal);
+  assert.equal(input.step.instructions,a.activity.steps[1].instructions);
+  assert.equal(input.approvedRevision,a.revision);
+  assert.match(JSON.stringify(input.conversation),/PREVIOUS_APPROVED_ANSWER/);
+  assert.match(request.system,/proposedStep.*null/);
+  assert.throws(() => TEAM.buildRequest(w,'question',{question:'שאלה',approvalId:'missing'}),/מאושרת/);
+  assert.throws(() => TEAM.buildRequest(w,'question',{question:'שאלה',approvalId:a.id,threadKey:'stage_2_approval_other'}),/שיחה/);
+  const danger = TEAM.update(w,draft => {draft.context.immediateDanger=true;});
+  assert.throws(() => TEAM.buildRequest(danger,'question',{question:'שאלה',approvalId:a.id}),/סכנה/);
+});
+
+test('recovery merges immutable local and latest evidence with complete lineage', () => {
+  const base = approved(), approvalId=base.approvals[0].id;
+  const latest = TEAM.recordPractice(base,{approvalId,stepId:'main',kind:'rehearsal',observation:'LATEST_REHEARSAL',nextAction:'לנסות'});
+  let mine = TEAM.approve(TEAM.update(base,w => {w.activity.title='LOCAL_APPROVED';}),{safety:true,privacy:true,professional:true});
+  const localApproval=mine.approvals.at(-1).id;
+  mine = TEAM.recordPractice(mine,{approvalId:localApproval,stepId:'main',kind:'meeting',observation:'LOCAL_MEETING',nextAction:'לנסות',wasRealMeeting:true});
+  mine = TEAM.saveMove(mine,{observationId:mine.observations[0].id,title:'LOCAL_MOVE',conditions:'זוגות',limits:'הקשר אחד',privacyChecked:true});
+  const merged = TEAM.mergeWorkspaces(latest,mine);
+  assert.equal(merged.approvals.length,2); assert.equal(merged.rehearsals.length,1); assert.equal(merged.observations.length,1); assert.equal(merged.moves.length,1);
+  assert.equal(merged.activity.title,'LOCAL_APPROVED'); assert.ok(merged.revision>Math.max(mine.revision,latest.revision));
+  assert.equal(TEAM.publicPack(merged,localApproval,{moveIds:[merged.moves[0].id]}).moves[0].title,'LOCAL_MOVE');
+  assert.equal(base.observations.length,0); assert.equal(latest.observations.length,0); assert.ok(Object.isFrozen(merged.observations));
+  const collision=JSON.parse(JSON.stringify(latest)); collision.approvals[0].activity.title='COLLISION';
+  assert.throws(() => TEAM.mergeWorkspaces(collision,mine),/תיעוד|מזהה/);
+});
+
+test('valid JSON with malformed stored evidence is rejected and preserved', async () => {
+  let w=approved(); const approvalId=w.approvals[0].id;
+  w=TEAM.recordPractice(w,{approvalId,stepId:'main',kind:'meeting',observation:'ראינו',nextAction:'ננסה',wasRealMeeting:true});
+  w=TEAM.saveMove(w,{observationId:w.observations[0].id,title:'מהלך',conditions:'זוגות',limits:'הקשר אחד',privacyChecked:true});
+  for (const corrupt of [
+    value=> {value.moves[0].conditions={private:{concerns:'PRIVATE_CORRUPTION'}};},
+    value=> {value.moves[0].observationId='missing';},
+    value=> {value.moves[0].step.instructions='FORGED_STEP';},
+    value=> {value.observations[0].kind='rehearsal';},
+    value=> {value.approvals.push({...value.approvals[0]});},
+    value=> {value.approvals[0].at='not a date';}
+  ]) {
+    const broken=JSON.parse(JSON.stringify(w)); corrupt(broken);
+    const storage=memory(), raw=JSON.stringify({scopeKey:'owner',workspace:broken}); storage.setItem('owner',raw);
+    const repo=TEAM.createRepository({storage,locks:serialLocks(),ownerKey:()=> 'owner'});
+    await assert.rejects(repo.load(),error=>error.code==='storage-invalid');
+    assert.equal(storage.getItem('owner'),raw);
+    assert.throws(()=>TEAM.publicPack(broken,approvalId,{moveIds:[broken.moves[0].id]}));
+  }
+});
+
+test('repository storage and unsupported-lock failures remain retryable without losing initial draft', async () => {
+  const original=memory(); let unavailable=true;
+  const storage={getItem:original.getItem,setItem(key,value){if(unavailable)throw Error('temporarily unavailable');original.setItem(key,value);}};
+  const repo=TEAM.createRepository({storage,locks:serialLocks(),ownerKey:()=> 'owner'}),w=workspace();
+  await assert.rejects(repo.save(w,{expectedRevision:0}),error=>error.code==='storage-unavailable');
+  assert.equal(original.getItem('owner'),null); unavailable=false;
+  await repo.save(w,{expectedRevision:0}); assert.equal((await repo.load()).context.goal,w.context.goal);
+  const unsupported=TEAM.createRepository({storage:memory(),ownerKey:()=> 'other'});
+  await assert.rejects(unsupported.save(w,{expectedRevision:0}),error=>error.code==='storage-unavailable');
+  const emptyStorage=memory(),emptyRepo=TEAM.createRepository({storage:emptyStorage,locks:serialLocks(),ownerKey:()=> 'empty'}),empty=TEAM.newWorkspace();
+  await emptyRepo.save(empty,{expectedRevision:0}); await emptyRepo.save(empty,{expectedRevision:0});
+  assert.equal((await emptyRepo.load()).revision,0);
+});

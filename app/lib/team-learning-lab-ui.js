@@ -2,7 +2,8 @@
   "use strict";
   const T = window.SBE_TEAM, D = window.SBE_DOC;
   const $ = id => document.getElementById(id);
-  const BASE = "sbe.team-lab.v1";
+  const demoRun = new URLSearchParams(location.search).get("demolab") === "1" && window.parent !== window && sessionStorage.getItem("sbe.session.homeUrl") === "admin.html?role=sys";
+  const BASE = demoRun ? "sbe.team-lab.demo.v1" : "sbe.team-lab.v1";
   const PHASES = T.PHASES;
   const STAGES = ["התכנון", "הפעילות", "החזרה עם עמיתים", "הלמידה מהמפגש"];
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -13,8 +14,10 @@
   const initialOwner = ownerKey(), initialIdentity = identity();
   let ws, ready = false, persistedRevision = 0, stage = 0, conflict = false;
   let saveTimer, saving, saveAgain = false, activeRun, waitTimer, generated = false;
-  const proposals = new Map(), formValues = {}, selectedMoves = new Set();
-  const repository = T.createRepository({storage:localStorage,ownerKey,locks:navigator.locks});
+  const proposals = new Map(), formValues = {}, selectedMoves = new Set(), pendingActions = new WeakSet();
+  const demoStorage = new Map();
+  const storage = demoRun ? {getItem:key => demoStorage.get(key) ?? null,setItem:(key,value) => demoStorage.set(key,value)} : localStorage;
+  const repository = T.createRepository({storage,ownerKey,locks:navigator.locks});
   const work = window.SBE_PLANNER.createWork(() => ({revision:ws?.revision,owner:ownerKey(),token:identity(),context:ws?.context}));
 
   function node(tag, content, className) {
@@ -25,17 +28,29 @@
   }
   function button(label, action, primary) {
     const b = node("button",label,primary ? "lab-primary" : ""); b.type = "button";
-    b.addEventListener("click",() => attempt(action)); return b;
+    b.addEventListener("click",() => attemptOnce(b,action)); return b;
   }
   function attempt(fn) {
     try { const result = fn(); if (result?.catch) result.catch(showError); return result; }
     catch (error) { showError(error); }
   }
+  function attemptOnce(target,fn) {
+    if (pendingActions.has(target)) return;
+    const wasDisabled = target.disabled;
+    pendingActions.add(target); target.disabled = true;
+    const finish = () => { pendingActions.delete(target); target.disabled = wasDisabled; updateDanger(); };
+    const result = attempt(fn);
+    if (result?.then) result.then(finish,finish); else finish();
+    return result;
+  }
   function message(value, error = false) {
     $("lab-message").textContent = value; $("lab-message").hidden = !value;
     $("lab-message").dataset.error = String(error);
   }
-  function showError(error) { message(error?.message || "הפעולה לא הושלמה. אפשר לנסות שוב; הנוסח נשאר כאן.",true); }
+  function showError(error) {
+    if (error?.name === "AbortError") { message("הבקשה נעצרה. אפשר להמשיך מהנוסח הנוכחי ולנסות שוב."); return; }
+    message(error?.message || "הפעולה לא הושלמה. אפשר לנסות שוב; הנוסח נשאר כאן.",true);
+  }
   function assertOwner() {
     if (!ready) throw new Error("העבודה הפרטית עדיין לא נפתחה. אפשר לנסות לפתוח אותה שוב.");
     if (ownerKey() !== initialOwner || identity() !== initialIdentity) {
@@ -43,15 +58,18 @@
     }
   }
   function invalidate() { work.invalidate(); proposals.clear(); }
+  function resetApprovalChecks() {
+    ["safety","privacy","professional"].forEach(k => { $("lab-check-" + k).checked = false; });
+  }
   function change(mutator) {
     assertOwner(); invalidate(); ws = T.update(ws,mutator);
-    ["safety","privacy","professional"].forEach(k => { $("lab-check-" + k).checked = false; });
+    resetApprovalChecks();
     updateDanger();
     queueSave();
   }
   function updateDanger() {
     $("lab-danger").hidden = !ws?.context.immediateDanger;
-    ["lab-generate","lab-regenerate","lab-approve"].forEach(id => { $(id).disabled = !!ws?.context.immediateDanger || !!activeRun; });
+    ["lab-generate","lab-regenerate","lab-approve"].forEach(id => { $(id).disabled = !!ws?.context.immediateDanger || !!activeRun || pendingActions.has($(id)); });
   }
   function queueSave() {
     $("lab-save-status").textContent = conflict ? "יש שינוי בלשונית אחרת. הטיוטה שלכם נשארת כאן." : "יש שינויים בטיוטה. שומרים במכשיר…";
@@ -60,7 +78,7 @@
   async function save() {
     assertOwner(); clearTimeout(saveTimer);
     if (conflict) throw new Error("הגרסה השמורה השתנתה. אפשר לפתוח אותה או לשלב בה את הטיוטה שלכם.");
-    if (saving) { saveAgain = true; await saving; return; }
+    if (saving) { saveAgain = true; await saving; return save(); }
     if (ws.revision === persistedRevision && persistedRevision !== 0) return;
     const snapshot = clone(ws), expectedRevision = persistedRevision;
     $("lab-save-status").textContent = "שומרים את הטיוטה במכשיר…";
@@ -68,13 +86,16 @@
       assertOwner(); persistedRevision = saved.revision;
       $("lab-save-status").textContent = ws.revision === persistedRevision ? "נשמר במכשיר הזה · גרסה " + persistedRevision : "יש שינוי נוסף בטיוטה. שומרים…";
     }).catch(error => {
-      conflict = true; $("lab-reload").hidden = false;
+      conflict = error.code === "conflict" || error.code === "storage-invalid";
+      $("lab-reload").hidden = !conflict;
       $("lab-save-status").textContent = "השמירה לא הושלמה. הטיוטה שלכם נשארת כאן.";
       throw error;
     });
-    try { await saving; } finally {
+    let savedSuccessfully = false;
+    try { await saving; savedSuccessfully = true; } finally {
       saving = null;
-      if (!conflict && (saveAgain || ws.revision !== persistedRevision)) { saveAgain = false; queueSave(); }
+      const needsSave = saveAgain || ws.revision !== persistedRevision; saveAgain = false;
+      if (savedSuccessfully && !conflict && needsSave) queueSave();
     }
   }
   function draft(key) { return ws.private.threads["draft_" + key]?.[0]?.content || ""; }
@@ -211,14 +232,25 @@
       assertOwner();
       if (ws.revision !== proposal.revision) throw new Error("הטיוטה השתנתה מאז ההצעה. אפשר לשאול שוב על הנוסח הנוכחי.");
       const next = T.applyProposal(ws,proposal.step,{revision:proposal.revision,stepId:proposal.stepId});
-      invalidate(); ws = next; queueSave(); renderEditor(); renderStageQuestion(); message("ההצעה אומצה לשלב שנבחר. אפשר לקרוא ולערוך את הנוסח.");
+      invalidate(); ws = next; resetApprovalChecks(); updateDanger(); queueSave(); renderEditor(); renderStageQuestion(); message("ההצעה אומצה לשלב שנבחר. אפשר לקרוא ולערוך את הנוסח ולבדוק אותה מחדש לפני אישור.");
     }); apply.disabled = ws.revision !== proposal.revision;
     card.append(apply); box.append(card);
   }
+  function selectedPractice() {
+    if (stage !== 2 && stage !== 3) return null;
+    const form = readForm(stage === 2 ? "rehearsal" : "meeting");
+    const approval = ws.approvals.find(a => a.id === form.approvalId);
+    return approval ? {approval,stepId:form.stepId || undefined} : null;
+  }
+  function stageQuestionKey() {
+    const selected = selectedPractice();
+    return "stage_" + stage + (selected ? "_approval_" + selected.approval.id : "");
+  }
   function renderStageQuestion() {
-    const key = "stage_" + stage;
+    const key = stageQuestionKey(), selected = selectedPractice();
     $("lab-question-title").textContent = "שאלה על " + STAGES[stage];
     $("lab-question-hint").textContent = ["אפשר לחשוב על המטרה, הגישות וההתאמה לקבוצה.","אפשר לשאול על המהלך כולו. הצעה לשינוי שלב מבקשים ליד אותו שלב.","אפשר להכין את ההנחיה, שאלות הצפייה וחלוקת התפקידים.","אפשר לחשוב על מה שנלמד ועל הפעולה הבאה. תצפיות פרטיות אינן נשלחות בשאלה הזאת."][stage];
+    if (selected) $("lab-question-hint").textContent += " השאלה מתייחסת לגרסה שבחרתם: " + selected.approval.activity.title + " · גרסה " + selected.approval.revision + ".";
     $("lab-question-input").value = draft(key); renderAnswer(key,$("lab-question-answer"));
   }
   function busy(run,kind) {
@@ -231,7 +263,7 @@
   function endBusy(run) {
     if (activeRun !== run) return;
     clearInterval(waitTimer); activeRun = null; $("lab-wait").hidden = true; updateDanger();
-    ["lab-ask","lab-support"].forEach(id => { $(id).disabled = false; });
+    ["lab-ask","lab-support"].forEach(id => { $(id).disabled = pendingActions.has($(id)); });
   }
   async function call(kind,options = {}) {
     assertOwner();
@@ -246,7 +278,7 @@
       if (error.name === "AbortError") message("הבקשה נעצרה. אפשר להמשיך מהנוסח הנוכחי ולנסות שוב.");
       else {
         try { await save(); } catch {}
-        showError(new Error("לא התקבלה תשובה מה-AI. " + error.message + " מה שמילאתם נשאר בטיוטה; אפשר לנסות שוב."));
+        throw new Error("לא התקבלה תשובה מה-AI. " + error.message + " מה שמילאתם נשאר בטיוטה; אפשר לנסות שוב.");
       }
       throw error;
     } finally { endBusy(run); }
@@ -259,9 +291,12 @@
   }
   async function ask(key,stepId) {
     const question = draft(key).trim(); if (!question) throw new Error("כתבו שאלה קצרה כדי שנוכל לחשוב יחד.");
-    const {value,run} = await call("question",{question,stepId}); run.assertCurrent();
+    const selected = !stepId && key === stageQuestionKey() ? selectedPractice() : null;
+    const options = {question,stepId,threadKey:key};
+    if (selected) {options.approvalId = selected.approval.id; options.stepId = selected.stepId;}
+    const {value,run} = await call("question",options); run.assertCurrent();
     change(w => {const history = w.private.threads[key] || []; w.private.threads[key] = [...history,{role:"user",content:question},{role:"assistant",content:value.answer}].slice(-40);});
-    if (value.proposedStep && stepId && value.proposedStep.id === stepId) proposals.set(key,{step:value.proposedStep,stepId,revision:ws.revision});
+    if (!selected && value.proposedStep && stepId && value.proposedStep.id === stepId) proposals.set(key,{step:value.proposedStep,stepId,revision:ws.revision});
     if (stepId) { const target = [...document.querySelectorAll("[data-answer-key]")].find(n => n.dataset.answerKey === key); if (target) renderAnswer(key,target); }
     else renderStageQuestion();
     await save();
@@ -285,10 +320,10 @@
       stepHost.replaceChildren(); preview.replaceChildren();
       const approval = ws.approvals.find(a => a.id === form.approvalId);
       if (!approval) return;
-      stepHost.append(field("השלב שבו התנסינו",form.stepId || "",value => setForm(key,"stepId",value),{options:[{id:"",label:"בחרו שלב"},...approval.activity.steps.map(s => ({id:s.id,label:s.title}))]}));
+      stepHost.append(field("השלב שבו התנסינו",form.stepId || "",value => {setForm(key,"stepId",value); if (stage === (real ? 3 : 2)) renderStageQuestion();},{options:[{id:"",label:"בחרו שלב"},...approval.activity.steps.map(s => ({id:s.id,label:s.title}))]}));
       const d = detail("קריאת הגרסה המאושרת",[publicDocument(T.publicPack(ws,approval.id))]); preview.append(d);
     }
-    grid.append(field("הגרסה המאושרת",form.approvalId,value => {setForm(key,"approvalId",value); setForm(key,"stepId",""); showSelection();},{options:approvalOptions()}),stepHost,
+    grid.append(field("הגרסה המאושרת",form.approvalId,value => {setForm(key,"approvalId",value); setForm(key,"stepId",""); showSelection(); if (stage === (real ? 3 : 2)) renderStageQuestion();},{options:approvalOptions()}),stepHost,
       field(real ? "מה ראינו בפועל במפגש?" : "מה ראינו בחזרה?",form.observation || "",value => setForm(key,"observation",value),{wide:true,rows:3,hint:"פעולות ורגעים מסוימים, בלי שמות, ציונים או פרטים מזהים."}),
       field("מה ננסה בפעם הבאה?",form.nextAction || "",value => setForm(key,"nextAction",value),{wide:true}));
     box.append(grid);
@@ -385,32 +420,32 @@
     assertOwner(); const latest = await repository.load();
     if (!latest) throw new Error("לא נמצאה גרסה שמורה. הטיוטה שלכם נשארת כאן.");
     const dialog = node("dialog"); dialog.dir = "rtl"; dialog.className = "lab-card";
-    dialog.append(node("h2","הגרסה השמורה והטיוטה שלכם"),node("p","אפשר לשמור את ההקשר והפעילות שערכתם מעל הגרסה האחרונה. האישורים והתיעוד שכבר נשמרו בה יישארו. אפשר גם לפתוח אותה בלי הטיוטה הנוכחית."));
+    dialog.append(node("h2","הגרסה השמורה והטיוטה שלכם"),node("p","השילוב ישמור אישורים, חזרות, תצפיות ומהלכים משתי הגרסאות. ההקשר, הפעילות והחששות יהיו מהטיוטה שלכם; שיחה שקיימת בשתיהן תישמר בנוסח שלכם. שיחות נוספות מהגרסה השמורה יישארו. אפשר גם לפתוח את הגרסה השמורה במקום הטיוטה הנוכחית."));
     dialog.append(button("שילוב הטיוטה שלי ושמירה",async () => {
-      const mine = clone(ws); persistedRevision = latest.revision; ws = T.update(latest,w => {w.context = mine.context; w.activity = mine.activity; w.private = mine.private;}); conflict = false; $("lab-reload").hidden = true; dialog.close(); await save(); renderAll();
-    },true),button("פתיחת הגרסה השמורה במקום הטיוטה",() => {invalidate(); ws = latest; persistedRevision = latest.revision; conflict = false; Object.keys(formValues).forEach(k => delete formValues[k]); $("lab-reload").hidden = true; renderAll(); dialog.close(); $("lab-save-status").textContent = "נפתחה הגרסה השמורה · " + persistedRevision;}),button("המשך עריכה בלי החלפה",() => dialog.close()));
+      assertOwner(); const combined = T.mergeWorkspaces(latest,ws); invalidate(); persistedRevision = latest.revision; ws = combined; resetApprovalChecks(); conflict = false; Object.keys(formValues).forEach(k => delete formValues[k]); $("lab-reload").hidden = true; dialog.close(); renderAll(); await save();
+    },true),button("פתיחת הגרסה השמורה במקום הטיוטה",() => {assertOwner(); invalidate(); ws = latest; resetApprovalChecks(); persistedRevision = latest.revision; conflict = false; Object.keys(formValues).forEach(k => delete formValues[k]); $("lab-reload").hidden = true; renderAll(); dialog.close(); $("lab-save-status").textContent = "נפתחה הגרסה השמורה · " + persistedRevision;}),button("המשך עריכה בלי החלפה",() => dialog.close()));
     dialog.addEventListener("close",() => dialog.remove(),{once:true}); document.body.append(dialog); dialog.showModal();
   }
   function demoFill() {
     assertOwner(); if (sessionStorage.getItem("sbe.session.homeUrl") !== "admin.html?role=sys") throw new Error("מילוי לדוגמה זמין למנהלת המערכת.");
-    change(w => {Object.assign(w.context,{audience:"staff",ageBand:"d-f",situation:"routine",mode:"in-person",subject:"ישיבת צוות מדעים",curriculumGoal:"לתכנן משימת חקר משותפת",goal:"לבנות דרך קבועה שבה עמיתים משתפים רעיון, מקשיבים ובוחרים ניסוי קטן לשבוע הבא",environment:"חדר צוות, שולחן משותף ולוח",constraints:"אפשר לעבוד בזוגות ולהציע דרך כתובה להשתתף",accessibility:"בחירה בין דיבור, כתיבה והתבוננות",adultSupport:"המנחה מתאמת תפקידים ומאפשרת עצירה",groupSize:8,minutes:45,immediateDanger:false,models:T.MODELS.filter(m => m.audiences.includes("staff")).slice(0,2).map(m => m.id)});}); renderContext(); renderModels(); goStage(0);
+    change(w => {Object.assign(w.context,T.newWorkspace().context,{audience:"staff",ageBand:"d-f",situation:"routine",mode:"in-person",subject:"ישיבת צוות מדעים",curriculumGoal:"לתכנן משימת חקר משותפת",goal:"לבנות דרך קבועה שבה עמיתים משתפים רעיון, מקשיבים ובוחרים ניסוי קטן לשבוע הבא",environment:"חדר צוות, שולחן משותף ולוח",constraints:"אפשר לעבוד בזוגות ולהציע דרך כתובה להשתתף",accessibility:"בחירה בין דיבור, כתיבה והתבוננות",adultSupport:"המנחה מתאמת תפקידים ומאפשרת עצירה",groupSize:8,minutes:45,immediateDanger:false,models:T.MODELS.filter(m => m.audiences.includes("staff")).slice(0,2).map(m => m.id)});}); renderContext(); renderModels(); goStage(0);
   }
   async function init() {
     try {
       const loaded = await repository.load(); ws = loaded || T.newWorkspace(); persistedRevision = loaded?.revision || 0; ready = true; conflict = false;
-      renderAll(); $("lab-save-status").textContent = loaded ? "העבודה הפרטית נפתחה · גרסה " + loaded.revision : "טיוטה חדשה במכשיר הזה"; $("lab-reload").hidden = true;
+      resetApprovalChecks(); renderAll(); $("lab-save-status").textContent = loaded ? "העבודה הפרטית נפתחה · גרסה " + loaded.revision : "טיוטה חדשה במכשיר הזה"; $("lab-reload").hidden = true;
     } catch (error) {ready = false; $("lab-save-status").textContent = "לא הצלחנו לפתוח את העבודה השמורה. הנתונים לא שונו."; $("lab-reload").hidden = false; showError(error);}
   }
   document.querySelectorAll("[data-stage]").forEach(b => b.addEventListener("click",() => attempt(() => goStage(Number(b.dataset.stage)))));
-  $("lab-save").addEventListener("click",() => attempt(save)); $("lab-reload").addEventListener("click",() => attempt(recover));
+  $("lab-save").addEventListener("click",() => attemptOnce($("lab-save"),save)); $("lab-reload").addEventListener("click",() => attempt(recover));
   ["lab-generate","lab-regenerate"].forEach(id => $(id).addEventListener("click",() => attempt(generate)));
   $("lab-demo").addEventListener("click",() => attempt(demoFill));
   $("lab-cancel").addEventListener("click",() => {work.invalidate(); message("הבקשה בוטלה. הטיוטה נשארת כאן.");});
-  $("lab-question-input").addEventListener("input",() => attempt(() => setDraft("stage_" + stage,$("lab-question-input").value)));
-  $("lab-ask").addEventListener("click",() => attempt(() => ask("stage_" + stage)));
+  $("lab-question-input").addEventListener("input",() => attempt(() => setDraft(stageQuestionKey(),$("lab-question-input").value)));
+  $("lab-ask").addEventListener("click",() => attemptOnce($("lab-ask"),() => ask(stageQuestionKey())));
   $("lab-concerns").addEventListener("input",() => attempt(() => change(w => {w.private.concerns = $("lab-concerns").value;})));
   $("lab-support").addEventListener("click",() => attempt(support));
-  $("lab-approve").addEventListener("click",() => attempt(async () => {
+  $("lab-approve").addEventListener("click",() => attemptOnce($("lab-approve"),async () => {
     assertOwner(); const next = T.approve(ws,{safety:$("lab-check-safety").checked,privacy:$("lab-check-privacy").checked,professional:$("lab-check-professional").checked});
     invalidate(); ws = next; queueSave(); await save(); renderPractice(); renderLearning(); goStage(2); message("הגרסה המאושרת נשמרה. בחרו אותה במפורש לחזרה עם עמיתים.");
   }));
