@@ -18,6 +18,7 @@ window.SBE_SCREENS = [
       { file:'system-select.html', label:'בחירת מערכת', who:'כניסה בקוד מוסד (הדרך הישנה)' },
       { file:'sources-library.html', label:'ספריית המקורות', who:'כל מי שנכנס/ה' },
       { file:'examples.html', label:'🗂 ספריית תוצרים לדוגמה', who:'כולם, גם בלי כניסה (רק מה שסומן במעבדת הדמו)' },
+      { file:'map.html', label:'🗺 מפת הכלים', who:'כולם, גם בלי כניסה' },
     ]},
     { title:'סימולציה, שיחות מאתגרות', items:[
       { file:'input-screen.html', label:'יצירת תרחיש: סטודנטיות.ים', who:'מנחות סטודנטים' },
