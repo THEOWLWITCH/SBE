@@ -1,0 +1,281 @@
+{
+  "status": "complete",
+  "verdict": "Not ready",
+  "scope": {
+    "base": "50fb0977141da46287b205aa541701fc3a065dad",
+    "branch": "feat/be-good-quality-foundation",
+    "head_sha": "4ad8bc472b47c3598ffa4f4159d32170d6a2ba73",
+    "pr_url": null,
+    "files_changed": 15
+  },
+  "run_id": "20261009-170349-f5dedee5",
+  "artifact_path": "C:\\Users\\yaels\\AppData\\Local\\Temp\\compound-engineering-yaels\\ce-code-review\\20261009-170349-f5dedee5",
+  "durable_report_path": "C:/Users/yaels/Documents/Codex/2026-10-06/openai-docs-make-me-a-plan/work/begood/docs/reviews/2026-10-10-team-learning-lab-review-20261009-170349-f5dedee5.md",
+  "reviewers": [
+    "correctness",
+    "project-standards",
+    "testing",
+    "maintainability",
+    "security",
+    "reliability",
+    "adversarial",
+    "julik-frontend-races"
+  ],
+  "source": "Actual completed ce-code-review review.json and metadata.json; compact durable copy.",
+  "findings": [
+    {
+      "#": 1,
+      "title": "Demo generation overwrites the administrator's regular draft",
+      "severity": "P1",
+      "file": "app/lib/demo-hook.js",
+      "line": 130,
+      "independent_reviewers": [
+        "adversarial"
+      ],
+      "validation_status": "confirmed"
+    },
+    {
+      "#": 2,
+      "title": "Conflict recovery discards locally recorded meeting evidence",
+      "severity": "P1",
+      "file": "app/lib/team-learning-lab-ui.js",
+      "line": 390,
+      "independent_reviewers": [
+        "adversarial"
+      ],
+      "validation_status": "confirmed"
+    },
+    {
+      "#": 3,
+      "title": "Follow-up questions forget the previous answer",
+      "severity": "P1",
+      "file": "app/lib/team-learning-lab.js",
+      "line": 213,
+      "independent_reviewers": [
+        "adversarial"
+      ],
+      "validation_status": "confirmed"
+    },
+    {
+      "#": 4,
+      "title": "Clear human checks when adopting changed activity content",
+      "severity": "P1",
+      "file": "app/lib/team-learning-lab-ui.js",
+      "line": 214,
+      "independent_reviewers": [
+        "correctness"
+      ],
+      "validation_status": "confirmed"
+    },
+    {
+      "#": 5,
+      "title": "Prevent duplicate submissions while evidence is saving",
+      "severity": "P2",
+      "file": "app/lib/team-learning-lab-ui.js",
+      "line": 300,
+      "independent_reviewers": [
+        "julik-frontend-races"
+      ],
+      "validation_status": "confirmed"
+    },
+    {
+      "#": 6,
+      "title": "Allow retry after first-save storage failure",
+      "severity": "P2",
+      "file": "app/lib/team-learning-lab-ui.js",
+      "line": 71,
+      "independent_reviewers": [
+        "reliability"
+      ],
+      "validation_status": "confirmed"
+    },
+    {
+      "#": 7,
+      "title": "Persisted move fields escape the public projection",
+      "severity": "P2",
+      "file": "app/lib/team-learning-lab.js",
+      "line": 129,
+      "independent_reviewers": [],
+      "validation_status": "confirmed"
+    },
+    {
+      "#": 8,
+      "title": "Rehearsal questions use the wrong activity version",
+      "severity": "P2",
+      "file": "app/lib/team-learning-lab.js",
+      "line": 198,
+      "independent_reviewers": [
+        "adversarial"
+      ],
+      "validation_status": "confirmed"
+    }
+  ],
+  "actionable_findings": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "validator": {
+    "batch_count": 1,
+    "selected": 8,
+    "confirmed": 8,
+    "rejected": 0,
+    "unresolved": 0,
+    "malformed": 0,
+    "failed": 0,
+    "shortcut_skipped": 0,
+    "wait_bound_exceeded": false,
+    "degraded_blockers": [],
+    "verdicts": [
+      {
+        "#": 1,
+        "status": "confirmed",
+        "protected_subject": "data-loss",
+        "reason_field": "findings[#=1].validation_reason"
+      },
+      {
+        "#": 2,
+        "status": "confirmed",
+        "protected_subject": "data-loss",
+        "reason_field": "findings[#=2].validation_reason"
+      },
+      {
+        "#": 3,
+        "status": "confirmed",
+        "protected_subject": null,
+        "reason_field": "findings[#=3].validation_reason"
+      },
+      {
+        "#": 4,
+        "status": "confirmed",
+        "protected_subject": null,
+        "reason_field": "findings[#=4].validation_reason"
+      },
+      {
+        "#": 5,
+        "status": "confirmed",
+        "protected_subject": "concurrency",
+        "reason_field": "findings[#=5].validation_reason"
+      },
+      {
+        "#": 6,
+        "status": "confirmed",
+        "protected_subject": "data-loss",
+        "reason_field": "findings[#=6].validation_reason"
+      },
+      {
+        "#": 7,
+        "status": "confirmed",
+        "protected_subject": "secrets-exposure",
+        "reason_field": "findings[#=7].validation_reason"
+      },
+      {
+        "#": 8,
+        "status": "confirmed",
+        "protected_subject": null,
+        "reason_field": "findings[#=8].validation_reason"
+      }
+    ],
+    "skip_evidence_basis": "No verified adversarial-provider cross-model artifact exists; local persona and attributed parent agreement never permit a skip.",
+    "protected_subject_additions": [
+      {
+        "#": 6,
+        "protected_subject": "data-loss",
+        "reason": "The validator adds data-loss protection to the first-save retry failure; no rejection or action-route change was made."
+      }
+    ]
+  },
+  "peer": {
+    "selected": true,
+    "target": null,
+    "route": null,
+    "preference_source": "default",
+    "outcome": "in-process-fallback",
+    "artifact": null,
+    "coverage": "Cross-model pass: not run; attested Codex host has only Codex CLI installed, no different-provider route (Claude, Grok, Cursor, OpenCode absent). Adversarial lens ran via in-process fallback."
+  },
+  "token_accounting": {
+    "status": "unrecorded",
+    "reason": "No persisted stage event contains a token count. Earlier usage cannot be reconstructed, and this report does not invent a total."
+  },
+  "cost": {
+    "host": "codex",
+    "scope": {
+      "changed_lines": 993,
+      "depth": "full",
+      "exec_nontest_lines": 701,
+      "size_band": "large",
+      "unclassified_lines": {
+        ".css": 4,
+        ".html": 59
+      }
+    },
+    "stages": [
+      {
+        "elapsed_seconds": 13.716,
+        "ended_at": "2026-10-09T14:04:03.391741+00:00",
+        "facts": {
+          "changed_lines": 993,
+          "depth": "full",
+          "exec_nontest_lines": 701,
+          "size_band": "large",
+          "unclassified_lines": {
+            ".css": 4,
+            ".html": 59
+          }
+        },
+        "stage": "scope",
+        "started_at": "2026-10-09T14:03:49.675956+00:00"
+      },
+      {
+        "elapsed_seconds": 168.609,
+        "ended_at": "2026-10-09T14:06:52.000994+00:00",
+        "reviewers": 8,
+        "stage": "select",
+        "started_at": "2026-10-09T14:04:03.391741+00:00"
+      },
+      {
+        "candidates": 10,
+        "elapsed_seconds": 1556.216,
+        "ended_at": "2026-10-09T14:32:48.217191+00:00",
+        "stage": "dispatch",
+        "started_at": "2026-10-09T14:06:52.000994+00:00"
+      },
+      {
+        "candidates": 8,
+        "elapsed_seconds": 362.912,
+        "ended_at": "2026-10-09T14:40:37.459498+00:00",
+        "stage": "merge",
+        "started_at": "2026-10-09T14:34:34.547777+00:00"
+      },
+      {
+        "candidates": 8,
+        "elapsed_seconds": 292.107,
+        "ended_at": "2026-10-09T14:46:29.139273+00:00",
+        "stage": "validate",
+        "started_at": "2026-10-09T14:41:37.032416+00:00"
+      },
+      {
+        "candidates": 8,
+        "elapsed_seconds": 506.609,
+        "ended_at": "2026-10-10T07:52:50.817518+00:00",
+        "stage": "report",
+        "started_at": "2026-10-10T07:44:24.208399+00:00"
+      }
+    ],
+    "status": "complete",
+    "totals": {
+      "artifact_bytes": 896555,
+      "candidates": 10,
+      "elapsed_seconds": 2900.169,
+      "reviewers": 8
+    },
+    "truncated_events": 0
+  },
+  "resolution_note": "This receipt describes original 4ad8bc4. Later fixes are recorded separately in the fix-verification and team-learning-lab-verification documents."
+}

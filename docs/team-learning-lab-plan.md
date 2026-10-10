@@ -6,7 +6,7 @@
 
 מרחב עבודה למחנכות ולמחנכים: בחירת גישות, יצירת פעילות בעזרת AI, עריכה ושיחה בכל שלב, אישור גרסה לחזרה עם עמיתים, תצפית במפגש אמיתי ושמירת מהלך שנוסה עם התנאים והגבולות שלו. אנחנו לומדים על פעולות, ולא נותנים ציונים לאנשים. כלי המשך נפתחים רק למי שיש להם הרשאה.
 
-מצב שגרה/חירום ואופן המפגש הם שני צירים נפרדים. אפשר חירום ומפגש מקוון יחד. חמישה טווחי גיל: גן, א–ג, ד–ו, ז–ט, י–יב. הנמען תלמידים או צוות חינוך; גם כשהנמען תלמידים, המבוגר מכין ומנחה. חקר שיעור וליווי פדגוגי מוצגים לצוותים. התנסות ורפלקציה, חקר ויצירה, קהילת מעשה ואפשרויות השתתפות נגישות מציעים גישות משלימות עם מקור, תנאי התאמה ומגבלות. אין סיווג של אנשים לסגנונות למידה.
+מצב שגרה/חירום ואופן המפגש הם שני צירים נפרדים. אפשר חירום ומפגש מקוון יחד. חמישה טווחי גיל: גן, א–ג, ד–ו, ז–ט, י–יב. הנמען תלמידים או צוות חינוך; גם כשהנמען תלמידים, המבוגר מכין ומנחה. חקר שיעור, ליווי פדגוגי וקהילת מעשה מוצגים לצוותים. התנסות ורפלקציה, חקר ויצירה ואפשרויות השתתפות נגישות זמינים גם לפעילות תלמידים. לכל גישה מקור, תנאי התאמה ומגבלות. אין סיווג של אנשים לסגנונות למידה.
 
 מקשרים מטרה חינוכית, תחום ליבה/תהליך קיים, סביבת למידה, יצירתיות, אי-ודאות ומחלוקת למנגנון חברתי חוזר. בכל פעילות ובכל שלב מוצגים מטרה, רכיבי חוסן, מיומנויות אישיות ומשותפות והנחיה מעשית.
 
@@ -27,16 +27,19 @@
 
 `app/lib/team-learning-lab.js` הוא UMD: `window.SBE_TEAM` ו-CommonJS. הממשק:
 
-- `VERSION`, `AGE_BANDS`, `MODES`, `MODELS`, `SOURCES`, `RED_LINES` הם קטלוגים. לכל פריט `id,label`; למודל גם `summary,use,limits,audiences,sources`. למקור `id,label,url,kind`. קהילה מקצועית מיועדת לצוות; UDL שכבת תכנון שאפשר לשלב.
+- `VERSION`, `AGE_BANDS`, `MODES`, `MODELS`, `SOURCES`, `RED_LINES`, `PHASES` הם קטלוגים. לכל פריט `id,label` מלבד PHASES, שהוא מערך ארבעת שמות חלקי המפגש; למודל גם `summary,use,limits,audiences,sources`. למקור `id,label,url,kind`. קהילה מקצועית מיועדת לצוות; UDL שכבת תכנון שאפשר לשלב.
 - `newWorkspace()` מחזיר `{schemaVersion,revision:0,context,activity:null,approvals:[],rehearsals:[],observations:[],moves:[],private:{concerns:'',threads:{}}}`. context: `audience` students/staff; `ageBand` gan/a-c/d-f/g-i/j-l; `situation` routine/emergency; `mode` in-person/online/async/hybrid/low-connectivity; `emergencyKind,subject,curriculumGoal,goal,environment,constraints,accessibility,adultSupport` כמחרוזות; `groupSize,minutes` מספרים; `models` מזהי גישות; `immediateDanger` בוליאני.
 - `update(workspace,mutator)` מחזיר עותק עם revision+1, בלי לשנות גרסאות קודמות. `validateContext(context)` ו-`validateActivity(activity,context)` מחזירים עותק מוגבל לשדות מוכרים או זורקים Error בעברית. context ריק מותר לשמירה, אך לא להפקה/אישור. גישה המיועדת לצוות בלבד לא משמשת פעילות תלמידים. סכנה מיידית חוסמת הפקה ואישור.
 - Activity: `title,purpose,facilitationGuide,environmentPlan,uncertaintyPlan,creativityPlan,conflictPlan,participationAlternative` מחרוזות; `resilienceComponents,individualSkills,sharedSkills` מערכי מחרוזות; `sources` מזהי מקורות מוכרים; `socialMechanism:{name,cadence,roles,firstAction,review}`; `steps` עד 16. Step: `id,title,phase,minutes,purpose,instructions,facilitation,resources,environment,components,individualSkills,sharedSkills`. שלושת השדות האחרונים מערכי מחרוזות; היתר מחרוזות מלבד minutes. phase: פתיחה/פעילות מרכזית/סיכום/אחרי המפגש. זמנים חיוביים, לאחר המפגש אפשר 0; סך המפגש בגבול הזמן שב-context. יש פתיחה, פעילות מרכזית, סיכום ואחרי המפגש.
-- `buildRequest(workspace,kind,{question,stepId}={})` מחזיר גוף לקריאת `sbeCallAI`: permission nana, system, messages, maxTokens, timeoutMs. kind generate/question/support. בהפקה מבקשים JSON Activity לפי החוזה. בשאלה `{answer,proposedStep:null|Step}`; לתמיכה `{answer}`. הפקה ושאלות אינן כוללות private.concerns; רק support מפורש שולח חששות לתשובה תומכת קצרה. אין זהות/ציון/אישור משדה AI. המקורות הם רשימה מאומתת, והקלט מסומן נתונים לא מהימנים.
+- `buildRequest(workspace,kind,{question,stepId,approvalId,threadKey}={})` מחזיר גוף לקריאת `sbeCallAI`: permission nana, system, messages, maxTokens, timeoutMs. kind generate/question/support. בהפקה מבקשים JSON Activity לפי החוזה. בשאלה `{answer,proposedStep:null|Step}`; לתמיכה `{answer}`. שאלה על חזרה או מפגש עם approvalId נשענת על ההקשר, הפעילות והשלב הקפואים שבחר האדם, ואינה מציעה שינוי לגרסה המאושרת. threadKey מאומת מול השלב והאישור; רק 12 ההודעות האחרונות בשיחה הזאת, עד 4,000 תווים בכל הודעה, מצורפות. היסטוריה אינה גוברת על הנוסח הנוכחי. הפקה ושאלות אינן כוללות private.concerns, שיחות אחרות או תצפיות גולמיות; רק support מפורש שולח חששות לתשובה תומכת קצרה. אין זהות/ציון/אישור משדה AI. המקורות הם רשימה מאומתת, והקלט מסומן נתונים לא מהימנים.
 - `parseReply(text,kind,context)` מאמת את תשובת ה-AI. שאלה אינה משנה טיוטה. `applyProposal(workspace,proposal,{revision,stepId})` מאמץ רק שלב שנמצא ורק כשה-revision זהה, ואחר כך מאמת את הפעילות השלמה. תשובה מאוחרת לא מחזירה שלב שהוסר.
 - `approve(workspace,{safety,privacy,professional})` דורש שלושת אישורי האדם ומוסיף ל-approvals תמונת מצב עמוקה `{id,revision,at,context,activity}` בלי private. עריכה מאוחרת שומרת את האישור הקודם; תרגול משתמש באישור שנבחר במפורש.
 - `recordPractice(workspace,{approvalId,stepId,kind,at,observation,nextAction,wasRealMeeting})`: kind rehearsal/meeting; תצפית ממשית דורשת wasRealMeeting=true, מה נראה ומה ננסה בהמשך; נקשרת לאישור ולשלב הקפואים. `saveMove(workspace,{observationId,title,conditions,limits,privacyChecked})` שומר מהלך רק מתצפית meeting, עם תנאים, מגבלות ואישור פרטיות מפורש.
 - `publicPack(workspace,approvalId,{moveIds=[]}={})` מחזיר `{schemaVersion,context,activity,redLines,sources,moves}` עם שדות נבחרים בלבד. ללא חששות, שיחות, תצפיות גולמיות או מזהי משתמש. moves רק אלה שנבחרו במפורש.
-- `createRepository({storage,ownerKey,locks})` מחזיר `load()` ו-`save(workspace,{expectedRevision})` אסינכרוני. ownerKey פונקציה שנבדקת שוב בתוך navigator.locks. scopeKey נרשם מחוץ ל-workspace. שומרים תחת `sbeUserKey('sbe.team-lab.v1')`. קריאה/שמירה של בעלים שהתחלפו נחסמת; conflict בין לשוניות לא מוחק מידע. שגיאה/JSON פגום אינם מאופסים בשקט.
+- `mergeWorkspaces(latest,mine)` משלב אישורים ותיעוד משתי הגרסאות לפי מזהה, בלי לשנות את שרשרת האישור → התצפית → המהלך. מזהה זהה עם תוכן שונה נחסם. ההקשר, הפעילות והחששות נבחרים מהטיוטה המקומית; שיחות נוספות נשמרות, ובשיחה משותפת נבחר הנוסח המקומי. הממשק מסביר את הבחירה לפני השילוב ומאפס את בדיקות האישור האנושיות.
+- `createRepository({storage,ownerKey,locks})` מחזיר `load()` ו-`save(workspace,{expectedRevision})` אסינכרוני. ownerKey פונקציה שנבדקת שוב בתוך navigator.locks. scopeKey נרשם מחוץ ל-workspace. שומרים תחת `sbeUserKey('sbe.team-lab.v1')`. קריאה/שמירה של בעלים שהתחלפו נחסמת; conflict בין לשוניות לא מוחק מידע. שגיאה/JSON פגום אינם מאופסים בשקט. קודי השגיאה מבדילים בין `conflict`, `storage-invalid` ו-`storage-unavailable`; כשל זמני מאפשר ניסיון ידני חוזר בלי לולאת שמירה אוטומטית. רשומות שמורות נבדקות לשדות מותרי סוג, מזהים, תאריכים והקשרים תקינים לפני שימוש או ייצוא.
+
+כל אימוץ תוכן או החלפת טיוטה מאפס את שלוש בדיקות האישור. פעולות תיעוד ואישור חסומות ללחיצה חוזרת כל עוד השמירה פעילה. דמו מנהלת בתוך המסגרת המורשית משתמש באחסון בזיכרון נפרד, כדי שלא יחליף את טיוטת העבודה הפרטית.
 
 ## בדיקות קבלה
 
@@ -48,3 +51,7 @@
 - סכנה מיידית עוצרת את המסלול החינוכי. קווים אדומים מוצגים גם בתיק: בטיחות, בלי חשיפה כפויה/שחזור טראומה, חלופות השתתפות, עצירה בפגיעה, פרטיות ואחריות מבוגר.
 - קריאה לשרת משתמשת באסימון, permission nana ומנגנון העבודה האסינכרוני הקיים. בלי AI אין תוצר מדומה. כשל אינו מוחק טיוטה.
 - כל הבדיקות הקיימות והחדשות עוברות, מסך רחב/צר נבדקים. סקירת קוד עצמאית מתועדת. קלוד מקבל קבצים, מצב הבדיקות והשלבים שעדיין מחייבים AI חי והערכה מקצועית.
+
+## מצב המימוש, 2026-10-10
+
+ארבע יחידות המימוש הושלמו בקוד. 249 בדיקות עברו, כולל 36 בדיקות למעבדה: 18 תחום, 17 ממשק ואחת לניווט. פירוט הקבלה, תיקוני שמונת ממצאי הסקירה והגבולות שנותרו מופיעים ב[תיעוד האימות](team-learning-lab-verification.md). המשך עם AI חי, ביקורת חינוך והנחיה ופיילוט צוות קטן מופיעים ב[מסמך לקלוד](team-learning-lab-claude.md).
