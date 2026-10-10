@@ -12,21 +12,21 @@
 <!-- מפת הכלים (10/10/2026): דף ציבורי. "מה תרצו לעשות?" ← המלצה ממה להתחיל ומה בהמשך, על נהר בסגנון הלוגו. בלי מודל ובלי כניסה. -->
 <style>
 :root{
-  --navy:#0B3A6B; --blue:#1C6FA8; --teal:#1A9BB5; --aqua:#7FD0DE; --green:#3A9E6B; --leaf:#8CC63F; --sun:#FFC95C; --sun-soft:#FFF1CF;
+  --navy:#0B3A6B; --blue:#1C6FA8; --teal:#1A9BB5; --aqua:#7FD0DE; --green:#3A9E6B; --leaf:#8CC63F; --sun:#FFC95C; --sun-soft:#FFF1CF; --earth1:#B98B5F; --earth2:#7E5A3C; --earth-line:#D9B48A; --land-soft:rgba(140,198,63,.18);
   --ink:#10283F; --muted:#56697A; --paper:#FFFFFF; --card:rgba(255,255,255,.82); --line:rgba(16,40,63,.12);
   --sky1:#F4FBFD; --sky2:#E3F3F7; --dawn:#FFF6E2; --hill1:#CFEBE0; --hill2:#B5DFE8; --fade:.34;
   --shadow:0 10px 30px rgba(11,58,107,.12);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --navy:#9CC8F0; --blue:#6FB3E6; --teal:#5CCBDD; --aqua:#2E7F90; --green:#6CC895; --leaf:#A7DB66; --sun:#FFD27A; --sun-soft:#3A3220;
+    --navy:#9CC8F0; --blue:#6FB3E6; --teal:#5CCBDD; --aqua:#2E7F90; --green:#6CC895; --leaf:#A7DB66; --sun:#FFD27A; --sun-soft:#3A3220; --earth1:#8A6A4C; --earth2:#5A4130; --earth-line:#A9845F; --land-soft:rgba(108,200,149,.12);
     --ink:#E6EEF5; --muted:#9DB0C0; --paper:#0E1A26; --card:rgba(20,36,52,.86); --line:rgba(230,238,245,.14);
     --sky1:#0B1622; --sky2:#10263A; --dawn:#2A2618; --hill1:#163A33; --hill2:#14384A; --fade:.28;
     --shadow:0 10px 30px rgba(0,0,0,.45);
   }
 }
 :root[data-theme="dark"]{
-  --navy:#9CC8F0; --blue:#6FB3E6; --teal:#5CCBDD; --aqua:#2E7F90; --green:#6CC895; --leaf:#A7DB66; --sun:#FFD27A; --sun-soft:#3A3220;
+  --navy:#9CC8F0; --blue:#6FB3E6; --teal:#5CCBDD; --aqua:#2E7F90; --green:#6CC895; --leaf:#A7DB66; --sun:#FFD27A; --sun-soft:#3A3220; --earth1:#8A6A4C; --earth2:#5A4130; --earth-line:#A9845F; --land-soft:rgba(108,200,149,.12);
   --ink:#E6EEF5; --muted:#9DB0C0; --paper:#0E1A26; --card:rgba(20,36,52,.86); --line:rgba(230,238,245,.14);
   --sky1:#0B1622; --sky2:#10263A; --dawn:#2A2618; --hill1:#163A33; --hill2:#14384A; --fade:.28;
   --shadow:0 10px 30px rgba(0,0,0,.45);
@@ -65,7 +65,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 .heard b{display:block;color:var(--navy);font-size:16px;margin:6px 0 8px}
 
 /* ── המפה ── */
-.mapbox{position:relative;margin:22px auto 0;max-width:1120px;border-radius:32px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:radial-gradient(700px 360px at 8% 6%,var(--sun-soft),transparent 70%),linear-gradient(180deg,var(--sky1),var(--sky2))}
+.mapbox{position:relative;margin:22px auto 0;max-width:1120px;border-radius:32px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:radial-gradient(700px 360px at 8% 6%,var(--land-soft),transparent 70%),linear-gradient(180deg,var(--sky1),var(--sky2))}
 svg.map{display:block;width:100%;height:auto;overflow:visible}
 .st{cursor:pointer;transition:opacity .35s}
 .st:focus{outline:none}
@@ -165,7 +165,7 @@ footer a{margin:0 6px}
 
   <div class="mapbox" id="mapbox"></div>
   <div class="legend" id="steps5"></div>
-  <div class="legend"><span><i class="dot lab"></i>🧪 מעבדה ותרגול: מתנסים ומתאמנים במקום בטוח</span><span><i class="dot work"></i>🌿 סביבת עבודה: מלווה עשייה אמיתית לאורך זמן</span><span>☀️ בסוף הדרך: קהילת חוסן</span></div>
+  <div class="legend"><span><i class="dot lab"></i>🧪 מעבדה ותרגול: מתנסים ומתאמנים במקום בטוח</span><span><i class="dot work"></i>🌿 סביבת עבודה: מלווה עשייה אמיתית לאורך זמן</span><span>🏡 בסוף הדרך: קרקע יציבה, קהילת חוסן</span></div>
 
   <section class="route-out" id="route" aria-live="polite"></section>
 
@@ -192,7 +192,7 @@ footer a{margin:0 6px}
     { id: 'activity', perm: 'activity', g: 'act', n: 'תכנון פעילות', i: '🗓', k: 'work', page: 'activity-planner.html', goal: 'מרעיון לפעילות חינוכית מוכנה להפעלה, או לרצף של מפגשים.' },
     { id: 'writer', perm: 'writer', g: 'act', n: 'כתיבה מקדמת חוסן', i: '✍️', k: 'work', page: 'message-writer.html', goal: 'כתיבה יומיומית מכוונת חוסן חברתי: הודעה או מכתב לתלמידים, להורים או לצוות, בשפה מחזקת מהטיוטה הראשונה.' },
     { id: 'review', perm: 'academic', g: 'learn', n: 'משוב לעבודות', i: '📝', k: 'work', page: 'academic-review.html', goal: 'להתכונן להגשת עבודה: משוב לפי קריטריונים. הכתיבה נשארת שלכם.' },
-    { id: 'journey', perm: 'journey', g: 'anchor', n: 'מסע אל החוסן', i: '☀️', k: 'work', page: 'journey.html', goal: 'דרך מלווה בחמישה שלבים, עם אבני דרך ומשוב, עד תו חוסן לקהילת חוסן.' }
+    { id: 'journey', perm: 'journey', g: 'anchor', n: 'מסע אל החוסן', i: '🏡', k: 'work', page: 'journey.html', goal: 'דרך מלווה בחמישה שלבים, עם אבני דרך ומשוב, עד תו חוסן לקהילת חוסן.' }
   ];
   const T = Object.fromEntries(TOOLS.map((t) => [t.id, t]));
   const R = window.SBE_READY, GR = (id) => R && R.GROUPS.find((g) => g.id === id);
@@ -256,17 +256,33 @@ footer a{margin:0 6px}
   const box = $('#mapbox');
   const LAYOUT = {
     wide: { w: 1000, h: 650, river: 'M 925 565 C 700 590, 330 575, 140 525 C 30 495, 40 410, 160 400 C 400 380, 660 420, 850 385 C 975 360, 965 260, 840 250 C 640 232, 430 262, 270 222 C 190 200, 165 150, 150 112',
-      sun: [140, 92, 62], start: [972, 540], hills: ['M0 650 L0 330 C 160 270, 330 330, 470 300 S 760 230, 1000 300 L1000 650 Z', 'M0 650 L0 470 C 200 440, 380 480, 560 450 S 840 420, 1000 470 L1000 650 Z'], fs: 17, r: 27 },
+      sun: [150, 92, 62], ground: [150, 120, -20, 285, 72], start: [972, 540], hills: ['M0 650 L0 330 C 160 270, 330 330, 470 300 S 760 230, 1000 300 L1000 650 Z', 'M0 650 L0 470 C 200 440, 380 480, 560 450 S 840 420, 1000 470 L1000 650 Z'], fs: 17, r: 27 },
     tall: (() => { // בטלפון: תחנה בכל שורה, בצדדים מתחלפים, והנהר מתפתל ביניהן
       const n = 12, gap = 82, h = 200 + n * gap, pts = [];
       for (let i = 0; i < n; i++) pts.push([i % 2 ? 285 : 115, h - 60 - i * gap]);
       let d = 'M 360 ' + (h - 20) + ' C 300 ' + (h - 20) + ', ' + pts[0][0] + ' ' + (pts[0][1] + 30) + ', ' + pts[0][0] + ' ' + pts[0][1];
       const all = pts.concat([[205, 82]]);
       for (let i = 1; i < all.length; i++) { const [x0, y0] = all[i - 1], [x1, y1] = all[i]; d += ' C ' + x0 + ' ' + (y0 - gap * 0.55) + ', ' + x1 + ' ' + (y1 + gap * 0.55) + ', ' + x1 + ' ' + y1; }
-      return { w: 400, h, river: d, pts, sun: [205, 82, 50], start: [372, h - 40], hills: ['M0 ' + h + ' L0 ' + (h - 420) + ' C 120 ' + (h - 470) + ', 260 ' + (h - 400) + ', 400 ' + (h - 450) + ' L400 ' + h + ' Z', 'M0 ' + h + ' L0 ' + (h - 180) + ' C 140 ' + (h - 220) + ', 260 ' + (h - 160) + ', 400 ' + (h - 200) + ' L400 ' + h + ' Z'], fs: 16, r: 24 };
+      return { w: 400, h, river: d, pts, sun: [205, 92, 50], ground: [205, 120, -20, 420, 46], start: [372, h - 40], hills: ['M0 ' + h + ' L0 ' + (h - 420) + ' C 120 ' + (h - 470) + ', 260 ' + (h - 400) + ', 400 ' + (h - 450) + ' L400 ' + h + ' Z', 'M0 ' + h + ' L0 ' + (h - 180) + ' C 140 ' + (h - 220) + ', 260 ' + (h - 160) + ', 400 ' + (h - 200) + ' L400 ' + h + ' Z'], fs: 16, r: 24 };
     })()
   };
   let mode = '', nodes = {}, routeG = null, L = null, waveRAF = 0;
+  // קרקע יציבה בסוף הדרך (10/10/2026: "המסע הוא מהנהר הסוער אל קרקע יציבה, שהיא משהו מושג"):
+  // מישור עם עשב ושכבות אדמה, ועליו התחנה האחרונה. הנהר נגמר בחוף שלה.
+  function ground(svg, [cx, top, L0, R0, depth]) {
+    const g = S('g', { 'aria-hidden': 'true' }), hw = (R0 - L0) / 2, bot = top + depth;
+    g.appendChild(S('path', { d: `M ${L0} ${top} Q ${cx} ${top - 16} ${R0} ${top} L ${R0 - 26} ${bot} Q ${cx} ${bot + 12} ${L0 + 26} ${bot} Z`, fill: 'url(#earth)' }));
+    [0.38, 0.7].forEach((f) => { const y = top + depth * f, sh = 26 * f;
+      g.appendChild(S('path', { d: `M ${L0 + sh} ${y} Q ${cx} ${y + 7} ${R0 - sh} ${y}`, fill: 'none', stroke: 'var(--earth-line)', 'stroke-width': 3, 'stroke-linecap': 'round', opacity: '.7' })); });
+    [[cx - hw * 0.45, top + depth * 0.52, 5], [cx + hw * 0.35, top + depth * 0.82, 4], [cx + hw * 0.1, top + depth * 0.3, 3.5]].forEach(([x, y, r]) =>
+      g.appendChild(S('ellipse', { cx: x, cy: y, rx: r * 1.4, ry: r, fill: 'var(--earth-line)', opacity: '.8' })));
+    g.appendChild(S('path', { d: `M ${L0 - 2} ${top + 2} Q ${cx} ${top - 15} ${R0 + 2} ${top + 2}`, fill: 'none', stroke: 'url(#gr)', 'stroke-width': 12, 'stroke-linecap': 'round' }));
+    [[R0 - 34, 1], [cx - 95, 0.85]].forEach(([x, sc]) => { const y = top - 3;
+      g.appendChild(S('rect', { x: x - 2.5 * sc, y: y - 22 * sc, width: 5 * sc, height: 22 * sc, rx: 2, fill: 'var(--earth2)' }));
+      g.appendChild(S('circle', { cx: x, cy: y - 28 * sc, r: 13 * sc, fill: 'url(#gr)' }));
+      g.appendChild(S('circle', { cx: x - 8 * sc, cy: y - 21 * sc, r: 9 * sc, fill: 'var(--green)', opacity: '.9' })); });
+    svg.appendChild(g);
+  }
   // גלים זורמים על הנהר (10/10/2026: "שהקווים שזזים יהיו כמו גל זורם"): שלושה קווים דקים ובהירים
   // שמתפתלים לאורך הנהר בגל רך, והגל נע לכיוון השמש. בלי תנועה למי שביקש פחות תנועה.
   function waves(svg, probe, width) {
@@ -283,9 +299,10 @@ footer a{margin:0 6px}
       { off: width * 0.24, amp: width * 0.09, k: 0.058, sp: 2.0, ph: 4.0, w: 1.5, o: 0.6, dash: [90, 65], v: 46 }
     ].map((ln) => Object.assign(ln, { el: svg.appendChild(S('path', { fill: 'none', stroke: '#fff', 'stroke-opacity': ln.o, 'stroke-width': ln.w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-dasharray': ln.dash.join(' ') })) }));
     const fade = (d) => Math.min(1, d / 60, (len - d) / 60);
+    const rough = (d) => 1.55 - 1.2 * (d / len); // סוער בהתחלה, רגוע ליד הקרקע היציבה
     const draw = (t) => lines.forEach((ln) => {
       let path = '';
-      pts.forEach((p, i) => { const o = (ln.off + ln.amp * Math.sin(ln.k * p.d - t * ln.sp + ln.ph)) * fade(p.d);
+      pts.forEach((p, i) => { const o = (ln.off + ln.amp * rough(p.d) * Math.sin(ln.k * p.d - t * ln.sp + ln.ph)) * fade(p.d);
         path += (i ? ' L ' : 'M ') + (p.x + p.nx * o).toFixed(1) + ' ' + (p.y + p.ny * o).toFixed(1); });
       ln.el.setAttribute('d', path); ln.el.setAttribute('stroke-dashoffset', (-t * ln.v).toFixed(1));
     });
@@ -298,9 +315,11 @@ footer a{margin:0 6px}
   function draw() {
     const m = box.clientWidth < 640 ? 'tall' : 'wide'; if (m === mode) return; mode = m; L = LAYOUT[m];
     box.textContent = ''; nodes = {};
-    const svg = S('svg', { class: 'map', viewBox: '0 0 ' + L.w + ' ' + L.h, role: 'img', 'aria-label': 'מפת הכלים: נהר שמתחיל בתרגול ומגיע אל קהילת חוסן' });
+    const svg = S('svg', { class: 'map', viewBox: '0 0 ' + L.w + ' ' + L.h, role: 'img', 'aria-label': 'מפת הכלים: מנהר סוער אל קרקע יציבה, קהילת חוסן' });
     const defs = S('defs');
     defs.innerHTML = '<linearGradient id="rv" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="var(--blue)"/><stop offset=".55" stop-color="var(--teal)"/><stop offset="1" stop-color="var(--green)"/></linearGradient>' +
+      '<linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--leaf)"/><stop offset="1" stop-color="var(--green)"/></linearGradient>' +
+      '<linearGradient id="earth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--earth1)"/><stop offset="1" stop-color="var(--earth2)"/></linearGradient>' +
       '<radialGradient id="sn"><stop offset="0" stop-color="#FFF4D6"/><stop offset=".55" stop-color="var(--sun)"/><stop offset="1" stop-color="var(--sun)" stop-opacity="0"/></radialGradient>' +
       '<linearGradient id="h1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--hill2)"/><stop offset="1" stop-color="var(--hill2)" stop-opacity=".1"/></linearGradient>' +
       '<linearGradient id="h2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--hill1)"/><stop offset="1" stop-color="var(--hill1)" stop-opacity=".15"/></linearGradient>' +
@@ -309,12 +328,12 @@ footer a{margin:0 6px}
       '<linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--teal)"/><stop offset="1" stop-color="var(--blue)"/></linearGradient>';
     svg.appendChild(defs);
     // שמש וגבעות
-    svg.appendChild(S('circle', { cx: L.sun[0], cy: L.sun[1], r: L.sun[2] * 1.9, fill: 'url(#sn)', opacity: '.75' }));
     L.hills.forEach((d, i) => svg.appendChild(S('path', { d, fill: i ? 'url(#h2)' : 'url(#h1)' })));
     // הנהר: פס רחב, ועליו זרם בהיר שזורם
     svg.appendChild(S('path', { d: L.river, fill: 'none', stroke: 'url(#rv)', 'stroke-width': m === 'wide' ? 26 : 22, 'stroke-linecap': 'round', opacity: '.9' }));
     const probe = S('path', { d: L.river }); svg.appendChild(probe); probe.setAttribute('fill', 'none');
     waves(svg, probe, m === 'wide' ? 26 : 22);
+    ground(svg, L.ground);
     // אתם כאן: שתי דמויות כמו בלוגו
     const [sx, sy] = L.start, me = S('g', { transform: 'translate(' + (sx - 30) + ',' + (sy - 78) + ')' });
     me.innerHTML = '<circle cx="14" cy="10" r="10" fill="url(#fg)"/><path d="M0 52 C 4 28, 24 26, 28 52 Z" fill="url(#fg)"/><circle cx="36" cy="22" r="7.5" fill="url(#wk)"/><path d="M26 54 C 29 36, 44 34, 47 54 Z" fill="url(#wk)"/>' +
@@ -330,15 +349,15 @@ footer a{margin:0 6px}
       const side = i % 2 ? 1 : -1, r = last ? L.sun[2] * 0.62 : L.r;
       const g = S('g', { class: 'st', tabindex: '0', role: 'button', 'aria-label': t.n + ': ' + t.goal, transform: 'translate(' + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ')' });
       g.appendChild(S('circle', { class: 'halo', r: r + 6, fill: 'var(--sun)', opacity: '0', style: 'transform-box:fill-box;transform-origin:center' }));
-      g.appendChild(S('circle', { class: 'disc', r, fill: last ? 'var(--sun)' : (t.k === 'lab' ? 'url(#lb)' : 'url(#wk)'), stroke: 'var(--paper)', 'stroke-width': 4, style: 'transform-box:fill-box;transform-origin:center' }));
+      g.appendChild(S('circle', { class: 'disc', r, fill: last ? 'url(#gr)' : (t.k === 'lab' ? 'url(#lb)' : 'url(#wk)'), stroke: 'var(--paper)', 'stroke-width': 4, style: 'transform-box:fill-box;transform-origin:center' }));
       const ic = S('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': r * 0.95 }); ic.textContent = t.i; g.appendChild(ic);
-      const dy = last ? -(r + 36) : side * (r + 18) + (side > 0 ? 6 : 0);
-      let lx = Math.min(Math.max(p.x, 85), L.w - 85) - p.x, ly = dy;
+      const dy = last ? (mode === 'wide' ? -4 : -(r + 34)) : side * (r + 18) + (side > 0 ? 6 : 0);
+      let lx = last && mode === 'wide' ? L.ground[3] - p.x + 95 : Math.min(Math.max(p.x, 85), L.w - 85) - p.x, ly = dy;
       if (mode === 'tall' && !last) { // בטלפון: השם ליד התחנה, בצד הפנוי
         lx = (p.x < L.w / 2 ? 1 : -1) * 105; ly = 6;
       }
       const lab = S('text', { class: 'lab', 'text-anchor': 'middle', x: lx, y: ly, 'font-size': L.fs }); lab.textContent = t.n; g.appendChild(lab);
-      if (last) { const s2 = S('text', { class: 'sublab', 'text-anchor': 'middle', y: dy + 18, 'font-size': 14 }); s2.textContent = '🔁 לעגן בשגרה · אל קהילת חוסן'; g.appendChild(s2); }
+      if (last) { const s2 = S('text', { class: 'sublab', 'text-anchor': 'middle', x: lx, y: dy + 19, 'font-size': 14 }); s2.textContent = '🔁 לעגן בשגרה · קרקע יציבה'; g.appendChild(s2); }
       const bd = S('g', { class: 'badge', transform: 'translate(' + (r * 0.75) + ',' + (-r * 0.75) + ')' });
       bd.appendChild(S('circle', { r: 13, fill: 'var(--sun)', stroke: 'var(--paper)', 'stroke-width': 3 }));
       const bt = S('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 14, 'font-weight': 800, fill: '#0B2236', 'font-family': 'Assistant' }); bd.appendChild(bt); g.appendChild(bd);
@@ -385,7 +404,7 @@ footer a{margin:0 6px}
     const q = $('#quick'); q.textContent = ''; q.hidden = !chosen.size; if (!chosen.size) return;
     const pl = plan(), first = T[pl.first[0].id];
     const line = el('div', { class: 'q-line' });
-    line.appendChild(el('span', { class: 'q-sun' }, '☀️'));
+    line.appendChild(el('span', { class: 'q-sun' }, '🧭'));
     const tx = el('div'); tx.appendChild(el('b', null, 'מתחילים ב: ' + first.i + ' ' + first.n));
     const rest = pl.next.concat(pl.later).map((x) => T[x.id].n);
     if (rest.length) tx.appendChild(el('span', null, 'אחר כך: ' + rest.join(' · ')));
