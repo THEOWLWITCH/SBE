@@ -20,7 +20,8 @@
     leadcr: 'מנהיגות בחירום ובמשבר',
     stu:  'מנהיגות תלמידים וקול התלמידים',
     facil: 'הנחיית קבוצות ושיח בכיתה',
-    cont: 'רציפות, מסירה וגיבוי בצוות'
+    cont: 'רציפות, מסירה וגיבוי בצוות',
+    routine: 'שגרות, מנגנונים חברתיים ויוזמות תלמידים'
   };
   var S = [
     // ── ישראל ──
@@ -766,7 +767,76 @@
     {k:'Epstein2011', g:'cont', apa:'Epstein, J. L. (2011). School, family, and community partnerships: Preparing educators and improving schools (2nd ed.). Westview Press.',
       url:'https://scholar.google.com/scholar?q=Epstein+2011+School+family+and+community+partnerships',
       gist:'שש דרכים לשותפות בין בית הספר למשפחה, ובהן תקשורת דו־כיוונית ברורה ולמידה בבית. שותפות טובה מתוכננת ומתעדכנת, ולא נשענת על אדם אחד.',
-      be:'המכתב והשרשרת להורים הם חלק מתוכנית קבועה, ולא פנייה חד־פעמית.'}
+      be:'המכתב והשרשרת להורים הם חלק מתוכנית קבועה, ולא פנייה חד־פעמית.'},
+    // ── שגרות, מנגנונים חברתיים ויוזמות תלמידים (10/10/2026, למרכז השגרות והיוזמות החברתיות) ──
+    {k:'Ostrom1990', g:'routine', apa:'Ostrom, E. (1990). Governing the commons: The evolution of institutions for collective action. Cambridge University Press.',
+      url:'https://doi.org/10.1017/CBO9780511807763',
+      gist:'קהילות שומרות לאורך זמן על משאב משותף כשהכללים נקבעים בידי המשתתפים, כשיש מעקב שקוף אחרי הביצוע, תגובה מדורגת, ומקום קבוע לשנות את הכללים.',
+      be:'ההסכם לתקופת ניסיון נכתב בידי הקבוצה, נבדק בכל הפעלה, ונפתח לשינוי במועד שנבחר מראש.'},
+    {k:'Lundy2007', g:'routine', apa:'Lundy, L. (2007). \u2018Voice\u2019 is not enough: Conceptualising Article 12 of the United Nations Convention on the Rights of the Child. British Educational Research Journal, 33(6), 927–942.',
+      url:'https://doi.org/10.1080/01411920701657033',
+      gist:'השתתפות אמיתית של ילדים נשענת על ארבעה רכיבים: מרחב בטוח לדבר, קול (עזרה לנסח), קהל שמקשיב, והשפעה: תשובה ברורה מה נעשה עם מה שנאמר.',
+      be:'כל בקשת שינוי מקבלת מענה ברור ביומן ההחלטות: התקבלה, הותאמה, או לא הפעם, ולמה.'},
+    {k:'Hart1992', g:'routine', apa:'Hart, R. A. (1992). Children\u2019s participation: From tokenism to citizenship (Innocenti Essays No. 4). UNICEF International Child Development Centre.',
+      url:'https://www.unicef-irc.org/publications/pdf/childrens_participation.pdf',
+      gist:'סולם ההשתתפות: מהשתתפות לנוי ועד יוזמה של הילדים שבה הם מחליטים יחד עם המבוגרים. השלבים הגבוהים דורשים מידע, תפקיד אמיתי והשפעה על ההחלטה.',
+      be:'הקבוצה בוחרת את הפעולה ומחלקת את האחריות. המחנכת מאשרת רק את גבולות ההחלטה.'},
+    {k:'Mitra2004', g:'routine', apa:'Mitra, D. L. (2004). The significance of students: Can increasing \u201cstudent voice\u201d in schools lead to gains in youth development? Teachers College Record, 106(4), 651–688.',
+      url:'https://doi.org/10.1111/j.1467-9620.2004.00354.x',
+      gist:'כשתלמידים לוקחים תפקיד אמיתי בשינוי בבית הספר, מתחזקות אצלם שלוש תחושות: סוכנות (אני משפיע/ה), שייכות ומסוגלות.',
+      be:'תפקיד קבוע עם גיבוי במנגנון נותן לכל משתתף/ת תחושת השפעה ושייכות.'},
+    {k:'Larson2000', g:'routine', apa:'Larson, R. W. (2000). Toward a psychology of positive youth development. American Psychologist, 55(1), 170–183.',
+      url:'https://doi.org/10.1037/0003-066X.55.1.170',
+      gist:'יוזמה מתפתחת בפעילות מתמשכת שבחרו בה, שיש בה מטרה, מאמץ לאורך זמן ומכשולים שמתמודדים איתם. פעילות מובנית ומשותפת מתאימה לכך יותר מפנאי לא מובנה.',
+      be:'המנגנון חוזר לאורך זמן, ולכן יש בו מקום ליוזמה, להתמדה ולהתמודדות עם מכשול.'},
+    {k:'Zimmerman2000', g:'routine', apa:'Zimmerman, M. A. (2000). Empowerment theory: Psychological, organizational, and community levels of analysis. In J. Rappaport & E. Seidman (Eds.), Handbook of community psychology (pp. 43–63). Kluwer Academic/Plenum.',
+      url:'https://scholar.google.com/scholar?q=Zimmerman+2000+Empowerment+theory+psychological+organizational+community+levels',
+      gist:'העצמה נבנית ברמת האדם (תחושת שליטה), ברמת הארגון (מבנים שמאפשרים השתתפות והשפעה) וברמת הקהילה. ארגון מעצים נותן תפקידים, אחריות משותפת וקבלת החלטות.',
+      be:'הלוח, כרטיסי התפקיד וההסכם הם מבנה שמאפשר לכל אחד ואחת להשתתף ולהשפיע.'},
+    {k:'Lally2010', g:'routine', apa:'Lally, P., van Jaarsveld, C. H. M., Potts, H. W. W., & Wardle, J. (2010). How are habits formed: Modelling habit formation in the real world. European Journal of Social Psychology, 40(6), 998–1009.',
+      url:'https://doi.org/10.1002/ejsp.674',
+      gist:'הרגל נבנה מחזרה על אותה פעולה באותו הקשר. זה לוקח זמן (בממוצע כחודשיים), ופעם אחת שהוחמצה לא מבטלת את מה שנבנה.',
+      be:'מועד קבוע וחזרה הם הלב של המנגנון. הפעלה שלא קרתה היא סיבה לבדוק את הלוח, לא לוותר.'},
+    {k:'Wood2007', g:'routine', apa:'Wood, W., & Neal, D. T. (2007). A new look at habits and the habit–goal interface. Psychological Review, 114(4), 843–863.',
+      url:'https://doi.org/10.1037/0033-295X.114.4.843',
+      gist:'הרגלים מופעלים בידי רמזים קבועים בסביבה: זמן, מקום, אנשים ופעולה קודמת. כשההקשר קבוע, הפעולה קורית גם בלי החלטה מחדש בכל פעם.',
+      be:'לכל הפעלה מועד, מקום ופתיחה קבועים, כדי שהמנגנון יתקיים גם בשבוע עמוס.'},
+    {k:'Fiese2002', g:'routine', apa:'Fiese, B. H., Tomcho, T. J., Douglas, M., Josephs, K., Poltrock, S., & Baker, T. (2002). A review of 50 years of research on naturally occurring family routines and rituals: Cause for celebration? Journal of Family Psychology, 16(4), 381–390.',
+      url:'https://doi.org/10.1037/0893-3200.16.4.381',
+      gist:'שגרה היא "מה עושים ומתי". טקס הוא "מי אנחנו": יש בו משמעות סמלית ותחושת שייכות. שגרות וטקסים קבועים קשורים לביטחון ולתפקוד טוב יותר בקבוצה.',
+      be:'פתיחה וסיום קבועים בכל הפעלה הופכים את השגרה גם לטקס קטן של שייכות ומשמעות.'},
+    {k:'Langley2009', g:'routine', apa:'Langley, G. J., Moen, R. D., Nolan, K. M., Nolan, T. W., Norman, C. L., & Provost, L. P. (2009). The improvement guide: A practical approach to enhancing organizational performance (2nd ed.). Jossey-Bass.',
+      url:'https://scholar.google.com/scholar?q=Langley+2009+The+improvement+guide',
+      gist:'שיפור נעשה במחזורים קטנים של תכנון, ניסוי, בדיקה ופעולה (PDSA). מנסים בקטן, לומדים ממה שקרה, ורק אז מרחיבים או משנים.',
+      be:'"מנסים פעמיים" ו"פותחים לשינוי" הם מחזור שיפור: שתי הפעלות, בדיקה, וגרסה חדשה של ההסכם.'},
+    {k:'Bryk2015', g:'routine', apa:'Bryk, A. S., Gomez, L. M., Grunow, A., & LeMahieu, P. G. (2015). Learning to improve: How America\u2019s schools can get better at getting better. Harvard Education Press.',
+      url:'https://scholar.google.com/scholar?q=Bryk+2015+Learning+to+improve',
+      gist:'בית ספר משתפר כשמנסים שינויים קטנים, מודדים מה קרה בפועל, ומשתפים את מה שנלמד. השאלה היא מה עובד, למי ובאילו תנאים.',
+      be:'יומן ההחלטות שומר את מה שנלמד מכל הפעלה, כדי שהגרסה הבאה תיבנה עליו.'},
+    {k:'Seligman2011', g:'routine', apa:'Seligman, M. E. P. (2011). Flourish: A visionary new understanding of happiness and well-being. Free Press.',
+      url:'https://scholar.google.com/scholar?q=Seligman+2011+Flourish',
+      gist:'רווחה נפשית בנויה מחמישה רכיבים: רגש חיובי, מעורבות, קשרים, משמעות והישג (PERMA). אפשר לטפח אותם בפעילות יומיומית, ולא רק במטרה רחוקה.',
+      be:'כל הפעלה נותנת משהו טוב כבר עכשיו (קשר, משמעות, הצלחה קטנה), ולא רק מקדמת יעד רחוק.'},
+    {k:'Snyder2002', g:'routine', apa:'Snyder, C. R. (2002). Hope theory: Rainbows in the mind. Psychological Inquiry, 13(4), 249–275.',
+      url:'https://doi.org/10.1207/S15327965PLI1304_01',
+      gist:'תקווה בנויה משלושה רכיבים: מטרה ברורה, דרכים להגיע אליה, ותחושה שאפשר ללכת בהן. אפשר לטפח אותה בתכנון של מטרות, מסלולים וחלופות.',
+      be:'תמונת העתיד, הצעדים והדרך החלופית בהסכם בונים תקווה מעשית.'},
+    {k:'Oettingen2012', g:'routine', apa:'Oettingen, G. (2012). Future thought and behaviour change. European Review of Social Psychology, 23(1), 1–63.',
+      url:'https://doi.org/10.1080/10463283.2011.643698',
+      gist:'חשיבה על עתיד רצוי מקדמת שינוי כשמצמידים אליה את המכשול שבדרך ותוכנית למכשול (mental contrasting). פנטזיה חיובית לבדה פחות מניעה לפעולה.',
+      be:'כשפותחים לשינוי, מסתכלים גם על תמונת העתיד וגם על מה שעיכב בהפעלות, ומחליטים מה עושים אז.'},
+    {k:'Gollwitzer1999', g:'routine', apa:'Gollwitzer, P. M. (1999). Implementation intentions: Strong effects of simple plans. American Psychologist, 54(7), 493–503.',
+      url:'https://doi.org/10.1037/0003-066X.54.7.493',
+      gist:'תוכנית בצורת "אם... אז..." (מתי, איפה ומה אעשה) מגבירה מאוד את הסיכוי שהכוונה תתבצע בפועל.',
+      be:'בכרטיס התפקיד כתוב מה עושים אם לא מגיעים, ומי מגבה, כדי שהמשימה תתבצע בכל מקרה.'},
+    {k:'Bandura1997', g:'routine', apa:'Bandura, A. (1997). Self-efficacy: The exercise of control. W. H. Freeman.',
+      url:'https://scholar.google.com/scholar?q=Bandura+1997+Self-efficacy+The+exercise+of+control',
+      gist:'מסוגלות נבנית בעיקר מחוויות הצלחה, מצפייה בעמיתים שמצליחים, משכנוע מעודד ומהבנת התגובה הרגשית. מסוגלות קבוצתית נבנית כשהקבוצה מצליחה יחד.',
+      be:'שתי הפעלות קצרות עם הצלחה נראית בונות מסוגלות אישית וקבוצתית לפני שמרחיבים.'},
+    {k:'Hackman2002', g:'routine', apa:'Hackman, J. R. (2002). Leading teams: Setting the stage for great performances. Harvard Business School Press.',
+      url:'https://scholar.google.com/scholar?q=Hackman+2002+Leading+teams',
+      gist:'צוות מצליח כשהוא צוות אמיתי (ברור מי בו), יש לו כיוון משמעותי, מבנה שמאפשר עבודה (משימה, נורמות והרכב), הקשר תומך ומשאבים.',
+      be:'הלוח, כרטיסי התפקיד וההסכם נותנים למנגנון מבנה ברור, והמחנכת נותנת הקשר תומך.'}
   ];
   var byKey = {}; S.forEach(function(s){ byKey[s.k] = s; });
   // לכל יועצת בנק משלה: פרקטי (הכיתה) — בלי קבוצות המנהיגות; נוגי (מנהיגות) — קבוצות המנהיגות,
@@ -776,11 +846,15 @@
   var NUGI_K = { Edmondson1999: 1, Frazier2017: 1, JenningsGreenberg2009: 1, Allen2018: 1, WangDegol2016: 1,
     Battistich1997: 1, RyanDeci2017: 1, Moore2026: 1, Gregory2016: 1, Augustine2018: 1, Miao2023: 1, Brookings2026: 1 };
   var CONT_K = { EvenZahav2024: 1, Hazzan2026: 1, Miller2007: 1, Spillane2005: 1, Hobfoll2007: 1, Emmer2001: 1, BrykSchneider2002: 1, Sade2024: 1, Fuchs2025: 1 };
+  // מרכז השגרות והיוזמות החברתיות (10/10/2026): קבוצת השגרות ומקורות קיימים על השתתפות, קהילה דואגת, אחריות משותפת ואמון
+  var ROUT_K = { Sade2024: 1, SadeTools2026: 1, Battistich1997: 1, Durlak2011: 1, Hobfoll2007: 1, Johnson2009: 1, RyanDeci2017: 1,
+    MitraGross2009: 1, Spillane2005: 1, Edmondson1999: 1, Kaner2014: 1, Rogelberg2019: 1 };
   var ADV = {
-    practi: function(s){ return !LEAD_G[s.g] && s.g !== 'cont'; },
+    practi: function(s){ return !LEAD_G[s.g] && s.g !== 'cont' && s.g !== 'routine'; },
     nugi:   function(s){ return !!(NUGI_G[s.g] || NUGI_K[s.k]); },
     // תיק הרציפות (09/10/2026): קבוצת הרציפות ומקורות קיימים על רציפות חינוכית, מנהיגות מבוזרת, שגרה ואמון
     continuity: function(s){ return s.g === 'cont' || !!CONT_K[s.k]; },
+    routines: function(s){ return s.g === 'routine' || !!ROUT_K[s.k]; },
     nana:   function(){ return true; } // ננה — כל בנק הידע (07/10/2026): ההמלצות והמשוב שלה נשענים על כל מקורות החוסן
   };
   function forAdvisor(name){ var f = ADV[name]; return f ? S.filter(f) : S.slice(); }
