@@ -35,7 +35,7 @@ import { randomUUID } from 'node:crypto';
 import { getProvider } from './lib/providers.mjs';
 import { runPipeline } from './lib/pipeline.mjs';
 import { toScenario } from './lib/to-scenario.mjs';
-import { handleAccess, supabaseStore } from './lib/access.mjs';
+import { handleAccess, supabaseStore, authorizeModel } from './lib/access.mjs';
 import { studioRequest } from './lib/studio.mjs';
 import { customerPass, reviewEnabled } from './lib/customer-pass.mjs';
 
@@ -205,6 +205,16 @@ const server = createServer(async (req, res) => {
   } catch {
     return sendJson(res, 400, { error: 'גוף הבקשה אינו JSON תקין' });
   }
+
+  // מי פונה למודל (10/10/2026): רק מי שנכנס/ה, ורק לכלי שפתוח לו או לה (authorizeModel ב-lib/access.mjs).
+  // מצב עבודה (pipeline-status) פתוח: מזהה העבודה אקראי ונמסר רק למי שהתחיל/ה אותה.
+  if (req.url !== '/api/pipeline-status' && process.env.MODEL_AUTH !== 'off' && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    let gate;
+    try { gate = await authorizeModel(supabaseStore(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY), payload._auth); }
+    catch (e) { console.error(`model auth: ${e.message}`); return sendJson(res, 503, { error: 'אין כרגע חיבור לשרת הבדיקה. אפשר לנסות שוב בעוד רגע.' }); }
+    if (!gate.ok) return sendJson(res, 401, { code: 'auth', error: 'כדי להמשיך, היכנסו שוב עם הקוד שלכם.' });
+  }
+  delete payload._auth;
 
   // POST /api/pipeline (21/09/2026) — הצינור התלת-שלבי המלא ממסך הקלט של
   // אנשי החינוך: { input: {given, locked, approach, skills, ...}, meta: {...} }

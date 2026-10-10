@@ -16,10 +16,32 @@
 (function(){
   "use strict";
   var KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules",
-              "sbe.session.perms", "sbe.session.info"];
+              "sbe.session.perms", "sbe.session.info", "sbe.session.wf"];
   var MIRROR = "sbe.session.mirror", HOURS = 12;
 
   function ss(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
+
+  // פנייה למודל (10/10/2026): השרת עונה רק למי שנכנס/ה, ורק לכלי שפתוח לו או לה (authorizeModel ב-harness/lib/access.mjs).
+  // כאן, במקום אחד לכל הכלים, כל בקשה ל-/api/complete, /api/character-turn ו-/api/pipeline מקבלת את פרטי הכניסה:
+  // האסימון החתום, הדף, ומזהה הסדנה למשתתפות סדנה.
+  try {
+    var _fetch = window.fetch;
+    if (_fetch && !_fetch.sbeAuth) {
+      var wrapped = function(url, opts){
+        try {
+          var u = typeof url === "string" ? url : (url && url.url) || "";
+          if (/\/api\/(complete|character-turn|pipeline)(\?|$)/.test(u) && opts && typeof opts.body === "string" && opts.body.charAt(0) === "{") {
+            var b = JSON.parse(opts.body);
+            b._auth = { token: ss("sbe.session.token") || "", page: location.pathname.split("/").pop() || "index.html", w: ss("sbe.session.wf") || "" };
+            opts = Object.assign({}, opts, { body: JSON.stringify(b) });
+          }
+        } catch(e){}
+        return _fetch.call(this, url, opts);
+      };
+      wrapped.sbeAuth = true;
+      window.fetch = wrapped;
+    }
+  } catch(e){}
 
   // שחזור כניסה בלשונית חדשה / רענון שכפול הכניסה ל-localStorage.
   try {
