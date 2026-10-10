@@ -3,7 +3,7 @@
  * "מוצג בספרייה" במעבדת הדמו. לא ממלא את הטופס, רק מראה מה מקבלים. אין תוצר מאושר — אין קישור.
  * שימוש: <script src="lib/example-peek.js" data-tool="nana" defer></script>
  *   data-tool — מזהה הכלי במעבדת הדמו (אפשר כמה, בפסיקים: "act-single,act-seq").
- *   הקישור נכנס אחרי .article-link, או אחרי ה-h1 הראשון. מסך שנבנה ב-JS קורא ל-SBE_PEEK.mount(parent).
+ *   הקישור נכנס אחרי האלמנט שמסומן data-peek, או אחרי ה-h1 הראשון. מסך שנבנה ב-JS קורא ל-SBE_PEEK.mount(parent).
  * המסמך מוצג במסגרת סגורה, בלי סקריפטים (כמו בספרייה). */
 (function () {
   'use strict';
@@ -99,7 +99,7 @@
     });
   }
   function auto() {
-    var a = document.querySelector('.article-link') || document.querySelector('h1');
+    var a = document.querySelector('[data-peek]') || document.querySelector('h1');
     if (a) mount(null, a);
   }
   window.SBE_PEEK = { mount: mount, open: function () { load().then(function (all) { var l = mine(all); if (l.length) open(l); }); } };
