@@ -114,7 +114,8 @@
     var who = root.querySelector("select"); if (who && who.options[2]) { who.value = who.options[2].value; who.dispatchEvent(new Event("change", { bubbles: true })); }
     var inp = "סוגי הכלים: " + tools.join(", ") + (who ? "\nמי משתמש: " + who.value : "");
     var b = [].slice.call(root.querySelectorAll("button")).filter(function (x) { return /כתיבת הנוהל|כתיבה מחדש/.test(x.textContent); })[0]; click(b);
-    var doc = await waitFor(function () { var d = root.querySelector(".proc-doc .lvl"); if (d) return root.querySelector(".proc-doc");
+    var rootSel = root.id ? "#" + root.id : '[data-pane="proc"]';
+    var doc = await waitFor(function () { root = $(rootSel) || root; var d = root.querySelector(".proc-doc .lvl"); if (d) return root.querySelector(".proc-doc");
       var e = root.querySelector(".err:not([hidden])"); return e && e.textContent ? { fail: e.textContent } : null; }, 15 * 60e3, title);
     if (doc.fail) throw new Error(doc.fail);
     await sleep(600);
@@ -153,9 +154,10 @@
         var ta = J.querySelector("textarea"); if (ta) { ta.value = "חוזרים אחרי היעדרות ארוכה, ושמחים לקראתם."; ta.dispatchEvent(new Event("input", { bubbles: true })); }
         var inp = inputSummary(J);
         var jb = [].slice.call(J.querySelectorAll("button")).filter(function (b) { return /הכנת ערכת ההצטרפות/.test(b.textContent); })[0]; click(jb);
-        await waitFor(function () { return [].some.call(J.querySelectorAll("h3"), function (h) { return /תיק כניסה קבוצתי/.test(h.textContent); }) || null; }, 15 * 60e3, "ערכת ההצטרפות");
+        // הלשונית נבנית מחדש אחרי ההפקה, ולכן מחפשים אותה מחדש בכל בדיקה
+        var JP = await waitFor(function () { var P = $('[data-pane="join"]'); return P && [].some.call(P.querySelectorAll("h3"), function (h) { return /תיק כניסה קבוצתי/.test(h.textContent); }) ? P : null; }, 15 * 60e3, "ערכת ההצטרפות");
         await sleep(800);
-        return [{ tool: "cont-join", title: "תיק רציפות: ערכת הצטרפות וחזרה", label: "הצטרפות וחזרה", html: standalone(J, "ערכת הצטרפות וחזרה"), input: inp }];
+        return [{ tool: "cont-join", title: "תיק רציפות: ערכת הצטרפות וחזרה", label: "הצטרפות וחזרה", html: standalone($('[data-pane="join"]') || JP, "ערכת הצטרפות וחזרה"), input: inp }];
       }
       // נוהל עבודה בכלים שלכם (לשונית "נוהל עבודה")
       click('[data-tab="proc"]'); await sleep(800);
