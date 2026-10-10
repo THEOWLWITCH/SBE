@@ -19,12 +19,12 @@
 
   const EMPTY = () => ({ form: {}, kit: null, emerg: null, version: 0, at: '', history: [], tab: 'routine', review: '',
     local: { students: [], studentsLink: '', red: [], individual: [], plans: [], updates: [], readiness: {}, teams: [], letter: {} },
-    join: { form: {}, kit: null, info: [], choice: '', done: {}, log: [], checkWhen: '' } });
+    join: { form: {}, kit: null, info: [], choice: '', done: {}, log: [], checkWhen: '' }, proc: {} });
   let S = EMPTY();
   function load() {
     try {
       const v = JSON.parse(localStorage.getItem(STORE) || 'null');
-      if (v && v.form) { S = Object.assign(EMPTY(), v); S.local = Object.assign(EMPTY().local, v.local || {}); S.join = Object.assign(EMPTY().join, v.join || {}); }
+      if (v && v.form) { S = Object.assign(EMPTY(), v); S.local = Object.assign(EMPTY().local, v.local || {}); S.join = Object.assign(EMPTY().join, v.join || {}); S.proc = v.proc || {}; }
     } catch (e) {}
   }
   load();
@@ -412,7 +412,21 @@
     box.appendChild(top);
     const ul = el('ul', 'st-list'); st.forEach(([n, ok, note]) => { const li = el('li', ok ? 'ok' : 'miss', (ok ? '✓ ' : '○ ') + n + (note ? ' (' + note + ')' : '')); ul.appendChild(li); }); box.appendChild(ul);
   }
-  const TABS = [['routine', '🏫 שגרה'], ['emerg', '🚨 חירום ולמידה מרחוק'], ['join', '🤝 הצטרפות וחזרה'], ['students', '👥 התלמידים'], ['updates', '📝 עדכוני המחליפה']];
+  // נוהל עבודה בכלים שלכם: איפה כל חלק בתיק נמצא בכלים שכבר יש לבית הספר (SBE_PROC)
+  const PROC_ITEMS = ['כרטיס פתיחה ושגרות', 'תפקידים וגיבוי', 'נהלי בית הספר', 'תכניות הלימודים והעבודה', 'מידע חשוב רפואי ונפשי (רגיש)',
+    'רשימת התלמידים ופרטי ההורים (רגיש)', 'מענה פרטני (רגיש)', 'צוותי עבודה', 'שרשרת הקשר', 'מכתב להורים', 'עדכוני המחליפה (רגיש)',
+    'תיק כניסה קבוצתי', 'רשומת התאמות (רגיש)'];
+  function renderProc() {
+    const box = el('div', 'proc-box');
+    box.appendChild(el('h3', null, '🗂 נוהל עבודה בכלים שלכם'));
+    const inner = el('div'); box.appendChild(inner);
+    if (!window.SBE_PROC) return box;
+    if (!S.proc) S.proc = {};
+    window.SBE_PROC.mount(inner, { state: S.proc, save, kind: 'continuity', items: () => PROC_ITEMS,
+      context: () => ['תפקיד: ' + (S.form.role || ''), 'שכבת גיל: ' + (S.form.age || ''), 'איפה לומדים מרחוק: ' + (S.form.platform || ''), 'איפה הדברים היום: ' + (S.form.where || '')].join('\n') });
+    return box;
+  }
+  const TABS = [['routine', '🏫 שגרה'], ['emerg', '🚨 חירום ולמידה מרחוק'], ['join', '🤝 הצטרפות וחזרה'], ['students', '👥 התלמידים'], ['updates', '📝 עדכוני המחליפה'], ['proc', '🗂 נוהל עבודה']];
   function showKit() {
     const box = F('kit'); box.textContent = '';
     const bar = el('div', 'tabs no-print'); bar.setAttribute('role', 'tablist');
@@ -422,7 +436,7 @@
       b.dataset.tab = id; b.setAttribute('role', 'tab'); bar.appendChild(b);
     });
     box.appendChild(bar);
-    const make = { routine: () => window.SBE_DOC.editable(renderRoutine()), emerg: renderEmerg, join: renderJoin, students: renderStudents, updates: renderUpdates };
+    const make = { routine: () => window.SBE_DOC.editable(renderRoutine()), emerg: renderEmerg, join: renderJoin, students: renderStudents, updates: renderUpdates, proc: renderProc };
     TABS.forEach(([id, label]) => { const p = el('div', 'pane'); p.dataset.pane = id; p.dataset.title = label.replace(/^\S+\s/, ''); p.appendChild(make[id]()); panes[id] = p; box.appendChild(p); });
     const cur = TABS.some((t) => t[0] === S.tab) ? S.tab : 'routine';
     bar.querySelector('[data-tab="' + cur + '"]').click();

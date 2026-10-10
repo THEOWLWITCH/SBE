@@ -362,6 +362,20 @@
     save(); goStep(2);
   }
 
+  // נוהל עבודה בכלים שלכם: איפה הלוח, הכרטיסים והתיעוד נמצאים בכלים שכבר יש למוסד (SBE_PROC)
+  const PROC_ITEMS = ['לוח ביצוע', 'כרטיסי תפקיד וגיבוי עם שמות (רגיש)', 'הסכם לתקופת ניסיון', 'תיעוד ההפעלות', 'בקשות לשינוי', 'יומן החלטות', 'גרסאות מאושרות'];
+  function procBlock() {
+    const sec = el('section', 'proc-box no-print'); sec.id = 'procR';
+    sec.appendChild(el('h3', null, '🗂 נוהל עבודה בכלים שלכם'));
+    const inner = el('div'); sec.appendChild(inner);
+    if (!window.SBE_PROC) return sec;
+    if (!I.proc) I.proc = {};
+    window.SBE_PROC.mount(inner, { state: I.proc, save, kind: 'routines', items: () => PROC_ITEMS,
+      context: () => ['המנגנון: ' + (I.form.mechType || ''), 'שכבת גיל: ' + (I.form.age || ''), 'כמה משתתפים: ' + (I.form.size || ''), 'מתי: ' + (I.form.when || ''),
+        'הפעולה: ' + txt(I.plan && I.plan.action && I.plan.action.name)].join('\n') });
+    return sec;
+  }
+
   function draw(n) {
     if (!I.plan) return;
     const box = F('out' + n); box.textContent = ''; metaLine(box);
@@ -381,6 +395,7 @@
         goStep(3);
       }));
       box.appendChild(row);
+      box.appendChild(procBlock());
     }
     if (n === 3) {
       const det = el('details', 'more'); det.appendChild(el('summary', null, 'מהלך כל הפעלה ושאלות לסיום')); det.appendChild(runPlan(I.plan)); box.appendChild(det);

@@ -17,6 +17,7 @@
 <script src="lib/ref-collect.js"></script>
 <script src="lib/resilience-writer.js"></script>
 <script src="lib/continuity-model.js"></script>
+<script src="lib/tools-procedure.js"></script>
 <style>
 :root{
   --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
@@ -208,6 +209,15 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
 .sens-note{border:2px solid #B3261E;color:#B3261E;padding:.4rem .7rem;border-radius:6px;font-weight:700}
 @media print{.redbox{border:3px solid #B3261E;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tabs,.status,.actions{display:none!important}}
 [hidden]{display:none!important}
+.proc-box{border:1px solid var(--hair);border-radius:10px;padding:.8rem 1rem;margin:1rem 0;background:var(--surface)}
+.proc-box h3{margin:.1rem 0 .4rem}.proc-box h4{margin:1rem 0 .4rem}
+.proc-tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.4rem;margin:.3rem 0 .8rem}
+.proc-tool{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem;border:1px solid var(--hair);border-radius:8px;padding:.4rem .55rem;cursor:pointer;background:var(--surface-2)}
+.proc-tool:has(input:checked){border-color:var(--auto);background:var(--auto-soft)}
+.proc-ex{flex-basis:100%;font-size:.82rem;color:var(--muted)}
+.lvl{display:inline-block;border-radius:999px;padding:.05rem .55rem;font-size:.85rem;white-space:nowrap}
+.lvl.l1{background:var(--auto-soft);color:var(--auto)}.lvl.l2{background:var(--spoken-soft);color:var(--spoken)}.lvl.l3{background:var(--brick-soft);color:var(--brick);font-weight:600}
+.proc-box textarea{width:100%}
 </style>
 </head>
 <body>
