@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>מפת הכלים · Begood</title>
 <link rel="icon" href="assets/begood-mark.png">
+<script src="lib/readiness-groups.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700;800&display=swap">
@@ -61,6 +62,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 .go{font:inherit;font-weight:700;font-size:16px;border:0;border-radius:999px;padding:10px 22px;cursor:pointer;color:#fff;background:linear-gradient(90deg,var(--green),var(--teal))}
 .clear{font:inherit;font-size:14px;border:0;background:none;color:var(--muted);cursor:pointer;text-decoration:underline}
 .heard{font-size:14.5px;color:var(--muted);margin:8px 4px 0;min-height:1em}
+.heard b{display:block;color:var(--navy);font-size:16px;margin:6px 0 8px}
 
 /* ── המפה ── */
 .mapbox{position:relative;margin:22px auto 0;max-width:1120px;border-radius:32px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:radial-gradient(700px 360px at 8% 6%,var(--sun-soft),transparent 70%),linear-gradient(180deg,var(--sky1),var(--sky2))}
@@ -120,6 +122,12 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin-top:34px}
 footer a{margin:0 6px}
 @media (max-width:820px){.steps{grid-template-columns:1fr}}
 @media print{body{background:#fff}.ask,.mapbox,.legend,.all,header nav,.pop{display:none}.tcard{box-shadow:none}}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin:3px 0 6px}.tags .kind{margin:0}
+.rg{font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px;background:var(--sun-soft);color:var(--ink)}
+.gh{font-size:17px;color:var(--navy);margin:18px 0 0}
+.step5{font-weight:700;color:var(--navy);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 12px}
+#steps5{margin-top:12px}
+.zone{font-family:"Assistant",sans-serif;font-weight:800;fill:var(--navy);paint-order:stroke;stroke:var(--sky1);stroke-width:6px;stroke-linejoin:round;opacity:.85}
 </style>
 </head>
 <body>
@@ -131,14 +139,14 @@ footer a{margin:0 6px}
 
   <section class="hero">
     <h1>מאיפה מתחילים?</h1>
-    <p class="lead">ספרו לנו מה תרצו לעשות, ונראה לכם את הדרך: באיזה כלי מתחילים, מה אחר כך ומה בהמשך.</p>
+    <p class="lead">את החוסן אפשר למדוד רק מול משבר. את המוכנות אפשר לבדוק כל יום. ספרו לנו מה תרצו לעשות, ונראה לכם את הדרך: באיזה כלי מתחילים, מה אחר כך ומה בהמשך.</p>
   </section>
 
   <section class="ask" aria-labelledby="askH">
     <h2 id="askH">מה תרצו לעשות? (אפשר לבחור כמה)</h2>
     <div class="needs" id="needs"></div>
     <form class="free" id="free">
-      <input id="q" type="text" placeholder="או כתבו במילים שלכם, למשל: יש לי שיחה קשה עם הורים בשבוע הבא" aria-label="מה תרצו לעשות, במילים שלכם">
+      <input id="q" type="text" placeholder="או כתבו במילים שלכם, למשל: טיול שנתי, כיתה חדשה, צוות שמתחלף" aria-label="מה תרצו לעשות, במילים שלכם">
       <button class="go" type="submit">הראו לי את הדרך</button>
       <button class="clear" type="button" id="clear">ניקוי</button>
     </form>
@@ -146,11 +154,12 @@ footer a{margin:0 6px}
   </section>
 
   <div class="mapbox" id="mapbox"></div>
+  <div class="legend" id="steps5"></div>
   <div class="legend"><span><i class="dot lab"></i>🧪 מעבדה ותרגול: מתנסים ומתאמנים במקום בטוח</span><span><i class="dot work"></i>🌿 סביבת עבודה: מלווה עשייה אמיתית לאורך זמן</span><span>☀️ בסוף הדרך: קהילת חוסן</span></div>
 
   <section class="route-out" id="route" aria-live="polite"></section>
 
-  <details class="all"><summary>🗺 כל הכלים ומה המטרה של כל אחד</summary><div class="grid" id="all"></div></details>
+  <details class="all"><summary>🗺 כל הכלים ומה המטרה של כל אחד</summary><div id="all"></div></details>
 
   <footer><a href="entry.html">כניסה עם הקוד שלכם</a>·<a href="renew.html">בקשה לכלים של Begood</a>·<a href="about.html#tools">עוד על הכלים</a></footer>
 </div>
@@ -159,36 +168,40 @@ footer a{margin:0 6px}
 <script>
 (function () {
   'use strict';
-  // הכלים שפתוחים למשתמשים, לפי סדר הדרך על הנהר: מהתרגול, דרך העבודה בכיתה ובצוות, אל קהילת חוסן.
+  // הכלים שפתוחים למשתמשים, לפי סדר הדרך על הנהר: חמש שאלות של מוכנות יומיומית (SBE_READY), ובסוף השמש: קהילת חוסן.
   const TOOLS = [
-    { id: 'conv', n: 'תכנון שיחה', i: '💬', k: 'lab', page: 'conversation-planner.html', goal: 'להתכונן לשיחה חשובה: תדריך קצר, כרטיס תזכורת, ומה עושים אם השיחה מסתבכת.' },
-    { id: 'practice', n: 'תרגול עצמי', i: '🎧', k: 'lab', page: 'practice.html', goal: 'להתאמן לבד, מתי שנוח, מול דמות שמגיבה כמו אדם אמיתי, ולקבל משוב.' },
-    { id: 'scenario', n: 'יצירת תרחיש', i: '🎭', k: 'lab', page: 'input-screen.html', goal: 'לבנות מתיאור קצר תרחיש שלם לשיחה מאתגרת, עם דמויות, נקודות תפנית ותוצרים למנחה.' },
-    { id: 'roleplay', n: 'משחק תפקידים', i: '🔄', k: 'lab', page: 'parent-input-screen.html', goal: 'הורה וילד/ה, או שני בני נוער: כל אחד נכנס לנעליים של השני.' },
-    { id: 'workshop', n: 'סדנה', i: '👥', k: 'lab', page: 'facilitator-screen.html', goal: 'לפתוח סדנה בלחיצה: המשתתפות מצטרפות מהטלפון, מתנסות ונותנות משוב.' },
-    { id: 'nana', n: 'ננה: מהוראה להנחיה', i: '🧭', k: 'lab', page: 'facilitation-advisor.html', goal: 'מדריך הנחיה וכרטיס כיס למפגש, תרגול רגע מאתגר ורפלקציה אחרי המפגש.' },
-    { id: 'writer', n: 'כתיבה מקדמת חוסן', i: '✍️', k: 'work', page: 'message-writer.html', goal: 'הודעה או מכתב לתלמידים, להורים או לצוות, בשפה מחזקת מהטיוטה הראשונה.' },
-    { id: 'activity', n: 'תכנון פעילות', i: '🗓', k: 'work', page: 'activity-planner.html', goal: 'מרעיון לפעילות חינוכית מוכנה להפעלה, או לרצף של מפגשים.' },
-    { id: 'review', n: 'משוב לעבודות', i: '📝', k: 'work', page: 'academic-review.html', goal: 'משוב לפי קריטריונים לפני ההגשה. הכתיבה נשארת שלכם.' },
-    { id: 'mapping', n: 'מיפוי חוסן חברתי', i: '📊', k: 'work', page: 'resilience-team.html', goal: 'תלמידים, הורים ומורים עונים על שאלון קצר, ומקבלים תמונת מצב של הכיתה והמלצות.' },
-    { id: 'practi', n: 'פרקטי', i: '🌱', k: 'work', page: 'resilience-advisor.html', goal: 'יועצת לחוסן החברתי בכיתה: ניתוח, פעולות מותאמות לגיל והדרכה לשיחה אישית.' },
-    { id: 'nugi', n: 'נוגי', i: '🏛', k: 'work', page: 'leadership-advisor.html', goal: 'יועצת למנהיגות שתומכת בחוסן, להנהלה, לרכזים ולצוותי תלמידים.' },
-    { id: 'journey', n: 'מסע אל החוסן', i: '☀️', k: 'work', page: 'journey.html', goal: 'דרך מלווה בחמישה שלבים, עם אבני דרך ומשוב, עד תו חוסן לקהילת חוסן.' }
+    { id: 'mapping', g: 'see', n: 'מיפוי חוסן חברתי', i: '📊', k: 'work', page: 'resilience-team.html', goal: 'תלמידים, הורים ומורים עונים על שאלון קצר, ומקבלים תמונת מצב של הכיתה והמלצות.' },
+    { id: 'practi', g: 'see', n: 'פרקטי', i: '🌱', k: 'work', page: 'resilience-advisor.html', goal: 'יועצת לחוסן החברתי בכיתה: ניתוח, פעולות מותאמות לגיל והדרכה לשיחה אישית.' },
+    { id: 'nugi', g: 'see', n: 'נוגי', i: '🏛', k: 'work', page: 'leadership-advisor.html', goal: 'יועצת למנהיגות תומכת חוסן, להנהלה, לרכזים ולצוותי תלמידים.' },
+    { id: 'scenario', g: 'practice', n: 'יצירת תרחיש', i: '🎭', k: 'lab', page: 'input-screen.html', goal: 'לבנות מתיאור קצר תרחיש שלם לשיחה מאתגרת, עם דמויות, נקודות תפנית ותוצרים למנחה.' },
+    { id: 'workshop', g: 'practice', n: 'סדנה', i: '👥', k: 'lab', page: 'facilitator-screen.html', goal: 'לפתוח סדנה בלחיצה: המשתתפות מצטרפות מהטלפון, מתנסות ונותנות משוב.' },
+    { id: 'roleplay', g: 'practice', n: 'משחק תפקידים', i: '🔄', k: 'lab', page: 'parent-input-screen.html', goal: 'הורה וילד/ה, או שני בני נוער: כל אחד נכנס לנעליים של השני.' },
+    { id: 'practice', g: 'practice', n: 'תרגול עצמי', i: '🎧', k: 'lab', page: 'practice.html', goal: 'להתאמן לבד, מתי שנוח, מול דמות שמגיבה כמו אדם אמיתי, ולקבל משוב.' },
+    { id: 'conv', g: 'practice', n: 'תכנון שיחה', i: '💬', k: 'lab', page: 'conversation-planner.html', goal: 'להתכונן לשיחה חשובה: תדריך קצר, כרטיס תזכורת, ומה עושים אם השיחה מסתבכת.' },
+    { id: 'nana', g: 'practice', n: 'ננה: מהוראה להנחיה', i: '🧭', k: 'lab', page: 'facilitation-advisor.html', goal: 'מדריך הנחיה וכרטיס כיס למפגש, תרגול רגע מאתגר ורפלקציה אחרי המפגש.' },
+    { id: 'activity', g: 'act', n: 'תכנון פעילות', i: '🗓', k: 'work', page: 'activity-planner.html', goal: 'מרעיון לפעילות חינוכית מוכנה להפעלה, או לרצף של מפגשים.' },
+    { id: 'writer', g: 'act', n: 'כתיבה מקדמת חוסן', i: '✍️', k: 'work', page: 'message-writer.html', goal: 'כתיבה יומיומית מכוונת חוסן חברתי: הודעה או מכתב לתלמידים, להורים או לצוות, בשפה מחזקת מהטיוטה הראשונה.' },
+    { id: 'review', g: 'learn', n: 'משוב לעבודות', i: '📝', k: 'work', page: 'academic-review.html', goal: 'להתכונן להגשת עבודה: משוב לפי קריטריונים. הכתיבה נשארת שלכם.' },
+    { id: 'journey', g: 'anchor', n: 'מסע אל החוסן', i: '☀️', k: 'work', page: 'journey.html', goal: 'דרך מלווה בחמישה שלבים, עם אבני דרך ומשוב, עד תו חוסן לקהילת חוסן.' }
   ];
   const T = Object.fromEntries(TOOLS.map((t) => [t.id, t]));
-  // מה תרצו לעשות: לכל בחירה דרך לפי סדר, ולכל כלי בדרך משפט קצר למה הוא כאן.
+  const R = window.SBE_READY, GR = (id) => R && R.GROUPS.find((g) => g.id === id);
+  // מה תרצו לעשות: לכל בחירה דרך לפי סדר, ולכל כלי בדרך משפט קצר על התפקיד שלו בה.
   const NEEDS = [
-    { id: 'talk', n: 'להתכונן לשיחה קשה', kw: /שיח|פגיש|מאתגר|לדבר|עימות|כעס/, path: [['conv', 'מתכננים את השיחה: איך פותחים, מה שואלים, ומה עושים אם היא מסתבכת.'], ['practice', 'מתאמנים על השיחה מול דמות, ומקבלים משוב לפני הרגע האמיתי.'], ['writer', 'אם תרצו לשלוח הודעה לפני השיחה או אחריה, כותבים אותה בשפה מחזקת.']] },
-    { id: 'class', n: 'להבין מה קורה בכיתה', kw: /כית|אווירה|חברתי|חרם|בודד|דחי|אלימ|מצב/, path: [['mapping', 'מתחילים בתמונת מצב: כולם עונים על שאלון קצר.'], ['practi', 'מקבלים ניתוח ופעולות מותאמות לגיל, ואפשר להמשיך לשאול.'], ['activity', 'הופכים את ההמלצה לפעילות מוכנה להפעלה.']] },
-    { id: 'group', n: 'לחזק את הכיתה כקבוצה', kw: /חיזוק|לחזק|גיבוש|שייכות|קבוצ|ביחד|יחד/, path: [['mapping', 'רואים מה כבר חזק ומה אפשר לחזק.'], ['practi', 'בוחרים פעולות לכיתה, עם הדרכה לשיחות.'], ['nana', 'מתכוננים להנחות את הכיתה, ולא רק ללמד אותה.'], ['activity', 'מתכננים את המפגשים עצמם.'], ['journey', 'כשתרצו להפוך את זה לדרך קבועה של כל בית הספר.']] },
-    { id: 'facil', n: 'להנחות קבוצה, לא רק ללמד', kw: /הנח|מנח|דיון|שיחה כיתתית|מעגל/, path: [['nana', 'מספרים על המפגש ומקבלים מדריך הנחיה וכרטיס כיס.'], ['activity', 'בונים את הפעילות שתנחו.'], ['practice', 'אם תרצו, מתאמנים על רגע מאתגר לפני המפגש.']] },
-    { id: 'write', n: 'לכתוב הודעה או מכתב', kw: /הודע|מכתב|לכתוב|וואטסאפ|מייל|עדכון/, path: [['writer', 'כותבים מה רוצים לומר, ומקבלים נוסח בשפה מחזקת.'], ['conv', 'אם ההודעה פותחת שיחה, מתכננים גם אותה.']] },
-    { id: 'lead', n: 'להוביל צוות או בית ספר', kw: /צוות|הנהל|מנהל|רכז|בית ספר|בית הספר|מנהיג/, path: [['nugi', 'מתחילים בתמונת מצב של ההובלה וההמלצות.'], ['mapping', 'אוספים קולות מהכיתות ומהצוות.'], ['journey', 'יוצאים לדרך מלווה עם אבני דרך.']] },
-    { id: 'train', n: 'להכשיר סטודנטים או להעביר סדנה', kw: /סטודנט|הכשר|סדנ|מרצ|קורס|סימולצ/, path: [['scenario', 'בונים תרחיש מהמקרה שלכם.'], ['workshop', 'פותחים סדנה והמשתתפות מצטרפות מהטלפון.'], ['roleplay', 'מוסיפים התנסות בזוגות.'], ['practice', 'כל אחת ממשיכה להתאמן לבד.']] },
-    { id: 'plan', n: 'לתכנן שיעור או פעילות', kw: /שיעור|פעילות|מערך|תכנו|רצף|מפגש/, path: [['activity', 'מרעיון לפעילות מוכנה, או לרצף של מפגשים.'], ['nana', 'מתכוננים להנחות אותה.']] },
-    { id: 'feedback', n: 'משוב על עבודה כתובה', kw: /משוב|עבוד|הגש|עבודה סמינריונית|כתיבה אקדמית|מאמר/, path: [['review', 'מקבלים משוב לפי קריטריונים, לפני ההגשה.']] },
-    { id: 'family', n: 'הורים ונוער: להבין את הצד השני', kw: /הור|נוער|מתבגר|ילד|משפח|אמא|אבא/, path: [['roleplay', 'כל אחד נכנס לנעליים של השני.'], ['practice', 'מתאמנים לבד על השיחה בבית.'], ['conv', 'מתכננים את השיחה האמיתית.']] },
-    { id: 'community', n: 'להפוך לקהילת חוסן', kw: /קהיל|תו חוסן|רשות|שכונ|מסע/, path: [['mapping', 'תמונת מצב של הקהילה.'], ['nugi', 'מנהיגות משותפת שמחזיקה גם ביום שבו הכול משתבש.'], ['journey', 'דרך בחמישה שלבים עד תו חוסן.']] }
+    { id: 'talk', n: 'להתכונן לשיחה מאתגרת', kw: /שיח|פגיש|מאתגר|לדבר|עימות|כעס/, path: [['conv', 'מתכננים את השיחה: איך פותחים, מה שואלים, ומה עושים אם היא מסתבכת.'], ['practice', 'מתאמנים על השיחה מול דמות, ומקבלים משוב לפני הרגע האמיתי.'], ['writer', 'אם תרצו לשלוח הודעה לפני השיחה או אחריה, כותבים אותה בשפה מחזקת.']] },
+    { id: 'class', n: 'לראות את תמונת החוסן בכיתה', kw: /כית|אווירה|חברתי|חרם|בודד|דחי|תמונ|מצב/, path: [['mapping', 'מתחילים בתמונת מצב: כולם עונים על שאלון קצר.'], ['practi', 'מקבלים ניתוח ופעולות מותאמות לגיל, ואפשר להמשיך לשאול.'], ['activity', 'הופכים את ההמלצה לפעילות מוכנה להפעלה.']] },
+    { id: 'group', n: 'לחזק את הכיתה כקבוצה', kw: /חיזוק|לחזק|גיבוש|שייכות|קבוצ|ביחד|יחד/, path: [['mapping', 'רואים מה כבר חזק ומה אפשר לחזק.'], ['practi', 'בוחרים פעולות לכיתה, עם הדרכה לשיחות.'], ['nana', 'מתכוננים להנחות את הכיתה כקבוצה.'], ['activity', 'מתכננים את המפגשים עצמם.'], ['journey', 'כשתרצו להפוך את זה לדרך קבועה של כל בית הספר.']] },
+    { id: 'facil', n: 'להנחות קבוצה', kw: /הנח|מנח|דיון|מעגל/, path: [['nana', 'מספרים על המפגש ומקבלים מדריך הנחיה וכרטיס כיס.'], ['activity', 'בונים את הפעילות שתנחו.'], ['practice', 'אם תרצו, מתאמנים על רגע מאתגר לפני המפגש.']] },
+    { id: 'write', n: 'כתיבה יומיומית מכוונת חוסן חברתי', kw: /הודע|מכתב|כתיב|לכתוב|וואטסאפ|מייל|עדכון|יומיומ/, path: [['writer', 'כותבים מה רוצים לומר, ומקבלים נוסח בשפה מחזקת.'], ['conv', 'אם ההודעה פותחת שיחה, מתכננים גם אותה.']] },
+    { id: 'lead', n: 'מנהיגות תומכת חוסן בצוות ובבית הספר', kw: /צוות|הנהל|מנהל|רכז|בית ספר|בית הספר|מנהיג|להוביל/, path: [['nugi', 'מתחילים בתמונת מצב של ההובלה וההמלצות.'], ['mapping', 'אוספים קולות מהכיתות ומהצוות.'], ['journey', 'יוצאים לדרך מלווה עם אבני דרך.']] },
+    { id: 'train', n: 'להכשיר סטודנטים או להנחות סדנה', kw: /סטודנט|הכשר|סדנ|מרצ|קורס|סימולצ/, path: [['scenario', 'בונים תרחיש מהמקרה שלכם.'], ['workshop', 'פותחים סדנה והמשתתפות מצטרפות מהטלפון.'], ['roleplay', 'מוסיפים התנסות בזוגות.'], ['practice', 'כל אחת ממשיכה להתאמן לבד.']] },
+    { id: 'plan', n: 'לתכנן שיעור או פעילות', kw: /שיעור|פעילות|מערך|תכנו|רצף|מפגש|טיול|טקס|אירוע|מסיב|מסלול/, path: [['activity', 'מרעיון לפעילות מוכנה, או לרצף של מפגשים.'], ['nana', 'מתכוננים להנחות אותה.']] },
+    { id: 'submit', n: 'להתכונן להגשת עבודה', kw: /הגש|עבוד|משוב|סמינר|מאמר|אקדמ/, path: [['review', 'מקבלים משוב לפי קריטריונים, לפני ההגשה.']] },
+    { id: 'parents', n: 'שפת החוסן עבור הורים', kw: /הור|משפח|אמא|אבא|ילד|נוער|מתבגר|בבית/, path: [['roleplay', 'הורה וילד/ה, כל אחד מתנסה בנקודת המבט של השני.'], ['conv', 'מתכננים שיחה בבית בשפה מחזקת.'], ['practice', 'מתאמנים לבד על השיחה.']] },
+    { id: 'community', n: 'להפוך לקהילת חוסן', kw: /קהיל|תו חוסן|רשות|שכונ|מסע/, path: [['mapping', 'תמונת מצב של הקהילה.'], ['nugi', 'מנהיגות משותפת שמחזיקה גם ביום שבו הכול משתבש.'], ['journey', 'דרך בחמישה שלבים עד תו חוסן.']] },
+    // רק משאלות ההבהרה של הטקסט החופשי (לא ברשימה הראשית)
+    { id: 'prepare', hidden: true, n: 'להכין את הקבוצה יחד', kw: /^$/, path: [['activity', 'מתכננים פעילות הכנה קצרה עם הקבוצה: ציפיות, תפקידים ועזרה הדדית.'], ['nana', 'מתכוננים להנחות את שיחת ההכנה כקבוצה.'], ['writer', 'אם תרצו, כותבים לקבוצה הודעה מזמינה.']] },
+    { id: 'team', hidden: true, n: 'לתאם עם הצוות', kw: /^$/, path: [['writer', 'כותבים עדכון לצוות בשפה מחזקת.'], ['nugi', 'מחלקים תפקידים וגיבוי בצוות.']] }
   ];
   const chosen = new Set();
   const $ = (s) => document.querySelector(s);
@@ -198,14 +211,23 @@ footer a{margin:0 6px}
 
   // ── בחירות ──
   const needsBox = $('#needs');
-  NEEDS.forEach((nd) => { const b = el('button', { type: 'button', class: 'need', 'aria-pressed': 'false' }, nd.n); b.dataset.id = nd.id;
+  NEEDS.filter((nd) => !nd.hidden).forEach((nd) => { const b = el('button', { type: 'button', class: 'need', 'aria-pressed': 'false' }, nd.n); b.dataset.id = nd.id;
     b.addEventListener('click', () => { chosen.has(nd.id) ? chosen.delete(nd.id) : chosen.add(nd.id); $('#heard').textContent = ''; update(); }); needsBox.appendChild(b); });
+  // טקסט חופשי: תמיד חוזרות שאלות הבהרה על מה שנכתב (גם בלי התאמה), כך שאין מבוי סתום. מה שזוהה כבר מסומן.
+  const ASK = [['write', 'לכתוב הודעה או מכתב'], ['plan', 'לתכנן את הפעילות, את המסלול או את סדר היום'], ['prepare', 'להכין את הקבוצה יחד'],
+    ['talk', 'להתכונן לשיחה מאתגרת'], ['facil', 'להנחות את הקבוצה'], ['class', 'לראות איפה הקבוצה עומדת היום'], ['team', 'לתאם עם הצוות']];
   $('#free').addEventListener('submit', (e) => { e.preventDefault();
-    const q = $('#q').value.trim(); if (!q) { $('#heard').textContent = 'כתבו כמה מילים, או בחרו מהרשימה.'; return; }
-    const hit = NEEDS.filter((nd) => nd.kw.test(q));
-    if (!hit.length) { $('#heard').textContent = 'לא מצאנו התאמה. אפשר לבחור מהרשימה למעלה, או לכתוב אחרת.'; return; }
-    hit.forEach((nd) => chosen.add(nd.id)); $('#heard').textContent = 'הבנו: ' + hit.map((nd) => nd.n).join(' · '); update();
-    setTimeout(() => $('#route').scrollIntoView({ behavior: 'smooth', block: 'start' }), 350); });
+    const q = $('#q').value.trim(), out = $('#heard'); out.textContent = '';
+    if (!q) { out.textContent = 'כתבו כמה מילים, או בחרו מהרשימה.'; return; }
+    const hit = NEEDS.filter((nd) => nd.kw.test(q)).map((nd) => nd.id);
+    hit.forEach((id) => chosen.add(id));
+    out.appendChild(el('b', null, 'בשביל "' + q.slice(0, 60) + '", מה מתוך אלה תרצו לעשות? (אפשר כמה)'));
+    const box = el('div', { class: 'needs ask2' });
+    const opts = ASK.concat(hit.filter((id) => !ASK.some((x) => x[0] === id)).map((id) => [id, NEEDS.find((nd) => nd.id === id).n]));
+    opts.forEach(([id, label]) => { const b = el('button', { type: 'button', class: 'need', 'aria-pressed': String(chosen.has(id)) }, label);
+      b.addEventListener('click', () => { chosen.has(id) ? chosen.delete(id) : chosen.add(id); b.setAttribute('aria-pressed', String(chosen.has(id))); update(); }); box.appendChild(b); });
+    out.appendChild(box); update();
+  });
   $('#clear').addEventListener('click', () => { chosen.clear(); $('#q').value = ''; $('#heard').textContent = ''; update(); });
 
   // הדרך המשולבת: כלי מקבל את המקום הכי מוקדם שלו בכל הבחירות.
@@ -278,12 +300,16 @@ footer a{margin:0 6px}
         lx = (p.x < L.w / 2 ? 1 : -1) * 105; ly = 6;
       }
       const lab = S('text', { class: 'lab', 'text-anchor': 'middle', x: lx, y: ly, 'font-size': L.fs }); lab.textContent = t.n; g.appendChild(lab);
-      if (last) { const s2 = S('text', { class: 'sublab', 'text-anchor': 'middle', y: dy + 18, 'font-size': 14 }); s2.textContent = 'אל קהילת חוסן'; g.appendChild(s2); }
+      if (last) { const s2 = S('text', { class: 'sublab', 'text-anchor': 'middle', y: dy + 18, 'font-size': 14 }); s2.textContent = '🔁 לעגן בשגרה · אל קהילת חוסן'; g.appendChild(s2); }
       const bd = S('g', { class: 'badge', transform: 'translate(' + (r * 0.75) + ',' + (-r * 0.75) + ')' });
       bd.appendChild(S('circle', { r: 13, fill: 'var(--sun)', stroke: 'var(--paper)', 'stroke-width': 3 }));
       const bt = S('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 14, 'font-weight': 800, fill: '#0B2236', 'font-family': 'Assistant' }); bd.appendChild(bt); g.appendChild(bd);
       const open = () => show(t.id); g.addEventListener('click', open); g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
-      svg.appendChild(g); nodes[t.id] = { g, x: p.x, y: p.y, bt };
+      svg.appendChild(g); nodes[t.id] = { g, x: p.x, y: p.y, bt, side };
+      // תחילת קבוצה: שם השאלה של המוכנות, בצד הפנוי של התחנה
+      if (R && !last && (i === 0 || TOOLS[i - 1].g !== t.g)) { const gr = GR(t.g), zy = p.y - side * (r + 44) - (side < 0 ? 0 : 0);
+        const z = S('text', { class: 'zone', 'text-anchor': 'middle', x: Math.min(Math.max(p.x, 90), L.w - 90), y: mode === 'tall' ? p.y - r - 14 : zy, 'font-size': mode === 'tall' ? 14 : 15 });
+        z.textContent = gr.i + ' ' + gr.n; svg.insertBefore(z, routeG); }
     });
     paint();
   }
@@ -303,7 +329,10 @@ footer a{margin:0 6px}
   function card(t, why, n) {
     const c = el('div', { class: 'tcard ' + t.k });
     c.appendChild(el('b', null, (n ? n + '. ' : '') + t.i + ' ' + t.n));
-    c.appendChild(el('span', { class: 'kind ' + t.k }, t.k === 'lab' ? '🧪 מעבדה ותרגול' : '🌿 סביבת עבודה'));
+    const tags = el('div', { class: 'tags' }); const gr = GR(t.g);
+    if (gr) tags.appendChild(el('span', { class: 'rg' }, gr.i + ' ' + gr.n));
+    tags.appendChild(el('span', { class: 'kind ' + t.k }, t.k === 'lab' ? '🧪 מעבדה ותרגול' : '🌿 סביבת עבודה'));
+    c.appendChild(tags);
     c.appendChild(el('p', null, t.goal));
     if (why) c.appendChild(el('p', { class: 'why' }, 'בדרך שלכם: ' + why));
     const a = el('a', { class: 'open', href: t.page }, 'לכלי ←'); c.appendChild(a);
@@ -332,7 +361,10 @@ footer a{margin:0 6px}
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('#pop').hidden = true; });
   document.addEventListener('click', (e) => { const p = $('#pop'); if (!p.hidden && !p.contains(e.target) && !e.target.closest('.st')) p.hidden = true; });
 
-  const all = $('#all'); TOOLS.forEach((t) => all.appendChild(card(t)));
+  const all = $('#all');
+  (R ? R.GROUPS : []).forEach((g) => { const ts = TOOLS.filter((t) => t.g === g.id); if (!ts.length) return;
+    all.appendChild(el('h3', { class: 'gh' }, R.title(g))); const gg = el('div', { class: 'grid' }); ts.forEach((t) => gg.appendChild(card(t))); all.appendChild(gg); });
+  if (R) { const st = $('#steps5'); R.GROUPS.forEach((g, i) => { st.appendChild(el('span', { class: 'step5' }, (i + 1) + '. ' + g.i + ' ' + g.n + ': ' + g.q)); }); }
   draw(); renderRoute();
   let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(draw, 120); });
   // קישור עם בחירה מוכנה: map.html?need=talk,class
