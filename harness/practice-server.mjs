@@ -13,6 +13,8 @@ import {handleAccess, supabaseStore, resolvePrincipal, reserveAIUsage, settleAIU
 import {handleStudio} from './lib/studio.mjs';
 import {handleArtifacts,artifactReviewRunId} from './lib/activity-artifact.mjs';
 import {completionUsageCharge} from './lib/token-budget.mjs';
+// הסוכנת-הלקוחה (main, 09/10/2026): קריאה שמפיקה תוצר נבדקת ומתוקנת פעם אחת. הקריאות שלה עוברות דרך
+// boundedProvider, ולכן נספרות בתקציב ונבדקות מול ההרשאה החיה כמו כל קריאה אחרת.
 import {customerPass,reviewEnabled} from './lib/customer-pass.mjs';
 
 const AI_PERMS = ['fac_trainee','fac_parent','fac_youth','practice','conv','activity','academic','resilience','leadership','practi','writer','studio','nana'];
@@ -158,11 +160,15 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
         scenario._generation={pipelineOutput:out,context:payload.input};
         output={scenario,usage:out.usage,_ms:out._ms};
       } else {
-        const result=assertCompletionResult(await provider.complete({...payload,variation:'medium',signal:controller.signal}));
-        const pass=reviewProduct?await customerPass({complete:async request=>assertCompletionResult(await provider.complete({...request,signal:controller.signal}))},
-          {...payload,text:result.text || ''}):null;
-        output={text:pass?.text ?? result.text ?? '',toolCalls:result.toolCalls || [],usage:result.usage,
-          ...(pass?.review?{review:pass.review}:{})};
+        const {customerReview,...request}=payload;
+        const result=assertCompletionResult(await provider.complete({...request,variation:'medium',signal:controller.signal}));
+        output={text:result.text || '',toolCalls:result.toolCalls || [],usage:result.usage};
+        // כשל של הסוכנת (כולל תקציב) לא עוצר את התוצר; ביטול הרשאה נבדק שוב לפני השמירה
+        if(reviewProduct && output.text && !output.toolCalls.length) {
+          const pass=await customerPass({complete:async r=>assertCompletionResult(await provider.complete({...r,signal:controller.signal}))},
+            {system:request.system,messages:request.messages,maxTokens:request.maxTokens,text:output.text});
+          output={...output,text:pass.text,...(pass.review?{review:pass.review}:{})};
+        }
       }
       const live=await resolvePrincipal(st,token),current=await st.get(key);
       if(controller.signal.aborted || !live || live.ownerId!==actor.ownerId || !allowed(live,path,payload.permission)

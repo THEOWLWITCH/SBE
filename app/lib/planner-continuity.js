@@ -4,7 +4,7 @@
   const SCHEMA = "planner-document/v1";
   const TAGS = new Set("article div span p h1 h2 h3 h4 h5 h6 table thead tbody tfoot tr th td ul ol li strong b em i u br blockquote a bdi".split(" "));
   const DROP = new Set("script style iframe object embed svg math img input textarea select button video audio canvas template".split(" "));
-  const CLASSES = new Set("kit-table kit-two kit-facts kit-steps kit-close kit-h kit-sub kit-min kit-muted kit-session sbe-rich draftbox rcard rcard-row rcard-meta tree2-root tree2-row tree2-end card act session-card step-card claims-box".split(" "));
+  const CLASSES = new Set("kit-table kit-two kit-facts kit-steps kit-close kit-flow flow ph kit-h kit-sub kit-min kit-muted kit-session sbe-rich draftbox rcard rcard-row rcard-meta tree2-root tree2-row tree2-end card act session-card step-card claims-box".split(" "));
   const clone = value => JSON.parse(JSON.stringify(value));
   const key = base => {
     if (typeof window.sbeUserKey !== "function") throw new Error("יש להיכנס למערכת לפני שמירת תוצר פרטי.");
@@ -160,7 +160,9 @@
       dialog.append(close,heading,notice,body,status); dialog.addEventListener("close", () => dialog.remove(),{once:true});
       document.body.append(dialog); showList(); dialog.showModal(); return dialog;
     }
-    return {list,get,save,restore,copy,saveButton,print,open};
+    // צילום של הנוסח הערוך שעל המסך, בלי שמירה. משמש לשליחה לבדיקה ולאישור בשרת (planner-artifact).
+    function snapshot(nodes) { assertOwner(); const doc = capture(nodes); restoreDocument(doc); return doc; }
+    return {list,get,save,restore,copy,saveButton,print,open,snapshot};
   }
   function createWork(readState) {
     let active;

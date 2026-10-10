@@ -3,8 +3,13 @@ import { runGates,assertGenerationInput,approvedSources } from './gates.mjs';
 import { toScenario } from './to-scenario.mjs';
 import { applyProposal,contractError,digest,AGENT_LIMITS,REVIEWERS,agentEnvelope } from './agent-contract.mjs';
 import { runAgentReview } from './agent-orchestrator.mjs';
+import { PLANNER_KINDS,PRACTICE_MODES,OPTIONAL_BY_CHOICE,validatePlannerContent,plannerContentFromDraft } from './planner-artifact.mjs';
 
-const PERMISSIONS=['fac_trainee','fac_parent','fac_youth','activity','studio','resilience','leadership','practi'];
+const PERMISSIONS=['fac_trainee','fac_parent','fac_youth','activity','conv','studio','resilience','leadership','practi'];
+// Each kind is opened only by the tools that produce it. A conversation draft needs the conversation planner.
+const KIND_PERMISSIONS=Object.freeze({narrative:['fac_trainee','fac_parent','fac_youth','activity','studio','resilience','leadership','practi'],
+  activity:['activity','studio','resilience','leadership','practi'],conversation:['conv'],
+  sequence:['activity','studio','resilience','leadership','practi']});
 const VERSION='activity-artifact/v1';
 const now=()=>new Date().toISOString();
 const clone=value=>structuredClone(value);
@@ -15,14 +20,20 @@ const snapshot=a=>({version:a.version,status:a.status,content:clone(a.content),s
 const allowedContent=['kind','pipelineOutput','scenario','context','purpose','resilienceComponents','individualSkills','sharedSkills','facilitatorGuide','socialMechanism','steps'];
 export const artifactReviewRunId=(id,version,idempotencyKey)=>'run-'+digest(id+'\0'+version+'\0'+idempotencyKey).slice(7,39);
 function authorized(principal){return text(principal?.ownerId)&&text(principal?.tenantId)&&Array.isArray(principal.permissions)&&principal.permissions.some(p=>PERMISSIONS.includes(p));}
-function own(record,p){return record&&record.ownerId===p.ownerId&&record.tenantId===p.tenantId;}
+function own(record,p){return record&&record.ownerId===p.ownerId&&record.tenantId===p.tenantId&&kindAllowed(p,record.content?.kind);}
+function kindAllowed(p,kind){return (KIND_PERMISSIONS[kind]||[]).some(x=>p.permissions.includes(x));}
 function privateLeaks(value,concerns) {
   if(!text(concerns))return false;
   const serialized=JSON.stringify(value),markers=[concerns.trim(),...(concerns.match(/\+?\d[\d\s()-]{6,}\d/g)||[]).map(s=>s.trim())];
   return markers.some(marker=>marker.length>=8&&serialized.includes(marker));
 }
 
-export function validateArtifactContent(input,{sourceLibrary=[],complete=false}={}) {
+export function validateArtifactContent(input,{sourceLibrary=[],complete=false,waived=[]}={}) {
+  if(object(input)&&PLANNER_KINDS.includes(input.kind)) {
+    const content=validatePlannerContent(input,{complete,waived});
+    if(Buffer.byteLength(JSON.stringify(content))>500000)throw contractError('artifact_too_large');
+    return content;
+  }
   if(!object(input)||input.kind!=='narrative')throw contractError('unsupported_artifact_kind');
   const content=Object.fromEntries(allowedContent.filter(k=>Object.hasOwn(input,k)).map(k=>[k,clone(input[k])]));
   const output=input.pipelineOutput||(input.scenario?.characters?input.scenario:null);
@@ -101,7 +112,11 @@ export async function handleArtifacts(store,principal,body,{provider,sourceLibra
     if(typeof store?.get!=='function'||typeof store?.putIfAbsent!=='function'||typeof store?.compareAndSet!=='function')throw contractError('atomic_storage_required',503);
     const sources=approvedSources(sourceLibrary).map(s=>({...s,approved:true}));
     if(body.action==='create') {
-      const content=validateArtifactContent(body.content,{sourceLibrary:sources});
+      // A planner draft goes through its explicit adapter; it is never sent as narrative content.
+      if(body.draft!==undefined&&body.content!==undefined)throw contractError('invalid_request',400);
+      const input=body.draft!==undefined?plannerContentFromDraft(body.kind,body.draft,body.planning):body.content;
+      if(!object(input)||!kindAllowed(principal,input.kind))throw contractError(object(input)&&KIND_PERMISSIONS[input.kind]?'artifact_forbidden':'unsupported_artifact_kind',object(input)&&KIND_PERMISSIONS[input.kind]?403:422);
+      const content=validateArtifactContent(input,{sourceLibrary:sources});
       if(body.privateConcerns!==undefined&&typeof body.privateConcerns!=='string')throw contractError('invalid_concern',400);
       const artifact={schemaVersion:VERSION,id:'art-'+randomUUID(),ownerId:principal.ownerId,tenantId:principal.tenantId,
         version:1,status:'draft',privacy:'private',content,privateConcerns:(body.privateConcerns||'').slice(0,12000),
@@ -118,7 +133,8 @@ export async function handleArtifacts(store,principal,body,{provider,sourceLibra
     if(body.action==='practice'||body.action==='observe') {
       if(!Number.isInteger(body.version))throw contractError('approved_version_required',400);
       const approved=record.approvedVersions.find(a=>a.version===body.version);if(!approved)throw contractError('unapproved_version',409);
-      if(body.action==='practice')return [200,{artifactId:record.id,version:approved.version,content:clone(approved.content),
+      if(body.action==='practice')return [200,{artifactId:record.id,version:approved.version,kind:approved.content.kind,
+        practiceMode:PRACTICE_MODES[approved.content.kind],proceedWithout:approved.proceedWithout||[],content:clone(approved.content),
         observations:record.observations.filter(o=>o.version===approved.version).map(clone),evidenceStatus:'human-approved-for-use'}];
       if(!text(body.observation)||!text(body.chosenNextStep)||body.observation.length>12000||body.chosenNextStep.length>12000)throw contractError('observation_and_decision_required',422);
       if(body.submissionId!==undefined&&(!text(body.submissionId)||!/^[a-zA-Z0-9_-]{8,100}$/.test(body.submissionId)))throw contractError('invalid_submission',400);
@@ -135,6 +151,7 @@ export async function handleArtifacts(store,principal,body,{provider,sourceLibra
     if(body.expectedVersion!==record.version)throw contractError('version_conflict',409);
     if(body.action==='update') {
       const content=validateArtifactContent(body.content,{sourceLibrary:sources});
+      if(content.kind!==record.content.kind)throw contractError('kind_mismatch');
       if(body.privateConcerns!==undefined&&typeof body.privateConcerns!=='string')throw contractError('invalid_concern',400);
       const next=clone(record);next.history.push(snapshot(record));next.content=content;next.version++;next.status='draft';next.updatedAt=now();
       next.locks=text(content.purpose)?{purpose:content.purpose}:{};
@@ -166,7 +183,7 @@ export async function handleArtifacts(store,principal,body,{provider,sourceLibra
       claimed.status='review_required';claimed.updatedAt=now();await assertCurrent();await atomicWrite(store,record,claimed);
       const validateCandidate=async proposal=>{
         if(privateLeaks({changes:proposal.changes,unknowns:proposal.unknowns,riskFlags:proposal.riskFlags},record.privateConcerns))throw contractError('private_leak');
-        try{validateArtifactContent(applyProposal(record.content,proposal),{sourceLibrary:sources,complete:true});}
+        try{validateArtifactContent(applyProposal(record.content,proposal),{sourceLibrary:sources,complete:true,waived:OPTIONAL_BY_CHOICE[record.content.kind]||[]});}
         catch(error){throw contractError(error.code==='missing_step'?'missing_step':'invalid_artifact');}
       };
       let review;
@@ -207,13 +224,17 @@ export async function handleArtifacts(store,principal,body,{provider,sourceLibra
       if(body.decision==='accept') {
         const candidate=applyProposal(record.content,proposal);
         if(privateLeaks(proposal.changes,record.privateConcerns))throw contractError('private_leak');
-        next.content=validateArtifactContent(candidate,{sourceLibrary:sources,complete:true});next.history.push(snapshot(record));
+        next.content=validateArtifactContent(candidate,{sourceLibrary:sources,complete:true,waived:OPTIONAL_BY_CHOICE[record.content.kind]||[]});next.history.push(snapshot(record));
         next.version++;next.status='review_required';decision.resultVersion=next.version;
       }
       next.decisions.push(decision);next.updatedAt=now();return [200,{artifact:await atomicWrite(store,record,next)}];
     }
     if(body.action==='approve') {
-      validateArtifactContent(record.content,{sourceLibrary:sources,complete:true});
+      // The planner may choose, explicitly, to continue without fields that her kind allows (OPTIONAL_BY_CHOICE).
+      const optional=OPTIONAL_BY_CHOICE[record.content.kind]||[];
+      if(body.proceedWithout!==undefined&&(!Array.isArray(body.proceedWithout)||body.proceedWithout.some(f=>!optional.includes(f))))throw contractError('invalid_choice',400);
+      const proceedWithout=[...new Set(body.proceedWithout||[])].filter(f=>!text(record.content[f]));
+      validateArtifactContent(record.content,{sourceLibrary:sources,complete:true,waived:proceedWithout});
       const accepted=record.proposals.filter(p=>p.decision==='accepted');
       const currentRuns=Object.values(record.reviewRuns).filter(r=>r.baseVersion===record.version || accepted.some(p=>Object.values(r.results||{}).some(result=>result.proposal?.id===p.id)));
       if(currentRuns.some(r=>r.status==='running'))throw contractError('review_running',409);
@@ -221,7 +242,7 @@ export async function handleArtifacts(store,principal,body,{provider,sourceLibra
         ...currentRuns.flatMap(r=>[...(r.proposal?.unknowns||[]),...(r.proposal?.riskFlags||[]),...(['partial','failed','fallback','cancelled','lost'].includes(r.status)?['review_status:'+r.status]:[])])])];
       if(risks.length&&body.acknowledgeRisks!==true)throw contractError('risk_acknowledgement_required',422);
       const next=clone(record);
-      if(!next.approvedVersions.some(s=>s.version===record.version))next.approvedVersions.push({...snapshot(record),approvedBy:principal.ownerId,approvedAt:now(),sourceVersion:digest(sources),acknowledgedRisks:risks});
+      if(!next.approvedVersions.some(s=>s.version===record.version))next.approvedVersions.push({...snapshot(record),approvedBy:principal.ownerId,approvedAt:now(),sourceVersion:digest(sources),acknowledgedRisks:risks,...(proceedWithout.length?{proceedWithout}:{})});
       next.status='approved';next.updatedAt=now();return [200,{artifact:await atomicWrite(store,record,next)}];
     }
     throw contractError('unknown_action',400);
