@@ -21,7 +21,8 @@
     stu:  'מנהיגות תלמידים וקול התלמידים',
     facil: 'הנחיית קבוצות ושיח בכיתה',
     cont: 'רציפות, מסירה וגיבוי בצוות',
-    routine: 'שגרות, מנגנונים חברתיים ויוזמות תלמידים'
+    routine: 'שגרות, מנגנונים חברתיים ויוזמות תלמידים',
+    family: 'שותפות עם משפחות'
   };
   var S = [
     // ── ישראל ──
@@ -836,7 +837,76 @@
     {k:'Hackman2002', g:'routine', apa:'Hackman, J. R. (2002). Leading teams: Setting the stage for great performances. Harvard Business School Press.',
       url:'https://scholar.google.com/scholar?q=Hackman+2002+Leading+teams',
       gist:'צוות מצליח כשהוא צוות אמיתי (ברור מי בו), יש לו כיוון משמעותי, מבנה שמאפשר עבודה (משימה, נורמות והרכב), הקשר תומך ומשאבים.',
-      be:'הלוח, כרטיסי התפקיד וההסכם נותנים למנגנון מבנה ברור, והמחנכת נותנת הקשר תומך.'}
+      be:'הלוח, כרטיסי התפקיד וההסכם נותנים למנגנון מבנה ברור, והמחנכת נותנת הקשר תומך.'},
+    // ── שותפות עם משפחות (10/10/2026, למעבדה לבניית גשר שותפות בין הבית לכיתה) ──
+    {k:'EEFParents2021', g:'family', apa:'Education Endowment Foundation. (2021). Working with parents to support children’s learning: Guidance report. EEF.',
+      url:'https://educationendowmentfoundation.org.uk/education-evidence/guidance-reports/supporting-parents',
+      gist:'ארבע המלצות: לברר מה המשפחות כבר עושות ומה הן יכולות לעשות; לתת הצעות מעשיות וקצרות ללמידה בבית; לבנות תקשורת חיובית, קשורה ללמידה ודו־כיוונית; ולתת תמיכה מותאמת למשפחות שזקוקות לה יותר.',
+      be:'המורה מציעה מטרה אחת וכמה דרכים קצרות, והמשפחה בוחרת, מציעה התאמה או אומרת מה לא מעשי כרגע.'},
+    {k:'HooverDempsey1997', g:'family', apa:'Hoover-Dempsey, K. V., & Sandler, H. M. (1997). Why do parents become involved in their children’s education? Review of Educational Research, 67(1), 3–42.',
+      url:'https://doi.org/10.3102/00346543067001003',
+      gist:'הורים מעורבים כשהם רואים בזה חלק מתפקידם, כשהם מרגישים שהם יכולים לעזור, וכשהם מקבלים הזמנה מהמורה או מהילד. ההזמנה וההקשר של חיי המשפחה (זמן, כוחות, ידע) משפיעים מאוד.',
+      be:'הכרטיס הוא הזמנה ברורה ומעשית, שמתאימה לזמן ולכוחות שיש למשפחה עכשיו.'},
+    {k:'HooverDempsey2005', g:'family', apa:'Hoover-Dempsey, K. V., Walker, J. M. T., Sandler, H. M., Whetsel, D., Green, C. L., Wilkins, A. S., & Closson, K. (2005). Why do parents become involved? Research findings and implications. The Elementary School Journal, 106(2), 105–130.',
+      url:'https://doi.org/10.1086/499194',
+      gist:'הזמנות ספציפיות מהמורה ("אפשר לשאול אותו בערב מה הכי אהב היום") מגבירות מעורבות יותר מהזמנות כלליות. מורים יכולים להתאים את ההזמנה לזמן ולידע של המשפחה.',
+      be:'כל דרך תמיכה בכרטיס קצרה וספציפית: מה עושים, כמה זמן, ומתי.'},
+    {k:'MappKuttner2013', g:'family', apa:'Mapp, K. L., & Kuttner, P. J. (2013). Partners in education: A dual capacity-building framework for family–school partnerships. SEDL.',
+      url:'https://www2.ed.gov/documents/family-community/partners-education.pdf',
+      gist:'שותפות דורשת בניית יכולת משני הצדדים: הצוות לומד ליצור קשר מכבד ומגוון, והמשפחות מקבלות דרכים ממשיות להשתתף. שותפות טובה קשורה ללמידה, נבנית על יחסים, משותפת ואינטראקטיבית.',
+      be:'המעבדה מפתחת את המיומנות של המורה ליצור גשר, ולא מנסה לשנות את ההורים.'},
+    {k:'Moll1992', g:'family', apa:'Moll, L. C., Amanti, C., Neff, D., & Gonzalez, N. (1992). Funds of knowledge for teaching: Using a qualitative approach to connect homes and classrooms. Theory Into Practice, 31(2), 132–141.',
+      url:'https://doi.org/10.1080/00405849209543534',
+      gist:'בכל משפחה יש "קרנות ידע": ידע, כישורים ומסורות מחיי היומיום. כשהמורה מכירה בהם ומשתמשת בהם בכיתה, הקשר בין הבית לבית הספר מתחזק, בלי להניח מראש מה חסר למשפחה.',
+      be:'המורה לא מניחה מראש מה טוב להורים, ומזמינה אותם לספר מה מתאים ומה הם כבר עושים.'},
+    {k:'Bronfenbrenner1979', g:'family', apa:'Bronfenbrenner, U. (1979). The ecology of human development: Experiments by nature and design. Harvard University Press.',
+      url:'https://scholar.google.com/scholar?q=Bronfenbrenner+1979+The+ecology+of+human+development',
+      gist:'ילד מתפתח בתוך כמה מסגרות (בית, כיתה, קהילה), והקשרים בין המסגרות (המזו־סיסטם) משפיעים על ההתפתחות שלו לא פחות מכל מסגרת לבדה.',
+      be:'הגשר בין הבית לכיתה הוא רכיב חוסן בפני עצמו: קשר בין מסגרות סביב הילד/ה.'},
+    {k:'Lareau2003', g:'family', apa:'Lareau, A. (2003). Unequal childhoods: Class, race, and family life. University of California Press.',
+      url:'https://scholar.google.com/scholar?q=Lareau+2003+Unequal+childhoods',
+      gist:'משפחות שונות מגדלות ילדים בדרכים שונות ומתקשרות עם בית הספר בסגנונות שונים. בית הספר נוטה לראות בסגנון של משפחות מבוססות את "הנורמה", וכך משפחות אחרות נשפטות בלי שהסגנון שלהן נראה.',
+      be:'סגנונות קשר שונים ומידות מעורבות שונות מתקבלים בלי שיפוט, גם כשהם פחות נורמטיביים.'},
+    {k:'Jeynes2012', g:'family', apa:'Jeynes, W. H. (2012). A meta-analysis of the efficacy of different types of parental involvement programs for urban students. Urban Education, 47(4), 706–742.',
+      url:'https://doi.org/10.1177/0042085912445643',
+      gist:'תכניות למעורבות הורים קשורות להישגים טובים יותר. תכניות שבהן הורים ומורים עובדים יחד, וקריאה משותפת בבית, הראו השפעה ברורה.',
+      be:'צעד מוסכם אחד בין הבית לכיתה, עם נקודת בדיקה, הוא הלב של כל סבב.'},
+    {k:'HillTyson2009', g:'family', apa:'Hill, N. E., & Tyson, D. F. (2009). Parental involvement in middle school: A meta-analytic assessment of the strategies that promote achievement. Developmental Psychology, 45(3), 740–763.',
+      url:'https://doi.org/10.1037/a0015362',
+      gist:'בחטיבת הביניים, שיחה בבית על חשיבות הלמידה ועל תכניות לעתיד ("סוציאליזציה אקדמית") קשורה להישגים יותר מעזרה ישירה בשיעורי הבית.',
+      be:'דרכי התמיכה אינן רק עזרה בשיעורים: גם שאלה בערב או עידוד קצר הם דרך משמעותית.'},
+    {k:'KraftRogers2015', g:'family', apa:'Kraft, M. A., & Rogers, T. (2015). The underutilized potential of teacher-to-parent communication: Evidence from a field experiment. Economics of Education Review, 47, 49–63.',
+      url:'https://doi.org/10.1016/j.econedurev.2015.04.001',
+      gist:'הודעות קצרות ואישיות מהמורה להורים, פעם בשבוע, הפחיתו נשירה מקורס. הודעות שהציעו דבר אחד לשפר השפיעו יותר מהודעות שבחו בלבד.',
+      be:'הכרטיס וההודעה למשפחה קצרים, אישיים, ומציעים צעד אחד.'},
+    {k:'KraftDougherty2013', g:'family', apa:'Kraft, M. A., & Dougherty, S. M. (2013). The effect of teacher–family communication on student engagement: Evidence from a randomized field experiment. Journal of Research on Educational Effectiveness, 6(3), 199–222.',
+      url:'https://doi.org/10.1080/19345747.2012.743636',
+      gist:'קשר תכוף בין המורה למשפחה (טלפון והודעות) הגביר את המעורבות של התלמידים בכיתה ואת השלמת שיעורי הבית, וחיזק את הקשר בין המורה לתלמידים.',
+      be:'קשר קצר וקבוע עם המשפחה תורם גם למה שקורה בכיתה.'},
+    {k:'BergmanChan2021', g:'family', apa:'Bergman, P., & Chan, E. W. (2021). Leveraging parents through low-cost technology: The impact of high-frequency information on student achievement. Journal of Human Resources, 56(1), 125–158.',
+      url:'https://doi.org/10.3368/jhr.56.1.1118-9837R1',
+      gist:'הודעות טקסט אוטומטיות להורים על מטלות שלא הוגשו ועל היעדרויות הגבירו נוכחות והשלמת מטלות, בעלות נמוכה מאוד.',
+      be:'דרך תגובה קצרה ונגישה (מספר, סימון, הודעה קולית) מאפשרת קשר בלי להעמיס.'},
+    {k:'Ishimaru2019', g:'family', apa:'Ishimaru, A. M. (2019). Just schools: Building equitable collaborations with families and communities. Teachers College Press.',
+      url:'https://scholar.google.com/scholar?q=Ishimaru+2019+Just+schools',
+      gist:'שותפות שוויונית עם משפחות מתחילה בהקשבה למה שמשפחות יודעות ורוצות, במיוחד משפחות שבית הספר פחות שומע. המשפחות שותפות לקבלת ההחלטות, ולא רק "מעורבות".',
+      be:'התגובה של המשפחה משפיעה על ההחלטה הבאה של המורה, בכיתה ובבית.'},
+    {k:'AdamsChristenson2000', g:'family', apa:'Adams, K. S., & Christenson, S. L. (2000). Trust and the family–school relationship: Examination of parent–teacher differences in elementary and secondary grades. Journal of School Psychology, 38(5), 477–497.',
+      url:'https://doi.org/10.1016/S0022-4405(00)00048-0',
+      gist:'אמון בין הורים למורים נבנה בעיקר מתקשורת: תדירות, איכות ותחושה שמקשיבים. האמון יורד בדרך כלל בחטיבה ובתיכון, ולכן חשוב לבנות אותו בכוונה.',
+      be:'מחזור קצר של הצעה, תגובה ומענה בונה אמון: המשפחה רואה שהתגובה שלה השפיעה.'},
+    {k:'ChristensonSheridan2001', g:'family', apa:'Christenson, S. L., & Sheridan, S. M. (2001). Schools and families: Creating essential connections for learning. Guilford Press.',
+      url:'https://scholar.google.com/scholar?q=Christenson+Sheridan+2001+Schools+and+families',
+      gist:'שותפות בין בית לבית ספר נבנית על ארבעה רכיבים: גישה (אמונה ששותפות חשובה), עמדה (כבוד וללא האשמה), אווירה (מזמינה) ופעולות (דרכים ממשיות לעבוד יחד).',
+      be:'המעבדה שמה את העמדה המכבדת והלא שיפוטית לפני הפעולה.'},
+    {k:'Sheridan2019', g:'family', apa:'Sheridan, S. M., Smith, T. E., Moorman Kim, E., Beretvas, S. N., & Park, S. (2019). A meta-analysis of family-school interventions and children’s social-emotional functioning: Moderators and components of efficacy. Review of Educational Research, 89(2), 296–332.',
+      url:'https://doi.org/10.3102/0034654318825437',
+      gist:'התערבויות של שותפות בין בית לבית ספר שיפרו את התפקוד החברתי־רגשי של ילדים. תקשורת דו־כיוונית ושיתוף בפתרון בעיות היו מהרכיבים היעילים.',
+      be:'הצעד המוסכם נבנה יחד, מתוך התגובה של המשפחה, ונבדק בנקודת בדיקה.'},
+    {k:'Smith2020', g:'family', apa:'Smith, T. E., Sheridan, S. M., Kim, E. M., Park, S., & Beretvas, S. N. (2020). The effects of family-school partnership interventions on academic and social-emotional functioning: A meta-analysis exploring what works for whom. Educational Psychology Review, 32, 511–544.',
+      url:'https://doi.org/10.1007/s10648-019-09509-w',
+      gist:'שותפות בין משפחה לבית ספר שיפרה הישגים ותפקוד חברתי־רגשי, אצל ילדים מרקעים שונים. היא עבדה גם כשהמשפחות השתתפו בדרכים שונות ובמידות שונות.',
+      be:'יש יותר מדרך אחת להיות שותפים, וכל מידת מעורבות היא נקודת פתיחה לגיטימית.'}
   ];
   var byKey = {}; S.forEach(function(s){ byKey[s.k] = s; });
   // לכל יועצת בנק משלה: פרקטי (הכיתה) — בלי קבוצות המנהיגות; נוגי (מנהיגות) — קבוצות המנהיגות,
@@ -849,12 +919,15 @@
   // מרכז השגרות והיוזמות החברתיות (10/10/2026): קבוצת השגרות ומקורות קיימים על השתתפות, קהילה דואגת, אחריות משותפת ואמון
   var ROUT_K = { Sade2024: 1, SadeTools2026: 1, Battistich1997: 1, Durlak2011: 1, Hobfoll2007: 1, Johnson2009: 1, RyanDeci2017: 1,
     MitraGross2009: 1, Spillane2005: 1, Edmondson1999: 1, Kaner2014: 1, Rogelberg2019: 1 };
+  // המעבדה לבניית גשר שותפות בין הבית לכיתה (10/10/2026): קבוצת המשפחות ומקורות קיימים על שותפות, אמון והשתתפות
+  var FAM_K = { HendersonMapp2002: 1, Epstein2011: 1, BrykSchneider2002: 1, Lundy2007: 1, Sade2024: 1, SadeTools2026: 1, Hobfoll2007: 1, Ungar2011: 1 };
   var ADV = {
-    practi: function(s){ return !LEAD_G[s.g] && s.g !== 'cont' && s.g !== 'routine'; },
+    practi: function(s){ return !LEAD_G[s.g] && s.g !== 'cont' && s.g !== 'routine' && s.g !== 'family'; },
     nugi:   function(s){ return !!(NUGI_G[s.g] || NUGI_K[s.k]); },
     // תיק הרציפות (09/10/2026): קבוצת הרציפות ומקורות קיימים על רציפות חינוכית, מנהיגות מבוזרת, שגרה ואמון
     continuity: function(s){ return s.g === 'cont' || !!CONT_K[s.k]; },
     routines: function(s){ return s.g === 'routine' || !!ROUT_K[s.k]; },
+    bridge: function(s){ return s.g === 'family' || !!FAM_K[s.k]; },
     nana:   function(){ return true; } // ננה — כל בנק הידע (07/10/2026): ההמלצות והמשוב שלה נשענים על כל מקורות החוסן
   };
   function forAdvisor(name){ var f = ADV[name]; return f ? S.filter(f) : S.slice(); }
