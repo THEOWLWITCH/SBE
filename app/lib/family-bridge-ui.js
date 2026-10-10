@@ -21,13 +21,15 @@
   const arr = (x) => Array.isArray(x) ? x : [];
 
   const FAMILY = (n) => ({ id: 'f' + Date.now().toString(36) + n, label: 'משפחה ' + 'אבגדהוזחטיכלמנ'[n % 14], status: '', chosen: '', adapt: '', notNow: '', how: '',
-    clear: '', doable: '', decision: null, pick: '', checkWhen: '', result: '' });
+    clear: '', doable: '', decision: null, pick: '', checkWhen: '', result: '', story: {} });
   const EMPTY = () => ({ step: 1, form: {}, plan: null, version: 0, at: '', families: [FAMILY(0)], changes: [], learned: '', reflect: '' });
   let S = EMPTY();
   try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && v.form) S = Object.assign(EMPTY(), v); } catch (e) {}
   function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }
   const labels = () => S.families.map((f) => f.label);
   const otherLang = () => S.form.lang && S.form.lang !== 'עברית';
+  const goalMode = () => M.isGoal(S.form);
+  if (!S.form.focus) S.form.focus = M.FOCUS.contact;
 
   // ── הטופס ──
   (function buildForm() {
@@ -38,18 +40,21 @@
       if (f.main) label.appendChild(el('span', 'main-tag', 'שדה עיקרי'));
       box.appendChild(label);
       let input;
-      if (f.type === 'select') { input = el('select'); input.appendChild(new Option('בחירה…', '')); f.opts.forEach((o) => input.appendChild(new Option(o, o))); }
+      if (f.type === 'select') { input = el('select'); if (f.closed) input.setAttribute('data-closed', ''); else input.appendChild(new Option('בחירה…', '')); f.opts.forEach((o) => input.appendChild(new Option(o, o))); }
       else { input = el('textarea'); input.maxLength = 3000; }
       input.id = id; if (f.ph) input.placeholder = f.ph;
       const v = S.form[f.k];
       if (v) { if (f.type === 'select' && ![...input.options].some((o) => o.value === v)) input.appendChild(new Option(v, v)); input.value = v; }
-      const keep = () => { S.form[f.k] = input.value; save(); };
+      const keep = () => { S.form[f.k] = input.value; save(); if (f.k === 'focus') showGoal(); };
+      if (f.goalOnly) box.dataset.goalOnly = '1';
       input.addEventListener('input', keep); input.addEventListener('change', keep);
       box.appendChild(input);
       (f.type === 'area' ? form : grid).appendChild(box);
     });
     form.prepend(grid);
+    showGoal();
   })();
+  function showGoal() { document.querySelectorAll('[data-goal-only]').forEach((b) => { b.hidden = !goalMode(); }); }
   function readForm() { const d = {}; M.FIELDS.forEach((f) => { d[f.k] = (F('f-' + f.k).value || '').trim(); }); return d; }
 
   // ── צעדים ──
@@ -107,10 +112,10 @@
 
   // ── תוצרים ──
   function goalBlock(P) {
-    const box = el('section'); head(box, 'goal');
-    box.appendChild(KV([['המטרה', txt(P.goal.text)], ['למה זה חשוב לילד/ה', txt(P.goal.why)], ['מה נראה כשזה קורה', txt(P.goal.sign)]]));
-    head(box, 'ways'); box.appendChild(T('ways', arr(P.ways).map((w) => [txt(w.name), txt(w.what), txt(w.time), txt(w.level)])));
-    head(box, 'school'); box.appendChild(KV([['מה עושים', txt(P.school.what)], ['מי', txt(P.school.who)], ['מתי', txt(P.school.when)]]));
+    const g = goalMode(), box = el('section'); head(box, g ? 'goal' : 'goalContact');
+    box.appendChild(KV([[g ? 'המטרה' : 'הגשר', txt(P.goal.text)], ['למה זה חשוב לילד/ה', txt(P.goal.why)], [g ? 'מה נראה כשזה קורה' : 'מה נראה כשהקשר עובד', txt(P.goal.sign)]]));
+    head(box, g ? 'ways' : 'waysContact'); box.appendChild(T(g ? 'ways' : 'waysContact', arr(P.ways).map((w) => [txt(w.name), txt(w.what), txt(w.time), txt(w.level)])));
+    head(box, g ? 'school' : 'schoolContact'); box.appendChild(KV([['מה עושים', txt(P.school.what)], ['מי', txt(P.school.who)], ['מתי', txt(P.school.when)]]));
     return box;
   }
   function stylesBlock(P) {
@@ -128,7 +133,7 @@
   const CARD_ROWS = [['greeting', 'פנייה'], ['goal', 'המטרה'], ['intro', 'הזמנה לבחור'], ['adapt', 'התאמה'], ['notNow', 'אם לא מתאים כרגע'], ['respond', 'איך עונים'], ['closing', 'חתימה']];
   function cardText(c) {
     c = c || {};
-    return [txt(c.greeting), txt(c.goal), txt(c.intro), arr(c.options).map((o, i) => (i + 1) + '. ' + txt(o)).join('\n'), txt(c.adapt), txt(c.notNow), txt(c.respond), txt(c.closing)].filter(Boolean).join('\n\n');
+    return [txt(c.greeting), txt(c.goal), txt(c.intro), arr(c.questions).map((q, i) => (i + 1) + '. ' + txt(q.q) + '\n' + arr(q.opts).map((o) => '- ' + txt(o)).join('\n')).join('\n\n'), arr(c.options).map((o, i) => (i + 1) + '. ' + txt(o)).join('\n'), txt(c.adapt), txt(c.notNow), txt(c.respond), txt(c.closing)].filter(Boolean).join('\n\n');
   }
   // הכרטיס כפי שהמשפחה תראה אותו (להדפסה ולתצוגה)
   function cardView(c, dir) {
@@ -136,7 +141,8 @@
     if (c.greeting) box.appendChild(el('p', 'cf-greet', txt(c.greeting)));
     if (c.goal) box.appendChild(el('p', 'cf-goal', txt(c.goal)));
     if (c.intro) box.appendChild(el('p', null, txt(c.intro)));
-    const ol = el('ol', 'cf-opts'); arr(c.options).forEach((o) => ol.appendChild(el('li', null, '☐ ' + txt(o)))); box.appendChild(ol);
+    arr(c.questions).forEach((q, i) => { box.appendChild(el('p', 'cf-q', (i + 1) + '. ' + txt(q.q))); const u = el('ul', 'cf-qopts'); arr(q.opts).forEach((o) => u.appendChild(el('li', null, '☐ ' + txt(o)))); box.appendChild(u); });
+    if (arr(c.options).length) { if (arr(c.questions).length) box.appendChild(el('p', 'cf-q', 'או בחרו דרך מוכנה:')); const ol = el('ol', 'cf-opts'); arr(c.options).forEach((o) => ol.appendChild(el('li', null, '☐ ' + txt(o)))); box.appendChild(ol); }
     if (c.adapt) { box.appendChild(el('p', null, txt(c.adapt))); box.appendChild(el('p', 'cf-line', '______________________________')); }
     if (c.notNow) box.appendChild(el('p', null, '☐ ' + txt(c.notNow)));
     if (c.respond) box.appendChild(el('p', 'cf-respond', txt(c.respond)));
@@ -147,6 +153,9 @@
     const box = el('section', 'cardedit');
     box.appendChild(el('h4', null, title));
     box.appendChild(window.SBE_TABLE(null, CARD_ROWS.slice(0, 3).map(([k, l]) => [l, field(c, k, l, true)]).concat(
+      arr(c.questions).map((q, i) => ['שאלה ' + (i + 1), (() => { const d = el('div'); const a = el('textarea'); a.rows = 1; a.value = txt(q.q); a.setAttribute('aria-label', 'שאלה ' + (i + 1));
+        a.addEventListener('input', () => { q.q = a.value; save(); }); const o = el('textarea'); o.rows = 3; o.value = arr(q.opts).map(txt).join('\n'); o.setAttribute('aria-label', 'האפשרויות לשאלה ' + (i + 1)); o.title = 'אפשרות בכל שורה';
+        o.addEventListener('input', () => { q.opts = o.value.split('\n').map((x) => x.trim()).filter(Boolean); save(); }); d.append(a, o); return d; })()]),
       [['האפשרויות', (() => { const d = el('div'); arr(c.options).forEach((o, i) => { const f = el('textarea'); f.rows = 2; f.value = txt(o); f.setAttribute('aria-label', 'אפשרות ' + (i + 1)); f.addEventListener('input', () => { c.options[i] = f.value; save(); }); d.appendChild(f); }); return d; })()]],
       CARD_ROWS.slice(3).map(([k, l]) => [l, field(c, k, l, true)])), 'kit-t etable'));
     return box;
@@ -166,6 +175,12 @@
     top.appendChild(lab);
     if (S.families.length > 1) top.appendChild(btn('✕', 'xbtn', () => { if (confirm('להסיר את "' + f.label + '"?')) { S.families.splice(i, 1); save(); draw(3); } }));
     c.appendChild(top);
+    // הסיפור בתחילת השיח: רק על המסך, לא בהדפסה
+    const st = f.story || (f.story = {}), sb = el('div', 'story');
+    sb.appendChild(el('h4', null, 'הסיפור'));
+    const sg = el('div', 'grid2');
+    M.STORY.forEach((x) => { const d = el('div', 'f'); d.appendChild(el('label', null, x.l)); d.appendChild(field(st, x.k, x.l, true, x.ph)); sg.appendChild(d); });
+    sb.appendChild(sg); c.appendChild(sb);
     const g = el('div', 'grid2');
     const add = (label, node) => { const d = el('div', 'f'); d.appendChild(el('label', null, label)); d.appendChild(node); g.appendChild(d); };
     add('מה המשפחה ענתה', choice(f, 'status', 'מה המשפחה ענתה', M.RESPONSES, () => draw(3)));
@@ -190,6 +205,9 @@
     a.appendChild(el('label', null, 'מה בחרת')); a.appendChild(choice(f, 'pick', 'מה בחרת', arr(d.options).map((o) => txt(o.name)), () => { const c = F('checks'); if (c) c.replaceWith(checksBlock()); }));
     b.appendChild(el('label', null, 'נקודת בדיקה')); const ci = el('input'); ci.type = 'date'; ci.value = f.checkWhen || ''; ci.setAttribute('aria-label', 'נקודת בדיקה');
     ci.addEventListener('change', () => { f.checkWhen = ci.value; save(); }); b.appendChild(ci); g.append(a, b); box.appendChild(g);
+    if (d.feel) box.appendChild(el('p', 'feel', txt(d.feel)));
+    const tk = d.talk || {};
+    if (tk.open || tk.ask || tk.close) { box.appendChild(el('h4', null, 'לשיחה עם ההורים')); box.appendChild(KV([['איך לפתוח', txt(tk.open)], ['שאלה להקשבה', txt(tk.ask)], ['איך לסיים', txt(tk.close)]])); }
     box.appendChild(KV([['מה נראה בנקודת הבדיקה', txt(d.check && d.check.look) + (d.check && d.check.when ? ' (' + txt(d.check.when) + ')' : '')], ['איך לפעול בתוך הקשר הזה', txt(d.note)]]));
     const msg = el('div', 'reply'); msg.appendChild(el('h4', null, 'הודעה למשפחה'));
     const t = el('textarea'); t.rows = 5; t.value = txt(d.reply.text); t.setAttribute('aria-label', 'הודעה למשפחה'); if (otherLang()) t.dir = 'auto';
@@ -201,14 +219,15 @@
   }
   async function decide(f, b) {
     const err = F('err-' + f.id); err.hidden = true;
-    if (!f.status) return fail(err, 'כדי להמשיך, בחרי מה המשפחה ענתה. גם "עוד לא ענתה" היא תשובה.');
+    if (!f.status && !M.storyText(f.story)) return fail(err, 'כדי להמשיך, ספרי את הסיפור או בחרי מה המשפחה ענתה. גם "עוד לא ענתה" היא תשובה.');
     const P = S.plan, way = arr(P.ways).find((w) => txt(w.name) === f.chosen);
-    const content = M.anonymize('השדות:\n' + M.inputText(S.form) + '\n\nהמטרה: ' + txt(P.goal.text) + '\nדרכי התמיכה שהוצעו: ' + arr(P.ways).map((w) => txt(w.name) + ' (' + txt(w.what) + ')').join('; ') +
+    const story = M.storyText(f.story);
+    const content = M.anonymize('השדות:\n' + M.inputText(S.form) + (story ? '\n\nהסיפור של המורה עם המשפחה:\n' + story : '') + '\n\n' + (goalMode() ? 'המטרה: ' : 'הגשר: ') + txt(P.goal.text) + '\n' + (goalMode() ? 'דרכי התמיכה שהוצעו: ' : 'דרכי הקשר שהוצעו: ') + arr(P.ways).map((w) => txt(w.name) + ' (' + txt(w.what) + ')').join('; ') +
       '\nהחלופה בכיתה: ' + txt(P.school.what) + '\n\nהתגובה של המשפחה: ' + f.status + (way ? '\nהדרך שבחרו: ' + txt(way.name) + ': ' + txt(way.what) : '') +
-      (f.adapt ? '\nההתאמה שהציעו: ' + f.adapt : '') + (f.notNow ? '\nמה כתבו: ' + f.notNow : '') + (f.how ? '\nאיך ענו: ' + f.how : '') + '\n\nהציעי את ההמשך.', labels());
+      (f.status ? '' : 'עוד לא נשלח כרטיס, או שאין תגובה מתועדת.') + (f.adapt ? '\nההתאמה שהציעו: ' + f.adapt : '') + (f.notNow ? '\nמה כתבו: ' + f.notNow : '') + (f.how ? '\nאיך ענו: ' + f.how : '') + '\n\nהציעי את ההמשך.', labels());
     b.disabled = true; const stop = waiting(F('wait-' + f.id), 'מכינה אפשרויות להמשך והודעה למשפחה.', 35);
     let k = null, bad = null;
-    try { k = await ask(M.decideSystem(KB, WRITER, S.form.lang), content, M.validDecision); } catch (e) { bad = e; console.warn('גשר, החלטה:', e.message); }
+    try { k = await ask(M.decideSystem(KB, WRITER, S.form.lang, S.form.focus), content, M.validDecision); } catch (e) { bad = e; console.warn('גשר, החלטה:', e.message); }
     finally { stop(); b.disabled = false; }
     if (!M.validDecision(k)) return fail(err, why(bad));
     f.decision = k; f.pick = ''; save(); draw(3);
@@ -274,12 +293,12 @@
   // ── הפקה ──
   F('go').addEventListener('click', async () => {
     const d = readForm(); S.form = d; save();
-    const missing = M.FIELDS.filter((f) => f.main && !d[f.k]).map((f) => f.l);
+    const missing = M.FIELDS.filter((f) => (f.main || (f.goalOnly && M.isGoal(d))) && !d[f.k]).map((f) => f.l);
     F('err1').hidden = true;
     if (missing.length) return fail(F('err1'), 'כדי להמשיך, נשמח למלא: ' + missing.join(', ') + '.');
-    const b = F('go'); b.disabled = true; const stop = waiting(F('wait1'), 'מכינה דרכי תמיכה, חלופה בכיתה וכרטיס בחירה למשפחה.', 60);
+    const b = F('go'); b.disabled = true; const stop = waiting(F('wait1'), goalMode() ? 'מכינה דרכי תמיכה, חלופה בכיתה וכרטיס בחירה למשפחה.' : 'מכינה דרכי קשר וכרטיס למשפחה על הקשר עצמו.', 60);
     let k = null, bad = null;
-    try { k = await ask(M.planSystem(KB, WRITER, d.lang), 'השדות:\n' + M.inputText(d) + '\n\nהכיני את הסבב.', M.valid); } catch (e) { bad = e; console.warn('גשר:', e.message); }
+    try { k = await ask(M.planSystem(KB, WRITER, d.lang, d.focus), 'השדות:\n' + M.inputText(d) + '\n\nהכיני את הסבב.', M.valid); } catch (e) { bad = e; console.warn('גשר:', e.message); }
     finally { stop(); b.disabled = false; }
     if (!M.valid(k)) return fail(F('err1'), why(bad));
     Object.assign(S, { plan: k, version: 1, at: today(), families: [FAMILY(0)], changes: [], learned: '' });
@@ -295,7 +314,7 @@
     const b = F('revise'); b.disabled = true; const stop = waiting(F('wait4'), 'משפרת את הכרטיס לפי התגובות.', 70);
     let k = null, bad = null;
     try {
-      k = await ask(M.reviseSystem(KB, WRITER, S.form.lang), M.anonymize('השדות:\n' + M.inputText(S.form) + '\n\nהסבב הנוכחי (JSON):\n' + JSON.stringify(plan) + '\n\nמה קרה עם המשפחות:\n' + log +
+      k = await ask(M.reviseSystem(KB, WRITER, S.form.lang, S.form.focus), M.anonymize('השדות:\n' + M.inputText(S.form) + '\n\nהסבב הנוכחי (JSON):\n' + JSON.stringify(plan) + '\n\nמה קרה עם המשפחות:\n' + log +
         '\n\nמה המורה למדה:\n' + (S.reflect || '[לא נכתב]') + '\n\nשפרי את הכרטיס.', labels()), M.valid);
     } catch (e) { bad = e; console.warn('גשר, שיפור:', e.message); }
     finally { stop(); b.disabled = false; }
@@ -328,13 +347,12 @@
   F('newRound').addEventListener('click', () => { if (!confirm('לפתוח סבב חדש? הסבב הנוכחי יימחק מהמכשיר.')) return; const f = S.form; S = EMPTY(); S.form = f; save(); goStep(1); });
 
   F('example').addEventListener('click', () => {
-    const ex = { forWho: 'כמה משפחות', age: 'ג–ד', lang: 'עברית', time: '20 דקות בשבוע',
-      goal: 'שהילדים יקראו עשר דקות ביום ויספרו במשפט אחד מה קראו.',
-      context: 'בכיתה יש ספרייה קטנה. חלק מהילדים קוראים בבית, וחלק כמעט לא. כמה משפחות כמעט לא בקשר עם בית הספר.',
-      known: 'בשאלון של תחילת השנה: שתי משפחות ביקשו הודעות קוליות בלבד, משפחה אחת ביקשה קשר דרך הסבתא, ומשפחה אחת ענתה "רק כשיש משהו חשוב".',
-      inClass: 'עשר דקות קריאה שקטה כל בוקר, ושיתוף קצר בזוגות.' };
+    const ex = { focus: M.FOCUS.contact, forWho: 'כמה משפחות', age: 'ג–ד', lang: 'עברית', time: '20 דקות בשבוע', goal: '',
+      context: 'תחילת שנה, כיתה חדשה. עם כמה משפחות כמעט אין קשר: הודעות בקבוצה נשארות בלי תגובה, ולאסיפה לא הגיעו.',
+      known: 'משפחה אחת שולחת הודעות קוליות בלבד. באחרת הסבתא אוספת את הילד. משפחה אחת ביקשה "רק כשיש משהו חשוב".',
+      inClass: 'שיחת בוקר קצרה עם כל ילד פעם בשבוע, ופתק "מה היה השבוע" בתיק ביום חמישי.' };
     M.FIELDS.forEach((f) => { const i = F('f-' + f.k); if (f.type === 'select' && ex[f.k] && ![...i.options].some((o) => o.value === ex[f.k])) i.appendChild(new Option(ex[f.k], ex[f.k])); i.value = ex[f.k] || ''; });
-    S.form = ex; save(); F('err1').hidden = true;
+    S.form = ex; save(); showGoal(); F('err1').hidden = true;
   });
   goStep(S.plan ? (S.step || 2) : 1);
 })();

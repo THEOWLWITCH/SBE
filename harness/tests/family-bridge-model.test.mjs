@@ -48,3 +48,21 @@ test('screen text and the start-of-year form are written as an invitation and wi
   assert.doesNotMatch(html + ui + labels + year, /—/);
   assert.match(year, /כרגע לא מתאים לנו, וזה בסדר/);
 });
+
+test('the first card is about the contact itself; a goal card is an option for later', () => {
+  const kb = SRC.forAdvisor('bridge');
+  assert.equal(M.FIELDS[0].k, 'focus'); assert.deepEqual(M.FIELDS[0].opts, [M.FOCUS.contact, M.FOCUS.goal]);
+  const c = M.planSystem(kb, '', 'עברית'), g = M.planSystem(kb, '', 'עברית', M.FOCUS.goal);
+  assert.match(c, /על הקשר עצמו: איך, כמה ובאילו דרכים/); assert.match(c, /questions: 3 שאלות/); assert.doesNotMatch(c, /הגשר כבר קיים/);
+  assert.match(g, /הגשר כבר קיים/); assert.match(g, /דרכי תמיכה קצרות/);
+  assert.ok(M.isGoal({ focus: M.FOCUS.goal }) && !M.isGoal({}));
+  assert.ok(M.valid({ goal: { text: 'x' }, ways: [{}, {}], school: { what: 'x' }, card: { questions: [{ q: 'א', opts: ['ב'] }] } }));
+});
+
+test('each family starts with a story, and feelings about the parents are treated as a guess to check', () => {
+  assert.deepEqual(M.STORY.map((x) => x.l), ['מה קרה', 'מה הקושי בתקשורת', 'מה המטרה של השיחה', 'מה אני מרגישה', 'מה אני חושבת שההורים מרגישים']);
+  assert.equal(M.storyText({ what: 'א', me: 'ב' }), 'מה קרה: א\nמה אני מרגישה: ב');
+  const d = M.decideSystem(SRC.forAdvisor('bridge'), '', 'עברית');
+  assert.match(d, /השערה ולא ידיעה/); assert.match(d, /"talk"/); assert.match(d, /שיחה אחת קצרה, לא שיח מתמשך/);
+  assert.deepEqual(invite.find(M.STORY.map((x) => x.l + ' ' + x.ph).join(' ')), []);
+});
