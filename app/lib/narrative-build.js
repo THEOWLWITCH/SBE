@@ -163,7 +163,7 @@
     `));
     wrap.append(el("div", { class: "sb-banner " + (mock ? "mock" : "ai") },
       mock ? (mockNote || "⚠ אין חיבור למודל כרגע, מוצג תרחיש הדוגמה של המסלול הזה, באותה תבנית בדיוק שבה ייבנה התרחיש שלך כשהשרת המקומי פועל.")
-           : "התוצר נכתב על ידי המודל מתוך השדות שמילאת. קראי, ואם משהו לא מדויק, ערכי את השדה למעלה ובני מחדש."));
+           : "אם משהו לא מדויק, אפשר לשנות שדה למעלה ולבנות מחדש."));
     if (scenario && window.SBE_ACTIVITY_REVIEW) {
       const editor = el('div'); wrap.append(editor);
       window.SBE_ACTIVITY_REVIEW.mount(editor, { scenario, server, onApproved: artifact => {

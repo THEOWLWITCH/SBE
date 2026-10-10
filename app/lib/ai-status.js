@@ -14,7 +14,7 @@
       if (!mine) return;
       // המסך עצמו כבר קבע מצב (setAIStatus אחרי קריאה אמיתית) — לא דורסים
       if (chip.className !== last || chip.innerHTML !== lastHtml) { mine = false; return; }
-      chip.className = "ai-status " + cls; chip.innerHTML = dot + text;
+      chip.className = "ai-status sbe-sysonly " + cls; chip.innerHTML = dot + text;
       last = chip.className; lastHtml = chip.innerHTML;
     }
     // הסבר קצר — נפתח בלחיצה

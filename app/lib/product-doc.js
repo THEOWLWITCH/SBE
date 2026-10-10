@@ -112,7 +112,7 @@
   const STYLE = `.kit-table{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:14.5px;line-height:1.6}
 .kit-table th,.kit-table td{border:1px solid #CDD3D8;padding:8px 10px;text-align:right;vertical-align:top}
 .kit-table tbody th{background:rgba(46,90,125,.08);width:22%;font-weight:700}
-.kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700}
+.kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .kit-flow tr.ph th{background:#DCE7EF;color:#1E3F5A;text-align:right;font-size:15px;width:auto}
 .kit-flow td{width:33%}
 .kit-table .sbe-rich{font-size:14.5px;line-height:1.65}.kit-table .sbe-rich p:last-child,.kit-table .sbe-rich ul:last-child{margin-bottom:0}
@@ -138,7 +138,7 @@
     node.setAttribute("contenteditable", "true");
     node.setAttribute("spellcheck", "true");
     const hint = document.createElement("p"); hint.className = "sbe-edit-hint";
-    hint.textContent = "✎ אפשר לערוך את הטקסט ישירות כאן (למחוק, להוסיף ולנסח מחדש). ההדפסה ושמירת ה-PDF יכללו את הנוסח הערוך.";
+    hint.textContent = "✎ אפשר לערוך את הטקסט כאן.";
     const wrap = document.createElement("div"); wrap.append(hint, node);
     return wrap;
   }
@@ -170,6 +170,22 @@
     });
   }
 
+  // בלי עמוד ריק (09/10/2026: "אין להשאיר עמוד ריק"): בלוק שמסומן "לא לחתוך" (break-inside:avoid) ושגבוה
+  // מרוב העמוד נדחף כולו לעמוד הבא ומשאיר אחריו עמוד ריק או כמעט ריק. לפני ההדפסה מודדים ברוחב של הדף המודפס,
+  // ובלוק כזה מקבל .sbe-brk, שמתיר לו להיחתך. כותרות וטבלאות קצרות ממשיכים להישמר יחד.
+  const BRK_CSS = "@media print{.sbe-brk{break-inside:auto!important;page-break-inside:auto!important}}";
+  function relaxTall(doc, { widthMm = 170, heightMm = 261 } = {}) {
+    const root = doc.documentElement, body = doc.body; if (!body) return;
+    const px = (mm) => mm * 96 / 25.4, limit = px(heightMm) * 0.6;
+    const prev = [root.style.width, body.style.maxWidth];
+    root.style.width = widthMm + "mm"; body.style.maxWidth = "none";
+    try {
+      body.querySelectorAll(".sbe-brk").forEach((el) => el.classList.remove("sbe-brk"));
+      body.querySelectorAll("*").forEach((el) => { if (el.getBoundingClientRect().height > limit) el.classList.add("sbe-brk"); });
+    } finally { root.style.width = prev[0]; body.style.maxWidth = prev[1]; }
+    if (!doc.getElementById("sbe-brk-css")) { const st = doc.createElement("style"); st.id = "sbe-brk-css"; st.textContent = BRK_CSS; doc.head.appendChild(st); }
+  }
+
   // כרטיס כיס (08/10/2026): תוצר נפרד, אותיות גדולות שקל לקרוא בזמן המפגש
   const POCKET_CSS = `
 body{font-size:20px;line-height:1.55;max-width:760px}
@@ -190,6 +206,7 @@ h1{font-size:26px}.hd img{height:44px}
     "facilitation-advisor.html": ["ננה", "מהוראה להנחיה: הנחיית קבוצה שמקדמת חוסן חברתי"],
     "team-learning-lab.html": ["מעבדת תרגול ולמידה בצוות", "חזרות עם עמיתים, תצפית במפגש אמיתי ושמירת מהלכים שניסינו"],
     "message-writer.html": ["כתיבה מקדמת חוסן", "הודעות ומכתבים לפי עשרת עקרונות השפה המחזקת"],
+    "continuity-kit.html": ["תיק רציפות", "תיק הפעלה קצר למי שתחליף אותך: שגרות, תפקידים וגיבוי, ומה מחליטים בעצמם"],
     "resilience-team.html": ["מיפוי חוסן חברתי", "שאלון לכיתה, תמונת מצב והמלצות"],
     "conversation-planner.html": ["תכנון שיחה", "הכנה לשיחה מאתגרת: איך פותחים, מה שואלים ואיך מסיימים"],
     "activity-planner.html": ["תכנון פעילות", "מערך למפגש או לרצף מפגשים: מטרות, מהלך וזמנים"],
@@ -232,6 +249,7 @@ h1{font-size:26px}.hd img{height:44px}
       head = document.createElement("div"); head.id = "sbe-print-ctx"; document.body.prepend(head);
     }
     head.innerHTML = ctxHTML(t) + `<div class="ttl">${esc(title || "")}</div><div class="dt">${esc(today())}</div>`;
+    relaxTall(document, { widthMm: 166, heightMm: 257 });
     const old = document.title; document.title = fileTitle(title, t);
     const back = () => { document.title = old; window.removeEventListener("afterprint", back); };
     window.addEventListener("afterprint", back);
@@ -242,6 +260,8 @@ h1{font-size:26px}.hd img{height:44px}
   function print({ title, subtitle, kind, node, nodes, inline = false, landscape = false, pocket = false }) {
     const parts = (nodes || [node]).filter(Boolean).map((n) => {
       const c = n.cloneNode(true);
+      if (window.SBE_REFS && SBE_REFS.forPrint) SBE_REFS.forPrint(c); // מקורות: רק כשבחרו "צירוף המקורות לקובץ"
+      else c.querySelectorAll(".sbe-refs:not(.attach)").forEach((x) => x.remove());
       c.querySelectorAll("button,.sbe-edit-hint,.no-print,style,script").forEach((x) => x.remove());
       c.querySelectorAll("table.rtable").forEach((t) => t.classList.add("kit-table")); // טבלאות SBE_TABLE — אותו עיצוב בהדפסה
       [c, ...c.querySelectorAll("[contenteditable]")].forEach((x) => { x.removeAttribute("contenteditable"); x.removeAttribute("spellcheck"); x.classList.remove("sbe-edit"); });
@@ -316,10 +336,13 @@ ${pocket ? POCKET_CSS : ""}</style></head><body>
 <div class="hd"><div>${ctxHTML()}<h1>${esc(title)}</h1>${subtitle ? `<p class="sub">${esc(subtitle)}</p>` : ""}<div class="dt">${esc(date)}</div></div><img src="${logo}" alt="Begood"></div>
 ${parts}
 <div class="ft">הופק ב-Begood · be-good.co.il</div>
-<script>${inline ? "" : "window.onload=function(){setTimeout(function(){window.print()},300)}"}<\/script>
+<script>var relaxTall=${relaxTall.toString()};var BRK_CSS=${JSON.stringify(BRK_CSS)};function sbeRelax(){relaxTall(document,{widthMm:${landscape ? 257 : 170},heightMm:${landscape ? 174 : 261}})}
+window.addEventListener("beforeprint",sbeRelax);${inline ? "window.addEventListener('load',sbeRelax);" : "window.onload=function(){sbeRelax();setTimeout(function(){window.print()},300)}"}<\/script>
 </body></html>`);
     w.document.close();
   }
 
+  // גם בהדפסה ישירה מהדפדפן (Ctrl+P) בכל דף שטוען את הקובץ הזה
+  if (typeof window !== "undefined" && window.addEventListener) window.addEventListener("beforeprint", () => { try { relaxTall(document, { widthMm: 166, heightMm: 257 }); } catch (e) {} });
   window.SBE_DOC = { rich, editable, print, ensureStyle, sections, table, flowTable, PHASES, toolInfo, fileTitle, ctxHTML, printPage };
 })();

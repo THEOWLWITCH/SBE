@@ -382,3 +382,31 @@ test('the customer agent reads every kit; unclear kits are revised once and the 
   assert.equal(ok3,200);assert.ok(!out3.customerReview);
   delete process.env.OPENAI_API_KEY;
 });
+
+// תקלת הפקה (09/10/2026): המודל נתן לשלב "אחרי המפגש" 0 דקות, והערכה כולה נדחתה.
+test('an "after the meeting" step may take 0 minutes and is not counted; a meeting step may not', () => {
+  const b=brief(), a=generated(b), s=a.sessions[0];
+  s.steps.push({...s.steps[s.steps.length-1],id:'after-1',title:'אחרי המפגש',phase:'אחרי המפגש',minutes:0});
+  assert.ok(!studio.validateActivity(a,b).includes('משך שלב אינו תקין'));
+  const big=generated(b); big.sessions[0].steps.push({...big.sessions[0].steps[0],id:'after-2',phase:'אחרי המפגש',minutes:9999});
+  assert.ok(!studio.validateActivity(big,b).some(e=>/חורג/.test(e)),'after-meeting time is outside the meeting');
+  const bad=generated(b); bad.sessions[0].steps[0].minutes=0;
+  assert.ok(studio.validateActivity(bad,b).includes('משך שלב אינו תקין'));
+  const text=generated(b); text.sessions[0].steps[0].minutes='10';
+  assert.ok(!studio.validateActivity(text,b).includes('משך שלב אינו תקין'),'a number written as text is read as a number');
+});
+
+test('a kit that fails the checks is sent back once with the list of problems, and the fixed kit is used', async () => {
+  const {store,token}=await signed();process.env.OPENAI_API_KEY='test-key';process.env.STUDIO_CUSTOMER_REVIEW='off';
+  const bad=generated(); bad.sessions[0].steps[0].minutes=0;
+  const sent=[];
+  const fetchImpl=async(url,opts)=>{const body=JSON.parse(opts.body);sent.push(body);return response(sent.length===1?bad:generated());};
+  const [status,out]=await handleStudio(store,{token,action:'generate',brief:brief()},{fetchImpl});
+  assert.equal(status,200,JSON.stringify(out).slice(0,200));
+  assert.equal(sent.length,2);
+  assert.match(sent[1].instructions,/לא עברה את הבדיקה/);
+  assert.match(sent[1].input[0].content[0].text,/משך שלב אינו תקין/);
+  const [again]=await handleStudio(store,{token,action:'generate',brief:brief()},{fetchImpl:async()=>response(bad)});
+  assert.equal(again,422,'a kit that is still invalid after one repair is not shown');
+  delete process.env.OPENAI_API_KEY;delete process.env.STUDIO_CUSTOMER_REVIEW;
+});

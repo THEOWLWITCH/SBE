@@ -36,7 +36,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:30px;m
 .toc a{color:var(--ink);text-decoration:none;}
 .toc a:hover{color:var(--spoken);}
 
-.track{margin-bottom:56px;page-break-before:always;}
+.track{margin-bottom:56px;}.track~.track{page-break-before:always;}
 .track:first-of-type{page-break-before:auto;}
 .track-head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px;}
 .track-head .num{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--spoken);
@@ -87,7 +87,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:30px;m
   body{background:#fff;padding:0;}
   .wrap{max-width:none;}
   .toc{display:none;}
-  .track{page-break-before:always;}
+  .track~.track{page-break-before:always;}
   .docview,.cardview{box-shadow:none;}
   a{color:inherit;text-decoration:none;}
   .print-only{display:block;}
