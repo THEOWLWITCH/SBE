@@ -778,8 +778,8 @@ async function generateProposals(required) {
       callAI(sysTrainee, "בני את דמות המתנסה לתרחיש הזה, בעברית, לפי כל ההנחיות.", 6000, 360000),
     ]);
 
-    const mA = rawA.match(/\{[\s\S]*\}/);
-    const mB = rawB.match(/\{[\s\S]*\}/);
+    const mA = sbeJsonMatch(rawA);
+    const mB = sbeJsonMatch(rawB);
     if (!mA) throw new Error("לא התקבל JSON תקין מהמודל (קריאה א׳)");
     if (!mB) throw new Error("לא התקבל JSON תקין מהמודל (קריאה ב׳)");
     const parsedA = JSON.parse(mA[0]);

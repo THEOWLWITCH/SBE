@@ -909,7 +909,7 @@ async function generateProposals(required) {
     // שני גיליונות דמות מלאים + קונפליקט, כולל כמה שדות מורכבים (Register,
     // Anchor, opening, turningPoints). יכויל שוב אם יתגלה בפועל שלא מספיק.
     const raw = await callAI(system, "בני דמויות וסיטואציה מלאות לתרגול הזה, בעברית, לפי כל ההנחיות.", 20000, 420000);
-    const m = raw.match(/\{[\s\S]*\}/);
+    const m = sbeJsonMatch(raw);
     if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
     const parsed = JSON.parse(m[0]);
     AI_CHIP_KEYS.forEach(k => { if (Array.isArray(parsed[k])) parsed[k] = parsed[k].join(","); });

@@ -245,7 +245,7 @@ function saveDraft(id, d){ try { localStorage.setItem(draftKey(id), JSON.stringi
 function btn(text, cls, fn){ const b = el('button', 'btn' + (cls ? ' ' + cls : ''), text); b.type = 'button'; if (fn) b.addEventListener('click', fn); return b; }
 function card(){ const c = el('div', 'card'); F('app').appendChild(c); return c; }
 function errLine(c){ const e = el('p', 'err'); e.hidden = true; c.appendChild(e); return t => { e.textContent = t || ''; e.hidden = !t; }; }
-function parseJSON(t){ const m = String(t || '').match(/\{[\s\S]*\}/); if (!m) throw new Error('לא התקבל מבנה תקין'); return JSON.parse(m[0]); }
+function parseJSON(t){ const m = sbeJsonMatch(String(t || '')); if (!m) throw new Error('לא התקבל מבנה תקין'); return JSON.parse(m[0]); }
 
 // מפת המסע: חמש תחנות
 function journeyMap(j){

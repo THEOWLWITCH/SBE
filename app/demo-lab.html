@@ -255,8 +255,7 @@ async function review(d,btn,show){
     const full=await api({action:'demoGet',id:d.id});
     const text=SBE_CUSTOMER.textOf(full.html).slice(0,60000);
     const raw=await sbeCallAI(AI_SERVER,{system:SBE_CUSTOMER.system,messages:[{role:'user',content:'מה ביקשתי (הקלט):\n'+(d.input||'לא נשמר')+'\n\nהתוצר שקיבלתי ('+d.title+'):\n'+text}],maxTokens:6000},240000);
-    const m=String(raw).match(/\{[\s\S]*\}/);if(!m)throw new Error('לא התקבלה תשובה במבנה הנכון');
-    const r=JSON.parse(m[0]);r.issues=Array.isArray(r.issues)?r.issues:[];r.at=new Date().toISOString();rvSet(d.id,r);
+    const r=sbeParseJSON(raw);if(!r||typeof r!=='object')throw new Error('התשובה לא הגיעה במבנה הנכון. אפשר לנסות שוב');r.issues=Array.isArray(r.issues)?r.issues:[];r.at=new Date().toISOString();rvSet(d.id,r);
     btn.textContent=rvLabel(d);if(show)showReview(d,r);return r;
   }catch(e){btn.textContent=old;if(show)alert('הבדיקה לא הצליחה: '+e.message);return null;}
   finally{btn.disabled=false;}

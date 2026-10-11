@@ -78,7 +78,7 @@ function mount(h){
       const ab=A?attachBlocks(A.att,A.instruction):{text:'',blocks:[]};
       const content=ab.blocks.length?[...ab.blocks,{type:'text',text:user+ab.text}]:user+ab.text;
       const res=await complete(system(),[{role:'user',content}],8000,true);
-      const m=res.match(/\{[\s\S]*\}/);if(!m)throw new Error('לא התקבל מבנה תקין');
+      const m=sbeJsonMatch(res);if(!m)throw new Error('לא התקבל מבנה תקין');
       const d=JSON.parse(m[0]);const msg=String(d.message||'').replace(/\*\*/g,'');if(!msg)throw new Error('לא התקבלה הודעה');
       out.textContent='';
       out.appendChild(el('h3',null,'ההודעה'));

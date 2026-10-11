@@ -87,7 +87,7 @@
   function parse(text) {
     const t = String(text || '').trim();
     try { return JSON.parse(t); } catch (e) {}
-    const m = t.match(/\{[\s\S]*\}/);
+    const m = (typeof sbeJsonMatch === 'function') ? sbeJsonMatch(t) : t.match(/\{[\s\S]*\}/);
     if (m) { try { return JSON.parse(m[0]); } catch (e) {} }
     return null;
   }
