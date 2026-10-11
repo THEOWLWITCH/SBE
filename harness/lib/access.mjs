@@ -648,6 +648,9 @@ async function handleDemos(store, body) {
   const action = body.action;
   const index = (await store.get('demo:index')) || [];
   const clean = (v, n) => String(v || '').replace(/\s+/g, ' ').trim().slice(0, n);
+  // תוצאת בדיקת הלקוחה (11/10/2026): נשמרת עם התוצר, כדי שכל מכשיר יידע שהוא כבר נבדק ותוקן
+  const cleanRv = (r) => (r && typeof r === 'object') ? { ready: !!r.ready, summary: clean(r.summary, 400), found: Number(r.found) || 0, fixed: Number(r.fixed) || 0,
+    at: clean(r.at, 40), issues: (Array.isArray(r.issues) ? r.issues : []).slice(0, 8).map((x) => ({ where: clean(x && x.where, 200), quote: clean(x && x.quote, 300), problem: clean(x && x.problem, 400), fix: clean(x && x.fix, 400) })) } : undefined;
   if (action === 'demoPublicList') return [200, { items: index.filter((d) => d.public).map(({ id, tool, title, label, at, input, order }) => ({ id, tool, title, label, at, input, order })) }];
   if (action === 'demoGet') {
     const id = String(body.id || '');
@@ -664,6 +667,7 @@ async function handleDemos(store, body) {
     const id = (Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).slice(0, 16);
     const meta = { id, tool: clean(body.tool, 40), title: clean(body.title, 120), label: clean(body.label, 80), input: String(body.input || '').replace(/[ \t]+/g, ' ').trim().slice(0, 3000),
       run: clean(body.run, 40), order: Number(body.order) || 0, at: new Date().toISOString(), public: false };
+    if (body.rv) meta.rv = cleanRv(body.rv);
     await store.set('demo:' + id, { html });
     const next = [meta, ...index].slice(0, DEMO_LIMIT);
     for (const old of index.slice(DEMO_LIMIT - 1)) await store.del('demo:' + old.id);
@@ -680,9 +684,9 @@ async function handleDemos(store, body) {
   if (action === 'demoUpdate') {
     const id = String(body.id || ''), html = String(body.html || '');
     if (!index.some((d) => d.id === id)) return [404, { error: 'not found' }];
-    if (!html || html.length > DEMO_MAX) return [400, { error: 'bad html' }];
-    await store.set('demo:' + id, { html });
-    await store.set('demo:index', index.map((d) => d.id === id ? { ...d, fixed: (d.fixed || 0) + 1, fixedAt: new Date().toISOString() } : d));
+    if (html.length > DEMO_MAX || (!html && !body.rv)) return [400, { error: 'bad html' }];
+    if (html) await store.set('demo:' + id, { html });
+    await store.set('demo:index', index.map((d) => d.id !== id ? d : { ...d, ...(html ? { fixed: (d.fixed || 0) + 1, fixedAt: new Date().toISOString() } : {}), ...(body.rv ? { rv: cleanRv(body.rv) } : {}) }));
     return [200, { ok: true }];
   }
   if (action === 'demoPublish' || action === 'demoDelete') {

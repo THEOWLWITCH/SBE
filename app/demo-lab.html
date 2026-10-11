@@ -153,11 +153,11 @@ async function api(body){
 const date=s=>{const t=new Date(s),z=n=>String(n).padStart(2,'0');return z(t.getDate())+'.'+z(t.getMonth()+1)+'.'+String(t.getFullYear()).slice(2)+', '+z(t.getHours())+':'+z(t.getMinutes());};
 
 // הכלים, לפי סדר ההצגה בתיקייה ובספרייה
-const TOOLS={studio:'סטודיו חוסן: ערכת פעולה',practi:'פרקטי: יועצת לחוסן בכיתה',nugi:'נוגי: מנהיגות תומכת חוסן',nana:'ננה: מהוראה להנחיה',writer:'כתיבה מקדמת חוסן',continuity:'תיק רציפות','cont-join':'תיק רציפות: הצטרפות וחזרה','cont-proc':'תיק רציפות: נוהל עבודה בכלים שלכם',routines:'מרכז שגרות ויוזמות חברתיות','routines-proc':'מרכז שגרות: נוהל עבודה בכלים שלכם',bridge:'גשר בין הבית לכיתה',
+const TOOLS={studio:'סטודיו חוסן: ערכת פעולה',practi:'פרקטי: יועצת לחוסן בכיתה',nugi:'נוגי: מנהיגות תומכת חוסן',nana:'ננה: מהוראה להנחיה',writer:'כתיבה מקדמת חוסן',continuity:'תיק רציפות','cont-join':'תיק רציפות: הצטרפות וחזרה','cont-proc':'תיק רציפות: נוהל עבודה בכלים שלכם',routines:'מרכז שגרות ויוזמות חברתיות','routines-proc':'מרכז שגרות: נוהל עבודה בכלים שלכם',bridge:'גשר בין הבית לכיתה',dialogue:'מעבדת שיח וחקר משותף',teamthink:'חשיבת צוות',
   resil:'מיפוי חוסן חברתי: סיכום לכיתה',conv:'תכנון שיחה','act-single':'תכנון פעילות: מפגש אחד','act-seq':'תכנון פעילות: רצף מפגשים',paths:'מסלולי השתתפות בלמידה',
   review:'משוב לעבודות',journey:'מסע אל החוסן',practice:'תרגול עצמי בסימולציה','practice-own':'תרגול עצמי: מקרה משלך',edu:'סימולציה: סטודנטים/ות',parents:'סימולציה: הורים',youth:'סימולציה: נוער'};
 const RUNS=[
-  ['studio','resilience-studio.html',40],['practi','resilience-advisor.html',20],['nugi','leadership-advisor.html',20],['nana','facilitation-advisor.html',20],['writer','message-writer.html',10],['continuity','continuity-kit.html',15],['cont-join','continuity-kit.html?part=join',20],['cont-proc','continuity-kit.html?part=proc',20],['routines','routines-hub.html',10],['routines-proc','routines-hub.html?part=proc',15],['bridge','family-bridge.html',10],
+  ['studio','resilience-studio.html',40],['practi','resilience-advisor.html',20],['nugi','leadership-advisor.html',20],['nana','facilitation-advisor.html',20],['writer','message-writer.html',10],['continuity','continuity-kit.html',15],['cont-join','continuity-kit.html?part=join',20],['cont-proc','continuity-kit.html?part=proc',20],['routines','routines-hub.html',10],['routines-proc','routines-hub.html?part=proc',15],['bridge','family-bridge.html',10],['dialogue','shared-dialogue-lab.html',10],['teamthink','team-thinking.html',10],
   ['resil','resilience-team.html',20],['conv','conversation-planner.html',20],['act-single','activity-planner.html',20],['act-seq','activity-planner.html?part=seq',35],['paths','activity-planner.html?part=paths',10],
   ['review','academic-review.html',20],['journey','journey.html',30],['practice','practice.html?minTurns=3',20],['practice-own','practice.html?part=own&minTurns=3',25],['edu','input-screen.html',50],['parents','parent-input-screen.html',50],['youth','student-input-screen.html',50]];
 const ORDER=Object.keys(TOOLS);
@@ -208,7 +208,31 @@ async function runAll(ids){
   BUSY=false;F('go').disabled=false;F('prog').textContent='הסתיים: '+done+' מתוך '+ids.length;
   loadList();
 }
-function runOne(id,batch){
+// כל תוצר בתיקייה שעוד לא נבדק נבדק ומתוקן לבד, אחד אחרי השני
+let AUTO=false;
+async function autoCheck(){
+  if(AUTO)return;AUTO=true;
+  try{for(const d of ITEMS.slice()){if(!rvGet(d.id)&&ITEMS.some(x=>x.id===d.id))await ensureChecked(d);}}
+  finally{AUTO=false;}
+}
+// החלפת תוצר בתיקייה (11/10/2026): הפקה חדשה של אותו כלי, והתוצר הישן נמחק. אם הישן היה בספרייה, החדש נכנס במקומו.
+async function replaceOld(old,news){
+  const olds=ITEMS.filter(x=>x.tool===old.tool&&(x.id===old.id||news.some(n=>n.title===x.title)));
+  for(const o of olds){
+    if(o.public){const nw=news.find(n=>n.title===o.title)||(o.id===old.id?news[0]:null);if(nw)await api({action:'demoPublish',id:nw.id,public:true}).catch(()=>{});}
+    await api({action:'demoDelete',id:o.id}).catch(()=>{});
+  }
+}
+async function replaceItem(d){
+  const run=RUNS.find(r=>r[0]===d.tool);
+  if(!run){alert('לא מצאנו את הכלי של התוצר הזה. אפשר להפיק אותו מחדש מהרשימה למעלה.');return;}
+  if(BUSY){alert('יש הפקה שרצה עכשיו. אפשר להחליף כשהיא תסתיים.');return;}
+  if(!confirm('להפיק מחדש את "'+d.title+'"? התוצר החדש ייבדק ויתוקן, ואז יחליף את הנוכחי'+(d.public?' (גם בספריית הדוגמאות)':'')+'.'))return;
+  BUSY=true;F('go').disabled=true;setRun(run[0],'','בתור');
+  try{await runOne(run[0],Date.now().toString(36),{replace:d});}finally{BUSY=false;F('go').disabled=false;}
+  loadList();
+}
+function runOne(id,batch,opts){
   const [,url,mins]=RUNS.find(r=>r[0]===id);
   return new Promise(resolve=>{
     const fr=document.createElement('iframe');fr.src=url+(url.includes('?')?'&':'?')+'demolab=1';
@@ -224,18 +248,19 @@ function runOne(id,batch){
       if(m.status==='error'){end('error',m.message||'לא הופק');return;}
       if(m.status==='done'){
         clearTimeout(guard);
-        let saved=0,err='';
+        let saved=0,err='';const news=[];
         for(const it of (m.items||[])){
           // התוצר נשמר רק אחרי שהלקוחה קראה אותו והוא תוקן לפי ההערות שלה
           let html=it.html,r=null;
           try{const out=await reviewAndFix(html,it.input||'',it.title,t=>{F('st-'+id).textContent=t;});html=out.html;r=out.r;}
           catch(x){console.warn('בדיקת הלקוחה:',x.message);}
           F('st-'+id).textContent='שומר...';
-          try{const sv=await api({action:'demoSave',tool:it.tool||id,title:it.title,label:it.label,html,input:it.input||'',run:batch,order:ORDER.indexOf(id)});saved++;if(r&&sv&&sv.item)rvSet(sv.item.id,r);}
+          try{const sv=await api({action:'demoSave',tool:it.tool||id,title:it.title,label:it.label,html,input:it.input||'',run:batch,order:ORDER.indexOf(id),rv:r||undefined});saved++;if(sv&&sv.item)news.push(sv.item);}
           catch(x){err=x.message;}
         }
         end(saved?'done':'error',saved?'נשמר ✓ ('+saved+' '+(saved>1?'מסמכים':'מסמך')+', '+Math.max(1,Math.round((Date.now()-t0)/60000))+' דק׳)':('השמירה לא הצליחה: '+err));
         // התיקייה מתעדכנת מיד, וכפתור "צפייה" בשורה פותח את התוצר האחרון של הכלי (08/10/2026: "איפה אני רואה אותם?")
+        if(saved&&opts&&opts.replace)await replaceOld(opts.replace,news);
         if(saved){await loadList();showView(id,it0(m));}
       }
     }
@@ -251,8 +276,10 @@ const HIDDEN_HINT=/טרם פורסם|SadeTools2026|SadeTrust2026/;
 // 🧐 הסוכנת-הלקוחה (08/10/2026): קוראת כל תוצר כמו מי שתשתמש בו ובודקת שהוא ברור ועונה לבקשה (lib/customer-review.js).
 // התוצאה נשמרת במכשיר לפי התוצר, כדי לראות אותה גם אחרי רענון.
 const AI_SERVER='https://sbe-server.onrender.com', RV_KEY='sbe.demolab.review.v1';
-function rvGet(id){try{return (JSON.parse(localStorage.getItem(RV_KEY)||'{}')||{})[id]||null;}catch(e){return null;}}
-function rvSet(id,v){try{const o=JSON.parse(localStorage.getItem(RV_KEY)||'{}')||{};o[id]=v;localStorage.setItem(RV_KEY,JSON.stringify(o));}catch(e){}}
+// תוצאת הבדיקה נשמרת עם התוצר בשרת (rv), ובמכשיר כגיבוי
+function rvGet(id){const d=ITEMS.find(x=>x.id===id);if(d&&d.rv)return d.rv;try{return (JSON.parse(localStorage.getItem(RV_KEY)||'{}')||{})[id]||null;}catch(e){return null;}}
+function rvSet(id,v){try{const o=JSON.parse(localStorage.getItem(RV_KEY)||'{}')||{};o[id]=v;localStorage.setItem(RV_KEY,JSON.stringify(o));}catch(e){}
+  const d=ITEMS.find(x=>x.id===id);if(d)d.rv=v;api({action:'demoUpdate',id,rv:v}).catch(()=>{});}
 function rvLabel(d){const r=rvGet(d.id),n=r?(r.issues||[]).length:0;if(!r)return '🧐 בדיקה ותיקון';
   if(r.fixed)return n?'🔧 תוקן · עוד '+(n===1?'הערה אחת':n+' הערות'):'🔧 תוקן ✓ ברור';
   return !n?'🧐 ברור ✓':(n===1?'🧐 הערה אחת · תיקון':'🧐 '+n+' הערות · תיקון');}
@@ -283,12 +310,20 @@ async function reviewAndFix(html,input,title,say){
   r.found=found;r.fixed=fixed;r.at=new Date().toISOString();
   return {html,r};
 }
+const CHECKING={};
+// תוצר שעוד לא נבדק נבדק ומתוקן לפני שמציגים אותו (11/10/2026: "למה הבדיקות לא נעשים לפני שאני רואה את התוצר?")
+function ensureChecked(d){
+  if(rvGet(d.id))return Promise.resolve(rvGet(d.id));
+  if(!CHECKING[d.id]){const b=document.querySelector('.rv-btn[data-id="'+d.id+'"]')||el('button');CHECKING[d.id]=review(d,b,false).finally(()=>{delete CHECKING[d.id];});}
+  return CHECKING[d.id];
+}
 async function review(d,btn,show){
+  if(CHECKING[d.id]&&!show)return CHECKING[d.id];
   const old=btn.textContent;btn.disabled=true;
   try{
     const full=await api({action:'demoGet',id:d.id});
     const out=await reviewAndFix(full.html,d.input,d.title,t=>{btn.textContent=t+' (כמה דקות)';});
-    if(out.r.fixed)await api({action:'demoUpdate',id:d.id,html:out.html});
+    if(out.r.fixed)await api({action:'demoUpdate',id:d.id,html:out.html,rv:out.r});
     rvSet(d.id,out.r);btn.textContent=rvLabel(d);if(show)showReview(d,out.r);return out.r;
   }catch(e){btn.textContent=old;if(show)alert('הבדיקה לא הצליחה: '+e.message);return null;}
   finally{btn.disabled=false;}
@@ -335,7 +370,8 @@ async function loadList(){
       const c=el('div','card item');
       const t=el('div','t');t.appendChild(el('b',null,d.title));t.appendChild(el('span','muted','הופק: '+date(d.at)));c.appendChild(t);
       const v=el('button','btn ghost sm','צפייה');v.onclick=()=>view(d);c.appendChild(v);
-      const rv=el('button','btn ghost sm rv-btn',rvLabel(d));rv.onclick=()=>review(d,rv,true);c.appendChild(rv);
+      const rv=el('button','btn ghost sm rv-btn',rvLabel(d));rv.dataset.id=d.id;rv.onclick=()=>review(d,rv,true);c.appendChild(rv);
+      const rp=el('button','btn ghost sm','🔄 החלפה');rp.title='הפקה חדשה של התוצר הזה, עם בדיקה ותיקון, במקום הנוכחי';rp.onclick=()=>replaceItem(d);c.appendChild(rp);
       // שמירה בספריית הדוגמאות (09/10/2026: "אין כפתור ששומר בספריית הדוגמאות"): כפתור ברור במקום תיבת סימון
       const p=el('button','btn sm pub-btn');p.type='button';p.dataset.id=d.id;pubLabel(p,d);p.onclick=()=>togglePublic(d);
       c.appendChild(p);
@@ -370,6 +406,10 @@ async function view(d){
   VIEWED=d;F('dlgPub').dataset.id=d.id;pubLabel(F('dlgPub'),d);
   const n=++VIEW_N;
   F('dlgT').textContent=d.title;F('dlgLib').href='examples.html?tool='+encodeURIComponent(d.tool||'');F('dlgInT').textContent=d.input||'';F('dlgIn').hidden=!d.input;
+  if(!rvGet(d.id)){
+    F('dlgF').srcdoc=vmsg('🧐 הלקוחה קוראת את התוצר, ואז הוא מתוקן לפי ההערות שלה.<br>התוצר יוצג אחרי התיקון. זה לוקח בדרך כלל 2 עד 5 דקות.');if(!F('dlg').open)F('dlg').showModal();
+    await ensureChecked(d);if(n!==VIEW_N)return;
+  }
   F('dlgF').srcdoc=vmsg('טוען את התוצר...');if(!F('dlg').open)F('dlg').showModal();
   const slow=setTimeout(()=>{if(n===VIEW_N)F('dlgF').srcdoc=vmsg('טוען את התוצר... השרת מתעורר, זה יכול לקחת עד דקה.');},8000);
   try{
@@ -387,7 +427,7 @@ function clean(html){
   return '<!doctype html>'+d.documentElement.outerHTML;
 }
 F('dlgPrint').onclick=()=>{const w=window.open('','_blank');if(!w)return;w.document.open();w.document.write(clean(F('dlgF').srcdoc));w.document.close();setTimeout(()=>w.print(),900);};
-loadList();
+loadList().then(autoCheck);
 })();
 </script>
 </body>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חשיבת צוות</title>
+<script src="lib/access-guard.js"></script>
+<script src="lib/example-peek.js" data-tool="teamthink" defer></script>
+<script src="lib/open-select.js"></script>
+<script src="lib/ai-call.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@300;400;600;700&display=swap">
+<link rel="stylesheet" href="lib/playful.css">
+<script src="lib/resilience-advisor-sources.js"></script>
+<script src="lib/report-table.js"></script>
+<script src="lib/product-doc.js"></script>
+<script src="lib/ref-collect.js"></script>
+<script src="lib/lab-kit.js"></script>
+<script src="lib/team-thinking-model.js"></script>
+</head>
+<body>
+<nav class="topnav no-print">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › חשיבת צוות</span>
+</nav>
+<div class="wrap">
+  <header class="hero warm no-print">
+    <div class="hero-text">
+      <span class="eyebrow">🧪 מעבדה · חושבים יחד</span>
+      <h1>חשיבת צוות</h1>
+      <p data-peek>הצוות חושב יחד על אתגר: כל הקולות נשמעים, כל רעיון מוסבר במילים של עמית לפני שמגיבים, שוקלים בעד ונגד, מפרגנים לתרומה, ושואלים מה הרווחנו מהחשיבה ביחד. מחלוקת עניינית נשמרת, וקושי הופך לניסיון.</p>
+    </div>
+    <svg class="hero-art" viewBox="0 0 240 160" aria-hidden="true" focusable="false">
+      <g fill="none" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round">
+        <path d="M120 80 L60 40"/><path d="M120 80 L185 40"/><path d="M120 80 L55 125"/><path d="M120 80 L190 122"/><path d="M60 40 Q120 10 185 40" stroke-dasharray="3 6"/><path d="M55 125 Q120 158 190 122" stroke-dasharray="3 6"/>
+      </g>
+      <g font-family="Rubik,sans-serif" font-size="18" text-anchor="middle">
+        <circle cx="120" cy="80" r="26" fill="#F6D58A" stroke="#fff" stroke-width="2"/><text x="120" y="87">🤝</text>
+        <circle cx="60" cy="40" r="18" fill="#9ADBD2" stroke="#fff" stroke-width="2"/><text x="60" y="46">🗣</text>
+        <circle cx="185" cy="40" r="18" fill="#B5DFA9" stroke="#fff" stroke-width="2"/><text x="185" y="46">💡</text>
+        <circle cx="55" cy="125" r="18" fill="#F7B9A6" stroke="#fff" stroke-width="2"/><text x="55" y="131">⚖️</text>
+        <circle cx="190" cy="122" r="18" fill="#D7C3EE" stroke="#fff" stroke-width="2"/><text x="190" y="128">🏅</text>
+      </g>
+    </svg>
+  </header>
+
+  <div class="card no-print">
+    <h2><span class="h-ico">👥</span> הצוותים והאתגרים שלנו</h2>
+    <div class="hub" id="hub"></div>
+    <div class="btns"><button class="btn ghost sm" id="delItem" type="button">🗑 מחיקת האתגר הפתוח</button></div>
+  </div>
+
+  <ol class="steps no-print" id="steps"></ol>
+
+  <section class="card stage" id="s1" data-step="1">
+    <h2><span class="h-ico">🎯</span> האתגר שלנו</h2>
+    <div id="form" class="no-print"></div>
+    <div class="btns no-print">
+      <button class="btn" id="go" type="button">הצעת מהלך חשיבה ותפקידים</button>
+      <button class="btn ghost sbe-sysonly" id="example" type="button">דוגמה</button>
+    </div>
+    <div class="wait" id="wait1" hidden></div>
+    <p class="err" id="err1" hidden></p>
+    <div id="out1"></div>
+  </section>
+
+  <section class="card stage" id="s2" data-step="2" hidden>
+    <h2><span class="h-ico">🗣</span> כל הקולות</h2>
+    <div id="out2"></div>
+    <div class="btns no-print">
+      <button class="btn" type="button" data-go="3">ממשיכים: שוקלים יחד ←</button>
+      <button class="btn ghost" type="button" data-go="1">→ חזרה</button>
+    </div>
+  </section>
+
+  <section class="card stage" id="s3" data-step="3" hidden>
+    <h2><span class="h-ico">⚖️</span> שוקלים יחד</h2>
+    <div id="out3"></div>
+    <div class="btns no-print">
+      <button class="btn" type="button" data-go="4">ממשיכים: מה הרווחנו ←</button>
+      <button class="btn ghost" type="button" data-go="2">→ חזרה</button>
+    </div>
+  </section>
+
+  <section class="card stage" id="s4" data-step="4" hidden>
+    <h2><span class="h-ico">🏅</span> מה הרווחנו</h2>
+    <div id="out4"></div>
+    <div class="btns no-print"><button class="btn ghost" type="button" data-go="3">→ חזרה</button></div>
+  </section>
+</div>
+<script src="lib/team-thinking-ui.js"></script>
+<script src="lib/screens-menu.js"></script>
+<script src="lib/demo-hook.js"></script>
+</body>
+</html>
