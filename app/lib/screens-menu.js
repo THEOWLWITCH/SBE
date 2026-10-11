@@ -37,8 +37,8 @@ window.SBE_SCREENS = [
       { file:'conversation-planner.html', label:'תכנון שיחה', who:'הרשאת תכנון שיחה' },
       { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
       { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה bridge)' },
-      { file:'shared-dialogue-lab.html', label:'מעבדת שיח וחקר משותף', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה dialogue)' },
-      { file:'team-thinking.html', label:'חשיבת צוות', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה teamthink)' },
+      { file:'shared-dialogue-lab.html', label:'מעבדת שיח וחקר משותף', who:'הרשאת מעבדת שיח וחקר משותף (dialogue)' },
+      { file:'team-thinking.html', label:'חשיבת צוות', who:'הרשאת חשיבת צוות (teamthink)' },
     ]},
     { title:'🎭 2. להתאמן: תוצרי הסימולציה', items:[
       { file:'doc-facilitator.html', label:'גרסת המנחה', who:'רק את ומנחות הסימולציה' },
