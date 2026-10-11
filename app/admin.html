@@ -336,6 +336,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 
 <script src="lib/feedback-bank.js"></script>
 <script src="lib/screens-menu.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 "use strict";
 const $ = (id) => document.getElementById(id);
@@ -439,7 +440,7 @@ function saveSuggestions(list){ try { localStorage.setItem("sbe.source.suggestio
 
 const TABS = {
   inst:[["codes","קודים"],["users","משתמשות"],["feedback","מדדי המשוב"],["data","נתונים"]],
-  sys: [["home","🏠 מה מחכה לי"],["insts","🏫 מוסדות וקודים"],["journeys","🧭 לוח המסעות: אישורים ומשוב"],["inbox","✉️ פניות"],["crit","✅ קריטריונים לאישור"],["taxonomies","📋 רשימות"],["libs","📚 מקורות"],["eval","🔎 בקרת איכות"],["data","📊 נתונים"],["access","🔑 סיסמת הניהול"]],
+  sys: [["home","🏠 מה מחכה לי"],["insts","🏫 מוסדות וקודים"],["journeys","🧭 לוח המסעות: אישורים ומשוב"],["inbox","✉️ פניות"],["crit","✅ קריטריונים לאישור"],["taxonomies","📋 רשימות"],["libs","📚 מקורות"],["eval","🔎 בקרת איכות"],["data","📊 נתונים"],["open","🔗 קישור פתוח ליום אחד"],["access","🔑 סיסמת הניהול"]],
 };
 
 // קישורים למסכים אחרים בפרויקט — לא לשוניות בתוך admin.html, אלא ניווט
@@ -524,7 +525,7 @@ function render(){
     p.append(al);
   }
   document.title = (role === "sys" && critPendingN ? "(" + critPendingN + ") " : "") + document.title.replace(/^\(\d+\) /, "");
-  p.append(({ codes:pCodes, users:pUsers, feedback:pFeedback, data:pData, insts:pInsts, inbox:pInbox, crit:pCrit, access:pAccess, home:pHome, taxonomies:pTaxonomies, libs:pLibs, eval:pEvalSet })[tab]());
+  p.append(({ codes:pCodes, users:pUsers, feedback:pFeedback, data:pData, insts:pInsts, inbox:pInbox, crit:pCrit, access:pAccess, home:pHome, open:pOpen, taxonomies:pTaxonomies, libs:pLibs, eval:pEvalSet })[tab]());
 }
 
 // ── מה מחכה לי (04/10/2026): דף הבית של ניהול המערכת — כל מה שדורש טיפול, במקום אחד ──
@@ -1593,7 +1594,7 @@ let myInst = null;     // קוד המוסד של מנהלת המוסד
 let openInst = null;   // המוסד שפתוח כרגע ברשימה (נשאר פתוח אחרי שמירה)
 let gateFailed = false;
 
-function resetAccessData(){ if (!accessAuth && sysToken()) tokenFailed = true; accessAuth = ""; accessState = null; instList = null; homeData = null; myInst = null; inbox = null; critData = null; }
+function resetAccessData(){ if (!accessAuth && sysToken()) tokenFailed = true; accessAuth = ""; accessState = null; instList = null; homeData = null; myInst = null; inbox = null; critData = null; openData = null; }
 
 function accessFail(e){
   ask("הפעולה לא בוצעה",
@@ -1643,6 +1644,65 @@ function gate(w, loaded, loader, pwLabel){
   }
   w.append(unlockCard(pwLabel, loader));
   return false;
+}
+
+// ── קישור פתוח ליום אחד (11/10/2026: "ה-QR יהיה במצגת או אשלח להן בוואטסאפ קישור, בלי קוד, אבל רק ביום ההצגה") ──
+// השרת: openCreate / openList / openRevoke / openJoin (harness/lib/access.mjs). הכניסה: entry.html?open=<מזהה>.
+const OPEN_TOOLS = [["message-writer.html","כתיבה מקדמת חוסן"],["conversation-planner.html","תכנון שיחה"],["activity-planner.html","תכנון פעילות"],
+  ["facilitation-advisor.html","ננה: מהוראה להנחיה"],["resilience-advisor.html","פרקטי: חוסן חברתי בכיתה"],["academic-review.html","משוב לעבודות"]];
+let openData = null;
+const openUrl = id => "https://be-good.co.il/entry.html?open=" + id;
+const ilDay = d => { const m = String(d||"").match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? (+m[3]) + "." + (+m[2]) + "." + m[1].slice(2) : d; };
+function pOpen(){
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"קישור פתוח ליום אחד"), el("p",{class:"sub"},"קישור או QR לכלי אחד, בלי קוד, שפתוח רק בתאריך שבחרת (לפי שעון ישראל). מתאים להתנסות בהרצאה או בסדנה. השרת בודק את התאריך בכל פנייה, ולמחרת הכלי נסגר מעצמו."));
+  if (!gate(w, openData, async () => { openData = await accessCall("openList"); }, "סיסמת מנהלת המערכת")) return w;
+  // יצירה
+  const c = el("div",{class:"card"}), inn = el("div",{class:"in"});
+  const tool = el("select",{"data-closed":""}); OPEN_TOOLS.forEach(([v,l]) => tool.append(el("option",{value:v},l)));
+  const date = el("input",{type:"date", value: openData.today});
+  const name = el("input",{type:"text", placeholder:"למשל: orit", maxlength:"32"});
+  const label = el("input",{type:"text", placeholder:"למשל: הרצאה לצוות", maxlength:"80"});
+  const max = el("input",{type:"number", min:"1", max:"500", value:"200", style:"width:110px"});
+  const go = el("button",{class:"act p"},"יצירת הקישור");
+  const row = (l, n, hint) => el("label",{style:"display:block;margin:0 0 10px"}, el("b",{style:"display:block;font-size:14px;margin-bottom:4px"}, l), n, hint ? el("span",{class:"hint"}, hint) : "");
+  go.addEventListener("click", async () => {
+    const id = name.value.trim().toLowerCase();
+    if (id && !/^[a-z0-9][a-z0-9-]{2,31}$/.test(id)) { ask("השם של הקישור", "אפשר אותיות באנגלית, ספרות ומקף, 3 עד 32 תווים. או להשאיר ריק, ונבחר שם בעצמנו.", () => {}); return; }
+    go.disabled = true;
+    try { await accessCall("openCreate", { page: tool.value, date: date.value, id, label: label.value, max: max.value }); openData = null; render(); }
+    catch(e){ go.disabled = false; if (e.data && e.data.error === "taken") ask("השם תפוס", "יש כבר קישור בשם הזה. אפשר לבחור שם אחר.", () => {}); else accessFail(e); }
+  });
+  inn.append(el("h3",{style:"margin-top:0"},"קישור חדש"), row("הכלי", tool), row("התאריך", date, "הקישור פתוח רק ביום הזה."),
+    row("שם לקישור", name, "אותיות באנגלית, ספרות ומקף. השם מופיע בכתובת. אפשר להשאיר ריק, ונבחר שם אקראי."), row("כותרת", label, "מופיעה למשתתפות במסך."),
+    row("מספר משתתפות מרבי", max), go);
+  c.append(inn); w.append(c);
+  // הקישורים
+  const items = openData.items || [];
+  if (!items.length) { w.append(el("p",{class:"sub"},"עדיין אין קישורים.")); return w; }
+  items.forEach(x => {
+    const card = el("div",{class:"card",style:"margin-top:12px"}), ci = el("div",{class:"in"});
+    const st = x.revoked ? "בוטל" : x.date === openData.today ? "פתוח היום" : x.date > openData.today ? "ייפתח ב־" + ilDay(x.date) : "הסתיים";
+    const toolName = (OPEN_TOOLS.find(t => t[0] === x.page) || [, x.page])[1];
+    const url = openUrl(x.id);
+    ci.append(el("h3",{style:"margin:0 0 6px"}, (x.label || toolName)),
+      el("p",{style:"margin:0 0 8px;font-size:14px;color:var(--muted)"}, toolName + " · " + ilDay(x.date) + " · " + st + " · נכנסו " + (x.joins || 0) + " מתוך " + (x.max || 500)));
+    if (!x.revoked && x.date >= openData.today) {
+      const qr = el("div",{style:"background:#fff;padding:10px;display:inline-block;border-radius:8px;margin:4px 0 8px"});
+      if (window.QRCode) try { new QRCode(qr, { text: url, width: 168, height: 168, correctLevel: QRCode.CorrectLevel.M }); } catch(e){}
+      const linkBox = el("input",{type:"text", readonly:"", value:url, style:"width:100%;direction:ltr;text-align:left"});
+      const copy = el("button",{class:"act"},"העתקת הקישור");
+      copy.addEventListener("click", () => { linkBox.select(); try { navigator.clipboard.writeText(url); } catch(e){ document.execCommand("copy"); } copy.textContent = "✓ הועתק"; });
+      const msgText = "שלום, " + (x.label ? "ל" + x.label.replace(/^ל/, "") + ": " : "") + "הקישור להתנסות ב" + toolName + ". הוא פתוח רק ב־" + ilDay(x.date) + ", ואין צורך בקוד:\n" + url;
+      const wa = el("a",{class:"act", href:"https://wa.me/?text=" + encodeURIComponent(msgText), target:"_blank", rel:"noopener", style:"text-decoration:none;display:inline-block;padding:7px 14px;border:1px solid var(--line);border-radius:6px"},"שליחה בוואטסאפ");
+      const off = el("button",{class:"act"},"ביטול הקישור");
+      off.addEventListener("click", () => ask("ביטול הקישור", "אחרי הביטול הקישור לא ייפתח, וגם מי שכבר נכנסה לא תוכל להמשיך להשתמש בכלי. לבטל?", async () => {
+        try { await accessCall("openRevoke", { id: x.id }); openData = null; render(); } catch(e){ accessFail(e); } }));
+      ci.append(qr, linkBox, el("div",{style:"display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"}, copy, wa, off));
+    }
+    card.append(ci); w.append(card);
+  });
+  return w;
 }
 
 // ── פניות (01/10/2026): רעיונות, תקלות ושאלות שנשלחו מתוך פרקטי (גם מהתנסות הקהילה) ──
