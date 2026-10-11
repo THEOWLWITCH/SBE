@@ -388,11 +388,16 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
   if(errors.length) return [422,{error:'הערכה דורשת תיקון לפני שימוש: '+errors.join('; ')}];
   let review=null;
   if(process.env.STUDIO_CUSTOMER_REVIEW!=='off') {
-    review=await ask(INVITE.apply(CUSTOMER.system),'מה ביקשתי (הקלט):\n'+JSON.stringify(brief)+'\n\nהתוצר שקיבלתי:\n'+kitText(result),CUSTOMER.schema,'customer_review');
-    if(review && !review.ready && review.issues.length) {
-      const fixed=await ask(INVITE.apply(INSTRUCTIONS)+'\n'+CUSTOMER.reviseNote(review.issues),
-        JSON.stringify({...input,previousDraft:result,customerIssues:review.issues}),ACTIVITY_SCHEMA,'studio_activity');
-      if(fixed && !fixed.clarificationQuestions.length && !kitErrors(fixed,brief,action,available).length) { result=fixed; review={...review,revised:true}; }
+    // שני סבבים (11/10/2026: "תיתן ללקוחה לבדוק פעמיים ותתקן אחרי כל בדיקה")
+    let revised=false;
+    for(let round=0;round<2;round++) {
+      const r=await ask(INVITE.apply(CUSTOMER.system),'מה ביקשתי (הקלט):\n'+JSON.stringify(brief)+'\n\nהתוצר שקיבלתי:\n'+kitText(result),CUSTOMER.schema,'customer_review');
+      if(!r) break;
+      review={...r,revised};
+      if(r.ready || !r.issues.length) break;
+      const fixed=await ask(INVITE.apply(INSTRUCTIONS)+'\n'+CUSTOMER.reviseNote(r.issues),
+        JSON.stringify({...input,previousDraft:result,customerIssues:r.issues}),ACTIVITY_SCHEMA,'studio_activity');
+      if(fixed && !fixed.clarificationQuestions.length && !kitErrors(fixed,brief,action,available).length) { result=fixed; revised=true; review={...review,revised}; }
     }
   }
   const guide=result.learningGuide;

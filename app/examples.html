@@ -66,7 +66,7 @@ h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:20px;margin:30px 0 4px
 dialog{width:min(980px,96vw);height:92vh;border:1px solid var(--hair);border-radius:12px;padding:0;background:var(--surface);color:var(--ink)}
 dialog::backdrop{background:rgba(10,14,18,.55)}
 @media print{dialog[open]{display:none!important}}
-.dlg{display:grid;grid-template-rows:auto auto minmax(0,1fr);height:100%;overflow:hidden}
+.dlg{display:grid;grid-template-rows:auto minmax(0,1fr);height:100%;overflow:hidden}
 .dlg-h{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--hair);flex-wrap:wrap}
 .dlg-h b{flex:1}
 .btn{font-family:inherit;font-size:13.5px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--hair);background:transparent;color:var(--ink);cursor:pointer}
@@ -101,7 +101,6 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 
 <dialog id="dlg"><div class="dlg">
   <div class="dlg-h"><b id="dlgT"></b><button class="btn" id="dlgX">סגירה</button></div>
-  <details id="dlgIn"><summary>מה הוזן לכלי</summary><pre id="dlgInT"></pre></details>
   <iframe id="dlgF" sandbox="allow-popups allow-popups-to-escape-sandbox" title="התוצר לדוגמה"></iframe>
 </div></dialog>
 
@@ -179,9 +178,9 @@ async function load(){
     box.appendChild(g);
   });
 }
-// צפייה בלבד (11/10/2026: "בתיקיית התוצרים אל תיתן אפשרות לשמור או להדפיס - רק לראות"): מסמך נקי שנפתח מלמעלה (SBE_VIEW)
+// צפייה בלבד, רק התוצר (11/10/2026: "בתיקיית התוצרים אל תיתן אפשרות לשמור או להדפיס - רק לראות"; "לא יראו מה שהוזן - רק תוצר"): מסמך נקי שנפתח מלמעלה (SBE_VIEW)
 async function view(d){
-  F('dlgT').textContent=d.title;F('dlgInT').textContent=d.input||'';F('dlgIn').hidden=!d.input;F('dlgIn').open=false;
+  F('dlgT').textContent=d.title;
   SBE_VIEW.message(F('dlgF'),'טוען את התוצר... בפעם הראשונה זה יכול לקחת עד דקה.');F('dlg').showModal();
   try{const full=await api({action:'demoGet',id:d.id});SBE_VIEW.show(F('dlgF'),full.html,{viewOnly:true});}
   catch(e){SBE_VIEW.message(F('dlgF'),'לא הצלחנו לטעון את התוצר. אפשר לנסות שוב.');}

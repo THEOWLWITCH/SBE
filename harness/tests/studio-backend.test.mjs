@@ -361,17 +361,17 @@ test('provider errors make no claim that a local draft was saved',async()=>{
   delete process.env.OPENAI_API_KEY;
 });
 
-test('the customer agent reads every kit; unclear kits are revised once and the review is returned', async () => {
+test('the customer agent reads every kit twice; unclear kits are revised after each review and the review is returned', async () => {
   const {store,token}=await signed();process.env.OPENAI_API_KEY='test-key';
   const first=generated(), fixed=generated();fixed.title='גרסה ברורה';
   const names=[];let reviewText='';
   const mock=async(url,opts)=>{const body=JSON.parse(opts.body);const name=body.text.format.name;names.push(name);
     if(name==='customer_review'){reviewText=body.input[0].content[0].text;assert.match(body.instructions,/את הלקוחה של Begood/);
       return response({ready:false,summary:'לא ברור מתי שואלים את השאלות',issues:[{where:'מפגש 1 · סיכום',quote:'שאלות לעיבוד',problem:'לא ברור מי שואל ומתי',fix:'שאלות לסיכום: המנחה שואלת את הקבוצה בסוף המפגש'}]});}
-    if(names.filter(n=>n==='studio_activity').length===2){assert.match(body.instructions,/הלקוחה קראה את הגרסה הקודמת/);const input=JSON.parse(body.input[0].content[0].text);assert.ok(input.previousDraft&&input.customerIssues.length===1);return response(fixed);}
+    if(names.filter(n=>n==='studio_activity').length>=2){assert.match(body.instructions,/הלקוחה קראה את הגרסה הקודמת/);const input=JSON.parse(body.input[0].content[0].text);assert.ok(input.previousDraft&&input.customerIssues.length===1);return response(fixed);}
     return response(first);};
   const [ok,out]=await handleStudio(store,{token,action:'generate',brief:brief()},{fetchImpl:mock});
-  assert.equal(ok,200);assert.deepEqual(names,['studio_activity','customer_review','studio_activity']);
+  assert.equal(ok,200);assert.deepEqual(names,['studio_activity','customer_review','studio_activity','customer_review','studio_activity']);
   assert.equal(out.activity.title,'גרסה ברורה');assert.equal(out.customerReview.revised,true);assert.equal(out.customerReview.issues.length,1);
   assert.match(reviewText,/\[תיאור הפעילות\]/);
   // סוכנת שאומרת שהערכה מוכנה: בלי תיקון; וכשהסוכנת לא זמינה, הערכה המקורית חוזרת כרגיל

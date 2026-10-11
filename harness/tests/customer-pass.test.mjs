@@ -22,7 +22,7 @@ test('a clear product passes through unchanged after one review call', async () 
 test('an unclear product is fixed with targeted edits (not a full rewrite), and the JSON stays valid', async () => {
   const p = fake([JSON.stringify({ ready: false, summary: 'לא ברור', issues: [issue] }), JSON.stringify({ edits: [{ find: 'שאלות לעיבוד', replace: 'שאלות לסיכום: המנחה שואלת את הקבוצה' }] })]);
   const out = await customerPass(p, { system: 'S', messages: [{ role: 'user', content: 'בקשה' }], maxTokens: 16000, text: '{"title":"א","flow":[{"guide":"שאלות לעיבוד \\"בסוף\\""}]}' });
-  assert.equal(out.review.revised, true); assert.equal(p.calls.length, 2);
+  assert.equal(out.review.revised, true); assert.equal(p.calls.length, 3);
   const o = JSON.parse(out.text); assert.equal(o.title, 'א'); assert.match(o.flow[0].guide, /^שאלות לסיכום: המנחה שואלת את הקבוצה/);
   assert.match(p.calls[1].system, /העורכת של Begood/); assert.equal(p.calls[1].maxTokens, 4000);
   assert.match(p.calls[1].messages[0].content, /ההערות של הלקוחה/);
@@ -44,4 +44,16 @@ test('plain-text products are revised as text', async () => {
   const p = fake([JSON.stringify({ ready: false, summary: '', issues: [issue] }), JSON.stringify({ edits: [{ find: 'הודעה קצרה', replace: 'הודעה מתוקנת' }] })]);
   const out = await customerPass(p, { system: 'S', messages: [{ role: 'user', content: [{ type: 'text', text: 'כתבי הודעה' }, { type: 'image' }] }], text: 'שלום. הודעה קצרה לכיתה.' });
   assert.equal(out.text, 'שלום. הודעה מתוקנת לכיתה.'); assert.match(p.calls[0].messages[0].content, /כתבי הודעה/);
+});
+
+test('two rounds: review, fix, review again, fix again (and a clear second review stops)', async () => {
+  const issue2 = { ...issue, quote: 'סבב', fix: 'סבב שיחה' };
+  const p = fake([JSON.stringify({ ready: false, summary: '', issues: [issue] }), JSON.stringify({ edits: [{ find: 'שאלות לעיבוד', replace: 'שאלות לסיכום' }] }),
+    JSON.stringify({ ready: false, summary: '', issues: [issue2] }), JSON.stringify({ edits: [{ find: 'סבב קצר', replace: 'סבב שיחה קצר' }] })]);
+  const out = await customerPass(p, { system: 'S', messages: [{ role: 'user', content: 'בקשה' }], text: 'שאלות לעיבוד. סבב קצר.' });
+  assert.equal(out.text, 'שאלות לסיכום. סבב שיחה קצר.'); assert.equal(p.calls.length, 4); assert.equal(out.review.rounds, 2); assert.equal(out.review.applied, 2);
+  assert.match(p.calls[2].messages[0].content, /שאלות לסיכום/);
+  const q = fake([JSON.stringify({ ready: false, summary: '', issues: [issue] }), JSON.stringify({ edits: [{ find: 'שאלות לעיבוד', replace: 'שאלות לסיכום' }] }), JSON.stringify({ ready: true, summary: 'ברור', issues: [] })]);
+  const out2 = await customerPass(q, { system: 'S', messages: [], text: 'שאלות לעיבוד.' });
+  assert.equal(out2.text, 'שאלות לסיכום.'); assert.equal(q.calls.length, 3); assert.equal(out2.review.ready, true);
 });
