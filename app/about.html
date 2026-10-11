@@ -131,8 +131,6 @@ h3.grp{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:18px;margin:22px 0
 .lib b{font-size:16px;}.lib p{margin:4px 0 0;font-size:14.5px;line-height:1.7;}
 section.card h3{font-size:17px;margin-bottom:8px;}
 .toc{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:4px 0 14px;}
-.art-back{text-align:center;margin:18px 0 0;} .art-back .back{margin-top:0;font-size:14.5px;}
-.toc a.toc-art{color:var(--auto);background:var(--auto-soft);}
 .toc a{font-size:13px;font-weight:600;color:var(--spoken);background:var(--spoken-soft);border-radius:99px;padding:4px 11px;text-decoration:none;}
 .prose h4{font-size:14.5px;margin:16px 0 4px;color:var(--spoken);}
 .prose ul ul{margin:.2rem 0 .5rem;}
@@ -141,23 +139,6 @@ section.card h3{font-size:17px;margin-bottom:8px;}
 .brand{display:block;width:min(190px,48vw);height:auto;margin:14px auto 0;}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .brand{background:#EEF1F4;border-radius:12px;padding:8px 12px;} }
 :root[data-theme="dark"] .brand{background:#EEF1F4;border-radius:12px;padding:8px 12px;}
-.article{padding:28px clamp(18px,5vw,44px) 30px;}
-.article .art-head{display:block;text-align:center;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--hair);}
-.art-kicker{font-size:12px;letter-spacing:.14em;color:var(--muted);margin:0 0 4px;}
-.article .art-head h3{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(26px,5.5vw,32px);line-height:1.2;margin:0 0 8px;text-wrap:balance;}
-.article .byline{font-size:15px;font-weight:600;color:var(--ink);margin:0 0 4px;}
-.art-sub{font-size:14px;color:var(--muted);margin:0 auto;max-width:46ch;text-wrap:balance;}
-.article p,.article li{text-align:justify;text-justify:inter-word;font-size:16px;line-height:1.85;}
-.article p{margin:0 0 14px;}
-.article h4{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:21px;font-weight:700;color:var(--spoken);margin:30px 0 12px;padding-top:14px;border-top:1px solid var(--hair);break-after:avoid;text-wrap:balance;}
-.article h5{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:17px;font-weight:700;margin:20px 0 6px;break-after:avoid;}
-.article ul{margin:4px 0 16px;padding-inline-start:22px;} .article li{margin-bottom:8px;}
-.article li::marker{color:var(--spoken);}
-.article .art-refs li{font-size:13.5px;line-height:1.6;text-align:start;color:var(--muted);}
-.article a{color:var(--spoken);word-break:break-all;}
-.article .art-head p{text-align:center;margin-inline:auto;}
-@media (max-width:560px){.article p,.article li{text-align:start;}}
-@media print{.article{break-inside:auto;} .article li{break-inside:avoid;}}
 </style>
 </head>
 <body>
@@ -173,7 +154,7 @@ section.card h3{font-size:17px;margin-bottom:8px;}
 </header>
 
 <nav class="toc" aria-label="תוכן העמוד">
-  <a href="#value">ההזמנה שלנו</a><a href="#tools">הכלים</a><a href="#ai">בינה מלאכותית</a><a href="#start">איך מתחילים</a><a href="#privacy">פרטיות</a><a href="#contact">יצירת קשר</a><a href="#article" class="toc-art">📖 המאמר: לבחור בחוסן שלנו</a>
+  <a href="#value">ההזמנה שלנו</a><a href="#tools">הכלים</a><a href="#ai">בינה מלאכותית</a><a href="#start">איך מתחילים</a><a href="#privacy">פרטיות</a><a href="#contact">יצירת קשר</a>
 </nav>
 
 <section id="value">
@@ -270,103 +251,6 @@ section.card h3{font-size:17px;margin-bottom:8px;}
   <p>ובתוך המערכת, בכל מסכי העבודה, כפתור <b>"דיווח / רעיון"</b> מגיע ישירות אלינו.</p>
 </section>
 
-<section id="article" class="card prose article">
-  <header class="art-head">
-    <p class="art-kicker">מאמר</p>
-    <h3>לבחור בחוסן שלנו</h3>
-    <p class="byline">ד״ר יעל שדה</p>
-    <p class="art-sub">המושגים שבבסיס כלי החוסן החברתי: מנגנונים חברתיים, קהילת חוסן ותו חוסן</p>
-  </header>
-<p>חוסן אינו נכס שנרכש פעם אחת ונשמר במגירה. הוא מצב חי ומשתנה, שנבנה מרכיבים רבים כמו אמון, שייכות, תקשורת, מנהיגות, אופטימיות, נרטיב משותף ומוכנות. מידת ההשפעה של כל אחד מהרכיבים משתנה בהתאם לזמן ולנסיבות.</p>
-<p>חוסן של חברה לאורך תקופה הוא תהליך רב ערוצי שאחד הדברים המרכזיים בו הן פעולות משותפות, גדולות וקטנות, שחוזרות על עצמן, כך שחברי הקהילה מפתחים מיומנויות משותפות. כדי שהחזרה הזאת תקרה והפרטים ירכשו את המיומנויות, מתפתחים בכל חברה מנגנונים חברתיים. שימוש מודע ומושכל בהם הופך מנגנונים אלה לתומכי חוסן. למשל: קבלת החלטה בשקיפות (פעולה משותפת), באספה (מנגנון חברתי); חבר קהילה שפונה (מיומנות משותפת) אל ועדת תרבות (מנגנון חברתי); פינוי הכיתה באזעקה (פעולה משותפת) לפי נהלי בית הספר (מנגנון חברתי) – כך, החברה פועלת בעקביות ומתוך הסכמה לטובת עצמה, יום אחר יום, שנה אחר שנה והמנגנונים החברתיים הם המתווים את דרכי הפעולה ואת גבולות ההסכמה.</p>
-<p>כך, כשמגיע המשבר, אין מה להמציא מחדש. כל אחד ואחת יודעים היטב מה תפקידם, מה לעשות או לא לעשות ולמי להישמע - הקהילה פועלת בתיאום כפי שהתרגלה לפעול תמיד, בשגרה, כדי לשמור על חבריה ועל החיים המשותפים.</p>
-<p>חוסן כזה אינו מקרה. הוא בחירה מושכלת כיוון שלרוב, טובת הכלל כוללת ויתור כלשהו על הטוב האישי בטווח הזמן הקצר.</p>
-<p>המאמר הקצר הזה מסביר את המושגים המרכזיים והתהליכים שבבסיס החוסן החברתי: המנגנונים החברתיים, קהילת חוסן, ותו חוסן.</p>
-<h4>מנגנונים חברתיים: החוסן שבשגרה</h4>
-<p>מנגנון חברתי הוא דרך פעולה או מסגרת קבועה שבה אנשים עושים דברים יחד כדי להשיג מטרה משותפת, או כדי להסדיר את היחסים ביניהם. כל מנגנון נושא בתוכו משהו מן הערכים ומן הנורמות של הקהילה (שדה, 2024).</p>
-<p>מנגנונים כאלה פועלים כמעט בכל קהילה: בקיבוץ ובשכונה, בבית הספר ובארגון. לרוב איש אינו קורא להם בשם אלא הם פשוט "הדרך שבה עושים אצלנו דברים". המחקר זיהה חמישה מהם:</p>
-<ul>
-<li><b>תקנונים: </b>הכללים הכתובים בעניינים הפנימיים של הקהילה/חברה והם אינם סותרים את חוקי המסגרת המכילה של הקהילה או המדינה.</li>
-<li><b>פרוטוקולים: </b>הזיכרון המשותף של התהליכים שקורים.</li>
-<li><b>הכלת קבוצות בשוליים: </b>הדרכים שמאפשרות לכל אחד ואחת להשתייך, לתרום ולהרגיש שייכות, גם למי שאינם הולכים בתלם.</li>
-<li><b>דימוי חוסן קהילתי</b>: הסיפורים שהקהילה מספרת על עצמה: על משברים שעברה ועל הדרך שבה התמודדה איתם. דימוי החוסן כולל את הנרטיבים והאתוסים.</li>
-<li><b>תודעת חוסן רב־ערוצית: </b>הערוצים התודעתיים שמחברים בין קבוצות שונות באותה קהילה, ההסכמות שנקבעו מראש על אופן הפעולה בשעת משבר והדעה של הפרטים על יכולות החברה.</li>
-</ul>
-<p>אלה דוגמאות בלבד. גם טקס, חג, מרחב מפגש או קבוצת וואטסאפ שכונתית יכולים להיות מנגנון חברתי.</p>
-<h5>מה הם עושים לחוסן?</h5>
-<p>המנגנונים הם החולייה שמאפשרת למסוגלות של הפרטים להתממש. למשל, עלון בית ספרי שמגיע לכולם יוצר שקיפות; שקיפות בונה אמון; ואמון הוא מה שמאפשר לפעול יחד כשהלחץ גובר. תקנון שקובע ממלא מקום לכל תפקיד מבטיח שהקהילה תמשיך לתפקד גם כשבעל/ת התפקיד אינו/ה נמצא (Sade &amp; Lewin, 2020).</p>
-<h5>מה גילה המחקר?</h5>
-<p>בקיבוצים שנחקרו פעלו המנגנונים בעיקר מכוח הרגל, ולא מתוך מודעות לתפקידם בחוסן. התפקיד החשוב של ההרגל הוא לשמור על יציבות והבעיה בו היא שחלק מן הכוח הגלום במנגנונים נשאר בלתי ממומש (שדה, 2024).</p>
-<h4>קהילת חוסן: כשהחוסן הופך לבחירה</h4>
-<p>מחקרי החוסן הקהילתי עוסקים ביכולות שיש לכל קהילה, במידה זו או אחרת ובתרומתן לחוסן בתנאי משבר שונים (Norris et al., 2008).</p>
-<p>קהילת חוסן היא משהו אחר: קהילה שבוחרת להפוך את החוסן לחלק מוצהר מחייה, בשגרה כמו במשבר.</p>
-<p>זו אינה קהילה מסוג מיוחד. כל קהילה יכולה לבחור בדרך הזו, ולהתקרב אליה צעד אחר צעד.</p>
-<p>ארבע תכונות מאפיינות קהילת חוסן:</p>
-<ul>
-<li><b>מחויבות משותפת: </b>הקהילה מחליטה, בדרכי ההחלטה שלה, לפתח את חוסנה. כך, ככל שרבים יותר שותפים להחלטה, כך המחויבות עמוקה יותר.</li>
-<li><b>אחריות מבוזרת: </b>האחריות אינה מונחת על כתפיו של אדם אחד. היא מתחלקת בין רבים: תפקידים מתחלפים, ממלאי מקום, ומיומנויות שכולם מכירים.</li>
-<li><b>שימוש מודע במנגנונים חברתיים: </b>הקהילה מתבוננת במנגנונים שלה ושואלת: מה מהם משרת את החוסן שלנו, ומה אפשר לשפר?</li>
-<li><b>למידה מתמשכת: </b>הקהילה ממפה, משפרת, מתרגלת ומעריכה את עצמה - ושוב מתחילה, כחלק מהתהליך עד שהוא הופך למנגנון חברתי בעצמו.</li>
-</ul>
-<p>בקהילת חוסן, החוסן אינו עתודה שנשמרת לעת חירום אלא הוא צומח יחד עם איכות החיים: מה שמחזק את הקהילה בשעת משבר מעשיר ומחזק גם את החיים המשותפים ביום־יום.</p>
-<h4>מהרגל לבחירה: איך מתחילים</h4>
-<p>הדרך לקהילת חוסן מתחילה במה שכבר יש, ומתקדמת בספירלה של צעדים קטנים. סדר הצעדים וקצב ההליכה אינו קבוע, ואפשר להתאים אותם לקצב של הקהילה. התהליך הזה כולל בין השאר:</p>
-<ul>
-<li><b>מחויבות: הצהרה ברורה על תחילת התהליך וקבלת הסכמה רחבה.</b></li>
-<li><b>תמונת מצב: ממפים את מצב הקהילה ומשקפים אותו לכלל כדי לדעת מהם הקולות המרכזיים ובשוליים, ל</b>אילו מנגנונים חברתיים פועלים יש פוטנציאל לפתח חוסן חברתי ומה חסר.</li>
-<li><b>שיפור: </b>כדאי להתחיל בשינוי קטן ושיקצור הצלחה כדי ללמוד ממנו וכדי לתת מוטיבציה להמשך.</li>
-<li><b>תרגול: </b>מפתחים מיומנויות משותפות ומתחילים לקרוא לזה בשם מובחן. התרגול, יהיה אשר יהיה, יתרחש עם מרבית הפרטים ולא רק עם בעלי התפקידים או אלה שקולם נשמע תמיד.</li>
-<li><b>הערכה: </b>מדי פעם, במועדים שיקבעו מראש, עוצרים ושואלים: מה עבד? מה אפשר לנסות אחרת? מה הצעד הבא?</li>
-<li>חלוקת אחריות: המוביל יקבע מראש, רצוי באחריות משותפת ומתחלפת.</li>
-<li>שקיפות התהליך: מעבירים מידע באופן שוטף ומדגישים <b>סימנים המורים על כך שיש התקדמות: </b>מנגנון שמופעל מתוך כוונה ברורה לחזק את החוסן, כשרבים שותפים לו, וכשהוא נבחן מחדש מעת לעת; תהליך שהתקבל בהשתתפות יותר פרטים; הרגשה שמשהו קורה.</li>
-</ul>
-<p>קהילת חוסן אינה מחליפה את המדינה או את הרשות המקומית אלא היא מתחברת אליהן, מגייסת את משאביהן, ומכוונת אותם לטובת הקהילה.</p>
-<h4>תו חוסן: הכרה שמחזקת את הבחירה</h4>
-<p>תו חוסן הוא הכרה בעבודתה של קהילת חוסן. הוא אינו תנאי, קהילה יכולה להיות קהילת חוסן גם בלעדיו. תפקידו לחזק את הבחירה המודעת על-ידי משוב חיובי מהציבור הרחב ומגופים ממסדיים חיצוניים.</p>
-<p>מה התו עשוי להעניק:</p>
-<ul>
-<li><b>לגיטימציה: </b>השקעה בחוסן מבקשת זמן ומשאבים כבר עכשיו, למען עתיד שאינו ודאי. הכרה ציבורית עוזרת לחברים לראות בתרומתם השקעה, ולא ויתור או פעולה באין ברירה.</li>
-<li><b>רף ברור:</b> התו מתרגם שאיפה כללית לצעדים שאפשר לתכנן ושגם מקבלי ההחלטות ברשות ובמדינה מכירים בהם.</li>
-<li><b>שינוי נורמות: </b>הקהילות הראשונות יראו איך נראית קהילת חוסן, ואחרות עשויות ללכת בעקבותיהן.</li>
-</ul>
-<p>כדי שהתו יחזק ולא יחליש:</p>
-<ul>
-<li><b>התו כולל משוב והערכה ולא ציון, ש</b>נכתבת עם פירוט לגבי מה שעובד ומה כדאי לשפר או לנסות בהמשך.</li>
-<li>נציגי קהילות אחרות שותפים לתהליך מתן התו וכך הם לומדים להעריך תהליכים חברתיים תומכי חוסן ולומדים מהם.</li>
-<li><b>התו בוחן עשייה, דעות ולא רק מסמכים. </b></li>
-<li><b>לפני קבלת התו יש ציוני דרך בשלבים המציינים התקדמות ראויה כמו </b>תחילת התהליך והכרה במחויבות ובמיפוי, ציון שנה (או כל תקופה אחרת) בתוך התהליך מתוך הערכה להובלתו בהתמדה ובעקביות ורק אחר כך בקהילת חוסן מלאה.</li>
-<li>קהילות ותיקות מלוות את החדשות.</li>
-<li><b>תהליך פתוח לכל קהילה</b> שאינו תנאי לקבלת שירותים מהמדינה. המוטיבציה היא פנימית בעיקרה "עושים למען עצמנו".</li>
-<li><b>לתו יש תוקף מוגבל כדי ש</b>מעגל הלמידה יישאר רענן ועירני והתהליך יתעדכן ויתעצם ולא יהפוך להרגל.</li>
-</ul>
-<h5>מי מעניק את התו?</h5>
-<p>הגוף המעניק יהיה משולב: המדינה או מי מטעמה (פיקוד העורף? המשרד לביטחון פנים?) קובעת את הרף ומעניקה את ההכרה באמצעות גוף עצמאי מעריך, וקהילות עמיתות שותפות בהערכה. כך נהנה התו ממעמד ציבורי, ושומר על מבט רחב: חוסן כחלק מאיכות החיים, ולא רק כמוכנות לחירום.</p>
-<h4>מקורות</h4>
-<ul class="art-refs">
-<li>שדה, י' (2024). קהילת חוסן: גישה חדשה לפיתוח חוסן קהילתי המבוסס על מנגנונים חברתיים קיימים [עבודת דוקטורט, אוניברסיטת אריאל].</li>
-<li dir="ltr">Norris, F. H., Stevens, S. P., Pfefferbaum, B., Wyche, K. F., &amp; Pfefferbaum, R. L. (2008). Community resilience as a metaphor, theory, set of capacities, and strategy for disaster readiness. American Journal of Community Psychology, 41(1–2), 127–150. <a href="https://doi.org/10.1007/s10464-007-9156-6" target="_blank" rel="noopener">https://doi.org/10.1007/s10464-007-9156-6</a></li>
-<li dir="ltr">Sade, Y., &amp; Lewin, E. (2020). The use of internal governance in the kibbutz as a tool for social maintenance and development. Comparative Sociology, 19, 69–87. <a href="https://doi.org/10.1163/15691330-BJA10002" target="_blank" rel="noopener">https://doi.org/10.1163/15691330-BJA10002</a></li>
-</ul>
-  <p class="art-back" hidden><a class="back js-back" href="entry.html"></a></p>
-</section>
 </div>
-<script>
-// חזרה לכלי שממנו הגיעו למאמר (07/10/2026): ?from=<דף>. הקישור נפתח בלשונית חדשה — אז סוגרים אותה
-// וחוזרים ללשונית של הכלי, כשהעבודה שם שלמה. אם אי אפשר לסגור — עוברים לכלי.
-(function(){
-  var NAMES={"facilitation-advisor.html":"ננה","leadership-advisor.html":"נוגי","resilience-advisor.html":"פרקטי","message-writer.html":"כתיבה מקדמת חוסן",
-    "resilience-studio.html":"סטודיו חוסן","resilience-team.html":"מיפוי החוסן החברתי","journey.html":"מסע אל החוסן"};
-  var from=new URLSearchParams(location.search).get("from")||"";
-  if(!NAMES[from])return;
-  var ab=document.querySelector(".art-back");if(ab)ab.hidden=false;
-  [document.getElementById("back")].concat([].slice.call(document.querySelectorAll(".js-back"))).forEach(function(a){
-  a.textContent="→ חזרה ל"+NAMES[from];a.href=from;
-  a.addEventListener("click",function(e){
-    if(history.length<=1){e.preventDefault();window.close();setTimeout(function(){location.href=from;},300);}
-    else if(document.referrer&&document.referrer.indexOf(location.origin+"/")===0&&document.referrer.indexOf(from)!==-1){e.preventDefault();history.back();}
-  });
-  });
-})();
-</script>
 </body>
 </html>
