@@ -295,6 +295,10 @@ export async function authorizePermission(store, token, permissions) {
     if (!rec || rec.inst !== t.inst || rec.kind !== t.kind) return null;
     live = await resolveCode(store, rec, settings);
     if (live.error) return null;
+  } else if (t.k === 'open') {
+    const rec = await store.get('open:' + t.o);
+    if (!openLive(rec)) return null;
+    live = { perms: [rec.perm] };
   } else if (t.k === 'inst' || (t.k === 'code' && t.c === 'LEGACY' && t.kind === 'legacy')) {
     const inst = (await getInstitutions(store)).find(x => x.name === t.inst);
     const sub = subState(inst, settings);
@@ -1278,6 +1282,56 @@ async function handleFeedbackInbox(store, body) {
   return [400, { error: 'bad action' }];
 }
 
+// ── קישור פתוח ליום אחד (11/10/2026: "ה-QR יהיה במצגת או אשלח להן בוואטסאפ קישור, בלי קוד, אבל רק ביום ההצגה") ──
+// open:<id> → { id, page, perm, date: 'YYYY-MM-DD' (שעון ישראל), label, max, joins, createdAt, revoked }.
+// entry.html?open=<id>: בלי קוד, רק בתאריך הזה, רק לכלי אחד. האסימון { k:'open', o:id } נבדק מול הרשומה בכל פנייה
+// למודל (authorizePermission), כך שאחרי היום, או אחרי ביטול, הכלי נסגר מיד.
+export const OPEN_PAGES = { 'message-writer.html': 'writer', 'conversation-planner.html': 'conv', 'activity-planner.html': 'activity',
+  'facilitation-advisor.html': 'nana', 'resilience-advisor.html': 'practi', 'academic-review.html': 'academic' };
+export const ilToday = (d = new Date()) => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
+const OPEN_MAX = 500;
+const validOpenId = (id) => /^[a-z0-9][a-z0-9-]{2,31}$/.test(String(id || ''));
+const openLive = (rec) => !!rec && !rec.revoked && rec.date === ilToday();
+async function handleOpenLinks(store, body, isSys) {
+  const { action } = body;
+  if (action === 'openJoin') {
+    const id = String(body.id || '').toLowerCase();
+    const rec = validOpenId(id) ? await store.get('open:' + id) : null;
+    if (!rec || rec.revoked) { await pause(); return [404, { error: 'open-missing' }]; }
+    if (rec.date !== ilToday()) return [403, { error: rec.date > ilToday() ? 'open-early' : 'open-over', date: rec.date, label: rec.label || '' }];
+    if ((rec.joins || 0) >= (rec.max || OPEN_MAX)) return [403, { error: 'open-full' }];
+    rec.joins = (rec.joins || 0) + 1; await store.set('open:' + id, rec);
+    const token = await signToken(store, { k: 'open', o: id, perms: [rec.perm] });
+    return [200, { ok: true, token, kind: 'open', page: rec.page, perms: [rec.perm], label: rec.label || '', date: rec.date }];
+  }
+  if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
+  if (action === 'openList') {
+    const rows = await store.list('open:');
+    return [200, { today: ilToday(), items: rows.map((r) => r.value).sort((a, b) => String(b.date).localeCompare(String(a.date))) }];
+  }
+  if (action === 'openCreate') {
+    const page = modelPage(body.page);
+    if (!OPEN_PAGES[page]) return [400, { error: 'bad page' }];
+    if (!validYmd(body.date)) return [400, { error: 'bad date' }];
+    let id = String(body.id || '').trim().toLowerCase();
+    if (id) { if (!validOpenId(id)) return [400, { error: 'bad id' }]; if (await store.get('open:' + id)) return [409, { error: 'taken' }]; }
+    else { do { id = randomBytes(5).toString('hex'); } while (await store.get('open:' + id)); }
+    const max = Math.max(1, Math.min(OPEN_MAX, parseInt(body.max, 10) || OPEN_MAX));
+    const rec = { id, page, perm: OPEN_PAGES[page], date: body.date, label: String(body.label || '').trim().slice(0, 80), max, joins: 0,
+      createdAt: new Date().toISOString(), revoked: false };
+    await store.set('open:' + id, rec);
+    return [200, { ok: true, item: rec }];
+  }
+  if (action === 'openRevoke') {
+    const id = String(body.id || '').toLowerCase();
+    const rec = validOpenId(id) ? await store.get('open:' + id) : null;
+    if (!rec) return [404, { error: 'not found' }];
+    rec.revoked = true; await store.set('open:' + id, rec);
+    return [200, { ok: true }];
+  }
+  return [400, { error: 'bad action' }];
+}
+
 // מחזירה [status, body].
 export async function handleAccess(store, body) {
   const { action } = body || {};
@@ -1357,6 +1411,7 @@ export async function handleAccess(store, body) {
 
   const sysTok = await verifyToken(store, body?.token);
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
+  if (/^open(Join|List|Create|Revoke)$/.test(action || '')) return handleOpenLinks(store, body, isSys);
 
   if (['renewRequest', 'codesList', 'codeCreate', 'codeRevoke', 'codeUse', 'setSubscription', 'renewSubscription',
     'getSettings', 'setSettings', 'renewList', 'renewDone', 'renewApprove'].includes(action)) {

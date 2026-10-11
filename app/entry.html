@@ -328,6 +328,45 @@ function enterGuest(){
   location.href = "resilience-advisor.html";
 }
 
+// ── קישור פתוח ליום אחד (11/10/2026): בלי קוד, רק ביום שנקבע, רק לכלי אחד. השרת בודק את התאריך בכל פנייה. ──
+const ymdIL = d => { const m = String(d || "").match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? (+m[3]) + "." + (+m[2]) + "." + m[1].slice(2) : ""; };
+async function enterOpen(id){
+  const card = el("div",{class:"card"}), inn = el("div",{class:"in"});
+  const msg = el("p",{}, "נכנסים לכלי... (לפעמים עד דקה)");
+  inn.append(el("h2",{},"כניסה להתנסות"), msg); card.append(inn); view.append(card);
+  const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 75000);
+  let r, data = {};
+  try {
+    r = await fetch(ACCESS_URL, { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ action:"openJoin", id }), signal: ctrl.signal });
+    data = await r.json().catch(() => ({}));
+  } catch(e){ r = null; } finally { clearTimeout(timer); }
+  if (r && r.ok && data.token && /^[a-z0-9-]+\.html$/.test(data.page || "")) {
+    clearSession();
+    try {
+      sessionStorage.setItem("sbe.session.token", data.token);
+      sessionStorage.setItem("sbe.session.perms", JSON.stringify(data.perms || []));
+      sessionStorage.setItem("sbe.session.info", JSON.stringify({ kind:"open", label:data.label || "", notices:[] }));
+      sessionStorage.setItem("sbe.session.role", data.label || "התנסות");
+      sessionStorage.setItem("sbe.session.homeUrl", "home.html"); // המסכים נגזרים מההרשאה (access-guard.js)
+    } catch(e){}
+    location.replace(data.page);
+    return;
+  }
+  const day = ymdIL(data.date);
+  const T = {
+    "open-early": "הקישור ייפתח ביום ההתנסות" + (day ? ", " + day : "") + ". נשמח לראותך אז.",
+    "open-over": "הקישור היה פתוח ביום ההתנסות" + (day ? " (" + day + ")" : "") + ", ועכשיו הוא סגור. תודה שהשתתפת!",
+    "open-full": "הקישור הגיע למספר המשתתפות שנקבע לו. אפשר לפנות למנחה.",
+    "open-missing": "הקישור הזה לא פעיל. אפשר לבדוק אותו מול מי ששלח/ה אותו."
+  };
+  msg.textContent = T[data.error] || "אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע.";
+  const again = el("button",{class:"primary", type:"button", style:"width:auto;margin-inline-end:8px"},"לנסות שוב");
+  again.addEventListener("click", () => location.reload());
+  const other = el("a",{href:"entry.html"},"כניסה עם קוד");
+  if (!T[data.error]) inn.append(again); // אין חיבור: אפשר לנסות שוב
+  inn.append(el("p",{class:"morelinks"}, other, el("span",{class:"sep"}," · "), el("a",{href:"about.html"},"אודות Begood")));
+}
+
 // קוד לקבוצה של סדנה: בוחרים תפקיד מתוך ארבעה, ואז קוד + שם.
 function buildWorkshopPicker(prefill){
   const wrap = el("div",{});
@@ -506,6 +545,9 @@ function buildAdminField(role){
   if (new URLSearchParams(location.search).get("logout")) clearSession();
   // entry.html?practi — קישור ישיר להתנסות (לשקף/QR בהרצאה)
   if (new URLSearchParams(location.search).has("practi") && guestOpen()) { enterGuest(); return; }
+  // entry.html?open=<מזהה>: קישור פתוח ליום אחד, בלי קוד (נוצר בניהול, "🔗 קישור פתוח ליום אחד")
+  var openId = (new URLSearchParams(location.search).get("open") || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 32);
+  if (openId) { enterOpen(openId); return; }
   renderEntry();
   var home = null, roleLabel = "";
   try {
