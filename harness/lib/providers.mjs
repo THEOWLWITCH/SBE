@@ -2,6 +2,8 @@
 import { createRequire } from 'node:module';
 // שפה של הזמנה, לא של חובה — כלל של Begood לכל קריאה למודל (מקור אמת: app/lib/invite-language.js)
 const INVITE = createRequire(import.meta.url)('../../app/lib/invite-language.js');
+// מרכאות אחידות בכל תשובה של המודל: " רגילות, בלי „ ״ ובלי מרכאות כפולות (מקור אמת: app/lib/quotes.js)
+const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
 // עוצמת הווריאציה מופשטת: כל ספק ממפה אותה אחרת.
 
 const VARIATION = {
@@ -226,7 +228,12 @@ export function getProvider(name) {
     async complete(opts) {
       let lastErr;
       for (let attempt = 0; attempt < 3; attempt++) {
-        try { return await p.complete({ ...opts, system: INVITE.apply(opts.system), apiKey, model: opts.model || this.model }); }
+        try {
+          const r = await p.complete({ ...opts, system: INVITE.apply(opts.system), apiKey, model: opts.model || this.model });
+          if (r && typeof r.text === 'string') r.text = QUOTES.text(r.text);
+          if (r && Array.isArray(r.toolCalls)) r.toolCalls = r.toolCalls.map((c) => ({ ...c, input: QUOTES.deep(c.input) }));
+          return r;
+        }
         catch (e) {
           lastErr = e;
           if (!(e instanceof ProviderError) || !e.retryable) throw e;

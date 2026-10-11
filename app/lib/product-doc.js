@@ -20,6 +20,7 @@
   }
 
   function rich(text) {
+    if (window.SBE_QUOTES) text = SBE_QUOTES.fix(String(text == null ? '' : text)); // מרכאות אחידות (lib/quotes.js)
     const box = document.createElement("div"); box.className = "sbe-rich";
     let list = null;
     String(text || "").replace(/\r/g, "").split("\n").forEach((raw) => {

@@ -6,6 +6,7 @@
 <title>פרקטי: יועצת לפיתוח חוסן חברתי</title>
 <script src="lib/report-table.js"></script>
 <script src="lib/access-guard.js"></script>
+<script src="lib/quotes.js"></script>
 <script src="lib/product-doc.js"></script>
 <script src="lib/example-peek.js" data-tool="practi" defer></script>
 <script src="lib/open-select.js"></script>
@@ -642,6 +643,7 @@ function withRefs(text){ // מקורות בסוף המסמך (08/10/2026): [מפ
 }
 function inlineRich(text){ // **מודגש** → הדגשה, [מפתח] → קישור; כוכביות בודדות לא מוצגות
   const frag=document.createDocumentFragment();
+  if(window.SBE_QUOTES)text=SBE_QUOTES.fix(String(text||''));
   String(text||'').split(/\*\*([^*]+)\*\*/).forEach((part,i)=>{
     part=part.replace(/\*\*/g,'');
     if(i%2){const b=el('b');b.appendChild(withRefs(part));frag.appendChild(b);}else frag.appendChild(withRefs(part));
