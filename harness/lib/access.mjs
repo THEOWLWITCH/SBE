@@ -4,6 +4,8 @@
 // כי מנהלת המערכת צריכה לראות אותו כדי למסור אותו.
 // store: { get(key) → value|null, set(key, value), del(key), list(prefix), delPrefix(prefix) }.
 import { scryptSync, randomBytes, timingSafeEqual, createHmac, createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
 
 // בתוקף רק עד שמנהלת המערכת מחליפה סיסמה בפעם הראשונה (אלה הסיסמאות שהיו
 // כתובות עד עכשיו ב-entry.html).
@@ -652,13 +654,15 @@ async function handleDemos(store, body) {
   // תוצאת בדיקת הלקוחה (11/10/2026): נשמרת עם התוצר, כדי שכל מכשיר יידע שהוא כבר נבדק ותוקן
   const cleanRv = (r) => (r && typeof r === 'object') ? { ready: !!r.ready, summary: clean(r.summary, 400), found: Number(r.found) || 0, fixed: Number(r.fixed) || 0,
     at: clean(r.at, 40), issues: (Array.isArray(r.issues) ? r.issues : []).slice(0, 8).map((x) => ({ where: clean(x && x.where, 200), quote: clean(x && x.quote, 300), problem: clean(x && x.problem, 400), fix: clean(x && x.fix, 400) })) } : undefined;
-  if (action === 'demoPublicList') return [200, { items: index.filter((d) => d.public).map(({ id, tool, title, label, at, input, order }) => ({ id, tool, title, label, at, input, order })) }];
+  if (action === 'demoPublicList') return [200, { items: index.filter((d) => d.public).map(({ id, tool, title, label, at, order }) => ({ id, tool, title, label, at, order })) }];
   if (action === 'demoGet') {
     const id = String(body.id || '');
     const meta = index.find((d) => d.id === id);
     if (!meta || (!meta.public && !isSys)) { await pause(); return [404, { error: 'not found' }]; }
     const doc = await store.get('demo:' + id);
-    return doc ? [200, { ...meta, html: doc.html }] : [404, { error: 'not found' }];
+    // בספרייה רק התוצר (11/10/2026: "בתיק התוצרים לא יראו מה שהוזן - רק תוצר"); הקלט רק למנהלת המערכת
+    const { input, ...pub } = meta;
+    return doc ? [200, { ...(isSys ? meta : pub), html: demoTidy(doc.html) }] : [404, { error: 'not found' }];
   }
   if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
   if (action === 'demoList') return [200, { items: index }];
@@ -1551,4 +1555,13 @@ export function supabaseStore(url, key) {
       await check(await fetch(`${base}?key=like.${encodeURIComponent(prefix + '*')}`, { method: 'DELETE', headers }));
     },
   };
+}
+
+// תוצרים שכבר נשמרו (11/10/2026): "תרומה לחוסן החברתי" במקום "מה זה בונה / מה זה מפתח",
+// ומרכאות רגילות בטקסט (לא בתוך סקריפטים ותגיות), כדי שגם התוצרים הישנים בספרייה יוצגו בניסוח החדש.
+export function demoTidy(html) {
+  return String(html || '').split(/(<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>)/i).map((part, i) => i % 2 ? part : part
+    .replace(/>([^<]+)</g, (m, t) => '>' + QUOTES.fix(t
+      .replace(/מה זה בונה בחוסן החברתי|מה זה בונה בחוסן/g, 'תרומה לחוסן החברתי')
+      .replace(/מה זה (?:בונה|מפתח)(?=:|\s*$)/g, 'תרומה לחוסן החברתי')) + '<')).join('');
 }

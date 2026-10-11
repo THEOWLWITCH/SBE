@@ -343,7 +343,7 @@
     const lg = el('section', 'sens'); lg.appendChild(el('h3', null, 'רשומת התאמות')); lg.appendChild(el('p', 'sub', 'מה התאמנו ולמה. המחנכת מאשרת כל התאמה'));
     lg.appendChild(etable(['תאריך', 'מה התאמנו', 'למה', 'אישור המחנכת'], J.log, 'הוספת התאמה', 4)); root.appendChild(lg);
     if (k.adult) root.appendChild(el('p', 'remind', '👩‍🏫 ' + txt(k.adult)));
-    if ((k.resilience || []).length) { root.appendChild(el('h3', null, 'מה זה בונה בחוסן')); root.appendChild(window.SBE_TABLE(['רכיב החוסן', 'איך זה קורה'], k.resilience.map((x) => [txt(x.component), txt(x.how)]), 'kit-t')); }
+    if ((k.resilience || []).length) { root.appendChild(el('h3', null, 'תרומה לחוסן החברתי')); root.appendChild(window.SBE_TABLE(['רכיב החוסן', 'איך זה קורה'], k.resilience.map((x) => [txt(x.component), txt(x.how)]), 'kit-t')); }
     const row = el('div', 'actions no-print');
     row.append(btn('🖨 כרטיסי בחירה ותפקיד', 'btn btn-ghost sm', () => printJoinCards()),
       btn('מצטרף/ת חדש/ה: מתחילים מחדש (תיק הכניסה נשמר)', 'btn btn-ghost sm', () => { if (!confirm('להתחיל מסלול חדש? הבחירה, הלוח ורשומת ההתאמות יתאפסו, ותיק הכניסה הקבוצתי יישאר.')) return; J.choice = ''; J.done = {}; J.log = []; J.checkWhen = window.sbeIsoPlus ? sbeIsoPlus(14) : ''; save(); showKit(); }));

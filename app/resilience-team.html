@@ -6,6 +6,7 @@
 <title>מיפוי חוסן חברתי: ניהול</title>
 <script src="lib/report-table.js"></script>
 <script src="lib/access-guard.js"></script>
+<script src="lib/quotes.js"></script>
 <script src="lib/product-doc.js"></script>
 <script src="lib/example-peek.js" data-tool="resil" defer></script>
 <script src="lib/ai-call.js"></script>
@@ -1217,13 +1218,13 @@ function actCard(a,extra){
   if(extra)tags.appendChild(el2('span','act-tag',extra));
   if(tags.childNodes.length)c.appendChild(tags);
   c.appendChild(el2('p','act-d',a.description||''));
-  if(a.mechanism)c.appendChild(el2('p','act-m','מה זה מפתח: '+a.mechanism));
+  if(a.mechanism)c.appendChild(el2('p','act-m','תרומה לחוסן החברתי: '+a.mechanism));
   return c;
 }
 // טבלאות בסיכום (07/10/2026), כמו בדוח של פרקטי: פעילות בכל שורה; חוזקות ואתגרים — תחום | מה רואים
 function actTable(items,extraFn,mechLabel){if(!(items||[]).length)return el2('p',null,'—');
   const mech=items.some(a=>a.mechanism);
-  return SBE_TABLE(mech?['הפעילות','מה עושים',mechLabel||'מה זה מפתח']:['הפעילות','מה עושים'],items.map(a=>{const t=el2('div');t.appendChild(el2('div','rt-title',a.title||''));const tags=el2('div','act-tags');
+  return SBE_TABLE(mech?['הפעילות','מה עושים',mechLabel||'תרומה לחוסן החברתי']:['הפעילות','מה עושים'],items.map(a=>{const t=el2('div');t.appendChild(el2('div','rt-title',a.title||''));const tags=el2('div','act-tags');
     if(a.game)tags.appendChild(el2('span','act-tag game','🎲 משחק חברתי'));if(a.kind)tags.appendChild(el2('span','act-tag kind',a.kind));if(a.circle)tags.appendChild(el2('span','act-tag circle',a.circle));
     const x=extraFn?extraFn(a):'';if(x)tags.appendChild(el2('span','act-tag',x));if(tags.childNodes.length)t.appendChild(tags);
     return mech?[t,a.description||'',a.mechanism||null]:[t,a.description||''];}),'acts');}
@@ -1234,7 +1235,7 @@ function textList(items){
   return ul;
 }
 function summaryPlainText(c){
-  const d=c.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.game?'משחק חברתי':'',a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  מה זה מפתח: '+a.mechanism:'');
+  const d=c.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.game?'משחק חברתי':'',a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  תרומה לחוסן החברתי: '+a.mechanism:'');
   L.push('סיכום והמלצות: כיתה '+c.cls+' ('+c.band+')','',d.intro||'');
   if((d.progress||[]).length){L.push('','מעקב: מה השתנה מאז המדידה הקודמת');d.progress.forEach(x=>L.push('• '+x.domain+': '+x.text));}
   L.push('','1. חוזקות הכיתה');

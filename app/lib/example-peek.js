@@ -12,6 +12,12 @@
   var ACCESS = 'https://sbe-server.onrender.com/api/access';
   var CACHE = 'sbe.peek.v1', TTL = 10 * 60 * 1000;
   var items = null, pending = null;
+  // צפייה בלבד, ממסמך נקי (product-view.js, 11/10/2026)
+  var VIEW_SRC = me && me.src ? me.src.replace(/example-peek\.js.*$/, 'product-view.js') : 'lib/product-view.js';
+  function viewer() {
+    if (window.SBE_VIEW) return Promise.resolve(window.SBE_VIEW);
+    return new Promise(function (ok) { var s = document.createElement('script'); s.src = VIEW_SRC; s.onload = function () { ok(window.SBE_VIEW || null); }; s.onerror = function () { ok(null); }; document.head.appendChild(s); });
+  }
 
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = String(text); return n; }
   function api(body) {
@@ -42,13 +48,14 @@
       '.sbe-peek button{font:inherit;font-weight:700;background:none;border:0;padding:0;cursor:pointer;color:var(--spoken,var(--accent,#2E5A7D));text-decoration:underline;text-underline-offset:3px}' +
       '.sbe-peek-d{width:min(980px,96vw);height:92vh;border:1px solid #CDD3D8;border-radius:12px;padding:0;background:#FCFCFD;color:#141C24;direction:rtl}' +
       '.sbe-peek-d::backdrop{background:rgba(10,14,18,.55)}' +
-      '.sbe-peek-w{display:flex;flex-direction:column;height:100%;font-family:"Assistant","Segoe UI",system-ui,sans-serif}' +
+      '.sbe-peek-w{display:grid;grid-template-rows:auto auto minmax(0,1fr);height:100%;overflow:hidden;font-family:"Assistant","Segoe UI",system-ui,sans-serif}' +
+      '@media print{.sbe-peek-d[open]{display:none!important}}' +
       '.sbe-peek-h{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid #CDD3D8;flex-wrap:wrap}' +
       '.sbe-peek-h b{flex:1;font-size:16px}' +
       '.sbe-peek-h select{width:auto!important;max-width:45%;flex:0 1 auto;margin:0!important;min-height:0!important}' +
       '.sbe-peek-h select,.sbe-peek-h a,.sbe-peek-h button{font:inherit;font-size:13.5px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid #CDD3D8;background:transparent;color:#141C24;cursor:pointer;text-decoration:none}' +
       '.sbe-peek-n{padding:6px 14px;font-size:13.5px;color:#5C6771;border-bottom:1px solid #CDD3D8;margin:0}' +
-      '.sbe-peek-w iframe{flex:1;width:100%;border:0;background:#fff}';
+      '.sbe-peek-w iframe{width:100%;height:100%;min-height:0;border:0;background:#fff;display:block}';
     document.head.appendChild(s);
   }
 
@@ -63,7 +70,7 @@
       var lib = el('a', null, '📚 לכל הדוגמאות'); lib.target = '_blank'; lib.rel = 'noopener'; h.appendChild(lib);
       var x = el('button', null, 'סגירה'); x.type = 'button'; x.onclick = function () { dlg.close(); }; h.appendChild(x);
       w.appendChild(h);
-      w.appendChild(el('p', 'sbe-peek-n', 'תוצר אמיתי של הכלי, על מקרה בדוי. התוצר שלכם ייבנה מהפרטים שתמלאו, ואפשר יהיה לערוך אותו על המסך ולשמור כ-PDF.'));
+      w.appendChild(el('p', 'sbe-peek-n', 'תוצר אמיתי של הכלי, על מקרה בדוי, לצפייה בלבד. התוצר שלכם ייבנה מהפרטים שתמלאו, ואפשר יהיה לערוך אותו על המסך ולשמור כ-PDF.'));
       var fr = el('iframe'); fr.setAttribute('sandbox', 'allow-popups allow-popups-to-escape-sandbox'); fr.title = 'התוצר לדוגמה'; w.appendChild(fr);
       dlg.appendChild(w); document.body.appendChild(dlg);
       dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
@@ -80,9 +87,13 @@
   }
   function msg(t) { return '<p style="font-family:sans-serif;padding:40px;text-align:center" dir="rtl">' + t + '</p>'; }
   function show(d) {
-    var fr = dlg._fr; fr.srcdoc = msg('טוען את התוצר... בפעם הראשונה זה יכול לקחת עד דקה.');
-    api({ action: 'demoGet', id: d.id }).then(function (full) { fr.srcdoc = String(full.html||'').replace(/<\/head>/i,'<style>.bar{display:none!important}</style></head>'); })
-      .catch(function () { fr.srcdoc = msg('לא הצלחנו לטעון את התוצר. אפשר לנסות שוב בעוד רגע.'); });
+    var fr = dlg._fr;
+    viewer().then(function (V) {
+      if (V) V.message(fr, 'טוען את התוצר... בפעם הראשונה זה יכול לקחת עד דקה.'); else fr.srcdoc = msg('טוען את התוצר...');
+      return api({ action: 'demoGet', id: d.id }).then(function (full) {
+        if (V) V.show(fr, full.html, { viewOnly: true }); else fr.srcdoc = String(full.html || '');
+      }).catch(function () { if (V) V.message(fr, 'לא הצלחנו לטעון את התוצר. אפשר לנסות שוב בעוד רגע.'); else fr.srcdoc = msg('לא הצלחנו לטעון את התוצר.'); });
+    });
   }
 
   // מוסיף את הקישור לתוך parent (בסוף), או אחרי after. רק כשיש תוצר מאושר לכלי.

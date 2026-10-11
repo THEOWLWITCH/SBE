@@ -1,7 +1,7 @@
 // הסוכנת-הלקוחה בכל הכלים (09/10/2026: "הסוכנת תרוץ אוטומטית גם בשאר הכלים").
 // כל קריאה ל-/api/complete שמסומנת customerReview:true (רק קריאות שמפיקות תוצר, לא שיחות ולא דברי דמויות):
 //  1. הסוכנת קוראת את התוצר כמו מי שתשתמש בו (app/lib/customer-review.js) ומחזירה מה לא ברור.
-//  2. אם משהו לא ברור, המודל מתקן פעם אחת, באותו מבנה ובאותו פורמט בדיוק.
+//  2. אם משהו לא ברור, המודל מתקן באותו מבנה ובאותו פורמט בדיוק, והסוכנת בודקת שוב ומתקנים שוב (שני סבבים).
 //  3. התיקון נכנס רק אם הוא תקין: לא ריק, ובתוצר JSON — JSON תקין עם אותם שדות עליונים. אחרת חוזר התוצר המקורי.
 // כל כשל של הסוכנת (מודל לא זמין, תשובה לא תקינה) לא עוצר את התוצר. CUSTOMER_REVIEW=off מכבה.
 import { createRequire } from 'node:module';
@@ -40,11 +40,9 @@ export function reviewEnabled(payload) {
 }
 
 // provider.complete({system, messages, maxTokens, variation}) → {text}
-export async function customerPass(provider, { system, messages, maxTokens, text }) {
-  const msgs = Array.isArray(messages) && messages.length ? messages : [{ role: 'user', content: '' }];
-  const request = msgs.filter((m) => m.role === 'user').map((m) => contentText(m.content)).join('\n\n').slice(0, MAX_REQUEST);
-  const asJson = jsonOf(text);
-  let review = null;
+// שני סבבים (11/10/2026: "תיתן ללקוחה לבדוק פעמיים ותתקן אחרי כל בדיקה"): בדיקה ← תיקון ← בדיקה שנייה ← תיקון.
+export const ROUNDS = 2;
+async function reviewOnce(provider, request, text, asJson) {
   try {
     const r = await provider.complete({
       system: CUSTOMER.system,
@@ -53,27 +51,46 @@ export async function customerPass(provider, { system, messages, maxTokens, text
       variation: 'low', maxTokens: 4000,
     });
     const v = jsonOf(r.text);
-    if (v && typeof v.ready === 'boolean' && Array.isArray(v.issues)) review = { ready: v.ready, summary: String(v.summary || ''), issues: v.issues.slice(0, 8) };
-  } catch { return { text, review: null }; }
-  if (!review || review.ready || !review.issues.length) return { text, review: review && { ...review, revised: false } };
-  // תיקון ממוקד (11/10/2026: "ההפקה מתבצעת כבר 10 דקות"): במקום לכתוב את כל התוצר מחדש (פי שניים זמן),
-  // המודל מחזיר עריכות {find, replace} לפי ההערות, והן מוחלות כאן. ב-JSON רק בתוך ערכי טקסט, כך שהמבנה לא נשבר.
+    if (v && typeof v.ready === 'boolean' && Array.isArray(v.issues)) return { ready: v.ready, summary: String(v.summary || ''), issues: v.issues.slice(0, 8) };
+  } catch {}
+  return null;
+}
+// תיקון ממוקד (11/10/2026: "ההפקה מתבצעת כבר 10 דקות"): במקום לכתוב את כל התוצר מחדש (פי שניים זמן),
+// המודל מחזיר עריכות {find, replace} לפי ההערות, והן מוחלות כאן. ב-JSON רק בתוך ערכי טקסט, כך שהמבנה לא נשבר.
+async function fixOnce(provider, request, text, issues, asJson) {
   try {
     const r = await provider.complete({
       system: CUSTOMER.fixSystem,
-      messages: [{ role: 'user', content: CUSTOMER.fixRequest(String(text).slice(0, MAX_PRODUCT), review.issues, request) }],
+      messages: [{ role: 'user', content: CUSTOMER.fixRequest(String(text).slice(0, MAX_PRODUCT), issues, request) }],
       variation: 'low', maxTokens: 4000,
     });
     const v = jsonOf(r.text);
     const edits = v && Array.isArray(v.edits) ? v.edits : [];
     const { text: fixed, applied } = applyTextEdits(String(text), edits, !!asJson);
-    if (!applied) return { text, review: { ...review, revised: false } };
+    if (!applied) return null;
     if (asJson) {
       const o = jsonOf(fixed);
-      if (!o || Object.keys(asJson).some((k) => !(k in o))) return { text, review: { ...review, revised: false } };
+      if (!o || Object.keys(asJson).some((k) => !(k in o))) return null;
     }
-    return { text: fixed, review: { ...review, revised: true, applied } };
-  } catch { return { text, review: { ...review, revised: false } }; }
+    return { text: fixed, applied };
+  } catch { return null; }
+}
+export async function customerPass(provider, { system, messages, maxTokens, text }) {
+  const msgs = Array.isArray(messages) && messages.length ? messages : [{ role: 'user', content: '' }];
+  const request = msgs.filter((m) => m.role === 'user').map((m) => contentText(m.content)).join('\n\n').slice(0, MAX_REQUEST);
+  const asJson = jsonOf(text);
+  let cur = String(text), first = null, last = null, applied = 0, rounds = 0;
+  for (let round = 0; round < ROUNDS; round++) {
+    const review = await reviewOnce(provider, request, cur, asJson);
+    if (!review) break;
+    rounds++; last = review; if (!first) first = review;
+    if (review.ready || !review.issues.length) break;
+    const f = await fixOnce(provider, request, cur, review.issues, asJson);
+    if (!f) continue;
+    cur = f.text; applied += f.applied;
+  }
+  if (!first) return { text, review: null };
+  return { text: applied ? cur : text, review: { ready: last.ready, summary: last.summary, issues: last.issues, found: first.issues.length, revised: applied > 0, applied, rounds } };
 }
 
 // מחילה עריכות על התוצר. JSON: בערכי הטקסט בלבד (המופע הראשון), ומחזירה JSON תקין. טקסט: החלפה של המופע הראשון.

@@ -7,6 +7,7 @@
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/customer-review.js"></script>
+<script src="lib/product-view.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
@@ -83,11 +84,12 @@ a.btn{text-decoration:none;display:inline-block}
 dialog{width:min(980px,96vw);height:92vh;border:1px solid var(--hair);border-radius:12px;padding:0;background:var(--surface);color:var(--ink)}
 dialog::backdrop{background:rgba(10,14,18,.55)}
 .dlg{display:flex;flex-direction:column;height:100%}
+#dlg .dlg{display:grid;grid-template-rows:auto auto minmax(0,1fr);overflow:hidden}
 .dlg-h{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--hair);flex-wrap:wrap}
 .dlg-h b{flex:1}
-.dlg details{padding:6px 14px;border-bottom:1px solid var(--hair);font-size:14px}
+.dlg details{padding:6px 14px;border-bottom:1px solid var(--hair);font-size:14px;max-height:30vh;overflow:auto}
 .dlg pre{white-space:pre-wrap;font-family:inherit;margin:6px 0;color:var(--muted)}
-.dlg iframe{flex:1;width:100%;border:0;background:#fff}
+.dlg iframe{width:100%;height:100%;min-height:0;border:0;background:#fff;display:block}
 </style>
 </head>
 <body>
@@ -402,8 +404,9 @@ async function togglePublic(d){
   finally{btns.forEach(b=>{b.disabled=false;pubLabel(b,d);});}
 }
 F('dlgPub').onclick=()=>{if(VIEWED)togglePublic(VIEWED);};
+let VIEW_HTML='';
 async function view(d){
-  VIEWED=d;F('dlgPub').dataset.id=d.id;pubLabel(F('dlgPub'),d);
+  VIEWED=d;VIEW_HTML='';F('dlgPub').dataset.id=d.id;pubLabel(F('dlgPub'),d);
   const n=++VIEW_N;
   F('dlgT').textContent=d.title;F('dlgLib').href='examples.html?tool='+encodeURIComponent(d.tool||'');F('dlgInT').textContent=d.input||'';F('dlgIn').hidden=!d.input;
   if(!rvGet(d.id)){
@@ -415,7 +418,8 @@ async function view(d){
   try{
     const full=await api({action:'demoGet',id:d.id});clearTimeout(slow);if(n!==VIEW_N)return;
     const txt=String(full.html||'').replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>|<[^>]+>|\s+/g,' ').trim();
-    F('dlgF').srcdoc=txt.length>40?String(full.html||'').replace(/<\/head>/i,'<style>.bar{display:none!important}</style></head>'):vmsg('התוצר נשמר בלי תוכן. אפשר להפיק אותו שוב בכפתור "הפקה" בשורה של הכלי, ולמחוק את העותק הזה.');
+    VIEW_HTML=txt.length>40?String(full.html||''):'';
+    if(VIEW_HTML)SBE_VIEW.show(F('dlgF'),VIEW_HTML);else F('dlgF').srcdoc=vmsg('התוצר נשמר בלי תוכן. אפשר להפיק אותו שוב בכפתור "הפקה" בשורה של הכלי, ולמחוק את העותק הזה.');
   }catch(e){clearTimeout(slow);if(n!==VIEW_N)return;F('dlgF').srcdoc=vmsg('לא הצלחנו לטעון את התוצר ('+e.message+'). אפשר לסגור ולנסות שוב בעוד רגע.');}
 }
 F('dlgX').onclick=()=>F('dlg').close();
@@ -426,7 +430,7 @@ function clean(html){
   d.querySelectorAll('*').forEach(n=>[...n.attributes].forEach(a=>{if(/^on/i.test(a.name)||/^\s*javascript:/i.test(a.value))n.removeAttribute(a.name);}));
   return '<!doctype html>'+d.documentElement.outerHTML;
 }
-F('dlgPrint').onclick=()=>{const w=window.open('','_blank');if(!w)return;w.document.open();w.document.write(clean(F('dlgF').srcdoc));w.document.close();setTimeout(()=>w.print(),900);};
+F('dlgPrint').onclick=()=>{const w=window.open('','_blank');if(!w)return;w.document.open();w.document.write(clean(VIEW_HTML||F('dlgF').srcdoc||''));w.document.close();setTimeout(()=>w.print(),900);};
 loadList().then(autoCheck);
 })();
 </script>

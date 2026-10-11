@@ -11,6 +11,7 @@ const studio = createRequire(import.meta.url)('../../app/lib/resilience-studio.j
 const INVITE = createRequire(import.meta.url)('../../app/lib/invite-language.js');
 // הסוכנת-הלקוחה (08/10/2026): קוראת כל ערכה כמו מי שתשתמש בה, ואם משהו לא ברור, הערכה מתוקנת פעם אחת
 const CUSTOMER = createRequire(import.meta.url)('../../app/lib/customer-review.js');
+const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js'); // מרכאות אחידות בכל ערכה
 // עד לאישור המקצועי (07/10/2026): רק הרשאת studio (ומנהלת המערכת). כשמאשרים — מוסיפים את
 // 'activity', 'resilience', 'practi', 'leadership' כאן, ב-access-guard.js וב-home.html.
 const STUDIO_PERMS = ['studio'];
@@ -343,7 +344,7 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
   const content=provider.output.flatMap(item=>Array.isArray(item?.content)?item.content:[]);
   if(content.some(c=>c.type==='refusal')) return [422,{error:'המודל לא יכול ליצור פעילות מהבקשה הזו. אפשר לערוך את התקציר.'}];
   let result;
-  try { result=JSON.parse(content.filter(c=>c.type==='output_text').map(c=>c.text).join('')); }
+  try { result=QUOTES.deep(JSON.parse(content.filter(c=>c.type==='output_text').map(c=>c.text).join(''))); }
   catch { return [422,{error:'התקבלה תשובה שאינה תקינה; לא נוצרה ערכה.'}]; }
   if(!matchesSchema(result,schema)) return [422,{error:'התשובה אינה תואמת למבנה הפעילות; לא נוצרה ערכה.'}];
   if(action==='analyze') {
@@ -374,7 +375,7 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
       if(!r.ok) return null;
       const out=await r.json();
       if(!out || out.status!=='completed' || !Array.isArray(out.output)) return null;
-      const v=JSON.parse(out.output.flatMap(item=>Array.isArray(item?.content)?item.content:[]).filter(c=>c.type==='output_text').map(c=>c.text).join(''));
+      const v=QUOTES.deep(JSON.parse(out.output.flatMap(item=>Array.isArray(item?.content)?item.content:[]).filter(c=>c.type==='output_text').map(c=>c.text).join('')));
       return matchesSchema(v,schema)?v:null;
     } catch { return null; }
   };
@@ -387,11 +388,16 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
   if(errors.length) return [422,{error:'הערכה דורשת תיקון לפני שימוש: '+errors.join('; ')}];
   let review=null;
   if(process.env.STUDIO_CUSTOMER_REVIEW!=='off') {
-    review=await ask(INVITE.apply(CUSTOMER.system),'מה ביקשתי (הקלט):\n'+JSON.stringify(brief)+'\n\nהתוצר שקיבלתי:\n'+kitText(result),CUSTOMER.schema,'customer_review');
-    if(review && !review.ready && review.issues.length) {
-      const fixed=await ask(INVITE.apply(INSTRUCTIONS)+'\n'+CUSTOMER.reviseNote(review.issues),
-        JSON.stringify({...input,previousDraft:result,customerIssues:review.issues}),ACTIVITY_SCHEMA,'studio_activity');
-      if(fixed && !fixed.clarificationQuestions.length && !kitErrors(fixed,brief,action,available).length) { result=fixed; review={...review,revised:true}; }
+    // שני סבבים (11/10/2026: "תיתן ללקוחה לבדוק פעמיים ותתקן אחרי כל בדיקה")
+    let revised=false;
+    for(let round=0;round<2;round++) {
+      const r=await ask(INVITE.apply(CUSTOMER.system),'מה ביקשתי (הקלט):\n'+JSON.stringify(brief)+'\n\nהתוצר שקיבלתי:\n'+kitText(result),CUSTOMER.schema,'customer_review');
+      if(!r) break;
+      review={...r,revised};
+      if(r.ready || !r.issues.length) break;
+      const fixed=await ask(INVITE.apply(INSTRUCTIONS)+'\n'+CUSTOMER.reviseNote(r.issues),
+        JSON.stringify({...input,previousDraft:result,customerIssues:r.issues}),ACTIVITY_SCHEMA,'studio_activity');
+      if(fixed && !fixed.clarificationQuestions.length && !kitErrors(fixed,brief,action,available).length) { result=fixed; revised=true; review={...review,revised}; }
     }
   }
   const guide=result.learningGuide;
