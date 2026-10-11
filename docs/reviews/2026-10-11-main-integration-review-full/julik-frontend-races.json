@@ -1,0 +1,29 @@
+{
+  "reviewer": "julik-frontend-races",
+  "findings": [
+    {
+      "title": "Continuity demo reads and rewrites the real private draft",
+      "severity": "P1",
+      "file": "app/lib/demo-hook.js",
+      "line": 140,
+      "why_it_matters": "Running the admin demo in an iframe opens the regular user's continuity kit storage before loading the sample. The sample action then saves back to that same key, replacing the user's form while retaining private local sections. The demo therefore reads real private state and can alter the draft that the user later returns to; the generated demo document can also include any retained local kit content.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 75,
+      "evidence": [
+        "app/lib/demo-hook.js:140     \"continuity-kit.html\": function () { return inPage(\"continuity\", \"תיק רציפות\", \"תיק רציפות\", \"#example\", \"#go\", \"#kit .kit h2\", \"#kit\", \"#err1\"); },",
+        "app/lib/continuity-kit-ui.js:11   const STORE = window.sbeUserKey ? sbeUserKey('sbe.continuity.v2') : 'sbe.continuity.v2:anon';",
+        "app/lib/continuity-kit-ui.js:25       const v = JSON.parse(localStorage.getItem(STORE) || 'null');",
+        "app/lib/continuity-kit-ui.js:462     S.form = ex; save(); F('err1').hidden = true;",
+        "app/lib/demo-hook.js:111     click(example); await sleep(1200);",
+        "provenance: c46203a7 Claude 2026-10-09 - continuity demo recipe; both this recipe and continuity's regular storage path already exist in c187604, so this is upstream-only relative to local integration.",
+        "Validation: the review context records a local isolation reproduction in which the embedded admin demo read the regular private storage once; its untracked repro test is excluded from reviewed source."
+      ],
+      "pre_existing": true,
+      "suggested_fix": "Detect the authorized embedded demo mode before continuity-kit-ui loads storage, then use a fresh in-memory store (or a separate disposable demo key) for all continuity reads and writes in that mode. Keep the regular user key untouched, and add an isolation test that seeds a real draft, runs the embedded demo, and asserts zero reads and writes to the regular key."
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

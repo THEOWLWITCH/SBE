@@ -1,0 +1,206 @@
+[
+  {
+    "reviewer": "synthesis",
+    "independence_verified": false,
+    "findings": [
+      {
+        "autofix_class": "manual",
+        "confidence": 100,
+        "evidence": [
+          "harness/lib/studio.mjs:379:           text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});",
+          "harness/lib/studio.mjs:347:   finally {clearTimeout(requestTimer);signal?.removeEventListener('abort',abortRequest);}",
+          "harness/practice-server.mjs:151:         const [status,result]=await studioHandler(st,{...payload,token,async:false},{signal:controller.signal,fetchImpl});",
+          "harness/tests/studio-backend.test.mjs:400-410: the repair test asserts invalid-then-valid and invalid-twice replies, with no AbortController or cancellation assertion.",
+          "provenance: c0fb8f7e Claude 2026-10-09 - Studio repair helper already used independent AbortSignal.timeout in c187604; local Studio cancellation integration adds the signal contract, exposing the interaction.",
+          "Trigger: a schema-valid first activity has a meeting step with minutes=0. kitErrors rejects it and the new caller at harness/lib/studio.mjs:388-390 sends it to ask for validation repair, independently of the customer-review setting.",
+          "The initial request combines the incoming job signal with its timeout at harness/lib/studio.mjs:334-347. The repair at 374-385 instead supplies an unrelated AbortSignal.timeout and never attaches the incoming signal.",
+          "harness/practice-server.mjs:204:           const cancelled=await finishJob(st,key,actor,{status:'cancelled'},'release');controllers.get(key)?.abort();",
+          "The Studio fetch wrapper at harness/practice-server.mjs:145-150 checks the job before submission and after reading response JSON, but passes options directly to fetch. Thus its post-response check prevents commit without aborting the paid request already in flight.",
+          "Local reproduction used the actual handleStudio and domain exampleActivity, paused the second fetch, then aborted the supplied controller. Observed: jobAborted=true, repairAborted=false, calls=2. Releasing the synthetic response allowed handleStudio to return 200. No paid AI or network was used. All 74 targeted AI/planner/lab/Studio tests passed despite this scenario.",
+          "provenance: c0fb8f7 Claude 2026-10-09 - Fix studio kit rejection and add one repair attempt across tools. Targeted c187604 blame assigns the new validation-repair caller to this commit; it is absent at b7c85b1. This finding concerns its new interaction with the quality branch's cancellable job server, rather than attributing the unchanged timeout helper solely to reconciliation.",
+          "harness/lib/studio.mjs:389-390: the new invalid-kit path invokes ask(...) for a repair after the first call's linked requestController has been removed at line 347.",
+          "harness/practice-server.mjs:203-205: /api/pipeline-cancel aborts controllers.get(key), and lines 145-150 check current state before fetch and after response.json(), not during fetch.",
+          "provenance: c187604 Danny Baranes 2026-10-09 - upstream ask helper already used a timeout-only signal; this integration adds a cancellable first request but leaves the newly reachable repair path unlinked."
+        ],
+        "file": "harness/lib/studio.mjs",
+        "first_evidence": "harness/lib/studio.mjs:379:           text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});",
+        "independent_reviewers": [
+          "adversarial",
+          "reliability",
+          "testing"
+        ],
+        "line": 379,
+        "owner": "downstream-resolver",
+        "pre_existing": false,
+        "requires_verification": true,
+        "reviewers": [
+          "adversarial",
+          "reliability",
+          "testing"
+        ],
+        "severity": "P1",
+        "suggested_fix": "Link every ask request to the incoming job signal and its timeout, check cancellation before submission, and propagate cancellation instead of swallowing it as null. Through createPracticeServer, pause an invalid-first/valid-repair request, cancel the job while the repair is pending, and assert its provider signal aborts, no continuation starts and no activity is committed; retain the live permission checks.",
+        "title": "Cancelling a Studio repair leaves provider work running",
+        "why_it_matters": "Cancelling, expiring or revoking a job during the new validation repair aborts the job controller and can release its usage reservation, but the repair fetch listens only to a separate 180-second timeout. Paid provider work can continue after cancellation. The server checks current access before another request and before committing a result, so this claim concerns the already in-flight request, not stale output publication or starting a repair after cancellation. The direct repair regression does not exercise this lifecycle boundary."
+      },
+      {
+        "autofix_class": "manual",
+        "confidence": 100,
+        "evidence": [
+          "harness/lib/studio.mjs:378:         body:JSON.stringify({model,reasoning:{effort},store:false,instructions,input:[{role:'user',content:[{type:'input_text',text}]}],",
+          "The request finishes at harness/lib/studio.mjs:379 with the schema and timeout, without max_output_tokens. By comparison, the initial payload at line 330 includes max_output_tokens:16000.",
+          "Trigger: the first provider reply parses and matches ACTIVITY_SCHEMA but fails kitErrors. The new caller at harness/lib/studio.mjs:388-390 submits the uncapped repair even when STUDIO_CUSTOMER_REVIEW=off.",
+          "harness/practice-server.mjs:37:   const maxTokens=request.maxTokens ?? request.max_output_tokens ?? 220;",
+          "The integrated Studio wrapper at harness/practice-server.mjs:145-150 reserves requestBudget(request,1), then checks only live access when response.json is read. Unlike boundedProvider at lines 55-60, it does not inspect or charge the response's actual usage.",
+          "Local actual-handler reproduction captured the second request as repairMaxOutputTokens=null; the corrected full kit was accepted with status 200. No paid AI or network was used. The newly added studio-backend repair test calls handleStudio with a plain fetch stub, so its success does not exercise the production job-budget wrapper.",
+          "provenance: c0fb8f7 Claude 2026-10-09 - Fix studio kit rejection and add one repair attempt across tools. The new validation-repair caller is absent at b7c85b1 and inherited from c187604; its interaction with the existing quality-branch budget wrapper is newly reachable for invalid first kits."
+        ],
+        "file": "harness/lib/studio.mjs",
+        "first_evidence": "harness/lib/studio.mjs:378:         body:JSON.stringify({model,reasoning:{effort},store:false,instructions,input:[{role:'user',content:[{type:'input_text',text}]}],",
+        "independent_reviewers": [
+          "adversarial"
+        ],
+        "line": 378,
+        "owner": "downstream-resolver",
+        "pre_existing": false,
+        "requires_verification": true,
+        "reviewers": [
+          "adversarial"
+        ],
+        "severity": "P2",
+        "suggested_fix": "Set explicit max_output_tokens on every ask request, using a defended cap for repaired activities and a smaller cap for customer-review responses. Make the Studio fetch wrapper validate and charge actual provider usage against the reserved job budget, as boundedProvider already does. Verify a repaired response whose reported usage exceeds its reservation through the production server boundary.",
+        "title": "Validation repair omits the provider output budget cap",
+        "why_it_matters": "An invalid first kit now reaches a second paid generation request without max_output_tokens. In the integrated Studio job wrapper, the budget estimator substitutes only 220 output tokens when that field is absent, and the response wrapper never accounts for actual provider usage. A normal complete repaired kit can exceed that output allowance while the job remains green; a much longer schema-valid response can consume substantially more than the work that was reserved. The first generation's explicit 16000-token cap does not protect this new attempt."
+      },
+      {
+        "autofix_class": "gated_auto",
+        "confidence": 75,
+        "evidence": [
+          "harness/lib/studio.mjs:389:     const repaired=await ask(INVITE.apply(INSTRUCTIONS)+'\\nהגרסה הקודמת לא עברה את הבדיקה. תקני בדיוק את הבעיות האלה, ושמרי את כל השאר כפי שהוא: '+errors.join('; '),",
+          "harness/lib/studio.mjs:336,379: the initial generation and each ask() have separate 180000 ms timeouts; lines 395-400 permit a customer review and another revision after the repair.",
+          "app/lib/resilience-studio-ui.js:64:     while(Date.now()-t0<9*60*1000) {",
+          "app/lib/resilience-studio-ui.js:76:     throw new Error('הבנייה נמשכה מעבר לזמן ההמתנה. התוכן הקיים נשמר; אפשר לנסות שוב.');",
+          "Scope evidence: b7c85b1 permits at most initial generation plus customer review/revision; the added validation repair creates a fourth sequential 180-second request, while the browser still polls for nine minutes. Incidence of four slow successful responses was not measured."
+        ],
+        "file": "harness/lib/studio.mjs",
+        "first_evidence": "harness/lib/studio.mjs:389:     const repaired=await ask(INVITE.apply(INSTRUCTIONS)+'\\nהגרסה הקודמת לא עברה את הבדיקה. תקני בדיוק את הבעיות האלה, ושמרי את כל השאר כפי שהוא: '+errors.join('; '),",
+        "independent_reviewers": [
+          "reliability"
+        ],
+        "line": 389,
+        "owner": "downstream-resolver",
+        "pre_existing": false,
+        "requires_verification": true,
+        "reviewers": [
+          "reliability"
+        ],
+        "severity": "P2",
+        "suggested_fix": "Give the Studio job a shared end-to-end deadline and pass its remaining time into every provider call, or extend the browser's polling window beyond the maximum permitted sequence and preserve the job ID for resumption. Test a slow repair plus review/revision sequence.",
+        "title": "Studio repair can outlast the browser's job wait",
+        "why_it_matters": "A generated kit that needs validation repair and then customer review can use three sequential provider calls, with a fourth when customer review requests revision. Each call may take 180 seconds, while the Studio browser stops polling nine minutes after job acceptance. A slow but successful fourth call can therefore finish on the server after the browser has told the user that building failed; retrying starts another charged job and the completed kit is not displayed."
+      },
+      {
+        "autofix_class": "manual",
+        "confidence": 100,
+        "evidence": [
+          "app/lib/demo-hook.js:140:     \"continuity-kit.html\": function () { return inPage(\"continuity\", \"תיק רציפות\", \"תיק רציפות\", \"#example\", \"#go\", \"#kit .kit h2\", \"#kit\", \"#err1\"); },",
+          "app/lib/continuity-kit-ui.js:11,25-26,462: STORE always uses sbeUserKey('sbe.continuity.v2'); load restores the persisted state including S.local; the example action only assigns S.form = ex and saves. There is no separate demo store/state.",
+          "app/lib/continuity-kit-ui.js:365-371,212,277: Generation replaces S.kit/S.emerg but retains S.local. renderLetter fills its text from S.local.letter; renderStudents creates a non-no-print anchor with a.href = S.local.studentsLink.",
+          "app/lib/demo-hook.js:59,124: standalone removes button/script/no-print/input elements but does not remove .sens or .letter-out; inPage returns standalone($(capture), title) for the complete #kit capture.",
+          "app/demo-lab.html:230: await api({action:'demoSave',tool:it.tool||id,title:it.title,label:it.label,html:it.html,input:it.input||'',run:batch,order:ORDER.indexOf(id)});",
+          "provenance: c46203a Claude 2026-10-09 - New tool: continuity kit for the teacher (תיק רציפות); b0845a2 Claude 2026-10-09 - Continuity kit v2: routine and emergency subfolders, sensitive data on device only. The continuity UI is identical to c187604 and its continuity recipe is inherited unchanged.",
+          "app/lib/continuity-kit-ui.js:11 captures the regular sbeUserKey('sbe.continuity.v2') storage key, and load at lines 23-29 restores S.local. There is no separate embedded-demo state. If S.kit exists, line 464 immediately renders its local sensitive inputs.",
+          "The example handler at app/lib/continuity-kit-ui.js:452-462 updates only S.form and the form inputs; it does not clear the existing S.local.red, students, individual or updates tables.",
+          "app/lib/demo-hook.js:112:     var inp = inputSummary();",
+          "inputSummary at app/lib/demo-hook.js:44-54 scans document inputs and excludes only dialog, hidden-type and file inputs. It does not exclude .sens or elements in hidden panes. inPage collects this input before it clears the capture node at line 113.",
+          "app/demo-lab.html:230:           try{await api({action:'demoSave',tool:it.tool||id,title:it.title,label:it.label,html:it.html,input:it.input||'',run:batch,order:ORDER.indexOf(id)});saved++;}",
+          "Local reproduction evaluated the actual inputSummary function with the continuity model's 14 form fields followed by the three rendered red-table inputs. The result included SYNTHETIC_STUDENT_NAME, SYNTHETIC_MEDICAL_DETAILS and SYNTHETIC_SAFETY_ACTION within its first-18-input limit. No real private data or external network was used.",
+          "provenance: c46203a Claude 2026-10-09 - New tool: continuity kit for the teacher (תיק רציפות). Targeted blame at c187604:app/lib/demo-hook.js:131 attributes the identical continuity recipe to this commit; c187604:app/lib/continuity-kit-ui.js is identical to the reviewed file, with scoped local restoration added by b0845a2 on 2026-10-09. This is upstream-only relative to the integration.",
+          "app/lib/demo-hook.js:140     \"continuity-kit.html\": function () { return inPage(\"continuity\", \"תיק רציפות\", \"תיק רציפות\", \"#example\", \"#go\", \"#kit .kit h2\", \"#kit\", \"#err1\"); },",
+          "app/lib/continuity-kit-ui.js:11   const STORE = window.sbeUserKey ? sbeUserKey('sbe.continuity.v2') : 'sbe.continuity.v2:anon';",
+          "app/lib/continuity-kit-ui.js:25       const v = JSON.parse(localStorage.getItem(STORE) || 'null');",
+          "app/lib/continuity-kit-ui.js:462     S.form = ex; save(); F('err1').hidden = true;",
+          "app/lib/demo-hook.js:111     click(example); await sleep(1200);",
+          "provenance: c46203a7 Claude 2026-10-09 - continuity demo recipe; both this recipe and continuity's regular storage path already exist in c187604, so this is upstream-only relative to local integration.",
+          "Validation: the review context records a local isolation reproduction in which the embedded admin demo read the regular private storage once; its untracked repro test is excluded from reviewed source.",
+          "Independent merge-leaf repro: HEAD 4452201 plus the frozen integration; Node v20.19.1; synthetic private marker; node --preserve-symlinks --preserve-symlinks-main --test harness/tests/continuity-demo-isolation.test.mjs. Authorized embedded demo expected zero ordinary private reads and observed one (1 failed); standalone, non-admin and ordinary embedded controls passed (3 passed). This untracked deliberate red test is evidence only, excluded from reviewed source; it does not replace or invalidate the reported 296/296 tracked-suite baseline.",
+          "Merge-leaf provenance check: git diff --exit-code c187604 -- app/lib/continuity-kit-ui.js returned no diff; c187604:app/lib/demo-hook.js has the identical continuity recipe at line 131, attributed by blame to c46203a7 (Claude, 2026-10-09). The reviewed recipe is at line 140 because the team-lab recipe changed neighboring lines."
+        ],
+        "file": "app/lib/demo-hook.js",
+        "first_evidence": "app/lib/demo-hook.js:140:     \"continuity-kit.html\": function () { return inPage(\"continuity\", \"תיק רציפות\", \"תיק רציפות\", \"#example\", \"#go\", \"#kit .kit h2\", \"#kit\", \"#err1\"); },",
+        "independent_reviewers": [
+          "adversarial",
+          "julik-frontend-races",
+          "security"
+        ],
+        "line": 140,
+        "owner": "downstream-resolver",
+        "pre_existing": true,
+        "requires_verification": true,
+        "reviewers": [
+          "adversarial",
+          "julik-frontend-races",
+          "security"
+        ],
+        "severity": "P1",
+        "suggested_fix": "Under the existing administrator/embed/demolab gate, initialize continuity with a fresh in-memory state/store before any ordinary private read. Scope demo summaries to the sample form, exclude sensitive nodes, and capture an explicitly shareable output node. Verify successful and failed demos leave seeded regular storage byte-identical with zero regular reads/writes and send no roster, contact or medical sentinels to demoSave.",
+        "title": "Continuity demos read, replace and upload private kit data",
+        "why_it_matters": "An authorized embedded continuity demo opens the ordinary owner-scoped store, replaces only the sample form and generated folders, and retains private local data. The generic input summary can capture rendered sensitive rows before the kit is cleared, while whole-kit HTML capture retains roster links and letter/contact text. demoSave receives that captured input and HTML; the sample also writes to the regular private draft. The identical continuity UI and recipe are already in c187604 and unrelated to the local reconciliation, so this remains an upstream-only finding outside the primary integration verdict."
+      },
+      {
+        "autofix_class": "gated_auto",
+        "confidence": 100,
+        "evidence": [
+          "app/lib/continuity-kit-ui.js:346     const make = { routine: () => window.SBE_DOC.editable(renderRoutine()), emerg: renderEmerg, students: renderStudents, updates: renderUpdates };",
+          "CLAUDE.md:13 - **כל תוצר: עריכה על המסך ו-PDF מעוצב.** `app/lib/product-doc.js` (`SBE_DOC`): `rich()` לטקסט מהמודל, `editable()` — עריכה ישירה עם הסבר קצר, `print()` — מסמך עם לוגו, כותרת ותאריך, להדפסה או לשמירה כ-PDF (כולל הנוסח הערוך).",
+          "app/lib/continuity-kit-ui.js:242-249 renders the generated emergency model as plain text and tables, without contenteditable or SBE_DOC.editable; line 180-184 only makes the separate readiness fields editable.",
+          "provenance: b0845a2b Claude 2026-10-09 - unchanged at c187604:app/lib/continuity-kit-ui.js:346"
+        ],
+        "file": "app/lib/continuity-kit-ui.js",
+        "first_evidence": "app/lib/continuity-kit-ui.js:346     const make = { routine: () => window.SBE_DOC.editable(renderRoutine()), emerg: renderEmerg, students: renderStudents, updates: renderUpdates };",
+        "independent_reviewers": [
+          "project-standards"
+        ],
+        "line": 346,
+        "owner": "downstream-resolver",
+        "pre_existing": true,
+        "requires_verification": true,
+        "reviewers": [
+          "project-standards"
+        ],
+        "severity": "P2",
+        "suggested_fix": "Wrap the generated emergency content in SBE_DOC.editable, preserve its edited text before showKit rebuilds the pane, and print the edited pane. Keep the readiness and team form controls separate from the contenteditable region.",
+        "title": "Emergency folder lacks on-screen editing",
+        "why_it_matters": "A teacher can correct the generated routine folder directly, but cannot correct generated emergency instructions before printing the same continuity kit. CLAUDE.md:13 requires on-screen editing and a PDF for every product."
+      },
+      {
+        "autofix_class": "gated_auto",
+        "confidence": 75,
+        "evidence": [
+          "app/lib/continuity-kit-ui.js:167     if (window.SBE_REFS) { SBE_REFS.add(k.sources || []); const rs = SBE_REFS.end(); if (rs) root.appendChild(rs); }",
+          "CLAUDE.md:56 - **מקורות בסוף המסמך, לא בתוך הטקסט.** `app/lib/ref-collect.js` (`SBE_REFS`): מוציא [מפתח] ו-(מפתח, מפתח) מהטקסט, ומוסיף סעיף \"מקורות\" בסוף הדוח, המדריך או התשובה.",
+          "app/lib/continuity-kit-ui.js:379-387 prints all four panes in order in one document; line 249 also appends a separate source list to the emergency pane.",
+          "provenance: c46203a7 Claude 2026-10-09 - unchanged at c187604:app/lib/continuity-kit-ui.js:167; b0845a2b Claude 2026-10-09 - unchanged print assembly at c187604:379-387"
+        ],
+        "file": "app/lib/continuity-kit-ui.js",
+        "first_evidence": "app/lib/continuity-kit-ui.js:167     if (window.SBE_REFS) { SBE_REFS.add(k.sources || []); const rs = SBE_REFS.end(); if (rs) root.appendChild(rs); }",
+        "independent_reviewers": [
+          "project-standards"
+        ],
+        "line": 167,
+        "owner": "downstream-resolver",
+        "pre_existing": true,
+        "requires_verification": true,
+        "reviewers": [
+          "project-standards"
+        ],
+        "severity": "P2",
+        "suggested_fix": "For the combined printable kit, collect and deduplicate the selected routine and emergency references, remove their pane-local source blocks from the print copy, and append one attached source section after the final pane.",
+        "title": "Continuity sources appear before document end",
+        "why_it_matters": "When a teacher opts to attach sources and prints the full continuity kit, the routine source list appears before the emergency, student, and update folders. This breaks the project's rule that sources belong at the end of the document."
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "rejected_claims": [
+    {
+      "reviewer": "api-contract",
+      "title": "Hyrum's Law: source opt-out invalidates exported v1 activity",
+      "file": "app/lib/team-learning-lab-ui.js",
+      "line": 416,
+      "disposition": "rejected-during-synthesis",
+      "reason": "The claim assumes a consumer that imports the sharing JSON as a complete activity. The inspected publicPack and UI consumers do not advertise that import/validation contract. The explicit plan requires source opt-out from JSON while keeping the frozen approval complete; the export mutates only a freshly validated clone. No current consumer breakage or significant maintenance consequence was established, so the proposed new version/discriminator is an unsupported contract expansion.",
+      "evidence": [
+        "app/lib/team-learning-lab-ui.js:413-417: pack() returns T.publicPack; only its local p.sources and p.activity.sources are emptied for the explicitly selected JSON sharing export.",
+        "app/lib/team-learning-lab.js:233-237: publicPack constructs a new validated context/activity object from the frozen approval; it is not an import API.",
+        "docs/team-learning-lab-plan.md:44,54 explicitly requires PDF/JSON source attachment to be opt-in and the frozen approval to remain complete when JSON omits sources.",
+        "Text reference inspection found validateActivity used for draft generation, approvals, evidence reconstruction, proposals and demo rendering, with no public-pack JSON ingestion consumer in the reviewed repository. This is a repository-bounded consumer inspection, not an assertion about unknown external integrations.",
+        "Discriminating tests on HEAD 4452201 plus the frozen local integration, Node v20.19.1, synthetic in-memory browser fixture: approved sources controls plus switching frozen approval tests passed (2 pass, 29 skipped). Actual JSON Blob export omits sources by default and leaves serialized approvals identical; this verifies the specified sharing behavior, not an external import contract."
+      ]
+    }
+  ],
+  "semantic_duplicate_merges": 4,
+  "settlement_discards": 0,
+  "source_detail_keys_preserved": true
+}

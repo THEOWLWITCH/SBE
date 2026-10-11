@@ -1,0 +1,30 @@
+{
+  "status": "complete",
+  "verdict": "Ready to merge",
+  "primary": 0,
+  "actionable": 0,
+  "pre_existing": 3,
+  "validator": {
+    "confirmed": 0,
+    "rejected": 3,
+    "unresolved": 0,
+    "malformed": 0,
+    "failed": 0,
+    "shortcut_skipped": 0
+  },
+  "run_id": "20261010-111543-e72b7705",
+  "scope": {
+    "mode": "standalone",
+    "base": "b7c85b18011f824a86669c98ced19404e85736f0",
+    "branch": "feat/be-good-quality-foundation",
+    "head_sha": "44522014186a731d2ebab0825d54a2f803168aca",
+    "pr_url": null,
+    "files_changed": 53,
+    "changed_lines": 2123,
+    "executable_lines": 1479,
+    "executable_non_test_lines": 1012,
+    "reviewed_tree": "HEAD 44522014186a731d2ebab0825d54a2f803168aca plus the frozen tracked local integration; HEAD alone is not the reviewed source.",
+    "main_included_through": "c187604",
+    "main_excluded": "daaa5c4"
+  }
+}

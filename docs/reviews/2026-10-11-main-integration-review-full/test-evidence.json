@@ -1,0 +1,25 @@
+{
+  "reviewed_head": "44522014186a731d2ebab0825d54a2f803168aca",
+  "base": "b7c85b18011f824a86669c98ced19404e85736f0",
+  "main_included_through": "c187604",
+  "main_excluded": "daaa5c4",
+  "frozen_baseline": {
+    "evidence_path": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\outputs\\team-lab-main-integration-tests.log",
+    "sha256": "595e3eeb7a8971914222f7839f52ed88a06ea0fe48b99e777179c588036ed084",
+    "tests": 296,
+    "pass": 296,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 46386.101,
+    "evidence": "Dispatch context read actual saved TAP summary; source/tests were frozen. Root ran full suite with preserve-symlink flags."
+  },
+  "deliberate_red_repro": {
+    "path": "harness/tests/continuity-demo-isolation.test.mjs",
+    "command": "node --preserve-symlinks --preserve-symlinks-main --test harness/tests/continuity-demo-isolation.test.mjs",
+    "scope": "untracked, excluded from frozen baseline",
+    "root_reported_result": "Authorized embedded demo expected zero ordinary private storage reads and observed one. Three normal-mode controls pass. No production fix yet.",
+    "observed_by_dispatch_context": false
+  }
+}

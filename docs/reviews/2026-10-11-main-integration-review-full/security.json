@@ -1,0 +1,28 @@
+{
+  "reviewer": "security",
+  "findings": [
+    {
+      "title": "CWE-200 Continuity demos upload private local kit data",
+      "severity": "P1",
+      "file": "app/lib/demo-hook.js",
+      "line": 140,
+      "why_it_matters": "When an administrator already has a real continuity kit on this browser and runs its demo, the demo opens the ordinary owner-scoped store and replaces only the example form and generated folders. It retains S.local, including the private school-roster link and filled parent-letter replacement/contact fields. The recipe captures all of #kit; standalone removes input elements but preserves the roster anchor and rendered letter text, and demo-lab sends that HTML to demoSave. Therefore data entered as local kit data is uploaded without a kit export choice, and can later be exposed by publishing the supposedly fictional demo. This defect is unchanged upstream behavior at c187604, rather than a new reconciliation defect.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 75,
+      "evidence": [
+        "app/lib/demo-hook.js:140:     \"continuity-kit.html\": function () { return inPage(\"continuity\", \"תיק רציפות\", \"תיק רציפות\", \"#example\", \"#go\", \"#kit .kit h2\", \"#kit\", \"#err1\"); },",
+        "app/lib/continuity-kit-ui.js:11,25-26,462: STORE always uses sbeUserKey('sbe.continuity.v2'); load restores the persisted state including S.local; the example action only assigns S.form = ex and saves. There is no separate demo store/state.",
+        "app/lib/continuity-kit-ui.js:365-371,212,277: Generation replaces S.kit/S.emerg but retains S.local. renderLetter fills its text from S.local.letter; renderStudents creates a non-no-print anchor with a.href = S.local.studentsLink.",
+        "app/lib/demo-hook.js:59,124: standalone removes button/script/no-print/input elements but does not remove .sens or .letter-out; inPage returns standalone($(capture), title) for the complete #kit capture.",
+        "app/demo-lab.html:230: await api({action:'demoSave',tool:it.tool||id,title:it.title,label:it.label,html:it.html,input:it.input||'',run:batch,order:ORDER.indexOf(id)});",
+        "provenance: c46203a Claude 2026-10-09 - New tool: continuity kit for the teacher (תיק רציפות); b0845a2 Claude 2026-10-09 - Continuity kit v2: routine and emergency subfolders, sensitive data on device only. The continuity UI is identical to c187604 and its continuity recipe is inherited unchanged."
+      ],
+      "pre_existing": true,
+      "suggested_fix": "Give continuity's authorized embedded demolab mode a fresh in-memory state and store, following team-learning-lab-ui.js's demoRun isolation pattern, so the recipe neither loads nor writes sbe.continuity.v2. Capture an explicitly nonsensitive printable node for the demo instead of the whole live #kit. Verify with a seeded regular kit that a successful and failed demo leave its bytes intact and that demoSave HTML/input contain none of its roster URL or letter/contact markers."
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

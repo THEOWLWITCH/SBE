@@ -1,0 +1,9 @@
+{
+  "head_sha": "44522014186a731d2ebab0825d54a2f803168aca",
+  "verified_paths": 53,
+  "snapshot_hash_mismatches": [],
+  "production_and_tracked_tests_unchanged": true,
+  "scope_mode": "standalone",
+  "legacy_context_mode": "local-aligned",
+  "scope_mode_resolution": "finish-input standalone supersedes the older local-aligned label in scope-context.json"
+}

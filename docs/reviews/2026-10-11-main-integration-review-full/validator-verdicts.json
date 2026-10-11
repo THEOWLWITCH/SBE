@@ -1,0 +1,22 @@
+{
+  "verdicts": [
+    {
+      "#": 1,
+      "status": "rejected",
+      "protected_subject": "concurrency",
+      "reason": "The required in-flight production repair is unreachable in the frozen 4452201 integration: studio.mjs:64-67,92-97 always supplies at least 180 public sources whose inspected double-encoded contribution is 154870 bytes, exceeding practice-server.mjs:238's 128000 budget before its :145-149 fetch guard, and a Node v20.19.1 in-process production-listener test with STUDIO_CUSTOMER_REVIEW=off and a synthetic invalid-first/valid-repair provider observed zero fetches and an error job; the direct handleStudio signal mismatch reproduces only when this guard is bypassed."
+    },
+    {
+      "#": 2,
+      "status": "rejected",
+      "protected_subject": null,
+      "reason": "Although studio.mjs:378-379 omits the repair cap, its alleged accepted paid production repair cannot occur in the frozen 4452201 integration because :64-67,92-97's mandatory public-source payload alone contributes 154870 encoded bytes against practice-server.mjs:238's 128000 job budget and :145-149 rejects before the initial fetch; the independently inspected Node v20.19.1 production-listener reproduction with STUDIO_CUSTOMER_REVIEW=off, an invalid-first/valid-repair fixture and oversized synthetic reported usage observed zero provider calls, an error job and no committed output."
+    },
+    {
+      "#": 3,
+      "status": "rejected",
+      "protected_subject": "concurrency",
+      "reason": "The four-response precondition is prevented for the actual browser consumer in this frozen 4452201 integration: resilience-studio-ui.js:12 targets the server started by render.yaml:6, whose practice-server.mjs:145-149,238 rejects the mandatory studio.mjs:64-67,92-97 source contribution of 154870 encoded bytes against its 128000 budget before the first generation, so the :64 nine-minute polling limit cannot encounter the claimed slow repair/review/revision sequence; a Node v20.19.1 synthetic production-listener test with customer review off observed zero provider calls and an immediate error job."
+    }
+  ]
+}
