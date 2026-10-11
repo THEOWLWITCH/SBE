@@ -19,18 +19,18 @@ test('a clear product passes through unchanged after one review call', async () 
   assert.match(p.calls[0].messages[0].content, /שמות השדות הם הכותרות/);
 });
 
-test('an unclear product is fixed once, in the same JSON shape', async () => {
-  const p = fake([JSON.stringify({ ready: false, summary: 'לא ברור', issues: [issue] }), 'הנה: {"title":"ב","flow":[]}']);
-  const out = await customerPass(p, { system: 'S', messages: [{ role: 'user', content: 'בקשה' }], maxTokens: 8000, text: '{"title":"א","flow":[]}' });
-  assert.equal(out.review.revised, true); assert.match(out.text, /"title":"ב"/); assert.equal(p.calls.length, 2);
-  assert.equal(p.calls[1].system, 'S'); assert.equal(p.calls[1].maxTokens, 8000);
-  const last = p.calls[1].messages.at(-1).content; assert.match(last, /הלקוחה קראה את הגרסה הקודמת/); assert.match(last, /JSON תקין/);
-  assert.equal(p.calls[1].messages.at(-2).role, 'assistant');
+test('an unclear product is fixed with targeted edits (not a full rewrite), and the JSON stays valid', async () => {
+  const p = fake([JSON.stringify({ ready: false, summary: 'לא ברור', issues: [issue] }), JSON.stringify({ edits: [{ find: 'שאלות לעיבוד', replace: 'שאלות לסיכום: המנחה שואלת את הקבוצה' }] })]);
+  const out = await customerPass(p, { system: 'S', messages: [{ role: 'user', content: 'בקשה' }], maxTokens: 16000, text: '{"title":"א","flow":[{"guide":"שאלות לעיבוד \\"בסוף\\""}]}' });
+  assert.equal(out.review.revised, true); assert.equal(p.calls.length, 2);
+  const o = JSON.parse(out.text); assert.equal(o.title, 'א'); assert.match(o.flow[0].guide, /^שאלות לסיכום: המנחה שואלת את הקבוצה/);
+  assert.match(p.calls[1].system, /העורכת של Begood/); assert.equal(p.calls[1].maxTokens, 4000);
+  assert.match(p.calls[1].messages[0].content, /ההערות של הלקוחה/);
 });
 
 test('a broken fix (missing fields, empty, error) keeps the original; a failing review never blocks the product', async () => {
   const orig = '{"title":"א","flow":[]}';
-  for (const second of ['{"title":"ב"}', '', new Error('x')]) {
+  for (const second of [JSON.stringify({ edits: [{ find: 'לא קיים בתוצר', replace: 'x' }] }), '', 'לא JSON', new Error('x')]) {
     const out = await customerPass(fake([JSON.stringify({ ready: false, summary: '', issues: [issue] }), second]), { system: 'S', messages: [], maxTokens: 100, text: orig });
     assert.equal(out.text, orig); assert.equal(out.review.revised, false);
   }
@@ -41,7 +41,7 @@ test('a broken fix (missing fields, empty, error) keeps the original; a failing 
 });
 
 test('plain-text products are revised as text', async () => {
-  const p = fake([JSON.stringify({ ready: false, summary: '', issues: [issue] }), 'הודעה מתוקנת']);
-  const out = await customerPass(p, { system: 'S', messages: [{ role: 'user', content: [{ type: 'text', text: 'כתבי הודעה' }, { type: 'image' }] }], text: 'הודעה' });
-  assert.equal(out.text, 'הודעה מתוקנת'); assert.match(p.calls[0].messages[0].content, /כתבי הודעה/); assert.match(p.calls[1].messages.at(-1).content, /בלי הקדמה/);
+  const p = fake([JSON.stringify({ ready: false, summary: '', issues: [issue] }), JSON.stringify({ edits: [{ find: 'הודעה קצרה', replace: 'הודעה מתוקנת' }] })]);
+  const out = await customerPass(p, { system: 'S', messages: [{ role: 'user', content: [{ type: 'text', text: 'כתבי הודעה' }, { type: 'image' }] }], text: 'שלום. הודעה קצרה לכיתה.' });
+  assert.equal(out.text, 'שלום. הודעה מתוקנת לכיתה.'); assert.match(p.calls[0].messages[0].content, /כתבי הודעה/);
 });
