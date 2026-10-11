@@ -41,6 +41,43 @@
     return 'הלקוחה קראה את הגרסה הקודמת ומצאה את הבעיות האלה. תקני בדיוק אותן, ושמרי את כל השאר כפי שהוא: אותו מבנה, אותו תוכן, אותם מקורות ואותם מזהים. ' +
       (issues || []).map((x, i) => (i + 1) + '. ' + [x.where, x.problem, x.fix && ('הצעה: ' + x.fix)].filter(Boolean).join(' · ')).join(' ');
   }
+  // תיקון לפי הלקוחה (11/10/2026: "אני רוצה תוצר אחרי שהסוכנת בודקת אותו"): עריכות מדויקות בטקסט של התוצר,
+  // כך שהמבנה, הטבלאות והעיצוב נשמרים. find = ציטוט מדויק מהתוצר, replace = הנוסח החדש.
+  const fixSystem = [
+    'את העורכת של Begood. קיבלת תוצר מוכן, ואת ההערות של הלקוחה שקראה אותו. התפקיד שלך: לתקן בדיוק את מה שהיא העירה, ולא לגעת בשאר.',
+    'החזירי עריכות בטקסט. לכל עריכה: find = רצף מילים שמופיע בתוצר בדיוק כפי שהוא, בתוך פסקה, פריט או תא אחד (העתיקי מהתוצר, בלי לשנות אות). replace = הנוסח המתוקן של אותו קטע.',
+    'כשחסר מידע: find = המשפט שאחריו מוסיפים, ו-replace = אותו משפט ואחריו התוספת. כשצריך לפרק הנחיה עמומה: כתבי מי עושה, מה עושים, עם מה ומה יוצא בסוף.',
+    'הנוסח החדש: עברית פשוטה, משפטים מלאים עם נקודה בסוף, פנייה ישירה בגוף שני, שפה של הזמנה, בלי מקף ארוך. לא ממציאים שמות, עובדות או מקורות: מקום למילוי בסוגריים מרובעים.',
+    'עריכה אחת לכל הערה לפחות, ועד 16 עריכות. find קצר ככל האפשר אבל ייחודי בתוצר.',
+    'החזירי אך ורק JSON: {"edits":[{"find":"","replace":""}]}'
+  ].join('\n\n');
+  function fixRequest(text, issues, input) {
+    return 'מה ביקשתי (הקלט):\n' + (input || 'לא נשמר') + '\n\nההערות של הלקוחה:\n' +
+      (issues || []).map((x, i) => (i + 1) + '. ' + [x.where && 'איפה: ' + x.where, x.quote && 'מה כתוב: "' + x.quote + '"', x.problem && 'מה לא ברור: ' + x.problem, x.fix && 'הצעה: ' + x.fix].filter(Boolean).join(' · ')).join('\n') +
+      '\n\nהתוצר:\n' + text;
+  }
+  // מחילה את העריכות על מסמך HTML (בדפדפן). מחפשת קודם בצומת טקסט אחד, ואחר כך באלמנט הקטן ביותר שמכיל את הקטע.
+  function applyEdits(html, edits) {
+    if (typeof DOMParser === 'undefined') return { html, applied: 0 };
+    const d = new DOMParser().parseFromString(html, 'text/html');
+    const norm = (t) => String(t || '').replace(/\s+/g, ' ').trim();
+    let applied = 0;
+    (edits || []).forEach((e) => {
+      const find = norm(e && e.find), rep = norm(e && e.replace);
+      if (!find || find.length < 3 || find === rep) return;
+      const w = d.createTreeWalker(d.body, 4);
+      for (let n = w.nextNode(); n; n = w.nextNode()) {
+        if (n.parentNode && /^(SCRIPT|STYLE)$/.test(n.parentNode.nodeName)) continue;
+        const t = n.textContent.replace(/\s+/g, ' ');
+        const i = t.indexOf(find);
+        if (i >= 0) { n.textContent = t.slice(0, i) + rep + t.slice(i + find.length); applied++; return; }
+      }
+      const els = [...d.body.querySelectorAll('p,li,td,th,h1,h2,h3,h4,h5,dd,dt,span,div,blockquote')]
+        .filter((x) => norm(x.textContent).includes(find) && !x.querySelector('table,ul,ol,p,li,div'));
+      if (els.length) { const x = els.sort((a, b) => a.textContent.length - b.textContent.length)[0]; x.textContent = norm(x.textContent).replace(find, rep); applied++; }
+    });
+    return { html: '<!DOCTYPE html>\n' + d.documentElement.outerHTML, applied };
+  }
   function textOf(x) {
     if (x == null) return '';
     if (typeof x === 'string') {
@@ -72,5 +109,5 @@
     walk(x);
     return out.join(' ').replace(/ *\n */g, '\n').replace(/\n{2,}/g, '\n').trim();
   }
-  return { CHECKS, system, schema, reviseNote, textOf };
+  return { CHECKS, system, schema, reviseNote, textOf, fixSystem, fixRequest, applyEdits };
 });

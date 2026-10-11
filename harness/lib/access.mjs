@@ -676,6 +676,15 @@ async function handleDemos(store, body) {
     await store.set('demo:index', []);
     return [200, { ok: true, deleted: index.length }];
   }
+  // גרסה מתוקנת אחרי בדיקת הלקוחה (11/10/2026): מחליפה את המסמך במקום, ושומרת את מצב הספרייה
+  if (action === 'demoUpdate') {
+    const id = String(body.id || ''), html = String(body.html || '');
+    if (!index.some((d) => d.id === id)) return [404, { error: 'not found' }];
+    if (!html || html.length > DEMO_MAX) return [400, { error: 'bad html' }];
+    await store.set('demo:' + id, { html });
+    await store.set('demo:index', index.map((d) => d.id === id ? { ...d, fixed: (d.fixed || 0) + 1, fixedAt: new Date().toISOString() } : d));
+    return [200, { ok: true }];
+  }
   if (action === 'demoPublish' || action === 'demoDelete') {
     const id = String(body.id || '');
     if (!index.some((d) => d.id === id)) return [404, { error: 'not found' }];
@@ -1405,7 +1414,7 @@ export async function handleAccess(store, body) {
 
   if (typeof action === 'string' && action.startsWith('resil')) return handleResilience(store, body);
   if (action === 'listGet' || action === 'listAdd' || action === 'listRemove') return handleLists(store, body);
-  if (/^demo(Save|List|Get|Publish|Delete|Clear|PublicList)$/.test(action || '')) return handleDemos(store, body);
+  if (/^demo(Save|Update|List|Get|Publish|Delete|Clear|PublicList)$/.test(action || '')) return handleDemos(store, body);
   if (action === 'fbSubmit' || action === 'fbList' || action === 'fbDelete') return handleFeedbackInbox(store, body);
   if (/^crit(List|Propose|Mine|Use|Admin|Approve|Reject|Remove)$/.test(action || '')) return handleReviewCriteria(store, body);
   if (/^jr[A-Z]/.test(action || '')) return handleJourney(store, body);

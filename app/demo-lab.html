@@ -118,7 +118,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 <p class="muted" style="margin-top:10px">מסע אל החוסן נוצר כמסע דמו (בלי מיילים, ולא נספר בדוחות ובמחקר). אפשר למחוק אותו בלוח המסעות.</p>
 
 <h2 id="list-h">התיקייה שלי: התוצרים שהופקו</h2>
-<div class="row" style="margin-bottom:10px"><button class="btn sm" id="rvAll" type="button">🧐 בדיקת הלקוחה לכל התוצרים</button><button class="btn danger sm" id="clearAll" type="button">🗑 מחיקת כל התוצרים</button><a href="examples.html" target="_blank" rel="noopener" class="btn ghost sm">📚 לספריית התוצרים לדוגמה ←</a><span class="muted">שם מופיע רק מה ששמרת בספרייה.</span></div>
+<div class="row" style="margin-bottom:10px"><button class="btn sm" id="rvAll" type="button">🧐 בדיקה ותיקון לכל התוצרים</button><button class="btn danger sm" id="clearAll" type="button">🗑 מחיקת כל התוצרים</button><a href="examples.html" target="_blank" rel="noopener" class="btn ghost sm">📚 לספריית התוצרים לדוגמה ←</a><span class="muted">שם מופיע רק מה ששמרת בספרייה.</span></div>
 <div id="list"><p class="muted">טוען...</p></div>
 </div>
 
@@ -223,10 +223,15 @@ function runOne(id,batch){
       if(m.status==='running'){F('st-'+id).textContent='מפיק מול המודל...';return;}
       if(m.status==='error'){end('error',m.message||'לא הופק');return;}
       if(m.status==='done'){
-        F('st-'+id).textContent='שומר...';
+        clearTimeout(guard);
         let saved=0,err='';
         for(const it of (m.items||[])){
-          try{await api({action:'demoSave',tool:it.tool||id,title:it.title,label:it.label,html:it.html,input:it.input||'',run:batch,order:ORDER.indexOf(id)});saved++;}
+          // התוצר נשמר רק אחרי שהלקוחה קראה אותו והוא תוקן לפי ההערות שלה
+          let html=it.html,r=null;
+          try{const out=await reviewAndFix(html,it.input||'',it.title,t=>{F('st-'+id).textContent=t;});html=out.html;r=out.r;}
+          catch(x){console.warn('בדיקת הלקוחה:',x.message);}
+          F('st-'+id).textContent='שומר...';
+          try{const sv=await api({action:'demoSave',tool:it.tool||id,title:it.title,label:it.label,html,input:it.input||'',run:batch,order:ORDER.indexOf(id)});saved++;if(r&&sv&&sv.item)rvSet(sv.item.id,r);}
           catch(x){err=x.message;}
         }
         end(saved?'done':'error',saved?'נשמר ✓ ('+saved+' '+(saved>1?'מסמכים':'מסמך')+', '+Math.max(1,Math.round((Date.now()-t0)/60000))+' דק׳)':('השמירה לא הצליחה: '+err));
@@ -248,27 +253,57 @@ const HIDDEN_HINT=/טרם פורסם|SadeTools2026|SadeTrust2026/;
 const AI_SERVER='https://sbe-server.onrender.com', RV_KEY='sbe.demolab.review.v1';
 function rvGet(id){try{return (JSON.parse(localStorage.getItem(RV_KEY)||'{}')||{})[id]||null;}catch(e){return null;}}
 function rvSet(id,v){try{const o=JSON.parse(localStorage.getItem(RV_KEY)||'{}')||{};o[id]=v;localStorage.setItem(RV_KEY,JSON.stringify(o));}catch(e){}}
-function rvLabel(d){const r=rvGet(d.id);return !r?'🧐 בדיקת הלקוחה':r.ready&&!(r.issues||[]).length?'🧐 ברור ✓':((r.issues||[]).length===1?'🧐 הערה אחת':'🧐 '+(r.issues||[]).length+' הערות');}
+function rvLabel(d){const r=rvGet(d.id),n=r?(r.issues||[]).length:0;if(!r)return '🧐 בדיקה ותיקון';
+  if(r.fixed)return n?'🔧 תוקן · עוד '+(n===1?'הערה אחת':n+' הערות'):'🔧 תוקן ✓ ברור';
+  return !n?'🧐 ברור ✓':(n===1?'🧐 הערה אחת · תיקון':'🧐 '+n+' הערות · תיקון');}
+// בדיקה ותיקון (11/10/2026: "אני רוצה תוצר אחרי שהסוכנת בודקת אותו"): הלקוחה קוראת, העורכת מתקנת בדיוק לפי ההערות
+// (עריכות בטקסט, המבנה נשמר: SBE_CUSTOMER.fixSystem, applyEdits), והלקוחה קוראת שוב. עד שני סבבי תיקון.
+async function rvRun(html,input,title){
+  const text=SBE_CUSTOMER.textOf(html).slice(0,60000);
+  const raw=await sbeCallAI(AI_SERVER,{system:SBE_CUSTOMER.system,messages:[{role:'user',content:'מה ביקשתי (הקלט):\n'+(input||'לא נשמר')+'\n\nהתוצר שקיבלתי ('+title+'):\n'+text}],maxTokens:6000},240000);
+  const r=sbeParseJSON(raw);if(!r||typeof r!=='object')throw new Error('התשובה לא הגיעה במבנה הנכון. אפשר לנסות שוב');
+  r.issues=Array.isArray(r.issues)?r.issues:[];return r;
+}
+async function fixRun(html,issues,input){
+  const text=SBE_CUSTOMER.textOf(html).slice(0,60000);
+  const raw=await sbeCallAI(AI_SERVER,{system:SBE_CUSTOMER.fixSystem,messages:[{role:'user',content:SBE_CUSTOMER.fixRequest(text,issues,input)}],maxTokens:8000},240000);
+  const v=sbeParseJSON(raw);
+  return SBE_CUSTOMER.applyEdits(html,v&&Array.isArray(v.edits)?v.edits:[]);
+}
+async function reviewAndFix(html,input,title,say){
+  say('🧐 הלקוחה קוראת...');
+  let r=await rvRun(html,input,title);const found=r.issues.length;let fixed=0;
+  for(let round=0;round<2&&r.issues.length;round++){
+    say('🔧 מתקנת לפי '+r.issues.length+' הערות...');
+    const f=await fixRun(html,r.issues,input);if(!f.applied)break;
+    html=f.html;fixed+=f.applied;
+    say('🧐 הלקוחה קוראת שוב...');
+    r=await rvRun(html,input,title);
+  }
+  r.found=found;r.fixed=fixed;r.at=new Date().toISOString();
+  return {html,r};
+}
 async function review(d,btn,show){
-  const old=btn.textContent;btn.disabled=true;btn.textContent='🧐 קוראת... (עד 2 דק׳)';
+  const old=btn.textContent;btn.disabled=true;
   try{
     const full=await api({action:'demoGet',id:d.id});
-    const text=SBE_CUSTOMER.textOf(full.html).slice(0,60000);
-    const raw=await sbeCallAI(AI_SERVER,{system:SBE_CUSTOMER.system,messages:[{role:'user',content:'מה ביקשתי (הקלט):\n'+(d.input||'לא נשמר')+'\n\nהתוצר שקיבלתי ('+d.title+'):\n'+text}],maxTokens:6000},240000);
-    const r=sbeParseJSON(raw);if(!r||typeof r!=='object')throw new Error('התשובה לא הגיעה במבנה הנכון. אפשר לנסות שוב');r.issues=Array.isArray(r.issues)?r.issues:[];r.at=new Date().toISOString();rvSet(d.id,r);
-    btn.textContent=rvLabel(d);if(show)showReview(d,r);return r;
+    const out=await reviewAndFix(full.html,d.input,d.title,t=>{btn.textContent=t+' (כמה דקות)';});
+    if(out.r.fixed)await api({action:'demoUpdate',id:d.id,html:out.html});
+    rvSet(d.id,out.r);btn.textContent=rvLabel(d);if(show)showReview(d,out.r);return out.r;
   }catch(e){btn.textContent=old;if(show)alert('הבדיקה לא הצליחה: '+e.message);return null;}
   finally{btn.disabled=false;}
 }
 function showReview(d,r){
   F('rvT').textContent='🧐 בדיקת הלקוחה: '+d.title;const b=F('rvB');b.textContent='';
+  if(r.found)b.appendChild(el('p',null,'🔧 הלקוחה מצאה '+r.found+(r.found===1?' הערה':' הערות')+', והתוצר תוקן ('+r.fixed+(r.fixed===1?' תיקון':' תיקונים')+'). התוצר בתיקייה הוא הגרסה המתוקנת.'));
   b.appendChild(el('p',null,(r.ready&&!r.issues.length?'✓ ':'')+(r.summary||'')));
+  if(r.issues.length)b.appendChild(el('p',null,r.found?'מה שעוד נשאר אחרי התיקון:':'ההערות:'));
   if(r.issues.length){
     const t=el('table','kit-table');t.style.cssText='width:100%;border-collapse:collapse;font-size:14px';
     const h=el('tr');['איפה','מה כתוב','מה לא ברור','הצעה לתיקון'].forEach(x=>{const th=el('th',null,x);th.style.cssText='background:#2E5A7D;color:#fff;padding:6px 8px;text-align:right';h.appendChild(th);});t.appendChild(h);
     r.issues.forEach(x=>{const tr=el('tr');[x.where,x.quote,x.problem,x.fix].forEach(v=>{const td=el('td',null,v||'');td.style.cssText='border:1px solid var(--hair);padding:6px 8px;vertical-align:top';tr.appendChild(td);});t.appendChild(tr);});
     b.appendChild(t);
-    b.appendChild(el('p','muted','הבדיקה עוזרת לראות מה כדאי לשפר בכלי עצמו. התוצר בתיקייה לא משתנה.'));
+    b.appendChild(el('p','muted','אפשר ללחוץ שוב על הכפתור בשורה לסבב תיקון נוסף.'));
   }
   F('rvDlg').showModal();
 }
@@ -282,8 +317,8 @@ F('clearAll').onclick=async()=>{
 };
 F('rvAll').onclick=async()=>{
   const btn=F('rvAll');if(btn.disabled)return;btn.disabled=true;let n=0;
-  for(const d of ITEMS){btn.textContent='🧐 בודקת '+(++n)+' מתוך '+ITEMS.length+'...';const c=[...document.querySelectorAll('#list .item')].find(x=>x.querySelector('b')&&x.querySelector('b').textContent===d.title&&x.querySelector('.rv-btn'));await review(d,c?c.querySelector('.rv-btn'):el('button'),false);}
-  btn.disabled=false;btn.textContent='🧐 בדיקת הלקוחה לכל התוצרים';
+  for(const d of ITEMS){btn.textContent='🧐 בודקת ומתקנת '+(++n)+' מתוך '+ITEMS.length+'...';const pr=rvGet(d.id);if(pr&&!(pr.issues||[]).length)continue;const c=[...document.querySelectorAll('#list .item')].find(x=>x.querySelector('b')&&x.querySelector('b').textContent===d.title&&x.querySelector('.rv-btn'));await review(d,c?c.querySelector('.rv-btn'):el('button'),false);}
+  btn.disabled=false;btn.textContent='🧐 בדיקה ותיקון לכל התוצרים';
 };
 async function loadList(){
   const box=F('list');

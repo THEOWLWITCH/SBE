@@ -36,14 +36,31 @@
   const nameOf = (it) => txt(it.plan && it.plan.title) || it.form.mechType || 'מנגנון חדש';
   const names = () => Object.values(I.people || {}).flatMap((p) => [p.who, p.backup]).flatMap((n) => String(n || '').split(/[,،]/));
 
-  // ── סרגל המנגנונים ──
+  // ── סרגל המנגנונים: אריח לכל מנגנון, עם סמל לפי הסוג ופס התקדמות של ארבעה צעדים ──
+  const MECH_ICON = { 'מועצת כיתה': '🗳️', 'לוח עזרה': '🤝', 'ועדה': '🧩', 'צוות פעולה': '🚀', 'מפגש חוסן קבוע': '🌱' };
+  const STEP_ICON = ['🧭', '🤝', '🔁', '🌱'];
+  // חגיגה קטנה כשמאשרים (בלי תנועה למי שביקש פחות תנועה)
+  function celebrate() {
+    try { if (matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch (e) {}
+    const box = el('div', 'confetti'); box.setAttribute('aria-hidden', 'true');
+    const C = ['#2A9D8F', '#E3A72F', '#4E9A4F', '#D9694B', '#24476B'];
+    for (let i = 0; i < 36; i++) {
+      const p = el('i'); p.style.left = Math.random() * 100 + '%'; p.style.background = C[i % C.length];
+      p.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px'); p.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg');
+      p.style.animationDelay = Math.random() * .35 + 's'; if (i % 3 === 0) p.style.borderRadius = '50%';
+      box.appendChild(p);
+    }
+    document.body.appendChild(box); setTimeout(() => box.remove(), 2400);
+  }
   function renderHub() {
     const box = F('hub'); box.textContent = '';
     S.items.forEach((it) => {
       const c = el('button', 'mech' + (it.id === I.id ? ' on' : '')); c.type = 'button';
+      c.appendChild(el('span', 'm-ico', MECH_ICON[it.form.mechType] || '✨'));
       c.appendChild(el('b', null, nameOf(it)));
       const st = M.STAGES[(it.step || 1) - 1];
-      c.appendChild(el('span', null, (it.form.mechType && it.plan ? it.form.mechType + ' · ' : '') + 'צעד ' + (it.step || 1) + ': ' + st.t + (it.version ? ' · גרסה ' + it.version : '')));
+      c.appendChild(el('span', 'm-sub', (it.form.mechType && it.plan ? it.form.mechType + ' · ' : '') + 'צעד ' + (it.step || 1) + ': ' + st.t + (it.version ? ' · גרסה ' + it.version : '')));
+      const dots = el('span', 'm-dots'); for (let i = 1; i <= 4; i++) dots.appendChild(el('i', i <= (it.step || 1) && (i === 1 || it.plan) ? 'd' + i : '')); c.appendChild(dots);
       c.addEventListener('click', () => { S.cur = it.id; I = it; save(); openItem(); });
       box.appendChild(c);
     });
@@ -110,11 +127,11 @@
 
   // ── צעדים ──
   const STEPS = F('steps');
-  M.STAGES.forEach((s) => { const li = el('li'); li.dataset.step = s.n; li.appendChild(el('b', null, s.n + '. ' + s.t)); li.appendChild(document.createTextNode(s.d)); STEPS.appendChild(li); });
+  M.STAGES.forEach((s, i) => { const li = el('li'); li.dataset.step = s.n; li.appendChild(el('span', 'tok', STEP_ICON[i])); li.appendChild(el('b', null, s.n + '. ' + s.t)); li.appendChild(el('span', 'sd', s.d)); STEPS.appendChild(li); });
   function goStep(n) {
     if (n > 1 && !I.plan) n = 1;
     I.step = n; save();
-    for (let i = 1; i <= 4; i++) F('s' + i).hidden = i !== n;
+    for (let i = 1; i <= 4; i++) { const sec = F('s' + i); sec.hidden = i !== n; sec.classList.remove('enter'); if (i === n) { void sec.offsetWidth; sec.classList.add('enter'); } }
     STEPS.querySelectorAll('li').forEach((li) => { const i = +li.dataset.step; li.classList.toggle('on', i === n); li.classList.toggle('done', i < n && !!I.plan); });
     if (n === 1) drawOptions(); else draw(n);
     renderHub();
@@ -245,7 +262,10 @@
         ppl.append(w, bk); c.appendChild(ppl);
         M.ROLE_ROWS.forEach(([k2, l]) => { const row = el('div', 'rcard-row'); row.appendChild(el('b', null, l)); row.appendChild(field(r, k2, l, true)); c.appendChild(row); });
         const ok = el('label', 'okline'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!p.ok;
-        cb.addEventListener('change', () => { p.ok = cb.checked; save(); c.classList.toggle('ok', p.ok); c.querySelector('h4').textContent = key + (p.ok ? ' ✓' : ''); });
+        cb.addEventListener('change', () => {
+          p.ok = cb.checked; save(); c.classList.toggle('ok', p.ok); c.classList.toggle('pop', p.ok); c.querySelector('h4').textContent = key + (p.ok ? ' ✓' : '');
+          if (p.ok && arr(I.plan.roles).every((x) => (I.people[txt(x.role)] || {}).ok)) celebrate();
+        });
         ok.append(cb, document.createTextNode(' אישר/ה את התפקיד ואת הגיבוי')); c.appendChild(ok);
       } else {
         if (p.who || p.backup) c.appendChild(el('p', 'rcard-meta', [p.who && 'בתפקיד: ' + p.who, p.backup && 'מגבה: ' + p.backup].filter(Boolean).join(' · ')));
@@ -391,7 +411,7 @@
       by.addEventListener('input', () => { I.approver = by.value; save(); });
       const signed = I.versions.some((x) => x.v === I.version);
       row.append(lab, by, btn(signed ? '✓ גרסה ' + I.version + ' אושרה · מנסים פעמיים ←' : '✓ אישור ההסכם לתקופת ניסיון', 'btn sm', () => {
-        if (!signed) { I.versions.push({ v: I.version, at: today(), by: I.approver || by.value, note: I.version === 1 ? 'גרסה ראשונה' : 'גרסה ' + I.version }); I.log.push({ d: today(), what: 'אישרנו את ההסכם לתקופת ניסיון (גרסה ' + I.version + ')', how: I.how || '', who: '' }); save(); }
+        if (!signed) { celebrate(); I.versions.push({ v: I.version, at: today(), by: I.approver || by.value, note: I.version === 1 ? 'גרסה ראשונה' : 'גרסה ' + I.version }); I.log.push({ d: today(), what: 'אישרנו את ההסכם לתקופת ניסיון (גרסה ' + I.version + ')', how: I.how || '', who: '' }); save(); }
         goStep(3);
       }));
       box.appendChild(row);
