@@ -174,6 +174,13 @@
       await waitFor(function () { var e = $("#err1"); if (e && !e.hidden) return { fail: e.textContent }; return $("#out1 .tiles"); }, 15 * 60e3, "שאלות החקר")
         .then(function (r) { if (r.fail) throw new Error(r.fail); });
       click("#out1 .choice"); await sleep(800);
+      if (q.get("part") === "full") { // חקר שלם: טענות וראיות לדוגמה, והצעת הגרסה המתוקנת מול המודל
+        window.sbeDialogueDemoFill(); click("#steps li[data-step='4']"); await sleep(800); click("#revise");
+        await waitFor(function () { var e = $("#err4"); if (e && !e.hidden) return { fail: e.textContent }; return $("#sugg .tile"); }, 15 * 60e3, "הצעת הגרסה המתוקנת")
+          .then(function (r) { if (r.fail) throw new Error(r.fail); });
+        [].slice.call(document.querySelectorAll("#sugg button")).filter(function (b) { return /אימוץ/.test(b.textContent); })[0].click(); await sleep(800);
+        return [{ tool: "dialogue-full", title: "מעבדת שיח וחקר משותף: תיק החקר עם גרסה מתוקנת", label: "שיח וחקר: תיק החקר", html: standalone(window.sbeDialoguePrintNode("all"), "תיק החקר"), input: inp }];
+      }
       return [{ tool: "dialogue", title: "מעבדת שיח וחקר משותף: נקודת הפתיחה", label: "שיח וחקר משותף", html: standalone(window.sbeDialoguePrintNode("all"), "מעבדת שיח וחקר משותף"), input: inp }];
     },
     "team-thinking.html": async function () {
@@ -181,6 +188,14 @@
       await waitFor(function () { var e = $("#err1"); if (e && !e.hidden) return { fail: e.textContent }; return $("#out1 .tiles"); }, 15 * 60e3, "מהלך החשיבה")
         .then(function (r) { if (r.fail) throw new Error(r.fail); });
       await sleep(800);
+      if (q.get("part") === "round") { // סבב שלם: רעיונות, שקילה, החלטה ופרגון לדוגמה, והמשוב על התהליך מול המודל
+        window.sbeTeamThinkDemoFill(); click("#steps li[data-step='4']"); await sleep(800);
+        click([].slice.call(document.querySelectorAll("#out4 button")).filter(function (b) { return /משוב על התהליך/.test(b.textContent); })[0]);
+        await waitFor(function () { var e = $("#out4 .err:not([hidden])"); if (e && e.textContent) return { fail: e.textContent }; return [].some.call(document.querySelectorAll("#out4 h3"), function (h) { return /מה עבד/.test(h.textContent); }); }, 15 * 60e3, "המשוב על התהליך")
+          .then(function (r) { if (r && r.fail) throw new Error(r.fail); });
+        await sleep(800);
+        return [{ tool: "teamthink-round", title: "חשיבת צוות: סיכום הסבב ומשוב על התהליך", label: "חשיבת צוות: סיכום הסבב", html: standalone(window.sbeTeamThinkPrintNode("round"), "סיכום הסבב"), input: inp }];
+      }
       return [{ tool: "teamthink", title: "חשיבת צוות: מהלך החשיבה ותפקידים", label: "חשיבת צוות", html: standalone(window.sbeTeamThinkPrintNode("plan"), "חשיבת צוות"), input: inp }];
     },
     "family-bridge.html": function () { return inPage("bridge", "גשר בין הבית לכיתה: כרטיס בחירה", "גשר בין הבית לכיתה", "#example", "#go", "#out2 .card-family", "#out2", "#err1"); },
