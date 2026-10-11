@@ -528,6 +528,11 @@
       chosen: 'לוח עזרה שבועי: כל אחד ואחת יכולים לכתוב "אשמח לעזרה ב..." או "אני יכול/ה לעזור ב...", וצוות הלוח מחבר בין הבקשות להצעות.' };
     M.FIELDS.forEach((f) => { const i = F('f-' + f.k); if (f.type === 'select' && ex[f.k] && ![...i.options].some((o) => o.value === ex[f.k])) i.appendChild(new Option(ex[f.k], ex[f.k])); i.value = ex[f.k] || ''; });
     I.form = ex; save(); goLabel(); F('err1').hidden = true;
+    // שיהיה ברור שמשהו קרה: השדות מלמעלה, והכפתור למטה
+    F('form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const n = F('exNote') || el('p', 'hint'); n.id = 'exNote'; n.setAttribute('data-keep', '');
+    n.textContent = '✓ הדוגמה נטענה לשדות למעלה (לוח עזרה, כיתה ה–ו). אפשר לשנות, ואז ללחוץ "בניית לוח הביצוע וההסכם".';
+    F('example').parentNode.after(n); setTimeout(() => n.remove(), 9000);
   });
 
   function openItem() {
