@@ -1152,7 +1152,7 @@ function render() {
           el("div", { class:"combo-other-note" },
             "התוספת זמינה מיד לכל היוצרות, ומיוחסת לך (שם ותאריך שמולאו למעלה)."),
         ]);
-        panel.append(search, bodyBox, otherRow);
+        panel.append(search, otherRow, bodyBox); // ההוספה מתחת לחיפוש, גלויה בלי גלילה
 
         const selected = () => inp.value ? inp.value.split(",") : [];
 

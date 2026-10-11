@@ -132,6 +132,7 @@ details.log summary{cursor:pointer;}
   cursor:pointer;}
 .customsel-opt:hover{background:var(--spoken-soft);}
 .customsel-other{display:flex;gap:6px;padding:7px 6px 4px;border-top:1px solid var(--hair);margin-top:4px;}
+.customsel-panel .customsel-other{position:sticky;top:-4px;z-index:1;background:var(--surface,#fff);border-top:none;border-bottom:1px solid var(--hair);margin:-4px -4px 4px;padding:8px;}
 .customsel-other input{flex:1;font-family:inherit;font-size:13px;padding:6px 8px;
   border:1px solid var(--hair);border-radius:5px;background:var(--ground);color:var(--ink);}
 .customsel-other button{font-size:12.5px;padding:5px 11px;}
@@ -439,7 +440,7 @@ function buildCustomSelect(container, hiddenInput, listName, baseOpts){
     const otherBtn = el("button", { type:"button" }, "הוספה");
     otherBtn.addEventListener("click", addOther);
     otherRow.append(otherInput, otherBtn);
-    panel.append(otherRow);
+    panel.prepend(otherRow); // למעלה, גלוי בלי גלילה
   }
   renderOpts();
   trigger.addEventListener("click", () => {

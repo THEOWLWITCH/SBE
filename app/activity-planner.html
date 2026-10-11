@@ -744,7 +744,7 @@ const GROUPS = [
     { k:"expression", l:"גיוון דרכי הבעה" },
     { k:"technology", l:"שילוב משמעותי ורלוונטי של טכנולוגיה" },
     { k:"resources", l:"רשימת משאבים, עזרים ואביזרים", tall:1 },
-    { k:"groupStyle", l:"אופי הפעילות", type:"select",
+    { k:"groupStyle", l:"אופי הפעילות", type:"select", other:true,
       opts:["",
         "פעילות אישית / למידה פרטנית",
         "פעילות בזוגות",
@@ -1006,7 +1006,7 @@ function render() {
             const otherBtn = el("button", { type:"button" }, "הוספה");
             otherBtn.addEventListener("click", addOther);
             otherRow.append(otherInput, otherBtn);
-            panel.append(otherRow);
+            panel.prepend(otherRow); // למעלה, כדי שיהיה גלוי בלי גלילה ברשימה ארוכה
           }
         }
         renderPanelOptions();

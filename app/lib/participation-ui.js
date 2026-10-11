@@ -13,6 +13,8 @@
   const CSS = `
 .paths{border:2px solid #2E5A7D;border-radius:12px;padding:.2rem 1rem .9rem;margin:1rem 0;background:#fff}
 .paths>summary{cursor:pointer;font-weight:800;font-size:1.05rem;color:#2E5A7D;padding:.6rem 0}
+.paths .opt-tag{font-weight:500;font-size:.85rem;color:#5C6771}
+.paths-skip{display:flex;justify-content:flex-start;margin:.1rem 0 .5rem}
 .paths h4{margin:1rem 0 .3rem;color:#2E5A7D}.paths .sub{color:#5C6771;font-size:.88rem;margin:0 0 .4rem}
 .paths .pbtn{font:inherit;font-weight:700;padding:.45rem .9rem;border-radius:8px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;cursor:pointer;margin:.2rem 0 .2rem .4rem}
 .paths .pbtn.ghost{background:transparent;color:#2E5A7D}.paths .pbtn:disabled{opacity:.5}
@@ -46,7 +48,10 @@
     const seqMode = opts.mode === 'seq';
     const box = el('details', 'paths'); box.open = !!S.open;
     box.addEventListener('toggle', () => { S.open = box.open; save(); if (box.open) draw(); });
-    const sm = el('summary', null, '🧭 מסלולי השתתפות בלמידה'); box.appendChild(sm);
+    // רשות (11/10/2026: "אפשר לדלג על המסלולים"): לא חוסם את התכנון, ואפשר לסגור בכל רגע
+    const sm = el('summary', null, '🧭 מסלולי השתתפות בלמידה'); sm.appendChild(el('span', 'opt-tag', ' (רשות, אפשר לדלג)')); box.appendChild(sm);
+    const skip = btn('דילוג: התכנון ממשיך בלי המסלולים', 'ghost', () => { box.open = false; box.scrollIntoView({ block: 'nearest' }); });
+    const skipRow = el('div', 'paths-skip'); skipRow.appendChild(skip); box.appendChild(skipRow);
     const body = el('div'); box.appendChild(body);
     node.appendChild(box);
     const picked = () => S.cards.filter((c) => c.on);
