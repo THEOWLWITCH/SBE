@@ -10,7 +10,7 @@
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Rubik:wght@500;600;700&family=Assistant:wght@300;400;600;700&display=swap">
 <script src="lib/resilience-advisor-sources.js"></script>
 <script src="lib/report-table.js"></script>
 <script src="lib/product-doc.js"></script>
@@ -247,6 +247,166 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
 .lvl{display:inline-block;border-radius:999px;padding:.05rem .55rem;font-size:.85rem;white-space:nowrap}
 .lvl.l1{background:var(--auto-soft);color:var(--auto)}.lvl.l2{background:var(--spoken-soft);color:var(--spoken)}.lvl.l3{background:var(--brick-soft);color:var(--brick);font-weight:600}
 .proc-box textarea{width:100%}
+
+/* ── עיצוב משחקי ונעים (11/10/2026: "מלבב ונעים, ברוח משחקית אבל לא ילדותי, דינאמי ויצירתי") ──
+   צבעי הלוגו: כחול כהה, טורקיז, ירוק ושמש, ועוד אלמוג. רק על המסך: ההדפסה נשארת נקייה. */
+:root{--teal:#2A9D8F;--teal-soft:#DDF2EF;--sun:#E3A72F;--sun-soft:#FCF0D6;--leaf:#4E9A4F;--leaf-soft:#E2F1DF;
+  --coral:#D9694B;--coral-soft:#FBE5DE;--navy:#24476B;--sky:#EEF5FA;--card-shadow:0 2px 0 rgba(36,71,107,.06),0 10px 28px -14px rgba(36,71,107,.28)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--teal:#5CC6B8;--teal-soft:#16302D;--sun:#F0C766;--sun-soft:#352A12;
+  --leaf:#86C47F;--leaf-soft:#1B2C1B;--coral:#EE9A80;--coral-soft:#3A221B;--navy:#9CC2E3;--sky:#141B21;--card-shadow:0 10px 28px -14px rgba(0,0,0,.6)}}
+:root[data-theme="dark"]{--teal:#5CC6B8;--teal-soft:#16302D;--sun:#F0C766;--sun-soft:#352A12;
+  --leaf:#86C47F;--leaf-soft:#1B2C1B;--coral:#EE9A80;--coral-soft:#3A221B;--navy:#9CC2E3;--sky:#141B21;--card-shadow:0 10px 28px -14px rgba(0,0,0,.6)}
+@media screen{
+  body{background:var(--sky)}
+  body::before,body::after{content:"";position:fixed;z-index:-1;border-radius:50%;filter:blur(60px);opacity:.45;pointer-events:none}
+  body::before{width:420px;height:420px;background:var(--teal-soft);top:-120px;inset-inline-start:-140px}
+  body::after{width:380px;height:380px;background:var(--sun-soft);bottom:-140px;inset-inline-end:-120px}
+  h1,h2,.steps b,.mech b,.rcard h4,.runcard h3{font-family:"Rubik","Assistant",system-ui,sans-serif;letter-spacing:-.01em}
+  .wrap{max-width:900px}
+  .card{border:none;border-radius:20px;box-shadow:var(--card-shadow);padding:1.3rem 1.45rem}
+  h2{display:flex;align-items:center;gap:.5rem;font-size:1.25rem;color:var(--navy);font-weight:700}
+  .h-ico{display:inline-grid;place-items:center;width:2.1rem;height:2.1rem;border-radius:12px;background:var(--acc-soft,var(--teal-soft));font-size:1.1rem;
+    transform:rotate(-6deg);transition:transform .3s}
+  .card:hover .h-ico{transform:rotate(4deg) scale(1.06)}
+
+  /* פתיח */
+  .hero{position:relative;display:flex;align-items:center;gap:1rem;border-radius:24px;padding:1.5rem 1.6rem;margin-bottom:1.1rem;overflow:hidden;
+    background:linear-gradient(120deg,var(--navy) 0%,#2B6F8A 55%,var(--teal) 100%);color:#fff;box-shadow:var(--card-shadow)}
+  :root[data-theme="dark"] .hero{background:linear-gradient(120deg,#16324D,#1E5363 60%,#1F6F66)}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .hero{background:linear-gradient(120deg,#16324D,#1E5363 60%,#1F6F66)}}
+  .hero::after{content:"";position:absolute;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.07);bottom:-110px;inset-inline-start:30%}
+  .hero-text{flex:1 1 auto;position:relative;z-index:1}
+  .hero h1{font-size:2rem;color:#fff;margin:.25rem 0 .45rem}
+  .hero p{color:rgba(255,255,255,.9);max-width:34rem}
+  .hero a{color:#fff}
+  .eyebrow{display:inline-block;font-size:.8rem;font-weight:700;padding:.18rem .7rem;border-radius:99px;background:rgba(255,255,255,.16);color:#fff}
+  .hero-art{flex:0 0 240px;width:240px;height:auto;position:relative;z-index:1}
+  .h-river{fill:none;stroke:rgba(255,255,255,.22);stroke-width:16;stroke-linecap:round}
+  .h-trail{fill:none;stroke:#fff;stroke-width:2.2;stroke-dasharray:3 7;stroke-linecap:round;animation:trail 3s linear infinite}
+  @keyframes trail{to{stroke-dashoffset:-40}}
+  .h-wave path{fill:none;stroke:rgba(255,255,255,.45);stroke-width:1.6;stroke-linecap:round;animation:bob 4s ease-in-out infinite}
+  .h-wave path:nth-child(2){animation-delay:-1.3s}.h-wave path:nth-child(3){animation-delay:-2.6s}
+  @keyframes bob{50%{transform:translateY(-3px)}}
+  .h-isle ellipse{stroke:#fff;stroke-width:2}
+  .h-isle text{font:700 12px "Rubik",sans-serif;fill:#1C3550;text-anchor:middle}
+  .i1 ellipse{fill:#9ADBD2}.i2 ellipse{fill:#F6D58A}.i3 ellipse{fill:#B5DFA9}.i4 ellipse{fill:#F7B9A6}
+  .h-dot{fill:var(--sun);stroke:#fff;stroke-width:2}
+  @media (max-width:640px){.hero{flex-direction:column;align-items:stretch;padding:1.2rem}.hero-art{flex-basis:auto;width:100%;max-height:120px}.hero h1{font-size:1.6rem}}
+
+  /* המנגנונים שלנו: אריחים */
+  .hub{gap:.7rem}
+  .mech{position:relative;border:2px solid transparent;border-radius:16px;padding:.7rem .9rem .6rem 2.9rem;background:var(--surface-2);min-width:200px;
+    transition:transform .18s,box-shadow .18s,border-color .18s}
+  .mech:hover{transform:translateY(-3px) rotate(-.6deg);box-shadow:0 10px 20px -12px rgba(36,71,107,.45)}
+  .mech .m-ico{position:absolute;inset-inline-end:.7rem;top:.65rem;width:1.9rem;height:1.9rem;border-radius:10px;display:grid;place-items:center;background:var(--surface);font-size:1rem}
+  .mech b{padding-inline-end:2.4rem}
+  .mech span.m-sub{display:block;padding-inline-end:2.4rem}
+  .mech.on{border-color:var(--teal);background:var(--teal-soft)}.mech.on b{color:var(--navy)}
+  .m-dots{display:flex;gap:4px;margin-top:.4rem;padding-inline-end:2.4rem}
+  .m-dots i{width:18px;height:6px;border-radius:99px;background:var(--hair)}
+  .m-dots i.d1{background:var(--teal)}.m-dots i.d2{background:var(--sun)}.m-dots i.d3{background:var(--leaf)}.m-dots i.d4{background:var(--coral)}
+  .mech.add{border:2px dashed var(--teal);color:var(--teal);background:transparent;padding:.7rem 1rem;display:grid;place-items:center}
+  .mech.add:hover{background:var(--teal-soft)}
+
+  /* הצעדים: לוח משחק */
+  .steps{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin:.4rem 0 1.2rem;padding:.2rem 0}
+  .steps::before{content:"";position:absolute;top:1.85rem;inset-inline:12%;height:4px;border-radius:99px;
+    background:repeating-linear-gradient(90deg,var(--hair) 0 10px,transparent 10px 18px)}
+  .steps li,#steps li{position:relative;border:none;background:transparent;text-align:center;padding:0 .3rem;font-size:.82rem;color:var(--muted);flex:none}
+  .steps .tok{position:relative;display:grid;place-items:center;width:3.4rem;height:3.4rem;margin:0 auto .45rem;border-radius:18px;font-size:1.45rem;
+    background:var(--surface);box-shadow:0 0 0 3px var(--surface),0 6px 14px -8px rgba(36,71,107,.5);transform:rotate(-4deg);transition:transform .25s,background .25s}
+  .steps li:nth-child(even) .tok{transform:rotate(4deg)}
+  .steps li:hover .tok{transform:translateY(-3px) rotate(0)}
+  .steps li b{font-size:.98rem;color:var(--ink)}
+  .steps li.on{background:transparent;color:var(--muted)}
+  .steps li.on .tok{background:var(--acc);color:#fff;transform:scale(1.12) rotate(0);animation:pulse 2.2s ease-out infinite}
+  .steps li.on b{color:var(--acc)}
+  .steps li.done .tok{background:var(--acc-soft)}
+  .steps li.done .tok::after{content:"✓";position:absolute;top:-6px;inset-inline-start:-6px;width:1.25rem;height:1.25rem;border-radius:50%;background:var(--leaf);color:#fff;font-size:.75rem;font-weight:700;display:grid;place-items:center;box-shadow:0 0 0 2px var(--surface)}
+  @keyframes pulse{0%{box-shadow:0 0 0 3px var(--surface),0 0 0 3px var(--acc)}70%{box-shadow:0 0 0 3px var(--surface),0 0 0 14px transparent}100%{box-shadow:0 0 0 3px var(--surface),0 0 0 3px transparent}}
+  .steps li[data-step="1"],#s1{--acc:var(--teal);--acc-soft:var(--teal-soft)}
+  .steps li[data-step="2"],#s2{--acc:var(--sun);--acc-soft:var(--sun-soft)}
+  .steps li[data-step="3"],#s3{--acc:var(--leaf);--acc-soft:var(--leaf-soft)}
+  .steps li[data-step="4"],#s4{--acc:var(--coral);--acc-soft:var(--coral-soft)}
+  .steps li .sd{display:block;margin-top:.1rem;line-height:1.35}
+  @media (max-width:640px){.steps{grid-template-columns:repeat(4,1fr)}.steps li .sd{display:none}.steps li b{font-size:.8rem}.steps .tok{width:2.8rem;height:2.8rem;font-size:1.2rem}.steps::before{top:1.5rem}}
+
+  /* כרטיסי הצעדים */
+  #s1,#s2,#s3,#s4{position:relative;border-top:6px solid var(--acc);overflow:hidden}
+  #s1::after,#s2::after,#s3::after,#s4::after{position:absolute;top:-.6rem;inset-inline-end:.7rem;font:700 6.5rem/1 "Rubik",sans-serif;color:var(--acc);opacity:.08;pointer-events:none}
+  #s1::after{content:"1"}#s2::after{content:"2"}#s3::after{content:"3"}#s4::after{content:"4"}
+  section.card.enter{animation:rise .45s cubic-bezier(.2,.8,.2,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  #s1 h2,#s2 h2,#s3 h2,#s4 h2{color:var(--navy)}
+
+  /* שדות וכפתורים */
+  input[type=text],input[type=number],select,textarea{border-radius:12px;background:var(--surface);border:1.5px solid var(--hair);transition:border-color .15s,box-shadow .15s}
+  input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc,var(--teal));box-shadow:0 0 0 4px var(--acc-soft,var(--teal-soft))}
+  .f .main-tag{border:none;background:var(--acc-soft,var(--teal-soft));color:var(--navy)}
+  .btn{border-radius:99px;padding:.7rem 1.35rem;background:linear-gradient(135deg,var(--navy),#2B6F8A);box-shadow:0 6px 14px -8px rgba(36,71,107,.7);
+    transition:transform .15s,box-shadow .15s,filter .15s}
+  :root[data-theme="dark"] .btn{background:linear-gradient(135deg,#2B5C86,#2A7F78)}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn{background:linear-gradient(135deg,#2B5C86,#2A7F78)}}
+  .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 18px -10px rgba(36,71,107,.8);filter:saturate(1.15)}
+  .btn:active:not(:disabled){transform:translateY(1px) scale(.98)}
+  .btn-ghost,:root[data-theme="dark"] .btn-ghost{background:var(--surface);border:1.5px solid var(--hair);box-shadow:none;color:var(--ink)}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn-ghost{background:var(--surface)}}
+  .btn-ghost:hover:not(:disabled){border-color:var(--acc,var(--teal));color:var(--navy);box-shadow:none}
+  .topnav{background:color-mix(in srgb,var(--surface) 85%,transparent);backdrop-filter:blur(8px)}
+
+  /* טבלאות */
+  .kit-table{border-radius:14px;overflow:hidden}
+  .kit h3{display:flex;align-items:center;gap:.45rem;color:var(--navy)}
+  .kit h3::before{content:"";width:.6rem;height:.6rem;border-radius:3px;background:var(--acc,var(--teal));transform:rotate(45deg);flex:none}
+  .kit .sub{padding-inline-start:1.05rem}
+  #opts table tbody tr{transition:background .15s}
+  #opts table tbody tr:hover{background:var(--teal-soft)}
+
+  /* כרטיסי תפקיד: כמו קלפים */
+  .roles{gap:1rem}
+  .rcard{position:relative;border:none;border-radius:18px;padding:0 .9rem .8rem;background:var(--surface);box-shadow:var(--card-shadow);
+    transition:transform .22s,box-shadow .22s;overflow:hidden}
+  .rcard:nth-child(odd){transform:rotate(-.7deg)}.rcard:nth-child(even){transform:rotate(.7deg)}
+  .rcard:hover{transform:translateY(-4px) rotate(0)}
+  .rcard h4{margin:0 -.9rem .6rem;padding:.6rem .9rem;background:linear-gradient(90deg,var(--sun-soft),var(--surface));color:var(--navy)}
+  .rcard.ok{box-shadow:inset 0 0 0 2px var(--leaf),var(--card-shadow)}
+  .rcard.ok h4{background:linear-gradient(90deg,var(--leaf-soft),var(--surface));color:var(--leaf)}
+  .rcard.ok::after{content:"אישר/ה ✓";position:absolute;top:.5rem;inset-inline-end:.6rem;font:700 .75rem "Rubik",sans-serif;color:var(--leaf);
+    border:2px solid var(--leaf);border-radius:8px;padding:.05rem .45rem;transform:rotate(-10deg);background:var(--surface)}
+  .rcard.pop::after{animation:stamp .4s cubic-bezier(.3,1.6,.5,1)}
+  @keyframes stamp{from{transform:rotate(-10deg) scale(2.2);opacity:0}to{transform:rotate(-10deg) scale(1);opacity:1}}
+  .ppl{border-radius:12px}
+  .okline{padding:.45rem .6rem;border-radius:12px;background:var(--surface-2);cursor:pointer}
+  .okline input{width:1.15rem;height:1.15rem;accent-color:var(--leaf)}
+
+  /* שתי ההפעלות */
+  .runcard{position:relative;border:none;border-radius:18px;box-shadow:var(--card-shadow);padding:.8rem 1rem 1rem}
+  .runcard h3{display:flex;align-items:center;gap:.5rem;color:var(--navy)}
+  .runcard h3::before{content:"🎯";display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:var(--leaf-soft);font-size:1rem}
+  .runcard:nth-child(2) h3::before{content:"🎯🎯";font-size:.7rem}
+  .more{border-radius:14px;background:var(--surface-2);border:none}
+
+  /* פותחים לשינוי */
+  .proposal{border:none;border-radius:18px;background:linear-gradient(160deg,var(--coral-soft),var(--surface) 60%);box-shadow:var(--card-shadow)}
+  .balance,.recommend{border-radius:12px}
+  .proc-box{border:none;border-radius:18px;background:var(--surface-2)}
+
+  /* המתנה */
+  .wait{padding:.6rem .8rem;border-radius:14px;background:var(--acc-soft,var(--teal-soft));color:var(--ink)}
+  .wait .bar{height:9px;background:var(--surface)}
+  .wait .bar>div{background:repeating-linear-gradient(45deg,var(--acc,var(--teal)) 0 10px,color-mix(in srgb,var(--acc,var(--teal)) 70%,#fff) 10px 20px);
+    background-size:28px 28px;animation:stripes 1s linear infinite}
+  @keyframes stripes{to{background-position:28px 0}}
+
+  /* חגיגה קטנה כשמאשרים */
+  .confetti{position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden}
+  .confetti i{position:absolute;top:-12px;width:10px;height:14px;border-radius:3px;animation:fall 1.6s cubic-bezier(.25,.6,.4,1) forwards}
+  @keyframes fall{to{transform:translate(var(--dx),105vh) rotate(var(--r));opacity:.2}}
+}
+@media screen and (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .h-dot{display:none}
+}
 </style>
 </head>
 <body>
@@ -256,13 +416,26 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
   <span class="crumb">Begood › חוסן חברתי › מרכז שגרות ויוזמות חברתיות</span>
 </nav>
 <div class="wrap">
-  <div class="card no-print">
-    <h1>מרכז שגרות ויוזמות חברתיות</h1>
-    <p data-peek>סביבת עבודה להפעלה מתמשכת של מועצת כיתה, לוח עזרה, ועדה, צוות פעולה או מפגש חוסן קבוע. הקבוצה בוחרת פעולה, מחלקת אחריות, מנסה אותה פעמיים, ופותחת את ההסכם לשינוי במועד שנבחר, לאור תמונת העתיד ואיכות החיים עכשיו.</p>
-  </div>
+  <header class="hero no-print">
+    <div class="hero-text">
+      <span class="eyebrow">🔁 לעגן בשגרה · סביבת עבודה</span>
+      <h1>מרכז שגרות ויוזמות חברתיות</h1>
+      <p data-peek>סביבת עבודה להפעלה מתמשכת של מועצת כיתה, לוח עזרה, ועדה, צוות פעולה או מפגש חוסן קבוע. הקבוצה בוחרת פעולה, מחלקת אחריות, מנסה אותה פעמיים, ופותחת את ההסכם לשינוי במועד שנבחר, לאור תמונת העתיד ואיכות החיים עכשיו.</p>
+    </div>
+    <svg class="hero-art" viewBox="0 0 260 170" aria-hidden="true" focusable="false">
+      <path class="h-river" d="M250 150 C 200 150, 210 95, 155 98 S 110 140, 70 100 S 40 40, 10 22"/>
+      <path class="h-trail" d="M250 150 C 200 150, 210 95, 155 98 S 110 140, 70 100 S 40 40, 10 22"/>
+      <g class="h-wave"><path d="M206 120 q6 -5 12 0 t12 0"/><path d="M86 150 q6 -5 12 0 t12 0"/><path d="M36 62 q6 -5 12 0 t12 0"/></g>
+      <g class="h-isle i1"><ellipse cx="220" cy="146" rx="20" ry="9"/><text x="220" y="150">1</text></g>
+      <g class="h-isle i2"><ellipse cx="155" cy="98" rx="20" ry="9"/><text x="155" y="102">2</text></g>
+      <g class="h-isle i3"><ellipse cx="82" cy="112" rx="20" ry="9"/><text x="82" y="116">3</text></g>
+      <g class="h-isle i4"><ellipse cx="24" cy="34" rx="22" ry="10"/><text x="24" y="38">4</text></g>
+      <circle class="h-dot" r="5"><animateMotion dur="9s" repeatCount="indefinite" rotate="auto" path="M250 150 C 200 150, 210 95, 155 98 S 110 140, 70 100 S 40 40, 10 22"/></circle>
+    </svg>
+  </header>
 
   <div class="card no-print hubcard">
-    <h2>המנגנונים שלנו</h2>
+    <h2><span class="h-ico">🧩</span> המנגנונים שלנו</h2>
     <div class="hub" id="hub"></div>
     <div class="hubtools">
       <button class="btn btn-ghost sm" id="saveFile" type="button">💾 שמירת קובץ</button>
@@ -274,7 +447,7 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
   <ol class="steps no-print" id="steps"></ol>
 
   <section class="card no-print" id="s1">
-    <h2>בוחרים פעולה</h2>
+    <h2><span class="h-ico">🧭</span> בוחרים פעולה</h2>
     <button class="btn btn-ghost sm" id="fromStudio" type="button" hidden>ייבוא המנגנון שתוכנן בסטודיו חוסן</button>
     <div id="form"></div>
     <div class="btns">
@@ -287,7 +460,7 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
   </section>
 
   <section class="card" id="s2" hidden>
-    <h2 class="no-print">מאשרים אחריות</h2>
+    <h2 class="no-print"><span class="h-ico">🤝</span> מאשרים אחריות</h2>
     <p class="hint no-print">השמות בכרטיסי התפקיד נשמרים רק במכשיר הזה ומופיעים רק בהדפסה. הם לא נשלחים לשום מקום.</p>
     <div id="out2"></div>
     <div class="btns no-print">
@@ -298,7 +471,7 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
   </section>
 
   <section class="card" id="s3" hidden>
-    <h2 class="no-print">מנסים פעמיים</h2>
+    <h2 class="no-print"><span class="h-ico">🔁</span> מנסים פעמיים</h2>
     <div id="out3"></div>
     <div class="btns no-print">
       <button class="btn btn-ghost sm" type="button" data-print="sheet">🖨 לוח מודפס להפעלה</button>
@@ -308,7 +481,7 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
   </section>
 
   <section class="card" id="s4" hidden>
-    <h2 class="no-print">פותחים לשינוי</h2>
+    <h2 class="no-print"><span class="h-ico">🌱</span> פותחים לשינוי</h2>
     <div class="btns no-print"><button class="btn" id="revise" type="button">הצעה לגרסה הבאה של ההסכם</button></div>
     <div class="wait" id="wait4" hidden></div>
     <p class="err" id="err4" hidden></p>
