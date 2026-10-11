@@ -84,13 +84,21 @@
     const m = x.match(/\{[\s\S]*\}/); if (m) { try { return JSON.parse(m[0]); } catch (e) {} }
     return null;
   }
-  async function sbeCallAIJson(server, body, timeoutMs, check) {
+  async function sbeCallAIJson(server, body, timeoutMs, check, options = {}) {
+    const beforeAttempt = () => {
+      if (options.signal?.aborted) throw new DOMException("הבקשה בוטלה", "AbortError");
+      options.beforeAttempt?.();
+    };
     const ok = (v) => v && typeof v === "object" && (!check || check(v));
-    let v = parseLoose(await sbeCallAI(server, body, timeoutMs));
+    beforeAttempt();
+    let v = parseLoose(await sbeCallAI(server, body, timeoutMs, options));
+    beforeAttempt();
     if (ok(v)) return v;
     const again = Object.assign({}, body, { system: String(body.system || "") + "\n\nהתשובה הקודמת לא הגיעה במבנה המלא שביקשתי (JSON חסר, חלקי או לא תקין). החזירי עכשיו רק JSON תקין ומלא, בדיוק במבנה שביקשתי." });
     delete again.requestId;
-    v = parseLoose(await sbeCallAI(server, again, timeoutMs));
+    beforeAttempt();
+    v = parseLoose(await sbeCallAI(server, again, timeoutMs, options));
+    beforeAttempt();
     if (ok(v)) return v;
     throw Object.assign(new Error("התוצר חזר חלקי"), { code: "incomplete" });
   }

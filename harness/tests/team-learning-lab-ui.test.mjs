@@ -7,6 +7,8 @@ import vm from 'node:vm';
 const domainSource = readFileSync(new URL('../../app/lib/team-learning-lab.js', import.meta.url), 'utf8');
 const uiSource = readFileSync(new URL('../../app/lib/team-learning-lab-ui.js', import.meta.url), 'utf8');
 const plannerSource = readFileSync(new URL('../../app/lib/planner-continuity.js', import.meta.url), 'utf8');
+const aiCallSource = readFileSync(new URL('../../app/lib/ai-call.js', import.meta.url), 'utf8');
+const refSource = readFileSync(new URL('../../app/lib/ref-collect.js', import.meta.url), 'utf8');
 const regularKey = 'sbe.team-lab.v1:synthetic-test-owner';
 const checks = ['safety', 'privacy', 'professional'];
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -22,7 +24,7 @@ const hook = `
       Object.keys(formValues).forEach(key => delete formValues[key]);
       clearTimeout(saveTimer); renderAll();
     },
-    save, recover, renderAnswer, practiceForm, renderLearning, goStage, ask, demoFill, generate,
+    save, recover, renderAnswer, practiceForm, renderLearning, renderExport, goStage, ask, demoFill, generate,
     setForm, setDraft,
     propose(key, value) { proposals.set(key, value); }
   };
@@ -36,14 +38,28 @@ class Element {
     this.tagName = tag.toUpperCase(); this.childNodes = []; this.listeners = new Map();
     this.attributes = new Map(); this.dataset = {}; this.checked = false;
     this.hidden = false; this.disabled = false; this.value = ''; this.parentNode = null;
-    this.classList = { add() {}, remove() {}, toggle() {} };
+    const classes = new Set();
+    this.classList = {
+      add(...names) { names.forEach(name => classes.add(name)); },
+      remove(...names) { names.forEach(name => classes.delete(name)); },
+      contains: name => classes.has(name),
+      toggle(name, force) {
+        const enabled = force === undefined ? !classes.has(name) : !!force;
+        if (enabled) classes.add(name); else classes.delete(name);
+        return enabled;
+      }
+    };
+    Object.defineProperty(this, 'className', { get: () => [...classes].join(' '), set(value) { classes.clear(); String(value).split(/\s+/).filter(Boolean).forEach(name => classes.add(name)); } });
   }
+  get firstChild() { return this.childNodes[0] || null; }
+  get parentElement() { return this.parentNode; }
   append(...nodes) {
     for (const node of nodes) {
       if (node.parentNode) node.remove();
       node.parentNode = this; this.childNodes.push(node);
     }
   }
+  appendChild(node) { this.append(node); return node; }
   replaceChildren(...nodes) {
     for (const node of this.childNodes) node.parentNode = null;
     this.childNodes = []; this.append(...nodes);
@@ -58,6 +74,13 @@ class Element {
     this.listeners.set(type, (this.listeners.get(type) || []).filter(entry => !entry.once));
     return Promise.all(results);
   }
+  click() { return this.dispatch('click'); }
+  querySelectorAll(selector) {
+    if (selector.startsWith(':scope > ')) return this.childNodes.filter(node => matches(node, selector.slice(9)));
+    return this.childNodes.flatMap(descendants).filter(node => matches(node, selector));
+  }
+  querySelector(selector) { return this.querySelectorAll(selector)[0] || null; }
+  closest(selector) { for (let node = this; node; node = node.parentElement) if (matches(node, selector)) return node; return null; }
   setAttribute(name, value) { this.attributes.set(name, String(value)); }
   removeAttribute(name) { this.attributes.delete(name); }
   getAttribute(name) { return this.attributes.get(name) ?? null; }
@@ -70,6 +93,14 @@ class Element {
   }
 }
 
+function matches(node, selector) {
+  return selector.split(',').some(part => {
+    const value = part.trim();
+    if (value.startsWith('.')) return value.slice(1).split('.').every(name => node.classList.contains(name));
+    if (value.startsWith('#')) return node.id === value.slice(1);
+    return node.tagName === value.toUpperCase();
+  });
+}
 function descendants(root) { return [root, ...root.childNodes.flatMap(descendants)]; }
 function findButton(root, label) {
   const found = descendants(root).find(node => node.tagName === 'BUTTON' && node.textContent === label);
@@ -97,7 +128,7 @@ function controlledLocks() {
     }
   };
 }
-async function settle() { for (let i = 0; i < 12; i++) await Promise.resolve(); }
+async function settle() { for (let i = 0; i < 32; i++) await Promise.resolve(); }
 function deferred() {
   let resolve, reject;
   const promise = new Promise((onResolve, onReject) => { resolve = onResolve; reject = onReject; });
@@ -105,14 +136,15 @@ function deferred() {
 }
 
 async function fixture({ storage = memory(), sys = false, embedded = false, search = '', reply } = {}) {
-  const ids = new Map(), created = [], timers = new Map(), intervals = new Map(), calls = [], requestOptions = [], aiSignals = [];
+  const ids = new Map(), created = [], timers = new Map(), intervals = new Map(), calls = [], requestOptions = [], aiSignals = [], printed = [], exportBlobs = [];
   let timerId = 0;
   const element = tag => { const node = new Element(tag); created.push(node); return node; };
-  const byId = id => { if (!ids.has(id)) ids.set(id, element()); return ids.get(id); };
+  const byId = id => { if (!ids.has(id)) { const node = element(); node.id = id; ids.set(id, node); } return ids.get(id); };
   const stages = Array.from({ length: 4 }, (_, index) => { const node = element('button'); node.dataset.stage = String(index); return node; });
-  const body = element('body');
+  const body = element('body'), head = element('head');
   const document = {
-    body, createElement: element, getElementById: byId,
+    body, head, createElement: element,
+    getElementById: id => id === 'sbe-refs-style' ? head.childNodes.find(node => node.id === id) || null : byId(id),
     querySelectorAll(selector) {
       if (selector === '[data-stage]') return stages;
       if (selector === '[data-answer-key]') return created.filter(node => node.dataset.answerKey);
@@ -127,31 +159,47 @@ async function fixture({ storage = memory(), sys = false, embedded = false, sear
   const locks = controlledLocks();
   const window = {
     sbeUserKey: base => `${base}:synthetic-test-owner`,
-    SBE_DOC: { rich: value => { const node = element('div'); node.textContent = String(value); return node; }, table: () => element('table'), flowTable: () => element('table') },
-    sbeAIOrigin: () => 'synthetic:no-network',
-    async sbeCallAI(_origin, request, _timeoutMs, options) {
-      calls.push(plain(request));
-      aiSignals.push(options.signal);
-      const fields = requestFields(request);
-      // Intentionally ignore abort in the transport: late-response tests must
-      // prove the production planner guard rejects a reply that still arrives.
-      const value = reply ? await reply(request) : fields.action === 'generate' ? activity() : { answer: 'אפשר לנסות שאלה קצרה.', proposedStep: null };
-      return JSON.stringify(value);
+    SBE_DOC: {
+      rich: value => { const node = element('div'); node.textContent = String(value); return node; }, table: () => element('table'), flowTable: () => element('table'),
+      print(spec) { window.SBE_REFS.forPrint(spec.node); printed.push(spec); }
     },
+    sbeAIOrigin: () => 'synthetic:no-network',
+    sbeAIHeaders: () => ({ Authorization: 'Bearer synthetic-test-token', 'content-type': 'application/json' }),
     addEventListener() {}
   };
   window.parent = embedded ? {} : window;
   window.location = { search };
+  class FixtureURL extends URL {
+    static createObjectURL(blob) { exportBlobs.push(blob); return `blob:synthetic-${exportBlobs.length}`; }
+    static revokeObjectURL() {}
+  }
   const sandbox = {
     window, document, location: window.location, navigator: { locks }, localStorage: storage,
     sessionStorage: { getItem: key => session.get(key) ?? null },
-    crypto: webcrypto, AbortController, DOMException, URL, URLSearchParams, console,
-    setTimeout(callback) { const id = ++timerId; timers.set(id, callback); return id; },
+    crypto: webcrypto, AbortController, DOMException, URL: FixtureURL, URLSearchParams, Blob, console,
+    async fetch(url, init) {
+      assert.ok(url.endsWith('/api/complete'), 'UI fixture expects direct complete acknowledgments');
+      const request = JSON.parse(init.body), fields = requestFields(request);
+      // Fetch deliberately ignores abort. The actual transport and planner
+      // guards must reject an obsolete call even if its reply still arrives.
+      const value = reply ? await reply(request) : fields.action === 'generate' ? activity() : { answer: 'אפשר לנסות שאלה קצרה.', proposedStep: null };
+      return { ok: true, status: 200, text: async () => JSON.stringify({ text: typeof value === 'string' ? value : JSON.stringify(value) }) };
+    },
+    setTimeout(callback, delay) { const id = ++timerId; if (delay === 0) Promise.resolve().then(callback); else timers.set(id, callback); return id; },
     clearTimeout(id) { timers.delete(id); },
     setInterval(callback) { const id = ++timerId; intervals.set(id, callback); return id; },
     clearInterval(id) { intervals.delete(id); }
   };
   vm.runInNewContext(plannerSource, sandbox, { filename: 'planner-continuity.js' });
+  vm.runInNewContext(aiCallSource, sandbox, { filename: 'ai-call.js' });
+  vm.runInNewContext(refSource, sandbox, { filename: 'ref-collect.js' });
+  const recordCall = (request, options) => { calls.push(plain(request)); aiSignals.push(options.signal); };
+  const transport = window.sbeCallAI;
+  window.sbeCallAI = (server, request, timeout, options = {}) => { recordCall(request, options); return transport(server, request, timeout, options); };
+  if (window.sbeCallAIJson) {
+    const helper = window.sbeCallAIJson;
+    window.sbeCallAIJson = (server, request, timeout, check, options = {}) => { recordCall(request, options); return helper(server, request, timeout, check, options); };
+  }
   vm.runInNewContext(domainSource, sandbox, { filename: 'team-learning-lab.js' });
   const TEAM = window.SBE_TEAM, originalBuildRequest = TEAM.buildRequest;
   TEAM.buildRequest = (...args) => { requestOptions.push(plain(args[2] || {})); return originalBuildRequest(...args); };
@@ -160,7 +208,7 @@ async function fixture({ storage = memory(), sys = false, embedded = false, sear
   const api = window.__labTest;
   assert.equal(api.state().ready, true, 'actual startup must load the fixture workspace');
   return {
-    api, publicApi: window.SBE_TEAM_UI, TEAM, storage, locks, calls, requestOptions, aiSignals, session, timers, body, byId, element,
+    api, publicApi: window.SBE_TEAM_UI, TEAM, storage, locks, calls, requestOptions, aiSignals, session, timers, body, byId, element, printed, exportBlobs,
     seed(value) { storage.map.set(regularKey, JSON.stringify({ scopeKey: regularKey, workspace: value })); api.seed(value); },
     checkAll(value = true) { checks.forEach(key => { byId(`lab-check-${key}`).checked = value; }); },
     checked() { return checks.map(key => byId(`lab-check-${key}`).checked); },
@@ -210,6 +258,16 @@ function requestFields(request) {
   assert.fail('real buildRequest must include its structured current request');
 }
 function stored(storage) { return JSON.parse(storage.getItem(regularKey)).workspace; }
+async function selectExport(f, approvalId) {
+  const select = descendants(f.byId('lab-export')).find(node => node.getAttribute('aria-label') === 'הגרסה לתיק');
+  assert.ok(select, 'actual export approval selection must be rendered');
+  select.value = approvalId; await select.dispatch('change'); await settle();
+}
+async function exportPack(f) {
+  await findButton(f.byId('lab-export'), 'ייצוא תיק מאושר כ-JSON').dispatch('click');
+  assert.ok(f.exportBlobs.length, 'actual JSON action must create its downloadable Blob');
+  return JSON.parse(await f.exportBlobs.at(-1).text());
+}
 
 test('adopting the actual rendered proposal clears every human check and requires renewed approval', async () => {
   const f = await fixture(), original = workspace(f.TEAM); f.seed(original); f.checkAll();
@@ -373,6 +431,100 @@ test('failed embedded admin demo generation preserves regular storage and leaves
   assert.ok(!JSON.stringify(f.calls[0]).includes('SYNTHETIC_REGULAR_PRIVATE'));
   assert.equal(f.byId('lab-wait').hidden, true); assert.equal(f.api.state().activeRun, null);
   assert.throws(() => f.publicApi.printableNode(), /עוד לא הופקה/);
+});
+
+test('generation repairs a JSON activity that fails full domain validation before applying it', async () => {
+  const attempts = [];
+  const f = await fixture({ reply: request => {
+    attempts.push(plain(request));
+    return attempts.length === 1 ? activity({ steps: [] }) : activity({ title: 'Synthetic repaired complete activity' });
+  } });
+  f.seed(workspace(f.TEAM)); await f.publicApi.generate();
+  assert.equal(attempts.length, 2);
+  assert.equal(f.api.state().ws.activity.title, 'Synthetic repaired complete activity');
+  assert.equal(stored(f.storage).activity.title, 'Synthetic repaired complete activity');
+  assert.ok(attempts[1].system.startsWith(attempts[0].system));
+  assert.equal(attempts[1].permission, 'nana'); assert.equal(attempts[1].customerReview, true);
+});
+
+test('two domain-invalid generation replies leave the current activity intact and release busy controls', async () => {
+  let attempts = 0;
+  const f = await fixture({ reply: () => { attempts++; return activity({ steps: [] }); } });
+  const current = workspace(f.TEAM); f.seed(current); const savedBefore = f.storage.getItem(regularKey);
+  await assert.rejects(f.publicApi.generate(), /חלקי|מלא|הושלם/);
+  assert.equal(attempts, 2); assert.deepEqual(plain(f.api.state().ws), plain(current));
+  assert.equal(f.storage.getItem(regularKey), savedBefore);
+  assert.equal(f.byId('lab-wait').hidden, true); assert.equal(f.api.state().activeRun, null);
+  assert.equal(f.byId('lab-generate').disabled, false);
+  assert.throws(() => f.publicApi.printableNode(), /עוד לא הופקה/);
+});
+
+test('approved sources use the real folded controls and visibility alone never attaches them to exports', async () => {
+  const f = await fixture(), w = approved(f.TEAM); f.seed(w);
+  const frozen = JSON.stringify(w.approvals); await selectExport(f, w.approvals[0].id);
+  const panel = f.byId('lab-export').querySelector('.sbe-refs'); assert.ok(panel);
+  const open = panel.querySelector('.refs-open'), attach = panel.querySelector('.refs-attach');
+  assert.equal(panel.classList.contains('open'), false); assert.equal(open.getAttribute('aria-expanded'), 'false');
+  assert.equal(panel.classList.contains('attach'), false); assert.equal(attach.getAttribute('aria-pressed'), 'false');
+  assert.ok(panel.querySelector('.refs-body').querySelector('a').href.startsWith('https://'), 'folded source retains its verified catalog link');
+  await open.dispatch('click');
+  assert.equal(panel.classList.contains('open'), true); assert.equal(open.getAttribute('aria-expanded'), 'true');
+  assert.equal(attach.getAttribute('aria-pressed'), 'false');
+  await findButton(f.byId('lab-export'), 'הדפסה / שמירה כ-PDF').dispatch('click');
+  assert.equal(f.printed.length, 1); assert.equal(f.printed[0].node.querySelector('.sbe-refs'), null);
+  const output = await exportPack(f);
+  assert.deepEqual(output.sources, []); assert.deepEqual(output.activity.sources, []);
+  assert.equal(panel.classList.contains('open'), true, 'printing its fresh document leaves the visible panel intact');
+  assert.equal(JSON.stringify(f.api.state().ws.approvals), frozen, 'export filtering never mutates the frozen approval');
+});
+
+test('source attachment persists through reload and controls actual JSON and sanitized print content', async () => {
+  const f = await fixture(), w = approved(f.TEAM); f.seed(w);
+  const frozen = JSON.stringify(w.approvals); await selectExport(f, w.approvals[0].id);
+  await f.byId('lab-export').querySelector('.refs-attach').dispatch('click');
+  assert.equal(f.byId('lab-export').querySelector('.refs-attach').getAttribute('aria-pressed'), 'true');
+  await f.byId('lab-save').dispatch('click');
+  const reloaded = await fixture({ storage: f.storage }), panel = reloaded.byId('lab-export').querySelector('.sbe-refs');
+  assert.ok(panel); assert.equal(panel.classList.contains('attach'), true); assert.equal(panel.classList.contains('open'), false);
+  assert.equal(panel.querySelector('.refs-attach').getAttribute('aria-pressed'), 'true');
+  const expected = plain(f.TEAM.publicPack(w, w.approvals[0].id));
+  const output = await exportPack(reloaded);
+  assert.deepEqual(output.sources, expected.sources); assert.deepEqual(output.activity.sources, expected.activity.sources);
+  await findButton(reloaded.byId('lab-export'), 'הדפסה / שמירה כ-PDF').dispatch('click');
+  const printable = reloaded.printed[0].node, sources = printable.querySelector('.sbe-refs'); assert.ok(sources);
+  assert.equal(sources.querySelector('.refs-bar'), null); assert.equal(sources.querySelector('.refs-body'), null);
+  assert.equal(sources.querySelector('a').href, expected.sources[0].url);
+  assert.ok(panel.querySelector('.refs-bar'), 'printing does not consume the live attachment controls');
+  await panel.querySelector('.refs-attach').dispatch('click');
+  const detached = await exportPack(reloaded); assert.deepEqual(detached.sources, []); assert.deepEqual(detached.activity.sources, []);
+  assert.equal(JSON.stringify(reloaded.api.state().ws.approvals), frozen);
+});
+
+test('selecting a different frozen approval resets the source attachment choice before export', async () => {
+  const f = await fixture(); let w = approved(f.TEAM); const firstId = w.approvals[0].id;
+  w = f.TEAM.update(w, draft => { draft.activity.title = 'Synthetic second approved activity'; draft.activity.sources = ['WHO2011']; });
+  w = f.TEAM.approve(w, { safety: true, privacy: true, professional: true });
+  const secondId = w.approvals[1].id, frozen = JSON.stringify(w.approvals); f.seed(w);
+  await selectExport(f, firstId); await f.byId('lab-export').querySelector('.refs-attach').dispatch('click');
+  assert.equal(f.byId('lab-export').querySelector('.sbe-refs').classList.contains('attach'), true);
+  await selectExport(f, secondId);
+  const panel = f.byId('lab-export').querySelector('.sbe-refs'); assert.ok(panel);
+  assert.equal(panel.classList.contains('attach'), false); assert.equal(panel.querySelector('.refs-attach').getAttribute('aria-pressed'), 'false');
+  assert.equal(panel.querySelector('.refs-open').getAttribute('aria-expanded'), 'false');
+  const secondPack = f.TEAM.publicPack(w, secondId);
+  assert.equal(panel.querySelector('a').href, secondPack.sources[0].url);
+  const output = await exportPack(f); assert.equal(output.activity.title, secondPack.activity.title);
+  assert.deepEqual(output.sources, []); assert.deepEqual(output.activity.sources, []);
+  assert.equal(JSON.stringify(f.api.state().ws.approvals), frozen);
+});
+
+test('an embedded generated demo printable node strips its default unattached sources with the real print sanitizer', async () => {
+  const f = await fixture({ sys: true, embedded: true, search: '?demolab=1' });
+  f.publicApi.demoFill(); await f.publicApi.generate();
+  assert.deepEqual(plain(f.api.state().ws.activity.sources), ['CAST2024']);
+  const printable = f.publicApi.printableNode(); assert.equal(printable.tagName, 'ARTICLE');
+  assert.equal(printable.querySelector('.sbe-refs'), null); assert.equal(printable.querySelector('.refs-bar'), null);
+  assert.deepEqual(plain(f.api.state().ws.activity.sources), ['CAST2024'], 'print sanitization leaves the generated activity sources intact');
 });
 
 for (const options of [

@@ -1742,7 +1742,7 @@ function setMode(m, updateUrl) {
   actionsSeq.style.display = m === "seq" ? "" : "none";
   // באנר "רובריקת הקריטריונים טיוטה" שייך לרובריקה של המפגש הבודד ושל הניתוח;
   // לרצף יש קריטריונים משלו (מהמסמך של המשתמשת), ולכן הוא לא מוצג שם.
-  
+
   if (m === "upload") document.body.style.paddingBottom = ""; else adjustActionsPadding();
   if (updateUrl) { try { const u = new URL(location.href); u.searchParams.set("mode", m); history.replaceState(null, "", u); } catch(e){} }
 }

@@ -235,7 +235,13 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
       if(!st.putIfAbsent || !st.compareAndSet || !st.finalizeAIJob) return send(req,res,503,{error:'נדרשת תשתית אחסון אטומית.'});
       // Review and optional repair share the same bounded provider. Reserve their
       // allowance before admitting the job; large passes may keep the original.
-      const tokenBudget=req.url==='/api/pipeline'?256000:req.url==='/api/studio'?128000:req.url==='/api/artifacts'?100000:
+      // Studio includes the complete public source bank. One initial Responses
+      // call exceeds 128000; kits also reserve room for bounded review/repair.
+      // The full reservation still counts daily, including failed attempts.
+      // With today's 1000000 owner allowance, analyze + kit uses 768000 and
+      // another consultation is denied. Daily quota tuning is separate work.
+      const tokenBudget=req.url==='/api/pipeline'?256000:req.url==='/api/studio'?
+        (['analyze','consult'].includes(input.action)?256000:512000):req.url==='/api/artifacts'?100000:
         req.url==='/api/complete'&&reviewEnabled(input)?requestBudget({...input,variation:'medium'},1)+128000:requestBudget({...input,variation:'medium'});
       if(tokenBudget>512000)return send(req,res,413,{error:'הקלט גדול מדי לתקציב הבקשה.'});
       const usage=await reserveAIUsage(st,actor,{requestId,requestHash,maxTokens,tokenBudget});

@@ -1,10 +1,10 @@
 {
-  "version": "agent-evaluation-cases/v2",
+  "version": "agent-evaluation-cases/v3",
   "planningVersion": "planning-eval-cases/v1",
   "synthetic": true,
   "applicationSchemaFinalized": true,
   "applicationSchema": "begood-studio/1.0",
-  "description": "Application-compatible synthetic Studio requests and provider responses. Acceptance outcomes retained; unexercised behavior and human judgment are explicitly pending. Version 2 follows the current step facilitation/space contract; expected acceptance outcomes are unchanged.",
+  "description": "Application-compatible synthetic Studio requests and provider responses. Acceptance outcomes retained; unexercised behavior and human judgment are explicitly pending. Version 3 retains the current step facilitation/space contract and all expected acceptance outcomes. E11 expects exactly two primary calls: the invalid structured response and its single bounded repair, matching the current Studio policy.",
   "principals": [
     {
       "id": "fixture-user-a",
@@ -2243,7 +2243,7 @@
         }
       },
       "expectedHttpStatus": 422,
-      "expectedProviderCalls": 1,
+      "expectedProviderCalls": 2,
       "automatedChecks": [
         "http_status",
         "provider_call_count",

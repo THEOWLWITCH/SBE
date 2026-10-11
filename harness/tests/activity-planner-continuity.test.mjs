@@ -19,7 +19,7 @@ class Node {
   setAttribute(k,v){this.attrs.set(k,String(v));}getAttribute(k){return this.attrs.get(k)??null;}
   addEventListener(k,fn){const a=this.listeners.get(k)||[];a.push(fn);this.listeners.set(k,a);}
   async fire(k){for(const fn of this.listeners.get(k)||[])await fn({target:this});}
-  querySelector(q){return descendants(this).find(x=>q[0]==='#'?x.getAttribute('id')===q.slice(1):x.tagName===q.toUpperCase())||null;}
+  querySelector(q){return descendants(this).find(x=>q[0]==='#'?x.getAttribute('id')===q.slice(1):q[0]==='.'?x.className.split(/\s+/).includes(q.slice(1)):x.tagName===q.toUpperCase())||null;}
   querySelectorAll(q){return descendants(this).filter(x=>x.tagName===q.toUpperCase());}
   showModal(){this.open=true;}close(){this.open=false;void this.fire('close');}remove(){if(this.parentNode)this.parentNode.childNodes=this.parentNode.childNodes.filter(x=>x!==this);}focus(){}
 }
@@ -89,6 +89,36 @@ test('Sequence document saves, reopens, prints and downloads the actual edited t
   e.setFailWrite(false);await e.ctx.shown.tools[1].fire('click');let record=e.ctx.seqArchive.list()[0];assert.match(e.ctx.seqArchive.restore(record)[0].textContent,/נוסח רצף שערכתי\nשאלה משותפת/);assert.equal(e.ctx.seqArchive.restore(record)[0].querySelector('script'),null);
   doc.querySelector('td').textContent='גרסה נוספת';await e.ctx.shown.tools[1].fire('click');record=e.ctx.seqArchive.list()[0];assert.equal(record.version,2);assert.match(e.ctx.seqArchive.restore(record.history[0])[0].textContent,/נוסח רצף שערכתי/);
   await e.ctx.shown.tools[0].fire('click');assert.match(e.printed[0].nodes[0].textContent,/גרסה נוספת/);assert.equal(e.printed[0].nodes[0].querySelector('script'),null);await e.ctx.shown.tools[2].fire('click');assert.match(e.ctx.download[1],/גרסה נוספת/);assert.doesNotMatch(e.ctx.download[1],/activeAttack|onclick|<script/);assert.equal(e.storage.has('oldScoped'),false);
+});
+test('Sequence source attachment preserves human edits in save, print, download and review snapshots',async()=>{
+  const e=environment();sequence(e);
+  const article=e.el('article',{},e.el('table',{},e.el('tr',{},e.el('td',{},'original synthetic plan'))));
+  e.ctx.DOMParser=class{parseFromString(){return{querySelector:()=>article};}};
+  e.ctx.aiNarrative=async()=>({paragraphs:['synthetic']});
+  e.ctx.docShell=(title,body)=>`<!doctype html><title>${title}</title><body>${body}</body>`;
+  e.ctx.esc=s=>String(s||'').replace(/[&<>"']/g,'');e.document.getElementById('brandLogo').src='brand.png';
+  e.ctx.window.SBE_REFS={};
+  e.ctx.seqRefsPanel=(_narr,onAttach)=>{
+    e.ctx.toggleAttachment=onAttach;
+    const refs=e.el('section',{},e.el('div',{class:'refs-body'},'synthetic academic citation',e.el('script',{},'sourceAttack()')));
+    return refs;
+  };
+  e.ctx.window.SBE_ACTIVITY_REVIEW={plannerButton:options=>{e.ctx.reviewOptions=options;return e.el('button',{},'review snapshot');}};
+  e.ctx.SBE_ACTIVITY_REVIEW=e.ctx.window.SBE_ACTIVITY_REVIEW;
+  await e.document.getElementById('bSeqBuild').fire('click');
+  const doc=e.ctx.shown.body.querySelector('article'),cell=doc.querySelector('td');cell.textContent='human edited educational plan';
+  assert.doesNotMatch(doc.textContent,/academic citation/);
+  e.ctx.toggleAttachment(true);assert.match(doc.textContent,/human edited.*academic citation/);assert.equal(doc.querySelector('script'),null);
+  const save=e.ctx.shown.tools.find(n=>/שמירה/.test(n.textContent)&&!/PDF|למחשב/.test(n.textContent));
+  await save.fire('click');assert.match(e.ctx.seqArchive.restore(e.ctx.seqArchive.list()[0])[0].textContent,/human edited.*academic citation/);
+  assert.match(e.ctx.reviewOptions.nodes()[0].textContent,/human edited.*academic citation/);
+  await e.ctx.shown.tools.find(n=>/PDF/.test(n.textContent)).fire('click');assert.match(e.printed[0].nodes[0].textContent,/human edited.*academic citation/);
+  await e.ctx.shown.tools.find(n=>n.textContent==='שמירה למחשב').fire('click');assert.match(e.ctx.download[1],/human edited.*academic citation/);assert.doesNotMatch(e.ctx.download[1],/sourceAttack/);
+  cell.textContent='second human edit';e.ctx.toggleAttachment(false);
+  assert.equal(doc.querySelector('td').textContent,'second human edit');assert.doesNotMatch(doc.textContent,/academic citation/);
+  assert.doesNotMatch(e.ctx.reviewOptions.nodes()[0].textContent,/academic citation/);
+  e.ctx.toggleAttachment(true);e.setOwner('B');e.ctx.toggleAttachment(false);
+  assert.match(doc.textContent,/second human edit.*academic citation/);assert.match(e.ctx.shown.body.textContent,/הכניסה.*רענן/);
 });
 test('Owner switch blocks new AI submissions, saved-product writes and the captured sequence draft key',async()=>{
   const e=environment();single(e);sequence(e);e.run(part('function saveDraft()','function touch('));e.run('saveDraft();');const original=e.storage.get(e.ctx.DRAFT_KEY);e.setOwner('B');

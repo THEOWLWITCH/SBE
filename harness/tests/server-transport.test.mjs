@@ -76,14 +76,16 @@ test('successful async tool calls persist; expiry and revocation close polling',
 });
 
 test('Studio terminal polling preserves its existing success and structured-error envelope',async t=>{
-  const {store,a}=await account(['studio']);let outcome=[200,{activity:{title:'פעילות סינתטית'}}];
-  const {server,post}=await serving(t,{store,studioHandler:async()=>outcome});
   for(const [requestId,status,result] of [
     ['studio-success',200,{activity:{title:'פעילות סינתטית'}}],
     ['studio-invalid',422,{error:'חסר מדריך הנחיה',code:'studio_invalid',details:['facilitatorGuide']}],
     ['studio-denied',403,{error:'אין הרשאה',code:'studio_forbidden'}]
   ]) {
-    outcome=[status,result];const start=await post('/api/studio',a,{action:'generate',async:true,requestId});
+    // These independent envelope cases each reserve a complete kit allowance.
+    // Give them separate owners/stores; daily quota is verified separately.
+    const {store,a}=await account(['studio']);
+    const {server,post}=await serving(t,{store,studioHandler:async()=>[status,result]});
+    const start=await post('/api/studio',a,{action:'generate',async:true,requestId});
     assert.equal(start.status,200);await server.waitForJobs();
     const done=await post('/api/studio',a,{action:'status',jobId:start.body.jobId});
     assert.equal(done.body.status,'done');assert.equal(done.body.httpStatus,status);assert.deepEqual(done.body.result,result);

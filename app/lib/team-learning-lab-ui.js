@@ -126,7 +126,7 @@
     input.value = options.array && Array.isArray(value) ? value.join("\n") : text(value); input.setAttribute("aria-label",label);
     if (options.placeholder) input.placeholder = options.placeholder;
     input.addEventListener(options.options ? "change" : "input",() => attempt(() => onInput(options.number ? Number(input.value) : input.value)));
-    wrap.append(input); if (options.hint) wrap.append(node("small",options.hint));
+    wrap.append(input); if (options.hint) wrap.append(node("small",options.hint,"hint"));
     return wrap;
   }
   function contextField(name,label,options) {
@@ -272,12 +272,19 @@
     const request = T.buildRequest(ws,kind,options), context = clone(ws.context), run = work.start();
     busy(run,kind); message("");
     try {
-      const reply = await window.sbeCallAI(window.sbeAIOrigin(),request,request.timeoutMs,{signal:run.signal});
-      run.assertCurrent(); assertOwner(); return {value:T.parseReply(reply,kind,context),run};
+      let value;
+      const current = () => {run.assertCurrent(); assertOwner();};
+      await window.sbeCallAIJson(window.sbeAIOrigin(),request,request.timeoutMs,reply => {
+        current();
+        try {value = T.parseReply(JSON.stringify(reply),kind,context); return true;}
+        catch {return false;}
+      },{signal:run.signal,beforeAttempt:current});
+      current(); return {value,run};
     } catch (error) {
       if (error.name === "AbortError") message("הבקשה נעצרה. אפשר להמשיך מהנוסח הנוכחי ולנסות שוב.");
       else {
         try { await save(); } catch {}
+        if (error.code === "incomplete") throw new Error("התוצר התקבל חלקי גם לאחר בקשת השלמה. מה שמילאתם נשאר בטיוטה; אפשר לנסות שוב.");
         throw new Error("לא התקבלה תשובה מה-AI. " + error.message + " מה שמילאתם נשאר בטיוטה; אפשר לנסות שוב.");
       }
       throw error;
@@ -378,7 +385,14 @@
       })); host.append(card);
     });
   }
-  function publicDocument(pack) {
+  function referenceSection(sources,attach = false,onAttach) {
+    const section = node("section"); if (attach) section.classList.add("attach");
+    section.append(node("h3","מקורות"),node("p","המקורות מציעים בסיס לגישות. ההתאמה לפעילות הזאת היא השערת תכנון, שאותה בודקים בניסיון ובשיקול דעת מקצועי."),sourceLinks(sources));
+    window.SBE_REFS.fold(section,sources.length);
+    if (onAttach) section.querySelector(".refs-attach").addEventListener("click",() => attempt(() => onAttach(section.classList.contains("attach"))));
+    return section;
+  }
+  function publicDocument(pack,{attachSources = false} = {}) {
     const article = node("article",undefined,"lab-doc"); article.append(node("h2",pack.activity.title));
     const c = pack.context, a = pack.activity;
     article.append(D.table([["מטרה",a.purpose],["קבוצה",(c.audience === "staff" ? "צוות חינוך" : "תלמידים ותלמידות") + " · " + (T.AGE_BANDS.find(x => x.id === c.ageBand)?.label || "")],["הקשר",c.subject + " · " + c.curriculumGoal],["מפגש",text(T.MODES.find(x => x.id === c.mode)?.label) + " · " + c.minutes + " דקות · " + (c.situation === "emergency" ? "חירום" : "שגרה")],["רכיבי חוסן",text(a.resilienceComponents)],["מיומנויות אישיות",text(a.individualSkills)],["מיומנויות משותפות",text(a.sharedSkills)],["הנחיית המבוגר",D.rich(a.facilitationGuide)]]));
@@ -389,16 +403,18 @@
       article.append(node("h3","מהלכים שנבחרו לשיתוף")); pack.moves.forEach(m => article.append(D.table([["מהלך שנוסה",m.title],["מטרת השלב",m.step.purpose],["מה עושים",m.step.instructions],["הנחיה",m.step.facilitation],["רכיבי חוסן",text(m.step.components)],["מיומנויות אישיות",text(m.step.individualSkills)],["מיומנויות משותפות",text(m.step.sharedSkills)],["סביבה ומשאבים",m.step.environment + " · " + m.step.resources],["תנאי התאמה",m.conditions],["גבולות",m.limits]])));
     }
     article.append(node("h3","גבולות ששומרים על המשתתפים")); const red = node("ul"); (pack.redLines || T.RED_LINES).forEach(r => red.append(node("li",typeof r === "string" ? r : r.label))); article.append(red);
-    article.append(node("h3","מקורות"),node("p","המקורות מציעים בסיס לגישות. ההתאמה לפעילות הזאת היא השערת תכנון, שאותה בודקים בניסיון ובשיקול דעת מקצועי."),sourceLinks(pack.sources));
+    if (pack.sources.length) article.append(referenceSection(pack.sources,attachSources));
     return article;
   }
   function renderExport() {
     const box = $("lab-export"), form = readForm("export"); box.replaceChildren(); box.className = "lab-export";
     if (!ws.approvals.length) return;
-    box.append(node("h3","תיק הצוות לשיתוף"),node("p","בוחרים גרסה מאושרת ומהלכים לשיתוף. החששות, השיחות והתצפיות הגולמיות אינם חלק מהתיק.","lab-muted"),field("הגרסה לתיק",form.approvalId || "",value => setForm("export","approvalId",value),{options:approvalOptions()}));
+    box.append(node("h3","תיק הצוות לשיתוף"),node("p","בוחרים גרסה מאושרת ומהלכים לשיתוף. החששות, השיחות והתצפיות הגולמיות אינם חלק מהתיק.","lab-muted"),field("הגרסה לתיק",form.approvalId || "",value => {setForm("export","approvalId",value); setForm("export","attachSources",false); renderExport();},{options:approvalOptions()}));
     function pack() { assertOwner(); if (!form.approvalId) throw new Error("בחרו במפורש גרסה מאושרת לתיק."); return T.publicPack(ws,form.approvalId,{moveIds:[...selectedMoves]}); }
-    const actions = node("div",undefined,"lab-footeractions"); actions.append(button("הדפסה / שמירה כ-PDF",() => {const p = pack(); D.print({title:p.activity.title,kind:"תיק צוות",node:publicDocument(p),inline:true,landscape:true});}),button("ייצוא תיק מאושר כ-JSON",() => {
-      const p = pack(), blob = new Blob([JSON.stringify(p,null,2)],{type:"application/json;charset=utf-8"}), url = URL.createObjectURL(blob), a = node("a"); a.href = url; a.download = "Begood-team-lab-" + new Date().toISOString().slice(0,10) + ".json"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url),10000);
+    if (form.approvalId && ws.approvals.some(a => a.id === form.approvalId)) box.append(referenceSection(pack().sources,form.attachSources === true,value => setForm("export","attachSources",value)));
+    const actions = node("div",undefined,"lab-footeractions"); actions.append(button("הדפסה / שמירה כ-PDF",() => {const p = pack(); D.print({title:p.activity.title,kind:"תיק צוות",node:publicDocument(p,{attachSources:form.attachSources === true}),inline:true,landscape:true});}),button("ייצוא תיק מאושר כ-JSON",() => {
+      const p = pack(); if (form.attachSources !== true) {p.sources = []; p.activity.sources = [];}
+      const blob = new Blob([JSON.stringify(p,null,2)],{type:"application/json;charset=utf-8"}), url = URL.createObjectURL(blob), a = node("a"); a.href = url; a.download = "Begood-team-lab-" + new Date().toISOString().slice(0,10) + ".json"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url),10000);
     })); box.append(actions);
   }
   function renderRelated() {
@@ -461,7 +477,7 @@
   window.SBE_TEAM_UI = {demoFill,generate,printableNode() {
     assertOwner(); if (!generated || !ws.activity) throw new Error("עוד לא הופקה פעילות אמיתית.");
     const activity = T.validateActivity(ws.activity,ws.context), sources = activity.sources.map(id => T.SOURCES.find(s => s.id === id)).filter(Boolean);
-    return publicDocument({context:T.validateContext(ws.context),activity,redLines:T.RED_LINES,sources,moves:[]});
+    return window.SBE_REFS.forPrint(publicDocument({context:T.validateContext(ws.context),activity,redLines:T.RED_LINES,sources,moves:[]}));
   }};
   attempt(init);
 })();
