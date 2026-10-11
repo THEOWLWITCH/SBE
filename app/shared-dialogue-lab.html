@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מעבדת שיח וחקר משותף</title>
+<script src="lib/access-guard.js"></script>
+<script src="lib/example-peek.js" data-tool="dialogue" defer></script>
+<script src="lib/open-select.js"></script>
+<script src="lib/ai-call.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@300;400;600;700&display=swap">
+<link rel="stylesheet" href="lib/playful.css">
+<script src="lib/resilience-advisor-sources.js"></script>
+<script src="lib/report-table.js"></script>
+<script src="lib/product-doc.js"></script>
+<script src="lib/ref-collect.js"></script>
+<script src="lib/lab-kit.js"></script>
+<script src="lib/dialogue-lab-model.js"></script>
+</head>
+<body>
+<nav class="topnav no-print">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › מעבדת שיח וחקר משותף</span>
+</nav>
+<div class="wrap">
+  <header class="hero no-print">
+    <div class="hero-text">
+      <span class="eyebrow">🧪 מעבדה · שיח וחקר בתחום הדעת</span>
+      <h1>מעבדת שיח וחקר משותף</h1>
+      <p data-peek>הקבוצה חוקרת שאלה בתחום הדעת: מנסחת שאלה, בונה טענות, בודקת ראיות ומתקנת יחד. כל אחד ואחת מביעים עמדה ומסבירים אותה, גם עמדה שלא נבחרה נשמרת, והמורה בודקת ומאשרת את המסקנה.</p>
+    </div>
+    <svg class="hero-art" viewBox="0 0 240 160" aria-hidden="true" focusable="false">
+      <g fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-dasharray="4 6"><path d="M70 60 L120 95 L175 55"/><path d="M120 95 L120 140"/></g>
+      <g font-family="Rubik,sans-serif" font-weight="700" font-size="22" text-anchor="middle">
+        <circle cx="70" cy="50" r="28" fill="#9ADBD2" stroke="#fff" stroke-width="2"/><text x="70" y="58" fill="#1C3550">?</text>
+        <circle cx="175" cy="45" r="28" fill="#F6D58A" stroke="#fff" stroke-width="2"/><text x="175" y="53" fill="#1C3550">💡</text>
+        <circle cx="120" cy="100" r="24" fill="#B5DFA9" stroke="#fff" stroke-width="2"/><text x="120" y="108" fill="#1C3550">🔎</text>
+        <circle cx="120" cy="140" r="14" fill="#F7B9A6" stroke="#fff" stroke-width="2"/>
+      </g>
+    </svg>
+  </header>
+
+  <div class="card no-print">
+    <h2><span class="h-ico">🗂</span> החקרים שלנו</h2>
+    <div class="hub" id="hub"></div>
+    <div class="btns">
+      <button class="btn ghost sm" id="saveFile" type="button">💾 שמירת קובץ</button>
+      <label class="btn ghost sm" style="margin:0">📂 פתיחת קובץ<input id="openFile" type="file" accept=".json,application/json" hidden></label>
+      <button class="btn ghost sm" id="delItem" type="button">🗑 מחיקת החקר הפתוח</button>
+    </div>
+  </div>
+
+  <ol class="steps no-print" id="steps"></ol>
+
+  <section class="card stage" id="s1" data-step="1">
+    <h2><span class="h-ico">❓</span> מנסחים שאלה</h2>
+    <div id="form" class="no-print"></div>
+    <div class="btns no-print">
+      <button class="btn" id="go" type="button">הצעת שאלות חקר ותפקידים</button>
+      <button class="btn ghost sbe-sysonly" id="example" type="button">דוגמה</button>
+    </div>
+    <div class="wait" id="wait1" hidden></div>
+    <p class="err" id="err1" hidden></p>
+    <div id="out1"></div>
+  </section>
+
+  <section class="card stage" id="s2" data-step="2" hidden>
+    <h2><span class="h-ico">💡</span> בונים טענה</h2>
+    <div id="out2"></div>
+    <div class="btns no-print">
+      <button class="btn" type="button" data-go="3">ממשיכים: בודקים ראיות ←</button>
+      <button class="btn ghost" type="button" data-go="1">→ חזרה</button>
+    </div>
+  </section>
+
+  <section class="card stage" id="s3" data-step="3" hidden>
+    <h2><span class="h-ico">🔎</span> בודקים ראיות</h2>
+    <div id="out3"></div>
+    <div class="btns no-print">
+      <button class="btn ghost sm" type="button" data-print="roles">🖨 כרטיסי תפקיד</button>
+      <button class="btn" type="button" data-go="4">ממשיכים: מתקנים יחד ←</button>
+      <button class="btn ghost" type="button" data-go="2">→ חזרה</button>
+    </div>
+  </section>
+
+  <section class="card stage" id="s4" data-step="4" hidden>
+    <h2><span class="h-ico">🛠</span> מתקנים יחד</h2>
+    <div class="btns no-print"><button class="btn" id="revise" type="button">הצעה לגרסה מתוקנת</button></div>
+    <div class="wait" id="wait4" hidden></div>
+    <p class="err" id="err4" hidden></p>
+    <div id="out4"></div>
+    <div class="btns no-print">
+      <button class="btn ghost sm" type="button" data-print="board">🖨 לוח שאלה, טענות וראיות</button>
+      <button class="btn ghost sm" type="button" data-print="roles">🖨 כרטיסי תפקיד</button>
+      <button class="btn sm" type="button" data-print="all">🖨 תיק החקר</button>
+      <button class="btn ghost" type="button" data-go="3">→ חזרה</button>
+    </div>
+  </section>
+</div>
+<script src="lib/dialogue-lab-ui.js"></script>
+<script src="lib/screens-menu.js"></script>
+<script src="lib/demo-hook.js"></script>
+</body>
+</html>

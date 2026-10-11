@@ -17,7 +17,7 @@
   const PAGES = {
     see: ['resilience-team.html', 'resilience-fill.html', 'resilience-advisor.html', 'leadership-advisor.html'],
     practice: ['input-screen.html', 'parent-input-screen.html', 'student-input-screen.html', 'search.html', 'facilitator-screen.html', 'observation-sheet.html',
-      'practice.html', 'conversation-planner.html', 'facilitation-advisor.html', 'family-bridge.html',
+      'practice.html', 'conversation-planner.html', 'facilitation-advisor.html', 'family-bridge.html', 'shared-dialogue-lab.html', 'team-thinking.html',
       'doc-facilitator.html', 'doc-trainee.html', 'doc-actor.html', 'card-actor.html'],
     act: ['activity-planner.html', 'resilience-studio.html', 'message-writer.html'],
     learn: ['academic-review.html', 'feedback.html', 'feedback-results.html'],

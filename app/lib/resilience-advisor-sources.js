@@ -23,7 +23,8 @@
     cont: 'רציפות, מסירה וגיבוי בצוות',
     routine: 'שגרות, מנגנונים חברתיים ויוזמות תלמידים',
     family: 'שותפות עם משפחות',
-    paths: 'מסלולי השתתפות, בחירה ועדות ללמידה'
+    paths: 'מסלולי השתתפות, בחירה ועדות ללמידה',
+    dialog: 'שיח, חקר משותף וחשיבת צוות'
   };
   var S = [
     // ── ישראל ──
@@ -985,7 +986,52 @@
     {k:'Pashler2008', g:'paths', apa:'Pashler, H., McDaniel, M., Rohrer, D., & Bjork, R. (2008). Learning styles: Concepts and evidence. Psychological Science in the Public Interest, 9(3), 105–119.',
       url:'https://doi.org/10.1111/j.1539-6053.2009.01038.x',
       gist:'אין עדות לכך שהתאמת ההוראה ל"סגנון למידה" של תלמיד (חזותי, שמיעתי וכדומה) משפרת למידה. הדרך המתאימה תלויה בתוכן וביעד.',
-      be:'מסלולים אינם "סגנונות למידה": התלמידים בוחרים, והמורה בודקת אם יש עדות להבנה. לא כל דרך מתאימה לכל יעד.'}
+      be:'מסלולים אינם "סגנונות למידה": התלמידים בוחרים, והמורה בודקת אם יש עדות להבנה. לא כל דרך מתאימה לכל יעד.'},
+    // ── שיח, חקר משותף וחשיבת צוות (11/10/2026, למעבדת שיח וחקר משותף ולחשיבת צוות) ──
+    {k:'EEFCollab2021', g:'dialog', apa:'Education Endowment Foundation. (2021). Collaborative learning approaches. Teaching and Learning Toolkit. EEF.',
+      url:'https://educationendowmentfoundation.org.uk/education-evidence/teaching-learning-toolkit/collaborative-learning-approaches',
+      gist:'למידה שיתופית מועילה כשהמשימה מובנית, יש לה תכלית משותפת, התפקידים ברורים והתלמידים מתרגלים איך לעבוד יחד. הסקירה מדווחת על שונות גדולה בין תוכניות ועל ביטחון ראיות נמוך יחסית.',
+      be:'בשתי המעבדות יש מבנה קבוע, תפקידים ותכלית משותפת, ולא "עבודה בקבוצות" כללית. לא מבטיחים תוצאה מספרית.'},
+    {k:'Jay2017', g:'dialog', apa:'Jay, T., Willis, B., Thomas, P., Taylor, R., Moore, N., Burnett, C., Merchant, G., & Stevens, A. (2017). Dialogic teaching: Evaluation report and executive summary. Education Endowment Foundation.',
+      url:'https://educationendowmentfoundation.org.uk/projects-and-evaluation/projects/dialogic-teaching',
+      gist:'הערכה של תוכנית הוראה דיאלוגית בבתי ספר יסודיים באנגליה: שיח מנומק, שאלות פתוחות והרחבת תשובות, עם הכשרה וליווי של המורים. נמצאו שיפורים קטנים עד בינוניים באנגלית, במדעים ובמתמטיקה.',
+      be:'השיח בכיתה הוא כלי למידה בתחום הדעת. במעבדה המורה מקבלת מהלכים קבועים לשיח מנומק, ולא רק "דיון".'},
+    {k:'Alexander2020', g:'dialog', apa:'Alexander, R. (2020). A dialogic teaching companion. Routledge.',
+      url:'https://doi.org/10.4324/9781351040143',
+      gist:'הוראה דיאלוגית: שיח קולקטיבי, הדדי, תומך, מצטבר ותכליתי. התלמידים מקשיבים זה לזה, בונים על רעיונות של אחרים ומנמקים, והמורה מכוונת את השיח למטרה לימודית.',
+      be:'"מסבירים רעיון של עמית לפני שמגיבים" ו"מה רעיון אחד הוסיף לאחר" הם מהלכים של שיח מצטבר והדדי.'},
+    {k:'MichaelsOConnor2008', g:'dialog', apa:'Michaels, S., O’Connor, C., & Resnick, L. B. (2008). Deliberative discourse idealized and realized: Accountable talk in the classroom and in civic life. Studies in Philosophy and Education, 27(4), 283–297.',
+      url:'https://doi.org/10.1007/s11217-007-9071-1',
+      gist:'שיח אחראי (Accountable Talk): אחריות לקהילת הלומדים (הקשבה ובנייה על דברי אחרים), לחשיבה מנומקת ולידע מבוסס בתחום. מהלכי מורה כמו "מי יכול/ה לומר במילים שלו מה היא אמרה?".',
+      be:'שלוש האחריויות מתורגמות במעבדה לשלושה הרגלים: להסביר את רעיון העמית, לנמק בעד ונגד, ולבדוק ראיה.'},
+    {k:'Osborne2004', g:'dialog', apa:'Osborne, J., Erduran, S., & Simon, S. (2004). Enhancing the quality of argumentation in school science. Journal of Research in Science Teaching, 41(10), 994–1020.',
+      url:'https://doi.org/10.1002/tea.20035',
+      gist:'טיעון במדעים משתפר כשמלמדים במפורש את מבנה הטענה (טענה, נתון, הצדקה, הפרכה) ונותנים לתלמידים להתמודד עם טענות מתחרות. איכות הטיעון נמדדת לפי שימוש בהפרכות.',
+      be:'בלוח הטענות יש מקום לנימוקים בעד ונגד ולחלופה, וגם עמדה שלא נבחרה נשמרת עם הנימוק שלה.'},
+    {k:'HattieTimperley2007', g:'dialog', apa:'Hattie, J., & Timperley, H. (2007). The power of feedback. Review of Educational Research, 77(1), 81–112.',
+      url:'https://doi.org/10.3102/003465430298487',
+      gist:'משוב מועיל עונה על שלוש שאלות: לאן הולכים (המטרה), איך מתקדמים (ביחס לקריטריונים), ומה הצעד הבא. משוב על המשימה ועל התהליך יעיל יותר ממשוב על האדם עצמו.',
+      be:'המשוב במעבדות מתייחס לרעיון, להסבר ולראיה ביחס לקריטריונים המשותפים, ולא לאדם.'},
+    {k:'ScardamaliaBereiter2006', g:'dialog', apa:'Scardamalia, M., & Bereiter, C. (2006). Knowledge building: Theory, pedagogy, and technology. In R. K. Sawyer (Ed.), The Cambridge handbook of the learning sciences (pp. 97–115). Cambridge University Press.',
+      url:'https://doi.org/10.1017/CBO9780511816833.008',
+      gist:'בניית ידע: קהילה שמשפרת רעיונות לאורך זמן. רעיונות נחשבים ניתנים לשיפור, האחריות לידע היא קולקטיבית, וגרסאות קודמות נשמרות כדי לראות את ההתקדמות.',
+      be:'התוצר שייך לקבוצה, יש לו גרסאות, וכל שינוי נשמר עם הנימוק והראיה שעליה הוא נשען.'},
+    {k:'Woolley2010', g:'dialog', apa:'Woolley, A. W., Chabris, C. F., Pentland, A., Hashmi, N., & Malone, T. W. (2010). Evidence for a collective intelligence factor in the performance of human groups. Science, 330(6004), 686–688.',
+      url:'https://doi.org/10.1126/science.1193147',
+      gist:'לקבוצות יש "אינטליגנציה קולקטיבית" שמנבאת הצלחה במגוון משימות. היא קשורה לשוויון בחלוקת זמן הדיבור ולרגישות חברתית של חברי הקבוצה, יותר מאשר לאינטליגנציה של היחידים.',
+      be:'בחשיבת צוות מוודאים שכל הקולות נשמעים: סבב קולות, תור דיבור ותפקיד שמזמין את מי שעוד לא דיבר.'},
+    {k:'Nemeth2001', g:'dialog', apa:'Nemeth, C., Brown, K., & Rogers, J. (2001). Devil’s advocate versus authentic dissent: Stimulating quantity and quality. European Journal of Social Psychology, 31(6), 707–720.',
+      url:'https://doi.org/10.1002/ejsp.58',
+      gist:'מחלוקת אמיתית מעוררת חשיבה מגוונת ואיכותית יותר מ"פרקליט שטן" מתוכנן. עמדת מיעוט כנה מובילה את הקבוצה לשקול יותר מידע ויותר חלופות.',
+      be:'מחלוקת עניינית לא נחסמת ולא מוחלפת בהסכמה מלאכותית. עמדה חלופית נשמרת עם הנימוק שלה.'},
+    {k:'Kapur2008', g:'dialog', apa:'Kapur, M. (2008). Productive failure. Cognition and Instruction, 26(3), 379–424.',
+      url:'https://doi.org/10.1080/07370000802212669',
+      gist:'כישלון יצרני: קבוצות שהתמודדו עם בעיות מורכבות ולא פתרו אותן בהתחלה הגיעו להבנה עמוקה יותר בהמשך, כשהניסיון שלהן קיבל מבנה ועיבוד.',
+      be:'קושי וכישלון הופכים לשלב בחקר: "מה למדנו מהקושי?" ובחירה בבדיקה נוספת, בלי להציג כישלון כהצלחה.'},
+    {k:'Gable2004', g:'dialog', apa:'Gable, S. L., Reis, H. T., Impett, E. A., & Asher, E. R. (2004). What do you do when things go right? The intrapersonal and interpersonal benefits of sharing positive events. Journal of Personality and Social Psychology, 87(2), 228–245.',
+      url:'https://doi.org/10.1037/0022-3514.87.2.228',
+      gist:'תגובה פעילה ומכבדת להצלחה של אחר (שמחה אמיתית, שאלות, עניין) מחזקת את הקשר ואת הרווחה של שני הצדדים, יותר מתגובה פסיבית או מבטלת.',
+      be:'פרגון ושמחה בהצלחת האחר הם מהלך מכוון בחשיבת צוות: פרגון לתרומה קונקרטית, ולא מחמאה כללית.'},
   ];
   var byKey = {}; S.forEach(function(s){ byKey[s.k] = s; });
   // לכל יועצת בנק משלה: פרקטי (הכיתה) — בלי קבוצות המנהיגות; נוגי (מנהיגות) — קבוצות המנהיגות,
@@ -1002,14 +1048,18 @@
   var FAM_K = { HendersonMapp2002: 1, Epstein2011: 1, BrykSchneider2002: 1, Lundy2007: 1, Sade2024: 1, SadeTools2026: 1, Hobfoll2007: 1, Ungar2011: 1 };
   // מסלולי השתתפות בלמידה (10/10/2026): קבוצת המסלולים ומקורות קיימים על UDL, למידה שיתופית ושיח
   var PATHS_K = { CAST2024: 1, Johnson2009: 1, RyanDeci2017: 1, Topping2005: 1, HoweAbedin2013: 1, MercerLittleton2007: 1, Resnick2015: 1, Sade2024: 1 };
+  // מעבדת שיח וחקר משותף וחשיבת צוות (11/10/2026): קבוצת השיח ומקורות קיימים על שיח, למידה שיתופית ואמון
+  var DIALOG_K = { CohenLotan2014: 1, Johnson2009: 1, MercerLittleton2007: 1, Resnick2015: 1, HoweAbedin2013: 1, Edmondson1999: 1, Bohm1996: 1, Kaner2014: 1, Topping2005: 1, RyanDeci2017: 1, Sade2024: 1 };
   var ADV = {
-    practi: function(s){ return !LEAD_G[s.g] && s.g !== 'cont' && s.g !== 'routine' && s.g !== 'family' && s.g !== 'paths'; },
+    practi: function(s){ return !LEAD_G[s.g] && s.g !== 'cont' && s.g !== 'routine' && s.g !== 'family' && s.g !== 'paths' && s.g !== 'dialog'; },
     nugi:   function(s){ return !!(NUGI_G[s.g] || NUGI_K[s.k]); },
     // תיק הרציפות (09/10/2026): קבוצת הרציפות ומקורות קיימים על רציפות חינוכית, מנהיגות מבוזרת, שגרה ואמון
     continuity: function(s){ return s.g === 'cont' || !!CONT_K[s.k]; },
     routines: function(s){ return s.g === 'routine' || !!ROUT_K[s.k]; },
     bridge: function(s){ return s.g === 'family' || !!FAM_K[s.k]; },
     paths: function(s){ return s.g === 'paths' || !!PATHS_K[s.k]; },
+    dialogue: function(s){ return s.g === 'dialog' || !!DIALOG_K[s.k]; },
+    teamthink: function(s){ return s.g === 'dialog' || !!DIALOG_K[s.k]; },
     nana:   function(){ return true; } // ננה — כל בנק הידע (07/10/2026): ההמלצות והמשוב שלה נשענים על כל מקורות החוסן
   };
   function forAdvisor(name){ var f = ADV[name]; return f ? S.filter(f) : S.slice(); }

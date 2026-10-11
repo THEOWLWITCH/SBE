@@ -168,6 +168,21 @@
       if (q.get("part") !== "proc") return plan;
       return procDemo($("#procR"), "routines-proc", "מרכז שגרות: נוהל עבודה בכלים שלכם", "נוהל עבודה · מרכז שגרות", ["גיליון משותף", "לוח מודפס"]);
     },
+    // מעבדת שיח וחקר משותף וחשיבת צוות (11/10/2026): נקודת הפתיחה כתוצר (שאלות, תנאי בדיקה, תפקידים ותכנית; מהלך חשיבה ותפקידים)
+    "shared-dialogue-lab.html": async function () {
+      click("#example"); await sleep(1200); var inp = inputSummary(); click("#go");
+      await waitFor(function () { var e = $("#err1"); if (e && !e.hidden) return { fail: e.textContent }; return $("#out1 .tiles"); }, 15 * 60e3, "שאלות החקר")
+        .then(function (r) { if (r.fail) throw new Error(r.fail); });
+      click("#out1 .choice"); await sleep(800);
+      return [{ tool: "dialogue", title: "מעבדת שיח וחקר משותף: נקודת הפתיחה", label: "שיח וחקר משותף", html: standalone(window.sbeDialoguePrintNode("all"), "מעבדת שיח וחקר משותף"), input: inp }];
+    },
+    "team-thinking.html": async function () {
+      click("#example"); await sleep(1200); var inp = inputSummary(); click("#go");
+      await waitFor(function () { var e = $("#err1"); if (e && !e.hidden) return { fail: e.textContent }; return $("#out1 .tiles"); }, 15 * 60e3, "מהלך החשיבה")
+        .then(function (r) { if (r.fail) throw new Error(r.fail); });
+      await sleep(800);
+      return [{ tool: "teamthink", title: "חשיבת צוות: מהלך החשיבה ותפקידים", label: "חשיבת צוות", html: standalone(window.sbeTeamThinkPrintNode("plan"), "חשיבת צוות"), input: inp }];
+    },
     "family-bridge.html": function () { return inPage("bridge", "גשר בין הבית לכיתה: כרטיס בחירה", "גשר בין הבית לכיתה", "#example", "#go", "#out2 .card-family", "#out2", "#err1"); },
     "message-writer.html": function () { return inPage("writer", "כתיבה מקדמת חוסן: הודעה", "כתיבה מקדמת חוסן", "#rw-example", "#rw-go", "#rw-out .rw-new", "#rw-out", "#rw-err"); },
     "conversation-planner.html": function () { fillSample(); return dialogProduct("conv", "תכנון שיחה: התוצר", "תכנון שיחה", function () { click("#bBuild"); }); },
