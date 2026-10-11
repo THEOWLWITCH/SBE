@@ -39,8 +39,23 @@
   function parseLoose(t) {
     const x = String(t || "").trim();
     try { return JSON.parse(x); } catch (e) {}
-    const m = x.match(/\{[\s\S]*\}/); if (m) { try { return JSON.parse(m[0]); } catch (e) {} }
+    // אובייקט JSON ראשון שלם, גם כשהמודל מוסיף אחריו טקסט (11/10/2026: "Unexpected non-whitespace character after JSON")
+    for (let i = x.indexOf("{"); i >= 0; i = x.indexOf("{", i + 1)) {
+      const end = balancedEnd(x, i);
+      if (end > i) { try { return JSON.parse(x.slice(i, end + 1)); } catch (e) {} }
+    }
     return null;
+  }
+  function balancedEnd(x, i) {
+    let depth = 0, str = false, esc = false;
+    for (let j = i; j < x.length; j++) {
+      const c = x[j];
+      if (str) { if (esc) esc = false; else if (c === "\\") esc = true; else if (c === '"') str = false; continue; }
+      if (c === '"') str = true;
+      else if (c === "{" || c === "[") depth++;
+      else if (c === "}" || c === "]") { depth--; if (depth === 0) return j; }
+    }
+    return -1;
   }
   async function sbeCallAIJson(server, body, timeoutMs, check) {
     const ok = (v) => v && typeof v === "object" && (!check || check(v));
@@ -54,4 +69,13 @@
   }
   window.sbeCallAIJson = sbeCallAIJson;
   window.sbeParseJSON = parseLoose;
+  // במקום x.match(/\{[\s\S]*\}/): מחזירה [האובייקט הראשון השלם] גם כשאחריו יש טקסט, או את ההתאמה הישנה
+  window.sbeJsonMatch = function (t) {
+    const x = String(t || "");
+    for (let i = x.indexOf("{"); i >= 0; i = x.indexOf("{", i + 1)) {
+      const end = balancedEnd(x, i);
+      if (end > i) { const s = x.slice(i, end + 1); try { JSON.parse(s); return [s]; } catch (e) {} }
+    }
+    return x.match(/\{[\s\S]*\}/);
+  };
 })();

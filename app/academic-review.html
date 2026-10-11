@@ -926,7 +926,7 @@ async function computeFeedbackAI(text, age, criteriaList, mode, task, kind) {
   // maxTokens/timeout גבוהים — עבודה אקדמית שלמה יכולה להיות ארוכה, ומשוב
   // אמיתי לכמה קריטריונים גם הוא ארוך. אותו סדר גודל שנמדד ב-activity-planner.html.
   const raw = await callAI(system, "הטקסט לבדיקה:\n\n" + text, 14000, 360000, true);
-  const m = raw.match(/\{[\s\S]*\}/);
+  const m = sbeJsonMatch(raw);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
   // הפניות לספרייה → ציטוט אמיתי; רשימת המקורות שהוזכרו מוצגת בסוף המשוב

@@ -1196,7 +1196,7 @@ async function generateSummary(){
   const timer=null; // ברקע, עם שאילת מצב (lib/ai-call.js, 06/10/2026)
   try{
     const text=await sbeCallAI(AI_SERVER,{system:SUM_SYSTEM,messages:[{role:'user',content:inp.text}],maxTokens:12000,customerReview:true},300000);
-    const m=String(text||'').match(/\{[\s\S]*\}/);
+    const m=sbeJsonMatch(String(text||''));
     if(!m)throw new Error('המודל לא החזיר מבנה תקין');
     const doc=JSON.parse(m[0]);
     saveSummaryCache({cid:sumCacheId(cfg),at:new Date().toISOString(),cls:cfg.cls,band:inp.band.label,doc});

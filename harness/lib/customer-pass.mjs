@@ -14,10 +14,26 @@ function contentText(c) {
   if (Array.isArray(c)) return c.map((p) => (p && typeof p.text === 'string' ? p.text : p && p.type ? '[' + p.type + ']' : '')).join('\n');
   return '';
 }
-function jsonOf(text) {
-  const m = String(text || '').match(/\{[\s\S]*\}/);
-  if (!m) return null;
-  try { const v = JSON.parse(m[0]); return v && typeof v === 'object' && !Array.isArray(v) ? v : null; } catch { return null; }
+// האובייקט הראשון השלם, גם כשאחריו יש עוד טקסט
+function balancedEnd(x, i) {
+  let depth = 0, str = false, esc = false;
+  for (let j = i; j < x.length; j++) {
+    const c = x[j];
+    if (str) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') str = false; continue; }
+    if (c === '"') str = true;
+    else if (c === '{' || c === '[') depth++;
+    else if (c === '}' || c === ']') { depth--; if (depth === 0) return j; }
+  }
+  return -1;
+}
+export function jsonOf(text) {
+  const x = String(text || '');
+  for (let i = x.indexOf('{'); i >= 0; i = x.indexOf('{', i + 1)) {
+    const end = balancedEnd(x, i);
+    if (end < 0) continue;
+    try { const v = JSON.parse(x.slice(i, end + 1)); if (v && typeof v === 'object' && !Array.isArray(v)) return v; } catch {}
+  }
+  return null;
 }
 export function reviewEnabled(payload) {
   return !!(payload && payload.customerReview) && process.env.CUSTOMER_REVIEW !== 'off';

@@ -865,7 +865,7 @@ async function generateProposals(ctx) {
     // maxTokens=16000, timeout=200 שניות — נמדד חי (19/09/2026): גם 4000
     // גרם לקטיעה בפועל, וגם עם 16000 ההפקה לקחה כ-2 דקות 18 שניות.
     const raw = await callAI(system, "בני הצעת פעילות מלאה, בעברית.", 16000, 300000);
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    const jsonMatch = sbeJsonMatch(raw);
     if (!jsonMatch) throw new Error("לא התקבל JSON תקין מהמודל");
     const parsed = JSON.parse(jsonMatch[0]);
     setAIStatus("ok");
@@ -1412,7 +1412,7 @@ async function computeFeedbackFromFieldsAI(d) {
   // maxTokens=8000, timeout=150 שניות — נמדד חי (19/09/2026): משוב אמיתי
   // על תוכנית לקח כ-60 שניות; 2500 גרם לקטיעה.
   const raw = await callAI(system, "תוכנית הפעילות:\n" + JSON.stringify(d, null, 2), 8000, 240000, true);
-  const m = raw.match(/\{[\s\S]*\}/);
+  const m = sbeJsonMatch(raw);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
   setAIStatus("ok");
@@ -1513,7 +1513,7 @@ async function synthesizeActivityNarrative(d, creator) {
       "החזירי אך ורק JSON: {\"title\":\"כותרת קצרה לפעילות (לא שם המקצוע)\",\"paragraphs\":[\"...\",\"...\",\"...\",\"...\"],\"prepare\":[\"...\"],\"flow\":[{\"phase\":\"פתיחה\",\"title\":\"\",\"minutes\":5,\"description\":\"\",\"guide\":\"\",\"resources\":\"\"}]}",
     ].join("\n\n");
     const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 8000, 240000, true);
-    const m = text.match(/\{[\s\S]*\}/); if (!m) throw new Error("לא התקבל JSON");
+    const m = sbeJsonMatch(text); if (!m) throw new Error("לא התקבל JSON");
     const out = JSON.parse(m[0]);
     if (!Array.isArray(out.paragraphs) || out.paragraphs.length < 3) throw new Error("מבנה חסר");
     setAIStatus("ok");
@@ -1677,7 +1677,7 @@ async function computeFeedbackFromTextAI(text) {
     "החזירי אך ורק JSON תקין במבנה: {\"good\":[\"...\"],\"gaps\":[\"...\"]} — עם הסבר קונקרטי לכל פריט, מצטט מהטקסט כשרלוונטי. בלי טקסט נוסף מסביב.",
   ].join("\n");
   const raw = await callAI(system, "טקסט הפעילות:\n" + text, 8000, 240000, true);
-  const m = raw.match(/\{[\s\S]*\}/);
+  const m = sbeJsonMatch(raw);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
   setAIStatus("ok");
@@ -2699,7 +2699,7 @@ function preamble(p){
   ].filter(Boolean).join("\n");
 }
 function parseJSON(raw){
-  const m = String(raw || "").match(/\{[\s\S]*\}/);
+  const m = sbeJsonMatch(String(raw || ""));
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   return JSON.parse(m[0]);
 }

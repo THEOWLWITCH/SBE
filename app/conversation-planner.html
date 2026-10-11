@@ -500,7 +500,7 @@ async function buildDigitalDraft(d) {
     // מהתקציב על חשיבה פנימית לפני הטקסט הגלוי, ו-2000 נקטע בבדיקה חיה
     // מול השרת האמיתי ("שגיאת ספק: התוצר נקטע. max_tokens נמוך מדי").
     const raw = await callAI(system, userText, 8000, 240000, true);
-    const m = raw.match(/\{[\s\S]*\}/);
+    const m = sbeJsonMatch(raw);
     if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
     const parsed = JSON.parse(m[0]);
     if (!parsed.full || !parsed.short) throw new Error("חסרים שדות בתשובת המודל");
@@ -694,7 +694,7 @@ async function generateProposals(required) {
     // הצעה מלאה (16 שדות) דורשת תקציב דומה, כי thinking:adaptive+effort גבוה
     // צורך המון טוקנים על חשיבה פנימית לפני שהמודל מתחיל להפיק טקסט גלוי.
     const raw = await callAI(system, "בני הצעת תכנון שיחה מלאה, בעברית.", 16000, 300000);
-    const m = raw.match(/\{[\s\S]*\}/);
+    const m = sbeJsonMatch(raw);
     if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
     const parsed = JSON.parse(m[0]);
     AI_TRAIT_KEYS.forEach(k => { if (Array.isArray(parsed[k])) parsed[k] = JSON.stringify(parsed[k]); });
