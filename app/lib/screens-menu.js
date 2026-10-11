@@ -116,4 +116,32 @@ window.SBE_SCREENS_RENDER = function(host, opts){
     });
   });
 };
+// כפתור ☰ צף (11/10/2026: "לא רואה בתפריט את עבודת הצוות"): בדפים שטוענים את הקובץ ואין להם תפריט משלהם
+// (הכלים החדשים: חשיבת צוות, מעבדת שיח, מרכז השגרות, תיק הרציפות, הגשר). רק למנהלת המערכת, לא בתוך iframe.
+function autoMount(){
+  var sys = false;
+  try { sys = sessionStorage.getItem('sbe.session.homeUrl') === 'admin.html?role=sys'; } catch(e){}
+  if (!sys || window.self !== window.top) return;
+  if (document.getElementById('navMenuBtn') || document.getElementById('studio-screens') || document.getElementById('sbeAutoMenu')) return;
+  var here = (location.pathname.split('/').pop() || '').toLowerCase();
+  if (here === 'admin.html') return;
+  var st = document.createElement('style');
+  st.textContent = '#sbeAutoMenu{position:fixed;top:10px;inset-inline-end:10px;z-index:9997;direction:rtl;font-family:"Assistant","Segoe UI",system-ui,sans-serif}' +
+    '#sbeAutoMenu>button{font:600 12.5px/1.4 inherit;padding:5px 11px;border-radius:14px;border:1px solid #CDD3D8;background:#FCFCFD;color:#141C24;cursor:pointer;box-shadow:0 2px 8px rgba(20,28,36,.12)}' +
+    '#sbeAutoPanel{position:absolute;top:34px;inset-inline-end:0;width:270px;max-height:75vh;overflow-y:auto;background:#FCFCFD;border:1px solid #CDD3D8;border-radius:10px;box-shadow:0 14px 40px rgba(20,28,36,.22);padding:8px 0}' +
+    '#sbeAutoPanel[hidden]{display:none}#sbeAutoPanel h5{font-size:12px;color:#5C6771;margin:8px 14px 4px;font-weight:700}' +
+    '#sbeAutoPanel a{display:block;padding:7px 14px;color:#141C24;text-decoration:none;font-size:14.5px;border-inline-start:3px solid transparent}' +
+    '#sbeAutoPanel a:hover{background:#EDEFF1}#sbeAutoPanel a.current{color:#2E5A7D;font-weight:700;background:#DCE7EF;border-inline-start-color:#2E5A7D}' +
+    '@media print{#sbeAutoMenu{display:none}}';
+  document.head.appendChild(st);
+  var box = document.createElement('div'); box.id = 'sbeAutoMenu'; box.className = 'no-print';
+  var b = document.createElement('button'); b.type = 'button'; b.textContent = '☰ תפריט'; b.title = 'כל המסכים';
+  var panel = document.createElement('div'); panel.id = 'sbeAutoPanel'; panel.hidden = true;
+  box.appendChild(b); box.appendChild(panel); document.body.appendChild(box);
+  window.SBE_SCREENS_RENDER(panel, { here: here });
+  b.addEventListener('click', function(){ panel.hidden = !panel.hidden; });
+  document.addEventListener('click', function(e){ if (!panel.hidden && !box.contains(e.target)) panel.hidden = true; });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') panel.hidden = true; });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', autoMount); else autoMount();
 })();
