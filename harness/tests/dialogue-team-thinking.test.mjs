@@ -66,19 +66,24 @@ test('respectful feedback keeps the critique, asks for a reason when there is no
   assert.ok(!KIT.validFeedback({ kind: 'rephrase', rewrite: '' }));
 });
 
-test('both screens: in the practice group, sys-only until approval, inviting language without long dashes', () => {
+test('both screens: in the practice group, open by permission, inviting language without long dashes', () => {
   for (const f of ['shared-dialogue-lab.html', 'team-thinking.html']) {
     assert.equal(R.groupOf(f).id, 'practice', f);
     const html = read(f);
     for (const lib of ['access-guard.js', 'open-select.js', 'ai-call.js', 'lab-kit.js', 'screens-menu.js', 'demo-hook.js', 'example-peek.js']) assert.match(html, new RegExp('lib/' + lib.replace('.', '\\.')), f + ' ' + lib);
     assert.match(html, /id="example"[^>]*>|class="btn ghost sbe-sysonly" id="example"/);
     assert.match(html, /sbe-sysonly" id="example"/);
-    assert.match(read('map.html'), new RegExp("pending: true[^}]*page: '" + f.replace('.', '\\.') + "'"));
+    assert.doesNotMatch(read('map.html'), new RegExp("pending: true[^}]*page: '" + f.replace('.', '\\.') + "'"));
   }
   const fixed = ['shared-dialogue-lab.html', 'team-thinking.html', 'lib/dialogue-lab-ui.js', 'lib/team-thinking-ui.js', 'lib/lab-kit.js', 'lib/team-thinking-model.js', 'lib/dialogue-lab-model.js'].map(read).join('\n')
     + JSON.stringify([D.FIELDS, D.SECTIONS, D.GAIN, TT.FIELDS, TT.SECTIONS, TT.GAIN, KIT.FB_KINDS]);
   assert.deepEqual(invite.find(fixed.replace(/<svg[\s\S]*?<\/svg>/g, '')), []);
   assert.doesNotMatch(fixed.replace(/\/\/[^\n]*/g, ''), /—/);
-  const access = read('../harness/lib/access.mjs');
-  for (const f of ['shared-dialogue-lab.html', 'team-thinking.html']) assert.ok(!access.includes("'" + f + "'"), f + ' is not opened by any permission yet');
+  const access = read('../harness/lib/access.mjs'), guard = read('lib/access-guard.js'), about = read('about.html');
+  for (const [f, perm, name] of [['shared-dialogue-lab.html', 'dialogue', 'מעבדת שיח וחקר משותף'], ['team-thinking.html', 'teamthink', 'חשיבת צוות']]) {
+    assert.ok(access.includes("'" + f + "': ['" + perm + "']"), f + ' in MODEL_PAGES');
+    assert.match(access, new RegExp("PERMS = \\[[^\\]]*'" + perm + "'")); assert.ok(guard.includes(perm + ': ["' + f + '"'), f + ' in PAGES_BY_PERM');
+    for (const g of ['home.html', 'admin.html', 'renew.html']) assert.ok(read(g).includes(name), g + ' ' + name);
+    assert.ok(about.includes('<b>' + name + '<span class="kind lab">'), 'about ' + name);
+  }
 });
