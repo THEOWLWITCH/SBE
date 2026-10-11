@@ -1,0 +1,48 @@
+{
+  "reviewer": "project-standards",
+  "findings": [
+    {
+      "title": "Exclude entrant input notes from shared continuity exports",
+      "severity": "P2",
+      "file": "app/lib/continuity-kit-ui.js",
+      "line": 415,
+      "why_it_matters": "The continuity copy labeled as safe to share includes the teacher's raw entrant notes, alongside the generated group material. renderJoin places JOIN_FIELDS inputs inside the printable pane without a privacy marker; printable(false) converts their values into visible spans and only removes .sens blocks. The existing DOM fixture, extended in memory with a synthetic J.form.notes sentinel, confirmed that the sentinel appears in printShare. Removing the input section from shared export preserves the generated welcome plan while keeping the teacher's private context separate.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/continuity-kit-ui.js:415 --       box.appendChild(i); (f.type === 'area' ? root : form).appendChild(box); if (f.k === 'away') root.appendChild(form);",
+        "CLAUDE.md:237 -- רק מקטעי התוצר ניתנים לעריכה; הקלטים הפרטיים נשארים בנפרד.",
+        "CLAUDE.md:233 -- מסומן `.sens`, ויש \"עותק לשיתוף, בלי מידע רגיש\".",
+        "app/lib/continuity-model.js:158 -- { k: 'notes', l: 'מה חשוב לדעת כדי שהכניסה תהיה נוחה', type: 'area', ph: 'בלי שמות ובלי סיבת ההיעדרות. למשל: מעדיף להתחיל בהקשבה; מכיר שני תלמידים בכיתה.' }",
+        "app/lib/continuity-kit-ui.js:583-585 -- printable converts every input/textarea to a span of its value, then removes .sens only for a shared copy.",
+        "Read-only synthetic probe using the unmodified continuity-kit-ui.test.mjs fixture definitions: privateInputPrinted=true for J.form.notes='SYNTHETIC_PRIVATE_ENTRY_NOTES' after clicking printShare."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Put all JOIN_FIELDS input boxes in a distinct join-inputs wrapper and explicitly remove that wrapper in printable(false) before converting controls to spans. Keep generated group.say and the chosen generated entry materials in the shared output. Add a fixture check that a raw notes sentinel is absent from printShare while permitted generated group text remains."
+    },
+    {
+      "title": "Clear the previous entrant's kit when starting anew",
+      "severity": "P2",
+      "file": "app/lib/continuity-kit-ui.js",
+      "line": 456,
+      "why_it_matters": "Starting a new entrant route leaves the previous entrant's form, welcome message, first task and role cards visible and printable. The reset clears only progress fields, so even the information previously permitted for the old entrant's group message remains active for the next entrant. A synthetic click through the existing DOM fixture confirmed that the old kit and input notes survive and the old first task still appears in the shared export. Resetting entrant-specific state while retaining J.info implements the documented new-route behavior.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/continuity-kit-ui.js:456 --       btn('מצטרף/ת חדש/ה: מתחילים מחדש (תיק הכניסה נשמר)', 'btn btn-ghost sm', () => { if (!confirm('להתחיל מסלול חדש? הבחירה, הלוח ורשומת ההתאמות יתאפסו, ותיק הכניסה הקבוצתי יישאר.')) return; J.choice = ''; J.done = {}; J.log = []; J.checkWhen = window.sbeIsoPlus ? sbeIsoPlus(14) : ''; save(); showKit(); }));",
+        "CLAUDE.md:234 -- \"מצטרף/ת חדש/ה\" מתחיל מסלול חדש ושומר את תיק הכניסה.",
+        "app/lib/continuity-kit-ui.js:430 --     const k = J.kit; if (!k) return root;",
+        "app/lib/continuity-kit-ui.js:437-442 -- the retained kit supplies first.task, roles, group.say and the two-week board when renderJoin rebuilds the pane.",
+        "Read-only synthetic probe using the existing DOM fixture: after clicking the new entrant button, afterResetKitTitle='תכנית קודמת', afterResetForm still contains the old notes, and previousEntrantTaskStillPrinted=true; groupInfoRetained remains present."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Reset J.form and J.kit together with choice/done/log/checkWhen, preserving only the shared J.info entry directory; rebuild the pane and require a fresh kit before showing entrant-specific tasks/messages or printing role cards. Add a reset fixture assertion that old form/kit content disappears, J.info survives reload, and printShare contains no old entrant task."
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

@@ -1,0 +1,41 @@
+{
+  "reviewer": "security",
+  "findings": [
+    {
+      "title": "CWE-200: isolate bridge and routines demos before loading",
+      "severity": "P1",
+      "file": "app/lib/routines-ui.js",
+      "line": 32,
+      "why_it_matters": "Running these new demos can upload real local student or family details into demo metadata and overwrite the active private workspace. Both UIs load ordinary owner storage; the example handlers replace the form while old private output inputs remain, and demo-hook captures inputSummary before clearing that output. The routines path reproduced with the actual UI/model and demo input helper includes a saved child's name and contact in the demo input; demoSave stores this metadata and demoPublicList returns it if the example is later published. Fresh demo memory before any load, save or Studio import prevents both private capture and private record replacement.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 75,
+      "evidence": [
+        "app/lib/routines-ui.js:32 --   try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && Array.isArray(v.items)) S = v; } catch (e) {}",
+        "app/lib/routines-ui.js:35 --   function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }",
+        "app/lib/routines-ui.js:90 --       const v = JSON.parse(localStorage.getItem(KEY('sbe.studio.v1')) || 'null'), st = v && v.state, a = st && st.activity;",
+        "app/lib/routines-ui.js:510 --     I.form = ex; save(); goLabel(); F('err1').hidden = true;",
+        "app/lib/routines-ui.js:229 --     Object.assign(I, { plan: k, version: 1, at: today(), people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], rounds: [] });",
+        "app/lib/family-bridge-ui.js:29 --   try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && v.form) S = Object.assign(EMPTY(), v); } catch (e) {}",
+        "app/lib/family-bridge-ui.js:30 --   function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }",
+        "app/lib/family-bridge-ui.js:494 --     S.form = ex; save(); showGoal(); F('err1').hidden = true;",
+        "app/lib/family-bridge-ui.js:432 --     Object.assign(S, { plan: k, version: 1, at: today(), families: [FAMILY(0)], changes: [], learned: '' });",
+        "app/lib/demo-hook.js:125 --     click(example); await sleep(1200);",
+        "app/lib/demo-hook.js:126 --     var inp = inputSummary();",
+        "app/lib/demo-hook.js:127 --     var cap = $(capture); if (cap) cap.textContent = \"\";",
+        "app/lib/demo-hook.js:176 --       var plan = await inPage(\"routines\", \"מרכז שגרות: לוח ביצוע והסכם\", \"מרכז שגרות ויוזמות חברתיות\", \"#example\", \"#go\", \"#out2 .roles\", \"#out2\", \"#err1\");",
+        "app/lib/demo-hook.js:180 --     \"family-bridge.html\": function () { return inPage(\"bridge\", \"גשר בין הבית לכיתה: כרטיס בחירה\", \"גשר בין הבית לכיתה\", \"#example\", \"#go\", \"#out2 .card-family\", \"#out2\", \"#err1\"); },",
+        "app/demo-lab.html:230 --           try{await api({action:'demoSave',tool:it.tool||id,title:it.title,label:it.label,html:it.html,input:it.input||'',run:batch,order:ORDER.indexOf(id)});saved++;}",
+        "harness/lib/access.mjs:711 --     const meta = { id, tool: clean(body.tool, 40), title: clean(body.title, 120), label: clean(body.label, 80), input: String(body.input || '').replace(/[ \\t]+/g, ' ').trim().slice(0, 3000),",
+        "harness/lib/access.mjs:697 --   if (action === 'demoPublicList') return [200, { items: index.filter((d) => d.public).map(({ id, tool, title, label, at, input, order }) => ({ id, tool, title, label, at, input, order })) }];",
+        "Read-only synthetic in-memory VM: actual routines-model.js, routines-ui.js and report-table.js rendered a saved step-2 owner record with one board row and a named role. Actual #example click plus actual demo-hook inputSummary under all three demo gates produced reads=2, writes=2, privateRecordChanged=true and SYNTHETIC_PRIVATE_CHILD_NAME / SYNTHETIC_PRIVATE_CONTACT in captured lines 17 and 18. This proof did not run the browser or a provider; it executed canonical UI source and the canonical capture helper without writing source.",
+        "app/lib/continuity-kit-ui.js:15-17 already implements the three-gate fresh-memory storage pattern; participation-ui.js:40-50 applies the same boundary before reading ordinary owner storage."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Before initializing state in both family-bridge-ui.js and routines-ui.js, use the exact demo-hook gates (demolab=1, embedded window, system-admin homeUrl) to select fresh per-instance memory storage, matching continuity-kit-ui.js and participation-ui.js. Route every state read/write through that storage and ensure routines studioMech also uses it or is disabled in demo mode. Verify successful and failed actual demo recipes leave ordinary records byte-identical and produce no private markers in input summaries, captured HTML or provider requests; retain ordinary persistence when any gate is absent."
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

@@ -1,0 +1,263 @@
+[
+  {
+    "reviewer": "correctness",
+    "findings": [
+      {
+        "title": "Bind routines responses to their initiating item",
+        "severity": "P1",
+        "file": "app/lib/routines-ui.js",
+        "line": 216,
+        "confidence": 100,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "For options, build, and revise, capture a target item plus an immutable request-context/revision identifier before await. Apply the response only to that still-existing, unchanged target, and render or move steps only if it remains the selected item. Invalidate pending operations on deletion or replacement and prevent duplicate generation for the same revision. Add deferred-provider VM tests covering switch, deletion, and a second operation.",
+        "first_evidence": "app/lib/routines-ui.js:216 --     I.options = o.options.filter((x) => x && x.name); I.choose = o.choose || null; I.optSources = arr(o.sources); I.pick = ''; save(); drawOptions();"
+      },
+      {
+        "title": "Isolate new demo tools from personal workspaces",
+        "severity": "P1",
+        "file": "app/lib/routines-ui.js",
+        "line": 35,
+        "confidence": 100,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Use fresh per-instance in-memory storage for both new interfaces only when all three existing demo gates hold (demolab=1, embedded, administrator). Route every workspace read and save through that selected storage; prevent routines' Studio import from reading the ordinary private Studio record in demo mode. Keep ordinary persistence unchanged. Add actual-recipe success and provider-failure VM tests seeded with private forms, plans, people/families, procedure data, and history, asserting zero ordinary storage access and no private content in requests or captures.",
+        "first_evidence": "app/lib/routines-ui.js:35 --   function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }"
+      },
+      {
+        "title": "Keep practice demos away from saved personal cases",
+        "severity": "P1",
+        "file": "app/lib/demo-hook.js",
+        "line": 324,
+        "confidence": 100,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Apply the existing three-gate fresh in-memory demo storage pattern to the new private cases and draft state in practice.html. Scope the ordinary practice recipe's selection to the catalogue container as an additional explicit boundary. Exercise both actual practice recipes with a saved synthetic private case and draft, asserting the catalogue recipe never selects or sends the private character and the own-case recipe neither reads, writes, clears, nor evicts private records.",
+        "first_evidence": "app/lib/demo-hook.js:324 --       var card = await waitFor(\".scenario-card\", 30e3, \"רשימת התרחישים\");"
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "security",
+    "findings": [
+      {
+        "title": "CWE-200: isolate bridge and routines demos before loading",
+        "severity": "P1",
+        "file": "app/lib/routines-ui.js",
+        "line": 32,
+        "confidence": 75,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Before initializing state in both family-bridge-ui.js and routines-ui.js, use the exact demo-hook gates (demolab=1, embedded window, system-admin homeUrl) to select fresh per-instance memory storage, matching continuity-kit-ui.js and participation-ui.js. Route every state read/write through that storage and ensure routines studioMech also uses it or is disabled in demo mode. Verify successful and failed actual demo recipes leave ordinary records byte-identical and produce no private markers in input summaries, captured HTML or provider requests; retain ordinary persistence when any gate is absent.",
+        "first_evidence": "app/lib/routines-ui.js:32 --   try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && Array.isArray(v.items)) S = v; } catch (e) {}"
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "reliability",
+    "findings": [
+      {
+        "title": "Bind pending routine generation to its originating item",
+        "severity": "P1",
+        "file": "app/lib/routines-ui.js",
+        "line": 229,
+        "confidence": 100,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Capture the originating item and a per-item request generation before each asynchronous options, build and revision request. Apply returned data only to that captured item if it is still present and that generation is current; persist S, and redraw or change steps only when I is still the originating item. Do not write a completed request into the currently selected global I or resurrect an item deleted while pending.",
+        "first_evidence": "app/lib/routines-ui.js:229 --     Object.assign(I, { plan: k, version: 1, at: today(), people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], rounds: [] });"
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "adversarial",
+    "findings": [
+      {
+        "title": "Demo runs overwrite private work and evict saved cases",
+        "severity": "P1",
+        "file": "app/practice.html",
+        "line": 1945,
+        "confidence": 75,
+        "autofix_class": "manual",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Before any workspace read in family-bridge-ui.js, routines-ui.js and the practice own-case IIFE, select fresh memory storage only when demolab=1, the page is embedded and homeUrl is admin.html?role=sys; route every workspace read/write, including the routines Studio import, through it. Preserve normal owner storage outside those three gates. Exercise the actual recipes with seeded private drafts, twelve saved cases and a saved preview; prove both successful and failed demos leave ordinary records byte-identical and cannot capture private content or accept an old preview.",
+        "first_evidence": "app/practice.html:1945 --   let mine = []; try { mine = JSON.parse(localStorage.getItem(KEY) || \"[]\"); } catch (e) {}"
+      },
+      {
+        "title": "Switching routines sends a pending result into another item",
+        "severity": "P1",
+        "file": "app/lib/routines-ui.js",
+        "line": 229,
+        "confidence": 75,
+        "autofix_class": "manual",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Capture an item identity/reference and an operation or revision token before each options/build/revise await. Apply the result only to that initiating item if it still exists and the token is current, and redraw/navigate only when that item is still selected. Invalidate outstanding operations when an item is deleted or regenerated; do not let an older request unlock or update a newer request's controls. Verify deferred-provider sequences for A-to-B switching and deleting A, including preservation of B's existing plan, people and history.",
+        "first_evidence": "app/lib/routines-ui.js:229 --     Object.assign(I, { plan: k, version: 1, at: today(), people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], rounds: [] });"
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "testing",
+    "findings": [
+      {
+        "title": "Pending routines generation overwrites another mechanism",
+        "severity": "P2",
+        "file": "app/lib/routines-ui.js",
+        "line": 229,
+        "confidence": 100,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Capture the target item and a request generation identifier before awaiting in options, build, and revise. Apply results only to that retained item if it still exists and the request is current, and redraw only when it remains selected. Add a DOM/VM regression test that holds A's response, selects B with existing plan/history, resolves A, and asserts B remains unchanged and A receives its own result; also cover deletion while pending.",
+        "first_evidence": "app/lib/routines-ui.js:229 --     Object.assign(I, { plan: k, version: 1, at: today(), people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], rounds: [] });"
+      }
+    ],
+    "residual_risks": [
+      "Targeted execution of six test files produced 22 passing pure model/VM tests and 31 immediate fetch failed errors in loopback HTTP tests under the current sandbox. Actual listener assertions were inspected but transport behavior could not be independently executed here; no provider/live API or browser was used."
+    ],
+    "testing_gaps": [
+      "harness/lib/studio.mjs:433 handles both 413 workflow exhaustion and 429 reservation denial by retaining an unready kit. The tests verify 413 after validation repair and 429 at root admission, but not 429 at the optional customer child. Add an actual-listener case with daily allowance sufficient for the root but insufficient for customer review, asserting one physical fetch, valid retained activity, customerReview.ready=false, no replacement fetch, and committed root with no occupied child reservation."
+    ]
+  },
+  {
+    "reviewer": "api-contract",
+    "findings": [
+      {
+        "title": "Preserve retrieval and cancellation of legacy private jobs",
+        "severity": "P2",
+        "file": "harness/practice-server.mjs",
+        "line": 263,
+        "confidence": 75,
+        "autofix_class": "manual",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Separate new-request admission from stored-job authorization. Keep mandatory page/permission declarations for admission; for legacy job records without either field, apply the former endpoint-specific live permission policy after the existing owner and tenant checks, only on status/cancel operations. Add a base-shaped persisted pipeline job recovery and cancellation regression test.",
+        "first_evidence": "harness/practice-server.mjs:263 -- if(!allowed(actor,job.path,job.permission,job.modelPage)) return send(req,res,403,{error:'אין הרשאה פעילה לעבודה.'});"
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "project-standards",
+    "findings": [
+      {
+        "title": "Exclude entrant input notes from shared continuity exports",
+        "severity": "P2",
+        "file": "app/lib/continuity-kit-ui.js",
+        "line": 415,
+        "confidence": 100,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Put all JOIN_FIELDS input boxes in a distinct join-inputs wrapper and explicitly remove that wrapper in printable(false) before converting controls to spans. Keep generated group.say and the chosen generated entry materials in the shared output. Add a fixture check that a raw notes sentinel is absent from printShare while permitted generated group text remains.",
+        "first_evidence": "app/lib/continuity-kit-ui.js:415 --       box.appendChild(i); (f.type === 'area' ? root : form).appendChild(box); if (f.k === 'away') root.appendChild(form);"
+      },
+      {
+        "title": "Clear the previous entrant's kit when starting anew",
+        "severity": "P2",
+        "file": "app/lib/continuity-kit-ui.js",
+        "line": 456,
+        "confidence": 100,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Reset J.form and J.kit together with choice/done/log/checkWhen, preserving only the shared J.info entry directory; rebuild the pane and require a fresh kit before showing entrant-specific tasks/messages or printing role cards. Add a reset fixture assertion that old form/kit content disappears, J.info survives reload, and printShare contains no old entrant task.",
+        "first_evidence": "app/lib/continuity-kit-ui.js:456 --       btn('מצטרף/ת חדש/ה: מתחילים מחדש (תיק הכניסה נשמר)', 'btn btn-ghost sm', () => { if (!confirm('להתחיל מסלול חדש? הבחירה, הלוח ורשומת ההתאמות יתאפסו, ותיק הכניסה הקבוצתי יישאר.')) return; J.choice = ''; J.done = {}; J.log = []; J.checkWhen = window.sbeIsoPlus ? sbeIsoPlus(14) : ''; save(); showKit(); }));"
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "julik-frontend-races",
+    "findings": [
+      {
+        "title": "Bind routine completions to their originating mechanism",
+        "severity": "P1",
+        "file": "app/lib/routines-ui.js",
+        "line": 229,
+        "confidence": 100,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Capture const item = I before each options/build/revise request and use that item throughout preparation and settlement; verify it still belongs to S.items before committing. Only navigate or redraw if I === item. Track pending state per item to prevent overlapping generation and stale overwrites.",
+        "first_evidence": "app/lib/routines-ui.js:229 --     Object.assign(I, { plan: k, version: 1, at: today(), people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], rounds: [] });"
+      },
+      {
+        "title": "Discard family revisions after starting a new round",
+        "severity": "P2",
+        "file": "app/lib/family-bridge-ui.js",
+        "line": 451,
+        "confidence": 100,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Capture the round object and request generation before dispatch; after await commit only when S is still that round and the request is current. Invalidate outstanding requests on newRound and apply the same guard to initial generation and per-family operations.",
+        "first_evidence": "app/lib/family-bridge-ui.js:451 --     S.plan = k; S.version += 1; S.at = today(); save(); draw(4);"
+      },
+      {
+        "title": "Preserve participation request locks across redraws",
+        "severity": "P2",
+        "file": "app/lib/participation-ui.js",
+        "line": 148,
+        "confidence": 75,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Keep pending suggestion/adjustment state and request IDs in the mount closure, guard handlers before dispatch, and set every recreated button's disabled state from that shared state. Commit only the current request result; clear pending state in finally.",
+        "first_evidence": "app/lib/participation-ui.js:148 --       const sb = btn(S.cards.length ? 'הצעה חדשה למטרה' : 'הצעת מסלולים למטרה', S.cards.length ? 'ghost' : '', () => suggest(sb, err, wait));"
+      },
+      {
+        "title": "Invalidate custom-case work when leaving the editor",
+        "severity": "P2",
+        "file": "app/practice.html",
+        "line": 1983,
+        "confidence": 75,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Use an editor session generation and per-operation request ID; invalidate the session on cancel, scenario selection and approval. After await discard invalidated results and only call step when the request still belongs to the active editor session; retain the user's draft independently.",
+        "first_evidence": "app/practice.html:1983 --     draft.questions = r.questions.filter(q => q && q.q).slice(0, 4); draft.answers = {}; draft.scenario = null; saveDraft();"
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "maintainability",
+    "findings": [],
+    "residual_risks": [],
+    "testing_gaps": []
+  }
+]

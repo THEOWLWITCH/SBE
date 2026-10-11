@@ -1,0 +1,71 @@
+{
+  "reviewer": "correctness",
+  "findings": [
+    {
+      "title": "Bind routines responses to their initiating item",
+      "severity": "P1",
+      "file": "app/lib/routines-ui.js",
+      "line": 216,
+      "why_it_matters": "Switching to another mechanism while AI generation is pending saves the first mechanism's response into the second mechanism. The selector remains enabled and changes the shared I variable; options, initial generation, and revision all write through that variable after awaiting the provider. Initial generation additionally clears the other mechanism's people, runs, decisions, and version history. Capturing the initiating item and checking its continued existence and revision before applying results prevents cross-item corruption while allowing navigation.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/routines-ui.js:216 --     I.options = o.options.filter((x) => x && x.name); I.choose = o.choose || null; I.optSources = arr(o.sources); I.pick = ''; save(); drawOptions();",
+        "app/lib/routines-ui.js:47 --       c.addEventListener('click', () => { S.cur = it.id; I = it; save(); openItem(); });",
+        "app/lib/routines-ui.js:213 --     try { o = await ask(M.optionsSystem(KB), 'השדות:\\n' + M.inputText(d) + '\\n\\nהציעי אפשרויות.', M.validOptions); } catch (e) { bad = e; console.warn('מרכז שגרות, אפשרויות:', e.message); }",
+        "app/lib/routines-ui.js:229 --     Object.assign(I, { plan: k, version: 1, at: today(), people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], rounds: [] });",
+        "app/lib/routines-ui.js:433 --     I.proposal = k; save(); draw(4);",
+        "Read-only VM execution of the actual routines model and UI, with a deferred synthetic provider: start options for item A, click item B in the actual hub, resolve A's response. Persisted output was {current:B,A:null,B:[{name:A result one},{name:A result two}]}; B's original option was overwritten. No source or repository mutation was used."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "For options, build, and revise, capture a target item plus an immutable request-context/revision identifier before await. Apply the response only to that still-existing, unchanged target, and render or move steps only if it remains the selected item. Invalidate pending operations on deletion or replacement and prevent duplicate generation for the same revision. Add deferred-provider VM tests covering switch, deletion, and a second operation."
+    },
+    {
+      "title": "Isolate new demo tools from personal workspaces",
+      "severity": "P1",
+      "file": "app/lib/routines-ui.js",
+      "line": 35,
+      "why_it_matters": "Running the new routines or family bridge demonstration overwrites the administrator's ordinary saved workspace. These interfaces load and save the same owner key in demo mode, and the recipes invoke example followed by generation; example already replaces and persists the private form, while successful generation resets the plan and its associated tracking data. The demo's capture input can also include other restored private fields. The existing gated in-memory storage pattern in participation and continuity prevents both persistence damage and private input entering demo artifacts.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/routines-ui.js:35 --   function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }",
+        "app/lib/routines-ui.js:32 --   try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && Array.isArray(v.items)) S = v; } catch (e) {}",
+        "app/lib/family-bridge-ui.js:30 --   function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }",
+        "app/lib/demo-hook.js:176 --       var plan = await inPage(\"routines\", \"מרכז שגרות: לוח ביצוע והסכם\", \"מרכז שגרות ויוזמות חברתיות\", \"#example\", \"#go\", \"#out2 .roles\", \"#out2\", \"#err1\");",
+        "app/lib/demo-hook.js:180 --     \"family-bridge.html\": function () { return inPage(\"bridge\", \"גשר בין הבית לכיתה: כרטיס בחירה\", \"גשר בין הבית לכיתה\", \"#example\", \"#go\", \"#out2 .card-family\", \"#out2\", \"#err1\"); },",
+        "Read-only VM execution of actual routines model/UI under demolab=1, embedded window, and administrator session, seeded with a synthetic private form: initialization plus the actual example click performed 2 ordinary reads and 2 ordinary writes, changed the private purpose to the demo purpose, and left originalBytesUnchanged=false. No provider call was needed to reproduce the damage."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Use fresh per-instance in-memory storage for both new interfaces only when all three existing demo gates hold (demolab=1, embedded, administrator). Route every workspace read and save through that selected storage; prevent routines' Studio import from reading the ordinary private Studio record in demo mode. Keep ordinary persistence unchanged. Add actual-recipe success and provider-failure VM tests seeded with private forms, plans, people/families, procedure data, and history, asserting zero ordinary storage access and no private content in requests or captures."
+    },
+    {
+      "title": "Keep practice demos away from saved personal cases",
+      "severity": "P1",
+      "file": "app/lib/demo-hook.js",
+      "line": 324,
+      "why_it_matters": "The ordinary practice demonstration now automatically selects a saved personal case when one exists, rather than a catalogue example. The newly added myCases area appears before the catalogue and renders the same scenario-card class, so the unscoped first-card query selects private case content. The recipe sends that selected character context through the AI conversation and returns its title, transcript, and feedback as a demo artifact. The new own-case demonstration also writes its generated case and clears the private draft through ordinary storage, so both recipes need a fresh demo workspace.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/demo-hook.js:324 --       var card = await waitFor(\".scenario-card\", 30e3, \"רשימת התרחישים\");",
+        "app/practice.html:251 --   <div id=\"myCases\"></div> appears before the catalogue filters and catalogue cards.",
+        "app/practice.html:2038 --       const card = el(\"div\", { class: \"scenario-card\", tabindex: \"0\" },",
+        "app/lib/demo-hook.js:343 --       } else card.click();",
+        "app/practice.html:1308 --     CHARACTER_SHEET: composeCharacterSheet(actor),",
+        "app/lib/demo-hook.js:365 --       return [{ tool: \"practice\", title: \"תרגול עצמי: \" + scName, label: \"תרגול עצמי בסימולציה\", html: standalone(wrap, \"תרגול עצמי: \" + scName), input: \"התרחיש: \" + scName + \"\\nתורות אשת החינוך:\\n\" + lines.join(\"\\n\") }];",
+        "app/practice.html:2025 --     mine.unshift({ id, at: new Date().toISOString().slice(0, 10), sc: draft.scenario }); mine = mine.slice(0, 12); saveMine();"
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Apply the existing three-gate fresh in-memory demo storage pattern to the new private cases and draft state in practice.html. Scope the ordinary practice recipe's selection to the catalogue container as an additional explicit boundary. Exercise both actual practice recipes with a saved synthetic private case and draft, asserting the catalogue recipe never selects or sends the private character and the own-case recipe neither reads, writes, clears, nor evicts private records."
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

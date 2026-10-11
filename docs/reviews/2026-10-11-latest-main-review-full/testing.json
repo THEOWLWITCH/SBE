@@ -1,0 +1,31 @@
+{
+  "reviewer": "testing",
+  "findings": [
+    {
+      "title": "Pending routines generation overwrites another mechanism",
+      "severity": "P2",
+      "file": "app/lib/routines-ui.js",
+      "line": 229,
+      "why_it_matters": "Switching mechanisms while generation is pending saves the first mechanism's returned plan into the newly selected mechanism and clears its people, runs, and version history. The request reads the original global I before awaiting, but its completion writes through the now-current I; options and revision handlers have the same target drift. The new routines tests exercise the model and read UI text for language checks, so they cannot detect this ordinary navigation scenario.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/routines-ui.js:229 --     Object.assign(I, { plan: k, version: 1, at: today(), people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], rounds: [] });",
+        "app/lib/routines-ui.js:47 --       c.addEventListener('click', () => { S.cur = it.id; I = it; save(); openItem(); });",
+        "app/lib/routines-ui.js:225 --     try { k = await ask(M.planSystem(KB, WRITER), 'השדות:\\n' + M.inputText(I.form) + '\\n\\nהפעולה שהקבוצה בחרה: ' + act + (I.how ? '\\nאיך הוחלט: ' + I.how : '') + '\\n\\nהכיני את התוצר.', M.valid); }",
+        "Read-only VM execution of the exact build() function held its A response, switched I to B, then resolved A: secondPlan became {title:'A returned',action:{name:'A'}}, secondPeople became {}, and firstPlan stayed absent.",
+        "harness/tests/routines-model.test.mjs:47-54 only reads routines-ui.js as a string for invitation-language and dash checks; rg across harness/tests found no execution of routines-ui.js."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Capture the target item and a request generation identifier before awaiting in options, build, and revise. Apply results only to that retained item if it still exists and the request is current, and redraw only when it remains selected. Add a DOM/VM regression test that holds A's response, selects B with existing plan/history, resolves A, and asserts B remains unchanged and A receives its own result; also cover deletion while pending."
+    }
+  ],
+  "residual_risks": [
+    "Targeted execution of six test files produced 22 passing pure model/VM tests and 31 immediate fetch failed errors in loopback HTTP tests under the current sandbox. Actual listener assertions were inspected but transport behavior could not be independently executed here; no provider/live API or browser was used."
+  ],
+  "testing_gaps": [
+    "harness/lib/studio.mjs:433 handles both 413 workflow exhaustion and 429 reservation denial by retaining an unready kit. The tests verify 413 after validation repair and 429 at root admission, but not 429 at the optional customer child. Add an actual-listener case with daily allowance sufficient for the root but insufficient for customer review, asserting one physical fetch, valid retained activity, customerReview.ready=false, no replacement fetch, and committed root with no occupied child reservation."
+  ]
+}

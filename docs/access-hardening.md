@@ -143,3 +143,11 @@ reservations (including releases) until daily caps no longer depend on them;
 only expired outputs may be
 removed by the server's retention policy. Quota ledger maintenance beyond the
 current daily admission/expiry logic is an operational follow-up.
+
+## Studio native reservation accounting — 11 October 2026
+
+Studio prepares its authenticated native Responses request before initial reservation. Its first reservation uses the exact serialized request bytes, output ceiling and a 2,048 margin; each continuation reserves separately before dispatch. The workflow ceiling remains 512,000 and existing daily/concurrency limits remain unchanged. Auxiliary request IDs are persisted before reservation and bounded to the root ID with ordinals 2–4. Each continuation checks live permission, cancellation and job ownership again before provider dispatch.
+
+Auxiliary settlement releases occupied capacity while retaining daily charge and never commits another course/student production. Root finalization is atomic; auxiliary cleanup is separate, retried by finally/terminal polling and recoverable from persisted IDs, with reservation expiry as a fallback. Immediate cleanup after process loss is not guaranteed. The generic whole-job reservation policy above remains for non-Studio paths. Synthetic atomic/listener tests do not prove deployed database race correctness. See [current verification](reviews/2026-10-11-latest-main-integration-verification.md).
+
+Generic historical jobs that lack both modelPage and permission are rejected with 403 for status and cancellation, including system administrators. There is no compatibility exemption without a verified permission association.

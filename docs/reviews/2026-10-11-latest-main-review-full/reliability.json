@@ -1,0 +1,27 @@
+{
+  "reviewer": "reliability",
+  "findings": [
+    {
+      "title": "Bind pending routine generation to its originating item",
+      "severity": "P1",
+      "file": "app/lib/routines-ui.js",
+      "line": 229,
+      "why_it_matters": "Starting generation for mechanism A, then selecting existing mechanism B while the model is pending, saves A's generated plan into B and clears B's participants, runs, decisions and version history. The mechanism buttons remain active and replace the shared I variable while build awaits the request; its completion writes and persists whichever item is now selected. Retrying A does not restore the overwritten B records. The options and revision handlers have the same mutable-item completion pattern.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "suggested_fix": "Capture the originating item and a per-item request generation before each asynchronous options, build and revision request. Apply returned data only to that captured item if it is still present and that generation is current; persist S, and redraw or change steps only when I is still the originating item. Do not write a completed request into the currently selected global I or resurrect an item deleted while pending.",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/routines-ui.js:229 --     Object.assign(I, { plan: k, version: 1, at: today(), people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], rounds: [] });",
+        "app/lib/routines-ui.js:47 --       c.addEventListener('click', () => { S.cur = it.id; I = it; save(); openItem(); });",
+        "app/lib/routines-ui.js:225 --     try { k = await ask(M.planSystem(KB, WRITER), 'השדות:\\n' + M.inputText(I.form) + '\\n\\nהפעולה שהקבוצה בחרה: ' + act + (I.how ? '\\nאיך הוחלט: ' + I.how : '') + '\\n\\nהכיני את התוצר.', M.valid); }",
+        "app/lib/routines-ui.js:231 --     save(); goStep(2);",
+        "app/lib/routines-ui.js:433 --     I.proposal = k; save(); draw(4);"
+      ],
+      "pre_existing": false
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

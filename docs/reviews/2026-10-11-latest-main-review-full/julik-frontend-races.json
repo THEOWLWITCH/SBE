@@ -1,0 +1,85 @@
+{
+  "reviewer": "julik-frontend-races",
+  "findings": [
+    {
+      "title": "Bind routine completions to their originating mechanism",
+      "severity": "P1",
+      "file": "app/lib/routines-ui.js",
+      "line": 229,
+      "why_it_matters": "Starting generation for mechanism A and selecting B before it finishes saves A's result into B. Plan generation also resets B's people, runs and version history, so simply using the hub during the wait can overwrite another saved mechanism. The handlers read mutable global I again after await instead of retaining the originating item.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/routines-ui.js:229 --     Object.assign(I, { plan: k, version: 1, at: today(), people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], rounds: [] });",
+        "app/lib/routines-ui.js:47 --       c.addEventListener('click', () => { S.cur = it.id; I = it; save(); openItem(); });",
+        "app/lib/routines-ui.js:213,216 -- Awaited options generation likewise writes I.options after the wait; revision at 427-433 writes I.proposal after the wait.",
+        "Synthetic Node VM of the actual go listener: hold ask promise for A, assign I=B as the hub does, resolve with A result; B.options becomes A result and A.options remains undefined."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Capture const item = I before each options/build/revise request and use that item throughout preparation and settlement; verify it still belongs to S.items before committing. Only navigate or redraw if I === item. Track pending state per item to prevent overlapping generation and stale overwrites."
+    },
+    {
+      "title": "Discard family revisions after starting a new round",
+      "severity": "P2",
+      "file": "app/lib/family-bridge-ui.js",
+      "line": 451,
+      "why_it_matters": "While a revision is running in step 4, starting a new round clears the workspace, but the old completion then installs the previous round's revised plan into the new round and saves it. It can also overwrite a newly generated round if that request finishes first. Only the revision button is disabled; the new-round control remains active.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/family-bridge-ui.js:451 --     S.plan = k; S.version += 1; S.at = today(); save(); draw(4);",
+        "app/lib/family-bridge-ui.js:486 --   F('newRound').addEventListener('click', () => { if (!confirm('לפתוח סבב חדש? הסבב הנוכחי יימחק מהמכשיר.')) return; const f = S.form; S = EMPTY(); S.form = f; save(); goStep(1); });",
+        "app/family-bridge.html:320 --       <button class=\"btn btn-ghost\" id=\"newRound\" type=\"button\">סבב חדש</button>",
+        "Synthetic Node VM of the actual revise listener: hold ask promise, replace S with an empty round as newRound does, resolve old revision; the new S.plan becomes the old round revision."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Capture the round object and request generation before dispatch; after await commit only when S is still that round and the request is current. Invalidate outstanding requests on newRound and apply the same guard to initial generation and per-family operations."
+    },
+    {
+      "title": "Preserve participation request locks across redraws",
+      "severity": "P2",
+      "file": "app/lib/participation-ui.js",
+      "line": 148,
+      "why_it_matters": "A pending participation suggestion only disables its original button. Selecting a card, adding a catalog card, or closing and reopening the panel redraws it with an enabled suggestion button, so users can start another charged model call while the first is running. Both completions then commit and redraw in arrival order, allowing the older result to replace the newer one.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 75,
+      "evidence": [
+        "app/lib/participation-ui.js:148 --       const sb = btn(S.cards.length ? 'הצעה חדשה למטרה' : 'הצעת מסלולים למטרה', S.cards.length ? 'ghost' : '', () => suggest(sb, err, wait));",
+        "app/lib/participation-ui.js:88 --       b.disabled = true; const stop = waiting(wait, 'מציעה מסלולי השתתפות למטרה.', 40);",
+        "app/lib/participation-ui.js:163 --           const lb = el('label'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!p.on; cb.addEventListener('change', () => { p.on = cb.checked; save(); draw(); });",
+        "app/lib/participation-ui.js:54 --     box.addEventListener('toggle', () => { S.open = box.open; save(); if (box.open) draw(); });",
+        "app/lib/participation-ui.js:95-96 -- Both suggestion completions overwrite S.cards and clear S.adjust; adjust uses the same element-only disabling pattern at 102 and recreated button at 191."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Keep pending suggestion/adjustment state and request IDs in the mount closure, guard handlers before dispatch, and set every recreated button's disabled state from that shared state. Commit only the current request result; clear pending state in finally."
+    },
+    {
+      "title": "Invalidate custom-case work when leaving the editor",
+      "severity": "P2",
+      "file": "app/practice.html",
+      "line": 1983,
+      "why_it_matters": "After requesting clarification, the user can return to the scenario list and start practicing a different scenario. When the original request finishes it unconditionally calls step(2), which opens the custom editor and hides the active chat and composer. Build/revise completions similarly call step(3), so navigation away does not stop old work from taking over the current screen.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 75,
+      "evidence": [
+        "app/practice.html:1983 --     draft.questions = r.questions.filter(q => q && q.q).slice(0, 4); draft.answers = {}; draft.scenario = null; saveDraft();",
+        "app/practice.html:1972 --   $(\"ownCancel\").addEventListener(\"click\", () => { $(\"scenarioName\").textContent = \"בחרי תרחיש לתרגול\"; show(\"screen-select\"); });",
+        "app/practice.html:1985 --     renderQs(); step(2);",
+        "app/practice.html:1960-1963 -- step(n) always calls show(\"screen-custom\"); show at 855-859 hides all other screens and the composer.",
+        "app/practice.html:2010 --     draft.scenario = PC.normalize(r); saveDraft(); $(\"ownChange\").value = \"\"; preview(); step(3);"
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Use an editor session generation and per-operation request ID; invalidate the session on cancel, scenario selection and approval. After await discard invalidated results and only call step when the request still belongs to the active editor session; retain the user's draft independently."
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}
