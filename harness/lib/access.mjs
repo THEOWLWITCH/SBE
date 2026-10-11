@@ -1047,6 +1047,8 @@ async function handleJourney(store, body) {
 
   // ── המגישים ──
   if (isOwner || isSys) {
+    // מחיקת מסע בידי המגישים (11/10/2026: "להוסיף כפתור של סטטוס המסע ואפשרות מחיקה"). המסך מבקש אישור לפני.
+    if (action === 'jrDelete') { await store.del('jr:' + j.id); return [200, { ok: true }]; }
     if (action === 'jrSaveMapping') {
       if (!['mapping', 'proposal'].includes(j.status)) return [409, { error: 'bad state' }];
       j.mapping = jrClean(body.mapping || {}); await jrSave(store, j); return [200, { ok: true }];

@@ -152,6 +152,25 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
   #report{break-before:auto}
   h2,h3,h4{break-after:avoid}.act,.rich li,.intro,.lens,.score-row{break-inside:avoid}
   .bar,.bar>div,.val,.intro,.lens,.act-tag{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.goals{display:flex;flex-direction:column;gap:.9rem}
+.goal{list-style:none;padding:.6rem .8rem;border:1px solid var(--line,#d9e2e8);border-radius:10px;background:var(--card,#fff)}
+.goal-cl{font-weight:700;color:var(--spoken,#1F7F95);margin-bottom:.3rem}
+.goal-line{margin:.15rem 0}
+.ask-bar{display:flex;gap:.5rem;align-items:flex-start;flex-wrap:wrap;margin-top:.5rem}
+.ask-bar details summary{cursor:pointer;color:var(--spoken,#1F7F95);font-weight:600;padding:.35rem 0}
+.ask-bar details textarea{width:100%;margin:.4rem 0}
+.btn-sm{font-size:.85rem;padding:.3rem .7rem}
+.ask-q{margin:.6rem 0 .2rem;color:var(--muted,#4a5d6e)}
+.ask-a{border-inline-start:3px solid var(--spoken,#1F7F95);padding-inline-start:.7rem}
+@media print{.ask-bar{display:none}}
+.exit-row{display:flex;gap:.9rem;justify-content:flex-end;flex-wrap:wrap;font-size:.88rem;margin:-.3rem 0 .4rem}
+.exit-row a{color:var(--muted);text-decoration:none;font-weight:600}
+.exit-row a:hover{color:var(--ink);text-decoration:underline}
+.status-btn{display:inline-block;margin:.3rem 0;padding:.45rem .9rem;border-radius:999px;font-weight:700;border:1px solid var(--hair);background:var(--surface);color:var(--ink);cursor:pointer}
+.status-btn.st-review{background:#FBEBC8;border-color:#E9C987;color:#6B4A10}
+.status-btn.st-proposal,.status-btn.st-mapping{background:#DDEFF4;border-color:#9FCBD6;color:#14505E}
+.status-btn.st-active{background:#E1F0E3;border-color:#A6CFAD;color:#22593A}
+.status-btn.st-done{background:#2F7A52;border-color:#2F7A52;color:#fff}
 </style>
 </head>
 <body>
@@ -244,10 +263,18 @@ function journeyMap(j){
 }
 
 // ── רשימת המסעות + מסע חדש ──
+// דרך לצאת מכל מסך במסע (11/10/2026: "אין לי איך לצאת מכאן"), גם כשסרגל הניווט העליון לא נראה
+function exitRow(inJourney){
+  const r = el('div', 'exit-row no-print'); let home = 'home.html'; try { home = sessionStorage.getItem('sbe.session.homeUrl') || home; } catch(e){}
+  if (inJourney) { const all = el('a', null, '← לכל המסעות'); all.href = '#'; all.addEventListener('click', e => { e.preventDefault(); location.hash = ''; }); r.appendChild(all); }
+  const h = el('a', null, '⌂ המרחב שלי'); h.href = home; r.appendChild(h);
+  const x = el('a', null, 'יציאה'); x.href = 'entry.html?logout=1'; r.appendChild(x);
+  return r;
+}
 async function viewList(){
   const app = F('app'); app.textContent = '';
   const c = card();
-  c.appendChild(el('h1', null, 'מסע אל החוסן'));
+  c.appendChild(exitRow(false)); c.appendChild(el('h1', null, 'מסע אל החוסן'));
   const p = el('p'); p.appendChild(inlineRich('מסע מלווה בשלבים אל **תו חוסן לקהילת חוסן** — מגן ומכיתה ועד בית ספר וקהילה. מתחילים במיפוי קצר, מקבלים הצעת מסע עם אפשרויות, בוחרים יחד, ויוצאים לדרך עם אבני דרך ברורות ותעודה על כל אחת מהן. לאורך כל הדרך — ליווי אישי של ד״ר יעל שדה.')); c.appendChild(p);
   { const ar = el('p', 'muted'); ar.style.cssText = 'font-size:.9rem;margin:.45rem 0 0'; ar.appendChild(document.createTextNode('📖 ')); const a = el('a', null, 'לבחור בחוסן שלנו'); a.href = 'about.html?from=journey.html#article'; a.target = '_blank'; a.rel = 'noopener'; a.style.fontWeight = '700'; ar.appendChild(a); ar.appendChild(document.createTextNode('. מאמר קצר על המושגים שבבסיס המסע: מנגנונים חברתיים, קהילת חוסן ותו חוסן.')); c.appendChild(ar); }
   if (window.SBE_PEEK) SBE_PEEK.mount(null, c.lastElementChild); // תוצר לדוגמה (lib/example-peek.js)
@@ -257,9 +284,21 @@ async function viewList(){
   if (d._status === 403) { list.appendChild(el('p', 'err', 'כדי לצאת למסע, אפשר להיכנס עם קוד שיש בו הרשאת "מסע אל החוסן".')); return; }
   (d.items || []).forEach(s => {
     const r = el('div', 'ms'); const h = el('h3'); h.appendChild(document.createTextNode(s.unitName)); h.appendChild(el('span', 'tagx', unitT(s.unit))); r.appendChild(h);
-    const st = { mapping: 'מיפוי ראשוני', proposal: 'הצעת המסע מחכה לבחירות שלכם', review: 'ההצעה אצל ד״ר יעל שדה', active: 'בדרך: ' + stT(s.stage), done: 'קהילת חוסן: המסע הושלם 🎉' }[s.status] || '';
-    r.appendChild(el('div', 'meta', st + (s.total ? ' · ' + s.approved + '/' + s.total + ' אבני דרך' : '') + (s.next ? ' · הבאה: ' + fmt(s.next) : '')));
-    const b = btn('כניסה למסע', 'btn-ghost', () => { location.hash = s.id; }); b.style.marginTop = '.5rem'; r.appendChild(b); list.appendChild(r);
+    // סטטוס המסע ככפתור בולט (11/10/2026): מה המצב ומה הצעד הבא, ולחיצה נכנסת למסע
+    const ST = { mapping: ['📝', 'מיפוי ראשוני', 'הצעד הבא: להשלים את המיפוי'], proposal: ['🧭', 'הצעת המסע מחכה לבחירות שלכם', 'הצעד הבא: לבחור ולהסביר'],
+      review: ['⏳', 'ההצעה אצל ד״ר יעל שדה', 'אין צורך לעשות דבר עכשיו'], active: ['🚶', 'בדרך: ' + stT(s.stage), s.next ? 'אבן הדרך הבאה עד ' + fmt(s.next) : ''],
+      done: ['🎉', 'קהילת חוסן: המסע הושלם', ''] }[s.status] || ['', '', ''];
+    const sb = btn(ST[0] + ' ' + ST[1], 'status-btn st-' + s.status, () => { location.hash = s.id; });
+    r.appendChild(sb);
+    r.appendChild(el('div', 'meta', [ST[2], s.total ? s.approved + '/' + s.total + ' אבני דרך' : ''].filter(Boolean).join(' · ')));
+    const acts = el('div', 'btns'); acts.style.marginTop = '.5rem';
+    acts.appendChild(btn('כניסה למסע', 'btn-ghost', () => { location.hash = s.id; }));
+    const del = btn('🗑 מחיקה', 'btn-ghost', async () => {
+      if (!confirm('למחוק את המסע "' + s.unitName + '"? המיפוי, הבחירות, אבני הדרך והתעודות יימחקו, ואי אפשר לשחזר אותם.')) return;
+      del.disabled = true; const d2 = await api('jrDelete', { id: s.id });
+      if (d2.ok) r.remove(); else { del.disabled = false; alert('המסע לא נמחק. אפשר לנסות שוב.'); }
+    }); acts.appendChild(del);
+    r.appendChild(acts); list.appendChild(r);
   });
   if (!(d.items || []).length) list.appendChild(el('p', 'muted', 'עדיין אין מסעות. אפשר לצאת למסע חדש למטה.'));
   // מסע חדש
@@ -298,7 +337,7 @@ async function viewJourney(id){
   JR = d.journey; SETTINGS = d.settings || {}; render();
 }
 function header(){
-  const c = card(); const h = el('h1', null, JR.unitName); c.appendChild(h);
+  const c = card(); c.appendChild(exitRow(true)); const h = el('h1', null, JR.unitName); c.appendChild(h);
   c.appendChild(el('p', 'muted', unitT(JR.unit) + (JR.by ? ' · ' + JR.by : '') + ' · נפתח ב-' + fmt(JR.created)));
   c.appendChild(journeyMap(JR));
   const wa = (SETTINGS.wa || {}); const link = (wa[JR.unit] || wa.all || '').trim();
@@ -389,7 +428,7 @@ function mappingText(m){
 // טבלאות (07/10/2026), בקו אחיד עם שאר התוצרים: אשכולות, מכשולים ואבני דרך
 function clusterTable(p){ return SBE_TABLE(['האשכול','איפה אתם','מה כבר יש','הצעד הבא'], (p.clusters || []).map(x => [el('b', null, clT(x.c)), el('span', 'cl-chip', stT(x.stage)), x.strength || null, x.next || null]), 'jr-cl'); }
 function failTable(p){ return SBE_TABLE(['מכשול בדרך','מה ראינו','הגשר שאפשר לבנות'], (p.fails || []).map(f => [el('b', null, J.ICON.obstacle + ' ' + ((J.FAILS.find(x => x.k === f.type) || {}).t || 'מכשול') + (f.critical ? ', חשוב לטפל' : '')), f.seen || null, f.bridge ? J.ICON.bridge + ' ' + f.bridge : null]), 'jr-fl'); }
-function milestoneTable(ms){ return SBE_TABLE(['#','אבן הדרך','שלב','יעדים ואיך יודעים שהושגו'], ms.map((m, i) => { const ul = el('ul'); (m.goals || []).forEach(g => { const li = el('li'); li.appendChild(el('b', null, clT(g.c) + ': ')); li.appendChild(document.createTextNode((g.goal || '') + (g.measure ? ' — ' + g.measure : ''))); ul.appendChild(li); });
+function milestoneTable(ms){ return SBE_TABLE(['#','אבן הדרך','שלב','יעדים ואיך יודעים שהושגו'], ms.map((m, i) => { const ul = el('ul'); (m.goals || []).forEach(g => { ul.appendChild(goalLi(g)); });
   return [String(i + 1), el('b', null, (m.gate ? J.ICON.gate + ' ' : '') + (m.title || '')), stT(m.stage), ul.childNodes.length ? ul : null]; }), 'jr-ms'); }
 
 // שלב 2: הצעת המסע — אפשרויות, בחירה והסבר
@@ -489,9 +528,9 @@ function milestoneCard(m, i){
   c.appendChild(h); c.appendChild(el('div', 'meta', stT(m.stage) + ' · עד ' + fmt(m.due)));
   // טבלה (07/10/2026, "קו אחיד"): יעדים · מה מגישים · טיפ
   const rows = [];
-  if ((m.goals || []).length) { const ul = el('ul'); m.goals.forEach(g => { const li = el('li'); li.appendChild(el('span', 'cl-chip', clT(g.c))); li.appendChild(document.createTextNode(g.goal)); if (g.measure) li.appendChild(el('div', 'muted', 'איך נדע: ' + g.measure)); ul.appendChild(li); }); rows.push(['יעדים ואיך נדע', ul]); }
-  if ((m.submit || []).length) { const ul = el('ul'); m.submit.forEach(s => ul.appendChild(el('li', null, s))); rows.push(['מה מגישים', ul]); }
-  if (m.tip) rows.push(['💡 טיפ', m.tip]);
+  if ((m.goals || []).length) { const box = el('div', 'goals'); m.goals.forEach((g, gi) => box.appendChild(goalBlock(m, i, g, gi))); rows.push(['יעדים', box]); }
+  if ((m.submit || []).length) { const ul = el('ul'); m.submit.forEach(s => ul.appendChild(el('li', null, J.endDot(s)))); rows.push(['מה מגישים', ul]); }
+  if (m.tip) rows.push(['💡 טיפ', J.endDot(m.tip)]);
   if (rows.length) c.appendChild(SBE_TABLE(null, rows, 'ms-table'));
   if (m.status === 'approved' && m.cert) { const a = el('a', 'btn btn-ghost', '🏅 לתעודה'); a.href = 'journey-cert.html?id=' + JR.id + '&code=' + m.cert.code; a.target = '_blank'; a.style.textDecoration = 'none'; c.appendChild(a); }
   if (JR.status === 'active' && (m.status === 'open' || m.status === 'needs')) submitForm(c, m, i);
@@ -522,6 +561,37 @@ function submitForm(c, m, i){
     if (r.ok) { await viewJourney(JR.id); } else { err('ההגשה לא נשלחה. נסו שוב.'); go.disabled = false; }
   }); go.style.marginTop = '.6rem'; det.appendChild(go);
   c.appendChild(det);
+}
+// יעד: כל חלק בשורה משלו, אחד מתחת לשני, עם נקודה בסוף (11/10/2026)
+function goalLi(g){ const li = el('li', 'goal'); li.appendChild(el('div', 'goal-cl', clT(g.c))); J.goalParts(g).forEach(([k, v]) => { const p = el('p', 'goal-line'); p.appendChild(el('b', null, k + ': ')); p.appendChild(document.createTextNode(v)); li.appendChild(p); }); return li; }
+// "צעד אחר צעד" ו"שאלה על הסעיף": היועצת עונה מיד, בלי לחכות לד״ר יעל שדה.
+// השיחה נשמרת במכשיר (לפי משתמש/ת); להעביר לד״ר שדה רק אם רוצים.
+const askKey = () => window.sbeUserKey ? sbeUserKey('sbe.journey.ask.' + JR.id) : 'sbe.journey.ask.' + JR.id;
+function askLoad(){ try { return JSON.parse(localStorage.getItem(askKey()) || '{}') || {}; } catch(e){ return {}; } }
+function askSave(all){ try { localStorage.setItem(askKey(), JSON.stringify(all)); } catch(e){} }
+function goalBlock(m, mi, g, gi){
+  const li = goalLi(g); const k = mi + ':' + gi;
+  const ctx = 'המסגרת: ' + unitT(JR.unit) + ' · ' + (JR.unitName || '') + '. אבן הדרך: ' + m.title + ' (' + stT(m.stage) + (m.gate ? ', שער' : '') + '). האשכול: ' + clT(g.c) + '. הסעיף: ' + J.goalParts(g).map(x => x[0] + ': ' + x[1]).join(' ');
+  const log = el('div', 'ask-log'); const bar = el('div', 'btns no-print ask-bar');
+  const show = () => { log.textContent = ''; (askLoad()[k] || []).forEach(x => { const q = el('p', 'ask-q'); q.appendChild(el('b', null, x.mode === 'steps' ? 'צעד אחר צעד' : 'השאלה שלכם: ')); if (x.mode !== 'steps') q.appendChild(document.createTextNode(x.q)); log.appendChild(q); const a = richText(x.a); a.classList.add('ask-a'); log.appendChild(a); }); };
+  const run = async (mode, q, b) => {
+    const all = askLoad(); const hist = all[k] || [];
+    const messages = []; hist.forEach(x => { messages.push({ role: 'user', content: x.mode === 'steps' ? 'פרקי את הסעיף לצעדים.' : x.q }); messages.push({ role: 'assistant', content: x.a }); });
+    messages.push({ role: 'user', content: mode === 'steps' ? 'פרקי את הסעיף לצעדים.' : q });
+    b.disabled = true; const wait = el('p', 'muted', 'כותבת... (בדרך כלל עד חצי דקה)'); log.appendChild(wait);
+    try { const a = (await complete(J.explainSystem(JR.unit, ctx, mode), messages, 1600)).trim(); if (!a) throw 0; hist.push({ mode, q: q || '', a, at: new Date().toISOString() }); all[k] = hist.slice(-12); askSave(all); show(); }
+    catch(e){ wait.textContent = 'אין כרגע חיבור. מה שכתבתם נשמר, ואפשר לנסות שוב.'; }
+    b.disabled = false;
+  };
+  const steps = btn('🧩 צעד אחר צעד', 'btn-ghost btn-sm', e => run('steps', '', e.currentTarget));
+  const det = document.createElement('details'); const sm = el('summary', null, '❓ שאלה על הסעיף'); det.appendChild(sm);
+  const tx = document.createElement('textarea'); tx.maxLength = 800; tx.placeholder = 'מה לא ברור? למשל: איזה שאלון בדיוק? מי מעביר אותו?'; tx.style.minHeight = '3rem'; det.appendChild(tx);
+  const send = btn('שליחה ליועצת המסע', 'btn-ghost btn-sm', e => { const q = tx.value.trim(); if (q.length < 2) return; tx.value = ''; run('ask', q, e.currentTarget); });
+  det.appendChild(send);
+  det.appendChild(el('p', 'muted', 'היועצת עונה מיד. אם תרצו שד״ר יעל שדה תראה את השאלה, אפשר לשלוח אותה בשיחה שבסוף אבן הדרך.'));
+  bar.appendChild(steps); bar.appendChild(det);
+  li.appendChild(bar); li.appendChild(log); show();
+  return li;
 }
 // שרשור: לכל אבן דרך (ולמסע כולו) — הערות, ערעור, בקשת דחייה ותשובות
 function threadInline(c, mi){
