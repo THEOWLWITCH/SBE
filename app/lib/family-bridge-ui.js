@@ -81,7 +81,7 @@
     tick(); const iv = setInterval(tick, 1000);
     return () => { clearInterval(iv); node.hidden = true; };
   }
-  const ask = (system, content, check) => window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 6000, customerReview: true }, 300000, check);
+  const ask = (system, content, check) => window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 30000, customerReview: true }, 300000, check);
   function fail(n, m) { n.textContent = m; n.hidden = false; }
 
   // ── עזרים ──
@@ -261,7 +261,7 @@
     const P = f.practice, log = P.turns.map((t) => (t.me ? 'המחנכת: ' : 'ההורה: ') + t.text).join('\n');
     b.disabled = true; const stop = waiting(F('wait2-' + f.id), 'מכינה משוב קצר על השיחה.', 25);
     let k = null, bad = null;
-    try { k = await window.sbeCallAIJson(SERVER, { system: M.feedbackSystem(KB), messages: [{ role: 'user', content: M.anonymize('מה שידוע:\n' + caseText(f) + '\n\nהשיחה:\n' + log, labels()) }], maxTokens: 1200 }, 120000, M.validFeedback); }
+    try { k = await window.sbeCallAIJson(SERVER, { system: M.feedbackSystem(KB), messages: [{ role: 'user', content: M.anonymize('מה שידוע:\n' + caseText(f) + '\n\nהשיחה:\n' + log, labels()) }], maxTokens: 3000 }, 120000, M.validFeedback); }
     catch (e) { bad = e; } finally { stop(); b.disabled = false; }
     if (!M.validFeedback(k)) return fail(F('err2-' + f.id), why(bad));
     P.feedback = k; save(); draw(3);

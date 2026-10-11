@@ -85,7 +85,7 @@
         '\n\n' + (revise ? 'עדכני את הנוהל.' : 'כתבי את הנוהל.');
       b.disabled = true; const stop = waiting(wait, revise ? 'מעדכנת את הנוהל.' : 'כותבת נוהל עבודה בכלים שבחרת.', 45);
       let k = null, bad = null;
-      try { k = await window.sbeCallAIJson(SERVER, { system: revise ? reviseSystem(opts.kind) : system(opts.kind), messages: [{ role: 'user', content }], maxTokens: 4000, customerReview: true }, 180000, valid); }
+      try { k = await window.sbeCallAIJson(SERVER, { system: revise ? reviseSystem(opts.kind) : system(opts.kind), messages: [{ role: 'user', content }], maxTokens: 10000, customerReview: true }, 180000, valid); }
       catch (e) { bad = e; } finally { stop(); b.disabled = false; }
       if (!valid(k)) { err.textContent = why(bad); err.hidden = false; return; }
       S.changes = arr(k.changes); delete k.changes; S.proc = k; S.version = (S.version || 0) + 1;

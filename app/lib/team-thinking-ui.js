@@ -96,7 +96,7 @@
     if (miss.length) { F('err1').textContent = 'כדי להמשיך, נשמח למלא: ' + miss.join(', ') + '.'; F('err1').hidden = false; return; }
     const b = F('go'); b.disabled = true; const stop = K.waiting(F('wait1'), 'מכינה מהלך חשיבה, תפקידים והסכמות.', 45);
     const it = I, st = it.rev || 0; let o = null, bad = null;
-    try { o = await K.json(M.planSystem(KB), anon('השדות:\n' + M.inputText(d) + '\n\nהכיני את מהלך החשיבה.'), M.validPlan, 5000); }
+    try { o = await K.json(M.planSystem(KB), anon('השדות:\n' + M.inputText(d) + '\n\nהכיני את מהלך החשיבה.'), M.validPlan, 12000); }
     catch (e) { bad = e; console.warn('חשיבת צוות:', e.message); }
     finally { stop(); b.disabled = false; }
     if (!M.validPlan(o)) { F('err1').textContent = K.why(bad); F('err1').hidden = false; return; }
@@ -208,7 +208,7 @@
         'מה למדנו מקושי: ' + (I.learned || ''), 'גאווה: ' + (I.pride || ''),
         'מה הרווחנו (לפי שלבים):\n' + [1, 2, 3, 4].map((n) => M.GAIN[n] + ' ' + (I.gains[n] || '')).join('\n'),
         'יומן משוב: ' + I.feedback.map((f) => f.how).join(', ')].join('\n\n'));
-      try { o = await K.json(M.reflectSystem(KB), content, M.validReflect, 3000); } catch (e) { bad = e; }
+      try { o = await K.json(M.reflectSystem(KB), content, M.validReflect, 6000); } catch (e) { bad = e; }
       finally { stop(); go.disabled = false; }
       if (!M.validReflect(o)) { err.textContent = K.why(bad); err.hidden = false; return; }
       if (I !== it || (it.rev || 0) !== st) { err.textContent = K.LATE; err.hidden = false; return; }

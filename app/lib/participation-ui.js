@@ -81,7 +81,7 @@
       if (!/מטרת הפעילות|היעד|נושא הרצף|מטרות הרצף/.test(c)) { err.textContent = 'כדי להציע מסלולים, נשמח למטרה (או לנושא הרצף) בטופס התכנון.'; err.hidden = false; return; }
       b.disabled = true; const stop = waiting(wait, 'מציעה מסלולי השתתפות למטרה.', 40);
       let k = null, bad = null;
-      try { k = await window.sbeCallAIJson(SERVER, { system: M.suggestSystem(KB), messages: [{ role: 'user', content: c + '\n\nהציעי מסלולים.' }], maxTokens: 4000, customerReview: true }, 180000, M.valid); }
+      try { k = await window.sbeCallAIJson(SERVER, { system: M.suggestSystem(KB), messages: [{ role: 'user', content: c + '\n\nהציעי מסלולים.' }], maxTokens: 10000, customerReview: true }, 180000, M.valid); }
       catch (e) { bad = e; console.warn('מסלולים:', e.message); } finally { stop(); b.disabled = false; }
       if (!M.valid(k)) { err.textContent = why(bad); err.hidden = false; return; }
       const keep = picked();
@@ -95,7 +95,7 @@
       if (!ps.some((p) => { const o = S.obs[p.name] || {}; return o.count || o.ev || o.cond; })) { err.textContent = 'כדי להציע התאמה, נשמח לתיעוד של מסלול אחד לפחות בדף התצפית.'; err.hidden = false; return; }
       b.disabled = true; const stop = waiting(wait, 'מציעה התאמה לשיעור הבא.', 30);
       let k = null, bad = null;
-      try { k = await window.sbeCallAIJson(SERVER, { system: M.adjustSystem(KB), messages: [{ role: 'user', content: ctxText() + '\n\nמה כולם מדגימים: ' + S.must + '\n\nהמסלולים והקריטריונים:\n' + ps.map((p) => p.name + ' (' + p.mode + '): ' + txt(p.crit)).join('\n') + '\n\nדף התצפית:\n' + log + '\n\nהציעי התאמה.' }], maxTokens: 2000, customerReview: true }, 120000, M.validAdjust); }
+      try { k = await window.sbeCallAIJson(SERVER, { system: M.adjustSystem(KB), messages: [{ role: 'user', content: ctxText() + '\n\nמה כולם מדגימים: ' + S.must + '\n\nהמסלולים והקריטריונים:\n' + ps.map((p) => p.name + ' (' + p.mode + '): ' + txt(p.crit)).join('\n') + '\n\nדף התצפית:\n' + log + '\n\nהציעי התאמה.' }], maxTokens: 5000, customerReview: true }, 120000, M.validAdjust); }
       catch (e) { bad = e; } finally { stop(); b.disabled = false; }
       if (!M.validAdjust(k)) { err.textContent = why(bad); err.hidden = false; return; }
       S.adjust = k; S.pick = ''; save(); draw();

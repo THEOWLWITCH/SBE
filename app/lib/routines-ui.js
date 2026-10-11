@@ -149,7 +149,7 @@
     tick(); const iv = setInterval(tick, 1000);
     return () => { clearInterval(iv); node.hidden = true; };
   }
-  const ask = (system, content, check) => window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 7000, customerReview: true }, 300000, check);
+  const ask = (system, content, check) => window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 16000, customerReview: true }, 300000, check);
   function fail(n, m) { n.textContent = m; n.hidden = false; }
 
   // ── עזרים לתצוגה ──

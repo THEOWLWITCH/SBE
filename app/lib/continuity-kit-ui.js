@@ -82,7 +82,7 @@
   // תשובה חלקית או לא תקינה: ניסיון נוסף אחד (sbeCallAIJson ב-lib/ai-call.js), ואחר כך הודעה שונה מ"אין חיבור"
   const PARTIAL = 'התיק חזר חלקי. מה שמילאת נשמר, ואפשר לנסות שוב.';
   async function ask(system, content, check) {
-    return window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 7000, customerReview: true }, 300000, check);
+    return window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 16000, customerReview: true }, 300000, check);
   }
   const why = (e) => (typeof window !== 'undefined' && window.sbeAIError) ? window.sbeAIError(e, NO_MODEL, PARTIAL) : ((e && e.code === 'incomplete') ? PARTIAL : NO_MODEL);
   const plansText = () => (S.local.plans || []).filter((p) => p.c0 || p.c1).map((p) => '- ' + [p.c0, p.c1, p.c2].filter(Boolean).join(' · ')).join('\n');

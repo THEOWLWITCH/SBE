@@ -41,6 +41,7 @@
     if (e && e.code === "incomplete") return partial || noModel;
     let t = noModel;
     if (/היכנסו שוב|הכניסה הסתיימה|status 401|שגיאת שרת 401/.test(m)) t = "הכניסה הסתיימה. כדי להמשיך, היכנסו שוב. מה שמילאת נשמר במכשיר.";
+    else if (/max_tokens|התוצר נקטע/.test(m)) t = "התוצר יצא ארוך מהצפוי ונקטע. מה שמילאת נשמר, ואפשר לנסות שוב.";
     else if (/timeout|נמשכה יותר מדי|נקטע/.test(m)) t = "המודל לא הספיק לענות בזמן. מה שמילאת נשמר, ואפשר לנסות שוב.";
     let sys = false; try { sys = sessionStorage.getItem("sbe.session.homeUrl") === "admin.html?role=sys"; } catch (x) {}
     return sys && m ? t + " (למנהלת המערכת: " + m.slice(0, 200) + ")" : t;
@@ -70,11 +71,19 @@
   }
   async function sbeCallAIJson(server, body, timeoutMs, check) {
     const ok = (v) => v && typeof v === "object" && (!check || check(v));
-    let v = parseLoose(await sbeCallAI(server, body, timeoutMs));
+    // תוצר שנקטע כי היה ארוך מהמגבלה (11/10/2026: "max_tokens נמוך מדי"): פעם אחת נוספת עם מגבלה כפולה
+    const call = async (b) => {
+      try { return await sbeCallAI(server, b, timeoutMs); }
+      catch (e) {
+        if (!/max_tokens|נקטע\. /.test(String(e && e.message)) || b._grown) throw e;
+        return sbeCallAI(server, Object.assign({}, b, { maxTokens: Math.min(32000, (b.maxTokens || 4000) * 2), _grown: true }), timeoutMs);
+      }
+    };
+    let v = parseLoose(await call(body));
     if (ok(v)) return v;
     const again = Object.assign({}, body, { system: String(body.system || "") + "\n\nהתשובה הקודמת לא הגיעה במבנה המלא שביקשתי (JSON חסר, חלקי או לא תקין). החזירי עכשיו רק JSON תקין ומלא, בדיוק במבנה שביקשתי." });
     delete again.requestId;
-    v = parseLoose(await sbeCallAI(server, again, timeoutMs));
+    v = parseLoose(await call(again));
     if (ok(v)) return v;
     throw Object.assign(new Error("התוצר חזר חלקי"), { code: "incomplete" });
   }
