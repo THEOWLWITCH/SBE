@@ -675,11 +675,11 @@ function actCard(a,extra){
   if(extra)tags.appendChild(el('span','act-tag',extra));
   if(tags.childNodes.length)c.appendChild(tags);
   {const dd=richText(a.description||'');dd.classList.add('act-d');c.appendChild(dd);}
-  if(a.mechanism)c.appendChild(el('p','act-m','מה זה מפתח: '+a.mechanism));
+  if(a.mechanism)c.appendChild(el('p','act-m','תרומה לחוסן החברתי: '+a.mechanism));
   const b=basisEl(a.basis);if(b)c.appendChild(b);
   return c;
 }
-// טבלאות בדוח (07/10/2026): פעילות בכל שורה — הפעילות · מה עושים · מה זה מפתח; חוזקות ואתגרים — תחום | מה רואים
+// טבלאות בדוח (07/10/2026): פעילות בכל שורה — הפעילות · מה עושים · תרומה לחוסן החברתי; חוזקות ואתגרים — תחום | מה רואים
 function titleCell(a,extra){const c=el('div');c.appendChild(el('div','rt-title',a.title||''));const tags=el('div','act-tags');
   if(a.game)tags.appendChild(el('span','act-tag game','🎲 משחק חברתי'));if(a.kind)tags.appendChild(el('span','act-tag kind',a.kind));
   if(a.circle)tags.appendChild(el('span','act-tag circle',a.circle));if(extra)tags.appendChild(el('span','act-tag',extra));if(tags.childNodes.length)c.appendChild(tags);return c;}
@@ -688,11 +688,11 @@ function actTable(items,extraFn,mechLabel){if(!(items||[]).length)return el('p',
   // עמודה בלי תוכן לא מוצגת (08/10/2026: התאמה בין כותרת לתוכן). המקורות עברו לסוף הדוח, ולכן בהמלצות בלי "mechanism" אין מה להראות בה.
   const rows=items.map(a=>{const dd=richText(a.description||'');dd.classList.add('act-d');return [titleCell(a,extraFn?extraFn(a):''),dd,mechCell(a)];});
   if(rows.every(r=>!r[2]))return SBE_TABLE(['ההמלצה','מה עושים'],rows.map(r=>r.slice(0,2)),'acts');
-  return SBE_TABLE(['הפעילות','מה עושים',mechLabel||'מה זה מפתח'],rows,'acts');}
+  return SBE_TABLE(['הפעילות','מה עושים',mechLabel||'תרומה לחוסן החברתי'],rows,'acts');}
 function domTable(items){if(!(items||[]).length)return el('p','muted','—');return SBE_TABLE(null,items.map(it=>[it.domain||'',inlineRich(it.text||'')]));}
 function textList(items){const ul=el('ul','tl');(items||[]).forEach(it=>{const li=el('li');if(it.domain)li.appendChild(el('b',null,it.domain+': '));li.appendChild(inlineRich(it.text||''));ul.appendChild(li);});return ul;}
 function plain(){
-  const R=STATE.report,d=R.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.game?'משחק חברתי':'',a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  מה זה מפתח: '+a.mechanism:'')+((a.basis||[]).length?'\n  מבוסס על: '+a.basis.join(', '):'');
+  const R=STATE.report,d=R.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.game?'משחק חברתי':'',a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  תרומה לחוסן החברתי: '+a.mechanism:'')+((a.basis||[]).length?'\n  מבוסס על: '+a.basis.join(', '):'');
   L.push('פרקטי: המלצות לפיתוח חוסן חברתי, כיתה '+(R.cls||'')+' ('+R.age+')','',d.intro||'');if(d.lens)L.push('','איך המחקר קורא את התמונה',d.lens);
   if((d.answers||[]).length){L.push('','תשובות לשאלות שלך');d.answers.forEach(x=>L.push('• '+x.question+'\n  '+x.answer));}
   L.push('','1. חוזקות הכיתה');(d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));

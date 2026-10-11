@@ -4,6 +4,8 @@
 // כי מנהלת המערכת צריכה לראות אותו כדי למסור אותו.
 // store: { get(key) → value|null, set(key, value), del(key), list(prefix), delPrefix(prefix) }.
 import { scryptSync, randomBytes, timingSafeEqual, createHmac, createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
 
 // בתוקף רק עד שמנהלת המערכת מחליפה סיסמה בפעם הראשונה (אלה הסיסמאות שהיו
 // כתובות עד עכשיו ב-entry.html).
@@ -658,7 +660,7 @@ async function handleDemos(store, body) {
     const meta = index.find((d) => d.id === id);
     if (!meta || (!meta.public && !isSys)) { await pause(); return [404, { error: 'not found' }]; }
     const doc = await store.get('demo:' + id);
-    return doc ? [200, { ...meta, html: doc.html }] : [404, { error: 'not found' }];
+    return doc ? [200, { ...meta, html: demoTidy(doc.html) }] : [404, { error: 'not found' }];
   }
   if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
   if (action === 'demoList') return [200, { items: index }];
@@ -1551,4 +1553,13 @@ export function supabaseStore(url, key) {
       await check(await fetch(`${base}?key=like.${encodeURIComponent(prefix + '*')}`, { method: 'DELETE', headers }));
     },
   };
+}
+
+// תוצרים שכבר נשמרו (11/10/2026): "תרומה לחוסן החברתי" במקום "מה זה בונה / מה זה מפתח",
+// ומרכאות רגילות בטקסט (לא בתוך סקריפטים ותגיות), כדי שגם התוצרים הישנים בספרייה יוצגו בניסוח החדש.
+export function demoTidy(html) {
+  return String(html || '').split(/(<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>)/i).map((part, i) => i % 2 ? part : part
+    .replace(/>([^<]+)</g, (m, t) => '>' + QUOTES.fix(t
+      .replace(/מה זה בונה בחוסן החברתי|מה זה בונה בחוסן/g, 'תרומה לחוסן החברתי')
+      .replace(/מה זה (?:בונה|מפתח)(?=:|\s*$)/g, 'תרומה לחוסן החברתי')) + '<')).join('');
 }

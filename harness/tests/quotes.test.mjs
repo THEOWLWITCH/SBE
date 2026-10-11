@@ -16,3 +16,11 @@ test('JSON answers keep their structure: quotes are fixed only inside values', (
   assert.equal(j.a, '"עד עכשיו שוחחנו."'); assert.equal(j.b[0], '"x"');
   assert.equal(Q.text('{"a":"לא נסגר'), '{"a":"לא נסגר'); // JSON שבור: לא נוגעים
 });
+
+test('demoTidy: saved products show "תרומה לחוסן החברתי" and plain quotes, scripts untouched', async () => {
+  const { demoTidy } = await import('../lib/access.mjs');
+  const out = demoTidy('<th>מה זה מפתח</th><td>מה זה בונה בחוסן החברתי</td><p>מה זה בונה: x „שלום”</p><script>var a="";</script>');
+  assert.match(out, /<th>תרומה לחוסן החברתי<\/th><td>תרומה לחוסן החברתי<\/td>/);
+  assert.match(out, /<p>תרומה לחוסן החברתי: x "שלום"<\/p>/);
+  assert.match(out, /var a="";/);
+});

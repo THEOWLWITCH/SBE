@@ -522,7 +522,7 @@ function renderGuide(){
   // העמדה
   if(d.stance.to){
     doc.appendChild(el('h3',null,'התפקיד שלך במפגש'));
-    doc.appendChild(ktable(['כשמלמדים (הוראה)','כשמנחים (הנחיה)','מה זה בונה בחוסן החברתי'],[[d.stance.from?inlineRich(N.trimLead(d.stance.from)):null,inlineRich(N.trimLead(d.stance.to)),d.stance.why?inlineRich(d.stance.why):null]],'kstance'));
+    doc.appendChild(ktable(['כשמלמדים (הוראה)','כשמנחים (הנחיה)','תרומה לחוסן החברתי'],[[d.stance.from?inlineRich(N.trimLead(d.stance.from)):null,inlineRich(N.trimLead(d.stance.to)),d.stance.why?inlineRich(d.stance.why):null]],'kstance'));
   }
   // טבלאות (07/10/2026): במקום הרבה שורות קצרות — טבלה לכל חלק. עריכה ישירה בתאים; ב-PDF לרוחב הדף.
   const ul=(xs)=>{const u=el('ul','tl');xs.forEach(x=>{const li=el('li');li.appendChild(inlineRich(x));u.appendChild(li);});return u;};
@@ -531,12 +531,12 @@ function renderGuide(){
   // קריאת הקבוצה
   if(d.read.stage||d.read.needs.length){
     doc.appendChild(el('h3',null,'מצב הקבוצה'));
-    doc.appendChild(ktable(null,[['מה המצב עכשיו',txt(d.read.stage)],['מה יכול לחזק אותה',d.read.needs.length?ul(d.read.needs):null],['מה זה בונה בחוסן החברתי',txt(d.read.lens)]].filter(r=>r[1]),'k2'));
+    doc.appendChild(ktable(null,[['מה המצב עכשיו',txt(d.read.stage)],['מה יכול לחזק אותה',d.read.needs.length?ul(d.read.needs):null],['תרומה לחוסן החברתי',txt(d.read.lens)]].filter(r=>r[1]),'k2'));
   }
   // המיומנויות לחזק
   if(d.shifts.length){
     doc.appendChild(el('h3',null,'מיומנויות למפגש'));
-    doc.appendChild(ktable(['המיומנות','מה עושים','מה אומרים','מה זה בונה בחוסן החברתי'],d.shifts.map(x=>[el('b',null,x.skill),txt(x.move),sayEl(x.say),lensTxt(x.lens,x.basis)]),'kshifts'));
+    doc.appendChild(ktable(['המיומנות','מה עושים','מה אומרים','תרומה לחוסן החברתי'],d.shifts.map(x=>[el('b',null,x.skill),txt(x.move),sayEl(x.say),lensTxt(x.lens,x.basis)]),'kshifts'));
   }
   // קשת המפגש
   if(d.arc.length){
@@ -548,7 +548,7 @@ function renderGuide(){
       if(x.say.length){const sy=el('div');sy.appendChild(el('b',null,'מה אומרים: '));x.say.forEach(t=>put(sy,sayEl(t)));g.appendChild(sy);}
       put(g,row('מה לראות',x.watch));
       return {phase:phaseOf(x.phase),title:x.phase,minutes:x.minutes||'',desc:x.structure?inlineRich(x.structure):'',guide:g,lens:lensTxt(x.lens,x.basis)};
-    }),[['desc','מה קורה בשלב'],['guide','הנחיה למנחה'],['lens','מה זה בונה בחוסן החברתי']]);
+    }),[['desc','מה קורה בשלב'],['guide','הנחיה למנחה'],['lens','תרומה לחוסן החברתי']]);
     t.classList.add('karc');doc.appendChild(t);
   }
   // סולם שאלות — טבלה אחת, עמודה לכל שלב
@@ -566,13 +566,13 @@ function renderGuide(){
   const cv=d.conversation;
   if(cv){
     doc.appendChild(el('h3',null,'שיחה אישית אחרי המפגש'));
-    doc.appendChild(ktable(null,[['עם מי',txt(cv.with)],['המטרה',txt(cv.goal)],['איפה ומתי',txt(cv.setting)],['פותחים',sayEl(cv.opening)],['שאלות המשך',cv.followups.length?ul(cv.followups):null],['מסיימים',txt(cv.closing)],['מה זה בונה בחוסן החברתי',txt(cv.lens)]].filter(r=>r[1]),'k2'));
+    doc.appendChild(ktable(null,[['עם מי',txt(cv.with)],['המטרה',txt(cv.goal)],['איפה ומתי',txt(cv.setting)],['פותחים',sayEl(cv.opening)],['שאלות המשך',cv.followups.length?ul(cv.followups):null],['מסיימים',txt(cv.closing)],['תרומה לחוסן החברתי',txt(cv.lens)]].filter(r=>r[1]),'k2'));
   }
   // מנגנון
   const mc=d.mechanism;
   if(mc){
     doc.appendChild(el('h3',null,'מה ממשיך אחרי המפגש'+(mc.title?': '+mc.title:'')));
-    doc.appendChild(ktable(null,[['מה קורה',txt(mc.what)],['מי מוביל/ה',txt(mc.who)],['באיזה קצב',txt(mc.rhythm)],['איך יודעים שזה פועל',txt(mc.sign)],['מה זה בונה בחוסן החברתי',lensTxt(mc.lens,mc.basis)]].filter(r=>r[1]),'k2'));
+    doc.appendChild(ktable(null,[['מה קורה',txt(mc.what)],['מי מוביל/ה',txt(mc.who)],['באיזה קצב',txt(mc.rhythm)],['איך יודעים שזה פועל',txt(mc.sign)],['תרומה לחוסן החברתי',lensTxt(mc.lens,mc.basis)]].filter(r=>r[1]),'k2'));
   }
   // חששות ושאלות
   if(d.worries.length){

@@ -207,7 +207,7 @@
         if (tr.never.length) body.appendChild(el('p', 'pnote', 'הוצעו ולא נבחרו עדיין: ' + tr.never.join('; ') + '. אפשר לבדוק מה יעזור לנסות אותם, או להחליף.'));
         if (tr.single.length) body.appendChild(el('p', 'pnote', 'בשיעורים ' + tr.single.join(', ') + ' הוצעה דרך השתתפות מסוג אחד בלבד (רק לבד, או רק בקבוצה).'));
       }
-      if (window.SBE_REFS && S.sources.length) { SBE_REFS.begin(SRC, 'resilience-advisor-sources.html'); const rr = el('div'); if (S.resilience) { rr.appendChild(el('h4', null, 'מה זה בונה בחוסן')); rr.appendChild(el('p', null, txt(S.resilience))); } SBE_REFS.add(S.sources); const rs = SBE_REFS.end(); if (rs) rr.appendChild(rs); body.appendChild(rr); }
+      if (window.SBE_REFS && S.sources.length) { SBE_REFS.begin(SRC, 'resilience-advisor-sources.html'); const rr = el('div'); if (S.resilience) { rr.appendChild(el('h4', null, 'תרומה לחוסן החברתי')); rr.appendChild(el('p', null, txt(S.resilience))); } SBE_REFS.add(S.sources); const rs = SBE_REFS.end(); if (rs) rr.appendChild(rs); body.appendChild(rr); }
       if (window.SBE_OPEN && SBE_OPEN.scan) try { SBE_OPEN.scan(); } catch (e) {}
     }
     draw();
