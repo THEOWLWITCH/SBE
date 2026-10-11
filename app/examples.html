@@ -7,6 +7,7 @@
 <meta name="description" content="תוצרים אמיתיים שהפיקו הכלים של Begood (לחוסן חברתי, להנחיה, לתכנון שיחות ופעילויות ולסימולציות).">
 <script src="lib/access-guard.js"></script>
 <script src="lib/readiness-groups.js"></script>
+<script src="lib/product-view.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
@@ -64,13 +65,14 @@ h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:20px;margin:30px 0 4px
 .contact a{color:var(--spoken);font-weight:700}
 dialog{width:min(980px,96vw);height:92vh;border:1px solid var(--hair);border-radius:12px;padding:0;background:var(--surface);color:var(--ink)}
 dialog::backdrop{background:rgba(10,14,18,.55)}
-.dlg{display:flex;flex-direction:column;height:100%}
+@media print{dialog[open]{display:none!important}}
+.dlg{display:grid;grid-template-rows:auto auto minmax(0,1fr);height:100%;overflow:hidden}
 .dlg-h{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--hair);flex-wrap:wrap}
 .dlg-h b{flex:1}
 .btn{font-family:inherit;font-size:13.5px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--hair);background:transparent;color:var(--ink);cursor:pointer}
-.dlg details{padding:6px 14px;border-bottom:1px solid var(--hair);font-size:14px}
+.dlg details{padding:6px 14px;border-bottom:1px solid var(--hair);font-size:14px;max-height:30vh;overflow:auto}
 .dlg pre{white-space:pre-wrap;font-family:inherit;margin:6px 0;color:var(--muted)}
-.dlg iframe{flex:1;width:100%;border:0;background:#fff}
+.dlg iframe{width:100%;height:100%;min-height:0;border:0;background:#fff;display:block}
 .rgroup{font-weight:800;font-size:1.15rem;color:var(--spoken);margin:28px 0 0;padding-top:10px;border-top:2px solid var(--hair)}
 </style>
 </head>
@@ -177,11 +179,12 @@ async function load(){
     box.appendChild(g);
   });
 }
+// צפייה בלבד (11/10/2026: "בתיקיית התוצרים אל תיתן אפשרות לשמור או להדפיס - רק לראות"): מסמך נקי שנפתח מלמעלה (SBE_VIEW)
 async function view(d){
-  F('dlgT').textContent=d.title;F('dlgInT').textContent=d.input||'';F('dlgIn').hidden=!d.input;
-  F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:40px;text-align:center" dir="rtl">טוען את התוצר... בפעם הראשונה זה יכול לקחת עד דקה.</p>';F('dlg').showModal();
-  try{const full=await api({action:'demoGet',id:d.id});F('dlgF').srcdoc=String(full.html||'').replace(/<\/head>/i,'<style>.bar{display:none!important}</style></head>');}
-  catch(e){F('dlgF').srcdoc='<p style="font-family:sans-serif;padding:40px;text-align:center" dir="rtl">לא הצלחנו לטעון את התוצר. אפשר לנסות שוב.</p>';}
+  F('dlgT').textContent=d.title;F('dlgInT').textContent=d.input||'';F('dlgIn').hidden=!d.input;F('dlgIn').open=false;
+  SBE_VIEW.message(F('dlgF'),'טוען את התוצר... בפעם הראשונה זה יכול לקחת עד דקה.');F('dlg').showModal();
+  try{const full=await api({action:'demoGet',id:d.id});SBE_VIEW.show(F('dlgF'),full.html,{viewOnly:true});}
+  catch(e){SBE_VIEW.message(F('dlgF'),'לא הצלחנו לטעון את התוצר. אפשר לנסות שוב.');}
 }
 F('dlgX').onclick=()=>F('dlg').close();
 load();
