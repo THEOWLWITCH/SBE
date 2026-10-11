@@ -126,6 +126,12 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .dt-sub{font-size:13px;color:var(--muted);margin-top:4px;}
 .dt-cap{font-size:12.5px;font-weight:700;color:var(--muted);margin:14px 0 6px;}
 .dt .eff{margin-inline-start:0;}
+.aloud{border:1px solid #C9D8E4;background:var(--spoken-bg);border-radius:6px;padding:12px 16px;font-size:15px;line-height:1.75;color:var(--ink);}
+.aloud p{margin:0 0 6px;} .aloud p:last-child{margin:0;}
+.rcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;}
+.rcard{border:1.5px dashed #9AA6B0;border-radius:8px;padding:12px 14px;break-inside:avoid;page-break-inside:avoid;}
+.rcard h4{margin:0 0 2px;font-size:17px;} .rcard .rc-sub{font-size:12px;color:var(--muted);margin-bottom:8px;}
+.rcard .dt{font-size:13.5px;} .rcard .big{font-size:15px;font-weight:600;color:var(--spoken);}
 .red{border:1px solid #E0C4C1;background:#FAF0EF;border-radius:4px;
   padding:12px 15px;font-size:14px;color:#7A322D;}
 .foot{border-top:1px solid var(--hair);padding:11px 36px;font-size:11.5px;
@@ -236,6 +242,9 @@ export const dtable = (head, trs) =>
 const ol = (items) => list(items, true);
 export const red = (text) => sec('קו אדום', `<div class="red">${esc(text)}</div>`);
 export const blk = (l, html) => `<div class="blk"><div class="lbl">${esc(l)}</div>${html}</div>`;
+// פתיחה לקבוצה ותיבת הקראה (11/10/2026: "חסר: 1. פסקת הפתיחה לקבוצה. 2. כרטיס לכל דמות בנפרד")
+export const aloud = (arr) => `<div class="aloud">${paras(arr)}</div>`;
+const firstSentences = (t, n = 2) => (String(t || '').match(/[^.!?]+[.!?]+/g) || [String(t || '')]).slice(0, n).join(' ').trim();
 
 // כרטיס נקודת תפנית, עם ענפי אם/אז מפורשים בשמות הדוברות.
 //   t: { n, name, type, core, trigger, does, demands, missed,
@@ -392,10 +401,17 @@ ${WIDGET}`;
         redLine(),
     });
 
+    // פתיחה לקבוצה: רק מה שגלוי למתנסה (tr.opening), בלי מה שמתחת. כך היא לא מגלה סודות לקבוצה.
+    const eduIntro = (Array.isArray(f.groupIntro) ? f.groupIntro : [f.groupIntro]).filter(Boolean);
+    const groupIntroEdu = eduIntro.length ? eduIntro : [
+      `אנחנו עומדים לצפות בשיחה בין ${tr.role || 'אשת החינוך'} לבין ${actorFirstName || 'הדמות'}${a.role ? ', ' + a.role : ''}.`,
+      'בזמן הצפייה כדאי לשים לב לרגעים שבהם השיחה נפתחת, ולרגעים שבהם היא נסגרת.',
+    ];
     const facilitator = page(s, {
       badge: 'גרסת המנחה',
       meta: [`<b>${esc(s.creator)}</b>`, esc(s.date), esc(s.audience), esc(s.experience), ...baseMeta],
       body:
+        sec('פתיחה לקבוצה', aloud(groupIntroEdu), 'להקראה לפני הסצנה. רק מה שגלוי למתנסה') +
         sec('תמצית התרחיש', dtable(null, [
           ['רקע מלא', paras(f.background)],
           ['שתי הדמויות', paras(f.charactersProse)],
@@ -476,10 +492,38 @@ ${WIDGET}`;
     const otherOf = (key) => s.characters.find((c) => c.key !== key);
 
 
+    // פסקת פתיחה שהמנחה קוראת לקבוצה: מה רואים, איפה ומי. בלי מה שמתחת (portrait) ובלי התפניות.
+    const bg = Array.isArray(s.background) ? s.background : [s.background];
+    const intro = (Array.isArray(s.groupIntro) ? s.groupIntro : [s.groupIntro]).filter(Boolean);
+    const groupIntro = intro.length ? intro : [
+      firstSentences(bg[0], 3),
+      `בסצנה: ${s.characters.map((c) => c.name).join(' ו')}. בזמן הצפייה כדאי לשים לב לרגעים שבהם השיחה נפתחת, ולרגעים שבהם היא נסגרת.`,
+    ].filter(Boolean);
+    // כרטיס קצר לכל דמות, לגזור ולתת למגלם/ת: מה קורה, מה רוצים, איך פותחים, מה פותח ומה סוגר
+    const roleCard = (c) => {
+      const k = c.card || {};
+      const mine = (s.turningPoints || []).filter((t) => t.who === c.key);
+      const opens = k.opensWhen || (mine.find((t) => /פתיחה/.test(t.type || '')) || {}).trigger || '';
+      const closes = k.closesWhen || (mine.find((t) => /סגירה|ניתוק/.test(t.type || '')) || {}).trigger || '';
+      const other = otherOf(c.key);
+      return `<div class="rcard"><h4>${esc(c.name)}</h4><div class="rc-sub">כרטיס דמות · ${esc(s.name)}</div>` + dtable(null, [
+        [c.pronoun === 'אתה' ? 'מי אתה' : 'מי את', esc(k.who || firstSentences((c.portrait || [])[0], 1))],
+        [c.pronoun === 'אתה' ? 'מה אתה רוצה' : 'מה את רוצה', esc(k.want || firstSentences((c.portrait || [])[1], 2))],
+        ['המשפט הראשון', k.opening ? `<div class="big">${esc(k.opening)}</div>` : ''],
+        ['הביטוי החוזר', k.phrase ? `<div class="big">${esc(k.phrase)}</div>` : ''],
+        ['מה לא נאמר', esc(k.notSay || '')],
+        ['מה פותח', esc(opens)],
+        ['מה סוגר', esc(closes)],
+        ['מי מולך', esc(other ? other.name + (k.facing ? ': ' + k.facing : '') : '')],
+      ].filter((r) => r[1])) + `</div>`;
+    };
+    const cardsSec = sec('כרטיסי הדמויות', `<div class="rcards">${s.characters.map(roleCard).join('')}</div>`, 'לגזור ולתת לכל מגלם/ת את הכרטיס שלו/ה. הכרטיס המלא של כל דמות נמצא גם בקובץ נפרד');
+
     const scenario = page(s, {
       badge: s.scenarioBadge,
       meta,
       body:
+        sec('פתיחה לקבוצה', aloud(groupIntro), 'להקראה לפני הסצנה') +
         sec('תמצית התרחיש', dtable(null, [
           ['מה קורה כאן', paras(s.background)],
           ...s.characters.map((c) => [esc(c.name), paras(c.summary)]),
@@ -495,7 +539,7 @@ ${WIDGET}`;
         ].filter((r) => r[1]))) +
         sec('מה לראות ומה לשאול', dtable(['נקודה לצפייה', 'מה ראיתי'], (s.watch || []).map((w) => [esc(w), ''])) +
           ((s.debrief || []).length ? dtable(['מתי', 'השאלות'], [['<b>תחקיר — אחרי הצפייה</b>', ol(s.debrief)]]) : '')) +
-        red(s.redLine),
+        red(s.redLine) + cardsSec,
     });
     const files = [[`${s.outputs.scenario}.html`, scenario, s.scenarioBadge]];
 
@@ -525,5 +569,5 @@ ${WIDGET}`;
     return { files };
   }
 
-  return { page, card, renderEduDocs, renderRoleDocs, esc, sec, paras, list, rows, dtable, tpTables, red, blk, tpCard, CSS, CARD_CSS, FONTS };
+  return { page, card, renderEduDocs, renderRoleDocs, esc, sec, paras, list, rows, dtable, tpTables, red, blk, aloud, tpCard, CSS, CARD_CSS, FONTS };
 }

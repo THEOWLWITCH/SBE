@@ -377,7 +377,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
 <div class="modepick">
   <button type="button" class="on" id="mPlan">מפגש / שיעור בודד<span class="d">הדרכה שלב-אחר-שלב לפעילות אחת. המערכת מציעה ואת בוחרת</span></button>
   <button type="button" id="mSeq">רצף מפגשים<span class="d">קורס, סדנה או יחידת לימוד, עד 30 מפגשים, עם בדיקות ומשוב על הרצף כולו</span></button>
-  <button type="button" id="mUpload">ניתוח פעילות קיימת<span class="d">הדביקי או העלי טקסט פעילות שכבר יש לך, ותקבלי משוב מילולי</span></button>
+  <button type="button" id="mUpload">ניתוח פעילות קיימת<span class="d">אפשר להדביק או להעלות טקסט של פעילות שכבר יש, ולקבל משוב מילולי</span></button>
 </div>
 
 <!-- ═══ מסך 1: הדרכת תכנון ═══ -->
@@ -416,12 +416,12 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
     <div class="grp-b">
       <div class="uploadbox" style="margin:0;">
         <input type="file" id="sqFile" accept=".txt,text/plain,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,application/pdf">
-        <p class="note" id="sqFileStatus" style="margin:8px 0 0;">קובץ Word (.docx), PDF או טקסט, או הדביקי את התוכן למטה. קובץ Word ישן (.doc) אינו נתמך.</p>
+        <p class="note" id="sqFileStatus" style="margin:8px 0 0;">קובץ Word (.docx), PDF או טקסט, או להדביק את התוכן למטה. קובץ Word ישן (.doc) אינו נתמך.</p>
       </div>
-      <textarea class="pastearea" id="sqDocText" style="min-height:140px;" placeholder="או הדביקי כאן את תוכן המסמך..."></textarea>
+      <textarea class="pastearea" id="sqDocText" style="min-height:140px;" placeholder="אפשר גם להדביק כאן את תוכן המסמך..."></textarea>
       <div class="pair" style="grid-template-columns:1fr auto;align-items:end;">
         <div class="f">
-          <label>מספר המפגשים <span class="reqstar" aria-hidden="true">*</span><span class="hint"> · שדה עיקרי: כמה מפגשים תרצו ברצף (1–30)</span></label>
+          <label>מספר המפגשים <span class="reqstar" aria-hidden="true">*</span><span class="hint"> · שדה עיקרי: כמה מפגשים רוצים ברצף (1–30)</span></label>
           <input type="number" id="sqDocN" min="1" max="30" placeholder="לדוגמה: 14 (סמסטר)">
         </div>
         <button type="button" class="primary" id="sqImportBtn">ניתוח ופריסה למפגשים</button>
@@ -433,7 +433,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
     <div class="grp-b">
       <p class="note" style="margin:0;">אפשר לשאול כל שאלה על התכנון.</p>
       <textarea id="sqQ" rows="2" placeholder="לדוגמה: איך לבנות את המפגש השלישי כך שיהיה קשה יותר מהשני, בלי לאבד את מי שמתקשות?"></textarea>
-      <div><button type="button" class="primary" id="sqAsk">שאלי</button></div>
+      <div><button type="button" class="primary" id="sqAsk">שליחה</button></div>
       <div id="sqAnswers"></div>
     </div>
   </details>
@@ -444,11 +444,11 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
 <!-- ═══ מסך 2: ניתוח פעילות קיימת ═══ -->
 <section class="screen" id="screen-upload">
   <div class="uploadbox">
-    <p class="note" style="margin-bottom:10px;">קובץ טקסט (.txt), Word (.docx) או PDF, או פשוט הדביקי את הטקסט למטה. <span style="display:block;margin-top:4px;">קובץ Word ישן (.doc) אינו נתמך, שמרי כ-.docx או הדביקי את הטקסט.</span></p>
+    <p class="note" style="margin-bottom:10px;">קובץ טקסט (.txt), Word (.docx) או PDF, או פשוט להדביק את הטקסט למטה. <span style="display:block;margin-top:4px;">קובץ Word ישן (.doc) אינו נתמך, אפשר לשמור כ-.docx או להדביק את הטקסט.</span></p>
     <input type="file" id="upFile" accept=".txt,text/plain,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,application/pdf">
     <p class="note" id="upStatus" style="margin-top:8px;"></p>
   </div>
-  <textarea class="pastearea" id="upText" placeholder="הדביקי כאן את תיאור הפעילות..."></textarea>
+  <textarea class="pastearea" id="upText" placeholder="אפשר להדביק כאן את תיאור הפעילות..."></textarea>
   <div style="margin-top:12px;">
     <button type="button" class="primary" id="bAnalyze">ניתוח</button>
   </div>
@@ -461,7 +461,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
   <button type="button" id="bFeedback">משוב</button>
   <button type="button" id="bBuild" disabled>הפקת התוצר</button>
   <button type="button" id="bReset">ניקוי</button>
-  <span class="note" id="hint">מלאי את השדות העיקריים</span>
+  <span class="note" id="hint">אפשר למלא את השדות העיקריים</span>
 </div></div>
 
 <div class="actions" id="actionsSeq" style="display:none"><div class="inner">
@@ -744,7 +744,7 @@ const GROUPS = [
     { k:"expression", l:"גיוון דרכי הבעה" },
     { k:"technology", l:"שילוב משמעותי ורלוונטי של טכנולוגיה" },
     { k:"resources", l:"רשימת משאבים, עזרים ואביזרים", tall:1 },
-    { k:"groupStyle", l:"אופי הפעילות", type:"select",
+    { k:"groupStyle", l:"אופי הפעילות", type:"select", other:true,
       opts:["",
         "פעילות אישית / למידה פרטנית",
         "פעילות בזוגות",
@@ -828,9 +828,14 @@ function setAIStatus(status){
   else chip.innerHTML = dot + "בודקת חיבור למודל...";
 }
 
+// הסיבה האמיתית לתקלה האחרונה (11/10/2026: "ההפקה לא עובדת"): ההודעה אומרת מה קרה, ולא תמיד "אין חיבור"
+var LAST_AI_ERR = null;
+function noModelMsg() { return window.sbeAIError ? sbeAIError(LAST_AI_ERR, NO_MODEL) : NO_MODEL; }
 async function callAI(system, userText, maxTokens, timeoutMs, review) { // review: תוצר, עובר דרך הסוכנת-הלקוחה (harness/lib/customer-pass.mjs)
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך
-  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, customerReview: !!review }, timeoutMs || 60000);
+  LAST_AI_ERR = null;
+  try { return await sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, customerReview: !!review }, timeoutMs || 60000); }
+  catch (e) { LAST_AI_ERR = e; throw e; }
 }
 
 async function generateProposals(ctx) {
@@ -857,8 +862,8 @@ async function generateProposals(ctx) {
       ctx.approach ? "" : "ערך 'approach' (גישת למידה) חייב להיות **בדיוק** אחד או כמה (מופרדים בפסיק) מהערכים הבאים, מילה במילה: " + APPROACH_CARDS.map(c=>c.v).join(" | "),
       ctx.age ? "" : "ערך 'age' (קהל יעד) חייב להיות בדיוק אחד מ: " + AGE_OPTS.filter(Boolean).join(" | "),
       "ערך 'groupStyle' (אופי הפעילות) חייב להיות בדיוק אחד מ: פעילות אישית / למידה פרטנית | פעילות בזוגות | פעילות בקבוצות קטנות / למידה שיתופית | פעילות במליאה / כיתתית משותפת | שילוב בין כמה מהמבנים לעיל",
-      "שדה 'movement' (שילוב תנועה): התנועה חייבת לשרת את המטרה עצמה, לא רק הפסקה — נסחי כך שברור למה דווקא התנועה הזו.",
-      "שדה 'mainActivity': אם מתאים לחלק לכמה שלבים, כתבי אותם כשורות ממוספרות (1. ... 2. ...).",
+      "שדה 'movement' (שילוב תנועה): התנועה חייבת לשרת את המטרה עצמה, לא רק הפסקה — אפשר לנסח כך שברור למה דווקא התנועה הזו.",
+      "שדה 'mainActivity': אם מתאים לחלק לכמה שלבים, אפשר לכתוב אותם כשורות ממוספרות (1. ... 2. ...).",
       "שדות openingMin/mainMin/closingMin: משך כל שלב בנפרד (למשל \"5 דקות\"), לא סעיף זמן כללי אחד, סכומם חייב להתאים בקירוב למשך הכולל שנקבע ב-duration.",
       "החזירי אך ורק אובייקט JSON תקין, בלי טקסט לפני או אחרי, עם המפתחות: age, domain, duration, approach, specialNotes, opening, openingMin, mainActivity, mainMin, closing, closingMin, outcome, movement, expression, technology, resources, groupStyle.",
     ].filter(Boolean).join("\n");
@@ -994,7 +999,7 @@ function render() {
           });
           if (f.other) {
             const otherRow = el("div", { class:"customsel-other" });
-            otherInput = el("input", { type:"text", placeholder:"הקלידי אפשרות משלך: נשמרת לכולן" });
+            otherInput = el("input", { type:"text", placeholder:"אפשר להקליד אפשרות משלך: נשמרת לכולן" });
             const addOther = () => {
               const t = otherInput.value.trim(); if (!t) return;
               addCustomListItem(f.k, t);
@@ -1006,7 +1011,7 @@ function render() {
             const otherBtn = el("button", { type:"button" }, "הוספה");
             otherBtn.addEventListener("click", addOther);
             otherRow.append(otherInput, otherBtn);
-            panel.append(otherRow);
+            panel.prepend(otherRow); // למעלה, כדי שיהיה גלוי בלי גלילה ברשימה ארוכה
           }
         }
         renderPanelOptions();
@@ -1201,7 +1206,7 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
       approach: state.approach === "locked" ? val("approach") : "",
       specialNotes: state.specialNotes === "locked" ? val("specialNotes") : "",
     });
-    if (out._noModel) { if (hintEl) hintEl.textContent = "⚠ " + NO_MODEL; return; }
+    if (out._noModel) { if (hintEl) hintEl.textContent = "⚠ " + noModelMsg(); return; }
     for (const [k,v] of Object.entries(out)) {
       if (!FIELDS.has(k) || state[k] === "locked") continue;
       const n = document.getElementById("i-"+k);
@@ -1261,7 +1266,7 @@ function computeFeedbackFromFields(d) {
   //   את הקטגוריה כולה במקום להציג "מה עובד" ריקה.
   const good = [], gaps = [], check = [];
 
-  if (d.goal) check.push("המטרה: קראי אותה כמשפט עומד בפני עצמו. היא אומרת מה בדיוק המשתתפים ידעו/ירגישו/יוכלו לעשות, או שהיא עדיין כותרת כללית (\"ללמד על X\")?");
+  if (d.goal) check.push("המטרה: אפשר לקרוא אותה כמשפט עומד בפני עצמו. היא אומרת מה בדיוק המשתתפים ידעו/ירגישו/יוכלו לעשות, או שהיא עדיין כותרת כללית (\"ללמד על X\")?");
   else gaps.push("המטרה עדיין לא מנוסחת.");
 
   // S.M.A.R.T — היחיד מבין הקריטריונים שיכול להישאר "good"/"gap" אמיתיים
@@ -1280,12 +1285,12 @@ function computeFeedbackFromFields(d) {
   if (!d.mainActivity) missingStructure.push("פעילות מרכזית");
   if (!d.closing) missingStructure.push("סיכום");
   if (missingStructure.length) gaps.push("חסר במבנה: " + missingStructure.join(", ") + ".");
-  else check.push("המבנה מלא (פתיחה + פעילות מרכזית + סיכום), קראי את שלושתם ברצף: זו זרימה הגיונית אחת, או שלושה קטעים מנותקים?");
+  else check.push("המבנה מלא (פתיחה + פעילות מרכזית + סיכום), אפשר לקרוא את שלושתם ברצף: זו זרימה הגיונית אחת, או שלושה קטעים מנותקים?");
 
   if (d.outcome) check.push("התוצר שהגדרת: הוא באמת נובע מהפעילות שתיארת, או נשמע כללי/מודבק מפעילות אחרת?");
   else gaps.push("לא הוגדר תוצר לפעילות.");
 
-  if (d.movement) check.push("שילוב התנועה קשור לתוכן: נסי לומר במשפט אחד למה דווקא התנועה הזו, לא כל תנועה, מקדמת את המטרה שהגדרת. אם אין משפט כזה, כנראה שהתנועה עדיין דקורטיבית ולא משמעותית.");
+  if (d.movement) check.push("שילוב התנועה קשור לתוכן: אפשר לנסות לומר במשפט אחד למה דווקא התנועה הזו, לא כל תנועה, מקדמת את המטרה שהגדרת. אם אין משפט כזה, כנראה שהתנועה עדיין דקורטיבית ולא משמעותית.");
   else gaps.push("שילוב תנועה עדיין לא תואר.");
 
   if (d.expression) check.push("גיוון דרכי ההבעה: יש בפעילות באמת יותר מדרך הבעה אחת (למשל דיבור + תנועה + יצירה חזותית), או שזו מילה אחת שנכתבה בשדה?");
@@ -1304,7 +1309,7 @@ function computeFeedbackFromFields(d) {
   if (missingMin.length) gaps.push("חסר משך זמן " + missingMin.join(", ") + ".");
 
   if (d.goal && d.mainActivity) {
-    check.push("קשר בין המטרה לפעילות המרכזית: נסי לומר במשפט אחד איך הפעילות המרכזית מקדמת בפועל את המטרה. זו שאלת תוכן: אין דרך אוטומטית אמינה לבדוק אותה, רק קריאה שלך (או של מודל אמיתי בעתיד).");
+    check.push("קשר בין המטרה לפעילות המרכזית: אפשר לנסות לומר במשפט אחד איך הפעילות המרכזית מקדמת בפועל את המטרה. זו שאלת תוכן: אין דרך אוטומטית אמינה לבדוק אותה, רק קריאה שלך (או של מודל אמיתי בעתיד).");
   }
 
   // בדיקה ייחודית לכל גישת למידה שנבחרה (19/09/2026, הורחב 22/09/2026
@@ -1323,7 +1328,7 @@ function computeFeedbackFromFields(d) {
     const clue = hasActive ? "נמצאו מילים שמרמזות על מעורבות פעילה (בוחרים/יוצרים/חוקרים)"
       : hasPassive ? "הניסוח נשמע יותר פסיבי (מקשיבים/צופים)"
       : "לא נמצאו מילות מפתח ברורות לכאן או לכאן";
-    check.push("מעורבות תלמידים: " + clue + ", אבל זו בדיקת מילות מפתח בלבד, לא הבנה של מה שבאמת קורה. קראי בעצמך: התלמידים פעילים בלמידה, או בעיקר צופים/מאזינים?");
+    check.push("מעורבות תלמידים: " + clue + ", אבל זו בדיקת מילות מפתח בלבד, לא הבנה של מה שבאמת קורה. אפשר לקרוא בעצמך: התלמידים פעילים בלמידה, או בעיקר צופים/מאזינים?");
   }
   return { good, gaps, check };
 }
@@ -1338,9 +1343,9 @@ const TEXT_CHECKS = [
   { words:["מטרה","יעד"], label:"מטרה/יעד", ask:"וודאי שהיא מנוסחת בבירור, לא רק נושא כללי." },
   { words:["פתיחה","פתיח"], label:"פתיחה", ask:"וודאי שיש שלב פתיחה מזוהה." },
   { words:["סיכום","רפלקציה","הערכה"], label:"סיכום/רפלקציה", ask:"וודאי שיש שלב סיכום או רפלקציה בסוף." },
-  { words:["תנועה","זזים","קם","קמים","מסתובב"], label:"שילוב תנועה", ask:"אם יש תנועה, בדקי שהיא קשורה למטרה, לא רק הפסקה." },
-  { words:["חומרים","עזרים","אביזרים","ציוד"], label:"משאבים ועזרים", ask:"בדקי שהרשימה ריאלית וזמינה בפועל." },
-  { words:["דקות","זמן","שעה"], label:"חלוקת זמן", ask:"בדקי שיש חלוקה ברורה לשלבים, לא רק משך כולל." },
+  { words:["תנועה","זזים","קם","קמים","מסתובב"], label:"שילוב תנועה", ask:"אם יש תנועה, אפשר לבדוק שהיא קשורה למטרה, לא רק הפסקה." },
+  { words:["חומרים","עזרים","אביזרים","ציוד"], label:"משאבים ועזרים", ask:"אפשר לבדוק שהרשימה ריאלית וזמינה בפועל." },
+  { words:["דקות","זמן","שעה"], label:"חלוקת זמן", ask:"אפשר לבדוק שיש חלוקה ברורה לשלבים, לא רק משך כולל." },
 ];
 function computeFeedbackFromText(text) {
   const has = (words) => words.some(w => text.includes(w));
@@ -1350,14 +1355,14 @@ function computeFeedbackFromText(text) {
     check.push(`${c.label}: ${found ? "נמצאה התייחסות בטקסט" : "לא נמצאה מילה מפורשת"}, ${c.ask}`);
   });
   if (has(["טכנולוגי","דיגיטל","מחשב","אפליקצי","יישומון"])) {
-    check.push("טכנולוגיה: נמצאה התייחסות, בדקי שהיא משרתת את המטרה ולא רק תוספת.");
+    check.push("טכנולוגיה: נמצאה התייחסות, אפשר לבדוק שהיא משרתת את המטרה ולא רק תוספת.");
   }
   const hasActive = ENGAGEMENT_WORDS.some(w => text.includes(w));
   const hasPassive = PASSIVE_WORDS.some(w => text.includes(w));
   const clue = hasActive ? "נמצאו מילים שמרמזות על מעורבות פעילה"
     : hasPassive ? "הניסוח נשמע יותר פסיבי"
     : "לא נמצאו מילות מפתח ברורות לכאן או לכאן";
-  check.push("מעורבות תלמידים: " + clue + ", קראי בעצמך אם התלמידים פעילים בלמידה או בעיקר צופים/מאזינים.");
+  check.push("מעורבות תלמידים: " + clue + ", אפשר לקרוא בעצמך אם התלמידים פעילים בלמידה או בעיקר צופים/מאזינים.");
   return { good:[], gaps:[], check };
 }
 
@@ -1404,14 +1409,14 @@ async function computeFeedbackFromFieldsAI(d) {
     .join(" ");
   const system = [ "אסור לכתוב שם של מחבר, מאמר, ספר, מחקר או שנת פרסום. אפשר להזכיר תיאוריה או גישה במילים. מקורות מגיעים רק מספריית המקורות המאומתת של המערכת.",
     "את בודקת תוכניות פעילות חינוכיות עבור מערכת Begood, בעברית.",
-    "קבלי את תוכנית הפעילות המלאה (JSON) וכתבי משוב אמיתי, ספציפי לתוכן הזה — לא משפטים כלליים שמתאימים לכל תוכנית.",
-    "בדקי בפרט: קשר אמיתי בין המטרה לפעילות המרכזית; שילוב תנועה שמשרת את המטרה ולא רק הפסקה; מעורבות פעילה של התלמידים (בוחרים/יוצרים/חוקרים) ולא רק האזנה; ניסוח S.M.A.R.T שבו כל חמש האותיות ספציפיות ולא כלליות.",
+    "קבלי את תוכנית הפעילות המלאה (JSON) ולכתוב משוב אמיתי, ספציפי לתוכן הזה — לא משפטים כלליים שמתאימים לכל תוכנית.",
+    "אפשר לבדוק בפרט: קשר אמיתי בין המטרה לפעילות המרכזית; שילוב תנועה שמשרת את המטרה ולא רק הפסקה; מעורבות פעילה של התלמידים (בוחרים/יוצרים/חוקרים) ולא רק האזנה; ניסוח S.M.A.R.T שבו כל חמש האותיות ספציפיות ולא כלליות.",
     approachHint,
     "החזירי אך ורק JSON תקין במבנה: {\"good\":[\"...\"],\"gaps\":[\"...\"]} — good=מה שבאמת עובד בתוכנית הזו, gaps=מה שכדאי לחזק, עם הסבר קונקרטי לכל אחד. בלי טקסט נוסף מסביב.",
   ].filter(Boolean).join("\n");
   // maxTokens=8000, timeout=150 שניות — נמדד חי (19/09/2026): משוב אמיתי
   // על תוכנית לקח כ-60 שניות; 2500 גרם לקטיעה.
-  const raw = await callAI(system, "תוכנית הפעילות:\n" + JSON.stringify(d, null, 2), 8000, 240000, true);
+  const raw = await callAI(system, "תוכנית הפעילות:\n" + JSON.stringify(d, null, 2), 16000, 300000, true);
   const m = sbeJsonMatch(raw);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
@@ -1428,7 +1433,7 @@ document.getElementById("bFeedback").addEventListener("click", async (e) => {
     catch (err) {
       console.warn("משוב AI לא זמין, לא מופק משוב. סיבה:", err.message);
       setAIStatus("mock");
-      return show("המשוב לא הופק", el("p",{}, NO_MODEL));
+      return show("המשוב לא הופק", el("p",{}, noModelMsg()));
     }
     showFeedback(fb);
   } finally { e.target.disabled = false; e.target.textContent = "משוב"; }
@@ -1507,12 +1512,12 @@ async function synthesizeActivityNarrative(d, creator) {
     const system = [ "אסור לכתוב שם של מחבר, מאמר, ספר, מחקר או שנת פרסום. אפשר להזכיר תיאוריה או גישה במילים. מקורות מגיעים רק מספריית המקורות המאומתת של המערכת.",
       "את כותבת מסמך תוכנית פעילות עבור מורה/מנחה, בעברית, מתוך שדות שמולאו במסך תכנון הפעילות של מערכת Begood. הקוראת תקרא אותו פעם אחת לפני הפעילות ותרגיש מוכנה.",
       "התוצר הוא טקסט רציף — לא רשימת שדות, לא כותרות-משנה, לא תוויות ונקודתיים, לא \"S.M.A.R.T\" גלוי. ארבע פסקאות: (1) למה נבחרה הפעילות ומה המשמעות מאחוריה — המטרה והיעד משולבים כסיפור; (2) איך היא נראית בפועל מרגע הכניסה לחדר ועד הסיכום, עם משכי הזמן שזורים במשפטים (\"חמש הדקות הראשונות...\"); (3) למה גישת הלמידה, התנועה, דרכי ההבעה והטכנולוגיה משרתות את המטרה ולא רק מתלוות אליה; (4) פסקה קצרה בגוף שני למורה עם טיפ מעשי אחד שנגזר מהתוכן.",
-      "חוק הספציפיות: שם, מספר, חפץ, מקום. משפט שאפשר להעתיק לפעילות אחרת בלי לשנות מילה נפסל. אל תמציאי תוכן שלא נמסר; אם שדה חסר, כתבי סביבו.",
+      "חוק הספציפיות: שם, מספר, חפץ, מקום. משפט שאפשר להעתיק לפעילות אחרת בלי לשנות מילה נפסל. אל תמציאי תוכן שלא נמסר; אם שדה חסר, אפשר לכתוב סביבו.",
       "בנוסף, רשימת \"מה להכין מראש\": לוח זמנים בשורה, מרחב, ציוד, ניסוחים שכדאי להכין מראש, 4-8 פריטים קצרים, זו הרשימה היחידה שנשארת רשימה.",
       "בנוסף, \"flow\": מהלך המפגש לפי השדות פתיחה, פעילות מרכזית וסיכום שמולאו (ואם יש, משהו קצר שעושים אחרי המפגש). לכל שלב: phase (אחד מ: פתיחה, פעילות מרכזית, סיכום, אחרי המפגש; בפעילות המרכזית אפשר כמה שלבים ברצף), title (שם קצר), minutes (מספר), description (תיאור הפעילות: מי עושה, מה עושים, עם מה ומה יוצא בסוף), guide (הנחיה למורה: מה אומרת, ואילו שאלות שואלת את הקבוצה ובשביל מה), resources (עזרים ומשאבים לשלב, או מחרוזת ריקה). בלי להמציא תוכן שלא נמסר.",
       "החזירי אך ורק JSON: {\"title\":\"כותרת קצרה לפעילות (לא שם המקצוע)\",\"paragraphs\":[\"...\",\"...\",\"...\",\"...\"],\"prepare\":[\"...\"],\"flow\":[{\"phase\":\"פתיחה\",\"title\":\"\",\"minutes\":5,\"description\":\"\",\"guide\":\"\",\"resources\":\"\"}]}",
     ].join("\n\n");
-    const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 8000, 240000, true);
+    const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 16000, 300000, true);
     const m = sbeJsonMatch(text); if (!m) throw new Error("לא התקבל JSON");
     const out = JSON.parse(m[0]);
     if (!Array.isArray(out.paragraphs) || out.paragraphs.length < 3) throw new Error("מבנה חסר");
@@ -1561,7 +1566,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   let narr = null;
   try { narr = await synthesizeActivityNarrative(d, creator); }
   finally { e.target.disabled = false; e.target.textContent = "הפקת התוצר"; }
-  if (!narr) return show("התוצר לא הופק", el("p",{}, NO_MODEL));
+  if (!narr) return show("התוצר לא הופק", el("p",{}, noModelMsg()));
   body.append(el("h4",{style:"margin-top:0"},"מסמך תוכנית פעילות"));
   if (!narr) body.append(el("p", { class:"savenote", style:"background:#FAEFDC;border-inline-start:3px solid #8F5F2E;padding:8px 11px;border-radius:6px;" },
     "⚠ אין חיבור למודל כרגע. המסמך מוצג מהשדות כפי שמולאו (מצב הדגמה). כשהשרת המקומי פועל, המודל כותב מהם מסמך רציף."));
@@ -1576,7 +1581,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   // במערכת / שמור במחשב. לפני השמירה ניתן לערוך את התוצר — הוסיפי משפט
   // הזמנה לעריכה." העריכה עצמה נשארת בשדות שמאחורי הדיאלוג, לא בתוך התצוגה.
   body.append(el("p", { class:"savenote" },
-    "אפשר לערוך את המסמך ואת הכרטיס ישירות כאן, או לסגור, לשנות שדה למעלה ולבנות מחדש. מרוצה? הדפיסי או שמרי כ-PDF."));
+    "אפשר לערוך את המסמך ואת הכרטיס ישירות כאן, או לסגור, לשנות שדה למעלה ולבנות מחדש. מרוצה? אפשר להדפיס או לשמור כ-PDF."));
   const dlgF = document.getElementById("dlgF");
   dlgF.textContent = "";
   const printBtn = el("button", { type:"button", class:"primary" }, "הדפסה / שמירה כ-PDF");
@@ -1649,14 +1654,14 @@ document.getElementById("upFile").addEventListener("change", async (e) => {
       const buf = await file.arrayBuffer();
       const text = await extractPdfText(buf);
       document.getElementById("upText").value = text;
-      statusEl.textContent = text.trim() ? "נטען מ-PDF (" + file.name + ")." : "לא נמצא טקסט ניתן לחילוץ בקובץ. ייתכן שזה PDF סרוק (תמונה). הדביקי את הטקסט ידנית.";
+      statusEl.textContent = text.trim() ? "נטען מ-PDF (" + file.name + ")." : "לא נמצא טקסט ניתן לחילוץ בקובץ. ייתכן שזה PDF סרוק (תמונה). אפשר להדביק את הטקסט ידנית.";
     } else if (name.endsWith(".docx")) {
       const buf = await file.arrayBuffer();
       const result = await mammoth.extractRawText({ arrayBuffer: buf });
       document.getElementById("upText").value = result.value;
       statusEl.textContent = "נטען מ-Word (" + file.name + ").";
     } else if (name.endsWith(".doc")) {
-      statusEl.textContent = "פורמט Word ישן (.doc) אינו נתמך, שמרי כ-.docx או הדביקי את הטקסט ידנית.";
+      statusEl.textContent = "פורמט Word ישן (.doc) אינו נתמך, אפשר לשמור כ-.docx או להדביק את הטקסט ידנית.";
     } else {
       const reader = new FileReader();
       reader.onload = () => {
@@ -1666,17 +1671,17 @@ document.getElementById("upFile").addEventListener("change", async (e) => {
       reader.readAsText(file, "UTF-8");
     }
   } catch (err) {
-    statusEl.textContent = "לא הצלחנו לקרוא את הקובץ (" + err.message + "): הדביקי את הטקסט ידנית.";
+    statusEl.textContent = "לא הצלחנו לקרוא את הקובץ (" + err.message + "): אפשר להדביק את הטקסט ידנית.";
   }
 });
 async function computeFeedbackFromTextAI(text) {
   const system = [ "אסור לכתוב שם של מחבר, מאמר, ספר, מחקר או שנת פרסום. אפשר להזכיר תיאוריה או גישה במילים. מקורות מגיעים רק מספריית המקורות המאומתת של המערכת.",
     "את בודקת תוכניות פעילות חינוכיות עבור מערכת Begood, בעברית.",
-    "קיבלת טקסט חופשי של פעילות קיימת (לא שדות מובנים). קראי אותו וכתבי משוב אמיתי, ספציפי לתוכן הזה בדיוק.",
-    "בדקי בפרט: האם יש מטרה ברורה; מבנה (פתיחה/גוף/סיכום); קשר אמיתי בין המטרה לפעילות עצמה; שילוב תנועה שמשרת את המטרה (אם קיים); מעורבות פעילה של התלמידים לעומת האזנה פסיבית; חלוקת זמן וריאליזם.",
+    "קיבלת טקסט חופשי של פעילות קיימת (לא שדות מובנים). אפשר לקרוא אותו ולכתוב משוב אמיתי, ספציפי לתוכן הזה בדיוק.",
+    "אפשר לבדוק בפרט: האם יש מטרה ברורה; מבנה (פתיחה/גוף/סיכום); קשר אמיתי בין המטרה לפעילות עצמה; שילוב תנועה שמשרת את המטרה (אם קיים); מעורבות פעילה של התלמידים לעומת האזנה פסיבית; חלוקת זמן וריאליזם.",
     "החזירי אך ורק JSON תקין במבנה: {\"good\":[\"...\"],\"gaps\":[\"...\"]} — עם הסבר קונקרטי לכל פריט, מצטט מהטקסט כשרלוונטי. בלי טקסט נוסף מסביב.",
   ].join("\n");
-  const raw = await callAI(system, "טקסט הפעילות:\n" + text, 8000, 240000, true);
+  const raw = await callAI(system, "טקסט הפעילות:\n" + text, 16000, 300000, true);
   const m = sbeJsonMatch(raw);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
@@ -1686,7 +1691,7 @@ async function computeFeedbackFromTextAI(text) {
 
 document.getElementById("bAnalyze").addEventListener("click", async (e) => {
   const text = document.getElementById("upText").value.trim();
-  if (!text) return show("חסר טקסט", el("p",{},"הדביקי או העלי טקסט פעילות לפני הניתוח."));
+  if (!text) return show("חסר טקסט", el("p",{},"אפשר להדביק או להעלות טקסט פעילות לפני הניתוח."));
   e.target.disabled = true; e.target.textContent = "מנתחת... (עד כ-5 דקות)";
   try {
     let fb;
@@ -1694,7 +1699,7 @@ document.getElementById("bAnalyze").addEventListener("click", async (e) => {
     catch (err) {
       console.warn("ניתוח AI לא זמין, לא מופק ניתוח. סיבה:", err.message);
       setAIStatus("mock");
-      return show("הניתוח לא הופק", el("p",{}, NO_MODEL));
+      return show("הניתוח לא הופק", el("p",{}, noModelMsg()));
     }
     showFeedback(fb);
   } finally { e.target.disabled = false; e.target.textContent = "ניתוח"; }
@@ -2068,7 +2073,7 @@ function selF(label, path, baseOpts, listKey, o){
       panel.append(b);
     });
     const row = el("div", { class:"customsel-other" });
-    const oi = el("input", { type:"text", placeholder:"חסר משהו? כתבי כאן והוסיפי" });
+    const oi = el("input", { type:"text", placeholder:"חסר משהו? אפשר לכתוב כאן ולהוסיף" });
     const ob = el("button", { type:"button" }, "הוספה");
     const add = () => { const t = str(oi.value); if (!t) return; seqAddCustom(listKey, t); choose(t); };
     oi.addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); add(); } });
@@ -2386,7 +2391,7 @@ function renderSeq(){
   env.querySelector('input[type="text"]:not([placeholder])');
   const prefs = grp("העדפות", isOpen("prefs", false), [
     checklistF("סגנונות הוראה ופעילות שחשובים לך", "prefs", PREF_ITEMS, "seqPrefs",
-      { hint:"סמני, והרחיבי בשורה שתיפתח", notePh:"הרחבה (לא חובה), לדוגמה: ישיבה במעגל, בלי שולחנות באמצע", addPh:"העדפה שאינה ברשימה: נשמרת לכולן" }),
+      { hint:"אפשר לסמן, והרחיבי בשורה שתיפתח", notePh:"הרחבה (לא חובה), לדוגמה: ישיבה במעגל, בלי שולחנות באמצע", addPh:"העדפה שאינה ברשימה: נשמרת לכולן" }),
   ]);
   prefs.dataset.g = "prefs";
   const limits = grp("מגבלות", isOpen("limits", false), [
@@ -2768,10 +2773,10 @@ async function aiFillAll(onStep){
 }
 async function aiReport(facts){
   const system = [preamble(),
-    "כתבי דו״ח ניתוח מקצועי על תכנון רצף המפגשים המצורף. אין לתת ציון מספרי בשום מקום.",
+    "אפשר לכתוב דו״ח ניתוח מקצועי על תכנון רצף המפגשים המצורף. אין לתת ציון מספרי בשום מקום.",
     "הקריטריונים: בדיוק בשמות האלה ובסדר הזה:\n" + REPORT_CRITERIA.map((c, i) => (i + 1) + ". " + c.t).join("\n"),
     "לכל קריטריון: relevant (true/false — אם הקריטריון אינו רלוונטי לתכנון הזה, false והסבר קצר ב-assessment למה, בלי להמציא ביקורת); assessment (2–4 משפטים ספציפיים לתוכן, עם הפניה למפגש או לשדה מסוים); suggestions (0–3 הצעות לשיפור קונקרטיות).",
-    "בקריטריון \"התקדמות והדרגתיות לאורך הרצף\" — בדקי אם רמת הקושי והעומק נבנית ממפגש למפגש, לא רק אם הסגנון אחיד. בקריטריון \"התאמה למגבלות ולהעדפות שהוגדרו\" — בדקי כל מפגש מול המגבלות וההעדפות. בקריטריון \"יישום גישות הלמידה שנבחרו\" — בדקי לכל גישה שנבחרה את מה שמגדיר אותה (ראי למעלה), ובאילו מפגשים היא מתממשת או חסרה; אם לא נבחרה גישה — relevant:false.",
+    "בקריטריון \"התקדמות והדרגתיות לאורך הרצף\" — אפשר לבדוק אם רמת הקושי והעומק נבנית ממפגש למפגש, לא רק אם הסגנון אחיד. בקריטריון \"התאמה למגבלות ולהעדפות שהוגדרו\" — אפשר לבדוק כל מפגש מול המגבלות וההעדפות. בקריטריון \"יישום גישות הלמידה שנבחרו\" — אפשר לבדוק לכל גישה שנבחרה את מה שמגדיר אותה (ראי למעלה), ובאילו מפגשים היא מתממשת או חסרה; אם לא נבחרה גישה — relevant:false.",
     "אחר כך summary שמטרתו ללמד את היוצרת לתכנן טוב יותר בעתיד ולהנחות טוב יותר את הלומדים: impression (פסקה), strengths, weaknesses, suggestions (מערכים).",
     "החזירי אך ורק JSON: {\"criteria\":[{\"title\":\"...\",\"relevant\":true,\"assessment\":\"...\",\"suggestions\":[\"...\"]}],\"summary\":{\"impression\":\"...\",\"strengths\":[\"...\"],\"weaknesses\":[\"...\"],\"suggestions\":[\"...\"]}}",
   ].join("\n\n");
@@ -2784,9 +2789,9 @@ async function aiReport(facts){
 async function aiImproveRange(a, b, first){
   const system = [preamble(),
     "שכתבי את תכנון רצף המפגשים המצורף לגרסה משופרת, שהיוצרת תוכל לעבור עליה ולערוך.",
-    "שמרי על כוונת היוצרת, על מספר המפגשים ועל העובדות: creator, date, framework, audience, ageRange, participants, space, prefs, limits, domain, approaches, topic, courseLevel — ללא שינוי.",
+    "אפשר לשמור על כוונת היוצרת, על מספר המפגשים ועל העובדות: creator, date, framework, audience, ageRange, participants, space, prefs, limits, domain, approaches, topic, courseLevel — ללא שינוי.",
     "מותר ורצוי: לשפר ניסוח ועברית (משלב גבוה, בהירות, דיוק), לחדד את היעדים לפי S.M.A.R.T, לתקן אי-התאמות בזמנים, לחזק את ההדרגתיות בין המפגשים, להתאים פעילויות למגבלות ולהעדפות, ולהשלים שדות ריקים.",
-    `בקריאה הזו שפרי רק את ${rangeLabel(a, b)} (n=${a + 1} עד n=${b})` + (first ? ", וגם את goals (עד חמש מטרות: מותר לנסח מחדש אם זה מחדד אותן), finalProduct ו-assessment." : ". המפגשים האחרים מוצגים כהקשר, שמרי על ההדרגתיות מולם כפי שהם."),
+    `בקריאה הזו שפרי רק את ${rangeLabel(a, b)} (n=${a + 1} עד n=${b})` + (first ? ", וגם את goals (עד חמש מטרות: מותר לנסח מחדש אם זה מחדד אותן), finalProduct ו-assessment." : ". המפגשים האחרים מוצגים כהקשר, אפשר לשמור על ההדרגתיות מולם כפי שהם."),
     SESSION_SCHEMA, TIME_RULE,
     "החזירי אך ורק JSON: {\"plan\":{" + (first ? "\"goals\":[\"...\"],\"finalProduct\":\"...\",\"assessment\":\"...\"," : "") + "\"sessions\":[{\"n\":" + (a + 1) + ", ...כל שדות המפגש...}]},\"changes\":[{\"where\":\"מפגש " + (a + 1) + " · פתיחה\",\"why\":\"...\"}]} — changes: השינויים העיקריים בטווח הזה ולמה (עד 6).",
   ].join("\n\n");
@@ -2831,8 +2836,8 @@ function libCatalog(lib){
 async function aiNarrative(){
   const lib = await loadLibrary();
   const system = [preamble(),
-    "כתבי שלוש פסקאות רציפות שיפתחו את מסמך תכנון הרצף — לא רשימות, לא כותרות: (1) הסיפור של הרצף — מה הלומדים עוברים מהמפגש הראשון ועד התוצר הסופי; (2) למה הוא בנוי כך — ההדרגתיות, הגישות שנבחרו, וההתאמה לקהל, לגיל ולתנאים; (3) פסקה קצרה בגוף שני, ליוצרת, עם עצה מעשית אחת להנחיית הרצף.",
-    lib.length ? "מקורות להרחבה — בחרי אך ורק מתוך ספריית המקורות המאומתת שלמטה, לפי המספר (id) בלבד. אסור לכתוב מקור, שם מחבר או כותרת משלך. לכל מפגש 1–2 מקורות שמתאימים לנושא שלו; ולרצף כולו 3–5 מקורות, כולל מקורות לגישות שנבחרו אם יש כאלה בספרייה. אם אין מקור מתאים — מערך ריק. הספרייה (id | תחום | נושא | סוג | תגיות | גישה):\n" + libCatalog(lib) : "",
+    "אפשר לכתוב שלוש פסקאות רציפות שיפתחו את מסמך תכנון הרצף — לא רשימות, לא כותרות: (1) הסיפור של הרצף — מה הלומדים עוברים מהמפגש הראשון ועד התוצר הסופי; (2) למה הוא בנוי כך — ההדרגתיות, הגישות שנבחרו, וההתאמה לקהל, לגיל ולתנאים; (3) פסקה קצרה בגוף שני, ליוצרת, עם עצה מעשית אחת להנחיית הרצף.",
+    lib.length ? "מקורות להרחבה — אפשר לבחור אך ורק מתוך ספריית המקורות המאומתת שלמטה, לפי המספר (id) בלבד. אסור לכתוב מקור, שם מחבר או כותרת משלך. לכל מפגש 1–2 מקורות שמתאימים לנושא שלו; ולרצף כולו 3–5 מקורות, כולל מקורות לגישות שנבחרו אם יש כאלה בספרייה. אם אין מקור מתאים — מערך ריק. הספרייה (id | תחום | נושא | סוג | תגיות | גישה):\n" + libCatalog(lib) : "",
     "אל תמציאי תוכן שלא נמסר. החזירי אך ורק JSON: {\"paragraphs\":[\"...\",\"...\",\"...\"]" + (lib.length ? ",\"sources\":{\"overall\":[12,40],\"sessions\":[{\"n\":1,\"ids\":[3]}]}" : "") + "}",
   ].filter(Boolean).join("\n\n");
   const out = parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), 12000, 300000, true));
@@ -2849,7 +2854,7 @@ async function aiNarrative(){
 async function aiAsk(q){
   const system = [preamble(),
     "היוצרת שואלת שאלה תוך כדי מילוי התכנון. עני ישירות, מעשית ובקצרה (עד כ-150 מילים), בהתייחס לתכנון הנוכחי המצורף. אם השאלה אינה קשורה לתכנון — עני בקצרה והחזירי את השיחה לתכנון. טקסט רגיל, בלי JSON."].join("\n\n");
-  return await callAI(system, "התכנון הנוכחי:\n" + JSON.stringify(planForAI()) + "\n\nהשאלה:\n" + q, 6000, 300000);
+  return await callAI(system, "התכנון הנוכחי:\n" + JSON.stringify(planForAI()) + "\n\nהשאלה:\n" + q, 12000, 300000);
 }
 
 // ── מיזוג תוצאות המודל ──
@@ -2977,7 +2982,7 @@ document.getElementById("bSeqReport").addEventListener("click", async (e) => {
     catch (err) { console.warn("דו״ח AI לא זמין:", err.message); setAIStatus("mock"); }
     finally { done(); }
   }
-  if (!ai && !missingRequired().length) return seqDialog("משוב ודו״ח ניתוח", el("p", {}, NO_MODEL));
+  if (!ai && !missingRequired().length) return seqDialog("משוב ודו״ח ניתוח", el("p", {}, noModelMsg()));
   const html = reportHTML(facts, ai);
   const body = el("div");
   if (!ai) body.append(mockNote(missingRequired().length
@@ -3039,7 +3044,7 @@ document.getElementById("bSeqUndo").addEventListener("click", () => {
 
 document.getElementById("bSeqBuild").addEventListener("click", async (e) => {
   if (!seq.sessions.some(s => !isEmptySession(s))) {
-    seqDialog("הפקת התוצר", el("p", {}, "עוד אין אף מפגש עם יעד או מהלך. מלאי לפחות מפגש אחד, או השתמשי ב״השלמת נתונים חסרים״."));
+    seqDialog("הפקת התוצר", el("p", {}, "עוד אין אף מפגש עם יעד או מהלך. אפשר למלא לפחות מפגש אחד, או השתמשי ב״השלמת נתונים חסרים״."));
     return;
   }
   const done = busy(e.target, "מנסחת את פתיחת המסמך ובוחרת מקורות... עד כ-4 דקות");
@@ -3047,13 +3052,13 @@ document.getElementById("bSeqBuild").addEventListener("click", async (e) => {
   try { narr = await aiNarrative(); setAIStatus("ok"); }
   catch (err) { console.warn("פתיחה נרטיבית לא זמינה:", err.message); setAIStatus("mock"); }
   finally { done(); }
-  if (!narr) return seqDialog("הפקת התוצר", el("p", {}, NO_MODEL));
+  if (!narr) return seqDialog("הפקת התוצר", el("p", {}, noModelMsg()));
   let html = seqDocHTML(narr, false);
   const body = el("div");
   if (!narr) body.append(mockNote("אין חיבור למודל כרגע. המסמך נבנה מהשדות כפי שמולאו, בלי פסקאות הפתיחה (״על הרצף״) שהמודל כותב."));
   const fr = frameOf(html);
   body.append(fr, el("p", { class:"savenote" },
-    "אפשר לסגור, לערוך כל שדה ולהפיק מחדש. התוצר כאן הוא תמיד הגרסה האחרונה. מרוצה? שמרי, הדפיסי או העבירי."));
+    "אפשר לסגור, לערוך כל שדה ולהפיק מחדש. התוצר כאן הוא תמיד הגרסה האחרונה. מרוצה? אפשר לשמור, להדפיס או להעביר."));
   const refs = seqRefsPanel(narr, on => { html = seqDocHTML(narr, on); fr.srcdoc = html; });
   if (refs) body.append(refs);
   const sysBtn = btn("שמירה במערכת", () => {
@@ -3115,7 +3120,7 @@ async function readDocFile(file){
   const name = file.name.toLowerCase();
   if (name.endsWith(".pdf")) return await extractPdfText(await file.arrayBuffer());
   if (name.endsWith(".docx")) return (await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() })).value;
-  if (name.endsWith(".doc")) throw new Error("פורמט Word ישן (.doc) אינו נתמך, שמרי כ-.docx או הדביקי את הטקסט");
+  if (name.endsWith(".doc")) throw new Error("פורמט Word ישן (.doc) אינו נתמך, אפשר לשמור כ-.docx או להדביק את הטקסט");
   return await file.text();
 }
 document.getElementById("sqFile").addEventListener("change", async (e) => {
@@ -3125,20 +3130,20 @@ document.getElementById("sqFile").addEventListener("change", async (e) => {
   try {
     const text = await readDocFile(file);
     document.getElementById("sqDocText").value = text;
-    st.textContent = str(text) ? `נטען מ-${file.name}: ${text.length.toLocaleString("he-IL")} תווים.` : "לא נמצא טקסט ניתן לחילוץ. ייתכן שזה PDF סרוק (תמונה). הדביקי את הטקסט ידנית.";
-  } catch (err) { st.textContent = "לא הצלחנו לקרוא את הקובץ (" + err.message + "): הדביקי את הטקסט ידנית."; }
+    st.textContent = str(text) ? `נטען מ-${file.name}: ${text.length.toLocaleString("he-IL")} תווים.` : "לא נמצא טקסט ניתן לחילוץ. ייתכן שזה PDF סרוק (תמונה). אפשר להדביק את הטקסט ידנית.";
+  } catch (err) { st.textContent = "לא הצלחנו לקרוא את הקובץ (" + err.message + "): אפשר להדביק את הטקסט ידנית."; }
 });
 async function aiImportOutline(text, n){
   const system = [preamble({}),
     "קיבלת מסמך תכנון קיים: סילבוס, תכנית קורס, רשימת נושאים או תכנון חלקי. נתחי אותו והפכי אותו לבסיס של תכנית רצף מפגשים.",
     n ? `מספר המפגשים הנדרש: ${n}. אם המסמך מפרט מספר אחר של נושאים או שיעורים — פצלי, אחדי או פרסי אותם כך שייווצר רצף הדרגתי ומאוזן של ${n} מפגשים בדיוק.`
       : "מספר המפגשים לא נקבע: אם המסמך מפרט מפגשים או שבועות, לפיו; אחרת מספר סביר לתוכן (לכל היותר 30).",
-    "שדות עובדתיים — framework, audience, ageRange, participants, space, prefs, limits, courseLevel, domain — מלאי רק אם הם כתובים במסמך במפורש או נגזרים ממנו בוודאות; אחרת מחרוזת ריקה או מערך ריק. אל תמציאי עובדות.",
+    "שדות עובדתיים — framework, audience, ageRange, participants, space, prefs, limits, courseLevel, domain — אפשר למלא רק אם הם כתובים במסמך במפורש או נגזרים ממנו בוודאות; אחרת מחרוזת ריקה או מערך ריק. אל תמציאי עובדות.",
     "prefs ו-limits: מערכים של {item, note}. העדיפי שמות פריטים מהרשימות — העדפות: " + PREF_ITEMS.join(" | ") + " ; מגבלות: " + LIMIT_ITEMS.join(" | ") + ".",
     "audience — העדיפי אחד מ: " + AUDIENCE_OPTS.join(" | ") + ". ageRange — העדיפי אחד מ: " + AGE_RANGE_OPTS.join(" | ") + ".",
-    "topic, goals (עד חמש מטרות), finalProduct, assessment — מתוך המסמך; מה שחסר בו, נסחי כך שיתאים לו.",
+    "topic, goals (עד חמש מטרות), finalProduct, assessment — מתוך המסמך; מה שחסר בו, אפשר לנסח כך שיתאים לו.",
     "approaches — 0–3 גישות למידה שהמסמך מתאר או מרמז עליהן בבירור, אך ורק בשמות המדויקים מהרשימה: " + APPROACH_CARDS.map(c => c.v).join(" | ") + ". אם אין — מערך ריק.",
-    "outline — מערך באורך מספר המפגשים: לכל מפגש {\"n\":1,\"title\":\"נושא המפגש\",\"focus\":\"משפט אחד: מה יקרה בו ואיך הוא נשען על הקודם\"}. שמרי על הדרגתיות לאורך הרצף.",
+    "outline — מערך באורך מספר המפגשים: לכל מפגש {\"n\":1,\"title\":\"נושא המפגש\",\"focus\":\"משפט אחד: מה יקרה בו ואיך הוא נשען על הקודם\"}. אפשר לשמור על הדרגתיות לאורך הרצף.",
     "sessionLength — אורך מפגש אחיד בדקות אם המסמך קובע אותו (למשל \"90 דקות\"); אם לא כתוב או משתנה בין מפגשים — מחרוזת ריקה.",
     "notes, שניים-שלושה משפטים ליוצרת: מה נלקח מהמסמך, מה הושלם, ומה כדאי לה לבדוק.",
     "החזירי אך ורק JSON: {\"sessionLength\":\"\",\"approaches\":[],\"framework\":\"\",\"audience\":\"\",\"ageRange\":\"\",\"participants\":\"\",\"space\":\"\",\"prefs\":[],\"limits\":[],\"domain\":\"\",\"topic\":\"\",\"goals\":[],\"courseLevel\":\"\",\"finalProduct\":\"\",\"assessment\":\"\",\"outline\":[],\"notes\":\"\"}",
@@ -3182,10 +3187,10 @@ function markAllProposals(){
 document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
   const text = str(document.getElementById("sqDocText").value);
   const st = document.getElementById("sqFileStatus");
-  if (!text) { st.textContent = "אין עדיין תוכן: העלי קובץ או הדביקי את המסמך."; return; }
+  if (!text) { st.textContent = "אין עדיין תוכן: אפשר להעלות קובץ או להדביק את המסמך."; return; }
   let n = parseInt(document.getElementById("sqDocN").value, 10);
   // מספר המפגשים — שדה עיקרי לפני תחילת הניתוח (07/10/2026)
-  if (!Number.isFinite(n) || n < 1) { st.textContent = "כדי להתחיל את הניתוח, כתבו כמה מפגשים תרצו ברצף (1–" + MAX_SESSIONS + ")."; document.getElementById("sqDocN").focus(); return; }
+  if (!Number.isFinite(n) || n < 1) { st.textContent = "כדי להתחיל את הניתוח, אפשר לכתוב כמה מפגשים רוצים ברצף (1–" + MAX_SESSIONS + ")."; document.getElementById("sqDocN").focus(); return; }
   n = Math.max(1, Math.min(MAX_SESSIONS, n));
   const nonEmpty = str(seq.topic) || seq.sessions.some(s => !isEmptySession(s));
   if (nonEmpty && !confirm("התכנית שתיבנה מהמסמך תחליף את מה שכבר מילאת בטופס הרצף. להמשיך?")) return;
@@ -3221,7 +3226,7 @@ document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
     const creator = seq.creator, date = seq.date;
     seq = normalize(Object.assign({}, head, { goals: head.goals.length ? head.goals : [""], sessions: built }));
     seq.creator = creator; seq.date = date; seq._imported = true;
-    seq._importNotes = str(outl.notes) + (failed ? ` לא הצלחתי לפרט את ${missingLabel(r.missing)} גם בניסיון השני: בהם מופיע רק נושא המפגש בשדה ״פעילות מרכזית״. לחצי ״השלמת נתונים חסרים״ כדי להשלים אותם.` : "");
+    seq._importNotes = str(outl.notes) + (failed ? ` לא הצלחתי לפרט את ${missingLabel(r.missing)} גם בניסיון השני: בהם מופיע רק נושא המפגש בשדה ״פעילות מרכזית״. אפשר ללחוץ ״השלמת נתונים חסרים״ כדי להשלים אותם.` : "");
     markAllProposals(); snapshot = null;
     openSess.clear(); openSess.add(0);
     setAIStatus("ok");

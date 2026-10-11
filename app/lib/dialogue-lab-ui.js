@@ -110,7 +110,7 @@
     if (miss.length) { F('err1').textContent = 'כדי להמשיך, נשמח למלא: ' + miss.join(', ') + '.'; F('err1').hidden = false; return; }
     const b = F('go'); b.disabled = true; const stop = K.waiting(F('wait1'), 'מכינה שאלות חקר, תנאי בדיקה ותפקידים.', 60);
     const it = I, st = it.rev || 0; let o = null, bad = null;
-    try { o = await K.json(M.startSystem(KB), anon('השדות:\n' + M.inputText(d) + '\n\nהכיני את נקודת הפתיחה.'), M.validStart, 7000); }
+    try { o = await K.json(M.startSystem(KB), anon('השדות:\n' + M.inputText(d) + '\n\nהכיני את נקודת הפתיחה.'), M.validStart, 16000); }
     catch (e) { bad = e; console.warn('מעבדת שיח וחקר:', e.message); }
     finally { stop(); b.disabled = false; }
     if (!M.validStart(o)) { F('err1').textContent = K.why(bad); F('err1').hidden = false; return; }
@@ -146,7 +146,7 @@
     out.appendChild(K.gain(I.gains, 1, M.GAIN[1], () => save()));
     K.chat(out, chatOpts(1));
     const row = el('div', 'btns no-print');
-    row.appendChild(btn('ממשיכים: בונים טענה ←', 'btn', () => { if (!String(I.question || '').trim()) { alert('כדי להמשיך, בחרו שאלת חקר או נסחו אחת.'); return; } goStep(2); }));
+    row.appendChild(btn('ממשיכים: בונים טענה ←', 'btn', () => { if (!String(I.question || '').trim()) { alert('כדי להמשיך, אפשר לבחור שאלת חקר או לנסח אחת.'); return; } goStep(2); }));
     out.appendChild(row);
   }
   function roleTiles(full) {
@@ -259,7 +259,7 @@
       'הטענות:\n' + I.claims.map((c, i) => (i + 1) + '. ' + (c.text || '') + ' | בעד: ' + (c.pro || '') + ' | נגד: ' + (c.con || '') + ' | ' + (c.state || '')).join('\n'),
       'הראיות (מספר. מה בודקים | מה נמצא | מגבלות | מה זה אומר):\n' + I.evidence.map((e, i) => i + '. ' + (e.what || '') + ' | ' + (e.found || 'לא נבדק עדיין') + ' | ' + (e.limits || '') + ' | ' + (e.stance || '')).join('\n'),
       'ההסבר הנוכחי: ' + ((I.versions[I.versions.length - 1] || {}).text || (I.claims.find((c) => c.state === 'נבחרה') || I.claims[0] || {}).text || 'עוד אין')].join('\n\n'));
-    try { o = await K.json(M.reviseSystem(KB), content, M.validRevise, 4000); } catch (e) { bad = e; }
+    try { o = await K.json(M.reviseSystem(KB), content, M.validRevise, 8000); } catch (e) { bad = e; }
     finally { stop(); b.disabled = false; }
     if (!M.validRevise(o)) { F('err4').textContent = K.why(bad); F('err4').hidden = false; return; }
     if (I !== it || (it.rev || 0) !== st) { F('err4').textContent = K.LATE; F('err4').hidden = false; return; }

@@ -199,14 +199,14 @@ const view = $("entry-view");
 // הקוד עצמו קובע מי את/ה ומה פתוח לך (השרת בודק: harness/lib/access.mjs,
 // login/kind:"code"). קוד סדנה וכניסת ניהול — קישורים קטנים מתחת.
 const CODE_ERRORS = {
-  wrong: "הקוד לא מוכר. בדקו שהוא הוקלד נכון.",
-  revoked: "הקוד הזה בוטל. פנו למי שנתן/ה לכם אותו.",
-  expired: "תוקף הקוד הסתיים. פנו למי שנתן/ה לכם אותו.",
-  "used-up": "הקוד מיצה את מספר ההפקות שלו. בקשו קוד חדש מהמרצה.",
-  full: "כל המקומות בקורס הזה כבר תפוסים. פנו למרצה.",
+  wrong: "הקוד לא מוכר. אפשר לבדוק שהוא הוקלד נכון.",
+  revoked: "הקוד הזה בוטל. אפשר לפנות למי שנתן/ה לכם אותו.",
+  expired: "תוקף הקוד הסתיים. אפשר לפנות למי שנתן/ה לכם אותו.",
+  "used-up": "הקוד מיצה את מספר ההפקות שלו. אפשר לבקש קוד חדש מהמרצה.",
+  full: "כל המקומות בקורס הזה כבר תפוסים. אפשר לפנות למרצה.",
   inactive: "הכניסה למוסד מושהית כרגע.",
   "sub-expired": "המנוי של המוסד הסתיים.",
-  down: "אין כרגע חיבור לשרת הבדיקה. נסו שוב בעוד רגע.",
+  down: "אין כרגע חיבור לשרת הבדיקה. אפשר לנסות שוב בעוד רגע.",
 };
 // קוד קורס: מזהה קבוע למכשיר הזה, כדי שלכל סטודנט/ית תהיה מכסת משוב משלה.
 const SID_KEY = c => "sbe.course.sid." + c.replace(/[^A-Z0-9]/g, "");
@@ -242,7 +242,7 @@ function renderEntry(){
   const btn = el("button",{class:"primary"},"כניסה");
   const submit = async () => {
     const c = fixCodeKeys(code.value.replace(/[‎‏؜]/g, "")).trim();
-    if (!c) { err.textContent = "הקלידו את הקוד כדי להיכנס."; err.hidden = false; return; }
+    if (!c) { err.textContent = "אפשר להקליד את הקוד כדי להיכנס."; err.hidden = false; return; }
     // קוד לקבוצה של סדנה (6 ספרות, 05/10/2026): אותו שדה — ממשיכים לבחירת תפקיד ושם
     if (/^\d{6}$/.test(c)) { err.hidden = true; const alt = $("altField"); alt.hidden = false; alt.textContent = ""; alt.append(buildWorkshopPicker(c)); alt.scrollIntoView({ behavior:"smooth", block:"center" }); return; }
     btn.disabled = true; btn.textContent = "בודקת... (לפעמים עד דקה)";
@@ -278,13 +278,13 @@ function renderEntry(){
   // קישור מהמרצה (entry.html?c=קוד) — הקוד כבר ממולא, נשאר רק ללחוץ "כניסה"
   const pre = fixCodeKeys(new URLSearchParams(location.search).get("c") || "").replace(/[^A-Z0-9-]/g, "").slice(0, 12);
   if (pre) code.value = pre;
-  inn.append(el("p",{class:"hint"},"הקלידו את הקוד שקיבלתם: קוד אישי, או קוד לקבוצה מהמרצה או מהמנחה (גם 6 ספרות מהסדנה). הקוד קובע מה פתוח לכם."),
+  inn.append(el("p",{class:"hint"},"אפשר להקליד את הקוד שקיבלתם: קוד אישי, או קוד לקבוצה מהמרצה או מהמנחה (גם 6 ספרות מהסדנה). הקוד קובע מה פתוח לכם."),
     el("label",{},"הקוד שלך"), code, err, btn);
   card.append(el("h2",{},"כניסה למערכת"), inn);
   view.append(card);
   // מפת הכלים: לא בטוחים מאיפה להתחיל? (map.html, פתוח לכולם)
   const ml = el("a",{class:"maplink",href:"map.html"}), mt = el("div",{});
-  mt.append(el("b",{},"מאיפה מתחילים? מפת הכלים"), el("span",{},"ספרו מה תרצו לעשות, וקבלו דרך: באיזה כלי מתחילים ומה בהמשך."));
+  mt.append(el("b",{},"מאיפה מתחילים? מפת הכלים"), el("span",{},"אפשר לספר מה רוצים לעשות, ולקבל דרך: באיזה כלי מתחילים ומה בהמשך."));
   ml.append(el("span",{class:"sun"},"🧭"), mt);
   view.append(ml);
 
@@ -426,12 +426,12 @@ function buildWorkshopField(role, prefill){
     fetch("https://sbe-server.onrender.com/api/access", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ action:"wfJoin", code: c }) })
       .then(r => r.json().then(d => ({ st: r.status, d }))).then(({ st, d }) => {
         btn.disabled = false; btn.textContent = "כניסה";
-        if (!d.w) { err.textContent = st === 404 ? "לא מצאנו סדנה פתוחה עם הקוד הזה. כדאי לבדוק את הספרות מול המסך של המנחה." : "אין כרגע חיבור לשרת. נסו שוב בעוד רגע."; err.hidden = false; return; }
+        if (!d.w) { err.textContent = st === 404 ? "לא מצאנו סדנה פתוחה עם הקוד הזה. כדאי לבדוק את הספרות מול המסך של המנחה." : "אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע."; err.hidden = false; return; }
         clearSession();
         persistSession(name, ROLE_LABEL[role]);
         try { sessionStorage.setItem("sbe.session.homeUrl", "entry.html?home=" + role); sessionStorage.setItem("sbe.session.wf", d.w); } catch(e){}
         renderWorkshopSuccess(role, name);
-      }).catch(() => { btn.disabled = false; btn.textContent = "כניסה"; err.textContent = "אין כרגע חיבור לשרת. נסו שוב בעוד רגע."; err.hidden = false; });
+      }).catch(() => { btn.disabled = false; btn.textContent = "כניסה"; err.textContent = "אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע."; err.hidden = false; });
   };
   btn.addEventListener("click", submit);
   nm.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
@@ -507,14 +507,14 @@ function buildAdminField(role){
   const btn = el("button",{class:"primary"},"כניסה");
   const submit = async () => {
     const clean = pass.value.replace(/[‎‏؜]/g, "").trim();
-    if (!clean) { err.textContent = "הקלידו סיסמה כדי להיכנס."; err.hidden = false; return; }
+    if (!clean) { err.textContent = "אפשר להקליד סיסמה כדי להיכנס."; err.hidden = false; return; }
     btn.disabled = true; btn.textContent = "בודקת... (לפעמים עד דקה)";
     const res = await checkAccess(role, clean);
     btn.disabled = false; btn.textContent = "כניסה";
     if (res !== "ok") {
       err.textContent = res === "wrong"
         ? "סיסמה שגויה. אפשר ללחוץ \"הצג\" כדי לבדוק מה הוקלד."
-        : "אין כרגע חיבור לשרת הבדיקה. נסי שוב בעוד רגע.";
+        : "אין כרגע חיבור לשרת הבדיקה. אפשר לנסות שוב בעוד רגע.";
       err.hidden = false; return;
     }
     err.hidden = true;

@@ -243,7 +243,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
         <option>הקמת מועצת תלמידים או צוות תלמידים</option>
       </select>
       <div class="addrow no-print">
-        <input type="text" id="f-sit-new" maxlength="80" placeholder="לא מוצאים? הקלידו מצב אחד: הוא יתווסף לרשימה של כולם">
+        <input type="text" id="f-sit-new" maxlength="80" placeholder="לא מוצאים? אפשר להקליד מצב אחד: הוא יתווסף לרשימה של כולם">
         <button type="button" class="btn btn-ghost" id="btn-sit-add">הוספה לרשימה</button>
       </div>
       <p class="muted" id="sit-msg" hidden></p>
@@ -254,7 +254,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 
     <div class="card">
       <h2>2. שאלון פתיחה: תמונת המצב</h2>
-      <p class="muted" id="crit-help">הממדים הראשונים הם ליבת השאלון; אחריהם ממדי רשות להעמקה. לכל היגד בחרו עד כמה הוא מתאר את המצב בחודש האחרון. אם אין לך מספיק מידע, "לא יודע/ת" (גם זה מידע). היגדים שמסומנים <span class="rev">היגד הפוך</span> מתארים מצב שפוגע בחוסן.</p>
+      <p class="muted" id="crit-help">הממדים הראשונים הם ליבת השאלון; אחריהם ממדי רשות להעמקה. לכל היגד אפשר לבחור עד כמה הוא מתאר את המצב בחודש האחרון. אם אין לך מספיק מידע, "לא יודע/ת" (גם זה מידע). היגדים שמסומנים <span class="rev">היגד הפוך</span> מתארים מצב שפוגע בחוסן.</p>
       <div id="criteria"></div>
     </div>
 
@@ -281,7 +281,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
   <div id="report"></div>
   <div id="chat-area" hidden>
     <div class="card chat no-print">
-      <h2>שאלו את נוגי</h2>
+      <h2>שאלה לנוגי</h2>
       <p class="muted">למשל: "איך אני מתחילה לבנות צוות ממלאי מקום?" או "איך לפתוח שיחה עם מורה שנראית שחוקה?"</p>
       <div id="chat-log"></div>
       <textarea id="chat-in" maxlength="1000" placeholder="השאלה שלך..."></textarea>
@@ -487,7 +487,7 @@ function addableSelect(id,listName,what){
   const wrap=document.createElement('details');wrap.className='addmore no-print';
   const sm=document.createElement('summary');sm.textContent='לא מוצאים? הוספה לרשימה';wrap.appendChild(sm);
   const row=document.createElement('div');row.className='addrow';
-  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+', יתווסף לרשימה של כולם';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='אפשר להקליד '+what+', יתווסף לרשימה של כולם';
   const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה לרשימה';
   row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);
   const msg=document.createElement('p');msg.className='muted';msg.hidden=true;wrap.appendChild(msg);
@@ -746,7 +746,7 @@ F('btn-analyze').addEventListener('click',async()=>{
   const need=[];if(!F('f-who').value)need.push('תפקיד');if(!F('f-stage').value)need.push('שלב חינוכי');if(!F('f-sit').value)need.push('מצב');
   if(need.length||miss.length){
     miss.forEach(it=>F('q-'+it.k).classList.add('miss'));
-    err.textContent=(need.length?'כדי להמשיך, בחרו: '+need.join(', ')+'. ':'')+(miss.length?'חסרות תשובות ל-'+miss.length+' היגדים (מסומנים באדום). אפשר לבחור "לא יודע/ת".':'');
+    err.textContent=(need.length?'כדי להמשיך, אפשר לבחור: '+need.join(', ')+'. ':'')+(miss.length?'חסרות תשובות ל-'+miss.length+' היגדים (מסומנים באדום). אפשר לבחור "לא יודע/ת".':'');
     err.hidden=false;(need.length?F(!F('f-who').value?'f-who':!F('f-stage').value?'f-stage':'f-sit'):F('q-'+miss[0].k)).scrollIntoView({behavior:'smooth',block:'center'});return;
   }
   err.hidden=true;renderPicture(a);
@@ -759,7 +759,7 @@ F('btn-analyze').addEventListener('click',async()=>{
     STATE.report={at:new Date().toISOString(),who:F('f-who').value,mode:F('f-mode').value,school:F('f-school').value.trim(),stage:F('f-stage').value,sit:F('f-sit').value,doc,picture:pictureText(a)};
     STATE.chat=[];save();renderReport();renderChat();
   }catch(e){
-    rep.textContent='';const c=el('div','card');c.appendChild(el('p','err',e.name==='AbortError'?'הניתוח לקח יותר מדי זמן. נסו שוב.':(e.code==='incomplete'?'הדוח חזר חלקי. נסו שוב בעוד רגע.':'הניתוח לא הצליח ('+e.message+'). נסו שוב בעוד רגע.')));rep.appendChild(c);
+    rep.textContent='';const c=el('div','card');c.appendChild(el('p','err',e.name==='AbortError'?'הניתוח לקח יותר מדי זמן. אפשר לנסות שוב.':(e.code==='incomplete'?'הדוח חזר חלקי. אפשר לנסות שוב בעוד רגע.':'הניתוח לא הצליח ('+e.message+'). אפשר לנסות שוב בעוד רגע.')));rep.appendChild(c);
   }finally{BUSY=false;b.disabled=false;b.textContent='ניתוח והמלצות';}
 });
 
@@ -928,7 +928,7 @@ F('chat-send').addEventListener('click',async()=>{
   try{
     const ans=await complete(sys,STATE.chat.slice(-12),6000);
     STATE.chat.push({role:'assistant',content:ans.trim()});save();ok=true;
-  }catch(e){STATE.chat.pop();F('chat-in').value=q;const er=F('chat-err');er.textContent='לא התקבלה תשובה ('+e.message+'). נסו שוב.';er.hidden=false;}
+  }catch(e){STATE.chat.pop();F('chat-in').value=q;const er=F('chat-err');er.textContent='לא התקבלה תשובה ('+e.message+'). אפשר לנסות שוב.';er.hidden=false;}
   finally{BUSY=CHAT_BUSY=false;b.disabled=false;b.textContent='שליחה';renderChat();
     if(ok){const last=F('chat-log').lastElementChild;if(last)last.scrollIntoView({behavior:'smooth',block:'start'});if(!F('chat-in').hidden)F('chat-in').focus({preventScroll:true});}}
 });

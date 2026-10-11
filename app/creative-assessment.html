@@ -175,7 +175,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <!-- ① כניסה -->
 <section class="screen on" id="screen-join">
   <header><p class="lead">Begood · הערכה יצירתית</p><h1>כניסה לסדנה</h1></header>
-  <p class="lead">הקלידי את קוד הסדנה שמופיע על המסך, ואת שמך.</p>
+  <p class="lead">אפשר להקליד את קוד הסדנה שמופיע על המסך, ואת שמך.</p>
   <div class="field"><label>קוד הסדנה</label>
     <input id="jCode" type="text" inputmode="numeric" maxlength="6" placeholder="שש ספרות"></div>
   <div class="field"><label>שם</label><input id="jName" type="text" placeholder="שמך"></div>
@@ -206,7 +206,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 
 <!-- ③ בחירת אפשרות -->
 <section class="screen" id="screen-picker">
-  <header><p class="lead">Begood · הערכה יצירתית</p><h1>בחרי דרך להערכה יצירתית</h1></header>
+  <header><p class="lead">Begood · הערכה יצירתית</p><h1>בחירת דרך להערכה יצירתית</h1></header>
   <p class="lead">אפשר לבחור יותר מדרך אחת, אחת אחרי השנייה.</p>
   <div class="pickgrid" id="pickgrid"></div>
 </section>
@@ -442,7 +442,7 @@ METHODS = [
 
 // 1 · רפלקציה עצמית
 { id:1, n:1, title:"רפלקציה עצמית", desc:"כתיבה חופשית או מונחית על החוויה בסדנה",
-  instr:"כתוב/כתבי רפלקציה על החוויה שלך בסדנה.",
+  instr:"כתב.י רפלקציה על החוויה שלך בסדנה.",
   render(container, answers, onProgress){
     const guiding = [
       "אילו רגשות התעוררו אצלך במהלך הסימולציה?",
@@ -450,7 +450,7 @@ METHODS = [
       "מה את היית אומרת אחרת בשיחה?",
       "איך את היית מגיבה אחרת בשיחה?",
       "מה היית ממליצה לחברתך המתנסה לשפר בעתיד?",
-      "מה תרצי לזכור מהסדנה כדי שישמש אותך בעתיד?",
+      "מה רוצים לזכור מהסדנה כדי שישמש אותך בעתיד?",
       "מה ראית בסימולציה שלא מאפיין אותך והיית רוצה לנסות?",
     ];
     const modeRow = el("div",{class:"chips"});
@@ -475,7 +475,7 @@ METHODS = [
 
 // 2 · הערכה מקצועית
 { id:2, n:2, title:"הערכה מקצועית", desc:"בחירת חמש מיומנויות מהתרחיש והערכתן",
-  instr:"כתוב/כתבי הערכה על מיומנויות שעמדו בבסיס התרחיש. בחרי חמש מהרשימה.",
+  instr:"כתב.י הערכה על מיומנויות שעמדו בבסיס התרחיש. אפשר לבחור חמש מהרשימה.",
   render(container, answers, onProgress){
     answers.skills = [];
     const cnt = el("span",{class:"pickcount"}, "נבחרו 0 מתוך 5");
@@ -495,7 +495,7 @@ METHODS = [
     });
     container.append(cnt, chips, body);
     function buildSkillQuestions(){
-      const subs = ["באיזו מידה המיומנות באה לידי ביטוי","אופן השימוש במיומנות","הצעות לשיפור","הסבירי כיצד שרתה המיומנות את הדמות"];
+      const subs = ["באיזו מידה המיומנות באה לידי ביטוי","אופן השימוש במיומנות","הצעות לשיפור","אפשר להסביר כיצד שרתה המיומנות את הדמות"];
       let remaining = answers.skills.length * subs.length;
       answers.skills.forEach(i => {
         const h = el("div",{class:"qbox"}, el("label",{}, "מיומנות: " + SCENARIO.skills[i]));
@@ -541,7 +541,7 @@ METHODS = [
         row.append(w, when, rm); list.append(row);
       }
       for (let i=0;i<minN;i++) addRow();
-      const add = el("button",{class:"act ghost"}, "הוסיפי לחישה"); add.addEventListener("click", addRow);
+      const add = el("button",{class:"act ghost"}, "➕ הוספת לחישה"); add.addEventListener("click", addRow);
       container.append(add);
     }
     whisperGroup("מה היית לוחשת למתנסה?", "whispersTrainee", 3);
@@ -559,7 +559,7 @@ METHODS = [
 
 // 6 · עיצוב תמונות ב-AI (יחיד)
 { id:6, n:6, title:"עיצוב תמונות ב-AI", desc:"פוסטר לסימולציה ועוד שלוש גרסאות",
-  instr:"בחרי מערכת AI זמינה שיודעת ליצור תמונות. צרי פוסטר לסימולציה שכולל כותרת, הצגת המשתתפות והזמנה משכנעת לצפות בה, והסבירי את הרציונל. אחר כך צרי שלוש גרסאות נוספות, ובכל אחת שני רכיב משמעותי כלשהו — הסבירי את השינויים ומשמעותם.",
+  instr:"אפשר לבחור מערכת AI זמינה שיודעת ליצור תמונות. אפשר ליצור פוסטר לסימולציה שכולל כותרת, הצגת המשתתפות והזמנה משכנעת לצפות בה, ולהסביר את הרציונל. אחר כך אפשר ליצור שלוש גרסאות נוספות, ובכל אחת שני רכיב משמעותי כלשהו — אפשר להסביר את השינויים ומשמעותם.",
   render(container, answers, onProgress){ buildImageSet(container, answers, onProgress, ["פוסטר ראשי","גרסה נוספת 1","גרסה נוספת 2","גרסה נוספת 3"]); }},
 
 // 7 · עיצוב גלריה ב-AI (קבוצתי)
@@ -579,7 +579,7 @@ METHODS = [
       src = imageSourceField(() => {});
       const titleI = document.createElement("input"); titleI.type="text"; titleI.placeholder="כותרת התמונה";
       const expl = document.createElement("textarea"); expl.rows=2; expl.placeholder="הסבר";
-      const addErr = el("p",{class:"err"},"כדי להמשיך, מלאו שם, צרו או העלו תמונה, ומלאו כותרת לפני ההוספה."); addErr.hidden = true;
+      const addErr = el("p",{class:"err"},"כדי להמשיך, אפשר למלא שם, ליצור או להעלות תמונה, ולמלא כותרת לפני ההוספה."); addErr.hidden = true;
       const add = el("button",{class:"act ghost"},"הוספה לגלריה");
       add.addEventListener("click", () => {
         if (!nameI.value.trim() || !src.hasImage() || !titleI.value.trim()) { addErr.hidden = false; return; }
@@ -606,7 +606,7 @@ METHODS = [
 
 // 8 · מכתב לדמות בעוד שנה
 { id:8, n:8, title:"מכתב לדמות בעוד שנה", desc:"מכתב חופשי מהעתיד לעצמה",
-  instr:"דמייני שאת אחת הדמויות שהשתתפו בסימולציה. עברה שנה, ואת כותבת לעצמך מכתב. כתבי אותו באופן חופשי ואותנטי.",
+  instr:"דמייני שאת אחת הדמויות שהשתתפו בסימולציה. עברה שנה, ואת כותבת לעצמך מכתב. אפשר לכתוב אותו באופן חופשי ואותנטי.",
   render(container, answers, onProgress){
     shortField(container, "character", answers, "מי הדמות?", () => onProgress(!!answers.character && !!answers.letter));
     textField(container, "letter", answers, "המכתב", { rows:9, onInput: () => onProgress(!!answers.character && !!answers.letter) });
@@ -614,7 +614,7 @@ METHODS = [
 
 // 9 · מפגש בין הדמויות בעוד 5 שנים
 { id:9, n:9, title:"מפגש בין הדמויות בעוד 5 שנים", desc:"תרחיש כתוב חופשי למפגש עתידי",
-  instr:"דמייני שעברו חמש שנים מאז המפגש, והדמויות נפגשות שוב במקרה. כתבי את השיחה ביניהן, כולל תיאור פיזי, תנועות, הבעות פנים וכל מה שעולה בדמיונך.",
+  instr:"דמייני שעברו חמש שנים מאז המפגש, והדמויות נפגשות שוב במקרה. אפשר לכתוב את השיחה ביניהן, כולל תיאור פיזי, תנועות, הבעות פנים וכל מה שעולה בדמיונך.",
   render(container, answers, onProgress){
     shortField(container, "title", answers, "כותרת", () => onProgress(!!answers.title && !!answers.story));
     textField(container, "story", answers, "התרחיש", { rows:10, onInput: () => onProgress(!!answers.title && !!answers.story) });
@@ -622,7 +622,7 @@ METHODS = [
 
 // 10 · ומה עכשיו
 { id:10, n:10, title:"ומה עכשיו", desc:"תרחיש המשך עם עץ שיחה",
-  instr:"כתבי תרחיש להמשך השיחה בין הדמויות.",
+  instr:"אפשר לכתוב תרחיש להמשך השיחה בין הדמויות.",
   render(container, answers, onProgress){
     textField(container, "whenWhere", answers, "מתי ואיפה נערכה הפגישה?", { rows:2, onInput: check });
     const treeWrap = el("div"); container.append(el("div",{class:"qbox"}, el("label",{},"עץ שיחה: אם... אז...")), treeWrap);
@@ -644,12 +644,12 @@ METHODS = [
       wrap.append(inp); studio.append(wrap); return inp;
     };
     mk("epTitle","מהי כותרת הפרק?","input");
-    mk("intro","נסחי את פתיח התוכנית שמציג את הקונפליקט של האורחת","textarea");
+    mk("intro","אפשר לנסח את פתיח התוכנית שמציג את הקונפליקט של האורחת","textarea");
     mk("q1","שאלה קשה 1","input");
     mk("q2","שאלה קשה 2","input");
     const which = el("div",{}, el("label",{},"איזו מהשתיים הכי קשה או מאתגרת?"));
     const sel = document.createElement("select");
-    sel.append(el("option",{value:""},"בחרי"), el("option",{value:"1"},"שאלה 1"), el("option",{value:"2"},"שאלה 2"));
+    sel.append(el("option",{value:""},"אפשר לבחור"), el("option",{value:"1"},"שאלה 1"), el("option",{value:"2"},"שאלה 2"));
     sel.addEventListener("change", () => { answers.harder = sel.value; check(); });
     which.append(sel); studio.append(which);
     mk("answer","כיצד היא עונה על השאלה הקשה מביניהן?","textarea");
@@ -699,11 +699,11 @@ METHODS = [
 
 // 14 · מטאפורה ויזואלית
 { id:14, n:14, title:"מטאפורה ויזואלית", desc:"חפץ או דימוי שמייצג את הדינמיקה",
-  instr:"בחרי חפץ יומיומי, כלי עבודה, תופעת טבע או חיה המהווים מטאפורה מרכזית לדינמיקה שהתרחשה בסימולציה.",
+  instr:"אפשר לבחור חפץ יומיומי, כלי עבודה, תופעת טבע או חיה המהווים מטאפורה מרכזית לדינמיקה שהתרחשה בסימולציה.",
   render(container, answers, onProgress){
     const src = imageSourceField(() => { answers.metaphorImage = src.getRecord(); check(); });
     container.append(el("div",{class:"qbox"}, el("label",{},"החפץ או הדימוי"), src.el));
-    textField(container, "why", answers, "הסבירי מדוע בחרת דווקא בדימוי זה", { onInput: check });
+    textField(container, "why", answers, "אפשר להסביר מדוע בחרת דווקא בדימוי זה", { onInput: check });
     textField(container, "change", answers, "איזה שינוי יכול לקרות למטאפורה כדי שהקונפליקט ייפתר?", { onInput: check });
     function check(){ onProgress(!!answers.metaphorImage && !!answers.why && !!answers.change); }
   }},
@@ -750,7 +750,7 @@ function buildTreeRows(wrap, answers, key, min, onChange){
     sync();
   }
   for (let i=0;i<min;i++) addRow();
-  const add = el("button",{class:"act ghost"},"הוסיפי סבב"); add.addEventListener("click", addRow);
+  const add = el("button",{class:"act ghost"},"➕ הוספת סבב"); add.addEventListener("click", addRow);
   wrap.append(add);
 }
 
@@ -804,7 +804,7 @@ function imageSourceField(onChange){
     bMock.setAttribute("aria-pressed","true"); bUp.setAttribute("aria-pressed","false");
     body.textContent = "";
     const seedI = document.createElement("input"); seedI.type="text"; seedI.placeholder="מילת מפתח או תיאור לתמונה";
-    const genErr = el("p",{class:"err"},"כדי ליצור, כתבו מילת מפתח או תיאור."); genErr.hidden = true;
+    const genErr = el("p",{class:"err"},"כדי ליצור, אפשר לכתוב מילת מפתח או תיאור."); genErr.hidden = true;
     const genBtn = el("button",{class:"act ghost"},"יצירת תמונה (הדמיה)");
     const imgWrap = el("div");
     genBtn.addEventListener("click", () => {
@@ -867,12 +867,12 @@ const FORMATTERS = {
     if (a.reflection) return ["הרפלקציה שלך:", a.reflection];
     const qs = ["אילו רגשות התעוררו אצלך במהלך הסימולציה?","אילו מחשבות עברו במוחך במהלך הסימולציה?",
       "מה את היית אומרת אחרת בשיחה?","איך את היית מגיבה אחרת בשיחה?",
-      "מה היית ממליצה לחברתך המתנסה לשפר בעתיד?","מה תרצי לזכור מהסדנה כדי שישמש אותך בעתיד?",
+      "מה היית ממליצה לחברתך המתנסה לשפר בעתיד?","מה רוצים לזכור מהסדנה כדי שישמש אותך בעתיד?",
       "מה ראית בסימולציה שלא מאפיין אותך והיית רוצה לנסות?"];
     return qs.flatMap((q,i) => a["g"+i] ? [q, a["g"+i], ""] : []);
   },
   2(a){
-    const subs = ["באיזו מידה המיומנות באה לידי ביטוי","אופן השימוש במיומנות","הצעות לשיפור","הסבירי כיצד שרתה המיומנות את הדמות"];
+    const subs = ["באיזו מידה המיומנות באה לידי ביטוי","אופן השימוש במיומנות","הצעות לשיפור","אפשר להסביר כיצד שרתה המיומנות את הדמות"];
     return (a.skills||[]).flatMap(i => [
       "מיומנות: " + SCENARIO.skills[i],
       ...subs.flatMap((s,si) => a["skill"+i+"_"+si] ? [s + ": " + a["skill"+i+"_"+si]] : []),
@@ -1050,8 +1050,8 @@ function computeFeedback(answers){
   if (uniqueWords / Math.max(words,1) > 0.6) strengths.push("השפה מגוונת ולא חוזרת על עצמה, סימן לחשיבה פעילה ולא לניסוח אוטומטי.");
   if (mentionsSkill) strengths.push("יש התייחסות ישירה למיומנויות שהתרחיש התמקד בהן, לא רק תיאור כללי של מה שקרה.");
   else growth.push("כדאי לנסות לקשור את מה שכתבת ישירות למיומנות ספציפית מהתרחיש. זה מה שהופך רפלקציה למשהו שאפשר ליישם בפעם הבאה.");
-  if (!growth.length) growth.push("נסי בפעם הבאה להוסיף גם את מה שהיה קשה או לא ברור, לא רק את מה שעבד.");
-  const recommendation = "בהערכה הבאה, נסי להתמקד ב" + (mentionsSkill
+  if (!growth.length) growth.push("אפשר לנסות בפעם הבאה להוסיף גם את מה שהיה קשה או לא ברור, לא רק את מה שעבד.");
+  const recommendation = "בהערכה הבאה, אפשר לנסות להתמקד ב" + (mentionsSkill
     ? "תיאור של רגע קונקרטי אחד לעומק, במקום כמה רגעים בקצרה."
     : "קישור ברור בין מה שכתבת לבין מיומנות ספציפית אחת מהתרחיש.");
   return { strengths, growth, recommendation };

@@ -385,7 +385,7 @@ function reviewPlan(j){
   const err = errLine(c); const bar = el('div', 'btns');
   bar.appendChild(dr);
   bar.appendChild(btn('אישור: יוצאים לדרך', '', async () => { if (msg.value.trim().length < 5) return err('כדאי לכתוב להם כמה מילים.'); const r = await api('jrApprove', { id: j.id, milestones: plan, message: msg.value.trim() }); if (r.ok) viewOne(j.id); else err('האישור לא נשמר.'); }));
-  bar.appendChild(btn('החזרה לעוד התאמות', 'btn-ghost', async () => { if (msg.value.trim().length < 5) return err('כתבי מה כדאי להתאים.'); const r = await api('jrReturn', { id: j.id, message: msg.value.trim() }); if (r.ok) viewOne(j.id); }));
+  bar.appendChild(btn('החזרה לעוד התאמות', 'btn-ghost', async () => { if (msg.value.trim().length < 5) return err('אפשר לכתוב מה כדאי להתאים.'); const r = await api('jrReturn', { id: j.id, message: msg.value.trim() }); if (r.ok) viewOne(j.id); }));
   c.appendChild(bar);
 }
 function adminMilestone(m, i){
@@ -414,7 +414,7 @@ function adminMilestone(m, i){
     const err = errLine(box); const bar2 = el('div', 'btns');
     bar2.appendChild(btn('אישור והענקת תעודה 🏅', '', async () => { if (asx.value.trim().length < 10) return err('כדאי לכתוב הערכה לתעודה (אפשר בעזרת "טיוטה לתעודה").');
       const r = await api('jrReview', { id: JR.id, mi: i, decision: 'approve', message: msg.value.trim(), assessment: asx.value.trim(), progress: prg.value.split('\n').map(x => x.trim()).filter(Boolean) }); if (r.ok) viewOne(JR.id); else err('לא נשמר.'); }));
-    bar2.appendChild(btn('השלמה קטנה בדרך', 'btn-ghost', async () => { if (msg.value.trim().length < 5) return err('כתבי להם מה כדאי להשלים.'); const r = await api('jrReview', { id: JR.id, mi: i, decision: 'needs', message: msg.value.trim() }); if (r.ok) viewOne(JR.id); }));
+    bar2.appendChild(btn('השלמה קטנה בדרך', 'btn-ghost', async () => { if (msg.value.trim().length < 5) return err('אפשר לכתוב להם מה כדאי להשלים.'); const r = await api('jrReview', { id: JR.id, mi: i, decision: 'needs', message: msg.value.trim() }); if (r.ok) viewOne(JR.id); }));
     box.appendChild(bar2); c.appendChild(box);
   }
   threadBox(i, c);

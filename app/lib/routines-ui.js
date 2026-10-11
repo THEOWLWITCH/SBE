@@ -149,7 +149,7 @@
     tick(); const iv = setInterval(tick, 1000);
     return () => { clearInterval(iv); node.hidden = true; };
   }
-  const ask = (system, content, check) => window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 7000, customerReview: true }, 300000, check);
+  const ask = (system, content, check) => window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 16000, customerReview: true }, 300000, check);
   function fail(n, m) { n.textContent = m; n.hidden = false; }
 
   // ── עזרים לתצוגה ──
@@ -202,7 +202,7 @@
     const f1 = el('div', 'f'), l1 = el('label', null, 'מה הקבוצה בחרה'), s1 = el('select');
     s1.id = 'pick'; l1.htmlFor = 'pick'; s1.setAttribute('data-closed', '');
     s1.appendChild(new Option('בחירה…', '')); I.options.forEach((o, i) => s1.appendChild(new Option(txt(o.name), String(i))));
-    s1.appendChild(new Option('פעולה אחרת (כתבו בשדה "הפעולה שהקבוצה כבר בחרה")', 'other'));
+    s1.appendChild(new Option('פעולה אחרת (אפשר לכתוב בשדה "הפעולה שהקבוצה כבר בחרה")', 'other'));
     s1.value = I.pick || ''; s1.addEventListener('change', () => { I.pick = s1.value; save(); });
     f1.append(l1, s1);
     const f2 = el('div', 'f'), l2 = el('label', null, 'איך הקבוצה החליטה'), s2 = el('select');
@@ -236,7 +236,7 @@
   async function build() {
     const act = chosenText();
     F('err1').hidden = true;
-    if (!act) return fail(F('err1'), 'כדי להמשיך, בחרו את הפעולה שהקבוצה בחרה, או כתבו אותה בשדה "הפעולה שהקבוצה כבר בחרה".');
+    if (!act) return fail(F('err1'), 'כדי להמשיך, אפשר לבחור את הפעולה שהקבוצה בחרה, או לכתוב אותה בשדה "הפעולה שהקבוצה כבר בחרה".');
     const b = F('go'); b.disabled = true; const stop = waiting(F('wait1'), 'מכינה לוח ביצוע, כרטיסי תפקיד והסכם לתקופת ניסיון.', 70);
     let k = null, bad = null;
     try { k = await ask(M.planSystem(KB, WRITER), 'השדות:\n' + M.inputText(I.form) + '\n\nהפעולה שהקבוצה בחרה: ' + act + (I.how ? '\nאיך הוחלט: ' + I.how : '') + '\n\nהכיני את התוצר.', M.valid); }
@@ -528,6 +528,11 @@
       chosen: 'לוח עזרה שבועי: כל אחד ואחת יכולים לכתוב "אשמח לעזרה ב..." או "אני יכול/ה לעזור ב...", וצוות הלוח מחבר בין הבקשות להצעות.' };
     M.FIELDS.forEach((f) => { const i = F('f-' + f.k); if (f.type === 'select' && ex[f.k] && ![...i.options].some((o) => o.value === ex[f.k])) i.appendChild(new Option(ex[f.k], ex[f.k])); i.value = ex[f.k] || ''; });
     I.form = ex; save(); goLabel(); F('err1').hidden = true;
+    // שיהיה ברור שמשהו קרה: השדות מלמעלה, והכפתור למטה
+    F('form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const n = F('exNote') || el('p', 'hint'); n.id = 'exNote'; n.setAttribute('data-keep', '');
+    n.textContent = '✓ הדוגמה נטענה לשדות למעלה (לוח עזרה, כיתה ה–ו). אפשר לשנות, ואז ללחוץ "בניית לוח הביצוע וההסכם".';
+    F('example').parentNode.after(n); setTimeout(() => n.remove(), 9000);
   });
 
   function openItem() {

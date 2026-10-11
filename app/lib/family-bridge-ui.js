@@ -81,7 +81,7 @@
     tick(); const iv = setInterval(tick, 1000);
     return () => { clearInterval(iv); node.hidden = true; };
   }
-  const ask = (system, content, check) => window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 6000, customerReview: true }, 300000, check);
+  const ask = (system, content, check) => window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 30000, customerReview: true }, 300000, check);
   function fail(n, m) { n.textContent = m; n.hidden = false; }
 
   // ── עזרים ──
@@ -168,6 +168,16 @@
     Y.qs.forEach((q, i) => { box.appendChild(el('p', 'yq', (i + 1) + '. ' + q.q)); const u = el('ul', 'yo'); q.opts.forEach((o) => u.appendChild(el('li', null, (/^_+$/.test(o) ? '' : '☐ ') + o))); box.appendChild(u); });
     box.appendChild(el('p', null, Y.close)); return box;
   }
+  // טופס גוגל (lib/google-form.js): הכרטיס והשאלון לתחילת השנה, עם כל השאלות
+  function cardSpec(c) {
+    c = c || {};
+    const qs = arr(c.questions).map((q) => ({ q: txt(q.q), opts: arr(q.opts).map(txt) }));
+    if (arr(c.options).length) qs.push({ q: arr(c.questions).length ? 'או בחרו דרך מוכנה:' : 'מה מתאים לכם?', opts: arr(c.options).map(txt) });
+    if (c.notNow) qs.push({ q: 'ואם כרגע מתאים לכם פחות קשר', opts: [txt(c.notNow)] });
+    if (c.adapt) qs.push({ q: txt(c.adapt), opts: ['________'] });
+    return { title: txt(c.goal) || 'איך נהיה בקשר', description: [txt(c.greeting), txt(c.intro), txt(c.respond)].filter(Boolean).join('\n\n'), questions: qs, closing: txt(c.closing) };
+  }
+  const yearSpec = () => ({ title: M.YEAR_FORM.title, description: M.YEAR_FORM.intro, questions: M.YEAR_FORM.qs, closing: M.YEAR_FORM.close });
   const yearText = () => [M.YEAR_FORM.title, M.YEAR_FORM.intro].concat(M.YEAR_FORM.qs.map((q, i) => (i + 1) + '. ' + q.q + '\n' + q.opts.map((o) => '- ' + o).join('\n')), [M.YEAR_FORM.close]).join('\n\n');
 
   // ── צעד 3: משפחה ──
@@ -205,7 +215,7 @@
     const ol = el('ol', 'nextlist'), d = f.decision;
     const done = [!!(f.pick && f.checkWhen), !!f.sent, !!(f.practice && f.practice.feedback), !!f.planNext, !!f.summary];
     const item = (i, body) => { const li = el('li', done[i] ? 'done' : ''); li.appendChild(el('b', null, (done[i] ? '✓ ' : '') + M.NEXT[i])); if (body) li.appendChild(body); ol.appendChild(li); };
-    item(0, el('p', 'sub', done[0] ? 'בחרת: ' + f.pick : 'בחרי למעלה את ההמשך ואת תאריך נקודת הבדיקה.'));
+    item(0, el('p', 'sub', done[0] ? 'בחרת: ' + f.pick : 'אפשר לבחור למעלה את ההמשך ואת תאריך נקודת הבדיקה.'));
     const s2 = el('div'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!f.sent; cb.id = 'sent-' + f.id;
     const l2 = el('label', 'okline'); l2.htmlFor = cb.id; l2.append(cb, document.createTextNode(' שלחתי את ההודעה, בדרך שהמשפחה בחרה'));
     cb.addEventListener('change', () => { f.sent = cb.checked; save(); draw(3); }); s2.appendChild(l2); item(1, s2);
@@ -261,7 +271,7 @@
     const P = f.practice, log = P.turns.map((t) => (t.me ? 'המחנכת: ' : 'ההורה: ') + t.text).join('\n');
     b.disabled = true; const stop = waiting(F('wait2-' + f.id), 'מכינה משוב קצר על השיחה.', 25);
     let k = null, bad = null;
-    try { k = await window.sbeCallAIJson(SERVER, { system: M.feedbackSystem(KB), messages: [{ role: 'user', content: M.anonymize('מה שידוע:\n' + caseText(f) + '\n\nהשיחה:\n' + log, labels()) }], maxTokens: 1200 }, 120000, M.validFeedback); }
+    try { k = await window.sbeCallAIJson(SERVER, { system: M.feedbackSystem(KB), messages: [{ role: 'user', content: M.anonymize('מה שידוע:\n' + caseText(f) + '\n\nהשיחה:\n' + log, labels()) }], maxTokens: 3000 }, 120000, M.validFeedback); }
     catch (e) { bad = e; } finally { stop(); b.disabled = false; }
     if (!M.validFeedback(k)) return fail(F('err2-' + f.id), why(bad));
     P.feedback = k; save(); draw(3);
@@ -275,7 +285,7 @@
   }
   async function planNext(f, b) {
     F('err2-' + f.id).hidden = true;
-    if (!f.pick) return fail(F('err2-' + f.id), 'כדי לתכנן, בחרי קודם את ההמשך (צעד 1).');
+    if (!f.pick) return fail(F('err2-' + f.id), 'כדי לתכנן, אפשר לבחור קודם את ההמשך (צעד 1).');
     b.disabled = true; const stop = waiting(F('wait2-' + f.id), 'מתכננת את הקשר בחודשיים הקרובים.', 30);
     let k = null, bad = null;
     try { k = await ask(M.planNextSystem(KB, WRITER), 'השדות:\n' + M.inputText(S.form) + '\n\n' + caseText(f) + '\n\nתכנני את הקשר בהמשך.', M.validPlanNext); }
@@ -347,7 +357,7 @@
   }
   async function decide(f, b) {
     const err = F('err-' + f.id); err.hidden = true;
-    if (!f.status && !M.storyText(f.story)) return fail(err, 'כדי להמשיך, ספרי את הסיפור או בחרי מה המשפחה ענתה. גם "עוד לא ענתה" היא תשובה.');
+    if (!f.status && !M.storyText(f.story)) return fail(err, 'כדי להמשיך, אפשר לספר את הסיפור או לבחור מה המשפחה ענתה. גם "עוד לא ענתה" היא תשובה.');
     const P = S.plan, way = arr(P.ways).find((w) => txt(w.name) === f.chosen);
     const story = M.storyText(f.story);
     const content = M.anonymize('השדות:\n' + M.inputText(S.form) + (story ? '\n\nהסיפור של המורה עם המשפחה:\n' + story : '') + '\n\n' + (goalMode() ? 'המטרה: ' : 'הגשר: ') + txt(P.goal.text) + '\n' + (goalMode() ? 'דרכי התמיכה שהוצעו: ' : 'דרכי הקשר שהוצעו: ') + arr(P.ways).map((w) => txt(w.name) + ' (' + txt(w.what) + ')').join('; ') +
@@ -389,12 +399,16 @@
       const row = el('div', 'actions no-print');
       const cp = btn('📋 העתקת הכרטיס להודעה', 'btn btn-ghost sm', () => copyText(cardText(P.card), cp));
       row.append(cp, btn('🖨 הדפסת הכרטיס', 'btn btn-ghost sm', () => doPrint('card')));
-      cs.appendChild(row); box.appendChild(cs);
+      if (window.SBE_GFORM) row.append(SBE_GFORM.button(() => cardSpec(P.card), '📝 העברה לטופס גוגל'));
+      cs.appendChild(row);
+      cs.appendChild(el('p', 'sub no-print', 'אפשר לשלוח את הכרטיס גם כטופס גוגל: המשפחות עונות בטלפון, והתשובות נאספות בחשבון הגוגל של בית הספר.'));
+      box.appendChild(cs);
       if (otherLang() && P.cardHe && arr(P.cardHe.options).length) { const he = el('details', 'more'); he.appendChild(el('summary', null, 'הכרטיס בעברית')); he.appendChild(cardView(P.cardHe)); box.appendChild(he); }
       box.appendChild(withRefs((r) => { r.appendChild(goalBlock(P)); r.appendChild(stylesBlock(P)); r.appendChild(meaning(P)); }));
       const yf = el('details', 'more no-print'); yf.appendChild(el('summary', null, 'שאלון קשר לתחילת השנה (פעם אחת לכל ההורים)')); yf.appendChild(yearForm());
       const yr = el('div', 'actions'), ycp = btn('📋 העתקת השאלון', 'btn btn-ghost sm', () => copyText(yearText(), ycp));
-      yr.append(ycp, btn('🖨 הדפסת השאלון', 'btn btn-ghost sm', () => doPrint('year'))); yf.appendChild(yr); box.appendChild(yf);
+      yr.append(ycp, btn('🖨 הדפסת השאלון', 'btn btn-ghost sm', () => doPrint('year')));
+      if (window.SBE_GFORM) yr.append(SBE_GFORM.button(yearSpec, '📝 העברה לטופס גוגל')); yf.appendChild(yr); box.appendChild(yf);
     }
     if (n === 3) {
       head(box, 'families');

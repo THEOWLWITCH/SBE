@@ -137,6 +137,10 @@ documents.facilitator.skillsToTrain:
 documents.facilitator.observationPoints:
   4–6 נקודות. כל אחת: מה לשים לב אליו ולמה זה חשוב בתרחיש הזה.
 
+documents.facilitator.groupIntro (פסקה אחת, 3–5 משפטים, גוף שני רבים, להקראה לקבוצה לפני הסצנה):
+  איפה ומתי, מי שתי הדמויות (שם ותפקיד), מה קרה רגע לפני, ולמה כדאי לשים לב בצפייה.
+  רק מה שגלוי למתנסה: בלי הרובד הסמוי, בלי מה שהשחקנית יודעת, ובלי התפניות.
+
 documents.facilitator.preSessionQuestions:
   2–3 שאלות שמומלץ לשאול לפני שמתחילים.
 
@@ -202,6 +206,7 @@ scenarioSubtitle: [סוג המחלוקת] בין [מי] ל[מי] על [הנוש�
     },
     "facilitator": {
       "fullBackground": "",
+      "groupIntro": "",
       "charactersProse": "",
       "whatTheApproachSaysHere": "",
       "dynamics": "",

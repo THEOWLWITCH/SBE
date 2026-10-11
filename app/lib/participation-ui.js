@@ -13,6 +13,8 @@
   const CSS = `
 .paths{border:2px solid #2E5A7D;border-radius:12px;padding:.2rem 1rem .9rem;margin:1rem 0;background:#fff}
 .paths>summary{cursor:pointer;font-weight:800;font-size:1.05rem;color:#2E5A7D;padding:.6rem 0}
+.paths .opt-tag{font-weight:500;font-size:.85rem;color:#5C6771}
+.paths-skip{display:flex;justify-content:flex-start;margin:.1rem 0 .5rem}
 .paths h4{margin:1rem 0 .3rem;color:#2E5A7D}.paths .sub{color:#5C6771;font-size:.88rem;margin:0 0 .4rem}
 .paths .pbtn{font:inherit;font-weight:700;padding:.45rem .9rem;border-radius:8px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;cursor:pointer;margin:.2rem 0 .2rem .4rem}
 .paths .pbtn.ghost{background:transparent;color:#2E5A7D}.paths .pbtn:disabled{opacity:.5}
@@ -46,7 +48,10 @@
     const seqMode = opts.mode === 'seq';
     const box = el('details', 'paths'); box.open = !!S.open;
     box.addEventListener('toggle', () => { S.open = box.open; save(); if (box.open) draw(); });
-    const sm = el('summary', null, '🧭 מסלולי השתתפות בלמידה'); box.appendChild(sm);
+    // רשות (11/10/2026: "אפשר לדלג על המסלולים"): לא חוסם את התכנון, ואפשר לסגור בכל רגע
+    const sm = el('summary', null, '🧭 מסלולי השתתפות בלמידה'); sm.appendChild(el('span', 'opt-tag', ' (רשות, אפשר לדלג)')); box.appendChild(sm);
+    const skip = btn('דילוג: התכנון ממשיך בלי המסלולים', 'ghost', () => { box.open = false; box.scrollIntoView({ block: 'nearest' }); });
+    const skipRow = el('div', 'paths-skip'); skipRow.appendChild(skip); box.appendChild(skipRow);
     const body = el('div'); box.appendChild(body);
     node.appendChild(box);
     const picked = () => S.cards.filter((c) => c.on);
@@ -81,7 +86,7 @@
       if (!/מטרת הפעילות|היעד|נושא הרצף|מטרות הרצף/.test(c)) { err.textContent = 'כדי להציע מסלולים, נשמח למטרה (או לנושא הרצף) בטופס התכנון.'; err.hidden = false; return; }
       b.disabled = true; const stop = waiting(wait, 'מציעה מסלולי השתתפות למטרה.', 40);
       let k = null, bad = null;
-      try { k = await window.sbeCallAIJson(SERVER, { system: M.suggestSystem(KB), messages: [{ role: 'user', content: c + '\n\nהציעי מסלולים.' }], maxTokens: 4000, customerReview: true }, 180000, M.valid); }
+      try { k = await window.sbeCallAIJson(SERVER, { system: M.suggestSystem(KB), messages: [{ role: 'user', content: c + '\n\nהציעי מסלולים.' }], maxTokens: 10000, customerReview: true }, 180000, M.valid); }
       catch (e) { bad = e; console.warn('מסלולים:', e.message); } finally { stop(); b.disabled = false; }
       if (!M.valid(k)) { err.textContent = why(bad); err.hidden = false; return; }
       const keep = picked();
@@ -95,7 +100,7 @@
       if (!ps.some((p) => { const o = S.obs[p.name] || {}; return o.count || o.ev || o.cond; })) { err.textContent = 'כדי להציע התאמה, נשמח לתיעוד של מסלול אחד לפחות בדף התצפית.'; err.hidden = false; return; }
       b.disabled = true; const stop = waiting(wait, 'מציעה התאמה לשיעור הבא.', 30);
       let k = null, bad = null;
-      try { k = await window.sbeCallAIJson(SERVER, { system: M.adjustSystem(KB), messages: [{ role: 'user', content: ctxText() + '\n\nמה כולם מדגימים: ' + S.must + '\n\nהמסלולים והקריטריונים:\n' + ps.map((p) => p.name + ' (' + p.mode + '): ' + txt(p.crit)).join('\n') + '\n\nדף התצפית:\n' + log + '\n\nהציעי התאמה.' }], maxTokens: 2000, customerReview: true }, 120000, M.validAdjust); }
+      try { k = await window.sbeCallAIJson(SERVER, { system: M.adjustSystem(KB), messages: [{ role: 'user', content: ctxText() + '\n\nמה כולם מדגימים: ' + S.must + '\n\nהמסלולים והקריטריונים:\n' + ps.map((p) => p.name + ' (' + p.mode + '): ' + txt(p.crit)).join('\n') + '\n\nדף התצפית:\n' + log + '\n\nהציעי התאמה.' }], maxTokens: 8000, customerReview: true }, 120000, M.validAdjust); }
       catch (e) { bad = e; } finally { stop(); b.disabled = false; }
       if (!M.validAdjust(k)) { err.textContent = why(bad); err.hidden = false; return; }
       S.adjust = k; S.pick = ''; save(); draw();
@@ -129,7 +134,7 @@
     function draw() {
       if (!box.open) return;
       body.textContent = '';
-      body.appendChild(el('p', 'sub', 'אין דרך אחת ללמוד. בחרי כמה דרכים להשתתף ולהראות הבנה סביב אותה מטרה, ובדקי אחרי השיעור מה אפשר השתתפות ולמידה.'));
+      body.appendChild(el('p', 'sub', 'אין דרך אחת ללמוד. אפשר לבחור כמה דרכים להשתתף ולהראות הבנה סביב אותה מטרה, ולבדוק אחרי השיעור מה אפשר השתתפות ולמידה.'));
       const c = ctx();
       if (seqMode) {
         const ss = arr(c.sessions); const d = el('div'); d.appendChild(el('b', null, 'לאיזה מפגש מתכננים עכשיו'));

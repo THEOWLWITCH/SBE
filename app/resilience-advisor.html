@@ -215,7 +215,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
         <option>מעבר לבית ספר חדש</option>
       </select>
       <div class="addrow no-print">
-        <input type="text" id="f-sit-new" maxlength="80" placeholder="לא מוצאים? הקלידו מצב אחד: הוא יתווסף לרשימה של כולם">
+        <input type="text" id="f-sit-new" maxlength="80" placeholder="לא מוצאים? אפשר להקליד מצב אחד: הוא יתווסף לרשימה של כולם">
         <button type="button" class="btn btn-ghost" id="btn-sit-add">הוספה לרשימה</button>
       </div>
       <p class="muted" id="sit-msg" hidden></p>
@@ -227,7 +227,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 
     <div class="card">
       <h2>2. תמונת המצב: תבחינים</h2>
-      <p class="muted">לכל היגד בחרו עד כמה הוא מתאר את הכיתה בחודש האחרון. אם אין לך מספיק מידע, "לא יודע/ת" (גם זה מידע). היגדים שמסומנים <span class="rev">היגד הפוך</span> מתארים התנהגות פוגעת.</p>
+      <p class="muted">לכל היגד אפשר לבחור עד כמה הוא מתאר את הכיתה בחודש האחרון. אם אין לך מספיק מידע, "לא יודע/ת" (גם זה מידע). היגדים שמסומנים <span class="rev">היגד הפוך</span> מתארים התנהגות פוגעת.</p>
       <div id="criteria"></div>
     </div>
 
@@ -254,7 +254,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
   <div id="report"></div>
   <div id="chat-area" hidden>
     <div class="card chat no-print">
-      <h2>שאלו את פרקטי</h2>
+      <h2>שאלה לפרקטי</h2>
       <p class="muted">למשל: "איך אני פותחת שיחה על מה שקורה בקבוצת הוואטסאפ?" או "תן לי משחק לשיעור הראשון של השבוע".</p>
       <div id="chat-log"></div>
       <textarea id="chat-in" maxlength="1000" placeholder="השאלה שלך..."></textarea>
@@ -406,7 +406,7 @@ function addableSelect(id,listName,what){
   const wrap=document.createElement('details');wrap.className='addmore no-print';
   const sm=document.createElement('summary');sm.textContent='לא מוצאים? הוספה לרשימה';wrap.appendChild(sm);
   const row=document.createElement('div');row.className='addrow';
-  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+', יתווסף לרשימה של כולם';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='אפשר להקליד '+what+', יתווסף לרשימה של כולם';
   const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה לרשימה';
   row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);
   const msg=document.createElement('p');msg.className='muted';msg.hidden=true;wrap.appendChild(msg);
@@ -554,7 +554,7 @@ const PERSONA = [
   'מודל האיתנות של ד״ר יעל שדה (SadeTrust2026) ברמת הכיתה: מוכנות (לפני משבר), איתנות (היכולת של הכיתה להמשיך לתפקד במהלך משבר) וחוסן (התאוששות, למידה וצמיחה אחריו) — כדאי להתאים את ההמלצות לשלב. איתנות נוצרת מחיבור בין שכבה מבנית (שגרות, תפקידים, נהלים כיתתיים) לשכבה חברתית־יחסית (שייכות, ערכים, אופטימיות, שיתוף פעולה) — והאמון בין המחנך/ת לתלמידים ולהורים הוא המאיץ שמחבר ביניהן והופך אותן לתפקוד. אמון נבנה מהתאמה בין המסר, האמינות, המהירות והזמינות של המחנך/ת.',
   'ארגז הכלים של ד״ר יעל שדה (SadeTools2026), ברמת הכיתה — השתמשי בו כשמתאים: (א) שפה מחזקת במכתבים ובהודעות להורים ולתלמידים — גוף ראשון רבים ("אנחנו", "הכיתה שלנו"); מסר מרגיע יחד עם קריאה לפעולה; מה כבר נעשה ומה מתוכנן; סיפורים ושמות מהכיתה; הזמנה למעורבות; שפה פשוטה; וסיום במסר של תקווה. (ב) פעולות לחוסן חברתי בכיתה — מכתב כיתתי חודשי בגוף ראשון רבים; פתיחת שבוע או שעת מחנך במסר מעודד; פינת "פנים מהכיתה"; קיר פרגון; פרסום חגיגי של הצלחות קטנות; סמל או סלוגן כיתתי; קבוצת הכיתה עם תוכן חברתי ולא רק לוגיסטי. (ג) קירוב תלמידים ומשפחות בשוליים — תלמידים ומשפחות חדשים, מפונים, בעלי צרכים מיוחדים או רקע שונה: מיפוי עדין של מי לא משתתף/ת ולמה, מפגש היכרות עם ותיקים, תפקיד בצוותי התכנון, ציון מועדים של קהילות שונות, תרגום הודעות כשמתאים, ופנייה אישית ישירה. (ד) אמנה כיתתית — כללים וערכים שנכתבים יחד עם התלמידים, בשפה ברורה, ונבחנים מחדש מדי פעם (כולל "כללים זמניים" לתקופת משבר).',
   'החינוך כגורם מגן (Fathi2022): צעדים בחינוך, בשילוב ובבריאות שמקדמים חוסן אישי הם גורמי הגנה חברתיים, ובית הספר הוא המקום המרכזי לקדם חוסן של ילדים ובני נוער. חוסר השכלה ונשירה הם גורמי סיכון (לצד עוני, הדרה ומשבר משפחתי) — ולכן כדאי לשים לב במיוחד לתלמידים בסיכון לנשירה ולחיבור שלהם לכיתה. פיתוח חוסן יכול להשתלב בשגרת הלמידה, כמו למידה רגשית־חברתית. "ללמוד איך ללמוד" (למידה לאורך החיים) היא דרך יסוד לחוסן שמתאימה כמעט לכל משבר — ולכן כדאי לשלב בהמלצות גם הרגלי למידה עצמאית ושיתופית ורפלקציה. הכנה לחירום יכולה להיות חלק טבעי מתוכנית הלימודים, מגיל צעיר (כמו בקובה): תרגול, ידע ותפקידים שהתלמידים מכירים מראש.',
-  'בקיאות והתאמה: הכירי את כל מגוון האפשרויות — שיחה אישית, שיחה בקבוצה קטנה, שיחה כיתתית, מנגנונים כיתתיים, עבודה עם הורים ועם הצוות — ובחרי את המתאימות למקרה, לגיל, לגודל הכיתה, למצב ולשאר הנתונים שתיאר/ה המחנך/ת.',
+  'בקיאות והתאמה: הכירי את כל מגוון האפשרויות — שיחה אישית, שיחה בקבוצה קטנה, שיחה כיתתית, מנגנונים כיתתיים, עבודה עם הורים ועם הצוות — ולבחור את המתאימות למקרה, לגיל, לגודל הכיתה, למצב ולשאר הנתונים שתיאר/ה המחנך/ת.',
   'המחנך/ת דילג/ה על שאלון התלמידים ותיאר/ה את הכיתה לפי תבחינים קבועים. זו נקודת המבט שלו/ה בלבד — התייחס/י אליה ברצינות, אבל אל תציג/י אותה כעובדה על כל התלמידים.',
   'בסיס הידע שלך הוא רשימת המקורות הבאה (מפתח בסוגריים מרובעים ועיקר הממצא). כשאת/ה נשען/ת על מקור — ציין/י את המפתח שלו בדיוק כפי שהוא. אסור להמציא מקורות, מחקרים, נתונים או ציטוטים, ואסור להפנות למפתח שאינו ברשימה. אם אין ברשימה מקור שתומך בהמלצה — הצג/י אותה כניסיון מקצועי, בלי מפתח.',
   SBE_RLEAD.classPrompt(),
@@ -610,7 +610,7 @@ F('btn-analyze').addEventListener('click',async()=>{
   document.querySelectorAll('.q').forEach(q=>q.classList.remove('miss'));
   if(!F('f-age').value||!F('f-sit').value||miss.length){
     miss.forEach(it=>F('q-'+it.k).classList.add('miss'));
-    err.textContent=(!F('f-age').value||!F('f-sit').value?'כדי להמשיך, בחרו שכבת גיל ומצב. ':'')+(miss.length?'חסרות תשובות ל-'+miss.length+' תבחינים (מסומנים באדום). אפשר לבחור "לא יודע/ת".':'');
+    err.textContent=(!F('f-age').value||!F('f-sit').value?'כדי להמשיך, אפשר לבחור שכבת גיל ומצב. ':'')+(miss.length?'חסרות תשובות ל-'+miss.length+' תבחינים (מסומנים באדום). אפשר לבחור "לא יודע/ת".':'');
     err.hidden=false;(miss[0]?F('q-'+miss[0].k):F('f-age')).scrollIntoView({behavior:'smooth',block:'center'});return;
   }
   err.hidden=true;renderPicture(a);
@@ -623,7 +623,7 @@ F('btn-analyze').addEventListener('click',async()=>{
     STATE.report={at:new Date().toISOString(),cls:F('f-cls').value.trim(),age:F('f-age').value,doc,picture:pictureText(a)};
     STATE.chat=[];save();renderReport();renderChat();
   }catch(e){
-    rep.textContent='';const c=el('div','card');c.appendChild(el('p','err',e.name==='AbortError'?'הניתוח לקח יותר מדי זמן. נסו שוב.':(e.code==='incomplete'?'הדוח חזר חלקי. נסו שוב בעוד רגע.':'הניתוח לא הצליח ('+e.message+'). נסו שוב בעוד רגע.')));rep.appendChild(c);
+    rep.textContent='';const c=el('div','card');c.appendChild(el('p','err',e.name==='AbortError'?'הניתוח לקח יותר מדי זמן. אפשר לנסות שוב.':(e.code==='incomplete'?'הדוח חזר חלקי. אפשר לנסות שוב בעוד רגע.':'הניתוח לא הצליח ('+e.message+'). אפשר לנסות שוב בעוד רגע.')));rep.appendChild(c);
   }finally{BUSY=false;b.disabled=false;b.textContent='ניתוח והמלצות';}
 });
 
@@ -761,7 +761,7 @@ F('chat-send').addEventListener('click',async()=>{
   try{
     const ans=await complete(sys,STATE.chat.slice(-12),6000);
     STATE.chat.push({role:'assistant',content:ans.trim()});save();ok=true;
-  }catch(e){STATE.chat.pop();F('chat-in').value=q;const er=F('chat-err');er.textContent='לא התקבלה תשובה ('+e.message+'). נסו שוב.';er.hidden=false;}
+  }catch(e){STATE.chat.pop();F('chat-in').value=q;const er=F('chat-err');er.textContent='לא התקבלה תשובה ('+e.message+'). אפשר לנסות שוב.';er.hidden=false;}
   finally{BUSY=CHAT_BUSY=false;b.disabled=false;b.textContent='שליחה';renderChat();
     if(ok){const last=F('chat-log').lastElementChild;if(last)last.scrollIntoView({behavior:'smooth',block:'start'});if(!F('chat-in').hidden)F('chat-in').focus({preventScroll:true});}}
 });

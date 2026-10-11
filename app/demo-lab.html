@@ -293,7 +293,7 @@ async function rvRun(html,input,title){
 }
 async function fixRun(html,issues,input){
   const text=SBE_CUSTOMER.textOf(html).slice(0,60000);
-  const raw=await sbeCallAI(AI_SERVER,{system:SBE_CUSTOMER.fixSystem,messages:[{role:'user',content:SBE_CUSTOMER.fixRequest(text,issues,input)}],maxTokens:8000},240000);
+  const raw=await sbeCallAI(AI_SERVER,{system:SBE_CUSTOMER.fixSystem,messages:[{role:'user',content:SBE_CUSTOMER.fixRequest(text,issues,input)}],maxTokens:12000},240000);
   const v=sbeParseJSON(raw);
   return SBE_CUSTOMER.applyEdits(html,v&&Array.isArray(v.edits)?v.edits:[]);
 }

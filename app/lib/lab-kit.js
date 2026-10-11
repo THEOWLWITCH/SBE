@@ -108,7 +108,7 @@
   }
 
   const json = (system, content, check, maxTokens) => window.sbeCallAIJson(SERVER(), { system, messages: [{ role: 'user', content }], maxTokens: maxTokens || 6000, customerReview: true }, 300000, check);
-  const plain = (system, messages, maxTokens) => window.sbeCallAI(SERVER(), { system, messages, maxTokens: maxTokens || 1500 }, 180000);
+  const plain = (system, messages, maxTokens) => window.sbeCallAI(SERVER(), { system, messages, maxTokens: maxTokens || 3000 }, 180000);
 
   // שיחה בכל שלב: שאלה, בקשת הבהרה או הצעת שיפור. התשובה לא משנה את העבודה: מה שמאמצים, מאמצים במפורש.
   function chat(host, o) {
@@ -124,7 +124,7 @@
       try {
         const msgs = hist.slice(-8).map((m, i, a) => ({ role: m.role, content: i === 0 && m.role === 'user' ? 'ההקשר של העבודה עכשיו:\n' + o.context() + '\n\nהשאלה: ' + m.content : m.content }));
         if (msgs[0].role !== 'user') msgs.shift();
-        const a = await plain(o.system(), msgs, 1500);
+        const a = await plain(o.system(), msgs, 3000);
         if (!String(a || '').trim()) throw new Error('empty');
         hist.push({ role: 'assistant', content: String(a).trim() }); o.save(); draw();
       } catch (e) { hist.pop(); o.save(); draw(); ta.value = q; err.textContent = NO_MODEL; err.hidden = false; }
@@ -145,7 +145,7 @@
       const t = ta.value.trim(); if (!t) return; err.hidden = true; out.textContent = '';
       go.disabled = true; const stop = waiting(w, 'קוראת את המשוב.', 15);
       let r = null, bad = null;
-      try { r = await window.sbeCallAIJson(SERVER(), { system: FEEDBACK_SYSTEM, messages: [{ role: 'user', content: 'ההקשר:\n' + o.context() + (about.value.trim() ? '\n\nהמשוב מתייחס ל: ' + about.value.trim() : '') + '\n\nהמשוב כפי שנכתב:\n' + t }], maxTokens: 1500 }, 120000, validFeedback); }
+      try { r = await window.sbeCallAIJson(SERVER(), { system: FEEDBACK_SYSTEM, messages: [{ role: 'user', content: 'ההקשר:\n' + o.context() + (about.value.trim() ? '\n\nהמשוב מתייחס ל: ' + about.value.trim() : '') + '\n\nהמשוב כפי שנכתב:\n' + t }], maxTokens: 3000 }, 120000, validFeedback); }
       catch (e) { bad = e; }
       finally { stop(); go.disabled = false; }
       if (!validFeedback(r)) { err.textContent = why(bad); err.hidden = false; return; }

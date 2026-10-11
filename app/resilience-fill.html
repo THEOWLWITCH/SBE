@@ -127,14 +127,14 @@ select:focus,input:focus{outline:2px solid var(--spoken);outline-offset:1px}
     <select id="s-voice"><option value="">— בחר/י תפקיד —</option></select>
     <label for="s-code" id="lbl-code">הקוד האישי שלי</label>
     <input type="text" id="s-code" placeholder="מילה או מספר שרק את/ה יודע/ת" maxlength="30" autocomplete="off" dir="ltr">
-    <p style="font-size:.8rem;margin-top:-.5rem">בחרו מילה או מספר שתזכרו גם בפעם הבאה. כך נוכל לראות שינוי לאורך זמן, בלי לדעת מי אתם. לא השם שלכם, כדי לשמור על אנונימיות.</p>
+    <p style="font-size:.8rem;margin-top:-.5rem">אפשר לבחור מילה או מספר שתזכרו גם בפעם הבאה. כך נוכל לראות שינוי לאורך זמן, בלי לדעת מי אתם. לא השם שלכם, כדי לשמור על אנונימיות.</p>
     <p id="fill-msg" style="display:none;font-size:.88rem;font-weight:600"></p>
     <button class="btn" id="btn-start" disabled>התחל/י מילוי</button>
   </div>
   <div class="card" id="nolink" style="display:none">
     <h2>איך נכנסים לשאלון</h2>
     <p>השאלון נפתח מהקישור או מקוד ה-QR של הכיתה. המחנך/כת מקבל/ת אותם במסך "מיפוי חוסן חברתי", אחרי פתיחת כיתה.</p>
-    <label for="nl-link">יש לכם את הקישור? הדביקו אותו כאן</label>
+    <label for="nl-link">יש לכם את הקישור? אפשר להדביק אותו כאן</label>
     <input type="text" id="nl-link" placeholder="https://…/resilience-fill.html?g=…" autocomplete="off" dir="ltr">
     <p id="nl-err" style="display:none;font-size:.88rem;font-weight:600;color:var(--brick)"></p>
     <button class="btn" id="nl-go">מעבר לשאלון</button>
@@ -242,7 +242,7 @@ if(!gid){
   const go=()=>{
     const raw=nlIn.value.trim(); let id='';
     try{ id=new URL(raw).searchParams.get('g')||''; }catch(e){ const m=raw.match(/[?&]g=([a-z0-9]+)/); id=m?m[1]:(/^[a-z0-9]{8,20}$/.test(raw)?raw:''); }
-    if(!/^[a-z0-9]{8,20}$/.test(id)){ nlErr.textContent='זה לא נראה כמו קישור של כיתה. העתיקו את הקישור המלא מהמחנך/כת.'; nlErr.style.display=''; return; }
+    if(!/^[a-z0-9]{8,20}$/.test(id)){ nlErr.textContent='זה לא נראה כמו קישור של כיתה. אפשר להעתיק את הקישור המלא מהמחנך/כת.'; nlErr.style.display=''; return; }
     location.href='resilience-fill.html?g='+id;
   };
   document.getElementById('nl-go').addEventListener('click',go);
@@ -270,13 +270,13 @@ if(!gid){
 } else {
   showMsg('טוען את פרטי הכיתה... (לפעמים עד דקה)');
   api({action:'resilInfo',id:gid}).then(d=>{
-    if(!d.group){showMsg(d._status===404?'הכיתה הזאת לא קיימת (אולי נמחקה). בקשו קישור חדש מהמחנך/כת.':'אין כרגע חיבור לשרת. נסו לרענן בעוד רגע.',true);return;}
+    if(!d.group){showMsg(d._status===404?'הכיתה הזאת לא קיימת (אולי נמחקה). אפשר לבקש קישור חדש מהמחנך/כת.':'אין כרגע חיבור לשרת. אפשר לנסות לרענן בעוד רגע.',true);return;}
     group=d.group;
     sBand.value=String(group.band); iCls.value=group.cls;
     if(!group.open){showMsg('השאלון של הכיתה הזאת נסגר.',true);}
     else showMsg('');
     chk();
-  }).catch(()=>showMsg('אין כרגע חיבור לשרת. נסו לרענן בעוד רגע.',true));
+  }).catch(()=>showMsg('אין כרגע חיבור לשרת. אפשר לנסות לרענן בעוד רגע.',true));
 }
 
 // ── state ──
@@ -344,10 +344,10 @@ function finish(){
     if(d.ok){show('s-done');return;}
     sendMsg.style.color='var(--brick)';
     if(d._status===409){sendMsg.textContent='השאלון נסגר בינתיים, והתשובות לא נשמרו.';return;}
-    sendMsg.textContent='השליחה לא הצליחה. התשובות שמורות בדף: נסו שוב.';btnRetry.style.display='';
+    sendMsg.textContent='השליחה לא הצליחה. התשובות שמורות בדף: אפשר לנסות שוב.';btnRetry.style.display='';
   }).catch(()=>{
     sendMsg.style.color='var(--brick)';
-    sendMsg.textContent='אין חיבור לשרת. התשובות שמורות בדף: נסו שוב בעוד רגע.';btnRetry.style.display='';
+    sendMsg.textContent='אין חיבור לשרת. התשובות שמורות בדף: אפשר לנסות שוב בעוד רגע.';btnRetry.style.display='';
   });
 }
 btnRetry.addEventListener('click',finish);

@@ -356,7 +356,7 @@ h2{font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:1.12rem;fon
   <!-- ── בחירת השאלות (עד 15) — רק אחריה נפתח השאלון ומתפרסם ה-QR ── -->
   <div class="card" id="setup-select-card" style="display:none">
     <h2>בחירת השאלות לשאלון</h2>
-    <p style="font-size:.85rem">בחרו עד <b>15</b> היגדים. התלמידים יענו רק עליהם. כדאי לבחור בכל תחום גם את ההיגד החיובי וגם את ההיגד ההפוך (↕), כי ציון התחום מחושב משניהם.</p>
+    <p style="font-size:.85rem">אפשר לבחור עד <b>15</b> היגדים. התלמידים יענו רק עליהם. כדאי לבחור בכל תחום גם את ההיגד החיובי וגם את ההיגד ההפוך (↕), כי ציון התחום מחושב משניהם.</p>
     <div class="sel-bar"><span id="sel-count"></span><button class="btn btn-ghost btn-sm" id="btn-sel-clear" style="width:auto">ניקוי הבחירה</button></div>
     <div id="sel-list"></div>
     <div class="sel-bar sel-bottom">
@@ -384,7 +384,7 @@ h2{font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:1.12rem;fon
     <h2>הקישור לשאלון</h2>
     <div class="share-grid">
       <div>
-        <p>שלחו את הקישור לתלמידים, להורים ולמורים. כל אחד/ת בוחר/ת תפקיד וקוד בשאלון עצמו.</p>
+        <p>אפשר לשלוח את הקישור לתלמידים, להורים ולמורים. כל אחד/ת בוחר/ת תפקיד וקוד בשאלון עצמו.</p>
         <div class="link-box" id="fill-link"></div>
         <button class="btn btn-copy btn-sm" id="btn-copy-link">העתק קישור</button>
       </div>
@@ -606,8 +606,8 @@ function setOpen(open){
   setStatus(open?'פותח את השאלון...':'סוגר את השאלון...');
   api({action:'resilSetOpen',id:cfg.id,key:cfg.key,token:sessionToken(),open}).then(d=>{
     if(d.group){GROUP=d.group;setStatus(open?'השאלון פתוח למילוי.':'השאלון נסגר. אפשר לראות את התוצאות.');}
-    else setStatus('הפעולה לא הצליחה. נסו שוב.',true);
-  }).catch(()=>setStatus('אין כרגע חיבור לשרת. נסו שוב.',true)).finally(renderAll);
+    else setStatus('הפעולה לא הצליחה. אפשר לנסות שוב.',true);
+  }).catch(()=>setStatus('אין כרגע חיבור לשרת. אפשר לנסות שוב.',true)).finally(renderAll);
 }
 
 // ── Tabs ──
@@ -697,10 +697,10 @@ document.getElementById('btn-sel-create').addEventListener('click',function(){
       showSelect(false);renderAll();window.scrollTo(0,0);return;
     }
     selMsg.style.color='var(--brick)';
-    selMsg.textContent = d.error==='module off' ? 'מודול החוסן החברתי לא פעיל במוסד שלך. פני למנהלת המערכת.'
+    selMsg.textContent = d.error==='module off' ? 'מודול החוסן החברתי לא פעיל במוסד שלך. אפשר לפנות למנהלת המערכת.'
       : d._status===403 ? 'אפשר להיכנס מחדש (כמחנך/כת עם קוד המוסד, או כמנהלת מערכת), ואז לפתוח את השאלון.'
-      : 'הפתיחה לא הצליחה. נסו שוב בעוד רגע.';
-  }).catch(()=>{selMsg.style.color='var(--brick)';selMsg.textContent='אין כרגע חיבור לשרת. נסו שוב בעוד רגע.';})
+      : 'הפתיחה לא הצליחה. אפשר לנסות שוב בעוד רגע.';
+  }).catch(()=>{selMsg.style.color='var(--brick)';selMsg.textContent='אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע.';})
     .finally(()=>{btn.disabled=!(SEL.size>=1&&SEL.size<=MAX_SEL);});
 });
 
@@ -737,7 +737,7 @@ document.getElementById('btn-restore').addEventListener('click',function(){
     if(!d.group){cfgMsg.style.color='var(--brick)';cfgMsg.textContent='הקוד לא מתאים לאף כיתה.';return;}
     saveCfg({id:m[1],key:m[2],cls:d.group.cls,band:d.group.band});
     GROUP=d.group;RESP=d.resp||[];cfgMsg.textContent='';renderAll();
-  }).catch(()=>{cfgMsg.style.color='var(--brick)';cfgMsg.textContent='אין כרגע חיבור לשרת. נסו שוב בעוד רגע.';});
+  }).catch(()=>{cfgMsg.style.color='var(--brick)';cfgMsg.textContent='אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע.';});
 });
 
 document.getElementById('btn-cfg-reset').addEventListener('click',function(){
@@ -747,8 +747,8 @@ document.getElementById('btn-cfg-reset').addEventListener('click',function(){
   const done=()=>{clearAll();_tempView=false;cfgCls.value='';cfgBand.value='';chkCfg();renderAll();checkLock();setStatus('');};
   if(!cfg){done();return;}
   api({action:'resilDelete',id:cfg.id,key:cfg.key,token:sessionToken()}).then(d=>{
-    if(d.ok||d._status===404)done(); else setStatus('המחיקה לא הצליחה. נסו שוב.',true);
-  }).catch(()=>setStatus('אין כרגע חיבור לשרת. נסו שוב.',true));
+    if(d.ok||d._status===404)done(); else setStatus('המחיקה לא הצליחה. אפשר לנסות שוב.',true);
+  }).catch(()=>setStatus('אין כרגע חיבור לשרת. אפשר לנסות שוב.',true));
 });
 document.getElementById('btn-refresh').addEventListener('click',refresh);
 document.getElementById('btn-toggle-open').addEventListener('click',function(){setOpen(!(GROUP&&GROUP.open));});
@@ -767,7 +767,7 @@ function loadAllGroups(){
   api({action:'resilList',token:sessionToken()}).then(d=>{
     const box=document.getElementById('all-groups');box.textContent='';
     if(!d.groups){allStatus.style.color='var(--brick)';
-      allStatus.textContent=d._status===403?'תוקף הכניסה פג. אפשר להיכנס מחדש כמנהלת מערכת.':'אין כרגע חיבור לשרת. נסי שוב בעוד רגע.';return;}
+      allStatus.textContent=d._status===403?'תוקף הכניסה פג. אפשר להיכנס מחדש כמנהלת מערכת.':'אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע.';return;}
     allStatus.textContent=d.groups.length?'':'עדיין לא נפתחו כיתות.';
     if(!d.groups.length)return;
     const tbl=document.createElement('table');tbl.className='vtable';
@@ -783,7 +783,7 @@ function loadAllGroups(){
       tr.insertCell().appendChild(b);
     });
     box.appendChild(tbl);
-  }).catch(()=>{allStatus.style.color='var(--brick)';allStatus.textContent='אין כרגע חיבור לשרת. נסי שוב בעוד רגע.';});
+  }).catch(()=>{allStatus.style.color='var(--brick)';allStatus.textContent='אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע.';});
 }
 if(IS_SYS){
   document.getElementById('all-groups-card').style.display='';
@@ -1202,7 +1202,7 @@ async function generateSummary(){
     saveSummaryCache({cid:sumCacheId(cfg),at:new Date().toISOString(),cls:cfg.cls,band:inp.band.label,doc});
     window._sumErr='';
   }catch(e){
-    window._sumErr=e.name==='AbortError'?'ההפקה לקחה יותר מדי זמן. נסו שוב.':'ההפקה לא הצליחה ('+e.message+'). נסו שוב בעוד רגע.';
+    window._sumErr=e.name==='AbortError'?'ההפקה לקחה יותר מדי זמן. אפשר לנסות שוב.':'ההפקה לא הצליחה ('+e.message+'). אפשר לנסות שוב בעוד רגע.';
   }finally{clearTimeout(timer);SUM_BUSY=false;renderSummary();}
 }
 
@@ -1333,7 +1333,7 @@ function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,c=>'&#'+c.charCod
 function renderHome(){
   const cfg=loadCfg(),box=document.getElementById('home-content');if(!cfg)return;
   const resp=viewResp();
-  if(!resp.length){box.innerHTML='<div class="card home-empty"><h2>עדיין אין תשובות</h2><p>שלחו את הקישור לשאלון (בלשונית "⚙ הכיתה"). כשיגיעו תשובות, התוצאות יופיעו כאן.</p></div>';return;}
+  if(!resp.length){box.innerHTML='<div class="card home-empty"><h2>עדיין אין תשובות</h2><p>אפשר לשלוח את הקישור לשאלון (בלשונית "⚙ הכיתה"). כשיגיעו תשובות, התוצאות יופיעו כאן.</p></div>';return;}
   const domains=SC.computeDomains(resp,R.ITEMS,cfg.band);
   const n=new Set(resp.map(r=>r.v+':'+r.k)).size;
   const sorted=[...domains].sort((a,b)=>b.score-a.score);

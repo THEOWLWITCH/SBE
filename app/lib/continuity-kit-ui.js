@@ -82,7 +82,7 @@
   // תשובה חלקית או לא תקינה: ניסיון נוסף אחד (sbeCallAIJson ב-lib/ai-call.js), ואחר כך הודעה שונה מ"אין חיבור"
   const PARTIAL = 'התיק חזר חלקי. מה שמילאת נשמר, ואפשר לנסות שוב.';
   async function ask(system, content, check) {
-    return window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 7000, customerReview: true }, 300000, check);
+    return window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 16000, customerReview: true }, 300000, check);
   }
   const why = (e) => (typeof window !== 'undefined' && window.sbeAIError) ? window.sbeAIError(e, NO_MODEL, PARTIAL) : ((e && e.code === 'incomplete') ? PARTIAL : NO_MODEL);
   const plansText = () => (S.local.plans || []).filter((p) => p.c0 || p.c1).map((p) => '- ' + [p.c0, p.c1, p.c2].filter(Boolean).join(' · ')).join('\n');
@@ -309,7 +309,7 @@
     });
     const err = el('p', 'err'); err.hidden = true; const wait = el('div', 'wait'); wait.hidden = true;
     const go = btn(J.kit ? 'הכנה מחדש' : 'הכנת ערכת ההצטרפות', J.kit ? 'btn btn-ghost sm' : 'btn', async () => {
-      err.hidden = true; if (!J.form.who) return fail(err, 'כדי להמשיך, בחרי מי מצטרף או חוזר.');
+      err.hidden = true; if (!J.form.who) return fail(err, 'כדי להמשיך, אפשר לבחור מי מצטרף או חוזר.');
       go.disabled = true; const w = waiting(wait, 'מכינה ערכת הצטרפות וחזרה.', 60);
       let k = null, bad = null;
       try { k = await ask(C.joinSystem(KB, WRITER), 'מהתיק:\n' + C.inputText(S.form) + '\n\nההצטרפות:\n' + C.JOIN_FIELDS.map((f) => J.form[f.k] ? f.l + ': ' + J.form[f.k] : '').filter(Boolean).join('\n') +

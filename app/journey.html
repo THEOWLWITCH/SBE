@@ -321,10 +321,10 @@ async function viewList(){
   const EM_RE = /^[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}$/i;
   const err = errLine(n);
   const go = btn('יוצאים לדרך', '', async () => {
-    if (nm.value.trim().length < 2) return err('כדי להמשיך, כתבו את שם המסגרת.');
+    if (nm.value.trim().length < 2) return err('כדי להמשיך, אפשר לכתוב את שם המסגרת.');
     if (up.checked && !EM_RE.test(em.value.trim())) return err('כדי לקבל עדכונים, נשמח לכתובת מייל תקינה.');
     go.disabled = true; const r = await api('jrCreate', { unit: sel.value, unitName: nm.value.trim(), by: by.value.trim(), research: cb.checked, email: em.value.trim(), updates: up.checked }); go.disabled = false;
-    if (r.id) location.hash = r.id; else err(r._status === 403 ? 'אין הרשאה למסע אל החוסן.' : 'לא הצלחנו ליצור את המסע. נסו שוב.');
+    if (r.id) location.hash = r.id; else err(r._status === 403 ? 'אין הרשאה למסע אל החוסן.' : 'לא הצלחנו ליצור את המסע. אפשר לנסות שוב.');
   }); go.style.marginTop = '.8rem'; n.appendChild(go);
 }
 
@@ -361,7 +361,7 @@ function contactBox(){
     if (up.checked && !/^[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}$/i.test(em.value.trim())) { msg.textContent = 'נשמח לכתובת מייל תקינה.'; return; }
     sv.disabled = true; const r = await api('jrContact', { id: JR.id, email: em.value.trim(), updates: up.checked }); sv.disabled = false;
     if (r.ok) { JR.contact = r.contact; sm.textContent = r.contact.updates ? '📧 עדכונים במייל: פעילים (' + r.contact.email + ')' : '📧 עדכונים במייל: כבויים'; msg.textContent = 'נשמר ✓'; }
-    else msg.textContent = 'לא נשמר. נסו שוב.';
+    else msg.textContent = 'לא נשמר. אפשר לנסות שוב.';
   }); sv.style.marginTop = '.4rem'; dt.appendChild(sv); dt.appendChild(msg);
   return dt;
 }
@@ -413,7 +413,7 @@ function viewMapping(){
       const r = await api('jrSetProposal', { id: JR.id, proposal: prop });
       if (!r.ok) throw new Error('השמירה לא הצליחה');
       JR.proposal = prop; JR.status = 'proposal'; render(); window.scrollTo(0, 0);
-    } catch(e) { err('ההצעה לא הוכנה (' + (e.name === 'AbortError' ? 'לקח יותר מדי זמן' : e.message) + '). נסו שוב.'); go.disabled = false; go.textContent = 'לקבלת הצעת מסע'; }
+    } catch(e) { err('ההצעה לא הוכנה (' + (e.name === 'AbortError' ? 'לקח יותר מדי זמן' : e.message) + '). אפשר לנסות שוב.'); go.disabled = false; go.textContent = 'לקבלת הצעת מסע'; }
   }); go.style.marginTop = '.8rem'; f.appendChild(go);
 }
 function mappingText(m){
@@ -440,7 +440,7 @@ function decisionBlock(dec, state, onChange){
     r.addEventListener('change', () => { v.option = o.label; box.querySelectorAll('.opt').forEach(x => x.classList.remove('on')); lab.classList.add('on'); onChange(); });
     const t = el('div'); t.appendChild(el('b', null, o.label)); if (o.explain) t.appendChild(el('span', null, o.explain)); lab.appendChild(r); lab.appendChild(t); box.appendChild(lab);
   });
-  box.appendChild(el('label', null, 'ספרו לנו מה הוביל אתכם לבחירה הזו *'));
+  box.appendChild(el('label', null, 'אפשר לספר לנו מה הוביל אתכם לבחירה הזו *'));
   const ch = el('div', 'chips'); J.REASONS.forEach(rs => { const l = el('label' + '', v.reasons.includes(rs) ? 'on' : ''); const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = v.reasons.includes(rs);
     cb.addEventListener('change', () => { v.reasons = cb.checked ? v.reasons.concat(rs) : v.reasons.filter(x => x !== rs); l.classList.toggle('on', cb.checked); onChange(); }); l.appendChild(cb); l.appendChild(document.createTextNode(rs)); ch.appendChild(l); });
   box.appendChild(ch);
@@ -466,15 +466,15 @@ function viewProposal(){
     c.appendChild(failTable(p));
   } else c.appendChild(el('p', 'obst', J.ICON.clear + ' לא נמצא כשל מערכתי משמעותי.'));
   const ch = card(); ch.appendChild(el('h2', null, 'ההחלטות שלכם'));
-  ch.appendChild(el('p', 'muted', 'זו הצעה ולא הוראה: בחרו בכל החלטה את האפשרות שמתאימה לכם, וספרו מה הוביל אתכם אליה. אפשר להתייעץ עם הצוות לפני השליחה: הבחירות נשמרות במכשיר.'));
+  ch.appendChild(el('p', 'muted', 'זו הצעה ולא הוראה: אפשר לבחור בכל החלטה את האפשרות שמתאימה לכם, ולספר מה הוביל אתכם אליה. אפשר להתייעץ עם הצוות לפני השליחה: הבחירות נשמרות במכשיר.'));
   (p.decisions || []).forEach(dec => ch.appendChild(decisionBlock(dec, state, save)));
   const u = J.UNITS.find(x => x.k === JR.unit) || J.UNITS[5];
-  ch.appendChild(decisionBlock({ id: 'pace', q: 'באיזה קצב תרצו ללכת?', options: J.PACES.map(x => ({ label: x.t, explain: 'בערך ' + Math.round(u.months * x.f) + ' חודשים למסע כולו' })) }, state, save));
+  ch.appendChild(decisionBlock({ id: 'pace', q: 'באיזה קצב רוצים ללכת?', options: J.PACES.map(x => ({ label: x.t, explain: 'בערך ' + Math.round(u.months * x.f) + ' חודשים למסע כולו' })) }, state, save));
   const err = errLine(ch);
   const go = btn('שליחת הבחירות לד״ר יעל שדה', '', async () => {
     const ids = (p.decisions || []).map(x => x.id).concat('pace');
-    const miss = ids.filter(k => !state[k] || !state[k].option); if (miss.length) return err('כדי להמשיך, בחרו אפשרות בכל החלטה.');
-    const noEx = ids.filter(k => !state[k].reasons.length && !state[k].explain.trim()); if (noEx.length) return err('נשמח להסבר קצר בכל החלטה: סמנו סיבה או כתבו כמה מילים.');
+    const miss = ids.filter(k => !state[k] || !state[k].option); if (miss.length) return err('כדי להמשיך, אפשר לבחור אפשרות בכל החלטה.');
+    const noEx = ids.filter(k => !state[k].reasons.length && !state[k].explain.trim()); if (noEx.length) return err('נשמח להסבר קצר בכל החלטה: אפשר לסמן סיבה או לכתוב כמה מילים.');
     err(''); go.disabled = true; go.textContent = 'בונה את אבני הדרך לפי הבחירות שלכם... (עד שתי דקות)';
     try {
       const counts = J.plannedCounts(JR.unit, start);
@@ -485,7 +485,7 @@ function viewProposal(){
       const r = await api('jrSubmitChoices', { id: JR.id, choices: state, plan, startStage: start, pace: paceK });
       if (!r.ok) throw new Error(r.error === 'explain required' ? 'חסר הסבר באחת ההחלטות' : 'השליחה לא הצליחה');
       Object.assign(JR, { status: 'review', choices: state, plan, startStage: start, pace: paceK }); render(); window.scrollTo(0, 0);
-    } catch(e) { err('לא הצלחנו לשלוח (' + (e.name === 'AbortError' ? 'לקח יותר מדי זמן' : e.message) + '). נסו שוב.'); go.disabled = false; go.textContent = 'שליחת הבחירות לד״ר יעל שדה'; }
+    } catch(e) { err('לא הצלחנו לשלוח (' + (e.name === 'AbortError' ? 'לקח יותר מדי זמן' : e.message) + '). אפשר לנסות שוב.'); go.disabled = false; go.textContent = 'שליחת הבחירות לד״ר יעל שדה'; }
   }); go.style.marginTop = '.8rem'; ch.appendChild(go);
 }
 
@@ -558,7 +558,7 @@ function submitForm(c, m, i){
   const go = btn('הגשה', '', async () => {
     if (ev.value.trim().length < 10) return err('נשמח לתיאור קצר של מה שנעשה.');
     go.disabled = true; const r = await api('jrSubmitMilestone', { id: JR.id, mi: i, submission: { evidence: ev.value.trim(), links: ln.value.split('\n').map(x => x.trim()).filter(x => /^https?:\/\//.test(x)).slice(0, 10), reflection: refl ? refl() : undefined } });
-    if (r.ok) { await viewJourney(JR.id); } else { err('ההגשה לא נשלחה. נסו שוב.'); go.disabled = false; }
+    if (r.ok) { await viewJourney(JR.id); } else { err('ההגשה לא נשלחה. אפשר לנסות שוב.'); go.disabled = false; }
   }); go.style.marginTop = '.6rem'; det.appendChild(go);
   c.appendChild(det);
 }
@@ -588,7 +588,7 @@ function goalBlock(m, mi, g, gi){
   const tx = document.createElement('textarea'); tx.maxLength = 800; tx.placeholder = 'מה לא ברור? למשל: איזה שאלון בדיוק? מי מעביר אותו?'; tx.style.minHeight = '3rem'; det.appendChild(tx);
   const send = btn('שליחה ליועצת המסע', 'btn-ghost btn-sm', e => { const q = tx.value.trim(); if (q.length < 2) return; tx.value = ''; run('ask', q, e.currentTarget); });
   det.appendChild(send);
-  det.appendChild(el('p', 'muted', 'היועצת עונה מיד. אם תרצו שד״ר יעל שדה תראה את השאלה, אפשר לשלוח אותה בשיחה שבסוף אבן הדרך.'));
+  det.appendChild(el('p', 'muted', 'היועצת עונה מיד. אם רוצים שד״ר יעל שדה תראה את השאלה, אפשר לשלוח אותה בשיחה שבסוף אבן הדרך.'));
   bar.appendChild(steps); bar.appendChild(det);
   li.appendChild(bar); li.appendChild(log); show();
   return li;
@@ -602,10 +602,10 @@ function threadInline(c, mi){
     const det = document.createElement('details'); det.className = 'no-print'; const sm = el('summary', null, mi === null ? 'הודעה לד״ר יעל שדה' : 'הערה, שאלה, ערעור או בקשת דחייה'); sm.style.cssText = 'cursor:pointer;color:var(--muted);font-size:.88rem'; det.appendChild(sm);
     const kind = document.createElement('select'); [['comment', 'הערה או שאלה'], ['appeal', 'ערעור: הדרישה לא מתאימה או קשה מדי'], ['extension', 'בקשת דחייה של המועד']].forEach(([v, x]) => { const o = el('option', null, x); o.value = v; kind.appendChild(o); });
     if (mi !== null) det.appendChild(kind);
-    const tx = document.createElement('textarea'); tx.maxLength = 2000; tx.placeholder = 'כתבו כאן: ההודעה נשמרת במסע ומגיעה לד״ר יעל שדה'; det.appendChild(tx);
+    const tx = document.createElement('textarea'); tx.maxLength = 2000; tx.placeholder = 'אפשר לכתוב כאן: ההודעה נשמרת במסע ומגיעה לד״ר יעל שדה'; det.appendChild(tx);
     const err = errLine(det);
     const go = btn('שליחה', 'btn-ghost', async () => { if (tx.value.trim().length < 2) return err('אפשר לכתוב כאן כמה מילים ואז לשלוח.'); go.disabled = true;
-      const r = await api('jrPost', { id: JR.id, mi, kind: mi === null ? 'comment' : kind.value, text: tx.value.trim() }); if (r.ok) await viewJourney(JR.id); else { err('לא נשלח. נסו שוב.'); go.disabled = false; } });
+      const r = await api('jrPost', { id: JR.id, mi, kind: mi === null ? 'comment' : kind.value, text: tx.value.trim() }); if (r.ok) await viewJourney(JR.id); else { err('לא נשלח. אפשר לנסות שוב.'); go.disabled = false; } });
     go.style.marginTop = '.4rem'; det.appendChild(go); t.appendChild(det);
   }
   c.appendChild(t);

@@ -277,7 +277,7 @@ function addableSelect(id,listName,what){
   const wrap=document.createElement('details');wrap.className='addmore no-print';
   const sm=document.createElement('summary');sm.textContent='לא מוצאים? הוספה לרשימה';wrap.appendChild(sm);
   const row=document.createElement('div');row.className='addrow';
-  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+', יתווסף לרשימה של כולם';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='אפשר להקליד '+what+', יתווסף לרשימה של כולם';
   const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה לרשימה';
   row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);
   const msg=document.createElement('p');msg.className='muted';msg.hidden=true;wrap.appendChild(msg);
