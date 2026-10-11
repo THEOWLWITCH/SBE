@@ -1,0 +1,28 @@
+{
+  "reviewer": "api-contract",
+  "findings": [
+    {
+      "title": "Preserve retrieval and cancellation of legacy private jobs",
+      "severity": "P2",
+      "file": "harness/practice-server.mjs",
+      "line": 263,
+      "why_it_matters": "After this server upgrade, an owner cannot recover or cancel an existing generic-model job that was admitted without an explicit permission. Base jobs have no modelPage, and the newly shared allowed() guard rejects both missing declarations before checking even the administrator role. Narrative recovery polls the stored job ID, treats the resulting 403 as a terminal error, and removes its local recovery record instead of recovering a completed result or handling a lost job. A retrieval-only compatibility policy for owner-bound legacy records preserves recovery without relaxing the new admission requirement.",
+      "autofix_class": "manual",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "suggested_fix": "Separate new-request admission from stored-job authorization. Keep mandatory page/permission declarations for admission; for legacy job records without either field, apply the former endpoint-specific live permission policy after the existing owner and tenant checks, only on status/cancel operations. Add a base-shaped persisted pipeline job recovery and cancellation regression test.",
+      "confidence": 75,
+      "evidence": [
+        "harness/practice-server.mjs:263 -- if(!allowed(actor,job.path,job.permission,job.modelPage)) return send(req,res,403,{error:'אין הרשאה פעילה לעבודה.'});",
+        "harness/practice-server.mjs:93 -- if(modelPath && !permission && !page) return false;",
+        "570c354:harness/practice-server.mjs:253 -- const record={ownerId:actor.ownerId,tenantId:actor.tenantId,permission,path:req.url,requestId,requestHash, (no modelPage persisted)",
+        "app/lib/narrative-build.js:431 -- try { scn = await pollJob(server, job.jobId, button, undefined, run); }",
+        "app/lib/narrative-build.js:440 -- finally { done(); endEdu(run); try { localStorage.removeItem(JOB_KEY); } catch (e) {} }",
+        "Synthetic VM execution of the actual allowed() source: an owner with fac_trainee yields false for an old /api/pipeline record and true for a page-bound input-screen.html record."
+      ],
+      "pre_existing": false
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

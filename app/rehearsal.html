@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>תרגול הגרסה שאישרת: Begood</title>
+<script src="lib/access-guard.js"></script>
+<script src="lib/product-doc.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
+<style>
+:root{--ground:#EDEFF1;--surface:#FCFCFD;--ink:#141C24;--muted:#5C6771;--hair:#CDD3D8;--spoken:#2E5A7D;--shadow:rgba(20,28,36,.08)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ground:#12171B;--surface:#1A2126;--ink:#E3E7EA;--muted:#94A0A9;--hair:#33404A;--spoken:#82AECE;--shadow:rgba(0,0,0,.45);color-scheme:dark}}
+:root[data-theme="dark"]{--ground:#12171B;--surface:#1A2126;--ink:#E3E7EA;--muted:#94A0A9;--hair:#33404A;--spoken:#82AECE;--shadow:rgba(0,0,0,.45);color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.6 "Assistant","Segoe UI",system-ui,sans-serif;padding:0 16px 48px}
+.wrap{max-width:860px;margin:0 auto;padding-top:18px}
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(24px,5vw,32px);margin:8px 0 4px}
+h2{font-size:18px;margin:0 0 8px}
+.sub{color:var(--muted);margin:0 0 18px}
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px var(--shadow)}
+button,select,textarea{font:inherit;color:inherit}
+button:disabled{opacity:.55;cursor:default}
+[hidden]{display:none!important}
+button{padding:8px 16px;border-radius:6px;border:1px solid var(--spoken);background:var(--spoken);color:#fff;font-weight:600;cursor:pointer;margin:6px 0 16px}
+select,textarea{background:var(--surface);border:1px solid var(--hair);border-radius:6px;padding:7px 9px}
+a.back{color:var(--spoken);font-weight:600;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="home.html">→ המרחב שלי</a>
+  <!-- התרגול לגרסה שאושרה, לפעילות ולשיחה (9 באוקטובר 2026). הקוד ב-lib/artifact-practice.js, כמו בתרגול התרחישים. -->
+  <h1 id="scenarioName">תרגול הגרסה שאישרת</h1>
+  <p class="sub" id="scenarioSubtitle">פותחים רק גרסה שאישרת. עריכה חדשה לא משנה אותה.</p>
+  <div id="composerBar" hidden></div>
+</div>
+<script src="lib/ai-call.js"></script>
+<script src="lib/rehearsal-model.js"></script>
+<script src="lib/artifact-practice.js"></script>
+</body>
+</html>

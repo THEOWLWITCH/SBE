@@ -274,21 +274,35 @@ function openForm(r){
 
 $("back").addEventListener("click", () => { $("bar").style.display = "none"; show("pick"); });
 
-$("send").addEventListener("click", () => {
+let feedbackSubmission = null;
+$("send").addEventListener("click", async () => {
   const record = { ...data, _inst: CONTEXT.inst, _fac: CONTEXT.fac, _scenario: CONTEXT.scenario || PICK.scenario || "",
     _asked: FORMS[role].q.map(q => q.k) };
   // ניסוח של מדד שנוסף (לא ממדדי ברירת המחדל) נשמר עם המשוב, כדי שהתוצאות
   // יוכלו להציג אותו גם במכשיר שאין בבנק שלו את המדד הזה.
   const defs = SBE_FB.customList({ [role]: record._asked }, BANK);
   if (defs.length) record._defs = defs;
-  try { localStorage.setItem("sbe.fb." + role + "." + Date.now(), JSON.stringify(record)); } catch(e){}
+  const snapshot = JSON.stringify(record);
+  if (!feedbackSubmission || feedbackSubmission.snapshot !== snapshot) feedbackSubmission = {snapshot,id:crypto.randomUUID()};
+  $("send").disabled = true;
+  try {
+    localStorage.setItem("sbe.fb." + role + "." + feedbackSubmission.id, snapshot);
   // לשרת — כדי שהמנחה תראה את המשוב מכל מכשיר (קישור מסדנה כולל ?w=)
-  if (CONTEXT.w) fetch("https://sbe-server.onrender.com/api/access", { method:"POST", headers:{ "content-type":"application/json" },
-    body: JSON.stringify({ action:"wfSubmit", w: CONTEXT.w, role, record }) }).catch(() => {});
+    if (CONTEXT.w) {
+      const response = await fetch("https://sbe-server.onrender.com/api/access", {method:"POST",headers:{"content-type":"application/json"},
+        body:JSON.stringify({action:"wfSubmit",w:CONTEXT.w,role,record,submissionId:feedbackSubmission.id})});
+      if (!response.ok) throw new Error("המשוב טרם התקבל בשרת. אפשר לנסות שוב; עותק נשמר במכשיר.");
+    }
+  } catch(error) {
+    $("send").disabled = false;
+    alert(error.message || "שמירת המשוב לא הסתיימה. אפשר לנסות שוב.");
+    return;
+  }
   $("bar").style.display = "none";
   $("doneMsg").textContent = role === "fac"
-    ? "המשוב נשמר ונוסף למה שנצבר על התרחיש הזה."
-    : "המשוב נשמר. הוא אינו ציון ואינו נכנס לתיק של אף אחת.";
+    ? (CONTEXT.w ? "המשוב התקבל בשרת ונוסף למשובי הסדנה." : "המשוב נשמר במכשיר הזה.")
+    : (CONTEXT.w ? "המשוב התקבל בשרת. הוא אינו ציון ואינו נכנס לתיק של אף אחת." : "המשוב נשמר במכשיר הזה.");
+  $("send").disabled = false;
   show("thanks");
   scrollTo({ top: 0 });
 });

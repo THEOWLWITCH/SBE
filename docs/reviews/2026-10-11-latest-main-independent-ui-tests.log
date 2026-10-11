@@ -1,0 +1,515 @@
+TAP version 13
+# Subtest: generated routine and emergency wording survives rebuild/reload while private controls keep working
+ok 1 - generated routine and emergency wording survives rebuild/reload while private controls keep working
+  ---
+  duration_ms: 268.34
+  ...
+# Subtest: editing the unfilled letter preserves wording when local details change, and only filled preview prints
+ok 2 - editing the unfilled letter preserves wording when local details change, and only filled preview prints
+  ---
+  duration_ms: 70.287
+  ...
+# Subtest: sources start folded/excluded, persist independent choices and print once after all panes
+ok 3 - sources start folded/excluded, persist independent choices and print once after all panes
+  ---
+  duration_ms: 247.6965
+  ...
+# Subtest: joined continuity panes retain source choices and shared prints omit the private adaptation log
+ok 4 - joined continuity panes retain source choices and shared prints omit the private adaptation log
+  ---
+  duration_ms: 117.251
+  ...
+# Subtest: paste/drop block active live markup and snapshots/print strip active attributes and private controls
+ok 5 - paste/drop block active live markup and snapshots/print strip active attributes and private controls
+  ---
+  duration_ms: 89.5347
+  ...
+# Subtest: a newly accepted routine replaces its edits while emergency wording and source selections survive
+ok 6 - a newly accepted routine replaces its edits while emergency wording and source selections survive
+  ---
+  duration_ms: 68.0956
+  ...
+# Subtest: stored editable trees reject controls/private blocks and filter event attributes or active links
+ok 7 - stored editable trees reject controls/private blocks and filter event attributes or active links
+  ---
+  duration_ms: 20.8988
+  ...
+# Subtest: oversized/deep snapshots fall back safely and a rejected oversized edit keeps the prior saved wording
+ok 8 - oversized/deep snapshots fall back safely and a rejected oversized edit keeps the prior saved wording
+  ---
+  duration_ms: 40.6439
+  ...
+# Subtest: giant class/href attributes normalize to bounded inert values before capture or URL parsing
+ok 9 - giant class/href attributes normalize to bounded inert values before capture or URL parsing
+  ---
+  duration_ms: 105.8443
+  ...
+# Subtest: normalized allowed attributes share the cumulative text budget on capture, restore and actual edit saving
+ok 10 - normalized allowed attributes share the cumulative text budget on capture, restore and actual edit saving
+  ---
+  duration_ms: 57.2754
+  ...
+# Subtest: successful authorized demo leaves the private store untouched and private sentinels absent from input/capture
+ok 11 - successful authorized demo leaves the private store untouched and private sentinels absent from input/capture
+  ---
+  duration_ms: 93.9115
+  ...
+# Subtest: failed authorized demo leaves the private store untouched and private sentinels absent from input/capture
+ok 12 - failed authorized demo leaves the private store untouched and private sentinels absent from input/capture
+  ---
+  duration_ms: 28.187
+  ...
+# Subtest: shared continuity print excludes raw joining inputs but retains permitted generated group text
+ok 13 - shared continuity print excludes raw joining inputs but retains permitted generated group text
+  ---
+  duration_ms: 89.9361
+  ...
+# Subtest: a new entrant clears personal inputs, kit and source choices while the group directory survives reload
+ok 14 - a new entrant clears personal inputs, kit and source choices while the group directory survives reload
+  ---
+  duration_ms: 94.5581
+  ...
+# Subtest: a late joining result cannot restore the previous entrant after reset
+ok 15 - a late joining result cannot restore the previous entrant after reset
+  ---
+  duration_ms: 73.2138
+  ...
+# Subtest: a redrawn joining pane keeps its request lock and does not send a duplicate
+ok 16 - a redrawn joining pane keeps its request lock and does not send a duplicate
+  ---
+  duration_ms: 70.5397
+  ...
+# Subtest: successful actual family demo recipe isolates private state before all reads and capture
+ok 17 - successful actual family demo recipe isolates private state before all reads and capture
+  ---
+  duration_ms: 142.4785
+  ...
+# Subtest: failed actual family demo recipe isolates private state before all reads and capture
+ok 18 - failed actual family demo recipe isolates private state before all reads and capture
+  ---
+  duration_ms: 33.4364
+  ...
+# Subtest: standalone family mode retains normal owner reads, writes and reload
+ok 19 - standalone family mode retains normal owner reads, writes and reload
+  ---
+  duration_ms: 26.0088
+  ...
+# Subtest: non-admin family mode retains normal owner reads, writes and reload
+ok 20 - non-admin family mode retains normal owner reads, writes and reload
+  ---
+  duration_ms: 23.2934
+  ...
+# Subtest: ordinary embedded family mode retains normal owner reads, writes and reload
+ok 21 - ordinary embedded family mode retains normal owner reads, writes and reload
+  ---
+  duration_ms: 21.1755
+  ...
+# Subtest: near-match flag family mode retains normal owner reads, writes and reload
+ok 22 - near-match flag family mode retains normal owner reads, writes and reload
+  ---
+  duration_ms: 21.3451
+  ...
+# Subtest: late family revision cannot restore an old plan or unlock a new round generation
+ok 23 - late family revision cannot restore an old plan or unlock a new round generation
+  ---
+  duration_ms: 51.219
+  ...
+# Subtest: late initial generation cannot overwrite a newer generation or stop its wait
+ok 24 - late initial generation cannot overwrite a newer generation or stop its wait
+  ---
+  duration_ms: 41.3291
+  ...
+# Subtest: editing generation input preserves the new wording and rejects advice for the previous wording
+ok 25 - editing generation input preserves the new wording and rejects advice for the previous wording
+  ---
+  duration_ms: 30.9272
+  ...
+# Subtest: editing a family response while deciding rejects advice for the previous response
+ok 26 - editing a family response while deciding rejects advice for the previous response
+  ---
+  duration_ms: 17.9959
+  ...
+# Subtest: editing another family leaves an independent pending decision valid
+ok 27 - editing another family leaves an independent pending decision valid
+  ---
+  duration_ms: 20.8442
+  ...
+# Subtest: imported family round rejects a pending revision without changing imported history
+ok 28 - imported family round rejects a pending revision without changing imported history
+  ---
+  duration_ms: 25.5695
+  ...
+# Subtest: an old family completion cannot release a newer imported family request with the same ID
+ok 29 - an old family completion cannot release a newer imported family request with the same ID
+  ---
+  duration_ms: 33.2326
+  ...
+# Subtest: late decision stays out of a new family round
+ok 30 - late decision stays out of a new family round
+  ---
+  duration_ms: 34.2685
+  ...
+# Subtest: late plan next stays out of a new family round
+ok 31 - late plan next stays out of a new family round
+  ---
+  duration_ms: 32.308
+  ...
+# Subtest: late summary stays out of a new family round
+ok 32 - late summary stays out of a new family round
+  ---
+  duration_ms: 36.73
+  ...
+# Subtest: late feedback stays out of a new family round
+ok 33 - late feedback stays out of a new family round
+  ---
+  duration_ms: 19.8378
+  ...
+# Subtest: late practice turn stays out of a new family round
+ok 34 - late practice turn stays out of a new family round
+  ---
+  duration_ms: 22.0169
+  ...
+# Subtest: current decision commits to its originating family and releases the lock
+ok 35 - current decision commits to its originating family and releases the lock
+  ---
+  duration_ms: 16.8538
+  ...
+# Subtest: current plan next commits to its originating family and releases the lock
+ok 36 - current plan next commits to its originating family and releases the lock
+  ---
+  duration_ms: 13.9169
+  ...
+# Subtest: current summary commits to its originating family and releases the lock
+ok 37 - current summary commits to its originating family and releases the lock
+  ---
+  duration_ms: 13.877
+  ...
+# Subtest: current feedback commits to its originating family and releases the lock
+ok 38 - current feedback commits to its originating family and releases the lock
+  ---
+  duration_ms: 9.5949
+  ...
+# Subtest: current practice turn commits to its originating family and releases the lock
+ok 39 - current practice turn commits to its originating family and releases the lock
+  ---
+  duration_ms: 15.0068
+  ...
+# Subtest: family AI lock survives redraw and blocks duplicate and conflicting operations
+ok 40 - family AI lock survives redraw and blocks duplicate and conflicting operations
+  ---
+  duration_ms: 27.7176
+  ...
+# Subtest: a new plan replacement invalidates older per-family advice in the same round
+ok 41 - a new plan replacement invalidates older per-family advice in the same round
+  ---
+  duration_ms: 23.1183
+  ...
+# Subtest: current family failure keeps existing data and permits a new attempt after redraw
+ok 42 - current family failure keeps existing data and permits a new attempt after redraw
+  ---
+  duration_ms: 26.2097
+  ...
+# Subtest: the latest file selection owns import even when the earlier file resolves first
+ok 43 - the latest file selection owns import even when the earlier file resolves first
+  ---
+  duration_ms: 7.2708
+  ...
+# Subtest: opening a new round during file reading prevents the old import from replacing it
+ok 44 - opening a new round during file reading prevents the old import from replacing it
+  ---
+  duration_ms: 10.0639
+  ...
+# Subtest: successful actual participation demo recipe never reads, writes or captures either private workspace
+ok 45 - successful actual participation demo recipe never reads, writes or captures either private workspace
+  ---
+  duration_ms: 36.0115
+  ...
+# Subtest: failed actual participation demo recipe never reads, writes or captures either private workspace
+ok 46 - failed actual participation demo recipe never reads, writes or captures either private workspace
+  ---
+  duration_ms: 16.3641
+  ...
+# Subtest: single demo edits and lesson tracking stay in fresh instance memory across remounts
+ok 47 - single demo edits and lesson tracking stay in fresh instance memory across remounts
+  ---
+  duration_ms: 49.0695
+  ...
+# Subtest: seq demo edits and lesson tracking stay in fresh instance memory across remounts
+ok 48 - seq demo edits and lesson tracking stay in fresh instance memory across remounts
+  ---
+  duration_ms: 29.7819
+  ...
+# Subtest: standalone participation keeps ordinary owner reads and persistent edits in both modes
+ok 49 - standalone participation keeps ordinary owner reads and persistent edits in both modes
+  ---
+  duration_ms: 24.6474
+  ...
+# Subtest: non-admin participation keeps ordinary owner reads and persistent edits in both modes
+ok 50 - non-admin participation keeps ordinary owner reads and persistent edits in both modes
+  ---
+  duration_ms: 25.2214
+  ...
+# Subtest: ordinary embedded participation keeps ordinary owner reads and persistent edits in both modes
+ok 51 - ordinary embedded participation keeps ordinary owner reads and persistent edits in both modes
+  ---
+  duration_ms: 15.6073
+  ...
+# Subtest: participation suggestion keeps one mount-owned lock after closing and reopening
+ok 52 - participation suggestion keeps one mount-owned lock after closing and reopening
+  ---
+  duration_ms: 25.3735
+  ...
+# Subtest: participation adjustment locks recreated controls and unlocks after a provider failure
+ok 53 - participation adjustment locks recreated controls and unlocks after a provider failure
+  ---
+  duration_ms: 29.6396
+  ...
+# Subtest: a participation suggestion for a previous sequence meeting cannot replace the selected meeting
+ok 54 - a participation suggestion for a previous sequence meeting cannot replace the selected meeting
+  ---
+  duration_ms: 23.825
+  ...
+# Subtest: an adjustment for observations already saved as a lesson cannot re-enter the next lesson
+ok 55 - an adjustment for observations already saved as a lesson cannot re-enter the next lesson
+  ---
+  duration_ms: 23.5863
+  ...
+# Subtest: actual own-case demo success isolates twelve cases and an old private preview
+ok 56 - actual own-case demo success isolates twelve cases and an old private preview
+  ---
+  duration_ms: 157.5341
+  ...
+# Subtest: actual own-case demo clarify isolates twelve cases and an old private preview
+ok 57 - actual own-case demo clarify isolates twelve cases and an old private preview
+  ---
+  duration_ms: 28.3428
+  ...
+# Subtest: actual own-case demo build isolates twelve cases and an old private preview
+ok 58 - actual own-case demo build isolates twelve cases and an old private preview
+  ---
+  duration_ms: 25.3294
+  ...
+# Subtest: actual catalogue demo success selects a bank card and preserves all private state
+ok 59 - actual catalogue demo success selects a bank card and preserves all private state
+  ---
+  duration_ms: 86.5542
+  ...
+# Subtest: actual catalogue demo chat selects a bank card and preserves all private state
+ok 60 - actual catalogue demo chat selects a bank card and preserves all private state
+  ---
+  duration_ms: 44.6841
+  ...
+# Subtest: actual own-case recipe answers the generated questions before creating a fresh story
+ok 61 - actual own-case recipe answers the generated questions before creating a fresh story
+  ---
+  duration_ms: 86.8731
+  ...
+# Subtest: catalogue recipe ignores a visible unrelated personal card even in front of the bank
+ok 62 - catalogue recipe ignores a visible unrelated personal card even in front of the bank
+  ---
+  duration_ms: 52.0922
+  ...
+# Subtest: standalone keeps ordinary personal case and draft persistence
+ok 63 - standalone keeps ordinary personal case and draft persistence
+  ---
+  duration_ms: 15.6157
+  ...
+# Subtest: non-admin keeps ordinary personal case and draft persistence
+ok 64 - non-admin keeps ordinary personal case and draft persistence
+  ---
+  duration_ms: 20.16
+  ...
+# Subtest: ordinary embedded keeps ordinary personal case and draft persistence
+ok 65 - ordinary embedded keeps ordinary personal case and draft persistence
+  ---
+  duration_ms: 9.0471
+  ...
+# Subtest: near-match marker keeps ordinary personal case and draft persistence
+ok 66 - near-match marker keeps ordinary personal case and draft persistence
+  ---
+  duration_ms: 8.0837
+  ...
+# Subtest: late custom clarification cannot reopen the editor after cancel
+ok 67 - late custom clarification cannot reopen the editor after cancel
+  ---
+  duration_ms: 9.6317
+  ...
+# Subtest: late custom clarification cannot reopen the editor after select
+ok 68 - late custom clarification cannot reopen the editor after select
+  ---
+  duration_ms: 6.1727
+  ...
+# Subtest: late custom clarification cannot reopen the editor after approve
+ok 69 - late custom clarification cannot reopen the editor after approve
+  ---
+  duration_ms: 13.0147
+  ...
+# Subtest: late custom build cannot replace edited context
+ok 70 - late custom build cannot replace edited context
+  ---
+  duration_ms: 11.7492
+  ...
+# Subtest: late custom revision cannot replace edited context
+ok 71 - late custom revision cannot replace edited context
+  ---
+  duration_ms: 8.6623
+  ...
+# Subtest: late build is discarded after cancel
+ok 72 - late build is discarded after cancel
+  ---
+  duration_ms: 7.1402
+  ...
+# Subtest: late build is discarded after select
+ok 73 - late build is discarded after select
+  ---
+  duration_ms: 5.8949
+  ...
+# Subtest: late build is discarded after approve
+ok 74 - late build is discarded after approve
+  ---
+  duration_ms: 12.6172
+  ...
+# Subtest: late revision is discarded after cancel
+ok 75 - late revision is discarded after cancel
+  ---
+  duration_ms: 6.1182
+  ...
+# Subtest: late revision is discarded after select
+ok 76 - late revision is discarded after select
+  ---
+  duration_ms: 4.8523
+  ...
+# Subtest: late revision is discarded after approve
+ok 77 - late revision is discarded after approve
+  ---
+  duration_ms: 7.4854
+  ...
+# Subtest: an invalidated operation cannot unlock or stop the newer request
+ok 78 - an invalidated operation cannot unlock or stop the newer request
+  ---
+  duration_ms: 4.8578
+  ...
+# Subtest: duplicate custom operations are ignored while the editor owns a pending request
+ok 79 - duplicate custom operations are ignored while the editor owns a pending request
+  ---
+  duration_ms: 12.9637
+  ...
+# Subtest: options completion belongs to A after switching to B and preserves all B data
+ok 80 - options completion belongs to A after switching to B and preserves all B data
+  ---
+  duration_ms: 47.4776
+  ...
+# Subtest: build completion belongs to A after switching to B and preserves all B data
+ok 81 - build completion belongs to A after switching to B and preserves all B data
+  ---
+  duration_ms: 65.1548
+  ...
+# Subtest: revise completion belongs to A after switching to B and preserves all B data
+ok 82 - revise completion belongs to A after switching to B and preserves all B data
+  ---
+  duration_ms: 28.8173
+  ...
+# Subtest: options cannot resurrect deleted A or replace B after a deferred result
+ok 83 - options cannot resurrect deleted A or replace B after a deferred result
+  ---
+  duration_ms: 15.1252
+  ...
+# Subtest: build cannot resurrect deleted A or replace B after a deferred result
+ok 84 - build cannot resurrect deleted A or replace B after a deferred result
+  ---
+  duration_ms: 15.923
+  ...
+# Subtest: revise cannot resurrect deleted A or replace B after a deferred result
+ok 85 - revise cannot resurrect deleted A or replace B after a deferred result
+  ---
+  duration_ms: 22.0574
+  ...
+# Subtest: options discards a result after its initiating inputs change and permits a fresh request
+ok 86 - options discards a result after its initiating inputs change and permits a fresh request
+  ---
+  duration_ms: 16.4654
+  ...
+# Subtest: build discards a result after its initiating inputs change and permits a fresh request
+ok 87 - build discards a result after its initiating inputs change and permits a fresh request
+  ---
+  duration_ms: 21.8939
+  ...
+# Subtest: revise discards a result after its initiating inputs change and permits a fresh request
+ok 88 - revise discards a result after its initiating inputs change and permits a fresh request
+  ---
+  duration_ms: 20.1575
+  ...
+# Subtest: request lock survives A to B to A redraw, including the recreated options build button
+ok 89 - request lock survives A to B to A redraw, including the recreated options build button
+  ---
+  duration_ms: 36.0404
+  ...
+# Subtest: switching to B lets its own request finish first without A clearing B pending controls
+ok 90 - switching to B lets its own request finish first without A clearing B pending controls
+  ---
+  duration_ms: 26.4915
+  ...
+# Subtest: revision includes anonymized human decisions and journal while approval stays human owned
+ok 91 - revision includes anonymized human decisions and journal while approval stays human owned
+  ---
+  duration_ms: 21.4891
+  ...
+# Subtest: a decision edited during revision is preserved and invalidates the older proposal
+ok 92 - a decision edited during revision is preserved and invalidates the older proposal
+  ---
+  duration_ms: 10.2524
+  ...
+# Subtest: a change then restoration still invalidates the earlier request revision
+ok 93 - a change then restoration still invalidates the earlier request revision
+  ---
+  duration_ms: 6.858
+  ...
+# Subtest: the old provider failure does not expose an error or release B request lock
+ok 94 - the old provider failure does not expose an error or release B request lock
+  ---
+  duration_ms: 14.6803
+  ...
+# Subtest: successful actual routines demo recipe uses fresh memory without private read, write, import, request or capture
+ok 95 - successful actual routines demo recipe uses fresh memory without private read, write, import, request or capture
+  ---
+  duration_ms: 65.6121
+  ...
+# Subtest: failed actual routines demo recipe uses fresh memory without private read, write, import, request or capture
+ok 96 - failed actual routines demo recipe uses fresh memory without private read, write, import, request or capture
+  ---
+  duration_ms: 24.8134
+  ...
+# Subtest: no demo keeps ordinary workspace and Studio reads, persistent edits and reload
+ok 97 - no demo keeps ordinary workspace and Studio reads, persistent edits and reload
+  ---
+  duration_ms: 17.1981
+  ...
+# Subtest: standalone keeps ordinary workspace and Studio reads, persistent edits and reload
+ok 98 - standalone keeps ordinary workspace and Studio reads, persistent edits and reload
+  ---
+  duration_ms: 21.0068
+  ...
+# Subtest: non-admin keeps ordinary workspace and Studio reads, persistent edits and reload
+ok 99 - non-admin keeps ordinary workspace and Studio reads, persistent edits and reload
+  ---
+  duration_ms: 18.5547
+  ...
+# Subtest: inexact demo keeps ordinary workspace and Studio reads, persistent edits and reload
+ok 100 - inexact demo keeps ordinary workspace and Studio reads, persistent edits and reload
+  ---
+  duration_ms: 16.4402
+  ...
+# Subtest: inexact home keeps ordinary workspace and Studio reads, persistent edits and reload
+ok 101 - inexact home keeps ordinary workspace and Studio reads, persistent edits and reload
+  ---
+  duration_ms: 16.7779
+  ...
+1..101
+# tests 101
+# suites 0
+# pass 101
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1754.0973

@@ -1,0 +1,52 @@
+{
+  "verdicts": [
+    {
+      "#": 1,
+      "status": "confirmed",
+      "protected_subject": "data-loss",
+      "reason": "When a routine request for A is pending and the enabled hub selects B, routines-ui.js:47 changes I while :229 still writes through I; a fresh Node v20.19.1 VM probe of the staged build function reproduced A's result replacing B's plan and clearing B's people and versions, and the new file is introduced relative to 570c354."
+    },
+    {
+      "#": 2,
+      "status": "confirmed",
+      "protected_subject": "data-loss",
+      "reason": "With a saved owner workspace and all three authorized embedded-demo gates, the newly introduced routines/family/custom-practice readers and writers remain ungated while demo-hook.js:125 and :175-180 invoke ordinary example controls; a fresh Node v20.19.1 probe of routines initialization and the actual example handler read and overwrote the synthetic private owner record, and the inspected unscoped capture and custom-case approval paths additionally expose private input and truncate saved cases."
+    },
+    {
+      "#": 3,
+      "status": "confirmed",
+      "protected_subject": "secrets-exposure",
+      "reason": "When entrant notes are populated, new renderJoin inputs at continuity-kit-ui.js:415 have no privacy wrapper and printable(false) at :583-585 exports their values; a fresh Node v20.19.1 run using the actual staged UI and existing synthetic DOM fixture printed SYNTHETIC_PRIVATE_ENTRY_NOTES in printShare while retaining the permitted generated group text."
+    },
+    {
+      "#": 4,
+      "status": "confirmed",
+      "protected_subject": "secrets-exposure",
+      "reason": "With a previous entrant's notes and generated kit saved, the newly introduced new-entrant handler at continuity-kit-ui.js:456 resets only progress rather than entrant-specific context; a fresh Node v20.19.1 click through the staged UI fixture retained the old form and kit, printed the old entrant task, and retained the shared directory, despite the documented new-route behavior and the distinct shared info field."
+    },
+    {
+      "#": 5,
+      "status": "confirmed",
+      "protected_subject": "concurrency",
+      "reason": "When a family revision is pending, family-bridge.html:320 leaves newRound reachable and family-bridge-ui.js:486 replaces S without invalidation while :451 commits through current S; a fresh Node v20.19.1 VM execution of both actual staged listeners reproduced the old revision entering the newly created round."
+    },
+    {
+      "#": 6,
+      "status": "confirmed",
+      "protected_subject": "concurrency",
+      "reason": "Closing and reopening a participation panel during a suggestion recreates an enabled button at participation-ui.js:148 despite :88 disabling only the old element, and a fresh Node v20.19.1 probe using the actual staged mount and DOM fixture dispatched two deferred calls then persisted the older response after the newer one; ai-call.js:35 assigns a fresh request ID to each call."
+    },
+    {
+      "#": 7,
+      "status": "confirmed",
+      "protected_subject": null,
+      "reason": "After recording rejection/adaptation notes and a decision journal through the reachable controls at routines-ui.js:324-333, revision at :422 and :427-428 sends the requests and observations but omits both decision stores; a fresh Node v20.19.1 capture of the staged revision listener and actual routines model confirmed both requests present and all decision-note/journal sentinels absent, while resulting provider advice was not measured."
+    },
+    {
+      "#": 8,
+      "status": "confirmed",
+      "protected_subject": "concurrency",
+      "reason": "When custom clarification is pending, ownCancel at practice.html:1972 permits return to selection and :972 permits starting another chat, but the new completion at :1985 unconditionally calls step; a fresh Node v20.19.1 VM probe of the staged ownNext, ownCancel, step and show functions reproduced the late response reopening the custom editor and hiding the active chat and composer, with no cancellation signal or session guard supplied."
+    }
+  ]
+}

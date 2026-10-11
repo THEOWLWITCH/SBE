@@ -21,25 +21,51 @@
 
   function ss(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
 
-  // פנייה למודל (10/10/2026): השרת עונה רק למי שנכנס/ה, ורק לכלי שפתוח לו או לה (authorizeModel ב-harness/lib/access.mjs).
-  // כאן, במקום אחד לכל הכלים, כל בקשה ל-/api/complete, /api/character-turn ו-/api/pipeline מקבלת את פרטי הכניסה:
-  // האסימון החתום, הדף, ומזהה הסדנה למשתתפות סדנה.
+  // Model-service callers attach these headers explicitly. Source downloads and
+  // arbitrary external links must never receive the session token.
+  window.sbeAIHeaders = function(extra){
+    var headers = Object.assign({"content-type":"application/json"}, extra || {});
+    var token = ss("sbe.session.token");
+    if (token) headers.authorization = "Bearer " + token;
+    return headers;
+  };
+  window.sbeAIOrigin = function(){
+    // Local development may select a loopback test server. A public page can
+    // never redirect its bearer token to a configurable external host.
+    if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && window.SBE_AI_ORIGIN) {
+      try {
+        var origin = new URL(window.SBE_AI_ORIGIN);
+        if (/^(localhost|127\.0\.0\.1)$/.test(origin.hostname) && /^https?:$/.test(origin.protocol)) return origin.origin;
+      } catch(e){}
+    }
+    return "https://sbe-server.onrender.com";
+  };
+
+  // Legacy callers declare their tool here. Only our model endpoints receive
+  // credentials; matching an external URL's path is never sufficient.
   try {
-    var _fetch = window.fetch;
-    if (_fetch && !_fetch.sbeAuth) {
-      var wrapped = function(url, opts){
+    var originalFetch = window.fetch;
+    if (originalFetch && !originalFetch.sbeAuth) {
+      var authenticatedFetch = function(url, opts){
         try {
-          var u = typeof url === "string" ? url : (url && url.url) || "";
-          if (/\/api\/(complete|character-turn|pipeline)(\?|$)/.test(u) && opts && typeof opts.body === "string" && opts.body.charAt(0) === "{") {
-            var b = JSON.parse(opts.body);
-            b._auth = { token: ss("sbe.session.token") || "", page: location.pathname.split("/").pop() || "index.html", w: ss("sbe.session.wf") || "" };
-            opts = Object.assign({}, opts, { body: JSON.stringify(b) });
+          var target = new URL(typeof url === "string" ? url : url.url, location.href);
+          var ownOrigin = new URL(location.href).origin;
+          var modelOrigin = window.sbeAIOrigin();
+          if ((target.origin === ownOrigin || target.origin === modelOrigin) && !target.username && !target.password
+              && /^\/api\/(complete|character-turn|pipeline)$/.test(target.pathname)
+              && opts && typeof opts.body === "string" && /^\s*\{/.test(opts.body)) {
+            var body = JSON.parse(opts.body), headers = new Headers(opts.headers || {});
+            var explicit = headers.get("authorization");
+            var token = explicit ? explicit.replace(/^Bearer\s+/i, "") : (ss("sbe.session.token") || "");
+            if (!explicit && token) headers.set("authorization", "Bearer " + token);
+            body._auth = { token: token, page: location.pathname.split("/").pop() || "index.html", w: ss("sbe.session.wf") || "" };
+            opts = Object.assign({}, opts, { headers: headers, body: JSON.stringify(body) });
           }
         } catch(e){}
-        return _fetch.call(this, url, opts);
+        return originalFetch.call(this, url, opts);
       };
-      wrapped.sbeAuth = true;
-      window.fetch = wrapped;
+      authenticatedFetch.sbeAuth = true;
+      window.fetch = authenticatedFetch;
     }
   } catch(e){}
 
@@ -73,13 +99,14 @@
         // Legacy institutional sessions share c=LEGACY; scope by the signed institution instead.
         // Ambiguous old c-LEGACY records are deliberately not migrated between institutions.
         id = p.k === "code" && p.c === "LEGACY" ? "legacy-inst-" + encodeURIComponent(p.inst || "")
+          : p.k === "workshop" ? "workshop-" + encodeURIComponent(p.w || "") + "-" + encodeURIComponent(p.s || "")
           : p.k === "code" ? "c-" + p.c + (p.s ? "-" + p.s : "") : p.k === "inst" ? "inst-" + p.inst : String(p.k || "anon");
       } else if (ss("sbe.session.homeUrl")) id = "h-" + ss("sbe.session.homeUrl");
     } catch(e){}
     return base + ":" + id;
   };
-  // ניקוי חד־פעמי של שמירות ישנות שלא היו לפי משתמש/ת (הן הציגו פרטים של מישהו אחר)
-  try { ["sbe.advisor.v1", "sbe.nugi.v1", "sbe.writer.v1", "sbe.review.draft.v1"].forEach(function(k){ localStorage.removeItem(k); }); } catch(e){}
+  // Old unscoped drafts remain available for explicit recovery. They are never
+  // opened or assigned to the next user automatically.
 
   var home = ss("sbe.session.homeUrl") || "";
   // רכיבים טכניים (למשל מצב החיבור למודל) — מוצגים רק למנהלת המערכת: class="sbe-sysonly"
@@ -196,17 +223,18 @@
   // שהשרת החזיר לקוד (sbe.session.perms).
   var PAGES_BY_PERM = {
     fac_trainee: ["input-screen.html"], fac_parent: ["parent-input-screen.html"], fac_youth: ["student-input-screen.html"],
-    conv: ["conversation-planner.html"], activity: ["activity-planner.html"], academic: ["academic-review.html"],
+    conv: ["conversation-planner.html", "rehearsal.html"], activity: ["activity-planner.html", "rehearsal.html"], academic: ["academic-review.html"], // rehearsal.html: תרגול הגרסה שאושרה (09/10/2026)
     resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html"],
     leadership: ["leadership-advisor.html", "resilience-advisor-sources.html"],
     practi: ["resilience-advisor.html", "resilience-advisor-sources.html"],
     studio: ["resilience-studio.html"], // עד לאישור המקצועי — רק בהרשאה הזאת (studio.mjs: STUDIO_PERMS)
+    practice: ["practice.html"],
     journey: ["journey.html"],
     writer: ["message-writer.html", "resilience-advisor-sources.html"], // כתיבה מקדמת חוסן — רק בהרשאה הזאת (02/10/2026)
-    nana: ["facilitation-advisor.html", "resilience-advisor-sources.html"] // ננה — מהוראה להנחיה (07/10/2026)
+    nana: ["facilitation-advisor.html", "team-learning-lab.html", "resilience-advisor-sources.html"] // learning and rehearsal extend Nana; Studio remains separate.
   };
   var SIM_DOCS = ["doc-trainee.html", "doc-actor.html", "card-actor.html", "doc-facilitator.html"];
-  var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html"].concat(SIM_DOCS);
+  var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html", "practice.html"].concat(SIM_DOCS);
 
   var allowed = null; // null = הכול
   if (home === "home.html") {
@@ -222,7 +250,7 @@
   } else if (/^system-select\.html/.test(home)) {
     var track = q.get("track");
     allowed = ["system-select.html", "search.html", "facilitator-screen.html",
-               "feedback.html", "feedback-results.html"].concat(SIM_DOCS);
+               "feedback.html", "feedback-results.html", "practice.html"].concat(SIM_DOCS);
     if (TRACK_INPUT[track]) allowed.push(TRACK_INPUT[track]);
     else for (var t in TRACK_INPUT) allowed.push(TRACK_INPUT[t]);
     // הכלים הנוספים — רק מה שנפתח למוסד (sbe.session.modules, נשמר ב-system-select.html).
@@ -230,8 +258,8 @@
     try { mods = JSON.parse(ss("sbe.session.modules") || "{}") || {}; } catch(e){}
     if (mods.studio === true) allowed.push("resilience-studio.html");
     if (track !== "parent" && track !== "youth") {
-      if (mods.conv === true) allowed.push("conversation-planner.html");
-      if (mods.activity === true) allowed.push("activity-planner.html");
+      if (mods.conv === true) allowed.push("conversation-planner.html", "rehearsal.html");
+      if (mods.activity === true) allowed.push("activity-planner.html", "rehearsal.html");
       if (mods.academic === true) allowed.push("academic-review.html");
     }
   } else if (/^entry\.html\?home=/.test(home)) {

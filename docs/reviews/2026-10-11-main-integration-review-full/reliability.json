@@ -1,0 +1,45 @@
+{
+  "reviewer": "reliability",
+  "findings": [
+    {
+      "title": "Studio repair ignores cancellation after its request starts",
+      "severity": "P2",
+      "file": "harness/lib/studio.mjs",
+      "line": 379,
+      "why_it_matters": "When a Studio job is cancelled, expires, or loses access during the new validation repair, its provider request can keep running for up to three minutes. The server aborts the job controller, but this fetch listens only to its independent timeout; the cancelled work continues consuming provider capacity and budget until it returns. The wrapper's later authorization check prevents publication, but cannot stop the in-flight call.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 75,
+      "evidence": [
+        "harness/lib/studio.mjs:379:           text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});",
+        "harness/lib/studio.mjs:389-390: the new invalid-kit path invokes ask(...) for a repair after the first call's linked requestController has been removed at line 347.",
+        "harness/practice-server.mjs:203-205: /api/pipeline-cancel aborts controllers.get(key), and lines 145-150 check current state before fetch and after response.json(), not during fetch.",
+        "provenance: c187604 Danny Baranes 2026-10-09 - upstream ask helper already used a timeout-only signal; this integration adds a cancellable first request but leaves the newly reachable repair path unlinked."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Give ask() a signal linked to both the job's signal and its 180-second timeout, and check that signal before each optional repair or review call. Verify cancellation during the repair with a pending fetch that observes its signal."
+    },
+    {
+      "title": "Studio repair can outlast the browser's job wait",
+      "severity": "P2",
+      "file": "harness/lib/studio.mjs",
+      "line": 389,
+      "why_it_matters": "A generated kit that needs validation repair and then customer review can use three sequential provider calls, with a fourth when customer review requests revision. Each call may take 180 seconds, while the Studio browser stops polling nine minutes after job acceptance. A slow but successful fourth call can therefore finish on the server after the browser has told the user that building failed; retrying starts another charged job and the completed kit is not displayed.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 75,
+      "evidence": [
+        "harness/lib/studio.mjs:389:     const repaired=await ask(INVITE.apply(INSTRUCTIONS)+'\\nהגרסה הקודמת לא עברה את הבדיקה. תקני בדיוק את הבעיות האלה, ושמרי את כל השאר כפי שהוא: '+errors.join('; '),",
+        "harness/lib/studio.mjs:336,379: the initial generation and each ask() have separate 180000 ms timeouts; lines 395-400 permit a customer review and another revision after the repair.",
+        "app/lib/resilience-studio-ui.js:64:     while(Date.now()-t0<9*60*1000) {",
+        "app/lib/resilience-studio-ui.js:76:     throw new Error('הבנייה נמשכה מעבר לזמן ההמתנה. התוכן הקיים נשמר; אפשר לנסות שוב.');"
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Give the Studio job a shared end-to-end deadline and pass its remaining time into every provider call, or extend the browser's polling window beyond the maximum permitted sequence and preserve the job ID for resumption. Test a slow repair plus review/revision sequence."
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

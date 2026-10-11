@@ -1,0 +1,2365 @@
+TAP version 13
+# Subtest: F02: legacy institutions retain their own journeys and cannot read each other
+ok 1 - F02: legacy institutions retain their own journeys and cannot read each other
+  ---
+  duration_ms: 452.983
+  ...
+# Subtest: F02: workshop tenant is server-derived; foreign legacy sessions cannot list or delete
+ok 2 - F02: workshop tenant is server-derived; foreign legacy sessions cannot list or delete
+  ---
+  duration_ms: 457.5131
+  ...
+# Subtest: F03: private actions revalidate revoked code, institution subscription and module ceiling
+ok 3 - F03: private actions revalidate revoked code, institution subscription and module ceiling
+  ---
+  duration_ms: 420.5707
+  ...
+# Subtest: supported academic legacy entry has live academic authorization and code rotation revokes it
+ok 4 - supported academic legacy entry has live academic authorization and code rotation revokes it
+  ---
+  duration_ms: 2.6668
+  ...
+# Subtest: system password replacement revokes already signed administrator sessions
+ok 5 - system password replacement revokes already signed administrator sessions
+  ---
+  duration_ms: 80.4364
+  ...
+# Subtest: public exceptions preserve certificates, questionnaires and workshop forms, while private reads need live entry
+ok 6 - public exceptions preserve certificates, questionnaires and workshop forms, while private reads need live entry
+  ---
+  duration_ms: 5.4236
+  ...
+# Subtest: public renewal intake records a validated request and cannot grant or enumerate access
+ok 7 - public renewal intake records a validated request and cannot grant or enumerate access
+  ---
+  duration_ms: 3.8543
+  ...
+# Subtest: old legacy records with proven tenant remain accessible; unknown ownership never gets inferred
+ok 8 - old legacy records with proven tenant remain accessible; unknown ownership never gets inferred
+  ---
+  duration_ms: 414.344
+  ...
+# Subtest: workshop participants have signed bounded roles, distinct owners, and live expiry/host revocation
+ok 9 - workshop participants have signed bounded roles, distinct owners, and live expiry/host revocation
+  ---
+  duration_ms: 6.4499
+  ...
+# Subtest: F04/F11: twenty reservations for a three-use code admit exactly three and commit once
+ok 10 - F04/F11: twenty reservations for a three-use code admit exactly three and commit once
+  ---
+  duration_ms: 13.1441
+  ...
+# Subtest: release, expiry, idempotency conflict, token cap, and unsupported persistence fail safely
+ok 11 - release, expiry, idempotency conflict, token cap, and unsupported persistence fail safely
+  ---
+  duration_ms: 6.5971
+  ...
+# Subtest: course seat reservations include pending students and failed generations return capacity
+ok 12 - course seat reservations include pending students and failed generations return capacity
+  ---
+  duration_ms: 3.0028
+  ...
+# Subtest: durable job claim and finalization settle quota in the same atomic operation
+ok 13 - durable job claim and finalization settle quota in the same atomic operation
+  ---
+  duration_ms: 1.8014
+  ...
+# Subtest: Supabase atomic operations use dedicated RPCs and a missing migration never falls back to read/write
+ok 14 - Supabase atomic operations use dedicated RPCs and a missing migration never falls back to read/write
+  ---
+  duration_ms: 1.6422
+  ...
+# Subtest: workshop creation claims code and owner atomically across competing institutions
+ok 15 - workshop creation claims code and owner atomically across competing institutions
+  ---
+  duration_ms: 24.0954
+  ...
+# Subtest: Supabase listings fetch all pages with a key cursor even when the server caps pages below 500
+ok 16 - Supabase listings fetch all pages with a key cursor even when the server caps pages below 500
+  ---
+  duration_ms: 2.1603
+  ...
+# Subtest: failed and expired attempts exhaust daily owner admission without consuming academic productions
+ok 17 - failed and expired attempts exhaust daily owner admission without consuming academic productions
+  ---
+  duration_ms: 55.681
+  ...
+# Subtest: released attempts retain conservative daily token budgets across new IDs
+ok 18 - released attempts retain conservative daily token budgets across new IDs
+  ---
+  duration_ms: 3.1481
+  ...
+# Subtest: tenant daily admission retains released attempts across different owners
+ok 19 - tenant daily admission retains released attempts across different owners
+  ---
+  duration_ms: 0.7568
+  ...
+# Subtest: Narrative adapter preserves original context and marks missing explanations without fabricating them
+ok 20 - Narrative adapter preserves original context and marks missing explanations without fabricating them
+  ---
+  duration_ms: 24.4556
+  ...
+# Subtest: Narrative adapter retains canonical pipeline lines, actions, and missed-turn guidance
+ok 21 - Narrative adapter retains canonical pipeline lines, actions, and missed-turn guidance
+  ---
+  duration_ms: 1.3243
+  ...
+# Subtest: A save completing after an edit keeps visible local text and the new server base version
+ok 22 - A save completing after an edit keeps visible local text and the new server base version
+  ---
+  duration_ms: 4.6458
+  ...
+# Subtest: A late review never restores a removed step or accepts a proposal over unsaved edits
+ok 23 - A late review never restores a removed step or accepts a proposal over unsaved edits
+  ---
+  duration_ms: 3.3084
+  ...
+# Subtest: Step IDs remain stable through edits, add/remove, and local reopening
+ok 24 - Step IDs remain stable through edits, add/remove, and local reopening
+  ---
+  duration_ms: 3.8669
+  ...
+# Subtest: Proposal decisions are explicit and approval sends risk acknowledgment for the exact saved version
+ok 25 - Proposal decisions are explicit and approval sends risk acknowledgment for the exact saved version
+  ---
+  duration_ms: 3.9099
+  ...
+# Subtest: Conflicts preserve a recoverable local draft and a failed save is never reported as saved
+ok 26 - Conflicts preserve a recoverable local draft and a failed save is never reported as saved
+  ---
+  duration_ms: 16.5359
+  ...
+# Subtest: Rejecting a proposal preserves edits and private concerns made before or during the decision
+ok 27 - Rejecting a proposal preserves edits and private concerns made before or during the decision
+  ---
+  duration_ms: 5.8066
+  ...
+# Subtest: A disposed or replaced editor cannot overwrite the active editor local backup
+ok 28 - A disposed or replaced editor cannot overwrite the active editor local backup
+  ---
+  duration_ms: 4.6466
+  ...
+# Subtest: Cancelling before artifact startup acknowledgment cancels the late authenticated job
+ok 29 - Cancelling before artifact startup acknowledgment cancels the late authenticated job
+  ---
+  duration_ms: 3.4946
+  ...
+# Subtest: Async review uses authenticated transport, stable logical request IDs, and cancellation reaches its job
+ok 30 - Async review uses authenticated transport, stable logical request IDs, and cancellation reaches its job
+  ---
+  duration_ms: 27.0835
+  ...
+# Subtest: Cancelling an async review cancels its authenticated server job and preserves the content
+ok 31 - Cancelling an async review cancels its authenticated server job and preserves the content
+  ---
+  duration_ms: 8.3709
+  ...
+# Subtest: Loading the server version keeps an explicit recoverable copy of a conflicting local edit
+ok 32 - Loading the server version keeps an explicit recoverable copy of a conflicting local edit
+  ---
+  duration_ms: 2.5188
+  ...
+# Subtest: Refreshing twice does not silently rebase a conflicting local draft onto a new server version
+ok 33 - Refreshing twice does not silently rebase a conflicting local draft onto a new server version
+  ---
+  duration_ms: 3.1528
+  ...
+# Subtest: proposal comparison uses its historical base after a deleted step and a newer review
+ok 34 - proposal comparison uses its historical base after a deleted step and a newer review
+  ---
+  duration_ms: 8.5315
+  ...
+# Subtest: Actual editor DOM exposes RTL labels, private concern, steps, and explicit safe proposal controls
+ok 35 - Actual editor DOM exposes RTL labels, private concern, steps, and explicit safe proposal controls
+  ---
+  duration_ms: 9.132
+  ...
+# Subtest: Private concerns travel separately from participant content and stay out of workshop callbacks
+ok 36 - Private concerns travel separately from participant content and stay out of workshop callbacks
+  ---
+  duration_ms: 3.4745
+  ...
+# Subtest: Narrative generation cancelled by reset never opens its late result and keeps scoped job transport
+ok 37 - Narrative generation cancelled by reset never opens its late result and keeps scoped job transport
+  ---
+  duration_ms: 8.9768
+  ...
+# Subtest: confirmed lost generations use a fresh request ID for recovery, including reopening a saved job
+ok 38 - confirmed lost generations use a fresh request ID for recovery, including reopening a saved job
+  ---
+  duration_ms: 89.0124
+  ...
+# Subtest: Actual narrative input screen loads the editor before the build module and all inline scripts parse
+ok 39 - Actual narrative input screen loads the editor before the build module and all inline scripts parse
+  ---
+  duration_ms: 9.8841
+  ...
+# Subtest: Single activity saves actual edited document/card, prints them and preserves version history on reopen
+ok 40 - Single activity saves actual edited document/card, prints them and preserves version history on reopen
+  ---
+  duration_ms: 26.2658
+  ...
+# Subtest: Single build ignores success or failure after reset and cannot replace a newer product
+ok 41 - Single build ignores success or failure after reset and cannot replace a newer product
+  ---
+  duration_ms: 5.9766
+  ...
+# Subtest: Sequence deletion/reset rejects a late fill while owned incremental chunks can continue
+ok 42 - Sequence deletion/reset rejects a late fill while owned incremental chunks can continue
+  ---
+  duration_ms: 17.4924
+  ...
+# Subtest: Sequence improved proposal keeps comparison and declines adoption after a newer human edit
+ok 43 - Sequence improved proposal keeps comparison and declines adoption after a newer human edit
+  ---
+  duration_ms: 15.4154
+  ...
+# Subtest: Fresh sequence improvement can be adopted and undo restores the original plan
+ok 44 - Fresh sequence improvement can be adopted and undo restores the original plan
+  ---
+  duration_ms: 5.4968
+  ...
+# Subtest: Sequence document saves, reopens, prints and downloads the actual edited table without active pasted markup
+ok 45 - Sequence document saves, reopens, prints and downloads the actual edited table without active pasted markup
+  ---
+  duration_ms: 6.531
+  ...
+# Subtest: Sequence source attachment preserves human edits in save, print, download and review snapshots
+ok 46 - Sequence source attachment preserves human edits in save, print, download and review snapshots
+  ---
+  duration_ms: 5.784
+  ...
+# Subtest: Owner switch blocks new AI submissions, saved-product writes and the captured sequence draft key
+ok 47 - Owner switch blocks new AI submissions, saved-product writes and the captured sequence draft key
+  ---
+  duration_ms: 5.0182
+  ...
+# Subtest: Sequence import and Q&A ignore late replies after input edits or reset
+ok 48 - Sequence import and Q&A ignore late replies after input edits or reset
+  ---
+  duration_ms: 7.4321
+  ...
+# Subtest: Superseding work releases its previous button while an old finally cannot unlock the newer request
+ok 49 - Superseding work releases its previous button while an old finally cannot unlock the newer request
+  ---
+  duration_ms: 6.9009
+  ...
+# Subtest: private versioned drafts enforce owner/tenant and fail closed without an atomic store
+ok 50 - private versioned drafts enforce owner/tenant and fail closed without an atomic store
+  ---
+  duration_ms: 173.1862
+  ...
+# Subtest: gated artifacts preserve original renderer metadata through update and approved practice
+ok 51 - gated artifacts preserve original renderer metadata through update and approved practice
+  ---
+  duration_ms: 41.2324
+  ...
+# Subtest: three scoped reviewers and synthesis share one base; only facilitator receives concerns and all remain private proposals
+ok 52 - three scoped reviewers and synthesis share one base; only facilitator receives concerns and all remain private proposals
+  ---
+  duration_ms: 55.1805
+  ...
+# Subtest: specialists receive distinct trusted responsibilities and traces hash the actual role prompts
+ok 53 - specialists receive distinct trusted responsibilities and traces hash the actual role prompts
+  ---
+  duration_ms: 59.6699
+  ...
+# Subtest: compact reviewers keep structured context but only readers of full prose may replace it
+ok 54 - compact reviewers keep structured context but only readers of full prose may replace it
+  ---
+  duration_ms: 9.5726
+  ...
+# Subtest: partial reviewer failures persist valid candidates and retry only missing work
+ok 55 - partial reviewer failures persist valid candidates and retry only missing work
+  ---
+  duration_ms: 66.4313
+  ...
+# Subtest: human accept creates a new version; stale decisions conflict and practice/observation use the approved snapshot
+ok 56 - human accept creates a new version; stale decisions conflict and practice/observation use the approved snapshot
+  ---
+  duration_ms: 94.06
+  ...
+# Subtest: model cannot write approval/identity/locked context, cite unapproved sources, or accept an invalid artifact
+ok 57 - model cannot write approval/identity/locked context, cite unapproved sources, or accept an invalid artifact
+  ---
+  duration_ms: 89.8878
+  ...
+# Subtest: late review cannot overwrite an edit or reintroduce a removed step
+ok 58 - late review cannot overwrite an edit or reintroduce a removed step
+  ---
+  duration_ms: 42.7939
+  ...
+# Subtest: timeouts bound a provider that ignores cancellation and never save its later result
+ok 59 - timeouts bound a provider that ignores cancellation and never save its later result
+  ---
+  duration_ms: 55.5665
+  ...
+# Subtest: explicit cancellation fences a result even when the adapter returns after abort
+ok 60 - explicit cancellation fences a result even when the adapter returns after abort
+  ---
+  duration_ms: 29.4127
+  ...
+# Subtest: hard call/input/token ceilings reject excess work and never mark a proposal approved
+ok 61 - hard call/input/token ceilings reject excess work and never mark a proposal approved
+  ---
+  duration_ms: 51.0771
+  ...
+# Subtest: shipped-document-sized narrative reviews fit single and team bounds without hidden retries
+ok 62 - shipped-document-sized narrative reviews fit single and team bounds without hidden retries
+  ---
+  duration_ms: 137.4941
+  ...
+# Subtest: Reviewers wait for conservative reservations to settle instead of losing the queued safety review
+ok 63 - Reviewers wait for conservative reservations to settle instead of losing the queued safety review
+  ---
+  duration_ms: 83.2198
+  ...
+# Subtest: Measured exhaustion after queued reviewers still blocks synthesis without an extra physical call
+ok 64 - Measured exhaustion after queued reviewers still blocks synthesis without an extra physical call
+  ---
+  duration_ms: 45.8777
+  ...
+# Subtest: Cancellation and the shared deadline stop queued reviewer dispatch when active adapters do not settle
+ok 65 - Cancellation and the shared deadline stop queued reviewer dispatch when active adapters do not settle
+  ---
+  duration_ms: 273.0449
+  ...
+# Subtest: Partial token usage keeps whole reservations and cannot admit otherwise over-budget queued work
+ok 66 - Partial token usage keeps whole reservations and cannot admit otherwise over-budget queued work
+  ---
+  duration_ms: 48.9318
+  ...
+# Subtest: Complete token measurements are charged while invalid counts and excessive output remain budget failures
+ok 67 - Complete token measurements are charged while invalid counts and excessive output remain budget failures
+  ---
+  duration_ms: 100.3833
+  ...
+# Subtest: Aborting during a suspended ownership check prevents queued dispatch after that check resumes
+ok 68 - Aborting during a suspended ownership check prevents queued dispatch after that check resumes
+  ---
+  duration_ms: 21.8176
+  ...
+# Subtest: a lost review lease can retry its base version and fences a response from the abandoned attempt
+ok 69 - a lost review lease can retry its base version and fences a response from the abandoned attempt
+  ---
+  duration_ms: 74.5488
+  ...
+# Subtest: locked goals and server-approved source IDs are checked before any candidate is stored
+ok 70 - locked goals and server-approved source IDs are checked before any candidate is stored
+  ---
+  duration_ms: 46.1574
+  ...
+# Subtest: two simultaneous human edits allow one commit and preserve the original content history
+ok 71 - two simultaneous human edits allow one commit and preserve the original content history
+  ---
+  duration_ms: 20.2291
+  ...
+# Subtest: the real provider adapter cannot retry a reviewer behind the four-call budget
+ok 72 - the real provider adapter cannot retry a reviewer behind the four-call budget
+  ---
+  duration_ms: 62.8104
+  ...
+# Subtest: Cancelling before startup acknowledgment releases the caller and cancels the subsequently accepted job
+ok 73 - Cancelling before startup acknowledgment releases the caller and cancels the subsequently accepted job
+  ---
+  duration_ms: 29.1736
+  ...
+# Subtest: Late acknowledged cancellation keeps copied credentials of the submitting owner after A to B
+ok 74 - Late acknowledged cancellation keeps copied credentials of the submitting owner after A to B
+  ---
+  duration_ms: 3.2635
+  ...
+# Subtest: Polling uses live identity and cleans up with original-owner credentials when B cannot read A
+ok 75 - Polling uses live identity and cleans up with original-owner credentials when B cannot read A
+  ---
+  duration_ms: 6.3563
+  ...
+# Subtest: An already cancelled request is never sent to the server
+ok 76 - An already cancelled request is never sent to the server
+  ---
+  duration_ms: 2.0063
+  ...
+# Subtest: malformed JSON repairs once through actual authenticated jobs without mutating the original request
+ok 77 - malformed JSON repairs once through actual authenticated jobs without mutating the original request
+  ---
+  duration_ms: 51.5913
+  ...
+# Subtest: valid JSON that fails full domain reply validation receives one repair
+ok 78 - valid JSON that fails full domain reply validation receives one repair
+  ---
+  duration_ms: 29.2202
+  ...
+# Subtest: two unusable replies stop with incomplete after exactly two attempts
+ok 79 - two unusable replies stop with incomplete after exactly two attempts
+  ---
+  duration_ms: 29.8383
+  ...
+# Subtest: an already aborted helper request never reaches fetch
+ok 80 - an already aborted helper request never reaches fetch
+  ---
+  duration_ms: 9.022
+  ...
+# Subtest: beforeAttempt may reject the initial request without submitting a job
+ok 81 - beforeAttempt may reject the initial request without submitting a job
+  ---
+  duration_ms: 3.3475
+  ...
+# Subtest: identity change after a malformed null reply blocks repair through beforeAttempt
+ok 82 - identity change after a malformed null reply blocks repair through beforeAttempt
+  ---
+  duration_ms: 12.1393
+  ...
+# Subtest: abort after malformed output prevents a repair job even when fetch ignores abort
+ok 83 - abort after malformed output prevents a repair job even when fetch ignores abort
+  ---
+  duration_ms: 7.3472
+  ...
+# Subtest: cancelling a repair before acknowledgment cancels its late accepted job with submitting credentials
+ok 84 - cancelling a repair before acknowledgment cancels its late accepted job with submitting credentials
+  ---
+  duration_ms: 6.4546
+  ...
+# Subtest: a validator cancellation propagates without being mistaken for incomplete data
+ok 85 - a validator cancellation propagates without being mistaken for incomplete data
+  ---
+  duration_ms: 4.5695
+  ...
+# Subtest: print uses approved tables, treats markup as text and excludes private observations and unsaved form values
+ok 86 - print uses approved tables, treats markup as text and excludes private observations and unsaved form values
+  ---
+  duration_ms: 14.356
+  ...
+# Subtest: approved rehearsal fetches the exact version, shows its explanations and reopens its observations without generation
+ok 87 - approved rehearsal fetches the exact version, shows its explanations and reopens its observations without generation
+  ---
+  duration_ms: 19.5715
+  ...
+# Subtest: a failed observation keeps text and retries the same submission; pending save prevents an edit from being erased
+ok 88 - a failed observation keeps text and retries the same submission; pending save prevents an edit from being erased
+  ---
+  duration_ms: 7.9737
+  ...
+# Subtest: a draft or denied artifact cannot show a practice form or approved content
+ok 89 - a draft or denied artifact cannot show a practice form or approved content
+  ---
+  duration_ms: 11.015
+  ...
+# Subtest: the documented gates entry point executes real valid and adversarial fixtures without a provider
+ok 90 - the documented gates entry point executes real valid and adversarial fixtures without a provider
+  ---
+  duration_ms: 426.9034
+  ...
+# Subtest: unknown or live provider CLI options fail explicitly instead of silently running fixtures
+ok 91 - unknown or live provider CLI options fail explicitly instead of silently running fixtures
+  ---
+  duration_ms: 939.4876
+  ...
+# Subtest: the pipeline baseline is repeatable and exercises provider fixtures before final gates
+ok 92 - the pipeline baseline is repeatable and exercises provider fixtures before final gates
+  ---
+  duration_ms: 52.8906
+  ...
+# Subtest: a broken fixture/provider adapter is an unexpected error, not a successful schema rejection
+ok 93 - a broken fixture/provider adapter is an unexpected error, not a successful schema rejection
+  ---
+  duration_ms: 4.055
+  ...
+# Subtest: authorized embedded continuity demo never loads or overwrites an ordinary private kit
+ok 94 - authorized embedded continuity demo never loads or overwrites an ordinary private kit
+  ---
+  duration_ms: 14.2661
+  ...
+# Subtest: standalone continuity uses its ordinary owner store rather than broadening demo isolation
+ok 95 - standalone continuity uses its ordinary owner store rather than broadening demo isolation
+  ---
+  duration_ms: 3.4626
+  ...
+# Subtest: non-admin continuity uses its ordinary owner store rather than broadening demo isolation
+ok 96 - non-admin continuity uses its ordinary owner store rather than broadening demo isolation
+  ---
+  duration_ms: 2.5977
+  ...
+# Subtest: ordinary embedded continuity uses its ordinary owner store rather than broadening demo isolation
+ok 97 - ordinary embedded continuity uses its ordinary owner store rather than broadening demo isolation
+  ---
+  duration_ms: 1.9907
+  ...
+# Subtest: generated routine and emergency wording survives rebuild/reload while private controls keep working
+ok 98 - generated routine and emergency wording survives rebuild/reload while private controls keep working
+  ---
+  duration_ms: 364.4647
+  ...
+# Subtest: editing the unfilled letter preserves wording when local details change, and only filled preview prints
+ok 99 - editing the unfilled letter preserves wording when local details change, and only filled preview prints
+  ---
+  duration_ms: 136.8019
+  ...
+# Subtest: sources start folded/excluded, persist independent choices and print once after all panes
+ok 100 - sources start folded/excluded, persist independent choices and print once after all panes
+  ---
+  duration_ms: 602.7302
+  ...
+# Subtest: joined continuity panes retain source choices and shared prints omit the private adaptation log
+ok 101 - joined continuity panes retain source choices and shared prints omit the private adaptation log
+  ---
+  duration_ms: 185.2134
+  ...
+# Subtest: paste/drop block active live markup and snapshots/print strip active attributes and private controls
+ok 102 - paste/drop block active live markup and snapshots/print strip active attributes and private controls
+  ---
+  duration_ms: 199.5338
+  ...
+# Subtest: a newly accepted routine replaces its edits while emergency wording and source selections survive
+ok 103 - a newly accepted routine replaces its edits while emergency wording and source selections survive
+  ---
+  duration_ms: 175.2752
+  ...
+# Subtest: stored editable trees reject controls/private blocks and filter event attributes or active links
+ok 104 - stored editable trees reject controls/private blocks and filter event attributes or active links
+  ---
+  duration_ms: 62.6897
+  ...
+# Subtest: oversized/deep snapshots fall back safely and a rejected oversized edit keeps the prior saved wording
+ok 105 - oversized/deep snapshots fall back safely and a rejected oversized edit keeps the prior saved wording
+  ---
+  duration_ms: 149.5589
+  ...
+# Subtest: giant class/href attributes normalize to bounded inert values before capture or URL parsing
+ok 106 - giant class/href attributes normalize to bounded inert values before capture or URL parsing
+  ---
+  duration_ms: 187.8108
+  ...
+# Subtest: normalized allowed attributes share the cumulative text budget on capture, restore and actual edit saving
+ok 107 - normalized allowed attributes share the cumulative text budget on capture, restore and actual edit saving
+  ---
+  duration_ms: 148.2614
+  ...
+# Subtest: successful authorized demo leaves the private store untouched and private sentinels absent from input/capture
+ok 108 - successful authorized demo leaves the private store untouched and private sentinels absent from input/capture
+  ---
+  duration_ms: 336.6012
+  ...
+# Subtest: failed authorized demo leaves the private store untouched and private sentinels absent from input/capture
+ok 109 - failed authorized demo leaves the private store untouched and private sentinels absent from input/capture
+  ---
+  duration_ms: 76.2787
+  ...
+# Subtest: shared continuity print excludes raw joining inputs but retains permitted generated group text
+ok 110 - shared continuity print excludes raw joining inputs but retains permitted generated group text
+  ---
+  duration_ms: 202.4009
+  ...
+# Subtest: a new entrant clears personal inputs, kit and source choices while the group directory survives reload
+ok 111 - a new entrant clears personal inputs, kit and source choices while the group directory survives reload
+  ---
+  duration_ms: 258.811
+  ...
+# Subtest: a late joining result cannot restore the previous entrant after reset
+ok 112 - a late joining result cannot restore the previous entrant after reset
+  ---
+  duration_ms: 264.1162
+  ...
+# Subtest: a redrawn joining pane keeps its request lock and does not send a duplicate
+ok 113 - a redrawn joining pane keeps its request lock and does not send a duplicate
+  ---
+  duration_ms: 151.7685
+  ...
+# Subtest: the continuity bank has several academic sources, all with a key, citation and finding
+ok 114 - the continuity bank has several academic sources, all with a key, citation and finding
+  ---
+  duration_ms: 6.064
+  ...
+# Subtest: the prompt asks for the kit parts, privacy, conversation guidance and cites only the bank
+ok 115 - the prompt asks for the kit parts, privacy, conversation guidance and cites only the bank
+  ---
+  duration_ms: 1.5939
+  ...
+# Subtest: input text, parsing and validity
+ok 116 - input text, parsing and validity
+  ---
+  duration_ms: 2.5265
+  ...
+# Subtest: screen text is written as an invitation (no "חייב", "צריך", "אסור")
+ok 117 - screen text is written as an invitation (no "חייב", "צריך", "אסור")
+  ---
+  duration_ms: 7.664
+  ...
+# Subtest: the readiness list, the parent letter and the emergency check
+ok 118 - the readiness list, the parent letter and the emergency check
+  ---
+  duration_ms: 0.5403
+  ...
+# Subtest: the student list is read in the browser: headers, no headers, quotes and teams
+ok 119 - the student list is read in the browser: headers, no headers, quotes and teams
+  ---
+  duration_ms: 2.545
+  ...
+# Subtest: joining and return kit: choice, rotating peers, adult responsibility, and no reason for absence
+ok 120 - joining and return kit: choice, rotating peers, adult responsibility, and no reason for absence
+  ---
+  duration_ms: 0.5798
+  ...
+# Subtest: Open-select leaves the conversation output mode closed and its two routes keep the intended products
+ok 121 - Open-select leaves the conversation output mode closed and its two routes keep the intended products
+  ---
+  duration_ms: 3023.3663
+  ...
+# Subtest: Digital page saves actual edited full and short text, reopens, prints and versions without another AI call
+ok 122 - Digital page saves actual edited full and short text, reopens, prints and versions without another AI call
+  ---
+  duration_ms: 2002.5596
+  ...
+# Subtest: Oral briefing and reminder save current edited table cells and show failed storage writes
+ok 123 - Oral briefing and reminder save current edited table cells and show failed storage writes
+  ---
+  duration_ms: 1337.0595
+  ...
+# Subtest: Proposal replies never refill cleared fields or reset forms
+ok 124 - Proposal replies never refill cleared fields or reset forms
+  ---
+  duration_ms: 2940.7184
+  ...
+# Subtest: Old successful and failed generations cannot replace a newer edited product
+ok 125 - Old successful and failed generations cannot replace a newer edited product
+  ---
+  duration_ms: 4081.5794
+  ...
+# Subtest: Closing, resetting, reopening saved products or changing identity invalidates pending generation
+ok 126 - Closing, resetting, reopening saved products or changing identity invalidates pending generation
+  ---
+  duration_ms: 7540.6043
+  ...
+# Subtest: Owner A/B/A isolates saved products, preserves legacy data and passes the run signal to the local AI origin
+ok 127 - Owner A/B/A isolates saved products, preserves legacy data and passes the run signal to the local AI origin
+  ---
+  duration_ms: 1372.8263
+  ...
+# Subtest: Editing the visible product aborts pending work and its late reply leaves the edited text intact
+ok 128 - Editing the visible product aborts pending work and its late reply leaves the edited text intact
+  ---
+  duration_ms: 850.1841
+  ...
+# Subtest: After identity changes, new work on the old form refuses to send its previous owner fields
+ok 129 - After identity changes, new work on the old form refuses to send its previous owner fields
+  ---
+  duration_ms: 254.8311
+  ...
+# Subtest: only product calls are reviewed, and CUSTOMER_REVIEW=off turns it off
+ok 130 - only product calls are reviewed, and CUSTOMER_REVIEW=off turns it off
+  ---
+  duration_ms: 3.7382
+  ...
+# Subtest: a clear product passes through unchanged after one review call
+ok 131 - a clear product passes through unchanged after one review call
+  ---
+  duration_ms: 1.1491
+  ...
+# Subtest: an unclear product is fixed once, in the same JSON shape
+ok 132 - an unclear product is fixed once, in the same JSON shape
+  ---
+  duration_ms: 0.8828
+  ...
+# Subtest: a broken fix (missing fields, empty, error) keeps the original; a failing review never blocks the product
+ok 133 - a broken fix (missing fields, empty, error) keeps the original; a failing review never blocks the product
+  ---
+  duration_ms: 0.9624
+  ...
+# Subtest: plain-text products are revised as text
+ok 134 - plain-text products are revised as text
+  ---
+  duration_ms: 1.0028
+  ...
+# Subtest: several academic sources support the bridge lab, including the EEF parents guidance
+ok 135 - several academic sources support the bridge lab, including the EEF parents guidance
+  ---
+  duration_ms: 5.1323
+  ...
+# Subtest: the prompts carry the lab principles, every part and the sources
+ok 136 - the prompts carry the lab principles, every part and the sources
+  ---
+  duration_ms: 2.6595
+  ...
+# Subtest: family nicknames are replaced before sending, and parsing checks the main parts
+ok 137 - family nicknames are replaced before sending, and parsing checks the main parts
+  ---
+  duration_ms: 1.469
+  ...
+# Subtest: screen text and the start-of-year form are written as an invitation and without long dashes
+ok 138 - screen text and the start-of-year form are written as an invitation and without long dashes
+  ---
+  duration_ms: 11.5509
+  ...
+# Subtest: the first card is about the contact itself; a goal card is an option for later
+ok 139 - the first card is about the contact itself; a goal card is an option for later
+  ---
+  duration_ms: 0.7099
+  ...
+# Subtest: each family starts with a story, and feelings about the parents are treated as a guess to check
+ok 140 - each family starts with a story, and feelings about the parents are treated as a guess to check
+  ---
+  duration_ms: 0.5527
+  ...
+# Subtest: successful actual family demo recipe isolates private state before all reads and capture
+ok 141 - successful actual family demo recipe isolates private state before all reads and capture
+  ---
+  duration_ms: 178.1693
+  ...
+# Subtest: failed actual family demo recipe isolates private state before all reads and capture
+ok 142 - failed actual family demo recipe isolates private state before all reads and capture
+  ---
+  duration_ms: 98.3294
+  ...
+# Subtest: standalone family mode retains normal owner reads, writes and reload
+ok 143 - standalone family mode retains normal owner reads, writes and reload
+  ---
+  duration_ms: 51.6496
+  ...
+# Subtest: non-admin family mode retains normal owner reads, writes and reload
+ok 144 - non-admin family mode retains normal owner reads, writes and reload
+  ---
+  duration_ms: 25.2765
+  ...
+# Subtest: ordinary embedded family mode retains normal owner reads, writes and reload
+ok 145 - ordinary embedded family mode retains normal owner reads, writes and reload
+  ---
+  duration_ms: 136.4118
+  ...
+# Subtest: near-match flag family mode retains normal owner reads, writes and reload
+ok 146 - near-match flag family mode retains normal owner reads, writes and reload
+  ---
+  duration_ms: 38.2161
+  ...
+# Subtest: late family revision cannot restore an old plan or unlock a new round generation
+ok 147 - late family revision cannot restore an old plan or unlock a new round generation
+  ---
+  duration_ms: 91.784
+  ...
+# Subtest: late initial generation cannot overwrite a newer generation or stop its wait
+ok 148 - late initial generation cannot overwrite a newer generation or stop its wait
+  ---
+  duration_ms: 87.0821
+  ...
+# Subtest: editing generation input preserves the new wording and rejects advice for the previous wording
+ok 149 - editing generation input preserves the new wording and rejects advice for the previous wording
+  ---
+  duration_ms: 102.3232
+  ...
+# Subtest: editing a family response while deciding rejects advice for the previous response
+ok 150 - editing a family response while deciding rejects advice for the previous response
+  ---
+  duration_ms: 32.63
+  ...
+# Subtest: editing another family leaves an independent pending decision valid
+ok 151 - editing another family leaves an independent pending decision valid
+  ---
+  duration_ms: 63.3089
+  ...
+# Subtest: imported family round rejects a pending revision without changing imported history
+ok 152 - imported family round rejects a pending revision without changing imported history
+  ---
+  duration_ms: 50.5413
+  ...
+# Subtest: an old family completion cannot release a newer imported family request with the same ID
+ok 153 - an old family completion cannot release a newer imported family request with the same ID
+  ---
+  duration_ms: 38.5736
+  ...
+# Subtest: late decision stays out of a new family round
+ok 154 - late decision stays out of a new family round
+  ---
+  duration_ms: 67.3039
+  ...
+# Subtest: late plan next stays out of a new family round
+ok 155 - late plan next stays out of a new family round
+  ---
+  duration_ms: 50.9019
+  ...
+# Subtest: late summary stays out of a new family round
+ok 156 - late summary stays out of a new family round
+  ---
+  duration_ms: 49.8993
+  ...
+# Subtest: late feedback stays out of a new family round
+ok 157 - late feedback stays out of a new family round
+  ---
+  duration_ms: 45.6061
+  ...
+# Subtest: late practice turn stays out of a new family round
+ok 158 - late practice turn stays out of a new family round
+  ---
+  duration_ms: 38.4362
+  ...
+# Subtest: current decision commits to its originating family and releases the lock
+ok 159 - current decision commits to its originating family and releases the lock
+  ---
+  duration_ms: 23.1965
+  ...
+# Subtest: current plan next commits to its originating family and releases the lock
+ok 160 - current plan next commits to its originating family and releases the lock
+  ---
+  duration_ms: 23.1924
+  ...
+# Subtest: current summary commits to its originating family and releases the lock
+ok 161 - current summary commits to its originating family and releases the lock
+  ---
+  duration_ms: 24.8068
+  ...
+# Subtest: current feedback commits to its originating family and releases the lock
+ok 162 - current feedback commits to its originating family and releases the lock
+  ---
+  duration_ms: 27.9358
+  ...
+# Subtest: current practice turn commits to its originating family and releases the lock
+ok 163 - current practice turn commits to its originating family and releases the lock
+  ---
+  duration_ms: 19.4814
+  ...
+# Subtest: family AI lock survives redraw and blocks duplicate and conflicting operations
+ok 164 - family AI lock survives redraw and blocks duplicate and conflicting operations
+  ---
+  duration_ms: 62.5208
+  ...
+# Subtest: a new plan replacement invalidates older per-family advice in the same round
+ok 165 - a new plan replacement invalidates older per-family advice in the same round
+  ---
+  duration_ms: 44.6742
+  ...
+# Subtest: current family failure keeps existing data and permits a new attempt after redraw
+ok 166 - current family failure keeps existing data and permits a new attempt after redraw
+  ---
+  duration_ms: 74.8648
+  ...
+# Subtest: the latest file selection owns import even when the earlier file resolves first
+ok 167 - the latest file selection owns import even when the earlier file resolves first
+  ---
+  duration_ms: 12.8973
+  ...
+# Subtest: opening a new round during file reading prevents the old import from replacing it
+ok 168 - opening a new round during file reading prevents the old import from replacing it
+  ---
+  duration_ms: 16.8071
+  ...
+# Subtest: actual HTTP boundary accepts the owned tool and refuses other, missing or mismatched tool declarations
+ok 169 - actual HTTP boundary accepts the owned tool and refuses other, missing or mismatched tool declarations
+  ---
+  duration_ms: 529.0643
+  ...
+# Subtest: explicit API permission and body auth use the same signed principal, without a workshop-id bypass
+ok 170 - explicit API permission and body auth use the same signed principal, without a workshop-id bypass
+  ---
+  duration_ms: 70.2445
+  ...
+# Subtest: removing the requested module during completion stops result persistence and later polling
+ok 171 - removing the requested module during completion stops result persistence and later polling
+  ---
+  duration_ms: 53.2868
+  ...
+# Subtest: a revoked credential closes generation and polling without another provider call
+ok 172 - a revoked credential closes generation and polling without another provider call
+  ---
+  duration_ms: 61.3618
+  ...
+# Subtest: idempotency ignores consumed credential metadata and distinguishes the requested tool
+ok 173 - idempotency ignores consumed credential metadata and distinguishes the requested tool
+  ---
+  duration_ms: 58.6623
+  ...
+# Subtest: a code opens the model only for its own tool
+ok 174 - a code opens the model only for its own tool
+  ---
+  duration_ms: 19.611
+  ...
+# Subtest: a revoked code stops at once, and a forged or missing token is refused
+ok 175 - a revoked code stops at once, and a forged or missing token is refused
+  ---
+  duration_ms: 1.3364
+  ...
+# Subtest: the system admin can use every tool, including tools not yet open to others
+ok 176 - the system admin can use every tool, including tools not yet open to others
+  ---
+  duration_ms: 1.5895
+  ...
+# Subtest: workshop access uses the signed role issued by the actual join flow, never a workshop id alone
+ok 177 - workshop access uses the signed role issued by the actual join flow, never a workshop id alone
+  ---
+  duration_ms: 4.9736
+  ...
+# Subtest: Nana opens the team lab, and activity or conversation opens approved-plan rehearsal
+ok 178 - Nana opens the team lab, and activity or conversation opens approved-plan rehearsal
+  ---
+  duration_ms: 2.3684
+  ...
+# Subtest: changing the administrator password invalidates an older model credential
+ok 179 - changing the administrator password invalidates an older model credential
+  ---
+  duration_ms: 2.6363
+  ...
+# Subtest: every page that calls the model has a rule, and the browser sends the sign-in details
+ok 180 - every page that calls the model has a rule, and the browser sends the sign-in details
+  ---
+  duration_ms: 3.6386
+  ...
+# Subtest: the actual browser helper adds auth only to designated model service requests
+ok 181 - the actual browser helper adds auth only to designated model service requests
+  ---
+  duration_ms: 83.7035
+  ...
+# Subtest: a public page cannot select an external model service through the development override
+ok 182 - a public page cannot select an external model service through the development override
+  ---
+  duration_ms: 2.4951
+  ...
+# Subtest: the wrapper preserves an explicitly captured credential when the current session changes
+ok 183 - the wrapper preserves an explicitly captured credential when the current session changes
+  ---
+  duration_ms: 2.7631
+  ...
+# Subtest: cancel/reset/source edits before delayed startup acknowledgment still cancel the accepted server job
+ok 184 - cancel/reset/source edits before delayed startup acknowledgment still cancel the accepted server job
+  ---
+  duration_ms: 27.9263
+  ...
+# Subtest: a late obsolete acknowledgment cancels only its job and preserves a newer run and its saved job ID
+ok 185 - a late obsolete acknowledgment cancels only its job and preserves a newer run and its saved job ID
+  ---
+  duration_ms: 29.0299
+  ...
+# Subtest: successful actual participation demo recipe never reads, writes or captures either private workspace
+ok 186 - successful actual participation demo recipe never reads, writes or captures either private workspace
+  ---
+  duration_ms: 107.5194
+  ...
+# Subtest: failed actual participation demo recipe never reads, writes or captures either private workspace
+ok 187 - failed actual participation demo recipe never reads, writes or captures either private workspace
+  ---
+  duration_ms: 53.182
+  ...
+# Subtest: single demo edits and lesson tracking stay in fresh instance memory across remounts
+ok 188 - single demo edits and lesson tracking stay in fresh instance memory across remounts
+  ---
+  duration_ms: 140.8438
+  ...
+# Subtest: seq demo edits and lesson tracking stay in fresh instance memory across remounts
+ok 189 - seq demo edits and lesson tracking stay in fresh instance memory across remounts
+  ---
+  duration_ms: 19.2527
+  ...
+# Subtest: standalone participation keeps ordinary owner reads and persistent edits in both modes
+ok 190 - standalone participation keeps ordinary owner reads and persistent edits in both modes
+  ---
+  duration_ms: 80.4291
+  ...
+# Subtest: non-admin participation keeps ordinary owner reads and persistent edits in both modes
+ok 191 - non-admin participation keeps ordinary owner reads and persistent edits in both modes
+  ---
+  duration_ms: 89.1846
+  ...
+# Subtest: ordinary embedded participation keeps ordinary owner reads and persistent edits in both modes
+ok 192 - ordinary embedded participation keeps ordinary owner reads and persistent edits in both modes
+  ---
+  duration_ms: 25.7838
+  ...
+# Subtest: participation suggestion keeps one mount-owned lock after closing and reopening
+ok 193 - participation suggestion keeps one mount-owned lock after closing and reopening
+  ---
+  duration_ms: 47.6023
+  ...
+# Subtest: participation adjustment locks recreated controls and unlocks after a provider failure
+ok 194 - participation adjustment locks recreated controls and unlocks after a provider failure
+  ---
+  duration_ms: 31.1271
+  ...
+# Subtest: a participation suggestion for a previous sequence meeting cannot replace the selected meeting
+ok 195 - a participation suggestion for a previous sequence meeting cannot replace the selected meeting
+  ---
+  duration_ms: 25.2722
+  ...
+# Subtest: an adjustment for observations already saved as a lesson cannot re-enter the next lesson
+ok 196 - an adjustment for observations already saved as a lesson cannot re-enter the next lesson
+  ---
+  duration_ms: 32.2996
+  ...
+# Subtest: a long list of paths in every mode: alone, pair, group and whole class
+ok 197 - a long list of paths in every mode: alone, pair, group and whole class
+  ---
+  duration_ms: 4.3948
+  ...
+# Subtest: sources include CAST and the evidence on choice, formative assessment and learning styles
+ok 198 - sources include CAST and the evidence on choice, formative assessment and learning styles
+  ---
+  duration_ms: 1.0255
+  ...
+# Subtest: the prompts keep the goal fixed, the way open, and the observation on conditions
+ok 199 - the prompts keep the goal fixed, the way open, and the observation on conditions
+  ---
+  duration_ms: 2.3628
+  ...
+# Subtest: tracking shows what was offered and chosen, what was never chosen, and lessons with one mode only
+ok 200 - tracking shows what was offered and chosen, what was never chosen, and lessons with one mode only
+  ---
+  duration_ms: 4.2871
+  ...
+# Subtest: screen text is written as an invitation and without long dashes
+ok 201 - screen text is written as an invitation and without long dashes
+  ---
+  duration_ms: 4.4948
+  ...
+# Subtest: the planner document is checked again on the server: allowed tags, classes and links only
+ok 202 - the planner document is checked again on the server: allowed tags, classes and links only
+  ---
+  duration_ms: 8.2429
+  ...
+# Subtest: adapters map only what the planner holds; minutes not given are editable estimates
+ok 203 - adapters map only what the planner holds; minutes not given are editable estimates
+  ---
+  duration_ms: 3.7455
+  ...
+# Subtest: a planner draft is never stored as narrative, and each kind needs its own tool permission
+ok 204 - a planner draft is never stored as narrative, and each kind needs its own tool permission
+  ---
+  duration_ms: 12.2394
+  ...
+# Subtest: activity: save, review, decide and approve the same version, then practice that exact version
+ok 205 - activity: save, review, decide and approve the same version, then practice that exact version
+  ---
+  duration_ms: 27.9418
+  ...
+# Subtest: approval gates per kind: an activity needs every professional field, a conversation needs goal, guidance and stages
+ok 206 - approval gates per kind: an activity needs every professional field, a conversation needs goal, guidance and stages
+  ---
+  duration_ms: 25.5162
+  ...
+# Subtest: reviewers stay in scope for planner kinds: no pipeline output, conversation guidance, locked goal
+ok 207 - reviewers stay in scope for planner kinds: no pipeline output, conversation guidance, locked goal
+  ---
+  duration_ms: 3.099
+  ...
+# Subtest: an activity may be approved without a social mechanism or facilitator guide only by an explicit choice, kept with the version
+ok 208 - an activity may be approved without a social mechanism or facilitator guide only by an explicit choice, kept with the version
+  ---
+  duration_ms: 7.8153
+  ...
+# Subtest: with the real source bank, every reviewer envelope fits the input cap (the full catalogue alone used to exceed it)
+ok 209 - with the real source bank, every reviewer envelope fits the input cap (the full catalogue alone used to exceed it)
+  ---
+  duration_ms: 144.1832
+  ...
+# Subtest: a sequence becomes its own kind: steps per session, stable IDs, and the activity gates
+ok 210 - a sequence becomes its own kind: steps per session, stable IDs, and the activity gates
+  ---
+  duration_ms: 19.9692
+  ...
+# Subtest: Private product saves actual edited tables, reopens without AI and versions later edits
+ok 211 - Private product saves actual edited tables, reopens without AI and versions later edits
+  ---
+  duration_ms: 67.8019
+  ...
+# Subtest: Scoped products isolate A/B/A, refuse an old open editor after identity changes and preserve ambiguous legacy data
+ok 212 - Scoped products isolate A/B/A, refuse an old open editor after identity changes and preserve ambiguous legacy data
+  ---
+  duration_ms: 8.5552
+  ...
+# Subtest: Save errors keep the product and never report success; reopened and printed snapshots discard active markup
+ok 213 - Save errors keep the product and never report success; reopened and printed snapshots discard active markup
+  ---
+  duration_ms: 8.8527
+  ...
+# Subtest: Source links survive copy, save, reopen and print while active URLs stay inert
+ok 214 - Source links survive copy, save, reopen and print while active URLs stay inert
+  ---
+  duration_ms: 14.49
+  ...
+# Subtest: Safe bidi isolation of phone and email survives saved and printed Hebrew documents
+ok 215 - Safe bidi isolation of phone and email survives saved and printed Hebrew documents
+  ---
+  duration_ms: 29.5539
+  ...
+# Subtest: Two window saves of the same version conflict instead of silently losing one edit
+ok 216 - Two window saves of the same version conflict instead of silently losing one edit
+  ---
+  duration_ms: 15.4809
+  ...
+# Subtest: Two overlapping new products both remain in the private archive
+ok 217 - Two overlapping new products both remain in the private archive
+  ---
+  duration_ms: 28.3808
+  ...
+# Subtest: Queued save rechecks ownership and fails visibly when locking is unavailable
+ok 218 - Queued save rechecks ownership and fails visibly when locking is unavailable
+  ---
+  duration_ms: 33.3833
+  ...
+# Subtest: A late request cannot apply after source edits, reset, replacement or changed owner; own incremental changes can checkpoint
+ok 219 - A late request cannot apply after source edits, reset, replacement or changed owner; own incremental changes can checkpoint
+  ---
+  duration_ms: 6.231
+  ...
+# Subtest: clarifying questions ask only what is missing, up to four, without names
+ok 220 - clarifying questions ask only what is missing, up to four, without names
+  ---
+  duration_ms: 3.9941
+  ...
+# Subtest: the story is built in the same structure as the bank, with five turning points in the engine order
+ok 221 - the story is built in the same structure as the bank, with five turning points in the engine order
+  ---
+  duration_ms: 4.4097
+  ...
+# Subtest: practice screen: own case, three steps, saved per user, inviting language
+ok 222 - practice screen: own case, three steps, saved per user, inviting language
+  ---
+  duration_ms: 1.8935
+  ...
+# Subtest: actual own-case demo success isolates twelve cases and an old private preview
+ok 223 - actual own-case demo success isolates twelve cases and an old private preview
+  ---
+  duration_ms: 232.7473
+  ...
+# Subtest: actual own-case demo clarify isolates twelve cases and an old private preview
+ok 224 - actual own-case demo clarify isolates twelve cases and an old private preview
+  ---
+  duration_ms: 67.6224
+  ...
+# Subtest: actual own-case demo build isolates twelve cases and an old private preview
+ok 225 - actual own-case demo build isolates twelve cases and an old private preview
+  ---
+  duration_ms: 45.2866
+  ...
+# Subtest: actual catalogue demo success selects a bank card and preserves all private state
+ok 226 - actual catalogue demo success selects a bank card and preserves all private state
+  ---
+  duration_ms: 114.5492
+  ...
+# Subtest: actual catalogue demo chat selects a bank card and preserves all private state
+ok 227 - actual catalogue demo chat selects a bank card and preserves all private state
+  ---
+  duration_ms: 104.6939
+  ...
+# Subtest: actual own-case recipe answers the generated questions before creating a fresh story
+ok 228 - actual own-case recipe answers the generated questions before creating a fresh story
+  ---
+  duration_ms: 178.6074
+  ...
+# Subtest: catalogue recipe ignores a visible unrelated personal card even in front of the bank
+ok 229 - catalogue recipe ignores a visible unrelated personal card even in front of the bank
+  ---
+  duration_ms: 164.4299
+  ...
+# Subtest: standalone keeps ordinary personal case and draft persistence
+ok 230 - standalone keeps ordinary personal case and draft persistence
+  ---
+  duration_ms: 21.0003
+  ...
+# Subtest: non-admin keeps ordinary personal case and draft persistence
+ok 231 - non-admin keeps ordinary personal case and draft persistence
+  ---
+  duration_ms: 38.3181
+  ...
+# Subtest: ordinary embedded keeps ordinary personal case and draft persistence
+ok 232 - ordinary embedded keeps ordinary personal case and draft persistence
+  ---
+  duration_ms: 13.8375
+  ...
+# Subtest: near-match marker keeps ordinary personal case and draft persistence
+ok 233 - near-match marker keeps ordinary personal case and draft persistence
+  ---
+  duration_ms: 12.5226
+  ...
+# Subtest: late custom clarification cannot reopen the editor after cancel
+ok 234 - late custom clarification cannot reopen the editor after cancel
+  ---
+  duration_ms: 21.9344
+  ...
+# Subtest: late custom clarification cannot reopen the editor after select
+ok 235 - late custom clarification cannot reopen the editor after select
+  ---
+  duration_ms: 8.4077
+  ...
+# Subtest: late custom clarification cannot reopen the editor after approve
+ok 236 - late custom clarification cannot reopen the editor after approve
+  ---
+  duration_ms: 10.6591
+  ...
+# Subtest: late custom build cannot replace edited context
+ok 237 - late custom build cannot replace edited context
+  ---
+  duration_ms: 29.4162
+  ...
+# Subtest: late custom revision cannot replace edited context
+ok 238 - late custom revision cannot replace edited context
+  ---
+  duration_ms: 35.6182
+  ...
+# Subtest: late build is discarded after cancel
+ok 239 - late build is discarded after cancel
+  ---
+  duration_ms: 9.2257
+  ...
+# Subtest: late build is discarded after select
+ok 240 - late build is discarded after select
+  ---
+  duration_ms: 9.7324
+  ...
+# Subtest: late build is discarded after approve
+ok 241 - late build is discarded after approve
+  ---
+  duration_ms: 39.5378
+  ...
+# Subtest: late revision is discarded after cancel
+ok 242 - late revision is discarded after cancel
+  ---
+  duration_ms: 13.8617
+  ...
+# Subtest: late revision is discarded after select
+ok 243 - late revision is discarded after select
+  ---
+  duration_ms: 11.8936
+  ...
+# Subtest: late revision is discarded after approve
+ok 244 - late revision is discarded after approve
+  ---
+  duration_ms: 19.1872
+  ...
+# Subtest: an invalidated operation cannot unlock or stop the newer request
+ok 245 - an invalidated operation cannot unlock or stop the newer request
+  ---
+  duration_ms: 39.0839
+  ...
+# Subtest: duplicate custom operations are ignored while the editor owns a pending request
+ok 246 - duplicate custom operations are ignored while the editor owns a pending request
+  ---
+  duration_ms: 72.2879
+  ...
+# Subtest: F05: research export contains only closed fields and excludes all free text and identity
+ok 247 - F05: research export contains only closed fields and excludes all free text and identity
+  ---
+  duration_ms: 16.2516
+  ...
+# Subtest: F04: parallel workshop feedback preserves all distinct submissions
+ok 248 - F04: parallel workshop feedback preserves all distinct submissions
+  ---
+  duration_ms: 24.6741
+  ...
+# Subtest: F04: feedback retries are idempotent, content changes conflict, and unsupported storage fails closed
+ok 249 - F04: feedback retries are idempotent, content changes conflict, and unsupported storage fails closed
+  ---
+  duration_ms: 3.3383
+  ...
+# Subtest: F04: optimistic journey writes conflict and preserve the saved input
+ok 250 - F04: optimistic journey writes conflict and preserve the saved input
+  ---
+  duration_ms: 15.1036
+  ...
+# Subtest: authorization hook is rechecked before an internal provider retry
+ok 251 - authorization hook is rechecked before an internal provider retry
+  ---
+  duration_ms: 78.4341
+  ...
+# Subtest: Public policy titles cannot suppress canonical server rules and repeated application stays deduplicated
+ok 252 - Public policy titles cannot suppress canonical server rules and repeated application stays deduplicated
+  ---
+  duration_ms: 6.8695
+  ...
+# Subtest: F08: empty and partial scenarios fail required schema gates
+ok 253 - F08: empty and partial scenarios fail required schema gates
+  ---
+  duration_ms: 9.712
+  ...
+# Subtest: F08: nested valid documents pass; a spoofed lock elsewhere does not
+ok 254 - F08: nested valid documents pass; a spoofed lock elsewhere does not
+  ---
+  duration_ms: 4.1602
+  ...
+# Subtest: F08: supplied context cannot approve a source or an unsupported language
+ok 255 - F08: supplied context cannot approve a source or an unsupported language
+  ---
+  duration_ms: 5.071
+  ...
+# Subtest: F08: pipeline rejects an empty stage before marking it done
+ok 256 - F08: pipeline rejects an empty stage before marking it done
+  ---
+  duration_ms: 4.8404
+  ...
+# Subtest: F07: OpenAI preserves ordered history, system, files and forced tools through mocked real payload
+ok 257 - F07: OpenAI preserves ordered history, system, files and forced tools through mocked real payload
+  ---
+  duration_ms: 2.6539
+  ...
+# Subtest: Anthropic keeps adaptive thinking and prompt calls, including normalized file blocks and tools
+ok 258 - Anthropic keeps adaptive thinking and prompt calls, including normalized file blocks and tools
+  ---
+  duration_ms: 2.1166
+  ...
+# Subtest: both adapters preserve ordered tool history and normalize tool-only results
+ok 259 - both adapters preserve ordered tool history and normalize tool-only results
+  ---
+  duration_ms: 3.7756
+  ...
+# Subtest: refusal, truncation and empty completion are typed failures carrying status and usage
+ok 260 - refusal, truncation and empty completion are typed failures carrying status and usage
+  ---
+  duration_ms: 2.9448
+  ...
+# Subtest: retry is bounded to one and cancellation prevents calls, while unsupported configurations fail before transport
+ok 261 - retry is bounded to one and cancellation prevents calls, while unsupported configurations fail before transport
+  ---
+  duration_ms: 20.5552
+  ...
+# Subtest: malformed tool JSON retains usage; known model limits and unsupported forced tools fail without a call
+ok 262 - malformed tool JSON retains usage; known model limits and unsupported forced tools fail without a call
+  ---
+  duration_ms: 3.3134
+  ...
+# Subtest: pipeline validates each stage, snapshots given, excludes hidden sources, and protects conversion
+ok 263 - pipeline validates each stage, snapshots given, excludes hidden sources, and protects conversion
+  ---
+  duration_ms: 95.867
+  ...
+# Subtest: empty, invalid JSON and invalid later stages fail before done or persistence
+ok 264 - empty, invalid JSON and invalid later stages fail before done or persistence
+  ---
+  duration_ms: 12.5992
+  ...
+# Subtest: default SSE transport reconstructs split Hebrew, incremental tool JSON, thinking and measured usage
+ok 265 - default SSE transport reconstructs split Hebrew, incremental tool JSON, thinking and measured usage
+  ---
+  duration_ms: 179.7416
+  ...
+# Subtest: default SSE transport rejects malformed tool JSON and premature closure with partial usage
+ok 266 - default SSE transport rejects malformed tool JSON and premature closure with partial usage
+  ---
+  duration_ms: 60.287
+  ...
+# Subtest: default SSE transport aborts an open stream without retrying or discarding partial usage
+ok 267 - default SSE transport aborts an open stream without retrying or discarding partial usage
+  ---
+  duration_ms: 164.6416
+  ...
+# Subtest: public examples expose only published metadata and documents without login
+ok 268 - public examples expose only published metadata and documents without login
+  ---
+  duration_ms: 855.4651
+  ...
+# Subtest: public read exceptions never grant demo management or writes
+ok 269 - public read exceptions never grant demo management or writes
+  ---
+  duration_ms: 1.0888
+  ...
+# Subtest: live administrator retains unpublished reads and explicit publication
+ok 270 - live administrator retains unpublished reads and explicit publication
+  ---
+  duration_ms: 8.2377
+  ...
+# Subtest: password rotation revokes private demo reads even through the public read route
+ok 271 - password rotation revokes private demo reads even through the public read route
+  ---
+  duration_ms: 581.5283
+  ...
+# Subtest: the real four-stage pipeline fits its reserved budget and has one physical attempt per stage
+ok 272 - the real four-stage pipeline fits its reserved budget and has one physical attempt per stage
+  ---
+  duration_ms: 323.487
+  ...
+# Subtest: a released reservation with a missing job never starts a new paid call under the old request ID
+ok 273 - a released reservation with a missing job never starts a new paid call under the old request ID
+  ---
+  duration_ms: 78.4461
+  ...
+# Subtest: input costs reserve a conservative budget and oversized requests fail before provider access
+ok 274 - input costs reserve a conservative budget and oversized requests fail before provider access
+  ---
+  duration_ms: 79.1611
+  ...
+# Subtest: a failed artifact review preserves the private draft and releases production instead of reporting done
+ok 275 - a failed artifact review preserves the private draft and releases production instead of reporting done
+  ---
+  duration_ms: 93.799
+  ...
+# Subtest: lost durable jobs reconcile their artifact run and a retry cannot receive an abandoned response
+ok 276 - lost durable jobs reconcile their artifact run and a retry cannot receive an abandoned response
+  ---
+  duration_ms: 212.3004
+  ...
+# Subtest: revocation during a team review stops synthesis and prevents late proposal persistence
+ok 277 - revocation during a team review stops synthesis and prevents late proposal persistence
+  ---
+  duration_ms: 84.1129
+  ...
+# Subtest: missing reviewers require explicit acknowledgment even when accepting an individual reviewer
+ok 278 - missing reviewers require explicit acknowledgment even when accepting an individual reviewer
+  ---
+  duration_ms: 73.1383
+  ...
+# Subtest: private concern questions stay with the coaching role and cannot enter synthesis through flags
+ok 279 - private concern questions stay with the coaching role and cannot enter synthesis through flags
+  ---
+  duration_ms: 63.0418
+  ...
+# Subtest: observation retries are idempotent and changing a submitted observation conflicts
+ok 280 - observation retries are idempotent and changing a submitted observation conflicts
+  ---
+  duration_ms: 25.3859
+  ...
+# Subtest: five readiness questions, in the order of the cycle
+ok 281 - five readiness questions, in the order of the cycle
+  ---
+  duration_ms: 4.5069
+  ...
+# Subtest: the ☰ menu uses the same groups for every tool page
+ok 282 - the ☰ menu uses the same groups for every tool page
+  ---
+  duration_ms: 4.3986
+  ...
+# Subtest: about page and tool map follow the five questions, in inviting language
+ok 283 - about page and tool map follow the five questions, in inviting language
+  ---
+  duration_ms: 9.6868
+  ...
+# Subtest: activity rehearsal: the model plays the group, from the approved version and the chosen step
+ok 284 - activity rehearsal: the model plays the group, from the approved version and the chosen step
+  ---
+  duration_ms: 6.1613
+  ...
+# Subtest: conversation rehearsal: the model plays the other side, without group-only fields
+ok 285 - conversation rehearsal: the model plays the other side, without group-only fields
+  ---
+  duration_ms: 1.3192
+  ...
+# Subtest: feedback is about actions, without a score, with headings per kind
+ok 286 - feedback is about actions, without a score, with headings per kind
+  ---
+  duration_ms: 0.9288
+  ...
+# Subtest: approved version text is bounded and the transcript names each side
+ok 287 - approved version text is bounded and the transcript names each side
+  ---
+  duration_ms: 1.7822
+  ...
+# Subtest: sequence rehearsal sends only the session of the chosen step
+ok 288 - sequence rehearsal sends only the session of the chosen step
+  ---
+  duration_ms: 1.0441
+  ...
+# Subtest: several academic sources support the routines hub
+ok 289 - several academic sources support the routines hub
+  ---
+  duration_ms: 6.6981
+  ...
+# Subtest: four stages, the five mechanisms, and prompts with every part and the sources
+ok 290 - four stages, the five mechanisms, and prompts with every part and the sources
+  ---
+  duration_ms: 3.1211
+  ...
+# Subtest: names typed on the device are replaced before anything goes to the model
+ok 291 - names typed on the device are replaced before anything goes to the model
+  ---
+  duration_ms: 2.6216
+  ...
+# Subtest: parsing checks the main parts
+ok 292 - parsing checks the main parts
+  ---
+  duration_ms: 1.4327
+  ...
+# Subtest: screen text is written as an invitation and without long dashes
+ok 293 - screen text is written as an invitation and without long dashes
+  ---
+  duration_ms: 8.4715
+  ...
+# Subtest: options completion belongs to A after switching to B and preserves all B data
+ok 294 - options completion belongs to A after switching to B and preserves all B data
+  ---
+  duration_ms: 60.6903
+  ...
+# Subtest: build completion belongs to A after switching to B and preserves all B data
+ok 295 - build completion belongs to A after switching to B and preserves all B data
+  ---
+  duration_ms: 78.1282
+  ...
+# Subtest: revise completion belongs to A after switching to B and preserves all B data
+ok 296 - revise completion belongs to A after switching to B and preserves all B data
+  ---
+  duration_ms: 30.0449
+  ...
+# Subtest: options cannot resurrect deleted A or replace B after a deferred result
+ok 297 - options cannot resurrect deleted A or replace B after a deferred result
+  ---
+  duration_ms: 39.3337
+  ...
+# Subtest: build cannot resurrect deleted A or replace B after a deferred result
+ok 298 - build cannot resurrect deleted A or replace B after a deferred result
+  ---
+  duration_ms: 28.8635
+  ...
+# Subtest: revise cannot resurrect deleted A or replace B after a deferred result
+ok 299 - revise cannot resurrect deleted A or replace B after a deferred result
+  ---
+  duration_ms: 52.0954
+  ...
+# Subtest: options discards a result after its initiating inputs change and permits a fresh request
+ok 300 - options discards a result after its initiating inputs change and permits a fresh request
+  ---
+  duration_ms: 33.2824
+  ...
+# Subtest: build discards a result after its initiating inputs change and permits a fresh request
+ok 301 - build discards a result after its initiating inputs change and permits a fresh request
+  ---
+  duration_ms: 33.4069
+  ...
+# Subtest: revise discards a result after its initiating inputs change and permits a fresh request
+ok 302 - revise discards a result after its initiating inputs change and permits a fresh request
+  ---
+  duration_ms: 30.3376
+  ...
+# Subtest: request lock survives A to B to A redraw, including the recreated options build button
+ok 303 - request lock survives A to B to A redraw, including the recreated options build button
+  ---
+  duration_ms: 80.8363
+  ...
+# Subtest: switching to B lets its own request finish first without A clearing B pending controls
+ok 304 - switching to B lets its own request finish first without A clearing B pending controls
+  ---
+  duration_ms: 50.8355
+  ...
+# Subtest: revision includes anonymized human decisions and journal while approval stays human owned
+ok 305 - revision includes anonymized human decisions and journal while approval stays human owned
+  ---
+  duration_ms: 64.6727
+  ...
+# Subtest: a decision edited during revision is preserved and invalidates the older proposal
+ok 306 - a decision edited during revision is preserved and invalidates the older proposal
+  ---
+  duration_ms: 48.5969
+  ...
+# Subtest: a change then restoration still invalidates the earlier request revision
+ok 307 - a change then restoration still invalidates the earlier request revision
+  ---
+  duration_ms: 31.3387
+  ...
+# Subtest: the old provider failure does not expose an error or release B request lock
+ok 308 - the old provider failure does not expose an error or release B request lock
+  ---
+  duration_ms: 39.5695
+  ...
+# Subtest: successful actual routines demo recipe uses fresh memory without private read, write, import, request or capture
+ok 309 - successful actual routines demo recipe uses fresh memory without private read, write, import, request or capture
+  ---
+  duration_ms: 100.8953
+  ...
+# Subtest: failed actual routines demo recipe uses fresh memory without private read, write, import, request or capture
+ok 310 - failed actual routines demo recipe uses fresh memory without private read, write, import, request or capture
+  ---
+  duration_ms: 44.8939
+  ...
+# Subtest: no demo keeps ordinary workspace and Studio reads, persistent edits and reload
+ok 311 - no demo keeps ordinary workspace and Studio reads, persistent edits and reload
+  ---
+  duration_ms: 28.5345
+  ...
+# Subtest: standalone keeps ordinary workspace and Studio reads, persistent edits and reload
+ok 312 - standalone keeps ordinary workspace and Studio reads, persistent edits and reload
+  ---
+  duration_ms: 14.185
+  ...
+# Subtest: non-admin keeps ordinary workspace and Studio reads, persistent edits and reload
+ok 313 - non-admin keeps ordinary workspace and Studio reads, persistent edits and reload
+  ---
+  duration_ms: 35.1358
+  ...
+# Subtest: inexact demo keeps ordinary workspace and Studio reads, persistent edits and reload
+ok 314 - inexact demo keeps ordinary workspace and Studio reads, persistent edits and reload
+  ---
+  duration_ms: 21.3939
+  ...
+# Subtest: inexact home keeps ordinary workspace and Studio reads, persistent edits and reload
+ok 315 - inexact home keeps ordinary workspace and Studio reads, persistent edits and reload
+  ---
+  duration_ms: 21.9098
+  ...
+# Subtest: F01: every model and polling alias authenticates before provider access
+ok 316 - F01: every model and polling alias authenticates before provider access
+  ---
+  duration_ms: 262.5747
+  ...
+# Subtest: owner/tenant, module and output bound checks survive valid login
+ok 317 - owner/tenant, module and output bound checks survive valid login
+  ---
+  duration_ms: 189.0514
+  ...
+# Subtest: successful async tool calls persist; expiry and revocation close polling
+ok 318 - successful async tool calls persist; expiry and revocation close polling
+  ---
+  duration_ms: 71.3104
+  ...
+# Subtest: Studio terminal polling preserves its existing success and structured-error envelope
+ok 319 - Studio terminal polling preserves its existing success and structured-error envelope
+  ---
+  duration_ms: 128.9942
+  ...
+# Subtest: Transient terminal storage failure is retried without another provider call
+ok 320 - Transient terminal storage failure is retried without another provider call
+  ---
+  duration_ms: 35.0859
+  ...
+# Subtest: The actual Studio browser client consumes server success and clarification responses
+ok 321 - The actual Studio browser client consumes server success and clarification responses
+  ---
+  duration_ms: 66.6166
+  ...
+# Subtest: A same-boot job without a local executor is reconciled after its lease expires
+ok 322 - A same-boot job without a local executor is reconciled after its lease expires
+  ---
+  duration_ms: 34.395
+  ...
+# Subtest: The authenticated artifact boundary reconciles single-attempt usage before admitting queued reviewers
+ok 323 - The authenticated artifact boundary reconciles single-attempt usage before admitting queued reviewers
+  ---
+  duration_ms: 177.6957
+  ...
+# Subtest: Product customer review and one repair use the authenticated job and a reserved bounded allowance
+ok 324 - Product customer review and one repair use the authenticated job and a reserved bounded allowance
+  ---
+  duration_ms: 34.1555
+  ...
+# Subtest: An incomplete customer reviewer keeps the original product; revocation cannot publish a fallback
+ok 325 - An incomplete customer reviewer keeps the original product; revocation cannot publish a fallback
+  ---
+  duration_ms: 57.5457
+  ...
+# Subtest: Customer review runs only for marked products, inside the job budget, and keeps the original on its own failure
+ok 326 - Customer review runs only for marked products, inside the job budget, and keeps the original on its own failure
+  ---
+  duration_ms: 361.9179
+  ...
+# Subtest: AE22: missing, revoked, expired and closed-ceiling access never calls AI
+ok 327 - AE22: missing, revoked, expired and closed-ceiling access never calls AI
+  ---
+  duration_ms: 19.7439
+  ...
+# Subtest: AE22: legacy access rechecks institution and ceiling; activity access cannot load a mapping
+ok 328 - AE22: legacy access rechecks institution and ceiling; activity access cannot load a mapping
+  ---
+  duration_ms: 10.0167
+  ...
+# Subtest: AE1,21,22: authorized mapping uses existing scores, deduplicates selected rounds and strips identifiers
+ok 329 - AE1,21,22: authorized mapping uses existing scores, deduplicates selected rounds and strips identifiers
+  ---
+  duration_ms: 438.0863
+  ...
+# Subtest: GPT-6 Responses payload is strict; source snapshots remain public and user sources stay unreviewed
+ok 330 - GPT-6 Responses payload is strict; source snapshots remain public and user sources stay unreviewed
+  ---
+  duration_ms: 21.0342
+  ...
+# Subtest: invalid focus, missing context, active danger, incomplete/refusal and malformed outputs do not become kits
+ok 331 - invalid focus, missing context, active danger, incomplete/refusal and malformed outputs do not become kits
+  ---
+  duration_ms: 44.3556
+  ...
+# Subtest: AE17,19,21: analysis accepts inspiration and mapping data stays aggregate-only in the AI request
+ok 332 - AE17,19,21: analysis accepts inspiration and mapping data stays aggregate-only in the AI request
+  ---
+  duration_ms: 13.8931
+  ...
+# Subtest: AE16,17: adaptation sanitizes a prior kit and keeps the acceptance decision with the user
+ok 333 - AE16,17: adaptation sanitizes a prior kit and keeps the acceptance decision with the user
+  ---
+  duration_ms: 19.1831
+  ...
+# Subtest: AE2,5: generation returns material clarification before creating a kit, even with manual focus
+ok 334 - AE2,5: generation returns material clarification before creating a kit, even with manual focus
+  ---
+  duration_ms: 12.5508
+  ...
+# Subtest: AE5,10,23: new activity evidence is never promoted to proven efficacy
+ok 335 - AE5,10,23: new activity evidence is never promoted to proven efficacy
+  ---
+  duration_ms: 14.1246
+  ...
+# Subtest: AE1,22: a live system administrator can connect a mapping without its manager key
+ok 336 - AE1,22: a live system administrator can connect a mapping without its manager key
+  ---
+  duration_ms: 2.2305
+  ...
+# Subtest: AE1,11,21: selected statement identity, polarity and measured sides survive aggregation
+ok 337 - AE1,11,21: selected statement identity, polarity and measured sides survive aggregation
+  ---
+  duration_ms: 8.1429
+  ...
+# Subtest: new kits require complete practical facilitation and a suitable mechanism with source provenance
+ok 338 - new kits require complete practical facilitation and a suitable mechanism with source provenance
+  ---
+  duration_ms: 50.0409
+  ...
+# Subtest: older version 1.0 activities adapt with defaults for newly added sections
+ok 339 - older version 1.0 activities adapt with defaults for newly added sections
+  ---
+  duration_ms: 11.6795
+  ...
+# Subtest: consultation starts before production context and supports repeated conversation history
+ok 340 - consultation starts before production context and supports repeated conversation history
+  ---
+  duration_ms: 9.3942
+  ...
+# Subtest: consultation sanitizes private concerns, history and unfinished step snapshots; acceptance remains explicit
+ok 341 - consultation sanitizes private concerns, history and unfinished step snapshots; acceptance remains explicit
+  ---
+  duration_ms: 7.5642
+  ...
+# Subtest: consultation validates question, stage, concerns and current step before calling the provider
+ok 342 - consultation validates question, stage, concerns and current step before calling the provider
+  ---
+  duration_ms: 2.4008
+  ...
+# Subtest: consultation suggestions cannot replace global activity or target an unselected step
+ok 343 - consultation suggestions cannot replace global activity or target an unselected step
+  ---
+  duration_ms: 26.5062
+  ...
+# Subtest: consultation rechecks live access, enforces mapping permission and stops active danger
+ok 344 - consultation rechecks live access, enforces mapping permission and stops active danger
+  ---
+  duration_ms: 5.0917
+  ...
+# Subtest: consultation uses public provenance with IAF always and UNICEF only for youth
+ok 345 - consultation uses public provenance with IAF always and UNICEF only for youth
+  ---
+  duration_ms: 42.4524
+  ...
+# Subtest: consultation rejects refusal, incomplete or malformed responses and false efficacy or approval claims
+ok 346 - consultation rejects refusal, incomplete or malformed responses and false efficacy or approval claims
+  ---
+  duration_ms: 28.9045
+  ...
+# Subtest: provider errors make no claim that a local draft was saved
+ok 347 - provider errors make no claim that a local draft was saved
+  ---
+  duration_ms: 11.8089
+  ...
+# Subtest: the customer agent reads every kit; unclear kits are revised once and the review is returned
+ok 348 - the customer agent reads every kit; unclear kits are revised once and the review is returned
+  ---
+  duration_ms: 39.1159
+  ...
+# Subtest: an "after the meeting" step may take 0 minutes and is not counted; a meeting step may not
+ok 349 - an "after the meeting" step may take 0 minutes and is not counted; a meeting step may not
+  ---
+  duration_ms: 0.9215
+  ...
+# Subtest: a kit that fails the checks is sent back once with the list of problems, and the fixed kit is used
+ok 350 - a kit that fails the checks is sent back once with the list of problems, and the fixed kit is used
+  ---
+  duration_ms: 15.8592
+  ...
+# Subtest: async generate returns a job id, runs the model in the background and only its owner can read it
+ok 351 - async generate returns a job id, runs the model in the background and only its owner can read it
+  ---
+  duration_ms: 79.2321
+  ...
+# Subtest: async requests that fail before the model answer directly, without a job or an AI call
+ok 352 - async requests that fail before the model answer directly, without a job or an AI call
+  ---
+  duration_ms: 4.5169
+  ...
+# Subtest: model failures and invalid kits arrive as the job result with their status
+ok 353 - model failures and invalid kits arrive as the job result with their status
+  ---
+  duration_ms: 28.5022
+  ...
+# Subtest: one login can run at most three model jobs at once
+ok 354 - one login can run at most three model jobs at once
+  ---
+  duration_ms: 57.5229
+  ...
+# Subtest: AE13–14: editable focus respects an explicit positive choice
+ok 355 - AE13–14: editable focus respects an explicit positive choice
+  ---
+  duration_ms: 2.9266
+  ...
+# Subtest: AE4,24: a short example fits time and links every skill to a real step
+ok 356 - AE4,24: a short example fits time and links every skill to a real step
+  ---
+  duration_ms: 2.9641
+  ...
+# Subtest: AE25: removing the joint step removes its shared skill claims
+ok 357 - AE25: removing the joint step removes its shared skill claims
+  ---
+  duration_ms: 0.7312
+  ...
+# Subtest: AE19–20: portable export retains provenance and excludes planning context
+ok 358 - AE19–20: portable export retains provenance and excludes planning context
+  ---
+  duration_ms: 4.1294
+  ...
+# Subtest: AE18,23: sources have no count cap and unreviewed sources remain context
+ok 359 - AE18,23: sources have no count cap and unreviewed sources remain context
+  ---
+  duration_ms: 0.8137
+  ...
+# Subtest: R35: revised instructions cannot carry unchecked skill claims into an export
+ok 360 - R35: revised instructions cannot carry unchecked skill claims into an export
+  ---
+  duration_ms: 2.7782
+  ...
+# Subtest: the activity schema requires a learning guide with sources and practical fields
+ok 361 - the activity schema requires a learning guide with sources and practical fields
+  ---
+  duration_ms: 5.1893
+  ...
+# Subtest: a generated kit links the guide to bank sources (name, link, version, status)
+ok 362 - a generated kit links the guide to bank sources (name, link, version, status)
+  ---
+  duration_ms: 27.2488
+  ...
+# Subtest: incomplete guides, invented or hidden sources and efficacy claims are rejected
+ok 363 - incomplete guides, invented or hidden sources and efficacy claims are rejected
+  ---
+  duration_ms: 164.7448
+  ...
+# Subtest: older work files without a guide adapt; hidden sources in a saved guide never reach the model
+ok 364 - older work files without a guide adapt; hidden sources in a saved guide never reach the model
+  ---
+  duration_ms: 41.2986
+  ...
+# Subtest: the guide is kept in the shared version but contains no private coaching material
+ok 365 - the guide is kept in the shared version but contains no private coaching material
+  ---
+  duration_ms: 1.5117
+  ...
+# Subtest: Studio screen matches its declared permissions across broad users
+ok 366 - Studio screen matches its declared permissions across broad users
+  ---
+  duration_ms: 31.9606
+  ...
+# Subtest: Navigation exposes Studio with an accurate permission description
+ok 367 - Navigation exposes Studio with an accurate permission description
+  ---
+  duration_ms: 0.9588
+  ...
+# Subtest: AE1,22: manager and administrator mapping handoffs retain the selected round
+ok 368 - AE1,22: manager and administrator mapping handoffs retain the selected round
+  ---
+  duration_ms: 4.0004
+  ...
+# Subtest: AE22: actual legacy institutional sessions have isolated work and mapping keys
+ok 369 - AE22: actual legacy institutional sessions have isolated work and mapping keys
+  ---
+  duration_ms: 9.5926
+  ...
+# Subtest: Denied mapping keeps the current work, while revoked Studio access locks it
+ok 370 - Denied mapping keeps the current work, while revoked Studio access locks it
+  ---
+  duration_ms: 7.3516
+  ...
+# Subtest: Model actions run as a background job and poll until done
+ok 371 - Model actions run as a background job and poll until done
+  ---
+  duration_ms: 34.8036
+  ...
+# Subtest: Background job errors keep the same handling, and a lost job is retried once
+ok 372 - Background job errors keep the same handling, and a lost job is retried once
+  ---
+  duration_ms: 73.0354
+  ...
+# Subtest: Durable lost/cancelled/expired jobs and revoked polling stop Studio waiting immediately
+ok 373 - Durable lost/cancelled/expired jobs and revoked polling stop Studio waiting immediately
+  ---
+  duration_ms: 100.1604
+  ...
+# Subtest: Shared print retains existing popup callers and their automatic print behavior
+ok 374 - Shared print retains existing popup callers and their automatic print behavior
+  ---
+  duration_ms: 62.6413
+  ...
+# Subtest: Inline print escapes headings, requires an explicit print gesture, and removes its dialog on close
+ok 375 - Inline print escapes headings, requires an explicit print gesture, and removes its dialog on close
+  ---
+  duration_ms: 3.6201
+  ...
+# Subtest: Full-bank analysis, kit and two meaningful consultations fit daily quota; a third is denied before dispatch
+ok 376 - Full-bank analysis, kit and two meaningful consultations fit daily quota; a third is denied before dispatch
+  ---
+  duration_ms: 382.1917
+  ...
+# Subtest: Invalid and oversized Studio requests consume no reservations and make no provider calls
+ok 377 - Invalid and oversized Studio requests consume no reservations and make no provider calls
+  ---
+  duration_ms: 85.0075
+  ...
+# Subtest: Failed auxiliary provider calls keep their daily charge; duplicate root requests never replay them
+ok 378 - Failed auxiliary provider calls keep their daily charge; duplicate root requests never replay them
+  ---
+  duration_ms: 65.51
+  ...
+# Subtest: Studio cancel during child reservation prevents dispatch and releases the late reservation
+ok 379 - Studio cancel during child reservation prevents dispatch and releases the late reservation
+  ---
+  duration_ms: 48.4003
+  ...
+# Subtest: Studio revoke during child reservation prevents dispatch and releases the late reservation
+ok 380 - Studio revoke during child reservation prevents dispatch and releases the late reservation
+  ---
+  duration_ms: 43.626
+  ...
+# Subtest: Cancellation closes the local dispatch gate before slow finalization storage returns
+ok 381 - Cancellation closes the local dispatch gate before slow finalization storage returns
+  ---
+  duration_ms: 41.8509
+  ...
+# Subtest: Durable lost Studio jobs release orphan child capacity without replay
+ok 382 - Durable lost Studio jobs release orphan child capacity without replay
+  ---
+  duration_ms: 39.1805
+  ...
+# Subtest: Durable expired Studio jobs release orphan child capacity without replay
+ok 383 - Durable expired Studio jobs release orphan child capacity without replay
+  ---
+  duration_ms: 41.1746
+  ...
+# Subtest: Durable terminal Studio jobs release orphan child capacity without replay
+ok 384 - Durable terminal Studio jobs release orphan child capacity without replay
+  ---
+  duration_ms: 32.5171
+  ...
+# Subtest: Terminal polling retries a failed child cleanup after atomic root finalization
+ok 385 - Terminal polling retries a failed child cleanup after atomic root finalization
+  ---
+  duration_ms: 36.5695
+  ...
+# Subtest: daily allowance can admit a Studio kit but deny its optional customer review without losing the kit
+ok 386 - daily allowance can admit a Studio kit but deny its optional customer review without losing the kit
+  ---
+  duration_ms: 42.2346
+  ...
+# Subtest: Actual Studio analyze is admitted with the complete public bank and bounded output
+ok 387 - Actual Studio analyze is admitted with the complete public bank and bounded output
+  ---
+  duration_ms: 221.0943
+  ...
+# Subtest: Actual Studio consult is admitted with the complete public bank and bounded output
+ok 388 - Actual Studio consult is admitted with the complete public bank and bounded output
+  ---
+  duration_ms: 78.1311
+  ...
+# Subtest: Actual Studio generate is admitted with the complete public bank and bounded output
+ok 389 - Actual Studio generate is admitted with the complete public bank and bounded output
+  ---
+  duration_ms: 89.6364
+  ...
+# Subtest: Actual Studio adapt is admitted with the complete public bank and bounded output
+ok 390 - Actual Studio adapt is admitted with the complete public bank and bounded output
+  ---
+  duration_ms: 79.5916
+  ...
+# Subtest: Actual Studio validation repair respects its workflow ceiling and keeps a valid kit
+ok 391 - Actual Studio validation repair respects its workflow ceiling and keeps a valid kit
+  ---
+  duration_ms: 61.8032
+  ...
+# Subtest: Actual Studio customer repair respects its workflow ceiling and keeps a valid kit
+ok 392 - Actual Studio customer repair respects its workflow ceiling and keeps a valid kit
+  ---
+  duration_ms: 63.4067
+  ...
+# Subtest: A customer review after validation repair is blocked before provider fetch; the validated kit stays unreviewed
+ok 393 - A customer review after validation repair is blocked before provider fetch; the validated kit stays unreviewed
+  ---
+  duration_ms: 48.7935
+  ...
+# Subtest: A mixed refusal and valid JSON during Studio validation never accepts refused output
+ok 394 - A mixed refusal and valid JSON during Studio validation never accepts refused output
+  ---
+  duration_ms: 52.7216
+  ...
+# Subtest: A mixed refusal and valid JSON during Studio customer never accepts refused output
+ok 395 - A mixed refusal and valid JSON during Studio customer never accepts refused output
+  ---
+  duration_ms: 37.312
+  ...
+# Subtest: A mixed refusal and valid JSON during Studio revision never accepts refused output
+ok 396 - A mixed refusal and valid JSON during Studio revision never accepts refused output
+  ---
+  duration_ms: 18.4514
+  ...
+# Subtest: Oversized Studio input is rejected before admission and does not consume daily allowance
+ok 397 - Oversized Studio input is rejected before admission and does not consume daily allowance
+  ---
+  duration_ms: 50.769
+  ...
+# Subtest: Current daily reservation limits admit two consultations after analysis and a kit, then deny another
+ok 398 - Current daily reservation limits admit two consultations after analysis and a kit, then deny another
+  ---
+  duration_ms: 77.674
+  ...
+# Subtest: Cancelling during Studio validation aborts the provider and stops queued calls
+ok 399 - Cancelling during Studio validation aborts the provider and stops queued calls
+  ---
+  duration_ms: 41.6596
+  ...
+# Subtest: Cancelling during Studio customer aborts the provider and stops queued calls
+ok 400 - Cancelling during Studio customer aborts the provider and stops queued calls
+  ---
+  duration_ms: 40.8945
+  ...
+# Subtest: Live Studio revocation prevents subsequent provider calls and a completed result
+ok 401 - Live Studio revocation prevents subsequent provider calls and a completed result
+  ---
+  duration_ms: 30.8968
+  ...
+# Subtest: One eight-minute deadline terminates a stalled later stage and clears every long timer
+ok 402 - One eight-minute deadline terminates a stalled later stage and clears every long timer
+  ---
+  duration_ms: 40.4932
+  ...
+# Subtest: A customer attempt timeout can retain a validated kit while clearing the whole-job deadline
+ok 403 - A customer attempt timeout can retain a validated kit while clearing the whole-job deadline
+  ---
+  duration_ms: 55.0459
+  ...
+# Subtest: Quota failure cannot announce a saved activity or discard the in-memory draft; retry can succeed
+ok 404 - Quota failure cannot announce a saved activity or discard the in-memory draft; retry can succeed
+  ---
+  duration_ms: 18.9653
+  ...
+# Subtest: Social mechanisms preserve roles and cadence in public kits, while coaching fears stay private
+ok 405 - Social mechanisms preserve roles and cadence in public kits, while coaching fears stay private
+  ---
+  duration_ms: 5.435
+  ...
+# Subtest: AI step suggestions require explicit acceptance and reject a stale step
+ok 406 - AI step suggestions require explicit acceptance and reject a stale step
+  ---
+  duration_ms: 2.4228
+  ...
+# Subtest: Consulting a linked variant uses its profile and private conversation, without main mapping or sources
+ok 407 - Consulting a linked variant uses its profile and private conversation, without main mapping or sources
+  ---
+  duration_ms: 3.9488
+  ...
+# Subtest: Reopening a conversation renders the saved suggested wording as historical text
+ok 408 - Reopening a conversation renders the saved suggested wording as historical text
+  ---
+  duration_ms: 3.3218
+  ...
+# Subtest: Accepting or rejecting a linked candidate clears its coach context and allows the next question
+ok 409 - Accepting or rejecting a linked candidate clears its coach context and allows the next question
+  ---
+  duration_ms: 8.2246
+  ...
+# Subtest: A step proposal cannot modify a replacement candidate with identical step wording
+ok 410 - A step proposal cannot modify a replacement candidate with identical step wording
+  ---
+  duration_ms: 1.8098
+  ...
+# Subtest: Reading a source file discards it after work, brief or authorization changes; normal import succeeds
+ok 411 - Reading a source file discards it after work, brief or authorization changes; normal import succeeds
+  ---
+  duration_ms: 5.8583
+  ...
+# Subtest: Team learning lab extends Nana without granting Studio or Writer access
+ok 412 - Team learning lab extends Nana without granting Studio or Writer access
+  ---
+  duration_ms: 38.0258
+  ...
+# Subtest: adopting the actual rendered proposal clears every human check and requires renewed approval
+ok 413 - adopting the actual rendered proposal clears every human check and requires renewed approval
+  ---
+  duration_ms: 43.3268
+  ...
+# Subtest: recovery merge clears human checks before the recovered content can be approved
+ok 414 - recovery merge clears human checks before the recovered content can be approved
+  ---
+  duration_ms: 24.0272
+  ...
+# Subtest: recovery load clears human checks before the recovered content can be approved
+ok 415 - recovery load clears human checks before the recovered content can be approved
+  ---
+  duration_ms: 17.2207
+  ...
+# Subtest: the recovery merge action retains evidence from both the local draft and latest saved workspace
+ok 416 - the recovery merge action retains evidence from both the local draft and latest saved workspace
+  ---
+  duration_ms: 69.1252
+  ...
+# Subtest: failed persistence of a recovery merge retains both evidence sets and remains manually retryable
+ok 417 - failed persistence of a recovery merge retains both evidence sets and remains manually retryable
+  ---
+  duration_ms: 28.5685
+  ...
+# Subtest: a transient write failure stays retryable and schedules no automatic retry loop
+ok 418 - a transient write failure stays retryable and schedules no automatic retry loop
+  ---
+  duration_ms: 28.6048
+  ...
+# Subtest: a manual save requested during a held save waits for the newest revision to be persisted
+ok 419 - a manual save requested during a held save waits for the newest revision to be persisted
+  ---
+  duration_ms: 13.3136
+  ...
+# Subtest: two queued clicks on the actual rehearsal save button create one evidence record while its lock is pending
+ok 420 - two queued clicks on the actual rehearsal save button create one evidence record while its lock is pending
+  ---
+  duration_ms: 21.4944
+  ...
+# Subtest: two queued clicks on the actual meeting save button create one evidence record while its lock is pending
+ok 421 - two queued clicks on the actual meeting save button create one evidence record while its lock is pending
+  ---
+  duration_ms: 16.3035
+  ...
+# Subtest: two queued approval clicks create one frozen approval while persistence is pending
+ok 422 - two queued approval clicks create one frozen approval while persistence is pending
+  ---
+  duration_ms: 10.8189
+  ...
+# Subtest: two queued archive clicks create one move from the actual selected meeting observation
+ok 423 - two queued archive clicks create one move from the actual selected meeting observation
+  ---
+  duration_ms: 20.3874
+  ...
+# Subtest: an embedded admin demonstration fills and generates in ephemeral storage without touching the regular draft
+ok 424 - an embedded admin demonstration fills and generates in ephemeral storage without touching the regular draft
+  ---
+  duration_ms: 12.1788
+  ...
+# Subtest: failed embedded admin demo generation preserves regular storage and leaves no generated activity
+ok 425 - failed embedded admin demo generation preserves regular storage and leaves no generated activity
+  ---
+  duration_ms: 10.5128
+  ...
+# Subtest: generation repairs a JSON activity that fails full domain validation before applying it
+ok 426 - generation repairs a JSON activity that fails full domain validation before applying it
+  ---
+  duration_ms: 21.736
+  ...
+# Subtest: two domain-invalid generation replies leave the current activity intact and release busy controls
+ok 427 - two domain-invalid generation replies leave the current activity intact and release busy controls
+  ---
+  duration_ms: 9.2798
+  ...
+# Subtest: approved sources use the real folded controls and visibility alone never attaches them to exports
+ok 428 - approved sources use the real folded controls and visibility alone never attaches them to exports
+  ---
+  duration_ms: 17.8075
+  ...
+# Subtest: source attachment persists through reload and controls actual JSON and sanitized print content
+ok 429 - source attachment persists through reload and controls actual JSON and sanitized print content
+  ---
+  duration_ms: 27.4286
+  ...
+# Subtest: selecting a different frozen approval resets the source attachment choice before export
+ok 430 - selecting a different frozen approval resets the source attachment choice before export
+  ---
+  duration_ms: 21.2425
+  ...
+# Subtest: an embedded generated demo printable node strips its default unattached sources with the real print sanitizer
+ok 431 - an embedded generated demo printable node strips its default unattached sources with the real print sanitizer
+  ---
+  duration_ms: 7.0263
+  ...
+# Subtest: demo isolation is gated by admin, embed and query ({"sys":false,"embedded":true,"search":"?demolab=1"})
+ok 432 - demo isolation is gated by admin, embed and query ({"sys":false,"embedded":true,"search":"?demolab=1"})
+  ---
+  duration_ms: 15.4173
+  ...
+# Subtest: demo isolation is gated by admin, embed and query ({"sys":true,"embedded":false,"search":"?demolab=1"})
+ok 433 - demo isolation is gated by admin, embed and query ({"sys":true,"embedded":false,"search":"?demolab=1"})
+  ---
+  duration_ms: 6.9761
+  ...
+# Subtest: demo isolation is gated by admin, embed and query ({"sys":true,"embedded":true,"search":""})
+ok 434 - demo isolation is gated by admin, embed and query ({"sys":true,"embedded":true,"search":""})
+  ---
+  duration_ms: 10.0862
+  ...
+# Subtest: stage 2 question uses the explicitly selected frozen approval and step through actual question listeners
+ok 435 - stage 2 question uses the explicitly selected frozen approval and step through actual question listeners
+  ---
+  duration_ms: 23.8728
+  ...
+# Subtest: stage 3 question uses the explicitly selected frozen approval and step through actual question listeners
+ok 436 - stage 3 question uses the explicitly selected frozen approval and step through actual question listeners
+  ---
+  duration_ms: 10.3951
+  ...
+# Subtest: ask passes the chosen current thread to real buildRequest and sends bounded follow-up context only
+ok 437 - ask passes the chosen current thread to real buildRequest and sends bounded follow-up context only
+  ---
+  duration_ms: 9.2777
+  ...
+# Subtest: actual planner rejects a late generate reply after edit and releases busy controls
+ok 438 - actual planner rejects a late generate reply after edit and releases busy controls
+  ---
+  duration_ms: 11.8452
+  ...
+# Subtest: actual planner rejects a late generate reply after recover and releases busy controls
+ok 439 - actual planner rejects a late generate reply after recover and releases busy controls
+  ---
+  duration_ms: 13.7033
+  ...
+# Subtest: actual planner rejects a late generate reply after session and releases busy controls
+ok 440 - actual planner rejects a late generate reply after session and releases busy controls
+  ---
+  duration_ms: 7.7802
+  ...
+# Subtest: actual planner rejects a late question reply after edit and releases busy controls
+ok 441 - actual planner rejects a late question reply after edit and releases busy controls
+  ---
+  duration_ms: 11.4396
+  ...
+# Subtest: actual planner rejects a late question reply after recover and releases busy controls
+ok 442 - actual planner rejects a late question reply after recover and releases busy controls
+  ---
+  duration_ms: 6.9726
+  ...
+# Subtest: actual planner rejects a late question reply after session and releases busy controls
+ok 443 - actual planner rejects a late question reply after session and releases busy controls
+  ---
+  duration_ms: 6.1584
+  ...
+# Subtest: catalogs expose five age bands, six complementary approaches and verified sources in both UMD surfaces
+ok 444 - catalogs expose five age bands, six complementary approaches and verified sources in both UMD surfaces
+  ---
+  duration_ms: 11.4581
+  ...
+# Subtest: context preserves independent axes and one eligible model while rejecting staff approaches for students
+ok 445 - context preserves independent axes and one eligible model while rejecting staff approaches for students
+  ---
+  duration_ms: 2.3501
+  ...
+# Subtest: update is immutable, drafts may be empty, and generation needs real context without fabricated activity
+ok 446 - update is immutable, drafts may be empty, and generation needs real context without fabricated activity
+  ---
+  duration_ms: 29.0139
+  ...
+# Subtest: strict activity validation checks phase order, bounded time, unique IDs, sources and social learning fields
+ok 447 - strict activity validation checks phase order, bounded time, unique IDs, sources and social learning fields
+  ---
+  duration_ms: 1.9157
+  ...
+# Subtest: all age bands and staff/student axes inform bounded AI prompts, while concerns only enter explicit support
+ok 448 - all age bands and staff/student axes inform bounded AI prompts, while concerns only enter explicit support
+  ---
+  duration_ms: 8.2241
+  ...
+# Subtest: immediate danger gates educational generation and approval
+ok 449 - immediate danger gates educational generation and approval
+  ---
+  duration_ms: 1.6658
+  ...
+# Subtest: AI replies accept JSON fences, strip authority fields and reject malformed/oversized replies
+ok 450 - AI replies accept JSON fences, strip authority fields and reject malformed/oversized replies
+  ---
+  duration_ms: 2.4748
+  ...
+# Subtest: questions do not mutate drafts; adopting a proposal requires matching revision and an existing target
+ok 451 - questions do not mutate drafts; adopting a proposal requires matching revision and an existing target
+  ---
+  duration_ms: 2.2725
+  ...
+# Subtest: human approval requires all checks and remains a frozen snapshot after editing
+ok 452 - human approval requires all checks and remains a frozen snapshot after editing
+  ---
+  duration_ms: 11.2992
+  ...
+# Subtest: practice is linked to a chosen approved step and only a real meeting can become a tried move
+ok 453 - practice is linked to a chosen approved step and only a real meeting can become a tried move
+  ---
+  duration_ms: 9.6075
+  ...
+# Subtest: public pack contains only chosen approved material, verified sources and immutable red lines
+ok 454 - public pack contains only chosen approved material, verified sources and immutable red lines
+  ---
+  duration_ms: 5.9007
+  ...
+# Subtest: repository isolates owners, bounds workspace fields and preserves corrupt or unavailable storage
+ok 455 - repository isolates owners, bounds workspace fields and preserves corrupt or unavailable storage
+  ---
+  duration_ms: 5.9788
+  ...
+# Subtest: atomic repository rejects competing stale saves and checks owner again inside the lock
+ok 456 - atomic repository rejects competing stale saves and checks owner again inside the lock
+  ---
+  duration_ms: 3.0739
+  ...
+# Subtest: follow-up sends only the bounded explicitly chosen conversation
+ok 457 - follow-up sends only the bounded explicitly chosen conversation
+  ---
+  duration_ms: 4.8536
+  ...
+# Subtest: rehearsal and meeting questions use explicitly selected frozen context and step
+ok 458 - rehearsal and meeting questions use explicitly selected frozen context and step
+  ---
+  duration_ms: 3.0179
+  ...
+# Subtest: recovery merges immutable local and latest evidence with complete lineage
+ok 459 - recovery merges immutable local and latest evidence with complete lineage
+  ---
+  duration_ms: 9.4455
+  ...
+# Subtest: valid JSON with malformed stored evidence is rejected and preserved
+ok 460 - valid JSON with malformed stored evidence is rejected and preserved
+  ---
+  duration_ms: 9.7345
+  ...
+# Subtest: repository storage and unsupported-lock failures remain retryable without losing initial draft
+ok 461 - repository storage and unsupported-lock failures remain retryable without losing initial draft
+  ---
+  duration_ms: 2.9611
+  ...
+# Subtest: Only a complete single-attempt measurement can release reserved budget
+ok 462 - Only a complete single-attempt measurement can release reserved budget
+  ---
+  duration_ms: 3.6645
+  ...
+# Subtest: Final-attempt measurements cannot discount a reservation that permits a retry
+ok 463 - Final-attempt measurements cannot discount a reservation that permits a retry
+  ---
+  duration_ms: 0.4651
+  ...
+# Subtest: Invalid, inconsistent and overflowing usage never releases a reservation
+ok 464 - Invalid, inconsistent and overflowing usage never releases a reservation
+  ---
+  duration_ms: 1.8522
+  ...
+# Subtest: tool types by what they do, with another tool and "not sure yet"
+ok 465 - tool types by what they do, with another tool and "not sure yet"
+  ---
+  duration_ms: 3.4821
+  ...
+# Subtest: the prompt holds the fixed backbone for every tool and keeps sensitive items out of shared tools
+ok 466 - the prompt holds the fixed backbone for every tool and keeps sensitive items out of shared tools
+  ---
+  duration_ms: 1.2513
+  ...
+# Subtest: valid needs the map, what stays out and the handover
+ok 467 - valid needs the map, what stays out and the handover
+  ---
+  duration_ms: 0.8958
+  ...
+# Subtest: mounted in the routines hub and in the continuity kit; screen text invites, without long dashes
+ok 468 - mounted in the routines hub and in the continuity kit; screen text invites, without long dashes
+  ---
+  duration_ms: 9.4919
+  ...
+# Subtest: 20 synthetic cases use the application contract while preserving their acceptance outcomes
+ok 469 - 20 synthetic cases use the application contract while preserving their acceptance outcomes
+  ---
+  duration_ms: 2.5959
+  ...
+# Subtest: fixture comparison has stable provenance and never treats schema success as a human quality score
+ok 470 - fixture comparison has stable provenance and never treats schema success as a human quality score
+  ---
+  duration_ms: 226.9177
+  ...
+# Subtest: trace uses an explicit allowlist and opaque identity links, including nested gate errors and free text
+ok 471 - trace uses an explicit allowlist and opaque identity links, including nested gate errors and free text
+  ---
+  duration_ms: 1.7476
+  ...
+1..471
+# tests 471
+# suites 0
+# pass 471
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 23916.5202

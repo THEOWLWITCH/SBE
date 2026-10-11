@@ -8,6 +8,10 @@
   const KB = SRC.forAdvisor('bridge');
   const WRITER = window.SBE_WRITER ? window.SBE_WRITER.rule : '';
   const STORE = window.sbeUserKey ? sbeUserKey('sbe.bridge.v1') : 'sbe.bridge.v1:anon';
+  let demo = false;
+  try { demo = new URLSearchParams(location.search).get('demolab') === '1' && window.parent !== window && sessionStorage.getItem('sbe.session.homeUrl') === 'admin.html?role=sys'; } catch (e) {}
+  const memory = new Map();
+  const storage = demo ? { getItem: (k) => memory.get(k) || null, setItem: (k, v) => memory.set(k, v) } : localStorage;
   const SERVER = window.sbeAIOrigin ? window.sbeAIOrigin() : 'https://sbe-server.onrender.com';
   const F = (id) => document.getElementById(id);
   const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התוצר לא הוכן. מה שמילאת נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
@@ -26,8 +30,43 @@
     clear: '', doable: '', decision: null, pick: '', checkWhen: '', result: '', story: {} });
   const EMPTY = () => ({ step: 1, form: {}, plan: null, version: 0, at: '', families: [FAMILY(0)], changes: [], learned: '', reflect: '' });
   let S = EMPTY();
-  try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && v.form) S = Object.assign(EMPTY(), v); } catch (e) {}
-  function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }
+  try { const v = JSON.parse(storage.getItem(STORE) || 'null'); if (v && v.form) S = Object.assign(EMPTY(), v); } catch (e) {}
+  function save() { try { storage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }
+  let epoch = 0;
+  let opening = 0;
+  const pending = new Map();
+  const familyKey = (f) => 'family:' + f.id;
+  function syncPending() {
+    const roundBusy = pending.has('round');
+    F('go').disabled = roundBusy; F('revise').disabled = roundBusy;
+    F('out3').querySelectorAll('[data-family-operation]').forEach((b) => { b.disabled = roundBusy || pending.has(b.getAttribute('data-family-operation')); });
+  }
+  function invalidate() {
+    epoch += 1;
+    pending.forEach((op) => { if (op.stop) op.stop(); }); pending.clear(); syncPending();
+  }
+  function start(key, family) {
+    if (pending.has(key) || (family && (pending.has('round') || !S.families.includes(family)))) return null;
+    if (key === 'round') invalidate();
+    const op = { key, round: S, plan: S.plan, epoch, family };
+    pending.set(key, op); syncPending(); return op;
+  }
+  function current(op) {
+    return pending.get(op.key) === op && op.round === S && op.plan === S.plan && op.epoch === epoch && (!op.family || S.families.includes(op.family)) && (!op.context || op.signature === op.context());
+  }
+  function capture(op, context) {
+    op.context = context; op.signature = context();
+  }
+  function finish(op) {
+    const active = current(op), ownsLock = pending.get(op.key) === op;
+    if (op.stop) op.stop(ownsLock);
+    if (ownsLock) { pending.delete(op.key); syncPending(); }
+    return active;
+  }
+  function familyButton(f, text, cls, fn) {
+    const b = btn(text, cls, fn), key = familyKey(f);
+    b.setAttribute('data-family-operation', key); b.disabled = pending.has('round') || pending.has(key); return b;
+  }
   const labels = () => S.families.map((f) => f.label);
   const otherLang = () => S.form.lang && S.form.lang !== 'עברית';
   const goalMode = () => M.isGoal(S.form);
@@ -79,7 +118,7 @@
     const t0 = Date.now();
     const tick = () => { const s = Math.round((Date.now() - t0) / 1000); line.textContent = text + ' בדרך כלל ' + exp + ' שניות. עברו ' + s + ' שניות.'; fill.style.width = Math.min(95, s / exp * 90) + '%'; };
     tick(); const iv = setInterval(tick, 1000);
-    return () => { clearInterval(iv); node.hidden = true; };
+    return (hide = true) => { clearInterval(iv); if (hide) node.hidden = true; };
   }
   const ask = (system, content, check) => window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 6000, customerReview: true }, 300000, check);
   function fail(n, m) { n.textContent = m; n.hidden = false; }
@@ -195,7 +234,7 @@
     if (f.status === 'לא מעשי כרגע') { const d = el('div', 'f'); d.appendChild(el('label', null, 'מה כתבו (אם כתבו)')); d.appendChild(field(f, 'notNow', 'מה כתבו', true, 'בלי שמות.')); c.appendChild(d); }
     const err = el('p', 'err'); err.hidden = true; err.id = 'err-' + f.id;
     const wait = el('div', 'wait'); wait.hidden = true; wait.id = 'wait-' + f.id;
-    if (!f.decision) { const b = btn('קבלת הצעה להמשך עם המשפחה', 'btn sm', () => decide(f, b)); c.append(b, wait, err); }
+    if (!f.decision) { const b = familyButton(f, 'קבלת הצעה להמשך עם המשפחה', 'btn sm', () => decide(f, b)); c.append(b, wait, err); }
     else { c.append(wait, err); c.appendChild(decisionView(f)); c.appendChild(nextGuide(f)); }
     return c;
   }
@@ -212,10 +251,10 @@
     item(2, practiceBlock(f));
     const s4 = el('div');
     if (f.planNext) s4.appendChild(planNextView(f));
-    const pb = btn(f.planNext ? 'תכנון מחדש' : 'תכנון הקשר בחודשיים הקרובים', f.planNext ? 'btn btn-ghost sm' : 'btn sm', () => planNext(f, pb)); s4.appendChild(pb); item(3, s4);
+    const pb = familyButton(f, f.planNext ? 'תכנון מחדש' : 'תכנון הקשר בחודשיים הקרובים', f.planNext ? 'btn btn-ghost sm' : 'btn sm', () => planNext(f, pb)); s4.appendChild(pb); item(3, s4);
     const s5 = el('div');
     if (f.summary) s5.appendChild(summaryView(f));
-    const sb = btn(f.summary ? 'סיכום מעודכן' : 'הכנת סיכום', f.summary ? 'btn btn-ghost sm' : 'btn sm', () => summarize(f, sb)); s5.appendChild(sb);
+    const sb = familyButton(f, f.summary ? 'סיכום מעודכן' : 'הכנת סיכום', f.summary ? 'btn btn-ghost sm' : 'btn sm', () => summarize(f, sb)); s5.appendChild(sb);
     s5.appendChild(el('p', 'remind', '📌 כדאי להוסיף את דרך הקשר המוסכמת עם המשפחה לתיק הרציפות, כדי שמי שתחליף אותך תדע איך להיות בקשר.'));
     if (f.summary) { s5.appendChild(btn('🖨 הדפסה / PDF', 'btn btn-ghost sm', () => printSummary(f))); s5.appendChild(btn('💾 שמירה במחשב', 'btn btn-ghost sm', () => downloadSummary(f))); }
     item(4, s5);
@@ -238,18 +277,22 @@
     const mine = P.turns.filter((t) => t.me).length;
     if (!P.feedback && mine < M.PRACTICE_TURNS) {
       const ta = el('textarea'); ta.rows = 2; ta.placeholder = mine ? 'מה תעני?' : 'איך תפתחי את השיחה?'; ta.setAttribute('aria-label', 'מה את אומרת');
-      const send = btn('שליחה', 'btn sm', async () => {
+      const send = familyButton(f, 'שליחה', 'btn sm', async () => {
         const v = ta.value.trim(); if (!v) return;
+        const op = start(familyKey(f), f); if (!op) return;
         P.turns.push({ me: true, text: v }); save(); send.disabled = true;
-        const msgs = P.turns.map((t) => ({ role: t.me ? 'user' : 'assistant', content: M.anonymize(t.text, labels()) }));
-        let reply = null;
-        try { reply = await window.sbeCallAI(SERVER, { system: M.practiceSystem(caseText(f)), messages: msgs, maxTokens: 300 }, 90000); } catch (e) { console.warn('גשר, תרגול:', e.message); }
+        const request = () => ({ system: M.practiceSystem(caseText(f)), messages: P.turns.map((t) => ({ role: t.me ? 'user' : 'assistant', content: M.anonymize(t.text, labels()) })), maxTokens: 300 });
+        capture(op, () => JSON.stringify(request()));
+        let reply = null, active = false;
+        try { reply = await window.sbeCallAI(SERVER, request(), 90000); } catch (e) { console.warn('גשר, תרגול:', e.message); }
+        finally { active = finish(op); }
+        if (!active || f.practice !== P) return;
         if (!reply) { P.turns.pop(); save(); draw(3); return fail(F('err2-' + f.id), NO_MODEL); }
         P.turns.push({ me: false, text: String(reply).trim() }); save(); draw(3);
       });
       box.append(ta, send);
     }
-    if (mine && !P.feedback) box.appendChild(btn('סיום התרגול ומשוב', 'btn btn-ghost sm', (ev) => feedback(f, ev.target)));
+    if (mine && !P.feedback) box.appendChild(familyButton(f, 'סיום התרגול ומשוב', 'btn btn-ghost sm', (ev) => feedback(f, ev.target)));
     if (P.feedback) {
       box.appendChild(window.SBE_TABLE(null, [['מה עבד', (() => { const u = el('ul'); arr(P.feedback.worked).forEach((x) => u.appendChild(el('li', null, txt(x)))); return u; })()],
         ['מה אפשר לנסות', (() => { const u = el('ul'); arr(P.feedback.try).forEach((x) => u.appendChild(el('li', null, txt(x)))); return u; })()], ['הצעד הבא', txt(P.feedback.next)]], 'kit-t'));
@@ -258,11 +301,14 @@
     return box;
   }
   async function feedback(f, b) {
-    const P = f.practice, log = P.turns.map((t) => (t.me ? 'המחנכת: ' : 'ההורה: ') + t.text).join('\n');
-    b.disabled = true; const stop = waiting(F('wait2-' + f.id), 'מכינה משוב קצר על השיחה.', 25);
-    let k = null, bad = null;
-    try { k = await window.sbeCallAIJson(SERVER, { system: M.feedbackSystem(KB), messages: [{ role: 'user', content: M.anonymize('מה שידוע:\n' + caseText(f) + '\n\nהשיחה:\n' + log, labels()) }], maxTokens: 1200 }, 120000, M.validFeedback); }
-    catch (e) { bad = e; } finally { stop(); b.disabled = false; }
+    const op = start(familyKey(f), f); if (!op) return;
+    const P = f.practice, content = () => M.anonymize('מה שידוע:\n' + caseText(f) + '\n\nהשיחה:\n' + P.turns.map((t) => (t.me ? 'המחנכת: ' : 'ההורה: ') + t.text).join('\n'), labels());
+    capture(op, content);
+    b.disabled = true; op.stop = waiting(F('wait2-' + f.id), 'מכינה משוב קצר על השיחה.', 25);
+    let k = null, bad = null, active = false;
+    try { k = await window.sbeCallAIJson(SERVER, { system: M.feedbackSystem(KB), messages: [{ role: 'user', content: content() }], maxTokens: 1200 }, 120000, M.validFeedback); }
+    catch (e) { bad = e; } finally { active = finish(op); }
+    if (!active || f.practice !== P) return;
     if (!M.validFeedback(k)) return fail(F('err2-' + f.id), why(bad));
     P.feedback = k; save(); draw(3);
   }
@@ -274,12 +320,17 @@
     return box;
   }
   async function planNext(f, b) {
+    if (pending.has(familyKey(f)) || pending.has('round')) return;
     F('err2-' + f.id).hidden = true;
     if (!f.pick) return fail(F('err2-' + f.id), 'כדי לתכנן, בחרי קודם את ההמשך (צעד 1).');
-    b.disabled = true; const stop = waiting(F('wait2-' + f.id), 'מתכננת את הקשר בחודשיים הקרובים.', 30);
-    let k = null, bad = null;
-    try { k = await ask(M.planNextSystem(KB, WRITER), 'השדות:\n' + M.inputText(S.form) + '\n\n' + caseText(f) + '\n\nתכנני את הקשר בהמשך.', M.validPlanNext); }
-    catch (e) { bad = e; } finally { stop(); b.disabled = false; }
+    const op = start(familyKey(f), f); if (!op) return;
+    const content = () => 'השדות:\n' + M.inputText(S.form) + '\n\n' + caseText(f) + '\n\nתכנני את הקשר בהמשך.';
+    capture(op, content);
+    b.disabled = true; op.stop = waiting(F('wait2-' + f.id), 'מתכננת את הקשר בחודשיים הקרובים.', 30);
+    let k = null, bad = null, active = false;
+    try { k = await ask(M.planNextSystem(KB, WRITER), content(), M.validPlanNext); }
+    catch (e) { bad = e; } finally { active = finish(op); }
+    if (!active) return;
     if (!M.validPlanNext(k)) return fail(F('err2-' + f.id), why(bad));
     f.planNext = k; save(); draw(3);
   }
@@ -296,14 +347,20 @@
     return box;
   }
   async function summarize(f, b) {
+    const op = start(familyKey(f), f); if (!op) return;
     F('err2-' + f.id).hidden = true;
-    const P = f.practice || {}, pl = f.planNext;
-    const extra = [P.feedback && 'מה עלה בתרגול: עבד: ' + arr(P.feedback.worked).join('; ') + '. לנסות: ' + arr(P.feedback.try).join('; '),
-      pl && 'תכנון הקשר: ' + arr(pl.steps).map((x) => x.when + ': ' + x.what).join('; '), f.result && 'בנקודת הבדיקה: ' + f.result, f.sent && 'ההודעה נשלחה.'].filter(Boolean).join('\n');
-    b.disabled = true; const stop = waiting(F('wait2-' + f.id), 'מכינה סיכום לשמירה.', 30);
-    let k = null, bad = null;
-    try { k = await ask(M.summarySystem(KB), M.anonymize('השדות:\n' + M.inputText(S.form) + '\n\n' + caseText(f) + (extra ? '\n' + extra : '') + '\n\nסכמי.', labels()), M.validSummary); }
-    catch (e) { bad = e; } finally { stop(); b.disabled = false; }
+    const content = () => {
+      const P = f.practice || {}, pl = f.planNext;
+      const extra = [P.feedback && 'מה עלה בתרגול: עבד: ' + arr(P.feedback.worked).join('; ') + '. לנסות: ' + arr(P.feedback.try).join('; '),
+        pl && 'תכנון הקשר: ' + arr(pl.steps).map((x) => x.when + ': ' + x.what).join('; '), f.result && 'בנקודת הבדיקה: ' + f.result, f.sent && 'ההודעה נשלחה.'].filter(Boolean).join('\n');
+      return M.anonymize('השדות:\n' + M.inputText(S.form) + '\n\n' + caseText(f) + (extra ? '\n' + extra : '') + '\n\nסכמי.', labels());
+    };
+    capture(op, content);
+    b.disabled = true; op.stop = waiting(F('wait2-' + f.id), 'מכינה סיכום לשמירה.', 30);
+    let k = null, bad = null, active = false;
+    try { k = await ask(M.summarySystem(KB), content(), M.validSummary); }
+    catch (e) { bad = e; } finally { active = finish(op); }
+    if (!active) return;
     if (!M.validSummary(k)) return fail(F('err2-' + f.id), why(bad));
     f.summary = k; save(); draw(3);
   }
@@ -327,7 +384,7 @@
   function decisionView(f) {
     const d = f.decision, box = el('div', 'decision');
     head(box, 'options');
-    const again = btn('רוצה הצעה אחרת?', 'linkbtn', () => decide(f, again)); box.appendChild(again);
+    const again = familyButton(f, 'רוצה הצעה אחרת?', 'linkbtn', () => decide(f, again)); box.appendChild(again);
     box.appendChild(T('options', arr(d.options).map((o) => [txt(o.name), txt(o.inClass), txt(o.atHome), txt(o.why)])));
     const g = el('div', 'grid2'), a = el('div', 'f'), b = el('div', 'f');
     a.appendChild(el('label', null, 'מה בחרת')); a.appendChild(choice(f, 'pick', 'מה בחרת', arr(d.options).map((o) => txt(o.name)), () => { const c = F('checks'); if (c) c.replaceWith(checksBlock()); }));
@@ -346,17 +403,22 @@
     return box;
   }
   async function decide(f, b) {
+    if (pending.has(familyKey(f)) || pending.has('round')) return;
     const err = F('err-' + f.id); err.hidden = true;
     if (!f.status && !M.storyText(f.story)) return fail(err, 'כדי להמשיך, ספרי את הסיפור או בחרי מה המשפחה ענתה. גם "עוד לא ענתה" היא תשובה.');
-    const P = S.plan, way = arr(P.ways).find((w) => txt(w.name) === f.chosen);
-    const story = M.storyText(f.story);
-    const content = M.anonymize('השדות:\n' + M.inputText(S.form) + (story ? '\n\nהסיפור של המורה עם המשפחה:\n' + story : '') + '\n\n' + (goalMode() ? 'המטרה: ' : 'הגשר: ') + txt(P.goal.text) + '\n' + (goalMode() ? 'דרכי התמיכה שהוצעו: ' : 'דרכי הקשר שהוצעו: ') + arr(P.ways).map((w) => txt(w.name) + ' (' + txt(w.what) + ')').join('; ') +
-      '\nהחלופה בכיתה: ' + txt(P.school.what) + '\n\nהתגובה של המשפחה: ' + f.status + (way ? '\nהדרך שבחרו: ' + txt(way.name) + ': ' + txt(way.what) : '') +
-      (f.status ? '' : 'עוד לא נשלח כרטיס, או שאין תגובה מתועדת.') + (f.adapt ? '\nההתאמה שהציעו: ' + f.adapt : '') + (f.notNow ? '\nמה כתבו: ' + f.notNow : '') + (f.how ? '\nאיך ענו: ' + f.how : '') + '\n\nהציעי את ההמשך.', labels());
-    b.disabled = true; const stop = waiting(F('wait-' + f.id), 'מכינה אפשרויות להמשך והודעה למשפחה.', 35);
-    let k = null, bad = null;
-    try { k = await ask(M.decideSystem(KB, WRITER, S.form.lang, S.form.focus), content, M.validDecision); } catch (e) { bad = e; console.warn('גשר, החלטה:', e.message); }
-    finally { stop(); b.disabled = false; }
+    const content = () => {
+      const P = S.plan, way = arr(P.ways).find((w) => txt(w.name) === f.chosen), story = M.storyText(f.story);
+      return M.anonymize('השדות:\n' + M.inputText(S.form) + (story ? '\n\nהסיפור של המורה עם המשפחה:\n' + story : '') + '\n\n' + (goalMode() ? 'המטרה: ' : 'הגשר: ') + txt(P.goal.text) + '\n' + (goalMode() ? 'דרכי התמיכה שהוצעו: ' : 'דרכי הקשר שהוצעו: ') + arr(P.ways).map((w) => txt(w.name) + ' (' + txt(w.what) + ')').join('; ') +
+        '\nהחלופה בכיתה: ' + txt(P.school.what) + '\n\nהתגובה של המשפחה: ' + f.status + (way ? '\nהדרך שבחרו: ' + txt(way.name) + ': ' + txt(way.what) : '') +
+        (f.status ? '' : 'עוד לא נשלח כרטיס, או שאין תגובה מתועדת.') + (f.adapt ? '\nההתאמה שהציעו: ' + f.adapt : '') + (f.notNow ? '\nמה כתבו: ' + f.notNow : '') + (f.how ? '\nאיך ענו: ' + f.how : '') + '\n\nהציעי את ההמשך.', labels());
+    };
+    const op = start(familyKey(f), f); if (!op) return;
+    capture(op, () => JSON.stringify([S.form.lang, S.form.focus, content()]));
+    b.disabled = true; op.stop = waiting(F('wait-' + f.id), 'מכינה אפשרויות להמשך והודעה למשפחה.', 35);
+    let k = null, bad = null, active = false;
+    try { k = await ask(M.decideSystem(KB, WRITER, S.form.lang, S.form.focus), content(), M.validDecision); } catch (e) { bad = e; console.warn('גשר, החלטה:', e.message); }
+    finally { active = finish(op); }
+    if (!active) return;
     if (!M.validDecision(k)) return fail(err, why(bad));
     f.decision = k; f.pick = ''; if (!f.checkWhen) f.checkWhen = isoPlus(14); save(); draw(3);
   }
@@ -420,33 +482,46 @@
 
   // ── הפקה ──
   F('go').addEventListener('click', async () => {
+    if (pending.has('round')) return;
     const d = readForm(); S.form = d; save();
     const missing = M.FIELDS.filter((f) => (f.main || (f.goalOnly && M.isGoal(d))) && !d[f.k]).map((f) => f.l);
     F('err1').hidden = true;
     if (missing.length) return fail(F('err1'), 'כדי להמשיך, נשמח למלא: ' + missing.join(', ') + '.');
-    const b = F('go'); b.disabled = true; const stop = waiting(F('wait1'), goalMode() ? 'מכינה דרכי תמיכה, חלופה בכיתה וכרטיס בחירה למשפחה.' : 'מכינה דרכי קשר וכרטיס למשפחה על הקשר עצמו.', 60);
-    let k = null, bad = null;
+    const op = start('round'); if (!op) return;
+    capture(op, () => M.inputText(S.form));
+    const b = F('go'); b.disabled = true; op.stop = waiting(F('wait1'), goalMode() ? 'מכינה דרכי תמיכה, חלופה בכיתה וכרטיס בחירה למשפחה.' : 'מכינה דרכי קשר וכרטיס למשפחה על הקשר עצמו.', 60);
+    let k = null, bad = null, active = false;
     try { k = await ask(M.planSystem(KB, WRITER, d.lang, d.focus), 'השדות:\n' + M.inputText(d) + '\n\nהכיני את הסבב.', M.valid); } catch (e) { bad = e; console.warn('גשר:', e.message); }
-    finally { stop(); b.disabled = false; }
+    finally { active = finish(op); }
+    if (!active) return;
     if (!M.valid(k)) return fail(F('err1'), why(bad));
+    invalidate();
     Object.assign(S, { plan: k, version: 1, at: today(), families: [FAMILY(0)], changes: [], learned: '' });
     save(); goStep(2);
   });
   F('revise').addEventListener('click', async () => {
+    if (pending.has('round')) return;
     const used = S.families.filter((f) => f.status || f.clear || f.doable);
     F('err4').hidden = true;
     if (!used.length) return fail(F('err4'), 'כדי לשפר את הכרטיס, נשמח לתגובה של משפחה אחת לפחות בצעד 3.');
-    const log = S.families.map((f) => f.label + ': ' + (f.status || 'לא תועד') + (f.chosen ? ' · הדרך: ' + f.chosen : '') + (f.adapt ? ' · התאמה: ' + f.adapt : '') + (f.notNow ? ' · כתבו: ' + f.notNow : '') +
-      ' · מובן: ' + (f.clear || 'לא תועד') + ' · ישים: ' + (f.doable || 'לא תועד') + (f.pick ? ' · ההמשך שנבחר: ' + f.pick : '') + (f.result ? ' · בנקודת הבדיקה: ' + f.result : '')).join('\n');
-    const plan = Object.assign({}, S.plan); delete plan.sources;
-    const b = F('revise'); b.disabled = true; const stop = waiting(F('wait4'), 'משפרת את הכרטיס לפי התגובות.', 70);
-    let k = null, bad = null;
+    const content = () => {
+      const log = S.families.map((f) => f.label + ': ' + (f.status || 'לא תועד') + (f.chosen ? ' · הדרך: ' + f.chosen : '') + (f.adapt ? ' · התאמה: ' + f.adapt : '') + (f.notNow ? ' · כתבו: ' + f.notNow : '') +
+        ' · מובן: ' + (f.clear || 'לא תועד') + ' · ישים: ' + (f.doable || 'לא תועד') + (f.pick ? ' · ההמשך שנבחר: ' + f.pick : '') + (f.result ? ' · בנקודת הבדיקה: ' + f.result : '')).join('\n');
+      const plan = Object.assign({}, S.plan); delete plan.sources;
+      return M.anonymize('השדות:\n' + M.inputText(S.form) + '\n\nהסבב הנוכחי (JSON):\n' + JSON.stringify(plan) + '\n\nמה קרה עם המשפחות:\n' + log +
+        '\n\nמה המורה למדה:\n' + (S.reflect || '[לא נכתב]') + '\n\nשפרי את הכרטיס.', labels());
+    };
+    const op = start('round'); if (!op) return;
+    capture(op, () => JSON.stringify([S.form.lang, S.form.focus, content()]));
+    const b = F('revise'); b.disabled = true; op.stop = waiting(F('wait4'), 'משפרת את הכרטיס לפי התגובות.', 70);
+    let k = null, bad = null, active = false;
     try {
-      k = await ask(M.reviseSystem(KB, WRITER, S.form.lang, S.form.focus), M.anonymize('השדות:\n' + M.inputText(S.form) + '\n\nהסבב הנוכחי (JSON):\n' + JSON.stringify(plan) + '\n\nמה קרה עם המשפחות:\n' + log +
-        '\n\nמה המורה למדה:\n' + (S.reflect || '[לא נכתב]') + '\n\nשפרי את הכרטיס.', labels()), M.valid);
+      k = await ask(M.reviseSystem(KB, WRITER, S.form.lang, S.form.focus), content(), M.valid);
     } catch (e) { bad = e; console.warn('גשר, שיפור:', e.message); }
-    finally { stop(); b.disabled = false; }
+    finally { active = finish(op); }
+    if (!active) return;
     if (!M.valid(k)) return fail(F('err4'), why(bad));
+    invalidate();
     S.changes = arr(k.changes); S.learned = k.learned || ''; delete k.changes; delete k.learned;
     S.plan = k; S.version += 1; S.at = today(); save(); draw(4);
   });
@@ -479,13 +554,16 @@
   }));
   document.querySelectorAll('[data-openwork]').forEach((inp) => inp.addEventListener('change', async () => {
     const file = inp.files[0]; if (!file) return;
+    const round = S, openedAt = epoch, request = ++opening;
     try { const o = JSON.parse(await file.text()); if (!o || o.type !== 'begood-bridge' || !o.state || !o.state.form) throw new Error('זה לא קובץ עבודה של מעבדת הגשר');
-      if (S.plan && !confirm('לפתוח את הקובץ במקום הסבב הנוכחי?')) return; S = Object.assign(EMPTY(), o.state); save(); location.reload(); }
-    catch (e) { alert('לא הצלחנו לפתוח את הקובץ: ' + e.message); } finally { inp.value = ''; }
+      if (request !== opening || S !== round || epoch !== openedAt) return;
+      if (S.plan && !confirm('לפתוח את הקובץ במקום הסבב הנוכחי?')) return; invalidate(); S = Object.assign(EMPTY(), o.state); save(); location.reload(); }
+    catch (e) { if (request === opening && S === round && epoch === openedAt) alert('לא הצלחנו לפתוח את הקובץ: ' + e.message); } finally { if (request === opening) inp.value = ''; }
   }));
-  F('newRound').addEventListener('click', () => { if (!confirm('לפתוח סבב חדש? הסבב הנוכחי יימחק מהמכשיר.')) return; const f = S.form; S = EMPTY(); S.form = f; save(); goStep(1); });
+  F('newRound').addEventListener('click', () => { if (!confirm('לפתוח סבב חדש? הסבב הנוכחי יימחק מהמכשיר.')) return; invalidate(); const f = S.form; S = EMPTY(); S.form = f; save(); goStep(1); });
 
   F('example').addEventListener('click', () => {
+    invalidate();
     const ex = { focus: M.FOCUS.contact, forWho: 'כמה משפחות', age: 'ג–ד', lang: 'עברית', time: '20 דקות בשבוע', goal: '',
       context: 'תחילת שנה, כיתה חדשה. עם כמה משפחות כמעט אין קשר: הודעות בקבוצה נשארות בלי תגובה, ולאסיפה לא הגיעו.',
       known: 'משפחה אחת שולחת הודעות קוליות בלבד. באחרת הסבתא אוספת את הילד. משפחה אחת ביקשה "רק כשיש משהו חשוב".',

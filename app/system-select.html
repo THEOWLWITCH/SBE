@@ -191,7 +191,7 @@ if (!inst) {
 } else {
   modMsg.hidden = false; modMsg.textContent = "טוענת את הכלים של המוסד... (לפעמים עד דקה)";
   fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" },
-    body: JSON.stringify({ action: "getModules", inst }) })
+    body: JSON.stringify({ action: "getModules", inst, token:sessionStorage.getItem("sbe.session.token") || "" }) })
     .then(r => r.ok ? r.json() : null)
     .then(cfg => {
       if (!cfg) throw new Error("no cfg");

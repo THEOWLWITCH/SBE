@@ -1,0 +1,20 @@
+{
+  "policy": "Actual alleged failure classified before reading validator verdicts",
+  "classifications": [
+    {
+      "#": 1,
+      "protected_subject": "concurrency",
+      "reason": "The new repair request continues after its job cancellation/revocation signal; the failure is observable synchronization between job state and in-flight provider work."
+    },
+    {
+      "#": 2,
+      "protected_subject": null,
+      "reason": "The alleged defect is missing output-budget enforcement for paid repair work; no evidenced external compatibility, memory-safety or trust-boundary injection claim is made."
+    },
+    {
+      "#": 3,
+      "protected_subject": "concurrency",
+      "reason": "The additional sequential repair lets server job completion fall outside client polling lifetime; the alleged observable failure is ordering and lifecycle synchronization."
+    }
+  ]
+}

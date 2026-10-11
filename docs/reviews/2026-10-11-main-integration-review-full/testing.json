@@ -1,0 +1,27 @@
+{
+  "reviewer": "testing",
+  "findings": [
+    {
+      "title": "Studio repair lacks a cancellation regression test",
+      "severity": "P1",
+      "file": "harness/lib/studio.mjs",
+      "line": 379,
+      "why_it_matters": "The Studio server passes a job cancellation signal, but after the initial provider call completes the repair and customer-review calls use only their own timeout signal. A cancelled or revoked job can therefore continue spending provider work for up to several minutes. The new repair test always lets the job finish and does not catch this lifecycle path.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 75,
+      "evidence": [
+        "harness/lib/studio.mjs:379:           text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});",
+        "harness/lib/studio.mjs:347:   finally {clearTimeout(requestTimer);signal?.removeEventListener('abort',abortRequest);}",
+        "harness/practice-server.mjs:151:         const [status,result]=await studioHandler(st,{...payload,token,async:false},{signal:controller.signal,fetchImpl});",
+        "harness/tests/studio-backend.test.mjs:400-410: the repair test asserts invalid-then-valid and invalid-twice replies, with no AbortController or cancellation assertion.",
+        "provenance: c0fb8f7e Claude 2026-10-09 - Studio repair helper already used independent AbortSignal.timeout in c187604; local Studio cancellation integration adds the signal contract, exposing the interaction."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Extend the Studio repair test with a controlled first invalid response, abort the supplied signal before or during the second provider call, and assert no further provider call, no activity result, and a stopped request. Propagate the job signal through repair and customer-review calls, keeping the existing timeout bound and live authorization checks."
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

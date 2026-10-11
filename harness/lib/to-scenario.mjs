@@ -12,6 +12,8 @@
 //   const scenario = toScenario(pipelineOutput, { input, meta });
 //   writeFileSync('app/scenarios/x.json', JSON.stringify(scenario, null, 2));
 
+import { runGates, approvedSources, OutputContractError } from './gates.mjs';
+
 const arr = (x) => (Array.isArray(x) ? x.filter(Boolean) : x ? [x] : []);
 const str = (x) => (x == null ? '' : String(x));
 // טקסט חופשי → פסקאות (המודל לפעמים מחזיר מחרוזת אחת עם שורות ריקות במקום מערך).
@@ -19,7 +21,10 @@ const toParas = (x) => (Array.isArray(x) ? x.filter(Boolean) : str(x).split(/\n\
 
 const TYPE_MAP = { 'פתיחה': 'פתיחה', 'סגירה': 'סגירה', 'מותנה': 'מותנה', 'היפוך': 'היפוך', 'ניתוק': 'ניתוק', 'פתיחה עמוקה': 'פתיחה עמוקה' };
 
-export function toScenario(out, { input = {}, meta = {} } = {}) {
+export function toScenario(out, { input = {}, meta = {}, sourceLibrary = [] } = {}) {
+  const gates = runGates(out, input, { sourceLibrary });
+  if (!gates.passed) throw new OutputContractError('final', gates.flagged.filter(g => g.kind === 'exact').map(g => g.detail || g.name));
+  const sourceById = new Map(approvedSources(sourceLibrary).map(s => [s.sourceId,s]));
   const ch = out.characters || {};
   const a = ch.actor || {}, t = ch.trainee || {};
   const docs = out.documents || {};
@@ -56,6 +61,8 @@ export function toScenario(out, { input = {}, meta = {} } = {}) {
 
   return {
     id,
+    given: structuredClone(out.given),
+    sourceRefs: structuredClone(out.sources),
     name: str(out.scenarioName),
     subtitle: str(out.scenarioSubtitle),
     institution: str(meta.institution || 'מכללה לחינוך'),
@@ -122,7 +129,7 @@ export function toScenario(out, { input = {}, meta = {} } = {}) {
       preQuestions: toParas(df.preSessionQuestions),
       debrief: toParas(df.debriefQuestions),
       reflection: toParas(df.reflectionQuestions),
-      sources: arr(out.sources),
+      sources: out.sources.map(s => sourceById.get(s.sourceId).citation),
     },
   };
 }

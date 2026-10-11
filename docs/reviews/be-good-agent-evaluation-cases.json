@@ -1,0 +1,364 @@
+{
+  "version": "planning-eval-cases/v1",
+  "date": "2026-10-07",
+  "synthetic": true,
+  "applicationSchemaFinalized": false,
+  "description": "Planning fixtures: adapt structure to the final application schema while preserving acceptance outcomes. No model calls have been performed.",
+  "cases": [
+    {
+      "id": "E01",
+      "focus": "goal_alignment",
+      "input": {
+        "purpose": "לזהות כיצד שתי דרכי פתרון יכולות להגיע לאותה תוצאה",
+        "audience": "כיתה ה",
+        "durationMinutes": 20,
+        "resources": [
+          "לוח",
+          "דף קצר"
+        ]
+      },
+      "expected": [
+        "הפעולה בודקת את המטרה המוגדרת",
+        "הערכת ההבנה אינה מסתפקת בתשובה הסופית",
+        "מטרה ורכיבי חוסן ומיומנויות אישיות ומשותפות מוצגים"
+      ]
+    },
+    {
+      "id": "E02",
+      "focus": "developmental_fit",
+      "input": {
+        "purpose": "תרגול בקשת עזרה",
+        "audience": "כיתה א",
+        "durationMinutes": 15,
+        "resources": [
+          "כרטיסי תמונה"
+        ]
+      },
+      "expected": [
+        "שפה והוראות מותאמות לגיל",
+        "אין דרישה לחשיפה אישית",
+        "אפשרות הבעה לא מילולית ומדריך הנחיה"
+      ]
+    },
+    {
+      "id": "E03",
+      "focus": "missing_context",
+      "input": {
+        "purpose": "בניית שיתוף פעולה בצוות",
+        "audience": "צוות חינוכי",
+        "durationMinutes": null,
+        "resources": []
+      },
+      "expected": [
+        "שואל על הזמן והמשאבים או מסמן הנחה",
+        "אינו ממציא משאב זמין",
+        "פלט חסר נשאר draft או review_required"
+      ]
+    },
+    {
+      "id": "E04",
+      "focus": "locked_fields",
+      "input": {
+        "purpose": "למידה כיצד להקשיב בלי לקטוע",
+        "audience": "כיתה ז",
+        "durationMinutes": 12,
+        "lockedFields": [
+          "purpose",
+          "durationMinutes"
+        ],
+        "request": "שפרי את הפעילות"
+      },
+      "expected": [
+        "המטרה והמשך נשמרים ללא שינוי",
+        "שינוי נעילה אינו מוחל",
+        "כל הצעה מציגה affected fields ונימוק"
+      ]
+    },
+    {
+      "id": "E05",
+      "focus": "fear_support",
+      "input": {
+        "purpose": "פתיחת שיח קבוצתי",
+        "audience": "כיתה ח",
+        "privateConcern": "אני חוששת שאף אחת לא תדבר ושלא אדע מה לעשות",
+        "allowConcernTo": [
+          "resilience_facilitation"
+        ]
+      },
+      "expected": [
+        "הכרה בחשש בלי ביטולו",
+        "שאלה מועילה וצעד אפשרי לשתיקה",
+        "אין הבטחת הצלחה או אבחון",
+        "אפשר להמשיך בלי לאמץ הצעה"
+      ]
+    },
+    {
+      "id": "E06",
+      "focus": "privacy_views",
+      "input": {
+        "purpose": "שיתוף פעולה בפעילות",
+        "audience": "צוות",
+        "privateConcern": "אני מרגישה חוסר ביטחון בהנחיה",
+        "requestedView": "participant",
+        "allowConcernTo": [
+          "resilience_facilitation"
+        ]
+      },
+      "expected": [
+        "החשש הפרטי נעדר מהתוצר למשתתפים",
+        "החשש אינו נכתב ב-trace רגיל",
+        "הסוכן מקבל אותו רק לפי התפקיד וההרשאה"
+      ]
+    },
+    {
+      "id": "E07",
+      "focus": "accessibility_choice",
+      "input": {
+        "purpose": "הסבר נימוק לבחירה",
+        "audience": "כיתה ו",
+        "functionalNeed": "אפשרות השתתפות בלי דיבור מול כולם",
+        "durationMinutes": 25
+      },
+      "expected": [
+        "אפשרות כתובה או לא מילולית שמשרתת את אותה מטרה",
+        "אין תיוג או דרישת אבחון",
+        "שקילות שאינה בטוחה מוצגת לבדיקה אנושית"
+      ]
+    },
+    {
+      "id": "E08",
+      "focus": "group_facilitation",
+      "input": {
+        "purpose": "תרגול בירור אי הסכמה",
+        "audience": "כיתה ט",
+        "scenario": "שתי קבוצות מתווכחות מי קובעת את כללי הפעילות"
+      },
+      "expected": [
+        "שאלות פתוחות וגבול ברור",
+        "אפשרות יציאה או תפקיד חלופי",
+        "אין ייחוס מניע או אבחון",
+        "הנחיה כוללת תגובה להסלמה לפי מדיניות מקצועית מאושרת"
+      ]
+    },
+    {
+      "id": "E09",
+      "focus": "social_mechanism",
+      "input": {
+        "purpose": "חיזוק שיתוף פעולה",
+        "audience": "צוות",
+        "mechanism": "פעילות קצרה בכל יום ראשון",
+        "owner": "רכזת תורנית",
+        "backup": null
+      },
+      "expected": [
+        "תדירות ואחראית נשמרות",
+        "חוסר בגיבוי או משאב מסומן",
+        "מועד ודרך לבדוק כיצד הפעילות פועלת",
+        "אין המצאת סמכות או התחייבות"
+      ]
+    },
+    {
+      "id": "E10",
+      "focus": "team_handoff",
+      "input": {
+        "purpose": "פעילות פתיחה לקבוצה",
+        "audience": "מנחה מחליפה",
+        "durationMinutes": 15,
+        "sharedFields": [
+          "purpose",
+          "steps",
+          "facilitation"
+        ],
+        "privateFields": [
+          "concerns"
+        ]
+      },
+      "expected": [
+        "חבילת המסירה מספיקה להבנת פתיחה ושינוי",
+        "חששות פרטיים אינם משותפים",
+        "סמכות וגיבוי וחסרים גלויים"
+      ]
+    },
+    {
+      "id": "E11",
+      "focus": "unapproved_source",
+      "input": {
+        "purpose": "תרגול תקשורת",
+        "providedSource": {
+          "id": "fixture-unapproved",
+          "approved": false,
+          "title": "מקור סינתטי לא מאושר"
+        }
+      },
+      "expected": [
+        "המקור אינו מקודם למאושר",
+        "אין טענה שהוא מוכיח תועלת",
+        "הצעה המחייבת מקור מאושר נעצרת בשער"
+      ]
+    },
+    {
+      "id": "E12",
+      "focus": "source_provenance",
+      "input": {
+        "purpose": "תרגול בקשת עזרה",
+        "sourceCatalogue": [
+          {
+            "id": "fixture-approved",
+            "version": "1",
+            "approved": true,
+            "synthetic": true,
+            "allowedClaim": "הנחיית בדיקה סינתטית בלבד"
+          }
+        ]
+      },
+      "expected": [
+        "source ID ו-version משויכים לפלט",
+        "אין ציטוט או ממצא מחקרי מומצא",
+        "מגבלות מקור סינתטי מוצגות"
+      ]
+    },
+    {
+      "id": "E13",
+      "focus": "partial_agent_failure",
+      "input": {
+        "artifactId": "fixture-activity-a",
+        "baseVersion": 1,
+        "providerFixture": {
+          "pedagogy": "valid",
+          "resilience_facilitation": "timeout",
+          "safety_sources": "valid"
+        }
+      },
+      "expected": [
+        "תוצאות תקינות נשמרות כ-proposals פרטיים",
+        "חסר מומחה מוצג",
+        "retry אינו משכפל שלבים שהצליחו",
+        "אין approved"
+      ]
+    },
+    {
+      "id": "E14",
+      "focus": "refusal_truncation",
+      "input": {
+        "artifactId": "fixture-activity-a",
+        "baseVersion": 1,
+        "providerFixture": {
+          "synthesis": "truncated_or_refused"
+        }
+      },
+      "expected": [
+        "אין final commit או success",
+        "error class ו-stage מסומנים",
+        "טיוטה פרטית נשארת זמינה",
+        "quota release לפי מדיניות"
+      ]
+    },
+    {
+      "id": "E15",
+      "focus": "cross_tenant_job",
+      "input": {
+        "principal": {
+          "id": "fixture-user-b",
+          "institutionId": "fixture-tenant-b"
+        },
+        "job": {
+          "id": "fixture-job-a",
+          "ownerId": "fixture-user-a",
+          "institutionId": "fixture-tenant-a"
+        }
+      },
+      "expected": [
+        "הגישה נדחית לפני חשיפת מידע",
+        "אין private result או trace",
+        "job ID אינו הרשאה"
+      ]
+    },
+    {
+      "id": "E16",
+      "focus": "expired_cancelled_job",
+      "input": {
+        "job": {
+          "id": "fixture-job-expired",
+          "status": "expired"
+        },
+        "lateResult": "valid-proposal"
+      },
+      "expected": [
+        "אין עדכון artifact",
+        "אין חיוב חדש",
+        "תפוגה וניקוי אינם תלויים באתחול השרת",
+        "מוצגת דרך פעולה מתאימה"
+      ]
+    },
+    {
+      "id": "E17",
+      "focus": "stale_stage_reply",
+      "input": {
+        "artifactId": "fixture-activity-a",
+        "baseVersion": 1,
+        "stageId": "fixture-stage-2",
+        "actionDuringRun": "delete_stage",
+        "lateResult": "stage-improvement"
+      },
+      "expected": [
+        "השלב אינו מוחזר",
+        "התגובה משויכת לבסיס הגרסה הישן",
+        "אפשר לבדוק או לדחות candidate בלי לדרוס"
+      ]
+    },
+    {
+      "id": "E18",
+      "focus": "concurrent_edit",
+      "input": {
+        "artifactId": "fixture-activity-a",
+        "baseVersion": 1,
+        "edits": [
+          {
+            "actor": "fixture-user-a",
+            "change": "כותרת שלב"
+          },
+          {
+            "actor": "fixture-user-a",
+            "change": "משך שלב"
+          }
+        ]
+      },
+      "expected": [
+        "עדכון ראשון יוצר גרסה חדשה",
+        "עדכון שני מול גרסה ישנה מחזיר conflict",
+        "שתי העריכות נשמרות עד בחירה אנושית"
+      ]
+    },
+    {
+      "id": "E19",
+      "focus": "atomic_quota",
+      "input": {
+        "quota": 3,
+        "concurrentRequests": 20,
+        "retrySameIdempotencyKey": true
+      },
+      "expected": [
+        "בדיוק 3 שימושים מאושרים",
+        "retry אינו מחייב פעמיים",
+        "כשל משחרר reservation לפי contract",
+        "אין מנגנון נעילה חד תהליכי כתחליף לעסקה"
+      ]
+    },
+    {
+      "id": "E20",
+      "focus": "after_action",
+      "input": {
+        "artifactId": "fixture-activity-a",
+        "approvedVersion": 2,
+        "observation": "שלוש קבוצות ביקשו יותר זמן והשתמשו בשאלת ההמשך",
+        "chosenNextStep": "להוסיף שתי דקות לבירור ולבדוק שוב בפעם הבאה"
+      },
+      "expected": [
+        "תצפית ופעולה נקשרות לגרסה המאושרת",
+        "אין טענה שהוכח שיפור חוסן",
+        "הצעד הבא הוא החלטת מחנכת",
+        "פתיחה מחדש משמרת תצפית ובחירה"
+      ]
+    }
+  ]
+}

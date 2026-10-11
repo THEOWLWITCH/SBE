@@ -1,0 +1,9 @@
+{
+  "learnings": [],
+  "agent_native_gaps": [],
+  "deployment_notes": [],
+  "residual_risks": [],
+  "testing_gaps": [
+    "Successful authenticated Studio admission with actual handleStudio remains unverified. The server transport tests inject a studioHandler result, while backend repair tests bypass the job wrapper; the validator production-listener fixture hit the mandatory-source budget guard and made zero provider calls. Establish a synthetic valid-first and invalid-first/valid-repair success case through that boundary before claiming Studio generation works."
+  ]
+}

@@ -1,0 +1,259 @@
+{
+  "status": "complete",
+  "kind": "independent-planner-integration-check",
+  "implementationHead": "7c9b2cbbf6a41c6fc47a9a2a4daea59855eeacfd",
+  "approvedMain": "8cc4ffa55b3b21e01e24fc8f6809fde8c70fec7e",
+  "completedAt": "2026-10-09T04:30:14.613Z",
+  "scope": {
+    "description": "Independent read-only verification of canonical product-policy idempotence, reservation-aware agent scheduling, shared completion usage charge and authenticated outer server budget integration.",
+    "formalReview": false,
+    "originalReviewedHead": "bafa1cc9a8c550b6451744a45a22a9aa75e760bf",
+    "authoring": "Evidence artifacts only; no production source or Git writes.",
+    "network": "Loopback synthetic HTTP only; no external model/provider calls."
+  },
+  "paths": [
+    {
+      "path": "app/lib/invite-language.js",
+      "gitBlobIdNormalized": "1a0b6521a810f56400e53dacba7d6e7192a8738f",
+      "workingFileSha256": "80b5147af4681a6b9f64dde5aee756ebd8dc9f3fa9c4c009edf316e0ffbe563e"
+    },
+    {
+      "path": "harness/lib/agent-contract.mjs",
+      "gitBlobIdNormalized": "b95558ffd0f24559a20a29aa1f22088764ee3f64",
+      "workingFileSha256": "1cfba2606842a95b35c4a9c60c83a02e6c314a8fee381d1fcae5541a3c2f2fc8"
+    },
+    {
+      "path": "harness/lib/agent-orchestrator.mjs",
+      "gitBlobIdNormalized": "9ebf64c1408ab8a050353aa70a58334b60926bbc",
+      "workingFileSha256": "cc02f291064865314904d9f8c9602293e16b0d177b3d2af7bb8d27dee0c09607"
+    },
+    {
+      "path": "harness/lib/providers.mjs",
+      "gitBlobIdNormalized": "053dee25d849131c46f6cc8cb233f67da0f0450c",
+      "workingFileSha256": "0aa5fad2e01ae9c16c9fb06ec66786892324c0848f6b8f41929d4765cc84eaef"
+    },
+    {
+      "path": "harness/lib/token-budget.mjs",
+      "gitBlobIdNormalized": "aaa12049c65425da1b3ab97e5c01b0c4f6d6ff36",
+      "workingFileSha256": "97b867d553e7fcb1cf8e15d5c716f962d9b854cf517eb6f0555c78ae258c8da3"
+    },
+    {
+      "path": "harness/practice-server.mjs",
+      "gitBlobIdNormalized": "b8d8c47f43e4ff99196b55a548aaa3e5757d02ab",
+      "workingFileSha256": "12e08691eabb2a3eff27e6e34ca388eafc02367b67362ecceb4a0d53fa35a422"
+    },
+    {
+      "path": "harness/tests/agent-orchestrator.test.mjs",
+      "gitBlobIdNormalized": "5ac7077fcd09816bd940ac87f81fefcba679afb7",
+      "workingFileSha256": "abece5dd577f8d49e4cdcac4c4ddc5dce543212ce33d91fb89c091befc979dce"
+    },
+    {
+      "path": "harness/tests/provider-gates.test.mjs",
+      "gitBlobIdNormalized": "dd6360ba9a68c84fd36a805a51df4fb1dc2e9e13",
+      "workingFileSha256": "2ecb33500d553fa253964bbea6b8a4970b9bb1c7a6a3dcd47d34d00ee2fbdff6"
+    },
+    {
+      "path": "harness/tests/server-transport.test.mjs",
+      "gitBlobIdNormalized": "ccb532ac4ab1d6ebb03a8cac76f82c444a01577d",
+      "workingFileSha256": "0ffeec235a3bf3e0ba633925e029430123606917ba8cd3e32ec369b07beae1c8"
+    },
+    {
+      "path": "harness/tests/token-budget.test.mjs",
+      "gitBlobIdNormalized": "e9983f1b723fa15ff4209809d3c3605f13faa302",
+      "workingFileSha256": "ea89f62709616fb7022a1a350e7bce8b3950a6aa0f9f01065f8b094cf5de648a"
+    }
+  ],
+  "authoredPaths": [],
+  "outcome": {
+    "openConcreteDefects": [],
+    "openConcreteDefectCount": 0,
+    "conclusion": "All executed bounded integration checks passed at the exact clean implementation head.",
+    "resolvedIntegrationFindings": [
+      {
+        "id": "integration-partial-usage-accounting",
+        "description": "A partially unknown input/output usage count must retain the full reservation unless an authoritative measured total or both complete counts are available.",
+        "negativeEvidence": "outputs/quality-evidence/planner-integration-partial-usage-probe.json",
+        "postFixCase": "preserved partial-usage red repro now fails closed",
+        "verified": "The same low-budget synthetic reproduction now launches only pedagogy and retains its full reservation; no over-budget queued or synthesis call is launched."
+      },
+      {
+        "id": "integration-authenticated-outer-budget",
+        "description": "The authenticated outer wrapper must reconcile completed single-attempt usage so deferred team reviewers can proceed within the unchanged 100000 allowance.",
+        "negativeEvidence": "outputs/quality-evidence/planner-integration-outer-budget-probe.json",
+        "postFixCase": "actual authenticated HTTP complete",
+        "verified": "Actual loopback create→async review→poll now physically completes pedagogy, resilience_facilitation, safety_sources and synthesis, with total measured usage 36160 and unchanged tokenBudget 100000. Artifact version remains 1 and no version is approved."
+      }
+    ]
+  },
+  "executed": {
+    "targetedTests": {
+      "artifact": "outputs/quality-evidence/planner-integration-targeted-tests.json",
+      "artifactSha256": "88d9bf9f5140f0eb98b2207bde4aea5d44c112cb1f148384a9da35b11b6896f1",
+      "startedAt": "2026-10-08T16:47:33.089Z",
+      "endedAt": "2026-10-08T16:47:34.337Z",
+      "runtime": "v20.19.1",
+      "command": [
+        "node",
+        "--preserve-symlinks",
+        "--preserve-symlinks-main",
+        "--test",
+        "harness/tests/agent-orchestrator.test.mjs",
+        "harness/tests/provider-gates.test.mjs",
+        "harness/tests/server-transport.test.mjs",
+        "harness/tests/token-budget.test.mjs"
+      ],
+      "exitCode": 0,
+      "counts": {
+        "tests": 48,
+        "pass": 48,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "executedBy": "planner_report_recovery"
+    },
+    "independentProbes": {
+      "artifact": "outputs/quality-evidence/planner-integration-postfix-probes.json",
+      "artifactSha256": "5da57e6666bb1b0aad593746bdc6e341a3d53766a2c7fa3138c2eb1e742027b9",
+      "startedAt": "2026-10-08T16:49:26.322Z",
+      "endedAt": "2026-10-08T16:49:26.704Z",
+      "runtime": "v20.19.1",
+      "caseCount": 17,
+      "passedCaseCount": 17,
+      "cases": [
+        {
+          "name": "canonical policy exact idempotence with block metadata and unchanged defaults",
+          "passed": true
+        },
+        {
+          "name": "preserved partial-usage red repro now fails closed",
+          "passed": true
+        },
+        {
+          "name": "queued reviewers recheck authorization before physical dispatch",
+          "passed": true
+        },
+        {
+          "name": "deferred team retains lowered physical call cap",
+          "passed": true
+        },
+        {
+          "name": "actual outer wrapper: single measured total",
+          "passed": true
+        },
+        {
+          "name": "actual outer wrapper: single both complete counts",
+          "passed": true
+        },
+        {
+          "name": "actual outer wrapper: single measured total with partial component",
+          "passed": true
+        },
+        {
+          "name": "actual outer wrapper: partial unknown input",
+          "passed": true
+        },
+        {
+          "name": "actual outer wrapper: partial unknown output",
+          "passed": true
+        },
+        {
+          "name": "actual outer wrapper: fully unknown",
+          "passed": true
+        },
+        {
+          "name": "actual outer wrapper: multi-attempt final-only usage",
+          "passed": true
+        },
+        {
+          "name": "actual outer wrapper: failed result with usage",
+          "passed": true
+        },
+        {
+          "name": "actual outer wrapper: thrown error with usage",
+          "passed": true
+        },
+        {
+          "name": "actual outer wrapper: inconsistent total",
+          "passed": true
+        },
+        {
+          "name": "actual outer wrapper: excess output",
+          "passed": true
+        },
+        {
+          "name": "actual authenticated HTTP complete",
+          "passed": true
+        },
+        {
+          "name": "actual authenticated HTTP revoke",
+          "passed": true
+        }
+      ],
+      "executedBy": "planner_report_recovery",
+      "method": "Direct orchestration probes; exact outer-wrapper source functions in a VM with the real product policy and shared charge helper; two actual authenticated loopback HTTP scenarios."
+    },
+    "reusedAfterInterruption": true,
+    "reexecutedTestsAfterInterruption": false,
+    "executionDatesPreserved": true
+  },
+  "coverage": {
+    "canonicalPolicy": "Full canonical rules append once; headings alone cannot suppress them; repeated application preserves existing array blocks and metadata.",
+    "unknownAndFailedUsage": "Partial or missing usage, failed completions and thrown errors retain their reservations. Inconsistent totals and excessive output reject without discount.",
+    "multiAttemptAccounting": "Potential two-attempt requests retain the full conservative reservation because returned usage can cover only the final attempt. Default retry behavior remains unchanged.",
+    "queuedWork": "Targeted tests and independent probes verify cancellation, shared deadline, lowered call caps, settled budget exhaustion, live authorization rechecks and termination without hidden retries or queued deadlock.",
+    "authorization": "Actual HTTP revocation after the first two provider calls prevents queued physical calls and all proposals; polling returns 403 and the job cannot finish done.",
+    "defaults": "Team remains disabled by default; maxCalls 4, maxTokensPerCall 2400, totalTokens 100000, timeoutMs 45000 and maxInputBytes 64000 remain unchanged."
+  },
+  "supplementalRootAttestation": {
+    "source": "Root coordination message after interruption, not independently executed by this leaf.",
+    "implementationHead": "7c9b2cbbf6a41c6fc47a9a2a4daea59855eeacfd",
+    "fullTests": {
+      "passed": 205,
+      "total": 205
+    },
+    "syntaxChecks": 64
+  },
+  "preservedNegativeEvidence": [
+    {
+      "path": "outputs/quality-evidence/planner-integration-partial-usage-probe.json",
+      "sha256": "3116dc60ba356ce7304e91ab3687cc94b3488358807219ab6fc6acba3face021",
+      "originalHead": "307298ab6fbc184ef30ce7fede935d002688d3b3",
+      "originalAssertionPassed": false,
+      "preserved": true
+    },
+    {
+      "path": "outputs/quality-evidence/planner-integration-outer-budget-probe.json",
+      "sha256": "50b3c4206887306047deec9ec4d698018fbaa98daa48c18271df8434a68c23ac",
+      "originalHead": "a3ded7fd6d990e08bf694fd45015d67b0da9abc0",
+      "originalAssertionPassed": false,
+      "preserved": true
+    }
+  ],
+  "preservedOriginalFormalReceipts": [
+    {
+      "path": "C:/Users/yaels/AppData/Local/Temp/compound-engineering-yaels/ce-code-review/20261008-planner-bafa1cc9/review.json",
+      "sha256": "6997c2a4b5daaae74b7c17b2dd18985062836c63624ebf00174cb4992fe9e130",
+      "preserved": true
+    },
+    {
+      "path": "C:/Users/yaels/AppData/Local/Temp/compound-engineering-yaels/ce-code-review/20261008-planner-bafa1cc9/metadata.json",
+      "sha256": "2c9482d5cfb4b56393ecc73d7602f8107b6d04a9d8bd047bb8af44c8bc35f13f",
+      "preserved": true
+    }
+  ],
+  "provenance": {
+    "cleanAtPriorExecutions": true,
+    "currentClean": true,
+    "workingFilesMatchRecordedTestAndProbeHashes": true,
+    "allListedNormalizedBlobsMatchImplementationHead": true
+  },
+  "limits": [
+    "This is a bounded integration check, not a new formal review or an amendment to the immutable bafa1cc9 review receipt.",
+    "48 is the executed Node test count; 17 is a separate probe case count, not another test-suite count.",
+    "All fixtures were synthetic; no paid/live provider calls, production database, deployment or rollout occurred.",
+    "Production incidence, live-model educational quality, full U5 completion, privacy retention policy and human educational evaluation remain outside this check.",
+    "Browser print/download delivery and native dialog dismissal acceptance are not established by these backend integration checks.",
+    "Root full-test and syntax numbers are explicitly supplemental attestations; this leaf executed only the 48 targeted tests and 17 probe cases recorded above."
+  ]
+}

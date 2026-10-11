@@ -1,0 +1,74 @@
+{
+  "reviewer": "adversarial",
+  "findings": [
+    {
+      "title": "Cancelling a validation repair leaves paid generation running",
+      "severity": "P2",
+      "file": "harness/lib/studio.mjs",
+      "line": 379,
+      "why_it_matters": "The newly introduced validation repair runs even with STUDIO_CUSTOMER_REVIEW=off. Once its provider request has started, cancelling the server job releases the usage reservation and aborts the job controller, but the repair uses only its independent 180-second timeout. The provider therefore continues doing paid work after cancellation. The server's final live-job check correctly prevents stale output from being committed, but it cannot cancel this in-flight request. Repeated cancellation during repair can leave several provider operations consuming resources after their reservations have been released.",
+      "autofix_class": "manual",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "harness/lib/studio.mjs:379:           text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});",
+        "Trigger: a schema-valid first activity has a meeting step with minutes=0. kitErrors rejects it and the new caller at harness/lib/studio.mjs:388-390 sends it to ask for validation repair, independently of the customer-review setting.",
+        "The initial request combines the incoming job signal with its timeout at harness/lib/studio.mjs:334-347. The repair at 374-385 instead supplies an unrelated AbortSignal.timeout and never attaches the incoming signal.",
+        "harness/practice-server.mjs:204:           const cancelled=await finishJob(st,key,actor,{status:'cancelled'},'release');controllers.get(key)?.abort();",
+        "The Studio fetch wrapper at harness/practice-server.mjs:145-150 checks the job before submission and after reading response JSON, but passes options directly to fetch. Thus its post-response check prevents commit without aborting the paid request already in flight.",
+        "Local reproduction used the actual handleStudio and domain exampleActivity, paused the second fetch, then aborted the supplied controller. Observed: jobAborted=true, repairAborted=false, calls=2. Releasing the synthetic response allowed handleStudio to return 200. No paid AI or network was used. All 74 targeted AI/planner/lab/Studio tests passed despite this scenario.",
+        "provenance: c0fb8f7 Claude 2026-10-09 - Fix studio kit rejection and add one repair attempt across tools. Targeted c187604 blame assigns the new validation-repair caller to this commit; it is absent at b7c85b1. This finding concerns its new interaction with the quality branch's cancellable job server, rather than attributing the unchanged timeout helper solely to reconciliation."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Give every ask invocation an abort controller that combines the incoming job signal with its timeout, check the signal before submission, and propagate cancellation instead of converting it to null. Verify cancellation while the validation-repair fetch is pending through createPracticeServer, with customer review disabled."
+    },
+    {
+      "title": "Validation repair omits the provider output budget cap",
+      "severity": "P2",
+      "file": "harness/lib/studio.mjs",
+      "line": 378,
+      "why_it_matters": "An invalid first kit now reaches a second paid generation request without max_output_tokens. In the integrated Studio job wrapper, the budget estimator substitutes only 220 output tokens when that field is absent, and the response wrapper never accounts for actual provider usage. A normal complete repaired kit can exceed that output allowance while the job remains green; a much longer schema-valid response can consume substantially more than the work that was reserved. The first generation's explicit 16000-token cap does not protect this new attempt.",
+      "autofix_class": "manual",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "harness/lib/studio.mjs:378:         body:JSON.stringify({model,reasoning:{effort},store:false,instructions,input:[{role:'user',content:[{type:'input_text',text}]}],",
+        "The request finishes at harness/lib/studio.mjs:379 with the schema and timeout, without max_output_tokens. By comparison, the initial payload at line 330 includes max_output_tokens:16000.",
+        "Trigger: the first provider reply parses and matches ACTIVITY_SCHEMA but fails kitErrors. The new caller at harness/lib/studio.mjs:388-390 submits the uncapped repair even when STUDIO_CUSTOMER_REVIEW=off.",
+        "harness/practice-server.mjs:37:   const maxTokens=request.maxTokens ?? request.max_output_tokens ?? 220;",
+        "The integrated Studio wrapper at harness/practice-server.mjs:145-150 reserves requestBudget(request,1), then checks only live access when response.json is read. Unlike boundedProvider at lines 55-60, it does not inspect or charge the response's actual usage.",
+        "Local actual-handler reproduction captured the second request as repairMaxOutputTokens=null; the corrected full kit was accepted with status 200. No paid AI or network was used. The newly added studio-backend repair test calls handleStudio with a plain fetch stub, so its success does not exercise the production job-budget wrapper.",
+        "provenance: c0fb8f7 Claude 2026-10-09 - Fix studio kit rejection and add one repair attempt across tools. The new validation-repair caller is absent at b7c85b1 and inherited from c187604; its interaction with the existing quality-branch budget wrapper is newly reachable for invalid first kits."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Set explicit max_output_tokens on every ask request, using a defended cap for repaired activities and a smaller cap for customer-review responses. Make the Studio fetch wrapper validate and charge actual provider usage against the reserved job budget, as boundedProvider already does. Verify a repaired response whose reported usage exceeds its reservation through the production server boundary."
+    },
+    {
+      "title": "Continuity demo uploads device-only sensitive input",
+      "severity": "P1",
+      "file": "app/lib/demo-hook.js",
+      "line": 140,
+      "why_it_matters": "If the administrator previously filled a continuity kit's red medical-information table, running its new demo recipe opens that same saved kit. The example action changes only the form, retaining the sensitive local rows. The generic demo input collector scans all document inputs before clearing the kit, including hidden panes and .sens tables, then demo-lab sends the captured input to demoSave. Student names and medical details that the continuity UI promises will stay on the device therefore reach server storage, and can accompany an example if it is later published. The demo also replaces the regular kit's form and generated content because it uses the same storage key. This defect is already present unchanged in c187604 and is not attributed to the local reconciliation.",
+      "autofix_class": "manual",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/demo-hook.js:140:     \"continuity-kit.html\": function () { return inPage(\"continuity\", \"תיק רציפות\", \"תיק רציפות\", \"#example\", \"#go\", \"#kit .kit h2\", \"#kit\", \"#err1\"); },",
+        "app/lib/continuity-kit-ui.js:11 captures the regular sbeUserKey('sbe.continuity.v2') storage key, and load at lines 23-29 restores S.local. There is no separate embedded-demo state. If S.kit exists, line 464 immediately renders its local sensitive inputs.",
+        "The example handler at app/lib/continuity-kit-ui.js:452-462 updates only S.form and the form inputs; it does not clear the existing S.local.red, students, individual or updates tables.",
+        "app/lib/demo-hook.js:112:     var inp = inputSummary();",
+        "inputSummary at app/lib/demo-hook.js:44-54 scans document inputs and excludes only dialog, hidden-type and file inputs. It does not exclude .sens or elements in hidden panes. inPage collects this input before it clears the capture node at line 113.",
+        "app/demo-lab.html:230:           try{await api({action:'demoSave',tool:it.tool||id,title:it.title,label:it.label,html:it.html,input:it.input||'',run:batch,order:ORDER.indexOf(id)});saved++;}",
+        "Local reproduction evaluated the actual inputSummary function with the continuity model's 14 form fields followed by the three rendered red-table inputs. The result included SYNTHETIC_STUDENT_NAME, SYNTHETIC_MEDICAL_DETAILS and SYNTHETIC_SAFETY_ACTION within its first-18-input limit. No real private data or external network was used.",
+        "provenance: c46203a Claude 2026-10-09 - New tool: continuity kit for the teacher (תיק רציפות). Targeted blame at c187604:app/lib/demo-hook.js:131 attributes the identical continuity recipe to this commit; c187604:app/lib/continuity-kit-ui.js is identical to the reviewed file, with scoped local restoration added by b0845a2 on 2026-10-09. This is upstream-only relative to the integration."
+      ],
+      "pre_existing": true,
+      "suggested_fix": "Initialize continuity demos with an empty in-memory state under the existing administrator/embed/demolab gate, preserving the regular device store on success and failure. Collect the demo input summary only from #form and additionally exclude .sens nodes in the shared collector. Verify a seeded regular kit containing red-table and student-contact sentinels remains byte-identical and that demoSave payloads contain none of those sentinels."
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

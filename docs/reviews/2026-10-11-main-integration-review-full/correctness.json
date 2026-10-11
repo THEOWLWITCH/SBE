@@ -1,0 +1,8 @@
+{
+  "reviewer": "correctness",
+  "findings": [],
+  "residual_risks": [],
+  "testing_gaps": [
+    "The Studio validation-repair test (harness/tests/studio-backend.test.mjs:399) calls handleStudio with a mock fetch directly. Add a case with an invalid first kit and a valid repaired kit through the authenticated /api/studio job wrapper, exercising its accumulated 128000 budget and cancellation signal; the direct helper test does not establish that the production wrapper admits the repair."
+  ]
+}

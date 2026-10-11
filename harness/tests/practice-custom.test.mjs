@@ -44,6 +44,9 @@ test('practice screen: own case, three steps, saved per user, inviting language'
   assert.match(html, /sbeUserKey\("sbe\.practice\.custom\.v1"\)/);
   assert.doesNotMatch(html, /רננה מהנהנת/);
   const a = html.indexOf('<section id="screen-custom"'), b = html.indexOf('</section>', a);
-  const block = html.slice(a, b) + html.slice(html.indexOf('// ── מקרה משלך'), html.indexOf('renderFilters();\nrenderScenarioList();'));
+  const scriptStart = html.indexOf('// ── מקרה משלך');
+  const scriptLength = html.slice(scriptStart).search(/renderFilters\(\);\r?\nrenderScenarioList\(\);/);
+  assert.ok(scriptStart >= 0 && scriptLength >= 0, 'the own-case script has explicit boundaries with either line ending');
+  const block = html.slice(a, b) + html.slice(scriptStart, scriptStart + scriptLength);
   assert.deepEqual(invite.find(block), []); assert.doesNotMatch(block, /—/);
 });

@@ -36,6 +36,8 @@ window.SBE_SCREENS = [
       { file:'practice.html', label:'תרגול עצמי', who:'משתתפות בסדנה' },
       { file:'conversation-planner.html', label:'תכנון שיחה', who:'הרשאת תכנון שיחה' },
       { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
+      { file:'team-learning-lab.html', label:'מעבדת תרגול ולמידה בצוות', who:'הרשאת ננה' },
+      { file:'rehearsal.html', label:'תרגול הגרסה שאושרה (פעילות ושיחה)', who:'הרשאת תכנון פעילות או תכנון שיחה, עם קישור לגרסה מאושרת' },
       { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה bridge)' },
     ]},
     { title:'🎭 2. להתאמן: תוצרי הסימולציה', items:[

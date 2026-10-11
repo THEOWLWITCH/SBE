@@ -1,0 +1,27 @@
+{
+  "reviewer": "api-contract",
+  "findings": [
+    {
+      "title": "Hyrum's Law: source opt-out invalidates exported v1 activity",
+      "severity": "P2",
+      "file": "app/lib/team-learning-lab-ui.js",
+      "line": 416,
+      "why_it_matters": "The default JSON export keeps the team-learning-lab/v1 schemaVersion but replaces an approved activity's required, nonempty sources list with an empty array. A consumer that validates the exported activity through the project's own validateActivity API rejects it, and an empty array cannot tell a consumer that sources were deliberately omitted rather than absent from the approval.",
+      "autofix_class": "manual",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/team-learning-lab-ui.js:416:       const p = pack(); if (form.attachSources !== true) {p.sources = []; p.activity.sources = [];}",
+        "app/lib/team-learning-lab.js:104:     out.sources=list(input.sources,\"מקורות\",complete);",
+        "app/lib/team-learning-lab.js:70:     if (!Array.isArray(value) || value.length > 24 || (required && !value.length)) fail(\"בדקו את \" + label + \".\");",
+        "app/lib/team-learning-lab.js:118:   const validateActivity = (input,ctx) => activity(input,validateContext(ctx),true);",
+        "app/lib/team-learning-lab.js:8:   const VERSION = \"team-learning-lab/v1\";"
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Give the redacted JSON export an explicit versioned public-pack contract with a sourcesOmitted discriminator, and validate that contract separately from the complete activity contract. Keep the frozen approved activity unchanged, and add a test that the default export validates under the declared public-pack version."
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

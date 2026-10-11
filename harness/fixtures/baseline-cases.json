@@ -1,0 +1,3320 @@
+{
+  "version": "baseline-contract/v1",
+  "synthetic": true,
+  "cases": [
+    {
+      "id": "baseline-valid",
+      "title": "תקין סינתטי",
+      "input": {
+        "language": "עברית",
+        "locked": {
+          "characters.trainee.role": "מחנכת"
+        },
+        "given": {
+          "who": "מחנכת ועמיתה",
+          "whatHappened": "כרטיס תכנון כחול מונח בחדר הצוות",
+          "goals": "לבחור סדר לבדיקה"
+        },
+        "skills": [
+          "בירור בחירה"
+        ],
+        "existingNames": []
+      },
+      "scenario": {
+        "scenarioName": "כרטיס לבחירה",
+        "scenarioSubtitle": "שיחה בחדר הצוות",
+        "characters": {
+          "trainee": {
+            "role": "מחנכת",
+            "nameAndAge": "דמות בדויה א, בת 35",
+            "gender": "נקבה",
+            "genderNote": "",
+            "domainMaterial": {
+              "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+              "object": "כרטיס תכנון כחול",
+              "lineUnderPressure": "נבדוק צעד אחד יחד.",
+              "syntax": [
+                "שאלה פתוחה",
+                "משפט קצר",
+                "סיכום בחירה"
+              ]
+            },
+            "register": {
+              "answerLength": "שורה אחת",
+              "insteadOfAnswering": "מסמנת בכרטיס",
+              "whenLong": "כאשר מוסכם צעד"
+            },
+            "verbalTic": "אפשר לבחור דרך אחרת.",
+            "visibleLayer": {
+              "emotions": [
+                "מתח"
+              ],
+              "needs": [
+                "בהירות"
+              ],
+              "statedPosition": "אני מבקשת להבין את התכנון."
+            },
+            "hiddenLayer": {
+              "emotions": [
+                "דאגה"
+              ],
+              "needs": [
+                "שליטה"
+              ],
+              "fear": "אני חוששת שבלי זמן לחשוב לא אוכל להציע דרך שתהיה ברורה ונגישה לקבוצה"
+            },
+            "wontSay": "אני צריכה זמן פרטי להתכונן לשיחה בלי קהל",
+            "trustCondition": {
+              "form": "נפתחת",
+              "what": "אם נסכם שאפשר לעבור לכתיבה לפני דיבור",
+              "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+            },
+            "pressureValve": "אני מבקשת לברר שאלה אחת לפני המשך השיחה",
+            "contradiction": {
+              "fact": "היא הסכימה לכרטיס אך ביקשה זמן נוסף",
+              "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+            }
+          },
+          "actor": {
+            "role": "עמיתה",
+            "nameAndAge": "דמות בדויה ב, בת 36",
+            "gender": "נקבה",
+            "genderNote": "",
+            "domainMaterial": {
+              "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+              "object": "כרטיס תכנון כחול",
+              "lineUnderPressure": "נבדוק צעד אחד יחד.",
+              "syntax": [
+                "שאלה פתוחה",
+                "משפט קצר",
+                "סיכום בחירה"
+              ]
+            },
+            "register": {
+              "answerLength": "שתי שורות",
+              "insteadOfAnswering": "מסמנת בכרטיס",
+              "whenLong": "כאשר מוסכם צעד"
+            },
+            "verbalTic": "נבדוק צעד אחד יחד.",
+            "visibleLayer": {
+              "emotions": [
+                "מתח"
+              ],
+              "needs": [
+                "בהירות"
+              ],
+              "statedPosition": "אני מבקשת להבין את התכנון."
+            },
+            "hiddenLayer": {
+              "emotions": [
+                "דאגה"
+              ],
+              "needs": [
+                "שליטה"
+              ],
+              "fear": "אני חוששת שהצוות יחשוב שאין לי מקום להציע פעולה אחרת לקבוצה בשיחה הבאה"
+            },
+            "wontSay": "לא סיפרתי שהכרטיס הכחול מכיל רעיון שבחרתי לדחות בשבוע שעבר",
+            "trustCondition": {
+              "form": "נפתחת",
+              "what": "אם תתני לי לבחור את סדר הבדיקה של שלוש האפשרויות",
+              "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+            },
+            "pressureValve": "אני מניחה את הכרטיס בצד ומבקשת הפסקה של שתי דקות",
+            "contradiction": {
+              "fact": "היא עצמה ביקשה להחליף את הכרטיס הכחול לפני שבוע",
+              "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+            }
+          }
+        },
+        "conflict": {
+          "surface": "סדר הכרטיסים בתכנון",
+          "real": "בחירה וזמן חשיבה",
+          "asymmetry": {
+            "traineeDoesntKnow": "הכרטיס נדחה בשבוע שעבר",
+            "actorDoesntKnow": "אפשר להחליף סדר"
+          },
+          "stakes": {
+            "trainee": "סיום תכנון ברור",
+            "actor": "מקום לבחירה"
+          }
+        },
+        "rejectedDirections": [
+          "אין אלימות",
+          "אין אבחון",
+          "אין הבטחת הצלחה"
+        ],
+        "turningPoints": [
+          {
+            "name": "תפנית 1",
+            "type": "פתיחה",
+            "coreTurn": true,
+            "derivedFrom": "characters.actor.trustCondition",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 1?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 2",
+            "type": "מותנה",
+            "coreTurn": true,
+            "derivedFrom": "characters.actor.wontSay",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 2?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 3",
+            "type": "היפוך",
+            "coreTurn": false,
+            "derivedFrom": "characters.actor.contradiction",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 3?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 4",
+            "type": "סגירה",
+            "coreTurn": false,
+            "derivedFrom": "characters.actor.pressureValve",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 4?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "סוגר",
+                "quality": "נכון אך כואב",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 5",
+            "type": "ניתוק",
+            "coreTurn": false,
+            "derivedFrom": "characters.actor.hiddenLayer",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 5?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          }
+        ],
+        "endings": [
+          {
+            "name": "צעד משותף",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "הפסקה מוסכמת",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "אין הסכמה",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "שיחה חוזרת",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          }
+        ],
+        "sources": [
+          {
+            "sourceId": "fixture-approved-source"
+          }
+        ],
+        "documents": {
+          "actor": {
+            "story": "עמיתה מגיעה עם כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+            "entrance": {
+              "posture": "יושבת",
+              "doing": "מניחה כרטיס",
+              "firstLine": "נבדוק צעד אחד יחד."
+            },
+            "portrait": "דמות בדויה לצורכי בדיקה",
+            "askAndBeneath": "מבקשת זמן בחירה",
+            "arc": "בודקת אם יש מקום לבחירה",
+            "endingsProse": "מסכמת מה נבחר",
+            "whoSitsAcross": "מחנכת",
+            "expectThis": "שאלות פתוחות"
+          },
+          "facilitator": {
+            "fullBackground": "בדיקה סינתטית של שיחה על כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+            "charactersProse": "שתי דמויות בדויות",
+            "whatTheApproachSaysHere": "שיחה מכילה עם בחירה",
+            "dynamics": "זמן ובהירות",
+            "skillsToTrain": "בירור בחירה",
+            "observationPoints": "האם נשאלה שאלה פתוחה",
+            "preSessionQuestions": "מה צריך לדעת מראש?",
+            "debriefQuestions": "מה עזר לבחירה?",
+            "reflectionQuestions": "מה נרצה לבדוק שוב?"
+          },
+          "trainee": "בחדר הצוות ביום ראשון בשעה 10 מונח כרטיס תכנון כחול. שתי חברות צוות מבקשות לבחור את סדר הבדיקה. את מחנכת שמבקשת לברר צעד אפשרי. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+          "traineeStakes": "המטרה היא לסיים תכנון ברור ולתת זמן בחירה. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים."
+        },
+        "given": {
+          "who": "מחנכת ועמיתה",
+          "whatHappened": "כרטיס תכנון כחול מונח בחדר הצוות",
+          "goals": "לבחור סדר לבדיקה"
+        },
+        "conflictNote": "שני צרכים לגיטימיים.",
+        "setting": {
+          "place": "חדר צוות",
+          "timeAndCircumstance": "יום ראשון בשעה 10"
+        },
+        "priorRelationship": "שתי חברות צוות שעובדות יחד חודש"
+      },
+      "pipelineResponses": {
+        "stage1": {
+          "rejectedDirections": [
+            "אין אלימות",
+            "אין אבחון",
+            "אין הבטחת הצלחה"
+          ],
+          "conflictNote": "שני צרכים לגיטימיים.",
+          "conflict": {
+            "surface": "סדר הכרטיסים בתכנון",
+            "real": "בחירה וזמן חשיבה",
+            "asymmetry": {
+              "traineeDoesntKnow": "הכרטיס נדחה בשבוע שעבר",
+              "actorDoesntKnow": "אפשר להחליף סדר"
+            },
+            "stakes": {
+              "trainee": "סיום תכנון ברור",
+              "actor": "מקום לבחירה"
+            }
+          },
+          "setting": {
+            "place": "חדר צוות",
+            "timeAndCircumstance": "יום ראשון בשעה 10"
+          },
+          "priorRelationship": "שתי חברות צוות שעובדות יחד חודש",
+          "characters": {
+            "trainee": {
+              "role": "מחנכת",
+              "nameAndAge": "דמות בדויה א, בת 35",
+              "gender": "נקבה",
+              "genderNote": "",
+              "domainMaterial": {
+                "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+                "object": "כרטיס תכנון כחול",
+                "lineUnderPressure": "נבדוק צעד אחד יחד.",
+                "syntax": [
+                  "שאלה פתוחה",
+                  "משפט קצר",
+                  "סיכום בחירה"
+                ]
+              },
+              "register": {
+                "answerLength": "שורה אחת",
+                "insteadOfAnswering": "מסמנת בכרטיס",
+                "whenLong": "כאשר מוסכם צעד"
+              },
+              "verbalTic": "אפשר לבחור דרך אחרת.",
+              "visibleLayer": {
+                "emotions": [
+                  "מתח"
+                ],
+                "needs": [
+                  "בהירות"
+                ],
+                "statedPosition": "אני מבקשת להבין את התכנון."
+              },
+              "hiddenLayer": {
+                "emotions": [
+                  "דאגה"
+                ],
+                "needs": [
+                  "שליטה"
+                ],
+                "fear": "אני חוששת שבלי זמן לחשוב לא אוכל להציע דרך שתהיה ברורה ונגישה לקבוצה"
+              },
+              "wontSay": "אני צריכה זמן פרטי להתכונן לשיחה בלי קהל",
+              "trustCondition": {
+                "form": "נפתחת",
+                "what": "אם נסכם שאפשר לעבור לכתיבה לפני דיבור",
+                "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+              },
+              "pressureValve": "אני מבקשת לברר שאלה אחת לפני המשך השיחה",
+              "contradiction": {
+                "fact": "היא הסכימה לכרטיס אך ביקשה זמן נוסף",
+                "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+              }
+            },
+            "actor": {
+              "role": "עמיתה",
+              "nameAndAge": "דמות בדויה ב, בת 36",
+              "gender": "נקבה",
+              "genderNote": "",
+              "domainMaterial": {
+                "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+                "object": "כרטיס תכנון כחול",
+                "lineUnderPressure": "נבדוק צעד אחד יחד.",
+                "syntax": [
+                  "שאלה פתוחה",
+                  "משפט קצר",
+                  "סיכום בחירה"
+                ]
+              },
+              "register": {
+                "answerLength": "שתי שורות",
+                "insteadOfAnswering": "מסמנת בכרטיס",
+                "whenLong": "כאשר מוסכם צעד"
+              },
+              "verbalTic": "נבדוק צעד אחד יחד.",
+              "visibleLayer": {
+                "emotions": [
+                  "מתח"
+                ],
+                "needs": [
+                  "בהירות"
+                ],
+                "statedPosition": "אני מבקשת להבין את התכנון."
+              },
+              "hiddenLayer": {
+                "emotions": [
+                  "דאגה"
+                ],
+                "needs": [
+                  "שליטה"
+                ],
+                "fear": "אני חוששת שהצוות יחשוב שאין לי מקום להציע פעולה אחרת לקבוצה בשיחה הבאה"
+              },
+              "wontSay": "לא סיפרתי שהכרטיס הכחול מכיל רעיון שבחרתי לדחות בשבוע שעבר",
+              "trustCondition": {
+                "form": "נפתחת",
+                "what": "אם תתני לי לבחור את סדר הבדיקה של שלוש האפשרויות",
+                "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+              },
+              "pressureValve": "אני מניחה את הכרטיס בצד ומבקשת הפסקה של שתי דקות",
+              "contradiction": {
+                "fact": "היא עצמה ביקשה להחליף את הכרטיס הכחול לפני שבוע",
+                "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+              }
+            }
+          }
+        },
+        "stage2": {
+          "turningPoints": [
+            {
+              "name": "תפנית 1",
+              "type": "פתיחה",
+              "coreTurn": true,
+              "derivedFrom": "characters.actor.trustCondition",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 1?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 2",
+              "type": "מותנה",
+              "coreTurn": true,
+              "derivedFrom": "characters.actor.wontSay",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 2?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 3",
+              "type": "היפוך",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.contradiction",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 3?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 4",
+              "type": "סגירה",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.pressureValve",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 4?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "סוגר",
+                  "quality": "נכון אך כואב",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 5",
+              "type": "ניתוק",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.hiddenLayer",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 5?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            }
+          ],
+          "endings": [
+            {
+              "name": "צעד משותף",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "הפסקה מוסכמת",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "אין הסכמה",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "שיחה חוזרת",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            }
+          ]
+        },
+        "stage3": {
+          "scenarioName": "כרטיס לבחירה",
+          "scenarioSubtitle": "שיחה בחדר הצוות",
+          "sources": [
+            {
+              "sourceId": "fixture-approved-source"
+            }
+          ],
+          "documents": {
+            "actor": {
+              "story": "עמיתה מגיעה עם כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+              "entrance": {
+                "posture": "יושבת",
+                "doing": "מניחה כרטיס",
+                "firstLine": "נבדוק צעד אחד יחד."
+              },
+              "portrait": "דמות בדויה לצורכי בדיקה",
+              "askAndBeneath": "מבקשת זמן בחירה",
+              "arc": "בודקת אם יש מקום לבחירה",
+              "endingsProse": "מסכמת מה נבחר",
+              "whoSitsAcross": "מחנכת",
+              "expectThis": "שאלות פתוחות"
+            },
+            "facilitator": {
+              "fullBackground": "בדיקה סינתטית של שיחה על כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+              "charactersProse": "שתי דמויות בדויות",
+              "whatTheApproachSaysHere": "שיחה מכילה עם בחירה",
+              "dynamics": "זמן ובהירות",
+              "skillsToTrain": "בירור בחירה",
+              "observationPoints": "האם נשאלה שאלה פתוחה",
+              "preSessionQuestions": "מה צריך לדעת מראש?",
+              "debriefQuestions": "מה עזר לבחירה?",
+              "reflectionQuestions": "מה נרצה לבדוק שוב?"
+            }
+          }
+        },
+        "trainee": "בחדר הצוות ביום ראשון בשעה 10 מונח כרטיס תכנון כחול. שתי חברות צוות מבקשות לבחור את סדר הבדיקה. את מחנכת שמבקשת לברר צעד אפשרי. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.\n---\nהמטרה היא לסיים תכנון ברור ולתת זמן בחירה. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים."
+      },
+      "expected": "passed",
+      "findingIds": [
+        "F18"
+      ],
+      "sourceLibrary": [
+        {
+          "sourceId": "fixture-approved-source",
+          "title": "fixture-approved-source",
+          "citation": "fixture-approved-source",
+          "approved": true
+        }
+      ]
+    },
+    {
+      "id": "baseline-empty",
+      "title": "empty",
+      "input": {
+        "language": "עברית",
+        "locked": {
+          "characters.trainee.role": "מחנכת"
+        },
+        "given": {
+          "who": "מחנכת ועמיתה",
+          "whatHappened": "כרטיס תכנון כחול מונח בחדר הצוות",
+          "goals": "לבחור סדר לבדיקה"
+        },
+        "skills": [
+          "בירור בחירה"
+        ],
+        "existingNames": []
+      },
+      "scenario": {},
+      "pipelineResponses": {
+        "stage1": {},
+        "stage2": {
+          "turningPoints": [
+            {
+              "name": "תפנית 1",
+              "type": "פתיחה",
+              "coreTurn": true,
+              "derivedFrom": "characters.actor.trustCondition",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 1?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 2",
+              "type": "מותנה",
+              "coreTurn": true,
+              "derivedFrom": "characters.actor.wontSay",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 2?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 3",
+              "type": "היפוך",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.contradiction",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 3?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 4",
+              "type": "סגירה",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.pressureValve",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 4?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "סוגר",
+                  "quality": "נכון אך כואב",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 5",
+              "type": "ניתוק",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.hiddenLayer",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 5?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            }
+          ],
+          "endings": [
+            {
+              "name": "צעד משותף",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "הפסקה מוסכמת",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "אין הסכמה",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "שיחה חוזרת",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            }
+          ]
+        },
+        "stage3": {
+          "scenarioName": "כרטיס לבחירה",
+          "scenarioSubtitle": "שיחה בחדר הצוות",
+          "sources": [
+            {
+              "sourceId": "fixture-approved-source"
+            }
+          ],
+          "documents": {
+            "actor": {
+              "story": "עמיתה מגיעה עם כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+              "entrance": {
+                "posture": "יושבת",
+                "doing": "מניחה כרטיס",
+                "firstLine": "נבדוק צעד אחד יחד."
+              },
+              "portrait": "דמות בדויה לצורכי בדיקה",
+              "askAndBeneath": "מבקשת זמן בחירה",
+              "arc": "בודקת אם יש מקום לבחירה",
+              "endingsProse": "מסכמת מה נבחר",
+              "whoSitsAcross": "מחנכת",
+              "expectThis": "שאלות פתוחות"
+            },
+            "facilitator": {
+              "fullBackground": "בדיקה סינתטית של שיחה על כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+              "charactersProse": "שתי דמויות בדויות",
+              "whatTheApproachSaysHere": "שיחה מכילה עם בחירה",
+              "dynamics": "זמן ובהירות",
+              "skillsToTrain": "בירור בחירה",
+              "observationPoints": "האם נשאלה שאלה פתוחה",
+              "preSessionQuestions": "מה צריך לדעת מראש?",
+              "debriefQuestions": "מה עזר לבחירה?",
+              "reflectionQuestions": "מה נרצה לבדוק שוב?"
+            }
+          }
+        },
+        "trainee": "בחדר הצוות ביום ראשון בשעה 10 מונח כרטיס תכנון כחול. שתי חברות צוות מבקשות לבחור את סדר הבדיקה. את מחנכת שמבקשת לברר צעד אפשרי. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.\n---\nהמטרה היא לסיים תכנון ברור ולתת זמן בחירה. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים."
+      },
+      "expected": "rejected",
+      "findingIds": [
+        "F07"
+      ],
+      "sourceLibrary": [
+        {
+          "sourceId": "fixture-approved-source",
+          "title": "fixture-approved-source",
+          "citation": "fixture-approved-source",
+          "approved": true
+        }
+      ]
+    },
+    {
+      "id": "baseline-missing-stage",
+      "title": "missing-stage",
+      "input": {
+        "language": "עברית",
+        "locked": {
+          "characters.trainee.role": "מחנכת"
+        },
+        "given": {
+          "who": "מחנכת ועמיתה",
+          "whatHappened": "כרטיס תכנון כחול מונח בחדר הצוות",
+          "goals": "לבחור סדר לבדיקה"
+        },
+        "skills": [
+          "בירור בחירה"
+        ],
+        "existingNames": []
+      },
+      "scenario": {
+        "scenarioName": "כרטיס לבחירה",
+        "scenarioSubtitle": "שיחה בחדר הצוות",
+        "characters": {
+          "trainee": {
+            "role": "מחנכת",
+            "nameAndAge": "דמות בדויה א, בת 35",
+            "gender": "נקבה",
+            "genderNote": "",
+            "domainMaterial": {
+              "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+              "object": "כרטיס תכנון כחול",
+              "lineUnderPressure": "נבדוק צעד אחד יחד.",
+              "syntax": [
+                "שאלה פתוחה",
+                "משפט קצר",
+                "סיכום בחירה"
+              ]
+            },
+            "register": {
+              "answerLength": "שורה אחת",
+              "insteadOfAnswering": "מסמנת בכרטיס",
+              "whenLong": "כאשר מוסכם צעד"
+            },
+            "verbalTic": "אפשר לבחור דרך אחרת.",
+            "visibleLayer": {
+              "emotions": [
+                "מתח"
+              ],
+              "needs": [
+                "בהירות"
+              ],
+              "statedPosition": "אני מבקשת להבין את התכנון."
+            },
+            "hiddenLayer": {
+              "emotions": [
+                "דאגה"
+              ],
+              "needs": [
+                "שליטה"
+              ],
+              "fear": "אני חוששת שבלי זמן לחשוב לא אוכל להציע דרך שתהיה ברורה ונגישה לקבוצה"
+            },
+            "wontSay": "אני צריכה זמן פרטי להתכונן לשיחה בלי קהל",
+            "trustCondition": {
+              "form": "נפתחת",
+              "what": "אם נסכם שאפשר לעבור לכתיבה לפני דיבור",
+              "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+            },
+            "pressureValve": "אני מבקשת לברר שאלה אחת לפני המשך השיחה",
+            "contradiction": {
+              "fact": "היא הסכימה לכרטיס אך ביקשה זמן נוסף",
+              "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+            }
+          },
+          "actor": {
+            "role": "עמיתה",
+            "nameAndAge": "דמות בדויה ב, בת 36",
+            "gender": "נקבה",
+            "genderNote": "",
+            "domainMaterial": {
+              "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+              "object": "כרטיס תכנון כחול",
+              "lineUnderPressure": "נבדוק צעד אחד יחד.",
+              "syntax": [
+                "שאלה פתוחה",
+                "משפט קצר",
+                "סיכום בחירה"
+              ]
+            },
+            "register": {
+              "answerLength": "שתי שורות",
+              "insteadOfAnswering": "מסמנת בכרטיס",
+              "whenLong": "כאשר מוסכם צעד"
+            },
+            "verbalTic": "נבדוק צעד אחד יחד.",
+            "visibleLayer": {
+              "emotions": [
+                "מתח"
+              ],
+              "needs": [
+                "בהירות"
+              ],
+              "statedPosition": "אני מבקשת להבין את התכנון."
+            },
+            "hiddenLayer": {
+              "emotions": [
+                "דאגה"
+              ],
+              "needs": [
+                "שליטה"
+              ],
+              "fear": "אני חוששת שהצוות יחשוב שאין לי מקום להציע פעולה אחרת לקבוצה בשיחה הבאה"
+            },
+            "wontSay": "לא סיפרתי שהכרטיס הכחול מכיל רעיון שבחרתי לדחות בשבוע שעבר",
+            "trustCondition": {
+              "form": "נפתחת",
+              "what": "אם תתני לי לבחור את סדר הבדיקה של שלוש האפשרויות",
+              "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+            },
+            "pressureValve": "אני מניחה את הכרטיס בצד ומבקשת הפסקה של שתי דקות",
+            "contradiction": {
+              "fact": "היא עצמה ביקשה להחליף את הכרטיס הכחול לפני שבוע",
+              "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+            }
+          }
+        },
+        "conflict": {
+          "surface": "סדר הכרטיסים בתכנון",
+          "real": "בחירה וזמן חשיבה",
+          "asymmetry": {
+            "traineeDoesntKnow": "הכרטיס נדחה בשבוע שעבר",
+            "actorDoesntKnow": "אפשר להחליף סדר"
+          },
+          "stakes": {
+            "trainee": "סיום תכנון ברור",
+            "actor": "מקום לבחירה"
+          }
+        },
+        "rejectedDirections": [
+          "אין אלימות",
+          "אין אבחון",
+          "אין הבטחת הצלחה"
+        ],
+        "endings": [
+          {
+            "name": "צעד משותף",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "הפסקה מוסכמת",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "אין הסכמה",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "שיחה חוזרת",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          }
+        ],
+        "sources": [
+          {
+            "sourceId": "fixture-approved-source"
+          }
+        ],
+        "documents": {
+          "actor": {
+            "story": "עמיתה מגיעה עם כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+            "entrance": {
+              "posture": "יושבת",
+              "doing": "מניחה כרטיס",
+              "firstLine": "נבדוק צעד אחד יחד."
+            },
+            "portrait": "דמות בדויה לצורכי בדיקה",
+            "askAndBeneath": "מבקשת זמן בחירה",
+            "arc": "בודקת אם יש מקום לבחירה",
+            "endingsProse": "מסכמת מה נבחר",
+            "whoSitsAcross": "מחנכת",
+            "expectThis": "שאלות פתוחות"
+          },
+          "facilitator": {
+            "fullBackground": "בדיקה סינתטית של שיחה על כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+            "charactersProse": "שתי דמויות בדויות",
+            "whatTheApproachSaysHere": "שיחה מכילה עם בחירה",
+            "dynamics": "זמן ובהירות",
+            "skillsToTrain": "בירור בחירה",
+            "observationPoints": "האם נשאלה שאלה פתוחה",
+            "preSessionQuestions": "מה צריך לדעת מראש?",
+            "debriefQuestions": "מה עזר לבחירה?",
+            "reflectionQuestions": "מה נרצה לבדוק שוב?"
+          },
+          "trainee": "בחדר הצוות ביום ראשון בשעה 10 מונח כרטיס תכנון כחול. שתי חברות צוות מבקשות לבחור את סדר הבדיקה. את מחנכת שמבקשת לברר צעד אפשרי. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+          "traineeStakes": "המטרה היא לסיים תכנון ברור ולתת זמן בחירה. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים."
+        },
+        "given": {
+          "who": "מחנכת ועמיתה",
+          "whatHappened": "כרטיס תכנון כחול מונח בחדר הצוות",
+          "goals": "לבחור סדר לבדיקה"
+        },
+        "conflictNote": "שני צרכים לגיטימיים.",
+        "setting": {
+          "place": "חדר צוות",
+          "timeAndCircumstance": "יום ראשון בשעה 10"
+        },
+        "priorRelationship": "שתי חברות צוות שעובדות יחד חודש"
+      },
+      "pipelineResponses": {
+        "stage1": {
+          "rejectedDirections": [
+            "אין אלימות",
+            "אין אבחון",
+            "אין הבטחת הצלחה"
+          ],
+          "conflictNote": "שני צרכים לגיטימיים.",
+          "conflict": {
+            "surface": "סדר הכרטיסים בתכנון",
+            "real": "בחירה וזמן חשיבה",
+            "asymmetry": {
+              "traineeDoesntKnow": "הכרטיס נדחה בשבוע שעבר",
+              "actorDoesntKnow": "אפשר להחליף סדר"
+            },
+            "stakes": {
+              "trainee": "סיום תכנון ברור",
+              "actor": "מקום לבחירה"
+            }
+          },
+          "setting": {
+            "place": "חדר צוות",
+            "timeAndCircumstance": "יום ראשון בשעה 10"
+          },
+          "priorRelationship": "שתי חברות צוות שעובדות יחד חודש",
+          "characters": {
+            "trainee": {
+              "role": "מחנכת",
+              "nameAndAge": "דמות בדויה א, בת 35",
+              "gender": "נקבה",
+              "genderNote": "",
+              "domainMaterial": {
+                "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+                "object": "כרטיס תכנון כחול",
+                "lineUnderPressure": "נבדוק צעד אחד יחד.",
+                "syntax": [
+                  "שאלה פתוחה",
+                  "משפט קצר",
+                  "סיכום בחירה"
+                ]
+              },
+              "register": {
+                "answerLength": "שורה אחת",
+                "insteadOfAnswering": "מסמנת בכרטיס",
+                "whenLong": "כאשר מוסכם צעד"
+              },
+              "verbalTic": "אפשר לבחור דרך אחרת.",
+              "visibleLayer": {
+                "emotions": [
+                  "מתח"
+                ],
+                "needs": [
+                  "בהירות"
+                ],
+                "statedPosition": "אני מבקשת להבין את התכנון."
+              },
+              "hiddenLayer": {
+                "emotions": [
+                  "דאגה"
+                ],
+                "needs": [
+                  "שליטה"
+                ],
+                "fear": "אני חוששת שבלי זמן לחשוב לא אוכל להציע דרך שתהיה ברורה ונגישה לקבוצה"
+              },
+              "wontSay": "אני צריכה זמן פרטי להתכונן לשיחה בלי קהל",
+              "trustCondition": {
+                "form": "נפתחת",
+                "what": "אם נסכם שאפשר לעבור לכתיבה לפני דיבור",
+                "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+              },
+              "pressureValve": "אני מבקשת לברר שאלה אחת לפני המשך השיחה",
+              "contradiction": {
+                "fact": "היא הסכימה לכרטיס אך ביקשה זמן נוסף",
+                "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+              }
+            },
+            "actor": {
+              "role": "עמיתה",
+              "nameAndAge": "דמות בדויה ב, בת 36",
+              "gender": "נקבה",
+              "genderNote": "",
+              "domainMaterial": {
+                "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+                "object": "כרטיס תכנון כחול",
+                "lineUnderPressure": "נבדוק צעד אחד יחד.",
+                "syntax": [
+                  "שאלה פתוחה",
+                  "משפט קצר",
+                  "סיכום בחירה"
+                ]
+              },
+              "register": {
+                "answerLength": "שתי שורות",
+                "insteadOfAnswering": "מסמנת בכרטיס",
+                "whenLong": "כאשר מוסכם צעד"
+              },
+              "verbalTic": "נבדוק צעד אחד יחד.",
+              "visibleLayer": {
+                "emotions": [
+                  "מתח"
+                ],
+                "needs": [
+                  "בהירות"
+                ],
+                "statedPosition": "אני מבקשת להבין את התכנון."
+              },
+              "hiddenLayer": {
+                "emotions": [
+                  "דאגה"
+                ],
+                "needs": [
+                  "שליטה"
+                ],
+                "fear": "אני חוששת שהצוות יחשוב שאין לי מקום להציע פעולה אחרת לקבוצה בשיחה הבאה"
+              },
+              "wontSay": "לא סיפרתי שהכרטיס הכחול מכיל רעיון שבחרתי לדחות בשבוע שעבר",
+              "trustCondition": {
+                "form": "נפתחת",
+                "what": "אם תתני לי לבחור את סדר הבדיקה של שלוש האפשרויות",
+                "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+              },
+              "pressureValve": "אני מניחה את הכרטיס בצד ומבקשת הפסקה של שתי דקות",
+              "contradiction": {
+                "fact": "היא עצמה ביקשה להחליף את הכרטיס הכחול לפני שבוע",
+                "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+              }
+            }
+          }
+        },
+        "stage2": {
+          "endings": [
+            {
+              "name": "צעד משותף",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "הפסקה מוסכמת",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "אין הסכמה",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "שיחה חוזרת",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            }
+          ]
+        },
+        "stage3": {
+          "scenarioName": "כרטיס לבחירה",
+          "scenarioSubtitle": "שיחה בחדר הצוות",
+          "sources": [
+            {
+              "sourceId": "fixture-approved-source"
+            }
+          ],
+          "documents": {
+            "actor": {
+              "story": "עמיתה מגיעה עם כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+              "entrance": {
+                "posture": "יושבת",
+                "doing": "מניחה כרטיס",
+                "firstLine": "נבדוק צעד אחד יחד."
+              },
+              "portrait": "דמות בדויה לצורכי בדיקה",
+              "askAndBeneath": "מבקשת זמן בחירה",
+              "arc": "בודקת אם יש מקום לבחירה",
+              "endingsProse": "מסכמת מה נבחר",
+              "whoSitsAcross": "מחנכת",
+              "expectThis": "שאלות פתוחות"
+            },
+            "facilitator": {
+              "fullBackground": "בדיקה סינתטית של שיחה על כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+              "charactersProse": "שתי דמויות בדויות",
+              "whatTheApproachSaysHere": "שיחה מכילה עם בחירה",
+              "dynamics": "זמן ובהירות",
+              "skillsToTrain": "בירור בחירה",
+              "observationPoints": "האם נשאלה שאלה פתוחה",
+              "preSessionQuestions": "מה צריך לדעת מראש?",
+              "debriefQuestions": "מה עזר לבחירה?",
+              "reflectionQuestions": "מה נרצה לבדוק שוב?"
+            }
+          }
+        },
+        "trainee": "בחדר הצוות ביום ראשון בשעה 10 מונח כרטיס תכנון כחול. שתי חברות צוות מבקשות לבחור את סדר הבדיקה. את מחנכת שמבקשת לברר צעד אפשרי. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.\n---\nהמטרה היא לסיים תכנון ברור ולתת זמן בחירה. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים."
+      },
+      "expected": "rejected",
+      "findingIds": [
+        "F07"
+      ],
+      "sourceLibrary": [
+        {
+          "sourceId": "fixture-approved-source",
+          "title": "fixture-approved-source",
+          "citation": "fixture-approved-source",
+          "approved": true
+        }
+      ]
+    },
+    {
+      "id": "baseline-unapproved-source",
+      "title": "unapproved-source",
+      "input": {
+        "language": "עברית",
+        "locked": {
+          "characters.trainee.role": "מחנכת"
+        },
+        "given": {
+          "who": "מחנכת ועמיתה",
+          "whatHappened": "כרטיס תכנון כחול מונח בחדר הצוות",
+          "goals": "לבחור סדר לבדיקה"
+        },
+        "skills": [
+          "בירור בחירה"
+        ],
+        "existingNames": []
+      },
+      "scenario": {
+        "scenarioName": "כרטיס לבחירה",
+        "scenarioSubtitle": "שיחה בחדר הצוות",
+        "characters": {
+          "trainee": {
+            "role": "מחנכת",
+            "nameAndAge": "דמות בדויה א, בת 35",
+            "gender": "נקבה",
+            "genderNote": "",
+            "domainMaterial": {
+              "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+              "object": "כרטיס תכנון כחול",
+              "lineUnderPressure": "נבדוק צעד אחד יחד.",
+              "syntax": [
+                "שאלה פתוחה",
+                "משפט קצר",
+                "סיכום בחירה"
+              ]
+            },
+            "register": {
+              "answerLength": "שורה אחת",
+              "insteadOfAnswering": "מסמנת בכרטיס",
+              "whenLong": "כאשר מוסכם צעד"
+            },
+            "verbalTic": "אפשר לבחור דרך אחרת.",
+            "visibleLayer": {
+              "emotions": [
+                "מתח"
+              ],
+              "needs": [
+                "בהירות"
+              ],
+              "statedPosition": "אני מבקשת להבין את התכנון."
+            },
+            "hiddenLayer": {
+              "emotions": [
+                "דאגה"
+              ],
+              "needs": [
+                "שליטה"
+              ],
+              "fear": "אני חוששת שבלי זמן לחשוב לא אוכל להציע דרך שתהיה ברורה ונגישה לקבוצה"
+            },
+            "wontSay": "אני צריכה זמן פרטי להתכונן לשיחה בלי קהל",
+            "trustCondition": {
+              "form": "נפתחת",
+              "what": "אם נסכם שאפשר לעבור לכתיבה לפני דיבור",
+              "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+            },
+            "pressureValve": "אני מבקשת לברר שאלה אחת לפני המשך השיחה",
+            "contradiction": {
+              "fact": "היא הסכימה לכרטיס אך ביקשה זמן נוסף",
+              "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+            }
+          },
+          "actor": {
+            "role": "עמיתה",
+            "nameAndAge": "דמות בדויה ב, בת 36",
+            "gender": "נקבה",
+            "genderNote": "",
+            "domainMaterial": {
+              "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+              "object": "כרטיס תכנון כחול",
+              "lineUnderPressure": "נבדוק צעד אחד יחד.",
+              "syntax": [
+                "שאלה פתוחה",
+                "משפט קצר",
+                "סיכום בחירה"
+              ]
+            },
+            "register": {
+              "answerLength": "שתי שורות",
+              "insteadOfAnswering": "מסמנת בכרטיס",
+              "whenLong": "כאשר מוסכם צעד"
+            },
+            "verbalTic": "נבדוק צעד אחד יחד.",
+            "visibleLayer": {
+              "emotions": [
+                "מתח"
+              ],
+              "needs": [
+                "בהירות"
+              ],
+              "statedPosition": "אני מבקשת להבין את התכנון."
+            },
+            "hiddenLayer": {
+              "emotions": [
+                "דאגה"
+              ],
+              "needs": [
+                "שליטה"
+              ],
+              "fear": "אני חוששת שהצוות יחשוב שאין לי מקום להציע פעולה אחרת לקבוצה בשיחה הבאה"
+            },
+            "wontSay": "לא סיפרתי שהכרטיס הכחול מכיל רעיון שבחרתי לדחות בשבוע שעבר",
+            "trustCondition": {
+              "form": "נפתחת",
+              "what": "אם תתני לי לבחור את סדר הבדיקה של שלוש האפשרויות",
+              "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+            },
+            "pressureValve": "אני מניחה את הכרטיס בצד ומבקשת הפסקה של שתי דקות",
+            "contradiction": {
+              "fact": "היא עצמה ביקשה להחליף את הכרטיס הכחול לפני שבוע",
+              "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+            }
+          }
+        },
+        "conflict": {
+          "surface": "סדר הכרטיסים בתכנון",
+          "real": "בחירה וזמן חשיבה",
+          "asymmetry": {
+            "traineeDoesntKnow": "הכרטיס נדחה בשבוע שעבר",
+            "actorDoesntKnow": "אפשר להחליף סדר"
+          },
+          "stakes": {
+            "trainee": "סיום תכנון ברור",
+            "actor": "מקום לבחירה"
+          }
+        },
+        "rejectedDirections": [
+          "אין אלימות",
+          "אין אבחון",
+          "אין הבטחת הצלחה"
+        ],
+        "turningPoints": [
+          {
+            "name": "תפנית 1",
+            "type": "פתיחה",
+            "coreTurn": true,
+            "derivedFrom": "characters.actor.trustCondition",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 1?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 2",
+            "type": "מותנה",
+            "coreTurn": true,
+            "derivedFrom": "characters.actor.wontSay",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 2?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 3",
+            "type": "היפוך",
+            "coreTurn": false,
+            "derivedFrom": "characters.actor.contradiction",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 3?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 4",
+            "type": "סגירה",
+            "coreTurn": false,
+            "derivedFrom": "characters.actor.pressureValve",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 4?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "סוגר",
+                "quality": "נכון אך כואב",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 5",
+            "type": "ניתוק",
+            "coreTurn": false,
+            "derivedFrom": "characters.actor.hiddenLayer",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 5?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          }
+        ],
+        "endings": [
+          {
+            "name": "צעד משותף",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "הפסקה מוסכמת",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "אין הסכמה",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "שיחה חוזרת",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          }
+        ],
+        "sources": [
+          {
+            "sourceId": "fixture-unapproved"
+          }
+        ],
+        "documents": {
+          "actor": {
+            "story": "עמיתה מגיעה עם כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+            "entrance": {
+              "posture": "יושבת",
+              "doing": "מניחה כרטיס",
+              "firstLine": "נבדוק צעד אחד יחד."
+            },
+            "portrait": "דמות בדויה לצורכי בדיקה",
+            "askAndBeneath": "מבקשת זמן בחירה",
+            "arc": "בודקת אם יש מקום לבחירה",
+            "endingsProse": "מסכמת מה נבחר",
+            "whoSitsAcross": "מחנכת",
+            "expectThis": "שאלות פתוחות"
+          },
+          "facilitator": {
+            "fullBackground": "בדיקה סינתטית של שיחה על כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+            "charactersProse": "שתי דמויות בדויות",
+            "whatTheApproachSaysHere": "שיחה מכילה עם בחירה",
+            "dynamics": "זמן ובהירות",
+            "skillsToTrain": "בירור בחירה",
+            "observationPoints": "האם נשאלה שאלה פתוחה",
+            "preSessionQuestions": "מה צריך לדעת מראש?",
+            "debriefQuestions": "מה עזר לבחירה?",
+            "reflectionQuestions": "מה נרצה לבדוק שוב?"
+          },
+          "trainee": "בחדר הצוות ביום ראשון בשעה 10 מונח כרטיס תכנון כחול. שתי חברות צוות מבקשות לבחור את סדר הבדיקה. את מחנכת שמבקשת לברר צעד אפשרי. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+          "traineeStakes": "המטרה היא לסיים תכנון ברור ולתת זמן בחירה. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים."
+        },
+        "given": {
+          "who": "מחנכת ועמיתה",
+          "whatHappened": "כרטיס תכנון כחול מונח בחדר הצוות",
+          "goals": "לבחור סדר לבדיקה"
+        },
+        "conflictNote": "שני צרכים לגיטימיים.",
+        "setting": {
+          "place": "חדר צוות",
+          "timeAndCircumstance": "יום ראשון בשעה 10"
+        },
+        "priorRelationship": "שתי חברות צוות שעובדות יחד חודש"
+      },
+      "pipelineResponses": {
+        "stage1": {
+          "rejectedDirections": [
+            "אין אלימות",
+            "אין אבחון",
+            "אין הבטחת הצלחה"
+          ],
+          "conflictNote": "שני צרכים לגיטימיים.",
+          "conflict": {
+            "surface": "סדר הכרטיסים בתכנון",
+            "real": "בחירה וזמן חשיבה",
+            "asymmetry": {
+              "traineeDoesntKnow": "הכרטיס נדחה בשבוע שעבר",
+              "actorDoesntKnow": "אפשר להחליף סדר"
+            },
+            "stakes": {
+              "trainee": "סיום תכנון ברור",
+              "actor": "מקום לבחירה"
+            }
+          },
+          "setting": {
+            "place": "חדר צוות",
+            "timeAndCircumstance": "יום ראשון בשעה 10"
+          },
+          "priorRelationship": "שתי חברות צוות שעובדות יחד חודש",
+          "characters": {
+            "trainee": {
+              "role": "מחנכת",
+              "nameAndAge": "דמות בדויה א, בת 35",
+              "gender": "נקבה",
+              "genderNote": "",
+              "domainMaterial": {
+                "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+                "object": "כרטיס תכנון כחול",
+                "lineUnderPressure": "נבדוק צעד אחד יחד.",
+                "syntax": [
+                  "שאלה פתוחה",
+                  "משפט קצר",
+                  "סיכום בחירה"
+                ]
+              },
+              "register": {
+                "answerLength": "שורה אחת",
+                "insteadOfAnswering": "מסמנת בכרטיס",
+                "whenLong": "כאשר מוסכם צעד"
+              },
+              "verbalTic": "אפשר לבחור דרך אחרת.",
+              "visibleLayer": {
+                "emotions": [
+                  "מתח"
+                ],
+                "needs": [
+                  "בהירות"
+                ],
+                "statedPosition": "אני מבקשת להבין את התכנון."
+              },
+              "hiddenLayer": {
+                "emotions": [
+                  "דאגה"
+                ],
+                "needs": [
+                  "שליטה"
+                ],
+                "fear": "אני חוששת שבלי זמן לחשוב לא אוכל להציע דרך שתהיה ברורה ונגישה לקבוצה"
+              },
+              "wontSay": "אני צריכה זמן פרטי להתכונן לשיחה בלי קהל",
+              "trustCondition": {
+                "form": "נפתחת",
+                "what": "אם נסכם שאפשר לעבור לכתיבה לפני דיבור",
+                "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+              },
+              "pressureValve": "אני מבקשת לברר שאלה אחת לפני המשך השיחה",
+              "contradiction": {
+                "fact": "היא הסכימה לכרטיס אך ביקשה זמן נוסף",
+                "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+              }
+            },
+            "actor": {
+              "role": "עמיתה",
+              "nameAndAge": "דמות בדויה ב, בת 36",
+              "gender": "נקבה",
+              "genderNote": "",
+              "domainMaterial": {
+                "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+                "object": "כרטיס תכנון כחול",
+                "lineUnderPressure": "נבדוק צעד אחד יחד.",
+                "syntax": [
+                  "שאלה פתוחה",
+                  "משפט קצר",
+                  "סיכום בחירה"
+                ]
+              },
+              "register": {
+                "answerLength": "שתי שורות",
+                "insteadOfAnswering": "מסמנת בכרטיס",
+                "whenLong": "כאשר מוסכם צעד"
+              },
+              "verbalTic": "נבדוק צעד אחד יחד.",
+              "visibleLayer": {
+                "emotions": [
+                  "מתח"
+                ],
+                "needs": [
+                  "בהירות"
+                ],
+                "statedPosition": "אני מבקשת להבין את התכנון."
+              },
+              "hiddenLayer": {
+                "emotions": [
+                  "דאגה"
+                ],
+                "needs": [
+                  "שליטה"
+                ],
+                "fear": "אני חוששת שהצוות יחשוב שאין לי מקום להציע פעולה אחרת לקבוצה בשיחה הבאה"
+              },
+              "wontSay": "לא סיפרתי שהכרטיס הכחול מכיל רעיון שבחרתי לדחות בשבוע שעבר",
+              "trustCondition": {
+                "form": "נפתחת",
+                "what": "אם תתני לי לבחור את סדר הבדיקה של שלוש האפשרויות",
+                "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+              },
+              "pressureValve": "אני מניחה את הכרטיס בצד ומבקשת הפסקה של שתי דקות",
+              "contradiction": {
+                "fact": "היא עצמה ביקשה להחליף את הכרטיס הכחול לפני שבוע",
+                "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+              }
+            }
+          }
+        },
+        "stage2": {
+          "turningPoints": [
+            {
+              "name": "תפנית 1",
+              "type": "פתיחה",
+              "coreTurn": true,
+              "derivedFrom": "characters.actor.trustCondition",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 1?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 2",
+              "type": "מותנה",
+              "coreTurn": true,
+              "derivedFrom": "characters.actor.wontSay",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 2?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 3",
+              "type": "היפוך",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.contradiction",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 3?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 4",
+              "type": "סגירה",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.pressureValve",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 4?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "סוגר",
+                  "quality": "נכון אך כואב",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 5",
+              "type": "ניתוק",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.hiddenLayer",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 5?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            }
+          ],
+          "endings": [
+            {
+              "name": "צעד משותף",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "הפסקה מוסכמת",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "אין הסכמה",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "שיחה חוזרת",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            }
+          ]
+        },
+        "stage3": {
+          "scenarioName": "כרטיס לבחירה",
+          "scenarioSubtitle": "שיחה בחדר הצוות",
+          "sources": [
+            {
+              "sourceId": "fixture-unapproved"
+            }
+          ],
+          "documents": {
+            "actor": {
+              "story": "עמיתה מגיעה עם כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+              "entrance": {
+                "posture": "יושבת",
+                "doing": "מניחה כרטיס",
+                "firstLine": "נבדוק צעד אחד יחד."
+              },
+              "portrait": "דמות בדויה לצורכי בדיקה",
+              "askAndBeneath": "מבקשת זמן בחירה",
+              "arc": "בודקת אם יש מקום לבחירה",
+              "endingsProse": "מסכמת מה נבחר",
+              "whoSitsAcross": "מחנכת",
+              "expectThis": "שאלות פתוחות"
+            },
+            "facilitator": {
+              "fullBackground": "בדיקה סינתטית של שיחה על כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+              "charactersProse": "שתי דמויות בדויות",
+              "whatTheApproachSaysHere": "שיחה מכילה עם בחירה",
+              "dynamics": "זמן ובהירות",
+              "skillsToTrain": "בירור בחירה",
+              "observationPoints": "האם נשאלה שאלה פתוחה",
+              "preSessionQuestions": "מה צריך לדעת מראש?",
+              "debriefQuestions": "מה עזר לבחירה?",
+              "reflectionQuestions": "מה נרצה לבדוק שוב?"
+            }
+          }
+        },
+        "trainee": "בחדר הצוות ביום ראשון בשעה 10 מונח כרטיס תכנון כחול. שתי חברות צוות מבקשות לבחור את סדר הבדיקה. את מחנכת שמבקשת לברר צעד אפשרי. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.\n---\nהמטרה היא לסיים תכנון ברור ולתת זמן בחירה. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים."
+      },
+      "expected": "rejected",
+      "findingIds": [
+        "F08"
+      ],
+      "sourceLibrary": [
+        {
+          "sourceId": "fixture-approved-source",
+          "title": "fixture-approved-source",
+          "citation": "fixture-approved-source",
+          "approved": true
+        }
+      ]
+    },
+    {
+      "id": "baseline-locked-field",
+      "title": "locked-field",
+      "input": {
+        "language": "עברית",
+        "locked": {
+          "scenarioName": "כותרת נעולה אחרת"
+        },
+        "given": {
+          "who": "מחנכת ועמיתה",
+          "whatHappened": "כרטיס תכנון כחול מונח בחדר הצוות",
+          "goals": "לבחור סדר לבדיקה"
+        },
+        "skills": [
+          "בירור בחירה"
+        ],
+        "existingNames": []
+      },
+      "scenario": {
+        "scenarioName": "כרטיס לבחירה",
+        "scenarioSubtitle": "שיחה בחדר הצוות",
+        "characters": {
+          "trainee": {
+            "role": "מחנכת",
+            "nameAndAge": "דמות בדויה א, בת 35",
+            "gender": "נקבה",
+            "genderNote": "",
+            "domainMaterial": {
+              "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+              "object": "כרטיס תכנון כחול",
+              "lineUnderPressure": "נבדוק צעד אחד יחד.",
+              "syntax": [
+                "שאלה פתוחה",
+                "משפט קצר",
+                "סיכום בחירה"
+              ]
+            },
+            "register": {
+              "answerLength": "שורה אחת",
+              "insteadOfAnswering": "מסמנת בכרטיס",
+              "whenLong": "כאשר מוסכם צעד"
+            },
+            "verbalTic": "אפשר לבחור דרך אחרת.",
+            "visibleLayer": {
+              "emotions": [
+                "מתח"
+              ],
+              "needs": [
+                "בהירות"
+              ],
+              "statedPosition": "אני מבקשת להבין את התכנון."
+            },
+            "hiddenLayer": {
+              "emotions": [
+                "דאגה"
+              ],
+              "needs": [
+                "שליטה"
+              ],
+              "fear": "אני חוששת שבלי זמן לחשוב לא אוכל להציע דרך שתהיה ברורה ונגישה לקבוצה"
+            },
+            "wontSay": "אני צריכה זמן פרטי להתכונן לשיחה בלי קהל",
+            "trustCondition": {
+              "form": "נפתחת",
+              "what": "אם נסכם שאפשר לעבור לכתיבה לפני דיבור",
+              "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+            },
+            "pressureValve": "אני מבקשת לברר שאלה אחת לפני המשך השיחה",
+            "contradiction": {
+              "fact": "היא הסכימה לכרטיס אך ביקשה זמן נוסף",
+              "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+            }
+          },
+          "actor": {
+            "role": "עמיתה",
+            "nameAndAge": "דמות בדויה ב, בת 36",
+            "gender": "נקבה",
+            "genderNote": "",
+            "domainMaterial": {
+              "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+              "object": "כרטיס תכנון כחול",
+              "lineUnderPressure": "נבדוק צעד אחד יחד.",
+              "syntax": [
+                "שאלה פתוחה",
+                "משפט קצר",
+                "סיכום בחירה"
+              ]
+            },
+            "register": {
+              "answerLength": "שתי שורות",
+              "insteadOfAnswering": "מסמנת בכרטיס",
+              "whenLong": "כאשר מוסכם צעד"
+            },
+            "verbalTic": "נבדוק צעד אחד יחד.",
+            "visibleLayer": {
+              "emotions": [
+                "מתח"
+              ],
+              "needs": [
+                "בהירות"
+              ],
+              "statedPosition": "אני מבקשת להבין את התכנון."
+            },
+            "hiddenLayer": {
+              "emotions": [
+                "דאגה"
+              ],
+              "needs": [
+                "שליטה"
+              ],
+              "fear": "אני חוששת שהצוות יחשוב שאין לי מקום להציע פעולה אחרת לקבוצה בשיחה הבאה"
+            },
+            "wontSay": "לא סיפרתי שהכרטיס הכחול מכיל רעיון שבחרתי לדחות בשבוע שעבר",
+            "trustCondition": {
+              "form": "נפתחת",
+              "what": "אם תתני לי לבחור את סדר הבדיקה של שלוש האפשרויות",
+              "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+            },
+            "pressureValve": "אני מניחה את הכרטיס בצד ומבקשת הפסקה של שתי דקות",
+            "contradiction": {
+              "fact": "היא עצמה ביקשה להחליף את הכרטיס הכחול לפני שבוע",
+              "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+            }
+          }
+        },
+        "conflict": {
+          "surface": "סדר הכרטיסים בתכנון",
+          "real": "בחירה וזמן חשיבה",
+          "asymmetry": {
+            "traineeDoesntKnow": "הכרטיס נדחה בשבוע שעבר",
+            "actorDoesntKnow": "אפשר להחליף סדר"
+          },
+          "stakes": {
+            "trainee": "סיום תכנון ברור",
+            "actor": "מקום לבחירה"
+          }
+        },
+        "rejectedDirections": [
+          "אין אלימות",
+          "אין אבחון",
+          "אין הבטחת הצלחה"
+        ],
+        "turningPoints": [
+          {
+            "name": "תפנית 1",
+            "type": "פתיחה",
+            "coreTurn": true,
+            "derivedFrom": "characters.actor.trustCondition",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 1?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 2",
+            "type": "מותנה",
+            "coreTurn": true,
+            "derivedFrom": "characters.actor.wontSay",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 2?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 3",
+            "type": "היפוך",
+            "coreTurn": false,
+            "derivedFrom": "characters.actor.contradiction",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 3?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 4",
+            "type": "סגירה",
+            "coreTurn": false,
+            "derivedFrom": "characters.actor.pressureValve",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 4?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "סוגר",
+                "quality": "נכון אך כואב",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 5",
+            "type": "ניתוק",
+            "coreTurn": false,
+            "derivedFrom": "characters.actor.hiddenLayer",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 5?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          }
+        ],
+        "endings": [
+          {
+            "name": "צעד משותף",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "הפסקה מוסכמת",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "אין הסכמה",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "שיחה חוזרת",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          }
+        ],
+        "sources": [
+          {
+            "sourceId": "fixture-approved-source"
+          }
+        ],
+        "documents": {
+          "actor": {
+            "story": "עמיתה מגיעה עם כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+            "entrance": {
+              "posture": "יושבת",
+              "doing": "מניחה כרטיס",
+              "firstLine": "נבדוק צעד אחד יחד."
+            },
+            "portrait": "דמות בדויה לצורכי בדיקה",
+            "askAndBeneath": "מבקשת זמן בחירה",
+            "arc": "בודקת אם יש מקום לבחירה",
+            "endingsProse": "מסכמת מה נבחר",
+            "whoSitsAcross": "מחנכת",
+            "expectThis": "שאלות פתוחות"
+          },
+          "facilitator": {
+            "fullBackground": "בדיקה סינתטית של שיחה על כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+            "charactersProse": "שתי דמויות בדויות",
+            "whatTheApproachSaysHere": "שיחה מכילה עם בחירה",
+            "dynamics": "זמן ובהירות",
+            "skillsToTrain": "בירור בחירה",
+            "observationPoints": "האם נשאלה שאלה פתוחה",
+            "preSessionQuestions": "מה צריך לדעת מראש?",
+            "debriefQuestions": "מה עזר לבחירה?",
+            "reflectionQuestions": "מה נרצה לבדוק שוב?"
+          },
+          "trainee": "בחדר הצוות ביום ראשון בשעה 10 מונח כרטיס תכנון כחול. שתי חברות צוות מבקשות לבחור את סדר הבדיקה. את מחנכת שמבקשת לברר צעד אפשרי. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+          "traineeStakes": "המטרה היא לסיים תכנון ברור ולתת זמן בחירה. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים."
+        },
+        "given": {
+          "who": "מחנכת ועמיתה",
+          "whatHappened": "כרטיס תכנון כחול מונח בחדר הצוות",
+          "goals": "לבחור סדר לבדיקה"
+        },
+        "conflictNote": "שני צרכים לגיטימיים.",
+        "setting": {
+          "place": "חדר צוות",
+          "timeAndCircumstance": "יום ראשון בשעה 10"
+        },
+        "priorRelationship": "שתי חברות צוות שעובדות יחד חודש"
+      },
+      "pipelineResponses": {
+        "stage1": {
+          "rejectedDirections": [
+            "אין אלימות",
+            "אין אבחון",
+            "אין הבטחת הצלחה"
+          ],
+          "conflictNote": "שני צרכים לגיטימיים.",
+          "conflict": {
+            "surface": "סדר הכרטיסים בתכנון",
+            "real": "בחירה וזמן חשיבה",
+            "asymmetry": {
+              "traineeDoesntKnow": "הכרטיס נדחה בשבוע שעבר",
+              "actorDoesntKnow": "אפשר להחליף סדר"
+            },
+            "stakes": {
+              "trainee": "סיום תכנון ברור",
+              "actor": "מקום לבחירה"
+            }
+          },
+          "setting": {
+            "place": "חדר צוות",
+            "timeAndCircumstance": "יום ראשון בשעה 10"
+          },
+          "priorRelationship": "שתי חברות צוות שעובדות יחד חודש",
+          "characters": {
+            "trainee": {
+              "role": "מחנכת",
+              "nameAndAge": "דמות בדויה א, בת 35",
+              "gender": "נקבה",
+              "genderNote": "",
+              "domainMaterial": {
+                "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+                "object": "כרטיס תכנון כחול",
+                "lineUnderPressure": "נבדוק צעד אחד יחד.",
+                "syntax": [
+                  "שאלה פתוחה",
+                  "משפט קצר",
+                  "סיכום בחירה"
+                ]
+              },
+              "register": {
+                "answerLength": "שורה אחת",
+                "insteadOfAnswering": "מסמנת בכרטיס",
+                "whenLong": "כאשר מוסכם צעד"
+              },
+              "verbalTic": "אפשר לבחור דרך אחרת.",
+              "visibleLayer": {
+                "emotions": [
+                  "מתח"
+                ],
+                "needs": [
+                  "בהירות"
+                ],
+                "statedPosition": "אני מבקשת להבין את התכנון."
+              },
+              "hiddenLayer": {
+                "emotions": [
+                  "דאגה"
+                ],
+                "needs": [
+                  "שליטה"
+                ],
+                "fear": "אני חוששת שבלי זמן לחשוב לא אוכל להציע דרך שתהיה ברורה ונגישה לקבוצה"
+              },
+              "wontSay": "אני צריכה זמן פרטי להתכונן לשיחה בלי קהל",
+              "trustCondition": {
+                "form": "נפתחת",
+                "what": "אם נסכם שאפשר לעבור לכתיבה לפני דיבור",
+                "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+              },
+              "pressureValve": "אני מבקשת לברר שאלה אחת לפני המשך השיחה",
+              "contradiction": {
+                "fact": "היא הסכימה לכרטיס אך ביקשה זמן נוסף",
+                "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+              }
+            },
+            "actor": {
+              "role": "עמיתה",
+              "nameAndAge": "דמות בדויה ב, בת 36",
+              "gender": "נקבה",
+              "genderNote": "",
+              "domainMaterial": {
+                "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+                "object": "כרטיס תכנון כחול",
+                "lineUnderPressure": "נבדוק צעד אחד יחד.",
+                "syntax": [
+                  "שאלה פתוחה",
+                  "משפט קצר",
+                  "סיכום בחירה"
+                ]
+              },
+              "register": {
+                "answerLength": "שתי שורות",
+                "insteadOfAnswering": "מסמנת בכרטיס",
+                "whenLong": "כאשר מוסכם צעד"
+              },
+              "verbalTic": "נבדוק צעד אחד יחד.",
+              "visibleLayer": {
+                "emotions": [
+                  "מתח"
+                ],
+                "needs": [
+                  "בהירות"
+                ],
+                "statedPosition": "אני מבקשת להבין את התכנון."
+              },
+              "hiddenLayer": {
+                "emotions": [
+                  "דאגה"
+                ],
+                "needs": [
+                  "שליטה"
+                ],
+                "fear": "אני חוששת שהצוות יחשוב שאין לי מקום להציע פעולה אחרת לקבוצה בשיחה הבאה"
+              },
+              "wontSay": "לא סיפרתי שהכרטיס הכחול מכיל רעיון שבחרתי לדחות בשבוע שעבר",
+              "trustCondition": {
+                "form": "נפתחת",
+                "what": "אם תתני לי לבחור את סדר הבדיקה של שלוש האפשרויות",
+                "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+              },
+              "pressureValve": "אני מניחה את הכרטיס בצד ומבקשת הפסקה של שתי דקות",
+              "contradiction": {
+                "fact": "היא עצמה ביקשה להחליף את הכרטיס הכחול לפני שבוע",
+                "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+              }
+            }
+          }
+        },
+        "stage2": {
+          "turningPoints": [
+            {
+              "name": "תפנית 1",
+              "type": "פתיחה",
+              "coreTurn": true,
+              "derivedFrom": "characters.actor.trustCondition",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 1?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 2",
+              "type": "מותנה",
+              "coreTurn": true,
+              "derivedFrom": "characters.actor.wontSay",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 2?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 3",
+              "type": "היפוך",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.contradiction",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 3?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 4",
+              "type": "סגירה",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.pressureValve",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 4?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "סוגר",
+                  "quality": "נכון אך כואב",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 5",
+              "type": "ניתוק",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.hiddenLayer",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 5?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            }
+          ],
+          "endings": [
+            {
+              "name": "צעד משותף",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "הפסקה מוסכמת",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "אין הסכמה",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "שיחה חוזרת",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            }
+          ]
+        },
+        "stage3": {
+          "scenarioName": "כרטיס לבחירה",
+          "scenarioSubtitle": "שיחה בחדר הצוות",
+          "sources": [
+            {
+              "sourceId": "fixture-approved-source"
+            }
+          ],
+          "documents": {
+            "actor": {
+              "story": "עמיתה מגיעה עם כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+              "entrance": {
+                "posture": "יושבת",
+                "doing": "מניחה כרטיס",
+                "firstLine": "נבדוק צעד אחד יחד."
+              },
+              "portrait": "דמות בדויה לצורכי בדיקה",
+              "askAndBeneath": "מבקשת זמן בחירה",
+              "arc": "בודקת אם יש מקום לבחירה",
+              "endingsProse": "מסכמת מה נבחר",
+              "whoSitsAcross": "מחנכת",
+              "expectThis": "שאלות פתוחות"
+            },
+            "facilitator": {
+              "fullBackground": "בדיקה סינתטית של שיחה על כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+              "charactersProse": "שתי דמויות בדויות",
+              "whatTheApproachSaysHere": "שיחה מכילה עם בחירה",
+              "dynamics": "זמן ובהירות",
+              "skillsToTrain": "בירור בחירה",
+              "observationPoints": "האם נשאלה שאלה פתוחה",
+              "preSessionQuestions": "מה צריך לדעת מראש?",
+              "debriefQuestions": "מה עזר לבחירה?",
+              "reflectionQuestions": "מה נרצה לבדוק שוב?"
+            }
+          }
+        },
+        "trainee": "בחדר הצוות ביום ראשון בשעה 10 מונח כרטיס תכנון כחול. שתי חברות צוות מבקשות לבחור את סדר הבדיקה. את מחנכת שמבקשת לברר צעד אפשרי. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.\n---\nהמטרה היא לסיים תכנון ברור ולתת זמן בחירה. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים."
+      },
+      "expected": "rejected",
+      "findingIds": [
+        "F08"
+      ],
+      "sourceLibrary": [
+        {
+          "sourceId": "fixture-approved-source",
+          "title": "fixture-approved-source",
+          "citation": "fixture-approved-source",
+          "approved": true
+        }
+      ]
+    },
+    {
+      "id": "baseline-private-leak",
+      "title": "private-leak",
+      "input": {
+        "language": "עברית",
+        "locked": {
+          "characters.trainee.role": "מחנכת"
+        },
+        "given": {
+          "who": "מחנכת ועמיתה",
+          "whatHappened": "כרטיס תכנון כחול מונח בחדר הצוות",
+          "goals": "לבחור סדר לבדיקה"
+        },
+        "skills": [
+          "בירור בחירה"
+        ],
+        "existingNames": []
+      },
+      "scenario": {
+        "scenarioName": "כרטיס לבחירה",
+        "scenarioSubtitle": "שיחה בחדר הצוות",
+        "characters": {
+          "trainee": {
+            "role": "מחנכת",
+            "nameAndAge": "דמות בדויה א, בת 35",
+            "gender": "נקבה",
+            "genderNote": "",
+            "domainMaterial": {
+              "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+              "object": "כרטיס תכנון כחול",
+              "lineUnderPressure": "נבדוק צעד אחד יחד.",
+              "syntax": [
+                "שאלה פתוחה",
+                "משפט קצר",
+                "סיכום בחירה"
+              ]
+            },
+            "register": {
+              "answerLength": "שורה אחת",
+              "insteadOfAnswering": "מסמנת בכרטיס",
+              "whenLong": "כאשר מוסכם צעד"
+            },
+            "verbalTic": "אפשר לבחור דרך אחרת.",
+            "visibleLayer": {
+              "emotions": [
+                "מתח"
+              ],
+              "needs": [
+                "בהירות"
+              ],
+              "statedPosition": "אני מבקשת להבין את התכנון."
+            },
+            "hiddenLayer": {
+              "emotions": [
+                "דאגה"
+              ],
+              "needs": [
+                "שליטה"
+              ],
+              "fear": "אני חוששת שבלי זמן לחשוב לא אוכל להציע דרך שתהיה ברורה ונגישה לקבוצה"
+            },
+            "wontSay": "אני צריכה זמן פרטי להתכונן לשיחה בלי קהל",
+            "trustCondition": {
+              "form": "נפתחת",
+              "what": "אם נסכם שאפשר לעבור לכתיבה לפני דיבור",
+              "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+            },
+            "pressureValve": "אני מבקשת לברר שאלה אחת לפני המשך השיחה",
+            "contradiction": {
+              "fact": "היא הסכימה לכרטיס אך ביקשה זמן נוסף",
+              "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+            }
+          },
+          "actor": {
+            "role": "עמיתה",
+            "nameAndAge": "דמות בדויה ב, בת 36",
+            "gender": "נקבה",
+            "genderNote": "",
+            "domainMaterial": {
+              "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+              "object": "כרטיס תכנון כחול",
+              "lineUnderPressure": "נבדוק צעד אחד יחד.",
+              "syntax": [
+                "שאלה פתוחה",
+                "משפט קצר",
+                "סיכום בחירה"
+              ]
+            },
+            "register": {
+              "answerLength": "שתי שורות",
+              "insteadOfAnswering": "מסמנת בכרטיס",
+              "whenLong": "כאשר מוסכם צעד"
+            },
+            "verbalTic": "נבדוק צעד אחד יחד.",
+            "visibleLayer": {
+              "emotions": [
+                "מתח"
+              ],
+              "needs": [
+                "בהירות"
+              ],
+              "statedPosition": "אני מבקשת להבין את התכנון."
+            },
+            "hiddenLayer": {
+              "emotions": [
+                "דאגה"
+              ],
+              "needs": [
+                "שליטה"
+              ],
+              "fear": "אני חוששת שהצוות יחשוב שאין לי מקום להציע פעולה אחרת לקבוצה בשיחה הבאה"
+            },
+            "wontSay": "לא סיפרתי שהכרטיס הכחול מכיל רעיון שבחרתי לדחות בשבוע שעבר",
+            "trustCondition": {
+              "form": "נפתחת",
+              "what": "אם תתני לי לבחור את סדר הבדיקה של שלוש האפשרויות",
+              "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+            },
+            "pressureValve": "אני מניחה את הכרטיס בצד ומבקשת הפסקה של שתי דקות",
+            "contradiction": {
+              "fact": "היא עצמה ביקשה להחליף את הכרטיס הכחול לפני שבוע",
+              "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+            }
+          }
+        },
+        "conflict": {
+          "surface": "סדר הכרטיסים בתכנון",
+          "real": "בחירה וזמן חשיבה",
+          "asymmetry": {
+            "traineeDoesntKnow": "הכרטיס נדחה בשבוע שעבר",
+            "actorDoesntKnow": "אפשר להחליף סדר"
+          },
+          "stakes": {
+            "trainee": "סיום תכנון ברור",
+            "actor": "מקום לבחירה"
+          }
+        },
+        "rejectedDirections": [
+          "אין אלימות",
+          "אין אבחון",
+          "אין הבטחת הצלחה"
+        ],
+        "turningPoints": [
+          {
+            "name": "תפנית 1",
+            "type": "פתיחה",
+            "coreTurn": true,
+            "derivedFrom": "characters.actor.trustCondition",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 1?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 2",
+            "type": "מותנה",
+            "coreTurn": true,
+            "derivedFrom": "characters.actor.wontSay",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 2?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 3",
+            "type": "היפוך",
+            "coreTurn": false,
+            "derivedFrom": "characters.actor.contradiction",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 3?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 4",
+            "type": "סגירה",
+            "coreTurn": false,
+            "derivedFrom": "characters.actor.pressureValve",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 4?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "סוגר",
+                "quality": "נכון אך כואב",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          },
+          {
+            "name": "תפנית 5",
+            "type": "ניתוק",
+            "coreTurn": false,
+            "derivedFrom": "characters.actor.hiddenLayer",
+            "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+            "characterDoes": {
+              "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 5?",
+              "action": "מסמנת כרטיס"
+            },
+            "demands": "לברר אפשרות בלי לכפות",
+            "ifMissed": "מבקשת לעצור",
+            "skill": "בירור בחירה",
+            "branches": [
+              {
+                "traineeMove": "שואלת מה מתאים",
+                "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                "underneath": "זקוקה לבחירה",
+                "effect": "פותח",
+                "quality": "מקדם",
+                "next": "בוחרות צעד נוסף"
+              }
+            ]
+          }
+        ],
+        "endings": [
+          {
+            "name": "צעד משותף",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "הפסקה מוסכמת",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "אין הסכמה",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          },
+          {
+            "name": "שיחה חוזרת",
+            "howItLooks": "מסכמות מה נבחר ומה חסר",
+            "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+          }
+        ],
+        "sources": [
+          {
+            "sourceId": "fixture-approved-source"
+          }
+        ],
+        "documents": {
+          "actor": {
+            "story": "עמיתה מגיעה עם כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+            "entrance": {
+              "posture": "יושבת",
+              "doing": "מניחה כרטיס",
+              "firstLine": "נבדוק צעד אחד יחד."
+            },
+            "portrait": "דמות בדויה לצורכי בדיקה",
+            "askAndBeneath": "מבקשת זמן בחירה",
+            "arc": "בודקת אם יש מקום לבחירה",
+            "endingsProse": "מסכמת מה נבחר",
+            "whoSitsAcross": "מחנכת",
+            "expectThis": "שאלות פתוחות"
+          },
+          "facilitator": {
+            "fullBackground": "בדיקה סינתטית של שיחה על כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+            "charactersProse": "שתי דמויות בדויות",
+            "whatTheApproachSaysHere": "שיחה מכילה עם בחירה",
+            "dynamics": "זמן ובהירות",
+            "skillsToTrain": "בירור בחירה",
+            "observationPoints": "האם נשאלה שאלה פתוחה",
+            "preSessionQuestions": "מה צריך לדעת מראש?",
+            "debriefQuestions": "מה עזר לבחירה?",
+            "reflectionQuestions": "מה נרצה לבדוק שוב?"
+          },
+          "trainee": "בחדר הצוות ביום ראשון בשעה 10 מונח כרטיס תכנון כחול. שתי חברות צוות מבקשות לבחור את סדר הבדיקה. את מחנכת שמבקשת לברר צעד אפשרי. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים. לא סיפרתי שהכרטיס הכחול מכיל רעיון שבחרתי לדחות בשבוע שעבר",
+          "traineeStakes": "המטרה היא לסיים תכנון ברור ולתת זמן בחירה. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים."
+        },
+        "given": {
+          "who": "מחנכת ועמיתה",
+          "whatHappened": "כרטיס תכנון כחול מונח בחדר הצוות",
+          "goals": "לבחור סדר לבדיקה"
+        },
+        "conflictNote": "שני צרכים לגיטימיים.",
+        "setting": {
+          "place": "חדר צוות",
+          "timeAndCircumstance": "יום ראשון בשעה 10"
+        },
+        "priorRelationship": "שתי חברות צוות שעובדות יחד חודש"
+      },
+      "pipelineResponses": {
+        "stage1": {
+          "rejectedDirections": [
+            "אין אלימות",
+            "אין אבחון",
+            "אין הבטחת הצלחה"
+          ],
+          "conflictNote": "שני צרכים לגיטימיים.",
+          "conflict": {
+            "surface": "סדר הכרטיסים בתכנון",
+            "real": "בחירה וזמן חשיבה",
+            "asymmetry": {
+              "traineeDoesntKnow": "הכרטיס נדחה בשבוע שעבר",
+              "actorDoesntKnow": "אפשר להחליף סדר"
+            },
+            "stakes": {
+              "trainee": "סיום תכנון ברור",
+              "actor": "מקום לבחירה"
+            }
+          },
+          "setting": {
+            "place": "חדר צוות",
+            "timeAndCircumstance": "יום ראשון בשעה 10"
+          },
+          "priorRelationship": "שתי חברות צוות שעובדות יחד חודש",
+          "characters": {
+            "trainee": {
+              "role": "מחנכת",
+              "nameAndAge": "דמות בדויה א, בת 35",
+              "gender": "נקבה",
+              "genderNote": "",
+              "domainMaterial": {
+                "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+                "object": "כרטיס תכנון כחול",
+                "lineUnderPressure": "נבדוק צעד אחד יחד.",
+                "syntax": [
+                  "שאלה פתוחה",
+                  "משפט קצר",
+                  "סיכום בחירה"
+                ]
+              },
+              "register": {
+                "answerLength": "שורה אחת",
+                "insteadOfAnswering": "מסמנת בכרטיס",
+                "whenLong": "כאשר מוסכם צעד"
+              },
+              "verbalTic": "אפשר לבחור דרך אחרת.",
+              "visibleLayer": {
+                "emotions": [
+                  "מתח"
+                ],
+                "needs": [
+                  "בהירות"
+                ],
+                "statedPosition": "אני מבקשת להבין את התכנון."
+              },
+              "hiddenLayer": {
+                "emotions": [
+                  "דאגה"
+                ],
+                "needs": [
+                  "שליטה"
+                ],
+                "fear": "אני חוששת שבלי זמן לחשוב לא אוכל להציע דרך שתהיה ברורה ונגישה לקבוצה"
+              },
+              "wontSay": "אני צריכה זמן פרטי להתכונן לשיחה בלי קהל",
+              "trustCondition": {
+                "form": "נפתחת",
+                "what": "אם נסכם שאפשר לעבור לכתיבה לפני דיבור",
+                "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+              },
+              "pressureValve": "אני מבקשת לברר שאלה אחת לפני המשך השיחה",
+              "contradiction": {
+                "fact": "היא הסכימה לכרטיס אך ביקשה זמן נוסף",
+                "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+              }
+            },
+            "actor": {
+              "role": "עמיתה",
+              "nameAndAge": "דמות בדויה ב, בת 36",
+              "gender": "נקבה",
+              "genderNote": "",
+              "domainMaterial": {
+                "thisWeek": "ישיבת צוות ביום ראשון בשעה 10",
+                "object": "כרטיס תכנון כחול",
+                "lineUnderPressure": "נבדוק צעד אחד יחד.",
+                "syntax": [
+                  "שאלה פתוחה",
+                  "משפט קצר",
+                  "סיכום בחירה"
+                ]
+              },
+              "register": {
+                "answerLength": "שתי שורות",
+                "insteadOfAnswering": "מסמנת בכרטיס",
+                "whenLong": "כאשר מוסכם צעד"
+              },
+              "verbalTic": "נבדוק צעד אחד יחד.",
+              "visibleLayer": {
+                "emotions": [
+                  "מתח"
+                ],
+                "needs": [
+                  "בהירות"
+                ],
+                "statedPosition": "אני מבקשת להבין את התכנון."
+              },
+              "hiddenLayer": {
+                "emotions": [
+                  "דאגה"
+                ],
+                "needs": [
+                  "שליטה"
+                ],
+                "fear": "אני חוששת שהצוות יחשוב שאין לי מקום להציע פעולה אחרת לקבוצה בשיחה הבאה"
+              },
+              "wontSay": "לא סיפרתי שהכרטיס הכחול מכיל רעיון שבחרתי לדחות בשבוע שעבר",
+              "trustCondition": {
+                "form": "נפתחת",
+                "what": "אם תתני לי לבחור את סדר הבדיקה של שלוש האפשרויות",
+                "whyItWorks": "הבחירה מאפשרת זמן חשיבה."
+              },
+              "pressureValve": "אני מניחה את הכרטיס בצד ומבקשת הפסקה של שתי דקות",
+              "contradiction": {
+                "fact": "היא עצמה ביקשה להחליף את הכרטיס הכחול לפני שבוע",
+                "howItCanSurface": "כאשר בודקות יחד את סדר הבחירה."
+              }
+            }
+          }
+        },
+        "stage2": {
+          "turningPoints": [
+            {
+              "name": "תפנית 1",
+              "type": "פתיחה",
+              "coreTurn": true,
+              "derivedFrom": "characters.actor.trustCondition",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 1?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 2",
+              "type": "מותנה",
+              "coreTurn": true,
+              "derivedFrom": "characters.actor.wontSay",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 2?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 3",
+              "type": "היפוך",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.contradiction",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 3?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 4",
+              "type": "סגירה",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.pressureValve",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 4?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "סוגר",
+                  "quality": "נכון אך כואב",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            },
+            {
+              "name": "תפנית 5",
+              "type": "ניתוק",
+              "coreTurn": false,
+              "derivedFrom": "characters.actor.hiddenLayer",
+              "trigger": "כאשר מופיע כרטיס תכנון כחול בשיחה",
+              "characterDoes": {
+                "line": "נבדוק צעד אחד יחד. אפשר לבחור אפשרות 5?",
+                "action": "מסמנת כרטיס"
+              },
+              "demands": "לברר אפשרות בלי לכפות",
+              "ifMissed": "מבקשת לעצור",
+              "skill": "בירור בחירה",
+              "branches": [
+                {
+                  "traineeMove": "שואלת מה מתאים",
+                  "exampleWording": "\"איזו אפשרות תרצי לבדוק?\"",
+                  "saidAloud": "\"נבדוק צעד אחד יחד.\"",
+                  "underneath": "זקוקה לבחירה",
+                  "effect": "פותח",
+                  "quality": "מקדם",
+                  "next": "בוחרות צעד נוסף"
+                }
+              ]
+            }
+          ],
+          "endings": [
+            {
+              "name": "צעד משותף",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "הפסקה מוסכמת",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "אין הסכמה",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            },
+            {
+              "name": "שיחה חוזרת",
+              "howItLooks": "מסכמות מה נבחר ומה חסר",
+              "whatItSays": "זו תוצאה של שיחה בדויה בלבד"
+            }
+          ]
+        },
+        "stage3": {
+          "scenarioName": "כרטיס לבחירה",
+          "scenarioSubtitle": "שיחה בחדר הצוות",
+          "sources": [
+            {
+              "sourceId": "fixture-approved-source"
+            }
+          ],
+          "documents": {
+            "actor": {
+              "story": "עמיתה מגיעה עם כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+              "entrance": {
+                "posture": "יושבת",
+                "doing": "מניחה כרטיס",
+                "firstLine": "נבדוק צעד אחד יחד."
+              },
+              "portrait": "דמות בדויה לצורכי בדיקה",
+              "askAndBeneath": "מבקשת זמן בחירה",
+              "arc": "בודקת אם יש מקום לבחירה",
+              "endingsProse": "מסכמת מה נבחר",
+              "whoSitsAcross": "מחנכת",
+              "expectThis": "שאלות פתוחות"
+            },
+            "facilitator": {
+              "fullBackground": "בדיקה סינתטית של שיחה על כרטיס תכנון כחול. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+              "charactersProse": "שתי דמויות בדויות",
+              "whatTheApproachSaysHere": "שיחה מכילה עם בחירה",
+              "dynamics": "זמן ובהירות",
+              "skillsToTrain": "בירור בחירה",
+              "observationPoints": "האם נשאלה שאלה פתוחה",
+              "preSessionQuestions": "מה צריך לדעת מראש?",
+              "debriefQuestions": "מה עזר לבחירה?",
+              "reflectionQuestions": "מה נרצה לבדוק שוב?"
+            }
+          }
+        },
+        "trainee": "בחדר הצוות ביום ראשון בשעה 10 מונח כרטיס תכנון כחול. שתי חברות צוות מבקשות לבחור את סדר הבדיקה. את מחנכת שמבקשת לברר צעד אפשרי. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.\n---\nהמטרה היא לסיים תכנון ברור ולתת זמן בחירה. קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים. לא סיפרתי שהכרטיס הכחול מכיל רעיון שבחרתי לדחות בשבוע שעבר"
+      },
+      "expected": "rejected",
+      "findingIds": [
+        "F05"
+      ],
+      "sourceLibrary": [
+        {
+          "sourceId": "fixture-approved-source",
+          "title": "fixture-approved-source",
+          "citation": "fixture-approved-source",
+          "approved": true
+        }
+      ]
+    }
+  ]
+}

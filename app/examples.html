@@ -112,6 +112,7 @@ const TOOLS=[
   ['practi','פרקטי: יועצת לחוסן בכיתה','המחנך/ת מתארים את הכיתה, ופרקטי מציעה תמונת מצב והמלצות מעשיות, עם שלבים, אפשרויות בחירה והודעות מוכנות.'],
   ['nugi','נוגי: מנהיגות תומכת חוסן','להנהלה, לרכזים ולצוותי תלמידים: תמונת מצב של המנהיגות בבית הספר והמלצות שבונות מנגנונים משותפים.'],
   ['nana','ננה: מהוראה להנחיה','מדריך הנחיה למפגש: עמדה, שפה, מהלכי שיחה, רגעים מאתגרים וסיום שהופך למנגנון חוזר.'],
+  ['team-lab','מעבדת תרגול ולמידה בצוות','פעילות לפי הגישות שבחרנו, עם מטרה, הנחיה, סביבת למידה, מיומנויות וקווים אדומים. התוצר לדוגמה אינו עדות לניסיון במפגש אמיתי.'],
   ['writer','כתיבה מקדמת חוסן','הודעות ומכתבים לתלמידים, להורים ולצוות, לפי עשרת עקרונות השפה המחזקת.'],
   ['continuity','תיק רציפות','תיק הפעלה קצר למי שתחליף את המורה: שגרות, תפקידים וגיבוי, גבולות החלטה, רגעים שכדאי להתכונן אליהם ודף תרגול לעמיתה.'],
   ['cont-join','תיק רציפות: הצטרפות וחזרה','ערכה לתלמיד/ה שמצטרף/ת או חוזר/ת, או לכל הכיתה: תיק כניסה קבוצתי, דרכי הצטרפות לבחירה, תפקידי עמיתים ולוח לשבועיים.'],
@@ -146,7 +147,7 @@ async function load(){
   }
   const known=TOOLS.map(t=>t[0]);
   // לפי חמש שאלות של מוכנות יומיומית (SBE_READY)
-  const RG={"cont-join": "anchor", "cont-proc": "anchor", "routines-proc": "anchor", "paths": "act", "practice-own": "practice", "studio": "act", "practi": "see", "nugi": "see", "nana": "practice", "writer": "act", "continuity": "anchor", "routines": "anchor", "bridge": "practice", "resil": "see", "conv": "practice", "act-single": "act", "act-seq": "act", "review": "learn", "journey": "anchor", "practice": "practice", "edu": "practice", "parents": "practice", "youth": "practice"}, R=window.SBE_READY, order=R?R.GROUPS.map(g=>g.id):[];
+  const RG={"team-lab": "practice", "cont-join": "anchor", "cont-proc": "anchor", "routines-proc": "anchor", "paths": "act", "practice-own": "practice", "studio": "act", "practi": "see", "nugi": "see", "nana": "practice", "writer": "act", "continuity": "anchor", "routines": "anchor", "bridge": "practice", "resil": "see", "conv": "practice", "act-single": "act", "act-seq": "act", "review": "learn", "journey": "anchor", "practice": "practice", "edu": "practice", "parents": "practice", "youth": "practice"}, R=window.SBE_READY, order=R?R.GROUPS.map(g=>g.id):[];
   const sorted=TOOLS.slice().sort((a,b)=>order.indexOf(RG[a[0]])-order.indexOf(RG[b[0]]));
   const groups=sorted.concat([['_other','תוצרים נוספים','']]);
   let lastG=null;

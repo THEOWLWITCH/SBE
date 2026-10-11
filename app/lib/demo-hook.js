@@ -139,6 +139,15 @@
   }
 
   var RECIPES = {
+    "team-learning-lab.html": async function () {
+      var ui = await waitFor(function () { return window.SBE_TEAM_UI; }, 30000, "פתיחת מעבדת הצוות");
+      await ui.demoFill();
+      await ui.generate(); // Uses the authenticated live model, never a canned activity.
+      var doc = ui.printableNode();
+      if (!doc || !doc.textContent.trim()) throw new Error("הפעילות לא הופקה. הקלט נשמר ואפשר לנסות שוב.");
+      return [{ tool:"team-lab", title:"מעבדת תרגול ולמידה בצוות: הפעילות שלנו", label:"מעבדת תרגול ולמידה בצוות",
+        html:standalone(doc,"הפעילות שלנו"), input:"הכנת פעילות בחינוך לפי גישות משלימות. זהו תוצר AI, ולא תיעוד של מפגש שהתקיים." }];
+    },
     "resilience-advisor.html": function () { return inPage("practi", "פרקטי: דוח לכיתה", "פרקטי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
     "leadership-advisor.html": function () { return inPage("nugi", "נוגי: דוח סיכום והמלצות", "נוגי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
     "facilitation-advisor.html": function () { return inPage("nana", "ננה: מדריך הנחיה", "ננה", "#btn-example", "#btn-go", "#guide-doc", "#guide-doc", "#guide"); },
@@ -312,7 +321,7 @@
     },
     // תרגול עצמי בסימולציה (07/10/2026): התרחיש הראשון ← ארבעה תורות של אשת החינוך ← סיום ← השיחה והמשוב
     "practice.html": async function () {
-      var card = await waitFor(".scenario-card", 30e3, "רשימת התרחישים");
+      var card = await waitFor("#scenarioList .scenario-card", 30e3, "רשימת התרחישים");
       var scName = (card.querySelector(".sc-name") || {}).textContent || "תרחיש", story = null, ownInput = "";
       if (q.get("part") === "own") { // תרגול על מקרה משלך: המקרה, שאלות ההבהרה, הסיפור, ואז השיחה והמשוב
         click("#bOwnCase"); await sleep(500);
@@ -320,14 +329,14 @@
         setVal("ownRole", "מחנכת"); setVal("ownOther", "אבא של תלמיד"); setVal("ownGoal", "שנסכים על צעד אחד לשבוע הקרוב"); setVal("ownHard", "אני חוששת שהוא יאשים את בית הספר");
         ownInput = inputSummary($("#own1"));
         click("#ownNext");
-        var st = await waitFor(function () { if (!$("#own2").hidden) return "q"; if (!$("#own3").hidden) return "s"; var e = $("#ownErr"); return !e.hidden && e.textContent ? { fail: e.textContent } : null; }, 10 * 60e3, "שאלות ההבהרה");
+        var st = await waitFor(function () { var e = $("#ownErr"); if (!e.hidden && e.textContent) return { fail: e.textContent }; if (!$("#ownWait").hidden) return null; if (!$("#own2").hidden) return "q"; if (!$("#own3").hidden) return "s"; return null; }, 10 * 60e3, "שאלות ההבהרה");
         if (st.fail) throw new Error(st.fail);
         if (st === "q") {
           document.querySelectorAll("#ownQs .own-q").forEach(function (w) { var o = w.querySelector(".own-opts button"); if (o) o.click(); else { var i = w.querySelector("input"); i.value = "לא ידוע לי"; i.dispatchEvent(new Event("input", { bubbles: true })); } });
           ownInput += "\n" + [].map.call(document.querySelectorAll("#ownQs .own-q"), function (w) { return w.querySelector("b").textContent + " " + w.querySelector("input").value; }).join("\n");
           click("#ownBuild");
         }
-        var pv = await waitFor(function () { if (!$("#own3").hidden && $("#ownPreview .own-prev")) return true; var e = $("#ownErr"); return !e.hidden && e.textContent ? { fail: e.textContent } : null; }, 15 * 60e3, "הסיפור");
+        var pv = await waitFor(function () { var e = $("#ownErr"); if (!e.hidden && e.textContent) return { fail: e.textContent }; return $("#ownWait").hidden && !$("#own3").hidden && $("#ownPreview .own-prev") ? true : null; }, 15 * 60e3, "הסיפור");
         if (pv.fail) throw new Error(pv.fail);
         story = $("#ownPreview").cloneNode(true); scName = ($("#ownPreview h3") || {}).textContent || "מקרה משלי";
         click("#ownApprove"); await sleep(800);

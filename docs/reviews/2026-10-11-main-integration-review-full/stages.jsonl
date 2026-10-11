@@ -1,0 +1,12 @@
+{"phase": "start", "stage": "scope", "ts": "2026-10-10T08:17:10.673445+00:00"}
+{"facts": {"changed_lines": 1756, "depth": "full", "exec_nontest_lines": 1012, "size_band": "large", "unclassified_lines": {".html": 566, ".md": 20}}, "phase": "end", "stage": "scope", "ts": "2026-10-10T08:17:10.863306+00:00"}
+{"phase": "start", "stage": "select", "ts": "2026-10-10T08:17:10.863306+00:00"}
+{"facts": {"resumed_after_usage_limit": true}, "phase": "end", "reviewers": 10, "stage": "select", "ts": "2026-10-11T08:35:11.533510+00:00"}
+{"phase": "start", "stage": "dispatch", "ts": "2026-10-11T08:35:11.533510+00:00"}
+{"candidates": 11, "phase": "end", "stage": "dispatch", "ts": "2026-10-11T08:59:47.293339+00:00"}
+{"phase": "start", "stage": "merge", "ts": "2026-10-11T09:01:34.096917+00:00"}
+{"candidates": 3, "phase": "end", "stage": "merge", "ts": "2026-10-11T09:09:46.047058+00:00"}
+{"phase": "start", "stage": "validate", "ts": "2026-10-11T09:10:34.412494+00:00"}
+{"phase": "end", "stage": "validate", "ts": "2026-10-11T09:18:36.716138+00:00"}
+{"phase": "start", "stage": "report", "ts": "2026-10-11T09:21:07.968077+00:00"}
+{"candidates": 0, "phase": "end", "stage": "report", "ts": "2026-10-11T09:27:46.450383+00:00"}

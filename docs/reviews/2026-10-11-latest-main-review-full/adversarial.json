@@ -1,0 +1,54 @@
+{
+  "reviewer": "adversarial",
+  "findings": [
+    {
+      "title": "Demo runs overwrite private work and evict saved cases",
+      "severity": "P1",
+      "file": "app/practice.html",
+      "line": 1945,
+      "why_it_matters": "Running the newly added family, routines or own-case demo in the administrator's ordinary browser reads and writes the same private owner workspace. The recipes save sample input over existing drafts; a successful routines build clears its people and history, and own-case approval inserts a demo into the twelve-case private list and evicts its oldest real case. A pre-existing own-case preview can also satisfy the recipe's readiness checks immediately and be captured as the demo while the new request is still pending. The existing three-gate memory storage used by continuity and participation prevents this combination only for those two tools.",
+      "autofix_class": "manual",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "suggested_fix": "Before any workspace read in family-bridge-ui.js, routines-ui.js and the practice own-case IIFE, select fresh memory storage only when demolab=1, the page is embedded and homeUrl is admin.html?role=sys; route every workspace read/write, including the routines Studio import, through it. Preserve normal owner storage outside those three gates. Exercise the actual recipes with seeded private drafts, twelve saved cases and a saved preview; prove both successful and failed demos leave ordinary records byte-identical and cannot capture private content or accept an old preview.",
+      "confidence": 75,
+      "evidence": [
+        "app/practice.html:1945 --   let mine = []; try { mine = JSON.parse(localStorage.getItem(KEY) || \"[]\"); } catch (e) {}",
+        "app/practice.html:1948 --   try { Object.assign(draft, JSON.parse(localStorage.getItem(KEY + \".draft\") || \"{}\")); } catch (e) {}",
+        "app/practice.html:2025 --     mine.unshift({ id, at: new Date().toISOString().slice(0, 10), sc: draft.scenario }); mine = mine.slice(0, 12); saveMine();",
+        "app/lib/demo-hook.js:327-342: the new part=own recipe opens the current draft, changes and saves the input fields, starts ownNext, accepts an already-visible own3/ownPreview, clones that preview, and clicks ownApprove. With a stored scenario, bOwnCase selects step 3 before the new model request completes; with twelve saved cases, approval necessarily removes the oldest one.",
+        "app/lib/routines-ui.js:32 --   try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && Array.isArray(v.items)) S = v; } catch (e) {}",
+        "app/lib/routines-ui.js:35 --   function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }",
+        "app/lib/routines-ui.js:503-510 saves the demo example into the selected private item's form; :229 replaces its plan and clears people, runs, versions and rounds on successful generation.",
+        "app/lib/family-bridge-ui.js:29 --   try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && v.form) S = Object.assign(EMPTY(), v); } catch (e) {}",
+        "app/lib/family-bridge-ui.js:494 --     S.form = ex; save(); showGoal(); F('err1').hidden = true;",
+        "app/lib/demo-hook.js:175-180 adds routines and family recipes that call inPage on the ordinary example/generate controls. inPage records unscoped inputSummary before clearing only the capture node, so private inputs rendered elsewhere remain eligible for the demo input record.",
+        "app/lib/continuity-kit-ui.js:15-17 and app/lib/participation-ui.js:43-46 already choose fresh memory before private reads when all three demo gates are true; the three new workspace flows do not use that boundary."
+      ],
+      "pre_existing": false
+    },
+    {
+      "title": "Switching routines sends a pending result into another item",
+      "severity": "P1",
+      "file": "app/lib/routines-ui.js",
+      "line": 229,
+      "why_it_matters": "A teacher can start building routine A, switch to routine B through the still-active hub, and receive A's result in B. The completion assigns through the mutable global I after the wait, replacing B's plan and clearing its people, trials, decisions and version history while A remains unfinished. Options and revision requests use the same mutable target, so this also misfiles proposals and feedback between routines. Capturing the requested item and checking its continued existence and revision makes the response belong to its initiating workspace.",
+      "autofix_class": "manual",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "suggested_fix": "Capture an item identity/reference and an operation or revision token before each options/build/revise await. Apply the result only to that initiating item if it still exists and the token is current, and redraw/navigate only when that item is still selected. Invalidate outstanding operations when an item is deleted or regenerated; do not let an older request unlock or update a newer request's controls. Verify deferred-provider sequences for A-to-B switching and deleting A, including preservation of B's existing plan, people and history.",
+      "confidence": 75,
+      "evidence": [
+        "app/lib/routines-ui.js:229 --     Object.assign(I, { plan: k, version: 1, at: today(), people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], rounds: [] });",
+        "app/lib/routines-ui.js:47 --       c.addEventListener('click', () => { S.cur = it.id; I = it; save(); openItem(); });",
+        "app/lib/routines-ui.js:225 --     try { k = await ask(M.planSystem(KB, WRITER), 'השדות:\\n' + M.inputText(I.form) + '\\n\\nהפעולה שהקבוצה בחרה: ' + act + (I.how ? '\\nאיך הוחלט: ' + I.how : '') + '\\n\\nהכיני את התוצר.', M.valid); }",
+        "Scenario: select saved A, start its build and hold the provider result; the code disables only F('go'). Click B's hub button, which remains enabled and reassigns I. Release a valid A result: :229 resets B's plan/history, :231 saves it under B and navigates B to step 2. There is no captured item, revision check or removed-item check on this path.",
+        "app/lib/routines-ui.js:215 similarly assigns the pending options response through I after await; :432-433 similarly writes revision changes and proposal through the newly selected I.",
+        "app/lib/routines-ui.js:52-56 permits deletion and reassignment to S.items[0] while a request is pending, creating the same wrong-owner result path even if the initiating item is removed."
+      ],
+      "pre_existing": false
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

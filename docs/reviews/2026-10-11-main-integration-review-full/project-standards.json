@@ -1,0 +1,45 @@
+{
+  "reviewer": "project-standards",
+  "findings": [
+    {
+      "title": "Emergency folder lacks on-screen editing",
+      "severity": "P2",
+      "file": "app/lib/continuity-kit-ui.js",
+      "line": 346,
+      "why_it_matters": "A teacher can correct the generated routine folder directly, but cannot correct generated emergency instructions before printing the same continuity kit. CLAUDE.md:13 requires on-screen editing and a PDF for every product.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/continuity-kit-ui.js:346     const make = { routine: () => window.SBE_DOC.editable(renderRoutine()), emerg: renderEmerg, students: renderStudents, updates: renderUpdates };",
+        "CLAUDE.md:13 - **כל תוצר: עריכה על המסך ו-PDF מעוצב.** `app/lib/product-doc.js` (`SBE_DOC`): `rich()` לטקסט מהמודל, `editable()` — עריכה ישירה עם הסבר קצר, `print()` — מסמך עם לוגו, כותרת ותאריך, להדפסה או לשמירה כ-PDF (כולל הנוסח הערוך).",
+        "app/lib/continuity-kit-ui.js:242-249 renders the generated emergency model as plain text and tables, without contenteditable or SBE_DOC.editable; line 180-184 only makes the separate readiness fields editable.",
+        "provenance: b0845a2b Claude 2026-10-09 - unchanged at c187604:app/lib/continuity-kit-ui.js:346"
+      ],
+      "pre_existing": true,
+      "suggested_fix": "Wrap the generated emergency content in SBE_DOC.editable, preserve its edited text before showKit rebuilds the pane, and print the edited pane. Keep the readiness and team form controls separate from the contenteditable region."
+    },
+    {
+      "title": "Continuity sources appear before document end",
+      "severity": "P2",
+      "file": "app/lib/continuity-kit-ui.js",
+      "line": 167,
+      "why_it_matters": "When a teacher opts to attach sources and prints the full continuity kit, the routine source list appears before the emergency, student, and update folders. This breaks the project's rule that sources belong at the end of the document.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 75,
+      "evidence": [
+        "app/lib/continuity-kit-ui.js:167     if (window.SBE_REFS) { SBE_REFS.add(k.sources || []); const rs = SBE_REFS.end(); if (rs) root.appendChild(rs); }",
+        "CLAUDE.md:56 - **מקורות בסוף המסמך, לא בתוך הטקסט.** `app/lib/ref-collect.js` (`SBE_REFS`): מוציא [מפתח] ו-(מפתח, מפתח) מהטקסט, ומוסיף סעיף \"מקורות\" בסוף הדוח, המדריך או התשובה.",
+        "app/lib/continuity-kit-ui.js:379-387 prints all four panes in order in one document; line 249 also appends a separate source list to the emergency pane.",
+        "provenance: c46203a7 Claude 2026-10-09 - unchanged at c187604:app/lib/continuity-kit-ui.js:167; b0845a2b Claude 2026-10-09 - unchanged print assembly at c187604:379-387"
+      ],
+      "pre_existing": true,
+      "suggested_fix": "For the combined printable kit, collect and deduplicate the selected routine and emergency references, remove their pane-local source blocks from the print copy, and append one attached source section after the final pane."
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

@@ -15,6 +15,9 @@ const CUSTOMER = createRequire(import.meta.url)('../../app/lib/customer-review.j
 // 'activity', 'resilience', 'practi', 'leadership' כאן, ב-access-guard.js וב-home.html.
 const STUDIO_PERMS = ['studio'];
 const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
+// Every generation/review/repair shares this deadline, below the browser's
+// nine-minute polling window. A single provider attempt remains bounded too.
+const REQUEST_DEADLINE_MS = 8*60*1000, ATTEMPT_TIMEOUT_MS = 3*60*1000;
 const STR = { type:'string' };
 const strings = { type:'array', items:STR };
 const focus = { type:'string', enum:studio.COMPONENTS.map(c=>c.id) };
@@ -287,7 +290,10 @@ function kitErrors(result,brief,action,available) {
   return errors;
 }
 
-export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onReady}={}) {
+// Prepare the authenticated, normalized wire request once, before admission.
+// The production listener keeps this object in memory; client fields cannot
+// inject a prepared request and mapping is not re-read after reservation.
+export async function prepareStudio(store, body) {
   const actor=await authorizePermission(store,body?.token,STUDIO_PERMS);
   if(!actor) return [403,{code:'studio_forbidden',error:'אין הרשאה פעילה לסטודיו. יש להיכנס מחדש עם קוד מתאים.'}];
   if(!body || typeof body!=='object' || Array.isArray(body)) return [400,{error:'בקשה לא תקינה.'}];
@@ -327,81 +333,123 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
   const input={action,brief,components:studio.COMPONENTS,professionalSources,
     ...(mapping?{mapping}:{}),...(previous?{previous}: {}),...(consultation || {})};
   const schema=action==='analyze'?RECOMMENDATION_SCHEMA:action==='consult'?CONSULTATION_SCHEMA:ACTIVITY_SCHEMA;
-  const payload={model,reasoning:{effort},store:false,instructions:INVITE.apply(INSTRUCTIONS),
+  const payload={model,reasoning:{effort},store:false,max_output_tokens:action==='analyze'?4096:action==='consult'?8192:16000,instructions:INVITE.apply(INSTRUCTIONS),
     input:[{role:'user',content:[{type:'input_text',text:JSON.stringify(input)}]}],
     text:{format:{type:'json_schema',name:action==='analyze'?'studio_focus':action==='consult'?'studio_consultation':'studio_activity',strict:true,schema}}};
-  let provider;
-  try {
-    if(onReady) onReady();
-    const r=await fetchImpl('https://api.openai.com/v1/responses',{method:'POST',
-      headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify(payload),
-      signal:AbortSignal.timeout(180000)});
-    if(!r.ok) return [503,{error:'שירות היצירה וההתייעצות אינו זמין כעת. אפשר לנסות שוב.'}];
-    provider=await r.json();
-  } catch { return [503,{error:'הבקשה לא הסתיימה. אפשר לנסות שוב.'}]; }
-  if(!provider || provider.status!=='completed' || !Array.isArray(provider.output)) return [422,{error:'המודל לא השלים תשובה; לא נוצרה ערכה.'}];
-  const content=provider.output.flatMap(item=>Array.isArray(item?.content)?item.content:[]);
-  if(content.some(c=>c.type==='refusal')) return [422,{error:'המודל לא יכול ליצור פעילות מהבקשה הזו. אפשר לערוך את התקציר.'}];
-  let result;
-  try { result=JSON.parse(content.filter(c=>c.type==='output_text').map(c=>c.text).join('')); }
-  catch { return [422,{error:'התקבלה תשובה שאינה תקינה; לא נוצרה ערכה.'}]; }
-  if(!matchesSchema(result,schema)) return [422,{error:'התשובה אינה תואמת למבנה הפעילות; לא נוצרה ערכה.'}];
-  if(action==='analyze') {
-    if(brief.focus && studio.component(brief.focus) && result.focus!==brief.focus) return [422,{error:'המוקד שבחרתם הוחלף. ערכו את התקציר ונסו שוב.'}];
-    return [200,{recommendation:result,...(mapping?{mapping}:{})}];
-  }
-  const available=new Map(professionalSources.map(s=>[s.sourceId,s]));
-  if(action==='consult') {
-    if(!result.answer.trim() || [...result.nextSteps,...result.questions].some(item=>!item.trim()))
-      return [422,{error:'ההתייעצות דורשת תשובה והצעות תקינות.'}];
-    if(result.professionalBasis.some(b=>!available.has(b.sourceId) || !b.explanation.trim()))
-      return [422,{error:'ההתייעצות כוללת מקור מקצועי לא מוכר או חסר הסבר.'}];
-    if(!consultation.selectedStep && result.suggestedInstructions!=='')
-      return [422,{error:'הצעת הוראות דורשת בחירה מפורשת של שלב בטיוטה.'}];
-    if(claimsProvenActivity(result)) return [422,{error:'ההתייעצות כוללת טענה לא מבוססת על יעילות או אישור מקצועי.'}];
-    return [200,{consultation:{...result,professionalBasis:enrichBasis(result.professionalBasis,available)},...(mapping?{mapping}:{})}];
-  }
-  if(result.clarificationQuestions.length) return [422,{error:'יש לנו כמה שאלות קצרות לפני שבונים את הפעילות.',
-    questions:result.clarificationQuestions.map(q=>q.trim()).filter(Boolean),focus:result.focus,rationale:result.selectionReason}];
-  // בדיקה ותיקון אחד (09/10/2026: "לוודא שלא תחזור תקלה כזאת"): ערכה שלא עברה את הבדיקה חוזרת פעם אחת
-  // למודל עם רשימת הבעיות, לפני שמציגים הודעת שגיאה.
-  const ask=async(instructions,text,schema,name)=>{
+  return {action,brief,consultation,mapping,professionalSources,input,schema,payload,apiKey,model,effort};
+}
+
+export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onReady,signal,preparedStudio}={}) {
+  const prepared=preparedStudio || await prepareStudio(store,body);
+  if(Array.isArray(prepared))return prepared;
+  const {action,brief,consultation,mapping,professionalSources,input,schema,payload,apiKey,model,effort}=prepared;
+  const requestController=new AbortController();
+  const abortRequest=()=>requestController.abort(signal?.reason);
+  const requestTimer=setTimeout(()=>requestController.abort(new DOMException('Studio deadline exceeded','TimeoutError')),REQUEST_DEADLINE_MS);
+  if(signal?.aborted) abortRequest();
+  signal?.addEventListener('abort',abortRequest,{once:true});
+  const responses=async request=>{
+    requestController.signal.throwIfAborted();
+    const attempt=new AbortController();
+    const abortAttempt=()=>attempt.abort(requestController.signal.reason);
+    const timer=setTimeout(()=>attempt.abort(new DOMException('Studio attempt timed out','TimeoutError')),ATTEMPT_TIMEOUT_MS);
+    requestController.signal.addEventListener('abort',abortAttempt,{once:true});
+    let rejectAborted;
+    const aborted=new Promise((_,reject)=>{rejectAborted=()=>reject(attempt.signal.reason);
+      attempt.signal.addEventListener('abort',rejectAborted,{once:true});});
     try {
-      const r=await fetchImpl('https://api.openai.com/v1/responses',{method:'POST',
-        headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},
-        body:JSON.stringify({model,reasoning:{effort},store:false,instructions,input:[{role:'user',content:[{type:'input_text',text}]}],
-          text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});
-      if(!r.ok) return null;
-      const out=await r.json();
-      if(!out || out.status!=='completed' || !Array.isArray(out.output)) return null;
-      const v=JSON.parse(out.output.flatMap(item=>Array.isArray(item?.content)?item.content:[]).filter(c=>c.type==='output_text').map(c=>c.text).join(''));
-      return matchesSchema(v,schema)?v:null;
-    } catch { return null; }
-  };
-  let errors=kitErrors(result,brief,action,available);
-  if(errors.length) {
-    const repaired=await ask(INVITE.apply(INSTRUCTIONS)+'\nהגרסה הקודמת לא עברה את הבדיקה. תקני בדיוק את הבעיות האלה, ושמרי את כל השאר כפי שהוא: '+errors.join('; '),
-      JSON.stringify({...input,previousDraft:result,validationErrors:errors}),ACTIVITY_SCHEMA,'studio_activity');
-    if(repaired && !repaired.clarificationQuestions.length && !kitErrors(repaired,brief,action,available).length) { result=repaired; errors=[]; }
-  }
-  if(errors.length) return [422,{error:'הערכה דורשת תיקון לפני שימוש: '+errors.join('; ')}];
-  let review=null;
-  if(process.env.STUDIO_CUSTOMER_REVIEW!=='off') {
-    review=await ask(INVITE.apply(CUSTOMER.system),'מה ביקשתי (הקלט):\n'+JSON.stringify(brief)+'\n\nהתוצר שקיבלתי:\n'+kitText(result),CUSTOMER.schema,'customer_review');
-    if(review && !review.ready && review.issues.length) {
-      const fixed=await ask(INVITE.apply(INSTRUCTIONS)+'\n'+CUSTOMER.reviseNote(review.issues),
-        JSON.stringify({...input,previousDraft:result,customerIssues:review.issues}),ACTIVITY_SCHEMA,'studio_activity');
-      if(fixed && !fixed.clarificationQuestions.length && !kitErrors(fixed,brief,action,available).length) { result=fixed; review={...review,revised:true}; }
+      const pending=(async()=>{
+        attempt.signal.throwIfAborted();
+        const r=await fetchImpl('https://api.openai.com/v1/responses',{method:'POST',
+          headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify(request),signal:attempt.signal});
+        if(!r.ok) return null;
+        const value=await r.json();
+        attempt.signal.throwIfAborted();
+        return value;
+      })();
+      return await Promise.race([pending,aborted]);
+    } finally {
+      clearTimeout(timer);
+      attempt.signal.removeEventListener('abort',rejectAborted);
+      requestController.signal.removeEventListener('abort',abortAttempt);
     }
-  }
-  const guide=result.learningGuide;
-  const {clarificationQuestions,...kit}=result;
-  const activity={...kit,schemaVersion:studio.VERSION,catalogueVersion:studio.VERSION,evidenceStatus:'new-ai',
-    leaderGuidance:'טיוטה: פעילות חדשה שנוצרה בבינה מלאכותית, שטרם אושרה מקצועית; יעילות הפעילות לא נבדקה. '+result.leaderGuidance,
-    professionalBasis:enrichBasis(result.professionalBasis,available),
-    learningGuide:{...guide,learnBefore:guide.learnBefore.map(s=>{const src=available.get(s.sourceId);
-      return {sourceId:src.sourceId,focus:s.focus,name:src.name,url:src.url,version:src.version,status:src.status};})}};
-  return [200,{activity,...(review?{customerReview:{ready:review.ready,summary:review.summary,issues:review.issues,revised:!!review.revised}}:{}),...(mapping?{mapping}:{})}];
+  };
+  try {
+    let provider;
+    try {
+      if(onReady) onReady();
+      provider=await responses(payload);
+      if(!provider) return [503,{error:'שירות היצירה וההתייעצות אינו זמין כעת. אפשר לנסות שוב.'}];
+    } catch { return [503,{error:'הבקשה לא הסתיימה. אפשר לנסות שוב.'}]; }
+    if(!provider || provider.status!=='completed' || !Array.isArray(provider.output)) return [422,{error:'המודל לא השלים תשובה; לא נוצרה ערכה.'}];
+    const content=provider.output.flatMap(item=>Array.isArray(item?.content)?item.content:[]);
+    if(content.some(c=>c.type==='refusal')) return [422,{error:'המודל לא יכול ליצור פעילות מהבקשה הזו. אפשר לערוך את התקציר.'}];
+    let result;
+    try { result=JSON.parse(content.filter(c=>c.type==='output_text').map(c=>c.text).join('')); }
+    catch { return [422,{error:'התקבלה תשובה שאינה תקינה; לא נוצרה ערכה.'}]; }
+    if(!matchesSchema(result,schema)) return [422,{error:'התשובה אינה תואמת למבנה הפעילות; לא נוצרה ערכה.'}];
+    if(action==='analyze') {
+      if(brief.focus && studio.component(brief.focus) && result.focus!==brief.focus) return [422,{error:'המוקד שבחרתם הוחלף. ערכו את התקציר ונסו שוב.'}];
+      return [200,{recommendation:result,...(mapping?{mapping}:{})}];
+    }
+    const available=new Map(professionalSources.map(s=>[s.sourceId,s]));
+    if(action==='consult') {
+      if(!result.answer.trim() || [...result.nextSteps,...result.questions].some(item=>!item.trim()))
+        return [422,{error:'ההתייעצות דורשת תשובה והצעות תקינות.'}];
+      if(result.professionalBasis.some(b=>!available.has(b.sourceId) || !b.explanation.trim()))
+        return [422,{error:'ההתייעצות כוללת מקור מקצועי לא מוכר או חסר הסבר.'}];
+      if(!consultation.selectedStep && result.suggestedInstructions!=='')
+        return [422,{error:'הצעת הוראות דורשת בחירה מפורשת של שלב בטיוטה.'}];
+      if(claimsProvenActivity(result)) return [422,{error:'ההתייעצות כוללת טענה לא מבוססת על יעילות או אישור מקצועי.'}];
+      return [200,{consultation:{...result,professionalBasis:enrichBasis(result.professionalBasis,available)},...(mapping?{mapping}:{})}];
+    }
+    if(result.clarificationQuestions.length) return [422,{error:'יש לנו כמה שאלות קצרות לפני שבונים את הפעילות.',
+      questions:result.clarificationQuestions.map(q=>q.trim()).filter(Boolean),focus:result.focus,rationale:result.selectionReason}];
+    // בדיקה ותיקון אחד (09/10/2026: "לוודא שלא תחזור תקלה כזאת"): ערכה שלא עברה את הבדיקה חוזרת פעם אחת
+    // למודל עם רשימת הבעיות, לפני שמציגים הודעת שגיאה.
+    let askFailure;
+    const ask=async(instructions,text,schema,name)=>{
+      askFailure=null;
+      try {
+        const out=await responses({model,reasoning:{effort},store:false,max_output_tokens:name==='customer_review'?4000:16000,
+          instructions,input:[{role:'user',content:[{type:'input_text',text}]}],text:{format:{type:'json_schema',name,strict:true,schema}}});
+        if(!out || out.status!=='completed' || !Array.isArray(out.output)) return null;
+        const content=out.output.flatMap(item=>Array.isArray(item?.content)?item.content:[]);
+        if(content.some(item=>item.type==='refusal')) return null;
+        const v=JSON.parse(content.filter(item=>item.type==='output_text').map(item=>item.text).join(''));
+        return matchesSchema(v,schema)?v:null;
+      } catch(error) {if(requestController.signal.aborted)throw error;askFailure=error;return null;}
+    };
+    let errors=kitErrors(result,brief,action,available);
+    if(errors.length) {
+      const repaired=await ask(INVITE.apply(INSTRUCTIONS)+'\nהגרסה הקודמת לא עברה את הבדיקה. תקני בדיוק את הבעיות האלה, ושמרי את כל השאר כפי שהוא: '+errors.join('; '),
+        JSON.stringify({...input,previousDraft:result,validationErrors:errors}),ACTIVITY_SCHEMA,'studio_activity');
+      if(repaired && !repaired.clarificationQuestions.length && !kitErrors(repaired,brief,action,available).length) { result=repaired; errors=[]; }
+    }
+    if(errors.length) return [422,{error:'הערכה דורשת תיקון לפני שימוש: '+errors.join('; ')}];
+    let review=null;
+    if(process.env.STUDIO_CUSTOMER_REVIEW!=='off') {
+      review=await ask(INVITE.apply(CUSTOMER.system),'מה ביקשתי (הקלט):\n'+JSON.stringify(brief)+'\n\nהתוצר שקיבלתי:\n'+kitText(result),CUSTOMER.schema,'customer_review');
+      if(!review && (askFailure?.status===413 || askFailure?.status===429)) review={ready:false,
+        summary:'בדיקת הערכה לא הושלמה במסגרת המכסה. אפשר לבדוק את ההנחיות ולחזור לבדיקה בהמשך.',
+        issues:[{where:'בדיקת הערכה',quote:'',problem:'לא נותר תקציב לבדיקת המשך.',fix:'אפשר לשמור את הטיוטה ולבדוק אותה עם המנחה לפני שימוש.'}]};
+      // A review blocked by admission is not a model critique and does not
+      // trigger a replacement draft without a completed customer review.
+      if(review && !review.ready && review.issues.length && !askFailure) {
+        const fixed=await ask(INVITE.apply(INSTRUCTIONS)+'\n'+CUSTOMER.reviseNote(review.issues),
+          JSON.stringify({...input,previousDraft:result,customerIssues:review.issues}),ACTIVITY_SCHEMA,'studio_activity');
+        if(fixed && !fixed.clarificationQuestions.length && !kitErrors(fixed,brief,action,available).length) { result=fixed; review={...review,revised:true}; }
+      }
+    }
+    const guide=result.learningGuide;
+    const {clarificationQuestions,...kit}=result;
+    const activity={...kit,schemaVersion:studio.VERSION,catalogueVersion:studio.VERSION,evidenceStatus:'new-ai',
+      leaderGuidance:'טיוטה: פעילות חדשה שנוצרה בבינה מלאכותית, שטרם אושרה מקצועית; יעילות הפעילות לא נבדקה. '+result.leaderGuidance,
+      professionalBasis:enrichBasis(result.professionalBasis,available),
+      learningGuide:{...guide,learnBefore:guide.learnBefore.map(s=>{const src=available.get(s.sourceId);
+        return {sourceId:src.sourceId,focus:s.focus,name:src.name,url:src.url,version:src.version,status:src.status};})}};
+    return [200,{activity,...(review?{customerReview:{ready:review.ready,summary:review.summary,issues:review.issues,revised:!!review.revised}}:{}),...(mapping?{mapping}:{})}];
+  } finally {clearTimeout(requestTimer);signal?.removeEventListener('abort',abortRequest);}
 }
 
 // Background mode: a single request that waits minutes for the model was cut by proxies, sleeping

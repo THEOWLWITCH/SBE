@@ -4,9 +4,10 @@
   "type": "module",
   "description": "רתמת הרצה לסט ההערכה",
   "scripts": {
-    "test": "node --test",
-    "run": "node run.mjs",
-    "gates": "node run.mjs --gates-only"
+    "test": "node --preserve-symlinks --preserve-symlinks-main --test",
+    "run": "node --preserve-symlinks --preserve-symlinks-main run.mjs --synthetic",
+    "gates": "node --preserve-symlinks --preserve-symlinks-main run.mjs --gates-only",
+    "eval": "node --preserve-symlinks --preserve-symlinks-main run.mjs --eval"
   },
   "engines": {
     "node": ">=18"

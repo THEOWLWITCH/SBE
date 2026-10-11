@@ -13,6 +13,8 @@ test('five readiness questions, in the order of the cycle', () => {
   assert.deepEqual(R.GROUPS.map((g) => g.n), ['לראות', 'להתאמן', 'לתכנן ולפעול', 'ללמוד מהעשייה', 'לעגן בשגרה']);
   assert.equal(R.title(R.GROUPS[1]), '🎭 2. להתאמן: מוכנים לרגע המאתגר?');
   assert.equal(R.groupOf('academic-review.html?x=1').id, 'learn');
+  assert.equal(R.groupOf('team-learning-lab.html').id, 'practice');
+  assert.equal(R.groupOf('rehearsal.html').id, 'practice');
   const all = Object.values(R.PAGES).flat(); assert.equal(new Set(all).size, all.length, 'each page in one group');
 });
 

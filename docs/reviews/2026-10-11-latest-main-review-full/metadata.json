@@ -1,0 +1,89 @@
+{
+  "branch": "feat/be-good-quality-foundation",
+  "completed_at": "2026-10-11T11:29:11.603280+00:00",
+  "cost": {
+    "host": "codex",
+    "scope": {
+      "changed_lines": 5484,
+      "depth": "full",
+      "exec_nontest_lines": 2771,
+      "size_band": "large",
+      "unclassified_lines": {
+        ".html": 1640,
+        ".md": 134
+      }
+    },
+    "stages": [
+      {
+        "elapsed_seconds": 0.179,
+        "ended_at": "2026-10-11T10:39:43.907044+00:00",
+        "facts": {
+          "changed_lines": 5484,
+          "depth": "full",
+          "exec_nontest_lines": 2771,
+          "size_band": "large",
+          "unclassified_lines": {
+            ".html": 1640,
+            ".md": 134
+          }
+        },
+        "stage": "scope",
+        "started_at": "2026-10-11T10:39:43.728490+00:00"
+      },
+      {
+        "elapsed_seconds": 121.477,
+        "ended_at": "2026-10-11T10:41:45.384032+00:00",
+        "reviewers": 10,
+        "stage": "select",
+        "started_at": "2026-10-11T10:39:43.907044+00:00"
+      },
+      {
+        "candidates": 15,
+        "elapsed_seconds": 1243.54,
+        "ended_at": "2026-10-11T11:02:28.924191+00:00",
+        "stage": "dispatch",
+        "started_at": "2026-10-11T10:41:45.384032+00:00"
+      },
+      {
+        "candidates": 8,
+        "elapsed_seconds": 453.406,
+        "ended_at": "2026-10-11T11:12:39.372974+00:00",
+        "stage": "merge",
+        "started_at": "2026-10-11T11:05:05.967233+00:00"
+      },
+      {
+        "candidates": 8,
+        "elapsed_seconds": 451.081,
+        "ended_at": "2026-10-11T11:20:42.546675+00:00",
+        "stage": "validate",
+        "started_at": "2026-10-11T11:13:11.465198+00:00"
+      },
+      {
+        "candidates": 8,
+        "elapsed_seconds": 380.624,
+        "ended_at": "2026-10-11T11:29:11.761533+00:00",
+        "stage": "report",
+        "started_at": "2026-10-11T11:22:51.137117+00:00"
+      }
+    ],
+    "status": "complete",
+    "totals": {
+      "artifact_bytes": 2566472,
+      "candidates": 15,
+      "elapsed_seconds": 2650.307,
+      "reviewers": 10
+    },
+    "truncated_events": 0
+  },
+  "head_sha": "570c354301b6e5ebcbc82880f6aff0f33ebc78f4",
+  "review_sha256": "67379a55fb4d565ffd018abdd7007c386a1c71e0592ba475804bd6d291f9c653",
+  "reviewed_snapshot": {
+    "base_head": "570c354301b6e5ebcbc82880f6aff0f33ebc78f4",
+    "description": "Staged main integration plus root-owned local fixes and tests; HEAD alone is not the reviewed source.",
+    "full_diff_sha256": "96ed3e83de94e0755e4ee56502d7943ed6aa8ee8ac6d937b1d6ccdea84954793",
+    "kind": "canonical staged working tree",
+    "merge_head": "daaa5c419b237a309c9124fb6656b1fb79863229"
+  },
+  "run_id": "20261011-133912-22bd88d2",
+  "verdict": "Not ready"
+}

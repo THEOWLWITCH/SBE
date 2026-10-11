@@ -1,0 +1,196 @@
+{
+  "run_id": "20261010-111543-e72b7705",
+  "run_dir": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\review-artifacts\\ce-code-review\\20261010-111543-e72b7705",
+  "skill_dir": "C:/Users/yaels/.codex/plugins/cache/compound-engineering-plugin/compound-engineering/3.30.4/skills/ce-code-review",
+  "docs_root": "docs",
+  "mode": {
+    "agent": true,
+    "apply_local": false,
+    "grouping": "auto",
+    "depth": "full"
+  },
+  "invocation": {
+    "arguments": "mode:agent base:b7c85b1 plan:docs/team-learning-lab-plan.md",
+    "constraints": [
+      "READ-ONLY independent integration review using compound-engineering:ce-code-review full skill mode:agent base:b7c85b1 plan:docs/team-learning-lab-plan.md.",
+      "Scope material NEW delta since b7c85b1, not repeat original8fixreview.",
+      "Need actual complete receipt, no apply/stage/commit.",
+      "User authorized continuation and cloudcompatibleGitHubwork, no mainmerge/deploy/newPR.",
+      "Userideation HTMLuntracked expresslyoutofscope.",
+      "No commits/push untilactualreceipt.",
+      "New nextlabbrief willbeplan doconlyrootlater explicitlyoutscope nextprojectno UI now.",
+      "Thisreviewstaysmainc187 snapshot; recordnewmainnotincluded andmustintegratebeforemainmerge/deploy so do not claim latest main.",
+      "No browser call/HTTP inspection against blocked localhost UI, no alternate browser or workaround. Synthetic CLI/VM tests and read-only source are allowed. No real provider calls, secrets, payment or external peer tasks."
+    ]
+  },
+  "scope": {
+    "mode": "standalone",
+    "base": "b7c85b18011f824a86669c98ced19404e85736f0",
+    "diff_a": "b7c85b18011f824a86669c98ced19404e85736f0",
+    "diff_b": null,
+    "repo_root": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\begood",
+    "context": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\review-artifacts\\ce-code-review\\20261010-111543-e72b7705\\scope-context.json",
+    "pr": {
+      "number": null,
+      "url": null,
+      "title": null,
+      "body": null,
+      "base_ref_name": null,
+      "head_ref_oid": null,
+      "head_ref": null,
+      "base_ref": null,
+      "has_prior_comments": false
+    },
+    "branch": "feat/be-good-quality-foundation",
+    "head_sha": "44522014186a731d2ebab0825d54a2f803168aca",
+    "files": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\review-artifacts\\ce-code-review\\20261010-111543-e72b7705\\files.txt",
+    "diff": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\review-artifacts\\ce-code-review\\20261010-111543-e72b7705\\full.diff",
+    "tree_is_reviewed_head": true,
+    "untracked_excluded": [
+      "docs/ideation/2026-10-09-be-good-additional-products-ideation.html",
+      "docs/shared-dialogue-lab-brief.md",
+      "harness/tests/continuity-demo-isolation.test.mjs"
+    ]
+  },
+  "intent": {
+    "summary": "Integrate current main through c187604 into the quality-foundation branch, preserving private team-lab drafts, access, cancellation, bounded work and frozen approved evidence. Add explicit source attachment and one complete-JSON repair without letting stale or revoked requests proceed; retain planner review and rehearsal continuity. Review only the new delta since b7c85b1, separate from the prior original eight-fix review.",
+    "confidence": "explicit"
+  },
+  "plan": {
+    "path": "docs/team-learning-lab-plan.md",
+    "source": "explicit",
+    "requirements": [
+      "שתי גישות לפחות מוצעות לבחירה, אך מותר לבחור אחת מתאימה. חקר שיעור וליווי מקצועי אינם מוצגים לילדים. כל חמש שכבות הגיל, שני הנמענים ושילובי חירום/מקוון נשמרים ומגיעים לפרומפט.",
+      "הקשר ללמידת ליבה, סביבה נגישה, אי-ודאות ויצירתיות מופיעים בתוצר; מקור מופיע רק מתוך הקטלוג, עם הסתייגות מעוצמת הראיות.",
+      "הוספה/הסרה/עריכה של שלב ושאלה בכל שלב עובדות. שינוי קלט/כניסה בזמן בקשת AI מבטל אותה; תוצאה מאוחרת לא מאומצת. מאמצים הצעת שיפור רק בלחיצה.",
+      "אישור נשמר כגרסה נפרדת. תצפית על מפגש אמיתי אינה חזרה; מהלך שנוסה אינו מסומן אחרי AI או חזרה בלבד.",
+      "תיק השיתוף והשמירה לפי משתמש לא מדליפים חששות או שיחות. דפדפן אחר/מכשיר אחר אינו מוצג כמסונכרן. שני חלונות אינם דורסים גרסה חדשה.",
+      "סכנה מיידית עוצרת את המסלול החינוכי. קווים אדומים מוצגים גם בתיק: בטיחות, בלי חשיפה כפויה/שחזור טראומה, חלופות השתתפות, עצירה בפגיעה, פרטיות ואחריות מבוגר.",
+      "מקורות סגורים ואינם מצורפים כברירת מחדל; פתיחת הרשימה אינה צירוף. בחירת הצירוף נשמרת לתיק שנבחר, והשמטה מ-JSON אינה משנה אישור קפוא. תשובת AI חלקית מקבלת תיקון אחד; כשל שני, ביטול או החלפת זהות משאירים את הטיוטה בלי קריאה נוספת.",
+      "קריאה לשרת משתמשת באסימון, permission nana ומנגנון העבודה האסינכרוני הקיים. בלי AI אין תוצר מדומה. כשל אינו מוחק טיוטה.",
+      "כל הבדיקות הקיימות והחדשות עוברות, מסך רחב/צר נבדקים. סקירת קוד עצמאית מתועדת. קלוד מקבל קבצים, מצב הבדיקות והשלבים שעדיין מחייבים AI חי והערכה מקצועית."
+    ],
+    "implementation_units": [
+      "1. חוזה תחום וקטלוג מקורות/גישות, עם בדיקות התנהגות לפני המימוש.",
+      "2. מסך RTL נגיש עם ארבעה צעדים: מתכננים, הפעילות שלנו, מתרגלים, לומדים מהניסיון. שאלות זמינות בכל צעד ולכל שלב פעילות; הצעת שינוי מאומצת במפורש.",
+      "3. חיבור למערכת: הרשאות, בית, תפריט, מטא-נתוני תוצר, מאמר, כלי המשך, ספריית דוגמאות ומתכון דמו אמיתי (בלי להריץ קריאות בתשלום).",
+      "4. בדיקות אוטומטיות, בדיקת דפדפן, פישוט קוד, סקירת קוד ותיעוד המשך לקלוד."
+    ],
+    "settled_decisions": []
+  },
+  "roster": {
+    "selected": [
+      {
+        "reviewer": "correctness",
+        "tier": "session",
+        "reason": "always-on"
+      },
+      {
+        "reviewer": "project-standards",
+        "tier": "balanced-mid",
+        "reason": "CLAUDE.md fallback criteria govern changed paths"
+      },
+      {
+        "reviewer": "testing",
+        "tier": "balanced-mid",
+        "reason": "meaningful runtime and test changes"
+      },
+      {
+        "reviewer": "maintainability",
+        "tier": "balanced-mid",
+        "reason": "large executable delta"
+      },
+      {
+        "reviewer": "agent-native",
+        "tier": "balanced-mid",
+        "reason": "AI prompt/context/capability changes"
+      },
+      {
+        "reviewer": "security",
+        "tier": "session",
+        "reason": "identity, privacy and untrusted input boundaries"
+      },
+      {
+        "reviewer": "reliability",
+        "tier": "balanced-mid",
+        "reason": "provider retries, cancellation and timeout paths"
+      },
+      {
+        "reviewer": "api-contract",
+        "tier": "balanced-mid",
+        "reason": "structured Studio and export contracts"
+      },
+      {
+        "reviewer": "adversarial",
+        "tier": "session",
+        "reason": "local fallback because no different-provider route is eligible"
+      },
+      {
+        "reviewer": "julik-frontend-races",
+        "tier": "balanced-mid",
+        "reason": "async UI identity, state and lifecycle"
+      }
+    ],
+    "standards": {
+      "criteria": [
+        {
+          "path": "CLAUDE.md",
+          "source": "instruction-file-fallback",
+          "applies_to": "Every reviewed changed path in files.txt"
+        }
+      ],
+      "fallback_named": true,
+      "not_run_reason": null
+    },
+    "packs": {
+      "roots": [],
+      "errors": [],
+      "warnings": []
+    }
+  },
+  "collection": {
+    "returns": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\review-artifacts\\ce-code-review\\20261010-111543-e72b7705\\raw-returns.json",
+    "unstructured_returns": [
+      {
+        "reviewer": "agent-native",
+        "path": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\review-artifacts\\ce-code-review\\20261010-111543-e72b7705\\agent-native.md"
+      }
+    ],
+    "failed_reviewers": [],
+    "bound_exceeded": [],
+    "fast_pass": {
+      "emitted_preliminary": false,
+      "candidates": []
+    }
+  },
+  "peer": {
+    "selected": false,
+    "target": null,
+    "route": null,
+    "preference_source": "default",
+    "outcome": "not-run",
+    "artifact": null,
+    "coverage": "Cross-model review was not run: no attested different-provider CLI route was installed (only Codex and npx; Bash absent), and no external job was started. An in-process adversarial reviewer completed as the local fallback."
+  },
+  "coverage_notes": [
+    "Reviewed HEAD plus local production integration changes; ongoing test additions and documentation edits recorded separately.",
+    "Windows app-container temp failed persistence; stable scratch uses authorized workspace outside repository.",
+    "Review setup paused at account usage limit on 10 Oct; resumed 11 Oct before any persona dispatch.",
+    "Source snapshot refreshed after helper test staging; root confirms production semantics frozen.",
+    "Upstream-only defects present unchanged at c187604 are separated from integration-caused findings with git provenance.",
+    "After first reviewer dispatch, root updated only E11 expectedProviderCalls to2 for bounded Studio validation repair plus fixture dataset version. Runtime production hashes unchanged; fixture added to scope and communicated to active reviewers.",
+    "Root reports full suite 296/296 passed before a deliberate untracked red continuity demo repro. The new isolation test is evidence only and excluded from reviewed source scope; no production fix exists at this snapshot.",
+    "Root independently reproduced the continuity demo private-state read with harness/tests/continuity-demo-isolation.test.mjs: authorized embedded demo expected zero reads but read regular private storage once; three non-demo guards passed. Use as validation evidence if relevant; this is not a passed regression suite.",
+    "Main advanced to daaa5c4 after review dispatch; this run reviews integrated main through c187604 only. The subsequent main delta is outside this run and requires integration/review before main merge or deployment.",
+    "During dispatch only three reviewed handoff/plan documents changed to record the 296/296 baseline, pending deliberate red repro, synthetic auth/local server and newer excluded main/next-product brief. Full diff and documentation hashes refreshed; production and tracked tests unchanged. Root confirmed these prose-only changes.",
+    "Final prose refresh adds docs/team-learning-lab-verification.md to scope (53 files, 2,123 changed lines); project-standards reviewer dispatched a bounded supplement for all four changed documentation files. Runtime and tracked test hashes stayed frozen.",
+    "Standards reviewer completed a supplemental independent read of the final four changed documentation files and returned no additional findings.",
+    "Root supplied contract evidence, not a verdict: team-lab renderExport uses a clone from T.publicPack and empties p.sources and p.activity.sources only for the explicit sharing export. No public-pack import path or validator is advertised; validateActivity checks complete draft/approval. Validator must inspect actual consumers and distinguish required redaction from a proven compatibility defect.",
+    "Root supplied cancellation evidence, not a verdict: practice-server.mjs 145-152 asserts current permission/job state before request and rejects results after cancellation, but passes options unchanged into native fetch. studio.mjs ask() line379 supplies only its timeout signal, so an already in-flight continuation may remain live. Validator must distinguish blocked new requests/stale commits from abort of an in-flight provider fetch.",
+    "Base-explicit review uses standalone scope; the working tree is the reviewed head plus frozen local integration. Earlier setup context labeled it local-aligned; the corrected finish contract is standalone.",
+    "All ten selected local lenses returned terminal outputs. Nine structured full artifacts and compact returns plus the exact unstructured agent-native return are saved. The final standards supplement was collected.",
+    "No source, test, staging, commit or push mutation was performed by this review run.",
+    "The source snapshot is 53 tracked changed files, 2,123 changed lines, 1,479 executable lines and 1,012 executable non-test lines; large full-depth floor.",
+    "Dispatch context read the actual outputs/team-lab-main-integration-tests.log TAP summary: 296 passed, zero failures/cancellations/skips/todo. Exact log hash and separate root-reported deliberate red reproduction are saved in C:\\Users\\yaels\\Documents\\Codex\\2026-10-06\\openai-docs-make-me-a-plan\\work\\review-artifacts\\ce-code-review\\20261010-111543-e72b7705\\test-evidence.json. This is the frozen baseline, before any fix."
+  ]
+}

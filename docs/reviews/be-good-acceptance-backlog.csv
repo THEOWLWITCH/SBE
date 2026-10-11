@@ -1,0 +1,28 @@
+﻿id,priority,work_package,scope,required_outcome,verification,dependency,status
+F01,P1,A,AI routes,"Live authorization; server-derived owner and tenant; bounded tokens and concurrency","Anonymous and unauthorized callers rejected before provider; forged tenant ignored",U1,not_rechecked
+F02,P1,A,Legacy institutions,"Stable principal plus tenant on read/list/update/delete","Institution B cannot access A; legitimate legacy owner retains access",U1,not_rechecked
+F03,P1,A,Session revocation,"Current code/tool/institution/subscription status enforced","Revoked token rejected; active authorized token succeeds",F02,not_rechecked
+F04,P1,B,Feedback and quota,"Atomic writes and quota; idempotency","100 distinct feedbacks retained; 20 requests with quota 3 allow exactly 3",F01,not_rechecked
+F05,P1,B,Research export,"Closed approved fields by default; free text on separate reviewed path","Synthetic names/phone/unique event absent; revoked consent respected",F01,not_rechecked
+F06,P1,B,Local drafts,"User and institution scoped; legacy ownership not guessed","A to B to A isolates drafts and preserves A",F02,not_rechecked
+F07,P1_when_switching,C,Provider adapter,"Messages/history/files/tools/refusal/truncation mapped consistently","Provider fixture observes complete ordered payload; unsupported input explicit",U1,not_rechecked
+F08,P1,C,Pipeline and gates,"Strict stage/final schema and gates before success or final commit","Empty stage; fabricated source; locked change; refusal/truncation rejected",F07,not_rechecked
+F09,P2,B,Edited output persistence,"Current visible edited version saved and reopened","Edit/save/reopen/print round trip; failed storage shows error",F06,not_rechecked
+F10,P2,B,Academic JSON import,"Validate candidate before atomic form replacement","Malformed fields leave original form and feedback untouched",U1,not_rechecked
+F11,P2,B,Quota failure recovery,"Reserve/commit/release; failure does not consume final use","Timeout releases reservation; retry does not charge twice",F04,not_rechecked
+F12,P2,B,Stale AI response,"Cancelled or superseded result cannot repopulate form","Clear/edit while request runs; late result ignored",U1,not_rechecked
+F13,P2,B,Large journey save,"Persist success checked before approval or notification","Oversize returns visible size error; no success/notification",F01,not_rechecked
+F14,P2,B,Milestones and certificates,"Stable milestone identity/version; reorder preserves association","Certificate retains same milestone after reorder",F02,not_rechecked
+F15,P2,C,Practice turn reporting,"Invalid branch effect never defaults to success","Unknown branch keeps prior state or shows explicit error",F07,not_rechecked
+F16,P2,C,Resilience score coverage,"Formula/history preserved; missing polarity and coverage shown","Partial responses cannot masquerade as complete 0/100 measurement",U1,not_rechecked
+F17,P2,A,Background jobs,"Owner/tenant/expiry/cancel/idempotency enforced","B cannot poll A; expired jobs unavailable and cleaned without restart",F01,not_rechecked
+F18,P2,D,Harness and CI,"Documented test entry exists; regression suite executable","Offline fixture suite runs from clean checkout",none,not_rechecked
+F19,P2,D,Planner accessibility,"Accessible labels and keyboard/RTL flow","Field accessible names and keyboard/screen reader checks",U5,not_rechecked
+R01,verify,A,Supabase policies,"Verify actual RLS/grants using staging principals","Anonymous and A/B access matrix on staging; no live private data",F02,unverified_environment
+R02,verify,D,HTML rendering,"Trace all model/user content sinks and encode or sanitize","Synthetic markup remains safe through display/print/export",U1,unverified_runtime
+R03,verify,A,Bootstrap credentials,"Confirm defaults replaced without printing secrets","Configuration presence/rotation audit; no live password probing",none,unverified_environment
+R04,verify,D,Backups and pagination,"Recoverability and complete listing policy","Staging restore drill and list continuation test",none,unverified_environment
+R05,verify,D,Reminders and delivery,"Delivery outcome recorded; recoverable bounded attempts","Failed send not marked delivered; retry idempotent",F04,unverified_runtime
+R06,verify,C,Source verification,"Separate editor note from bibliographic evidence","Source ID/version and approval state verified by content owner",none,professional_review_needed
+R07,verify,C,Model attribution,"Provider/model provenance per saved artifact","Historical artifact attribution does not change after provider switch",F07,not_rechecked
+R08,verify,C,Safeguarding policy,"Local professional policy consistent across tools","Owner approval plus synthetic scenarios across affected tools",none,professional_review_needed

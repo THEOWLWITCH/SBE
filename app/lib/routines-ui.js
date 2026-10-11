@@ -9,6 +9,10 @@
   const WRITER = window.SBE_WRITER ? window.SBE_WRITER.rule : '';
   const KEY = (b) => window.sbeUserKey ? sbeUserKey(b) : b + ':anon';
   const STORE = KEY('sbe.routines.v1');
+  let demo = false;
+  try { demo = new URLSearchParams(location.search).get('demolab') === '1' && window.parent !== window && sessionStorage.getItem('sbe.session.homeUrl') === 'admin.html?role=sys'; } catch (e) {}
+  const memory = new Map();
+  const storage = demo ? { getItem: (k) => memory.get(k) || null, setItem: (k, v) => memory.set(k, String(v)) } : localStorage;
   const SERVER = window.sbeAIOrigin ? window.sbeAIOrigin() : 'https://sbe-server.onrender.com';
   const F = (id) => document.getElementById(id);
   const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התוצר לא הוכן. מה שמילאת נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
@@ -29,12 +33,21 @@
   const ITEM = () => ({ id: 'm' + Date.now().toString(36), step: 1, form: {}, options: null, choose: null, pick: '', how: '', plan: null, version: 0, at: '',
     people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], log: [], rounds: [], reviewDate: '' });
   let S = { items: [], cur: '' };
-  try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && Array.isArray(v.items)) S = v; } catch (e) {}
+  try { const v = JSON.parse(storage.getItem(STORE) || 'null'); if (v && Array.isArray(v.items)) S = v; } catch (e) {}
   if (!S.items.length) { S.items.push(ITEM()); S.cur = S.items[0].id; }
   let I = S.items.find((x) => x.id === S.cur) || S.items[0];
-  function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }
+  const revisions = new WeakMap(), pending = new WeakMap();
+  // Navigation and procedure locations do not change the AI context. Edits do,
+  // even if the user later restores the previous wording before completion.
+  function revisionOf(it) {
+    const context = Object.assign({}, it); delete context.step; delete context.reviewDate; delete context.proc;
+    const stamp = JSON.stringify(context), previous = revisions.get(it);
+    if (!previous || previous.stamp !== stamp) revisions.set(it, { stamp, n: previous ? previous.n + 1 : 0 });
+    return revisions.get(it).n;
+  }
+  function save() { S.items.forEach(revisionOf); try { storage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }
   const nameOf = (it) => txt(it.plan && it.plan.title) || it.form.mechType || 'מנגנון חדש';
-  const names = () => Object.values(I.people || {}).flatMap((p) => [p.who, p.backup]).flatMap((n) => String(n || '').split(/[,،]/));
+  const names = (it) => Object.values((it || I).people || {}).flatMap((p) => [p.who, p.backup]).flatMap((n) => String(n || '').split(/[,،]/));
 
   // ── סרגל המנגנונים ──
   function renderHub() {
@@ -87,7 +100,7 @@
   // ── ייבוא מנגנון שתוכנן בסטודיו חוסן ──
   function studioMech() {
     try {
-      const v = JSON.parse(localStorage.getItem(KEY('sbe.studio.v1')) || 'null'), st = v && v.state, a = st && st.activity;
+      const v = JSON.parse(storage.getItem(KEY('sbe.studio.v1')) || 'null'), st = v && v.state, a = st && st.activity;
       const m = a && a.socialMechanism; if (!m || !m.type || m.type === 'none') return null;
       return { a, m, b: st.activityBrief || st.brief || {} };
     } catch (e) { return null; }
@@ -118,19 +131,39 @@
     STEPS.querySelectorAll('li').forEach((li) => { const i = +li.dataset.step; li.classList.toggle('on', i === n); li.classList.toggle('done', i < n && !!I.plan); });
     if (n === 1) drawOptions(); else draw(n);
     renderHub();
+    syncAI();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   STEPS.querySelectorAll('li').forEach((li) => li.addEventListener('click', () => goStep(+li.dataset.step)));
   document.querySelectorAll('[data-go]').forEach((b) => b.addEventListener('click', () => goStep(+b.dataset.go)));
 
   // ── המתנה ──
-  function waiting(node, text, exp) {
+  function waiting(node, text, exp, visible) {
     node.hidden = false; node.textContent = '';
     const line = el('div'), bar = el('div', 'bar'), fill = el('div'); bar.appendChild(fill); node.append(line, bar);
     const t0 = Date.now();
-    const tick = () => { const s = Math.round((Date.now() - t0) / 1000); line.textContent = text + ' בדרך כלל ' + exp + ' שניות. עברו ' + s + ' שניות.'; fill.style.width = Math.min(95, s / exp * 90) + '%'; };
+    const tick = () => { if (!visible()) return; if (line.parentNode !== node) { node.textContent = ''; node.append(line, bar); } node.hidden = false; const s = Math.round((Date.now() - t0) / 1000); line.textContent = text + ' בדרך כלל ' + exp + ' שניות. עברו ' + s + ' שניות.'; fill.style.width = Math.min(95, s / exp * 90) + '%'; };
     tick(); const iv = setInterval(tick, 1000);
-    return () => { clearInterval(iv); node.hidden = true; };
+    const stop = () => { clearInterval(iv); if (visible()) node.hidden = true; }; stop.tick = tick; return stop;
+  }
+  function syncAI() {
+    const op = pending.get(I);
+    F('go').disabled = F('revise').disabled = !!op;
+    F('opts').querySelectorAll('.routine-build').forEach((b) => { b.disabled = !!op; });
+    F('wait1').hidden = !op || op.kind === 'revise'; F('wait4').hidden = !op || op.kind !== 'revise';
+    if (op && op.stop) op.stop.tick();
+  }
+  function beginAI(it, kind, text, seconds) {
+    if (pending.has(it)) return null;
+    const op = { item: it, revision: revisionOf(it), kind };
+    pending.set(it, op);
+    op.stop = waiting(F(kind === 'revise' ? 'wait4' : 'wait1'), text, seconds, () => I === it && pending.get(it) === op);
+    syncAI(); return op;
+  }
+  function finishAI(op) {
+    const current = pending.get(op.item) === op;
+    const valid = current && S.items.includes(op.item) && revisionOf(op.item) === op.revision;
+    op.stop(); if (current) pending.delete(op.item); syncAI(); return valid;
   }
   const ask = (system, content, check) => window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 7000, customerReview: true }, 300000, check);
   function fail(n, m) { n.textContent = m; n.hidden = false; }
@@ -195,7 +228,7 @@
     s2.value = I.how || ''; s2.addEventListener('change', () => { I.how = s2.value; save(); });
     f2.append(l2, s2); row.append(f1, f2); box.appendChild(row);
     if (window.SBE_OPEN && SBE_OPEN.scan) try { SBE_OPEN.scan(box); } catch (e) {}
-    box.appendChild(btn('בניית לוח הביצוע וההסכם', 'btn', build));
+    const buildButton = btn('בניית לוח הביצוע וההסכם', 'btn routine-build', build); buildButton.disabled = pending.has(I); box.appendChild(buildButton);
     box.appendChild(withRefs(() => {}));
   }
   function chosenText() {
@@ -203,32 +236,36 @@
     return (I.form.chosen || '').trim();
   }
   F('go').addEventListener('click', async () => {
+    if (pending.has(I)) return;
     const d = readForm(); I.form = d; save();
     const missing = M.FIELDS.filter((f) => f.main && !d[f.k]).map((f) => f.l.replace(/:.*$/, ''));
     F('err1').hidden = true;
     if (missing.length) return fail(F('err1'), 'כדי להמשיך, נשמח למלא: ' + missing.join(', ') + '.');
     if (d.chosen) { I.pick = 'other'; return build(); }
-    const b = F('go'); b.disabled = true; const stop = waiting(F('wait1'), 'מכינה כמה אפשרויות לבחירה.', 40);
+    const target = I, op = beginAI(target, 'options', 'מכינה כמה אפשרויות לבחירה.', 40);
+    if (!op) return;
     let o = null, bad = null;
     try { o = await ask(M.optionsSystem(KB), 'השדות:\n' + M.inputText(d) + '\n\nהציעי אפשרויות.', M.validOptions); } catch (e) { bad = e; console.warn('מרכז שגרות, אפשרויות:', e.message); }
-    finally { stop(); b.disabled = false; }
-    if (!M.validOptions(o)) return fail(F('err1'), why(bad));
-    I.options = o.options.filter((x) => x && x.name); I.choose = o.choose || null; I.optSources = arr(o.sources); I.pick = ''; save(); drawOptions();
-    F('opts').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!finishAI(op)) return;
+    if (!M.validOptions(o)) { if (I === target) fail(F('err1'), why(bad)); return; }
+    target.options = o.options.filter((x) => x && x.name); target.choose = o.choose || null; target.optSources = arr(o.sources); target.pick = ''; save();
+    if (I === target) { drawOptions(); F('opts').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   });
   async function build() {
+    if (pending.has(I)) return;
     const act = chosenText();
     F('err1').hidden = true;
     if (!act) return fail(F('err1'), 'כדי להמשיך, בחרו את הפעולה שהקבוצה בחרה, או כתבו אותה בשדה "הפעולה שהקבוצה כבר בחרה".');
-    const b = F('go'); b.disabled = true; const stop = waiting(F('wait1'), 'מכינה לוח ביצוע, כרטיסי תפקיד והסכם לתקופת ניסיון.', 70);
+    const target = I, op = beginAI(target, 'build', 'מכינה לוח ביצוע, כרטיסי תפקיד והסכם לתקופת ניסיון.', 70);
+    if (!op) return;
     let k = null, bad = null;
-    try { k = await ask(M.planSystem(KB, WRITER), 'השדות:\n' + M.inputText(I.form) + '\n\nהפעולה שהקבוצה בחרה: ' + act + (I.how ? '\nאיך הוחלט: ' + I.how : '') + '\n\nהכיני את התוצר.', M.valid); }
+    try { k = await ask(M.planSystem(KB, WRITER), 'השדות:\n' + M.inputText(target.form) + '\n\nהפעולה שהקבוצה בחרה: ' + act + (target.how ? '\nאיך הוחלט: ' + target.how : '') + '\n\nהכיני את התוצר.', M.valid); }
     catch (e) { bad = e; console.warn('מרכז שגרות, לוח:', e.message); }
-    finally { stop(); b.disabled = false; }
-    if (!M.valid(k)) return fail(F('err1'), why(bad));
-    Object.assign(I, { plan: k, version: 1, at: today(), people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], rounds: [] });
-    I.log = [{ d: today(), what: 'בחרנו בפעולה: ' + (txt(k.action && k.action.name) || act.slice(0, 80)), how: I.how || '', who: '' }];
-    save(); goStep(2);
+    if (!finishAI(op)) return;
+    if (!M.valid(k)) { if (I === target) fail(F('err1'), why(bad)); return; }
+    Object.assign(target, { plan: k, version: 1, at: today(), people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], rounds: [], step: 2 });
+    target.log = [{ d: today(), what: 'בחרנו בפעולה: ' + (txt(k.action && k.action.name) || act.slice(0, 80)), how: target.how || '', who: '' }];
+    save(); if (I === target) goStep(2); else renderHub();
   }
 
   // ── צעד 2: מאשרים אחריות ──
@@ -301,7 +338,7 @@
     c.appendChild(etable(M.SECTIONS.requests.cols, run.reqs, ['role', 'what', 'why'], { add: 'הוספת בקשה לשינוי', area: true }));
     return c;
   }
-  function allRequests() { const out = []; I.runs.forEach((r, ri) => arr(r.reqs).forEach((q, qi) => { if ((q.what || '').trim()) out.push({ id: ri + '-' + qi, q, n: ri + 1 }); })); return out; }
+  function allRequests(it) { const out = []; (it || I).runs.forEach((r, ri) => arr(r.reqs).forEach((q, qi) => { if ((q.what || '').trim()) out.push({ id: ri + '-' + qi, q, n: ri + 1 }); })); return out; }
 
   // ── צעד 4: פותחים לשינוי ──
   function checksBlock() {
@@ -412,25 +449,27 @@
   }
 
   F('revise').addEventListener('click', async () => {
+    if (pending.has(I)) return;
     const used = I.runs.filter((r) => r.date || r.worked || r.hard || r.next || Object.keys(r.status).length || r.reqs.length);
     F('err4').hidden = true;
     if (!used.length) return fail(F('err4'), 'כדי לפתוח לשינוי, נשמח לתיעוד של הפעלה אחת לפחות (עדיף שתיים) בצעד 3.');
-    const N = names();
-    const log = I.runs.map((r, i) => 'הפעלה ' + (i + 1) + (r.date ? ' (' + fmtDate(r.date) + ')' : '') + ':\n' +
-      arr(I.plan.board).map((t, j) => '- ' + txt(t.task) + ': ' + (r.status[j] || 'לא תועד')).join('\n') +
+    const target = I, N = names(target);
+    const log = target.runs.map((r, i) => 'הפעלה ' + (i + 1) + (r.date ? ' (' + fmtDate(r.date) + ')' : '') + ':\n' +
+      arr(target.plan.board).map((t, j) => '- ' + txt(t.task) + ': ' + (r.status[j] || 'לא תועד')).join('\n') +
       '\nמה עבד: ' + (r.worked || '[לא נכתב]') + '\nמה היה קשה: ' + (r.hard || '[לא נכתב]') + '\nכולם ידעו מה הצעד הבא: ' + (r.next || 'לא תועד')).join('\n\n');
-    const reqs = allRequests().map((x, i) => (i + 1) + '. ' + (x.q.role ? x.q.role + ' מבקש/ת: ' : '') + x.q.what + (x.q.why ? ' (כי ' + x.q.why + ')' : '')).join('\n');
-    const plan = copy(I.plan); delete plan.sources;
-    const b = F('revise'); b.disabled = true; const stop = waiting(F('wait4'), 'מכינה הצעה לגרסה הבאה של ההסכם.', 80);
+    const reqs = allRequests(target).map((x, i) => { const decision = target.decided[x.id] || {}; return (i + 1) + '. ' + (x.q.role ? x.q.role + ' מבקש/ת: ' : '') + x.q.what + (x.q.why ? ' (כי ' + x.q.why + ')' : '') + '\nהחלטה שנרשמה: ' + (decision.status || 'טרם הוחלט') + (decision.note ? '\nהערה להחלטה: ' + decision.note : ''); }).join('\n');
+    const journal = arr(target.log).map((entry) => [entry.d, entry.what, entry.how && 'איך הוחלט: ' + entry.how].filter(Boolean).join(' · ')).join('\n');
+    const plan = copy(target.plan); delete plan.sources;
+    const op = beginAI(target, 'revise', 'מכינה הצעה לגרסה הבאה של ההסכם.', 80); if (!op) return;
     let k = null, bad = null;
     try {
-      k = await ask(M.reviseSystem(KB, WRITER), M.anonymize('השדות:\n' + M.inputText(I.form) + '\n\nההסכם והלוח הנוכחיים (גרסה ' + I.version + ', JSON):\n' + JSON.stringify(plan) +
-        '\n\nהתיעוד מההפעלות:\n' + log + '\n\nבקשות לשינוי:\n' + (reqs || '[לא עלו בקשות]') + '\n\nהכיני את ההצעה לגרסה הבאה.', N), M.valid);
+      k = await ask(M.reviseSystem(KB, WRITER), M.anonymize('השדות:\n' + M.inputText(target.form) + '\n\nההסכם והלוח הנוכחיים (גרסה ' + target.version + ', JSON):\n' + JSON.stringify(plan) +
+        '\n\nהתיעוד מההפעלות:\n' + log + '\n\nבקשות לשינוי וההחלטות שנרשמו:\n' + (reqs || '[לא עלו בקשות]') + '\n\nיומן החלטות:\n' + (journal || '[לא נרשמו החלטות]') + '\n\nהכיני את ההצעה לגרסה הבאה.', N), M.valid);
     } catch (e) { bad = e; console.warn('מרכז שגרות, שינוי:', e.message); }
-    finally { stop(); b.disabled = false; }
-    if (!M.valid(k)) return fail(F('err4'), why(bad));
-    I.changes = arr(k.changes); I.ansAI = arr(k.answers); I.balance = k.balance || ''; delete k.changes; delete k.answers; delete k.balance;
-    I.proposal = k; save(); draw(4);
+    if (!finishAI(op)) return;
+    if (!M.valid(k)) { if (I === target) fail(F('err4'), why(bad)); return; }
+    target.changes = arr(k.changes); target.ansAI = arr(k.answers); target.balance = k.balance || ''; delete k.changes; delete k.answers; delete k.balance;
+    target.proposal = k; save(); if (I === target) draw(4);
   });
 
   // ── הדפסה: הכול נבנה מהנתונים, כולל השמות שבמכשיר ──

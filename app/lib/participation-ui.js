@@ -37,11 +37,17 @@
   function mount(node, opts) {
     if (!node || !M) return;
     if (!document.getElementById('sbe-paths-css')) { const st = el('style'); st.id = 'sbe-paths-css'; st.textContent = CSS; document.head.appendChild(st); }
+    // Match demo-hook's gates before loading either ordinary owner workspace.
+    // Each mount gets fresh memory so demo cards, observations and lessons stay separate.
+    let demo = false;
+    try { demo = new URLSearchParams(location.search).get('demolab') === '1' && window.parent !== window && sessionStorage.getItem('sbe.session.homeUrl') === 'admin.html?role=sys'; } catch (e) {}
+    const demoStore = new Map();
+    const storage = demo ? { getItem: (key) => demoStore.get(key) || null, setItem: (key, value) => demoStore.set(key, value) } : localStorage;
     const KEY = (window.sbeUserKey ? sbeUserKey('sbe.paths.v1') : 'sbe.paths.v1:anon') + '.' + opts.mode;
     const EMPTY = () => ({ must: '', choose: '', cards: [], obs: {}, adjust: null, pick: '', lessons: [], cur: 0, resilience: '', sources: [], open: false });
     let S = EMPTY();
-    try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); if (v && v.cards) S = Object.assign(EMPTY(), v); } catch (e) {}
-    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+    try { const v = JSON.parse(storage.getItem(KEY) || 'null'); if (v && v.cards) S = Object.assign(EMPTY(), v); } catch (e) {}
+    const save = () => { try { storage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
     const ctx = () => { try { return opts.context() || {}; } catch (e) { return {}; } };
     const seqMode = opts.mode === 'seq';
     const box = el('details', 'paths'); box.open = !!S.open;
@@ -50,6 +56,9 @@
     const body = el('div'); box.appendChild(body);
     node.appendChild(box);
     const picked = () => S.cards.filter((c) => c.on);
+    let pending = null, requestFeedback = null;
+    const requestContext = (kind) => JSON.stringify([ctxText(), S.cur, S.must, S.choose,
+      ...(kind === 'adjust' ? [picked(), S.obs] : [])]);
 
     function ctxText() {
       const c = ctx(), lines = [];
@@ -77,27 +86,37 @@
     }
 
     async function suggest(b, err, wait) {
+      if (pending) return;
       const c = ctxText(); err.hidden = true;
       if (!/מטרת הפעילות|היעד|נושא הרצף|מטרות הרצף/.test(c)) { err.textContent = 'כדי להציע מסלולים, נשמח למטרה (או לנושא הרצף) בטופס התכנון.'; err.hidden = false; return; }
+      const operation = { context: requestContext('suggest') }; pending = operation; requestFeedback = null;
       b.disabled = true; const stop = waiting(wait, 'מציעה מסלולי השתתפות למטרה.', 40);
       let k = null, bad = null;
       try { k = await window.sbeCallAIJson(SERVER, { system: M.suggestSystem(KB), messages: [{ role: 'user', content: c + '\n\nהציעי מסלולים.' }], maxTokens: 4000, customerReview: true }, 180000, M.valid); }
       catch (e) { bad = e; console.warn('מסלולים:', e.message); } finally { stop(); b.disabled = false; }
-      if (!M.valid(k)) { err.textContent = why(bad); err.hidden = false; return; }
+      if (pending !== operation) return;
+      pending = null;
+      if (requestContext('suggest') !== operation.context) { draw(); return; }
+      if (!M.valid(k)) { requestFeedback = { kind: 'suggest', text: why(bad) }; draw(); return; }
       const keep = picked();
       S.must = k.must || ''; S.choose = k.choose || ''; S.resilience = k.resilience || ''; S.sources = arr(k.sources);
       S.cards = keep.concat(arr(k.cards).filter((x) => x && x.name && !keep.some((p) => p.name === x.name)).map((x) => ({ name: x.name, mode: x.mode, how: x.how, crit: x.evidence, support: x.support, access: x.access, fit: x.fit, on: false, ok: false })));
       S.adjust = null; save(); draw();
     }
     async function adjust(b, err, wait) {
+      if (pending) return;
       const ps = picked(); err.hidden = true;
       const log = ps.map((p) => { const o = S.obs[p.name] || {}; return p.name + ': בחרו ' + (o.count || 'לא תועד') + ' · עדות להבנה: ' + (o.ev || 'לא תועד') + ' · מה אפשר או עיכב: ' + (o.cond || 'לא נכתב'); }).join('\n');
       if (!ps.some((p) => { const o = S.obs[p.name] || {}; return o.count || o.ev || o.cond; })) { err.textContent = 'כדי להציע התאמה, נשמח לתיעוד של מסלול אחד לפחות בדף התצפית.'; err.hidden = false; return; }
+      const operation = { context: requestContext('adjust') }; pending = operation; requestFeedback = null;
       b.disabled = true; const stop = waiting(wait, 'מציעה התאמה לשיעור הבא.', 30);
       let k = null, bad = null;
       try { k = await window.sbeCallAIJson(SERVER, { system: M.adjustSystem(KB), messages: [{ role: 'user', content: ctxText() + '\n\nמה כולם מדגימים: ' + S.must + '\n\nהמסלולים והקריטריונים:\n' + ps.map((p) => p.name + ' (' + p.mode + '): ' + txt(p.crit)).join('\n') + '\n\nדף התצפית:\n' + log + '\n\nהציעי התאמה.' }], maxTokens: 2000, customerReview: true }, 120000, M.validAdjust); }
       catch (e) { bad = e; } finally { stop(); b.disabled = false; }
-      if (!M.validAdjust(k)) { err.textContent = why(bad); err.hidden = false; return; }
+      if (pending !== operation) return;
+      pending = null;
+      if (requestContext('adjust') !== operation.context) { draw(); return; }
+      if (!M.validAdjust(k)) { requestFeedback = { kind: 'adjust', text: why(bad) }; draw(); return; }
       S.adjust = k; S.pick = ''; save(); draw();
     }
     function saveLesson() {
@@ -140,6 +159,8 @@
       body.appendChild(el('h4', null, '1. מסלולים לבחירה'));
       const err = el('p', 'perr'); err.hidden = true; const wait = el('p', 'pwait'); wait.hidden = true;
       const sb = btn(S.cards.length ? 'הצעה חדשה למטרה' : 'הצעת מסלולים למטרה', S.cards.length ? 'ghost' : '', () => suggest(sb, err, wait));
+      sb.disabled = !!pending;
+      if (requestFeedback && requestFeedback.kind === 'suggest') { err.textContent = requestFeedback.text; err.hidden = false; }
       body.append(sb, wait, err);
       if (S.cards.length || S.must) {
         body.appendChild(el('p', 'sub', M.SECTIONS.frame.h));
@@ -182,7 +203,9 @@
         body.appendChild(T(M.SECTIONS.observe.cols, ps.map((p) => { const o = S.obs[p.name] || (S.obs[p.name] = {}); const n = el('input'); n.type = 'number'; n.min = '0'; n.value = o.count || ''; n.setAttribute('aria-label', 'כמה בחרו: ' + p.name); n.addEventListener('input', () => { o.count = n.value; save(); });
           return [txt(p.name), n, sel(o, 'ev', 'עדות להבנה: ' + p.name, M.OBS), area(o, 'cond', 'מה אפשר או עיכב: ' + p.name, 2, 'תנאים ופעולות, למשל: הוראה כתובה על הלוח, זמן, גודל הקבוצה')]; })));
         const e2 = el('p', 'perr'); e2.hidden = true; const w2 = el('p', 'pwait'); w2.hidden = true;
-        const ab = btn('הצעת התאמה לשיעור הבא', S.adjust ? 'ghost' : '', () => adjust(ab, e2, w2)); body.append(ab, w2, e2);
+        const ab = btn('הצעת התאמה לשיעור הבא', S.adjust ? 'ghost' : '', () => adjust(ab, e2, w2)); ab.disabled = !!pending;
+        if (requestFeedback && requestFeedback.kind === 'adjust') { e2.textContent = requestFeedback.text; e2.hidden = false; }
+        body.append(ab, w2, e2);
         if (S.adjust) {
           body.appendChild(T(M.SECTIONS.adjust.cols, arr(S.adjust.options).map((o) => [txt(o.name), txt(o.change), txt(o.why)])));
           if (S.adjust.keep) body.appendChild(el('p', null, 'מה כדאי לשמור: ' + txt(S.adjust.keep)));

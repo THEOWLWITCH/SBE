@@ -9,6 +9,12 @@
   const KB = SRC.forAdvisor('continuity');
   const WRITER = window.SBE_WRITER ? window.SBE_WRITER.rule : '';
   const STORE = window.sbeUserKey ? sbeUserKey('sbe.continuity.v2') : 'sbe.continuity.v2:anon';
+  // The demo recipe has the same three gates as demo-hook.js. Its entire state
+  // starts in memory, before any ordinary private kit can be read.
+  let demo = false;
+  try { demo = new URLSearchParams(location.search).get('demolab') === '1' && window.parent !== window && sessionStorage.getItem('sbe.session.homeUrl') === 'admin.html?role=sys'; } catch (e) {}
+  const demoStore = new Map();
+  const storage = demo ? { getItem: (key) => demoStore.get(key) || null, setItem: (key, value) => demoStore.set(key, value) } : localStorage;
   const SERVER = window.sbeAIOrigin ? window.sbeAIOrigin() : 'https://sbe-server.onrender.com';
   const F = (id) => document.getElementById(id);
   const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התיק לא הוכן. מה שמילאת נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
@@ -17,18 +23,18 @@
   function btn(text, cls, fn) { const b = el('button', cls || 'btn btn-ghost', text); b.type = 'button'; if (fn) b.addEventListener('click', fn); return b; }
   const today = () => new Date().toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' });
 
-  const EMPTY = () => ({ form: {}, kit: null, emerg: null, version: 0, at: '', history: [], tab: 'routine', review: '',
+  const EMPTY = () => ({ form: {}, kit: null, emerg: null, version: 0, at: '', history: [], tab: 'routine', review: '', edits: {}, references: {},
     local: { students: [], studentsLink: '', red: [], individual: [], plans: [], updates: [], readiness: {}, teams: [], letter: {} },
     join: { form: {}, kit: null, info: [], choice: '', done: {}, log: [], checkWhen: '' }, proc: {} });
   let S = EMPTY();
   function load() {
     try {
-      const v = JSON.parse(localStorage.getItem(STORE) || 'null');
+      const v = JSON.parse(storage.getItem(STORE) || 'null');
       if (v && v.form) { S = Object.assign(EMPTY(), v); S.local = Object.assign(EMPTY().local, v.local || {}); S.join = Object.assign(EMPTY().join, v.join || {}); S.proc = v.proc || {}; }
     } catch (e) {}
   }
   load();
-  function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} drawStatus(); }
+  function save() { try { storage.setItem(STORE, JSON.stringify(S)); } catch (e) {} drawStatus(); }
 
   // ── הטופס ──
   function fieldBox(f, parent) {
@@ -136,6 +142,97 @@
   function sensBlock(key, node, red) {
     const box = el('section', 'sens' + (red ? ' redbox' : '')); head(box, key, '🔒 במכשיר בלבד'); box.appendChild(node); return box;
   }
+  // Only generated blocks are editable. Persist a bounded, inert tree rather
+  // than HTML, so rebuilding a pane cannot lose wording or recreate controls.
+  const EDIT_TAGS = new Set('div span p h2 h3 h4 table thead tbody tfoot tr th td ul ol li b strong i em u br blockquote a'.split(' '));
+  const EDIT_DROP = new Set('script style iframe object embed svg math img input textarea select button video audio canvas template'.split(' '));
+  const EDIT_CLASSES = new Set('model kit-table kit-t rtable sbe-rich talk fill sub tag empty teamcard'.split(' '));
+  function editAttrs(tag, read) {
+    const attrs = {}, classes = [...new Set(String(read('class') || '').split(/\s+/).filter((c) => EDIT_CLASSES.has(c)))];
+    if (classes.length) attrs.class = classes.join(' ');
+    if (tag === 'td' || tag === 'th') {
+      ['colspan', 'rowspan'].forEach((key) => { const v = String(read(key) || ''); if (/^\d{1,2}$/.test(v) && +v > 0) attrs[key] = v; });
+      const label = read('data-label'); if (typeof label === 'string') attrs['data-label'] = label.slice(0, 300);
+    }
+    if (tag === 'a') {
+      const href = String(read('href') || '');
+      if (href.length <= 2000) { try { const url = new URL(href); if (['http:', 'https:'].includes(url.protocol) && url.href.length <= 2000) attrs.href = url.href; } catch (e) {} }
+    }
+    return attrs;
+  }
+  function editBudget() {
+    let count = 0, chars = 0;
+    return (depth, text = '', attrs = {}) => { if (++count > 5000 || depth > 80 || (chars += text.length + Object.values(attrs).reduce((total, value) => total + value.length, 0)) > 200000) throw new Error('הנוסח ארוך מדי לשמירה. אפשר לקצר אותו או להעתיק אותו למסמך.'); };
+  }
+  function captureEdit(root) {
+    const check = editBudget();
+    function capture(node, depth) {
+      if (node.nodeType === 3) { const text = node.textContent || ''; check(depth, text); return [{ text }]; }
+      if (node.nodeType !== 1) { check(depth); return []; }
+      const tag = node.tagName.toLowerCase();
+      const attrs = EDIT_TAGS.has(tag) ? editAttrs(tag, (key) => node.getAttribute(key)) : {};
+      check(depth, '', attrs);
+      if (EDIT_DROP.has(tag) || /(?:^|\s)(?:sens|no-print|sbe-refs|sbe-edit-hint)(?:\s|$)/.test(node.className || '')) return [];
+      const children = [...node.childNodes].flatMap((child) => capture(child, depth + 1));
+      return EDIT_TAGS.has(tag) ? [{ tag, attrs, children }] : children;
+    }
+    return { v: 1, nodes: [...root.childNodes].flatMap((node) => capture(node, 0)) };
+  }
+  function restoreEdit(snapshot) {
+    if (!snapshot || snapshot.v !== 1 || !Array.isArray(snapshot.nodes)) throw new Error('נוסח העריכה השמור אינו תקין.');
+    const check = editBudget();
+    function restore(tree, depth) {
+      if (!tree || typeof tree !== 'object') throw new Error('נוסח העריכה השמור אינו תקין.');
+      if (typeof tree.text === 'string') { check(depth, tree.text); return document.createTextNode(tree.text); }
+      if (!EDIT_TAGS.has(tree.tag) || !Array.isArray(tree.children)) throw new Error('נוסח העריכה השמור אינו תקין.');
+      if (/(?:^|\s)(?:sens|no-print|sbe-refs)(?:\s|$)/.test(tree.attrs && tree.attrs.class || '')) throw new Error('נוסח העריכה השמור אינו תקין.');
+      const attrs = editAttrs(tree.tag, (key) => tree.attrs && tree.attrs[key]);
+      check(depth, '', attrs);
+      const n = el(tree.tag);
+      Object.keys(attrs).forEach((key) => n.setAttribute(key, attrs[key]));
+      if (tree.tag === 'a' && attrs.href) { n.target = '_blank'; n.rel = 'noopener'; }
+      n.append(...tree.children.map((child) => restore(child, depth + 1))); return n;
+    }
+    return snapshot.nodes.map((node) => restore(node, 0));
+  }
+  function editedBlock(node, key, onChange) {
+    if (!S.edits || typeof S.edits !== 'object' || Array.isArray(S.edits)) S.edits = {};
+    if (S.edits[key]) { try { node.replaceChildren(...restoreEdit(S.edits[key])); } catch (e) { console.warn('תיק רציפות, עריכה:', e.message); } }
+    const wrap = window.SBE_DOC.editable(node); node.dataset.editKey = key;
+    const keep = () => {
+      try { S.edits[key] = captureEdit(node); save(); if (onChange) onChange(); }
+      catch (e) { wrap.querySelector('.sbe-edit-hint').textContent = 'הנוסח עדיין כאן. ' + e.message; }
+    };
+    // Contenteditable accepts rich clipboard/drop markup by default. Insert
+    // only a text node, before anything active can enter the live document.
+    const insertText = (event, transfer) => {
+      event.preventDefault();
+      const text = transfer && transfer.getData('text/plain'); if (!text) return;
+      const value = document.createTextNode(text), selection = window.getSelection && window.getSelection();
+      const range = selection && selection.rangeCount && selection.getRangeAt(0);
+      if (range && node.contains(range.commonAncestorContainer)) {
+        range.deleteContents(); range.insertNode(value); range.setStartAfter(value); range.collapse(true);
+        selection.removeAllRanges(); selection.addRange(range);
+      } else node.appendChild(value);
+      keep();
+    };
+    node.addEventListener('input', keep);
+    node.addEventListener('paste', (event) => insertText(event, event.clipboardData));
+    node.addEventListener('drop', (event) => insertText(event, event.dataTransfer));
+    return wrap;
+  }
+  function clearEdits(pane) { if (S.edits && typeof S.edits === 'object') Object.keys(S.edits).filter((key) => key.startsWith(pane + '.')).forEach((key) => delete S.edits[key]); }
+  function references(root, pane) {
+    if (!window.SBE_REFS) return;
+    const rs = SBE_REFS.end(); if (!rs) return;
+    if (!S.references || typeof S.references !== 'object' || Array.isArray(S.references)) S.references = {};
+    const choice = S.references[pane] || {};
+    root.appendChild(rs);
+    const open = rs.querySelector('.refs-open'), attach = rs.querySelector('.refs-attach');
+    if (choice.open === true) open.click(); if (choice.attach === true) attach.click();
+    const keep = () => { S.references[pane] = { open: rs.classList.contains('open'), attach: rs.classList.contains('attach') }; save(); };
+    open.addEventListener('click', keep); attach.addEventListener('click', keep);
+  }
   function renderRoutine() {
     const k = S.kit, root = el('div', 'kit');
     if (window.SBE_REFS) SBE_REFS.begin(SRC, 'resilience-advisor-sources.html');
@@ -144,8 +241,9 @@
     const none = el('label', 'none no-print'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!S.local.redNone;
     cb.addEventListener('change', () => { S.local.redNone = cb.checked; save(); }); none.append(cb, document.createTextNode(' אין כרגע מידע חשוב לרשום כאן'));
     red.appendChild(none); root.appendChild(red);
-    head(root, 'opening'); root.appendChild(window.SBE_TABLE(null, (k.opening || []).map((r) => [txt(r.h), txt(r.t)]), 'kit-t'));
-    const model = el('div', 'model'); root.appendChild(model);
+    const opening = el('div', 'model'); head(opening, 'opening'); opening.appendChild(window.SBE_TABLE(null, (k.opening || []).map((r) => [txt(r.h), txt(r.t)]), 'kit-t'));
+    root.appendChild(editedBlock(opening, 'routine.opening'));
+    const model = el('div', 'model');
     head(model, 'routines'); model.appendChild(T('routines', (k.routines || []).map((r) => [txt(r.name), txt(r.when), txt(r.what), txt(r.helpers)])));
     if ((k.roles || []).length) { head(model, 'roles'); model.appendChild(T('roles', k.roles.map((r) => [txt(r.role), txt(r.who), txt(r.backup), txt(r.update)]))); }
     const d = k.decisions || {};
@@ -157,15 +255,17 @@
       head(model, 'procedures');
       model.appendChild(T('procedures', k.procedures.map((p) => { let a = ''; if (/^https?:\/\//.test(p.link || '')) { a = el('a', null, 'פתיחה'); a.href = p.link; a.target = '_blank'; a.rel = 'noopener'; } return [txt(p.name), txt(p.what), a]; })));
     }
+    root.appendChild(editedBlock(model, 'routine.main'));
     head(root, 'plans'); root.appendChild(editTable('plans', C.SECTIONS.plans.cols, { area: [1], add: 'הוספת מקצוע או תחום', empty: 'מה לומדים החודש בכל מקצוע, ואיפה החומר. זה עוזר גם להכין משימות ללמידה מרחוק.' }));
     root.appendChild(sensBlock('individual', editTable('individual', C.SECTIONS.individual.cols, { sens: true, area: [1], add: 'הוספת מענה פרטני' })));
-    const more = el('div', 'model'); root.appendChild(more);
+    const more = el('div', 'model');
     if ((k.moments || []).length) { head(more, 'moments'); more.appendChild(T('moments', k.moments.map((m) => [txt(m.if), window.SBE_DOC.rich(txt(m.then))]))); }
     if (k.classTalk) { head(more, 'classTalk'); more.appendChild(el('div', 'talk', txt(k.classTalk))); }
     head(more, 'trial'); more.appendChild(T('trial', (k.trial || []).map((t) => [txt(t.task), txt(t.check), el('span', 'fill', ' ')])));
     if (k.upkeep) { head(more, 'upkeep'); more.appendChild(T('upkeep', [[txt(k.upkeep.who), txt(k.upkeep.when) || S.form.update || '', txt(k.upkeep.how)]])); }
     if (k.resilience) { head(more, 'resilience'); more.appendChild(el('p', null, txt(k.resilience))); }
-    if (window.SBE_REFS) { SBE_REFS.add(k.sources || []); const rs = SBE_REFS.end(); if (rs) root.appendChild(rs); }
+    root.appendChild(editedBlock(more, 'routine.followup'));
+    if (window.SBE_REFS) { SBE_REFS.add(k.sources || []); references(root, 'routine'); }
     return root;
   }
   const STATUS = ['עוד לא בדקנו', 'קיים ✓', 'בדרך', 'עוד לא קיים'];
@@ -210,12 +310,18 @@
     const box = el('div', 'letter');
     const v = S.local.letter, grid = el('div', 'grid2 no-print');
     const out = el('div', 'talk letter-out');
-    const update = () => { out.textContent = C.fillLetter(txt(S.emerg.parentLetter), v); };
+    const template = el('div', 'talk', txt(S.emerg.parentLetter));
+    const update = () => { out.textContent = C.fillLetter(template.textContent, v); };
+    const wording = el('details', 'more no-print');
+    wording.appendChild(el('summary', null, 'עריכת נוסח המכתב'));
+    wording.appendChild(el('p', 'muted', 'אפשר לשנות את הנוסח כאן, ולהשאיר את השדות בסוגריים מרובעים. הפרטים שתמלאו בהמשך יופיעו במכתב להורים.'));
+    wording.appendChild(editedBlock(template, 'emerg.letter', update));
+    box.appendChild(wording);
     C.LETTER_FIELDS.forEach((f) => {
       const b = el('div', 'f'), l = el('label', null, f.l), i = el('input'); i.type = 'text'; i.id = 'lt-' + f.k; l.htmlFor = i.id; i.value = v[f.k] || ''; if (f.ph) i.placeholder = f.ph;
       i.addEventListener('input', () => { v[f.k] = i.value; save(); update(); }); b.append(l, i); grid.appendChild(b);
     });
-    box.appendChild(grid); box.appendChild(out); update();
+    box.appendChild(grid); box.appendChild(el('h4', null, 'המכתב להורים')); box.appendChild(out); update();
     const row = el('div', 'btns no-print');
     row.appendChild(btn('העתקת המכתב', 'btn btn-ghost sm', (e) => { navigator.clipboard && navigator.clipboard.writeText(out.textContent).then(() => { e.target.textContent = 'הועתק ✓'; setTimeout(() => { e.target.textContent = 'העתקת המכתב'; }, 1600); }); }));
     row.appendChild(btn('🖨 הדפסת המכתב', 'btn btn-ghost sm', () => window.SBE_DOC.print({ title: 'מכתב להורים', subtitle: S.form.group || '', kind: 'מכתב להורים', node: out })));
@@ -231,7 +337,7 @@
         e.target.disabled = true; const wt = waiting(w, 'מכינה את תיקיית החירום.', 80); let x = null, bad = null;
         try { x = await makeEmerg(); } catch (err) { bad = err; console.warn(err.message); } finally { wt.stop(); e.target.disabled = false; }
         if (!C.validEmerg(x)) { er.textContent = why(bad); er.hidden = false; return; }
-        S.emerg = x; save(); showKit();
+        S.emerg = x; clearEdits('emerg'); save(); showKit();
       }));
       root.append(w, er); return root;
     }
@@ -240,14 +346,15 @@
     head(root, 'readiness'); root.appendChild(renderReadiness());
     head(root, 'teams', '🔒 במכשיר בלבד'); root.appendChild(renderTeams());
     head(root, 'teamCard'); const card = el('ol', 'teamcard'); C.TEAM_QUESTIONS.forEach((q) => card.appendChild(el('li', null, q))); root.appendChild(card);
-    const model = el('div', 'model'); root.appendChild(model);
+    const model = el('div', 'model');
     head(model, 'remote'); model.appendChild(T('remote', (k.remote || []).map((r) => [txt(r.subject), txt(r.task), txt(r.where)])));
     head(model, 'chain'); model.appendChild(T('chain', (k.chain || []).map((r) => [txt(r.who), txt(r.whom), txt(r.when), txt(r.how)])));
     if (k.emergTalk) { head(model, 'emergTalk'); model.appendChild(el('div', 'talk', txt(k.emergTalk))); }
     if ((k.drill || []).length) { head(model, 'drill'); model.appendChild(T('drill', k.drill.map((r) => [txt(r.step), txt(r.check)]))); }
+    root.appendChild(editedBlock(model, 'emerg.main'));
     head(root, 'letter'); root.appendChild(renderLetter());
-    if (k.resilience) { head(root, 'resilience'); root.appendChild(el('p', null, txt(k.resilience))); }
-    if (window.SBE_REFS) { SBE_REFS.add(k.sources || []); const rs = SBE_REFS.end(); if (rs) root.appendChild(rs); }
+    if (k.resilience) { const resilience = el('div', 'model'); head(resilience, 'resilience'); resilience.appendChild(el('p', null, txt(k.resilience))); root.appendChild(editedBlock(resilience, 'emerg.resilience')); }
+    if (window.SBE_REFS) { SBE_REFS.add(k.sources || []); references(root, 'emerg'); }
     return root;
   }
 
@@ -296,29 +403,40 @@
     return root;
   }
   // ── הצטרפות וחזרה לקבוצה (10/10/2026): תלמיד/ה חדש/ה, חזרה אחרי היעדרות מכל סיבה, או כל הכיתה חוזרת ──
+  let joiningRequest = null;
   function renderJoin() {
     const J = S.join, root = el('div', 'kit join');
     root.appendChild(el('p', 'sub', 'מסלול קצר למי שמצטרף או חוזר: מידע שימושי, דרך כניסה לבחירה, משימה ראשונה ותפקידי עמיתים מתחלפים. אחרי כמה מפגשים בודקים מה להתאים.'));
-    const form = el('div', 'grid2');
+    const inputs = el('div', 'join-inputs sens'), form = el('div', 'grid2');
+    inputs.appendChild(form); root.appendChild(inputs);
     C.JOIN_FIELDS.forEach((f) => {
       const box = el('div', 'f'), l = el('label', null, f.l); if (f.main) l.appendChild(el('span', 'main-tag', 'שדה עיקרי')); box.appendChild(l);
       let i; if (f.type === 'select') { i = el('select'); i.appendChild(new Option('בחירה…', '')); f.opts.forEach((o) => i.appendChild(new Option(o, o))); } else { i = el('textarea'); i.rows = 2; }
       if (f.ph) i.placeholder = f.ph; i.value = J.form[f.k] || ''; i.setAttribute('aria-label', f.l);
       const keep = () => { J.form[f.k] = i.value; save(); }; i.addEventListener('input', keep); i.addEventListener('change', keep);
-      box.appendChild(i); (f.type === 'area' ? root : form).appendChild(box); if (f.k === 'away') root.appendChild(form);
+      box.appendChild(i); (f.type === 'area' ? inputs : form).appendChild(box);
     });
     const err = el('p', 'err'); err.hidden = true; const wait = el('div', 'wait'); wait.hidden = true;
     const go = btn(J.kit ? 'הכנה מחדש' : 'הכנת ערכת ההצטרפות', J.kit ? 'btn btn-ghost sm' : 'btn', async () => {
+      if (joiningRequest && joiningRequest.join === J) return;
       err.hidden = true; if (!J.form.who) return fail(err, 'כדי להמשיך, בחרי מי מצטרף או חוזר.');
+      const context = () => JSON.stringify([S.form, J.form, J.info]);
+      const operation = { join: J, context: context() }; joiningRequest = operation;
       go.disabled = true; const w = waiting(wait, 'מכינה ערכת הצטרפות וחזרה.', 60);
       let k = null, bad = null;
       try { k = await ask(C.joinSystem(KB, WRITER), 'מהתיק:\n' + C.inputText(S.form) + '\n\nההצטרפות:\n' + C.JOIN_FIELDS.map((f) => J.form[f.k] ? f.l + ': ' + J.form[f.k] : '').filter(Boolean).join('\n') +
         (J.info.length ? '\n\nתיק הכניסה הקבוצתי הקיים (לשמור ולעדכן):\n' + J.info.map((x) => x.c0 + ': ' + x.c1).join('\n') : '') + '\n\nהכיני את הערכה.', C.validJoin); }
-      catch (e) { bad = e; console.warn('תיק רציפות, הצטרפות:', e.message); } finally { w.stop(); go.disabled = false; }
+      catch (e) { bad = e; console.warn('תיק רציפות, הצטרפות:', e.message); } finally {
+        w.stop();
+        if (joiningRequest === operation) joiningRequest = null;
+        document.querySelectorAll('[data-joining-request]').forEach((button) => { button.disabled = !!(joiningRequest && joiningRequest.join === S.join); });
+      }
+      if (S.join !== J || context() !== operation.context) return;
       if (!C.validJoin(k)) return fail(err, why(bad));
       J.kit = k; if (!J.info.length) J.info = (k.info || []).map((x) => ({ c0: txt(x.topic), c1: txt(x.what) }));
       J.choice = ''; J.done = {}; if (!J.checkWhen && window.sbeIsoPlus) J.checkWhen = sbeIsoPlus(14); save(); showKit();
     });
+    go.setAttribute('data-joining-request', ''); go.disabled = !!(joiningRequest && joiningRequest.join === J);
     root.append(go, wait, err);
     const k = J.kit; if (!k) return root;
     if (window.SBE_REFS) SBE_REFS.begin(SRC, 'resilience-advisor-sources.html');
@@ -346,9 +464,15 @@
     if ((k.resilience || []).length) { root.appendChild(el('h3', null, 'מה זה בונה בחוסן')); root.appendChild(window.SBE_TABLE(['רכיב החוסן', 'איך זה קורה'], k.resilience.map((x) => [txt(x.component), txt(x.how)]), 'kit-t')); }
     const row = el('div', 'actions no-print');
     row.append(btn('🖨 כרטיסי בחירה ותפקיד', 'btn btn-ghost sm', () => printJoinCards()),
-      btn('מצטרף/ת חדש/ה: מתחילים מחדש (תיק הכניסה נשמר)', 'btn btn-ghost sm', () => { if (!confirm('להתחיל מסלול חדש? הבחירה, הלוח ורשומת ההתאמות יתאפסו, ותיק הכניסה הקבוצתי יישאר.')) return; J.choice = ''; J.done = {}; J.log = []; J.checkWhen = window.sbeIsoPlus ? sbeIsoPlus(14) : ''; save(); showKit(); }));
+      btn('מצטרף/ת חדש/ה: מתחילים מחדש (תיק הכניסה נשמר)', 'btn btn-ghost sm', () => {
+        if (!confirm('להתחיל מסלול חדש? הפרטים והערכה האישית, הבחירה, הלוח ורשומת ההתאמות יתאפסו, ותיק הכניסה הקבוצתי יישאר.')) return;
+        joiningRequest = null; S.join = { ...EMPTY().join, info: J.info };
+        if (S.references) delete S.references.join;
+        clearEdits('join'); save(); showKit();
+      }));
     root.appendChild(row);
-    if (window.SBE_REFS) { SBE_REFS.add(k.sources || []); const rs = SBE_REFS.end(); if (rs) root.appendChild(rs); }
+    if (window.SBE_REFS) SBE_REFS.add(k.sources || []);
+    references(root, 'join');
     return root;
   }
   // טבלה לעריכה עם שורות שנשמרות (c0..cN)
@@ -436,7 +560,7 @@
       b.dataset.tab = id; b.setAttribute('role', 'tab'); bar.appendChild(b);
     });
     box.appendChild(bar);
-    const make = { routine: () => window.SBE_DOC.editable(renderRoutine()), emerg: renderEmerg, join: renderJoin, students: renderStudents, updates: renderUpdates, proc: renderProc };
+    const make = { routine: renderRoutine, emerg: renderEmerg, join: renderJoin, students: renderStudents, updates: renderUpdates, proc: renderProc };
     TABS.forEach(([id, label]) => { const p = el('div', 'pane'); p.dataset.pane = id; p.dataset.title = label.replace(/^\S+\s/, ''); p.appendChild(make[id]()); panes[id] = p; box.appendChild(p); });
     const cur = TABS.some((t) => t[0] === S.tab) ? S.tab : 'routine';
     bar.querySelector('[data-tab="' + cur + '"]').click();
@@ -455,35 +579,45 @@
     let k = null, e2 = null, bad = null;
     try {
       k = await ask(C.system(KB, WRITER), 'השדות:\n' + C.inputText(d) + '\n\nהכיני את תיקיית השגרה.', C.valid);
-      S.kit = k; w.set('מכינה את תיקיית החירום והלמידה מרחוק (2 מתוך 2).');
+      S.kit = k; clearEdits('routine'); w.set('מכינה את תיקיית החירום והלמידה מרחוק (2 מתוך 2).');
       try { e2 = await makeEmerg(); } catch (e) { console.warn('תיק רציפות, חירום:', e.message); }
     } catch (e) { bad = e; console.warn('תיק רציפות:', e.message); }
     finally { w.stop(); b.disabled = false; }
     if (!C.valid(k)) return fail(F('err1'), why(bad));
-    S.emerg = C.validEmerg(e2) ? e2 : null;
+    S.emerg = C.validEmerg(e2) ? e2 : null; clearEdits('emerg');
     S.version = (S.version || 0) + 1; S.at = today(); S.history = []; save();
     showKit(); goStep(2);
   });
 
   // ── הדפסה: התיק המלא, או עותק לשיתוף בלי מידע רגיש ──
   function printable(withSens) {
-    const out = el('div');
+    const out = el('div'), sources = [], seen = new Set();
     if (withSens) out.appendChild(el('p', 'sens-note', '🔒 מידע רגיש: לשמור בתיק סגור, ולא להעביר הלאה.'));
     document.querySelectorAll('#kit .pane').forEach((p) => {
       const c = p.cloneNode(true); c.hidden = false;
+      c.querySelectorAll('[data-edit-key]').forEach((node) => node.replaceChildren(...restoreEdit(captureEdit(node))));
       c.querySelectorAll('input,textarea').forEach((i) => { const s = el('span', 'val', i.value || ''); i.replaceWith(s); });
       c.querySelectorAll('select').forEach((i) => { const o = i.options[i.selectedIndex]; i.replaceWith(el('span', 'val', o ? o.text : '')); });
       if (!withSens) c.querySelectorAll('.sens').forEach((x) => x.remove());
       c.querySelectorAll('.etable tbody tr').forEach((tr) => { if (![...tr.querySelectorAll('.val')].some((v) => v.textContent.trim())) tr.remove(); });
       c.querySelectorAll('.etable').forEach((t) => { if (!t.querySelector('tbody tr')) { const s = t.closest('section'); (s || t).remove(); } });
+      c.querySelectorAll('.sbe-refs').forEach((sec) => {
+        if (sec.classList.contains('attach')) sec.querySelectorAll('ol li').forEach((li) => {
+          const key = li.textContent.replace(/\s+/g, ' ').trim();
+          if (key && !seen.has(key)) { seen.add(key); sources.push(li.cloneNode(true)); }
+        });
+        sec.remove();
+      });
       if (!c.textContent.trim()) return;
       const h = el('h2', null, p.dataset.title); out.append(h, c);
     });
+    if (sources.length) { const refs = el('section', 'sbe-refs attach'), items = el('ol'); sources.forEach((li) => items.appendChild(li)); refs.append(el('h3', null, 'מקורות'), items); out.appendChild(refs); }
     return out;
   }
   function doPrint(withSens) {
     const title = (txt(S.kit.title) || '').replace(/^תיק רציפות:?\s*/, '') || S.form.group || 'תיק רציפות';
-    window.SBE_DOC.print({ title, subtitle: [S.form.role, S.form.receiver].filter(Boolean).join(' · ') + ' · גרסה ' + S.version + (withSens ? '' : ' · עותק לשיתוף'), kind: withSens ? 'תיק הפעלה' : 'תיק הפעלה לשיתוף', node: printable(withSens) });
+    try { window.SBE_DOC.print({ title, subtitle: [S.form.role, S.form.receiver].filter(Boolean).join(' · ') + ' · גרסה ' + S.version + (withSens ? '' : ' · עותק לשיתוף'), kind: withSens ? 'תיק הפעלה' : 'תיק הפעלה לשיתוף', node: printable(withSens) }); }
+    catch (e) { alert('לא הצלחנו להכין את העותק להדפסה. ' + e.message); }
   }
   F('print').addEventListener('click', () => doPrint(true));
   F('printShare').addEventListener('click', () => doPrint(false));
@@ -501,7 +635,8 @@
       const o = JSON.parse(await f.text());
       if (!o || o.type !== 'begood-continuity' || !o.S || typeof o.S !== 'object' || !o.S.form) throw new Error('זה לא קובץ של תיק רציפות');
       if (S.kit && !confirm('לפתוח את התיק מהקובץ במקום התיק שעל המסך?')) return;
-      S = Object.assign(EMPTY(), o.S); S.local = Object.assign(EMPTY().local, o.S.local || {}); save();
+      S = Object.assign(EMPTY(), o.S); S.local = Object.assign(EMPTY().local, o.S.local || {});
+      S.join = Object.assign(EMPTY().join, o.S.join || {}); S.proc = o.S.proc || {}; save();
       location.reload();
     } catch (err) { alert('לא הצלחנו לפתוח את הקובץ: ' + err.message); }
     finally { e.target.value = ''; }
@@ -535,7 +670,7 @@
     finally { w.stop(); b.disabled = false; }
     if (!C.valid(k)) return fail(F('err3'), why(bad));
     const changes = Array.isArray(k.changes) ? k.changes : []; delete k.changes;
-    S.history.push({ version: S.version, at: S.at, note }); S.kit = k; S.version += 1; S.at = today(); save();
+    S.history.push({ version: S.version, at: S.at, note }); S.kit = k; clearEdits('routine'); S.version += 1; S.at = today(); save();
     const box = F('changes'); box.textContent = '';
     box.appendChild(el('h3', null, 'מה השתנה בגרסה ' + S.version));
     if (changes.length) box.appendChild(window.SBE_TABLE(['איפה בתיק', 'מה השתנה ולמה'], changes.map((c) => [txt(c.where), txt(c.why)]), 'kit-t'));

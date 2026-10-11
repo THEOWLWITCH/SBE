@@ -1,0 +1,557 @@
+{
+  "kind": "original-review-to-current-fix-index",
+  "runId": "20261007-090901-b9225b3f",
+  "originalReviewedHead": "7524755d9bcad05931abff2eef76aea70368230b",
+  "verifiedImplementationHead": "7b4f2d8d6028536cc482b1fc85dc3f83d5db7a98",
+  "formalReviewStatus": "complete",
+  "originalSnapshotVerdict": "Not ready",
+  "currentCheckKind": "targeted-independent-resolution-check",
+  "currentResolvedFindings": 13,
+  "mappings": [
+    {
+      "finding": 1,
+      "title": "Rejecting a proposal erases unsaved human edits",
+      "severity": "P1",
+      "originalValidation": "confirmed",
+      "originalValidationReason": "At reviewed head 7524755, activity-review-ui.js:228-235 and :140-144 adopt unchanged server content after an allowed dirty-draft rejection, and an independent Node v20.19.1 in-memory edit-before-reject reproduction erased both unsaved purpose and concerns, cleared dirty, and removed the edit from local storage; the newly added reject UI at :381 makes this ordering reachable.",
+      "currentCheck": "CR07",
+      "currentStatus": "resolved",
+      "evidence": {
+        "id": "CR07",
+        "title": "Proposal rejection preserves unsaved text and concerns",
+        "status": "resolved",
+        "current": [
+          [
+            "app/lib/activity-review-ui.js",
+            160
+          ],
+          [
+            "app/lib/activity-review-ui.js",
+            259
+          ]
+        ],
+        "evidence": [
+          "Reject decisions adopt server metadata while preserving draft/concerns/dirty state if human edits existed before or during the request; revision checks protect edits arriving after launch.",
+          "activity-flow.test.mjs:89 covers edit-before-reject and edit-during-reject, private concerns, local backup and reopening."
+        ],
+        "uncertainty": "A genuine concurrent server content-version conflict remains explicit and requires comparison; it is not silently rebased."
+      }
+    },
+    {
+      "finding": 2,
+      "title": "Reconcile artifact reviews when their worker is lost",
+      "severity": "P1",
+      "originalValidation": "confirmed",
+      "originalValidationReason": "New activity-artifact.mjs:134-135 persists a running claim before execution, while append exceptions bypass :148 and server lost-job recovery at practice-server.mjs:167-169 touches only pj records; an independent Node v20.19.1 snapshot reproduction with a single append-storage exception left the run running, returned 409 on retry and approval, and still blocked approval after a fresh successful review, establishing reachable failure without measuring production incidence.",
+      "currentCheck": "CR02",
+      "currentStatus": "resolved",
+      "evidence": {
+        "id": "CR02",
+        "title": "Abandoned artifact claims, worker loss and checkpoint I/O",
+        "status": "resolved",
+        "current": [
+          [
+            "harness/lib/activity-artifact.mjs",
+            66
+          ],
+          [
+            "harness/lib/activity-artifact.mjs",
+            84
+          ],
+          [
+            "harness/lib/activity-artifact.mjs",
+            163
+          ],
+          [
+            "harness/lib/activity-artifact.mjs",
+            178
+          ],
+          [
+            "harness/practice-server.mjs",
+            222
+          ]
+        ],
+        "evidence": [
+          "Artifact runs persist a bounded lease, owning job key and fresh attemptId. Reconciliation marks terminal/expired claims lost, keeps saved results and permits explicit retry. Checkpoint/final writes require the same running, unexpired attempt.",
+          "agent-orchestrator.test.mjs:200 tests lease reclamation, same base-version retry, abandoned late callback fenced with 409 and approval without manufacturing a content edit. quality-foundation.test.mjs:62 tests actual durable-job loss and artifact association.",
+          "Supplemental current-resolution-probes.mjs injects one thrown CAS I/O error at the first reviewer checkpoint. The initial review returns 503 with run failed; retry completes; approval returns 200 at version 1; exactly two synthetic provider calls."
+        ],
+        "uncertainty": "Sustained storage unavailability cannot be repaired while storage is inaccessible; the persisted lease supports recovery after service restoration. PostgreSQL transactions and multi-worker behavior remain staging gates."
+      }
+    },
+    {
+      "finding": 3,
+      "title": "CWE-863: Revocation misses reviewer calls and persisted proposals",
+      "severity": "P1",
+      "originalValidation": "confirmed",
+      "originalValidationReason": "practice-server.mjs:110 runs the new artifact flow with a captured principal and only revalidates at :135-137 after proposal writes and synthesis, while activity-artifact.mjs:65-70 checks stored ownership rather than live permission; an independent Node v20.19.1 in-process snapshot route test revoked STAFF111 during a blocked reviewer, observed a null live principal, then still persisted that reviewer and synthesis and completed the artifact review while the job became error.",
+      "currentCheck": "CR12",
+      "currentStatus": "resolved",
+      "evidence": {
+        "id": "CR12",
+        "title": "Live revocation fences reviewer calls and proposal writes",
+        "status": "resolved",
+        "current": [
+          [
+            "harness/practice-server.mjs",
+            113
+          ],
+          [
+            "harness/practice-server.mjs",
+            124
+          ],
+          [
+            "harness/lib/providers.mjs",
+            418
+          ],
+          [
+            "harness/lib/activity-artifact.mjs",
+            92
+          ],
+          [
+            "harness/lib/activity-artifact.mjs",
+            194
+          ],
+          [
+            "harness/lib/agent-orchestrator.mjs",
+            18
+          ]
+        ],
+        "evidence": [
+          "The job-owned live-principal assertion checks owner, tenant, current permission, job state, expiry and cancellation. It runs before each provider attempt, after completion, and before review checkpoint/final writes. Terminal failure bookkeeping can clear the run lock.",
+          "quality-foundation.test.mjs:94 blocks all three reviewers, revokes the active staff code, then releases responses. It asserts exactly three initial calls, no synthesis, zero stored proposals, unchanged version, failed run, error job, released ledger and 403 on later reads."
+        ],
+        "uncertainty": "The local check proves revocation observed before the write. A general transactional coupling of arbitrary permission revocation with all artifact CAS writes is not established; database rollout and race testing remain gates."
+      }
+    },
+    {
+      "finding": 4,
+      "title": "Preserve the Studio polling response contract",
+      "severity": "P1",
+      "originalValidation": "confirmed",
+      "originalValidationReason": "The new practice-server.mjs:121-123/:171-172 discards the prior Studio terminal envelope and structured non-200 result, while resilience-studio-ui.js:69 and :86-90 still require httpStatus/result and clarification fields; an independent Node v20.19.1 in-process snapshot server-to-actual-client generate test received {status:done,activity} and threw שגיאת שרת undefined, and the unchanged client has no terminal status:error branch for the reachable studio.mjs:322-323 clarification path.",
+      "currentCheck": "CR03",
+      "currentStatus": "resolved",
+      "evidence": {
+        "id": "CR03",
+        "title": "Studio terminal polling contract",
+        "status": "resolved",
+        "current": [
+          [
+            "harness/practice-server.mjs",
+            148
+          ],
+          [
+            "harness/practice-server.mjs",
+            188
+          ],
+          [
+            "app/lib/resilience-studio-ui.js",
+            69
+          ]
+        ],
+        "evidence": [
+          "Successful and failed Studio terminal responses return status:done plus httpStatus and the complete result, preserving structured clarification fields. Failures release the quota reservation.",
+          "server-transport.test.mjs:78 exercises 200, structured 422 and 403 outcomes through both polling aliases; :104 executes the actual Studio browser client against the local HTTP server for consultation and clarification."
+        ],
+        "uncertainty": "No live OpenAI Studio call was made. Synthetic-handler tests establish envelope compatibility, not the quality of generated activities."
+      }
+    },
+    {
+      "finding": 5,
+      "title": "Every narrative pipeline exhausts its admitted job budget",
+      "severity": "P1",
+      "originalValidation": "confirmed",
+      "originalValidationReason": "The new practice-server.mjs:192 admits 256000 units while :31-42 charges two reservations for each of pipeline.mjs:45/:64/:72/:81 at the server-supplied 32000 output ceiling, requiring at least 272384 before prompt bytes; an independent Node v20.19.1 immutable-snapshot baseline-valid run using the exact limiter failed at trainee with 413 after two calls, whereas its unlimited valid four-stage run reserved 400656 units.",
+      "currentCheck": "CR01",
+      "currentStatus": "resolved",
+      "evidence": {
+        "id": "CR01",
+        "title": "Narrative pipeline admission budget",
+        "status": "resolved",
+        "current": [
+          [
+            "harness/practice-server.mjs",
+            38
+          ],
+          [
+            "harness/practice-server.mjs",
+            121
+          ],
+          [
+            "harness/practice-server.mjs",
+            213
+          ]
+        ],
+        "evidence": [
+          "Pipeline still admits 256000 units, but boundedProvider explicitly forces one physical attempt per stage, rather than the old two-attempt reservation. The cumulative conservative input/output guard remains active.",
+          "quality-foundation.test.mjs:24 runs the real four-stage prompt builders through /api/pipeline, asserts four completed calls, maxAttempts=1/maxTokens=32000, terminal done and one committed ledger."
+        ],
+        "uncertainty": "This verifies a repository-valid narrative fixture. Oversized stages remain intentionally rejected; live-provider quality/latency is unmeasured."
+      }
+    },
+    {
+      "finding": 6,
+      "title": "Read turning point instructions from the pipeline contract",
+      "severity": "P2",
+      "originalValidation": "confirmed",
+      "originalValidationReason": "New activity-review-ui.js:75-84 reads the original _generation.pipelineOutput but uses renderer-only does/missed fields instead of the enforced gates.mjs:81-84 characterDoes/ifMissed contract, and the real narrative-build.js caller opens this adapter; an independent Node v20.19.1 snapshot baseline-valid gate/toScenario/draftFromScenario reproduction omitted the character action, spoken line, and missed-turn consequence from step instructions.",
+      "currentCheck": "CR05",
+      "currentStatus": "resolved",
+      "evidence": {
+        "id": "CR05",
+        "title": "Canonical narrative turning-point instructions",
+        "status": "resolved",
+        "current": [
+          [
+            "app/lib/activity-review-ui.js",
+            89
+          ]
+        ],
+        "evidence": [
+          "The adapter now reads characterDoes.line/action and ifMissed from the enforced pipeline contract, retaining compatibility fallbacks for renderer-style fields.",
+          "activity-flow.test.mjs:32 constructs a synthetic canonical turning point and asserts exact line/action/missed-turn instructions. The private artifact validator retains the pipeline contract and approved snapshots preserve its derived content."
+        ],
+        "uncertainty": "This is contract fidelity; it does not evaluate educational usefulness of the wording."
+      }
+    },
+    {
+      "finding": 7,
+      "title": "Allocate a new request after confirmed generation failure",
+      "severity": "P2",
+      "originalValidation": "confirmed",
+      "originalValidationReason": "The diff adds retained requestId values at narrative-build.js:371/:382 while its lost-job retries at :376/:395/:411 reuse those values, but the new practice-server.mjs:194-199 returns the original released terminal job for the same ID; independent Node v20.19.1 snapshot function reproductions recorded identical IDs on both complete and educational retry submissions and a second lost failure, establishing the restart-recovery path although production restart incidence was not measured.",
+      "currentCheck": "CR04",
+      "currentStatus": "resolved",
+      "evidence": {
+        "id": "CR04",
+        "title": "Fresh IDs after confirmed terminal generation failure",
+        "status": "resolved",
+        "current": [
+          [
+            "app/lib/narrative-build.js",
+            390
+          ],
+          [
+            "app/lib/narrative-build.js",
+            417
+          ],
+          [
+            "app/lib/narrative-build.js",
+            433
+          ]
+        ],
+        "evidence": [
+          "Completion recovery, educational-pipeline recovery and resumed saved-job recovery all clone the body with a fresh crypto.randomUUID requestId only after confirmed lost/transient terminal failure. Initial uncertain startup transport does not get this recovery branch.",
+          "activity-flow.test.mjs:258 captures submissions for completion, pipeline and saved-job resume and verifies changed IDs after lost status. quality-foundation.test.mjs:36 confirms a released old ID never launches another paid call."
+        ],
+        "uncertainty": "Unknown network outcomes remain subject to durable idempotency; this fix does not infer that a timed-out start was never accepted."
+      }
+    },
+    {
+      "finding": 8,
+      "title": "Reconcile jobs after terminal persistence failure",
+      "severity": "P2",
+      "originalValidation": "confirmed",
+      "originalValidationReason": "New practice-server.mjs:90-98 retries only returned CAS conflicts and :141-143 swallows thrown terminal writes before releasing quota and removing the executor, while :167 excludes expired current-boot jobs from recovery; an independent Node v20.19.1 snapshot in-process request injected exactly two finalization exceptions, restored storage, advanced the clock 120 seconds, and observed an expired-lease job still running with released quota.",
+      "currentCheck": "CR11",
+      "currentStatus": "resolved",
+      "evidence": {
+        "id": "CR11",
+        "title": "Terminal persistence failure and same-boot orphan recovery",
+        "status": "resolved",
+        "current": [
+          [
+            "harness/practice-server.mjs",
+            94
+          ],
+          [
+            "harness/practice-server.mjs",
+            184
+          ]
+        ],
+        "evidence": [
+          "finishJob retries thrown storage errors up to three attempts and keeps atomic job/quota finalization. Polling reconciles an expired running lease when a different boot or no current local executor owns the job.",
+          "server-transport.test.mjs:94 injects the first finalize I/O failure and proves retry saves the same completion with one provider call. :120 injects sustained finalization failure, restores storage and advances the lease; polling returns lost and a released ledger for the same-boot orphan."
+        ],
+        "uncertainty": "Recovery needs storage service availability and owner polling; no background retention/reconciliation daemon is claimed. Deployed PostgreSQL finalization-vs-cancellation is still unrun."
+      }
+    },
+    {
+      "finding": 9,
+      "title": "Detached editor completion overwrites the reopened draft",
+      "severity": "P2",
+      "originalValidation": "confirmed",
+      "originalValidationReason": "New activity-review-ui.js:397 creates independent sessions sharing the artifact storage key at :112-118, while input-screen.html:1274-1279 replaces/closes the dialog without disposal and old save adoption at :140-144 still persists; an independent Node v20.19.1 snapshot shared-storage two-session save-in-flight reproduction kept the reopened unsaved text visible but overwrote its persisted draft with the older clean response, proving the close/reopen ordering is reachable.",
+      "currentCheck": "CR09",
+      "currentStatus": "resolved",
+      "evidence": {
+        "id": "CR09",
+        "title": "Closed/replaced editor ownership and local persistence",
+        "status": "resolved",
+        "current": [
+          [
+            "app/lib/activity-review-ui.js",
+            130
+          ],
+          [
+            "app/lib/activity-review-ui.js",
+            139
+          ],
+          [
+            "app/lib/activity-review-ui.js",
+            160
+          ],
+          [
+            "app/input-screen.html",
+            1276
+          ]
+        ],
+        "evidence": [
+          "Sessions claim an artifact-local storage key, dispose the previous owner and guard asynchronous adopt/persist against disposal. Dialog close/replacement calls the mounted editor disposal hook.",
+          "activity-flow.test.mjs:108 holds the old save, opens a second session sharing storage, edits the new session, then resolves the old save and verifies the active backup survives."
+        ],
+        "uncertainty": "This is in-process session ownership, not cross-tab or cross-device editing serialization; server CAS and explicit conflict recovery cover independent clients."
+      }
+    },
+    {
+      "finding": 10,
+      "title": "Cancellation before job acknowledgment leaves generation running",
+      "severity": "P2",
+      "originalValidation": "confirmed",
+      "originalValidationReason": "The diff adds UI invalidation at narrative-build.js:49-63 but :53 cancels only a known job and :384 checks staleness before :389 captures the acknowledgment, while new practice-server.mjs:205-206 executes independently of response lifetime; an independent Node v20.19.1 snapshot buildEdu test cancelled after submission but before a held live-job acknowledgment, then observed no cancel POST or recoverable job ID, establishing the UI ordering with production incidence unmeasured.",
+      "currentCheck": "CR08",
+      "currentStatus": "resolved",
+      "evidence": {
+        "id": "CR08",
+        "title": "Cancellation before startup acknowledgment",
+        "status": "resolved",
+        "current": [
+          [
+            "app/lib/narrative-build.js",
+            49
+          ],
+          [
+            "app/lib/narrative-build.js",
+            52
+          ],
+          [
+            "app/lib/narrative-build.js",
+            399
+          ],
+          [
+            "app/lib/activity-review-ui.js",
+            53
+          ]
+        ],
+        "evidence": [
+          "The bounded startup acknowledgment is retained separately from the UI abort signal. Its job ID is captured before stale-run handling, and an obsolete acknowledged job receives an authenticated cancel request. The artifact client also retains and cancels a late acknowledgment.",
+          "narrative-startup.test.mjs:32 tests cancel/reset/source edit before delayed acknowledgment; :53 verifies obsolete acknowledgment cancels only its own job and leaves the newer saved job intact. activity-flow.test.mjs:122 covers the artifact review variant."
+        ],
+        "uncertainty": "If the acknowledgment connection never yields a job ID, the client cannot cancel by ID; server time limits and lease/TTL recovery remain the bounded fallback. These tests prove delayed accepted acknowledgments, not arbitrary network partition recovery."
+      }
+    },
+    {
+      "finding": 11,
+      "title": "Fit supported narratives into the reviewer input budget",
+      "severity": "P2",
+      "originalValidation": "confirmed",
+      "originalValidationReason": "New agent-contract.mjs:46-54 sends all narrative content except derived scenario to every reviewer under agent-orchestrator.mjs:25’s 16000-byte limit, although activity-artifact.mjs:54 accepts up to 500000 bytes; an independent Node v20.19.1 snapshot reproduction saved a gate-valid baseline with shipped edu.json facilitator material (201) but exceeded the envelope cap and returned failed/budget_exceeded with zero provider calls, establishing the supported input shape without measuring user incidence.",
+      "currentCheck": "CR06",
+      "currentStatus": "resolved",
+      "evidence": {
+        "id": "CR06",
+        "title": "Production-sized review envelopes and compact-role authority",
+        "status": "resolved",
+        "current": [
+          [
+            "harness/lib/agent-contract.mjs",
+            6
+          ],
+          [
+            "harness/lib/agent-contract.mjs",
+            28
+          ],
+          [
+            "harness/lib/agent-contract.mjs",
+            55
+          ],
+          [
+            "harness/lib/activity-artifact.mjs",
+            157
+          ],
+          [
+            "harness/lib/agent-orchestrator.mjs",
+            29
+          ]
+        ],
+        "evidence": [
+          "The input limit is 64000 UTF-8 bytes, with an explicit 413 preflight before a run claim. Compact pedagogy/facilitation roles omit full document prose, retain structured context and cannot propose pipelineOutput replacement; safety/single/synthesis retain full prose.",
+          "agent-orchestrator.test.mjs:185 uses shipped educational facilitator guidance for both single and team review, verifies complete status, 1/4 calls and <=100000 budget with measured synthetic usage. :69 validates that only full-prose readers can replace it."
+        ],
+        "uncertainty": "The artifact storage ceiling remains larger than the review ceiling by design. Some very large team envelopes or missing usage can hit the bounded aggregate allowance; the UI gives an actionable size limit and retained candidates. No guarantee is made that every storable artifact fits one review."
+      }
+    },
+    {
+      "finding": 12,
+      "title": "Supply specialist and synthesis role instructions",
+      "severity": "P2",
+      "originalValidation": "confirmed",
+      "originalValidationReason": "The explicitly selected plan, inspected from staged plan-source.md (SHA256 534F026AC505E1A93B0998CEBAD3FA567DB401D59AB00AD0BAEFC3F09666F76C), assigns specialist rubrics at :21-24 and disagreement-preserving synthesis at :82/:105, but newly added agent-contract.mjs:45-63 and agent-orchestrator.mjs:36 provide only role labels and one generic instruction; an independent Node v20.19.1 snapshot team-mode request capture showed the same system text for all three specialists and synthesis, establishing the required instruction omission while model-output incidence was not measured.",
+      "currentCheck": "CR14",
+      "currentStatus": "resolved",
+      "evidence": {
+        "id": "CR14",
+        "title": "Trusted specialist/synthesis responsibilities",
+        "status": "resolved",
+        "current": [
+          [
+            "harness/lib/agent-contract.mjs",
+            72
+          ],
+          [
+            "harness/lib/agent-contract.mjs",
+            79
+          ],
+          [
+            "harness/lib/agent-orchestrator.mjs",
+            4
+          ],
+          [
+            "harness/lib/agent-orchestrator.mjs",
+            37
+          ],
+          [
+            "harness/lib/agent-orchestrator.mjs",
+            58
+          ]
+        ],
+        "evidence": [
+          "Server-owned role instructions now specify pedagogy, resilience/facilitation, privacy/sources, combined single reviewer and synthesis duties. Synthesis must preserve unresolved disagreements and missing-reviewer warnings.",
+          "agent-orchestrator.test.mjs:59 asserts four distinct trusted system prompts, separation of untrusted instructions and four distinct prompt hashes; it does not assert equality to each exact system digest. Separately, source at agent-orchestrator.mjs:58 computes promptVersion as digest(AGENT_SYSTEMS[agent]), and :4 derives reservation bytes from those actual prompts."
+        ],
+        "uncertainty": "Prompt presence and bounded contracts do not establish that live models fulfill the rubric. Human evaluation of conflicting proposals and model quality remains an explicit pilot gate."
+      }
+    },
+    {
+      "finding": 13,
+      "title": "Exercise Anthropic streaming through the real transport",
+      "severity": "P2",
+      "originalValidation": "confirmed",
+      "originalValidationReason": "At reviewed head 7524755, provider-gates.test.mjs:98/:119/:143/:179 substitutes assembled Anthropic responses and the complete harness/tests search contains no SSE event fixtures or ANTHROPIC_BASE_URL setup, while the diff changes providers.mjs:82/:116-117/:129-156 and production routes Anthropic through defaultTransport/postStream at :329/:362; therefore changed streaming reconstruction and abort/error triggers bypass the regression assertions, with live transport failure incidence unmeasured.",
+      "currentCheck": "CR13",
+      "currentStatus": "resolved",
+      "evidence": {
+        "id": "CR13",
+        "title": "Anthropic native SSE transport coverage",
+        "status": "resolved",
+        "current": [
+          [
+            "harness/lib/providers.mjs",
+            110
+          ],
+          [
+            "harness/lib/providers.mjs",
+            125
+          ],
+          [
+            "harness/tests/provider-stream.test.mjs",
+            43
+          ]
+        ],
+        "evidence": [
+          "New tests use getProvider(anthropic) with its default transport against a local synthetic HTTP SSE server, not an injected preassembled response. Chunks split delimiters and Hebrew UTF-8 bytes.",
+          "provider-stream.test.mjs:43 verifies text, thinking/signature reconstruction, incremental tool JSON and measured usage; :52 rejects malformed tool JSON and premature close with known input usage; :60 aborts an open stream and retains usage."
+        ],
+        "uncertainty": "Synthetic native-transport compatibility is established. No Anthropic live service call or future vendor protocol guarantee is implied."
+      }
+    }
+  ],
+  "releaseGates": [
+    {
+      "id": "RG01",
+      "title": "Real PostgreSQL/RPC and grants verification",
+      "status": "release-gate",
+      "current": [
+        [
+          "docs/migrations/verify_access_atomic.mjs",
+          1
+        ],
+        [
+          "docs/access-hardening.md",
+          110
+        ]
+      ],
+      "evidence": [
+        "The verifier now contains 20 competing atomic success finalizations plus foreign/revoked commit denial and release. It is explicitly opt-in and has not been executed against a database."
+      ],
+      "remaining": [
+        "Execute in a dedicated staging database; verify RPC/table/browser-role grants, locks, backup/restore and realistic multi-worker behavior.",
+        "Add/execute success-vs-cancellation finalization race, competing workshop-code claims, pending/released course-seat reservations and expiry reclamation at the real RPC boundary."
+      ],
+      "originalInputs": [
+        "data-migration.json",
+        "deployment-verification.md",
+        "testing.json",
+        "security.json"
+      ]
+    },
+    {
+      "id": "RG02",
+      "title": "Retention, operational rollout and rollback ownership",
+      "status": "release-gate",
+      "current": [
+        [
+          "docs/access-hardening.md",
+          144
+        ],
+        [
+          "docs/agent-team.md",
+          82
+        ]
+      ],
+      "evidence": [
+        "Job expiry is a read-access/time limit, not physical deletion. Private artifacts, proposals and observations still hold authorized educational content."
+      ],
+      "remaining": [
+        "Approve and implement retention/cleanup ownership before real private data; preserve quota daily-admission and idempotency windows.",
+        "Record deployed client/server revisions, monitoring destinations, restart/rollback acceptance and platform generation-disable controls."
+      ],
+      "originalInputs": [
+        "deployment-verification.md"
+      ]
+    },
+    {
+      "id": "RG03",
+      "title": "Live-model, human educational/source and semantic-privacy acceptance",
+      "status": "release-gate",
+      "current": [
+        [
+          "docs/agent-team.md",
+          74
+        ],
+        [
+          "docs/agent-team.md",
+          82
+        ]
+      ],
+      "evidence": [
+        "The run uses only memory/mock transports and a local synthetic provider SSE server. Literal private-concern/phone matching and approved source IDs are concrete gates, not semantic privacy/source relevance proofs."
+      ],
+      "remaining": [
+        "Run approved-cost live provider experiments and human rubric evaluation, including conflicting specialists and participant choice/facilitation content.",
+        "Review semantic privacy, source relevance, educational appropriateness and professional Studio approval before opening the broader permissions or team flag."
+      ],
+      "originalInputs": [
+        "agent-native.md",
+        "deployment-verification.md",
+        "security.json"
+      ]
+    }
+  ],
+  "limitations": [
+    "No live database, external provider, migration, production data, deployment, push or repository implementation edit.",
+    "Targeted tests use local HTTP, memory persistence and synthetic provider results; no independent cross-model reviewer was run in this check.",
+    "Formal stable finding IDs are owned by the separate resumed merge/validator/report flow; CR/IC/RG identifiers are only local check references."
+  ]
+}

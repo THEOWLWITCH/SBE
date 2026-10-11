@@ -1,0 +1,291 @@
+[
+  {
+    "reviewer": "security",
+    "findings": [
+      {
+        "title": "CWE-200 Continuity demos upload private local kit data",
+        "severity": "P1",
+        "file": "app/lib/demo-hook.js",
+        "line": 140,
+        "confidence": 75,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": true,
+        "suggested_fix": "Isolate continuity's authorized embedded demo in fresh in-memory state/storage, following the team-lab pattern. Capture explicitly nonsensitive output instead of the whole #kit. Verify seeded private storage stays unchanged and demoSave contains no saved roster URL or letter/contact markers. This behavior is inherited unchanged from c187604.",
+        "first_evidence": "app/lib/demo-hook.js:140:     \"continuity-kit.html\": function () { return inPage(\"continuity\", \"תיק רציפות\", \"תיק רציפות\", \"#example\", \"#go\", \"#kit .kit h2\", \"#kit\", \"#err1\"); },",
+        "evidence": [
+          "app/lib/demo-hook.js:140:     \"continuity-kit.html\": function () { return inPage(\"continuity\", \"תיק רציפות\", \"תיק רציפות\", \"#example\", \"#go\", \"#kit .kit h2\", \"#kit\", \"#err1\"); },",
+          "app/lib/continuity-kit-ui.js:11,25-26,462: STORE always uses sbeUserKey('sbe.continuity.v2'); load restores the persisted state including S.local; the example action only assigns S.form = ex and saves. There is no separate demo store/state.",
+          "app/lib/continuity-kit-ui.js:365-371,212,277: Generation replaces S.kit/S.emerg but retains S.local. renderLetter fills its text from S.local.letter; renderStudents creates a non-no-print anchor with a.href = S.local.studentsLink.",
+          "app/lib/demo-hook.js:59,124: standalone removes button/script/no-print/input elements but does not remove .sens or .letter-out; inPage returns standalone($(capture), title) for the complete #kit capture.",
+          "app/demo-lab.html:230: await api({action:'demoSave',tool:it.tool||id,title:it.title,label:it.label,html:it.html,input:it.input||'',run:batch,order:ORDER.indexOf(id)});",
+          "provenance: c46203a Claude 2026-10-09 - New tool: continuity kit for the teacher (תיק רציפות); b0845a2 Claude 2026-10-09 - Continuity kit v2: routine and emergency subfolders, sensitive data on device only. The continuity UI is identical to c187604 and its continuity recipe is inherited unchanged."
+        ]
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "correctness",
+    "findings": [],
+    "residual_risks": [],
+    "testing_gaps": [
+      "The Studio validation-repair test (harness/tests/studio-backend.test.mjs:399) calls handleStudio with a mock fetch directly. Add an invalid-first, valid-repair case through the authenticated /api/studio job wrapper to exercise its accumulated 128000 budget and cancellation signal."
+    ]
+  },
+  {
+    "reviewer": "testing",
+    "findings": [
+      {
+        "title": "Studio repair lacks a cancellation regression test",
+        "severity": "P1",
+        "file": "harness/lib/studio.mjs",
+        "line": 379,
+        "confidence": 75,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Test cancellation during the second provider call and assert that work stops without returning an activity. Propagate the job signal through repair and customer-review calls.",
+        "first_evidence": "harness/lib/studio.mjs:379:           text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});",
+        "evidence": [
+          "harness/lib/studio.mjs:379:           text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});",
+          "harness/lib/studio.mjs:347:   finally {clearTimeout(requestTimer);signal?.removeEventListener('abort',abortRequest);}",
+          "harness/practice-server.mjs:151:         const [status,result]=await studioHandler(st,{...payload,token,async:false},{signal:controller.signal,fetchImpl});",
+          "harness/tests/studio-backend.test.mjs:400-410: the repair test asserts invalid-then-valid and invalid-twice replies, with no AbortController or cancellation assertion.",
+          "provenance: c0fb8f7e Claude 2026-10-09 - Studio repair helper already used independent AbortSignal.timeout in c187604; local Studio cancellation integration adds the signal contract, exposing the interaction."
+        ]
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "project-standards",
+    "findings": [
+      {
+        "title": "Emergency folder lacks on-screen editing",
+        "severity": "P2",
+        "file": "app/lib/continuity-kit-ui.js",
+        "line": 346,
+        "confidence": 100,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": true,
+        "suggested_fix": "Wrap generated emergency content in SBE_DOC.editable, preserve edits across pane rebuilds, and print the edited pane.",
+        "first_evidence": "app/lib/continuity-kit-ui.js:346     const make = { routine: () => window.SBE_DOC.editable(renderRoutine()), emerg: renderEmerg, students: renderStudents, updates: renderUpdates };",
+        "evidence": [
+          "app/lib/continuity-kit-ui.js:346     const make = { routine: () => window.SBE_DOC.editable(renderRoutine()), emerg: renderEmerg, students: renderStudents, updates: renderUpdates };",
+          "CLAUDE.md:13 - **כל תוצר: עריכה על המסך ו-PDF מעוצב.** `app/lib/product-doc.js` (`SBE_DOC`): `rich()` לטקסט מהמודל, `editable()` — עריכה ישירה עם הסבר קצר, `print()` — מסמך עם לוגו, כותרת ותאריך, להדפסה או לשמירה כ-PDF (כולל הנוסח הערוך).",
+          "app/lib/continuity-kit-ui.js:242-249 renders the generated emergency model as plain text and tables, without contenteditable or SBE_DOC.editable; line 180-184 only makes the separate readiness fields editable.",
+          "provenance: b0845a2b Claude 2026-10-09 - unchanged at c187604:app/lib/continuity-kit-ui.js:346"
+        ]
+      },
+      {
+        "title": "Continuity sources appear before document end",
+        "severity": "P2",
+        "file": "app/lib/continuity-kit-ui.js",
+        "line": 167,
+        "confidence": 75,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": true,
+        "suggested_fix": "Collect selected references from both folders and append one deduplicated source section after the final pane in the print copy.",
+        "first_evidence": "app/lib/continuity-kit-ui.js:167     if (window.SBE_REFS) { SBE_REFS.add(k.sources || []); const rs = SBE_REFS.end(); if (rs) root.appendChild(rs); }",
+        "evidence": [
+          "app/lib/continuity-kit-ui.js:167     if (window.SBE_REFS) { SBE_REFS.add(k.sources || []); const rs = SBE_REFS.end(); if (rs) root.appendChild(rs); }",
+          "CLAUDE.md:56 - **מקורות בסוף המסמך, לא בתוך הטקסט.** `app/lib/ref-collect.js` (`SBE_REFS`): מוציא [מפתח] ו-(מפתח, מפתח) מהטקסט, ומוסיף סעיף \"מקורות\" בסוף הדוח, המדריך או התשובה.",
+          "app/lib/continuity-kit-ui.js:379-387 prints all four panes in order in one document; line 249 also appends a separate source list to the emergency pane.",
+          "provenance: c46203a7 Claude 2026-10-09 - unchanged at c187604:app/lib/continuity-kit-ui.js:167; b0845a2b Claude 2026-10-09 - unchanged print assembly at c187604:379-387"
+        ]
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "api-contract",
+    "findings": [
+      {
+        "title": "Hyrum's Law: source opt-out invalidates exported v1 activity",
+        "severity": "P2",
+        "file": "app/lib/team-learning-lab-ui.js",
+        "line": 416,
+        "confidence": 100,
+        "autofix_class": "manual",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Give the redacted JSON export an explicit versioned public-pack contract with a sourcesOmitted discriminator, and validate it separately from a complete activity.",
+        "first_evidence": "app/lib/team-learning-lab-ui.js:416:       const p = pack(); if (form.attachSources !== true) {p.sources = []; p.activity.sources = [];}",
+        "evidence": [
+          "app/lib/team-learning-lab-ui.js:416:       const p = pack(); if (form.attachSources !== true) {p.sources = []; p.activity.sources = [];}",
+          "app/lib/team-learning-lab.js:104:     out.sources=list(input.sources,\"מקורות\",complete);",
+          "app/lib/team-learning-lab.js:70:     if (!Array.isArray(value) || value.length > 24 || (required && !value.length)) fail(\"בדקו את \" + label + \".\");",
+          "app/lib/team-learning-lab.js:118:   const validateActivity = (input,ctx) => activity(input,validateContext(ctx),true);",
+          "app/lib/team-learning-lab.js:8:   const VERSION = \"team-learning-lab/v1\";"
+        ]
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "reliability",
+    "findings": [
+      {
+        "title": "Studio repair ignores cancellation after its request starts",
+        "severity": "P2",
+        "file": "harness/lib/studio.mjs",
+        "line": 379,
+        "confidence": 75,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Link ask() to both the job signal and its 180-second timeout. Verify cancellation during an in-flight repair.",
+        "first_evidence": "harness/lib/studio.mjs:379:           text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});",
+        "evidence": [
+          "harness/lib/studio.mjs:379:           text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});",
+          "harness/lib/studio.mjs:389-390: the new invalid-kit path invokes ask(...) for a repair after the first call's linked requestController has been removed at line 347.",
+          "harness/practice-server.mjs:203-205: /api/pipeline-cancel aborts controllers.get(key), and lines 145-150 check current state before fetch and after response.json(), not during fetch.",
+          "provenance: c187604 Danny Baranes 2026-10-09 - upstream ask helper already used a timeout-only signal; this integration adds a cancellable first request but leaves the newly reachable repair path unlinked."
+        ]
+      },
+      {
+        "title": "Studio repair can outlast the browser's job wait",
+        "severity": "P2",
+        "file": "harness/lib/studio.mjs",
+        "line": 389,
+        "confidence": 75,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Apply a shared end-to-end deadline to all provider calls, or extend polling beyond their maximum sequence and preserve the job ID for resumption.",
+        "first_evidence": "harness/lib/studio.mjs:389:     const repaired=await ask(INVITE.apply(INSTRUCTIONS)+'\\nהגרסה הקודמת לא עברה את הבדיקה. תקני בדיוק את הבעיות האלה, ושמרי את כל השאר כפי שהוא: '+errors.join('; '),",
+        "evidence": [
+          "harness/lib/studio.mjs:389:     const repaired=await ask(INVITE.apply(INSTRUCTIONS)+'\\nהגרסה הקודמת לא עברה את הבדיקה. תקני בדיוק את הבעיות האלה, ושמרי את כל השאר כפי שהוא: '+errors.join('; '),",
+          "harness/lib/studio.mjs:336,379: the initial generation and each ask() have separate 180000 ms timeouts; lines 395-400 permit a customer review and another revision after the repair.",
+          "app/lib/resilience-studio-ui.js:64:     while(Date.now()-t0<9*60*1000) {",
+          "app/lib/resilience-studio-ui.js:76:     throw new Error('הבנייה נמשכה מעבר לזמן ההמתנה. התוכן הקיים נשמר; אפשר לנסות שוב.');"
+        ]
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "adversarial",
+    "findings": [
+      {
+        "title": "Cancelling a validation repair leaves paid generation running",
+        "severity": "P2",
+        "file": "harness/lib/studio.mjs",
+        "line": 379,
+        "confidence": 100,
+        "autofix_class": "manual",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Combine the incoming job signal with the repair timeout, reject before submission when cancelled, and propagate cancellation. Verify cancellation during a pending validation repair through createPracticeServer.",
+        "first_evidence": "harness/lib/studio.mjs:379:           text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});",
+        "evidence": [
+          "harness/lib/studio.mjs:379:           text:{format:{type:'json_schema',name,strict:true,schema}}}),signal:AbortSignal.timeout(180000)});",
+          "Trigger: a schema-valid first activity has a meeting step with minutes=0. kitErrors rejects it and the new caller at harness/lib/studio.mjs:388-390 sends it to ask for validation repair, independently of the customer-review setting.",
+          "The initial request combines the incoming job signal with its timeout at harness/lib/studio.mjs:334-347. The repair at 374-385 instead supplies an unrelated AbortSignal.timeout and never attaches the incoming signal.",
+          "harness/practice-server.mjs:204:           const cancelled=await finishJob(st,key,actor,{status:'cancelled'},'release');controllers.get(key)?.abort();",
+          "The Studio fetch wrapper at harness/practice-server.mjs:145-150 checks the job before submission and after reading response JSON, but passes options directly to fetch. Thus its post-response check prevents commit without aborting the paid request already in flight.",
+          "Local reproduction used the actual handleStudio and domain exampleActivity, paused the second fetch, then aborted the supplied controller. Observed: jobAborted=true, repairAborted=false, calls=2. Releasing the synthetic response allowed handleStudio to return 200. No paid AI or network was used. All 74 targeted AI/planner/lab/Studio tests passed despite this scenario.",
+          "provenance: c0fb8f7 Claude 2026-10-09 - Fix studio kit rejection and add one repair attempt across tools. Targeted c187604 blame assigns the new validation-repair caller to this commit; it is absent at b7c85b1. This finding concerns its new interaction with the quality branch's cancellable job server, rather than attributing the unchanged timeout helper solely to reconciliation."
+        ]
+      },
+      {
+        "title": "Validation repair omits the provider output budget cap",
+        "severity": "P2",
+        "file": "harness/lib/studio.mjs",
+        "line": 378,
+        "confidence": 100,
+        "autofix_class": "manual",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": false,
+        "suggested_fix": "Set explicit max_output_tokens for every repair/review request and validate actual provider usage against the Studio job budget. Exercise over-budget repair usage through the production server wrapper.",
+        "first_evidence": "harness/lib/studio.mjs:378:         body:JSON.stringify({model,reasoning:{effort},store:false,instructions,input:[{role:'user',content:[{type:'input_text',text}]}],",
+        "evidence": [
+          "harness/lib/studio.mjs:378:         body:JSON.stringify({model,reasoning:{effort},store:false,instructions,input:[{role:'user',content:[{type:'input_text',text}]}],",
+          "The request finishes at harness/lib/studio.mjs:379 with the schema and timeout, without max_output_tokens. By comparison, the initial payload at line 330 includes max_output_tokens:16000.",
+          "Trigger: the first provider reply parses and matches ACTIVITY_SCHEMA but fails kitErrors. The new caller at harness/lib/studio.mjs:388-390 submits the uncapped repair even when STUDIO_CUSTOMER_REVIEW=off.",
+          "harness/practice-server.mjs:37:   const maxTokens=request.maxTokens ?? request.max_output_tokens ?? 220;",
+          "The integrated Studio wrapper at harness/practice-server.mjs:145-150 reserves requestBudget(request,1), then checks only live access when response.json is read. Unlike boundedProvider at lines 55-60, it does not inspect or charge the response's actual usage.",
+          "Local actual-handler reproduction captured the second request as repairMaxOutputTokens=null; the corrected full kit was accepted with status 200. No paid AI or network was used. The newly added studio-backend repair test calls handleStudio with a plain fetch stub, so its success does not exercise the production job-budget wrapper.",
+          "provenance: c0fb8f7 Claude 2026-10-09 - Fix studio kit rejection and add one repair attempt across tools. The new validation-repair caller is absent at b7c85b1 and inherited from c187604; its interaction with the existing quality-branch budget wrapper is newly reachable for invalid first kits."
+        ]
+      },
+      {
+        "title": "Continuity demo uploads device-only sensitive input",
+        "severity": "P1",
+        "file": "app/lib/demo-hook.js",
+        "line": 140,
+        "confidence": 100,
+        "autofix_class": "manual",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": true,
+        "suggested_fix": "Use empty in-memory continuity state for authorized embedded demos; collect input only from #form and exclude .sens nodes. Verify seeded private storage remains unchanged and sensitive sentinels never reach demoSave. Identical defect exists at c187604 with provenance recorded in adversarial.json.",
+        "first_evidence": "app/lib/demo-hook.js:140:     \"continuity-kit.html\": function () { return inPage(\"continuity\", \"תיק רציפות\", \"תיק רציפות\", \"#example\", \"#go\", \"#kit .kit h2\", \"#kit\", \"#err1\"); },",
+        "evidence": [
+          "app/lib/demo-hook.js:140:     \"continuity-kit.html\": function () { return inPage(\"continuity\", \"תיק רציפות\", \"תיק רציפות\", \"#example\", \"#go\", \"#kit .kit h2\", \"#kit\", \"#err1\"); },",
+          "app/lib/continuity-kit-ui.js:11 captures the regular sbeUserKey('sbe.continuity.v2') storage key, and load at lines 23-29 restores S.local. There is no separate embedded-demo state. If S.kit exists, line 464 immediately renders its local sensitive inputs.",
+          "The example handler at app/lib/continuity-kit-ui.js:452-462 updates only S.form and the form inputs; it does not clear the existing S.local.red, students, individual or updates tables.",
+          "app/lib/demo-hook.js:112:     var inp = inputSummary();",
+          "inputSummary at app/lib/demo-hook.js:44-54 scans document inputs and excludes only dialog, hidden-type and file inputs. It does not exclude .sens or elements in hidden panes. inPage collects this input before it clears the capture node at line 113.",
+          "app/demo-lab.html:230:           try{await api({action:'demoSave',tool:it.tool||id,title:it.title,label:it.label,html:it.html,input:it.input||'',run:batch,order:ORDER.indexOf(id)});saved++;}",
+          "Local reproduction evaluated the actual inputSummary function with the continuity model's 14 form fields followed by the three rendered red-table inputs. The result included SYNTHETIC_STUDENT_NAME, SYNTHETIC_MEDICAL_DETAILS and SYNTHETIC_SAFETY_ACTION within its first-18-input limit. No real private data or external network was used.",
+          "provenance: c46203a Claude 2026-10-09 - New tool: continuity kit for the teacher (תיק רציפות). Targeted blame at c187604:app/lib/demo-hook.js:131 attributes the identical continuity recipe to this commit; c187604:app/lib/continuity-kit-ui.js is identical to the reviewed file, with scoped local restoration added by b0845a2 on 2026-10-09. This is upstream-only relative to the integration."
+        ]
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "maintainability",
+    "findings": [],
+    "residual_risks": [],
+    "testing_gaps": []
+  },
+  {
+    "reviewer": "julik-frontend-races",
+    "findings": [
+      {
+        "title": "Continuity demo reads and rewrites the real private draft",
+        "severity": "P1",
+        "file": "app/lib/demo-hook.js",
+        "line": 140,
+        "confidence": 75,
+        "autofix_class": "gated_auto",
+        "owner": "downstream-resolver",
+        "requires_verification": true,
+        "pre_existing": true,
+        "suggested_fix": "Use fresh in-memory storage for the authorized embedded continuity demo before loading any continuity data. Verify that the demo makes zero reads or writes to the regular user key.",
+        "first_evidence": "app/lib/demo-hook.js:140     \"continuity-kit.html\": function () { return inPage(\"continuity\", \"תיק רציפות\", \"תיק רציפות\", \"#example\", \"#go\", \"#kit .kit h2\", \"#kit\", \"#err1\"); },",
+        "evidence": [
+          "app/lib/demo-hook.js:140     \"continuity-kit.html\": function () { return inPage(\"continuity\", \"תיק רציפות\", \"תיק רציפות\", \"#example\", \"#go\", \"#kit .kit h2\", \"#kit\", \"#err1\"); },",
+          "app/lib/continuity-kit-ui.js:11   const STORE = window.sbeUserKey ? sbeUserKey('sbe.continuity.v2') : 'sbe.continuity.v2:anon';",
+          "app/lib/continuity-kit-ui.js:25       const v = JSON.parse(localStorage.getItem(STORE) || 'null');",
+          "app/lib/continuity-kit-ui.js:462     S.form = ex; save(); F('err1').hidden = true;",
+          "app/lib/demo-hook.js:111     click(example); await sleep(1200);",
+          "provenance: c46203a7 Claude 2026-10-09 - continuity demo recipe; both this recipe and continuity's regular storage path already exist in c187604, so this is upstream-only relative to local integration.",
+          "Validation: the review context records a local isolation reproduction in which the embedded admin demo read the regular private storage once; its untracked repro test is excluded from reviewed source."
+        ]
+      }
+    ],
+    "residual_risks": [],
+    "testing_gaps": []
+  }
+]

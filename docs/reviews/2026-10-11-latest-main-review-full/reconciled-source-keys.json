@@ -1,0 +1,33 @@
+{
+  "[\"app/lib/routines-ui.js\", 32, \"Isolate new demos before reading private workspaces\"]": [
+    "[\"correctness\", \"app/lib/routines-ui.js\", \"35\", \"isolate new demo tools from personal workspaces\"]",
+    "[\"security\", \"app/lib/routines-ui.js\", \"32\", \"cwe-200: isolate bridge and routines demos before loading\"]",
+    "[\"adversarial\", \"app/practice.html\", \"1945\", \"demo runs overwrite private work and evict saved cases\"]",
+    "[\"correctness\", \"app/lib/demo-hook.js\", \"324\", \"keep practice demos away from saved personal cases\"]"
+  ],
+  "[\"app/lib/routines-ui.js\", 229, \"Bind routine completions to their initiating mechanism\"]": [
+    "[\"correctness\", \"app/lib/routines-ui.js\", \"216\", \"bind routines responses to their initiating item\"]",
+    "[\"reliability\", \"app/lib/routines-ui.js\", \"229\", \"bind pending routine generation to its originating item\"]",
+    "[\"julik-frontend-races\", \"app/lib/routines-ui.js\", \"229\", \"bind routine completions to their originating mechanism\"]",
+    "[\"adversarial\", \"app/lib/routines-ui.js\", \"229\", \"switching routines sends a pending result into another item\"]",
+    "[\"testing\", \"app/lib/routines-ui.js\", \"229\", \"pending routines generation overwrites another mechanism\"]"
+  ],
+  "[\"app/lib/continuity-kit-ui.js\", 415, \"Exclude entrant input notes from shared continuity exports\"]": [
+    "[\"project-standards\", \"app/lib/continuity-kit-ui.js\", \"415\", \"exclude entrant input notes from shared continuity exports\"]"
+  ],
+  "[\"app/lib/continuity-kit-ui.js\", 456, \"Clear the previous entrant's kit when starting anew\"]": [
+    "[\"project-standards\", \"app/lib/continuity-kit-ui.js\", \"456\", \"clear the previous entrant's kit when starting anew\"]"
+  ],
+  "[\"app/lib/family-bridge-ui.js\", 451, \"Discard family revisions after starting a new round\"]": [
+    "[\"julik-frontend-races\", \"app/lib/family-bridge-ui.js\", \"451\", \"discard family revisions after starting a new round\"]"
+  ],
+  "[\"app/lib/participation-ui.js\", 148, \"Preserve participation request locks across redraws\"]": [
+    "[\"julik-frontend-races\", \"app/lib/participation-ui.js\", \"148\", \"preserve participation request locks across redraws\"]"
+  ],
+  "[\"app/lib/routines-ui.js\", 422, \"Include recorded decisions in routines revision context\"]": [
+    "[\"agent-native\", \"app/lib/routines-ui.js\", \"422\", \"include recorded decisions in routines revision context\"]"
+  ],
+  "[\"app/practice.html\", 1983, \"Invalidate custom-case work when leaving the editor\"]": [
+    "[\"julik-frontend-races\", \"app/practice.html\", \"1983\", \"invalidate custom-case work when leaving the editor\"]"
+  ]
+}

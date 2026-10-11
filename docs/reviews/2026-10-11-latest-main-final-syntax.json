@@ -1,0 +1,322 @@
+{
+  "kind": "syntax-only",
+  "at": "2026-10-11T11:46:25.367Z",
+  "base": "570c354",
+  "scripts": 62,
+  "configuredLint": false,
+  "configuredTypecheck": false,
+  "results": [
+    {
+      "file": "app/about.html",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/activity-planner.html",
+      "status": "passed",
+      "inline": 5
+    },
+    {
+      "file": "app/continuity-kit.html",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/demo-lab.html",
+      "status": "passed",
+      "inline": 1
+    },
+    {
+      "file": "app/entry.html",
+      "status": "passed",
+      "inline": 2
+    },
+    {
+      "file": "app/examples.html",
+      "status": "passed",
+      "inline": 1
+    },
+    {
+      "file": "app/facilitation-advisor.html",
+      "status": "passed",
+      "inline": 1
+    },
+    {
+      "file": "app/family-bridge.html",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/home.html",
+      "status": "passed",
+      "inline": 1
+    },
+    {
+      "file": "app/journey.html",
+      "status": "passed",
+      "inline": 1
+    },
+    {
+      "file": "app/leadership-advisor.html",
+      "status": "passed",
+      "inline": 1
+    },
+    {
+      "file": "app/lib/access-guard.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/continuity-kit-ui.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/continuity-model.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/demo-hook.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/example-peek.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/family-bridge-model.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/family-bridge-ui.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/participation-model.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/participation-ui.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/practice-custom.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/product-doc.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/readiness-groups.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/resilience-advisor-sources.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/resilience-studio-ui.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/routines-model.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/routines-ui.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/screens-menu.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/lib/tools-procedure.js",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/map.html",
+      "status": "passed",
+      "inline": 1
+    },
+    {
+      "file": "app/message-writer.html",
+      "status": "passed",
+      "inline": 1
+    },
+    {
+      "file": "app/practice.html",
+      "status": "passed",
+      "inline": 3
+    },
+    {
+      "file": "app/renew.html",
+      "status": "passed",
+      "inline": 1
+    },
+    {
+      "file": "app/resilience-advisor.html",
+      "status": "passed",
+      "inline": 1
+    },
+    {
+      "file": "app/resilience-studio.html",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/resilience-team.html",
+      "status": "passed",
+      "inline": 2
+    },
+    {
+      "file": "app/routines-hub.html",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "app/team-learning-lab.html",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/lib/access.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/lib/studio.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/lib/token-budget.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/practice-server.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/continuity-kit-ui.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/continuity-model.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/family-bridge-model.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/model-auth-transport.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/model-auth.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/participation-demo-isolation.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/participation-model.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/practice-custom.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/quality-foundation.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/readiness-groups.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/routines-model.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/server-transport.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/studio-quota-flow.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/studio-transport-budget.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/tools-procedure.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/family-bridge-ui.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/practice-editor-ui.test.mjs",
+      "status": "passed",
+      "inline": 0
+    },
+    {
+      "file": "harness/tests/routines-ui-state.test.mjs",
+      "status": "passed",
+      "inline": 0
+    }
+  ],
+  "passed": 60,
+  "failed": 0,
+  "sourceCommit": "eaf670eab9f56bf6bfb52fc3e35ea483cca006de",
+  "postRunWhitespaceOnly": [
+    "harness/tests/family-bridge-ui.test.mjs",
+    "harness/tests/routines-ui-state.test.mjs"
+  ],
+  "postRunFocusedTests": {
+    "passed": 50,
+    "failed": 0,
+    "change": "removed extra EOF blank lines only"
+  }
+}
