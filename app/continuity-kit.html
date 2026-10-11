@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>תיק רציפות</title>
 <script src="lib/access-guard.js"></script>
-<script src="lib/example-peek.js" data-tool="continuity" defer></script>
+<script src="lib/example-peek.js" data-tool="continuity,cont-join,cont-proc" defer></script>
 <script src="lib/open-select.js"></script>
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +17,7 @@
 <script src="lib/ref-collect.js"></script>
 <script src="lib/resilience-writer.js"></script>
 <script src="lib/continuity-model.js"></script>
+<script src="lib/tools-procedure.js"></script>
 <style>
 :root{
   --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
@@ -195,6 +196,8 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 .etable{margin:.3rem 0 .8rem}
 .kit-table select{min-width:9.5rem;font:inherit;padding:.25rem .3rem}.etable input,.etable textarea{width:100%;border:1px solid transparent;background:transparent;padding:.2rem;font:inherit;min-height:0}
 .etable input:focus,.etable textarea:focus{border-color:var(--spoken);background:var(--surface)}.etable textarea{min-height:52px}
+.remind{font-size:.92rem;background:var(--hidden-soft);border-radius:6px;padding:.4rem .7rem;margin:.6rem 0}
+.join .etable td>div{display:flex;gap:.2rem;align-items:flex-start}.join .etable td>div>textarea{flex:1;min-height:0}
 .etable .xbtn{font:inherit;border:none;background:none;color:var(--brick);cursor:pointer;padding:.2rem .4rem}
 .kit h3 .tag{font-size:.72rem;font-weight:600;color:var(--hidden);background:var(--hidden-soft);border-radius:99px;padding:.05rem .5rem;margin-inline-start:.5rem}
 .redbox{border:3px solid #B3261E;border-radius:10px;padding:.4rem .8rem .6rem;margin:.6rem 0 1rem;background:rgba(179,38,30,.05)}
@@ -206,6 +209,15 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
 .sens-note{border:2px solid #B3261E;color:#B3261E;padding:.4rem .7rem;border-radius:6px;font-weight:700}
 @media print{.redbox{border:3px solid #B3261E;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tabs,.status,.actions{display:none!important}}
 [hidden]{display:none!important}
+.proc-box{border:1px solid var(--hair);border-radius:10px;padding:.8rem 1rem;margin:1rem 0;background:var(--surface)}
+.proc-box h3{margin:.1rem 0 .4rem}.proc-box h4{margin:1rem 0 .4rem}
+.proc-tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.4rem;margin:.3rem 0 .8rem}
+.proc-tool{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem;border:1px solid var(--hair);border-radius:8px;padding:.4rem .55rem;cursor:pointer;background:var(--surface-2)}
+.proc-tool:has(input:checked){border-color:var(--auto);background:var(--auto-soft)}
+.proc-ex{flex-basis:100%;font-size:.82rem;color:var(--muted)}
+.lvl{display:inline-block;border-radius:999px;padding:.05rem .55rem;font-size:.85rem;white-space:nowrap}
+.lvl.l1{background:var(--auto-soft);color:var(--auto)}.lvl.l2{background:var(--spoken-soft);color:var(--spoken)}.lvl.l3{background:var(--brick-soft);color:var(--brick);font-weight:600}
+.proc-box textarea{width:100%}
 </style>
 </head>
 <body>
@@ -217,8 +229,7 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
 <div class="wrap">
   <div class="card no-print">
     <h1>תיק רציפות</h1>
-    <p>מכינים תיק הפעלה למי שתחליף אותך: ממלאת מקום, עמיתה שמגבה או בעלת תפקיד חדשה. בתיק שתי תיקיות: <b>שגרה</b>, ו<b>חירום ולמידה מרחוק</b>. מה שלא פועל בשגרה יקרוס בחירום, ולכן מה שמכינים לחירום מתורגל גם בשגרה. המחליפה ממשיכה לעדכן את התיק, ועמיתה יכולה לנסות אותו מראש.</p>
-    <p class="article-link" style="font-size:.9rem;margin:.45rem 0 0">📖 <a href="about.html?from=continuity-kit.html#article" target="_blank" rel="noopener" style="color:var(--spoken);font-weight:700">לבחור בחוסן שלנו</a>. מאמר קצר על המושגים שבבסיס הכלי: מנגנונים חברתיים, קהילת חוסן ותו חוסן.</p>
+    <p data-peek>מכינים תיק הפעלה למי שתחליף אותך: ממלאת מקום, עמיתה שמגבה או בעלת תפקיד חדשה. בתיק שתי תיקיות: <b>שגרה</b>, ו<b>חירום ולמידה מרחוק</b>. מה שלא פועל בשגרה יקרוס בחירום, ולכן מה שמכינים לחירום מתורגל גם בשגרה. המחליפה ממשיכה לעדכן את התיק, ועמיתה יכולה לנסות אותו מראש.</p>
   </div>
   <ol class="steps no-print" id="steps">
     <li data-step="1"><b>1. מספרים</b>התפקיד, הכיתה והשגרות</li>

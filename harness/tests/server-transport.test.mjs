@@ -21,6 +21,7 @@ async function serving(t,options) {
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   t.after(async()=>{await server.waitForJobs();await new Promise(resolve=>server.close(resolve));});
   const post=async(path,token,body)=>{
+    if(path==='/api/complete' && !body.permission && !body._auth) body={...body,permission:'activity'};
     const res=await fetch(`http://127.0.0.1:${server.address().port}${path}`,{method:'POST',
       headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify(body)});
     return {status:res.status,body:await res.json()};

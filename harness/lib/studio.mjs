@@ -290,7 +290,10 @@ function kitErrors(result,brief,action,available) {
   return errors;
 }
 
-export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onReady,signal}={}) {
+// Prepare the authenticated, normalized wire request once, before admission.
+// The production listener keeps this object in memory; client fields cannot
+// inject a prepared request and mapping is not re-read after reservation.
+export async function prepareStudio(store, body) {
   const actor=await authorizePermission(store,body?.token,STUDIO_PERMS);
   if(!actor) return [403,{code:'studio_forbidden',error:'אין הרשאה פעילה לסטודיו. יש להיכנס מחדש עם קוד מתאים.'}];
   if(!body || typeof body!=='object' || Array.isArray(body)) return [400,{error:'בקשה לא תקינה.'}];
@@ -330,9 +333,16 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
   const input={action,brief,components:studio.COMPONENTS,professionalSources,
     ...(mapping?{mapping}:{}),...(previous?{previous}: {}),...(consultation || {})};
   const schema=action==='analyze'?RECOMMENDATION_SCHEMA:action==='consult'?CONSULTATION_SCHEMA:ACTIVITY_SCHEMA;
-  const payload={model,reasoning:{effort},store:false,max_output_tokens:16000,instructions:INVITE.apply(INSTRUCTIONS),
+  const payload={model,reasoning:{effort},store:false,max_output_tokens:action==='analyze'?4096:action==='consult'?8192:16000,instructions:INVITE.apply(INSTRUCTIONS),
     input:[{role:'user',content:[{type:'input_text',text:JSON.stringify(input)}]}],
     text:{format:{type:'json_schema',name:action==='analyze'?'studio_focus':action==='consult'?'studio_consultation':'studio_activity',strict:true,schema}}};
+  return {action,brief,consultation,mapping,professionalSources,input,schema,payload,apiKey,model,effort};
+}
+
+export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onReady,signal,preparedStudio}={}) {
+  const prepared=preparedStudio || await prepareStudio(store,body);
+  if(Array.isArray(prepared))return prepared;
+  const {action,brief,consultation,mapping,professionalSources,input,schema,payload,apiKey,model,effort}=prepared;
   const requestController=new AbortController();
   const abortRequest=()=>requestController.abort(signal?.reason);
   const requestTimer=setTimeout(()=>requestController.abort(new DOMException('Studio deadline exceeded','TimeoutError')),REQUEST_DEADLINE_MS);
@@ -397,7 +407,9 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
       questions:result.clarificationQuestions.map(q=>q.trim()).filter(Boolean),focus:result.focus,rationale:result.selectionReason}];
     // בדיקה ותיקון אחד (09/10/2026: "לוודא שלא תחזור תקלה כזאת"): ערכה שלא עברה את הבדיקה חוזרת פעם אחת
     // למודל עם רשימת הבעיות, לפני שמציגים הודעת שגיאה.
+    let askFailure;
     const ask=async(instructions,text,schema,name)=>{
+      askFailure=null;
       try {
         const out=await responses({model,reasoning:{effort},store:false,max_output_tokens:name==='customer_review'?4000:16000,
           instructions,input:[{role:'user',content:[{type:'input_text',text}]}],text:{format:{type:'json_schema',name,strict:true,schema}}});
@@ -406,7 +418,7 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
         if(content.some(item=>item.type==='refusal')) return null;
         const v=JSON.parse(content.filter(item=>item.type==='output_text').map(item=>item.text).join(''));
         return matchesSchema(v,schema)?v:null;
-      } catch(error) {if(requestController.signal.aborted)throw error;return null;}
+      } catch(error) {if(requestController.signal.aborted)throw error;askFailure=error;return null;}
     };
     let errors=kitErrors(result,brief,action,available);
     if(errors.length) {
@@ -418,7 +430,12 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
     let review=null;
     if(process.env.STUDIO_CUSTOMER_REVIEW!=='off') {
       review=await ask(INVITE.apply(CUSTOMER.system),'מה ביקשתי (הקלט):\n'+JSON.stringify(brief)+'\n\nהתוצר שקיבלתי:\n'+kitText(result),CUSTOMER.schema,'customer_review');
-      if(review && !review.ready && review.issues.length) {
+      if(!review && (askFailure?.status===413 || askFailure?.status===429)) review={ready:false,
+        summary:'בדיקת הערכה לא הושלמה במסגרת המכסה. אפשר לבדוק את ההנחיות ולחזור לבדיקה בהמשך.',
+        issues:[{where:'בדיקת הערכה',quote:'',problem:'לא נותר תקציב לבדיקת המשך.',fix:'אפשר לשמור את הטיוטה ולבדוק אותה עם המנחה לפני שימוש.'}]};
+      // A review blocked by admission is not a model critique and does not
+      // trigger a replacement draft without a completed customer review.
+      if(review && !review.ready && review.issues.length && !askFailure) {
         const fixed=await ask(INVITE.apply(INSTRUCTIONS)+'\n'+CUSTOMER.reviseNote(review.issues),
           JSON.stringify({...input,previousDraft:result,customerIssues:review.issues}),ACTIVITY_SCHEMA,'studio_activity');
         if(fixed && !fixed.clarificationQuestions.length && !kitErrors(fixed,brief,action,available).length) { result=fixed; review={...review,revised:true}; }

@@ -366,6 +366,35 @@ export async function settleAIUsage(store,principal,{requestId,outcome}={}) {
   return store.atomicSettleUsage({ownerId:principal.ownerId,tenantId:principal.tenantId,requestId,outcome,now:new Date().toISOString()});
 }
 
+// ── מי יכול/ה לפנות למודל (10/10/2026: "לחסום אפשרות פרצה שאנשים מקבלים גישה לכלי אחד ויכולים להגיע לכלים אחרים") ──
+// כל פנייה ל-/api/complete, /api/character-turn ו-/api/pipeline נושאת _auth: {token, page, w} (access-guard.js מוסיף אותו).
+// בכל כניסה נבדקים הרשומות וההרשאות החיות, כולל מנהלת ומשתתפת בסדנה.
+// הסדנה מנפיקה אסימון חתום דרך wfJoin; מזהה סדנה לבדו אינו אישור להשתמש במודל.
+// כלי חדש שקורא למודל: מוסיפים כאן את הדף ואת ההרשאה (כמו PAGES_BY_PERM ב-access-guard.js). דף שאינו כאן: מנהלת המערכת בלבד.
+export const MODEL_PAGES = {
+  'input-screen.html': ['fac_trainee'], 'parent-input-screen.html': ['fac_parent'], 'student-input-screen.html': ['fac_youth'],
+  'practice.html': ['practice', 'fac_trainee', 'fac_parent', 'fac_youth'], 'facilitator-screen.html': ['fac_trainee', 'fac_parent', 'fac_youth'],
+  'conversation-planner.html': ['conv'], 'activity-planner.html': ['activity'], 'rehearsal.html': ['conv', 'activity'], 'academic-review.html': ['academic'],
+  'resilience-team.html': ['resilience'], 'resilience-advisor.html': ['resilience', 'practi'], 'leadership-advisor.html': ['leadership'],
+  'resilience-studio.html': ['studio'], 'journey.html': ['journey'], 'message-writer.html': ['writer'], 'facilitation-advisor.html': ['nana'],
+  'team-learning-lab.html': ['nana']
+};
+export const WORKSHOP_MODEL_PAGES = ['practice.html', 'conversation-planner.html', 'activity-planner.html', 'academic-review.html', 'parent-input-screen.html'];
+export function modelPage(page) {
+  let f = String(page || '').split('?')[0].split('#')[0].split('/').pop().toLowerCase();
+  if (f && !/\.html$/.test(f)) f += '.html';
+  return /^[a-z0-9-]+\.html$/.test(f) ? f : '';
+}
+export async function authorizeModel(store, auth) {
+  const a = auth && typeof auth === 'object' ? auth : {};
+  const page = modelPage(a.page);
+  const actor = await resolvePrincipal(store, a.token);
+  if (actor?.k === 'sys' && page) return { ok: true, who: 'sys' };
+  const perms = MODEL_PAGES[page];
+  if (actor && perms?.some(p => actor.permissions.includes(p))) return { ok: true, who: actor.k === 'workshop' ? 'workshop' : 'code' };
+  return { ok: false };
+}
+
 // הודעות לבאנר אחרי כניסה.
 function notices(kind, sub, rec) {
   const n = [];

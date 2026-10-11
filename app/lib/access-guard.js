@@ -16,7 +16,7 @@
 (function(){
   "use strict";
   var KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules",
-              "sbe.session.perms", "sbe.session.info"];
+              "sbe.session.perms", "sbe.session.info", "sbe.session.wf"];
   var MIRROR = "sbe.session.mirror", HOURS = 12;
 
   function ss(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
@@ -40,6 +40,34 @@
     }
     return "https://sbe-server.onrender.com";
   };
+
+  // Legacy callers declare their tool here. Only our model endpoints receive
+  // credentials; matching an external URL's path is never sufficient.
+  try {
+    var originalFetch = window.fetch;
+    if (originalFetch && !originalFetch.sbeAuth) {
+      var authenticatedFetch = function(url, opts){
+        try {
+          var target = new URL(typeof url === "string" ? url : url.url, location.href);
+          var ownOrigin = new URL(location.href).origin;
+          var modelOrigin = window.sbeAIOrigin();
+          if ((target.origin === ownOrigin || target.origin === modelOrigin) && !target.username && !target.password
+              && /^\/api\/(complete|character-turn|pipeline)$/.test(target.pathname)
+              && opts && typeof opts.body === "string" && /^\s*\{/.test(opts.body)) {
+            var body = JSON.parse(opts.body), headers = new Headers(opts.headers || {});
+            var explicit = headers.get("authorization");
+            var token = explicit ? explicit.replace(/^Bearer\s+/i, "") : (ss("sbe.session.token") || "");
+            if (!explicit && token) headers.set("authorization", "Bearer " + token);
+            body._auth = { token: token, page: location.pathname.split("/").pop() || "index.html", w: ss("sbe.session.wf") || "" };
+            opts = Object.assign({}, opts, { headers: headers, body: JSON.stringify(body) });
+          }
+        } catch(e){}
+        return originalFetch.call(this, url, opts);
+      };
+      authenticatedFetch.sbeAuth = true;
+      window.fetch = authenticatedFetch;
+    }
+  } catch(e){}
 
   // שחזור כניסה בלשונית חדשה / רענון שכפול הכניסה ל-localStorage.
   try {
@@ -127,6 +155,47 @@
     var pending = 0;
     var later = function(){ if (pending) return; pending = setTimeout(function(){ pending = 0; quiet(); }, 60); };
     document.addEventListener("DOMContentLoaded", function(){ quiet(); try { new MutationObserver(later).observe(document.body, {childList: true, subtree: true}); } catch(e){} });
+  } catch(e){}
+
+  // תאריך כמקובל בישראל, בכל המערכת (10/10/2026: "תאריך יופיע כברירת מחדל ועם אפשרות לשנות. באופן בו הוא מופיע בכל המערכת"):
+  // שדה תאריך של הדפדפן מוצג לפי שפת הדפדפן (לפעמים mm/dd/yyyy). כאן כל input[type=date] מקבל שדה טקסט בפורמט 10.10.26,
+  // שאפשר להקליד בו (גם 10/10/2026), וכפתור 📅 שפותח את לוח השנה. הערך של השדה המקורי נשאר yyyy-mm-dd, כך שהקוד לא משתנה.
+  try {
+    var p2 = function(n){ return (n < 10 ? "0" : "") + n; };
+    window.sbeDateIL = function(iso){ var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || "")); return m ? m[3] + "." + m[2] + "." + m[1].slice(2) : ""; };
+    window.sbeIsoPlus = function(days){ var d = new Date(); d.setDate(d.getDate() + (days || 0)); return d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()); };
+    var parseIL = function(t){
+      var m = /^\s*(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{2}|\d{4})\s*$/.exec(String(t || "")); if (!m) return null;
+      var y = +m[3]; if (y < 100) y += 2000; var mo = +m[2], d = +m[1], dt = new Date(y, mo - 1, d);
+      return dt.getMonth() === mo - 1 && dt.getDate() === d ? y + "-" + p2(mo) + "-" + p2(d) : null;
+    };
+    var desc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+    var dateIL = function(inp){
+      if (inp.getAttribute("data-il") || inp.closest("[data-native-date]")) return; inp.setAttribute("data-il", "1");
+      var t = document.createElement("input"); t.type = "text"; t.inputMode = "numeric"; t.className = "sbe-date " + (inp.className || "");
+      t.placeholder = "יום.חודש.שנה"; t.setAttribute("aria-label", inp.getAttribute("aria-label") || (inp.id && document.querySelector('label[for="' + inp.id + '"]') ? document.querySelector('label[for="' + inp.id + '"]').textContent : "תאריך"));
+      t.style.cssText = "width:7.5em;direction:ltr;text-align:right";
+      var cal = document.createElement("button"); cal.type = "button"; cal.textContent = "📅"; cal.title = "לוח שנה"; cal.setAttribute("aria-label", "פתיחת לוח שנה");
+      cal.style.cssText = "font:inherit;border:1px solid #CDD3D8;border-radius:6px;background:transparent;cursor:pointer;padding:.2rem .4rem;margin-inline-start:.25rem";
+      var sync = function(){ t.value = window.sbeDateIL(desc.get.call(inp)); t.style.borderColor = ""; };
+      Object.defineProperty(inp, "value", { configurable: true, get: function(){ return desc.get.call(this); }, set: function(v){ desc.set.call(this, v); sync(); } });
+      inp.style.cssText += ";position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;border:0;padding:0";
+      inp.tabIndex = -1; inp.setAttribute("aria-hidden", "true");
+      inp.parentNode.insertBefore(t, inp); inp.parentNode.insertBefore(cal, inp.nextSibling);
+      inp.addEventListener("change", sync);
+      cal.addEventListener("click", function(){ try { if (inp.showPicker) { inp.style.pointerEvents = "auto"; inp.showPicker(); inp.style.pointerEvents = "none"; return; } } catch(e){} t.focus(); });
+      t.addEventListener("change", function(){
+        var v = t.value.trim();
+        if (!v) { desc.set.call(inp, ""); inp.dispatchEvent(new Event("change", { bubbles: true })); return; }
+        var iso = parseIL(v);
+        if (!iso) { t.style.borderColor = "#B3261E"; t.title = "כדי לשמור, כתבו תאריך כמו 25.10.26"; return; }
+        desc.set.call(inp, iso); sync(); inp.dispatchEvent(new Event("input", { bubbles: true })); inp.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      sync();
+    };
+    var scanDates = function(){ [].forEach.call(document.querySelectorAll('input[type="date"]:not([data-il])'), dateIL); };
+    var dPending = 0;
+    document.addEventListener("DOMContentLoaded", function(){ scanDates(); try { new MutationObserver(function(){ if (dPending) return; dPending = setTimeout(function(){ dPending = 0; scanDates(); }, 0); }).observe(document.body, {childList: true, subtree: true}); } catch(e){} });
   } catch(e){}
 
   // המסך הנוכחי, יחסית ל-app/ (products/x.html לתוצרים).

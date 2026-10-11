@@ -17,7 +17,7 @@ async function http(t,provider,options={}) {
   const server=createPracticeServer({store,providerFactory:()=>provider,sourceLibrary:fixture.sourceLibrary,...options});
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   t.after(async()=>{await server.waitForJobs();await new Promise(resolve=>server.close(resolve));});
-  const post=async(path,body)=>{const res=await fetch('http://127.0.0.1:'+server.address().port+path,{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+session.token},body:JSON.stringify(body)});return {status:res.status,body:await res.json()};};
+  const post=async(path,body)=>{if(['/api/complete','/api/pipeline'].includes(path) && !body.permission && !body._auth) body={...body,permission:path==='/api/pipeline'?'fac_trainee':'activity'};const res=await fetch('http://127.0.0.1:'+server.address().port+path,{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+session.token},body:JSON.stringify(body)});return {status:res.status,body:await res.json()};};
   return {post,store,server};
 }
 

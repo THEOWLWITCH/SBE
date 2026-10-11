@@ -24,12 +24,13 @@
   const today = () => new Date().toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' });
 
   const EMPTY = () => ({ form: {}, kit: null, emerg: null, version: 0, at: '', history: [], tab: 'routine', review: '', edits: {}, references: {},
-    local: { students: [], studentsLink: '', red: [], individual: [], plans: [], updates: [], readiness: {}, teams: [], letter: {} } });
+    local: { students: [], studentsLink: '', red: [], individual: [], plans: [], updates: [], readiness: {}, teams: [], letter: {} },
+    join: { form: {}, kit: null, info: [], choice: '', done: {}, log: [], checkWhen: '' }, proc: {} });
   let S = EMPTY();
   function load() {
     try {
       const v = JSON.parse(storage.getItem(STORE) || 'null');
-      if (v && v.form) { S = Object.assign(EMPTY(), v); S.local = Object.assign(EMPTY().local, v.local || {}); }
+      if (v && v.form) { S = Object.assign(EMPTY(), v); S.local = Object.assign(EMPTY().local, v.local || {}); S.join = Object.assign(EMPTY().join, v.join || {}); S.proc = v.proc || {}; }
     } catch (e) {}
   }
   load();
@@ -401,6 +402,101 @@
     root.appendChild(sec);
     return root;
   }
+  // ── הצטרפות וחזרה לקבוצה (10/10/2026): תלמיד/ה חדש/ה, חזרה אחרי היעדרות מכל סיבה, או כל הכיתה חוזרת ──
+  let joiningRequest = null;
+  function renderJoin() {
+    const J = S.join, root = el('div', 'kit join');
+    root.appendChild(el('p', 'sub', 'מסלול קצר למי שמצטרף או חוזר: מידע שימושי, דרך כניסה לבחירה, משימה ראשונה ותפקידי עמיתים מתחלפים. אחרי כמה מפגשים בודקים מה להתאים.'));
+    const inputs = el('div', 'join-inputs sens'), form = el('div', 'grid2');
+    inputs.appendChild(form); root.appendChild(inputs);
+    C.JOIN_FIELDS.forEach((f) => {
+      const box = el('div', 'f'), l = el('label', null, f.l); if (f.main) l.appendChild(el('span', 'main-tag', 'שדה עיקרי')); box.appendChild(l);
+      let i; if (f.type === 'select') { i = el('select'); i.appendChild(new Option('בחירה…', '')); f.opts.forEach((o) => i.appendChild(new Option(o, o))); } else { i = el('textarea'); i.rows = 2; }
+      if (f.ph) i.placeholder = f.ph; i.value = J.form[f.k] || ''; i.setAttribute('aria-label', f.l);
+      const keep = () => { J.form[f.k] = i.value; save(); }; i.addEventListener('input', keep); i.addEventListener('change', keep);
+      box.appendChild(i); (f.type === 'area' ? inputs : form).appendChild(box);
+    });
+    const err = el('p', 'err'); err.hidden = true; const wait = el('div', 'wait'); wait.hidden = true;
+    const go = btn(J.kit ? 'הכנה מחדש' : 'הכנת ערכת ההצטרפות', J.kit ? 'btn btn-ghost sm' : 'btn', async () => {
+      if (joiningRequest && joiningRequest.join === J) return;
+      err.hidden = true; if (!J.form.who) return fail(err, 'כדי להמשיך, בחרי מי מצטרף או חוזר.');
+      const context = () => JSON.stringify([S.form, J.form, J.info]);
+      const operation = { join: J, context: context() }; joiningRequest = operation;
+      go.disabled = true; const w = waiting(wait, 'מכינה ערכת הצטרפות וחזרה.', 60);
+      let k = null, bad = null;
+      try { k = await ask(C.joinSystem(KB, WRITER), 'מהתיק:\n' + C.inputText(S.form) + '\n\nההצטרפות:\n' + C.JOIN_FIELDS.map((f) => J.form[f.k] ? f.l + ': ' + J.form[f.k] : '').filter(Boolean).join('\n') +
+        (J.info.length ? '\n\nתיק הכניסה הקבוצתי הקיים (לשמור ולעדכן):\n' + J.info.map((x) => x.c0 + ': ' + x.c1).join('\n') : '') + '\n\nהכיני את הערכה.', C.validJoin); }
+      catch (e) { bad = e; console.warn('תיק רציפות, הצטרפות:', e.message); } finally {
+        w.stop();
+        if (joiningRequest === operation) joiningRequest = null;
+        document.querySelectorAll('[data-joining-request]').forEach((button) => { button.disabled = !!(joiningRequest && joiningRequest.join === S.join); });
+      }
+      if (S.join !== J || context() !== operation.context) return;
+      if (!C.validJoin(k)) return fail(err, why(bad));
+      J.kit = k; if (!J.info.length) J.info = (k.info || []).map((x) => ({ c0: txt(x.topic), c1: txt(x.what) }));
+      J.choice = ''; J.done = {}; if (!J.checkWhen && window.sbeIsoPlus) J.checkWhen = sbeIsoPlus(14); save(); showKit();
+    });
+    go.setAttribute('data-joining-request', ''); go.disabled = !!(joiningRequest && joiningRequest.join === J);
+    root.append(go, wait, err);
+    const k = J.kit; if (!k) return root;
+    if (window.SBE_REFS) SBE_REFS.begin(SRC, 'resilience-advisor-sources.html');
+    // תיק כניסה קבוצתי: נשמר ומתעדכן לפעם הבאה
+    root.appendChild(el('h3', null, 'תיק כניסה קבוצתי')); root.appendChild(el('p', 'sub', 'מידע שימושי שהקבוצה מתחזקת ומעדכנת. נשאר לפעם הבאה שמישהו מצטרף.'));
+    root.appendChild(etable(['הנושא', 'מה חשוב לדעת'], J.info, 'הוספת פריט'));
+    root.appendChild(el('h3', null, 'דרכי הצטרפות לבחירה')); root.appendChild(el('p', 'sub', 'המצטרף/ת בוחר/ת. כל דרך לגיטימית'));
+    root.appendChild(window.SBE_TABLE(['הדרך', 'איך זה נראה'], (k.ways || []).map((x) => [txt(x.name), txt(x.how)]), 'kit-t'));
+    const ch = el('div', 'f no-print'); ch.appendChild(el('label', null, 'מה בחר/ה המצטרף/ת')); const cs = el('select'); cs.setAttribute('data-closed', ''); cs.appendChild(new Option('עוד לא בחר/ה', ''));
+    (k.ways || []).forEach((x) => cs.appendChild(new Option(txt(x.name), txt(x.name)))); cs.value = J.choice || ''; cs.addEventListener('change', () => { J.choice = cs.value; save(); }); ch.appendChild(cs); root.appendChild(ch);
+    root.appendChild(el('h3', null, 'המשימה הראשונה'));
+    root.appendChild(window.SBE_TABLE(null, [['מה עושים', txt(k.first.task)], ['עם מי', txt(k.first.with)], ['מתי', txt(k.first.when)]].filter((r) => r[1]), 'kit-t'));
+    if ((k.roles || []).length) { root.appendChild(el('h3', null, 'תפקידי עמיתים מתחלפים')); root.appendChild(window.SBE_TABLE(['התפקיד', 'מה עושים', 'מתי מתחלפים'], k.roles.map((x) => [txt(x.role), txt(x.does), txt(x.rotate)]), 'kit-t')); }
+    if (k.group) { root.appendChild(el('h3', null, 'מה אומרים לקבוצה')); root.appendChild(window.SBE_TABLE(null, [['מה אומרים (רק מה שהותר לשתף)', txt(k.group.say)], ['איך מקבלים את המצטרף/ת', txt(k.group.welcome)]].filter((r) => r[1]), 'kit-t')); }
+    root.appendChild(el('h3', null, 'לוח לשבועיים'));
+    root.appendChild(window.SBE_TABLE(['מתי', 'מה קורה', 'מי אחראי/ת', 'קרה'], (k.board || []).map((x, i) => { const c = el('input'); c.type = 'checkbox'; c.checked = !!J.done[i]; c.setAttribute('aria-label', 'קרה: ' + txt(x.what)); c.addEventListener('change', () => { J.done[i] = c.checked; save(); }); return [txt(x.day), txt(x.what), txt(x.who), c]; }), 'kit-t'));
+    if (k.check) {
+      root.appendChild(el('h3', null, 'בדיקה אחרי כמה מפגשים'));
+      const d = el('div', 'f no-print'); d.appendChild(el('label', null, 'מתי בודקים')); const di = el('input'); di.type = 'date'; di.value = J.checkWhen || ''; di.addEventListener('change', () => { J.checkWhen = di.value; save(); }); d.appendChild(di); root.appendChild(d);
+      root.appendChild(window.SBE_TABLE(null, [['מתי', txt(k.check.after)], ['מה בודקים', list(k.check.look)]], 'kit-t'));
+    }
+    const lg = el('section', 'sens'); lg.appendChild(el('h3', null, 'רשומת התאמות')); lg.appendChild(el('p', 'sub', 'מה התאמנו ולמה. המחנכת מאשרת כל התאמה'));
+    lg.appendChild(etable(['תאריך', 'מה התאמנו', 'למה', 'אישור המחנכת'], J.log, 'הוספת התאמה', 4)); root.appendChild(lg);
+    if (k.adult) root.appendChild(el('p', 'remind', '👩‍🏫 ' + txt(k.adult)));
+    if ((k.resilience || []).length) { root.appendChild(el('h3', null, 'מה זה בונה בחוסן')); root.appendChild(window.SBE_TABLE(['רכיב החוסן', 'איך זה קורה'], k.resilience.map((x) => [txt(x.component), txt(x.how)]), 'kit-t')); }
+    const row = el('div', 'actions no-print');
+    row.append(btn('🖨 כרטיסי בחירה ותפקיד', 'btn btn-ghost sm', () => printJoinCards()),
+      btn('מצטרף/ת חדש/ה: מתחילים מחדש (תיק הכניסה נשמר)', 'btn btn-ghost sm', () => {
+        if (!confirm('להתחיל מסלול חדש? הפרטים והערכה האישית, הבחירה, הלוח ורשומת ההתאמות יתאפסו, ותיק הכניסה הקבוצתי יישאר.')) return;
+        joiningRequest = null; S.join = { ...EMPTY().join, info: J.info };
+        if (S.references) delete S.references.join;
+        clearEdits('join'); save(); showKit();
+      }));
+    root.appendChild(row);
+    if (window.SBE_REFS) SBE_REFS.add(k.sources || []);
+    references(root, 'join');
+    return root;
+  }
+  // טבלה לעריכה עם שורות שנשמרות (c0..cN)
+  function etable(cols, rows, addLabel, n) {
+    const wrap = el('div'); n = n || cols.length;
+    const draw = () => {
+      wrap.textContent = '';
+      wrap.appendChild(window.SBE_TABLE(cols, rows.map((r, ri) => cols.map((c, ci) => {
+        const d = el('div'); const t = el('textarea'); t.rows = 2; t.value = r['c' + ci] || ''; t.setAttribute('aria-label', c); t.addEventListener('input', () => { r['c' + ci] = t.value; save(); }); d.appendChild(t);
+        if (ci === n - 1) { const x = btn('✕', 'xbtn no-print', () => { rows.splice(ri, 1); save(); draw(); }); x.setAttribute('aria-label', 'הסרת השורה'); d.appendChild(x); }
+        return d;
+      })), 'kit-t etable'));
+      wrap.appendChild(btn('➕ ' + addLabel, 'btn btn-ghost sm no-print', () => { rows.push({}); save(); draw(); }));
+    };
+    draw(); return wrap;
+  }
+  function printJoinCards() {
+    const k = S.join.kit, out = el('div');
+    const card = el('div', 'rcard'); card.appendChild(el('h3', null, 'איך תרצה/י להצטרף?'));
+    (k.ways || []).forEach((x) => { const r = el('div', 'rcard-row'); r.appendChild(el('b', null, '☐ ' + txt(x.name))); r.appendChild(el('span', null, txt(x.how))); card.appendChild(r); });
+    const f = el('div', 'rcard-row'); f.appendChild(el('b', null, 'המשימה הראשונה')); f.appendChild(el('span', null, txt(k.first.task))); card.appendChild(f); out.appendChild(card);
+    (k.roles || []).forEach((x) => { const c = el('div', 'rcard'); c.appendChild(el('h3', null, txt(x.role))); [['מה עושים', x.does], ['מתי מתחלפים', x.rotate]].forEach(([l, v]) => { if (!v) return; const r = el('div', 'rcard-row'); r.appendChild(el('b', null, l)); r.appendChild(el('span', null, txt(v))); c.appendChild(r); }); out.appendChild(c); });
+    window.SBE_DOC.print({ title: txt(k.title) || 'הצטרפות וחזרה', subtitle: S.form.group || '', kind: 'כרטיסי בחירה ותפקיד', node: out });
+  }
   function renderUpdates() {
     const root = el('div', 'kit');
     root.appendChild(el('p', null, 'כאן המחליפה כותבת בסוף כל יום מה היה ומה ממשיך. כך המורה הקבועה, ומי שתבוא אחריה, יודעות בדיוק איפה הכיתה עומדת.'));
@@ -440,7 +536,21 @@
     box.appendChild(top);
     const ul = el('ul', 'st-list'); st.forEach(([n, ok, note]) => { const li = el('li', ok ? 'ok' : 'miss', (ok ? '✓ ' : '○ ') + n + (note ? ' (' + note + ')' : '')); ul.appendChild(li); }); box.appendChild(ul);
   }
-  const TABS = [['routine', '🏫 שגרה'], ['emerg', '🚨 חירום ולמידה מרחוק'], ['students', '👥 התלמידים'], ['updates', '📝 עדכוני המחליפה']];
+  // נוהל עבודה בכלים שלכם: איפה כל חלק בתיק נמצא בכלים שכבר יש לבית הספר (SBE_PROC)
+  const PROC_ITEMS = ['כרטיס פתיחה ושגרות', 'תפקידים וגיבוי', 'נהלי בית הספר', 'תכניות הלימודים והעבודה', 'מידע חשוב רפואי ונפשי (רגיש)',
+    'רשימת התלמידים ופרטי ההורים (רגיש)', 'מענה פרטני (רגיש)', 'צוותי עבודה', 'שרשרת הקשר', 'מכתב להורים', 'עדכוני המחליפה (רגיש)',
+    'תיק כניסה קבוצתי', 'רשומת התאמות (רגיש)'];
+  function renderProc() {
+    const box = el('div', 'proc-box');
+    box.appendChild(el('h3', null, '🗂 נוהל עבודה בכלים שלכם'));
+    const inner = el('div'); box.appendChild(inner);
+    if (!window.SBE_PROC) return box;
+    if (!S.proc) S.proc = {};
+    window.SBE_PROC.mount(inner, { state: S.proc, save, kind: 'continuity', items: () => PROC_ITEMS,
+      context: () => ['תפקיד: ' + (S.form.role || ''), 'שכבת גיל: ' + (S.form.age || ''), 'איפה לומדים מרחוק: ' + (S.form.platform || ''), 'איפה הדברים היום: ' + (S.form.where || '')].join('\n') });
+    return box;
+  }
+  const TABS = [['routine', '🏫 שגרה'], ['emerg', '🚨 חירום ולמידה מרחוק'], ['join', '🤝 הצטרפות וחזרה'], ['students', '👥 התלמידים'], ['updates', '📝 עדכוני המחליפה'], ['proc', '🗂 נוהל עבודה']];
   function showKit() {
     const box = F('kit'); box.textContent = '';
     const bar = el('div', 'tabs no-print'); bar.setAttribute('role', 'tablist');
@@ -450,7 +560,7 @@
       b.dataset.tab = id; b.setAttribute('role', 'tab'); bar.appendChild(b);
     });
     box.appendChild(bar);
-    const make = { routine: renderRoutine, emerg: renderEmerg, students: renderStudents, updates: renderUpdates };
+    const make = { routine: renderRoutine, emerg: renderEmerg, join: renderJoin, students: renderStudents, updates: renderUpdates, proc: renderProc };
     TABS.forEach(([id, label]) => { const p = el('div', 'pane'); p.dataset.pane = id; p.dataset.title = label.replace(/^\S+\s/, ''); p.appendChild(make[id]()); panes[id] = p; box.appendChild(p); });
     const cur = TABS.some((t) => t[0] === S.tab) ? S.tab : 'routine';
     bar.querySelector('[data-tab="' + cur + '"]').click();
@@ -525,7 +635,8 @@
       const o = JSON.parse(await f.text());
       if (!o || o.type !== 'begood-continuity' || !o.S || typeof o.S !== 'object' || !o.S.form) throw new Error('זה לא קובץ של תיק רציפות');
       if (S.kit && !confirm('לפתוח את התיק מהקובץ במקום התיק שעל המסך?')) return;
-      S = Object.assign(EMPTY(), o.S); S.local = Object.assign(EMPTY().local, o.S.local || {}); save();
+      S = Object.assign(EMPTY(), o.S); S.local = Object.assign(EMPTY().local, o.S.local || {});
+      S.join = Object.assign(EMPTY().join, o.S.join || {}); S.proc = o.S.proc || {}; save();
       location.reload();
     } catch (err) { alert('לא הצלחנו לפתוח את הקובץ: ' + err.message); }
     finally { e.target.value = ''; }
@@ -539,7 +650,8 @@
     const a = el('a'); a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })); a.download = 'עדכון-תיק-רציפות.ics';
     document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   });
-  if (S.review) F('reviewDate').value = S.review;
+  F('reviewDate').value = S.review || (window.sbeIsoPlus ? sbeIsoPlus(30) : '');
+  F('reviewDate').addEventListener('change', () => { S.review = F('reviewDate').value; save(); });
 
   // ── צעד 3: עמיתה מנסה ──
   F('toTrial').addEventListener('click', () => goStep(3));

@@ -1,3 +1,11 @@
+// Studio sends native Responses JSON. Count the exact serialized wire and its
+// actual output cap, without adding a second generic-provider system field.
+export function responsesReservation(serializedRequest) {
+  const request=JSON.parse(serializedRequest);
+  if(!Number.isInteger(request.max_output_tokens) || request.max_output_tokens<1)throw Error('invalid Responses output cap');
+  return Buffer.byteLength(serializedRequest)+request.max_output_tokens+2048;
+}
+
 // Usage returned by an adapter can describe only its final physical attempt.
 // Reconcile a reservation only when a single successful attempt has a complete,
 // finite measurement. Null means invalid usage: callers reject and retain it.

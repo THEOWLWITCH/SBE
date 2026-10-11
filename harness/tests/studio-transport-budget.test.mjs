@@ -5,7 +5,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {createPracticeServer} from '../practice-server.mjs';
 import {createAtomicMemoryStore,handleAccess,AI_LIMITS} from '../lib/access.mjs';
-import {applyProductPolicy} from '../lib/providers.mjs';
+import {handleStudio} from '../lib/studio.mjs';
 
 const studio=createRequire(import.meta.url)('../../app/lib/resilience-studio.js');
 const brief=()=>studio.newBrief({startingPoint:'Synthetic team activity',goal:'Synthetic shared preparation',leaderRole:'מנחה',
@@ -95,13 +95,12 @@ function sourcesIntact(request) {
 }
 function outputCaps(calls) {
   for(const {request,signal} of calls) {
-    assert.equal(request.max_output_tokens,request.text.format.name==='customer_review'?4000:16000);
+    assert.equal(request.max_output_tokens,({customer_review:4000,studio_focus:4096,studio_consultation:8192})[request.text.format.name] || 16000);
     assert.equal(request.store,false);assert.equal(request.text.format.strict,true);assert.equal(signal.aborted,false);
   }
 }
 function reservedAmount(request) {
-  return Buffer.byteLength(JSON.stringify({...request,system:applyProductPolicy(request.system||request.instructions)}))
-    +request.max_output_tokens+2048;
+  return Buffer.byteLength(JSON.stringify(request))+request.max_output_tokens+2048;
 }
 
 for(const action of ['analyze','consult','generate','adapt'])test('Actual Studio '+action+' is admitted with the complete public bank and bounded output',async t=>{
@@ -112,16 +111,18 @@ for(const action of ['analyze','consult','generate','adapt'])test('Actual Studio
     action==='adapt'?{previous:studio.exampleActivity(brief())}:{});
   const done=await fixture.done(jobId);
   assert.equal(done.status,'done');assert.equal(done.httpStatus,200,JSON.stringify(done.result));
-  const expectedBudget=['analyze','consult'].includes(action)?256000:512000;
+  const expectedBudget=reservedAmount(fixture.calls[0].request);
   assert.equal((await fixture.store.get('pj:'+jobId)).tokenBudget,expectedBudget);
   assert.equal((await fixture.store.list('aiq:'))[0].value.tokenBudget,expectedBudget);
   assert.equal((await fixture.store.list('aiq:'))[0].value.state,'committed');
   assert.equal(AI_LIMITS.maxTokenBudget,512000);sourcesIntact(fixture.calls[0].request);outputCaps(fixture.calls);
-  assert.ok(fixture.calls.reduce((sum,call)=>sum+reservedAmount(call.request),0)<=expectedBudget);
+  const reservations=await fixture.store.list('aiq:');
+  assert.equal(reservations.reduce((sum,row)=>sum+row.value.tokenBudget,0),fixture.calls.reduce((sum,call)=>sum+reservedAmount(call.request),0));
+  assert.ok(reservations.reduce((sum,row)=>sum+row.value.tokenBudget,0)<=512000);
   assert.equal(fixture.calls.length,['generate','adapt'].includes(action)?2:1);
 });
 
-for(const repair of ['validation','customer'])test('Actual Studio '+repair+' repair remains inside its shared budget',async t=>{
+for(const repair of ['validation','customer'])test('Actual Studio '+repair+' repair respects its workflow ceiling and keeps a valid kit',async t=>{
   const bad=generated();bad.sessions[0].steps[0].minutes=0;let kits=0;
   const fixture=await serving(t,async request=>{
     if(request.text.format.name==='customer_review')return providerResponse(repair==='customer'?revise:ready);
@@ -129,18 +130,21 @@ for(const repair of ['validation','customer'])test('Actual Studio '+repair+' rep
     if(kits>1)result.title='Synthetic repaired kit';return providerResponse(result);
   });
   const jobId=await fixture.start('generate'),done=await fixture.done(jobId);
-  assert.equal(done.httpStatus,200,JSON.stringify(done.result));assert.equal(done.result.activity.title,'Synthetic repaired kit');
-  assert.equal(done.result.customerReview.revised,repair==='customer');assert.equal(fixture.calls.length,3);
+  assert.equal(done.httpStatus,200,JSON.stringify(done.result));
+  assert.equal(done.result.activity.title,repair==='validation'?'Synthetic repaired kit':generated().title);
+  assert.equal(done.result.customerReview.ready,false);assert.equal(done.result.customerReview.revised,false);assert.equal(fixture.calls.length,2);
+  if(repair==='validation')assert.match(done.result.customerReview.issues[0].problem,/תקציב/);
+  else assert.deepEqual(done.result.customerReview.issues,revise.issues);
   outputCaps(fixture.calls);sourcesIntact(fixture.calls[0].request);
   sourcesIntact(fixture.calls.findLast(call=>call.request.text.format.name==='studio_activity').request);
   assert.ok(fixture.calls.reduce((sum,call)=>sum+reservedAmount(call.request),0)<=512000);
 });
 
-test('A second full repair is blocked before provider fetch; the validated kit and review remain explicit',async t=>{
+test('A customer review after validation repair is blocked before provider fetch; the validated kit stays unreviewed',async t=>{
   const bad=generated();bad.sessions[0].steps[0].minutes=0;let kits=0;
   const fixture=await serving(t,async request=>providerResponse(request.text.format.name==='customer_review'?revise:++kits===1?bad:generated()));
   const done=await fixture.done(await fixture.start('generate'));
-  assert.equal(done.httpStatus,200);assert.equal(fixture.calls.length,3);
+  assert.equal(done.httpStatus,200);assert.equal(fixture.calls.length,2);
   assert.equal(done.result.customerReview.ready,false);assert.equal(done.result.customerReview.revised,false);
   assert.ok(done.result.activity);assert.equal((await fixture.store.list('aiq:'))[0].value.state,'committed');outputCaps(fixture.calls);
 });
@@ -154,7 +158,12 @@ for(const stage of ['validation','customer','revision'])test('A mixed refusal an
     if(request.text.format.name==='customer_review')return stage==='customer'?refusedResponse(ready):providerResponse(revise);
     return index===1?providerResponse(original):refusedResponse(refused);
   });
-  const done=await fixture.done(await fixture.start('generate'));
+  // Revision JSON/refusal validation remains a domain test. The production
+  // listener blocks that third full-bank attempt before provider dispatch.
+  const done=stage==='revision'?await (async()=>{
+    const [status,login]=await handleAccess(fixture.store,{action:'login',kind:'code',secret:'STUDIO111'});assert.equal(status,200);
+    const [httpStatus,result]=await handleStudio(fixture.store,{token:login.token,action:'generate',brief:brief()});return {httpStatus,result};
+  })():await fixture.done(await fixture.start('generate'));
   if(stage==='validation') {
     assert.equal(done.httpStatus,422);assert.ok(!done.result.activity);assert.ok(!done.result.customerReview);
     assert.match(done.result.error,/משך שלב אינו תקין/);
@@ -166,38 +175,37 @@ for(const stage of ['validation','customer','revision'])test('A mixed refusal an
       assert.equal(done.result.customerReview.ready,false);assert.equal(done.result.customerReview.revised,false);
       assert.deepEqual(done.result.customerReview.issues,revise.issues);
     }
-    assert.equal((await fixture.store.list('aiq:'))[0].value.state,'committed');
+    if(stage!=='revision')assert.equal((await fixture.store.list('aiq:'))[0].value.state,'committed');
   }
   assert.equal(fixture.calls.length,stage==='revision'?3:2);outputCaps(fixture.calls);
 });
 
-test('Oversized Studio input never reaches the provider; released reservations retain their daily allowance',async t=>{
+test('Oversized Studio input is rejected before admission and does not consume daily allowance',async t=>{
   const fixture=await serving(t,async()=>{throw Error('Over-budget provider fetch');});
   const large=brief();large.sources=[{name:'Synthetic oversized context',content:'x'.repeat(550000)}];
-  const done=await fixture.done(await fixture.start('generate',{brief:large}));
-  assert.equal(done.httpStatus,503);assert.equal(fixture.calls.length,0);
-  const usage=(await fixture.store.list('aiq:'))[0].value;assert.equal(usage.state,'released');assert.equal(usage.tokenBudget,512000);
-  const retry=await fixture.post('/api/studio',{action:'generate',brief:brief(),async:true,requestId:'synthetic-second-generation'});
-  assert.equal(retry.status,429);assert.equal(retry.body.code,'quota_exceeded');assert.equal(fixture.calls.length,0);
+  const rejected=await fixture.post('/api/studio',{action:'generate',brief:large,async:true,requestId:'synthetic-oversized-generation'});
+  assert.equal(rejected.status,413);assert.equal(fixture.calls.length,0);assert.deepEqual(await fixture.store.list('aiq:'),[]);
 });
 
-test('Current daily reservation limits deny consultation after analysis and a kit; no quota bypass is introduced',async t=>{
+test('Current daily reservation limits admit two consultations after analysis and a kit, then deny another',async t=>{
   const fixture=await serving(t,async request=>providerResponse(request.text.format.name==='customer_review'?ready:
-    request.text.format.name==='studio_focus'?{focus:'support',rationale:'Synthetic rationale',alternatives:['trust'],questions:[]}:generated()));
+    request.text.format.name==='studio_focus'?{focus:'support',rationale:'Synthetic rationale',alternatives:['trust'],questions:[]}:
+    request.text.format.name==='studio_consultation'?{answer:'Synthetic answer',encouragement:'Synthetic encouragement',nextSteps:[],questions:[],suggestedInstructions:'',professionalBasis:[]}:generated()));
   assert.equal((await fixture.done(await fixture.start('analyze'))).httpStatus,200);
   assert.equal((await fixture.done(await fixture.start('generate'))).httpStatus,200);
   const reservations=await fixture.store.list('aiq:');
-  assert.equal(reservations.reduce((sum,row)=>sum+row.value.tokenBudget,0),768000);
+  assert.equal(reservations.reduce((sum,row)=>sum+row.value.tokenBudget,0),fixture.calls.reduce((sum,call)=>sum+reservedAmount(call.request),0));
+  for(let n=1;n<=2;n++)assert.equal((await fixture.done(await fixture.start('consult',{stage:'starting',question:'Synthetic follow-up',requestId:'synthetic-follow-up-'+n}))).httpStatus,200);
   const consultation=await fixture.post('/api/studio',{action:'consult',brief:brief(),stage:'starting',
     question:'Synthetic follow-up',async:true,requestId:'synthetic-follow-up'});
   assert.equal(consultation.status,429);assert.equal(consultation.body.code,'quota_exceeded');
-  assert.equal(fixture.calls.length,3);assert.equal(AI_LIMITS.dailyTokens,1000000);
+  assert.equal(fixture.calls.length,5);assert.equal(AI_LIMITS.dailyTokens,1000000);
 });
 
-for(const stage of ['validation','customer','revision'])test('Cancelling during Studio '+stage+' aborts the provider and stops queued calls',async t=>{
+for(const stage of ['validation','customer'])test('Cancelling during Studio '+stage+' aborts the provider and stops queued calls',async t=>{
   const reached=gate(),late=gate();let heldSignal;const bad=generated();bad.sessions[0].steps[0].minutes=0;
   const fixture=await serving(t,async(request,options,index)=>{
-    const hold=stage==='validation'?index===2:stage==='customer'?request.text.format.name==='customer_review':index===3;
+    const hold=stage==='validation'?index===2:request.text.format.name==='customer_review';
     if(hold){heldSignal=options.signal;reached.open();await late.promise;return providerResponse(generated());}
     return providerResponse(request.text.format.name==='customer_review'?revise:stage==='validation'?bad:generated());
   });
@@ -205,7 +213,7 @@ for(const stage of ['validation','customer','revision'])test('Cancelling during 
   const cancelled=await fixture.post('/api/pipeline-cancel',{jobId});assert.equal(cancelled.body.status,'cancelled');
   assert.equal(heldSignal.aborted,true);
   await fixture.server.waitForJobs();
-  assert.equal((await fixture.done(jobId)).status,'cancelled');assert.equal(fixture.calls.length,stage==='revision'?3:2);
+  assert.equal((await fixture.done(jobId)).status,'cancelled');assert.equal(fixture.calls.length,2);
   assert.equal((await fixture.store.list('aiq:'))[0].value.state,'released');
   late.open();await new Promise(resolve=>setImmediate(resolve));
   const final=await fixture.done(jobId);assert.equal(final.status,'cancelled');assert.ok(!final.result);
@@ -223,10 +231,10 @@ test('Live Studio revocation prevents subsequent provider calls and a completed 
 });
 
 test('One eight-minute deadline terminates a stalled later stage and clears every long timer',async t=>{
-  const reached=gate(),late=gate();let heldSignal;const bad=generated();bad.sessions[0].steps[0].minutes=0;
+  const reached=gate(),late=gate();let heldSignal;
   const fixture=await serving(t,async(request,options,index)=>{
     if(request.text.format.name==='customer_review'){heldSignal=options.signal;reached.open();await late.promise;return providerResponse(revise);}
-    return providerResponse(index===1?bad:generated());
+    return providerResponse(generated());
   },{longTimers:true});
   const jobId=await fixture.start('generate');await reached.promise;
   const deadlines=fixture.timers.filter(timer=>timer.ms===8*60*1000);
@@ -234,9 +242,9 @@ test('One eight-minute deadline terminates a stalled later stage and clears ever
   assert.ok(deadlines[0].ms<9*60*1000);deadlines[0].fire();
   await fixture.server.waitForJobs();assert.equal(heldSignal.aborted,true);
   const done=await fixture.done(jobId);assert.equal(done.status,'done');assert.equal(done.httpStatus,503);
-  assert.equal(fixture.calls.length,3);assert.equal((await fixture.store.list('aiq:'))[0].value.state,'released');
+  assert.equal(fixture.calls.length,2);assert.equal((await fixture.store.list('aiq:'))[0].value.state,'released');
   assert.ok(fixture.timers.every(timer=>!timer.active));
-  late.open();await new Promise(resolve=>setImmediate(resolve));assert.equal(fixture.calls.length,3);
+  late.open();await new Promise(resolve=>setImmediate(resolve));assert.equal(fixture.calls.length,2);
 });
 
 test('A customer attempt timeout can retain a validated kit while clearing the whole-job deadline',async t=>{

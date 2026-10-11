@@ -35,7 +35,7 @@ class Element {
   removeAttribute(k){if(k==='class')this.className='';else this.attrs.delete(k);}
   get options(){return this.children.filter(n=>n.tagName==='OPTION');}get selectedIndex(){return Math.max(0,this.options.findIndex(n=>n.value===this.value));}
   addEventListener(type,fn){const xs=this.listeners.get(type)||[];xs.push(fn);this.listeners.set(type,xs);}
-  async fire(type,extra={}){const event={target:this,defaultPrevented:false,preventDefault(){this.defaultPrevented=true;},...extra};for(const fn of this.listeners.get(type)||[])await fn(event);return event;}
+  async fire(type,extra={}){const event={target:this,defaultPrevented:false,preventDefault(){this.defaultPrevented=true;},...extra};for(const fn of [...(this.listeners.get(type)||[])])await fn(event);return event;}
   click(){return this.fire('click');}focus(){}
   contains(n){return n===this||all(this).includes(n);}
   querySelectorAll(selector){if(selector.startsWith(':scope > '))return this.children.filter(n=>matches(n,selector.slice(9)));return all(this).filter(n=>matches(n,selector));}
@@ -126,6 +126,18 @@ test('sources start folded/excluded, persist independent choices and print once 
   await g.pane('routine').querySelector('.refs-attach').click();await g.pane('emerg').querySelector('.refs-attach').click();await g.document.getElementById('printShare').click();assert.equal(g.printed.at(-1).node.querySelector('.sbe-refs'),null);
 });
 
+test('joined continuity panes retain source choices and shared prints omit the private adaptation log',async()=>{
+  const saved=record();saved.join={form:{who:'מצטרפת'},kit:{title:'ערכת הצטרפות',info:[],ways:[],first:{task:'משימה משותפת',with:'עמיתה',when:'בבוקר'},roles:[],board:[],sources:['Synthetic2026b']},log:[{c0:'SYNTHETIC_PRIVATE_JOIN_LOG'}]};
+  const f=fixture({data:new Map([[key,JSON.stringify(saved)]])});
+  assert.equal(f.api.state().join.choice,'');assert.deepEqual(plain(f.api.state().proc),{});
+  const refs=f.pane('join').querySelector('.sbe-refs');assert.ok(refs&&!refs.classList.contains('open')&&!refs.classList.contains('attach'));
+  await refs.querySelector('.refs-open').click();await refs.querySelector('.refs-attach').click();
+  const g=fixture({data:f.data});assert.ok(g.pane('join').querySelector('.sbe-refs').classList.contains('open'));assert.ok(g.pane('join').querySelector('.sbe-refs').classList.contains('attach'));
+  await g.document.getElementById('printShare').click();const out=g.printed.at(-1);
+  assert.equal(out.node.querySelectorAll('.sbe-refs').length,1);assert.equal(out.node.lastChild.querySelectorAll('li').length,1);
+  assert.match(out.html,/Synthetic source B\./);assert.doesNotMatch(out.html,/SYNTHETIC_PRIVATE_JOIN_LOG/);
+});
+
 test('paste/drop block active live markup and snapshots/print strip active attributes and private controls',async()=>{
   const f=fixture(),node=f.edit('emerg.main'),payload='<img src=x onerror="attack()"><script>attack()</script><span onclick="attack()">נוסח</span>';
   const paste=await node.fire('paste',{clipboardData:{getData:type=>type==='text/plain'?'טקסט שהדבקנו':payload}});assert.equal(paste.defaultPrevented,true);assert.match(node.textContent,/טקסט שהדבקנו/);assert.equal(node.querySelector('img,script,[onclick]'),null);
@@ -194,4 +206,55 @@ for(const fail of [false,true])test((fail?'failed':'successful')+' authorized de
   if(fail)await assert.rejects(f.window.__continuityDemo.recipe(),/התיק לא הוכן|התוצר לא הופק/);
   else{const items=await f.window.__continuityDemo.recipe();assert.equal(items.length,1);assert.doesNotMatch(JSON.stringify(items),/SYNTHETIC_PRIVATE/);}
   assert.equal(f.reads(),0);assert.equal(f.writes(),0);assert.equal(data.get(key),before);assert.doesNotMatch(f.window.__continuityDemo.inputSummary(),/SYNTHETIC_PRIVATE/);assert.doesNotMatch(f.window.__continuityDemo.standalone(f.document.getElementById('kit'),'תיק רציפות'),/SYNTHETIC_PRIVATE/);assert.doesNotMatch(JSON.stringify(f.calls),/SYNTHETIC_PRIVATE/);
+});
+function joiningRecord() {
+  const saved=record();
+  saved.join={form:{who:'תלמיד/ה שחוזר/ת אחרי היעדרות',away:'כמה ימים',share:'SYNTHETIC_RAW_JOIN_SHARE',notes:'SYNTHETIC_RAW_JOIN_NOTES'},
+    info:[{c0:'מקום משותף',c1:'SYNTHETIC_GROUP_DIRECTORY'}],choice:'הקשבה',done:{0:true},log:[{c0:'SYNTHETIC_PRIVATE_JOIN_LOG'}],checkWhen:'2026-10-25',
+    kit:{title:'SYNTHETIC_OLD_ENTRANT_KIT',info:[{topic:'מידע',what:'מידע משותף'}],ways:[{name:'הקשבה',how:'נקשיב'}],first:{task:'SYNTHETIC_OLD_ENTRANT_TASK',with:'עמיתה',when:'היום'},
+      roles:[],board:[{day:'היום',what:'ניפגש',who:'מחנכת'}],group:{say:'SYNTHETIC_PERMITTED_GROUP_MESSAGE',welcome:'ברוכים הבאים'},sources:['Synthetic2026b']}};
+  saved.references={join:{open:true,attach:true}};return saved;
+}
+const joinButton=(f,label)=>f.pane('join').querySelectorAll('button').find(button=>button.textContent.includes(label));
+function deferredJoin(){let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};}
+
+test('shared continuity print excludes raw joining inputs but retains permitted generated group text',async()=>{
+  const f=fixture({data:new Map([[key,JSON.stringify(joiningRecord())]])});
+  await f.document.getElementById('printShare').click();
+  const shared=f.printed.at(-1);assert.doesNotMatch(shared.html,/SYNTHETIC_RAW_JOIN|SYNTHETIC_PRIVATE_JOIN_LOG/);
+  assert.match(shared.html,/SYNTHETIC_PERMITTED_GROUP_MESSAGE/);
+  await f.document.getElementById('print').click();assert.match(f.printed.at(-1).html,/SYNTHETIC_RAW_JOIN_NOTES/);
+});
+
+test('a new entrant clears personal inputs, kit and source choices while the group directory survives reload',async()=>{
+  const f=fixture({data:new Map([[key,JSON.stringify(joiningRecord())]])});
+  await joinButton(f,'מצטרף/ת חדש/ה').click();
+  const state=f.api.state();assert.deepEqual(plain(state.join.form),{});assert.equal(state.join.kit,null);
+  assert.deepEqual(plain(state.join.info),[{c0:'מקום משותף',c1:'SYNTHETIC_GROUP_DIRECTORY'}]);
+  assert.equal(state.references.join,undefined);assert.deepEqual(plain(state.join.log),[]);
+  assert.equal(joinButton(f,'כרטיסי בחירה'),undefined);
+  const g=fixture({data:f.data});assert.equal(g.api.state().join.kit,null);assert.deepEqual(plain(g.api.state().join.form),{});
+  assert.equal(g.api.state().join.info[0].c1,'SYNTHETIC_GROUP_DIRECTORY');
+  await g.document.getElementById('printShare').click();assert.doesNotMatch(g.printed.at(-1).html,/SYNTHETIC_OLD_ENTRANT|SYNTHETIC_RAW_JOIN/);
+});
+
+test('a late joining result cannot restore the previous entrant after reset',async()=>{
+  const f=fixture({data:new Map([[key,JSON.stringify(joiningRecord())]])}),late=deferredJoin();
+  let calls=0;f.window.sbeCallAIJson=async()=>{calls++;return late.promise;};
+  const pending=joinButton(f,'הכנה מחדש').click();assert.equal(calls,1);
+  await joinButton(f,'מצטרף/ת חדש/ה').click();
+  late.resolve(joiningRecord().join.kit);await pending;
+  assert.equal(f.api.state().join.kit,null);assert.deepEqual(plain(f.api.state().join.form),{});
+  const g=fixture({data:f.data});assert.equal(g.api.state().join.kit,null);
+  await f.document.getElementById('printShare').click();assert.doesNotMatch(f.printed.at(-1).html,/SYNTHETIC_OLD_ENTRANT/);
+});
+
+test('a redrawn joining pane keeps its request lock and does not send a duplicate',async()=>{
+  const f=fixture({data:new Map([[key,JSON.stringify(joiningRecord())]])}),late=deferredJoin();
+  let calls=0;f.window.sbeCallAIJson=async()=>{calls++;return late.promise;};
+  const pending=joinButton(f,'הכנה מחדש').click();f.api.showKit();
+  const rebuilt=joinButton(f,'הכנה מחדש');assert.equal(rebuilt.disabled,true);
+  await rebuilt.click();assert.equal(calls,1);
+  late.resolve(joiningRecord().join.kit);await pending;
+  assert.equal(joinButton(f,'הכנה מחדש').disabled,false);
 });

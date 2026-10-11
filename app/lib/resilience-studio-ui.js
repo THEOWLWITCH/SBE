@@ -86,6 +86,8 @@
         $('brief-confirmed').checked=false;renderMapping();updateControls();persist();
         throw new Error(data.error+' העבודה נשמרה; אפשר להמשיך ללא מיפוי או לחבר מיפוי מורשה ממסך המיפוי.');
       }
+      if(data.code==='quota_exceeded'||data.error==='quota_exceeded')
+        throw new Error('מכסת הבינה המלאכותית או מספר הבקשות במקביל הגיעו למגבלה. התוכן הקיים נשאר במסך; אפשר להמשיך לערוך ולשמור, ולבקש שוב כשהמכסה זמינה.');
       if(status===401||status===403)lockWorkspace();
       if(Array.isArray(data.questions)&&data.questions.length) {
         state.recommendation={focus:data.focus||state.brief.focus,rationale:data.rationale||'כדי לדייק את הפעילות, יש לנו כמה שאלות קצרות.',alternatives:[],questions:data.questions.map(String)};

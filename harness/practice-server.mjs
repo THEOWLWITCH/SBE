@@ -9,19 +9,19 @@ import {runInNewContext} from 'node:vm';
 import {getProvider, assertCompletionResult,applyProductPolicy} from './lib/providers.mjs';
 import {runPipeline} from './lib/pipeline.mjs';
 import {toScenario} from './lib/to-scenario.mjs';
-import {handleAccess, supabaseStore, resolvePrincipal, reserveAIUsage, settleAIUsage} from './lib/access.mjs';
-import {handleStudio} from './lib/studio.mjs';
+import {handleAccess, supabaseStore, resolvePrincipal, reserveAIUsage, settleAIUsage, MODEL_PAGES, modelPage} from './lib/access.mjs';
+import {handleStudio,prepareStudio} from './lib/studio.mjs';
 import {handleArtifacts,artifactReviewRunId} from './lib/activity-artifact.mjs';
-import {completionUsageCharge} from './lib/token-budget.mjs';
+import {completionUsageCharge,responsesReservation} from './lib/token-budget.mjs';
 // הסוכנת-הלקוחה (main, 09/10/2026): קריאה שמפיקה תוצר נבדקת ומתוקנת פעם אחת. הקריאות שלה עוברות דרך
 // boundedProvider, ולכן נספרות בתקציב ונבדקות מול ההרשאה החיה כמו כל קריאה אחרת.
 import {customerPass,reviewEnabled} from './lib/customer-pass.mjs';
 
-const AI_PERMS = ['fac_trainee','fac_parent','fac_youth','practice','conv','activity','academic','resilience','leadership','practi','writer','studio','nana'];
+const AI_PERMS = ['fac_trainee','fac_parent','fac_youth','practice','conv','activity','academic','resilience','leadership','practi','writer','studio','nana','journey'];
 const STUDIO_PERMS = ['studio'];
 const CORS = [...new Set([...(process.env.CORS_ORIGIN || '').split(',').map(s=>s.trim().replace(/\/$/, '')).filter(Boolean),
   'https://be-good.co.il','https://www.be-good.co.il','https://s-b-e.netlify.app'])];
-const BOOT = randomUUID(), TTL = 3 * 3600000;
+const BOOT = randomUUID(), TTL = 3 * 3600000, STUDIO_WORKFLOW_BUDGET = 512000;
 const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const failure = (message,status=400) => Object.assign(new Error(message),{status});
 
@@ -88,12 +88,19 @@ async function readBody(req) {
   catch {throw failure('invalid JSON');}
 }
 
-function allowed(actor,path,permission) {
+function allowed(actor,path,permission,page) {
+  const modelPath=['/api/complete','/api/character-turn','/api/pipeline'].includes(path);
+  if(modelPath && !permission && !page) return false;
   if (actor.k==='sys') return true;
   const wanted=path==='/api/pipeline'?AI_PERMS.filter(p=>p.startsWith('fac_'))
     : path==='/api/character-turn'?['practice','fac_trainee','fac_parent','fac_youth']
     : path==='/api/studio'?STUDIO_PERMS:AI_PERMS;
-  return permission?wanted.includes(permission) && actor.permissions.includes(permission):wanted.some(p=>actor.permissions.includes(p));
+  if(permission && (!wanted.includes(permission) || !actor.permissions.includes(permission))) return false;
+  if(page) {
+    const pagePerms=MODEL_PAGES[page] || [];
+    return pagePerms.some(p=>wanted.includes(p) && actor.permissions.includes(p) && (!permission || p===permission));
+  }
+  return permission?true:wanted.some(p=>actor.permissions.includes(p));
 }
 
 export function createPracticeServer({store,providerFactory=()=>getProvider(process.env.PROVIDER || 'anthropic'),
@@ -111,15 +118,38 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
     for(let attempt=0;attempt<3;attempt++) {
       try {
         const prior=await st.get(key);
-        if(!prior || prior.status!=='running') return false;
+        if(!prior)return false;
+        if(prior.status!=='running') {await releaseStudioReservations(st,actor,prior);return false;}
         const result=await st.finalizeAIJob({key,expected:prior,value:{...prior,...next},
           principal:{ownerId:actor.ownerId,tenantId:actor.tenantId},requestId:prior.requestId,outcome});
-        if(result.updated) return true;
+        if(result.updated) {
+          // Root finalization is atomic. Auxiliary cleanup is recoverable from
+          // the durable IDs on terminal polling if storage is temporarily down.
+          await releaseStudioReservations(st,actor,{...prior,...next}).catch(()=>{});return true;
+        }
       } catch(error) {lastError=error;}
     }
     throw lastError || failure('job conflict',409);
   }
-  async function execute(st,key,job,actor,payload,path,token) {
+  async function releaseStudioReservations(st,actor,job) {
+    if(job.path!=='/api/studio')return;
+    for(const requestId of (job.studioReservations || []).slice(0,3)) {
+      if(![2,3,4].some(n=>requestId===job.requestId+'.studio.'+n))continue;
+      try{await settleAIUsage(st,actor,{requestId,outcome:'release'});}
+      catch(error){if(!['reservation_missing','reservation_expired'].includes(error.code))throw error;}
+    }
+  }
+  async function appendStudioReservation(st,key,requestId) {
+    for(let attempt=0;attempt<3;attempt++) {
+      const prior=await st.get(key);
+      if(prior?.status!=='running' || prior.expiresAt<=clock())throw failure('job stopped',403);
+      const children=prior.studioReservations || [];
+      if(children.length>=3 || children.includes(requestId))throw failure('Studio attempt conflict',409);
+      if((await st.compareAndSet({key,expected:prior,value:{...prior,studioReservations:[...children,requestId]}})).updated)return;
+    }
+    throw failure('job conflict',409);
+  }
+  async function execute(st,key,job,actor,payload,path,token,preparedStudio) {
     const controller=new AbortController();controllers.set(key,controller);
     const timer=setTimeout(()=>controller.abort(),Math.min(jobTtlMs,45*60000));timer.unref?.();
     const heartbeat=setInterval(()=>transition(st,key,{leaseUntil:clock()+90000}).catch(()=>controller.abort()),30000);
@@ -128,7 +158,7 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
     const assertCurrent=async()=>{
       const [live,current]=await Promise.all([resolvePrincipal(st,token),st.get(key)]);
       if(controller.signal.aborted||!live||live.ownerId!==actor.ownerId||live.tenantId!==actor.tenantId
-        ||!allowed(live,path,payload.permission)||current?.status!=='running'||current.expiresAt<=clock())
+        ||!allowed(live,path,payload.permission,job.modelPage)||current?.status!=='running'||current.expiresAt<=clock())
         throw Object.assign(failure('access ended or job stopped',403),{code:'access_denied'});
     };
     try {
@@ -141,15 +171,35 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
         if(!['complete','partial','fallback'].includes(result.review?.status) || !result.review.proposal) throw failure('artifact review failed',422);
         output=result;
       } else if(path==='/api/studio') {
-        let spent=0;
+        let spent=0,attempt=0;
         const fetchImpl=async(url,options)=>{
           await assertCurrent();
-          const request=JSON.parse(options.body),amount=requestBudget(request,1);
-          if(spent+amount>job.tokenBudget)throw failure('generation budget exceeded',413);
-          spent+=amount;const response=await fetch(url,options),readJson=response.json.bind(response);
-          response.json=async()=>{const value=await readJson();await assertCurrent();return value;};return response;
+          const request=JSON.parse(options.body),amount=responsesReservation(options.body);
+          if(spent+amount>STUDIO_WORKFLOW_BUDGET || ++attempt>4)throw failure('generation budget exceeded',413);
+          const childId=attempt===1?null:job.requestId+'.studio.'+attempt;
+          if(!childId && amount!==job.tokenBudget)throw failure('Studio reservation mismatch',413);
+          const releaseChild=()=>childId?settleAIUsage(st,actor,{requestId:childId,outcome:'release'}).catch(()=>{}):Promise.resolve();
+          try {
+            if(childId) {
+              await appendStudioReservation(st,key,childId);
+              await assertCurrent();
+              const child=await reserveAIUsage(st,actor,{requestId:childId,
+                requestHash:hash([job.requestHash,attempt,options.body]),maxTokens:request.max_output_tokens,tokenBudget:amount});
+              if(child.state!=='reserved')throw failure('Studio attempt already settled',409);
+            }
+            await assertCurrent();options.signal?.throwIfAborted();
+            spent+=amount;
+            const response=await fetch(url,options),readJson=response.json.bind(response);
+            response.json=async()=>{try{const value=await readJson();await assertCurrent();return value;}finally{await releaseChild();}};
+            if(!response.ok)await releaseChild();
+            return response;
+          } catch(error) {
+            // Auxiliary attempts retain daily charge but do not consume another
+            // course use. This also closes a cancel-during-reservation race.
+            await releaseChild();throw error;
+          }
         };
-        const [status,result]=await studioHandler(st,{...payload,token,async:false},{signal:controller.signal,fetchImpl});
+        const [status,result]=await studioHandler(st,{...payload,token,async:false},{signal:controller.signal,fetchImpl,preparedStudio});
         if(status!==200) throw Object.assign(failure(result.error || 'studio failed',status),{result});
         output=result;
       } else if(path==='/api/pipeline') {
@@ -171,7 +221,7 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
         }
       }
       const live=await resolvePrincipal(st,token),current=await st.get(key);
-      if(controller.signal.aborted || !live || live.ownerId!==actor.ownerId || !allowed(live,path,payload.permission)
+      if(controller.signal.aborted || !live || live.ownerId!==actor.ownerId || live.tenantId!==actor.tenantId || !allowed(live,path,payload.permission,job.modelPage)
         || current?.status!=='running' || current.expiresAt<=clock()) throw failure('request cancelled or access ended',403);
       if(output.scenario) await saveScenario(output.scenario,actor,st);
       committed=await finishJob(st,key,actor,{status:'done',output},'commit');
@@ -180,7 +230,10 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
       await finishJob(st,key,actor,{status:'error',error:'לא ניתן להשלים את הבקשה. העבודה הקודמת נשמרה.',errorCode:error.code || 'generation_failed',
         httpStatus:error.status || 503,...(path==='/api/studio' && error.result?{failureOutput:error.result}:{})},'release').catch(()=>{});
       if(!committed) await settleAIUsage(st,actor,{requestId:job.requestId,outcome:'release'}).catch(()=>{});
-    } finally {clearTimeout(timer);clearInterval(heartbeat);controllers.delete(key);}
+    } finally {
+      if(path==='/api/studio')try{await releaseStudioReservations(st,actor,await st.get(key) || job);}catch{}
+      clearTimeout(timer);clearInterval(heartbeat);controllers.delete(key);
+    }
   }
   const server=createServer(async(req,res)=>{
     try {
@@ -192,22 +245,32 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
       const payload=await readBody(req),st=getStore();
       if(!st) return send(req,res,503,{error:'storage unavailable'});
       if(req.url==='/api/access') {const [status,out]=await handleAccess(st,payload);return send(req,res,status,out);}
-      const token=String(req.headers.authorization || '').replace(/^Bearer\s+/i,'') || payload.token;
-      const actor=await resolvePrincipal(st,token),permission=req.headers['x-sbe-permission'] || payload.permission;
-      if(!actor || !allowed(actor,req.url,permission)) return send(req,res,403,{error:'נדרשת כניסה עם הרשאה פעילה.',code:'access_denied'});
+      const auth=payload._auth && typeof payload._auth==='object' && !Array.isArray(payload._auth)?payload._auth:{};
+      const header=String(req.headers.authorization || ''),headerToken=header.replace(/^Bearer\s+/i,'');
+      const token=header?headerToken:payload.token || auth.token;
+      const permission=req.headers['x-sbe-permission'] || payload.permission;
+      const page=auth.page?modelPage(auth.page):undefined;
+      if((header && (!/^Bearer\s+\S+$/i.test(header) || (payload.token && payload.token!==token) || (auth.token && auth.token!==token)))
+        || (payload.token && auth.token && payload.token!==auth.token)
+        || (req.headers['x-sbe-permission'] && payload.permission && req.headers['x-sbe-permission']!==payload.permission)
+        || (auth.page && !page)) return send(req,res,403,{error:'נדרשת כניסה עם הרשאה פעילה.',code:'access_denied'});
+      delete payload._auth;
+      const actor=await resolvePrincipal(st,token);
+      if(!actor || !allowed(actor,req.url,permission,page)) return send(req,res,403,{error:'נדרשת כניסה עם הרשאה פעילה.',code:'access_denied'});
       if(req.url==='/api/pipeline-status' || req.url==='/api/pipeline-cancel' || (req.url==='/api/studio' && payload.action==='status')) {
         const key='pj:'+String(payload.jobId || ''),job=await st.get(key);
         if(!job || job.ownerId!==actor.ownerId || job.tenantId!==actor.tenantId) return send(req,res,404,{status:'unknown'});
-        if(!allowed(actor,job.path,job.permission)) return send(req,res,403,{error:'אין הרשאה פעילה לעבודה.'});
-        if(job.expiresAt<=clock()) {await finishJob(st,key,actor,{status:'expired'},'release');return send(req,res,410,{status:'expired'});}
+        if(!allowed(actor,job.path,job.permission,job.modelPage)) return send(req,res,403,{error:'אין הרשאה פעילה לעבודה.'});
+        if(job.expiresAt<=clock()) {controllers.get(key)?.abort();await finishJob(st,key,actor,{status:'expired'},'release');return send(req,res,410,{status:'expired'});}
         if(req.url==='/api/pipeline-cancel') {
-          const cancelled=await finishJob(st,key,actor,{status:'cancelled'},'release');controllers.get(key)?.abort();
+          controllers.get(key)?.abort();const cancelled=await finishJob(st,key,actor,{status:'cancelled'},'release');
           return send(req,res,200,{status:cancelled?'cancelled':job.status});
         }
         if(job.status==='running' && (job.boot!==BOOT || !controllers.has(key)) && job.leaseUntil<=clock()) {
           await finishJob(st,key,actor,{status:'lost'},'release');
           return send(req,res,200,{status:'lost'});
         }
+        if(job.status!=='running')await releaseStudioReservations(st,actor,job);
         if(job.path==='/api/studio' && ['done','error'].includes(job.status)) return send(req,res,200,{status:'done',
           httpStatus:job.status==='done'?200:(job.httpStatus || 503),result:job.status==='done'?job.output:
             (job.failureOutput || {error:job.error,code:job.errorCode})});
@@ -231,33 +294,38 @@ export function createPracticeServer({store,providerFactory=()=>getProvider(proc
       const input={...payload,maxTokens,permission};
       for(const field of ['token','async','requestId','sourceLibrary']) delete input[field];
       if(req.url==='/api/artifacts')input.idempotencyKey ||= requestId;
-      const requestHash=hash({path:req.url,input}),jobId=hash([actor.ownerId,actor.tenantId,req.url,requestId]).slice(0,32),key='pj:'+jobId;
+      const requestHash=hash({path:req.url,input,...(page?{modelPage:page}:{})}),jobId=hash([actor.ownerId,actor.tenantId,req.url,requestId]).slice(0,32),key='pj:'+jobId;
       if(!st.putIfAbsent || !st.compareAndSet || !st.finalizeAIJob) return send(req,res,503,{error:'נדרשת תשתית אחסון אטומית.'});
       // Review and optional repair share the same bounded provider. Reserve their
       // allowance before admitting the job; large passes may keep the original.
-      // Studio includes the complete public source bank. One initial Responses
-      // call exceeds 128000; kits also reserve room for bounded review/repair.
-      // The full reservation still counts daily, including failed attempts.
-      // With today's 1000000 owner allowance, analyze + kit uses 768000 and
-      // another consultation is denied. Daily quota tuning is separate work.
+      // Studio admission prepares one authenticated wire request and reserves
+      // only that attempt. Continuations reserve before dispatch, sharing the
+      // unchanged workflow ceiling and daily quota without trimming sources.
+      let preparedStudio;
+      if(req.url==='/api/studio' && studioHandler===handleStudio) {
+        preparedStudio=await prepareStudio(st,{...input,token});
+        if(Array.isArray(preparedStudio))return send(req,res,...preparedStudio);
+      }
       const tokenBudget=req.url==='/api/pipeline'?256000:req.url==='/api/studio'?
-        (['analyze','consult'].includes(input.action)?256000:512000):req.url==='/api/artifacts'?100000:
+        (preparedStudio?responsesReservation(JSON.stringify(preparedStudio.payload)):
+          (['analyze','consult'].includes(input.action)?256000:STUDIO_WORKFLOW_BUDGET)):req.url==='/api/artifacts'?100000:
         req.url==='/api/complete'&&reviewEnabled(input)?requestBudget({...input,variation:'medium'},1)+128000:requestBudget({...input,variation:'medium'});
       if(tokenBudget>512000)return send(req,res,413,{error:'הקלט גדול מדי לתקציב הבקשה.'});
-      const usage=await reserveAIUsage(st,actor,{requestId,requestHash,maxTokens,tokenBudget});
+      const usage=await reserveAIUsage(st,actor,{requestId,requestHash,maxTokens:preparedStudio?.payload.max_output_tokens ?? maxTokens,tokenBudget});
       if(usage.state!=='reserved') {
         const existing=await st.get(key);
         if(!existing || existing.requestHash!==requestHash)return send(req,res,409,{error:'הבקשה הקודמת הסתיימה. נסי בקשה חדשה.',code:'reservation_closed'});
         if(payload.async)return send(req,res,200,{jobId});
         return send(req,res,existing.status==='done'?200:409,existing.status==='done'?existing.output:{error:existing.error || 'הבקשה הקודמת הסתיימה.'});
       }
-      const record={ownerId:actor.ownerId,tenantId:actor.tenantId,permission,path:req.url,requestId,requestHash,
+      const record={ownerId:actor.ownerId,tenantId:actor.tenantId,permission,...(page?{modelPage:page}:{}),path:req.url,requestId,requestHash,
         ...(req.url==='/api/artifacts'?{artifactId:input.artifactId,baseVersion:input.expectedVersion,
           reviewRunId:artifactReviewRunId(input.artifactId,input.expectedVersion,input.idempotencyKey)}:{}),
+        ...(req.url==='/api/studio'?{studioReservations:[]}:{}),
         tokenBudget,status:'running',stages:{},t0:clock(),expiresAt:clock()+jobTtlMs,leaseUntil:clock()+90000,boot:BOOT};
       const claim=await st.putIfAbsent({key,value:record});
       if(!claim.created && claim.value.requestHash!==requestHash) return send(req,res,409,{error:'מזהה הבקשה כבר שימש לתוכן אחר.'});
-      if(claim.created) {const task=execute(st,key,record,actor,input,req.url,token);running.add(task);task.finally(()=>running.delete(task));}
+      if(claim.created) {const task=execute(st,key,record,actor,input,req.url,token,preparedStudio);running.add(task);task.finally(()=>running.delete(task));}
       if(payload.async) return send(req,res,200,{jobId});
       while(!res.destroyed) {
         const job=await st.get(key);
