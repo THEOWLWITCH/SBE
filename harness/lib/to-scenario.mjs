@@ -114,6 +114,7 @@ export function toScenario(out, { input = {}, meta = {} } = {}) {
     endings,
     facilitator: {
       background: str(df.fullBackground),
+      groupIntro: toParas(df.groupIntro),
       charactersProse: toParas(df.charactersProse || df.bothCharacters),
       approachInScenario: str(df.whatTheApproachSaysHere),
       dynamics: toParas(df.dynamics),
