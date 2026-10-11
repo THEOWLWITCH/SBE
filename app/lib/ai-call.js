@@ -14,7 +14,7 @@
       return { ok: res.ok, status: res.status, data };
     } finally { clearTimeout(timer); }
   }
-  async function sbeCallAI(server, body, timeoutMs, retried) {
+  async function callOnce(server, body, timeoutMs, retried) {
     const s = await post(server + "/api/complete", Object.assign({}, body, { async: true }), 90000);
     if (!s.ok || s.data.error) throw new Error(s.data.error || ("שגיאת שרת " + s.status));
     if (!s.data.jobId) { if (typeof s.data.text === "string") return s.data.text; throw new Error("המודל לא החזיר תשובה"); }
@@ -27,11 +27,22 @@
       if (d.status === "done" && typeof d.text === "string") return d.text;
       if (d.status === "error") throw new Error(d.error || "הקריאה למודל נכשלה");
       if (d.status === "lost" || d.status === "unknown") {
-        if (!retried) return sbeCallAI(server, body, timeoutMs, true);
+        if (!retried) return callOnce(server, body, timeoutMs, true);
         throw new Error("השרת הופעל מחדש באמצע");
       }
     }
     throw new Error("timeout: הקריאה למודל נמשכה יותר מדי");
+  }
+  // תוצר שנקטע כי היה ארוך מהמגבלה (11/10/2026: "תכנון פעילות: ההפקה לא עובדת... תבדוק את כל ההפקות"):
+  // בכל הכלים, פעם אחת נוספת עם מגבלה כפולה (עד 32000), וזמן המתנה ארוך יותר.
+  async function sbeCallAI(server, body, timeoutMs) {
+    try { return await callOnce(server, body, timeoutMs); }
+    catch (e) {
+      if (!/max_tokens|נקטע\. /.test(String(e && e.message)) || body._grown || (body.maxTokens || 0) >= 32000) throw e;
+      const b = Object.assign({}, body, { maxTokens: Math.min(32000, Math.max(4000, (body.maxTokens || 4000) * 2)), _grown: true });
+      delete b.requestId;
+      return callOnce(server, b, Math.round((timeoutMs || 60000) * 1.5));
+    }
   }
   window.sbeCallAI = sbeCallAI;
   // הודעה שאומרת מה קרה באמת (11/10/2026: "מרכז שגרות: אין חיבור למודל"): כל תקלה הוצגה כ"אין חיבור",
@@ -71,14 +82,7 @@
   }
   async function sbeCallAIJson(server, body, timeoutMs, check) {
     const ok = (v) => v && typeof v === "object" && (!check || check(v));
-    // תוצר שנקטע כי היה ארוך מהמגבלה (11/10/2026: "max_tokens נמוך מדי"): פעם אחת נוספת עם מגבלה כפולה
-    const call = async (b) => {
-      try { return await sbeCallAI(server, b, timeoutMs); }
-      catch (e) {
-        if (!/max_tokens|נקטע\. /.test(String(e && e.message)) || b._grown) throw e;
-        return sbeCallAI(server, Object.assign({}, b, { maxTokens: Math.min(32000, (b.maxTokens || 4000) * 2), _grown: true }), timeoutMs);
-      }
-    };
+    const call = (b) => sbeCallAI(server, b, timeoutMs); // הניסיון עם מגבלה כפולה כבר בתוך sbeCallAI
     let v = parseLoose(await call(body));
     if (ok(v)) return v;
     const again = Object.assign({}, body, { system: String(body.system || "") + "\n\nהתשובה הקודמת לא הגיעה במבנה המלא שביקשתי (JSON חסר, חלקי או לא תקין). החזירי עכשיו רק JSON תקין ומלא, בדיוק במבנה שביקשתי." });

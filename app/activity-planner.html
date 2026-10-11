@@ -828,9 +828,14 @@ function setAIStatus(status){
   else chip.innerHTML = dot + "בודקת חיבור למודל...";
 }
 
+// הסיבה האמיתית לתקלה האחרונה (11/10/2026: "ההפקה לא עובדת"): ההודעה אומרת מה קרה, ולא תמיד "אין חיבור"
+var LAST_AI_ERR = null;
+function noModelMsg() { return window.sbeAIError ? sbeAIError(LAST_AI_ERR, NO_MODEL) : NO_MODEL; }
 async function callAI(system, userText, maxTokens, timeoutMs, review) { // review: תוצר, עובר דרך הסוכנת-הלקוחה (harness/lib/customer-pass.mjs)
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך
-  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, customerReview: !!review }, timeoutMs || 60000);
+  LAST_AI_ERR = null;
+  try { return await sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, customerReview: !!review }, timeoutMs || 60000); }
+  catch (e) { LAST_AI_ERR = e; throw e; }
 }
 
 async function generateProposals(ctx) {
@@ -1201,7 +1206,7 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
       approach: state.approach === "locked" ? val("approach") : "",
       specialNotes: state.specialNotes === "locked" ? val("specialNotes") : "",
     });
-    if (out._noModel) { if (hintEl) hintEl.textContent = "⚠ " + NO_MODEL; return; }
+    if (out._noModel) { if (hintEl) hintEl.textContent = "⚠ " + noModelMsg(); return; }
     for (const [k,v] of Object.entries(out)) {
       if (!FIELDS.has(k) || state[k] === "locked") continue;
       const n = document.getElementById("i-"+k);
@@ -1411,7 +1416,7 @@ async function computeFeedbackFromFieldsAI(d) {
   ].filter(Boolean).join("\n");
   // maxTokens=8000, timeout=150 שניות — נמדד חי (19/09/2026): משוב אמיתי
   // על תוכנית לקח כ-60 שניות; 2500 גרם לקטיעה.
-  const raw = await callAI(system, "תוכנית הפעילות:\n" + JSON.stringify(d, null, 2), 8000, 240000, true);
+  const raw = await callAI(system, "תוכנית הפעילות:\n" + JSON.stringify(d, null, 2), 16000, 300000, true);
   const m = sbeJsonMatch(raw);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
@@ -1428,7 +1433,7 @@ document.getElementById("bFeedback").addEventListener("click", async (e) => {
     catch (err) {
       console.warn("משוב AI לא זמין, לא מופק משוב. סיבה:", err.message);
       setAIStatus("mock");
-      return show("המשוב לא הופק", el("p",{}, NO_MODEL));
+      return show("המשוב לא הופק", el("p",{}, noModelMsg()));
     }
     showFeedback(fb);
   } finally { e.target.disabled = false; e.target.textContent = "משוב"; }
@@ -1512,7 +1517,7 @@ async function synthesizeActivityNarrative(d, creator) {
       "בנוסף, \"flow\": מהלך המפגש לפי השדות פתיחה, פעילות מרכזית וסיכום שמולאו (ואם יש, משהו קצר שעושים אחרי המפגש). לכל שלב: phase (אחד מ: פתיחה, פעילות מרכזית, סיכום, אחרי המפגש; בפעילות המרכזית אפשר כמה שלבים ברצף), title (שם קצר), minutes (מספר), description (תיאור הפעילות: מי עושה, מה עושים, עם מה ומה יוצא בסוף), guide (הנחיה למורה: מה אומרת, ואילו שאלות שואלת את הקבוצה ובשביל מה), resources (עזרים ומשאבים לשלב, או מחרוזת ריקה). בלי להמציא תוכן שלא נמסר.",
       "החזירי אך ורק JSON: {\"title\":\"כותרת קצרה לפעילות (לא שם המקצוע)\",\"paragraphs\":[\"...\",\"...\",\"...\",\"...\"],\"prepare\":[\"...\"],\"flow\":[{\"phase\":\"פתיחה\",\"title\":\"\",\"minutes\":5,\"description\":\"\",\"guide\":\"\",\"resources\":\"\"}]}",
     ].join("\n\n");
-    const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 8000, 240000, true);
+    const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 16000, 300000, true);
     const m = sbeJsonMatch(text); if (!m) throw new Error("לא התקבל JSON");
     const out = JSON.parse(m[0]);
     if (!Array.isArray(out.paragraphs) || out.paragraphs.length < 3) throw new Error("מבנה חסר");
@@ -1561,7 +1566,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   let narr = null;
   try { narr = await synthesizeActivityNarrative(d, creator); }
   finally { e.target.disabled = false; e.target.textContent = "הפקת התוצר"; }
-  if (!narr) return show("התוצר לא הופק", el("p",{}, NO_MODEL));
+  if (!narr) return show("התוצר לא הופק", el("p",{}, noModelMsg()));
   body.append(el("h4",{style:"margin-top:0"},"מסמך תוכנית פעילות"));
   if (!narr) body.append(el("p", { class:"savenote", style:"background:#FAEFDC;border-inline-start:3px solid #8F5F2E;padding:8px 11px;border-radius:6px;" },
     "⚠ אין חיבור למודל כרגע. המסמך מוצג מהשדות כפי שמולאו (מצב הדגמה). כשהשרת המקומי פועל, המודל כותב מהם מסמך רציף."));
@@ -1676,7 +1681,7 @@ async function computeFeedbackFromTextAI(text) {
     "אפשר לבדוק בפרט: האם יש מטרה ברורה; מבנה (פתיחה/גוף/סיכום); קשר אמיתי בין המטרה לפעילות עצמה; שילוב תנועה שמשרת את המטרה (אם קיים); מעורבות פעילה של התלמידים לעומת האזנה פסיבית; חלוקת זמן וריאליזם.",
     "החזירי אך ורק JSON תקין במבנה: {\"good\":[\"...\"],\"gaps\":[\"...\"]} — עם הסבר קונקרטי לכל פריט, מצטט מהטקסט כשרלוונטי. בלי טקסט נוסף מסביב.",
   ].join("\n");
-  const raw = await callAI(system, "טקסט הפעילות:\n" + text, 8000, 240000, true);
+  const raw = await callAI(system, "טקסט הפעילות:\n" + text, 16000, 300000, true);
   const m = sbeJsonMatch(raw);
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   const parsed = JSON.parse(m[0]);
@@ -1694,7 +1699,7 @@ document.getElementById("bAnalyze").addEventListener("click", async (e) => {
     catch (err) {
       console.warn("ניתוח AI לא זמין, לא מופק ניתוח. סיבה:", err.message);
       setAIStatus("mock");
-      return show("הניתוח לא הופק", el("p",{}, NO_MODEL));
+      return show("הניתוח לא הופק", el("p",{}, noModelMsg()));
     }
     showFeedback(fb);
   } finally { e.target.disabled = false; e.target.textContent = "ניתוח"; }
@@ -2849,7 +2854,7 @@ async function aiNarrative(){
 async function aiAsk(q){
   const system = [preamble(),
     "היוצרת שואלת שאלה תוך כדי מילוי התכנון. עני ישירות, מעשית ובקצרה (עד כ-150 מילים), בהתייחס לתכנון הנוכחי המצורף. אם השאלה אינה קשורה לתכנון — עני בקצרה והחזירי את השיחה לתכנון. טקסט רגיל, בלי JSON."].join("\n\n");
-  return await callAI(system, "התכנון הנוכחי:\n" + JSON.stringify(planForAI()) + "\n\nהשאלה:\n" + q, 6000, 300000);
+  return await callAI(system, "התכנון הנוכחי:\n" + JSON.stringify(planForAI()) + "\n\nהשאלה:\n" + q, 12000, 300000);
 }
 
 // ── מיזוג תוצאות המודל ──
@@ -2977,7 +2982,7 @@ document.getElementById("bSeqReport").addEventListener("click", async (e) => {
     catch (err) { console.warn("דו״ח AI לא זמין:", err.message); setAIStatus("mock"); }
     finally { done(); }
   }
-  if (!ai && !missingRequired().length) return seqDialog("משוב ודו״ח ניתוח", el("p", {}, NO_MODEL));
+  if (!ai && !missingRequired().length) return seqDialog("משוב ודו״ח ניתוח", el("p", {}, noModelMsg()));
   const html = reportHTML(facts, ai);
   const body = el("div");
   if (!ai) body.append(mockNote(missingRequired().length
@@ -3047,7 +3052,7 @@ document.getElementById("bSeqBuild").addEventListener("click", async (e) => {
   try { narr = await aiNarrative(); setAIStatus("ok"); }
   catch (err) { console.warn("פתיחה נרטיבית לא זמינה:", err.message); setAIStatus("mock"); }
   finally { done(); }
-  if (!narr) return seqDialog("הפקת התוצר", el("p", {}, NO_MODEL));
+  if (!narr) return seqDialog("הפקת התוצר", el("p", {}, noModelMsg()));
   let html = seqDocHTML(narr, false);
   const body = el("div");
   if (!narr) body.append(mockNote("אין חיבור למודל כרגע. המסמך נבנה מהשדות כפי שמולאו, בלי פסקאות הפתיחה (״על הרצף״) שהמודל כותב."));
