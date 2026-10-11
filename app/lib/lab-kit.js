@@ -29,7 +29,7 @@
   const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התוצר לא הוכן. מה שמילאת נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
   const PARTIAL = 'התוצר חזר חלקי. מה שמילאת נשמר, ואפשר לנסות שוב.';
   const LATE = 'התשובה הגיעה אחרי שינוי בעבודה, ולכן היא לא הוחלה. אפשר לבקש שוב.';
-  const why = (e) => (e && e.code === 'incomplete') ? PARTIAL : NO_MODEL;
+  const why = (e) => (typeof window !== 'undefined' && window.sbeAIError) ? window.sbeAIError(e, NO_MODEL, PARTIAL) : ((e && e.code === 'incomplete') ? PARTIAL : NO_MODEL);
 
   // לוח הצעדים: אסימון וסמל לכל צעד
   function steps(host, stages, onGo) {

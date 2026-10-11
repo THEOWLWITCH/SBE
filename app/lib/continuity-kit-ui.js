@@ -84,7 +84,7 @@
   async function ask(system, content, check) {
     return window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 7000, customerReview: true }, 300000, check);
   }
-  const why = (e) => (e && e.code === 'incomplete') ? PARTIAL : NO_MODEL;
+  const why = (e) => (typeof window !== 'undefined' && window.sbeAIError) ? window.sbeAIError(e, NO_MODEL, PARTIAL) : ((e && e.code === 'incomplete') ? PARTIAL : NO_MODEL);
   const plansText = () => (S.local.plans || []).filter((p) => p.c0 || p.c1).map((p) => '- ' + [p.c0, p.c1, p.c2].filter(Boolean).join(' · ')).join('\n');
   async function makeEmerg() {
     const plans = plansText();

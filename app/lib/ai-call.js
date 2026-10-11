@@ -34,6 +34,17 @@
     throw new Error("timeout: הקריאה למודל נמשכה יותר מדי");
   }
   window.sbeCallAI = sbeCallAI;
+  // הודעה שאומרת מה קרה באמת (11/10/2026: "מרכז שגרות: אין חיבור למודל"): כל תקלה הוצגה כ"אין חיבור",
+  // גם כשהכניסה הסתיימה או כשהמודל לא הספיק לענות. מנהלת המערכת רואה גם את הסיבה הטכנית.
+  window.sbeAIError = function (e, noModel, partial) {
+    const m = String((e && e.message) || "");
+    if (e && e.code === "incomplete") return partial || noModel;
+    let t = noModel;
+    if (/היכנסו שוב|הכניסה הסתיימה|status 401|שגיאת שרת 401/.test(m)) t = "הכניסה הסתיימה. כדי להמשיך, היכנסו שוב. מה שמילאת נשמר במכשיר.";
+    else if (/timeout|נמשכה יותר מדי|נקטע/.test(m)) t = "המודל לא הספיק לענות בזמן. מה שמילאת נשמר, ואפשר לנסות שוב.";
+    let sys = false; try { sys = sessionStorage.getItem("sbe.session.homeUrl") === "admin.html?role=sys"; } catch (x) {}
+    return sys && m ? t + " (למנהלת המערכת: " + m.slice(0, 200) + ")" : t;
+  };
   // תוצר במבנה JSON (09/10/2026: "לוודא שלא תחזור תקלה כזאת בכלים אחרים"): כשהתשובה לא נקראת או חסרים בה
   // חלקים (check), מבקשים פעם אחת נוספת עם הערה למודל, ורק אז מציגים שגיאה (code: 'incomplete').
   function parseLoose(t) {

@@ -70,7 +70,8 @@
     const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = String(x); return n; };
     const btn = (t, c, f) => { const b = el('button', c || 'btn btn-ghost sm', t); b.type = 'button'; if (f) b.addEventListener('click', f); return b; };
     const T = (cols, rows) => window.SBE_TABLE(cols, rows, 'kit-t');
-    const why = (e) => (e && e.code === 'incomplete') ? 'הנוהל חזר חלקי. אפשר לנסות שוב.' : 'אין כרגע חיבור למודל, ולכן הנוהל לא הוכן. מה שבחרתם נשמר, ואפשר לנסות שוב בעוד דקה.';
+    const NOM = 'אין כרגע חיבור למודל, ולכן הנוהל לא הוכן. מה שבחרתם נשמר, ואפשר לנסות שוב בעוד דקה.', PART = 'הנוהל חזר חלקי. אפשר לנסות שוב.';
+    const why = (e) => window.sbeAIError ? window.sbeAIError(e, NOM, PART) : ((e && e.code === 'incomplete') ? PART : NOM);
     function waiting(n, t, exp) { n.hidden = false; const t0 = Date.now(); const tick = () => { n.textContent = t + ' בדרך כלל ' + exp + ' שניות. עברו ' + Math.round((Date.now() - t0) / 1000) + ' שניות.'; }; tick(); const iv = setInterval(tick, 1000); return () => { clearInterval(iv); n.hidden = true; }; }
     async function make(b, err, wait, revise) {
       err.hidden = true;
