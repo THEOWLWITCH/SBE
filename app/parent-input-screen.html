@@ -318,7 +318,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <button type="button" class="primary" id="bSuggest">מילוי הצעות</button>
   <button type="button" id="bBuild" disabled>בנייה</button>
   <button type="button" id="bReset">ניקוי</button>
-  <span class="note" id="hint">מלאי את השדות העיקריים</span>
+  <span class="note" id="hint">אפשר למלא את השדות העיקריים</span>
 </div></div>
 
 <script src="lib/narrative-doc.js"></script>
@@ -789,18 +789,18 @@ async function generateProposals(required) {
       "דמות 1 (ההורה שמתרגל/ת): " + (required.character1 || ""),
       "דמות 2: " + (required.character2 || ""),
       "תיאור הפגישה (מקום, זמן, הסיפור): " + (required.meeting || ""),
-      "חוק הספציפיות: כל שדה טקסט חייב להכיל לפחות אחד מאלה — שם פרטי, מספר, חפץ מוחשי, מקום מסוים, או משפט במרכאות. שדה שאפשר להעתיק לתרחיש אחר בלי לשנות מילה נפסל, כתבי אותו מחדש.",
+      "חוק הספציפיות: כל שדה טקסט חייב להכיל לפחות אחד מאלה — שם פרטי, מספר, חפץ מוחשי, מקום מסוים, או משפט במרכאות. שדה שאפשר להעתיק לתרחיש אחר בלי לשנות מילה נפסל, אפשר לכתוב אותו מחדש.",
       "char1Name/otherName: שם פרטי בלבד.",
       "char1Gender/otherGender: קבעי לפי השם או התיאור שנכתב (נקבה/זכר/אחר). כל שדה שמתאר את הדמות (Register/Tic/Valve/WontSay/Trust/Contra, בשני הצדדים) חייב להיות מנוקד דקדוקית בהתאם, כולל בתוך ציטוטים במרכאות.",
       "התאמה לגיל (חובה): כל השדות (הנושא, סוג הרגעים, הרגשות, הצרכים, הביטוי החוזר והתפניות) מותאמים לגיל דמות 2 (otherAgeBand). למשל בגיל הרך: מעברים, פרידה בבוקר, שינה, אוכל, התפרצות זעם, לא שעת חזרה מבילוי, טלפון או ויכוח ערכי של מתבגרים.",
-      "conflictType (מה מאפיין את הרגעים האלה): בחרי אחד בדיוק מתוך: " + CTYPE_CARDS.map(c=>c.v).join(" | ") + ". הגדרת כל סוג:\n" + CTYPE_CARDS.map(c=>c.v+": "+c.d).join("\n"),
-      "approach (הגישה שתנחה את השיחה): בחרי אחד בדיוק מתוך: " + APPROACH_OPTS.join(" | ") + ", עדיפות לברירת המחדל שמתאימה ל-conflictType שבחרת, אלא אם משהו בתיאור המפגש מצדיק גישה אחרת.",
-      "otherAgeBand (גיל דמות 2): בחרי אחד בדיוק מתוך: הגיל הרך (0-7) | 8-11 | 12-14 | 15-18 | צעירים (18-30) | בוגרים | סבא/סבתא, לפי תיאור דמות 2 שכתבה ההורה.",
+      "conflictType (מה מאפיין את הרגעים האלה): אפשר לבחור אחד בדיוק מתוך: " + CTYPE_CARDS.map(c=>c.v).join(" | ") + ". הגדרת כל סוג:\n" + CTYPE_CARDS.map(c=>c.v+": "+c.d).join("\n"),
+      "approach (הגישה שתנחה את השיחה): אפשר לבחור אחד בדיוק מתוך: " + APPROACH_OPTS.join(" | ") + ", עדיפות לברירת המחדל שמתאימה ל-conflictType שבחרת, אלא אם משהו בתיאור המפגש מצדיק גישה אחרת.",
+      "otherAgeBand (גיל דמות 2): אפשר לבחור אחד בדיוק מתוך: הגיל הרך (0-7) | 8-11 | 12-14 | 15-18 | צעירים (18-30) | בוגרים | סבא/סבתא, לפי תיאור דמות 2 שכתבה ההורה.",
       "char1Register/register: איך הדמות בדרך כלל מדברת ומתנהגת, מדידה קונקרטית (אורך תשובה, מה קורה בגוף), לא תיאור כללי כמו \"מדבר בקצרה\". register של דמות 2 חייב להיות מותאם לגיל שנקבע ב-otherAgeBand.",
       "char1Tic/tic: ביטוי או הרגל חוזר שהוא/היא, במרכאות אם זה משפט.",
       "char1EmotionsVisible/char1EmotionsHidden/emotionsVisible/emotionsHidden (רגשות): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("emotions"),
       "char1NeedsVisible/char1NeedsHidden/needsVisible/needsHidden (צרכים): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("needs"),
-      "skills (מיומנויות שתרצו לחזק): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("skills") + (isResilienceFocus() ? "\nזהו תרחיש לחוסן חברתי: בחרי לפחות שתיים מהמיומנויות המשותפות (הקבוצות שמתחילות ב\"חוסן חברתי ·\"), לפי מה שהסיטואציה דורשת מהקבוצה או מהקהילה." : ""),
+      "skills (מיומנויות שתרצו לחזק): חובה לבחור אך ורק מתוך הרשימה הסגורה הבאה, מילה במילה:\n" + taxonomyPromptText("skills") + (isResilienceFocus() ? "\nזהו תרחיש לחוסן חברתי: אפשר לבחור לפחות שתיים מהמיומנויות המשותפות (הקבוצות שמתחילות ב\"חוסן חברתי ·\"), לפי מה שהסיטואציה דורשת מהקבוצה או מהקהילה." : ""),
       "הבחירה מרשימות הרגשות/הצרכים/המיומנויות חייבת להתאים לסיטואציה הספציפית שנכתבה, לא בחירה אקראית שאפשר להעתיק לכל משפחה אחרת בלי לשנות מילה.",
       "char1WontSay/wontSay: משפט אחד במרכאות שהדמות לא תגיד בשום מצב. משפט ממשי, לא נושא כללי.",
       "char1Valve/valve (מה קורה כשהוא/היא באמת נלחץ/ת או מוצף/ת): ספציפי לדמות הזו, גזור מה-Anchor או ה-Register שלה, לא תגובה גנרית שמתאימה לכל אחד. תגובה ריאלית בין הורה לילד/ה יכולה לכלול קול שעולה, אבל תמיד עם פרט קונקרטי לצידה (מה קורה אחרי, מה עוצר את זה), לא כמשפט יחיד וכללי כמו \"מרים/ה את הקול\".",
@@ -815,8 +815,8 @@ async function generateProposals(required) {
       "turningPoints: בדיוק חמש שורות ממוספרות, כל שורה בפורמט \"N. <ביטוי/טריגר קצר וספציפי> · <תגית: פתיחה|סגירה|מותנה|היפוך|פתיחה עמוקה>\" (אפשר להוסיף \" · ליבה\" בסוף לשתיים מהן). לפחות אחת מהחמש חייבת להיות סגירה או ניתוק.",
       "coreTurns: מספרי שתי התפניות שהן ליבה, בפורמט \"1 · 3\", מתאים לשתיים שסומנו \"ליבה\".",
       "knows: מה דמות 1 יודעת ומה היא לא יודעת לגבי דמות 2 ברגע הזה.",
-      "lang: בחרי \"עברית\" אלא אם משהו בתיאור מצדיק אחרת.",
-      "outType (סוג תוצר): בחרי אחד בדיוק מתוך: תרחיש | משחק תפקידים, לפי מה שמתאים לתיאור המפגש, אלא אם ההורה כבר בחר/ה בעצמו/ה.",
+      "lang: אפשר לבחור \"עברית\" אלא אם משהו בתיאור מצדיק אחרת.",
+      "outType (סוג תוצר): אפשר לבחור אחד בדיוק מתוך: תרחיש | משחק תפקידים, לפי מה שמתאים לתיאור המפגש, אלא אם ההורה כבר בחר/ה בעצמו/ה.",
       "החזירי אך ורק אובייקט JSON תקין אחד, בלי טקסט לפני או אחרי, עם המפתחות המדויקים הבאים בלבד: lang, outType, skills, topic, otherAgeBand, approach, conflictType, turningPoints, coreTurns, char1Name, char1Gender, char1Age, char1Anchor, char1Goal, char1Register, char1Tic, char1Traits, char1EmotionsVisible, char1EmotionsHidden, char1NeedsVisible, char1NeedsHidden, char1WontSay, char1Valve, char1Trust, char1Contra, char1Fear, knows, otherName, otherGender, otherAge, otherAnchor, otherGoal, register, tic, traits, emotionsVisible, emotionsHidden, needsVisible, needsHidden, wontSay, valve, trust, contra, fear. השדות skills/char1EmotionsVisible/char1EmotionsHidden/char1NeedsVisible/char1NeedsHidden/emotionsVisible/emotionsHidden/needsVisible/needsHidden/char1Goal/otherGoal הם מערכי מחרוזות. char1Traits/traits הם מערכי אובייקטים {axis, note}. char1Age/otherAge הם מספרים. שאר השדות הם מחרוזות טקסט.",
     ].join("\n\n");
 
@@ -923,7 +923,7 @@ function render() {
       // <option> דינמית ל-<select> הקיים, במקום להסתפק בערך הקבוע "אחר".
       if (f.type === "select" && f.other) {
         const custom = el("input", { type:"text", class:"other-inp",
-          placeholder:"או הקלידי אפשרות משלך" });
+          placeholder:"אפשר גם להקליד אפשרות משלך" });
         let customOpt = null;
         custom.addEventListener("input", () => {
           const t = custom.value.trim();
@@ -1043,7 +1043,7 @@ function render() {
         // הבסיסי (לא מ-taxonomyGroups, כדי לא לכלול את דלי "ללא שיוך").
         const otherGroupSelI = el("select", {});
         visibleBaseGroups(f.taxonomy).forEach(g => otherGroupSelI.append(el("option",{value:g.id}, g.name)));
-        const otherInp = el("input", { type:"text", placeholder:"פריט חסר? הקלידי והוסיפי" });
+        const otherInp = el("input", { type:"text", placeholder:"פריט חסר? אפשר להקליד ולהוסיף" });
         const otherBtn = el("button", { type:"button" }, "הוספה");
         const otherRow = el("div", { class:"combo-other" }, [
           el("div", { class:"combo-other-group" }, "לתת-סעיף:", otherGroupSelI),

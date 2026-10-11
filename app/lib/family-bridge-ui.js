@@ -215,7 +215,7 @@
     const ol = el('ol', 'nextlist'), d = f.decision;
     const done = [!!(f.pick && f.checkWhen), !!f.sent, !!(f.practice && f.practice.feedback), !!f.planNext, !!f.summary];
     const item = (i, body) => { const li = el('li', done[i] ? 'done' : ''); li.appendChild(el('b', null, (done[i] ? '✓ ' : '') + M.NEXT[i])); if (body) li.appendChild(body); ol.appendChild(li); };
-    item(0, el('p', 'sub', done[0] ? 'בחרת: ' + f.pick : 'בחרי למעלה את ההמשך ואת תאריך נקודת הבדיקה.'));
+    item(0, el('p', 'sub', done[0] ? 'בחרת: ' + f.pick : 'אפשר לבחור למעלה את ההמשך ואת תאריך נקודת הבדיקה.'));
     const s2 = el('div'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!f.sent; cb.id = 'sent-' + f.id;
     const l2 = el('label', 'okline'); l2.htmlFor = cb.id; l2.append(cb, document.createTextNode(' שלחתי את ההודעה, בדרך שהמשפחה בחרה'));
     cb.addEventListener('change', () => { f.sent = cb.checked; save(); draw(3); }); s2.appendChild(l2); item(1, s2);
@@ -285,7 +285,7 @@
   }
   async function planNext(f, b) {
     F('err2-' + f.id).hidden = true;
-    if (!f.pick) return fail(F('err2-' + f.id), 'כדי לתכנן, בחרי קודם את ההמשך (צעד 1).');
+    if (!f.pick) return fail(F('err2-' + f.id), 'כדי לתכנן, אפשר לבחור קודם את ההמשך (צעד 1).');
     b.disabled = true; const stop = waiting(F('wait2-' + f.id), 'מתכננת את הקשר בחודשיים הקרובים.', 30);
     let k = null, bad = null;
     try { k = await ask(M.planNextSystem(KB, WRITER), 'השדות:\n' + M.inputText(S.form) + '\n\n' + caseText(f) + '\n\nתכנני את הקשר בהמשך.', M.validPlanNext); }
@@ -357,7 +357,7 @@
   }
   async function decide(f, b) {
     const err = F('err-' + f.id); err.hidden = true;
-    if (!f.status && !M.storyText(f.story)) return fail(err, 'כדי להמשיך, ספרי את הסיפור או בחרי מה המשפחה ענתה. גם "עוד לא ענתה" היא תשובה.');
+    if (!f.status && !M.storyText(f.story)) return fail(err, 'כדי להמשיך, אפשר לספר את הסיפור או לבחור מה המשפחה ענתה. גם "עוד לא ענתה" היא תשובה.');
     const P = S.plan, way = arr(P.ways).find((w) => txt(w.name) === f.chosen);
     const story = M.storyText(f.story);
     const content = M.anonymize('השדות:\n' + M.inputText(S.form) + (story ? '\n\nהסיפור של המורה עם המשפחה:\n' + story : '') + '\n\n' + (goalMode() ? 'המטרה: ' : 'הגשר: ') + txt(P.goal.text) + '\n' + (goalMode() ? 'דרכי התמיכה שהוצעו: ' : 'דרכי הקשר שהוצעו: ') + arr(P.ways).map((w) => txt(w.name) + ' (' + txt(w.what) + ')').join('; ') +

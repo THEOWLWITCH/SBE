@@ -171,7 +171,7 @@ async function api(action, extra = {}) {
   const box = $("banners");
   (INFO.notices || []).forEach(n => {
     const b = el("div", { class: "banner" + (n.level === "danger" ? " danger" : "") });
-    const renewLink = INFO.kind === "instadmin" ? el("a", { href: "renew.html" }, "לבקשת חידוש") : "פנו למנהל/ת המוסד.";
+    const renewLink = INFO.kind === "instadmin" ? el("a", { href: "renew.html" }, "לבקשת חידוש") : "אפשר לפנות למנהל/ת המוסד.";
     if (n.type === "sub-ending") b.append("המנוי של המוסד מסתיים ב-" + fmtDate(n.subEnd) + " (עוד " + n.daysLeft + " ימים). ", renewLink);
     else if (n.type === "grace") b.append("המנוי של המוסד הסתיים. נותרו " + n.daysLeft + " ימים לחידוש לפני שהכניסה תיחסם. ", renewLink);
     else if (n.type === "code-ending") b.append("תוקף הקוד שלך מסתיים ב-" + fmtDate(n.expiresAt) + ". כדאי לבקש קוד חדש ממי שנתן/ה לך אותו.");
@@ -204,7 +204,7 @@ async function api(action, extra = {}) {
   if (has("academic")) T.push(["academic-review.html", "משוב לעבודות", "להתכונן להגשת עבודה: משוב לפי קריטריונים"]);
   const box = $("tiles");
   if (!T.length && INFO.kind !== "instadmin" && !has("lecturer")) {
-    box.append(el("div", { class: "empty" }, "עדיין לא נפתחו לך כלים. פנו למי שנתן/ה לך את הקוד."));
+    box.append(el("div", { class: "empty" }, "עדיין לא נפתחו לך כלים. אפשר לפנות למי שנתן/ה לך את הקוד."));
   } else {
     // הכלים לפי חמש שאלות של מוכנות יומיומית (SBE_READY), ובסוף ספריית המקורות
     const R = window.SBE_READY, tile = ([h, t, d]) => el("a", { class: "tile", href: h }, el("b", {}, t), el("span", {}, d));
@@ -244,7 +244,7 @@ async function renderAdmin() {
   box.append(card);
   const d = await api("codesList").catch(() => ({}));
   card.textContent = "";
-  if (!d.codes) { card.append(el("p", { class: "msg err" }, d._status === 403 ? "תוקף הכניסה פג. צאו והיכנסו שוב." : "אין כרגע חיבור לשרת. נסו לרענן בעוד רגע.")); return; }
+  if (!d.codes) { card.append(el("p", { class: "msg err" }, d._status === 403 ? "תוקף הכניסה פג. אפשר לצאת ולהיכנס שוב." : "אין כרגע חיבור לשרת. אפשר לנסות לרענן בעוד רגע.")); return; }
   const ceiling = d.ceiling || {};
   const open = Object.keys(PERM_LABEL).filter(p => ceiling[p]);
   const sub = d.sub || {};
@@ -260,7 +260,7 @@ async function renderAdmin() {
   card.append(tree);
   card.append(el("p", { class: "sub" },
     sub.subEnd ? "המנוי של המוסד בתוקף עד " + fmtDate(sub.subEnd) + ". קודי הצוות פוקעים לכל המאוחר אז." : "המנוי של המוסד ללא תאריך סיום.",
-    " מה שפתוח למוסד: ", open.length ? open.map(p => PERM_LABEL[p]).join(", ") : "עדיין שום דבר: פנו למנהלת המערכת."));
+    " מה שפתוח למוסד: ", open.length ? open.map(p => PERM_LABEL[p]).join(", ") : "עדיין שום דבר: אפשר לפנות למנהלת המערכת."));
 
   // יצירת קוד
   const f = el("div", { class: "card" });
@@ -291,14 +291,14 @@ async function renderAdmin() {
   const msg = el("div", {});
   go.addEventListener("click", async () => {
     const perms = Object.keys(cbs).filter(p => cbs[p].checked);
-    if (!perms.length) { msg.className = "msg err"; msg.textContent = "כדי להמשיך, סמנו לפחות הרשאה אחת."; return; }
+    if (!perms.length) { msg.className = "msg err"; msg.textContent = "כדי להמשיך, אפשר לסמן לפחות הרשאה אחת."; return; }
     let expiresAt = null;
     if (exp.value === "date") expiresAt = expDate.value || null;
     else if (exp.value) expiresAt = new Date(Date.now() + Number(exp.value) * 864e5).toISOString().slice(0, 10);
     go.disabled = true; msg.className = "msg"; msg.textContent = "מפיקה...";
     const r = await api("codeCreate", { kind: "staff", perms, label: lbl.value.trim(), expiresAt }).catch(() => ({}));
     go.disabled = false;
-    if (!r.code) { msg.className = "msg err"; msg.textContent = r.error === "above ceiling" ? "אחת ההרשאות לא פתוחה למוסד." : "ההפקה לא הצליחה. נסו שוב."; return; }
+    if (!r.code) { msg.className = "msg err"; msg.textContent = r.error === "above ceiling" ? "אחת ההרשאות לא פתוחה למוסד." : "ההפקה לא הצליחה. אפשר לנסות שוב."; return; }
     msg.className = ""; msg.textContent = "";
     msg.append(el("div", { class: "newcodes" }, "הקוד החדש: ", el("span", { class: "code" }, r.code.code), " ", copyBtn(r.code.code),
       el("div", { class: "sub", style: "font-size:13px;margin-top:4px" }, "מוסרים אותו לאיש/אשת הצוות. נכנסים איתו במסך הכניסה, בשדה \"הקוד שלך\".")));
@@ -390,7 +390,7 @@ async function renderLecturer(box) {
   const reload = async () => { d = await api("codesList").catch(() => d); draw(); };
   const draw = () => {
     card.textContent = "";
-    if (!d.codes) { card.append(el("p", { class: "msg err" }, "אין כרגע חיבור לשרת. נסו לרענן בעוד רגע.")); return; }
+    if (!d.codes) { card.append(el("p", { class: "msg err" }, "אין כרגע חיבור לשרת. אפשר לנסות לרענן בעוד רגע.")); return; }
     const lim = (d.settings && d.settings.academic) || { maxActive: 50, days: 7, uses: 3 };
     const active = d.codes.filter(c => (c.kind === "student" || c.kind === "course") && statusOf(c)[1] === "ok").length;
     const room = Math.max(0, lim.maxActive - active);
@@ -410,7 +410,7 @@ async function renderLecturer(box) {
       if (!name.value.trim()) { msg.className = "msg err"; msg.textContent = "כדאי לתת שם לקורס, כדי שתזהי אותו ברשימה."; name.focus(); return; }
       go.disabled = true; msg.className = "msg"; msg.textContent = "יוצרת...";
       const r = await api("codeCreate", { kind: "course", label: name.value.trim(), seats: Number(seats.value) || 40, days: Number(days.value) || 30 }).catch(() => ({}));
-      if (!r.code) { msg.className = "msg err"; msg.textContent = r.error === "limit" ? "הגעת למספר הקודים הפעילים המרבי." : "היצירה לא הצליחה. נסו שוב."; go.disabled = false; return; }
+      if (!r.code) { msg.className = "msg err"; msg.textContent = r.error === "limit" ? "הגעת למספר הקודים הפעילים המרבי." : "היצירה לא הצליחה. אפשר לנסות שוב."; go.disabled = false; return; }
       fresh = r.code.code;
       await reload();
     });
@@ -437,7 +437,7 @@ async function renderLecturer(box) {
       const n = Math.max(1, Math.min(room, Number(cnt.value) || 1));
       go2.disabled = true; msg2.className = "msg"; msg2.textContent = "מפיקה...";
       const r = await api("codeCreate", { kind: "student", count: n, label: lbl.value.trim() }).catch(() => ({}));
-      if (!r.codes) { msg2.className = "msg err"; msg2.textContent = r.error === "limit" ? "הגעת למספר הקודים הפעילים המרבי." : "ההפקה לא הצליחה. נסו שוב."; go2.disabled = false; return; }
+      if (!r.codes) { msg2.className = "msg err"; msg2.textContent = r.error === "limit" ? "הגעת למספר הקודים הפעילים המרבי." : "ההפקה לא הצליחה. אפשר לנסות שוב."; go2.disabled = false; return; }
       d = await api("codesList").catch(() => d);
       draw();
       const det2 = card.querySelector("details"); if (det2) det2.open = true;
@@ -479,7 +479,7 @@ function courseBox(c, lim, isNew, reload) {
     "לקראת הגשת העבודה בקורס \"" + (c.label || "") + "\" אפשר לקבל משוב על הטיוטה בכלי \"משוב לעבודות\" של Begood.\n" +
     "כניסה בקישור: " + link + "\n(או בהקלדת הקוד " + c.code + " באתר be-good.co.il)\n" +
     "לכל אחד ואחת יש עד " + (c.usesPer || lim.uses) + " הפקות משוב, עד " + fmtDate(c.expiresAt) + ".\n" +
-    "המשוב נועד לעזור לכם לשפר את העבודה. הכתיבה נשארת שלכם. זכרו לציין בעבודה שנעזרתם בכלי בינה מלאכותית ואת שם הכלי.\n" +
+    "המשוב נועד לעזור לכם לשפר את העבודה. הכתיבה נשארת שלכם. כדאי לזכור לציין בעבודה שנעזרתם בכלי בינה מלאכותית ואת שם הכלי.\n" +
     "בהצלחה!";
   const b = el("div", { class: isNew ? "newcodes" : "card", style: "margin:12px 0 0;box-shadow:none" + (stc === "off" ? ";opacity:.6" : "") });
   b.append(el("div", { style: "display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center" },

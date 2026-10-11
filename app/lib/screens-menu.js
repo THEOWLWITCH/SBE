@@ -143,5 +143,5 @@ function autoMount(){
   document.addEventListener('click', function(e){ if (!panel.hidden && !box.contains(e.target)) panel.hidden = true; });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') panel.hidden = true; });
 }
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', autoMount); else autoMount();
+if (typeof document !== 'undefined' && typeof sessionStorage !== 'undefined') { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', autoMount); else autoMount(); }
 })();

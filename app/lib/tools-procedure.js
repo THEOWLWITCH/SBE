@@ -75,7 +75,7 @@
     function waiting(n, t, exp) { n.hidden = false; const t0 = Date.now(); const tick = () => { n.textContent = t + ' בדרך כלל ' + exp + ' שניות. עברו ' + Math.round((Date.now() - t0) / 1000) + ' שניות.'; }; tick(); const iv = setInterval(tick, 1000); return () => { clearInterval(iv); n.hidden = true; }; }
     async function make(b, err, wait, revise) {
       err.hidden = true;
-      if (!S.tools.length && !(S.other || '').trim()) { err.textContent = 'כדי להמשיך, בחרו באילו כלים אתם עובדים (אפשר גם "עוד לא יודעת").'; err.hidden = false; return; }
+      if (!S.tools.length && !(S.other || '').trim()) { err.textContent = 'כדי להמשיך, אפשר לבחור באילו כלים אתם עובדים (אפשר גם "עוד לא יודעת").'; err.hidden = false; return; }
       const tools = TOOL_TYPES.filter((t) => S.tools.includes(t.k)).map((t) => t.n).concat((S.other || '').trim() ? ['כלי אחר: ' + S.other.trim()] : []);
       const last = S.checks[0];
       const content = 'הכלים שבהם המוסד עובד: ' + tools.join('; ') + '\nמי משתמש: ' + (S.who || 'לא צוין') +
@@ -130,7 +130,7 @@
         const nt = el('textarea'); nt.rows = 2; nt.placeholder = 'מה עבד ומה לא, בלי שמות.'; nt.setAttribute('aria-label', 'הערות לבדיקה'); nt.addEventListener('input', () => { cur.note = nt.value; }); node.appendChild(nt);
         const e2 = el('p', 'err'); e2.hidden = true; const w2 = el('div', 'wait'); w2.hidden = true;
         const sv = btn('💾 שמירת הבדיקה', 'btn btn-ghost sm', () => { S.checks.unshift({ at: new Date().toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' }), answers: cur.answers, note: cur.note }); if (window.sbeIsoPlus) S.nextCheck = window.sbeIsoPlus(30); save(); draw(); });
-        const up = btn('עדכון הנוהל לפי הבדיקה', 'btn sm', () => { if (!S.checks.length) { e2.textContent = 'כדי לעדכן, שמרו קודם בדיקה אחת.'; e2.hidden = false; return; } make(up, e2, w2, true); });
+        const up = btn('עדכון הנוהל לפי הבדיקה', 'btn sm', () => { if (!S.checks.length) { e2.textContent = 'כדי לעדכן, אפשר לשמור קודם בדיקה אחת.'; e2.hidden = false; return; } make(up, e2, w2, true); });
         const r = el('div', 'actions no-print'); r.append(sv, up); node.append(r, w2, e2);
         if (S.checks.length) node.appendChild(T(['תאריך', 'מה עלה'], S.checks.map((c) => [c.at, c.answers.filter(Boolean).join(' · ') + (c.note ? ' · ' + c.note : '')])));
       }

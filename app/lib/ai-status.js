@@ -42,7 +42,7 @@
         else if (d && d.ok) set("mock", "השרת פועל, אבל חסר מפתח למודל. אי אפשר להפיק תוצרים");
         else set("mock", "אין חיבור לשרת: אי אפשר להפיק תוצרים כרגע");
       })
-      .catch(function () { set("mock", "אין חיבור לשרת: אי אפשר להפיק תוצרים כרגע. נסי שוב בעוד דקה"); })
+      .catch(function () { set("mock", "אין חיבור לשרת: אי אפשר להפיק תוצרים כרגע. אפשר לנסות שוב בעוד דקה"); })
       .then(function () { clearInterval(tick); clearTimeout(to); });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();

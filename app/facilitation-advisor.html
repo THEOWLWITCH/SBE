@@ -219,7 +219,7 @@ ul.tl li{margin:.25rem 0}
     <ol class="steps">
       <li><b>1. מספרים</b>על הקבוצה, על המפגש ועל עצמך כמנחה</li>
       <li><b>2. מקבלים מדריך</b>שאפשר לערוך, להדפיס ולשמור כ-PDF, וגם כרטיס כיס</li>
-      <li class="step-opt"><b>ואם תרצו, מתרגלים וחוזרים</b>זו אפשרות: תרגול רגע מאתגר מול "הקבוצה", ורפלקציה אחרי המפגש</li>
+      <li class="step-opt"><b>ואם רוצים, מתרגלים וחוזרים</b>זו אפשרות: תרגול רגע מאתגר מול "הקבוצה", ורפלקציה אחרי המפגש</li>
     </ol>
   </div>
 
@@ -256,7 +256,7 @@ ul.tl li{margin:.25rem 0}
       <legend>אני כמנחה</legend>
       <label for="f-exp">הניסיון שלי בהנחיית קבוצה</label>
       <select id="f-exp"><option value="">בחירה...</option></select>
-      <label>באיזו מיומנות תרצו שאתמקד? <span class="opt">(לא חובה, אפשר לבחור כמה)</span></label>
+      <label>באיזו מיומנות רוצים שאתמקד? <span class="opt">(לא חובה, אפשר לבחור כמה)</span></label>
       <details class="habits-dd" id="habits-dd"><summary id="habits-sum">בחירה...</summary><div class="habits" id="f-habits"></div></details>
       <label for="f-worry">מה מדאיג אותך לקראת המפגש? <span class="opt">(לא חובה)</span></label>
       <textarea id="f-worry" maxlength="800" placeholder="למשל: שתהיה שתיקה ולא אדע מה לעשות; שאאבד שליטה; שמישהו יתחיל לבכות"></textarea>
@@ -296,12 +296,12 @@ ul.tl li{margin:.25rem 0}
       <div class="chat" id="pr-log"></div>
       <div id="pr-reply" hidden>
         <label for="pr-in" class="muted" style="font-weight:600">מה את/ה אומר/ת או עושה עכשיו?</label>
-        <textarea id="pr-in" maxlength="800" placeholder="כתבו כמו שהייתם אומרים בחדר"></textarea>
+        <textarea id="pr-in" maxlength="800" placeholder="אפשר לכתוב כמו שהייתם אומרים בחדר"></textarea>
         <div class="btns"><button class="btn" id="pr-go" type="button">שליחה</button><button class="btn btn-ghost" id="pr-end" type="button">סיום תרגול ומשוב</button></div>
       </div>
     </div>
     <div id="pane-after" hidden>
-      <p class="muted">אחרי המפגש, ספרו מה קרה: מה עבד, מה הפתיע, איפה היה קשה. ננה תחזיר משוב, מה זה אומר על הקבוצה, והצעד הבא.</p>
+      <p class="muted">אחרי המפגש, אפשר לספר מה קרה: מה עבד, מה הפתיע, איפה היה קשה. ננה תחזיר משוב, מה זה אומר על הקבוצה, והצעד הבא.</p>
       <label for="af-in">מה קרה במפגש?</label>
       <textarea id="af-in" maxlength="2500" style="min-height:120px" placeholder="למשל: הפתיחה בסבב עבדה, אבל בהעמקה שלושה דיברו כל הזמן. כשחיכיתי בשקט, דנה דיברה בפעם הראשונה."></textarea>
       <div class="btns"><button class="btn" id="af-go" type="button">משוב מננה</button></div>
@@ -402,7 +402,7 @@ function addableSelect(id,listName,what){
   const wrap=document.createElement('details');wrap.className='addmore no-print';
   const sm=document.createElement('summary');sm.textContent='חסר משהו? הוספה לרשימה';wrap.appendChild(sm);
   const r=document.createElement('div');r.className='addrow';
-  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='הקלידו '+what+', יתווסף לרשימה של כולם';
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='אפשר להקליד '+what+', יתווסף לרשימה של כולם';
   const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה לרשימה';
   r.appendChild(inp);r.appendChild(btn);wrap.appendChild(r);
   const msg=document.createElement('p');msg.className='muted';msg.hidden=true;wrap.appendChild(msg);

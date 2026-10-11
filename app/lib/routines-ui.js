@@ -202,7 +202,7 @@
     const f1 = el('div', 'f'), l1 = el('label', null, 'מה הקבוצה בחרה'), s1 = el('select');
     s1.id = 'pick'; l1.htmlFor = 'pick'; s1.setAttribute('data-closed', '');
     s1.appendChild(new Option('בחירה…', '')); I.options.forEach((o, i) => s1.appendChild(new Option(txt(o.name), String(i))));
-    s1.appendChild(new Option('פעולה אחרת (כתבו בשדה "הפעולה שהקבוצה כבר בחרה")', 'other'));
+    s1.appendChild(new Option('פעולה אחרת (אפשר לכתוב בשדה "הפעולה שהקבוצה כבר בחרה")', 'other'));
     s1.value = I.pick || ''; s1.addEventListener('change', () => { I.pick = s1.value; save(); });
     f1.append(l1, s1);
     const f2 = el('div', 'f'), l2 = el('label', null, 'איך הקבוצה החליטה'), s2 = el('select');
@@ -236,7 +236,7 @@
   async function build() {
     const act = chosenText();
     F('err1').hidden = true;
-    if (!act) return fail(F('err1'), 'כדי להמשיך, בחרו את הפעולה שהקבוצה בחרה, או כתבו אותה בשדה "הפעולה שהקבוצה כבר בחרה".');
+    if (!act) return fail(F('err1'), 'כדי להמשיך, אפשר לבחור את הפעולה שהקבוצה בחרה, או לכתוב אותה בשדה "הפעולה שהקבוצה כבר בחרה".');
     const b = F('go'); b.disabled = true; const stop = waiting(F('wait1'), 'מכינה לוח ביצוע, כרטיסי תפקיד והסכם לתקופת ניסיון.', 70);
     let k = null, bad = null;
     try { k = await ask(M.planSystem(KB, WRITER), 'השדות:\n' + M.inputText(I.form) + '\n\nהפעולה שהקבוצה בחרה: ' + act + (I.how ? '\nאיך הוחלט: ' + I.how : '') + '\n\nהכיני את התוצר.', M.valid); }

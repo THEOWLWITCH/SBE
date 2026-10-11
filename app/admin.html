@@ -813,7 +813,7 @@ function pInsts(){
       // 2. המוסד
       const instWrap = el("div",{style:"margin:6px 0"});
       const selInst = el("select",{style:"min-width:220px"});
-      selInst.append(el("option",{value:""},"— בחרי את המוסד —"));
+      selInst.append(el("option",{value:""},"— אפשר לבחור את המוסד —"));
       instList.slice().sort((a, b) => a.name.localeCompare(b.name, "he")).forEach(x => selInst.append(el("option",{value:x.name}, x.name)));
       const newName = el("input",{placeholder:"שם המוסד החדש", value: q.instTyped || "", style:"min-width:220px"});
       const instNote = el("p",{class:"hint"});
@@ -858,8 +858,8 @@ function pInsts(){
       function sync() {
         const k = kind();
         selInst.hidden = k !== "renew"; newName.hidden = k !== "new";
-        instNote.textContent = k === "renew" ? (q.inst ? "בטופס נכתב \"" + typed + "\": כדאי לוודא בשיחה שזה אכן המוסד." : "בטופס נכתב \"" + typed + "\", והשם לא זוהה כמוסד קיים. בחרי את המוסד הנכון.")
-          : k === "new" ? (instList.some(x => x.name === newName.value.trim()) ? "⚠ מוסד בשם הזה כבר קיים: אם זה אותו מוסד, בחרי \"חידוש\"." : "המוסד ייפתח כמוסד חדש. אחר כך מפיקים קוד למנהל/ת המוסד.")
+        instNote.textContent = k === "renew" ? (q.inst ? "בטופס נכתב \"" + typed + "\": כדאי לוודא בשיחה שזה אכן המוסד." : "בטופס נכתב \"" + typed + "\", והשם לא זוהה כמוסד קיים. אפשר לבחור את המוסד הנכון.")
+          : k === "new" ? (instList.some(x => x.name === newName.value.trim()) ? "⚠ מוסד בשם הזה כבר קיים: אם זה אותו מוסד, אפשר לבחור \"חידוש\"." : "המוסד ייפתח כמוסד חדש. אחר כך מפיקים קוד למנהל/ת המוסד.")
           : k === "other" ? "בקשה שאינה פתיחה או חידוש: מטפלים ידנית, ואז סוגרים את הבקשה." : "";
         const x = instList.find(i => i.name === selInst.value);
         curOpen.textContent = k === "renew" && x ? "פתוחות היום: " + ((x.open || []).map(p => MOD_LABELS[p] || p).join(", ") || "אין") + (x.subEnd ? " · מנוי עד " + fmt(x.subEnd) : "") : "";
@@ -909,7 +909,7 @@ function pInsts(){
 
   // רשימת המוסדות — כל מוסד מקופל לשורה אחת; בפתיחה: ארבעה חלקים ברורים
   const c = el("div",{class:"card"});
-  c.append(el("h3",{},"המוסדות", el("em",{}, "לחצי על מוסד כדי לנהל אותו")));
+  c.append(el("h3",{},"המוסדות", el("em",{}, "אפשר ללחוץ על מוסד כדי לנהל אותו")));
   const inn = el("div",{class:"in"});
   if (!instList.length) inn.append(el("p",{class:"sub",style:"margin:0"},"עדיין אין מוסדות."));
   const copyBtn = (txt) => { const b = el("button",{class:"linkbtn"},"העתקה");
@@ -1542,7 +1542,7 @@ function pData(){
   // אסור שיהיה כפתור מחיקה כולל!" — מנוטרל כשאין שום סינון פעיל.
   const bDel = el("button",{class:"act d"}, "מחיקת " + matching.length + " המסוננים");
   bDel.disabled = !anyActive || !matching.length;
-  bDel.title = anyActive ? "" : "בחרי קריטריון סינון אחד לפחות. אין כפתור שמוחק הכול";
+  bDel.title = anyActive ? "" : "אפשר לבחור קריטריון סינון אחד לפחות. אין כפתור שמוחק הכול";
   bDel.addEventListener("click",()=> ask("מחיקת " + matching.length + " תרחישים",
     "התרחישים התואמים לסינון הנוכחי בלבד: " +
       matching.slice(0,3).map(r=>r.name).join("، ") + (matching.length>3 ? " ועוד "+(matching.length-3) : "") +
@@ -1599,7 +1599,7 @@ function resetAccessData(){ if (!accessAuth && sysToken()) tokenFailed = true; a
 
 function accessFail(e){
   ask("הפעולה לא בוצעה",
-    e.status === 403 ? "הסיסמה כבר לא תקפה. הקלידי אותה מחדש." : "אין כרגע חיבור לשרת. נסי שוב בעוד רגע.",
+    e.status === 403 ? "הסיסמה כבר לא תקפה. אפשר להקליד אותה מחדש." : "אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע.",
     () => { if (e.status === 403) { resetAccessData(); render(); } });
 }
 
@@ -1610,7 +1610,7 @@ function unlockCard(pwLabel, loader){
   const inn = el("div",{class:"in"});
   const pw = el("input",{type:"password", placeholder:pwLabel, autocomplete:"off"});
   pw.style.width = "100%";
-  const err = el("div",{class:"lock"}, "אין כרגע חיבור לשרת. נסי שוב בעוד רגע.");
+  const err = el("div",{class:"lock"}, "אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע.");
   err.hidden = !gateFailed;
   const go = el("button",{class:"act p"},"פתיחה");
   const submit = async () => {
@@ -1620,14 +1620,14 @@ function unlockCard(pwLabel, loader){
     try { await loader(); render(); }
     catch (e) {
       accessAuth = "";
-      err.textContent = e.status === 403 ? "סיסמה שגויה." : "אין כרגע חיבור לשרת. נסי שוב בעוד רגע.";
+      err.textContent = e.status === 403 ? "סיסמה שגויה." : "אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע.";
       err.hidden = false; go.disabled = false; go.textContent = "פתיחה";
     }
   };
   go.addEventListener("click", submit);
   pw.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
   inn.append(el("p",{style:"margin:0 0 10px;font-size:14.5px;color:var(--muted)"},
-    "כדי לראות ולשנות, הקלידי את " + pwLabel + ". היא נשמרת רק כל עוד הדף הזה פתוח."),
+    "כדי לראות ולשנות, אפשר להקליד את " + pwLabel + ". היא נשמרת רק כל עוד הדף הזה פתוח."),
     pw, err, el("div",{class:"btnrow"}, go));
   c.append(inn);
   return c;
@@ -1849,7 +1849,7 @@ function pAccess(){
       if (a.length < 8) { msg.textContent = "אפשר לבחור סיסמה באורך 8 תווים לפחות."; msg.hidden = false; return; }
       if (a !== b) { msg.textContent = "שתי ההקלדות לא זהות."; msg.hidden = false; return; }
       ask("החלפת סיסמת " + LABELS[kind],
-        "הסיסמה הקודמת תפסיק לעבוד מיד. שמרי את החדשה במקום בטוח. אי אפשר לשחזר אותה, רק להחליף שוב.",
+        "הסיסמה הקודמת תפסיק לעבוד מיד. אפשר לשמור את החדשה במקום בטוח. אי אפשר לשחזר אותה, רק להחליף שוב.",
         async () => {
           try {
             accessState = await accessCall("setPassword", { kind, newPassword: a });
@@ -1909,7 +1909,7 @@ function openPersonalDlg(x) {
   $("pcCancel").onclick = () => d.close();
   const open = x.open || [];
   if (!open.length) {
-    body.append(el("p",{style:"margin:0;color:var(--brick)"}, "עדיין לא נפתחו מערכות למוסד הזה. קודם לחצי \"מערכות פתוחות\" ובחרי מה פתוח לו."));
+    body.append(el("p",{style:"margin:0;color:var(--brick)"}, "עדיין לא נפתחו מערכות למוסד הזה. קודם אפשר ללחוץ על \"מערכות פתוחות\" ולבחור מה פתוח לו."));
     ok.hidden = true; d.showModal(); return;
   }
   body.append(el("p",{style:"margin:0 0 12px;font-size:13.5px;color:var(--muted);line-height:1.6"},
@@ -1926,7 +1926,7 @@ function openPersonalDlg(x) {
   const out = el("div",{style:"margin-top:12px"}); body.append(out);
   ok.onclick = async () => {
     const perms = open.filter(p => cbs[p].checked);
-    if (!perms.length) { out.textContent = "כדי להמשיך, סמנו לפחות מערכת אחת."; return; }
+    if (!perms.length) { out.textContent = "כדי להמשיך, אפשר לסמן לפחות מערכת אחת."; return; }
     ok.disabled = true; out.textContent = "מפיקה... (לפעמים עד דקה)";
     try {
       const r = await accessCall("codeCreate", { kind: "staff", inst: x.name, perms, label: name.value.trim(),
@@ -1935,7 +1935,7 @@ function openPersonalDlg(x) {
       out.append(el("div",{style:"font-size:13.5px;color:var(--muted)"}, "הקוד מוכן. מעבירים אותו לאדם, והוא/היא מקלידים אותו במסך הכניסה:"),
         el("div",{class:"bigcode",style:"margin-top:6px"}, r.code.code));
       ok.hidden = true; instList = null; render();
-    } catch (e) { ok.disabled = false; out.textContent = "לא הצלחתי להפיק קוד. נסי שוב."; }
+    } catch (e) { ok.disabled = false; out.textContent = "לא הצלחתי להפיק קוד. אפשר לנסות שוב."; }
   };
   d.showModal();
 }
@@ -2003,7 +2003,7 @@ function openModDlg(instName) {
           dlg.close(); instList = null; render();
         } catch (e) {
           accessAuth = prevAuth;
-          errMsg.textContent = e.status === 403 ? "סיסמה שגויה." : "אין כרגע חיבור לשרת. נסי שוב בעוד רגע.";
+          errMsg.textContent = e.status === 403 ? "סיסמה שגויה." : "אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע.";
           errMsg.style.display = "block";
         } finally {
           $("modSave").disabled = false;

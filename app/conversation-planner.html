@@ -251,7 +251,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <button type="button" class="primary" id="bSuggest">מילוי הצעות</button>
   <button type="button" id="bBuild" disabled>בנייה</button>
   <button type="button" id="bReset">ניקוי</button>
-  <span class="note" id="hint">מלאי את שני השדות העיקריים</span>
+  <span class="note" id="hint">אפשר למלא את שני השדות העיקריים</span>
 </div></div>
 
 <dialog id="dlg">
@@ -476,12 +476,12 @@ async function buildDigitalDraft(d) {
     const myLine = traitsLine(d.myTraits);
     const system = [ "אסור לכתוב שם של מחבר, מאמר, ספר, מחקר או שנת פרסום. אפשר להזכיר תיאוריה או גישה במילים. מקורות מגיעים רק מספריית המקורות המאומתת של המערכת.",
       "את עוזרת שמנסחת טיוטת הודעה כתובה (מייל/הודעת טקסט/צ'אט) עבור שיחה אמיתית שהמשתמשת מתכננת. זה לא סימולציה.",
-      "הגישה שנבחרה להנחות את הניסוח: " + (d.approach || "לא נבחרה — נסחי בגישה כללית ומכבדת"),
+      "הגישה שנבחרה להנחות את הניסוח: " + (d.approach || "לא נבחרה — אפשר לנסח בגישה כללית ומכבדת"),
       RED_LINES_TEXT,
       TALK_RULE,
       "ההודעה חייבת לפתוח בברכת שלום ובמשהו טוב לומר על הצד השני, לפני מעבר לגוף העניין.",
       "כתבי בגוף ראשון, בעברית טבעית וזורמת — לא מתורגמת ולא נוסחתית. כל פועל ותואר בגוף ראשון — במגדר של הכותבת/הכותב כפי שעולה מ\"מי אני בשיחה\" (למשל \"מורה\", \"רכזת\" → \"אני מניחה\", לא \"אני מניח\"). אם המגדר לא ברור — נסחי בלי פועל מגדרי.",
-      "אל תמציאי שם לצד השני. אם שמו לא נמסר בשדות — פתחי ב\"שלום,\" בלבד, בלי שם ובלי סוגריים.",
+      "אל תמציאי שם לצד השני. אם שמו לא נמסר בשדות — אפשר לפתוח ב\"שלום,\" בלבד, בלי שם ובלי סוגריים.",
       "החזירי אך ורק אובייקט JSON עם המפתחות: full (טיוטה מלאה, כמה משפטים עד כמה פסקאות), short (גרסה מקוצרת משמעותית להודעת טקסט/צ'אט, לא רק העתקה של תחילת הגרסה המלאה).",
     ].join("\n");
     const userText = [
@@ -949,8 +949,8 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     if (!draft || !draft.isAI) return noModel(); // בלי חיבור למודל — אין תוצר (לא תבנית קבועה)
     body.append(el("div", { class:"banner-mini" },
       draft.isAI
-        ? "קראי ותאימי לפני שליחה בפועל. "
-        : "השרת המקומי לא זמין: הטיוטה מורכבת מתבנית קבועה לפי הגישה שנבחרה, לא ניסוח AI אמיתי. קראי ותאימי לפני שליחה בפועל. ",
+        ? "אפשר לקרוא ותאימי לפני שליחה בפועל. "
+        : "השרת המקומי לא זמין: הטיוטה מורכבת מתבנית קבועה לפי הגישה שנבחרה, לא ניסוח AI אמיתי. אפשר לקרוא ותאימי לפני שליחה בפועל. ",
       el("b",{}, "לפני שליחה: ודאי שההודעה פותחת בברכת שלום ובמשהו טוב לומר, לפני גוף העניין.")));
     if (draft.contextNote) body.append(el("div", { class:"rcard-row" },
       el("b",{},"הערת תכנון, לא חלק מההודעה"), el("div",{}, draft.contextNote)));
@@ -961,7 +961,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     const shortBox = el("div", { class:"draftbox", contenteditable:"true", spellcheck:"true" }, draft.short); shortBox.classList.add("sbe-edit");
     body.append(shortBox);
     body.append(el("p", { class:"savenote" },
-      "אפשר לערוך את הטיוטות ישירות כאן, או לסגור, לשנות שדה למעלה ולבנות מחדש. מרוצה? העתיקי, הדפיסי או שמרי כ-PDF."));
+      "אפשר לערוך את הטיוטות ישירות כאן, או לסגור, לשנות שדה למעלה ולבנות מחדש. מרוצה? אפשר להעתיק, להדפיס או לשמור כ-PDF."));
     const sysBtn = el("button", { type:"button", class:"dlg-dl" }, "שמירה במערכת");
     sysBtn.addEventListener("click", () => {
       try {
@@ -1052,7 +1052,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     if (!briefing) body.append(tree);
 
     body.append(el("p", { class:"savenote" },
-      "אפשר לערוך את התדריך ואת הכרטיס ישירות כאן, או לסגור, לשנות שדה למעלה ולבנות מחדש. מרוצה? הדפיסי או שמרי כ-PDF."));
+      "אפשר לערוך את התדריך ואת הכרטיס ישירות כאן, או לסגור, לשנות שדה למעלה ולבנות מחדש. מרוצה? אפשר להדפיס או לשמור כ-PDF."));
     const sysBtn = el("button", { type:"button", class:"dlg-dl" }, "שמירה במערכת");
     sysBtn.addEventListener("click", () => {
       try {

@@ -161,7 +161,7 @@
         var v = t.value.trim();
         if (!v) { desc.set.call(inp, ""); inp.dispatchEvent(new Event("change", { bubbles: true })); return; }
         var iso = parseIL(v);
-        if (!iso) { t.style.borderColor = "#B3261E"; t.title = "כדי לשמור, כתבו תאריך כמו 25.10.26"; return; }
+        if (!iso) { t.style.borderColor = "#B3261E"; t.title = "כדי לשמור, אפשר לכתוב תאריך כמו 25.10.26"; return; }
         desc.set.call(inp, iso); sync(); inp.dispatchEvent(new Event("input", { bubbles: true })); inp.dispatchEvent(new Event("change", { bubbles: true }));
       });
       sync();

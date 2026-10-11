@@ -95,7 +95,7 @@
       if (!ps.some((p) => { const o = S.obs[p.name] || {}; return o.count || o.ev || o.cond; })) { err.textContent = 'כדי להציע התאמה, נשמח לתיעוד של מסלול אחד לפחות בדף התצפית.'; err.hidden = false; return; }
       b.disabled = true; const stop = waiting(wait, 'מציעה התאמה לשיעור הבא.', 30);
       let k = null, bad = null;
-      try { k = await window.sbeCallAIJson(SERVER, { system: M.adjustSystem(KB), messages: [{ role: 'user', content: ctxText() + '\n\nמה כולם מדגימים: ' + S.must + '\n\nהמסלולים והקריטריונים:\n' + ps.map((p) => p.name + ' (' + p.mode + '): ' + txt(p.crit)).join('\n') + '\n\nדף התצפית:\n' + log + '\n\nהציעי התאמה.' }], maxTokens: 5000, customerReview: true }, 120000, M.validAdjust); }
+      try { k = await window.sbeCallAIJson(SERVER, { system: M.adjustSystem(KB), messages: [{ role: 'user', content: ctxText() + '\n\nמה כולם מדגימים: ' + S.must + '\n\nהמסלולים והקריטריונים:\n' + ps.map((p) => p.name + ' (' + p.mode + '): ' + txt(p.crit)).join('\n') + '\n\nדף התצפית:\n' + log + '\n\nהציעי התאמה.' }], maxTokens: 8000, customerReview: true }, 120000, M.validAdjust); }
       catch (e) { bad = e; } finally { stop(); b.disabled = false; }
       if (!M.validAdjust(k)) { err.textContent = why(bad); err.hidden = false; return; }
       S.adjust = k; S.pick = ''; save(); draw();
@@ -129,7 +129,7 @@
     function draw() {
       if (!box.open) return;
       body.textContent = '';
-      body.appendChild(el('p', 'sub', 'אין דרך אחת ללמוד. בחרי כמה דרכים להשתתף ולהראות הבנה סביב אותה מטרה, ובדקי אחרי השיעור מה אפשר השתתפות ולמידה.'));
+      body.appendChild(el('p', 'sub', 'אין דרך אחת ללמוד. אפשר לבחור כמה דרכים להשתתף ולהראות הבנה סביב אותה מטרה, ולבדוק אחרי השיעור מה אפשר השתתפות ולמידה.'));
       const c = ctx();
       if (seqMode) {
         const ss = arr(c.sessions); const d = el('div'); d.appendChild(el('b', null, 'לאיזה מפגש מתכננים עכשיו'));

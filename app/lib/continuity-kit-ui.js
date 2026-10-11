@@ -309,7 +309,7 @@
     });
     const err = el('p', 'err'); err.hidden = true; const wait = el('div', 'wait'); wait.hidden = true;
     const go = btn(J.kit ? 'הכנה מחדש' : 'הכנת ערכת ההצטרפות', J.kit ? 'btn btn-ghost sm' : 'btn', async () => {
-      err.hidden = true; if (!J.form.who) return fail(err, 'כדי להמשיך, בחרי מי מצטרף או חוזר.');
+      err.hidden = true; if (!J.form.who) return fail(err, 'כדי להמשיך, אפשר לבחור מי מצטרף או חוזר.');
       go.disabled = true; const w = waiting(wait, 'מכינה ערכת הצטרפות וחזרה.', 60);
       let k = null, bad = null;
       try { k = await ask(C.joinSystem(KB, WRITER), 'מהתיק:\n' + C.inputText(S.form) + '\n\nההצטרפות:\n' + C.JOIN_FIELDS.map((f) => J.form[f.k] ? f.l + ': ' + J.form[f.k] : '').filter(Boolean).join('\n') +

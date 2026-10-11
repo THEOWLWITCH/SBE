@@ -145,7 +145,7 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
     <div><label for="email">מייל *</label><input id="email" type="email" maxlength="80" dir="ltr" autocomplete="email"></div>
     <div><label for="phone">טלפון נייד *</label><input id="phone" type="tel" maxlength="15" dir="ltr" autocomplete="tel" placeholder="05X-XXXXXXX"></div>
   </div>
-  <label>אילו כלים תרצו לבקש? *</label>
+  <label>אילו כלים רוצים לבקש? *</label>
   <div class="sys" id="systems"></div>
   <label>תקופה</label>
   <div class="per">
@@ -193,7 +193,7 @@ $("send").addEventListener("click", async () => {
   if (!body.fullName || (!priv && !body.instName)) { msg.textContent = priv ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולשם המוסד."; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { msg.textContent = "כתובת המייל לא תקינה."; return; }
   if (!/^(\+972|0)5\d{8}$/.test(phone)) { msg.textContent = "מספר הטלפון הנייד לא תקין (למשל 050-1234567)."; return; }
-  if (!systems.length) { msg.textContent = "כדי לשלוח, סמנו לפחות כלי אחד."; return; }
+  if (!systems.length) { msg.textContent = "כדי לשלוח, אפשר לסמן לפחות כלי אחד."; return; }
   $("send").disabled = true; msg.className = "msg"; msg.textContent = "שולחת... (לפעמים עד דקה)";
   try {
     const r = await fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
@@ -208,8 +208,8 @@ $("send").addEventListener("click", async () => {
       $("form").append(p); return;
     }
     msg.className = "msg err";
-    msg.textContent = r.status === 429 ? "כבר התקבלו כמה בקשות מהמוסד הזה: ניצור קשר בקרוב." : "השליחה לא הצליחה. בדקו את הפרטים ונסו שוב.";
-  } catch (e) { msg.className = "msg err"; msg.textContent = "אין כרגע חיבור לשרת. נסו שוב בעוד רגע."; }
+    msg.textContent = r.status === 429 ? "כבר התקבלו כמה בקשות מהמוסד הזה: ניצור קשר בקרוב." : "השליחה לא הצליחה. אפשר לבדוק את הפרטים ולנסות שוב.";
+  } catch (e) { msg.className = "msg err"; msg.textContent = "אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע."; }
   $("send").disabled = false;
 });
 </script>

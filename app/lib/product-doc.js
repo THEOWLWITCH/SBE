@@ -291,7 +291,7 @@ h1{font-size:26px}.hd img{height:44px}
     } else {
       w = window.open("", "_blank");
     }
-    if (!w) { alert("הדפדפן חסם את חלון ההדפסה. אפשרי חלונות קופצים לאתר ונסי שוב."); return; }
+    if (!w) { alert("הדפדפן חסם את חלון ההדפסה. אפשר לאפשר חלונות קופצים לאתר ולנסות שוב."); return; }
     w.document.write(`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(fileTitle(title, undefined, kind))}</title>
 <style>
 @page{size:A4${landscape ? " landscape" : ""};margin:18mm 20mm}

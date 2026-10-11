@@ -187,12 +187,12 @@ button:disabled{opacity:.4;cursor:not-allowed;}
 
 <div class="card" id="fbCard"><h2>הכנה: מדדי המשוב לסדנה<em id="fbSum"></em></h2>
   <div class="in">
-    <p class="hint" style="margin:0 0 12px" id="fbIntro">בכל אחד משלושת שאלוני המשוב בחרי 5–10 מדדים שמתאימים לסדנה הזו. רק הם יופיעו בטפסים של המנחה, של המתנסה ושל הצופות. הסימון הראשוני הוא ברירת המחדל של המוסד.</p>
+    <p class="hint" style="margin:0 0 12px" id="fbIntro">בכל אחד משלושת שאלוני המשוב אפשר לבחור 5–10 מדדים שמתאימים לסדנה הזו. רק הם יופיעו בטפסים של המנחה, של המתנסה ושל הצופות. הסימון הראשוני הוא ברירת המחדל של המוסד.</p>
     <div class="fbtabs" id="fbTabs"></div>
     <div id="fbList"></div>
     <div class="fbadd" id="fbAdd">
       <h3 id="fbAddTtl">חסר מדד?</h3>
-      <p class="hint" style="margin:0">הוסיפי אותו כאן. הוא יסומן לסדנה הזו וייכנס לבנק המשותף של כל המוסדות, עם שמך, שם המוסד והתאריך.</p>
+      <p class="hint" style="margin:0">אפשר להוסיף אותו כאן. הוא יסומן לסדנה הזו וייכנס לבנק המשותף של כל המוסדות, עם שמך, שם המוסד והתאריך.</p>
       <div class="fbaddrow">
         <input id="fbAddName" placeholder="השם המלא שלך" aria-label="שם מלא, לקרדיט" autocomplete="name">
         <input id="fbAddInst" placeholder="המוסד" aria-label="המוסד">
@@ -251,7 +251,7 @@ button:disabled{opacity:.4;cursor:not-allowed;}
   <button class="stop" id="bEnd" disabled>סיום</button>
   <button id="bProject" disabled>מצב הקרנה</button>
   <span class="spacer"></span>
-  <span class="note" id="hint">פתחי סדנה כדי לקבל קוד</span>
+  <span class="note" id="hint">אפשר לפתוח סדנה כדי לקבל קוד</span>
 </div></div>
 
 <div class="project" id="proj">
@@ -387,7 +387,7 @@ $("bEnd").addEventListener("click", () => {
 $("bProject").addEventListener("click", () => {
   $("pName").textContent = S.name;
   $("pCode").textContent = code || "------";
-  $("pMeta").textContent = S.lang + " · " + S.minutes + " דקות · הקלידו את הקוד בטלפון";
+  $("pMeta").textContent = S.lang + " · " + S.minutes + " דקות · אפשר להקליד את הקוד בטלפון";
   $("proj").classList.add("on");
   if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
 });
@@ -462,8 +462,8 @@ function drawFb(){
   $("fbAddTtl").textContent = "חסר מדד בשאלון ה" + FB.ROLE_LABEL[fbRole] + "?";
   if (phase < 1) {
     $("bOpen").disabled = !fbAllValid();
-    $("hint").textContent = fbAllValid() ? "פתחי סדנה כדי לקבל קוד"
-      : "כדי לפתוח סדנה, בחרי " + FB.MIN + "–" + FB.MAX + " מדדים בכל אחד משלושת שאלוני המשוב.";
+    $("hint").textContent = fbAllValid() ? "אפשר לפתוח סדנה כדי לקבל קוד"
+      : "כדי לפתוח סדנה, אפשר לבחור " + FB.MIN + "–" + FB.MAX + " מדדים בכל אחד משלושת שאלוני המשוב.";
   }
 }
 
@@ -512,8 +512,8 @@ function fbAddMsg(text, bad){
 }
 $("fbAddBtn").addEventListener("click", () => {
   const name = $("fbAddName").value.trim(), inst = $("fbAddInst").value.trim(), text = $("fbAddText").value.trim();
-  if (!text) { fbAddMsg("כתבי את ניסוח המדד.", true); $("fbAddText").focus(); return; }
-  if (!name) { fbAddMsg("כתבי את שמך המלא — הוא מופיע כקרדיט ליד המדד.", true); $("fbAddName").focus(); return; }
+  if (!text) { fbAddMsg("אפשר לכתוב את ניסוח המדד.", true); $("fbAddText").focus(); return; }
+  if (!name) { fbAddMsg("אפשר לכתוב את שמך המלא — הוא מופיע כקרדיט ליד המדד.", true); $("fbAddName").focus(); return; }
   const id = FB.addMetric(fbRole, { l:text, type:$("fbAddType").value, creator:name, by:inst || null }, FB_BANK);
   if (!id) return;
   const sel = fbSel[fbRole];
@@ -531,7 +531,7 @@ $("fbAddText").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.p
 $("bCopy").addEventListener("click", async () => {
   const inp = $("fbUrl");
   try { await navigator.clipboard.writeText(inp.value); $("bCopy").textContent = "הועתק ✓"; }
-  catch(e) { inp.select(); $("bCopy").textContent = "סמנו והעתיקו"; }
+  catch(e) { inp.select(); $("bCopy").textContent = "אפשר לסמן ולהעתיק"; }
   setTimeout(() => { $("bCopy").textContent = "העתקה"; }, 2200);
 });
 

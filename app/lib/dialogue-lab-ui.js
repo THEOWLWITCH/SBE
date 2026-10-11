@@ -146,7 +146,7 @@
     out.appendChild(K.gain(I.gains, 1, M.GAIN[1], () => save()));
     K.chat(out, chatOpts(1));
     const row = el('div', 'btns no-print');
-    row.appendChild(btn('ממשיכים: בונים טענה ←', 'btn', () => { if (!String(I.question || '').trim()) { alert('כדי להמשיך, בחרו שאלת חקר או נסחו אחת.'); return; } goStep(2); }));
+    row.appendChild(btn('ממשיכים: בונים טענה ←', 'btn', () => { if (!String(I.question || '').trim()) { alert('כדי להמשיך, אפשר לבחור שאלת חקר או לנסח אחת.'); return; } goStep(2); }));
     out.appendChild(row);
   }
   function roleTiles(full) {
