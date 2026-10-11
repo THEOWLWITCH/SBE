@@ -168,6 +168,16 @@
     Y.qs.forEach((q, i) => { box.appendChild(el('p', 'yq', (i + 1) + '. ' + q.q)); const u = el('ul', 'yo'); q.opts.forEach((o) => u.appendChild(el('li', null, (/^_+$/.test(o) ? '' : '☐ ') + o))); box.appendChild(u); });
     box.appendChild(el('p', null, Y.close)); return box;
   }
+  // טופס גוגל (lib/google-form.js): הכרטיס והשאלון לתחילת השנה, עם כל השאלות
+  function cardSpec(c) {
+    c = c || {};
+    const qs = arr(c.questions).map((q) => ({ q: txt(q.q), opts: arr(q.opts).map(txt) }));
+    if (arr(c.options).length) qs.push({ q: arr(c.questions).length ? 'או בחרו דרך מוכנה:' : 'מה מתאים לכם?', opts: arr(c.options).map(txt) });
+    if (c.notNow) qs.push({ q: 'ואם כרגע מתאים לכם פחות קשר', opts: [txt(c.notNow)] });
+    if (c.adapt) qs.push({ q: txt(c.adapt), opts: ['________'] });
+    return { title: txt(c.goal) || 'איך נהיה בקשר', description: [txt(c.greeting), txt(c.intro), txt(c.respond)].filter(Boolean).join('\n\n'), questions: qs, closing: txt(c.closing) };
+  }
+  const yearSpec = () => ({ title: M.YEAR_FORM.title, description: M.YEAR_FORM.intro, questions: M.YEAR_FORM.qs, closing: M.YEAR_FORM.close });
   const yearText = () => [M.YEAR_FORM.title, M.YEAR_FORM.intro].concat(M.YEAR_FORM.qs.map((q, i) => (i + 1) + '. ' + q.q + '\n' + q.opts.map((o) => '- ' + o).join('\n')), [M.YEAR_FORM.close]).join('\n\n');
 
   // ── צעד 3: משפחה ──
@@ -389,12 +399,16 @@
       const row = el('div', 'actions no-print');
       const cp = btn('📋 העתקת הכרטיס להודעה', 'btn btn-ghost sm', () => copyText(cardText(P.card), cp));
       row.append(cp, btn('🖨 הדפסת הכרטיס', 'btn btn-ghost sm', () => doPrint('card')));
-      cs.appendChild(row); box.appendChild(cs);
+      if (window.SBE_GFORM) row.append(SBE_GFORM.button(() => cardSpec(P.card), '📝 העברה לטופס גוגל'));
+      cs.appendChild(row);
+      cs.appendChild(el('p', 'sub no-print', 'אפשר לשלוח את הכרטיס גם כטופס גוגל: המשפחות עונות בטלפון, והתשובות נאספות בחשבון הגוגל של בית הספר.'));
+      box.appendChild(cs);
       if (otherLang() && P.cardHe && arr(P.cardHe.options).length) { const he = el('details', 'more'); he.appendChild(el('summary', null, 'הכרטיס בעברית')); he.appendChild(cardView(P.cardHe)); box.appendChild(he); }
       box.appendChild(withRefs((r) => { r.appendChild(goalBlock(P)); r.appendChild(stylesBlock(P)); r.appendChild(meaning(P)); }));
       const yf = el('details', 'more no-print'); yf.appendChild(el('summary', null, 'שאלון קשר לתחילת השנה (פעם אחת לכל ההורים)')); yf.appendChild(yearForm());
       const yr = el('div', 'actions'), ycp = btn('📋 העתקת השאלון', 'btn btn-ghost sm', () => copyText(yearText(), ycp));
-      yr.append(ycp, btn('🖨 הדפסת השאלון', 'btn btn-ghost sm', () => doPrint('year'))); yf.appendChild(yr); box.appendChild(yf);
+      yr.append(ycp, btn('🖨 הדפסת השאלון', 'btn btn-ghost sm', () => doPrint('year')));
+      if (window.SBE_GFORM) yr.append(SBE_GFORM.button(yearSpec, '📝 העברה לטופס גוגל')); yf.appendChild(yr); box.appendChild(yf);
     }
     if (n === 3) {
       head(box, 'families');
