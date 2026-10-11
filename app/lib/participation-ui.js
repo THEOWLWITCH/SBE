@@ -9,7 +9,7 @@
   const SERVER = window.sbeAIOrigin ? window.sbeAIOrigin() : 'https://sbe-server.onrender.com';
   const NO_MODEL = 'אין כרגע חיבור למודל, ולכן לא הוכנה הצעה. אפשר לנסות שוב בעוד דקה, או לבחור מסלולים מהרשימה המלאה.';
   const PARTIAL = 'ההצעה חזרה חלקית. אפשר לנסות שוב.';
-  const why = (e) => (e && e.code === 'incomplete') ? PARTIAL : NO_MODEL;
+  const why = (e) => (typeof window !== 'undefined' && window.sbeAIError) ? window.sbeAIError(e, NO_MODEL, PARTIAL) : ((e && e.code === 'incomplete') ? PARTIAL : NO_MODEL);
   const CSS = `
 .paths{border:2px solid #2E5A7D;border-radius:12px;padding:.2rem 1rem .9rem;margin:1rem 0;background:#fff}
 .paths>summary{cursor:pointer;font-weight:800;font-size:1.05rem;color:#2E5A7D;padding:.6rem 0}

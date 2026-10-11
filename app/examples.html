@@ -121,6 +121,8 @@ const TOOLS=[
   ['bridge','גשר בין הבית לכיתה','מטרה אחת וכמה דרכי תמיכה קצרות למשפחה: כרטיס בחירה, דרך תגובה קצרה, חלופה מלאה בכיתה, וסגנונות קשר שונים.'],
   ['dialogue','מעבדת שיח וחקר משותף','קבוצה חוקרת שאלה בתחום הדעת: שאלות חקר לבחירה, תנאי בדיקה, כרטיסי תפקיד (גם מעטפת) ותכנית חקר.'],
   ['teamthink','חשיבת צוות','מהלך חשיבה לצוות: כל הקולות, הסבר במילים של עמית, בעד ונגד, פרגון, ותפקידים מתחלפים.'],
+  ['dialogue-full','מעבדת שיח וחקר: תיק החקר','חקר שלם: שאלה, טענות, ראיות מקושרות, טיוטת גרסה מתוקנת שממתינה לאישור המורה, ומה הרווחנו בכל שלב.'],
+  ['teamthink-round','חשיבת צוות: סיכום הסבב','סבב שלם: כל הרעיונות, שקילה בעד ונגד, החלטה, פרגון לתרומה ומשוב על התהליך בלי ציונים לאנשים.'],
   ['resil','מיפוי חוסן חברתי: סיכום לכיתה','סיכום והמלצות על בסיס שאלון החוסן שהתלמידים ממלאים.'],
   ['conv','תכנון שיחה','תוכנית לשיחה מאתגרת: איך פותחים, שאלות המשך, ואיך מסיימים.'],
   ['act-single','תכנון פעילות: מפגש אחד','מערך מפגש מלא, עם מטרות, מהלך וזמנים.'],
@@ -148,7 +150,7 @@ async function load(){
   }
   const known=TOOLS.map(t=>t[0]);
   // לפי חמש שאלות של מוכנות יומיומית (SBE_READY)
-  const RG={"dialogue": "practice", "teamthink": "practice", "cont-join": "anchor", "cont-proc": "anchor", "routines-proc": "anchor", "paths": "act", "practice-own": "practice", "studio": "act", "practi": "see", "nugi": "see", "nana": "practice", "writer": "act", "continuity": "anchor", "routines": "anchor", "bridge": "practice", "resil": "see", "conv": "practice", "act-single": "act", "act-seq": "act", "review": "learn", "journey": "anchor", "practice": "practice", "edu": "practice", "parents": "practice", "youth": "practice"}, R=window.SBE_READY, order=R?R.GROUPS.map(g=>g.id):[];
+  const RG={"dialogue": "practice", "dialogue-full": "practice", "teamthink": "practice", "teamthink-round": "practice", "cont-join": "anchor", "cont-proc": "anchor", "routines-proc": "anchor", "paths": "act", "practice-own": "practice", "studio": "act", "practi": "see", "nugi": "see", "nana": "practice", "writer": "act", "continuity": "anchor", "routines": "anchor", "bridge": "practice", "resil": "see", "conv": "practice", "act-single": "act", "act-seq": "act", "review": "learn", "journey": "anchor", "practice": "practice", "edu": "practice", "parents": "practice", "youth": "practice"}, R=window.SBE_READY, order=R?R.GROUPS.map(g=>g.id):[];
   const sorted=TOOLS.slice().sort((a,b)=>order.indexOf(RG[a[0]])-order.indexOf(RG[b[0]]));
   const groups=sorted.concat([['_other','תוצרים נוספים','']]);
   let lastG=null;

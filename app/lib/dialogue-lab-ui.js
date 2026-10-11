@@ -296,6 +296,11 @@
     }
     if (what === 'all') {
       if (I.plan.length) { head(root, 'plan'); root.appendChild(T('plan', I.plan.map((p) => [p.who, p.what, p.when, p.conditions, p.check].map((x) => txt(x || ''))))); }
+      const d = I.draft || {};
+      if (String(d.text || '').trim()) {
+        root.appendChild(el('h3', null, 'טיוטת הגרסה החדשה' + (d.approved ? '' : ' (ממתינה לאישור המורה)')));
+        root.appendChild(window.SBE_TABLE(null, [['ההסבר', d.text], ['מה השתנה', d.changed], ['למה', d.why], ['על אילו ראיות', arr(d.evidence).map((x) => x + 1).join(', ')], ['שאלות פתוחות', d.open], ['עמדה חלופית', d.alternative]].filter((r) => String(r[1] || '').trim()).map((r) => [r[0], txt(r[1])]), 'kit-t'));
+      }
       if (I.versions.length) { head(root, 'versions'); root.appendChild(T('versions', I.versions.map((v) => [String(v.v), v.at, v.text, [v.changed, v.why].filter(Boolean).join(' · '), v.evidence.map((x) => x + 1).join(', '), v.by]))); }
       const gains = [1, 2, 3, 4].filter((n) => String(I.gains[n] || '').trim()).map((n) => [M.STAGES[n - 1].t, M.GAIN[n], I.gains[n]]);
       if (gains.length) { head(root, 'gains'); root.appendChild(T('gains', gains)); }
@@ -303,6 +308,18 @@
     return root;
   }
   window.sbeDialoguePrintNode = printNode;
+  // מעבדת הדמו (?part=full): טענות וראיות לדוגמה לחקר שנפתח מהדוגמה, כדי להפיק מול המודל גם את הצעת הגרסה המתוקנת
+  window.sbeDialogueDemoFill = function () {
+    const r = roleNames();
+    I.claims = [{ text: 'הצמח פונה לכיוון האור, כי אור עוזר לו לגדול.', by: r[0] || '', peer: 'הוא אומר שהצמח מתכופף אל החלון כי שם יש אור.', pro: 'כל הצמחים בחלון פונים לאותו כיוון.', con: 'אולי זה בגלל החום מהחלון ולא בגלל האור.', state: 'נבחרה' },
+      { text: 'הצמח פונה לכיוון החום של החלון.', by: r[1] || '', peer: 'היא חושבת שהחום מושך את הצמח.', pro: 'ליד החלון חם יותר.', con: 'גם צמח ליד מנורה קרה פנה אליה.', state: 'נשמרת כחלופה' }];
+    I.evidence = [{ what: 'זווית הגבעול בעציץ בתוך קופסה עם חור בצד אחד, במשך חמישה ימים', kind: 'מדידה', source: 'הניסוי שלנו', by: r[2] || '', until: 'סוף השבוע', claim: '0', found: 'הזווית גדלה מ-0 ל-35 מעלות לכיוון החור.', limits: 'עציץ אחד בלבד.', stance: 'תומכת' },
+      { what: 'עציץ השוואה בלי קופסה, באמצע הכיתה', kind: 'תצפית', source: 'הניסוי שלנו', by: r[2] || '', until: 'סוף השבוע', claim: '0', found: 'הגבעול נשאר כמעט ישר.', limits: 'קשה למדוד זווית קטנה.', stance: 'תומכת' }];
+    I.open = [{ q: 'האם זה קורה גם באור של מנורה?', from: 'שאלה של מתעד/ת' }];
+    I.gains = Object.assign(I.gains || {}, { 2: 'הרעיון על החום עזר לנו לחשוב על בדיקה שמפרידה בין אור לחום.', 3: 'מכין/ת החומרים הכין/ה קופסה, ולכן יכולנו לבדוק אור מכיוון אחד.' });
+    I.roles.forEach((x) => { x.okReady = true; });
+    save(true);
+  };
   const KINDS = { board: 'לוח שאלה, טענות וראיות', roles: 'כרטיסי תפקיד', all: 'תיק החקר' };
   document.querySelectorAll('[data-print]').forEach((b) => b.addEventListener('click', () => {
     const w = b.dataset.print; window.SBE_DOC.print({ title: I.question || 'חקר משותף', kind: KINDS[w], node: printNode(w) });
