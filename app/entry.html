@@ -264,7 +264,10 @@ function renderEntry(){
       sessionStorage.setItem("sbe.session.role", res.label || res.inst || "");
       sessionStorage.setItem("sbe.session.homeUrl", "home.html");
     } catch(e){}
-    location.href = "home.html";
+    // entry.html?c=קוד&go=message-writer.html (QR להתנסות בהרצאה): אחרי הכניסה הכלי נפתח ישר.
+    // רק שם של דף באתר; דף שלא פתוח בקוד הזה מחזיר ל"המרחב שלי" (access-guard.js).
+    const go = new URLSearchParams(location.search).get("go") || "";
+    location.href = /^[a-z0-9-]+\.html$/.test(go) ? go : "home.html";
   };
   btn.addEventListener("click", submit);
   code.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
