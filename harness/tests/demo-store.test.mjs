@@ -42,3 +42,25 @@ test('a listed product whose document is missing is removed from the list when o
   const [, plist] = await handleAccess(store, { action: 'demoPublicList' });
   assert.ok(plist.items.length === 1 && !('input' in plist.items[0]));
 });
+
+test('a private view link shows only the chosen products, without the input, until it expires or is revoked', async () => {
+  const store = slowStore(); const token = await sys(store);
+  const [, a] = await handleAccess(store, { action: 'demoSave', token, tool: 'practi', title: 'a', html: doc, input: 'סוד' });
+  const [, b] = await handleAccess(store, { action: 'demoSave', token, tool: 'nana', title: 'b', html: doc, input: 'סוד' });
+  assert.equal((await handleAccess(store, { action: 'demoShare', ids: [a.item.id] }))[0], 403, 'only the system admin creates links');
+  const [st, out] = await handleAccess(store, { action: 'demoShare', token, ids: [a.item.id, 'nope'], days: 3, name: 'לחברה' });
+  assert.equal(st, 200); const sid = out.share.sid;
+  let [s2, view] = await handleAccess(store, { action: 'demoShareGet', share: sid });
+  assert.equal(s2, 200); assert.deepEqual(view.items.map((d) => d.id), [a.item.id]); assert.ok(!('input' in view.items[0]));
+  [s2, view] = await handleAccess(store, { action: 'demoGet', id: a.item.id, share: sid });
+  assert.equal(s2, 200); assert.ok(view.html && !('input' in view));
+  assert.equal((await handleAccess(store, { action: 'demoGet', id: b.item.id, share: sid }))[0], 404, 'a product that was not chosen stays closed');
+  assert.equal((await handleAccess(store, { action: 'demoGet', id: a.item.id }))[0], 404, 'without the link it stays closed');
+  assert.equal((await handleAccess(store, { action: 'demoShareGet', share: 'x'.repeat(28) }))[0], 404);
+  const [, list] = await handleAccess(store, { action: 'demoShareList', token }); assert.equal(list.items.length, 1);
+  await handleAccess(store, { action: 'demoShareRevoke', token, share: sid });
+  assert.equal((await handleAccess(store, { action: 'demoShareGet', share: sid }))[0], 404, 'revoked');
+  assert.equal((await handleAccess(store, { action: 'demoGet', id: a.item.id, share: sid }))[0], 404);
+  const sh = store.data.get('demoshare:' + sid); store.data.set('demoshare:' + sid, { ...sh, revoked: false, exp: new Date(Date.now() - 1000).toISOString() });
+  assert.equal((await handleAccess(store, { action: 'demoShareGet', share: sid }))[0], 404, 'expired');
+});

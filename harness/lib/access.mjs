@@ -662,11 +662,26 @@ async function handleDemosLocked(store, body) {
   // תוצאת בדיקת הלקוחה (11/10/2026): נשמרת עם התוצר, כדי שכל מכשיר יידע שהוא כבר נבדק ותוקן
   const cleanRv = (r) => (r && typeof r === 'object') ? { ready: !!r.ready, summary: clean(r.summary, 400), found: Number(r.found) || 0, fixed: Number(r.fixed) || 0,
     at: clean(r.at, 40), issues: (Array.isArray(r.issues) ? r.issues : []).slice(0, 8).map((x) => ({ where: clean(x && x.where, 200), quote: clean(x && x.quote, 300), problem: clean(x && x.problem, 400), fix: clean(x && x.fix, 400) })) } : undefined;
+  // קישור צפייה פרטי (12/10/2026: "חברה יכולה לעזור לי לבדוק תוצרים בלי ססמה?"): רק התוצרים שנבחרו, עד תאריך,
+  // בלי כניסה ובלי מה שהוזן. מזהה ארוך שאי אפשר לנחש; מנהלת המערכת יכולה לבטל בכל רגע.
+  const shareOf = async (sid) => {
+    sid = String(sid || '');
+    if (!/^[a-z0-9]{20,40}$/.test(sid)) return null;
+    const sh = await store.get('demoshare:' + sid);
+    return sh && !sh.revoked && Date.parse(sh.exp) > Date.now() ? sh : null;
+  };
+  if (action === 'demoShareGet') {
+    const sh = await shareOf(body.share);
+    if (!sh) { await pause(); return [404, { error: 'expired' }]; }
+    const items = index.filter((d) => sh.ids.includes(d.id)).map(({ id, tool, title, label, at, order }) => ({ id, tool, title, label, at, order }));
+    return [200, { name: sh.name, exp: sh.exp, items }];
+  }
   if (action === 'demoPublicList') return [200, { items: index.filter((d) => d.public).map(({ id, tool, title, label, at, order }) => ({ id, tool, title, label, at, order })) }];
   if (action === 'demoGet') {
     const id = String(body.id || '');
     const meta = index.find((d) => d.id === id);
-    if (!meta || (!meta.public && !isSys)) { await pause(); return [404, { error: 'not found' }]; }
+    const shared = !meta || meta.public || isSys ? null : await shareOf(body.share);
+    if (!meta || (!meta.public && !isSys && !(shared && shared.ids.includes(id)))) { await pause(); return [404, { error: 'not found' }]; }
     const doc = await store.get('demo:' + id);
     // בספרייה רק התוצר (11/10/2026: "בתיק התוצרים לא יראו מה שהוזן - רק תוצר"); הקלט רק למנהלת המערכת
     const { input, ...pub } = meta;
@@ -679,6 +694,26 @@ async function handleDemosLocked(store, body) {
   }
   if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
   if (action === 'demoList') return [200, { items: index }];
+  if (action === 'demoShare') {
+    const ids = (Array.isArray(body.ids) ? body.ids : []).map(String).filter((id) => index.some((d) => d.id === id)).slice(0, 100);
+    if (!ids.length) return [400, { error: 'no items' }];
+    const days = Math.min(30, Math.max(1, Number(body.days) || 7));
+    const sid = randomBytes(18).toString('hex').slice(0, 28);
+    const sh = { sid, ids, name: clean(body.name, 80), created: new Date().toISOString(), exp: new Date(Date.now() + days * 864e5).toISOString() };
+    await store.set('demoshare:' + sid, sh);
+    return [200, { share: sh }];
+  }
+  if (action === 'demoShareList') {
+    const rows = await store.list('demoshare:');
+    const items = rows.map((r) => r.value).filter((x) => x && !x.revoked && Date.parse(x.exp) > Date.now()).sort((a, b) => String(b.created).localeCompare(String(a.created)));
+    return [200, { items }];
+  }
+  if (action === 'demoShareRevoke') {
+    const sid = String(body.share || ''); const sh = await store.get('demoshare:' + sid);
+    if (!sh) return [404, { error: 'not found' }];
+    await store.set('demoshare:' + sid, { ...sh, revoked: true });
+    return [200, { ok: true }];
+  }
   if (action === 'demoSave') {
     const html = String(body.html || '');
     if (!html || html.length > DEMO_MAX) return [400, { error: 'bad html' }];
@@ -1439,7 +1474,7 @@ export async function handleAccess(store, body) {
 
   if (typeof action === 'string' && action.startsWith('resil')) return handleResilience(store, body);
   if (action === 'listGet' || action === 'listAdd' || action === 'listRemove') return handleLists(store, body);
-  if (/^demo(Save|Update|List|Get|Publish|Delete|Clear|PublicList)$/.test(action || '')) return handleDemos(store, body);
+  if (/^demo(Save|Update|List|Get|Publish|Delete|Clear|PublicList|Share|ShareList|ShareRevoke|ShareGet)$/.test(action || '')) return handleDemos(store, body);
   if (action === 'fbSubmit' || action === 'fbList' || action === 'fbDelete') return handleFeedbackInbox(store, body);
   if (/^crit(List|Propose|Mine|Use|Admin|Approve|Reject|Remove)$/.test(action || '')) return handleReviewCriteria(store, body);
   if (/^jr[A-Z]/.test(action || '')) return handleJourney(store, body);

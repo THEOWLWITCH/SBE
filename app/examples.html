@@ -69,7 +69,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 .dlg{display:grid;grid-template-rows:auto minmax(0,1fr);height:100%;overflow:hidden}
 .dlg-h{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--hair);flex-wrap:wrap}
 .dlg-h b{flex:1}
-.btn{font-family:inherit;font-size:13.5px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--hair);background:transparent;color:var(--ink);cursor:pointer}
+.btn{font-family:inherit;font-size:13.5px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--hair);background:transparent;color:var(--ink);cursor:pointer;text-decoration:none}
 .dlg details{padding:6px 14px;border-bottom:1px solid var(--hair);font-size:14px;max-height:30vh;overflow:auto}
 .dlg pre{white-space:pre-wrap;font-family:inherit;margin:6px 0;color:var(--muted)}
 .dlg iframe{width:100%;height:100%;min-height:0;border:0;background:#fff;display:block}
@@ -100,7 +100,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 </div>
 
 <dialog id="dlg"><div class="dlg">
-  <div class="dlg-h"><b id="dlgT"></b><button class="btn" id="dlgX">סגירה</button></div>
+  <div class="dlg-h"><b id="dlgT"></b><a class="btn" id="dlgFb" href="#" hidden>💬 משוב על התוצר</a><button class="btn" id="dlgX">סגירה</button></div>
   <iframe id="dlgF" sandbox="allow-popups allow-popups-to-escape-sandbox" title="התוצר לדוגמה"></iframe>
 </div></dialog>
 
@@ -112,6 +112,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 const ACCESS='https://sbe-server.onrender.com/api/access';
 const F=id=>document.getElementById(id);
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=String(text);return n;}
+const SHARE=(new URLSearchParams(location.search).get('share')||'').replace(/[^a-z0-9]/g,'');
 async function api(body){const r=await fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw new Error(String(r.status));return r.json();}
 const TOOLS=[
   ['studio','סטודיו חוסן: ערכת פעולה','מהשראה לערכת פעולה: מטרה, מוקד חוסן, טבלה לכל מפגש עם איך מנחים, מרחב ועזרים, וחומרים למשתתפים.'],
@@ -144,8 +145,17 @@ const TOOLS=[
 async function load(){
   const box=F('lib');
   let items=[];
-  try{items=(await api({action:'demoPublicList'})).items||[];}
-  catch(e){box.textContent='';box.appendChild(el('p','empty','לא הצלחנו לטעון את הדוגמאות כרגע. אפשר לנסות שוב בעוד רגע.'));return;}
+  // קישור צפייה פרטי (12/10/2026): ?share=<מזהה> מציג רק את התוצרים שנבחרו במעבדת הדמו, עד התאריך שנקבע
+  if(SHARE){
+    try{const r=await api({action:'demoShareGet',share:SHARE});items=r.items||[];
+      const n=el('div','dev-note');n.setAttribute('role','note');n.appendChild(el('span','dn-ico','👀'));
+      const p=el('p');p.appendChild(el('b',null,'תוצרים לצפייה לפני פרסום.'));p.appendChild(document.createTextNode(' הקישור הזה פרטי ופתוח עד '+new Date(r.exp).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'})+'. בכל תוצר יש "💬 משוב על התוצר": נשמח לשמוע מה ברור, מה לא ברור ומה חסר.'));
+      n.appendChild(p);box.parentNode.insertBefore(n,box);}
+    catch(e){box.textContent='';box.appendChild(el('p','empty','הקישור הזה כבר לא פתוח. אפשר לבקש קישור חדש.'));return;}
+  } else {
+    try{items=(await api({action:'demoPublicList'})).items||[];}
+    catch(e){box.textContent='';box.appendChild(el('p','empty','לא הצלחנו לטעון את הדוגמאות כרגע. אפשר לנסות שוב בעוד רגע.'));return;}
+  }
   box.textContent='';
   if(!items.length){box.appendChild(el('p','empty','הדוגמאות בהכנה: מוזמנות ומוזמנים לחזור בקרוב, או ליצור קשר ונשמח להראות.'));return;}
   // ?tool=nana (מהקישור "איך נראה התוצר?" בכלי) — רק הדוגמאות של הכלי, וקישור לכל השאר
@@ -181,8 +191,9 @@ async function load(){
 // צפייה בלבד, רק התוצר (11/10/2026: "בתיקיית התוצרים אל תיתן אפשרות לשמור או להדפיס - רק לראות"; "לא יראו מה שהוזן - רק תוצר"): מסמך נקי שנפתח מלמעלה (SBE_VIEW)
 async function view(d){
   F('dlgT').textContent=d.title;
+  const fb=F('dlgFb');fb.hidden=false;fb.href='mailto:yael.sade@gmail.com?subject='+encodeURIComponent('משוב על תוצר ב-Begood: '+d.title)+'&body='+encodeURIComponent('התוצר: '+d.title+'\n\nמה ברור:\n\nמה לא ברור:\n\nמה חסר:\n');
   SBE_VIEW.message(F('dlgF'),'טוען את התוצר... בפעם הראשונה זה יכול לקחת עד דקה.');F('dlg').showModal();
-  try{const full=await api({action:'demoGet',id:d.id});SBE_VIEW.show(F('dlgF'),full.html,{viewOnly:true});}
+  try{const full=await api(SHARE?{action:'demoGet',id:d.id,share:SHARE}:{action:'demoGet',id:d.id});SBE_VIEW.show(F('dlgF'),full.html,{viewOnly:true});}
   catch(e){SBE_VIEW.message(F('dlgF'),'לא הצלחנו לטעון את התוצר. אפשר לנסות שוב.');}
 }
 F('dlgX').onclick=()=>F('dlg').close();

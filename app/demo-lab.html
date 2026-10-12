@@ -122,6 +122,17 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 
 <h2 id="list-h">התיקייה שלי: התוצרים שהופקו</h2>
 <div class="row" style="margin-bottom:10px"><button class="btn sm" id="rvAll" type="button">🧐 בדיקה ותיקון לכל התוצרים</button><button class="btn danger sm" id="clearAll" type="button">🗑 מחיקת כל התוצרים</button><a href="examples.html" target="_blank" rel="noopener" class="btn ghost sm">📚 לספריית התוצרים לדוגמה ←</a><span class="muted">שם מופיע רק מה ששמרת בספרייה.</span></div>
+<details id="sharePanel" class="card" style="margin:0 0 12px;padding:10px 14px"><summary style="cursor:pointer;font-weight:700">🔗 קישור צפייה פרטי: לחברה שעוזרת לבדוק, בלי סיסמה</summary>
+  <p class="muted" style="margin:8px 0">מסמנים ☐ ליד התוצרים שרוצים להראות, ויוצרים קישור. מי שמקבל/ת את הקישור רואה רק את התוצרים האלה, לקריאה בלבד, בלי מה שהוזן ובלי הדפסה, עד התאריך שנבחר. בכל תוצר יש "💬 משוב על התוצר", שמגיע למייל שלך. אפשר לבטל קישור בכל רגע.</p>
+  <div class="row" style="flex-wrap:wrap;gap:8px;align-items:center">
+    <label>שם לקישור <input id="shName" placeholder="למשל: לבדיקה של רותי" style="width:200px"></label>
+    <label>פתוח למשך <select id="shDays" data-closed><option value="3">3 ימים</option><option value="7" selected>שבוע</option><option value="14">שבועיים</option><option value="30">חודש</option></select></label>
+    <button class="btn ghost sm" id="shAll" type="button">סימון כל התוצרים</button>
+    <button class="btn sm" id="shMake" type="button">יצירת קישור לתוצרים שסימנתי (<span id="shN">0</span>)</button>
+  </div>
+  <div id="shOut" style="margin-top:10px"></div>
+  <div id="shList" style="margin-top:10px"></div>
+</details>
 <div id="list"><p class="muted">טוען...</p></div>
 </div>
 
@@ -372,6 +383,7 @@ async function loadList(){
     box.appendChild(el('div','tool-h',TOOLS[tool]||tool));
     groups[tool].forEach(d=>{
       const c=el('div','card item');
+      const ck=el('input');ck.type='checkbox';ck.className='sh-ck';ck.title='לקישור הצפייה הפרטי';ck.checked=SHARE_SEL.has(d.id);ck.onchange=()=>{ck.checked?SHARE_SEL.add(d.id):SHARE_SEL.delete(d.id);F('shN').textContent=SHARE_SEL.size;};c.appendChild(ck);
       const t=el('div','t');t.appendChild(el('b',null,d.title));t.appendChild(el('span','muted','הופק: '+date(d.at)));c.appendChild(t);
       const v=el('button','btn ghost sm','צפייה');v.onclick=()=>view(d);c.appendChild(v);
       const rv=el('button','btn ghost sm rv-btn',rvLabel(d));rv.dataset.id=d.id;rv.onclick=()=>review(d,rv,true);c.appendChild(rv);
@@ -386,6 +398,35 @@ async function loadList(){
   });
 }
 // צפייה: הודעות הטעינה מימין, ובאמצע; אחרי 8 שניות מסבירים שהשרת מתעורר; שגיאה עם "לנסות שוב". (08/10/2026: "ריק...")
+// קישור צפייה פרטי (12/10/2026: "חברה יכולה לעזור לי לבדוק תוצרים בלי ססמה?")
+const SHARE_SEL=new Set();
+function shareUrl(sid){return location.href.replace(/[^/]*$/,'')+'examples.html?share='+sid;}
+function shareRow(sh,box){
+  const r=el('div','row');r.style.cssText='flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0';
+  const u=shareUrl(sh.sid);
+  r.appendChild(el('b',null,(sh.name||'קישור')+' · '+sh.ids.length+' תוצרים · עד '+date(sh.exp)));
+  const a=el('a',null,'פתיחה');a.href=u;a.target='_blank';a.rel='noopener';r.appendChild(a);
+  const cp=el('button','btn ghost sm','העתקת הקישור');cp.type='button';cp.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(u).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הקישור',2000);});};r.appendChild(cp);
+  const wa=el('a','btn ghost sm','וואטסאפ');wa.href='https://wa.me/?text='+encodeURIComponent('אשמח לעזרה בבדיקת תוצרים של Begood. אפשר לפתוח ולקרוא, ובכל תוצר יש כפתור למשוב: '+u);wa.target='_blank';wa.rel='noopener';r.appendChild(wa);
+  const x=el('button','btn danger sm','ביטול הקישור');x.type='button';x.onclick=async()=>{if(!confirm('לבטל את הקישור? מי שקיבל/ה אותו לא יוכל/תוכל לפתוח אותו יותר.'))return;try{await api({action:'demoShareRevoke',share:sh.sid});loadShares();}catch(e){alert('הביטול לא הצליח: '+e.message);}};r.appendChild(x);
+  box.appendChild(r);
+}
+async function loadShares(){
+  const box=F('shList');box.textContent='';
+  try{const items=(await api({action:'demoShareList'})).items||[];if(!items.length)return;box.appendChild(el('p','muted','קישורים פתוחים:'));items.forEach(sh=>shareRow(sh,box));}
+  catch(e){box.appendChild(el('p','warn','לא הצלחנו לטעון את הקישורים ('+e.message+').'));}
+}
+F('shAll').onclick=()=>{ITEMS.forEach(d=>SHARE_SEL.add(d.id));document.querySelectorAll('.sh-ck').forEach(c=>c.checked=true);F('shN').textContent=SHARE_SEL.size;};
+F('shMake').onclick=async()=>{
+  const out=F('shOut');out.textContent='';
+  const ids=[...SHARE_SEL].filter(id=>ITEMS.some(d=>d.id===id));
+  if(!ids.length){out.appendChild(el('p','warn','כדי ליצור קישור, אפשר לסמן ☐ ליד תוצר אחד או יותר ברשימה.'));return;}
+  const b=F('shMake');b.disabled=true;
+  try{const r=await api({action:'demoShare',ids,days:F('shDays').value,name:F('shName').value});out.appendChild(el('p',null,'✓ הקישור מוכן:'));shareRow(r.share,out);F('shName').value='';loadShares();}
+  catch(e){out.appendChild(el('p','warn','הקישור לא נוצר ('+e.message+'). אפשר לנסות שוב.'));}
+  finally{b.disabled=false;}
+};
+F('sharePanel').addEventListener('toggle',()=>{if(F('sharePanel').open)loadShares();});
 let VIEW_N=0;
 function vmsg(t){return '<!doctype html><html dir="rtl" lang="he"><body style="font-family:Assistant,Arial,sans-serif;font-size:17px;color:#5C6771;text-align:center;padding:60px 20px">'+t+'</body></html>';}
 // כפתור הספרייה: אותו מצב בשורה ובחלון הצפייה
