@@ -115,7 +115,7 @@
   // ── תוצרים ──
   function goalBlock(P) {
     const g = goalMode(), box = el('section'); head(box, g ? 'goal' : 'goalContact');
-    box.appendChild(KV([[g ? 'המטרה' : 'הגשר', txt(P.goal.text)], ['למה זה חשוב לילד/ה', txt(P.goal.why)], [g ? 'מה נראה כשזה קורה' : 'מה נראה כשהקשר עובד', txt(P.goal.sign)]]));
+    box.appendChild(KV([['המטרה', txt(P.goal.text)], ['למה זה חשוב לילד/ה', txt(P.goal.why)], [g ? 'מה נראה כשזה קורה' : 'מה נראה כשהקשר עובד', txt(P.goal.sign)]]));
     head(box, g ? 'ways' : 'waysContact'); box.appendChild(T(g ? 'ways' : 'waysContact', arr(P.ways).map((w) => [txt(w.name), txt(w.what), txt(w.time), txt(w.level)])));
     head(box, g ? 'school' : 'schoolContact'); box.appendChild(KV([['מה עושים', txt(P.school.what)], ['מי', txt(P.school.who)], ['מתי', txt(P.school.when)]]));
     return box;
@@ -148,7 +148,7 @@
     if (arr(P.skills).length) { head(box, 'skills'); box.appendChild(T('skills', P.skills.map((s) => [txt(s.skill), txt(s.kind), txt(s.where)]))); }
     return box;
   }
-  const CARD_ROWS = [['greeting', 'פנייה'], ['goal', 'המטרה'], ['intro', 'הזמנה לבחור'], ['adapt', 'התאמה'], ['notNow', 'אם לא מתאים כרגע'], ['respond', 'איך עונים'], ['reach', 'איך פונים אליי'], ['group', 'הקבוצה הכיתתית'], ['closing', 'חתימה']];
+  const CARD_ROWS = [['greeting', 'פנייה'], ['goal', 'המטרה'], ['intro', 'הזמנה לבחור'], ['adapt', 'התאמה'], ['notNow', 'אם לא מתאים כרגע'], ['respond', 'איך עונים'], ['reach', 'איך פונים אל המורה'], ['group', 'הקבוצה הכיתתית'], ['closing', 'חתימה']];
   function cardText(c) {
     c = c || {};
     return [txt(c.greeting), txt(c.goal), txt(c.intro), arr(c.questions).map((q, i) => (i + 1) + '. ' + txt(q.q) + '\n' + arr(q.opts).map((o) => '- ' + txt(o)).join('\n')).join('\n\n'), arr(c.options).map((o, i) => (i + 1) + '. ' + txt(o)).join('\n'), txt(c.adapt), txt(c.notNow), txt(c.respond), txt(c.reach), txt(c.group), txt(c.closing)].filter(Boolean).join('\n\n');
@@ -180,9 +180,9 @@
       CARD_ROWS.slice(3).map(([k, l]) => [l, field(c, k, l, true)])), 'kit-t etable'));
     return box;
   }
-  function yearForm() {
+  function yearForm(noTitle) {
     const Y = M.YEAR_FORM, box = el('div', 'yearform');
-    box.appendChild(el('h3', null, Y.title)); box.appendChild(el('p', null, Y.intro));
+    if (!noTitle) box.appendChild(el('h3', null, Y.title)); box.appendChild(el('p', null, Y.intro));
     Y.qs.forEach((q, i) => { box.appendChild(el('p', 'yq', (i + 1) + '. ' + q.q)); const u = el('ul', 'yo'); q.opts.forEach((o) => u.appendChild(el('li', null, (/^_+$/.test(o) ? '' : '☐ ') + o))); box.appendChild(u); });
     box.appendChild(el('p', 'cf-reach', Y.reach)); box.appendChild(el('p', null, Y.close)); return box;
   }
@@ -215,9 +215,9 @@
     const add = (label, node) => { const d = el('div', 'f'); d.appendChild(el('label', null, label)); d.appendChild(node); g.appendChild(d); };
     add('מה המשפחה ענתה', choice(f, 'status', 'מה המשפחה ענתה', M.RESPONSES, () => draw(3)));
     if (f.status === 'בחרה דרך' || f.status === 'הציעה התאמה') add('איזו דרך', choice(f, 'chosen', 'איזו דרך', arr(S.plan.ways).map((w) => txt(w.name))));
-    add('איך ענו', choice(f, 'how', 'איך ענו', ['הודעה כתובה', 'הודעה קולית', 'שיחה', 'פתק', 'דרך הילד/ה', 'דרך בן או בת משפחה אחרים'], null, false));
+    add('איך ענו', choice(f, 'how', 'איך ענו', ['הודעה כתובה', 'הודעה קולית', 'שיחה', 'פתק', 'דרך הילד/ה', 'דרך מישהו אחר מהמשפחה'], null, false));
     add('הכרטיס היה מובן?', choice(f, 'clear', 'הכרטיס היה מובן', ['כן', 'בחלקו', 'לא ידוע']));
-    add('הדרך הייתה ישימה עבורם?', choice(f, 'doable', 'הדרך הייתה ישימה', ['כן', 'בחלקה', 'לא', 'לא ידוע']));
+    add('הדרך התאימה להם?', choice(f, 'doable', 'הדרך התאימה להם', ['כן', 'בחלקה', 'לא', 'לא ידוע']));
     c.appendChild(g);
     if (f.status === 'הציעה התאמה') { const d = el('div', 'f'); d.appendChild(el('label', null, 'ההתאמה שהציעו')); d.appendChild(field(f, 'adapt', 'ההתאמה שהציעו', true, 'במילים שלהם, בלי שמות.')); c.appendChild(d); }
     if (f.status === 'לא מעשי כרגע') { const d = el('div', 'f'); d.appendChild(el('label', null, 'מה כתבו (אם כתבו)')); d.appendChild(field(f, 'notNow', 'מה כתבו', true, 'בלי שמות.')); c.appendChild(d); }
@@ -233,7 +233,7 @@
     const ol = el('ol', 'nextlist'), d = f.decision;
     const done = [!!(f.pick && f.checkWhen), !!f.sent, !!(f.practice && f.practice.feedback), !!f.planNext, !!f.summary];
     const item = (i, body) => { const li = el('li', done[i] ? 'done' : ''); li.appendChild(el('b', null, (done[i] ? '✓ ' : '') + M.NEXT[i])); if (body) li.appendChild(body); ol.appendChild(li); };
-    item(0, el('p', 'sub', done[0] ? 'בחרת: ' + f.pick : 'אפשר לבחור למעלה את ההמשך ואת תאריך נקודת הבדיקה.'));
+    item(0, el('p', 'sub', done[0] ? 'ההמשך שנבחר: ' + f.pick : 'אפשר לבחור למעלה את ההמשך ואת תאריך נקודת הבדיקה.'));
     const s2 = el('div'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!f.sent; cb.id = 'sent-' + f.id;
     const l2 = el('label', 'okline'); l2.htmlFor = cb.id; l2.append(cb, document.createTextNode(' שלחתי את ההודעה, בדרך שהמשפחה בחרה'));
     cb.addEventListener('change', () => { f.sent = cb.checked; save(); draw(3); }); s2.appendChild(l2); item(1, s2);
@@ -261,11 +261,11 @@
     const P = f.practice || (f.practice = { turns: [], feedback: null, open: false }), box = el('div');
     if (!P.open && !P.turns.length) { box.appendChild(el('p', 'sub', 'אפשר להתאמן על השיחה לפני שמדברים באמת. המודל משחק את ההורה.')); box.appendChild(btn('▶ תרגול השיחה', 'btn btn-ghost sm', () => { P.open = true; save(); draw(3); })); return box; }
     const chat = el('div', 'chat');
-    P.turns.forEach((t) => chat.appendChild(el('div', 'msg ' + (t.me ? 'me' : 'bot'), (t.me ? 'את: ' : 'ההורה: ') + t.text)));
+    P.turns.forEach((t) => chat.appendChild(el('div', 'msg ' + (t.me ? 'me' : 'bot'), (t.me ? 'אני: ' : 'ההורה: ') + t.text)));
     box.appendChild(chat);
     const mine = P.turns.filter((t) => t.me).length;
     if (!P.feedback && mine < M.PRACTICE_TURNS) {
-      const ta = el('textarea'); ta.rows = 2; ta.placeholder = mine ? 'מה תעני?' : 'איך תפתחי את השיחה?'; ta.setAttribute('aria-label', 'מה את אומרת');
+      const ta = el('textarea'); ta.rows = 2; ta.placeholder = mine ? 'מה עונים?' : 'איך פותחים את השיחה?'; ta.setAttribute('aria-label', 'מה את אומרת');
       const send = btn('שליחה', 'btn sm', async () => {
         const v = ta.value.trim(); if (!v) return;
         P.turns.push({ me: true, text: v }); save(); send.disabled = true;
@@ -336,7 +336,7 @@
     f.summary = k; save(); draw(3);
   }
   function summaryNode(f) {
-    const out = el('div'); out.appendChild(summaryView(f));
+    const out = el('div'); const sv = summaryView(f); const h4 = sv.querySelector('h4'); if (h4) h4.remove(); out.appendChild(sv);
     if (f.planNext) { out.appendChild(el('h3', null, 'תכנון הקשר בהמשך')); const v = planNextView(f); v.querySelectorAll('button').forEach((x) => x.remove()); out.appendChild(v); }
     return out;
   }
@@ -358,12 +358,12 @@
     const again = btn('רוצה הצעה אחרת?', 'linkbtn', () => decide(f, again)); box.appendChild(again);
     box.appendChild(T('options', arr(d.options).map((o) => [txt(o.name), txt(o.inClass), txt(o.atHome), txt(o.why)])));
     const g = el('div', 'grid2'), a = el('div', 'f'), b = el('div', 'f');
-    a.appendChild(el('label', null, 'מה בחרת')); a.appendChild(choice(f, 'pick', 'מה בחרת', arr(d.options).map((o) => txt(o.name)), () => { const c = F('checks'); if (c) c.replaceWith(checksBlock()); }));
+    a.appendChild(el('label', null, 'ההמשך שנבחר')); a.appendChild(choice(f, 'pick', 'ההמשך שנבחר', arr(d.options).map((o) => txt(o.name)), () => { const c = F('checks'); if (c) c.replaceWith(checksBlock()); }));
     b.appendChild(el('label', null, 'נקודת בדיקה')); const ci = el('input'); ci.type = 'date'; ci.value = f.checkWhen || ''; ci.setAttribute('aria-label', 'נקודת בדיקה');
     ci.addEventListener('change', () => { f.checkWhen = ci.value; save(); }); b.appendChild(ci); g.append(a, b); box.appendChild(g);
     if (d.feel) box.appendChild(el('p', 'feel', txt(d.feel)));
     const tk = d.talk || {};
-    if (tk.open || tk.ask || tk.close) { box.appendChild(el('h4', null, 'לשיחה עם ההורים')); box.appendChild(KV([['איך לפתוח', txt(tk.open)], ['שאלה להקשבה', txt(tk.ask)], ['איך לסיים', txt(tk.close)]])); }
+    if (tk.open || tk.ask || tk.close) { box.appendChild(el('h4', null, 'לשיחה עם ההורים')); box.appendChild(KV([['איך לפתוח', txt(tk.open)], ['שאלה פתוחה', txt(tk.ask)], ['איך לסיים', txt(tk.close)]])); }
     box.appendChild(KV([['מה נראה בנקודת הבדיקה', txt(d.check && d.check.look) + (d.check && d.check.when ? ' (' + txt(d.check.when) + ')' : '')], ['איך לפעול בתוך הקשר הזה', txt(d.note)]]));
     const msg = el('div', 'reply'); msg.appendChild(el('h4', null, 'הודעה למשפחה'));
     const t = el('textarea'); t.rows = 5; t.value = txt(d.reply.text); t.setAttribute('aria-label', 'הודעה למשפחה'); if (otherLang()) t.dir = 'auto';
@@ -395,9 +395,9 @@
     const fs = S.families, n = fs.length, cnt = (k, v) => fs.filter((f) => f[k] === v).length;
     const answered = fs.filter((f) => f.status && f.status !== 'עוד לא ענתה').length;
     box.appendChild(T('checks', [
-      ['האפשרויות היו מובנות?', fs.some((f) => f.clear) ? 'כן: ' + cnt('clear', 'כן') + ' · בחלקו: ' + cnt('clear', 'בחלקו') + ' · לא ידוע: ' + cnt('clear', 'לא ידוע') : 'עוד לא תועד'],
+      ['הכרטיס היה מובן?', fs.some((f) => f.clear) ? 'כן: ' + cnt('clear', 'כן') + ' · בחלקו: ' + cnt('clear', 'בחלקו') + ' · לא ידוע: ' + cnt('clear', 'לא ידוע') : 'עוד לא תועד'],
       ['הדרכים היו ישימות?', fs.some((f) => f.doable) ? 'כן: ' + cnt('doable', 'כן') + ' · בחלקה: ' + cnt('doable', 'בחלקה') + ' · לא: ' + cnt('doable', 'לא') : 'עוד לא תועד'],
-      ['תגובה שהובילה להתאמה מעשית שבחרת', fs.filter((f) => f.pick).length + ' מתוך ' + n + ' משפחות'],
+      ['משפחות שנבחר איתן המשך', fs.filter((f) => f.pick).length + ' מתוך ' + n + ' משפחות'],
       ['תגובות שהגיעו', answered + ' מתוך ' + n + '. כל תגובה, וגם שתיקה, היא מידע ולא מדד לאיכות המשפחה.']
     ]));
     return box;
@@ -445,7 +445,7 @@
         }), 'kit-t'));
       }
       const r = el('div', 'f'); r.appendChild(el('label', null, 'מה למדתי על בניית הגשר')); r.appendChild(field(S, 'reflect', 'מה למדתי', true, 'מה עבד, מה הפתיע, ומה אעשה אחרת עם המשפחה הבאה.')); box.appendChild(r);
-      if (S.changes.length) { head(box, 'changes', ' ' + S.version); box.appendChild(T('changes', S.changes.map((c) => [txt(c.where), txt(c.what), txt(c.why)]))); }
+      if (S.changes.length) { head(box, 'changes', ' (גרסה ' + S.version + ')'); box.appendChild(T('changes', S.changes.map((c) => [txt(c.where), txt(c.what), txt(c.why)]))); }
       if (S.learned) { head(box, 'learned'); box.appendChild(el('p', 'balance', txt(S.learned))); }
     }
   }
@@ -495,7 +495,7 @@
     const P = S.plan, out = el('div');
     let kind = 'סבב גשר';
     if (what === 'card') { kind = 'כרטיס בחירה למשפחה'; out.appendChild(cardView(P.card, otherLang() ? 'auto' : null)); }
-    else if (what === 'year') { kind = 'שאלון קשר לתחילת השנה'; out.appendChild(yearForm()); }
+    else if (what === 'year') { kind = 'שאלון קשר לתחילת השנה'; out.appendChild(yearForm(true)); }
     else if (what === 'group') { kind = 'מדיניות לקבוצה הכיתתית'; out.appendChild(window.SBE_TABLE(null, groupRows(P.group || {}), 'kit-t')); }
     else {
       out.appendChild(withRefs((r) => {
@@ -509,7 +509,7 @@
       const attached = !!document.querySelector('#out2 .sbe-refs.attach');
       out.querySelectorAll('.sbe-refs').forEach((x) => { if (attached) x.classList.add('attach'); });
     }
-    window.SBE_DOC.print({ extraCss: PRINT_CSS, title: what === 'year' ? M.YEAR_FORM.title : what === 'group' ? 'קבוצת הוואטסאפ הכיתתית' : (txt(P.title).replace(/^גשר:?\s*/, '') || 'גשר שותפות'), subtitle: [S.form.forWho, S.form.age, S.form.lang].filter(Boolean).join(' · ') + ' · גרסה ' + S.version, kind, node: out });
+    window.SBE_DOC.print({ extraCss: PRINT_CSS, title: what === 'year' ? M.YEAR_FORM.title : what === 'group' ? 'קבוצת הוואטסאפ הכיתתית' : (txt(P.title).replace(/^גשר:?\s*/, '') || 'גשר שותפות'), subtitle: /^(card|year|group)$/.test(what) ? '' : [S.form.forWho, S.form.age, S.form.lang].filter(Boolean).join(' · ') + ' · גרסה ' + S.version, kind, node: out });
   }
   document.querySelectorAll('[data-print]').forEach((b) => b.addEventListener('click', () => { if (S.plan) doPrint(b.dataset.print); }));
   // קובץ עבודה: כל המעבדה, כדי להמשיך במכשיר אחר (כולל הכינויים והסיפורים: נשמר רק אצלך)

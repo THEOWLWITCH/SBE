@@ -4,7 +4,7 @@
 //   מה יש לנו (המידע בסביבת העבודה) · רמת הפרטיות של כל פריט · איפה הוא נמצא בכלים שבחרו · מי מעדכן ומתי
 //   · מה לא נכנס לשם לעולם · איך מעבירים הלאה כשמתחלפים · מה לברר מול בית הספר · ובדיקה תקופתית של הנוהל.
 // סוג הכלי נבחר לפי מה שהוא עושה (תיקייה, גיליון, מערכת בית הספר, קבוצת הודעות, לוח בכיתה...), ולא לפי שם מסחרי,
-// ואפשר לכתוב כלי אחר או לבחור "עוד לא יודעת". SBE_PROC.mount(node, { state, save, items, context, kind }).
+// ואפשר לכתוב כלי אחר או לבחור "עוד לא ברור". SBE_PROC.mount(node, { state, save, items, context, kind }).
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.SBE_PROC = factory();
@@ -20,7 +20,7 @@
     { k: 'mail', n: 'דואר אלקטרוני', ex: 'רשימת תפוצה של הצוות או של ההורים' },
     { k: 'board', n: 'לוח מודפס בכיתה', ex: 'לוח מודעות, דף על הקיר' },
     { k: 'binder', n: 'קלסר או מחברת', ex: 'תיק סגור בחדר המורים או בכיתה' },
-    { k: 'unsure', n: 'עוד לא יודעת: עזרו לי לבחור', ex: 'הנוהל יציע אפשרויות ושאלות לבירור' }
+    { k: 'unsure', n: 'עוד לא ברור: הצעה לבחירה', ex: 'הנוהל יציע אפשרויות ושאלות לבירור' }
   ];
   const LEVELS = ['פתוח לקבוצה', 'לצוות בלבד', 'רגיש: במכשיר או בתיק סגור בלבד'];
   const SHAPE = '{"title":"","map":[{"item":"","level":"","where":"","who":"","when":""}],"structure":[{"name":"","what":""}],' +
@@ -31,7 +31,7 @@
         ' ב-Begood. Begood לא שומרת את העבודה המשותפת. הנוהל אומר איך לעבוד בכלים שכבר יש למוסד, כך שהעבודה תימשך, תהיה שקופה, ותעבור הלאה כשמישהו מתחלף.',
       'הנוהל בנוי על שלד קבוע שמתאים לכל כלי: מה יש לנו · רמת הפרטיות · איפה זה נמצא · מי מעדכן ומתי · מה לא נכנס לעולם · איך מעבירים הלאה · מה לברר · בדיקה תקופתית. אל תניחי פרטים על כלי מסחרי מסוים (תפריטים, כפתורים): כתבי ברמה שמתאימה לכל כלי מהסוג שנבחר.',
       'רמות פרטיות: ' + LEVELS.join(' · ') + '. פריט שמסומן "רגיש" (מידע רפואי ונפשי, פרטי הורים, רשימת תלמידים עם פרטים, מענה פרטני, סיבות היעדרות, שמות בתיעוד) נשאר במכשיר של המחנכת או בתיק סגור, ולעולם לא בקבוצת הודעות, בלוח בכיתה או בכלי שתלמידים רואים. כשתלמידים משתתפים: רק פריטים "פתוח לקבוצה", ורק בכלי שמתאים לגיל (לוח מודפס או מסמך פתוח לצפייה, לא קבוצת הודעות של קטינים).',
-      'אם נבחר "עוד לא יודעת": הציעי שתי אפשרויות פשוטות (למשל לוח מודפס בכיתה ועוד תיקייה משותפת לצוות), והכניסי ל-ask את מה שכדאי לברר מול בית הספר.',
+      'אם נבחר "עוד לא ברור": הציעי שתי אפשרויות פשוטות (למשל לוח מודפס בכיתה ועוד תיקייה משותפת לצוות), והכניסי ל-ask את מה שכדאי לברר מול בית הספר.',
       'החלקים:',
       '- map: לכל פריט ברשימה שנמסרה {item, level: אחת מרמות הפרטיות, where: באיזה כלי ובאיזה מקום בתוכו (למשל "גיליון: לשונית לוח ביצוע"), who: מי מעדכן (תפקיד, עדיף מתחלף), when: מתי מעדכנים}.',
       '- structure: 3 עד 6 שורות של מבנה שמתאים לכלים שנבחרו {name: שם תיקייה, לשונית, עמודה או אזור בלוח, what: מה נמצא שם}. שמות פשוטים וקבועים, עם תאריך בפורמט 10.10.26.',
@@ -70,12 +70,12 @@
     const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = String(x); return n; };
     const btn = (t, c, f) => { const b = el('button', c || 'btn btn-ghost sm', t); b.type = 'button'; if (f) b.addEventListener('click', f); return b; };
     const T = (cols, rows) => window.SBE_TABLE(cols, rows, 'kit-t');
-    const NOM = 'אין כרגע חיבור למודל, ולכן הנוהל לא הוכן. מה שבחרתם נשמר, ואפשר לנסות שוב בעוד דקה.', PART = 'הנוהל חזר חלקי. אפשר לנסות שוב.';
+    const NOM = 'אין כרגע חיבור למודל, ולכן הנוהל לא הוכן. מה שנבחר נשמר, ואפשר לנסות שוב בעוד דקה.', PART = 'הנוהל חזר חלקי. אפשר לנסות שוב.';
     const why = (e) => window.sbeAIError ? window.sbeAIError(e, NOM, PART) : ((e && e.code === 'incomplete') ? PART : NOM);
     function waiting(n, t, exp) { n.hidden = false; const t0 = Date.now(); const tick = () => { n.textContent = t + ' בדרך כלל ' + exp + ' שניות. עברו ' + Math.round((Date.now() - t0) / 1000) + ' שניות.'; }; tick(); const iv = setInterval(tick, 1000); return () => { clearInterval(iv); n.hidden = true; }; }
     async function make(b, err, wait, revise) {
       err.hidden = true;
-      if (!S.tools.length && !(S.other || '').trim()) { err.textContent = 'כדי להמשיך, אפשר לבחור באילו כלים אתם עובדים (אפשר גם "עוד לא יודעת").'; err.hidden = false; return; }
+      if (!S.tools.length && !(S.other || '').trim()) { err.textContent = 'כדי להמשיך, אפשר לבחור באילו כלים אתם עובדים (אפשר גם "עוד לא ברור").'; err.hidden = false; return; }
       const tools = TOOL_TYPES.filter((t) => S.tools.includes(t.k)).map((t) => t.n).concat((S.other || '').trim() ? ['כלי אחר: ' + S.other.trim()] : []);
       const last = S.checks[0];
       const content = 'הכלים שבהם המוסד עובד: ' + tools.join('; ') + '\nמי משתמש: ' + (S.who || 'לא צוין') +
@@ -83,7 +83,7 @@
         (opts.context ? '\n\nהקשר:\n' + opts.context() : '') +
         (revise && S.proc ? '\n\nהנוהל הנוכחי (JSON):\n' + JSON.stringify(S.proc) + '\n\nמה עלה בבדיקה:\n' + (last ? last.answers.map((a, i) => (S.proc.check.questions[i] || '') + ': ' + a).join('\n') + '\n' + (last.note || '') : '[לא נכתב]') : '') +
         '\n\n' + (revise ? 'עדכני את הנוהל.' : 'כתבי את הנוהל.');
-      b.disabled = true; const stop = waiting(wait, revise ? 'מעדכנת את הנוהל.' : 'כותבת נוהל עבודה בכלים שבחרת.', 45);
+      b.disabled = true; const stop = waiting(wait, revise ? 'מעדכנת את הנוהל.' : 'כותבת נוהל עבודה בכלים שנבחרו.', 45);
       let k = null, bad = null;
       try { k = await window.sbeCallAIJson(SERVER, { system: revise ? reviseSystem(opts.kind) : system(opts.kind), messages: [{ role: 'user', content }], maxTokens: 10000, customerReview: true }, 180000, valid); }
       catch (e) { bad = e; } finally { stop(); b.disabled = false; }

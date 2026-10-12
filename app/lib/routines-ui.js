@@ -434,7 +434,7 @@
       box.appendChild(procBlock());
     }
     if (n === 3) {
-      const det = el('details', 'more'); det.appendChild(el('summary', null, 'מהלך כל הפעלה ושאלות לסיום')); det.appendChild(runPlan(I.plan)); box.appendChild(det);
+      const det = el('details', 'more'); det.appendChild(el('summary', null, 'מהלך כל הפעלה ושאלות לסיכום')); det.appendChild(runPlan(I.plan)); box.appendChild(det);
       const g = el('div', 'runs'); I.runs.forEach((r, i) => g.appendChild(runCard(r, i + 1))); box.appendChild(g);
       if (window.SBE_OPEN && SBE_OPEN.scan) try { SBE_OPEN.scan(box); } catch (e) {}
     }
@@ -498,13 +498,15 @@
     out.appendChild(withRefs((r) => {
       r.appendChild(KV([['הפעולה', txt(P.action && P.action.name)], ['מה רוצים שיקרה', txt(P.action && P.action.purpose)], ['מתי ואיפה', txt(P.action && P.action.when)]]));
       [agreementBlock(P, false), boardBlock(P, false), roleCards(false), keepBlock(P), runPlan(P), meaning(P), logBlock(false)].forEach((x) => r.appendChild(x));
+      // נוהל העבודה בכלים שלכם, אם נכתב (12/10/2026, בדיקת הלקוחה)
+      const pd = document.querySelector('#procR .proc-doc'); if (pd) { r.appendChild(el('h3', null, 'נוהל עבודה בכלים שלכם')); r.appendChild(pd.cloneNode(true)); }
       const v = versionsBlock(); if (v) r.appendChild(v);
     }));
     const attached = !!document.querySelector('#out2 .sbe-refs.attach');
     out.querySelectorAll('.sbe-refs').forEach((x) => { if (attached) x.classList.add('attach'); });
     return out;
   }
-  const KIND = { board: 'לוח ביצוע וכרטיסי תפקיד', sheet: 'לוח להפעלה', log: 'יומן החלטות', all: 'תיק המנגנון' };
+  const KIND = { board: 'לוח ביצוע, כרטיסי תפקיד והסכם', sheet: 'לוח להפעלה', log: 'יומן החלטות', all: 'תיק המנגנון' };
   document.querySelectorAll('[data-print]').forEach((b) => b.addEventListener('click', () => {
     if (!I.plan) return;
     const w = b.dataset.print;
