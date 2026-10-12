@@ -202,6 +202,7 @@
     practi: ["resilience-advisor.html", "resilience-advisor-sources.html"],
     studio: ["resilience-studio.html"], // עד לאישור המקצועי — רק בהרשאה הזאת (studio.mjs: STUDIO_PERMS)
     journey: ["journey.html"],
+    studies: ["social-resilience-studies.html"],
     writer: ["message-writer.html", "resilience-advisor-sources.html"], // כתיבה מקדמת חוסן — רק בהרשאה הזאת (02/10/2026)
     nana: ["facilitation-advisor.html", "resilience-advisor-sources.html"], // ננה — מהוראה להנחיה (07/10/2026)
     dialogue: ["shared-dialogue-lab.html", "resilience-advisor-sources.html"], // מעבדת שיח וחקר משותף (11/10/2026)
@@ -231,6 +232,7 @@
     var mods = {};
     try { mods = JSON.parse(ss("sbe.session.modules") || "{}") || {}; } catch(e){}
     if (mods.studio === true) allowed.push("resilience-studio.html");
+    if (mods.studies === true) allowed.push("social-resilience-studies.html");
     if (track !== "parent" && track !== "youth") {
       if (mods.conv === true) allowed.push("conversation-planner.html");
       if (mods.activity === true) allowed.push("activity-planner.html");

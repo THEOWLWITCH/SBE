@@ -38,6 +38,7 @@ import { toScenario } from './lib/to-scenario.mjs';
 import { handleAccess, supabaseStore, authorizeModel } from './lib/access.mjs';
 import { studioRequest } from './lib/studio.mjs';
 import { customerPass, reviewEnabled } from './lib/customer-pass.mjs';
+import { handleStudies, supabaseStudyFiles } from './lib/studies.mjs';
 
 // שמירת תרחיש ב-Supabase. נקראת רק כשיש SUPABASE_SERVICE_KEY בסביבה.
 // scenario הוא הפלט של toScenario(); meta הוא payload.meta מהלקוח.
@@ -123,13 +124,23 @@ function startKeepAlive(res) {
   return (body) => { clearInterval(timer); if (!res.writableEnded) res.end(JSON.stringify(body)); };
 }
 
-function readBody(req) {
+function readBody(req, maxChars = 2_000_000) {
   return new Promise((resolve, reject) => {
     // setEncoding: אותו תיקון כמו ב-providers.mjs — בלעדיו אות עברית שנחתכת בין
     // מנות של גוף הבקשה (תכנון ארוך) מגיעה למודל כ-"??".
     req.setEncoding('utf8');
-    let raw = '';
-    req.on('data', chunk => { raw += chunk; if (raw.length > 2_000_000) req.destroy(); });
+    let raw = ''; let exceeded = false;
+    req.on('data', chunk => {
+      if (exceeded) return;
+      raw += chunk;
+      if (raw.length > maxChars) {
+        exceeded = true; raw = '';
+        reject(Object.assign(new Error('request body too large'), { status: 413 }));
+        // Preserve the existing small-request connection behavior. The file
+        // route drains an oversized body so it can return a useful JSON error.
+        if (maxChars === 2_000_000) req.destroy();
+      }
+    });
     req.on('end', () => resolve(raw));
     req.on('error', reject);
   });
@@ -156,6 +167,37 @@ const server = createServer(async (req, res) => {
     const hasWorkspace = !!(process.env.ANTHROPIC_WORKSPACE_ID || '').trim();
     const hasSupabase = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
     return sendJson(res, 200, { ok: true, hasKey, hasWorkspace, hasSupabase });
+  }
+
+  // לימודי חוסן חברתי: every read rechecks live access. 75 MiB accommodates
+  // a 50 MiB base64 attachment plus three previews, only on this endpoint.
+  if (req.method === 'POST' && req.url === '/api/studies') {
+    res.setHeader('cache-control', 'private, no-store');
+    const url = process.env.SUPABASE_URL; const key = process.env.SUPABASE_SERVICE_KEY;
+    if (!url || !key) return sendJson(res, 503, { code: 'studies_storage', error: 'החומרים אינם זמינים כרגע. אפשר לנסות שוב בעוד מעט.' });
+    let body;
+    try { body = JSON.parse(await readBody(req, 75 * 1024 * 1024)); }
+    catch (error) { return sendJson(res, error.status === 413 ? 413 : 400, { code: 'studies_invalid',
+      error: error.status === 413 ? 'הבקשה גדולה מדי. אפשר לצרף קובץ עד 50 MiB ושלוש תמונות תצוגה עד 1 MiB כל אחת.' : 'הבקשה אינה תקינה. אפשר לרענן ולנסות שוב.' }); }
+    try {
+      const [status, out] = await handleStudies(supabaseStore(url, key, { timeoutMs: 120000 }), body, { files: supabaseStudyFiles(url, key) });
+      if (status === 200 && Buffer.isBuffer(out.bytes)) {
+        const fallback = out.name.replace(/[^\x20-\x7e]|["\\]/g, '_');
+        const encoded = encodeURIComponent(out.name).replace(/['()*]/g, character => '%' + character.charCodeAt(0).toString(16).toUpperCase());
+        res.writeHead(200, {
+          'content-type': out.mime, 'content-length': out.bytes.length,
+          'content-disposition': `attachment; filename="${fallback}"; filename*=UTF-8''${encoded}`,
+          'cache-control': 'private, no-store', 'x-content-type-options': 'nosniff',
+          'access-control-allow-origin': corsFor(res), 'vary': 'origin',
+          'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type',
+        });
+        return res.end(out.bytes);
+      }
+      return sendJson(res, status, out);
+    } catch {
+      console.error('studies: request failed');
+      return sendJson(res, 503, { code: 'studies_storage', error: 'החומרים אינם זמינים כרגע. אפשר לנסות שוב בעוד מעט.' });
+    }
   }
 
   // POST /api/access — סיסמאות הניהול וקוד "משוב לעבודות" (lib/access.mjs).

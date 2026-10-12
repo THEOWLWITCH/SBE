@@ -1,0 +1,46 @@
+.studies-admin { max-width:1100px; margin:auto; }
+.studies-admin .sa-top { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; margin-bottom:22px; }
+.studies-admin .sa-top h2 { margin:0; font-family:"Frank Ruhl Libre",Georgia,serif; font-size:28px; }
+.studies-admin .sa-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.studies-admin .sa-button { font:inherit; font-weight:700; padding:9px 15px; border:1px solid var(--hair); border-radius:9px; color:var(--ink); background:var(--surface); cursor:pointer; text-decoration:none; }
+.studies-admin .sa-button.primary { background:var(--spoken); color:var(--surface); border-color:var(--spoken); }
+.studies-admin .sa-button.danger { color:var(--brick); }
+.studies-admin .sa-button:disabled { opacity:.6; cursor:wait; }
+.studies-admin .sa-button:focus-visible, .studies-admin input:focus-visible, .studies-admin textarea:focus-visible, .studies-admin select:focus-visible { outline:3px solid var(--spoken); outline-offset:3px; }
+.studies-admin .sa-group { background:var(--surface); border:1px solid var(--hair); border-radius:14px; margin-bottom:18px; overflow:hidden; }
+.studies-admin .sa-group-head { padding:15px 18px; display:flex; gap:12px; justify-content:space-between; align-items:center; flex-wrap:wrap; border-bottom:1px solid var(--hair); }
+.studies-admin .sa-group-head h3 { margin:0; font-size:20px; }
+.studies-admin .sa-count, .studies-admin .sa-meta { color:var(--muted); font-size:14px; }
+.studies-admin .sa-item { display:flex; gap:16px; align-items:center; padding:15px 18px; border-bottom:1px solid var(--hair); }
+.studies-admin .sa-item:last-child { border-bottom:0; }
+.studies-admin .sa-item-copy { min-width:0; flex:1; overflow-wrap:anywhere; }
+.studies-admin .sa-item-copy h4 { margin:0 0 5px; font-size:18px; }
+.studies-admin .sa-item-copy p { margin:0; white-space:pre-wrap; font-size:15px; color:var(--muted); }
+.studies-admin .sa-cover { width:112px; height:72px; object-fit:contain; border:1px solid var(--hair); border-radius:7px; background:var(--surface-2); flex-shrink:0; }
+.studies-admin .sa-empty { text-align:center; padding:35px 18px; border:1px dashed var(--hair); border-radius:14px; color:var(--muted); }
+.studies-admin .sa-note { margin:10px 0; padding:10px 14px; border-radius:8px; background:var(--spoken-soft); }
+.studies-admin .sa-error { color:var(--brick); background:var(--brick-soft); white-space:pre-wrap; }
+.studies-admin .sa-note:empty { display:none; }
+.studies-admin dialog { width:min(660px,calc(100vw - 32px)); max-height:90vh; overflow:auto; padding:0; border:1px solid var(--hair); border-radius:16px; background:var(--surface); color:var(--ink); box-shadow:0 18px 60px var(--shadow); }
+.studies-admin dialog::backdrop { background:rgba(12,30,43,.55); }
+.studies-admin .sa-form { padding:24px; }
+.studies-admin .sa-form h3 { font-family:"Frank Ruhl Libre",Georgia,serif; font-size:26px; margin:0 0 20px; }
+.studies-admin .sa-field { display:block; margin-bottom:15px; }
+.studies-admin .sa-label { display:block; font-weight:700; margin-bottom:5px; }
+.studies-admin .sa-form input:not([type=checkbox]), .studies-admin .sa-form select, .studies-admin .sa-form textarea { display:block; box-sizing:border-box; width:100%; padding:10px 11px; border:1px solid var(--hair); border-radius:8px; background:var(--ground); color:var(--ink); font:inherit; }
+.studies-admin .sa-form input[type=url] { direction:ltr; text-align:left; }
+.studies-admin .sa-pair { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.studies-admin .sa-help { font-size:14px; color:var(--muted); margin:5px 0 8px; }
+.studies-admin .sa-current-file { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:10px; font-size:14px; }
+.studies-admin .sa-preview-strip { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+.studies-admin .sa-preview-strip img { width:115px; height:74px; object-fit:contain; background:var(--surface-2); border:1px solid var(--hair); border-radius:6px; }
+.studies-admin .sa-preview { position:relative; }
+.studies-admin .sa-preview button { position:absolute; top:3px; left:3px; width:24px; height:24px; border:1px solid var(--hair); background:var(--surface); color:var(--ink); border-radius:50%; cursor:pointer; }
+.studies-admin .sa-form-footer { display:flex; justify-content:flex-start; gap:9px; border-top:1px solid var(--hair); padding-top:16px; margin-top:20px; }
+@media(max-width:600px) {
+  .studies-admin .sa-item { align-items:flex-start; flex-wrap:wrap; gap:10px; }
+  .studies-admin .sa-cover { width:85px; height:56px; }
+  .studies-admin .sa-item .sa-actions { flex-basis:100%; }
+  .studies-admin .sa-pair { grid-template-columns:1fr; gap:0; }
+  .studies-admin .sa-form { padding:18px; }
+}

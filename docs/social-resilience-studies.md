@@ -18,3 +18,23 @@ Approved scope, 12 October 2026: a materials library using the approved logo-win
 ## Verification
 
 Exercise admin group/item create, edit, move and delete; file upload and opening; link-only item; PDF previews and PowerPoint embedded cover; empty library; permission denial, revoked/expired code and closed institution ceiling; reader has no upload controls; desktop and mobile layouts with the exact approved banner. Tests and browser checks use only local synthetic files, never production content.
+
+## Acceptance checklist, 12 October 2026
+
+- [x] Exact section name and approved window landscape with the symbolic group; image SHA256 `8AC0D2BD34262FB7F7B6718BBD0A67262AFA6635DFCF6FCDA915B864E560E6C9`.
+- [x] Named groups, create/rename/delete empty groups, and move materials between groups.
+- [x] Material title, attachment or link, optional explanation and editable date.
+- [x] Real PDF first-three-page previews, available PPTX embedded cover and optional manual preview images.
+- [x] Upload and all management controls only in the system administration area.
+- [x] Closed-by-default `studies` permission, assignable to access codes within the institution ceiling; live authorization before listing and opening files.
+- [x] Desktop and 390px phone layouts, empty states and keyboard-accessible native dialogs.
+- [x] 152/152 automated tests, 14 browser workflow checks, and additional save lifecycle/blocked-popup regression checks.
+- [x] Completed `ce-code-review` receipt, run `20261012-studies-final`, followed by fixes for all eight confirmed findings.
+
+## Save and recovery behavior
+
+Saving locks the material/group dialog until its request completes, including local file reading, and preview completion cannot unlock an in-flight save. Background management counters replay after an editor closes. The reader removes an expired fallback Blob link and allows opening the protected file again.
+
+Each Storage request has a 120-second deadline that aborts transport and body reads. Only the studies route opts the metadata store into the same deadline; existing callers retain their previous behavior. Failed replacement metadata writes read back the library before cleaning up the new object. A referenced object or an uncertain read-back is retained to protect the attachment; an ambiguous failure can therefore leave a private unreferenced object for later cleanup. Successful replacement and deletion clean up old objects.
+
+Implementation is saved on `feat/social-resilience-studies`. Production publishing remains a separate explicit instruction under the repository's deployment policy.

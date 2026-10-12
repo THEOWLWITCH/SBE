@@ -1575,37 +1575,38 @@ export async function handleAccess(store, body) {
 
 // מאגר ב-Supabase: טבלת access_settings (key text PK, value jsonb), עם RLS בלי
 // שום policy — כך שרק השרת, עם ה-service key, יכול לקרוא ולכתוב.
-export function supabaseStore(url, key) {
+export function supabaseStore(url, key, { fetchImpl = fetch, timeoutMs } = {}) {
   const base = `${url.replace(/\/+$/, '')}/rest/v1/access_settings`;
   const headers = { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' };
+  const request = (target, options) => fetchImpl(target, timeoutMs === undefined ? options : { ...options, signal: AbortSignal.timeout(timeoutMs) });
   const check = async (r) => {
     if (!r.ok) throw new Error(`Supabase ${r.status}: ${(await r.text().catch(() => '')).slice(0, 200)}`);
     return r;
   };
   return {
     async get(k) {
-      const r = await check(await fetch(`${base}?key=eq.${encodeURIComponent(k)}&select=value`, { headers }));
+      const r = await check(await request(`${base}?key=eq.${encodeURIComponent(k)}&select=value`, { headers }));
       const rows = await r.json();
       return rows.length ? rows[0].value : null;
     },
     async set(k, value) {
-      await check(await fetch(base, {
+      await check(await request(base, {
         method: 'POST',
         headers: { ...headers, Prefer: 'resolution=merge-duplicates,return=minimal' },
         body: JSON.stringify({ key: k, value, updated_at: new Date().toISOString() }),
       }));
     },
     async del(k) {
-      await check(await fetch(`${base}?key=eq.${encodeURIComponent(k)}`, { method: 'DELETE', headers }));
+      await check(await request(`${base}?key=eq.${encodeURIComponent(k)}`, { method: 'DELETE', headers }));
     },
     // כל השורות שהמפתח שלהן מתחיל ב-prefix (like של PostgREST; * הוא התו הכללי).
     async list(prefix, { keysOnly = false } = {}) {
       const sel = keysOnly ? 'key' : 'key,value';
-      const r = await check(await fetch(`${base}?key=like.${encodeURIComponent(prefix + '*')}&select=${sel}&order=key&limit=5000`, { headers }));
+      const r = await check(await request(`${base}?key=like.${encodeURIComponent(prefix + '*')}&select=${sel}&order=key&limit=5000`, { headers }));
       return r.json();
     },
     async delPrefix(prefix) {
-      await check(await fetch(`${base}?key=like.${encodeURIComponent(prefix + '*')}`, { method: 'DELETE', headers }));
+      await check(await request(`${base}?key=like.${encodeURIComponent(prefix + '*')}`, { method: 'DELETE', headers }));
     },
   };
 }

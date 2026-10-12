@@ -57,7 +57,10 @@ test('every page that calls the model has a rule, and the browser sends the sign
   const guard = readFileSync(new URL('../../app/lib/access-guard.js', import.meta.url), 'utf8');
   const m = guard.match(/var PAGES_BY_PERM = \{([\s\S]*?)\};/)[1];
   const pages = new Set([...m.matchAll(/"([a-z-]+\.html)"/g)].map((x) => x[1]).filter((p) => !/sources|fill|home/.test(p)));
-  for (const p of pages) if (!['resilience-advisor-sources.html'].includes(p)) assert.ok(MODEL_PAGES[p], 'MODEL_PAGES lacks ' + p);
+  // The studies library reads protected materials without invoking a model.
+  const nonModelPages = ['resilience-advisor-sources.html', 'social-resilience-studies.html'];
+  for (const p of pages) if (!nonModelPages.includes(p)) assert.ok(MODEL_PAGES[p], 'MODEL_PAGES lacks ' + p);
+  assert.equal(MODEL_PAGES['social-resilience-studies.html'], undefined);
   assert.match(guard, /_auth = \{ token: ss\("sbe\.session\.token"\)/);
   assert.match(guard, /"sbe\.session\.wf"\]/);
 });

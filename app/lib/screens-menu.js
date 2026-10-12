@@ -52,6 +52,7 @@ window.SBE_SCREENS = [
       { file:'message-writer.html', label:'כתיבה מקדמת חוסן', who:'הרשאת כתיבה מקדמת חוסן בלבד' },
     ]},
     { title:'📖 4. ללמוד מהעשייה: מה למדנו?', items:[
+      { file:'social-resilience-studies.html', label:'לימודי חוסן חברתי', who:'הרשאת לימודי חוסן חברתי (studies)' },
       { file:'academic-review.html', label:'משוב לעבודות: להתכונן להגשה', who:'הרשאת משוב לעבודות' },
       { file:'feedback.html', label:'משוב', who:'משתתפות ומנחות' },
       { file:'feedback-results.html', label:'תוצאות המשוב', who:'מנחות' },
