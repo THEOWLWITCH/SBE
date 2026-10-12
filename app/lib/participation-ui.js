@@ -116,15 +116,15 @@
     }
 
     function printCards() {
-      const out = el('div'); out.appendChild(el('p', null, 'מה כולם מדגימים: ' + txt(S.must)));
+      const out = el('div'); out.appendChild(el('p', null, 'מה כל התלמידים מראים, בכל מסלול: ' + txt(S.must)));
       picked().forEach((p) => { const c = el('div', 'rcard'); c.appendChild(el('h3', null, txt(p.name) + ' · ' + txt(p.mode)));
-        [['מה עושים', p.how], ['איך מראים שהבנתי', p.crit], ['מה עוזר אם נתקעים', p.support]].forEach(([l, v]) => { if (!v) return; const r = el('div', 'rcard-row'); r.appendChild(el('b', null, l)); r.appendChild(el('span', null, txt(v))); c.appendChild(r); });
+        [['מה עושים', p.how], ['איך רואים שהבנתם', p.crit], ['מה עוזר אם נתקעים', p.support]].forEach(([l, v]) => { if (!v) return; const r = el('div', 'rcard-row'); r.appendChild(el('b', null, l)); r.appendChild(el('span', null, txt(v))); c.appendChild(r); });
         out.appendChild(c); });
       window.SBE_DOC.print({ title: 'כרטיסי מסלולים', subtitle: txt(ctx().goal || ctx().topic || ''), kind: 'כרטיסי מסלולי השתתפות', node: out });
     }
     function printObs() {
       const out = el('div'); out.appendChild(el('p', null, 'תאריך: ____________   ' + (seqMode ? 'מפגש ' + (S.cur + 1) : '')));
-      out.appendChild(el('p', null, 'מה כולם מדגימים: ' + txt(S.must)));
+      out.appendChild(el('p', null, 'מה כל התלמידים מראים, בכל מסלול: ' + txt(S.must)));
       out.appendChild(T(['המסלול', 'הקריטריון לעדות ללמידה', 'כמה בחרו', 'נראתה עדות להבנה? (כן / בחלקו / לא)', 'מה אפשר או עיכב השתתפות'],
         picked().map((p) => [txt(p.name), txt(p.crit), ' ', ' ', (() => { const d = el('div'); d.style.height = '3.2em'; return d; })()])));
       out.appendChild(el('p', null, 'התצפית היא על התנאים והפעולות, לא על התלמידים.'));
@@ -149,7 +149,7 @@
       if (S.cards.length || S.must) {
         body.appendChild(el('p', 'sub', M.SECTIONS.frame.h));
         const r2 = el('div', 'row2'), a = el('div'), b2 = el('div');
-        a.append(el('b', null, 'מה כולם מדגימים (לא בבחירה)'), area(S, 'must', 'מה כולם מדגימים', 2)); b2.append(el('b', null, 'מה התלמידים בוחרים'), area(S, 'choose', 'מה התלמידים בוחרים', 2));
+        a.append(el('b', null, 'מה כל התלמידים מראים, בכל מסלול (לא בבחירה)'), area(S, 'must', 'מה כל התלמידים מראים', 2)); b2.append(el('b', null, 'מה התלמידים בוחרים'), area(S, 'choose', 'מה התלמידים בוחרים', 2));
         r2.append(a, b2); body.appendChild(r2);
       }
       if (S.cards.length) {
@@ -160,7 +160,7 @@
           [['מה עושים', p.how], ['למה זה מתאים', p.fit], ['מה עוזר', p.support], ['איך זה מנגיש לעמיתים', p.access]].forEach(([l, v]) => { if (!v) return; const q = el('p'); q.appendChild(el('b', null, l)); q.appendChild(document.createTextNode(txt(v))); cd.appendChild(q); });
           if (!p.how) { cd.appendChild(el('b', null, 'מה עושים')); cd.appendChild(area(p, 'how', 'מה עושים: ' + p.name, 2, 'בשניים או שלושה משפטים, כמו בכרטיס לתלמיד')); }
           const lb = el('label'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!p.on; cb.addEventListener('change', () => { p.on = cb.checked; save(); draw(); });
-          lb.append(cb, document.createTextNode(' בוחרת במסלול הזה')); cd.appendChild(lb); grid.appendChild(cd);
+          lb.append(cb, document.createTextNode(' בחירת המסלול')); cd.appendChild(lb); grid.appendChild(cd);
         });
         body.appendChild(grid);
       }
@@ -207,6 +207,7 @@
         if (tr.never.length) body.appendChild(el('p', 'pnote', 'הוצעו ולא נבחרו עדיין: ' + tr.never.join('; ') + '. אפשר לבדוק מה יעזור לנסות אותם, או להחליף.'));
         if (tr.single.length) body.appendChild(el('p', 'pnote', 'בשיעורים ' + tr.single.join(', ') + ' הוצעה דרך השתתפות מסוג אחד בלבד (רק לבד, או רק בקבוצה).'));
       }
+      if (S.resilience && !(window.SBE_REFS && S.sources.length)) { body.appendChild(el('h4', null, 'תרומה לחוסן החברתי')); body.appendChild(el('p', null, txt(S.resilience))); }
       if (window.SBE_REFS && S.sources.length) { SBE_REFS.begin(SRC, 'resilience-advisor-sources.html'); const rr = el('div'); if (S.resilience) { rr.appendChild(el('h4', null, 'תרומה לחוסן החברתי')); rr.appendChild(el('p', null, txt(S.resilience))); } SBE_REFS.add(S.sources); const rs = SBE_REFS.end(); if (rs) rr.appendChild(rs); body.appendChild(rr); }
       if (window.SBE_OPEN && SBE_OPEN.scan) try { SBE_OPEN.scan(); } catch (e) {}
     }

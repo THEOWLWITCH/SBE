@@ -917,6 +917,7 @@ async function computeFeedbackAI(text, age, criteriaList, mode, task, kind) {
     task && kind !== "task" ? "הנחיות המשימה או המחוון שהכותב/ת קיבל/ה מהמרצה — זו המסגרת לבדיקה, ולא חלק מהעבודה (אל תעירי על ניסוח ההנחיות עצמן). בכל קריטריון התייחסי גם להנחיות כשהן רלוונטיות, ובשדה \"taskFit\" — עד כמה העבודה עונה על ההנחיות: מה כבר עונה עליהן, ומה חסר או לא תואם (עם ציון ההנחיה):\n<<<\n" + task + "\n>>>" : "",
     "את נותנת משוב בלבד ולא כותבת במקום הכותב/ת: אל תכתבי סעיפים, פסקאות, פרקים או נוסח חלופי מלא — רק הכוונה מה לחזק ואיך לגשת לזה, ודוגמה קצרה של כמה מילים לכל היותר.",
     "לכל קריטריון: נקודות חוזק אמיתיות מהטקסט הספציפי הזה (לא כלליות), ונקודות לשיפור קונקרטיות עם דוגמה מהטקסט עצמו איפה אפשר.",
+    "סדרי את הנקודות לשיפור לפי סדר עבודה: מה כדאי לתקן קודם, ומה אחר כך.",
     toneLine,
     "אל תצטטי קטעים ארוכים מהטקסט בחזרה — התייחסי אליהם במילים שלך, עם ציון מיקום (\"בפתיחה\", \"בפסקה השנייה\") ולא העתקה.",
     "אין לתת ציון מספרי או אחוז בשום מקום בתשובה — המשוב מילולי בלבד.",
@@ -946,7 +947,7 @@ let LAST_FEEDBACK = null;
 function renderFeedback(fb, mock) {
   const body = $("dlgB"); body.textContent = "";
   if (mock) body.append(el("p", { class:"mock-note" }, "⚠ אין חיבור למודל כרגע. זה נתון טכני גולמי, לא משוב אמיתי על התוכן."));
-  if (fb.overall) body.append(el("p", { style:"margin:0 0 14px;color:var(--muted);" }, fb.overall));
+  if (fb.overall) { body.append(el("h4", {}, "מבט כללי")); body.append(el("p", { style:"margin:0 0 14px;" }, fb.overall)); }
   const fbList = fb.taskFit && ((fb.taskFit.strengths||[]).length || (fb.taskFit.improvements||[]).length)
     ? [{ title:"התאמה להנחיות המשימה", ...fb.taskFit }, ...(fb.criteria || [])] : (fb.criteria || []);
   // טבלה (07/10/2026), בקו אחיד עם שאר התוצרים: קריטריון בכל שורה — הקריטריון · מה עובד · מה אפשר לחזק
@@ -970,7 +971,7 @@ function renderFeedback(fb, mock) {
   if (!mock) body.append(aiNoteEl());
   $("bPrintFb").hidden = false;
   const kindT = LAST_FEEDBACK && (FB_KINDS.find(x => x.k === LAST_FEEDBACK.kind) || {}).t;
-  $("dlgH").textContent = "משוב · " + (LAST_FEEDBACK && LAST_FEEDBACK.creator || val("creatorName") || "—") + (kindT ? " · " + kindT : "");
+  $("dlgH").textContent = ["משוב", LAST_FEEDBACK && LAST_FEEDBACK.creator || val("creatorName"), kindT].filter(Boolean).join(" · ");
   if (!$("dlg").open) $("dlg").showModal();
 }
 // ── תזכורת: לציין בעבודה את השימוש בכלי בינה מלאכותית ואת שם הכלי (02/10/2026) ──
@@ -978,8 +979,8 @@ const AI_TOOL = "Begood: ניתוח ומשוב לעבודה אקדמית (מבו
 function aiNoteLines(){
   const d = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
   return ["תזכורת: ציון השימוש בבינה מלאכותית:",
-    "אם שיפרת את העבודה בעקבות המשוב, ציינ/י בעבודה שנעזרת בכלי בינה מלאכותית, ואת שם הכלי: " + AI_TOOL + ".",
-    "נוסח מוצע: \"בשלב העריכה נעזרתי בכלי הבינה המלאכותית " + AI_TOOL + " לקבלת משוב על העבודה (" + d + "). הכתיבה והתיקונים נעשו על ידי.\"",
+    "אם שיפרת את העבודה בעקבות המשוב, ציינ.י בעבודה שנעזרת בכלי בינה מלאכותית, ואת שם הכלי: " + AI_TOOL + ".",
+    "נוסח מוצע: \"בשלב העריכה נעזרתי בכלי הבינה המלאכותית " + AI_TOOL + " לקבלת משוב על העבודה (" + d + "). הכתיבה והתיקונים נעשו בידי.\"",
     "כדאי לבדוק את הנחיות המרצה או המוסד לגבי אופן הציון."];
 }
 function aiNoteEl(){
@@ -1039,7 +1040,7 @@ $("bReview").addEventListener("click", async (e) => {
 $("dlgX").addEventListener("click", () => $("dlg").close());
 // הדפסה / PDF (07/10/2026) — כמו בשאר התוצרים: לוגו, כותרת, תאריך, והטבלה
 $("bPrintFb").addEventListener("click", () => { if (!LAST_FEEDBACK) return;
-  SBE_DOC.print({ title: "משוב לעבודה: " + (LAST_FEEDBACK.creator || ""), subtitle: $("dlgH").textContent, node: $("dlgB") }); });
+  SBE_DOC.print({ title: "משוב לעבודה" + (LAST_FEEDBACK.creator ? ": " + LAST_FEEDBACK.creator : ""), subtitle: (FB_KINDS.find(x => x.k === LAST_FEEDBACK.kind) || {}).t || "", node: $("dlgB") }); });
 // הורדת קובץ: הקישור נשאר בדף רגע אחרי הלחיצה — הסרה מיידית גורמת לחלק מהדפדפנים לאבד את שם הקובץ
 function downloadBlob(blob, name){
   const a = document.createElement("a");

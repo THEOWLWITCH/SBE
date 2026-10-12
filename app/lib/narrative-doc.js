@@ -325,6 +325,14 @@ var hd=t.tHead;if(!hd){hd=document.createElement('thead');t.insertBefore(hd,t.fi
 window.addEventListener('beforeprint',go);var m=window.matchMedia&&window.matchMedia('print');if(m&&m.addListener)m.addListener(function(e){if(e.matches)go();});})();<\/script>`;
 const RH_STYLE = '@media screen{tr.sbe-rh-row{display:none}}@media print{thead{display:table-header-group}tr.sbe-rh-row th{background:none!important;color:#141C24!important;border:0!important;text-align:right!important;font-weight:700;font-size:1.05em;padding:4px 0 6px!important}.sbe-rh-src{display:none!important}}';
 
+// מהלך מפגש אחיד (12/10/2026, בדיקת הלקוחה): פתיחה · פעילות מרכזית · סיכום · אחרי המפגש
+const flowSec = (mins, who) => sec('מהלך המפגש', dtable(['החלק', 'מה קורה'], [
+  ['<b>פתיחה</b>', 'המנחה מקריאה את הפתיחה לקבוצה, ומחלקת תפקידים: ' + who + '.'],
+  ['<b>פעילות מרכזית</b>', 'הסצנה' + (mins ? ', כ-' + esc(String(mins)) + ' דקות' : '') + '. הצופים עוקבים אחרי מה לראות בצפייה.'],
+  ['<b>סיכום</b>', 'שאלות לסיכום: קודם מי שהשתתפו בסצנה, ואחר כך הצופים.'],
+  ['<b>אחרי המפגש</b>', 'כל משתתף/ת בוחר/ת צעד אחד לנסות, ואפשר לחזור אליו במפגש הבא.'],
+]));
+
 function createRenderer(config) {
   const MARK = config.MARK || '';
   // שני הרכיבים הגלובליים של app/ — תפריט הניווט ("→ חזרה / ☰ תפריט") וכפתור
@@ -432,6 +440,7 @@ ${WIDGET}`;
       meta: [`<b>${esc(s.creator)}</b>`, esc(s.date), esc(s.audience), esc(s.experience), ...baseMeta],
       body:
         sec('פתיחה לקבוצה', aloud(groupIntroEdu), 'להקראה לפני הסצנה. רק מה שגלוי למתנסה') +
+        flowSec(s.duration, 'מתנסה, שחקנית וצופות') +
         sec('תמצית התרחיש', dtable(null, [
           ['רקע מלא', paras(f.background)],
           ['שתי הדמויות', paras(f.charactersProse)],
@@ -542,6 +551,7 @@ ${WIDGET}`;
       meta,
       body:
         sec('פתיחה לקבוצה', aloud(groupIntro), 'להקראה לפני הסצנה') +
+        flowSec(s.duration || 5, 'מי משחק כל דמות, ומי צופה') +
         sec('תמצית התרחיש', dtable(null, [
           ['מה קורה כאן', paras(s.background)],
           ...s.characters.map((c) => [esc(c.name), paras(c.summary)]),

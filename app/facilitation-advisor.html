@@ -491,7 +491,7 @@ F('btn-go').addEventListener('click',async()=>{
     let txt=await complete(sys,[{role:'user',content:input}],16000,true),doc;
     try{doc=N.normalize(N.parse(txt),KEYS);}catch(e){doc=null;}
     if(!N.valid(doc)){ // ניסיון שני אחד: תיקון המבנה
-      txt=await complete(sys,[{role:'user',content:input},{role:'assistant',content:txt.slice(0,30000)},{role:'user',content:'המבנה לא היה JSON תקין ומלא. החזירי את אותו מדריך כ-JSON תקין בלבד, במבנה שהוגדר, עם 5–7 שלבים ב-arc.'}],16000);
+      txt=await complete(sys,[{role:'user',content:input},{role:'assistant',content:txt.slice(0,30000)},{role:'user',content:'המבנה לא היה JSON תקין ומלא. החזירי את אותו מדריך כ-JSON תקין בלבד, במבנה שהוגדר, עם 5–7 שלבים ב-arc.'}],16000,true);
       doc=N.normalize(N.parse(txt),KEYS);
       if(!N.valid(doc))throw Object.assign(new Error('המדריך חזר חלקי'),{code:'incomplete'});
     }
@@ -544,15 +544,15 @@ function renderGuide(){
     // מהלך המפגש (08/10/2026), בקו אחיד עם שאר התוצרים: לפני המפגש · פתיחה · פעילות מרכזית · סיכום · אחרי המפגש
     const phaseOf=(p)=>{p=String(p||'');return /לפני/.test(p)?'לפני המפגש':/אחרי/.test(p)?'אחרי המפגש':/פתיח/.test(p)?'פתיחה':/סיו|סיכום|התכנס|סגיר|המשך/.test(p)?'סיכום':'פעילות מרכזית';};
     const t=SBE_DOC.flowTable(d.arc.map(x=>{
-      const g=el('div');if(x.facilitator)g.appendChild(richText(x.facilitator));
+      const g=el('div');
       if(x.say.length){const sy=el('div');sy.appendChild(el('b',null,'מה אומרים: '));x.say.forEach(t=>put(sy,sayEl(t)));g.appendChild(sy);}
       put(g,row('מה לראות',x.watch));
-      return {phase:phaseOf(x.phase),title:x.phase,minutes:x.minutes||'',desc:x.structure?inlineRich(x.structure):'',guide:g,lens:lensTxt(x.lens,x.basis)};
+      return {phase:phaseOf(x.phase),title:x.phase,minutes:x.minutes||'',desc:(()=>{const c=el('div');if(x.facilitator)c.appendChild(richText(x.facilitator));if(x.structure){const p=el('p');p.appendChild(inlineRich(x.structure));c.appendChild(p);}return c.childNodes.length?c:'';})(),guide:g,lens:lensTxt(x.lens,x.basis)};
     }),[['desc','מה קורה בשלב'],['guide','הנחיה למנחה'],['lens','תרומה לחוסן החברתי']]);
     t.classList.add('karc');doc.appendChild(t);
   }
   // סולם שאלות — טבלה אחת, עמודה לכל שלב
-  const Q=d.questions,QL=[['open','שאלות פתיחה'],['deepen','שאלות להעמקה'],['connect','חיבור לחיים ולקבוצה'],['close','שאלות סיום']].filter(([k])=>Q[k].length);
+  const Q=d.questions,QL=[['open','שאלות פתיחה'],['deepen','שאלות להעמקה'],['connect','שאלות לחיבור לחיים'],['close','שאלות לסיכום']].filter(([k])=>Q[k].length);
   if(QL.length){
     doc.appendChild(el('h3',null,'שאלות למפגש'));
     doc.appendChild(ktable(QL.map(q=>q[1]),[QL.map(([k])=>ul(Q[k]))],'kq'));
@@ -588,7 +588,7 @@ function renderGuide(){
     doc.appendChild(el('h3',null,'שאלות לעצמך אחרי המפגש'));
     const ul=el('ul','tl');d.reflect.forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));ul.appendChild(li);});doc.appendChild(ul);
   }
-  doc.appendChild(el('p','muted','ננה מציעה, ואת/ה מחליט/ה: המדריך הוא נקודת פתיחה שמתאימים לקבוצה שלך. המקורות בכפתור "📚 מקורות" בסוף המסמך, ואפשר לבחור לצרף אותם לקובץ.'));
+  doc.appendChild(el('p','muted no-print','ננה מציעה, ואת/ה מחליט/ה: המדריך הוא נקודת פתיחה שמתאימים לקבוצה שלך. המקורות בכפתור "📚 מקורות" בסוף המסמך, ואפשר לבחור לצרף אותם לקובץ.'));
   {const rs=SBE_REFS.end();if(rs)doc.appendChild(rs);}
   card.appendChild(window.SBE_DOC?SBE_DOC.editable(doc):doc);
   g.appendChild(card);
@@ -610,11 +610,11 @@ function renderGuide(){
 function pocketNode(d){
   const box=el('div','pocket-doc');const sec=(t,cls)=>{const x=el('section','pk-sec'+(cls?' '+cls:''));if(t)x.appendChild(el('h4',null,t));box.appendChild(x);return x;};
   const clean=t=>SBE_REFS.strip(String(t||'').replace(/\*\*/g,''));
-  if(d.stance.to){const x=sec('התפקיד שלי במפגש','pk-stance');x.appendChild(el('p',null,clean(N.trimLead(d.stance.to))));}
+  if(d.stance.to){const x=sec('התפקיד שלך במפגש','pk-stance');x.appendChild(el('p',null,clean(N.trimLead(d.stance.to))));}
   if(d.pocket.length){const x=sec('לזכור');const ul=el('ul');d.pocket.forEach(t=>ul.appendChild(el('li',null,clean(t))));x.appendChild(ul);}
   const qs=[...d.questions.open.slice(0,2),...d.questions.deepen.slice(0,2),...d.questions.close.slice(0,1)];
   if(qs.length){const x=sec('שאלות לקבוצה');const ul=el('ul');qs.forEach(t=>ul.appendChild(el('li',null,clean(t))));x.appendChild(ul);}
-  if(d.moments.length){const x=sec('ברגע קשה');const ul=el('ul');d.moments.forEach(m=>{const li=el('li','pk-moment');li.appendChild(el('b',null,clean(m.moment)+': '));li.appendChild(document.createTextNode(clean(m.say||m.do)));ul.appendChild(li);});x.appendChild(ul);}
+  if(d.moments.length){const x=sec('ברגע מאתגר');const ul=el('ul');d.moments.forEach(m=>{const li=el('li','pk-moment');li.appendChild(el('b',null,clean(m.moment)+': '));li.appendChild(document.createTextNode(clean(m.say||m.do)));ul.appendChild(li);});x.appendChild(ul);}
   return box;
 }
 

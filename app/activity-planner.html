@@ -1462,7 +1462,7 @@ function buildDocView(d, creator) {
   const img = el("img"); img.src = document.getElementById("brandLogo").src;
   logoRow.append(img, el("b",{}, "Begood"));
   dv.append(logoRow);
-  dv.append(el("div", { class:"dv-by" }, "תוכנית פעילות · " + (creator || "—") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
+  dv.append(el("div", { class:"dv-by" }, ["תוכנית פעילות", creator].filter(Boolean).join(" · ") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
   dv.append(creditNode());
   dv.append(el("h2", {}, d.domain || "פעילות"));
   dv.append(el("div", { class:"dv-meta" }, [d.age, d.duration, approachList(d.approach).join(" + ")].filter(Boolean).join(" · ")));
@@ -1492,9 +1492,9 @@ function buildCardView(d, creator) {
   cv.append(el("h3", {}, "כרטיס תמציתי · " + (d.domain || "פעילות")));
   const ol = el("ol", { class:"cv-steps", style:"margin:0;padding-inline-start:18px" });
   if (d.opening) ol.append(el("li",{},"פתיחה" + (d.openingMin ? ` (${d.openingMin})` : "") + ": " + d.opening));
-  if (d.mainActivity) ol.append(el("li",{},"מרכזית" + (d.mainMin ? ` (${d.mainMin})` : "") + ": " + d.mainActivity));
+  if (d.mainActivity) ol.append(el("li",{},"פעילות מרכזית" + (d.mainMin ? ` (${d.mainMin})` : "") + ": " + d.mainActivity));
   if (d.closing) ol.append(el("li",{},"סיכום" + (d.closingMin ? ` (${d.closingMin})` : "") + ": " + d.closing));
-  cv.append(SBE_DOC.table([["מטרה", d.goal], ["לשים לב", d.specialNotes], ["שלבים", ol.childNodes.length ? ol : ""],
+  cv.append(SBE_DOC.table([["מטרה", d.goal], ["דגשים למורה", d.specialNotes], ["שלבים", ol.childNodes.length ? ol : ""],
     ["שילוב תנועה", d.movement], ["משאבים", d.resources]]));
   if (creator) cv.append(el("div",{style:"margin-top:6px;font-size:11px;color:#5C6771"}, creator));
   return cv;
@@ -1532,7 +1532,7 @@ function buildNarrativeDocView(d, creator, narr) {
   const img = el("img"); img.src = document.getElementById("brandLogo").src;
   logoRow.append(img, el("b",{}, "Begood"));
   dv.append(logoRow);
-  dv.append(el("div", { class:"dv-by" }, "תוכנית פעילות · " + (creator || "—") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
+  dv.append(el("div", { class:"dv-by" }, ["תוכנית פעילות", creator].filter(Boolean).join(" · ") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
   dv.append(creditNode());
   dv.append(el("h2", {}, narr.title || d.domain || "פעילות"));
   dv.append(el("div", { class:"dv-meta" }, [d.domain, d.age, d.duration, approachList(d.approach).join(" + ")].filter(Boolean).join(" · ")));
@@ -2501,7 +2501,8 @@ function fmtDate(iso){
   return isNaN(d) ? str(iso) : d.toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
 }
 const DOC_CSS = `
-@page{size:A4;margin:24mm 24mm;}
+.ctx{font:12.5px Assistant,Arial,sans-serif;color:#2E5A7D;margin:0 0 6px}.ctx b{font-weight:700}
+@page{size:A4;margin:24mm 24mm;@bottom-center{content:"עמוד " counter(page) " מתוך " counter(pages);font:600 8.5pt Assistant,Arial,sans-serif;color:#5C6771}@bottom-right{content:"Begood · be-good.co.il";font:8pt Assistant,Arial,sans-serif;color:#8A949E}}
 *{box-sizing:border-box;}
 body{margin:0;background:#fff;color:#141C24;font-family:"Assistant","Segoe UI",Arial,sans-serif;font-size:14.5px;line-height:1.65;}
 article{max-width:760px;margin:0 auto;padding:34px 34px 26px;}
@@ -2559,9 +2560,11 @@ function docHeader(kind, title){
   const total = durs.length ? durs.reduce((a, b) => a + b, 0) : null;
   const meta = [str(seq.audience), str(seq.ageRange) && "גיל: " + str(seq.ageRange), str(seq.participants) && str(seq.participants) + " משתתפים",
     seq.sessions.length + " מפגשים", total ? "סה״כ " + fmtMin(total) : ""].filter(Boolean).join(" · ");
-  return `<div class="hd"><img src="${logo}" alt="Begood"><div class="kind">${esc(kind)}</div>
+  // שם הכלי ומטרתו מעל הכותרת, כמו בכל תוצר (12/10/2026, בדיקת הלקוחה)
+  const ctx = (window.SBE_DOC && SBE_DOC.ctxHTML) ? SBE_DOC.ctxHTML() : "";
+  return `${ctx}<div class="hd"><img src="${logo}" alt="Begood"><div class="kind">${esc(kind)}</div>
 <h1>${esc(title)}</h1>${subt ? `<p class="subt">${esc(subt)}</p>` : ""}<div class="meta">${esc(meta)}</div>
-<div class="meta">${esc(str(seq.creator) || "—")} · ${esc(fmtDate(seq.date))}</div></div>
+<div class="meta">${esc([str(seq.creator), fmtDate(seq.date)].filter(Boolean).join(" · "))}</div></div>
 <div class="credit">${SBE_CREDIT_HTML} · ${esc(fmtDate(today()))}</div>`;
 }
 function smartSentence(s){ return smartLines(s.smart); }
@@ -2590,7 +2593,7 @@ function seqDocHTML(narr, attach){
     h += `<h2>מבט על הרצף</h2><table><thead><tr><th>מפגש</th><th>יעד</th><th>משך</th><th>תוצר המפגש</th></tr></thead><tbody>`;
     filled.forEach(({ s, i }) => {
       const goal = smartTexts(s)[0] || str(s.opening);
-      h += `<tr><td class="n">${i + 1}</td><td>${nl(goal)}</td><td class="n">${esc(str(s.duration) || "—")}</td><td>${nl(s.product)}</td></tr>`;
+      h += `<tr><td class="n">${i + 1}</td><td>${nl(goal)}</td><td class="n">${esc(str(s.duration))}</td><td>${nl(s.product)}</td></tr>`;
     });
     h += `</tbody></table><h2>המפגשים</h2>`;
     // לכל מפגש: יעד, טבלת מהלך (שלב · זמן · מה עושים), וטבלת סיום (תוצר והערכה · משאבים ועזרים · מקורות)
@@ -2606,7 +2609,7 @@ function seqDocHTML(narr, attach){
       // מהלך המפגש (08/10/2026): פתיחה · פעילות מרכזית · סיכום, כשורת כותרת לכל חלק; עמודות: תיאור הפעילות · עזרים ומשאבים
       if (rows.length) { const hasRes = !!str(s.resources);
         h += `<table class="flow"><thead><tr><th>תיאור הפעילות</th>${hasRes ? "<th>עזרים ומשאבים</th>" : ""}</tr></thead><tbody>${rows.map(([t, m, c]) =>
-          `<tr class="ph"><th colspan="${hasRes ? 2 : 1}">${t}${str(m) ? " · " + esc(str(m)) : ""}</th></tr><tr><td>${c}</td>${hasRes ? `<td>${t === "פעילות מרכזית" ? nl(s.resources) : "—"}</td>` : ""}</tr>`).join("")}</tbody></table>`; }
+          `<tr class="ph"><th colspan="${hasRes ? 2 : 1}">${t}${str(m) ? " · " + esc(str(m)) : ""}</th></tr><tr><td>${c}</td>${hasRes ? `<td>${t === "פעילות מרכזית" ? nl(s.resources) : ""}</td>` : ""}</tr>`).join("")}</tbody></table>`; }
       const ss = narr && narr.sessionSources ? narr.sessionSources[i + 1] : null;
       const end = [["תוצר המפגש והערכתו", str(s.product) ? nl(s.product) : ""], ["משאבים ועזרים", str(s.resources) && !rows.some(r => r[0] === "פעילות מרכזית") ? nl(s.resources) : ""], ["מקורות להרחבה", attach && ss && ss.length ? sourceList(ss) : ""]].filter(x => x[1]);
       if (end.length) h += `<table class="end"><thead><tr>${end.map(x => `<th>${x[0]}</th>`).join("")}</tr></thead><tbody><tr>${end.map(x => `<td>${x[1]}</td>`).join("")}</tr></tbody></table>`;
@@ -2653,17 +2656,17 @@ function reportHTML(facts, ai){
   let h = docHeader("דו״ח ניתוח · תכנון רצף מפגשים", title);
   const tag = { ok:"✓ נבדק", gap:"לתיקון", check:"לבדיקה" };
   // טבלאות (07/10/2026, "קו אחיד"): בדיקה · מה נמצא; קריטריון · מה עולה · הצעות; סיכום — כותרת | תוכן
-  h += `<h2>בדיקות מכניות</h2><p class="note">עובדות שהמערכת בודקת בעצמה: שדות, סכומי זמנים ואזכורים של דברים שהוגדרו כמגבלה. ״לבדיקה״ פירושו שנמצא משהו שכדאי לוודא, לא הכרעה.</p>`;
+  h += `<h2>בדיקה של השדות והזמנים</h2><p class="note">שדות, סכומי זמנים ואזכורים של דברים שהוגדרו כמגבלה. "לבדיקה" פירושו שנמצא משהו שכדאי לוודא, לא הכרעה.</p>`;
   const fx = facts.length ? facts : [{ type:"ok", text:"לא נמצאו פערים מכניים." }];
   h += `<table class="kv"><tbody>${fx.map(f => `<tr class="fact-row ${f.type}"><th>${tag[f.type]}</th><td>${esc(f.text)}</td></tr>`).join("")}</tbody></table>`;
   if (ai) {
-    h += `<h2>משוב מקצועי</h2><p class="note">קריאה מקצועית של המודל, על סמך התכנון כולו. ללא ציון מספרי.</p>`;
+    h += `<h2>משוב מקצועי</h2><p class="note">משוב לפי הקריטריונים, על סמך התכנון כולו. בלי ציון מספרי.</p>`;
     const crit = (ai.criteria || []);
     if (crit.length) {
       h += `<table class="crit-t"><thead><tr><th>הקריטריון</th><th>מה עולה מהתכנון</th><th>הצעות לשיפור</th></tr></thead><tbody>`;
       crit.forEach(c => {
         const na = c.relevant === false;
-        const sug = !na && Array.isArray(c.suggestions) && c.suggestions.length ? `<ul>${c.suggestions.map(x => `<li>${nl(x)}</li>`).join("")}</ul>` : "—";
+        const sug = !na && Array.isArray(c.suggestions) && c.suggestions.length ? `<ul>${c.suggestions.map(x => `<li>${nl(x)}</li>`).join("")}</ul>` : "";
         h += `<tr${na ? ' class="na"' : ""}><th>${esc(c.title)}${na ? `<span class="na-tag">לא רלוונטי לתכנון הזה</span>` : ""}</th><td>${str(c.assessment) ? nl(c.assessment) : "—"}</td><td>${sug}</td></tr>`;
       });
       h += `</tbody></table>`;
@@ -2698,7 +2701,7 @@ function preamble(p){
   p = p || seq;
   return [
     `את יועצת אקדמית ומקצועית בכירה בתחום "${str(p.domain) || "חינוך והוראה"}"${str(p.topic) ? `, בנושא "${str(p.topic)}"` : ""}, הפועלת בתוך מערכת Begood. את מציבה לעצמך רף גבוה: כל משפט ספציפי לתכנון הזה, משפט שאפשר להעתיק לתכנון אחר בלי לשנות בו מילה פסול.`,
-    "כתבי בעברית תקנית במשלב גבוה — בהירה, רהוטה ומדויקת. כשאת מתייחסת ללומדים, נסחי בלשון רבים או באופן נייטרלי מגדרית.",
+    "כתבי בעברית פשוטה, ישירה וברורה, במשפטים קצרים. כשאת מתייחסת ללומדים, נסחי בלשון רבים או באופן נייטרלי מגדרית.",
     "אסור לכתוב שם של מחבר, מאמר, ספר, מחקר או שנת פרסום. אפשר להזכיר תיאוריה או גישה במילים. מקורות מגיעים רק מספריית המקורות המאומתת של המערכת.",
     "התחשבי במלוא פרטי המעטפת (מסגרת, קהל יעד, גיל, מספר משתתפים, מרחב), בהעדפות ובמגבלות שהיוצרת ציינה — כסף, מקום, צורת ישיבה, טכנולוגיה שאינה זמינה, שיקולי דת או מסורת וכדומה. אל תציעי דבר שסותר מגבלה שצוינה.",
     (Array.isArray(p.approaches) && p.approaches.length)
@@ -2762,7 +2765,7 @@ async function aiFillRange(a, b, first){
   ].join("\n\n");
   // 20000/300 שניות למנה של עד 7 מפגשים, כולל חשיבה פנימית (thinking:adaptive
   // + effort גבוה בשרת המשותף). לכייל מול מודל אמיתי ברצף של 14 מפגשים.
-  return parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), CHUNK_TOKENS, CHUNK_TIMEOUT));
+  return parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), CHUNK_TOKENS, CHUNK_TIMEOUT, true));
 }
 async function aiFillAll(onStep){
   let total = 0;
@@ -2793,12 +2796,12 @@ async function aiImproveRange(a, b, first){
   const system = [preamble(),
     "שכתבי את תכנון רצף המפגשים המצורף לגרסה משופרת, שהיוצרת תוכל לעבור עליה ולערוך.",
     "אפשר לשמור על כוונת היוצרת, על מספר המפגשים ועל העובדות: creator, date, framework, audience, ageRange, participants, space, prefs, limits, domain, approaches, topic, courseLevel — ללא שינוי.",
-    "מותר ורצוי: לשפר ניסוח ועברית (משלב גבוה, בהירות, דיוק), לחדד את היעדים לפי S.M.A.R.T, לתקן אי-התאמות בזמנים, לחזק את ההדרגתיות בין המפגשים, להתאים פעילויות למגבלות ולהעדפות, ולהשלים שדות ריקים.",
+    "מותר ורצוי: לשפר ניסוח ועברית (פשוט, בהיר ומדויק), לחדד כל יעד למשפט קצר אחד של פעולה ותוצר, לתקן אי-התאמות בזמנים, לחזק את ההדרגתיות בין המפגשים, להתאים פעילויות למגבלות ולהעדפות, ולהשלים שדות ריקים.",
     `בקריאה הזו שפרי רק את ${rangeLabel(a, b)} (n=${a + 1} עד n=${b})` + (first ? ", וגם את goals (עד חמש מטרות: מותר לנסח מחדש אם זה מחדד אותן), finalProduct ו-assessment." : ". המפגשים האחרים מוצגים כהקשר, אפשר לשמור על ההדרגתיות מולם כפי שהם."),
     SESSION_SCHEMA, TIME_RULE,
     "החזירי אך ורק JSON: {\"plan\":{" + (first ? "\"goals\":[\"...\"],\"finalProduct\":\"...\",\"assessment\":\"...\"," : "") + "\"sessions\":[{\"n\":" + (a + 1) + ", ...כל שדות המפגש...}]},\"changes\":[{\"where\":\"מפגש " + (a + 1) + " · פתיחה\",\"why\":\"...\"}]} — changes: השינויים העיקריים בטווח הזה ולמה (עד 6).",
   ].join("\n\n");
-  const out = parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), CHUNK_TOKENS, CHUNK_TIMEOUT));
+  const out = parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), CHUNK_TOKENS, CHUNK_TIMEOUT, true));
   if (!out.plan || !Array.isArray(out.plan.sessions)) throw new Error("מבנה חסר");
   return out;
 }

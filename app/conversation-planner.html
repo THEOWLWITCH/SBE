@@ -734,7 +734,7 @@ function render() {
       // סטטוס השדה (חובה / רשות-תמולא / רשות-לא-תמולא) חייב להופיע תמיד,
       // גם כשיש hint מותאם — ראו ההערה המלאה ב-input-screen.html (22/09/2026).
       if (f.req) lab.append(el("span",{class:"reqmark"}, " · שדה עיקרי"));
-      else if (f.noAutoFill) lab.append(el("span",{class:"hint"}, " · רשות — לא תמולא אוטומטית, אך המערכת תתחשב במה שתכתבי בה"));
+      else if (f.noAutoFill) lab.append(el("span",{class:"hint"}, " · רשות. אפשר להשאיר ריק"));
       else lab.append(el("span",{class:"hint"}, " · אפשר להשאיר ריק"));
       if (f.hint) lab.append(el("span",{class:"hint"}, " · " + f.hint));
       wrap.append(lab);
@@ -909,7 +909,7 @@ function refresh() {
   const ok = missing.length === 0;
   document.getElementById("bBuild").disabled = !ok || p+w === reqKeys.length;
   document.getElementById("hint").textContent = ok
-    ? (p ? "אפשר לבנות. שדות בהצעה יישארו כפי שהם." : "מלאי הצעות או כתבי בעצמך")
+    ? (p ? "אפשר לבנות. שדות בהצעה יישארו כפי שהם." : "אפשר למלא הצעות או לכתוב")
     : `נשארו ${missing.length} שדות עיקריים למילוי`;
   document.getElementById("ready").textContent = ok ? "" : "השדות העיקריים עוד לא מולאו";
 }
@@ -955,9 +955,9 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     if (!draft || !draft.isAI) return noModel(); // בלי חיבור למודל — אין תוצר (לא תבנית קבועה)
     body.append(el("div", { class:"banner-mini" },
       draft.isAI
-        ? "אפשר לקרוא ותאימי לפני שליחה בפועל. "
+        ? "אפשר לקרוא ולהתאים לפני השליחה. "
         : "השרת המקומי לא זמין: הטיוטה מורכבת מתבנית קבועה לפי הגישה שנבחרה, לא ניסוח AI אמיתי. אפשר לקרוא ותאימי לפני שליחה בפועל. ",
-      el("b",{}, "לפני שליחה: ודאי שההודעה פותחת בברכת שלום ובמשהו טוב לומר, לפני גוף העניין.")));
+      el("b",{}, "לפני שליחה כדאי לבדוק שההודעה פותחת בברכת שלום ובמשהו טוב לומר, לפני גוף העניין.")));
     if (draft.contextNote) body.append(el("div", { class:"rcard-row" },
       el("b",{},"הערת תכנון, לא חלק מההודעה"), el("div",{}, draft.contextNote)));
     body.append(el("h4", {}, `גרסה מלאה: ${d.approach || "כללי"}`));
@@ -1006,11 +1006,14 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
       const traitsNote = [traitsLine(d.myTraits) ? "המאפיינים שלי: " + traitsLine(d.myTraits) : "", traitsLine(d.otherTraits) ? "המאפיינים של הצד השני: " + traitsLine(d.otherTraits) : ""].filter(Boolean).join("\n");
       const system = [ "אסור לכתוב שם של מחבר, מאמר, ספר, מחקר או שנת פרסום. אפשר להזכיר תיאוריה או גישה במילים. מקורות מגיעים רק מספריית המקורות המאומתת של המערכת.",
         "את כותבת תדריך אישי קצר למי שעומדת לפני שיחה חשובה, בעברית, מתוך שדות שמילאה במסך תכנון השיחה של מערכת Begood. היא תקרא אותו פעם אחת לפני שהיא נכנסת לחדר ותרגיש מוכנה.",
-        "כתבי בגוף שני, בפסקאות קצרות ומרווחות, עם כותרת מודגשת לכל חלק — כדי שיהיה קל לקרוא, במיוחד בנושא רגיש. ארבעה חלקים, בכותרות האלה בדיוק:",
-        "**מה על הכף** — ההקשר האנושי: מי את בשיחה הזאת, מי הצד השני, מה קרה עד כה ומה באמת חשוב. שתיים-שלוש פסקאות קצרות.",
+        "כתבי בגוף שני, בפסקאות קצרות ומרווחות, עם כותרת מודגשת לכל חלק — כדי שיהיה קל לקרוא, במיוחד בנושא רגיש. שבעה חלקים, בכותרות האלה בדיוק:",
+        "**מה המטרה** — משפט אחד: מה היית רוצה שיקרה בסוף השיחה.",
+        "**מה חשוב לדעת** — ההקשר האנושי: מי את/ה בשיחה הזאת (לפי השדות), מי הצד השני, מה קרה עד כה ומה באמת חשוב. שתיים-שלוש פסקאות קצרות.",
+        "**איפה ומתי** — המקום והזמן שמתאימים לשיחה הזאת (למשל ביחידות, במקום שקט, כשיש זמן ולא בדלת), ולמה.",
         "**איך לפתוח** — ברכת שלום ומשהו טוב לומר לפני גוף העניין, ומשפט פתיחה לדוגמה במרכאות.",
+        "**שאלות המשך** — תבליטים: 2–4 שאלות פתוחות במרכאות, ולכל אחת מתי שואלים אותה ובשביל מה.",
         "**אם השיחה מסתבכת** — תבליטים (שורה שמתחילה ב-\"- \"): מה לעשות אם הצד השני מתגונן, מסכים-אבל-לא-משתנה, או לוקח את זה אישית — מתוך \"מה עלול להשתבש\". בכל תבליט: מילת מפתח מודגשת, ומשפט לדוגמה במרכאות.",
-        "**איך לסיים** — הקו התחתון שלך, מה יקרה אם המטרה תתממש, ותוכנית ב'. כולל איך לסיים בכבוד גם בלי הסכמה, ועם פתח להמשך.",
+        "**איך לסיים** — מה חשוב לך לשמור עליו, מה יקרה אם המטרה תתממש, ותוכנית ב'. כולל איך לסיים בכבוד גם בלי הסכמה, ועם פתח להמשך.",
         "הדגשה רק למילות מפתח (**כך**). בלי סימני #, בלי טבלאות.",
         TALK_RULE,
         "התיאוריה שנבחרה (" + (d.approach || "לא נבחרה") + ") נשמעת בהצעות עצמן, לא כהגדרה. המאפיינים של שני הצדדים (תכונות ומזג) משפיעים על הניסוח: מה יעבוד עם מי שכזה, וממה להיזהר.",
@@ -1030,7 +1033,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
 
     if (briefing) {
       body.append(el("div", { class:"banner-mini" }, "אם משהו לא מדויק, אפשר לערוך ישירות כאן, או לשנות שדה למעלה ולבנות מחדש."));
-      body.append(el("h4", {}, "לפני שאת נכנסת לחדר"));
+      body.append(el("h4", {}, "תדריך לפני שיחה"));
       briefNode = SBE_DOC.sections(briefing) || SBE_DOC.rich(briefing); // טבלה: חלק בכל שורה (07/10/2026)
       body.append(SBE_DOC.editable(briefNode));
     } else {
@@ -1040,7 +1043,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     // כרטיס התזכורת — טבלה (07/10/2026)
     const myLine = traitsLine(d.myTraits), otherLine = traitsLine(d.otherTraits);
     const rc = SBE_DOC.table([
-      ["המטרה שלי", d.goal], ["קו תחתון", d.nonNegotiables], ["איך לפתוח", d.openingLine],
+      ["המטרה שלי", d.goal], ["מה חשוב לי לשמור עליו", d.nonNegotiables], ["איך לפתוח", d.openingLine],
       ["הגישה", d.approach ? d.approach + (info ? ": " + info.when.replace(/^מתי כדאי לבחור בה:\s*/,"") : "") : ""],
       ["תוכנית ב׳", d.backupPlan], ["המאפיינים שלי", myLine], [`המאפיינים של ${d.otherParty || "הצד השני"}`, otherLine],
     ]);
@@ -1076,7 +1079,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
       title: briefing ? "תדריך לפני שיחה" : "כרטיס תזכורת לשיחה",
       subtitle: [d.myself, d.otherParty].filter(Boolean).join(" · מול ") ,
       nodes: (() => { const card = rc.querySelector("tr") ? [h("כרטיס תזכורת"), rc] : [];
-        return briefing ? [h("לפני שאת נכנסת לחדר"), briefNode, ...card] : [...card, h("עץ אפשרויות"), tree]; })() }));
+        return briefing ? [h("תדריך לפני שיחה"), briefNode, ...card] : [...card, h("עץ אפשרויות"), tree]; })() }));
     body.append(dl, sysBtn);
     show(briefing ? "התדריך לפני השיחה" : "כרטיס התזכורת ועץ האפשרויות", body);
   }
