@@ -47,3 +47,9 @@ test('practice screen: own case, three steps, saved per user, inviting language'
   const block = html.slice(a, b) + html.slice(html.indexOf('// ── מקרה משלך'), html.indexOf('renderFilters();\nrenderScenarioList();'));
   assert.deepEqual(invite.find(block), []); assert.doesNotMatch(block, /—/);
 });
+test('מקרה משלך: מגדר המתנסה והדמות לפי המקרה (12/10/2026)', async () => {
+  const PC = (await import('node:module')).createRequire(import.meta.url)('../../app/lib/practice-custom.js');
+  assert.match(PC.buildSystem(), /actor\.gender "זכר" או "נקבה"/);
+  assert.doesNotMatch(PC.buildSystem(), /המתנסה בלשון נקבה\./);
+  assert.match(PC.caseText({ me: 'זכר', story: 'א' }), /פנייה אליי: בלשון זכר/);
+});

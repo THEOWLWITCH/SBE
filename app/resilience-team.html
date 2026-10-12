@@ -269,7 +269,7 @@ body[data-mode="setup"] .tab-bar,body[data-mode="collect"] .tab-bar{display:none
 .home-empty{text-align:center}
 .pane-nav{display:flex;justify-content:space-between;gap:.6rem;margin:1rem 0 2rem;flex-wrap:wrap}
 .pane-nav .btn{width:auto}
-@media(max-width:600px){.j-lbl{display:none}.j-step.current .j-lbl{display:inline}.glance,.prod-grid,.next-grid,.share-grid{grid-template-columns:1fr}.journey{border-radius:14px;margin:.6rem .6rem 0}}
+@media screen and (max-width:600px){.j-lbl{display:none}.j-step.current .j-lbl{display:inline}.glance,.prod-grid,.next-grid,.share-grid{grid-template-columns:1fr}.journey{border-radius:14px;margin:.6rem .6rem 0}}
 @media print{.journey{display:none!important}}
 /* empty */
 .empty{text-align:center;color:var(--muted);padding:2rem;font-size:.9rem}
@@ -285,7 +285,7 @@ h2{font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:1.12rem;fon
 .tab-btn{flex:0 0 auto;min-width:0;font:inherit;font-weight:700;font-size:.92rem;border:1px solid var(--hair);border-bottom:none;border-radius:8px 8px 0 0;padding:.45rem .9rem;background:var(--surface-2,#E4E7EA);color:var(--muted)}
 .tab-btn.active{background:var(--spoken);color:#fff;border-color:var(--spoken)}
 .tab-btn.locked{color:var(--hair)}
-@media(max-width:600px){.tool-head h1{font-size:1.45rem}.tab-btn{font-size:.85rem;padding:.4rem .6rem}}
+@media screen and (max-width:600px){.tool-head h1{font-size:1.45rem}.tab-btn{font-size:.85rem;padding:.4rem .6rem}}
 </style>
 </head>
 <body>
@@ -424,7 +424,7 @@ h2{font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:1.12rem;fon
 
 <!-- ── Tab: ציונים ── -->
 <div id="t-scores" class="pane">
-  <div id="scores-content"><div class="empty">אין עדיין נתונים. הגדר/י כיתה ואסוף/י תשובות.</div></div>
+  <div id="scores-content"><div class="empty">אין עדיין נתונים. כדי להתחיל, אפשר להגדיר כיתה ולאסוף תשובות.</div></div>
 </div>
 
 <!-- ── Tab: לפי קבוצות נשאלים ── -->
@@ -864,7 +864,7 @@ function tierClass(tier){return ['t0','t1','t2','t3'][tier];}
 function tierClassB(tier){return ['t0b','t1b','t2b','t3b'][tier];}
 
 function flagBadge(f){
-  if(f==='פועל, ופוגע') return '<span class="flag flag-pog">'+f+'</span>';
+  if(f==='יש גם התנהגות פוגעת') return '<span class="flag flag-pog">'+f+'</span>';
   if(f==='פער בין הקבוצות') return '<span class="flag flag-kol">'+f+'</span>';
   return '<span class="flag flag-unk">'+f+'</span>';
 }
@@ -872,7 +872,7 @@ function flagBadge(f){
 function renderScores(){
   const cfg=loadCfg();
   const el=document.getElementById('scores-content');
-  if(!cfg){el.innerHTML='<div class="empty">הגדר/י כיתה בלשונית "הגדרה" כדי לראות ציונים.</div>';return;}
+  if(!cfg){el.innerHTML='<div class="empty">כדי לראות ציונים, אפשר להגדיר כיתה בלשונית "הגדרה".</div>';return;}
   const resp=viewResp();
   if(!resp.length){el.innerHTML='<div class="empty">עדיין אין תשובות.</div>';return;}
 
@@ -937,7 +937,7 @@ function renderScores(){
 function renderVoices(){
   const cfg=loadCfg();
   const el=document.getElementById('voices-content');
-  if(!cfg){el.innerHTML='<div class="empty">הגדר/י כיתה תחילה.</div>';return;}
+  if(!cfg){el.innerHTML='<div class="empty">כדי להתחיל, אפשר להגדיר כיתה.</div>';return;}
   const resp=viewResp();
   if(!resp.length){el.innerHTML='<div class="empty">עדיין אין תשובות.</div>';return;}
 
@@ -999,7 +999,7 @@ function renderVoices(){
 function renderReport(){
   const cfg=loadCfg();
   const el=document.getElementById('report-content');
-  if(!cfg){el.innerHTML='<div class="empty">הגדר/י כיתה תחילה.</div>';return;}
+  if(!cfg){el.innerHTML='<div class="empty">כדי להתחיל, אפשר להגדיר כיתה.</div>';return;}
   const resp=viewResp();
   if(!resp.length){el.innerHTML='<div class="empty">עדיין אין תשובות.</div>';return;}
 
@@ -1023,10 +1023,9 @@ function renderReport(){
     {
       n:1, title:'איך לקרוא את הדוח',
       body:`הדוח מציג ציונים בין 0 ל-100 לכל תחום של חוסן חברתי.
-הציון משקף את הממוצע של כל הנשאלים לאחר תיקון עבור היגדים הפוכים (התנהגויות מזיקות).
+הציון נבנה מכל התשובות. בהיגדים על התנהגות פוגעת, תשובה גבוהה מורידה את הציון.
 טווח 75–100 = תפקודי · 50–74 = חלקי · 25–49 = חלש · מתחת ל-25 = בקושי תפקודי.
-<br><br>כלל חשוב: כשהתנהגות מזיקה גבוהה, היא <strong>מגבילה</strong> את ציון התחום גם אם ההתנהגות המיטיבה גבוהה.
-זה לא ממוצע: זה מחסום.`
+<br><br>כשבתחום יש גם התנהגות פוגעת, הציון <strong>לא עולה</strong> על מה שהפגיעה מאפשרת, גם אם ההתנהגות המיטיבה גבוהה.`
     },
     {
       n:2, title:'הציונים',
@@ -1050,7 +1049,7 @@ function renderReport(){
         : 'אין עדיין מספיק נתונים.'
     },
     {
-      n:5, title:'פועל, ופוגע',
+      n:5, title:'יש גם התנהגות פוגעת',
       body: capped.length
         ? `ב-${capped.length} תחום/ים, התנהגויות מזיקות מגבילות את הציון גם כשההתנהגות המיטיבה גבוהה:<br><br>`+
           capped.map(d=>`<strong>${d.d}</strong>: מיטיב=${Math.round(d.good)}, מזיק=${Math.round(d.harm)}, ציון=${Math.round(d.score)}`).join('<br>')+
@@ -1062,7 +1061,7 @@ function renderReport(){
       body: bottom.length
         ? `התחומים הדורשים תשומת לב:<br><br>`+
           bottom.map(d=>`<strong>${d.d}</strong> (${Math.round(d.score)}): `+
-            (d.capped?'הפחת התנהגות מזיקה לפני שמחזקים חיובי':'חזק התנהגויות מיטיבות')
+            (d.capped?'כדאי להתחיל בהפחתת ההתנהגות הפוגעת, ורק אחר כך לחזק את המיטיבה':'אפשר לחזק את ההתנהגויות המיטיבות')
           ).join('<br><br>')
         : 'אין מספיק נתונים להמלצות.'
     },
@@ -1079,25 +1078,23 @@ function renderReport(){
       body: unknown.length
         ? `ב-${unknown.length} תחום/ים יותר משליש מהנשאלים בחרו "לא יודע":<br><br>`+
           unknown.map(d=>`<strong>${d.d}</strong> (${Math.round(d.unknownRate*100)}% לא יודעים)`).join('<br>')+
-          '<br><br>אי-ידיעה גבוהה יכולה להצביע על חוסר חשיפה, חוסר בטחון, או שאלה לא מובנת.'
+          '<br><br>אי-ידיעה גבוהה יכולה להצביע על חוסר חשיפה, חוסר ביטחון, או שאלה לא מובנת.'
         : 'אחוז ה"לא יודע" נמוך: הנשאלים הרגישו שהם יכולים להשיב.'
     },
     {
       n:9, title:'הצעד הראשון',
       body: firstStep
-        ? `דבר אחד בלבד.<br><br>הצעד המומלץ הוא לטפל ב<strong>${firstStep.d}</strong> (ציון: ${Math.round(firstStep.score)}).`+
-          (firstStep.capped?'<br>מכיוון שמדובר בתחום עם התנהגות מזיקה מגבילה, הצעד הראשון הוא <strong>הפחתת</strong> ההתנהגות המזיקה: לפני שמנסים לחזק.'
-            :'<br>הצעד הוא שיחה קצרה עם הצוות: מה דבר אחד שניתן לשנות השבוע בנוגע לתחום זה?')+
-          '<br><br>לא שני דברים. לא תוכנית. דבר אחד.'
+        ? `הצעד המומלץ הוא לטפל ב<strong>${firstStep.d}</strong> (ציון: ${Math.round(firstStep.score)}).`+
+          (firstStep.capped?'<br>בתחום הזה יש גם התנהגות פוגעת, ולכן כדאי להתחיל ב<strong>הפחתת</strong> ההתנהגות הפוגעת, ורק אחר כך לחזק.'
+            :'<br>אפשר להתחיל בשיחה קצרה עם הצוות על השאלה: איזה דבר אחד אפשר לשנות כבר השבוע בתחום הזה?')
         : 'אין עדיין מספיק נתונים לצעד ראשון.'
     },
     {
       n:10, title:'מה שהדוח אינו יודע',
-      body:`הדוח אינו יודע למה. הוא יודע מה, ועד כמה.<br><br>
-הדוח אינו מדיד עבור תלמידים ספציפיים ואינו חושף זהויות.<br>
-הדוח אינו מחליף שיחה, תצפית, או שיפוט מקצועי.<br>
-הדוח אינו מציג עלויות, אומדן זמן, או ספירה אנושית: אלה אינם ידועים לו.<br><br>
-השתמש/י בדוח כנקודת פתיחה לשיחה, לא כמסקנה.`
+      body:`הדוח מראה מה ועד כמה, אבל לא למה.<br><br>
+הוא לא מתייחס לתלמיד/ה מסוים/ת ולא חושף מי ענה.<br>
+הוא לא מחליף שיחה, תצפית ושיקול דעת מקצועי.<br><br>
+אפשר להשתמש בו כנקודת פתיחה לשיחה, ולא כמסקנה.`
     },
   ];
 
@@ -1168,16 +1165,16 @@ const SUM_SYSTEM=[
   '2. יצירתיות וגיוון: הצע/י כמה אפשרויות שונות זו מזו בכל סעיף (לא הצעה אחת), ושלב/י בין פעילויות חד-פעמיות לתהליכים מתמשכים.',
   '3. התאמה לגיל: כל הצעה חייבת להתאים לשכבת הגיל שבנתונים — ניסוח, רמת אחריות של התלמידים ומשך הפעילות.',
   '4. מעגלים: עודד/י מעורבות גם מחוץ לכיתה — בבית הספר ובקהילה (שכבות אחרות, הורים, שכונה, מוסדות קהילתיים) — ולא רק בכיתה.',
-  '5. אתגרים בניסוח אופטימי: לנסח כל אתגר ככיוון צמיחה ("הכיתה יכולה לפתח..."), לא כליקוי. בלי האשמה ובלי הכללות על תלמידים.',
+  '5. אתגרים בניסוח אופטימי: לנסח כל אתגר ככיוון צמיחה ("אפשר לפתח אצלכם בכיתה..."), לא כליקוי. בלי האשמה ובלי הכללות על תלמידים.',
   '6. להישען רק על הנתונים שנמסרו. אסור להמציא ממצאים, מספרים או מקרים, ואין להתייחס לתלמיד/ה מסוים/ת. תחום עם "התנהגות פוגעת מגבילה" — ההמלצה הראשונה בו היא הפחתת הפגיעה. פער בין קבוצות — להציע גם דרך לשיחה בין הקבוצות. הרבה "לא יודע" — להציע דרך להפוך את התחום לגלוי ומדובר.',
   '7. פנייה למחנך/ת בלשון מכבדת ומעשית, בשפה פשוטה וברורה.',
   '8. משחקים חברתיים: בכל אחת משלוש רשימות הפעילויות שלב/י לפחות 1–2 משחקים חברתיים — משחקי שיתוף פעולה (לא תחרות של יחיד נגד יחיד), מותאמים לגיל, עם הסבר קצר איך משחקים ומה המטרה. סמן/י אותם ב-"game":true.',
   '9. סביבת הכיתה: המלצות לעיצוב המרחב הפיזי והחזותי של הכיתה שתומכות בממצאים — למשל סידור ישיבה שמאפשר עבודה בקבוצות, פינות (שיחה, הרגעה, יצירה), לוחות ותצוגות שהתלמידים מפעילים, סמלים ומוסכמות כיתתיים, תצוגת הישגים משותפים — וכל המלצה מקושרת לתחום מהממצאים.',
-  '10. המלצות נוספות: דברים שעולים מהתוצאות ואינם נכנסים לסעיפים האחרים — למשל עבודה עם ההורים, תיאום עם הצוות והיועצ/ת, שיחות עם התלמידים על הממצאים, מדידה חוזרת, או תחום שכדאי לבדוק לעומק. בלי לחזור על מה שכבר הוצע.',
+  '10. המלצות נוספות: דברים שעולים מהתוצאות ואינם נכנסים לסעיפים האחרים — למשל עבודה עם ההורים, תיאום עם הצוות, שיחות עם התלמידים על הממצאים, מדידה חוזרת, או תחום שכדאי לבדוק לעומק. בלי לחזור על מה שכבר הוצע.',
   '11. מעקב: אם בנתונים יש השוואה בין סיבובי מדידה — התייחס/י לשינוי במבט-העל, ומלא/י את "progress": מה השתפר (ומה כנראה תרם לזה, רק כהשערה), מה ירד או נשאר במקום, ומה כדאי לשמר. שינוי של פחות מ-5 נקודות — לא לפרש כשינוי. בלי השוואה — "progress" ריק.',
-  'היקף: 3–5 חוזקות, 3–5 אתגרים, 3–5 פעילויות בכל אחת משלוש רשימות הפעילויות, 3–5 המלצות לסביבת הכיתה, ו-2–4 המלצות נוספות.',
+  'היקף: 3–5 חוזקות, 3–5 אתגרים, 3–5 פעילויות בכל אחת משלוש רשימות הפעילויות, 3–5 המלצות לסביבת הכיתה, 2–4 המלצות נוספות, 1–2 שיחות עם הנחיות מלאות (עם תלמיד/ה, עם קבוצה או עם הכיתה על הממצאים), ו-3–5 צעדים קטנים לפי הסדר, לכל צעד מי אחראי/ת ואיך מעדכנים את כולם.',
   'החזר/י אך ורק JSON תקין, בלי טקסט נוסף, במבנה:',
-  '{"intro":"2–3 משפטים — מבט-על על הכיתה",',
+  '{"intro":"2–3 משפטים, בפנייה ישירה: מה בולט אצלכם בכיתה",',
   ' "progress":[{"domain":"שם התחום או \"ציון כולל\"","text":"מה השתנה ומה זה אומר"}],',
   ' "strengths":[{"domain":"שם התחום","text":"מה החוזקה ומה היא מאפשרת"}],',
   ' "strengthActivities":[ACT],',
@@ -1185,8 +1182,10 @@ const SUM_SYSTEM=[
   ' "challenges":[{"domain":"שם התחום","text":"האתגר בניסוח אופטימי"}],',
   ' "challengeActivities":[ACT + "for":"שם התחום"],',
   ' "environment":[{"title":"שם קצר","description":"מה משנים במרחב ואיך — 1–3 משפטים","for":"התחום שזה תומך בו"}],',
-  ' "other":[{"title":"שם קצר","description":"ההמלצה ולמה היא עולה מהתוצאות — 1–3 משפטים"}]}',
-  'כאשר ACT הוא {"title":"שם קצר","kind":"חד-פעמית" או "תהליך מתמשך","game":true רק אם זה משחק חברתי,"circle":"כיתה" או "בית הספר" או "קהילה","description":"מה עושים, מי מוביל/ה ואיך (במשחק — גם איך משחקים) — 2–4 משפטים","mechanism":"איזה מנגנון חברתי / עבודת צוות / מיומנות משותפת זה מפתח"}'
+  ' "other":[{"title":"שם קצר","description":"ההמלצה ולמה היא עולה מהתוצאות — 1–3 משפטים"}],',
+  ' "conversations":[{"with":"עם מי (תלמיד/ה, קבוצה, הכיתה)","goal":"מטרת השיחה","setting":"איפה ומתי","opening":"שאלת פתיחה לדוגמה","followups":["שאלת המשך"],"closing":"איך מסיימים"}],',
+  ' "plan":[{"when":"השבוע","what":"מה עושים","who":"מי אחראי/ת (עדיף משותף ומתחלף)","update":"איך מעדכנים את כולם"}]}',
+  'כאשר ACT הוא {"title":"שם קצר","kind":"חד-פעמית" או "תהליך מתמשך","game":true רק אם זה משחק חברתי,"circle":"כיתה" או "בית הספר" או "קהילה","description":"מה עושים, מי מוביל/ה ואיך (במשחק — גם איך משחקים) — 2–4 משפטים","mechanism":"תרומה לחוסן החברתי: איזה מנגנון משותף, עבודת צוות או מיומנות משותפת זה בונה בכיתה, במשפט אחד"}'
 ].join('\n');
 
 async function generateSummary(){
@@ -1222,13 +1221,13 @@ function actCard(a,extra){
   return c;
 }
 // טבלאות בסיכום (07/10/2026), כמו בדוח של פרקטי: פעילות בכל שורה; חוזקות ואתגרים — תחום | מה רואים
-function actTable(items,extraFn,mechLabel){if(!(items||[]).length)return el2('p',null,'—');
+function actTable(items,extraFn,mechLabel,first){if(!(items||[]).length)return el2('p',null,'');
   const mech=items.some(a=>a.mechanism);
-  return SBE_TABLE(mech?['הפעילות','מה עושים',mechLabel||'תרומה לחוסן החברתי']:['הפעילות','מה עושים'],items.map(a=>{const t=el2('div');t.appendChild(el2('div','rt-title',a.title||''));const tags=el2('div','act-tags');
+  return SBE_TABLE(mech?[first||'הפעילות','מה עושים',mechLabel||'תרומה לחוסן החברתי']:[first||'הפעילות','מה עושים'],items.map(a=>{const t=el2('div');t.appendChild(el2('div','rt-title',a.title||''));const tags=el2('div','act-tags');
     if(a.game)tags.appendChild(el2('span','act-tag game','🎲 משחק חברתי'));if(a.kind)tags.appendChild(el2('span','act-tag kind',a.kind));if(a.circle)tags.appendChild(el2('span','act-tag circle',a.circle));
     const x=extraFn?extraFn(a):'';if(x)tags.appendChild(el2('span','act-tag',x));if(tags.childNodes.length)t.appendChild(tags);
     return mech?[t,a.description||'',a.mechanism||null]:[t,a.description||''];}),'acts');}
-function domTable(items){if(!(items||[]).length)return el2('p',null,'—');return SBE_TABLE(null,items.map(it=>[it.domain||'',it.text||'']));}
+function domTable(items){if(!(items||[]).length)return el2('p',null,'');return SBE_TABLE(['התחום','מה רואים'],items.map(it=>[it.domain||'',it.text||'']));}
 function textList(items){
   const ul=el2('ul');
   (items||[]).forEach(it=>{const li=el2('li');if(it.domain){li.appendChild(el2('b',null,it.domain+': '));}li.appendChild(document.createTextNode(it.text||''));ul.appendChild(li);});
@@ -1241,29 +1240,31 @@ function summaryPlainText(c){
   L.push('','1. חוזקות הכיתה');
   (d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','1.1 פעילויות ותהליכים להעצמת החוזקות');(d.strengthActivities||[]).forEach(a=>L.push(act(a)));
-  L.push('','1.2 החוזקות כמנוף להתמודדות עם האתגרים');(d.leverage||[]).forEach(a=>L.push(act(a,a.from&&a.to?a.from+' ← '+a.to:'')));
-  L.push('','2. אתגרים','','2.1 האתגרים: כיווני צמיחה');(d.challenges||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
+  L.push('','1.2 חוזקות שעוזרות באתגרים');(d.leverage||[]).forEach(a=>L.push(act(a,a.from&&a.to?a.from+' ← '+a.to:'')));
+  L.push('','2. אתגרים','','2.1 מה אפשר לחזק');(d.challenges||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','2.2 פעילויות ותהליכים להתמודדות');(d.challengeActivities||[]).forEach(a=>L.push(act(a,a.for)));
   if((d.environment||[]).length){L.push('','3. עיצוב סביבת הכיתה');d.environment.forEach(x=>L.push('• '+x.title+(x.for?' ['+x.for+']':'')+'\n  '+x.description));}
   if((d.other||[]).length){L.push('','4. המלצות נוספות');d.other.forEach(x=>L.push('• '+x.title+'\n  '+x.description));}
+  if((d.conversations||[]).length){L.push('','5. שיחות מומלצות');d.conversations.forEach(x=>L.push('• שיחה עם '+(x.with||'')+'\n  מטרה: '+(x.goal||'')+'\n  איפה ומתי: '+(x.setting||'')+'\n  פתיחה: '+(x.opening||'')+'\n  שאלות המשך: '+(x.followups||[]).join(' / ')+'\n  סיום: '+(x.closing||'')));}
+  if((d.plan||[]).length){L.push('','6. תוכנית צעדים');d.plan.forEach(x=>L.push('• '+x.when+': '+x.what+(x.who?'\n  מי אחראי/ת: '+x.who:'')+(x.update?'\n  איך מעדכנים: '+x.update:'')));}
   return L.join('\n');
 }
 
 function renderSummary(){
   const cfg=loadCfg();const box=document.getElementById('summary-content');
-  if(!cfg){box.innerHTML='<div class="empty">הגדר/י כיתה תחילה.</div>';return;}
+  if(!cfg){box.innerHTML='<div class="empty">כדי להתחיל, אפשר להגדיר כיתה.</div>';return;}
   if(!RESP.length){box.innerHTML='<div class="empty">עדיין אין תשובות. הסיכום יופק אחרי שייאספו תשובות.</div>';return;}
   box.textContent='';
   box.insertAdjacentHTML('afterbegin',roundBar());
   const cached=loadSummaryCache(cfg);
   const head=el2('div','card no-print');
   head.appendChild(el2('h2',null,'סיכום והמלצות למחנך/ת'));
-  head.appendChild(el2('p',null,'המודל מנתח את הממצאים ומציע: חוזקות הכיתה ואיך להעצים אותן ולהשתמש בהן כמנוף, אתגרים בניסוח אופטימי עם פעילויות, תהליכים ומשחקים חברתיים, עיצוב סביבת הכיתה והמלצות נוספות, בדגש על עבודת צוות ומנגנונים חברתיים, בהתאמה לשכבת הגיל.'));
+  head.appendChild(el2('p',null,'חוזקות הכיתה ואיך להעצים אותן ולהשתמש בהן כמנוף, אתגרים בניסוח אופטימי עם פעילויות, תהליכים ומשחקים חברתיים, עיצוב סביבת הכיתה והמלצות נוספות, בדגש על עבודת צוות ומנגנונים חברתיים, בהתאמה לשכבת הגיל.'));
   const acts=el2('div','sum-actions');
   const gen=el2('button','btn',SUM_BUSY?'מפיק את הסיכום... (עד כ-5 דקות)':cached?'הפקה מחדש':'הפקת סיכום והמלצות');
   gen.id='btn-sum-gen';gen.disabled=SUM_BUSY;gen.addEventListener('click',generateSummary);acts.appendChild(gen);
   if(cached&&!SUM_BUSY){
-    const pr=el2('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'סיכום והמלצות לכיתה'}):window.print());acts.appendChild(pr);
+    const pr=el2('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'סיכום והמלצות לכיתה',node:document.getElementById('summary-content')}):window.print());acts.appendChild(pr);
     const cp=el2('button','btn btn-ghost','העתקת הטקסט');cp.addEventListener('click',()=>{navigator.clipboard&&navigator.clipboard.writeText(summaryPlainText(cached)).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הטקסט',2000);}).catch(()=>{});});acts.appendChild(cp);
   }
   head.appendChild(acts);
@@ -1274,7 +1275,7 @@ function renderSummary(){
 
   const d=cached.doc||{};
   const card=el2('div','card sum-doc');
-  const t=el2('h2',null,'סיכום והמלצות: כיתה '+cached.cls);t.style.borderBottom='none';card.appendChild(t);
+  const t=el2('h2','no-print','סיכום והמלצות'+(cached.cls?': כיתה '+cached.cls:''));t.style.borderBottom='none';card.appendChild(t);
   card.appendChild(el2('p',null,'שכבה: '+cached.band+' · הופק: '+new Date(cached.at).toLocaleDateString('he-IL',{day:"2-digit",month:"2-digit",year:"2-digit"})+(cfg.demo?' · כיתת דמו':''))).style.cssText='font-size:.8rem;color:var(--muted);margin-top:-.4rem';
   if(d.intro)card.appendChild(el2('p','sum-intro',d.intro));
   if((d.progress||[]).length){
@@ -1286,11 +1287,11 @@ function renderSummary(){
   card.appendChild(domTable(d.strengths));
   card.appendChild(el2('h3',null,'1.1 פעילויות ותהליכים להעצמת החוזקות'));
   card.appendChild(actTable(d.strengthActivities));
-  card.appendChild(el2('h3',null,'1.2 החוזקות כמנוף להתמודדות עם האתגרים'));
+  card.appendChild(el2('h3',null,'1.2 חוזקות שעוזרות באתגרים'));
   card.appendChild(actTable(d.leverage,a=>a.from&&a.to?a.from+' ← '+a.to:''));
 
   card.appendChild(el2('h2',null,'2. אתגרים'));
-  card.appendChild(el2('h3',null,'2.1 האתגרים: כיווני צמיחה'));
+  card.appendChild(el2('h3',null,'2.1 מה אפשר לחזק'));
   card.appendChild(domTable(d.challenges));
   card.appendChild(el2('h3',null,'2.2 פעילויות ותהליכים להתמודדות'));
   card.appendChild(actTable(d.challengeActivities,a=>a.for));
@@ -1298,14 +1299,19 @@ function renderSummary(){
   // סיכום שהופק לפני שנוספו הסעיפים האלה — בלי כותרות ריקות
   if((d.environment||[]).length){
     card.appendChild(el2('h2',null,'3. עיצוב סביבת הכיתה'));
-    card.appendChild(actTable(d.environment,a=>a.for));
+    card.appendChild(actTable(d.environment,a=>a.for,null,'ההמלצה'));
   }
   if((d.other||[]).length){
     card.appendChild(el2('h2',null,'4. המלצות נוספות'));
-    card.appendChild(actTable(d.other));
+    card.appendChild(actTable(d.other,null,null,'ההמלצה'));
   }
+  // שיחה ותוכנית צעדים עם אחריות (12/10/2026, בדיקת הלקוחה)
+  if((d.conversations||[]).length){card.appendChild(el2('h2',null,'5. שיחות מומלצות והנחיות לשיחה'));
+    card.appendChild(SBE_TABLE(['עם מי ומטרה','איפה ומתי','איך פותחים','שאלות המשך','איך מסיימים'],d.conversations.map(x=>[(x.with||'')+(x.goal?': '+x.goal:''),x.setting||'',x.opening||'',(x.followups||[]).join('\n'),x.closing||'']),'plan-t'));}
+  if((d.plan||[]).length){card.appendChild(el2('h2',null,'6. תוכנית צעדים'));
+    card.appendChild(SBE_TABLE(['מתי','מה עושים','מי אחראי/ת','איך מעדכנים את כולם'],d.plan.map(x=>[x.when||'',x.what||'',x.who||'',x.update||'']),'plan-t'));}
 
-  card.appendChild(el2('p',null,'הסיכום הופק על ידי מודל שפה על סמך תוצאות השאלון בלבד. הוא נקודת פתיחה לחשיבה ולשיחה עם הצוות, ולא מחליף שיקול דעת מקצועי.')).style.cssText='font-size:.78rem;color:var(--muted);margin-top:1.2rem';
+  card.appendChild(el2('p',null,'הסיכום הוא נקודת פתיחה לחשיבה ולשיחה עם הצוות, ולא מחליף שיקול דעת מקצועי.')).style.cssText='font-size:.78rem;color:var(--muted);margin-top:1.2rem';
   box.appendChild(card);
 }
 

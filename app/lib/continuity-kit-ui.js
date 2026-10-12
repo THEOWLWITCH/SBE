@@ -144,6 +144,12 @@
     const none = el('label', 'none no-print'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!S.local.redNone;
     cb.addEventListener('change', () => { S.local.redNone = cb.checked; save(); }); none.append(cb, document.createTextNode(' אין כרגע מידע חשוב לרשום כאן'));
     red.appendChild(none); root.appendChild(red);
+    // בקצרה (12/10/2026, בדיקת הלקוחה): גם לתיק השגרה, לא רק להצטרפות
+    const sm = k.summary || {};
+    if (sm.best || sm.gap || sm.calm) {
+      root.appendChild(el('h3', null, 'בקצרה: רציפות כש' + (S.form.receiver || 'מישהי אחרת') + ' נכנסת לתפקיד'));
+      root.appendChild(window.SBE_TABLE(null, [['מהי רציפות מיטבית', txt(sm.best)], ['כשמשהו חסר או לא עובד', txt(sm.gap)], ['איך יוצרים שלווה, למי שבכיתה ולמי שמצטרף/ת', txt(sm.calm)]].filter((r) => r[1]), 'kit-t'));
+    }
     head(root, 'opening'); root.appendChild(window.SBE_TABLE(null, (k.opening || []).map((r) => [txt(r.h), txt(r.t)]), 'kit-t'));
     const model = el('div', 'model'); root.appendChild(model);
     head(model, 'routines'); model.appendChild(T('routines', (k.routines || []).map((r) => [txt(r.name), txt(r.when), txt(r.what), txt(r.helpers)])));
@@ -155,7 +161,7 @@
     }
     if ((k.procedures || []).length) {
       head(model, 'procedures');
-      model.appendChild(T('procedures', k.procedures.map((p) => { let a = ''; if (/^https?:\/\//.test(p.link || '')) { a = el('a', null, 'פתיחה'); a.href = p.link; a.target = '_blank'; a.rel = 'noopener'; } return [txt(p.name), txt(p.what), a]; })));
+      model.appendChild(T('procedures', k.procedures.map((p) => { let a = ''; if (/^https?:\/\//.test(p.link || '')) { a = el('a', null, p.link); a.href = p.link; a.target = '_blank'; a.rel = 'noopener'; } return [txt(p.name), txt(p.what), a]; })));
     }
     head(root, 'plans'); root.appendChild(editTable('plans', C.SECTIONS.plans.cols, { area: [1], add: 'הוספת מקצוע או תחום', empty: 'מה לומדים החודש בכל מקצוע, ואיפה החומר. זה עוזר גם להכין משימות ללמידה מרחוק.' }));
     root.appendChild(sensBlock('individual', editTable('individual', C.SECTIONS.individual.cols, { sens: true, area: [1], add: 'הוספת מענה פרטני' })));
@@ -209,6 +215,7 @@
   function renderLetter() {
     const box = el('div', 'letter');
     const v = S.local.letter, grid = el('div', 'grid2 no-print');
+    box.appendChild(el('p', 'hint no-print', 'המחליפה ממלאת רק את השדות, והמכתב מתעדכן.'));
     const out = el('div', 'talk letter-out');
     const update = () => { out.textContent = C.fillLetter(txt(S.emerg.parentLetter), v); };
     C.LETTER_FIELDS.forEach((f) => {
@@ -237,6 +244,7 @@
     }
     const k = S.emerg;
     if (window.SBE_REFS) SBE_REFS.begin(SRC, 'resilience-advisor-sources.html');
+    root.appendChild(el('p', 'sub', 'הרציפות בחירום היא של הכיתה: הצוותים, שרשרת הקשר והמשימות פועלים גם כשאין שיעור, עם המחנכת או עם מי שמחליפה אותה.'));
     head(root, 'readiness'); root.appendChild(renderReadiness());
     head(root, 'teams', '🔒 במכשיר בלבד'); root.appendChild(renderTeams());
     head(root, 'teamCard'); const card = el('ol', 'teamcard'); C.TEAM_QUESTIONS.forEach((q) => card.appendChild(el('li', null, q))); root.appendChild(card);
@@ -298,14 +306,14 @@
   // ── הצטרפות וחזרה לקבוצה (10/10/2026): תלמיד/ה חדש/ה, חזרה אחרי היעדרות מכל סיבה, או כל הכיתה חוזרת ──
   function renderJoin() {
     const J = S.join, root = el('div', 'kit join');
-    root.appendChild(el('p', 'sub', 'מסלול קצר למי שמצטרף או חוזר: מידע שימושי, דרך כניסה לבחירה, משימה ראשונה ותפקידי עמיתים מתחלפים. אחרי כמה מפגשים בודקים מה להתאים.'));
-    const form = el('div', 'grid2');
+    root.appendChild(el('p', 'sub', 'הרציפות כאן היא של התלמידים. מסלול קצר למי שמצטרף/ת או חוזר/ת: מידע שימושי, דרך כניסה לבחירה, משימה ראשונה ותפקידי עמיתים מתחלפים. אחרי כמה מפגשים בודקים מה להתאים.'));
+    const form = el('div', 'grid2 no-print');
     C.JOIN_FIELDS.forEach((f) => {
       const box = el('div', 'f'), l = el('label', null, f.l); if (f.main) l.appendChild(el('span', 'main-tag', 'שדה עיקרי')); box.appendChild(l);
       let i; if (f.type === 'select') { i = el('select'); i.appendChild(new Option('בחירה…', '')); f.opts.forEach((o) => i.appendChild(new Option(o, o))); } else { i = el('textarea'); i.rows = 2; }
       if (f.ph) i.placeholder = f.ph; i.value = J.form[f.k] || ''; i.setAttribute('aria-label', f.l);
       const keep = () => { J.form[f.k] = i.value; save(); }; i.addEventListener('input', keep); i.addEventListener('change', keep);
-      box.appendChild(i); (f.type === 'area' ? root : form).appendChild(box); if (f.k === 'away') root.appendChild(form);
+      box.classList.add('no-print'); box.appendChild(i); (f.type === 'area' ? root : form).appendChild(box); if (f.k === 'away') root.appendChild(form);
     });
     const err = el('p', 'err'); err.hidden = true; const wait = el('div', 'wait'); wait.hidden = true;
     const go = btn(J.kit ? 'הכנה מחדש' : 'הכנת ערכת ההצטרפות', J.kit ? 'btn btn-ghost sm' : 'btn', async () => {
@@ -322,6 +330,12 @@
     root.append(go, wait, err);
     const k = J.kit; if (!k) return root;
     if (window.SBE_REFS) SBE_REFS.begin(SRC, 'resilience-advisor-sources.html');
+    // בקצרה: רציפות מיטבית, מה עושים כשיש פער, ואיך מייצרים שלווה (12/10/2026, משוב)
+    const sm = k.summary || {};
+    if (sm.best || sm.gap || sm.calm) {
+      root.appendChild(el('h3', null, 'בקצרה: רציפות לתלמידים שמצטרפים או חוזרים'));
+      root.appendChild(window.SBE_TABLE(null, [['מהי רציפות מיטבית', txt(sm.best)], ['כשמשהו חסר או לא עובד', txt(sm.gap)], ['איך יוצרים שלווה, למי שבכיתה ולמי שמצטרף/ת', txt(sm.calm)]].filter((r) => r[1]), 'kit-t'));
+    }
     // תיק כניסה קבוצתי: נשמר ומתעדכן לפעם הבאה
     root.appendChild(el('h3', null, 'תיק כניסה קבוצתי')); root.appendChild(el('p', 'sub', 'מידע שימושי שהקבוצה מתחזקת ומעדכנת. נשאר לפעם הבאה שמישהו מצטרף.'));
     root.appendChild(etable(['הנושא', 'מה חשוב לדעת'], J.info, 'הוספת פריט'));
@@ -332,9 +346,9 @@
     root.appendChild(el('h3', null, 'המשימה הראשונה'));
     root.appendChild(window.SBE_TABLE(null, [['מה עושים', txt(k.first.task)], ['עם מי', txt(k.first.with)], ['מתי', txt(k.first.when)]].filter((r) => r[1]), 'kit-t'));
     if ((k.roles || []).length) { root.appendChild(el('h3', null, 'תפקידי עמיתים מתחלפים')); root.appendChild(window.SBE_TABLE(['התפקיד', 'מה עושים', 'מתי מתחלפים'], k.roles.map((x) => [txt(x.role), txt(x.does), txt(x.rotate)]), 'kit-t')); }
-    if (k.group) { root.appendChild(el('h3', null, 'מה אומרים לקבוצה')); root.appendChild(window.SBE_TABLE(null, [['מה אומרים (רק מה שהותר לשתף)', txt(k.group.say)], ['איך מקבלים את המצטרף/ת', txt(k.group.welcome)]].filter((r) => r[1]), 'kit-t')); }
+    if (k.group) { root.appendChild(el('h3', null, 'מה אומרים לקבוצה')); root.appendChild(window.SBE_TABLE(null, [['מה אומרים (רק מה שהוסכם לשתף)', txt(k.group.say)], ['איך מקבלים את המצטרף/ת', txt(k.group.welcome)]].filter((r) => r[1]), 'kit-t')); }
     root.appendChild(el('h3', null, 'לוח לשבועיים'));
-    root.appendChild(window.SBE_TABLE(['מתי', 'מה קורה', 'מי אחראי/ת', 'קרה'], (k.board || []).map((x, i) => { const c = el('input'); c.type = 'checkbox'; c.checked = !!J.done[i]; c.setAttribute('aria-label', 'קרה: ' + txt(x.what)); c.addEventListener('change', () => { J.done[i] = c.checked; save(); }); return [txt(x.day), txt(x.what), txt(x.who), c]; }), 'kit-t'));
+    root.appendChild(window.SBE_TABLE(['מתי', 'מה קורה', 'מי אחראי/ת', 'בוצע'], (k.board || []).map((x, i) => { const c = el('input'); c.type = 'checkbox'; c.checked = !!J.done[i]; c.setAttribute('aria-label', 'קרה: ' + txt(x.what)); c.addEventListener('change', () => { J.done[i] = c.checked; save(); }); return [txt(x.day), txt(x.what), txt(x.who), c]; }), 'kit-t'));
     if (k.check) {
       root.appendChild(el('h3', null, 'בדיקה אחרי כמה מפגשים'));
       const d = el('div', 'f no-print'); d.appendChild(el('label', null, 'מתי בודקים')); const di = el('input'); di.type = 'date'; di.value = J.checkWhen || ''; di.addEventListener('change', () => { J.checkWhen = di.value; save(); }); d.appendChild(di); root.appendChild(d);
@@ -367,7 +381,7 @@
   }
   function printJoinCards() {
     const k = S.join.kit, out = el('div');
-    const card = el('div', 'rcard'); card.appendChild(el('h3', null, 'איך תרצה/י להצטרף?'));
+    const card = el('div', 'rcard'); card.appendChild(el('h3', null, 'איך תרצה.י להצטרף?'));
     (k.ways || []).forEach((x) => { const r = el('div', 'rcard-row'); r.appendChild(el('b', null, '☐ ' + txt(x.name))); r.appendChild(el('span', null, txt(x.how))); card.appendChild(r); });
     const f = el('div', 'rcard-row'); f.appendChild(el('b', null, 'המשימה הראשונה')); f.appendChild(el('span', null, txt(k.first.task))); card.appendChild(f); out.appendChild(card);
     (k.roles || []).forEach((x) => { const c = el('div', 'rcard'); c.appendChild(el('h3', null, txt(x.role))); [['מה עושים', x.does], ['מתי מתחלפים', x.rotate]].forEach(([l, v]) => { if (!v) return; const r = el('div', 'rcard-row'); r.appendChild(el('b', null, l)); r.appendChild(el('span', null, txt(v))); c.appendChild(r); }); out.appendChild(c); });
@@ -375,7 +389,7 @@
   }
   function renderUpdates() {
     const root = el('div', 'kit');
-    root.appendChild(el('p', null, 'כאן המחליפה כותבת בסוף כל יום מה היה ומה ממשיך. כך המורה הקבועה, ומי שתבוא אחריה, יודעות בדיוק איפה הכיתה עומדת.'));
+    root.appendChild(el('p', 'no-print', 'כאן המחליפה כותבת בסוף כל יום מה היה ומה ממשיך. כך המורה הקבועה, ומי שתבוא אחריה, יודעות בדיוק איפה הכיתה עומדת.'));
     const sec = el('section', 'sens'); head(sec, 'updates', '🔒 במכשיר בלבד');
     const form = el('div', 'grid2 no-print'), vals = {};
     [['d', 'תאריך', today()], ['a', 'מה היה היום'], ['b', 'מה חשוב לדעת'], ['c', 'מה ממשיך מחר']].forEach(([k, l, v]) => {
@@ -470,13 +484,19 @@
     const out = el('div');
     if (withSens) out.appendChild(el('p', 'sens-note', '🔒 מידע רגיש: לשמור בתיק סגור, ולא להעביר הלאה.'));
     document.querySelectorAll('#kit .pane').forEach((p) => {
-      const c = p.cloneNode(true); c.hidden = false;
+      let c = p.cloneNode(true); c.hidden = false;
+      // בנוהל העבודה מודפס רק הנוהל עצמו, לא הטופס (12/10/2026, בדיקת הלקוחה)
+      if (p.dataset.pane === 'proc') { const d = c.querySelector('.proc-doc'); if (!d) return; c = el('div'); c.appendChild(d); }
+      c.querySelectorAll('input[type=checkbox]').forEach((i) => i.replaceWith(el('span', 'val', i.checked ? '✓' : '☐')));
       c.querySelectorAll('input,textarea').forEach((i) => { const s = el('span', 'val', i.value || ''); i.replaceWith(s); });
       c.querySelectorAll('select').forEach((i) => { const o = i.options[i.selectedIndex]; i.replaceWith(el('span', 'val', o ? o.text : '')); });
       if (!withSens) c.querySelectorAll('.sens').forEach((x) => x.remove());
       c.querySelectorAll('.etable tbody tr').forEach((tr) => { if (![...tr.querySelectorAll('.val')].some((v) => v.textContent.trim())) tr.remove(); });
       c.querySelectorAll('.etable').forEach((t) => { if (!t.querySelector('tbody tr')) { const s = t.closest('section'); (s || t).remove(); } });
-      if (!c.textContent.trim()) return;
+      // חלונית שעוד לא הוכנה לא נכנסת להדפסה (12/10/2026, בדיקת הלקוחה)
+      if ((p.dataset.pane === 'join' && !(S.join && S.join.kit)) || (p.dataset.pane === 'emerg' && !S.emerg)) return;
+      const probe = c.cloneNode(true); probe.querySelectorAll('.no-print,button').forEach((x) => x.remove());
+      if (!probe.textContent.trim()) return;
       const h = el('h2', null, p.dataset.title); out.append(h, c);
     });
     return out;

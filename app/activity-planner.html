@@ -194,7 +194,7 @@ details.log summary{cursor:pointer;}
   resize:vertical;direction:rtl;min-height:38px;}
 .smartcheck{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);
   white-space:nowrap;padding-top:5px;cursor:pointer;}
-@media(max-width:480px){
+@media screen and (max-width:480px){
   .smartrow{grid-template-columns:32px 1fr;}
   .smartcheck{grid-column:2;justify-self:start;padding-top:0;}
 }
@@ -331,14 +331,14 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
 .flow{border-inline-start:3px solid var(--hair);padding-inline-start:12px;display:flex;flex-direction:column;gap:11px;}
 .flow-h{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:700;font-size:14.5px;}
 .pair{display:grid;grid-template-columns:1fr 150px;gap:9px;align-items:start;}
-@media(max-width:560px){.pair{grid-template-columns:1fr;}}
+@media screen and (max-width:560px){.pair{grid-template-columns:1fr;}}
 .subs-h{font-size:13.5px;font-weight:600;color:var(--muted);}
 .sub-row{display:grid;grid-template-columns:34px 1fr 118px auto;gap:6px;align-items:start;margin-bottom:6px;}
 .sub-row textarea,.sub-row input{width:100%;font-family:inherit;font-size:14.5px;color:var(--ink);background:var(--ground);
   border:1px solid var(--hair);border-radius:5px;padding:8px 10px;resize:vertical;direction:rtl;}
 .sub-row .snum{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);padding-top:10px;}
 .sub-row[data-state="proposal"] textarea,.sub-row [data-state="proposal"]{border-style:dashed;border-inline-start:3px solid var(--auto);color:var(--muted);}
-@media(max-width:560px){.sub-row{grid-template-columns:30px 1fr;} .sub-row input,.sub-row>button{grid-column:2;}}
+@media screen and (max-width:560px){.sub-row{grid-template-columns:30px 1fr;} .sub-row input,.sub-row>button{grid-column:2;}}
 .timechk{font-size:12.5px;padding:6px 10px;border-radius:5px;line-height:1.5;}
 .timechk.ok{background:var(--auto-soft);color:var(--auto);}
 .timechk.bad{background:var(--brick-soft);color:var(--brick);}
@@ -352,7 +352,7 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
 .diff .old{border-inline-end:1px solid var(--hair);}
 .diff .new{background:var(--auto-soft);}
 .diff .tag{display:block;font-size:11px;color:var(--muted);font-weight:600;margin-bottom:2px;}
-@media(max-width:560px){.diff .dc{grid-template-columns:1fr;} .diff .old{border-inline-end:none;border-bottom:1px solid var(--hair);}}
+@media screen and (max-width:560px){.diff .dc{grid-template-columns:1fr;} .diff .old{border-inline-end:none;border-bottom:1px solid var(--hair);}}
 
 @media print{
   .actions,.bar,.modepick,header,.banner,#navBar,#rptFab,.dlg-f{display:none!important;}
@@ -656,11 +656,11 @@ const IDEA_BANK = {
 // המפורש שלה: "השאלה היא תמיד כלפי הלומדים" (בניגוד לניסוח הכללי בתמונה
 // שהיא שלחה, "מה בדיוק צריך לעשות?"/"מה יקדם אותי למטרה שלי?" וכו').
 const SMART_ITEMS = [
-  { key:"S", letter:"S", label:"ספציפית ומדוייקת", ask:"מה בדיוק הלומדים ילמדו לדעת או לעשות?" },
-  { key:"M", letter:"M", label:"מדידה", ask:"איך תדעי שהלומדים השיגו את זה בפועל?" },
+  { key:"S", letter:"S", label:"ספציפית ומדויקת", ask:"מה בדיוק הלומדים ילמדו לדעת או לעשות?" },
+  { key:"M", letter:"M", label:"מדידה", ask:"איך יודעים שהלומדים השיגו את זה בפועל?" },
   { key:"A", letter:"A", label:"ברת השגה", ask:"האם זה בהישג ידם של הלומדים, ברמה ובזמן שיש להם?" },
   { key:"R", letter:"R", label:"רלוונטית", ask:"איך זה מקדם את הלומדים במטרת הלמידה הרחבה יותר? האם הפעילות מתאימה לאופי הלומדים, לגיל שלהם, למציאות שסביבם, ולמסגרת הזמן הנתונה?" },
-  { key:"T", letter:"T", label:"מחוייבת לזמנים", ask:"עד מתי הלומדים אמורים להשיג את זה?" },
+  { key:"T", letter:"T", label:"תחומה בזמן", ask:"עד מתי הלומדים אמורים להשיג את זה?" },
 ];
 function parseSmart(str) {
   if (!str) return {};
@@ -720,7 +720,7 @@ const GROUPS = [
       hint:"מוגדרת וניתנת לזיהוי בטקסט: מה המשתתפים ידעו/ירגישו/יוכלו לעשות בסופה" },
     { k:"smart", l:"ניסוח היעד לפי מודל S.M.A.R.T", req:1, type:"smart",
       example:"עד סוף השיעור כל הילדים יכירו את מגילת העצמאות של מדינת ישראל ויזכרו משמעות של סעיף אחד לפחות.",
-      hint:"מודל להציב מטרות בצורה חכמה. השאלה בכל שורה מופנית ללומדים, לא אלייך." },
+      hint:"חמש שאלות שעוזרות לנסח יעד ברור. התשובות מתארות מה הלומדים יעשו." },
   ]},
   { id:"env", title:"מעטפת", fields:[
     { k:"age", l:"קהל היעד", type:"select", other:true, opts:AGE_OPTS },
@@ -739,6 +739,7 @@ const GROUPS = [
     { k:"mainMin", l:"משך הפעילות המרכזית", placeholder:"לדוגמה: 20 דקות" },
     { k:"closing", l:"סיכום, כולל רפלקציה או הערכה", tall:1 },
     { k:"closingMin", l:"משך הסיכום", placeholder:"לדוגמה: 10 דקות" },
+    { k:"after", l:"אחרי המפגש", tall:1, hint:"מי עושה מה אחרי המפגש, ועד מתי. לא נספר בזמן המפגש" },
     { k:"outcome", l:"תוצר: פיזי או מופשט (רעיון, תובנה)" },
     { k:"movement", l:"שילוב תנועה משמעותי ורלוונטי", tall:1,
       hint:"איך התנועה קשורה למטרה עצמה, לא רק הפסקה בין קטעים" },
@@ -904,7 +905,7 @@ function render() {
       // סטטוס השדה (חובה / רשות-תמולא / רשות-לא-תמולא) חייב להופיע תמיד,
       // גם כשיש hint מותאם — ראו ההערה המלאה ב-input-screen.html (22/09/2026).
       if (f.req) lab.append(el("span",{class:"reqmark"}, " · שדה עיקרי"));
-      else if (f.noAutoFill) lab.append(el("span",{class:"hint"}, " · רשות — לא תמולא אוטומטית, אך המערכת תתחשב במה שתכתבי בה"));
+      else if (f.noAutoFill) lab.append(el("span",{class:"hint"}, " · רשות: לא מתמלא לבד. מה שכתוב כאן נכנס לתכנון."));
       else lab.append(el("span",{class:"hint"}, " · אפשר להשאיר ריק"));
       if (f.hint) lab.append(el("span",{class:"hint"}, " · " + f.hint));
       wrap.append(lab);
@@ -1462,8 +1463,8 @@ function buildDocView(d, creator) {
   const img = el("img"); img.src = document.getElementById("brandLogo").src;
   logoRow.append(img, el("b",{}, "Begood"));
   dv.append(logoRow);
-  dv.append(el("div", { class:"dv-by" }, "תוכנית פעילות · " + (creator || "—") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
-  dv.append(creditNode());
+  dv.append(el("div", { class:"dv-by no-print" }, ["תוכנית פעילות", creator].filter(Boolean).join(" · ") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
+  { const cn = creditNode(); cn.classList.add("no-print"); dv.append(cn); }
   dv.append(el("h2", {}, d.domain || "פעילות"));
   dv.append(el("div", { class:"dv-meta" }, [d.age, d.duration, approachList(d.approach).join(" + ")].filter(Boolean).join(" · ")));
   const srcLine = renderSourcesLine(d); if (srcLine) dv.append(srcLine);
@@ -1492,9 +1493,9 @@ function buildCardView(d, creator) {
   cv.append(el("h3", {}, "כרטיס תמציתי · " + (d.domain || "פעילות")));
   const ol = el("ol", { class:"cv-steps", style:"margin:0;padding-inline-start:18px" });
   if (d.opening) ol.append(el("li",{},"פתיחה" + (d.openingMin ? ` (${d.openingMin})` : "") + ": " + d.opening));
-  if (d.mainActivity) ol.append(el("li",{},"מרכזית" + (d.mainMin ? ` (${d.mainMin})` : "") + ": " + d.mainActivity));
+  if (d.mainActivity) ol.append(el("li",{},"פעילות מרכזית" + (d.mainMin ? ` (${d.mainMin})` : "") + ": " + d.mainActivity));
   if (d.closing) ol.append(el("li",{},"סיכום" + (d.closingMin ? ` (${d.closingMin})` : "") + ": " + d.closing));
-  cv.append(SBE_DOC.table([["מטרה", d.goal], ["לשים לב", d.specialNotes], ["שלבים", ol.childNodes.length ? ol : ""],
+  cv.append(SBE_DOC.table([["מטרה", d.goal], ["על הקבוצה", d.specialNotes], ["שלבים", ol.childNodes.length ? ol : ""],
     ["שילוב תנועה", d.movement], ["משאבים", d.resources]]));
   if (creator) cv.append(el("div",{style:"margin-top:6px;font-size:11px;color:#5C6771"}, creator));
   return cv;
@@ -1512,10 +1513,10 @@ async function synthesizeActivityNarrative(d, creator) {
       .map(([k, v]) => (FIELDS.get(k)?.l || k) + ": " + (k === "smart" ? smartLines(v) : v)).join("\n");
     const system = [ "אסור לכתוב שם של מחבר, מאמר, ספר, מחקר או שנת פרסום. אפשר להזכיר תיאוריה או גישה במילים. מקורות מגיעים רק מספריית המקורות המאומתת של המערכת.",
       "את כותבת מסמך תוכנית פעילות עבור מורה/מנחה, בעברית, מתוך שדות שמולאו במסך תכנון הפעילות של מערכת Begood. הקוראת תקרא אותו פעם אחת לפני הפעילות ותרגיש מוכנה.",
-      "התוצר הוא טקסט רציף — לא רשימת שדות, לא כותרות-משנה, לא תוויות ונקודתיים, לא \"S.M.A.R.T\" גלוי. ארבע פסקאות: (1) למה נבחרה הפעילות ומה המשמעות מאחוריה — המטרה והיעד משולבים כסיפור; (2) איך היא נראית בפועל מרגע הכניסה לחדר ועד הסיכום, עם משכי הזמן שזורים במשפטים (\"חמש הדקות הראשונות...\"); (3) למה גישת הלמידה, התנועה, דרכי ההבעה והטכנולוגיה משרתות את המטרה ולא רק מתלוות אליה; (4) פסקה קצרה בגוף שני למורה עם טיפ מעשי אחד שנגזר מהתוכן.",
+      "התוצר הוא טקסט רציף — לא רשימת שדות, לא כותרות-משנה, לא תוויות ונקודתיים, לא \"S.M.A.R.T\" גלוי. ארבע פסקאות: (1) למה נבחרה הפעילות ומה המשמעות מאחוריה — המטרה והיעד משולבים כסיפור; (2) מה המשתתפים ייקחו איתם בסוף, במשפט או שניים; (3) למה גישת הלמידה, התנועה, דרכי ההבעה והטכנולוגיה משרתות את המטרה ולא רק מתלוות אליה; (4) פסקה קצרה בגוף שני למורה עם טיפ מעשי אחד שנגזר מהתוכן.",
       "חוק הספציפיות: שם, מספר, חפץ, מקום. משפט שאפשר להעתיק לפעילות אחרת בלי לשנות מילה נפסל. אל תמציאי תוכן שלא נמסר; אם שדה חסר, אפשר לכתוב סביבו.",
       "בנוסף, רשימת \"מה להכין מראש\": לוח זמנים בשורה, מרחב, ציוד, ניסוחים שכדאי להכין מראש, 4-8 פריטים קצרים, זו הרשימה היחידה שנשארת רשימה.",
-      "בנוסף, \"flow\": מהלך המפגש לפי השדות פתיחה, פעילות מרכזית וסיכום שמולאו (ואם יש, משהו קצר שעושים אחרי המפגש). לכל שלב: phase (אחד מ: פתיחה, פעילות מרכזית, סיכום, אחרי המפגש; בפעילות המרכזית אפשר כמה שלבים ברצף), title (שם קצר), minutes (מספר), description (תיאור הפעילות: מי עושה, מה עושים, עם מה ומה יוצא בסוף), guide (הנחיה למורה: מה אומרת, ואילו שאלות שואלת את הקבוצה ובשביל מה), resources (עזרים ומשאבים לשלב, או מחרוזת ריקה). בלי להמציא תוכן שלא נמסר.",
+      "בנוסף, \"flow\": מהלך המפגש לפי השדות פתיחה, פעילות מרכזית וסיכום שמולאו (ואם יש, משהו קצר שעושים אחרי המפגש). לכל שלב: phase (אחד מ: פתיחה, פעילות מרכזית, סיכום, אחרי המפגש; בפעילות המרכזית אפשר כמה שלבים ברצף), title (שם קצר), minutes (מספר), description (תיאור הפעילות: מי עושה, מה עושים, עם מה ומה יוצא בסוף), guide (הנחיה למנחה: מה אומרים, ולכל שאלה מתי שואלים, מי שואל את מי ובשביל מה; בסיכום: שאלות לסיכום), resources (עזרים ומשאבים לשלב, או מחרוזת ריקה). בלי להמציא תוכן שלא נמסר.",
       "החזירי אך ורק JSON: {\"title\":\"כותרת קצרה לפעילות (לא שם המקצוע)\",\"paragraphs\":[\"...\",\"...\",\"...\",\"...\"],\"prepare\":[\"...\"],\"flow\":[{\"phase\":\"פתיחה\",\"title\":\"\",\"minutes\":5,\"description\":\"\",\"guide\":\"\",\"resources\":\"\"}]}",
     ].join("\n\n");
     const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 16000, 300000, true);
@@ -1532,14 +1533,14 @@ function buildNarrativeDocView(d, creator, narr) {
   const img = el("img"); img.src = document.getElementById("brandLogo").src;
   logoRow.append(img, el("b",{}, "Begood"));
   dv.append(logoRow);
-  dv.append(el("div", { class:"dv-by" }, "תוכנית פעילות · " + (creator || "—") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
-  dv.append(creditNode());
-  dv.append(el("h2", {}, narr.title || d.domain || "פעילות"));
+  dv.append(el("div", { class:"dv-by no-print" }, ["תוכנית פעילות", creator].filter(Boolean).join(" · ") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
+  { const cn = creditNode(); cn.classList && cn.classList.add("no-print"); dv.append(cn); }
+  dv.append(el("h2", { class:"no-print" }, narr.title || d.domain || "פעילות"));
   dv.append(el("div", { class:"dv-meta" }, [d.domain, d.age, d.duration, approachList(d.approach).join(" + ")].filter(Boolean).join(" · ")));
   const srcLine = renderSourcesLine(d); if (srcLine) dv.append(srcLine);
   // טבלאות (07/10/2026), כמו ברצף המפגשים: הפסקאות של המודל כשורות (כותרת | תוכן), ומהלך הפעילות בטבלה
   const str = (x) => (x == null ? "" : String(x)).trim();
-  const LBL = ["למה הפעילות הזאת", "איך זה נראה בפועל", "למה הגישה משרתת את המטרה", "טיפ למורה"];
+  const LBL = ["למה הפעילות הזאת", "מה המשתתפים ייקחו איתם", "למה הגישה משרתת את המטרה", "טיפ למורה"];
   const ul = (xs) => { const u = el("ul", { style:"margin:0;padding-inline-start:18px;" }); xs.forEach(x => u.append(el("li",{},x))); return u; };
   dv.append(SBE_DOC.table(narr.paragraphs.map((p, i) => [LBL[i] || "ועוד", p])
     .concat([["התוצר", d.outcome], ["מה להכין מראש", Array.isArray(narr.prepare) && narr.prepare.length ? ul(narr.prepare) : ""]])));
@@ -1548,7 +1549,7 @@ function buildNarrativeDocView(d, creator, narr) {
   let rows = Array.isArray(narr.flow) ? narr.flow.filter(r => r && (str(r.description) || str(r.guide))).map(r => ({
     phase: SBE_DOC.PHASES.includes(r.phase) ? r.phase : "פעילות מרכזית", title: str(r.title), minutes: num(r.minutes),
     desc: str(r.description), guide: str(r.guide), res: str(r.resources) })) : [];
-  if (!rows.length) rows = [["פתיחה", d.openingMin, d.opening], ["פעילות מרכזית", d.mainMin, d.mainActivity], ["סיכום", d.closingMin, d.closing]]
+  if (!rows.length) rows = [["פתיחה", d.openingMin, d.opening], ["פעילות מרכזית", d.mainMin, d.mainActivity], ["סיכום", d.closingMin, d.closing], ["אחרי המפגש", "", d.after]]
     .filter(r => str(r[2])).map(([phase, m, txt]) => ({ phase, title: "", minutes: num(m), desc: str(txt), guide: "", res: phase === "פעילות מרכזית" ? str(d.resources) : "" }));
   if (rows.length && str(d.resources) && !rows.some(r => r.res)) { const mr = rows.find(r => r.phase === "פעילות מרכזית") || rows[0]; mr.res = str(d.resources); }
   if (rows.length) {
@@ -1586,9 +1587,9 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   const dlgF = document.getElementById("dlgF");
   dlgF.textContent = "";
   const printBtn = el("button", { type:"button", class:"primary" }, "הדפסה / שמירה כ-PDF");
-  printBtn.addEventListener("click", () => { const h = document.createElement("h3"); h.textContent = "כרטיס תמציתי לפעילות עצמה";
+  printBtn.addEventListener("click", () => {
     SBE_DOC.print({ title: "תוכנית פעילות" + ((narr && narr.title) ? ": " + narr.title : (d.domain ? ": " + d.domain : "")),
-      subtitle: [creator, d.age, d.duration].filter(Boolean).join(" · "), nodes: [doc, h, card] }); });
+      subtitle: [creator, d.age, d.duration].filter(Boolean).join(" · "), nodes: [doc, card] }); });
   const saveTextParts = () => {
     const lines = ["תוכנית פעילות: " + ((narr && narr.title) || d.domain || ""), creator || "", ""];
     if (narr) {
@@ -1821,7 +1822,8 @@ function todayHe(){ return new Date().toLocaleDateString("he-IL",{day:"2-digit",
 function emptySub(){ return { t:"", min:"" }; }
 function emptySession(){
   return { smart:"", product:"", resources:"", duration:"", opening:"", openingMin:"",
-    main:"", mainMin:"", subs:[emptySub(), emptySub(), emptySub()], closing:"", closingMin:"" };
+    main:"", mainMin:"", subs:[emptySub(), emptySub(), emptySub()], closing:"", closingMin:"",
+    openingGuide:"", mainGuide:"", closingGuide:"", after:"" };
 }
 function emptySeq(){
   return { creator:"", date:todayHe(), framework:"", audience:"", ageRange:"", participants:"", space:"",
@@ -2000,7 +2002,7 @@ function mechanicalChecks(){
 // ── רכיבי שדה ──
 function statusLabel(kind){
   if (kind === "req") return el("span", { class:"reqmark" }, " · שדה עיקרי");
-  if (kind === "noauto") return el("span", { class:"hint" }, " · רשות — לא תמולא אוטומטית, אך המערכת תתחשב במה שתכתבי בה");
+  if (kind === "noauto") return el("span", { class:"hint" }, " · רשות: לא מתמלא לבד. מה שכתוב כאן נכנס לתכנון.");
   if (kind === "short") return el("span", { class:"hint" }, " · רשות: תושלם אם ריקה");
   return el("span", { class:"hint" }, " · אפשר להשאיר ריק");
 }
@@ -2279,9 +2281,12 @@ function sessionEl(i){
   flow.append(pair(
     tf("פתיחה", P + ".opening", { kind:"short", onInput:refreshHead }),
     tf("משך", P + ".openingMin", { kind:"short", single:true, placeholder:"10 דקות", onInput:refreshHead })));
+  // הנחיה למנחה לכל חלק, ו"אחרי המפגש" (12/10/2026: מהלך מפגש אחיד, שלוש עמודות)
+  flow.append(tf("הנחיה למנחה בפתיחה", P + ".openingGuide", { kind:"short", hint:"מה אומרים, אילו שאלות שואלים, מי שואל את מי ובשביל מה" }));
   flow.append(pair(
     tf("פעילות מרכזית", P + ".main", { kind:"short", hint:"תיאור כללי: הפירוט בתת-הפעילויות", onInput:refreshHead }),
     tf("משך", P + ".mainMin", { kind:"short", single:true, placeholder:"60 דקות", onInput:refreshHead })));
+  flow.append(tf("הנחיה למנחה בפעילות המרכזית", P + ".mainGuide", { kind:"short", hint:"מה אומרים, אילו שאלות שואלים, מי שואל את מי ובשביל מה" }));
 
   const subsBox = el("div");
   function buildSubs(){
@@ -2318,6 +2323,8 @@ function sessionEl(i){
   flow.append(pair(
     tf("סיכום", P + ".closing", { kind:"short", onInput:refreshHead }),
     tf("משך", P + ".closingMin", { kind:"short", single:true, placeholder:"15 דקות", onInput:refreshHead })));
+  flow.append(tf("הנחיה למנחה בסיכום", P + ".closingGuide", { kind:"short", hint:"מה אומרים, אילו שאלות שואלים, מי שואל את מי ובשביל מה" }));
+  flow.append(tf("אחרי המפגש", P + ".after", { kind:"short", hint:"מה קורה אחרי המפגש: מי עושה מה, ועד מתי. לא נספר בזמן המפגש" }));
   flow.append(timeLine);
   body.append(flow);
 
@@ -2392,7 +2399,7 @@ function renderSeq(){
   env.querySelector('input[type="text"]:not([placeholder])');
   const prefs = grp("העדפות", isOpen("prefs", false), [
     checklistF("סגנונות הוראה ופעילות שחשובים לך", "prefs", PREF_ITEMS, "seqPrefs",
-      { hint:"אפשר לסמן, והרחיבי בשורה שתיפתח", notePh:"הרחבה (לא חובה), לדוגמה: ישיבה במעגל, בלי שולחנות באמצע", addPh:"העדפה שאינה ברשימה: נשמרת לכולן" }),
+      { hint:"אפשר לסמן, והרחיבי בשורה שתיפתח", notePh:"הרחבה (רשות), לדוגמה: ישיבה במעגל, בלי שולחנות באמצע", addPh:"העדפה שאינה ברשימה: נשמרת לכולן" }),
   ]);
   prefs.dataset.g = "prefs";
   const limits = grp("מגבלות", isOpen("limits", false), [
@@ -2501,21 +2508,26 @@ function fmtDate(iso){
   return isNaN(d) ? str(iso) : d.toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
 }
 const DOC_CSS = `
-@page{size:A4;margin:24mm 24mm;}
+.ctx{font:12.5px Assistant,Arial,sans-serif;color:#2E5A7D;margin:0 0 6px}.ctx b{font-weight:700}
+@page{size:A4;margin:24mm 24mm;@bottom-center{content:"עמוד " counter(page) " מתוך " counter(pages);font:600 8.5pt Assistant,Arial,sans-serif;color:#5C6771}@bottom-right{content:"Begood · be-good.co.il";font:8pt Assistant,Arial,sans-serif;color:#8A949E}}
 *{box-sizing:border-box;}
 body{margin:0;background:#fff;color:#141C24;font-family:"Assistant","Segoe UI",Arial,sans-serif;font-size:14.5px;line-height:1.65;}
 article{max-width:760px;margin:0 auto;padding:34px 34px 26px;}
-.hd img{height:30px;display:block;margin-bottom:12px;}
-.kind{font:500 11px "IBM Plex Mono",monospace;letter-spacing:.14em;color:#5C6771;}
+.hd{border-top:5px solid #2E5A7D;border-bottom:1px solid #CDD3D8;padding:14px 0 12px;margin-bottom:18px;position:relative;}
+.hd::after{content:"";position:absolute;top:-5px;left:0;width:22%;height:5px;background:#2BA39C;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.hd img{height:52px;float:left;margin:0 0 6px 12px;}
+.kind{font:600 13px Assistant,Arial,sans-serif;color:#2E5A7D;}
 h1{font:900 30px/1.15 "Frank Ruhl Libre",Georgia,serif;margin:6px 0 4px;text-wrap:balance;}
 .subt{font-size:16px;color:#2E5A7D;font-weight:600;margin:0 0 4px;}
 .meta{font-size:12.5px;color:#5C6771;}
 .credit{font-size:11.5px;color:#5C6771;border-top:1px solid #CDD3D8;border-bottom:1px solid #CDD3D8;padding:6px 0;margin:14px 0 20px;}
-h2{font:700 19px "Frank Ruhl Libre",Georgia,serif;margin:26px 0 8px;padding-bottom:4px;border-bottom:2px solid #141C24;}
+h2{font:700 17px Assistant,Arial,sans-serif;color:#1E3F5A;margin:26px 0 8px;padding:2px 10px 2px 0;border-inline-start:4px solid #2BA39C;break-after:avoid;page-break-after:avoid;}
 h3{font:700 16.5px "Frank Ruhl Libre",Georgia,serif;margin:0 0 6px;display:flex;gap:10px;align-items:baseline;}
 h3 .t{font:500 12px "IBM Plex Mono",monospace;color:#5C6771;margin-inline-start:auto;}
 h4{font:700 14.5px "Frank Ruhl Libre",Georgia,serif;margin:14px 0 4px;}
 p{margin:0 0 10px;}
+p,li,td{text-align:justify;text-justify:inter-word;}
+table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,table tr>td:first-child:nth-last-child(n+3),table tr>td:first-child:nth-last-child(n+3) p,table tr>td:first-child:nth-last-child(n+3) li{text-align:start}table tr>td:first-child:nth-last-child(2),table tr>td:first-child:nth-last-child(2) p{text-align:start}
 .lbl{font-size:11.5px;font-weight:700;color:#5C6771;letter-spacing:.03em;margin:10px 0 2px;}
 ol,ul{margin:4px 0 8px;padding-inline-start:20px;}
 li{margin-bottom:3px;}
@@ -2557,13 +2569,17 @@ function docHeader(kind, title){
   const total = durs.length ? durs.reduce((a, b) => a + b, 0) : null;
   const meta = [str(seq.audience), str(seq.ageRange) && "גיל: " + str(seq.ageRange), str(seq.participants) && str(seq.participants) + " משתתפים",
     seq.sessions.length + " מפגשים", total ? "סה״כ " + fmtMin(total) : ""].filter(Boolean).join(" · ");
-  return `<div class="hd"><img src="${logo}" alt="Begood"><div class="kind">${esc(kind)}</div>
+  // שם הכלי ומטרתו מעל הכותרת, כמו בכל תוצר (12/10/2026, בדיקת הלקוחה)
+  const ctx = (window.SBE_DOC && SBE_DOC.ctxHTML) ? SBE_DOC.ctxHTML() : "";
+  return `<div class="hd"><img src="${logo}" alt="Begood">${ctx}<div class="kind">${esc(kind)}</div>
 <h1>${esc(title)}</h1>${subt ? `<p class="subt">${esc(subt)}</p>` : ""}<div class="meta">${esc(meta)}</div>
-<div class="meta">${esc(str(seq.creator) || "—")} · ${esc(fmtDate(seq.date))}</div></div>
-<div class="credit">${SBE_CREDIT_HTML} · ${esc(fmtDate(today()))}</div>`;
+<div class="meta">${esc([str(seq.creator), fmtDate(seq.date)].filter(Boolean).join(" · "))}</div></div>`;
 }
-function smartSentence(s){ return smartLines(s.smart); }
+// יעד המפגש: משפט אחד של פעולה ותוצר (S), לא חמשת רכיבי S.M.A.R.T (12/10/2026, בדיקת הלקוחה)
+function smartSentence(s){ return smartTexts(s)[0] || ""; }
 // attach: המקורות בתוך המסמך (09/10/2026: "רשימת המקורות לא תהיה פתוחה"). בלי attach הם רק בכפתור "📚 מקורות" בחלון התוצר.
+// לבדיקה ולמעבדת הדמו: מסמך הרצף כ-HTML
+window.sbeSeqDocHTML = (narr, attach) => seqDocHTML(narr, attach);
 function seqDocHTML(narr, attach){
   const title = str(seq.topic) || "תכנון רצף מפגשים";
   let h = docHeader("תכנון רצף מפגשים", title);
@@ -2587,24 +2603,25 @@ function seqDocHTML(narr, attach){
   if (filled.length) {
     h += `<h2>מבט על הרצף</h2><table><thead><tr><th>מפגש</th><th>יעד</th><th>משך</th><th>תוצר המפגש</th></tr></thead><tbody>`;
     filled.forEach(({ s, i }) => {
-      const goal = smartTexts(s)[0] || str(s.opening);
-      h += `<tr><td class="n">${i + 1}</td><td>${nl(goal)}</td><td class="n">${esc(str(s.duration) || "—")}</td><td>${nl(s.product)}</td></tr>`;
+      const goal = smartTexts(s)[0] || "";
+      h += `<tr><td class="n">${i + 1}</td><td>${nl(goal)}</td><td class="n">${esc(str(s.duration))}</td><td>${nl(s.product)}</td></tr>`;
     });
     h += `</tbody></table><h2>המפגשים</h2>`;
     // לכל מפגש: יעד, טבלת מהלך (שלב · זמן · מה עושים), וטבלת סיום (תוצר והערכה · משאבים ועזרים · מקורות)
     filled.forEach(({ s, i }) => {
       const rows = [];
-      if (str(s.opening)) rows.push(["פתיחה", s.openingMin, nl(s.opening)]);
+      if (str(s.opening) || str(s.openingGuide)) rows.push(["פתיחה", s.openingMin, nl(s.opening), s.openingGuide]);
       const subs = s.subs.filter(x => str(x.t));
       if (str(s.main) || subs.length) rows.push(["פעילות מרכזית", s.mainMin, (str(s.main) ? `<p>${nl(s.main)}</p>` : "") +
-        (subs.length ? `<ol>${subs.map(x => `<li>${nl(x.t)}${str(x.min) ? ` <span class="meta">(${esc(str(x.min))})</span>` : ""}</li>`).join("")}</ol>` : "")]);
-      if (str(s.closing)) rows.push(["סיכום", s.closingMin, nl(s.closing)]);
+        (subs.length ? `<ol>${subs.map(x => `<li>${nl(x.t)}${str(x.min) ? ` <span class="meta">(${esc(str(x.min))})</span>` : ""}</li>`).join("")}</ol>` : ""), s.mainGuide]);
+      if (str(s.closing) || str(s.closingGuide)) rows.push(["סיכום", s.closingMin, nl(s.closing), s.closingGuide]);
+      if (str(s.after)) rows.push(["אחרי המפגש", "", nl(s.after), ""]);
       h += `<section class="sess"><h3>מפגש ${i + 1}<span class="t">${esc(str(s.duration))}</span></h3>`;
       if (smartSentence(s)) h += `<p class="goal"><b>יעד המפגש:</b> ${nl(smartSentence(s))}</p>`;
-      // מהלך המפגש (08/10/2026): פתיחה · פעילות מרכזית · סיכום, כשורת כותרת לכל חלק; עמודות: תיאור הפעילות · עזרים ומשאבים
-      if (rows.length) { const hasRes = !!str(s.resources);
-        h += `<table class="flow"><thead><tr><th>תיאור הפעילות</th>${hasRes ? "<th>עזרים ומשאבים</th>" : ""}</tr></thead><tbody>${rows.map(([t, m, c]) =>
-          `<tr class="ph"><th colspan="${hasRes ? 2 : 1}">${t}${str(m) ? " · " + esc(str(m)) : ""}</th></tr><tr><td>${c}</td>${hasRes ? `<td>${t === "פעילות מרכזית" ? nl(s.resources) : "—"}</td>` : ""}</tr>`).join("")}</tbody></table>`; }
+      // מהלך המפגש (08/10/2026; 12/10/2026 הנחיה למנחה ואחרי המפגש): שורת כותרת לכל חלק; עמודות: תיאור הפעילות · הנחיה למנחה · עזרים ומשאבים
+      if (rows.length) { const hasRes = !!str(s.resources), hasG = rows.some(r => str(r[3])), nc = 1 + (hasG ? 1 : 0) + (hasRes ? 1 : 0);
+        h += `<table class="flow"><thead><tr><th>תיאור הפעילות</th>${hasG ? "<th>הנחיה למנחה (כולל השאלות)</th>" : ""}${hasRes ? "<th>עזרים ומשאבים</th>" : ""}</tr></thead><tbody>${rows.map(([t, m, c, g]) =>
+          `<tr class="ph"><th colspan="${nc}">${t}${str(m) ? " · " + esc(str(m)) : ""}</th></tr><tr><td>${c}</td>${hasG ? `<td>${nl(g)}</td>` : ""}${hasRes ? `<td>${t === "פעילות מרכזית" ? nl(s.resources) : ""}</td>` : ""}</tr>`).join("")}</tbody></table>`; }
       const ss = narr && narr.sessionSources ? narr.sessionSources[i + 1] : null;
       const end = [["תוצר המפגש והערכתו", str(s.product) ? nl(s.product) : ""], ["משאבים ועזרים", str(s.resources) && !rows.some(r => r[0] === "פעילות מרכזית") ? nl(s.resources) : ""], ["מקורות להרחבה", attach && ss && ss.length ? sourceList(ss) : ""]].filter(x => x[1]);
       if (end.length) h += `<table class="end"><thead><tr>${end.map(x => `<th>${x[0]}</th>`).join("")}</tr></thead><tbody><tr>${end.map(x => `<td>${x[1]}</td>`).join("")}</tr></tbody></table>`;
@@ -2651,17 +2668,17 @@ function reportHTML(facts, ai){
   let h = docHeader("דו״ח ניתוח · תכנון רצף מפגשים", title);
   const tag = { ok:"✓ נבדק", gap:"לתיקון", check:"לבדיקה" };
   // טבלאות (07/10/2026, "קו אחיד"): בדיקה · מה נמצא; קריטריון · מה עולה · הצעות; סיכום — כותרת | תוכן
-  h += `<h2>בדיקות מכניות</h2><p class="note">עובדות שהמערכת בודקת בעצמה: שדות, סכומי זמנים ואזכורים של דברים שהוגדרו כמגבלה. ״לבדיקה״ פירושו שנמצא משהו שכדאי לוודא, לא הכרעה.</p>`;
+  h += `<h2>בדיקה של השדות והזמנים</h2><p class="note">שדות, סכומי זמנים ואזכורים של דברים שהוגדרו כמגבלה. "לבדיקה" פירושו שנמצא משהו שכדאי לוודא, לא הכרעה.</p>`;
   const fx = facts.length ? facts : [{ type:"ok", text:"לא נמצאו פערים מכניים." }];
   h += `<table class="kv"><tbody>${fx.map(f => `<tr class="fact-row ${f.type}"><th>${tag[f.type]}</th><td>${esc(f.text)}</td></tr>`).join("")}</tbody></table>`;
   if (ai) {
-    h += `<h2>משוב מקצועי</h2><p class="note">קריאה מקצועית של המודל, על סמך התכנון כולו. ללא ציון מספרי.</p>`;
+    h += `<h2>משוב מקצועי</h2><p class="note">משוב לפי הקריטריונים, על סמך התכנון כולו. בלי ציון מספרי.</p>`;
     const crit = (ai.criteria || []);
     if (crit.length) {
       h += `<table class="crit-t"><thead><tr><th>הקריטריון</th><th>מה עולה מהתכנון</th><th>הצעות לשיפור</th></tr></thead><tbody>`;
       crit.forEach(c => {
         const na = c.relevant === false;
-        const sug = !na && Array.isArray(c.suggestions) && c.suggestions.length ? `<ul>${c.suggestions.map(x => `<li>${nl(x)}</li>`).join("")}</ul>` : "—";
+        const sug = !na && Array.isArray(c.suggestions) && c.suggestions.length ? `<ul>${c.suggestions.map(x => `<li>${nl(x)}</li>`).join("")}</ul>` : "";
         h += `<tr${na ? ' class="na"' : ""}><th>${esc(c.title)}${na ? `<span class="na-tag">לא רלוונטי לתכנון הזה</span>` : ""}</th><td>${str(c.assessment) ? nl(c.assessment) : "—"}</td><td>${sug}</td></tr>`;
       });
       h += `</tbody></table>`;
@@ -2696,7 +2713,7 @@ function preamble(p){
   p = p || seq;
   return [
     `את יועצת אקדמית ומקצועית בכירה בתחום "${str(p.domain) || "חינוך והוראה"}"${str(p.topic) ? `, בנושא "${str(p.topic)}"` : ""}, הפועלת בתוך מערכת Begood. את מציבה לעצמך רף גבוה: כל משפט ספציפי לתכנון הזה, משפט שאפשר להעתיק לתכנון אחר בלי לשנות בו מילה פסול.`,
-    "כתבי בעברית תקנית במשלב גבוה — בהירה, רהוטה ומדויקת. כשאת מתייחסת ללומדים, נסחי בלשון רבים או באופן נייטרלי מגדרית.",
+    "כתבי בעברית פשוטה, ישירה וברורה, במשפטים קצרים. כשאת מתייחסת ללומדים, נסחי בלשון רבים או באופן נייטרלי מגדרית.",
     "אסור לכתוב שם של מחבר, מאמר, ספר, מחקר או שנת פרסום. אפשר להזכיר תיאוריה או גישה במילים. מקורות מגיעים רק מספריית המקורות המאומתת של המערכת.",
     "התחשבי במלוא פרטי המעטפת (מסגרת, קהל יעד, גיל, מספר משתתפים, מרחב), בהעדפות ובמגבלות שהיוצרת ציינה — כסף, מקום, צורת ישיבה, טכנולוגיה שאינה זמינה, שיקולי דת או מסורת וכדומה. אל תציעי דבר שסותר מגבלה שצוינה.",
     (Array.isArray(p.approaches) && p.approaches.length)
@@ -2709,7 +2726,7 @@ function parseJSON(raw){
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   return JSON.parse(m[0]);
 }
-const SESSION_SCHEMA = "לכל מפגש: smart (אובייקט {S,M,A,R,T} של מחרוזות — יעד מדיד לפי S.M.A.R.T, מנוסח כלפי הלומדים), product (תוצר המפגש והערכתו), resources, duration, opening, openingMin, main (תיאור כללי של הפעילות המרכזית), mainMin, subs (מערך {t,min} של 2–4 תת-פעילויות), closing, closingMin. משכים כמחרוזת כמו \"15 דקות\".";
+const SESSION_SCHEMA = "לכל מפגש: smart (אובייקט {S,M,A,R,T} של מחרוזות — יעד מדיד לפי S.M.A.R.T, מנוסח כלפי הלומדים), product (תוצר המפגש והערכתו), resources, duration, opening, openingMin, main (תיאור כללי של הפעילות המרכזית), mainMin, subs (מערך {t,min} של 2–4 תת-פעילויות), closing, closingMin, openingGuide / mainGuide / closingGuide (הנחיה למנחה לכל חלק: מה אומרים, ולכל שאלה מי שואל את מי, מתי ובשביל מה; בסיכום שאלות לסיכום), after (אחרי המפגש: מי עושה מה ועד מתי). משכים כמחרוזת כמו \"15 דקות\".";
 const TIME_RULE = "חובה בכל מפגש: openingMin + mainMin + closingMin שווה בדיוק ל-duration, ו-mainMin שווה בדיוק לסכום ה-min של subs.";
 // רצפים ארוכים (14 מפגשים = סמסטר, עד 30) — השלמה ונוסח משופר רצים במנות של
 // CHUNK מפגשים לקריאה. כל קריאה רואה את התכנון כולו (כדי לשמור על ההדרגתיות),
@@ -2760,7 +2777,7 @@ async function aiFillRange(a, b, first){
   ].join("\n\n");
   // 20000/300 שניות למנה של עד 7 מפגשים, כולל חשיבה פנימית (thinking:adaptive
   // + effort גבוה בשרת המשותף). לכייל מול מודל אמיתי ברצף של 14 מפגשים.
-  return parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), CHUNK_TOKENS, CHUNK_TIMEOUT));
+  return parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), CHUNK_TOKENS, CHUNK_TIMEOUT, true));
 }
 async function aiFillAll(onStep){
   let total = 0;
@@ -2791,12 +2808,12 @@ async function aiImproveRange(a, b, first){
   const system = [preamble(),
     "שכתבי את תכנון רצף המפגשים המצורף לגרסה משופרת, שהיוצרת תוכל לעבור עליה ולערוך.",
     "אפשר לשמור על כוונת היוצרת, על מספר המפגשים ועל העובדות: creator, date, framework, audience, ageRange, participants, space, prefs, limits, domain, approaches, topic, courseLevel — ללא שינוי.",
-    "מותר ורצוי: לשפר ניסוח ועברית (משלב גבוה, בהירות, דיוק), לחדד את היעדים לפי S.M.A.R.T, לתקן אי-התאמות בזמנים, לחזק את ההדרגתיות בין המפגשים, להתאים פעילויות למגבלות ולהעדפות, ולהשלים שדות ריקים.",
+    "מותר ורצוי: לשפר ניסוח ועברית (פשוט, בהיר ומדויק), לחדד כל יעד למשפט קצר אחד של פעולה ותוצר, לתקן אי-התאמות בזמנים, לחזק את ההדרגתיות בין המפגשים, להתאים פעילויות למגבלות ולהעדפות, ולהשלים שדות ריקים.",
     `בקריאה הזו שפרי רק את ${rangeLabel(a, b)} (n=${a + 1} עד n=${b})` + (first ? ", וגם את goals (עד חמש מטרות: מותר לנסח מחדש אם זה מחדד אותן), finalProduct ו-assessment." : ". המפגשים האחרים מוצגים כהקשר, אפשר לשמור על ההדרגתיות מולם כפי שהם."),
     SESSION_SCHEMA, TIME_RULE,
     "החזירי אך ורק JSON: {\"plan\":{" + (first ? "\"goals\":[\"...\"],\"finalProduct\":\"...\",\"assessment\":\"...\"," : "") + "\"sessions\":[{\"n\":" + (a + 1) + ", ...כל שדות המפגש...}]},\"changes\":[{\"where\":\"מפגש " + (a + 1) + " · פתיחה\",\"why\":\"...\"}]} — changes: השינויים העיקריים בטווח הזה ולמה (עד 6).",
   ].join("\n\n");
-  const out = parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), CHUNK_TOKENS, CHUNK_TIMEOUT));
+  const out = parseJSON(await callAI(system, "התכנון:\n" + JSON.stringify(planForAI()), CHUNK_TOKENS, CHUNK_TIMEOUT, true));
   if (!out.plan || !Array.isArray(out.plan.sessions)) throw new Error("מבנה חסר");
   return out;
 }
@@ -2859,7 +2876,7 @@ async function aiAsk(q){
 }
 
 // ── מיזוג תוצאות המודל ──
-const S_KEYS = ["product", "resources", "duration", "opening", "openingMin", "main", "mainMin", "closing", "closingMin"];
+const S_KEYS = ["product", "resources", "duration", "opening", "openingMin", "main", "mainMin", "closing", "closingMin", "openingGuide", "mainGuide", "closingGuide", "after"];
 function mergeFill(res, a, b){
   let n = 0;
   if (a == null) { a = 0; b = seq.sessions.length; }
@@ -2898,7 +2915,8 @@ function improvedDiffs(imp){
   cmp("תוצר סופי", seq.finalProduct, imp.finalProduct);
   cmp("דרכי המדידה, ההערכה והמשוב", seq.assessment, imp.assessment);
   const L = { duration:"משך", opening:"פתיחה", openingMin:"משך הפתיחה", main:"פעילות מרכזית", mainMin:"משך הפעילות המרכזית",
-    closing:"סיכום", closingMin:"משך הסיכום", product:"תוצר והערכה", resources:"משאבים ועזרים" };
+    closing:"סיכום", closingMin:"משך הסיכום", product:"תוצר והערכה", resources:"משאבים ועזרים",
+    openingGuide:"הנחיה למנחה בפתיחה", mainGuide:"הנחיה למנחה בפעילות המרכזית", closingGuide:"הנחיה למנחה בסיכום", after:"אחרי המפגש" };
   imp.sessions.slice(0, seq.sessions.length).forEach((is, i) => {
     if (!is) return;
     const os = seq.sessions[i], n = i + 1, osm = parseSmart(os.smart);
@@ -3016,7 +3034,7 @@ document.getElementById("bSeqImprove").addEventListener("click", async (e) => {
   const diffs = improvedDiffs(out.plan);
   if (out.failedMsg) body.append(mockNote(`הנוסח המשופר נכתב עבור חלק מהמפגשים בלבד: ${out.missing} מפגשים לא קיבלו נוסח משופר (${out.failedMsg}). אפשר לאמץ את מה שנכתב ולנסות שוב.`));
   body.append(el("p", { class:"note", style:"margin-top:0" },
-    "הגרסה המשופרת מוצגת לצד הנוסח שלך, שדה-שדה. שום דבר לא השתנה בטופס עד שתבחרי לאמץ, ואחרי האימוץ אפשר לערוך כל שדה, או לבטל את האימוץ כולו."));
+    "הגרסה המשופרת מוצגת לצד הנוסח שלך, שדה-שדה. שום דבר לא השתנה בטופס עד שבוחרים לאמץ, ואחרי האימוץ אפשר לערוך כל שדה, או לבטל את האימוץ כולו."));
   if (Array.isArray(out.changes) && out.changes.length) {
     const ul = el("ul");
     out.changes.forEach(c => ul.append(el("li", {}, el("b", {}, str(c.where) + ": "), str(c.why))));
@@ -3107,7 +3125,7 @@ document.getElementById("sqAsk").addEventListener("click", async (e) => {
   try { a.textContent = str(await aiAsk(q)); setAIStatus("ok"); qi.value = ""; }
   catch (err) {
     console.warn("שאלה ליועצת לא זמינה:", err.message); setAIStatus("mock");
-    a.textContent = ""; a.append(mockNote("אין חיבור למודל כרגע: תשובה לשאלה חופשית דורשת מודל אמיתי. השאלה נשארה בתיבה, כדי שתוכלי לשלוח אותה שוב כשהשרת פועל."));
+    a.textContent = ""; a.append(mockNote("אין חיבור למודל כרגע: תשובה לשאלה חופשית דורשת מודל אמיתי. השאלה נשארה בתיבה, ואפשר לשלוח אותה שוב בעוד רגע."));
   } finally { e.target.disabled = false; e.target.textContent = old; }
 });
 
@@ -3271,7 +3289,11 @@ const SEQ_SAMPLE = {
       subs:[{t:"קריאה משותפת של הקטע הראשון, ועצירה אחרי כל משפט של ההורה: מה הוא מבקש, ומה אולי מתחת", min:"20 דקות"},
         {t:"עבודה בשלישיות על הקטע השני, עם טבלת ניתוח גלוי-סמוי", min:"25 דקות"},
         {t:"מליאה: כל שלישייה מציגה צורך אחד שזיהתה ואת המשפט שהסגיר אותו", min:"20 דקות"}],
-      closing:"חזרה למשפט שכל אחת רשמה בפתיחה: מה אולי היה מתחתיו? כתיבה אישית, בלי חובת שיתוף", closingMin:"15 דקות" },
+      closing:"חזרה למשפט שכל אחת רשמה בפתיחה: מה אולי היה מתחתיו? כתיבה אישית, בלי חובת שיתוף", closingMin:"15 דקות",
+      openingGuide:"המנחה מזמינה: \"נזכרו בשיחה אחת עם הורה שנשארה איתכן. כתבו משפט אחד שההורה אמר.\" אין שיתוף בשלב הזה.",
+      mainGuide:"אחרי כל משפט בקטע המנחה שואלת את המליאה: \"מה ההורה מבקש כאן?\" ו\"מה אולי עומד מאחורי זה?\", כדי לעבור מהגלוי אל הסמוי.",
+      closingGuide:"שאלות לסיכום: המנחה שואלת כל אחת בכתב, לעצמה: \"מה אולי היה מתחת למשפט שכתבת?\" ומזמינה מי שרוצה לשתף משפט אחד.",
+      after:"כל משתתפת מביאה למפגש הבא משפט אחד ששמעה מהורה השבוע, ומה היא חושבת שעמד מאחוריו." },
     { smart: smartJSON("כל משתתפת תפתח שיחה עם הורה כועס בסימולציה קצרה, ותשקף את הדאגה שמאחורי הכעס לפני שהיא מסבירה",
         "בכל סימולציה הצופה מסמנת אם השיקוף הגיע לפני ההסבר", "כן: הסימולציות קצרות (ארבע דקות) ומתקיימות בשלישיות תומכות",
         "זה הרגע שבו רוב השיחות הקשות נשברות", "עד סוף המפגש השני"),
@@ -3398,7 +3420,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
       <label>מה חסר, מה היה מבלבל, או הערה אחרת?</label>
       <textarea id="rptUsageNotes" placeholder="לא חובה"></textarea>
     </div>
-    <label>צילום מסך (לא חובה)</label>
+    <label>צילום מסך (רשות)</label>
     <input type="file" id="rptFile" accept="image/*">
   </div>
   <div class="rf">

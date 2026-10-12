@@ -102,7 +102,7 @@
         if (k === "desc" && r.title) { const b = document.createElement("b"); b.textContent = r.title + (r.minutes ? " (" + (typeof r.minutes === "number" ? r.minutes + " דק׳" : r.minutes) + ")" : ""); const d = document.createElement("div"); d.append(b); td.append(d); }
         const v = r[k];
         if (v instanceof Node) td.append(v); else if (has(v)) { const d = document.createElement("div"); d.style.whiteSpace = "pre-line"; d.textContent = String(v); td.append(d); }
-        if (!td.childNodes.length) td.textContent = "—";
+        
         tr.append(td);
       });
       tb.append(tr);
@@ -113,11 +113,15 @@
   const STYLE = `.kit-table{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:14.5px;line-height:1.6}
 .kit-table th,.kit-table td{border:1px solid #CDD3D8;padding:8px 10px;text-align:right;vertical-align:top}
 .kit-table tbody th{background:rgba(46,90,125,.08);width:22%;font-weight:700}
+/* יישור לשני הצדדים בכל התוצרים, גם בטבלאות (12/10/2026) */
+.kit-table td,.rtable td,.ktable td,.sbe-rich p,.sbe-rich li,.sbe-edit p,.sbe-edit li,.sbe-edit td{text-align:justify;text-justify:inter-word}
+/* תא צר (טבלה של שלוש עמודות ומעלה): יישור לימין, בלי רווחים גדולים בין המילים */
+table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,table tr>td:first-child:nth-last-child(n+3),table tr>td:first-child:nth-last-child(n+3) p,table tr>td:first-child:nth-last-child(n+3) li{text-align:start}table tr>td:first-child:nth-last-child(2),table tr>td:first-child:nth-last-child(2) p{text-align:start}
 .kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .kit-flow tr.ph th{background:#DCE7EF;color:#1E3F5A;text-align:right;font-size:15px;width:auto}
 .kit-flow td{width:33%}
 .kit-table .sbe-rich{font-size:14.5px;line-height:1.65}.kit-table .sbe-rich p:last-child,.kit-table .sbe-rich ul:last-child{margin-bottom:0}
-@media (max-width:640px){.kit-table,.kit-table tbody,.kit-table tr,.kit-table th,.kit-table td{display:block;width:auto}.kit-table tr{border:1px solid #CDD3D8;border-radius:8px;margin:8px 0;overflow:hidden}.kit-table th,.kit-table td{border:0}}
+@media screen and (max-width:640px){.kit-table,.kit-table tbody,.kit-table tr,.kit-table th,.kit-table td{display:block;width:auto}.kit-table tr{border:1px solid #CDD3D8;border-radius:8px;margin:8px 0;overflow:hidden}.kit-table th,.kit-table td{border:0}}
 .sbe-rich{line-height:1.75;font-size:15px}
 .sbe-rich h4{font-size:15.5px;margin:18px 0 6px;font-weight:800}
 .sbe-rich h4:first-child{margin-top:0}
@@ -145,7 +149,14 @@
   }
 
   // הלוגו מוטמע במסמך (data URL) — חלון הדפסה ריק לא תמיד טוען תמונות מכתובת.
+  // הלוגו נטען מראש כ-data URL כשהקובץ נטען, כדי שיופיע בכל PDF גם כשבדף אין תמונת לוגו (12/10/2026, בדיקת הלקוחה)
+  let LOGO_DATA = "";
+  try {
+    const u = new URL("assets/begood-logo.webp", document.baseURI.replace(/\/(products|lib)\/[^/]*$/, "/")).href;
+    fetch(u).then((r) => r.ok ? r.blob() : null).then((b) => { if (!b) return; const fr = new FileReader(); fr.onload = () => { LOGO_DATA = String(fr.result || ""); }; fr.readAsDataURL(b); }).catch(() => {});
+  } catch (e) {}
   function logoSrc() {
+    if (LOGO_DATA) return LOGO_DATA;
     const url = new URL("assets/begood-logo.webp", document.baseURI.replace(/\/products\/[^/]*$/, "/")).href;
     const img = [...document.images].find((i) => /begood-logo|alt="?Begood/i.test(i.src + ' alt="' + i.alt) && i.complete && i.naturalWidth);
     if (!img) return url;
@@ -162,12 +173,15 @@
   // כותרת + התוכן הקצר שאחריה עוטפים יחד ב-.keep (break-inside:avoid). תוכן ארוך — נשאר עם כותרתו לפחות בשורה הראשונה.
   function keepWithHeadings(root) {
     root.querySelectorAll("h2,h3,h4,.kit-h").forEach((h) => {
-      const nx = h.nextElementSibling; if (!nx || h.parentNode.classList.contains("keep")) return;
+      let nx = h.nextElementSibling; if (!nx || h.parentNode.classList.contains("keep")) return;
+      // הסבר קצר בין הכותרת לטבלה נשאר איתן (12/10/2026, בדיקת הלקוחה: שורה יתומה בראש עמוד)
+      const note = nx.matches("p") && (nx.textContent || "").length < 200 && nx.nextElementSibling && nx.nextElementSibling.matches("table,ul,ol,div") ? nx : null;
+      if (note) nx = note.nextElementSibling;
       const rows = nx.matches("table") ? nx.querySelectorAll("tr").length : 0;
       const items = nx.matches("ul,ol") ? nx.children.length : 0;
       const short = (nx.matches("table") && rows <= 7) || (nx.matches("ul,ol") && items <= 14) || (nx.matches("p,div") && (nx.textContent || "").length < 900);
       const wrap = document.createElement("div"); wrap.className = short ? "keep" : "keep-start";
-      h.parentNode.insertBefore(wrap, h); wrap.append(h); if (short) wrap.append(nx);
+      h.parentNode.insertBefore(wrap, h); wrap.append(h); if (note) wrap.append(note); if (short) wrap.append(nx);
     });
   }
 
@@ -190,21 +204,26 @@
   // כותרת שחוזרת בכל עמוד (12/10/2026: "במקרים שטבלאות נחתכות - הכותרת צריכה לחזור על עצמה בדף הבא"):
   // טבלה עם כותרות עמודה (thead) חוזרת עליהן בכל עמוד. טבלה בלי thead (כותרת | תוכן) שמעליה כותרת מקבלת
   // את הכותרת הזאת כשורת כותרת שחוזרת, והכותרת המקורית לא מודפסת פעמיים. שורה לא נחתכת באמצע.
-  const RH_CSS = "@media screen{thead.sbe-rh{display:none}}@media print{thead{display:table-header-group}tfoot{display:table-footer-group}tr{break-inside:avoid;page-break-inside:avoid}" +
-    "thead.sbe-rh th{background:none!important;color:#141C24!important;border:0!important;text-align:start!important;font-weight:700!important;font-size:1.05em!important;padding:4px 0 6px!important;width:auto!important}.sbe-rh-src{display:none!important}}";
+  const RH_CSS = "@media screen{thead.sbe-rh,tr.sbe-rh-row{display:none}}@media print{thead{display:table-header-group}tfoot{display:table-footer-group}tr{break-inside:avoid;page-break-inside:avoid}" +
+    "tr.sbe-rh-row th{background:none!important;color:#1E3F5A!important;border:0!important;text-align:start!important;font-weight:700!important;font-size:15.5px!important;padding:6px 10px 8px 0!important;width:auto!important;box-shadow:inset -4px 0 0 #2BA39C;-webkit-print-color-adjust:exact;print-color-adjust:exact}.sbe-rh-src{display:none!important}}";
   function repeatHeads(doc) {
     const body = doc && doc.body; if (!body) return;
     body.querySelectorAll("table").forEach((t) => {
-      if (t.tHead) return;
+      if (t.querySelector("tr.sbe-rh-row")) return;
       const rows = [...t.rows]; if (rows.length < 3) return; // טבלה קצרה לא נחתכת ממילא
       let node = t, h = t.previousElementSibling;
       while (!h && node.parentElement && node.parentElement !== body && node.parentElement.children.length === 1) { node = node.parentElement; h = node.previousElementSibling; }
-      if (!h || !/^H[2-6]$/.test(h.tagName) || !h.textContent.trim()) return;
+      // כותרת שנעטפה לפני ההדפסה (keepWithHeadings: .keep-start) נמצאת בסוף העטיפה שלפני הטבלה
+      if (h && h.classList && h.classList.contains("keep-start") && h.lastElementChild) h = h.lastElementChild;
+      const isHead = (x) => x && (/^H[2-6]$/.test(x.tagName) || (x.classList && (x.classList.contains("kit-h") || x.classList.contains("dt-cap"))));
+      if (!isHead(h) || !h.textContent.trim()) return; // בלי כותרת מעל: כותרות העמודה (thead) חוזרות לבד
       const cols = Math.max(1, ...rows.map((r) => [...r.cells].reduce((n, c) => n + (c.colSpan || 1), 0)));
-      const thead = doc.createElement("thead"); thead.className = "sbe-rh";
-      const tr = doc.createElement("tr"), th = doc.createElement("th");
-      th.colSpan = cols; th.textContent = h.textContent.replace(/\s+/g, " ").trim();
-      tr.appendChild(th); thead.appendChild(tr); t.insertBefore(thead, t.firstChild);
+      // שם הטבלה חוזר בראש כל עמוד (12/10/2026: "כותרת טבלה חוזרת בראש כל עמוד"), מעל כותרות העמודה אם יש
+      const tr = doc.createElement("tr"), th = doc.createElement("th"); tr.className = "sbe-rh-row";
+      th.colSpan = cols; th.textContent = h.textContent.replace(/\s+/g, " ").trim(); tr.appendChild(th);
+      let thead = t.tHead;
+      if (!thead) { thead = doc.createElement("thead"); thead.className = "sbe-rh"; t.insertBefore(thead, t.firstChild); }
+      thead.insertBefore(tr, thead.firstChild);
       h.classList.add("sbe-rh-src");
     });
     if (!doc.getElementById("sbe-rh-css")) { const st = doc.createElement("style"); st.id = "sbe-rh-css"; st.textContent = RH_CSS; (doc.head || body).appendChild(st); }
@@ -235,7 +254,7 @@ h1{font-size:26px}.hd img{height:44px}
     "leadership-advisor.html": ["נוגי", "יועצת למנהיגות תומכת חוסן: תמונת מצב והמלצות להנהלה ולצוותים"],
     "facilitation-advisor.html": ["ננה", "מהוראה להנחיה: הנחיית קבוצה שמקדמת חוסן חברתי"],
     "message-writer.html": ["כתיבה מקדמת חוסן", "הודעות ומכתבים לפי עשרת עקרונות השפה המחזקת"],
-    "continuity-kit.html": ["תיק רציפות", "תיק הפעלה קצר למי שתחליף אותך: שגרות, תפקידים וגיבוי, ומה מחליטים בעצמם"],
+    "continuity-kit.html": ["תיק רציפות", "רציפות בכיתה: תיק הפעלה למורה המחליפה, ומסלול הצטרפות וחזרה לתלמידים"],
     "routines-hub.html": ["מרכז שגרות ויוזמות חברתיות", "קבוצה מפעילה מנגנון חברתי קבוע: בוחרת פעולה, מאשרת אחריות, מנסה פעמיים ופותחת את ההסכם לשינוי"],
     "shared-dialogue-lab.html": ["מעבדת שיח וחקר משותף", "קבוצה חוקרת שאלה בתחום הדעת: בונה טענות, בודקת ראיות ומתקנת יחד, והמורה מאשרת"],
     "team-thinking.html": ["חשיבת צוות", "צוות חושב יחד על אתגר: כל הקולות, נימוקים בעד ונגד, פרגון, ומה הרווחנו מהחשיבה ביחד"],
@@ -271,7 +290,16 @@ h1{font-size:26px}.hd img{height:44px}
     return t ? `<div class="ctx"><b>${esc(t.name)}</b> · ${esc(t.purpose)}</div>` : "";
   }
   // דפים שמדפיסים את עצמם (פרקטי, נוגי, מיפוי חוסן חברתי): כותרת הקשר שמופיעה רק בהדפסה, ושם קובץ ברור
-  function printPage({ title }) {
+  // node (12/10/2026: "מעוצבים כמוצר למכירה בחנות"): התוצר מודפס במסמך ההדפסה המעוצב (לוגו, גופני המותג, מספרי עמודים),
+  // עם עיצוב הכלי, כמו כל שאר התוצרים. בלי node: הדפסת הדף עצמו, כמו קודם.
+  function printPage({ title, node }) {
+    if (node) {
+      const css = [...document.querySelectorAll("style")].map((x) => x.textContent).join("\n") +
+        "\nhtml,body{height:auto!important;overflow:visible!important}.no-print,.sbe-sysonly{display:none!important}" +
+        // בלי קופסאות אפורות בהדפסה (12/10/2026, בדיקת הלקוחה)
+        "\n.lens,.layers,.intro,.sum-intro,.rw-new,.act-r{background:none!important;border:0!important;padding:0!important;box-shadow:none!important}";
+      return print({ title, node, extraCss: css });
+    }
     const t = toolInfo();
     let head = document.getElementById("sbe-print-ctx");
     if (!head) {
@@ -289,12 +317,14 @@ h1{font-size:26px}.hd img{height:44px}
     setTimeout(back, 60000);
   }
 
-  function print({ title, subtitle, kind, node, nodes, inline = false, landscape = false, pocket = false }) {
+  // toHtml (12/10/2026: "ל PDF תגיע רק עריכה עם לוגו"): מחזיר את מסמך ההדפסה כטקסט במקום לפתוח חלון,
+  // כדי שמעבדת הדמו תשמור בדיוק את מה שהכלי מדפיס (לוגו, כותרת, תאריך ורק התוצר). extraCss: עיצוב הכלי, לפני עיצוב ההדפסה.
+  function print({ title, subtitle, kind, node, nodes, inline = false, landscape = false, pocket = false, toHtml = false, extraCss = "" }) {
     const parts = (nodes || [node]).filter(Boolean).map((n) => {
       const c = n.cloneNode(true);
       if (window.SBE_REFS && SBE_REFS.forPrint) SBE_REFS.forPrint(c); // מקורות: רק כשבחרו "צירוף המקורות לקובץ"
       else c.querySelectorAll(".sbe-refs:not(.attach)").forEach((x) => x.remove());
-      c.querySelectorAll("button,.sbe-edit-hint,.no-print,style,script").forEach((x) => x.remove());
+      c.querySelectorAll("button,.sbe-edit-hint,.no-print,style,script,.banner-mini,.savenote,.mock-note,.sbe-sysonly,[data-status-line],.sbe-peek").forEach((x) => x.remove());
       c.querySelectorAll("table.rtable").forEach((t) => t.classList.add("kit-table")); // טבלאות SBE_TABLE — אותו עיצוב בהדפסה
       [c, ...c.querySelectorAll("[contenteditable]")].forEach((x) => { x.removeAttribute("contenteditable"); x.removeAttribute("spellcheck"); x.classList.remove("sbe-edit"); });
       keepWithHeadings(c);
@@ -302,8 +332,10 @@ h1{font-size:26px}.hd img{height:44px}
     }).join("");
     const logo = logoSrc();
     const date = new Date().toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "2-digit" });
-    let w;
-    if (inline) {
+    let w, out = null;
+    if (toHtml) {
+      out = ""; w = { document: { write: (x) => { out += x; }, close() {} } };
+    } else if (inline) {
       // An authenticated export can finish after the browser's popup gesture expires.
       const preview = document.createElement("dialog");
       preview.setAttribute("aria-label", "תצוגה מקדימה להדפסה");
@@ -323,33 +355,42 @@ h1{font-size:26px}.hd img{height:44px}
     }
     if (!w) { alert("הדפדפן חסם את חלון ההדפסה. אפשר לאפשר חלונות קופצים לאתר ולנסות שוב."); return; }
     w.document.write(`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(fileTitle(title, undefined, kind))}</title>
-<style>
-@page{size:A4${landscape ? " landscape" : ""};margin:24mm 24mm}
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Frank+Ruhl+Libre:wght@700&display=swap">
+${extraCss ? "<style>" + extraCss + "</style>" : ""}<style>
+/* עיצוב של מוצר מוגמר (12/10/2026: "התוצרים ב PDF יהיו מעוצבים כמוצר למכירה בחנות"): גופני המותג, כותרת עם לוגו, מספרי עמודים */
+@page{size:A4${landscape ? " landscape" : ""};margin:24mm 24mm;
+  @bottom-center{content:"עמוד " counter(page) " מתוך " counter(pages);font:600 9pt Assistant,Arial,sans-serif;color:#5C6771}
+  @bottom-right{content:"Begood · be-good.co.il";font:9pt Assistant,Arial,sans-serif;color:#8A949C}}
 body{font-family:"Assistant","Segoe UI",Arial,sans-serif;color:#141C24;max-width:${landscape ? 1040 : 720}px;margin:24px auto;padding:0 16px;line-height:1.7;font-size:14.5px}
-.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #2E5A7D;padding-bottom:10px;margin-bottom:18px;gap:16px}
-.hd img{height:54px}
-.hd .dt{font-size:12.5px;color:#5C6771}
-.hd .ctx{font-size:13px;color:#2E5A7D;margin:0 0 4px}.hd .ctx b{font-weight:700}
-h1{font-size:22px;margin:0 0 4px;break-after:avoid}
-.sub{color:#5C6771;margin:0 0 18px;font-size:13.5px}
-h4,h3,h2{break-after:avoid;break-inside:avoid;font-size:15px;margin:18px 0 6px}
+.hd{display:flex;justify-content:space-between;align-items:center;border-top:5px solid #2E5A7D;border-bottom:1px solid #CDD3D8;padding:14px 0 12px;margin-bottom:22px;gap:16px;position:relative}
+.hd::after{content:"";position:absolute;top:-5px;left:0;width:22%;height:5px;background:#2BA39C;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.hd img{height:58px}
+.hd .dt{font-size:12.5px;color:#5C6771;margin-top:2px}
+.hd .ctx{font-size:12.5px;color:#2E5A7D;margin:0 0 4px;letter-spacing:.01em}.hd .ctx b{font-weight:700}
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:26px;line-height:1.25;color:#1E3F5A;margin:0 0 4px;break-after:avoid}
+.sub{color:#5C6771;margin:0 0 4px;font-size:13.5px}
+h4,h3,h2{break-after:avoid;break-inside:avoid;font-size:15.5px;margin:22px 0 8px;color:#1E3F5A}
+h2,h3,h4{padding-inline-start:10px;border-inline-start:4px solid #2BA39C}
 .keep{break-inside:avoid;page-break-inside:avoid}
 .keep-start+*{break-before:avoid;page-break-before:avoid}
 h2+table tr:first-child,h3+table tr:first-child{break-before:avoid}
 ul,ol{orphans:3;widows:3}
 p,li{orphans:3;widows:3}
-.draftbox,.rcard,.sbe-rich,.card,.act,.session-card,.step-card,.claims-box,li{break-inside:avoid}
+.draftbox,.rcard,.act,.session-card,.step-card,.claims-box,li{break-inside:avoid}
+/* כרטיסי המסך (רקע, מסגרת, ריפוד) לא עוברים להדפסה: מסמך אחד נקי */
+.card{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 6px!important;border-radius:0!important;break-inside:auto!important}
 .draftbox{white-space:pre-line;border:1px solid #CDD3D8;border-radius:6px;padding:12px 14px;margin-bottom:12px}
-.rcard{border:1px solid #CDD3D8;border-radius:8px;padding:12px 14px;background:#F3F6F8}
+.rcard{border:1px solid #CDD3D8;border-radius:8px;padding:12px 14px;background:none}
 .rcard-row{margin-bottom:8px}.rcard-row b{display:block;font-size:12px;color:#5C6771}
 .rcard-meta{font-size:12px;color:#5C6771;margin-bottom:8px}
 .sbe-rich h4{font-size:15px}
 .tree2-root,.tree2-row,.tree2-end{border:1px solid #CDD3D8;border-radius:6px;padding:8px 10px;margin-bottom:6px;break-inside:avoid}
 .tree2-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .kit-table{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:13px;line-height:1.5}
-.kit-table th,.kit-table td{border:1px solid #CDD3D8;padding:6px 8px;text-align:right;vertical-align:top}
-.kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700}
-.kit-table tbody th{background:#F3F6F8;width:18%;font-weight:700}
+.kit-table th,.kit-table td{border:1px solid #D5DCE2;padding:7px 9px;text-align:right;vertical-align:top}
+.kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.kit-table tbody th{background:#EEF3F7;width:18%;font-weight:700;color:#1E3F5A;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.kit-table tbody tr:nth-child(even) td{background:#FAFBFC;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .kit-table tr{break-inside:avoid}.kit-table thead{display:table-header-group}
 .kit-table p{margin:0 0 4px}.kit-table ul,.kit-table ol{margin:0;padding-inline-start:18px}
 .kit-facts tbody th{width:12%}.kit-facts td{width:38%}
@@ -359,19 +400,22 @@ p,li{orphans:3;widows:3}
 .kit-flow td{width:33%}.kit-flow tr.ph th{background:#DCE7EF;color:#1E3F5A;text-align:right;font-size:14px;width:auto}.kit-flow tr.ph{break-after:avoid;page-break-after:avoid}
 .kit-h{font-size:16px;color:#2E5A7D;margin:20px 0 4px}.kit-sub{margin:0 0 6px;font-size:13.5px}
 .kit-min,.kit-muted{color:#5C6771;font-size:12px}.kit-session{break-before:auto}
-.ft{margin-top:26px;border-top:1px solid #CDD3D8;padding-top:8px;font-size:11.5px;color:#5C6771}
+.ft{margin-top:28px;border-top:1px solid #CDD3D8;padding-top:8px;font-size:11.5px;color:#5C6771}@media print{.ft{display:none}}
 .bar{position:sticky;top:0;background:#fff;padding:8px 0;margin-bottom:10px;text-align:left}
+p,li,dd,blockquote,td:not(.n):not(.ck){text-align:justify;text-justify:inter-word}
+table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,table tr>td:first-child:nth-last-child(n+3),table tr>td:first-child:nth-last-child(n+3) p,table tr>td:first-child:nth-last-child(n+3) li{text-align:start}table tr>td:first-child:nth-last-child(2),table tr>td:first-child:nth-last-child(2) p{text-align:start}
 .bar button{font:inherit;font-weight:700;padding:7px 16px;border-radius:6px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;cursor:pointer}
 @media print{.bar{display:none}body{margin:0;max-width:none}}
 ${pocket ? POCKET_CSS : ""}</style></head><body>
-<div class="bar"><button onclick="window.print()">הדפסה / שמירה כ-PDF</button></div>
+${toHtml ? "" : '<div class="bar"><button onclick="window.print()">הדפסה / שמירה כ-PDF</button></div>'}
 <div class="hd"><div>${ctxHTML()}<h1>${esc(title)}</h1>${subtitle ? `<p class="sub">${esc(subtitle)}</p>` : ""}<div class="dt">${esc(date)}</div></div><img src="${logo}" alt="Begood"></div>
 ${parts}
 <div class="ft">הופק ב-Begood · be-good.co.il</div>
 <script>var relaxTall=${relaxTall.toString()};var BRK_CSS=${JSON.stringify(BRK_CSS)};var repeatHeads=${repeatHeads.toString()};var RH_CSS=${JSON.stringify(RH_CSS)};function sbeRelax(){try{repeatHeads(document)}catch(e){}relaxTall(document,{widthMm:${landscape ? 249 : 162},heightMm:${landscape ? 162 : 249}})}
-window.addEventListener("beforeprint",sbeRelax);${inline ? "window.addEventListener('load',sbeRelax);" : "window.onload=function(){sbeRelax();setTimeout(function(){window.print()},300)}"}<\/script>
+window.addEventListener("beforeprint",sbeRelax);${inline || toHtml ? "window.addEventListener('load',sbeRelax);" : "window.onload=function(){sbeRelax();setTimeout(function(){window.print()},300)}"}<\/script>
 </body></html>`);
     w.document.close();
+    if (toHtml) return out;
   }
 
   // גם בהדפסה ישירה מהדפדפן (Ctrl+P) בכל דף שטוען את הקובץ הזה

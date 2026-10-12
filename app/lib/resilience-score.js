@@ -128,7 +128,7 @@
       const gap     = vals.length >= 2 ? Math.max(...vals) - Math.min(...vals) : 0;
 
       const flags = [];
-      if (ds.capped) flags.push('פועל, ופוגע');
+      if (ds.capped) flags.push('יש גם התנהגות פוגעת');
       if (gap >= 30)  flags.push('פער בין הקבוצות'); // פער בין קבוצות הנשאלים (resilience-team.html)
       if (unk >= 0.34) flags.push('רבים אינם יודעים');
 

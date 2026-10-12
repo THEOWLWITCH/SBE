@@ -286,14 +286,14 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 </details>
 
 <details class="grp" open>
-  <summary>הנחיות המשימה / מחוון, לא חובה<span class="count" id="n-task"></span></summary>
+  <summary>הנחיות המשימה או המחוון (רשות)<span class="count" id="n-task"></span></summary>
   <div class="grp-b">
     <p class="note" data-info style="margin:0">קיבלת מהמרצה משימה, הנחיות או מחוון? אפשר להעלות או להדביק אותם כאן. הם <b>לא נבדקים כחלק מהעבודה</b>, הם המסגרת לבדיקה, בסוג המשוב "לפי הנחיות המנחה" או "משוב משולב" (בחירה למטה), המשוב יבדוק עד כמה העבודה עונה עליהן.</p>
     <div class="uploadbox" style="margin-bottom:0">
       <input type="file" id="taskFile" accept=".txt,text/plain,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,application/pdf">
       <p class="note" id="taskStatus" style="margin-top:8px;"></p>
     </div>
-    <textarea class="pastearea" id="taskText" maxlength="20000" style="min-height:140px" placeholder="אפשר להדביק כאן את הנחיות המשימה או את המחוון (לא חובה)..."></textarea>
+    <textarea class="pastearea" id="taskText" maxlength="20000" style="min-height:140px" placeholder="אפשר להדביק כאן את הנחיות המשימה או את המחוון (רשות)..."></textarea>
   </div>
 </details>
 
@@ -318,7 +318,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
         <input id="critNewTitle" maxlength="80" placeholder="הוספת קריטריון: כותרת (לדוגמה: השוואה בין מחקרים בסקירה)">
         <button type="button" id="critAddBtn">הוספה</button>
       </div>
-      <textarea id="critNewDetail" maxlength="400" placeholder="פירוט: מה הקריטריון בודק (לא חובה, עד 400 תווים)"></textarea>
+      <textarea id="critNewDetail" maxlength="400" placeholder="פירוט: מה הקריטריון בודק (רשות, עד 400 תווים)"></textarea>
       <div class="critadd-opts">
         <label for="critNewCat" style="font-weight:400">קטגוריה:</label>
         <select id="critNewCat"></select>
@@ -579,7 +579,7 @@ const RC_GHOST = [
   /\b(?:write|rewrite|compose|generate|draft)\b[^.]{0,40}\b(?:for me|my|the (?:section|chapter|paragraph|introduction|essay|summary|conclusion))\b/i,
 ];
 function rcGhostwrite(t){ const s = String(t || "").replace(/\s+/g, " "); return RC_GHOST.some(r => r.test(s)); }
-const GHOST_MSG = "הקריטריון לא התקבל: הכלי נותן משוב ולא כותב במקומך — זה העיקרון של מוכנות להגשה. אפשר לנסח קריטריון שמתאר מה לבדוק, למשל: \"האם הסקירה משווה בין מחקרים\" ולא \"אפשר לכתוב לי את הסקירה\".";
+const GHOST_MSG = "הקריטריון לא התקבל: הכלי נותן משוב ולא כותב במקום הכותב/ת. זה העיקרון של מוכנות להגשה. אפשר לנסח קריטריון שמתאר מה לבדוק, למשל: \"האם הסקירה משווה בין מחקרים\" ולא \"אפשר לכתוב לי את הסקירה\".";
 
 function token(){ try { return sessionStorage.getItem("sbe.session.token") || ""; } catch(e){ return ""; } }
 async function accessApi(body){
@@ -740,11 +740,11 @@ async function loadCommunity(){
 // ── סוג המשוב (02/10/2026): קריטריונים אקדמיים / משוב רך על סגנון, משלב וקוהרנטיות /
 // לפי הנחיות המנחה (שדה "הנחיות המשימה") / משולב — כל האפשרויות יחד.
 const FB_KINDS = [
-  { k:"criteria", t:"קריטריונים לכתיבה אקדמית", d:"משוב לפי הקריטריונים שתסמני למטה: הקבועים, שלך או מהקהילה." },
+  { k:"criteria", t:"קריטריונים לכתיבה אקדמית", d:"משוב לפי הקריטריונים שמסמנים למטה: הקבועים, שלך או מהקהילה." },
   { k:"style", t:"משוב רך: סגנון, משלב וקוהרנטיות", d:"משוב עדין שמתמקד באיך שהעבודה כתובה: סגנון וזרימה, משלב לשון, וקוהרנטיות (החיבור בין משפטים, פסקאות ורעיונות). אין צורך לסמן קריטריונים." },
   { k:"structure", t:"מבנה כללי, פסקאות ותחביר", d:"משוב על השלד של העבודה: המבנה הכללי (פתיחה, גוף, סיכום, פרקים וכותרות), בניית פסקאות, ותחביר (משפטים, פיסוק ומילות קישור). אין צורך לסמן קריטריונים." },
-  { k:"task", t:"לפי הנחיות המנחה", d:"משוב שבודק את העבודה מול ההנחיות או המחוון שהעלית בשדה \"הנחיות המשימה\": דרישה אחר דרישה. אין צורך לסמן קריטריונים." },
-  { k:"combined", t:"משוב משולב", d:"כל האפשרויות יחד: הקריטריונים שתסמני, משוב רך על סגנון, משלב וקוהרנטיות, מבנה כללי, פסקאות ותחביר, ובדיקה מול הנחיות המנחה (אם הועלו)." },
+  { k:"task", t:"לפי הנחיות המנחה", d:"משוב שבודק את העבודה מול ההנחיות או המחוון שהודבקו בשדה \"הנחיות המשימה\": דרישה אחר דרישה. אין צורך לסמן קריטריונים." },
+  { k:"combined", t:"משוב משולב", d:"כל האפשרויות יחד: הקריטריונים שמסמנים, משוב רך על סגנון, משלב וקוהרנטיות, מבנה כללי, פסקאות ותחביר, ובדיקה מול הנחיות המנחה (אם הועלו)." },
 ];
 const STYLE_CRITERIA = [
   { v:"סגנון וזרימה", d:"קריאוּת, אורך משפטים, מעברים בין משפטים, חזרות ובהירות הניסוח", style:true },
@@ -894,7 +894,7 @@ function resolveRefs(str){
   const text = String(str || "").replace(/\[\s*מקור\s*#\s*(\d+)\s*\]/g, (m, id) => {
     const x = byId.get(Number(id)); if (!x) return "";
     if (!refs.includes(x)) refs.push(x);
-    return "(" + x.citation.split(/\)\./)[0].replace(/\s*\(\d{4}.*$/, "") + ", " + x.year + ")";
+    return ""; // מקורות בסוף, לא בתוך המשפט (12/10/2026, בדיקת הלקוחה)
   }).replace(/\s{2,}/g, " ").trim();
   return { text, refs };
 }
@@ -917,6 +917,8 @@ async function computeFeedbackAI(text, age, criteriaList, mode, task, kind) {
     task && kind !== "task" ? "הנחיות המשימה או המחוון שהכותב/ת קיבל/ה מהמרצה — זו המסגרת לבדיקה, ולא חלק מהעבודה (אל תעירי על ניסוח ההנחיות עצמן). בכל קריטריון התייחסי גם להנחיות כשהן רלוונטיות, ובשדה \"taskFit\" — עד כמה העבודה עונה על ההנחיות: מה כבר עונה עליהן, ומה חסר או לא תואם (עם ציון ההנחיה):\n<<<\n" + task + "\n>>>" : "",
     "את נותנת משוב בלבד ולא כותבת במקום הכותב/ת: אל תכתבי סעיפים, פסקאות, פרקים או נוסח חלופי מלא — רק הכוונה מה לחזק ואיך לגשת לזה, ודוגמה קצרה של כמה מילים לכל היותר.",
     "לכל קריטריון: נקודות חוזק אמיתיות מהטקסט הספציפי הזה (לא כלליות), ונקודות לשיפור קונקרטיות עם דוגמה מהטקסט עצמו איפה אפשר.",
+    "סדרי את הנקודות לשיפור לפי סדר עבודה: מה כדאי לתקן קודם, ומה אחר כך.",
+    "פני אל הכותב/ת בגוף שני בצורה כוללת (כתבת, אפשר לחזק), או בלי פנייה.",
     toneLine,
     "אל תצטטי קטעים ארוכים מהטקסט בחזרה — התייחסי אליהם במילים שלך, עם ציון מיקום (\"בפתיחה\", \"בפסקה השנייה\") ולא העתקה.",
     "אין לתת ציון מספרי או אחוז בשום מקום בתשובה — המשוב מילולי בלבד.",
@@ -946,7 +948,7 @@ let LAST_FEEDBACK = null;
 function renderFeedback(fb, mock) {
   const body = $("dlgB"); body.textContent = "";
   if (mock) body.append(el("p", { class:"mock-note" }, "⚠ אין חיבור למודל כרגע. זה נתון טכני גולמי, לא משוב אמיתי על התוכן."));
-  if (fb.overall) body.append(el("p", { style:"margin:0 0 14px;color:var(--muted);" }, fb.overall));
+  if (fb.overall) { body.append(el("h4", {}, "מבט כללי")); body.append(el("p", { style:"margin:0 0 14px;" }, fb.overall)); }
   const fbList = fb.taskFit && ((fb.taskFit.strengths||[]).length || (fb.taskFit.improvements||[]).length)
     ? [{ title:"התאמה להנחיות המשימה", ...fb.taskFit }, ...(fb.criteria || [])] : (fb.criteria || []);
   // טבלה (07/10/2026), בקו אחיד עם שאר התוצרים: קריטריון בכל שורה — הקריטריון · מה עובד · מה אפשר לחזק
@@ -955,7 +957,7 @@ function renderFeedback(fb, mock) {
     fbList.map(c => [el("b", {}, c.title || ""), ul(c.strengths), ul(c.improvements)]), "fb-table"));
   if (fb.sources && fb.sources.length) {
     const sec = el("div", { class:"fb-sec" });
-    sec.append(el("h4", {}, "מקורות שהוזכרו במשוב: מספריית המקורות המאומתת"));
+    sec.append(el("h4", {}, "מקורות"));
     const ul = el("ul");
     fb.sources.forEach(x => {
       const li = el("li", {}, x.citation + " ");
@@ -970,7 +972,7 @@ function renderFeedback(fb, mock) {
   if (!mock) body.append(aiNoteEl());
   $("bPrintFb").hidden = false;
   const kindT = LAST_FEEDBACK && (FB_KINDS.find(x => x.k === LAST_FEEDBACK.kind) || {}).t;
-  $("dlgH").textContent = "משוב · " + (LAST_FEEDBACK && LAST_FEEDBACK.creator || val("creatorName") || "—") + (kindT ? " · " + kindT : "");
+  $("dlgH").textContent = ["משוב", LAST_FEEDBACK && LAST_FEEDBACK.creator || val("creatorName"), kindT].filter(Boolean).join(" · ");
   if (!$("dlg").open) $("dlg").showModal();
 }
 // ── תזכורת: לציין בעבודה את השימוש בכלי בינה מלאכותית ואת שם הכלי (02/10/2026) ──
@@ -978,8 +980,8 @@ const AI_TOOL = "Begood: ניתוח ומשוב לעבודה אקדמית (מבו
 function aiNoteLines(){
   const d = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
   return ["תזכורת: ציון השימוש בבינה מלאכותית:",
-    "אם שיפרת את העבודה בעקבות המשוב, ציינ/י בעבודה שנעזרת בכלי בינה מלאכותית, ואת שם הכלי: " + AI_TOOL + ".",
-    "נוסח מוצע: \"בשלב העריכה נעזרתי בכלי הבינה המלאכותית " + AI_TOOL + " לקבלת משוב על העבודה (" + d + "). הכתיבה והתיקונים נעשו על ידי.\"",
+    "אם שיפרת את העבודה בעקבות המשוב, ציינ.י בעבודה שנעזרת בכלי בינה מלאכותית, ואת שם הכלי: " + AI_TOOL + ".",
+    "נוסח מוצע: \"בשלב העריכה נעזרתי בכלי הבינה המלאכותית " + AI_TOOL + " לקבלת משוב על העבודה (" + d + "). הכתיבה והתיקונים נעשו בידי.\"",
     "כדאי לבדוק את הנחיות המרצה או המוסד לגבי אופן הציון."];
 }
 function aiNoteEl(){
@@ -1039,7 +1041,7 @@ $("bReview").addEventListener("click", async (e) => {
 $("dlgX").addEventListener("click", () => $("dlg").close());
 // הדפסה / PDF (07/10/2026) — כמו בשאר התוצרים: לוגו, כותרת, תאריך, והטבלה
 $("bPrintFb").addEventListener("click", () => { if (!LAST_FEEDBACK) return;
-  SBE_DOC.print({ title: "משוב לעבודה: " + (LAST_FEEDBACK.creator || ""), subtitle: $("dlgH").textContent, node: $("dlgB") }); });
+  SBE_DOC.print({ title: "משוב לעבודה" + (LAST_FEEDBACK.creator ? ": " + LAST_FEEDBACK.creator : ""), subtitle: (FB_KINDS.find(x => x.k === LAST_FEEDBACK.kind) || {}).t || "", node: $("dlgB") }); });
 // הורדת קובץ: הקישור נשאר בדף רגע אחרי הלחיצה — הסרה מיידית גורמת לחלק מהדפדפנים לאבד את שם הקובץ
 function downloadBlob(blob, name){
   const a = document.createElement("a");
@@ -1341,7 +1343,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
       <label>מה חסר, מה היה מבלבל, או הערה אחרת?</label>
       <textarea id="rptUsageNotes" placeholder="לא חובה"></textarea>
     </div>
-    <label>צילום מסך (לא חובה)</label>
+    <label>צילום מסך (רשות)</label>
     <input type="file" id="rptFile" accept="image/*">
   </div>
   <div class="rf">

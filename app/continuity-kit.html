@@ -72,7 +72,7 @@ textarea{min-height:64px;resize:vertical}
 .addrow input{flex:1}
 .addrow .btn{white-space:nowrap;padding:.45rem .8rem;font-size:.88rem}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
-@media (max-width:600px){.row2{grid-template-columns:1fr}}
+@media screen and (max-width:600px){.row2{grid-template-columns:1fr}}
 .btn{display:inline-block;font:inherit;font-weight:700;padding:.65rem 1.1rem;border-radius:8px;border:none;cursor:pointer;
   background:var(--spoken);color:#fff}
 .btn:disabled{opacity:.5;cursor:default}
@@ -174,7 +174,7 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 .f .main-tag{font-weight:600;font-size:.75rem;color:var(--spoken);border:1px solid var(--spoken);border-radius:99px;padding:0 .45rem;margin-inline-start:.4rem}
 .f textarea{min-height:84px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.2rem 1rem}
-@media (max-width:640px){.grid2{grid-template-columns:1fr}}
+@media screen and (max-width:640px){.grid2{grid-template-columns:1fr}}
 .kit-meta{color:var(--muted);font-size:.88rem;margin:-.2rem 0 .8rem}
 .kit h3{color:var(--spoken);margin:1.2rem 0 .3rem;font-size:1.05rem}
 .kit .sub{color:var(--muted);font-size:.85rem;margin:0 0 .3rem}
@@ -230,11 +230,11 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
 <div class="wrap">
   <div class="card no-print">
     <h1>תיק רציפות</h1>
-    <p data-peek>מכינים תיק הפעלה למי שתחליף אותך: ממלאת מקום, עמיתה שמגבה או בעלת תפקיד חדשה. בתיק שתי תיקיות: <b>שגרה</b>, ו<b>חירום ולמידה מרחוק</b>. מה שלא פועל בשגרה יקרוס בחירום, ולכן מה שמכינים לחירום מתורגל גם בשגרה. המחליפה ממשיכה לעדכן את התיק, ועמיתה יכולה לנסות אותו מראש.</p>
+    <p data-peek>התיק שומר על רציפות בשני מצבים: כשמורה מחליפה נכנסת לכיתה (ממלאת מקום, עמיתה שמגבה או בעלת תפקיד חדשה), וכשתלמידים מצטרפים או חוזרים (לשונית <b>הצטרפות וחזרה</b>). למחליפה יש שתי תיקיות: <b>שגרה</b>, ו<b>חירום ולמידה מרחוק</b>. מה שלא פועל בשגרה יקרוס בחירום, ולכן מה שמכינים לחירום מתורגל גם בשגרה. המחליפה ממשיכה לעדכן את התיק, ועמיתה יכולה לנסות אותו מראש.</p>
   </div>
   <ol class="steps no-print" id="steps">
     <li data-step="1"><b>1. מספרים</b>התפקיד, הכיתה והשגרות</li>
-    <li data-step="2"><b>2. התיק</b>שגרה, חירום, תלמידים ועדכונים</li>
+    <li data-step="2"><b>2. התיק</b>שגרה, חירום, הצטרפות וחזרה, תלמידים ועדכונים</li>
     <li data-step="3"><b>3. עמיתה מנסה</b>ומתקנים את מה שחסר</li>
   </ol>
   <section class="card no-print" id="s1">
@@ -267,7 +267,7 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
   <section class="card no-print" id="s3" hidden>
     <h2>עמיתה מנסה את התיק</h2>
     <ol class="tl">
-      <li>מדפיסים את התיק, או שולחים אותו לעמיתה. בסוף התיק יש <b>דף תרגול</b> עם משימות קצרות.</li>
+      <li>מדפיסים את התיק, או שולחים אותו לעמיתה. בסוף תיקיית השגרה יש <b>דף תרגול</b> עם משימות קצרות.</li>
       <li>העמיתה מנסה כמה משימות לפי התיק בלבד, בלי לשאול אותך, ומסמנת מה היה חסר או לא ברור.</li>
       <li>כותבים כאן מה עלה, והתיק מתעדכן לגרסה חדשה. אפשר לחזור על זה כמה פעמים.</li>
     </ol>

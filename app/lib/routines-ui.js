@@ -25,7 +25,7 @@
   const copy = (x) => JSON.parse(JSON.stringify(x));
 
   // ── המצב: כמה מנגנונים, אחד פתוח ──
-  const RUN = () => ({ date: '', status: {}, worked: '', hard: '', next: '', reqs: [] });
+  const RUN = () => ({ date: '', status: {}, worked: '', hard: '', gave: '', slipped: '', next: '', reqs: [] });
   const ITEM = () => ({ id: 'm' + Date.now().toString(36), step: 1, form: {}, options: null, choose: null, pick: '', how: '', plan: null, version: 0, at: '',
     people: {}, runs: [RUN(), RUN()], decided: {}, proposal: null, changes: [], ansAI: [], balance: '', versions: [], log: [], rounds: [], reviewDate: '' });
   let S = { items: [], cur: '' };
@@ -289,6 +289,21 @@
     else box.appendChild(KV(M.AGREEMENT_ROWS.map(([k, l]) => [l, txt(a[k])])));
     return box;
   }
+  // שומרים על השגרה (12/10/2026, משוב): אחריות, חזרה להסכם בשלבים, קצב לאורך זמן, תיעוד, והערך שהתלמידים רואים
+  // editable (12/10/2026, בדיקת הלקוחה): בצעד 2 המחנכת עורכת גם את חלק השמירה, כמו את הלוח וההסכם
+  const KEEP_KEYS = { owner: ['who', 'what', 'handover'], slip: ['step', 'if', 'then', 'who'], rhythm: ['when', 'what', 'who'], record: ['what', 'where', 'who'], value: ['what', 'when', 'shows'] };
+  function keepBlock(plan, editable) {
+    const k = plan.keep || {}, box = el('section');
+    if (!Object.keys(KEEP_KEYS).some((x) => arr(k[x]).length)) return box;
+    head(box, 'keep');
+    Object.keys(KEEP_KEYS).forEach((x) => {
+      if (!arr(k[x]).length) return;
+      head(box, x);
+      if (editable) box.appendChild(etable(M.SECTIONS[x].cols, k[x], KEEP_KEYS[x], { add: 'הוספת שורה', area: true }));
+      else box.appendChild(T(x, k[x].map((r, i) => KEEP_KEYS[x].map((key) => txt(r[key] || (key === 'step' ? String(i + 1) : ''))))));
+    });
+    return box;
+  }
   function runPlan(plan) {
     const box = el('section'); head(box, 'run');
     box.appendChild(T('run', arr(plan.run).map((r) => [txt(r.part), txt(r.what), txt(r.lead), r.minutes ? r.minutes + ' דקות' : ''])));
@@ -315,7 +330,7 @@
       s.addEventListener('change', () => { run.status[i] = s.value; save(); });
       return [txt(t.task), txt(t.role), s];
     }), 'kit-t'));
-    [['worked', 'מה עבד'], ['hard', 'מה היה קשה']].forEach(([k, l]) => { const f = el('div', 'f'); f.appendChild(el('label', null, l)); f.lastChild.htmlFor = 'r' + n + k; const t = field(run, k, l, true); t.id = 'r' + n + k; t.placeholder = 'בלי שמות. מה קרה בפעולה.'; f.appendChild(t); c.appendChild(f); });
+    [['worked', 'מה עבד'], ['hard', 'מה היה קשה'], ['gave', 'מה זה נתן לנו (במילים של התלמידים)'], ['slipped', 'מה לא נשמר, ואיך חזרנו להסכם']].forEach(([k, l]) => { const f = el('div', 'f'); f.appendChild(el('label', null, l)); f.lastChild.htmlFor = 'r' + n + k; const t = field(run, k, l, true); t.id = 'r' + n + k; t.placeholder = 'בלי שמות. מה קרה בפעולה.'; f.appendChild(t); c.appendChild(f); });
     const nx = el('div', 'f'); nx.appendChild(el('label', null, 'בסוף ההפעלה, כולם ידעו מה הצעד הבא ומי אחראי/ת עליו?')); nx.appendChild(choice(run, 'next', 'כולם ידעו מה הצעד הבא', ['כן, כולם', 'חלק', 'עוד לא'])); c.appendChild(nx);
     c.appendChild(el('h4', null, M.SECTIONS.requests.h));
     c.appendChild(etable(M.SECTIONS.requests.cols, run.reqs, ['role', 'what', 'why'], { add: 'הוספת בקשה לשינוי', area: true }));
@@ -364,6 +379,7 @@
     if (I.changes.length) { head(box, 'changes', ' ' + (I.version + 1)); box.appendChild(T('changes', I.changes.map((c) => [txt(c.where), txt(c.what), txt(c.why)]))); }
     box.appendChild(agreementBlock(P, true, ' · הצעה לגרסה ' + (I.version + 1)));
     box.appendChild(boardBlock(P, true));
+    box.appendChild(keepBlock(P, true));
     const row = el('div', 'actions no-print'), lab = el('label', null, 'מי אישר/ה'), by = el('input');
     by.type = 'text'; by.id = 'approver'; lab.htmlFor = 'approver'; by.value = I.approver || 'הקבוצה, והמחנכת אישרה את הגבולות';
     by.addEventListener('input', () => { I.approver = by.value; save(); });
@@ -402,7 +418,7 @@
     if (n === 2) {
       box.appendChild(KV([['הפעולה', txt(I.plan.action && I.plan.action.name)], ['מה רוצים שיקרה', txt(I.plan.action && I.plan.action.purpose)], ['מתי ואיפה', txt(I.plan.action && I.plan.action.when)]]));
       box.appendChild(withRefs((r) => {
-        r.appendChild(boardBlock(I.plan, true)); r.appendChild(roleCards(true)); r.appendChild(agreementBlock(I.plan, true));
+        r.appendChild(boardBlock(I.plan, true)); r.appendChild(roleCards(true)); r.appendChild(agreementBlock(I.plan, true)); r.appendChild(keepBlock(I.plan, true));
         r.appendChild(runPlan(I.plan)); r.appendChild(meaning(I.plan));
       }));
       const v = versionsBlock(); if (v) box.appendChild(v);
@@ -418,7 +434,7 @@
       box.appendChild(procBlock());
     }
     if (n === 3) {
-      const det = el('details', 'more'); det.appendChild(el('summary', null, 'מהלך כל הפעלה ושאלות לסיום')); det.appendChild(runPlan(I.plan)); box.appendChild(det);
+      const det = el('details', 'more'); det.appendChild(el('summary', null, 'מהלך כל הפעלה ושאלות לסיכום')); det.appendChild(runPlan(I.plan)); box.appendChild(det);
       const g = el('div', 'runs'); I.runs.forEach((r, i) => g.appendChild(runCard(r, i + 1))); box.appendChild(g);
       if (window.SBE_OPEN && SBE_OPEN.scan) try { SBE_OPEN.scan(box); } catch (e) {}
     }
@@ -432,13 +448,13 @@
   }
 
   F('revise').addEventListener('click', async () => {
-    const used = I.runs.filter((r) => r.date || r.worked || r.hard || r.next || Object.keys(r.status).length || r.reqs.length);
+    const used = I.runs.filter((r) => r.date || r.worked || r.hard || r.gave || r.slipped || r.next || Object.keys(r.status).length || r.reqs.length);
     F('err4').hidden = true;
     if (!used.length) return fail(F('err4'), 'כדי לפתוח לשינוי, נשמח לתיעוד של הפעלה אחת לפחות (עדיף שתיים) בצעד 3.');
     const N = names();
     const log = I.runs.map((r, i) => 'הפעלה ' + (i + 1) + (r.date ? ' (' + fmtDate(r.date) + ')' : '') + ':\n' +
       arr(I.plan.board).map((t, j) => '- ' + txt(t.task) + ': ' + (r.status[j] || 'לא תועד')).join('\n') +
-      '\nמה עבד: ' + (r.worked || '[לא נכתב]') + '\nמה היה קשה: ' + (r.hard || '[לא נכתב]') + '\nכולם ידעו מה הצעד הבא: ' + (r.next || 'לא תועד')).join('\n\n');
+      '\nמה עבד: ' + (r.worked || '[לא נכתב]') + '\nמה היה קשה: ' + (r.hard || '[לא נכתב]') + (r.gave ? '\nמה זה נתן לנו: ' + r.gave : '') + (r.slipped ? '\nמה לא נשמר ואיך חזרנו להסכם: ' + r.slipped : '') + '\nכולם ידעו מה הצעד הבא: ' + (r.next || 'לא תועד')).join('\n\n');
     const reqs = allRequests().map((x, i) => (i + 1) + '. ' + (x.q.role ? x.q.role + ' מבקש/ת: ' : '') + x.q.what + (x.q.why ? ' (כי ' + x.q.why + ')' : '')).join('\n');
     const plan = copy(I.plan); delete plan.sources;
     const b = F('revise'); b.disabled = true; const stop = waiting(F('wait4'), 'מכינה הצעה לגרסה הבאה של ההסכם.', 80);
@@ -458,7 +474,7 @@
     const out = el('div'), P = I.plan;
     if (what === 'board') {
       out.appendChild(KV([['הפעולה', txt(P.action && P.action.name)], ['מתי ואיפה', txt(P.action && P.action.when)]]));
-      [boardBlock(P, false), roleCards(false), agreementBlock(P, false)].forEach((x) => out.appendChild(x));
+      [boardBlock(P, false), roleCards(false), agreementBlock(P, false), keepBlock(P)].forEach((x) => out.appendChild(x));
       return out;
     }
     if (what === 'sheet') {
@@ -466,6 +482,10 @@
       head(out, 'board');
       out.appendChild(window.SBE_TABLE(['המשימה', 'תפקיד', 'מי מגבה', 'בוצע', 'חלקית', 'לא בוצע'], arr(P.board).map((t) => [txt(t.task), txt(t.role), txt(t.backup), '☐', '☐', '☐']), 'kit-t'));
       out.appendChild(runPlan(P));
+      // כשמשהו לא נשמר, והערך לתלמידים: גם בלוח שהקבוצה מחזיקה ביד (12/10/2026, בדיקת הלקוחה)
+      const K = P.keep || {};
+      if (arr(K.slip).length) { head(out, 'slip'); out.appendChild(T('slip', K.slip.map((r, i) => [txt(r.step || String(i + 1)), txt(r.if), txt(r.then), txt(r.who)]))); }
+      out.appendChild(el('p', null, 'מה זה נתן לנו היום? ______________________________'));
       head(out, 'requests'); out.appendChild(window.SBE_TABLE(M.SECTIONS.requests.cols, [1, 2, 3].map(() => [0, 1, 2].map(() => { const d = el('div'); d.style.height = '2.4em'; return d; })), 'kit-t blank'));
       return out;
     }
@@ -477,14 +497,16 @@
     }
     out.appendChild(withRefs((r) => {
       r.appendChild(KV([['הפעולה', txt(P.action && P.action.name)], ['מה רוצים שיקרה', txt(P.action && P.action.purpose)], ['מתי ואיפה', txt(P.action && P.action.when)]]));
-      [agreementBlock(P, false), boardBlock(P, false), roleCards(false), runPlan(P), meaning(P), logBlock(false)].forEach((x) => r.appendChild(x));
+      [agreementBlock(P, false), boardBlock(P, false), roleCards(false), keepBlock(P), runPlan(P), meaning(P), logBlock(false)].forEach((x) => r.appendChild(x));
+      // נוהל העבודה בכלים שלכם, אם נכתב (12/10/2026, בדיקת הלקוחה)
+      const pd = document.querySelector('#procR .proc-doc'); if (pd) { r.appendChild(el('h3', null, 'נוהל עבודה בכלים שלכם')); r.appendChild(pd.cloneNode(true)); }
       const v = versionsBlock(); if (v) r.appendChild(v);
     }));
     const attached = !!document.querySelector('#out2 .sbe-refs.attach');
     out.querySelectorAll('.sbe-refs').forEach((x) => { if (attached) x.classList.add('attach'); });
     return out;
   }
-  const KIND = { board: 'לוח ביצוע וכרטיסי תפקיד', sheet: 'לוח להפעלה', log: 'יומן החלטות', all: 'תיק המנגנון' };
+  const KIND = { board: 'לוח ביצוע, כרטיסי תפקיד והסכם', sheet: 'לוח להפעלה', log: 'יומן החלטות', all: 'תיק המנגנון' };
   document.querySelectorAll('[data-print]').forEach((b) => b.addEventListener('click', () => {
     if (!I.plan) return;
     const w = b.dataset.print;

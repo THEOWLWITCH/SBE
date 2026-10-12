@@ -38,26 +38,26 @@ body{direction:rtl;background:var(--ground);margin:0;padding:26px 16px 60px;
 .sheet{max-width:820px;margin:0 auto;background:var(--paper);color:var(--ink);
   border-radius:3px;box-shadow:0 8px 30px rgba(16,22,28,.16);overflow:hidden;
   font-size:15px;line-height:1.66;}
-.lg{height:26px;width:auto;display:inline-block;}
-@media print{.lg{height:22px;}}
-.head{padding:24px 36px 18px;text-align:right;}
-.badge{display:block;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--muted);margin:10px 0 14px;}
+/* כותרת אחידה עם שאר תוצרי Begood (12/10/2026, בדיקת הלקוחה): פס מותג, לוגו בגודל מלא ושורת הכלי */
+.lg{height:48px;width:auto;display:block;float:left;margin:0 0 6px 12px;}
+.head{padding:20px 36px 16px;text-align:right;border-top:5px solid #2E5A7D;position:relative;}
+.head::after{content:"";position:absolute;top:-5px;left:0;width:22%;height:5px;background:#2BA39C;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.badge{display:block;font-size:13px;font-weight:600;color:#2E5A7D;margin:0 0 6px;}
+.badge::before{content:"תוצרי הסימולציה · ";font-weight:700;}
 .ttl{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:27px;
   line-height:1.16;margin:0 0 5px;}
 .sub{font-size:14.5px;color:var(--muted);margin:0 0 12px;}
 .meta{font-size:12.5px;color:var(--muted);}
 .meta b{color:var(--ink);font-weight:600;}
 .meta span+span::before{content:" · ";}
-.hr{border-top:2px solid var(--ink);margin:0 36px;}
+.hr{border-top:1px solid #CDD3D8;margin:0 36px;clear:both;}
 @media print{.hr{margin-inline:0;}}
 .body{padding:24px 36px 30px;}
 .sec{margin-bottom:26px;}
 .sec:last-child{margin-bottom:0;}
-.h{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--muted);padding-bottom:6px;margin-bottom:12px;
-  border-bottom:1px solid var(--hair);display:flex;justify-content:space-between;
-  gap:12px;align-items:baseline;}
+.h{font-family:Assistant,Arial,sans-serif;font-size:15px;font-weight:800;letter-spacing:0;
+  color:#1E3F5A;padding:2px 10px 4px 0;margin-bottom:12px;border-inline-start:4px solid #2A9D8F;
+  display:flex;justify-content:space-between;gap:12px;align-items:baseline;}
 .h em{font-style:normal;font-family:inherit;font-size:12px;letter-spacing:0;text-transform:none;}
 p{margin:0 0 11px;}
 p:last-child{margin:0;}
@@ -117,6 +117,8 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .dt p{margin:0 0 6px;} .dt p:last-child{margin:0;}
 .dt ol,.dt ul{margin:0;padding-inline-start:17px;} .dt li{margin-bottom:4px;}
 .dt td.n{width:32px;text-align:center;font-weight:700;}
+.body p,.body li,.dt td:not(.n):not(.ck){text-align:justify;text-justify:inter-word;}
+.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,.dt tr>td:first-child:nth-last-child(n+3),.dt tr>td:first-child:nth-last-child(n+3) p,.dt tr>td:first-child:nth-last-child(n+3) li{text-align:start}table tr>td:first-child:nth-last-child(2),table tr>td:first-child:nth-last-child(2) p{text-align:start}
 .dt td.ck{width:64px;text-align:center;color:var(--muted);font-size:16px;}
 .dt td.w{width:38%;}
 .dt .tag{margin-inline-start:6px;}
@@ -124,7 +126,9 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .dt .write{min-height:4.6em;outline:none;border-radius:3px;}
 .dt .write:focus{background:var(--spoken-bg);}
 .dt-sub{font-size:13px;color:var(--muted);margin-top:4px;}
-.dt-cap{font-size:12.5px;font-weight:700;color:var(--muted);margin:14px 0 6px;}
+.dt-cap{font-size:12.5px;font-weight:700;color:var(--muted);margin:14px 0 6px;break-after:avoid;page-break-after:avoid;}
+.h{break-after:avoid;page-break-after:avoid;}
+.dt td .big,.dt td .stop,.dt td .warm,.dt td .said{text-align:start;}
 .dt .eff{margin-inline-start:0;}
 .aloud{border:1px solid #C9D8E4;background:var(--spoken-bg);border-radius:6px;padding:12px 16px;font-size:15px;line-height:1.75;color:var(--ink);}
 .aloud p{margin:0 0 6px;} .aloud p:last-child{margin:0;}
@@ -138,7 +142,7 @@ ol.list li,ul.list li{margin-bottom:7px;}
   color:var(--muted);display:flex;flex-direction:column;gap:3px;background:var(--sub);}
 .foot-row{display:flex;justify-content:space-between;}
 .foot-by{font-size:10px;}
-@media(max-width:640px){
+@media screen and (max-width:640px){
   .dt thead{display:none;}
   .dt,.dt tbody,.dt tr,.dt td,.dt tbody th{display:block;width:auto!important;}
   .dt tr{border:1px solid var(--hair);border-radius:6px;margin:0 0 8px;overflow:hidden;}
@@ -150,7 +154,7 @@ ol.list li,ul.list li{margin-bottom:7px;}
   .two{grid-template-columns:1fr;} .row,.tp-b,.br{grid-template-columns:1fr;gap:3px;}
   .head,.body,.foot{padding-inline:20px;}
 }
-@page{size:A4;margin:24mm 24mm;}
+@page{size:A4;margin:24mm 24mm;@bottom-center{content:"עמוד " counter(page) " מתוך " counter(pages);font:600 8.5pt Assistant,Arial,sans-serif;color:#5C6771}@bottom-right{content:"Begood · be-good.co.il";font:8pt Assistant,Arial,sans-serif;color:#8A949E}}
 @media print{
   body{background:#fff;padding:0;}
   .sheet{box-shadow:none;max-width:none;border-radius:0;font-size:11pt;}
@@ -176,12 +180,11 @@ body{direction:rtl;background:var(--ground);margin:0;padding:22px 14px 50px;
 .card{max-width:560px;margin:0 auto;background:var(--paper);color:var(--ink);
  border-radius:4px;box-shadow:0 8px 26px rgba(16,22,28,.16);overflow:hidden;
  font-size:14.5px;line-height:1.5;}
-.lg{height:20px;width:auto;display:block;flex:0 0 auto;}
-.ch{padding:14px 20px 12px;border-bottom:2px solid var(--ink);display:flex;
+.lg{height:30px;width:auto;display:block;flex:0 0 auto;}
+.ch{padding:14px 20px 12px;border-top:5px solid #2E5A7D;border-bottom:1px solid #CDD3D8;display:flex;
  justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;}
 .ch b{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:19px;font-weight:900;}
-.ch span{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;
- text-transform:uppercase;color:var(--muted);}
+.ch span{font-size:12px;font-weight:600;color:#2E5A7D;}
 .cb{padding:14px 20px 18px;}
 .blk{margin-bottom:13px;}
 .blk:last-child{margin-bottom:0;}
@@ -209,8 +212,10 @@ ol.q li,ul.q li{margin-bottom:5px;}
 .dt tbody th{background:var(--sub);width:27%;font-weight:700;font-size:12px;color:var(--ink);}
 .dt p{margin:0;} .dt td.n{width:26px;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);}
 .dt td.ty{width:1%;white-space:nowrap;}
+.dt td:not(.n):not(.ck):not(.ty),.card p,.card li{text-align:justify;text-justify:inter-word;}
+.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,.dt tr>td:first-child:nth-last-child(n+3),.dt tr>td:first-child:nth-last-child(n+3) p,.dt tr>td:first-child:nth-last-child(n+3) li{text-align:start}table tr>td:first-child:nth-last-child(2),table tr>td:first-child:nth-last-child(2) p{text-align:start}
 .dt-cap{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.12em;color:var(--muted);margin:4px 0 4px;}
-@media(max-width:520px){
+@media screen and (max-width:520px){
   .dt thead{display:none;}
   .dt,.dt tbody,.dt tr,.dt td,.dt tbody th{display:block;width:auto!important;}
   .dt tr{border:1px solid var(--hair);border-radius:6px;margin:0 0 7px;overflow:hidden;}
@@ -218,7 +223,7 @@ ol.q li,ul.q li{margin-bottom:5px;}
   .dt td.n,.dt td.ty{display:inline-block;border:0;}
   .dt td[data-label]:not([data-label="#"])::before{content:attr(data-label);display:block;font-weight:700;font-size:11px;color:var(--muted);}
 }
-@page{size:A5;margin:14mm;}
+@page{size:A5;margin:14mm;@bottom-center{content:"עמוד " counter(page) " מתוך " counter(pages);font:600 7.5pt Assistant,Arial,sans-serif;color:#5C6771}@bottom-right{content:"Begood · be-good.co.il";font:7pt Assistant,Arial,sans-serif;color:#8A949E}}
 @media print{body{background:#fff;padding:0;}.card{box-shadow:none;max-width:none;border-radius:0;font-size:10.5pt;}
  .dt tr{break-inside:avoid;} .dt thead th,.dt tbody th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
  #rptFab,#rptDlg,#navBar,#navPanel{display:none!important;} body.sbe-hasnav{padding-top:0;}}
@@ -299,7 +304,7 @@ export function tpTables(tps, { whoOf, otherOf, doLabel = 'מה את עושה', 
     br.push([esc(t.n), `<b>אם ${esc(other)}</b> ${esc(b.move)}`, `<b>${esc(then)}</b> <span class="said">${esc(b.says)}</span>`,
       `<span class="eff ${effCls(b.effect)}">${esc(b.effect)}</span> ${b.quality ? `<em>${esc(b.quality)}</em>` : ''}`]);
   }));
-  return num(main) + (br.length ? `<div class="dt-cap">אם… אז… — איך כל תפנית יכולה להתגלגל</div>` +
+  return num(main) + (br.length ? `<div class="dt-cap">אם… אז…: איך כל תפנית יכולה להתגלגל</div>` +
     num(dtable(['#', 'אם…', 'אז…', 'לאן זה מוביל'], br)) : '');
 }
 
@@ -307,6 +312,36 @@ export function tpTables(tps, { whoOf, otherOf, doLabel = 'מה את עושה', 
 //   config.MARK           data-URI של הלוגו
 //   config.REPORT_WIDGET  HTML של כפתור הדיווח (או "" בדפדפן/בתצוגה מקדימה)
 //   config.GUARD          סקריפט שמירת ההרשאות (או "" בדפדפן/בתצוגה מקדימה)
+// כותרת הטבלה חוזרת בראש כל עמוד (12/10/2026: "כותרת טבלה חוזרת בראש כל עמוד"): לפני הדפסה, לכל טבלה
+// מעל שורת כותרות העמודה נכנסת שורה עם שם הטבלה (הכיתוב שמעליה, או כותרת הסעיף), ו-thead חוזר בכל עמוד.
+const RH_SCRIPT = `<script>(function(){function go(){document.querySelectorAll('table').forEach(function(t){
+if(t.querySelector('tr.sbe-rh-row')||t.rows.length<3||t.closest('.rcard'))return;var cap=t.previousElementSibling,name='',hide=null;
+if(cap&&cap.classList.contains('dt-cap')){name=cap.textContent;hide=cap;}else{var s=t.closest('.sec'),h=s&&s.querySelector(':scope>.h');
+if(h){var sp=h.querySelector('span');name=(sp||h).textContent;if(h.nextElementSibling===t)hide=(h.querySelector('em')&&sp)?sp:h;}}
+name=String(name||'').replace(/\s+/g,' ').trim();if(!name)return;var n=0;[].forEach.call(t.rows[0].cells,function(c){n+=c.colSpan||1;});
+var tr=document.createElement('tr'),th=document.createElement('th');tr.className='sbe-rh-row';th.colSpan=n;th.textContent=name;tr.appendChild(th);
+var hd=t.tHead;if(!hd){hd=document.createElement('thead');t.insertBefore(hd,t.firstChild);}hd.insertBefore(tr,hd.firstChild);if(hide)hide.classList.add('sbe-rh-src');});}
+window.addEventListener('beforeprint',go);var m=window.matchMedia&&window.matchMedia('print');if(m&&m.addListener)m.addListener(function(e){if(e.matches)go();});})();<\/script>`;
+const RH_STYLE = '@media screen{tr.sbe-rh-row{display:none}}@media print{thead{display:table-header-group}tr.sbe-rh-row th{background:none!important;color:#141C24!important;border:0!important;text-align:right!important;font-weight:700;font-size:1.05em;padding:4px 0 6px!important}.sbe-rh-src{display:none!important}}';
+
+// תאריך כמקובל בישראל, אחיד בכל המסמכים: 12.10.26 (ומחרוזת חופשית כמו "2 בספטמבר 2026" עוברת המרה)
+const HEB_MONTHS = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+export function dateIL(d) {
+  const t = String(d || '').trim(); if (!t) return '';
+  const p2 = (n) => String(n).padStart(2, '0');
+  let m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if (m) return p2(m[3]) + '.' + p2(m[2]) + '.' + m[1].slice(2);
+  m = t.match(/^(\d{1,2})[./](\d{1,2})[./](\d{2,4})$/); if (m) return p2(m[1]) + '.' + p2(m[2]) + '.' + m[3].slice(-2);
+  m = t.match(/^(\d{1,2})\s+ב?(\S+)\s+(\d{4})$/); if (m && HEB_MONTHS.indexOf(m[2]) >= 0) return p2(m[1]) + '.' + p2(HEB_MONTHS.indexOf(m[2]) + 1) + '.' + m[3].slice(2);
+  return t;
+}
+// מהלך מפגש אחיד (12/10/2026, בדיקת הלקוחה): פתיחה · פעילות מרכזית · סיכום · אחרי המפגש
+const flowSec = (mins, who) => sec('מהלך המפגש', dtable(['החלק', 'תיאור הפעילות', 'הנחיה למנחה (כולל השאלות)', 'עזרים ומשאבים'], [
+  ['<b>פתיחה</b>', 'הקבוצה שומעת את הפתיחה, ומתחלקים תפקידים: ' + who + '.', 'המנחה מקריאה את הפתיחה לקבוצה ושואלת: "מה כבר ידוע לנו על המצב?"', 'פסקת הפתיחה, כרטיסי הדמויות'],
+  ['<b>פעילות מרכזית</b>', 'הסצנה' + (mins ? ', כ-' + esc(String(mins)) + ' דקות' : '') + '.', 'המנחה עוקבת אחרי נקודות התפנית, והצופים אחרי "מה לראות בצפייה".', 'דף הצפייה'],
+  ['<b>סיכום</b>', 'שיחה על מה שקרה בסצנה.', 'שאלות לסיכום: קודם מי שהשתתפו בסצנה, ואחר כך הצופים.', 'השאלות לסיכום שבמסמך'],
+  ['<b>אחרי המפגש</b>', 'כל משתתף/ת בוחר/ת צעד אחד לנסות.', 'במפגש הבא המנחה שואלת: "מה ניסיתם, ומה קרה?"', ''],
+]));
+
 export function createRenderer(config) {
   const MARK = config.MARK || '';
   // שני הרכיבים הגלובליים של app/ — תפריט הניווט ("→ חזרה / ☰ תפריט") וכפתור
@@ -317,12 +352,12 @@ export function createRenderer(config) {
   const GUARD = config.GUARD || '';
 
   function page(scn, { badge, meta, body }) {
-    const byline = [scn.creator, scn.date, scn.institution].filter(Boolean).map(esc).join(' · ');
+    const byline = [scn.creator, dateIL(scn.date), scn.institution].filter(Boolean).map(esc).join(' · ');
     return `<meta charset="UTF-8">
 <title>${esc(scn.name)} · ${esc(badge)}</title>
 ${GUARD}
 ${FONTS}
-<style>${CSS}</style>
+<style>${CSS}${RH_STYLE}</style>
 <div class="sheet">
   <div class="head">
     <img class="lg" src="${MARK}" alt="Begood">
@@ -334,10 +369,11 @@ ${FONTS}
   <div class="hr"></div>
   <div class="body">${body}</div>
   <div class="foot">
-    <div class="foot-row"><span>Begood · חינוך מבוסס סימולציה · ${esc(scn.id)}</span><span>${esc(badge)}</span></div>
+    <div class="foot-row"><span>Begood · חינוך מבוסס סימולציה</span><span>${esc(badge)}</span></div>
     ${byline ? `<div class="foot-by">${byline}</div>` : ''}
   </div>
 </div>
+${RH_SCRIPT}
 ${WIDGET}`;
   }
 
@@ -354,7 +390,7 @@ ${WIDGET}`;
 
   // ── מסלול אנשי חינוך: ארבעה מסמכים מ-scenario.json ──
   function renderEduDocs(s) {
-    const baseMeta = [`<b>${esc(s.duration)}</b> דקות`, esc(s.age), `גישה חינוכית: ${esc(s.approach)}`, esc(s.id)];
+    const baseMeta = [`<b>${esc(s.duration)}</b> דקות`, esc(s.age), `גישה חינוכית: ${esc(s.approach)}`, esc(dateIL(s.date))].filter(Boolean);
     const redLine = () => red(s.redLine);
     const tr = s.trainee, a = s.actor, f = s.facilitator;
     const actorFirstName = String(a.nameAndAge || '').split(',')[0];
@@ -372,7 +408,7 @@ ${WIDGET}`;
           ['מה הייתי רוצה שיקרה', '<div class="write" contenteditable="true"></div>'],
           ['איך אפתח', '<div class="write" contenteditable="true"></div>'],
           ['מה אשאל', '<div class="write" contenteditable="true"></div>'],
-        ]), 'למילוי לפני הסימולציה — על המסך או בדף המודפס') +
+        ]), 'למילוי לפני הסימולציה, על המסך או בדף המודפס') +
         redLine(),
     });
 
@@ -385,7 +421,7 @@ ${WIDGET}`;
           ['מה קרה, מנקודת מבטך', paras(a.story)],
           ['מה את מבקשת, ומה את לא אומרת', paras(a.askAndBeneath)],
           ['מי יושבת מולך', paras(tr.portraitForActor)],
-        ]), 'לדעת מי היא — לא כדי לרחם עליה, כדי להוביל') +
+        ]), 'להכיר את הדמות מבפנים: לא כדי לרחם עליה, אלא כדי להוביל את השיחה') +
         sec('מה פותח אותך, ומה סוגר', dtable(null, [
           ['מה פותח אותך', paras(a.opens)],
           ['מה שאת יודעת והיא לא', paras(a.knows)],
@@ -393,11 +429,11 @@ ${WIDGET}`;
           ['הסתירה שבך', paras(a.contradiction)],
         ].filter((r) => r[1]))) +
         sec('חמש נקודות התפנית', tpTables(s.turningPoints, { whoOf: () => 'את', otherOf: () => tr.role }),
-          'מלאי, לא רצף. בחמש דקות יקרו שתיים') +
+          'לא כל התפניות יקרו, ולא בסדר הזה. בסצנה אחת יקרו בדרך כלל שתיים') +
         sec('איך זה מתגלגל ואיך זה נגמר', dtable(null, [
-          ['איך חמש הדקות יכולות להתגלגל', paras(a.arc)],
+          ['איך הסצנה יכולה להתגלגל', paras(a.arc)],
           ['איך זה יכול להיגמר', paras(a.endingsProse)],
-          ['אם היא עושה משהו שאינו כאן', `<p>שאלי את עצמך מה ${esc(actorFirstName)} תעשה לנוכח החשש שלה, ולכי לשם. חמש התפניות הן מלאי ולא כלוב.</p>`],
+          ['אם היא עושה משהו שאינו כאן', `<p>שאלי את עצמך מה ${esc(actorFirstName)} תעשה לנוכח החשש שלה, ולכי לשם. חמש התפניות הן אפשרויות, לא תסריט סגור.</p>`],
         ].filter((r) => r[1]))) +
         redLine(),
     });
@@ -410,9 +446,10 @@ ${WIDGET}`;
     ];
     const facilitator = page(s, {
       badge: 'גרסת המנחה',
-      meta: [`<b>${esc(s.creator)}</b>`, esc(s.date), esc(s.audience), esc(s.experience), ...baseMeta],
+      meta: [`<b>${esc(s.creator)}</b>`, esc(s.audience), esc(s.experience), ...baseMeta].filter(Boolean),
       body:
         sec('פתיחה לקבוצה', aloud(groupIntroEdu), 'להקראה לפני הסצנה. רק מה שגלוי למתנסה') +
+        flowSec(s.duration, 'מתנסה, שחקנית וצופות') +
         sec('תמצית התרחיש', dtable(null, [
           ['רקע מלא', paras(f.background)],
           ['שתי הדמויות', paras(f.charactersProse)],
@@ -423,22 +460,20 @@ ${WIDGET}`;
           dtable(['#', 'התפנית', 'הרגע', 'מה זה מבקש מהמתנסה', 'אם זה לא קורה'], (s.turningPoints || []).map((t) => [
             esc(t.n), `<b>${esc(t.name)}</b>${t.core ? '<span class="tag t-core">ליבה</span>' : ''}`, esc(t.trigger), esc(t.demands), esc(t.missed),
           ])).replace(/<td data-label="#">/g, '<td class="n" data-label="#">'),
-          'תפניות הליבה מסומנות. בחמש דקות יקרו שתיים, אולי שלוש') +
+          'תפניות הליבה מסומנות. בסצנה אחת יקרו בדרך כלל שתיים, אולי שלוש') +
         sec('מה לראות בצפייה',
           dtable(['#', 'מיומנות לאימון', 'נצפה', 'לא נצפה'], (f.skills || []).map((k, i) => [String(i + 1), esc(k), '☐', '☐']))
             .replace(/<td data-label="#">/g, '<td class="n" data-label="#">').replace(/<td data-label="(נצפה|לא נצפה)">/g, '<td class="ck" data-label="$1">') +
           ((f.watchFor || []).length ? dtable(['נקודה לצפייה', 'מה ראיתי'], f.watchFor.map((w) => [esc(w), ''])) : ''),
-          'המיומנויות מהטקסונומיה — אלה שיופיעו בדף הצפייה') +
-        sec('שאלות לשיחה', dtable(['מתי', 'השאלות'], [
-          ['לפני הצפייה — שיחה מקדימה', ol(f.preQuestions)],
-          ['תחקיר — אחרי הצפייה', ol((f.debrief || []).concat(['מה קידם את המפגש?', 'מה גרע מהמפגש?']))],
-          ['רפלקציה', ol(f.reflection)],
-        ].filter((r) => /<li>/.test(r[1])).map(([k, v]) => [`<b>${esc(k)}</b>`, v]))) +
-        sec('מקורות להרחבה',
-          (f.sources || []).length
-            ? list(f.sources)
-            : `<p class="note">לא נבחרו מקורות מהספרייה לתרחיש זה. <b>המערכת אינה כותבת מקורות</b>, ולכן סעיף ריק עדיף על מקור שאינו קיים.</p>`) +
-        redLine(),
+          'המיומנויות שיופיעו בדף הצפייה') +
+        // שאלות: מתי, מי שואל את מי ובשביל מה (12/10/2026, בדיקת הלקוחה)
+        sec('שאלות לשיחה', dtable(['מתי', 'מי שואל את מי, ובשביל מה', 'השאלות'], [
+          ['לפני הצפייה', 'המנחה שואלת את הצופות, כדי לכוון את תשומת הלב למה שיקרה בסצנה.', ol(f.preQuestions)],
+          ['שאלות לסיכום: אחרי הצפייה', 'המנחה שואלת קודם את המתנסה ואחר כך את הצופות, כדי לחבר בין מה שקרה למיומנויות.', ol((f.debrief || []).concat(['מה עזר לשיחה?', 'מה אפשר לעשות אחרת בפעם הבאה?']))],
+          ['רפלקציה: בסוף המפגש', 'כל משתתפת לעצמה, בכתב, כדי לבחור צעד אחד שתיקח איתה.', ol(f.reflection)],
+        ].filter((r) => /<li>/.test(r[2])).map(([k, w, v]) => [`<b>${esc(k)}</b>`, esc(w), v]))) +
+        redLine() +
+        ((f.sources || []).length ? sec('מקורות להרחבה', list(f.sources)) : ''),
     });
 
     const tic = (a.visible || []).find((v) => String(v).includes('"')) || '';
@@ -451,16 +486,16 @@ ${WIDGET}`;
         ['פתיחה', `<p style="margin:0">${esc(entrance.posture)} · ${esc(entrance.doing)}</p><p style="margin:5px 0 0" class="big">${esc(entrance.firstLine)}</p>`],
         ['הביטוי החוזר שלך', tic ? `<div class="big">${esc(tic)}</div>` : ''],
         ['לא תגידי בשום מצב', wontSay ? `<div class="stop">${esc(wontSay)}</div>` : ''],
-        ['בלחץ שלישי יוצא רק זה', a.valve ? `<div class="warm">${esc(a.valve)}</div>` : ''],
-        ['נפתחת כש', a.opens ? esc(a.opens) : ''],
+        ['מה תגלי רק אחרי שילחצו עלייך כמה פעמים', a.valve ? `<div class="warm">${esc(a.valve)}</div>` : ''],
+        ['מה פותח אותך', a.opens ? esc(a.opens) : ''],
         ['מולך', `${esc(tr.role)}${tr.seniority ? ', ' + esc(tr.seniority) : ''}. ${esc((tr.traits || [])[1] || (tr.traits || [])[0] || '')}` +
           ((tr.likelyMoves || []).length ? `<ul class="q" style="margin-top:5px">${tr.likelyMoves.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '')],
       ].filter((r) => r[1])) +
       `<div class="dt-cap">חמש התפניות</div>` +
-      dtable(['#', 'התפנית', 'מה זה מבקש ממנה', 'ליבה או סוג'], (s.turningPoints || []).map((t) => [esc(t.n), `<b>${esc(t.name)}</b>`, esc(t.demands), tpType(t)]))
+      dtable(['#', 'התפנית', 'הרגע', 'מה זה מבקש ממנה', 'ליבה או סוג'], (s.turningPoints || []).map((t) => [esc(t.n), `<b>${esc(t.name)}</b>`, esc(t.trigger), esc(t.demands), tpType(t)]))
         .replace(/<td data-label="#">/g, '<td class="n" data-label="#">').replace(/<td data-label="ליבה או סוג">/g, '<td class="ty" data-label="ליבה או סוג">') +
       ((s.endings || []).length ? dtable(null, [['סיומים', `<ul class="q">${s.endings.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>`]]) : '') +
-      `<div class="free">אם היא עושה משהו שאינו כאן: שאלי מה ${esc(actorFirstName)} תעשה לנוכח החשש שלה, ולכי לשם. <b>המפה היא מלאי ולא כלוב.</b></div>`);
+      `<div class="free">אם היא עושה משהו שאינו כאן: שאלי מה ${esc(actorFirstName)} תעשה לנוכח החשש שלה, ולכי לשם. <b>לא כל התפניות יקרו, ולא בסדר הזה.</b></div>`);
 
     // בדיקת דלף על גרסת המתנסה — אותה בדיקה שרצה ברתמה.
     const secrets = [
@@ -486,8 +521,8 @@ ${WIDGET}`;
   // ── מסלולי הורים / נוער: תסריט + כרטיס דמות לכל אחת מהשתיים ──
   function renderRoleDocs(s) {
     const byKey = Object.fromEntries(s.characters.map((c) => [c.key, c]));
-    const meta = [`<b>${esc(s.creator)}</b>`, esc(s.institution), esc(s.date), `<b>${esc(s.duration)}</b> דקות`,
-      esc(s.age), esc(s.approach), esc(s.id)];
+    const meta = [`<b>${esc(s.creator)}</b>`, esc(s.institution), esc(dateIL(s.date)), `<b>${esc(s.duration)}</b> דקות`,
+      esc(s.age), esc(s.approach)].filter(Boolean);
     const approachShort = String(s.approach || '').replace(/\s*\(.*\)\s*$/, '');
     const isParents = s.track === 'parents';
     const otherOf = (key) => s.characters.find((c) => c.key !== key);
@@ -525,6 +560,7 @@ ${WIDGET}`;
       meta,
       body:
         sec('פתיחה לקבוצה', aloud(groupIntro), 'להקראה לפני הסצנה') +
+        flowSec(s.duration || 5, 'מי משחק כל דמות, ומי צופה') +
         sec('תמצית התרחיש', dtable(null, [
           ['מה קורה כאן', paras(s.background)],
           ...s.characters.map((c) => [esc(c.name), paras(c.summary)]),
@@ -533,13 +569,13 @@ ${WIDGET}`;
         sec('חמש נקודות התפנית', tpTables(s.turningPoints, {
           whoOf: (t) => byKey[t.who].name, otherOf: (t) => otherOf(t.who).name,
           doLabel: 'מה קורה מצד הדמות', askLabel: 'מה זה מבקש',
-        }), 'מלאי, לא רצף') +
+        }), 'לא כל התפניות יקרו, ולא בסדר הזה') +
         sec('איך זה מתגלגל ואיך זה נגמר', dtable(null, [
-          ['איך חמש הדקות יכולות להתגלגל', paras(s.arc)],
+          ['איך הסצנה יכולה להתגלגל', paras(s.arc)],
           ['איך זה יכול להיגמר', paras(s.endingsProse)],
         ].filter((r) => r[1]))) +
         sec('מה לראות ומה לשאול', dtable(['נקודה לצפייה', 'מה ראיתי'], (s.watch || []).map((w) => [esc(w), ''])) +
-          ((s.debrief || []).length ? dtable(['מתי', 'השאלות'], [['<b>תחקיר — אחרי הצפייה</b>', ol(s.debrief)]]) : '')) +
+          ((s.debrief || []).length ? dtable(['מתי', 'מי שואל את מי, ובשביל מה', 'השאלות'], [['<b>שאלות לסיכום: אחרי הצפייה</b>', 'המנחה שואלת קודם את המשחקים ואחר כך את הצופים, כדי לחבר בין מה שקרה בסצנה לחיים.', ol(s.debrief)]]) : '')) +
         red(s.redLine) + cardsSec,
     });
     const files = [[`${s.outputs.scenario}.html`, scenario, s.scenarioBadge]];
@@ -558,7 +594,7 @@ ${WIDGET}`;
             whoOf: (t) => (t.who === c.key ? c.pronoun : byKey[t.who].name),
             otherOf: (t) => (otherOf(t.who).key === c.key ? c.pronoun : otherOf(t.who).name),
             doLabel: 'מה קורה מצד הדמות', askLabel: 'מה זה מבקש',
-          }), 'מלאי, לא רצף') +
+          }), 'לא כל התפניות יקרו, ולא בסדר הזה') +
           sec('איך זה מתגלגל ואיך זה נגמר', dtable(null, [
             [isParents ? 'איך הערב יכול להתגלגל' : 'איך השיחה יכולה להתגלגל', paras(s.arc)],
             ['איך זה יכול להיגמר', paras(s.endingsProse)],

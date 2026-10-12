@@ -13,7 +13,7 @@
   const today = () => new Date().toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' });
   try { const h = sessionStorage.getItem('sbe.session.homeUrl'); if (h) F('nav-home').href = h; } catch (e) {}
 
-  const ITEM = () => ({ id: 'd' + Date.now().toString(36), step: 1, rev: 0, form: {}, start: null, pick: '', question: '', criteria: [], how: '', roles: [], path: [], plan: [],
+  const ITEM = () => ({ id: 'd' + Date.now().toString(36), step: 1, rev: 0, form: {}, start: null, pick: '', question: '', criteria: [], how: '', roles: [], path: [], plan: [], flow: [],
     claims: [], open: [], evidence: [], draft: { evidence: [] }, versions: [], gains: {}, chats: { 1: [], 2: [], 3: [], 4: [] }, feedback: [], sources: [] });
   let S = { items: [], cur: '' };
   try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && Array.isArray(v.items)) S = v; } catch (e) {}
@@ -107,7 +107,7 @@
     const d = {}; M.FIELDS.forEach((f) => { d[f.k] = (F('f-' + f.k).value || '').trim(); }); I.form = d; save();
     const miss = M.FIELDS.filter((f) => f.main && !d[f.k]).map((f) => f.l);
     F('err1').hidden = true;
-    if (miss.length) { F('err1').textContent = 'כדי להמשיך, נשמח למלא: ' + miss.join(', ') + '.'; F('err1').hidden = false; return; }
+    if (miss.length) { F('err1').textContent = 'כדי להמשיך, אפשר למלא: ' + miss.join(', ') + '.'; F('err1').hidden = false; return; }
     const b = F('go'); b.disabled = true; const stop = K.waiting(F('wait1'), 'מכינה שאלות חקר, תנאי בדיקה ותפקידים.', 60);
     const it = I, st = it.rev || 0; let o = null, bad = null;
     try { o = await K.json(M.startSystem(KB), anon('השדות:\n' + M.inputText(d) + '\n\nהכיני את נקודת הפתיחה.'), M.validStart, 16000); }
@@ -117,7 +117,7 @@
     if (I !== it || (it.rev || 0) !== st) { F('err1').textContent = K.LATE; F('err1').hidden = false; return; }
     I.start = o; I.pick = ''; I.sources = arr(o.sources);
     I.roles = arr(o.roles).filter((r) => r && r.role).map((r) => Object.assign({ who: '', okReady: false }, r));
-    I.path = arr(o.path); I.plan = arr(o.plan).map((x) => Object.assign({}, x));
+    I.path = arr(o.path); I.plan = arr(o.plan).map((x) => Object.assign({}, x)); I.flow = arr(o.flow);
     save(); draw1(); F('out1').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
   function draw1() {
@@ -141,7 +141,8 @@
       root.appendChild(K.etable([{ k: 'what', l: M.SECTIONS.criteria.cols[0], area: true }, { k: 'why', l: M.SECTIONS.criteria.cols[1], area: true }], I.criteria, edited, { add: 'הוספת תנאי' }));
       head(root, 'roles'); root.appendChild(roleTiles(true));
       if (I.path.length) { head(root, 'path'); root.appendChild(T('path', I.path.map((p) => [txt(p.what), txt(p.how)]))); }
-      if (I.start.claimStart) root.appendChild(el('p', 'note', '💬 לפתיחת השלב הבא: ' + txt(I.start.claimStart)));
+      if (I.start.claimStart) root.appendChild(el('p', 'note', '💬 משפט פתיחה לשלב הטענות (המורה אומרת): ' + txt(I.start.claimStart)));
+      if (arr(I.flow).length) { head(root, 'flow'); root.appendChild(flowNode()); }
     });
     out.appendChild(K.gain(I.gains, 1, M.GAIN[1], () => save()));
     K.chat(out, chatOpts(1));
@@ -175,9 +176,10 @@
   function draw2() {
     const out = F('out2'); out.textContent = '';
     out.appendChild(el('p', 'note', '❓ ' + I.question));
+    if (I.start && I.start.claimStart) out.appendChild(el('p', 'note', '💬 לפתיחת השלב: ' + txt(I.start.claimStart)));
     const kit = el('div', 'kit'); out.appendChild(kit);
     head(kit, 'claims');
-    kit.appendChild(el('p', 'sub', 'לפני שמגיבים לרעיון, מישהו/י אחר/ת מסביר/ה אותו במילים שלו/ה.'));
+    kit.appendChild(el('p', 'sub', 'לפני שמגיבים לרעיון, משתתף/ת אחר/ת מסביר/ה אותו במילים שלו/ה.'));
     kit.appendChild(K.etable([{ k: 'text', l: 'הטענה או ההסבר', area: true }, { k: 'by', l: 'מי הציע/ה (תפקיד)', opts: roleNames }, { k: 'peer', l: 'במילים של עמית/ה', area: true },
       { k: 'pro', l: 'נימוקים בעד', area: true }, { k: 'con', l: 'נימוקים נגד', area: true }, { k: 'state', l: 'מצב', opts: M.CLAIM_STATES }], I.claims, edited, { add: 'הוספת טענה', blank: () => ({ state: 'פתוחה' }) }));
     head(kit, 'open');
@@ -190,7 +192,7 @@
   function drawGaps() {
     const box = F('gaps'); if (!box) return; box.textContent = '';
     const g = M.envelopeGaps(I.roles);
-    if (g.length) box.appendChild(el('p', 'note', '🧰 לפני הבדיקה: ' + g.join(', ') + ' עוד לא מסומנים "מוכן". אפשר לתאם זמן, תמיכה או חלופה. אין צורך לחפש אשמים.'));
+    if (g.length) box.appendChild(el('p', 'note', '🧰 לפני הבדיקה: ' + g.join(', ') + ' עוד לא מסומנים "מוכן". אפשר לתאם זמן, תמיכה או חלופה.'));
     else if (I.roles.length) box.appendChild(el('p', 'note ok', '✓ כל תפקידי המעטפת מוכנים. אפשר לצאת לבדיקה.'));
   }
   function draw3() {
@@ -232,7 +234,7 @@
     });
     const ap = el('label', 'okline'), acb = el('input'); acb.type = 'checkbox'; acb.checked = !!d.approved;
     acb.addEventListener('change', () => { d.approved = acb.checked; save(); });
-    ap.append(acb, document.createTextNode(' המורה בדקה ומאשרת את המסקנה'));
+    ap.append(acb, document.createTextNode(' המורה בדקה ואישרה את המסקנה'));
     const by = el('div', 'f'); by.append(el('label', null, 'מי אישר/ה'), K.field(d, 'by', 'מי אישר/ה', false, () => save()));
     kit.append(ap, by);
     const err = el('p', 'err'); err.hidden = true;
@@ -251,7 +253,7 @@
   }
   F('revise').addEventListener('click', async () => {
     const box = F('sugg'); box.textContent = ''; F('err4').hidden = true;
-    if (!I.evidence.some((e) => String(e.found || '').trim())) { F('err4').textContent = 'כדי לקבל הצעה לגרסה מתוקנת, נשמח לראיה אחת לפחות עם "מה נמצא" בצעד 3.'; F('err4').hidden = false; return; }
+    if (!I.evidence.some((e) => String(e.found || '').trim())) { F('err4').textContent = 'כדי לקבל הצעה לגרסה מתוקנת, אפשר למלא "מה נמצא" לפחות בראיה אחת בצעד 3.'; F('err4').hidden = false; return; }
     const b = F('revise'); b.disabled = true; const stop = K.waiting(F('wait4'), 'מכינה הצעה לגרסה מתוקנת.', 40);
     const it = I, st = it.rev || 0; let o = null, bad = null;
     const content = anon(['שאלת החקר: ' + I.question, 'המטרה: ' + (I.form.goal || ''), 'גיל: ' + (I.form.age || '') + ' · תחום: ' + (I.form.subject || ''),
@@ -279,12 +281,15 @@
   function printNode(what) {
     const root = el('div', 'kit');
     if (what !== 'roles') {
-      root.appendChild(el('h2', null, 'שאלת החקר: ' + (I.question || '')));
-      root.appendChild(window.SBE_TABLE(null, [['תחום', I.form.subject], ['גיל', I.form.age], ['המטרה', I.form.goal], ['איך בחרנו', I.how]].filter((r) => r[1]), 'kit-t'));
+      root.appendChild(window.SBE_TABLE(null, [['שאלת החקר', I.question], ['תחום', I.form.subject], ['גיל', I.form.age], ['המטרה', I.form.goal], ['איך בחרנו', I.how]].filter((r) => r[1]), 'kit-t'));
       if (I.criteria.length) { head(root, 'criteria'); root.appendChild(T('criteria', I.criteria.map((c) => [c.what, c.why]))); }
-      if (I.claims.length) { head(root, 'claims'); root.appendChild(T('claims', I.claims.map((c) => [c.text, c.by, c.peer, c.pro, c.con, c.state].map((x) => x || '')))); }
+      // בתיק החקר: איך עובדים ומהלך המפגש הראשון לפני הטענות, לפי סדר העבודה
+      if (what === 'all') { if (I.path.length) { head(root, 'path'); root.appendChild(T('path', I.path.map((p) => [txt(p.what), txt(p.how)]))); } if (arr(I.flow).length) { head(root, 'flow'); root.appendChild(flowNode()); } }
+      // מספר לכל טענה וראיה, כדי ש"טענה 1" ו"על אילו ראיות: 1, 2" יהיו ברורים (12/10/2026, בדיקת הלקוחה)
+      const NT = (key, rows) => window.SBE_TABLE(['#'].concat(M.SECTIONS[key].cols), rows.map((r, i) => [String(i + 1)].concat(r)), 'kit-t');
+      if (I.claims.length) { head(root, 'claims'); root.appendChild(NT('claims', I.claims.map((c) => [c.text, c.by, c.peer, c.pro, c.con, c.state].map((x) => x || '')))); }
       if (I.open.length) { head(root, 'open'); root.appendChild(T('open', I.open.map((o) => [o.q || '', o.from || '']))); }
-      if (I.evidence.length) { head(root, 'evidence'); root.appendChild(T('evidence', I.evidence.map((e) => [e.what, e.kind, e.source, e.by, e.until, e.claim !== undefined && e.claim !== '' ? 'טענה ' + (+e.claim + 1) : '', e.found, e.limits, e.stance].map((x) => x || '')))); }
+      if (I.evidence.length) { head(root, 'evidence'); root.appendChild(NT('evidence', I.evidence.map((e) => [e.what, e.kind, e.source, e.by, e.until, e.claim !== undefined && e.claim !== '' ? 'טענה ' + (+e.claim + 1) : '', e.found, e.limits, e.stance].map((x) => x || '')))); }
     }
     if (what !== 'board') {
       if (I.roles.length) {
@@ -295,6 +300,7 @@
       }
     }
     if (what === 'all') {
+      if (I.start && I.start.claimStart) root.appendChild(el('p', 'note', '💬 לפתיחת שלב הטענות: ' + txt(I.start.claimStart)));
       if (I.plan.length) { head(root, 'plan'); root.appendChild(T('plan', I.plan.map((p) => [p.who, p.what, p.when, p.conditions, p.check].map((x) => txt(x || ''))))); }
       const d = I.draft || {};
       if (String(d.text || '').trim()) {
@@ -308,6 +314,11 @@
     return root;
   }
   window.sbeDialoguePrintNode = printNode;
+  // מהלך מפגש אחיד (12/10/2026): פתיחה · פעילות מרכזית · סיכום · אחרי המפגש, בשלוש עמודות
+  function flowNode() {
+    return window.SBE_DOC.flowTable(arr(I.flow).map((r) => ({ phase: r.phase, title: txt(r.title), minutes: r.minutes, desc: txt(r.desc), guide: txt(r.guide), res: txt(r.res) })),
+      [['desc', 'מה הקבוצה עושה'], ['guide', 'הנחיה למורה (כולל השאלות)'], ['res', 'עזרים וחומרים']]);
+  }
   // מעבדת הדמו (?part=full): טענות וראיות לדוגמה לחקר שנפתח מהדוגמה, כדי להפיק מול המודל גם את הצעת הגרסה המתוקנת
   window.sbeDialogueDemoFill = function () {
     const r = roleNames();
@@ -322,7 +333,7 @@
   };
   const KINDS = { board: 'לוח שאלה, טענות וראיות', roles: 'כרטיסי תפקיד', all: 'תיק החקר' };
   document.querySelectorAll('[data-print]').forEach((b) => b.addEventListener('click', () => {
-    const w = b.dataset.print; window.SBE_DOC.print({ title: I.question || 'חקר משותף', kind: KINDS[w], node: printNode(w) });
+    const w = b.dataset.print; window.SBE_DOC.print({ title: I.question || 'חקר משותף', kind: KINDS[w], node: printNode(w), landscape: w !== 'roles' });
   }));
 
   // ── דוגמה (מנהלת המערכת בלבד) ──

@@ -57,11 +57,12 @@
   const roleNames = () => arr(I.roles).map((r) => r.role).filter(Boolean).concat(['משתתף/ת']);
   const ideaOpts = () => I.ideas.map((x, i) => [String(i), 'רעיון ' + (i + 1) + ': ' + String(x.idea || '').slice(0, 40)]);
   function context() {
-    return anon(['הצוות: ' + (I.form.team || ''), 'האתגר: ' + (I.form.challenge || ''), 'מה רוצים בסוף: ' + (I.form.outcome || ''),
+    return anon(['רמה: ' + (I.form.level || ''), 'גיל: ' + (I.form.age || ''), 'כמה משתתפים: ' + (I.form.size || ''), 'זמן: ' + (I.form.time || ''), 'הצוות: ' + (I.form.team || ''), 'האתגר: ' + (I.form.challenge || ''), 'מה רוצים בסוף: ' + (I.form.outcome || ''),
       I.ideas.length ? 'רעיונות:\n' + I.ideas.map((x, i) => (i + 1) + '. ' + (x.idea || '')).join('\n') : ''].filter(Boolean).join('\n'));
   }
-  const chatOpts = (n) => ({ history: () => (I.chats[n] = I.chats[n] || []), save: () => save(), context, system: () => M.stageSystem(n) });
-  const fbOpts = { context, log: (x) => { I.feedback.push(x); save(); } };
+  const ADULT = () => /בוגרים/.test(I.form.level || '');
+  const chatOpts = (n) => ({ ph: 'למשל: איך מזמינים מי שעוד לא דיבר/ה?', history: () => (I.chats[n] = I.chats[n] || []), save: () => save(), context, system: () => M.stageSystem(n) });
+  const fbOpts = { adult: ADULT, context, log: (x) => { I.feedback.push(x); save(); } };
   function withRefs(root, build) {
     if (window.SBE_REFS) SBE_REFS.begin(SRC, 'resilience-advisor-sources.html');
     build(root);
@@ -76,13 +77,19 @@
       const box = el('div', 'f'), id = 'f-' + f.k, label = el('label', null, f.l); label.htmlFor = id;
       if (f.main) label.appendChild(el('span', 'main-tag', 'שדה עיקרי'));
       let input;
-      if (f.type === 'select') { input = el('select'); input.appendChild(new Option('בחירה…', '')); f.opts.forEach((o) => input.appendChild(new Option(o, o))); }
+      if (f.type === 'select') {
+        input = el('select'); input.appendChild(new Option('בחירה…', ''));
+        // גיל וצוות לפי הרמה שנבחרה; הרמה עצמה רשימה סגורה (12/10/2026, בדיקת הלקוחה)
+        const by = f.k === 'age' ? M.AGES_BY_LEVEL : f.k === 'team' ? M.TEAMS_BY_LEVEL : null;
+        ((by && by[I.form.level]) || f.opts).forEach((o) => input.appendChild(new Option(o, o)));
+        if (f.k === 'level') input.setAttribute('data-closed', '');
+      }
       else if (f.type === 'area') input = el('textarea');
       else { input = el('input'); input.type = 'text'; }
       input.id = id; if (f.ph) input.placeholder = f.ph;
       const v = I.form[f.k];
       if (v) { if (f.type === 'select' && ![...input.options].some((o) => o.value === v)) input.appendChild(new Option(v, v)); input.value = v; }
-      const keep = () => { I.form[f.k] = input.value; edited(); };
+      const keep = () => { I.form[f.k] = input.value; edited(); if (f.k === 'level') { M.FIELDS.forEach((g) => { const n = F('f-' + g.k); if (n && g.k !== 'level') I.form[g.k] = n.value; }); [['age', M.AGES_BY_LEVEL], ['team', M.TEAMS_BY_LEVEL]].forEach(([k, by]) => { const ok = by[I.form.level]; if (ok && I.form[k] && !ok.includes(I.form[k])) I.form[k] = ''; }); save(); buildForm(); } };
       input.addEventListener('input', keep); input.addEventListener('change', keep);
       box.append(label, input); (f.type === 'area' ? form : grid).appendChild(box);
       if (f.k === 'time') form.appendChild(grid);
@@ -93,7 +100,7 @@
     const d = {}; M.FIELDS.forEach((f) => { d[f.k] = (F('f-' + f.k).value || '').trim(); }); I.form = d; save();
     const miss = M.FIELDS.filter((f) => f.main && !d[f.k]).map((f) => f.l);
     F('err1').hidden = true;
-    if (miss.length) { F('err1').textContent = 'כדי להמשיך, נשמח למלא: ' + miss.join(', ') + '.'; F('err1').hidden = false; return; }
+    if (miss.length) { F('err1').textContent = 'כדי להמשיך, אפשר למלא: ' + miss.join(', ') + '.'; F('err1').hidden = false; return; }
     const b = F('go'); b.disabled = true; const stop = K.waiting(F('wait1'), 'מכינה מהלך חשיבה, תפקידים והסכמות.', 45);
     const it = I, st = it.rev || 0; let o = null, bad = null;
     try { o = await K.json(M.planSystem(KB), anon('השדות:\n' + M.inputText(d) + '\n\nהכיני את מהלך החשיבה.'), M.validPlan, 12000); }
@@ -140,7 +147,7 @@
     out.appendChild(K.gain(I.gains, 1, M.GAIN[1], () => save()));
     K.chat(out, chatOpts(1));
     const row = el('div', 'btns no-print');
-    row.append(btn('🖨 מהלך החשיבה ותפקידים', 'btn ghost sm', () => print('plan')), btn('מתחילים: כל הקולות ←', 'btn', () => goStep(2)));
+    row.append(btn('🖨 מהלך החשיבה והתפקידים', 'btn ghost sm', () => print('plan')), btn('מתחילים: כל הקולות ←', 'btn', () => goStep(2)));
     out.appendChild(row);
   }
 
@@ -158,7 +165,7 @@
     const v = el('div'); v.id = 'voices'; out.appendChild(v); voicesLine();
     const kit = el('div', 'kit'); out.appendChild(kit);
     head(kit, 'ideas');
-    kit.appendChild(el('p', 'sub', 'לפני שמגיבים, מישהו/י אחר/ת מסביר/ה את הרעיון במילים שלו/ה. "מי הציע/ה": תפקיד, או "משתתף/ת 1", "משתתף/ת 2".'));
+    kit.appendChild(el('p', 'sub', 'לפני שמגיבים, משתתף/ת אחר/ת מסביר/ה את הרעיון במילים שלו/ה. "מי הציע/ה": תפקיד, או "משתתף/ת 1", "משתתף/ת 2".'));
     kit.appendChild(K.etable([{ k: 'idea', l: 'הרעיון', area: true }, { k: 'by', l: 'מי הציע/ה' }, { k: 'peer', l: 'במילים של עמית/ה', area: true }, { k: 'adds', l: 'מה זה מוסיף', area: true }], I.ideas,
       () => { edited(); voicesLine(); }, { add: 'הוספת רעיון', after: voicesLine }));
     const f = el('div', 'f'); f.append(el('label', null, 'מי עוד לא נשמע/ה, ואיך נזמין (בלי שמות)'), K.field(I, 'missing', 'מי עוד לא נשמע/ה', true, edited)); kit.appendChild(f);
@@ -197,7 +204,7 @@
     const refl = el('div', 'kit'); out.append(rb, w, err, refl);
     const go = btn('משוב על התהליך', 'btn', async () => {
       err.hidden = true;
-      if (!I.ideas.length) { err.textContent = 'כדי לקבל משוב על התהליך, נשמח לרעיון אחד לפחות בצעד 2.'; err.hidden = false; return; }
+      if (!I.ideas.length) { err.textContent = 'כדי לקבל משוב על התהליך, אפשר להוסיף רעיון אחד לפחות בצעד 2.'; err.hidden = false; return; }
       go.disabled = true; const stop = K.waiting(w, 'קוראת את מה שעשיתם.', 30);
       const it = I, st = it.rev || 0; let o = null, bad = null;
       const content = anon([context(), 'מי עוד לא נשמע/ה: ' + (I.missing || ''),
@@ -240,9 +247,9 @@
   // ── הדפסה ──
   function printNode(what) {
     const root = el('div', 'kit');
-    root.appendChild(window.SBE_TABLE(null, [['הצוות', I.form.team], ['האתגר', I.form.challenge], ['מה רוצים בסוף', I.form.outcome]].filter((r) => r[1]), 'kit-t'));
+    root.appendChild(window.SBE_TABLE(null, [['רמה', I.form.level], ['הצוות', I.form.team], ['גיל', I.form.age], ['כמה משתתפים', I.form.size], ['זמן', I.form.time], ['האתגר', I.form.challenge], ['מה רוצים בסוף', I.form.outcome]].filter((r) => r[1]), 'kit-t'));
     if (what === 'plan' && I.plan) { planBlocks(root, false); return root; }
-    if (I.ideas.length) { head(root, 'ideas'); root.appendChild(T('ideas', I.ideas.map((x) => [x.idea, x.by, x.peer, x.adds].map((v) => v || '')))); }
+    if (I.ideas.length) { head(root, 'ideas'); root.appendChild(window.SBE_TABLE(['#'].concat(M.SECTIONS.ideas.cols), I.ideas.map((x, i) => [String(i + 1)].concat([x.idea, x.by, x.peer, x.adds].map((v) => v || ''))), 'kit-t')); }
     if (I.weigh.length) { head(root, 'weigh'); root.appendChild(T('weigh', I.weigh.map((x) => [x.idea !== undefined && x.idea !== '' ? 'רעיון ' + (+x.idea + 1) : '', x.pro, x.con, x.combine, x.dispute].map((v) => v || '')))); }
     const D = I.decision;
     if (D.what) { head(root, 'decision'); root.appendChild(window.SBE_TABLE(null, [['מה בחרנו', D.what], ['איך החלטנו', D.how], ['מי מוביל/ה', D.who], ['עד מתי', D.when], ['אפשרויות שנשמרות', D.kept]].filter((r) => r[1]), 'kit-t')); }
@@ -271,10 +278,10 @@
     I.gains = Object.assign(I.gains || {}, { 2: 'הרעיון של חבר/ה להפסקה לא היה עולה לנו לבד.', 3: 'מהמחלוקת על הכדורגל הבנו שכדאי כמה תחנות.', 4: 'הגענו לרעיון משולב שאף אחד לא הציע לבד.' });
     save(true);
   };
-  function print(what) { window.SBE_DOC.print({ title: nameOf(I), kind: what === 'plan' ? 'מהלך החשיבה ותפקידים' : 'סיכום הסבב', node: printNode(what) }); }
+  function print(what) { window.SBE_DOC.print({ title: nameOf(I), kind: what === 'plan' ? 'מהלך החשיבה והתפקידים' : 'סיכום הסבב', node: printNode(what) }); }
 
   F('example').addEventListener('click', () => {
-    I.form = { team: 'קבוצת תלמידים', age: 'ה–ו', size: '6', time: '40 דקות', challenge: 'איך מארגנים הפסקה ארוכה שבה לכל אחד ואחת בכיתה יש עם מי לשחק.',
+    I.form = { level: 'יסודי', team: 'קבוצת תלמידים', age: 'ה–ו', size: '6', time: '40 דקות', challenge: 'איך מארגנים הפסקה ארוכה שבה לכל אחד ואחת בכיתה יש עם מי לשחק.',
       outcome: 'שתי הצעות שהצוות בוחר ביניהן, ומי מוביל/ה כל אחת בשבוע הבא.', known: 'ניסינו פעם משחק כיתתי בחצר, ורק חלק הצטרפו.', hard: 'אותם שניים מדברים הרבה, ויש שמחכים בשקט.' };
     edited(); buildForm();
   });

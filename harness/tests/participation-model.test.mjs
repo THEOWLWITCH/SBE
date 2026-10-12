@@ -34,8 +34,8 @@ test('the prompts keep the goal fixed, the way open, and the observation on cond
 });
 
 test('tracking shows what was offered and chosen, what was never chosen, and lessons with one mode only', () => {
-  const t = M.track([{ offered: ['חשוב, זוג, שתף', 'מפת מושגים'], used: { 'חשוב, זוג, שתף': 5, 'מפת מושגים': 0 } }, { offered: ['מפת מושגים', 'כרטיס יציאה: משפט אחד שלמדתי'], used: {} }]);
-  assert.deepEqual(t.rows.find((r) => r.name === 'חשוב, זוג, שתף').cells, ['●', '']);
+  const t = M.track([{ offered: ['חושבים לבד, משוחחים בזוג, משתפים במליאה', 'מפת מושגים'], used: { 'חושבים לבד, משוחחים בזוג, משתפים במליאה': 5, 'מפת מושגים': 0 } }, { offered: ['מפת מושגים', 'כרטיס יציאה: משפט אחד שלמדתי'], used: {} }]);
+  assert.deepEqual(t.rows.find((r) => r.name === 'חושבים לבד, משוחחים בזוג, משתפים במליאה').cells, ['●', '']);
   assert.deepEqual(t.never, ['מפת מושגים', 'כרטיס יציאה: משפט אחד שלמדתי']);
   assert.deepEqual(t.single, [2]);
 });

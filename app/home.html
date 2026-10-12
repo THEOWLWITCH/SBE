@@ -430,7 +430,7 @@ async function renderLecturer(box) {
     det.append(el("p", { class: "sub", style: "margin-top:8px" }, "כל קוד אישי מיועד לסטודנט/ית אחד/ת: בתוקף " + lim.days + " ימים ומאפשר עד " + lim.uses +
       " הפקות משוב. אפשר להחזיק עד " + lim.maxActive + " קודים פעילים בו-זמנית (קוד לקבוצה נספר כקוד אחד). פעילים עכשיו: " + active + "."));
     const cnt = el("input", { type: "number", min: "1", max: String(Math.max(1, room)), value: String(Math.min(room || 1, 1)) });
-    const lbl = el("input", { placeholder: "שם או קורס (לא חובה)", maxlength: "60" });
+    const lbl = el("input", { placeholder: "שם או קורס (רשות)", maxlength: "60" });
     const go2 = el("button", { class: "btn ghost", disabled: room === 0 }, "הפקת קודים אישיים");
     const msg2 = el("div", {});
     go2.addEventListener("click", async () => {

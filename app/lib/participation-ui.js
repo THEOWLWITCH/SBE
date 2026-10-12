@@ -27,7 +27,7 @@
 .paths textarea,.paths input[type=text],.paths input[type=number],.paths select{width:100%;font:inherit;font-size:.9rem;padding:.35rem .5rem;border:1px solid #CDD3D8;border-radius:6px;box-sizing:border-box}
 .paths .perr{color:#8C3A34;font-weight:600}.paths .pwait{color:#5C6771;font-size:.9rem}
 .paths .pnote{background:#F5EAD9;border-radius:6px;padding:.4rem .7rem;font-size:.9rem;margin:.4rem 0}
-.paths .row2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}@media (max-width:640px){.paths .row2{grid-template-columns:1fr}}
+.paths .row2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}@media screen and (max-width:640px){.paths .row2{grid-template-columns:1fr}}
 .paths .ptrack td{text-align:center}.paths .ptrack td:first-child{text-align:right}`;
   function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = String(text); return n; }
   function btn(text, cls, fn) { const b = el('button', 'pbtn' + (cls ? ' ' + cls : ''), text); b.type = 'button'; if (fn) b.addEventListener('click', fn); return b; }
@@ -107,7 +107,7 @@
     }
     function saveLesson() {
       const ps = picked(), c = ctx();
-      const lesson = { label: seqMode ? 'מפגש ' + (S.cur + 1) : 'שיעור ' + (S.lessons.length + 1), date: today(), offered: ps.map((p) => p.name),
+      const lesson = { label: seqMode ? 'מפגש ' + (S.cur + 1) : 'שיעור ' + (S.lessons.length + 1), date: today(), offered: ps.map((p) => p.name), modes: Object.fromEntries(ps.map((p) => [p.name, p.mode || ''])),
         used: Object.fromEntries(ps.map((p) => [p.name, +((S.obs[p.name] || {}).count) || 0])), decision: S.pick || '' };
       if (seqMode) { const n = Math.max(arr(c.sessions).length, S.cur + 1); while (S.lessons.length < n) S.lessons.push({ label: 'מפגש ' + (S.lessons.length + 1), offered: [], used: {} }); S.lessons[S.cur] = lesson; }
       else S.lessons.push(lesson);
@@ -116,15 +116,15 @@
     }
 
     function printCards() {
-      const out = el('div'); out.appendChild(el('p', null, 'מה כולם מדגימים: ' + txt(S.must)));
+      const out = el('div'); out.appendChild(el('p', null, 'מה כל התלמידים מראים, בכל מסלול: ' + txt(S.must)));
       picked().forEach((p) => { const c = el('div', 'rcard'); c.appendChild(el('h3', null, txt(p.name) + ' · ' + txt(p.mode)));
-        [['מה עושים', p.how], ['איך מראים שהבנתי', p.crit], ['מה עוזר אם נתקעים', p.support]].forEach(([l, v]) => { if (!v) return; const r = el('div', 'rcard-row'); r.appendChild(el('b', null, l)); r.appendChild(el('span', null, txt(v))); c.appendChild(r); });
+        [['מה עושים', p.how], ['איך רואים שהבנתם', p.crit], ['מה עוזר אם נתקעים', p.support]].forEach(([l, v]) => { if (!v) return; const r = el('div', 'rcard-row'); r.appendChild(el('b', null, l)); r.appendChild(el('span', null, txt(v))); c.appendChild(r); });
         out.appendChild(c); });
       window.SBE_DOC.print({ title: 'כרטיסי מסלולים', subtitle: txt(ctx().goal || ctx().topic || ''), kind: 'כרטיסי מסלולי השתתפות', node: out });
     }
     function printObs() {
       const out = el('div'); out.appendChild(el('p', null, 'תאריך: ____________   ' + (seqMode ? 'מפגש ' + (S.cur + 1) : '')));
-      out.appendChild(el('p', null, 'מה כולם מדגימים: ' + txt(S.must)));
+      out.appendChild(el('p', null, 'מה כל התלמידים מראים, בכל מסלול: ' + txt(S.must)));
       out.appendChild(T(['המסלול', 'הקריטריון לעדות ללמידה', 'כמה בחרו', 'נראתה עדות להבנה? (כן / בחלקו / לא)', 'מה אפשר או עיכב השתתפות'],
         picked().map((p) => [txt(p.name), txt(p.crit), ' ', ' ', (() => { const d = el('div'); d.style.height = '3.2em'; return d; })()])));
       out.appendChild(el('p', null, 'התצפית היא על התנאים והפעולות, לא על התלמידים.'));
@@ -149,7 +149,7 @@
       if (S.cards.length || S.must) {
         body.appendChild(el('p', 'sub', M.SECTIONS.frame.h));
         const r2 = el('div', 'row2'), a = el('div'), b2 = el('div');
-        a.append(el('b', null, 'מה כולם מדגימים (לא בבחירה)'), area(S, 'must', 'מה כולם מדגימים', 2)); b2.append(el('b', null, 'מה התלמידים בוחרים'), area(S, 'choose', 'מה התלמידים בוחרים', 2));
+        a.append(el('b', null, 'מה כל התלמידים מראים, בכל מסלול (לא בבחירה)'), area(S, 'must', 'מה כל התלמידים מראים', 2)); b2.append(el('b', null, 'מה התלמידים בוחרים'), area(S, 'choose', 'מה התלמידים בוחרים', 2));
         r2.append(a, b2); body.appendChild(r2);
       }
       if (S.cards.length) {
@@ -160,7 +160,7 @@
           [['מה עושים', p.how], ['למה זה מתאים', p.fit], ['מה עוזר', p.support], ['איך זה מנגיש לעמיתים', p.access]].forEach(([l, v]) => { if (!v) return; const q = el('p'); q.appendChild(el('b', null, l)); q.appendChild(document.createTextNode(txt(v))); cd.appendChild(q); });
           if (!p.how) { cd.appendChild(el('b', null, 'מה עושים')); cd.appendChild(area(p, 'how', 'מה עושים: ' + p.name, 2, 'בשניים או שלושה משפטים, כמו בכרטיס לתלמיד')); }
           const lb = el('label'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!p.on; cb.addEventListener('change', () => { p.on = cb.checked; save(); draw(); });
-          lb.append(cb, document.createTextNode(' בוחרת במסלול הזה')); cd.appendChild(lb); grid.appendChild(cd);
+          lb.append(cb, document.createTextNode(' בחירת המסלול')); cd.appendChild(lb); grid.appendChild(cd);
         });
         body.appendChild(grid);
       }
@@ -177,7 +177,7 @@
       // 2. קריטריונים, כרטיסים ודף תצפית
       if (ps.length) {
         body.appendChild(el('h4', null, '2. ' + M.SECTIONS.criteria.h)); body.appendChild(el('p', 'sub', M.SECTIONS.criteria.sub));
-        body.appendChild(T(M.SECTIONS.criteria.cols, ps.map((p) => { const ok = el('input'); ok.type = 'checkbox'; ok.checked = !!p.ok; ok.setAttribute('aria-label', 'אישרתי: ' + p.name); ok.addEventListener('change', () => { p.ok = ok.checked; save(); }); return [txt(p.name) + ' · ' + (p.mode || ''), area(p, 'crit', 'הקריטריון: ' + p.name, 2, 'מה תראי או תשמעי שיגיד שהבינו'), ok]; })));
+        body.appendChild(T(M.SECTIONS.criteria.cols, ps.map((p) => { const ok = el('input'); ok.type = 'checkbox'; ok.checked = !!p.ok; ok.setAttribute('aria-label', 'אישרתי: ' + p.name); ok.addEventListener('change', () => { p.ok = ok.checked; save(); }); return [txt(p.name) + ' · ' + (p.mode || ''), area(p, 'crit', 'הקריטריון: ' + p.name, 2, 'מה אפשר לראות או לשמוע שמראה שהבינו'), ok]; })));
         const row = el('div');
         row.append(btn('🖨 כרטיסי מסלולים לתלמידים', 'ghost', printCards), btn('🖨 דף תצפית', 'ghost', printObs));
         if (opts.insert) row.appendChild(btn('➕ הוספה לתכנון הפעילות', 'ghost', () => { opts.insert('מסלולי השתתפות: ' + ps.map((p) => p.name + ' (' + p.mode + ')').join('; ') + '. מה כולם מדגימים: ' + txt(S.must)); }));
@@ -205,8 +205,9 @@
         const dec = S.lessons.filter((l) => l.decision).map((l) => [l.label + (l.date ? ' (' + l.date + ')' : ''), l.decision]);
         if (dec.length) body.appendChild(T(['השיעור', 'ההחלטה לשיעור הבא'], dec));
         if (tr.never.length) body.appendChild(el('p', 'pnote', 'הוצעו ולא נבחרו עדיין: ' + tr.never.join('; ') + '. אפשר לבדוק מה יעזור לנסות אותם, או להחליף.'));
-        if (tr.single.length) body.appendChild(el('p', 'pnote', 'בשיעורים ' + tr.single.join(', ') + ' הוצעה דרך השתתפות מסוג אחד בלבד (רק לבד, או רק בקבוצה).'));
+        if (tr.single.length) body.appendChild(el('p', 'pnote', (seqMode ? 'במפגשים ' : 'בשיעורים ') + tr.single.join(', ') + ' הוצעה דרך השתתפות מסוג אחד בלבד (רק לבד, או רק בקבוצה).'));
       }
+      if (S.resilience && !(window.SBE_REFS && S.sources.length)) { body.appendChild(el('h4', null, 'תרומה לחוסן החברתי')); body.appendChild(el('p', null, txt(S.resilience))); }
       if (window.SBE_REFS && S.sources.length) { SBE_REFS.begin(SRC, 'resilience-advisor-sources.html'); const rr = el('div'); if (S.resilience) { rr.appendChild(el('h4', null, 'תרומה לחוסן החברתי')); rr.appendChild(el('p', null, txt(S.resilience))); } SBE_REFS.add(S.sources); const rs = SBE_REFS.end(); if (rs) rr.appendChild(rs); body.appendChild(rr); }
       if (window.SBE_OPEN && SBE_OPEN.scan) try { SBE_OPEN.scan(); } catch (e) {}
     }

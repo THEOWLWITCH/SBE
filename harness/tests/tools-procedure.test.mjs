@@ -20,7 +20,7 @@ test('the prompt holds the fixed backbone for every tool and keeps sensitive ite
     for (const t of [P.system(kind), P.reviseSystem(kind)]) {
       for (const part of ['map', 'structure', 'roles', 'never', 'handover', 'ask', 'start', 'check']) assert.ok(t.includes('- ' + part + ':'), part);
       assert.match(t, /לעולם לא בקבוצת הודעות, בלוח בכיתה או בכלי שתלמידים רואים/);
-      assert.match(t, /עוד לא יודעת/); assert.match(t, /אל תניחי פרטים על כלי מסחרי מסוים/);
+      assert.match(t, /עוד לא ברור/); assert.match(t, /אל תניחי פרטים על כלי מסחרי מסוים/);
       assert.match(t, /בלי שמות של אנשים/);
     }
   }

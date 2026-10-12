@@ -72,7 +72,7 @@ input[type=text],input[type=number],select,textarea{width:100%;font:inherit;font
 textarea{min-height:64px;resize:vertical}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem}
-@media (max-width:640px){.row2,.row3{grid-template-columns:1fr}}
+@media screen and (max-width:640px){.row2,.row3{grid-template-columns:1fr}}
 .btn{display:inline-block;font:inherit;font-weight:700;padding:.65rem 1.1rem;border-radius:8px;border:none;cursor:pointer;
   background:var(--spoken);color:#fff}
 .btn:disabled{opacity:.5;cursor:default}
@@ -85,12 +85,12 @@ textarea{min-height:64px;resize:vertical}
 .steps li{background:var(--spoken-soft);border-radius:8px;padding:.6rem .75rem;font-size:.9rem}
 .steps b{display:block;color:var(--spoken)}
 .steps li.step-opt{background:transparent;border:1px dashed var(--spoken)}
-@media (max-width:640px){.steps{grid-template-columns:1fr}}
+@media screen and (max-width:640px){.steps{grid-template-columns:1fr}}
 .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:.6rem;align-items:center;margin:.6rem 0}
 .vs div{border-radius:8px;padding:.55rem .75rem;font-size:.9rem}
 .vs .from{background:var(--surface-2)}.vs .to{background:var(--auto-soft)}
 .vs .arrow{color:var(--muted);font-weight:700}
-@media (max-width:640px){.vs{grid-template-columns:1fr}.vs .arrow{text-align:center}}
+@media screen and (max-width:640px){.vs{grid-template-columns:1fr}.vs .arrow{text-align:center}}
 fieldset{border:none}
 legend{font-weight:700;font-size:1.05rem;color:var(--spoken);margin-bottom:.2rem}
 .sec{border-top:1px solid var(--hair);padding-top:.9rem;margin-top:1rem}
@@ -103,7 +103,7 @@ legend{font-weight:700;font-size:1.05rem;color:var(--spoken);margin-bottom:.2rem
 .habits-dd>summary.has{border-color:var(--spoken)}
 .habits-dd .habits{grid-template-columns:1fr;max-height:20rem;overflow:auto;border:1px solid var(--hair);border-top:0;border-radius:0 0 8px 8px;padding:.4rem;margin-top:0}
 .habits{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.3rem}
-@media (max-width:640px){.habits{grid-template-columns:1fr}}
+@media screen and (max-width:640px){.habits{grid-template-columns:1fr}}
 .habits label{margin:0;font-weight:500;font-size:.9rem;display:flex;gap:.45rem;align-items:flex-start;border:1px solid var(--hair);
   border-radius:8px;padding:.45rem .6rem;cursor:pointer;background:var(--ground)}
 .habits input{margin-top:.25rem;flex:0 0 auto;width:16px;height:16px}
@@ -141,7 +141,7 @@ ul.tl li{margin:.25rem 0}
 .kit-table p{margin:0 0 .3rem}.kit-table ul{margin:0;padding-inline-start:1.1rem}
 .kit-table .say{margin:.1rem 0 .3rem}.kit-table .basis{margin:.3rem 0 0;font-size:.8rem}.kit-table .min{color:var(--muted);font-size:.82rem}
 .kit-table tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--surface-2) 35%,transparent)}
-@media (max-width:640px){
+@media screen and (max-width:640px){
   .kit-table thead{display:none}
   .kit-table,.kit-table tbody,.kit-table tr,.kit-table td,.kit-table tbody th{display:block;width:auto}
   .kit-table tr{border:1px solid var(--hair);border-radius:8px;margin:.5rem 0;overflow:hidden}
@@ -150,7 +150,7 @@ ul.tl li{margin:.25rem 0}
   .kit-table td[data-label]::before{content:attr(data-label);display:block;font-weight:700;font-size:.8rem;color:var(--muted)}
 }
 .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
-@media (max-width:640px){.qgrid{grid-template-columns:1fr}}
+@media screen and (max-width:640px){.qgrid{grid-template-columns:1fr}}
 .qgrid .rcard{margin:0}
 .wait-t{font-weight:600}.wait-s{font-size:.85rem;color:var(--muted);margin-top:.2rem}
 .wait-bar{height:6px;border-radius:99px;background:var(--hair);overflow:hidden;margin-top:.45rem;max-width:320px}.wait-bar i{display:block;height:100%;width:0;background:var(--spoken);transition:width .9s linear}
@@ -164,7 +164,7 @@ ul.tl li{margin:.25rem 0}
 .pocket-doc .pk-stance{background:var(--spoken-soft);font-weight:700}
 .pocket{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:.35rem}
 .pocket li{background:var(--hidden-soft);border-radius:6px;padding:.35rem .6rem;font-size:.9rem;font-weight:600}
-@media (max-width:640px){.pocket{grid-template-columns:1fr}}
+@media screen and (max-width:640px){.pocket{grid-template-columns:1fr}}
 .rich>*:last-child{margin-bottom:0}
 .rich p{margin:0 0 .7rem}
 .rich h4{font-size:.98rem;color:var(--spoken);margin:.9rem 0 .35rem}
@@ -232,11 +232,11 @@ ul.tl li{margin:.25rem 0}
         <div><label for="f-age">גיל</label><select id="f-age"><option value="">בחירה...</option></select></div>
       </div>
       <div class="row3">
-        <div><label for="f-size">כמה משתתפים <span class="opt">(לא חובה)</span></label><input id="f-size" type="number" min="2" max="400" placeholder="למשל 32"></div>
+        <div><label for="f-size">כמה משתתפים <span class="opt">(רשות)</span></label><input id="f-size" type="number" min="2" max="400" placeholder="למשל 32"></div>
         <div><label for="f-familiar">כמה הם מכירים זה את זה</label><select id="f-familiar"><option value="">לא ידוע</option></select></div>
         <div><label for="f-role">התפקיד שלי מול הקבוצה</label><select id="f-role"><option value="">בחירה...</option></select></div>
       </div>
-      <label for="f-about">מה עוד חשוב לדעת על הקבוצה? <span class="opt">(לא חובה)</span></label>
+      <label for="f-about">מה עוד חשוב לדעת על הקבוצה? <span class="opt">(רשות)</span></label>
       <textarea id="f-about" maxlength="1500" placeholder="למשל: יש כמה תלמידים שקטים מאוד ושניים שתמיד מדברים; לאחרונה היה ריב בקבוצת הווטסאפ; חלק מהתלמידים חדשים בכיתה. בלי שמות מלאים."></textarea>
     </fieldset>
 
@@ -257,11 +257,11 @@ ul.tl li{margin:.25rem 0}
       <legend>אני כמנחה</legend>
       <label for="f-exp">הניסיון שלי בהנחיית קבוצה</label>
       <select id="f-exp"><option value="">בחירה...</option></select>
-      <label>באיזו מיומנות רוצים שאתמקד? <span class="opt">(לא חובה, אפשר לבחור כמה)</span></label>
+      <label>באיזו מיומנות רוצים שאתמקד? <span class="opt">(רשות, אפשר לבחור כמה)</span></label>
       <details class="habits-dd" id="habits-dd"><summary id="habits-sum">בחירה...</summary><div class="habits" id="f-habits"></div></details>
-      <label for="f-worry">מה מדאיג אותך לקראת המפגש? <span class="opt">(לא חובה)</span></label>
+      <label for="f-worry">מה מדאיג אותך לקראת המפגש? <span class="opt">(רשות)</span></label>
       <textarea id="f-worry" maxlength="800" placeholder="למשל: שתהיה שתיקה ולא אדע מה לעשות; שאאבד שליטה; שמישהו יתחיל לבכות"></textarea>
-      <label for="f-question">שאלה מרכזית לננה <span class="opt">(לא חובה)</span></label>
+      <label for="f-question">שאלה מרכזית לננה <span class="opt">(רשות)</span></label>
       <textarea id="f-question" maxlength="600" placeholder="למשל: איך אני מנחה שיחה על נושא שגם אני מתרגשת ממנו?"></textarea>
     </fieldset>
 
@@ -366,7 +366,7 @@ function put(parent,...kids){kids.forEach(k=>{if(k)parent.appendChild(k);});retu
 // טבלה למדריך: head — כותרות עמודות (לכל תא data-label, לתצוגה מוערמת בטלפון); בלי head — תווית בעמודה הראשונה
 function ktable(head,rows,cls){
   const t=el('table','kit-table '+(cls||''));
-  const fill=(c,v)=>{if(v==null||v===''){c.textContent='—';c.classList.add('empty');}else if(v instanceof Node)c.appendChild(v);else c.textContent=String(v);return c;};
+  const fill=(c,v)=>{if(v==null||v===''){c.classList.add('empty');}else if(v instanceof Node)c.appendChild(v);else c.textContent=String(v);return c;};
   if(head){const th=el('thead'),tr=el('tr');head.forEach(h=>tr.appendChild(el('th',null,h)));th.appendChild(tr);t.appendChild(th);}
   const tb=el('tbody');rows.forEach(r=>{const tr=el('tr');r.forEach((v,i)=>{const c=fill(el(!head&&i===0?'th':'td'),v);if(head)c.dataset.label=head[i];tr.appendChild(c);});tb.appendChild(tr);});t.appendChild(tb);return t;
 }
@@ -491,7 +491,7 @@ F('btn-go').addEventListener('click',async()=>{
     let txt=await complete(sys,[{role:'user',content:input}],16000,true),doc;
     try{doc=N.normalize(N.parse(txt),KEYS);}catch(e){doc=null;}
     if(!N.valid(doc)){ // ניסיון שני אחד: תיקון המבנה
-      txt=await complete(sys,[{role:'user',content:input},{role:'assistant',content:txt.slice(0,30000)},{role:'user',content:'המבנה לא היה JSON תקין ומלא. החזירי את אותו מדריך כ-JSON תקין בלבד, במבנה שהוגדר, עם 5–7 שלבים ב-arc.'}],16000);
+      txt=await complete(sys,[{role:'user',content:input},{role:'assistant',content:txt.slice(0,30000)},{role:'user',content:'המבנה לא היה JSON תקין ומלא. החזירי את אותו מדריך כ-JSON תקין בלבד, במבנה שהוגדר, עם 5–7 שלבים ב-arc.'}],16000,true);
       doc=N.normalize(N.parse(txt),KEYS);
       if(!N.valid(doc))throw Object.assign(new Error('המדריך חזר חלקי'),{code:'incomplete'});
     }
@@ -544,15 +544,15 @@ function renderGuide(){
     // מהלך המפגש (08/10/2026), בקו אחיד עם שאר התוצרים: לפני המפגש · פתיחה · פעילות מרכזית · סיכום · אחרי המפגש
     const phaseOf=(p)=>{p=String(p||'');return /לפני/.test(p)?'לפני המפגש':/אחרי/.test(p)?'אחרי המפגש':/פתיח/.test(p)?'פתיחה':/סיו|סיכום|התכנס|סגיר|המשך/.test(p)?'סיכום':'פעילות מרכזית';};
     const t=SBE_DOC.flowTable(d.arc.map(x=>{
-      const g=el('div');if(x.facilitator)g.appendChild(richText(x.facilitator));
+      const g=el('div');
       if(x.say.length){const sy=el('div');sy.appendChild(el('b',null,'מה אומרים: '));x.say.forEach(t=>put(sy,sayEl(t)));g.appendChild(sy);}
       put(g,row('מה לראות',x.watch));
-      return {phase:phaseOf(x.phase),title:x.phase,minutes:x.minutes||'',desc:x.structure?inlineRich(x.structure):'',guide:g,lens:lensTxt(x.lens,x.basis)};
+      return {phase:phaseOf(x.phase),title:x.phase,minutes:x.minutes||'',desc:(()=>{const c=el('div');if(x.facilitator)c.appendChild(richText(x.facilitator));if(x.structure){const p=el('p');p.appendChild(inlineRich(x.structure));c.appendChild(p);}return c.childNodes.length?c:'';})(),guide:g,lens:lensTxt(x.lens,x.basis)};
     }),[['desc','מה קורה בשלב'],['guide','הנחיה למנחה'],['lens','תרומה לחוסן החברתי']]);
     t.classList.add('karc');doc.appendChild(t);
   }
   // סולם שאלות — טבלה אחת, עמודה לכל שלב
-  const Q=d.questions,QL=[['open','שאלות פתיחה'],['deepen','שאלות להעמקה'],['connect','חיבור לחיים ולקבוצה'],['close','שאלות סיום']].filter(([k])=>Q[k].length);
+  const Q=d.questions,QL=[['open','שאלות פתיחה'],['deepen','שאלות להעמקה'],['connect','שאלות לחיבור לחיים'],['close','שאלות לסיכום']].filter(([k])=>Q[k].length);
   if(QL.length){
     doc.appendChild(el('h3',null,'שאלות למפגש'));
     doc.appendChild(ktable(QL.map(q=>q[1]),[QL.map(([k])=>ul(Q[k]))],'kq'));
@@ -566,7 +566,7 @@ function renderGuide(){
   const cv=d.conversation;
   if(cv){
     doc.appendChild(el('h3',null,'שיחה אישית אחרי המפגש'));
-    doc.appendChild(ktable(null,[['עם מי',txt(cv.with)],['המטרה',txt(cv.goal)],['איפה ומתי',txt(cv.setting)],['פותחים',sayEl(cv.opening)],['שאלות המשך',cv.followups.length?ul(cv.followups):null],['מסיימים',txt(cv.closing)],['תרומה לחוסן החברתי',txt(cv.lens)]].filter(r=>r[1]),'k2'));
+    doc.appendChild(ktable(null,[['עם מי',txt(cv.with)],['המטרה',txt(cv.goal)],['איפה ומתי',txt(cv.setting)],['איך פותחים',sayEl(cv.opening)],['שאלות המשך',cv.followups.length?ul(cv.followups):null],['איך מסיימים',txt(cv.closing)],['תרומה לחוסן החברתי',txt(cv.lens)]].filter(r=>r[1]),'k2'));
   }
   // מנגנון
   const mc=d.mechanism;
@@ -588,7 +588,7 @@ function renderGuide(){
     doc.appendChild(el('h3',null,'שאלות לעצמך אחרי המפגש'));
     const ul=el('ul','tl');d.reflect.forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));ul.appendChild(li);});doc.appendChild(ul);
   }
-  doc.appendChild(el('p','muted','ננה מציעה, ואת/ה מחליט/ה: המדריך הוא נקודת פתיחה שמתאימים לקבוצה שלך. המקורות בכפתור "📚 מקורות" בסוף המסמך, ואפשר לבחור לצרף אותם לקובץ.'));
+  doc.appendChild(el('p','muted no-print','ננה מציעה, ואת/ה מחליט/ה: המדריך הוא נקודת פתיחה שמתאימים לקבוצה שלך. המקורות בכפתור "📚 מקורות" בסוף המסמך, ואפשר לבחור לצרף אותם לקובץ.'));
   {const rs=SBE_REFS.end();if(rs)doc.appendChild(rs);}
   card.appendChild(window.SBE_DOC?SBE_DOC.editable(doc):doc);
   g.appendChild(card);
@@ -609,12 +609,12 @@ function renderGuide(){
 // כרטיס כיס: מה שכדאי שיהיה ביד בזמן המפגש — עמדה, תזכורות, שאלות, ומשפט אחד לכל רגע קשה
 function pocketNode(d){
   const box=el('div','pocket-doc');const sec=(t,cls)=>{const x=el('section','pk-sec'+(cls?' '+cls:''));if(t)x.appendChild(el('h4',null,t));box.appendChild(x);return x;};
-  const clean=t=>SBE_REFS.strip(String(t||'').replace(/\*\*/g,''));
-  if(d.stance.to){const x=sec('התפקיד שלי במפגש','pk-stance');x.appendChild(el('p',null,clean(N.trimLead(d.stance.to))));}
+  const clean=t=>SBE_REFS.strip(String(t||'').replace(/\*\*/g,'')).replace(/\s*\([^)]*\)\s*$/,''); // בכרטיס הכיס בלי "(מי שואל, בשביל מה)"
+  if(d.stance.to){const x=sec('התפקיד שלך במפגש','pk-stance');x.appendChild(el('p',null,clean(N.trimLead(d.stance.to))));}
   if(d.pocket.length){const x=sec('לזכור');const ul=el('ul');d.pocket.forEach(t=>ul.appendChild(el('li',null,clean(t))));x.appendChild(ul);}
   const qs=[...d.questions.open.slice(0,2),...d.questions.deepen.slice(0,2),...d.questions.close.slice(0,1)];
   if(qs.length){const x=sec('שאלות לקבוצה');const ul=el('ul');qs.forEach(t=>ul.appendChild(el('li',null,clean(t))));x.appendChild(ul);}
-  if(d.moments.length){const x=sec('ברגע קשה');const ul=el('ul');d.moments.forEach(m=>{const li=el('li','pk-moment');li.appendChild(el('b',null,clean(m.moment)+': '));li.appendChild(document.createTextNode(clean(m.say||m.do)));ul.appendChild(li);});x.appendChild(ul);}
+  if(d.moments.length){const x=sec('ברגע מאתגר');const ul=el('ul');d.moments.forEach(m=>{const li=el('li','pk-moment');li.appendChild(el('b',null,clean(m.moment)+': '));li.appendChild(document.createTextNode(clean(m.say||m.do)));ul.appendChild(li);});x.appendChild(ul);}
   return box;
 }
 
@@ -701,7 +701,7 @@ F('btn-example').addEventListener('click',()=>{
   const v={'f-group':'כיתה בבית הספר','f-age':'חטיבת ביניים','f-size':'31','f-familiar':'קבוצה ותיקה','f-role':'מחנך/ת הכיתה',
     'f-about':'כיתה ח׳. יש כמה תלמידים שקטים מאוד ושלושה שמדברים כל הזמן. לאחרונה היה ריב בקבוצת הווטסאפ של הכיתה, ושתי תלמידות לא מדברות זו עם זו.',
     'f-topic':'איך אנחנו מדברים זה עם זה: בכיתה וברשת','f-goal':'שהתלמידים ינסחו יחד הסכמות לשיחה מכבדת, שישמעו גם את השקטים, ושהכיתה תחליט על דרך קבועה לפתור מחלוקות.',
-    'f-sit':'קונפליקט או מתח בקבוצה','f-duration':'שיעור (45 דקות)','f-space':'כיתה בשורות: אפשר להזיז','f-exp':'הנחיתי קצת',
+    'f-sit':'קונפליקט או מתח בקבוצה','f-duration':'שיעור (45 דקות)','f-space':'כיתה בשורות, אפשר להזיז שולחנות','f-exp':'הנחיתי קצת',
     'f-worry':'שהריב יתפרץ שוב באמצע השיעור ושאני לא אדע איך לעצור בלי להרים את הקול.','f-question':''};
   Object.keys(v).forEach(k=>{if(LISTS[k])LISTS[k].ensure(v[k]);F(k).value=v[k];F(k).classList.remove('miss');});F('form-err').hidden=true;setHabits(['answer','judge','conflict']);save();
   formNote('✓ הדוגמה נטענה לשדות למעלה. אפשר לשנות, ואז ללחוץ "הכנת מדריך ההנחיה".');F(FIELDS[0]).scrollIntoView({behavior:'smooth',block:'center'});

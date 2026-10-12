@@ -10,7 +10,9 @@
   var FIX = 'html,body{display:block!important;visibility:visible!important;opacity:1!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;position:static!important;transform:none!important}' +
     'main,main *{max-height:none!important;opacity:1!important}main{display:block!important;visibility:visible!important}' +
     '*,*::before,*::after{animation:none!important;transition:none!important}' +
-    '.bar,.sbe-sysonly,.no-print,button,dialog:not([open]){display:none!important}';
+    'p,li,dd,blockquote,td:not(.n):not(.ck){text-align:justify;text-justify:inter-word}' +
+    'table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,table tr>td:first-child:nth-last-child(n+3),table tr>td:first-child:nth-last-child(n+3) p,table tr>td:first-child:nth-last-child(n+3) li{text-align:start}table tr>td:first-child:nth-last-child(2),table tr>td:first-child:nth-last-child(2) p{text-align:start}' +
+    '.bar,.sbe-sysonly,.no-print,button,dialog:not([open]),.banner-mini,.savenote,.mock-note,.sbe-edit-hint{display:none!important}';
   var NOPRINT = '@media print{html,body{background:#fff!important}body>*{display:none!important}body::after{content:"התוצר לדוגמה מוצג לצפייה בלבד.";display:block;font:16px Assistant,Arial,sans-serif;padding:40px;text-align:center}}';
   var lastUrl = null;
 

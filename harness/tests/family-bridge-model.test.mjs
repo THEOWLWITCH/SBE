@@ -66,3 +66,12 @@ test('each family starts with a story, and feelings about the parents are treate
   assert.match(d, /השערה ולא ידיעה/); assert.match(d, /"talk"/); assert.match(d, /שיחה אחת קצרה, לא שיח מתמשך/);
   assert.deepEqual(invite.find(M.STORY.map((x) => x.l + ' ' + x.ph).join(' ')), []);
 });
+test('גשר: איך המשפחה פונה למורה, ומדיניות לקבוצה הכיתתית (12/10/2026)', () => {
+  const kb = SRC.forAdvisor('bridge');
+  for (const p of [M.planSystem(kb, '', 'עברית'), M.planSystem(kb, '', 'עברית', M.FOCUS.goal)]) {
+    assert.match(p, /"reach":\[\{"how"/); assert.match(p, /"group":\{"for"/); assert.match(p, /"reach":"","group":""/);
+    assert.match(p, /קבוצת הוואטסאפ הכיתתית/); assert.match(p, /בעניין דחוף/);
+  }
+  assert.ok(M.SECTIONS.reach.cols.length === 3 && M.SECTIONS.group.h);
+  assert.deepEqual(invite.find([M.SECTIONS.reach.h, M.SECTIONS.reach.sub, M.SECTIONS.group.h, M.SECTIONS.group.sub].join(' ')), []);
+});

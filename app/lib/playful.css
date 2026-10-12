@@ -31,7 +31,7 @@ p{margin-bottom:.5rem}
 .topnav .crumb{margin-inline-start:auto;color:var(--muted);font-size:12px}
 .wrap{max-width:900px;margin:0 auto;padding:1.2rem 1rem 4rem}
 .card{background:var(--surface);border-radius:20px;box-shadow:var(--card-shadow);padding:1.3rem 1.45rem;margin-bottom:1rem}
-@media (max-width:600px){.card{padding:1rem}}
+@media screen and (max-width:600px){.card{padding:1rem}}
 .h-ico{display:inline-grid;place-items:center;width:2.1rem;height:2.1rem;border-radius:12px;background:var(--acc-soft,var(--teal-soft));font-size:1.1rem;transform:rotate(-6deg);transition:transform .3s;flex:none}
 .card:hover .h-ico{transform:rotate(4deg) scale(1.06)}
 
@@ -43,7 +43,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc,var(
 .f{margin:0 0 .6rem}
 .main-tag{font-weight:600;font-size:.74rem;color:var(--navy);background:var(--acc-soft,var(--teal-soft));border-radius:99px;padding:0 .5rem;margin-inline-start:.4rem}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.2rem 1rem}
-@media (max-width:640px){.grid2{grid-template-columns:1fr}}
+@media screen and (max-width:640px){.grid2{grid-template-columns:1fr}}
 
 /* כפתורים */
 .btn{display:inline-block;font:inherit;font-weight:700;padding:.7rem 1.35rem;border-radius:99px;border:none;cursor:pointer;color:#fff;
@@ -73,7 +73,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc,var(
 .hero a{color:#fff}
 .eyebrow{display:inline-block;font-size:.8rem;font-weight:700;padding:.18rem .7rem;border-radius:99px;background:rgba(255,255,255,.16);color:#fff}
 .hero-art{flex:0 0 220px;width:220px;height:auto;position:relative;z-index:1}
-@media (max-width:640px){.hero{flex-direction:column;align-items:stretch;padding:1.2rem}.hero-art{flex-basis:auto;width:100%;max-height:120px}.hero h1{font-size:1.6rem}}
+@media screen and (max-width:640px){.hero{flex-direction:column;align-items:stretch;padding:1.2rem}.hero-art{flex-basis:auto;width:100%;max-height:120px}.hero h1{font-size:1.6rem}}
 
 /* הצעדים: לוח משחק */
 .steps{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin:.4rem 0 1.2rem;padding:.2rem 0;list-style:none}
@@ -94,7 +94,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc,var(
 .steps li[data-step="2"],.stage[data-step="2"]{--acc:var(--sun);--acc-soft:var(--sun-soft)}
 .steps li[data-step="3"],.stage[data-step="3"]{--acc:var(--leaf);--acc-soft:var(--leaf-soft)}
 .steps li[data-step="4"],.stage[data-step="4"]{--acc:var(--coral);--acc-soft:var(--coral-soft)}
-@media (max-width:640px){.steps li .sd{display:none}.steps li b{font-size:.8rem}.steps .tok{width:2.8rem;height:2.8rem;font-size:1.2rem}.steps::before{top:1.5rem}}
+@media screen and (max-width:640px){.steps li .sd{display:none}.steps li b{font-size:.8rem}.steps .tok{width:2.8rem;height:2.8rem;font-size:1.2rem}.steps::before{top:1.5rem}}
 
 /* כרטיס של צעד */
 .stage{position:relative;border-top:6px solid var(--acc);overflow:hidden}
@@ -146,7 +146,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc,var(
 .msg.me{background:var(--teal-soft);margin-inline-end:12%;white-space:pre-wrap}
 .msg.bot{background:var(--surface);margin-inline-start:12%}
 .fb-pair{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.5rem 0}
-@media (max-width:640px){.fb-pair{grid-template-columns:1fr}}
+@media screen and (max-width:640px){.fb-pair{grid-template-columns:1fr}}
 .fb-pair>div{border-radius:12px;padding:.55rem .75rem;background:var(--surface)}
 .fb-pair .was{border:1.5px solid var(--hair)}
 .fb-pair .now{border:1.5px solid var(--leaf)}

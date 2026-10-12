@@ -193,7 +193,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 #screen-custom .f{margin:0 0 12px}#screen-custom label{display:block;font-weight:700;margin-bottom:4px}
 #screen-custom textarea,#screen-custom input{width:100%;font:inherit;font-size:15px;padding:8px 10px;border:1px solid var(--hair);border-radius:6px;background:var(--surface);color:var(--ink);box-sizing:border-box}
 #screen-custom .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:600px){#screen-custom .grid2{grid-template-columns:1fr}}
+@media screen and (max-width:600px){#screen-custom .grid2{grid-template-columns:1fr}}
 .own-acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .own-q{margin:0 0 14px}.own-q b{display:block;margin-bottom:6px}.own-opts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
 .own-opts button{font-size:13.5px;padding:4px 12px;border-radius:999px}.own-opts button[aria-pressed="true"]{background:var(--spoken);border-color:var(--spoken);color:#fff}
@@ -229,7 +229,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <div class="bar-wrap" id="barWrap">
 <div class="bar">
   <span class="chip">תור <b id="turnNum">0</b> מתוך <b id="maxTurnsChip">20</b></span>
-  <span class="chip muted" title="בנוי, כבוי כברירת מחדל עד הפעלה מוסדית">מצב קול: כבוי</span>
+  <span class="chip muted sbe-sysonly" title="בנוי, כבוי כברירת מחדל עד הפעלה מוסדית">מצב קול: כבוי</span>
   <span class="spacer"></span>
   <button type="button" id="bRecall">הסיפור שוב</button>
   <button type="button" id="bEndChat" disabled>סיום שיחה</button>
@@ -264,6 +264,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
     <div class="grid2">
       <div class="f"><label for="ownRole">התפקיד שלי</label><input id="ownRole" list="ownRoles" placeholder="למשל: מחנכת"></div>
       <div class="f"><label for="ownOther">מי מולי בשיחה</label><input id="ownOther" list="ownOthers" placeholder="למשל: אבא של תלמיד"></div>
+      <div class="f"><label for="ownMe">איך לפנות אליי</label><select id="ownMe" data-closed><option value="נקבה">בלשון נקבה</option><option value="זכר">בלשון זכר</option></select></div>
     </div>
     <div class="f"><label for="ownGoal">מה הייתי רוצה שיקרה בסוף השיחה</label><input id="ownGoal" placeholder="למשל: שנסכים על צעד אחד לשבוע הקרוב"></div>
     <div class="f"><label for="ownHard">מה מאתגר אותי בשיחה הזאת (אם רוצים)</label><input id="ownHard" placeholder="למשל: אני חוששת שהוא יכעס"></div>
@@ -277,7 +278,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   </div>
   <div class="card" id="own3" hidden>
     <div id="ownPreview"></div>
-    <div class="own-acts"><button type="button" class="primary" id="ownApprove">✓ מאשרת, מתחילים להתאמן</button></div>
+    <div class="own-acts"><button type="button" class="primary" id="ownApprove">✓ מאשרים ומתחילים להתאמן</button></div>
     <details class="own-change"><summary>לשנות משהו בסיפור</summary>
       <textarea id="ownChange" rows="2" placeholder="למשל: היא לא כועסת, היא בעיקר מודאגת. השיחה בטלפון ולא בפגישה."></textarea>
       <button type="button" id="ownRevise">עדכון הסיפור</button></details>
@@ -290,11 +291,11 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <section id="screen-intro" hidden>
   <div class="card">
     <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
-      text-transform:uppercase;color:var(--muted);margin-bottom:12px;">לפני שמתחילות</p>
+      text-transform:uppercase;color:var(--muted);margin-bottom:12px;">לפני שמתחילים</p>
     <div id="openingText"></div>
   </div>
   <div style="margin-top:14px;display:flex;gap:12px;align-items:center;">
-    <button type="button" class="primary" id="bStart">מוכנה, נתחיל</button>
+    <button type="button" class="primary" id="bStart">מוכנים? מתחילים</button>
     <button type="button" id="bBackToSelect">לבחור תרחיש אחר</button>
   </div>
 </section>
@@ -306,16 +307,16 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <style>.fb-st{font-weight:700;font-size:.85rem}.fb-st.reached{color:#4A6B5A}.fb-st.missed{color:#8C3A34}</style>
 <section id="screen-feedback" hidden>
   <h2 style="font-family:'Frank Ruhl Libre',Georgia,serif;">מה קרה בתרגול</h2>
-  <div class="fb-h">לאילו תפניות הגעת</div>
+  <h3 class="fb-h">לאילו תפניות הגעת</h3>
   <div id="fbTurningPoints"></div>
-  <div class="fb-h">מיומנויות שהופיעו בדברייך</div>
+  <h3 class="fb-h">מיומנויות שהופיעו בדברים שלך</h3>
   <div id="fbSkills"></div>
-  <div class="fb-h">רגע אחד שכמעט נפתח</div>
+  <h3 class="fb-h">רגע אחד שכמעט נפתח</h3>
   <div class="fb-note" id="fbAlmost"></div>
   <button type="button" class="primary" id="bRetrySecond" hidden style="margin-top:8px;">ניסיון שני: לנסות שוב את הרגע הזה</button>
-  <div class="fb-h">איך השיחה נסגרה</div>
+  <h3 class="fb-h">איך השיחה נסגרה</h3>
   <div class="fb-note" id="fbEnding"></div>
-  <p class="no-score">בלי ציון ובלי דירוג. את מתרגלת לבד: זה משוב ללמידה, לא בחינה.</p>
+  <p class="no-score">בלי ציון ובלי דירוג. זה תרגול אישי: משוב ללמידה, לא בחינה.</p>
   <details class="log">
     <summary>מה נרשם (לצורכי מחקר ואיכות)</summary>
     <pre id="fbLog"></pre>
@@ -340,7 +341,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 
 <div class="composer-bar" id="composerBar" hidden>
   <div class="inner" id="composerActive">
-    <textarea id="composerInput" rows="1" placeholder="מה את אומרת..."></textarea>
+    <textarea id="composerInput" rows="1" placeholder="מה אומרים..."></textarea>
     <button type="button" class="primary" id="bSend">שליחה</button>
   </div>
   <div class="inner" id="composerEnded" hidden>
@@ -369,7 +370,7 @@ const SCENARIOS = {
   name: "יש לך גן טוב",
   subtitle: "מחלוקת בין גננת לאם על גבולות מעורבות ההורים",
   meta: { lang:"עברית", age:"גן", approach:"דיאלוג ומפגש", exp:"קבוצה מנוסה", conflictType:"ערכי" },
-  redLine: "קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+  redLine: "קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או ניסיון לכפות ניצחון של צד אחד אינם לגיטימיים.",
   trainee: {
     role: "גננת בגן טרום חובה", roleLabel: "גננת", name: null,
     opening: [
@@ -487,7 +488,7 @@ const SCENARIOS = {
     { text:"אמירה מפורשת של מה ניתן לעשות ומה לא", keywords:["מה שכן אני יכולה","זה כן","אני כן יכולה"] },
     { text:"הימנעות מהבטחת מה שלא ניתן לקיים", keywords:["לא יכולה להבטיח","לא אבטיח","אי אפשר להבטיח"] },
     { text:"שיקוף רגש", keywords:["נשמע לך קשה","את בטח","זה בטח לא פשוט","אני שומעת כמה"] },
-    { text:"החזקת שתיקה בלי מיהור למילויה", detectShort:true },
+    { text:"שתיקה בלי למהר למלא אותה", detectShort:true },
     { text:"טון קול מותאם למצב", undetectable:true },
     { text:"גוף פתוח ולא מתגונן", undetectable:true },
     { text:"סימני מתח בגוף", note:"מתייחס לדמות, לא למתנסה, לא רלוונטי לזיהוי מטקסט שלה." },
@@ -507,7 +508,7 @@ const SCENARIOS = {
   name: "עשרים ושמונה בכיתה",
   subtitle: "שיחה בין רכזת שילוב למחנכת על יציאת תלמיד מהכיתה",
   meta: { lang:"עברית", age:"כיתה ד-ה", approach:"ניתוח התנהגות ו-CBT", exp:"פעם ראשונה", conflictType:"מבני" },
-  redLine: "קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+  redLine: "קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או ניסיון לכפות ניצחון של צד אחד אינם לגיטימיים.",
   trainee: {
     role: "רכזת השילוב בבית הספר", roleLabel:"רכזת שילוב", name:null,
     opening: [
@@ -627,7 +628,7 @@ const SCENARIOS = {
   name: "למה בכלל",
   subtitle: "מחלוקת בין רכזת פדגוגית למורה מתחילה ששוקלת לעזוב",
   meta: { lang:"עברית", age:"חטיבת ביניים", approach:"חינוך למשמעות", exp:"קבוצה מנוסה", conflictType:"רגשי" },
-  redLine: "קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים.",
+  redLine: "קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או ניסיון לכפות ניצחון של צד אחד אינם לגיטימיים.",
   trainee: {
     role: "רכזת פדגוגית", roleLabel:"רכזת", name:null,
     opening: [
@@ -713,7 +714,7 @@ const SCENARIOS = {
     { text:"מתן בחירה או שליטה בקצב", keywords:["בקצב שלך","רק אם את רוצה","אין לחץ"] },
     { text:"שאילת שאלה פתוחה", keywords:["מה זה אומר לך","איך את רואה את זה","מה חשוב לך בזה"] },
     { text:"הבעת הערכה או הכרה", keywords:["אני מעריכה","זה לא קל להגיד","תודה שסיפרת"] },
-    { text:"החזקת שתיקה בלי מיהור למילויה", detectShort:true },
+    { text:"שתיקה בלי למהר למלא אותה", detectShort:true },
     { text:"שיקוף רגש", keywords:["נשמע שזה מפחיד","זה נשמע כואב","זה נשמע מבלבל"] },
     { text:"הימנעות מהצעת פתרון מוקדם", keywords:["לא אגיד לך מה לעשות","זו לא ההחלטה שלי"] },
     { text:"תיקון רגע שנפגם בשיחה", keywords:["בואי נחזור לרגע","לא התכוונתי שזה יישמע"] },
@@ -943,7 +944,7 @@ function renderScenarioList(){
       el("div", { class:"sc-name" }, sc.name),
       el("div", { class:"sc-sub" }, sc.subtitle),
       // מי מי: המתנסה היא אשת החינוך שמובילה את השיחה, והמערכת משחקת את הדמות שמולה (כמו השחקנית בסדנה)
-      el("div", { class:"sc-sub" }, [el("b", {}, "את: "), sc.trainee.roleLabel, " · ", el("b", {}, "מולך: "), (sc.actor.name || "") + ", " + sc.actor.roleLabel]),
+      el("div", { class:"sc-sub" }, [el("b", {}, youL(sc)), sc.trainee.roleLabel, " · ", el("b", {}, "מולך: "), (sc.actor.name || "") + ", " + sc.actor.roleLabel]),
       el("div", { class:"sc-tags" }, tags.map(t => el("span", { class:"sc-tag" }, t))),
     ]);
     const pick = () => selectScenario(id);
@@ -961,7 +962,7 @@ function selectScenario(id){
 function init(){
   document.getElementById("scenarioName").textContent = SCENARIO.name;
   document.getElementById("scenarioSubtitle").textContent = SCENARIO.subtitle;
-  document.getElementById("redlineBanner").innerHTML = "<b>קו אדום</b> · " + SCENARIO.redLine;
+  document.getElementById("redlineBanner").innerHTML = "<b>קו אדום:</b> " + String(SCENARIO.redLine || "").replace(/^קו אדום:\s*/, "");
   document.getElementById("maxTurnsChip").textContent = String(MAX_TURNS);
   const ot = document.getElementById("openingText");
   ot.textContent = "";
@@ -1015,7 +1016,12 @@ document.getElementById("bPrintFb").addEventListener("click", () => {
     .map(m => [m.who === "trainee" ? "אני" : (SCENARIO.actor.name || "הדמות"), m.line])));
   const fb = document.getElementById("screen-feedback").cloneNode(true);
   fb.querySelectorAll("button,details").forEach(x => x.remove());
-  SBE_DOC.print({ title: "תרגול עצמי: " + SCENARIO.name, subtitle: SCENARIO.subtitle || "", nodes: [fb, conv] });
+  // המקרה בראש ה-PDF, כדי שאפשר יהיה לקרוא אותו אחר כך (12/10/2026, בדיקת הלקוחה)
+  const tr = SCENARIO.trainee || {}, cs = el("div");
+  const op = Array.isArray(tr.opening) ? tr.opening : [tr.opening].filter(Boolean), opEl = el("div"); op.forEach(p => opEl.append(el("p", {}, p)));
+  const caseRows = [["המקרה", op.length ? opEl : (SCENARIO.subtitle || "")], ["מולך", SCENARIO.actor && SCENARIO.actor.name || ""]].filter(r => r[1] instanceof Node || String(r[1] || "").trim());
+  if (caseRows.length) { cs.append(el("h3", {}, "המקרה")); cs.append(SBE_TABLE(null, caseRows)); }
+  SBE_DOC.print({ title: "תרגול עצמי: " + SCENARIO.name, subtitle: SCENARIO.subtitle || "", nodes: [cs, fb, conv] });
 });
 document.getElementById("bEndedAgain").addEventListener("click", resetAll);
 document.getElementById("bBackToSelect").addEventListener("click", backToSelect);
@@ -1320,7 +1326,17 @@ function buildCharacterPrompt(){
     MAX_TURNS: String(MAX_TURNS),
     PRESSURE_COUNT: String(state.pressCount),
     CLOSING_HINT: closingHint,
-  });
+  }) + genderNote(sc);
+}
+// מגדר (12/10/2026, בדיקת הלקוחה): ההנחיות כתובות בלשון נקבה, אבל הדמות והמתנסה לפי התרחיש
+// "את:" או "אתה:" לפי הפנייה שנבחרה
+function youL(sc){ return /זכר|גבר/.test((sc && sc.trainee && sc.trainee.gender) || "") ? "אתה: " : "את: "; }
+function genderNote(sc){
+  const male = /זכר|גבר/.test((sc.actor && sc.actor.gender) || ""), trMale = /זכר|גבר/.test((sc.trainee && sc.trainee.gender) || "");
+  const L = [];
+  if (male) L.push("הדמות שלך היא גבר. דבר בלשון זכר על עצמך (\"אני חושב\", \"אני לא יודע\"), גם אם ההנחיות כאן כתובות בלשון נקבה.");
+  if (trMale) L.push("מי שמולך הוא גבר: פני אליו בלשון זכר (\"אתה\").");
+  return L.length ? "\n\n" + L.join("\n") : "";
 }
 
 // ── בדיקות חצייה — תמיד מקומיות ומיידיות, גם במצב AI אמיתי וגם במוקאפ.
@@ -1889,17 +1905,17 @@ function showFeedback(){
   tpBox.textContent = "";
   tpBox.append(SBE_TABLE(["#", "התפנית", "מה קרה", "מה מוביל אליה"], SCENARIO.turningPoints.map(tp => {
     const fired = state.firedTPs[tp.n];
-    return [String(tp.n), el("b", {}, tp.name), el("span", { class:"fb-st " + (fired ? "reached" : "missed") }, fired ? "✓ נפתחה · " + fired.effect : "עוד לא נפתחה" + (tp.missed ? " · " + tp.missed : "")), tp.trigger || "—"]; // העמודה "מה מוביל אליה" תמיד מראה מה פותח את התפנית (08/10/2026: התאמה בין כותרת לתוכן)
+    return [String(tp.n), el("b", {}, tp.name), el("span", { class:"fb-st " + (fired ? "reached" : "missed") }, fired ? "✓ נפתחה · " + ({"מחזיק":"נפתח כיוון, ונשאר במקום","פותח":"השיחה התקדמה","סוגר":"השיחה נסגרה"}[fired.effect] || fired.effect) : "עוד לא נפתחה" + (tp.missed ? " · " + tp.missed : "")), tp.trigger || "—"]; // העמודה "מה מוביל אליה" תמיד מראה מה פותח את התפנית (08/10/2026: התאמה בין כותרת לתוכן)
   }), "fb-tp-table"));
 
   const skBox = document.getElementById("fbSkills");
   skBox.textContent = "";
-  skBox.append(SBE_TABLE(["המיומנות", "מה זוהה בדברייך"], analyzeSkills().map(s => [s.text,
+  skBox.append(SBE_TABLE(["המיומנות", "מה זוהה בדברים שלך"], analyzeSkills().filter(s => s.status === "found" || s.status === "missing" || s.status === "na").map(s => [s.text,
     s.status === "found" ? `כשאמרת: "${s.quote}"` : s.status === "missing" ? "לא זוהה בתרגול הזה" : s.status === "na" ? s.note : "לא ניתן לזהות באופן אוטומטי מטקסט בלבד"]), "fb-sk-table"));
 
   const almostTP = SCENARIO.turningPoints.find(tp => state.firedTPs[tp.n] && state.firedTPs[tp.n].effect === "מחזיק");
   document.getElementById("fbAlmost").textContent = almostTP
-    ? `בתפנית "${almostTP.name}": נפתח כיוון, אבל המשיכה שלך החזיקה אותו במקום לקדם אותו.`
+    ? `בתפנית "${almostTP.name}": נפתח כיוון, והתגובה שלך השאירה אותו במקום. אפשר לנסות בפעם הבאה שאלה פתוחה או שיקוף, כדי לקדם אותו.`
     : "לא זוהה רגע כזה בתרגול הזה.";
 
   // ── "ניסיון שני" (19/09/2026, הכרעת המשתמשת: המערכת מציעה, המתרגלת
@@ -1949,8 +1965,8 @@ function showFeedback(){
   const saveDraft = () => { try { localStorage.setItem(KEY + ".draft", JSON.stringify(draft)); } catch (e) {} };
   PC.ROLES.forEach(r => $("ownRoles").append(el("option", { value: r })));
   PC.OTHERS.forEach(r => $("ownOthers").append(el("option", { value: r })));
-  const FIELDS = { story: "ownStory", role: "ownRole", other: "ownOther", goal: "ownGoal", hard: "ownHard" };
-  Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; $(id).addEventListener("input", () => { draft.form[k] = $(id).value; saveDraft(); }); });
+  const FIELDS = { story: "ownStory", role: "ownRole", other: "ownOther", me: "ownMe", goal: "ownGoal", hard: "ownHard" };
+  Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || (k === "me" ? "נקבה" : ""); if (k === "me") draft.form.me = $(id).value; const keep = () => { draft.form[k] = $(id).value; saveDraft(); }; $(id).addEventListener("input", keep); $(id).addEventListener("change", keep); });
 
   function step(n){
     [1, 2, 3].forEach(i => { $("own" + i).hidden = i !== n; });
@@ -2007,14 +2023,14 @@ function showFeedback(){
     try { r = await sbeCallAIJson(AI_SERVER, { system: revise ? PC.reviseSystem() : PC.buildSystem(), messages: [{ role: "user", content }], maxTokens: 10000 }, 240000, PC.valid); }
     catch (e) { bad = e; } finally { stop(); b.disabled = false; }
     if (!PC.valid(r)) { if (!revise) step(draft.questions.length ? 2 : 1); return fail(bad); }
-    draft.scenario = PC.normalize(r); saveDraft(); $("ownChange").value = ""; preview(); step(3);
+    draft.scenario = PC.normalize(r); if (draft.scenario && draft.scenario.trainee) draft.scenario.trainee.gender = draft.form.me || "נקבה"; saveDraft(); $("ownChange").value = ""; preview(); step(3);
   }
   function preview(){
     const sc = draft.scenario, box = $("ownPreview"); box.textContent = "";
     const d = el("div", { class: "own-prev" }, el("h3", {}, sc.name), el("p", { class: "who" }, sc.subtitle),
-      el("p", { class: "who" }, el("b", {}, "את: "), sc.trainee.roleLabel || sc.trainee.role, " · ", el("b", {}, "מולך: "), sc.actor.name + ", " + (sc.actor.roleLabel || sc.actor.role)));
+      el("p", { class: "who" }, el("b", {}, youL(sc)), sc.trainee.roleLabel || sc.trainee.role, " · ", el("b", {}, "מולך: "), sc.actor.name + ", " + (sc.actor.roleLabel || sc.actor.role)));
     sc.trainee.opening.forEach(p => d.append(el("p", {}, p)));
-    d.append(el("p", { class: "first" }, el("b", {}, sc.actor.name + (/זכר|גבר/.test(sc.actor.gender || "") ? " פותח: " : " פותחת: ")), "״" + sc.actor.entrance.firstLine + "״"));
+    d.append(el("p", { class: "first" }, el("b", {}, sc.actor.name + (/זכר|גבר/.test(sc.actor.gender || "") ? " פותח: " : " פותחת: ")), "\"" + sc.actor.entrance.firstLine + "\""));
     box.append(d);
   }
   if (draft.scenario) preview();
@@ -2024,7 +2040,7 @@ function showFeedback(){
     const id = "my-" + Date.now().toString(36);
     mine.unshift({ id, at: new Date().toISOString().slice(0, 10), sc: draft.scenario }); mine = mine.slice(0, 12); saveMine();
     Object.assign(draft, { form: {}, questions: [], answers: {}, scenario: null }); saveDraft();
-    Object.values(FIELDS).forEach(f => { $(f).value = ""; });
+    Object.values(FIELDS).forEach(f => { if (f !== "ownMe") $(f).value = ""; });
     renderMine(); SCENARIOS[id] = mine[0].sc; selectScenario(id);
   });
   function renderMine(){
@@ -2038,7 +2054,7 @@ function showFeedback(){
       const card = el("div", { class: "scenario-card", tabindex: "0" },
         el("div", { class: "my-case" }, el("div", { class: "sc-name", style: "flex:1" }, "✍️ " + m.sc.name), del),
         el("div", { class: "sc-sub" }, m.sc.subtitle),
-        el("div", { class: "sc-sub" }, el("b", {}, "את: "), m.sc.trainee.roleLabel || "", " · ", el("b", {}, "מולך: "), m.sc.actor.name + ", " + (m.sc.actor.roleLabel || "")));
+        el("div", { class: "sc-sub" }, el("b", {}, youL(m.sc)), m.sc.trainee.roleLabel || "", " · ", el("b", {}, "מולך: "), m.sc.actor.name + ", " + (m.sc.actor.roleLabel || "")));
       const pick = () => selectScenario(m.id);
       card.addEventListener("click", pick); card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
       box.append(card);
@@ -2117,7 +2133,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
       <label>מה חסר, מה היה מבלבל, או הערה אחרת?</label>
       <textarea id="rptUsageNotes" placeholder="לא חובה"></textarea>
     </div>
-    <label>צילום מסך (לא חובה)</label>
+    <label>צילום מסך (רשות)</label>
     <input type="file" id="rptFile" accept="image/*">
   </div>
   <div class="rf">

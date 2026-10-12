@@ -54,9 +54,21 @@
     return out.slice(0, 18).join("\n").slice(0, 3000);
   }
   // מסמך HTML עצמאי מאזור בדף: עם הסגנונות של הכלי, בלי כפתורים, בלי עריכה ובלי סקריפטים
+  // הערות מסך, שדות, כפתורים ושורות מצב: לא חלק מהתוצר (12/10/2026: "ל PDF תגיע רק עריכה עם לוגו")
+  var NOISE = "button,script,.sbe-edit-hint,.no-print,textarea,input,select,label,.actions,.toolbar,.banner-mini,.savenote,.mock-note,.dlg-dl,.sbe-q,.sbe-i,.hint,.err,.perr,.wait,.rep-nav,.refs-bar,.sbe-peek,[data-status-line],.sbe-sysonly,.log,.mock-tag";
   function standalone(node, title) {
+    var D0 = window.SBE_DOC;
+    if (D0 && D0.print) {
+      // אותו מסמך שהכלי מדפיס: לוגו, שם הכלי ומטרתו, כותרת, תאריך, ורק התוצר
+      var k = node.cloneNode(true);
+      k.querySelectorAll(NOISE).forEach(function (x) { x.remove(); });
+      k.querySelectorAll("details").forEach(function (d) { d.setAttribute("open", ""); });
+      var pageCss = [].map.call(document.querySelectorAll("style"), function (s) { return s.textContent; }).join("\n") +
+        "\nhtml,body{height:auto!important;overflow:visible!important}*{max-height:none!important}.sbe-sysonly{display:none!important}";
+      try { var h = D0.print({ title: title, node: k, toHtml: true, extraCss: pageCss }); if (h) return withBase(h); } catch (e) { console.warn("מעבדת הדמו: מסמך ההדפסה לא נבנה", e); }
+    }
     var c = node.cloneNode(true);
-    c.querySelectorAll("button,script,.sbe-edit-hint,.no-print,textarea,input,select,.actions,.toolbar").forEach(function (x) { x.remove(); });
+    c.querySelectorAll("button,script,.sbe-edit-hint,.no-print,textarea,input,select,.actions,.toolbar,.banner-mini,.savenote,.mock-note,.dlg-dl").forEach(function (x) { x.remove(); });
     [c].concat([].slice.call(c.querySelectorAll("[contenteditable]"))).forEach(function (x) { x.removeAttribute("contenteditable"); });
     c.querySelectorAll("details").forEach(function (d) { d.setAttribute("open", ""); });
     var css = [].map.call(document.querySelectorAll("style"), function (s) { return s.textContent; }).join("\n");
@@ -144,7 +156,7 @@
     "facilitation-advisor.html": function () { return inPage("nana", "ננה: מדריך הנחיה", "ננה", "#btn-example", "#btn-go", "#guide-doc", "#guide-doc", "#guide"); },
     "continuity-kit.html": async function () {
       var part = q.get("part");
-      var kit = await inPage("continuity", "תיק רציפות", "תיק רציפות", "#example", "#go", "#kit .kit h2", "#kit", "#err1");
+      var kit = await inPage("continuity", "תיק רציפות: למורה המחליפה", "תיק רציפות", "#example", "#go", "#kit .kit h2", "#kit", "#err1");
       if (!part) return kit;
       if (part === "join") { // ערכת הצטרפות וחזרה (לשונית "הצטרפות וחזרה")
         click('[data-tab="join"]'); await sleep(800);
@@ -157,7 +169,7 @@
         // הלשונית נבנית מחדש אחרי ההפקה, ולכן מחפשים אותה מחדש בכל בדיקה
         var JP = await waitFor(function () { var P = $('[data-pane="join"]'); return P && [].some.call(P.querySelectorAll("h3"), function (h) { return /תיק כניסה קבוצתי/.test(h.textContent); }) ? P : null; }, 15 * 60e3, "ערכת ההצטרפות");
         await sleep(800);
-        return [{ tool: "cont-join", title: "תיק רציפות: ערכת הצטרפות וחזרה", label: "הצטרפות וחזרה", html: standalone($('[data-pane="join"]') || JP, "ערכת הצטרפות וחזרה"), input: inp }];
+        return [{ tool: "cont-join", title: "תיק רציפות: הצטרפות וחזרה של תלמידים לכיתה", label: "הצטרפות וחזרה", html: standalone($('[data-pane="join"]') || JP, "ערכת הצטרפות וחזרה"), input: inp }];
       }
       // נוהל עבודה בכלים שלכם (לשונית "נוהל עבודה")
       click('[data-tab="proc"]'); await sleep(800);
@@ -200,7 +212,7 @@
     },
     "family-bridge.html": function () { return inPage("bridge", "גשר בין הבית לכיתה: כרטיס בחירה", "גשר בין הבית לכיתה", "#example", "#go", "#out2 .card-family", "#out2", "#err1"); },
     "message-writer.html": function () { return inPage("writer", "כתיבה מקדמת חוסן: הודעה", "כתיבה מקדמת חוסן", "#rw-example", "#rw-go", "#rw-out .rw-new", "#rw-out", "#rw-err"); },
-    "conversation-planner.html": function () { fillSample(); return dialogProduct("conv", "תכנון שיחה: התוצר", "תכנון שיחה", function () { click("#bBuild"); }); },
+    "conversation-planner.html": function () { fillSample(); return dialogProduct("conv", "תכנון שיחה: תדריך לפני שיחה", "תכנון שיחה", function () { click("#bBuild"); }); },
     "activity-planner.html": async function () {
       if (q.get("part") === "seq") {
         click("#mSeq"); await sleep(600); click("#sqLoadSample"); await sleep(1500);
