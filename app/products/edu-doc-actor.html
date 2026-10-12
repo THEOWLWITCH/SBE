@@ -454,7 +454,7 @@ ol.list li,ul.list li{margin-bottom:7px;}
 <script>(function(){function go(){document.querySelectorAll('table').forEach(function(t){
 if(t.querySelector('tr.sbe-rh-row')||t.rows.length<3||t.closest('.rcard'))return;var cap=t.previousElementSibling,name='',hide=null;
 if(cap&&cap.classList.contains('dt-cap')){name=cap.textContent;hide=cap;}else{var s=t.closest('.sec'),h=s&&s.querySelector(':scope>.h');
-if(h){var sp=h.querySelector('span');name=(sp||h).textContent;if(h.nextElementSibling===t&&!h.querySelector('em'))hide=h;}}
+if(h){var sp=h.querySelector('span');name=(sp||h).textContent;if(h.nextElementSibling===t)hide=(h.querySelector('em')&&sp)?sp:h;}}
 name=String(name||'').replace(/s+/g,' ').trim();if(!name)return;var n=0;[].forEach.call(t.rows[0].cells,function(c){n+=c.colSpan||1;});
 var tr=document.createElement('tr'),th=document.createElement('th');tr.className='sbe-rh-row';th.colSpan=n;th.textContent=name;tr.appendChild(th);
 var hd=t.tHead;if(!hd){hd=document.createElement('thead');t.insertBefore(hd,t.firstChild);}hd.insertBefore(tr,hd.firstChild);if(hide)hide.classList.add('sbe-rh-src');});}
