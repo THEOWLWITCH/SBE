@@ -645,7 +645,15 @@ const LIST_MAX = 200, ITEM_MAX = 80;
 // ושומרת אותו כאן. רק מנהלת המערכת רואה את התיקייה; מה שהיא מסמנת "להצגה" מופיע בספריית התוצרים
 // לדוגמה (examples.html) לכל מי שמתעניין/ת — בלי כניסה. demo:index — רשימה בלי ה-HTML; demo:<id> — המסמך.
 const DEMO_MAX = 1_500_000, DEMO_LIMIT = 200;
-async function handleDemos(store, body) {
+// נעילה (12/10/2026: "תוצרים לא נטענים"): כל פעולה על התיקייה רצה אחרי הקודמת, כדי ששמירה או תיקון
+// שרצים במקביל ל"מחיקת כל התוצרים" לא יחזירו לרשימה תוצרים שהמסמך שלהם כבר נמחק.
+let demoChain = Promise.resolve();
+function handleDemos(store, body) {
+  const run = demoChain.then(() => handleDemosLocked(store, body));
+  demoChain = run.catch(() => {});
+  return run;
+}
+async function handleDemosLocked(store, body) {
   const t = await verifyToken(store, body.token);
   const isSys = !!t && t.k === 'sys';
   const action = body.action;
@@ -662,7 +670,12 @@ async function handleDemos(store, body) {
     const doc = await store.get('demo:' + id);
     // בספרייה רק התוצר (11/10/2026: "בתיק התוצרים לא יראו מה שהוזן - רק תוצר"); הקלט רק למנהלת המערכת
     const { input, ...pub } = meta;
-    return doc ? [200, { ...(isSys ? meta : pub), html: demoTidy(doc.html) }] : [404, { error: 'not found' }];
+    if (!doc || !doc.html) {
+      // מסמך שנמחק: מוציאים גם את השורה מהרשימה, כדי שלא יופיע שוב
+      await store.set('demo:index', index.filter((d) => d.id !== id));
+      return [404, { error: 'gone' }];
+    }
+    return [200, { ...(isSys ? meta : pub), html: demoTidy(doc.html) }];
   }
   if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
   if (action === 'demoList') return [200, { items: index }];
@@ -690,6 +703,9 @@ async function handleDemos(store, body) {
     const id = String(body.id || ''), html = String(body.html || '');
     if (!index.some((d) => d.id === id)) return [404, { error: 'not found' }];
     if (html.length > DEMO_MAX || (!html && !body.rv)) return [400, { error: 'bad html' }];
+    // תוצר שנמחק בינתיים (למשל ב"מחיקת כל התוצרים") לא חוזר לרשימה
+    const cur = await store.get('demo:' + id);
+    if (!cur || !cur.html) { await store.set('demo:index', index.filter((d) => d.id !== id)); return [404, { error: 'gone' }]; }
     if (html) await store.set('demo:' + id, { html });
     await store.set('demo:index', index.map((d) => d.id !== id ? d : { ...d, ...(html ? { fixed: (d.fixed || 0) + 1, fixedAt: new Date().toISOString() } : {}), ...(body.rv ? { rv: cleanRv(body.rv) } : {}) }));
     return [200, { ok: true }];
