@@ -6,7 +6,8 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const P = require('../../app/lib/practice-custom.js');
 const invite = require('../../app/lib/invite-language.js');
-const html = readFileSync(new URL('../../app/practice.html', import.meta.url), 'utf8');
+// Match the same wording scope on Windows CRLF and Unix LF checkouts.
+const html = readFileSync(new URL('../../app/practice.html', import.meta.url), 'utf8').replace(/\r\n?/g, '\n');
 
 const tp = (i) => ({ name: 'ת' + i, trigger: 'כש...', does: { line: 'שורה ' + i, stage: '' }, missed: '', keywords: ['מילה'], branches: i < 2 ? [{ move: 'm', effect: 'פותח', quality: 'מקדם', keywords: ['k'], line: 'l', stage: '' }] : [{ move: 'x' }] });
 const sample = () => ({ name: 'שם', subtitle: 'בין מי למי', trainee: { role: 'מחנכת', opening: ['א', 'ב', 'כעת תיפגשי'] },
@@ -44,7 +45,9 @@ test('practice screen: own case, three steps, saved per user, inviting language'
   assert.match(html, /sbeUserKey\("sbe\.practice\.custom\.v1"\)/);
   assert.doesNotMatch(html, /רננה מהנהנת/);
   const a = html.indexOf('<section id="screen-custom"'), b = html.indexOf('</section>', a);
-  const block = html.slice(a, b) + html.slice(html.indexOf('// ── מקרה משלך'), html.indexOf('renderFilters();\nrenderScenarioList();'));
+  const scriptStart = html.indexOf('// ── מקרה משלך'), scriptEnd = html.indexOf('renderFilters();\nrenderScenarioList();', scriptStart);
+  assert.ok(a >= 0 && b > a && scriptStart > b && scriptEnd > scriptStart, 'own-case wording boundaries are present and ordered');
+  const block = html.slice(a, b) + html.slice(scriptStart, scriptEnd);
   assert.deepEqual(invite.find(block), []); assert.doesNotMatch(block, /—/);
 });
 test('מקרה משלך: מגדר המתנסה והדמות לפי המקרה (12/10/2026)', async () => {

@@ -30,6 +30,7 @@ Exercise admin group/item create, edit, move and delete; file upload and opening
 - [x] Desktop and 390px phone layouts, empty states and keyboard-accessible native dialogs.
 - [x] 152/152 automated tests, 14 browser workflow checks, and additional save lifecycle/blocked-popup regression checks.
 - [x] Completed `ce-code-review` receipt, run `20261012-studies-final`, followed by fixes for all eight confirmed findings.
+- [x] Follow-up: repair the existing self-practice wording test for Windows CRLF checkouts, retain forbidden-word/dash checks and reject missing scope boundaries.
 
 ## Save and recovery behavior
 
