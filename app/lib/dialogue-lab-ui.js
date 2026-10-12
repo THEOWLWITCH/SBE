@@ -175,6 +175,7 @@
   function draw2() {
     const out = F('out2'); out.textContent = '';
     out.appendChild(el('p', 'note', '❓ ' + I.question));
+    if (I.start && I.start.claimStart) out.appendChild(el('p', 'note', '💬 לפתיחת השלב: ' + txt(I.start.claimStart)));
     const kit = el('div', 'kit'); out.appendChild(kit);
     head(kit, 'claims');
     kit.appendChild(el('p', 'sub', 'לפני שמגיבים לרעיון, מישהו/י אחר/ת מסביר/ה אותו במילים שלו/ה.'));
@@ -282,9 +283,11 @@
       root.appendChild(el('h2', null, 'שאלת החקר: ' + (I.question || '')));
       root.appendChild(window.SBE_TABLE(null, [['תחום', I.form.subject], ['גיל', I.form.age], ['המטרה', I.form.goal], ['איך בחרנו', I.how]].filter((r) => r[1]), 'kit-t'));
       if (I.criteria.length) { head(root, 'criteria'); root.appendChild(T('criteria', I.criteria.map((c) => [c.what, c.why]))); }
-      if (I.claims.length) { head(root, 'claims'); root.appendChild(T('claims', I.claims.map((c) => [c.text, c.by, c.peer, c.pro, c.con, c.state].map((x) => x || '')))); }
+      // מספר לכל טענה וראיה, כדי ש"טענה 1" ו"על אילו ראיות: 1, 2" יהיו ברורים (12/10/2026, בדיקת הלקוחה)
+      const NT = (key, rows) => window.SBE_TABLE(['#'].concat(M.SECTIONS[key].cols), rows.map((r, i) => [String(i + 1)].concat(r)), 'kit-t');
+      if (I.claims.length) { head(root, 'claims'); root.appendChild(NT('claims', I.claims.map((c) => [c.text, c.by, c.peer, c.pro, c.con, c.state].map((x) => x || '')))); }
       if (I.open.length) { head(root, 'open'); root.appendChild(T('open', I.open.map((o) => [o.q || '', o.from || '']))); }
-      if (I.evidence.length) { head(root, 'evidence'); root.appendChild(T('evidence', I.evidence.map((e) => [e.what, e.kind, e.source, e.by, e.until, e.claim !== undefined && e.claim !== '' ? 'טענה ' + (+e.claim + 1) : '', e.found, e.limits, e.stance].map((x) => x || '')))); }
+      if (I.evidence.length) { head(root, 'evidence'); root.appendChild(NT('evidence', I.evidence.map((e) => [e.what, e.kind, e.source, e.by, e.until, e.claim !== undefined && e.claim !== '' ? 'טענה ' + (+e.claim + 1) : '', e.found, e.limits, e.stance].map((x) => x || '')))); }
     }
     if (what !== 'board') {
       if (I.roles.length) {
@@ -295,6 +298,8 @@
       }
     }
     if (what === 'all') {
+      if (I.path.length) { head(root, 'path'); root.appendChild(T('path', I.path.map((p) => [txt(p.what), txt(p.how)]))); }
+      if (I.start && I.start.claimStart) root.appendChild(el('p', 'note', '💬 לפתיחת שלב הטענות: ' + txt(I.start.claimStart)));
       if (I.plan.length) { head(root, 'plan'); root.appendChild(T('plan', I.plan.map((p) => [p.who, p.what, p.when, p.conditions, p.check].map((x) => txt(x || ''))))); }
       const d = I.draft || {};
       if (String(d.text || '').trim()) {
@@ -322,7 +327,7 @@
   };
   const KINDS = { board: 'לוח שאלה, טענות וראיות', roles: 'כרטיסי תפקיד', all: 'תיק החקר' };
   document.querySelectorAll('[data-print]').forEach((b) => b.addEventListener('click', () => {
-    const w = b.dataset.print; window.SBE_DOC.print({ title: I.question || 'חקר משותף', kind: KINDS[w], node: printNode(w) });
+    const w = b.dataset.print; window.SBE_DOC.print({ title: I.question || 'חקר משותף', kind: KINDS[w], node: printNode(w), landscape: w !== 'roles' });
   }));
 
   // ── דוגמה (מנהלת המערכת בלבד) ──

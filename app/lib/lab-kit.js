@@ -13,7 +13,7 @@
     'rewrite: ניסוח מכבד של המשוב, בגוף ראשון של מי שכתב/ה, שמשמר את הביקורת העניינית. ביקורת מתייחסת לרעיון, להסבר ולראיה, ושומרת על כבוד האדם.',
     'kind: "ok" כשהמשוב כבר ענייני ומכבד (אז rewrite קרוב מאוד למקור). "rephrase" כשיש בו פגיעה או זלזול, אבל גם נימוק אמיתי: משמרים את הנימוק בניסוח מכבד. "clarify" כשיש רק זלזול בלי נימוק: rewrite מבקש הסבר ודרך לבדוק, למשל "אני עדיין לא מבין/ה איך ההצעה עוזרת לשאלה שלנו. אפשר להסביר את הקשר ולהציע דרך לבדוק אותו?". "stop" כשיש פגיעה אישית, השפלה, איום או חשיפת מידע פרטי: לא מנסחים מחדש, ו-note מזמין את המבוגר/ת לתווך בשיחה.',
     'כללים: לא ממציאים חולשה, ראיה או יתרון כדי להשלים תבנית. לא הופכים התנגדות להסכמה ולא מחליפים ביקורת מנומקת בפרגון ריק. מחלוקת עניינית היא חלק מהחקר. בלי ציונים לאנשים ובלי תיוג. עברית פשוטה ומשפטים מלאים עם נקודה בסוף.',
-    'note: משפט קצר למי שכתב/ה, מה השתנה בניסוח ולמה (או למה כדאי לעצור ולדבר עם המבוגר/ת).',
+    'note: משפט קצר למי שכתב/ה, מה השתנה בניסוח ולמה (או למה כדאי לעצור ולדבר עם המבוגר/ת; בצוות של מבוגרים: עם המנחה או בצוות).',
     'החזירי אך ורק JSON: {"kind":"ok","idea":"","contribution":"","difficulty":"","suggestion":"","question":"","rewrite":"","note":""}'
   ].join('\n\n');
   const FB_KINDS = { ok: '✓ המשוב ענייני ומכבד', rephrase: '🌱 הצעה לניסוח מכבד, עם אותה ביקורת', clarify: '❓ חסר נימוק: הצעה לבקש הסבר', stop: '✋ כדאי לעצור ולדבר עם המבוגר/ת' };
@@ -92,6 +92,8 @@
   // "מה הרווחנו מהחשיבה ביחד?" בכל שלב
   function gain(obj, k, question, onChange) {
     const box = el('div', 'gain'); box.appendChild(el('b', null, '🤝 ' + question));
+    // מתי, מי שואל את מי ובשביל מה (12/10/2026, בדיקת הלקוחה)
+    box.appendChild(el('p', 'sub', 'בסוף השלב המנחה שואל/ת את כל הקבוצה. כל אחד ואחת עונים במשפט, והמתעד/ת כותב/ת כאן, כדי שנראה מה הרווחנו יחד.'));
     box.appendChild(field(obj, k, question, true, onChange)); return box;
   }
 
@@ -154,7 +156,7 @@
     function show(orig, on, r) {
       out.textContent = '';
       out.appendChild(el('p', 'note' + (r.kind === 'ok' ? ' ok' : ''), FB_KINDS[r.kind] + (r.note ? '. ' + txt(r.note) : '')));
-      if (r.kind === 'stop') { o.log({ at: new Date().toISOString(), on, was: orig, now: '', how: 'לשיחה עם המבוגר/ת' }); return; }
+      if (r.kind === 'stop') { o.log({ at: new Date().toISOString(), on, was: orig, now: '', how: o.adult && o.adult() ? 'לשיחה בצוות, עם המנחה' : 'לשיחה עם המבוגר/ת' }); return; }
       const pair = el('div', 'fb-pair'), a = el('div', 'was'), b = el('div', 'now');
       a.append(el('b', null, 'כפי שנכתב'), el('div', null, orig));
       const edit = el('textarea'); edit.value = txt(r.rewrite); edit.rows = 3;
@@ -163,7 +165,7 @@
       if (rows.length) out.appendChild(window.SBE_TABLE(['חלק במשוב', 'מה כתוב'], rows, 'kit-t'));
       const keep = (how, now) => { o.log({ at: new Date().toISOString(), on, was: orig, now, how }); out.textContent = ''; out.appendChild(el('p', 'note ok', '✓ נשמר ביומן המשוב: ' + how + '.')); ta.value = ''; };
       const row = el('div', 'btns');
-      row.append(btn('✓ אימוץ הניסוח', 'btn sm', () => keep('אומץ', edit.value.trim())), btn('השארת הנוסח שלי', 'btn ghost sm', () => keep('נשאר כפי שנכתב', orig)), btn('לדיון עם המורה', 'btn ghost sm', () => keep('לדיון עם המורה', edit.value.trim())));
+      row.append(btn('✓ אימוץ הניסוח', 'btn sm', () => keep('אומץ', edit.value.trim())), btn('השארת הנוסח שלי', 'btn ghost sm', () => keep('נשאר כפי שנכתב', orig)), btn(o.adult && o.adult() ? 'לדיון בצוות' : 'לדיון עם המורה', 'btn ghost sm', () => keep('לדיון עם המורה', edit.value.trim())));
       out.appendChild(row);
     }
     det.append(ta, about, el('div', 'btns'), w, err, out); det.querySelector('.btns').appendChild(go);

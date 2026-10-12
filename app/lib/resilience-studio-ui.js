@@ -13,8 +13,8 @@
   const BRIEF_FIELDS = ['startingPoint','goal','leaderRole','leaderAge','experience','participants','participantAge','count','duration','sessions','format','familiarity','relationships','context','materials','space','language','accessibility','crisis','youthMode','focus','observations','clarifications'];
   const NUMBERS = new Set(['count','duration','sessions']);
   const EVIDENCE = {'example-draft':'דוגמת פיתוח: טרם אושרה','new-ai':'פעילות חדשה בבינה מלאכותית: טיוטה; יעילותה לא נבדקה'};
-  const MECHANISM_LABELS={name:'שם המנגנון',cadence:'מתי ובאיזו תדירות?',roles:'מי אחראית, מי שותף ומי מגבה?',participation:'איך משתתפים ומשפיעים?',firstAction:'הפעולה הראשונה',review:'מתי ואיך בודקים ומשפרים?',mechanism:'איך המנגנון מתרגל את מוקד החוסן?'};
-  const LEARNING_LABELS={mechanism:'איך הפעילות אמורה לעבוד (השערת התכנון)',apply:'איך מיישמים במפגש',watchFor:'מה נראה בפועל אם המנגנון פועל',limits:'גבולות: מה הפעילות אינה, ומתי עוצרים'};
+  const MECHANISM_LABELS={name:'שם המנגנון',cadence:'מתי ובאיזו תדירות?',roles:'מי אחראי/ת, מי שותף/ה ומי מגבה?',participation:'איך משתתפים ומשפיעים?',firstAction:'הפעולה הראשונה',review:'מתי ואיך בודקים ומשפרים?',mechanism:'איך המנגנון מתרגל את מוקד החוסן?'};
+  const LEARNING_LABELS={mechanism:'איך הפעילות אמורה לעבוד',apply:'איך מיישמים במפגש',watchFor:'מה נראה בפועל אם המנגנון פועל',limits:'מה הפעילות לא עושה, ומתי עוצרים'};
   const FACILITATION_LABELS={preparation:'לפני המפגש: הכנה וחזרה',opening:'פתיחה והסכמות',participation:'הזמנת השתתפות',questions:'שאלות והקשבה',difficulties:'שתיקה, התנגדות או מחלוקת',closing:'סיכום: מה שואלים בסוף ואיך מסיימים',followUp:'המשך ולמידה מההנחיה'};
   const IDEAS = [
     {id:'education',audience:'חינוך',title:'מידע חסר, פתרון משותף',focus:'support',purpose:'לתרגל בקשת עזרה והחלפת מידע במשימה משותפת.',individual:['זיהוי מידע חסר','בקשת עזרה והבהרה'],shared:['החלפת מידע ועזרה','בניית תכנית משולבת'],steps:['בקבוצות קטנות כל משתתף מקבל חלק אחר של משימה בדויה.','שואלים ומחליפים מידע כדי לבנות תכנית אחת.','מזהים איזו בקשת עזרה אפשרה להתקדם.'],participants:'קבוצת תלמידים',age:'לפי גיל הקבוצה',goal:'לבקש מידע ועזרה ולבנות פתרון משותף',duration:40},
@@ -30,7 +30,7 @@
   function clear(node) { node.replaceChildren(); return node; }
   function button(text, handler, className) { const b=el('button',className||'btn secondary small',text); b.type='button'; b.addEventListener('click',handler); return b; }
   function list(lines, ordered) { const n=el(ordered?'ol':'ul'); (lines||[]).forEach(x=>n.append(el('li','',x))); return n; }
-  function labelText(label, text) { const p=el('p'); p.append(el('b','',label+' '),document.createTextNode(String(text||'—'))); return p; }
+  function labelText(label, text) { const p=el('p'); p.append(el('b','',label+' '),document.createTextNode(String(text||''))); return p; }
   function paragraph(parent, title, value) { if(title)parent.append(el('h3','',title));parent.append(window.SBE_DOC ? SBE_DOC.rich(value||'') : el('p','',value||'')); }
   function safeLink(url, name) { try{const u=new URL(url); if(!['https:','http:'].includes(u.protocol))return null; const a=el('a','',name||url); a.href=u.href; a.target='_blank'; a.rel='noopener noreferrer'; return a;}catch{return null;} }
   function componentLabel(id) { return (D.component(id)||{}).label||id; }
@@ -455,7 +455,7 @@
   function renderValidation(isCandidate) {
     const a=isCandidate&&candidate?candidate.activity:state.activity,b=isCandidate&&candidate?candidate.brief:state.activityBrief||state.brief,host=$(isCandidate?'candidate-validation':'activity-validation');clear(host);if(!a)return;
     const problems=D.validateActivity(a,b),box=el('div',problems.length?'validation-errors':'validation-good');
-    if(problems.length)box.append(el('b','','נדרש תיקון לפני יצוא או אישור:'),list(problems));else box.textContent='הערכה כוללת מטרה, תרגול מקושר לשלבים וחומרים, והזמנים מתאימים לתקציר. התאמה ויעילות מקצועית עדיין נבחנות.';host.append(box);
+    if(problems.length)box.append(el('b','','כדי להדפיס או לאשר, אפשר לתקן קודם:'),list(problems));else box.textContent='הערכה כוללת מטרה, תרגול מקושר לשלבים וחומרים, והזמנים מתאימים לתקציר. התאמה ויעילות מקצועית עדיין נבחנות.';host.append(box);
   }
   function renderActivity() {
     $('activity-section').hidden=!state.activity;$('adapt-section').hidden=!state.activity;
@@ -538,13 +538,13 @@
       archive('לפני התאמה שאושרה');state.activity=copy(candidate.activity);state.activityBrief=cleanBrief(candidate.brief);state.brief=cleanBrief(candidate.brief);state.mapping=safeMapping(candidate.mapping);setCandidate(null);editingBaseArchived=false;render();if(persist())notice('ההתאמה אושרה. הגרסה הקודמת נשמרה בהיסטוריה.');else notice('ההתאמה וההיסטוריה מוצגות כאן.');
     }
   }
-  function checkExport(activity,brief) { const problems=D.validateActivity(activity,brief);if(problems.length)throw new Error('נדרש תיקון לפני יצוא: '+problems.join('; ')); }
+  function checkExport(activity,brief) { const problems=D.validateActivity(activity,brief);if(problems.length)throw new Error('כדי להדפיס, אפשר לתקן קודם: '+problems.join('; ')); }
   // ערכה להדפסה (08/10/2026): לכל מפגש טבלת מהלך לפי פתיחה, פעילות מרכזית, סיכום ואחרי המפגש: תיאור הפעילות · הנחיה למנחה · עזרים ומשאבים.
   // במקום הרבה שורות קצרות. גרסת המנחה לרוחב הדף; חומרי המשתתפים — רק מה שמשותף.
   function printDocument(activity,participantOnly,includeReason,brief) {
     const a=D.publicActivity(activity),n=el('div','print-document kit');brief=brief||{};
     const rich=v=>window.SBE_DOC?SBE_DOC.rich(v||''):el('p','',v||'');
-    const cell=(tag,content,cls)=>{const c=el(tag,cls||'');if(content instanceof Node)c.append(content);else c.textContent=String(content==null||content===''?'—':content);return c;};
+    const cell=(tag,content,cls)=>{const c=el(tag,cls||'');if(content instanceof Node)c.append(content);else c.textContent=String(content==null?'':content);return c;};
     const table=(cls,head,rows)=>{const t=el('table','kit-table '+(cls||''));if(head){const tr=el('tr');head.forEach(h=>tr.append(cell('th',h)));const th=el('thead');th.append(tr);t.append(th);}const tb=el('tbody');rows.forEach(r=>{const tr=el('tr');r.forEach((c,i)=>tr.append(cell(!head&&(i===0||(r.length===4&&i===2))?'th':'td',c)));tb.append(tr);});t.append(tb);return t;};
     const join=xs=>(xs||[]).filter(x=>String(x||'').trim()).join(' · ');
     const section=t=>n.append(el('h2','kit-h',t));
@@ -552,7 +552,9 @@
     const who=join([brief.participants,brief.participantAge,brief.count?brief.count+' משתתפים':'']);
     const time=join([(a.sessions||[]).length>1?(a.sessions.length+' מפגשים'):'',brief.duration?brief.duration+' דקות למפגש':'']);
     const facts=[['מטרה',a.purpose],['מוקד החוסן',componentLabel(a.focus)]];
-    if(!participantOnly){facts.push(['משתתפים',who],['זמן',time],['מרחב',brief.space],['עזרים',brief.materials],['בסיס',evidenceLabel(a)]);}
+    if(!participantOnly){facts.push(['משתתפים',who],['זמן',time],['מרחב',brief.space],['עזרים',brief.materials],['על מה זה נשען',evidenceLabel(a)]);}
+    // עובדה בלי ערך לא מודפסת (12/10/2026, בדיקת הלקוחה)
+    for(let i=facts.length-1;i>=0;i--)if(!String(facts[i][1]==null?'':facts[i][1]).trim())facts.splice(i,1);
     const pairs=[];for(let i=0;i<facts.length;i+=2)pairs.push(facts.slice(i,i+2));
     n.append(table('kit-facts',null,pairs.map(p=>p.length===2?[p[0][0],p[0][1],p[1][0],p[1][1]]:[p[0][0],p[0][1],' ',' '])));
     if(!participantOnly){
@@ -565,7 +567,7 @@
       const block=el('section','kit-session');
       const mins=(session.steps||[]).reduce((t,x)=>t+(x.phase==='אחרי המפגש'?0:(Number(x.minutes)||0)),0);
       block.append(el('h2','kit-h','מפגש '+(si+1)+': '+(session.title||'')+(mins&&!participantOnly?' · '+mins+' דקות':'')));
-      const sub=el('p','kit-sub');sub.append(el('b','','מטרת המפגש: '),document.createTextNode(session.purpose||'—'));if(session.link&&!participantOnly){sub.append(document.createTextNode(' · '));sub.append(el('b','','קשר לתהליך: '),document.createTextNode(session.link));}block.append(sub);
+      const sub=el('p','kit-sub');sub.append(el('b','','מטרת המפגש: '),document.createTextNode(session.purpose||''));if(session.link&&!participantOnly){sub.append(document.createTextNode(' · '));sub.append(el('b','','קשר לתהליך: '),document.createTextNode(session.link));}block.append(sub);
       // מהלך המפגש (08/10/2026): פתיחה · פעילות מרכזית · סיכום · אחרי המפגש, בשלוש עמודות:
       // תיאור הפעילות · הנחיה למנחה (כולל שאלות הסיכום) · עזרים ומשאבים
       const steps=session.steps||[];
@@ -603,7 +605,7 @@
       const lg=D.learningGuide(a.learningGuide);
       if(D.LEARNING_FIELDS.some(k=>lg[k].trim())||lg.learnBefore.length){
         section('מדריך למידה למנחה');const rows=lg.mechanism.trim()?[[LEARNING_LABELS.mechanism,rich(lg.mechanism)]]:[];
-        if(lg.learnBefore.length){const ul=el('ul');lg.learnBefore.forEach(src=>{const li=el('li');li.append(safeLink(src.url,src.name||src.sourceId)||el('b','',src.name||src.sourceId));if(src.focus)li.append(document.createTextNode(' — '+src.focus));ul.append(li);});rows.push(['מה ללמוד לפני ההנחיה',ul]);}
+        if(lg.learnBefore.length){const ul=el('ul');lg.learnBefore.forEach(src=>{const li=el('li');li.append(safeLink(src.url,src.name||src.sourceId)||el('b','',src.name||src.sourceId));if(src.focus)li.append(document.createTextNode(': '+src.focus));ul.append(li);});rows.push(['מה ללמוד לפני ההנחיה',ul]);}
         ['apply','watchFor','limits'].forEach(k=>{if(lg[k].trim())rows.push([LEARNING_LABELS[k],rich(lg[k])]);});
         n.append(table('kit-two',null,rows));
       }
