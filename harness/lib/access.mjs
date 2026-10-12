@@ -673,7 +673,7 @@ async function handleDemosLocked(store, body) {
   if (action === 'demoShareGet') {
     const sh = await shareOf(body.share);
     if (!sh) { await pause(); return [404, { error: 'expired' }]; }
-    const items = index.filter((d) => sh.ids.includes(d.id)).map(({ id, tool, title, label, at, order }) => ({ id, tool, title, label, at, order }));
+    const items = index.filter((d) => sh.all || sh.ids.includes(d.id)).map(({ id, tool, title, label, at, order }) => ({ id, tool, title, label, at, order }));
     return [200, { name: sh.name, exp: sh.exp, items }];
   }
   if (action === 'demoPublicList') return [200, { items: index.filter((d) => d.public).map(({ id, tool, title, label, at, order }) => ({ id, tool, title, label, at, order })) }];
@@ -681,7 +681,7 @@ async function handleDemosLocked(store, body) {
     const id = String(body.id || '');
     const meta = index.find((d) => d.id === id);
     const shared = !meta || meta.public || isSys ? null : await shareOf(body.share);
-    if (!meta || (!meta.public && !isSys && !(shared && shared.ids.includes(id)))) { await pause(); return [404, { error: 'not found' }]; }
+    if (!meta || (!meta.public && !isSys && !(shared && (shared.all || shared.ids.includes(id))))) { await pause(); return [404, { error: 'not found' }]; }
     const doc = await store.get('demo:' + id);
     // בספרייה רק התוצר (11/10/2026: "בתיק התוצרים לא יראו מה שהוזן - רק תוצר"); הקלט רק למנהלת המערכת
     const { input, ...pub } = meta;
@@ -695,11 +695,13 @@ async function handleDemosLocked(store, body) {
   if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
   if (action === 'demoList') return [200, { items: index }];
   if (action === 'demoShare') {
-    const ids = (Array.isArray(body.ids) ? body.ids : []).map(String).filter((id) => index.some((d) => d.id === id)).slice(0, 100);
-    if (!ids.length) return [400, { error: 'no items' }];
+    // בלי סימון: כל התיקייה, גם מה שיופק אחר כך (12/10/2026: "קישור אחד מהיר למעבדת הדמו וזהו")
+    const all = !!body.all;
+    const ids = all ? [] : (Array.isArray(body.ids) ? body.ids : []).map(String).filter((id) => index.some((d) => d.id === id)).slice(0, 100);
+    if (!all && !ids.length) return [400, { error: 'no items' }];
     const days = Math.min(30, Math.max(1, Number(body.days) || 7));
     const sid = randomBytes(18).toString('hex').slice(0, 28);
-    const sh = { sid, ids, name: clean(body.name, 80), created: new Date().toISOString(), exp: new Date(Date.now() + days * 864e5).toISOString() };
+    const sh = { sid, ids, all, name: clean(body.name, 80), created: new Date().toISOString(), exp: new Date(Date.now() + days * 864e5).toISOString() };
     await store.set('demoshare:' + sid, sh);
     return [200, { share: sh }];
   }

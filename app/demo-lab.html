@@ -123,12 +123,11 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 <h2 id="list-h">התיקייה שלי: התוצרים שהופקו</h2>
 <div class="row" style="margin-bottom:10px"><button class="btn sm" id="rvAll" type="button">🧐 בדיקה ותיקון לכל התוצרים</button><button class="btn danger sm" id="clearAll" type="button">🗑 מחיקת כל התוצרים</button><a href="examples.html" target="_blank" rel="noopener" class="btn ghost sm">📚 לספריית התוצרים לדוגמה ←</a><span class="muted">שם מופיע רק מה ששמרת בספרייה.</span></div>
 <details id="sharePanel" class="card" style="margin:0 0 12px;padding:10px 14px"><summary style="cursor:pointer;font-weight:700">🔗 קישור צפייה פרטי: לחברה שעוזרת לבדוק, בלי סיסמה</summary>
-  <p class="muted" style="margin:8px 0">מסמנים ☐ ליד התוצרים שרוצים להראות, ויוצרים קישור. מי שמקבל/ת את הקישור רואה רק את התוצרים האלה, לקריאה בלבד, בלי מה שהוזן ובלי הדפסה, עד התאריך שנבחר. בכל תוצר יש "💬 משוב על התוצר", שמגיע למייל שלך. אפשר לבטל קישור בכל רגע.</p>
+  <p class="muted" style="margin:8px 0">לוחצים "יצירת קישור": בלי סימון הקישור פותח את כל התיקייה, ואפשר לסמן ☐ ליד תוצרים כדי להראות רק אותם. מי שמקבל/ת את הקישור רואה רק את התוצרים האלה, לקריאה בלבד, בלי מה שהוזן ובלי הדפסה, עד התאריך שנבחר. בכל תוצר יש "💬 משוב על התוצר", שמגיע למייל שלך. אפשר לבטל קישור בכל רגע.</p>
   <div class="row" style="flex-wrap:wrap;gap:8px;align-items:center">
     <label>שם לקישור <input id="shName" placeholder="למשל: לבדיקה של רותי" style="width:200px"></label>
     <label>פתוח למשך <select id="shDays" data-closed><option value="3">3 ימים</option><option value="7" selected>שבוע</option><option value="14">שבועיים</option><option value="30">חודש</option></select></label>
-    <button class="btn ghost sm" id="shAll" type="button">סימון כל התוצרים</button>
-    <button class="btn sm" id="shMake" type="button">יצירת קישור לתוצרים שסימנתי (<span id="shN">0</span>)</button>
+    <button class="btn sm" id="shMake" type="button">יצירת קישור</button><span class="muted">בלי סימון: כל התיקייה, גם מה שיופק אחר כך · מסומנים: <span id="shN">0</span></span>
   </div>
   <div id="shOut" style="margin-top:10px"></div>
   <div id="shList" style="margin-top:10px"></div>
@@ -404,7 +403,7 @@ function shareUrl(sid){return location.href.replace(/[^/]*$/,'')+'examples.html?
 function shareRow(sh,box){
   const r=el('div','row');r.style.cssText='flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0';
   const u=shareUrl(sh.sid);
-  r.appendChild(el('b',null,(sh.name||'קישור')+' · '+sh.ids.length+' תוצרים · עד '+date(sh.exp)));
+  r.appendChild(el('b',null,(sh.name||'קישור')+' · '+(sh.all?'כל התיקייה':sh.ids.length+' תוצרים')+' · עד '+date(sh.exp)));
   const a=el('a',null,'פתיחה');a.href=u;a.target='_blank';a.rel='noopener';r.appendChild(a);
   const cp=el('button','btn ghost sm','העתקת הקישור');cp.type='button';cp.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(u).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הקישור',2000);});};r.appendChild(cp);
   const wa=el('a','btn ghost sm','וואטסאפ');wa.href='https://wa.me/?text='+encodeURIComponent('אשמח לעזרה בבדיקת תוצרים של Begood. אפשר לפתוח ולקרוא, ובכל תוצר יש כפתור למשוב: '+u);wa.target='_blank';wa.rel='noopener';r.appendChild(wa);
@@ -416,13 +415,12 @@ async function loadShares(){
   try{const items=(await api({action:'demoShareList'})).items||[];if(!items.length)return;box.appendChild(el('p','muted','קישורים פתוחים:'));items.forEach(sh=>shareRow(sh,box));}
   catch(e){box.appendChild(el('p','warn','לא הצלחנו לטעון את הקישורים ('+e.message+').'));}
 }
-F('shAll').onclick=()=>{ITEMS.forEach(d=>SHARE_SEL.add(d.id));document.querySelectorAll('.sh-ck').forEach(c=>c.checked=true);F('shN').textContent=SHARE_SEL.size;};
+
 F('shMake').onclick=async()=>{
   const out=F('shOut');out.textContent='';
   const ids=[...SHARE_SEL].filter(id=>ITEMS.some(d=>d.id===id));
-  if(!ids.length){out.appendChild(el('p','warn','כדי ליצור קישור, אפשר לסמן ☐ ליד תוצר אחד או יותר ברשימה.'));return;}
   const b=F('shMake');b.disabled=true;
-  try{const r=await api({action:'demoShare',ids,days:F('shDays').value,name:F('shName').value});out.appendChild(el('p',null,'✓ הקישור מוכן:'));shareRow(r.share,out);F('shName').value='';loadShares();}
+  try{const r=await api({action:'demoShare',...(ids.length?{ids}:{all:true}),days:F('shDays').value,name:F('shName').value});out.appendChild(el('p',null,'✓ הקישור מוכן:'));shareRow(r.share,out);F('shName').value='';loadShares();}
   catch(e){out.appendChild(el('p','warn','הקישור לא נוצר ('+e.message+'). אפשר לנסות שוב.'));}
   finally{b.disabled=false;}
 };
