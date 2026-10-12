@@ -274,7 +274,7 @@
   function print(what) { window.SBE_DOC.print({ title: nameOf(I), kind: what === 'plan' ? 'מהלך החשיבה ותפקידים' : 'סיכום הסבב', node: printNode(what) }); }
 
   F('example').addEventListener('click', () => {
-    I.form = { team: 'קבוצת תלמידים', age: 'ה–ו', size: '6', time: '40 דקות', challenge: 'איך מארגנים הפסקה ארוכה שבה לכל אחד ואחת בכיתה יש עם מי לשחק.',
+    I.form = { level: 'יסודי', team: 'קבוצת תלמידים', age: 'ה–ו', size: '6', time: '40 דקות', challenge: 'איך מארגנים הפסקה ארוכה שבה לכל אחד ואחת בכיתה יש עם מי לשחק.',
       outcome: 'שתי הצעות שהצוות בוחר ביניהן, ומי מוביל/ה כל אחת בשבוע הבא.', known: 'ניסינו פעם משחק כיתתי בחצר, ורק חלק הצטרפו.', hard: 'אותם שניים מדברים הרבה, ויש שמחכים בשקט.' };
     edited(); buildForm();
   });
