@@ -1905,7 +1905,7 @@ function showFeedback(){
   tpBox.textContent = "";
   tpBox.append(SBE_TABLE(["#", "התפנית", "מה קרה", "מה מוביל אליה"], SCENARIO.turningPoints.map(tp => {
     const fired = state.firedTPs[tp.n];
-    return [String(tp.n), el("b", {}, tp.name), el("span", { class:"fb-st " + (fired ? "reached" : "missed") }, fired ? "✓ נפתחה · " + ({"מחזיק":"נפתח כיוון, ונשאר במקום","פותח":"השיחה התקדמה","סוגר":"השיחה נסגרה"}[fired.effect] || fired.effect) : "עוד לא נפתחה" + (tp.missed ? " · " + tp.missed : "")), tp.trigger || "—"]; // העמודה "מה מוביל אליה" תמיד מראה מה פותח את התפנית (08/10/2026: התאמה בין כותרת לתוכן)
+    return [String(tp.n), el("b", {}, tp.name), el("span", { class:"fb-st " + (fired ? "reached" : "missed") }, fired ? "✓ נפתחה · " + ({"מחזיק":"נפתח כיוון, ונשאר במקום","פותח":"השיחה התקדמה","סוגר":"השיחה נסגרה"}[fired.effect] || fired.effect) : "עוד לא נפתחה" + (tp.missed ? " · " + tp.missed : "")), tp.trigger || ""]; // העמודה "מה מוביל אליה" תמיד מראה מה פותח את התפנית (08/10/2026: התאמה בין כותרת לתוכן)
   }), "fb-tp-table"));
 
   const skBox = document.getElementById("fbSkills");
@@ -2129,9 +2129,9 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
       <label>האם תרצה/י להמשיך להשתמש במערכת?</label>
       <select id="rptContinue"><option value="">לא צוין</option><option>במידה רבה</option><option>במידה בינונית</option><option>במידה מועטה</option></select>
       <label>למי היית ממליץ/ה להשתמש במערכת?</label>
-      <input id="rptRecommend" placeholder="לא חובה">
+      <input id="rptRecommend" placeholder="רשות">
       <label>מה חסר, מה היה מבלבל, או הערה אחרת?</label>
-      <textarea id="rptUsageNotes" placeholder="לא חובה"></textarea>
+      <textarea id="rptUsageNotes" placeholder="רשות"></textarea>
     </div>
     <label>צילום מסך (רשות)</label>
     <input type="file" id="rptFile" accept="image/*">

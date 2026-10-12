@@ -198,6 +198,7 @@ footer a{margin:0 6px}
     { id: 'studio', pending: true, perm: 'studio', g: 'act', n: 'סטודיו חוסן', i: '🎨', k: 'work', page: 'resilience-studio.html', goal: 'מהשראה לערכת פעולה: מטרה, מוקד חוסן ומפגשים מוכנים להנחיה.' },
     { id: 'paths', pending: true, perm: 'activity', g: 'act', n: 'מסלולי השתתפות בלמידה', i: '🛤', k: 'work', page: 'activity-planner.html', goal: 'כמה דרכים להשתתף ולהראות הבנה סביב אותה מטרה, בתוך תכנון הפעילות.' },
     { id: 'review', perm: 'academic', g: 'learn', n: 'משוב לעבודות', i: '📝', k: 'work', page: 'academic-review.html', goal: 'להתכונן להגשת עבודה: משוב לפי קריטריונים. הכתיבה נשארת שלכם.' },
+    { id: 'studies', perm: 'studies', g: 'learn', n: 'לימודי חוסן חברתי', i: '📚', k: 'work', kind: '📚 חומרי לימוד', page: 'social-resilience-studies.html', goal: 'חומרי לימוד לפי קבוצות: קבצים וקישורים, עם הסברים ותצוגות מקדימות.' },
     { id: 'routines', pending: true, perm: 'routines', g: 'anchor', n: 'מרכז שגרות ויוזמות חברתיות', i: '🔁', k: 'work', page: 'routines-hub.html', goal: 'מנגנון חברתי קבוע בכיתה: בוחרים, מאשרים אחריות, מנסים פעמיים ופותחים לשינוי.' },
     { id: 'continuity', pending: true, perm: 'continuity', g: 'anchor', n: 'תיק רציפות', i: '🗂', k: 'work', page: 'continuity-kit.html', goal: 'מה ימשיך לפעול כשמישהו חסר: שגרה, חירום ולמידה מרחוק, הצטרפות וחזרה.' },
     { id: 'journey', perm: 'journey', g: 'anchor', n: 'מסע אל החוסן', i: '🏡', k: 'work', page: 'journey.html', goal: 'דרך מלווה בחמישה שלבים, עם אבני דרך ומשוב, עד תו חוסן לקהילת חוסן.' }
@@ -422,7 +423,7 @@ footer a{margin:0 6px}
     c.appendChild(el('b', null, (n ? n + '. ' : '') + t.i + ' ' + t.n));
     const tags = el('div', { class: 'tags' }); const gr = GR(t.g);
     if (gr) tags.appendChild(el('span', { class: 'rg' }, gr.i + ' ' + gr.n));
-    tags.appendChild(el('span', { class: 'kind ' + t.k }, t.k === 'lab' ? '🧪 מעבדה ותרגול' : '🌿 סביבת עבודה'));
+    tags.appendChild(el('span', { class: 'kind ' + t.k }, t.kind || (t.k === 'lab' ? '🧪 מעבדה ותרגול' : '🌿 סביבת עבודה')));
     if (t.pending) tags.appendChild(el('span', { class: 'pend' }, '🔒 טרם אושר: גלוי רק לך'));
     c.appendChild(tags);
     c.appendChild(el('p', null, t.goal));
