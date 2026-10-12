@@ -212,9 +212,10 @@ async function runAll(ids){
 }
 // כל תוצר בתיקייה שעוד לא נבדק נבדק ומתוקן לבד, אחד אחרי השני
 let AUTO=false;
+let CLEARED=0;
 async function autoCheck(){
-  if(AUTO)return;AUTO=true;
-  try{for(const d of ITEMS.slice()){if(!rvGet(d.id)&&ITEMS.some(x=>x.id===d.id))await ensureChecked(d);}}
+  if(AUTO)return;AUTO=true;const c0=CLEARED;
+  try{for(const d of ITEMS.slice()){if(CLEARED!==c0)break;if(!rvGet(d.id)&&ITEMS.some(x=>x.id===d.id))await ensureChecked(d);}}
   finally{AUTO=false;}
 }
 // החלפת תוצר בתיקייה (11/10/2026): הפקה חדשה של אותו כלי, והתוצר הישן נמחק. אם הישן היה בספרייה, החדש נכנס במקומו.
@@ -349,7 +350,7 @@ F('clearAll').onclick=async()=>{
   if(!ITEMS.length){alert('התיקייה כבר ריקה.');return;}
   const pub=ITEMS.filter(d=>d.public).length;
   if(!confirm('למחוק את כל '+ITEMS.length+' התוצרים בתיקייה?'+(pub?' '+pub+' מהם מוצגים עכשיו בספרייה, וגם הם יימחקו.':'')+' אי אפשר לשחזר.'))return;
-  try{const r=await api({action:'demoClear'});try{localStorage.removeItem(RV_KEY);localStorage.removeItem(ST_KEY);}catch(e){}await loadList();alert('נמחקו '+r.deleted+' תוצרים. אפשר להתחיל הפקה חדשה.');}
+  try{CLEARED++;const r=await api({action:'demoClear'});try{localStorage.removeItem(RV_KEY);localStorage.removeItem(ST_KEY);}catch(e){}await loadList();alert('נמחקו '+r.deleted+' תוצרים. אפשר להתחיל הפקה חדשה.');}
   catch(e){alert('המחיקה לא הצליחה: '+e.message);}
 };
 F('rvAll').onclick=async()=>{
@@ -420,7 +421,10 @@ async function view(d){
     const txt=String(full.html||'').replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>|<[^>]+>|\s+/g,' ').trim();
     VIEW_HTML=txt.length>40?String(full.html||''):'';
     if(VIEW_HTML)SBE_VIEW.show(F('dlgF'),VIEW_HTML);else F('dlgF').srcdoc=vmsg('התוצר נשמר בלי תוכן. אפשר להפיק אותו שוב בכפתור "הפקה" בשורה של הכלי, ולמחוק את העותק הזה.');
-  }catch(e){clearTimeout(slow);if(n!==VIEW_N)return;F('dlgF').srcdoc=vmsg('לא הצלחנו לטעון את התוצר ('+e.message+'). אפשר לסגור ולנסות שוב בעוד רגע.');}
+  }catch(e){clearTimeout(slow);if(n!==VIEW_N)return;
+    // תוצר שהמסמך שלו נמחק (12/10/2026: "תוצרים לא נטענים"): יוצא מהרשימה, במקום הודעת שגיאה
+    if(/gone|not found/.test(e.message)){F('dlgF').srcdoc=vmsg('התוצר הזה כבר נמחק מהתיקייה, והוא יוצא מהרשימה. אפשר להפיק אותו מחדש בכפתור "הפקה" בשורה של הכלי.');ITEMS=ITEMS.filter(x=>x.id!==d.id);loadList();return;}
+    F('dlgF').srcdoc=vmsg('לא הצלחנו לטעון את התוצר ('+e.message+'). אפשר לסגור ולנסות שוב בעוד רגע.');}
 }
 F('dlgX').onclick=()=>F('dlg').close();
 // הדפסה: עותק נקי של המסמך (בלי סקריפטים ובלי מאזיני אירועים) בחלון חדש
