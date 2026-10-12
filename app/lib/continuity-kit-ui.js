@@ -298,7 +298,7 @@
   // ── הצטרפות וחזרה לקבוצה (10/10/2026): תלמיד/ה חדש/ה, חזרה אחרי היעדרות מכל סיבה, או כל הכיתה חוזרת ──
   function renderJoin() {
     const J = S.join, root = el('div', 'kit join');
-    root.appendChild(el('p', 'sub', 'מסלול קצר למי שמצטרף או חוזר: מידע שימושי, דרך כניסה לבחירה, משימה ראשונה ותפקידי עמיתים מתחלפים. אחרי כמה מפגשים בודקים מה להתאים.'));
+    root.appendChild(el('p', 'sub', 'כאן הרציפות היא של התלמידים: מסלול קצר למי שמצטרף או חוזר: מידע שימושי, דרך כניסה לבחירה, משימה ראשונה ותפקידי עמיתים מתחלפים. אחרי כמה מפגשים בודקים מה להתאים.'));
     const form = el('div', 'grid2');
     C.JOIN_FIELDS.forEach((f) => {
       const box = el('div', 'f'), l = el('label', null, f.l); if (f.main) l.appendChild(el('span', 'main-tag', 'שדה עיקרי')); box.appendChild(l);
@@ -322,6 +322,12 @@
     root.append(go, wait, err);
     const k = J.kit; if (!k) return root;
     if (window.SBE_REFS) SBE_REFS.begin(SRC, 'resilience-advisor-sources.html');
+    // בקצרה: רציפות מיטבית, מה עושים כשיש פער, ואיך מייצרים שלווה (12/10/2026, משוב)
+    const sm = k.summary || {};
+    if (sm.best || sm.gap || sm.calm) {
+      root.appendChild(el('h3', null, 'בקצרה: רציפות לתלמידים שמצטרפים או חוזרים'));
+      root.appendChild(window.SBE_TABLE(null, [['מהי רציפות מיטבית', txt(sm.best)], ['כשיש פער בין זה למציאות', txt(sm.gap)], ['איך מייצרים תחושת שלווה, למי שבכיתה ולמי שמצטרף/ת', txt(sm.calm)]].filter((r) => r[1]), 'kit-t'));
+    }
     // תיק כניסה קבוצתי: נשמר ומתעדכן לפעם הבאה
     root.appendChild(el('h3', null, 'תיק כניסה קבוצתי')); root.appendChild(el('p', 'sub', 'מידע שימושי שהקבוצה מתחזקת ומעדכנת. נשאר לפעם הבאה שמישהו מצטרף.'));
     root.appendChild(etable(['הנושא', 'מה חשוב לדעת'], J.info, 'הוספת פריט'));

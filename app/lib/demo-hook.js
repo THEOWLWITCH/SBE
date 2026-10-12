@@ -156,7 +156,7 @@
     "facilitation-advisor.html": function () { return inPage("nana", "ננה: מדריך הנחיה", "ננה", "#btn-example", "#btn-go", "#guide-doc", "#guide-doc", "#guide"); },
     "continuity-kit.html": async function () {
       var part = q.get("part");
-      var kit = await inPage("continuity", "תיק רציפות", "תיק רציפות", "#example", "#go", "#kit .kit h2", "#kit", "#err1");
+      var kit = await inPage("continuity", "תיק רציפות: למורה המחליפה", "תיק רציפות", "#example", "#go", "#kit .kit h2", "#kit", "#err1");
       if (!part) return kit;
       if (part === "join") { // ערכת הצטרפות וחזרה (לשונית "הצטרפות וחזרה")
         click('[data-tab="join"]'); await sleep(800);
@@ -169,7 +169,7 @@
         // הלשונית נבנית מחדש אחרי ההפקה, ולכן מחפשים אותה מחדש בכל בדיקה
         var JP = await waitFor(function () { var P = $('[data-pane="join"]'); return P && [].some.call(P.querySelectorAll("h3"), function (h) { return /תיק כניסה קבוצתי/.test(h.textContent); }) ? P : null; }, 15 * 60e3, "ערכת ההצטרפות");
         await sleep(800);
-        return [{ tool: "cont-join", title: "תיק רציפות: ערכת הצטרפות וחזרה", label: "הצטרפות וחזרה", html: standalone($('[data-pane="join"]') || JP, "ערכת הצטרפות וחזרה"), input: inp }];
+        return [{ tool: "cont-join", title: "תיק רציפות: הצטרפות וחזרה של תלמידים לכיתה", label: "הצטרפות וחזרה", html: standalone($('[data-pane="join"]') || JP, "ערכת הצטרפות וחזרה"), input: inp }];
       }
       // נוהל עבודה בכלים שלכם (לשונית "נוהל עבודה")
       click('[data-tab="proc"]'); await sleep(800);

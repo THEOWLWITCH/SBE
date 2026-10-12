@@ -289,6 +289,18 @@
     else box.appendChild(KV(M.AGREEMENT_ROWS.map(([k, l]) => [l, txt(a[k])])));
     return box;
   }
+  // שומרים על השגרה (12/10/2026, משוב): אחריות, חזרה להסכם בשלבים, קצב לאורך זמן, תיעוד, והערך שהתלמידים רואים
+  function keepBlock(plan) {
+    const k = plan.keep || {}, box = el('section');
+    if (!['owner', 'slip', 'rhythm', 'record', 'value'].some((x) => arr(k[x]).length)) return box;
+    head(box, 'keep');
+    if (arr(k.owner).length) { head(box, 'owner'); box.appendChild(T('owner', k.owner.map((r) => [txt(r.who), txt(r.what), txt(r.handover)]))); }
+    if (arr(k.slip).length) { head(box, 'slip'); box.appendChild(T('slip', k.slip.map((r, i) => [txt(r.step || String(i + 1)), txt(r.if), txt(r.then), txt(r.who)]))); }
+    if (arr(k.rhythm).length) { head(box, 'rhythm'); box.appendChild(T('rhythm', k.rhythm.map((r) => [txt(r.when), txt(r.what), txt(r.who)]))); }
+    if (arr(k.record).length) { head(box, 'record'); box.appendChild(T('record', k.record.map((r) => [txt(r.what), txt(r.where), txt(r.who)]))); }
+    if (arr(k.value).length) { head(box, 'value'); box.appendChild(T('value', k.value.map((r) => [txt(r.what), txt(r.when), txt(r.shows)]))); }
+    return box;
+  }
   function runPlan(plan) {
     const box = el('section'); head(box, 'run');
     box.appendChild(T('run', arr(plan.run).map((r) => [txt(r.part), txt(r.what), txt(r.lead), r.minutes ? r.minutes + ' דקות' : ''])));
@@ -402,7 +414,7 @@
     if (n === 2) {
       box.appendChild(KV([['הפעולה', txt(I.plan.action && I.plan.action.name)], ['מה רוצים שיקרה', txt(I.plan.action && I.plan.action.purpose)], ['מתי ואיפה', txt(I.plan.action && I.plan.action.when)]]));
       box.appendChild(withRefs((r) => {
-        r.appendChild(boardBlock(I.plan, true)); r.appendChild(roleCards(true)); r.appendChild(agreementBlock(I.plan, true));
+        r.appendChild(boardBlock(I.plan, true)); r.appendChild(roleCards(true)); r.appendChild(agreementBlock(I.plan, true)); r.appendChild(keepBlock(I.plan));
         r.appendChild(runPlan(I.plan)); r.appendChild(meaning(I.plan));
       }));
       const v = versionsBlock(); if (v) box.appendChild(v);
@@ -458,7 +470,7 @@
     const out = el('div'), P = I.plan;
     if (what === 'board') {
       out.appendChild(KV([['הפעולה', txt(P.action && P.action.name)], ['מתי ואיפה', txt(P.action && P.action.when)]]));
-      [boardBlock(P, false), roleCards(false), agreementBlock(P, false)].forEach((x) => out.appendChild(x));
+      [boardBlock(P, false), roleCards(false), agreementBlock(P, false), keepBlock(P)].forEach((x) => out.appendChild(x));
       return out;
     }
     if (what === 'sheet') {
@@ -477,7 +489,7 @@
     }
     out.appendChild(withRefs((r) => {
       r.appendChild(KV([['הפעולה', txt(P.action && P.action.name)], ['מה רוצים שיקרה', txt(P.action && P.action.purpose)], ['מתי ואיפה', txt(P.action && P.action.when)]]));
-      [agreementBlock(P, false), boardBlock(P, false), roleCards(false), runPlan(P), meaning(P), logBlock(false)].forEach((x) => r.appendChild(x));
+      [agreementBlock(P, false), boardBlock(P, false), roleCards(false), keepBlock(P), runPlan(P), meaning(P), logBlock(false)].forEach((x) => r.appendChild(x));
       const v = versionsBlock(); if (v) r.appendChild(v);
     }));
     const attached = !!document.querySelector('#out2 .sbe-refs.attach');
