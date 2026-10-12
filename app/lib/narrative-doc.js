@@ -121,6 +121,7 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .dt ol,.dt ul{margin:0;padding-inline-start:17px;} .dt li{margin-bottom:4px;}
 .dt td.n{width:32px;text-align:center;font-weight:700;}
 .body p,.body li,.dt td:not(.n):not(.ck){text-align:justify;text-justify:inter-word;}
+.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,.dt tr>td:first-child:nth-last-child(n+3),.dt tr>td:first-child:nth-last-child(n+3) p,.dt tr>td:first-child:nth-last-child(n+3) li{text-align:start}
 .dt td.ck{width:64px;text-align:center;color:var(--muted);font-size:16px;}
 .dt td.w{width:38%;}
 .dt .tag{margin-inline-start:6px;}
@@ -214,6 +215,7 @@ ol.q li,ul.q li{margin-bottom:5px;}
 .dt p{margin:0;} .dt td.n{width:26px;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);}
 .dt td.ty{width:1%;white-space:nowrap;}
 .dt td:not(.n):not(.ck):not(.ty),.card p,.card li{text-align:justify;text-justify:inter-word;}
+.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,.dt tr>td:first-child:nth-last-child(n+3),.dt tr>td:first-child:nth-last-child(n+3) p,.dt tr>td:first-child:nth-last-child(n+3) li{text-align:start}
 .dt-cap{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.12em;color:var(--muted);margin:4px 0 4px;}
 @media screen and (max-width:520px){
   .dt thead{display:none;}

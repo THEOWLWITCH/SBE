@@ -115,6 +115,8 @@
 .kit-table tbody th{background:rgba(46,90,125,.08);width:22%;font-weight:700}
 /* יישור לשני הצדדים בכל התוצרים, גם בטבלאות (12/10/2026) */
 .kit-table td,.rtable td,.ktable td,.sbe-rich p,.sbe-rich li,.sbe-edit p,.sbe-edit li,.sbe-edit td{text-align:justify;text-justify:inter-word}
+/* תא צר (טבלה של שלוש עמודות ומעלה): יישור לימין, בלי רווחים גדולים בין המילים */
+table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,table tr>td:first-child:nth-last-child(n+3),table tr>td:first-child:nth-last-child(n+3) p,table tr>td:first-child:nth-last-child(n+3) li{text-align:start}
 .kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .kit-flow tr.ph th{background:#DCE7EF;color:#1E3F5A;text-align:right;font-size:15px;width:auto}
 .kit-flow td{width:33%}
@@ -193,7 +195,7 @@
   // טבלה עם כותרות עמודה (thead) חוזרת עליהן בכל עמוד. טבלה בלי thead (כותרת | תוכן) שמעליה כותרת מקבלת
   // את הכותרת הזאת כשורת כותרת שחוזרת, והכותרת המקורית לא מודפסת פעמיים. שורה לא נחתכת באמצע.
   const RH_CSS = "@media screen{thead.sbe-rh,tr.sbe-rh-row{display:none}}@media print{thead{display:table-header-group}tfoot{display:table-footer-group}tr{break-inside:avoid;page-break-inside:avoid}" +
-    "tr.sbe-rh-row th{background:none!important;color:#141C24!important;border:0!important;text-align:start!important;font-weight:700!important;font-size:1.05em!important;padding:4px 0 6px!important;width:auto!important}.sbe-rh-src{display:none!important}}";
+    "tr.sbe-rh-row th{background:none!important;color:#1E3F5A!important;border:0!important;text-align:start!important;font-weight:700!important;font-size:15.5px!important;padding:6px 10px 8px 0!important;width:auto!important;box-shadow:inset -4px 0 0 #2BA39C;-webkit-print-color-adjust:exact;print-color-adjust:exact}.sbe-rh-src{display:none!important}}";
   function repeatHeads(doc) {
     const body = doc && doc.body; if (!body) return;
     body.querySelectorAll("table").forEach((t) => {
@@ -278,7 +280,14 @@ h1{font-size:26px}.hd img{height:44px}
     return t ? `<div class="ctx"><b>${esc(t.name)}</b> · ${esc(t.purpose)}</div>` : "";
   }
   // דפים שמדפיסים את עצמם (פרקטי, נוגי, מיפוי חוסן חברתי): כותרת הקשר שמופיעה רק בהדפסה, ושם קובץ ברור
-  function printPage({ title }) {
+  // node (12/10/2026: "מעוצבים כמוצר למכירה בחנות"): התוצר מודפס במסמך ההדפסה המעוצב (לוגו, גופני המותג, מספרי עמודים),
+  // עם עיצוב הכלי, כמו כל שאר התוצרים. בלי node: הדפסת הדף עצמו, כמו קודם.
+  function printPage({ title, node }) {
+    if (node) {
+      const css = [...document.querySelectorAll("style")].map((x) => x.textContent).join("\n") +
+        "\nhtml,body{height:auto!important;overflow:visible!important}.no-print,.sbe-sysonly{display:none!important}";
+      return print({ title, node, extraCss: css });
+    }
     const t = toolInfo();
     let head = document.getElementById("sbe-print-ctx");
     if (!head) {
@@ -334,22 +343,30 @@ h1{font-size:26px}.hd img{height:44px}
     }
     if (!w) { alert("הדפדפן חסם את חלון ההדפסה. אפשר לאפשר חלונות קופצים לאתר ולנסות שוב."); return; }
     w.document.write(`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(fileTitle(title, undefined, kind))}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Frank+Ruhl+Libre:wght@700&display=swap">
 ${extraCss ? "<style>" + extraCss + "</style>" : ""}<style>
-@page{size:A4${landscape ? " landscape" : ""};margin:24mm 24mm}
+/* עיצוב של מוצר מוגמר (12/10/2026: "התוצרים ב PDF יהיו מעוצבים כמוצר למכירה בחנות"): גופני המותג, כותרת עם לוגו, מספרי עמודים */
+@page{size:A4${landscape ? " landscape" : ""};margin:24mm 24mm;
+  @bottom-center{content:"עמוד " counter(page) " מתוך " counter(pages);font:600 9pt Assistant,Arial,sans-serif;color:#5C6771}
+  @bottom-right{content:"Begood · be-good.co.il";font:9pt Assistant,Arial,sans-serif;color:#8A949C}}
 body{font-family:"Assistant","Segoe UI",Arial,sans-serif;color:#141C24;max-width:${landscape ? 1040 : 720}px;margin:24px auto;padding:0 16px;line-height:1.7;font-size:14.5px}
-.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #2E5A7D;padding-bottom:10px;margin-bottom:18px;gap:16px}
-.hd img{height:54px}
-.hd .dt{font-size:12.5px;color:#5C6771}
-.hd .ctx{font-size:13px;color:#2E5A7D;margin:0 0 4px}.hd .ctx b{font-weight:700}
-h1{font-size:22px;margin:0 0 4px;break-after:avoid}
+.hd{display:flex;justify-content:space-between;align-items:center;border-top:5px solid #2E5A7D;border-bottom:1px solid #CDD3D8;padding:14px 0 12px;margin-bottom:22px;gap:16px;position:relative}
+.hd::after{content:"";position:absolute;top:-5px;left:0;width:22%;height:5px;background:#2BA39C}
+.hd img{height:58px}
+.hd .dt{font-size:12.5px;color:#5C6771;margin-top:2px}
+.hd .ctx{font-size:12.5px;color:#2E5A7D;margin:0 0 4px;letter-spacing:.01em}.hd .ctx b{font-weight:700}
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:26px;line-height:1.25;color:#1E3F5A;margin:0 0 4px;break-after:avoid}
 .sub{color:#5C6771;margin:0 0 18px;font-size:13.5px}
-h4,h3,h2{break-after:avoid;break-inside:avoid;font-size:15px;margin:18px 0 6px}
+h4,h3,h2{break-after:avoid;break-inside:avoid;font-size:15.5px;margin:22px 0 8px;color:#1E3F5A}
+h2,h3{padding-inline-start:10px;border-inline-start:4px solid #2BA39C}
 .keep{break-inside:avoid;page-break-inside:avoid}
 .keep-start+*{break-before:avoid;page-break-before:avoid}
 h2+table tr:first-child,h3+table tr:first-child{break-before:avoid}
 ul,ol{orphans:3;widows:3}
 p,li{orphans:3;widows:3}
-.draftbox,.rcard,.sbe-rich,.card,.act,.session-card,.step-card,.claims-box,li{break-inside:avoid}
+.draftbox,.rcard,.act,.session-card,.step-card,.claims-box,li{break-inside:avoid}
+/* כרטיסי המסך (רקע, מסגרת, ריפוד) לא עוברים להדפסה: מסמך אחד נקי */
+.card{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 6px!important;border-radius:0!important;break-inside:auto!important}
 .draftbox{white-space:pre-line;border:1px solid #CDD3D8;border-radius:6px;padding:12px 14px;margin-bottom:12px}
 .rcard{border:1px solid #CDD3D8;border-radius:8px;padding:12px 14px;background:#F3F6F8}
 .rcard-row{margin-bottom:8px}.rcard-row b{display:block;font-size:12px;color:#5C6771}
@@ -358,9 +375,10 @@ p,li{orphans:3;widows:3}
 .tree2-root,.tree2-row,.tree2-end{border:1px solid #CDD3D8;border-radius:6px;padding:8px 10px;margin-bottom:6px;break-inside:avoid}
 .tree2-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .kit-table{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:13px;line-height:1.5}
-.kit-table th,.kit-table td{border:1px solid #CDD3D8;padding:6px 8px;text-align:right;vertical-align:top}
-.kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700}
-.kit-table tbody th{background:#F3F6F8;width:18%;font-weight:700}
+.kit-table th,.kit-table td{border:1px solid #D5DCE2;padding:7px 9px;text-align:right;vertical-align:top}
+.kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.kit-table tbody th{background:#EEF3F7;width:18%;font-weight:700;color:#1E3F5A;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.kit-table tbody tr:nth-child(even) td{background:#FAFBFC;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .kit-table tr{break-inside:avoid}.kit-table thead{display:table-header-group}
 .kit-table p{margin:0 0 4px}.kit-table ul,.kit-table ol{margin:0;padding-inline-start:18px}
 .kit-facts tbody th{width:12%}.kit-facts td{width:38%}
@@ -370,9 +388,10 @@ p,li{orphans:3;widows:3}
 .kit-flow td{width:33%}.kit-flow tr.ph th{background:#DCE7EF;color:#1E3F5A;text-align:right;font-size:14px;width:auto}.kit-flow tr.ph{break-after:avoid;page-break-after:avoid}
 .kit-h{font-size:16px;color:#2E5A7D;margin:20px 0 4px}.kit-sub{margin:0 0 6px;font-size:13.5px}
 .kit-min,.kit-muted{color:#5C6771;font-size:12px}.kit-session{break-before:auto}
-.ft{margin-top:26px;border-top:1px solid #CDD3D8;padding-top:8px;font-size:11.5px;color:#5C6771}
+.ft{margin-top:28px;border-top:1px solid #CDD3D8;padding-top:8px;font-size:11.5px;color:#5C6771}@media print{.ft{display:none}}
 .bar{position:sticky;top:0;background:#fff;padding:8px 0;margin-bottom:10px;text-align:left}
 p,li,dd,blockquote,td:not(.n):not(.ck){text-align:justify;text-justify:inter-word}
+table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,table tr>td:first-child:nth-last-child(n+3),table tr>td:first-child:nth-last-child(n+3) p,table tr>td:first-child:nth-last-child(n+3) li{text-align:start}
 .bar button{font:inherit;font-weight:700;padding:7px 16px;border-radius:6px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;cursor:pointer}
 @media print{.bar{display:none}body{margin:0;max-width:none}}
 ${pocket ? POCKET_CSS : ""}</style></head><body>

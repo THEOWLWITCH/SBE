@@ -1263,7 +1263,7 @@ function renderSummary(){
   const gen=el2('button','btn',SUM_BUSY?'מפיק את הסיכום... (עד כ-5 דקות)':cached?'הפקה מחדש':'הפקת סיכום והמלצות');
   gen.id='btn-sum-gen';gen.disabled=SUM_BUSY;gen.addEventListener('click',generateSummary);acts.appendChild(gen);
   if(cached&&!SUM_BUSY){
-    const pr=el2('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'סיכום והמלצות לכיתה'}):window.print());acts.appendChild(pr);
+    const pr=el2('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'סיכום והמלצות לכיתה',node:document.getElementById('summary-content')}):window.print());acts.appendChild(pr);
     const cp=el2('button','btn btn-ghost','העתקת הטקסט');cp.addEventListener('click',()=>{navigator.clipboard&&navigator.clipboard.writeText(summaryPlainText(cached)).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הטקסט',2000);}).catch(()=>{});});acts.appendChild(cp);
   }
   head.appendChild(acts);

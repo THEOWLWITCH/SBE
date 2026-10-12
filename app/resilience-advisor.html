@@ -713,7 +713,7 @@ function renderReport(){
   const box=F('report');box.textContent='';const R=STATE.report;if(!R)return;const d=R.doc||{};
   const head=el('div','card no-print');
   const acts=el('div','btns');
-  const pr=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'דוח המלצות לכיתה'+(R.cls?' '+R.cls:'')}):window.print());
+  const pr=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'דוח המלצות לכיתה'+(R.cls?' '+R.cls:''),node:F('report')}):window.print());
   const cp=el('button','btn btn-ghost','העתקת הטקסט');cp.addEventListener('click',()=>{navigator.clipboard&&navigator.clipboard.writeText(plain()).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הטקסט',2000);});});
   const ask=el('button','btn','לשאול את פרקטי ↓');ask.addEventListener('click',()=>{F('chat-area').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>{if(!F('chat-in').disabled)F('chat-in').focus({preventScroll:true});},500);});
   acts.appendChild(ask);acts.appendChild(pr);acts.appendChild(cp);head.appendChild(el('h2',null,'הדוח מוכן'));head.appendChild(acts);box.appendChild(head);

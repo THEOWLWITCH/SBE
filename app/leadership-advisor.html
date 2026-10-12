@@ -830,7 +830,7 @@ function convCard(c){
 // טבלאות בדוח (07/10/2026): המלצה בכל שורה — ההמלצה · מה עושים · לחוסן החברתי
 function titleCell(a,extra){const c=el('div');c.appendChild(el('div','rt-title',a.title||''));const tags=el('div','act-tags');
   if(a.kind)tags.appendChild(el('span','act-tag kind',a.kind));if(a.lead)tags.appendChild(el('span','act-tag circle','מוביל/ה: '+a.lead));if(extra)tags.appendChild(el('span','act-tag',extra));if(tags.childNodes.length)c.appendChild(tags);return c;}
-function resCell(a){const c=el('div');if(a.mechanism){const p=el('p');p.appendChild(el('b',null,'תרומה לחוסן החברתי: '));p.appendChild(document.createTextNode(a.mechanism));c.appendChild(p);}
+function resCell(a){const c=el('div');if(a.mechanism){const p=el('p');p.appendChild(document.createTextNode(a.mechanism));c.appendChild(p);} // כותרת העמודה כבר אומרת "תרומה לחוסן החברתי"
   if(a.resilience){const p=el('p');p.appendChild(inlineRich(a.resilience));c.appendChild(p);}const b=basisEl(a.basis);if(b)c.appendChild(b);return c.childNodes.length?c:null;}
 function recTable(rec,title,items,first){if(!(items||[]).length)return;rec.appendChild(el('h3',null,title));
   rec.appendChild(SBE_TABLE([first||'ההמלצה','מה עושים','תרומה לחוסן החברתי'],items.map(a=>{const dd=richText(a.description||'');dd.classList.add('act-d');return [titleCell(a,a.for),dd,resCell(a)];}),'acts'));}
@@ -843,7 +843,7 @@ function renderReport(){
   const head=el('div','card no-print');head.appendChild(el('h2',null,'הדוח מוכן'));
   const nav=el('div','rep-nav');
   const ask=el('button','btn','לשאול את נוגי ↓');ask.addEventListener('click',()=>{F('chat-area').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>{if(!F('chat-in').disabled)F('chat-in').focus({preventScroll:true});},500);});
-  const pr=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'דוח סיכום והמלצות'+(STATE.report&&STATE.report.school?': '+STATE.report.school:'')}):window.print());
+  const pr=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'דוח סיכום והמלצות'+(STATE.report&&STATE.report.school?': '+STATE.report.school:''),node:F('report')}):window.print());
   const cp=el('button','btn btn-ghost','העתקת הטקסט');cp.addEventListener('click',()=>{navigator.clipboard&&navigator.clipboard.writeText(plain()).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הטקסט',2000);});});
   nav.appendChild(ask);nav.appendChild(pr);nav.appendChild(cp);head.appendChild(nav);box.appendChild(head);
 
