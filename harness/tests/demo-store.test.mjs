@@ -64,3 +64,13 @@ test('a private view link shows only the chosen products, without the input, unt
   const sh = store.data.get('demoshare:' + sid); store.data.set('demoshare:' + sid, { ...sh, revoked: false, exp: new Date(Date.now() - 1000).toISOString() });
   assert.equal((await handleAccess(store, { action: 'demoShareGet', share: sid }))[0], 404, 'expired');
 });
+
+test('a link with nothing chosen opens the whole folder, also products saved later', async () => {
+  const store = slowStore(); const token = await sys(store);
+  const [, a] = await handleAccess(store, { action: 'demoSave', token, tool: 'practi', title: 'a', html: doc });
+  const [, out] = await handleAccess(store, { action: 'demoShare', token, all: true });
+  const [, b] = await handleAccess(store, { action: 'demoSave', token, tool: 'nana', title: 'b', html: doc });
+  const [, view] = await handleAccess(store, { action: 'demoShareGet', share: out.share.sid });
+  assert.deepEqual(view.items.map((d) => d.id).sort(), [a.item.id, b.item.id].sort());
+  assert.equal((await handleAccess(store, { action: 'demoGet', id: b.item.id, share: out.share.sid }))[0], 200);
+});
