@@ -110,13 +110,14 @@
       const p = S.proc; if (!p) return;
       const doc = el('div', 'proc-doc'); node.appendChild(doc);
       doc.appendChild(el('h4', null, txt(p.title) + ' · גרסה ' + (S.version || 1)));
+      if (arr(S.changes).length) doc.appendChild(el('h4', null, 'מה השתנה בגרסה הזאת'));
       if (arr(S.changes).length) doc.appendChild(T(['איפה', 'מה השתנה'], S.changes.map((c) => [txt(c.where), txt(c.what)])));
       doc.appendChild(el('h4', null, 'מה נמצא איפה'));
-      doc.appendChild(T(['מה', 'רמת פרטיות', 'איפה', 'מי מעדכן/ת', 'מתי'], arr(p.map).map((m) => { const lv = el('span', 'lvl ' + (/רגיש/.test(m.level) ? 'l3' : /צוות/.test(m.level) ? 'l2' : 'l1'), txt(m.level)); return [txt(m.item), lv, txt(m.where), txt(m.who), txt(m.when)]; })));
+      doc.appendChild(T(['הפריט', 'רמת פרטיות', 'איפה', 'מי מעדכן/ת', 'מתי'], arr(p.map).map((m) => { const lv = el('span', 'lvl ' + (/רגיש/.test(m.level) ? 'l3' : /צוות/.test(m.level) ? 'l2' : 'l1'), txt(m.level)); return [txt(m.item), lv, txt(m.where), txt(m.who), txt(m.when)]; })));
       if (arr(p.structure).length) { doc.appendChild(el('h4', null, 'המבנה')); doc.appendChild(T(['השם', 'מה נמצא שם'], p.structure.map((s) => [txt(s.name), txt(s.what)]))); }
       if (arr(p.roles).length) { doc.appendChild(el('h4', null, 'מי עושה מה')); doc.appendChild(T(['התפקיד', 'מה רואים ועורכים', 'מה עושים'], p.roles.map((r) => [txt(r.role), txt(r.can), txt(r.does)]))); }
       const lists = [['מה לא נכנס לכלים המשותפים', p.never], ['כשמישהו מתחלף', p.handover], ['מה לברר מול בית הספר', p.ask], ['שלושה צעדים לשבוע הקרוב', p.start]];
-      doc.appendChild(T(['', ''].map((x, i) => i ? 'מה עושים' : 'החלק'), lists.concat(p.check ? [['בודקים את הנוהל ' + txt(p.check.every), p.check.questions]] : []).filter((l) => arr(l[1]).length).map(([h, xs]) => { const u = el('ul'); xs.forEach((x) => u.appendChild(el('li', null, txt(x)))); return [h, u]; })));
+      doc.appendChild(T(['', ''].map((x, i) => i ? 'פירוט' : 'החלק'), lists.concat(p.check ? [['בודקים את הנוהל ' + txt(p.check.every), p.check.questions]] : []).filter((l) => arr(l[1]).length).map(([h, xs]) => { const u = el('ul'); xs.forEach((x) => u.appendChild(el('li', null, txt(x)))); return [h, u]; })));
       const acts = el('div', 'actions no-print');
       const cp = btn('📋 העתקת הנוהל (להדבקה בראש התיקייה או הגיליון)', 'btn btn-ghost sm', () => { const t = text(p); try { navigator.clipboard.writeText(t).then(() => { cp.textContent = '✓ הועתק'; }, () => prompt('להעתקה:', t)); } catch (e) { prompt('להעתקה:', t); } });
       acts.append(cp, btn('🖨 הדפסת הנוהל', 'btn btn-ghost sm', () => { const out = doc.cloneNode(true); window.SBE_DOC.print({ title: txt(p.title), subtitle: 'גרסה ' + (S.version || 1), kind: 'נוהל עבודה בכלים שלכם', node: out }); }));

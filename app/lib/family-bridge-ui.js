@@ -138,7 +138,7 @@
     const G = P.group || {}, rows = groupRows(G);
     if (rows.length) {
       head(box, 'group'); box.appendChild(KV(rows));
-      if (tools) { const r = el('div', 'actions no-print'), b = btn('📋 העתקת המדיניות להודעה להורים', 'btn btn-ghost sm', () => copyText(groupText(G), b)); r.appendChild(b); box.appendChild(r); }
+      if (tools) { const r = el('div', 'actions no-print'), b = btn('📋 העתקת המדיניות להודעה להורים', 'btn btn-ghost sm', () => copyText(groupText(G), b)); r.append(b, btn('🖨 הדפסת המדיניות להורים', 'btn btn-ghost sm', () => doPrint('group'))); box.appendChild(r); }
     }
     return box;
   }
@@ -160,7 +160,7 @@
     if (c.goal) box.appendChild(el('p', 'cf-goal', txt(c.goal)));
     if (c.intro) box.appendChild(el('p', null, txt(c.intro)));
     arr(c.questions).forEach((q, i) => { box.appendChild(el('p', 'cf-q', (i + 1) + '. ' + txt(q.q))); const u = el('ul', 'cf-qopts'); arr(q.opts).forEach((o) => u.appendChild(el('li', null, '☐ ' + txt(o)))); box.appendChild(u); });
-    if (arr(c.options).length) { if (arr(c.questions).length) box.appendChild(el('p', 'cf-q', 'או בחרו דרך מוכנה:')); const ol = el('ol', 'cf-opts'); arr(c.options).forEach((o) => ol.appendChild(el('li', null, '☐ ' + txt(o)))); box.appendChild(ol); }
+    if (arr(c.options).length) { if (arr(c.questions).length && (c.orPick || !dir)) box.appendChild(el('p', 'cf-q', txt(c.orPick) || 'או בחרו דרך מוכנה:')); const ol = el('ol', 'cf-opts'); arr(c.options).forEach((o) => ol.appendChild(el('li', null, '☐ ' + txt(o)))); box.appendChild(ol); }
     if (c.adapt) { box.appendChild(el('p', null, txt(c.adapt))); box.appendChild(el('p', 'cf-line', '______________________________')); }
     if (c.notNow) box.appendChild(el('p', null, '☐ ' + txt(c.notNow)));
     if (c.respond) box.appendChild(el('p', 'cf-respond', txt(c.respond)));
@@ -184,19 +184,19 @@
     const Y = M.YEAR_FORM, box = el('div', 'yearform');
     box.appendChild(el('h3', null, Y.title)); box.appendChild(el('p', null, Y.intro));
     Y.qs.forEach((q, i) => { box.appendChild(el('p', 'yq', (i + 1) + '. ' + q.q)); const u = el('ul', 'yo'); q.opts.forEach((o) => u.appendChild(el('li', null, (/^_+$/.test(o) ? '' : '☐ ') + o))); box.appendChild(u); });
-    box.appendChild(el('p', null, Y.close)); return box;
+    box.appendChild(el('p', 'cf-reach', Y.reach)); box.appendChild(el('p', null, Y.close)); return box;
   }
   // טופס גוגל (lib/google-form.js): הכרטיס והשאלון לתחילת השנה, עם כל השאלות
   function cardSpec(c) {
     c = c || {};
     const qs = arr(c.questions).map((q) => ({ q: txt(q.q), opts: arr(q.opts).map(txt) }));
-    if (arr(c.options).length) qs.push({ q: arr(c.questions).length ? 'או בחרו דרך מוכנה:' : 'מה מתאים לכם?', opts: arr(c.options).map(txt) });
-    if (c.notNow) qs.push({ q: 'ואם כרגע מתאים לכם פחות קשר', opts: [txt(c.notNow)] });
+    if (arr(c.options).length) qs.push({ q: txt(c.orPick) || (arr(c.questions).length ? 'או בחרו דרך מוכנה:' : 'מה מתאים לכם?'), opts: arr(c.options).map(txt) });
+    if (c.notNow) qs.push({ q: txt(c.lessContact) || 'ואם כרגע מתאים לכם פחות קשר', opts: [txt(c.notNow)] });
     if (c.adapt) qs.push({ q: txt(c.adapt), opts: ['________'] });
     return { title: txt(c.goal) || 'איך נהיה בקשר', description: [txt(c.greeting), txt(c.intro), txt(c.respond), txt(c.reach), txt(c.group)].filter(Boolean).join('\n\n'), questions: qs, closing: txt(c.closing) };
   }
-  const yearSpec = () => ({ title: M.YEAR_FORM.title, description: M.YEAR_FORM.intro, questions: M.YEAR_FORM.qs, closing: M.YEAR_FORM.close });
-  const yearText = () => [M.YEAR_FORM.title, M.YEAR_FORM.intro].concat(M.YEAR_FORM.qs.map((q, i) => (i + 1) + '. ' + q.q + '\n' + q.opts.map((o) => '- ' + o).join('\n')), [M.YEAR_FORM.close]).join('\n\n');
+  const yearSpec = () => ({ title: M.YEAR_FORM.title, description: M.YEAR_FORM.intro + '\n\n' + M.YEAR_FORM.reach, questions: M.YEAR_FORM.qs, closing: M.YEAR_FORM.close });
+  const yearText = () => [M.YEAR_FORM.title, M.YEAR_FORM.intro].concat(M.YEAR_FORM.qs.map((q, i) => (i + 1) + '. ' + q.q + '\n' + q.opts.map((o) => '- ' + o).join('\n')), [M.YEAR_FORM.reach, M.YEAR_FORM.close]).join('\n\n');
 
   // ── צעד 3: משפחה ──
   function familyCard(f, i) {
@@ -496,6 +496,7 @@
     let kind = 'סבב גשר';
     if (what === 'card') { kind = 'כרטיס בחירה למשפחה'; out.appendChild(cardView(P.card, otherLang() ? 'auto' : null)); }
     else if (what === 'year') { kind = 'שאלון קשר לתחילת השנה'; out.appendChild(yearForm()); }
+    else if (what === 'group') { kind = 'מדיניות לקבוצה הכיתתית'; out.appendChild(window.SBE_TABLE(null, groupRows(P.group || {}), 'kit-t')); }
     else {
       out.appendChild(withRefs((r) => {
         [goalBlock(P), contactBlock(P), stylesBlock(P)].forEach((x) => r.appendChild(x));
@@ -508,7 +509,7 @@
       const attached = !!document.querySelector('#out2 .sbe-refs.attach');
       out.querySelectorAll('.sbe-refs').forEach((x) => { if (attached) x.classList.add('attach'); });
     }
-    window.SBE_DOC.print({ extraCss: PRINT_CSS, title: what === 'year' ? M.YEAR_FORM.title : (txt(P.title).replace(/^גשר:?\s*/, '') || 'גשר שותפות'), subtitle: [S.form.forWho, S.form.age, S.form.lang].filter(Boolean).join(' · ') + ' · גרסה ' + S.version, kind, node: out });
+    window.SBE_DOC.print({ extraCss: PRINT_CSS, title: what === 'year' ? M.YEAR_FORM.title : what === 'group' ? 'קבוצת הוואטסאפ הכיתתית' : (txt(P.title).replace(/^גשר:?\s*/, '') || 'גשר שותפות'), subtitle: [S.form.forWho, S.form.age, S.form.lang].filter(Boolean).join(' · ') + ' · גרסה ' + S.version, kind, node: out });
   }
   document.querySelectorAll('[data-print]').forEach((b) => b.addEventListener('click', () => { if (S.plan) doPrint(b.dataset.print); }));
   // קובץ עבודה: כל המעבדה, כדי להמשיך במכשיר אחר (כולל הכינויים והסיפורים: נשמר רק אצלך)

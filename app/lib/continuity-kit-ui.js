@@ -144,6 +144,13 @@
     const none = el('label', 'none no-print'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!S.local.redNone;
     cb.addEventListener('change', () => { S.local.redNone = cb.checked; save(); }); none.append(cb, document.createTextNode(' אין כרגע מידע חשוב לרשום כאן'));
     red.appendChild(none); root.appendChild(red);
+    root.appendChild(el('p', 'sub', 'כאן הרציפות היא של הכיתה כשמורה מחליפה נכנסת: מה שהיא צריכה לדעת כדי שהיום ימשיך כרגיל.'));
+    // בקצרה (12/10/2026, בדיקת הלקוחה): גם לתיק השגרה, לא רק להצטרפות
+    const sm = k.summary || {};
+    if (sm.best || sm.gap || sm.calm) {
+      root.appendChild(el('h3', null, 'בקצרה: רציפות לכיתה כשמורה מחליפה נכנסת'));
+      root.appendChild(window.SBE_TABLE(null, [['מהי רציפות מיטבית', txt(sm.best)], ['כשיש פער בין זה למציאות', txt(sm.gap)], ['איך יוצרים שלווה לתלמידים', txt(sm.calm)]].filter((r) => r[1]), 'kit-t'));
+    }
     head(root, 'opening'); root.appendChild(window.SBE_TABLE(null, (k.opening || []).map((r) => [txt(r.h), txt(r.t)]), 'kit-t'));
     const model = el('div', 'model'); root.appendChild(model);
     head(model, 'routines'); model.appendChild(T('routines', (k.routines || []).map((r) => [txt(r.name), txt(r.when), txt(r.what), txt(r.helpers)])));
@@ -237,6 +244,7 @@
     }
     const k = S.emerg;
     if (window.SBE_REFS) SBE_REFS.begin(SRC, 'resilience-advisor-sources.html');
+    root.appendChild(el('p', 'sub', 'כאן הרציפות היא של הכיתה בחירום: הצוותים, שרשרת הקשר והמשימות פועלים גם כשאין שיעור, עם המחנכת או עם מי שמחליפה אותה.'));
     head(root, 'readiness'); root.appendChild(renderReadiness());
     head(root, 'teams', '🔒 במכשיר בלבד'); root.appendChild(renderTeams());
     head(root, 'teamCard'); const card = el('ol', 'teamcard'); C.TEAM_QUESTIONS.forEach((q) => card.appendChild(el('li', null, q))); root.appendChild(card);
@@ -299,13 +307,13 @@
   function renderJoin() {
     const J = S.join, root = el('div', 'kit join');
     root.appendChild(el('p', 'sub', 'כאן הרציפות היא של התלמידים: מסלול קצר למי שמצטרף או חוזר: מידע שימושי, דרך כניסה לבחירה, משימה ראשונה ותפקידי עמיתים מתחלפים. אחרי כמה מפגשים בודקים מה להתאים.'));
-    const form = el('div', 'grid2');
+    const form = el('div', 'grid2 no-print');
     C.JOIN_FIELDS.forEach((f) => {
       const box = el('div', 'f'), l = el('label', null, f.l); if (f.main) l.appendChild(el('span', 'main-tag', 'שדה עיקרי')); box.appendChild(l);
       let i; if (f.type === 'select') { i = el('select'); i.appendChild(new Option('בחירה…', '')); f.opts.forEach((o) => i.appendChild(new Option(o, o))); } else { i = el('textarea'); i.rows = 2; }
       if (f.ph) i.placeholder = f.ph; i.value = J.form[f.k] || ''; i.setAttribute('aria-label', f.l);
       const keep = () => { J.form[f.k] = i.value; save(); }; i.addEventListener('input', keep); i.addEventListener('change', keep);
-      box.appendChild(i); (f.type === 'area' ? root : form).appendChild(box); if (f.k === 'away') root.appendChild(form);
+      box.classList.add('no-print'); box.appendChild(i); (f.type === 'area' ? root : form).appendChild(box); if (f.k === 'away') root.appendChild(form);
     });
     const err = el('p', 'err'); err.hidden = true; const wait = el('div', 'wait'); wait.hidden = true;
     const go = btn(J.kit ? 'הכנה מחדש' : 'הכנת ערכת ההצטרפות', J.kit ? 'btn btn-ghost sm' : 'btn', async () => {
@@ -381,7 +389,7 @@
   }
   function renderUpdates() {
     const root = el('div', 'kit');
-    root.appendChild(el('p', null, 'כאן המחליפה כותבת בסוף כל יום מה היה ומה ממשיך. כך המורה הקבועה, ומי שתבוא אחריה, יודעות בדיוק איפה הכיתה עומדת.'));
+    root.appendChild(el('p', 'no-print', 'כאן המחליפה כותבת בסוף כל יום מה היה ומה ממשיך. כך המורה הקבועה, ומי שתבוא אחריה, יודעות בדיוק איפה הכיתה עומדת.'));
     const sec = el('section', 'sens'); head(sec, 'updates', '🔒 במכשיר בלבד');
     const form = el('div', 'grid2 no-print'), vals = {};
     [['d', 'תאריך', today()], ['a', 'מה היה היום'], ['b', 'מה חשוב לדעת'], ['c', 'מה ממשיך מחר']].forEach(([k, l, v]) => {
@@ -476,7 +484,9 @@
     const out = el('div');
     if (withSens) out.appendChild(el('p', 'sens-note', '🔒 מידע רגיש: לשמור בתיק סגור, ולא להעביר הלאה.'));
     document.querySelectorAll('#kit .pane').forEach((p) => {
-      const c = p.cloneNode(true); c.hidden = false;
+      let c = p.cloneNode(true); c.hidden = false;
+      // בנוהל העבודה מודפס רק הנוהל עצמו, לא הטופס (12/10/2026, בדיקת הלקוחה)
+      if (p.dataset.pane === 'proc') { const d = c.querySelector('.proc-doc'); if (!d) return; c = el('div'); c.appendChild(d); }
       c.querySelectorAll('input,textarea').forEach((i) => { const s = el('span', 'val', i.value || ''); i.replaceWith(s); });
       c.querySelectorAll('select').forEach((i) => { const o = i.options[i.selectedIndex]; i.replaceWith(el('span', 'val', o ? o.text : '')); });
       if (!withSens) c.querySelectorAll('.sens').forEach((x) => x.remove());
