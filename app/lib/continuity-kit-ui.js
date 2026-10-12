@@ -144,7 +144,7 @@
     const none = el('label', 'none no-print'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!S.local.redNone;
     cb.addEventListener('change', () => { S.local.redNone = cb.checked; save(); }); none.append(cb, document.createTextNode(' אין כרגע מידע חשוב לרשום כאן'));
     red.appendChild(none); root.appendChild(red);
-    root.appendChild(el('p', 'sub', 'כאן הרציפות היא של הכיתה כשמורה מחליפה נכנסת: מה שהיא צריכה לדעת כדי שהיום ימשיך כרגיל.'));
+    root.appendChild(el('p', 'sub', 'כאן הרציפות היא של הכיתה כשמורה מחליפה נכנסת: מה שחשוב לה לדעת כדי שהיום ימשיך כרגיל.'));
     // בקצרה (12/10/2026, בדיקת הלקוחה): גם לתיק השגרה, לא רק להצטרפות
     const sm = k.summary || {};
     if (sm.best || sm.gap || sm.calm) {
