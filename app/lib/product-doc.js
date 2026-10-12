@@ -192,24 +192,26 @@
   // כותרת שחוזרת בכל עמוד (12/10/2026: "במקרים שטבלאות נחתכות - הכותרת צריכה לחזור על עצמה בדף הבא"):
   // טבלה עם כותרות עמודה (thead) חוזרת עליהן בכל עמוד. טבלה בלי thead (כותרת | תוכן) שמעליה כותרת מקבלת
   // את הכותרת הזאת כשורת כותרת שחוזרת, והכותרת המקורית לא מודפסת פעמיים. שורה לא נחתכת באמצע.
-  const RH_CSS = "@media screen{thead.sbe-rh{display:none}}@media print{thead{display:table-header-group}tfoot{display:table-footer-group}tr{break-inside:avoid;page-break-inside:avoid}" +
-    "thead.sbe-rh th{background:none!important;color:#141C24!important;border:0!important;text-align:start!important;font-weight:700!important;font-size:1.05em!important;padding:4px 0 6px!important;width:auto!important}.sbe-rh-src{display:none!important}}";
+  const RH_CSS = "@media screen{thead.sbe-rh,tr.sbe-rh-row{display:none}}@media print{thead{display:table-header-group}tfoot{display:table-footer-group}tr{break-inside:avoid;page-break-inside:avoid}" +
+    "tr.sbe-rh-row th{background:none!important;color:#141C24!important;border:0!important;text-align:start!important;font-weight:700!important;font-size:1.05em!important;padding:4px 0 6px!important;width:auto!important}.sbe-rh-src{display:none!important}}";
   function repeatHeads(doc) {
     const body = doc && doc.body; if (!body) return;
     body.querySelectorAll("table").forEach((t) => {
-      if (t.tHead) return;
+      if (t.querySelector("tr.sbe-rh-row")) return;
       const rows = [...t.rows]; if (rows.length < 3) return; // טבלה קצרה לא נחתכת ממילא
       let node = t, h = t.previousElementSibling;
       while (!h && node.parentElement && node.parentElement !== body && node.parentElement.children.length === 1) { node = node.parentElement; h = node.previousElementSibling; }
       // כותרת שנעטפה לפני ההדפסה (keepWithHeadings: .keep-start) נמצאת בסוף העטיפה שלפני הטבלה
       if (h && h.classList && h.classList.contains("keep-start") && h.lastElementChild) h = h.lastElementChild;
-      const isHead = (x) => x && (/^H[2-6]$/.test(x.tagName) || (x.classList && x.classList.contains("kit-h")));
-      if (!isHead(h) || !h.textContent.trim()) return;
+      const isHead = (x) => x && (/^H[2-6]$/.test(x.tagName) || (x.classList && (x.classList.contains("kit-h") || x.classList.contains("dt-cap"))));
+      if (!isHead(h) || !h.textContent.trim()) return; // בלי כותרת מעל: כותרות העמודה (thead) חוזרות לבד
       const cols = Math.max(1, ...rows.map((r) => [...r.cells].reduce((n, c) => n + (c.colSpan || 1), 0)));
-      const thead = doc.createElement("thead"); thead.className = "sbe-rh";
-      const tr = doc.createElement("tr"), th = doc.createElement("th");
-      th.colSpan = cols; th.textContent = h.textContent.replace(/\s+/g, " ").trim();
-      tr.appendChild(th); thead.appendChild(tr); t.insertBefore(thead, t.firstChild);
+      // שם הטבלה חוזר בראש כל עמוד (12/10/2026: "כותרת טבלה חוזרת בראש כל עמוד"), מעל כותרות העמודה אם יש
+      const tr = doc.createElement("tr"), th = doc.createElement("th"); tr.className = "sbe-rh-row";
+      th.colSpan = cols; th.textContent = h.textContent.replace(/\s+/g, " ").trim(); tr.appendChild(th);
+      let thead = t.tHead;
+      if (!thead) { thead = doc.createElement("thead"); thead.className = "sbe-rh"; t.insertBefore(thead, t.firstChild); }
+      thead.insertBefore(tr, thead.firstChild);
       h.classList.add("sbe-rh-src");
     });
     if (!doc.getElementById("sbe-rh-css")) { const st = doc.createElement("style"); st.id = "sbe-rh-css"; st.textContent = RH_CSS; (doc.head || body).appendChild(st); }

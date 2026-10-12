@@ -312,6 +312,18 @@ function tpTables(tps, { whoOf, otherOf, doLabel = 'מה את עושה', askLabe
 //   config.MARK           data-URI של הלוגו
 //   config.REPORT_WIDGET  HTML של כפתור הדיווח (או "" בדפדפן/בתצוגה מקדימה)
 //   config.GUARD          סקריפט שמירת ההרשאות (או "" בדפדפן/בתצוגה מקדימה)
+// כותרת הטבלה חוזרת בראש כל עמוד (12/10/2026: "כותרת טבלה חוזרת בראש כל עמוד"): לפני הדפסה, לכל טבלה
+// מעל שורת כותרות העמודה נכנסת שורה עם שם הטבלה (הכיתוב שמעליה, או כותרת הסעיף), ו-thead חוזר בכל עמוד.
+const RH_SCRIPT = `<script>(function(){function go(){document.querySelectorAll('table').forEach(function(t){
+if(t.querySelector('tr.sbe-rh-row')||t.rows.length<3)return;var cap=t.previousElementSibling,name='',hide=null;
+if(cap&&cap.classList.contains('dt-cap')){name=cap.textContent;hide=cap;}else{var s=t.closest('.sec'),h=s&&s.querySelector(':scope>.h');
+if(h){var sp=h.querySelector('span');name=(sp||h).textContent;if(h.nextElementSibling===t)hide=h;}}
+name=String(name||'').replace(/\s+/g,' ').trim();if(!name)return;var n=0;[].forEach.call(t.rows[0].cells,function(c){n+=c.colSpan||1;});
+var tr=document.createElement('tr'),th=document.createElement('th');tr.className='sbe-rh-row';th.colSpan=n;th.textContent=name;tr.appendChild(th);
+var hd=t.tHead;if(!hd){hd=document.createElement('thead');t.insertBefore(hd,t.firstChild);}hd.insertBefore(tr,hd.firstChild);if(hide)hide.classList.add('sbe-rh-src');});}
+window.addEventListener('beforeprint',go);var m=window.matchMedia&&window.matchMedia('print');if(m&&m.addListener)m.addListener(function(e){if(e.matches)go();});})();<\/script>`;
+const RH_STYLE = '@media screen{tr.sbe-rh-row{display:none}}@media print{thead{display:table-header-group}tr.sbe-rh-row th{background:none!important;color:#141C24!important;border:0!important;text-align:right!important;font-weight:700;font-size:1.05em;padding:4px 0 6px!important}.sbe-rh-src{display:none!important}}';
+
 function createRenderer(config) {
   const MARK = config.MARK || '';
   // שני הרכיבים הגלובליים של app/ — תפריט הניווט ("→ חזרה / ☰ תפריט") וכפתור
@@ -327,7 +339,7 @@ function createRenderer(config) {
 <title>${esc(scn.name)} · ${esc(badge)}</title>
 ${GUARD}
 ${FONTS}
-<style>${CSS}</style>
+<style>${CSS}${RH_STYLE}</style>
 <div class="sheet">
   <div class="head">
     <img class="lg" src="${MARK}" alt="Begood">
@@ -343,6 +355,7 @@ ${FONTS}
     ${byline ? `<div class="foot-by">${byline}</div>` : ''}
   </div>
 </div>
+${RH_SCRIPT}
 ${WIDGET}`;
   }
 
