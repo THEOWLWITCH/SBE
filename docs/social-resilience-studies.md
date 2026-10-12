@@ -31,6 +31,7 @@ Exercise admin group/item create, edit, move and delete; file upload and opening
 - [x] 152/152 automated tests, 14 browser workflow checks, and additional save lifecycle/blocked-popup regression checks.
 - [x] Completed `ce-code-review` receipt, run `20261012-studies-final`, followed by fixes for all eight confirmed findings.
 - [x] Follow-up: repair the existing self-practice wording test for Windows CRLF checkouts, retain forbidden-word/dash checks and reject missing scope boundaries.
+- [x] Follow-up: replace remaining obligation wording in the self-practice feedback form with optional wording and remove the missing-value dash from its feedback table.
 
 ## Save and recovery behavior
 
