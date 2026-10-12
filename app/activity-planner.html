@@ -1821,7 +1821,8 @@ function todayHe(){ return new Date().toLocaleDateString("he-IL",{day:"2-digit",
 function emptySub(){ return { t:"", min:"" }; }
 function emptySession(){
   return { smart:"", product:"", resources:"", duration:"", opening:"", openingMin:"",
-    main:"", mainMin:"", subs:[emptySub(), emptySub(), emptySub()], closing:"", closingMin:"" };
+    main:"", mainMin:"", subs:[emptySub(), emptySub(), emptySub()], closing:"", closingMin:"",
+    openingGuide:"", mainGuide:"", closingGuide:"", after:"" };
 }
 function emptySeq(){
   return { creator:"", date:todayHe(), framework:"", audience:"", ageRange:"", participants:"", space:"",
@@ -2279,9 +2280,12 @@ function sessionEl(i){
   flow.append(pair(
     tf("פתיחה", P + ".opening", { kind:"short", onInput:refreshHead }),
     tf("משך", P + ".openingMin", { kind:"short", single:true, placeholder:"10 דקות", onInput:refreshHead })));
+  // הנחיה למנחה לכל חלק, ו"אחרי המפגש" (12/10/2026: מהלך מפגש אחיד, שלוש עמודות)
+  flow.append(tf("הנחיה למנחה בפתיחה", P + ".openingGuide", { kind:"short", hint:"מה אומרים, אילו שאלות שואלים, מי שואל את מי ובשביל מה" }));
   flow.append(pair(
     tf("פעילות מרכזית", P + ".main", { kind:"short", hint:"תיאור כללי: הפירוט בתת-הפעילויות", onInput:refreshHead }),
     tf("משך", P + ".mainMin", { kind:"short", single:true, placeholder:"60 דקות", onInput:refreshHead })));
+  flow.append(tf("הנחיה למנחה בפעילות המרכזית", P + ".mainGuide", { kind:"short", hint:"מה אומרים, אילו שאלות שואלים, מי שואל את מי ובשביל מה" }));
 
   const subsBox = el("div");
   function buildSubs(){
@@ -2318,6 +2322,8 @@ function sessionEl(i){
   flow.append(pair(
     tf("סיכום", P + ".closing", { kind:"short", onInput:refreshHead }),
     tf("משך", P + ".closingMin", { kind:"short", single:true, placeholder:"15 דקות", onInput:refreshHead })));
+  flow.append(tf("הנחיה למנחה בסיכום", P + ".closingGuide", { kind:"short", hint:"מה אומרים, אילו שאלות שואלים, מי שואל את מי ובשביל מה" }));
+  flow.append(tf("אחרי המפגש", P + ".after", { kind:"short", hint:"מה קורה אחרי המפגש: מי עושה מה, ועד מתי. לא נספר בזמן המפגש" }));
   flow.append(timeLine);
   body.append(flow);
 
@@ -2569,6 +2575,8 @@ function docHeader(kind, title){
 }
 function smartSentence(s){ return smartLines(s.smart); }
 // attach: המקורות בתוך המסמך (09/10/2026: "רשימת המקורות לא תהיה פתוחה"). בלי attach הם רק בכפתור "📚 מקורות" בחלון התוצר.
+// לבדיקה ולמעבדת הדמו: מסמך הרצף כ-HTML
+window.sbeSeqDocHTML = (narr, attach) => seqDocHTML(narr, attach);
 function seqDocHTML(narr, attach){
   const title = str(seq.topic) || "תכנון רצף מפגשים";
   let h = docHeader("תכנון רצף מפגשים", title);
@@ -2599,17 +2607,18 @@ function seqDocHTML(narr, attach){
     // לכל מפגש: יעד, טבלת מהלך (שלב · זמן · מה עושים), וטבלת סיום (תוצר והערכה · משאבים ועזרים · מקורות)
     filled.forEach(({ s, i }) => {
       const rows = [];
-      if (str(s.opening)) rows.push(["פתיחה", s.openingMin, nl(s.opening)]);
+      if (str(s.opening) || str(s.openingGuide)) rows.push(["פתיחה", s.openingMin, nl(s.opening), s.openingGuide]);
       const subs = s.subs.filter(x => str(x.t));
       if (str(s.main) || subs.length) rows.push(["פעילות מרכזית", s.mainMin, (str(s.main) ? `<p>${nl(s.main)}</p>` : "") +
-        (subs.length ? `<ol>${subs.map(x => `<li>${nl(x.t)}${str(x.min) ? ` <span class="meta">(${esc(str(x.min))})</span>` : ""}</li>`).join("")}</ol>` : "")]);
-      if (str(s.closing)) rows.push(["סיכום", s.closingMin, nl(s.closing)]);
+        (subs.length ? `<ol>${subs.map(x => `<li>${nl(x.t)}${str(x.min) ? ` <span class="meta">(${esc(str(x.min))})</span>` : ""}</li>`).join("")}</ol>` : ""), s.mainGuide]);
+      if (str(s.closing) || str(s.closingGuide)) rows.push(["סיכום", s.closingMin, nl(s.closing), s.closingGuide]);
+      if (str(s.after)) rows.push(["אחרי המפגש", "", nl(s.after), ""]);
       h += `<section class="sess"><h3>מפגש ${i + 1}<span class="t">${esc(str(s.duration))}</span></h3>`;
       if (smartSentence(s)) h += `<p class="goal"><b>יעד המפגש:</b> ${nl(smartSentence(s))}</p>`;
-      // מהלך המפגש (08/10/2026): פתיחה · פעילות מרכזית · סיכום, כשורת כותרת לכל חלק; עמודות: תיאור הפעילות · עזרים ומשאבים
-      if (rows.length) { const hasRes = !!str(s.resources);
-        h += `<table class="flow"><thead><tr><th>תיאור הפעילות</th>${hasRes ? "<th>עזרים ומשאבים</th>" : ""}</tr></thead><tbody>${rows.map(([t, m, c]) =>
-          `<tr class="ph"><th colspan="${hasRes ? 2 : 1}">${t}${str(m) ? " · " + esc(str(m)) : ""}</th></tr><tr><td>${c}</td>${hasRes ? `<td>${t === "פעילות מרכזית" ? nl(s.resources) : ""}</td>` : ""}</tr>`).join("")}</tbody></table>`; }
+      // מהלך המפגש (08/10/2026; 12/10/2026 הנחיה למנחה ואחרי המפגש): שורת כותרת לכל חלק; עמודות: תיאור הפעילות · הנחיה למנחה · עזרים ומשאבים
+      if (rows.length) { const hasRes = !!str(s.resources), hasG = rows.some(r => str(r[3])), nc = 1 + (hasG ? 1 : 0) + (hasRes ? 1 : 0);
+        h += `<table class="flow"><thead><tr><th>תיאור הפעילות</th>${hasG ? "<th>הנחיה למנחה (כולל השאלות)</th>" : ""}${hasRes ? "<th>עזרים ומשאבים</th>" : ""}</tr></thead><tbody>${rows.map(([t, m, c, g]) =>
+          `<tr class="ph"><th colspan="${nc}">${t}${str(m) ? " · " + esc(str(m)) : ""}</th></tr><tr><td>${c}</td>${hasG ? `<td>${nl(g)}</td>` : ""}${hasRes ? `<td>${t === "פעילות מרכזית" ? nl(s.resources) : ""}</td>` : ""}</tr>`).join("")}</tbody></table>`; }
       const ss = narr && narr.sessionSources ? narr.sessionSources[i + 1] : null;
       const end = [["תוצר המפגש והערכתו", str(s.product) ? nl(s.product) : ""], ["משאבים ועזרים", str(s.resources) && !rows.some(r => r[0] === "פעילות מרכזית") ? nl(s.resources) : ""], ["מקורות להרחבה", attach && ss && ss.length ? sourceList(ss) : ""]].filter(x => x[1]);
       if (end.length) h += `<table class="end"><thead><tr>${end.map(x => `<th>${x[0]}</th>`).join("")}</tr></thead><tbody><tr>${end.map(x => `<td>${x[1]}</td>`).join("")}</tr></tbody></table>`;
@@ -2714,7 +2723,7 @@ function parseJSON(raw){
   if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
   return JSON.parse(m[0]);
 }
-const SESSION_SCHEMA = "לכל מפגש: smart (אובייקט {S,M,A,R,T} של מחרוזות — יעד מדיד לפי S.M.A.R.T, מנוסח כלפי הלומדים), product (תוצר המפגש והערכתו), resources, duration, opening, openingMin, main (תיאור כללי של הפעילות המרכזית), mainMin, subs (מערך {t,min} של 2–4 תת-פעילויות), closing, closingMin. משכים כמחרוזת כמו \"15 דקות\".";
+const SESSION_SCHEMA = "לכל מפגש: smart (אובייקט {S,M,A,R,T} של מחרוזות — יעד מדיד לפי S.M.A.R.T, מנוסח כלפי הלומדים), product (תוצר המפגש והערכתו), resources, duration, opening, openingMin, main (תיאור כללי של הפעילות המרכזית), mainMin, subs (מערך {t,min} של 2–4 תת-פעילויות), closing, closingMin, openingGuide / mainGuide / closingGuide (הנחיה למנחה לכל חלק: מה אומרים, ולכל שאלה מי שואל את מי, מתי ובשביל מה; בסיכום שאלות לסיכום), after (אחרי המפגש: מי עושה מה ועד מתי). משכים כמחרוזת כמו \"15 דקות\".";
 const TIME_RULE = "חובה בכל מפגש: openingMin + mainMin + closingMin שווה בדיוק ל-duration, ו-mainMin שווה בדיוק לסכום ה-min של subs.";
 // רצפים ארוכים (14 מפגשים = סמסטר, עד 30) — השלמה ונוסח משופר רצים במנות של
 // CHUNK מפגשים לקריאה. כל קריאה רואה את התכנון כולו (כדי לשמור על ההדרגתיות),
@@ -2864,7 +2873,7 @@ async function aiAsk(q){
 }
 
 // ── מיזוג תוצאות המודל ──
-const S_KEYS = ["product", "resources", "duration", "opening", "openingMin", "main", "mainMin", "closing", "closingMin"];
+const S_KEYS = ["product", "resources", "duration", "opening", "openingMin", "main", "mainMin", "closing", "closingMin", "openingGuide", "mainGuide", "closingGuide", "after"];
 function mergeFill(res, a, b){
   let n = 0;
   if (a == null) { a = 0; b = seq.sessions.length; }
@@ -2903,7 +2912,8 @@ function improvedDiffs(imp){
   cmp("תוצר סופי", seq.finalProduct, imp.finalProduct);
   cmp("דרכי המדידה, ההערכה והמשוב", seq.assessment, imp.assessment);
   const L = { duration:"משך", opening:"פתיחה", openingMin:"משך הפתיחה", main:"פעילות מרכזית", mainMin:"משך הפעילות המרכזית",
-    closing:"סיכום", closingMin:"משך הסיכום", product:"תוצר והערכה", resources:"משאבים ועזרים" };
+    closing:"סיכום", closingMin:"משך הסיכום", product:"תוצר והערכה", resources:"משאבים ועזרים",
+    openingGuide:"הנחיה למנחה בפתיחה", mainGuide:"הנחיה למנחה בפעילות המרכזית", closingGuide:"הנחיה למנחה בסיכום", after:"אחרי המפגש" };
   imp.sessions.slice(0, seq.sessions.length).forEach((is, i) => {
     if (!is) return;
     const os = seq.sessions[i], n = i + 1, osm = parseSmart(os.smart);
@@ -3276,7 +3286,11 @@ const SEQ_SAMPLE = {
       subs:[{t:"קריאה משותפת של הקטע הראשון, ועצירה אחרי כל משפט של ההורה: מה הוא מבקש, ומה אולי מתחת", min:"20 דקות"},
         {t:"עבודה בשלישיות על הקטע השני, עם טבלת ניתוח גלוי-סמוי", min:"25 דקות"},
         {t:"מליאה: כל שלישייה מציגה צורך אחד שזיהתה ואת המשפט שהסגיר אותו", min:"20 דקות"}],
-      closing:"חזרה למשפט שכל אחת רשמה בפתיחה: מה אולי היה מתחתיו? כתיבה אישית, בלי חובת שיתוף", closingMin:"15 דקות" },
+      closing:"חזרה למשפט שכל אחת רשמה בפתיחה: מה אולי היה מתחתיו? כתיבה אישית, בלי חובת שיתוף", closingMin:"15 דקות",
+      openingGuide:"המנחה מזמינה: \"נזכרו בשיחה אחת עם הורה שנשארה איתכן. כתבו משפט אחד שההורה אמר.\" אין שיתוף בשלב הזה.",
+      mainGuide:"אחרי כל משפט בקטע המנחה שואלת את המליאה: \"מה ההורה מבקש כאן?\" ו\"מה אולי עומד מאחורי זה?\", כדי לעבור מהגלוי אל הסמוי.",
+      closingGuide:"שאלות לסיכום: המנחה שואלת כל אחת בכתב, לעצמה: \"מה אולי היה מתחת למשפט שכתבת?\" ומזמינה מי שרוצה לשתף משפט אחד.",
+      after:"כל משתתפת מביאה למפגש הבא משפט אחד ששמעה מהורה השבוע, ומה היא חושבת שעמד מאחוריו." },
     { smart: smartJSON("כל משתתפת תפתח שיחה עם הורה כועס בסימולציה קצרה, ותשקף את הדאגה שמאחורי הכעס לפני שהיא מסבירה",
         "בכל סימולציה הצופה מסמנת אם השיקוף הגיע לפני ההסבר", "כן: הסימולציות קצרות (ארבע דקות) ומתקיימות בשלישיות תומכות",
         "זה הרגע שבו רוב השיחות הקשות נשברות", "עד סוף המפגש השני"),

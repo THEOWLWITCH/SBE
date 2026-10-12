@@ -13,7 +13,7 @@
   const today = () => new Date().toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' });
   try { const h = sessionStorage.getItem('sbe.session.homeUrl'); if (h) F('nav-home').href = h; } catch (e) {}
 
-  const ITEM = () => ({ id: 'd' + Date.now().toString(36), step: 1, rev: 0, form: {}, start: null, pick: '', question: '', criteria: [], how: '', roles: [], path: [], plan: [],
+  const ITEM = () => ({ id: 'd' + Date.now().toString(36), step: 1, rev: 0, form: {}, start: null, pick: '', question: '', criteria: [], how: '', roles: [], path: [], plan: [], flow: [],
     claims: [], open: [], evidence: [], draft: { evidence: [] }, versions: [], gains: {}, chats: { 1: [], 2: [], 3: [], 4: [] }, feedback: [], sources: [] });
   let S = { items: [], cur: '' };
   try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && Array.isArray(v.items)) S = v; } catch (e) {}
@@ -117,7 +117,7 @@
     if (I !== it || (it.rev || 0) !== st) { F('err1').textContent = K.LATE; F('err1').hidden = false; return; }
     I.start = o; I.pick = ''; I.sources = arr(o.sources);
     I.roles = arr(o.roles).filter((r) => r && r.role).map((r) => Object.assign({ who: '', okReady: false }, r));
-    I.path = arr(o.path); I.plan = arr(o.plan).map((x) => Object.assign({}, x));
+    I.path = arr(o.path); I.plan = arr(o.plan).map((x) => Object.assign({}, x)); I.flow = arr(o.flow);
     save(); draw1(); F('out1').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
   function draw1() {
@@ -142,6 +142,7 @@
       head(root, 'roles'); root.appendChild(roleTiles(true));
       if (I.path.length) { head(root, 'path'); root.appendChild(T('path', I.path.map((p) => [txt(p.what), txt(p.how)]))); }
       if (I.start.claimStart) root.appendChild(el('p', 'note', '💬 לפתיחת השלב הבא: ' + txt(I.start.claimStart)));
+      if (arr(I.flow).length) { head(root, 'flow'); root.appendChild(flowNode()); }
     });
     out.appendChild(K.gain(I.gains, 1, M.GAIN[1], () => save()));
     K.chat(out, chatOpts(1));
@@ -300,6 +301,7 @@
     if (what === 'all') {
       if (I.path.length) { head(root, 'path'); root.appendChild(T('path', I.path.map((p) => [txt(p.what), txt(p.how)]))); }
       if (I.start && I.start.claimStart) root.appendChild(el('p', 'note', '💬 לפתיחת שלב הטענות: ' + txt(I.start.claimStart)));
+      if (arr(I.flow).length) { head(root, 'flow'); root.appendChild(flowNode()); }
       if (I.plan.length) { head(root, 'plan'); root.appendChild(T('plan', I.plan.map((p) => [p.who, p.what, p.when, p.conditions, p.check].map((x) => txt(x || ''))))); }
       const d = I.draft || {};
       if (String(d.text || '').trim()) {
@@ -313,6 +315,11 @@
     return root;
   }
   window.sbeDialoguePrintNode = printNode;
+  // מהלך מפגש אחיד (12/10/2026): פתיחה · פעילות מרכזית · סיכום · אחרי המפגש, בשלוש עמודות
+  function flowNode() {
+    return window.SBE_DOC.flowTable(arr(I.flow).map((r) => ({ phase: r.phase, title: txt(r.title), minutes: r.minutes, desc: txt(r.desc), guide: txt(r.guide), res: txt(r.res) })),
+      [['desc', 'מה הקבוצה עושה'], ['guide', 'הנחיה למורה (כולל השאלות)'], ['res', 'עזרים וחומרים']]);
+  }
   // מעבדת הדמו (?part=full): טענות וראיות לדוגמה לחקר שנפתח מהדוגמה, כדי להפיק מול המודל גם את הצעת הגרסה המתוקנת
   window.sbeDialogueDemoFill = function () {
     const r = roleNames();

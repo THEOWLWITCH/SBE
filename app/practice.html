@@ -264,6 +264,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
     <div class="grid2">
       <div class="f"><label for="ownRole">התפקיד שלי</label><input id="ownRole" list="ownRoles" placeholder="למשל: מחנכת"></div>
       <div class="f"><label for="ownOther">מי מולי בשיחה</label><input id="ownOther" list="ownOthers" placeholder="למשל: אבא של תלמיד"></div>
+      <div class="f"><label for="ownMe">איך לפנות אליי</label><select id="ownMe" data-closed><option value="נקבה">בלשון נקבה</option><option value="זכר">בלשון זכר</option></select></div>
     </div>
     <div class="f"><label for="ownGoal">מה הייתי רוצה שיקרה בסוף השיחה</label><input id="ownGoal" placeholder="למשל: שנסכים על צעד אחד לשבוע הקרוב"></div>
     <div class="f"><label for="ownHard">מה מאתגר אותי בשיחה הזאת (אם רוצים)</label><input id="ownHard" placeholder="למשל: אני חוששת שהוא יכעס"></div>
@@ -1325,7 +1326,15 @@ function buildCharacterPrompt(){
     MAX_TURNS: String(MAX_TURNS),
     PRESSURE_COUNT: String(state.pressCount),
     CLOSING_HINT: closingHint,
-  });
+  }) + genderNote(sc);
+}
+// מגדר (12/10/2026, בדיקת הלקוחה): ההנחיות כתובות בלשון נקבה, אבל הדמות והמתנסה לפי התרחיש
+function genderNote(sc){
+  const male = /זכר|גבר/.test((sc.actor && sc.actor.gender) || ""), trMale = /זכר|גבר/.test((sc.trainee && sc.trainee.gender) || "");
+  const L = [];
+  if (male) L.push("הדמות שלך היא גבר. דבר בלשון זכר על עצמך (\"אני חושב\", \"אני לא יודע\"), גם אם ההנחיות כאן כתובות בלשון נקבה.");
+  if (trMale) L.push("מי שמולך הוא גבר: פני אליו בלשון זכר (\"אתה\").");
+  return L.length ? "\n\n" + L.join("\n") : "";
 }
 
 // ── בדיקות חצייה — תמיד מקומיות ומיידיות, גם במצב AI אמיתי וגם במוקאפ.
@@ -1954,8 +1963,8 @@ function showFeedback(){
   const saveDraft = () => { try { localStorage.setItem(KEY + ".draft", JSON.stringify(draft)); } catch (e) {} };
   PC.ROLES.forEach(r => $("ownRoles").append(el("option", { value: r })));
   PC.OTHERS.forEach(r => $("ownOthers").append(el("option", { value: r })));
-  const FIELDS = { story: "ownStory", role: "ownRole", other: "ownOther", goal: "ownGoal", hard: "ownHard" };
-  Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; $(id).addEventListener("input", () => { draft.form[k] = $(id).value; saveDraft(); }); });
+  const FIELDS = { story: "ownStory", role: "ownRole", other: "ownOther", me: "ownMe", goal: "ownGoal", hard: "ownHard" };
+  Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || (k === "me" ? "נקבה" : ""); if (k === "me") draft.form.me = $(id).value; const keep = () => { draft.form[k] = $(id).value; saveDraft(); }; $(id).addEventListener("input", keep); $(id).addEventListener("change", keep); });
 
   function step(n){
     [1, 2, 3].forEach(i => { $("own" + i).hidden = i !== n; });
@@ -2012,7 +2021,7 @@ function showFeedback(){
     try { r = await sbeCallAIJson(AI_SERVER, { system: revise ? PC.reviseSystem() : PC.buildSystem(), messages: [{ role: "user", content }], maxTokens: 10000 }, 240000, PC.valid); }
     catch (e) { bad = e; } finally { stop(); b.disabled = false; }
     if (!PC.valid(r)) { if (!revise) step(draft.questions.length ? 2 : 1); return fail(bad); }
-    draft.scenario = PC.normalize(r); saveDraft(); $("ownChange").value = ""; preview(); step(3);
+    draft.scenario = PC.normalize(r); if (draft.scenario && draft.scenario.trainee) draft.scenario.trainee.gender = draft.form.me || "נקבה"; saveDraft(); $("ownChange").value = ""; preview(); step(3);
   }
   function preview(){
     const sc = draft.scenario, box = $("ownPreview"); box.textContent = "";
