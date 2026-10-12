@@ -56,7 +56,7 @@
   // מסמך HTML עצמאי מאזור בדף: עם הסגנונות של הכלי, בלי כפתורים, בלי עריכה ובלי סקריפטים
   function standalone(node, title) {
     var c = node.cloneNode(true);
-    c.querySelectorAll("button,script,.sbe-edit-hint,.no-print,textarea,input,select,.actions,.toolbar").forEach(function (x) { x.remove(); });
+    c.querySelectorAll("button,script,.sbe-edit-hint,.no-print,textarea,input,select,.actions,.toolbar,.banner-mini,.savenote,.mock-note,.dlg-dl").forEach(function (x) { x.remove(); });
     [c].concat([].slice.call(c.querySelectorAll("[contenteditable]"))).forEach(function (x) { x.removeAttribute("contenteditable"); });
     c.querySelectorAll("details").forEach(function (d) { d.setAttribute("open", ""); });
     var css = [].map.call(document.querySelectorAll("style"), function (s) { return s.textContent; }).join("\n");
@@ -200,7 +200,7 @@
     },
     "family-bridge.html": function () { return inPage("bridge", "גשר בין הבית לכיתה: כרטיס בחירה", "גשר בין הבית לכיתה", "#example", "#go", "#out2 .card-family", "#out2", "#err1"); },
     "message-writer.html": function () { return inPage("writer", "כתיבה מקדמת חוסן: הודעה", "כתיבה מקדמת חוסן", "#rw-example", "#rw-go", "#rw-out .rw-new", "#rw-out", "#rw-err"); },
-    "conversation-planner.html": function () { fillSample(); return dialogProduct("conv", "תכנון שיחה: התוצר", "תכנון שיחה", function () { click("#bBuild"); }); },
+    "conversation-planner.html": function () { fillSample(); return dialogProduct("conv", "תכנון שיחה: תדריך לפני שיחה", "תכנון שיחה", function () { click("#bBuild"); }); },
     "activity-planner.html": async function () {
       if (q.get("part") === "seq") {
         click("#mSeq"); await sleep(600); click("#sqLoadSample"); await sleep(1500);

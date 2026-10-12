@@ -1616,5 +1616,6 @@ export function demoTidy(html) {
   return String(html || '').split(/(<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>)/i).map((part, i) => i % 2 ? part : part
     .replace(/>([^<]+)</g, (m, t) => '>' + QUOTES.fix(t
       .replace(/מה זה בונה בחוסן החברתי|מה זה בונה בחוסן/g, 'תרומה לחוסן החברתי')
+      .replace(/^תכנון שיחה: התוצר$/, 'תכנון שיחה: תדריך לפני שיחה')
       .replace(/מה זה (?:בונה|מפתח)(?=:|\s*$)/g, 'תרומה לחוסן החברתי')) + '<')).join('');
 }
