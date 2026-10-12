@@ -656,11 +656,11 @@ const IDEA_BANK = {
 // המפורש שלה: "השאלה היא תמיד כלפי הלומדים" (בניגוד לניסוח הכללי בתמונה
 // שהיא שלחה, "מה בדיוק צריך לעשות?"/"מה יקדם אותי למטרה שלי?" וכו').
 const SMART_ITEMS = [
-  { key:"S", letter:"S", label:"ספציפית ומדוייקת", ask:"מה בדיוק הלומדים ילמדו לדעת או לעשות?" },
-  { key:"M", letter:"M", label:"מדידה", ask:"איך תדעי שהלומדים השיגו את זה בפועל?" },
+  { key:"S", letter:"S", label:"ספציפית ומדויקת", ask:"מה בדיוק הלומדים ילמדו לדעת או לעשות?" },
+  { key:"M", letter:"M", label:"מדידה", ask:"איך יודעים שהלומדים השיגו את זה בפועל?" },
   { key:"A", letter:"A", label:"ברת השגה", ask:"האם זה בהישג ידם של הלומדים, ברמה ובזמן שיש להם?" },
   { key:"R", letter:"R", label:"רלוונטית", ask:"איך זה מקדם את הלומדים במטרת הלמידה הרחבה יותר? האם הפעילות מתאימה לאופי הלומדים, לגיל שלהם, למציאות שסביבם, ולמסגרת הזמן הנתונה?" },
-  { key:"T", letter:"T", label:"מחוייבת לזמנים", ask:"עד מתי הלומדים אמורים להשיג את זה?" },
+  { key:"T", letter:"T", label:"תחומה בזמן", ask:"עד מתי הלומדים אמורים להשיג את זה?" },
 ];
 function parseSmart(str) {
   if (!str) return {};
@@ -720,7 +720,7 @@ const GROUPS = [
       hint:"מוגדרת וניתנת לזיהוי בטקסט: מה המשתתפים ידעו/ירגישו/יוכלו לעשות בסופה" },
     { k:"smart", l:"ניסוח היעד לפי מודל S.M.A.R.T", req:1, type:"smart",
       example:"עד סוף השיעור כל הילדים יכירו את מגילת העצמאות של מדינת ישראל ויזכרו משמעות של סעיף אחד לפחות.",
-      hint:"מודל להציב מטרות בצורה חכמה. השאלה בכל שורה מופנית ללומדים, לא אלייך." },
+      hint:"חמש שאלות שעוזרות לנסח יעד ברור. התשובות מתארות מה הלומדים יעשו." },
   ]},
   { id:"env", title:"מעטפת", fields:[
     { k:"age", l:"קהל היעד", type:"select", other:true, opts:AGE_OPTS },
@@ -739,6 +739,7 @@ const GROUPS = [
     { k:"mainMin", l:"משך הפעילות המרכזית", placeholder:"לדוגמה: 20 דקות" },
     { k:"closing", l:"סיכום, כולל רפלקציה או הערכה", tall:1 },
     { k:"closingMin", l:"משך הסיכום", placeholder:"לדוגמה: 10 דקות" },
+    { k:"after", l:"אחרי המפגש", tall:1, hint:"מי עושה מה אחרי המפגש, ועד מתי. לא נספר בזמן המפגש" },
     { k:"outcome", l:"תוצר: פיזי או מופשט (רעיון, תובנה)" },
     { k:"movement", l:"שילוב תנועה משמעותי ורלוונטי", tall:1,
       hint:"איך התנועה קשורה למטרה עצמה, לא רק הפסקה בין קטעים" },
@@ -904,7 +905,7 @@ function render() {
       // סטטוס השדה (חובה / רשות-תמולא / רשות-לא-תמולא) חייב להופיע תמיד,
       // גם כשיש hint מותאם — ראו ההערה המלאה ב-input-screen.html (22/09/2026).
       if (f.req) lab.append(el("span",{class:"reqmark"}, " · שדה עיקרי"));
-      else if (f.noAutoFill) lab.append(el("span",{class:"hint"}, " · רשות — לא תמולא אוטומטית, אך המערכת תתחשב במה שתכתבי בה"));
+      else if (f.noAutoFill) lab.append(el("span",{class:"hint"}, " · רשות: לא מתמלא לבד. מה שכתוב כאן נכנס לתכנון."));
       else lab.append(el("span",{class:"hint"}, " · אפשר להשאיר ריק"));
       if (f.hint) lab.append(el("span",{class:"hint"}, " · " + f.hint));
       wrap.append(lab);
@@ -1462,8 +1463,8 @@ function buildDocView(d, creator) {
   const img = el("img"); img.src = document.getElementById("brandLogo").src;
   logoRow.append(img, el("b",{}, "Begood"));
   dv.append(logoRow);
-  dv.append(el("div", { class:"dv-by" }, ["תוכנית פעילות", creator].filter(Boolean).join(" · ") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
-  dv.append(creditNode());
+  dv.append(el("div", { class:"dv-by no-print" }, ["תוכנית פעילות", creator].filter(Boolean).join(" · ") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
+  { const cn = creditNode(); cn.classList.add("no-print"); dv.append(cn); }
   dv.append(el("h2", {}, d.domain || "פעילות"));
   dv.append(el("div", { class:"dv-meta" }, [d.age, d.duration, approachList(d.approach).join(" + ")].filter(Boolean).join(" · ")));
   const srcLine = renderSourcesLine(d); if (srcLine) dv.append(srcLine);
@@ -1494,7 +1495,7 @@ function buildCardView(d, creator) {
   if (d.opening) ol.append(el("li",{},"פתיחה" + (d.openingMin ? ` (${d.openingMin})` : "") + ": " + d.opening));
   if (d.mainActivity) ol.append(el("li",{},"פעילות מרכזית" + (d.mainMin ? ` (${d.mainMin})` : "") + ": " + d.mainActivity));
   if (d.closing) ol.append(el("li",{},"סיכום" + (d.closingMin ? ` (${d.closingMin})` : "") + ": " + d.closing));
-  cv.append(SBE_DOC.table([["מטרה", d.goal], ["דגשים למורה", d.specialNotes], ["שלבים", ol.childNodes.length ? ol : ""],
+  cv.append(SBE_DOC.table([["מטרה", d.goal], ["על הקבוצה", d.specialNotes], ["שלבים", ol.childNodes.length ? ol : ""],
     ["שילוב תנועה", d.movement], ["משאבים", d.resources]]));
   if (creator) cv.append(el("div",{style:"margin-top:6px;font-size:11px;color:#5C6771"}, creator));
   return cv;
@@ -1512,10 +1513,10 @@ async function synthesizeActivityNarrative(d, creator) {
       .map(([k, v]) => (FIELDS.get(k)?.l || k) + ": " + (k === "smart" ? smartLines(v) : v)).join("\n");
     const system = [ "אסור לכתוב שם של מחבר, מאמר, ספר, מחקר או שנת פרסום. אפשר להזכיר תיאוריה או גישה במילים. מקורות מגיעים רק מספריית המקורות המאומתת של המערכת.",
       "את כותבת מסמך תוכנית פעילות עבור מורה/מנחה, בעברית, מתוך שדות שמולאו במסך תכנון הפעילות של מערכת Begood. הקוראת תקרא אותו פעם אחת לפני הפעילות ותרגיש מוכנה.",
-      "התוצר הוא טקסט רציף — לא רשימת שדות, לא כותרות-משנה, לא תוויות ונקודתיים, לא \"S.M.A.R.T\" גלוי. ארבע פסקאות: (1) למה נבחרה הפעילות ומה המשמעות מאחוריה — המטרה והיעד משולבים כסיפור; (2) איך היא נראית בפועל מרגע הכניסה לחדר ועד הסיכום, עם משכי הזמן שזורים במשפטים (\"חמש הדקות הראשונות...\"); (3) למה גישת הלמידה, התנועה, דרכי ההבעה והטכנולוגיה משרתות את המטרה ולא רק מתלוות אליה; (4) פסקה קצרה בגוף שני למורה עם טיפ מעשי אחד שנגזר מהתוכן.",
+      "התוצר הוא טקסט רציף — לא רשימת שדות, לא כותרות-משנה, לא תוויות ונקודתיים, לא \"S.M.A.R.T\" גלוי. ארבע פסקאות: (1) למה נבחרה הפעילות ומה המשמעות מאחוריה — המטרה והיעד משולבים כסיפור; (2) מה המשתתפים ייקחו איתם בסוף, במשפט או שניים; (3) למה גישת הלמידה, התנועה, דרכי ההבעה והטכנולוגיה משרתות את המטרה ולא רק מתלוות אליה; (4) פסקה קצרה בגוף שני למורה עם טיפ מעשי אחד שנגזר מהתוכן.",
       "חוק הספציפיות: שם, מספר, חפץ, מקום. משפט שאפשר להעתיק לפעילות אחרת בלי לשנות מילה נפסל. אל תמציאי תוכן שלא נמסר; אם שדה חסר, אפשר לכתוב סביבו.",
       "בנוסף, רשימת \"מה להכין מראש\": לוח זמנים בשורה, מרחב, ציוד, ניסוחים שכדאי להכין מראש, 4-8 פריטים קצרים, זו הרשימה היחידה שנשארת רשימה.",
-      "בנוסף, \"flow\": מהלך המפגש לפי השדות פתיחה, פעילות מרכזית וסיכום שמולאו (ואם יש, משהו קצר שעושים אחרי המפגש). לכל שלב: phase (אחד מ: פתיחה, פעילות מרכזית, סיכום, אחרי המפגש; בפעילות המרכזית אפשר כמה שלבים ברצף), title (שם קצר), minutes (מספר), description (תיאור הפעילות: מי עושה, מה עושים, עם מה ומה יוצא בסוף), guide (הנחיה למורה: מה אומרת, ואילו שאלות שואלת את הקבוצה ובשביל מה), resources (עזרים ומשאבים לשלב, או מחרוזת ריקה). בלי להמציא תוכן שלא נמסר.",
+      "בנוסף, \"flow\": מהלך המפגש לפי השדות פתיחה, פעילות מרכזית וסיכום שמולאו (ואם יש, משהו קצר שעושים אחרי המפגש). לכל שלב: phase (אחד מ: פתיחה, פעילות מרכזית, סיכום, אחרי המפגש; בפעילות המרכזית אפשר כמה שלבים ברצף), title (שם קצר), minutes (מספר), description (תיאור הפעילות: מי עושה, מה עושים, עם מה ומה יוצא בסוף), guide (הנחיה למנחה: מה אומרים, ולכל שאלה מתי שואלים, מי שואל את מי ובשביל מה; בסיכום: שאלות לסיכום), resources (עזרים ומשאבים לשלב, או מחרוזת ריקה). בלי להמציא תוכן שלא נמסר.",
       "החזירי אך ורק JSON: {\"title\":\"כותרת קצרה לפעילות (לא שם המקצוע)\",\"paragraphs\":[\"...\",\"...\",\"...\",\"...\"],\"prepare\":[\"...\"],\"flow\":[{\"phase\":\"פתיחה\",\"title\":\"\",\"minutes\":5,\"description\":\"\",\"guide\":\"\",\"resources\":\"\"}]}",
     ].join("\n\n");
     const text = await callAI(system, "השדות:\n" + raw + "\n\nכתבי את המסמך.", 16000, 300000, true);
@@ -1532,14 +1533,14 @@ function buildNarrativeDocView(d, creator, narr) {
   const img = el("img"); img.src = document.getElementById("brandLogo").src;
   logoRow.append(img, el("b",{}, "Begood"));
   dv.append(logoRow);
-  dv.append(el("div", { class:"dv-by" }, ["תוכנית פעילות", creator].filter(Boolean).join(" · ") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
-  dv.append(creditNode());
-  dv.append(el("h2", {}, narr.title || d.domain || "פעילות"));
+  dv.append(el("div", { class:"dv-by no-print" }, ["תוכנית פעילות", creator].filter(Boolean).join(" · ") + " · " + new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"})));
+  { const cn = creditNode(); cn.classList && cn.classList.add("no-print"); dv.append(cn); }
+  dv.append(el("h2", { class:"no-print" }, narr.title || d.domain || "פעילות"));
   dv.append(el("div", { class:"dv-meta" }, [d.domain, d.age, d.duration, approachList(d.approach).join(" + ")].filter(Boolean).join(" · ")));
   const srcLine = renderSourcesLine(d); if (srcLine) dv.append(srcLine);
   // טבלאות (07/10/2026), כמו ברצף המפגשים: הפסקאות של המודל כשורות (כותרת | תוכן), ומהלך הפעילות בטבלה
   const str = (x) => (x == null ? "" : String(x)).trim();
-  const LBL = ["למה הפעילות הזאת", "איך זה נראה בפועל", "למה הגישה משרתת את המטרה", "טיפ למורה"];
+  const LBL = ["למה הפעילות הזאת", "מה המשתתפים ייקחו איתם", "למה הגישה משרתת את המטרה", "טיפ למורה"];
   const ul = (xs) => { const u = el("ul", { style:"margin:0;padding-inline-start:18px;" }); xs.forEach(x => u.append(el("li",{},x))); return u; };
   dv.append(SBE_DOC.table(narr.paragraphs.map((p, i) => [LBL[i] || "ועוד", p])
     .concat([["התוצר", d.outcome], ["מה להכין מראש", Array.isArray(narr.prepare) && narr.prepare.length ? ul(narr.prepare) : ""]])));
@@ -1548,7 +1549,7 @@ function buildNarrativeDocView(d, creator, narr) {
   let rows = Array.isArray(narr.flow) ? narr.flow.filter(r => r && (str(r.description) || str(r.guide))).map(r => ({
     phase: SBE_DOC.PHASES.includes(r.phase) ? r.phase : "פעילות מרכזית", title: str(r.title), minutes: num(r.minutes),
     desc: str(r.description), guide: str(r.guide), res: str(r.resources) })) : [];
-  if (!rows.length) rows = [["פתיחה", d.openingMin, d.opening], ["פעילות מרכזית", d.mainMin, d.mainActivity], ["סיכום", d.closingMin, d.closing]]
+  if (!rows.length) rows = [["פתיחה", d.openingMin, d.opening], ["פעילות מרכזית", d.mainMin, d.mainActivity], ["סיכום", d.closingMin, d.closing], ["אחרי המפגש", "", d.after]]
     .filter(r => str(r[2])).map(([phase, m, txt]) => ({ phase, title: "", minutes: num(m), desc: str(txt), guide: "", res: phase === "פעילות מרכזית" ? str(d.resources) : "" }));
   if (rows.length && str(d.resources) && !rows.some(r => r.res)) { const mr = rows.find(r => r.phase === "פעילות מרכזית") || rows[0]; mr.res = str(d.resources); }
   if (rows.length) {
@@ -1586,9 +1587,9 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   const dlgF = document.getElementById("dlgF");
   dlgF.textContent = "";
   const printBtn = el("button", { type:"button", class:"primary" }, "הדפסה / שמירה כ-PDF");
-  printBtn.addEventListener("click", () => { const h = document.createElement("h3"); h.textContent = "כרטיס תמציתי לפעילות עצמה";
+  printBtn.addEventListener("click", () => {
     SBE_DOC.print({ title: "תוכנית פעילות" + ((narr && narr.title) ? ": " + narr.title : (d.domain ? ": " + d.domain : "")),
-      subtitle: [creator, d.age, d.duration].filter(Boolean).join(" · "), nodes: [doc, h, card] }); });
+      subtitle: [creator, d.age, d.duration].filter(Boolean).join(" · "), nodes: [doc, card] }); });
   const saveTextParts = () => {
     const lines = ["תוכנית פעילות: " + ((narr && narr.title) || d.domain || ""), creator || "", ""];
     if (narr) {
@@ -2001,7 +2002,7 @@ function mechanicalChecks(){
 // ── רכיבי שדה ──
 function statusLabel(kind){
   if (kind === "req") return el("span", { class:"reqmark" }, " · שדה עיקרי");
-  if (kind === "noauto") return el("span", { class:"hint" }, " · רשות — לא תמולא אוטומטית, אך המערכת תתחשב במה שתכתבי בה");
+  if (kind === "noauto") return el("span", { class:"hint" }, " · רשות: לא מתמלא לבד. מה שכתוב כאן נכנס לתכנון.");
   if (kind === "short") return el("span", { class:"hint" }, " · רשות: תושלם אם ריקה");
   return el("span", { class:"hint" }, " · אפשר להשאיר ריק");
 }
@@ -2512,13 +2513,15 @@ const DOC_CSS = `
 *{box-sizing:border-box;}
 body{margin:0;background:#fff;color:#141C24;font-family:"Assistant","Segoe UI",Arial,sans-serif;font-size:14.5px;line-height:1.65;}
 article{max-width:760px;margin:0 auto;padding:34px 34px 26px;}
-.hd img{height:30px;display:block;margin-bottom:12px;}
-.kind{font:500 11px "IBM Plex Mono",monospace;letter-spacing:.14em;color:#5C6771;}
+.hd{border-top:5px solid #2E5A7D;border-bottom:1px solid #CDD3D8;padding:14px 0 12px;margin-bottom:18px;position:relative;}
+.hd::after{content:"";position:absolute;top:-5px;left:0;width:22%;height:5px;background:#2BA39C;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.hd img{height:52px;float:left;margin:0 0 6px 12px;}
+.kind{font:600 13px Assistant,Arial,sans-serif;color:#2E5A7D;}
 h1{font:900 30px/1.15 "Frank Ruhl Libre",Georgia,serif;margin:6px 0 4px;text-wrap:balance;}
 .subt{font-size:16px;color:#2E5A7D;font-weight:600;margin:0 0 4px;}
 .meta{font-size:12.5px;color:#5C6771;}
 .credit{font-size:11.5px;color:#5C6771;border-top:1px solid #CDD3D8;border-bottom:1px solid #CDD3D8;padding:6px 0;margin:14px 0 20px;}
-h2{font:700 19px "Frank Ruhl Libre",Georgia,serif;margin:26px 0 8px;padding-bottom:4px;border-bottom:2px solid #141C24;}
+h2{font:700 17px Assistant,Arial,sans-serif;color:#1E3F5A;margin:26px 0 8px;padding:2px 10px 2px 0;border-inline-start:4px solid #2BA39C;break-after:avoid;page-break-after:avoid;}
 h3{font:700 16.5px "Frank Ruhl Libre",Georgia,serif;margin:0 0 6px;display:flex;gap:10px;align-items:baseline;}
 h3 .t{font:500 12px "IBM Plex Mono",monospace;color:#5C6771;margin-inline-start:auto;}
 h4{font:700 14.5px "Frank Ruhl Libre",Georgia,serif;margin:14px 0 4px;}
@@ -2568,12 +2571,12 @@ function docHeader(kind, title){
     seq.sessions.length + " מפגשים", total ? "סה״כ " + fmtMin(total) : ""].filter(Boolean).join(" · ");
   // שם הכלי ומטרתו מעל הכותרת, כמו בכל תוצר (12/10/2026, בדיקת הלקוחה)
   const ctx = (window.SBE_DOC && SBE_DOC.ctxHTML) ? SBE_DOC.ctxHTML() : "";
-  return `${ctx}<div class="hd"><img src="${logo}" alt="Begood"><div class="kind">${esc(kind)}</div>
+  return `<div class="hd"><img src="${logo}" alt="Begood">${ctx}<div class="kind">${esc(kind)}</div>
 <h1>${esc(title)}</h1>${subt ? `<p class="subt">${esc(subt)}</p>` : ""}<div class="meta">${esc(meta)}</div>
-<div class="meta">${esc([str(seq.creator), fmtDate(seq.date)].filter(Boolean).join(" · "))}</div></div>
-<div class="credit">${SBE_CREDIT_HTML} · ${esc(fmtDate(today()))}</div>`;
+<div class="meta">${esc([str(seq.creator), fmtDate(seq.date)].filter(Boolean).join(" · "))}</div></div>`;
 }
-function smartSentence(s){ return smartLines(s.smart); }
+// יעד המפגש: משפט אחד של פעולה ותוצר (S), לא חמשת רכיבי S.M.A.R.T (12/10/2026, בדיקת הלקוחה)
+function smartSentence(s){ return smartTexts(s)[0] || ""; }
 // attach: המקורות בתוך המסמך (09/10/2026: "רשימת המקורות לא תהיה פתוחה"). בלי attach הם רק בכפתור "📚 מקורות" בחלון התוצר.
 // לבדיקה ולמעבדת הדמו: מסמך הרצף כ-HTML
 window.sbeSeqDocHTML = (narr, attach) => seqDocHTML(narr, attach);
@@ -2600,7 +2603,7 @@ function seqDocHTML(narr, attach){
   if (filled.length) {
     h += `<h2>מבט על הרצף</h2><table><thead><tr><th>מפגש</th><th>יעד</th><th>משך</th><th>תוצר המפגש</th></tr></thead><tbody>`;
     filled.forEach(({ s, i }) => {
-      const goal = smartTexts(s)[0] || str(s.opening);
+      const goal = smartTexts(s)[0] || "";
       h += `<tr><td class="n">${i + 1}</td><td>${nl(goal)}</td><td class="n">${esc(str(s.duration))}</td><td>${nl(s.product)}</td></tr>`;
     });
     h += `</tbody></table><h2>המפגשים</h2>`;
@@ -3031,7 +3034,7 @@ document.getElementById("bSeqImprove").addEventListener("click", async (e) => {
   const diffs = improvedDiffs(out.plan);
   if (out.failedMsg) body.append(mockNote(`הנוסח המשופר נכתב עבור חלק מהמפגשים בלבד: ${out.missing} מפגשים לא קיבלו נוסח משופר (${out.failedMsg}). אפשר לאמץ את מה שנכתב ולנסות שוב.`));
   body.append(el("p", { class:"note", style:"margin-top:0" },
-    "הגרסה המשופרת מוצגת לצד הנוסח שלך, שדה-שדה. שום דבר לא השתנה בטופס עד שתבחרי לאמץ, ואחרי האימוץ אפשר לערוך כל שדה, או לבטל את האימוץ כולו."));
+    "הגרסה המשופרת מוצגת לצד הנוסח שלך, שדה-שדה. שום דבר לא השתנה בטופס עד שבוחרים לאמץ, ואחרי האימוץ אפשר לערוך כל שדה, או לבטל את האימוץ כולו."));
   if (Array.isArray(out.changes) && out.changes.length) {
     const ul = el("ul");
     out.changes.forEach(c => ul.append(el("li", {}, el("b", {}, str(c.where) + ": "), str(c.why))));
@@ -3122,7 +3125,7 @@ document.getElementById("sqAsk").addEventListener("click", async (e) => {
   try { a.textContent = str(await aiAsk(q)); setAIStatus("ok"); qi.value = ""; }
   catch (err) {
     console.warn("שאלה ליועצת לא זמינה:", err.message); setAIStatus("mock");
-    a.textContent = ""; a.append(mockNote("אין חיבור למודל כרגע: תשובה לשאלה חופשית דורשת מודל אמיתי. השאלה נשארה בתיבה, כדי שתוכלי לשלוח אותה שוב כשהשרת פועל."));
+    a.textContent = ""; a.append(mockNote("אין חיבור למודל כרגע: תשובה לשאלה חופשית דורשת מודל אמיתי. השאלה נשארה בתיבה, ואפשר לשלוח אותה שוב בעוד רגע."));
   } finally { e.target.disabled = false; e.target.textContent = old; }
 });
 

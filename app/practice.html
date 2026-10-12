@@ -488,7 +488,7 @@ const SCENARIOS = {
     { text:"אמירה מפורשת של מה ניתן לעשות ומה לא", keywords:["מה שכן אני יכולה","זה כן","אני כן יכולה"] },
     { text:"הימנעות מהבטחת מה שלא ניתן לקיים", keywords:["לא יכולה להבטיח","לא אבטיח","אי אפשר להבטיח"] },
     { text:"שיקוף רגש", keywords:["נשמע לך קשה","את בטח","זה בטח לא פשוט","אני שומעת כמה"] },
-    { text:"החזקת שתיקה בלי מיהור למילויה", detectShort:true },
+    { text:"שתיקה בלי למהר למלא אותה", detectShort:true },
     { text:"טון קול מותאם למצב", undetectable:true },
     { text:"גוף פתוח ולא מתגונן", undetectable:true },
     { text:"סימני מתח בגוף", note:"מתייחס לדמות, לא למתנסה, לא רלוונטי לזיהוי מטקסט שלה." },
@@ -714,7 +714,7 @@ const SCENARIOS = {
     { text:"מתן בחירה או שליטה בקצב", keywords:["בקצב שלך","רק אם את רוצה","אין לחץ"] },
     { text:"שאילת שאלה פתוחה", keywords:["מה זה אומר לך","איך את רואה את זה","מה חשוב לך בזה"] },
     { text:"הבעת הערכה או הכרה", keywords:["אני מעריכה","זה לא קל להגיד","תודה שסיפרת"] },
-    { text:"החזקת שתיקה בלי מיהור למילויה", detectShort:true },
+    { text:"שתיקה בלי למהר למלא אותה", detectShort:true },
     { text:"שיקוף רגש", keywords:["נשמע שזה מפחיד","זה נשמע כואב","זה נשמע מבלבל"] },
     { text:"הימנעות מהצעת פתרון מוקדם", keywords:["לא אגיד לך מה לעשות","זו לא ההחלטה שלי"] },
     { text:"תיקון רגע שנפגם בשיחה", keywords:["בואי נחזור לרגע","לא התכוונתי שזה יישמע"] },
@@ -944,7 +944,7 @@ function renderScenarioList(){
       el("div", { class:"sc-name" }, sc.name),
       el("div", { class:"sc-sub" }, sc.subtitle),
       // מי מי: המתנסה היא אשת החינוך שמובילה את השיחה, והמערכת משחקת את הדמות שמולה (כמו השחקנית בסדנה)
-      el("div", { class:"sc-sub" }, [el("b", {}, "את: "), sc.trainee.roleLabel, " · ", el("b", {}, "מולך: "), (sc.actor.name || "") + ", " + sc.actor.roleLabel]),
+      el("div", { class:"sc-sub" }, [el("b", {}, youL(sc)), sc.trainee.roleLabel, " · ", el("b", {}, "מולך: "), (sc.actor.name || "") + ", " + sc.actor.roleLabel]),
       el("div", { class:"sc-tags" }, tags.map(t => el("span", { class:"sc-tag" }, t))),
     ]);
     const pick = () => selectScenario(id);
@@ -1329,6 +1329,8 @@ function buildCharacterPrompt(){
   }) + genderNote(sc);
 }
 // מגדר (12/10/2026, בדיקת הלקוחה): ההנחיות כתובות בלשון נקבה, אבל הדמות והמתנסה לפי התרחיש
+// "את:" או "אתה:" לפי הפנייה שנבחרה
+function youL(sc){ return /זכר|גבר/.test((sc && sc.trainee && sc.trainee.gender) || "") ? "אתה: " : "את: "; }
 function genderNote(sc){
   const male = /זכר|גבר/.test((sc.actor && sc.actor.gender) || ""), trMale = /זכר|גבר/.test((sc.trainee && sc.trainee.gender) || "");
   const L = [];
@@ -2026,7 +2028,7 @@ function showFeedback(){
   function preview(){
     const sc = draft.scenario, box = $("ownPreview"); box.textContent = "";
     const d = el("div", { class: "own-prev" }, el("h3", {}, sc.name), el("p", { class: "who" }, sc.subtitle),
-      el("p", { class: "who" }, el("b", {}, "את: "), sc.trainee.roleLabel || sc.trainee.role, " · ", el("b", {}, "מולך: "), sc.actor.name + ", " + (sc.actor.roleLabel || sc.actor.role)));
+      el("p", { class: "who" }, el("b", {}, youL(sc)), sc.trainee.roleLabel || sc.trainee.role, " · ", el("b", {}, "מולך: "), sc.actor.name + ", " + (sc.actor.roleLabel || sc.actor.role)));
     sc.trainee.opening.forEach(p => d.append(el("p", {}, p)));
     d.append(el("p", { class: "first" }, el("b", {}, sc.actor.name + (/זכר|גבר/.test(sc.actor.gender || "") ? " פותח: " : " פותחת: ")), "\"" + sc.actor.entrance.firstLine + "\""));
     box.append(d);
@@ -2038,7 +2040,7 @@ function showFeedback(){
     const id = "my-" + Date.now().toString(36);
     mine.unshift({ id, at: new Date().toISOString().slice(0, 10), sc: draft.scenario }); mine = mine.slice(0, 12); saveMine();
     Object.assign(draft, { form: {}, questions: [], answers: {}, scenario: null }); saveDraft();
-    Object.values(FIELDS).forEach(f => { $(f).value = ""; });
+    Object.values(FIELDS).forEach(f => { if (f !== "ownMe") $(f).value = ""; });
     renderMine(); SCENARIOS[id] = mine[0].sc; selectScenario(id);
   });
   function renderMine(){
@@ -2052,7 +2054,7 @@ function showFeedback(){
       const card = el("div", { class: "scenario-card", tabindex: "0" },
         el("div", { class: "my-case" }, el("div", { class: "sc-name", style: "flex:1" }, "✍️ " + m.sc.name), del),
         el("div", { class: "sc-sub" }, m.sc.subtitle),
-        el("div", { class: "sc-sub" }, el("b", {}, "את: "), m.sc.trainee.roleLabel || "", " · ", el("b", {}, "מולך: "), m.sc.actor.name + ", " + (m.sc.actor.roleLabel || "")));
+        el("div", { class: "sc-sub" }, el("b", {}, youL(m.sc)), m.sc.trainee.roleLabel || "", " · ", el("b", {}, "מולך: "), m.sc.actor.name + ", " + (m.sc.actor.roleLabel || "")));
       const pick = () => selectScenario(m.id);
       card.addEventListener("click", pick); card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
       box.append(card);

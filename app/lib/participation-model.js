@@ -21,7 +21,7 @@
     { n: 'מיון כרטיסים והסבר המיון', m: 'לבד', c: 'בנייה' },
     { n: 'פתרון משימה ובדיקה עצמית לפי דוגמה', m: 'לבד', c: 'כתיבה' },
     { n: 'כרטיס יציאה: משפט אחד שלמדתי', m: 'לבד', c: 'כתיבה' },
-    { n: 'חשוב, זוג, שתף', m: 'בזוג', c: 'דיבור' },
+    { n: 'חושבים לבד, משוחחים בזוג, משתפים במליאה', m: 'בזוג', c: 'דיבור' },
     { n: 'הסבר לחבר או לחברה (מורה עמית)', m: 'בזוג', c: 'דיבור' },
     { n: 'ראיון הדדי', m: 'בזוג', c: 'דיבור' },
     { n: 'כתיבה משותפת בזוג', m: 'בזוג', c: 'כתיבה' },
@@ -51,10 +51,10 @@
   const SECTIONS = {
     frame: { h: 'מה כולם מדגימים, ומה בבחירה' },
     cards: { h: 'מסלולים מוצעים', sub: 'אפשר לבחור שניים עד ארבעה מסלולים סביב אותה מטרה. אין דרך אחת ללמוד' },
-    criteria: { h: 'קריטריונים לראיית למידה', sub: 'לכל מסלול: איך נראית הבנה בדרך הזאת. המורה מאשרת', cols: ['המסלול', 'הקריטריון לעדות ללמידה', 'אישרתי'] },
+    criteria: { h: 'איך רואים שלמדו', sub: 'לכל מסלול: איך נראית הבנה בדרך הזאת. המורה מאשרת', cols: ['המסלול', 'הקריטריון לעדות ללמידה', 'אישרתי'] },
     observe: { h: 'דף תצפית', sub: 'על התנאים והפעולות, לא על התלמידים', cols: ['המסלול', 'כמה בחרו', 'נראתה עדות להבנה?', 'מה אפשר או עיכב השתתפות'] },
-    adjust: { h: 'התאמה לשיעור הבא', cols: ['האפשרות', 'מה משנים', 'למה'] },
-    track: { h: 'מעקב לאורך הרצף', sub: 'אילו מסלולים הוצעו (◯) ונבחרו (●) בכל שיעור' }
+    adjust: { h: 'התאמה לשיעור הבא', cols: ['האפשרות', 'מה משנים', 'למה זה יעזור'] },
+    track: { h: 'מעקב לאורך השיעורים', sub: 'אילו מסלולים הוצעו (◯) ונבחרו (●) בכל שיעור' }
   };
   function catalogText() { return MODES.map((m) => m + ': ' + CATALOG.filter((x) => x.m === m).map((x) => x.n).join('; ')).join('\n'); }
   function kbText(kb) { return (kb || []).filter((s) => !s.hidden).map((s) => '[' + s.k + '] ' + s.gist).join('\n'); }
@@ -101,7 +101,8 @@
     const rows = names.map((n) => ({ name: n, cells: arr(lessons).map((l) => arr(l.offered).indexOf(n) === -1 ? '' : (l.used && l.used[n] > 0 ? '●' : '◯')) }));
     const never = rows.filter((r) => r.cells.indexOf('●') === -1 && r.cells.indexOf('◯') !== -1).map((r) => r.name);
     const modeOf = (n) => { const c = CATALOG.find((x) => x.n === n); return c ? c.m : ''; };
-    const single = arr(lessons).map((l, i) => { const ms = new Set(arr(l.offered).map(modeOf).filter(Boolean)); return arr(l.offered).length && ms.size < 2 ? i + 1 : 0; }).filter(Boolean);
+    // מסלול שהמודל הוסיף: הסוג נשמר עם השיעור (modes), כדי שלא תופיע אזהרה שגויה (12/10/2026, בדיקת הלקוחה)
+    const single = arr(lessons).map((l, i) => { const ms = new Set(arr(l.offered).map((n) => (l.modes && l.modes[n]) || modeOf(n)).filter(Boolean)); return arr(l.offered).length >= 2 && ms.size < 2 && ms.size > 0 ? i + 1 : 0; }).filter(Boolean);
     return { rows, never, single };
   }
   return { MODES, CATALOG, RESILIENCE, PERSONAL, SHARED, OBS, SECTIONS, suggestSystem, adjustSystem, parse, valid, validAdjust, track };
