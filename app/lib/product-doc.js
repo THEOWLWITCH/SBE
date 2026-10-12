@@ -187,6 +187,35 @@
     if (!doc.getElementById("sbe-brk-css")) { const st = doc.createElement("style"); st.id = "sbe-brk-css"; st.textContent = BRK_CSS; doc.head.appendChild(st); }
   }
 
+  // כותרת שחוזרת בכל עמוד (12/10/2026: "במקרים שטבלאות נחתכות - הכותרת צריכה לחזור על עצמה בדף הבא"):
+  // טבלה עם כותרות עמודה (thead) חוזרת עליהן בכל עמוד. טבלה בלי thead (כותרת | תוכן) שמעליה כותרת מקבלת
+  // את הכותרת הזאת כשורת כותרת שחוזרת, והכותרת המקורית לא מודפסת פעמיים. שורה לא נחתכת באמצע.
+  const RH_CSS = "@media screen{thead.sbe-rh{display:none}}@media print{thead{display:table-header-group}tfoot{display:table-footer-group}tr{break-inside:avoid;page-break-inside:avoid}" +
+    "thead.sbe-rh th{background:none!important;color:#141C24!important;border:0!important;text-align:start!important;font-weight:700!important;font-size:1.05em!important;padding:4px 0 6px!important;width:auto!important}.sbe-rh-src{display:none!important}}";
+  function repeatHeads(doc) {
+    const body = doc && doc.body; if (!body) return;
+    body.querySelectorAll("table").forEach((t) => {
+      if (t.tHead) return;
+      const rows = [...t.rows]; if (rows.length < 3) return; // טבלה קצרה לא נחתכת ממילא
+      let node = t, h = t.previousElementSibling;
+      while (!h && node.parentElement && node.parentElement !== body && node.parentElement.children.length === 1) { node = node.parentElement; h = node.previousElementSibling; }
+      if (!h || !/^H[2-6]$/.test(h.tagName) || !h.textContent.trim()) return;
+      const cols = Math.max(1, ...rows.map((r) => [...r.cells].reduce((n, c) => n + (c.colSpan || 1), 0)));
+      const thead = doc.createElement("thead"); thead.className = "sbe-rh";
+      const tr = doc.createElement("tr"), th = doc.createElement("th");
+      th.colSpan = cols; th.textContent = h.textContent.replace(/\s+/g, " ").trim();
+      tr.appendChild(th); thead.appendChild(tr); t.insertBefore(thead, t.firstChild);
+      h.classList.add("sbe-rh-src");
+    });
+    if (!doc.getElementById("sbe-rh-css")) { const st = doc.createElement("style"); st.id = "sbe-rh-css"; st.textContent = RH_CSS; (doc.head || body).appendChild(st); }
+  }
+  // הכנה להדפסה של כל מסמך (גם מסמך בתוך מסגרת): כותרות שחוזרות ובלי עמוד ריק
+  function preparePrint(doc, landscape) {
+    doc = doc || document;
+    try { repeatHeads(doc); } catch (e) {}
+    try { relaxTall(doc, landscape ? { widthMm: 249, heightMm: 162 } : { widthMm: 162, heightMm: 249 }); } catch (e) {}
+  }
+
   // כרטיס כיס (08/10/2026): תוצר נפרד, אותיות גדולות שקל לקרוא בזמן המפגש
   const POCKET_CSS = `
 body{font-size:20px;line-height:1.55;max-width:760px}
@@ -252,7 +281,7 @@ h1{font-size:26px}.hd img{height:44px}
       head = document.createElement("div"); head.id = "sbe-print-ctx"; document.body.prepend(head);
     }
     head.innerHTML = ctxHTML(t) + `<div class="ttl">${esc(title || "")}</div><div class="dt">${esc(today())}</div>`;
-    relaxTall(document, { widthMm: 166, heightMm: 257 });
+    preparePrint(document);
     const old = document.title; document.title = fileTitle(title, t);
     const back = () => { document.title = old; window.removeEventListener("afterprint", back); };
     window.addEventListener("afterprint", back);
@@ -295,7 +324,7 @@ h1{font-size:26px}.hd img{height:44px}
     if (!w) { alert("הדפדפן חסם את חלון ההדפסה. אפשר לאפשר חלונות קופצים לאתר ולנסות שוב."); return; }
     w.document.write(`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(fileTitle(title, undefined, kind))}</title>
 <style>
-@page{size:A4${landscape ? " landscape" : ""};margin:18mm 20mm}
+@page{size:A4${landscape ? " landscape" : ""};margin:24mm 24mm}
 body{font-family:"Assistant","Segoe UI",Arial,sans-serif;color:#141C24;max-width:${landscape ? 1040 : 720}px;margin:24px auto;padding:0 16px;line-height:1.7;font-size:14.5px}
 .hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #2E5A7D;padding-bottom:10px;margin-bottom:18px;gap:16px}
 .hd img{height:54px}
@@ -339,13 +368,13 @@ ${pocket ? POCKET_CSS : ""}</style></head><body>
 <div class="hd"><div>${ctxHTML()}<h1>${esc(title)}</h1>${subtitle ? `<p class="sub">${esc(subtitle)}</p>` : ""}<div class="dt">${esc(date)}</div></div><img src="${logo}" alt="Begood"></div>
 ${parts}
 <div class="ft">הופק ב-Begood · be-good.co.il</div>
-<script>var relaxTall=${relaxTall.toString()};var BRK_CSS=${JSON.stringify(BRK_CSS)};function sbeRelax(){relaxTall(document,{widthMm:${landscape ? 257 : 170},heightMm:${landscape ? 174 : 261}})}
+<script>var relaxTall=${relaxTall.toString()};var BRK_CSS=${JSON.stringify(BRK_CSS)};var repeatHeads=${repeatHeads.toString()};var RH_CSS=${JSON.stringify(RH_CSS)};function sbeRelax(){try{repeatHeads(document)}catch(e){}relaxTall(document,{widthMm:${landscape ? 249 : 162},heightMm:${landscape ? 162 : 249}})}
 window.addEventListener("beforeprint",sbeRelax);${inline ? "window.addEventListener('load',sbeRelax);" : "window.onload=function(){sbeRelax();setTimeout(function(){window.print()},300)}"}<\/script>
 </body></html>`);
     w.document.close();
   }
 
   // גם בהדפסה ישירה מהדפדפן (Ctrl+P) בכל דף שטוען את הקובץ הזה
-  if (typeof window !== "undefined" && window.addEventListener) window.addEventListener("beforeprint", () => { try { relaxTall(document, { widthMm: 166, heightMm: 257 }); } catch (e) {} });
-  window.SBE_DOC = { rich, editable, print, ensureStyle, sections, table, flowTable, PHASES, toolInfo, fileTitle, ctxHTML, printPage };
+  if (typeof window !== "undefined" && window.addEventListener) window.addEventListener("beforeprint", () => preparePrint(document));
+  window.SBE_DOC = { rich, editable, print, ensureStyle, sections, table, flowTable, PHASES, toolInfo, fileTitle, ctxHTML, printPage, preparePrint, repeatHeads };
 })();

@@ -2481,7 +2481,7 @@ function frameOf(html){
   fr.srcdoc = html;
   return fr;
 }
-function printFrame(fr){ try { fr.contentWindow.focus(); fr.contentWindow.print(); } catch(e){ console.warn("הדפסה נכשלה:", e.message); } }
+function printFrame(fr){ try { if (window.SBE_DOC && SBE_DOC.preparePrint) SBE_DOC.preparePrint(fr.contentDocument); fr.contentWindow.focus(); fr.contentWindow.print(); } catch(e){ console.warn("הדפסה נכשלה:", e.message); } }
 function downloadHTML(filename, html){
   const blob = new Blob([html], { type:"text/html;charset=utf-8" });
   const a = document.createElement("a");
@@ -2501,7 +2501,7 @@ function fmtDate(iso){
   return isNaN(d) ? str(iso) : d.toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
 }
 const DOC_CSS = `
-@page{size:A4;margin:16mm 15mm;}
+@page{size:A4;margin:24mm 24mm;}
 *{box-sizing:border-box;}
 body{margin:0;background:#fff;color:#141C24;font-family:"Assistant","Segoe UI",Arial,sans-serif;font-size:14.5px;line-height:1.65;}
 article{max-width:760px;margin:0 auto;padding:34px 34px 26px;}

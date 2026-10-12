@@ -150,7 +150,7 @@ ol.list li,ul.list li{margin-bottom:7px;}
   .two{grid-template-columns:1fr;} .row,.tp-b,.br{grid-template-columns:1fr;gap:3px;}
   .head,.body,.foot{padding-inline:20px;}
 }
-@page{size:A4;margin:18mm 20mm;}
+@page{size:A4;margin:24mm 24mm;}
 @media print{
   body{background:#fff;padding:0;}
   .sheet{box-shadow:none;max-width:none;border-radius:0;font-size:11pt;}
@@ -159,6 +159,7 @@ ol.list li,ul.list li{margin-bottom:7px;}
   .dt{font-size:10pt;} .dt tr{break-inside:avoid;page-break-inside:avoid;} .dt thead{display:table-header-group;}
   .dt thead th,.dt tbody th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .dt td.w{height:3.2em;}
+  thead{display:table-header-group;} tr{break-inside:avoid;page-break-inside:avoid;}
   .no-print,#rptFab,#rptDlg,#navBar,#navPanel{display:none!important;}
   body.sbe-hasnav{padding-top:0;}
 }
@@ -217,7 +218,7 @@ ol.q li,ul.q li{margin-bottom:5px;}
   .dt td.n,.dt td.ty{display:inline-block;border:0;}
   .dt td[data-label]:not([data-label="#"])::before{content:attr(data-label);display:block;font-weight:700;font-size:11px;color:var(--muted);}
 }
-@page{size:A5;margin:10mm;}
+@page{size:A5;margin:14mm;}
 @media print{body{background:#fff;padding:0;}.card{box-shadow:none;max-width:none;border-radius:0;font-size:10.5pt;}
  .dt tr{break-inside:avoid;} .dt thead th,.dt tbody th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
  #rptFab,#rptDlg,#navBar,#navPanel{display:none!important;} body.sbe-hasnav{padding-top:0;}}
