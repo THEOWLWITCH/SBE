@@ -155,7 +155,7 @@
     });
     function show(orig, on, r) {
       out.textContent = '';
-      out.appendChild(el('p', 'note' + (r.kind === 'ok' ? ' ok' : ''), FB_KINDS[r.kind] + (r.note ? '. ' + txt(r.note) : '')));
+      out.appendChild(el('p', 'note' + (r.kind === 'ok' ? ' ok' : ''), (r.kind === 'stop' && o.adult && o.adult() ? '✋ כדאי לעצור ולדבר על זה בצוות, עם המנחה' : FB_KINDS[r.kind]) + (r.note ? '. ' + txt(r.note) : '')));
       if (r.kind === 'stop') { o.log({ at: new Date().toISOString(), on, was: orig, now: '', how: o.adult && o.adult() ? 'לשיחה בצוות, עם המנחה' : 'לשיחה עם המבוגר/ת' }); return; }
       const pair = el('div', 'fb-pair'), a = el('div', 'was'), b = el('div', 'now');
       a.append(el('b', null, 'כפי שנכתב'), el('div', null, orig));
@@ -165,7 +165,7 @@
       if (rows.length) out.appendChild(window.SBE_TABLE(['חלק במשוב', 'מה כתוב'], rows, 'kit-t'));
       const keep = (how, now) => { o.log({ at: new Date().toISOString(), on, was: orig, now, how }); out.textContent = ''; out.appendChild(el('p', 'note ok', '✓ נשמר ביומן המשוב: ' + how + '.')); ta.value = ''; };
       const row = el('div', 'btns');
-      row.append(btn('✓ אימוץ הניסוח', 'btn sm', () => keep('אומץ', edit.value.trim())), btn('השארת הנוסח שלי', 'btn ghost sm', () => keep('נשאר כפי שנכתב', orig)), btn(o.adult && o.adult() ? 'לדיון בצוות' : 'לדיון עם המורה', 'btn ghost sm', () => keep('לדיון עם המורה', edit.value.trim())));
+      row.append(btn('✓ אימוץ הניסוח', 'btn sm', () => keep('אומץ', edit.value.trim())), btn('השארת הנוסח שלי', 'btn ghost sm', () => keep('נשאר כפי שנכתב', orig)), btn(o.adult && o.adult() ? 'לדיון בצוות' : 'לדיון עם המורה', 'btn ghost sm', () => keep(o.adult && o.adult() ? 'לדיון בצוות' : 'לדיון עם המורה', edit.value.trim())));
       out.appendChild(row);
     }
     det.append(ta, about, el('div', 'btns'), w, err, out); det.querySelector('.btns').appendChild(go);

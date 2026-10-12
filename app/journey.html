@@ -381,7 +381,7 @@ function render(){
 function viewMapping(){
   const m = JR.mapping || {}; m.answers = m.answers || {}; m.fails = m.fails || {};
   const c = card(); c.appendChild(el('h2', null, 'מיפוי ראשוני: יוצאים לדרך'));
-  c.appendChild(el('p', 'muted', 'כמה דקות של מיפוי כנה: איפה אנחנו היום. אין תשובות נכונות: זו נקודת המוצא. "לא יודעים" היא תשובה לגיטימית. הכול נשמר אוטומטית.'));
+  c.appendChild(el('p', 'muted', 'כמה דקות של מיפוי: איפה אתם היום. אין תשובה נכונה או לא נכונה, ו"לא יודעים" היא תשובה לגיטימית. הכול נשמר אוטומטית.'));
   let timer = null; const persist = () => { clearTimeout(timer); timer = setTimeout(() => api('jrSaveMapping', { id: JR.id, mapping: m }), 600); };
   J.CLUSTERS.forEach(cl => {
     c.appendChild(el('h3', null, cl.k + '. ' + cl.t)); c.appendChild(el('p', 'muted', cl.d));
@@ -392,7 +392,7 @@ function viewMapping(){
       s.addEventListener('change', () => { m.answers[it.k] = s.value === '' ? undefined : +s.value; persist(); }); r.appendChild(s); c.appendChild(r);
     });
   });
-  const f = card(); f.appendChild(el('h2', null, 'נקודות שבירה אפשריות'));
+  const f = card(); f.appendChild(el('h2', null, 'מה קורה כשמשהו לא זמין'));
   f.appendChild(el('p', 'muted', 'מה קורה כשרכיב אחד לא זמין (אדם, ערוץ, מקום, ציוד או שותף)? זה עוזר לזהות מכשולים בדרך ולבנות להם גשרים מראש.'));
   J.FAILS.forEach(fl => {
     const r = el('div', 'qrow'); const t = el('div'); t.appendChild(el('b', null, fl.t + ': ')); t.appendChild(document.createTextNode(fl.q)); r.appendChild(t);
@@ -405,7 +405,7 @@ function viewMapping(){
   const err = errLine(f);
   const go = btn('לקבלת הצעת מסע', '', async () => {
     const answered = Object.values(m.answers).filter(v => v !== undefined).length;
-    if (answered < 15) return err('כדאי לענות לפחות על 15 היגדים (ענינו על ' + answered + ' מתוך ' + J.ITEMS.length + '), כדי שההצעה תתאים לכם.');
+    if (answered < 15) return err('כדי שההצעה תתאים לכם, כדאי לענות על 15 היגדים לפחות. עד עכשיו: ' + answered + ' מתוך ' + J.ITEMS.length + '.');
     err(''); go.disabled = true; go.textContent = 'מכינה הצעת מסע... (עד שתי דקות)';
     try {
       await api('jrSaveMapping', { id: JR.id, mapping: m });
@@ -428,7 +428,7 @@ function mappingText(m){
 
 // טבלאות (07/10/2026), בקו אחיד עם שאר התוצרים: אשכולות, מכשולים ואבני דרך
 function clusterTable(p){ return SBE_TABLE(['האשכול','איפה אתם','מה כבר יש','הצעד הבא'], (p.clusters || []).map(x => [el('b', null, clT(x.c)), el('span', 'cl-chip', stT(x.stage)), x.strength || null, x.next || null]), 'jr-cl'); }
-function failTable(p){ return SBE_TABLE(['מכשול בדרך','מה ראינו','הגשר שאפשר לבנות'], (p.fails || []).map(f => [el('b', null, J.ICON.obstacle + ' ' + ((J.FAILS.find(x => x.k === f.type) || {}).t || 'מכשול') + (f.critical ? ', חשוב לטפל' : '')), f.seen || null, f.bridge ? J.ICON.bridge + ' ' + f.bridge : null]), 'jr-fl'); }
+function failTable(p){ return SBE_TABLE(['מכשול בדרך','מה ראינו','הגשר שאפשר לבנות'], (p.fails || []).map(f => [el('b', null, J.ICON.obstacle + ' ' + ((J.FAILS.find(x => x.k === f.type) || {}).t || 'מכשול') + (f.critical ? ' · כדאי לטפל בזה קודם' : '')), f.seen || null, f.bridge ? J.ICON.bridge + ' ' + f.bridge : null]), 'jr-fl'); }
 function milestoneTable(ms){ return SBE_TABLE(['#','אבן הדרך','שלב','יעדים: מה עושים, איך, מי ואיך נדע'], ms.map((m, i) => { const ul = el('ul'); (m.goals || []).forEach(g => { ul.appendChild(goalLi(g)); });
   return [String(i + 1), el('b', null, (m.gate ? J.ICON.gate + ' ' : '') + (m.title || '')), stT(m.stage), ul.childNodes.length ? ul : null]; }), 'jr-ms'); }
 
@@ -462,7 +462,7 @@ function viewProposal(){
   c.appendChild(el('h3', null, 'איפה אתם בכל אשכול'));
   c.appendChild(clusterTable(p));
   const start = J.journeyStage(Object.fromEntries((p.clusters || []).map(x => [x.c, x.stage])));
-  c.appendChild(el('p', 'banner-soft', 'נקודת היציאה של המסע: ' + stT(start) + ', לפי האשכול שעוד הכי רחוק, כי חוזק באשכול אחד לא מכסה על אשכול אחר.'));
+  c.appendChild(el('p', 'banner-soft', 'נקודת היציאה של המסע: ' + stT(start) + ', לפי האשכול שנמצא בשלב הנמוך ביותר: חוזק באשכול אחד לא מפצה על אשכול אחר.'));
   if ((p.fails || []).length) { c.appendChild(el('h3', null, 'מכשולים בדרך, וגשרים שאפשר לבנות'));
     c.appendChild(failTable(p));
   } else c.appendChild(el('p', 'obst', J.ICON.clear + ' לא נמצא כשל מערכתי משמעותי.'));
@@ -500,7 +500,7 @@ function viewReview(){
 }
 // PDF כמוצר מוגמר (12/10/2026, בדיקת הלקוחה): רק הטבלאות, במסמך ההדפסה של Begood
 function printBtn(node, kind){
-  const b = btn('🖨 הדפסה / שמירה כ-PDF', 'ghost no-print', () => { const n = node.cloneNode(true); n.querySelectorAll('.banner-soft,.no-print,button').forEach(x => x.remove());
+  const b = btn('🖨 הדפסה / שמירה כ-PDF', 'ghost no-print', () => { const n = node.cloneNode(true); n.querySelectorAll('.banner-soft,.no-print,button,h2').forEach(x => x.remove());
     if (window.SBE_DOC) SBE_DOC.print({ title: (JR.unitName || 'מסע אל החוסן'), kind, node: n, landscape: true }); });
   b.style.marginTop = '.6rem'; return b;
 }
@@ -523,7 +523,7 @@ function viewActive(){
     finalReflection(c);
   } else if (next) {
     const dd = daysTo(next.due);
-    c.appendChild(el('p', 'banner-soft', (next.status === 'submitted' ? 'הגשתם את "' + next.title + '": המשוב בדרך.' : dd < 0 ? J.ICON.rest + ' עצירת התרעננות: "' + next.title + '" חיכתה ל-' + fmt(next.due) + '. אפשר להגיש עכשיו, או לבקש דחייה.' : 'אבן הדרך הבאה: "' + next.title + '". המועד: ' + (dd === 0 ? 'היום' : 'בעוד ' + dd + ' ימים') + ' (' + fmt(next.due) + ').')));
+    c.appendChild(el('p', 'banner-soft', (next.status === 'submitted' ? 'הגשתם את "' + next.title + '": המשוב בדרך.' : dd < 0 ? J.ICON.rest + ' עצירת התרעננות: "' + next.title + '" תוכננה ל-' + fmt(next.due) + '. אפשר להגיש עכשיו, או לבקש דחייה.' : 'אבן הדרך הבאה: "' + next.title + '". המועד: ' + (dd === 0 ? 'היום' : 'בעוד ' + dd + ' ימים') + ' (' + fmt(next.due) + ').')));
   }
   const bar = el('div', 'btns no-print'); bar.appendChild(btn('הוספת המועדים ליומן', 'btn-ghost', ics)); c.appendChild(bar);
   ms.forEach((m, i) => milestoneCard(m, i));
@@ -546,14 +546,14 @@ function milestoneCard(m, i){
 }
 function submitForm(c, m, i){
   const det = document.createElement('details'); det.className = 'no-print'; const sm = el('summary', null, m.status === 'needs' ? 'השלמה והגשה מחדש' : 'הגשת אבן הדרך'); sm.style.cssText = 'cursor:pointer;color:var(--spoken);font-weight:700;margin-top:.5rem'; det.appendChild(sm);
-  det.appendChild(el('label', null, 'מה עשיתם: תיאור והראיות *'));
+  det.appendChild(el('label', null, 'מה עשיתם: תיאור וראיות *'));
   const ev = document.createElement('textarea'); ev.maxLength = 3000; ev.placeholder = 'תארו מה נעשה, מי השתתף, ומה רואים היום שלא היה קודם. בלי פרטים מזהים של ילדים.'; det.appendChild(ev);
   det.appendChild(el('label', null, 'קישורים (תיעוד, תמונות, מסמכים): קישור בכל שורה'));
   const ln = document.createElement('textarea'); ln.placeholder = 'https://...'; ln.style.minHeight = '3rem'; det.appendChild(ln);
   let refl = null;
   if (m.gate) {
     det.appendChild(el('h3', null, 'רפלקציה בשער'));
-    det.appendChild(el('label', null, 'תארו איך הבחירות שעשיתם השפיעו על הדרך שלכם'));
+    det.appendChild(el('label', null, 'איך הבחירות שעשיתם השפיעו על הדרך?'));
     const eff = document.createElement('select'); ['', 'קידמו מאוד', 'קידמו', 'לא השפיעו במיוחד', 'עיכבו מעט', 'עיכבו'].forEach(x => { const o = el('option', null, x || 'בחירה'); o.value = x; eff.appendChild(o); }); det.appendChild(eff);
     const effT = document.createElement('textarea'); effT.maxLength = 800; effT.placeholder = 'כמה מילים על ההשפעה'; effT.style.minHeight = '3rem'; det.appendChild(effT);
     det.appendChild(el('label', null, 'אם הייתם מחליטים שוב היום, מה הייתם בוחרים? נשמח לשמוע את השיקולים'));
@@ -588,7 +588,7 @@ function goalBlock(m, mi, g, gi){
     messages.push({ role: 'user', content: mode === 'steps' ? 'פרקי את הסעיף לצעדים.' : q });
     b.disabled = true; const wait = el('p', 'muted', 'כותבת... (בדרך כלל עד חצי דקה)'); log.appendChild(wait);
     try { const a = (await complete(J.explainSystem(JR.unit, ctx, mode), messages, 1600)).trim(); if (!a) throw 0; hist.push({ mode, q: q || '', a, at: new Date().toISOString() }); all[k] = hist.slice(-12); askSave(all); show(); }
-    catch(e){ wait.textContent = 'אין כרגע חיבור. מה שכתבתם נשמר, ואפשר לנסות שוב.'; }
+    catch(e){ if (mode === 'ask' && q && !tx.value) tx.value = q; wait.textContent = 'אין כרגע חיבור. השאלה חזרה לתיבה, ואפשר לנסות שוב.'; }
     b.disabled = false;
   };
   const steps = btn('🧩 צעד אחר צעד', 'btn-ghost btn-sm', e => run('steps', '', e.currentTarget));
