@@ -54,7 +54,19 @@
     return out.slice(0, 18).join("\n").slice(0, 3000);
   }
   // מסמך HTML עצמאי מאזור בדף: עם הסגנונות של הכלי, בלי כפתורים, בלי עריכה ובלי סקריפטים
+  // הערות מסך, שדות, כפתורים ושורות מצב: לא חלק מהתוצר (12/10/2026: "ל PDF תגיע רק עריכה עם לוגו")
+  var NOISE = "button,script,.sbe-edit-hint,.no-print,textarea,input,select,label,.actions,.toolbar,.banner-mini,.savenote,.mock-note,.dlg-dl,.sbe-q,.sbe-i,.hint,.err,.perr,.wait,.rep-nav,.refs-bar,.sbe-peek,[data-status-line],.sbe-sysonly";
   function standalone(node, title) {
+    var D0 = window.SBE_DOC;
+    if (D0 && D0.print) {
+      // אותו מסמך שהכלי מדפיס: לוגו, שם הכלי ומטרתו, כותרת, תאריך, ורק התוצר
+      var k = node.cloneNode(true);
+      k.querySelectorAll(NOISE).forEach(function (x) { x.remove(); });
+      k.querySelectorAll("details").forEach(function (d) { d.setAttribute("open", ""); });
+      var pageCss = [].map.call(document.querySelectorAll("style"), function (s) { return s.textContent; }).join("\n") +
+        "\nhtml,body{height:auto!important;overflow:visible!important}*{max-height:none!important}.sbe-sysonly{display:none!important}";
+      try { var h = D0.print({ title: title, node: k, toHtml: true, extraCss: pageCss }); if (h) return withBase(h); } catch (e) { console.warn("מעבדת הדמו: מסמך ההדפסה לא נבנה", e); }
+    }
     var c = node.cloneNode(true);
     c.querySelectorAll("button,script,.sbe-edit-hint,.no-print,textarea,input,select,.actions,.toolbar,.banner-mini,.savenote,.mock-note,.dlg-dl").forEach(function (x) { x.remove(); });
     [c].concat([].slice.call(c.querySelectorAll("[contenteditable]"))).forEach(function (x) { x.removeAttribute("contenteditable"); });

@@ -289,12 +289,14 @@ h1{font-size:26px}.hd img{height:44px}
     setTimeout(back, 60000);
   }
 
-  function print({ title, subtitle, kind, node, nodes, inline = false, landscape = false, pocket = false }) {
+  // toHtml (12/10/2026: "ל PDF תגיע רק עריכה עם לוגו"): מחזיר את מסמך ההדפסה כטקסט במקום לפתוח חלון,
+  // כדי שמעבדת הדמו תשמור בדיוק את מה שהכלי מדפיס (לוגו, כותרת, תאריך ורק התוצר). extraCss: עיצוב הכלי, לפני עיצוב ההדפסה.
+  function print({ title, subtitle, kind, node, nodes, inline = false, landscape = false, pocket = false, toHtml = false, extraCss = "" }) {
     const parts = (nodes || [node]).filter(Boolean).map((n) => {
       const c = n.cloneNode(true);
       if (window.SBE_REFS && SBE_REFS.forPrint) SBE_REFS.forPrint(c); // מקורות: רק כשבחרו "צירוף המקורות לקובץ"
       else c.querySelectorAll(".sbe-refs:not(.attach)").forEach((x) => x.remove());
-      c.querySelectorAll("button,.sbe-edit-hint,.no-print,style,script").forEach((x) => x.remove());
+      c.querySelectorAll("button,.sbe-edit-hint,.no-print,style,script,.banner-mini,.savenote,.mock-note").forEach((x) => x.remove());
       c.querySelectorAll("table.rtable").forEach((t) => t.classList.add("kit-table")); // טבלאות SBE_TABLE — אותו עיצוב בהדפסה
       [c, ...c.querySelectorAll("[contenteditable]")].forEach((x) => { x.removeAttribute("contenteditable"); x.removeAttribute("spellcheck"); x.classList.remove("sbe-edit"); });
       keepWithHeadings(c);
@@ -302,8 +304,10 @@ h1{font-size:26px}.hd img{height:44px}
     }).join("");
     const logo = logoSrc();
     const date = new Date().toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "2-digit" });
-    let w;
-    if (inline) {
+    let w, out = null;
+    if (toHtml) {
+      out = ""; w = { document: { write: (x) => { out += x; }, close() {} } };
+    } else if (inline) {
       // An authenticated export can finish after the browser's popup gesture expires.
       const preview = document.createElement("dialog");
       preview.setAttribute("aria-label", "תצוגה מקדימה להדפסה");
@@ -323,7 +327,7 @@ h1{font-size:26px}.hd img{height:44px}
     }
     if (!w) { alert("הדפדפן חסם את חלון ההדפסה. אפשר לאפשר חלונות קופצים לאתר ולנסות שוב."); return; }
     w.document.write(`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(fileTitle(title, undefined, kind))}</title>
-<style>
+${extraCss ? "<style>" + extraCss + "</style>" : ""}<style>
 @page{size:A4${landscape ? " landscape" : ""};margin:24mm 24mm}
 body{font-family:"Assistant","Segoe UI",Arial,sans-serif;color:#141C24;max-width:${landscape ? 1040 : 720}px;margin:24px auto;padding:0 16px;line-height:1.7;font-size:14.5px}
 .hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #2E5A7D;padding-bottom:10px;margin-bottom:18px;gap:16px}
@@ -364,14 +368,15 @@ p,li{orphans:3;widows:3}
 .bar button{font:inherit;font-weight:700;padding:7px 16px;border-radius:6px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;cursor:pointer}
 @media print{.bar{display:none}body{margin:0;max-width:none}}
 ${pocket ? POCKET_CSS : ""}</style></head><body>
-<div class="bar"><button onclick="window.print()">הדפסה / שמירה כ-PDF</button></div>
+${toHtml ? "" : '<div class="bar"><button onclick="window.print()">הדפסה / שמירה כ-PDF</button></div>'}
 <div class="hd"><div>${ctxHTML()}<h1>${esc(title)}</h1>${subtitle ? `<p class="sub">${esc(subtitle)}</p>` : ""}<div class="dt">${esc(date)}</div></div><img src="${logo}" alt="Begood"></div>
 ${parts}
 <div class="ft">הופק ב-Begood · be-good.co.il</div>
 <script>var relaxTall=${relaxTall.toString()};var BRK_CSS=${JSON.stringify(BRK_CSS)};var repeatHeads=${repeatHeads.toString()};var RH_CSS=${JSON.stringify(RH_CSS)};function sbeRelax(){try{repeatHeads(document)}catch(e){}relaxTall(document,{widthMm:${landscape ? 249 : 162},heightMm:${landscape ? 162 : 249}})}
-window.addEventListener("beforeprint",sbeRelax);${inline ? "window.addEventListener('load',sbeRelax);" : "window.onload=function(){sbeRelax();setTimeout(function(){window.print()},300)}"}<\/script>
+window.addEventListener("beforeprint",sbeRelax);${inline || toHtml ? "window.addEventListener('load',sbeRelax);" : "window.onload=function(){sbeRelax();setTimeout(function(){window.print()},300)}"}<\/script>
 </body></html>`);
     w.document.close();
+    if (toHtml) return out;
   }
 
   // גם בהדפסה ישירה מהדפדפן (Ctrl+P) בכל דף שטוען את הקובץ הזה
