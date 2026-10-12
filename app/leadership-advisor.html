@@ -71,7 +71,7 @@ textarea{min-height:64px;resize:vertical}
 .addrow input{flex:1}
 .addrow .btn{white-space:nowrap;padding:.45rem .8rem;font-size:.88rem}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
-@media (max-width:600px){.row2{grid-template-columns:1fr}}
+@media screen and (max-width:600px){.row2{grid-template-columns:1fr}}
 .btn{display:inline-block;font:inherit;font-weight:700;padding:.65rem 1.1rem;border-radius:8px;border:none;cursor:pointer;
   background:var(--spoken);color:#fff}
 .btn:disabled{opacity:.5;cursor:default}
@@ -167,7 +167,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 .layer{display:grid;grid-template-columns:11rem 1fr;gap:.6rem;padding:.35rem 0;border-top:1px dashed var(--hair)}
 .layer:first-of-type{border-top:none}
 .layer p{margin:0}
-@media (max-width:600px){.layer{grid-template-columns:1fr;gap:.1rem}}
+@media screen and (max-width:600px){.layer{grid-template-columns:1fr;gap:.1rem}}
 .conv{border:1px solid var(--hair);border-inline-start:3px solid var(--auto);border-radius:9px;padding:.7rem .9rem;margin:.55rem 0}
 .conv dl{display:grid;grid-template-columns:auto 1fr;gap:.25rem .7rem;margin:.4rem 0 0;font-size:.93rem}
 .conv dt{font-weight:700;color:var(--muted)}

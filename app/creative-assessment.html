@@ -102,7 +102,7 @@ textarea{resize:vertical;min-height:90px;line-height:1.55;}
 .tree-row > button{justify-self:end;align-self:center;white-space:nowrap;padding:8px 14px;}
 .tree-labels{margin-bottom:4px;}
 .tree-labels b{font-size:13px;color:var(--spoken);}
-@media(max-width:640px){
+@media screen and (max-width:640px){
   .tree-row{grid-template-columns:1fr 1fr;grid-template-areas:"num num" "if then" "rm rm";}
   .tree-row .num{grid-area:num;text-align:start;}
   .tree-row textarea:nth-of-type(1){grid-area:if;}
@@ -112,7 +112,7 @@ textarea{resize:vertical;min-height:90px;line-height:1.55;}
 }
 
 .whisper-row{display:grid;grid-template-columns:1fr 120px auto;gap:8px;margin-bottom:8px;}
-@media(max-width:560px){.whisper-row{grid-template-columns:1fr;}}
+@media screen and (max-width:560px){.whisper-row{grid-template-columns:1fr;}}
 
 .upload-wrap{margin:8px 0;}
 .upload-preview{margin-top:8px;}

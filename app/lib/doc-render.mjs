@@ -139,7 +139,7 @@ ol.list li,ul.list li{margin-bottom:7px;}
   color:var(--muted);display:flex;flex-direction:column;gap:3px;background:var(--sub);}
 .foot-row{display:flex;justify-content:space-between;}
 .foot-by{font-size:10px;}
-@media(max-width:640px){
+@media screen and (max-width:640px){
   .dt thead{display:none;}
   .dt,.dt tbody,.dt tr,.dt td,.dt tbody th{display:block;width:auto!important;}
   .dt tr{border:1px solid var(--hair);border-radius:6px;margin:0 0 8px;overflow:hidden;}
@@ -212,7 +212,7 @@ ol.q li,ul.q li{margin-bottom:5px;}
 .dt td.ty{width:1%;white-space:nowrap;}
 .dt td:not(.n):not(.ck):not(.ty),.card p,.card li{text-align:justify;text-justify:inter-word;}
 .dt-cap{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.12em;color:var(--muted);margin:4px 0 4px;}
-@media(max-width:520px){
+@media screen and (max-width:520px){
   .dt thead{display:none;}
   .dt,.dt tbody,.dt tr,.dt td,.dt tbody th{display:block;width:auto!important;}
   .dt tr{border:1px solid var(--hair);border-radius:6px;margin:0 0 7px;overflow:hidden;}

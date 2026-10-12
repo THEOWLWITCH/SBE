@@ -15,7 +15,7 @@
 .rtable .act-d{margin:0}.rtable .rt-title{font-weight:700}
 .rtable td.empty{color:var(--muted,#5C6771)}
 .rtable td{text-align:justify;text-justify:inter-word}
-@media (max-width:640px){
+@media screen and (max-width:640px){
   .rtable thead{display:none}
   .rtable,.rtable tbody,.rtable tr,.rtable td,.rtable tbody th{display:block;width:auto}
   .rtable tr{border:1px solid var(--hair,#CDD3D8);border-radius:8px;margin:.5rem 0;overflow:hidden}

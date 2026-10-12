@@ -27,7 +27,7 @@
 .paths textarea,.paths input[type=text],.paths input[type=number],.paths select{width:100%;font:inherit;font-size:.9rem;padding:.35rem .5rem;border:1px solid #CDD3D8;border-radius:6px;box-sizing:border-box}
 .paths .perr{color:#8C3A34;font-weight:600}.paths .pwait{color:#5C6771;font-size:.9rem}
 .paths .pnote{background:#F5EAD9;border-radius:6px;padding:.4rem .7rem;font-size:.9rem;margin:.4rem 0}
-.paths .row2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}@media (max-width:640px){.paths .row2{grid-template-columns:1fr}}
+.paths .row2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}@media screen and (max-width:640px){.paths .row2{grid-template-columns:1fr}}
 .paths .ptrack td{text-align:center}.paths .ptrack td:first-child{text-align:right}`;
   function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = String(text); return n; }
   function btn(text, cls, fn) { const b = el('button', 'pbtn' + (cls ? ' ' + cls : ''), text); b.type = 'button'; if (fn) b.addEventListener('click', fn); return b; }

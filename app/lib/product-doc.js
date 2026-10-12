@@ -119,7 +119,7 @@
 .kit-flow tr.ph th{background:#DCE7EF;color:#1E3F5A;text-align:right;font-size:15px;width:auto}
 .kit-flow td{width:33%}
 .kit-table .sbe-rich{font-size:14.5px;line-height:1.65}.kit-table .sbe-rich p:last-child,.kit-table .sbe-rich ul:last-child{margin-bottom:0}
-@media (max-width:640px){.kit-table,.kit-table tbody,.kit-table tr,.kit-table th,.kit-table td{display:block;width:auto}.kit-table tr{border:1px solid #CDD3D8;border-radius:8px;margin:8px 0;overflow:hidden}.kit-table th,.kit-table td{border:0}}
+@media screen and (max-width:640px){.kit-table,.kit-table tbody,.kit-table tr,.kit-table th,.kit-table td{display:block;width:auto}.kit-table tr{border:1px solid #CDD3D8;border-radius:8px;margin:8px 0;overflow:hidden}.kit-table th,.kit-table td{border:0}}
 .sbe-rich{line-height:1.75;font-size:15px}
 .sbe-rich h4{font-size:15.5px;margin:18px 0 6px;font-weight:800}
 .sbe-rich h4:first-child{margin-top:0}
@@ -201,7 +201,10 @@
       const rows = [...t.rows]; if (rows.length < 3) return; // טבלה קצרה לא נחתכת ממילא
       let node = t, h = t.previousElementSibling;
       while (!h && node.parentElement && node.parentElement !== body && node.parentElement.children.length === 1) { node = node.parentElement; h = node.previousElementSibling; }
-      if (!h || !/^H[2-6]$/.test(h.tagName) || !h.textContent.trim()) return;
+      // כותרת שנעטפה לפני ההדפסה (keepWithHeadings: .keep-start) נמצאת בסוף העטיפה שלפני הטבלה
+      if (h && h.classList && h.classList.contains("keep-start") && h.lastElementChild) h = h.lastElementChild;
+      const isHead = (x) => x && (/^H[2-6]$/.test(x.tagName) || (x.classList && x.classList.contains("kit-h")));
+      if (!isHead(h) || !h.textContent.trim()) return;
       const cols = Math.max(1, ...rows.map((r) => [...r.cells].reduce((n, c) => n + (c.colSpan || 1), 0)));
       const thead = doc.createElement("thead"); thead.className = "sbe-rh";
       const tr = doc.createElement("tr"), th = doc.createElement("th");

@@ -11,7 +11,7 @@
 .jmap .nm{font-size:.82rem;font-weight:700;line-height:1.25}
 .jmap .sb{font-size:.7rem;color:var(--muted)}
 .jmap .cnt{font-size:.72rem;color:var(--auto);font-weight:700;margin-top:.15rem}
-@media (max-width:560px){.jmap .nm{font-size:.7rem}.jmap .sb{display:none}.jmap .dot{width:1.9rem;height:1.9rem}.jmap .st::before{top:.95rem}}
+@media screen and (max-width:560px){.jmap .nm{font-size:.7rem}.jmap .sb{display:none}.jmap .dot{width:1.9rem;height:1.9rem}.jmap .st::before{top:.95rem}}
 .cl-chip{display:inline-block;font-size:.72rem;font-weight:700;border-radius:99px;padding:.05rem .55rem;background:var(--spoken-soft);color:var(--spoken);margin-inline-end:.35rem}
 .ms{border:1px solid var(--hair);border-radius:10px;padding:.85rem 1rem;margin:.7rem 0;background:var(--surface);break-inside:avoid}
 .ms.approved{border-inline-start:4px solid var(--auto)}
@@ -41,7 +41,7 @@
 .chips label.on{border-color:var(--spoken);background:var(--spoken-soft);color:var(--spoken)}
 .qrow{display:grid;grid-template-columns:1fr auto;gap:.6rem;align-items:center;padding:.45rem 0;border-bottom:1px dashed var(--hair)}
 .qrow select{width:auto;min-width:10rem}
-@media (max-width:600px){.qrow{grid-template-columns:1fr}}
+@media screen and (max-width:600px){.qrow{grid-template-columns:1fr}}
 .banner-soft{background:var(--spoken-soft);border-radius:8px;padding:.6rem .9rem;margin:.5rem 0;font-weight:600}
 .obst{display:flex;gap:.5rem;align-items:flex-start;margin:.35rem 0}
 .obst .ic{font-size:1.15rem}
