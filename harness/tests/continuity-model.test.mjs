@@ -26,7 +26,7 @@ test('the prompt asks for the kit parts, privacy, conversation guidance and cite
   for (const tag of C.LETTER_FIELDS.map((f) => f.tag)) assert.ok(e.includes(tag), tag);
   assert.match(e, /מה שלא פועל בשגרה יקרוס בחירום/);
   assert.match(s, /אין לך את רשימת התלמידים, את פרטי ההורים או מידע רפואי/);
-  assert.match(s, /לא מפנים ליועצת כברירת מחדל/);
+  assert.match(s, /בלי הפניה ליועצת או לאיש\/אשת מקצוע/);
   assert.match(s, /איך אוכל לעזור לך/);
   assert.match(s, /WRITER-RULE/);
   for (const k of kb.filter((x) => !x.hidden)) assert.ok(s.includes('[' + k.k + ']'), k.k);
