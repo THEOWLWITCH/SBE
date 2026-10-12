@@ -113,6 +113,8 @@
   const STYLE = `.kit-table{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:14.5px;line-height:1.6}
 .kit-table th,.kit-table td{border:1px solid #CDD3D8;padding:8px 10px;text-align:right;vertical-align:top}
 .kit-table tbody th{background:rgba(46,90,125,.08);width:22%;font-weight:700}
+/* יישור לשני הצדדים בכל התוצרים, גם בטבלאות (12/10/2026) */
+.kit-table td,.rtable td,.ktable td,.sbe-rich p,.sbe-rich li,.sbe-edit p,.sbe-edit li,.sbe-edit td{text-align:justify;text-justify:inter-word}
 .kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .kit-flow tr.ph th{background:#DCE7EF;color:#1E3F5A;text-align:right;font-size:15px;width:auto}
 .kit-flow td{width:33%}
@@ -365,6 +367,7 @@ p,li{orphans:3;widows:3}
 .kit-min,.kit-muted{color:#5C6771;font-size:12px}.kit-session{break-before:auto}
 .ft{margin-top:26px;border-top:1px solid #CDD3D8;padding-top:8px;font-size:11.5px;color:#5C6771}
 .bar{position:sticky;top:0;background:#fff;padding:8px 0;margin-bottom:10px;text-align:left}
+p,li,dd,blockquote,td:not(.n):not(.ck){text-align:justify;text-justify:inter-word}
 .bar button{font:inherit;font-weight:700;padding:7px 16px;border-radius:6px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;cursor:pointer}
 @media print{.bar{display:none}body{margin:0;max-width:none}}
 ${pocket ? POCKET_CSS : ""}</style></head><body>

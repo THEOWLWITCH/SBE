@@ -14,6 +14,7 @@
 .rtable .act-tags{margin:.3rem 0 0}.rtable .basis{margin:.35rem 0 0;font-size:.8rem}.rtable .act-r{margin:.3rem 0 0}
 .rtable .act-d{margin:0}.rtable .rt-title{font-weight:700}
 .rtable td.empty{color:var(--muted,#5C6771)}
+.rtable td{text-align:justify;text-justify:inter-word}
 @media (max-width:640px){
   .rtable thead{display:none}
   .rtable,.rtable tbody,.rtable tr,.rtable td,.rtable tbody th{display:block;width:auto}

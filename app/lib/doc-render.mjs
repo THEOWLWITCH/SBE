@@ -117,6 +117,7 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .dt p{margin:0 0 6px;} .dt p:last-child{margin:0;}
 .dt ol,.dt ul{margin:0;padding-inline-start:17px;} .dt li{margin-bottom:4px;}
 .dt td.n{width:32px;text-align:center;font-weight:700;}
+.body p,.body li,.dt td:not(.n):not(.ck){text-align:justify;text-justify:inter-word;}
 .dt td.ck{width:64px;text-align:center;color:var(--muted);font-size:16px;}
 .dt td.w{width:38%;}
 .dt .tag{margin-inline-start:6px;}
@@ -209,6 +210,7 @@ ol.q li,ul.q li{margin-bottom:5px;}
 .dt tbody th{background:var(--sub);width:27%;font-weight:700;font-size:12px;color:var(--ink);}
 .dt p{margin:0;} .dt td.n{width:26px;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);}
 .dt td.ty{width:1%;white-space:nowrap;}
+.dt td:not(.n):not(.ck):not(.ty),.card p,.card li{text-align:justify;text-justify:inter-word;}
 .dt-cap{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.12em;color:var(--muted);margin:4px 0 4px;}
 @media(max-width:520px){
   .dt thead{display:none;}
