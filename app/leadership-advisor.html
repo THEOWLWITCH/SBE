@@ -724,8 +724,8 @@ const ADVISOR_SYSTEM = [
   ' "actions":[ACT],',
   ' "team":[REC], "communication":[REC], "wellbeing":[REC], "students":[REC],',
   ' "conversations":[{"with":"עם מי","goal":"מטרת השיחה","resilience":"איך השיחה מחזקת את החוסן החברתי","setting":"איפה ומתי","opening":"שאלת פתיחה לדוגמה","followups":["שאלת המשך"],"closing":"איך מסיימים"}],',
-  ' "plan":[{"when":"השבוע","what":"מה עושים ומי מוביל/ה"}],',
-  ' "checks":["שאלה שכדאי לבדוק עם הצוות או עם התלמידים כדי לאמת את התמונה"],',
+  ' "plan":[{"when":"השבוע","what":"מה עושים","who":"מי אחראי/ת (עדיף משותף ומתחלף)","update":"איך מעדכנים את כולם"}],',
+  ' "checks":[{"q":"השאלה","who":"מי שואל/ת את מי","when":"מתי ואיפה","why":"מה זה יעזור לברר"}],',
   SBE_WRITER.reportSchema,
   ' "answers":[{"question":"השאלה","answer":"תשובה ישירה ומעשית"}]}',
   'כאשר ACT הוא {"title":"שם קצר","kind":"צעד מיידי" או "תהליך מתמשך","lead":"מי מוביל/ה — עדיף צוות","for":"שם התחום","description":"מה עושים ואיך — 2–4 משפטים","mechanism":"איזה מנגנון זה בונה","resilience":"איך זה מחזק את החוסן החברתי — 1–2 משפטים","basis":["מפתח"]}',
@@ -816,7 +816,7 @@ function actCard(a,extra){
   return c;
 }
 // "resilience" — ההסבר בהקשר של חוסן חברתי, שמופיע בכל פריט בדוח
-function resEl(t){if(!t)return null;const p=el('p','act-r');p.appendChild(el('b',null,'לחוסן החברתי: '));p.appendChild(inlineRich(t));return p;}
+function resEl(t){if(!t)return null;const p=el('p','act-r');p.appendChild(el('b',null,'תרומה לחוסן החברתי: '));p.appendChild(inlineRich(t));return p;}
 function withRes(card,t){const r=resEl(t);if(r){const b=card.querySelector('.basis');b?card.insertBefore(r,b):card.appendChild(r);}return card;}
 function textList(items){const ul=el('ul','tl');(items||[]).forEach(it=>{const li=el('li');if(it.domain)li.appendChild(el('b',null,it.domain+': '));li.appendChild(inlineRich(it.text||''));const r=resEl(it.resilience);if(r)li.appendChild(r);ul.appendChild(li);});return ul;}
 function recCard(x){return withRes(actCard({title:x.title,description:x.description,basis:x.basis}),x.resilience);}
@@ -834,7 +834,7 @@ function resCell(a){const c=el('div');if(a.mechanism){const p=el('p');p.appendCh
   if(a.resilience){const p=el('p');p.appendChild(inlineRich(a.resilience));c.appendChild(p);}const b=basisEl(a.basis);if(b)c.appendChild(b);return c.childNodes.length?c:null;}
 function recTable(rec,title,items,first){if(!(items||[]).length)return;rec.appendChild(el('h3',null,title));
   rec.appendChild(SBE_TABLE([first||'ההמלצה','מה עושים','תרומה לחוסן החברתי'],items.map(a=>{const dd=richText(a.description||'');dd.classList.add('act-d');return [titleCell(a,a.for),dd,resCell(a)];}),'acts'));}
-function domTable(items){if(!(items||[]).length)return el('p','muted','—');return SBE_TABLE(null,items.map(it=>{const c=el('div');c.appendChild(inlineRich(it.text||''));const r=resEl(it.resilience);if(r)c.appendChild(r);return [it.domain||'',c];}));}
+function domTable(items){if(!(items||[]).length)return el('p','muted','');return SBE_TABLE(null,items.map(it=>{const c=el('div');c.appendChild(inlineRich(it.text||''));const r=resEl(it.resilience);if(r)c.appendChild(r);return [it.domain||'',c];}));}
 function section(card,title,items,fn){if(!(items||[]).length)return;card.appendChild(el('h3',null,title));items.forEach(x=>card.appendChild(fn(x)));}
 function metaLine(R){return [R.who,R.mode,R.school?'בית ספר '+R.school:'',R.stage,R.sit?'מצב: '+R.sit:'','הופק: '+new Date(R.at).toLocaleDateString('he-IL',{day:"2-digit",month:"2-digit",year:"2-digit"})].filter(Boolean).join(' · ');}
 function renderReport(){
@@ -849,13 +849,13 @@ function renderReport(){
 
   // דוח סיכום והמלצות: תמונת המצב ואחריה ההמלצות — רצף אחד
   const doc=el('div','card');doc.id='report-doc';
-  doc.appendChild(el('h2',null,'דוח סיכום והמלצות: ההנהגה ככוח שמחזק את החוסן החברתי'));
+  doc.appendChild(el('h2','no-print','דוח סיכום והמלצות'));
   doc.appendChild(el('p','muted',metaLine(R)+' · על סמך שאלון הפתיחה'));
   if((d.answers||[]).length){doc.appendChild(el('h3',null,'תשובות לשאלות שלך'));doc.appendChild(SBE_TABLE(null,d.answers.map(x=>[x.question||'',richText(x.answer||'')])));}
   const sum=el('div');sum.id='report-sum';
   sum.appendChild(el('h2',null,'א. תמונת המצב'));
   if(d.intro){const ip=el('p','intro');ip.appendChild(inlineRich(d.intro));sum.appendChild(ip);}
-  if(d.lens){const l=el('div','lens');l.appendChild(el('b',null,'איך המחקר על חוסן חברתי קורא את התמונה: '));l.appendChild(inlineRich(d.lens));sum.appendChild(l);}
+  if(d.lens){const l=el('div','lens');l.appendChild(el('b',null,'מה המחקר אומר על המצב אצלכם: '));l.appendChild(inlineRich(d.lens));sum.appendChild(l);}
   if(d.twoLayer&&(d.twoLayer.phase||d.twoLayer.structural||d.twoLayer.social||d.twoLayer.trust)){const t=d.twoLayer,box2=el('div','layers');box2.appendChild(el('h3',null,'מודל האיתנות הדו־שכבתי'));
     box2.appendChild(SBE_TABLE(null,[['השלב',t.phase],['השכבה המבנית',t.structural],['השכבה החברתית־יחסית',t.social],['האמון: המאיץ המקשר',t.trust]].filter(([,v])=>v).map(([k,v])=>[k,inlineRich(v)])));
     sum.appendChild(box2);}
@@ -865,27 +865,27 @@ function renderReport(){
   doc.appendChild(sum);
 
   const rec=el('div');rec.id='report-rec';
-  rec.appendChild(el('h2',null,'ב. המלצות, לפיתוח מנהיגות תומכת חוסן'));
+  rec.appendChild(el('h2',null,'ב. המלצות לפיתוח מנהיגות תומכת חוסן'));
   recTable(rec,'1. פעולות מרכזיות',d.actions,'הפעולה');
   recTable(rec,'2. צוות, שותפים וממלאי מקום',d.team);
   recTable(rec,'3. תקשורת, פירגון ועידוד',d.communication);
   recTable(rec,'4. רווחת הצוות וההנהגה',d.wellbeing);
   recTable(rec,'5. שותפות עם תלמידים',d.students);
-  if((d.conversations||[]).length){rec.appendChild(el('h3',null,'6. שיחות מומלצות — עם הנחיות'));d.conversations.forEach(c=>{rec.appendChild(el('h4',null,'שיחה עם '+(c.with||'')));
+  if((d.conversations||[]).length){rec.appendChild(el('h3',null,'6. שיחות מומלצות והנחיות לשיחה'));d.conversations.forEach(c=>{rec.appendChild(el('h4',null,'שיחה עם '+(c.with||'')));
     rec.appendChild(SBE_TABLE(null,[['מטרה',c.goal],['תרומה לחוסן החברתי',c.resilience],['איפה ומתי',c.setting],['פתיחה',c.opening],['שאלות המשך',(c.followups||[]).length?(()=>{const u=el('ul');c.followups.forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));u.appendChild(li);});return u;})():''],['סיום',c.closing]].filter(([,v])=>v).map(([k,v])=>[k,v instanceof Node?v:inlineRich(v)])));});}
-  if((d.plan||[]).length){rec.appendChild(el('h3',null,'7. תוכנית צעדים'));rec.appendChild(SBE_TABLE(['מתי','מה עושים'],d.plan.map(p=>[el('b',null,p.when||''),inlineRich(p.what||'')]),'plan-t'));}
+  if((d.plan||[]).length){rec.appendChild(el('h3',null,'7. תוכנית צעדים'));rec.appendChild(SBE_TABLE(['מתי','מה עושים','מי אחראי/ת','איך מעדכנים את כולם'],d.plan.map(p=>[el('b',null,p.when||''),inlineRich(p.what||''),p.who||'',p.update||'']),'plan-t'));}
   rec.appendChild(SBE_WRITER.reportSection(d,{el,inlineRich,richText},'8. עקרונות החוסן בתקשורת של ההנהגה','הודעות מוכנות לשליחה: כתובות לפי עקרונות החוסן'));
-  if((d.checks||[]).length){rec.appendChild(el('h3',null,'9. כדאי לבדוק'));const ul=el('ul','tl');d.checks.forEach(x=>ul.appendChild(el('li',null,x)));rec.appendChild(ul);}
-  const foot=el('p','muted','הדוח הופק על ידי מודל שפה על סמך שאלון הפתיחה ומבוססים על ');const a=el('a',null,'רשימת המקורות');a.href='resilience-advisor-sources.html?a=nugi';a.target='_blank';a.style.color='var(--spoken)';foot.appendChild(a);
-  foot.appendChild(document.createTextNode('. הוא נקודת פתיחה לחשיבה ולשיחה עם הצוות, ולא מחליף שיקול דעת מקצועי. כל המלצה יש לבחון לאור הנהלים והחוקים, והאחריות לכך היא של ההנהגה.'));foot.style.marginTop='1rem';rec.appendChild(foot);
+  if((d.checks||[]).length){rec.appendChild(el('h3',null,'9. כדאי לבדוק'));rec.appendChild(SBE_TABLE(['השאלה','מי שואל/ת את מי','מתי','בשביל מה'],d.checks.map(x=>typeof x==='string'?[x,'','','']:[x.q||'',x.who||'',x.when||'',x.why||'']),'plan-t'));}
+  const foot=el('p','muted','ההמלצות הן נקודת פתיחה לחשיבה ולשיחה עם הצוות, ולא מחליפות שיקול דעת מקצועי. כדאי לבדוק כל המלצה לאור הנהלים והחוקים. המקורות: ');const a=el('a',null,'רשימת המקורות');a.href='resilience-advisor-sources.html?a=nugi';a.target='_blank';a.style.color='var(--spoken)';foot.appendChild(a);
+  foot.appendChild(document.createTextNode('.'));foot.style.marginTop='1rem';rec.appendChild(foot);
   doc.appendChild(rec);{const rs=SBE_REFS.end();if(rs)doc.appendChild(rs);}box.appendChild(doc);
   F('chat-area').hidden=false;
 }
 function plain(){
   const R=STATE.report,d=R.doc||{},L=[];
-  const rs=x=>x&&x.resilience?'\n  לחוסן החברתי: '+x.resilience:'';
-  const rec=x=>'• '+x.title+'\n  '+(x.description||'')+rs(x)+((x.basis||[]).length?'\n  מבוסס על: '+x.basis.join(', '):'');
-  L.push('דוח סיכום והמלצות: ההנהגה ככוח שמחזק את החוסן החברתי',metaLine(R));
+  const rs=x=>x&&x.resilience?'\n  תרומה לחוסן החברתי: '+x.resilience:'';
+  const rec=x=>'• '+x.title+'\n  '+(x.description||'')+rs(x)+'';
+  L.push('דוח סיכום והמלצות',metaLine(R));
   if((d.answers||[]).length){L.push('','תשובות לשאלות שלך');d.answers.forEach(x=>L.push('• '+x.question+'\n  '+x.answer));}
   L.push('','א. תמונת המצב','',d.intro||'');
   if(d.lens)L.push('','איך המחקר קורא את התמונה',d.lens);
@@ -893,13 +893,13 @@ function plain(){
   L.push('','חוזקות');(d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text+rs(x)));
   L.push('','אתגרים: כיווני צמיחה');(d.challenges||[]).forEach(x=>L.push('• '+x.domain+': '+x.text+rs(x)));
   if((d.priorities||[]).length){L.push('','שלוש העדיפויות המרכזיות');d.priorities.forEach((p,i)=>{const o=typeof p==='string'?{text:p}:p;L.push((i+1)+'. '+o.text+rs(o));});}
-  L.push('','ב. המלצות, לפיתוח מנהיגות תומכת חוסן');
+  L.push('','ב. המלצות לפיתוח מנהיגות תומכת חוסן');
   if((d.actions||[]).length){L.push('','1. פעולות מרכזיות');d.actions.forEach(a=>L.push('• '+a.title+' ['+[a.kind,a.lead?'מוביל/ה: '+a.lead:'',a.for].filter(Boolean).join(' · ')+']\n  '+(a.description||'')+(a.mechanism?'\n  תרומה לחוסן החברתי: '+a.mechanism:'')+rs(a)));}
   [['2. צוות, שותפים וממלאי מקום',d.team],['3. תקשורת, פירגון ועידוד',d.communication],['4. רווחת הצוות וההנהגה',d.wellbeing],['5. שותפות עם תלמידים',d.students]].forEach(([t,xs])=>{if((xs||[]).length){L.push('',t);xs.forEach(x=>L.push(rec(x)));}});
   if((d.conversations||[]).length){L.push('','6. שיחות מומלצות');d.conversations.forEach(c=>L.push('• שיחה עם '+c.with+'\n  מטרה: '+(c.goal||'')+rs(c)+'\n  איפה ומתי: '+(c.setting||'')+'\n  פתיחה: '+(c.opening||'')+'\n  שאלות המשך: '+(c.followups||[]).join(' · ')+'\n  סיום: '+(c.closing||'')));}
-  if((d.plan||[]).length){L.push('','7. תוכנית צעדים');d.plan.forEach(p=>L.push('• '+p.when+': '+p.what));}
+  if((d.plan||[]).length){L.push('','7. תוכנית צעדים');d.plan.forEach(p=>L.push('• '+p.when+': '+p.what+(p.who?'\n  מי אחראי/ת: '+p.who:'')+(p.update?'\n  איך מעדכנים: '+p.update:'')));}
   L.push(...SBE_WRITER.reportPlain(d,'8. עקרונות החוסן בתקשורת של ההנהגה','הודעות מוכנות לשליחה: כתובות לפי עקרונות החוסן'));
-  if((d.checks||[]).length){L.push('','9. כדאי לבדוק');d.checks.forEach(x=>L.push('• '+x));}
+  if((d.checks||[]).length){L.push('','9. כדאי לבדוק');d.checks.forEach(x=>L.push(typeof x==='string'?'• '+x:'• '+(x.q||'')+[x.who&&'מי שואל/ת: '+x.who,x.when&&'מתי: '+x.when,x.why&&'בשביל מה: '+x.why].filter(Boolean).map(t=>'\n  '+t).join('')));}
   L.push('','כל המלצה יש לבחון לאור הנהלים והחוקים, והאחריות לכך היא של ההנהגה.');
   L.push('','המקורות: '+location.href.replace(/[^/]*$/,'resilience-advisor-sources.html?a=nugi'));
   return L.join('\n').replace(/\*\*/g,'');

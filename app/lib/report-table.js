@@ -34,6 +34,12 @@
   }
   window.SBE_TABLE = function (head, rows, cls) {
     style();
+    // עמודה שאין בה תוכן בשום שורה לא מוצגת, ותא ריק נשאר ריק (12/10/2026, בדיקת הלקוחה: "—" נראה כמו חוסר)
+    const blank = (v) => v == null || v === "";
+    if (head && (rows || []).length) {
+      const drop = head.map((h, i) => i > 0 && rows.every((r) => blank(r[i])));
+      if (drop.some(Boolean)) { head = head.filter((h, i) => !drop[i]); rows = rows.map((r) => r.filter((v, i) => !drop[i])); }
+    }
     const t = document.createElement("table"); t.className = "rtable" + (cls ? " " + cls : "");
     if (head) {
       const th = document.createElement("thead"), tr = document.createElement("tr");
@@ -45,7 +51,7 @@
       const tr = document.createElement("tr");
       r.forEach((v, i) => {
         const c = document.createElement(!head && i === 0 ? "th" : "td");
-        if (v == null || v === "") { c.textContent = "—"; c.classList.add("empty"); }
+        if (v == null || v === "") c.classList.add("empty");
         else if (v instanceof Node) c.append(v); else c.textContent = String(v);
         if (head) c.dataset.label = head[i];
         tr.append(c);
