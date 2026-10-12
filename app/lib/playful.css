@@ -174,6 +174,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc,var(
   body::before{width:420px;height:420px;background:var(--teal-soft);top:-120px;inset-inline-start:-140px}
   body::after{width:380px;height:380px;background:var(--sun-soft);bottom:-140px;inset-inline-end:-120px}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
-@page{size:A4;margin:18mm 20mm}
+@page{size:A4;margin:24mm 24mm}
 @media print{.topnav,.no-print,.hero,.steps,.btns,.side,.wait{display:none!important}body{background:#fff}.card{box-shadow:none;padding:0}
   .stage{border:none}.stage::after{display:none}h2,h3,h4{break-after:avoid}.tile,.kit-table tr{break-inside:avoid}.tile{transform:none!important;box-shadow:none;border:1px solid #ccc}}

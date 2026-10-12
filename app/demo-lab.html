@@ -8,6 +8,7 @@
 <script src="lib/ai-call.js"></script>
 <script src="lib/customer-review.js"></script>
 <script src="lib/product-view.js"></script>
+<script src="lib/product-doc.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
@@ -434,7 +435,7 @@ function clean(html){
   d.querySelectorAll('*').forEach(n=>[...n.attributes].forEach(a=>{if(/^on/i.test(a.name)||/^\s*javascript:/i.test(a.value))n.removeAttribute(a.name);}));
   return '<!doctype html>'+d.documentElement.outerHTML;
 }
-F('dlgPrint').onclick=()=>{const w=window.open('','_blank');if(!w)return;w.document.open();w.document.write(clean(VIEW_HTML||F('dlgF').srcdoc||''));w.document.close();setTimeout(()=>w.print(),900);};
+F('dlgPrint').onclick=()=>{const w=window.open('','_blank');if(!w)return;w.document.open();w.document.write(clean(VIEW_HTML||F('dlgF').srcdoc||''));w.document.close();try{SBE_DOC.preparePrint(w.document);}catch(e){}setTimeout(()=>w.print(),900);};
 loadList().then(autoCheck);
 })();
 </script>

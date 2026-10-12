@@ -30,7 +30,7 @@ test('Shared print retains existing popup callers and their automatic print beha
   assert.deepEqual(env.popups[0],['','_blank']);
   assert.match(env.written[0],/window.onload=function\(\).*window.print\(\)/);
   assert.match(env.written[0],/<html lang="he" dir="rtl">/);
-  assert.match(env.written[0],/@page\{size:A4;margin:18mm 20mm\}/);
+  assert.match(env.written[0],/@page\{size:A4;margin:24mm 24mm\}/);
 });
 
 test('Inline print escapes headings, requires an explicit print gesture, and removes its dialog on close',()=>{
