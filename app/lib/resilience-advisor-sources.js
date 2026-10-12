@@ -578,7 +578,7 @@
     {k:'IASC2007', g:'sys', apa:'Inter-Agency Standing Committee. (2007). IASC guidelines on mental health and psychosocial support in emergency settings. IASC.',
       url:'https://interagencystandingcommittee.org/iasc-task-force-mental-health-and-psychosocial-support-emergency-settings/iasc-guidelines-mental-health-and-psychosocial-support-emergency-settings-2007',
       gist:'הנחיות לתמיכה נפשית־חברתית בחירום: פירמידת התערבויות, שירותים בסיסיים וביטחון, חיזוק תמיכה משפחתית וקהילתית, תמיכה ממוקדת לא־מומחית, ושירותים מקצועיים למעטים; גיוס קהילתי, חינוך ומידע הם חלק מהמענה.',
-      be:'רוב התמיכה בחירום אינה טיפולית אלא קהילתית ומשפחתית: מה שמחנכים ומנהיגים יכולים לתת; הפניה מקצועית: למי שזקוק לה, במסלול ברור.'},
+      be:'רוב התמיכה בחירום אינה טיפולית אלא קהילתית ומשפחתית: מה שמחנכים ומנהיגים נותנים, כמבוגרים מוכרים, מלווים ומתמידים.'},
     // ── עדכון שבועי (04/10/2026, אומתו: כותרת, מחברים, שנה ותקציר) ──
     {k:'Sotardi2026', g:'cls', apa:'Sotardi, V., & Rudolf, R. (2026). School belonging as co-constructed: Affective experiences and social-emotional skills with individual, peer, and cross-level determinants across 14 countries. Contemporary Educational Psychology, 86, 102469.',
       url:'https://doi.org/10.1016/j.cedpsych.2026.102469',
