@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const src = readFileSync(join(HERE, 'doc-render.mjs'), 'utf8');
 const MARK = 'data:image/webp;base64,' +
-  readFileSync(join(HERE, '..', 'assets', 'begood-mark.webp')).toString('base64');
+  readFileSync(join(HERE, '..', 'assets', 'begood-logo.webp')).toString('base64');
 
 const body = src
   .replace(/^export function /gm, 'function ')

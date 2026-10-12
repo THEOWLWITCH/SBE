@@ -116,7 +116,7 @@
 /* יישור לשני הצדדים בכל התוצרים, גם בטבלאות (12/10/2026) */
 .kit-table td,.rtable td,.ktable td,.sbe-rich p,.sbe-rich li,.sbe-edit p,.sbe-edit li,.sbe-edit td{text-align:justify;text-justify:inter-word}
 /* תא צר (טבלה של שלוש עמודות ומעלה): יישור לימין, בלי רווחים גדולים בין המילים */
-table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,table tr>td:first-child:nth-last-child(n+3),table tr>td:first-child:nth-last-child(n+3) p,table tr>td:first-child:nth-last-child(n+3) li{text-align:start}
+table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,table tr>td:first-child:nth-last-child(n+3),table tr>td:first-child:nth-last-child(n+3) p,table tr>td:first-child:nth-last-child(n+3) li{text-align:start}table tr>td:first-child:nth-last-child(2),table tr>td:first-child:nth-last-child(2) p{text-align:start}
 .kit-table thead th{background:#2E5A7D;color:#fff;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .kit-flow tr.ph th{background:#DCE7EF;color:#1E3F5A;text-align:right;font-size:15px;width:auto}
 .kit-flow td{width:33%}
@@ -149,7 +149,14 @@ table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-ch
   }
 
   // הלוגו מוטמע במסמך (data URL) — חלון הדפסה ריק לא תמיד טוען תמונות מכתובת.
+  // הלוגו נטען מראש כ-data URL כשהקובץ נטען, כדי שיופיע בכל PDF גם כשבדף אין תמונת לוגו (12/10/2026, בדיקת הלקוחה)
+  let LOGO_DATA = "";
+  try {
+    const u = new URL("assets/begood-logo.webp", document.baseURI.replace(/\/(products|lib)\/[^/]*$/, "/")).href;
+    fetch(u).then((r) => r.ok ? r.blob() : null).then((b) => { if (!b) return; const fr = new FileReader(); fr.onload = () => { LOGO_DATA = String(fr.result || ""); }; fr.readAsDataURL(b); }).catch(() => {});
+  } catch (e) {}
   function logoSrc() {
+    if (LOGO_DATA) return LOGO_DATA;
     const url = new URL("assets/begood-logo.webp", document.baseURI.replace(/\/products\/[^/]*$/, "/")).href;
     const img = [...document.images].find((i) => /begood-logo|alt="?Begood/i.test(i.src + ' alt="' + i.alt) && i.complete && i.naturalWidth);
     if (!img) return url;
@@ -166,12 +173,15 @@ table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-ch
   // כותרת + התוכן הקצר שאחריה עוטפים יחד ב-.keep (break-inside:avoid). תוכן ארוך — נשאר עם כותרתו לפחות בשורה הראשונה.
   function keepWithHeadings(root) {
     root.querySelectorAll("h2,h3,h4,.kit-h").forEach((h) => {
-      const nx = h.nextElementSibling; if (!nx || h.parentNode.classList.contains("keep")) return;
+      let nx = h.nextElementSibling; if (!nx || h.parentNode.classList.contains("keep")) return;
+      // הסבר קצר בין הכותרת לטבלה נשאר איתן (12/10/2026, בדיקת הלקוחה: שורה יתומה בראש עמוד)
+      const note = nx.matches("p") && (nx.textContent || "").length < 200 && nx.nextElementSibling && nx.nextElementSibling.matches("table,ul,ol,div") ? nx : null;
+      if (note) nx = note.nextElementSibling;
       const rows = nx.matches("table") ? nx.querySelectorAll("tr").length : 0;
       const items = nx.matches("ul,ol") ? nx.children.length : 0;
       const short = (nx.matches("table") && rows <= 7) || (nx.matches("ul,ol") && items <= 14) || (nx.matches("p,div") && (nx.textContent || "").length < 900);
       const wrap = document.createElement("div"); wrap.className = short ? "keep" : "keep-start";
-      h.parentNode.insertBefore(wrap, h); wrap.append(h); if (short) wrap.append(nx);
+      h.parentNode.insertBefore(wrap, h); wrap.append(h); if (note) wrap.append(note); if (short) wrap.append(nx);
     });
   }
 
@@ -353,14 +363,14 @@ ${extraCss ? "<style>" + extraCss + "</style>" : ""}<style>
   @bottom-right{content:"Begood · be-good.co.il";font:9pt Assistant,Arial,sans-serif;color:#8A949C}}
 body{font-family:"Assistant","Segoe UI",Arial,sans-serif;color:#141C24;max-width:${landscape ? 1040 : 720}px;margin:24px auto;padding:0 16px;line-height:1.7;font-size:14.5px}
 .hd{display:flex;justify-content:space-between;align-items:center;border-top:5px solid #2E5A7D;border-bottom:1px solid #CDD3D8;padding:14px 0 12px;margin-bottom:22px;gap:16px;position:relative}
-.hd::after{content:"";position:absolute;top:-5px;left:0;width:22%;height:5px;background:#2BA39C}
+.hd::after{content:"";position:absolute;top:-5px;left:0;width:22%;height:5px;background:#2BA39C;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .hd img{height:58px}
 .hd .dt{font-size:12.5px;color:#5C6771;margin-top:2px}
 .hd .ctx{font-size:12.5px;color:#2E5A7D;margin:0 0 4px;letter-spacing:.01em}.hd .ctx b{font-weight:700}
 h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:26px;line-height:1.25;color:#1E3F5A;margin:0 0 4px;break-after:avoid}
-.sub{color:#5C6771;margin:0 0 18px;font-size:13.5px}
+.sub{color:#5C6771;margin:0 0 4px;font-size:13.5px}
 h4,h3,h2{break-after:avoid;break-inside:avoid;font-size:15.5px;margin:22px 0 8px;color:#1E3F5A}
-h2,h3{padding-inline-start:10px;border-inline-start:4px solid #2BA39C}
+h2,h3,h4{padding-inline-start:10px;border-inline-start:4px solid #2BA39C}
 .keep{break-inside:avoid;page-break-inside:avoid}
 .keep-start+*{break-before:avoid;page-break-before:avoid}
 h2+table tr:first-child,h3+table tr:first-child{break-before:avoid}
@@ -393,7 +403,7 @@ p,li{orphans:3;widows:3}
 .ft{margin-top:28px;border-top:1px solid #CDD3D8;padding-top:8px;font-size:11.5px;color:#5C6771}@media print{.ft{display:none}}
 .bar{position:sticky;top:0;background:#fff;padding:8px 0;margin-bottom:10px;text-align:left}
 p,li,dd,blockquote,td:not(.n):not(.ck){text-align:justify;text-justify:inter-word}
-table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,table tr>td:first-child:nth-last-child(n+3),table tr>td:first-child:nth-last-child(n+3) p,table tr>td:first-child:nth-last-child(n+3) li{text-align:start}
+table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,table tr>td:first-child:nth-last-child(n+3),table tr>td:first-child:nth-last-child(n+3) p,table tr>td:first-child:nth-last-child(n+3) li{text-align:start}table tr>td:first-child:nth-last-child(2),table tr>td:first-child:nth-last-child(2) p{text-align:start}
 .bar button{font:inherit;font-weight:700;padding:7px 16px;border-radius:6px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;cursor:pointer}
 @media print{.bar{display:none}body{margin:0;max-width:none}}
 ${pocket ? POCKET_CSS : ""}</style></head><body>

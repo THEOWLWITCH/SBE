@@ -15,7 +15,7 @@
 .rtable .act-d{margin:0}.rtable .rt-title{font-weight:700}
 .rtable td.empty{color:var(--muted,#5C6771)}
 .rtable td{text-align:justify;text-justify:inter-word}
-.rtable tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),.rtable tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,.rtable tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,.rtable tr>td:first-child:nth-last-child(n+3),.rtable tr>td:first-child:nth-last-child(n+3) p,.rtable tr>td:first-child:nth-last-child(n+3) li{text-align:start}
+.rtable tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),.rtable tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,.rtable tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,.rtable tr>td:first-child:nth-last-child(n+3),.rtable tr>td:first-child:nth-last-child(n+3) p,.rtable tr>td:first-child:nth-last-child(n+3) li{text-align:start}table tr>td:first-child:nth-last-child(2),table tr>td:first-child:nth-last-child(2) p{text-align:start}
 @media screen and (max-width:640px){
   .rtable thead{display:none}
   .rtable,.rtable tbody,.rtable tr,.rtable td,.rtable tbody th{display:block;width:auto}

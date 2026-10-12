@@ -168,7 +168,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
   <div class="card">
     <h1>פרקטי: יועצת לפיתוח חוסן חברתי</h1>
     <p>רוצים תמונת מצב והמלצות בלי להעביר שאלון לתלמידים? מתארים את הכיתה לפי התבחינים שלמטה, ופרקטי מנתחת את התמונה ומציעה המלצות, בדומה לדוח שמתקבל אחרי מיפוי בשאלון: חוזקות, אתגרים, פעילויות ומשחקים חברתיים, סביבת הכיתה והמלצות נוספות. אחר כך אפשר להמשיך לשאול אותה שאלות.</p>
-    <p class="intro" style="border-inline-start-color:var(--hidden);background:var(--hidden-soft);font-size:.92rem;margin:.6rem 0"><b>חשוב:</b> כל המלצה של פרקטי יש לבחון לאור הנהלים והחוקים, והאחריות לכך היא של המחנך/ת. ההמלצות הן הצעות לחשיבה ולא הוראות.</p>
+    <p class="intro" style="border-inline-start-color:var(--hidden);background:var(--hidden-soft);font-size:.92rem;margin:.6rem 0">כדאי לבחון כל המלצה לאור הנהלים והחוקים. ההמלצות הן הצעות לחשיבה, וההחלטה בידיים שלך.</p>
     <p data-peek class="muted">פרקטי נשענת על מחקר עדכני מישראל ומהעולם: <a href="resilience-advisor-sources.html" target="_blank" style="color:var(--spoken);font-weight:700">רשימת המקורות</a>. התיאור הוא נקודת המבט שלך; כדי לשמוע גם את התלמידים, אפשר בהמשך להעביר את <a href="resilience-team.html" style="color:var(--spoken)">שאלון החוסן</a>.</p>
   </div>
 
@@ -181,12 +181,12 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
       </div>
       <div class="row2">
         <div><label for="f-age">שכבת גיל</label>
-          <select id="f-age"><option value="">— בחירה —</option><option>גן עד ג׳</option><option>ד׳ עד ו׳</option><option>ז׳ עד ט׳</option><option>י׳ עד י״ב</option></select></div>
+          <select id="f-age"><option value="">בחירה...</option><option>גן עד ג׳</option><option>ד׳ עד ו׳</option><option>ז׳ עד ט׳</option><option>י׳ עד י״ב</option></select></div>
         <div><label for="f-size">מספר תלמידים</label><input type="number" id="f-size" min="1" max="60"></div>
       </div>
       <label for="f-sit">מה המצב עכשיו</label>
       <select id="f-sit">
-        <option value="">— בחירה —</option>
+        <option value="">בחירה...</option>
         <option>שגרה</option>
         <option>פרצה מלחמה</option>
         <option>מלחמה מתמשכת</option>
@@ -227,18 +227,18 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
     </div>
 
     <div class="card">
-      <h2>2. תמונת המצב: תבחינים</h2>
+      <h2>2. מה רואים בכיתה</h2>
       <p class="muted">לכל היגד אפשר לבחור עד כמה הוא מתאר את הכיתה בחודש האחרון. אם אין לך מספיק מידע, "לא יודע/ת" (גם זה מידע). היגדים שמסומנים <span class="rev">היגד הפוך</span> מתארים התנהגות פוגעת.</p>
       <div id="criteria"></div>
     </div>
 
     <div class="card">
       <h2>3. במילים שלך (רשות)</h2>
-      <label for="f-strong">תאר/י את חוזקות הכיתה באופן חופשי</label>
+      <label for="f-strong">מה חזק בכיתה?</label>
       <textarea id="f-strong" maxlength="800"></textarea>
-      <label for="f-weak">תאר/י את חולשות הכיתה באופן חופשי</label>
+      <label for="f-weak">מה מאתגר בכיתה כרגע?</label>
       <textarea id="f-weak" maxlength="800"></textarea>
-      <label for="f-questions">מהן השאלות המרכזיות שעבורן את/ה מחפש/ת מענה?</label>
+      <label for="f-questions">על אילו שאלות הייתם רוצים תשובה?</label>
       <textarea id="f-questions" maxlength="800"></textarea>
       <label for="f-worry">מה הכי מדאיג אותך?</label>
       <textarea id="f-worry" maxlength="800"></textarea>
@@ -256,7 +256,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
   <div id="chat-area" hidden>
     <div class="card chat no-print">
       <h2>שאלה לפרקטי</h2>
-      <p class="muted">למשל: "איך אני פותחת שיחה על מה שקורה בקבוצת הוואטסאפ?" או "תן לי משחק לשיעור הראשון של השבוע".</p>
+      <p class="muted">למשל: "איך אני פותחת שיחה על מה שקורה בקבוצת הוואטסאפ?" או "אפשר הצעה למשחק לשיעור הראשון של השבוע?".</p>
       <div id="chat-log"></div>
       <textarea id="chat-in" maxlength="1000" placeholder="השאלה שלך..."></textarea>
       <div class="btns"><button class="btn" id="chat-send">שליחה</button><span class="muted" id="chat-left"></span></div>
@@ -335,7 +335,7 @@ function renderCriteria(){
     [...dm.items,...communityItems(dm)].forEach(it=>{
       const q=document.createElement('div');q.className='q';q.id='q-'+it.k;if(it.c){q.dataset.c='1';q.dataset.raw=it.raw;}
       const t=document.createElement('div');t.className='qt';t.textContent=it.q;
-      if(it.r){const r=document.createElement('span');r.className='rev';r.textContent='היגד הפוך';t.appendChild(r);}
+      if(it.r){const r=document.createElement('span');r.className='rev';r.textContent='התנהגות פוגעת';t.appendChild(r);}
       const lk=document.createElement('div');lk.className='look';lk.textContent=it.look?'למשל: '+it.look:'';
       const sc=document.createElement('div');sc.className='scale';
       SCALE.forEach((s,i)=>{
@@ -527,13 +527,13 @@ function renderPicture(a){
   const box=F('picture');box.textContent='';
   const ds=domains(a);if(!ds.length)return;
   const card=el('div','card');card.appendChild(el('h2',null,'תמונת המצב לפי התיאור שלך'));
-  card.appendChild(el('p','muted','ציון לכל תחום לפי התשובות שלך, באותו סולם של שאלון החוסן. זו נקודת מבט אחת, של המחנך/ת.'));
+  card.appendChild(el('p','muted','ציון לכל תחום לפי התשובות שלך, באותו סולם של שאלון החוסן. זו נקודת המבט שלך, אחת מכמה.'));
   DIMS.forEach(dm=>{
     const mine=ds.filter(d=>d.dim===dm.t);if(!mine.length)return;
     card.appendChild(el('h3',null,dm.t));
     mine.forEach(d=>{
       const r=el('div','score-row');const lb=el('div','score-label',d.d);
-      if(d.capped)lb.appendChild(el('span','flag','פועל, ופוגע'));
+      if(d.capped)lb.appendChild(el('span','flag','יש גם התנהגות פוגעת'));
       const bar=el('div','bar');const fill=el('div','t'+d.t);fill.style.width=Math.round(d.score)+'%';bar.appendChild(fill);
       r.appendChild(lb);r.appendChild(bar);r.appendChild(el('div','val t'+d.t+'b',Math.round(d.score)));card.appendChild(r);
     });
@@ -555,7 +555,7 @@ const PERSONA = [
   'מודל האיתנות של ד״ר יעל שדה (SadeTrust2026) ברמת הכיתה: מוכנות (לפני משבר), איתנות (היכולת של הכיתה להמשיך לתפקד במהלך משבר) וחוסן (התאוששות, למידה וצמיחה אחריו) — כדאי להתאים את ההמלצות לשלב. איתנות נוצרת מחיבור בין שכבה מבנית (שגרות, תפקידים, נהלים כיתתיים) לשכבה חברתית־יחסית (שייכות, ערכים, אופטימיות, שיתוף פעולה) — והאמון בין המחנך/ת לתלמידים ולהורים הוא המאיץ שמחבר ביניהן והופך אותן לתפקוד. אמון נבנה מהתאמה בין המסר, האמינות, המהירות והזמינות של המחנך/ת.',
   'ארגז הכלים של ד״ר יעל שדה (SadeTools2026), ברמת הכיתה — השתמשי בו כשמתאים: (א) שפה מחזקת במכתבים ובהודעות להורים ולתלמידים — גוף ראשון רבים ("אנחנו", "הכיתה שלנו"); מסר מרגיע יחד עם קריאה לפעולה; מה כבר נעשה ומה מתוכנן; סיפורים ושמות מהכיתה; הזמנה למעורבות; שפה פשוטה; וסיום במסר של תקווה. (ב) פעולות לחוסן חברתי בכיתה — מכתב כיתתי חודשי בגוף ראשון רבים; פתיחת שבוע או שעת מחנך במסר מעודד; פינת "פנים מהכיתה"; קיר פרגון; פרסום חגיגי של הצלחות קטנות; סמל או סלוגן כיתתי; קבוצת הכיתה עם תוכן חברתי ולא רק לוגיסטי. (ג) קירוב תלמידים ומשפחות בשוליים — תלמידים ומשפחות חדשים, מפונים, בעלי צרכים מיוחדים או רקע שונה: מיפוי עדין של מי לא משתתף/ת ולמה, מפגש היכרות עם ותיקים, תפקיד בצוותי התכנון, ציון מועדים של קהילות שונות, תרגום הודעות כשמתאים, ופנייה אישית ישירה. (ד) אמנה כיתתית — כללים וערכים שנכתבים יחד עם התלמידים, בשפה ברורה, ונבחנים מחדש מדי פעם (כולל "כללים זמניים" לתקופת משבר).',
   'החינוך כגורם מגן (Fathi2022): צעדים בחינוך, בשילוב ובבריאות שמקדמים חוסן אישי הם גורמי הגנה חברתיים, ובית הספר הוא המקום המרכזי לקדם חוסן של ילדים ובני נוער. חוסר השכלה ונשירה הם גורמי סיכון (לצד עוני, הדרה ומשבר משפחתי) — ולכן כדאי לשים לב במיוחד לתלמידים בסיכון לנשירה ולחיבור שלהם לכיתה. פיתוח חוסן יכול להשתלב בשגרת הלמידה, כמו למידה רגשית־חברתית. "ללמוד איך ללמוד" (למידה לאורך החיים) היא דרך יסוד לחוסן שמתאימה כמעט לכל משבר — ולכן כדאי לשלב בהמלצות גם הרגלי למידה עצמאית ושיתופית ורפלקציה. הכנה לחירום יכולה להיות חלק טבעי מתוכנית הלימודים, מגיל צעיר (כמו בקובה): תרגול, ידע ותפקידים שהתלמידים מכירים מראש.',
-  'בקיאות והתאמה: הכירי את כל מגוון האפשרויות — שיחה אישית, שיחה בקבוצה קטנה, שיחה כיתתית, מנגנונים כיתתיים, עבודה עם הורים ועם הצוות — ולבחור את המתאימות למקרה, לגיל, לגודל הכיתה, למצב ולשאר הנתונים שתיאר/ה המחנך/ת.',
+  'בקיאות והתאמה: הכירי את כל מגוון האפשרויות — שיחה אישית, שיחה בקבוצה קטנה, שיחה כיתתית, מנגנונים כיתתיים, עבודה עם הורים ועם הצוות, ובחרי את המתאימות למקרה, לגיל, לגודל הכיתה, למצב ולשאר הנתונים שתיאר/ה המחנך/ת.',
   'המחנך/ת דילג/ה על שאלון התלמידים ותיאר/ה את הכיתה לפי תבחינים קבועים. זו נקודת המבט שלו/ה בלבד — התייחס/י אליה ברצינות, אבל אל תציג/י אותה כעובדה על כל התלמידים.',
   'בסיס הידע שלך הוא רשימת המקורות הבאה (מפתח בסוגריים מרובעים ועיקר הממצא). כשאת/ה נשען/ת על מקור — ציין/י את המפתח שלו בדיוק כפי שהוא. אסור להמציא מקורות, מחקרים, נתונים או ציטוטים, ואסור להפנות למפתח שאינו ברשימה. אם אין ברשימה מקור שתומך בהמלצה — הצג/י אותה כניסיון מקצועי, בלי מפתח.',
   SBE_RLEAD.classPrompt(),
@@ -597,7 +597,7 @@ const ADVISOR_SYSTEM = [
   ' "plan":[{"when":"השבוע","what":"מה עושים","who":"מי אחראי/ת (עדיף משותף ומתחלף)","update":"איך מעדכנים את כולם"}],',
   SBE_WRITER.reportSchema,
   ' "answers":[{"question":"השאלה של המחנך/ת","answer":"תשובה ישירה ומעשית"}]}',
-  'כאשר ACT הוא {"title":"שם קצר","kind":"חד-פעמית" או "תהליך מתמשך","game":true רק אם זה משחק,"circle":"כיתה" או "בית הספר" או "קהילה","description":"מה עושים, מי מוביל/ה ואיך — 2–4 משפטים","mechanism":"איזה מנגנון חברתי או מיומנות משותפת זה מפתח","basis":["מפתח"]}'
+  'כאשר ACT הוא {"title":"שם קצר","kind":"חד-פעמית" או "תהליך מתמשך","game":true רק אם זה משחק,"circle":"כיתה" או "בית הספר" או "קהילה","description":"מה עושים, מי מוביל/ה ואיך — 2–4 משפטים","mechanism":"תרומה לחוסן החברתי: איזה מנגנון משותף או מיומנות משותפת זה בונה בכיתה, במשפט אחד","basis":["מפתח"]}'
 ].join('\n');
 
 async function complete(system,messages,maxTokens,review){
@@ -692,7 +692,7 @@ function actTable(items,extraFn,mechLabel){if(!(items||[]).length)return el('p',
   const rows=items.map(a=>{const dd=richText(a.description||'');dd.classList.add('act-d');return [titleCell(a,extraFn?extraFn(a):''),dd,mechCell(a)];});
   if(rows.every(r=>!r[2]))return SBE_TABLE(['ההמלצה','מה עושים'],rows.map(r=>r.slice(0,2)),'acts');
   return SBE_TABLE(['הפעילות','מה עושים',mechLabel||'תרומה לחוסן החברתי'],rows,'acts');}
-function domTable(items){if(!(items||[]).length)return el('p','muted','');return SBE_TABLE(null,items.map(it=>[it.domain||'',inlineRich(it.text||'')]));}
+function domTable(items){if(!(items||[]).length)return el('p','muted','');return SBE_TABLE(['התחום','מה רואים'],items.map(it=>[it.domain||'',inlineRich(it.text||'')]));}
 function textList(items){const ul=el('ul','tl');(items||[]).forEach(it=>{const li=el('li');if(it.domain)li.appendChild(el('b',null,it.domain+': '));li.appendChild(inlineRich(it.text||''));ul.appendChild(li);});return ul;}
 function plain(){
   const R=STATE.report,d=R.doc,L=[];const act=(a,x)=>'• '+a.title+' ['+[a.game?'משחק חברתי':'',a.kind,a.circle,x].filter(Boolean).join(' · ')+']\n  '+a.description+(a.mechanism?'\n  תרומה לחוסן החברתי: '+a.mechanism:'')+'';
@@ -700,14 +700,14 @@ function plain(){
   if((d.answers||[]).length){L.push('','תשובות לשאלות שלך');d.answers.forEach(x=>L.push('• '+x.question+'\n  '+x.answer));}
   L.push('','1. חוזקות הכיתה');(d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','1.1 פעילויות להעצמת החוזקות');(d.strengthActivities||[]).forEach(a=>L.push(act(a)));
-  L.push('','1.2 החוזקות כמנוף');(d.leverage||[]).forEach(a=>L.push(act(a,a.from&&a.to?a.from+' ← '+a.to:'')));
+  L.push('','1.2 חוזקות שעוזרות באתגרים');(d.leverage||[]).forEach(a=>L.push(act(a,a.from&&a.to?a.from+' ← '+a.to:'')));
   L.push('','2. אתגרים','','2.1 כיווני צמיחה');(d.challenges||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','2.2 פעילויות להתמודדות');(d.challengeActivities||[]).forEach(a=>L.push(act(a,a.for)));
   if((d.environment||[]).length){L.push('','3. סביבת הכיתה');d.environment.forEach(x=>L.push('• '+x.title+(x.for?' ['+x.for+']':'')+'\n  '+x.description));}
   if((d.other||[]).length){L.push('','4. המלצות נוספות');d.other.forEach(x=>L.push('• '+x.title+'\n  '+x.description));}
   L.push(...SBE_WRITER.reportPlain(d,'5. עקרונות החוסן בתקשורת של הכיתה','הודעות מוכנות לשליחה: כתובות לפי עקרונות החוסן','h2'));
-  if((d.checks||[]).length){L.push('','6. כדאי לבדוק עם התלמידים');d.checks.forEach(x=>L.push(typeof x==='string'?'• '+x:'• '+(x.q||'')+[x.who&&'מי שואל/ת: '+x.who,x.when&&'מתי: '+x.when,x.why&&'בשביל מה: '+x.why].filter(Boolean).map(t=>'\n  '+t).join('')));}if((d.conversations||[]).length){L.push('','7. שיחות מומלצות');d.conversations.forEach(x=>L.push('• שיחה עם '+(x.with||'')+'\n  מטרה: '+(x.goal||'')+'\n  איפה ומתי: '+(x.setting||'')+'\n  פתיחה: '+(x.opening||'')+'\n  שאלות המשך: '+(x.followups||[]).join(' / ')+'\n  סיום: '+(x.closing||'')));}if((d.plan||[]).length){L.push('','8. תוכנית צעדים');d.plan.forEach(p=>L.push('• '+p.when+': '+p.what+(p.who?'\n  מי אחראי/ת: '+p.who:'')+(p.update?'\n  איך מעדכנים: '+p.update:'')));}
-  L.push('','כל המלצה יש לבחון לאור הנהלים והחוקים, והאחריות לכך היא של המחנך/ת.');
+  if((d.checks||[]).length){L.push('','6. שאלות לבירור עם התלמידים');d.checks.forEach(x=>L.push(typeof x==='string'?'• '+x:'• '+(x.q||'')+[x.who&&'מי שואל/ת: '+x.who,x.when&&'מתי: '+x.when,x.why&&'בשביל מה: '+x.why].filter(Boolean).map(t=>'\n  '+t).join('')));}if((d.conversations||[]).length){L.push('','7. שיחות מומלצות');d.conversations.forEach(x=>L.push('• שיחה עם '+(x.with||'')+'\n  מטרה: '+(x.goal||'')+'\n  איפה ומתי: '+(x.setting||'')+'\n  פתיחה: '+(x.opening||'')+'\n  שאלות המשך: '+(x.followups||[]).join(' / ')+'\n  סיום: '+(x.closing||'')));}if((d.plan||[]).length){L.push('','8. תוכנית צעדים');d.plan.forEach(p=>L.push('• '+p.when+': '+p.what+(p.who?'\n  מי אחראי/ת: '+p.who:'')+(p.update?'\n  איך מעדכנים: '+p.update:'')));}
+  L.push('','כדאי לבחון כל המלצה לאור הנהלים והחוקים. ההמלצות הן הצעות לחשיבה, וההחלטה בידיים שלך.');
   L.push('','המקורות: '+location.href.replace(/[^/]*$/,'resilience-advisor-sources.html'));
   return L.join('\n').replace(/\*\*/g,'');
 }
@@ -725,17 +725,17 @@ function renderReport(){
   card.appendChild(el('p','muted','שכבה: '+R.age+' · הופק: '+new Date(R.at).toLocaleDateString('he-IL',{day:"2-digit",month:"2-digit",year:"2-digit"})+' · על סמך התיאור שלך'));
   if(d.intro){const ip=el('p','intro');ip.appendChild(inlineRich(d.intro));card.appendChild(ip);}
   if(d.lens){const l=el('div','lens');l.appendChild(el('b',null,'מה המחקר אומר על המצב אצלכם: '));l.appendChild(inlineRich(d.lens));card.appendChild(l);}
-  if((d.answers||[]).length){card.appendChild(el('h2',null,'תשובות לשאלות שלך'));card.appendChild(SBE_TABLE(null,d.answers.map(x=>[x.question||'',richText(x.answer||'')])));}
+  if((d.answers||[]).length){card.appendChild(el('h2',null,'תשובות לשאלות שלך'));card.appendChild(SBE_TABLE(['השאלה','התשובה'],d.answers.map(x=>[x.question||'',richText(x.answer||'')])));}
   card.appendChild(el('h2',null,'1. חוזקות הכיתה'));card.appendChild(domTable(d.strengths));
   card.appendChild(el('h3',null,'1.1 פעילויות ותהליכים להעצמת החוזקות'));card.appendChild(actTable(d.strengthActivities));
-  card.appendChild(el('h3',null,'1.2 החוזקות כמנוף להתמודדות עם האתגרים'));card.appendChild(actTable(d.leverage,a=>a.from&&a.to?a.from+' ← '+a.to:''));
+  card.appendChild(el('h3',null,'1.2 חוזקות שעוזרות באתגרים'));card.appendChild(actTable(d.leverage,a=>a.from&&a.to?a.from+' ← '+a.to:''));
   card.appendChild(el('h2',null,'2. אתגרים'));
-  card.appendChild(el('h3',null,'2.1 האתגרים: כיווני צמיחה'));card.appendChild(domTable(d.challenges));
+  card.appendChild(el('h3',null,'2.1 מה אפשר לחזק'));card.appendChild(domTable(d.challenges));
   card.appendChild(el('h3',null,'2.2 פעילויות ותהליכים להתמודדות'));card.appendChild(actTable(d.challengeActivities,a=>a.for));
   if((d.environment||[]).length){card.appendChild(el('h2',null,'3. עיצוב סביבת הכיתה'));card.appendChild(actTable(d.environment.map(x=>({title:x.title,description:x.description,basis:x.basis,for:x.for})),a=>a.for));}
   if((d.other||[]).length){card.appendChild(el('h2',null,'4. המלצות נוספות'));card.appendChild(actTable(d.other.map(x=>({title:x.title,description:x.description,basis:x.basis})),null));}
   card.appendChild(SBE_WRITER.reportSection(d,{el,inlineRich,richText},'5. עקרונות החוסן בתקשורת של הכיתה','הודעות מוכנות לשליחה: כתובות לפי עקרונות החוסן'));
-  if((d.checks||[]).length){card.appendChild(el('h2',null,'6. כדאי לבדוק עם התלמידים'));card.appendChild(SBE_TABLE(['השאלה','מי שואל/ת את מי','מתי','בשביל מה'],d.checks.map(x=>typeof x==='string'?[x,'','','']:[x.q||'',x.who||'',x.when||'',x.why||'']),'plan-t'));}if((d.conversations||[]).length){card.appendChild(el('h2',null,'7. שיחות מומלצות והנחיות לשיחה'));card.appendChild(SBE_TABLE(['עם מי ומטרה','איפה ומתי','איך פותחים','שאלות המשך','איך מסיימים'],d.conversations.map(x=>[(x.with||'')+(x.goal?': '+x.goal:''),x.setting||'',x.opening||'',(x.followups||[]).join('\n'),x.closing||'']),'plan-t'));}if((d.plan||[]).length){card.appendChild(el('h2',null,'8. תוכנית צעדים'));card.appendChild(SBE_TABLE(['מתי','מה עושים','מי אחראי/ת','איך מעדכנים את כולם'],d.plan.map(p=>[el('b',null,p.when||''),inlineRich(p.what||''),p.who||'',p.update||'']),'plan-t'));}
+  if((d.checks||[]).length){card.appendChild(el('h2',null,'6. שאלות לבירור עם התלמידים'));card.appendChild(SBE_TABLE(['השאלה','מי שואל/ת את מי','מתי','בשביל מה'],d.checks.map(x=>typeof x==='string'?[x,'','','']:[x.q||'',x.who||'',x.when||'',x.why||'']),'plan-t'));}if((d.conversations||[]).length){card.appendChild(el('h2',null,'7. שיחות מומלצות והנחיות לשיחה'));card.appendChild(SBE_TABLE(['עם מי ומטרה','איפה ומתי','איך פותחים','שאלות המשך','איך מסיימים'],d.conversations.map(x=>[(x.with||'')+(x.goal?': '+x.goal:''),x.setting||'',x.opening||'',(x.followups||[]).join('\n'),x.closing||'']),'plan-t'));}if((d.plan||[]).length){card.appendChild(el('h2',null,'8. תוכנית צעדים'));card.appendChild(SBE_TABLE(['מתי','מה עושים','מי אחראי/ת','איך מעדכנים את כולם'],d.plan.map(p=>[el('b',null,p.when||''),inlineRich(p.what||''),p.who||'',p.update||'']),'plan-t'));}
   const foot=el('p','muted','ההמלצות הן נקודת פתיחה לחשיבה ולשיחה עם הצוות, ולא מחליפות שיקול דעת מקצועי או את קולם של התלמידים. כדאי לבדוק כל המלצה לאור הנהלים והחוקים. המקורות: ');const a=el('a',null,'רשימת המקורות');a.href='resilience-advisor-sources.html';a.target='_blank';a.style.color='var(--spoken)';foot.appendChild(a);
   foot.appendChild(document.createTextNode('.'));foot.style.marginTop='1rem';card.appendChild(foot);
   {const rs=SBE_REFS.end();if(rs)card.insertBefore(rs,foot);}
@@ -760,7 +760,7 @@ F('chat-send').addEventListener('click',async()=>{
   const q=F('chat-in').value.trim();if(!q||BUSY||!STATE.report||askedCount()>=CHAT_MAX)return;
   BUSY=CHAT_BUSY=true;const b=F('chat-send');b.disabled=true;b.textContent='פרקטי חושבת...';F('chat-err').hidden=true;
   STATE.chat.push({role:'user',content:q});F('chat-in').value='';renderChat();
-  const sys=[PERSONA,'כעת את משוחחת עם המחנך/ת על הכיתה. תשובה ממוקדת (עד כ-250 מילים), מעשית, מותאמת לגיל ולמצב, בצורה של 2–3 חלופות פעולה שהמחנך/ת יכול/ה לבחור ביניהן — המלצות ולא קביעות. כשאת/ה נשען/ת על מקור — ציין/י את המפתח בסוגריים מרובעים, למשל [Allen2018]. עיצוב התשובה (בלי JSON): פסקאות קצרות עם שורה ריקה ביניהן; כל חלופה בשורה משלה שמתחילה בכותרת מודגשת, למשל **אפשרות א׳ — שם קצר**, ואחריה 2–3 תבליטים בשורות שמתחילות ב-"- "; הדגשה ב-**...** רק למילות המפתח החשובות; בלי כותרות #.',
+  const sys=[PERSONA,'כעת את משוחחת עם המחנך/ת על הכיתה. תשובה ממוקדת (עד כ-250 מילים), מעשית, מותאמת לגיל ולמצב, בצורה של 2–3 חלופות פעולה שהמחנך/ת יכול/ה לבחור ביניהן — המלצות ולא קביעות. כשאת/ה נשען/ת על מקור — ציין/י את המפתח בסוגריים מרובעים, למשל [Allen2018]. עיצוב התשובה (בלי JSON): פסקאות קצרות עם שורה ריקה ביניהן; כל חלופה בשורה משלה שמתחילה בכותרת מודגשת, למשל **אפשרות א׳: שם קצר**, ואחריה 2–3 תבליטים בשורות שמתחילות ב-"- "; הדגשה ב-**...** רק למילות המפתח החשובות; בלי כותרות #.',
     '','תמונת המצב שתיאר/ה המחנך/ת:',STATE.report.picture,'','הדוח שכבר נמסר לו/ה (אל תחזור/י עליו, התבסס/י עליו):',plainShort()].join('\n');
   let ok=false;
   try{

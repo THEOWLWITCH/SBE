@@ -192,7 +192,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
   <div class="card">
     <h1>נוגי: יועצת למנהיגות תומכת חוסן</h1>
     <p><b>נוגי היא יועצת לפיתוח מנהיגות שתומכת בחוסן חברתי</b>, לא יועצת מנהיגות כללית: כל ניתוח וכל המלצה שלה מוסברים במונחי החוסן החברתי של בית הספר, שייכות, אמון, מנגנונים משותפים, רשתות תמיכה ומסוגלות קולקטיבית. נוגי עוזרת למי שמוביל/ה בבית הספר (מנהל/ת, צוות הנהלה, רכזים, וגם מועצת תלמידים וצוותי תלמידים) לבנות מנהיגות שמחזקת את החוסן החברתי: תקשורת, פירגון ועידוד, אמון, גיבוי וממלאי מקום, רווחת הצוות, ידע על מערכות החירום, ושותפות עם תלמידים, הורים וקהילה. ממלאים שאלון פתיחה, ומקבלים <b>דוח סיכום והמלצות</b>, רק מה שרלוונטי, ו<b>שיחת המשך</b>.</p>
-    <p class="intro" style="border-inline-start-color:var(--hidden);background:var(--hidden-soft);font-size:.92rem;margin:.6rem 0"><b>חשוב:</b> כל המלצה של נוגי יש לבחון לאור הנהלים והחוקים, והאחריות לכך היא של ההנהגה. ההמלצות הן הצעות לחשיבה ולא הוראות.</p>
+    <p class="intro" style="border-inline-start-color:var(--hidden);background:var(--hidden-soft);font-size:.92rem;margin:.6rem 0">כדאי לבחון כל המלצה לאור הנהלים והחוקים. ההמלצות הן הצעות לחשיבה, וההחלטה בידי ההנהגה.</p>
     <p data-peek class="muted">מנהיגות טובה היא עבודת צוות, ולכן נוגי תמיד תעדיף צוות, שותפים וממלאי מקום. נוגי נשענת על מחקר עדכני מישראל ומהעולם, שמתעדכן מדי שבוע: <a href="resilience-advisor-sources.html?a=nugi" target="_blank" style="color:var(--spoken);font-weight:700">רשימת המקורות</a>.</p>
   </div>
 
@@ -201,7 +201,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
       <h2>1. מי מוביל/ה</h2>
       <div class="row2">
         <div><label for="f-who">התפקיד</label>
-          <select id="f-who"><option value="">— בחירה —</option>
+          <select id="f-who"><option value="">בחירה...</option>
             <option>מנהל/ת בית הספר</option><option>סגן/ית מנהל/ת</option><option>צוות הנהלה</option>
             <option>רכז/ת (שכבה, מקצוע, חברתי ועוד)</option><option>צוות רכזים</option><option>מחנכי שכבה</option>
             <option>מועצת תלמידים</option><option>צוות תלמידים מוביל</option><option>תלמיד/ה מוביל/ה</option></select></div>
@@ -212,7 +212,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
       <div class="row2">
         <div><label for="f-school">בית הספר (רשות)</label><input type="text" id="f-school" maxlength="60"></div>
         <div><label for="f-stage">שלב חינוכי</label>
-          <select id="f-stage"><option value="">— בחירה —</option><option>גן ילדים</option><option>יסודי</option><option>חטיבת ביניים</option><option>תיכון</option><option>שש־שנתי</option><option>כמה שלבים / רשות</option></select></div>
+          <select id="f-stage"><option value="">בחירה...</option><option>גן ילדים</option><option>יסודי</option><option>חטיבת ביניים</option><option>תיכון</option><option>שש־שנתי</option><option>כמה שלבים / רשות</option></select></div>
       </div>
       <div class="row2">
         <div><label for="f-staff">מספר אנשי צוות (בערך)</label><input type="number" id="f-staff" min="1" max="2000"></div>
@@ -220,7 +220,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
       </div>
       <label for="f-sit">מה המצב עכשיו</label>
       <select id="f-sit">
-        <option value="">— בחירה —</option>
+        <option value="">בחירה...</option>
         <option>שגרה</option>
         <option>תחילת שנה</option>
         <option>תחילת דרך כצוות הנהלה</option>
@@ -261,11 +261,11 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 
     <div class="card">
       <h2>3. במילים שלך (רשות)</h2>
-      <label for="f-strong" id="l-strong">תאר/י את החוזקות של ההנהגה ושל הצוות באופן חופשי</label>
+      <label for="f-strong" id="l-strong">מה חזק בהנהגה ובצוות?</label>
       <textarea id="f-strong" maxlength="800"></textarea>
-      <label for="f-weak" id="l-weak">תאר/י את החולשות והאתגרים של ההנהגה ושל הצוות באופן חופשי</label>
+      <label for="f-weak" id="l-weak">מה מאתגר את ההנהגה והצוות כרגע?</label>
       <textarea id="f-weak" maxlength="800"></textarea>
-      <label for="f-questions">מהן השאלות המרכזיות שעבורן את/ה מחפש/ת מענה?</label>
+      <label for="f-questions">על אילו שאלות הייתם רוצים תשובה?</label>
       <textarea id="f-questions" maxlength="800"></textarea>
       <label for="f-worry">מה הכי מדאיג אותך?</label>
       <textarea id="f-worry" maxlength="800"></textarea>
@@ -457,7 +457,7 @@ function buildCriteria(){
     [...dm.items,...communityItems(dm)].forEach(it=>{
       const q=document.createElement('div');q.className='q';q.id='q-'+it.k;if(it.c){q.dataset.c='1';q.dataset.raw=it.raw;}
       const t=document.createElement('div');t.className='qt';t.textContent=it.q;
-      if(it.r){const r=document.createElement('span');r.className='rev';r.textContent='היגד הפוך';t.appendChild(r);}
+      if(it.r){const r=document.createElement('span');r.className='rev';r.textContent='התנהגות פוגעת';t.appendChild(r);}
       const lk=document.createElement('div');lk.className='look';lk.textContent=it.look?'למשל: '+it.look:'';
       const sc=document.createElement('div');sc.className='scale';
       SCALE.forEach((s,i)=>{
@@ -478,8 +478,8 @@ function buildCriteria(){
     sec.querySelector('h3').remove();det.appendChild(sec);crit.appendChild(det);
   });
   const stu=isStudents();
-  F('l-strong').textContent=stu?'תאר/י את החוזקות של המועצה או הצוות באופן חופשי':'תאר/י את החוזקות של ההנהגה ושל הצוות באופן חופשי';
-  F('l-weak').textContent=stu?'תאר/י את החולשות והאתגרים של המועצה או הצוות באופן חופשי':'תאר/י את החולשות והאתגרים של ההנהגה ושל הצוות באופן חופשי';
+  F('l-strong').textContent=stu?'מה חזק במועצה או בצוות?':'מה חזק בהנהגה ובצוות?';
+  F('l-weak').textContent=stu?'מה מאתגר את המועצה או הצוות כרגע?':'מה מאתגר את ההנהגה והצוות כרגע?';
 }
 // ── כל רשימה במסך אפשר להעשיר (חכמת ההמונים): ההוספה נשמרת בשרת ומופיעה מיד לכולם,
 // ומנהלת המערכת יכולה להסיר. addableSelect — לרשימות בחירה; היגדי קהילה — לשאלון.
@@ -658,13 +658,13 @@ function renderPicture(a){
   const box=F('picture');box.textContent='';
   const ds=domains(a);if(!ds.length)return;
   const card=el('div','card');card.appendChild(el('h2',null,'תמונת המצב לפי שאלון הפתיחה'));
-  card.appendChild(el('p','muted','ציון לכל תחום לפי התשובות שלך. זו נקודת מבט אחת, של מי שמילא/ה את השאלון.'));
+  card.appendChild(el('p','muted','ציון לכל תחום לפי התשובות שלך. זו נקודת המבט שלך, אחת מכמה.'));
   DIMS.forEach(dm=>{
     const mine=ds.filter(d=>d.dim===dm.t);if(!mine.length)return;
     card.appendChild(el('h3',null,dm.t));
     mine.forEach(d=>{
       const r=el('div','score-row');const lb=el('div','score-label',d.d);
-      if(d.capped)lb.appendChild(el('span','flag','פועל, ופוגע'));
+      if(d.capped)lb.appendChild(el('span','flag','יש גם התנהגות פוגעת'));
       const bar=el('div','bar');const fill=el('div','t'+d.t);fill.style.width=Math.round(d.score)+'%';bar.appendChild(fill);
       r.appendChild(lb);r.appendChild(bar);r.appendChild(el('div','val t'+d.t+'b',Math.round(d.score)));card.appendChild(r);
     });
@@ -715,7 +715,7 @@ const ADVISOR_SYSTEM = [
   SBE_WRITER.reportRule('ההנהגה עם הצוות, עם התלמידים ועם ההורים','לצוות, להורים או לתלמידים, לפי הממצאים'),
   'היקף: 3–5 חוזקות, 3–5 אתגרים, 3 עדיפויות, 3–5 פעולות, 2–4 המלצות בכל אחד מ-team / communication / wellbeing / students, 1–3 שיחות, 3–6 צעדים בתוכנית, 2–3 שאלות בדיקה.',
   'החזירי אך ורק JSON תקין, בלי טקסט נוסף, במבנה:',
-  '{"intro":"2–3 משפטים — מבט־על על ההנהגה ועל בית הספר",',
+  '{"intro":"2–3 משפטים בפנייה ישירה: מה בולט אצלכם בהנהגה ובבית הספר",',
   ' "lens":"3–5 משפטים: איך המחקר על חוסן חברתי ועל מנהיגות תומכת חוסן קורא את תמונת המצב, עם מפתחות מקורות בסוגריים מרובעים",',
   ' "strengths":[{"domain":"שם התחום","text":"מה החוזקה ומה היא מאפשרת","resilience":"איך החוזקה הזאת תורמת לחוסן החברתי"}],',
   ' "challenges":[{"domain":"שם התחום","text":"האתגר בניסוח אופטימי","resilience":"מה זה אומר לחוסן החברתי ומה ירוויח בית הספר מהתקדמות כאן"}],',
@@ -816,7 +816,7 @@ function actCard(a,extra){
   return c;
 }
 // "resilience" — ההסבר בהקשר של חוסן חברתי, שמופיע בכל פריט בדוח
-function resEl(t){if(!t)return null;const p=el('p','act-r');p.appendChild(el('b',null,'תרומה לחוסן החברתי: '));p.appendChild(inlineRich(t));return p;}
+function resEl(t){if(!t)return null;const p=el('p','act-r');p.appendChild(el('b',null,'מה זה אומר לחוסן החברתי: '));p.appendChild(inlineRich(t));return p;}
 function withRes(card,t){const r=resEl(t);if(r){const b=card.querySelector('.basis');b?card.insertBefore(r,b):card.appendChild(r);}return card;}
 function textList(items){const ul=el('ul','tl');(items||[]).forEach(it=>{const li=el('li');if(it.domain)li.appendChild(el('b',null,it.domain+': '));li.appendChild(inlineRich(it.text||''));const r=resEl(it.resilience);if(r)li.appendChild(r);ul.appendChild(li);});return ul;}
 function recCard(x){return withRes(actCard({title:x.title,description:x.description,basis:x.basis}),x.resilience);}
@@ -830,11 +830,11 @@ function convCard(c){
 // טבלאות בדוח (07/10/2026): המלצה בכל שורה — ההמלצה · מה עושים · לחוסן החברתי
 function titleCell(a,extra){const c=el('div');c.appendChild(el('div','rt-title',a.title||''));const tags=el('div','act-tags');
   if(a.kind)tags.appendChild(el('span','act-tag kind',a.kind));if(a.lead)tags.appendChild(el('span','act-tag circle','מוביל/ה: '+a.lead));if(extra)tags.appendChild(el('span','act-tag',extra));if(tags.childNodes.length)c.appendChild(tags);return c;}
-function resCell(a){const c=el('div');if(a.mechanism){const p=el('p');p.appendChild(document.createTextNode(a.mechanism));c.appendChild(p);} // כותרת העמודה כבר אומרת "תרומה לחוסן החברתי"
+function resCell(a){const c=el('div');if(a.mechanism&&!a.resilience){const p=el('p');p.appendChild(document.createTextNode(a.mechanism));c.appendChild(p);} // כותרת העמודה כבר אומרת "תרומה לחוסן החברתי"
   if(a.resilience){const p=el('p');p.appendChild(inlineRich(a.resilience));c.appendChild(p);}const b=basisEl(a.basis);if(b)c.appendChild(b);return c.childNodes.length?c:null;}
 function recTable(rec,title,items,first){if(!(items||[]).length)return;rec.appendChild(el('h3',null,title));
   rec.appendChild(SBE_TABLE([first||'ההמלצה','מה עושים','תרומה לחוסן החברתי'],items.map(a=>{const dd=richText(a.description||'');dd.classList.add('act-d');return [titleCell(a,a.for),dd,resCell(a)];}),'acts'));}
-function domTable(items){if(!(items||[]).length)return el('p','muted','');return SBE_TABLE(null,items.map(it=>{const c=el('div');c.appendChild(inlineRich(it.text||''));const r=resEl(it.resilience);if(r)c.appendChild(r);return [it.domain||'',c];}));}
+function domTable(items){if(!(items||[]).length)return el('p','muted','');return SBE_TABLE(['התחום','מה רואים'],items.map(it=>{const c=el('div');c.appendChild(inlineRich(it.text||''));const r=resEl(it.resilience);if(r)c.appendChild(r);return [it.domain||'',c];}));}
 function section(card,title,items,fn){if(!(items||[]).length)return;card.appendChild(el('h3',null,title));items.forEach(x=>card.appendChild(fn(x)));}
 function metaLine(R){return [R.who,R.mode,R.school?'בית ספר '+R.school:'',R.stage,R.sit?'מצב: '+R.sit:'','הופק: '+new Date(R.at).toLocaleDateString('he-IL',{day:"2-digit",month:"2-digit",year:"2-digit"})].filter(Boolean).join(' · ');}
 function renderReport(){
@@ -851,7 +851,7 @@ function renderReport(){
   const doc=el('div','card');doc.id='report-doc';
   doc.appendChild(el('h2','no-print','דוח סיכום והמלצות'));
   doc.appendChild(el('p','muted',metaLine(R)+' · על סמך שאלון הפתיחה'));
-  if((d.answers||[]).length){doc.appendChild(el('h3',null,'תשובות לשאלות שלך'));doc.appendChild(SBE_TABLE(null,d.answers.map(x=>[x.question||'',richText(x.answer||'')])));}
+  if((d.answers||[]).length){doc.appendChild(el('h3',null,'תשובות לשאלות שלך'));doc.appendChild(SBE_TABLE(['השאלה','התשובה'],d.answers.map(x=>[x.question||'',richText(x.answer||'')])));}
   const sum=el('div');sum.id='report-sum';
   sum.appendChild(el('h2',null,'א. תמונת המצב'));
   if(d.intro){const ip=el('p','intro');ip.appendChild(inlineRich(d.intro));sum.appendChild(ip);}
@@ -875,7 +875,7 @@ function renderReport(){
     rec.appendChild(SBE_TABLE(null,[['מטרה',c.goal],['תרומה לחוסן החברתי',c.resilience],['איפה ומתי',c.setting],['פתיחה',c.opening],['שאלות המשך',(c.followups||[]).length?(()=>{const u=el('ul');c.followups.forEach(q=>{const li=el('li');li.appendChild(inlineRich(q));u.appendChild(li);});return u;})():''],['סיום',c.closing]].filter(([,v])=>v).map(([k,v])=>[k,v instanceof Node?v:inlineRich(v)])));});}
   if((d.plan||[]).length){rec.appendChild(el('h3',null,'7. תוכנית צעדים'));rec.appendChild(SBE_TABLE(['מתי','מה עושים','מי אחראי/ת','איך מעדכנים את כולם'],d.plan.map(p=>[el('b',null,p.when||''),inlineRich(p.what||''),p.who||'',p.update||'']),'plan-t'));}
   rec.appendChild(SBE_WRITER.reportSection(d,{el,inlineRich,richText},'8. עקרונות החוסן בתקשורת של ההנהגה','הודעות מוכנות לשליחה: כתובות לפי עקרונות החוסן'));
-  if((d.checks||[]).length){rec.appendChild(el('h3',null,'9. כדאי לבדוק'));rec.appendChild(SBE_TABLE(['השאלה','מי שואל/ת את מי','מתי','בשביל מה'],d.checks.map(x=>typeof x==='string'?[x,'','','']:[x.q||'',x.who||'',x.when||'',x.why||'']),'plan-t'));}
+  if((d.checks||[]).length){rec.appendChild(el('h3',null,'9. שאלות לבירור'));rec.appendChild(SBE_TABLE(['השאלה','מי שואל/ת את מי','מתי','בשביל מה'],d.checks.map(x=>typeof x==='string'?[x,'','','']:[x.q||'',x.who||'',x.when||'',x.why||'']),'plan-t'));}
   const foot=el('p','muted','ההמלצות הן נקודת פתיחה לחשיבה ולשיחה עם הצוות, ולא מחליפות שיקול דעת מקצועי. כדאי לבדוק כל המלצה לאור הנהלים והחוקים. המקורות: ');const a=el('a',null,'רשימת המקורות');a.href='resilience-advisor-sources.html?a=nugi';a.target='_blank';a.style.color='var(--spoken)';foot.appendChild(a);
   foot.appendChild(document.createTextNode('.'));foot.style.marginTop='1rem';rec.appendChild(foot);
   doc.appendChild(rec);{const rs=SBE_REFS.end();if(rs)doc.appendChild(rs);}box.appendChild(doc);
@@ -899,8 +899,8 @@ function plain(){
   if((d.conversations||[]).length){L.push('','6. שיחות מומלצות');d.conversations.forEach(c=>L.push('• שיחה עם '+c.with+'\n  מטרה: '+(c.goal||'')+rs(c)+'\n  איפה ומתי: '+(c.setting||'')+'\n  פתיחה: '+(c.opening||'')+'\n  שאלות המשך: '+(c.followups||[]).join(' · ')+'\n  סיום: '+(c.closing||'')));}
   if((d.plan||[]).length){L.push('','7. תוכנית צעדים');d.plan.forEach(p=>L.push('• '+p.when+': '+p.what+(p.who?'\n  מי אחראי/ת: '+p.who:'')+(p.update?'\n  איך מעדכנים: '+p.update:'')));}
   L.push(...SBE_WRITER.reportPlain(d,'8. עקרונות החוסן בתקשורת של ההנהגה','הודעות מוכנות לשליחה: כתובות לפי עקרונות החוסן'));
-  if((d.checks||[]).length){L.push('','9. כדאי לבדוק');d.checks.forEach(x=>L.push(typeof x==='string'?'• '+x:'• '+(x.q||'')+[x.who&&'מי שואל/ת: '+x.who,x.when&&'מתי: '+x.when,x.why&&'בשביל מה: '+x.why].filter(Boolean).map(t=>'\n  '+t).join('')));}
-  L.push('','כל המלצה יש לבחון לאור הנהלים והחוקים, והאחריות לכך היא של ההנהגה.');
+  if((d.checks||[]).length){L.push('','9. שאלות לבירור');d.checks.forEach(x=>L.push(typeof x==='string'?'• '+x:'• '+(x.q||'')+[x.who&&'מי שואל/ת: '+x.who,x.when&&'מתי: '+x.when,x.why&&'בשביל מה: '+x.why].filter(Boolean).map(t=>'\n  '+t).join('')));}
+  L.push('','כדאי לבחון כל המלצה לאור הנהלים והחוקים. ההמלצות הן הצעות לחשיבה, וההחלטה בידי ההנהגה.');
   L.push('','המקורות: '+location.href.replace(/[^/]*$/,'resilience-advisor-sources.html?a=nugi'));
   return L.join('\n').replace(/\*\*/g,'');
 }

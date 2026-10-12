@@ -864,7 +864,7 @@ function tierClass(tier){return ['t0','t1','t2','t3'][tier];}
 function tierClassB(tier){return ['t0b','t1b','t2b','t3b'][tier];}
 
 function flagBadge(f){
-  if(f==='פועל, ופוגע') return '<span class="flag flag-pog">'+f+'</span>';
+  if(f==='יש גם התנהגות פוגעת') return '<span class="flag flag-pog">'+f+'</span>';
   if(f==='פער בין הקבוצות') return '<span class="flag flag-kol">'+f+'</span>';
   return '<span class="flag flag-unk">'+f+'</span>';
 }
@@ -1023,10 +1023,9 @@ function renderReport(){
     {
       n:1, title:'איך לקרוא את הדוח',
       body:`הדוח מציג ציונים בין 0 ל-100 לכל תחום של חוסן חברתי.
-הציון משקף את הממוצע של כל הנשאלים לאחר תיקון עבור היגדים הפוכים (התנהגויות מזיקות).
+הציון נבנה מכל התשובות. בהיגדים על התנהגות פוגעת, תשובה גבוהה מורידה את הציון.
 טווח 75–100 = תפקודי · 50–74 = חלקי · 25–49 = חלש · מתחת ל-25 = בקושי תפקודי.
-<br><br>כלל חשוב: כשהתנהגות מזיקה גבוהה, היא <strong>מגבילה</strong> את ציון התחום גם אם ההתנהגות המיטיבה גבוהה.
-זה לא ממוצע: זה מחסום.`
+<br><br>כשבתחום יש גם התנהגות פוגעת, הציון <strong>לא עולה</strong> על מה שהפגיעה מאפשרת, גם אם ההתנהגות המיטיבה גבוהה.`
     },
     {
       n:2, title:'הציונים',
@@ -1050,7 +1049,7 @@ function renderReport(){
         : 'אין עדיין מספיק נתונים.'
     },
     {
-      n:5, title:'פועל, ופוגע',
+      n:5, title:'יש גם התנהגות פוגעת',
       body: capped.length
         ? `ב-${capped.length} תחום/ים, התנהגויות מזיקות מגבילות את הציון גם כשההתנהגות המיטיבה גבוהה:<br><br>`+
           capped.map(d=>`<strong>${d.d}</strong>: מיטיב=${Math.round(d.good)}, מזיק=${Math.round(d.harm)}, ציון=${Math.round(d.score)}`).join('<br>')+
@@ -1062,7 +1061,7 @@ function renderReport(){
       body: bottom.length
         ? `התחומים הדורשים תשומת לב:<br><br>`+
           bottom.map(d=>`<strong>${d.d}</strong> (${Math.round(d.score)}): `+
-            (d.capped?'הפחת התנהגות מזיקה לפני שמחזקים חיובי':'חזק התנהגויות מיטיבות')
+            (d.capped?'כדאי להתחיל בהפחתת ההתנהגות הפוגעת, ורק אחר כך לחזק את המיטיבה':'אפשר לחזק את ההתנהגויות המיטיבות')
           ).join('<br><br>')
         : 'אין מספיק נתונים להמלצות.'
     },
@@ -1079,25 +1078,23 @@ function renderReport(){
       body: unknown.length
         ? `ב-${unknown.length} תחום/ים יותר משליש מהנשאלים בחרו "לא יודע":<br><br>`+
           unknown.map(d=>`<strong>${d.d}</strong> (${Math.round(d.unknownRate*100)}% לא יודעים)`).join('<br>')+
-          '<br><br>אי-ידיעה גבוהה יכולה להצביע על חוסר חשיפה, חוסר בטחון, או שאלה לא מובנת.'
+          '<br><br>אי-ידיעה גבוהה יכולה להצביע על חוסר חשיפה, חוסר ביטחון, או שאלה לא מובנת.'
         : 'אחוז ה"לא יודע" נמוך: הנשאלים הרגישו שהם יכולים להשיב.'
     },
     {
       n:9, title:'הצעד הראשון',
       body: firstStep
-        ? `דבר אחד בלבד.<br><br>הצעד המומלץ הוא לטפל ב<strong>${firstStep.d}</strong> (ציון: ${Math.round(firstStep.score)}).`+
-          (firstStep.capped?'<br>מכיוון שמדובר בתחום עם התנהגות מזיקה מגבילה, הצעד הראשון הוא <strong>הפחתת</strong> ההתנהגות המזיקה: לפני שמנסים לחזק.'
-            :'<br>הצעד הוא שיחה קצרה עם הצוות: מה דבר אחד שניתן לשנות השבוע בנוגע לתחום זה?')+
-          '<br><br>לא שני דברים. לא תוכנית. דבר אחד.'
+        ? `הצעד המומלץ הוא לטפל ב<strong>${firstStep.d}</strong> (ציון: ${Math.round(firstStep.score)}).`+
+          (firstStep.capped?'<br>בתחום הזה יש גם התנהגות פוגעת, ולכן כדאי להתחיל ב<strong>הפחתת</strong> ההתנהגות הפוגעת, ורק אחר כך לחזק.'
+            :'<br>אפשר להתחיל בשיחה קצרה עם הצוות על השאלה: איזה דבר אחד אפשר לשנות כבר השבוע בתחום הזה?')
         : 'אין עדיין מספיק נתונים לצעד ראשון.'
     },
     {
       n:10, title:'מה שהדוח אינו יודע',
-      body:`הדוח אינו יודע למה. הוא יודע מה, ועד כמה.<br><br>
-הדוח אינו מדיד עבור תלמידים ספציפיים ואינו חושף זהויות.<br>
-הדוח אינו מחליף שיחה, תצפית, או שיפוט מקצועי.<br>
-הדוח אינו מציג עלויות, אומדן זמן, או ספירה אנושית: אלה אינם ידועים לו.<br><br>
-השתמש/י בדוח כנקודת פתיחה לשיחה, לא כמסקנה.`
+      body:`הדוח מראה מה ועד כמה, אבל לא למה.<br><br>
+הוא לא מתייחס לתלמיד/ה מסוים/ת ולא חושף מי ענה.<br>
+הוא לא מחליף שיחה, תצפית ושיקול דעת מקצועי.<br><br>
+אפשר להשתמש בו כנקודת פתיחה לשיחה, ולא כמסקנה.`
     },
   ];
 
@@ -1188,7 +1185,7 @@ const SUM_SYSTEM=[
   ' "other":[{"title":"שם קצר","description":"ההמלצה ולמה היא עולה מהתוצאות — 1–3 משפטים"}],',
   ' "conversations":[{"with":"עם מי (תלמיד/ה, קבוצה, הכיתה)","goal":"מטרת השיחה","setting":"איפה ומתי","opening":"שאלת פתיחה לדוגמה","followups":["שאלת המשך"],"closing":"איך מסיימים"}],',
   ' "plan":[{"when":"השבוע","what":"מה עושים","who":"מי אחראי/ת (עדיף משותף ומתחלף)","update":"איך מעדכנים את כולם"}]}',
-  'כאשר ACT הוא {"title":"שם קצר","kind":"חד-פעמית" או "תהליך מתמשך","game":true רק אם זה משחק חברתי,"circle":"כיתה" או "בית הספר" או "קהילה","description":"מה עושים, מי מוביל/ה ואיך (במשחק — גם איך משחקים) — 2–4 משפטים","mechanism":"איזה מנגנון חברתי / עבודת צוות / מיומנות משותפת זה מפתח"}'
+  'כאשר ACT הוא {"title":"שם קצר","kind":"חד-פעמית" או "תהליך מתמשך","game":true רק אם זה משחק חברתי,"circle":"כיתה" או "בית הספר" או "קהילה","description":"מה עושים, מי מוביל/ה ואיך (במשחק — גם איך משחקים) — 2–4 משפטים","mechanism":"תרומה לחוסן החברתי: איזה מנגנון משותף, עבודת צוות או מיומנות משותפת זה בונה בכיתה, במשפט אחד"}'
 ].join('\n');
 
 async function generateSummary(){
@@ -1230,7 +1227,7 @@ function actTable(items,extraFn,mechLabel,first){if(!(items||[]).length)return e
     if(a.game)tags.appendChild(el2('span','act-tag game','🎲 משחק חברתי'));if(a.kind)tags.appendChild(el2('span','act-tag kind',a.kind));if(a.circle)tags.appendChild(el2('span','act-tag circle',a.circle));
     const x=extraFn?extraFn(a):'';if(x)tags.appendChild(el2('span','act-tag',x));if(tags.childNodes.length)t.appendChild(tags);
     return mech?[t,a.description||'',a.mechanism||null]:[t,a.description||''];}),'acts');}
-function domTable(items){if(!(items||[]).length)return el2('p',null,'');return SBE_TABLE(null,items.map(it=>[it.domain||'',it.text||'']));}
+function domTable(items){if(!(items||[]).length)return el2('p',null,'');return SBE_TABLE(['התחום','מה רואים'],items.map(it=>[it.domain||'',it.text||'']));}
 function textList(items){
   const ul=el2('ul');
   (items||[]).forEach(it=>{const li=el2('li');if(it.domain){li.appendChild(el2('b',null,it.domain+': '));}li.appendChild(document.createTextNode(it.text||''));ul.appendChild(li);});
@@ -1243,8 +1240,8 @@ function summaryPlainText(c){
   L.push('','1. חוזקות הכיתה');
   (d.strengths||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','1.1 פעילויות ותהליכים להעצמת החוזקות');(d.strengthActivities||[]).forEach(a=>L.push(act(a)));
-  L.push('','1.2 החוזקות כמנוף להתמודדות עם האתגרים');(d.leverage||[]).forEach(a=>L.push(act(a,a.from&&a.to?a.from+' ← '+a.to:'')));
-  L.push('','2. אתגרים','','2.1 האתגרים: כיווני צמיחה');(d.challenges||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
+  L.push('','1.2 חוזקות שעוזרות באתגרים');(d.leverage||[]).forEach(a=>L.push(act(a,a.from&&a.to?a.from+' ← '+a.to:'')));
+  L.push('','2. אתגרים','','2.1 מה אפשר לחזק');(d.challenges||[]).forEach(x=>L.push('• '+x.domain+': '+x.text));
   L.push('','2.2 פעילויות ותהליכים להתמודדות');(d.challengeActivities||[]).forEach(a=>L.push(act(a,a.for)));
   if((d.environment||[]).length){L.push('','3. עיצוב סביבת הכיתה');d.environment.forEach(x=>L.push('• '+x.title+(x.for?' ['+x.for+']':'')+'\n  '+x.description));}
   if((d.other||[]).length){L.push('','4. המלצות נוספות');d.other.forEach(x=>L.push('• '+x.title+'\n  '+x.description));}
@@ -1290,11 +1287,11 @@ function renderSummary(){
   card.appendChild(domTable(d.strengths));
   card.appendChild(el2('h3',null,'1.1 פעילויות ותהליכים להעצמת החוזקות'));
   card.appendChild(actTable(d.strengthActivities));
-  card.appendChild(el2('h3',null,'1.2 החוזקות כמנוף להתמודדות עם האתגרים'));
+  card.appendChild(el2('h3',null,'1.2 חוזקות שעוזרות באתגרים'));
   card.appendChild(actTable(d.leverage,a=>a.from&&a.to?a.from+' ← '+a.to:''));
 
   card.appendChild(el2('h2',null,'2. אתגרים'));
-  card.appendChild(el2('h3',null,'2.1 האתגרים: כיווני צמיחה'));
+  card.appendChild(el2('h3',null,'2.1 מה אפשר לחזק'));
   card.appendChild(domTable(d.challenges));
   card.appendChild(el2('h3',null,'2.2 פעילויות ותהליכים להתמודדות'));
   card.appendChild(actTable(d.challengeActivities,a=>a.for));
