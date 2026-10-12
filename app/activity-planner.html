@@ -2392,7 +2392,7 @@ function renderSeq(){
   env.querySelector('input[type="text"]:not([placeholder])');
   const prefs = grp("העדפות", isOpen("prefs", false), [
     checklistF("סגנונות הוראה ופעילות שחשובים לך", "prefs", PREF_ITEMS, "seqPrefs",
-      { hint:"אפשר לסמן, והרחיבי בשורה שתיפתח", notePh:"הרחבה (לא חובה), לדוגמה: ישיבה במעגל, בלי שולחנות באמצע", addPh:"העדפה שאינה ברשימה: נשמרת לכולן" }),
+      { hint:"אפשר לסמן, והרחיבי בשורה שתיפתח", notePh:"הרחבה (רשות), לדוגמה: ישיבה במעגל, בלי שולחנות באמצע", addPh:"העדפה שאינה ברשימה: נשמרת לכולן" }),
   ]);
   prefs.dataset.g = "prefs";
   const limits = grp("מגבלות", isOpen("limits", false), [
@@ -3400,7 +3400,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
       <label>מה חסר, מה היה מבלבל, או הערה אחרת?</label>
       <textarea id="rptUsageNotes" placeholder="לא חובה"></textarea>
     </div>
-    <label>צילום מסך (לא חובה)</label>
+    <label>צילום מסך (רשות)</label>
     <input type="file" id="rptFile" accept="image/*">
   </div>
   <div class="rf">

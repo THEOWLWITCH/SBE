@@ -102,7 +102,7 @@
         if (k === "desc" && r.title) { const b = document.createElement("b"); b.textContent = r.title + (r.minutes ? " (" + (typeof r.minutes === "number" ? r.minutes + " דק׳" : r.minutes) + ")" : ""); const d = document.createElement("div"); d.append(b); td.append(d); }
         const v = r[k];
         if (v instanceof Node) td.append(v); else if (has(v)) { const d = document.createElement("div"); d.style.whiteSpace = "pre-line"; d.textContent = String(v); td.append(d); }
-        if (!td.childNodes.length) td.textContent = "—";
+        
         tr.append(td);
       });
       tb.append(tr);
@@ -285,7 +285,9 @@ h1{font-size:26px}.hd img{height:44px}
   function printPage({ title, node }) {
     if (node) {
       const css = [...document.querySelectorAll("style")].map((x) => x.textContent).join("\n") +
-        "\nhtml,body{height:auto!important;overflow:visible!important}.no-print,.sbe-sysonly{display:none!important}";
+        "\nhtml,body{height:auto!important;overflow:visible!important}.no-print,.sbe-sysonly{display:none!important}" +
+        // בלי קופסאות אפורות בהדפסה (12/10/2026, בדיקת הלקוחה)
+        "\n.lens,.layers,.intro,.sum-intro,.rw-new,.act-r{background:none!important;border:0!important;padding:0!important;box-shadow:none!important}";
       return print({ title, node, extraCss: css });
     }
     const t = toolInfo();
@@ -312,7 +314,7 @@ h1{font-size:26px}.hd img{height:44px}
       const c = n.cloneNode(true);
       if (window.SBE_REFS && SBE_REFS.forPrint) SBE_REFS.forPrint(c); // מקורות: רק כשבחרו "צירוף המקורות לקובץ"
       else c.querySelectorAll(".sbe-refs:not(.attach)").forEach((x) => x.remove());
-      c.querySelectorAll("button,.sbe-edit-hint,.no-print,style,script,.banner-mini,.savenote,.mock-note").forEach((x) => x.remove());
+      c.querySelectorAll("button,.sbe-edit-hint,.no-print,style,script,.banner-mini,.savenote,.mock-note,.sbe-sysonly,[data-status-line],.sbe-peek").forEach((x) => x.remove());
       c.querySelectorAll("table.rtable").forEach((t) => t.classList.add("kit-table")); // טבלאות SBE_TABLE — אותו עיצוב בהדפסה
       [c, ...c.querySelectorAll("[contenteditable]")].forEach((x) => { x.removeAttribute("contenteditable"); x.removeAttribute("spellcheck"); x.classList.remove("sbe-edit"); });
       keepWithHeadings(c);
@@ -368,7 +370,7 @@ p,li{orphans:3;widows:3}
 /* כרטיסי המסך (רקע, מסגרת, ריפוד) לא עוברים להדפסה: מסמך אחד נקי */
 .card{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 6px!important;border-radius:0!important;break-inside:auto!important}
 .draftbox{white-space:pre-line;border:1px solid #CDD3D8;border-radius:6px;padding:12px 14px;margin-bottom:12px}
-.rcard{border:1px solid #CDD3D8;border-radius:8px;padding:12px 14px;background:#F3F6F8}
+.rcard{border:1px solid #CDD3D8;border-radius:8px;padding:12px 14px;background:none}
 .rcard-row{margin-bottom:8px}.rcard-row b{display:block;font-size:12px;color:#5C6771}
 .rcard-meta{font-size:12px;color:#5C6771;margin-bottom:8px}
 .sbe-rich h4{font-size:15px}

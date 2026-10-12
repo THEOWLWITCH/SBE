@@ -1,6 +1,290 @@
 <meta charset="UTF-8">
 <title>עזוב, לא משנה · כרטיס דמות · ניב</title>
-<script src="../lib/access-guard.js"></script>
+<script>/* ── שמירת הרשאות לכל דף ──
+   נטען ב-<head> של כל מסך (חוץ ממסך הכניסה ושאלון החוסן שנפתח מ-QR), לפני
+   שהדף מוצג. בודק מי נכנסה בלשונית הזאת (sbe.session.homeUrl, נשמר ב-entry.html
+   אחרי בדיקה בשרת) ואם המסך הזה ברשימה של התפקיד. אם לא — חזרה למסך הבית של
+   התפקיד, או למסך הכניסה כשאין כניסה.
+
+   הרשימות משקפות את הניווט האמיתי של כל תפקיד (הקישורים שהוא רואה ומה שהם
+   פותחים). מנהלת המערכת רואה הכול. מסך חדש שלא נוסף כאן פתוח רק לה.
+
+   לשונית חדשה (קישור שנפתח ב-target="_blank") לא מקבלת את sessionStorage של
+   הלשונית שפתחה אותה, ולכן הכניסה משוכפלת גם ל-localStorage ל-12 שעות.
+   חזרה למסך הכניסה מוחקת את שתיהן.
+
+   זו חסימה בדפדפן: היא עוצרת כל משתמשת רגילה, אבל הקבצים עצמם סטטיים. מה
+   שחייב להיות מוגן באמת (סיסמאות, נתוני החוסן) נבדק בשרת. */
+(function(){
+  "use strict";
+  var KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules",
+              "sbe.session.perms", "sbe.session.info", "sbe.session.wf"];
+  var MIRROR = "sbe.session.mirror", HOURS = 12;
+
+  function ss(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
+
+  // פנייה למודל (10/10/2026): השרת עונה רק למי שנכנס/ה, ורק לכלי שפתוח לו או לה (authorizeModel ב-harness/lib/access.mjs).
+  // כאן, במקום אחד לכל הכלים, כל בקשה ל-/api/complete, /api/character-turn ו-/api/pipeline מקבלת את פרטי הכניסה:
+  // האסימון החתום, הדף, ומזהה הסדנה למשתתפות סדנה.
+  try {
+    var _fetch = window.fetch;
+    if (_fetch && !_fetch.sbeAuth) {
+      var wrapped = function(url, opts){
+        try {
+          var u = typeof url === "string" ? url : (url && url.url) || "";
+          if (/\/api\/(complete|character-turn|pipeline)(\?|$)/.test(u) && opts && typeof opts.body === "string" && opts.body.charAt(0) === "{") {
+            var b = JSON.parse(opts.body);
+            b._auth = { token: ss("sbe.session.token") || "", page: location.pathname.split("/").pop() || "index.html", w: ss("sbe.session.wf") || "" };
+            opts = Object.assign({}, opts, { body: JSON.stringify(b) });
+          }
+        } catch(e){}
+        return _fetch.call(this, url, opts);
+      };
+      wrapped.sbeAuth = true;
+      window.fetch = wrapped;
+    }
+  } catch(e){}
+
+  // שחזור כניסה בלשונית חדשה / רענון שכפול הכניסה ל-localStorage.
+  try {
+    if (!ss("sbe.session.homeUrl")) {
+      var m = JSON.parse(localStorage.getItem(MIRROR) || "null");
+      if (m && m.exp > Date.now() && m.data) {
+        KEYS.forEach(function(k){ if (m.data[k] != null) sessionStorage.setItem(k, m.data[k]); });
+      }
+    }
+    if (ss("sbe.session.homeUrl")) {
+      var data = {};
+      KEYS.forEach(function(k){ var v = ss(k); if (v != null) data[k] = v; });
+      localStorage.setItem(MIRROR, JSON.stringify({ exp: Date.now() + HOURS * 3600e3, data: data }));
+    }
+  } catch(e){}
+
+  // ── שמירה במכשיר לפי משתמש/ת (02/10/2026) ──
+  // טופס שנשמר בדפדפן (פרקטי, נוגי, כתיבה מקדמת חוסן, משוב לעבודות) נשמר תחת מפתח של מי שנכנס/ה —
+  // לפי הקוד שבאסימון — כדי שמי שנכנס/ת עם קוד אחר באותו דפדפן יקבל/תקבל טופס נקי.
+  window.sbeUserKey = function(base){
+    var id = "anon";
+    try {
+      var t = ss("sbe.session.token") || "";
+      if (t.indexOf(".") > 0) {
+        var b = t.split(".")[0].replace(/-/g, "+").replace(/_/g, "/");
+        var bytes = Uint8Array.from(atob(b), function(ch){ return ch.charCodeAt(0); });
+        var p = JSON.parse(new TextDecoder().decode(bytes));
+        // קוד קורס: כל הסטודנטים עם אותו קוד — מבדילים לפי מזהה המכשיר (s)
+        // Legacy institutional sessions share c=LEGACY; scope by the signed institution instead.
+        // Ambiguous old c-LEGACY records are deliberately not migrated between institutions.
+        id = p.k === "code" && p.c === "LEGACY" ? "legacy-inst-" + encodeURIComponent(p.inst || "")
+          : p.k === "code" ? "c-" + p.c + (p.s ? "-" + p.s : "") : p.k === "inst" ? "inst-" + p.inst : String(p.k || "anon");
+      } else if (ss("sbe.session.homeUrl")) id = "h-" + ss("sbe.session.homeUrl");
+    } catch(e){}
+    return base + ":" + id;
+  };
+  // ניקוי חד־פעמי של שמירות ישנות שלא היו לפי משתמש/ת (הן הציגו פרטים של מישהו אחר)
+  try { ["sbe.advisor.v1", "sbe.nugi.v1", "sbe.writer.v1", "sbe.review.draft.v1"].forEach(function(k){ localStorage.removeItem(k); }); } catch(e){}
+
+  var home = ss("sbe.session.homeUrl") || "";
+  // רכיבים טכניים (למשל מצב החיבור למודל) — מוצגים רק למנהלת המערכת: class="sbe-sysonly"
+  try {
+    if (home === "admin.html?role=sys") document.documentElement.classList.add("sbe-sys");
+    var st = document.createElement("style"); st.textContent = "html:not(.sbe-sys) .sbe-sysonly{display:none!important}";
+    (document.head || document.documentElement).appendChild(st);
+  } catch(e){}
+
+  // בלי הערות מערכת במסכים (09/10/2026: "ההנחיות האלה אינן למשתמשים"):
+  //  - הסבר מתחת לבחירה או לשדה (.hint, .crit-mode-d, .critadd-note, .seq-note, [data-info]) הופך לסימן ⓘ:
+  //    הטקסט מופיע בריחוף או בלחיצה. [data-keep] נשאר גלוי (למשל ההנחיה במסך הכניסה).
+  //  - שורות מצב (#ready, #hint, #sqReady, #sqHint, .fbstatus, [data-status-line]) לא מוצגות.
+  //    כשהכפתור לידן כבוי, הטקסט עובר לריחוף על הכפתור, כדי שיהיה ברור למה.
+  try {
+    var qs = document.createElement("style");
+    qs.textContent = ".sbe-q{display:none!important}.sbe-q.sbe-q-open{display:block!important;background:#F4F7FA;border:1px solid #CDD3D8;border-radius:8px;padding:.35rem .6rem;margin:.25rem 0;font-size:.88rem;color:#3C4650}" +
+      "span.sbe-q.sbe-q-open{display:inline-block!important}" +
+      ".sbe-i{font:inherit;font-size:.9em;line-height:1;border:none;background:none;color:#2E5A7D;cursor:pointer;padding:0 .3em;vertical-align:baseline}.sbe-i:focus-visible{outline:2px solid #2E5A7D;border-radius:4px}" +
+      ".sbe-status-off{display:none!important}@media print{.sbe-i{display:none!important}}";
+    (document.head || document.documentElement).appendChild(qs);
+    var INFO = ".hint:not(.note):not([data-keep]),.crit-mode-d,.critadd-note,.seq-note,[data-info]";
+    var STATUS = "#ready.note,#hint.note,#sqReady,#sqHint,.fbstatus,[data-status-line]";
+    // במסך הכניסה ההנחיות הן העיקר, ולכן נשארות גלויות
+    var keepInfo = /(^|\/)entry(\.html)?$/.test(location.pathname);
+    var quiet = function(){
+      if (!keepInfo) document.querySelectorAll(INFO).forEach(function(el){
+        if (el.getAttribute("data-quiet") || el.closest(".sbe-sysonly")) return;
+        el.setAttribute("data-quiet", "1");
+        var b = document.createElement("button"); b.type = "button"; b.className = "sbe-i"; b.textContent = "ⓘ";
+        b.setAttribute("aria-label", "הסבר"); b.setAttribute("aria-expanded", "false");
+        var sync = function(){ b.title = (el.textContent || "").replace(/\s+/g, " ").replace(/^\s*·\s*/, "").trim(); b.hidden = !b.title; };
+        sync(); try { new MutationObserver(sync).observe(el, {childList: true, characterData: true, subtree: true}); } catch(e){}
+        b.addEventListener("click", function(e){ e.preventDefault(); e.stopPropagation(); var o = el.classList.toggle("sbe-q-open"); b.setAttribute("aria-expanded", String(o)); });
+        el.classList.add("sbe-q"); el.parentNode.insertBefore(b, el);
+      });
+      document.querySelectorAll(STATUS).forEach(function(el){
+        if (el.getAttribute("data-quiet")) return;
+        el.setAttribute("data-quiet", "1"); el.classList.add("sbe-status-off");
+        var box = el.parentNode;
+        var sync = function(){ var t = (el.textContent || "").trim(); if (!box) return;
+          box.querySelectorAll("button").forEach(function(btn){ if (btn.disabled && t) btn.title = t; else if (btn.getAttribute("data-status-title")) btn.removeAttribute("title"); if (btn.disabled && t) btn.setAttribute("data-status-title", "1"); }); };
+        sync(); try { new MutationObserver(sync).observe(el, {childList: true, characterData: true, subtree: true}); } catch(e){}
+      });
+    };
+    var pending = 0;
+    var later = function(){ if (pending) return; pending = setTimeout(function(){ pending = 0; quiet(); }, 60); };
+    document.addEventListener("DOMContentLoaded", function(){ quiet(); try { new MutationObserver(later).observe(document.body, {childList: true, subtree: true}); } catch(e){} });
+  } catch(e){}
+
+  // תאריך כמקובל בישראל, בכל המערכת (10/10/2026: "תאריך יופיע כברירת מחדל ועם אפשרות לשנות. באופן בו הוא מופיע בכל המערכת"):
+  // שדה תאריך של הדפדפן מוצג לפי שפת הדפדפן (לפעמים mm/dd/yyyy). כאן כל input[type=date] מקבל שדה טקסט בפורמט 10.10.26,
+  // שאפשר להקליד בו (גם 10/10/2026), וכפתור 📅 שפותח את לוח השנה. הערך של השדה המקורי נשאר yyyy-mm-dd, כך שהקוד לא משתנה.
+  try {
+    var p2 = function(n){ return (n < 10 ? "0" : "") + n; };
+    window.sbeDateIL = function(iso){ var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || "")); return m ? m[3] + "." + m[2] + "." + m[1].slice(2) : ""; };
+    window.sbeIsoPlus = function(days){ var d = new Date(); d.setDate(d.getDate() + (days || 0)); return d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()); };
+    var parseIL = function(t){
+      var m = /^\s*(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{2}|\d{4})\s*$/.exec(String(t || "")); if (!m) return null;
+      var y = +m[3]; if (y < 100) y += 2000; var mo = +m[2], d = +m[1], dt = new Date(y, mo - 1, d);
+      return dt.getMonth() === mo - 1 && dt.getDate() === d ? y + "-" + p2(mo) + "-" + p2(d) : null;
+    };
+    var desc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+    var dateIL = function(inp){
+      if (inp.getAttribute("data-il") || inp.closest("[data-native-date]")) return; inp.setAttribute("data-il", "1");
+      var t = document.createElement("input"); t.type = "text"; t.inputMode = "numeric"; t.className = "sbe-date " + (inp.className || "");
+      t.placeholder = "יום.חודש.שנה"; t.setAttribute("aria-label", inp.getAttribute("aria-label") || (inp.id && document.querySelector('label[for="' + inp.id + '"]') ? document.querySelector('label[for="' + inp.id + '"]').textContent : "תאריך"));
+      t.style.cssText = "width:7.5em;direction:ltr;text-align:right";
+      var cal = document.createElement("button"); cal.type = "button"; cal.textContent = "📅"; cal.title = "לוח שנה"; cal.setAttribute("aria-label", "פתיחת לוח שנה");
+      cal.style.cssText = "font:inherit;border:1px solid #CDD3D8;border-radius:6px;background:transparent;cursor:pointer;padding:.2rem .4rem;margin-inline-start:.25rem";
+      var sync = function(){ t.value = window.sbeDateIL(desc.get.call(inp)); t.style.borderColor = ""; };
+      Object.defineProperty(inp, "value", { configurable: true, get: function(){ return desc.get.call(this); }, set: function(v){ desc.set.call(this, v); sync(); } });
+      inp.style.cssText += ";position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;border:0;padding:0";
+      inp.tabIndex = -1; inp.setAttribute("aria-hidden", "true");
+      inp.parentNode.insertBefore(t, inp); inp.parentNode.insertBefore(cal, inp.nextSibling);
+      inp.addEventListener("change", sync);
+      cal.addEventListener("click", function(){ try { if (inp.showPicker) { inp.style.pointerEvents = "auto"; inp.showPicker(); inp.style.pointerEvents = "none"; return; } } catch(e){} t.focus(); });
+      t.addEventListener("change", function(){
+        var v = t.value.trim();
+        if (!v) { desc.set.call(inp, ""); inp.dispatchEvent(new Event("change", { bubbles: true })); return; }
+        var iso = parseIL(v);
+        if (!iso) { t.style.borderColor = "#B3261E"; t.title = "כדי לשמור, אפשר לכתוב תאריך כמו 25.10.26"; return; }
+        desc.set.call(inp, iso); sync(); inp.dispatchEvent(new Event("input", { bubbles: true })); inp.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      sync();
+    };
+    var scanDates = function(){ [].forEach.call(document.querySelectorAll('input[type="date"]:not([data-il])'), dateIL); };
+    var dPending = 0;
+    document.addEventListener("DOMContentLoaded", function(){ scanDates(); try { new MutationObserver(function(){ if (dPending) return; dPending = setTimeout(function(){ dPending = 0; scanDates(); }, 0); }).observe(document.body, {childList: true, subtree: true}); } catch(e){} });
+  } catch(e){}
+
+  // המסך הנוכחי, יחסית ל-app/ (products/x.html לתוצרים).
+  var parts = location.pathname.split("/");
+  var file = (parts.pop() || "index.html").toLowerCase();
+  if (!/\.html$/.test(file)) file += ".html"; // כתובות בלי סיומת (Netlify)
+  var inProducts = parts[parts.length - 1] === "products";
+  var page = (inProducts ? "products/" : "") + file;
+  var base = inProducts ? "../" : "";
+
+  var q = new URLSearchParams(home.split("?")[1] || "");
+  var ALL_USERS = ["entry.html", "index.html", "sources-library.html", "examples.html"];
+  var WORKSHOP = {
+    // תוצרי הסימולציה (גרסת המתנסה/השחקנית/המנחה, כרטיס שחקנית) — רק למנהלת המערכת ולמנחות הסימולציה (02/10/2026).
+    trainee: ["observation-sheet.html", "practice.html", "feedback.html",
+              "conversation-planner.html", "activity-planner.html", "academic-review.html"],
+    actor:   ["practice.html", "feedback.html",
+              "conversation-planner.html", "activity-planner.html", "academic-review.html"],
+    parent:  ["parent-input-screen.html", "practice.html", "feedback.html", "conversation-planner.html"],
+    youth:   ["practice.html", "feedback.html", "conversation-planner.html"]
+  };
+  var TRACK_INPUT = { trainee: "input-screen.html", parent: "parent-input-screen.html", youth: "student-input-screen.html" };
+
+  // כניסה בקוד (30/09/2026): הבית הוא home.html, והמסכים נגזרים מההרשאות
+  // שהשרת החזיר לקוד (sbe.session.perms).
+  var PAGES_BY_PERM = {
+    fac_trainee: ["input-screen.html"], fac_parent: ["parent-input-screen.html"], fac_youth: ["student-input-screen.html"],
+    conv: ["conversation-planner.html"], activity: ["activity-planner.html"], academic: ["academic-review.html"],
+    resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html"],
+    leadership: ["leadership-advisor.html", "resilience-advisor-sources.html"],
+    practi: ["resilience-advisor.html", "resilience-advisor-sources.html"],
+    studio: ["resilience-studio.html"], // עד לאישור המקצועי — רק בהרשאה הזאת (studio.mjs: STUDIO_PERMS)
+    journey: ["journey.html"],
+    writer: ["message-writer.html", "resilience-advisor-sources.html"], // כתיבה מקדמת חוסן — רק בהרשאה הזאת (02/10/2026)
+    nana: ["facilitation-advisor.html", "resilience-advisor-sources.html"], // ננה — מהוראה להנחיה (07/10/2026)
+    dialogue: ["shared-dialogue-lab.html", "resilience-advisor-sources.html"], // מעבדת שיח וחקר משותף (11/10/2026)
+    teamthink: ["team-thinking.html", "resilience-advisor-sources.html"] // חשיבת צוות (11/10/2026)
+  };
+  var SIM_DOCS = ["doc-trainee.html", "doc-actor.html", "card-actor.html", "doc-facilitator.html"];
+  var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html"].concat(SIM_DOCS);
+
+  var allowed = null; // null = הכול
+  if (home === "home.html") {
+    var perms = [];
+    try { perms = JSON.parse(ss("sbe.session.perms") || "[]") || []; } catch(e){}
+    allowed = ["home.html"];
+    perms.forEach(function(p){ (PAGES_BY_PERM[p] || []).forEach(function(x){ allowed.push(x); }); });
+    if (perms.some(function(p){ return /^fac_/.test(p); })) allowed = allowed.concat(FAC_PAGES);
+  } else if (home === "admin.html?role=sys") {
+    allowed = null;
+  } else if (home === "admin.html?role=inst") {
+    allowed = ["admin.html"];
+  } else if (/^system-select\.html/.test(home)) {
+    var track = q.get("track");
+    allowed = ["system-select.html", "search.html", "facilitator-screen.html",
+               "feedback.html", "feedback-results.html"].concat(SIM_DOCS);
+    if (TRACK_INPUT[track]) allowed.push(TRACK_INPUT[track]);
+    else for (var t in TRACK_INPUT) allowed.push(TRACK_INPUT[t]);
+    // הכלים הנוספים — רק מה שנפתח למוסד (sbe.session.modules, נשמר ב-system-select.html).
+    var mods = {};
+    try { mods = JSON.parse(ss("sbe.session.modules") || "{}") || {}; } catch(e){}
+    if (mods.studio === true) allowed.push("resilience-studio.html");
+    if (track !== "parent" && track !== "youth") {
+      if (mods.conv === true) allowed.push("conversation-planner.html");
+      if (mods.activity === true) allowed.push("activity-planner.html");
+      if (mods.academic === true) allowed.push("academic-review.html");
+    }
+  } else if (/^entry\.html\?home=/.test(home)) {
+    allowed = WORKSHOP[q.get("home")] || [];
+  } else if (home === "academic-review.html") {
+    allowed = ["academic-review.html"];
+  } else if (home === "resilience-advisor.html") {
+    // התנסות חברות.י הקהילה (זמני, להרצאה) — אורח/ת: רק פרקטי והמקורות שלה, עד 31.10.2026
+    var COMMUNITY_OPEN = false; // סגור עד שמנהלת המערכת מבקשת לפתוח (יחד עם entry.html)
+    allowed = COMMUNITY_OPEN && new Date() <= new Date("2026-10-31T23:59:59")
+      ? ["resilience-advisor.html", "resilience-advisor-sources.html"] : [];
+    if (!allowed.length) home = "";
+  } else if (home === "resilience-team.html") {
+    allowed = ["resilience-team.html", "resilience-fill.html"];
+  } else {
+    allowed = [];
+    home = "";
+  }
+
+  // טופס המשוב מקישור/QR של סדנה (?w=) — פתוח גם בלי כניסה: המשתתפות סורקות בטלפון בסוף התחקיר.
+  // השרת מקבל משוב רק לסדנה שנפתחה (wfSubmit), ולא חושף משובים של אחרים.
+  // ספריית התוצרים לדוגמה — פתוחה לכל מי שמתעניין/ת, גם בלי כניסה (רק מה שמנהלת המערכת סימנה להצגה).
+  if (page === "examples.html") return;
+  if (page === "feedback.html" && /[?&]w=[a-z0-9]{8,32}(&|$)/.test(location.search)) return;
+  // כניסה שהסתיימה (07/10/2026): האסימון החתום תקף 12 שעות, אבל לשונית פתוחה שומרת אותו גם אחר כך —
+  // והשרת דוחה אותו ("אין הרשאה פעילה"). חוזרים למסך הכניסה עם הסבר, במקום הודעת הרשאה מבלבלת.
+  if (ALL_USERS.indexOf(page) === -1) {
+    try {
+      var tk = ss("sbe.session.token") || "";
+      if (tk.indexOf(".") > 0) {
+        var raw = Uint8Array.from(atob(tk.split(".")[0].replace(/-/g, "+").replace(/_/g, "/")), function(ch){ return ch.charCodeAt(0); });
+        var pl = JSON.parse(new TextDecoder().decode(raw));
+        if (pl.exp && pl.exp < Date.now()) {
+          KEYS.forEach(function(k){ sessionStorage.removeItem(k); });
+          localStorage.removeItem(MIRROR);
+          document.documentElement.style.display = "none";
+          location.replace(base + "entry.html?expired=1");
+          return;
+        }
+      }
+    } catch(e){}
+  }
+  if (allowed === null || (home && ALL_USERS.indexOf(page) !== -1) || allowed.indexOf(page) !== -1) return;
+
+  // אין הרשאה — לא מציגים את הדף, וחוזרים למסך הבית (או למסך הכניסה).
+  document.documentElement.style.display = "none";
+  location.replace(base + (home || "entry.html"));
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -39,10 +323,9 @@ body{direction:rtl;background:var(--ground);margin:0;padding:26px 16px 60px;
 .body{padding:24px 36px 30px;}
 .sec{margin-bottom:26px;}
 .sec:last-child{margin-bottom:0;}
-.h{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--muted);padding-bottom:6px;margin-bottom:12px;
-  border-bottom:1px solid var(--hair);display:flex;justify-content:space-between;
-  gap:12px;align-items:baseline;}
+.h{font-family:Assistant,Arial,sans-serif;font-size:15px;font-weight:800;letter-spacing:0;
+  color:#1E3F5A;padding:2px 10px 4px 0;margin-bottom:12px;border-inline-start:4px solid #2A9D8F;
+  display:flex;justify-content:space-between;gap:12px;align-items:baseline;}
 .h em{font-style:normal;font-family:inherit;font-size:12px;letter-spacing:0;text-transform:none;}
 p{margin:0 0 11px;}
 p:last-child{margin:0;}
@@ -102,6 +385,8 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .dt p{margin:0 0 6px;} .dt p:last-child{margin:0;}
 .dt ol,.dt ul{margin:0;padding-inline-start:17px;} .dt li{margin-bottom:4px;}
 .dt td.n{width:32px;text-align:center;font-weight:700;}
+.body p,.body li,.dt td:not(.n):not(.ck){text-align:justify;text-justify:inter-word;}
+.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) p,.dt tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck) li,.dt tr>td:first-child:nth-last-child(n+3),.dt tr>td:first-child:nth-last-child(n+3) p,.dt tr>td:first-child:nth-last-child(n+3) li{text-align:start}
 .dt td.ck{width:64px;text-align:center;color:var(--muted);font-size:16px;}
 .dt td.w{width:38%;}
 .dt .tag{margin-inline-start:6px;}
@@ -111,6 +396,12 @@ ol.list li,ul.list li{margin-bottom:7px;}
 .dt-sub{font-size:13px;color:var(--muted);margin-top:4px;}
 .dt-cap{font-size:12.5px;font-weight:700;color:var(--muted);margin:14px 0 6px;}
 .dt .eff{margin-inline-start:0;}
+.aloud{border:1px solid #C9D8E4;background:var(--spoken-bg);border-radius:6px;padding:12px 16px;font-size:15px;line-height:1.75;color:var(--ink);}
+.aloud p{margin:0 0 6px;} .aloud p:last-child{margin:0;}
+.rcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;}
+.rcard{border:1.5px dashed #9AA6B0;border-radius:8px;padding:12px 14px;break-inside:avoid;page-break-inside:avoid;}
+.rcard h4{margin:0 0 2px;font-size:17px;} .rcard .rc-sub{font-size:12px;color:var(--muted);margin-bottom:8px;}
+.rcard .dt{font-size:13.5px;} .rcard .big{font-size:15px;font-weight:600;color:var(--spoken);}
 .red{border:1px solid #E0C4C1;background:#FAF0EF;border-radius:4px;
   padding:12px 15px;font-size:14px;color:#7A322D;}
 .foot{border-top:1px solid var(--hair);padding:11px 36px;font-size:11.5px;
@@ -129,7 +420,7 @@ ol.list li,ul.list li{margin-bottom:7px;}
   .two{grid-template-columns:1fr;} .row,.tp-b,.br{grid-template-columns:1fr;gap:3px;}
   .head,.body,.foot{padding-inline:20px;}
 }
-@page{size:A4;margin:24mm 24mm;}
+@page{size:A4;margin:24mm 24mm;@bottom-center{content:"עמוד " counter(page) " מתוך " counter(pages);font:600 8.5pt Assistant,Arial,sans-serif;color:#5C6771}@bottom-right{content:"Begood · be-good.co.il";font:8pt Assistant,Arial,sans-serif;color:#8A949E}}
 @media print{
   body{background:#fff;padding:0;}
   .sheet{box-shadow:none;max-width:none;border-radius:0;font-size:11pt;}
@@ -138,25 +429,34 @@ ol.list li,ul.list li{margin-bottom:7px;}
   .dt{font-size:10pt;} .dt tr{break-inside:avoid;page-break-inside:avoid;} .dt thead{display:table-header-group;}
   .dt thead th,.dt tbody th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .dt td.w{height:3.2em;}
+  thead{display:table-header-group;} tr{break-inside:avoid;page-break-inside:avoid;}
   .no-print,#rptFab,#rptDlg,#navBar,#navPanel{display:none!important;}
   body.sbe-hasnav{padding-top:0;}
 }
-</style>
+@media screen{tr.sbe-rh-row{display:none}}@media print{thead{display:table-header-group}tr.sbe-rh-row th{background:none!important;color:#141C24!important;border:0!important;text-align:right!important;font-weight:700;font-size:1.05em;padding:4px 0 6px!important}.sbe-rh-src{display:none!important}}</style>
 <div class="sheet">
   <div class="head">
     <img class="lg" src="data:image/webp;base64,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" alt="Begood">
     <p class="badge">כרטיס דמות · ניב</p>
     <p class="ttl">עזוב, לא משנה</p>
     <p class="sub">שבר אמון בין איתי לניב על סרטון שיצא מהטלפון של ניב לקבוצת הווטסאפ של השכבה</p>
-    <div class="meta"><span><b>ד״ר יעל שדה</b></span><span>סדנת כישורי חיים — חטיבת ביניים</span><span>23.9.26</span><span><b>5</b> דקות</span><span>חטיבת ביניים</span><span>גישת המפגש (דיאלוג ומפגש)</span><span>YT-0923-2342</span></div>
+    <div class="meta"><span><b>ד״ר יעל שדה</b></span><span>סדנת כישורי חיים — חטיבת ביניים</span><span>23.9.26</span><span><b>5</b> דקות</span><span>חטיבת ביניים</span><span>גישת המפגש (דיאלוג ומפגש)</span></div>
   </div>
   <div class="hr"></div>
-  <div class="body"><div class="sec"><div class="h"><span>מי אתה</span></div><table class="dt"><tbody><tr><th>מי אתה היום</th><td><p>אתה ניב, בן חמש עשרה, מכיר את איתי מגן חובה — תשע שנים. אתמול ישבת בפארק עם יובל ועוד שניים, הסרטון הגיע ליובל כבר עם הכיתוב, צחקת איתם ולחצת העבר לקבוצת השכבה תוך פחות מדקה, לפני שקראת את הכיתוב עד הסוף. אחרי שעה מחקת. ב-22:10 התקשרת לאיתי פעמיים והוא לא ענה, וארבע פעמים פתחת את הצ'אט וכתבת התנצלות ומחקת אותה. מאז הטלפון שלך על שקט. אתה מדבר מהר והרבה, עומד קרוב מדי, מגלגל כדור בין הרגליים, מתחיל משפטים ומוותר עליהם באמצע, ונכנס לתוך המשפטים של איתי עם "רגע, רגע, תקשיב שנייה" — לא כדי להשתלט, אלא כי שתיקה מרגישה לך כמו הרשעה.</p><p>מה שאתה רוצה זה שהחברות הזאת תישאר ושמישהו יסתכל עליך רגע בלי לשפוט. בגלוי אתה אשם ומתוסכל, מתחת יש בושה ופחד — אתה צוחק תמיד חזק יותר מכולם כשיובל והבנים צוחקים, גם כשלא מצחיק לך, וזה בדיוק מה שקרה אתמול. הפחד הוא קונקרטי: שאיתי יעבור לשבת בהפסקות עם הבנים מהקבוצה, ואתה תישאר זה שאין לו את מי לחפש במסדרון, אחרי שמכיתה ז' אתה שומר לו מקום בשולחן השני בקפיטריה גם כשהוא מאחר. המשפט שלא תגיד בשום מצב הוא "גם אני צחקתי כשראיתי את זה בפעם הראשונה בפארק" — כי אם תגיד אותו, ההסבר שלך שאתה רק העברתי קורס, ואיתי יבין שהיית בצד השני. כשתילחץ באמת תתחיל למנות כמה קבוצות זה עבר ומי עוד שלח, הקול יעלה ויישבר, ואז תוריד את הכובע ותדבר לתוך האספלט.</p><p>מה שלא מסתדר אצלך הוא לא הסתירה הרגילה: אתה באמת מצטער, ובכל זאת שלוש השורות בקבוצת השכבה עדיין לא נכתבו. פתחת את הצ'אט ארבע פעמים ולא הצלחת. זה יכול לעלות בשיחה ברגע שאיתי ישאל אותך למה לא כתבת כלום, או ברגע שתשמע את עצמך אומר שהתקשרת פעמיים — כי הטלפונים שלא נענו נוחים לך יותר מפוסט שכל השכבה תראה. וזה הפתח שלך: לא להתווכח על מה התכוונת, אלא לתת מעשה אחד קטן עם זמן ומקום. מה שמרגיע אותך באמת זה שאיתי יגיד לך משימה אחת ברורה, "תכתוב בקבוצה שאתה העלית וזהו", במקום "תחשוב מה עשית".</p></td></tr><tr><th>מי מולך</th><td><p>מולך עומד איתי, שלא פתח את קבוצת השכבה כבר שמונה עשרה שעות ויש בה 214 הודעות. הוא יענה לך קצר, יסובב את הכפפה, יסתכל על הקורה ולא עליך, ויגיד "לא משנה" בדיוק ברגעים שבהם זה הכי משנה. אל תתבלבל מהאדישות — הוא לוקח על עצמו כל גול, וגם את זה הוא לוקח על עצמו. אם תמשיך לדבר כשהוא מוצף, הוא יבקש שתי דקות וילך לברזייה עד הצלצול, ואז השיחה נגמרה.</p><p>ההזדמנויות שאתה יכול לתת לו פשוטות מאוד ולא קלות. אתה יכול לומר מעשה וזמן במשפט אחד ולעצור שם, בלי "אבל" ובלי רשימת הקבוצות. אתה יכול לשאול אותו מה היה לו בלילה, ולתת לשתיקה שאחרי השאלה להיות ארוכה. ואתה יכול להציע דבר קונקרטי שאתה עושה, לא דבר שהוא צריך להחליט עליו לבד — ולהשאיר לו בתוך זה בחירה אמיתית אם הוא רוצה אותו.</p></td></tr></tbody></table></div><div class="sec"><div class="h"><span>חמש נקודות התפנית</span><em>מלאי, לא רצף</em></div><table class="dt"><thead><tr><th>#</th><th>התפנית והרגע</th><th>מה קורה מצד הדמות</th><th>מה זה מבקש</th><th>אם זה לא קורה</th></tr></thead><tbody><tr><td class="n" data-label="#">1</td><td data-label="התפנית והרגע"><b>רק העברתי הלאה</b> <span class="tag t-open">פתיחה</span><div class="dt-sub">איתי יוצא מהמסדרון לכיוון המגרש עם הכפפה ביד, וניב עומד בדרך שלו ליד עמוד השער.</div></td><td data-label="מה קורה מצד הדמות"><span class="said">ניב פותח מהר, לפני שאיתי הספיק להגיד מילה: "אחי, רק העברתי, אני לא כתבתי את הכיתוב."</span></td><td data-label="מה זה מבקש">מאיתי — להחליט בשתי שניות אם הוא עוצר לשמוע או ממשיך ללכת לשער.</td><td data-label="אם זה לא קורה">אם ניב ממשיך ומונה לכמה קבוצות זה כבר עבר ומי עוד שלח, ההודאה שלו נבלעת בתוך ההסבר ואיתי כבר לא נמצא בשיחה.</td></tr><tr><td class="n" data-label="#">2</td><td data-label="התפנית והרגע"><b>מקריא את הכיתוב</b> <span class="tag t-core">ליבה</span><span class="tag t-open">היפוך</span><div class="dt-sub">ניב אומר בפעם השנייה שהוא לא כתב את הכיתוב, כאילו זה מסיים את העניין.</div></td><td data-label="מה קורה מצד הדמות"><b>איתי:</b> <span class="said">איתי מוציא את הטלפון, פותח את הסרטון, מקריא בקול ולאט את המילים שמעל התמונה, ואז מרים בפעם הראשונה את העיניים אל ניב.</span></td><td data-label="מה זה מבקש">מניב — לעמוד מול המילים עד הסוף בלי להיכנס באמצע ובלי להוריד את המבט.</td><td data-label="אם זה לא קורה">אם איתי מקריא ומיד מוסיף "לא משנה", הוא מוחק את מה שעשה באותה שנייה שבה עשה אותו.</td></tr><tr><td class="n" data-label="#">3</td><td data-label="התפנית והרגע"><b>מגן חובה</b> <span class="tag t-core">ליבה</span><span class="tag t-open">פתיחה עמוקה</span><div class="dt-sub">ניב אומר שזו הייתה שנייה אחת ושהוא לא התכוון לשום דבר.</div></td><td data-label="מה קורה מצד הדמות"><b>איתי:</b> <span class="said">איתי מפסיק לסובב את הכפפה ואומר בשקט, עם המבט על הקורה, "מגן חובה אתה מכיר אותי, ולא עצרת שנייה לפני שלחצת."</span></td><td data-label="מה זה מבקש">מניב — לענות למשפט הזה ולא לעובדות; להגיד משהו על עצמו ולא על הסרטון.</td><td data-label="אם זה לא קורה">אם ניב עונה בכמה זמן לקח לו למחוק ובכמה פעמים התקשר, איתי מבין שתשע השנים לא נכנסו לשיחה הזאת בכלל.</td></tr><tr><td class="n" data-label="#">4</td><td data-label="התפנית והרגע"><b>הולך לשער</b> <span class="tag t-close">סגירה</span><div class="dt-sub">ניב אומר בפעם השלישית שהוא לא התכוון, או שנמתחת שתיקה אחרי משפט שהיה קרוב מדי.</div></td><td data-label="מה קורה מצד הדמות"><b>איתי:</b> <span class="said">איתי מסתובב לכיוון השער, אומר "עזוב, לא משנה", נועץ את הכפפה בגדר המגרש ומתחיל ללכת.</span></td><td data-label="מה זה מבקש">מניב — להחליט אם הוא רודף אחריו במילים או אומר דבר אחד קצר ונשאר עומד.</td><td data-label="אם זה לא קורה">אם ניב הולך אחריו ומדבר לגב שלו, איתי יגיד "תן לי שתי דקות", ילך לברזייה ויחזור רק עם הצלצול.</td></tr><tr><td class="n" data-label="#">5</td><td data-label="התפנית והרגע"><b>רק אם אתה רוצה</b> <span class="tag t-open">מותנה</span><div class="dt-sub">איתי עצר ליד הגדר או חזר מהברזייה, ויש שתי שניות של שקט לפני הצלצול.</div></td><td data-label="מה קורה מצד הדמות"><span class="said">ניב מציע לכתוב עכשיו בקבוצת השכבה שהוא זה שהעלה את הסרטון ושזה היה מטומטם — ומוסיף "רק אם אתה רוצה".</span></td><td data-label="מה זה מבקש">מאיתי — להגיד מה הוא באמת רוצה שיקרה, במקום להיעלם מאחורי "לא משנה".</td><td data-label="אם זה לא קורה">אם ניב הופך את זה לשאלה פתוחה בסגנון "מה אתה רוצה שאעשה", הוא מגלגל את התיקון לאיתי — ואיתי, שלוקח על עצמו כל גול, יגיד שלא צריך.</td></tr></tbody></table><div class="dt-cap">אם… אז… — איך כל תפנית יכולה להתגלגל</div><table class="dt"><thead><tr><th>#</th><th>אם…</th><th>אז…</th><th>לאן זה מוביל</th></tr></thead><tbody><tr><td class="n" data-label="#">1</td><td data-label="אם…"><b>אם איתי</b> עוצר בלי להסתובב, מסובב את הכפפה בין הידיים ושואל: "מי כתב, אז?"</td><td data-label="אז…"><b>אתה מגיב:</b> <span class="said">יובל, מט'2. קיבלתי את זה ככה. אבל לקבוצת השכבה זה יצא ממני, ב-21:40.</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>מקדם</em></td></tr><tr><td class="n" data-label="#">1</td><td data-label="אם…"><b>אם איתי</b> ממשיך ללכת לכיוון השער ולא עונה.</td><td data-label="אז…"><b>אתה מגיב:</b> <span class="said">רגע, רגע, תקשיב שנייה, זה עבר בארבע קבוצות לפני שאני בכלל פתחתי את זה, תשאל את יובל.</span></td><td data-label="לאן זה מוביל"><span class="eff e-c">סוגר</span> <em>שגוי</em></td></tr><tr><td class="n" data-label="#">2</td><td data-label="אם…"><b>אם אתה</b> מוריד את הכובע, נעצר, ולא מתחיל משפט.</td><td data-label="אז…"><b>איתי:</b> <span class="said">זה מה ששלחת. אחת עשרה שניות ושורה אחת. אני לא פתחתי את הקבוצה מאז אתמול, יש שם 214 הודעות.</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>נכון אך כואב</em></td></tr><tr><td class="n" data-label="#">2</td><td data-label="אם…"><b>אם אתה</b> נכנס באמצע: "רגע, רגע, תקשיב שנייה, אני לא כתבתי את זה, אתה יודע שאני לא הייתי כותב דבר כזה."</td><td data-label="אז…"><b>איתי:</b> <span class="said">לא משנה.</span></td><td data-label="לאן זה מוביל"><span class="eff e-c">סוגר</span> <em>שגוי</em></td></tr><tr><td class="n" data-label="#">3</td><td data-label="אם…"><b>אם אתה</b> מדבר לתוך האספלט: "לא עצרתי. ישבתי עם יובל בפארק, צחקתי איתם ולחצתי."</td><td data-label="אז…"><b>איתי:</b> <span class="said">זה מה שרציתי שתגיד. חיכיתי כל הלילה שמישהו יגיד את זה.</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>מקדם</em></td></tr><tr><td class="n" data-label="#">3</td><td data-label="אם…"><b>אם אתה</b> מונה מהר: "מחקתי אחרי שעה, התקשרתי אליך פעמיים ב-22:10, תבדוק בטלפון שלך."</td><td data-label="אז…"><b>איתי:</b> <span class="said">התקשרת. יופי. תשע שנים, ניב.</span></td><td data-label="לאן זה מוביל"><span class="eff e-h">מחזיק</span> <em>שגוי</em></td></tr><tr><td class="n" data-label="#">4</td><td data-label="אם…"><b>אם אתה</b> נשאר במקום ואומר לגב משפט אחד: "ב-21:40 לחצתי העבר לקבוצת השכבה, בלי לחשוב." ולא מוסיף אחריו כלום.</td><td data-label="אז…"><b>איתי:</b> <span class="said">עוד פעם. בלי האבל.</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>מקדם</em></td></tr><tr><td class="n" data-label="#">4</td><td data-label="אם…"><b>אם אתה</b> הולך אחריו לאורך הגדר: "אחי, אתה לא יכול ללכת עכשיו, אני מנסה להסביר לך שנייה."</td><td data-label="אז…"><b>איתי:</b> <span class="said">תן לי שתי דקות.</span></td><td data-label="לאן זה מוביל"><span class="eff e-c">סוגר</span> <em>שגוי</em></td></tr><tr><td class="n" data-label="#">5</td><td data-label="אם…"><b>אם איתי</b> מגלגל את הכפפה ואומר: "תכתוב. בלי להסביר למה, רק שזה אתה."</td><td data-label="אז…"><b>אתה מגיב:</b> <span class="said">אני כותב עכשיו, שלוש שורות, ואני לא מוחק הפעם. אתה רוצה לראות לפני שאני שולח?</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>מקדם</em></td></tr><tr><td class="n" data-label="#">5</td><td data-label="אם…"><b>אם איתי</b> מושך בכתפיים: "לא צריך. זה כבר עבר בכל מקום."</td><td data-label="אז…"><b>אתה מגיב:</b> <span class="said">אוקיי. אז אני לא כותב.</span></td><td data-label="לאן זה מוביל"><span class="eff e-c">סוגר</span> <em>שגוי</em></td></tr></tbody></table></div><div class="sec"><div class="h"><span>איך זה מתגלגל ואיך זה נגמר</span></div><table class="dt"><tbody><tr><th>איך השיחה יכולה להתגלגל</th><td><p>הפתיחה כמעט תמיד תהיה של ניב, מהר מדי, לפני שאיתי בכלל הספיק להגיע לשער. משם יש שתי דרכים: הסבר שמתרחב ומאבד את איתי בתוך שלושים שניות, או משפט קצר שנוחת ומייצר שתיקה. אם נוצרה שתיקה, איתי יכול להוציא את הטלפון ולהקריא את הכיתוב בקול — ומכאן השיחה כבר לא על מי כתב אלא על מה שהמילים האלה עשו. אם ניב שורד את ההקראה בלי להיכנס באמצע, יש סיכוי שיישמע המשפט על תשע השנים מגן חובה, וזה הרגע העמוק ביותר שהשיחה יכולה להגיע אליו. בכל נקודה איתי עלול להסתובב לשער עם "עזוב, לא משנה", וההליכה הזאת היא עדיין חלק מהשיחה ולא סופה — תלוי אם ניב מדבר לגב או אומר דבר אחד ונשאר במקום.</p><p>התפניות הן מלאי ולא רצף: הן לא חייבות לקרות בסדר הזה, לא כולן חייבות לקרות, והמנחה שולפת מהן לפי מה שקורה בחדר. חמש דקות מספיקות בדרך כלל לשלוש. אם השיחה מתקרבת לסוף וניב עדיין מגן על עצמו, שווה לדחוף את ההצעה המותנית — שיכתוב בקבוצה שהוא זה שהעלה ושזה היה מטומטם, אם איתי רוצה — כי היא מכריחה את שניהם להגיד משהו קונקרטי במקום להישאר ברגש. ואם השיחה נסגרה מוקדם, אפשר להשאיר אותה סגורה; זה חומר טוב לתחקיר בדיוק כמו פיוס.</p></td></tr><tr><th>איך זה יכול להיגמר</th><td><p>חמש הדקות יכולות להיגמר בשלוש דרכים, ואחת מהן אינה טובה. הן יכולות להיגמר בכך שניב אומר מעשה וזמן בלי "אבל", איתי עוצר ליד הגדר ומשהו קטן נפתח — לא סליחה, אבל שניהם עומדים באותו מקום ומסתכלים זה על זה, ויש משפט אחד קונקרטי על מה נעשה עד סוף היום. הן יכולות להיגמר בלי פיוס אבל בתוך מפגש: איתי מקריא את הכיתוב בקול, ניב לא נכנס באמצע, ושניהם נפרדים עם הצלצול כשמשהו כבד הונח בפועל על האספלט ולא נדחף חזרה פנימה. והן יכולות להיגמר בכך שניב ממשיך למנות קבוצות ושמות, איתי אומר "תן לי שתי דקות", הולך לברזייה ולא חוזר עד הצלצול — וזה הסיום שאינו טוב, לא מפני שהוא עצוב, אלא מפני שהוא משאיר את שניהם בדיוק איפה שהיו אתמול ב-21:41, כל אחד לבד מול מסך.</p></td></tr></tbody></table></div><div class="sec"><div class="h"><span>קו אדום</span></div><div class="red">קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים. בני נוער בתרחיש יכולים לצעוק, להתרחק, לומר דברים חדים — זה חומר של השיחה. הקו האדום חל על מי שמגלמת את הדמות, לא על הדמות. אם זה קורה בכל זאת, המנחה עוצרת — וזה רגע ללמידה, לא כישלון.</div></div></div>
+  <div class="body"><div class="sec"><div class="h"><span>מי אתה</span></div><table class="dt"><tbody><tr><th>מי אתה היום</th><td><p>אתה ניב, בן חמש עשרה, מכיר את איתי מגן חובה — תשע שנים. אתמול ישבת בפארק עם יובל ועוד שניים, הסרטון הגיע ליובל כבר עם הכיתוב, צחקת איתם ולחצת העבר לקבוצת השכבה תוך פחות מדקה, לפני שקראת את הכיתוב עד הסוף. אחרי שעה מחקת. ב-22:10 התקשרת לאיתי פעמיים והוא לא ענה, וארבע פעמים פתחת את הצ'אט וכתבת התנצלות ומחקת אותה. מאז הטלפון שלך על שקט. אתה מדבר מהר והרבה, עומד קרוב מדי, מגלגל כדור בין הרגליים, מתחיל משפטים ומוותר עליהם באמצע, ונכנס לתוך המשפטים של איתי עם "רגע, רגע, תקשיב שנייה" — לא כדי להשתלט, אלא כי שתיקה מרגישה לך כמו הרשעה.</p><p>מה שאתה רוצה זה שהחברות הזאת תישאר ושמישהו יסתכל עליך רגע בלי לשפוט. בגלוי אתה אשם ומתוסכל, מתחת יש בושה ופחד — אתה צוחק תמיד חזק יותר מכולם כשיובל והבנים צוחקים, גם כשלא מצחיק לך, וזה בדיוק מה שקרה אתמול. הפחד הוא קונקרטי: שאיתי יעבור לשבת בהפסקות עם הבנים מהקבוצה, ואתה תישאר זה שאין לו את מי לחפש במסדרון, אחרי שמכיתה ז' אתה שומר לו מקום בשולחן השני בקפיטריה גם כשהוא מאחר. המשפט שלא תגיד בשום מצב הוא "גם אני צחקתי כשראיתי את זה בפעם הראשונה בפארק" — כי אם תגיד אותו, ההסבר שלך שאתה רק העברתי קורס, ואיתי יבין שהיית בצד השני. כשתילחץ באמת תתחיל למנות כמה קבוצות זה עבר ומי עוד שלח, הקול יעלה ויישבר, ואז תוריד את הכובע ותדבר לתוך האספלט.</p><p>מה שלא מסתדר אצלך הוא לא הסתירה הרגילה: אתה באמת מצטער, ובכל זאת שלוש השורות בקבוצת השכבה עדיין לא נכתבו. פתחת את הצ'אט ארבע פעמים ולא הצלחת. זה יכול לעלות בשיחה ברגע שאיתי ישאל אותך למה לא כתבת כלום, או ברגע שתשמע את עצמך אומר שהתקשרת פעמיים — כי הטלפונים שלא נענו נוחים לך יותר מפוסט שכל השכבה תראה. וזה הפתח שלך: לא להתווכח על מה התכוונת, אלא לתת מעשה אחד קטן עם זמן ומקום. מה שמרגיע אותך באמת זה שאיתי יגיד לך משימה אחת ברורה, "תכתוב בקבוצה שאתה העלית וזהו", במקום "תחשוב מה עשית".</p></td></tr><tr><th>מי מולך</th><td><p>מולך עומד איתי, שלא פתח את קבוצת השכבה כבר שמונה עשרה שעות ויש בה 214 הודעות. הוא יענה לך קצר, יסובב את הכפפה, יסתכל על הקורה ולא עליך, ויגיד "לא משנה" בדיוק ברגעים שבהם זה הכי משנה. אל תתבלבל מהאדישות — הוא לוקח על עצמו כל גול, וגם את זה הוא לוקח על עצמו. אם תמשיך לדבר כשהוא מוצף, הוא יבקש שתי דקות וילך לברזייה עד הצלצול, ואז השיחה נגמרה.</p><p>ההזדמנויות שאתה יכול לתת לו פשוטות מאוד ולא קלות. אתה יכול לומר מעשה וזמן במשפט אחד ולעצור שם, בלי "אבל" ובלי רשימת הקבוצות. אתה יכול לשאול אותו מה היה לו בלילה, ולתת לשתיקה שאחרי השאלה להיות ארוכה. ואתה יכול להציע דבר קונקרטי שאתה עושה, לא דבר שהוא צריך להחליט עליו לבד — ולהשאיר לו בתוך זה בחירה אמיתית אם הוא רוצה אותו.</p></td></tr></tbody></table></div><div class="sec"><div class="h"><span>חמש נקודות התפנית</span><em>לא כל התפניות יקרו, ולא בסדר הזה</em></div><table class="dt"><thead><tr><th>#</th><th>התפנית והרגע</th><th>מה קורה מצד הדמות</th><th>מה זה מבקש</th><th>אם זה לא קורה</th></tr></thead><tbody><tr><td class="n" data-label="#">1</td><td data-label="התפנית והרגע"><b>רק העברתי הלאה</b> <span class="tag t-open">פתיחה</span><div class="dt-sub">איתי יוצא מהמסדרון לכיוון המגרש עם הכפפה ביד, וניב עומד בדרך שלו ליד עמוד השער.</div></td><td data-label="מה קורה מצד הדמות"><span class="said">ניב פותח מהר, לפני שאיתי הספיק להגיד מילה: "אחי, רק העברתי, אני לא כתבתי את הכיתוב."</span></td><td data-label="מה זה מבקש">מאיתי — להחליט בשתי שניות אם הוא עוצר לשמוע או ממשיך ללכת לשער.</td><td data-label="אם זה לא קורה">אם ניב ממשיך ומונה לכמה קבוצות זה כבר עבר ומי עוד שלח, ההודאה שלו נבלעת בתוך ההסבר ואיתי כבר לא נמצא בשיחה.</td></tr><tr><td class="n" data-label="#">2</td><td data-label="התפנית והרגע"><b>מקריא את הכיתוב</b> <span class="tag t-core">ליבה</span><span class="tag t-open">היפוך</span><div class="dt-sub">ניב אומר בפעם השנייה שהוא לא כתב את הכיתוב, כאילו זה מסיים את העניין.</div></td><td data-label="מה קורה מצד הדמות"><b>איתי:</b> <span class="said">איתי מוציא את הטלפון, פותח את הסרטון, מקריא בקול ולאט את המילים שמעל התמונה, ואז מרים בפעם הראשונה את העיניים אל ניב.</span></td><td data-label="מה זה מבקש">מניב — לעמוד מול המילים עד הסוף בלי להיכנס באמצע ובלי להוריד את המבט.</td><td data-label="אם זה לא קורה">אם איתי מקריא ומיד מוסיף "לא משנה", הוא מוחק את מה שעשה באותה שנייה שבה עשה אותו.</td></tr><tr><td class="n" data-label="#">3</td><td data-label="התפנית והרגע"><b>מגן חובה</b> <span class="tag t-core">ליבה</span><span class="tag t-open">פתיחה עמוקה</span><div class="dt-sub">ניב אומר שזו הייתה שנייה אחת ושהוא לא התכוון לשום דבר.</div></td><td data-label="מה קורה מצד הדמות"><b>איתי:</b> <span class="said">איתי מפסיק לסובב את הכפפה ואומר בשקט, עם המבט על הקורה, "מגן חובה אתה מכיר אותי, ולא עצרת שנייה לפני שלחצת."</span></td><td data-label="מה זה מבקש">מניב — לענות למשפט הזה ולא לעובדות; להגיד משהו על עצמו ולא על הסרטון.</td><td data-label="אם זה לא קורה">אם ניב עונה בכמה זמן לקח לו למחוק ובכמה פעמים התקשר, איתי מבין שתשע השנים לא נכנסו לשיחה הזאת בכלל.</td></tr><tr><td class="n" data-label="#">4</td><td data-label="התפנית והרגע"><b>הולך לשער</b> <span class="tag t-close">סגירה</span><div class="dt-sub">ניב אומר בפעם השלישית שהוא לא התכוון, או שנמתחת שתיקה אחרי משפט שהיה קרוב מדי.</div></td><td data-label="מה קורה מצד הדמות"><b>איתי:</b> <span class="said">איתי מסתובב לכיוון השער, אומר "עזוב, לא משנה", נועץ את הכפפה בגדר המגרש ומתחיל ללכת.</span></td><td data-label="מה זה מבקש">מניב — להחליט אם הוא רודף אחריו במילים או אומר דבר אחד קצר ונשאר עומד.</td><td data-label="אם זה לא קורה">אם ניב הולך אחריו ומדבר לגב שלו, איתי יגיד "תן לי שתי דקות", ילך לברזייה ויחזור רק עם הצלצול.</td></tr><tr><td class="n" data-label="#">5</td><td data-label="התפנית והרגע"><b>רק אם אתה רוצה</b> <span class="tag t-open">מותנה</span><div class="dt-sub">איתי עצר ליד הגדר או חזר מהברזייה, ויש שתי שניות של שקט לפני הצלצול.</div></td><td data-label="מה קורה מצד הדמות"><span class="said">ניב מציע לכתוב עכשיו בקבוצת השכבה שהוא זה שהעלה את הסרטון ושזה היה מטומטם — ומוסיף "רק אם אתה רוצה".</span></td><td data-label="מה זה מבקש">מאיתי — להגיד מה הוא באמת רוצה שיקרה, במקום להיעלם מאחורי "לא משנה".</td><td data-label="אם זה לא קורה">אם ניב הופך את זה לשאלה פתוחה בסגנון "מה אתה רוצה שאעשה", הוא מגלגל את התיקון לאיתי — ואיתי, שלוקח על עצמו כל גול, יגיד שלא צריך.</td></tr></tbody></table><div class="dt-cap">אם… אז…: איך כל תפנית יכולה להתגלגל</div><table class="dt"><thead><tr><th>#</th><th>אם…</th><th>אז…</th><th>לאן זה מוביל</th></tr></thead><tbody><tr><td class="n" data-label="#">1</td><td data-label="אם…"><b>אם איתי</b> עוצר בלי להסתובב, מסובב את הכפפה בין הידיים ושואל: "מי כתב, אז?"</td><td data-label="אז…"><b>אתה מגיב:</b> <span class="said">יובל, מט'2. קיבלתי את זה ככה. אבל לקבוצת השכבה זה יצא ממני, ב-21:40.</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>מקדם</em></td></tr><tr><td class="n" data-label="#">1</td><td data-label="אם…"><b>אם איתי</b> ממשיך ללכת לכיוון השער ולא עונה.</td><td data-label="אז…"><b>אתה מגיב:</b> <span class="said">רגע, רגע, תקשיב שנייה, זה עבר בארבע קבוצות לפני שאני בכלל פתחתי את זה, תשאל את יובל.</span></td><td data-label="לאן זה מוביל"><span class="eff e-c">סוגר</span> <em>שגוי</em></td></tr><tr><td class="n" data-label="#">2</td><td data-label="אם…"><b>אם אתה</b> מוריד את הכובע, נעצר, ולא מתחיל משפט.</td><td data-label="אז…"><b>איתי:</b> <span class="said">זה מה ששלחת. אחת עשרה שניות ושורה אחת. אני לא פתחתי את הקבוצה מאז אתמול, יש שם 214 הודעות.</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>נכון אך כואב</em></td></tr><tr><td class="n" data-label="#">2</td><td data-label="אם…"><b>אם אתה</b> נכנס באמצע: "רגע, רגע, תקשיב שנייה, אני לא כתבתי את זה, אתה יודע שאני לא הייתי כותב דבר כזה."</td><td data-label="אז…"><b>איתי:</b> <span class="said">לא משנה.</span></td><td data-label="לאן זה מוביל"><span class="eff e-c">סוגר</span> <em>שגוי</em></td></tr><tr><td class="n" data-label="#">3</td><td data-label="אם…"><b>אם אתה</b> מדבר לתוך האספלט: "לא עצרתי. ישבתי עם יובל בפארק, צחקתי איתם ולחצתי."</td><td data-label="אז…"><b>איתי:</b> <span class="said">זה מה שרציתי שתגיד. חיכיתי כל הלילה שמישהו יגיד את זה.</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>מקדם</em></td></tr><tr><td class="n" data-label="#">3</td><td data-label="אם…"><b>אם אתה</b> מונה מהר: "מחקתי אחרי שעה, התקשרתי אליך פעמיים ב-22:10, תבדוק בטלפון שלך."</td><td data-label="אז…"><b>איתי:</b> <span class="said">התקשרת. יופי. תשע שנים, ניב.</span></td><td data-label="לאן זה מוביל"><span class="eff e-h">מחזיק</span> <em>שגוי</em></td></tr><tr><td class="n" data-label="#">4</td><td data-label="אם…"><b>אם אתה</b> נשאר במקום ואומר לגב משפט אחד: "ב-21:40 לחצתי העבר לקבוצת השכבה, בלי לחשוב." ולא מוסיף אחריו כלום.</td><td data-label="אז…"><b>איתי:</b> <span class="said">עוד פעם. בלי האבל.</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>מקדם</em></td></tr><tr><td class="n" data-label="#">4</td><td data-label="אם…"><b>אם אתה</b> הולך אחריו לאורך הגדר: "אחי, אתה לא יכול ללכת עכשיו, אני מנסה להסביר לך שנייה."</td><td data-label="אז…"><b>איתי:</b> <span class="said">תן לי שתי דקות.</span></td><td data-label="לאן זה מוביל"><span class="eff e-c">סוגר</span> <em>שגוי</em></td></tr><tr><td class="n" data-label="#">5</td><td data-label="אם…"><b>אם איתי</b> מגלגל את הכפפה ואומר: "תכתוב. בלי להסביר למה, רק שזה אתה."</td><td data-label="אז…"><b>אתה מגיב:</b> <span class="said">אני כותב עכשיו, שלוש שורות, ואני לא מוחק הפעם. אתה רוצה לראות לפני שאני שולח?</span></td><td data-label="לאן זה מוביל"><span class="eff e-o">פותח</span> <em>מקדם</em></td></tr><tr><td class="n" data-label="#">5</td><td data-label="אם…"><b>אם איתי</b> מושך בכתפיים: "לא צריך. זה כבר עבר בכל מקום."</td><td data-label="אז…"><b>אתה מגיב:</b> <span class="said">אוקיי. אז אני לא כותב.</span></td><td data-label="לאן זה מוביל"><span class="eff e-c">סוגר</span> <em>שגוי</em></td></tr></tbody></table></div><div class="sec"><div class="h"><span>איך זה מתגלגל ואיך זה נגמר</span></div><table class="dt"><tbody><tr><th>איך השיחה יכולה להתגלגל</th><td><p>הפתיחה כמעט תמיד תהיה של ניב, מהר מדי, לפני שאיתי בכלל הספיק להגיע לשער. משם יש שתי דרכים: הסבר שמתרחב ומאבד את איתי בתוך שלושים שניות, או משפט קצר שנוחת ומייצר שתיקה. אם נוצרה שתיקה, איתי יכול להוציא את הטלפון ולהקריא את הכיתוב בקול — ומכאן השיחה כבר לא על מי כתב אלא על מה שהמילים האלה עשו. אם ניב שורד את ההקראה בלי להיכנס באמצע, יש סיכוי שיישמע המשפט על תשע השנים מגן חובה, וזה הרגע העמוק ביותר שהשיחה יכולה להגיע אליו. בכל נקודה איתי עלול להסתובב לשער עם "עזוב, לא משנה", וההליכה הזאת היא עדיין חלק מהשיחה ולא סופה — תלוי אם ניב מדבר לגב או אומר דבר אחד ונשאר במקום.</p><p>התפניות הן מלאי ולא רצף: הן לא חייבות לקרות בסדר הזה, לא כולן חייבות לקרות, והמנחה שולפת מהן לפי מה שקורה בחדר. חמש דקות מספיקות בדרך כלל לשלוש. אם השיחה מתקרבת לסוף וניב עדיין מגן על עצמו, שווה לדחוף את ההצעה המותנית — שיכתוב בקבוצה שהוא זה שהעלה ושזה היה מטומטם, אם איתי רוצה — כי היא מכריחה את שניהם להגיד משהו קונקרטי במקום להישאר ברגש. ואם השיחה נסגרה מוקדם, אפשר להשאיר אותה סגורה; זה חומר טוב לתחקיר בדיוק כמו פיוס.</p></td></tr><tr><th>איך זה יכול להיגמר</th><td><p>חמש הדקות יכולות להיגמר בשלוש דרכים, ואחת מהן אינה טובה. הן יכולות להיגמר בכך שניב אומר מעשה וזמן בלי "אבל", איתי עוצר ליד הגדר ומשהו קטן נפתח — לא סליחה, אבל שניהם עומדים באותו מקום ומסתכלים זה על זה, ויש משפט אחד קונקרטי על מה נעשה עד סוף היום. הן יכולות להיגמר בלי פיוס אבל בתוך מפגש: איתי מקריא את הכיתוב בקול, ניב לא נכנס באמצע, ושניהם נפרדים עם הצלצול כשמשהו כבד הונח בפועל על האספלט ולא נדחף חזרה פנימה. והן יכולות להיגמר בכך שניב ממשיך למנות קבוצות ושמות, איתי אומר "תן לי שתי דקות", הולך לברזייה ולא חוזר עד הצלצול — וזה הסיום שאינו טוב, לא מפני שהוא עצוב, אלא מפני שהוא משאיר את שניהם בדיוק איפה שהיו אתמול ב-21:41, כל אחד לבד מול מסך.</p></td></tr></tbody></table></div><div class="sec"><div class="h"><span>קו אדום</span></div><div class="red">קו אדום: גם במצבים מתוחים, אלימות מכל סוג, השפלה, זלזול או מניפולציה של סכום אפס אינם לגיטימיים. בני נוער בתרחיש יכולים לצעוק, להתרחק, לומר דברים חדים — זה חומר של השיחה. הקו האדום חל על מי שמגלמת את הדמות, לא על הדמות. אם זה קורה בכל זאת, המנחה עוצרת — וזה רגע ללמידה, לא כישלון.</div></div></div>
   <div class="foot">
-    <div class="foot-row"><span>Begood · חינוך מבוסס סימולציה · YT-0923-2342</span><span>כרטיס דמות · ניב</span></div>
+    <div class="foot-row"><span>Begood · חינוך מבוסס סימולציה</span><span>כרטיס דמות · ניב</span></div>
     <div class="foot-by">ד״ר יעל שדה · 23.9.26 · סדנת כישורי חיים — חטיבת ביניים</div>
   </div>
 </div>
+<script>(function(){function go(){document.querySelectorAll('table').forEach(function(t){
+if(t.querySelector('tr.sbe-rh-row')||t.rows.length<3||t.closest('.rcard'))return;var cap=t.previousElementSibling,name='',hide=null;
+if(cap&&cap.classList.contains('dt-cap')){name=cap.textContent;hide=cap;}else{var s=t.closest('.sec'),h=s&&s.querySelector(':scope>.h');
+if(h){var sp=h.querySelector('span');name=(sp||h).textContent;if(h.nextElementSibling===t&&!h.querySelector('em'))hide=h;}}
+name=String(name||'').replace(/s+/g,' ').trim();if(!name)return;var n=0;[].forEach.call(t.rows[0].cells,function(c){n+=c.colSpan||1;});
+var tr=document.createElement('tr'),th=document.createElement('th');tr.className='sbe-rh-row';th.colSpan=n;th.textContent=name;tr.appendChild(th);
+var hd=t.tHead;if(!hd){hd=document.createElement('thead');t.insertBefore(hd,t.firstChild);}hd.insertBefore(tr,hd.firstChild);if(hide)hide.classList.add('sbe-rh-src');});}
+window.addEventListener('beforeprint',go);var m=window.matchMedia&&window.matchMedia('print');if(m&&m.addListener)m.addListener(function(e){if(e.matches)go();});})();</script>
 <!-- ── ניווט גלובלי: חזרה + הבית + תפריט (09/09/2026, הוקטן 09/09/2026,
      נוסף כפתור "הבית" 22/09/2026) ──
      סרגל דק וקבוע ברוחב מלא במקום כפתורים צפים גדולים שהתנגשו עם כותרת
@@ -316,7 +616,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
       <label>מה חסר, מה היה מבלבל, או הערה אחרת?</label>
       <textarea id="rptUsageNotes" placeholder="לא חובה"></textarea>
     </div>
-    <label>צילום מסך (לא חובה)</label>
+    <label>צילום מסך (רשות)</label>
     <input type="file" id="rptFile" accept="image/*">
   </div>
   <div class="rf">
@@ -359,7 +659,7 @@ dialog#rptDlg::backdrop{background:rgba(10,14,18,.55);}
   typeEl.addEventListener("change", syncType);
 
   function openDlg(presetType){
-    dateEl.value = new Date().toLocaleDateString("he-IL",{day:"2-digit",month:"2-digit",year:"2-digit"});
+    dateEl.value = new Date().toLocaleDateString("he-IL");
     if (!nameEl.value) { try { nameEl.value = sessionStorage.getItem("sbe.session.name") || ""; } catch(e){} }
     try { roleEl.value = sessionStorage.getItem("sbe.session.role") || ""; } catch(e){}
     errEl.hidden = true;

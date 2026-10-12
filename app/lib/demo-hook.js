@@ -55,7 +55,7 @@
   }
   // מסמך HTML עצמאי מאזור בדף: עם הסגנונות של הכלי, בלי כפתורים, בלי עריכה ובלי סקריפטים
   // הערות מסך, שדות, כפתורים ושורות מצב: לא חלק מהתוצר (12/10/2026: "ל PDF תגיע רק עריכה עם לוגו")
-  var NOISE = "button,script,.sbe-edit-hint,.no-print,textarea,input,select,label,.actions,.toolbar,.banner-mini,.savenote,.mock-note,.dlg-dl,.sbe-q,.sbe-i,.hint,.err,.perr,.wait,.rep-nav,.refs-bar,.sbe-peek,[data-status-line],.sbe-sysonly";
+  var NOISE = "button,script,.sbe-edit-hint,.no-print,textarea,input,select,label,.actions,.toolbar,.banner-mini,.savenote,.mock-note,.dlg-dl,.sbe-q,.sbe-i,.hint,.err,.perr,.wait,.rep-nav,.refs-bar,.sbe-peek,[data-status-line],.sbe-sysonly,.log,.mock-tag";
   function standalone(node, title) {
     var D0 = window.SBE_DOC;
     if (D0 && D0.print) {

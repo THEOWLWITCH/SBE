@@ -399,7 +399,7 @@ function viewMapping(){
     const s = document.createElement('select'); [['', 'בחירה'], ...J.FAIL_OPTS.map((x, i) => [String(i), x])].forEach(([v, x]) => { const o = el('option', null, x); o.value = v; if (String(m.fails[fl.k] ?? '') === v) o.selected = true; s.appendChild(o); });
     s.addEventListener('change', () => { m.fails[fl.k] = s.value === '' ? undefined : +s.value; persist(); }); r.appendChild(s); f.appendChild(r);
   });
-  f.appendChild(el('label', null, 'עוד משהו שחשוב שנדע? (לא חובה)'));
+  f.appendChild(el('label', null, 'עוד משהו שחשוב שנדע? (רשות)'));
   const notes = document.createElement('textarea'); notes.maxLength = 1500; notes.value = m.notes || ''; notes.placeholder = 'הקשר, אירועים מהתקופה האחרונה, מה כבר ניסיתם';
   notes.addEventListener('input', () => { m.notes = notes.value; persist(); }); f.appendChild(notes);
   const err = errLine(f);
@@ -446,11 +446,11 @@ function decisionBlock(dec, state, onChange){
     cb.addEventListener('change', () => { v.reasons = cb.checked ? v.reasons.concat(rs) : v.reasons.filter(x => x !== rs); l.classList.toggle('on', cb.checked); onChange(); }); l.appendChild(cb); l.appendChild(document.createTextNode(rs)); ch.appendChild(l); });
   box.appendChild(ch);
   const ex = document.createElement('textarea'); ex.maxLength = 1000; ex.placeholder = 'במילים שלכם: מה השיקולים שעמדו מאחורי הבחירה'; ex.value = v.explain; ex.addEventListener('input', () => { v.explain = ex.value; onChange(); }); box.appendChild(ex);
-  box.appendChild(el('label', null, 'מי היו שותפים להחלטה? (לא חובה)'));
+  box.appendChild(el('label', null, 'מי היו שותפים להחלטה? (רשות)'));
   const wh = el('div', 'chips'); ['הנהלה','צוות','תלמידים','הורים','תושבים','שותפים מבחוץ'].forEach(x => { const l = el('label', v.who.includes(x) ? 'on' : ''); const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = v.who.includes(x);
     cb.addEventListener('change', () => { v.who = cb.checked ? v.who.concat(x) : v.who.filter(y => y !== x); l.classList.toggle('on', cb.checked); onChange(); }); l.appendChild(cb); l.appendChild(document.createTextNode(x)); wh.appendChild(l); });
   box.appendChild(wh);
-  box.appendChild(el('label', null, 'מה היה מאתגר בהחלטה? (לא חובה)'));
+  box.appendChild(el('label', null, 'מה היה מאתגר בהחלטה? (רשות)'));
   const hd = document.createElement('input'); hd.type = 'text'; hd.maxLength = 300; hd.value = v.hard; hd.addEventListener('input', () => { v.hard = hd.value; onChange(); }); box.appendChild(hd);
   return box;
 }

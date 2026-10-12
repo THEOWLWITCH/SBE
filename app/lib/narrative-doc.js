@@ -57,10 +57,9 @@ body{direction:rtl;background:var(--ground);margin:0;padding:26px 16px 60px;
 .body{padding:24px 36px 30px;}
 .sec{margin-bottom:26px;}
 .sec:last-child{margin-bottom:0;}
-.h{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--muted);padding-bottom:6px;margin-bottom:12px;
-  border-bottom:1px solid var(--hair);display:flex;justify-content:space-between;
-  gap:12px;align-items:baseline;}
+.h{font-family:Assistant,Arial,sans-serif;font-size:15px;font-weight:800;letter-spacing:0;
+  color:#1E3F5A;padding:2px 10px 4px 0;margin-bottom:12px;border-inline-start:4px solid #2A9D8F;
+  display:flex;justify-content:space-between;gap:12px;align-items:baseline;}
 .h em{font-style:normal;font-family:inherit;font-size:12px;letter-spacing:0;text-transform:none;}
 p{margin:0 0 11px;}
 p:last-child{margin:0;}
@@ -155,7 +154,7 @@ ol.list li,ul.list li{margin-bottom:7px;}
   .two{grid-template-columns:1fr;} .row,.tp-b,.br{grid-template-columns:1fr;gap:3px;}
   .head,.body,.foot{padding-inline:20px;}
 }
-@page{size:A4;margin:24mm 24mm;}
+@page{size:A4;margin:24mm 24mm;@bottom-center{content:"עמוד " counter(page) " מתוך " counter(pages);font:600 8.5pt Assistant,Arial,sans-serif;color:#5C6771}@bottom-right{content:"Begood · be-good.co.il";font:8pt Assistant,Arial,sans-serif;color:#8A949E}}
 @media print{
   body{background:#fff;padding:0;}
   .sheet{box-shadow:none;max-width:none;border-radius:0;font-size:11pt;}
@@ -225,7 +224,7 @@ ol.q li,ul.q li{margin-bottom:5px;}
   .dt td.n,.dt td.ty{display:inline-block;border:0;}
   .dt td[data-label]:not([data-label="#"])::before{content:attr(data-label);display:block;font-weight:700;font-size:11px;color:var(--muted);}
 }
-@page{size:A5;margin:14mm;}
+@page{size:A5;margin:14mm;@bottom-center{content:"עמוד " counter(page) " מתוך " counter(pages);font:600 7.5pt Assistant,Arial,sans-serif;color:#5C6771}}
 @media print{body{background:#fff;padding:0;}.card{box-shadow:none;max-width:none;border-radius:0;font-size:10.5pt;}
  .dt tr{break-inside:avoid;} .dt thead th,.dt tbody th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
  #rptFab,#rptDlg,#navBar,#navPanel{display:none!important;} body.sbe-hasnav{padding-top:0;}}
@@ -306,7 +305,7 @@ function tpTables(tps, { whoOf, otherOf, doLabel = 'מה את עושה', askLabe
     br.push([esc(t.n), `<b>אם ${esc(other)}</b> ${esc(b.move)}`, `<b>${esc(then)}</b> <span class="said">${esc(b.says)}</span>`,
       `<span class="eff ${effCls(b.effect)}">${esc(b.effect)}</span> ${b.quality ? `<em>${esc(b.quality)}</em>` : ''}`]);
   }));
-  return num(main) + (br.length ? `<div class="dt-cap">אם… אז… — איך כל תפנית יכולה להתגלגל</div>` +
+  return num(main) + (br.length ? `<div class="dt-cap">אם… אז…: איך כל תפנית יכולה להתגלגל</div>` +
     num(dtable(['#', 'אם…', 'אז…', 'לאן זה מוביל'], br)) : '');
 }
 
@@ -317,9 +316,9 @@ function tpTables(tps, { whoOf, otherOf, doLabel = 'מה את עושה', askLabe
 // כותרת הטבלה חוזרת בראש כל עמוד (12/10/2026: "כותרת טבלה חוזרת בראש כל עמוד"): לפני הדפסה, לכל טבלה
 // מעל שורת כותרות העמודה נכנסת שורה עם שם הטבלה (הכיתוב שמעליה, או כותרת הסעיף), ו-thead חוזר בכל עמוד.
 const RH_SCRIPT = `<script>(function(){function go(){document.querySelectorAll('table').forEach(function(t){
-if(t.querySelector('tr.sbe-rh-row')||t.rows.length<3)return;var cap=t.previousElementSibling,name='',hide=null;
+if(t.querySelector('tr.sbe-rh-row')||t.rows.length<3||t.closest('.rcard'))return;var cap=t.previousElementSibling,name='',hide=null;
 if(cap&&cap.classList.contains('dt-cap')){name=cap.textContent;hide=cap;}else{var s=t.closest('.sec'),h=s&&s.querySelector(':scope>.h');
-if(h){var sp=h.querySelector('span');name=(sp||h).textContent;if(h.nextElementSibling===t)hide=h;}}
+if(h){var sp=h.querySelector('span');name=(sp||h).textContent;if(h.nextElementSibling===t&&!h.querySelector('em'))hide=h;}}
 name=String(name||'').replace(/\s+/g,' ').trim();if(!name)return;var n=0;[].forEach.call(t.rows[0].cells,function(c){n+=c.colSpan||1;});
 var tr=document.createElement('tr'),th=document.createElement('th');tr.className='sbe-rh-row';th.colSpan=n;th.textContent=name;tr.appendChild(th);
 var hd=t.tHead;if(!hd){hd=document.createElement('thead');t.insertBefore(hd,t.firstChild);}hd.insertBefore(tr,hd.firstChild);if(hide)hide.classList.add('sbe-rh-src');});}
@@ -353,7 +352,7 @@ ${FONTS}
   <div class="hr"></div>
   <div class="body">${body}</div>
   <div class="foot">
-    <div class="foot-row"><span>Begood · חינוך מבוסס סימולציה · ${esc(scn.id)}</span><span>${esc(badge)}</span></div>
+    <div class="foot-row"><span>Begood · חינוך מבוסס סימולציה</span><span>${esc(badge)}</span></div>
     ${byline ? `<div class="foot-by">${byline}</div>` : ''}
   </div>
 </div>
@@ -374,7 +373,7 @@ ${WIDGET}`;
 
   // ── מסלול אנשי חינוך: ארבעה מסמכים מ-scenario.json ──
   function renderEduDocs(s) {
-    const baseMeta = [`<b>${esc(s.duration)}</b> דקות`, esc(s.age), `גישה חינוכית: ${esc(s.approach)}`, esc(s.id)];
+    const baseMeta = [`<b>${esc(s.duration)}</b> דקות`, esc(s.age), `גישה חינוכית: ${esc(s.approach)}`, esc(s.date)].filter(Boolean);
     const redLine = () => red(s.redLine);
     const tr = s.trainee, a = s.actor, f = s.facilitator;
     const actorFirstName = String(a.nameAndAge || '').split(',')[0];
@@ -392,7 +391,7 @@ ${WIDGET}`;
           ['מה הייתי רוצה שיקרה', '<div class="write" contenteditable="true"></div>'],
           ['איך אפתח', '<div class="write" contenteditable="true"></div>'],
           ['מה אשאל', '<div class="write" contenteditable="true"></div>'],
-        ]), 'למילוי לפני הסימולציה — על המסך או בדף המודפס') +
+        ]), 'למילוי לפני הסימולציה, על המסך או בדף המודפס') +
         redLine(),
     });
 
@@ -405,7 +404,7 @@ ${WIDGET}`;
           ['מה קרה, מנקודת מבטך', paras(a.story)],
           ['מה את מבקשת, ומה את לא אומרת', paras(a.askAndBeneath)],
           ['מי יושבת מולך', paras(tr.portraitForActor)],
-        ]), 'לדעת מי היא — לא כדי לרחם עליה, כדי להוביל') +
+        ]), 'לדעת מי היא: לא כדי לרחם עליה, כדי להוביל') +
         sec('מה פותח אותך, ומה סוגר', dtable(null, [
           ['מה פותח אותך', paras(a.opens)],
           ['מה שאת יודעת והיא לא', paras(a.knows)],
@@ -413,7 +412,7 @@ ${WIDGET}`;
           ['הסתירה שבך', paras(a.contradiction)],
         ].filter((r) => r[1]))) +
         sec('חמש נקודות התפנית', tpTables(s.turningPoints, { whoOf: () => 'את', otherOf: () => tr.role }),
-          'מלאי, לא רצף. בחמש דקות יקרו שתיים') +
+          'לא כל התפניות יקרו, ולא בסדר הזה. בחמש דקות יקרו שתיים') +
         sec('איך זה מתגלגל ואיך זה נגמר', dtable(null, [
           ['איך חמש הדקות יכולות להתגלגל', paras(a.arc)],
           ['איך זה יכול להיגמר', paras(a.endingsProse)],
@@ -448,17 +447,15 @@ ${WIDGET}`;
           dtable(['#', 'מיומנות לאימון', 'נצפה', 'לא נצפה'], (f.skills || []).map((k, i) => [String(i + 1), esc(k), '☐', '☐']))
             .replace(/<td data-label="#">/g, '<td class="n" data-label="#">').replace(/<td data-label="(נצפה|לא נצפה)">/g, '<td class="ck" data-label="$1">') +
           ((f.watchFor || []).length ? dtable(['נקודה לצפייה', 'מה ראיתי'], f.watchFor.map((w) => [esc(w), ''])) : ''),
-          'המיומנויות מהטקסונומיה — אלה שיופיעו בדף הצפייה') +
-        sec('שאלות לשיחה', dtable(['מתי', 'השאלות'], [
-          ['לפני הצפייה — שיחה מקדימה', ol(f.preQuestions)],
-          ['תחקיר — אחרי הצפייה', ol((f.debrief || []).concat(['מה קידם את המפגש?', 'מה גרע מהמפגש?']))],
-          ['רפלקציה', ol(f.reflection)],
-        ].filter((r) => /<li>/.test(r[1])).map(([k, v]) => [`<b>${esc(k)}</b>`, v]))) +
-        sec('מקורות להרחבה',
-          (f.sources || []).length
-            ? list(f.sources)
-            : `<p class="note">לא נבחרו מקורות מהספרייה לתרחיש זה. <b>המערכת אינה כותבת מקורות</b>, ולכן סעיף ריק עדיף על מקור שאינו קיים.</p>`) +
-        redLine(),
+          'המיומנויות שיופיעו בדף הצפייה') +
+        // שאלות: מתי, מי שואל את מי ובשביל מה (12/10/2026, בדיקת הלקוחה)
+        sec('שאלות לשיחה', dtable(['מתי', 'מי שואל את מי, ובשביל מה', 'השאלות'], [
+          ['לפני הצפייה', 'המנחה שואלת את הצופות, כדי לכוון את תשומת הלב למה שיקרה בסצנה.', ol(f.preQuestions)],
+          ['שאלות לסיכום: אחרי הצפייה', 'המנחה שואלת קודם את המתנסה ואחר כך את הצופות, כדי לחבר בין מה שקרה למיומנויות.', ol((f.debrief || []).concat(['מה קידם את המפגש?', 'מה גרע מהמפגש?']))],
+          ['רפלקציה: בסוף המפגש', 'כל משתתפת לעצמה, בכתב, כדי לבחור צעד אחד שתיקח איתה.', ol(f.reflection)],
+        ].filter((r) => /<li>/.test(r[2])).map(([k, w, v]) => [`<b>${esc(k)}</b>`, esc(w), v]))) +
+        redLine() +
+        ((f.sources || []).length ? sec('מקורות להרחבה', list(f.sources)) : ''),
     });
 
     const tic = (a.visible || []).find((v) => String(v).includes('"')) || '';
@@ -471,16 +468,16 @@ ${WIDGET}`;
         ['פתיחה', `<p style="margin:0">${esc(entrance.posture)} · ${esc(entrance.doing)}</p><p style="margin:5px 0 0" class="big">${esc(entrance.firstLine)}</p>`],
         ['הביטוי החוזר שלך', tic ? `<div class="big">${esc(tic)}</div>` : ''],
         ['לא תגידי בשום מצב', wontSay ? `<div class="stop">${esc(wontSay)}</div>` : ''],
-        ['בלחץ שלישי יוצא רק זה', a.valve ? `<div class="warm">${esc(a.valve)}</div>` : ''],
-        ['נפתחת כש', a.opens ? esc(a.opens) : ''],
+        ['בלחץ שלישי: מה יוצא רק כשלוחצים שוב ושוב', a.valve ? `<div class="warm">${esc(a.valve)}</div>` : ''],
+        ['מה פותח אותך', a.opens ? esc(a.opens) : ''],
         ['מולך', `${esc(tr.role)}${tr.seniority ? ', ' + esc(tr.seniority) : ''}. ${esc((tr.traits || [])[1] || (tr.traits || [])[0] || '')}` +
           ((tr.likelyMoves || []).length ? `<ul class="q" style="margin-top:5px">${tr.likelyMoves.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '')],
       ].filter((r) => r[1])) +
       `<div class="dt-cap">חמש התפניות</div>` +
-      dtable(['#', 'התפנית', 'מה זה מבקש ממנה', 'ליבה או סוג'], (s.turningPoints || []).map((t) => [esc(t.n), `<b>${esc(t.name)}</b>`, esc(t.demands), tpType(t)]))
+      dtable(['#', 'התפנית', 'הרגע', 'מה זה מבקש ממנה', 'ליבה או סוג'], (s.turningPoints || []).map((t) => [esc(t.n), `<b>${esc(t.name)}</b>`, esc(t.trigger), esc(t.demands), tpType(t)]))
         .replace(/<td data-label="#">/g, '<td class="n" data-label="#">').replace(/<td data-label="ליבה או סוג">/g, '<td class="ty" data-label="ליבה או סוג">') +
       ((s.endings || []).length ? dtable(null, [['סיומים', `<ul class="q">${s.endings.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>`]]) : '') +
-      `<div class="free">אם היא עושה משהו שאינו כאן: שאלי מה ${esc(actorFirstName)} תעשה לנוכח החשש שלה, ולכי לשם. <b>המפה היא מלאי ולא כלוב.</b></div>`);
+      `<div class="free">אם היא עושה משהו שאינו כאן: שאלי מה ${esc(actorFirstName)} תעשה לנוכח החשש שלה, ולכי לשם. <b>לא כל התפניות יקרו, ולא בסדר הזה.</b></div>`);
 
     // בדיקת דלף על גרסת המתנסה — אותה בדיקה שרצה ברתמה.
     const secrets = [
@@ -507,7 +504,7 @@ ${WIDGET}`;
   function renderRoleDocs(s) {
     const byKey = Object.fromEntries(s.characters.map((c) => [c.key, c]));
     const meta = [`<b>${esc(s.creator)}</b>`, esc(s.institution), esc(s.date), `<b>${esc(s.duration)}</b> דקות`,
-      esc(s.age), esc(s.approach), esc(s.id)];
+      esc(s.age), esc(s.approach)].filter(Boolean);
     const approachShort = String(s.approach || '').replace(/\s*\(.*\)\s*$/, '');
     const isParents = s.track === 'parents';
     const otherOf = (key) => s.characters.find((c) => c.key !== key);
@@ -553,13 +550,13 @@ ${WIDGET}`;
         sec('חמש נקודות התפנית', tpTables(s.turningPoints, {
           whoOf: (t) => byKey[t.who].name, otherOf: (t) => otherOf(t.who).name,
           doLabel: 'מה קורה מצד הדמות', askLabel: 'מה זה מבקש',
-        }), 'מלאי, לא רצף') +
+        }), 'לא כל התפניות יקרו, ולא בסדר הזה') +
         sec('איך זה מתגלגל ואיך זה נגמר', dtable(null, [
           ['איך חמש הדקות יכולות להתגלגל', paras(s.arc)],
           ['איך זה יכול להיגמר', paras(s.endingsProse)],
         ].filter((r) => r[1]))) +
         sec('מה לראות ומה לשאול', dtable(['נקודה לצפייה', 'מה ראיתי'], (s.watch || []).map((w) => [esc(w), ''])) +
-          ((s.debrief || []).length ? dtable(['מתי', 'השאלות'], [['<b>תחקיר — אחרי הצפייה</b>', ol(s.debrief)]]) : '')) +
+          ((s.debrief || []).length ? dtable(['מתי', 'מי שואל את מי, ובשביל מה', 'השאלות'], [['<b>שאלות לסיכום: אחרי הצפייה</b>', 'המנחה שואלת קודם את המשחקים ואחר כך את הצופים, כדי לחבר בין מה שקרה בסצנה לחיים.', ol(s.debrief)]]) : '')) +
         red(s.redLine) + cardsSec,
     });
     const files = [[`${s.outputs.scenario}.html`, scenario, s.scenarioBadge]];
@@ -578,7 +575,7 @@ ${WIDGET}`;
             whoOf: (t) => (t.who === c.key ? c.pronoun : byKey[t.who].name),
             otherOf: (t) => (otherOf(t.who).key === c.key ? c.pronoun : otherOf(t.who).name),
             doLabel: 'מה קורה מצד הדמות', askLabel: 'מה זה מבקש',
-          }), 'מלאי, לא רצף') +
+          }), 'לא כל התפניות יקרו, ולא בסדר הזה') +
           sec('איך זה מתגלגל ואיך זה נגמר', dtable(null, [
             [isParents ? 'איך הערב יכול להתגלגל' : 'איך השיחה יכולה להתגלגל', paras(s.arc)],
             ['איך זה יכול להיגמר', paras(s.endingsProse)],
