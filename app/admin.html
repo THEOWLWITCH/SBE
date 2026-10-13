@@ -1688,7 +1688,12 @@ function pOpen(){
     if (id && !/^[a-z0-9][a-z0-9-]{2,31}$/.test(id)) { ask("השם של הקישור", "אפשר אותיות באנגלית, ספרות ומקף, 3 עד 32 תווים. או להשאיר ריק, ונבחר שם בעצמנו.", () => {}); return; }
     go.disabled = true;
     try { await accessCall("openCreate", { page: tool.value, date: date.value, id, label: label.value, max: max.value }); openData = null; render(); }
-    catch(e){ go.disabled = false; if (e.data && e.data.error === "taken") ask("השם תפוס", "יש כבר קישור בשם הזה. אפשר לבחור שם אחר.", () => {}); else accessFail(e); }
+    catch(e){ go.disabled = false; const er = e.data && e.data.error;
+      if (er === "taken") ask("השם תפוס", "יש כבר קישור בשם הזה. אפשר לבחור שם אחר.", () => {});
+      else if (er === "bad page") ask("הקישור לא נוצר", "השרת עוד לא מכיר את הכלי הזה. אחרי פריסה השרת מתעדכן כמה דקות; אפשר לנסות שוב בעוד רגע.", () => {});
+      else if (er === "bad date") ask("הקישור לא נוצר", "התאריך לא ברור. אפשר לכתוב אותו כך: 14.10.26, או לבחור בלוח השנה 📅.", () => {});
+      else if (er === "bad id") ask("הקישור לא נוצר", "השם של הקישור: אותיות באנגלית, ספרות ומקף, 3 עד 32 תווים.", () => {});
+      else accessFail(e); }
   });
   inn.append(el("h3",{style:"margin-top:0"},"קישור חדש"), row("הכלי", tool, "\"כל הכלים\" פותח את המרחב שלי עם כל הכלים שברשימה."), row("התאריך", date, "הקישור פתוח רק ביום הזה."),
     row("שם לקישור", name, "אותיות באנגלית, ספרות ומקף. השם מופיע בכתובת. אפשר להשאיר ריק, ונבחר שם אקראי."), row("כותרת", label, "מופיעה למשתתפות במסך."),
