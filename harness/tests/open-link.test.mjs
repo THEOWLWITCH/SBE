@@ -62,3 +62,21 @@ test('a full link stops letting people in', async () => {
   assert.equal((await handleAccess(store, { action: 'openJoin', id: 'small' }))[0], 200);
   assert.equal((await handleAccess(store, { action: 'openJoin', id: 'small' }))[1].error, 'open-full');
 });
+
+test('a daily link can open any listed tool, or all of them at once', async () => {
+  const store = memoryStore();
+  const token = await sys(store);
+  let [st, out] = await handleAccess(store, { action: 'openCreate', token, page: 'team-thinking.html', date: ilToday(), id: 'team' });
+  assert.equal(st, 200); assert.equal(out.item.perm, 'teamthink');
+  [st, out] = await handleAccess(store, { action: 'openCreate', token, page: 'home.html', date: ilToday(), id: 'all-day' });
+  assert.equal(st, 200);
+  [st, out] = await handleAccess(store, { action: 'openJoin', id: 'all-day' });
+  assert.equal(out.page, 'home.html'); assert.ok(out.perms.includes('writer') && out.perms.includes('leadership') && out.perms.includes('teamthink'));
+  const guest = out.token;
+  for (const page of ['message-writer.html', 'leadership-advisor.html', 'shared-dialogue-lab.html', 'academic-review.html'])
+    assert.ok((await authorizeModel(store, { token: guest, page })).ok, page);
+  for (const page of ['resilience-studio.html', 'journey.html', 'practice.html'])
+    assert.equal((await authorizeModel(store, { token: guest, page })).ok, false, page);
+  await handleAccess(store, { action: 'openRevoke', token, id: 'all-day' });
+  assert.equal((await authorizeModel(store, { token: guest, page: 'message-writer.html' })).ok, false);
+});

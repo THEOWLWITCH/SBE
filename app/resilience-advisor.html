@@ -654,7 +654,7 @@ F('btn-analyze').addEventListener('click',async()=>{
   try{
     // מבנה לא תקין: ניסיון נוסף אחד (sbeCallAIJson ב-lib/ai-call.js)
     const talk=STATE.report?STATE.pre.concat(STATE.chat):STATE.chat;
-    const input=pictureText(a)+(talk.length?'\n\nמה עלה בשיחה עם המחנך/ת לפני הדוח (שלבי את זה בדוח, ובמיוחד בתשובות ובהמלצות):\n'+chatText(talk):'');
+    const input=pictureText(a)+(talk.length?'\n\nהשיחה לפני הדוח. הדוח נשען עליה כמו על התיאור: מה שסופר בשיחה הוא מידע נוסף על הכיתה; תשובות לשאלות ההבהרה מדייקות את תמונת המצב ואת ההמלצות; כל שאלה שנשאלה בשיחה מקבלת מענה בדוח, ב-"answers" או בהמלצה המתאימה. אל תצטטי את השיחה ואל תחזרי עליה כמו שהיא.\n'+chatText(talk):'');
     const doc=await sbeCallAIJson(AI_SERVER,{system:ADVISOR_SYSTEM,messages:[{role:'user',content:input}],maxTokens:32000,customerReview:true},480000);
     STATE.report={at:new Date().toISOString(),cls:F('f-cls').value.trim(),age:F('f-age').value,doc,picture:pictureText(a)};
     STATE.pre=talk;STATE.chat=[];save();renderReport();renderChat();

@@ -300,7 +300,7 @@ export async function authorizePermission(store, token, permissions) {
   } else if (t.k === 'open') {
     const rec = await store.get('open:' + t.o);
     if (!openLive(rec)) return null;
-    live = { perms: [rec.perm] };
+    live = { perms: openPerms(rec) };
   } else if (t.k === 'inst' || (t.k === 'code' && t.c === 'LEGACY' && t.kind === 'legacy')) {
     const inst = (await getInstitutions(store)).find(x => x.name === t.inst);
     const sub = subState(inst, settings);
@@ -1359,8 +1359,14 @@ async function handleFeedbackInbox(store, body) {
 // open:<id> → { id, page, perm, date: 'YYYY-MM-DD' (שעון ישראל), label, max, joins, createdAt, revoked }.
 // entry.html?open=<id>: בלי קוד, רק בתאריך הזה, רק לכלי אחד. האסימון { k:'open', o:id } נבדק מול הרשומה בכל פנייה
 // למודל (authorizePermission), כך שאחרי היום, או אחרי ביטול, הכלי נסגר מיד.
+// 13/10/2026 ("תאפשר לי לתת קוד יומי לכל כלי המערכת"): כל הכלים שפתוחים למשתמשים ועובדים בלי קוד אישי, וגם "כל הכלים"
+// (OPEN_ALL: הכניסה למרחב שלי, עם כל ההרשאות של הרשימה). לא כאן: מיפוי החוסן ומסע אל החוסן (נשענים על קוד אישי בשרת),
+// כלי הסימולציה (סדנה וקוד מנחה), וכלים שטרם אושרו.
 export const OPEN_PAGES = { 'message-writer.html': 'writer', 'conversation-planner.html': 'conv', 'activity-planner.html': 'activity',
-  'facilitation-advisor.html': 'nana', 'resilience-advisor.html': 'practi', 'academic-review.html': 'academic' };
+  'facilitation-advisor.html': 'nana', 'resilience-advisor.html': 'practi', 'leadership-advisor.html': 'leadership',
+  'academic-review.html': 'academic', 'shared-dialogue-lab.html': 'dialogue', 'team-thinking.html': 'teamthink' };
+export const OPEN_ALL = 'home.html';
+const openPerms = (rec) => (rec && Array.isArray(rec.perms) && rec.perms.length ? rec.perms : [rec && rec.perm]).filter((p) => PERMS.includes(p));
 export const ilToday = (d = new Date()) => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
 const OPEN_MAX = 500;
 const validOpenId = (id) => /^[a-z0-9][a-z0-9-]{2,31}$/.test(String(id || ''));
@@ -1374,8 +1380,9 @@ async function handleOpenLinks(store, body, isSys) {
     if (rec.date !== ilToday()) return [403, { error: rec.date > ilToday() ? 'open-early' : 'open-over', date: rec.date, label: rec.label || '' }];
     if ((rec.joins || 0) >= (rec.max || OPEN_MAX)) return [403, { error: 'open-full' }];
     rec.joins = (rec.joins || 0) + 1; await store.set('open:' + id, rec);
-    const token = await signToken(store, { k: 'open', o: id, perms: [rec.perm] });
-    return [200, { ok: true, token, kind: 'open', page: rec.page, perms: [rec.perm], label: rec.label || '', date: rec.date }];
+    const perms = openPerms(rec);
+    const token = await signToken(store, { k: 'open', o: id, perms });
+    return [200, { ok: true, token, kind: 'open', page: rec.page, perms, label: rec.label || '', date: rec.date }];
   }
   if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
   if (action === 'openList') {
@@ -1384,13 +1391,14 @@ async function handleOpenLinks(store, body, isSys) {
   }
   if (action === 'openCreate') {
     const page = modelPage(body.page);
-    if (!OPEN_PAGES[page]) return [400, { error: 'bad page' }];
+    if (!OPEN_PAGES[page] && page !== OPEN_ALL) return [400, { error: 'bad page' }];
     if (!validYmd(body.date)) return [400, { error: 'bad date' }];
     let id = String(body.id || '').trim().toLowerCase();
     if (id) { if (!validOpenId(id)) return [400, { error: 'bad id' }]; if (await store.get('open:' + id)) return [409, { error: 'taken' }]; }
     else { do { id = randomBytes(5).toString('hex'); } while (await store.get('open:' + id)); }
     const max = Math.max(1, Math.min(OPEN_MAX, parseInt(body.max, 10) || OPEN_MAX));
-    const rec = { id, page, perm: OPEN_PAGES[page], date: body.date, label: String(body.label || '').trim().slice(0, 80), max, joins: 0,
+    const all = page === OPEN_ALL;
+    const rec = { id, page, perm: all ? 'all' : OPEN_PAGES[page], ...(all ? { perms: [...new Set(Object.values(OPEN_PAGES))] } : {}), date: body.date, label: String(body.label || '').trim().slice(0, 80), max, joins: 0,
       createdAt: new Date().toISOString(), revoked: false };
     await store.set('open:' + id, rec);
     return [200, { ok: true, item: rec }];
