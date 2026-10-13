@@ -126,6 +126,7 @@ ul.tl li{margin:.25rem 0}
 .rich li{margin:.3rem 0}
 .rich li::marker{color:var(--spoken)}
 #report h2{margin-top:1.6rem}
+.howto{background:var(--paper,#f6f9fb);border:1px solid var(--line,#d3e3ee);border-radius:12px;padding:.8rem 1.1rem;margin:.7rem 0}.howto ol{margin:.4rem 0;padding-inline-start:1.3rem}.howto li{margin:.25rem 0}.howto p{margin:.3rem 0 0}
 #report .card>h2:first-child{margin-top:0}
 .act-d{line-height:1.6}
 .chat .me{background:var(--spoken-soft);margin-inline-end:15%}
@@ -191,7 +192,18 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 <div class="wrap">
   <div class="card">
     <h1>נוגי: יועצת למנהיגות תומכת חוסן</h1>
-    <p><b>נוגי היא יועצת לפיתוח מנהיגות שתומכת בחוסן חברתי</b>, לא יועצת מנהיגות כללית: כל ניתוח וכל המלצה שלה מוסברים במונחי החוסן החברתי של בית הספר, שייכות, אמון, מנגנונים משותפים, רשתות תמיכה ומסוגלות קולקטיבית. נוגי עוזרת למי שמוביל/ה בבית הספר (מנהל/ת, צוות הנהלה, רכזים, וגם מועצת תלמידים וצוותי תלמידים) לבנות מנהיגות שמחזקת את החוסן החברתי: תקשורת, פירגון ועידוד, אמון, גיבוי וממלאי מקום, רווחת הצוות, ידע על מערכות החירום, ושותפות עם תלמידים, הורים וקהילה. ממלאים שאלון פתיחה, ומקבלים <b>דוח סיכום והמלצות</b>, רק מה שרלוונטי, ו<b>שיחת המשך</b>.</p>
+    <p><b>נוגי היא יועצת לפיתוח מנהיגות שתומכת בחוסן חברתי</b>, לא יועצת מנהיגות כללית: כל ניתוח וכל המלצה שלה מוסברים במונחי החוסן החברתי של בית הספר, שייכות, אמון, מנגנונים משותפים, רשתות תמיכה ומסוגלות קולקטיבית. נוגי עוזרת למי שמוביל/ה בבית הספר (מנהל/ת, צוות הנהלה, רכזים, וגם מועצת תלמידים וצוותי תלמידים) לבנות מנהיגות שמחזקת את החוסן החברתי: תקשורת, פירגון ועידוד, אמון, גיבוי וממלאי מקום, רווחת הצוות, ידע על מערכות החירום, ושותפות עם תלמידים, הורים וקהילה. ממלאים שאלון פתיחה, משוחחים עם נוגי, ומקבלים <b>דוח סיכום והמלצות</b> עם רק מה שרלוונטי.</p>
+    <div class="howto">
+      <b>איך זה עובד</b>
+      <ol>
+        <li><b>מי מוביל/ה.</b> שדות עיקריים: התפקיד, השלב החינוכי ומה המצב עכשיו. כל השאר רשות.</li>
+        <li><b>שאלון פתיחה.</b> לכל היגד בממדי הליבה בוחרים תשובה אחת. כשאין מספיק מידע, אפשר לבחור "לא יודע/ת". ממדי ההעמקה רשות.</li>
+        <li><b>במילים שלך.</b> רשות. מה שכותבים כאן עוזר לנוגי לדייק.</li>
+        <li><b>שיחה עם נוגי.</b> רשות, ומומלצת. אפשר לשאול, לספר עוד ולענות על שאלות ההבהרה שלה. מה שעולה בשיחה נכנס לדוח.</li>
+        <li><b>הדוח.</b> מפיקים אותו אחרי השיחה (עד כ־5 דקות). אחרי הדוח אפשר להמשיך לשאול, להפיק דוח מעודכן, להדפיס ולשמור כ־PDF.</li>
+      </ol>
+      <p class="muted">מה שממלאים נשמר במכשיר הזה בלבד. שמות של אנשי צוות, תלמידים והורים לא נדרשים, וכדאי לא לכתוב אותם.</p>
+    </div>
     <p class="intro" style="border-inline-start-color:var(--hidden);background:var(--hidden-soft);font-size:.92rem;margin:.6rem 0">כדאי לבחון כל המלצה לאור הנהלים והחוקים. ההמלצות הן הצעות לחשיבה, וההחלטה בידי ההנהגה.</p>
     <p data-peek class="muted">מנהיגות טובה היא עבודת צוות, ולכן נוגי תמיד תעדיף צוות, שותפים וממלאי מקום. נוגי נשענת על מחקר עדכני מישראל ומהעולם, שמתעדכן מדי שבוע: <a href="resilience-advisor-sources.html?a=nugi" target="_blank" style="color:var(--spoken);font-weight:700">רשימת המקורות</a>.</p>
   </div>
@@ -200,25 +212,25 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
     <div class="card">
       <h2>1. מי מוביל/ה</h2>
       <div class="row2">
-        <div><label for="f-who">התפקיד</label>
+        <div><label for="f-who">התפקיד (שדה עיקרי)</label>
           <select id="f-who"><option value="">בחירה...</option>
             <option>מנהל/ת בית הספר</option><option>סגן/ית מנהל/ת</option><option>צוות הנהלה</option>
             <option>רכז/ת (שכבה, מקצוע, חברתי ועוד)</option><option>צוות רכזים</option><option>מחנכי שכבה</option>
             <option>מועצת תלמידים</option><option>צוות תלמידים מוביל</option><option>תלמיד/ה מוביל/ה</option></select></div>
-        <div><label for="f-mode">איך מובילים</label>
+        <div><label for="f-mode">איך מובילים (רשות)</label>
           <select id="f-mode"><option>בצוות או עם שותפים</option><option>לבד</option></select>
           <p class="muted" id="mode-note" hidden>נוגי תמיד תעדיף צוות, שותפים וממלאי מקום, ותציע איך לבנות אותם סביבך.</p></div>
       </div>
       <div class="row2">
         <div><label for="f-school">בית הספר (רשות)</label><input type="text" id="f-school" maxlength="60"></div>
-        <div><label for="f-stage">שלב חינוכי</label>
+        <div><label for="f-stage">שלב חינוכי (שדה עיקרי)</label>
           <select id="f-stage"><option value="">בחירה...</option><option>גן ילדים</option><option>יסודי</option><option>חטיבת ביניים</option><option>תיכון</option><option>שש־שנתי</option><option>כמה שלבים / רשות</option></select></div>
       </div>
       <div class="row2">
-        <div><label for="f-staff">מספר אנשי צוות (בערך)</label><input type="number" id="f-staff" min="1" max="2000"></div>
-        <div><label for="f-size">מספר תלמידים (בערך)</label><input type="number" id="f-size" min="1" max="20000"></div>
+        <div><label for="f-staff">מספר אנשי צוות, בערך (רשות)</label><input type="number" id="f-staff" min="1" max="2000"></div>
+        <div><label for="f-size">מספר תלמידים, בערך (רשות)</label><input type="number" id="f-size" min="1" max="20000"></div>
       </div>
-      <label for="f-sit">מה המצב עכשיו</label>
+      <label for="f-sit">מה המצב עכשיו (שדה עיקרי)</label>
       <select id="f-sit">
         <option value="">בחירה...</option>
         <option>שגרה</option>
@@ -270,7 +282,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
       <label for="f-worry">מה הכי מדאיג אותך?</label>
       <textarea id="f-worry" maxlength="800"></textarea>
       <div class="btns">
-        <button class="btn" id="btn-analyze">ניתוח והמלצות</button>
+        <button class="btn" id="btn-next">המשך: שיחה עם נוגי</button>
         <button class="btn btn-ghost sbe-sysonly" id="btn-example">מילוי לדוגמה</button>
         <button class="btn btn-ghost" id="btn-clear">ניקוי</button>
       </div>
@@ -279,18 +291,24 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
   </div>
 
   <div id="picture"></div>
-  <div id="report"></div>
   <div id="chat-area" hidden>
     <div class="card chat no-print">
-      <h2>שאלה לנוגי</h2>
-      <p class="muted">למשל: "איך מתחילים לבנות צוות ממלאי מקום?" או "איך לפתוח שיחה עם מורה שנראית שחוקה?"</p>
+      <h2 id="chat-h">4. שיחה עם נוגי (רשות)</h2>
+      <p class="muted" id="chat-intro"></p>
+      <details id="chat-pre" hidden><summary class="muted">השיחה לפני הדוח</summary><div id="chat-pre-log"></div></details>
       <div id="chat-log"></div>
       <textarea id="chat-in" maxlength="1000" placeholder="השאלה שלך..."></textarea>
       <div class="btns"><button class="btn" id="chat-send">שליחה</button><span class="muted" id="chat-left"></span></div>
-      <p class="intro" id="chat-done" hidden style="font-size:.92rem">הגעת ל-10 שאלות: זה המקסימום לשיחה אחת. כדי להמשיך, אפשר לעדכן את התיאור ולהפיק ניתוח חדש, ואז תיפתח שיחה חדשה.</p>
+      <p class="intro" id="chat-done" hidden style="font-size:.92rem">אלה 10 השאלות של השלב הזה. אפשר להפיק את הדוח, ואחריו לשאול עוד.</p>
       <p class="err" id="chat-err" hidden></p>
     </div>
+    <div class="card no-print" id="report-step">
+      <h2>5. הדוח</h2>
+      <p class="muted" id="report-note"></p>
+      <div class="btns"><button class="btn" id="btn-analyze">הפקת הדוח</button></div>
+    </div>
   </div>
+  <div id="report"></div>
 </div>
 
 <button type="button" id="fb-fab" class="no-print">רעיונות / תקלות / שאלות</button>
@@ -607,12 +625,12 @@ function setAnswers(a){setTimeout(()=>document.querySelectorAll('details.optdim'
 
 // ── שמירה מקומית (במכשיר הזה בלבד). התשובות של שני הסטים נשמרות יחד, כדי שמעבר בין
 // "צוות" ל"תלמידים" לא ימחק תשובות.
-let STATE={report:null,chat:[]};let ALL_ANS={};
+let STATE={report:null,chat:[],pre:[],ready:false};let ALL_ANS={};
 function save(){try{Object.assign(ALL_ANS,answers());ITEMS.forEach(it=>{if(answers()[it.k]==null)delete ALL_ANS[it.k];});
-  const f={};TEXT_FIELDS.forEach(k=>f[k]=F(k).value);localStorage.setItem(STORE,JSON.stringify({f,a:ALL_ANS,report:STATE.report,chat:STATE.chat}));}catch(e){}}
+  const f={};TEXT_FIELDS.forEach(k=>f[k]=F(k).value);localStorage.setItem(STORE,JSON.stringify({f,a:ALL_ANS,report:STATE.report,chat:STATE.chat,pre:STATE.pre,ready:STATE.ready}));}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem(STORE)||'null');if(!s)return;if(s.f&&s.f['f-sit'])renderSituations(s.f['f-sit']);
   if(s.f){if(s.f['f-who'])ADD_WHO.ensure(s.f['f-who']);if(s.f['f-stage'])ADD_STAGE.ensure(s.f['f-stage']);}
-  TEXT_FIELDS.forEach(k=>{if(s.f&&s.f[k]!=null)F(k).value=s.f[k];});ALL_ANS=s.a||{};buildCriteria();setAnswers(ALL_ANS);STATE.report=s.report||null;STATE.chat=s.chat||[];}catch(e){}}
+  TEXT_FIELDS.forEach(k=>{if(s.f&&s.f[k]!=null)F(k).value=s.f[k];});ALL_ANS=s.a||{};buildCriteria();setAnswers(ALL_ANS);STATE.report=s.report||null;STATE.chat=s.chat||[];STATE.pre=s.pre||[];STATE.ready=!!(s.ready||s.report);}catch(e){}}
 TEXT_FIELDS.forEach(k=>F(k).addEventListener('input',save));
 F('f-who').addEventListener('change',()=>{save();buildCriteria();setAnswers(ALL_ANS);save();const a=answers();F('picture').textContent='';if(Object.keys(a).length)renderPicture(a);});
 
@@ -739,8 +757,8 @@ async function complete(system,messages,maxTokens,review){
 
 // ── ניתוח ──
 let BUSY=false;
-F('btn-analyze').addEventListener('click',async()=>{
-  if(BUSY)return;
+// סדר העבודה (13/10/2026, כמו בפרקטי): טופס ← שיחה ← דוח. הדוח נשען גם על מה שעלה בשיחה.
+function checkForm(){
   const a=answers();const err=F('form-err');
   const miss=ITEMS.filter(it=>!it.c&&!it.opt&&a[it.k]==null);
   document.querySelectorAll('.q').forEach(q=>q.classList.remove('miss'));
@@ -748,20 +766,32 @@ F('btn-analyze').addEventListener('click',async()=>{
   if(need.length||miss.length){
     miss.forEach(it=>F('q-'+it.k).classList.add('miss'));
     err.textContent=(need.length?'כדי להמשיך, אפשר לבחור: '+need.join(', ')+'. ':'')+(miss.length?'חסרות תשובות ל-'+miss.length+' היגדים (מסומנים באדום). אפשר לבחור "לא יודע/ת".':'');
-    err.hidden=false;(need.length?F(!F('f-who').value?'f-who':!F('f-stage').value?'f-stage':'f-sit'):F('q-'+miss[0].k)).scrollIntoView({behavior:'smooth',block:'center'});return;
+    err.hidden=false;(need.length?F(!F('f-who').value?'f-who':!F('f-stage').value?'f-stage':'f-sit'):F('q-'+miss[0].k)).scrollIntoView({behavior:'smooth',block:'center'});return null;
   }
-  err.hidden=true;renderPicture(a);
-  BUSY=true;const b=F('btn-analyze');b.disabled=true;b.textContent='נוגי מנתחת... (עד כ-5 דקות)';
+  err.hidden=true;renderPicture(a);return a;
+}
+function chatText(list){return (list||[]).map(m=>(m.role==='user'?'המוביל/ה: ':'נוגי: ')+m.content).join('\n\n');}
+F('btn-next').addEventListener('click',()=>{
+  if(!checkForm())return;STATE.ready=true;save();
+  F('chat-area').hidden=false;renderChat();F('chat-area').scrollIntoView({behavior:'smooth',block:'start'});
+  setTimeout(()=>{if(!F('chat-in').disabled)F('chat-in').focus({preventScroll:true});},500);
+});
+F('btn-analyze').addEventListener('click',async()=>{
+  if(BUSY)return;
+  const a=checkForm();if(!a)return;STATE.ready=true;
+  BUSY=true;const b=F('btn-analyze');b.disabled=true;b.textContent='נוגי מכינה את הדוח... (עד כ־5 דקות)';
   const rep=F('report');rep.textContent='';rep.appendChild(el('div','card','נוגי קוראת את תמונת המצב ומכינה את הדוח, ואז בודקת שהכול ברור... (עד כ-5 דקות)'));
   rep.scrollIntoView({behavior:'smooth',block:'start'});
   try{
     // מבנה לא תקין: ניסיון נוסף אחד (sbeCallAIJson ב-lib/ai-call.js)
-    const doc=await sbeCallAIJson(AI_SERVER,{system:ADVISOR_SYSTEM,messages:[{role:'user',content:pictureText(a)}],maxTokens:32000,customerReview:true},480000);
+    const talk=STATE.report?STATE.pre.concat(STATE.chat):STATE.chat;
+    const input=pictureText(a)+(talk.length?'\n\nהשיחה לפני הדוח. הדוח נשען עליה כמו על התיאור: מה שסופר בשיחה הוא מידע נוסף על המצב; תשובות לשאלות ההבהרה מדייקות את תמונת המצב ואת ההמלצות; כל שאלה שנשאלה בשיחה מקבלת מענה בדוח, ב-"answers" או בהמלצה המתאימה. אל תצטטי את השיחה ואל תחזרי עליה כמו שהיא.\n'+chatText(talk):'');
+    const doc=await sbeCallAIJson(AI_SERVER,{system:ADVISOR_SYSTEM,messages:[{role:'user',content:input}],maxTokens:32000,customerReview:true},480000);
     STATE.report={at:new Date().toISOString(),who:F('f-who').value,mode:F('f-mode').value,school:F('f-school').value.trim(),stage:F('f-stage').value,sit:F('f-sit').value,doc,picture:pictureText(a)};
-    STATE.chat=[];save();renderReport();renderChat();
+    STATE.pre=talk;STATE.chat=[];save();renderReport();renderChat();
   }catch(e){
     rep.textContent='';const c=el('div','card');c.appendChild(el('p','err',e.name==='AbortError'?'הניתוח לקח יותר מדי זמן. אפשר לנסות שוב.':(e.code==='incomplete'?'הדוח חזר חלקי. אפשר לנסות שוב בעוד רגע.':'הניתוח לא הצליח ('+e.message+'). אפשר לנסות שוב בעוד רגע.')));rep.appendChild(c);
-  }finally{BUSY=false;b.disabled=false;b.textContent='ניתוח והמלצות';}
+  }finally{BUSY=false;b.disabled=false;b.textContent=STATE.report?'הפקת דוח מעודכן':'הפקת הדוח';}
 });
 
 // ── עזרים משותפים לפרקטי ולנוגי (מקורות, הדגשות, כרטיסי פעולה) ──
@@ -842,7 +872,7 @@ function renderReport(){
   const box=F('report');box.textContent='';const R=STATE.report;if(!R)return;const d=R.doc||{};
   const head=el('div','card no-print');head.appendChild(el('h2',null,'הדוח מוכן'));
   const nav=el('div','rep-nav');
-  const ask=el('button','btn','לשאול את נוגי ↓');ask.addEventListener('click',()=>{F('chat-area').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>{if(!F('chat-in').disabled)F('chat-in').focus({preventScroll:true});},500);});
+  const ask=el('button','btn','שאלות המשך לנוגי ↓');ask.addEventListener('click',()=>{F('chat-area').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>{if(!F('chat-in').disabled)F('chat-in').focus({preventScroll:true});},500);});
   const pr=el('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'דוח סיכום והמלצות'+(STATE.report&&STATE.report.school?': '+STATE.report.school:''),node:F('report')}):window.print());
   const cp=el('button','btn btn-ghost','העתקת הטקסט');cp.addEventListener('click',()=>{navigator.clipboard&&navigator.clipboard.writeText(plain()).then(()=>{cp.textContent='הועתק ✓';setTimeout(()=>cp.textContent='העתקת הטקסט',2000);});});
   nav.appendChild(ask);nav.appendChild(pr);nav.appendChild(cp);head.appendChild(nav);box.appendChild(head);
@@ -879,7 +909,7 @@ function renderReport(){
   const foot=el('p','muted','ההמלצות הן נקודת פתיחה לחשיבה ולשיחה עם הצוות, ולא מחליפות שיקול דעת מקצועי. כדאי לבדוק כל המלצה לאור הנהלים והחוקים. המקורות: ');const a=el('a',null,'רשימת המקורות');a.href='resilience-advisor-sources.html?a=nugi';a.target='_blank';a.style.color='var(--spoken)';foot.appendChild(a);
   foot.appendChild(document.createTextNode('.'));foot.style.marginTop='1rem';rec.appendChild(foot);
   doc.appendChild(rec);{const rs=SBE_REFS.end();if(rs)doc.appendChild(rs);}box.appendChild(doc);
-  F('chat-area').hidden=false;
+  F('chat-area').hidden=false;F('report').after(F('chat-area'));
 }
 function plain(){
   const R=STATE.report,d=R.doc||{},L=[];
@@ -909,6 +939,13 @@ function plain(){
 const CHAT_MAX=10;let CHAT_BUSY=false;
 const askedCount=()=>STATE.chat.filter(m=>m.role==='user').length;
 function renderChat(){
+  const hasRep=!!STATE.report;
+  F('chat-h').textContent=hasRep?'שאלות המשך לנוגי':'4. שיחה עם נוגי (רשות)';
+  F('chat-intro').textContent=hasRep?'אפשר לשאול על הדוח, לבקש פירוט או חלופה אחרת. למשל: "איך מתחילים לבנות צוות ממלאי מקום?"':'אפשר לשאול, לספר עוד על בית הספר או לבקש שנוגי תשאל שאלות הבהרה. מה שעולה בשיחה נכנס לדוח. למשל: "איך פותחים שיחה עם מורה שנראית שחוקה?" או "מה עוד חשוב לך לדעת?".';
+  F('report-note').textContent=hasRep?'אחרי שיחה נוספת אפשר להפיק דוח מעודכן, שכולל גם אותה.':'הדוח נשען על מה שמילאת ועל מה שעלה בשיחה. אפשר להפיק אותו גם בלי לשאול דבר. ההפקה לוקחת עד כ־5 דקות.';
+  if(!BUSY)F('btn-analyze').textContent=hasRep?'הפקת דוח מעודכן':'הפקת הדוח';
+  const pre=F('chat-pre-log');pre.textContent='';F('chat-pre').hidden=!(hasRep&&STATE.pre.length);
+  if(hasRep)STATE.pre.forEach(m=>{const d=el('div','msg '+(m.role==='user'?'me':'bot'));d.appendChild(m.role==='user'?withRefs(m.content):richText(m.content));pre.appendChild(d);});
   const log=F('chat-log');log.textContent='';
   STATE.chat.forEach(m=>{const d=el('div','msg '+(m.role==='user'?'me':'bot'));if(m.role==='user')d.appendChild(withRefs(m.content));else{SBE_REFS.begin(SRC,'resilience-advisor-sources.html?a=nugi');d.appendChild(richText(m.content));const rs=SBE_REFS.end();if(rs)d.appendChild(rs);}log.appendChild(d);});
   if(CHAT_BUSY&&STATE.chat.length&&STATE.chat[STATE.chat.length-1].role==='user')log.appendChild(el('div','msg bot thinking','נוגי חושבת על תשובה…'));
@@ -921,11 +958,11 @@ function renderChat(){
 function plainShort(){const d=STATE.report.doc||{};const t=x=>(x||[]).map(a=>a.title||a.domain||a.text||a).filter(Boolean).join('; ');
   return ['חוזקות: '+t(d.strengths),'אתגרים: '+t(d.challenges),'עדיפויות: '+t(d.priorities),'פעולות: '+t(d.actions)].join('\n');}
 F('chat-send').addEventListener('click',async()=>{
-  const q=F('chat-in').value.trim();if(!q||BUSY||!STATE.report||askedCount()>=CHAT_MAX)return;
+  const q=F('chat-in').value.trim();if(!q||BUSY||!STATE.ready||askedCount()>=CHAT_MAX)return;
   BUSY=CHAT_BUSY=true;const b=F('chat-send');b.disabled=true;b.textContent='נוגי חושבת...';F('chat-err').hidden=true;
   STATE.chat.push({role:'user',content:q});F('chat-in').value='';renderChat();
-  const sys=[PERSONA,'כעת את משוחחת עם מי שמוביל/ה ('+(STATE.report.who||'')+'). זכרי: את יועצת לפיתוח מנהיגות שתומכת בחוסן חברתי: בכל חלופה הסבירי במשפט איך היא מחזקת את החוסן החברתי (שייכות, אמון, מנגנונים משותפים, רשתות תמיכה, מסוגלות קולקטיבית). תשובה ממוקדת (עד כ-250 מילים), מעשית, מותאמת לתפקיד, לשלב החינוכי ולמצב, בצורה של 2–3 חלופות פעולה: המלצות ולא קביעות; תמיד עם כיוון של צוות, שותפים וממלאי מקום, ועם הנחיות לשיחה כשזה רלוונטי. כשאת נשענת על מקור: ציינִי את המפתח בסוגריים מרובעים, למשל [Spillane2005]. עיצוב התשובה (בלי JSON): פסקאות קצרות עם שורה ריקה ביניהן; כל חלופה בשורה משלה שמתחילה בכותרת מודגשת, למשל **אפשרות א׳: שם קצר**, ואחריה 2–3 תבליטים בשורות שמתחילות ב-"- "; הדגשה ב-**...** רק למילות המפתח; בלי כותרות #.',
-    '','תמונת המצב משאלון הפתיחה:',STATE.report.picture,'','הדוח שכבר נמסר (אל תחזרי עליו, התבססי עליו):',plainShort()].join('\n');
+  const sys=[PERSONA,'כעת את משוחחת עם מי שמוביל/ה ('+(F('f-who').value||(STATE.report&&STATE.report.who)||'')+'). זכרי: את יועצת לפיתוח מנהיגות שתומכת בחוסן חברתי: בכל חלופה הסבירי במשפט איך היא מחזקת את החוסן החברתי (שייכות, אמון, מנגנונים משותפים, רשתות תמיכה, מסוגלות קולקטיבית). תשובה ממוקדת (עד כ-250 מילים), מעשית, מותאמת לתפקיד, לשלב החינוכי ולמצב, בצורה של 2–3 חלופות פעולה: המלצות ולא קביעות; תמיד עם כיוון של צוות, שותפים וממלאי מקום, ועם הנחיות לשיחה כשזה רלוונטי. כשאת נשענת על מקור: ציינִי את המפתח בסוגריים מרובעים, למשל [Spillane2005]. עיצוב התשובה (בלי JSON): פסקאות קצרות עם שורה ריקה ביניהן; כל חלופה בשורה משלה שמתחילה בכותרת מודגשת, למשל **אפשרות א׳: שם קצר**, ואחריה 2–3 תבליטים בשורות שמתחילות ב-"- "; הדגשה ב-**...** רק למילות המפתח; בלי כותרות #.',
+    '','תמונת המצב משאלון הפתיחה:',STATE.report?STATE.report.picture:pictureText(answers())].concat(STATE.report?['','הדוח שכבר נמסר (אל תחזרי עליו, התבססי עליו):',plainShort()]:['','השיחה מתקיימת לפני הדוח: עני על השאלה, וכשחסר מידע שחשוב לדוח, שאלי בסוף שאלת הבהרה אחת או שתיים. אל תכתבי את הדוח עצמו בשיחה.']).join('\n');
   let ok=false;
   try{
     const ans=await complete(sys,STATE.chat.slice(-12),6000);
@@ -950,8 +987,8 @@ F('btn-example').addEventListener('click',()=>{
 });
 F('btn-clear').addEventListener('click',()=>{
   if(!confirm('לנקות את הטופס, הדוח והשיחה?'))return;
-  TEXT_FIELDS.forEach(k=>{const n=F(k);n.value=n.tagName==='SELECT'&&k==='f-mode'?'בצוות או עם שותפים':'';});ALL_ANS={};buildCriteria();setAnswers({});STATE={report:null,chat:[]};save();modeNote();
-  F('picture').textContent='';F('report').textContent='';F('chat-area').hidden=true;
+  TEXT_FIELDS.forEach(k=>{const n=F(k);n.value=n.tagName==='SELECT'&&k==='f-mode'?'בצוות או עם שותפים':'';});ALL_ANS={};buildCriteria();setAnswers({});STATE={report:null,chat:[],pre:[],ready:false};save();modeNote();
+  F('picture').textContent='';F('report').textContent='';F('chat-area').hidden=true;F('picture').after(F('chat-area'));
 });
 
 
@@ -982,7 +1019,7 @@ loadSituations();
 loadStatements(STMT_LIST,rebuildCriteria);
 modeNote();
 const a0=answers();if(Object.keys(a0).length)renderPicture(a0);
-if(STATE.report){renderReport();renderChat();}
+if(STATE.report){renderReport();renderChat();}else if(STATE.ready){F('chat-area').hidden=false;renderChat();}
 })();
 </script>
 <script src="lib/demo-hook.js"></script>
