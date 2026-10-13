@@ -20,7 +20,7 @@
       'practice.html', 'conversation-planner.html', 'facilitation-advisor.html', 'family-bridge.html', 'shared-dialogue-lab.html', 'team-thinking.html',
       'doc-facilitator.html', 'doc-trainee.html', 'doc-actor.html', 'card-actor.html'],
     act: ['activity-planner.html', 'resilience-studio.html', 'message-writer.html'],
-    learn: ['academic-review.html', 'feedback.html', 'feedback-results.html'],
+    learn: ['social-resilience-studies.html', 'academic-review.html', 'feedback.html', 'feedback-results.html'],
     anchor: ['routines-hub.html', 'continuity-kit.html', 'journey.html']
   };
   const title = (g) => g.i + ' ' + (GROUPS.indexOf(g) + 1) + '. ' + g.n + ': ' + g.q;
