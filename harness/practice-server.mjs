@@ -39,6 +39,7 @@ import { handleAccess, supabaseStore, authorizeModel } from './lib/access.mjs';
 import { studioRequest } from './lib/studio.mjs';
 import { customerPass, reviewEnabled } from './lib/customer-pass.mjs';
 import { handleStudies, supabaseStudyFiles } from './lib/studies.mjs';
+import { handleCommunication } from './lib/communication-continuity.mjs';
 
 // שמירת תרחיש ב-Supabase. נקראת רק כשיש SUPABASE_SERVICE_KEY בסביבה.
 // scenario הוא הפלט של toScenario(); meta הוא payload.meta מהלקוח.
@@ -197,6 +198,31 @@ const server = createServer(async (req, res) => {
     } catch {
       console.error('studies: request failed');
       return sendJson(res, 503, { code: 'studies_storage', error: 'החומרים אינם זמינים כרגע. אפשר לנסות שוב בעוד מעט.' });
+    }
+  }
+
+  // Sensitive conversations use their own authenticated boundary. They never
+  // enter the generic pipeline jobs or its public status endpoint.
+  if (req.method === 'POST' && req.url === '/api/communication-continuity') {
+    res.setHeader('cache-control', 'private, no-store');
+    const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
+    if (!url || !key) return sendJson(res, 503, { code: 'storage', error: 'השמירה אינה זמינה כרגע. אפשר להשאיר את הטקסט על המסך ולנסות שוב.' });
+    let body;
+    try { body = JSON.parse(await readBody(req, 16 * 1024 * 1024)); }
+    catch (error) { return sendJson(res, error.status === 413 ? 413 : 400, { code: 'invalid', error: error.status === 413 ? 'הקובץ גדול מדי. אפשר לצרף עמוד רלוונטי או טקסט קצר יותר.' : 'הבקשה אינה תקינה. אפשר לרענן ולנסות שוב.' }); }
+    let finish;
+    try {
+      const [status, out] = await handleCommunication(supabaseStore(url, key, { timeoutMs: 120000 }), body, {
+        providerFactory: () => getProvider(process.env.PROVIDER || 'anthropic'),
+        onReady: () => { finish = startKeepAlive(res); }
+      });
+      if (finish) return finish(out);
+      return sendJson(res, status, out);
+    } catch {
+      console.error('communication: request failed');
+      const out = { code: 'unavailable', error: 'השיחה אינה זמינה כרגע. אפשר להשאיר את הטקסט על המסך ולנסות שוב.' };
+      if (finish) return finish(out);
+      return sendJson(res, 503, out);
     }
   }
 

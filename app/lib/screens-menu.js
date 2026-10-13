@@ -50,6 +50,7 @@ window.SBE_SCREENS = [
       { file:'activity-planner.html', label:'תכנון פעילות', who:'הרשאת תכנון פעילות' },
       { file:'resilience-studio.html', label:'סטודיו חוסן: השראה ופעולה', who:'הרשאת סטודיו בלבד (עד לאישור המקצועי)' },
       { file:'message-writer.html', label:'כתיבה מקדמת חוסן', who:'הרשאת כתיבה מקדמת חוסן בלבד' },
+      { file:'communication-continuity.html', label:'ניהול שיח מתמשך', who:'הרשאת writer וקוד אישי; שיחות פרטיות לפי זהות הכניסה' },
     ]},
     { title:'📖 4. ללמוד מהעשייה: מה למדנו?', items:[
       { file:'social-resilience-studies.html', label:'לימודי חוסן חברתי', who:'הרשאת לימודי חוסן חברתי (studies)' },

@@ -198,6 +198,7 @@ async function api(action, extra = {}) {
   if (has("dialogue")) T.push(["shared-dialogue-lab.html", "מעבדת שיח וחקר משותף", "קבוצה חוקרת שאלה בתחום הדעת: בונה טענות, בודקת ראיות ומתקנת יחד, והמורה מאשרת"]);
   if (has("teamthink")) T.push(["team-thinking.html", "חשיבת צוות", "צוות חושב יחד על אתגר: כל הקולות, בעד ונגד, פרגון, ומה הרווחנו מהחשיבה ביחד"]);
   if (has("writer")) T.push(["message-writer.html", "כתיבה מקדמת חוסן", "כותבים מה רוצים לומר (אפשר גם לצרף שיר, ציור או ידיעה) ומקבלים הודעה או מכתב שכתובים מההתחלה לפי עשרת עקרונות החוסן"]);
+  if (has("writer") && (INFO.kind === "staff" || INFO.kind === "instadmin")) T.push(["communication-continuity.html", "ניהול שיח מתמשך", "הודעות, טיוטות והחלטות במקום אחד. ממשיכים שיחה מתוך ההקשר ובוחרים צעד מקצועי להמשך"]);
   if (has("journey")) T.push(["journey.html", "מסע אל החוסן", "מסע מלווה בשלבים אל תו חוסן לקהילת חוסן (מיפוי, הצעה עם אפשרויות, אבני דרך ותעודות)"]);
   if (has("conv")) T.push(["conversation-planner.html", "תכנון שיחה", "הכנה לשיחה אמיתית: בעל פה או בכתב"]);
   if (has("activity")) T.push(["activity-planner.html", "תכנון פעילות", "תכנון פעילות חינוכית או ניתוח פעילות קיימת"]);

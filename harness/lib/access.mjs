@@ -321,7 +321,7 @@ export const MODEL_PAGES = {
   'practice.html': ['fac_trainee', 'fac_parent', 'fac_youth'], 'facilitator-screen.html': ['fac_trainee', 'fac_parent', 'fac_youth'],
   'conversation-planner.html': ['conv'], 'activity-planner.html': ['activity'], 'academic-review.html': ['academic'],
   'resilience-team.html': ['resilience'], 'resilience-advisor.html': ['resilience', 'practi'], 'leadership-advisor.html': ['leadership'],
-  'resilience-studio.html': ['studio'], 'journey.html': ['journey'], 'message-writer.html': ['writer'], 'facilitation-advisor.html': ['nana'],
+  'resilience-studio.html': ['studio'], 'journey.html': ['journey'], 'message-writer.html': ['writer'], 'communication-continuity.html': ['writer'], 'facilitation-advisor.html': ['nana'],
   'shared-dialogue-lab.html': ['dialogue'], 'team-thinking.html': ['teamthink']
 };
 export const WORKSHOP_MODEL_PAGES = ['practice.html', 'conversation-planner.html', 'activity-planner.html', 'academic-review.html', 'parent-input-screen.html'];
@@ -1584,6 +1584,23 @@ export function supabaseStore(url, key, { fetchImpl = fetch, timeoutMs } = {}) {
     return r;
   };
   return {
+    // Atomic PostgREST mutation: PostgreSQL checks the revision in the same
+    // UPDATE that writes content, including across server replicas.
+    async compareSet(k, expectedRevision, value) {
+      if (expectedRevision === null) {
+        const r = await request(base, { method: 'POST', headers: { ...headers, Prefer: 'return=representation' },
+          body: JSON.stringify({ key: k, value, updated_at: new Date().toISOString() }) });
+        if (r.status === 409) return false;
+        await check(r);
+        return (await r.json()).length === 1;
+      }
+      if (!Number.isInteger(expectedRevision) || expectedRevision < 0) throw new Error('invalid revision');
+      const r = await check(await request(`${base}?key=eq.${encodeURIComponent(k)}&value->>revision=eq.${expectedRevision}`, {
+        method: 'PATCH', headers: { ...headers, Prefer: 'return=representation' },
+        body: JSON.stringify({ value, updated_at: new Date().toISOString() })
+      }));
+      return (await r.json()).length === 1;
+    },
     async get(k) {
       const r = await check(await request(`${base}?key=eq.${encodeURIComponent(k)}&select=value`, { headers }));
       const rows = await r.json();

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ניהול שיח מתמשך · Begood</title>
+  <script src="lib/access-guard.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="lib/communication-continuity.css">
+  <script src="lib/quotes.js" defer></script>
+  <script src="lib/product-doc.js" defer></script>
+  <script src="lib/communication-core.js" defer></script>
+  <script src="lib/vendor/studies/jszip/jszip.min.js" defer></script>
+  <script src="lib/communication-attachments.js" defer></script>
+  <script src="lib/communication-continuity-ui.js" defer></script>
+</head>
+<body>
+  <a class="cc-skip" href="#cc-text">מעבר לכתיבה</a>
+  <nav class="topnav" aria-label="ניווט">
+    <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+    <span>Begood › ניהול שיח מתמשך</span>
+  </nav>
+  <header class="cc-header">
+    <div><p class="cc-eyebrow">BE GOOD</p><h1>ניהול שיח מתמשך</h1>
+      <p>שומרים את רצף השיחה, מנסחים תשובה ובוחרים את הצעד הבא.</p></div>
+    <img src="assets/begood-logo.webp" alt="Begood" width="115" height="68">
+  </header>
+  <main class="cc-layout">
+    <aside class="cc-saved card" aria-labelledby="cc-saved-title">
+      <div class="cc-row"><h2 id="cc-saved-title">השיחות שלי</h2><button type="button" id="cc-new" class="btn">שיחה חדשה</button></div>
+      <label for="cc-filter" class="cc-label">הצגת שיחות</label>
+      <select id="cc-filter"><option value="all">כל השיחות</option><option value="active">פעילות וממתינות</option><option value="archived">בארכיון</option></select>
+      <button type="button" id="cc-refresh" class="btn ghost cc-refresh">רענון הרשימה</button>
+      <p id="cc-list-status" class="muted" role="status"></p>
+      <div id="cc-list"></div>
+      <p class="cc-privacy-small">השיחות נשמרות בחשבון האישי בשרת. שיתוף קוד הכניסה האישי מאפשר גישה גם לשיחות. אפשר לייצא ולמחוק בכל עת.</p>
+    </aside>
+    <section class="cc-workspace" aria-label="מרחב השיח">
+      <div class="card cc-conversation" id="cc-conversation" hidden>
+        <div class="cc-row"><h2 id="cc-title"></h2><span id="cc-status-badge" class="cc-badge"></span></div>
+        <p id="cc-meta" class="muted"></p>
+        <details class="cc-fold">
+          <summary>פרטי השיחה וניהול</summary>
+          <div class="cc-fields">
+            <div><label for="cc-rename">שם השיחה</label><input id="cc-rename" type="text" maxlength="160"></div>
+            <div><label for="cc-status">מצב השיחה</label><select id="cc-status"></select></div>
+          </div>
+          <div class="cc-buttons">
+            <button type="button" id="cc-update" class="btn ghost">שמירת הפרטים</button>
+            <button type="button" id="cc-reopen" class="btn ghost">פתיחה מחדש</button>
+            <button type="button" id="cc-archive" class="btn ghost">העברה לארכיון</button>
+            <button type="button" id="cc-delete" class="btn danger">מחיקת השיחה</button>
+          </div>
+          <div class="cc-buttons" aria-label="ייצוא השיחה">
+            <button type="button" id="cc-export-json" class="btn ghost">ייצוא JSON</button>
+            <button type="button" id="cc-export-text" class="btn ghost">ייצוא טקסט</button>
+            <button type="button" id="cc-export-pdf" class="btn ghost">הדפסה / PDF מעוצב</button>
+          </div>
+        </details>
+      </div>
+      <section class="card cc-composer" aria-labelledby="cc-composer-title">
+        <h2 id="cc-composer-title">מה קורה בשיחה?</h2>
+        <label for="cc-text" class="sr-only">הודעה, תיאור המצב או מטרה</label>
+        <textarea id="cc-text" rows="5" placeholder="מה קרה? אפשר להדביק הודעה שקיבלת, לתאר את המצב או לכתוב מה תרצי להשיג."></textarea>
+        <details class="cc-fold">
+          <summary>פרטים והנחיה (רשות)</summary>
+          <div class="cc-fields">
+            <div><label for="cc-input-kind">סוג הטקסט</label><select id="cc-input-kind"><option value="received">הודעה שהתקבלה</option><option value="sent">הודעה שכבר נשלחה</option><option value="note">תיאור מצב, החלטה או הערה</option></select></div>
+            <div><label for="cc-audience">למי השיחה?</label><input id="cc-audience" type="text" maxlength="120" list="cc-audiences" placeholder="למשל: הורים, צוות או תלמידים"><datalist id="cc-audiences"><option value="הורים"><option value="צוות"><option value="תלמידים"><option value="קהילת בית הספר"></datalist></div>
+          </div>
+          <label for="cc-instruction">מה כדאי לקחת בחשבון?</label>
+          <textarea id="cc-instruction" rows="2" placeholder="אפשר לכתוב מטרה, סגנון או פרטים נוספים לניסוח"></textarea>
+        </details>
+        <details class="cc-fold cc-attachment">
+          <summary>צירוף תמונה, צילום מסך או קובץ (רשות)</summary>
+          <p class="cc-disclosure">תמונות ו־PDF נשלחים לעיבוד אצל ספק המודל שהוגדר ב־BE GOOD, וייתכן שהם כוללים פרטים מזהים. אפשר להסיר פרטים שאינם נחוצים לפני הצירוף. קובצי TXT ו־Word נקראים בדפדפן. רק טקסט שחולץ בהצלחה נשמר בשיחה; הקובץ המקורי אינו נשמר בשרת.</p>
+          <label for="cc-file">בחירת קובץ: תמונה, PDF, DOCX או TXT</label>
+          <input id="cc-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,.pdf,application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.txt,text/plain">
+          <p id="cc-file-status" class="muted" role="status"></p>
+          <button type="button" id="cc-file-clear" class="btn ghost" hidden>הסרת הקובץ</button>
+        </details>
+        <div class="cc-buttons"><button type="button" id="cc-save-input" class="btn ghost">שמירת הטקסט בשיחה</button></div>
+        <p class="cc-disclosure" id="cc-ai-disclosure">הפעולות של BE GOOD שולחות את היסטוריית השיחה וההנחיה לעיבוד אצל ספק המודל שהוגדר במערכת. בשיחות ארוכות אפשר שייווצרו סיכומי הקשר שיוצגו לצד המקורות; ההודעות המקוריות נשמרות במלואן. הטקסט והטיוטות נשמרים בחשבון האישי בשרת. כדאי לכלול רק את הפרטים הנחוצים לשיחה. תוצאה מוצעת היא טיוטה שאפשר לבדוק ולערוך לפני השימוש.</p>
+        <div id="cc-main-actions" class="cc-main-actions" aria-label="פעולות BE GOOD"></div>
+        <p class="muted cc-sent-notice">סימון "שלחתי את ההודעה" שומר את הנוסח שנשלח. השליחה עצמה נעשית בדרך שבחרת.</p>
+      </section>
+      <div id="cc-feedback" class="card cc-feedback" aria-live="polite" hidden>
+        <p id="cc-feedback-text"></p><progress id="cc-progress" hidden aria-label="עיבוד הבקשה"></progress>
+        <div class="cc-buttons"><button type="button" id="cc-retry" class="btn ghost" hidden>ניסיון חוזר של אותה בקשה</button><button type="button" id="cc-conflict-refresh" class="btn ghost" hidden>טעינת השיחה העדכנית</button></div>
+      </div>
+      <section class="card" id="cc-current-result" aria-label="הצעת BE GOOD" hidden></section>
+      <section class="cc-timeline-section" aria-labelledby="cc-timeline-title">
+        <h2 id="cc-timeline-title">רצף השיחה</h2>
+        <p id="cc-empty" class="cc-empty">כאן יופיעו הודעות שהתקבלו, טיוטות, הודעות שנשלחו והחלטות. אפשר להתחיל בטקסט קצר או בקובץ.</p>
+        <ol id="cc-timeline" class="cc-timeline"></ol>
+      </section>
+      <details class="card cc-fold cc-principles"><summary>עקרונות התקשורת של BE GOOD</summary><ol id="cc-principles"></ol></details>
+    </section>
+  </main>
+  <noscript><p class="card">להפעלת הכלי אפשר להפעיל JavaScript בדפדפן.</p></noscript>
+</body>
+</html>
