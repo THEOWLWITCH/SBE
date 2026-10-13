@@ -1670,6 +1670,17 @@ const OPEN_TOOLS = [["home.html","כל הכלים (המרחב שלי)"],["messag
 let openData = null;
 const openUrl = id => "https://be-good.co.il/entry.html?open=" + id;
 const ilDay = d => { const m = String(d||"").match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? (+m[3]) + "." + (+m[2]) + "." + m[1].slice(2) : d; };
+// השם בכתובת (13/10/2026): רווח, קו תחתון ונקודה הופכים למקף, אותיות גדולות לקטנות; ומה עוד לא מתאים נאמר במפורש
+const openId = v => String(v || "").trim().toLowerCase().replace(/[\s_.]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+function openIdProblem(v){
+  const id = openId(v);
+  if (!id) return "";
+  if (/[\u0590-\u05FF]/.test(id)) return "בשם של הקישור יש אותיות בעברית, וכתובת אינטרנט מקבלת רק אותיות באנגלית, ספרות ומקף.";
+  if (/[^a-z0-9-]/.test(id)) return "בשם של הקישור יש סימן שלא נכנס לכתובת. אפשר רק אותיות באנגלית, ספרות ומקף.";
+  if (id.length < 3) return "השם של הקישור קצר מדי: לפחות 3 תווים.";
+  if (id.length > 32) return "השם של הקישור ארוך מדי: עד 32 תווים.";
+  return "";
+}
 function pOpen(){
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"קישור פתוח ליום אחד"), el("p",{class:"sub"},"קישור או QR בלי קוד, לכלי אחד או לכל הכלים, שפתוח רק בתאריך שבחרת (לפי שעון ישראל). מתאים להתנסות בהרצאה או בסדנה. השרת בודק את התאריך בכל פנייה, ולמחרת הקישור נסגר מעצמו."));
@@ -1682,10 +1693,16 @@ function pOpen(){
   const label = el("input",{type:"text", placeholder:"למשל: הרצאה לצוות", maxlength:"80"});
   const max = el("input",{type:"number", min:"1", max:"500", value:"200", style:"width:110px"});
   const go = el("button",{class:"act p"},"יצירת הקישור");
+  const preview = el("span",{style:"display:block;font-size:13px;margin-top:4px;direction:ltr;text-align:right;color:var(--muted)"});
+  const showId = () => { const why = openIdProblem(name.value), id = openId(name.value);
+    preview.style.color = why ? "#9A4A3F" : "var(--muted)";
+    preview.style.direction = why ? "rtl" : "ltr";
+    preview.textContent = why ? why : id ? "be-good.co.il/entry.html?open=" + id : ""; };
+  name.addEventListener("input", showId);
   const row = (l, n, hint) => el("label",{style:"display:block;margin:0 0 10px"}, el("b",{style:"display:block;font-size:14px;margin-bottom:4px"}, l), n, hint ? el("span",{class:"hint"}, hint) : "");
   go.addEventListener("click", async () => {
-    const id = name.value.trim().toLowerCase();
-    if (id && !/^[a-z0-9][a-z0-9-]{2,31}$/.test(id)) { ask("השם של הקישור", "אפשר אותיות באנגלית, ספרות ומקף, 3 עד 32 תווים. או להשאיר ריק, ונבחר שם בעצמנו.", () => {}); return; }
+    const id = openId(name.value), why = openIdProblem(name.value);
+    if (why) { ask("השם של הקישור", why + " למשל: orit-14. אפשר גם להשאיר ריק, ונבחר שם בעצמנו.", () => {}); return; }
     go.disabled = true;
     try { await accessCall("openCreate", { page: tool.value, date: date.value, id, label: label.value, max: max.value }); openData = null; render(); }
     catch(e){ go.disabled = false; const er = e.data && e.data.error;
@@ -1696,7 +1713,7 @@ function pOpen(){
       else accessFail(e); }
   });
   inn.append(el("h3",{style:"margin-top:0"},"קישור חדש"), row("הכלי", tool, "\"כל הכלים\" פותח את המרחב שלי עם כל הכלים שברשימה."), row("התאריך", date, "הקישור פתוח רק ביום הזה."),
-    row("שם לקישור", name, "אותיות באנגלית, ספרות ומקף. השם מופיע בכתובת. אפשר להשאיר ריק, ונבחר שם אקראי."), row("כותרת", label, "מופיעה למשתתפות במסך."),
+    row("שם לקישור", el("span",{}, name, preview), "אותיות באנגלית, ספרות ומקף (רווח הופך למקף). השם מופיע בכתובת. אפשר להשאיר ריק, ונבחר שם אקראי."), row("כותרת", label, "מופיעה למשתתפות במסך."),
     row("מספר משתתפות מרבי", max), go);
   c.append(inn); w.append(c);
   // הקישורים
