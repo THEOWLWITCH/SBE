@@ -1,8 +1,6 @@
 // מתאם ספקים. הלוגיקה למעלה לא יודעת מול מי היא מדברת.
 import { createRequire } from 'node:module';
 import { openAIInput, providerSystem } from './provider-input.mjs';
-// שפה של הזמנה, לא של חובה — כלל של Begood לכל קריאה למודל (מקור אמת: app/lib/invite-language.js)
-const INVITE = createRequire(import.meta.url)('../../app/lib/invite-language.js');
 // מרכאות אחידות בכל תשובה של המודל: " רגילות, בלי „ ״ ובלי מרכאות כפולות (מקור אמת: app/lib/quotes.js)
 const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
 // עוצמת הווריאציה מופשטת: כל ספק ממפה אותה אחרת.

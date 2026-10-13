@@ -1588,14 +1588,14 @@ export function supabaseStore(url, key, { fetchImpl = fetch, timeoutMs } = {}) {
     // UPDATE that writes content, including across server replicas.
     async compareSet(k, expectedRevision, value) {
       if (expectedRevision === null) {
-        const r = await request(base, { method: 'POST', headers: { ...headers, Prefer: 'return=representation' },
+        const r = await request(`${base}?select=key`, { method: 'POST', headers: { ...headers, Prefer: 'return=representation' },
           body: JSON.stringify({ key: k, value, updated_at: new Date().toISOString() }) });
         if (r.status === 409) return false;
         await check(r);
         return (await r.json()).length === 1;
       }
       if (!Number.isInteger(expectedRevision) || expectedRevision < 0) throw new Error('invalid revision');
-      const r = await check(await request(`${base}?key=eq.${encodeURIComponent(k)}&value->>revision=eq.${expectedRevision}`, {
+      const r = await check(await request(`${base}?key=eq.${encodeURIComponent(k)}&value->>revision=eq.${expectedRevision}&select=key`, {
         method: 'PATCH', headers: { ...headers, Prefer: 'return=representation' },
         body: JSON.stringify({ value, updated_at: new Date().toISOString() })
       }));

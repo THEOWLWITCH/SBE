@@ -164,7 +164,14 @@ function binaryAttachment(attachment) {
   const bytes=Buffer.from(attachment.data,'base64');
   if(bytes.length>MAX_BINARY_BYTES)throw failure('ATTACHMENT_TOO_LARGE','אפשר לצרף קובץ בגודל עד 10 MB.',413);
   if(bytes.toString('base64')!==attachment.data)throw failure('ATTACHMENT_INVALID','הקובץ לא נקרא. אפשר לבחור אותו שוב.',400);
-  const valid=attachment.mediaType==='image/png'?bytes.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex')):attachment.mediaType==='image/jpeg'?bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff:attachment.mediaType==='image/webp'?bytes.toString('ascii',0,4)==='RIFF'&&bytes.toString('ascii',8,12)==='WEBP':attachment.mediaType==='image/gif'?['GIF87a','GIF89a'].includes(bytes.toString('ascii',0,6)):bytes.toString('ascii',0,5)==='%PDF-';
+  let valid;
+  switch (attachment.mediaType) {
+    case 'image/png': valid=bytes.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex')); break;
+    case 'image/jpeg': valid=bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff; break;
+    case 'image/webp': valid=bytes.toString('ascii',0,4)==='RIFF'&&bytes.toString('ascii',8,12)==='WEBP'; break;
+    case 'image/gif': valid=['GIF87a','GIF89a'].includes(bytes.toString('ascii',0,6)); break;
+    case 'application/pdf': valid=bytes.toString('ascii',0,5)==='%PDF-'; break;
+  }
   if(!valid)throw failure('ATTACHMENT_INVALID','תוכן הקובץ אינו תואם לסוג שצוין. אפשר לבחור קובץ אחר.',400);
   return bytes.length;
 }

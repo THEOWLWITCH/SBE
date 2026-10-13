@@ -45,6 +45,7 @@ test('Supabase compare-and-set emits atomic revision predicates and detects conf
   const data = new Map();
   const fetchImpl = async (target, opts) => {
     const u = new URL(target), body=JSON.parse(opts.body);
+    assert.equal(u.searchParams.get('select'),'key');
     if(opts.method==='POST') {
       if(data.has(body.key)) return Response.json({}, {status:409});
       data.set(body.key, body.value); return Response.json([body], {status:201});

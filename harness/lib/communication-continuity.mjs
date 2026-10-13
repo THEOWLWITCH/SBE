@@ -27,7 +27,7 @@ const conflict = () => fail(409,'REVISION_CONFLICT','השיחה עודכנה ב�
 const missing = () => fail(404,'NOT_FOUND','השיחה אינה זמינה בחשבון הזה.');
 const limited = () => fail(413,'STORAGE_LIMIT','הבקשה גדולה ממגבלת השמירה. כל המידע הקיים נשמר במלואו. אפשר לייצא את השיחה.');
 const clone = value => structuredClone(value);
-const has = (obj,key) => Object.prototype.hasOwnProperty.call(obj,key);
+const has = Object.hasOwn;
 function text(value,max=COMMUNICATION_LIMITS.text,{optional=false}={}) {
   if (optional && value === undefined) return '';
   if (typeof value !== 'string' || (!optional && !value.trim())) invalid();
@@ -140,22 +140,22 @@ function normalized(body) {
   }
   return payload;
 }
-async function save(store,key,expected,record,payload,researchStudy) {
+async function save(store,key,expected,record,payload,researchStudy,fingerprint) {
   record.updatedAt=new Date().toISOString();record.revision=expected===null?1:expected+1;
   record.rounds=record.entries.filter(e=>e.kind==='received').length;
   refreshResearch(record,researchStudy);
   const outcome={conversation:publicConversation(record)};
-  record._requests={...(record._requests||{}),[payload.requestId]:{fingerprint:sha(JSON.stringify(stable(payload))),action:payload.action,revision:record.revision}};
+  record._requests={...(record._requests||{}),[payload.requestId]:{fingerprint,action:payload.action,revision:record.revision}};
   checkSize(record);
   if(typeof store.compareSet!=='function') throw new Error('Atomic storage unavailable');
   if(!await store.compareSet(key,expected,record)) {
     const current=await store.get(key);
     if(current?._deleted) missing();
-    const retry=receipt(current,payload.requestId,sha(JSON.stringify(stable(payload))));
+    const retry=receipt(current,payload.requestId,fingerprint);
     if(retry) return retry;
     conflict();
   }
-  return [200,clone(outcome)];
+  return [200,outcome];
 }
 
 export async function handleCommunication(store,body,{providerFactory,researchStudy,onReady}={}) {
@@ -188,7 +188,7 @@ export async function handleCommunication(store,body,{providerFactory,researchSt
         revision:1,rounds:0,entries:[],versions:{...CORE.VERSIONS}};
       if(has(payload,'researchConsent')) record.research=consent(payload.researchConsent,researchStudy,at);
       if(record.research===undefined) delete record.research;
-      return await save(store,key,null,record,payload,researchStudy);
+      return await save(store,key,null,record,payload,researchStudy,fingerprint);
     }
     if(!stored) missing();
     if(payload.action==='get'||payload.action==='export') return [200,{conversation:publicConversation(stored)}];
@@ -262,7 +262,7 @@ export async function handleCommunication(store,body,{providerFactory,researchSt
       const retry=receipt(current,payload.requestId,fingerprint);if(retry)return retry;
       if(current.revision!==stored.revision) conflict();
     }
-    return await save(store,key,stored.revision,record,payload,researchStudy);
+    return await save(store,key,stored.revision,record,payload,researchStudy,fingerprint);
   } catch(error) {
     if(error instanceof CommunicationError) return [error.status,{code:error.code,error:error.message}];
     if(AI_ERRORS[error?.code]) {const [status,message]=AI_ERRORS[error.code];return [status,{code:error.code,error:message}];}
