@@ -18,6 +18,78 @@ function provider(responses = [output()], extra = {}) {
 }
 function conversation(entries = [{id:'r1',kind:'received',text:'אני רוצה להבין מה קרה.',at:'2026-10-13T07:00:00Z'}]) { return {id:'conv-1',title:'שיח עם הורה',audience:'הורים',status:'active',entries}; }
 const textRequest = call => call.messages.map(m=>typeof m.content==='string'?m.content:m.content.filter(x=>x.type==='text').map(x=>x.text).join('\n')).join('\n');
+const summaryOutput = request => ({facts:['עובדות המקור נשמרו.'],commitments:[],disagreements:[],openQuestions:[],uncertainty:[],drafts:[],sourceEntryIds:request.sourceEntryIds});
+
+test('compacted revisions anchor the exact canonical selected draft and exclude duplicate private metadata',async()=>{
+  const selected={id:'draft-b',kind:'draft',text:'אפשר לבדוק את הקריאה ביום שני בשעה 12:00.',at:'2026-10-02',why:'בירור הקריאה יחד',next:'בדיקת מועד פנוי',analysis:{...output().analysis,facts:['הבקשה עוסקת בקריאה.']},source:{entryIds:['received-1']},versions:{prompt:'prior'}};
+  const other={id:'draft-a',kind:'draft',text:'אפשר לדבר על הנוכחות ביום שישי בשעה 16:00.',at:'2026-10-01'};
+  const c={...conversation([other,selected,...Array.from({length:16},(_,i)=>({id:'long-'+i,kind:'received',text:'א'.repeat(2200),at:'2026-10-03'}))]),createdAt:'2026-10-01',updatedAt:'2026-10-03',revision:8,rounds:2,versions:{tool:'1.0.0'},latestAI:{output:{message:other.text.repeat(2000)}},research:{private:'DO NOT SEND'},_requests:{private:'DO NOT SEND'},actions:[{private:'DO NOT SEND'}]};
+  const p=provider(call=>{const request=JSON.parse(textRequest(call));return request.operation==='context-summary'?summaryOutput(request):output();},{contextWindowTokens:28000});
+  await generateCommunication({conversation:c,action:'suggest',revisionStyle:'shorter',draft:{...selected,text:'untrusted caller copy'},provider:p});
+  const request=JSON.parse(textRequest(p.calls.at(-1)));
+  assert.ok(request.history.every(entry=>entry.kind==='summary'));
+  assert.deepEqual(request.selectedDraft,selected);
+  assert.deepEqual(Object.keys(request.conversation).sort(),['id','title','audience','status','createdAt','updatedAt','revision','rounds','versions'].sort());
+  assert.ok(!JSON.stringify(request).includes('DO NOT SEND'));
+  assert.ok(!Object.hasOwn(request.conversation,'latestAI'));
+});
+
+test('a selected draft beyond the fixed prompt budget fails before summaries or generation',async()=>{
+  const draft={id:'oversized',kind:'draft',text:'א'.repeat(30000),at:'2026-10-13'};
+  const p=provider(call=>summaryOutput(JSON.parse(textRequest(call))),{contextWindowTokens:28000});
+  await assert.rejects(generateCommunication({conversation:conversation([draft]),action:'suggest',revisionStyle:'shorter',draft,provider:p}),error=>error.code==='AI_CONTEXT_LIMIT'&&error.status===413);
+  assert.equal(p.calls.length,0);
+});
+
+test('maximum-size Hebrew history summaries run with bounded concurrency and retain batch order',async()=>{
+  let active=0,maxActive=0,summaryIndex=0;
+  const completionOrder=[],requests=[];
+  const p=provider(async call=>{
+    const request=JSON.parse(textRequest(call));
+    if(request.operation!=='context-summary')return output();
+    const index=summaryIndex++;requests.push(request);active++;maxActive=Math.max(maxActive,active);
+    await new Promise(resolve=>setTimeout(resolve,index%2===0?12:1));
+    active--;completionOrder.push(index);
+    return {...summaryOutput(request),facts:[`סיכום אצווה ${index}`]};
+  });
+  const result=await generateCommunication({conversation:conversation([{id:'maximum',kind:'received',text:'א'.repeat(120000),at:'2026-10-13'}]),action:'suggest',provider:p});
+  assert.ok(requests.length>2);
+  assert.equal(maxActive,2);
+  assert.ok(completionOrder.indexOf(1)<completionOrder.indexOf(0));
+  assert.deepEqual(result.summaries.map(entry=>JSON.parse(entry.text).facts[0]),requests.map((_,i)=>`סיכום אצווה ${i}`));
+  assert.deepEqual(JSON.parse(textRequest(p.calls.at(-1))).history.map(entry=>entry.context.facts[0]),requests.map((_,i)=>`סיכום אצווה ${i}`));
+  assert.equal(active,0);
+});
+
+test('summary failure waits for started work and does not schedule remaining batches',async()=>{
+  let active=0,started=0,completed=0;
+  const p=provider(async call=>{
+    const request=JSON.parse(textRequest(call));
+    assert.equal(request.operation,'context-summary');
+    const index=started++;active++;
+    try{await new Promise(resolve=>setTimeout(resolve,index===0?1:15));if(index===0)throw new Error('summary service failure');completed++;return summaryOutput(request);}
+    finally{active--;}
+  });
+  await assert.rejects(generateCommunication({conversation:conversation([{id:'maximum',kind:'received',text:'א'.repeat(120000),at:'2026-10-13'}]),action:'suggest',provider:p}),/summary service failure/);
+  assert.equal(started,2);
+  assert.equal(completed,started-1);
+  assert.equal(active,0);
+  await new Promise(resolve=>setTimeout(resolve,20));
+  assert.equal(p.calls.length,started);
+});
+
+test('every middle fragment retains source role, date and draft or instruction links',async()=>{
+  const entries=[{id:'d',kind:'draft',text:'א'.repeat(16000)+' 😀',at:'2026-10-01',draftId:'prior-draft',sentEntryId:'sent-record'}, {id:'n',kind:'note',text:'ב'.repeat(16000),at:'2026-10-02',notePurpose:'instruction'}];
+  const seen=[];
+  const p=provider(call=>{const request=JSON.parse(textRequest(call));if(request.operation==='context-summary'){seen.push(...request.fragments);return summaryOutput(request);}return output();},{contextWindowTokens:28000});
+  await generateCommunication({conversation:conversation(entries),action:'suggest',provider:p});
+  for(const entry of entries){
+    const fragments=seen.filter(fragment=>fragment.entryId===entry.id);
+    assert.ok(fragments.length>=3);
+    assert.equal(fragments.map(fragment=>fragment.content).join(''),JSON.stringify(entry));
+    for(const fragment of fragments){for(const key of ['kind','at','draftId','sentEntryId','notePurpose'])if(Object.hasOwn(entry,key))assert.equal(fragment[key],entry[key]);assert.ok(!/[\uD800-\uDBFF]$/.test(fragment.content));}
+  }
+});
 
 test('full canonical ordered history, draft state, versions and configured model reach provider',async()=>{
   const entries=[{id:'old',kind:'sent',text:'אבדוק ואחזור ביום חמישי.',at:'2026-10-01',versions:{prompt:'old'}},{id:'draft',kind:'draft',text:'הצעה שלא נשלחה',revisions:[{text:'גרסה קודמת'}]},{id:'new',kind:'received',text:'מה התחדש?'}];
@@ -115,13 +187,18 @@ test('summary missing a source ID is repaired once instead of silently discardin
   const p=provider(call=>{const request=JSON.parse(textRequest(call));if(request.operation!=='context-summary')return output();n++;return {facts:['טקסט המקור נשמר.'],commitments:[],disagreements:[],openQuestions:[],uncertainty:[],drafts:[],sourceEntryIds:n===1?[]:request.sourceEntryIds};},{contextWindowTokens:28000});
   await generateCommunication({conversation:conversation([{id:'large',kind:'received',text:'א'.repeat(12000)}]),action:'suggest',provider:p});
   assert.ok(n>1);
-  assert.match(textRequest(p.calls[1]),/repair/i);
+  const requests=p.calls.map(call=>JSON.parse(textRequest(call))),repairs=requests.filter(request=>request.repair);
+  assert.equal(repairs.length,1);
+  assert.deepEqual(repairs[0].fragments,requests[0].fragments);
 });
 
 test('an empty summary cannot silently replace meaningful history',async()=>{
   const p=provider(call=>{const request=JSON.parse(textRequest(call));return {facts:[],commitments:[],disagreements:[],openQuestions:[],uncertainty:[],drafts:[],sourceEntryIds:request.sourceEntryIds};},{contextWindowTokens:28000});
   await assert.rejects(generateCommunication({conversation:conversation([{id:'large',kind:'received',text:'חשוב לזכור את ההתחייבות. '+'א'.repeat(12000)}]),action:'suggest',provider:p}),e=>e.code==='AI_OUTPUT_INVALID');
-  assert.equal(p.calls.length,2);
+  const requests=p.calls.map(call=>JSON.parse(textRequest(call))),originals=requests.filter(request=>!request.repair);
+  assert.equal(originals.length,2);
+  assert.equal(requests.length,4);
+  for(const original of originals)assert.equal(requests.filter(request=>request.repair&&JSON.stringify(request.fragments)===JSON.stringify(original.fragments)).length,1);
 });
 
 test('text extraction returns the complete original text without provider processing or truncation',async()=>{

@@ -1617,10 +1617,16 @@ export function supabaseStore(url, key, { fetchImpl = fetch, timeoutMs } = {}) {
       await check(await request(`${base}?key=eq.${encodeURIComponent(k)}`, { method: 'DELETE', headers }));
     },
     // כל השורות שהמפתח שלהן מתחיל ב-prefix (like של PostgREST; * הוא התו הכללי).
-    async list(prefix, { keysOnly = false } = {}) {
-      const sel = keysOnly ? 'key' : 'key,value';
+    async list(prefix, { keysOnly = false, conversationSummaries = false } = {}) {
+      // Server-owned projection: list navigation never transfers private raw
+      // histories, AI results, research envelopes or retry receipts.
+      const fields = ['id','title','audience','status','createdAt','updatedAt','revision','rounds','_deleted'];
+      const sel = keysOnly ? 'key' : conversationSummaries
+        ? ['key', ...fields.map(field => field + ':value->>' + field), 'versions:value->versions'].join(',') : 'key,value';
       const r = await check(await request(`${base}?key=like.${encodeURIComponent(prefix + '*')}&select=${sel}&order=key&limit=5000`, { headers }));
-      return r.json();
+      const rows = await r.json();
+      if (!conversationSummaries || keysOnly) return rows;
+      return rows.map(({key,...value}) => ({key,value:{...value,revision:Number(value.revision),rounds:Number(value.rounds),_deleted:value._deleted===true||value._deleted==='true'}}));
     },
     async delPrefix(prefix) {
       await check(await request(`${base}?key=like.${encodeURIComponent(prefix + '*')}`, { method: 'DELETE', headers }));

@@ -10,6 +10,7 @@ export const COMMUNICATION_LIMITS = Object.freeze({ text:120000, title:160, audi
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ACTIONS = new Set(['list','create','get','update','append','editDraft','markSent','delete','export','generate','extract']);
 const MUTATIONS = new Set(['create','update','append','editDraft','markSent','delete','generate','extract']);
+const SUMMARY_FIELDS = ['id','title','audience','status','createdAt','updatedAt','revision','rounds','versions'];
 const AI_ERRORS = {
   AI_OUTPUT_INVALID:[422,'לא התקבלה תשובה תקינה. אפשר לנסות שוב.'],
   AI_CONTEXT_LIMIT:[413,'השיחה ארוכה מכדי לעבד אותה במודל הזמין. כל התוכן השמור נשמר במלואו.'],
@@ -49,8 +50,13 @@ async function owner(store,auth) {
 }
 function publicConversation(record) {
   const { _requests, ...conversation } = record;
-  return clone(conversation);
+  // Older receipts may predate action provenance; never invent their versions.
+  const actions=Object.values(_requests||{}).filter(r=>r.at&&r.versions)
+    .map(({action,at,revision,versions})=>({action,at,revision,versions})).sort((a,b)=>a.revision-b.revision);
+  return clone({...conversation,actions});
 }
+const conversationSummary = record => clone(Object.fromEntries(SUMMARY_FIELDS.map(field=>[field,record[field]])));
+const mutationReceipt = (payload,fingerprint,revision,at) => ({fingerprint,action:payload.action,revision,at,versions:{...CORE.VERSIONS}});
 function receipt(record,requestId,fingerprint) {
   const previous=record?._requests?.[requestId];
   if(!previous) return null;
@@ -113,6 +119,10 @@ function normalized(body) {
   if(action==='append') {
     if(!['received','sent','note'].includes(body.kind)) invalid();
     payload.kind=body.kind;payload.text=text(body.text);
+    if(has(body,'notePurpose')) {
+      if(body.kind!=='note'||body.notePurpose!=='instruction') invalid();
+      payload.notePurpose=body.notePurpose;
+    }
   }
   if(action==='editDraft'||action==='markSent') {
     payload.entryId=uuid(body.entryId);
@@ -144,9 +154,9 @@ async function save(store,key,expected,record,payload,researchStudy,fingerprint)
   record.updatedAt=new Date().toISOString();record.revision=expected===null?1:expected+1;
   record.rounds=record.entries.filter(e=>e.kind==='received').length;
   refreshResearch(record,researchStudy);
-  const outcome={conversation:publicConversation(record)};
-  record._requests={...(record._requests||{}),[payload.requestId]:{fingerprint,action:payload.action,revision:record.revision}};
+  record._requests={...(record._requests||{}),[payload.requestId]:mutationReceipt(payload,fingerprint,record.revision,record.updatedAt)};
   checkSize(record);
+  const outcome={conversation:publicConversation(record)};
   if(typeof store.compareSet!=='function') throw new Error('Atomic storage unavailable');
   if(!await store.compareSet(key,expected,record)) {
     const current=await store.get(key);
@@ -165,10 +175,9 @@ export async function handleCommunication(store,body,{providerFactory,researchSt
     if(!ACTIONS.has(body.action)) invalid();
     const payload=normalized(body),prefix='cc:'+trustedOwner+':';
     if(payload.action==='list') {
-      const rows=await store.list(prefix);
+      const rows=await store.list(prefix,{conversationSummaries:true});
       if(rows.length>COMMUNICATION_LIMITS.conversations) limited();
-      const conversations=rows.filter(r=>r.value&&!r.value._deleted).map(r=>publicConversation(r.value)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
-      if(Buffer.byteLength(JSON.stringify(conversations),'utf8')>COMMUNICATION_LIMITS.rowBytes) limited();
+      const conversations=rows.filter(r=>r.value&&!r.value._deleted).map(r=>conversationSummary(r.value)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
       return [200,{conversations}];
     }
     const key=prefix+payload.id,stored=await store.get(key);
@@ -196,7 +205,7 @@ export async function handleCommunication(store,body,{providerFactory,researchSt
     const record=clone(stored),at=new Date().toISOString();
     if(payload.action==='delete') {
       const tombstone={id:payload.id,revision:stored.revision+1,_deleted:true,deletedAt:at,
-        _requests:{[payload.requestId]:{fingerprint,action:'delete',revision:stored.revision+1}}};
+        _requests:{[payload.requestId]:mutationReceipt(payload,fingerprint,stored.revision+1,at)}};
       if(!await store.compareSet(key,stored.revision,tombstone)) {
         const current=await store.get(key);const retry=receipt(current,payload.requestId,fingerprint);if(retry)return retry;conflict();
       }
@@ -209,12 +218,12 @@ export async function handleCommunication(store,body,{providerFactory,researchSt
         if(record.research===undefined) delete record.research;
       }
     }
-    if(payload.action==='append') record.entries.push(entry(payload.kind,payload.text,at));
+    if(payload.action==='append') record.entries.push(entry(payload.kind,payload.text,at,has(payload,'notePurpose')?{notePurpose:payload.notePurpose}:{}));
     if(payload.action==='editDraft') {
       const found=draft(record,payload.entryId);
       if(found.text!==payload.text) {
         found.revisions=[...(found.revisions||[]),{text:found.text,at:found.editedAt||found.at,versions:clone(found.versions),...(found.model?{model:clone(found.model)}:{})}];
-        found.text=payload.text;found.editedAt=at;
+        found.text=payload.text;found.editedAt=at;found.versions={...CORE.VERSIONS};
       }
     }
     if(payload.action==='markSent') {
@@ -228,7 +237,12 @@ export async function handleCommunication(store,body,{providerFactory,researchSt
     if(payload.action==='generate'||payload.action==='extract') {
       // Validate selected draft before opening a provider or starting keep-alive.
       const selected=payload.entryId?draft(record,payload.entryId):undefined;
+      if(payload.action==='generate'&&payload.instruction.trim()) {
+        const latestInstruction=record.entries.findLast(e=>e.kind==='note'&&e.notePurpose==='instruction');
+        if(latestInstruction?.text!==payload.instruction) record.entries.push(entry('note',payload.instruction,at,{notePurpose:'instruction'}));
+      }
       if(record.entries.length>=COMMUNICATION_LIMITS.entries) limited();
+      checkSize(record);
       if(typeof onReady==='function') await onReady();
       const ai=await import('./communication-ai.mjs');
       const needsProvider=payload.action==='generate'||payload.attachment.kind!=='text';
@@ -238,15 +252,15 @@ export async function handleCommunication(store,body,{providerFactory,researchSt
         configured=await providerFactory();
       }
       if(payload.action==='generate') {
-        const {output,summaries=[],model}=await ai.generateCommunication({conversation:publicConversation(stored),action:payload.mode,instruction:payload.instruction,
+        const {output,summaries=[],model}=await ai.generateCommunication({conversation:publicConversation(record),action:payload.mode,instruction:payload.instruction,
           revisionStyle:payload.revisionStyle,draft:selected?clone(selected):undefined,provider:configured});
         const sourceIds=new Set(record.entries.map(e=>e.id));
         for(const summary of summaries) {
           if(!summary.source?.entryIds?.length||summary.source.entryIds.some(id=>!sourceIds.has(id))) fail(422,'AI_OUTPUT_INVALID',AI_ERRORS.AI_OUTPUT_INVALID[1]);
-          record.entries.push(entry('summary',text(summary.text),at,{model,source:clone(summary.source),...(summary.analysis?{analysis:clone(summary.analysis)}:{}),...(summary.context?{context:clone(summary.context)}:{})}));
+          record.entries.push(entry('summary',text(summary.text),at,{model:summary.model||model,source:clone(summary.source),...(summary.analysis?{analysis:clone(summary.analysis)}:{}),...(summary.context?{context:clone(summary.context)}:{})}));
         }
         text(output.message,COMMUNICATION_LIMITS.text,{optional:true});
-        const source={entryIds:stored.entries.map(e=>e.id),purpose:'generation'};
+        const source={entryIds:[...sourceIds],purpose:'generation'};
         const result=entry(output.message?'draft':'analysis',output.message||'',at,{model,source,why:output.why,next:output.next,analysis:clone(output.analysis),
           clarification:output.clarification,mode:payload.mode,...(selected?{draftId:selected.id,revisionStyle:payload.revisionStyle}: {})});
         record.entries.push(result);record.latestAI={...clone(output),model,source,mode:payload.mode,at,entryId:result.id};

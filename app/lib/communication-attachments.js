@@ -30,7 +30,8 @@
     const zip = await window.JSZip.loadAsync(await file.arrayBuffer());
     const names = Object.keys(zip.files).filter(n => /^word\/(?:document|footnotes|endnotes|comments|header\d*|footer\d*)\.xml$/.test(n));
     if (!names.includes('word/document.xml')) throw new Error('לא נמצא מסמך Word קריא בקובץ. אפשר לשמור אותו שוב בפורמט DOCX.');
-    // Bound decompression before reading any XML. The complete extracted text is kept or rejected, never sliced.
+    // Cheap preflight only: ZIP size headers are untrusted. Bound actual decoded
+    // bytes below before accumulating XML, including across all selected members.
     let bytes = 0;
     for (const n of names) {
       const size = zip.files[n]._data && zip.files[n]._data.uncompressedSize;
@@ -40,11 +41,32 @@
     }
     names.sort((a, b) => a === 'word/document.xml' ? -1 : b === 'word/document.xml' ? 1 : a.localeCompare(b));
     const parts = [];
+    const decoded = { bytes: 0 };
     for (const n of names) {
-      const text = xmlText(await zip.files[n].async('string'));
+      const text = xmlText(await boundedXml(zip.files[n], decoded));
       if (text.trim()) parts.push(text);
     }
     return checkText(parts.join('\n\n'));
+  }
+  function boundedXml(member, decoded) {
+    return new Promise((resolve, reject) => {
+      const stream = member.internalStream('uint8array');
+      const decoder = new TextDecoder('utf-8', { fatal: true });
+      const pieces = []; let stopped = false;
+      function abort(error) { if (stopped) return; stopped = true; stream.pause(); pieces.length = 0; reject(error); }
+      stream.on('data', chunk => {
+        if (stopped) return;
+        decoded.bytes += chunk.byteLength;
+        if (decoded.bytes > MAX_XML_BYTES) return abort(new Error('קובץ ה־Word גדול מדי לקריאה כאן. אפשר לחלק אותו; הקובץ לא נשמר.'));
+        try { pieces.push(decoder.decode(chunk, { stream: true })); } catch (_) { abort(new Error('לא ניתן לקרוא את הטקסט בקובץ ה־Word. אפשר לייצא אותו כ־TXT.')); }
+      });
+      stream.on('error', abort);
+      stream.on('end', () => {
+        if (stopped) return;
+        try { pieces.push(decoder.decode()); stopped = true; resolve(pieces.join('')); } catch (error) { abort(error); }
+      });
+      stream.resume();
+    });
   }
   async function plainText(file) {
     const bytes = new Uint8Array(await file.arrayBuffer());

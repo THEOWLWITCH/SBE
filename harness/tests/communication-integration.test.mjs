@@ -71,3 +71,19 @@ test('Supabase compare-and-set emits atomic revision predicates and detects conf
   assert.equal(data.get('cc:test:uuid').revision,2);
   assert.equal(await first.compareSet('cc:test:uuid',1,{revision:3}),false);
 });
+
+test('saved-conversation list projects metadata at storage without private history',async()=>{
+  const requests=[];
+  const store=supabaseStore('https://fixture.invalid','synthetic-service',{fetchImpl:async(target)=>{
+    const u=new URL(target);requests.push(u);
+    return Response.json(u.searchParams.get('select')==='key'?[{key:'cc:owner:id'}]:[{key:'cc:owner:id',id:'id',title:'שיחה',revision:'3',rounds:'2',_deleted:null,versions:{tool:'1.0.0'}}]);
+  }});
+  const rows=await store.list('cc:owner:',{conversationSummaries:true});
+  assert.equal(rows[0].value.revision,3);assert.equal(rows[0].value.rounds,2);
+  assert.equal(rows[0].value._deleted,false);
+  const select=requests[0].searchParams.get('select');
+  assert.ok(select.includes('title:value->>title'));
+  assert.ok(select.includes('versions:value->versions'));
+  assert.ok(!/(?:^|,)value(?:,|$)|entries|latestAI|research|_requests/.test(select));
+  assert.deepEqual(await store.list('cc:owner:',{keysOnly:true,conversationSummaries:true}),[{key:'cc:owner:id'}]);
+});

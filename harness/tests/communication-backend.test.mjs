@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac, randomUUID } from 'node:crypto';
+import { createRequire } from 'node:module';
 import { handleCommunication, COMMUNICATION_LIMITS } from '../lib/communication-continuity.mjs';
+const CORE = createRequire(import.meta.url)('../../app/lib/communication-core.js');
 
 const copy = value => value == null ? value : structuredClone(value);
 function memoryStore() {
@@ -51,6 +53,91 @@ test('personal staff data persists, exports and reopens without configuring AI',
   const [,list]=await call(store,auth,{action:'list'}); assert.equal(list.conversations.length,1);
   assert.equal('owner' in exported.conversation,false); assert.equal('_requests' in exported.conversation,false);
   assert.match([...store.data.keys()].find(k=>k.startsWith('cc:')),/^cc:[a-f0-9]{64}:[a-f0-9-]{36}$/);
+});
+
+test('metadata-only list keeps individually valid large histories discoverable and selectable',async()=>{
+  const store=memoryStore(),first=await create(store),second=await create(store);
+  let totalBytes=0;
+  for(const [key,record] of store.data) if(key.startsWith('cc:')) {
+    record.entries=Array.from({length:70},()=>({id:randomUUID(),kind:'received',text:'א'.repeat(50000),at:record.createdAt,versions:{...CORE.VERSIONS}}));
+    record.rounds=70;record.revision=71;record.latestAI={message:'PRIVATE LIST SENTINEL'};
+    const bytes=Buffer.byteLength(JSON.stringify(record),'utf8');
+    assert.ok(bytes<COMMUNICATION_LIMITS.rowBytes);totalBytes+=bytes;store.data.set(key,record);
+  }
+  assert.ok(totalBytes>COMMUNICATION_LIMITS.rowBytes);
+  const originalList=store.list;let requestedOptions;
+  store.list=async(prefix,options)=>{requestedOptions=options;return originalList(prefix);};
+  const [status,out]=await call(store,first.auth,{action:'list'});
+  assert.equal(status,200,JSON.stringify(out));assert.deepEqual(requestedOptions,{conversationSummaries:true});
+  assert.deepEqual(new Set(out.conversations.map(c=>c.id)),new Set([first.conversation.id,second.conversation.id]));
+  for(const summary of out.conversations) assert.deepEqual(Object.keys(summary).sort(),['audience','createdAt','id','revision','rounds','status','title','updatedAt','versions']);
+  assert.doesNotMatch(JSON.stringify(out),/PRIVATE LIST SENTINEL|entries|latestAI|_requests|actions/);
+  const selected=out.conversations.find(c=>c.id===first.conversation.id);
+  for(const action of ['get','export']) {
+    const [readStatus,read]=await call(store,first.auth,{action,id:selected.id});
+    assert.equal(readStatus,200);assert.equal(read.conversation.entries.length,70);
+    assert.equal(read.conversation.entries[0].text,'א'.repeat(50000));
+  }
+  assert.deepEqual(await call(store,first.auth,mutation(selected,'delete')),[200,{deleted:true}]);
+  const [,remaining]=await call(store,first.auth,{action:'list'});assert.deepEqual(remaining.conversations.map(c=>c.id),[second.conversation.id]);
+});
+
+test('public successful-action provenance records acting versions while draft snapshots keep older versions',async()=>{
+  const store=memoryStore(),{conversation,auth,body}=await create(store);
+  const record=[...store.data].find(([key])=>key.startsWith('cc:'))[1];
+  const oldVersions={tool:'0.9.0',prompt:'0.9.0',principles:'18-0.9.0',schema:1},draftId=randomUUID();
+  record.versions={...oldVersions};record._requests[body.requestId].versions={...oldVersions};
+  record.entries.push({id:draftId,kind:'draft',text:'טיוטה מגרסה קודמת',at:record.createdAt,versions:{...oldVersions},model:{provider:'synthetic',id:'old-model'}});
+  const updateBody=mutation(conversation,'update',{title:'שם מעודכן',status:'archived'});
+  const [status,updated]=await call(store,auth,updateBody);
+  assert.equal(status,200);assert.deepEqual(updated.conversation.versions,oldVersions);
+  assert.deepEqual(updated.conversation.actions.map(a=>a.action),['create','update']);
+  assert.deepEqual(updated.conversation.actions[0].versions,oldVersions);
+  const updateAction=updated.conversation.actions[1];
+  assert.deepEqual(updateAction.versions,CORE.VERSIONS);assert.equal(updateAction.revision,updated.conversation.revision);
+  assert.ok(Number.isFinite(Date.parse(updateAction.at)));
+  const [,edited]=await call(store,auth,mutation(updated.conversation,'editDraft',{entryId:draftId,text:'טיוטה שנערכה עכשיו'}));
+  const draft=edited.conversation.entries.find(e=>e.id===draftId);
+  assert.deepEqual(draft.revisions[0].versions,oldVersions);assert.deepEqual(draft.versions,CORE.VERSIONS);
+  assert.deepEqual(edited.conversation.actions.map(a=>a.action),['create','update','editDraft']);
+  for(const action of edited.conversation.actions) assert.deepEqual(Object.keys(action).sort(),['action','at','revision','versions']);
+  const [,exported]=await call(store,auth,{action:'export',id:conversation.id});assert.deepEqual(exported.conversation.actions,edited.conversation.actions);
+  assert.doesNotMatch(JSON.stringify(exported.conversation.actions),/fingerprint|requestId|שם מעודכן|טיוטה/);
+  assert.deepEqual((await call(store,auth,updateBody))[1].conversation,edited.conversation);
+});
+
+test('marked educator instructions persist, deduplicate and become canonical AI sources',async()=>{
+  const store=memoryStore();let {conversation,auth}=await create(store);
+  const instruction='המטרה שלי היא לברר עובדות לפני החלטה.';let requests=[];
+  const deps={providerFactory:()=>provider(output(),{inspect(input){requests.push(JSON.parse(input.messages[0].content));}})};
+  const [status,generated]=await call(store,auth,mutation(conversation,'generate',{mode:'suggest',instruction}),deps);
+  assert.equal(status,200,JSON.stringify(generated));conversation=generated.conversation;
+  const note=conversation.entries.find(e=>e.kind==='note'&&e.notePurpose==='instruction');
+  assert.ok(note);assert.equal(note.text,instruction);
+  assert.ok(requests[0].history.some(e=>e.id===note.id&&e.text===instruction));
+  assert.ok(conversation.latestAI.source.entryIds.includes(note.id));
+  const [,loaded]=await call(store,auth,{action:'get',id:conversation.id});
+  const [,continued]=await call(store,auth,mutation(loaded.conversation,'generate',{mode:'continue',instruction}),deps);
+  conversation=continued.conversation;
+  assert.equal(conversation.entries.filter(e=>e.notePurpose==='instruction').length,1);
+  assert.ok(requests[1].history.some(e=>e.id===note.id&&e.text===instruction));
+  const nextInstruction='אני רוצה לתאם זמן לשיחה.';
+  const [,appended]=await call(store,auth,mutation(conversation,'append',{kind:'note',notePurpose:'instruction',text:nextInstruction}));
+  const [,afterPreSave]=await call(store,auth,mutation(appended.conversation,'generate',{mode:'suggest',instruction:nextInstruction}),deps);
+  assert.deepEqual(afterPreSave.conversation.entries.filter(e=>e.notePurpose==='instruction').map(e=>e.text),[instruction,nextInstruction]);
+  assert.ok(afterPreSave.conversation.latestAI.source.entryIds.includes(appended.conversation.entries.at(-1).id));
+});
+
+test('instruction-note purpose is validated and pre-saved instructions survive AI failure',async()=>{
+  const store=memoryStore();const {conversation,auth}=await create(store);
+  for(const extra of [{kind:'received',notePurpose:'instruction'},{kind:'note',notePurpose:'anything'},{kind:'note',notePurpose:null}]) {
+    assert.equal((await call(store,auth,mutation(conversation,'append',{text:'הנחיה',...extra})))[0],400);
+  }
+  const [,saved]=await call(store,auth,mutation(conversation,'append',{kind:'note',notePurpose:'instruction',text:'מטרה שמורה לפני הבקשה'}));
+  const [status]=await call(store,auth,mutation(saved.conversation,'generate',{mode:'suggest',instruction:'מטרה שמורה לפני הבקשה'}),{providerFactory(){throw new Error('synthetic provider unavailable');}});
+  assert.equal(status,503);
+  const [,loaded]=await call(store,auth,{action:'get',id:conversation.id});
+  assert.deepEqual(loaded.conversation,saved.conversation);
 });
 
 test('forged owner, another personal user and system admin cannot cross owner boundaries',async()=>{
@@ -159,6 +246,11 @@ test('delete removes raw text and all cached outcomes; a late AI result cannot r
   await started;
   const deleteBody=mutation(added.conversation,'delete');const deleted=await call(store,auth,deleteBody);assert.deepEqual(deleted,[200,{deleted:true}]);
   assert.deepEqual(await call(store,auth,deleteBody),deleted);release();assert.equal((await pending)[0],404);
+  const tombstone=[...store.data].find(([key])=>key.startsWith('cc:'))[1];
+  assert.deepEqual(Object.keys(tombstone._requests),[deleteBody.requestId]);
+  assert.deepEqual(tombstone._requests[deleteBody.requestId].versions,CORE.VERSIONS);
+  assert.equal(tombstone._requests[deleteBody.requestId].at,tombstone.deletedAt);
+  assert.equal(tombstone._requests[deleteBody.requestId].action,'delete');
   const serialized=JSON.stringify([...store.data]);assert.doesNotMatch(serialized,/SENSITIVE RAW SENTINEL|שיחה לבדיקה|entries|latestAI/);
   assert.equal((await call(store,auth,{action:'get',id:conversation.id}))[0],404);
   assert.equal((await call(store,auth,{action:'create',id:conversation.id,expectedRevision:null,requestId:randomUUID()}))[0],409);
@@ -223,6 +315,22 @@ test('long context summaries retain raw history and ordered source provenance in
   for(const summary of context) {assert.equal(summary.model.id,'synthetic-summary');assert.equal(summary.source.purpose,'context');assert.equal(summary.versions.schema,1);}
   assert.equal(out.conversation.entries.filter(e=>e.kind==='sent').length,0);
   assert.deepEqual(out.conversation.latestAI.source.entryIds,raw.map(e=>e.id));
+});
+
+test('stored context summaries retain their actual response model separately from the final draft model',async()=>{
+  const store=memoryStore();const {conversation,auth}=await create(store);
+  const [,added]=await call(store,auth,mutation(conversation,'append',{kind:'received',text:'מקור מלא '.repeat(3500)}));
+  const modelProvider={id:'anthropic',model:'configured-alias',contextWindowTokens:32768,async complete(input){
+    const request=JSON.parse(input.messages[0].content);
+    if(request.operation==='context-summary') return {text:JSON.stringify({facts:['נשמר מקור מלא.'],commitments:[],disagreements:[],openQuestions:[],uncertainty:[],drafts:[],sourceEntryIds:request.sourceEntryIds}),raw:{model:'actual-summary-model'}};
+    return {text:JSON.stringify(output()),raw:{model:'actual-generation-model'}};
+  }};
+  const [status,out]=await call(store,auth,mutation(added.conversation,'generate',{mode:'suggest'}),{providerFactory:()=>modelProvider});
+  assert.equal(status,200,JSON.stringify(out));
+  const summaries=out.conversation.entries.filter(e=>e.kind==='summary');assert.ok(summaries.length>0);
+  for(const summary of summaries) assert.deepEqual(summary.model,{provider:'anthropic',id:'actual-summary-model'});
+  assert.deepEqual(out.conversation.entries.find(e=>e.kind==='draft').model,{provider:'anthropic',id:'actual-generation-model'});
+  assert.deepEqual(out.conversation.latestAI.model,{provider:'anthropic',id:'actual-generation-model'});
 });
 
 test('bounds are explicit and no error exposes provider or store content',async()=>{

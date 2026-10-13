@@ -206,23 +206,27 @@ const server = createServer(async (req, res) => {
   if (req.method === 'POST' && req.url === '/api/communication-continuity') {
     res.setHeader('cache-control', 'private, no-store');
     const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
-    if (!url || !key) return sendJson(res, 503, { code: 'storage', error: 'השמירה אינה זמינה כרגע. אפשר להשאיר את הטקסט על המסך ולנסות שוב.' });
+    if (!url || !key) return sendJson(res, 503, { ok: false, status: 503, code: 'storage', error: 'השמירה אינה זמינה כרגע. אפשר להשאיר את הטקסט על המסך ולנסות שוב.' });
     let body;
     try { body = JSON.parse(await readBody(req, 16 * 1024 * 1024)); }
-    catch (error) { return sendJson(res, error.status === 413 ? 413 : 400, { code: 'invalid', error: error.status === 413 ? 'הקובץ גדול מדי. אפשר לצרף עמוד רלוונטי או טקסט קצר יותר.' : 'הבקשה אינה תקינה. אפשר לרענן ולנסות שוב.' }); }
+    catch (error) { const status = error.status === 413 ? 413 : 400; return sendJson(res, status, { ok: false, status, code: 'invalid', error: status === 413 ? 'הקובץ גדול מדי. אפשר לצרף עמוד רלוונטי או טקסט קצר יותר.' : 'הבקשה אינה תקינה. אפשר לרענן ולנסות שוב.' }); }
     let finish;
     try {
       const [status, out] = await handleCommunication(supabaseStore(url, key, { timeoutMs: 120000 }), body, {
         providerFactory: () => getProvider(process.env.PROVIDER || 'anthropic'),
         onReady: () => { finish = startKeepAlive(res); }
       });
-      if (finish) return finish(out);
-      return sendJson(res, status, out);
+      // Long requests must commit transport 200 for Render's keepalive. The
+      // flat result envelope preserves the actual operation status for clients.
+      const result = { ...out, ok: status >= 200 && status < 300, status };
+      if (finish) return finish(result);
+      return sendJson(res, status, result);
     } catch {
       console.error('communication: request failed');
       const out = { code: 'unavailable', error: 'השיחה אינה זמינה כרגע. אפשר להשאיר את הטקסט על המסך ולנסות שוב.' };
-      if (finish) return finish(out);
-      return sendJson(res, 503, out);
+      const result = { ...out, ok: false, status: 503 };
+      if (finish) return finish(result);
+      return sendJson(res, 503, result);
     }
   }
 

@@ -10,7 +10,7 @@
     influence: 'על מה אפשר להשפיע', outsideControl: 'מה מחוץ לשליטתך', responsibility: 'אחריות מקצועית',
     resources: 'משאבים', barriers: 'חסמים', agreements: 'הסכמות שנמסרו', openQuestions: 'שאלות פתוחות', followUp: 'מעקב והמשך'
   };
-  const state = { conversations: [], selected: null, busy: false, retry: null, edits: new Map(), buffers: new Map(), metadataDirty: false };
+  const state = { conversations: [], selected: null, busy: false, retry: null, edits: new Map(), buffers: new Map() };
   let ticker = null;
   function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = String(text); return n; }
   function button(text, action, cls) { const b = el('button', 'btn ' + (cls == null ? 'ghost' : cls), text); b.type = 'button'; b.disabled = state.busy; b.addEventListener('click', action); return b; }
@@ -19,13 +19,35 @@
   function date(iso) { if (!iso) return ''; const d = new Date(iso); return Number.isFinite(d.getTime()) ? d.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'short', timeStyle: 'short' }) : String(iso); }
   function rich(text) { if (window.SBE_DOC) return SBE_DOC.rich(text); return el('div', 'cc-entry-text', text); }
   function bufferKey() { return state.selected ? state.selected.id : 'new'; }
-  function rememberComposer() { state.buffers.set(bufferKey(), { text: F('cc-text').value, kind: F('cc-input-kind').value, audience: F('cc-audience').value, instruction: F('cc-instruction').value }); }
+  function latestInstruction(c) { return (c && c.entries || []).findLast(e => e.kind === 'note' && e.notePurpose === 'instruction'); }
+  function rememberComposer() {
+    const c = state.selected;
+    const b = { text: F('cc-text').value, kind: F('cc-input-kind').value, instruction: F('cc-instruction').value, savedInstruction: latestInstruction(c)?.text || '' };
+    for (const [field, id] of [['title', 'cc-rename'], ['status', 'cc-status'], ['audience', 'cc-audience']]) {
+      b[field] = F(id).value;
+      b[field + 'Dirty'] = !!c && b[field] !== (c[field] || '');
+    }
+    state.buffers.set(bufferKey(), b);
+  }
+  function metadataValue(field, c) {
+    const b = state.buffers.get(c.id);
+    return b && b[field + 'Dirty'] ? b[field] : c[field] || '';
+  }
+  function acknowledgeMetadata(c, patch) {
+    const b = state.buffers.get(c.id);
+    if (!b) return;
+    for (const field of ['title', 'status', 'audience']) {
+      if (!Object.prototype.hasOwnProperty.call(patch, field) || b[field] !== patch[field]) continue;
+      const expected = field === 'status' ? patch[field] : patch[field].trim();
+      if (c[field] === expected) { b[field] = c[field]; b[field + 'Dirty'] = false; }
+    }
+  }
   function loadComposer() {
     const b = state.buffers.get(bufferKey());
     F('cc-text').value = b ? b.text : '';
     F('cc-input-kind').value = b ? b.kind : 'received';
-    F('cc-audience').value = b ? b.audience : state.selected ? state.selected.audience || '' : '';
-    F('cc-instruction').value = b ? b.instruction : '';
+    F('cc-audience').value = state.selected ? metadataValue('audience', state.selected) : b ? b.audience : '';
+    F('cc-instruction').value = b ? b.instruction : latestInstruction(state.selected)?.text || '';
   }
   function feedback(text, error) { F('cc-feedback').hidden = false; F('cc-feedback').classList.toggle('error', !!error); F('cc-feedback-text').textContent = text; }
   function setBusy(on, text) {
@@ -59,7 +81,7 @@
     } catch (_) { throw new ApiError('החיבור לשרת נקטע. הטקסט נשמר כאן בלשונית כל עוד היא פתוחה. אפשר לנסות שוב את אותה בקשה.', 'network', 0); }
     let result;
     try { result = await response.json(); } catch (_) { throw new ApiError('לא התקבלה תשובה קריאה מהשרת. אפשר לנסות שוב את אותה בקשה.', 'response', response.status); }
-    if (!response.ok || result.error) throw new ApiError(result.error || 'הבקשה לא הושלמה. אפשר לנסות שוב.', result.code || 'server', response.status);
+    if (!response.ok || result.ok === false || result.error) throw new ApiError(result.error || 'הבקשה לא הושלמה. אפשר לנסות שוב.', result.code || 'server', Number.isInteger(result.status) ? result.status : response.status);
     if (token() !== op.token) throw new ApiError('הכניסה השתנתה בזמן הפעולה. אפשר לטעון מחדש את השיחות בחשבון הנוכחי.', 'unauthorized', 401);
     op.results.set(step, result);
     return result;
@@ -123,7 +145,7 @@
   }
   async function selectConversation(id) {
     if (state.busy) return;
-    rememberComposer(); state.metadataDirty = false;
+    rememberComposer();
     await run('פתיחת השיחה.', async op => {
       apply((await request(op, 'get', 'get', { id }, false)).conversation);
       loadComposer();
@@ -131,7 +153,7 @@
   }
   function beginNew() {
     if (state.busy) return;
-    rememberComposer(); state.selected = null; state.metadataDirty = false; state.retry = null;
+    rememberComposer(); state.selected = null; state.retry = null;
     F('cc-file').value = ''; F('cc-file-status').textContent = ''; F('cc-file-clear').hidden = true;
     F('cc-feedback').hidden = true; F('cc-retry').hidden = true; F('cc-conflict-refresh').hidden = true;
     renderConversation(); renderList(); loadComposer(); F('cc-text').focus();
@@ -139,7 +161,10 @@
   async function ensureConversation(op, initialText) {
     if (op.conversation) return op.conversation;
     if (op.existing) { op.conversation = op.existing; return op.conversation; }
-    op.conversation = apply((await request(op, 'create', 'create', { id: op.newId, title: initialText.trim().split('\n')[0].slice(0, 100) || 'שיחה חדשה', audience: op.audience, expectedRevision: null }, true)).conversation);
+    const created = (await request(op, 'create', 'create', { id: op.newId, title: initialText.trim().split('\n')[0].slice(0, 100) || 'שיחה חדשה', audience: op.audience, expectedRevision: null }, true)).conversation;
+    const b = state.buffers.get('new');
+    if (b && created?.id) state.buffers.set(created.id, { ...b, title: created.title, status: created.status, titleDirty: false, statusDirty: false, audienceDirty: b.audience !== created.audience });
+    op.conversation = apply(created);
     state.buffers.delete('new'); rememberComposer();
     return op.conversation;
   }
@@ -164,9 +189,18 @@
       rememberComposer();
     }
     if (op.audience !== op.conversation.audience && !op.audienceSaved) {
-      op.conversation = apply((await request(op, 'audience', 'update', { id: op.conversation.id, expectedRevision: op.conversation.revision, audience: op.audience }, true)).conversation);
+      const conversation = (await request(op, 'audience', 'update', { id: op.conversation.id, expectedRevision: op.conversation.revision, audience: op.audience }, true)).conversation;
+      acknowledgeMetadata(conversation, { audience: op.audience });
+      op.conversation = apply(conversation);
       op.audienceSaved = true;
     }
+  }
+  async function saveInstruction(op) {
+    if (!op.instruction.trim() || op.instructionSaved) return;
+    if (latestInstruction(op.conversation)?.text !== op.instruction) {
+      op.conversation = apply((await request(op, 'instruction', 'append', { id: op.conversation.id, expectedRevision: op.conversation.revision, kind: 'note', text: op.instruction, notePurpose: 'instruction' }, true)).conversation);
+    }
+    op.instructionSaved = true;
   }
   function saveInput() {
     return contextOperation('שמירת הטקסט בשיחה.', async op => {
@@ -184,6 +218,7 @@
         if (state.edits.get(entryId) === editedDraft) state.edits.delete(entryId);
         op.draftSaved = true;
       }
+      await saveInstruction(op);
       op.conversation = apply((await request(op, 'generate', 'generate', { id: op.conversation.id, expectedRevision: op.conversation.revision, mode, instruction: op.instruction, ...(entryId ? { entryId } : {}), ...(revisionStyle ? { revisionStyle } : {}) }, true)).conversation);
       op.success = op.conversation.latestAI && op.conversation.latestAI.clarification
         ? 'נשמרה שאלה להשלמת פרט מרכזי. אפשר להוסיף תשובה בטקסט ולבקש ניסוח שוב.'
@@ -285,7 +320,7 @@
     if (c) {
       F('cc-title').textContent = c.title || 'שיחה ללא שם'; F('cc-status-badge').textContent = C.STATUSES[c.status] || c.status;
       F('cc-meta').textContent = 'נוצרה: ' + date(c.createdAt) + ' · עודכנה: ' + date(c.updatedAt) + ' · ' + (c.rounds || 0) + ' סבבי שיח · מזהה: ' + c.id;
-      if (!state.metadataDirty) { F('cc-rename').value = c.title || ''; F('cc-status').value = c.status; }
+      F('cc-rename').value = metadataValue('title', c); F('cc-status').value = metadataValue('status', c); F('cc-audience').value = metadataValue('audience', c);
       const summaries = (c.entries || []).filter(e => e.kind === 'summary');
       if (summaries.length) {
         const notice = details('סיכומי ההקשר בשיחה (' + summaries.length + ')', [el('p', 'muted', 'BE GOOD יצרה סיכומים כדי להתחשב ברצף של שיחה ארוכה. כל ההודעות המקוריות נשמרות במלואן. כל סיכום מזוהה בנפרד ומציג את מזהי הרשומות שעליהן הוא מבוסס.')]);
@@ -326,7 +361,7 @@
     const c = state.selected;
     return run('שמירת פרטי השיחה.', async op => {
       const result = await request(op, 'update', 'update', { id: c.id, expectedRevision: c.revision, ...patch }, true);
-      state.metadataDirty = false; apply(result.conversation);
+      acknowledgeMetadata(result.conversation, patch); apply(result.conversation);
     }, success || 'פרטי השיחה נשמרו.');
   }
   function deleteConversation() {
@@ -338,7 +373,7 @@
       if (!result.deleted) throw new ApiError('השרת לא אישר את המחיקה. אפשר לנסות שוב.', 'response', 502);
       state.conversations = state.conversations.filter(x => x.id !== c.id);
       state.buffers.delete(c.id); (c.entries || []).forEach(e => state.edits.delete(e.id)); state.selected = null;
-      state.metadataDirty = false; renderConversation(); renderList(); loadComposer();
+      renderConversation(); renderList(); loadComposer();
     }, 'השיחה נמחקה מהשרת.');
   }
   async function upload() {
@@ -442,8 +477,7 @@
     F('cc-new').addEventListener('click', beginNew); F('cc-refresh').addEventListener('click', refreshList); F('cc-filter').addEventListener('change', renderList);
     F('cc-save-input').addEventListener('click', saveInput); F('cc-file').addEventListener('change', upload);
     F('cc-file-clear').addEventListener('click', () => { F('cc-file').value = ''; F('cc-file-status').textContent = ''; F('cc-file-clear').hidden = true; state.retry = null; F('cc-retry').hidden = true; });
-    ['cc-text', 'cc-input-kind', 'cc-audience', 'cc-instruction'].forEach(id => F(id).addEventListener('input', rememberComposer));
-    ['cc-rename', 'cc-status', 'cc-audience'].forEach(id => F(id).addEventListener('input', () => { state.metadataDirty = true; }));
+    ['cc-text', 'cc-input-kind', 'cc-audience', 'cc-instruction', 'cc-rename', 'cc-status'].forEach(id => F(id).addEventListener('input', rememberComposer));
     F('cc-update').addEventListener('click', () => updateConversation({ title: F('cc-rename').value, status: F('cc-status').value, audience: F('cc-audience').value }));
     F('cc-reopen').addEventListener('click', () => updateConversation({ status: 'active' }, 'השיחה נפתחה מחדש.'));
     F('cc-archive').addEventListener('click', () => updateConversation({ status: 'archived' }, 'השיחה הועברה לארכיון. אפשר לפתוח אותה מחדש.'));
@@ -452,8 +486,14 @@
     F('cc-retry').addEventListener('click', () => { if (state.retry) execute(state.retry); });
     F('cc-conflict-refresh').addEventListener('click', () => { if (state.selected) selectConversation(state.selected.id); });
     window.addEventListener('beforeunload', e => {
-      const hasInput = F('cc-text').value.trim() || [...state.buffers.values()].some(b => b.text.trim());
-      if (state.busy || state.edits.size || hasInput) { e.preventDefault(); e.returnValue = ''; }
+      rememberComposer();
+      const unsaved = [...state.buffers.entries()].some(([id, b]) => {
+        const c = state.selected?.id === id ? state.selected : state.conversations.find(item => item.id === id);
+        const savedInstruction = state.selected?.id === id ? latestInstruction(c)?.text || '' : b.savedInstruction;
+        return b.text.trim() || (b.instruction.trim() && b.instruction !== savedInstruction)
+          || ['title', 'status', 'audience'].some(field => b[field + 'Dirty'] && b[field] !== (c?.[field] || ''));
+      });
+      if (state.busy || state.edits.size || unsaved) { e.preventDefault(); e.returnValue = ''; }
     });
     renderConversation(); refreshList();
   }

@@ -1,0 +1,70 @@
+{
+  "verdicts": [
+    {
+      "#": 1,
+      "status": "confirmed",
+      "protected_subject": "data-loss",
+      "reason": "With unsaved title/status followed by the offered same-conversation refresh, newly added 639c74c app/lib/communication-continuity-ui.js:126 clears metadataDirty and :288 overwrites both inputs; a Node v20.19.1 in-memory execution of that revision replaced the pending title/status with server values, while :453 makes this path reachable after a revision conflict."
+    },
+    {
+      "#": 2,
+      "status": "confirmed",
+      "protected_subject": "data-loss",
+      "reason": "When another tab changes audience and this tab refreshes without editing audience, 639c74c app/lib/communication-continuity-ui.js:22-27 restores the stale clean buffer and :166-168 saves it at the fetched revision; a Node v20.19.1 synthetic execution observed get, append at revision 2, then update to the old audience at revision 3."
+    },
+    {
+      "#": 3,
+      "status": "confirmed",
+      "protected_subject": "data-loss",
+      "reason": "For metadata-only edits with no text, draft edits or active request, newly added 639c74c app/lib/communication-continuity-ui.js:446 sets metadataDirty but :455-456 omits it from beforeunload; executing the actual listener in a Node v20.19.1 synthetic DOM with metadataDirty=true left preventDefault uncalled and returnValue unset."
+    },
+    {
+      "#": 4,
+      "status": "confirmed",
+      "protected_subject": null,
+      "reason": "Four individually valid histories created through 639c74c handleCommunication using a signed synthetic writer and isolated in-memory CAS on Node v20.19.1 each serialized to 3,605,875 bytes below the 12,582,912-byte row limit, yet :171 returned list 413/STORAGE_LIMIT while known-ID get returned 200, and UI :119-129 requires the failed list for fresh-screen selection; production incidence was not measured."
+    },
+    {
+      "#": 5,
+      "status": "confirmed",
+      "protected_subject": "public-contract",
+      "reason": "A provider failure after onReady reaches newly added 639c74c harness/practice-server.mjs:217-219, which commits 200 through startKeepAlive(:115) and ignores the handler status contrary to docs/plans/2026-10-13-communication-continuity.md:7; executing the actual route branch with a synthetic response object and real handler on Node v20.19.1 observed handler 503/SERVICE_UNAVAILABLE delivered as route status 200."
+    },
+    {
+      "#": 6,
+      "status": "confirmed",
+      "protected_subject": null,
+      "reason": "Adding this new tool activates CLAUDE.md:434,438 requirements for example-peek and demo registration, but inspected 639c74c app/communication-continuity.html:7-17 has neither preview nor demo-hook loading and the demo-hook recipes, demo-lab RUNS/TOOLS and examples TOOLS contain no communication-continuity registration, so administrator demo and approved synthetic preview paths are absent."
+    },
+    {
+      "#": 7,
+      "status": "confirmed",
+      "protected_subject": "memory-safety",
+      "reason": "For a DOCX with forged central-directory size, newly added 639c74c app/lib/communication-attachments.js:36-44 trusts that size before accumulating decoded XML; running its actual prepare function with vendored JSZip 3.10.2 on Node v20.19.1 accepted a 20,721-byte synthetic ZIP advertising one byte and emitted 20,971,649 bytes beyond the 16 MiB guard before the size-mismatch error."
+    },
+    {
+      "#": 8,
+      "status": "confirmed",
+      "protected_subject": null,
+      "reason": "If continuation drops the second received message but still creates another draft, committed 639c74c harness/communication-browser-check.mjs:28-32 supplies a constant response without inspecting input, :76-82 asserts only two drafts before/after reload, and :97 checks only nonempty export entries, so no assertion discriminates that regression; no production regression is claimed."
+    },
+    {
+      "#": 9,
+      "status": "confirmed",
+      "protected_subject": null,
+      "reason": "When a selected older draft shares a summary batch with other drafts and long history requires compaction, 639c74c harness/lib/communication-ai.mjs:126,143 retains only selected id/kind and summaries without required draft-to-ID associations; a Node v20.19.1 synthetic paired run with a 28,000-token window and unrelated latestAI produced identical final requests after swapping the selected draft text, establishing the missing editing target."
+    },
+    {
+      "#": 10,
+      "status": "confirmed",
+      "protected_subject": null,
+      "reason": "For an allowed 120,000-character Hebrew received message under the documented default 32,768-token window, executing 639c74c generateCommunication with an asynchronous synthetic provider on Node v20.19.1 produced 16 summary calls plus one final call with maximum concurrency one, matching the serial await at :137-139 and proving the repeated round-trip delay path; live latency and production incidence were not measured."
+    },
+    {
+      "#": 11,
+      "status": "confirmed",
+      "protected_subject": null,
+      "reason": "Significant update/editDraft actions do not record current action versions at 639c74c harness/lib/communication-continuity.mjs:148,206,216-217 and receipts are excluded at :51; a Node v20.19.1 signed synthetic writer test on an older-version stored conversation/draft retained version 0.9.0 after rename/archive/edit while CORE was 1.0.0 and produced no public action provenance, contrary to the explicit traceability requirement, with production incidence unmeasured."
+    }
+  ]
+}

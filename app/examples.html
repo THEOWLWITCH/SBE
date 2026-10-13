@@ -120,6 +120,7 @@ const TOOLS=[
   ['nugi','נוגי: מנהיגות תומכת חוסן','להנהלה, לרכזים ולצוותי תלמידים: תמונת מצב של המנהיגות בבית הספר והמלצות שבונות מנגנונים משותפים.'],
   ['nana','ננה: מהוראה להנחיה','מדריך הנחיה למפגש: עמדה, שפה, מהלכי שיחה, רגעים מאתגרים וסיום שהופך למנגנון חוזר.'],
   ['writer','כתיבה מקדמת חוסן','הודעות ומכתבים לתלמידים, להורים ולצוות, לפי עשרת עקרונות השפה המחזקת.'],
+  ['communication-continuity','ניהול שיח מתמשך','רצף הודעות, טיוטות והחלטות שמסייע להוביל תקשורת מקצועית לאורך זמן. הדוגמאות כאן בדויות ואושרו להצגה.'],
   ['continuity','תיק רציפות: למורה המחליפה','תיק הפעלה קצר למי שתחליף את המורה: שגרות, תפקידים וגיבוי, גבולות החלטה, רגעים שכדאי להתכונן אליהם ודף תרגול לעמיתה.'],
   ['cont-join','תיק רציפות: הצטרפות וחזרה של תלמידים','ערכה לתלמיד/ה שמצטרף/ת או חוזר/ת, או לכל הכיתה: תיק כניסה קבוצתי, דרכי הצטרפות לבחירה, תפקידי עמיתים ולוח לשבועיים.'],
   ['cont-proc','תיק רציפות: נוהל עבודה בכלים שלכם','איפה כל חלק בתיק נמצא בכלים שכבר יש לבית הספר, מי מעדכן, ומה נשאר רק במכשיר.'],
@@ -167,6 +168,7 @@ async function load(){
   const known=TOOLS.map(t=>t[0]);
   // לפי חמש שאלות של מוכנות יומיומית (SBE_READY)
   const RG={"dialogue": "practice", "dialogue-full": "practice", "teamthink": "practice", "teamthink-round": "practice", "cont-join": "anchor", "cont-proc": "anchor", "routines-proc": "anchor", "paths": "act", "practice-own": "practice", "studio": "act", "practi": "see", "nugi": "see", "nana": "practice", "writer": "act", "continuity": "anchor", "routines": "anchor", "bridge": "practice", "resil": "see", "conv": "practice", "act-single": "act", "act-seq": "act", "review": "learn", "journey": "anchor", "practice": "practice", "edu": "practice", "parents": "practice", "youth": "practice"}, R=window.SBE_READY, order=R?R.GROUPS.map(g=>g.id):[];
+  RG['communication-continuity']='practice';
   const sorted=TOOLS.slice().sort((a,b)=>order.indexOf(RG[a[0]])-order.indexOf(RG[b[0]]));
   const groups=sorted.concat([['_other','תוצרים נוספים','']]);
   let lastG=null;

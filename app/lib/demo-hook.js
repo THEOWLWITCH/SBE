@@ -151,6 +151,27 @@
   }
 
   var RECIPES = {
+    "communication-continuity.html": async function () {
+      // Administrator-only synthetic input, processed by the real tool/provider.
+      // Capture this newly created timeline only; never select an existing row.
+      await waitFor(function () { return $("#cc-new") && !$("#cc-new").disabled; }, 30e3, "טעינת ניהול השיח");
+      click("#cc-new");
+      setVal("cc-text", "דוגמה בדויה: הורה כתב שהוא מבקש להבין מה קרה בשיעור ושואל אם אפשר לשוחח. אין עדיין מידע על האירוע או מועד מוסכם.");
+      setVal("cc-audience", "הורים");
+      setVal("cc-instruction", "עזרי לי להכיר בפנייה, לברר עובדות ולהציע תיאום שיחה בלי להבטיח תוצאה.");
+      var inp = inputSummary();
+      click('#cc-main-actions button[data-mode="suggest"]');
+      var timeline = await waitFor(function () {
+        var t = $("#cc-timeline");
+        if (t && t.querySelector(".cc-entry.draft,.cc-entry.analysis") && !$("#cc-new").disabled) return t;
+        if (!$("#cc-new").disabled && $("#cc-feedback.error")) return { fail: $("#cc-feedback-text").textContent };
+        return null;
+      }, 15 * 60e3, "טיוטת שיח לדוגמה");
+      if (timeline.fail) throw new Error(timeline.fail);
+      var copy = timeline.cloneNode(true);
+      copy.querySelectorAll("textarea").forEach(function (n) { var p = document.createElement("div"); p.style.whiteSpace = "pre-wrap"; p.textContent = n.value; n.replaceWith(p); });
+      return [{tool:"communication-continuity",title:"ניהול שיח מתמשך: דוגמה בדויה עם הורה",label:"ניהול שיח מתמשך",html:standalone(copy,"ניהול שיח מתמשך: דוגמה בדויה עם הורה"),input:inp}];
+    },
     "resilience-advisor.html": function () { return inPage("practi", "פרקטי: דוח לכיתה", "פרקטי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
     "leadership-advisor.html": function () { return inPage("nugi", "נוגי: דוח סיכום והמלצות", "נוגי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
     "facilitation-advisor.html": function () { return inPage("nana", "ננה: מדריך הנחיה", "ננה", "#btn-example", "#btn-go", "#guide-doc", "#guide-doc", "#guide"); },
