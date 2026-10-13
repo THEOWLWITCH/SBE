@@ -889,7 +889,7 @@ function render() {
       // סטטוס השדה (חובה / רשות-תמולא / רשות-לא-תמולא) חייב להופיע תמיד,
       // גם כשיש hint מותאם — ראו ההערה המלאה ב-input-screen.html (22/09/2026).
       if (f.req) lab.append(el("span",{class:"reqmark"}, " · שדה עיקרי"));
-      else if (f.noAutoFill) lab.append(el("span",{class:"hint"}, " · רשות — לא תמולא אוטומטית, אך המערכת תתחשב במה שתכתבי בה"));
+      else if (f.noAutoFill) lab.append(el("span",{class:"hint"}, " · רשות. לא ימולא אוטומטית, ומה שייכתב כאן ייכנס לחשבון"));
       else lab.append(el("span",{class:"hint"}, " · אפשר להשאיר ריק"));
       if (f.hint) lab.append(el("span",{class:"hint"}, " · " + f.hint));
       wrap.append(lab);

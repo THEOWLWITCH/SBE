@@ -344,7 +344,7 @@ $("bOpen").addEventListener("click", async () => {
   phase = 1; drawSteps();
   $("bOpen").disabled = true; $("bStart").disabled = false; $("bProject").disabled = false;
   $("joined").textContent = "משובים שהתקבלו: 0";
-  $("hint").textContent = "הקוד על המסך. כשכולן נכנסו, התחילי.";
+  $("hint").textContent = "הקוד על המסך. כשכולם נכנסו, אפשר להתחיל.";
   lockFb();
   // מספר המשובים שהגיעו לשרת מהסדנה הזו (אמיתי — לא מונה מדומה)
   joinTimer = setInterval(countFeedback, 20000);
