@@ -315,15 +315,16 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <div class="transcript" id="transcript"></div>
 </section>
 
-<style>.fb-st{font-weight:700;font-size:.85rem}.fb-st.reached{color:#4A6B5A}.fb-st.missed{color:#8C3A34}</style>
+<style>.fb-st{font-weight:600;font-size:.9rem}.fb-st.reached{color:#4A6B5A}.fb-st.missed{color:#8C3A34}.fb-st.held{color:#7A5A12}.fb-said{font-size:.85rem;color:var(--muted,#555);margin-top:4px}.fb-lead{margin:.2rem 0 .6rem}</style>
 <section id="screen-feedback" hidden>
   <h2 style="font-family:'Frank Ruhl Libre',Georgia,serif;">מה קרה בתרגול</h2>
   <div id="fbComm"></div>
-  <h3 class="fb-h">לאילו תפניות הגעת</h3>
+  <h3 class="fb-h">רגעי המפתח בשיחה</h3>
+  <p class="fb-lead">בשיחה הזאת יש כמה רגעים שבהם הדמות יכולה להיפתח. לכל רגע: מה היא אומרת בו, מה מביא אליו, ומה קרה בשיחה שלך.</p>
   <div id="fbTurningPoints"></div>
-  <h3 class="fb-h">מיומנויות שהופיעו בדברים שלך</h3>
+  <h3 class="fb-h">מיומנויות בשיחה</h3>
   <div id="fbSkills"></div>
-  <h3 class="fb-h">רגע אחד שכמעט נפתח</h3>
+  <h3 class="fb-h" id="fbAlmostH">רגע שאפשר לנסות שוב</h3>
   <div class="fb-note" id="fbAlmost"></div>
   <button type="button" class="primary" id="bRetrySecond" hidden style="margin-top:8px;">ניסיון שני: לנסות שוב את הרגע הזה</button>
   <h3 class="fb-h">איך השיחה נסגרה</h3>
@@ -873,6 +874,12 @@ function show(id){
   // הסרגל העליון (תור/התקדמות/הסיפור שוב/סיום שיחה/יציאה) שייך רק לשיחה
   // עצמה — בלעדי זה אפשר ללחוץ "יציאה" בזמן קריאת המשוב ולאבד אותו.
   document.getElementById("barWrap").hidden = (id !== "screen-chat");
+  // מסך חדש נפתח מלמעלה (14/10/2026: "כשהשיחה מסתיימת המסך נשאר למטה במקום לעלות... למשוב").
+  // גם אחרי פריים, כדי לגבור על גלילה לסוף השיחה שכבר התחילה.
+  if (id !== "screen-chat") {
+    const top = () => window.scrollTo({ top: 0, behavior: "instant" });
+    top(); requestAnimationFrame(top); setTimeout(top, 350);
+  }
 }
 
 // פס התקדמות פשוט לפי תורות בלבד — לא לפי תפניות. לא חושפים כמה תפניות
@@ -1043,7 +1050,7 @@ function clearSessionState(){
   Object.assign(state, {
     turn:0, transcript:[], activeTP:null, activeTPRetries:0, firedTPs:{}, pressCount:0,
     trustConditionMet:false, lastCharacterTs:null, ended:false, endingType:null,
-    endingIndex:null, closingLine:null, closingNote:null, commFb:null, crossings:[], injectionAttempts:[],
+    endingIndex:null, closingLine:null, closingNote:null, commFb:null, commFbFailed:false, crossings:[], injectionAttempts:[],
     responseTimesSec:[], holdIndexNeutral:0, holdIndexCool:0, holdIndexApproach:0,
     holdIndexInjection:0, harshCount:0, manipulationCount:0, turnLog:[], retry:null,
   });
@@ -1122,7 +1129,7 @@ function renderLastMessage(){
   // קבוע) — צריך לגלול את העמוד עצמו, לא את התיבה, אחרת הודעה חדשה מתווספת
   // מתחת לשורת הקומפוזר הקבועה ולא נראית בלי גלילה ידנית.
   requestAnimationFrame(() => {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    if (!document.getElementById("screen-chat").hidden) window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   });
 }
 
@@ -1138,7 +1145,7 @@ function renderFullTranscript(readOnlyUntil){
     box.append(buildMessageEl(t, isPast ? "retry-past" : null));
   });
   requestAnimationFrame(() => {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    if (!document.getElementById("screen-chat").hidden) window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   });
 }
 
@@ -1172,8 +1179,14 @@ const PRACTICE_PROMPT_TEMPLATE = `את {{NAME}}. את לא שחקנית ואת �
 משפט ארוך רק כאשר: {{WHEN_LONG}}
 הביטוי החוזר שלך: {{VERBAL_TIC}}
 
-תגובה אחת בכל פעם. משפט שנאמר בקול, ופעולה גופנית אחת לכל היותר בסוגריים.
+תגובה אחת בכל פעם. משפט שנאמר בקול, ובסוגריים לכל היותר תיאור קצר אחד של הבעה או תנועה.
 בלי תיאור פנימי, בלי הסבר, בלי כותרות.
+
+**פנים, מבט וגוף:** את אדם חי מול אדם, לא רק ידיים. התיאור בסוגריים מגוון ומשתנה לפי הרגע:
+- **הבעות פנים:** מרימה גבות, מכווצת מצח, חיוך קטן או מריר, שפתיים קפוצות, עיניים שמתמלאות, לסת מתוחה, צוחקת בלי שמחה.
+- **מבט:** את גם מסתכלת בעיניים, במיוחד כשאת אומרת דעה, כועסת, מתריסה, בודקת אם מאמינים לך או כשמשהו נוגע בך. משפילה מבט או מסיטה אותו רק כשזה באמת מתאים לרגע, לא כהרגל.
+- **גוף:** תנועה רק כשהיא אומרת משהו (נשענת קדימה, מתרחקת, מניחה את התיק).
+- **בלי חזרה:** כל הבעה או תנועה מופיעה לכל היותר פעם אחת בשיחה. מה שתיארת בכניסה (למשל משחק בחפץ) לא חוזר בכל תור. בהרבה תורות אין צורך בסוגריים בכלל (null).
 
 ═══════════════════════════════════════════════
 מה חי בך בשיחה הזאת
@@ -1549,7 +1562,7 @@ const REPORT_TURN_TOOL = {
     type: "object",
     properties: {
       spokenLine: { type: "string", description: "מה שהדמות אומרת בקול עכשיו, בדיוק לפי כללי הדיבור שהוגדרו (אורך, ביטוי חוזר וכו׳). זה מה שהמתרגלת תראה." },
-      stageDirection: { type: ["string","null"], description: "פעולה גופנית אחת לכל היותר, קצרה, או null אם אין." },
+      stageDirection: { type: ["string","null"], description: "הבעת פנים, מבט או תנועה, אחת לכל היותר וקצרה, שונה מכל מה שכבר תואר בשיחה (גם מבט בעיניים, לא רק ידיים או מבט מושפל), או null." },
       firedTurningPoint: { type: ["integer","null"], description: "מספר התפנית שהתגובה שלך התאימה, אם התאימה לאחת (כולל תפנית שמופעלת רק אחרי לחץ חוזר). null אם לא." },
       branchEffect: { type: ["string","null"], description: "אם לתפנית שנורתה יש ענפים: אחד מ- פותח / מחזיק / סוגר, בדיוק כפי שמוגדר בענפים. null אם אין ענפים או שלא נורתה תפנית." },
       trustConditionMet: { type: "boolean", description: "האם ברגע הזה מתקיים תנאי האמון שלך (ולא כבר התקיים קודם בשיחה)." },
@@ -1594,7 +1607,12 @@ function buildConversationMessages(traineeText){
 }
 
 async function callCharacterAI(traineeText){
-  const system = buildCharacterPrompt();
+  // הבעות שכבר תוארו (14/10/2026: "אי אפשר שהדמות כל הזמן מסובבת טבעת... או משפילה מבט"):
+  // המודל לא רואה את הסוגריים בהיסטוריה, ולכן מקבל אותם כרשימה כדי לא לחזור עליהן.
+  const used = state.transcript.filter(m => m.who === "character" && m.stage).map(m => m.stage);
+  const system = buildCharacterPrompt() + (used.length
+    ? "\n\nהבעות ותנועות שכבר תוארו בשיחה (לא חוזרים עליהן, וגם לא על דומות להן): " + used.join(" · ") + "."
+    : "");
   const messages = buildConversationMessages(traineeText);
   return callAI(system, messages);
 }
@@ -1963,20 +1981,27 @@ function showFeedback(){
   // טבלאות (07/10/2026), בקו אחיד עם שאר התוצרים
   const tpBox = document.getElementById("fbTurningPoints");
   tpBox.textContent = "";
-  tpBox.append(SBE_TABLE(["#", "התפנית", "מה קרה", "מה מוביל אליה"], SCENARIO.turningPoints.map(tp => {
+  // טבלה שמובנת בלי מונחים פנימיים (14/10/2026: "כל הטבלה מאוד לא מובנת"; "נפתחה · השיחה נסגרה"):
+  // הרגע במילים של הדמות, מה מביא אליו, ומה קרה בשיחה הזאת, במשפט שלם.
+  tpBox.append(SBE_TABLE(["#", "הרגע", "מה מביא אליו", "מה קרה בשיחה שלך"], SCENARIO.turningPoints.map(tp => {
     const fired = state.firedTPs[tp.n];
-    return [String(tp.n), el("b", {}, tp.name), el("span", { class:"fb-st " + (fired ? "reached" : "missed") }, fired ? "✓ נפתחה · " + ({"מחזיק":"נפתח כיוון, ונשאר במקום","פותח":"השיחה התקדמה","סוגר":"השיחה נסגרה"}[fired.effect] || fired.effect) : "עוד לא נפתחה" + (tp.missed ? " · " + tp.missed : "")), tp.trigger || ""]; // העמודה "מה מוביל אליה" תמיד מראה מה פותח את התפנית (08/10/2026: התאמה בין כותרת לתוכן)
+    const line = tp.does && tp.does.line || "";
+    const said = line && !line.includes(tp.name) ? el("div", { class:"fb-said" }, (/זכר|גבר/.test(SCENARIO.actor.gender || "") ? "הוא אומר: " : "היא אומרת: ") + "\"" + line + "\"") : "";
+    const what = !fired
+      ? "השיחה לא הגיעה לרגע הזה." + (tp.missed ? " מה קורה לעתים קרובות במקום: " + tp.missed : "")
+      : ({"פותח":"✓ הגעת לרגע הזה, והתגובה שלך קידמה את השיחה.","מחזיק":"הגעת לרגע הזה. התגובה שלך השאירה את השיחה במקום, בלי להתקדם.","סוגר":"הגעת לרגע הזה. אחרי התגובה שלך הדמות נסגרה ושיתפה פחות."}[fired.effect] || "✓ הגעת לרגע הזה.");
+    return [String(tp.n), el("div", {}, el("b", {}, "\"" + tp.name + "\""), said), tp.trigger || "", el("span", { class:"fb-st " + (!fired ? "missed" : fired.effect === "פותח" ? "reached" : "held") }, what)];
   }), "fb-tp-table"));
 
-  const skBox = document.getElementById("fbSkills");
-  skBox.textContent = "";
-  skBox.append(SBE_TABLE(["המיומנות", "מה זוהה בדברים שלך"], analyzeSkills().filter(s => s.status === "found" || s.status === "missing" || s.status === "na").map(s => [s.text,
-    s.status === "found" ? `כשאמרת: "${s.quote}"` : s.status === "missing" ? "לא זוהה בתרגול הזה" : s.status === "na" ? s.note : "לא ניתן לזהות באופן אוטומטי מטקסט בלבד"]), "fb-sk-table"));
+  renderSkillsTable();
 
   const almostTP = SCENARIO.turningPoints.find(tp => state.firedTPs[tp.n] && state.firedTPs[tp.n].effect === "מחזיק");
   document.getElementById("fbAlmost").textContent = almostTP
-    ? `בתפנית "${almostTP.name}": נפתח כיוון, והתגובה שלך השאירה אותו במקום. אפשר לנסות בפעם הבאה שאלה פתוחה או שיקוף, כדי לקדם אותו.`
-    : "לא זוהה רגע כזה בתרגול הזה.";
+    ? `ברגע "${almostTP.name}" הדמות נתנה פתח, והתגובה שלך השאירה את השיחה במקום. אפשר לחזור לרגע הזה ולנסות תגובה אחרת, למשל שאלה פתוחה או שיקוף רגש.`
+    : "";
+  // בלי רגע כזה, החלק לא מוצג (14/10/2026: "ניסוח לא ברור" על "לא זוהה רגע כזה").
+  document.getElementById("fbAlmostH").hidden = !almostTP;
+  document.getElementById("fbAlmost").hidden = !almostTP;
 
   // ── "ניסיון שני" (19/09/2026, הכרעת המשתמשת: המערכת מציעה, המתרגלת
   // בוחרת; רק בתרגול העצמי מול AI, לא בסדנה חיה) — זמין רק כשיש רגע
@@ -2022,8 +2047,32 @@ function commSystem(){
     "המקרה: " + (SCENARIO.subtitle || SCENARIO.name || ""),
     "תני משוב על התקשורת של המתנסה בלבד, לפי התיאוריות והמודלים של תקשורת שאת מכירה, ובחרי רק מה שרלוונטי לשיחה הזאת. למשל: הקשבה פעילה ושיקוף (רוג'רס); תקשורת מקרבת (רוזנברג: תצפית, רגש, צורך, בקשה); מסרי \"אני\" (גורדון); ראיון מוטיבציוני (שאלות פתוחות, אישור, שיקוף, סיכום); תיקוף רגשי; \"שיחות קשות\" (סטון, פאטון והין: מה קרה, רגשות, זהות); אימון רגשי (גוטמן); פתרון בעיות שיתופי (גרין); הבחנה בין עובדה לפרשנות; קצב, שתיקה והפחתת הסלמה; ותחושת שליטה לצד השני (\"מה היית רוצה שיקרה?\").",
     "כללים: התייחסי לפעולות ולמשפטים, לא לאדם. בלי ציון ובלי דירוג. כל נקודה עם ציטוט מדויק מדברי המתנסה (quote). בהצעות לשיפור: ניסוח חלופי לדוגמה שאפשר לומר בפעם הבאה (tryInstead). שפה של הזמנה (\"אפשר לנסות\", \"כדאי\"). " + (male ? "פני למתנסה בלשון זכר." : "פני למתנסה בלשון נקבה."),
-    "החזירי אך ורק JSON: {\"summary\":\"שניים או שלושה משפטים על השיחה\",\"strengths\":[{\"what\":\"מה עבד\",\"quote\":\"ציטוט\",\"why\":\"למה זה עובד\",\"basis\":\"על מה זה נשען (מודל או תיאוריה)\"}],\"growth\":[{\"what\":\"מה אפשר לחזק\",\"quote\":\"ציטוט\",\"tryInstead\":\"ניסוח לדוגמה\",\"why\":\"למה\",\"basis\":\"על מה זה נשען\"}],\"next\":[\"שלושה צעדים לתרגול הבא\"],\"tips\":[\"שלושה עד חמישה טיפים כלליים לשיחות כאלה\"]}. strengths: שתיים עד ארבע. growth: שתיים עד ארבע."
+    "החזירי אך ורק JSON: {\"summary\":\"שניים או שלושה משפטים על השיחה\",\"strengths\":[{\"what\":\"מה עבד\",\"quote\":\"ציטוט\",\"why\":\"למה זה עובד\",\"basis\":\"על מה זה נשען (מודל או תיאוריה)\"}],\"growth\":[{\"what\":\"מה אפשר לחזק\",\"quote\":\"ציטוט\",\"tryInstead\":\"ניסוח לדוגמה\",\"why\":\"למה\",\"basis\":\"על מה זה נשען\"}],\"next\":[\"שלושה צעדים לתרגול הבא\"],\"tips\":[\"שלושה עד חמישה טיפים כלליים לשיחות כאלה\"],\"skills\":[{\"n\":1,\"found\":true,\"quote\":\"ציטוט מדויק מדברי המתנסה, או ריק\",\"note\":\"משפט קצר\"}]}. strengths: שתיים עד ארבע. growth: שתיים עד ארבע.",
+    commSkillsRule()
   ].join("\n\n");
+}
+// המיומנויות נבדקות בידי המודל (14/10/2026: "הטבלה לא נכונה. כן היתה שאלה פתוחה"): התאמת מילות מפתח
+// פספסה שאלות פתוחות וניסוחים אחרים, ולכן היא לא משמשת עוד לטבלת המיומנויות.
+function commSkillList(){ return (SCENARIO.skills || []).filter(s => !s.undetectable && !s.note); }
+function commSkillsRule(){
+  const list = commSkillList();
+  if (!list.length) return "skills: מערך ריק.";
+  return "skills: לכל אחת מהמיומנויות הבאות, לפי המספר שלה, בדקי בכל דברי המתנסה אם היא הופיעה, גם בניסוח אחר מהמקובל (למשל כל שאלה שמזמינה תשובה חופשית היא שאלה פתוחה, גם כשהיא מתחילה ב\"מה\", \"איך\" או \"ספרי לי\"). found: true רק כשיש ציטוט מדויק שמדגים אותה, ואז quote הוא הציטוט. note: כשהופיעה, במה זה עזר בשיחה; כשלא הופיעה, איפה בשיחה היא יכלה להתאים. המיומנויות:\n"
+    + list.map((x, i) => (i + 1) + ". " + x.text).join("\n");
+}
+function renderSkillsTable(){
+  const skBox = document.getElementById("fbSkills"); if (!skBox) return;
+  skBox.textContent = "";
+  const r = state.commFb;
+  if (!r) { skBox.append(el("p", { class: "fb-note" }, state.commFbFailed ? "בדיקת המיומנויות לא הגיעה כרגע. אפשר לנסות שוב במשוב על התקשורת למעלה." : "המיומנויות נבדקות יחד עם המשוב על התקשורת.")); return; }
+  const list = commSkillList(), got = Array.isArray(r.skills) ? r.skills : [];
+  const q = (x) => "\"" + String(x).replace(/^["״“”]+|["״“”]+$/g, "") + "\"";
+  skBox.append(SBE_TABLE(["המיומנות", "מה עלה בשיחה"], list.map((sk, i) => {
+    const g = got.find(x => Number(x.n) === i + 1) || {};
+    const found = g.found && g.quote;
+    return [sk.text, el("span", { class: "fb-st " + (found ? "reached" : "held") },
+      found ? "✓ כשאמרת: " + q(g.quote) + (g.note ? " " + g.note : "") : "לא הופיעה בשיחה הזאת." + (g.note ? " " + g.note : ""))];
+  }), "fb-sk-table"));
 }
 function commTranscript(){
   return state.transcript.filter(t => t.who === "trainee" || t.who === "character")
@@ -2032,36 +2081,38 @@ function commTranscript(){
 async function loadCommFeedback(){
   const box = document.getElementById("fbComm"); box.textContent = "";
   box.append(el("h3", { class: "fb-h" }, "משוב על התקשורת בשיחה"));
-  if (state.commFb) return renderCommFeedback(box, state.commFb);
+  if (state.commFb) { renderSkillsTable(); return renderCommFeedback(box, state.commFb); }
+  state.commFbFailed = false; renderSkillsTable();
   if (!state.transcript.some(t => t.who === "trainee")) { box.append(el("p", { class: "fb-note" }, "לא נאמר דבר בשיחה, ולכן אין משוב על התקשורת.")); return; }
   const w = el("p", { class: "fb-note" }), t0 = Date.now(); box.append(w);
   const tick = () => { w.textContent = "הכנת המשוב נמשכת כ־40 שניות. חלפו " + Math.round((Date.now() - t0) / 1000) + " שניות."; };
   tick(); const iv = setInterval(tick, 1000);
   const ok = (o) => !!(o && Array.isArray(o.strengths) && Array.isArray(o.growth));
   let r = null;
-  try { r = await sbeCallAIJson(AI_SERVER, { system: commSystem(), messages: [{ role: "user", content: "השיחה:\n" + commTranscript() }], maxTokens: 5000 }, 180000, ok); }
+  try { r = await sbeCallAIJson(AI_SERVER, { system: commSystem(), messages: [{ role: "user", content: "השיחה:\n" + commTranscript() }], maxTokens: 7000 }, 180000, ok); }
   catch (e) { r = null; } finally { clearInterval(iv); w.remove(); }
   if (!ok(r)) {
     const again = el("button", { type: "button" }, "לנסות שוב");
     again.addEventListener("click", loadCommFeedback);
     box.append(el("p", { class: "fb-note" }, "המשוב על התקשורת לא הגיע כרגע. אפשר לנסות שוב."), again);
+    state.commFbFailed = true; renderSkillsTable();
     return;
   }
-  state.commFb = r; renderCommFeedback(box, r);
+  state.commFb = r; renderCommFeedback(box, r); renderSkillsTable();
 }
 function renderCommFeedback(box, r){
   if (r.summary) box.append(el("p", { class: "fb-note" }, r.summary));
   const q = (x) => x ? "\"" + String(x).replace(/^["״“”]+|["״“”]+$/g, "") + "\"" : "";
   if ((r.strengths || []).length) {
-    box.append(el("h4", {}, "מה עבד"));
+    box.append(el("h4", {}, "חוזקות: מה עבד בשיחה"));
     box.append(SBE_TABLE(["מה עשית", "מהשיחה", "למה זה עובד", "על מה זה נשען"], r.strengths.map(x => [el("b", {}, x.what || ""), q(x.quote), x.why || "", x.basis || ""]), "fb-comm-s"));
   }
   if ((r.growth || []).length) {
-    box.append(el("h4", {}, "מה אפשר לחזק"));
-    box.append(SBE_TABLE(["מה אפשר לחזק", "מהשיחה", "אפשר לנסות לומר", "על מה זה נשען"], r.growth.map(x => [el("b", {}, x.what || ""), q(x.quote), [q(x.tryInstead), x.why].filter(Boolean).join(" "), x.basis || ""]), "fb-comm-g"));
+    box.append(el("h4", {}, "מה אפשר לשפר"));
+    box.append(SBE_TABLE(["מה אפשר לשפר", "מהשיחה", "אפשר לנסות לומר", "על מה זה נשען"], r.growth.map(x => [el("b", {}, x.what || ""), q(x.quote), [q(x.tryInstead), x.why].filter(Boolean).join(" "), x.basis || ""]), "fb-comm-g"));
   }
-  if ((r.next || []).length) { box.append(el("h4", {}, "לתרגול הבא")); const ol = el("ol"); r.next.forEach(t => ol.append(el("li", {}, t))); box.append(ol); }
-  if ((r.tips || []).length) { box.append(el("h4", {}, "טיפים לשיחות כאלה")); const ul = el("ul"); r.tips.forEach(t => ul.append(el("li", {}, t))); box.append(ul); }
+  if ((r.next || []).length) { box.append(el("h4", {}, "לשיפור בתרגול הבא")); const ol = el("ol"); r.next.forEach(t => ol.append(el("li", {}, t))); box.append(ol); }
+  if ((r.tips || []).length) { box.append(el("h4", {}, "טיפים כלליים לשיחות כאלה")); const ul = el("ul"); r.tips.forEach(t => ul.append(el("li", {}, t))); box.append(ul); }
 }
 
 // ── מקרה משלך (10/10/2026): מספרים על המקרה · עוד כמה פרטים · מאשרים את הסיפור ומתחילים ──
