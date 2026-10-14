@@ -2028,7 +2028,7 @@ function showFeedback(){
   }
   function wait(text, sec){
     const w = $("ownWait"), t0 = Date.now(); w.hidden = false;
-    const tick = () => { w.textContent = text + " זה לוקח בדרך כלל כ-" + sec + " שניות. עברו " + Math.round((Date.now() - t0) / 1000) + " שניות."; };
+    const tick = () => { w.textContent = text + " חלפו " + Math.round((Date.now() - t0) / 1000) + " שניות."; };
     tick(); const iv = setInterval(tick, 1000); return () => { clearInterval(iv); w.hidden = true; };
   }
   const fail = (e) => { $("ownErr").textContent = (e && e.code === "incomplete") ? "הסיפור חזר חלקי. אפשר לנסות שוב." :
@@ -2044,8 +2044,8 @@ function showFeedback(){
   // 1 → 2: שאלות הבהרה, רק מה שחסר
   $("ownNext").addEventListener("click", async () => {
     if (!(draft.form.story || "").trim()) { $("ownErr").textContent = "כדי להמשיך, אפשר לספר בכמה משפטים על המקרה."; $("ownErr").hidden = false; $("ownStory").focus(); return; }
-    const b = $("ownNext"); b.disabled = true; const stop = wait("קוראת את המקרה.", 20); let r = null, bad = null;
-    try { r = await sbeCallAIJson(AI_SERVER, { system: PC.clarifySystem(), messages: [{ role: "user", content: PC.caseText(draft.form) }], maxTokens: 900 }, 90000, PC.validQuestions); }
+    const b = $("ownNext"); b.disabled = true; const stop = wait("קריאת המקרה נמשכת כ־20 שניות.", 20); let r = null, bad = null;
+    try { r = await sbeCallAIJson(AI_SERVER, { system: PC.clarifySystem(), messages: [{ role: "user", content: PC.caseText(draft.form) }], maxTokens: 900, fast: true }, 90000, PC.validQuestions); }
     catch (e) { bad = e; } finally { stop(); b.disabled = false; }
     if (!PC.validQuestions(r)) return fail(bad);
     draft.questions = r.questions.filter(q => q && q.q).slice(0, 4); draft.answers = {}; draft.scenario = null; saveDraft();
@@ -2070,9 +2070,9 @@ function showFeedback(){
   // 2 → 3: הסיפור
   async function build(revise){
     const b = revise ? $("ownRevise") : $("ownBuild"); b.disabled = true;
-    const stop = wait(revise ? "מעדכנת את הסיפור." : "כותבת את הסיפור ואת הדמות שמולך.", 60); let r = null, bad = null;
+    const stop = wait(revise ? "עדכון הסיפור נמשך כ־40 שניות." : "כתיבת הסיפור נמשכת כ־60 שניות.", revise ? 40 : 60); let r = null, bad = null;
     const content = caseText() + (revise && draft.scenario ? "\n\nהתרחיש הנוכחי (JSON):\n" + JSON.stringify(draft.scenario) + "\n\nמה לשנות: " + $("ownChange").value.trim() : "");
-    try { r = await sbeCallAIJson(AI_SERVER, { system: revise ? PC.reviseSystem() : PC.buildSystem(), messages: [{ role: "user", content }], maxTokens: 10000 }, 240000, PC.valid); }
+    try { r = await sbeCallAIJson(AI_SERVER, { system: revise ? PC.reviseSystem() : PC.buildSystem(), messages: [{ role: "user", content }], maxTokens: 10000, fast: true }, 240000, PC.valid); }
     catch (e) { bad = e; } finally { stop(); b.disabled = false; }
     if (!PC.valid(r)) { if (!revise) step(draft.questions.length ? 2 : 1); return fail(bad); }
     draft.scenario = PC.normalize(r); if (draft.scenario && draft.scenario.trainee) draft.scenario.trainee.gender = draft.form.me || "נקבה"; saveDraft(); $("ownChange").value = ""; preview(); step(3);

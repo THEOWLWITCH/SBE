@@ -274,7 +274,7 @@
     ['save-activity','print-kit','print-participant','download-work'].forEach(id=>$(id).disabled=busy||!state.activity);
     $('brief-confirmed').disabled=busy||!answered;
     $('ask-coach').disabled=busy||!authorized;
-    $('generation-hint').textContent=questions.length&&!answered?'אחרי שתענו על השאלות, אפשר לבנות.':'הבנייה לוקחת כמה דקות. אפשר להשאיר את המסך פתוח.';
+    $('generation-hint').textContent=questions.length&&!answered?'אחרי שתענו על השאלות, אפשר לבנות.':'הבנייה נמשכת כמה דקות. אפשר להשאיר את המסך פתוח.';
   }
   function renderFocus() {
     const c=D.component(state.brief.focus), box=clear($('focus-description'));

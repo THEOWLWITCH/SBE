@@ -919,7 +919,7 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
   if (reqKeys.some(k => !val(k))) {
     return show("נשארו שדות עיקריים למילוי", el("p",{},"יש למלא את \"מי אני בשיחה הזאת\" ו\"מי הצד השני\" לפני שאפשר לייצר הצעות."));
   }
-  e.target.disabled = true; e.target.textContent = "מייצר... (עד כ-5 דקות)";
+  e.target.disabled = true; e.target.textContent = "ההכנה נמשכת עד כ־5 דקות";
   try {
     const out = await generateProposals(Object.fromEntries(reqKeys.map(k => [k, val(k)])));
     if (out._noModel) return show("ההצעות לא הופקו", el("p",{}, aiWhy("אין כרגע חיבור למודל, ולכן לא הופקו הצעות. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים.")));
@@ -998,7 +998,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     // מסכים-אבל-לא-משתנה/לוקח-אישית (משולב בזרימה, לא כעץ "אם...אז"),
     // והקו התחתון + תוכנית ב'. כרטיס התזכורת נשאר ככלי תפעולי קצר. בלי מודל —
     // הכרטיס ועץ האפשרויות מהשדות, מסומנים כמצב הדגמה. prompts/narrative-products.md.
-    e.target.disabled = true; e.target.textContent = "כותבת את התדריך... עד כ-2 דקות";
+    e.target.disabled = true; e.target.textContent = "כתיבת התדריך נמשכת עד כ־2 דקות";
     let briefing = null, briefNode = null;
     try {
       const raw = Object.entries(d).filter(([k, v]) => v && String(v).trim() && !["myTraits","otherTraits"].includes(k))

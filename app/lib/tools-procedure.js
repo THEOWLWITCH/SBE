@@ -72,7 +72,7 @@
     const T = (cols, rows) => window.SBE_TABLE(cols, rows, 'kit-t');
     const NOM = 'אין כרגע חיבור למודל, ולכן הנוהל לא הוכן. מה שנבחר נשמר, ואפשר לנסות שוב בעוד דקה.', PART = 'הנוהל חזר חלקי. אפשר לנסות שוב.';
     const why = (e) => window.sbeAIError ? window.sbeAIError(e, NOM, PART) : ((e && e.code === 'incomplete') ? PART : NOM);
-    function waiting(n, t, exp) { n.hidden = false; const t0 = Date.now(); const tick = () => { n.textContent = t + ' בדרך כלל ' + exp + ' שניות. עברו ' + Math.round((Date.now() - t0) / 1000) + ' שניות.'; }; tick(); const iv = setInterval(tick, 1000); return () => { clearInterval(iv); n.hidden = true; }; }
+    function waiting(n, t, exp) { n.hidden = false; const t0 = Date.now(); const tick = () => { n.textContent = t + ' התהליך נמשך כ־' + exp + ' שניות. חלפו ' + Math.round((Date.now() - t0) / 1000) + ' שניות.'; }; tick(); const iv = setInterval(tick, 1000); return () => { clearInterval(iv); n.hidden = true; }; }
     async function make(b, err, wait, revise) {
       err.hidden = true;
       if (!S.tools.length && !(S.other || '').trim()) { err.textContent = 'כדי להמשיך, אפשר לבחור באילו כלים אתם עובדים (אפשר גם "עוד לא ברור").'; err.hidden = false; return; }
