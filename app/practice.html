@@ -202,6 +202,10 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 .own-prev h3{margin:0 0 4px}.own-prev .who{color:var(--muted);margin:0 0 10px}.own-prev p{margin:0 0 8px}
 .own-prev .first{border-inline-start:3px solid var(--spoken);padding:6px 10px;background:var(--spoken-soft);border-radius:4px}
 .my-case{display:flex;gap:8px;align-items:center}
+.own-share{border:1px solid var(--hair,#cdd3d8);border-radius:10px;padding:10px 14px;margin-top:12px;background:var(--surface-2,#f4f6f8)}
+.own-share label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}.own-share p{margin:6px 0;font-size:.92rem;color:var(--muted)}
+.own-share .warn{color:var(--brick,#9a4a3f);font-weight:600}
+.my-share{font-size:.82rem;border:1px solid var(--hair,#cdd3d8);background:transparent;border-radius:6px;padding:2px 8px;cursor:pointer;color:inherit}
 </style>
 
 <div class="wrap">
@@ -278,6 +282,13 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   </div>
   <div class="card" id="own3" hidden>
     <div id="ownPreview"></div>
+    <div class="own-share">
+      <label><input type="checkbox" id="ownShare"> <span><b>🤝 שיתוף הסיפור עם Begood (רשות)</b></span></label>
+      <p>אפשר לשתף את המקרה כדי שנלמד ממנו ונבנה ממנו תרחישים לתרגול לאחרים. נשלח רק מה שכתבת בצעד 1 ושם הסיפור, בלי השם שלך ובלי הקוד. לפני כל שימוש הסיפור נקרא ונערך, ופרטים מזהים מוסרים. אפשר לבטל את השיתוף בכל עת ב"המקרים שלי".</p>
+      <p>כדאי לבדוק שאין בסיפור שמות אמיתיים, מספרי טלפון או פרטים שאפשר לזהות מהם תלמיד/ה, משפחה או בית ספר.</p>
+      <label><input type="checkbox" id="ownResearch" disabled> <span>מותר להשתמש בסיפור גם במחקר, באופן אנונימי</span></label>
+      <p class="warn" id="ownShareWarn" hidden></p>
+    </div>
     <div class="own-acts"><button type="button" class="primary" id="ownApprove">✓ מאשרים ומתחילים להתאמן</button></div>
     <details class="own-change"><summary>לשנות משהו בסיפור</summary>
       <textarea id="ownChange" rows="2" placeholder="למשל: היא לא כועסת, היא בעיקר מודאגת. השיחה בטלפון ולא בפגישה."></textarea>
@@ -2077,9 +2088,32 @@ function showFeedback(){
   if (draft.scenario) preview();
 
   // אישור: נשמר ב"המקרים שלי" ומתחילים
-  $("ownApprove").addEventListener("click", () => {
+  // ── שיתוף סיפור אישי, בהסכמה (14/10/2026): השרת שומר רק את שדות צעד 1 ואת שם הסיפור, בלי שם ובלי קוד.
+  // מפתח הביטול נשמר במכשיר עם המקרה, ו"ביטול השיתוף" מוחק את הרשומה בשרת.
+  $("ownShare").addEventListener("change", () => { $("ownResearch").disabled = !$("ownShare").checked; if (!$("ownShare").checked) $("ownResearch").checked = false; $("ownShareWarn").hidden = true; });
+  const PII = /[\w.+-]+@[\w-]+\.[\w.]+|(?:\+?972|0)[\s-]?\d(?:[\s-]?\d){7,8}|\b\d{9}\b/;
+  function piiIn(form){ return Object.values(form || {}).some(v => PII.test(String(v || ""))); }
+  async function shareStory(m, research){
+    let token = ""; try { token = sessionStorage.getItem("sbe.session.token") || ""; } catch(e){}
+    const r = await fetch(AI_SERVER + "/api/access", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "storyShare", token, consent: { share: true, research: !!research }, form: m.form, scenario: { name: m.sc.name, subtitle: m.sc.subtitle, actor: { name: m.sc.actor.name, roleLabel: m.sc.actor.roleLabel } } }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.id) throw new Error(d.error || String(r.status));
+    m.shared = { id: d.id, key: d.key, at: new Date().toISOString().slice(0, 10), research: !!research }; saveMine();
+  }
+  async function withdrawStory(m){
+    const r = await fetch(AI_SERVER + "/api/access", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "storyWithdraw", id: m.shared.id, key: m.shared.key }) });
+    if (!r.ok && r.status !== 404) throw new Error(String(r.status));
+    delete m.shared; saveMine();
+  }
+  $("ownApprove").addEventListener("click", async () => {
+    const wantShare = $("ownShare").checked, research = $("ownResearch").checked, form = Object.assign({}, draft.form);
+    if (wantShare && piiIn(form)) { const w = $("ownShareWarn"); w.textContent = "נראה שיש בסיפור מספר טלפון, מייל או מספר זהות. כדי לשתף, אפשר להסיר אותם בצעד 1, או להוריד את הסימון ולהמשיך בלי שיתוף."; w.hidden = false; return; }
     const id = "my-" + Date.now().toString(36);
-    mine.unshift({ id, at: new Date().toISOString().slice(0, 10), sc: draft.scenario }); mine = mine.slice(0, 12); saveMine();
+    mine.unshift({ id, at: new Date().toISOString().slice(0, 10), sc: draft.scenario, form }); mine = mine.slice(0, 12); saveMine();
+    if (wantShare) { try { await shareStory(mine[0], research); } catch (e) { mine[0].shareFailed = true; saveMine(); } }
+    $("ownShare").checked = false; $("ownResearch").checked = false; $("ownResearch").disabled = true;
     Object.assign(draft, { form: {}, questions: [], answers: {}, scenario: null }); saveDraft();
     Object.values(FIELDS).forEach(f => { if (f !== "ownMe") $(f).value = ""; });
     renderMine(); SCENARIOS[id] = mine[0].sc; selectScenario(id);
@@ -2092,8 +2126,21 @@ function showFeedback(){
       SCENARIOS[m.id] = m.sc;
       const del = el("button", { type: "button", title: "מחיקה מהמכשיר", "aria-label": "מחיקה" }, "🗑");
       del.addEventListener("click", (e) => { e.stopPropagation(); if (!confirm("למחוק את המקרה מהמכשיר?")) return; mine = mine.filter(x => x.id !== m.id); delete SCENARIOS[m.id]; saveMine(); renderMine(); });
+      // שיתוף או ביטול שיתוף מתוך "המקרים שלי"
+      let shareBtn = null;
+      if (m.shared) {
+        shareBtn = el("button", { type: "button", class: "my-share", title: "הסיפור שותף עם Begood ב־" + m.shared.at }, "✓ שותף · ביטול השיתוף");
+        shareBtn.addEventListener("click", async (e) => { e.stopPropagation(); if (!confirm("לבטל את השיתוף? הסיפור יימחק מ־Begood, ויישאר רק במכשיר הזה.")) return;
+          try { await withdrawStory(m); renderMine(); } catch (er) { alert("הביטול לא הצליח כרגע. אפשר לנסות שוב בעוד רגע."); } });
+      } else if (m.form && m.form.story) {
+        shareBtn = el("button", { type: "button", class: "my-share" }, m.shareFailed ? "🤝 השיתוף לא הצליח · לנסות שוב" : "🤝 שיתוף עם Begood");
+        shareBtn.addEventListener("click", async (e) => { e.stopPropagation();
+          if (piiIn(m.form)) { alert("נראה שיש בסיפור מספר טלפון, מייל או מספר זהות, ולכן הוא לא ישותף."); return; }
+          if (!confirm("לשתף את הסיפור עם Begood? נשלח רק מה שכתבת בצעד 1 ושם הסיפור, בלי השם שלך ובלי הקוד. הסיפור נקרא ונערך לפני כל שימוש, ואפשר לבטל את השיתוף בכל עת.")) return;
+          try { await shareStory(m, false); delete m.shareFailed; saveMine(); renderMine(); } catch (er) { alert("השיתוף לא הצליח כרגע. אפשר לנסות שוב בעוד רגע."); } });
+      }
       const card = el("div", { class: "scenario-card", tabindex: "0" },
-        el("div", { class: "my-case" }, el("div", { class: "sc-name", style: "flex:1" }, "✍️ " + m.sc.name), del),
+        el("div", { class: "my-case" }, el("div", { class: "sc-name", style: "flex:1" }, "✍️ " + m.sc.name), shareBtn || "", del),
         el("div", { class: "sc-sub" }, m.sc.subtitle),
         el("div", { class: "sc-sub" }, el("b", {}, youL(m.sc)), m.sc.trainee.roleLabel || "", " · ", el("b", {}, "מולך: "), m.sc.actor.name + ", " + (m.sc.actor.roleLabel || "")));
       const pick = () => selectScenario(m.id);

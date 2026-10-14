@@ -1434,6 +1434,56 @@ async function handleOpenLinks(store, body, isSys) {
   return [400, { error: 'bad action' }];
 }
 
+// ── סיפורים אישיים, בהסכמה (14/10/2026: "תאפשר לשמור סיפורים אישיים למערכת - בהסכמה כמובן") ──
+// story:<id> → { id, at, consent:{share:true, research:bool, at}, form:{story,role,other,goal,hard}, scenario:{name,subtitle,actor}, status }
+// מי ששיתף/ה מקבל/ת מפתח ביטול (key) שנשמר במכשיר שלו/ה, ואפשר לבטל בכל עת (storyWithdraw): הרשומה נמחקת.
+// בלי שם המשתמש/ת ובלי קוד: רק סוג הכניסה. מנהלת המערכת קוראת, מסמנת ומוחקת.
+const STORY_MAX = 2000;
+const STORY_STATUS = ['חדש', 'נקרא', 'מתאים למאגר', 'לא מתאים'];
+const clip = (v, n) => String(v == null ? '' : v).slice(0, n);
+async function handleStories(store, body, isSys) {
+  const { action } = body;
+  if (action === 'storyShare') {
+    const t = await verifyToken(store, body.token);
+    if (!t) { await pause(); return [403, { error: 'unauthorized' }]; }
+    if (!body.consent || body.consent.share !== true) return [400, { error: 'no consent' }];
+    const f = body.form || {};
+    const form = { story: clip(f.story, 4000), role: clip(f.role, 120), other: clip(f.other, 120), goal: clip(f.goal, 400), hard: clip(f.hard, 400) };
+    if (form.story.trim().length < 20) return [400, { error: 'too short' }];
+    if ((await store.list('story:', { keysOnly: true })).length >= STORY_MAX) return [429, { error: 'full' }];
+    const sc = body.scenario && typeof body.scenario === 'object' ? body.scenario : {};
+    const scenario = { name: clip(sc.name, 160), subtitle: clip(sc.subtitle, 300), actor: { name: clip(sc.actor && sc.actor.name, 80), roleLabel: clip(sc.actor && sc.actor.roleLabel, 120) } };
+    const id = Date.now().toString(36) + '-' + randomBytes(4).toString('hex');
+    const key = randomBytes(12).toString('hex');
+    const rec = { id, key, at: new Date().toISOString(), who: t.k === 'sys' ? 'sys' : (t.kind || t.k), consent: { share: true, research: !!body.consent.research, at: new Date().toISOString() },
+      form, scenario, status: 'חדש' };
+    await store.set('story:' + id, rec);
+    return [200, { ok: true, id, key }];
+  }
+  if (action === 'storyWithdraw') {
+    const id = clip(body.id, 40);
+    const rec = /^[a-z0-9-]+$/.test(id) ? await store.get('story:' + id) : null;
+    if (!rec || !body.key || !same(String(body.key), String(rec.key))) { await pause(); return [404, { error: 'not found' }]; }
+    await store.del('story:' + id);
+    return [200, { ok: true }];
+  }
+  if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
+  if (action === 'storyList') {
+    const rows = await store.list('story:');
+    return [200, { items: rows.map((r) => { const { key, ...x } = r.value; return x; }).sort((a, b) => String(b.at).localeCompare(String(a.at))), statuses: STORY_STATUS }];
+  }
+  const id = clip(body.id, 40);
+  const rec = /^[a-z0-9-]+$/.test(id) ? await store.get('story:' + id) : null;
+  if (!rec) return [404, { error: 'not found' }];
+  if (action === 'storyStatus') {
+    if (!STORY_STATUS.includes(body.status)) return [400, { error: 'bad status' }];
+    rec.status = body.status; await store.set('story:' + id, rec);
+    return [200, { ok: true }];
+  }
+  if (action === 'storyDelete') { await store.del('story:' + id); return [200, { ok: true }]; }
+  return [400, { error: 'bad action' }];
+}
+
 // מחזירה [status, body].
 export async function handleAccess(store, body) {
   const { action } = body || {};
@@ -1514,6 +1564,7 @@ export async function handleAccess(store, body) {
   const sysTok = await verifyToken(store, body?.token);
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
   if (/^open(Join|List|Create|Update|Revoke)$/.test(action || '')) return handleOpenLinks(store, body, isSys);
+  if (/^story(Share|Withdraw|List|Status|Delete)$/.test(action || '')) return handleStories(store, body, isSys);
 
   if (['renewRequest', 'codesList', 'codeCreate', 'codeRevoke', 'codeUse', 'setSubscription', 'renewSubscription',
     'getSettings', 'setSettings', 'renewList', 'renewDone', 'renewApprove'].includes(action)) {
