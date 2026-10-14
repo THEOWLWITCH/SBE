@@ -35,3 +35,15 @@ test('only the admin reads the stories, the key never leaves, and the sharer can
   assert.equal((await handleAccess(store, { action: 'storyWithdraw', id: out.id, key: out.key }))[0], 200);
   assert.equal((await handleAccess(store, { action: 'storyList', token: sys.token }))[1].items.length, 0);
 });
+
+test('a practice conversation can be saved with consent, without a story form', async () => {
+  const store = memoryStore();
+  const [, sys] = await handleAccess(store, { action: 'login', kind: 'sys', secret: '990211' });
+  const talk = [{ who: 'character', line: 'בואי נגיד שראיתי מהחלון.' }, { who: 'trainee', line: 'מה ראית?' }, { who: 'system', line: 'x' }];
+  const [st, r] = await handleAccess(store, { action: 'storyShare', token: sys.token, talk, consent: { share: true, research: true }, scenario: { name: 'הגננת' } });
+  assert.equal(st, 200);
+  const rec = await store.get('story:' + r.id);
+  assert.equal(rec.kind, 'שיחה'); assert.equal(rec.talk.length, 2); assert.equal(rec.consent.research, true);
+  assert.equal((await handleAccess(store, { action: 'storyShare', token: sys.token, talk: talk.slice(0, 1), consent: { share: true } }))[1].error, 'too short');
+  assert.equal((await handleAccess(store, { action: 'storyWithdraw', id: r.id, key: r.key }))[0], 200);
+});

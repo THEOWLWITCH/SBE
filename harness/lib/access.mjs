@@ -1449,14 +1449,19 @@ async function handleStories(store, body, isSys) {
     if (!body.consent || body.consent.share !== true) return [400, { error: 'no consent' }];
     const f = body.form || {};
     const form = { story: clip(f.story, 4000), role: clip(f.role, 120), other: clip(f.other, 120), goal: clip(f.goal, 400), hard: clip(f.hard, 400) };
-    if (form.story.trim().length < 20) return [400, { error: 'too short' }];
+    // שיחת תרגול שנשמרת במאגר, בהסכמה (14/10/2026: "אין כפתור שמאפשר לשמור את השיחה במאגר המערכת"):
+    // רק מי מדבר ומה נאמר, עד 80 תורות.
+    const talk = (Array.isArray(body.talk) ? body.talk : []).slice(0, 80)
+      .filter((x) => x && (x.who === 'trainee' || x.who === 'character') && typeof x.line === 'string' && x.line.trim())
+      .map((x) => ({ who: x.who, line: clip(x.line, 1500) }));
+    if (form.story.trim().length < 20 && talk.length < 2) return [400, { error: 'too short' }];
     if ((await store.list('story:', { keysOnly: true })).length >= STORY_MAX) return [429, { error: 'full' }];
     const sc = body.scenario && typeof body.scenario === 'object' ? body.scenario : {};
     const scenario = { name: clip(sc.name, 160), subtitle: clip(sc.subtitle, 300), actor: { name: clip(sc.actor && sc.actor.name, 80), roleLabel: clip(sc.actor && sc.actor.roleLabel, 120) } };
     const id = Date.now().toString(36) + '-' + randomBytes(4).toString('hex');
     const key = randomBytes(12).toString('hex');
     const rec = { id, key, at: new Date().toISOString(), who: t.k === 'sys' ? 'sys' : (t.kind || t.k), consent: { share: true, research: !!body.consent.research, at: new Date().toISOString() },
-      form, scenario, status: 'חדש' };
+      form, scenario, talk, kind: talk.length ? 'שיחה' : 'סיפור', status: 'חדש' };
     await store.set('story:' + id, rec);
     return [200, { ok: true, id, key }];
   }

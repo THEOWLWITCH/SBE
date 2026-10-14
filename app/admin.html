@@ -444,7 +444,7 @@ function saveSuggestions(list){ try { localStorage.setItem("sbe.source.suggestio
 
 const TABS = {
   inst:[["codes","קודים"],["users","משתמשות"],["feedback","מדדי המשוב"],["data","נתונים"]],
-  sys: [["home","🏠 מה מחכה לי"],["insts","🏫 מוסדות וקודים"],["studies","📚 לימודי חוסן חברתי"],["journeys","🧭 לוח המסעות: אישורים ומשוב"],["demolab","🧪 מעבדת הדמו: תוצרים לתיקיית הדוגמאות"],["inbox","✉️ פניות"],["stories","📖 סיפורים אישיים"],["crit","✅ קריטריונים לאישור"],["taxonomies","📋 רשימות"],["libs","📚 מקורות"],["eval","🔎 בקרת איכות"],["data","📊 נתונים"],["open","🔗 קישור פתוח ליום אחד"],["access","🔑 סיסמת הניהול"]],
+  sys: [["home","🏠 מה מחכה לי"],["insts","🏫 מוסדות וקודים"],["studies","📚 לימודי חוסן חברתי"],["journeys","🧭 לוח המסעות: אישורים ומשוב"],["demolab","🧪 מעבדת הדמו: תוצרים לתיקיית הדוגמאות"],["inbox","✉️ פניות"],["stories","📖 סיפורים ושיחות"],["crit","✅ קריטריונים לאישור"],["taxonomies","📋 רשימות"],["libs","📚 מקורות"],["eval","🔎 בקרת איכות"],["data","📊 נתונים"],["open","🔗 קישור פתוח ליום אחד"],["access","🔑 סיסמת הניהול"]],
 };
 
 // קישורים למסכים אחרים בפרויקט — לא לשוניות בתוך admin.html, אלא ניווט
@@ -1773,7 +1773,7 @@ function pOpen(){
 let stories = null;
 function pStories(){
   const w = el("div",{class:"panel on"});
-  w.append(el("h2",{},"סיפורים אישיים"), el("p",{class:"sub"},"מקרים ששותפו בהסכמה מ\"מקרה משלך\" בתרגול העצמי, בלי שם ובלי קוד. לפני כל שימוש: לקרוא, לערוך ולהסיר פרטים מזהים. מחקר רק כשסומן \"מותר במחקר\"."));
+  w.append(el("h2",{},"סיפורים ושיחות"), el("p",{class:"sub"},"מקרים ששותפו בהסכמה מ\"מקרה משלך\", ושיחות תרגול שנשמרו במאגר ממסך המשוב בתרגול העצמי, בלי שם ובלי קוד. לפני כל שימוש: לקרוא, לערוך ולהסיר פרטים מזהים. מחקר רק כשסומן \"מותר במחקר\"."));
   if (!gate(w, stories, async () => { stories = await accessCall("storyList"); }, "סיסמת מנהלת המערכת")) return w;
   const items = stories.items || [];
   if (!items.length) { w.append(el("p",{class:"sub"},"עדיין לא שותפו סיפורים.")); return w; }
@@ -1781,9 +1781,16 @@ function pStories(){
   items.forEach(x => {
     const card = el("div",{class:"card",style:"margin-top:12px"}), ci = el("div",{class:"in"});
     const f = x.form || {};
-    ci.append(el("h3",{style:"margin:0 0 4px"}, (x.scenario && x.scenario.name) || "סיפור"),
+    ci.append(el("h3",{style:"margin:0 0 4px"}, (x.kind === "שיחה" ? "💬 שיחה: " : "") + ((x.scenario && x.scenario.name) || "סיפור")),
       el("p",{style:"margin:0 0 8px;font-size:13.5px;color:var(--muted)"}, [new Date(x.at).toLocaleDateString("he-IL"), x.status, x.consent && x.consent.research ? "מותר במחקר" : "בלי מחקר", f.role && ("התפקיד: " + f.role), f.other && ("מולי: " + f.other)].filter(Boolean).join(" · ")),
       el("p",{style:"white-space:pre-wrap;margin:0 0 6px"}, f.story || ""));
+    // שיחת תרגול שנשמרה במאגר (14/10/2026): מי אמר ומה
+    if ((x.talk || []).length) {
+      const det = el("details",{open:""}), tb = el("div",{style:"font-size:14px"});
+      det.append(el("summary",{}, "השיחה (" + x.talk.length + " תורות)"));
+      x.talk.forEach(m => tb.append(el("p",{style:"margin:3px 0"}, el("b",{}, (m.who === "trainee" ? "המתנסה" : ((x.scenario && x.scenario.actor && x.scenario.actor.name) || "הדמות")) + ": "), m.line)));
+      det.append(tb); ci.append(det);
+    }
     if (f.goal) ci.append(el("p",{style:"margin:0 0 4px;font-size:14px"}, "מה הייתי רוצה שיקרה: " + f.goal));
     if (f.hard) ci.append(el("p",{style:"margin:0 0 4px;font-size:14px"}, "מה מאתגר: " + f.hard));
     const st = el("select",{"data-closed":""}); (stories.statuses || []).forEach(v => st.append(el("option",{value:v}, v))); st.value = x.status;

@@ -315,7 +315,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <div class="transcript" id="transcript"></div>
 </section>
 
-<style>.fb-st{font-weight:600;font-size:.9rem}.fb-st.reached{color:#4A6B5A}.fb-st.missed{color:#8C3A34}.fb-st.held{color:#7A5A12}.fb-said{font-size:.85rem;color:var(--muted,#555);margin-top:4px}.fb-lead{margin:.2rem 0 .6rem}</style>
+<style>.fb-st{font-weight:600;font-size:.9rem}.fb-st.reached{color:#4A6B5A}.fb-st.missed{color:#8C3A34}.fb-st.held{color:#7A5A12}.fb-said{font-size:.85rem;color:var(--muted,#555);margin-top:4px}.fb-lead{margin:.2rem 0 .6rem}.fb-save{margin-top:18px;padding:12px 14px;border:1px solid var(--hair,#d9dde0);border-radius:12px}@media print{.fb-save{display:none}}</style>
 <section id="screen-feedback" hidden>
   <h2 style="font-family:'Frank Ruhl Libre',Georgia,serif;">מה קרה בתרגול</h2>
   <div id="fbComm"></div>
@@ -334,6 +334,16 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
     <summary>מה נרשם (לצורכי מחקר ואיכות)</summary>
     <pre id="fbLog"></pre>
   </details>
+  <div class="fb-save" id="fbSave">
+    <h3 class="fb-h">🤝 שמירת השיחה במאגר Begood (רשות)</h3>
+    <p class="fb-lead">אפשר לשמור את השיחה (מה שאמרת ומה שהדמות אמרה) במאגר של Begood, בלי שם ובלי קוד, כדי לשפר את התרגולים. אחרי השמירה אפשר לבטל אותה כאן.</p>
+    <label><input type="checkbox" id="fbSaveResearch"> מותר להשתמש בשיחה גם במחקר, באופן אנונימי</label>
+    <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button type="button" class="primary" id="bSaveTalk">שמירת השיחה במאגר</button>
+      <span id="fbSaveMsg" class="fb-note" hidden></span>
+      <button type="button" id="bWithdrawTalk" hidden>ביטול השמירה</button>
+    </div>
+  </div>
   <div style="margin-top:16px;display:flex;gap:12px;">
     <button type="button" id="bPrintFb">הדפסה / שמירה כ-PDF</button>
     <button type="button" id="bAgain">תרגול נוסף</button>
@@ -1028,6 +1038,44 @@ document.getElementById("bEndChat").addEventListener("click", () => {
 });
 document.getElementById("bBack").addEventListener("click", resetAll);
 document.getElementById("bAgain").addEventListener("click", resetAll);
+// ── שמירת השיחה במאגר, בהסכמה (14/10/2026: "אין כפתור שמאפשר לשמור את השיחה במאגר המערכת"):
+// נשלחים רק דברי המתנסה והדמות ושם התרחיש, בלי שם ובלי קוד (storyShare עם talk). מפתח הביטול נשאר בדף.
+const TALK_PII = /[\w.+-]+@[\w-]+\.[\w.]+|(?:\+?972|0)[\s-]?\d(?:[\s-]?\d){7,8}|\b\d{9}\b/;
+function renderSaveTalk(){
+  const saved = state.savedTalk, msg = document.getElementById("fbSaveMsg");
+  document.getElementById("bSaveTalk").hidden = !!saved;
+  document.getElementById("fbSaveResearch").disabled = !!saved;
+  document.getElementById("bWithdrawTalk").hidden = !saved;
+  msg.hidden = !saved; if (saved) msg.textContent = "✓ השיחה נשמרה במאגר" + (saved.research ? ", גם למחקר." : ".");
+}
+document.getElementById("bSaveTalk").addEventListener("click", async (ev) => {
+  const btn = ev.currentTarget, msg = document.getElementById("fbSaveMsg");
+  const talk = state.transcript.filter(m => m.who === "trainee" || m.who === "character").map(m => ({ who: m.who, line: m.line }));
+  msg.hidden = false;
+  if (talk.filter(m => m.who === "trainee").length < 1) { msg.textContent = "אין עדיין שיחה לשמור."; return; }
+  if (talk.some(m => m.who === "trainee" && TALK_PII.test(m.line))) { msg.textContent = "נראה שיש בשיחה מספר טלפון, מייל או מספר זהות, ולכן היא לא נשמרה במאגר."; return; }
+  const research = document.getElementById("fbSaveResearch").checked;
+  let token = ""; try { token = sessionStorage.getItem("sbe.session.token") || ""; } catch(e){}
+  btn.disabled = true; msg.textContent = "שומרת…";
+  try {
+    const r = await fetch(AI_SERVER + "/api/access", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "storyShare", token, consent: { share: true, research }, talk,
+        scenario: { name: SCENARIO.name, subtitle: SCENARIO.subtitle, actor: { name: SCENARIO.actor.name, roleLabel: SCENARIO.actor.roleLabel } } }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.id) throw new Error(d.error || String(r.status));
+    state.savedTalk = { id: d.id, key: d.key, research }; renderSaveTalk();
+  } catch (e) {
+    msg.textContent = "השיחה לא נשמרה כרגע. אפשר לנסות שוב.";
+  } finally { btn.disabled = false; }
+});
+document.getElementById("bWithdrawTalk").addEventListener("click", async () => {
+  const s = state.savedTalk; if (!s) return;
+  try {
+    const r = await fetch(AI_SERVER + "/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "storyWithdraw", id: s.id, key: s.key }) });
+    if (!r.ok && r.status !== 404) throw new Error(String(r.status));
+    state.savedTalk = null; renderSaveTalk(); const m = document.getElementById("fbSaveMsg"); m.hidden = false; m.textContent = "השמירה בוטלה, והשיחה נמחקה מהמאגר.";
+  } catch (e) { const m = document.getElementById("fbSaveMsg"); m.hidden = false; m.textContent = "הביטול לא הצליח כרגע. אפשר לנסות שוב."; }
+});
 // הדפסה / PDF (07/10/2026): השיחה והמשוב, עם לוגו, כותרת ותאריך — כמו בשאר התוצרים
 document.getElementById("bPrintFb").addEventListener("click", () => {
   const conv = el("div"); conv.append(el("h3", {}, "השיחה"));
@@ -1050,7 +1098,7 @@ function clearSessionState(){
   Object.assign(state, {
     turn:0, transcript:[], activeTP:null, activeTPRetries:0, firedTPs:{}, pressCount:0,
     trustConditionMet:false, lastCharacterTs:null, ended:false, endingType:null,
-    endingIndex:null, closingLine:null, closingNote:null, commFb:null, commFbFailed:false, crossings:[], injectionAttempts:[],
+    endingIndex:null, closingLine:null, closingNote:null, commFb:null, commFbFailed:false, savedTalk:null, crossings:[], injectionAttempts:[],
     responseTimesSec:[], holdIndexNeutral:0, holdIndexCool:0, holdIndexApproach:0,
     holdIndexInjection:0, harshCount:0, manipulationCount:0, turnLog:[], retry:null,
   });
@@ -2034,6 +2082,7 @@ function showFeedback(){
   }, null, 2);
 
   show("screen-feedback");
+  document.getElementById("fbSaveMsg").hidden = true; renderSaveTalk();
   loadCommFeedback();
 }
 
