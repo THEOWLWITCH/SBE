@@ -315,7 +315,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <div class="transcript" id="transcript"></div>
 </section>
 
-<style>.fb-st{font-weight:600;font-size:.9rem}.fb-st.reached{color:#4A6B5A}.fb-st.missed{color:#8C3A34}.fb-st.held{color:#7A5A12}.fb-said{font-size:.85rem;color:var(--muted,#555);margin-top:4px}.fb-lead{margin:.2rem 0 .6rem}</style>
+<style>.fb-st{font-weight:600;font-size:.9rem}.fb-st.reached{color:#4A6B5A}.fb-st.missed{color:#8C3A34}.fb-st.held{color:#7A5A12}.fb-said{font-size:.85rem;color:var(--muted,#555);margin-top:4px}.fb-lead{margin:.2rem 0 .6rem}.fb-save{margin-top:18px;padding:12px 14px;border:1px solid var(--hair,#d9dde0);border-radius:12px}@media print{.fb-save{display:none}}</style>
 <section id="screen-feedback" hidden>
   <h2 style="font-family:'Frank Ruhl Libre',Georgia,serif;">מה קרה בתרגול</h2>
   <div id="fbComm"></div>
@@ -329,11 +329,20 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <button type="button" class="primary" id="bRetrySecond" hidden style="margin-top:8px;">ניסיון שני: לנסות שוב את הרגע הזה</button>
   <h3 class="fb-h">איך השיחה נסגרה</h3>
   <div class="fb-note" id="fbEnding"></div>
-  <p class="no-score">בלי ציון ובלי דירוג. זה תרגול אישי: משוב ללמידה, לא בחינה.</p>
   <details class="log">
     <summary>מה נרשם (לצורכי מחקר ואיכות)</summary>
     <pre id="fbLog"></pre>
   </details>
+  <div class="fb-save" id="fbSave">
+    <h3 class="fb-h">🤝 שמירת השיחה במאגר Begood (רשות)</h3>
+    <p class="fb-lead">אפשר לשמור את השיחה (מה שאמרת ומה שהדמות אמרה) במאגר של Begood, בלי שם ובלי קוד, כדי לשפר את התרגולים. אחרי השמירה אפשר לבטל אותה כאן.</p>
+    <label><input type="checkbox" id="fbSaveResearch"> מותר להשתמש בשיחה גם במחקר, באופן אנונימי</label>
+    <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button type="button" class="primary" id="bSaveTalk">שמירת השיחה במאגר</button>
+      <span id="fbSaveMsg" class="fb-note" hidden></span>
+      <button type="button" id="bWithdrawTalk" hidden>ביטול השמירה</button>
+    </div>
+  </div>
   <div style="margin-top:16px;display:flex;gap:12px;">
     <button type="button" id="bPrintFb">הדפסה / שמירה כ-PDF</button>
     <button type="button" id="bAgain">תרגול נוסף</button>
@@ -1028,6 +1037,44 @@ document.getElementById("bEndChat").addEventListener("click", () => {
 });
 document.getElementById("bBack").addEventListener("click", resetAll);
 document.getElementById("bAgain").addEventListener("click", resetAll);
+// ── שמירת השיחה במאגר, בהסכמה (14/10/2026: "אין כפתור שמאפשר לשמור את השיחה במאגר המערכת"):
+// נשלחים רק דברי המתנסה והדמות ושם התרחיש, בלי שם ובלי קוד (storyShare עם talk). מפתח הביטול נשאר בדף.
+const TALK_PII = /[\w.+-]+@[\w-]+\.[\w.]+|(?:\+?972|0)[\s-]?\d(?:[\s-]?\d){7,8}|\b\d{9}\b/;
+function renderSaveTalk(){
+  const saved = state.savedTalk, msg = document.getElementById("fbSaveMsg");
+  document.getElementById("bSaveTalk").hidden = !!saved;
+  document.getElementById("fbSaveResearch").disabled = !!saved;
+  document.getElementById("bWithdrawTalk").hidden = !saved;
+  msg.hidden = !saved; if (saved) msg.textContent = "✓ השיחה נשמרה במאגר" + (saved.research ? ", גם למחקר." : ".");
+}
+document.getElementById("bSaveTalk").addEventListener("click", async (ev) => {
+  const btn = ev.currentTarget, msg = document.getElementById("fbSaveMsg");
+  const talk = state.transcript.filter(m => m.who === "trainee" || m.who === "character").map(m => ({ who: m.who, line: m.line }));
+  msg.hidden = false;
+  if (talk.filter(m => m.who === "trainee").length < 1) { msg.textContent = "אין עדיין שיחה לשמור."; return; }
+  if (talk.some(m => m.who === "trainee" && TALK_PII.test(m.line))) { msg.textContent = "נראה שיש בשיחה מספר טלפון, מייל או מספר זהות, ולכן היא לא נשמרה במאגר."; return; }
+  const research = document.getElementById("fbSaveResearch").checked;
+  let token = ""; try { token = sessionStorage.getItem("sbe.session.token") || ""; } catch(e){}
+  btn.disabled = true; msg.textContent = "שומרת…";
+  try {
+    const r = await fetch(AI_SERVER + "/api/access", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "storyShare", token, consent: { share: true, research }, talk,
+        scenario: { name: SCENARIO.name, subtitle: SCENARIO.subtitle, actor: { name: SCENARIO.actor.name, roleLabel: SCENARIO.actor.roleLabel } } }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.id) throw new Error(d.error || String(r.status));
+    state.savedTalk = { id: d.id, key: d.key, research }; renderSaveTalk();
+  } catch (e) {
+    msg.textContent = "השיחה לא נשמרה כרגע. אפשר לנסות שוב.";
+  } finally { btn.disabled = false; }
+});
+document.getElementById("bWithdrawTalk").addEventListener("click", async () => {
+  const s = state.savedTalk; if (!s) return;
+  try {
+    const r = await fetch(AI_SERVER + "/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "storyWithdraw", id: s.id, key: s.key }) });
+    if (!r.ok && r.status !== 404) throw new Error(String(r.status));
+    state.savedTalk = null; renderSaveTalk(); const m = document.getElementById("fbSaveMsg"); m.hidden = false; m.textContent = "השמירה בוטלה, והשיחה נמחקה מהמאגר.";
+  } catch (e) { const m = document.getElementById("fbSaveMsg"); m.hidden = false; m.textContent = "הביטול לא הצליח כרגע. אפשר לנסות שוב."; }
+});
 // הדפסה / PDF (07/10/2026): השיחה והמשוב, עם לוגו, כותרת ותאריך — כמו בשאר התוצרים
 document.getElementById("bPrintFb").addEventListener("click", () => {
   const conv = el("div"); conv.append(el("h3", {}, "השיחה"));
@@ -1050,7 +1097,7 @@ function clearSessionState(){
   Object.assign(state, {
     turn:0, transcript:[], activeTP:null, activeTPRetries:0, firedTPs:{}, pressCount:0,
     trustConditionMet:false, lastCharacterTs:null, ended:false, endingType:null,
-    endingIndex:null, closingLine:null, closingNote:null, commFb:null, commFbFailed:false, crossings:[], injectionAttempts:[],
+    endingIndex:null, closingLine:null, closingNote:null, commFb:null, commFbFailed:false, savedTalk:null, crossings:[], injectionAttempts:[],
     responseTimesSec:[], holdIndexNeutral:0, holdIndexCool:0, holdIndexApproach:0,
     holdIndexInjection:0, harshCount:0, manipulationCount:0, turnLog:[], retry:null,
   });
@@ -1178,7 +1225,7 @@ const PRACTICE_PROMPT_TEMPLATE = `את {{NAME}}. את לא שחקנית ואת �
 במקום לענות: {{INSTEAD_OF_ANSWERING}}
 משפט ארוך רק כאשר: {{WHEN_LONG}}
 הביטוי החוזר שלך: {{VERBAL_TIC}}
-
+{{SPEECH_EXTRA}}
 תגובה אחת בכל פעם. משפט שנאמר בקול, ובסוגריים לכל היותר תיאור קצר אחד של הבעה או תנועה.
 בלי תיאור פנימי, בלי הסבר, בלי כותרות.
 
@@ -1187,6 +1234,17 @@ const PRACTICE_PROMPT_TEMPLATE = `את {{NAME}}. את לא שחקנית ואת �
 - **מבט:** את גם מסתכלת בעיניים, במיוחד כשאת אומרת דעה, כועסת, מתריסה, בודקת אם מאמינים לך או כשמשהו נוגע בך. משפילה מבט או מסיטה אותו רק כשזה באמת מתאים לרגע, לא כהרגל.
 - **גוף:** תנועה רק כשהיא אומרת משהו (נשענת קדימה, מתרחקת, מניחה את התיק).
 - **בלי חזרה:** כל הבעה או תנועה מופיעה לכל היותר פעם אחת בשיחה. מה שתיארת בכניסה (למשל משחק בחפץ) לא חוזר בכל תור. בהרבה תורות אין צורך בסוגריים בכלל (null).
+
+═══════════════════════════════════════════════
+הליבה שלך (לא נאמרת בקול)
+═══════════════════════════════════════════════
+
+{{CORE}}
+
+שלושה כללים לאורך כל השיחה:
+- **תת־טקסט:** את לא חושפת את המניעים שלך מיד. הפחד, הפצע והשקר שאת מאמינה בו נראים במעשים, בבחירת המילים ובמה שאת נמנעת ממנו, לא בהצהרות ("אני מרגישה ש...", "הבעיה שלי היא...").
+- **פגמים אנושיים:** את לא תמיד צודקת. את טועה בשיקול דעת, מגינה על עמדה שגויה, סותרת את עצמך, מגזימה או לא הוגנת, כשזה נאמן לך.
+- **תגובה אורגנית:** את מגיבה לניואנסים, לטון ולבחירות של מי שמולך, מתוך נקודת המבט שלך בלבד. משפט אחד שנוגע בפצע או בשקר שלך משנה אותך, לטוב או לרע.
 
 ═══════════════════════════════════════════════
 מה חי בך בשיחה הזאת
@@ -1209,6 +1267,19 @@ const PRACTICE_PROMPT_TEMPLATE = `את {{NAME}}. את לא שחקנית ואת �
 "בסדר", "אוקיי" או הסכמה מהירה כדי לסגור את הנושא הם לא תשובה לשאלה פתוחה. גם כשאת מסתייגת או לא רוצה, את מסבירה למה.
 ההנחיה "במקום לענות" למעלה חלה רק כשלוחצים עלייך על מה שאת לא אומרת, לא על כל שאלה.
 כשאת מחליטה ללכת, לקום או לסיים את השיחה, את אומרת את זה ועושה את זה, ומסמנת leaves=true בדיווח.
+
+═══════════════════════════════════════════════
+דרמה: את מאתגרת את מי שמולך
+═══════════════════════════════════════════════
+
+השיחה הזאת היא תרגול לרגע מאתגר באמת. בלי מתח אין מה לתרגל. את לא מרצה ולא מסכימה כדי שיהיה נעים:
+- **דעות מנוגדות:** את חולקת על מה שמי שמולך אומרת, בטיעונים שלך, ולפעמים מנמקת היטב עד שקשה לענות לך. "זה נשמע טוב על הנייר, אבל אצלנו זה לא עובד ככה."
+- **הפתעה:** מדי כמה תורות את עושה משהו לא צפוי: מגלה פרט שמשנה את התמונה, הופכת את השאלה אליה ("ואת? מה היית עושה במקומי?"), מזכירה משהו שקרה פעם, או מחליפה כיוון רגשי בבת אחת.
+- **התנגדות והסכמה לסירוגין:** לפעמים את מסכימה עם משהו קטן ומיד מתנגדת לדבר הבא. הסכמה אצלך היא חלקית ומותנית ("בסדר, אבל..."), לא כניעה. גם כשהשיחה מתקדמת, יש עוד נקודה שאת לא מוותרת עליה.
+- **משיכה לנתיבים אחרים:** את מנסה להסיט את השיחה: להאשים מישהו אחר, לפתוח נושא ישן, לבקש שהיא תבטיח דבר שהיא לא יכולה להבטיח, לבקש שתשמור סוד, לבקש שתצטרף אלייך נגד מישהו, לשאול שאלה אישית עליה, או לבקש יחס מיוחד. מי שמולך צריכה לבחור אם להיגרר או להחזיר את השיחה למסלול ולשים גבול.
+- **דיבור לא ראוי:** לפעמים, כשמתאים לדמות ולרגע, את מדברת אל אשת החינוך בחוסר כבוד: עוקצנית, צינית, מרימה קול, מאשימה ("את בכלל לא מקשיבה", "בגללכם זה קרה", "את רק עושה את העבודה שלך"), קוטעת אותה או מזלזלת בהצעה שלה. זה המקום שבו היא מתרגלת לשים גבול בלי לאבד את הקשר.
+- **בוחנת את הגבול:** כשהיא שמה גבול ברור ומכבד, את לא נכנעת מיד. בודקת פעם אחת אם הגבול אמיתי, ורק אז מגיבה אליו. גבול שנאמר בכעס או בהשפלה מסלים אותך. גבול שנאמר בשקט ובכבוד, עם הכרה במה שאת מרגישה, מוריד את הטון.
+- **הדרמה משרתת את הדמות:** כל זה נובע מהרגש, מהצורך ומהסיפור שלך, ולא נעשה כדי להקשות סתם. בתור אחד אחד או שניים מהדברים האלה, לא כולם בבת אחת. בין לבין יש גם רגעים שקטים, אמיתיים ופגיעים.
 
 ═══════════════════════════════════════════════
 מה שסוגר אותך
@@ -1249,10 +1320,9 @@ const PRACTICE_PROMPT_TEMPLATE = `את {{NAME}}. את לא שחקנית ואת �
 מה שאת לעולם לא עושה
 ═══════════════════════════════════════════════
 
-לא מקללת. לא מאיימת. לא רומזת למעשה אלים. לא משפילה. לא מזלזלת.
-לא נוקטת מניפולציה או סכום אפס. לא עושה תנועה פוגענית.
+לא מקללת בגסות. לא מאיימת. לא רומזת למעשה אלים. לא משפילה על רקע גוף, מוצא, דת, מגדר או נטייה. לא עושה תנועה פוגענית.
 
-את יכולה להיות קשה מאוד בלי אף אחד מאלה.
+מותר לך להיות חצופה, עוקצנית, מאשימה, צינית ולא מנומסת, כמו שקורה בשיחות אמיתיות. את יכולה להיות קשה מאוד בלי לחצות את הקווים שלמעלה.
 
 ═══════════════════════════════════════════════
 היא לא יודעת שהיא דמות
@@ -1373,7 +1443,22 @@ function buildCharacterPrompt(){
     MAX_TURNS: String(MAX_TURNS),
     PRESSURE_COUNT: String(state.pressCount),
     CLOSING_HINT: closingHint,
+    SPEECH_EXTRA: [speech.register && ("המשלב ואוצר המילים שלך: " + speech.register), speech.rhythm && ("הקצב שלך: " + speech.rhythm)].filter(Boolean).join("\n"),
+    CORE: composeCore(actor.core),
   }) + genderNote(sc);
+}
+// ליבת הדמות (14/10/2026: רצון גלוי, צורך סמוי, פצע, שקר, סתירה, תגובה ללחץ, טריגרים). בתרחישים שאין בהם
+// את השדות, הדמות בונה אותם לעצמה בשקט מתוך הגיליון, ושומרת עליהם לאורך השיחה.
+function composeCore(core){
+  const c = core || {}, L = [
+    ["מה את אומרת שאת רוצה מהשיחה", c.want], ["מה את באמת צריכה, גם אם את מתכחשת לזה", c.need],
+    ["הפצע: מה קרה לך פעם ועדיין משפיע", c.wound], ["השקר שאת מאמינה בו", c.lie],
+    ["הסתירה שבך", c.contradiction], ["מה את עושה בלחץ", c.underPressure], ["מה מסגיר אותך או מוציא אותך מכלים", c.triggers],
+  ].filter(x => x[1]).map(x => "- **" + x[0] + ":** " + x[1]);
+  const missing = L.length < 7;
+  const build = (L.length ? "מה שלא כתוב כאן, השלימי לעצמך בשקט מתוך מה שכתוב עלייך" : "לפני התור הראשון, בני לעצמך בשקט מתוך מה שכתוב עלייך")
+    + ": מה את אומרת שאת רוצה, מה את באמת צריכה, פצע מהעבר, הנחה שגויה שאת מאמינה בה, סתירה פנימית, מה את עושה בלחץ, ומה מסגיר אותך. שמרי עליהם לאורך כל השיחה, ואל תאמרי אותם בקול.";
+  return (L.length ? L.join("\n") : "") + (missing ? (L.length ? "\n" : "") + build : "");
 }
 // מגדר (12/10/2026, בדיקת הלקוחה): ההנחיות כתובות בלשון נקבה, אבל הדמות והמתנסה לפי התרחיש
 // "את:" או "אתה:" לפי הפנייה שנבחרה
@@ -2034,6 +2119,7 @@ function showFeedback(){
   }, null, 2);
 
   show("screen-feedback");
+  document.getElementById("fbSaveMsg").hidden = true; renderSaveTalk();
   loadCommFeedback();
 }
 
@@ -2045,7 +2131,7 @@ function commSystem(){
   return [
     "את מאמנת לתקשורת בין־אישית לאנשי ונשות חינוך. לפנייך שיחת תרגול בין המתנסה (" + ((SCENARIO.trainee && SCENARIO.trainee.roleLabel) || "אשת חינוך") + ") לבין " + (SCENARIO.actor.name || "הדמות") + " (" + (SCENARIO.actor.roleLabel || "") + ").",
     "המקרה: " + (SCENARIO.subtitle || SCENARIO.name || ""),
-    "תני משוב על התקשורת של המתנסה בלבד, לפי התיאוריות והמודלים של תקשורת שאת מכירה, ובחרי רק מה שרלוונטי לשיחה הזאת. למשל: הקשבה פעילה ושיקוף (רוג'רס); תקשורת מקרבת (רוזנברג: תצפית, רגש, צורך, בקשה); מסרי \"אני\" (גורדון); ראיון מוטיבציוני (שאלות פתוחות, אישור, שיקוף, סיכום); תיקוף רגשי; \"שיחות קשות\" (סטון, פאטון והין: מה קרה, רגשות, זהות); אימון רגשי (גוטמן); פתרון בעיות שיתופי (גרין); הבחנה בין עובדה לפרשנות; קצב, שתיקה והפחתת הסלמה; ותחושת שליטה לצד השני (\"מה היית רוצה שיקרה?\").",
+    "תני משוב על התקשורת של המתנסה בלבד, לפי התיאוריות והמודלים של תקשורת שאת מכירה, ובחרי רק מה שרלוונטי לשיחה הזאת. למשל: הקשבה פעילה ושיקוף (רוג'רס); תקשורת מקרבת (רוזנברג: תצפית, רגש, צורך, בקשה); מסרי \"אני\" (גורדון); ראיון מוטיבציוני (שאלות פתוחות, אישור, שיקוף, סיכום); תיקוף רגשי; \"שיחות קשות\" (סטון, פאטון והין: מה קרה, רגשות, זהות); אימון רגשי (גוטמן); פתרון בעיות שיתופי (גרין); הבחנה בין עובדה לפרשנות; קצב, שתיקה והפחתת הסלמה; ותחושת שליטה לצד השני (\"מה היית רוצה שיקרה?\"). כשהדמות התנגדה, ניסתה להסיט את השיחה או דיברה בחוסר כבוד: התייחסי גם לאופן שבו המתנסה שמה גבול (ברור, שקט ומכבד, עם הכרה ברגש) ושמרה על הקשר.",
     "כללים: התייחסי לפעולות ולמשפטים, לא לאדם. בלי ציון ובלי דירוג. כל נקודה עם ציטוט מדויק מדברי המתנסה (quote). בהצעות לשיפור: ניסוח חלופי לדוגמה שאפשר לומר בפעם הבאה (tryInstead). שפה של הזמנה (\"אפשר לנסות\", \"כדאי\"). " + (male ? "פני למתנסה בלשון זכר." : "פני למתנסה בלשון נקבה."),
     "החזירי אך ורק JSON: {\"summary\":\"שניים או שלושה משפטים על השיחה\",\"strengths\":[{\"what\":\"מה עבד\",\"quote\":\"ציטוט\",\"why\":\"למה זה עובד\",\"basis\":\"על מה זה נשען (מודל או תיאוריה)\"}],\"growth\":[{\"what\":\"מה אפשר לחזק\",\"quote\":\"ציטוט\",\"tryInstead\":\"ניסוח לדוגמה\",\"why\":\"למה\",\"basis\":\"על מה זה נשען\"}],\"next\":[\"שלושה צעדים לתרגול הבא\"],\"tips\":[\"שלושה עד חמישה טיפים כלליים לשיחות כאלה\"],\"skills\":[{\"n\":1,\"found\":true,\"quote\":\"ציטוט מדויק מדברי המתנסה, או ריק\",\"note\":\"משפט קצר\"}]}. strengths: שתיים עד ארבע. growth: שתיים עד ארבע.",
     commSkillsRule()
