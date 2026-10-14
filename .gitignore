@@ -1,5 +1,15 @@
 harness/api-key.txt
 node_modules/
 
+# Private backups and key material are kept outside source control.
+*.begood
+*.key.dpapi
+*.backup-key
+*.backup.passphrase
+/backups/
+.env
+.env.*
+!.env.example
+
 # צילומי מסך מבדיקות — לא נכנסים למאגר
 /*.png

@@ -1,3 +1,4 @@
+import { seedOwnerPassword, SYNTHETIC_OWNER_PASSWORD, syntheticOwnerRecord } from './synthetic-access.mjs';
 // קישור פתוח ליום אחד (11/10/2026): בלי קוד, רק בתאריך שנקבע, רק לכלי אחד.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,7 +11,7 @@ function memoryStore(seed = {}) {
     async delPrefix(prefix) { for (const k of data.keys()) if (k.startsWith(prefix)) data.delete(k); } };
 }
 const dayShift = (n) => { const d = new Date(ilToday() + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
-async function sys(store) { const [, out] = await handleAccess(store, { action: 'login', kind: 'sys', secret: '990211' }); return out.token; }
+async function sys(store) { await seedOwnerPassword(store); const [, out] = await handleAccess(store, { action: 'login', kind: 'sys', secret: SYNTHETIC_OWNER_PASSWORD }); return out.token; }
 
 test('only the system admin creates, lists and revokes open links', async () => {
   const store = memoryStore();

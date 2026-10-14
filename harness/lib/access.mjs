@@ -7,9 +7,9 @@ import { scryptSync, randomBytes, timingSafeEqual, createHmac, createHash } from
 import { createRequire } from 'node:module';
 const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
 
-// בתוקף רק עד שמנהלת המערכת מחליפה סיסמה בפעם הראשונה (אלה הסיסמאות שהיו
-// כתובות עד עכשיו ב-entry.html).
-const DEFAULT_PASSWORDS = { sys: '990211', inst: '550118' };
+// First-use owner setup requires an explicitly provisioned deployment secret.
+// Existing stored hashes take precedence; the environment never overrides them.
+const MANAGEMENT_KINDS = ['sys', 'inst'];
 const MIN_PASSWORD = 8;
 // ההרשאות במערכת. לכל מוסד יש "תקרה" (modules:<מוסד>) — מה שמנהלת המערכת פתחה
 // לו; ברירת המחדל: שום דבר. קודי הצוות שמנהל/ת המוסד מפיק/ה מקבלים רק צירוף
@@ -30,9 +30,15 @@ function same(a, b) {
 }
 
 async function checkPassword(store, kind, pw) {
-  if (!DEFAULT_PASSWORDS[kind] || typeof pw !== 'string' || !pw) return false;
+  if (!MANAGEMENT_KINDS.includes(kind) || typeof pw !== 'string' || !pw) return false;
   const rec = await store.get('pw-' + kind);
-  if (!rec) return same(pw, DEFAULT_PASSWORDS[kind]);
+  if (!rec) {
+    const bootstrap = kind === 'sys' ? process.env.BE_GOOD_OWNER_BOOTSTRAP_PASSWORD : undefined;
+    if (typeof bootstrap !== 'string' || bootstrap.length < 12 || !same(pw, bootstrap)) return false;
+    await store.set('pw-sys', hashPassword(bootstrap));
+    return true;
+  }
+  if (typeof rec.salt !== 'string' || typeof rec.hash !== 'string') return false;
   return same(hashPassword(pw, rec.salt).hash, rec.hash);
 }
 
@@ -68,7 +74,8 @@ async function status(store) {
   return {
     academicCode: code ? code.code : null,
     academicCreatedAt: code ? code.createdAt : null,
-    defaultPasswords: { sys: !sys, inst: !inst },
+    defaultPasswords: { sys: false, inst: false },
+    passwordConfigured: { sys: !!sys, inst: !!inst },
   };
 }
 
@@ -86,20 +93,31 @@ async function tokenSecret(store) {
 }
 
 async function signToken(store, payload) {
-  const body = b64u(JSON.stringify({ ...payload, exp: Date.now() + TOKEN_HOURS * 3600e3 }));
+  if (payload.k === 'sys') {
+    const password = await store.get('pw-sys');
+    payload = { ...payload, authVersion: passwordVersion(password) };
+  }
+  const body = b64u(JSON.stringify({ ...payload, sid: randomBytes(24).toString('hex'), exp: Date.now() + TOKEN_HOURS * 3600e3 }));
   const sig = createHmac('sha256', await tokenSecret(store)).update(body).digest('base64url');
   return body + '.' + sig;
 }
 
 export async function verifyToken(store, token) {
-  if (typeof token !== 'string' || !token.includes('.')) return null;
+  if (typeof token !== 'string' || token.length > 8192 || !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token)) return null;
   const [body, sig] = token.split('.');
   const want = createHmac('sha256', await tokenSecret(store)).update(body).digest('base64url');
   if (!same(sig, want)) return null;
   try {
     const p = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
+    if (p.k === 'sys') {
+      const password = await store.get('pw-sys');
+      if (!password || !p.authVersion || p.authVersion !== passwordVersion(password)) return null;
+    }
     return p.exp > Date.now() ? p : null;
   } catch { return null; }
+}
+function passwordVersion(record) {
+  return record && createHash('sha256').update(String(record.salt) + ':' + String(record.hash)).digest('hex');
 }
 
 // ── חוסן חברתי: כיתות ותשובות ──
@@ -326,24 +344,55 @@ export const MODEL_PAGES = {
 };
 export const WORKSHOP_MODEL_PAGES = ['practice.html', 'conversation-planner.html', 'activity-planner.html', 'academic-review.html', 'parent-input-screen.html'];
 const WORKSHOP_HOURS = 48;
+async function liveWorkshop(store, w) {
+  if (!/^[a-z0-9]{8,32}$/.test(String(w || ''))) return null;
+  const ws = await store.get('wf:' + w);
+  const age = ws && Date.now() - Date.parse(ws.created || 0);
+  if (!ws || ws.revoked || !(age >= 0 && age < WORKSHOP_HOURS * 3600e3)) return null;
+  if (ws.owner === 'sys') return { w, inst: '' };
+  if (ws.owner && ws.owner !== 'LEGACY') {
+    const rec = await store.get('code:' + normCode(ws.owner));
+    if (!rec) return null;
+    const live = await resolveCode(store,rec,await getSettings(store));
+    return !live.error && live.perms.some(p => /^fac_/.test(p)) ? { w, inst: live.inst } : null;
+  }
+  const inst = (await getInstitutions(store)).find(x => x.name === ws.inst);
+  if (!inst || ['inactive','expired'].includes(subState(inst,await getSettings(store)).state)) return null;
+  const ceiling = await getCeiling(store,inst.name);
+  return ['fac_trainee','fac_parent','fac_youth'].some(p => ceiling[p]) ? { w, inst: inst.name } : null;
+}
 export function modelPage(page) {
   let f = String(page || '').split('?')[0].split('#')[0].split('/').pop().toLowerCase();
   if (f && !/\.html$/.test(f)) f += '.html';
   return /^[a-z0-9-]+\.html$/.test(f) ? f : '';
 }
-export async function authorizeModel(store, auth) {
+export const MODEL_ROUTES = {
+  '/api/complete': null,
+  '/api/character-turn': ['practice.html'],
+  '/api/pipeline': ['input-screen.html'],
+};
+export function modelIdentity(actor, credential) {
+  const digest = value => createHash('sha256').update(value).digest('hex');
+  const principal = actor.k === 'sys' ? 'sys' : actor.k === 'workshop' ? 'workshop:' + actor.w
+    : actor.k === 'open' ? 'open:' + actor.o : [actor.k, actor.c || '', actor.s || '', actor.inst || ''].join(':');
+  return { owner: digest(String(credential || '')), principal: digest(principal),
+    institution: digest(String(actor.inst || principal)), institutionId: actor.inst || null };
+}
+export async function authorizeModel(store, auth, route = '/api/complete') {
   const a = auth && typeof auth === 'object' ? auth : {};
   const page = modelPage(a.page);
+  if (!Object.hasOwn(MODEL_ROUTES, route) || (MODEL_ROUTES[route] && !MODEL_ROUTES[route].includes(page))) return { ok: false };
   if (a.token) {
     const t = await verifyToken(store, a.token);
-    if (t && t.k === 'sys') return { ok: true, who: 'sys' };
+    if (t?.k === 'workshop') {
+      const live = WORKSHOP_MODEL_PAGES.includes(page) && await liveWorkshop(store,t.w);
+      return live ? { ok:true, who:'workshop', page, route, ...modelIdentity({...t,inst:live.inst},a.token) } : {ok:false};
+    }
+    if (t && t.k === 'sys') return { ok: true, who: 'sys', page, route, ...modelIdentity(t, a.token) };
     const perms = MODEL_PAGES[page];
-    if (t && perms && await authorizePermission(store, a.token, perms)) return { ok: true, who: 'code' };
-  }
-  const w = String(a.w || '');
-  if (/^[a-z0-9]{8,32}$/.test(w) && WORKSHOP_MODEL_PAGES.includes(page)) {
-    const ws = await store.get('wf:' + w);
-    if (ws && Date.now() - Date.parse(ws.created || 0) < WORKSHOP_HOURS * 3600e3) return { ok: true, who: 'workshop' };
+    const live = t && perms && await authorizePermission(store, a.token, perms);
+    if (live) return { ok: true, who: 'code', page, route, ...modelIdentity(live, a.token) };
+    return { ok: false }; // a rejected token cannot fall back to workshop access
   }
   return { ok: false };
 }
@@ -1416,6 +1465,12 @@ async function handleOpenLinks(store, body, isSys) {
 // מחזירה [status, body].
 export async function handleAccess(store, body) {
   const { action } = body || {};
+
+  if (action === 'workshopLogin') {
+    const live = await liveWorkshop(store,body.w);
+    if (!live) return [403,{code:'workshop_forbidden',error:'הסדנה אינה פתוחה כעת.'}];
+    return [200,{ok:true,token:await signToken(store,{k:'workshop',w:live.w,inst:live.inst})}];
+  }
 
   if (action === 'login' && body.kind === 'code') {
     // כניסה בשדה אחד: הקוד קובע מי את/ה ומה פתוח.

@@ -45,15 +45,16 @@ test('async generate returns a job id, runs the model in the background and only
   assert.equal(status,200); assert.match(out.jobId,/^[0-9a-f-]{36}$/); assert.equal(calls,1);
   const running=await studioRequest(store,{token,action:'status',jobId:out.jobId});
   assert.equal(running[1].status,'running');
-  const other=await signed('OTHR-456');
+  store.data.set('code:OTHR456',{code:'OTHR-456',kind:'staff',inst:'Test institution',perms:['studio'],revoked:false});
+  const [,other]=await handleAccess(store,{action:'login',kind:'code',secret:'OTHR-456'});
   assert.deepEqual(await studioRequest(store,{token:other.token,action:'status',jobId:out.jobId}),[200,{status:'unknown'}]);
-  assert.deepEqual(await studioRequest(store,{action:'status',jobId:out.jobId}),[200,{status:'unknown'}]);
+  assert.equal((await studioRequest(store,{action:'status',jobId:out.jobId}))[0],403);
   g.open(); await tick(); await tick();
   const [,done]=await studioRequest(store,{token,action:'status',jobId:out.jobId});
   assert.equal(done.status,'done'); assert.equal(done.httpStatus,200);
   assert.equal(done.result.activity.evidenceStatus,'new-ai');
   assert.equal(done.result.activity.learningGuide.learnBefore[0].sourceId,'IAFCompetencies2026');
-  assert.deepEqual([...store.data.keys()].sort(),before,'the job and its result are not written to storage');
+  assert.deepEqual([...store.data.keys()].filter(key=>key!=='code:OTHR456').sort(),before,'the job and its result are not written to storage');
   assert.deepEqual(await studioRequest(store,{token,action:'status',jobId:'no-such-job'}),[200,{status:'unknown'}]);
 }));
 

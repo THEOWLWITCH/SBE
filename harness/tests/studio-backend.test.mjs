@@ -1,3 +1,4 @@
+import { seedOwnerPassword, SYNTHETIC_OWNER_PASSWORD, syntheticOwnerRecord } from './synthetic-access.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
@@ -166,7 +167,8 @@ function briefWith(fields) { return {...brief(),...fields}; }
 
 test('AE1,22: a live system administrator can connect a mapping without its manager key', async()=>{
   const store=memoryStore({'resil:abcdefgh':{inst:'Another institution',cls:'Private class',band:0,createdAt:'2026-01-01',keyHash:'not-needed-for-sys'}});
-  const [status,session]=await handleAccess(store,{action:'login',kind:'sys',secret:'990211'});
+  await seedOwnerPassword(store);
+  const [status,session]=await handleAccess(store,{action:'login',kind:'sys',secret: SYNTHETIC_OWNER_PASSWORD});
   assert.equal(status,200);
   const [ok,result]=await handleStudio(store,{token:session.token,action:'mapping',mapping:{id:'abcdefgh',key:'',round:'latest'}});
   assert.equal(ok,200);assert.equal(result.mapping.scope,'classroom');assert.equal(result.mapping.respondents,0);

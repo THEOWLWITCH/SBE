@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createHash, randomUUID } from 'node:crypto';
 import vm from 'node:vm';
-import { authorizePermission, handleAccess } from './access.mjs';
+import { authorizePermission, handleAccess, modelIdentity } from './access.mjs';
+import { createModelLimits } from './model-limits.mjs';
 
 const studio = createRequire(import.meta.url)('../../app/lib/resilience-studio.js');
 // שפה של הזמנה, לא של חובה — כלל של Begood לכל קריאה למודל (גם לסטודיו, שפונה ל-OpenAI ישירות)
@@ -477,13 +478,16 @@ export async function handleStudio(store, body, {fetchImpl=globalThis.fetch,onRe
 // Jobs stay in this process's memory only (they may carry private concerns), are bound to a hash of
 // the token that started them and expire; after a restart the browser gets 'unknown' and retries once.
 const JOBS = new Map();
+const STUDIO_LIMITS = createModelLimits();
 const JOB_TTL = 15*60*1000, JOB_MAX_AGE = 30*60*1000, MAX_RUNNING = 3;
 const owner = token => createHash('sha256').update(String(token||'')).digest('hex');
 function sweepJobs(now=Date.now()) {
   for(const [id,job] of JOBS) if(job.status==='running' ? now-job.t0>JOB_MAX_AGE : now-job.t>JOB_TTL) JOBS.delete(id);
 }
 export async function studioRequest(store, body, options={}) {
-  if(!body || typeof body!=='object' || Array.isArray(body) || (body.action!=='status' && !body.async)) return handleStudio(store,body,options);
+  const actor = await authorizePermission(store,body?.token,STUDIO_PERMS);
+  if (!actor) return [403,{code:'studio_forbidden',error:'אין הרשאה פעילה לסטודיו. יש להיכנס מחדש עם קוד מתאים.'}];
+  if(!body || typeof body!=='object' || Array.isArray(body)) return [400,{error:'בקשה לא תקינה.'}];
   sweepJobs();
   if(body.action==='status') {
     const job=JOBS.get(String(body.jobId||''));
@@ -492,12 +496,19 @@ export async function studioRequest(store, body, options={}) {
     return [200,{status:'done',httpStatus:job.result[0],result:job.result[1]}];
   }
   const who=owner(body.token);
+  const limits = options.limits || STUDIO_LIMITS;
+  const lease = ['analyze','generate','adapt','consult'].includes(body.action)
+    ? limits.acquire(modelIdentity(actor,body.token)) : {ok:true,release(){}};
+  if (!lease.ok) return [lease.status,{code:lease.code,error:lease.status===429
+    ? 'כבר נשלחו כמה בקשות. אפשר לחכות מעט ולנסות שוב.' : 'הגדרת הגבלת הבקשות אינה תקינה.'}];
+  const runRequest = () => handleStudio(store,body,options).finally(() => lease.release());
+  if (!body.async) return runRequest();
   if([...JOBS.values()].filter(job=>job.owner===who && job.status==='running').length>=MAX_RUNNING)
-    return [429,{error:'כבר רצות כמה בקשות מהכניסה הזאת. אפשר לחכות שהן יסתיימו ולנסות שוב.'}];
+    { lease.release(); return [429,{error:'כבר רצות כמה בקשות מהכניסה הזאת. אפשר לחכות שהן יסתיימו ולנסות שוב.'}]; }
   const {async:_async,...request}=body;
   let ready;
   const started=new Promise(resolve=>{ready=resolve;});
-  const run=handleStudio(store,request,{...options,onReady:()=>ready()});
+  const run=handleStudio(store,request,{...options,onReady:()=>ready()}).finally(() => lease.release());
   const first=await Promise.race([run.then(result=>({result})),started.then(()=>null)]);
   if(first) return first.result; // finished before reaching the model: errors, authorize, mapping
   const jobId=randomUUID(), job={owner:who,status:'running',t0:Date.now()};

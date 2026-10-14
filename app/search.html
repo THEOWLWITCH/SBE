@@ -145,7 +145,7 @@ mark{background:var(--spoken-soft);color:inherit;border-radius:2px;padding:0 2px
 <div class="inst-bar">
   <span class="inst-label">מוסד</span>
   <input id="instCode" class="inst-input" type="text"
-    placeholder="שם המוסד, בדיוק כפי שנכתב במסך הקלט" autocomplete="off" spellcheck="false">
+    placeholder="המוסד נקבע לפי הכניסה" autocomplete="off" spellcheck="false" readonly dir="rtl" aria-label="המוסד לפי הכניסה">
 </div>
 
 <div class="scope">
@@ -177,7 +177,7 @@ mark{background:var(--spoken-soft);color:inherit;border-radius:2px;padding:0 2px
 </div>
 
 <script type="module">
-import { fetchScenarios, incrementRuns } from './lib/sbe-db.js';
+import { fetchScenarios, getScenario, incrementRuns } from './lib/sbe-db.js';
 
 const $ = id => document.getElementById(id);
 
@@ -186,18 +186,14 @@ const state = {
   q: '',
   scope: 'mine',
   sort: 'new',
-  institutionId: (() => { try { return sessionStorage.getItem('sbe_inst') || ''; } catch { return ''; } })(),
+  // A display hint only. The server independently verifies the signed token.
+  institutionId: (() => { try { return JSON.parse(sessionStorage.getItem('sbe.session.info') || '{}').inst || ''; } catch { return ''; } })(),
   filters: {},
 };
 
 /* --- institution input --- */
 const instEl = $('instCode');
 instEl.value = state.institutionId;
-instEl.addEventListener('input', () => {
-  state.institutionId = instEl.value.trim();
-  try { sessionStorage.setItem('sbe_inst', state.institutionId); } catch {}
-  render();
-});
 
 /* --- filters --- */
 const FILTERS = [
@@ -280,11 +276,6 @@ async function doRender() {
   box.innerHTML = '<div class="empty" style="color:var(--muted)">טוענת…</div>';
   $('count').textContent = '';
 
-  if (state.scope === 'mine' && !state.institutionId) {
-    box.innerHTML = '<div class="empty">אפשר להקליד קוד מוסד בשורה למעלה כדי לראות את תרחישי המוסד שלך</div>';
-    return;
-  }
-
   let data;
   try {
     const res = await fetchScenarios({
@@ -301,8 +292,14 @@ async function doRender() {
       sort: state.sort,
     });
     data = res.data;
+    if (res.institutionId) {
+      state.institutionId = res.institutionId;
+      instEl.value = res.institutionId;
+    }
   } catch (e) {
-    box.innerHTML = `<div class="empty">שגיאת מסד נתונים: ${e.message}</div>`;
+    const error = document.createElement('div'); error.className = 'empty';
+    error.textContent = e.message || 'המאגר אינו זמין כעת. אפשר לנסות שוב.';
+    box.replaceChildren(error);
     return;
   }
 
@@ -373,12 +370,20 @@ async function doRender() {
   });
 }
 
-function openScenario(r) {
-  if (!r.scenario_json) return;
-  incrementRuns(r.id);
-  try { sessionStorage.setItem('sbe_scenario', JSON.stringify(r.scenario_json)); } catch {}
-  // ניווט למסמכים — TODO: פתיחה ב-doc-viewer
-  window.location.href = 'doc-trainee.html';
+async function openScenario(r) {
+  $('note').hidden = false;
+  $('note').textContent = 'פתיחת התרחיש…';
+  try {
+    // Recheck live access when opening; list metadata alone grants no access.
+    const current = await getScenario(r.id);
+    if (!current || !current.scenario_json) throw new Error('אין תוצר זמין לתרחיש הזה. אפשר לבחור תרחיש אחר.');
+    try { sessionStorage.setItem('sbe_scenario', JSON.stringify(current.scenario_json)); }
+    catch { throw new Error('השמירה במכשיר אינה זמינה. אפשר לאפשר שמירה ולנסות שוב.'); }
+    incrementRuns(r.id);
+    window.location.href = 'doc-trainee.html';
+  } catch (e) {
+    $('note').textContent = e.message || 'התרחיש אינו זמין כעת. אפשר לרענן את הרשימה.';
+  }
 }
 
 /* --- scope --- */
@@ -388,7 +393,8 @@ function setScope(s) {
   $('sShared').setAttribute('aria-pressed', String(s === 'shared'));
   $('note').textContent = s === 'mine'
     ? 'המאגר של המוסד שלך. תרחישים של מוסדות אחרים אינם נגישים, והמאגר המשותף מכיל רק את מה ששותף מרצון.'
-    : 'המאגר המשותף. כאן נמצאים רק תרחישים שהיוצרת בחרה במפורש לשתף. אפשר להסיר שיתוף בכל עת.';
+    : 'המאגר המשותף. כאן נמצאים רק תרחישים שסומנו במפורש לשיתוף.';
+  $('note').hidden = false;
   render();
 }
 
@@ -408,7 +414,9 @@ $('sShared').addEventListener('click', () => setScope('shared'));
 
 /* --- init --- */
 buildFilters();
-setScope('mine');
+let signedIn = false;
+try { signedIn = !!sessionStorage.getItem('sbe.session.token'); } catch {}
+setScope(signedIn ? 'mine' : 'shared');
 
 </script>
 

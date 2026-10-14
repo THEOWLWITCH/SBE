@@ -16,7 +16,7 @@
 (function(){
   "use strict";
   var KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules",
-              "sbe.session.perms", "sbe.session.info", "sbe.session.wf"];
+              "sbe.session.perms", "sbe.session.info", "sbe.session.wf", "sbe.session.workshopToken"];
   var MIRROR = "sbe.session.mirror", HOURS = 12;
 
   function ss(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
@@ -27,12 +27,25 @@
   try {
     var _fetch = window.fetch;
     if (_fetch && !_fetch.sbeAuth) {
-      var wrapped = function(url, opts){
+      var workshopLogin;
+      var wrapped = async function(url, opts){
         try {
           var u = typeof url === "string" ? url : (url && url.url) || "";
-          if (/\/api\/(complete|character-turn|pipeline)(\?|$)/.test(u) && opts && typeof opts.body === "string" && opts.body.charAt(0) === "{") {
+          if (/\/api\/(complete|character-turn|pipeline|pipeline-status)(\?|$)/.test(u) && opts && typeof opts.body === "string" && opts.body.charAt(0) === "{") {
             var b = JSON.parse(opts.body);
-            b._auth = { token: ss("sbe.session.token") || "", page: location.pathname.split("/").pop() || "index.html", w: ss("sbe.session.wf") || "" };
+            var token = ss("sbe.session.token") || "", workshop = ss("sbe.session.wf") || "";
+            if (!token && workshop) {
+              token = ss("sbe.session.workshopToken") || "";
+              if (!token) {
+                if (!workshopLogin) workshopLogin = _fetch.call(window,u.replace(/\/api\/[^/?]+(?:\?.*)?$/, "/api/access"),
+                  {method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"workshopLogin",w:workshop})})
+                  .then(async function(r){ if (!r.ok) throw new Error("כדי להמשיך, היכנסו שוב לסדנה."); var out=await r.json();
+                    if (!out.token) throw new Error("כדי להמשיך, היכנסו שוב לסדנה.");
+                    try { sessionStorage.setItem("sbe.session.workshopToken",out.token); } catch(e){} return out.token; });
+                try { token = await workshopLogin; } finally { workshopLogin = null; }
+              }
+            }
+            b._auth = { token: token, page: location.pathname.split("/").pop() || "index.html", w: workshop };
             opts = Object.assign({}, opts, { body: JSON.stringify(b) });
           }
         } catch(e){}
@@ -258,7 +271,7 @@
   // טופס המשוב מקישור/QR של סדנה (?w=) — פתוח גם בלי כניסה: המשתתפות סורקות בטלפון בסוף התחקיר.
   // השרת מקבל משוב רק לסדנה שנפתחה (wfSubmit), ולא חושף משובים של אחרים.
   // ספריית התוצרים לדוגמה — פתוחה לכל מי שמתעניין/ת, גם בלי כניסה (רק מה שמנהלת המערכת סימנה להצגה).
-  if (page === "examples.html") return;
+  if (page === "examples.html" || page === "search.html") return;
   if (page === "feedback.html" && /[?&]w=[a-z0-9]{8,32}(&|$)/.test(location.search)) return;
   // כניסה שהסתיימה (07/10/2026): האסימון החתום תקף 12 שעות, אבל לשונית פתוחה שומרת אותו גם אחר כך —
   // והשרת דוחה אותו ("אין הרשאה פעילה"). חוזרים למסך הכניסה עם הסבר, במקום הודעת הרשאה מבלבלת.

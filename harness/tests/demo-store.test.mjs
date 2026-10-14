@@ -1,3 +1,4 @@
+import { seedOwnerPassword, SYNTHETIC_OWNER_PASSWORD, syntheticOwnerRecord } from './synthetic-access.mjs';
 // תיקיית התוצרים (12/10/2026: "תוצרים לא נטענים"): מחיקת הכול שרצה במקביל לתיקון לא מחזירה תוצרים בלי מסמך.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -9,7 +10,7 @@ function slowStore() {
   return { data, async get(k) { await sleep(5); return data.has(k) ? JSON.parse(JSON.stringify(data.get(k))) : null; }, async set(k, v) { await sleep(5); data.set(k, v); }, async del(k) { await sleep(5); data.delete(k); },
     async list(prefix) { return [...data].filter(([k]) => k.startsWith(prefix)).map(([key, value]) => ({ key, value })); }, async delPrefix() {} };
 }
-async function sys(store) { const [, out] = await handleAccess(store, { action: 'login', kind: 'sys', secret: '990211' }); return out.token; }
+async function sys(store) { await seedOwnerPassword(store); const [, out] = await handleAccess(store, { action: 'login', kind: 'sys', secret: SYNTHETIC_OWNER_PASSWORD }); return out.token; }
 const doc = '<!doctype html><html><body><main><p>תוצר לדוגמה עם מספיק טקסט כדי להיראות.</p></main></body></html>';
 
 test('clearing the folder while a fix is being saved leaves no product without its document', async () => {

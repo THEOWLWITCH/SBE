@@ -6,6 +6,9 @@
   "use strict";
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   async function post(url, body, ms) {
+    // Also send the current session when this helper is used without the guard.
+    if (!body._auth) try { body = Object.assign({},body,{_auth:{token:sessionStorage.getItem("sbe.session.token")
+      || sessionStorage.getItem("sbe.session.workshopToken") || "",page:location.pathname.split("/").pop() || "index.html"}}); } catch(e){}
     const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), ms);
     try {
       const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
@@ -22,8 +25,8 @@
     while (Date.now() - t0 < limit) {
       await sleep(document.hidden ? 8000 : 3000);
       let d;
-      try { const r = await post(server + "/api/pipeline-status", { jobId: s.data.jobId }, 30000); if (!r.ok) throw new Error("status " + r.status); d = r.data; misses = 0; }
-      catch (e) { if (++misses >= 20) throw new Error("החיבור לשרת נקטע לזמן ארוך"); continue; }
+      try { const r = await post(server + "/api/pipeline-status", { jobId: s.data.jobId }, 30000); if (!r.ok) throw Object.assign(new Error(r.data.error || ("status " + r.status)),{status:r.status}); d = r.data; misses = 0; }
+      catch (e) { if (e.status===401 || e.status===403) throw e; if (++misses >= 20) throw new Error("החיבור לשרת נקטע לזמן ארוך"); continue; }
       if (d.status === "done" && typeof d.text === "string") return d.text;
       if (d.status === "error") throw new Error(d.error || "הקריאה למודל נכשלה");
       if (d.status === "lost" || d.status === "unknown") {

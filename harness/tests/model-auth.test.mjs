@@ -1,3 +1,4 @@
+import { seedOwnerPassword, SYNTHETIC_OWNER_PASSWORD, syntheticOwnerRecord } from './synthetic-access.mjs';
 // מי יכול/ה לפנות למודל (10/10/2026): רק מי שנכנס/ה, ורק לכלי שפתוח לו או לה. מנהלת המערכת: הכול.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -38,7 +39,8 @@ test('a revoked code stops at once, and a forged or missing token is refused', a
 
 test('the system admin can use every tool, including tools not yet open to others', async () => {
   const store = memoryStore();
-  const [, out] = await handleAccess(store, { action: 'login', kind: 'sys', secret: '990211' });
+  await seedOwnerPassword(store);
+  const [, out] = await handleAccess(store, { action: 'login', kind: 'sys', secret: SYNTHETIC_OWNER_PASSWORD });
   for (const page of ['routines-hub.html', 'continuity-kit.html', 'demo-lab.html', 'journeys.html', 'message-writer.html'])
     assert.ok((await authorizeModel(store, { token: out.token, page })).ok, page);
 });
@@ -46,7 +48,10 @@ test('the system admin can use every tool, including tools not yet open to other
 test('workshop participants use only the workshop tools, and only while the workshop is fresh', async () => {
   const store = memoryStore({ 'wf:abcdefgh12': { w: 'abcdefgh12', created: new Date().toISOString() },
     'wf:oldworkshop1': { w: 'oldworkshop1', created: new Date(Date.now() - 72 * 3600e3).toISOString() } });
-  assert.ok((await authorizeModel(store, { w: 'abcdefgh12', page: 'practice.html' })).ok);
+  store.data.get('wf:abcdefgh12').owner = 'sys';
+  const [,session] = await handleAccess(store,{action:'workshopLogin',w:'abcdefgh12'});
+  assert.ok((await authorizeModel(store, { token:session.token, page: 'practice.html' })).ok);
+  assert.equal((await authorizeModel(store, { w: 'abcdefgh12', page: 'practice.html' })).ok,false,'workshop ID alone is not an AI session');
   assert.equal((await authorizeModel(store, { w: 'abcdefgh12', page: 'facilitation-advisor.html' })).ok, false);
   assert.equal((await authorizeModel(store, { w: 'oldworkshop1', page: 'practice.html' })).ok, false);
   assert.equal((await authorizeModel(store, { w: 'nosuchworkshop', page: 'practice.html' })).ok, false);
@@ -61,6 +66,7 @@ test('every page that calls the model has a rule, and the browser sends the sign
   const nonModelPages = ['resilience-advisor-sources.html', 'social-resilience-studies.html'];
   for (const p of pages) if (!nonModelPages.includes(p)) assert.ok(MODEL_PAGES[p], 'MODEL_PAGES lacks ' + p);
   assert.equal(MODEL_PAGES['social-resilience-studies.html'], undefined);
-  assert.match(guard, /_auth = \{ token: ss\("sbe\.session\.token"\)/);
-  assert.match(guard, /"sbe\.session\.wf"\]/);
+  assert.match(guard, /ss\("sbe\.session\.token"\)/);
+  assert.match(guard, /pipeline-status/);
+  assert.match(guard, /"sbe\.session\.wf"/);
 });

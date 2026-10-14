@@ -1,3 +1,4 @@
+import { seedOwnerPassword, SYNTHETIC_OWNER_PASSWORD, syntheticOwnerRecord } from './synthetic-access.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
@@ -27,7 +28,8 @@ async function fixture(perms = ['studies']) {
   const store = memoryStore({ institutions: [{ name: 'Test school', code: '123456', active: true }],
     'modules:Test school': Object.fromEntries(perms.map(p => [p, true])),
     'code:TEST1234': { code: 'TEST-1234', kind: 'staff', inst: 'Test school', perms, revoked: false } });
-  const [, admin] = await handleAccess(store, { action: 'login', kind: 'sys', secret: '990211' });
+  await seedOwnerPassword(store);
+  const [, admin] = await handleAccess(store, { action: 'login', kind: 'sys', secret: SYNTHETIC_OWNER_PASSWORD });
   const [, reader] = await handleAccess(store, { action: 'login', kind: 'code', secret: 'TEST-1234' });
   const files = memoryFiles();
   const call = (action, extra = {}, token = admin.token) => handleStudies(store, { action, token, ...extra }, { files });
@@ -319,7 +321,7 @@ test('existing Supabase store callers retain their default fetch options', async
 });
 
 test('HTTP studies route accepts larger attachments, serves protected binary with CORS, and retains smaller existing-route limits', async t => {
-  const data = new Map(); const objects = new Map();
+  const data = new Map([['pw-sys',syntheticOwnerRecord()]]); const objects = new Map();
   const synthetic = createServer(async (req, res) => {
     const chunks = []; for await (const chunk of req) chunks.push(chunk);
     const bytes = Buffer.concat(chunks);
@@ -355,7 +357,7 @@ test('HTTP studies route accepts larger attachments, serves protected binary wit
   }
   assert.ok(ready, logs + String(connectionError));
   const post = (path, body) => fetch(base + path, { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://be-good.co.il' }, body: JSON.stringify(body) });
-  const login = await post('/api/access', { action: 'login', kind: 'sys', secret: '990211' });
+  const login = await post('/api/access', { action: 'login', kind: 'sys', secret: SYNTHETIC_OWNER_PASSWORD });
   const { token } = await login.json(); assert.ok(token);
   const upload = { name: 'קובץ לדוגמה.pdf', mime: 'application/pdf', data: Buffer.alloc(3 * 1024 * 1024, 'x').toString('base64') };
   const saved = await post('/api/studies', { action: 'save', token, item: item({ url: '' }), file: upload });

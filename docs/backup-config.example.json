@@ -1,0 +1,15 @@
+{
+  "profile": "full",
+  "scope": "synthetic",
+  "sources": [
+    { "id": "development", "repository": "../path-to-local-test-repository" }
+  ],
+  "database": {
+    "schema": "../synthetic-export/schema.sql",
+    "data": "../synthetic-export/data.sql",
+    "roles": "../synthetic-export/roles.sql",
+    "rls": "../synthetic-export/rls.sql"
+  },
+  "storageDirectory": "../synthetic-export/storage-objects",
+  "configurationReferences": "../synthetic-export/configuration-references.json"
+}
