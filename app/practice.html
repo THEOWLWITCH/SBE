@@ -2104,15 +2104,15 @@ function renderCommFeedback(box, r){
   if (r.summary) box.append(el("p", { class: "fb-note" }, r.summary));
   const q = (x) => x ? "\"" + String(x).replace(/^["״“”]+|["״“”]+$/g, "") + "\"" : "";
   if ((r.strengths || []).length) {
-    box.append(el("h4", {}, "מה עבד"));
+    box.append(el("h4", {}, "חוזקות: מה עבד בשיחה"));
     box.append(SBE_TABLE(["מה עשית", "מהשיחה", "למה זה עובד", "על מה זה נשען"], r.strengths.map(x => [el("b", {}, x.what || ""), q(x.quote), x.why || "", x.basis || ""]), "fb-comm-s"));
   }
   if ((r.growth || []).length) {
-    box.append(el("h4", {}, "מה אפשר לחזק"));
-    box.append(SBE_TABLE(["מה אפשר לחזק", "מהשיחה", "אפשר לנסות לומר", "על מה זה נשען"], r.growth.map(x => [el("b", {}, x.what || ""), q(x.quote), [q(x.tryInstead), x.why].filter(Boolean).join(" "), x.basis || ""]), "fb-comm-g"));
+    box.append(el("h4", {}, "מה אפשר לשפר"));
+    box.append(SBE_TABLE(["מה אפשר לשפר", "מהשיחה", "אפשר לנסות לומר", "על מה זה נשען"], r.growth.map(x => [el("b", {}, x.what || ""), q(x.quote), [q(x.tryInstead), x.why].filter(Boolean).join(" "), x.basis || ""]), "fb-comm-g"));
   }
-  if ((r.next || []).length) { box.append(el("h4", {}, "לתרגול הבא")); const ol = el("ol"); r.next.forEach(t => ol.append(el("li", {}, t))); box.append(ol); }
-  if ((r.tips || []).length) { box.append(el("h4", {}, "טיפים לשיחות כאלה")); const ul = el("ul"); r.tips.forEach(t => ul.append(el("li", {}, t))); box.append(ul); }
+  if ((r.next || []).length) { box.append(el("h4", {}, "לשיפור בתרגול הבא")); const ol = el("ol"); r.next.forEach(t => ol.append(el("li", {}, t))); box.append(ol); }
+  if ((r.tips || []).length) { box.append(el("h4", {}, "טיפים כלליים לשיחות כאלה")); const ul = el("ul"); r.tips.forEach(t => ul.append(el("li", {}, t))); box.append(ul); }
 }
 
 // ── מקרה משלך (10/10/2026): מספרים על המקרה · עוד כמה פרטים · מאשרים את הסיפור ומתחילים ──
