@@ -1670,6 +1670,11 @@ const OPEN_TOOLS = [["home.html","כל הכלים (המרחב שלי)"],["messag
 let openData = null;
 const openUrl = id => "https://be-good.co.il/entry.html?open=" + id;
 const ilDay = d => { const m = String(d||"").match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? (+m[3]) + "." + (+m[2]) + "." + m[1].slice(2) : d; };
+// 14/10/2026 ("הברקוד לא עבד"): טווח ימים, אישור לפני יצירה עם התאריך במילים, ושינוי תאריך לקישור קיים (אותה כתובת ואותו QR)
+const openEndOf = x => x.until && x.until > x.date ? x.until : x.date;
+const openDays = x => x.until && x.until > x.date ? "מ־" + ilDay(x.date) + " עד " + ilDay(x.until) : "ב־" + ilDay(x.date);
+const openState = (x, today) => x.revoked ? "בוטל" : today < x.date ? "ייפתח " + openDays(x) : today > openEndOf(x) ? "הסתיים" : "פתוח עכשיו";
+const openDateErr = er => er === "bad until" ? "תאריך הסיום מוקדם מתאריך ההתחלה, או רחוק ביותר מחודש." : "התאריך לא ברור. אפשר לכתוב אותו כך: 14.10.26, או לבחור בלוח השנה 📅.";
 // השם בכתובת (13/10/2026): רווח, קו תחתון ונקודה הופכים למקף, אותיות גדולות לקטנות; ומה עוד לא מתאים נאמר במפורש
 const openId = v => String(v || "").trim().toLowerCase().replace(/[\s_.]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
 function openIdProblem(v){
@@ -1689,6 +1694,7 @@ function pOpen(){
   const c = el("div",{class:"card"}), inn = el("div",{class:"in"});
   const tool = el("select",{"data-closed":""}); OPEN_TOOLS.forEach(([v,l]) => tool.append(el("option",{value:v},l)));
   const date = el("input",{type:"date", value: openData.today});
+  const until = el("input",{type:"date", value: ""});
   const name = el("input",{type:"text", placeholder:"למשל: orit", maxlength:"32"});
   const label = el("input",{type:"text", placeholder:"למשל: הרצאה לצוות", maxlength:"80"});
   const max = el("input",{type:"number", min:"1", max:"500", value:"200", style:"width:110px"});
@@ -1703,16 +1709,20 @@ function pOpen(){
   go.addEventListener("click", async () => {
     const id = openId(name.value), why = openIdProblem(name.value);
     if (why) { ask("השם של הקישור", why + " למשל: orit-14. אפשר גם להשאיר ריק, ונבחר שם בעצמנו.", () => {}); return; }
+    const plan = { date: date.value, until: until.value && until.value > date.value ? until.value : "" };
+    const when = openDays(plan) + (plan.date === openData.today && !plan.until ? " (היום בלבד)" : "");
+    ask("לפני יצירת הקישור", "הקישור יהיה פתוח " + when + ". בימים אחרים הוא לא ייפתח. אפשר לשנות את התאריכים גם אחר כך, בלי לשנות את הקישור וה־QR. ליצור?", async () => {
     go.disabled = true;
-    try { await accessCall("openCreate", { page: tool.value, date: date.value, id, label: label.value, max: max.value }); openData = null; render(); }
+    try { await accessCall("openCreate", { page: tool.value, date: plan.date, until: plan.until, id, label: label.value, max: max.value }); openData = null; render(); }
     catch(e){ go.disabled = false; const er = e.data && e.data.error;
       if (er === "taken") ask("השם תפוס", "יש כבר קישור בשם הזה. אפשר לבחור שם אחר.", () => {});
       else if (er === "bad page") ask("הקישור לא נוצר", "השרת עוד לא מכיר את הכלי הזה. אחרי פריסה השרת מתעדכן כמה דקות; אפשר לנסות שוב בעוד רגע.", () => {});
-      else if (er === "bad date") ask("הקישור לא נוצר", "התאריך לא ברור. אפשר לכתוב אותו כך: 14.10.26, או לבחור בלוח השנה 📅.", () => {});
+      else if (er === "bad date" || er === "bad until") ask("הקישור לא נוצר", openDateErr(er), () => {});
       else if (er === "bad id") ask("הקישור לא נוצר", "השם של הקישור: אותיות באנגלית, ספרות ומקף, 3 עד 32 תווים.", () => {});
       else accessFail(e); }
+    });
   });
-  inn.append(el("h3",{style:"margin-top:0"},"קישור חדש"), row("הכלי", tool, "\"כל הכלים\" פותח את המרחב שלי עם כל הכלים שברשימה."), row("התאריך", date, "הקישור פתוח רק ביום הזה."),
+  inn.append(el("h3",{style:"margin-top:0"},"קישור חדש"), row("הכלי", tool, "\"כל הכלים\" פותח את המרחב שלי עם כל הכלים שברשימה."), row("התאריך", date, "הקישור פתוח מתחילת היום הזה (שעון ישראל)."), row("עד תאריך (רשות)", until, "כדי שהקישור יהיה פתוח כמה ימים ברצף, עד חודש. בלי תאריך: יום אחד בלבד."),
     row("שם לקישור", el("span",{}, name, preview), "אותיות באנגלית, ספרות ומקף (רווח הופך למקף). השם מופיע בכתובת. אפשר להשאיר ריק, ונבחר שם אקראי."), row("כותרת", label, "מופיעה למשתתפות במסך."),
     row("מספר משתתפות מרבי", max), go);
   c.append(inn); w.append(c);
@@ -1721,18 +1731,31 @@ function pOpen(){
   if (!items.length) { w.append(el("p",{class:"sub"},"עדיין אין קישורים.")); return w; }
   items.forEach(x => {
     const card = el("div",{class:"card",style:"margin-top:12px"}), ci = el("div",{class:"in"});
-    const st = x.revoked ? "בוטל" : x.date === openData.today ? "פתוח היום" : x.date > openData.today ? "ייפתח ב־" + ilDay(x.date) : "הסתיים";
+    const st = openState(x, openData.today);
     const toolName = (OPEN_TOOLS.find(t => t[0] === x.page) || [, x.page])[1];
     const url = openUrl(x.id);
     ci.append(el("h3",{style:"margin:0 0 6px"}, (x.label || toolName)),
-      el("p",{style:"margin:0 0 8px;font-size:14px;color:var(--muted)"}, toolName + " · " + ilDay(x.date) + " · " + st + " · נכנסו " + (x.joins || 0) + " מתוך " + (x.max || 500)));
-    if (!x.revoked && x.date >= openData.today) {
+      el("p",{style:"margin:0 0 8px;font-size:14px;color:var(--muted)"}, toolName + " · " + openDays(x) + " · " + st + " · נכנסו " + (x.joins || 0) + " מתוך " + (x.max || 500)));
+    // שינוי תאריכים: גם לקישור שהסתיים או בוטל. הכתובת וה־QR נשארים כמו שהם.
+    const dBox = el("div",{style:"display:none;gap:8px;flex-wrap:wrap;align-items:end;margin:6px 0 10px"});
+    const d1 = el("input",{type:"date", value: x.date < openData.today ? openData.today : x.date}), d2 = el("input",{type:"date", value: x.until || ""});
+    const dSave = el("button",{class:"act p"},"שמירת התאריכים");
+    dSave.addEventListener("click", async () => {
+      const plan = { date: d1.value, until: d2.value && d2.value > d1.value ? d2.value : "" };
+      try { await accessCall("openUpdate", { id: x.id, date: plan.date, until: plan.until }); openData = null; render(); }
+      catch(e){ const er = e.data && e.data.error; if (er === "bad date" || er === "bad until") ask("התאריכים לא נשמרו", openDateErr(er), () => {}); else accessFail(e); }
+    });
+    dBox.append(el("label",{}, el("b",{style:"display:block;font-size:13px"},"מתאריך"), d1), el("label",{}, el("b",{style:"display:block;font-size:13px"},"עד תאריך (רשות)"), d2), dSave);
+    const dBtn = el("button",{class:"act"},"📅 שינוי תאריך");
+    dBtn.addEventListener("click", () => { dBox.style.display = dBox.style.display === "none" ? "flex" : "none"; });
+    ci.append(el("div",{style:"margin:0 0 6px"}, dBtn), dBox);
+    if (!x.revoked && openEndOf(x) >= openData.today) {
       const qr = el("div",{style:"background:#fff;padding:10px;display:inline-block;border-radius:8px;margin:4px 0 8px"});
       if (window.QRCode) try { new QRCode(qr, { text: url, width: 168, height: 168, correctLevel: QRCode.CorrectLevel.M }); } catch(e){}
       const linkBox = el("input",{type:"text", readonly:"", value:url, style:"width:100%;direction:ltr;text-align:left"});
       const copy = el("button",{class:"act"},"העתקת הקישור");
       copy.addEventListener("click", () => { linkBox.select(); try { navigator.clipboard.writeText(url); } catch(e){ document.execCommand("copy"); } copy.textContent = "✓ הועתק"; });
-      const msgText = "שלום, " + (x.label ? "ל" + x.label.replace(/^ל/, "") + ": " : "") + "הקישור להתנסות ב" + (x.page === "home.html" ? "כלים של Begood" : toolName) + ". הוא פתוח רק ב־" + ilDay(x.date) + ", ואין צורך בקוד:\n" + url;
+      const msgText = "שלום, " + (x.label ? "ל" + x.label.replace(/^ל/, "") + ": " : "") + "הקישור להתנסות ב" + (x.page === "home.html" ? "כלים של Begood" : toolName) + ". הוא פתוח " + openDays(x) + ", ואין צורך בקוד:\n" + url;
       const wa = el("a",{class:"act", href:"https://wa.me/?text=" + encodeURIComponent(msgText), target:"_blank", rel:"noopener", style:"text-decoration:none;display:inline-block;padding:7px 14px;border:1px solid var(--line);border-radius:6px"},"שליחה בוואטסאפ");
       const off = el("button",{class:"act"},"ביטול הקישור");
       off.addEventListener("click", () => ask("ביטול הקישור", "אחרי הביטול הקישור לא ייפתח, וגם מי שכבר נכנסה לא תוכל להמשיך להשתמש בכלי. לבטל?", async () => {
