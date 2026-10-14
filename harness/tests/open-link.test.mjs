@@ -80,3 +80,23 @@ test('a daily link can open any listed tool, or all of them at once', async () =
   await handleAccess(store, { action: 'openRevoke', token, id: 'all-day' });
   assert.equal((await authorizeModel(store, { token: guest, page: 'message-writer.html' })).ok, false);
 });
+
+test('a link can stay open for several days, and its dates can change without changing the link', async () => {
+  const store = memoryStore();
+  const token = await sys(store);
+  let [st, out] = await handleAccess(store, { action: 'openCreate', token, page: 'message-writer.html', date: dayShift(-1), until: dayShift(1), id: 'week' });
+  assert.equal(st, 200); assert.equal(out.item.until, dayShift(1));
+  [st, out] = await handleAccess(store, { action: 'openJoin', id: 'week' });
+  assert.equal(st, 200);
+  const guest = out.token;
+  assert.ok((await authorizeModel(store, { token: guest, page: 'message-writer.html' })).ok);
+  assert.equal((await handleAccess(store, { action: 'openCreate', token, page: 'message-writer.html', date: ilToday(), until: dayShift(-2), id: 'bad' }))[1].error, 'bad until');
+  assert.equal((await handleAccess(store, { action: 'openCreate', token, page: 'message-writer.html', date: ilToday(), until: dayShift(40), id: 'long' }))[1].error, 'bad until');
+  // a link set for yesterday (the mistake behind "the QR did not work") is fixed by moving its date
+  await handleAccess(store, { action: 'openCreate', token, page: 'message-writer.html', date: dayShift(-1), id: 'orit-14' });
+  assert.equal((await handleAccess(store, { action: 'openJoin', id: 'orit-14' }))[1].error, 'open-over');
+  assert.equal((await handleAccess(store, { action: 'openUpdate', id: 'orit-14', date: ilToday() }))[0], 403, 'only the system admin');
+  [st] = await handleAccess(store, { action: 'openUpdate', token, id: 'orit-14', date: ilToday() });
+  assert.equal(st, 200);
+  assert.equal((await handleAccess(store, { action: 'openJoin', id: 'orit-14' }))[0], 200);
+});

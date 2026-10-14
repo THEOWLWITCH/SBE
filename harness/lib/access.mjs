@@ -1370,19 +1370,28 @@ const openPerms = (rec) => (rec && Array.isArray(rec.perms) && rec.perms.length 
 export const ilToday = (d = new Date()) => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
 const OPEN_MAX = 500;
 const validOpenId = (id) => /^[a-z0-9][a-z0-9-]{2,31}$/.test(String(id || ''));
-const openLive = (rec) => !!rec && !rec.revoked && rec.date === ilToday();
+// 14/10/2026 ("הברקוד לא עבד"): קישור יכול להיות פתוח כמה ימים (date עד until), ואפשר לשנות לו תאריכים בלי לשנות את הכתובת (openUpdate)
+const openEnd = (rec) => (rec && validYmd(rec.until) && rec.until > rec.date ? rec.until : rec && rec.date);
+const OPEN_MAX_DAYS = 31;
+function openDates(body) {
+  if (!validYmd(body.date)) return { error: 'bad date' };
+  const until = body.until ? String(body.until) : '';
+  if (until && (!validYmd(until) || until < body.date || daysBetween(body.date, until) > OPEN_MAX_DAYS)) return { error: 'bad until' };
+  return { date: body.date, until: until && until > body.date ? until : '' };
+}
+const openLive = (rec) => !!rec && !rec.revoked && rec.date <= ilToday() && ilToday() <= openEnd(rec);
 async function handleOpenLinks(store, body, isSys) {
   const { action } = body;
   if (action === 'openJoin') {
     const id = String(body.id || '').toLowerCase();
     const rec = validOpenId(id) ? await store.get('open:' + id) : null;
     if (!rec || rec.revoked) { await pause(); return [404, { error: 'open-missing' }]; }
-    if (rec.date !== ilToday()) return [403, { error: rec.date > ilToday() ? 'open-early' : 'open-over', date: rec.date, label: rec.label || '' }];
+    if (!openLive(rec)) return [403, { error: rec.date > ilToday() ? 'open-early' : 'open-over', date: rec.date, until: rec.until || '', label: rec.label || '' }];
     if ((rec.joins || 0) >= (rec.max || OPEN_MAX)) return [403, { error: 'open-full' }];
     rec.joins = (rec.joins || 0) + 1; await store.set('open:' + id, rec);
     const perms = openPerms(rec);
     const token = await signToken(store, { k: 'open', o: id, perms });
-    return [200, { ok: true, token, kind: 'open', page: rec.page, perms, label: rec.label || '', date: rec.date }];
+    return [200, { ok: true, token, kind: 'open', page: rec.page, perms, label: rec.label || '', date: rec.date, until: rec.until || '' }];
   }
   if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
   if (action === 'openList') {
@@ -1392,14 +1401,26 @@ async function handleOpenLinks(store, body, isSys) {
   if (action === 'openCreate') {
     const page = modelPage(body.page);
     if (!OPEN_PAGES[page] && page !== OPEN_ALL) return [400, { error: 'bad page' }];
-    if (!validYmd(body.date)) return [400, { error: 'bad date' }];
+    const dates = openDates(body);
+    if (dates.error) return [400, { error: dates.error }];
     let id = String(body.id || '').trim().toLowerCase();
     if (id) { if (!validOpenId(id)) return [400, { error: 'bad id' }]; if (await store.get('open:' + id)) return [409, { error: 'taken' }]; }
     else { do { id = randomBytes(5).toString('hex'); } while (await store.get('open:' + id)); }
     const max = Math.max(1, Math.min(OPEN_MAX, parseInt(body.max, 10) || OPEN_MAX));
     const all = page === OPEN_ALL;
-    const rec = { id, page, perm: all ? 'all' : OPEN_PAGES[page], ...(all ? { perms: [...new Set(Object.values(OPEN_PAGES))] } : {}), date: body.date, label: String(body.label || '').trim().slice(0, 80), max, joins: 0,
+    const rec = { id, page, perm: all ? 'all' : OPEN_PAGES[page], ...(all ? { perms: [...new Set(Object.values(OPEN_PAGES))] } : {}), date: dates.date, ...(dates.until ? { until: dates.until } : {}), label: String(body.label || '').trim().slice(0, 80), max, joins: 0,
       createdAt: new Date().toISOString(), revoked: false };
+    await store.set('open:' + id, rec);
+    return [200, { ok: true, item: rec }];
+  }
+  if (action === 'openUpdate') {
+    const id = String(body.id || '').toLowerCase();
+    const rec = validOpenId(id) ? await store.get('open:' + id) : null;
+    if (!rec) return [404, { error: 'not found' }];
+    const dates = openDates(body);
+    if (dates.error) return [400, { error: dates.error }];
+    rec.date = dates.date; if (dates.until) rec.until = dates.until; else delete rec.until;
+    rec.revoked = false; rec.updatedAt = new Date().toISOString();
     await store.set('open:' + id, rec);
     return [200, { ok: true, item: rec }];
   }
@@ -1492,7 +1513,7 @@ export async function handleAccess(store, body) {
 
   const sysTok = await verifyToken(store, body?.token);
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
-  if (/^open(Join|List|Create|Revoke)$/.test(action || '')) return handleOpenLinks(store, body, isSys);
+  if (/^open(Join|List|Create|Update|Revoke)$/.test(action || '')) return handleOpenLinks(store, body, isSys);
 
   if (['renewRequest', 'codesList', 'codeCreate', 'codeRevoke', 'codeUse', 'setSubscription', 'renewSubscription',
     'getSettings', 'setSettings', 'renewList', 'renewDone', 'renewApprove'].includes(action)) {
