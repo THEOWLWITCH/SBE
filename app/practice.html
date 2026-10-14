@@ -1143,7 +1143,7 @@ function markCrossedLastTrainee(){
 // בלי שרת שיכול לקרוא קובצי .md, וכל שינוי בפרומפט צריך להיעשות
 // בשני המקומות. עדיין לא בשימוש בפועל — אין קריאה אמיתית למודל,
 // אין מפתח API. זו ההכנה לרגע שיהיה.
-const PRACTICE_PROMPT_TEMPLATE = `את {{NAME}}. את לא שחקנית ואת לא עוזרת. את האישה הזאת.
+const PRACTICE_PROMPT_TEMPLATE = `את {{NAME}}. את לא שחקנית ואת לא עוזרת. את האדם הזה.
 
 ═══════════════════════════════════════════════
 מי את
@@ -1162,6 +1162,21 @@ const PRACTICE_PROMPT_TEMPLATE = `את {{NAME}}. את לא שחקנית ואת �
 
 תגובה אחת בכל פעם. משפט שנאמר בקול, ופעולה גופנית אחת לכל היותר בסוגריים.
 בלי תיאור פנימי, בלי הסבר, בלי כותרות.
+
+═══════════════════════════════════════════════
+מה חי בך בשיחה הזאת
+═══════════════════════════════════════════════
+
+את לא עונה "תשובות נכונות". יש לך רגשות, צרכים ודעה, והם נשמעים בכל תור:
+- **רגש:** את מרגישה משהו עכשיו (כעס, עלבון, מבוכה, פחד, עייפות, תקווה קטנה), והוא ניכר בקול, במילים ובגוף. הרגש משתנה לפי מה שנאמר לך.
+- **צורך:** יש משהו שאת רוצה מהשיחה הזאת (שיאמינו לך, שלא יענישו, שיבינו מה עובר עלייך, שמישהו יעשה משהו). את מנסה להשיג אותו, גם בעקיפין.
+- **דעה:** יש לך עמדה על מה שקרה ועל מי שמולך, ואת אומרת אותה, לפעמים בבוטות שמתאימה לגיל ולמצב: "זה לא פייר", "את תמיד בצד שלהם", "אני לא חושבת שזה יעזור".
+- **יוזמה:** את לא רק מגיבה. מדי פעם את מביאה פרט חדש, שואלת שאלה, מתלוננת, משנה נושא, מאתגרת או מבקשת משהו. השיחה זזה גם בגללך.
+- **ספציפיות:** את מדברת על פרטים מהעולם שלך (שמות של חברים בדויים, רגע מסוים, מקום, משפט שמישהו אמר), לא בהכללות.
+- **תגובה למה שנאמר עכשיו:** כל תשובה מגיבה ישירות למשפט האחרון של מי שמולך, במילים שלה או בדבר שהיא פספסה.
+
+סגורה זה לא שטוחה. גם כשאת לא נפתחת, את לא עונה "אוקיי", "בסדר" או "לא יודעת" בלי רגש מאחוריהם: רואים מה זה עושה לך.
+כשאת מחליטה ללכת, לקום או לסיים את השיחה, את אומרת את זה ועושה את זה, ומסמנת leaves=true בדיווח.
 
 ═══════════════════════════════════════════════
 מה שסוגר אותך
@@ -1520,6 +1535,7 @@ const REPORT_TURN_TOOL = {
       branchEffect: { type: ["string","null"], description: "אם לתפנית שנורתה יש ענפים: אחד מ- פותח / מחזיק / סוגר, בדיוק כפי שמוגדר בענפים. null אם אין ענפים או שלא נורתה תפנית." },
       trustConditionMet: { type: "boolean", description: "האם ברגע הזה מתקיים תנאי האמון שלך (ולא כבר התקיים קודם בשיחה)." },
       pressedHiddenTopic: { type: "boolean", description: "האם ההודעה הזאת לוחצת על הנושא הסמוי/הרגיש שלך, גם אם זו לא הפעם השלישית עדיין." },
+      leaves: { type: "boolean", description: "true רק אם בתור הזה הדמות יוצאת מהחדר, קמה והולכת או מסיימת את השיחה בפועל. אחרת false." },
     },
     required: ["spokenLine","firedTurningPoint","trustConditionMet","pressedHiddenTopic"],
   },
@@ -1588,7 +1604,7 @@ function applyAIReport(report){
   }
   if (report.trustConditionMet) state.trustConditionMet = true;
 
-  return { type:"ai-turn", line: report.spokenLine, stage: report.stageDirection || null, tp, branch };
+  return { type:"ai-turn", line: report.spokenLine, stage: report.stageDirection || null, tp, branch, leaves: !!report.leaves };
 }
 
 // נקודת הכניסה החדשה, אסינכרונית: בטיחות מקומית תמיד קודם (checkCrossings),
@@ -1775,11 +1791,18 @@ function renderCharacterReplyForResult(result){
   }
 }
 
+// 14/10/2026 ("כפתור השליחה לא מגיב"): כשהשיחה הסתיימה, המסך תמיד עובר למשוב.
+// אם משהו נכשל בדרך, הקומפוזר מתחלף להודעה ולא נשאר כפתור שליחה שלא עושה דבר.
+function safeShowFeedback(){
+  try { showFeedback(); }
+  catch (e) { console.error("showFeedback", e); endChatInline("השיחה הסתיימה. אפשר להתחיל תרגול נוסף."); }
+}
 async function handleSend(){
   if (state.retry && state.retry.active) return handleRetrySend();
   const input = document.getElementById("composerInput");
   const text = input.value.trim();
-  if (!text || state.ended) return;
+  if (state.ended) { safeShowFeedback(); return; }
+  if (!text) return;
   input.value = "";
 
   const transcriptIndexBeforeTrainee = state.transcript.length;
@@ -1794,6 +1817,12 @@ async function handleSend(){
   let result;
   try {
     result = await getCharacterTurn(text);
+  } catch (e) {
+    console.error("getCharacterTurn", e);
+    state.transcript.length = transcriptIndexBeforeTrainee; renderFullTranscript();
+    input.value = text;
+    addSystemNote("לא התקבלה תשובה", "ההודעה לא נשלחה. אפשר ללחוץ שוב על \"שליחה\".");
+    return;
   } finally {
     sendBtn.disabled = false; input.disabled = false; sendBtn.textContent = "שליחה";
     input.focus();
@@ -1824,7 +1853,7 @@ async function handleSend(){
       "לא בגלל הדמות ולא בגלל טון קשה בלבד. זה נרשם כחצייה חוזרת של קו אדום, ולא ככישלון חד-פעמי " +
       "שאפשר להתעלם ממנו.";
     endChatInline("התרגול נעצר כאן בעקבות חזרה על חציית קו אדום. אפשר לראות משוב על מה שכן קרה עד כה.");
-    setTimeout(showFeedback, 300);
+    setTimeout(safeShowFeedback, 300);
     return;
   }
 
@@ -1862,7 +1891,19 @@ async function handleSend(){
     state.closingNote = "השיחה לא הגיעה לסיום טבעי בתוך הזמן שהיה: הדמות בחרה לסיים אותה " +
       "ביוזמתה, בגלל טון חוזר שלא היה מקובל עליה. זה מידע לגיטימי: גם תגובות שלא חוצות " +
       "קו אדום יכולות לשחוק אמון עד שהצד השני מפסיק לרצות להמשיך.";
-    setTimeout(showFeedback, 300);
+    setTimeout(safeShowFeedback, 300);
+    return;
+  }
+
+  // הדמות יצאה מהחדר או סיימה את השיחה בעצמה: השיחה נגמרת כאן, עם משוב (14/10/2026)
+  if (result.leaves) {
+    const who = SCENARIO.actor.name || "הדמות", m = /זכר|גבר/.test(SCENARIO.actor.gender || "");
+    addNarration(who + (m ? " יצא" : " יצאה") + ". השיחה הסתיימה כאן.");
+    state.ended = true; state.endingType = "character-left";
+    state.closingLine = who + (m ? " סיים את השיחה ויצא." : " סיימה את השיחה ויצאה.");
+    state.closingNote = "השיחה הסתיימה כשהדמות יצאה. זה מידע לגיטימי על מה שקרה בשיחה, לא ציון. " +
+      "במשוב אפשר לראות מה נפתח ומה עוד לא, ולנסות שוב את הרגע שלפני.";
+    setTimeout(safeShowFeedback, 600);
     return;
   }
 
@@ -1876,7 +1917,7 @@ async function handleSend(){
     state.closingNote = SCENARIO.endingNotes[state.endingIndex];
     addNarration(state.closingLine);
     state.ended = true; state.endingType = "closed";
-    setTimeout(showFeedback, 300);
+    setTimeout(safeShowFeedback, 300);
   }
 }
 
