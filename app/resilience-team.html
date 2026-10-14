@@ -1261,7 +1261,7 @@ function renderSummary(){
   head.appendChild(el2('h2',null,'סיכום והמלצות למחנך/ת'));
   head.appendChild(el2('p',null,'חוזקות הכיתה ואיך להעצים אותן ולהשתמש בהן כמנוף, אתגרים בניסוח אופטימי עם פעילויות, תהליכים ומשחקים חברתיים, עיצוב סביבת הכיתה והמלצות נוספות, בדגש על עבודת צוות ומנגנונים חברתיים, בהתאמה לשכבת הגיל.'));
   const acts=el2('div','sum-actions');
-  const gen=el2('button','btn',SUM_BUSY?'מפיק את הסיכום... (עד כ-5 דקות)':cached?'הפקה מחדש':'הפקת סיכום והמלצות');
+  const gen=el2('button','btn',SUM_BUSY?'הפקת הסיכום נמשכת עד כ־5 דקות':cached?'הפקה מחדש':'הפקת סיכום והמלצות');
   gen.id='btn-sum-gen';gen.disabled=SUM_BUSY;gen.addEventListener('click',generateSummary);acts.appendChild(gen);
   if(cached&&!SUM_BUSY){
     const pr=el2('button','btn btn-ghost','הדפסה / שמירה כ-PDF');pr.addEventListener('click',()=>window.SBE_DOC?SBE_DOC.printPage({title:'סיכום והמלצות לכיתה',node:document.getElementById('summary-content')}):window.print());acts.appendChild(pr);

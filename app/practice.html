@@ -202,6 +202,10 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 .own-prev h3{margin:0 0 4px}.own-prev .who{color:var(--muted);margin:0 0 10px}.own-prev p{margin:0 0 8px}
 .own-prev .first{border-inline-start:3px solid var(--spoken);padding:6px 10px;background:var(--spoken-soft);border-radius:4px}
 .my-case{display:flex;gap:8px;align-items:center}
+.own-share{border:1px solid var(--hair,#cdd3d8);border-radius:10px;padding:10px 14px;margin-top:12px;background:var(--surface-2,#f4f6f8)}
+.own-share label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}.own-share p{margin:6px 0;font-size:.92rem;color:var(--muted)}
+.own-share .warn{color:var(--brick,#9a4a3f);font-weight:600}
+.my-share{font-size:.82rem;border:1px solid var(--hair,#cdd3d8);background:transparent;border-radius:6px;padding:2px 8px;cursor:pointer;color:inherit}
 </style>
 
 <div class="wrap">
@@ -278,6 +282,13 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   </div>
   <div class="card" id="own3" hidden>
     <div id="ownPreview"></div>
+    <div class="own-share">
+      <label><input type="checkbox" id="ownShare"> <span><b>🤝 שיתוף הסיפור עם Begood (רשות)</b></span></label>
+      <p>אפשר לשתף את המקרה כדי שנלמד ממנו ונבנה ממנו תרחישים לתרגול לאחרים. נשלח רק מה שכתבת בצעד 1 ושם הסיפור, בלי השם שלך ובלי הקוד. לפני כל שימוש הסיפור נקרא ונערך, ופרטים מזהים מוסרים. אפשר לבטל את השיתוף בכל עת ב"המקרים שלי".</p>
+      <p>כדאי לבדוק שאין בסיפור שמות אמיתיים, מספרי טלפון או פרטים שאפשר לזהות מהם תלמיד/ה, משפחה או בית ספר.</p>
+      <label><input type="checkbox" id="ownResearch" disabled> <span>מותר להשתמש בסיפור גם במחקר, באופן אנונימי</span></label>
+      <p class="warn" id="ownShareWarn" hidden></p>
+    </div>
     <div class="own-acts"><button type="button" class="primary" id="ownApprove">✓ מאשרים ומתחילים להתאמן</button></div>
     <details class="own-change"><summary>לשנות משהו בסיפור</summary>
       <textarea id="ownChange" rows="2" placeholder="למשל: היא לא כועסת, היא בעיקר מודאגת. השיחה בטלפון ולא בפגישה."></textarea>
@@ -307,6 +318,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <style>.fb-st{font-weight:700;font-size:.85rem}.fb-st.reached{color:#4A6B5A}.fb-st.missed{color:#8C3A34}</style>
 <section id="screen-feedback" hidden>
   <h2 style="font-family:'Frank Ruhl Libre',Georgia,serif;">מה קרה בתרגול</h2>
+  <div id="fbComm"></div>
   <h3 class="fb-h">לאילו תפניות הגעת</h3>
   <div id="fbTurningPoints"></div>
   <h3 class="fb-h">מיומנויות שהופיעו בדברים שלך</h3>
@@ -1031,7 +1043,7 @@ function clearSessionState(){
   Object.assign(state, {
     turn:0, transcript:[], activeTP:null, activeTPRetries:0, firedTPs:{}, pressCount:0,
     trustConditionMet:false, lastCharacterTs:null, ended:false, endingType:null,
-    endingIndex:null, closingLine:null, closingNote:null, crossings:[], injectionAttempts:[],
+    endingIndex:null, closingLine:null, closingNote:null, commFb:null, crossings:[], injectionAttempts:[],
     responseTimesSec:[], holdIndexNeutral:0, holdIndexCool:0, holdIndexApproach:0,
     holdIndexInjection:0, harshCount:0, manipulationCount:0, turnLog:[], retry:null,
   });
@@ -1176,6 +1188,13 @@ const PRACTICE_PROMPT_TEMPLATE = `את {{NAME}}. את לא שחקנית ואת �
 - **תגובה למה שנאמר עכשיו:** כל תשובה מגיבה ישירות למשפט האחרון של מי שמולך, במילים שלה או בדבר שהיא פספסה.
 
 סגורה זה לא שטוחה. גם כשאת לא נפתחת, את לא עונה "אוקיי", "בסדר" או "לא יודעת" בלי רגש מאחוריהם: רואים מה זה עושה לך.
+
+**שאלה פתוחה מקבלת תשובה.** כשמי שמולך שואלת שאלה פתוחה ("מה דעתך...?", "איך את רואה את זה?", "מה קרה?", "מה היה עוזר לך?"), את עונה על השאלה עצמה:
+- אומרת מה את חושבת, בעמדה ברורה (גם אם היא לא מה שמי שמולך רוצה לשמוע).
+- מנמקת ומסבירה במשפט או שניים: למה, מה זה עושה לך, מה קרה פעם, ממה את חוששת.
+- מפתחת רעיון משלך או מציעה משהו אחר ("אולי במקום זה...", "בשבילי זה יותר...").
+"בסדר", "אוקיי" או הסכמה מהירה כדי לסגור את הנושא הם לא תשובה לשאלה פתוחה. גם כשאת מסתייגת או לא רוצה, את מסבירה למה.
+ההנחיה "במקום לענות" למעלה חלה רק כשלוחצים עלייך על מה שאת לא אומרת, לא על כל שאלה.
 כשאת מחליטה ללכת, לקום או לסיים את השיחה, את אומרת את זה ועושה את זה, ומסמנת leaves=true בדיווח.
 
 ═══════════════════════════════════════════════
@@ -1990,6 +2009,59 @@ function showFeedback(){
   }, null, 2);
 
   show("screen-feedback");
+  loadCommFeedback();
+}
+
+// ── משוב על התקשורת בשיחה (14/10/2026: "חסר משוב על השיחה לפי כל התיאוריות של תקשורת שאת מכירה.
+// חוזקות, חולשות, מה לשפר להמשך, טיפים כלליים") — המודל קורא את השיחה ונותן משוב על מה שהמתנסה עשה/תה,
+// בלי ציון ובלי שיפוט של האדם, עם ציטוט מהשיחה ועם המודל שעליו זה נשען.
+function commSystem(){
+  const male = /זכר|גבר/.test((SCENARIO.trainee && SCENARIO.trainee.gender) || "");
+  return [
+    "את מאמנת לתקשורת בין־אישית לאנשי ונשות חינוך. לפנייך שיחת תרגול בין המתנסה (" + ((SCENARIO.trainee && SCENARIO.trainee.roleLabel) || "אשת חינוך") + ") לבין " + (SCENARIO.actor.name || "הדמות") + " (" + (SCENARIO.actor.roleLabel || "") + ").",
+    "המקרה: " + (SCENARIO.subtitle || SCENARIO.name || ""),
+    "תני משוב על התקשורת של המתנסה בלבד, לפי התיאוריות והמודלים של תקשורת שאת מכירה, ובחרי רק מה שרלוונטי לשיחה הזאת. למשל: הקשבה פעילה ושיקוף (רוג'רס); תקשורת מקרבת (רוזנברג: תצפית, רגש, צורך, בקשה); מסרי \"אני\" (גורדון); ראיון מוטיבציוני (שאלות פתוחות, אישור, שיקוף, סיכום); תיקוף רגשי; \"שיחות קשות\" (סטון, פאטון והין: מה קרה, רגשות, זהות); אימון רגשי (גוטמן); פתרון בעיות שיתופי (גרין); הבחנה בין עובדה לפרשנות; קצב, שתיקה והפחתת הסלמה; ותחושת שליטה לצד השני (\"מה היית רוצה שיקרה?\").",
+    "כללים: התייחסי לפעולות ולמשפטים, לא לאדם. בלי ציון ובלי דירוג. כל נקודה עם ציטוט מדויק מדברי המתנסה (quote). בהצעות לשיפור: ניסוח חלופי לדוגמה שאפשר לומר בפעם הבאה (tryInstead). שפה של הזמנה (\"אפשר לנסות\", \"כדאי\"). " + (male ? "פני למתנסה בלשון זכר." : "פני למתנסה בלשון נקבה."),
+    "החזירי אך ורק JSON: {\"summary\":\"שניים או שלושה משפטים על השיחה\",\"strengths\":[{\"what\":\"מה עבד\",\"quote\":\"ציטוט\",\"why\":\"למה זה עובד\",\"basis\":\"על מה זה נשען (מודל או תיאוריה)\"}],\"growth\":[{\"what\":\"מה אפשר לחזק\",\"quote\":\"ציטוט\",\"tryInstead\":\"ניסוח לדוגמה\",\"why\":\"למה\",\"basis\":\"על מה זה נשען\"}],\"next\":[\"שלושה צעדים לתרגול הבא\"],\"tips\":[\"שלושה עד חמישה טיפים כלליים לשיחות כאלה\"]}. strengths: שתיים עד ארבע. growth: שתיים עד ארבע."
+  ].join("\n\n");
+}
+function commTranscript(){
+  return state.transcript.filter(t => t.who === "trainee" || t.who === "character")
+    .map(t => (t.who === "trainee" ? "המתנסה: " : (SCENARIO.actor.name || "הדמות") + ": ") + t.line + (t.stage ? " (" + t.stage + ")" : "")).join("\n");
+}
+async function loadCommFeedback(){
+  const box = document.getElementById("fbComm"); box.textContent = "";
+  box.append(el("h3", { class: "fb-h" }, "משוב על התקשורת בשיחה"));
+  if (state.commFb) return renderCommFeedback(box, state.commFb);
+  if (!state.transcript.some(t => t.who === "trainee")) { box.append(el("p", { class: "fb-note" }, "לא נאמר דבר בשיחה, ולכן אין משוב על התקשורת.")); return; }
+  const w = el("p", { class: "fb-note" }), t0 = Date.now(); box.append(w);
+  const tick = () => { w.textContent = "הכנת המשוב נמשכת כ־40 שניות. חלפו " + Math.round((Date.now() - t0) / 1000) + " שניות."; };
+  tick(); const iv = setInterval(tick, 1000);
+  const ok = (o) => !!(o && Array.isArray(o.strengths) && Array.isArray(o.growth));
+  let r = null;
+  try { r = await sbeCallAIJson(AI_SERVER, { system: commSystem(), messages: [{ role: "user", content: "השיחה:\n" + commTranscript() }], maxTokens: 5000 }, 180000, ok); }
+  catch (e) { r = null; } finally { clearInterval(iv); w.remove(); }
+  if (!ok(r)) {
+    const again = el("button", { type: "button" }, "לנסות שוב");
+    again.addEventListener("click", loadCommFeedback);
+    box.append(el("p", { class: "fb-note" }, "המשוב על התקשורת לא הגיע כרגע. אפשר לנסות שוב."), again);
+    return;
+  }
+  state.commFb = r; renderCommFeedback(box, r);
+}
+function renderCommFeedback(box, r){
+  if (r.summary) box.append(el("p", { class: "fb-note" }, r.summary));
+  const q = (x) => x ? "\"" + String(x).replace(/^["״“”]+|["״“”]+$/g, "") + "\"" : "";
+  if ((r.strengths || []).length) {
+    box.append(el("h4", {}, "מה עבד"));
+    box.append(SBE_TABLE(["מה עשית", "מהשיחה", "למה זה עובד", "על מה זה נשען"], r.strengths.map(x => [el("b", {}, x.what || ""), q(x.quote), x.why || "", x.basis || ""]), "fb-comm-s"));
+  }
+  if ((r.growth || []).length) {
+    box.append(el("h4", {}, "מה אפשר לחזק"));
+    box.append(SBE_TABLE(["מה אפשר לחזק", "מהשיחה", "אפשר לנסות לומר", "על מה זה נשען"], r.growth.map(x => [el("b", {}, x.what || ""), q(x.quote), [q(x.tryInstead), x.why].filter(Boolean).join(" "), x.basis || ""]), "fb-comm-g"));
+  }
+  if ((r.next || []).length) { box.append(el("h4", {}, "לתרגול הבא")); const ol = el("ol"); r.next.forEach(t => ol.append(el("li", {}, t))); box.append(ol); }
+  if ((r.tips || []).length) { box.append(el("h4", {}, "טיפים לשיחות כאלה")); const ul = el("ul"); r.tips.forEach(t => ul.append(el("li", {}, t))); box.append(ul); }
 }
 
 // ── מקרה משלך (10/10/2026): מספרים על המקרה · עוד כמה פרטים · מאשרים את הסיפור ומתחילים ──
@@ -2017,7 +2089,7 @@ function showFeedback(){
   }
   function wait(text, sec){
     const w = $("ownWait"), t0 = Date.now(); w.hidden = false;
-    const tick = () => { w.textContent = text + " זה לוקח בדרך כלל כ-" + sec + " שניות. עברו " + Math.round((Date.now() - t0) / 1000) + " שניות."; };
+    const tick = () => { w.textContent = text + " חלפו " + Math.round((Date.now() - t0) / 1000) + " שניות."; };
     tick(); const iv = setInterval(tick, 1000); return () => { clearInterval(iv); w.hidden = true; };
   }
   const fail = (e) => { $("ownErr").textContent = (e && e.code === "incomplete") ? "הסיפור חזר חלקי. אפשר לנסות שוב." :
@@ -2033,8 +2105,8 @@ function showFeedback(){
   // 1 → 2: שאלות הבהרה, רק מה שחסר
   $("ownNext").addEventListener("click", async () => {
     if (!(draft.form.story || "").trim()) { $("ownErr").textContent = "כדי להמשיך, אפשר לספר בכמה משפטים על המקרה."; $("ownErr").hidden = false; $("ownStory").focus(); return; }
-    const b = $("ownNext"); b.disabled = true; const stop = wait("קוראת את המקרה.", 20); let r = null, bad = null;
-    try { r = await sbeCallAIJson(AI_SERVER, { system: PC.clarifySystem(), messages: [{ role: "user", content: PC.caseText(draft.form) }], maxTokens: 900 }, 90000, PC.validQuestions); }
+    const b = $("ownNext"); b.disabled = true; const stop = wait("קריאת המקרה נמשכת כ־20 שניות.", 20); let r = null, bad = null;
+    try { r = await sbeCallAIJson(AI_SERVER, { system: PC.clarifySystem(), messages: [{ role: "user", content: PC.caseText(draft.form) }], maxTokens: 900, fast: true }, 90000, PC.validQuestions); }
     catch (e) { bad = e; } finally { stop(); b.disabled = false; }
     if (!PC.validQuestions(r)) return fail(bad);
     draft.questions = r.questions.filter(q => q && q.q).slice(0, 4); draft.answers = {}; draft.scenario = null; saveDraft();
@@ -2059,9 +2131,9 @@ function showFeedback(){
   // 2 → 3: הסיפור
   async function build(revise){
     const b = revise ? $("ownRevise") : $("ownBuild"); b.disabled = true;
-    const stop = wait(revise ? "מעדכנת את הסיפור." : "כותבת את הסיפור ואת הדמות שמולך.", 60); let r = null, bad = null;
+    const stop = wait(revise ? "עדכון הסיפור נמשך כ־40 שניות." : "כתיבת הסיפור נמשכת כ־60 שניות.", revise ? 40 : 60); let r = null, bad = null;
     const content = caseText() + (revise && draft.scenario ? "\n\nהתרחיש הנוכחי (JSON):\n" + JSON.stringify(draft.scenario) + "\n\nמה לשנות: " + $("ownChange").value.trim() : "");
-    try { r = await sbeCallAIJson(AI_SERVER, { system: revise ? PC.reviseSystem() : PC.buildSystem(), messages: [{ role: "user", content }], maxTokens: 10000 }, 240000, PC.valid); }
+    try { r = await sbeCallAIJson(AI_SERVER, { system: revise ? PC.reviseSystem() : PC.buildSystem(), messages: [{ role: "user", content }], maxTokens: 10000, fast: true }, 240000, PC.valid); }
     catch (e) { bad = e; } finally { stop(); b.disabled = false; }
     if (!PC.valid(r)) { if (!revise) step(draft.questions.length ? 2 : 1); return fail(bad); }
     draft.scenario = PC.normalize(r); if (draft.scenario && draft.scenario.trainee) draft.scenario.trainee.gender = draft.form.me || "נקבה"; saveDraft(); $("ownChange").value = ""; preview(); step(3);
@@ -2077,9 +2149,32 @@ function showFeedback(){
   if (draft.scenario) preview();
 
   // אישור: נשמר ב"המקרים שלי" ומתחילים
-  $("ownApprove").addEventListener("click", () => {
+  // ── שיתוף סיפור אישי, בהסכמה (14/10/2026): השרת שומר רק את שדות צעד 1 ואת שם הסיפור, בלי שם ובלי קוד.
+  // מפתח הביטול נשמר במכשיר עם המקרה, ו"ביטול השיתוף" מוחק את הרשומה בשרת.
+  $("ownShare").addEventListener("change", () => { $("ownResearch").disabled = !$("ownShare").checked; if (!$("ownShare").checked) $("ownResearch").checked = false; $("ownShareWarn").hidden = true; });
+  const PII = /[\w.+-]+@[\w-]+\.[\w.]+|(?:\+?972|0)[\s-]?\d(?:[\s-]?\d){7,8}|\b\d{9}\b/;
+  function piiIn(form){ return Object.values(form || {}).some(v => PII.test(String(v || ""))); }
+  async function shareStory(m, research){
+    let token = ""; try { token = sessionStorage.getItem("sbe.session.token") || ""; } catch(e){}
+    const r = await fetch(AI_SERVER + "/api/access", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "storyShare", token, consent: { share: true, research: !!research }, form: m.form, scenario: { name: m.sc.name, subtitle: m.sc.subtitle, actor: { name: m.sc.actor.name, roleLabel: m.sc.actor.roleLabel } } }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.id) throw new Error(d.error || String(r.status));
+    m.shared = { id: d.id, key: d.key, at: new Date().toISOString().slice(0, 10), research: !!research }; saveMine();
+  }
+  async function withdrawStory(m){
+    const r = await fetch(AI_SERVER + "/api/access", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "storyWithdraw", id: m.shared.id, key: m.shared.key }) });
+    if (!r.ok && r.status !== 404) throw new Error(String(r.status));
+    delete m.shared; saveMine();
+  }
+  $("ownApprove").addEventListener("click", async () => {
+    const wantShare = $("ownShare").checked, research = $("ownResearch").checked, form = Object.assign({}, draft.form);
+    if (wantShare && piiIn(form)) { const w = $("ownShareWarn"); w.textContent = "נראה שיש בסיפור מספר טלפון, מייל או מספר זהות. כדי לשתף, אפשר להסיר אותם בצעד 1, או להוריד את הסימון ולהמשיך בלי שיתוף."; w.hidden = false; return; }
     const id = "my-" + Date.now().toString(36);
-    mine.unshift({ id, at: new Date().toISOString().slice(0, 10), sc: draft.scenario }); mine = mine.slice(0, 12); saveMine();
+    mine.unshift({ id, at: new Date().toISOString().slice(0, 10), sc: draft.scenario, form }); mine = mine.slice(0, 12); saveMine();
+    if (wantShare) { try { await shareStory(mine[0], research); } catch (e) { mine[0].shareFailed = true; saveMine(); } }
+    $("ownShare").checked = false; $("ownResearch").checked = false; $("ownResearch").disabled = true;
     Object.assign(draft, { form: {}, questions: [], answers: {}, scenario: null }); saveDraft();
     Object.values(FIELDS).forEach(f => { if (f !== "ownMe") $(f).value = ""; });
     renderMine(); SCENARIOS[id] = mine[0].sc; selectScenario(id);
@@ -2092,8 +2187,21 @@ function showFeedback(){
       SCENARIOS[m.id] = m.sc;
       const del = el("button", { type: "button", title: "מחיקה מהמכשיר", "aria-label": "מחיקה" }, "🗑");
       del.addEventListener("click", (e) => { e.stopPropagation(); if (!confirm("למחוק את המקרה מהמכשיר?")) return; mine = mine.filter(x => x.id !== m.id); delete SCENARIOS[m.id]; saveMine(); renderMine(); });
+      // שיתוף או ביטול שיתוף מתוך "המקרים שלי"
+      let shareBtn = null;
+      if (m.shared) {
+        shareBtn = el("button", { type: "button", class: "my-share", title: "הסיפור שותף עם Begood ב־" + m.shared.at }, "✓ שותף · ביטול השיתוף");
+        shareBtn.addEventListener("click", async (e) => { e.stopPropagation(); if (!confirm("לבטל את השיתוף? הסיפור יימחק מ־Begood, ויישאר רק במכשיר הזה.")) return;
+          try { await withdrawStory(m); renderMine(); } catch (er) { alert("הביטול לא הצליח כרגע. אפשר לנסות שוב בעוד רגע."); } });
+      } else if (m.form && m.form.story) {
+        shareBtn = el("button", { type: "button", class: "my-share" }, m.shareFailed ? "🤝 השיתוף לא הצליח · לנסות שוב" : "🤝 שיתוף עם Begood");
+        shareBtn.addEventListener("click", async (e) => { e.stopPropagation();
+          if (piiIn(m.form)) { alert("נראה שיש בסיפור מספר טלפון, מייל או מספר זהות, ולכן הוא לא ישותף."); return; }
+          if (!confirm("לשתף את הסיפור עם Begood? נשלח רק מה שכתבת בצעד 1 ושם הסיפור, בלי השם שלך ובלי הקוד. הסיפור נקרא ונערך לפני כל שימוש, ואפשר לבטל את השיתוף בכל עת.")) return;
+          try { await shareStory(m, false); delete m.shareFailed; saveMine(); renderMine(); } catch (er) { alert("השיתוף לא הצליח כרגע. אפשר לנסות שוב בעוד רגע."); } });
+      }
       const card = el("div", { class: "scenario-card", tabindex: "0" },
-        el("div", { class: "my-case" }, el("div", { class: "sc-name", style: "flex:1" }, "✍️ " + m.sc.name), del),
+        el("div", { class: "my-case" }, el("div", { class: "sc-name", style: "flex:1" }, "✍️ " + m.sc.name), shareBtn || "", del),
         el("div", { class: "sc-sub" }, m.sc.subtitle),
         el("div", { class: "sc-sub" }, el("b", {}, youL(m.sc)), m.sc.trainee.roleLabel || "", " · ", el("b", {}, "מולך: "), m.sc.actor.name + ", " + (m.sc.actor.roleLabel || "")));
       const pick = () => selectScenario(m.id);

@@ -145,7 +145,7 @@
     node.hidden = false; node.textContent = '';
     const line = el('div'), bar = el('div', 'bar'), fill = el('div'); bar.appendChild(fill); node.append(line, bar);
     const t0 = Date.now();
-    const tick = () => { const s = Math.round((Date.now() - t0) / 1000); line.textContent = text + ' בדרך כלל ' + exp + ' שניות. עברו ' + s + ' שניות.'; fill.style.width = Math.min(95, s / exp * 90) + '%'; };
+    const tick = () => { const s = Math.round((Date.now() - t0) / 1000); line.textContent = text + ' התהליך נמשך כ־' + exp + ' שניות. חלפו ' + s + ' שניות.'; fill.style.width = Math.min(95, s / exp * 90) + '%'; };
     tick(); const iv = setInterval(tick, 1000);
     return () => { clearInterval(iv); node.hidden = true; };
   }

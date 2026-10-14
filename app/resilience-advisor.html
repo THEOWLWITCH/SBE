@@ -176,7 +176,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
         <li><b>מה רואים בכיתה.</b> לכל היגד בוחרים תשובה אחת. כשאין מספיק מידע, אפשר לבחור "לא יודע/ת".</li>
         <li><b>במילים שלך.</b> רשות. מה שכותבים כאן עוזר לפרקטי לדייק.</li>
         <li><b>שיחה עם פרקטי.</b> רשות, ומומלצת. אפשר לשאול, לספר עוד ולענות על שאלות ההבהרה שלה. מה שעולה בשיחה נכנס לדוח.</li>
-        <li><b>הדוח.</b> מפיקים אותו אחרי השיחה (עד כ־5 דקות). אחרי הדוח אפשר להמשיך לשאול, להדפיס ולשמור כ־PDF.</li>
+        <li><b>הדוח.</b> מפיקים אותו אחרי השיחה. ההפקה נמשכת עד כ־5 דקות. אחרי הדוח אפשר להמשיך לשאול, להדפיס ולשמור כ־PDF.</li>
       </ol>
       <p class="muted">מה שממלאים נשמר במכשיר הזה בלבד. שמות תלמידים לא נדרשים, וכדאי לא לכתוב אותם.</p>
     </div>
@@ -277,7 +277,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
     </div>
     <div class="card no-print" id="report-step">
       <h2>5. הדוח</h2>
-      <p class="muted" id="report-note">הדוח נשען על התיאור ועל מה שעלה בשיחה. אפשר להפיק אותו גם בלי לשאול דבר. ההפקה לוקחת עד כ־5 דקות.</p>
+      <p class="muted" id="report-note">הדוח נשען על התיאור ועל מה שעלה בשיחה. אפשר להפיק אותו גם בלי לשאול דבר. הפקת הדוח נמשכת עד כ־5 דקות.</p>
       <div class="btns"><button class="btn" id="btn-analyze">הפקת הדוח</button></div>
       <p class="err" id="form-err2" hidden></p>
     </div>
@@ -648,8 +648,8 @@ F('btn-next').addEventListener('click',()=>{
 F('btn-analyze').addEventListener('click',async()=>{
   if(BUSY)return;
   const a=checkForm();if(!a)return;STATE.ready=true;
-  BUSY=true;const b=F('btn-analyze');b.disabled=true;b.textContent='פרקטי מכינה את הדוח... (עד כ־5 דקות)';
-  const rep=F('report');rep.textContent='';const wait=el('div','card','פרקטי קוראת את תמונת המצב ומכינה המלצות, ואז בודקת שהכול ברור... (עד כ-5 דקות)');rep.appendChild(wait);
+  BUSY=true;const b=F('btn-analyze');b.disabled=true;b.textContent='הכנת הדוח נמשכת עד כ־5 דקות';
+  const rep=F('report');rep.textContent='';const wait=el('div','card','פרקטי קוראת את תמונת המצב, מכינה המלצות ובודקת שהכול ברור. הכנת הדוח נמשכת עד כ־5 דקות.');rep.appendChild(wait);
   rep.scrollIntoView({behavior:'smooth',block:'start'});
   try{
     // מבנה לא תקין: ניסיון נוסף אחד (sbeCallAIJson ב-lib/ai-call.js)
@@ -782,7 +782,7 @@ function renderChat(){
   const hasRep=!!STATE.report;
   F('chat-h').textContent=hasRep?'שאלות המשך לפרקטי':'4. שיחה עם פרקטי (רשות)';
   F('chat-intro').textContent=hasRep?'אפשר לשאול על הדוח, לבקש פירוט או חלופה אחרת. למשל: "איך פותחים את השיחה שהוצעה?"':'אפשר לשאול, לספר עוד על הכיתה או לבקש שפרקטי תשאל שאלות הבהרה. מה שעולה בשיחה נכנס לדוח. למשל: "איך פותחים שיחה על מה שקורה בקבוצת הוואטסאפ?" או "מה עוד חשוב לך לדעת על הכיתה?".';
-  F('report-note').textContent=hasRep?'אחרי שיחה נוספת אפשר להפיק דוח מעודכן, שכולל גם אותה.':'הדוח נשען על התיאור ועל מה שעלה בשיחה. אפשר להפיק אותו גם בלי לשאול דבר. ההפקה לוקחת עד כ־5 דקות.';
+  F('report-note').textContent=hasRep?'אחרי שיחה נוספת אפשר להפיק דוח מעודכן, שכולל גם אותה.':'הדוח נשען על התיאור ועל מה שעלה בשיחה. אפשר להפיק אותו גם בלי לשאול דבר. הפקת הדוח נמשכת עד כ־5 דקות.';
   if(!BUSY)F('btn-analyze').textContent=hasRep?'הפקת דוח מעודכן':'הפקת הדוח';
   const pre=F('chat-pre-log');pre.textContent='';F('chat-pre').hidden=!(hasRep&&STATE.pre.length);
   if(hasRep)STATE.pre.forEach(m=>{const d=el('div','msg '+(m.role==='user'?'me':'bot'));d.appendChild(m.role==='user'?withRefs(m.content):richText(m.content));pre.appendChild(d);});

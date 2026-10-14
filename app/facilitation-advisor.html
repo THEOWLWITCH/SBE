@@ -460,13 +460,13 @@ FIELDS.forEach(k=>{const clear=()=>{F(k).classList.remove('miss');save();};F(k).
 // ההודעות האחרונות — תמיד מתחילות בהודעה של המשתמש/ת (המודל לא מקבל שיחה שמתחילה בתשובה)
 function tail(list,n){let s=Math.max(0,list.length-n);while(s<list.length&&list[s].role!=='user')s++;return list.slice(s);}
 async function complete(system,messages,maxTokens,review){return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},300000)||'');}
-// המתנה עם ציפייה ברורה (08/10/2026): כמה זמן זה לוקח בדרך כלל, כמה עבר, ופס התקדמות
+// המתנה עם ציפייה ברורה (08/10/2026): כמה זמן התהליך נמשך, כמה חלף, ופס התקדמות. ניסוח רשמי (14/10/2026: "אנחנו לא ברחוב")
 function waiting(node,text,exp){
   exp=exp||45;const t0=Date.now();node.textContent='';
   const t=el('div','wait-t',text);const sub=el('div','wait-s','');const bar=el('div','wait-bar');const fill=el('i');bar.appendChild(fill);
   node.appendChild(t);node.appendChild(bar);node.appendChild(sub);
   const tick=()=>{const s=Math.round((Date.now()-t0)/1000);fill.style.width=Math.min(95,Math.round(s/exp*90))+'%';
-    sub.textContent=s<=exp?'בדרך כלל זה לוקח כ-'+exp+' שניות. עברו '+s+' שניות.':'לוקח קצת יותר מהרגיל. עוד רגע. עברו '+s+' שניות.';};
+    const dur=exp<90?'כ־'+exp+' שניות':'כ־'+Math.round(exp/60)+' דקות';sub.textContent=s<=exp?'התהליך נמשך '+dur+'. חלפו '+s+' שניות.':'התהליך נמשך מעט יותר מהרגיל. חלפו '+s+' שניות.';};
   tick();const id=setInterval(tick,1000);
   return ()=>clearInterval(id);
 }

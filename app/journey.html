@@ -586,7 +586,7 @@ function goalBlock(m, mi, g, gi){
     const all = askLoad(); const hist = all[k] || [];
     const messages = []; hist.forEach(x => { messages.push({ role: 'user', content: x.mode === 'steps' ? 'פרקי את הסעיף לצעדים.' : x.q }); messages.push({ role: 'assistant', content: x.a }); });
     messages.push({ role: 'user', content: mode === 'steps' ? 'פרקי את הסעיף לצעדים.' : q });
-    b.disabled = true; const wait = el('p', 'muted', 'כותבת... (בדרך כלל עד חצי דקה)'); log.appendChild(wait);
+    b.disabled = true; const wait = el('p', 'muted', 'כתיבת התשובה נמשכת עד כחצי דקה.'); log.appendChild(wait);
     try { const a = (await complete(J.explainSystem(JR.unit, ctx, mode), messages, 1600)).trim(); if (!a) throw 0; hist.push({ mode, q: q || '', a, at: new Date().toISOString() }); all[k] = hist.slice(-12); askSave(all); show(); }
     catch(e){ if (mode === 'ask' && q && !tx.value) tx.value = q; wait.textContent = 'אין כרגע חיבור. השאלה חזרה לתיבה, ואפשר לנסות שוב.'; }
     b.disabled = false;

@@ -72,7 +72,7 @@
     }
     function waiting(n, text, exp) {
       n.hidden = false; const t0 = Date.now();
-      const tick = () => { n.textContent = text + ' בדרך כלל ' + exp + ' שניות. עברו ' + Math.round((Date.now() - t0) / 1000) + ' שניות.'; };
+      const tick = () => { n.textContent = text + ' התהליך נמשך כ־' + exp + ' שניות. חלפו ' + Math.round((Date.now() - t0) / 1000) + ' שניות.'; };
       tick(); const iv = setInterval(tick, 1000); return () => { clearInterval(iv); n.hidden = true; };
     }
     function area(obj, k, label, rows, ph) { const t = el('textarea'); t.rows = rows || 2; t.value = txt(obj[k] || ''); t.setAttribute('aria-label', label); if (ph) t.placeholder = ph; t.addEventListener('input', () => { obj[k] = t.value; save(); }); return t; }
