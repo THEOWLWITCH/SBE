@@ -81,6 +81,11 @@ test('real gateway and PostgreSQL preserve researcher applications, releases, do
     const agreementReview = await mutate(owner, 'recordReview', { ...agreementScope, versionId: agreement.version.id, expectedRevision: agreement.record.revision, decision: 'approved' });
     let current = agreementReview.record;
     for (const actor of [owner, a]) current = (await mutate(actor, 'agreementApprove', { ...agreementScope, versionId: agreement.version.id, expectedRevision: current.revision, documentHash: agreement.version.contentHash, ipExplanationVersionId: template.version.id, ipReadAcknowledged: true })).record;
+    for (const actor of [owner, a]) {
+      const reopened = await f.checked(actor, 'recordGet', agreementScope);
+      assert.deepEqual(reopened.approvals?.map(receipt => receipt.party).sort(), ['owner', 'partner']);
+      assert.ok(reopened.approvals.every(receipt => receipt.versionId === agreement.version.id && receipt.documentHash === agreement.version.contentHash));
+    }
     const signing = await f.callResearch({ token: owner, action: 'signingStart', ...f.request({ ...agreementScope, versionId: agreement.version.id, expectedRevision: current.revision, documentHash: agreement.version.contentHash, consent: true }) });
     assert.equal(signing[0], 503);
     assert.equal((await f.checked(owner, 'recordGet', agreementScope)).record.status, 'approved');
