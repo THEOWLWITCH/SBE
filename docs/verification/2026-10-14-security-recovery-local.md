@@ -1,14 +1,39 @@
-# Local verification — 14 October 2026
+# BE GOOD — אימות מקומי מ־14.10.2026, עודכן ב־18.10.2026
 
-Base: f42d8b6; isolated branch: feat/security-backup-recovery. No production deployment, live migration or destructive operation.
+בסיס הביקורת: `f42d8b6`; ענף מבודד: `feat/security-backup-recovery`. לא בוצעו במסגרת העבודה פריסת ייצור, push, מיזוג ל־main, migration חי, יבוא נתוני אמת או פעולה הרסנית בייצור.
 
-- Full synthetic harness suite: 186 passed, 0 failed, 0 skipped (all-tests-release.log, 16.695 seconds).
-- Actual source archive: 1,022 entries; all captured refs and 578 continuity/436 security working files checked after restore; original repository unchanged.
-- Drive archive: owner-authorized private folder, shared=false; downloaded encrypted bytes match SHA256; actual decryption and source restore checked, plaintext drills/raw temporary keys removed.
-- Restored application: login, synthetic SQL save/read, cross-school denial, practice API, writer UI, library UI, owner backup monitor RTL desktop/mobile; 9.811 seconds. Synthetic provider only.
-- Actual synthetic SQL/foreign-key/Storage-file drill with PGlite; provider-compatible PostgreSQL recovery not claimed.
-- Three independent simplification reads: reuse, quality and efficiency. Fixed validated-reference snapshot race, persistent plaintext restore, read-side per-file stream overhead. Retained before/after Git comparisons. Fixed report-failure cleanup with an exclusive owned parent and a real PowerShell regression test.
+## בדיקות יישום ומקור
 
-Code review: skipped (ce-code-review unavailable). The attempted full review produced a fresh security read but the coordinator remained pending and could not finish the required pipeline; it was interrupted. security.json and draft review artifacts remain outside the repository. No complete review receipt is claimed. A complete review is required before production release.
+- הבדיקה המלאה האחרונה: 194 עברו, 0 נכשלו, 0 דולגו, ב־11.0836303 שניות. לוג: `all-tests-recovery-kit-20261018.log`, מחוץ למאגר. Node 24 מצורף, PGlite סינתטי, Git ו־HTTP מקומיים בלבד.
+- תחביר JavaScript ו־PowerShell עבר. אין פקודת lint/typecheck מוגדרת בפרויקט.
+- נקודות בדיקה קודמות נשמרות כראיות היסטוריות: 187/187 ב־15.712 שניות בלוג `all-tests-final-20261014-sanitized.log`, ובהמשך 190/190 ב־18.550 שניות. ארבע בדיקות ערכת המפתחות עברו תחילה בנפרד ונכללו כעת ב־suite המלאה של 194.
+- רגרסיית שחזור מקור בנתיבי Windows ארוכים עברה ב־5.067 שניות, בלי שינוי הגדרות Git כלליות.
+- ארכיון המקור הראשון: 1,022 פריטים; כל ה־refs שנאספו ו־578 קובצי continuity ו־436 קובצי security נבדקו לאחר שחזור. המאגר המקורי לא השתנה.
+- העותק הראשון ב־Drive נשמר בתיקייה שאושרה, עם owner בלבד ו־shared=false. bytes ו־SHA256 התאימו לאחר הורדה, פענוח ושחזור מקור עברו, ותיקיות התרגיל והמפתחות הזמניים הגלויים נוקו.
+- עותק המקור השני: `20261014T145631Z-49d4107f`, 1,028 פריטים ו־73,592,265 bytes מוצפנים. שוחזר מקומית והועלה לאותה תיקייה. לאחר הורדה ה־bytes וה־SHA256 התאימו: `1087a72bf56dfd871ebd0a860c7eca4059a56652ab8024b0b57a2bd1deabb5b4`. שחזור מתוך ההורדה של עותק זה טרם תועד; העותק הראשון ששוחזר נשמר.
+- היישום המשוחזר עבר כניסה, שמירה וקריאת SQL סינתטיים, דחיית מוסד אחר, practice API, מסך ניסוח, ספרייה ומסך גיבוי בעלים ב־RTL במחשב ובנייד, ב־9.811 שניות. ספק AI סינתטי בלבד.
+- תרגיל PGlite בדק SQL, מפתחות זרים וקשרים לקובצי Storage מקומיים סינתטיים. הוא אינו שחזור PostgreSQL/Supabase של ספק.
 
-Remaining operational dependencies: authenticated Supabase/Render access (live-data export is explicitly approved), portable recovery-key escrow, scheduled backups/alerts/retention, and a separately approved isolated real-data/provider restore. School adaptation and contracting remain subsequent work. This is an incremental local preservation checkpoint, not a production release.
+## נתוני אמת ותצורה
+
+האישור ליצוא נתוני אמת לתיקיית Drive הפרטית ולגיבוי כל רכיבי BE GOOD כבר התקבל. צילום SELECT של פרויקט SBE `liausvuuqxeaildbbsjm` נאסף ב־`2026-10-15T13:03:40.99552+00:00`: 41 טבלאות ו־345 רשומות, ובהן 91 ב־`public.access_settings` ו־9 ב־`public.scenarios`. נמצאו 0 משתמשי Auth, 0 buckets ו־0 objects, ללא טבלאות או sequences בלתי נגישים.
+
+ב־18.10.2026 נוצר הארכיון `20261018T065401Z-74464264`: 1,038 פריטים, 82,474,159 bytes תוכן ו־82,689,497 bytes מוצפנים. SHA256: `7a76e6238bbb89658b4a549838ad56c6ce512a3e2124d4947d43332691905d81`. הקובץ הורד מ־Drive, ה־hash התאים וכל פריט עבר אימות AES-GCM. זהו JSON וקטלוג, ולא pg_dump או יבוא PostgreSQL. ה־CSV ותיקיית ההכנה הגולמיים נמחקו אחרי הוכחת הענן; אין מפתחות זמניים גלויים.
+
+תצורת Netlify נשמרה בגיבוי DPAPI מקומי ובעותק Drive פרטי. הקובץ בגודל 4,806 bytes, SHA256 `e9b82833035cc65b261cd69299d04f6894063b5ed744c0b3ad781ea37a61d506`; קריאה חוזרת מהענן, hash ופענוח בזיכרון עברו. התוכן כולל ערך סוד אחד שאינו נכתב בדוח. [ראיות וקישורים](../../BE_GOOD_LIVE_BACKUP_2026-10-18.md).
+
+הפריסה הפעילה שנצפתה ב־Netlify היא `e2bcf89046f71ad0330197c17aa8202302fe6362`, שפורסמה ב־14.10.2026 בשעה `10:13Z` מחוץ לעבודה זו.
+
+## פישוט וביקורת
+
+שלוש סקירות הפישוט הקודמות בדקו שימוש חוזר, איכות ויעילות. תוקנו מרוץ בצילום refs מאומתים, plaintext שנשאר אחרי שחזור ותקורת קריאה לכל פריט. נשמרו השוואות Git לפני ואחרי. רגרסיית PowerShell בודקת ניקוי של תיקייה זמנית בבעלות הכלי ומפתח גלוי גם כשכתיבת דוח נכשלת.
+
+שלוש סקירות הפישוט החדשות הושלמו. נוספו אימות סיסמה משותף, הגבלת גודל הערכה לפני פענוח, בדיקת יכולות Node 24, הגבלת snapshot ל־64 MiB והפניה מתועדת לאישור יצוא. נשמרו שתי קריאות JSON לצורך אימות רגיל וייצוג מספרים מדויק. תיקיית הכנה שסיפקה הבעלים נשמרת עד הוכחת עותק עצמאי; דוח `plaintextStageRetained` מציין ניקוי ממתין. אין מחיקה אוטומטית של ארכיונים מוצפנים או מפתחות מניסיונות קודמים.
+
+ביקורת `ce-code-review` הקודמת לא הושלמה. התקבלה קריאת אבטחה חדשה, אך המתאם נשאר ממתין, התהליך הופסק ולא הופק receipt מלא. `security.json` וטיוטות הביקורת נשארו מחוץ למאגר. נדרשת ביקורת מלאה לפני שחרור ייצור.
+
+## תלויות שנותרו
+
+refs עדכניים נאספו לשכפול המבודד ב־18.10; ארכיון מקור משלים לקוד ול־refs החדשים עדיין ממתין להכנה ולהוכחת ענן. ערכת מפתחות ניידת נבדקה בקוד בלבד; ערכה אמיתית ממתינה לסיסמה שהבעלים תיצור מקומית, ו־DPAPI עדיין תלוי בפרופיל Windows הנוכחי. הבעלים דיווחה שהתחברה ל־Render, אך בדפדפן הזמין נשאר מסך כניסה ולכן הגישה והתצורה אינן מאומתות.
+
+תזמון, התראות ו־retention אינם פעילים. לא בוצע תרגיל ספק מלא עם נתוני אמת; יבוא כזה דורש אישור נפרד. התאמה לבית הספר והסכמים נשארים המשך עבודה. כלי ההכנה ב־scripts דורשים Node 24; ה־engine של שרת הייצור ב־harness לא השתנה. זוהי נקודת שימור ואימות מקומית, ללא רכישת שירות או שחרור ייצור.
