@@ -154,6 +154,23 @@ test('source collection preserves every local Git ref and dirty/untracked conten
   await writeFile(badReferences, JSON.stringify({ references: [{ name: 'SYNTHETIC_KEY', value: 'synthetic-inline-secret' }] }));
   await assert.rejects(createBackup({ secret: f.secret, destination: badOutput, config: { profile: 'source-preservation', scope: 'local-source', sources: [{ id: 'development', repository: repo }], configurationReferences: badReferences } }), /references.*values/i);
   await assert.rejects(access(badOutput));
+  const jsonExports = {}, jsonArchive = path.join(f.root, 'json-exports.begood');
+  for (const section of ['schema', 'data', 'roles', 'rls']) {
+    jsonExports[section] = path.join(f.root, `${section}.json`);
+    await writeFile(jsonExports[section], JSON.stringify({ section, synthetic: true }));
+  }
+  const emptyStorage = path.join(f.root, 'empty-storage'), references = path.join(f.root, 'references.json');
+  await mkdir(emptyStorage); await writeFile(references, '{"references":[]}');
+  await createBackup({ destination: jsonArchive, secret: f.secret, config: { profile: 'full', scope: 'synthetic', sources: [{ id: 'development', repository: repo }], databaseFormat: 'supabase-readonly-json', database: jsonExports, storageDirectory: emptyStorage, configurationReferences: references } });
+  const jsonRestore = path.join(f.root, 'restored-json');
+  await restoreArchive({ archive: jsonArchive, secret: f.secret, destination: jsonRestore });
+  for (const section of Object.keys(jsonExports)) {
+    assert.deepEqual(await readFile(path.join(jsonRestore, 'database', `${section}.json`)), await readFile(jsonExports[section]));
+    await assert.rejects(access(path.join(jsonRestore, 'database', `${section}.sql`)));
+  }
+  const jsonManifest = JSON.parse(await readFile(path.join(jsonRestore, 'BE_GOOD_RESTORED_MANIFEST.json'), 'utf8'));
+  assert.equal(jsonManifest.metadata.databaseExportFormat, 'supabase-readonly-json');
+  await assert.rejects(createBackup({ destination: path.join(f.root, 'invalid-format.begood'), secret: f.secret, config: { profile: 'full', scope: 'synthetic', databaseFormat: 'unknown' } }), /format/);
 });
 
 test('symlinked input or destination ancestors are refused', async (t) => {

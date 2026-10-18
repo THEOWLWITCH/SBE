@@ -1,0 +1,6 @@
+{
+  "name": "be-good-local-backup-operations",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" }
+}

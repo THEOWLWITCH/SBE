@@ -280,6 +280,8 @@ function validateConfigurationReferences(value) {
 export async function createBackup({ destination, secret, config }) {
   if (!config || !['full', 'source-preservation'].includes(config.profile) || !['synthetic', 'local-source', 'owner-approved-exports'].includes(config.scope)) throw new Error('Explicit backup profile and scope are required');
   if (config.scope === 'owner-approved-exports' && (typeof config.approvalReference !== 'string' || !config.approvalReference.trim())) throw new Error('Owner-approved exports require a recorded approval reference');
+  const databaseFormat = config.databaseFormat || 'sql';
+  if (!['sql', 'supabase-readonly-json'].includes(databaseFormat)) throw new Error('Invalid database export format');
   if (!Array.isArray(config.sources) || !config.sources.length || new Set(config.sources.map((source) => source.id)).size !== config.sources.length) throw new Error('At least one source with unique ids is required');
   for (const source of config.sources) {
     const relative = path.relative(path.resolve(source.repository), path.resolve(destination));
@@ -289,7 +291,7 @@ export async function createBackup({ destination, secret, config }) {
   const entries = [];
   try {
     for (const source of config.sources) await collectSource(source, scratch, entries);
-    for (const [key, component] of [['schema', 'database-schema'], ['data', 'database-data'], ['roles', 'database-roles'], ['rls', 'database-rls']]) if (config.database?.[key]) entries.push({ path: `database/${key}.sql`, sourcePath: config.database[key], component });
+    for (const [key, component] of [['schema', 'database-schema'], ['data', 'database-data'], ['roles', 'database-roles'], ['rls', 'database-rls']]) if (config.database?.[key]) entries.push({ path: `database/${key}.${databaseFormat === 'sql' ? 'sql' : 'json'}`, sourcePath: config.database[key], component });
     if (config.storageDirectory) {
       const files = await regularFiles(config.storageDirectory);
       entries.push(...files.map((file) => ({ ...file, path: `storage/objects/${file.path}`, component: 'storage-objects' })));
@@ -306,6 +308,6 @@ export async function createBackup({ destination, secret, config }) {
       entries.push({ path: 'configuration/references.json', sourcePath: referencesSnapshot, component: 'configuration-references',
         expectedDigest: { size: referencesBytes.length, sha256: sha256(referencesBytes) } });
     }
-    return await createArchive({ destination, secret, profile: config.profile, scope: config.scope, entries, metadata: { sourceCount: config.sources.length, approvalReference: config.approvalReference || null, liveAdaptersUsed: false, ignoredWorkingTreeFilesIncluded: false } });
+    return await createArchive({ destination, secret, profile: config.profile, scope: config.scope, entries, metadata: { sourceCount: config.sources.length, approvalReference: config.approvalReference || null, liveAdaptersUsed: false, ignoredWorkingTreeFilesIncluded: false, databaseExportFormat: databaseFormat } });
   } finally { await rm(scratch, { recursive: true, force: true }); }
 }

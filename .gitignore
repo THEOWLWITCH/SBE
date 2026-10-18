@@ -13,3 +13,6 @@ node_modules/
 
 # צילומי מסך מבדיקות — לא נכנסים למאגר
 /*.png
+*.recovery.json
+*.private.json
+*.dpapi
