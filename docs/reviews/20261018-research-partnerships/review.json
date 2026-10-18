@@ -1,0 +1,1075 @@
+{
+  "status": "complete",
+  "verdict": "Ready with fixes",
+  "scope": {
+    "base": "ec99d64e4f7daae41b3ce04a90c78f988fee4656",
+    "branch": "feat/research-partnerships",
+    "head_sha": "7ce6be8ad178f4ecab5c1d231360af45f5700315",
+    "pr_url": null,
+    "files_changed": 28
+  },
+  "intent": "Continue the existing owner-only Hebrew RTL research dashboard and individually isolated researcher workspaces. Implement stored applications, contributions, immutable agreement negotiations and approvals, private documents, exact-version findings publication, consent-filtered allowlisted analysis, and fail-closed verified provider signing with immutable executed evidence. Preserve existing research, questionnaire, security and professional communication behavior; all development is synthetic and local, with no production migration, real mail, provider activation or deployment.",
+  "intent_confidence": "explicit",
+  "reviewers": [
+    "correctness",
+    "project-standards",
+    "testing",
+    "maintainability",
+    "security",
+    "performance",
+    "api-contract",
+    "data-migration",
+    "reliability",
+    "adversarial",
+    "julik-frontend-races"
+  ],
+  "findings": [
+    {
+      "#": 1,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-partnership-ui.js:53 -- async function leaveEditor(next){const current=editor;while(current&&(current.dirty||current.saving)){if(!await current.save())return;if(editor!==current)return;}return next();}"
+      ],
+      "file": "app/lib/research-partnership-ui.js",
+      "first_evidence": "app/lib/research-partnership-ui.js:77 -- active.dirty=false;active.saving=request('recordSave',payload);",
+      "independent_reviewers": [
+        "adversarial",
+        "correctness",
+        "julik-frontend-races",
+        "reliability"
+      ],
+      "line": 77,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "adversarial",
+        "correctness",
+        "julik-frontend-races",
+        "reliability"
+      ],
+      "severity": "P1",
+      "suggested_fix": "Keep or restore dirty state on failed saves. Clear only the successfully saved snapshot, preserve edits made during a request, and block navigation/submission until save succeeds. Test failed autosave and explicit save followed by navigation.",
+      "title": "Preserve dirty state when saving a draft fails",
+      "why_it_matters": "A failed manual save or autosave leaves the editor clean. Navigating away then discards the unsaved draft; the supplied synthetic UI probe reproduced this.",
+      "precondition": "A draft has local edits, recordSave fails or returns no result, and the user then navigates or submits.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed the failed-save/navigation path; supplied synthetic UI probes reproduced draft loss.",
+      "protected_subject": "data-loss"
+    },
+    {
+      "#": 2,
+      "autofix_class": "gated_auto",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:121 includes own-folder records without a publication check; :280 permits the folder author to select head/private versions. Supplied unchanged-SQL probe returned draft count=1 and mean=3."
+      ],
+      "file": "harness/migrations/20261018-research-partnerships.sql",
+      "first_evidence": "harness/migrations/20261018-research-partnerships.sql:271 --   can_view:=owner_actor OR author_actor;",
+      "independent_reviewers": [
+        "security"
+      ],
+      "line": 271,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "security"
+      ],
+      "severity": "P1",
+      "suggested_fix": "Apply kind-specific release permissions to owner-created analysis results even within the recipient folder. Enforce them in lists, reads, version selection and downloads while preserving authors' own proposals. Test the approved-findings preset against draft and published results.",
+      "title": "CWE-284: Restrict own-folder analysis results until publication",
+      "why_it_matters": "A researcher with only approved-findings access can read an owner-created draft analysis result in her own folder before privacy review or publication. The supplied SQL probe returned a one-participant summary.",
+      "precondition": "The owner creates a draft analysis_result in a researcher folder whose researcher has only the approved-findings preset.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed own-folder draft access; supplied one-participant SQL probe establishes reachability.",
+      "protected_subject": "authorization-authentication"
+    },
+    {
+      "#": 3,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:302 checks partnership_snapshot_current only inside workspaceExport; :314 returns version.data on recordGet. Supplied withdrawal probe observed recordGet 200 and export 404 for the same version."
+      ],
+      "file": "harness/migrations/20261018-research-partnerships.sql",
+      "first_evidence": "harness/migrations/20261018-research-partnerships.sql:301 --    IF p_action='workspaceExport' THEN",
+      "independent_reviewers": [
+        "adversarial",
+        "security"
+      ],
+      "line": 301,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "adversarial",
+        "security"
+      ],
+      "severity": "P1",
+      "suggested_fix": "Use one authoritative current-consent/source guard for snapshot-backed record reads, impacts, publication lists and document bytes, as well as exports. Deny stale releases after withdrawal, consent change or source deletion without rewriting historical versions.",
+      "title": "CWE-284: Recheck source consent before returning findings",
+      "why_it_matters": "After a source participant withdraws, recordGet still returns published findings/results containing that participant. The same version is denied by workspaceExport; supplied SQL/gateway probes reproduced the mismatch.",
+      "precondition": "A published source-snapshot-backed result or finding is read after a represented participant withdraws or current source consent otherwise becomes invalid.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed the export-only consent guard; supplied withdrawal probes establish continued recordGet access.",
+      "protected_subject": "authorization-authentication"
+    },
+    {
+      "#": 4,
+      "autofix_class": "gated_auto",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:376 always returns contentCiphertext; harness/lib/research-partnerships.mjs:96-99 decrypts it into contentBase64 for either flag value."
+      ],
+      "file": "harness/migrations/20261018-research-partnerships.sql",
+      "first_evidence": "harness/migrations/20261018-research-partnerships.sql:374 -- AND (p_payload->>'download' IS DISTINCT FROM 'true' OR self_id=ANY(pub.download_partner_ids) AND pg_catalog.current_setting('research.permissions',true)::jsonb ? 'download_approved_findings')",
+      "independent_reviewers": [
+        "api-contract"
+      ],
+      "line": 374,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "api-contract"
+      ],
+      "severity": "P1",
+      "suggested_fix": "Require the publication download grant and download permission for every response containing original bytes, regardless of a client flag. Keep any view-only response byte-free. Test omitted, false and true download flags for viewers without download rights.",
+      "title": "Document bytes bypass the separate download grant",
+      "why_it_matters": "A publication viewer without download rights can omit download or send false and receive the original document bytes. The gateway always decrypts the ciphertext, so the separate grant is bypassed.",
+      "precondition": "A peer is listed as a publication viewer but not downloader and calls workspaceDocumentGet with download omitted or false for an attached document.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed original bytes are returned when download is omitted or false despite missing download rights.",
+      "protected_subject": "authorization-authentication"
+    },
+    {
+      "#": 5,
+      "autofix_class": "gated_auto",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:316 supplies approvals; app/lib/research-partnership-core.js:268 omits them from recordGet, so harness/lib/research-partnerships.mjs:64 filters them out."
+      ],
+      "file": "app/lib/research-partnership-ui.js",
+      "first_evidence": "app/lib/research-partnership-ui.js:100 -- for(const receipt of approvalReceipts.get(record.id)||[])if(receipt&&receipt.versionId===version.id&&receipt.documentHash===version.contentHash)",
+      "independent_reviewers": [
+        "julik-frontend-races"
+      ],
+      "line": 100,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "julik-frontend-races"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Add approvals to the recordGet response contract, preserve them through publicResult, and hydrate approvalReceipts on workspace load and refresh. Display only receipts matching the current version/hash; test reload after both parties approve.",
+      "title": "Reload hides persisted agreement approval receipts",
+      "why_it_matters": "Reopening an approved agreement hides existing exact-version approvals. SQL returns the receipts, but the public result schema drops them and the UI never hydrates its approvalReceipts map; supplied UI evidence reproduced the missing display.",
+      "precondition": "An approved agreement already has persisted approval receipts and the user reloads or reopens its folder.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed both the response-schema omission and missing UI receipt hydration on reopening.",
+      "protected_subject": "public-contract"
+    },
+    {
+      "#": 6,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:387 requires data.amendsAgreementVersionId to equal v.id; app/lib/research-partnership-ui.js:72-75 freezes the source form."
+      ],
+      "file": "app/lib/research-partnership-ui.js",
+      "first_evidence": "app/lib/research-partnership-ui.js:102 -- request('agreementAmend',{...exact(record,version),data:read(),reason:reason.value})",
+      "independent_reviewers": [
+        "adversarial",
+        "correctness"
+      ],
+      "line": 102,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "adversarial",
+        "correctness"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Seed the new amendment with amendsAgreementVersionId set to the currently executed version.id. Preserve the source agreement/evidence and open the returned new draft. Test an executed agreement and an executed amendment.",
+      "title": "Set the executed source version on linked amendments",
+      "why_it_matters": "The linked-amendment action sends the frozen executed form unchanged. Its source pointer is absent or refers to an earlier agreement, while SQL requires the exact current executed version, so the action fails.",
+      "precondition": "A user opens an executed agreement or executed amendment and chooses the linked-amendment action with a reason.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed the frozen form cannot provide the exact executed source pointer required by SQL."
+    },
+    {
+      "#": 7,
+      "autofix_class": "gated_auto",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-management-ui.js:23-24 and :99 consume location.search/partnerInvite only; app/lib/research-partnership-ui.js:119 contains the otherwise unreachable invitation flow."
+      ],
+      "file": "harness/lib/research-partnerships.mjs",
+      "first_evidence": "harness/lib/research-partnerships.mjs:73 --  const link=new URL('/research-management.html',settings.origin);link.hash='partner-invite='+raw;",
+      "independent_reviewers": [
+        "correctness"
+      ],
+      "line": 73,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "correctness"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Pass location.hash into the shell and consume the generated partner-invite fragment. Clear the invitation route after successful acceptance before loading the workspace. Keep the token out of query strings and test the exact email URL end to end.",
+      "title": "Read the invitation fragment generated by delivery",
+      "why_it_matters": "The generated email URL uses #partner-invite, but the shell reads only a partnerInvite query parameter. Opening the actual link never reaches invitation acceptance, blocking enrollment even with configured mail.",
+      "precondition": "An authenticated researcher follows the exact fragment URL generated by configured invitation mail delivery.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed the generated fragment and shell query parser do not match.",
+      "protected_subject": "public-contract"
+    },
+    {
+      "#": 8,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:432-434 and :461 persist the check/receipt before provider I/O at harness/lib/research-partnerships.mjs:127; research-client.js:31 retains the requestId after 503."
+      ],
+      "file": "harness/migrations/20261018-research-partnerships.sql",
+      "first_evidence": "harness/migrations/20261018-research-partnerships.sql:278 -- RETURN receipt.result||pg_catalog.jsonb_build_object('record',research_private.partnership_record(r),'signing',research_private.partnership_signing(signing),'providerCheckDue',false);",
+      "independent_reviewers": [
+        "reliability"
+      ],
+      "line": 278,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "reliability"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Separate an in-progress refresh lease from a completed receipt. Release or expire the lease on provider failure, persist completion after successful verification, and let the same requestId resume an incomplete check. Test transient provider failure followed by retry.",
+      "title": "Failed signing refresh consumes its retry receipt",
+      "why_it_matters": "If provider refresh fails, the database has already committed its completion receipt and check timestamp. The browser retries the same requestId, but replay skips verification and returns stale signing state.",
+      "precondition": "A configured signing refresh fails after the database context call commits, and the browser retries the same requestId retained after the 503/network failure.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed the receipt commits before provider I/O and the retained requestId suppresses verification on retry.",
+      "protected_subject": "concurrency"
+    },
+    {
+      "#": 9,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:442 reads variables but never uses the approved comparisons field; the supplied synthetic cohort probe returned a merged baseline mean."
+      ],
+      "file": "harness/migrations/20261018-research-partnerships.sql",
+      "first_evidence": "harness/migrations/20261018-research-partnerships.sql:452 -- CASE WHEN p_payload->>'operation' IN ('comparison','trend') THEN sr->>'waveId' ELSE NULL END",
+      "independent_reviewers": [
+        "correctness"
+      ],
+      "line": 452,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "correctness"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Add an approved, allowlisted grouping variable and group comparison results by its response value; retain wave grouping for trend. Until supported, reject comparison honestly instead of labeling a timepoint summary as a group comparison. Test distinct cohorts at one wave.",
+      "title": "Group comparison results by the approved cohort variable",
+      "why_it_matters": "A requested cohort comparison is grouped by waveId, just like a trend, and merges cohorts at the same wave. A supplied unchanged-SQL probe with cohort means 1 and 5 returned one baseline mean of 3.",
+      "precondition": "An approved comparison request asks for cohort/group comparisons with multiple cohorts at one wave.",
+      "validation_note": "Outside the normal eight-finding validator cap; retained from inspected reviewer/merge evidence, without independent validator confirmation."
+    },
+    {
+      "#": 10,
+      "autofix_class": "manual",
+      "confidence": 75,
+      "evidence": [
+        "harness/lib/research-partnerships.mjs:120 persists signingPrepare only after adapter.start; the provider request uses requestId as transactionId in research-signing.mjs:58."
+      ],
+      "file": "harness/lib/research-partnerships.mjs",
+      "first_evidence": "harness/lib/research-partnerships.mjs:119 --   const started=await adapter.start({...context,contentBase64:file.contentBase64,documentHash:payload.documentHash,consent:true,requestId:payload.requestId});",
+      "independent_reviewers": [
+        "reliability"
+      ],
+      "line": 119,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "reliability"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Persist a pending signing intent keyed by requestId before sending. Reconcile uncertain provider creation through transactionId and store the envelope ID before activation; void or reconcile an envelope when local preparation fails. Test provider success followed by local failure.",
+      "title": "Provider envelope can outlive failed local preparation",
+      "why_it_matters": "With a configured provider, an envelope is sent before the local signing session is stored. If local preparation fails, the external envelope remains active without a tracked session for webhook recovery. Incidence was not measured; no live provider was called.",
+      "precondition": "With a configured signing provider, adapter.start succeeds but the following signingPrepare write fails, conflicts, or loses its response before the session is persisted.",
+      "validation_note": "Outside the normal eight-finding validator cap; retained from inspected reviewer/merge evidence, without independent validator confirmation."
+    },
+    {
+      "#": 11,
+      "autofix_class": "gated_auto",
+      "confidence": 75,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:274 selects kind-specific record permissions; app/lib/research-partnership-core.js:86 uses resultDocumentIds for analysis_result."
+      ],
+      "file": "harness/migrations/20261018-research-partnerships.sql",
+      "first_evidence": "harness/migrations/20261018-research-partnerships.sql:374 -- pg_catalog.current_setting('research.permissions',true)::jsonb ? 'view_approved_findings' AND EXISTS(SELECT 1 FROM pg_catalog.jsonb_array_elements_text(COALESCE(ver.data->'supportingDocumentIds','[]')) d WHERE d=document.id::text)",
+      "independent_reviewers": [
+        "api-contract"
+      ],
+      "line": 374,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "api-contract"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Use the recordGet kind-specific view permission in workspaceDocumentGet. Select resultDocumentIds for analysis results and supportingDocumentIds for findings/contributions, while enforcing independent byte-download rights. Test each released kind plus withdrawal/revocation.",
+      "title": "Released contribution and analysis attachments cannot be read",
+      "why_it_matters": "Explicitly authorized peers cannot read released analysis attachments or contribution attachments with only the relevant kind permission. The document gate requires findings permission and only searches supportingDocumentIds.",
+      "precondition": "An explicitly authorized publication peer requests an analysis resultDocumentIds attachment, or a contribution attachment while holding its contribution permission without view_approved_findings.",
+      "validation_note": "Outside the normal eight-finding validator cap; retained from inspected reviewer/merge evidence, without independent validator confirmation."
+    }
+  ],
+  "actionable_findings": [
+    {
+      "#": 1,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-partnership-ui.js:53 -- async function leaveEditor(next){const current=editor;while(current&&(current.dirty||current.saving)){if(!await current.save())return;if(editor!==current)return;}return next();}"
+      ],
+      "file": "app/lib/research-partnership-ui.js",
+      "first_evidence": "app/lib/research-partnership-ui.js:77 -- active.dirty=false;active.saving=request('recordSave',payload);",
+      "independent_reviewers": [
+        "adversarial",
+        "correctness",
+        "julik-frontend-races",
+        "reliability"
+      ],
+      "line": 77,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "adversarial",
+        "correctness",
+        "julik-frontend-races",
+        "reliability"
+      ],
+      "severity": "P1",
+      "suggested_fix": "Keep or restore dirty state on failed saves. Clear only the successfully saved snapshot, preserve edits made during a request, and block navigation/submission until save succeeds. Test failed autosave and explicit save followed by navigation.",
+      "title": "Preserve dirty state when saving a draft fails",
+      "why_it_matters": "A failed manual save or autosave leaves the editor clean. Navigating away then discards the unsaved draft; the supplied synthetic UI probe reproduced this.",
+      "precondition": "A draft has local edits, recordSave fails or returns no result, and the user then navigates or submits.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed the failed-save/navigation path; supplied synthetic UI probes reproduced draft loss.",
+      "protected_subject": "data-loss"
+    },
+    {
+      "#": 2,
+      "autofix_class": "gated_auto",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:121 includes own-folder records without a publication check; :280 permits the folder author to select head/private versions. Supplied unchanged-SQL probe returned draft count=1 and mean=3."
+      ],
+      "file": "harness/migrations/20261018-research-partnerships.sql",
+      "first_evidence": "harness/migrations/20261018-research-partnerships.sql:271 --   can_view:=owner_actor OR author_actor;",
+      "independent_reviewers": [
+        "security"
+      ],
+      "line": 271,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "security"
+      ],
+      "severity": "P1",
+      "suggested_fix": "Apply kind-specific release permissions to owner-created analysis results even within the recipient folder. Enforce them in lists, reads, version selection and downloads while preserving authors' own proposals. Test the approved-findings preset against draft and published results.",
+      "title": "CWE-284: Restrict own-folder analysis results until publication",
+      "why_it_matters": "A researcher with only approved-findings access can read an owner-created draft analysis result in her own folder before privacy review or publication. The supplied SQL probe returned a one-participant summary.",
+      "precondition": "The owner creates a draft analysis_result in a researcher folder whose researcher has only the approved-findings preset.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed own-folder draft access; supplied one-participant SQL probe establishes reachability.",
+      "protected_subject": "authorization-authentication"
+    },
+    {
+      "#": 3,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:302 checks partnership_snapshot_current only inside workspaceExport; :314 returns version.data on recordGet. Supplied withdrawal probe observed recordGet 200 and export 404 for the same version."
+      ],
+      "file": "harness/migrations/20261018-research-partnerships.sql",
+      "first_evidence": "harness/migrations/20261018-research-partnerships.sql:301 --    IF p_action='workspaceExport' THEN",
+      "independent_reviewers": [
+        "adversarial",
+        "security"
+      ],
+      "line": 301,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "adversarial",
+        "security"
+      ],
+      "severity": "P1",
+      "suggested_fix": "Use one authoritative current-consent/source guard for snapshot-backed record reads, impacts, publication lists and document bytes, as well as exports. Deny stale releases after withdrawal, consent change or source deletion without rewriting historical versions.",
+      "title": "CWE-284: Recheck source consent before returning findings",
+      "why_it_matters": "After a source participant withdraws, recordGet still returns published findings/results containing that participant. The same version is denied by workspaceExport; supplied SQL/gateway probes reproduced the mismatch.",
+      "precondition": "A published source-snapshot-backed result or finding is read after a represented participant withdraws or current source consent otherwise becomes invalid.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed the export-only consent guard; supplied withdrawal probes establish continued recordGet access.",
+      "protected_subject": "authorization-authentication"
+    },
+    {
+      "#": 4,
+      "autofix_class": "gated_auto",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:376 always returns contentCiphertext; harness/lib/research-partnerships.mjs:96-99 decrypts it into contentBase64 for either flag value."
+      ],
+      "file": "harness/migrations/20261018-research-partnerships.sql",
+      "first_evidence": "harness/migrations/20261018-research-partnerships.sql:374 -- AND (p_payload->>'download' IS DISTINCT FROM 'true' OR self_id=ANY(pub.download_partner_ids) AND pg_catalog.current_setting('research.permissions',true)::jsonb ? 'download_approved_findings')",
+      "independent_reviewers": [
+        "api-contract"
+      ],
+      "line": 374,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "api-contract"
+      ],
+      "severity": "P1",
+      "suggested_fix": "Require the publication download grant and download permission for every response containing original bytes, regardless of a client flag. Keep any view-only response byte-free. Test omitted, false and true download flags for viewers without download rights.",
+      "title": "Document bytes bypass the separate download grant",
+      "why_it_matters": "A publication viewer without download rights can omit download or send false and receive the original document bytes. The gateway always decrypts the ciphertext, so the separate grant is bypassed.",
+      "precondition": "A peer is listed as a publication viewer but not downloader and calls workspaceDocumentGet with download omitted or false for an attached document.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed original bytes are returned when download is omitted or false despite missing download rights.",
+      "protected_subject": "authorization-authentication"
+    },
+    {
+      "#": 5,
+      "autofix_class": "gated_auto",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:316 supplies approvals; app/lib/research-partnership-core.js:268 omits them from recordGet, so harness/lib/research-partnerships.mjs:64 filters them out."
+      ],
+      "file": "app/lib/research-partnership-ui.js",
+      "first_evidence": "app/lib/research-partnership-ui.js:100 -- for(const receipt of approvalReceipts.get(record.id)||[])if(receipt&&receipt.versionId===version.id&&receipt.documentHash===version.contentHash)",
+      "independent_reviewers": [
+        "julik-frontend-races"
+      ],
+      "line": 100,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "julik-frontend-races"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Add approvals to the recordGet response contract, preserve them through publicResult, and hydrate approvalReceipts on workspace load and refresh. Display only receipts matching the current version/hash; test reload after both parties approve.",
+      "title": "Reload hides persisted agreement approval receipts",
+      "why_it_matters": "Reopening an approved agreement hides existing exact-version approvals. SQL returns the receipts, but the public result schema drops them and the UI never hydrates its approvalReceipts map; supplied UI evidence reproduced the missing display.",
+      "precondition": "An approved agreement already has persisted approval receipts and the user reloads or reopens its folder.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed both the response-schema omission and missing UI receipt hydration on reopening.",
+      "protected_subject": "public-contract"
+    },
+    {
+      "#": 6,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:387 requires data.amendsAgreementVersionId to equal v.id; app/lib/research-partnership-ui.js:72-75 freezes the source form."
+      ],
+      "file": "app/lib/research-partnership-ui.js",
+      "first_evidence": "app/lib/research-partnership-ui.js:102 -- request('agreementAmend',{...exact(record,version),data:read(),reason:reason.value})",
+      "independent_reviewers": [
+        "adversarial",
+        "correctness"
+      ],
+      "line": 102,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "adversarial",
+        "correctness"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Seed the new amendment with amendsAgreementVersionId set to the currently executed version.id. Preserve the source agreement/evidence and open the returned new draft. Test an executed agreement and an executed amendment.",
+      "title": "Set the executed source version on linked amendments",
+      "why_it_matters": "The linked-amendment action sends the frozen executed form unchanged. Its source pointer is absent or refers to an earlier agreement, while SQL requires the exact current executed version, so the action fails.",
+      "precondition": "A user opens an executed agreement or executed amendment and chooses the linked-amendment action with a reason.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed the frozen form cannot provide the exact executed source pointer required by SQL."
+    },
+    {
+      "#": 7,
+      "autofix_class": "gated_auto",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-management-ui.js:23-24 and :99 consume location.search/partnerInvite only; app/lib/research-partnership-ui.js:119 contains the otherwise unreachable invitation flow."
+      ],
+      "file": "harness/lib/research-partnerships.mjs",
+      "first_evidence": "harness/lib/research-partnerships.mjs:73 --  const link=new URL('/research-management.html',settings.origin);link.hash='partner-invite='+raw;",
+      "independent_reviewers": [
+        "correctness"
+      ],
+      "line": 73,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "correctness"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Pass location.hash into the shell and consume the generated partner-invite fragment. Clear the invitation route after successful acceptance before loading the workspace. Keep the token out of query strings and test the exact email URL end to end.",
+      "title": "Read the invitation fragment generated by delivery",
+      "why_it_matters": "The generated email URL uses #partner-invite, but the shell reads only a partnerInvite query parameter. Opening the actual link never reaches invitation acceptance, blocking enrollment even with configured mail.",
+      "precondition": "An authenticated researcher follows the exact fragment URL generated by configured invitation mail delivery.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed the generated fragment and shell query parser do not match.",
+      "protected_subject": "public-contract"
+    },
+    {
+      "#": 8,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:432-434 and :461 persist the check/receipt before provider I/O at harness/lib/research-partnerships.mjs:127; research-client.js:31 retains the requestId after 503."
+      ],
+      "file": "harness/migrations/20261018-research-partnerships.sql",
+      "first_evidence": "harness/migrations/20261018-research-partnerships.sql:278 -- RETURN receipt.result||pg_catalog.jsonb_build_object('record',research_private.partnership_record(r),'signing',research_private.partnership_signing(signing),'providerCheckDue',false);",
+      "independent_reviewers": [
+        "reliability"
+      ],
+      "line": 278,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "reliability"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Separate an in-progress refresh lease from a completed receipt. Release or expire the lease on provider failure, persist completion after successful verification, and let the same requestId resume an incomplete check. Test transient provider failure followed by retry.",
+      "title": "Failed signing refresh consumes its retry receipt",
+      "why_it_matters": "If provider refresh fails, the database has already committed its completion receipt and check timestamp. The browser retries the same requestId, but replay skips verification and returns stale signing state.",
+      "precondition": "A configured signing refresh fails after the database context call commits, and the browser retries the same requestId retained after the 503/network failure.",
+      "validation_status": "confirmed",
+      "validation_reason": "Fresh validator confirmed the receipt commits before provider I/O and the retained requestId suppresses verification on retry.",
+      "protected_subject": "concurrency"
+    },
+    {
+      "#": 9,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:442 reads variables but never uses the approved comparisons field; the supplied synthetic cohort probe returned a merged baseline mean."
+      ],
+      "file": "harness/migrations/20261018-research-partnerships.sql",
+      "first_evidence": "harness/migrations/20261018-research-partnerships.sql:452 -- CASE WHEN p_payload->>'operation' IN ('comparison','trend') THEN sr->>'waveId' ELSE NULL END",
+      "independent_reviewers": [
+        "correctness"
+      ],
+      "line": 452,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "correctness"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Add an approved, allowlisted grouping variable and group comparison results by its response value; retain wave grouping for trend. Until supported, reject comparison honestly instead of labeling a timepoint summary as a group comparison. Test distinct cohorts at one wave.",
+      "title": "Group comparison results by the approved cohort variable",
+      "why_it_matters": "A requested cohort comparison is grouped by waveId, just like a trend, and merges cohorts at the same wave. A supplied unchanged-SQL probe with cohort means 1 and 5 returned one baseline mean of 3.",
+      "precondition": "An approved comparison request asks for cohort/group comparisons with multiple cohorts at one wave.",
+      "validation_note": "Outside the normal eight-finding validator cap; retained from inspected reviewer/merge evidence, without independent validator confirmation."
+    },
+    {
+      "#": 10,
+      "autofix_class": "manual",
+      "confidence": 75,
+      "evidence": [
+        "harness/lib/research-partnerships.mjs:120 persists signingPrepare only after adapter.start; the provider request uses requestId as transactionId in research-signing.mjs:58."
+      ],
+      "file": "harness/lib/research-partnerships.mjs",
+      "first_evidence": "harness/lib/research-partnerships.mjs:119 --   const started=await adapter.start({...context,contentBase64:file.contentBase64,documentHash:payload.documentHash,consent:true,requestId:payload.requestId});",
+      "independent_reviewers": [
+        "reliability"
+      ],
+      "line": 119,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "reliability"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Persist a pending signing intent keyed by requestId before sending. Reconcile uncertain provider creation through transactionId and store the envelope ID before activation; void or reconcile an envelope when local preparation fails. Test provider success followed by local failure.",
+      "title": "Provider envelope can outlive failed local preparation",
+      "why_it_matters": "With a configured provider, an envelope is sent before the local signing session is stored. If local preparation fails, the external envelope remains active without a tracked session for webhook recovery. Incidence was not measured; no live provider was called.",
+      "precondition": "With a configured signing provider, adapter.start succeeds but the following signingPrepare write fails, conflicts, or loses its response before the session is persisted.",
+      "validation_note": "Outside the normal eight-finding validator cap; retained from inspected reviewer/merge evidence, without independent validator confirmation."
+    },
+    {
+      "#": 11,
+      "autofix_class": "gated_auto",
+      "confidence": 75,
+      "evidence": [
+        "harness/migrations/20261018-research-partnerships.sql:274 selects kind-specific record permissions; app/lib/research-partnership-core.js:86 uses resultDocumentIds for analysis_result."
+      ],
+      "file": "harness/migrations/20261018-research-partnerships.sql",
+      "first_evidence": "harness/migrations/20261018-research-partnerships.sql:374 -- pg_catalog.current_setting('research.permissions',true)::jsonb ? 'view_approved_findings' AND EXISTS(SELECT 1 FROM pg_catalog.jsonb_array_elements_text(COALESCE(ver.data->'supportingDocumentIds','[]')) d WHERE d=document.id::text)",
+      "independent_reviewers": [
+        "api-contract"
+      ],
+      "line": 374,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "api-contract"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Use the recordGet kind-specific view permission in workspaceDocumentGet. Select resultDocumentIds for analysis results and supportingDocumentIds for findings/contributions, while enforcing independent byte-download rights. Test each released kind plus withdrawal/revocation.",
+      "title": "Released contribution and analysis attachments cannot be read",
+      "why_it_matters": "Explicitly authorized peers cannot read released analysis attachments or contribution attachments with only the relevant kind permission. The document gate requires findings permission and only searches supportingDocumentIds.",
+      "precondition": "An explicitly authorized publication peer requests an analysis resultDocumentIds attachment, or a contribution attachment while holding its contribution permission without view_approved_findings.",
+      "validation_note": "Outside the normal eight-finding validator cap; retained from inspected reviewer/merge evidence, without independent validator confirmation."
+    }
+  ],
+  "triage_groups": [
+    {
+      "title": "Publication, consent and private documents",
+      "findings": [
+        2,
+        3,
+        4,
+        11
+      ],
+      "kind": "apply-queue",
+      "context": "Separate permission, exact publication, current source consent and byte-download checks are inconsistent across projections.",
+      "preferred_resolution": "Address #2 and #3 in shared authoritative read guards, then #4 and #11 in the kind-aware document gate; verify each denial and each intended release.",
+      "why": "Shared guards prevent one response path from undoing another path's privacy check; the findings have distinct failure modes and remain separate."
+    },
+    {
+      "title": "Draft and agreement state",
+      "findings": [
+        1,
+        5,
+        6
+      ],
+      "kind": "apply-queue",
+      "context": "The editor loses failed saves and does not restore persisted approval or amendment context.",
+      "preferred_resolution": "Fix #1 first, hydrate exact-version receipts for #5, then populate the executed source pointer for #6.",
+      "why": "Preserving unsaved data comes before agreement workflow and display fixes."
+    },
+    {
+      "title": "Provider signing recovery",
+      "findings": [
+        8,
+        10
+      ],
+      "kind": "apply-queue",
+      "context": "Provider calls and local durable state can diverge on transient failures.",
+      "preferred_resolution": "Make #10 track or reconcile external envelope creation, and make #8 retry an incomplete verification rather than replay its preliminary receipt.",
+      "why": "Creation and refresh fail at different boundaries; fixing one does not repair the other."
+    }
+  ],
+  "pre_existing_findings": [],
+  "requirements_completeness": {
+    "plan": "C:\\Users\\yaels\\Documents\\Codex\\2026-10-13\\files-pasted-by-the-user-codex\\work\\research-partnerships\\docs\\plans\\2026-10-18-research-partnerships-continuation.md",
+    "source": "explicit",
+    "requirements": [
+      {
+        "id": "R1",
+        "status": "met",
+        "evidence": "Existing shell/client, fixed RPC authorization and UI components are reused. Original auditList remains available; new mutations call the existing private metadata-only audit.",
+        "findings": []
+      },
+      {
+        "id": "R2",
+        "status": "met",
+        "evidence": "Owner search/study/status/kind filters, pending counts, deadlines and folder links exist; researchers receive scoped workspaces.",
+        "findings": []
+      },
+      {
+        "id": "R3",
+        "status": "partially addressed",
+        "evidence": "Structured application fields and immutable stored transitions exist; failed draft saves can lose edits.",
+        "findings": [
+          1
+        ]
+      },
+      {
+        "id": "R4",
+        "status": "partially addressed",
+        "evidence": "Individual folders, nested-reference checks and same-study isolation exist; intended released attachment access is incomplete.",
+        "findings": [
+          11
+        ]
+      },
+      {
+        "id": "R5",
+        "status": "partially addressed",
+        "evidence": "Exact-version approval/publication/viewer and withdrawal controls exist; current-consent reads and separate byte-download checks have gaps.",
+        "findings": [
+          3,
+          4
+        ]
+      },
+      {
+        "id": "R6",
+        "status": "partially addressed",
+        "evidence": "Approved-findings and collaborative-analysis presets exist without replacing prior explicit grants; own-folder result reads bypass the intended release boundary.",
+        "findings": [
+          2
+        ]
+      },
+      {
+        "id": "R7",
+        "status": "partially addressed",
+        "evidence": "Structured requests and owner-only fixed operations exist; release guards, cohort comparison and result attachments need correction.",
+        "findings": [
+          2,
+          3,
+          9,
+          11
+        ]
+      },
+      {
+        "id": "R8",
+        "status": "met",
+        "evidence": "Eight contribution categories, seven statuses, immutable proposals and separate agreed terms exist; approvals alone remain nonbinding.",
+        "findings": []
+      },
+      {
+        "id": "R9",
+        "status": "partially addressed",
+        "evidence": "All twelve sections, data reuse, missing fields, Hebrew preview and exports exist with explicit legal/template dependencies; save failure handling needs repair.",
+        "findings": [
+          1
+        ]
+      },
+      {
+        "id": "R10",
+        "status": "partially addressed",
+        "evidence": "Immutable revisions, exact comparisons and same-version/hash approvals exist; persisted approval receipts are not restored in the UI.",
+        "findings": [
+          5
+        ]
+      },
+      {
+        "id": "R11",
+        "status": "partially addressed",
+        "evidence": "IP acknowledgement is separate and executed evidence immutable; the UI cannot create the required correctly linked amendment.",
+        "findings": [
+          6
+        ]
+      },
+      {
+        "id": "R12",
+        "status": "partially addressed",
+        "evidence": "Stored invitations are expiring, individual-bound, revocable and single use; the delivered fragment route does not open acceptance.",
+        "findings": [
+          7
+        ]
+      },
+      {
+        "id": "R13",
+        "status": "partially addressed",
+        "evidence": "Provider identity/authority, consent, two signatures, evidence and fail-closed readiness exist; creation/refresh failure recovery needs repair.",
+        "findings": [
+          8,
+          10
+        ]
+      },
+      {
+        "id": "R14",
+        "status": "met",
+        "evidence": "Obligations are extracted only from verified execution, retain source/clause references and require owner review; unsigned proposals remain nonbinding.",
+        "findings": []
+      },
+      {
+        "id": "R15",
+        "status": "partially addressed",
+        "evidence": "Encrypted private documents and scoped reads/exports exist; original-byte download permission and kind-specific released reads are inconsistent.",
+        "findings": [
+          4,
+          11
+        ]
+      },
+      {
+        "id": "R16",
+        "status": "partially addressed",
+        "evidence": "Participant contracting remains separate and connector readiness is honest; withdrawal is not enforced on every released source-backed read.",
+        "findings": [
+          3
+        ]
+      },
+      {
+        "id": "R17",
+        "status": "partially addressed",
+        "evidence": "Unapplied migration, functional source, synthetic SQL/HTTP tests, browser evidence and Hebrew setup/readiness notes exist. Review fixes and final verification remain; DOCX visual rendering is transparently unverified.",
+        "findings": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ]
+      }
+    ],
+    "implementation_units": [
+      {
+        "id": "U0",
+        "status": "met",
+        "evidence": "Reconciled research/security foundation is already present at base ec99d64 and reused; original source checkouts and production are outside this review.",
+        "findings": []
+      },
+      {
+        "id": "U1",
+        "status": "partially addressed",
+        "evidence": "Shared vocabulary, validation, transitions and export contracts exist; recordGet must retain approval receipts.",
+        "findings": [
+          5
+        ]
+      },
+      {
+        "id": "U2",
+        "status": "partially addressed",
+        "evidence": "Private schema, immutable history, CAS/receipts and authorization are implemented; release/consent/document and refresh semantics need correction.",
+        "findings": [
+          2,
+          3,
+          4,
+          8,
+          9,
+          11
+        ]
+      },
+      {
+        "id": "U3",
+        "status": "partially addressed",
+        "evidence": "Typed gateway, encryption, exports, readiness and verified signing adapter exist; invitation routing and provider-state recovery need correction.",
+        "findings": [
+          7,
+          8,
+          10
+        ]
+      },
+      {
+        "id": "U4",
+        "status": "partially addressed",
+        "evidence": "Existing RTL interface has the requested overview, folders, forms and dependency states; save/reload/amendment/invitation workflows need correction.",
+        "findings": [
+          1,
+          5,
+          6,
+          7
+        ]
+      },
+      {
+        "id": "U5",
+        "status": "partially addressed",
+        "evidence": "Local synthetic verification and documentation exist; the actionable review findings and their regression checks must be completed before final local delivery.",
+        "findings": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ]
+      }
+    ],
+    "unaddressed": [],
+    "unrequested_behavior_rules": [],
+    "note": "All planned capabilities have implementation paths; partial entries map to concrete findings. Missing operational/legal inputs are explicit plan dependencies, not omitted product scope."
+  },
+  "learnings": [],
+  "agent_native_gaps": [],
+  "deployment_notes": [],
+  "residual_risks": [],
+  "testing_gaps": [
+    "Cross-study nested references: add a same-researcher/different-study negative test for supportingDocumentIds, sourceSnapshotId and agreement version references (harness/tests/research-partnership-database.test.mjs:59). The SQL currently checks study and partner; this is a consequential security test gap, not a demonstrated authorization defect.",
+    "Verified signer identity: vary provider email/name, clientUserId and identity workflow independently while consent and verification remain positive, and assert no execution (harness/tests/research-signing.test.mjs:71). The adapter currently enforces these matches; the missing negative cases are a security test gap."
+  ],
+  "coverage": {
+    "depth": "full",
+    "reviewer_selection": [
+      {
+        "reviewer": "correctness",
+        "tier": "session",
+        "reason": "always-on"
+      },
+      {
+        "reviewer": "project-standards",
+        "tier": "mid-tier",
+        "reason": "CLAUDE.md fallback governs changed paths"
+      },
+      {
+        "reviewer": "testing",
+        "tier": "mid-tier",
+        "reason": "changed contract tests, fixtures and gateway harness"
+      },
+      {
+        "reviewer": "maintainability",
+        "tier": "mid-tier",
+        "reason": "structural new modules and over 200 executable lines"
+      },
+      {
+        "reviewer": "security",
+        "tier": "session",
+        "reason": "individual record authorization, privacy, crypto and signing"
+      },
+      {
+        "reviewer": "performance",
+        "tier": "mid-tier",
+        "reason": "SQL dashboard queries and analysis transforms"
+      },
+      {
+        "reviewer": "api-contract",
+        "tier": "mid-tier",
+        "reason": "fixed RPC and browser gateway contracts"
+      },
+      {
+        "reviewer": "data-migration",
+        "tier": "mid-tier",
+        "reason": "new private research schema migration"
+      },
+      {
+        "reviewer": "reliability",
+        "tier": "mid-tier",
+        "reason": "external provider and RPC failure/timeout semantics"
+      },
+      {
+        "reviewer": "adversarial",
+        "tier": "session",
+        "reason": "data mutation, retry/idempotency and composition boundaries"
+      },
+      {
+        "reviewer": "julik-frontend-races",
+        "tier": "mid-tier",
+        "reason": "autosave, asynchronous editor and lifecycle/cancellation flows"
+      }
+    ],
+    "notes": [
+      "Scope: current working tree versus ec99d64, including all 13 explicitly requested untracked product/test files (28 files total); docs changes are intent/verification context only.",
+      "Project standards: CLAUDE.md instruction-file fallback, governing every changed path; no CODING_STANDARDS.md or AGENTS.md found.",
+      "Cross-model pass not run: Codex host attested, no different-provider CLI or Bash installed on PATH; no reviewed code sent externally. In-process adversarial fallback ran.",
+      "No previous-comments lens (no PR metadata); no agent-native surface, matching solutions corpus or declared Compound Packs. Purely additive schema did not select a deployment-verification leaf.",
+      "Parent reports full regression 440/440 before one additional UI assertion and focused 45/45 after simplification; this is supplied evidence unless a reviewer independently reran it.",
+      "Parent browser QA used the real local gateway and SQL with synthetic owner/Shoshi/Einat flows and desktop/mobile no-overflow checks. Actual DOCX ZIP/OOXML Hebrew, English, dates and RTL structure verified; visual rendering blocked by missing LibreOffice.",
+      "Live hosted PostgreSQL concurrency, operational signing/provider delivery, Google OAuth and legal/template approval remain external prerequisites, not local test passes.",
+      "Native sandbox temp path was ephemeral between shell invocations; review scratch recovered to stable writable Codex directory before dispatch. All launched reviewer artifact paths refer to this stable run.",
+      "cross-model pass: not run (no different-provider CLI or Bash installed); adversarial lens covered by the in-process fallback.",
+      "All 11 dispatched reviewer detail artifacts were loaded and hydrated; semantic reconciliation merged five duplicate claims. Reviewer agreement shares a serving model and did not raise any confidence anchor.",
+      "Three candidates failed the material-consequence admission check and were discarded; two testing-only candidates moved to testing_gaps. No rejected claim was recycled into a residual risk.",
+      "Confidence suppression: zero. Malformed findings/returns: zero. Missing-first-evidence demotions: zero; first_evidence_backfilled: zero. No settled-decision conflicts were supplied.",
+      "Primary candidates: 11 (four P1, seven P2). One validator batch selects the first eight by severity and stable number, including every P1. Three P2 findings remain unvalidated because of the normal batch cap. Zero shortcut skips: no verified independent cross-model evidence exists.",
+      "Merge inspected current motivating lines, surrounding authorization/consent branches and UI/gateway callers read-only. Reviewer reproductions remain attributed supplied evidence; merge ran no live SQL, service calls, migrations or product writes.",
+      "One bounded validator batch returned all eight mapped verdicts: confirmed 8, rejected 0, unresolved 0, malformed 0, failed 0, shortcut-skipped 0; the wait bound was not exceeded.",
+      "Findings #9, #10 and #11 remain outside the normal eight-finding cap. Their inspected reviewer/merge evidence is retained and they have no independent validator confirmation.",
+      "Report independently retained data-loss protection for #1 and authorization protection for #2-#4; it added public-contract protection for #5/#7 and ordering/concurrency protection for #8. All were confirmed, so no route changed.",
+      "Every explicit requirement and implementation unit has a corresponding implementation path. Partial entries identify the existing findings, not additional missing-scope findings. Reverse plan check found no distinct unrequested behavior rule.",
+      "Existing audit is served by research-management-ui.js:94 auditList; partnership SQL mutations use the existing private audit at :461. No extra audit feature or cosmetic title is required.",
+      "Stage 5c was disabled (agent report-only, apply_local=false). This leaf changed review artifacts only; no product, Git index, live migration, provider call or production state was changed."
+    ],
+    "suppressed_by_confidence": {},
+    "mode_aware_demotions": 2,
+    "first_evidence_backfilled": 0,
+    "missing_first_evidence_demotions": 0,
+    "malformed_findings": 0,
+    "malformed_returns": 0,
+    "validation": {
+      "outcome": "verdicts",
+      "confirmed": 8,
+      "rejected": 0,
+      "unresolved": 0,
+      "malformed": 0,
+      "failed": 0,
+      "shortcut_skipped": 0,
+      "selected": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "not_selected_due_to_cap": [
+        9,
+        10,
+        11
+      ],
+      "bound_exceeded": false,
+      "degraded_p0_p1": []
+    },
+    "protected_subject_reclassifications": [
+      {
+        "#": 5,
+        "protected_subject": "public-contract"
+      },
+      {
+        "#": 7,
+        "protected_subject": "public-contract"
+      },
+      {
+        "#": 8,
+        "protected_subject": "concurrency"
+      }
+    ],
+    "failed_reviewers": [],
+    "compound_packs": {
+      "roots": [],
+      "warnings": [],
+      "errors": []
+    },
+    "no_cross_model_egress": true
+  },
+  "peer": {
+    "outcome": "in-process-fallback",
+    "coverage": "cross-model pass: not run (no different-provider CLI or Bash installed); adversarial lens covered by the in-process fallback."
+  },
+  "verdict_reason": "Four confirmed P1 defects allow draft loss, premature analysis access, reads after source-consent withdrawal and a download-grant bypass. Repair these before completing local delivery, then address the remaining workflow/results defects. Every planned capability has an implementation path; external provider, legal/template, hosted concurrency and OAuth prerequisites remain explicitly outside the local verification claim.",
+  "fix_order": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    9,
+    10,
+    8,
+    11
+  ],
+  "artifact_path": "C:\\Users\\yaels\\Documents\\Codex\\ce-review-runs\\20261018-final-2eae93d4",
+  "run_id": "20261018-final-2eae93d4"
+}

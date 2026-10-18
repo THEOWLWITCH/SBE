@@ -71,6 +71,8 @@ The following are payloads besides common `token`, `action`, and mutation `reque
 
 `ImpactAIState`: `{configured,state:'not_requested'|'not_configured'|'ready'|'failed',summary:null|string}`. Exact `changes` do not depend on AI. No configured model or successful generation means no invented summary. AI output cannot approve, execute or confer rights.
 
+Comparison requests add `groupingVariable`: optional while drafting, required for a completed `comparison` request. It must identify a choice item in a published questionnaire assigned to the study. The source snapshot includes this approved grouping variable, while the requested measured variables remain the result variables. `comparison` groups by the answer to that item; `trend` groups by wave. Missing or unapproved group selectors are rejected rather than producing a merged cohort summary.
+
 ## Versions, status and obligations
 
 Record kinds are exactly application, analysis_request, analysis_result, finding, contribution, agreement, agreement_template, budget, obligation, decision. Documents are separate binary objects. `RECORD_STATUSES` and `RECORD_TRANSITIONS` define exact status/action/authority combinations. Roles are presentation presets, not authority. SQL validates the transition and actual record identity in the committing transaction.
@@ -104,3 +106,9 @@ Exports support UTF-8 text, typed JSON, escaped RTL HTML, and actual OOXML DOCX.
 New `researcher` preset is `[view_study,view_approved_findings]`. Collaborative analysis adds propose_analysis, view_analysis_results, comment_on_findings. Neither grants raw rows, identities, content, approved pseudonymized data, dataset export or finding downloads. Existing explicitly assigned grants and existing PI/assistant presets remain unchanged. `manage_study_questionnaires` maps to existing manage_questionnaires, without introducing a duplicate raw-data right. Permission grants alone do not bypass record viewers, study membership, individual folder scope, consent or ethics.
 
 Focused proof-first tests observed the expected missing-module failure before implementation; a second RED caught workspaceAnalysis incorrectly classified as read before its snapshot contract was corrected. Current focused suite covers frozen browser/CommonJS API, presets, typed/nested validation, money/dates/references, all 12 sections, template completion/placeholders, RTL preview, exact implications, transitions and nonbinding proposals. The core is standalone; existing base core/client/migrations are unchanged in U1. Database transactions, backend/provider adapters, UI forms, native Word/HTML exports and browser verification belong to U2–U5. Operational legal templates, signing provider, real email/Google configuration and production changes remain external prerequisites.
+
+## שימור תיק לאחר ביטול גישה
+
+ביטול חברות במחקר או השבתת זהות החוקרת חוסמים את גישתה גם לרשומות ולמסמכים שכבר שמורים. בעלת המערכת המאומתת יכולה להמשיך לנהל את התיק ההיסטורי ואת מילוי ההתחייבויות, בכפוף לבדיקות ההסכמה ומצב המקור הקיימות. פעולה זו אינה מפעילה את השותפות: `partnershipActive` מחייב גם חברות נוכחית וזהות פעילה.
+
+עובד חתימה מאומת למטרה הייעודית רשאי לשמור אירוע ספק וראיות עבור תהליך חתימה שכבר נשמר, גם לאחר ביטול גישת החוקרת. נשמרות בדיקות התהליך, הגרסה, המסמך והחותמות; אין היתר ליצור תהליך חתימה חדש לאחר הביטול. הסכם שבוצע ותנאיו נשארים בלתי ניתנים לשינוי חד־צדדי.
