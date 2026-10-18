@@ -11,17 +11,51 @@ import { sealRecoveryKit, openRecoveryKit, validateRecoveryPassphrase } from '..
 
 const exec = promisify(execFile);
 const escapePs = value => "'" + value.replaceAll("'", "''") + "'";
+const MATERIAL_LIMIT = 12 * 1024 * 1024;
+const MATERIAL_WIRE_LIMIT = 4 * Math.ceil(MATERIAL_LIMIT / 3);
+
+// This boundary must never propagate SyntaxError text containing confidential JSON.
+function decodePrivateJson(encoded) {
+  let decoded;
+  try {
+    if (!Buffer.isBuffer(encoded) || encoded.length === 0 || encoded.length > MATERIAL_WIRE_LIMIT) throw new Error();
+    const base64 = encoded.toString('utf8');
+    if (base64.length % 4 !== 0 || !/^[A-Za-z0-9+/]+={0,2}$/.test(base64)) throw new Error();
+    decoded = Buffer.from(base64, 'base64');
+    if (decoded.length > MATERIAL_LIMIT || decoded.toString('base64') !== base64) throw new Error();
+    return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(decoded));
+  } catch { throw new Error('Local protected material unavailable'); }
+  finally { decoded?.fill(0); if (Buffer.isBuffer(encoded)) encoded.fill(0); }
+}
+
+export function decodeWindowsRecoveryMaterial(encoded) {
+  try {
+    const material = decodePrivateJson(encoded);
+    if (!material || material.format !== 'be-good-recovery-material/v1' || !Array.isArray(material.archiveKeys) || !Array.isArray(material.providerConfigurations)) throw new Error();
+    const providerConfigurations = material.providerConfigurations.map(provider => {
+      if (!provider || !/^[a-z0-9-]{1,120}$/.test(provider.name) || typeof provider.documentBase64 !== 'string') throw new Error();
+      return { name: provider.name, document: decodePrivateJson(Buffer.from(provider.documentBase64, 'utf8')) };
+    });
+    return { format: material.format, archiveKeys: material.archiveKeys, providerConfigurations };
+  } catch { throw new Error('Local protected material unavailable'); }
+}
+
 export async function loadWindowsRecoveryMaterial(auditRoot) {
   if (process.platform !== 'win32') throw new Error('DPAPI collection requires the original Windows profile');
-  const script = `$ErrorActionPreference='Stop';Add-Type -AssemblyName System.Security;$root=${escapePs(path.resolve(auditRoot))};$keys=@();foreach($folder in @('source-preservation-keys','live-preservation-keys')){ $dir=Join-Path $root $folder;if(Test-Path -LiteralPath $dir){foreach($file in Get-ChildItem -LiteralPath $dir -Filter '*.key.dpapi'){if($file.Name -notmatch '^([0-9]{8}T[0-9]{6}Z-[a-f0-9]{8})\\.key\\.dpapi$'){continue};$id=$Matches[1];$bytes=[Security.Cryptography.ProtectedData]::Unprotect([IO.File]::ReadAllBytes($file.FullName),$null,[Security.Cryptography.DataProtectionScope]::CurrentUser);try{if($bytes.Length -ne 32){throw 'Invalid local key'};$keys+=@{id=$id;keyBase64=[Convert]::ToBase64String($bytes)}}finally{[Array]::Clear($bytes,0,$bytes.Length)}}}};$providers=@();$providerDir=Join-Path $root 'provider-preservation';if(Test-Path -LiteralPath $providerDir){foreach($file in Get-ChildItem -LiteralPath $providerDir -Filter '*.dpapi'){if($file.BaseName -notmatch '^[a-z0-9-]{1,120}$'){continue};$bytes=[Security.Cryptography.ProtectedData]::Unprotect([IO.File]::ReadAllBytes($file.FullName),$null,[Security.Cryptography.DataProtectionScope]::CurrentUser);try{$providers+=@{name=$file.BaseName;document=([Text.Encoding]::UTF8.GetString($bytes)|ConvertFrom-Json)}}finally{[Array]::Clear($bytes,0,$bytes.Length)}}};@{format='be-good-recovery-material/v1';archiveKeys=@($keys);providerConfigurations=@($providers)}|ConvertTo-Json -Depth 40 -Compress`;
-  const child = spawn('pwsh.exe', ['-NoLogo', '-NoProfile', '-Command', script], { stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
+  const script = `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';$WarningPreference='Stop';$jsonBytes=$null;try{Add-Type -AssemblyName System.Security;$root=${escapePs(path.resolve(auditRoot))};$keys=@();foreach($folder in @('source-preservation-keys','live-preservation-keys')){ $dir=Join-Path $root $folder;if(Test-Path -LiteralPath $dir){foreach($file in Get-ChildItem -LiteralPath $dir -Filter '*.key.dpapi'){if($file.Name -notmatch '^([0-9]{8}T[0-9]{6}Z-[a-f0-9]{8})\\.key\\.dpapi$'){continue};$id=$Matches[1];$bytes=[Security.Cryptography.ProtectedData]::Unprotect([IO.File]::ReadAllBytes($file.FullName),$null,[Security.Cryptography.DataProtectionScope]::CurrentUser);try{if($bytes.Length -ne 32){throw 'Invalid local key'};$keys+=@{id=$id;keyBase64=[Convert]::ToBase64String($bytes)}}finally{[Array]::Clear($bytes,0,$bytes.Length)}}}};$providers=@();$providerDir=Join-Path $root 'provider-preservation';if(Test-Path -LiteralPath $providerDir){foreach($file in Get-ChildItem -LiteralPath $providerDir -Filter '*.dpapi'){if($file.BaseName -notmatch '^[a-z0-9-]{1,120}$'){continue};$bytes=[Security.Cryptography.ProtectedData]::Unprotect([IO.File]::ReadAllBytes($file.FullName),$null,[Security.Cryptography.DataProtectionScope]::CurrentUser);try{$providers+=@{name=$file.BaseName;documentBase64=[Convert]::ToBase64String($bytes)}}finally{[Array]::Clear($bytes,0,$bytes.Length)}}};$json=@{format='be-good-recovery-material/v1';archiveKeys=@($keys);providerConfigurations=@($providers)}|ConvertTo-Json -Depth 40 -Compress;$jsonBytes=[Text.Encoding]::UTF8.GetBytes($json);if($jsonBytes.Length -gt ${MATERIAL_LIMIT}){throw 'Material too large'};[Console]::Out.Write([Convert]::ToBase64String($jsonBytes))}catch{exit 1}finally{if($null -ne $jsonBytes){[Array]::Clear($jsonBytes,0,$jsonBytes.Length)}}`;
+  const child = spawn('pwsh.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', script], { stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
   const chunks = []; let size = 0;
-  child.stdout.on('data', bytes => { size += bytes.length; if (size > 12 * 1024 * 1024) child.kill(); else chunks.push(bytes); });
-  child.stderr.on('data', () => {});
-  const code = await new Promise((resolve, reject) => { child.on('error', () => reject(new Error('Local protected material unavailable'))); child.on('close', resolve); });
-  if (code !== 0 || size > 12 * 1024 * 1024) { chunks.forEach(bytes => bytes.fill(0)); throw new Error('Local protected material unavailable'); }
-  const bytes = Buffer.concat(chunks);
-  try { return JSON.parse(bytes.toString('utf8')); } finally { bytes.fill(0); chunks.forEach(chunk => chunk.fill(0)); }
+  child.stdout.on('data', bytes => { size += bytes.length; if (size > MATERIAL_WIRE_LIMIT) { bytes.fill(0); child.kill(); } else chunks.push(bytes); });
+  child.stderr.on('data', bytes => bytes.fill(0));
+  const timeout = setTimeout(() => child.kill(), 60_000); timeout.unref();
+  let bytes;
+  try {
+    const code = await new Promise((resolve, reject) => { child.once('error', () => reject(new Error('Local protected material unavailable'))); child.once('close', resolve); });
+    if (code !== 0 || size > MATERIAL_WIRE_LIMIT) throw new Error('Local protected material unavailable');
+    bytes = Buffer.concat(chunks);
+    return decodeWindowsRecoveryMaterial(bytes);
+  } catch { throw new Error('Local protected material unavailable'); }
+  finally { clearTimeout(timeout); bytes?.fill(0); chunks.forEach(chunk => chunk.fill(0)); }
 }
 
 const page = (body) => `<!doctype html><html lang="he" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>מפתח שחזור לגיבוי BE GOOD</title><style>body{font:18px Arial,sans-serif;max-width:620px;margin:40px auto;padding:20px;line-height:1.6;color:#123}label,input,button{display:block;width:100%;box-sizing:border-box}input,button{font:inherit;padding:12px;margin:8px 0 22px}button{background:#16674c;color:white;border:0;border-radius:8px}small{display:block}</style>${body}</html>`;
@@ -31,7 +65,9 @@ export async function startRecoveryCapture({ output, reportPath, loadMaterial, l
   const token = '/' + randomBytes(32).toString('base64url');
   let complete = false, busy = false, origin;
   const server = http.createServer(async (req, res) => {
-    const respond = (status, body) => { res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'" }); res.end(body); };
+    // Native form POSTs use Origin:null under no-referrer. Keep the exact
+    // Origin check below and suppress referrers only for other origins.
+    const respond = (status, body) => { res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Referrer-Policy': 'same-origin', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'" }); res.end(body); };
     if (req.url !== token || req.headers.host !== new URL(origin).host) return respond(404, 'Not found');
     if (req.method === 'GET') return respond(200, complete ? page('<h1>ערכת השחזור נשמרה</h1><p>אפשר לחזור לצ׳אט. הסיסמה לא נשמרה בטופס.</p>') : form);
     if (req.method !== 'POST' || req.headers.origin !== origin || !/^application\/x-www-form-urlencoded(?:;|$)/.test(req.headers['content-type'] || '')) return respond(403, 'Forbidden');

@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
-import { mkdtemp, readFile, writeFile, access, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, access, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { sealRecoveryKit, openRecoveryKit } from '../lib/recovery-key-kit.mjs';
-import { startRecoveryCapture } from '../../scripts/recovery-key-capture.mjs';
+import { startRecoveryCapture, loadWindowsRecoveryMaterial, decodeWindowsRecoveryMaterial } from '../../scripts/recovery-key-capture.mjs';
 
 const exec = promisify(execFile), passphrase = 'synthetic-only-recovery-passphrase';
 function fixture() { return { format: 'be-good-recovery-material/v1', archiveKeys: [{ id: '20261018T010203Z-a1b2c3d4', keyBase64: randomBytes(32).toString('base64') }], providerConfigurations: [{ name: 'synthetic-provider', document: { token: 'SYNTHETIC-PRIVATE-TOKEN', title: 'גיבוי בדיקה' } }] }; }
@@ -55,6 +55,7 @@ test('loopback capture rejects foreign origins and invalid passwords before load
   t.after(() => new Promise(resolve => session.server.close(resolve)));
   const origin = new URL(session.url).origin;
   const initial = await fetch(session.url); assert.equal(initial.status, 200); assert.equal((await initial.text()).includes('SYNTHETIC-PRIVATE-TOKEN'), false);
+  assert.equal(initial.headers.get('referrer-policy'), 'same-origin', 'native form navigation must preserve its Origin while blocking cross-origin referrers');
   const body = new URLSearchParams({ passphrase, confirmation: passphrase, stored: 'on' });
   assert.equal((await fetch(session.url, { method: 'POST', headers: { Origin: 'https://foreign.invalid' }, body })).status, 403);
   assert.equal((await fetch(session.url, { method: 'POST', headers: { Origin: origin }, body: new URLSearchParams({ passphrase: 'short', confirmation: 'short', stored: 'on' }) })).status, 400);
@@ -65,4 +66,57 @@ test('loopback capture rejects foreign origins and invalid passwords before load
   assert.deepEqual(await openRecoveryKit(JSON.parse(await readFile(output, 'utf8')), passphrase), value);
   assert.equal(JSON.parse(await readFile(reportPath, 'utf8')).passwordRecoveryVerified, true);
   assert.equal(loads, 1);
+});
+
+test('recovery material transport rejects corrupt JSON and byte encodings without exposing input in errors', () => {
+  const marker = 'SYNTHETIC-CONFIDENTIAL-PARSE-MARKER';
+  const inputs = [
+    Buffer.from(Buffer.from(`{"value":"${marker}\nraw-control"}`).toString('base64')),
+    Buffer.from(Buffer.from(`{"value":"${marker}`).toString('base64')),
+    Buffer.from(Buffer.from([0xc3, 0x28]).toString('base64')),
+    Buffer.from('\u001b[32m' + marker),
+    Buffer.from('YR=='),
+    Buffer.alloc(0),
+    Buffer.alloc(16 * 1024 * 1024 + 1, 65)
+  ];
+  for (const input of inputs) {
+    assert.throws(() => decodeWindowsRecoveryMaterial(input), error => error.name === 'Error' && error.message === 'Local protected material unavailable' && !error.stack.includes(marker) && !error.stack.includes('raw-control'));
+    assert.ok(input.every(byte => byte === 0));
+  }
+  const value = fixture();
+  const transported = { ...value, providerConfigurations: value.providerConfigurations.map(provider => ({ name: provider.name, documentBase64: Buffer.from(JSON.stringify(provider.document), 'utf8').toString('base64') })) };
+  const encoded = Buffer.from(Buffer.from(JSON.stringify(transported), 'utf8').toString('base64'));
+  assert.deepEqual(decodeWindowsRecoveryMaterial(encoded), value);
+  assert.ok(encoded.every(byte => byte === 0));
+  const malformedProvider = { ...transported, providerConfigurations: [{ name: 'synthetic-provider', documentBase64: Buffer.from(`{"value":"${marker}\nraw-control"}`).toString('base64') }] };
+  assert.throws(() => decodeWindowsRecoveryMaterial(Buffer.from(Buffer.from(JSON.stringify(malformedProvider), 'utf8').toString('base64'))), error => error.name === 'Error' && error.message === 'Local protected material unavailable' && !error.stack.includes(marker));
+});
+
+test('Windows material collection preserves long Hebrew, newlines, and every JSON control character through private base64 stdout', { skip: process.platform !== 'win32', timeout: 30_000 }, async t => {
+  const root = await mkdtemp(path.join(tmpdir(), 'be-good-material-transport-test-'));
+  t.after(async () => {
+    assert.ok(path.resolve(root).startsWith(path.resolve(tmpdir()) + path.sep + 'be-good-material-transport-test-'));
+    await rm(root, { recursive: true, force: true });
+  });
+  const providerDirectory = path.join(root, 'provider-preservation'), keyDirectory = path.join(root, 'source-preservation-keys');
+  await mkdir(providerDirectory); await mkdir(keyDirectory);
+  const controls = Array.from({ length: 32 }, (_, index) => String.fromCharCode(index)).join('');
+  const document = { provider: 'render', identity: 'srv-synthetic1234', capturedAtISO: '2026-10-18T01:02:03.000Z', payload: { original: { envText: ('בדיקת גיבוי בעברית\nSYNTHETIC_VALUE="quoted"\r\n' + controls + '\u001b[31m\t😀\n').repeat(1200) }, secretFiles: [{ name: 'synthetic.txt', contents: controls + '\nשלום\n' }] } };
+  const escaped = value => "'" + value.replaceAll("'", "''") + "'";
+  const script = `$ErrorActionPreference='Stop';$plain=$null;$cipher=$null;$key=$null;$memory=[IO.MemoryStream]::new();$segment=[ArraySegment[byte]]::new([byte[]]::new(0));try{Add-Type -AssemblyName System.Security;[Console]::OpenStandardInput().CopyTo($memory);$plain=$memory.ToArray();$cipher=[Security.Cryptography.ProtectedData]::Protect($plain,$null,[Security.Cryptography.DataProtectionScope]::CurrentUser);[IO.File]::WriteAllBytes(${escaped(path.join(providerDirectory, 'synthetic-provider.dpapi'))},$cipher);$key=[byte[]](0..31);$cipher=[Security.Cryptography.ProtectedData]::Protect($key,$null,[Security.Cryptography.DataProtectionScope]::CurrentUser);[IO.File]::WriteAllBytes(${escaped(path.join(keyDirectory, '20261018T010203Z-a1b2c3d4.key.dpapi'))},$cipher)}catch{exit 1}finally{if($memory.TryGetBuffer([ref]$segment)){[Array]::Clear($segment.Array,0,$segment.Array.Length)};$memory.Dispose();foreach($bytes in @($plain,$cipher,$key)){if($null -ne $bytes){[Array]::Clear($bytes,0,$bytes.Length)}}}`;
+  const child = spawn('pwsh.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', script], { stdio: ['pipe', 'ignore', 'pipe'], windowsHide: true });
+  child.stderr.on('data', bytes => bytes.fill(0)); child.stdin.on('error', () => {});
+  const plaintext = Buffer.from(JSON.stringify(document), 'utf8');
+  try {
+    child.stdin.end(plaintext);
+    const code = await new Promise((resolve, reject) => { child.once('error', () => reject(new Error('Synthetic protected fixture unavailable'))); child.once('close', resolve); });
+    assert.equal(code, 0, 'Synthetic fixture encryption must succeed');
+  } finally { plaintext.fill(0); }
+  const material = await loadWindowsRecoveryMaterial(root);
+  assert.equal(material.format, 'be-good-recovery-material/v1');
+  assert.equal(material.archiveKeys.length, 1);
+  assert.equal(material.archiveKeys[0].id, '20261018T010203Z-a1b2c3d4');
+  assert.deepEqual(Buffer.from(material.archiveKeys[0].keyBase64, 'base64'), Buffer.from(Array.from({ length: 32 }, (_, index) => index)));
+  assert.equal(material.providerConfigurations.length, 1);
+  assert.deepEqual(material.providerConfigurations[0].document, document);
 });

@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { createHash, createCipheriv, createDecipheriv, randomBytes, randomUUID, scrypt, hkdfSync } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { Readable } from 'node:stream';
+import { Readable, Transform, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
 const exec = promisify(execFile), derivePassword = promisify(scrypt);
@@ -188,6 +188,131 @@ export async function verifyArchive({ archive, secret }) {
   const authenticated = await authenticatedPlaintext(archive, secret);
   try { const { manifest } = await inspectPlaintext(authenticated.plaintext); return safeSummary(manifest, authenticated.archiveSha256); }
   finally { await rm(authenticated.directory, { recursive: true, force: true }); }
+}
+
+// Rekeying inspects plaintext only in bounded memory, then passes it directly
+// into the new cipher. Neither validation pass creates a plaintext file.
+function plaintextInspector() {
+  const prefix = Buffer.alloc(8);
+  let prefixBytes = 0, encoded, encodedBytes = 0, manifest;
+  let entryIndex = 0, remaining = 0, hash, dataBytes = 0, expectedBytes = 0;
+  function finishEntries() {
+    while (entryIndex < manifest.entries.length && remaining === 0) {
+      if (hash.digest('hex') !== manifest.entries[entryIndex].sha256) throw new Error('Backup entry integrity verification failed');
+      entryIndex++;
+      if (entryIndex < manifest.entries.length) { remaining = manifest.entries[entryIndex].size; hash = createHash('sha256'); }
+    }
+  }
+  const inspector = new Transform({
+    transform(bytes, encoding, done) {
+      try {
+        let offset = 0;
+        while (offset < bytes.length) {
+          if (prefixBytes < 8) {
+            const size = Math.min(8 - prefixBytes, bytes.length - offset);
+            bytes.copy(prefix, prefixBytes, offset, offset + size); prefixBytes += size; offset += size;
+            if (prefixBytes === 8) {
+              const length = prefix.readBigUInt64BE();
+              if (length < 2n || length > BigInt(MAX_MANIFEST)) throw new Error('Invalid backup manifest length');
+              encoded = Buffer.alloc(Number(length));
+            }
+          } else if (!manifest) {
+            const size = Math.min(encoded.length - encodedBytes, bytes.length - offset);
+            bytes.copy(encoded, encodedBytes, offset, offset + size); encodedBytes += size; offset += size;
+            if (encodedBytes === encoded.length) {
+              try { manifest = JSON.parse(encoded.toString('utf8')); } catch { throw new Error('Invalid backup manifest JSON'); }
+              expectedBytes = validateManifest(manifest);
+              remaining = manifest.entries[0].size; hash = createHash('sha256'); finishEntries();
+            }
+          } else {
+            if (entryIndex === manifest.entries.length) throw new Error('Backup payload size/integrity mismatch');
+            const size = Math.min(remaining, bytes.length - offset);
+            hash.update(bytes.subarray(offset, offset + size)); remaining -= size; dataBytes += size; offset += size;
+            finishEntries();
+          }
+        }
+        done(null, bytes);
+      } catch (error) { done(error); }
+    },
+    flush(done) {
+      if (!manifest || entryIndex !== manifest.entries.length || dataBytes !== expectedBytes) return done(new Error('Backup payload size/integrity mismatch'));
+      done();
+    }
+  });
+  return { stream: inspector, manifest: () => manifest };
+}
+
+async function encryptedInput(archive) {
+  await noSymlinkAncestors(archive);
+  const handle = await open(archive, constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
+  try {
+    const info = await handle.stat();
+    if (!info.isFile() || info.size < HEADER_SIZE + TAG_SIZE + 8 || info.size > MAX_ARCHIVE + MAX_MANIFEST + HEADER_SIZE + TAG_SIZE + 8) throw new Error('Invalid or truncated backup archive');
+    const header = Buffer.alloc(HEADER_SIZE), tag = Buffer.alloc(TAG_SIZE);
+    if ((await handle.read(header, 0, header.length, 0)).bytesRead !== header.length || (await handle.read(tag, 0, tag.length, info.size - TAG_SIZE)).bytesRead !== tag.length) throw new Error('Invalid or truncated backup archive');
+    if (!header.subarray(0, 8).equals(MAGIC)) throw new Error('Invalid backup archive format');
+    return { handle, info, header, tag };
+  } catch (error) { await handle.close(); throw error; }
+}
+
+function decryptStream(input, key) {
+  const decipher = createDecipheriv('aes-256-gcm', key, input.header.subarray(41, 53));
+  decipher.setAAD(input.header); decipher.setAuthTag(input.tag);
+  return decipher;
+}
+
+async function inspectEncryptedStream(archive, secret) {
+  const input = await encryptedInput(archive);
+  let key;
+  try {
+    key = await cryptoKey(secret, input.header.subarray(9, 41), input.header[8]);
+    const inspector = plaintextInspector();
+    await pipeline(createReadStream(archive, { fd: input.handle.fd, autoClose: false, start: HEADER_SIZE, end: input.info.size - TAG_SIZE - 1 }), decryptStream(input, key), inspector.stream,
+      new Writable({ write(bytes, encoding, done) { done(); } }));
+    return inspector.manifest();
+  } finally { key?.fill(0); await input.handle.close(); }
+}
+
+async function rekeyArchiveImpl({ archive, destination, secret, newSecret }) {
+  const inputPath = path.resolve(archive), outputPath = path.resolve(destination);
+  const samePath = process.platform === 'win32' ? inputPath.toLowerCase() === outputPath.toLowerCase() : inputPath === outputPath;
+  if (samePath) throw new Error('Backup rekey output must differ from its input');
+  if ((Buffer.isBuffer(secret) && Buffer.isBuffer(newSecret) && secret.equals(newSecret)) || (typeof secret === 'string' && secret === newSecret)) throw new Error('Backup rekey requires a different new key');
+  await noSymlinkAncestors(outputPath, { leafMayBeMissing: true });
+  const sourceDigest = await digestFile(inputPath), input = await encryptedInput(inputPath);
+  let oldKey, newKey, output, ownsOutput = false;
+  try {
+    oldKey = await cryptoKey(secret, input.header.subarray(9, 41), input.header[8]);
+    const salt = randomBytes(32), iv = randomBytes(12), mode = Buffer.isBuffer(newSecret) ? 2 : 1;
+    const header = Buffer.concat([MAGIC, Buffer.from([mode]), salt, iv]);
+    newKey = await cryptoKey(newSecret, salt, mode);
+    const cipher = createCipheriv('aes-256-gcm', newKey, iv); cipher.setAAD(header);
+    const inspector = plaintextInspector();
+    output = await open(outputPath, 'wx', 0o600); ownsOutput = true;
+    await output.write(header, 0, header.length, 0);
+    await pipeline(createReadStream(inputPath, { fd: input.handle.fd, autoClose: false, start: HEADER_SIZE, end: input.info.size - TAG_SIZE - 1 }), decryptStream(input, oldKey), inspector.stream, cipher,
+      createWriteStream(outputPath, { fd: output.fd, autoClose: false, start: header.length }));
+    const tag = cipher.getAuthTag();
+    await output.write(tag, 0, tag.length, input.info.size - TAG_SIZE);
+    await output.sync(); await output.close(); output = null;
+    if ((await digestFile(inputPath)).sha256 !== sourceDigest.sha256) throw new Error('Backup archive changed during integrity verification');
+    const verifiedManifest = await inspectEncryptedStream(outputPath, newSecret);
+    const outputDigest = await digestFile(outputPath);
+    return { ...safeSummary(verifiedManifest, outputDigest.sha256), reencrypted: true, sourceArchiveSha256: sourceDigest.sha256, plaintextWrittenToDisk: false };
+  } catch (error) {
+    if (output) await output.close().catch(() => {});
+    if (ownsOutput) await rm(outputPath, { force: true });
+    throw error;
+  } finally { oldKey?.fill(0); newKey?.fill(0); await input.handle.close(); }
+}
+
+export async function rekeyArchive(options) {
+  try { return await rekeyArchiveImpl(options); }
+  catch (error) {
+    if (error.code === 'EEXIST') throw new Error('Backup rekey destination already exists; nothing was overwritten');
+    if (error.message === 'Backup rekey output must differ from its input' || error.message === 'Backup rekey requires a different new key') throw new Error(error.message);
+    throw new Error('Backup rekey integrity/authentication or local input verification failed; new output must not be used');
+  }
 }
 
 export async function restoreArchive({ archive, secret, destination }) {
