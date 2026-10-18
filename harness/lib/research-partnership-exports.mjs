@@ -12,7 +12,7 @@ const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 function render(record,version,template){
  if(record.kind==='agreement'){const rendered=CORE.renderAgreement(version.data,template?.data||template||null);return {...rendered,text:rendered.text+'\n\nחתימת בעלת המערכת\n\n\nהסכמה לחתימה אלקטרונית וחתימה אצל ספק החתימה\n\n\nחתימת החוקרת\n\n\nהסכמה לחתימה אלקטרונית וחתימה אצל ספק החתימה'};}
  const data=CORE.validateRecord(record.kind,version.data);
- function value(f,v){if(f.type==='boolean')return v?'כן':'לא';if(f.type==='enum')return f.choices[v];if(f.type==='tags')return v.join(', ');if(f.type==='rows')return v.map((row,i)=>(i+1)+'. '+f.fields.filter(n=>Object.hasOwn(row,n.id)).map(n=>n.label+': '+value(n,row[n.id])).join(' · ')).join('\n');return String(v);}
+ function value(f,v){if(f.type==='boolean')return v?'כן':'לא';if(f.type==='enum')return f.choices[v];if(f.type==='tags')return (f.id==='requestedPermissions'?v.map(CORE.permissionLabel):v).join(', ');if(f.type==='rows')return v.map((row,i)=>(i+1)+'. '+f.fields.filter(n=>Object.hasOwn(row,n.id)).map(n=>n.label+': '+value(n,row[n.id])).join(' · ')).join('\n');return String(v);}
  return {title:data.title||CORE.RECORD_KINDS[record.kind],ready:true,missingFields:[],text:CORE.RECORD_SCHEMAS[record.kind].fields.filter(f=>Object.hasOwn(data,f.id)).map(f=>f.label+': '+value(f,data[f.id])).join('\n\n')};
 }
 export function agreementHtml(rendered){

@@ -8,6 +8,13 @@ const code={kind:'staff',inst:'Synthetic School'};
 const access={async get(key){return key==='token-secret'?{secret}:key==='code:PERSON1'?code:key==='institutions'?[{name:code.inst,active:true}]:{};}};
 function token(){const b=Buffer.from(JSON.stringify({k:'code',c:'PERSON1',...code,exp:Date.now()+3600000})).toString('base64url');return b+'.'+createHmac('sha256',secret).update(b).digest('base64url');}
 const scope=()=>({studyId:randomUUID(),partnerId:randomUUID(),recordId:randomUUID()});
+
+test('human document exports use Hebrew permission names without changing structured data',async()=>{
+ const version={id:randomUUID(),data:{title:'בקשה בדויה',requestedPermissions:['view_study','view_approved_findings']}},store={async rpc(){return {record:{kind:'application'},version};}};
+ for(const format of ['text','html']){const [status,result]=await handleResearch(access,store,{token:token(),action:'workspaceExport',...scope(),versionId:version.id,format});assert.equal(status,200);const text=Buffer.from(result.contentBase64,'base64').toString('utf8');assert.match(text,/צפייה במחקר/);assert.match(text,/צפייה בממצאים מאושרים/);assert.doesNotMatch(text,/view_study|view_approved_findings/);}
+ const [,json]=await handleResearch(access,store,{token:token(),action:'workspaceExport',...scope(),versionId:version.id,format:'json'});
+ assert.deepEqual(JSON.parse(Buffer.from(json.contentBase64,'base64').toString()).version.data.requestedPermissions,version.data.requestedPermissions);
+});
 test('partnership gateway routes verified typed mutations and rejects authority/unknown nested keys',async()=>{
  const calls=[];const store={async rpc(t,a,p){calls.push({a,p});return {record:{id:p.recordId},version:{data:p.data},providerSecret:'never public'};}};
  const input={token:token(),action:'recordSave',...scope(),requestId:randomUUID(),expectedRevision:0,kind:'agreement',data:{title:'טיוטה'}};

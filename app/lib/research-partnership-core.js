@@ -1,7 +1,7 @@
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory();
-  else root.SBE_RESEARCH_PARTNERSHIPS = factory();
-})(typeof self !== 'undefined' ? self : this, function () {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./research-core.js'));
+  else root.SBE_RESEARCH_PARTNERSHIPS = factory(root.SBE_RESEARCH);
+})(typeof self !== 'undefined' ? self : this, function (base) {
   'use strict';
 
   function freeze(value) {
@@ -82,7 +82,7 @@
       tags('requestedTools', 'כלים מבוקשים', { required: true }), refs('questionnaireVersionIds', 'גרסאות שאלונים', 'instrument'), date('startDate', 'מועד התחלה', { required: true }), date('endDate', 'מועד סיום', { required: true }),
       choice('ethicsStatus', 'מצב אישור אתי', { pending: 'בתהליך', approved: 'אושר', not_required: 'לא נדרש לפי תיעוד' }, { required: true }), text('ethicsDetails', 'פירוט אישורים', { required: true }), text('consentPlan', 'תוכנית הסכמה', { required: true }),
       tags('requestedPermissions', 'הרשאות מבוקשות', { choices: ALL_PERMISSION_IDS, category: 'access', required: true }), text('requestedSupport', 'סיוע מבוקש'), documents()] },
-    analysis_request: { label: RECORD_KINDS.analysis_request, fields: [title(), tags('questions', 'שאלות לניתוח', { required: true }), tags('variables', 'משתנים', { required: true }), tags('comparisons', 'השוואות'), tags('timePoints', 'מועדים'), tags('requestedOutputs', 'תוצרים מבוקשים', { required: true }), choice('operation', 'סוג ניתוח מוצע', ANALYSIS_OPERATIONS, { required: true }), reference('sourceSnapshotId', 'תמונת מקור', 'snapshot'), text('rationale', 'מטרת הניתוח'), documents()] },
+    analysis_request: { label: RECORD_KINDS.analysis_request, fields: [title(), tags('questions', 'שאלות לניתוח', { required: true }), tags('variables', 'משתנים', { required: true }), tags('comparisons', 'השוואות'), text('groupingVariable', 'משתנה קבוצות מאושר להשוואה', { maxLength: 120 }), tags('timePoints', 'מועדים'), tags('requestedOutputs', 'תוצרים מבוקשים', { required: true }), choice('operation', 'סוג ניתוח מוצע', ANALYSIS_OPERATIONS, { required: true }), reference('sourceSnapshotId', 'תמונת מקור', 'snapshot'), text('rationale', 'מטרת הניתוח'), documents()] },
     analysis_result: { label: RECORD_KINDS.analysis_result, fields: [title(), reference('analysisRequestId', 'בקשת הניתוח', 'analysis_request', { required: true }), reference('sourceSnapshotId', 'תמונת מקור', 'snapshot', { required: true }), choice('operation', 'סוג הניתוח', ANALYSIS_OPERATIONS, { required: true }), text('analysisVersion', 'גרסת הניתוח', { required: true }), text('summary', 'סיכום', { required: true }), text('method', 'שיטת הניתוח', { required: true }), text('limitations', 'מגבלות'), text('privacyReview', 'סקירת פרטיות', { required: true, category: 'privacy' }), text('consentReview', 'התאמה להסכמות', { required: true, category: 'privacy' }), reference('consentProtocolVersionId', 'גרסת פרוטוקול הסכמה', 'consent', { required: true }), refs('resultDocumentIds', 'מסמכי תוצאה', 'document')] },
     finding: { label: RECORD_KINDS.finding, fields: [title(), text('summary', 'סיכום הממצא', { required: true }), text('evidence', 'ראיות ותימוכין', { required: true }), reference('sourceSnapshotId', 'תמונת מקור', 'snapshot', { required: true }), reference('analysisResultId', 'תוצאת ניתוח', 'analysis_result'), text('method', 'שיטה', { required: true }), text('analysisVersion', 'גרסת ניתוח', { required: true }), text('toolVersion', 'גרסת כלי', { required: true }), refs('questionnaireVersionIds', 'גרסאות שאלונים', 'instrument', { required: true }), reference('consentProtocolVersionId', 'גרסת פרוטוקול הסכמה', 'consent', { required: true }), text('limitations', 'מגבלות'), text('privacyReview', 'סקירת פרטיות', { required: true, category: 'privacy' }), text('consentReview', 'התאמה להסכמות', { required: true, category: 'privacy' }), documents()] },
     contribution: { label: RECORD_KINDS.contribution, fields: [title(), choice('category', 'סוג התרומה', CONTRIBUTION_CATEGORIES, { required: true }), text('description', 'תיאור התרומה', { required: true }), text('deliverables', 'תוצרים מוצעים'), text('requestedRecognition', 'הכרה מבוקשת'), money('requestedCompensation', 'תמורה מבוקשת'), choice('currency', 'מטבע', CURRENCIES), text('requestedUsage', 'שימוש מבוקש', { category: 'access' }), text('requestedIP', 'תנאי קניין רוחני מבוקשים', { category: 'IP' }), text('requestedOwnerObligations', 'בקשות מבעלת המערכת', { category: 'obligations' }), text('partnerResponsibilities', 'אחריות מוצעת לחוקרת', { category: 'obligations' }), date('dueDate', 'מועד מוצע', { category: 'deadline' }), documents()] },
@@ -164,6 +164,7 @@
     const definitions = schema(kind).fields;
     const checked = validateFields(definitions, data, false);
     const ids = new Set(definitions.filter(f => f.required).map(f => f.id));
+    if (kind === 'analysis_request' && checked.operation === 'comparison') ids.add('groupingVariable');
     for (const id of requiredIds) { if (!definitions.some(f => f.id === id)) invalid(); ids.add(id); }
     const missing = [];
     for (const definition of definitions) {
@@ -189,6 +190,7 @@
     const checked = validateFields(schema(kind).fields, data, options.complete === true);
     for (const [start, end] of [['startDate', 'endDate'], ['effectiveDate', 'terminationDate']]) if (checked[start] && checked[end] && checked[start] > checked[end]) invalid();
     if (kind === 'agreement_template') templateChecks(checked, options.complete === true);
+    if (kind === 'analysis_request' && checked.operation === 'comparison' && options.complete === true && empty(checked.groupingVariable)) invalid();
     return checked;
   }
   function validatePartner(data, options = {}) { return validateFields(PARTNER_FIELDS, data, options.complete === true); }
@@ -224,12 +226,13 @@
     for (const definition of definitions) compare(definition, before[definition.id], after[definition.id], definition.id, definition);
     return changes;
   }
+  function permissionLabel(id) { const key = PERMISSION_ALIASES[id] || id; return base?.PERMISSIONS?.[key] || PERMISSIONS[key] || id; }
   function formatValue(definition, value) {
     if (empty(value)) return '[חסר: ' + definition.label + ']';
     if (definition.type === 'boolean') return value ? 'כן' : 'לא';
     if (definition.type === 'enum') return definition.choices[value];
     if (definition.type === 'rows') return value.map((row, index) => (index + 1) + '. ' + definition.fields.filter(f => !empty(row[f.id])).map(f => f.label + ': ' + formatValue(f, row[f.id])).join(' · ')).join('\n');
-    if (Array.isArray(value)) return value.join(', ');
+    if (Array.isArray(value)) return (definition.id === 'requestedPermissions' ? value.map(permissionLabel) : value).join(', ');
     return String(value);
   }
   function renderAgreement(data, suppliedTemplate) {
@@ -288,5 +291,5 @@
     workspaceImpact: operation({ ...scope, fromVersionId: 'uuid', toVersionId: 'uuid', includeAI: 'boolean?' }, { changes: 'FieldChange[]', approvalsInvalidated: 'boolean', binding: 'false', ai: 'ImpactAIState' }, 'owner or actual record author'),
     workspaceAnalysis: operation({ studyId: 'uuid', partnerId: 'uuid', requestRecordId: 'uuid', sourceSnapshotId: 'uuid? omit to create consent-bound snapshot', operation: 'AnalysisOperation' }, { operation: 'AnalysisOperation', sourceSnapshotId: 'uuid', summary: 'ApprovedAnalysisProjection', provenance: 'AnalysisProvenance', record: 'Record draft analysis_result', version: 'RecordVersion' }, 'owner only; approved request and fixed allowlisted parameters; requestId required')
   };
-  return freeze({ VERSIONS, PERMISSIONS, PERMISSION_ALIASES, ACCESS_PRESETS, ROLE_PRESETS, CLIENT_ACTIONS, READ_ACTIONS, INTERNAL_ACTIONS, CONTRIBUTION_CATEGORIES, RECORD_KINDS, RECORD_STATUSES, RECORD_SCHEMAS, RECORD_TRANSITIONS, AGREEMENT_SECTIONS, ANALYSIS_OPERATIONS, PARTNER_FIELDS, APPROVED_TERMS_FIELDS, OPERATIONS, safeError, validateRecord, validatePartner, validateApprovedTerms, missingFields, canTransition, compareRecords, renderAgreement, isBindingObligation });
+  return freeze({ VERSIONS, PERMISSIONS, PERMISSION_ALIASES, ACCESS_PRESETS, ROLE_PRESETS, CLIENT_ACTIONS, READ_ACTIONS, INTERNAL_ACTIONS, CONTRIBUTION_CATEGORIES, RECORD_KINDS, RECORD_STATUSES, RECORD_SCHEMAS, RECORD_TRANSITIONS, AGREEMENT_SECTIONS, ANALYSIS_OPERATIONS, PARTNER_FIELDS, APPROVED_TERMS_FIELDS, OPERATIONS, safeError, validateRecord, validatePartner, validateApprovedTerms, missingFields, canTransition, compareRecords, renderAgreement, isBindingObligation, permissionLabel });
 });

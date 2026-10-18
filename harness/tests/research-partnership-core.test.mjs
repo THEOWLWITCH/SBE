@@ -16,6 +16,14 @@ test('owner release of approved contributions and analysis results has explicit 
 const application = () => ({title:'בקשת שותפות בדויה',applicationType:'partnership',fullName:'חוקרת בדויה',email:'researcher@example.invalid',institution:'מוסד בדוי',position:'חוקרת',objectives:'בדיקת תהליך',researchQuestions:['מה השתנה?'],method:'תיאורית',population:'צוות בדוי',requestedTools:['communication'],startDate:'2026-10-20',endDate:'2027-01-20',ethicsStatus:'pending',ethicsDetails:'נדרש אישור',consentPlan:'הסכמה נפרדת',requestedPermissions:['view_approved_findings']});
 const template = () => ({title:'תבנית שסופקה לבדיקה בלבד',templateVersion:'synthetic-1',explanationVersion:'synthetic-ip-1',sectionClauses:C.AGREEMENT_SECTIONS.map(section=>({sectionId:section.id,text:section.id==='parties'?'צדדים: {{ownerName}} / {{partnerName}}':'טקסט בדוי שנמסר לבדיקה '+section.label})),ipExplanation:'הסבר בדוי שסופק לבדיקה',mutualIPClause:'סעיף בדוי שסופק לבדיקה',requiredFieldIds:['ownerName','partnerName','studyTitle','purpose','effectiveDate','templateVersionId','ipExplanationVersionId']});
 
+test('agreement preview names permission choices in Hebrew while retaining canonical permission IDs',()=>{
+  const data={title:'הסכם בדוי',requestedPermissions:['view_study','view_approved_findings']};
+  const text=C.renderAgreement(data,template()).text;
+  assert.match(text,/צפייה במחקר/);assert.match(text,/צפייה בממצאים מאושרים/);
+  assert.doesNotMatch(text,/view_study|view_approved_findings/);
+  assert.deepEqual(data.requestedPermissions,['view_study','view_approved_findings']);
+});
+
 test('partnership vocabulary is a deeply frozen browser/CommonJS contract with no public execution callback', () => {
   assert.equal(C.CLIENT_ACTIONS.length,26);
   assert.deepEqual(C.INTERNAL_ACTIONS,['signatureComplete']);
@@ -37,6 +45,14 @@ test('approved findings and collaborative analysis presets have no implicit raw-
   assert.equal(C.ROLE_PRESETS.researcher,C.ACCESS_PRESETS.approved_findings);
   for(const grants of Object.values(C.ACCESS_PRESETS)) for(const grant of ['view_pseudonymized_data','view_identifiable_data','export_data','download_approved_findings','view_approved_pseudonymized_data','export_approved_dataset']) assert.equal(grants.includes(grant),false);
   assert.equal(C.PERMISSION_ALIASES.manage_study_questionnaires,'manage_questionnaires');
+});
+
+test('comparison requests require an explicit cohort field while descriptive and trend requests remain simple',()=>{
+ const data={title:'Cohort comparison',questions:['Synthetic'],variables:['q1'],requestedOutputs:['mean'],operation:'comparison'};
+ assert.ok(C.missingFields('analysis_request',data).includes('groupingVariable'));
+ invalid(()=>C.validateRecord('analysis_request',data,{complete:true}));
+ assert.equal(C.validateRecord('analysis_request',{...data,groupingVariable:'cohort'},{complete:true}).groupingVariable,'cohort');
+ for(const operation of ['descriptive','trend'])assert.doesNotThrow(()=>C.validateRecord('analysis_request',{...data,operation},{complete:true}));
 });
 
 test('complete typed applications retain values and reject arbitrary keys and client authority', () => {

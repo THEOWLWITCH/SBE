@@ -4,6 +4,10 @@
 // https://developers.docusign.com/docs/esign-rest-api/esign101/concepts/embedding/
 // https://developers.docusign.com/docs/esign-rest-api/reference/envelopes/enveloperecipients/list/
 // https://developers.docusign.com/platform/webhooks/connect/
+// Drafts are sent only from an authorized, persisted signing session. Transaction
+// IDs recover uncertain create responses within Docusign's seven-day window.
+// https://developers.docusign.com/docs/esign-rest-api/reference/envelopes/envelopes/update/
+// https://www.docusign.com/blog/developers/common-api-tasks-use-transactionid-to-find-the-envelope-you-created
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { contentHash } from './research-partnership-exports.mjs';
 const fail=code=>{throw Object.assign(new Error(code),{code});};
@@ -33,6 +37,19 @@ export function createSigningAdapter(options={}){
   try{if(binary){const bytes=Buffer.from(await response.arrayBuffer());if(bytes.length<5||bytes.length>8*1024*1024||bytes.subarray(0,5).toString()!=='%PDF-')fail('unavailable');return bytes;}const result=await response.json();if(!result||typeof result!=='object'||Array.isArray(result))fail('unavailable');return result;}catch{fail('unavailable');}
  }
  function current(state){const s=ready();if(!state||state.provider!=='docusign'||!UUID.test(state.providerSessionId||'')||state.authorityPolicyHash!==contentHash(s.policy)||!Array.isArray(state.signers)||state.signers.length!==2||!/^[a-f0-9]{64}$/.test(state.documentHash||'')||!/^[a-f0-9]{64}$/.test(state.providerDocumentHash||''))fail('conflict');return s;}
+ async function transactionEnvelope(requestId){
+  const result=await api('/envelopes?transaction_ids='+encodeURIComponent(requestId)),rows=result.envelopeTransactionStatuses??result.envelopes??[];
+  if(!Array.isArray(rows)||rows.some(row=>row.errorDetails||row.transactionId&&row.transactionId!==requestId)||result.nextUri||Number(result.totalSetSize||rows.length)>1)fail('unavailable');
+  if(!rows.length)return null;
+  if(rows.length!==1||!UUID.test(rows[0].envelopeId||'')||rows[0].status!=='created')fail('conflict');
+  return rows[0];
+ }
+ async function verifyIntent(state){
+  const s=current(state),path='/envelopes/'+state.providerSessionId;
+  const custom=await api(path+'/custom_fields');if(!custom.textCustomFields?.some(f=>f.name==='BEGOOD_VERSION_HASH'&&f.value===state.documentHash)||!custom.textCustomFields.some(f=>f.name==='BEGOOD_SOURCE_DOCUMENT_HASH'&&f.value===state.providerDocumentHash))fail('conflict');
+  const recipients=await api(path+'/recipients?include_tabs=true&include_extended=true');
+  if(recipients.signers?.length!==2||!state.signers.every(expected=>recipients.signers.some(actual=>actual.recipientId===expected.recipientId&&actual.email?.toLowerCase()===expected.email&&actual.name===expected.name&&actual.clientUserId===expected.clientUserId&&actual.identityVerification?.workflowId===s.policy.identityWorkflowId)))fail('conflict');
+ }
  return Object.freeze({
   readiness(){return {configured:!!settings,state:settings?'ready':'not_configured',message:settings?'שירות החתימה הוגדר; השלמה מחייבת אימות עדכני של שני הצדדים.':'נדרשים ספק חתימה, זהויות מאומתות ומדיניות סמכות חתימה מאושרת.'};},
   verifyEvent(raw,headers){
@@ -55,12 +72,17 @@ export function createSigningAdapter(options={}){
    if(signers[0].email===signers[1].email)fail('invalid');
    const providerDocumentHash=createHash('sha256').update(Buffer.from(context.contentBase64,'base64')).digest('hex');
    const recipients={signers:signers.map((p,i)=>({name:p.name,email:p.email,recipientId:p.recipientId,clientUserId:p.clientUserId,embeddedRecipientStartURL:'SIGN_AT_DOCUSIGN',routingOrder:'1',requireIdLookup:'true',identityVerification:{workflowId:s.policy.identityWorkflowId},tabs:{signHereTabs:[{documentId:'1',anchorString:i===0?'חתימת בעלת המערכת':'חתימת החוקרת',anchorUnits:'pixels',anchorYOffset:'24',anchorIgnoreIfNotPresent:'false'}],checkboxTabs:[{documentId:'1',anchorString:i===0?'חתימת בעלת המערכת':'חתימת החוקרת',anchorUnits:'pixels',anchorYOffset:'60',anchorIgnoreIfNotPresent:'false',tabLabel:'BEGOOD_SIGNING_CONSENT',tabGroupLabels:['BEGOOD_CONSENT_GROUP'],selected:'false'}],tabGroups:[{groupLabel:'BEGOOD_CONSENT_GROUP',groupRule:'SelectAtLeast',minimumRequired:'1',maximumAllowed:'1',tabScope:'Document',documentId:'1',validationMessage:'נדרשת הסכמה מפורשת לחתימה אלקטרונית.'}]}})),carbonCopies:signers.map((p,i)=>({name:p.name,email:p.email,recipientId:String(i+3),routingOrder:'2'}))};
-   const envelope=await api('/envelopes',{method:'POST',body:{transactionId:context.requestId,emailSubject:'BE GOOD: חתימת הסכם מחקר',status:'sent',enforceSignerVisibility:'true',eventNotification:{url:s.connectUrl,requireAcknowledgment:'true',includeHMAC:'true',includeDocuments:'false',loggingEnabled:'false',envelopeEvents:[{envelopeEventStatusCode:'completed'}],eventData:{version:'restv2.1',format:'json',includeData:[]}},customFields:{textCustomFields:[{name:'BEGOOD_VERSION_HASH',value:context.documentHash,show:'false',required:'true'},{name:'BEGOOD_SOURCE_DOCUMENT_HASH',value:providerDocumentHash,show:'false',required:'true'}]},documents:[{documentId:'1',name:'research-agreement.docx',fileExtension:'docx',documentBase64:context.contentBase64}],recipients}});
-   if(!UUID.test(envelope.envelopeId||''))fail('unavailable');
    const expiresAt=new Date(Date.now()+7*86400000).toISOString(),authorityPolicyHash=contentHash(s.policy);
-   return {providerSessionId:envelope.envelopeId,providerDocumentHash,expiresAt,authorityPolicyHash,state:{provider:'docusign',providerSessionId:envelope.envelopeId,documentHash:context.documentHash,providerDocumentHash,versionId:context.version.id,authorityPolicyHash,signers,consentRequested:true}};
+   const state={provider:'docusign',documentHash:context.documentHash,providerDocumentHash,versionId:context.version.id,authorityPolicyHash,signers,consentRequested:true};
+   let envelope=await transactionEnvelope(context.requestId),recovered=!!envelope;
+   if(!envelope){try{
+    envelope=await api('/envelopes',{method:'POST',body:{transactionId:context.requestId,emailSubject:'BE GOOD: חתימת הסכם מחקר',status:'created',enforceSignerVisibility:'true',eventNotification:{url:s.connectUrl,requireAcknowledgment:'true',includeHMAC:'true',includeDocuments:'false',loggingEnabled:'false',envelopeEvents:[{envelopeEventStatusCode:'completed'}],eventData:{version:'restv2.1',format:'json',includeData:[]}},customFields:{textCustomFields:[{name:'BEGOOD_VERSION_HASH',value:context.documentHash,show:'false',required:'true'},{name:'BEGOOD_SOURCE_DOCUMENT_HASH',value:providerDocumentHash,show:'false',required:'true'}]},documents:[{documentId:'1',name:'research-agreement.docx',fileExtension:'docx',documentBase64:context.contentBase64}],recipients}});
+    if(!UUID.test(envelope.envelopeId||'')||envelope.status!=='created')fail('unavailable');
+   }catch(error){envelope=await transactionEnvelope(context.requestId);if(!envelope)throw error;recovered=true;}}
+   state.providerSessionId=envelope.envelopeId;if(recovered)await verifyIntent(state);
+   return {providerSessionId:envelope.envelopeId,providerDocumentHash,expiresAt,authorityPolicyHash,state};
   },
-  async view(state,party){const s=current(state),p=state.signers.find(p=>p.party===party);if(!p)fail('unauthorized');const result=await api('/envelopes/'+state.providerSessionId+'/views/recipient',{method:'POST',body:{returnUrl:s.returnUrl,authenticationMethod:'none',email:p.email,userName:p.name,clientUserId:p.clientUserId}});let url;try{url=new URL(result.url);}catch{fail('unavailable');}if(url.protocol!=='https:'||!/(^|\.)docusign\.(net|com)$/i.test(url.hostname)||url.username||url.password)fail('unavailable');return {embeddedUrl:url.href,expiresAt:new Date(Date.now()+300000).toISOString()};},
+  async view(state,party){const s=current(state),p=state.signers.find(p=>p.party===party);if(!p)fail('unauthorized');const path='/envelopes/'+state.providerSessionId,envelope=await api(path);if(envelope.envelopeId!==state.providerSessionId)fail('conflict');if(envelope.status==='created'){await verifyIntent(state);await api(path,{method:'PUT',body:{status:'sent'}});}else if(!['sent','delivered'].includes(envelope.status))fail('conflict');const result=await api(path+'/views/recipient',{method:'POST',body:{returnUrl:s.returnUrl,authenticationMethod:'none',email:p.email,userName:p.name,clientUserId:p.clientUserId}});let url;try{url=new URL(result.url);}catch{fail('unavailable');}if(url.protocol!=='https:'||!/(^|\.)docusign\.(net|com)$/i.test(url.hostname)||url.username||url.password)fail('unavailable');return {embeddedUrl:url.href,expiresAt:new Date(Date.now()+300000).toISOString()};},
   async refresh(state){
    const s=current(state),path='/envelopes/'+state.providerSessionId;
    const envelope=await api(path);if(envelope.envelopeId!==state.providerSessionId)fail('conflict');

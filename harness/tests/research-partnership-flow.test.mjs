@@ -97,6 +97,8 @@ test('real gateway and PostgreSQL preserve researcher applications, releases, do
     assert.ok(aMemberId);
     const latestStudy = (await f.checked(owner, 'studyGet', { studyId: study.id })).study;
     await mutate(owner, 'memberRemove', { studyId: study.id, expectedRevision: latestStudy.revision, memberId: aMemberId });
+    assert.equal((await f.checked(owner, 'recordGet', recordScope)).record.id, recordScope.recordId, 'revocation must preserve owner access to retained proposals');
+    assert.ok((await f.checked(owner, 'workspaceList', { studyId: study.id })).workspaces.some(workspace => workspace.partnerId === scope.partnerId), 'owner can still find the retained researcher folder');
     await denied(a, 'recordGet', recordScope);
     await denied(a, 'workspaceDocumentGet', { ...scope, documentId: doc.document.id });
     await denied(a, 'workspaceDocumentPut', upload);
