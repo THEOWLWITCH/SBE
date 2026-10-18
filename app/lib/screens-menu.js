@@ -49,7 +49,7 @@ window.SBE_SCREENS = [
     { title:'🛠 3. לתכנן ולפעול: מה עושים מחר בבוקר?', items:[
       { file:'activity-planner.html', label:'תכנון פעילות', who:'הרשאת תכנון פעילות' },
       { file:'resilience-studio.html', label:'סטודיו חוסן: השראה ופעולה', who:'הרשאת סטודיו בלבד (עד לאישור המקצועי)' },
-      { file:'message-writer.html', label:'כתיבה מקדמת חוסן', who:'הרשאת כתיבה מקדמת חוסן בלבד' },
+      { file:'message-writer.html', label:'תקשורת מקדמת חוסן חברתי', who:'ניסוח חד־פעמי וניהול תקשורת; שמירת שיחות בקוד אישי' },
     ]},
     { title:'📖 4. ללמוד מהעשייה: מה למדנו?', items:[
       { file:'social-resilience-studies.html', label:'לימודי חוסן חברתי', who:'הרשאת לימודי חוסן חברתי (studies)' },

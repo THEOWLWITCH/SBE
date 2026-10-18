@@ -1,0 +1,89 @@
+{
+  "status": "passed",
+  "scope": "Caller read-only targeted validation of six already-confirmed ce-code-review findings; this does not replace or rerun the completed actual review.",
+  "review": "communication-continuity/docs/reviews/ce-code-review-20261013-unified-e443587/review.json",
+  "base": "e4435874ace293af4107c37ee2310e3b95af8c1e",
+  "validatedAt": "2026-10-13T11:19:33Z",
+  "runtime": "Node v20.19.1",
+  "versions": {
+    "tool": "1.1.0",
+    "prompt": "1.1.1",
+    "engine": "1.1.1",
+    "principles": "18-1.0.0",
+    "schema": 2
+  },
+  "sourceEditedByValidator": false,
+  "sourceDiffInspected": [
+    "app/lib/communication-continuity-ui.js",
+    "app/lib/communication-core.js",
+    "app/lib/demo-hook.js",
+    "harness/lib/communication-ai.mjs",
+    "harness/tests/communication-ui.test.mjs",
+    "harness/tests/communication-ai.test.mjs",
+    "harness/tests/communication-single.test.mjs",
+    "harness/communication-browser-check.mjs"
+  ],
+  "perFinding": [
+    {
+      "number": 1,
+      "status": "passed",
+      "evidence": "Actual signed UI lost-B/equal-revision-C probe retains C in transient document and persisted conversation. Unsubmitted conversion restarts after changed unsigned draft. Already-submitted conversion replays identical destination/request/body and retains later signed draft in both modes."
+    },
+    {
+      "number": 2,
+      "status": "passed",
+      "evidence": "Actual signed STORAGE_LIMIT/413 and INVALID_INPUT/400 material-count probes allow corrected fresh request and exactly one saved row. Independent 12-case UI status matrix resets only these exact pairs; network, unreadable response, 5xx, auth, conflict/request-reuse and 404 retain exact submitted body."
+    },
+    {
+      "number": 3,
+      "status": "passed",
+      "evidence": "Current pending composer fields, signed material wrapper and manual draft are in separate local export annotations. Canonical document/proof are unchanged, new local annotations have no model, archive includes no token or token secret."
+    },
+    {
+      "number": 4,
+      "status": "passed",
+      "evidence": "Independent actual demo recipe VM captures only current edited letter or current clarification. Instructions and version panel text remain excluded."
+    },
+    {
+      "number": 5,
+      "status": "passed",
+      "evidence": "Extractor negative description repairs on second call or rejects after two. Actual signed handler failed repair returns AI_OUTPUT_INVALID/422 with no material, no proof and no conversation writes."
+    },
+    {
+      "number": 6,
+      "status": "passed",
+      "evidence": "Verbatim emotional visible text succeeds unchanged beside objective description in direct extractor and actual signed handler. Only description receives certainty guard; ordinary OCR still preserves identical raw text."
+    }
+  ],
+  "priorProvenance": "Existing exact-draft/source-version and old-signed-provenance tests pass without rewriting original versions.",
+  "checks": [
+    {
+      "name": "focused AI/image tests",
+      "passed": 5,
+      "failed": 0
+    },
+    {
+      "name": "focused signed-handler and prior-provenance tests",
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "name": "focused UI retry/archive tests",
+      "passed": 10,
+      "failed": 0
+    },
+    {
+      "name": "outside-repo caller probe groups",
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "name": "git diff --check for targeted source/tests",
+      "passed": true
+    }
+  ],
+  "independentProbe": "unified-fix-probes.mjs",
+  "independentProbeResults": "unified-fix-probes-result.json",
+  "remainingConcreteDefects": [],
+  "limits": "Synthetic providers and in-memory storage only; root runs full suite and browser separately. No external APIs, deployment, production data, staging or commits performed."
+}

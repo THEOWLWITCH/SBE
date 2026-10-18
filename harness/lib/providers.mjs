@@ -1,7 +1,6 @@
 // מתאם ספקים. הלוגיקה למעלה לא יודעת מול מי היא מדברת.
 import { createRequire } from 'node:module';
-// שפה של הזמנה, לא של חובה — כלל של Begood לכל קריאה למודל (מקור אמת: app/lib/invite-language.js)
-const INVITE = createRequire(import.meta.url)('../../app/lib/invite-language.js');
+import { openAIInput, providerSystem } from './provider-input.mjs';
 // מרכאות אחידות בכל תשובה של המודל: " רגילות, בלי „ ״ ובלי מרכאות כפולות (מקור אמת: app/lib/quotes.js)
 const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
 // עוצמת הווריאציה מופשטת: כל ספק ממפה אותה אחרת.
@@ -201,11 +200,11 @@ const openai = {
   id: 'openai',
   defaultModel: 'gpt-4.1',
   envKey: 'OPENAI_API_KEY',
-  async complete({ model, system, prompt, variation, maxTokens, apiKey }) {
-    const input = system ? `${system}\n\n${prompt}` : prompt;
+  async complete({ model, system, prompt, messages, variation, maxTokens, apiKey, policy }) {
+    const input = openAIInput(system, prompt, messages);
     const r = await post('https://api.openai.com/v1/responses', {
       authorization: `Bearer ${apiKey}`,
-    }, { model, input, max_output_tokens: maxTokens, ...VARIATION[variation].openai });
+    }, { model, input, max_output_tokens: maxTokens, ...(policy === 'communication-continuity' ? { store: false } : {}), ...VARIATION[variation].openai });
     if (r.status === 'incomplete') throw new ProviderError('התוצר נקטע. max_output_tokens נמוך מדי');
     let text = r.output_text || '';
     if (!text && Array.isArray(r.output)) {
@@ -225,11 +224,12 @@ export function getProvider(name) {
   return {
     id: p.id,
     model: process.env.MODEL || p.defaultModel,
+    contextWindowTokens: Number(process.env.COMMUNICATION_CONTEXT_TOKENS) || undefined,
     async complete(opts) {
       let lastErr;
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
-          const r = await p.complete({ ...opts, system: INVITE.apply(opts.system), apiKey, model: opts.model || this.model });
+          const r = await p.complete({ ...opts, system: providerSystem(opts.system, opts.policy), apiKey, model: opts.model || this.model });
           if (r && typeof r.text === 'string') r.text = QUOTES.text(r.text);
           if (r && Array.isArray(r.toolCalls)) r.toolCalls = r.toolCalls.map((c) => ({ ...c, input: QUOTES.deep(c.input) }));
           return r;

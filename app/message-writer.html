@@ -1,328 +1,118 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>כתיבה מקדמת חוסן</title>
-<script src="lib/access-guard.js"></script>
-<script src="lib/example-peek.js" data-tool="writer" defer></script>
-<script src="lib/open-select.js"></script>
-<script src="lib/ai-call.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
-<script src="lib/resilience-advisor-sources.js"></script>
-<script src="lib/report-table.js"></script>
-<script src="lib/quotes.js"></script>
-<script src="lib/product-doc.js"></script>
-<script src="lib/resilience-writer.js"></script>
-<style>
-:root{
-  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
-  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
-  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
-  --hidden:#8F5F2E; --hidden-soft:#F5EAD9;
-  --auto:#4A6B5A; --auto-soft:#DFE9E2;
-  --brick:#8C3A34; --brick-soft:#F5E4E2;
-  --deep:#5B2D8E; --deep-soft:#EDE3F7;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
-    --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
-    --spoken:#82AECE; --spoken-soft:#1E2E3A;
-    --hidden:#CE9C5E; --hidden-soft:#332617;
-    --auto:#83B599; --auto-soft:#1B2A22;
-    --brick:#CF7C74; --brick-soft:#331E1C;
-    --deep:#A97FCC; --deep-soft:#2A1A42; color-scheme:dark
-  }
-}
-:root[data-theme="dark"]{
-  --ground:#12171B; --surface:#1A2126; --surface-2:#232C33;
-  --ink:#E3E7EA; --muted:#94A0A9; --hair:#33404A;
-  --spoken:#82AECE; --spoken-soft:#1E2E3A;
-  --hidden:#CE9C5E; --hidden-soft:#332617;
-  --auto:#83B599; --auto-soft:#1B2A22;
-  --brick:#CF7C74; --brick-soft:#331E1C;
-  --deep:#A97FCC; --deep-soft:#2A1A42; color-scheme:dark
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.55;
-  background:var(--ground);color:var(--ink);direction:rtl}
-.topnav{font-size:13px;padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--hair);
-  display:flex;gap:8px;align-items:center;position:sticky;top:0;z-index:10}
-.topnav button,.topnav a{font:inherit;font-weight:600;padding:4px 10px;border-radius:12px;border:1px solid var(--hair);
-  background:var(--surface);color:var(--ink);text-decoration:none;cursor:pointer}
-.topnav .crumb{margin-inline-start:auto;color:var(--muted);font-size:12px}
-.wrap{max-width:820px;margin:0 auto;padding:1.2rem 1rem 4rem}
-.card{background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:1.1rem 1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(20,28,36,.07)}
-h1{font-family:"Frank Ruhl Libre",serif;font-size:1.8rem;line-height:1.2;margin-bottom:.35rem}
-h2{font-size:1.12rem;color:var(--spoken);margin-bottom:.6rem}
-h3{font-size:1rem;margin:.9rem 0 .4rem}
-p{margin-bottom:.5rem}
-.muted{color:var(--muted);font-size:.9rem}
-label{display:block;font-weight:700;font-size:.9rem;margin:.7rem 0 .25rem}
-input[type=text],input[type=number],select,textarea{width:100%;font:inherit;font-size:.95rem;padding:.5rem .65rem;
-  border:1px solid var(--hair);border-radius:7px;background:var(--ground);color:var(--ink)}
-textarea{min-height:64px;resize:vertical}
-.addrow{display:flex;gap:.5rem;margin-top:.45rem}
-.addrow input{flex:1}
-.addrow .btn{white-space:nowrap;padding:.45rem .8rem;font-size:.88rem}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
-@media screen and (max-width:600px){.row2{grid-template-columns:1fr}}
-.btn{display:inline-block;font:inherit;font-weight:700;padding:.65rem 1.1rem;border-radius:8px;border:none;cursor:pointer;
-  background:var(--spoken);color:#fff}
-.btn:disabled{opacity:.5;cursor:default}
-.btn-ghost{background:transparent;border:1px solid var(--hair);color:var(--ink);font-weight:600}
-.btns{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.8rem}
-.dim{border-top:1px solid var(--hair);padding-top:.6rem;margin-top:.8rem}
-.dim:first-of-type{border-top:none;margin-top:0;padding-top:0}
-.q{padding:.55rem 0;border-bottom:1px dashed var(--hair)}
-.q:last-child{border-bottom:none}
-.q .qt{font-weight:600}
-.q .look{font-size:.82rem;color:var(--muted);margin:.1rem 0 .35rem}
-.q.miss .qt{color:var(--brick)}
-.scale{display:flex;flex-wrap:wrap;gap:.35rem}
-.scale label{margin:0;font-weight:500;font-size:.85rem;border:1px solid var(--hair);border-radius:99px;padding:.22rem .7rem;cursor:pointer;background:var(--ground)}
-.scale input{position:absolute;opacity:0;pointer-events:none}
-.scale label.on{background:var(--spoken);border-color:var(--spoken);color:#fff}
-.rev{font-size:.72rem;font-weight:700;color:var(--brick);background:var(--brick-soft);border-radius:99px;padding:.05rem .45rem;margin-inline-start:.3rem}
-.score-row{display:flex;align-items:center;gap:.6rem;margin:.35rem 0}
-.score-label{flex:0 0 42%;font-size:.88rem}
-.bar{flex:1;height:9px;background:var(--hair);border-radius:5px;overflow:hidden}
-.bar>div{height:100%}
-.val{flex:0 0 2.6rem;text-align:center;font-weight:700;font-size:.85rem;border-radius:5px}
-.t3{background:var(--auto)}.t3b{background:var(--auto-soft);color:var(--auto)}
-.t2{background:var(--hidden)}.t2b{background:var(--hidden-soft);color:var(--hidden)}
-.t1{background:var(--brick)}.t1b{background:var(--brick-soft);color:var(--brick)}
-.t0{background:var(--deep)}.t0b{background:var(--deep-soft);color:var(--deep)}
-.flag{display:inline-block;font-size:.72rem;font-weight:700;border-radius:99px;padding:.05rem .5rem;background:var(--brick-soft);color:var(--brick);margin-inline-start:.4rem}
-.intro{background:var(--spoken-soft);border-inline-start:3px solid var(--spoken);border-radius:6px;padding:.75rem 1rem;margin-bottom:.8rem}
-.lens{background:var(--surface-2);border-radius:6px;padding:.7rem 1rem;margin-bottom:.8rem;font-size:.95rem}
-.act{border:1px solid var(--hair);border-radius:9px;padding:.7rem .9rem;margin:.55rem 0;background:var(--surface)}
-.act-t{font-weight:700}
-.act-tags{display:flex;flex-wrap:wrap;gap:.3rem;margin:.3rem 0}
-.act-tag{font-size:.72rem;padding:.12rem .5rem;border-radius:99px;background:var(--surface-2);color:var(--muted);font-weight:700}
-.act-tag.kind{background:var(--spoken-soft);color:var(--spoken)}
-.act-tag.circle{background:var(--auto-soft);color:var(--auto)}
-.act-tag.game{background:var(--brick-soft);color:var(--brick)}
-.act-d{font-size:.93rem;margin:.2rem 0}
-.act-m{font-size:.84rem;color:var(--muted)}
-.basis{font-size:.78rem;color:var(--muted);margin-top:.3rem}
-.basis a,a.ref{color:var(--spoken);font-weight:600;text-decoration:none;direction:ltr;unicode-bidi:isolate}
-ul.tl{padding-inline-start:1.2rem}
-ul.tl li{margin:.25rem 0}
-.err{color:var(--brick);font-weight:600;margin-top:.5rem}
-.addmore{margin:.35rem 0 .2rem}
-.addmore summary{cursor:pointer;color:var(--spoken);font-size:.85rem;font-weight:600}
-.ctag{font-size:.7rem;font-weight:700;color:var(--auto);background:var(--auto-soft);border-radius:99px;padding:.05rem .45rem;margin-inline-start:.35rem}
-.chat .thinking{color:var(--muted);font-style:italic}
-.chat .msg{border-radius:9px;padding:.7rem .95rem;margin:.6rem 0;font-size:.95rem;line-height:1.65}
-.chat .me{white-space:pre-wrap}
-.rich>*:last-child{margin-bottom:0}
-.rich p{margin:0 0 .7rem}
-.rich h4{font-size:.98rem;color:var(--spoken);margin:.9rem 0 .35rem}
-.rich h4:first-child{margin-top:0}
-.rich ul,.rich ol{margin:.15rem 0 .75rem;padding-inline-start:1.35rem}
-.rich li{margin:.3rem 0}
-.rich li::marker{color:var(--spoken)}
-#report h2{margin-top:1.6rem}
-#report .card>h2:first-child{margin-top:0}
-.act-d{line-height:1.6}
-.chat .me{background:var(--spoken-soft);margin-inline-end:15%}
-.chat .bot{background:var(--surface-2);margin-inline-start:15%}
-#fb-fab{position:fixed;inset-inline-start:16px;bottom:16px;z-index:50;font:inherit;font-weight:700;font-size:.9rem;
-  padding:.6rem 1rem;border-radius:22px;border:none;background:var(--spoken);color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(20,28,36,.28)}
-dialog#fb-dlg{border:1px solid var(--hair);border-radius:10px;background:var(--surface);color:var(--ink);max-width:460px;width:92vw;padding:0}
-dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
-#fb-dlg .fbh{padding:.9rem 1.1rem;border-bottom:1px solid var(--hair);font-weight:700}
-#fb-dlg .fbb{padding:.6rem 1.1rem 1rem}
-#fb-dlg .fbf{padding:.7rem 1.1rem;border-top:1px solid var(--hair);display:flex;gap:.5rem}
-dialog#rw-dlg{border:1px solid var(--hair);border-radius:10px;background:var(--surface);color:var(--ink);max-width:720px;width:94vw;padding:0}
-dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
-#rw-dlg .fbh{padding:.9rem 1.1rem;border-bottom:1px solid var(--hair);font-weight:700}
-#rw-dlg .fbb{padding:.6rem 1.1rem 1rem;max-height:70vh;overflow:auto}
-#rw-dlg .fbf{padding:.7rem 1.1rem;border-top:1px solid var(--hair);display:flex;gap:.5rem}
-.rw-check{list-style:none;padding:0;margin:.3rem 0;font-size:.9rem}
-.rw-check li{padding:.25rem 0;border-bottom:1px dashed var(--hair)}
-.rw-check li.on b{color:var(--auto)}.rw-check li.off b{color:var(--muted)}
-.rw-new{border:1px solid var(--hair);border-radius:8px;padding:.7rem .9rem;background:var(--surface-2)}
-@page{size:A4;margin:24mm 24mm}
-@media print{.topnav,.no-print,#form-area,#fb-fab{display:none!important}body{background:#fff;font-size:11.5pt;line-height:1.6}
-  .wrap{max-width:none;padding:0}.card{box-shadow:none;border:none;padding:0}
-  #report{break-before:auto}
-  h2,h3,h4{break-after:avoid}.act,.rich li,.intro,.lens,.score-row{break-inside:avoid}
-  .bar,.bar>div,.val,.intro,.lens,.act-tag{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
-.attach{border:1px dashed var(--hair);border-radius:9px;padding:.55rem .8rem;margin:.8rem 0}
-.attach summary{cursor:pointer;font-weight:700;color:var(--spoken)}
-.attach-b{padding-top:.5rem}
-#rw-file-prev{max-height:160px;max-width:100%;border-radius:8px;border:1px solid var(--hair);margin:.4rem 0;display:block}
-#rw-file-prev[hidden]{display:none}
-.chips{display:flex;flex-wrap:wrap;gap:.35rem;margin:.3rem 0 .4rem}
-.chip{font:inherit;font-size:.82rem;border:1px solid var(--hair);border-radius:99px;padding:.2rem .7rem;background:var(--ground);color:var(--ink);cursor:pointer}
-.chip:hover{border-color:var(--spoken);color:var(--spoken)}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>תקשורת מקדמת חוסן חברתי · Begood</title>
+  <script src="lib/access-guard.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="lib/communication-continuity.css">
+  <script src="lib/quotes.js" defer></script>
+  <script src="lib/product-doc.js" defer></script>
+  <script src="lib/communication-core.js" defer></script>
+  <script src="lib/vendor/studies/jszip/jszip.min.js" defer></script>
+  <script src="lib/communication-attachments.js" defer></script>
+  <script src="lib/communication-continuity-ui.js" defer></script>
+  <script src="lib/example-peek.js" data-tool="writer,communication-continuity" defer></script>
+  <script src="lib/demo-hook.js" defer></script>
 </head>
 <body>
-<nav class="topnav no-print">
-  <button type="button" onclick="history.back()">→ חזרה</button>
-  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
-  <span class="crumb">Begood › כתיבה מקדמת חוסן</span>
-</nav>
-<div class="wrap">
-  <div class="card">
-    <h1>כתיבה מקדמת חוסן</h1>
-    <p>כותבים בכמה מילים מה רוצים לומר (לצוות, להורים, לתלמידים או לקהילת בית הספר) ומקבלים הודעה או מכתב שכבר <b>כתובים מההתחלה</b> לפי עשרת עקרונות השפה המחזקת. אפשר גם <b>לצרף תמונה או קובץ</b> (שיר, ציור של ילד/ה, ידיעה מהעיתון) ולכתוב מה לעשות איתו. כל העובדות והפרטים המעשיים נשמרים, ובסוף מוצג אילו עקרונות באים לידי ביטוי.</p>
-    <ol class="tl" style="font-size:.92rem;columns:2;column-gap:1.6rem" id="rw-list"></ol>
-    <p data-peek class="muted">העקרונות לקוחים מארגז הכלים של ד״ר יעל שדה לחוסן חברתי בקהילה.</p>
+  <a class="cc-skip" href="#cc-text">מעבר לכתיבה</a>
+  <nav class="topnav" aria-label="ניווט">
+    <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+    <span>Begood › תקשורת מקדמת חוסן חברתי</span>
+  </nav>
+  <header class="cc-header">
+    <div><p class="cc-eyebrow">BE GOOD</p><h1>תקשורת מקדמת חוסן חברתי</h1>
+      <p>מנסחים מסר ומובילים תקשורת מקצועית שמכוונת לאמון, לאמפתיה, לשותפות ולמוכנות.</p></div>
+    <img src="assets/begood-logo.webp" alt="Begood" width="115" height="68">
+  </header>
+  <div class="cc-mode-bar" aria-label="בחירת אופן העבודה">
+    <button type="button" id="cc-mode-single" class="btn" aria-pressed="true">ניסוח חד־פעמי</button>
+    <button type="button" id="cc-mode-continuity" class="btn ghost" aria-pressed="false">ניהול תקשורת</button>
+    <p id="cc-mode-description" class="muted">מסר אחד מתוך הנחיה קצרה. התוכן נשאר בלשונית עד ייצוא או המשך מפורש בניהול תקשורת.</p>
   </div>
-  <div class="card">
-    <div class="row2">
-      <div><label for="rw-aud">למי ההודעה</label>
-        <select id="rw-aud"><option>הורים</option><option>תלמידים</option><option>צוות</option><option>קהילת בית הספר</option><option>אחר</option></select></div>
-      <div><label for="rw-kind">מה כותבים</label>
-        <select id="rw-kind"><option>הודעה שוטפת</option><option>מכתב</option><option>מכתב אישי</option><option>עלון או ניוזלטר</option><option>עדכון בזמן חירום</option><option>הזמנה לאירוע</option><option>הודעה על אירוע קשה</option><option>מכתב תודה והוקרה</option></select></div>
-    </div>
-    <label for="rw-text">מה רוצים לומר?</label>
-    <textarea id="rw-text" maxlength="3000" style="min-height:140px" placeholder="העובדות והנקודות העיקריות: מה קרה או מה מתוכנן, תאריכים ושעות, מה מבקשים מהקוראים. אפשר גם להדביק טיוטה קיימת."></textarea>
-    <details class="attach" id="rw-attach">
-      <summary>📎 צירוף תמונה או קובץ (רשות): שיר, ציור של ילד/ה, ידיעה מהעיתון, מכתב</summary>
-      <div class="attach-b">
-        <input type="file" id="rw-file" accept="image/*,.pdf,application/pdf,.docx,.txt,text/plain">
-        <p class="muted" id="rw-file-status"></p>
-        <img id="rw-file-prev" alt="תצוגה מקדימה" hidden>
-        <label for="rw-file-do">מה לעשות עם הקובץ?</label>
-        <div class="chips" id="rw-file-chips"></div>
-        <textarea id="rw-file-do" maxlength="500" style="min-height:60px" placeholder="למשל: לפתוח את המכתב בשתי שורות מהשיר; לתאר את הציור ולהודות ליוצרת; להגיב לכתבה ולהזמין את ההורים לשיחה"></textarea>
-        <p class="muted">יצירה של ילד/ה: רק בשם פרטי, ואחרי שביקשתם רשות מהילד/ה ומההורים. את התמונה עצמה מצרפים להודעה כששולחים אותה.</p>
-        <button class="btn btn-ghost" type="button" id="rw-file-clear">הסרת הקובץ</button>
+  <main class="cc-layout">
+    <aside class="cc-saved card" aria-labelledby="cc-saved-title" data-communication-mode="continuity" hidden>
+      <div class="cc-row"><h2 id="cc-saved-title">השיחות שלי</h2><button type="button" id="cc-new" class="btn">שיחה חדשה</button></div>
+      <label for="cc-filter" class="cc-label">הצגת שיחות</label>
+      <select id="cc-filter"><option value="all">כל השיחות</option><option value="active">פעילות וממתינות</option><option value="archived">בארכיון</option></select>
+      <button type="button" id="cc-refresh" class="btn ghost cc-refresh">רענון הרשימה</button>
+      <p id="cc-list-status" class="muted" role="status"></p>
+      <div id="cc-list"></div>
+      <p class="cc-privacy-small">השיחות נשמרות בחשבון האישי בשרת. שיתוף קוד הכניסה האישי מאפשר גישה גם לשיחות. אפשר לייצא ולמחוק בכל עת.</p>
+    </aside>
+    <section class="cc-workspace" aria-label="מרחב התקשורת">
+      <div class="card cc-conversation" id="cc-conversation" data-communication-mode="continuity" hidden>
+        <div class="cc-row"><h2 id="cc-title"></h2><span id="cc-status-badge" class="cc-badge"></span></div>
+        <p id="cc-meta" class="muted"></p>
+        <details class="cc-fold">
+          <summary>פרטי השיחה וניהול</summary>
+          <div class="cc-fields">
+            <div><label for="cc-rename">שם השיחה</label><input id="cc-rename" type="text" maxlength="160"></div>
+            <div><label for="cc-status">מצב השיחה</label><select id="cc-status"></select></div>
+          </div>
+          <div class="cc-buttons">
+            <button type="button" id="cc-update" class="btn ghost">שמירת הפרטים</button>
+            <button type="button" id="cc-reopen" class="btn ghost">פתיחה מחדש</button>
+            <button type="button" id="cc-archive" class="btn ghost">העברה לארכיון</button>
+            <button type="button" id="cc-delete" class="btn danger">מחיקת השיחה</button>
+          </div>
+          <div class="cc-buttons" aria-label="ייצוא השיחה">
+            <button type="button" id="cc-export-json" class="btn ghost">ייצוא JSON</button>
+            <button type="button" id="cc-export-text" class="btn ghost">ייצוא טקסט</button>
+            <button type="button" id="cc-export-pdf" class="btn ghost">הדפסה / PDF מעוצב</button>
+          </div>
+        </details>
       </div>
-    </details>
-    <div class="row2">
-      <div><label for="rw-local">פרטים מקומיים לשילוב (רשות)</label>
-        <input id="rw-local" type="text" maxlength="300" placeholder="שמות, מקום מוכר, סיפור קטן מהשבוע"></div>
-      <div><label for="rw-sign">חתימה (רשות)</label>
-        <input id="rw-sign" type="text" maxlength="80" placeholder="למשל: רותי, המחנכת של ז׳2"></div>
-    </div>
-    <div class="btns">
-      <button class="btn" id="rw-go" type="button">כתיבת ההודעה</button>
-      <button class="btn btn-ghost sbe-sysonly" id="rw-example" type="button">דוגמה</button>
-    </div>
-    <p class="err" id="rw-err" hidden></p>
-  </div>
-  <div class="card" id="rw-card" hidden><div id="rw-out"></div></div>
-</div>
-<script>
-(function(){
-'use strict';
-// כתיבה מקדמת חוסן — מסך עצמאי (הרשאת writer בלבד). אותו כלי כמו בפרקטי ובנוגי.
-const SRC = window.SBE_ADVISOR_SOURCES;
-const AI_SERVER = 'https://sbe-server.onrender.com';
-const STORE = window.sbeUserKey ? sbeUserKey('sbe.writer.v1') : 'sbe.writer.v1:anon'; // לפי משתמש/ת (lib/access-guard.js)
-const F = k=>document.getElementById(k);
-try{ const h=sessionStorage.getItem('sbe.session.homeUrl'); if(h) F('nav-home').href=h; }catch(e){}
-function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=String(text);return n;}
-function withRefs(text){ // טקסט עם [מפתח] → קישורים למקורות; מפתח לא מוכר נשאר טקסט
-  const frag=document.createDocumentFragment();
-  String(text||'').split(/(\[[A-Za-z]+[0-9]{4}\])/).forEach(part=>{
-    const m=part.match(/^\[([A-Za-z]+[0-9]{4})\]$/);
-    if(m&&SRC.byKey[m[1]]&&SRC.byKey[m[1]].hidden){frag.appendChild(document.createTextNode('[ד״ר יעל שדה, Begood]'));}
-    else if(m&&SRC.byKey[m[1]]){const a=el('a','ref',m[1]);a.href='resilience-advisor-sources.html#'+m[1];a.target='_blank';a.title=SRC.byKey[m[1]].apa;frag.appendChild(document.createTextNode('['));frag.appendChild(a);frag.appendChild(document.createTextNode(']'));}
-    else if(!m)frag.appendChild(document.createTextNode(part)); // מפתח שאינו ברשימה — לא מוצג
-  });
-  return frag;
-}
-function inlineRich(text){ // **מודגש** → הדגשה, [מפתח] → קישור; כוכביות בודדות לא מוצגות
-  const frag=document.createDocumentFragment();
-  String(text||'').split(/\*\*([^*]+)\*\*/).forEach((part,i)=>{
-    part=part.replace(/\*\*/g,'');
-    if(i%2){const b=el('b');b.appendChild(withRefs(part));frag.appendChild(b);}else frag.appendChild(withRefs(part));
-  });
-  return frag;
-}
-// טקסט ארוך → פסקאות, תבליטים, רשימות ממוספרות ותת־כותרות, עם רווח ביניהם (לקריאה נוחה)
-function richText(text){
-  const box=el('div','rich');let list=null;
-  const close=()=>{list=null;};
-  String(text||'').replace(/\r/g,'').split('\n').forEach(raw=>{
-    const line=raw.trim();
-    if(!line){close();return;}
-    let m;
-    if((m=line.match(/^#{1,6}\s*(.+)$/))){close();const h=el('h4');h.appendChild(inlineRich(m[1]));box.appendChild(h);return;}
-    if((m=line.match(/^(?:[-•*●▪]|–)\s+(.+)$/))){if(!list||list.tagName!=='UL'){list=el('ul');box.appendChild(list);}const li=el('li');li.appendChild(inlineRich(m[1]));list.appendChild(li);return;}
-    if((m=line.match(/^(\d{1,2})[.)]\s+(.+)$/))){if(!list||list.tagName!=='OL'){list=el('ol');list.start=+m[1];box.appendChild(list);}const li=el('li');li.appendChild(inlineRich(m[2]));list.appendChild(li);return;}
-    if((m=line.match(/^\*\*([^*]+)\*\*[:：]?$/))){close();const h=el('h4');h.appendChild(inlineRich(m[1]));box.appendChild(h);return;}
-    close();const p=el('p');p.appendChild(inlineRich(line));box.appendChild(p);
-  });
-  return box;
-}
-async function complete(system,messages,maxTokens,review){
-  // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
-  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},480000)||'');
-}
-
-
-// ── כתיבה מקדמת חוסן (lib/resilience-writer.js) ──
-SBE_WRITER.mount({F,el,inlineRich,richText,complete,onStart:()=>save()});
-
-SBE_WRITER.PRINCIPLES.forEach(p=>F('rw-list').appendChild(el('li',null,p)));
-// ה-out נמצא בכרטיס שמוצג רק כשיש תוצאה
-new MutationObserver(()=>{F('rw-card').hidden=!F('rw-out').childNodes.length;}).observe(F('rw-out'),{childList:true});
-// ── רשימות שאפשר להעשיר: נמענים וסוגי הודעות (רשימות פתוחות בשרת: writer-aud, writer-kind) ──
-const ACCESS='https://sbe-server.onrender.com/api/access';
-function accessApi(body){return fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json().catch(()=>({})).then(d=>{d._status=r.status;return d;}));}
-function token(){try{return sessionStorage.getItem('sbe.session.token')||'';}catch(e){return '';}}
-let IS_SYS=false;try{IS_SYS=sessionStorage.getItem('sbe.session.homeUrl')==='admin.html?role=sys';}catch(e){}
-function addableSelect(id,listName,what){
-  const sel=F(id);const base=[...sel.options].map(o=>o.value).filter(Boolean);let extra=[];
-  const wrap=document.createElement('details');wrap.className='addmore no-print';
-  const sm=document.createElement('summary');sm.textContent='לא מוצאים? הוספה לרשימה';wrap.appendChild(sm);
-  const row=document.createElement('div');row.className='addrow';
-  const inp=document.createElement('input');inp.type='text';inp.maxLength=80;inp.placeholder='אפשר להקליד '+what+', יתווסף לרשימה של כולם';
-  const btn=document.createElement('button');btn.type='button';btn.className='btn btn-ghost';btn.textContent='הוספה לרשימה';
-  row.appendChild(inp);row.appendChild(btn);wrap.appendChild(row);
-  const msg=document.createElement('p');msg.className='muted';msg.hidden=true;wrap.appendChild(msg);
-  const adm=document.createElement('div');wrap.appendChild(adm);
-  sel.insertAdjacentElement('afterend',wrap);
-  function render(keep){
-    const cur=keep!=null?keep:sel.value;
-    [...sel.querySelectorAll('optgroup,option[data-c]')].forEach(n=>n.remove());
-    const ex=extra.filter(v=>!base.includes(v));if(cur&&!base.includes(cur)&&!ex.includes(cur))ex.push(cur);
-    if(ex.length){const g=document.createElement('optgroup');g.label='נוספו על ידי אנשי חינוך';
-      ex.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;o.dataset.c='1';g.appendChild(o);});sel.appendChild(g);}
-    sel.value=cur;
-    adm.textContent='';
-    if(IS_SYS&&extra.length){adm.appendChild(el('p','muted','מנהלת המערכת: הסרה מהרשימה:'));
-      extra.forEach(v=>{const r=el('div');r.style.cssText='display:flex;gap:.5rem;align-items:center;margin:.25rem 0';r.appendChild(el('span',null,v)).style.flex='1';
-        const b=el('button','btn btn-ghost','הסרה');b.type='button';b.style.cssText='padding:.2rem .6rem;font-size:.8rem';
-        b.addEventListener('click',()=>{if(!confirm('להסיר את "'+v+'" מהרשימה של כולם?'))return;
-          accessApi({action:'listRemove',name:listName,value:v,token:token()}).then(d=>{if(d.items){extra=d.items;render();}});});
-        r.appendChild(b);adm.appendChild(r);});}
-  }
-  btn.addEventListener('click',()=>{
-    const v=inp.value.replace(/\s+/g,' ').trim();msg.hidden=false;
-    if(v.length<2){msg.textContent='אפשר להקליד ערך ואז ללחוץ על "הוספה לרשימה".';return;}
-    btn.disabled=true;msg.textContent='מוסיפה לרשימה...';
-    const done=(t)=>{render(v);inp.value='';msg.textContent=t;sel.dispatchEvent(new Event('change'));save();};
-    accessApi({action:'listAdd',name:listName,value:v,token:token()}).then(d=>{
-      if(d.items){extra=d.items;done('נוסף לרשימה של כולם ונבחר ✓');}
-      else done(d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם, אפשר להיכנס עם ההרשאה המתאימה.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).');
-    }).catch(()=>done('נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).')).finally(()=>{btn.disabled=false;});
-  });
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();btn.click();}});
-  accessApi({action:'listGet',name:listName}).then(d=>{if(Array.isArray(d.items)){extra=d.items;render();}}).catch(()=>{});
-  return {ensure:v=>render(v)};
-}
-const AUD_LIST=addableSelect('rw-aud','writer-aud','נמען/ת (למשל: ועד ההורים, צוות המטבח)');
-const KIND_LIST=addableSelect('rw-kind','writer-kind','סוג הודעה (למשל: ברכה לחג, סיכום טיול)');
-function save(){try{const v={};['rw-aud','rw-kind','rw-text','rw-local','rw-sign'].forEach(k=>v[k]=F(k).value);localStorage.setItem(STORE,JSON.stringify(v));}catch(e){}}
-try{const v=JSON.parse(localStorage.getItem(STORE)||'null');if(v){if(v['rw-aud'])AUD_LIST.ensure(v['rw-aud']);if(v['rw-kind'])KIND_LIST.ensure(v['rw-kind']);['rw-text','rw-local','rw-sign'].forEach(k=>{if(v[k])F(k).value=v[k];});}}catch(e){}
-['rw-aud','rw-kind','rw-text','rw-local','rw-sign'].forEach(k=>{F(k).addEventListener('input',save);F(k).addEventListener('change',save);});
-F('rw-example').addEventListener('click',()=>{F('rw-aud').value='הורים';F('rw-kind').value='עדכון בזמן חירום';
-  F('rw-text').value='מחר הלימודים מרחוק בגלל המצב הביטחוני. כניסה לזום ב-8:00 לפי המערכת הרגילה. מי שאין לו מחשב — לפנות למזכירות עד 18:00 היום. השאלנו כבר 12 מחשבים. המורים יתקשרו לכל תלמיד במהלך השבוע.';
-  F('rw-local').value='';F('rw-sign').value='צוות בית הספר';save();});
-})();
-</script>
-<script src="lib/demo-hook.js"></script>
+      <section class="card cc-composer" aria-labelledby="cc-composer-title">
+        <h2 id="cc-composer-title">מה רוצים לומר?</h2>
+        <label for="cc-text" class="sr-only">הנחיה, הודעה, תיאור המצב או מטרה</label>
+        <textarea id="cc-text" rows="5" placeholder="למשל: כתבי הודעה להורים על מפגש הכיתה ביום חמישי בשעה 18:00, עם הזמנה לשיתוף פעולה."></textarea>
+        <details class="cc-fold">
+          <summary>פרטים והנחיה (רשות)</summary>
+          <div class="cc-fields">
+            <div data-communication-mode="continuity" hidden><label for="cc-input-kind">סוג הטקסט</label><select id="cc-input-kind"><option value="received">הודעה שהתקבלה</option><option value="sent">הודעה שכבר נשלחה</option><option value="note">תיאור מצב, החלטה או הערה</option></select></div>
+            <div><label for="cc-audience">למי פונים?</label><input id="cc-audience" type="text" maxlength="120" list="cc-audiences" placeholder="למשל: הורים, צוות או תלמידים"><datalist id="cc-audiences"><option value="הורים"><option value="צוות"><option value="תלמידים"><option value="קהילת בית הספר"></datalist></div>
+            <div data-communication-mode="single"><label for="cc-format">מה כותבים?</label><input id="cc-format" type="text" maxlength="120" list="cc-formats" placeholder="הודעה, מכתב, הזמנה או כל נוסח מקצועי"><datalist id="cc-formats"><option value="הודעה שוטפת"><option value="מכתב"><option value="מכתב אישי"><option value="עלון או ניוזלטר"><option value="עדכון בזמן חירום"><option value="הזמנה לאירוע"><option value="הודעה על אירוע קשה"><option value="מכתב תודה והוקרה"></datalist></div>
+            <div data-communication-mode="single"><label for="cc-local">פרטים מקומיים לשילוב (רשות)</label><textarea id="cc-local" rows="2" maxlength="12000" placeholder="שמות, מקום מוכר או עובדות נוספות שאפשר לשלב"></textarea></div>
+            <div data-communication-mode="single"><label for="cc-signature">חתימה (רשות)</label><input id="cc-signature" type="text" maxlength="500" placeholder="למשל: צוות בית הספר"></div>
+          </div>
+          <label for="cc-instruction">מה כדאי לקחת בחשבון?</label>
+          <textarea id="cc-instruction" rows="2" placeholder="אפשר לכתוב מטרה, סגנון או פרטים נוספים לניסוח"></textarea>
+          <div data-communication-mode="single" class="cc-buttons"><button type="button" id="cc-single-import" class="btn ghost">ייבוא פרטי טיוטה מהכותב הקודם</button><p id="cc-single-import-status" class="muted" role="status"></p></div>
+        </details>
+        <details class="cc-fold cc-attachment">
+          <summary>צירוף תמונה, צילום מסך או קובץ (רשות)</summary>
+          <p class="cc-disclosure" id="cc-upload-disclosure">תמונות ו־PDF נשלחים לעיבוד אצל ספק המודל שהוגדר ב־BE GOOD, וייתכן שהם כוללים פרטים מזהים. אפשר להסיר פרטים שאינם נחוצים לפני הצירוף. קובצי TXT ו־Word נקראים בדפדפן. בניסוח חד־פעמי, הטקסט או תיאור התמונה נשארים בלשונית. הקובץ המקורי אינו נשמר בשרת.</p>
+          <label for="cc-file">בחירת קובץ: תמונה, PDF, DOCX או TXT</label>
+          <input id="cc-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,.pdf,application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.txt,text/plain">
+          <p id="cc-file-status" class="muted" role="status"></p>
+          <button type="button" id="cc-file-clear" class="btn ghost" hidden>הסרת הקובץ</button>
+          <div id="cc-single-materials" data-communication-mode="single"></div>
+        </details>
+        <div class="cc-buttons" data-communication-mode="continuity" hidden><button type="button" id="cc-save-input" class="btn ghost">שמירת הטקסט בשיחה</button></div>
+        <p class="cc-disclosure" id="cc-ai-disclosure">ההנחיה והחומרים שתבחרי נשלחים לעיבוד אצל ספק המודל שהוגדר במערכת. בניסוח חד־פעמי הם והטיוטות נשארים בלשונית בלבד; מעבר לניהול תקשורת אינו שומר אותם. שמירה מתבצעת רק בפעולת "המשך בניהול תקשורת". התוצאה היא טיוטה לבדיקה ולעריכה לפני השימוש.</p>
+        <div class="cc-buttons" data-communication-mode="single"><button type="button" id="cc-single-generate" class="btn">ניסוח המסר</button><button type="button" id="cc-single-new" class="btn ghost">ניסוח חדש</button></div>
+        <div id="cc-main-actions" class="cc-main-actions" aria-label="פעולות BE GOOD" data-communication-mode="continuity" hidden></div>
+        <p class="muted cc-sent-notice" data-communication-mode="continuity" hidden>סימון "שלחתי את ההודעה" שומר את הנוסח שנשלח. השליחה עצמה נעשית בדרך שבחרת.</p>
+      </section>
+      <div id="cc-feedback" class="card cc-feedback" aria-live="polite" hidden>
+        <p id="cc-feedback-text"></p><progress id="cc-progress" hidden aria-label="עיבוד הבקשה"></progress>
+        <div class="cc-buttons"><button type="button" id="cc-retry" class="btn ghost" hidden>ניסיון חוזר של אותה בקשה</button><button type="button" id="cc-conflict-refresh" class="btn ghost" hidden>טעינת השיחה העדכנית</button></div>
+      </div>
+      <section class="card" id="cc-current-result" aria-label="הצעת BE GOOD" hidden></section>
+      <section class="card" id="cc-single-result" aria-label="הנוסח החד־פעמי" data-communication-mode="single" hidden></section>
+      <section class="cc-timeline-section" aria-labelledby="cc-timeline-title" data-communication-mode="continuity" hidden>
+        <h2 id="cc-timeline-title">רצף השיחה</h2>
+        <p id="cc-empty" class="cc-empty">כאן יופיעו הודעות שהתקבלו, טיוטות, הודעות שנשלחו והחלטות. אפשר להתחיל בטקסט קצר או בקובץ.</p>
+        <ol id="cc-timeline" class="cc-timeline"></ol>
+      </section>
+    <details class="card cc-fold cc-principles"><summary>עקרונות התקשורת של BE GOOD</summary><div id="cc-principles"></div></details>
+    </section>
+  </main>
+  <noscript><p class="card">להפעלת הכלי אפשר להפעיל JavaScript בדפדפן.</p></noscript>
 </body>
 </html>

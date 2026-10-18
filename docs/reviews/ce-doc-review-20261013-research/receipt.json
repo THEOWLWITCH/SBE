@@ -1,0 +1,177 @@
+{
+  "skill": "compound-engineering:ce-doc-review",
+  "mode": "non-interactive",
+  "documentType": "unified-plan",
+  "document": "docs/plans/2026-10-13-1445-feat-study-research-management-plan.md",
+  "origin": "docs/requirements/2026-10-13-communication-research-requirements.md",
+  "baselineSha256": "5b2d79cf5c29cebff119f477ae9ecbbf960516ffc88e3c6517bd00d54ad0dfc0",
+  "finalSha256": "fb138135e6b110a1dddb63608550f95255f6f44643968dcd58ad4219dde89b90",
+  "status": "complete",
+  "confidenceScoring": {
+    "scoringPerformed": true,
+    "externalResearchShapedPlan": true,
+    "depth": "deep",
+    "note": "Source/external grounding, traced flows, owned technical rules, six units and six design representations address the applicable checklist; no section reached the two-point dispatch threshold.",
+    "sectionsNeedingFurtherDeepening": [],
+    "criticalSectionBonus": 1
+  },
+  "editAuthority": "ce-plan caller: apply technical corrections to implementation/verification needed to satisfy the established Product Contract; preserve that contract and user constraints.",
+  "coverage": {
+    "completed": 7,
+    "dismissedByConsequence": 3,
+    "failed": 0,
+    "crossModel": {
+      "status": "not-run",
+      "reason": "Codex host; no other-family Claude, Grok, Cursor or OpenCode CLI and no Bash route installed. No external peer jobs launched."
+    },
+    "malformed": 0,
+    "admitted": 2,
+    "rawCandidates": 5,
+    "selected": 7,
+    "packs": [],
+    "personas": [
+      "coherence",
+      "feasibility",
+      "product-lens",
+      "design-lens",
+      "security-lens",
+      "scope-guardian",
+      "adversarial-document"
+    ]
+  },
+  "rawFindings": [
+    {
+      "reviewer": "coherence",
+      "finding": {
+        "title": "Reactivation omits owner confirmation",
+        "severity": "P2",
+        "section": "Planning Contract — Study lifecycle diagram",
+        "why_it_matters": "Implementers may reactivate a paused study without the owner's explicit confirmation, even though R5 (the study-state requirement) requires that confirmation for activation. Updating the diagram's paused-to-active transition to include owner confirmation makes it consistent with both R5 and the pending-approval transition.",
+        "finding_type": "error",
+        "autofix_class": "safe_auto",
+        "suggested_fix": "Change the Paused-to-Active transition label to “Owner confirms; revalidate approvals, dates and consent scope.”",
+        "confidence": 100,
+        "evidence": [
+          "R5. Support Draft, Pending Approval, Active, Paused, Completed and Archived states; activation requires the owner's explicit approval confirmation and published required configuration.",
+          "Paused --> Active: Revalidate approvals dates and consent scope"
+        ]
+      }
+    },
+    {
+      "reviewer": "design-lens",
+      "finding": {
+        "title": "Define the owner’s study activation interaction",
+        "severity": "P2",
+        "section": "Planning Contract / U4 — Owner, researcher and participant RTL interfaces",
+        "why_it_matters": "An owner could finish configuring a draft without a clear way to see what blocks activation or confirm approval. The Product Contract requires that confirmation, but the interface unit names configuration and builders without specifying the activation control or its blocked state. Adding those states gives implementers a testable path from draft to active study.",
+        "finding_type": "omission",
+        "autofix_class": "gated_auto",
+        "suggested_fix": "Specify an owner-only activation control in U4 that shows unmet published-configuration requirements, requires explicit approval confirmation when ready, and displays the resulting study state; add an integrated UI journey for it.",
+        "confidence": 75,
+        "evidence": [
+          "F2. Owner saves draft configuration, publishes versions, confirms approvals and activates; no draft collection occurs (R4–R5, R16).",
+          "Owner dashboard supports requested counts, configuration, researchers/grants, forms/schedules, reports, exports and audit."
+        ]
+      }
+    },
+    {
+      "reviewer": "design-lens",
+      "finding": {
+        "title": "Specify recovery from expired email verification",
+        "severity": "P2",
+        "section": "Planning Contract / U4 — Owner, researcher and participant RTL interfaces",
+        "why_it_matters": "A participant whose verification token expires may have no clear next action and cannot complete enrollment. The plan tests token rejection and shows an error branch, but does not specify how the portal obtains a fresh verification request or when changed consent requires acceptance again. An explicit recovery path prevents participants from getting stuck.",
+        "finding_type": "omission",
+        "autofix_class": "gated_auto",
+        "suggested_fix": "Define a pending-verification screen with a fresh verification request for expired tokens; when the consent version has changed, return the participant to the current consent before issuing a new request. Cover both paths in U4’s browser journey.",
+        "confidence": 75,
+        "evidence": [
+          "Confirm -->|No| Retry[Show expired or changed consent]",
+          "Expired/used/foreign tokens, replaced email, stale consent, paused study and withdrawal reject capture/contact without changing ordinary writer output.",
+          "Participant portal separates invitation disclosure, consent, explicit verification, optional questionnaires/samples, preferences and withdrawal."
+        ]
+      }
+    },
+    {
+      "reviewer": "scope-guardian",
+      "finding": {
+        "title": "Unresolved mail needs an owner-visible recovery path",
+        "severity": "P2",
+        "section": "KTD7 — Protect contacts and mail state",
+        "why_it_matters": "A lost provider response can leave a required welcome or follow-up message unresolved after the deduplication window, with no planned way for the owner to notice or reconcile it. Because delivery runs in an unattended worker, the participant may miss a study communication before anyone can correct it. An owner-visible unresolved state and manual reconciliation path would preserve the plan's safeguard against duplicate sends while making missed delivery actionable.",
+        "finding_type": "omission",
+        "autofix_class": "gated_auto",
+        "suggested_fix": "Add an owner-visible unresolved-delivery state and a documented manual reconciliation action for mail whose provider acceptance remains ambiguous after the deduplication window; keep automatic resend disabled until the outcome is established.",
+        "confidence": 75,
+        "evidence": [
+          "Ambiguous acceptance beyond Resend's 24-hour deduplication window remains unresolved rather than automatically resending.",
+          "Missing mail configuration is visible; provider errors, duplicate claims, lost acceptance, expired deduplication windows and withdrawal cancel/recheck are covered by synthetic delivery tests.",
+          "Internal worker schedules approved due mail/retention without a public bypass route."
+        ]
+      }
+    },
+    {
+      "reviewer": "security-lens",
+      "finding": {
+        "title": "Bound verification email requests before ownership is established",
+        "severity": "P2",
+        "section": "U3 — Research API, consent, surveys, samples and mail",
+        "why_it_matters": "An eligible signed-in participant can repeatedly request verification or replace the pending address to send study-branded email to mailboxes they do not own. Expiring one-use tokens protect verification, while welcome deduplication protects enrollment mail; neither bounds these pre-verification sends. Enforcing request quotas and reusing an outstanding verification intent prevents mailbox harassment and avoidable provider usage.",
+        "finding_type": "omission",
+        "autofix_class": "gated_auto",
+        "suggested_fix": "Require the verification-request database operation to enforce a server-configured cooldown and send quotas per participant, study and destination address, reuse an unexpired outstanding verification intent, and apply the same limits when replacing the pending email. Add synthetic tests proving repeated requests and address changes cannot bypass these limits.",
+        "confidence": 75,
+        "evidence": [
+          "Accept -->|Yes| Pending[Pending verified contact]",
+          "Implement verification, welcome, due questionnaires, approved updates/feedback and withdrawal-aware mail dispatch per KTD7.",
+          "Expired/used/foreign tokens, replaced email, stale consent, paused study and withdrawal reject capture/contact without changing ordinary writer output.",
+          "Use server-only AES-GCM encryption with a configured contact key, hashed expiring one-use verification tokens, and a durable encrypted outbox"
+        ]
+      }
+    }
+  ],
+  "resolutions": [
+    {
+      "disposition": "dismissed",
+      "title": "Reactivation omits owner confirmation",
+      "reviewer": "coherence",
+      "reason": "R5 applies owner confirmation to all activation, and F2/owner-only administration governs the linked lifecycle. The diagram does not authorize automatic reactivation; an omitted restatement is not a demonstrated wrong outcome."
+    },
+    {
+      "disposition": "dismissed",
+      "title": "Define the owner’s study activation interaction",
+      "reviewer": "design-lens",
+      "reason": "F2, R5, U4 and the consent/configuration tests already require the complete owner activation path. An extra UI-state restatement adds no missing outcome."
+    },
+    {
+      "disposition": "dismissed",
+      "title": "Specify recovery from expired email verification",
+      "reviewer": "design-lens",
+      "reason": "F4 preserves the invitation/consent request path, the diagram returns expired/changed consent to recovery, and U4 requires recoverable current-version messages and preserved inputs. A fresh request and current consent can be derived without another product rule."
+    },
+    {
+      "basis": "An authenticated participant can choose an unverified destination; token expiry and welcome idempotency do not limit repeated pre-verification sends. Smallest mail-boundary protection satisfies R11/R19 without changing professional use.",
+      "confidence": 75,
+      "class": "gated_auto",
+      "change": "KTD7 and U2/U3 tests now require atomic per-participant/study/destination cooldowns/quotas, including address replacement, and reuse of an unexpired intent.",
+      "title": "Bound verification email requests before ownership is established",
+      "reviewer": "security-lens",
+      "disposition": "applied"
+    },
+    {
+      "basis": "The unattended worker can lose provider acceptance; an unknown state without a visible owner action leaves a required longitudinal communication unresolved. This completes R11/R12 within existing owner control.",
+      "confidence": 75,
+      "class": "gated_auto",
+      "change": "KTD7 and U4 now require an owner-visible unresolved state and audited reconciliation of an established outcome while automatic resend remains disabled.",
+      "title": "Unresolved mail needs an owner-visible recovery path",
+      "reviewer": "scope-guardian",
+      "disposition": "applied"
+    }
+  ],
+  "fixesApplied": 2,
+  "proposedFixesCount": 0,
+  "decisionsCount": 0,
+  "fyiCount": 0,
+  "remainingFindings": [],
+  "planningBoundary": "No production code, tests, migration, deployment, real email or source export performed by the planning/review workflow. Isolated test dependency setup occurred separately under ce-work preparation."
+}

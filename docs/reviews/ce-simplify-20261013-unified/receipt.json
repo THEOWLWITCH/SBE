@@ -1,0 +1,33 @@
+{
+  "skill": "compound-engineering:ce-simplify-code",
+  "skillSource": "C:/Users/yaels/.codex/plugins/cache/compound-engineering-plugin/compound-engineering/3.30.5/skills/ce-simplify-code/SKILL.md",
+  "status": "complete",
+  "scope": "Human-authored app/harness code in git diff 984a958, including unstaged integration; excludes docs, generated/dependency files and raw review artifacts.",
+  "headAtReview": "d321853055f3b04fa480d1a9f6136c8c7eb7f831",
+  "structurePin": "docs/plans/2026-10-13-communication-continuity.md R1-R8",
+  "dispatch": "Full persona assets passed verbatim to three gpt-6-sol/medium reviewers. Reuse and quality launched together; efficiency queued until an active slot became available. All three terminal outcomes collected before edits. No cleanup primitive is exposed.",
+  "reviewers": [
+    {"task": "/root/unified_simplify/reuse", "status": "complete", "applied": 0, "skipped": 4},
+    {"task": "/root/unified_simplify/quality", "status": "complete", "applied": 1, "skipped": 1},
+    {"task": "/root/unified_simplify/efficiency", "status": "complete", "applied": 1, "skipped": 1}
+  ],
+  "applied": [
+    "Made singleActor private after project-wide search verified no outside caller.",
+    "Indexed existing source entries by ID once when materials are present, preserving first-match behavior, original entry references, source order and updates for newly appended materials."
+  ],
+  "skipped": [
+    "Four tiny helper consolidations would add a new neutral module and import surface for little clarity gain; UUID validators also use different error types/flags and cannot be swapped directly.",
+    "Migration-narrating module comment is low-value cleanup.",
+    "Caching signing secrets across proof checks could change behavior during secret rotation, so existing sequential reads remain."
+  ],
+  "changedFiles": ["harness/lib/communication-single.mjs"],
+  "checks": [
+    {"command": "node --test tests/communication-single.test.mjs tests/communication-backend.test.mjs", "result": "39/39 passed"},
+    {"command": "node --check harness/lib/communication-single.mjs", "result": "passed"},
+    {"command": "git diff --check", "result": "passed; existing CRLF normalization notices only"},
+    {"check": "project-wide lint/typecheck", "result": "No lint or typecheck command/configuration exists; harness/package.json configures test/run/gates only."}
+  ],
+  "verificationRationale": "Localized source lookup/private-export changes covered by single generation, material provenance, long sources, revisions and conversion plus ongoing backend regression tests. No broad shared-engine or UI change; no additional browser/full-suite rerun necessary for this pass.",
+  "bugs": [],
+  "shipping": "No stage, commit, push, PR, deployment or production modification."
+}

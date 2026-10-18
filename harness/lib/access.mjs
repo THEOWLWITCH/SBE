@@ -339,7 +339,7 @@ export const MODEL_PAGES = {
   'practice.html': ['fac_trainee', 'fac_parent', 'fac_youth'], 'facilitator-screen.html': ['fac_trainee', 'fac_parent', 'fac_youth'],
   'conversation-planner.html': ['conv'], 'activity-planner.html': ['activity'], 'academic-review.html': ['academic'],
   'resilience-team.html': ['resilience'], 'resilience-advisor.html': ['resilience', 'practi'], 'leadership-advisor.html': ['leadership'],
-  'resilience-studio.html': ['studio'], 'journey.html': ['journey'], 'message-writer.html': ['writer'], 'facilitation-advisor.html': ['nana'],
+  'resilience-studio.html': ['studio'], 'journey.html': ['journey'], 'message-writer.html': ['writer'], 'communication-continuity.html': ['writer'], 'facilitation-advisor.html': ['nana'],
   'shared-dialogue-lab.html': ['dialogue'], 'team-thinking.html': ['teamthink']
 };
 export const WORKSHOP_MODEL_PAGES = ['practice.html', 'conversation-planner.html', 'activity-planner.html', 'academic-review.html', 'parent-input-screen.html'];
@@ -1640,13 +1640,31 @@ export async function handleAccess(store, body) {
 // שום policy — כך שרק השרת, עם ה-service key, יכול לקרוא ולכתוב.
 export function supabaseStore(url, key, { fetchImpl = fetch, timeoutMs } = {}) {
   const base = `${url.replace(/\/+$/, '')}/rest/v1/access_settings`;
-  const headers = { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' };
+  const headers = { apikey: key, 'Content-Type': 'application/json' };
+  if (!String(key).startsWith('sb_secret_')) headers.Authorization = `Bearer ${key}`;
   const request = (target, options) => fetchImpl(target, timeoutMs === undefined ? options : { ...options, signal: AbortSignal.timeout(timeoutMs) });
   const check = async (r) => {
     if (!r.ok) throw new Error(`Supabase ${r.status}: ${(await r.text().catch(() => '')).slice(0, 200)}`);
     return r;
   };
   return {
+    // Atomic PostgREST mutation: PostgreSQL checks the revision in the same
+    // UPDATE that writes content, including across server replicas.
+    async compareSet(k, expectedRevision, value) {
+      if (expectedRevision === null) {
+        const r = await request(`${base}?select=key`, { method: 'POST', headers: { ...headers, Prefer: 'return=representation' },
+          body: JSON.stringify({ key: k, value, updated_at: new Date().toISOString() }) });
+        if (r.status === 409) return false;
+        await check(r);
+        return (await r.json()).length === 1;
+      }
+      if (!Number.isInteger(expectedRevision) || expectedRevision < 0) throw new Error('invalid revision');
+      const r = await check(await request(`${base}?key=eq.${encodeURIComponent(k)}&value->>revision=eq.${expectedRevision}&select=key`, {
+        method: 'PATCH', headers: { ...headers, Prefer: 'return=representation' },
+        body: JSON.stringify({ value, updated_at: new Date().toISOString() })
+      }));
+      return (await r.json()).length === 1;
+    },
     async get(k) {
       const r = await check(await request(`${base}?key=eq.${encodeURIComponent(k)}&select=value`, { headers }));
       const rows = await r.json();
@@ -1663,10 +1681,16 @@ export function supabaseStore(url, key, { fetchImpl = fetch, timeoutMs } = {}) {
       await check(await request(`${base}?key=eq.${encodeURIComponent(k)}`, { method: 'DELETE', headers }));
     },
     // כל השורות שהמפתח שלהן מתחיל ב-prefix (like של PostgREST; * הוא התו הכללי).
-    async list(prefix, { keysOnly = false } = {}) {
-      const sel = keysOnly ? 'key' : 'key,value';
+    async list(prefix, { keysOnly = false, conversationSummaries = false } = {}) {
+      // Server-owned projection: list navigation never transfers private raw
+      // histories, AI results, research envelopes or retry receipts.
+      const fields = ['id','title','audience','status','createdAt','updatedAt','revision','rounds','_deleted'];
+      const sel = keysOnly ? 'key' : conversationSummaries
+        ? ['key', ...fields.map(field => field + ':value->>' + field), 'versions:value->versions'].join(',') : 'key,value';
       const r = await check(await request(`${base}?key=like.${encodeURIComponent(prefix + '*')}&select=${sel}&order=key&limit=5000`, { headers }));
-      return r.json();
+      const rows = await r.json();
+      if (!conversationSummaries || keysOnly) return rows;
+      return rows.map(({key,...value}) => ({key,value:{...value,revision:Number(value.revision),rounds:Number(value.rounds),_deleted:value._deleted===true||value._deleted==='true'}}));
     },
     async delPrefix(prefix) {
       await check(await request(`${base}?key=like.${encodeURIComponent(prefix + '*')}`, { method: 'DELETE', headers }));

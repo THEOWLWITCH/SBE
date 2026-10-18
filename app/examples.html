@@ -131,7 +131,7 @@ const TOOLS=[
   ['practi','פרקטי: יועצת לחוסן בכיתה','המחנך/ת מתארים את הכיתה, ופרקטי מציעה תמונת מצב והמלצות מעשיות, עם שלבים, אפשרויות בחירה והודעות מוכנות.'],
   ['nugi','נוגי: מנהיגות תומכת חוסן','להנהלה, לרכזים ולצוותי תלמידים: תמונת מצב של המנהיגות בבית הספר והמלצות שבונות מנגנונים משותפים.'],
   ['nana','ננה: מהוראה להנחיה','מדריך הנחיה למפגש: עמדה, שפה, מהלכי שיחה, רגעים מאתגרים וסיום שהופך למנגנון חוזר.'],
-  ['writer','כתיבה מקדמת חוסן','הודעות ומכתבים לתלמידים, להורים ולצוות, לפי עשרת עקרונות השפה המחזקת.'],
+  ['writer','תקשורת מקדמת חוסן חברתי','ניסוח חד־פעמי וניהול תקשורת לאורך זמן, באותו מנוע ולפי 18 עקרונות התקשורת.'],
   ['continuity','תיק רציפות: למורה המחליפה','תיק הפעלה קצר למי שתחליף את המורה: שגרות, תפקידים וגיבוי, גבולות החלטה, רגעים שכדאי להתכונן אליהם ודף תרגול לעמיתה.'],
   ['cont-join','תיק רציפות: הצטרפות וחזרה של תלמידים','ערכה לתלמיד/ה שמצטרף/ת או חוזר/ת, או לכל הכיתה: תיק כניסה קבוצתי, דרכי הצטרפות לבחירה, תפקידי עמיתים ולוח לשבועיים.'],
   ['cont-proc','תיק רציפות: נוהל עבודה בכלים שלכם','איפה כל חלק בתיק נמצא בכלים שכבר יש לבית הספר, מי מעדכן, ומה נשאר רק במכשיר.'],
@@ -171,7 +171,9 @@ async function load(){
   box.textContent='';
   if(!items.length){box.appendChild(el('p','empty','הדוגמאות בהכנה: מוזמנות ומוזמנים לחזור בקרוב, או ליצור קשר ונשמח להראות.'));return;}
   // ?tool=nana (מהקישור "איך נראה התוצר?" בכלי) — רק הדוגמאות של הכלי, וקישור לכל השאר
-  const only=(new URLSearchParams(location.search).get('tool')||'').split(',').filter(Boolean);
+  // Existing approved continuity examples belong to the same unified product.
+  items=items.map(d=>d.tool==='communication-continuity'?{...d,tool:'writer'}:d);
+  const only=(new URLSearchParams(location.search).get('tool')||'').split(',').filter(Boolean).map(id=>id==='communication-continuity'?'writer':id);
   if(only.length&&items.some(d=>only.includes(d.tool))){
     items=items.filter(d=>only.includes(d.tool));
     const all=el('p','about');const a=el('a',null,'לכל התוצרים לדוגמה ←');a.href='examples.html';a.style.cssText='color:var(--spoken);font-weight:700';all.appendChild(a);box.appendChild(all);

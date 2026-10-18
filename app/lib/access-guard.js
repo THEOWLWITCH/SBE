@@ -72,7 +72,7 @@
   } catch(e){}
 
   // ── שמירה במכשיר לפי משתמש/ת (02/10/2026) ──
-  // טופס שנשמר בדפדפן (פרקטי, נוגי, כתיבה מקדמת חוסן, משוב לעבודות) נשמר תחת מפתח של מי שנכנס/ה —
+  // טופס שנשמר בדפדפן (פרקטי, נוגי, תקשורת מקדמת חוסן חברתי, משוב לעבודות) נשמר תחת מפתח של מי שנכנס/ה —
   // לפי הקוד שבאסימון — כדי שמי שנכנס/ת עם קוד אחר באותו דפדפן יקבל/תקבל טופס נקי.
   window.sbeUserKey = function(base){
     var id = "anon";
@@ -216,7 +216,7 @@
     studio: ["resilience-studio.html"], // עד לאישור המקצועי — רק בהרשאה הזאת (studio.mjs: STUDIO_PERMS)
     journey: ["journey.html"],
     studies: ["social-resilience-studies.html"],
-    writer: ["message-writer.html", "resilience-advisor-sources.html"], // כתיבה מקדמת חוסן — רק בהרשאה הזאת (02/10/2026)
+    writer: ["message-writer.html", "communication-continuity.html", "resilience-advisor-sources.html"], // כלי כתיבה ושיח בהרשאת writer
     nana: ["facilitation-advisor.html", "resilience-advisor-sources.html"], // ננה — מהוראה להנחיה (07/10/2026)
     dialogue: ["shared-dialogue-lab.html", "resilience-advisor-sources.html"], // מעבדת שיח וחקר משותף (11/10/2026)
     teamthink: ["team-thinking.html", "resilience-advisor-sources.html"] // חשיבת צוות (11/10/2026)
@@ -289,6 +289,15 @@
           return;
         }
       }
+    } catch(e){}
+  }
+  // Research has its own server/database bootstrap and study rights. This opens
+  // only the dedicated shell; it does not add any general administration access.
+  if (home && /^(research-management|research-participation)\.html$/.test(page)) {
+    try {
+      var researchRaw = Uint8Array.from(atob((ss("sbe.session.token") || "").split(".")[0].replace(/-/g, "+").replace(/_/g, "/")), function(ch){ return ch.charCodeAt(0); });
+      var researchSession = JSON.parse(new TextDecoder().decode(researchRaw));
+      if (researchSession.exp > Date.now() && (researchSession.k === "sys" || researchSession.k === "code" && researchSession.c !== "LEGACY" && ["staff", "instadmin"].indexOf(researchSession.kind) !== -1)) return;
     } catch(e){}
   }
   if (allowed === null || (home && ALL_USERS.indexOf(page) !== -1) || allowed.indexOf(page) !== -1) return;

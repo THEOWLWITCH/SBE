@@ -44,6 +44,10 @@ import { handleStudies, supabaseStudyFiles } from './lib/studies.mjs';
 import { createModelLimits } from './lib/model-limits.mjs';
 import { handleBackupStatus } from './lib/backup-monitor.mjs';
 import { handleScenarios, supabaseScenarios } from './lib/scenarios.mjs';
+import { handleCommunication } from './lib/communication-continuity.mjs';
+import { handleResearch } from './lib/research.mjs';
+import { supabaseResearchStore } from './lib/research-store.mjs';
+import { resolveResearchGeneratedSample } from './lib/research-usage.mjs';
 
 // שמירת תרחיש ב-Supabase. נקראת רק כשיש SUPABASE_SERVICE_KEY בסביבה.
 // scenario הוא הפלט של toScenario(); meta הוא payload.meta מהלקוח.
@@ -170,6 +174,8 @@ const jobSave = (id, rec) => { const st = jobStore(); return st ? st.set('pj:' +
 
 const server = createServer(async (req, res) => {
   res._origin = req.headers.origin || '';
+  const researchPath = (req.url || '').split('?')[0] === '/api/research';
+  if (researchPath) res.setHeader('cache-control', 'private, no-store');
   if (req.method === 'OPTIONS') return sendJson(res, 204, {});
 
   if (req.method === 'GET' && req.url === '/health') {
@@ -177,6 +183,22 @@ const server = createServer(async (req, res) => {
     const hasWorkspace = !!(process.env.ANTHROPIC_WORKSPACE_ID || '').trim();
     const hasSupabase = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
     return sendJson(res, 200, { ok: true, hasKey, hasWorkspace, hasSupabase });
+  }
+
+  if (researchPath) {
+    if (req.method !== 'POST') { res.setHeader('allow', 'POST, OPTIONS'); return sendJson(res, 405, {ok:false,status:405,error:'invalid',code:'invalid'}); }
+    const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
+    if (!url || !key) return sendJson(res, 503, {ok:false,status:503,error:'not_configured',code:'not_configured'});
+    let body;
+    try { body = JSON.parse(await readBody(req, 16 * 1024 * 1024)); }
+    catch (error) { const status = error.status === 413 ? 413 : 400; return sendJson(res,status,{ok:false,status,error:'invalid',code:'invalid'}); }
+    try {
+      const access = jobStore();
+      const [status,out] = await handleResearch(access,supabaseResearchStore(url,key),body,{
+        siteOrigin:CORS_ORIGIN, resolveGeneratedSample:request=>resolveResearchGeneratedSample(access,request)
+      });
+      return sendJson(res,status,{...out,ok:status>=200&&status<300,status});
+    } catch { return sendJson(res,503,{ok:false,status:503,error:'storage_unavailable',code:'storage_unavailable'}); }
   }
 
   // לימודי חוסן חברתי: every read rechecks live access. 75 MiB accommodates
@@ -207,6 +229,50 @@ const server = createServer(async (req, res) => {
     } catch {
       console.error('studies: request failed');
       return sendJson(res, 503, { code: 'studies_storage', error: 'החומרים אינם זמינים כרגע. אפשר לנסות שוב בעוד מעט.' });
+    }
+  }
+
+  // Sensitive conversations use their own authenticated boundary. They never
+  // enter the generic pipeline jobs or its public status endpoint.
+  if (req.method === 'POST' && req.url === '/api/communication-continuity') {
+    res.setHeader('cache-control', 'private, no-store');
+    const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
+    const access = jobStore();
+    if (!access) return sendJson(res, 503, { ok: false, status: 503, code: 'storage', error: 'שירות התקשורת אינו זמין כרגע. אפשר להשאיר את הטקסט על המסך ולנסות שוב.' });
+    let body;
+    try { body = JSON.parse(await readBody(req, 16 * 1024 * 1024)); }
+    catch (error) { const status = error.status === 413 ? 413 : 400; return sendJson(res, status, { ok: false, status, code: 'invalid', error: status === 413 ? 'הקובץ גדול מדי. אפשר לצרף עמוד רלוונטי או טקסט קצר יותר.' : 'הבקשה אינה תקינה. אפשר לרענן ולנסות שוב.' }); }
+    let finish, lease;
+    try {
+      if (['singleGenerate','singleExtract','generate','extract'].includes(body?.action)) {
+        const page = body.action.startsWith('single') ? 'message-writer.html' : 'communication-continuity.html';
+        const gate = await authorizeModel(access,{token:body.token,page});
+        if (!gate.ok) return sendJson(res,403,{ok:false,status:403,code:'ACCESS_DENIED',error:'כדי להמשיך, היכנסו שוב עם הקוד שלכם.'});
+        lease = limits.acquire(gate);
+        if (!lease.ok) {
+          if (lease.retryAfter) res.setHeader('retry-after',String(lease.retryAfter));
+          return sendJson(res,lease.status,{ok:false,status:lease.status,code:lease.code,error:'שירות התקשורת אינו זמין כרגע. אפשר לנסות שוב בעוד מעט.'});
+        }
+      }
+      const [status, out] = await handleCommunication(access, body, {
+        providerFactory: () => providerFactory(process.env.PROVIDER || 'anthropic'),
+        onReady: () => { finish = startKeepAlive(res); },
+        // Only server observations reach the separately consent-gated SQL RPC.
+        onUsage: url && key ? event => supabaseResearchStore(url,key,{timeoutMs:2000}).rpc(body.token,'recordUsage',event) : undefined
+      });
+      // Long requests must commit transport 200 for Render's keepalive. The
+      // flat result envelope preserves the actual operation status for clients.
+      const result = { ...out, ok: status >= 200 && status < 300, status };
+      if (finish) return finish(result);
+      return sendJson(res, status, result);
+    } catch {
+      console.error('communication: request failed');
+      const out = { code: 'unavailable', error: 'שירות התקשורת אינו זמין כרגע. אפשר להשאיר את הטקסט על המסך ולנסות שוב.' };
+      const result = { ...out, ok: false, status: 503 };
+      if (finish) return finish(result);
+      return sendJson(res, 503, result);
+    } finally {
+      lease?.release?.();
     }
   }
 

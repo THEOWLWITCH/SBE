@@ -1,0 +1,18 @@
+# Unified communication review resolution
+
+The full review `ce-code-review-20261013-unified-e443587` assessed frozen commit `e4435874ace293af4107c37ee2310e3b95af8c1e` against completed continuity commit `984a95892cb22baf69fadca835cc323e52c57f8c`. Ten local reviewers completed, followed by independent confirmation of all six findings. A different-provider CLI was unavailable; the review records a local adversarial fallback without claiming cross-model independence. The frozen receipt remains unchanged at `docs/reviews/ce-code-review-20261013-unified-e443587/review.json`.
+
+| Finding | Final correction and verification |
+| --- | --- |
+| 1 · P1: equal-revision conversion replay loses a later edit | Compare signed causal bases instead of revision magnitude. Restart a superseded edit-only operation before conversion submission; retain the exact destination/request/body afterward. Actual signed-handler/UI tests preserve the later draft in tab and saved conversation. |
+| 2 · P2: corrected input repeats a rejected conversion | Clear the pending operation only for definitive `INVALID_INPUT`/400 or `STORAGE_LIMIT`/413 rejection. Actual corrected-input tests succeed; an independent 12-case matrix confirms uncertain, auth, conflict and deletion failures keep exact replay. |
+| 3 · P2: JSON omits pending sources/materials | Export current composer fields and signed material pairs in a separate `manual-local` `exportPendingInput` annotation. Canonical signed input, entries and proof remain unchanged. Offline UI tests and a real downloaded browser archive verify completeness and no token/false AI attribution. |
+| 4 · P2: single demo includes workspace instructions | Capture only the current edited letter or clarification, then apply existing document branding. Independent demo probes and browser assertions exclude conversion/export notices and version panels. |
+| 5 · P2: image guard lacks negative regression coverage | Test objective-description repair and terminal rejection; failed handler repair returns no material/proof and performs no conversation write. A temporary outside-repository mutation removing only the guard causes the negative regression test to fail. |
+| 6 · P2: faithful emotional image quotations are rejected | Separate verbatim visible text from objective visual description in the shared extraction contract; guard only the description. Direct extractor and signed-handler tests preserve the quotation. Ordinary PDF/ongoing transcription retains its existing contract. |
+
+All six findings are resolved in runtime/test commit `c130cc1`. A separate read-only caller validator passed 23 focused test/probe groups with no remaining concrete defects in these fixes; its receipt is `docs/reviews/ce-code-review-20261013-unified-e443587/fix-validation.json`. It did not rerun or replace the completed full review. Source simplification completed independently with two applied changes; its receipt is `docs/reviews/ce-simplify-20261013-unified/receipt.json`.
+
+The final integrated suite passed 263/263 without skips or failures. All 26 browser journeys passed using the actual UI/handler with synthetic providers, in-memory storage and blocked external browser requests. Changed-script syntax checks passed. Tool version is 1.1.0; the significant extraction-contract correction advances prompt/engine to 1.1.1. Earlier provenance remains unchanged.
+
+Live AI/OCR quality and real Supabase transaction/RLS behavior remain unverified because credentials are absent. Actual PDF pagination was not tested. These are release validation requirements, separate from the six resolved findings. No production deployment, overwrite, migration, merge or PR was performed.
