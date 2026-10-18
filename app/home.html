@@ -6,6 +6,9 @@
 <title>המרחב שלי</title>
 <script src="lib/access-guard.js"></script>
 <script src="lib/readiness-groups.js"></script>
+<script src="lib/research-core.js" defer></script>
+<script src="lib/research-partnership-core.js" defer></script>
+<script src="lib/research-client.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -508,6 +511,26 @@ function courseBox(c, lim, isNew, reload) {
 
 renderAdmin();
 renderGroupCode();
+document.addEventListener('DOMContentLoaded', () => {
+  if (!window.SBE_RESEARCH_CLIENT || !TOKEN) return;
+  let tile = null;
+  const clearResearch = () => { if (tile) tile.remove(); tile = null; };
+  const researchClient = SBE_RESEARCH_CLIENT.create({onClear:clearResearch});
+  async function researchNavigation() {
+    clearResearch(); researchClient.invalidate('refresh');
+    try {
+      const data = await researchClient.call('workspaceBootstrap');
+      if (!(data.studies || []).length && !(data.partners || []).length) return;
+      tile = el('a',{class:'tile',href:'research-management.html?workspace=1'},
+        el('b',{},'התיק והשותפויות שלי'),el('span',{},'המחקרים שהוקצו לחשבון, בקשות, הסכמים וממצאים מורשים'));
+      $('tiles').append(tile);
+    } catch (_) { clearResearch(); }
+  }
+  window.addEventListener('focus', researchNavigation);
+  window.addEventListener('pagehide', () => { researchClient.invalidate('leave'); clearResearch(); });
+  window.addEventListener('storage', researchNavigation);
+  researchNavigation();
+});
 </script>
 </body>
 </html>

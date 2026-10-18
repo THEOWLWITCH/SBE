@@ -8,6 +8,11 @@ const require = createRequire(import.meta.url);
 const C = require('../../app/lib/research-partnership-core.js');
 const id = '11111111-1111-4111-8111-111111111111';
 const invalid = fn => assert.throws(fn, error => error.code === 'invalid' && error.message === 'invalid' && !error.message.includes('PRIVATE'));
+
+test('owner release of approved contributions and analysis results has explicit version viewer and download scopes', () => {
+  assert.equal(C.OPERATIONS.recordReview.request.viewerPartnerIds, 'uuid[]? analysis_result publication or approved contribution only');
+  assert.equal(C.OPERATIONS.recordReview.request.downloadPartnerIds, 'uuid[]? subset of explicit viewers');
+});
 const application = () => ({title:'בקשת שותפות בדויה',applicationType:'partnership',fullName:'חוקרת בדויה',email:'researcher@example.invalid',institution:'מוסד בדוי',position:'חוקרת',objectives:'בדיקת תהליך',researchQuestions:['מה השתנה?'],method:'תיאורית',population:'צוות בדוי',requestedTools:['communication'],startDate:'2026-10-20',endDate:'2027-01-20',ethicsStatus:'pending',ethicsDetails:'נדרש אישור',consentPlan:'הסכמה נפרדת',requestedPermissions:['view_approved_findings']});
 const template = () => ({title:'תבנית שסופקה לבדיקה בלבד',templateVersion:'synthetic-1',explanationVersion:'synthetic-ip-1',sectionClauses:C.AGREEMENT_SECTIONS.map(section=>({sectionId:section.id,text:section.id==='parties'?'צדדים: {{ownerName}} / {{partnerName}}':'טקסט בדוי שנמסר לבדיקה '+section.label})),ipExplanation:'הסבר בדוי שסופק לבדיקה',mutualIPClause:'סעיף בדוי שסופק לבדיקה',requiredFieldIds:['ownerName','partnerName','studyTitle','purpose','effectiveDate','templateVersionId','ipExplanationVersionId']});
 

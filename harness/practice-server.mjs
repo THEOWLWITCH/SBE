@@ -46,6 +46,7 @@ import { handleBackupStatus } from './lib/backup-monitor.mjs';
 import { handleScenarios, supabaseScenarios } from './lib/scenarios.mjs';
 import { handleCommunication } from './lib/communication-continuity.mjs';
 import { handleResearch } from './lib/research.mjs';
+import { handleResearchSigningWebhook } from './lib/research-partnerships.mjs';
 import { supabaseResearchStore } from './lib/research-store.mjs';
 import { resolveResearchGeneratedSample } from './lib/research-usage.mjs';
 
@@ -155,6 +156,7 @@ function readBody(req, maxChars = 2_000_000) {
     req.on('error', reject);
   });
 }
+function readRawBody(req,maxBytes){return new Promise((resolve,reject)=>{let length=0,exceeded=false;const chunks=[];req.on('data',chunk=>{if(exceeded)return;length+=chunk.length;if(length>maxBytes){exceeded=true;chunks.length=0;reject(Object.assign(new Error('invalid'),{status:413}));}else chunks.push(chunk);});req.on('end',()=>{if(!exceeded)resolve(Buffer.concat(chunks));});req.on('error',reject);});}
 
 // Dependencies are injected only by importing this factory for isolated tests.
 // HTTP input and environment flags cannot replace authentication or providers.
@@ -194,11 +196,22 @@ const server = createServer(async (req, res) => {
     catch (error) { const status = error.status === 413 ? 413 : 400; return sendJson(res,status,{ok:false,status,error:'invalid',code:'invalid'}); }
     try {
       const access = jobStore();
+      let impactProvider;
+      try { impactProvider = providerFactory(process.env.PROVIDER || 'anthropic'); } catch {}
       const [status,out] = await handleResearch(access,supabaseResearchStore(url,key),body,{
-        siteOrigin:CORS_ORIGIN, resolveGeneratedSample:request=>resolveResearchGeneratedSample(access,request)
+        siteOrigin:CORS_ORIGIN, resolveGeneratedSample:request=>resolveResearchGeneratedSample(access,request),
+        ...(impactProvider ? { impactProviderFactory:()=>impactProvider } : {})
       });
       return sendJson(res,status,{...out,ok:status>=200&&status<300,status});
     } catch { return sendJson(res,503,{ok:false,status:503,error:'storage_unavailable',code:'storage_unavailable'}); }
+  }
+  if((req.url||'').split('?')[0]==='/api/research-signing/webhook'){
+    if(req.method!=='POST')return sendJson(res,405,{ok:false,code:'invalid'});
+    const url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_KEY;
+    if(!url||!key)return sendJson(res,503,{ok:false,code:'not_configured'});
+    let raw;try{raw=await readRawBody(req,262144);}catch(error){return sendJson(res,error.status===413?413:400,{ok:false,code:'invalid'});}
+    const [status,out]=await handleResearchSigningWebhook(jobStore(),supabaseResearchStore(url,key),raw,req.headers);
+    return sendJson(res,status,out);
   }
 
   // לימודי חוסן חברתי: every read rechecks live access. 75 MiB accommodates

@@ -49,7 +49,7 @@ test('one assigned researcher opens directly and sees no owner, contact, content
   for (const forbidden of ['מחקר חדש','הרשאות צוות המחקר','פרטי קשר','ייצוא נתונים','פתיחת תוכן']) assert.ok(!d.root.textContent.includes(forbidden),forbidden);
   page.clear(); assert.equal(d.root.textContent,'');
 });
-test('owner form exposes thirteen individual permissions and activation requires explicit confirmation',async()=>{
+test('owner form exposes the shared individual permissions and activation requires explicit confirmation',async()=>{
   const UI=require('../../app/lib/research-management-ui.js'); const d=doc(); const calls=[];
   const study={id:'a',status:'pending_approval',revision:1,config:{title:'מחקר א'},permissions:[]};
   const client={setScope(){},call:async(a,p)=>{calls.push([a,p]);return a==='bootstrap'?{owner:true,studies:[study]}:{study};}};
@@ -60,7 +60,7 @@ test('owner form exposes thirteen individual permissions and activation requires
   assert.ok(!calls.some(([a])=>a==='studyStatus'));
   const team=all.find(n=>n.tagName==='button' && n.textContent==='הרשאות צוות המחקר'); await team.click();
   const boxes=[]; const walk2=n=>{if(n.attributes['data-permission'])boxes.push(n);n.children.forEach(walk2)}; walk2(d.root);
-  assert.equal(new Set(boxes.map(n=>n.attributes['data-permission'])).size,13);
+  assert.equal(new Set(boxes.map(n=>n.attributes['data-permission'])).size,Object.keys(require('../../app/lib/research-core.js').PERMISSIONS).length);
 });
 test('opening an opaque consent or verification URL performs read-only calls and leaves all consents unchecked',async()=>{
   const UI=require('../../app/lib/research-participation-ui.js'); const d=doc(); const calls=[];

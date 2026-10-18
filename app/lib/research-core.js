@@ -9,13 +9,17 @@
     view_aggregate_results: 'צפייה בתוצאות מצטברות', view_pseudonymized_data: 'צפייה בנתונים עם מזהי מחקר',
     view_identifiable_data: 'צפייה בפרטים מזהים', view_document_content: 'צפייה בתוכן מסמכים',
     export_data: 'ייצוא נתונים', manage_participants: 'ניהול משתתפים', contact_participants: 'יצירת קשר עם משתתפים',
-    manage_researchers: 'ניהול הרשאות צוות המחקר', manage_consent: 'ניהול טופסי הסכמה', view_audit_log: 'צפייה ביומן הפעולות'
+    manage_researchers: 'ניהול הרשאות צוות המחקר', manage_consent: 'ניהול טופסי הסכמה', view_audit_log: 'צפייה ביומן הפעולות',
+    view_approved_findings: 'צפייה בממצאים מאושרים', download_approved_findings: 'הורדת ממצאים מאושרים',
+    propose_analysis: 'הצעת ניתוח', view_analysis_results: 'צפייה בתוצאות ניתוח מאושרות', comment_on_findings: 'הוספת תגובה לממצא',
+    view_approved_pseudonymized_data: 'צפייה בנתונים מאושרים עם מזהי מחקר', export_approved_dataset: 'ייצוא מערך נתונים מאושר',
+    view_study_progress: 'צפייה בהתקדמות המחקר', view_approved_contributions: 'צפייה בתרומות מאושרות'
   });
   const STUDY_STATUSES = Object.freeze({ draft: 'טיוטה', pending_approval: 'ממתין לאישור', active: 'פעיל', paused: 'מושהה', completed: 'הסתיים', archived: 'בארכיון' });
   const ROLES = Object.freeze({ pi: 'חוקר.ת ראשי.ת', researcher: 'חוקר.ת', assistant: 'עוזר.ת מחקר או אנליסט.ית' });
   const ROLE_PRESETS = Object.freeze({
     pi: Object.freeze(['view_study', 'manage_questionnaires', 'view_aggregate_results', 'view_pseudonymized_data']),
-    researcher: Object.freeze(['view_study', 'view_aggregate_results', 'view_pseudonymized_data']),
+    researcher: Object.freeze(['view_study', 'view_approved_findings']),
     assistant: Object.freeze(['view_study', 'view_aggregate_results'])
   });
   const CONSTRUCTS = Object.freeze([

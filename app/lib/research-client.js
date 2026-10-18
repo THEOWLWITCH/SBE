@@ -1,9 +1,10 @@
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('./research-core.js'));
-  else root.SBE_RESEARCH_CLIENT = factory(root.SBE_RESEARCH);
-})(typeof self !== 'undefined' ? self : this, function (C) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./research-core.js'),require('./research-partnership-core.js'));
+  else root.SBE_RESEARCH_CLIENT = factory(root.SBE_RESEARCH,root.SBE_RESEARCH_PARTNERSHIPS);
+})(typeof self !== 'undefined' ? self : this, function (C,P) {
   'use strict';
-  const READS = new Set(['bootstrap','studyGet','memberList','versionList','participantList','contactGet','resultsGet','exportData','auditList','mailList','inviteInfo','myStudies','participationGet','sampleGet']);
+  const ACTIONS=new Set([...C.CLIENT_ACTIONS,...(P?.CLIENT_ACTIONS||[])]);
+  const READS = new Set(['bootstrap','studyGet','memberList','versionList','participantList','contactGet','resultsGet','exportData','auditList','mailList','inviteInfo','myStudies','participationGet','sampleGet',...(P?.READ_ACTIONS||[])]);
   const MESSAGES = { unauthorized:'הכניסה או ההרשאה הסתיימו. אפשר להיכנס מחדש בקוד האישי.', not_found:'המחקר או הנתונים אינם זמינים לחשבון הזה.', invalid:'אפשר לבדוק את הפרטים ולנסות שוב.', conflict:'המחקר השתנה בזמן העריכה. אפשר לרענן את המחקר לפני שמירה נוספת.', consent_changed:'טופס ההסכמה השתנה. אפשר לפתוח את הטופס העדכני ולאשר את הבחירה מחדש.', rate_limited:'בקשת האימות האחרונה עדיין בטיפול. אפשר לבדוק את תיבת הדוא״ל ולנסות שוב בהמשך.', not_configured:'השירות עדיין לא מוגדר. אפשר לפנות לבעלת המערכת להשלמת ההגדרה.', network:'החיבור לא הושלם. הפרטים שהוקלדו נשארים כאן ואפשר לנסות שוב.', stale:'התצוגה התחלפה.' };
   function error(code, status) { const e=new Error(code); e.code=code; e.status=status||0; e.userMessage=MESSAGES[code]||'הפעולה לא הושלמה. אפשר לנסות שוב.'; return e; }
   function create(options={}) {
@@ -15,7 +16,7 @@
     function invalidate(reason='refresh') { const sameSessionRefresh=reason==='refresh'&&seenToken===getToken();generation++;if(!sameSessionRefresh){pending.clear();scope='';}controllers.forEach(c=>c.abort());controllers.clear();seenToken=getToken();options.onClear?.(reason); }
     function setScope(next) { next=String(next||''); if(scope!==next || seenToken!==getToken()) { invalidate('scope'); scope=next; } }
     async function call(action,payload={}) {
-      if(!C.CLIENT_ACTIONS.includes(action)) throw error('invalid',400);
+      if(!ACTIONS.has(action)) throw error('invalid',400);
       if(seenToken!==getToken()) invalidate('account');
       const token=getToken(); if(!token) {invalidate('unauthorized');throw error('unauthorized',403);}
       if(payload.studyId && scope && payload.studyId!==scope) throw error('stale');
@@ -27,7 +28,7 @@
         const res=await fetchImpl(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),cache:'no-store',credentials:'omit',signal:controller?.signal});
         const data=await res.json();
         if(epoch!==generation || token!==getToken()) { if(token!==getToken())invalidate('account'); throw error('stale'); }
-        if(!res.ok || data.ok===false) { const code=typeof data.error==='string'?data.error:'invalid'; if(res.status===403||res.status===404)invalidate(code); if(key && res.status>=400 && res.status<500)pending.delete(key); throw error(code,res.status); }
+        if(!res.ok || data.ok===false) { const code=Object.hasOwn(MESSAGES,data.code)?data.code:Object.hasOwn(MESSAGES,data.error)?data.error:'invalid'; if(res.status===403||res.status===404)invalidate(code); if(key && res.status>=400 && res.status<500)pending.delete(key); throw error(code,res.status); }
         if(key)pending.delete(key); return data;
       } catch(e) { if(e.code)throw e; if(epoch!==generation || token!==getToken())throw error('stale'); throw error('network'); }
       finally {if(controller)controllers.delete(controller);}
@@ -41,7 +42,7 @@
       if(type==='textarea')n=node('textarea');else if(type==='select'){n=node('select');for(const [id,title] of Object.entries(options.choices||{})){const o=node('option','',title);o.value=id;n.append(o);}}
       else{n=node('input');n.type=type;} n.value=value==null?'':String(value);if(type==='checkbox'){n.checked=value===true;box.className='r-check';}
       if(options.min!=null)n.min=options.min;if(options.max!=null)n.max=options.max;if(options.placeholder)n.placeholder=options.placeholder;if(options.required)n.required=true;if(options.disabled)n.disabled=true;
-      n.setAttribute('data-research-field',label);box.append(n);parent.append(box);return n;
+      n.setAttribute('dir','rtl');n.setAttribute('aria-label',label);n.setAttribute('data-research-field',label);box.append(n);parent.append(box);return n;
     }
     function card(parent,title){const n=node('section','r-card');if(title)n.append(node('h2','',title));parent.append(n);return n;}
     function paragraph(parent,text,cls=''){const n=node('p',cls,text);parent.append(n);return n;}

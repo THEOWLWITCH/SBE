@@ -2,6 +2,7 @@ import { createHmac } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { verifyToken, ilToday } from './access.mjs';
 import { decryptResearchValue, encryptResearchValue, researchContactOptions, researchDigest } from './research-mail.mjs';
+import { handlePartnership, isPartnershipAction } from './research-partnerships.mjs';
 
 const require = createRequire(import.meta.url);
 const CORE = require('../../app/lib/research-core.js');
@@ -69,7 +70,7 @@ function unique(value, validate, max = 100) {
   if (new Set(values).size !== values.length) invalid();
   return values;
 }
-const permissions = values => unique(values, value => enumerated(value, Object.keys(CORE.PERMISSIONS)), 13);
+const permissions = values => unique(values, value => enumerated(value, Object.keys(CORE.PERMISSIONS)), Object.keys(CORE.PERMISSIONS).length);
 const categories = values => unique(values, value => enumerated(value, Object.keys(CORE.DATA_CATEGORIES)), 6);
 const contactKinds = values => unique(values, value => enumerated(value, Object.keys(CORE.CONTACT_KINDS)), 3);
 function preferences(value) {
@@ -375,6 +376,7 @@ export function researchCsv(rows) {
 export async function handleResearch(accessStore, researchStore, body, options = {}) {
   try {
     object(body);
+    if (isPartnershipAction(body.action)) return await handlePartnership(accessStore, researchStore, body, { ...options, verifyIdentity: verifyResearchIdentity });
     if (typeof body.action !== 'string' || !CLIENT.has(body.action)) invalid();
     const action = body.action;
     const payload = payloadFor(body);

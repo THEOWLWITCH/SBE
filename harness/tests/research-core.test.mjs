@@ -21,7 +21,8 @@ test('visible principle groups preserve all eighteen existing engine principles 
 
 test('research role defaults never grant identities, contacts, document content, exports or collaborator management', () => {
   const research = require('../../app/lib/research-core.js');
-  assert.equal(Object.keys(research.PERMISSIONS).length, 13);
+  assert.equal(Object.keys(research.PERMISSIONS).length, 22);
+  assert.deepEqual(research.ROLE_PRESETS.researcher, ['view_study', 'view_approved_findings']);
   for (const role of ['pi', 'researcher', 'assistant']) {
     const preset = research.ROLE_PRESETS[role];
     assert.ok(preset.includes('view_study'));

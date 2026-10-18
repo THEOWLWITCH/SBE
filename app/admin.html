@@ -505,6 +505,10 @@ function render(){
     b.addEventListener("click", () => { tab = k; nav.hidden = true; render(); });
     nav.append(b);
   });
+  if (role === 'sys' && isSysSession) {
+    nav.append(el('a',{class:'nlink',href:'research-management.html'},'מרכז המחקר של BE GOOD'));
+    nav.append(el('a',{class:'nlink',href:'research-management.html?workspace=1'},'ניהול שותפויות והסכמים'));
+  }
 
   };
   // מנהלת מוסדית: רק לשוניות המוסד. מנהלת המערכת: "רק את רואה" (הלשוניות ומסכי העבודה שלה) ואז "מה שאחרים רואים".

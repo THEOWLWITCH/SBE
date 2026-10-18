@@ -1,0 +1,147 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { randomUUID, createHash } from 'node:crypto';
+import { createPartnershipDatabase, TOKENS, request, token } from '../fixtures/research-partnership-database.mjs';
+import CORE from '../../app/lib/research-partnership-core.js';
+
+async function ok(rpc, credential, action, payload = {}) {
+  const result = await rpc(credential, action, payload);
+  assert.equal(result.error, undefined, JSON.stringify(result));
+  return result;
+}
+const sha = x => createHash('sha256').update(x).digest('hex');
+const cipher = {v:1,iv:'AAAAAAAAAAAAAAAA',tag:'AAAAAAAAAAAAAAAAAAAAAA==',data:'c3ludGhldGlj'};
+const profile = fullName => ({fullName,email:fullName.toLowerCase()+'@example.invalid',institution:'Synthetic'});
+async function setup(f) {
+ const a=(await ok(f.partnershipRpc,TOKENS.owner,'partnerSave',request({individualCode:'STAFFA',expectedRevision:null,profile:profile('Shoshi')}))).partner;
+ const b=(await ok(f.partnershipRpc,TOKENS.owner,'partnerSave',request({individualCode:'STAFFB',expectedRevision:null,profile:profile('Einat')}))).partner;
+ let s=(await ok(f.rpc,TOKENS.owner,'studyCreate',request({config:{title:'Synthetic same-study privacy'}}))).study;
+ for(const code of ['STAFFA','STAFFB']) {const z=await ok(f.rpc,TOKENS.owner,'memberSet',request({studyId:s.id,expectedRevision:s.revision,code,role:'researcher',permissions:['view_study','view_approved_findings','download_approved_findings','comment_on_findings','propose_analysis','view_analysis_results','view_approved_contributions']}));s.revision=z.revision;}
+ return {a,b,s};
+}
+const scope=(s,p,x)=>({studyId:s.id,partnerId:p.id,...(x ? {recordId:x.record.id,versionId:x.version?.id||x.record.headVersionId,expectedRevision:x.record.revision}: {})});
+const readScope=(s,p,x,version=true)=>({studyId:s.id,partnerId:p.id,recordId:x.record.id,...(version?{versionId:x.version?.id||x.record.headVersionId}:{})});
+async function save(f,s,p,kind,data,credential=TOKENS.a){return ok(f.partnershipRpc,credential,'recordSave',request({...scope(s,p),kind,data,expectedRevision:null}));}
+async function submit(f,s,p,x,credential=TOKENS.a){return ok(f.partnershipRpc,credential,'recordSubmit',request(scope(s,p,x)));}
+async function review(f,s,p,x,decision,extra={}){return ok(f.partnershipRpc,TOKENS.owner,'recordReview',request({...scope(s,p,x),decision,...extra}));}
+async function provenance(f,s,p){
+ const consent=randomUUID(),instrument=randomUUID(),snapshot=randomUUID();
+ await f.db.query('INSERT INTO research_private.form_versions(id,study_id,kind,definition) VALUES($1,$2,$3,$4),($5,$2,$6,$7)',[consent,s.id,'consent',{title:'Synthetic'},instrument,'instrument',{items:[{id:'q1',type:'number',min:0,max:10},{id:'group',type:'choice',options:['a','b']}]}]);
+ for(const id of [consent,instrument])await f.db.query('INSERT INTO research_private.form_publications(study_id,version_id) VALUES($1,$2)',[s.id,id]);
+ await f.db.query('UPDATE research_private.studies SET config=config||$1 WHERE id=$2',[{consentVersionId:consent,instrumentVersionIds:[instrument]},s.id]);
+ await f.db.query('INSERT INTO research_private.partnership_snapshots(id,study_id,partner_id,consent_version_id,participant_ids,response_ids,variables,source_rows,questionnaire_version_ids) VALUES($1,$2,$3,$4,$5,$5,$6,$7,$8)',[snapshot,s.id,p.id,consent,[],['q1'],[],[instrument]]);
+ return {consent,instrument,snapshot};
+}
+test('partner profiles infer self identity and private immutable record versions use canonical hashes', async () => {
+  const f = await createPartnershipDatabase();
+  try {
+    const p = await ok(f.partnershipRpc, TOKENS.a, 'partnerSave', request({expectedRevision:null, profile:{fullName:'Shoshi',email:'shoshi@example.invalid',institution:'Synthetic'}}));
+    assert.equal(p.partner.profile.fullName, 'Shoshi');
+    assert.equal(JSON.stringify(p).includes('STAFFA'), false);
+    assert.equal((await f.partnershipRpc(TOKENS.b, 'partnerGet', {partnerId:p.partner.id})).error, 'not_found');
+    const contract=(await f.db.query('SELECT research_private.partnership_contract() c')).rows[0].c;
+    assert.deepEqual(contract.schemas,CORE.RECORD_SCHEMAS);assert.deepEqual(contract.operations,CORE.OPERATIONS);
+  } finally { await f.close(); }
+});
+
+test('same-study researchers cannot discover folders, metadata, counts, nested references or history; CAS and receipts are exact',async()=>{
+ const f=await createPartnershipDatabase();try{
+ const {a,b,s}=await setup(f),data={title:'Private Shoshi proposal',category:'scientific',description:'Synthetic requested work',requestedCompensation:'125.25',currency:'ILS'};
+ const req=request({...scope(s,a),kind:'contribution',data,expectedRevision:null});const x=await ok(f.partnershipRpc,TOKENS.a,'recordSave',req);
+ assert.equal(x.version.contentHash,sha(JSON.stringify(Object.fromEntries(Object.entries(data).sort(([a],[b])=>a.localeCompare(b))))));
+ assert.deepEqual(await f.partnershipRpc(TOKENS.a,'recordSave',req),x);
+ assert.equal((await f.partnershipRpc(TOKENS.a,'recordSave',{...req,data:{...data,title:'Changed'}})).error,'conflict');
+ for(const action of ['recordGet','recordVersions','workspaceExport'])assert.equal((await f.partnershipRpc(TOKENS.b,action,{...readScope(s,a,x,action!=='recordVersions'),...(action==='workspaceExport'?{format:'json'}:{})})).error,'not_found');
+ const list=await ok(f.partnershipRpc,TOKENS.b,'workspaceList',{});assert.equal(list.workspaces.length,1);assert.equal(list.workspaces[0].partnerId,b.id);assert.equal(list.workspaces[0].records.length,0);assert.equal(list.workspaces[0].recordCounts.contribution,undefined);
+ assert.equal((await f.partnershipRpc(TOKENS.b,'workspaceList',{partnerId:a.id})).error,'not_found');
+ const d=await ok(f.partnershipRpc,TOKENS.a,'workspaceDocumentPut',request({...scope(s,a),filename:'synthetic.txt',mediaType:'text/plain',size:9,sha256:sha('synthetic'),contentCiphertext:cipher}));
+ assert.equal((await f.partnershipRpc(TOKENS.b,'workspaceDocumentGet',{...scope(s,a),documentId:d.document.id})).error,'not_found');
+ assert.equal((await f.partnershipRpc(TOKENS.b,'recordSave',request({...scope(s,b),kind:'contribution',expectedRevision:null,data:{title:'Wrong ref',category:'other',description:'Test',supportingDocumentIds:[d.document.id]}}))).error,'not_found');
+ assert.equal((await f.partnershipRpc(TOKENS.a,'recordSave',request({...scope(s,a),kind:'contribution',expectedRevision:null,data:{...data,providerVerification:'verified'}}))).error,'invalid');
+ const y=await ok(f.partnershipRpc,TOKENS.owner,'recordSave',request({...readScope(s,a,x,false),expectedRevision:x.record.revision,kind:'contribution',data:{...data,title:'Owner counterproposal'}}));assert.equal(y.version.proposedBy,'owner');assert.equal(y.record.status,'draft');
+ assert.equal((await f.partnershipRpc(TOKENS.a,'recordSubmit',request(scope(s,a,x)))).error,'conflict');
+ assert.equal((await ok(f.partnershipRpc,TOKENS.a,'recordVersions',readScope(s,a,y,false))).versions.length,2);
+ await assert.rejects(f.db.query('UPDATE research_private.partnership_versions SET data=$1',[{}]),/immutable/);
+ }finally{await f.close();}
+});
+
+test('contribution review preserves requested and agreed terms without creating binding money',async()=>{
+ const f=await createPartnershipDatabase();try{const {a,s}=await setup(f);let x=await save(f,s,a,'contribution',{title:'Synthetic funding',category:'funding',description:'Proposal',requestedCompensation:'500.00',currency:'ILS',requestedIP:'Proposed licence'});x=await submit(f,s,a,x);const r=await review(f,s,a,x,'approved',{approvedTerms:{compensation:'250.00',currency:'ILS',ip:'Owner reviewed proposal'}});
+ assert.equal(r.record.binding,false);assert.equal(r.review.approvedTerms.compensation,'250.00');const read=await ok(f.partnershipRpc,TOKENS.a,'recordGet',readScope(s,a,r));assert.equal(read.version.data.requestedCompensation,'500.00');assert.equal(read.version.data.requestedIP,'Proposed licence');
+ assert.equal((await f.partnershipRpc(TOKENS.owner,'recordReview',request({...scope(s,a,r),decision:'executed'}))).error,'invalid');
+ assert.equal((await f.partnershipRpc(TOKENS.a,'recordSave',request({...scope(s,a),kind:'budget',expectedRevision:null,data:{title:'Owner only'}}))).error,'not_found');
+ assert.equal((await f.partnershipRpc(TOKENS.owner,'recordSave',request({...scope(s,a),kind:'budget',expectedRevision:null,data:{title:'Nested invalid',items:[{description:'Fee',amount:'1.00',party:'owner',authority:'owner'}]}}))).error,'invalid');
+ }finally{await f.close();}
+});
+
+test('published findings release one approved version with independent download and withdrawal revocation',async()=>{
+ const f=await createPartnershipDatabase();try{const {a,b,s}=await setup(f);const pr=await provenance(f,s,a);let x=await save(f,s,a,'finding',{title:'Private synthetic finding',summary:'Aggregate only',evidence:'Synthetic',sourceSnapshotId:pr.snapshot,method:'Descriptive',analysisVersion:'1',toolVersion:'1',questionnaireVersionIds:[pr.instrument],consentProtocolVersionId:pr.consent,privacyReview:'Owner review',consentReview:'Owner review'});x=await submit(f,s,a,x);x=await review(f,s,a,x,'approved');
+ assert.equal((await f.partnershipRpc(TOKENS.b,'recordGet',readScope(s,a,x))).error,'not_found');
+ const pub=await ok(f.partnershipRpc,TOKENS.owner,'findingPublish',request({...scope(s,a,x),viewerPartnerIds:[b.id],downloadPartnerIds:[]}));
+ const read=await ok(f.partnershipRpc,TOKENS.b,'recordGet',readScope(s,a,pub));assert.equal(read.version.data.summary,'Aggregate only');assert.equal(read.access.canDownload,false);assert.equal(read.access.canComment,true);assert.equal(read.reviews,undefined);assert.equal((await ok(f.partnershipRpc,TOKENS.b,'recordVersions',readScope(s,a,pub,false))).versions.length,1);
+ const shared=(await ok(f.partnershipRpc,TOKENS.b,'workspaceList',{})).workspaces[0];assert.equal(shared.partnerId,b.id);assert.equal(shared.records.length,1);assert.equal(shared.records[0].partnerId,a.id);assert.equal(shared.documents.length,0);assert.equal(shared.snapshots.length,0);assert.equal(shared.partnerName,'Einat');
+ assert.equal((await f.partnershipRpc(TOKENS.b,'workspaceExport',{...readScope(s,a,pub),format:'json'})).error,'not_found');
+ const comment=await ok(f.partnershipRpc,TOKENS.b,'findingComment',request({...readScope(s,a,pub),text:'Synthetic comment'}));assert.equal(comment.comment.versionId,pub.record.publishedVersionId);
+ const withdrawn=await ok(f.partnershipRpc,TOKENS.owner,'findingWithdraw',request({...scope(s,a,pub),reason:'Owner withdrew synthetic release'}));assert.equal(withdrawn.record.status,'withdrawn');assert.equal((await f.partnershipRpc(TOKENS.b,'recordGet',readScope(s,a,pub))).error,'not_found');
+ }finally{await f.close();}
+});
+
+test('private documents are encrypted only, retry by byte hash, and direct browser/service tables stay denied',async()=>{
+ const f=await createPartnershipDatabase();try{const {a,s}=await setup(f);const req=request({...scope(s,a),filename:'synthetic.txt',mediaType:'text/plain',size:9,sha256:sha('synthetic'),contentCiphertext:cipher});const d=await ok(f.partnershipRpc,TOKENS.a,'workspaceDocumentPut',req);assert.deepEqual(await f.partnershipRpc(TOKENS.a,'workspaceDocumentPut',{...req,contentCiphertext:{...cipher,iv:'BBBBBBBBBBBBBBBB'}}),d);assert.equal((await f.partnershipRpc(TOKENS.a,'workspaceDocumentPut',{...req,sha256:sha('changed')})).error,'conflict');
+ assert.equal((await f.partnershipRpc(TOKENS.a,'workspaceDocumentPut',request({...scope(s,a),filename:'raw.txt',mediaType:'text/plain',contentBase64:'cGxhaW4='}))).error,'invalid');
+ const read=await ok(f.partnershipRpc,TOKENS.a,'workspaceDocumentGet',{...scope(s,a),documentId:d.document.id});assert.deepEqual(read.contentCiphertext,cipher);
+ for(const role of ['anon','authenticated','service_role']){await f.db.exec('SET ROLE '+role);await assert.rejects(f.db.query('SELECT * FROM research_private.partnership_documents'),/permission denied/);await f.db.exec('RESET ROLE');}
+ await f.db.exec('SET ROLE research_worker');assert.equal((await f.db.query('SELECT count(*)::int n FROM research_private.partnership_documents')).rows[0].n,0);await f.db.exec('RESET ROLE');
+ }finally{await f.close();}
+});
+
+test('individual invitations are bound single-use, expire/revoke, and defaults preserve existing explicit grants',async()=>{
+ const f=await createPartnershipDatabase();try{const {a,b,s}=await setup(f);const digest=sha('synthetic-invite');const inv=await ok(f.partnershipRpc,TOKENS.owner,'partnerInviteCreate',request({...scope(s,a),preset:'approved_findings',inviteDigest:digest}));assert.deepEqual(inv.invitation.permissions,['view_study','view_approved_findings']);assert.equal((await f.partnershipRpc(TOKENS.b,'partnerInviteGet',{inviteDigest:digest})).error,'not_found');assert.equal((await ok(f.partnershipRpc,TOKENS.a,'partnerInviteGet',{inviteDigest:digest})).invitation.partnerId,a.id);
+ const accept=request({inviteDigest:digest});const accepted=await ok(f.partnershipRpc,TOKENS.a,'partnerInviteAccept',accept);assert.equal(accepted.partner.id,a.id);assert.deepEqual(await f.partnershipRpc(TOKENS.a,'partnerInviteAccept',accept),accepted);assert.equal((await f.partnershipRpc(TOKENS.a,'partnerInviteAccept',request({inviteDigest:digest}))).error,'conflict');
+ const membership=(await f.db.query('SELECT permissions FROM research_private.memberships WHERE study_id=$1 AND actor_ref=$2',[s.id,'code:STAFFA'])).rows[0];assert.ok(membership.permissions.includes('comment_on_findings'));
+ const revoked=await ok(f.partnershipRpc,TOKENS.owner,'partnerInviteCreate',request({...scope(s,b),preset:'approved_findings',inviteDigest:sha('revoke')}));await ok(f.partnershipRpc,TOKENS.owner,'partnerInviteRevoke',request({...scope(s,b),invitationId:revoked.invitation.id,expectedRevision:0}));assert.equal((await f.partnershipRpc(TOKENS.b,'partnerInviteGet',{inviteDigest:sha('revoke')})).error,'not_found');
+ }finally{await f.close();}
+});
+
+async function approvedAgreement(f,s,a){
+ let template=await save(f,s,a,'agreement_template',{title:'Synthetic supplied template',templateVersion:'test-1',explanationVersion:'test-1',sectionClauses:CORE.AGREEMENT_SECTIONS.map(section=>({sectionId:section.id,text:'Synthetic supplied clause '+section.id})),ipExplanation:'Synthetic supplied explanation',mutualIPClause:'Synthetic supplied mutual clause',requiredFieldIds:[]},TOKENS.owner);
+ template=await review(f,s,a,template,'approved');
+ let x=await save(f,s,a,'agreement',{title:'Synthetic agreement',ownerName:'Owner',ownerEmail:'owner@example.invalid',ownerSignatory:'Owner',ownerAuthority:'Synthetic owner authority',partnerName:'Shoshi',partnerEmail:a.profile.email,partnerSignatory:'Shoshi',partnerAuthority:'Synthetic partner authority',studyTitle:'Synthetic study',purpose:'Synthetic purpose',effectiveDate:'2026-01-01',templateVersionId:template.record.headVersionId,ipExplanationVersionId:template.record.headVersionId,sharedExpenses:[{description:'Synthetic expense',amount:'25.00',party:'shared',dueDate:'2028-01-01'}],currency:'ILS'});
+ x=await submit(f,s,a,x);x=await review(f,s,a,x,'approved');
+ let read=await ok(f.partnershipRpc,TOKENS.owner,'recordGet',readScope(s,a,x));
+ for(const who of [TOKENS.owner,TOKENS.a]) x=await ok(f.partnershipRpc,who,'agreementApprove',request({...scope(s,a,x),documentHash:read.version.contentHash,ipExplanationVersionId:template.record.headVersionId,ipReadAcknowledged:true}));
+ return {x,read,template};
+}
+
+test('mutual approvals bind canonical head and revision invalidates them; worker signing is distinct from browser and mail',async()=>{
+ const f=await createPartnershipDatabase();try{const {a,s}=await setup(f);let {x,read}=await approvedAgreement(f,s,a);
+ const preflight=await ok(f.partnershipRpc,TOKENS.owner,'signingStart',request({...scope(s,a,x),documentHash:read.version.contentHash,consent:true}));assert.equal(preflight.signing,null);assert.equal(preflight.record.status,'approved');
+ for(const who of [TOKENS.owner,TOKENS.a,TOKENS.worker])assert.equal((await f.partnershipRpc(who,'signatureComplete',{...readScope(s,a,x),signingId:randomUUID()})).error,'unauthorized');
+ const changed=await ok(f.partnershipRpc,TOKENS.owner,'recordSave',request({...readScope(s,a,x,false),expectedRevision:x.record.revision,kind:'agreement',data:{...read.version.data,purpose:'New counterproposal'}}));assert.equal(changed.record.status,'draft');assert.equal(changed.record.approvedVersionId,null);
+ const worker=token({k:'research_signing_worker',purpose:'research-signing',exp:Date.now()+300000});assert.equal((await f.partnershipRpc(worker,'signingPrepare',request({...scope(s,a,changed),documentHash:read.version.contentHash,providerSessionId:'synthetic',expiresAt:new Date(Date.now()+3600000).toISOString(),providerStateCiphertext:cipher,providerDocumentHash:sha('synthetic-provider-bytes'),authorityPolicyHash:sha('synthetic')}))).error,'conflict');
+ const unsigned=await save(f,s,a,'agreement',{title:'Unsigned synthetic'});assert.equal((await f.partnershipRpc(TOKENS.owner,'recordSave',request({...scope(s,a),kind:'obligation',expectedRevision:null,data:{title:'Cannot bind unsigned',sourceAgreementId:unsigned.record.id,sourceAgreementVersionId:unsigned.version.id,clauseReference:'x',party:'owner',description:'No signature'}}))).error,'not_found');
+ }finally{await f.close();}
+});
+
+test('trusted execution keeps evidence immutable, extracts reviewable obligations and rejects unilateral term edits',async()=>{
+ const f=await createPartnershipDatabase();try{const {a,s}=await setup(f);const {x,read}=await approvedAgreement(f,s,a);const worker=token({k:'research_signing_worker',purpose:'research-signing',exp:Date.now()+300000});
+ const prep=await ok(f.partnershipRpc,worker,'signingPrepare',request({...scope(s,a,x),documentHash:read.version.contentHash,providerSessionId:'synthetic-provider-session',expiresAt:new Date(Date.now()+3600000).toISOString(),providerStateCiphertext:cipher,providerDocumentHash:sha('synthetic-provider-bytes'),authorityPolicyHash:sha('synthetic-authority-policy')}));assert.equal(prep.record.status,'signing');
+ const poll=request({...readScope(s,a,prep,false),signingId:prep.signing.id,expectedRevision:prep.record.revision});assert.equal((await ok(f.partnershipRpc,TOKENS.owner,'signingRefresh',poll)).providerCheckDue,true);assert.equal((await ok(f.partnershipRpc,TOKENS.owner,'signingRefresh',poll)).providerCheckDue,false);assert.equal((await ok(f.partnershipRpc,TOKENS.owner,'signingRefresh',{...poll,requestId:randomUUID()})).providerCheckDue,false);
+ const state=await ok(f.partnershipRpc,worker,'signingStateUpdate',{...readScope(s,a,prep,false),signingId:prep.signing.id,state:'in_progress'});assert.equal(state.signing.state,'in_progress');assert.equal((await f.partnershipRpc(token({k:'research_signing_worker',exp:Date.now()+300000}),'signingEventContext',{providerSessionId:'synthetic-provider-session'})).error,'unauthorized');
+ const ctx=await ok(f.partnershipRpc,worker,'signingEventContext',{providerSessionId:'synthetic-provider-session'});assert.equal(ctx.recordId,x.record.id);
+ const docs={};for(const purpose of ['final','certificate']) docs[purpose]=(await ok(f.partnershipRpc,worker,'signingEvidencePut',{...readScope(s,a,prep,false),signingId:prep.signing.id,purpose,filename:purpose+'.pdf',mediaType:'application/pdf',size:9,sha256:sha(purpose),contentCiphertext:cipher})).document;
+ const now=new Date().toISOString();const done=await ok(f.partnershipRpc,worker,'signatureComplete',{...readScope(s,a,prep),signingId:prep.signing.id,documentHash:read.version.contentHash,providerEventId:'synthetic-event',finalDocumentId:docs.final.id,finalDocumentHash:docs.final.sha256,auditCertificateDocumentId:docs.certificate.id,verifiedSigners:[{party:'owner',email:'owner@example.invalid',name:'Owner',authority:'Synthetic owner authority',recipientId:'synthetic-owner',identityVerified:true,consent:true,signedAt:now},{party:'partner',email:a.profile.email,name:'Shoshi',authority:'Synthetic partner authority',recipientId:'synthetic-partner',identityVerified:true,consent:true,signedAt:now}],completedAt:now});assert.equal(done.record.status,'executed');assert.equal(done.record.binding,true);
+ assert.equal((await f.partnershipRpc(TOKENS.owner,'recordSave',request({...readScope(s,a,done,false),expectedRevision:done.record.revision,kind:'agreement',data:read.version.data}))).error,'conflict');
+ const ws=(await ok(f.partnershipRpc,TOKENS.owner,'workspaceList',{studyId:s.id,partnerId:a.id})).workspaces[0];const obligation=ws.records.find(r=>r.kind==='obligation');assert.ok(obligation);assert.equal(obligation.status,'draft');let o=await ok(f.partnershipRpc,TOKENS.owner,'recordGet',{studyId:s.id,partnerId:a.id,recordId:obligation.id});assert.equal(o.record.binding,false);assert.equal(o.version.data.amount,'25.00');o=await submit(f,s,a,o,TOKENS.owner);o=await review(f,s,a,o,'approved');assert.equal(o.record.binding,true);assert.equal(CORE.isBindingObligation(o.record),true);
+ const old=await ok(f.partnershipRpc,TOKENS.owner,'recordGet',readScope(s,a,o));assert.equal((await f.partnershipRpc(TOKENS.owner,'recordSave',request({...readScope(s,a,o,false),expectedRevision:o.record.revision,kind:'obligation',data:{...old.version.data,amount:'26.00'}}))).error,'conflict');assert.equal((await f.partnershipRpc(TOKENS.owner,'recordReview',request({...scope(s,a,o),decision:'cancelled'}))).error,'not_found');
+ await assert.rejects(f.db.query('UPDATE research_private.partnership_executions SET document_hash=$1',[sha('tamper')]),/immutable/);
+ }finally{await f.close();}
+});
+
+test('analysis creates only consent-bound row-id snapshots, stale consent and revocation stop use and receipt replay',async()=>{
+ const f=await createPartnershipDatabase();try{const {a,b,s}=await setup(f);const pr=await provenance(f,s,a);const participant=randomUUID(),response=randomUUID();await f.db.query("INSERT INTO research_private.participants(id,study_id,actor_ref,status,consent_version_id,consents,verified) VALUES($1,$2,'code:PERSON1','enrolled',$3,$4,true)",[participant,s.id,pr.consent,{participate:true,surveys:true}]);await f.db.query('INSERT INTO research_private.responses(id,study_id,participant_id,instrument_version_id,consent_version_id,wave_id,answers,versions,config_revision) VALUES($1,$2,$3,$4,$5,$6,$7,$8,0)',[response,s.id,participant,pr.instrument,pr.consent,'baseline',{q1:3,privateText:'Never snapshot'},{}]);let x=await save(f,s,a,'analysis_request',{title:'Synthetic analysis',questions:['Synthetic question'],variables:['q1'],requestedOutputs:['mean'],operation:'descriptive'});x=await submit(f,s,a,x);x=await review(f,s,a,x,'approved');
+ const req=request({...scope(s,a),requestRecordId:x.record.id,operation:'descriptive'});const result=await ok(f.partnershipRpc,TOKENS.owner,'workspaceAnalysis',req);assert.equal(result.summary.count,1);assert.equal(result.summary.results[0].mean,3);assert.equal(result.record.status,'draft');const snap=(await f.db.query('SELECT source_rows,response_ids FROM research_private.partnership_snapshots WHERE id=$1',[result.sourceSnapshotId])).rows[0];assert.deepEqual(snap.source_rows,[]);assert.deepEqual(snap.response_ids,[response]);assert.equal(JSON.stringify(result).includes('Never snapshot'),false);
+ await f.db.query("UPDATE research_private.participants SET status='withdrawn' WHERE id=$1",[participant]);assert.equal((await f.partnershipRpc(TOKENS.owner,'workspaceAnalysis',request({...scope(s,a),requestRecordId:x.record.id,sourceSnapshotId:result.sourceSnapshotId,operation:'descriptive'}))).error,'not_found');assert.equal((await f.partnershipRpc(TOKENS.owner,'workspaceAnalysis',req)).error,'not_found');assert.equal((await f.partnershipRpc(TOKENS.owner,'workspaceExport',{...readScope(s,a,result),format:'json'})).error,'not_found');
+ const ownReq=request({...scope(s,a),kind:'contribution',data:{title:'Before revocation',category:'other',description:'Synthetic'},expectedRevision:null});await ok(f.partnershipRpc,TOKENS.a,'recordSave',ownReq);await f.db.query("DELETE FROM research_private.memberships WHERE study_id=$1 AND actor_ref='code:STAFFA'",[s.id]);assert.equal((await f.partnershipRpc(TOKENS.a,'recordSave',ownReq)).error,'not_found');assert.equal((await f.partnershipRpc(TOKENS.a,'recordGet',readScope(s,a,result))).error,'not_found');
+ }finally{await f.close();}
+});
