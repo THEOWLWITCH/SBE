@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { createResearchDatabase, token } from '../fixtures/research-database.mjs';
+import { createResearchDatabase, token, TOKENS, SECRET, OWNER_PASSWORD, request } from '../fixtures/research-database.mjs';
+import { readFile } from 'node:fs/promises';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 import { verifyToken } from '../lib/access.mjs';
 import { createPracticeServer } from '../practice-server.mjs';
 import { createModelLimits } from '../lib/model-limits.mjs';
@@ -10,6 +12,68 @@ import { once } from 'node:events';
 import { randomUUID } from 'node:crypto';
 
 const version = record => createHash('sha256').update(record.salt + ':' + record.hash).digest('hex');
+
+test('research authentication survives the complete hardened release migration order without opening credential access', async () => {
+  const runtime = process.env.RESEARCH_PGLITE_PATH || fileURLToPath(new URL('../../../research-test-runtime/node_modules/@electric-sql/pglite/', import.meta.url));
+  const { PGlite } = await import(pathToFileURL(runtime + '/dist/index.js').href);
+  const { pgcrypto } = await import(pathToFileURL(runtime + '/dist/contrib/pgcrypto.js').href);
+  const db = new PGlite({ extensions: { pgcrypto } });
+  const rpc = async (credential, action, payload = {}, name = 'research_rpc') => {
+    await db.exec('SET ROLE service_role');
+    try { return (await db.query('SELECT public.' + name + '($1,$2,$3::jsonb) AS result', [credential, action, payload])).rows[0].result; }
+    finally { await db.exec('RESET ROLE'); }
+  };
+  try {
+    await db.exec('CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN BYPASSRLS; CREATE TABLE public.access_settings(key text PRIMARY KEY,value jsonb NOT NULL); CREATE TABLE public.scenarios(id text PRIMARY KEY,institution_id text,runs integer);');
+    for (const [key, value] of [
+      ['token-secret', { secret: SECRET }], ['pw-sys', OWNER_PASSWORD],
+      ['institutions', [{ name: 'Synthetic School', active: true }]], ['settings', { graceDays: 14 }],
+      ['unrelated-sensitive', { synthetic: true }],
+      ...['STAFFA', 'STAFFB'].map(code => ['code:' + code, { code, kind: 'staff', inst: 'Synthetic School', perms: ['writer'], revoked: false }])
+    ]) await db.query('INSERT INTO public.access_settings VALUES($1,$2)', [key, value]);
+    for (const migration of ['20261014-service-data-boundaries.sql', '20261013-communication-storage.sql', '20261013-research-management.sql', '20261018-research-partnerships.sql']) {
+      await db.exec(await readFile(new URL('../migrations/' + migration, import.meta.url), 'utf8'));
+    }
+    const boundary = await readFile(new URL('../migrations/20261019-research-auth-boundary.sql', import.meta.url), 'utf8');
+    await db.exec('ALTER ROLE research_worker LOGIN');
+    await assert.rejects(db.exec(boundary), /role is missing or unsafe/);
+    await db.exec('ROLLBACK; ALTER ROLE research_worker NOLOGIN');
+    await db.exec('CREATE POLICY synthetic_existing_auth_policy ON public.access_settings FOR SELECT TO research_worker USING (false)');
+    await assert.rejects(db.exec(boundary), /none are replaced/);
+    await db.exec('ROLLBACK');
+    assert.equal((await db.query("SELECT count(*)::int n FROM pg_policy WHERE polname='synthetic_existing_auth_policy'")).rows[0].n, 1);
+    await db.exec('DROP POLICY synthetic_existing_auth_policy ON public.access_settings');
+    await db.exec(boundary);
+
+    assert.equal((await rpc(TOKENS.owner, 'bootstrap')).owner, true, 'owner authentication must work after storage RLS hardening');
+    assert.equal((await rpc(TOKENS.owner, 'workspaceBootstrap', {}, 'research_partnership_rpc')).owner, true);
+    const a = (await rpc(TOKENS.owner, 'studyCreate', request({ config: { title: 'Synthetic hardened study A' } }))).study;
+    const b = (await rpc(TOKENS.owner, 'studyCreate', request({ config: { title: 'Synthetic hardened study B' } }))).study;
+    await rpc(TOKENS.owner, 'memberSet', request({ studyId: a.id, expectedRevision: a.revision, code: 'STAFFA', role: 'researcher', permissions: ['view_study'] }));
+    assert.deepEqual((await rpc(TOKENS.a, 'bootstrap')).studies.map(study => study.id), [a.id]);
+    assert.equal((await rpc(TOKENS.a, 'studyGet', { studyId: b.id })).error, 'not_found');
+    for (const role of ['anon', 'authenticated']) {
+      await db.exec('SET ROLE ' + role);
+      try {
+        await assert.rejects(db.query('SELECT * FROM public.access_settings'), /permission denied/);
+        for (const name of ['research_rpc', 'research_partnership_rpc']) await assert.rejects(db.query('SELECT public.' + name + '($1,$2,$3::jsonb)', [TOKENS.owner, 'bootstrap', {}]), /permission denied/);
+      } finally { await db.exec('RESET ROLE'); }
+    }
+    const worker = (await db.query("SELECT rolcanlogin,rolsuper,rolbypassrls FROM pg_roles WHERE rolname='research_worker'")).rows[0];
+    assert.deepEqual(worker, { rolcanlogin: false, rolsuper: false, rolbypassrls: false });
+    await db.exec('SET ROLE research_worker');
+    try {
+      assert.deepEqual((await db.query('SELECT key FROM public.access_settings ORDER BY key')).rows.map(row => row.key), ['code:STAFFA', 'code:STAFFB', 'institutions', 'pw-sys', 'settings', 'token-secret']);
+      await assert.rejects(db.query("UPDATE public.access_settings SET value='{}'::jsonb WHERE key='token-secret'"), /row-level security/);
+      await assert.rejects(db.query("INSERT INTO public.access_settings VALUES('code:FORGED','{}'::jsonb)"), /permission denied/);
+      await assert.rejects(db.query("DELETE FROM public.access_settings WHERE key='pw-sys'"), /permission denied/);
+    } finally { await db.exec('RESET ROLE'); }
+    await db.query("UPDATE public.access_settings SET value=value||'{\"revoked\":true}'::jsonb WHERE key='code:STAFFA'");
+    assert.equal((await rpc(TOKENS.a, 'bootstrap')).error, 'unauthorized');
+    assert.equal((await rpc(TOKENS.a, 'workspaceBootstrap', {}, 'research_partnership_rpc')).error, 'unauthorized');
+  } finally { await db.close(); }
+});
+
 test('research SQL and access authentication reject legacy and rotated owner credentials', async () => {
   const fixture = await createResearchDatabase();
   const password = {salt:'synthetic-owner-salt',hash:'synthetic-owner-hash'};
