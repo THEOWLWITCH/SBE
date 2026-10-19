@@ -419,6 +419,16 @@ nav.tabs button[aria-selected="true"]::before{background:linear-gradient(90deg,#
 .fcscene[data-k="out"] .candle{transform:translateX(60px)}
 .fcscene[data-k="out"] .flower{opacity:0;transform:translateX(-60px) scale(.9)}
 .fcscene .candle{transform-origin:70px 178px}.fcscene .flower{transform-origin:190px 178px}
+
+/* תפריט ויסות: כל פריט בצבע אחר מצבעי הלוגו */
+.menulist li{--c:#1B4F7A;--cf:#fff;border-color:var(--frame);border-radius:14px;align-items:center;animation:cardIn .4s both;transition:transform .15s,box-shadow .15s}
+.menulist li:nth-child(4n+2){--c:#1A9BB5}
+.menulist li:nth-child(4n+3){--c:#3A9E6B}
+.menulist li:nth-child(4n){--c:#FFC929;--cf:#0f2b45}
+.menulist li::before{min-width:30px;height:30px;border:0;background:var(--c);color:var(--cf);font-size:.9rem;box-shadow:0 3px 8px -4px var(--c)}
+.menulist li:hover{transform:translateY(-1px);box-shadow:0 8px 16px -12px rgba(27,79,122,.7)}
+.menulist li:nth-child(2){animation-delay:0.04s}.menulist li:nth-child(3){animation-delay:0.08s}.menulist li:nth-child(4){animation-delay:0.12s}.menulist li:nth-child(5){animation-delay:0.16s}.menulist li:nth-child(6){animation-delay:0.20s}.menulist li:nth-child(7){animation-delay:0.24s}.menulist li:nth-child(8){animation-delay:0.28s}.menulist li:nth-child(9){animation-delay:0.32s}.menulist li:nth-child(10){animation-delay:0.36s}.menulist li:nth-child(11){animation-delay:0.40s}.menulist li:nth-child(12){animation-delay:0.44s}
+@media (prefers-reduced-motion: reduce){.menulist li{animation:none!important;transition:none}}
 </style>
 </head><body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
