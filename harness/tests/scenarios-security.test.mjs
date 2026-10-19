@@ -166,3 +166,62 @@ test('prepared migration refuses an unexpected existing policy and preserves it 
     assert.equal((await db.query('SELECT count(*)::integer AS n FROM public.scenarios')).rows[0].n, 5);
   } finally { await db.close(); }
 });
+
+test('known legacy anon_read policy is narrowed before strict service hardening without changing scenario rows', async () => {
+  const db = await syntheticDatabase();
+  try {
+    await db.exec('ALTER TABLE public.scenarios ENABLE ROW LEVEL SECURITY; CREATE POLICY anon_read ON public.scenarios FOR SELECT TO anon USING (true)');
+    const before = (await db.query('SELECT * FROM public.scenarios ORDER BY id')).rows;
+    await db.exec('SET ROLE anon');
+    assert.equal((await db.query('SELECT count(*)::int n FROM public.scenarios')).rows[0].n, 5);
+    await db.exec('RESET ROLE');
+    const originalPolicy = (await db.query("SELECT oid FROM pg_policy WHERE polrelid='public.scenarios'::regclass AND polname='anon_read'")).rows[0].oid;
+    await db.exec(await readFile(new URL('../migrations/20261019-normalize-legacy-scenario-policy.sql', import.meta.url), 'utf8'));
+    const narrowed = (await db.query("SELECT oid,polname,pg_get_expr(polqual,polrelid) AS expression FROM pg_policy WHERE polrelid='public.scenarios'::regclass")).rows;
+    assert.equal(narrowed.length, 1);
+    assert.equal(narrowed[0].oid, originalPolicy, 'rename and narrowing preserve the original policy object');
+    assert.equal(narrowed[0].polname, 'be_good_scenarios_shared_read');
+    await db.exec('SET ROLE anon');
+    assert.deepEqual((await db.query('SELECT id FROM public.scenarios ORDER BY id')).rows, [{ id: 'TR-S-01' }]);
+    await db.exec('RESET ROLE');
+    await db.exec(await readFile(new URL('../migrations/20261014-service-data-boundaries.sql', import.meta.url), 'utf8'));
+    for (const role of ['anon', 'authenticated']) {
+      await db.exec('SET ROLE ' + role);
+      try {
+        assert.deepEqual((await db.query('SELECT id FROM public.scenarios ORDER BY id')).rows, [{ id: 'TR-S-01' }]);
+        await assert.rejects(db.query("UPDATE public.scenarios SET runs=9 WHERE id='TR-S-01'"), /permission denied/);
+        await assert.rejects(db.query('SELECT * FROM public.access_settings'), /permission denied/);
+      } finally { await db.exec('RESET ROLE'); }
+    }
+    assert.deepEqual((await db.query('SELECT * FROM public.scenarios ORDER BY id')).rows, before);
+  } finally { await db.close(); }
+});
+
+test('legacy policy normalization refuses unknown definitions or additional policies and preserves them on rollback', async () => {
+  const db = await syntheticDatabase();
+  try {
+    const migration = await readFile(new URL('../migrations/20261019-normalize-legacy-scenario-policy.sql', import.meta.url), 'utf8');
+    const definitions = [
+      'CREATE POLICY unrelated_existing_policy ON public.scenarios FOR SELECT TO anon USING (true)',
+      'CREATE POLICY anon_read ON public.scenarios FOR SELECT TO anon USING (false)',
+      'CREATE POLICY anon_read ON public.scenarios FOR SELECT TO anon,authenticated USING (true)',
+      'CREATE POLICY anon_read ON public.scenarios AS RESTRICTIVE FOR SELECT TO anon USING (true)',
+      'CREATE POLICY anon_read ON public.scenarios FOR ALL TO anon USING (true) WITH CHECK (true)',
+      'CREATE POLICY anon_read ON public.scenarios FOR SELECT TO anon USING (true); CREATE POLICY be_good_scenarios_shared_read ON public.scenarios FOR SELECT TO anon USING (true)',
+      'CREATE POLICY anon_read ON public.scenarios FOR SELECT TO anon USING (true); CREATE POLICY unrelated_existing_policy ON public.scenarios FOR SELECT USING (false)'
+    ];
+    const rows = (await db.query('SELECT * FROM public.scenarios ORDER BY id')).rows;
+    for (const definition of definitions) {
+      await db.exec('BEGIN; ' + definition);
+      const before = (await db.query("SELECT oid,polname,polcmd,polpermissive,polroles,pg_get_expr(polqual,polrelid) AS qualifier,pg_get_expr(polwithcheck,polrelid) AS check_expression FROM pg_policy WHERE polrelid='public.scenarios'::regclass ORDER BY polname")).rows;
+      // Keep fixture policies committed so migration rollback must preserve them.
+      await db.exec('COMMIT');
+      await assert.rejects(db.exec(migration), /Unexpected/);
+      await db.exec('ROLLBACK');
+      const after = (await db.query("SELECT oid,polname,polcmd,polpermissive,polroles,pg_get_expr(polqual,polrelid) AS qualifier,pg_get_expr(polwithcheck,polrelid) AS check_expression FROM pg_policy WHERE polrelid='public.scenarios'::regclass ORDER BY polname")).rows;
+      assert.deepEqual(after, before);
+      assert.deepEqual((await db.query('SELECT * FROM public.scenarios ORDER BY id')).rows, rows);
+      for (const policy of before) await db.exec('DROP POLICY ' + policy.polname + ' ON public.scenarios');
+    }
+  } finally { await db.close(); }
+});
