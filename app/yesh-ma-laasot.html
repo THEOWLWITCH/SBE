@@ -1,0 +1,944 @@
+<!doctype html>
+<!-- "יש מה לעשות": מדריכון חירום להורים ולא.נשי חינוך. פתוח לכולם, בלי כניסה, ובלי ניווט לכלים אחרים.
+     אותו קובץ מופץ גם כקובץ עצמאי (הלוגו בתוכו). קישור מתנה: ?to=&from=&msg= (ו-lang=ar). ראו CLAUDE.md. -->
+<html lang="he" dir="rtl"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>יש מה לעשות · Begood</title>
+<meta name="description" content="מדריכון להורים ולא.נשי חינוך בחירום: הדקה הראשונה עם הילדים, נשימה, קרקוע ופעילויות קצרות.">
+<meta name="robots" content="index,follow">
+<link rel="icon" href="assets/begood-mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Rubik:wght@500;700&family=Noto+Sans+Arabic:wght@400;500;700&display=swap"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<style>
+/* Layout: calm header, quiet number banner per tab, one big "first minute" button, bottom thumb tabs, single column cards. Hebrew / Arabic, both RTL */
+:root{
+  --bg:#f3f6fa; --surface:#ffffff; --surface2:#e9eff7; --fg:#0f172a; --muted:#4a5a70; --line:#d3dce8;
+  --accent:#2563eb; --on-accent:#ffffff; --calm:#0b5f8f; --calm-soft:#e2eff8; --warm:#b45309; --warm-soft:#fdf0dc;
+  --header:#0f172a; --header-fg:#f1f5f9; --header-muted:#a7b4c8; --dot:#7cc4f0; --on-dot:#06223a;
+  --font-display:"Rubik","Heebo",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --font-body:"Heebo",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --r:14px; --tabs-h:68px;
+}
+html[lang="ar"]{
+  --font-display:"Noto Sans Arabic","Rubik",system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;
+  --font-body:"Noto Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0a1120; --surface:#111a2c; --surface2:#18233a; --fg:#e7edf6; --muted:#a3b2c7; --line:#25324b;
+  --accent:#7aa7ff; --on-accent:#0a1120; --calm:#7cc4f0; --calm-soft:#10283a; --warm:#f2b25c; --warm-soft:#33260f;
+  --header:#050a15; --header-fg:#eef2f8; --header-muted:#93a3ba; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0a1120; --surface:#111a2c; --surface2:#18233a; --fg:#e7edf6; --muted:#a3b2c7; --line:#25324b;
+  --accent:#7aa7ff; --on-accent:#0a1120; --calm:#7cc4f0; --calm-soft:#10283a; --warm:#f2b25c; --warm-soft:#33260f;
+  --header:#050a15; --header-fg:#eef2f8; --header-muted:#93a3ba; color-scheme:dark }
+
+html{font-size:106.25%;direction:rtl}
+html.fs1{font-size:118.75%} html.fs2{font-size:131.25%}
+body{direction:rtl;text-align:right;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:1rem;line-height:1.6;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:#fdd78c}
+*{box-sizing:border-box}
+h1,h2,h3{font-family:var(--font-display);line-height:1.3;text-wrap:balance;margin:0}
+h2{font-size:1.35rem} h3{font-size:1.1rem}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:720px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* header */
+header.top{position:relative;z-index:1;background:#fdd78c;color:#0f2b45}
+.top .row1{display:flex;align-items:center;gap:10px;padding-block:12px}
+.brand{flex:1;min-width:0}
+.brand h1{font-size:1.15rem;font-weight:700}
+.brand small{display:block;color:#5b4a1f;font-size:.8rem;line-height:1.35}
+.tools{display:flex;gap:6px}
+.bglogo{flex:none;display:inline-flex;align-items:center;background:#fff;border-radius:10px;padding:4px 6px}
+.bglogo img{height:34px;width:auto;display:block}
+@media (max-width:520px){.top .row1{flex-wrap:wrap;row-gap:8px}.top .brand{order:3;flex-basis:100%}.top .tools{margin-inline-start:auto}html.embed .top .row1{flex-wrap:nowrap}html.embed .top .brand{order:0;flex-basis:auto}html.embed .top .tools{margin-inline-start:0}}
+.bgline{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
+.bgline img{height:30px;width:auto;background:#fff;border-radius:6px;padding:3px 5px;border:1px solid var(--line)}
+html.embed .bglogo{display:none}
+.iconbtn{min-width:44px;min-height:44px;border-radius:10px;border:1px solid #0f2b4533;background:#ffffff73;color:#0f2b45;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;padding:0 8px}
+.langbtn{font-family:"Noto Sans Arabic","Heebo",system-ui,sans-serif;font-size:.95rem;padding:0 10px}
+.infobar{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding:10px 14px;border-radius:12px;background:var(--surface2);color:var(--muted);font-size:.92rem;line-height:1.4}
+.infobar a{color:var(--fg);font-weight:700;font-variant-numeric:tabular-nums;text-decoration:none;white-space:nowrap}
+.infobar a b{font-size:1.05rem}
+
+main{padding-block:16px calc(var(--tabs-h) + 28px + env(safe-area-inset-bottom,0px))}
+.view{display:flex;flex-direction:column;gap:18px}
+
+.nowbtn{width:100%;border:0;border-radius:18px;background:var(--calm);color:#fff;padding:18px;display:flex;align-items:center;gap:14px;text-align:right;min-height:84px;box-shadow:0 6px 18px -8px #0b5f8f80}
+:root[data-theme="dark"] .nowbtn{color:#06223a}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .nowbtn{color:#06223a}}
+.nowbtn strong{font-family:var(--font-display);font-size:1.25rem;display:block;line-height:1.3}
+.nowbtn span{font-size:.9rem;opacity:.92}
+.nowbtn svg{flex:none}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.eyebrow{font-size:.8rem;letter-spacing:.04em;color:var(--muted);font-weight:500}
+.lead{color:var(--muted)}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.btn{min-height:48px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);font-weight:500;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.btn.ghost{background:transparent}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.linkbtn{background:none;border:0;padding:8px 0;color:var(--accent);font-weight:500;text-decoration:underline;text-underline-offset:3px;min-height:44px;text-align:right}
+
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:.95rem}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.steps button{min-height:58px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;padding:4px}
+.steps button b{font-family:var(--font-display);font-size:1.3rem}
+.steps button small{font-size:.72rem;color:var(--muted)}
+.steps button[aria-current="step"]{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.steps button[aria-current="step"] small{color:inherit}
+.dd{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.dd{grid-template-columns:1fr}}
+.dd > div{border-radius:12px;padding:12px;min-width:0}
+.do{background:var(--calm-soft)} .dont{background:var(--warm-soft)}
+.dd h4{margin:0 0 4px;font-size:.95rem}
+.do h4{color:var(--calm)} .dont h4{color:var(--warm)}
+.dd ul{margin:0;padding-inline-start:18px}
+.note{border-inline-start:4px solid var(--warm);background:var(--warm-soft);padding:10px 12px;border-radius:8px;font-size:.95rem}
+.phrase{display:flex;align-items:flex-start;gap:8px;background:var(--surface2);border-radius:14px 14px 4px 14px;padding:10px 12px}
+.phrase q{flex:1;quotes:none;font-weight:500;min-width:0}
+.copy{flex:none;min-width:44px;min-height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;justify-content:center}
+
+.breath{display:flex;flex-direction:column;align-items:center;gap:14px;padding-block:8px}
+.ringwrap{width:220px;height:220px;max-width:100%;display:grid;place-items:center;position:relative}
+.ring{width:110px;height:110px;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--calm-soft),var(--calm));transform:scale(1);transition:transform 1s ease-in-out}
+.ringwrap::before{content:"";position:absolute;inset:0;border-radius:50%;border:2px dashed var(--line)}
+.phase{font-family:var(--font-display);font-size:1.5rem;text-align:center}
+.count{font-size:2.4rem;font-family:var(--font-display);font-variant-numeric:tabular-nums;line-height:1}
+.toggle{display:flex;align-items:center;gap:10px;min-height:44px}
+.toggle input{width:22px;height:22px;accent-color:var(--accent)}
+@media (prefers-reduced-motion: reduce){.ring{transition:none!important}}
+
+.gitem{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;background:var(--surface2);cursor:pointer}
+.gitem input{width:26px;height:26px;flex:none;margin-top:2px;accent-color:var(--calm)}
+.gitem b{font-family:var(--font-display);font-size:1.4rem;line-height:1;color:var(--calm);min-width:1.2ch}
+.gitem.done{opacity:.6} .gitem.done span{text-decoration:line-through}
+.bar{height:10px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--calm);transition:width .3s}
+
+.hgrid{display:grid;grid-template-columns:1fr;gap:10px}
+.hcard{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.hcard summary{list-style:none;display:flex;align-items:center;gap:12px;padding:12px;min-height:56px;cursor:pointer}
+.hcard summary::-webkit-details-marker{display:none}
+.hcard summary .dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--surface2);color:var(--accent);font-family:var(--font-display);font-weight:700}
+.hcard summary .t{flex:1}
+.hcard summary .t small{display:block;color:var(--muted);font-size:.85rem}
+.hcard .body{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px}
+.hcard ul{margin:0;padding-inline-start:18px}
+
+.filters{display:flex;flex-direction:column;gap:12px}
+.flabel{font-size:.85rem;color:var(--muted);font-weight:500;margin-bottom:4px}
+.summaryline{font-size:.92rem;color:var(--muted)}
+.badges{display:flex;flex-wrap:wrap;gap:6px}
+.badge{font-size:.8rem;padding:3px 10px;border-radius:99px;background:var(--surface2);color:var(--fg);border:1px solid var(--line)}
+.badge.p{background:var(--calm-soft);color:var(--calm);border-color:transparent;font-weight:500}
+.match{font-size:.9rem;background:var(--warm-soft);border-radius:10px;padding:8px 12px}
+.plan{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.plan li{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start}
+.plan .mins{grid-row:span 2;min-width:56px;text-align:center;border-radius:10px;background:var(--surface2);padding:6px 4px;font-variant-numeric:tabular-nums;font-weight:700;font-size:.9rem;line-height:1.2}
+.plan .mins small{display:block;font-weight:400;color:var(--muted);font-size:.72rem}
+.plan h4{margin:0;font-size:1rem}
+.say{display:flex;flex-direction:column;gap:8px}
+.adapt{display:flex;flex-direction:column;gap:8px}
+.adapt div{padding:10px 12px;border-radius:10px;background:var(--surface2);font-size:.95rem}
+.adapt div b{display:block;font-size:.85rem;color:var(--muted);font-weight:500}
+.alarmbox{border:1px solid var(--accent);border-radius:12px;padding:10px 12px;font-size:.95rem}
+.alarmbox b{color:var(--accent)}
+
+.pocket{background:var(--header);color:var(--header-fg);border-radius:18px;padding:16px;display:grid;gap:12px}
+.pocket h2{font-size:1.15rem}
+.pocket .cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pocket .cols > div{min-width:0}
+.pocket h3{font-size:.9rem;color:var(--header-muted);font-family:var(--font-body);font-weight:500;margin-bottom:4px}
+.pocket ul{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:.88rem;line-height:1.4}
+.pocket li{display:flex;gap:6px}
+.pocket li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;margin-top:.45em;background:var(--dot)}
+.pocket li.x::before{background:transparent;border:2px solid #f2b25c}
+.pocket .foot{font-size:.8rem;color:var(--header-muted);border-top:1px solid #ffffff22;padding-top:8px}
+.fav{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.fav .h{display:flex;align-items:center;gap:8px}
+.fav .h h3{flex:1;font-size:1rem}
+.empty{padding:16px;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
+.credits{font-size:.85rem;color:var(--muted);display:flex;flex-direction:column;gap:6px;padding-block:6px}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;color:var(--calm)}
+.dev{margin-top:28px;padding-top:12px;border-top:1px solid var(--line);font-size:.78rem;color:var(--muted);text-align:center;line-height:1.5}
+
+nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav.tabs .in{max-width:720px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+nav.tabs button{border:0;background:none;min-height:var(--tabs-h);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:.85rem;color:var(--muted);border-top:3px solid transparent}
+nav.tabs button[aria-selected="true"]{color:var(--accent);border-top-color:var(--accent);font-weight:700}
+
+.overlay{position:fixed;inset:0;z-index:40;background:var(--bg);overflow-y:auto;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.overlay.now{background:var(--header);color:var(--header-fg)}
+.overlay .wrap{padding-block:16px 32px;display:flex;flex-direction:column;gap:18px}
+.ovhead{display:flex;align-items:center;gap:10px}
+.ovhead h2{flex:1}
+.closebtn{min-width:48px;min-height:48px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);display:inline-flex;align-items:center;justify-content:center}
+.now .closebtn{border-color:#ffffff33;background:#ffffff12;color:var(--header-fg)}
+.bigsay{font-family:var(--font-display);font-size:1.6rem;line-height:1.4;background:#ffffff0f;border-radius:16px;padding:18px}
+.threedo{margin:0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:n}
+.threedo li{display:flex;gap:12px;align-items:flex-start;font-size:1.08rem;counter-increment:n}
+.threedo li::before{content:counter(n);flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--dot);color:var(--on-dot);font-weight:700;font-family:var(--font-display)}
+.nowgo{display:grid;gap:10px}
+.nowgo button{min-height:64px;border-radius:14px;border:0;background:#ffffff;color:#0f172a;font-family:var(--font-display);font-size:1.15rem;display:flex;align-items:center;gap:12px;padding:0 16px;text-align:right}
+.now .linkbtn{color:#9fc0ff}
+.flag{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.flag h3{font-size:1.02rem}
+.boundary{background:var(--fg);color:var(--bg);border-radius:14px;padding:14px;font-family:var(--font-display);font-size:1.1rem}
+
+.devlink{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.menulist{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;counter-reset:m}
+@media (max-width:420px){.menulist{grid-template-columns:1fr}}
+.menulist li{counter-increment:m;display:flex;gap:10px;align-items:flex-start;background:var(--calm-soft);border-radius:12px;padding:10px 12px;min-width:0}
+.menulist li::before{content:counter(m);flex:none;min-width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--surface);color:var(--calm);font-weight:700;font-size:.85rem;font-variant-numeric:tabular-nums}
+.signs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:560px){.signs{grid-template-columns:1fr}}
+.signs > div{background:var(--surface2);border-radius:12px;padding:10px 12px;min-width:0}
+.signs h4{margin:0 0 4px;font-family:var(--font-display);font-variant-numeric:tabular-nums}
+.signs ul{margin:0;padding-inline-start:18px;font-size:.93rem;display:grid;gap:2px}
+.rules{border-radius:12px;padding:10px 12px;background:var(--calm-soft);font-size:.93rem}
+.rules b{display:block;color:var(--calm);margin-bottom:2px}
+.rules ul{margin:0;padding-inline-start:18px}
+.stopgo{display:grid;gap:6px;margin-top:4px}
+.stopgo div{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;background:var(--surface2);border-radius:10px;padding:8px 12px}
+.stopgo b{font-family:var(--font-display);color:var(--accent);min-width:3.2em}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabs-h) + 14px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--fg);color:var(--bg);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:12px;max-width:calc(100% - 32px);box-shadow:0 10px 30px -10px #0008}
+.gift{position:fixed;inset:0;z-index:70;background:rgba(15,43,69,.55);display:grid;place-items:center;padding:16px;overflow-y:auto}
+.giftcard{background:var(--surface);color:var(--fg);border-radius:22px;max-width:440px;width:100%;overflow:hidden;box-shadow:0 20px 50px -12px #0008;text-align:center}
+.giftcard .top{background:#fdd78c;padding:22px 18px 16px;display:grid;justify-items:center;gap:10px;color:#0f2b45}
+.giftcard .top img{height:54px;width:auto;background:#fff;border-radius:12px;padding:6px 8px}
+.giftcard .bow{font-size:2.6rem;line-height:1}
+.giftcard h2{font-size:1.45rem}
+.giftcard .body{padding:16px 18px 20px;display:grid;gap:12px}
+.giftcard .from{font-weight:700;color:var(--calm)}
+.giftcard blockquote{margin:0;padding:12px 14px;border-radius:14px;background:var(--surface2);font-size:1.02rem;white-space:pre-line;text-align:right}
+.giftcard .btn.primary{justify-content:center;font-size:1.05rem;min-height:52px}
+.giftcard small{color:var(--muted)}
+.ribbon{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;background:var(--warm-soft);font-size:.92rem}
+.toast button{border:0;background:none;color:var(--bg);font-weight:700;text-decoration:underline;min-height:40px}
+</style>
+</head><body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="row1">
+      <span class="bglogo"><img src="data:image/webp;base64,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" alt="Be Good"></span>
+      <div class="brand">
+        <h1 data-t="appName">יש מה לעשות</h1>
+        <small data-t="appSub">מדריכון להורים וא.נשי חינוך בחירום</small>
+      </div>
+      <div class="tools">
+        <button class="iconbtn langbtn" id="langBtn" lang="ar">عربي</button>
+        <button class="iconbtn" id="fsBtn" data-ta="fsLabel">א+</button>
+        <button class="iconbtn" id="themeBtn" data-ta="themeLabel">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="view" id="v-reg" role="tabpanel" aria-labelledby="t-reg">
+    <p class="ribbon" id="giftRibbon" hidden></p>
+    <div class="infobar" data-infobar></div>
+    <button class="nowbtn" id="nowBtn">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 11V6a2 2 0 0 0-4 0v5M14 10V4a2 2 0 0 0-4 0v6M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-6-2.4l-3.6-3.6a2 2 0 0 1 2.8-2.8L7 15"/></svg>
+      <div><strong data-t="nowBtn"></strong><span data-t="nowBtnSub"></span></div>
+    </button>
+    <button class="linkbtn" data-open="flags" data-t="flagsLink"></button>
+
+    <article class="card" id="maseh">
+      <div><div class="eyebrow" data-t="masehEyebrow"></div><h2 data-t="masehTitle"></h2></div>
+      <div class="steps" role="tablist" id="masehSteps"></div>
+      <div id="masehBody" aria-live="polite"></div>
+      <div class="btnrow">
+        <button class="btn" id="masehPrev" data-t="prev"></button>
+        <button class="btn primary" id="masehNext"></button>
+        <button class="btn ghost" id="masehQuick" aria-pressed="false" data-t="quick"></button>
+      </div>
+    </article>
+
+    <article class="card" id="talk">
+      <div><div class="eyebrow" data-t="talkEyebrow"></div><h2 data-t="talkTitle"></h2></div>
+      <p class="lead" data-t="talkLead"></p>
+      <div class="hgrid" id="talkList"></div>
+      <div class="dd" id="talkAge"></div>
+    </article>
+
+    <article class="card" id="breathing">
+      <div><div class="eyebrow" data-t="breathEyebrow"></div><h2 data-t="breathTitle"></h2></div>
+      <div class="seg" id="breathModes" role="group"></div>
+      <div class="breath">
+        <div class="ringwrap"><div class="ring" id="ring"></div></div>
+        <div class="phase" id="phase"></div>
+        <div class="count" id="count" aria-live="off">&nbsp;</div>
+        <div class="lead" id="breathHint"></div>
+      </div>
+      <div class="btnrow">
+        <button class="btn primary" id="bStart" data-t="start"></button>
+        <button class="btn" id="bPause" data-t="pause"></button>
+        <button class="btn ghost" id="bReset" data-t="reset"></button>
+      </div>
+      <label class="toggle"><input type="checkbox" id="vib"> <span data-t="vib"></span></label>
+    </article>
+
+    <article class="card" id="grounding">
+      <div><div class="eyebrow" data-t="groundEyebrow"></div><h2>5-4-3-2-1</h2></div>
+      <div class="seg" id="gModes" role="group">
+        <button aria-pressed="false" data-g="child" data-t="gChild"></button>
+        <button aria-pressed="true" data-g="adult" data-t="gAdult"></button>
+      </div>
+      <p class="lead" data-t="gLead"></p>
+      <div id="gList" style="display:grid;gap:8px"></div>
+      <div class="bar" aria-hidden="true"><i id="gBar"></i></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span id="gPct" class="lead"></span>
+        <button class="btn ghost" id="gReset" data-t="gReset"></button>
+      </div>
+    </article>
+
+    <article class="card" id="menu">
+      <div><div class="eyebrow" data-t="menuEyebrow"></div><h2 data-t="menuTitle"></h2></div>
+      <p class="lead" data-t="menuLead"></p>
+      <ol class="menulist" id="menuList"></ol>
+    </article>
+
+    <article class="card">
+      <div><div class="eyebrow" data-t="hobEyebrow"></div><h2 data-t="hobTitle"></h2></div>
+      <div class="hgrid" id="hobfoll"></div>
+    </article>
+  </section>
+
+  <section class="view" id="v-gen" role="tabpanel" aria-labelledby="t-gen" hidden>
+    <div class="infobar" data-infobar></div>
+    <article class="card">
+      <div><div class="eyebrow" data-t="genEyebrow"></div><h2 data-t="genTitle"></h2></div>
+      <p class="summaryline" id="fSummary"></p>
+      <details id="fDetails">
+        <summary class="btn" style="width:fit-content" data-t="change"></summary>
+        <div class="filters" id="filters" style="margin-top:12px"></div>
+      </details>
+      <div class="btnrow">
+        <button class="btn primary" id="gAnother" data-t="another"></button>
+        <button class="btn" id="gSurprise" data-t="surprise"></button>
+        <button class="btn ghost" id="gResetF" data-t="resetF"></button>
+      </div>
+    </article>
+    <div id="result"></div>
+  </section>
+
+  <section class="view" id="v-pocket" role="tabpanel" aria-labelledby="t-pocket" hidden>
+    <div class="infobar" data-infobar></div>
+    <div class="pocket" id="pocketCard"></div>
+
+    <article class="card">
+      <div style="display:flex;align-items:center;gap:8px"><h2 style="flex:1" data-t="savedTitle"></h2><span class="status" id="savedCount"></span></div>
+      <div id="favList" style="display:grid;gap:10px"></div>
+    </article>
+
+    <article class="card">
+      <div><div class="eyebrow" data-t="selfEyebrow"></div><h2 data-t="selfTitle"></h2></div>
+      <ul id="selfList" style="margin:0;padding-inline-start:20px;display:grid;gap:6px"></ul>
+      <div id="stopgo"></div>
+    </article>
+
+    <article class="card">
+      <div class="eyebrow" data-t="sensEyebrow"></div>
+      <h2 data-t="sensTitle"></h2>
+      <div id="sensitive" style="display:grid;gap:8px"></div>
+    </article>
+
+    <div class="credits">
+      <span class="status"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="offline"></span></span>
+      <p data-t="basedOn"></p>
+      <p data-t="verified"></p>
+    </div>
+  </section>
+  <footer class="dev"><div class="bgline"><img src="data:image/webp;base64,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" alt="Be Good"><span data-t="partOf"></span><span aria-hidden="true">·</span><a class="devlink" href="https://be-good.co.il" target="_blank" rel="noopener" dir="ltr">be-good.co.il</a></div><span data-t="dev"></span> · <span dir="ltr" style="white-space:nowrap">052-3969417</span><br><span data-t="whoLine"></span> <a class="devlink" href="https://doi.org/10.54675/QDVK2110" target="_blank" rel="noopener" data-t="whoLink"></a></footer>
+</main>
+
+<nav class="tabs" role="tablist">
+  <div class="in">
+    <button role="tab" id="t-reg" aria-controls="v-reg" aria-selected="true" data-tab="reg">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/></svg><span data-t="tabReg"></span>
+    </button>
+    <button role="tab" id="t-gen" aria-controls="v-gen" aria-selected="false" data-tab="gen">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8L4 10l4.8 3.6L7 20l5-3.8 5 3.8-1.8-6.4L20 10l-6.1-1.2z"/></svg><span data-t="tabGen"></span>
+    </button>
+    <button role="tab" id="t-pocket" aria-controls="v-pocket" aria-selected="false" data-tab="pocket">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span data-t="tabPocket"></span>
+    </button>
+  </div>
+</nav>
+
+<div class="overlay now" id="ov-now" hidden role="dialog" aria-modal="true" aria-labelledby="nowTitle">
+  <div class="wrap">
+    <div class="ovhead"><h2 id="nowTitle" data-t="nowTitle"></h2><button class="closebtn" data-close data-ta="close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <ol class="threedo" id="nowThree"></ol>
+    <div>
+      <div class="eyebrow" style="color:var(--header-muted)" data-t="sayAloud"></div>
+      <p class="bigsay" data-t="bigSay"></p>
+    </div>
+    <div class="nowgo">
+      <button data-go="breath"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12.8 19.6A2 2 0 1 0 14 16H2M17.5 8a2.5 2.5 0 1 1 2 4H2M9.8 4.4A2 2 0 1 1 11 8H2"/></svg><span data-t="goBreath"></span></button>
+      <button data-go="ground"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/></svg><span data-t="goGround"></span></button>
+      <button data-go="act"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m12 3-1.9 5.8L4 10l4.8 3.6L7 20l5-3.8 5 3.8-1.8-6.4L20 10l-6.1-1.2z"/></svg><span data-t="goAct"></span></button>
+    </div>
+    <button class="linkbtn" data-open="flags" data-t="flagsLink"></button>
+  </div>
+</div>
+
+<div class="overlay" id="ov-flags" hidden role="dialog" aria-modal="true" aria-labelledby="flagsTitle">
+  <div class="wrap">
+    <div class="ovhead"><h2 id="flagsTitle" data-t="flagsTitle"></h2><button class="closebtn" data-close data-ta="close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <p class="boundary" data-t="boundary"></p>
+    <p class="lead" data-t="flagsLead"></p>
+    <div id="flagList" style="display:grid;gap:10px"></div>
+    <section class="card" id="signs"></section>
+    <div class="infobar" data-infobar></div>
+  </div>
+</div>
+
+<div class="gift" id="gift" hidden role="dialog" aria-modal="true" aria-labelledby="giftTitle"><div class="giftcard"><div class="top"><span class="bow" aria-hidden="true">🎁</span><h2 id="giftTitle"></h2></div><div class="body"><p class="from" id="giftFrom"></p><blockquote id="giftMsg" hidden></blockquote><p id="giftDesc"></p><button class="btn primary" id="giftOpen"></button><small id="giftTip"></small></div></div></div>
+
+<div class="toast" id="toast" hidden role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastAct" hidden></button></div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const store={get(k,d){try{const v=localStorage.getItem("edu_"+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("edu_"+k,JSON.stringify(v))}catch(e){}}};
+const ICON_COPY='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+const root=document.documentElement;
+let lang=store.get("lang","he"); if(lang!=="ar") lang="he";
+const QS=(()=>{try{return new URLSearchParams(location.search)}catch(e){return new URLSearchParams("")}})();
+if(QS.get("lang")==="ar"||QS.get("lang")==="he"){lang=QS.get("lang");store.set("lang",lang)}
+try{if(new URLSearchParams(location.search).get("embed")==="1")root.classList.add("embed")}catch(e){}
+
+/* ================= UI STRINGS ================= */
+const UI={
+he:{appName:"יש מה לעשות",appSub:"מדריכון להורים וא.נשי חינוך בחירום",fsLabel:"הגדלת טקסט",themeLabel:"מצב כהה או בהיר",langBtn:"عربي",langLabel:"لغة عربية",
+ hot104:"פיקוד העורף",hot100:"משטרה",nowBtn:"הדקה הראשונה עם הילדים",nowBtnSub:"מה עושים ומה אומרים",flagsLink:"ילד/ה במצוקה חריגה? מה עושים",
+ masehEyebrow:"עזרה ראשונה נפשית",masehTitle:"פרוטוקול מעש״ה",prev:"שלב קודם",next:"שלב הבא",restart:"חזרה להתחלה",quick:"גרסה מהירה",doH:"כן",dontH:"לא",sayLabel:"מה אפשר לומר",
+ breathEyebrow:"ויסות",breathTitle:"נשימה ביחד",ready:"מוכנים?",breathStartHint:"לחצו התחלה ונשמו יחד עם העיגול.",start:"התחלה",pause:"השהיה",reset:"איפוס",vib:"רטט בכל החלפת שלב (אם הטלפון תומך)",done:"כל הכבוד",doneHint:"אפשר להמשיך לנשום ככה גם לבד.",
+ groundEyebrow:"קרקוע חושי",gChild:"נוסח לילדים",gAdult:"נוסח למבוגרים ונוער",gLead:"אומרים בקול, לאט. בקבוצה: כל ילד אומר דבר אחד בתורו.",pct:"% הושלם",gDone:"הושלם. כל הכבוד.",gReset:"מתחילים מחדש",
+ hobEyebrow:"הובפול ועמיתים, 2007",hobTitle:"חמשת העקרונות בכיתה",
+ genEyebrow:"מחולל פעילות",genTitle:"מה מתאים לקבוצה שלפניכם?",change:"שינוי פרטים",another:"פעילות אחרת",surprise:"הפתיעו אותי",resetF:"איפוס בחירה",
+ pocketTitle:"כרטיס כיס · באזעקה ואחריה",during:"בזמן אזעקה",after:"מיד אחרי",pocketFoot:"פיקוד העורף 104 · משטרה 100 · מומלץ לצלם את המסך הזה",
+ savedTitle:"פעילויות שמורות",savedN:" שמורות",emptyFav:"עוד לא שמרתם פעילויות. בלשונית \"פעילות\" לוחצים \"שמירה למועדפים\", והן יופיעו כאן.",
+ selfEyebrow:"גם אתם צריכים ויסות",selfTitle:"אחרי המפגש",sensEyebrow:"מצבים רגישים",sensTitle:"שימו לב במיוחד",
+ offline:"כל התוכן נטען. כל עוד הדף פתוח הוא עובד גם בלי רשת.",basedOn:"מבוסס על: EduReserve, הטכניון · Hobfoll et al., 2007 · פרוטוקול מעש״ה (פרחי).",verified:"מספרי חירום נבדקו לאחרונה: אוקטובר 2026.",
+ dev:"פיתוח: ד״ר יעל שדה · חוסן | קהילה | חינוך",partOf:"כלי מתוך מערכת Be Good",tabReg:"ויסות",tabGen:"פעילות",tabPocket:"כרטיס כיס",
+ nowTitle:"הדקה הראשונה",close:"סגירה",sayAloud:"אמרו בקול",bigSay:"\"אני כאן איתכם. אנחנו במקום מוגן. עכשיו נעשה משהו ביחד.\"",goBreath:"נשימה ביחד",goGround:"קרקוע 5-4-3-2-1",goAct:"פעילות של 10 דקות עכשיו",
+ flagsTitle:"סימנים למצוקה חריגה",boundary:"אתם המבוגר שנמצא כאן עכשיו. נוכחות שקטה, ויסות וקרבה הם העזרה הכי חשובה ברגע הזה.",flagsLead:"עוצרים את הפעילות בשביל הילד הזה ונשארים איתו.",
+ copied:"הועתק",copyFail:"לא הצלחנו להעתיק. סמנו את הטקסט ידנית.",favSaved:"נשמר בכרטיס הכיס",favRemoved:"הוסר מהמועדפים",removed:"הוסר",undo:"ביטול",
+ save:"שמירה למועדפים",savedBtn:"שמור ✓",copyPlan:"העתקת התוכנית",copyShort:"העתקה",remove:"הסרה",copyAria:"העתקה",
+ actEyebrow:"פעילות",why:"למה זה עוזר:",s1:"פתיחה וחיבור",s2:"גוף הפעילות",s3:"סיום, רפלקציה ותקווה",s3short:"סיום ותקווה",min:"דק׳",sayAct:"מה לומר",alarm:"אם יש אזעקה באמצע:",shelterAd:"מקלט צפוף",
+ match:"התאמה קרובה. שימו לב: לא מותאם בדיוק ל",principle:"עיקרון",shelterAdLong:"התאמה למקלט צפוף",
+ nowThree:["רדו לגובה העיניים של הילדים. נשמו פעם אחת עמוק.","דברו לאט, בשקט ובמשפטים קצרים.","אמרו מה קורה עכשיו ומה יקרה מיד אחר כך."],
+ pocketDuring:[["הנחיות פיקוד העורף קודם לכל",0],["קול שקט, איטי ונמוך",0],["לרדת לגובה העיניים",0],["לספור ילדים ולקרוא בשמות",0],["משימה קטנה לכל ילד",0],["לא לצעוק או לנזוף",1],["לא לפתוח חדשות או סרטונים",1],["לא להבטיח \"לא יקרה כלום\"",1]],
+ pocketAfter:[["לספר: מה היה, איפה אנחנו, מה עכשיו",0],["שלוש נשימות ביחד",0],["פעילות קצרה ומוכרת",0],["לשים לב לילדים שקטים מדי",0],["לא לחקור פרטים מפחידים",1],["לא להעביר שמועות",1],["לא להשאיר ילד במצוקה לבד",1]],
+ giftFor:"מתנה בשבילך",giftFrom:"מאת: ",giftDesc:"מדריכון קטן לרגעים של חירום: מה עושים ומה אומרים לילדים בדקה הראשונה, נשימה, קרקוע ופעילויות קצרות. כדאי לשמור אותו בטלפון. כשהדף פתוח, הוא עובד גם בלי רשת.",giftOpen:"לפתיחת המתנה",giftTip:"טיפ: אפשר להוסיף את הדף למסך הבית של הטלפון.",giftRibbon:"🎁 מתנה מ",
+ self:["שלוש נשימות ארוכות, נשיפה ארוכה מהשאיפה.","לשתות מים ולאכול משהו קטן, גם אם לא מרגישים רעב.","לספר למישהו קרוב איך היה. לא צריך להחזיק הכול לבד."]},
+ar:{appName:"في إشي نعمله",appSub:"دليل صغير للأهل وللطواقم التربوية وقت الطوارئ",fsLabel:"كبّروا الخط",themeLabel:"وضع غامق أو فاتح",langBtn:"עברית",langLabel:"עברית",
+ hot104:"الجبهة الداخلية",hot100:"الشرطة",nowBtn:"أول دقيقة مع الولاد",nowBtnSub:"شو بنعمل وشو بنحكي",flagsLink:"ولد أو بنت بضيقة كبيرة؟ شو بنعمل",
+ masehEyebrow:"إسعاف أولي نفسي",masehTitle:"أربع خطوات للدعم الأولي",prev:"الخطوة اللي قبل",next:"الخطوة الجاية",restart:"من الأول",quick:"نسخة سريعة",doH:"اعملوا",dontH:"تجنّبوا",sayLabel:"شو ممكن تحكوا",
+ breathEyebrow:"تهدئة",breathTitle:"نتنفّس سوا",ready:"جاهزين؟",breathStartHint:"اكبسوا «ابدأ» وتنفّسوا مع الدائرة.",start:"ابدأ",pause:"وقّف",reset:"من جديد",vib:"اهتزاز مع كل مرحلة (إذا التلفون بيدعم)",done:"برافو عليكم",doneHint:"فيكم تكمّلوا تتنفّسوا هيك لحالكم.",
+ groundEyebrow:"رجوع للحواس",gChild:"للولاد",gAdult:"للكبار والشباب",gLead:"بنحكي بصوت عالي وعلى مهل. بالمجموعة: كل ولد بيحكي إشي واحد بدوره.",pct:"% خلص",gDone:"خلصنا. برافو.",gReset:"منبلّش من جديد",
+ hobEyebrow:"هوبفول وزملاؤه، 2007",hobTitle:"خمس مبادئ بالصف",
+ genEyebrow:"مولّد فعاليات",genTitle:"شو بناسب المجموعة اللي قدّامكم؟",change:"غيّروا التفاصيل",another:"فعالية ثانية",surprise:"فاجئوني",resetF:"رجّعوا الاختيار",
+ pocketTitle:"كرت جيبة · وقت الصافرة وبعدها",during:"وقت الصافرة",after:"بعدها فورًا",pocketFoot:"الجبهة الداخلية 104 · الشرطة 100 · منصح تصوّروا هالشاشة",
+ savedTitle:"فعاليات محفوظة",savedN:" محفوظة",emptyFav:"لسّا ما حفظتوا فعاليات. بصفحة «فعالية» اكبسوا «احفظ»، وبتطلع هون.",
+ selfEyebrow:"إنتو كمان بحاجة تهدوا",selfTitle:"بعد اللقاء",sensEyebrow:"حالات حساسة",sensTitle:"انتبهوا بشكل خاص",
+ offline:"كل المحتوى نزل. طول ما الصفحة مفتوحة بتشتغل كمان بدون إنترنت.",basedOn:"مبني على: EduReserve، التخنيون · Hobfoll et al., 2007 · بروتوكول מעש״ה (فرحي).",verified:"أرقام الطوارئ انفحصت آخر مرة: تشرين الأول 2026.",
+ dev:"تطوير: د. ياعيل سادِه · مناعة | مجتمع | تربية",partOf:"أداة من منظومة Be Good",tabReg:"تهدئة",tabGen:"فعالية",tabPocket:"كرت جيبة",
+ nowTitle:"أول دقيقة",close:"سكّروا",sayAloud:"احكوا بصوت عالي",bigSay:"«أنا هون معكم. إحنا بمكان آمن. هلّأ رح نعمل إشي سوا.»",goBreath:"نتنفّس سوا",goGround:"رجوع للحواس 5-4-3-2-1",goAct:"فعالية 10 دقايق هلّأ",
+ flagsTitle:"علامات ضيقة كبيرة",boundary:"إنتو الكبير اللي موجود هون هلّأ. الوجود الهادي، التهدئة والقرب هم أهم مساعدة بهاللحظة.",flagsLead:"بنوقّف الفعالية لهالولد ومنضل معه.",
+ copied:"انتسخ",copyFail:"ما زبط النسخ. علّموا النص بإيدكم.",favSaved:"انحفظ بكرت الجيبة",favRemoved:"انشال من المحفوظات",removed:"انشال",undo:"تراجع",
+ save:"احفظ",savedBtn:"محفوظ ✓",copyPlan:"انسخوا الخطة",copyShort:"انسخ",remove:"شيل",copyAria:"انسخ",
+ actEyebrow:"فعالية",why:"ليش هاد بساعد:",s1:"بداية وتعارف",s2:"الفعالية نفسها",s3:"ختام، حديث وأمل",s3short:"ختام وأمل",min:"دقايق",sayAct:"شو تحكوا",alarm:"إذا صار في صافرة بالنص:",shelterAd:"ملجأ مزدحم",
+ match:"قريبة من المطلوب. انتبهوا: مش مناسبة بالزبط لـ",principle:"المبدأ",shelterAdLong:"تعديل للملجأ المزدحم",
+ nowThree:["انزلوا لمستوى عيون الولاد. خدوا نفس عميق واحد.","احكوا على مهل، بهدوء، وبجمل قصيرة.","خبّروهم شو صاير هلّأ وشو رح يصير بعد شوي."],
+ pocketDuring:[["تعليمات الجبهة الداخلية قبل كل إشي",0],["صوت هادي، بطيء وواطي",0],["انزلوا لمستوى العيون",0],["عدّوا الولاد ونادوهم بأساميهم",0],["مهمة صغيرة لكل ولد",0],["ما تصرخوا وما توبّخوا",1],["ما تفتحوا أخبار أو فيديوهات",1],["ما توعدوا «ما رح يصير إشي»",1]],
+ pocketAfter:[["احكوا: شو صار، وين إحنا، شو هلّأ",0],["ثلاث أنفاس سوا",0],["فعالية قصيرة ومعروفة",0],["انتبهوا للولاد الساكتين كتير",0],["ما تسألوا عن تفاصيل مخيفة",1],["ما تنقلوا إشاعات",1],["ما تتركوا ولد متضايق لحاله",1]],
+ giftFor:"هدية إلك",giftFrom:"من: ",giftDesc:"دليل صغير للحظات الطوارئ: شو بنعمل وشو بنحكي للولاد بأول دقيقة، تنفّس، رجوع للحواس وفعاليات قصيرة. منصح تحفظوه بالتلفون. لما الصفحة مفتوحة، بتشتغل كمان بدون إنترنت.",giftOpen:"افتحوا الهدية",giftTip:"نصيحة: فيكم تزيدوا الصفحة لشاشة البيت بالتلفون.",giftRibbon:"🎁 هدية من ",
+ self:["ثلاث أنفاس طويلة، النفس الطالع أطول من الداخل.","اشربوا مي وكلوا إشي صغير، حتى لو مش جوعانين.","احكوا مع حدا قريب كيف كان. مش لازم تحملوا كل إشي لحالكم."]}
+};
+const t=k=>(UI[lang][k]!==undefined?UI[lang][k]:UI.he[k]);
+const L=o=>o[lang]||o.he;
+
+/* ===== added from "Teaching with care" (UNESCO, UNICEF, WHO 2026) ===== */
+Object.assign(UI.he,{
+ talkEyebrow:"תקשורת תומכת",talkTitle:"איך מדברים עם ילד במצוקה",talkLead:"לא צריך לדעת מה קרה כדי לעזור. מספיק להיות נוכחים, להקשיב ולתת שם לרגש.",
+ youngTitle:"עם ילדים קטנים",olderTitle:"עם מתבגרים",
+ menuEyebrow:"ויסות",menuTitle:"תפריט ויסות",menuLead:"לא כל דבר עוזר לכל ילד. מציעים כמה אפשרויות, והילד בוחר מה מתאים לו עכשיו. אפשר לבקש מכל ילד לבחור אחת ולהראות באצבעות.",
+ signsTitle:"מה לשים לב אליו לפי גיל",signsLead:"סימן אחד לא אומר הרבה. מה שחשוב הוא שינוי לעומת איך שהילד בדרך כלל: משהו חדש, שמתחזק, או שמפריע לו לתפקד.",signsNd:"אצל ילדים עם מוגבלות או נוירו-שונות: שימו לב להצפה חושית או \"כיבוי\" שקורים יותר מהרגיל, פחות תקשורת, או קושי במשימות מוכרות, במיוחד ברעש.",
+ rulesTitle:"כללים לכל פעילות בחירום",closeTitle:"שאלות לסיום",
+ stopTitle:"עצור · חשוב · פעל",stopLead:"כשהכול מרגיש יותר מדי, מפרקים בעיה אחת לצעד אחד.",buddyTitle:"שותף/ה מהצוות",buddyText:"בחרו מבוגר אחד מהצוות או מהשכנים. פעם ביום שואלים זה את זה: \"איך אתה באמת?\" ומקשיבים בלי לתקן.",
+ breathReflect:"שימו לב: משהו השתנה בגוף? מתי עוד זה יכול לעזור לכם?",
+ whoLine:"הפיתוח מותאם לדוח ארגון הבריאות העולמי, יוניצ״ף ואונסק״ו \"Teaching with care\" (ספטמבר 2026).",whoLink:"לדוח המלא"
+});
+Object.assign(UI.ar,{whoLine:"التطوير مبني على تقرير منظمة الصحة العالمية، اليونيسف واليونسكو «Teaching with care» (أيلول 2026).",whoLink:"للتقرير الكامل"});
+UI.he.doneHint=UI.he.breathReflect;
+UI.he.basedOn="מבוסס על: Teaching with care, אונסק״ו, יוניצ״ף וארגון הבריאות העולמי, 2026 · EduReserve, הטכניון · Hobfoll et al., 2007 · פרוטוקול מעש״ה (פרחי).";
+const TALK={he:[
+ {n:"הקשבה",how:"עוצרים את מה שעושים ופונים לילד. קול רגוע, לא מפריעים, לא נותנים עצות. משקפים את מה ששומעים, בלי לפרש.",say:["נשמע שאתה מרגיש שאין לך כוח לכלום.","את מרגישה שלא משתפים אותך, הבנתי נכון?","שמתי לב שהיית שקט/ה היום. אני כאן אם תרצה/י לדבר."]},
+ {n:"אמפתיה",how:"נותנים שם לרגש שרואים. משפט קצר, בלי להגזים ובלי להקטין.",say:["זה נשמע ממש קשה.","אני שומע/ת שזה מאוד הפחיד אותך.","תודה ששיתפת אותי."]},
+ {n:"תיקוף",how:"אומרים לילד שהרגש שלו מובן והגיוני במצב הזה. לא מתקנים ולא מבטלים.",say:["זה מובן לפחד במצב כזה.","הרבה ילדים מרגישים ככה כשלא יודעים מה יקרה.","הרגשות שלך אמיתיים וחשובים."]},
+ {n:"קרקוע",how:"מחזירים את הקשב לכאן ועכשיו. אם זה מגביר את המצוקה, עוצרים ופשוט נשארים ליד.",say:["בוא/י נניח רגע את כפות הרגליים על הרצפה.","תסתכל/י מסביב. אילו שלושה דברים את/ה רואה?","בוא/י ניקח נשימה איטית אחת ביחד."]}],
+ young:["שפה פשוטה ומשפטים קצרים.","להיצמד למילים ולהבעות של הילד.","קצת שובבות עדינה יכולה להקל."],
+ older:["לדבר בשפה ובסגנון שלהם.","לכבד פרטיות ועצמאות.","לא לדבר \"מלמעלה\". להראות שסומכים עליהם."],
+ avoid:["לא לומר \"תירגע\", \"אל תבכה\" או \"זה כלום\"","לא לשאול \"מה בדיוק ראית?\" או \"למה?\"","לא להבטיח \"הכול יהיה בסדר\" כשאינכם יודעים"]};
+const MENU={he:["נשימה איטית, נשיפה ארוכה","כפות רגליים חזק על הרצפה","לגימת מים","ללחוץ כף יד בכף יד חזק, ולשחרר","לצייר או לקשקש","לשבת רגע בפינה שקטה יותר","לספור לאט עד עשר","להחזיק חפץ מוכר ביד","לדבר בשקט עם מבוגר","להקשיב לשיר שקט או לזמזם"]};
+const SIGNS={he:[
+ ["4-6",["נצמדים למבוגר, פחד מוגבר, בכי או עצבנות","חזרה לדיבור תינוקי, הרטבה","הפסקה של משחק או דיבור","כאבי בטן או ראש, שינויים בשינה ובאכילה"]],
+ ["7-12",["הסתגרות, דאגה מתמשכת, אשמה","אי-שקט, תוקפנות, קשיי ריכוז","בידוד מהקבוצה או מריבות","תלונות על הגוף, עייפות, שינוי בתיאבון"]],
+ ["13-17",["חוסר תקווה, אבל חזק, בושה","לקיחת סיכונים, מרדנות, הימנעות","בידוד חזק או שינוי חד בחברים","עייפות מתמשכת, שינוי בשינה ובאכילה"]]]};
+const RULES={he:["ההשתתפות בבחירה. מותר להסתכל מהצד.","לא מבקשים מילדים לספר סיפורים אישיים.","לא מניחים מה עבר על ילד מסוים.","מותר לעצור או לצאת באמצע."]};
+const CLOSEQ={he:["מה היה מאתגר?","מה עזר לכם?","איפה עוד זה יכול לעזור?"]};
+const STOPGO={he:[["עצור","מגדירים את הבעיה במשפט אחד: \"אני מותש/ת ולא אכלתי מהבוקר.\""],["חשוב","מה עזר בעבר? מי יכול לעזור? מה אפשרי עכשיו?"],["פעל","בוחרים דבר אחד ועושים אותו. לא עזר? חוזרים לרשימה ומנסים אחר."]]};
+
+/* ================= CONTENT ================= */
+const MASEH={
+he:[
+ {l:"מ",n:"מחויבות",goal:"להפיג את תחושת הבדידות. הילד צריך לדעת שמישהו איתו.",
+  dos:["להתקרב ולרדת לגובה העיניים","לומר את השם שלכם ואת שם הילד","להישאר. נוכחות חשובה יותר ממילים"],
+  donts:["לא לעזוב בלי לומר מתי תחזרו","לא להבטיח דברים שאינם בשליטתכם","לא להקיף ילד אחד בכמה מבוגרים בבת אחת"],
+  say:["אני [שם], אני כאן איתך.","אני לא הולך/ת לשום מקום, אני נשאר/ת פה.","תסתכל/י עליי. אנחנו ביחד."]},
+ {l:"ע",n:"עידוד לפעולה",goal:"להחליף חוסר אונים בעשייה פשוטה שמחזירה שליטה.",
+  dos:["לתת משימה קטנה וברורה","לבחור פעולה שאפשר להצליח בה מיד","לשבח את הביצוע עצמו"],
+  donts:["לא לומר \"תירגע\" או \"אל תפחד\"","לא לתת משימה מורכבת או ארוכה","לא להכריח ילד שעוד לא מוכן"],
+  say:["תעזור/י לי? תחזיק/י את זה בשבילי.","בוא/י נספור יחד לאט עד עשר.","תמצא/י לי שלושה דברים כחולים בחדר."]},
+ {l:"ש",n:"שאלות מחייבות חשיבה",goal:"להפעיל את החשיבה ולהרגיע את התגובה הרגשית בעזרת שאלות עובדתיות.",
+  dos:["לשאול שאלות שיש להן תשובה פשוטה","לשאול על דברים מוכרים ונעימים","לחכות לתשובה בסבלנות"],
+  donts:["לא לשאול \"מה הרגשת?\" או \"למה?\"","לא לשאול על פרטי האירוע","לא לשאול הרבה שאלות ברצף"],
+  say:["באיזו כיתה את/ה?","מה אכלת היום בבוקר?","כמה אנשים יש פה בחדר, לדעתך?"]},
+ {l:"ה",n:"הבניית רצף",goal:"לסדר את הזמן: לאירוע הייתה התחלה, עכשיו אנחנו כאן, ויש המשך.",
+  dos:["לתאר בפשטות: מה היה, איפה אנחנו, מה הלאה","להשתמש רק במידע בטוח ומאומת","לחזור על הרצף כמה פעמים"],
+  donts:["לא לבקש מילדים לתאר מה ראו או שמעו","לא לנחש ולא להעביר שמועות","לא לתת תאריכים או שעות שאינכם יודעים"],
+  say:["הייתה אזעקה, הגענו מהר למקום מוגן, ועכשיו אנחנו כאן ביחד.","עכשיו שקט. נחכה להנחיה, ואז נצא יחד.","מה שעשינו עכשיו עבד. ידענו בדיוק מה לעשות."],
+  warn:"למה לא שואלים מה ראו? כשילד מספר פרטים מפחידים, ובמיוחד מול הקבוצה, הפחד מתחזק אצלו ועובר גם לילדים ששומעים. ילד שרוצה לספר בעצמו: מקשיבים בשקט, ולא שואלים על עוד פרטים."}],
+ar:[
+ {l:"1",n:"التزام",goal:"نخفّف الإحساس بالوحدة. الولد لازم يعرف إنه في حدا معه.",
+  dos:["قرّبوا وانزلوا لمستوى العيون","احكوا اسمكم واسم الولد","ضلّوا. الوجود أهم من الكلام"],
+  donts:["ما تروحوا بدون ما تحكوا إيمتى راجعين","ما توعدوا بإشي مش بإيدكم","ما تتجمّعوا كذا كبير حوالين ولد واحد"],
+  say:["أنا [الاسم]، أنا هون معك.","أنا مش رايح/ة لمحل، أنا ضايل/ة هون.","طلّع/ي عليّ. إحنا سوا."]},
+ {l:"2",n:"تشجيع على الفعل",goal:"نبدّل الإحساس بالعجز بعمل بسيط بيرجّع السيطرة.",
+  dos:["أعطوا مهمة صغيرة وواضحة","اختاروا إشي بينجح فيه فورًا","امدحوا العمل نفسه"],
+  donts:["ما تحكوا «اهدا» أو «لا تخاف»","ما تعطوا مهمة معقّدة أو طويلة","ما تجبروا ولد لسّا مش جاهز"],
+  say:["بتساعدني؟ امسك/ي هاد إلي.","تعال/ي نعدّ سوا على مهل لعشرة.","دوّر/ي لي على ثلاث أشيا زرق بالغرفة."]},
+ {l:"3",n:"أسئلة بتشغّل التفكير",goal:"نشغّل التفكير ونهدّي الردّة العاطفية بأسئلة عن حقائق.",
+  dos:["اسألوا أسئلة جوابها بسيط","اسألوا عن أشيا معروفة وحلوة","استنّوا الجواب بصبر"],
+  donts:["ما تسألوا «شو حسّيت؟» أو «ليش؟»","ما تسألوا عن تفاصيل الحدث","ما تكتّروا أسئلة ورا بعض"],
+  say:["بأي صف إنت/ي؟","شو أكلت الصبح؟","قديش في ناس بالغرفة، برأيك؟"]},
+ {l:"4",n:"ترتيب التسلسل",goal:"نرتّب الوقت: الحدث إله بداية، هلّأ إحنا هون، وفي إشي بعده.",
+  dos:["احكوا ببساطة: شو صار، وين إحنا، شو بعدين","استعملوا بس معلومات أكيدة","كرّروا التسلسل كذا مرة"],
+  donts:["ما تطلبوا من الولاد يحكوا شو شافوا أو سمعوا","ما تخمّنوا وما تنقلوا إشاعات","ما تعطوا مواعيد أو أوقات مش متأكدين منها"],
+  say:["صار في صافرة، وصلنا بسرعة لمكان آمن، وهلّأ إحنا هون سوا.","هلّأ في هدوء. منستنّى التعليمات وبعدها منطلع سوا.","اللي عملناه هلّأ زبط. عرفنا بالزبط شو لازم نعمل."],
+  warn:"ليش ما منسأل شو شافوا؟ لما الولد بيحكي تفاصيل مخيفة، خصوصًا قدّام المجموعة، الخوف بيكبر عنده وبينتقل للولاد اللي بيسمعوا. ولد بدّه يحكي من حاله: اسمعوه بهدوء، وما تسألوا عن تفاصيل زيادة."}]
+};
+const MODES={
+ box:{he:{name:"מרובעת 4-4-4-4",hint:"למבוגרים ולנוער.",ph:["שואפים","מחזיקים","נושפים","מחכים"]},ar:{name:"مربّع 4-4-4-4",hint:"للكبار والشباب.",ph:["نفس لجوّا","نمسك","نفس لبرّا","نستنّى"]},sec:[4,4,4,4],kind:["in","hold","out","hold"]},
+ gentle:{he:{name:"עדינה 3-3",hint:"בלי לעצור את הנשימה. מתאים לילדים חרדים.",ph:["שואפים","נושפים"]},ar:{name:"ناعم 3-3",hint:"بدون ما نحبس النفس. مناسب للولاد الخايفين.",ph:["نفس لجوّا","نفس لبرّا"]},sec:[3,3],kind:["in","out"]},
+ kids:{he:{name:"פרח ונר",hint:"מחזיקים פרח דמיוני ומריחים. אחר כך נושפים לאט על נר, בלי לכבות אותו.",ph:["מריחים את הפרח","נושפים על הנר"]},ar:{name:"وردة وشمعة",hint:"منمسك وردة بالخيال ومنشمّها. بعدين مننفخ على مهل على شمعة بدون ما نطفيها.",ph:["نشمّ الوردة","ننفخ عالشمعة"]},sec:[3,4],kind:["in","out"]}
+};
+const G={
+ he:{adult:["דברים שאתם רואים. אמרו אותם בשקט.","דברים שאתם יכולים לגעת בהם: הבגד, הרצפה, הקיר.","קולות שאתם שומעים, קרובים או רחוקים.","ריחות. אם אין, נזכרים בשני ריחות אהובים.","טעם אחד: לגימת מים, או מאכל אהוב שמדמיינים."],
+     child:["דברים שהעיניים שלי רואות. משהו כחול? משהו עגול?","דברים שהידיים שלי נוגעות בהם. רך? קשה? חלק?","קולות שהאוזניים שלי שומעות.","ריחות. אפשר להריח את השרוול, או להיזכר בריח של עוגה.","טעם אחד: לגימת מים, או לדמיין גלידה."]},
+ ar:{adult:["أشيا شايفينها. احكوها بهدوء.","أشيا فيكم تلمسوها: الأواعي، الأرض، الحيط.","أصوات سامعينها، قريبة أو بعيدة.","ريحتين. إذا ما في، تذكّروا ريحتين بتحبّوهم.","طعم واحد: شَفّة مي، أو أكلة بتحبّوها بالخيال."],
+     child:["أشيا عيوني شايفتها. إشي أزرق؟ إشي مدوّر؟","أشيا إيدي بتلمسها. ناعم؟ قاسي؟ أملس؟","أصوات أذنيّ سامعتها.","ريحتين. ممكن نشمّ الكمّ، أو نتذكّر ريحة كعكة.","طعم واحد: شَفّة مي، أو نتخيّل بوظة."]}
+};
+const HOB={
+ he:{safety:{n:"ביטחון",s:"להחזיר תחושה של מקום מוגן וצפוי",acts:["לומר כל פעם מה קורה עכשיו ומה יקרה אחר כך","לשמור על סדר יום קבוע ככל האפשר","להרחיק חדשות, סרטונים ושמועות מהכיתה"],say:"אנחנו במקום מוגן, ואני אגיד לכם כל פעם מה קורה."},
+  calm:{n:"הרגעה",s:"להוריד עוררות בגוף ובקבוצה",acts:["נשימה איטית ביחד","קול שקט וקצב דיבור איטי","פעילויות מוכרות שאין בהן הפתעות"],say:"בואו נעשה שלוש נשימות איטיות ביחד."},
+  efficacy:{n:"מסוגלות",s:"להרגיש \"אני יכול\" ו\"אנחנו יכולים\"",acts:["לתת תפקיד לכל ילד שרוצה","לבחור משימות שאפשר להצליח בהן","לשקף הצלחות קטנות במילים"],say:"מי רוצה להיות אחראי/ת על חלוקת המים?"},
+  connect:{n:"חיבוריות",s:"לחזק את הקשר בין הילדים ועם המבוגרים",acts:["עבודה בזוגות ובשלשות","לקרוא לכל ילד בשמו","לתת מקום לגעגוע לבני משפחה, בלי לחקור"],say:"תגידו את השם של מי שיושב לידכם."},
+  hope:{n:"תקווה",s:"לפתוח פתח לעתיד ולדברים טובים",acts:["לדבר על תוכניות קטנות וקרובות","להזכיר אנשים שעוזרים ושומרים","לסיים כל פעילות בנימה טובה"],say:"מה הדבר הראשון שתעשו כשתחזרו הביתה?"}},
+ ar:{safety:{n:"أمان",s:"نرجّع إحساس بمكان آمن ومتوقّع",acts:["احكوا كل مرة شو صاير هلّأ وشو رح يصير بعدين","حافظوا على برنامج يومي ثابت قد ما بتقدروا","بعّدوا الأخبار والفيديوهات والإشاعات عن الصف"],say:"إحنا بمكان آمن، وأنا رح أحكيلكم كل مرة شو صاير."},
+  calm:{n:"تهدئة",s:"نخفّف التوتر بالجسم وبالمجموعة",acts:["تنفّس بطيء سوا","صوت هادي وحكي على مهل","فعاليات معروفة بدون مفاجآت"],say:"تعالوا ناخد ثلاث أنفاس بطيئة سوا."},
+  efficacy:{n:"قدرة",s:"نحسّ «أنا بقدر» و«إحنا بنقدر»",acts:["أعطوا دور لكل ولد بدّه","اختاروا مهام فيها نجاح","احكوا عن النجاحات الصغيرة بالكلام"],say:"مين بدّه يكون مسؤول عن توزيع المي؟"},
+  connect:{n:"تواصل",s:"نقوّي العلاقة بين الولاد ومع الكبار",acts:["شغل بأزواج وبمجموعات صغيرة","نادوا كل ولد باسمه","أعطوا مكان للاشتياق للعيلة، بدون تحقيق"],say:"احكوا اسم اللي قاعد جنبكم."},
+  hope:{n:"أمل",s:"نفتح باب للمستقبل وللأشيا الحلوة",acts:["احكوا عن خطط صغيرة وقريبة","تذكّروا الناس اللي بيساعدوا وبيحموا","اختموا كل فعالية بإشي منيح"],say:"شو أول إشي رح تعملوه لما ترجعوا عالبيت؟"}}
+};
+const FLAGS={
+he:[
+ ["אתם לבד עם קבוצה, וילד אחד במצוקה","נותנים לקבוצה משימה שקטה שלא צריכה אתכם: סופרים יחד עד 20, נשימת פרח ונר, ציור. מבקשים מילד בוגר להוביל. מתיישבים עם הילד במקום שממנו רואים את כולם."],
+ ["קפיאה, הילד לא מגיב לשם","מתיישבים לידו, לא מולו. קוראים בשם בקול רגיל ושואלים שאלה קלה (\"באיזו כיתה את/ה?\"). אם אין תגובה, מתארים בשקט מה אתם עושים: \"אני יושב/ת לידך. אני נושם/ת לאט.\" ונושמים בקול. מגע רק אם הילד מסכים. לא לנער ולא להרים קול. זה יכול לקחת כמה דקות."],
+ ["ניתוק: מבט ריק, \"לא כאן\"","מחזירים לכאן ועכשיו דרך החושים: חפץ ביד (בקבוק, מפתח) ושאלה אם הוא קר או חם, רקיעה ברגליים על הרצפה, קרקוע 5-4-3-2-1 בנוסח לילדים. אומרים איפה אנחנו: \"אנחנו בממ״ד, עכשיו בוקר, אני כאן.\""],
+ ["בכי או פאניקה","לא עוצרים את הבכי. יושבים קרוב: \"זה בסדר לבכות, אני כאן.\" מאטים את הנשימה שלכם בקול, והילד מתחבר לקצב. נשימה מהירה וסחרחורת: נושפים יחד לאט כמו דרך קשית, נשיפה ארוכה מהשאיפה. אחר כך לגימת מים."],
+ ["תוקפנות כלפי עצמו או כלפי אחרים","קודם בטיחות: מרחיקים חפצים וילדים קרובים, שומרים מרחק של יד. משפטים קצרים בקול נמוך: \"אני לא אתן שמישהו ייפגע. אני כאן.\" לא מתווכחים ולא מענישים עכשיו. נותנים לגוף משימה: ללחוץ כרית, לדחוף את הקיר בידיים. סכנה ממשית לחיים: 100."],
+ ["אמירות על מוות או על פגיעה עצמית","מתייחסים ברצינות ובשקט. שואלים ישירות: \"את/ה חושב/ת לפגוע בעצמך?\" שאלה כזו לא מכניסה רעיון לראש. מקשיבים בלי לשפוט, מרחיקים חפצים מסוכנים, ולא משאירים את הילד לבד אפילו לרגע. לא מבטיחים לשמור סוד, וכשאפשר מספרים להורה."],
+ ["ילד ששמע שבן משפחה נפגע","לא חוקרים ולא מוסיפים מידע שאינכם יודעים. אומרים את מה שנכון: \"שמעת משהו מפחיד. אני עוד לא יודע/ת מה קרה. אני כאן איתך.\" נותנים לילד לבחור: לשבת בשקט, לדבר או לצייר. עוזרים לו ליצור קשר עם הורה אם אפשר. לא מבטיחים שהכול בסדר."],
+ ["ילד מספר על פגיעה או אלימות","מקשיבים ברוגע ובלי לשפוט, ומאמינים לו. אומרים: \"תודה שסיפרת לי. זו לא אשמתך. עשית נכון שסיפרת.\" לא שואלים על פרטים ולא חוקרים. שומרים מרחק פיזי מכבד. לא מבטיחים לשמור סוד, ומסבירים בפשטות: \"התפקיד שלי הוא לשמור עליך, אז אולי אצטרך לספר למבוגר שיכול לעזור.\""]],
+ar:[
+ ["إنتو لحالكم مع مجموعة، وولد واحد متضايق كتير","أعطوا المجموعة مهمة هادية ما بدها إياكم: يعدّوا سوا لعشرين، تنفّس الوردة والشمعة، رسم. اطلبوا من ولد كبير يقود. اقعدوا مع الولد بمحل بتشوفوا منه الكل."],
+ ["تجمّد، الولد ما بيرد على اسمه","اقعدوا جنبه، مش قباله. نادوه باسمه بصوت عادي واسألوا سؤال سهل («بأي صف إنت/ي؟»). إذا ما ردّ، احكوا بهدوء شو عم تعملوا: «أنا قاعد/ة جنبك. أنا عم بتنفّس على مهل.» وتنفّسوا بصوت مسموع. اللمس بس إذا الولد موافق. ما تهزّوه وما تعلّوا صوتكم. هاد ممكن ياخد كم دقيقة."],
+ ["انفصال: نظرة فاضية، «مش هون»","رجّعوه للهون والهلّأ عن طريق الحواس: غرض بإيده (قنينة، مفتاح) وسؤال إذا هو بارد أو سخن، دعس بالإجرين عالأرض، 5-4-3-2-1 للولاد. احكوا وين إحنا: «إحنا بالغرفة الآمنة، هلّأ الصبح، أنا هون.»"],
+ ["بكا أو هلع","ما توقّفوا البكا. اقعدوا قريب: «عادي تبكي، أنا هون.» بطّئوا نفسكم بصوت مسموع، والولد بيمشي معكم بالإيقاع. نفس سريع كتير ودوخة: انفخوا سوا على مهل كأنه من مصّاصة، النفس الطالع أطول من الداخل. بعدين شَفّة مي."],
+ ["عدوانية تجاه حاله أو غيره","أول إشي الأمان: بعّدوا الأغراض والولاد القريبين، وخلّوا مسافة إيد. جمل قصيرة بصوت واطي: «ما رح أخلّي حدا ينأذى. أنا هون.» ما تتجادلوا وما تعاقبوا هلّأ. أعطوا الجسم مهمة: يضغط على مخدّة، يدفش الحيط بإيديه. خطر حقيقي على الحياة: 100."],
+ ["حكي عن الموت أو عن أذية النفس","تعاملوا بجدية وبهدوء. اسألوا مباشرة: «إنت/ي بتفكّر/ي تأذي/ي حالك؟» سؤال زي هاد ما بيحطّ فكرة بالراس. اسمعوا بدون حكم، بعّدوا الأغراض الخطيرة، وما تتركوا الولد لحاله ولا لحظة. ما توعدوا تحفظوا السرّ، ولما يصير ممكن احكوا للأهل."],
+ ["ولد سمع إنه حدا من عيلته انصاب","ما تحقّقوا وما تزيدوا معلومات مش عارفينها. احكوا اللي صحيح: «سمعت إشي بخوّف. أنا لسّا مش عارف/ة شو صار. أنا هون معك.» خلّوا الولد يختار: يقعد بهدوء، يحكي أو يرسم. ساعدوه يتواصل مع أهله إذا ممكن. ما توعدوا إنه كل إشي منيح."]]
+};
+const SENS={
+he:[["ילדים להורים במילואים","לא לשאול איפה ההורה נמצא. אפשר להציע לצייר או לכתוב לו משהו."],["ילדים מפונים","לתת תחושת שייכות: שמות, תפקידים, מקום קבוע. לא להניח מה עבר עליהם."],["ילדים שאיבדו מישהו","להיזהר בפעילויות על \"משפחה\" ו\"בית\". מותר לא להשתתף."],["ילדים עם צרכים מיוחדים","להודיע מראש על כל שינוי, להפחית רעש, להשאיר חפץ מוכר ביד. להציע כמה דרכים להשתתף: לראות, לשמוע, לגעת או לזוז. לא כולם יכולים קשר עין או קרבה, ומתאימים את עצמכם לסימנים של הילד."],["ילדים חדשים בקבוצה","להכיר בשם, לצוות להם \"חבר/ה לדרך\", ולוודא שאף אחד לא נשאר לבד בצד."]],
+ar:[["ولاد أهلهم بالخدمة أو بعاد عن البيت","ما تسألوا وين الأب أو الأم. ممكن تقترحوا يرسموا أو يكتبوا إلهم إشي."],["ولاد طلعوا من بيوتهم","أعطوهم إحساس بالانتماء: أسامي، أدوار، مكان ثابت. ما تفترضوا شو مرّ عليهم."],["ولاد خسروا حدا","انتبهوا بفعاليات عن «العيلة» و«البيت». مسموح ما يشاركوا."],["ولاد مع احتياجات خاصة","خبّروهم قبل أي تغيير، خفّفوا الضجة، خلّوا معهم غرض بيعرفوه."]]
+};
+const GENERIC={
+he:[["ילד שלא רוצה להשתתף","מותר לו להסתכל מהצד. לא מכריחים. אפשר להציע לו תפקיד קטן, כמו לספור זמן."],["גילאים מעורבים","הגדולים עוזרים לקטנים ומקבלים תפקיד של מובילים."]],
+ar:[["ولد مش حابب يشارك","مسموح يتفرّج من بعيد. ما منجبر حدا. ممكن تعطوه دور صغير، مثلًا يعدّ الوقت."],["أعمار مختلطة","الكبار بيساعدوا الصغار وبياخدوا دور القادة."]]
+};
+const OPT={
+he:{age:{label:"גיל",o:{k:"גן (4-6)",a:"א׳-ג׳",b:"ד׳-ו׳",c:"ז׳-ט׳",d:"י׳-י״ב"}},
+ space:{label:"מרחב",o:{shelter:"מקלט / ממ״ד צפוף",class:"כיתה ממוגנת",yard:"חצר / מרחב פתוח",zoom:"זום"}},
+ exp:{label:"התחום שלכם",o:{general:"כללי",tech:"הייטק / חשיבה לוגית",stem:"מדעים",art:"אמנות",move:"תנועה וספורט",story:"שפה וסיפורים"}},
+ group:{label:"גודל קבוצה",o:{one:"1 על 1",small:"3-8",class:"15-30",mass:"30+"}},
+ dur:{label:"זמן",o:{"10":"10 דק׳","30":"20-30 דק׳","60":"45-60 דק׳"}},
+ equip:{label:"ציוד",o:{none:"ללא ציוד",paper:"דפים וכלי כתיבה",phones:"טלפונים",various:"ציוד מגוון"}},
+ focus:{label:"מה הקבוצה צריכה",o:{safety:"ביטחון ושגרה",calm:"הרגעה",energy:"פריקת אנרגיה",connect:"חיבוריות",efficacy:"מסוגלות",create:"יצירתיות"}}},
+ar:{age:{label:"العمر",o:{k:"روضة (4-6)",a:"أول-ثالث",b:"رابع-سادس",c:"سابع-تاسع",d:"عاشر-ثاني عشر"}},
+ space:{label:"المكان",o:{shelter:"ملجأ / غرفة آمنة مزدحمة",class:"صف محصّن",yard:"ساحة / مكان مفتوح",zoom:"زوم"}},
+ exp:{label:"مجالكم",o:{general:"عام",tech:"هايتك / تفكير منطقي",stem:"علوم",art:"فن",move:"حركة ورياضة",story:"لغة وقصص"}},
+ group:{label:"حجم المجموعة",o:{one:"واحد مع واحد",small:"3-8",class:"15-30",mass:"30+"}},
+ dur:{label:"الوقت",o:{"10":"10 دقايق","30":"20-30 دقيقة","60":"45-60 دقيقة"}},
+ equip:{label:"الأدوات",o:{none:"بدون أدوات",paper:"ورق وأقلام",phones:"تلفونات",various:"أدوات متنوعة"}},
+ focus:{label:"شو المجموعة بحاجة",o:{safety:"أمان وروتين",calm:"تهدئة",energy:"تفريغ طاقة",connect:"تواصل",efficacy:"قدرة",create:"إبداع"}}}
+};
+const PR={he:{safety:"ביטחון",calm:"הרגעה",efficacy:"מסוגלות",connect:"חיבוריות",hope:"תקווה"},ar:{safety:"أمان",calm:"تهدئة",efficacy:"قدرة",connect:"تواصل",hope:"أمل"}};
+const DEF={age:"a",space:"shelter",exp:"general",group:"class",dur:"10",equip:"none",focus:"calm"};
+const ALL_AGES=["k","a","b","c","d"],ALL_G=["one","small","class","mass"];
+const TIMES={"10":[2,6,2],"30":[4,18,5],"60":[8,40,10]};
+
+/* activities: meta + Hebrew text; Arabic text in AR by id */
+const A=[
+ {id:"traffic",ages:["k","a"],sp:["shelter","class","zoom","yard"],ex:["general","move"],gr:["small","class","mass"],du:["10","30"],eq:"none",fo:["calm","efficacy"],pr:"calm",
+  t:"הרמזור של הגוף",why:"הילדים לומדים שהם יכולים לשלוט בגוף: להאט, לעצור ולהתחיל מחדש.",o:"מציגים שלושה צבעים בידיים: אדום (אגרוף), צהוב (יד פתוחה), ירוק (נפנוף).",b:"אדום: פסל ונשימה אחת איטית. צהוב: תנועה בהילוך איטי במקום. ירוק: תנועה קטנה ושמחה במקום. מחליפים קצב, ובסוף נותנים לילדים להיות \"הרמזור\".",c:"מסיימים באדום ארוך עם שלוש נשימות. שואלים: איזה צבע הגוף שלכם עכשיו?",say:["כשאני אומר אדום, כולם הופכים לפסלים.","מי רוצה להיות הרמזור הבא?"],al:"באזעקה אומרים \"אדום ארוך\", עוברים למקום המוגן, וממשיכים שם בישיבה.",ad:"בישיבה בלבד: ירוק הופך לתנועת ידיים או תיפוף על הברכיים."},
+ {id:"echo",ages:["k","a","b","c"],sp:["shelter","class","yard","zoom"],ex:["move","art","general"],gr:["small","class","mass"],du:["10","30"],eq:"none",fo:["energy","connect"],pr:"connect",
+  t:"תופים בלי תופים",why:"קצב משותף מסנכרן את הקבוצה ומחזיר תחושת \"ביחד\".",o:"מוחאים קצב פשוט, והקבוצה חוזרת אחריכם כמו הד.",b:"מגוונים: כפיים, ברכיים, רקיעה קטנה. משחקים עם חזק וחלש, מהר ולאט. נותנים לילדים להוביל קצב בתורות.",c:"מנמיכים בהדרגה עד שקט מוחלט, ונושמים יחד נשימה אחת.",say:["אני מוחא, אתם ההד.","עכשיו הכי חלש שאפשר, כמו טיפות גשם קטנות."],al:"עוצרים בשקט, נכנסים למקום המוגן, וממשיכים בקצב חלש מאוד על הברכיים.",ad:"במקלט צפוף: רק כפיים וברכיים, בלי רקיעות."},
+ {id:"chain",ages:["a","b","c"],sp:["shelter","class","zoom"],ex:["story","general"],gr:["small","class"],du:["10","30"],eq:"none",fo:["connect","create"],pr:"hope",
+  t:"סיפור בשרשרת",why:"הקבוצה יוצרת יחד סיפור שנגמר טוב, וזה מחזק תחושה שאפשר לבנות המשך.",o:"פותחים: \"היה היה גור קטן שחיפש מקום נעים לשבת בו...\"",b:"כל ילד מוסיף משפט אחד. כלל אחד: בסיפור שלנו אף אחד לא נפגע, ובסוף מוצאים פתרון.",c:"המבוגר מסכם את הסיפור ושואל: מה הגור למד?",say:["כל אחד מוסיף משפט אחד. מותר להעביר.","בסיפור שלנו תמיד מוצאים דרך."],al:"אומרים \"הסיפור מחכה לנו\", עוברים למקום המוגן, ושם מזכירים איפה עצרנו.",ad:"בקבוצה גדולה: רק מי שמרים יד מוסיף משפט."},
+ {id:"binary",ages:["b","c","d"],sp:["shelter","class","zoom"],ex:["tech","stem"],gr:["one","small","class"],du:["10","30"],eq:"none",fo:["efficacy","create"],pr:"efficacy",
+  t:"לספור עד 31 ביד אחת",why:"אתגר מפתיע שכולם מצליחים בו, והצלחה כזאת מחזירה \"אני יכול\".",o:"שואלים: עד כמה אפשר לספור באצבעות של יד אחת? רוב התשובות יהיו 5.",b:"מלמדים שכל אצבע שווה ערך: אגודל 1, אצבע 2, אמה 4, קמיצה 8, זרת 16. מתרגלים מספרים יחד, ואז זוגות נותנים זה לזה חידות.",c:"כולם מציגים את 31 ביחד. מספרים שמחשבים סופרים בדיוק ככה.",say:["כל אצבע מורמת שווה מספר אחר.","מי מצליח להראות לי 13?"],al:"מורידים ידיים, עוברים למקום המוגן, וממשיכים שם בחידות בזוגות.",ad:"עובד מצוין בישיבה צפופה, אין צורך בתנועה."},
+ {id:"robot",ages:["a","b","c"],sp:["class","yard","shelter","zoom"],ex:["tech","stem","general"],gr:["small","class"],du:["30","60"],eq:"none",fo:["efficacy","connect"],pr:"efficacy",
+  t:"מתכנתים ורובוטים",why:"נותן שליטה מלאה ומשוב מיידי על הצלחה, וגם צחוק משותף.",o:"מסבירים: רובוט עושה רק מה שאומרים לו, בדיוק.",b:"בזוגות: \"מתכנת\" נותן הוראות מדויקות ו\"רובוט\" מבצע תנועת ידיים או ציור באוויר. אחרי כמה סבבים מתחלפים.",c:"שואלים: מה היה קשה בהוראות מדויקות? מה עזר?",say:["רובוט עושה בדיוק מה שאמרו לו, לא יותר.","איזו הוראה הייתה הכי ברורה?"],al:"\"הרובוטים במצב שינה\", עוברים למקום המוגן וממשיכים בתנועות ידיים.",ad:"במקלט: הרובוט מבצע רק תנועות ידיים ופנים."},
+ {id:"twenty",ages:["a","b","c","d"],sp:["shelter","class","zoom","yard"],ex:["general","stem","story"],gr:ALL_G,du:["10","30"],eq:"none",fo:["create","efficacy"],pr:"efficacy",
+  t:"20 שאלות",why:"חשיבה הגיונית מפעילה את המוח החושב ומרגיעה את הגוף.",o:"המבוגר חושב על חיה או חפץ, והקבוצה שואלת רק שאלות של כן ולא.",b:"סופרים את השאלות בקול. אחרי שמנחשים, ילד אחר חושב על משהו חדש.",c:"שואלים: איזו שאלה עזרה הכי הרבה?",say:["רק שאלות שאפשר לענות עליהן כן או לא.","נשארו לנו עוד שמונה שאלות."],al:"זוכרים כמה שאלות נשארו, עוברים למקום המוגן, וממשיכים מאותה נקודה.",ad:"בקבוצה של 30 ומעלה: מחלקים לשתי קבוצות ששואלות בתורות."},
+ {id:"collab",ages:["k","a","b","c"],sp:["shelter","class"],ex:["art","general"],gr:["small","class"],du:["30"],eq:"paper",fo:["create","connect"],pr:"connect",
+  t:"ציור משותף, כל אחד קו",why:"כל ילד תורם, ויוצרים יחד משהו שאי אפשר לעשות לבד.",o:"כל קבוצה קטנה מקבלת דף. הנושא: \"המקום הכי נעים שאפשר לדמיין\".",b:"הדף עובר מיד ליד, וכל ילד מוסיף פרט אחד. אחרי שני סבבים נותנים לציור שם.",c:"כל קבוצה מציגה בקצרה את הציור שלה. תולים או מצלמים.",say:["כל אחד מוסיף דבר אחד, ומעביר.","איך נקרא לציור שלנו?"],al:"שמים את הדפים במקום מוסכם, עוברים למקום המוגן, וחוזרים אליהם אחר כך.",ad:"בלי שולחנות: מניחים את הדף על ספר או על הרצפה."},
+ {id:"future",ages:["c","d","b"],sp:["class","shelter","zoom"],ex:["story","general"],gr:["one","small","class"],du:["30","60"],eq:"paper",fo:["calm","create"],pr:"hope",
+  t:"דברים שאני מחכה להם",why:"מפנה את המבט אל דברים טובים שקרובים לקרות.",o:"כל אחד כותב שלושה דברים קטנים שהוא מחכה להם בחודש הקרוב.",b:"בזוגות משתפים אחד מהם, רק מי שרוצה. אפשר להוסיף איך מתכוננים אליו.",c:"מי שרוצה מקריא דבר אחד בקול. מסכמים: יש לנו למה לחכות.",say:["אפשר גם דברים ממש קטנים, כמו ארוחה אהובה.","לא חייבים לשתף."],al:"מקפלים את הדף לכיס, עוברים למקום המוגן, וממשיכים בעל פה.",ad:"בלי דפים: אומרים בעל פה בזוגות."},
+ {id:"animals",ages:["k","a"],sp:["class","yard","shelter"],ex:["move","general"],gr:["small","class"],du:["10","30"],eq:"none",fo:["calm","energy"],pr:"calm",
+  t:"יוגה של חיות",why:"תנועה איטית ונשימה בצורה של משחק מורידות מתח מהגוף.",o:"מספרים שהיום כולנו חיות בגן חיות שקט.",b:"חתול מתמתח, צב מתכנס לשריון, ציפור פורשת כנפיים לאט, דוב נושם עמוק. כל תנוחה שלוש נשימות.",c:"מסיימים כצב בשריון, שקט שקט, ואז מציצים החוצה בחיוך.",say:["עכשיו כולנו צבים, נכנסים לשריון לאט.","הציפור פורשת כנפיים עם שאיפה."],al:"\"כל החיות נכנסות למחילה\", עוברים יחד למקום המוגן.",ad:"במקלט: רק חתול, צב וציפור, בישיבה."},
+ {id:"mirror",ages:["k","a","b","c"],sp:["shelter","class","zoom"],ex:["move","general","art"],gr:["one","small","class"],du:["10"],eq:"none",fo:["calm","connect"],pr:"connect",
+  t:"מראה איטית",why:"קשב הדדי ותנועה איטית יוצרים קשר והרגעה בבת אחת.",o:"עומדים או יושבים בזוגות מול מול.",b:"אחד מוביל תנועות ידיים איטיות מאוד, והשני משקף כמו מראה. מתחלפים. בסוף מנסים שאף אחד לא יוביל.",c:"שואלים: מה עזר לכם להיות מסונכרנים?",say:["לאט כמו בתוך דבש.","עכשיו המראה מובילה."],al:"משלבים ידיים בחיק, עוברים למקום המוגן, וממשיכים בישיבה.",ad:"בזום: כולם משקפים את המנחה על המסך."},
+ {id:"fermi",ages:["b","c","d"],sp:["shelter","class","zoom"],ex:["stem","tech","general"],gr:["small","class","mass"],du:["10","30"],eq:"none",fo:["efficacy","create"],pr:"efficacy",
+  t:"שאלות אומדן",why:"חשיבה מסודרת על שאלה פתוחה נותנת תחושת שליטה ויכולת.",o:"שואלים: כמה כפות ידיים אורך הקיר הזה? כולם מנחשים.",b:"בודקים יחד, ואז שואלים עוד: כמה פעמים לב דופק בשעה? כמה מילים אומרים ביום? מפרקים כל שאלה לחלקים קטנים.",c:"מי היה הכי קרוב? מסכמים: אפשר להעריך כמעט הכול אם מפרקים לחלקים.",say:["אין תשובה לא נכונה בניחוש.","בואו נפרק את זה לחלקים קטנים."],al:"זוכרים את השאלה, עוברים למקום המוגן, וממשיכים מאותה נקודה.",ad:"במקלט צפוף: בוחרים שאלות שלא דורשות לקום."},
+ {id:"category",ages:["b","c","d"],sp:["shelter","class","zoom"],ex:["story","general"],gr:["small","class","mass"],du:["10","30"],eq:"none",fo:["energy","create"],pr:"efficacy",
+  t:"ארץ עיר בעל פה",why:"משחק מוכר ומהיר שמעסיק את הראש ומחזיר תחושת שגרה.",o:"בוחרים אות בעזרת ספירה על האצבעות.",b:"כל קבוצה צריכה להגיד מהר: מדינה, עיר, חיה, צמח, מאכל באות הזו. מוסיפים קטגוריות שהילדים בוחרים.",c:"מכריזים על התשובה הכי מקורית. כל הקבוצות מקבלות מחיאת כפיים.",say:["האות שלנו היא מ׳. יש לכם עשר שניות.","איזו קטגוריה נוסיף?"],al:"עוצרים, עוברים למקום המוגן, וממשיכים באות חדשה.",ad:"בלי דפים: עונים בעל פה, כל קבוצה בתורה."},
+ {id:"count20",ages:["b","c","d"],sp:["shelter","class","zoom"],ex:["general"],gr:["small","class"],du:["10"],eq:"none",fo:["connect","calm"],pr:"connect",
+  t:"סופרים עד 20 ביחד",why:"הקבוצה צריכה להקשיב זה לזה כדי להצליח, וזה מחבר ומרגיע.",o:"עוצמים עיניים או מורידים מבט.",b:"צריך לספור עד 20, כל פעם אדם אחד אומר מספר, בלי סדר קבוע. אם שניים מדברים יחד, מתחילים מאחת.",c:"כשמגיעים ל-20 מוחאים כפיים חרישית. שואלים: מה עזר לנו?",say:["אם שניים אומרים יחד, חוזרים לאחת. זה בסדר.","מקשיבים לשקט בין המספרים."],al:"אומרים \"נמשיך מאחת אחר כך\" ועוברים למקום המוגן.",ad:"בקבוצה גדולה: סופרים עד 10 בקבוצות של 8."},
+ {id:"hack",ages:["c","d"],sp:["class","shelter","zoom"],ex:["tech","stem","general"],gr:["small","class"],du:["60","30"],eq:"paper",fo:["efficacy","create"],pr:"efficacy",
+  t:"האקתון קטן: להמציא משהו טוב",why:"צוותים ממציאים פתרון שעושה טוב למישהו, וזה מחזק מסוגלות ותקווה.",o:"השאלה: איזו המצאה תעשה טוב לילדים בשכונה שלנו?",b:"צוותים של 3-5 מציירים את ההמצאה, נותנים לה שם, ומכינים הצגה של דקה.",c:"כל צוות מציג. מסכמים את הרעיון שהכי רוצים לראות במציאות.",say:["כל רעיון מתקבל בשלב הזה.","למי ההמצאה שלכם עושה טוב?"],al:"כל צוות שומר את הדף אצלו, עוברים למקום המוגן, וממשיכים בעל פה.",ad:"בלי דפים: מציגים את ההמצאה כפנטומימה."},
+ {id:"statues",ages:["k","a","b"],sp:["class","yard"],ex:["move","art"],gr:["small","class"],du:["10","30"],eq:"none",fo:["energy","create"],pr:"calm",
+  t:"מוזיאון הפסלים",why:"פריקת אנרגיה בתנועה, עם עצירות שמתרגלות שליטה בגוף.",o:"כולם זזים בחופשיות.",b:"כשאומרים מילה (\"שמח\", \"חזק\", \"עץ\") כולם קופאים כפסל שמתאים לה. \"מבקר במוזיאון\" מסתובב ומחמיא לפסלים.",c:"הפסל האחרון: \"רגוע\". נשארים בו שלוש נשימות.",say:["הפסל של עכשיו: חזק!","המבקר מגיע, כולם קפואים."],al:"\"המוזיאון נסגר\", עוברים יחד למקום המוגן.",ad:"בישיבה: פסלים של פנים וידיים בלבד."},
+ {id:"ball",ages:["a","b","c","d"],sp:["shelter","class","zoom"],ex:["general"],gr:["small","class"],du:["10"],eq:"none",fo:["connect","efficacy"],pr:"connect",
+  t:"כדור המחמאות",why:"מחמאה קטנה מחזקת קשר ותחושת ערך.",o:"מחזיקים כדור דמיוני ומסבירים: מי שמקבל אותו שומע מחמאה.",b:"זורקים את הכדור לילד, אומרים לו משהו טוב, והוא ממשיך הלאה. מוודאים שכל ילד מקבל את הכדור.",c:"מסיימים במחמאה לכל הקבוצה.",say:["אני זורק את הכדור לנועה, כי עזרת קודם לחבר.","אפשר מחמאה קטנה, למשל על חיוך."],al:"מחזיקים את הכדור הדמיוני בכיס, עוברים למקום המוגן, וממשיכים שם.",ad:"בזום: אומרים את השם של מי שמקבל את הכדור."},
+ {id:"pmr",ages:["a","b","c","d"],sp:["shelter","class","zoom"],ex:["general","move"],gr:ALL_G,du:["10"],eq:"none",fo:["calm"],pr:"calm",
+  t:"מסע בגוף",why:"כיווץ ושחרור של שרירים מוריד מתח מהגוף ומרגיע.",o:"יושבים בנוחות. מי שרוצה עוצם עיניים.",b:"מכווצים חזק ומשחררים: אצבעות רגליים, רגליים, בטן, ידיים כמו לסחוט לימון, כתפיים עד האוזניים, פנים כמו לימון חמוץ. כל פעם חמש שניות ואז שחרור.",c:"נושמים שלוש נשימות ומרגישים את הגוף רך.",say:["סוחטים לימון ביד, חזק חזק, ועכשיו משחררים.","מרגישים את ההבדל בין חזק לרך?"],al:"פוקחים עיניים, עוברים למקום המוגן, וממשיכים מאיפה שעצרנו.",ad:"מתאים לישיבה צפופה כמו שהוא."},
+ {id:"doodle",ages:ALL_AGES,sp:["shelter","class"],ex:["art","general"],gr:ALL_G,du:["10","30"],eq:"paper",fo:["calm","create"],pr:"calm",
+  t:"קשקוש רגוע",why:"תנועה חוזרת על הדף מרגיעה, ואין דרך לטעות בה.",o:"כל ילד מקבל דף ומצייר עיגול גדול.",b:"ממלאים את העיגול בדוגמאות חוזרות: נקודות, גלים, משולשים. מוסיפים צבע אם יש. מוזיקה אין צורך.",c:"מי שרוצה מראה את הדף. שואלים: איזו דוגמה הכי נעימה לצייר?",say:["אין פה נכון ולא נכון.","מציירים לאט, כמו נשימה."],al:"לוקחים את הדף והעיפרון למקום המוגן וממשיכים שם.",ad:"בלי שולחנות: מציירים על ספר או על הברך."},
+ {id:"bag",ages:["k","a"],sp:["shelter","class","zoom"],ex:["story","general"],gr:["small","class"],du:["10"],eq:"none",fo:["create","calm"],pr:"hope",
+  t:"התיק הקסום",why:"דמיון משותף של דברים טובים יוצר תחושה נעימה ותקווה.",o:"\"יש לי תיק קסום, אפשר להוציא ממנו כל דבר טוב.\"",b:"כל ילד בתורו \"מוציא\" משהו מהתיק ומראה בפנטומימה. כולם מנחשים מה זה.",c:"מכניסים לתיק משהו לכל הקבוצה, כמו \"חיבוק גדול\", וסוגרים אותו.",say:["מה הוצאת מהתיק? בואו ננחש.","אני מכניס לתיק חיבוק לכולם."],al:"\"סוגרים את התיק\", עוברים למקום המוגן, ופותחים אותו שם.",ad:"מתאים לישיבה צפופה כמו שהוא."},
+ {id:"colors",ages:["b","c","d"],sp:["class","yard","shelter"],ex:["art","tech","general"],gr:["small","class"],du:["10","30"],eq:"phones",fo:["calm","create"],pr:"calm",
+  t:"צייד צבעים בטלפון",why:"מיקוד בפרטים קטנים ויפים מרגיע ומחזיר לכאן ועכשיו.",o:"כל זוג בוחר צבע אחד.",b:"מצלמים חמישה דברים קטנים בצבע שבחרו, מקרוב. רק חפצים, לא אנשים. בוחרים את התמונה הכי יפה.",c:"מציגים תמונה אחת. שואלים: מה גיליתם שלא שמתם לב אליו קודם?",say:["מצלמים רק חפצים, לא אנשים.","כמה שיותר מקרוב."],al:"מכבים את המסך, עוברים למקום המוגן, וממשיכים שם עם מה שיש מסביב.",ad:"במקלט: מצלמים פרטים על עצמכם, כמו בגדים ונעליים."},
+ {id:"safeplace",ages:["b","c","d","a"],sp:["shelter","class","zoom"],ex:["story","general"],gr:ALL_G,du:["10"],eq:"none",fo:["calm"],pr:"calm",
+  t:"המקום הנעים שלי בדמיון",why:"דמיון מודרך קצר מרגיע את הגוף ונותן מקום פנימי לחזור אליו.",o:"יושבים בנוחות. מי שרוצה עוצם עיניים, מי שלא, מסתכל על הרצפה.",b:"מדריכים בקול שקט: מקום נעים, אמיתי או מדומיין. מה רואים שם? מה שומעים? מה הטמפרטורה? מי איתכם?",c:"נושמים שלוש נשימות, מזיזים אצבעות, ופוקחים עיניים. אפשר לחזור למקום הזה מתי שרוצים.",say:["אפשר לבחור כל מקום שנעים לכם.","המקום הזה תמיד שלכם."],al:"פוקחים עיניים בעדינות ועוברים למקום המוגן. אומרים שאפשר לחזור לדמיון גם שם.",ad:"ילד שלא נוח לו לעצום עיניים יכול להסתכל על חפץ אחד."},
+ /* --- from "Teaching with care" --- */
+ {id:"ritual",ages:ALL_AGES,sp:["shelter","class","zoom","yard"],ex:["general"],gr:ALL_G,du:["10","30","60"],eq:"none",fo:["safety","calm"],pr:"safety",
+  t:"טקס פתיחה וסיום קבוע",why:"כשהכול לא צפוי, שגרה קבועה של פתיחה וסיום נותנת לילדים משהו שהם יודעים מראש.",o:"מברכים כל ילד בשמו. אומרים בקול את סדר הזמן הקרוב: \"עכשיו נשב, אחר כך נשחק, ואז נאכל.\"",b:"בוחרים יחד עם הילדים טקס פתיחה קצר (מחיאת כפיים בקצב, שיר, משפט קבוע) וטקס סיום (נשימה אחת, \"תודה שהייתם איתי\"). מתרגלים אותם פעמיים או שלוש.",c:"מסיימים בטקס הסיום ששמנו. מזכירים שנעשה אותו גם בפעם הבאה, בכל מקום שנהיה.",say:["ככה נתחיל וככה נסיים כל פעם.","מי רוצה לבחור את המשפט של היום?"],al:"עוצרים, עוברים למקום המוגן, ושם פותחים שוב בטקס הפתיחה. ככה הילדים יודעים שהשגרה ממשיכה.",ad:"עובד בכל מקום, גם בישיבה צפופה. בקטנים: שיר ותנועה. בגדולים: לתת להם להוביל."},
+ {id:"charter",ages:["a","b","c","d"],sp:["shelter","class","zoom"],ex:["general","story"],gr:["small","class","mass"],du:["10","30"],eq:"none",fo:["safety","efficacy"],pr:"safety",
+  t:"אמנת הממ״ד",why:"כללים שהילדים ניסחו בעצמם נותנים תחושת שליטה וסדר במקום צפוף ולא צפוי.",o:"שואלים: מה יעזור לכולנו להרגיש טוב כאן ביחד?",b:"אוספים 3 עד 5 כללים קצרים וחיוביים (\"מדברים בשקט\", \"עוזרים למי שקשה לו\", \"מותר לבקש הפסקה\"). אומרים אותם יחד בקול, ואם יש דף, כותבים ותולים.",c:"כל אחד אומר איזה כלל הכי חשוב לו. מסכמים: \"זו האמנה שלנו, ואנחנו שומרים עליה ביחד.\"",say:["כללים שאומרים מה כן עושים, לא רק מה אסור.","מי זוכר את הכלל השני שלנו?"],al:"אחרי שעוברים למקום המוגן, אומרים יחד את האמנה. זה מסדר את הקבוצה מחדש.",ad:"בלי דף: חוזרים על הכללים בעל פה, וכל כלל מקבל תנועת יד."},
+ {id:"thermo",ages:ALL_AGES,sp:["shelter","class","zoom","yard"],ex:["general"],gr:ALL_G,du:["10"],eq:"none",fo:["calm","safety"],pr:"calm",
+  t:"מדחום הרגש",why:"בדיקה קצרה ובלי מילים עוזרת לילדים לזהות מה הם מרגישים, ולמבוגר לראות מי צריך תשומת לב.",o:"מסבירים: אצבע אחת זה \"ממש קשה לי\", חמש אצבעות זה \"אני בסדר גמור\".",b:"כולם מראים יחד את המספר שלהם, בלי להסביר. מותר לא להראות. אומרים: \"כל מספר בסדר.\" אחר כך עושים יחד נשימה או קרקוע, ומודדים שוב.",c:"שואלים: \"השתנה משהו?\" ניגשים בשקט לילדים שהראו אחת או שתיים, בלי לשאול מול כולם.",say:["אין מספר נכון. כל מה שאתם מרגישים בסדר.","לא צריך להסביר למה."],al:"משתמשים במדחום שוב אחרי שמגיעים למקום המוגן, כדי לראות מי צריך אתכם.",ad:"בקטנים: פנים עצובות, רגילות ושמחות במקום אצבעות. מתאים לישיבה צפופה."},
+ {id:"buddy",ages:["a","b","c","d"],sp:["shelter","class","yard"],ex:["general"],gr:["small","class","mass"],du:["10"],eq:"none",fo:["connect","safety"],pr:"connect",
+  t:"חבר/ה לדרך",why:"לכל ילד יש מישהו קבוע ששם לב אליו, וזה מקטין בדידות, במיוחד אצל ילדים חדשים או ביישנים.",o:"מחלקים לזוגות קבועים לכל הזמן שאנחנו כאן. מצמידים ילד חדש או ביישן לילד חם ובטוח.",b:"מסבירים את התפקיד: לשבת יחד, לבדוק \"אתה בסדר?\", לעבור יחד למקום המוגן, ולקרוא למבוגר אם צריך. מתרגלים פעם אחת מעבר בזוגות.",c:"כל זוג מוצא דבר אחד משותף ומספר אותו. מזכירים: \"החבר שלכם לדרך תמיד לידכם.\"",say:["התפקיד שלכם הוא לשים לב אחד לשני.","אם החבר שלך צריך עזרה, קוראים לי."],al:"באזעקה כל זוג עובר יחד ובודק שהשני הגיע. מבוגר סופר זוגות.",ad:"בקבוצה גדולה: שלשות במקום זוגות, וכל שלשה מקבלת מספר."},
+ {id:"bingo",ages:["a","b","c","d"],sp:["class","yard","shelter"],ex:["general"],gr:["class","mass","small"],du:["10","30"],eq:"none",fo:["connect","energy"],pr:"connect",
+  t:"בינגו היכרות",why:"מכירים זה את זה דרך דברים נעימים ובטוחים, וזה בונה שייכות בקבוצה חדשה או מעורבת.",o:"מקריאים משפט \"מי ש...\", וכל מי שזה מתאים לו מרים יד או קם.",b:"משפטים בטוחים בלבד: \"מי שמדבר יותר משפה אחת\", \"מי שאוהב לצייר\", \"מי שיש לו חיית מחמד\", \"מי שמכיר בדיחה טובה\". אחרי כמה סבבים הילדים מציעים משפטים.",c:"שואלים: \"גיליתם משהו משותף עם מישהו שלא הכרתם?\"",say:["מי ש... מרים יד.","מי רוצה להציע את המשפט הבא?"],al:"עוצרים, עוברים למקום המוגן, וממשיכים שם בהרמת יד בלבד.",ad:"בישיבה: רק הרמת יד. לא משתמשים במשפטים על מראה, כסף, מוצא, או על הבית והמשפחה."},
+ {id:"interview",ages:["b","c","d"],sp:["shelter","class","zoom"],ex:["story","general"],gr:["small","class"],du:["10","30"],eq:"none",fo:["connect","calm"],pr:"connect",
+  t:"ראיון בזוגות",why:"שאלות פשוטות ובטוחות יוצרות קשר בין ילדים בלי לחשוף דברים קשים.",o:"בזוגות. כל אחד הוא \"עיתונאי\" שמראיין את השני.",b:"שאלות מוכנות: מה המאכל שהכי אהבת השבוע? איזה כישרון יש לך? מה עושה לך מצב רוח טוב? מתחלפים אחרי שלוש שאלות.",c:"מי שרוצה מציג את בן הזוג במשפט אחד: \"זאת נועה, והיא יודעת לשרוק.\"",say:["רק שאלות על דברים נעימים.","מותר לענות \"אני מעדיף/ה לא\"."],al:"מסיימים את השאלה, עוברים למקום המוגן, ומתחלפים שם.",ad:"מתאים לישיבה צפופה. בקטנים: מבוגר שואל וכל אחד עונה."},
+ {id:"twotruths",ages:["c","d","b"],sp:["shelter","class","zoom"],ex:["general","story"],gr:["small","class"],du:["10"],eq:"none",fo:["connect","energy"],pr:"connect",
+  t:"שתי אמיתות ושקר",why:"משחק קליל שמצחיק ומקרב, ונותן לכל אחד לבחור מה לשתף.",o:"המבוגר מתחיל: אומר שלושה משפטים על עצמו, ואחד מהם לא נכון.",b:"הקבוצה מנחשת מה השקר. אחר כך מי שרוצה מנסה. רק משפטים קלים: תחביבים, אוכל, כישרונות.",c:"שואלים: \"מה הפתיע אתכם היום?\"",say:["משהו קטן ומצחיק, לא סודות.","מי רוצה לנסות?"],al:"זוכרים מי היה בתור, עוברים למקום המוגן, וממשיכים.",ad:"מתאים לישיבה צפופה כמו שהוא."},
+ {id:"sixwords",ages:["c","d"],sp:["shelter","class","zoom"],ex:["story","art","general"],gr:["one","small","class"],du:["10","30"],eq:"none",fo:["create","calm"],pr:"efficacy",
+  t:"שש מילים עליי",why:"כתיבה קצרה וממוקדת נותנת ביטוי בלי צורך לספר יותר ממה שרוצים.",o:"מסבירים: מתארים את עצמכם בשש מילים בדיוק. דוגמה: \"אוהבת כדורגל, שונאת עגבניות, צוחקת הרבה.\"",b:"כל אחד חושב או כותב את שש המילים שלו. אפשר גם \"שש מילים על משהו שאני אוהב\". מי שרוצה מקריא.",c:"שואלים: \"מה היה קשה בלבחור רק שש מילים?\"",say:["רק שש מילים, לא יותר ולא פחות.","אפשר משהו מצחיק או משהו רציני."],al:"שומרים את המילים בראש, עוברים למקום המוגן, וממשיכים שם.",ad:"בלי דפים: חושבים ואומרים בעל פה. סופרים מילים על האצבעות."},
+ {id:"thanks",ages:["a","b","c","d"],sp:["shelter","class","zoom"],ex:["general"],gr:["small","class"],du:["10"],eq:"none",fo:["connect","hope"],pr:"hope",
+  t:"מעגל הוקרה",why:"לשמוע ולהגיד תודה מחזק קשר ומזכיר שיש טוב גם ביום קשה.",o:"נותנים פתיח למשפט: \"אני רוצה להגיד תודה ל... על...\"",b:"מי שרוצה אומר תודה למישהו בקבוצה, למבוגר, או למישהו שלא כאן. המבוגר מתחיל ומוודא שכל ילד מקבל תודה מישהו.",c:"מסיימים בתודה של המבוגר לכל הקבוצה, על משהו שעשו היום.",say:["אני רוצה להגיד תודה ל... על...","מותר תודה על משהו קטן."],al:"זוכרים מי בתור, עוברים למקום המוגן, וממשיכים.",ad:"בקבוצה גדולה: כל אחד אומר תודה לחבר/ה לדרך שלו."},
+ {id:"mystery",ages:["b","c","d"],sp:["shelter","class","zoom"],ex:["stem","tech","story","general"],gr:["small","class"],du:["30","60"],eq:"none",fo:["efficacy","connect"],pr:"efficacy",
+  t:"משימת צוות: פותרים תעלומה",why:"אתגר משותף שבו לכל אחד יש תפקיד מחזק מסוגלות ושיתוף.",o:"מחלקים לצוותים קטנים ונותנים תפקידים: מוביל/ה, שומר/ת זמן, זוכר/ת, מציג/ה.",b:"מספרים תעלומה קטנה ולא מפחידה (\"מי אכל את העוגה מהמקרר?\") עם רמזים. כל צוות שואל שאלות, מסכם רמזים ומציע פתרון. אחרי כל סבב מחליפים תפקידים.",c:"כל צוות מציג את הפתרון שלו. שואלים: \"מה עזר לצוות לעבוד יחד?\"",say:["לכל אחד בצוות יש תפקיד חשוב.","מה הרמז הבא אומר לכם?"],al:"כל צוות זוכר את הרמז האחרון, עוברים למקום המוגן, וממשיכים.",ad:"בישיבה צפופה: צוותים של מי שיושב קרוב."},
+ {id:"localgame",ages:ALL_AGES,sp:["class","yard","shelter"],ex:["general","move"],gr:["small","class"],du:["10","30"],eq:"none",fo:["energy","efficacy"],pr:"efficacy",
+  t:"המשחק שאנחנו מכירים",why:"ילד שמלמד אחרים משחק מוכר מרגיש מסוגל, והמשחק המוכר מחזיר תחושת שגרה.",o:"שואלים: \"איזה משחק אתם משחקים בבית או בשכונה?\"",b:"ילד אחד או שניים מלמדים את המשחק. המבוגר עוזר להתאים אותו למקום (בישיבה, בשקט). אומרים לפני המשחק מה הוא מחזק: \"זה משחק שעוזר לנו לשתף פעולה.\"",c:"שואלים: \"מה היה כיף? מי רוצה ללמד משחק בפעם הבאה?\"",say:["אתם המורים עכשיו. תסבירו לנו.","איך נשחק את זה בישיבה?"],al:"עוצרים, עוברים למקום המוגן, וממשיכים בגרסה בישיבה.",ad:"בוחרים משחק בלי ריצה. אפשר משחקי ידיים, מחיאות, ניחושים."},
+ {id:"feelings",ages:["a","b","c"],sp:["shelter","class","zoom"],ex:["story","general"],gr:["one","small","class"],du:["10","30"],eq:"none",fo:["calm","create"],pr:"calm",
+  t:"מה מרגישה הדמות?",why:"לדבר על רגשות של דמות בסיפור זה בטוח יותר מלדבר על עצמנו, ועדיין מלמד לזהות ולווסת רגשות.",o:"מספרים או קוראים סיפור קצר ומוכר.",b:"עוצרים בנקודות ושואלים: מה הדמות מרגישה? מה גרם לה להרגיש ככה? מה היא עשתה כדי להירגע? מה עוד היא יכלה לעשות?",c:"שואלים: \"איזה רעיון של הדמות יכול לעזור גם לכם?\"",say:["מה לדעתכם הדמות מרגישה עכשיו?","מה הייתם מציעים לה לעשות?"],al:"זוכרים איפה עצרנו בסיפור, עוברים למקום המוגן, וממשיכים.",ad:"בלי ספר: ממציאים סיפור או משתמשים באגדה מוכרת."},
+ {id:"mymenu",ages:["a","b","c","d"],sp:["shelter","class","zoom"],ex:["art","general"],gr:["one","small","class"],du:["10","30"],eq:"paper",fo:["calm","efficacy"],pr:"efficacy",
+  t:"התפריט שלי",why:"כל ילד בונה לעצמו רשימה של מה שעוזר לו להירגע, וכך יש לו כלים משלו גם כשהמבוגר לא לידו.",o:"מראים את \"תפריט הוויסות\" ומנסים יחד שניים או שלושה דברים ממנו.",b:"כל ילד מצייר או כותב על דף שלושה דברים שעוזרים לו: נשימה, לחיצת ידיים, לשתות מים, לחשוב על משהו אהוב. מקפלים לכיס.",c:"שואלים: \"מתי תשתמשו בתפריט שלכם?\"",say:["אין תשובה נכונה. מה שעוזר לך, זה מה שנכון.","שמרו את הדף בכיס."],al:"לוקחים את הדף למקום המוגן ומנסים שם דבר אחד מהתפריט.",ad:"בלי דף: כל ילד בוחר שלוש אצבעות, וכל אצבע היא דבר שעוזר לו."}
+];
+const AR={
+ traffic:{t:"إشارة المرور تبعت الجسم",why:"الولاد بيتعلّموا إنهم بيقدروا يتحكّموا بجسمهم: يبطّئوا، يوقفوا، ويرجعوا يبلّشوا.",o:"اعرضوا ثلاث ألوان بالإيدين: أحمر (قبضة)، أصفر (إيد مفتوحة)، أخضر (تلويح).",b:"أحمر: تمثال ونفس واحد بطيء. أصفر: حركة بطيئة كتير بالمكان. أخضر: حركة صغيرة وفرحانة بالمكان. غيّروا الإيقاع، وبالآخر خلّوا الولاد يكونوا هم «الإشارة».",c:"اختموا بأحمر طويل مع ثلاث أنفاس. اسألوا: أي لون جسمكم هلّأ؟",say:["لما أحكي أحمر، كلنا بنصير تماثيل.","مين بدّه يكون الإشارة الجاية؟"],al:"بالصافرة احكوا «أحمر طويل»، انتقلوا للمكان الآمن، وكمّلوا هناك وإنتو قاعدين.",ad:"قعود بس: الأخضر بيصير حركة إيدين أو طبل عالركب."},
+ echo:{t:"طبول بدون طبول",why:"إيقاع مشترك بيوحّد المجموعة وبيرجّع إحساس «سوا».",o:"صفّقوا إيقاع بسيط، والمجموعة بترجّعه وراكم زي الصدى.",b:"نوّعوا: تصفيق، ركب، دعسة صغيرة. العبوا بالعالي والواطي، بالسريع والبطيء. خلّوا الولاد يقودوا إيقاع بالدور.",c:"واطوا شوي شوي لحتى السكوت التام، وتنفّسوا سوا نفس واحد.",say:["أنا بصفّق، وإنتو الصدى.","هلّأ أوطى إشي ممكن، زي نقط شتي صغيرة."],al:"وقّفوا بهدوء، فوتوا للمكان الآمن، وكمّلوا بإيقاع واطي كتير عالركب.",ad:"بالملجأ المزدحم: تصفيق وركب بس، بدون دعس."},
+ chain:{t:"قصة بالدور",why:"المجموعة بتألّف قصة سوا بتخلص منيح، وهاد بقوّي الإحساس إنه في استمرارية.",o:"ابدأوا: «كان يا ما كان، جرو صغير بدوّر على مكان مريح يقعد فيه...»",b:"كل ولد بيزيد جملة وحدة. قانون واحد: بقصتنا ما حدا بينأذى، وبالآخر بنلاقي حل.",c:"الكبير بيلخّص القصة وبيسأل: شو تعلّم الجرو؟",say:["كل واحد بيزيد جملة وحدة. مسموح تعدّي.","بقصتنا دايمًا بنلاقي طريق."],al:"احكوا «القصة بتستنّانا»، انتقلوا للمكان الآمن، وهناك تذكّروا وين وقفنا.",ad:"بمجموعة كبيرة: بس اللي برفع إيده بيزيد جملة."},
+ binary:{t:"نعدّ لـ 31 بإيد وحدة",why:"تحدّي مفاجئ الكل بينجح فيه، ونجاح زي هاد بيرجّع «أنا بقدر».",o:"اسألوا: لوين فينا نعدّ بأصابع إيد وحدة؟ أغلب الأجوبة رح تكون 5.",b:"علّموا إنه كل إصبع إله قيمة: الإبهام 1، السبابة 2، الوسطى 4، البنصر 8، الخنصر 16. تمرّنوا على أرقام سوا، وبعدين أزواج بيعطوا بعض حزازير.",c:"الكل بيعرض 31 سوا. احكوا إنه الكمبيوترات بتعدّ هيك بالزبط.",say:["كل إصبع مرفوع إله قيمة غير.","مين بيقدر يفرجيني 13؟"],al:"نزّلوا الإيدين، انتقلوا للمكان الآمن، وكمّلوا هناك حزازير بأزواج.",ad:"بتزبط كتير بالقعدة المزدحمة، ما في حاجة لحركة."},
+ robot:{t:"مبرمجين وروبوتات",why:"بتعطي سيطرة كاملة وردّ فوري عن النجاح، وكمان ضحك مشترك.",o:"اشرحوا: الروبوت بيعمل بس اللي بنحكيله، بالزبط.",b:"بأزواج: «المبرمج» بيعطي تعليمات دقيقة و«الروبوت» بينفّذ حركة إيدين أو رسمة بالهوا. بعد كم جولة بيتبدّلوا.",c:"اسألوا: شو كان صعب بالتعليمات الدقيقة؟ شو ساعد؟",say:["الروبوت بيعمل بالزبط اللي انحكاله، مش أكتر.","أي تعليمة كانت أوضح إشي؟"],al:"«الروبوتات بوضع نوم»، انتقلوا للمكان الآمن وكمّلوا بحركات إيدين.",ad:"بالملجأ: الروبوت بينفّذ بس حركات إيدين ووجه."},
+ twenty:{t:"20 سؤال",why:"التفكير المنطقي بشغّل العقل اللي بفكّر وبهدّي الجسم.",o:"الكبير بيفكّر بحيوان أو غرض، والمجموعة بتسأل بس أسئلة جوابها آه أو لا.",b:"عدّوا الأسئلة بصوت عالي. بعد ما يحزروا، ولد تاني بيفكّر بإشي جديد.",c:"اسألوا: أي سؤال ساعد أكتر إشي؟",say:["بس أسئلة جوابها آه أو لا.","ضايلنا كمان ثمن أسئلة."],al:"تذكّروا قديش ضايل أسئلة، انتقلوا للمكان الآمن، وكمّلوا من نفس النقطة.",ad:"بمجموعة 30 وأكتر: قسّموا لمجموعتين بيسألوا بالدور."},
+ collab:{t:"رسمة مشتركة، كل واحد خط",why:"كل ولد بيساهم، ومنعمل سوا إشي ما حدا بيقدر يعمله لحاله.",o:"كل مجموعة صغيرة بتاخد ورقة. الموضوع: «أحلى مكان ممكن نتخيّله».",b:"الورقة بتنتقل من إيد لإيد، وكل ولد بيزيد تفصيلة وحدة. بعد جولتين بنعطي الرسمة اسم.",c:"كل مجموعة بتعرض رسمتها باختصار. منعلّقها أو منصوّرها.",say:["كل واحد بيزيد إشي واحد، وبيعطيها للي بعده.","شو بنسمّي رسمتنا؟"],al:"حطّوا الأوراق بمحل متّفق عليه، انتقلوا للمكان الآمن، وارجعولها بعدين.",ad:"بدون طاولات: حطّوا الورقة على كتاب أو عالأرض."},
+ future:{t:"أشيا أنا مستنّيها",why:"بتوجّه النظر لأشيا حلوة قريبة تصير.",o:"كل واحد بيكتب ثلاث أشيا صغيرة مستنّيها بالشهر الجاي.",b:"بأزواج بيشاركوا وحدة منهم، بس اللي بدّه. ممكن يزيدوا كيف بيتحضّروا إلها.",c:"اللي بدّه بيقرأ إشي واحد بصوت عالي. منلخّص: عنّا إشي نستنّاه.",say:["ممكن كمان أشيا صغيرة كتير، زي أكلة بتحبّوها.","مش لازم تشاركوا."],al:"طبّقوا الورقة بالجيبة، انتقلوا للمكان الآمن، وكمّلوا بالحكي.",ad:"بدون ورق: بنحكي بأزواج."},
+ animals:{t:"يوغا الحيوانات",why:"حركة بطيئة وتنفّس بشكل لعبة بيخفّفوا التوتر من الجسم.",o:"احكوا إنه اليوم كلنا حيوانات بحديقة حيوانات هادية.",b:"قطة بتتمطّى، سلحفاة بتفوت بقوقعتها، عصفور بيفرد جناحاته على مهل، دبّ بيتنفّس عميق. كل وضعية ثلاث أنفاس.",c:"منختم كسلحفاة بالقوقعة، هدوء هدوء، وبعدين منطلّ لبرّا بابتسامة.",say:["هلّأ كلنا سلاحف، منفوت عالقوقعة على مهل.","العصفور بيفرد جناحاته مع النفس الداخل."],al:"«كل الحيوانات بتفوت عالجحر»، انتقلوا سوا للمكان الآمن.",ad:"بالملجأ: قطة، سلحفاة وعصفور بس، وإحنا قاعدين."},
+ mirror:{t:"مراية بطيئة",why:"الانتباه لبعض والحركة البطيئة بيعملوا تواصل وتهدئة بنفس الوقت.",o:"وقفوا أو اقعدوا بأزواج وجه لوجه.",b:"واحد بيقود حركات إيدين بطيئة كتير، والتاني بيعكسها زي المراية. بيتبدّلوا. بالآخر بنجرّب إنه ما حدا يقود.",c:"اسألوا: شو ساعدكم تكونوا متزامنين؟",say:["على مهل كأنه جوّا عسل.","هلّأ المراية بتقود."],al:"حطّوا الإيدين بالحضن، انتقلوا للمكان الآمن، وكمّلوا قاعدين.",ad:"بالزوم: الكل بيعكس المرشد اللي عالشاشة."},
+ fermi:{t:"أسئلة تقدير",why:"التفكير المرتّب بسؤال مفتوح بيعطي إحساس بالسيطرة والقدرة.",o:"اسألوا: قديش كف إيد طول هالحيط؟ الكل بيحزر.",b:"افحصوا سوا، وبعدين اسألوا كمان: قديش مرة القلب بيدقّ بالساعة؟ قديش كلمة منحكي باليوم؟ فكّكوا كل سؤال لقطع صغيرة.",c:"مين كان أقرب؟ منلخّص: فينا نقدّر تقريبًا كل إشي إذا فكّكناه لقطع.",say:["ما في جواب غلط بالتخمين.","تعالوا نفكّكها لقطع صغيرة."],al:"تذكّروا السؤال، انتقلوا للمكان الآمن، وكمّلوا من نفس النقطة.",ad:"بالملجأ المزدحم: اختاروا أسئلة ما بدها نوقف."},
+ category:{t:"بلد، مدينة بالحكي",why:"لعبة معروفة وسريعة بتشغل الراس وبترجّع إحساس الروتين.",o:"اختاروا حرف عن طريق العدّ عالأصابع.",b:"كل مجموعة لازم تحكي بسرعة: بلد، مدينة، حيوان، نبتة، أكلة بهالحرف. زيدوا فئات بيختاروها الولاد.",c:"أعلنوا عن أكتر جواب مميّز. كل المجموعات بتاخد تصفيق.",say:["حرفنا هو الميم. عندكم عشر ثواني.","أي فئة بنزيد؟"],al:"وقّفوا، انتقلوا للمكان الآمن، وكمّلوا بحرف جديد.",ad:"بدون ورق: الجواب بالحكي، كل مجموعة بدورها."},
+ count20:{t:"منعدّ لعشرين سوا",why:"المجموعة لازم تسمع بعضها عشان تنجح، وهاد بيقرّب وبيهدّي.",o:"غمّضوا عيونكم أو نزّلوا النظر.",b:"لازم نعدّ لعشرين، كل مرة شخص واحد بيحكي رقم، بدون ترتيب ثابت. إذا اثنين حكوا سوا، منرجع لواحد.",c:"لما نوصل لعشرين منصفّق بصوت واطي. اسألوا: شو ساعدنا؟",say:["إذا اثنين حكوا سوا، منرجع لواحد. عادي.","منسمع للسكوت اللي بين الأرقام."],al:"احكوا «منكمّل من واحد بعدين» وانتقلوا للمكان الآمن.",ad:"بمجموعة كبيرة: عدّوا لعشرة بمجموعات من 8."},
+ hack:{t:"هاكاثون صغير: نخترع إشي منيح",why:"فرق بتخترع حل بيعمل خير لحدا، وهاد بقوّي القدرة والأمل.",o:"السؤال: أي اختراع رح يعمل خير لولاد حارتنا؟",b:"فرق من 3-5 بيرسموا الاختراع، بيعطوه اسم، وبيحضّروا عرض لدقيقة.",c:"كل فريق بيعرض. منلخّص الفكرة اللي أكتر بدنا نشوفها بالحقيقة.",say:["كل فكرة مقبولة بهالمرحلة.","لمين اختراعكم بيعمل خير؟"],al:"كل فريق بيحفظ الورقة معه، انتقلوا للمكان الآمن، وكمّلوا بالحكي.",ad:"بدون ورق: اعرضوا الاختراع بالتمثيل الصامت."},
+ statues:{t:"متحف التماثيل",why:"تفريغ طاقة بالحركة، مع وقفات بتمرّن على التحكّم بالجسم.",o:"الكل بيتحرّك بحرية.",b:"لما نحكي كلمة («فرحان»، «قوي»، «شجرة») الكل بيتجمّد كتمثال بيناسبها. «زائر المتحف» بيلفّ وبيمدح التماثيل.",c:"آخر تمثال: «هادي». منضل فيه ثلاث أنفاس.",say:["تمثال هلّأ: قوي!","الزائر جاي، الكل متجمّد."],al:"«المتحف سكّر»، انتقلوا سوا للمكان الآمن.",ad:"قعود: تماثيل وجه وإيدين بس."},
+ ball:{t:"طابة المديح",why:"مديح صغير بقوّي العلاقة والإحساس بالقيمة.",o:"امسكوا طابة خيالية واشرحوا: اللي بتوصله بيسمع مديح.",b:"ارموا الطابة لولد، احكوله إشي حلو، وهو بيكمّل لغيره. تأكّدوا إنه كل ولد بتوصله الطابة.",c:"اختموا بمديح لكل المجموعة.",say:["برمي الطابة لنور، لأنك ساعدت صاحبك قبل شوي.","ممكن مديح صغير، مثلًا عن ابتسامة."],al:"حطّوا الطابة الخيالية بالجيبة، انتقلوا للمكان الآمن، وكمّلوا هناك.",ad:"بالزوم: احكوا اسم اللي بتوصله الطابة."},
+ pmr:{t:"رحلة بالجسم",why:"شدّ وإرخاء العضلات بيخفّف التوتر من الجسم وبيهدّي.",o:"اقعدوا براحة. اللي بدّه بيغمّض عيونه.",b:"منشدّ قوي ومنرخي: أصابع الإجرين، الإجرين، البطن، الإيدين كأنه منعصر ليمونة، الكتاف لعند الأذنين، الوجه كأنه ليمونة حامضة. كل مرة خمس ثواني وبعدين إرخاء.",c:"منتنفّس ثلاث أنفاس ومنحسّ الجسم طري.",say:["منعصر ليمونة بالإيد، قوي قوي، وهلّأ منرخي.","حاسّين الفرق بين القوي والطري؟"],al:"فتّحوا عيونكم، انتقلوا للمكان الآمن، وكمّلوا من وين وقفنا.",ad:"بيناسب القعدة المزدحمة زي ما هو."},
+ doodle:{t:"خربشة هادية",why:"الحركة المتكرّرة عالورقة بتهدّي، وما في فيها غلط.",o:"كل ولد بياخد ورقة وبيرسم دائرة كبيرة.",b:"منعبّي الدائرة بأشكال متكرّرة: نقط، موج، مثلثات. منزيد ألوان إذا في. ما في حاجة لموسيقى.",c:"اللي بدّه بيفرجي الورقة. اسألوا: أي شكل أريح إشي ترسموه؟",say:["هون ما في صح وغلط.","منرسم على مهل، زي النفس."],al:"خدوا الورقة والقلم معكم للمكان الآمن وكمّلوا هناك.",ad:"بدون طاولات: ارسموا على كتاب أو عالركبة."},
+ bag:{t:"الشنطة السحرية",why:"خيال مشترك عن أشيا حلوة بيعمل إحساس منيح وأمل.",o:"«عندي شنطة سحرية، فينا نطلّع منها أي إشي حلو.»",b:"كل ولد بدوره بيطلّع إشي من الشنطة وبيفرجيه بالتمثيل الصامت. الكل بيحزر شو هو.",c:"منفوّت عالشنطة إشي لكل المجموعة، زي «حضن كبير»، ومنسكّرها.",say:["شو طلّعت من الشنطة؟ تعالوا نحزر.","بفوّت عالشنطة حضن للكل."],al:"«منسكّر الشنطة»، انتقلوا للمكان الآمن، ومنفتحها هناك.",ad:"بيناسب القعدة المزدحمة زي ما هو."},
+ colors:{t:"صيد الألوان بالتلفون",why:"التركيز بتفاصيل صغيرة وحلوة بيهدّي وبيرجّع للهون والهلّأ.",o:"كل زوج بيختار لون واحد.",b:"صوّروا خمس أشيا صغيرة بهاللون، من قريب. أغراض بس، مش ناس. اختاروا أحلى صورة.",c:"اعرضوا صورة وحدة. اسألوا: شو اكتشفتوا اللي ما انتبهتوله قبل؟",say:["منصوّر أغراض بس، مش ناس.","من قريب قد ما فيكم."],al:"طفّوا الشاشة، انتقلوا للمكان الآمن، وكمّلوا هناك مع اللي حواليكم.",ad:"بالملجأ: صوّروا تفاصيل عليكم، زي الأواعي والكنادر."},
+ safeplace:{t:"المكان الحلو تبعي بالخيال",why:"خيال موجّه قصير بيهدّي الجسم وبيعطي مكان جوّاني نرجعله.",o:"اقعدوا براحة. اللي بدّه بيغمّض، واللي لا، بيطلّع عالأرض.",b:"وجّهوا بصوت هادي: مكان حلو، حقيقي أو من الخيال. شو منشوف هناك؟ شو منسمع؟ كيف الجو؟ مين معكم؟",c:"منتنفّس ثلاث أنفاس، منحرّك الأصابع، ومنفتّح العيون. فينا نرجع لهالمكان وقت ما بدنا.",say:["فيكم تختاروا أي مكان بيريّحكم.","هالمكان دايمًا إلكم."],al:"فتّحوا العيون على مهل وانتقلوا للمكان الآمن. احكوا إنه فينا نرجع للخيال كمان هناك.",ad:"الولد اللي مش مرتاح يغمّض بيقدر يطلّع على غرض واحد."}
+};
+const tx=a=>lang==="ar"?Object.assign({},a,AR[a.id]):a;
+
+/* ================= toast & copy ================= */
+let toastT;
+function toast(msg,actLabel,actFn){
+  $("#toastMsg").textContent=msg;const b=$("#toastAct");
+  if(actLabel){b.hidden=false;b.textContent=actLabel;b.onclick=()=>{actFn();$("#toast").hidden=true}}else{b.hidden=true;b.onclick=null}
+  $("#toast").hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{$("#toast").hidden=true},actLabel?6000:2200);
+}
+function fallbackCopy(text){
+  const ta=document.createElement("textarea");ta.value=text;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();
+  let ok=false;try{ok=document.execCommand("copy")}catch(e){}document.body.removeChild(ta);
+  toast(ok?t("copied"):t("copyFail"));
+}
+function copy(text){try{navigator.clipboard.writeText(text).then(()=>toast(t("copied")),()=>fallbackCopy(text))}catch(e){fallbackCopy(text)}}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-copy]");if(b)copy(b.getAttribute("data-copy"))});
+const phraseHTML=s=>`<div class="phrase"><q>${esc(s)}</q><button class="copy" data-copy="${esc(s)}" aria-label="${t("copyAria")}">${ICON_COPY}</button></div>`;
+
+/* ================= settings ================= */
+let theme=store.get("theme",null); if(theme) root.setAttribute("data-theme",theme);
+$("#themeBtn").onclick=()=>{const dark=root.getAttribute("data-theme")?root.getAttribute("data-theme")==="dark":matchMedia("(prefers-color-scheme: dark)").matches;theme=dark?"light":"dark";root.setAttribute("data-theme",theme);store.set("theme",theme)};
+let fs=store.get("fs",0);
+const applyFs=()=>{root.classList.remove("fs1","fs2");if(fs)root.classList.add("fs"+fs);$("#fsBtn").textContent=lang==="ar"?["أ+","أ++","أ"][fs]:["א+","א++","א"][fs]};
+$("#fsBtn").onclick=()=>{fs=(fs+1)%3;applyFs();store.set("fs",fs)};
+$("#langBtn").onclick=()=>{lang=lang==="he"?"ar":"he";store.set("lang",lang);renderAll()};
+
+/* ================= tabs & overlays ================= */
+function showTab(k){
+  $$("nav.tabs [role=tab]").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===k?"true":"false"));
+  ["reg","gen","pocket"].forEach(x=>{$("#v-"+x).hidden=x!==k});
+  store.set("tab",k);window.scrollTo(0,0);
+}
+$$("nav.tabs [role=tab]").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+let lastFocus=null;
+function openOv(id){lastFocus=document.activeElement;$$(".overlay").forEach(o=>o.hidden=true);const o=$("#ov-"+id);o.hidden=false;o.scrollTop=0;document.body.style.overflow="hidden";const c=o.querySelector("[data-close]");c&&c.focus()}
+function closeOv(){$$(".overlay").forEach(o=>o.hidden=true);document.body.style.overflow="";lastFocus&&lastFocus.focus&&lastFocus.focus()}
+$("#nowBtn").onclick=()=>openOv("now");
+document.addEventListener("click",e=>{const o=e.target.closest("[data-open]");if(o)openOv(o.dataset.open);if(e.target.closest("[data-close]"))closeOv()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeOv()});
+$$("#ov-now [data-go]").forEach(b=>b.onclick=()=>{
+  closeOv();const g=b.dataset.go;
+  if(g==="breath"){showTab("reg");$("#breathing").scrollIntoView({block:"start"});startBreath()}
+  if(g==="ground"){showTab("reg");$("#grounding").scrollIntoView({block:"start"})}
+  if(g==="act"){F.space="shelter";F.equip="none";F.dur="10";store.set("filters",F);renderFilters();runGen(0);showTab("gen")}
+});
+
+/* ================= static text ================= */
+function renderStatic(){
+  root.setAttribute("lang",lang);root.setAttribute("dir","rtl");
+  document.title=t("appName");
+  $$("[data-t]").forEach(el=>{el.textContent=t(el.dataset.t)});
+  $$("[data-ta]").forEach(el=>{el.setAttribute("aria-label",t(el.dataset.ta))});
+  const lb=$("#langBtn");lb.textContent=t("langBtn");lb.setAttribute("lang",lang==="he"?"ar":"he");lb.setAttribute("aria-label",t("langLabel"));
+  $$("[data-infobar]").forEach(el=>{el.innerHTML=`<span>${t("hot104")} <a href="tel:104"><b>104</b></a></span><span>${t("hot100")} <a href="tel:100"><b>100</b></a></span>`});
+  $("#nowThree").innerHTML=t("nowThree").map(s=>`<li>${esc(s)}</li>`).join("");
+  const li=arr=>arr.map(([s,x])=>`<li${x?' class="x"':""}>${esc(s)}</li>`).join("");
+  $("#pocketCard").innerHTML=`<h2>${t("pocketTitle")}</h2><div class="cols"><div><h3>${t("during")}</h3><ul>${li(t("pocketDuring"))}</ul></div><div><h3>${t("after")}</h3><ul>${li(t("pocketAfter"))}</ul></div></div><div class="foot">${t("pocketFoot")}</div>`;
+  $("#selfList").innerHTML=t("self").map(s=>`<li>${esc(s)}</li>`).join("");
+  $("#flagList").innerHTML=FLAGS[lang].map(f=>`<div class="flag"><h3>${esc(f[0])}</h3><p>${esc(f[1])}</p></div>`).join("");
+  $("#sensitive").innerHTML=SENS[lang].map(s=>`<div class="adapt"><div><b>${esc(s[0])}</b>${esc(s[1])}</div></div>`).join("");
+  const TK=L(TALK);
+  $("#talkList").innerHTML=TK.map((s,i)=>`<details class="hcard"${i===0?" open":""}><summary><span class="dot">${i+1}</span><span class="t"><b>${s.n}</b><small>${s.how}</small></span></summary><div class="body">${s.say.map(phraseHTML).join("")}</div></details>`).join("");
+  $("#talkAge").innerHTML=`<div class="do"><h4>${t("youngTitle")}</h4><ul>${TALK.young.map(x=>`<li>${x}</li>`).join("")}</ul></div><div class="do"><h4>${t("olderTitle")}</h4><ul>${TALK.older.map(x=>`<li>${x}</li>`).join("")}</ul></div><div class="dont" style="grid-column:1/-1"><h4>${t("dontH")}</h4><ul>${TALK.avoid.map(x=>`<li>${x}</li>`).join("")}</ul></div>`;
+  $("#menuList").innerHTML=L(MENU).map(x=>`<li>${esc(x)}</li>`).join("");
+  $("#signs").innerHTML=`<h3>${t("signsTitle")}</h3><p class="lead">${t("signsLead")}</p><div class="signs">${L(SIGNS).map(([age,arr])=>`<div><h4 dir="ltr" style="text-align:right">${age}</h4><ul>${arr.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div><p class="lead" style="font-size:.9rem">${t("signsNd")}</p>`;
+  $("#stopgo").innerHTML=`<h3 style="margin-top:6px">${t("stopTitle")}</h3><p class="lead">${t("stopLead")}</p><div class="stopgo">${L(STOPGO).map(([a,b])=>`<div><b>${a}</b><span>${b}</span></div>`).join("")}</div><h3 style="margin-top:10px">${t("buddyTitle")}</h3><p>${t("buddyText")}</p>`;
+  $("#hobfoll").innerHTML=Object.values(HOB[lang]).map(h=>`<details class="hcard"><summary><span class="dot">${h.n[0]}</span><span class="t"><b>${h.n}</b><small>${h.s}</small></span></summary><div class="body"><ul>${h.acts.map(a=>`<li>${a}</li>`).join("")}</ul>${phraseHTML(h.say)}</div></details>`).join("");
+  applyFs();
+}
+
+/* ================= MASEH ================= */
+let mi=0,quick=false;
+function renderMaseh(){
+  const M=MASEH[lang];
+  $("#masehSteps").innerHTML=M.map((s,i)=>`<button role="tab" aria-current="${i===mi&&!quick?"step":"false"}" data-i="${i}"><b>${s.l}</b><small>${s.n}</small></button>`).join("");
+  $$("#masehSteps button").forEach(b=>b.onclick=()=>{quick=false;mi=+b.dataset.i;renderMaseh()});
+  $("#masehQuick").setAttribute("aria-pressed",quick?"true":"false");
+  $("#masehPrev").hidden=quick;$("#masehNext").hidden=quick;
+  if(quick){$("#masehBody").innerHTML=`<div style="display:grid;gap:12px">`+M.map(s=>`<div><h3>${s.l} · ${s.n}</h3><p class="lead">${s.goal}</p>${phraseHTML(s.say[0])}</div>`).join("")+`</div>`;return}
+  const s=M[mi];
+  $("#masehBody").innerHTML=`<div style="display:grid;gap:12px"><h3>${s.l} · ${s.n}</h3><p>${s.goal}</p>
+    <div class="dd"><div class="do"><h4>${t("doH")}</h4><ul>${s.dos.map(x=>`<li>${x}</li>`).join("")}</ul></div><div class="dont"><h4>${t("dontH")}</h4><ul>${s.donts.map(x=>`<li>${x}</li>`).join("")}</ul></div></div>
+    ${s.warn?`<p class="note">${s.warn}</p>`:""}<div class="eyebrow">${t("sayLabel")}</div><div style="display:grid;gap:8px">${s.say.map(phraseHTML).join("")}</div></div>`;
+  $("#masehPrev").disabled=mi===0;$("#masehNext").textContent=mi===3?t("restart"):t("next");
+}
+$("#masehPrev").onclick=()=>{if(mi>0){mi--;renderMaseh()}};
+$("#masehNext").onclick=()=>{mi=(mi+1)%4;renderMaseh()};
+$("#masehQuick").onclick=()=>{quick=!quick;renderMaseh()};
+
+/* ================= Breathing ================= */
+let mode="gentle",bTimer=null,pi=0,left=0,elapsed=0,wake=null,bState="ready";
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function renderModes(){
+  $("#breathModes").innerHTML=Object.entries(MODES).map(([k,m])=>`<button data-m="${k}" aria-pressed="${k===mode}">${m[lang].name}</button>`).join("");
+  $$("#breathModes button").forEach(b=>b.onclick=()=>{mode=b.dataset.m;resetBreath();renderModes()});
+}
+function setPhase(){
+  const M=MODES[mode],sec=M.sec[pi],kind=M.kind[pi];left=sec;
+  $("#phase").textContent=M[lang].ph[pi];$("#count").textContent=left;
+  const ring=$("#ring");ring.style.transitionDuration=reduce?"0s":sec+"s";
+  if(kind==="in")ring.style.transform="scale(1.9)";else if(kind==="out")ring.style.transform="scale(1)";
+  if($("#vib").checked){try{navigator.vibrate&&navigator.vibrate(kind==="in"?120:kind==="out"?[60,60,60]:40)}catch(e){}}
+}
+function tick(){
+  left--;elapsed++;
+  if(left>0){$("#count").textContent=left;return}
+  pi=(pi+1)%MODES[mode].sec.length;
+  if(pi===0&&elapsed>=120){stopBreath(true);return}
+  setPhase();
+}
+async function startBreath(){
+  if(bTimer)return;
+  if(bState!=="paused"){pi=0;elapsed=0;setPhase()}
+  bState="running";bTimer=setInterval(tick,1000);
+  try{if(navigator.wakeLock)wake=await navigator.wakeLock.request("screen")}catch(e){}
+}
+function stopBreath(done){
+  clearInterval(bTimer);bTimer=null;try{wake&&wake.release()}catch(e){}wake=null;
+  if(done){bState="done";$("#phase").textContent=t("done");$("#count").innerHTML="&nbsp;";$("#ring").style.transform="scale(1)";$("#breathHint").textContent=t("doneHint")}
+  else if(bState==="running")bState="paused";
+}
+function resetBreath(){
+  clearInterval(bTimer);bTimer=null;try{wake&&wake.release()}catch(e){}wake=null;bState="ready";pi=0;elapsed=0;
+  $("#phase").textContent=t("ready");$("#count").innerHTML="&nbsp;";const r=$("#ring");r.style.transitionDuration="0.4s";r.style.transform="scale(1)";$("#breathHint").textContent=MODES[mode][lang].hint;
+}
+$("#bStart").onclick=startBreath;$("#bPause").onclick=()=>stopBreath(false);$("#bReset").onclick=resetBreath;
+
+/* ================= Grounding ================= */
+let gm="adult",gDone=[false,false,false,false,false];
+function renderG(){
+  $$("#gModes button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.g===gm?"true":"false"));
+  $("#gList").innerHTML=G[lang][gm].map((s,i)=>`<label class="gitem${gDone[i]?" done":""}"><input type="checkbox" id="g${i}" ${gDone[i]?"checked":""}><b>${5-i}</b><span>${s}</span></label>`).join("");
+  $$("#gList input").forEach((c,i)=>c.onchange=()=>{gDone[i]=c.checked;renderG()});
+  const p=Math.round(gDone.filter(Boolean).length/5*100);$("#gBar").style.width=p+"%";
+  $("#gPct").textContent=p===100?t("gDone"):p+t("pct");
+}
+$$("#gModes button").forEach(b=>b.onclick=()=>{gm=b.dataset.g;renderG()});
+$("#gReset").onclick=()=>{gDone=[false,false,false,false,false];renderG()};
+
+/* ================= Generator ================= */
+let F=Object.assign({},DEF,store.get("filters",{}));
+let ranked=[],ri=0,current=null,currentMiss=[];
+function eqOk(a,av){return a==="none"||av==="various"||a===av}
+function score(a){
+  let s=0,miss=[];const chk=(ok,w,key)=>{if(ok)s+=w;else miss.push(key)};
+  chk(a.ages.includes(F.age),6,"age");chk(a.sp.includes(F.space),5,"space");chk(eqOk(a.eq,F.equip),5,"equip");
+  chk(a.du.includes(F.dur),3,"dur");chk(a.gr.includes(F.group),2,"group");chk(a.fo.includes(F.focus),2,"focus");chk(a.ex.includes(F.exp),1,"exp");
+  return {a,s,miss};
+}
+function rank(){ranked=A.map(score).sort((x,y)=>y.s-x.s||x.miss.length-y.miss.length)}
+function renderFilters(){
+  const O=OPT[lang];
+  $("#filters").innerHTML=Object.entries(O).map(([k,v])=>`<div><div class="flabel">${v.label}</div><div class="seg" role="group" aria-label="${v.label}">${Object.entries(v.o).map(([ok,ol])=>`<button data-f="${k}" data-v="${ok}" aria-pressed="${F[k]===ok}">${ol}</button>`).join("")}</div></div>`).join("");
+  $$("#filters button").forEach(b=>b.onclick=()=>{F[b.dataset.f]=b.dataset.v;store.set("filters",F);renderFilters();runGen(0)});
+  $("#fSummary").textContent=Object.keys(O).filter(k=>k!=="exp").map(k=>O[k].o[F[k]]).join(" · ");
+}
+function planText(a0){
+  const a=tx(a0),T=TIMES[F.dur],m=t("min");
+  return `${a.t}\n${t("principle")}: ${PR[lang][a.pr]}. ${a.why}\n\n1. ${t("s1")} (${T[0]} ${m}): ${a.o}\n2. ${t("s2")} (${T[1]} ${m}): ${a.b}\n3. ${t("s3short")} (${T[2]} ${m}): ${a.c}\n\n${t("sayAct")}:\n${a.say.map(s=>"• "+s).join("\n")}\n\n${t("alarm")} ${a.al}\n${t("shelterAdLong")}: ${a.ad}\n\n${t("closeTitle")}: ${L(CLOSEQ).join(" ")}\n${t("rulesTitle")}:\n${L(RULES).map(r=>"• "+r).join("\n")}`;
+}
+function cardHTML(a0,miss,isFav){
+  const a=tx(a0),T=TIMES[F.dur],O=OPT[lang];
+  const missTxt=miss&&miss.length?`<p class="match">${t("match")}${miss.map(m=>O[m].label+" ("+O[m].o[F[m]]+")").join(", ")}.</p>`:"";
+  return `<article class="card" data-id="${a.id}">
+   <div><div class="eyebrow">${t("actEyebrow")}</div><h2>${a.t}</h2></div>
+   <div class="badges"><span class="badge p">${PR[lang][a.pr]}</span>${a.ages.map(x=>`<span class="badge">${O.age.o[x]}</span>`).join("")}<span class="badge">${a.du.map(d=>O.dur.o[d]).join(" / ")}</span><span class="badge">${O.equip.o[a.eq]}</span></div>
+   ${missTxt}<p><b>${t("why")}</b> ${a.why}</p>
+   <ol class="plan">
+    <li><span class="mins">${T[0]}<small>${t("min")}</small></span><h4>${t("s1")}</h4><p>${a.o}</p></li>
+    <li><span class="mins">${T[1]}<small>${t("min")}</small></span><h4>${t("s2")}</h4><p>${a.b}</p></li>
+    <li><span class="mins">${T[2]}<small>${t("min")}</small></span><h4>${t("s3")}</h4><p>${a.c}</p></li>
+   </ol>
+   <div class="eyebrow">${t("sayAct")}</div><div class="say">${a.say.map(phraseHTML).join("")}</div>
+   <div class="alarmbox"><b>${t("alarm")}</b> ${a.al}</div>
+   <div class="adapt"><div><b>${t("shelterAd")}</b>${a.ad}</div>${GENERIC[lang].map(g=>`<div><b>${g[0]}</b>${g[1]}</div>`).join("")}</div>
+   <div class="rules"><b>${t("closeTitle")}</b>${L(CLOSEQ).join(" · ")}</div>
+   <div class="rules"><b>${t("rulesTitle")}</b><ul>${L(RULES).map(r=>`<li>${r}</li>`).join("")}</ul></div>
+   <div class="btnrow"><button class="btn ${isFav?"":"primary"}" data-fav="${a.id}">${isFav?t("savedBtn"):t("save")}</button><button class="btn" data-copyplan="${a.id}">${ICON_COPY} ${t("copyPlan")}</button></div></article>`;
+}
+let favs=store.get("favs",[]);
+function showResult(r){current=r.a;currentMiss=r.miss;$("#result").innerHTML=cardHTML(r.a,r.miss,favs.includes(r.a.id))}
+function runGen(i){rank();ri=i;showResult(ranked[ri%ranked.length])}
+$("#gAnother").onclick=()=>{runGen((ri+1)%Math.min(ranked.length,8))};
+$("#gSurprise").onclick=()=>{rank();const pool=ranked.filter(r=>!r.miss.includes("age")&&!r.miss.includes("equip"));const P=pool.length?pool:ranked;showResult(P[Math.floor(Math.random()*P.length)])};
+$("#gResetF").onclick=()=>{F=Object.assign({},DEF);store.set("filters",F);renderFilters();runGen(0)};
+document.addEventListener("click",e=>{
+  const f=e.target.closest("[data-fav]");
+  if(f){const id=f.dataset.fav;if(favs.includes(id)){favs=favs.filter(x=>x!==id);toast(t("favRemoved"))}else{favs.push(id);toast(t("favSaved"))}store.set("favs",favs);refreshFavButtons();renderFavs()}
+  const c=e.target.closest("[data-copyplan]");if(c){copy(planText(A.find(x=>x.id===c.dataset.copyplan)))}
+  const rm=e.target.closest("[data-rm]");if(rm){const id=rm.dataset.rm,idx=favs.indexOf(id);favs=favs.filter(x=>x!==id);store.set("favs",favs);renderFavs();refreshFavButtons();toast(t("removed"),t("undo"),()=>{favs.splice(idx,0,id);store.set("favs",favs);renderFavs();refreshFavButtons()})}
+});
+function refreshFavButtons(){$$("[data-fav]").forEach(b=>{const on=favs.includes(b.dataset.fav);b.textContent=on?t("savedBtn"):t("save");b.classList.toggle("primary",!on)})}
+function renderFavs(){
+  const list=favs.map(id=>A.find(a=>a.id===id)).filter(Boolean).map(tx);
+  $("#savedCount").textContent=list.length?list.length+t("savedN"):"";
+  if(!list.length){$("#favList").innerHTML=`<p class="empty">${t("emptyFav")}</p>`;return}
+  $("#favList").innerHTML=list.map(a=>`<details class="fav"><summary class="h" style="list-style:none;cursor:pointer;min-height:44px"><h3>${a.t}</h3><span class="badge p">${PR[lang][a.pr]}</span></summary>
+   <p>${a.o}</p><p>${a.b}</p><p>${a.c}</p><div class="alarmbox"><b>${t("alarm")}</b> ${a.al}</div>
+   <div class="btnrow"><button class="btn" data-copyplan="${a.id}">${ICON_COPY} ${t("copyShort")}</button><button class="btn ghost" data-rm="${a.id}">${t("remove")}</button></div></details>`).join("");
+}
+
+/* ================= init ================= */
+function renderAll(){
+  renderStatic();renderMaseh();renderModes();resetBreath();renderG();renderFilters();
+  if(current){showResult({a:current,miss:currentMiss})}else{runGen(0)}
+  renderFavs();
+}
+/* ================= gift link: ?to=&from=&msg= ================= */
+const clip=(s,n)=>String(s||"").replace(/[\u0000-\u001f\u007f]/g," ").replace(/\s+/g," ").trim().slice(0,n);
+const GIFT={to:clip(QS.get("to"),60),from:clip(QS.get("from"),60),msg:String(QS.get("msg")||"").replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g," ").trim().slice(0,400)};
+const isGift=QS.has("gift")||GIFT.to||GIFT.from||GIFT.msg;
+function renderGift(){
+  if(!isGift)return;
+  const rb=$("#giftRibbon");
+  if(GIFT.from){rb.textContent=t("giftRibbon")+GIFT.from;rb.hidden=false}
+  $("#giftTitle").textContent=t("giftFor")+(GIFT.to?", "+GIFT.to:"");
+  $("#giftFrom").textContent=GIFT.from?t("giftFrom")+GIFT.from:"";$("#giftFrom").hidden=!GIFT.from;
+  $("#giftMsg").textContent=GIFT.msg;$("#giftMsg").hidden=!GIFT.msg;
+  $("#giftDesc").textContent=t("giftDesc");$("#giftOpen").textContent=t("giftOpen");$("#giftTip").textContent=t("giftTip");
+}
+if(isGift){
+  let seen=false;try{seen=sessionStorage.getItem("edu_giftSeen")===location.search}catch(e){}
+  if(!seen){$("#gift").hidden=false;setTimeout(()=>{$("#giftOpen").focus()},50)}
+  $("#giftOpen").onclick=()=>{$("#gift").hidden=true;try{sessionStorage.setItem("edu_giftSeen",location.search)}catch(e){}};
+}
+const _renderStatic=renderStatic;renderStatic=function(){_renderStatic();renderGift()};
+renderAll();
+const savedTab=store.get("tab","reg");if(savedTab!=="reg")showTab(savedTab);
+})();
+</script>
+
+</body></html>

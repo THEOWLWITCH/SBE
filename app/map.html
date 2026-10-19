@@ -102,6 +102,7 @@ svg.map{display:block;width:100%;height:auto;overflow:visible}
 .tcard .kind{font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px;display:inline-block;margin:3px 0 6px}
 .tcard .kind.lab{background:rgba(28,111,168,.12);color:var(--blue)}
 .tcard .kind.work{background:rgba(58,158,107,.14);color:var(--green)}
+.tcard .kind.gift{background:rgba(253,215,140,.45);color:#7A5410}
 .tcard p{margin:0 0 6px;font-size:15px}
 .tcard .why{color:var(--muted);font-size:14.5px}
 .tcard a.open{font-weight:700;text-decoration:none}
@@ -193,6 +194,8 @@ footer a{margin:0 6px}
     { id: 'bridge', pending: true, perm: 'bridge', g: 'practice', n: 'גשר בין הבית לכיתה', i: '🌉', k: 'lab', page: 'family-bridge.html', goal: 'המשפחה והצוות בונים יחד שגרת קשר: כל משפחה בוחרת את הדרך שנוחה לה, ויחד מחליטים על הצעד הבא.' },
     { id: 'dialogue', perm: 'dialogue', g: 'practice', n: 'מעבדת שיח וחקר משותף', i: '🔎', k: 'lab', page: 'shared-dialogue-lab.html', goal: 'קבוצה חוקרת שאלה בתחום הדעת: בונה טענות, בודקת ראיות ומתקנת יחד, והמורה מאשרת.' },
     { id: 'teamthink', perm: 'teamthink', g: 'practice', n: 'חשיבת צוות', i: '🤝', k: 'lab', page: 'team-thinking.html', goal: 'צוות חושב יחד על אתגר: כל הקולות, בעד ונגד, פרגון, ומה הרווחנו מהחשיבה ביחד.' },
+    // פתוח לכולם, בלי קוד (19/10/2026): מדריכון לחירום. מהכלי עצמו אין מעבר לכלים אחרים.
+    { id: 'ymd', open: true, g: 'practice', n: 'יש מה לעשות: מדריכון לחירום', short: 'יש מה לעשות', i: '🎁', k: 'lab', kind: '🎁 פתוח לכולם', page: 'yesh-ma-laasot.html', goal: 'לרגעי חירום עם ילדים: הדקה הראשונה, מה עושים ומה אומרים, נשימה, קרקוע ופעילויות קצרות. פתוח לכולם, בלי קוד.' },
     { id: 'activity', perm: 'activity', g: 'act', n: 'תכנון פעילות', i: '🗓', k: 'work', page: 'activity-planner.html', goal: 'מרעיון לפעילות חינוכית מוכנה להפעלה, או לרצף של מפגשים.' },
     { id: 'writer', perm: 'writer', g: 'act', n: 'תקשורת מקדמת חוסן חברתי', i: '✍️', k: 'work', page: 'message-writer.html', goal: 'ניסוח הודעה, מכתב או עדכון, או הובלת תקשורת לאורך זמן עם הקשר, טיוטות והחלטות. אפשר להמשיך מניסוח חד־פעמי לשיחה שמורה.' },
     { id: 'studio', pending: true, perm: 'studio', g: 'act', n: 'סטודיו חוסן', i: '🎨', k: 'work', page: 'resilience-studio.html', goal: 'מהשראה לערכת פעולה: מטרה, מוקד חוסן ומפגשים מוכנים להנחיה.' },
@@ -211,6 +214,7 @@ footer a{margin:0 6px}
   // מה תרצו לעשות: לכל בחירה דרך לפי סדר, ולכל כלי בדרך משפט קצר על התפקיד שלו בה.
   const NEEDS = [
     { id: 'talk', n: 'להתכונן לשיחה מאתגרת', kw: /שיח|פגיש|מאתגר|לדבר|עימות|כעס/, path: [['conv', 'מתכננים את השיחה: איך פותחים, מה שואלים, ומה עושים אם היא מסתבכת.'], ['practice', 'מתאמנים על השיחה מול דמות, ומקבלים משוב לפני הרגע האמיתי.'], ['writer', 'אם רוצים לשלוח הודעה לפני השיחה או אחריה, כותבים אותה בשפה מחזקת.']] },
+    { id: 'emergency', n: 'להיערך לחירום ולתגובה ראשונה', kw: /חירום|אזעק|ממ"ד|ממ״ד|מקלט|מלחמ|פינוי|מפונ|טיל|רקט|רעיד|שריפ|הצפ|משבר|פיגוע|אסון/, path: [['ymd', 'ברגע עצמו: מה עושים ומה אומרים לילדים בדקה הראשונה, ופעילויות קצרות למרחב המוגן.'], ['continuity', 'מכינים מראש מה ימשיך לפעול בחירום ובלמידה מרחוק.'], ['practice', 'מתאמנים על שיחה מאתגרת אחרי אירוע, מול דמות.'], ['writer', 'כותבים להורים ולצוות הודעה בשפה מחזקת.']] },
     { id: 'class', n: 'לראות את תמונת החוסן בכיתה', kw: /כית|אווירה|חברתי|חרם|בודד|דחי|תמונ|מצב/, path: [['mapping', 'מתחילים בתמונת מצב: כולם עונים על שאלון קצר.'], ['practi', 'מקבלים ניתוח ופעולות מותאמות לגיל, ואפשר להמשיך לשאול.'], ['activity', 'הופכים את ההמלצה לפעילות מוכנה להפעלה.']] },
     { id: 'group', n: 'לחזק את הכיתה כקבוצה', kw: /חיזוק|לחזק|גיבוש|שייכות|קבוצ|ביחד|יחד/, path: [['mapping', 'רואים מה כבר חזק ומה אפשר לחזק.'], ['practi', 'בוחרים פעולות לכיתה, עם הדרכה לשיחות.'], ['teamthink', 'מתרגלים לחשוב יחד: כל הקולות, בעד ונגד ופרגון.'], ['routines', 'בונים מנגנון קבוע: מועצת כיתה, לוח עזרה או צוות פעולה.'], ['nana', 'מתכוננים להנחות את הכיתה כקבוצה.'], ['activity', 'מתכננים את המפגשים עצמם.'], ['journey', 'כשתרצו להפוך את זה לדרך קבועה של כל בית הספר.']] },
     { id: 'facil', n: 'להנחות קבוצה', kw: /הנח|מנח|דיון|מעגל/, path: [['nana', 'מספרים על המפגש ומקבלים מדריך הנחיה וכרטיס כיס.'], ['activity', 'בונים את הפעילות שתנחו.'], ['practice', 'אם רוצים, מתאמנים על רגע מאתגר לפני המפגש.']] },
@@ -237,7 +241,7 @@ footer a{margin:0 6px}
   NEEDS.filter((nd) => !nd.hidden).forEach((nd) => { const b = el('button', { type: 'button', class: 'need', 'aria-pressed': 'false' }, nd.n); b.dataset.id = nd.id;
     b.addEventListener('click', () => { chosen.has(nd.id) ? chosen.delete(nd.id) : chosen.add(nd.id); $('#heard').textContent = ''; update(); }); needsBox.appendChild(b); });
   // טקסט חופשי: תמיד חוזרות שאלות הבהרה על מה שנכתב (גם בלי התאמה), כך שאין מבוי סתום. מה שזוהה כבר מסומן.
-  const ASK = [['write', 'לכתוב הודעה או מכתב'], ['plan', 'לתכנן את הפעילות, את המסלול או את סדר היום'], ['prepare', 'להכין את הקבוצה יחד'],
+  const ASK = [['emergency', 'להיערך לחירום ולתגובה ראשונה'], ['write', 'לכתוב הודעה או מכתב'], ['plan', 'לתכנן את הפעילות, את המסלול או את סדר היום'], ['prepare', 'להכין את הקבוצה יחד'],
     ['talk', 'להתכונן לשיחה מאתגרת'], ['facil', 'להנחות את הקבוצה'], ['class', 'לראות איפה הקבוצה עומדת היום'], ['team', 'לתאם עם הצוות']];
   $('#free').addEventListener('submit', (e) => { e.preventDefault();
     const q = $('#q').value.trim(), out = $('#heard'); out.textContent = '';
@@ -383,15 +387,15 @@ footer a{margin:0 6px}
       g.appendChild(S('circle', { class: 'disc', r, fill: last ? 'url(#gr)' : (t.k === 'lab' ? 'url(#lb)' : 'url(#wk)'), stroke: 'var(--paper)', 'stroke-width': 4, style: 'transform-box:fill-box;transform-origin:center' }));
       const ic = S('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': r * 0.95 }); ic.textContent = t.i; g.appendChild(ic);
       const dy = last ? (mode === 'wide' ? L.ground.label[1] : -(r + 34)) : side * (r + 18) + (side > 0 ? 6 : 0);
-      const hw0 = t.n.length * L.fs * 0.27 + 6;
+      const nm = t.short || t.n, hw0 = nm.length * L.fs * 0.27 + 6;
       let lx = last ? L.ground.label[0] : Math.min(Math.max(p.x, hw0), L.w - hw0) - p.x, ly = dy;
       let fs = L.fs;
       if (mode === 'tall' && !last) { // בטלפון: השם ליד התחנה, בצד הפנוי, ובגודל שנכנס בו
         const right = p.x < L.w / 2, room = right ? (L.w - 6) - (p.x + r + 8) : (p.x - r - 8) - 6;
-        fs = Math.min(L.fs, room / (t.n.length * 0.52)); const half = t.n.length * fs * 0.26;
+        fs = Math.min(L.fs, room / (nm.length * 0.52)); const half = nm.length * fs * 0.26;
         lx = (right ? 1 : -1) * (r + 8 + half); ly = 6;
       }
-      const lab = S('text', { class: 'lab', 'text-anchor': 'middle', x: lx, y: ly, 'font-size': fs.toFixed(1) }); lab.textContent = t.n; g.appendChild(lab);
+      const lab = S('text', { class: 'lab', 'text-anchor': 'middle', x: lx, y: ly, 'font-size': fs.toFixed(1) }); lab.textContent = nm; g.appendChild(lab);
       if (last) { const s2 = S('text', { class: 'sublab', 'text-anchor': 'middle', x: lx, y: dy + 19, 'font-size': 14 }); s2.textContent = '🔁 לעגן בשגרה · קרקע יציבה'; g.appendChild(s2); }
       const bd = S('g', { class: 'badge', transform: 'translate(' + (r * 0.75) + ',' + (-r * 0.75) + ')' });
       bd.appendChild(S('circle', { r: 13, fill: 'var(--sun)', stroke: 'var(--paper)', 'stroke-width': 3 }));
@@ -423,14 +427,17 @@ footer a{margin:0 6px}
     c.appendChild(el('b', null, (n ? n + '. ' : '') + t.i + ' ' + t.n));
     const tags = el('div', { class: 'tags' }); const gr = GR(t.g);
     if (gr) tags.appendChild(el('span', { class: 'rg' }, gr.i + ' ' + gr.n));
-    tags.appendChild(el('span', { class: 'kind ' + t.k }, t.kind || (t.k === 'lab' ? '🧪 מעבדה ותרגול' : '🌿 סביבת עבודה')));
+    tags.appendChild(el('span', { class: 'kind ' + (t.open ? 'gift' : t.k) }, t.kind || (t.k === 'lab' ? '🧪 מעבדה ותרגול' : '🌿 סביבת עבודה')));
     if (t.pending) tags.appendChild(el('span', { class: 'pend' }, '🔒 טרם אושר: גלוי רק לך'));
     c.appendChild(tags);
     c.appendChild(el('p', null, t.goal));
     if (why) c.appendChild(el('p', { class: 'why' }, 'בדרך שלכם: ' + why));
     const links = el('div', { class: 'links' });
-    links.appendChild(el('a', { class: 'open', href: t.page }, 'יש לי קוד: כניסה לכלי ←'));
-    links.appendChild(el('a', { class: 'ask-tool', href: 'renew.html?perms=' + t.perm }, 'אין לי עדיין: בקשה לכלי'));
+    if (t.open) links.appendChild(el('a', { class: 'open', href: t.page }, 'לכלי, פתוח לכולם ←'));
+    else {
+      links.appendChild(el('a', { class: 'open', href: t.page }, 'יש לי קוד: כניסה לכלי ←'));
+      links.appendChild(el('a', { class: 'ask-tool', href: 'renew.html?perms=' + t.perm }, 'אין לי עדיין: בקשה לכלי'));
+    }
     c.appendChild(links);
     return c;
   }
