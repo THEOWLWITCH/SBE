@@ -410,6 +410,15 @@ nav.tabs button[aria-selected="true"]::before{background:linear-gradient(90deg,#
 @keyframes lean{0%,100%{transform:rotate(-10deg) scale(.96,1)}50%{transform:rotate(-22deg) scale(.9,.94)}}
 @keyframes puff{0%{opacity:0;transform:translateX(10px)}35%{opacity:.75}100%{opacity:0;transform:translateX(-26px)}}
 @media (prefers-reduced-motion: reduce){.fcscene *{animation:none!important;transition:none!important}.fcscene[data-k="in"] .scent path{opacity:.7;stroke-dashoffset:0}.fcscene[data-k="out"] .puff path{opacity:.7}.fcscene[data-k="out"] .flame{transform:rotate(-14deg)}}
+
+.speedrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.9rem}
+.seg.sm button{min-height:36px;padding:0 12px;font-size:.88rem}
+.fcscene .flower,.fcscene .candle{transition:transform .7s cubic-bezier(.3,.7,.3,1),opacity .6s ease}
+.fcscene[data-k="in"] .flower{transform:translateX(-60px)}
+.fcscene[data-k="in"] .candle{opacity:0;transform:translateX(60px) scale(.9)}
+.fcscene[data-k="out"] .candle{transform:translateX(60px)}
+.fcscene[data-k="out"] .flower{opacity:0;transform:translateX(-60px) scale(.9)}
+.fcscene .candle{transform-origin:70px 178px}.fcscene .flower{transform-origin:190px 178px}
 </style>
 </head><body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
@@ -524,6 +533,7 @@ nav.tabs button[aria-selected="true"]::before{background:linear-gradient(90deg,#
     <article class="card" id="breathing">
       <h2><svg class="ic" aria-hidden="true"><use href="#i-breath"/></svg><span data-t="breathTitle"></span></h2>
       <div class="seg" id="breathModes" role="group"></div>
+      <div class="speedrow"><span data-t="speedL"></span><div class="seg sm" id="bSpeed" role="group"></div></div>
       <div class="breath">
         <div class="fcscene" id="fc" aria-hidden="true"><svg viewBox="0 0 260 200">
           <defs>
@@ -574,6 +584,7 @@ nav.tabs button[aria-selected="true"]::before{background:linear-gradient(90deg,#
         <button class="btn" id="bPause" data-t="pause"></button>
         <button class="btn ghost" id="bReset" data-t="reset"></button>
       </div>
+      <label class="toggle"><input type="checkbox" id="snd"> <span data-t="snd"></span></label>
       <label class="toggle"><input type="checkbox" id="vib"> <span data-t="vib"></span></label>
     </article>
   </section>
@@ -682,7 +693,7 @@ const UI={
 he:{appName:"יש מה לעשות",appSub:"מדריכון להורים וא.נשי חינוך בחירום",fsLabel:"הגדלת טקסט",themeLabel:"מצב כהה או בהיר",langBtn:"عربي",langLabel:"لغة عربية",
  hot104:"פיקוד העורף",hot100:"משטרה",nowBtn:"הדקה הראשונה עם הילדים",nowBtnSub:"מה עושים ומה אומרים",flagsLink:"ילד/ה במצוקה חריגה? מה עושים",
  masehEyebrow:"עזרה ראשונה נפשית",masehTitle:"פרוטוקול מעש״ה",prev:"שלב קודם",next:"שלב הבא",restart:"חזרה להתחלה",quick:"גרסה מהירה",doH:"כן",dontH:"לא",sayLabel:"מה אפשר לומר",
- breathEyebrow:"ויסות",breathTitle:"נשימה ביחד",ready:"מוכנים?",breathStartHint:"לחצו התחלה ונשמו יחד עם העיגול.",start:"התחלה",pause:"השהיה",reset:"איפוס",vib:"רטט בכל החלפת שלב (אם הטלפון תומך)",done:"כל הכבוד",doneHint:"אפשר להמשיך לנשום ככה גם לבד.",
+ breathEyebrow:"ויסות",breathTitle:"נשימה ביחד",ready:"מוכנים?",breathStartHint:"לחצו התחלה ונשמו יחד עם העיגול.",start:"התחלה",pause:"השהיה",reset:"איפוס",vib:"רטט בכל החלפת שלב (אם הטלפון תומך)",snd:"צליל עדין בכל החלפת שלב",speedL:"קצב",sp1:"רגיל",sp2:"איטי",sp3:"איטי מאוד",done:"כל הכבוד",doneHint:"אפשר להמשיך לנשום ככה גם לבד.",
  groundEyebrow:"קרקוע חושי",gChild:"נוסח לילדים",gAdult:"נוסח למבוגרים ונוער",gLead:"אומרים בקול, לאט. בקבוצה: כל ילד אומר דבר אחד בתורו.",pct:"% הושלם",gDone:"הושלם. כל הכבוד.",gReset:"מתחילים מחדש",
  hobEyebrow:"הובפול ועמיתים, 2007",hobTitle:"חמשת העקרונות בכיתה",
  genEyebrow:"מחולל פעילות",genTitle:"מה מתאים לקבוצה שלפניכם?",change:"שינוי פרטים",another:"פעילות אחרת",surprise:"הפתיעו אותי",resetF:"איפוס בחירה",
@@ -705,7 +716,7 @@ he:{appName:"יש מה לעשות",appSub:"מדריכון להורים וא.נש
 ar:{appName:"في إشي نعمله",appSub:"دليل صغير للأهل وللطواقم التربوية وقت الطوارئ",fsLabel:"كبّروا الخط",themeLabel:"وضع غامق أو فاتح",langBtn:"עברית",langLabel:"עברית",
  hot104:"الجبهة الداخلية",hot100:"الشرطة",nowBtn:"أول دقيقة مع الولاد",nowBtnSub:"شو بنعمل وشو بنحكي",flagsLink:"ولد أو بنت بضيقة كبيرة؟ شو بنعمل",
  masehEyebrow:"إسعاف أولي نفسي",masehTitle:"أربع خطوات للدعم الأولي",prev:"الخطوة اللي قبل",next:"الخطوة الجاية",restart:"من الأول",quick:"نسخة سريعة",doH:"اعملوا",dontH:"تجنّبوا",sayLabel:"شو ممكن تحكوا",
- breathEyebrow:"تهدئة",breathTitle:"نتنفّس سوا",ready:"جاهزين؟",breathStartHint:"اكبسوا «ابدأ» وتنفّسوا مع الدائرة.",start:"ابدأ",pause:"وقّف",reset:"من جديد",vib:"اهتزاز مع كل مرحلة (إذا التلفون بيدعم)",done:"برافو عليكم",doneHint:"فيكم تكمّلوا تتنفّسوا هيك لحالكم.",
+ breathEyebrow:"تهدئة",breathTitle:"نتنفّس سوا",ready:"جاهزين؟",breathStartHint:"اكبسوا «ابدأ» وتنفّسوا مع الدائرة.",start:"ابدأ",pause:"وقّف",reset:"من جديد",vib:"اهتزاز مع كل مرحلة (إذا التلفون بيدعم)",snd:"صوت ناعم مع كل مرحلة",speedL:"الإيقاع",sp1:"عادي",sp2:"بطيء",sp3:"بطيء كتير",done:"برافو عليكم",doneHint:"فيكم تكمّلوا تتنفّسوا هيك لحالكم.",
  groundEyebrow:"رجوع للحواس",gChild:"للولاد",gAdult:"للكبار والشباب",gLead:"بنحكي بصوت عالي وعلى مهل. بالمجموعة: كل ولد بيحكي إشي واحد بدوره.",pct:"% خلص",gDone:"خلصنا. برافو.",gReset:"منبلّش من جديد",
  hobEyebrow:"هوبفول وزملاؤه، 2007",hobTitle:"خمس مبادئ بالصف",
  genEyebrow:"مولّد فعاليات",genTitle:"شو بناسب المجموعة اللي قدّامكم؟",change:"غيّروا التفاصيل",another:"فعالية ثانية",surprise:"فاجئوني",resetF:"رجّعوا الاختيار",
@@ -1067,19 +1078,23 @@ $("#masehNext").onclick=()=>{mi=(mi+1)%4;renderMaseh()};
 $("#masehQuick").onclick=()=>{quick=!quick;renderMaseh()};
 
 /* ================= Breathing ================= */
+let speed=store.get("bspeed",1);if(![1,1.5,2].includes(speed))speed=1;let actx=null;
 let mode="gentle",bTimer=null,pi=0,left=0,elapsed=0,wake=null,bState="ready";
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function renderModes(){
   $("#breathModes").innerHTML=Object.entries(MODES).map(([k,m])=>`<button data-m="${k}" aria-pressed="${k===mode}">${m[lang].name}</button>`).join("");
   $$("#breathModes button").forEach(b=>b.onclick=()=>{mode=b.dataset.m;resetBreath();renderModes()});
   $(".breath").classList.toggle("kids",mode==="kids");
+  $("#bSpeed").innerHTML=[[1,"sp1"],[1.5,"sp2"],[2,"sp3"]].map(([v,k])=>`<button data-sp="${v}" aria-pressed="${v===speed}">${t(k)}</button>`).join("");
+  $$("#bSpeed button").forEach(b=>b.onclick=()=>{speed=+b.dataset.sp;store.set("bspeed",speed);const was=bState;resetBreath();renderModes();if(was==="running")startBreath()});
 }
 function setPhase(){
-  const M=MODES[mode],sec=M.sec[pi],kind=M.kind[pi];left=sec;
+  const M=MODES[mode],sec=Math.round(M.sec[pi]*speed),kind=M.kind[pi];left=sec;
   $("#phase").textContent=M[lang].ph[pi];$("#count").textContent=left;
   const ring=$("#ring");ring.style.transitionDuration=reduce?"0s":sec+"s";
   if(kind==="in")ring.style.transform="scale(1.9)";else if(kind==="out")ring.style.transform="scale(1)";
   const fc=$("#fc");fc.style.setProperty("--d",sec+"s");fc.dataset.k=kind;
+  if($("#snd").checked)chime(kind);
   if($("#vib").checked){try{navigator.vibrate&&navigator.vibrate(kind==="in"?120:kind==="out"?[60,60,60]:40)}catch(e){}}
 }
 function tick(){
@@ -1104,6 +1119,17 @@ function resetBreath(){
   clearInterval(bTimer);bTimer=null;try{wake&&wake.release()}catch(e){}wake=null;bState="ready";pi=0;elapsed=0;
   $("#phase").textContent=t("ready");$("#count").innerHTML="&nbsp;";const r=$("#ring");r.style.transitionDuration="0.4s";r.style.transform="scale(1)";$("#fc").dataset.k="";$("#breathHint").textContent=MODES[mode][lang].hint;
 }
+function audio(){try{if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();if(actx.state==="suspended")actx.resume()}catch(e){actx=null}return actx}
+function chime(kind){
+  const a=audio();if(!a)return;const t0=a.currentTime;
+  const f=kind==="in"?528:kind==="out"?396:440;
+  const out=a.createGain();out.gain.setValueAtTime(0,t0);out.gain.linearRampToValueAtTime(.09,t0+.03);out.gain.exponentialRampToValueAtTime(.0005,t0+2.6);
+  const lp=a.createBiquadFilter();lp.type="lowpass";lp.frequency.value=2200;out.connect(lp);lp.connect(a.destination);
+  [[1,1],[2.01,.25],[3,.08]].forEach(([m,g])=>{const o=a.createOscillator(),gg=a.createGain();o.type="sine";o.frequency.value=f*m;gg.gain.value=g;o.connect(gg);gg.connect(out);o.start(t0);o.stop(t0+2.7)});
+}
+$("#snd").checked=store.get("bsnd",false);
+$("#snd").onchange=e=>{store.set("bsnd",e.target.checked);if(e.target.checked){audio();chime("hold")}};
+$("#bStart").addEventListener("click",()=>{if($("#snd").checked)audio()});
 $("#bStart").onclick=startBreath;$("#bPause").onclick=()=>stopBreath(false);$("#bReset").onclick=resetBreath;
 
 /* ================= Grounding ================= */
