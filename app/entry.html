@@ -141,10 +141,13 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 .maplink{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff;border-radius:18px;padding:14px 18px;margin:0 0 14px;
   background:linear-gradient(100deg,#2E8F62,#1A9BB5 55%,#1C5F99);box-shadow:0 8px 22px rgba(11,58,107,.18);transition:transform .15s}
 .maplink:hover{transform:translateY(-2px)}
-.maplink .sun{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:radial-gradient(circle at 35% 35%,#FFF1C9,#FFC95C)}
+.maplink .sun{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:radial-gradient(circle at 35% 35%,#FFE45C,#FFBE0B);box-shadow:0 0 0 2px rgba(255,255,255,.55)}
+@media screen and (max-width:520px){.maplink{padding:10px 14px;gap:10px;border-radius:14px}.maplink .sun{width:34px;height:34px;font-size:18px}.maplink b{font-size:15px}.maplink span{font-size:13px}}
 .maplink b{display:block;font-size:17px}.maplink span{font-size:14px;opacity:.92}
-.maplink.gift{background:linear-gradient(100deg,#FDD78C,#FFE7B5);color:#0F2B45;box-shadow:0 8px 22px rgba(180,120,20,.18)}
-.maplink.gift .sun{background:#fff}
+.maplink.gift{background:linear-gradient(100deg,#FFC21A,#FFD84D);color:#0F2B45;box-shadow:0 6px 16px rgba(200,140,0,.22);padding:10px 16px;gap:10px}
+.maplink.gift .sun{background:#fff;width:36px;height:36px;font-size:19px}
+.maplink.gift b{font-size:15.5px}.maplink.gift span{font-size:13.5px;opacity:1}
+@media screen and (max-width:520px){.maplink.gift{padding:8px 12px;border-radius:14px}.maplink.gift .sun{width:30px;height:30px;font-size:16px}.maplink.gift b{font-size:14.5px}.maplink.gift .more{display:none}}
 </style>
 
 <div class="wrap">
@@ -291,7 +294,7 @@ function renderEntry(){
   view.append(ml);
   // "יש מה לעשות" (19/10/2026): מדריכון לחירום, פתוח לכולם בלי קוד. מהמדריכון אין מעבר לכלים אחרים.
   const gl = el("a",{class:"maplink gift",href:"yesh-ma-laasot.html"}), gt = el("div",{});
-  gt.append(el("b",{},"יש מה לעשות: מדריכון לחירום"), el("span",{},"מה עושים ומה אומרים לילדים בדקה הראשונה. פתוח לכולם, בלי קוד."));
+  gt.append(el("b",{},"יש מה לעשות: מדריכון לחירום"), el("span",{}, el("span",{class:"more"},"מה עושים ומה אומרים לילדים בדקה הראשונה. "), "פתוח לכולם, בלי קוד."));
   gl.append(el("span",{class:"sun"},"🎁"), gt);
   view.append(gl);
 

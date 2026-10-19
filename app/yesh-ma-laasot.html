@@ -34,7 +34,7 @@ html[lang="ar"]{
 html{font-size:106.25%;direction:rtl}
 html.fs1{font-size:118.75%} html.fs2{font-size:131.25%}
 body{direction:rtl;text-align:right;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:1rem;line-height:1.6;-webkit-text-size-adjust:100%}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:#fdd78c}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:#FFC929}
 *{box-sizing:border-box}
 h1,h2,h3{font-family:var(--font-display);line-height:1.3;text-wrap:balance;margin:0}
 h2{font-size:1.35rem} h3{font-size:1.1rem}
@@ -44,7 +44,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
 .wrap{max-width:720px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 
 /* header */
-header.top{position:relative;z-index:1;background:#fdd78c;color:#0f2b45}
+header.top{position:relative;z-index:1;background:#FFC929;color:#0f2b45}
 .top .row1{display:flex;align-items:center;gap:10px;padding-block:12px}
 .brand{flex:1;min-width:0}
 .brand h1{font-size:1.15rem;font-weight:700}
@@ -52,7 +52,7 @@ header.top{position:relative;z-index:1;background:#fdd78c;color:#0f2b45}
 .tools{display:flex;gap:6px}
 .bglogo{flex:none;display:inline-flex;align-items:center;background:#fff;border-radius:10px;padding:4px 6px}
 .bglogo img{height:34px;width:auto;display:block}
-@media (max-width:520px){.top .row1{flex-wrap:wrap;row-gap:8px}.top .brand{order:3;flex-basis:100%}.top .tools{margin-inline-start:auto}html.embed .top .row1{flex-wrap:nowrap}html.embed .top .brand{order:0;flex-basis:auto}html.embed .top .tools{margin-inline-start:0}}
+@media screen and (max-width:520px){.top .row1{gap:8px;padding-block:8px}.bglogo{padding:3px 5px}.bglogo img{height:26px}.brand h1{font-size:1.02rem;white-space:nowrap}.brand small{display:none}.tools{gap:4px}.iconbtn{min-width:40px;min-height:40px;padding:0 6px}}
 .bgline{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
 .bgline img{height:30px;width:auto;background:#fff;border-radius:6px;padding:3px 5px;border:1px solid var(--line)}
 html.embed .bglogo{display:none}
@@ -210,7 +210,7 @@ nav.tabs button[aria-selected="true"]{color:var(--accent);border-top-color:var(-
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabs-h) + 14px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--fg);color:var(--bg);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:12px;max-width:calc(100% - 32px);box-shadow:0 10px 30px -10px #0008}
 .gift{position:fixed;inset:0;z-index:70;background:rgba(15,43,69,.55);display:grid;place-items:center;padding:16px;overflow-y:auto}
 .giftcard{background:var(--surface);color:var(--fg);border-radius:22px;max-width:440px;width:100%;overflow:hidden;box-shadow:0 20px 50px -12px #0008;text-align:center}
-.giftcard .top{background:#fdd78c;padding:22px 18px 16px;display:grid;justify-items:center;gap:10px;color:#0f2b45}
+.giftcard .top{background:#FFC929;padding:22px 18px 16px;display:grid;justify-items:center;gap:10px;color:#0f2b45}
 .giftcard .top img{height:54px;width:auto;background:#fff;border-radius:12px;padding:6px 8px}
 .giftcard .bow{font-size:2.6rem;line-height:1}
 .giftcard h2{font-size:1.45rem}
