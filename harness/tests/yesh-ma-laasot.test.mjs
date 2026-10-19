@@ -14,7 +14,7 @@ test('the guide is open: no login guard, no tool menu, no links to other tools',
   const h = read(PAGE);
   assert.doesNotMatch(h, /access-guard\.js|screens-menu\.js/);
   const hrefs = [...h.matchAll(/href="([^"]+)"/g)].map((m) => m[1]).filter((u) => !/^https:\/\/fonts\./.test(u));
-  for (const u of hrefs) assert.match(u, /^(https:\/\/be-good\.co\.il|https:\/\/doi\.org\/|tel:|assets\/|#i-)/, u);
+  for (const u of hrefs) assert.match(u, /^(https:\/\/be-good\.co\.il|https:\/\/doi\.org\/|tel:|assets\/|#il?-)/, u);
   assert.doesNotMatch(h, /location\.href\s*=/);
 });
 
