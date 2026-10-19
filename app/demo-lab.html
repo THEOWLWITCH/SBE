@@ -453,7 +453,7 @@ async function view(d){
   const n=++VIEW_N;
   F('dlgT').textContent=d.title;F('dlgLib').href='examples.html?tool='+encodeURIComponent(d.tool||'');F('dlgInT').textContent=d.input||'';F('dlgIn').hidden=!d.input;
   if(!rvGet(d.id)){
-    F('dlgF').srcdoc=vmsg('🧐 הלקוחה קוראת את התוצר, ואז הוא מתוקן לפי ההערות שלה.<br>התוצר יוצג אחרי התיקון. זה לוקח בדרך כלל 2 עד 5 דקות.');if(!F('dlg').open)F('dlg').showModal();
+    F('dlgF').srcdoc=vmsg('🧐 הלקוחה קוראת את התוצר, ואז הוא מתוקן לפי ההערות שלה.<br>התוצר יוצג אחרי התיקון. התהליך נמשך בדרך כלל 2 עד 5 דקות.');if(!F('dlg').open)F('dlg').showModal();
     await ensureChecked(d);if(n!==VIEW_N)return;
   }
   F('dlgF').srcdoc=vmsg('טוען את התוצר...');if(!F('dlg').open)F('dlg').showModal();

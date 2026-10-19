@@ -9,6 +9,8 @@ const VARIATION = {
   high:   { anthropic: { effort: 'xhigh' }, openai: { temperature: 1.0 } },
   medium: { anthropic: { effort: 'high'  }, openai: { temperature: 0.7 } },
   low:    { anthropic: { effort: 'high'  }, openai: { temperature: 0.3 } },
+  // 14/10/2026 ("היצירה לוקחת זמן רב מידי"): לבנייה שהמשתמש/ת מחכה לה מול המסך, כמו סיפור לתרגול על מקרה משלך
+  fast:   { anthropic: { effort: 'medium' }, openai: { temperature: 0.7 } },
 };
 
 class ProviderError extends Error {

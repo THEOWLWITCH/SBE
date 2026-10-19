@@ -482,8 +482,8 @@ const server = createServer(async (req, res) => {
     jobSave(jobId,job);
     setTimeout(() => PIPE_JOBS.delete(jobId), 3 * 3600 * 1000).unref?.();
     sendJson(res, 200, { jobId });
-      background = true;
-    provider.complete({ system, messages: messages || [{ role: 'user', content: '' }], tools, toolChoice, variation: 'medium', maxTokens: maxTokens || 220 })
+    background = true;
+    provider.complete({ system, messages: messages || [{ role: 'user', content: '' }], tools, toolChoice, variation: payload.fast ? 'fast' : 'medium', maxTokens: maxTokens || 220 })
       // הסוכנת-הלקוחה (lib/customer-pass.mjs): רק בקריאות שמפיקות תוצר
       .then((result) => reviewEnabled(payload) ? customerPass(provider, { system, messages, maxTokens, text: result.text }) : { text: result.text, review: null })
       .then((result) => {
@@ -504,7 +504,7 @@ const server = createServer(async (req, res) => {
       messages: messages || [{ role: 'user', content: '' }],
       tools,
       toolChoice,
-      variation: 'medium',
+      variation: payload.fast ? 'fast' : 'medium',
       maxTokens: maxTokens || 220,
     });
     const pass = reviewEnabled(payload) ? await customerPass(provider, { system, messages, maxTokens, text: result.text }) : null;

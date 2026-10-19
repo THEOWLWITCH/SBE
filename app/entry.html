@@ -352,7 +352,7 @@ async function enterOpen(id){
     location.replace(data.page);
     return;
   }
-  const day = ymdIL(data.date);
+  const day = ymdIL(data.date) + (data.until && data.until > data.date ? " עד " + ymdIL(data.until) : "");
   const T = {
     "open-early": "הקישור ייפתח ביום ההתנסות" + (day ? ", " + day : "") + ". נשמח לראותך אז.",
     "open-over": "הקישור היה פתוח ביום ההתנסות" + (day ? " (" + day + ")" : "") + ", ועכשיו הוא סגור. תודה שהשתתפת!",

@@ -192,7 +192,7 @@
     box.append(el("style", {}, `.sbe-build .sb-banner{border-radius:6px;padding:10px 13px;font-size:14px;line-height:1.6;margin-bottom:10px;background:#FAEFDC;border-inline-start:3px solid #8F5F2E;color:#5C3D1A;}
       .sbe-build .sb-why{font-size:12px;color:#5C6771;direction:ltr;text-align:left;background:#EDEFF1;border-radius:6px;padding:6px 9px;word-break:break-word;}`));
     box.append(el("div", { class: "sb-banner" }, offline
-      ? "התוצר לא נבנה: אין חיבור לשרת. אם את עובדת בענן, השרת ישן ומתעורר, המתיני כ-60 שניות ולחצי שוב על \"בנייה\". אם את עובדת מקומית, ודאי שחלון \"S.B.E - AI\" פתוח ושתופיע ההודעה \"שרת ה-AI פועל\". כל מה שמילאת בטופס נשמר."
+      ? "התוצר לא נבנה: אין חיבור לשרת. אם את עובדת בענן, השרת מתעורר, והתהליך נמשך כ־60 שניות. אחר כך אפשר ללחוץ שוב על \"בנייה\". אם את עובדת מקומית, ודאי שחלון \"S.B.E - AI\" פתוח ושתופיע ההודעה \"שרת ה-AI פועל\". כל מה שמילאת בטופס נשמר."
       : slow
       ? "התוצר לא נבנה: הבנייה לקחה יותר מ-30 דקות. זה קורה לפעמים כשהשרת עמוס. כל מה שמילאת בטופס נשמר: אפשר ללחוץ שוב על \"בנייה\"."
       : "התוצר לא נבנה: המודל החזיר תשובה חסרה או שהקריאה נכשלה באמצע. כל מה שמילאת בטופס נשמר: אפשר ללחוץ שוב על \"בנייה\". אם זה חוזר, אפשר להעתיק את השורה למטה ולשלוח אותה בכפתור \"דיווח\"."));
@@ -202,7 +202,7 @@
 
   // ── מסלולי הורים / נוער ───────────────────────────────────────────
   async function buildRole({ track, fields, labels, button, server, samplePath, setStatus, show, meta }) {
-    const done = busy(button, "כותבת את התוצר... עד כ-8 דקות");
+    const done = busy(button, "כתיבת התוצר נמשכת עד כ־8 דקות");
     let scn = null;
     try {
       const trackNote = track === "parents"
@@ -385,7 +385,7 @@
 
   // ── מסלול אנשי חינוך: הצינור התלת-שלבי ───────────────────────────
   async function buildEdu({ fields, labels, button, server, samplePath, setStatus, show }) {
-    const done = busy(button, "מתחילה לבנות את התרחיש: כ-15 דקות. אפשר להשאיר את הדף פתוח, וגם לחזור אליו אחר כך.");
+    const done = busy(button, "בניית התרחיש נמשכת כ־15 דקות. אפשר להשאיר את הדף פתוח, וגם לחזור אליו אחר כך.");
     let scn = null;
     try {
       const skills = String(fields.skills || "").split(",").map((s) => s.trim()).filter(Boolean);

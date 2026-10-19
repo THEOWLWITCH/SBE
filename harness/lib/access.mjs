@@ -1419,19 +1419,28 @@ const openPerms = (rec) => (rec && Array.isArray(rec.perms) && rec.perms.length 
 export const ilToday = (d = new Date()) => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
 const OPEN_MAX = 500;
 const validOpenId = (id) => /^[a-z0-9][a-z0-9-]{2,31}$/.test(String(id || ''));
-const openLive = (rec) => !!rec && !rec.revoked && rec.date === ilToday();
+// 14/10/2026 ("הברקוד לא עבד"): קישור יכול להיות פתוח כמה ימים (date עד until), ואפשר לשנות לו תאריכים בלי לשנות את הכתובת (openUpdate)
+const openEnd = (rec) => (rec && validYmd(rec.until) && rec.until > rec.date ? rec.until : rec && rec.date);
+const OPEN_MAX_DAYS = 31;
+function openDates(body) {
+  if (!validYmd(body.date)) return { error: 'bad date' };
+  const until = body.until ? String(body.until) : '';
+  if (until && (!validYmd(until) || until < body.date || daysBetween(body.date, until) > OPEN_MAX_DAYS)) return { error: 'bad until' };
+  return { date: body.date, until: until && until > body.date ? until : '' };
+}
+const openLive = (rec) => !!rec && !rec.revoked && rec.date <= ilToday() && ilToday() <= openEnd(rec);
 async function handleOpenLinks(store, body, isSys) {
   const { action } = body;
   if (action === 'openJoin') {
     const id = String(body.id || '').toLowerCase();
     const rec = validOpenId(id) ? await store.get('open:' + id) : null;
     if (!rec || rec.revoked) { await pause(); return [404, { error: 'open-missing' }]; }
-    if (rec.date !== ilToday()) return [403, { error: rec.date > ilToday() ? 'open-early' : 'open-over', date: rec.date, label: rec.label || '' }];
+    if (!openLive(rec)) return [403, { error: rec.date > ilToday() ? 'open-early' : 'open-over', date: rec.date, until: rec.until || '', label: rec.label || '' }];
     if ((rec.joins || 0) >= (rec.max || OPEN_MAX)) return [403, { error: 'open-full' }];
     rec.joins = (rec.joins || 0) + 1; await store.set('open:' + id, rec);
     const perms = openPerms(rec);
     const token = await signToken(store, { k: 'open', o: id, perms });
-    return [200, { ok: true, token, kind: 'open', page: rec.page, perms, label: rec.label || '', date: rec.date }];
+    return [200, { ok: true, token, kind: 'open', page: rec.page, perms, label: rec.label || '', date: rec.date, until: rec.until || '' }];
   }
   if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
   if (action === 'openList') {
@@ -1441,14 +1450,26 @@ async function handleOpenLinks(store, body, isSys) {
   if (action === 'openCreate') {
     const page = modelPage(body.page);
     if (!OPEN_PAGES[page] && page !== OPEN_ALL) return [400, { error: 'bad page' }];
-    if (!validYmd(body.date)) return [400, { error: 'bad date' }];
+    const dates = openDates(body);
+    if (dates.error) return [400, { error: dates.error }];
     let id = String(body.id || '').trim().toLowerCase();
     if (id) { if (!validOpenId(id)) return [400, { error: 'bad id' }]; if (await store.get('open:' + id)) return [409, { error: 'taken' }]; }
     else { do { id = randomBytes(5).toString('hex'); } while (await store.get('open:' + id)); }
     const max = Math.max(1, Math.min(OPEN_MAX, parseInt(body.max, 10) || OPEN_MAX));
     const all = page === OPEN_ALL;
-    const rec = { id, page, perm: all ? 'all' : OPEN_PAGES[page], ...(all ? { perms: [...new Set(Object.values(OPEN_PAGES))] } : {}), date: body.date, label: String(body.label || '').trim().slice(0, 80), max, joins: 0,
+    const rec = { id, page, perm: all ? 'all' : OPEN_PAGES[page], ...(all ? { perms: [...new Set(Object.values(OPEN_PAGES))] } : {}), date: dates.date, ...(dates.until ? { until: dates.until } : {}), label: String(body.label || '').trim().slice(0, 80), max, joins: 0,
       createdAt: new Date().toISOString(), revoked: false };
+    await store.set('open:' + id, rec);
+    return [200, { ok: true, item: rec }];
+  }
+  if (action === 'openUpdate') {
+    const id = String(body.id || '').toLowerCase();
+    const rec = validOpenId(id) ? await store.get('open:' + id) : null;
+    if (!rec) return [404, { error: 'not found' }];
+    const dates = openDates(body);
+    if (dates.error) return [400, { error: dates.error }];
+    rec.date = dates.date; if (dates.until) rec.until = dates.until; else delete rec.until;
+    rec.revoked = false; rec.updatedAt = new Date().toISOString();
     await store.set('open:' + id, rec);
     return [200, { ok: true, item: rec }];
   }
@@ -1459,6 +1480,61 @@ async function handleOpenLinks(store, body, isSys) {
     rec.revoked = true; await store.set('open:' + id, rec);
     return [200, { ok: true }];
   }
+  return [400, { error: 'bad action' }];
+}
+
+// ── סיפורים אישיים, בהסכמה (14/10/2026: "תאפשר לשמור סיפורים אישיים למערכת - בהסכמה כמובן") ──
+// story:<id> → { id, at, consent:{share:true, research:bool, at}, form:{story,role,other,goal,hard}, scenario:{name,subtitle,actor}, status }
+// מי ששיתף/ה מקבל/ת מפתח ביטול (key) שנשמר במכשיר שלו/ה, ואפשר לבטל בכל עת (storyWithdraw): הרשומה נמחקת.
+// בלי שם המשתמש/ת ובלי קוד: רק סוג הכניסה. מנהלת המערכת קוראת, מסמנת ומוחקת.
+const STORY_MAX = 2000;
+const STORY_STATUS = ['חדש', 'נקרא', 'מתאים למאגר', 'לא מתאים'];
+const clip = (v, n) => String(v == null ? '' : v).slice(0, n);
+async function handleStories(store, body, isSys) {
+  const { action } = body;
+  if (action === 'storyShare') {
+    const t = await verifyToken(store, body.token);
+    if (!t) { await pause(); return [403, { error: 'unauthorized' }]; }
+    if (!body.consent || body.consent.share !== true) return [400, { error: 'no consent' }];
+    const f = body.form || {};
+    const form = { story: clip(f.story, 4000), role: clip(f.role, 120), other: clip(f.other, 120), goal: clip(f.goal, 400), hard: clip(f.hard, 400) };
+    // שיחת תרגול שנשמרת במאגר, בהסכמה (14/10/2026: "אין כפתור שמאפשר לשמור את השיחה במאגר המערכת"):
+    // רק מי מדבר ומה נאמר, עד 80 תורות.
+    const talk = (Array.isArray(body.talk) ? body.talk : []).slice(0, 80)
+      .filter((x) => x && (x.who === 'trainee' || x.who === 'character') && typeof x.line === 'string' && x.line.trim())
+      .map((x) => ({ who: x.who, line: clip(x.line, 1500) }));
+    if (form.story.trim().length < 20 && talk.length < 2) return [400, { error: 'too short' }];
+    if ((await store.list('story:', { keysOnly: true })).length >= STORY_MAX) return [429, { error: 'full' }];
+    const sc = body.scenario && typeof body.scenario === 'object' ? body.scenario : {};
+    const scenario = { name: clip(sc.name, 160), subtitle: clip(sc.subtitle, 300), actor: { name: clip(sc.actor && sc.actor.name, 80), roleLabel: clip(sc.actor && sc.actor.roleLabel, 120) } };
+    const id = Date.now().toString(36) + '-' + randomBytes(4).toString('hex');
+    const key = randomBytes(12).toString('hex');
+    const rec = { id, key, at: new Date().toISOString(), who: t.k === 'sys' ? 'sys' : (t.kind || t.k), consent: { share: true, research: !!body.consent.research, at: new Date().toISOString() },
+      form, scenario, talk, kind: talk.length ? 'שיחה' : 'סיפור', status: 'חדש' };
+    await store.set('story:' + id, rec);
+    return [200, { ok: true, id, key }];
+  }
+  if (action === 'storyWithdraw') {
+    const id = clip(body.id, 40);
+    const rec = /^[a-z0-9-]+$/.test(id) ? await store.get('story:' + id) : null;
+    if (!rec || !body.key || !same(String(body.key), String(rec.key))) { await pause(); return [404, { error: 'not found' }]; }
+    await store.del('story:' + id);
+    return [200, { ok: true }];
+  }
+  if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
+  if (action === 'storyList') {
+    const rows = await store.list('story:');
+    return [200, { items: rows.map((r) => { const { key, ...x } = r.value; return x; }).sort((a, b) => String(b.at).localeCompare(String(a.at))), statuses: STORY_STATUS }];
+  }
+  const id = clip(body.id, 40);
+  const rec = /^[a-z0-9-]+$/.test(id) ? await store.get('story:' + id) : null;
+  if (!rec) return [404, { error: 'not found' }];
+  if (action === 'storyStatus') {
+    if (!STORY_STATUS.includes(body.status)) return [400, { error: 'bad status' }];
+    rec.status = body.status; await store.set('story:' + id, rec);
+    return [200, { ok: true }];
+  }
+  if (action === 'storyDelete') { await store.del('story:' + id); return [200, { ok: true }]; }
   return [400, { error: 'bad action' }];
 }
 
@@ -1547,7 +1623,8 @@ export async function handleAccess(store, body) {
 
   const sysTok = await verifyToken(store, body?.token);
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
-  if (/^open(Join|List|Create|Revoke)$/.test(action || '')) return handleOpenLinks(store, body, isSys);
+  if (/^open(Join|List|Create|Update|Revoke)$/.test(action || '')) return handleOpenLinks(store, body, isSys);
+  if (/^story(Share|Withdraw|List|Status|Delete)$/.test(action || '')) return handleStories(store, body, isSys);
 
   if (['renewRequest', 'codesList', 'codeCreate', 'codeRevoke', 'codeUse', 'setSubscription', 'renewSubscription',
     'getSettings', 'setSettings', 'renewList', 'renewDone', 'renewApprove'].includes(action)) {

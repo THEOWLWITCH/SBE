@@ -1015,7 +1015,7 @@ $("bReview").addEventListener("click", async (e) => {
     }
     if (u.left === 0) setTimeout(() => alert(info.kind === "course" ? "זו הייתה הפקת המשוב האחרונה שלך בקורס הזה." : "זו הייתה הפקת המשוב האחרונה בקוד הזה."), 50);
   }
-  e.target.disabled = true; e.target.textContent = "קוראת... (עד כ-5 דקות)";
+  e.target.disabled = true; e.target.textContent = "הכנת המשוב נמשכת עד כ־5 דקות";
   try {
     let fb, mock = false;
     try { fb = await computeFeedbackAI(text, age, criteriaList, critMode, val("taskText"), fbKind); }

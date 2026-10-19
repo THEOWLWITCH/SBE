@@ -1198,7 +1198,7 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
   }
   e.target.disabled = true; e.target.textContent = "מייצרת...";
   const hintEl = document.getElementById("hint");
-  if (hintEl) hintEl.textContent = "יוצרת הצעה מלאה מול המודל. זה יכול לקחת עד כ-3 דקות.";
+  if (hintEl) hintEl.textContent = "יצירת ההצעה המלאה נמשכת עד כ־3 דקות.";
   try {
     const out = await generateProposals({
       goal: val("goal"), smart: smartLines(val("smart")),
@@ -1428,7 +1428,7 @@ async function computeFeedbackFromFieldsAI(d) {
 
 document.getElementById("bFeedback").addEventListener("click", async (e) => {
   const d = {}; FIELDS.forEach((f,k) => { d[k] = val(k); });
-  e.target.disabled = true; e.target.textContent = "בודקת... (עד כ-5 דקות)";
+  e.target.disabled = true; e.target.textContent = "הבדיקה נמשכת עד כ־5 דקות";
   try {
     let fb;
     try { fb = await computeFeedbackFromFieldsAI(d); }
@@ -1564,7 +1564,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
   const d = {}; FIELDS.forEach((f,k) => { d[k] = val(k); });
   const creator = document.getElementById("creatorName").value.trim();
   const body = el("div");
-  e.target.disabled = true; e.target.textContent = "מנסחת את התוצר... עד כ-5 דקות";
+  e.target.disabled = true; e.target.textContent = "ניסוח התוצר נמשך עד כ־5 דקות";
   let narr = null;
   try { narr = await synthesizeActivityNarrative(d, creator); }
   finally { e.target.disabled = false; e.target.textContent = "הפקת התוצר"; }
@@ -1694,7 +1694,7 @@ async function computeFeedbackFromTextAI(text) {
 document.getElementById("bAnalyze").addEventListener("click", async (e) => {
   const text = document.getElementById("upText").value.trim();
   if (!text) return show("חסר טקסט", el("p",{},"אפשר להדביק או להעלות טקסט פעילות לפני הניתוח."));
-  e.target.disabled = true; e.target.textContent = "מנתחת... (עד כ-5 דקות)";
+  e.target.disabled = true; e.target.textContent = "הניתוח נמשך עד כ־5 דקות";
   try {
     let fb;
     try { fb = await computeFeedbackFromTextAI(text); }
@@ -2970,7 +2970,7 @@ document.getElementById("bSeqFill").addEventListener("click", async (e) => {
   const done = busy(btnEl, "משלימה...");
   let n = 0;
   try {
-    n = await aiFillAll((d, t, again) => { btnEl.textContent = again ? `משלימה שוב את ${again}: ${d} מתוך ${t} מנות הושלמו` : t > 1 ? `משלימה: ${d} מתוך ${t} מנות הושלמו (במקביל, עד כ-8 דקות)` : "משלימה... עד כ-8 דקות"; });
+    n = await aiFillAll((d, t, again) => { btnEl.textContent = again ? `משלימה שוב את ${again}: ${d} מתוך ${t} מנות הושלמו` : t > 1 ? `ההשלמה נמשכת עד כ־8 דקות: ${d} מתוך ${t} חלקים הושלמו` : "ההשלמה נמשכת עד כ־8 דקות"; });
     setAIStatus("ok");
     seqDialog("השלמת נתונים חסרים", el("p", {}, n
       ? `הושלמו ${n} שדות. הם מסומנים בקו מקווקו: הצעה של המערכת שנשארת כך אלא אם תשני אותה. שדות שכבר מילאת לא שונו, ועובדות על המציאות שלך (מרחב, תקציב, העדפות, מספר משתתפים) לא הומצאו.`
@@ -2996,7 +2996,7 @@ document.getElementById("bSeqReport").addEventListener("click", async (e) => {
   const facts = mechanicalChecks();
   let ai = null;
   if (!missingRequired().length) {
-    const done = busy(e.target, "מנתחת... עד כ-7 דקות");
+    const done = busy(e.target, "הניתוח נמשך עד כ־7 דקות");
     try { ai = await aiReport(facts); setAIStatus("ok"); }
     catch (err) { console.warn("דו״ח AI לא זמין:", err.message); setAIStatus("mock"); }
     finally { done(); }
@@ -3020,7 +3020,7 @@ document.getElementById("bSeqImprove").addEventListener("click", async (e) => {
   const done = busy(btnEl, "מנסחת גרסה משופרת...");
   let out = null;
   try {
-    out = await aiImproveAll((d, t, again) => { btnEl.textContent = again ? `מנסחת שוב את ${again}: ${d} מתוך ${t}` : t > 1 ? `מנסחת: ${d} מתוך ${t} מנות הושלמו (במקביל, עד כ-8 דקות)` : "מנסחת גרסה משופרת... עד כ-8 דקות"; });
+    out = await aiImproveAll((d, t, again) => { btnEl.textContent = again ? `מנסחת שוב את ${again}: ${d} מתוך ${t}` : t > 1 ? `ניסוח הגרסה המשופרת נמשך עד כ־8 דקות: ${d} מתוך ${t} חלקים הושלמו` : "ניסוח הגרסה המשופרת נמשך עד כ־8 דקות"; });
     setAIStatus("ok");
   }
   catch (err) { console.warn("נוסח משופר לא זמין:", err.message); setAIStatus("mock"); }
@@ -3066,7 +3066,7 @@ document.getElementById("bSeqBuild").addEventListener("click", async (e) => {
     seqDialog("הפקת התוצר", el("p", {}, "עוד אין אף מפגש עם יעד או מהלך. אפשר למלא לפחות מפגש אחד, או השתמשי ב״השלמת נתונים חסרים״."));
     return;
   }
-  const done = busy(e.target, "מנסחת את פתיחת המסמך ובוחרת מקורות... עד כ-4 דקות");
+  const done = busy(e.target, "ניסוח פתיחת המסמך ובחירת המקורות נמשכים עד כ־4 דקות");
   let narr = null;
   try { narr = await aiNarrative(); setAIStatus("ok"); }
   catch (err) { console.warn("פתיחה נרטיבית לא זמינה:", err.message); setAIStatus("mock"); }
@@ -3214,7 +3214,7 @@ document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
   const nonEmpty = str(seq.topic) || seq.sessions.some(s => !isEmptySession(s));
   if (nonEmpty && !confirm("התכנית שתיבנה מהמסמך תחליף את מה שכבר מילאת בטופס הרצף. להמשיך?")) return;
   const btnEl = e.target;
-  const done = busy(btnEl, "קוראת את המסמך ובונה מתווה... עד כ-4 דקות");
+  const done = busy(btnEl, "קריאת המסמך ובניית המתווה נמשכות עד כ־4 דקות");
   let head = null, built = null;
   try {
     const outl = await aiImportOutline(text, n);
@@ -3240,7 +3240,7 @@ document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
         if (idx >= a && idx < b) { built[idx] = sessionFromAI(x); got.add(idx); if (sessLen && !str(built[idx].duration)) built[idx].duration = sessLen; }
       });
       for (let i = a; i < b; i++) if (!got.has(i)) throw new Error("המודל לא החזיר את " + rangeLabel(i, i + 1));
-    }, (d, t, again) => { btnEl.textContent = again ? `פורסת שוב את ${again}: ${d} מתוך ${t} מנות הושלמו` : `פורסת ${built.length} מפגשים: ${d} מתוך ${t} מנות הושלמו (עד ${PARALLEL} במקביל, עד כ-8 דקות)`; });
+    }, (d, t, again) => { btnEl.textContent = again ? `פריסה חוזרת של ${again}: ${d} מתוך ${t} חלקים הושלמו` : `פריסת ${built.length} המפגשים נמשכת עד כ־8 דקות: ${d} מתוך ${t} חלקים הושלמו`; });
     const failed = r.failed ? r.failed.message : null;
     const creator = seq.creator, date = seq.date;
     seq = normalize(Object.assign({}, head, { goals: head.goals.length ? head.goals : [""], sessions: built }));
