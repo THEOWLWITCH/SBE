@@ -144,10 +144,9 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 .maplink .sun{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:radial-gradient(circle at 35% 35%,#FFE45C,#FFBE0B);box-shadow:0 0 0 2px rgba(255,255,255,.55)}
 @media screen and (max-width:520px){.maplink{padding:10px 14px;gap:10px;border-radius:14px}.maplink .sun{width:34px;height:34px;font-size:18px}.maplink b{font-size:15px}.maplink span{font-size:13px}}
 .maplink b{display:block;font-size:17px}.maplink span{font-size:14px;opacity:.92}
-.maplink.gift{background:linear-gradient(100deg,#FFC21A,#FFD84D);color:#0F2B45;box-shadow:0 4px 12px rgba(200,140,0,.2);padding:7px 14px;gap:9px;border-radius:14px}
-.maplink.gift .sun{background:#fff;width:30px;height:30px;font-size:16px}
-.maplink.gift b{font-size:14.5px}.maplink.gift span{font-size:13px;opacity:1}
-@media screen and (max-width:520px){.maplink.gift{padding:6px 12px;border-radius:12px}.maplink.gift .sun{width:26px;height:26px;font-size:14px}.maplink.gift b{font-size:13.5px}.maplink.gift span{font-size:12.5px}.maplink.gift .more{display:none}}
+.maplink.gift{display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(100deg,#FFC21A,#FFD84D);color:#0F2B45;box-shadow:0 2px 6px rgba(200,140,0,.18);padding:5px 12px;margin:0 0 14px;border-radius:10px;font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.maplink.gift b{display:inline;font-size:14px}.maplink.gift span{font-size:13px;opacity:.9}
+@media screen and (max-width:520px){.maplink.gift{padding:4px 10px;font-size:13px}.maplink.gift b{font-size:13px}.maplink.gift span{font-size:12px}}
 </style>
 
 <div class="wrap">
@@ -293,9 +292,8 @@ function renderEntry(){
   ml.append(el("span",{class:"sun"},"🧭"), mt);
   view.append(ml);
   // "יש מה לעשות" (19/10/2026): מדריכון לחירום, פתוח לכולם בלי קוד. מהמדריכון אין מעבר לכלים אחרים.
-  const gl = el("a",{class:"maplink gift",href:"yesh-ma-laasot.html"}), gt = el("div",{});
-  gt.append(el("b",{},"יש מה לעשות: מדריכון לחירום"), el("span",{}, el("span",{class:"more"},"מה עושים ומה אומרים לילדים בדקה הראשונה. "), "פתוח לכולם."));
-  gl.append(el("span",{class:"sun"},"🎁"), gt);
+  const gl = el("a",{class:"maplink gift",href:"yesh-ma-laasot.html"});
+  gl.append("🎁 ", el("b",{},"יש מה לעשות: מדריכון לחירום"), el("span",{},"· פתוח לכולם"));
   view.append(gl);
 
   // קישורים משניים: כניסת ניהול, אודות, חידוש מנוי (קוד לקבוצה של סדנה נכנס בשדה הראשי)
