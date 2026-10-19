@@ -72,18 +72,53 @@ main{padding-block:12px calc(var(--tabs-h) + 24px + env(safe-area-inset-bottom,0
 .infobar a b{font-family:var(--font-display);font-size:1.25rem;color:var(--navy);font-variant-numeric:tabular-nums}
 .infobar a span{color:var(--muted)}
 
-/* הכפתור הראשי: מסגרת בשיפוע הלוגו */
-.hero{width:100%;display:flex;align-items:center;gap:14px;min-height:78px;padding:12px 16px;border-radius:20px;text-align:right;
-  border:2.5px solid transparent;background:linear-gradient(var(--surface),var(--surface)) padding-box,linear-gradient(100deg,#1B4F7A,#1A9BB5 55%,#3A9E6B) border-box;
-  box-shadow:0 6px 18px -10px rgba(27,79,122,.45)}
-.hero strong{font-family:var(--font-display);font-size:1.4rem;color:var(--navy)}
+/* הכפתור הראשי: שיפוע הלוגו, אייקון חי */
+.hero{position:relative;overflow:hidden;width:100%;display:flex;align-items:center;gap:16px;min-height:104px;padding:14px 18px;border-radius:24px;text-align:right;border:0;color:#fff;
+  background:linear-gradient(115deg,#1B4F7A 0%,#1A9BB5 52%,#3A9E6B 100%);background-size:180% 180%;animation:heroBg 9s ease-in-out infinite alternate;
+  box-shadow:0 14px 30px -14px rgba(27,79,122,.75),inset 0 1px 0 rgba(255,255,255,.25)}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.22) 48%,transparent 62%);transform:translateX(120%);animation:sweep 4.5s ease-in-out 1.2s infinite;pointer-events:none}
+.hero:active{transform:scale(.985)}
+.hero .htxt{flex:1;display:flex;flex-direction:column;gap:2px;position:relative;z-index:1}
+.hero strong{font-family:var(--font-display);font-size:clamp(1.3rem,6.2vw,1.75rem);white-space:nowrap;font-weight:800;color:#fff;letter-spacing:-.01em;line-height:1.1}
+.hero .hsub{font-size:.9rem;font-weight:600;color:#FFE27A}
+.hero .go{position:relative;z-index:1;flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.16);border:1.5px solid rgba(255,255,255,.45);animation:nudge 1.6s ease-in-out infinite}
+.hero .go svg{width:22px;height:22px;transform:scaleX(-1)}
+html[dir="ltr"] .hero .go svg{transform:none}
+.beacon{position:relative;z-index:1;flex:none;width:76px;height:76px;display:grid;place-items:center}
+.beacon .core{position:relative;width:70px;height:70px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 0 0 4px rgba(255,201,41,.9),0 8px 18px -6px rgba(0,0,0,.35)}
+.beacon .rip{position:absolute;inset:3px;border-radius:50%;border:3px solid #FFC929;opacity:0;animation:ripple 2.4s cubic-bezier(.2,.6,.3,1) infinite}
+.beacon .rip.r2{animation-delay:.8s}.beacon .rip.r3{animation-delay:1.6s;border-color:#fff}
+.nowart{width:54px;height:54px;overflow:visible}
+.nowart .sun{transform-origin:38.5px 9.5px;animation:sun 2.4s ease-in-out infinite}
+.nowart .halo{transform-origin:38.5px 9.5px;animation:halo 2.4s ease-in-out infinite}
+.nowart .kid{transform-box:fill-box;transform-origin:center bottom;animation:bob 2.4s ease-in-out infinite}
+.nowart .kid.k2{animation-delay:.3s}
+.nowart .wv{stroke-dasharray:6 4;animation:wave 1.8s linear infinite}
+@keyframes heroBg{0%{background-position:0% 50%}100%{background-position:100% 50%}}
+@keyframes sweep{0%{transform:translateX(120%)}55%,100%{transform:translateX(-120%)}}
+@keyframes ripple{0%{transform:scale(.92);opacity:.85}100%{transform:scale(1.42);opacity:0}}
+@keyframes sun{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
+@keyframes halo{0%,100%{transform:scale(1);opacity:.0}50%{transform:scale(2.3);opacity:.45}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.2px)}}
+@keyframes wave{to{stroke-dashoffset:-20}}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(-5px)}}
+html[dir="ltr"] .hero .go{animation-name:nudgeL}
+@keyframes nudgeL{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
 
 /* אריחי הבית */
 .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:96px;padding:10px 6px;border-radius:18px;
-  border:1.5px solid var(--frame);background:var(--surface);color:var(--fg);font-family:var(--font-display);font-size:1rem;font-weight:500;text-align:center;line-height:1.2}
-.tile:active{transform:scale(.98)}
+.tile{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:104px;padding:12px 6px 10px;border-radius:20px;
+  border:1.5px solid var(--frame);background:var(--surface);color:var(--fg);font-family:var(--font-display);font-size:1.02rem;font-weight:600;text-align:center;line-height:1.2;
+  box-shadow:0 6px 14px -12px rgba(27,79,122,.6);transition:transform .18s ease,box-shadow .18s ease,border-color .18s;animation:tileIn .5s cubic-bezier(.2,.7,.3,1.2) both}
+.tile::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,#3A9E6B,#1A9BB5,#1B4F7A)}
+.tile .ic.lg{width:50px;height:50px;padding:7px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--frame);transition:transform .25s cubic-bezier(.2,.7,.3,1.4)}
+.tile:hover{transform:translateY(-3px);box-shadow:0 14px 22px -14px rgba(27,79,122,.7)}
+.tile:hover .ic.lg{transform:scale(1.1) rotate(-4deg)}
+.tile:active{transform:scale(.97)}
 .tile:nth-child(3n+2){border-color:rgba(27,79,122,.45)}.tile:nth-child(3n){border-color:rgba(58,158,107,.55)}
+.tile:nth-child(2){animation-delay:.05s}.tile:nth-child(3){animation-delay:.1s}.tile:nth-child(4){animation-delay:.15s}.tile:nth-child(5){animation-delay:.2s}.tile:nth-child(6){animation-delay:.25s}
+@keyframes tileIn{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.hero,.hero::after,.hero .go,.beacon .rip,.nowart *,.tile{animation:none!important}.hero::after{display:none}.tile{transition:none}}
 @media screen and (max-width:340px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .panel{display:flex;flex-direction:column;gap:12px}
@@ -289,7 +324,7 @@ nav.tabs button[aria-selected="true"]::before{content:"";position:absolute;top:0
   <section class="view" id="v-now">
     <p class="ribbon" id="giftRibbon" hidden></p>
     <div class="infobar" data-infobar></div>
-    <button class="hero" id="nowBtn"><svg class="ic xl" aria-hidden="true"><use href="#i-now"/></svg><strong data-t="nowBtn"></strong></button>
+    <button class="hero" id="nowBtn"><span class="beacon" aria-hidden="true"><i class="rip"></i><i class="rip r2"></i><i class="rip r3"></i><span class="core"><svg class="nowart" viewBox="0 0 48 48"><g fill="none" stroke="url(#lg)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><circle class="halo" cx="38.5" cy="9.5" r="3.4" fill="#FFC929" stroke="none"/><circle class="sun" cx="38.5" cy="9.5" r="3.6" fill="#FFC929" stroke="none"/><g class="kid"><circle cx="18" cy="13" r="5.2" fill="url(#lg)" stroke="none"/><path d="M9 38c1.5-8.6 5-13 10-13 3.6 0 6.2 2.2 7.8 6"/></g><g class="kid k2"><circle cx="31" cy="20.5" r="3.7" fill="url(#lg)" stroke="none"/><path d="M25.5 38c.8-5 3-8 6-8s5.2 3 6 8"/></g><path class="wv" d="M4 43c6-2.4 12-2.4 18 0s12 2.4 18 0" stroke-opacity=".7"/></g></svg></span></span><span class="htxt"><strong data-t="nowBtn"></strong><span class="hsub" data-t="nowSub"></span></span><span class="go" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-back"/></svg></span></button>
     <div class="tiles" id="homeTiles">
       <button class="tile" data-panel="maseh"><svg class="ic lg" aria-hidden="true"><use href="#i-path"/></svg><span data-t="tMaseh"></span></button>
       <button class="tile" data-panel="talk"><svg class="ic lg" aria-hidden="true"><use href="#i-talk"/></svg><span data-t="tTalk"></span></button>
@@ -523,8 +558,8 @@ ar:{appName:"في إشي نعمله",appSub:"دليل صغير للأهل ولل
 const t=k=>(UI[lang][k]!==undefined?UI[lang][k]:UI.he[k]);
 const L=o=>o[lang]||o.he;
 /* עיצוב לחירום (19/10/2026): לשוניות ואריחים, מילה או שתיים */
-Object.assign(UI.he,{nowBtn:"הדקה הראשונה",tabNow:"עכשיו",tabBreath:"נשימה",tabGround:"קרקוע",tabGen:"פעילות",tabPocket:"כרטיס",tMaseh:"מעש\u05f4ה",tTalk:"לדבר",tFlags:"מצוקה",tMenu:"ויסות",tHob:"עקרונות",tSelf:"לעצמכם",back:"חזרה",goBreath:"נשימה",goGround:"קרקוע",goAct:"פעילות"});
-Object.assign(UI.ar,{nowBtn:"أول دقيقة",tabNow:"هلّأ",tabBreath:"تنفّس",tabGround:"حواس",tabGen:"فعالية",tabPocket:"كرت",tMaseh:"4 خطوات",tTalk:"نحكي",tFlags:"ضيقة",tMenu:"تهدئة",tHob:"مبادئ",tSelf:"إلكم",back:"رجوع",goBreath:"تنفّس",goGround:"حواس",goAct:"فعالية"});
+Object.assign(UI.he,{nowBtn:"הדקה הראשונה",nowSub:"עם הילדים",tabNow:"עכשיו",tabBreath:"נשימה",tabGround:"קרקוע",tabGen:"פעילות",tabPocket:"כרטיס",tMaseh:"מעש\u05f4ה",tTalk:"לדבר",tFlags:"מצוקה",tMenu:"ויסות",tHob:"עקרונות",tSelf:"לעצמכם",back:"חזרה",goBreath:"נשימה",goGround:"קרקוע",goAct:"פעילות"});
+Object.assign(UI.ar,{nowBtn:"أول دقيقة",nowSub:"مع الولاد",tabNow:"هلّأ",tabBreath:"تنفّس",tabGround:"حواس",tabGen:"فعالية",tabPocket:"كرت",tMaseh:"4 خطوات",tTalk:"نحكي",tFlags:"ضيقة",tMenu:"تهدئة",tHob:"مبادئ",tSelf:"إلكم",back:"رجوع",goBreath:"تنفّس",goGround:"حواس",goAct:"فعالية"});
 
 /* ===== added from "Teaching with care" (UNESCO, UNICEF, WHO 2026) ===== */
 Object.assign(UI.he,{
