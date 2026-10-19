@@ -280,6 +280,113 @@ nav.tabs button[aria-selected="true"]::before{content:"";position:absolute;top:0
 .giftcard .btn.primary{justify-content:center;font-size:1.05rem;min-height:52px}
 .giftcard small{color:var(--muted)}
 .ribbon{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:12px;border:1.5px solid var(--sun);font-size:.92rem}
+
+/* ===== חתימה אחידה: פס עליון בצבעי הלוגו וקשת צהובה בפינה הימנית, ותנועה עדינה בכל המסכים ===== */
+.card,.pocket,.nowgo button,.bigsay{position:relative;overflow:hidden}
+.card::before,.pocket::before,.nowgo button::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,#3A9E6B,#1A9BB5,#1B4F7A);pointer-events:none}
+.card::after,.pocket::after,.nowgo button::after,.bigsay::after{content:"";position:absolute;top:8px;right:7px;width:46px;height:58px;border-top:2px solid #FFC929;border-right:2px solid #FFC929;border-top-right-radius:15px;pointer-events:none;
+  -webkit-mask:linear-gradient(to left,#000 30%,transparent),linear-gradient(to bottom,#000 30%,transparent);-webkit-mask-composite:source-in;mask:linear-gradient(to left,#000 30%,transparent) intersect,linear-gradient(to bottom,#000 30%,transparent)}
+.card{border-radius:20px;padding:18px 18px 16px;box-shadow:0 8px 20px -16px rgba(27,79,122,.55)}
+.card > h2,.phead h2,.ovhead h2{padding-inline-end:34px}
+.pocket{border-radius:20px;padding:20px 18px 16px}
+
+/* כניסה רכה של מסכים, לוחות וכרטיסים */
+.view:not([hidden]),.panel:not([hidden]){animation:viewIn .35s ease both}
+.view .card,.panel .card,.pocket{animation:cardIn .5s cubic-bezier(.2,.7,.3,1.1) both}
+.view .card:nth-of-type(2),.panel .card:nth-of-type(2){animation-delay:.08s}
+@keyframes viewIn{from{opacity:0}to{opacity:1}}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* כותרת הלוח וכפתור החזרה */
+.phead h2,.ovhead h2{position:relative;padding-bottom:6px}
+.phead h2::after,.ovhead h2::after{content:"";position:absolute;bottom:0;right:0;width:46px;height:3px;border-radius:3px;background:linear-gradient(90deg,#FFC929,#1A9BB5);animation:grow .6s .1s cubic-bezier(.2,.7,.3,1.2) both;transform-origin:right}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.back,.closebtn{border-color:var(--frame);color:var(--navy);transition:transform .15s,box-shadow .15s}
+.back:hover,.closebtn:hover{box-shadow:0 6px 14px -10px rgba(27,79,122,.7);transform:translateY(-1px)}
+
+
+/* כפתורים */
+.btn{border-radius:14px;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 16px -12px rgba(27,79,122,.8)}
+.btn:active{transform:scale(.97)}
+.btn.primary,.btn[aria-pressed="true"]{background:linear-gradient(110deg,#1B4F7A,#1A9BB5 60%,#3A9E6B);background-size:160% 100%;transition:background-position .4s,transform .15s,box-shadow .15s;box-shadow:0 8px 18px -12px rgba(27,79,122,.9)}
+.btn.primary:hover{background-position:100% 0}
+.seg button{transition:all .2s}
+.seg button[aria-pressed="true"]{background:linear-gradient(110deg,#1B4F7A,#1A9BB5);color:#fff;border-color:transparent;box-shadow:0 6px 14px -10px rgba(27,79,122,.9)}
+
+/* הדקה הראשונה */
+.overlay:not([hidden]) .wrap{animation:sheetIn .4s cubic-bezier(.2,.7,.3,1.1) both}
+@keyframes sheetIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.threedo li{padding:4px 0;animation:cardIn .45s cubic-bezier(.2,.7,.3,1.1) both}
+.threedo li:nth-child(2){animation-delay:.12s}.threedo li:nth-child(3){animation-delay:.24s}
+.threedo li::before{width:36px;height:36px;border:0;color:#fff;background:linear-gradient(135deg,#1B4F7A,#1A9BB5 60%,#3A9E6B);box-shadow:0 0 0 3px var(--surface),0 0 0 4.5px #FFC929;font-size:1.05rem}
+.bigsay{padding:20px 20px 18px;border-width:2.5px;background:linear-gradient(var(--surface),var(--surface)) padding-box,linear-gradient(100deg,#1B4F7A,#1A9BB5,#3A9E6B,#1A9BB5,#1B4F7A) border-box;background-size:100% 100%,300% 100%;animation:borderFlow 6s linear infinite,cardIn .5s .3s both}
+@keyframes borderFlow{to{background-position:0 0,300% 0}}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--teal);letter-spacing:.02em}
+.eyebrow::before{content:"";width:8px;height:8px;border-radius:50%;background:#FFC929;box-shadow:0 0 0 3px rgba(255,201,41,.25)}
+.nowgo button{min-height:108px;border-radius:20px;font-weight:600;box-shadow:0 6px 14px -12px rgba(27,79,122,.6);transition:transform .18s,box-shadow .18s;animation:tileIn .5s cubic-bezier(.2,.7,.3,1.2) both;animation-delay:.4s}
+.nowgo button:nth-child(2){animation-delay:.47s;border-color:rgba(27,79,122,.45)}.nowgo button:nth-child(3){animation-delay:.54s;border-color:rgba(58,158,107,.55)}
+.nowgo .ic.lg{width:50px;height:50px;padding:7px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--frame);transition:transform .25s cubic-bezier(.2,.7,.3,1.4)}
+.nowgo button:hover{transform:translateY(-3px);box-shadow:0 14px 22px -14px rgba(27,79,122,.7)}
+.nowgo button:hover .ic.lg{transform:scale(1.1) rotate(-4deg)}
+.flag{border-inline-start-color:#FFC929;border-radius:16px;animation:cardIn .45s both}
+
+/* מעש"ה: שלבים */
+.steps button{border-radius:16px;border-color:var(--frame);transition:transform .2s,box-shadow .2s,background .2s}
+.steps button:hover{transform:translateY(-2px)}
+.steps button[aria-current="step"]{border-color:transparent;background:linear-gradient(135deg,#1B4F7A,#1A9BB5 60%,#3A9E6B);box-shadow:0 10px 18px -12px rgba(27,79,122,.9),inset 0 -3px 0 #FFC929}
+.steps button[aria-current="step"] b,.steps button[aria-current="step"] small{color:#fff}
+#masehBody{animation:cardIn .4s both}
+.dd > div{border-radius:14px;animation:cardIn .45s both}.dd > div:nth-child(2){animation-delay:.08s}
+.phrase{border-radius:14px;border-inline-start-width:4px;transition:transform .15s,box-shadow .15s}
+.phrase:hover{transform:translateX(-2px);box-shadow:0 6px 14px -12px rgba(27,79,122,.7)}
+.copy{transition:color .15s,border-color .15s}.copy:hover{color:var(--teal);border-color:var(--teal)}
+
+/* כרטיסים נפתחים: עקרונות, לדבר */
+.hcard{border-color:var(--frame);border-radius:16px;transition:box-shadow .2s}
+.hcard[open]{box-shadow:0 10px 20px -16px rgba(27,79,122,.7);border-color:var(--teal)}
+.hcard summary .dot{border:0;color:#fff;background:linear-gradient(135deg,#1B4F7A,#1A9BB5 60%,#3A9E6B);transition:transform .3s cubic-bezier(.2,.7,.3,1.4)}
+.hcard[open] summary .dot{transform:rotate(-8deg) scale(1.08);box-shadow:0 0 0 2.5px var(--surface),0 0 0 4px #FFC929}
+.hcard[open] .body{animation:cardIn .35s both}
+
+/* נשימה */
+.ringwrap::before{border:2px dashed var(--frame);animation:spin 40s linear infinite}
+.ringwrap::after{content:"";position:absolute;inset:26px;border-radius:50%;border:2px solid #FFC929;opacity:.5;animation:haloRing 4s ease-in-out infinite}
+.ring{background:radial-gradient(circle at 36% 30%,#fff 0,#BDE7EE 14%,#1A9BB5 55%,#1B4F7A);box-shadow:0 14px 34px -12px rgba(27,79,122,.7),0 0 0 6px rgba(26,155,181,.12)}
+.phase{font-weight:700}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes haloRing{0%,100%{transform:scale(.92);opacity:.35}50%{transform:scale(1.04);opacity:.7}}
+
+/* קרקוע */
+.gitem{border-color:var(--frame);border-radius:16px;transition:transform .15s,box-shadow .15s,opacity .3s;animation:cardIn .45s both}
+.gitem:nth-child(2){animation-delay:.05s}.gitem:nth-child(3){animation-delay:.1s}.gitem:nth-child(4){animation-delay:.15s}.gitem:nth-child(5){animation-delay:.2s}
+.gitem:hover{transform:translateY(-1px);box-shadow:0 8px 16px -12px rgba(27,79,122,.7)}
+.gitem b{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;flex:none;color:#fff;font-size:1.15rem;background:linear-gradient(135deg,#1B4F7A,#1A9BB5 60%,#3A9E6B)}
+.gitem.done{opacity:.6}.gitem.done b{background:#FFC929;color:#0f2b45}
+.bar{height:10px}
+.bar i{background:linear-gradient(90deg,#1B4F7A,#1A9BB5,#3A9E6B,#FFC929)}
+
+/* פעילות */
+.plan li{animation:cardIn .45s both}.plan li:nth-child(2){animation-delay:.08s}.plan li:nth-child(3){animation-delay:.16s}
+.plan .mins{border:0;color:#fff;background:linear-gradient(135deg,#1B4F7A,#1A9BB5 60%,#3A9E6B);box-shadow:inset 0 -3px 0 #FFC929;border-radius:14px}
+.plan .mins small{color:#E6F6F9}
+.badge.p{background:linear-gradient(110deg,#1B4F7A,#1A9BB5);color:#fff;border-color:transparent}
+.match{border-inline-start-color:#FFC929;border-radius:14px}
+
+/* כרטיס כיס ושמורים */
+.pocket h3{display:flex;align-items:center;gap:6px}
+.pocket h3::before{content:"";width:14px;height:3px;border-radius:3px;background:#FFC929}
+.fav{border-color:var(--frame);border-radius:16px;animation:cardIn .45s both}
+
+/* לשוניות */
+nav.tabs button[aria-selected="true"] .ic{animation:pop .35s cubic-bezier(.2,.7,.3,1.6)}
+nav.tabs button[aria-selected="true"]::before{background:linear-gradient(90deg,#1B4F7A,#1A9BB5,#3A9E6B,#FFC929)}
+@keyframes pop{0%{transform:scale(.8)}100%{transform:scale(1)}}
+
+@media (prefers-reduced-motion: reduce){
+  .view,.panel,.card,.pocket,.overlay .wrap,.threedo li,.bigsay,.nowgo button,.flag,#masehBody,.dd > div,.hcard .body,.ringwrap::before,.ringwrap::after,.gitem,.plan li,.fav,nav.tabs .ic,.phead h2::after,.ovhead h2::after{animation:none!important}
+  .btn,.tile,.gitem,.phrase,.steps button{transition:none}
+}
 </style>
 </head><body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
