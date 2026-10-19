@@ -6,9 +6,14 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 DO $roles$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='research_table_owner') THEN CREATE ROLE research_table_owner NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS; END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='research_worker') THEN CREATE ROLE research_worker NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS; END IF;
+  IF EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname IN ('research_table_owner','research_worker')
+    AND (rolcanlogin OR rolsuper OR rolcreatedb OR rolcreaterole OR rolinherit OR rolbypassrls OR rolreplication)) THEN
+    RAISE EXCEPTION 'Unsafe existing research role; inspect its attributes before migration';
+  END IF;
 END $roles$;
-ALTER ROLE research_table_owner NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS;
-ALTER ROLE research_worker NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS;
+-- CREATEROLE permits safe role creation, but not ALTER ... NOSUPERUSER. The
+-- trusted migration operator also needs membership for object ownership moves.
+GRANT research_table_owner, research_worker TO CURRENT_USER;
 CREATE SCHEMA research_private AUTHORIZATION research_table_owner;
 REVOKE ALL ON SCHEMA research_private FROM PUBLIC, anon, authenticated, service_role;
 GRANT USAGE ON SCHEMA research_private TO research_worker, service_role;
@@ -574,7 +579,11 @@ DECLARE rows jsonb; manifest jsonb; BEGIN
  RETURN pg_catalog.jsonb_build_object('category',category,'rows',rows,'dictionary',pg_catalog.jsonb_build_object('participantId','Random identifier local to this study; does not imply anonymous free text','sourceId','Random source identifier local to this study','versions','Recorded application, tool, engine, prompt, principles, model, schema and metrics versions; unavailable model is null','mean','Descriptive numeric item mean, not a validated psychological score','metadata','counts.sessions: first successful AI writing operation in a process; counts.drafts: AI draft outputs; counts.revisions: changed manual draft or AI revision with a selected target; counts.rounds: distinct documented received inputs/extractions, sent snapshots do not add rounds; conversion retains evidence with zero counts; durationMs is observed elapsed server timing, never a psychological measure; no raw professional instructions/history','configRevision','Immutable configuration revision at collection','createdAt','Server timestamp'),'versions',manifest);
 END $f$;
 
+-- PostgreSQL requires CREATE on the containing schema for the new function
+-- owner. Remove this temporary DDL privilege before committing the migration.
+GRANT CREATE ON SCHEMA research_private TO research_worker;
 ALTER FUNCTION research_private.dispatch(text,text,jsonb) OWNER TO research_worker;
+REVOKE CREATE ON SCHEMA research_private FROM research_worker;
 CREATE FUNCTION research_private.live_individual(code text) RETURNS jsonb LANGUAGE plpgsql SET search_path='' AS $f$
 DECLARE rec jsonb; institutions jsonb; settings jsonb; institution jsonb; BEGIN
  SELECT value INTO rec FROM public.access_settings WHERE key='code:'||code FOR SHARE;

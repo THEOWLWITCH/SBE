@@ -13,7 +13,7 @@ import { randomUUID } from 'node:crypto';
 
 const version = record => createHash('sha256').update(record.salt + ':' + record.hash).digest('hex');
 
-test('research authentication survives the complete hardened release migration order without opening credential access', async () => {
+test('research authentication survives the complete hardened release migration order under a non-superuser operator without opening credential access', async () => {
   const runtime = process.env.RESEARCH_PGLITE_PATH || fileURLToPath(new URL('../../../research-test-runtime/node_modules/@electric-sql/pglite/', import.meta.url));
   const { PGlite } = await import(pathToFileURL(runtime + '/dist/index.js').href);
   const { pgcrypto } = await import(pathToFileURL(runtime + '/dist/contrib/pgcrypto.js').href);
@@ -24,13 +24,18 @@ test('research authentication survives the complete hardened release migration o
     finally { await db.exec('RESET ROLE'); }
   };
   try {
-    await db.exec('CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN BYPASSRLS; CREATE TABLE public.access_settings(key text PRIMARY KEY,value jsonb NOT NULL); CREATE TABLE public.scenarios(id text PRIMARY KEY,institution_id text,runs integer);');
+    await db.exec('CREATE ROLE migration_operator NOLOGIN NOSUPERUSER NOBYPASSRLS CREATEROLE; CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN BYPASSRLS; CREATE TABLE public.access_settings(key text PRIMARY KEY,value jsonb NOT NULL); CREATE TABLE public.scenarios(id text PRIMARY KEY,institution_id text,runs integer);');
     for (const [key, value] of [
       ['token-secret', { secret: SECRET }], ['pw-sys', OWNER_PASSWORD],
       ['institutions', [{ name: 'Synthetic School', active: true }]], ['settings', { graceDays: 14 }],
       ['unrelated-sensitive', { synthetic: true }],
       ...['STAFFA', 'STAFFB'].map(code => ['code:' + code, { code, kind: 'staff', inst: 'Synthetic School', perms: ['writer'], revoked: false }])
     ]) await db.query('INSERT INTO public.access_settings VALUES($1,$2)', [key, value]);
+    // The hosted migration operator owns application objects and has explicit
+    // crypto grant authority; CREATEROLE does not make it a PostgreSQL superuser.
+    await db.exec('ALTER TABLE public.access_settings OWNER TO migration_operator; ALTER TABLE public.scenarios OWNER TO migration_operator; CREATE SCHEMA extensions AUTHORIZATION migration_operator; CREATE EXTENSION pgcrypto WITH SCHEMA extensions; GRANT USAGE,CREATE ON SCHEMA public TO migration_operator; GRANT EXECUTE ON FUNCTION extensions.hmac(bytea,bytea,text) TO migration_operator WITH GRANT OPTION;');
+    const databaseName = (await db.query('SELECT current_database() AS name')).rows[0].name;
+    await db.exec('GRANT CREATE ON DATABASE "' + databaseName.replace(/"/g, '""') + '" TO migration_operator; SET ROLE migration_operator');
     for (const migration of ['20261014-service-data-boundaries.sql', '20261013-communication-storage.sql', '20261013-research-management.sql', '20261018-research-partnerships.sql']) {
       await db.exec(await readFile(new URL('../migrations/' + migration, import.meta.url), 'utf8'));
     }
@@ -44,6 +49,8 @@ test('research authentication survives the complete hardened release migration o
     assert.equal((await db.query("SELECT count(*)::int n FROM pg_policy WHERE polname='synthetic_existing_auth_policy'")).rows[0].n, 1);
     await db.exec('DROP POLICY synthetic_existing_auth_policy ON public.access_settings');
     await db.exec(boundary);
+    assert.deepEqual((await db.query("SELECT current_user,rolsuper,rolbypassrls FROM pg_roles WHERE rolname=current_user")).rows[0], { current_user: 'migration_operator', rolsuper: false, rolbypassrls: false });
+    assert.equal((await db.query("SELECT has_schema_privilege('research_worker','research_private','CREATE') AS allowed")).rows[0].allowed, false);
 
     assert.equal((await rpc(TOKENS.owner, 'bootstrap')).owner, true, 'owner authentication must work after storage RLS hardening');
     assert.equal((await rpc(TOKENS.owner, 'workspaceBootstrap', {}, 'research_partnership_rpc')).owner, true);
@@ -72,6 +79,18 @@ test('research authentication survives the complete hardened release migration o
     assert.equal((await rpc(TOKENS.a, 'bootstrap')).error, 'unauthorized');
     assert.equal((await rpc(TOKENS.a, 'workspaceBootstrap', {}, 'research_partnership_rpc')).error, 'unauthorized');
   } finally { await db.close(); }
+});
+
+test('research migration rejects an unsafe existing worker without changing its attributes or existing records', async () => {
+  const fixture = await createResearchDatabase();
+  try {
+    await fixture.db.exec('ALTER ROLE research_worker LOGIN');
+    const migration = await readFile(new URL('../migrations/20261013-research-management.sql', import.meta.url), 'utf8');
+    await assert.rejects(fixture.db.exec(migration), /Unsafe existing research role/);
+    await fixture.db.exec('ROLLBACK');
+    assert.equal((await fixture.db.query("SELECT rolcanlogin FROM pg_roles WHERE rolname='research_worker'")).rows[0].rolcanlogin, true);
+    assert.equal((await fixture.db.query("SELECT count(*)::int n FROM public.access_settings WHERE key='pw-sys'")).rows[0].n, 1);
+  } finally { await fixture.close(); }
 });
 
 test('research SQL and access authentication reject legacy and rotated owner credentials', async () => {
