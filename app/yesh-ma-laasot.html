@@ -388,6 +388,28 @@ nav.tabs button[aria-selected="true"]::before{background:linear-gradient(90deg,#
   .view,.panel,.card,.pocket,.overlay .wrap,.threedo li,.bigsay,.nowgo button,.flag,#masehBody,.dd > div,.hcard .body,.ringwrap::before,.ringwrap::after,.gitem,.plan li,.fav,nav.tabs .ic,.phead h2::after,.ovhead h2::after{animation:none!important}
   .btn,.tile,.gitem,.phrase,.steps button{transition:none}
 }
+
+/* פרח ונר */
+.fcscene{display:none;width:270px;max-width:100%}
+.fcscene svg{width:100%;height:auto;display:block;overflow:visible}
+.breath.kids .fcscene{display:block}.breath.kids .ringwrap{display:none}
+.fcscene .petals{transform-origin:190px 82px;transition:transform var(--d,3s) ease-in-out}
+.fcscene .scent path{opacity:0;stroke-dasharray:22;stroke-dashoffset:22}
+.fcscene .flame{transform-origin:70px 104px;animation:flick 2.2s ease-in-out infinite}
+.fcscene .glow{transform-origin:70px 92px;animation:glow 2.2s ease-in-out infinite}
+.fcscene .puff path{opacity:0}
+.fcscene[data-k="in"] .petals{transform:scale(1.14) rotate(8deg)}
+.fcscene[data-k="in"] .scent path{animation:scent 1.6s ease-out infinite}
+.fcscene[data-k="in"] .scent path:nth-child(2){animation-delay:.35s}.fcscene[data-k="in"] .scent path:nth-child(3){animation-delay:.7s}
+.fcscene[data-k="out"] .flame{animation:lean 1.4s ease-in-out infinite}
+.fcscene[data-k="out"] .puff path{animation:puff 1.4s ease-in-out infinite}
+.fcscene[data-k="out"] .puff path:nth-child(2){animation-delay:.25s}.fcscene[data-k="out"] .puff path:nth-child(3){animation-delay:.5s}
+@keyframes flick{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.04,.97) rotate(-2deg)}60%{transform:scale(.97,1.04) rotate(2deg)}}
+@keyframes glow{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.12);opacity:1}}
+@keyframes scent{0%{opacity:0;stroke-dashoffset:22;transform:translateY(6px)}40%{opacity:.8}100%{opacity:0;stroke-dashoffset:0;transform:translateY(-8px)}}
+@keyframes lean{0%,100%{transform:rotate(-10deg) scale(.96,1)}50%{transform:rotate(-22deg) scale(.9,.94)}}
+@keyframes puff{0%{opacity:0;transform:translateX(10px)}35%{opacity:.75}100%{opacity:0;transform:translateX(-26px)}}
+@media (prefers-reduced-motion: reduce){.fcscene *{animation:none!important;transition:none!important}.fcscene[data-k="in"] .scent path{opacity:.7;stroke-dashoffset:0}.fcscene[data-k="out"] .puff path{opacity:.7}.fcscene[data-k="out"] .flame{transform:rotate(-14deg)}}
 </style>
 </head><body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
@@ -503,6 +525,45 @@ nav.tabs button[aria-selected="true"]::before{background:linear-gradient(90deg,#
       <h2><svg class="ic" aria-hidden="true"><use href="#i-breath"/></svg><span data-t="breathTitle"></span></h2>
       <div class="seg" id="breathModes" role="group"></div>
       <div class="breath">
+        <div class="fcscene" id="fc" aria-hidden="true"><svg viewBox="0 0 260 200">
+          <defs>
+            <radialGradient id="fcFlame" cx=".5" cy=".7" r=".6"><stop offset="0" stop-color="#FFF6C8"/><stop offset=".45" stop-color="#FFC929"/><stop offset="1" stop-color="#F29D18"/></radialGradient>
+            <radialGradient id="fcGlow"><stop offset="0" stop-color="#FFC929" stop-opacity=".45"/><stop offset="1" stop-color="#FFC929" stop-opacity="0"/></radialGradient>
+            <linearGradient id="fcPet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E6F6F9"/><stop offset="1" stop-color="#BDE7EE"/></linearGradient>
+            <linearGradient id="fcWax" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#E9EDF1"/></linearGradient>
+          </defs>
+          <path class="ground" d="M14 182c30-8 60-8 90 0s60 8 90 0 36-6 52-3" fill="none" stroke="url(#lg)" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+          <g class="flower">
+            <path d="M190 178c0-30 2-58 0-86" fill="none" stroke="#3A9E6B" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M190 150c-14-2-22-10-24-22 13 1 22 9 24 22z" fill="#DDF1E5" stroke="#3A9E6B" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M191 134c12-4 21-1 26 9-12 3-21 0-26-9z" fill="#DDF1E5" stroke="#3A9E6B" stroke-width="1.8" stroke-linejoin="round"/>
+            <g class="petals">
+              <g fill="url(#fcPet)" stroke="#1A9BB5" stroke-width="1.8">
+                <ellipse cx="190" cy="66" rx="9" ry="16"/>
+                <ellipse cx="190" cy="66" rx="9" ry="16" transform="rotate(60 190 82)"/>
+                <ellipse cx="190" cy="66" rx="9" ry="16" transform="rotate(120 190 82)"/>
+                <ellipse cx="190" cy="66" rx="9" ry="16" transform="rotate(180 190 82)"/>
+                <ellipse cx="190" cy="66" rx="9" ry="16" transform="rotate(240 190 82)"/>
+                <ellipse cx="190" cy="66" rx="9" ry="16" transform="rotate(300 190 82)"/>
+              </g>
+              <circle cx="190" cy="82" r="8" fill="#FFC929"/>
+              <circle cx="187" cy="79" r="2.4" fill="#fff" opacity=".7"/>
+            </g>
+            <g class="scent" fill="none" stroke="#1A9BB5" stroke-width="1.8" stroke-linecap="round">
+              <path d="M178 50c-4-6 2-10-2-16"/><path d="M190 42c-4-6 2-10-2-16"/><path d="M202 50c-4-6 2-10-2-16"/>
+            </g>
+          </g>
+          <g class="candle">
+            <circle class="glow" cx="70" cy="92" r="30" fill="url(#fcGlow)"/>
+            <rect x="54" y="112" width="32" height="66" rx="7" fill="url(#fcWax)" stroke="#1A9BB5" stroke-width="1.8"/>
+            <path d="M58 118c4 3 8 3 10 0s6 6 10 1 4 2 4 2" fill="none" stroke="#BDE7EE" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M70 112v-8" stroke="#1B4F7A" stroke-width="2" stroke-linecap="round"/>
+            <g class="flame"><path d="M70 104c-9-6-9-16 0-28 9 12 9 22 0 28z" fill="url(#fcFlame)"/><path d="M70 101c-3-3-3-7 0-12 3 5 3 9 0 12z" fill="#fff" opacity=".75"/></g>
+            <g class="puff" fill="none" stroke="#1A9BB5" stroke-width="1.8" stroke-linecap="round">
+              <path d="M150 84c-8-3-14 3-22 0s-12 2-18 0"/><path d="M146 96c-8-3-14 3-22 0s-10 2-14 0"/><path d="M150 108c-8-3-14 3-22 0"/>
+            </g>
+          </g>
+        </svg></div>
         <div class="ringwrap"><div class="ring" id="ring"></div></div>
         <div class="phase" id="phase"></div>
         <div class="count" id="count" aria-live="off">&nbsp;</div>
@@ -1011,12 +1072,14 @@ const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function renderModes(){
   $("#breathModes").innerHTML=Object.entries(MODES).map(([k,m])=>`<button data-m="${k}" aria-pressed="${k===mode}">${m[lang].name}</button>`).join("");
   $$("#breathModes button").forEach(b=>b.onclick=()=>{mode=b.dataset.m;resetBreath();renderModes()});
+  $(".breath").classList.toggle("kids",mode==="kids");
 }
 function setPhase(){
   const M=MODES[mode],sec=M.sec[pi],kind=M.kind[pi];left=sec;
   $("#phase").textContent=M[lang].ph[pi];$("#count").textContent=left;
   const ring=$("#ring");ring.style.transitionDuration=reduce?"0s":sec+"s";
   if(kind==="in")ring.style.transform="scale(1.9)";else if(kind==="out")ring.style.transform="scale(1)";
+  const fc=$("#fc");fc.style.setProperty("--d",sec+"s");fc.dataset.k=kind;
   if($("#vib").checked){try{navigator.vibrate&&navigator.vibrate(kind==="in"?120:kind==="out"?[60,60,60]:40)}catch(e){}}
 }
 function tick(){
@@ -1034,12 +1097,12 @@ async function startBreath(){
 }
 function stopBreath(done){
   clearInterval(bTimer);bTimer=null;try{wake&&wake.release()}catch(e){}wake=null;
-  if(done){bState="done";$("#phase").textContent=t("done");$("#count").innerHTML="&nbsp;";$("#ring").style.transform="scale(1)";$("#breathHint").textContent=t("doneHint")}
+  if(done){bState="done";$("#phase").textContent=t("done");$("#count").innerHTML="&nbsp;";$("#ring").style.transform="scale(1)";$("#fc").dataset.k="";$("#breathHint").textContent=t("doneHint")}
   else if(bState==="running")bState="paused";
 }
 function resetBreath(){
   clearInterval(bTimer);bTimer=null;try{wake&&wake.release()}catch(e){}wake=null;bState="ready";pi=0;elapsed=0;
-  $("#phase").textContent=t("ready");$("#count").innerHTML="&nbsp;";const r=$("#ring");r.style.transitionDuration="0.4s";r.style.transform="scale(1)";$("#breathHint").textContent=MODES[mode][lang].hint;
+  $("#phase").textContent=t("ready");$("#count").innerHTML="&nbsp;";const r=$("#ring");r.style.transitionDuration="0.4s";r.style.transform="scale(1)";$("#fc").dataset.k="";$("#breathHint").textContent=MODES[mode][lang].hint;
 }
 $("#bStart").onclick=startBreath;$("#bPause").onclick=()=>stopBreath(false);$("#bReset").onclick=resetBreath;
 
