@@ -15,5 +15,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      # בדיקות מסד הנתונים מחפשות את PGlite מחוץ למאגר (research-test-runtime ליד תיקיית המאגר)
+      - name: PGlite for database tests
+        run: |
+          mkdir -p ../research-test-runtime
+          cd ../research-test-runtime
+          npm init -y >/dev/null
+          npm install --no-audit --no-fund @electric-sql/pglite@0.5.10
       - run: npm test
         working-directory: harness
