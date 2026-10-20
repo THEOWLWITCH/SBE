@@ -14,7 +14,7 @@ test('intake public and owner operations use only the intake service RPC, with a
 test('partnership public and private actions use only their fixed RPC',async()=>{
  const {supabaseResearchStore}=await import('../lib/research-store.mjs');let endpoint;
  const store=supabaseResearchStore('https://synthetic.invalid','sb_secret_synthetic',{fetchImpl:async(url)=>{endpoint=url;return Response.json({});}});
- for(const action of ['recordSave','workspaceExport','signingPrepare','signatureComplete']){await store.rpc('verified',action,{});assert.equal(endpoint,'https://synthetic.invalid/rest/v1/rpc/research_partnership_rpc');}
+ for(const action of ['recordSave','workspaceExport','signingPrepare','signatureComplete','agreementSources','agreementPrepare','agreementRefreshPreview','agreementRefreshApply','processingPolicyGet','processingPolicySave','processingPolicyApprove']){await store.rpc('verified',action,{});assert.equal(endpoint,'https://synthetic.invalid/rest/v1/rpc/research_partnership_rpc');}
 });
 test('fixed RPC transport uses legacy/opaque key headers and safe failures', async () => {
   const { supabaseResearchStore, ResearchStoreError } = await import('../lib/research-store.mjs');

@@ -9,6 +9,24 @@ const access={async get(key){return key==='token-secret'?{secret}:key==='code:PE
 function token(){const b=Buffer.from(JSON.stringify({k:'code',c:'PERSON1',...code,exp:Date.now()+3600000})).toString('base64url');return b+'.'+createHmac('sha256',secret).update(b).digest('base64url');}
 const scope=()=>({studyId:randomUUID(),partnerId:randomUUID(),recordId:randomUUID()});
 
+test('guided gateway validates source selection refresh and private policy commands and projects only contracted results',async()=>{
+ const {handlePartnership,validatePartnershipPayload}=await import('../lib/research-partnerships.mjs');
+ const pair={studyId:randomUUID(),partnerId:randomUUID()},s={...pair,recordId:randomUUID()},versionId=randomUUID(),requestId=randomUUID();
+ const policy={purpose:'pre_signing_document',provider:'synthetic-provider',providerVersion:'synthetic-v1',dataCategories:['agreement_document'],authorizedActors:['sys'],...Object.fromEntries(['partyRoles','transferBasis','storageLocation','retention','backups','deletion','withdrawal','securityMeasures','ethicsReference','consentReview'].map(k=>[k,'Synthetic explicit decision']))};
+ const samples=[
+  {action:'agreementSources',...pair},
+  {action:'agreementPrepare',...pair,requestId,applicationVersionId:versionId,budgetVersionIds:[],contributionVersionIds:[]},
+  {action:'agreementRefreshPreview',...s,versionId},
+  {action:'agreementRefreshApply',...s,versionId,requestId,expectedRevision:1,previewHash:'a'.repeat(64),replaceFields:['leadResearcher']},
+  {action:'processingPolicyGet',...pair},
+  {action:'processingPolicySave',...pair,requestId,expectedRevision:0,policy},
+  {action:'processingPolicyApprove',...pair,requestId,expectedRevision:1,policyVersionId:versionId,policyHash:'a'.repeat(64)}
+ ];
+ for(const body of samples){let observed;const store={async rpc(t,a,p){observed={a,p};return {sources:{currentGrants:['view_study']},guidance:{decisions:[]},record:{id:s.recordId},version:{id:versionId},preparation:{id:randomUUID()},template:null,resumed:false,preview:{hash:'a'.repeat(64)},policy:{id:versionId},privateProviderSecret:'never returned'};}};const [status,out]=await handlePartnership({},store,{token:'synthetic',...body},{env:{},verifyIdentity:async()=>({owner:true})});assert.equal(status,200,body.action);assert.deepEqual(observed,{a:body.action,p:validatePartnershipPayload(body)});assert.equal(out.privateProviderSecret,undefined);}
+ for(const bad of [{...samples[1],provenance:{verified:true}},{...samples[1],budgetVersionIds:[versionId,versionId]},{...samples[3],replaceFields:['population','population']},{...samples[3],previewHash:'forged'},{...samples[5],policy:{...policy,approved:true}},{...samples[5],expectedRevision:null}])assert.throws(()=>validatePartnershipPayload(bad));
+ let calls=0;for(const body of samples.filter(b=>b.action==='agreementPrepare'||b.action.startsWith('processingPolicy')))assert.equal((await handlePartnership({},{async rpc(){calls++;return {}; }},{token:'synthetic',...body},{env:{},verifyIdentity:async()=>({owner:false})}))[0],403);assert.equal(calls,0);
+});
+
 test('human document exports use Hebrew permission names without changing structured data',async()=>{
  const version={id:randomUUID(),data:{title:'בקשה בדויה',requestedPermissions:['view_study','view_approved_findings']}},store={async rpc(){return {record:{kind:'application'},version};}};
  for(const format of ['text','html']){const [status,result]=await handleResearch(access,store,{token:token(),action:'workspaceExport',...scope(),versionId:version.id,format});assert.equal(status,200);const text=Buffer.from(result.contentBase64,'base64').toString('utf8');assert.match(text,/צפייה במחקר/);assert.match(text,/צפייה בממצאים מאושרים/);assert.doesNotMatch(text,/view_study|view_approved_findings/);}

@@ -30,6 +30,8 @@ export function validatePartnershipPayload(body){
   if(type.startsWith('uuid[]'))out[key]=ids(value);
   else if(type.startsWith('uuid'))out[key]=uuid(value);
   else if(type==='sha256')out[key]=digest(value);
+  else if(key==='replaceFields'){if(!Array.isArray(value)||value.length>200||new Set(value).size!==value.length)invalid();out[key]=value.map(v=>text(v,500));}
+  else if(key==='policy')out[key]=CORE.validateProcessingPolicy(value);
   else if(type.startsWith('boolean'))out[key]=bool(value);
   else if(type==='true'){if(value!==true)invalid();out[key]=true;}
   else if(key==='profile')out[key]=CORE.validatePartner(value);
@@ -76,6 +78,7 @@ async function invitationDelivery(store,token,payload,raw,options){
 export async function handlePartnership(accessStore,store,body,options={}){
  try{
   const action=body.action,payload=validatePartnershipPayload(body),actor=await options.verifyIdentity(accessStore,body.token);
+  if((action==='agreementPrepare'||action.startsWith('processingPolicy'))&&!actor.owner)fail('unauthorized');
   const adapter=options.signingAdapter||createSigningAdapter(options);
   let returnedInvite;
   if(action==='partnerInviteCreate'){

@@ -26,12 +26,13 @@
   };
   const ROLE_PRESETS = { researcher: ACCESS_PRESETS.approved_findings };
   const CLIENT_ACTIONS = [
+    'agreementSources', 'agreementPrepare', 'agreementRefreshPreview', 'agreementRefreshApply', 'processingPolicyGet', 'processingPolicySave', 'processingPolicyApprove',
     'workspaceBootstrap', 'partnerSave', 'partnerGet', 'workspaceList', 'recordGet', 'recordSave', 'recordSubmit', 'recordReview', 'recordVersions',
     'findingPublish', 'findingWithdraw', 'findingComment', 'partnerInviteCreate', 'partnerInviteGet', 'partnerInviteAccept', 'partnerInviteRevoke',
     'agreementApprove', 'agreementAmend', 'signingStart', 'signingView', 'signingRefresh', 'workspaceDocumentPut', 'workspaceDocumentGet',
     'workspaceExport', 'workspaceImpact', 'workspaceAnalysis'
   ];
-  const READ_ACTIONS = ['workspaceBootstrap', 'partnerGet', 'workspaceList', 'recordGet', 'recordVersions', 'partnerInviteGet', 'signingView', 'workspaceDocumentGet', 'workspaceExport', 'workspaceImpact'];
+  const READ_ACTIONS = ['workspaceBootstrap', 'partnerGet', 'workspaceList', 'recordGet', 'recordVersions', 'partnerInviteGet', 'signingView', 'workspaceDocumentGet', 'workspaceExport', 'workspaceImpact', 'agreementSources', 'agreementRefreshPreview', 'processingPolicyGet'];
   const INTERNAL_ACTIONS = ['signatureComplete'];
   const CONTRIBUTION_CATEGORIES = {
     scientific: 'תרומה מדעית', methodological: 'תרומה מתודולוגית', questionnaires: 'שאלונים', educational_content: 'תוכן חינוכי',
@@ -245,6 +246,8 @@
   }
   function validatePartner(data, options = {}) { return validateFields(PARTNER_FIELDS, data, options.complete === true); }
   function validateApprovedTerms(data) { return validateFields(APPROVED_TERMS_FIELDS, data, false); }
+  const PROCESSING_POLICY_FIELDS = [choice('purpose','מטרת העברה',{external_impact:'הסבר שינויים',pre_signing_document:'מסמך לפני חתימה'},{required:true}),text('provider','ספק',{required:true,maxLength:240}),text('providerVersion','גרסת ספק',{required:true,maxLength:240}),tags('dataCategories','סוגי מידע',{required:true,choices:['agreement_changes','agreement_document','personal','confidential']}),tags('authorizedActors','מורשות גישה',{required:true}),...['partyRoles','transferBasis','storageLocation','retention','backups','deletion','withdrawal','securityMeasures','ethicsReference','consentReview'].map(id=>text(id,id,{required:true}))];
+  function validateProcessingPolicy(data) { return validateFields(PROCESSING_POLICY_FIELDS,data,true); }
 
   function transition(from, to, action, authority) { return { from, to, action, authority }; }
   function proposalTransitions() { return [
@@ -314,6 +317,13 @@
   const scope = { studyId: 'uuid', partnerId: 'uuid', recordId: 'uuid' };
   function operation(request, result, authority) { return { request, result, authority }; }
   const OPERATIONS = {
+    agreementSources: operation({studyId:'uuid',partnerId:'uuid'}, {sources:'AgreementSources',guidance:'ScopedGuidance'}, 'owner or current actual partner; current target membership'),
+    agreementPrepare: operation({studyId:'uuid',partnerId:'uuid',applicationVersionId:'uuid?',budgetVersionIds:'uuid[]?',contributionVersionIds:'uuid[]?'}, {record:'Record',version:'RecordVersion',template:'PreparedTemplate|null',preparation:'PreparationReceipt|null',sources:'AgreementSources',guidance:'ScopedGuidance',resumed:'boolean'}, 'owner only; preserve existing agreement'),
+    agreementRefreshPreview: operation({...scope,versionId:'uuid',applicationVersionId:'uuid?',budgetVersionIds:'uuid[]?',contributionVersionIds:'uuid[]?'}, {preview:'AgreementRefreshPreview'}, 'owner or current actual partner; server-derived exact sources'),
+    agreementRefreshApply: operation({...scope,versionId:'uuid',expectedRevision:'integer',previewHash:'sha256',replaceFields:'string[]',applicationVersionId:'uuid?',budgetVersionIds:'uuid[]?',contributionVersionIds:'uuid[]?'}, {record:'Record',version:'RecordVersion',preparation:'PreparationReceipt'}, 'owner or current actual partner; exact preview and selected fields only'),
+    processingPolicyGet: operation({studyId:'uuid',partnerId:'uuid'}, {policy:'ProcessingPolicy|null'}, 'owner only; private operational authorization'),
+    processingPolicySave: operation({studyId:'uuid',partnerId:'uuid',expectedRevision:'integer',policy:'ProcessingPolicyData'}, {policy:'ProcessingPolicy'}, 'owner only; new unapproved immutable revision'),
+    processingPolicyApprove: operation({studyId:'uuid',partnerId:'uuid',expectedRevision:'integer',policyVersionId:'uuid',policyHash:'sha256'}, {policy:'ProcessingPolicy'}, 'owner only; exact revision and current consent/ethics restriction snapshot'),
     workspaceBootstrap: operation({}, { owner: 'boolean', partners: 'PartnerSummary[]', studies: 'StudySummary[]', capabilities: 'string[]', readiness: 'Readiness' }, 'verified session'),
     partnerSave: operation({ partnerId: 'uuid?', expectedRevision: 'integer|null', individualCode: 'string? owner only', profile: 'PartnerData' }, { partner: 'Partner' }, 'owner or self; self identity is session-derived'),
     partnerGet: operation({ partnerId: 'uuid' }, { partner: 'Partner', workspaces: 'WorkspaceSummary[]' }, 'owner or self'),
@@ -341,5 +351,5 @@
     workspaceImpact: operation({ ...scope, fromVersionId: 'uuid', toVersionId: 'uuid', includeAI: 'boolean?' }, { changes: 'FieldChange[]', approvalsInvalidated: 'boolean', binding: 'false', ai: 'ImpactAIState' }, 'owner or actual record author'),
     workspaceAnalysis: operation({ studyId: 'uuid', partnerId: 'uuid', requestRecordId: 'uuid', sourceSnapshotId: 'uuid? omit to create consent-bound snapshot', operation: 'AnalysisOperation' }, { operation: 'AnalysisOperation', sourceSnapshotId: 'uuid', summary: 'ApprovedAnalysisProjection', provenance: 'AnalysisProvenance', record: 'Record draft analysis_result', version: 'RecordVersion' }, 'owner only; approved request and fixed allowlisted parameters; requestId required')
   };
-  return freeze({ VERSIONS, GUIDED_AGREEMENT, PERMISSIONS, PERMISSION_ALIASES, ACCESS_PRESETS, ROLE_PRESETS, CLIENT_ACTIONS, READ_ACTIONS, INTERNAL_ACTIONS, CONTRIBUTION_CATEGORIES, RECORD_KINDS, RECORD_STATUSES, RECORD_SCHEMAS, RECORD_TRANSITIONS, AGREEMENT_SECTIONS, ANALYSIS_OPERATIONS, PARTNER_FIELDS, APPROVED_TERMS_FIELDS, OPERATIONS, safeError, validateRecord, validatePartner, validateApprovedTerms, missingFields, canTransition, compareRecords, renderAgreement, isBindingObligation, permissionLabel });
+  return freeze({ VERSIONS, GUIDED_AGREEMENT, PERMISSIONS, PERMISSION_ALIASES, ACCESS_PRESETS, ROLE_PRESETS, CLIENT_ACTIONS, READ_ACTIONS, INTERNAL_ACTIONS, CONTRIBUTION_CATEGORIES, RECORD_KINDS, RECORD_STATUSES, RECORD_SCHEMAS, RECORD_TRANSITIONS, AGREEMENT_SECTIONS, ANALYSIS_OPERATIONS, PARTNER_FIELDS, APPROVED_TERMS_FIELDS, PROCESSING_POLICY_FIELDS, OPERATIONS, safeError, validateRecord, validatePartner, validateApprovedTerms, validateProcessingPolicy, missingFields, canTransition, compareRecords, renderAgreement, isBindingObligation, permissionLabel });
 });

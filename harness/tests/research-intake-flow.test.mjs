@@ -32,7 +32,7 @@ test('public proposal becomes an owner-approved private folder through HTTP and 
       }
       const body = JSON.parse(init.body);
       const procedure = body.p_action.startsWith('intake') ? 'research_intake_rpc'
-        : ['partnerGet', 'workspaceList', 'recordGet'].includes(body.p_action) ? 'research_partnership_rpc' : 'research_rpc';
+        : ['partnerGet', 'workspaceList', 'recordGet', 'agreementSources', 'agreementPrepare', 'agreementRefreshPreview', 'agreementRefreshApply', 'processingPolicyGet'].includes(body.p_action) ? 'research_partnership_rpc' : 'research_rpc';
       assert.equal(url.pathname, '/rest/v1/rpc/' + procedure);
       assert.equal(init.method, 'POST');
       assert.equal(init.headers.apikey, syntheticKey);
@@ -160,7 +160,11 @@ test('public proposal becomes an owner-approved private folder through HTTP and 
     assert.deepEqual(approved.workspace.grantedPermissions, grants);
     assert.equal(approved.workspace.partnershipActive, false);
     const afterApproval = await counts();
-    assert.deepEqual(afterApproval, { ...afterIdentity, memberships: 1, partners: 1, records: 1, reviews: 1 });
+    assert.deepEqual(afterApproval, { ...afterIdentity, memberships: 1, partners: 1, records: 3, reviews: 1 });
+    assert.equal(approved.preparation.record.kind, 'agreement');
+    assert.equal(approved.preparation.record.status, 'draft');
+    assert.equal(approved.preparation.template.record.status, 'draft');
+    assert.deepEqual(approved.preparation.version.data.requestedPermissions, grants);
     assert.deepEqual(await owner('intakeReview', approval), approved);
     assert.deepEqual(await counts(), afterApproval, 'review replay creates no duplicate rights or records');
     const recordScope = { studyId: firstStudy.id, partnerId: approved.partner.id, recordId: approved.application.recordId };
@@ -173,6 +177,11 @@ test('public proposal becomes an owner-approved private folder through HTTP and 
     assert.deepEqual(retained.application.application, application);
     assert.deepEqual(retained.terms, terms);
     const privateFolder = await api(researcher, 'partnerGet', { partnerId: approved.partner.id });
+    const agreementScope = {studyId:firstStudy.id,partnerId:approved.partner.id};
+    assert.deepEqual((await api(researcher,'agreementSources',agreementScope)).sources.currentGrants,grants);
+    await api(f.tokens.b,'agreementSources',agreementScope,404);
+    await api(researcher,'agreementPrepare',mutation(agreementScope),403);
+    await api(researcher,'processingPolicyGet',agreementScope,403);
     assert.deepEqual(privateFolder.workspaces.map(workspace => workspace.studyId), [firstStudy.id]);
     assert.deepEqual(privateFolder.workspaces[0].grantedPermissions, grants);
     await api(f.tokens.b, 'partnerGet', { partnerId: approved.partner.id }, 404);
@@ -209,7 +218,7 @@ test('public proposal becomes an owner-approved private folder through HTTP and 
       (SELECT count(*) FROM research_private.partnership_records WHERE kind IN ('agreement','obligation','budget'))::int AS financialOrLegalRecords,
       (SELECT count(*) FROM research_private.outbox)::int AS queuedMail,
       (SELECT count(*) FROM research_private.mail_attempts)::int AS mailAttempts`)).rows[0];
-    assert.deepEqual(effects, { executions: 0, signatures: 0, signingsessions: 0, financialorlegalrecords: 0, queuedmail: 0, mailattempts: 0 });
+    assert.deepEqual(effects, { executions: 0, signatures: 0, signingsessions: 0, financialorlegalrecords: 2, queuedmail: 0, mailattempts: 0 });
     assert.equal(modelRequests, 0);
     assert.deepEqual(externalRequests, []);
     assert.deepEqual(new Set(rpcCalls.map(call => call.procedure)), new Set(['research_intake_rpc', 'research_rpc', 'research_partnership_rpc']));

@@ -108,7 +108,7 @@ test('agreement preview names permission choices in Hebrew while retaining canon
 });
 
 test('partnership vocabulary is a deeply frozen browser/CommonJS contract with no public execution callback', () => {
-  assert.equal(C.CLIENT_ACTIONS.length,26);
+  assert.equal(C.CLIENT_ACTIONS.length,33);
   assert.deepEqual(C.INTERNAL_ACTIONS,['signatureComplete']);
   assert.equal(C.CLIENT_ACTIONS.includes('signatureComplete'),false);
   for(const action of C.READ_ACTIONS) assert.ok(C.CLIENT_ACTIONS.includes(action));
@@ -119,7 +119,7 @@ test('partnership vocabulary is a deeply frozen browser/CommonJS contract with n
   const context = {};
   vm.runInNewContext(readFileSync(new URL('../../app/lib/research-partnership-core.js',import.meta.url),'utf8'),context);
   assert.equal(context.SBE_RESEARCH_PARTNERSHIPS.VERSIONS.schema,3);
-  assert.equal(context.SBE_RESEARCH_PARTNERSHIPS.CLIENT_ACTIONS.length,26);
+  assert.equal(context.SBE_RESEARCH_PARTNERSHIPS.CLIENT_ACTIONS.length,33);
 });
 
 test('approved findings and collaborative analysis presets have no implicit raw-data or export grants', () => {
