@@ -355,9 +355,9 @@
     data = validateRecord('agreement', data);
     const template = suppliedTemplate ? validateRecord('agreement_template', suppliedTemplate, { complete: true }) : null;
     const definitions = RECORD_SCHEMAS.agreement.fields;
-    const byId = new Map(definitions.map(f => [f.id, f]));
     const missing = missingFields('agreement', data, template ? template.requiredFieldIds : []);
     if (data.guidedVersion === '4' || template?.requiredFieldIds?.includes('guidedVersion')) return renderGuidedAgreement(data, template, missing);
+    const byId = new Map(definitions.map(f => [f.id, f]));
     const required = new Set(template ? template.requiredFieldIds : []);
     function replace(text) { return text.replace(/\{\{([A-Za-z][A-Za-z0-9]*)\}\}/g, (_, id) => { if (empty(data[id])) required.add(id); return formatValue(byId.get(id), data[id]); }); }
     const sections = AGREEMENT_SECTIONS.map(section => {
