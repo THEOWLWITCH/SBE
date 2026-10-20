@@ -116,23 +116,80 @@ async function handleSigning({accessStore,store,body,payload,adapter,options}){
  const action=body.action;
  // Authorization precedes provider readiness so guessed scope never leaks.
  const context=await call(store,body.token,action,payload);
+ // Existing sessions retain their selected provider even when the default changes.
+ if(context.signing?.provider&&!options.signingAdapter)adapter=createSigningAdapter({...options,signingProvider:context.signing.provider});
  if(!signingReadiness(adapter,options).configured)fail('not_configured');
  const key=documentKey(options),worker=()=>researchSigningWorkerToken(accessStore),scope={studyId:payload.studyId,partnerId:payload.partnerId,recordId:payload.recordId};
  if(action==='signingStart'){
   if(context.signing?.id)return [200,{signing:publicSigning(context.signing)}];
   const rendered=CORE.renderAgreement(context.version.data,context.template?.data||context.template);if(!rendered.ready)fail('not_configured');
   const file=exportPartnership(context,'docx');
-  const started=await adapter.start({...context,contentBase64:file.contentBase64,documentHash:payload.documentHash,consent:true,requestId:payload.requestId});
+  if(adapter.provider==='signwell')return beginSignWell({accessStore,store,body,payload,adapter,context,file,key,scope});
+  const descriptor=adapter.transferDescriptor?.();if(!descriptor)fail('not_configured');
+  const authorizeTransfer=()=>call(store,body.token,'signingTransferAuthorize',{...scope,provider:descriptor.provider,providerVersion:descriptor.version});
+  await authorizeTransfer();
+  const started=await adapter.start({...context,contentBase64:file.contentBase64,documentHash:payload.documentHash,consent:true,requestId:payload.requestId,authorizeTransfer});
   const prepared=await call(store,await worker(),'signingPrepare',{...scope,requestId:payload.requestId,expectedRevision:payload.expectedRevision,versionId:payload.versionId,documentHash:payload.documentHash,providerDocumentHash:started.providerDocumentHash,providerSessionId:started.providerSessionId,expiresAt:started.expiresAt,providerStateCiphertext:encryptResearchValue(started.state,key),authorityPolicyHash:started.authorityPolicyHash});
   return [200,{signing:publicSigning(prepared.signing)}];
  }
  if(context.signing?.state==='completed'&&action==='signingRefresh')return [200,{record:context.record,signing:publicSigning(context.signing)}];
  if(action==='signingRefresh'&&context.providerCheckDue===false)return [200,{record:context.record,signing:publicSigning(context.signing)}];
  const state=decryptResearchValue(context.providerStateCiphertext,key);
- if(action==='signingView'){const view=await adapter.view(state,context.party);return [200,{signing:{...publicSigning(context.signing),embeddedUrl:view.embeddedUrl,expiresAt:view.expiresAt}}];}
+ if(state.provider&&state.provider!==context.signing?.provider||state.versionId&&state.versionId!==context.signing?.versionId||state.documentHash&&state.documentHash!==context.signing?.documentHash)fail('conflict');
+ if(state.provider==='signwell'){
+  const retained=await call(store,await worker(),'signingIntentGet',{intentId:state.intentId});assertSignWellState(retained.intent,state,scope,context.signing.id);
+ }
+ if(action==='signingView'){
+  if(state.provider==='signwell')return viewSignWell({accessStore,store,body,adapter,context,state,scope});
+  const descriptor=adapter.transferDescriptor?.();if(!descriptor)fail('not_configured');
+  const authorizeTransfer=()=>call(store,body.token,'signingTransferAuthorize',{...scope,provider:descriptor.provider,providerVersion:descriptor.version});
+  await authorizeTransfer();
+  const view=await adapter.view(state,context.party,{authorizeTransfer});await authorizeTransfer();return [200,{signing:{...publicSigning(context.signing),embeddedUrl:view.embeddedUrl,expiresAt:view.expiresAt}}];
+ }
  const verification=await adapter.refresh(state);
  if(!verification.completed){const updated=await call(store,await worker(),'signingStateUpdate',{...scope,signingId:context.signing.id,state:verification.state});return [200,{record:updated.record,signing:publicSigning(updated.signing)}];}
  return [200,await completeSigning({accessStore,store,scope,signing:context.signing,verification,key})];
+}
+async function beginSignWell({accessStore,store,body,payload,adapter,context,file,key,scope}){
+ const proposed=adapter.buildIntent({...context,contentBase64:file.contentBase64,documentHash:payload.documentHash,consent:true,requestId:payload.requestId});
+ const descriptor=adapter.transferDescriptor(),worker=()=>researchSigningWorkerToken(accessStore);
+ let {intent}=await call(store,body.token,'signingIntentReserve',{...payload,provider:'signwell',providerVersion:descriptor.version,providerDocumentHash:proposed.providerDocumentHash,authorityPolicyHash:proposed.authorityPolicyHash,expiresAt:proposed.expiresAt,providerStateCiphertext:encryptResearchValue({...proposed,sourceContentBase64:file.contentBase64},key)});
+ let state=decryptResearchValue(intent.providerStateCiphertext,key);
+ assertSignWellState(intent,state,scope);
+ if(!intent.providerSessionId){
+  const claim=await call(store,await worker(),'signingIntentCreateClaim',{intentId:intent.id,authorizationToken:body.token});intent=claim.intent;
+  if(!claim.claimed)return [200,{signing:publicSigning({recordId:intent.recordId,versionId:intent.versionId,documentHash:intent.documentHash,provider:'signwell',state:'creation_uncertain'})}];
+  try{state={...await adapter.createDraft(state,state.sourceContentBase64),sourceContentBase64:state.sourceContentBase64};}
+  catch{await call(store,await worker(),'signingIntentCreateClaim',{intentId:intent.id,authorizationToken:body.token}).catch(()=>{});return [200,{signing:publicSigning({recordId:intent.recordId,versionId:intent.versionId,documentHash:intent.documentHash,provider:'signwell',state:'creation_uncertain'})}];}
+  // Only this known response may be retried locally; no provider mutation is retried.
+  const attach=()=>call(store,workerToken,'signingIntentAttach',{intentId:intent.id,providerSessionId:state.providerSessionId,providerStateCiphertext:encryptResearchValue(state,key)}),workerToken=await worker();
+  let attached;try{attached=await attach();}catch{attached=await attach();}intent=attached.intent;
+ }
+ const linked=await call(store,await worker(),'signingIntentLink',{intentId:intent.id,authorizationToken:body.token});
+ return [200,{signing:publicSigning(linked.signing)}];
+}
+function assertSignWellState(intent,state,scope,signingId){
+ if(!intent||state.provider!=='signwell'||intent.provider!=='signwell'||state.intentId!==intent.id||intent.studyId!==scope.studyId||intent.partnerId!==scope.partnerId||intent.recordId!==scope.recordId||state.recordId!==intent.recordId||state.versionId!==intent.versionId||state.documentHash!==intent.documentHash||state.providerDocumentHash!==intent.providerDocumentHash||state.authorityPolicyHash!==intent.authorityPolicyHash||intent.providerSessionId&&state.providerSessionId!==intent.providerSessionId||signingId&&intent.signingId!==signingId)fail('conflict');
+}
+async function viewSignWell({accessStore,store,body,adapter,context,state,scope}){
+ const worker=()=>researchSigningWorkerToken(accessStore),intentId=state.intentId;
+ await call(store,body.token,'signingTransferAuthorize',{...scope,intentId});
+ const current=await adapter.readDraft(state);
+ if(current.providerStatus==='Draft'){
+  const claim=await call(store,await worker(),'signingIntentSendClaim',{intentId,authorizationToken:body.token});
+  if(!claim.claimed)return [200,{signing:{...publicSigning(context.signing),state:'send_uncertain'}}];
+  try{await adapter.send(current);}catch{await call(store,await worker(),'signingIntentSendClaim',{intentId,authorizationToken:body.token}).catch(()=>{});return [200,{signing:{...publicSigning(context.signing),state:'send_uncertain'}}];}
+  await call(store,await worker(),'signingIntentSent',{intentId});
+ }else{
+  const retained=await call(store,await worker(),'signingIntentGet',{intentId});
+  if(['sending','send_uncertain'].includes(retained.intent.state))await call(store,await worker(),'signingIntentSent',{intentId});
+  else if(retained.intent.state!=='sent')fail('conflict');
+ }
+ // Recheck current access after asynchronous provider work before exposing a party URL.
+ await call(store,body.token,'signingTransferAuthorize',{...scope,intentId});
+ const view=await adapter.view(state,context.party);
+ await call(store,body.token,'signingTransferAuthorize',{...scope,intentId});
+ return [200,{signing:{...publicSigning(context.signing),embeddedUrl:view.embeddedUrl,expiresAt:view.expiresAt}}];
 }
 async function completeSigning({accessStore,store,scope,signing,verification,key}){
  const worker=()=>researchSigningWorkerToken(accessStore),evidence=[];
@@ -144,7 +201,9 @@ async function completeSigning({accessStore,store,scope,signing,verification,key
 }
 export async function handleResearchSigningWebhook(accessStore,store,raw,headers,options={}){
  try{
-  const adapter=options.signingAdapter||createSigningAdapter(options),event=adapter.verifyEvent(raw,headers);if(!event.completed)return [200,{ok:true}];
+  // This established route verifies DocuSign Connect. SignWell event hashes do
+  // not bind a callback document ID and are deliberately unavailable here.
+  const adapter=options.signingAdapter||createSigningAdapter({...options,signingProvider:'docusign'}),event=adapter.verifyEvent(raw,headers);if(!event.completed)return [200,{ok:true}];
   const context=await call(store,await researchSigningWorkerToken(accessStore),'signingEventContext',{providerSessionId:event.providerSessionId});
   if(context.signing?.state==='completed')return [200,{ok:true}];
   const key=documentKey(options),state=decryptResearchValue(context.providerStateCiphertext,key);
@@ -154,4 +213,4 @@ export async function handleResearchSigningWebhook(accessStore,store,raw,headers
   await completeSigning({accessStore,store,scope,signing:context.signing,verification,key});return [200,{ok:true}];
  }catch(error){const code=own(safeMessages,error?.code)?error.code:'unavailable';return [{invalid:400,unauthorized:403,not_found:404,conflict:409,not_configured:503,unavailable:503}[code],{ok:false,code,error:safeMessages[code]}];}
 }
-function publicSigning(value){return Object.fromEntries(['id','recordId','versionId','documentHash','state','configured','embeddedUrl','expiresAt','completedAt'].map(key=>[key,value?.[key]??(key==='configured'?true:null)]));}
+function publicSigning(value){return Object.fromEntries(['id','recordId','versionId','documentHash','provider','state','configured','embeddedUrl','expiresAt','completedAt'].map(key=>[key,value?.[key]??(key==='configured'?true:null)]));}

@@ -43,6 +43,15 @@ test('legacy institution profiles infer applicant type while an individual profi
 });
 test('nested agreement rows are fieldsets and unconfigured signature cannot execute',async()=>{const UI=require('../../app/lib/research-partnership-ui.js');const s=guidedSetup();const page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await btn(s.root,'הוספת הוצאות משותפות').click();assert.ok(walk(s.root).some(n=>n.tagName==='fieldset'));assert.ok(field(s.root,'סכום'));assert.match(s.root.textContent,/תבנית מאושרת/);assert.ok(!btn(s.root,'תחילת חתימה'));await btn(s.root,'שמירת טיוטה').click();assert.ok(!s.calls.some(([a])=>a==='signingStart'));page.clear();});
 
+test('uncertain provider creation is visible without claiming a signature or hiding the approved agreement',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),original=s.client.call;
+ s.current().record.status='approved';s.current().version.contentHash='a'.repeat(64);
+ s.client.call=async(a,p)=>{if(a==='workspaceBootstrap'){const out=await original(a,p);out.readiness.signing={configured:true,state:'ready'};return out;}if(a==='signingStart')return {signing:{recordId:id(30),versionId:id(31),state:'creation_uncertain',configured:true}};return original(a,p);};
+ const page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();
+ field(s.root,'הסכמה לפתיחת תהליך החתימה לגרסה זו').checked=true;await btn(s.root,'תחילת חתימה').click();
+ assert.match(s.root.textContent,/לא ידוע אם טיוטת החתימה נוצרה אצל הספק/);assert.doesNotMatch(s.root.textContent,/החתימה הושלמה ואומתה/);assert.equal(walk(s.root).some(n=>n.tagName==='iframe'),false);page.clear();
+});
+
 function guidedSetup(owner=true){
  const s=setup(owner),original=s.client.call;
  s.workspace.grantedPermissions=['view_study'];

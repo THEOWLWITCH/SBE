@@ -10,6 +10,7 @@
 // https://www.docusign.com/blog/developers/common-api-tasks-use-transactionid-to-find-the-envelope-you-created
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { contentHash } from './research-partnership-exports.mjs';
+import { createSignWellAdapter } from './research-signwell.mjs';
 const fail=code=>{throw Object.assign(new Error(code),{code});};
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const email=v=>typeof v==='string'&&/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(v);
@@ -28,6 +29,13 @@ function configuration(options){
  return {token,accountId,base:base.href.replace(/\/$/,''),returnUrl:returnUrl.href,connectKey,connectUrl:connectUrl.href,policy};
 }
 export function createSigningAdapter(options={}){
+ const provider=options.signingProvider??options.signing?.provider??(options.env||process.env).RESEARCH_SIGNING_PROVIDER??'docusign';
+ // Retain provider-specific policy/credentials for already issued sessions.
+ // This constructor input is server-owned and never taken from a client body.
+ const selected=options.signingProviders?.[provider];
+ if(selected&&typeof selected==='object'&&!Array.isArray(selected))options={...options,...selected,signingProvider:provider};
+ if(provider==='signwell')return createSignWellAdapter(options);
+ if(provider!=='docusign')return Object.freeze({provider,readiness:()=>({configured:false,state:'unsupported_provider',message:'ספק החתימה שנבחר אינו נתמך.'}),verifyEvent:()=>fail('not_configured'),start:async()=>fail('not_configured'),view:async()=>fail('not_configured'),refresh:async()=>fail('not_configured')});
  const settings=configuration(options),fetchImpl=options.signingFetchImpl||globalThis.fetch;
  const ready=()=>{if(!settings||typeof fetchImpl!=='function')fail('not_configured');return settings;};
  async function api(path,{method='GET',body,binary=false}={}){
@@ -51,6 +59,8 @@ export function createSigningAdapter(options={}){
   if(recipients.signers?.length!==2||!state.signers.every(expected=>recipients.signers.some(actual=>actual.recipientId===expected.recipientId&&actual.email?.toLowerCase()===expected.email&&actual.name===expected.name&&actual.clientUserId===expected.clientUserId&&actual.identityVerification?.workflowId===s.policy.identityWorkflowId)))fail('conflict');
  }
  return Object.freeze({
+  provider:'docusign',
+  transferDescriptor(){const s=ready();return {provider:'docusign',version:s.policy.version};},
   readiness(){return {configured:!!settings,state:settings?'ready':'not_configured',message:settings?'שירות החתימה הוגדר; השלמה מחייבת אימות עדכני של שני הצדדים.':'נדרשים ספק חתימה, זהויות מאומתות ומדיניות סמכות חתימה מאושרת.'};},
   verifyEvent(raw,headers){
    const s=ready();if(!Buffer.isBuffer(raw)||raw.length>262144)fail('invalid');
@@ -76,13 +86,14 @@ export function createSigningAdapter(options={}){
    const state={provider:'docusign',documentHash:context.documentHash,providerDocumentHash,versionId:context.version.id,authorityPolicyHash,signers,consentRequested:true};
    let envelope=await transactionEnvelope(context.requestId),recovered=!!envelope;
    if(!envelope){try{
+    await context.authorizeTransfer?.();
     envelope=await api('/envelopes',{method:'POST',body:{transactionId:context.requestId,emailSubject:'BE GOOD: חתימת הסכם מחקר',status:'created',enforceSignerVisibility:'true',eventNotification:{url:s.connectUrl,requireAcknowledgment:'true',includeHMAC:'true',includeDocuments:'false',loggingEnabled:'false',envelopeEvents:[{envelopeEventStatusCode:'completed'}],eventData:{version:'restv2.1',format:'json',includeData:[]}},customFields:{textCustomFields:[{name:'BEGOOD_VERSION_HASH',value:context.documentHash,show:'false',required:'true'},{name:'BEGOOD_SOURCE_DOCUMENT_HASH',value:providerDocumentHash,show:'false',required:'true'}]},documents:[{documentId:'1',name:'research-agreement.docx',fileExtension:'docx',documentBase64:context.contentBase64}],recipients}});
     if(!UUID.test(envelope.envelopeId||'')||envelope.status!=='created')fail('unavailable');
-   }catch(error){envelope=await transactionEnvelope(context.requestId);if(!envelope)throw error;recovered=true;}}
+   }catch(error){if(['unauthorized','not_found','not_configured','conflict'].includes(error?.code))throw error;envelope=await transactionEnvelope(context.requestId);if(!envelope)throw error;recovered=true;}}
    state.providerSessionId=envelope.envelopeId;if(recovered)await verifyIntent(state);
    return {providerSessionId:envelope.envelopeId,providerDocumentHash,expiresAt,authorityPolicyHash,state};
   },
-  async view(state,party){const s=current(state),p=state.signers.find(p=>p.party===party);if(!p)fail('unauthorized');const path='/envelopes/'+state.providerSessionId,envelope=await api(path);if(envelope.envelopeId!==state.providerSessionId)fail('conflict');if(envelope.status==='created'){await verifyIntent(state);await api(path,{method:'PUT',body:{status:'sent'}});}else if(!['sent','delivered'].includes(envelope.status))fail('conflict');const result=await api(path+'/views/recipient',{method:'POST',body:{returnUrl:s.returnUrl,authenticationMethod:'none',email:p.email,userName:p.name,clientUserId:p.clientUserId}});let url;try{url=new URL(result.url);}catch{fail('unavailable');}if(url.protocol!=='https:'||!/(^|\.)docusign\.(net|com)$/i.test(url.hostname)||url.username||url.password)fail('unavailable');return {embeddedUrl:url.href,expiresAt:new Date(Date.now()+300000).toISOString()};},
+  async view(state,party,{authorizeTransfer}={}){const s=current(state),p=state.signers.find(p=>p.party===party);if(!p)fail('unauthorized');const path='/envelopes/'+state.providerSessionId,envelope=await api(path);if(envelope.envelopeId!==state.providerSessionId)fail('conflict');if(envelope.status==='created'){await verifyIntent(state);await authorizeTransfer?.();await api(path,{method:'PUT',body:{status:'sent'}});}else if(!['sent','delivered'].includes(envelope.status))fail('conflict');await authorizeTransfer?.();const result=await api(path+'/views/recipient',{method:'POST',body:{returnUrl:s.returnUrl,authenticationMethod:'none',email:p.email,userName:p.name,clientUserId:p.clientUserId}});let url;try{url=new URL(result.url);}catch{fail('unavailable');}if(url.protocol!=='https:'||!/(^|\.)docusign\.(net|com)$/i.test(url.hostname)||url.username||url.password)fail('unavailable');return {embeddedUrl:url.href,expiresAt:new Date(Date.now()+300000).toISOString()};},
   async refresh(state){
    const s=current(state),path='/envelopes/'+state.providerSessionId;
    const envelope=await api(path);if(envelope.envelopeId!==state.providerSessionId)fail('conflict');

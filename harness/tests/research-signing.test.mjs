@@ -5,9 +5,16 @@ import { randomUUID, createHash, createHmac } from 'node:crypto';
 import CORE from '../../app/lib/research-partnership-core.js';
 import { contentHash } from '../lib/research-partnership-exports.mjs';
 import { handleResearchSigningWebhook } from '../lib/research-partnerships.mjs';
+import { approveSigningProcessing } from '../fixtures/research-partnership-integrated.mjs';
 test('signing readiness requires credentials, owner policy and explicit supported identity checks',async()=>{
  const adapter=createSigningAdapter({env:{}});assert.equal(adapter.readiness().state,'not_configured');await assert.rejects(adapter.start({}),e=>e.code==='not_configured');
  const token=await researchSigningWorkerToken({get:async()=>({secret:'synthetic'})});const payload=JSON.parse(Buffer.from(token.split('.')[0],'base64url'));assert.equal(payload.k,'research_signing_worker');assert.equal(payload.purpose,'research-signing');
+});
+test('explicit server provider selection fails closed and never falls back from unknown or unassured SignWell',async()=>{
+ let calls=0;const options={env:{},signingFetchImpl:async()=>{calls++;throw new Error('synthetic should not call');}};
+ assert.equal(createSigningAdapter(options).provider,'docusign');
+ const unknown=createSigningAdapter({...options,signingProvider:'unsupported'});assert.equal(unknown.readiness().state,'unsupported_provider');await assert.rejects(unknown.start({}),e=>e.code==='not_configured');
+ const signwell=createSigningAdapter({...options,signingProvider:'signwell',signing:{apiKey:'synthetic-not-live',testMode:false}});assert.equal(signwell.provider,'signwell');assert.equal(signwell.readiness().configured,false);assert.throws(()=>signwell.buildIntent({}),e=>e.code==='not_configured');assert.equal(calls,0);
 });
 test('synthetic authenticated Connect event completes actual SQL execution without an open browser and stores encrypted immutable evidence',async()=>{
  const {createPartnershipIntegration}=await import('../fixtures/research-partnership-integrated.mjs');
@@ -35,7 +42,10 @@ test('synthetic authenticated Connect event completes actual SQL execution witho
   const agreementScope={...scope,recordId:agreement.record.id},versionId=agreement.version.id,documentHash=agreement.version.contentHash;
   agreement=await f.checked(f.tokens.a,'recordSubmit',f.request({...agreementScope,versionId,expectedRevision:agreement.record.revision}));let reviewed=await f.checked(f.tokens.owner,'recordReview',f.request({...agreementScope,versionId,expectedRevision:agreement.record.revision,decision:'approved'}));
   for(const who of ['owner','a'])reviewed=await f.checked(f.tokens[who],'agreementApprove',f.request({...agreementScope,versionId,expectedRevision:reviewed.record.revision,documentHash,ipExplanationVersionId:template.version.id,ipReadAcknowledged:true}));
-  const startRequest=f.request({...agreementScope,versionId,expectedRevision:reviewed.record.revision,documentHash,consent:true});const started=await f.checked(f.tokens.owner,'signingStart',startRequest);assert.equal(started.signing.state,'awaiting_signers');assert.equal((await f.checked(f.tokens.owner,'recordGet',agreementScope)).record.status,'signing');assert.equal((await f.checked(f.tokens.owner,'signingStart',startRequest)).signing.id,started.signing.id);assert.equal(starts,1);
+  const startRequest=f.request({...agreementScope,versionId,expectedRevision:reviewed.record.revision,documentHash,consent:true});
+  assert.equal((await f.callResearch({token:f.tokens.owner,action:'signingStart',...startRequest}))[0],503);assert.equal(starts,0,'editable agreement privacy never authorizes a transfer');
+  await approveSigningProcessing(f,scope);
+  const started=await f.checked(f.tokens.owner,'signingStart',startRequest);assert.equal(started.signing.state,'awaiting_signers');assert.equal((await f.checked(f.tokens.owner,'recordGet',agreementScope)).record.status,'signing');assert.equal((await f.checked(f.tokens.owner,'signingStart',startRequest)).signing.id,started.signing.id);assert.equal(starts,1);
   const currentRecord=(await f.checked(f.tokens.a,'recordGet',agreementScope)).record,refresh=f.request({...agreementScope,signingId:started.signing.id,expectedRevision:currentRecord.revision});
   assert.equal((await f.checked(f.tokens.a,'signingRefresh',refresh)).signing.state,'in_progress');assert.equal(envelopeReads,1);
   assert.equal((await f.checked(f.tokens.a,'signingRefresh',refresh)).signing.state,'in_progress');assert.equal(envelopeReads,1);
@@ -48,6 +58,7 @@ test('synthetic authenticated Connect event completes actual SQL execution witho
    assert.equal((await webhook())[0],409,JSON.stringify(signerMismatch));assert.equal((await f.query('SELECT count(*)::int n FROM research_private.partnership_executions')).rows[0].n,0);
   }
   signerMismatch=undefined;const completed=await webhook();assert.equal(completed[0],200,JSON.stringify({completed,internalErrors}));assert.deepEqual(completed[1],{ok:true});assert.equal((await webhook())[0],200);
+  assert.equal((await handleResearchSigningWebhook(f.accessStore,f.researchStore,raw,{'x-docusign-signature-1':signature},{...options,signingProvider:'signwell',documentKey:f.documentKey}))[0],200,'issued Connect callbacks keep their provider when new-document default changes');
   assert.equal((await f.checked(f.tokens.a,'recordGet',agreementScope)).record.status,'executed');
   const evidence=(await f.query('SELECT id,size,sha256,content_ciphertext FROM research_private.partnership_documents WHERE record_id=$1',[agreementScope.recordId])).rows;assert.equal(evidence.length,2);assert.ok(evidence.every(d=>d.sha256!==documentHash&&d.content_ciphertext.v===1));
   const bytes=await f.checked(f.tokens.a,'workspaceDocumentGet',{...scope,documentId:evidence[0].id,download:true});assert.match(Buffer.from(bytes.contentBase64,'base64').toString(),/^%PDF-/);
@@ -81,6 +92,7 @@ test('provider draft remains non-signable after local preparation failure and th
    const agreementScope={...scope,recordId:agreement.record.id},versionId=agreement.version.id,documentHash=agreement.version.contentHash;
    agreement=await f.checked(f.tokens.a,'recordSubmit',f.request({...agreementScope,versionId,expectedRevision:agreement.record.revision}));agreement=await f.checked(f.tokens.owner,'recordReview',f.request({...agreementScope,versionId,expectedRevision:agreement.record.revision,decision:'approved'}));
    for(const who of ['owner','a'])agreement=await f.checked(f.tokens[who],'agreementApprove',f.request({...agreementScope,versionId,expectedRevision:agreement.record.revision,documentHash,ipExplanationVersionId:template.version.id,ipReadAcknowledged:true}));
+   await approveSigningProcessing(f,scope);
    const start=f.request({...agreementScope,versionId,expectedRevision:agreement.record.revision,documentHash,consent:true}),rpc=f.researchStore.rpc;let failPrepare=true;
    f.researchStore.rpc=async(...args)=>{if(args[1]==='signingPrepare'&&failPrepare){failPrepare=false;if(failure==='after-commit')await rpc(...args);throw Object.assign(new Error('unavailable'),{code:'unavailable'});}return rpc(...args);};
    assert.equal((await f.callResearch({token:f.tokens.owner,action:'signingStart',...start}))[0],503);
