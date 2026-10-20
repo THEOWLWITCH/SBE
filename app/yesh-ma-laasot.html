@@ -1251,7 +1251,7 @@ function renderAll(){
 /* ================= gift link: ?to=&from=&msg= ================= */
 const clip=(s,n)=>String(s||"").replace(/[\u0000-\u001f\u007f]/g," ").replace(/\s+/g," ").trim().slice(0,n);
 const GIFT={to:clip(QS.get("to"),60),from:clip(QS.get("from"),60),msg:String(QS.get("msg")||"").replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g," ").trim().slice(0,400)};
-const isGift=QS.has("gift")||GIFT.to||GIFT.from||GIFT.msg;
+let isGift=QS.has("gift")||GIFT.to||GIFT.from||GIFT.msg;
 function renderGift(){
   if(!isGift)return;
   const rb=$("#giftRibbon");
@@ -1261,10 +1261,25 @@ function renderGift(){
   $("#giftMsg").textContent=GIFT.msg;$("#giftMsg").hidden=!GIFT.msg;
   $("#giftDesc").textContent=t("giftDesc");$("#giftOpen").textContent=t("giftOpen");$("#giftTip").textContent=t("giftTip");
 }
-if(isGift){
-  let seen=false;try{seen=sessionStorage.getItem("edu_giftSeen")===location.search}catch(e){}
+const GCODE=(QS.get("g")||"").replace(/[^A-Za-z0-9]/g,"").slice(0,16);
+const giftKey=()=>location.search;
+function openGift(){
+  renderGift();
+  let seen=false;try{seen=sessionStorage.getItem("edu_giftSeen")===giftKey()}catch(e){}
   if(!seen){$("#gift").hidden=false;setTimeout(()=>{$("#giftOpen").focus()},50)}
-  $("#giftOpen").onclick=()=>{$("#gift").hidden=true;try{sessionStorage.setItem("edu_giftSeen",location.search)}catch(e){}};
+  $("#giftOpen").onclick=()=>{$("#gift").hidden=true;try{sessionStorage.setItem("edu_giftSeen",giftKey())}catch(e){}};
+}
+if(isGift)openGift();
+/* קישור מתנה קצר (20/10/2026): be-good.co.il/g/<קוד> מפנה לכאן עם ?g=<קוד>; הפרטים נשמרים בשרת של Begood */
+if(GCODE&&!isGift){
+  fetch("https://sbe-server.onrender.com/api/access",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"giftGet",id:GCODE})})
+    .then(r=>r.ok?r.json():null).then(d=>{
+      if(!d||!d.gift)return;
+      const g=d.gift;GIFT.to=clip(g.to,60);GIFT.from=clip(g.from,60);GIFT.msg=String(g.msg||"").replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g," ").trim().slice(0,400);
+      isGift=true;
+      if((g.lang==="ar"||g.lang==="he")&&g.lang!==lang&&!QS.get("lang")){lang=g.lang;store.set("lang",lang);renderAll()}
+      openGift();
+    }).catch(()=>{});
 }
 const _renderStatic=renderStatic;renderStatic=function(){_renderStatic();renderGift()};
 renderAll();

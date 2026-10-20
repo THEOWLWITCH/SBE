@@ -1714,7 +1714,9 @@ function pOpen(){
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"קישור פתוח ליום אחד"), el("p",{class:"sub"},"קישור או QR בלי קוד, לכלי אחד או לכל הכלים, שפתוח רק בתאריך שבחרת (לפי שעון ישראל). מתאים להתנסות בהרצאה או בסדנה. השרת בודק את התאריך בכל פנייה, ולמחרת הקישור נסגר מעצמו."));
   // "יש מה לעשות" במתנה (19/10/2026): המדריכון פתוח לכולם, בלי קוד ובלי שרת, ולכן גם בלי סיסמה כאן.
-  if (window.SBE_GIFT) window.SBE_GIFT.mount(w, { from: "ד״ר יעל שדה" });
+  if (window.SBE_GIFT) window.SBE_GIFT.mount(w, { from: "ד״ר יעל שדה",
+    create: async (gifts) => (await accessCall("giftCreate", { gifts })).gifts,
+    remove: async (id, key) => { await accessCall("giftDelete", { id, key }); } });
   if (!gate(w, openData, async () => { openData = await accessCall("openList"); }, "סיסמת מנהלת המערכת")) return w;
   // יצירה
   const c = el("div",{class:"card"}), inn = el("div",{class:"in"});
