@@ -75,7 +75,7 @@
     F('cc-mode-description').textContent = single
       ? 'מסר אחד מתוך הנחיה קצרה. התוכן נשאר בלשונית עד ייצוא או המשך מפורש בניהול תקשורת.'
       : 'שומרים את רצף התקשורת בחשבון האישי, מנסחים תשובה ובוחרים את הצעד הבא.';
-    F('cc-composer-title').textContent = single ? 'מה רוצים לומר?' : state.selected ? 'הוספת הודעה או עדכון לשיחה' : 'מה קורה בשיחה?';
+    F('cc-composer-title').textContent = single ? 'מה רוצים לומר?' : state.selected ? 'הוספת הודעה או עדכון לשיחה' : 'מאיפה נתחיל את השיחה?';
     F('cc-text').placeholder = single ? 'למשל: כתבי הודעה להורים על מפגש הכיתה ביום חמישי בשעה 18:00, עם הזמנה לשיתוף פעולה.' : 'מה קרה? אפשר להדביק הודעה שקיבלת, לתאר את המצב או לכתוב מה תרצי להשיג.';
     F('cc-ai-disclosure').textContent = single
       ? 'ההנחיה והחומרים שתבחרי נשלחים לעיבוד אצל ספק המודל שהוגדר במערכת. כדאי לכלול רק את הפרטים הנחוצים ולצמצם פרטים מזהים. בניסוח חד־פעמי הם והטיוטות נשארים בלשונית בלבד; מעבר לניהול תקשורת אינו שומר אותם. שמירה מתבצעת רק בפעולת "המשך בניהול תקשורת". התוצאה היא טיוטה לבדיקה ולעריכה לפני השימוש.'
@@ -552,7 +552,7 @@
     const c = state.selected;
     const oldNotice = F('cc-conversation').querySelector('[data-context-notice]'); if (oldNotice) oldNotice.remove();
     F('cc-conversation').hidden = !c;
-    F('cc-composer-title').textContent = c ? 'הוספת הודעה או עדכון לשיחה' : 'מה קורה בשיחה?';
+    F('cc-composer-title').textContent = c ? 'הוספת הודעה או עדכון לשיחה' : 'מאיפה נתחיל את השיחה?';
     if (c) {
       F('cc-title').textContent = c.title || 'שיחה ללא שם'; F('cc-status-badge').textContent = C.STATUSES[c.status] || c.status;
       F('cc-meta').textContent = 'נוצרה: ' + date(c.createdAt) + ' · עודכנה: ' + date(c.updatedAt) + ' · ' + (c.rounds || 0) + ' סבבי שיח · מזהה: ' + c.id;
