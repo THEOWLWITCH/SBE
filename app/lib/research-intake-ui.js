@@ -5,6 +5,7 @@
   'use strict';
   const LABELS={title:'כותרת הבקשה',objectives:'מטרות בקצרה'};
   const ACK='קראתי את תנאי הפנייה. אישור הקריאה אינו חתימה על הסכם';
+  const PUBLIC_MESSAGES={rate_limited:'נשלחו כמה פניות. אפשר לנסות שוב בהמשך.',unavailable:'השירות אינו זמין כרגע. הפרטים נשארים כאן ואפשר לנסות שוב.'};
   const uuid=()=>crypto.randomUUID();
   const split=value=>[...new Set(String(value||'').split(/[\n,]/).map(s=>s.trim()).filter(Boolean))];
   const date=value=>value?new Intl.DateTimeFormat('he-IL',{dateStyle:'short',timeStyle:'short'}).format(new Date(value)):'טרם נרשם';
@@ -21,12 +22,13 @@
         body.requestId=pending.requestId;
       }
       I.validatePayload(action,body);
+      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
       try{
-        const response=await fetchImpl(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'omit',cache:'no-store'}),data=await response.json();
-        if(!response.ok||data.ok===false){if(response.status>=400&&response.status<500)pending=null;throw R.error(data.code==='terms_changed'?'conflict':Object.hasOwn(R.MESSAGES,data.code)?data.code:'invalid',response.status);}
+        const response=await fetchImpl(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'omit',cache:'no-store',signal:controller.signal}),data=await response.json();
+        if(!response.ok||data.ok===false){if(response.status>=400&&response.status<500)pending=null;const code=data.code==='terms_changed'?'conflict':Object.hasOwn(PUBLIC_MESSAGES,data.code)||Object.hasOwn(R.MESSAGES,data.code)?data.code:'invalid',error=R.error(code,response.status);if(PUBLIC_MESSAGES[code])error.userMessage=PUBLIC_MESSAGES[code];throw error;}
         if(action==='intakeSubmit')pending=null;
         return data;
-      }catch(e){if(e.code)throw e;throw R.error('network');}
+      }catch(e){if(typeof e.code==='string')throw e;throw R.error('network');}finally{clearTimeout(timer);}
     }
     return Object.freeze({call});
   }
@@ -73,8 +75,8 @@
     }
     async function load(){
       if(submitting||receipt)return;
-      read();const previous=info?.terms,readAcknowledged=ack?.checked===true,at=++epoch;
-      try{const data=await client.call('intakePublicInfo');if(at!==epoch)return;info=data;const changed=Boolean(previous&&(previous.versionId!==info.terms?.versionId||previous.hash!==info.terms?.hash));render(changed,readAcknowledged);}catch(e){if(at===epoch)note(e.userMessage||R.MESSAGES.network,true);}
+      read();const previous=info?.terms,at=++epoch;
+      try{const data=await client.call('intakePublicInfo');if(at!==epoch||submitting||receipt)return;read();const readAcknowledged=ack?.checked===true;info=data;const changed=Boolean(previous&&(previous.versionId!==info.terms?.versionId||previous.hash!==info.terms?.hash));render(changed,readAcknowledged);}catch(e){if(at===epoch&&!submitting&&!receipt)note(e.userMessage||R.MESSAGES.network,true);}
     }
     async function submit(){
       const application=read(),missing=I.SUBMISSION_REQUIRED_FIELDS.filter(key=>!application[key]||(Array.isArray(application[key])&&!application[key].length));
@@ -90,13 +92,13 @@
   }
   function mountOwner(options={}){
     const document=options.document||window.document,root=options.root,D=R.dom(document),client=options.client;
-    let bootstrap=options.bootstrap||{},ownerInfo=null,epoch=0,status=null,readDraft=null,route=null,applicationId=null;
-    function clear(){epoch++;ownerInfo=null;bootstrap={};readDraft=null;route=null;applicationId=null;status=null;root.replaceChildren();}
+    let bootstrap=options.bootstrap||{},ownerInfo=null,epoch=0,viewSequence=0,status=null,readDraft=null,route=null,applicationId=null;
+    function clear(){epoch++;viewSequence++;ownerInfo=null;bootstrap={};readDraft=null;route=null;applicationId=null;status=null;root.replaceChildren();}
     function note(text,bad=false){if(!status){status=D.node('p','r-notice');status.setAttribute('role','status');status.setAttribute('aria-live','polite');root.append(status);}status.className='r-notice'+(bad?' r-error':'');status.textContent=text;}
-    async function call(action,payload={}){const at=epoch;try{const data=await client.call(action,payload);return at===epoch?data:null;}catch(e){if(e.code!=='stale'&&at===epoch)note(e.userMessage||R.MESSAGES[e.code]||R.MESSAGES.invalid,true);return null;}}
-    async function ready(){if(ownerInfo)return true;const info=await call('intakeOwnerBootstrap');if(!info)return false;ownerInfo=info;return true;}
+    async function call(action,payload={}){const at=epoch,view=viewSequence;try{const data=await client.call(action,payload);return at===epoch&&view===viewSequence?data:null;}catch(e){if(e.code!=='stale'&&at===epoch&&view===viewSequence)note(e.userMessage||R.MESSAGES[e.code]||R.MESSAGES.invalid,true);return null;}}
+    async function ready(){if(ownerInfo)return true;const [info,studies]=await Promise.all([call('intakeOwnerBootstrap'),call('bootstrap')]);if(!info||!studies)return false;ownerInfo=info;bootstrap={...bootstrap,studies:studies.studies||[]};return true;}
     function heading(title){root.replaceChildren();status=null;readDraft=null;const box=D.card(root,title),nav=D.node('nav','r-toolbar');if(options.onBack)nav.append(D.button('כל השותפויות',options.onBack,'r-secondary'));nav.append(D.button('בקשות לשותפות',()=>inbox(),'r-secondary'),D.button('תנאי פנייה',()=>terms(),'r-secondary'));box.append(nav);return box;}
-    async function terms(saved){if(!await ready())return;route='terms';applicationId=null;const state=ownerInfo.termsState||{revision:0,draftVersion:null,publishedVersionId:null},version=state.draftVersion,seed=saved||version||I.DEFAULT_TERMS_DRAFT,box=heading('תנאי פנייה');
+    async function terms(saved){const view=++viewSequence;if(!await ready()||view!==viewSequence)return;route='terms';applicationId=null;const state=ownerInfo.termsState||{revision:0,draftVersion:null,publishedVersionId:null},version=state.draftVersion,seed=saved||version||I.DEFAULT_TERMS_DRAFT,box=heading('תנאי פנייה');
       D.paragraph(box,state.publishedVersionId?'הפניות פתוחות לפי גרסה שפורסמה. מזהה הגרסה: '+state.publishedVersionId:'טרם פורסמו תנאי פנייה. הפניות הציבוריות סגורות.','r-notice r-pre');
       const proposed=version?.number===1&&version.title===I.DEFAULT_TERMS_DRAFT.title&&version.text===I.DEFAULT_TERMS_DRAFT.text;
       D.paragraph(box,version?(proposed?'טיוטה מוצעת':'טיוטה שמורה')+' · גרסה '+version.number+(state.publishedVersionId===version.versionId?' · הגרסה פורסמה':' · הנוסח טרם פורסם'):'נוסח מוצע לעיון בעלת המערכת. הנוסח טרם אושר או פורסם.');
@@ -104,11 +106,11 @@
       box.append(D.button('שמירת טיוטת תנאים',async()=>{const result=await call('intakeTermsSave',{expectedRevision:state.revision,title:title.value,text:text.value});if(result){ownerInfo.termsState=result.termsState;await terms();note('הטיוטה נשמרה. פרסום הגרסה הוא פעולה נפרדת.');}}));
       if(version&&state.publishedVersionId!==version.versionId)box.append(D.button('פרסום הגרסה השמורה',async()=>{if(title.value!==version.title||text.value!==version.text){note('אפשר לשמור תחילה את השינויים כטיוטה, ולאחר מכן לפרסם את הגרסה השמורה.',true);return;}const result=await call('intakeTermsPublish',{expectedRevision:state.revision,versionId:version.versionId});if(result){ownerInfo.termsState=result.termsState;await terms();note('הגרסה השמורה פורסמה לתצוגה הציבורית.');}}));
     }
-    async function inbox(){if(!await ready())return;route='inbox';applicationId=null;const box=heading('בקשות לשותפות'),filters=D.node('div','r-grid'),state=D.field(filters,'מצב הפנייה','select','',{choices:{'':'כל המצבים',...I.APPLICATION_STATUSES}}),query=D.field(filters,'חיפוש בפניות');box.append(filters);const listing=D.node('div');box.append(listing);let applications=[],cursor=null;
+    async function inbox(){const view=++viewSequence;if(!await ready()||view!==viewSequence)return;route='inbox';applicationId=null;const box=heading('בקשות לשותפות'),filters=D.node('div','r-grid'),state=D.field(filters,'מצב הפנייה','select','',{choices:{'':'כל המצבים',...I.APPLICATION_STATUSES}}),query=D.field(filters,'חיפוש בפניות');box.append(filters);const listing=D.node('div');box.append(listing);let applications=[],cursor=null;
       async function fetchList(more=false){const data=await call('intakeList',{...(state.value?{status:state.value}:{}),...(query.value.trim()?{query:query.value.trim()}:{}),...(more&&cursor?{cursor}:{})});if(!data)return;applications=more?[...applications,...data.applications||[]]:data.applications||[];cursor=data.nextCursor;listing.replaceChildren();if(!applications.length)D.paragraph(listing,'אין כרגע פניות להצגה.','r-muted');for(const application of applications){const card=D.card(listing,application.fullName||application.application?.fullName||'פנייה לשותפות');card.append(D.button(application.title||application.application?.title||'פרטי הפנייה',()=>detail(application.id)));D.paragraph(card,(I.APPLICATION_STATUSES[application.status]||application.status)+' · '+date(application.submittedAt));}if(cursor)listing.append(D.button('פניות נוספות',()=>fetchList(true),'r-secondary'));}
       box.append(D.button('חיפוש בפניות',()=>fetchList()));await fetchList();
     }
-    async function detail(id,saved){if(!await ready())return;const result=await call('intakeGet',{applicationId:id});if(!result)return;route='detail';applicationId=id;const application=result.application,data=application.application||application.data||{},box=heading(data.title||'פרטי הפנייה');
+    async function detail(id,saved){const view=++viewSequence;if(!await ready()||view!==viewSequence)return;const result=await call('intakeGet',{applicationId:id});if(!result)return;route='detail';applicationId=id;const application=result.application,data=application.application||application.data||{},box=heading(data.title||'פרטי הפנייה');
       D.paragraph(box,'מצב: '+(I.APPLICATION_STATUSES[application.status]||application.status)+' · מועד הגשה: '+date(application.submittedAt)+' · גרסת הפנייה: '+application.revision);if(application.reviewedAt)D.paragraph(box,'מועד בדיקה: '+date(application.reviewedAt));
       const original=D.card(box,'הפרטים המקוריים שהוגשו');for(const def of I.PUBLIC_FIELDS)if(data[def.id]!==undefined){D.paragraph(original,def.label,'r-intake-label');const value=def.type==='enum'?def.choices[data[def.id]]:def.id==='requestedPermissions'?(data[def.id]||[]).map(P.permissionLabel).join(', '):R.display(data[def.id]);D.paragraph(original,value,'r-pre');}
       const accepted=D.node('details','r-fold');accepted.append(D.node('summary','','תנאי הפנייה שנקראו בעת ההגשה'));if(result.terms){D.paragraph(accepted,result.terms.title+' · גרסה '+result.terms.number);D.paragraph(accepted,result.terms.text,'r-pre');D.paragraph(accepted,'מזהה גרסה: '+result.terms.versionId+' · טביעת תוכן: '+result.terms.hash,'r-muted r-pre');}D.paragraph(accepted,'אישור הקריאה אינו חתימה על הסכם.');box.append(accepted);
@@ -126,7 +128,7 @@
       approval.append(D.button('יצירת מחקר כטיוטה מהבקשה',async()=>{const snapshot=readDraft(),created=await call('studyCreate',{config:{title:data.title,description:data.objectives||''}});if(created){bootstrap.studies=[...studies,created.study];await detail(id,{...snapshot,studyId:created.study.id});note('המחקר נשמר כטיוטה. אפשר להמשיך בבחירת הזהות וההרשאות.');}},'r-secondary'));
       const create=D.node('details','r-fold');create.append(D.node('summary','','קוד אישי חדש למחקר'));D.paragraph(create,'הקוד נוצר בהקשר כניסה קיים. יצירתו אינה פותחת כלים או מחקרים ואינה שולחת הודעה לפונה. אפשר למסור אותו באופן אישי לאחר וידוא זהות.');const institution=D.field(create,'הקשר כניסה לקוד החדש','select',saved?.newInstitution??ownerInfo.institutions?.[0]??'',{choices:{'':'בחירת מסגרת קיימת',...Object.fromEntries((ownerInfo.institutions||[]).map(i=>[i,i]))}}),label=D.field(create,'שם לקוד האישי','text',saved?.newLabel??data.fullName??'');
       create.append(D.button('יצירת קוד אישי למחקר',async()=>{const snapshot=readDraft(),created=await call('intakeIdentityCreate',{institution:institution.value,label:label.value});if(created){ownerInfo.identities=[...ownerInfo.identities||[],created.identity];await detail(id,{...snapshot,individualCode:created.identity.code,verified:false});note('נוצר קוד אישי למחקר: '+created.identity.code+'. הקוד אינו מקנה גישה עד לאישור ההרשאות.');}}));approval.append(create);
-      approval.append(D.button('אישור הבקשה וההרשאות שנבחרו',async()=>{if(!study.value||!identity.value||!verified.checked||!rights.values().includes('view_study')){note('להשלמת האישור אפשר לבחור מחקר, זהות אישית שנבדקה והרשאת צפייה במחקר, ולסמן את וידוא הזהות.',true);return;}let selected=(bootstrap.studies||[]).find(s=>s.id===study.value);if(!Number.isSafeInteger(selected?.revision)){const fresh=await call('studyGet',{studyId:study.value});if(!fresh)return;selected=fresh.study;}await review('approved',{studyId:study.value,studyExpectedRevision:selected.revision,individualCode:identity.value,permissions:rights.values()});}));
+      approval.append(D.button('אישור הבקשה וההרשאות שנבחרו',async()=>{if(!study.value||!identity.value||!verified.checked||!rights.values().includes('view_study')){note('להשלמת האישור אפשר לבחור מחקר, זהות אישית שנבדקה והרשאת צפייה במחקר, ולסמן את וידוא הזהות.',true);return;}const fresh=await call('studyGet',{studyId:study.value});if(!fresh)return;await review('approved',{studyId:study.value,studyExpectedRevision:fresh.study.revision,individualCode:identity.value,permissions:rights.values()});}));
     }
     return Object.freeze({inbox,terms,detail,clear,capture:()=>({route,applicationId,draft:readDraft?.()}),async restore(saved){if(saved?.route==='terms')await terms(saved.draft);else if(saved?.route==='detail')await detail(saved.applicationId,saved.draft);else await inbox();}});
   }

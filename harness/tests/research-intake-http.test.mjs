@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { PassThrough } from 'node:stream';
 import { createHmac, randomUUID } from 'node:crypto';
 import { createPracticeServer } from '../practice-server.mjs';
+import { setTimeout as delay } from 'node:timers/promises';
 
 // Exercise the real request listener and transport with isolated streams; no ports.
 test('public HTTP intake has its own byte cap, fixed service RPC, socket rate bucket and existing CORS', async () => {
@@ -37,5 +38,25 @@ test('public HTTP intake has its own byte cap, fixed service RPC, socket rate bu
     if (previous.url === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = previous.url;
     if (previous.key === undefined) delete process.env.SUPABASE_SERVICE_KEY; else process.env.SUPABASE_SERVICE_KEY = previous.key;
     server.close();
+  }
+});
+
+test('public intake returns unavailable when the access-settings request stalls',async(t)=>{
+  const previous={url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SERVICE_KEY,fetch:globalThis.fetch};
+  process.env.SUPABASE_URL='https://synthetic.invalid';process.env.SUPABASE_SERVICE_KEY='sb_secret_synthetic';
+  const originalTimeout=AbortSignal.timeout;let deadline=0;
+  t.mock.method(AbortSignal,'timeout',milliseconds=>{deadline=milliseconds;return originalTimeout(25);});
+  globalThis.fetch=async(url,options)=>{
+    if(new URL(url).searchParams.get('key')?.startsWith('like.'))return Response.json([]);
+    return new Promise((resolve,reject)=>options.signal?.addEventListener('abort',()=>reject(Error('synthetic timeout'))));
+  };
+  const server=createPracticeServer(),listener=server.listeners('request')[0],req=new PassThrough();req.url='/api/research-intake';req.method='POST';req.headers={};req.socket={remoteAddress:'synthetic-socket'};
+  const res={setHeader(){},writeHead(status){this.status=status;},end(value){this.body=JSON.parse(value);}};
+  try{
+    const handling=listener(req,res);req.end(JSON.stringify({action:'intakeSubmit',requestId:randomUUID(),termsVersionId:randomUUID(),termsHash:'a'.repeat(64),acknowledged:true,application:{title:'Synthetic',applicationType:'partnership',fullName:'Synthetic',email:'s@example.invalid',objectives:'Synthetic',requestedTools:['communication'],applicantType:'individual'}}));
+    await Promise.race([handling,delay(500).then(()=>{throw Error('public access-settings request remained unbounded');})]);
+    assert.equal(deadline,8000);assert.equal(res.status,503);assert.equal(res.body.code,'unavailable');
+  }finally{
+    globalThis.fetch=previous.fetch;if(previous.url===undefined)delete process.env.SUPABASE_URL;else process.env.SUPABASE_URL=previous.url;if(previous.key===undefined)delete process.env.SUPABASE_SERVICE_KEY;else process.env.SUPABASE_SERVICE_KEY=previous.key;server.close();
   }
 });

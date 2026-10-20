@@ -197,7 +197,7 @@ const server = createServer(async (req, res) => {
     try { body = JSON.parse((await readRawBody(req, 128 * 1024)).toString('utf8')); }
     catch (error) { const status = error.status === 413 ? 413 : 400; return sendJson(res,status,{ok:false,status,error:'invalid',code:'invalid'}); }
     try {
-      const [status, out] = await handleIntake(jobStore(), supabaseResearchStore(url, key), body, { clientAddress: req.socket.remoteAddress });
+      const [status, out] = await handleIntake(authStore || supabaseStore(url, key, { timeoutMs: 8000 }), supabaseResearchStore(url, key), body, { clientAddress: req.socket.remoteAddress });
       return sendJson(res, status, { ...out, ok: status >= 200 && status < 300, status });
     } catch { return sendJson(res, 503, {ok:false,status:503,error:'unavailable',code:'unavailable'}); }
   }

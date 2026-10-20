@@ -22,6 +22,8 @@ test('unpublished intake exposes no terms and accepts no applications', async ()
   assert.equal(typeof f.intakeRpc,'function');
   assert.deepEqual(await f.intakeRpc(null,'intakePublicInfo',{}),{terms:null,acceptingApplications:false});
   const draft=(await ok(f,'intakeOwnerBootstrap')).termsState;assert.equal(draft.revision,0);assert.deepEqual({title:draft.draftVersion.title,text:draft.draftVersion.text},INTAKE.DEFAULT_TERMS_DRAFT);
+  const contract=(await f.db.query('SELECT research_private.intake_contract() AS value')).rows[0].value;
+  assert.deepEqual(contract,{operations:INTAKE.OPERATIONS,publicFields:INTAKE.PUBLIC_FIELDS,requiredFields:INTAKE.SUBMISSION_REQUIRED_FIELDS,defaultDraft:INTAKE.DEFAULT_TERMS_DRAFT});
   assert.equal((await f.intakeRpc(null,'intakeSubmit',submission(draft.draftVersion))).error,'conflict');
  }finally{await f.close();}
 });
@@ -72,6 +74,19 @@ test('terms and review use CAS and exact request replay; owner lists query with 
   // Seed many synthetic proposals directly to exercise the owner's actual SQL page boundary.
   for(let i=0;i<52;i++)await f.db.query('WITH inserted AS (INSERT INTO research_private.intake_applications(request_id,payload_hash,application,terms_version_id,terms_hash) VALUES($1,$2,$3,$4,$2) RETURNING id) INSERT INTO research_private.intake_decisions(application_id) SELECT id FROM inserted',[randomUUID(),'a'.repeat(64),proposal({title:'Page synthetic '+i}),terms.versionId]);
   const first=await ok(f,'intakeList',{query:'Page synthetic'});assert.equal(first.applications.length,50);assert.ok(first.nextCursor);const last=await ok(f,'intakeList',{query:'Page synthetic',cursor:first.nextCursor});assert.equal(last.applications.length,2);assert.equal(last.nextCursor,null);assert.equal(new Set([...first.applications,...last.applications].map(a=>a.id)).size,52);
+ }finally{await f.close();}
+});
+
+test('an under-review note appends immutable review history without granting rights',async()=>{
+ const f=await createPartnershipDatabase();try{
+  const {terms}=await publish(f),sent=await submit(f,terms);
+  await ok(f,'intakeReview',request({applicationId:sent.receipt.id,expectedRevision:0,decision:'under_review',note:'First note'}));
+  const second=request({applicationId:sent.receipt.id,expectedRevision:1,decision:'under_review',note:'Follow-up note'});
+  const updated=await ok(f,'intakeReview',second);assert.equal(updated.application.revision,2);
+  assert.deepEqual(updated.application.reviews.map(review=>review.note),['First note','Follow-up note']);
+  assert.deepEqual(await ok(f,'intakeReview',second),updated);
+  assert.equal((await f.intakeRpc(TOKENS.owner,'intakeReview',request({...second,requestId:randomUUID(),note:'Stale'}))).error,'conflict');
+  for(const table of ['memberships','partnership_partners','partnership_records'])assert.equal((await f.db.query('SELECT count(*)::int n FROM research_private.'+table)).rows[0].n,0);
  }finally{await f.close();}
 });
 

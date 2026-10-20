@@ -49,6 +49,9 @@ test('research authentication survives the complete hardened release migration o
     assert.equal((await db.query("SELECT count(*)::int n FROM pg_policy WHERE polname='synthetic_existing_auth_policy'")).rows[0].n, 1);
     await db.exec('DROP POLICY synthetic_existing_auth_policy ON public.access_settings');
     await db.exec(boundary);
+    for (const migration of ['20261020-partnership-profile.sql', '20261020-partnership-intake.sql']) {
+      await db.exec(await readFile(new URL('../migrations/' + migration, import.meta.url), 'utf8'));
+    }
     assert.deepEqual((await db.query("SELECT current_user,rolsuper,rolbypassrls FROM pg_roles WHERE rolname=current_user")).rows[0], { current_user: 'migration_operator', rolsuper: false, rolbypassrls: false });
     assert.equal((await db.query("SELECT has_schema_privilege('research_worker','research_private','CREATE') AS allowed")).rows[0].allowed, false);
 
@@ -56,6 +59,19 @@ test('research authentication survives the complete hardened release migration o
     assert.equal((await rpc(TOKENS.owner, 'workspaceBootstrap', {}, 'research_partnership_rpc')).owner, true);
     const a = (await rpc(TOKENS.owner, 'studyCreate', request({ config: { title: 'Synthetic hardened study A' } }))).study;
     const b = (await rpc(TOKENS.owner, 'studyCreate', request({ config: { title: 'Synthetic hardened study B' } }))).study;
+    const intakeRpc = (credential, action, payload = {}) => rpc(credential, action, payload, 'research_intake_rpc');
+    let termsState = (await intakeRpc(TOKENS.owner, 'intakeOwnerBootstrap')).termsState;
+    assert.equal((await intakeRpc('', 'intakePublicInfo')).acceptingApplications, false);
+    termsState = (await intakeRpc(TOKENS.owner, 'intakeTermsSave', request({ expectedRevision: termsState.revision, title: 'Synthetic hardened intake', text: 'Synthetic conditions, no agreement.' }))).termsState;
+    await intakeRpc(TOKENS.owner, 'intakeTermsPublish', request({ expectedRevision: termsState.revision, versionId: termsState.draftVersion.versionId }));
+    const terms = (await intakeRpc('', 'intakePublicInfo')).terms;
+    const incoming = await intakeRpc('', 'intakeSubmit', request({ termsVersionId: terms.versionId, termsHash: terms.hash, acknowledged: true, rateBucket: 'b'.repeat(64), application: { applicantType: 'individual', title: 'Synthetic hardened proposal', applicationType: 'partnership', fullName: 'Synthetic Partner B', email: 'hardened@example.invalid', objectives: 'Synthetic collaboration', requestedTools: ['communication'] } }));
+    assert.equal(incoming.receipt.status, 'submitted');
+    assert.equal((await intakeRpc(TOKENS.a, 'intakeList')).error, 'unauthorized');
+    const approval = await intakeRpc(TOKENS.owner, 'intakeReview', request({ applicationId: incoming.receipt.id, expectedRevision: 0, decision: 'approved', studyId: b.id, studyExpectedRevision: b.revision, individualCode: 'STAFFB', permissions: ['view_study', 'view_approved_findings'] }));
+    assert.equal(approval.application.status, 'approved', JSON.stringify(approval));
+    assert.deepEqual(approval.workspace.grantedPermissions, ['view_study', 'view_approved_findings']);
+    assert.equal(approval.workspace.study.status, 'draft');
     await rpc(TOKENS.owner, 'memberSet', request({ studyId: a.id, expectedRevision: a.revision, code: 'STAFFA', role: 'researcher', permissions: ['view_study'] }));
     assert.deepEqual((await rpc(TOKENS.a, 'bootstrap')).studies.map(study => study.id), [a.id]);
     assert.equal((await rpc(TOKENS.a, 'studyGet', { studyId: b.id })).error, 'not_found');
@@ -63,7 +79,7 @@ test('research authentication survives the complete hardened release migration o
       await db.exec('SET ROLE ' + role);
       try {
         await assert.rejects(db.query('SELECT * FROM public.access_settings'), /permission denied/);
-        for (const name of ['research_rpc', 'research_partnership_rpc']) await assert.rejects(db.query('SELECT public.' + name + '($1,$2,$3::jsonb)', [TOKENS.owner, 'bootstrap', {}]), /permission denied/);
+        for (const name of ['research_rpc', 'research_partnership_rpc', 'research_intake_rpc']) await assert.rejects(db.query('SELECT public.' + name + '($1,$2,$3::jsonb)', [TOKENS.owner, 'bootstrap', {}]), /permission denied/);
       } finally { await db.exec('RESET ROLE'); }
     }
     const worker = (await db.query("SELECT rolcanlogin,rolsuper,rolbypassrls FROM pg_roles WHERE rolname='research_worker'")).rows[0];
