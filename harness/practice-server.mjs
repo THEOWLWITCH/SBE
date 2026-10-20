@@ -184,7 +184,8 @@ const server = createServer(async (req, res) => {
     const hasKey = !!process.env[getProviderEnvKeyName()];
     const hasWorkspace = !!(process.env.ANTHROPIC_WORKSPACE_ID || '').trim();
     const hasSupabase = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
-    return sendJson(res, 200, { ok: true, hasKey, hasWorkspace, hasSupabase });
+    // הגרסה שרצה (20/10/2026): כדי לבדוק מבחוץ שהשרת התעדכן אחרי פריסה. Render מוסיף את RENDER_GIT_COMMIT.
+    return sendJson(res, 200, { ok: true, hasKey, hasWorkspace, hasSupabase, commit: String(process.env.RENDER_GIT_COMMIT || '').slice(0, 7), gifts: true });
   }
 
   if (researchPath) {
