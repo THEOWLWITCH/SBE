@@ -4496,7 +4496,6 @@ CREATE OR REPLACE FUNCTION research_private.partnership_contract() RETURNS jsonb
 }
 $json$::jsonb $contract$;
 
--- Preserve existing validation, reference scope and grants; add conditional completion and row date order.
 CREATE OR REPLACE FUNCTION research_private.partnership_fields(fields jsonb,d jsonb,sid uuid,pid uuid,complete boolean DEFAULT false) RETURNS void LANGUAGE plpgsql SET search_path='' AS $f$
 DECLARE def jsonb; val jsonb; cell jsonb; k text; str text; typ text; BEGIN
  IF pg_catalog.jsonb_typeof(d) IS DISTINCT FROM 'object' THEN PERFORM research_private.fail('invalid'); END IF;
