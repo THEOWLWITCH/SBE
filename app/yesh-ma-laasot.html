@@ -1066,7 +1066,7 @@ function setPhase(){
   if(kind==="in")ring.style.transform="scale(1.9)";else if(kind==="out")ring.style.transform="scale(1)";
   const fc=$("#fc");fc.style.setProperty("--d",sec+"s");fc.dataset.k=kind;
   if($("#snd").checked)chime(kind);
-  if($("#vib").checked){try{navigator.vibrate&&navigator.vibrate(kind==="in"?120:kind==="out"?[60,60,60]:40)}catch(e){}}
+  if($("#vib").checked)buzz(kind);
 }
 function tick(){
   left--;elapsed++;
@@ -1090,7 +1090,24 @@ function resetBreath(){
   clearInterval(bTimer);bTimer=null;try{wake&&wake.release()}catch(e){}wake=null;bState="ready";pi=0;elapsed=0;
   $("#phase").textContent=t("ready");$("#count").innerHTML="&nbsp;";const r=$("#ring");r.style.transitionDuration="0.4s";r.style.transform="scale(1)";$("#fc").dataset.k="";$("#breathHint").textContent=MODES[mode][lang].hint;
 }
-function audio(){try{if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();if(actx.state==="suspended")actx.resume()}catch(e){actx=null}return actx}
+/* 20/10/2026 ("הרטט והקול לא עובדים"): באייפון הצליל נחסם במתג השקט ועד שמשחררים אותו בלחיצה,
+   ו-navigator.vibrate לא קיים. לכן: audioSession=playback, שחרור בלחיצה עם צליל שקט, חזרה אחרי הפרעה,
+   ובאייפון רטט קל דרך מתג (iOS 18 ומעלה). */
+function audio(){try{
+  if(navigator.audioSession){try{navigator.audioSession.type="playback"}catch(e){}}
+  if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();
+  if(actx.state!=="running")actx.resume();
+}catch(e){actx=null}return actx}
+function unlockAudio(){const a=audio();if(!a)return;try{const b=a.createBuffer(1,1,22050),src=a.createBufferSource();src.buffer=b;src.connect(a.destination);src.start(0)}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&actx&&actx.state!=="running"&&bState==="running")try{actx.resume()}catch(e){}});
+const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+let hapLab=null;
+function iosTap(){try{if(!hapLab){hapLab=document.createElement("label");const i=document.createElement("input");i.type="checkbox";i.setAttribute("switch","");hapLab.appendChild(i);hapLab.setAttribute("aria-hidden","true");hapLab.style.cssText="position:fixed;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;inset:auto auto 0 0";document.body.appendChild(hapLab)}hapLab.click()}catch(e){}}
+function buzz(kind){
+  if(navigator.vibrate){try{navigator.vibrate(kind==="in"?180:kind==="out"?[80,80,80]:60)}catch(e){}return}
+  if(isIOS){iosTap();if(kind==="out")setTimeout(iosTap,160)}
+}
+if(!navigator.vibrate&&!isIOS){const v=$("#vib");if(v)v.closest("label").hidden=true}
 function chime(kind){
   const a=audio();if(!a)return;const t0=a.currentTime;
   const f=kind==="in"?528:kind==="out"?396:440;
@@ -1099,8 +1116,9 @@ function chime(kind){
   [[1,1],[2.01,.25],[3,.08]].forEach(([m,g])=>{const o=a.createOscillator(),gg=a.createGain();o.type="sine";o.frequency.value=f*m;gg.gain.value=g;o.connect(gg);gg.connect(out);o.start(t0);o.stop(t0+2.7)});
 }
 $("#snd").checked=store.get("bsnd",false);
-$("#snd").onchange=e=>{store.set("bsnd",e.target.checked);if(e.target.checked){audio();chime("hold")}};
-$("#bStart").addEventListener("click",()=>{if($("#snd").checked)audio()});
+$("#snd").onchange=e=>{store.set("bsnd",e.target.checked);if(e.target.checked){unlockAudio();chime("hold")}};
+$("#vib").onchange=e=>{if(e.target.checked)buzz("in")};
+$("#bStart").addEventListener("click",()=>{if($("#snd").checked)unlockAudio()});
 $("#bStart").onclick=startBreath;$("#bPause").onclick=()=>stopBreath(false);$("#bReset").onclick=resetBreath;
 
 /* ================= Grounding ================= */
