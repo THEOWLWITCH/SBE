@@ -189,7 +189,7 @@ function showCats(cfg){
 if (!inst) {
   showCats({ conv: true, activity: true, academic: true, studio: true });
 } else {
-  modMsg.hidden = false; modMsg.textContent = "טוענת את הכלים של המוסד... (לפעמים עד דקה)";
+  modMsg.hidden = false; modMsg.textContent = "טוענים את הכלים של המוסד... (לפעמים עד דקה)";
   fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" },
     body: JSON.stringify({ action: "getModules", inst }) })
     .then(r => r.ok ? r.json() : null)

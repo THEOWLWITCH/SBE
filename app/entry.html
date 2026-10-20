@@ -249,7 +249,7 @@ function renderEntry(){
     if (!c) { err.textContent = "אפשר להקליד את הקוד כדי להיכנס."; err.hidden = false; return; }
     // קוד לקבוצה של סדנה (6 ספרות, 05/10/2026): אותו שדה — ממשיכים לבחירת תפקיד ושם
     if (/^\d{6}$/.test(c)) { err.hidden = true; const alt = $("altField"); alt.hidden = false; alt.textContent = ""; alt.append(buildWorkshopPicker(c)); alt.scrollIntoView({ behavior:"smooth", block:"center" }); return; }
-    btn.disabled = true; btn.textContent = "בודקת... (לפעמים עד דקה)";
+    btn.disabled = true; btn.textContent = "בודקים... (לפעמים עד דקה)";
     const res = await codeLogin(c);
     btn.disabled = false; btn.textContent = "כניסה";
     if (res.error) {
@@ -364,7 +364,7 @@ async function enterOpen(id){
   const T = {
     "open-early": "הקישור ייפתח ביום ההתנסות" + (day ? ", " + day : "") + ". נשמח לראותך אז.",
     "open-over": "הקישור היה פתוח ביום ההתנסות" + (day ? " (" + day + ")" : "") + ", ועכשיו הוא סגור. תודה שהשתתפת!",
-    "open-full": "הקישור הגיע למספר המשתתפות שנקבע לו. אפשר לפנות למנחה.",
+    "open-full": "הקישור הגיע למספר המשתתפים שנקבע לו. אפשר לפנות למנחה.",
     "open-missing": "הקישור הזה לא פעיל. אפשר לבדוק אותו מול מי ששלח/ה אותו."
   };
   msg.textContent = T[data.error] || "אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע.";
@@ -410,7 +410,7 @@ function persistSession(name, roleLabel){
   } catch(e){}
 }
 
-const ROLE_LABEL = { trainee:"סטודנט/ית", actor:"שחקנית", parent:"הורים", youth:"נוער", creator:"יוצרת",
+const ROLE_LABEL = { trainee:"סטודנט/ית", actor:"שחקנית", parent:"הורים", youth:"נוער", creator:"יוצר/ת",
   homeroom:"מחנך/כת",
   fac_trainee:"מנחה/ת סטודנטים", fac_parent:"מנחה/ת הורים", fac_youth:"מנחה/ת נוער" };
 
@@ -430,7 +430,7 @@ function buildWorkshopField(role, prefill){
     if (!name) { err.textContent = "נשמח גם לשם."; err.hidden = false; return; }
     err.hidden = true;
     // הקוד נבדק בשרת (05/10/2026): רק סדנה שהמנחה פתחה היום. כך גם המשוב משויך לסדנה הנכונה.
-    btn.disabled = true; btn.textContent = "בודקת את הקוד...";
+    btn.disabled = true; btn.textContent = "בודקים את הקוד...";
     fetch("https://sbe-server.onrender.com/api/access", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ action:"wfJoin", code: c }) })
       .then(r => r.json().then(d => ({ st: r.status, d }))).then(({ st, d }) => {
         btn.disabled = false; btn.textContent = "כניסה";
@@ -444,7 +444,7 @@ function buildWorkshopField(role, prefill){
   btn.addEventListener("click", submit);
   nm.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
   wrap.append(
-    el("p",{class:"hint"},"הקוד לקבוצה שהמנחה הציגה בסדנה. בלי חשבון ובלי הרשמה. הקוד פג בסוף היום."),
+    el("p",{class:"hint"},"הקוד לקבוצה שמוצג בסדנה. בלי חשבון ובלי הרשמה. הקוד פג בסוף היום."),
     el("label",{},"קוד לקבוצה"), code,
     el("label",{},"שם"), nm, err, btn);
   return wrap;
@@ -464,7 +464,7 @@ function renderWorkshopSuccess(role, name){
   const PRACTICE_LINK = { href:"practice.html", t:"תרגול עצמי", d:"תרגול מול AI שמגלם דמות" };
   const SOURCES_LINK = { href:"sources-library.html", t:"ספריית המקורות", d:"חיפוש במקורות התיאורטיים" };
   const TRAINEE_LINKS = [
-    { href:"observation-sheet.html", t:"דף צפייה (טלפון)", d:"למי שצופה, בסבב שבו מישהי אחרת מתנסה" },
+    { href:"observation-sheet.html", t:"דף צפייה (טלפון)", d:"למי שצופה, בסבב של מתנסה אחר/ת" },
     PRACTICE_LINK,
     { href:"feedback.html", t:"משוב", d:"משוב על הסדנה" },
     CONV_LINK, ACTIVITY_LINK, ACADEMIC_LINK, SOURCES_LINK,
@@ -516,7 +516,7 @@ function buildAdminField(role){
   const submit = async () => {
     const clean = pass.value.replace(/[‎‏؜]/g, "").trim();
     if (!clean) { err.textContent = "אפשר להקליד סיסמה כדי להיכנס."; err.hidden = false; return; }
-    btn.disabled = true; btn.textContent = "בודקת... (לפעמים עד דקה)";
+    btn.disabled = true; btn.textContent = "בודקים... (לפעמים עד דקה)";
     const res = await checkAccess(role, clean);
     btn.disabled = false; btn.textContent = "כניסה";
     if (res !== "ok") {
@@ -526,7 +526,7 @@ function buildAdminField(role){
       err.hidden = false; return;
     }
     err.hidden = true;
-    persistSession(null, role === "sys" ? "ניהול מערכת" : "מנהלת מוסדית");
+    persistSession(null, role === "sys" ? "ניהול מערכת" : "ניהול מוסד");
     const dest = "admin.html?role=" + role;
     try { sessionStorage.setItem("sbe.session.homeUrl", dest); } catch(e){}
     location.href = dest;

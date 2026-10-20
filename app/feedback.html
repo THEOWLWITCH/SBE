@@ -110,14 +110,14 @@ button.act.primary{background:var(--spoken);border-color:var(--spoken);color:#ff
     <h1>יש לך גן טוב</h1>
     <p class="lead">מחלוקת בין גננת לאם על גבולות מעורבות ההורים · 2 בספטמבר 2026</p>
   </header>
-  <p class="lead">מי את בסדנה הזו?</p>
+  <p class="lead">מה התפקיד שלך בסדנה הזו?</p>
   <div class="roles">
     <button class="role" data-r="fac"><b>מנחה</b><em>3 שאלות</em>
-      <span>המשוב שלך הוא היחיד שאומר אם התרחיש עצמו עבד. הוא נצבר ומוצג למי ששוקלת להשתמש בו.</span></button>
+      <span>המשוב שלך הוא היחיד שאומר אם התרחיש עצמו עבד. הוא נצבר ומוצג למי ששוקל/ת להשתמש בו.</span></button>
     <button class="role" data-r="trainee"><b>מתנסה</b><em>4 שאלות</em>
       <span>למתנסה בשיחה.</span></button>
     <button class="role" data-r="obs"><b>צופה</b><em>3 שאלות</em>
-      <span>לצופה שמילאה את דף הצפייה.</span></button>
+      <span>למי שצפה/תה ומילא/ה את דף הצפייה.</span></button>
   </div>
 </section>
 
@@ -176,7 +176,7 @@ const PICK = SBE_FB.resolveSets(BANK);
 
 const LEADS = { fac:"השאלה על מה שהיה חסר היא זו שמשפרת את המערכת.",
   trainee:"אין כאן ציון ואין הערכה.", obs:"קל למילוי ולניתוח." };
-const SOURCE_NOTE = { link:"המדדים שבחרה המנחה לסדנה הזו.", workshop:"המדדים שבחרה המנחה לסדנה הזו.",
+const SOURCE_NOTE = { link:"המדדים שנבחרו לסדנה הזו.", workshop:"המדדים שנבחרו לסדנה הזו.",
   default:"מדדי ברירת המחדל של המוסד." };
 
 function buildForms(){
@@ -246,7 +246,7 @@ function openForm(r){
       wrap.append(row);
       if (q.reason) {
         const t = document.createElement("textarea"); t.rows = 2;
-        t.placeholder = "נמקי בקצרה";
+        t.placeholder = "נימוק בקצרה";
         t.addEventListener("input", () => { data[q.k + "_why"] = t.value.trim(); });
         wrap.append(t);
       }
@@ -288,7 +288,7 @@ $("send").addEventListener("click", () => {
   $("bar").style.display = "none";
   $("doneMsg").textContent = role === "fac"
     ? "המשוב נשמר ונוסף למה שנצבר על התרחיש הזה."
-    : "המשוב נשמר. הוא אינו ציון ואינו נכנס לתיק של אף אחת.";
+    : "המשוב נשמר. הוא אינו ציון ואינו נכנס לתיק של אף אחד.";
   show("thanks");
   scrollTo({ top: 0 });
 });

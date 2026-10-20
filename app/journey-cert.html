@@ -84,7 +84,7 @@ fetch('https://sbe-server.onrender.com/api/access', { method:'POST', headers:{ '
     c.appendChild(el('h1', null, d.final ? 'תו חוסן לקהילת חוסן' : (d.gate ? 'תעודת שער' : 'תעודת אבן דרך')));
     const stg = (J.STAGES.find(s => s.k === +d.stage) || {});
     c.appendChild(el('div', 'sub', d.final ? 'קהילת חוסן: מנגנונים משותפים, תמונת עתיד ודרך שמחזיקה לאורך זמן' : stg.t + ' · ' + stg.sub));
-    c.appendChild(el('div', 'to', 'מוענקת בהוקרה ל'));
+    c.appendChild(el('div', 'to', d.final ? 'מוענק בהוקרה ל' : 'מוענקת בהוקרה ל'));
     c.appendChild(el('div', 'unit', d.unitName));
     const u = (J.UNITS.find(x => x.k === d.unit) || {}).t;
     c.appendChild(el('div', 'what', d.final ? 'על השלמת המסע אל החוסן' + (u ? ' (' + u + ')' : '') : 'על השלמת "' + d.title + '": אבן דרך ' + d.n + ' מתוך ' + d.total + ' במסע אל החוסן' + (u ? ' (' + u + ')' : '')));

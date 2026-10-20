@@ -590,7 +590,7 @@ const GROUPS = [
     { k:"date",     l:"תאריך", placeholder:"לדוגמה: 16.9.26", hint:"לצורך תיעוד" },
     { k:"inst",     l:"מסגרת ההתנסות", req:1, hint:"למשל מתנ\"ס, בית ספר, קבוצת הורים" },
     { k:"outType",  l:"סוג תוצר", type:"select", opts:["תרחיש","משחק תפקידים"],
-      hint:"תרחיש: מתרגלים מול AI שמגלם דמות אחת. משחק תפקידים: שתי אנשים מגלמים את שתי הדמויות בסדנה חיה, עם מנחה" },
+      hint:"תרחיש: מתרגלים מול AI שמגלם דמות אחת. משחק תפקידים: שני אנשים מגלמים את שתי הדמויות בסדנה חיה, עם מנחה" },
     { k:"dur",      l:"משך", type:"select", opts:["5 דקות","8 דקות","10 דקות"],
       hint:"ברירת המחדל: 5 דקות" },
     { k:"lang",     l:"שפת התוצר", type:"select", opts:["עברית","ערבית","אנגלית"] },
@@ -1224,7 +1224,7 @@ function refresh() {
   const ok = missing.length === 0;
   document.getElementById("bBuild").disabled = !ok || p+w === reqKeys.length;
   document.getElementById("hint").textContent = ok
-    ? (p ? "אפשר לבנות. שדות בהצעה יישארו כפי שהם." : "מלאי הצעות או כתבי בעצמך")
+    ? (p ? "אפשר לבנות. שדות בהצעה יישארו כפי שהם." : "אפשר למלא הצעות או לכתוב בעצמך")
     : `נשארו ${missing.length} שדות עיקריים למילוי`;
   document.getElementById("ready").textContent = ok ? "" : "השדות העיקריים עוד לא מולאו";
 }

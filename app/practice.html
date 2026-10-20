@@ -266,12 +266,12 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
     <div class="f"><label for="ownStory">על איזו שיחה רוצים להתאמן? מה קרה?</label>
       <textarea id="ownStory" rows="5" placeholder="למשל: אבא של תלמיד בכיתה ו׳ כתב לי שהבן שלו לא רוצה לבוא לבית הספר בגלל ילדים בכיתה, ומבקש להיפגש מחר. בלי שמות אמיתיים."></textarea></div>
     <div class="grid2">
-      <div class="f"><label for="ownRole">התפקיד שלי</label><input id="ownRole" list="ownRoles" placeholder="למשל: מחנכת"></div>
+      <div class="f"><label for="ownRole">התפקיד שלי</label><input id="ownRole" list="ownRoles" placeholder="למשל: מחנך/ת"></div>
       <div class="f"><label for="ownOther">מי מולי בשיחה</label><input id="ownOther" list="ownOthers" placeholder="למשל: אבא של תלמיד"></div>
       <div class="f"><label for="ownMe">איך לפנות אליי</label><select id="ownMe" data-closed><option value="נקבה">בלשון נקבה</option><option value="זכר">בלשון זכר</option></select></div>
     </div>
     <div class="f"><label for="ownGoal">מה הייתי רוצה שיקרה בסוף השיחה</label><input id="ownGoal" placeholder="למשל: שנסכים על צעד אחד לשבוע הקרוב"></div>
-    <div class="f"><label for="ownHard">מה מאתגר אותי בשיחה הזאת (אם רוצים)</label><input id="ownHard" placeholder="למשל: אני חוששת שהוא יכעס"></div>
+    <div class="f"><label for="ownHard">מה מאתגר אותי בשיחה הזאת (אם רוצים)</label><input id="ownHard" placeholder="למשל: חשש שהוא יכעס"></div>
     <datalist id="ownRoles"></datalist><datalist id="ownOthers"></datalist>
     <div class="own-acts"><button type="button" class="primary" id="ownNext">המשך</button><button type="button" id="ownCancel">חזרה לתרחישים</button></div>
   </div>
@@ -354,7 +354,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <div class="card">
     <p><b>יצאת מהתרגול. זה בסדר גמור.</b></p>
     <p>זו לא רשומה ככישלון ולא נשמרת כתוצאה. אם משהו בתרגול הזה נגע במקום רגיש, אפשר
-      לדבר על זה עם מנחת הסדנה לפני שממשיכות.</p>
+      לדבר על זה עם המנחה של הסדנה לפני שממשיכים.</p>
   </div>
   <div style="margin-top:14px;"><button type="button" id="bBack">חזרה למסך הראשי</button></div>
 </section>
@@ -525,7 +525,7 @@ const SCENARIOS = {
     { text:"שתיקה בלי למהר למלא אותה", detectShort:true },
     { text:"טון קול מותאם למצב", undetectable:true },
     { text:"גוף פתוח ולא מתגונן", undetectable:true },
-    { text:"סימני מתח בגוף", note:"מתייחס לדמות, לא למתנסה, לא רלוונטי לזיהוי מטקסט שלה." },
+    { text:"סימני מתח בגוף", note:"מתייחס לדמות, לא למתנסה, ולכן לא נבדק בדברי המתנסה." },
   ],
  },
 
@@ -666,7 +666,7 @@ const SCENARIOS = {
     { text:"חזרה למיקוד אחרי סטייה", keywords:["בואי נחזור","נחזור לנושא","בחזרה ל"] },
     { text:"התאמת רמת הישירות למצב", detectShort:true },
     { text:"טון קול מותאם למצב", undetectable:true },
-    { text:"סימני מתח בגוף", note:"מתייחס לדמות, לא למתנסה, לא רלוונטי לזיהוי מטקסט שלה." },
+    { text:"סימני מתח בגוף", note:"מתייחס לדמות, לא למתנסה, ולכן לא נבדק בדברי המתנסה." },
   ],
  },
 
@@ -1548,7 +1548,7 @@ function checkCrossings(traineeText){
     }
     return { type:"manipulation",
       note:"המהלך הזה מציב אולטימטום או אשמה חד-צדדית. במקום זה אפשר לומר מה חשוב לך " +
-           "ומה את מציעה, בלי לחייב את הצד השני. אפשר לנסות לכתוב את התור הזה מחדש." };
+           "ומה ההצעה שלך, בלי לחייב את הצד השני. אפשר לנסות לכתוב את התור הזה מחדש." };
   }
   return null;
 }
@@ -1878,12 +1878,12 @@ async function handleRetrySend(){
     return;
   }
   if (result.type === "manipulation") {
-    addSystemNote("רגע לפני שממשיכות", result.note);
+    addSystemNote("רגע לפני שממשיכים", result.note);
     markCrossedLastTrainee();
     return; // חזרה אחורה, גם כאן: התור לא נספר
   }
   if (result.type === "manipulation-close") {
-    addSystemNote("התרגול נעצר כאן", "חזרה על מניפולציה גם בחלון הקצר הזה, לא ממשיכות.");
+    addSystemNote("התרגול נעצר כאן", "חזרה על מניפולציה גם בחלון הקצר הזה, לא ממשיכים.");
     markCrossedLastTrainee();
     endRetry(null);
     return;
@@ -1995,7 +1995,7 @@ async function handleSend(){
     return;
   }
   if (result.type === "manipulation") {
-    addSystemNote("רגע לפני שממשיכות", result.note);
+    addSystemNote("רגע לפני שממשיכים", result.note);
     markCrossedLastTrainee();
     // חזרה אחורה: התור הזה לא נספר ולא מתקדם. הדמות עדיין לא הגיבה.
     return;

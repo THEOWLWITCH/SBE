@@ -1165,7 +1165,7 @@ function refresh() {
     st.textContent = "";
     if (state[k] === "proposal") {
       st.className = "state s-proposal";
-      st.append(el("span",{class:"dot d-p"}), "הצעה. יישאר כך אם לא תיגעי");
+      st.append(el("span",{class:"dot d-p"}), "הצעה. יישאר כך אם לא משנים");
       p++;
     } else if (state[k] === "locked") {
       st.className = "state s-locked";

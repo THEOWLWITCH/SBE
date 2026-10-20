@@ -264,7 +264,7 @@ async function renderAdmin() {
     el("ul", { style: "margin:10px 0 4px;padding-inline-start:20px;line-height:1.8;font-size:14px" },
       el("li", {}, el("b", {}, "את/ה"), " מפיק/ה כאן ", el("b", {}, "קוד אישי לכל איש/אשת צוות"), ", ובוחר/ת לו/ה כלים: רק מתוך מה שפתוח למוסד."),
       el("li", {}, el("b", {}, "מרצה"), " (הרשאת \"" + PERM_LABEL.lecturer + "\") יוצר/ת ", el("b", {}, "קוד לקבוצה לקורס"), ", הסטודנטים נכנסים איתו למשוב לעבודות."),
-      el("li", {}, el("b", {}, "מנחת סימולציה"), " פותחת סדנה ונותנת למשתתפות ", el("b", {}, "קוד לקבוצה לסדנה"), " (6 ספרות, 24 שעות): לסטודנטיות, לשחקניות, להורים ולנוער."),
+      el("li", {}, el("b", {}, "מנחה סימולציה"), " פותח/ת סדנה ונותן/ת למשתתפים ", el("b", {}, "קוד לקבוצה לסדנה"), " (6 ספרות, 24 שעות): לסטודנטים, לשחקניות, להורים ולנוער."),
       el("li", {}, el("b", {}, "מחנך/ת עם \"חוסן חברתי\""), " פותח/ת כיתה ושולח/ת לתלמידים ", el("b", {}, "קישור או QR"), " לשאלון, בלי קודים.")),
     el("p", { class: "sub", style: "margin:4px 0 0" }, "כך את/ה מנהל/ת רק את קודי הצוות, וכל איש/אשת צוות מעביר/ה את הגישה הלאה בעצמו/ה."));
   card.append(tree);
@@ -275,7 +275,7 @@ async function renderAdmin() {
   // יצירת קוד
   const f = el("div", { class: "card" });
   f.append(el("h3", {}, "קוד חדש לאיש/אשת צוות"));
-  f.append(el("p", { class: "sub" }, "אפשר קוד לאדם אחד או לקבוצה (למשל \"מחנכות שכבה ה׳\"). מסמנים כל צירוף של הרשאות מתוך מה שפתוח למוסד."));
+  f.append(el("p", { class: "sub" }, "אפשר קוד לאדם אחד או לקבוצה (למשל \"צוות שכבה ה׳\"). מסמנים כל צירוף של הרשאות מתוך מה שפתוח למוסד."));
   const lbl = el("input", { placeholder: "שם או תיאור (למשל: רחל כהן, מחנכת ה׳2)", maxlength: "60" });
   const permsBox = el("div", { class: "perms" });
   const cbs = {};
@@ -305,7 +305,7 @@ async function renderAdmin() {
     let expiresAt = null;
     if (exp.value === "date") expiresAt = expDate.value || null;
     else if (exp.value) expiresAt = new Date(Date.now() + Number(exp.value) * 864e5).toISOString().slice(0, 10);
-    go.disabled = true; msg.className = "msg"; msg.textContent = "מפיקה...";
+    go.disabled = true; msg.className = "msg"; msg.textContent = "מפיקים...";
     const r = await api("codeCreate", { kind: "staff", perms, label: lbl.value.trim(), expiresAt }).catch(() => ({}));
     go.disabled = false;
     if (!r.code) { msg.className = "msg err"; msg.textContent = r.error === "above ceiling" ? "אחת ההרשאות לא פתוחה למוסד." : "ההפקה לא הצליחה. אפשר לנסות שוב."; return; }
@@ -364,7 +364,7 @@ function renderGroupCode() {
   if (!fac && !lect) return;
   const box = $("lecturer"); box.textContent = "";
   box.append(el("h2", {}, "🎟 קוד לקבוצה"));
-  box.append(el("p", { class: "sub", style: "margin:-4px 0 10px;color:var(--muted)" }, "קוד אחד לכל הקבוצה, לא קוד לכל משתתפת. כולן נכנסות איתו באותו שדה במסך הכניסה."));
+  box.append(el("p", { class: "sub", style: "margin:-4px 0 10px;color:var(--muted)" }, "קוד אחד לכל הקבוצה, לא קוד לכל משתתף/ת. כל המשתתפים נכנסים איתו באותו שדה במסך הכניסה."));
   const panes = {};
   const seg = el("div", { class: "row", style: "gap:8px;margin-bottom:10px" });
   const opts = [];
@@ -381,8 +381,8 @@ function renderGroupCode() {
     pn.append(el("h3", {}, "קוד לקבוצה: לסדנה"),
       el("ol", { style: "margin:6px 0 10px;padding-inline-start:20px;line-height:1.8;font-size:14px" },
         el("li", {}, "פותחים סדנה: נוצר ", el("b", {}, "קוד לקבוצה בן 6 ספרות"), ", וקישור למשוב עם QR."),
-        el("li", {}, "המשתתפות מקלידות את הקוד במסך הכניסה של be-good.co.il, ובוחרות תפקיד: מתנסה, שחקנית, הורה או נוער."),
-        el("li", {}, "פתוח להן: דף צפייה, תרגול עצמי, משוב וכלי ההכנה של התפקיד. ", el("b", {}, "תוצרי הסימולציה"), " נשארים אצלך בלבד."),
+        el("li", {}, "המשתתפים מקלידים את הקוד במסך הכניסה של be-good.co.il, ובוחרים תפקיד: מתנסה, שחקנית, הורה או נוער."),
+        el("li", {}, "פתוח להם: דף צפייה, תרגול עצמי, משוב וכלי ההכנה של התפקיד. ", el("b", {}, "תוצרי הסימולציה"), " נשארים אצלך בלבד."),
         el("li", {}, "הקוד פעיל 24 שעות.")),
       el("a", { class: "btn", href: "facilitator-screen.html", style: "text-decoration:none;display:inline-block" }, "פתיחת סדנה ויצירת קוד לקבוצה"));
     box.append(pn);
@@ -417,8 +417,8 @@ async function renderLecturer(box) {
     const go = el("button", { class: "btn", disabled: room === 0 }, "יצירת קוד לקבוצה");
     const msg = el("div", {});
     go.addEventListener("click", async () => {
-      if (!name.value.trim()) { msg.className = "msg err"; msg.textContent = "כדאי לתת שם לקורס, כדי שתזהי אותו ברשימה."; name.focus(); return; }
-      go.disabled = true; msg.className = "msg"; msg.textContent = "יוצרת...";
+      if (!name.value.trim()) { msg.className = "msg err"; msg.textContent = "כדאי לתת שם לקורס, כדי לזהות אותו ברשימה."; name.focus(); return; }
+      go.disabled = true; msg.className = "msg"; msg.textContent = "יוצרים...";
       const r = await api("codeCreate", { kind: "course", label: name.value.trim(), seats: Number(seats.value) || 40, days: Number(days.value) || 30 }).catch(() => ({}));
       if (!r.code) { msg.className = "msg err"; msg.textContent = r.error === "limit" ? "הגעת למספר הקודים הפעילים המרבי." : "היצירה לא הצליחה. אפשר לנסות שוב."; go.disabled = false; return; }
       fresh = r.code.code;
@@ -445,7 +445,7 @@ async function renderLecturer(box) {
     const msg2 = el("div", {});
     go2.addEventListener("click", async () => {
       const n = Math.max(1, Math.min(room, Number(cnt.value) || 1));
-      go2.disabled = true; msg2.className = "msg"; msg2.textContent = "מפיקה...";
+      go2.disabled = true; msg2.className = "msg"; msg2.textContent = "מפיקים...";
       const r = await api("codeCreate", { kind: "student", count: n, label: lbl.value.trim() }).catch(() => ({}));
       if (!r.codes) { msg2.className = "msg err"; msg2.textContent = r.error === "limit" ? "הגעת למספר הקודים הפעילים המרבי." : "ההפקה לא הצליחה. אפשר לנסות שוב."; go2.disabled = false; return; }
       d = await api("codesList").catch(() => d);

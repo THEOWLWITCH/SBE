@@ -181,14 +181,14 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <div class="field"><label>שם</label><input id="jName" type="text" placeholder="שמך"></div>
   <p class="err" id="jErr" hidden></p>
   <button class="act primary" id="jGo">כניסה</button>
-  <p class="facilitator-link"><button class="linklike" id="openSetup">מנחה או מנהלת מוסד: בחירת תרחיש להערכה</button></p>
+  <p class="facilitator-link"><button class="linklike" id="openSetup">מנחה או מנהל/ת מוסד: בחירת תרחיש להערכה</button></p>
 </section>
 
 <!-- ⓿ הגדרת תרחיש למנחה/מנהלת -->
 <section class="screen" id="screen-setup">
   <header><p class="lead">Begood · הערכה יצירתית</p><h1>בחירת תרחיש להערכה</h1></header>
-  <p class="lead">הבחירה כאן קובעת איזה תרחיש יוצג לכל מי שנכנסת מעכשיו במסך הזה, בכל המכשירים ששמורים לאותו דפדפן.
-    אין עדיין חשבון מנחה אמיתי בפרויקט הזה (כמו בכל מסך אחר כאן): כל מי שיודעת לפתוח את הקישור הזה יכולה לשנות את הבחירה.</p>
+  <p class="lead">הבחירה כאן קובעת איזה תרחיש יוצג לכל מי שנכנס/ת מעכשיו במסך הזה, בכל המכשירים ששמורים לאותו דפדפן.
+    אין עדיין חשבון מנחה אמיתי בפרויקט הזה (כמו בכל מסך אחר כאן): כל מי שפותח/ת את הקישור הזה יכול/ה לשנות את הבחירה.</p>
   <div class="pickgrid" id="setupGrid"></div>
   <button class="act" id="backFromSetup">חזרה למסך הכניסה</button>
 </section>
@@ -447,9 +447,9 @@ METHODS = [
     const guiding = [
       "אילו רגשות התעוררו אצלך במהלך הסימולציה?",
       "אילו מחשבות עברו במוחך במהלך הסימולציה?",
-      "מה את היית אומרת אחרת בשיחה?",
-      "איך את היית מגיבה אחרת בשיחה?",
-      "מה היית ממליצה לחברתך המתנסה לשפר בעתיד?",
+      "מה היית אומר.ת אחרת בשיחה?",
+      "איך היית מגיב.ה אחרת בשיחה?",
+      "מה היית ממליץ.ה למתנסה לשפר בעתיד?",
       "מה רוצים לזכור מהסדנה כדי שישמש אותך בעתיד?",
       "מה ראית בסימולציה שלא מאפיין אותך והיית רוצה לנסות?",
     ];
@@ -513,7 +513,7 @@ METHODS = [
 
 // 3 · ניתוח דילמות קבוצתי
 { id:3, n:3, title:"ניתוח דילמות קבוצתי", desc:"עץ אם/אז משותף, לפחות עשרה סבבים",
-  instr:"מספר סטודנטיות מנתחות יחד את התרחיש וממלאות עץ התקדמות: אם... אז.... לפחות עשרה סבבים, ואפשר להוסיף עוד.",
+  instr:"כמה משתתפים מנתחים יחד את התרחיש וממלאים עץ התקדמות: אם... אז.... לפחות עשרה סבבים, ואפשר להוסיף עוד.",
   render(container, answers, onProgress){ buildTree(container, answers, onProgress, { min:10, group:true }); }},
 
 // 4 · ניתוח דילמות ליחיד
@@ -523,7 +523,7 @@ METHODS = [
 
 // 5 · זבוב על הקיר
 { id:5, n:5, title:"זבוב על הקיר", desc:"לחישות, עקיצות, וסיפור לחברה הטובה",
-  instr:"לו היית זבוב על הקיר בעת הסימולציה: מה היית לוחשת, מתי היית עוקצת, ומה סיפר הזבוב לחברתו הטובה בסוף.",
+  instr:"לו היית זבוב על הקיר בעת הסימולציה: מה היית לוחש.ת, מתי היית עוקץ.ת, ומה סיפר הזבוב לחברתו הטובה בסוף.",
   render(container, answers, onProgress){
     answers.whispersTrainee = []; answers.whispersActor = [];
     function whisperGroup(label, key, minN){
@@ -531,7 +531,7 @@ METHODS = [
       const list = el("div"); container.append(list);
       function addRow(){
         const row = el("div",{class:"whisper-row"});
-        const w = document.createElement("input"); w.type="text"; w.placeholder="מה תלחשי";
+        const w = document.createElement("input"); w.type="text"; w.placeholder="מה לוחשים";
         const when = document.createElement("input"); when.type="text"; when.placeholder="מתי";
         const rm = el("button",{class:"act ghost"},"הסרה");
         function sync(){ answers[key] = [...list.querySelectorAll(".whisper-row")].map(r => ({
@@ -544,10 +544,10 @@ METHODS = [
       const add = el("button",{class:"act ghost"}, "➕ הוספת לחישה"); add.addEventListener("click", addRow);
       container.append(add);
     }
-    whisperGroup("מה היית לוחשת למתנסה?", "whispersTrainee", 3);
-    whisperGroup("מה היית לוחשת לשחקנית?", "whispersActor", 3);
-    textField(container, "stingTrainee", answers, "מתי היית עוקצת את המתנסה? (הרגע שהכי היית רוצה לשנות)", { onInput: checkAll });
-    textField(container, "stingActor", answers, "מתי היית עוקצת את השחקנית? (הרגע שהכי היית רוצה לשנות)", { onInput: checkAll });
+    whisperGroup("מה היית לוחש.ת למתנסה?", "whispersTrainee", 3);
+    whisperGroup("מה היית לוחש.ת לשחקנית?", "whispersActor", 3);
+    textField(container, "stingTrainee", answers, "מתי היית עוקץ.ת את המתנסה? (הרגע שהכי היית רוצה לשנות)", { onInput: checkAll });
+    textField(container, "stingActor", answers, "מתי היית עוקץ.ת את השחקנית? (הרגע שהכי היית רוצה לשנות)", { onInput: checkAll });
     textField(container, "toldFriend", answers, "עם סיום הסימולציה הזבוב עף לספר עליה לחברתו הטובה. מה הוא סיפר לה?", { onInput: checkAll });
     function checkAll(){
       const wt = (answers.whispersTrainee||[]).filter(x=>x.whisper).length >= 3;
@@ -563,8 +563,8 @@ METHODS = [
   render(container, answers, onProgress){ buildImageSet(container, answers, onProgress, ["פוסטר ראשי","גרסה נוספת 1","גרסה נוספת 2","גרסה נוספת 3"]); }},
 
 // 7 · עיצוב גלריה ב-AI (קבוצתי)
-{ id:7, n:7, title:"עיצוב גלריה ב-AI", desc:"גלריית תמונות משותפת של כמה סטודנטיות",
-  instr:"בדומה לאפשרות הקודמת, אבל כאן עובדות יחד כמה סטודנטיות. הגלריה תציג את שם הסטודנטית, כותרת התמונה וההסבר.",
+{ id:7, n:7, title:"עיצוב גלריה ב-AI", desc:"גלריית תמונות משותפת של כמה משתתפים",
+  instr:"בדומה לאפשרות הקודמת, אבל כאן עובדים יחד כמה משתתפים. הגלריה תציג את שם המשתתף/ת, כותרת התמונה וההסבר.",
   render(container, answers, onProgress){
     answers.gallery = [];
     const grid = el("div",{class:"gallery"});
@@ -575,7 +575,7 @@ METHODS = [
     function freshBox(){
       box.textContent = "";
       box.append(el("label",{},"פרטי הפריט הבא"));
-      const nameI = document.createElement("input"); nameI.type="text"; nameI.placeholder="שם הסטודנטית";
+      const nameI = document.createElement("input"); nameI.type="text"; nameI.placeholder="שם המשתתף/ת";
       src = imageSourceField(() => {});
       const titleI = document.createElement("input"); titleI.type="text"; titleI.placeholder="כותרת התמונה";
       const expl = document.createElement("textarea"); expl.rows=2; expl.placeholder="הסבר";
@@ -606,7 +606,7 @@ METHODS = [
 
 // 8 · מכתב לדמות בעוד שנה
 { id:8, n:8, title:"מכתב לדמות בעוד שנה", desc:"מכתב חופשי מהעתיד לעצמה",
-  instr:"דמייני שאת אחת הדמויות שהשתתפו בסימולציה. עברה שנה, ואת כותבת לעצמך מכתב. אפשר לכתוב אותו באופן חופשי ואותנטי.",
+  instr:"אפשר לדמיין שאת/ה אחת הדמויות שהשתתפו בסימולציה. עברה שנה, ואת/ה כותב/ת לעצמך מכתב. אפשר לכתוב אותו באופן חופשי ואותנטי.",
   render(container, answers, onProgress){
     shortField(container, "character", answers, "מי הדמות?", () => onProgress(!!answers.character && !!answers.letter));
     textField(container, "letter", answers, "המכתב", { rows:9, onInput: () => onProgress(!!answers.character && !!answers.letter) });
@@ -614,7 +614,7 @@ METHODS = [
 
 // 9 · מפגש בין הדמויות בעוד 5 שנים
 { id:9, n:9, title:"מפגש בין הדמויות בעוד 5 שנים", desc:"תרחיש כתוב חופשי למפגש עתידי",
-  instr:"דמייני שעברו חמש שנים מאז המפגש, והדמויות נפגשות שוב במקרה. אפשר לכתוב את השיחה ביניהן, כולל תיאור פיזי, תנועות, הבעות פנים וכל מה שעולה בדמיונך.",
+  instr:"אפשר לדמיין שעברו חמש שנים מאז המפגש, והדמויות נפגשות שוב במקרה. אפשר לכתוב את השיחה ביניהן, כולל תיאור פיזי, תנועות, הבעות פנים וכל מה שעולה בדמיונך.",
   render(container, answers, onProgress){
     shortField(container, "title", answers, "כותרת", () => onProgress(!!answers.title && !!answers.story));
     textField(container, "story", answers, "התרחיש", { rows:10, onInput: () => onProgress(!!answers.title && !!answers.story) });
@@ -633,7 +633,7 @@ METHODS = [
 
 // 11 · ראיון בפודקאסט
 { id:11, n:11, title:"ראיון בפודקאסט", desc:"ראיון מדומה עם הדמות המרכזית",
-  instr:"דמייני שאת מנחה פודקאסט פופולרי בנושאי חינוך ותקשורת. היום, האורחת באולפן היא הדמות המרכזית מהסימולציה שזה עתה הסתיימה.",
+  instr:"אפשר לדמיין שאת/ה מנחה פודקאסט פופולרי בנושאי חינוך ותקשורת. היום, האורחת באולפן היא הדמות המרכזית מהסימולציה שזה עתה הסתיימה.",
   render(container, answers, onProgress){
     const studio = el("div",{class:"studio"}, el("span",{class:"onair"},"ON AIR"));
     container.append(studio);
@@ -674,7 +674,7 @@ METHODS = [
 
 // 13 · משקפיים מתחלפים
 { id:13, n:13, title:"משקפיים מתחלפים", desc:"שלוש פרספקטיבות על מה שקרה",
-  instr:"בחני את מה שהתרחש בסימולציה דרך שלושה זוגות משקפיים שונים.",
+  instr:"אפשר לבחון את מה שהתרחש בסימולציה דרך שלושה זוגות משקפיים שונים.",
   render(container, answers, onProgress){
     const glasses = el("div",{class:"glasses"});
     const body = el("div");
@@ -711,7 +711,7 @@ METHODS = [
 
 // ── בונה עץ אם/אז משותף לאפשרות 3 ולאפשרות 4 ──
 function buildTree(container, answers, onProgress, {min, group}){
-  if (group) shortField(container, "participants", answers, "שמות המשתתפות בקבוצה (מופרדות בפסיק)", check);
+  if (group) shortField(container, "participants", answers, "שמות המשתתפים בקבוצה (מופרדים בפסיק)", check);
   const wrap = el("div"); container.append(el("div",{class:"qbox"}, el("label",{},"עץ ההתקדמות: אם... אז...")), wrap);
   buildTreeRows(wrap, answers, "tree", min, check);
   textField(container, "insights", answers, "תובנות משותפות ו\"לקחת הביתה\"", { rows:4, onInput: check });
@@ -866,8 +866,8 @@ const FORMATTERS = {
   1(a){
     if (a.reflection) return ["הרפלקציה שלך:", a.reflection];
     const qs = ["אילו רגשות התעוררו אצלך במהלך הסימולציה?","אילו מחשבות עברו במוחך במהלך הסימולציה?",
-      "מה את היית אומרת אחרת בשיחה?","איך את היית מגיבה אחרת בשיחה?",
-      "מה היית ממליצה לחברתך המתנסה לשפר בעתיד?","מה רוצים לזכור מהסדנה כדי שישמש אותך בעתיד?",
+      "מה היית אומר.ת אחרת בשיחה?","איך היית מגיב.ה אחרת בשיחה?",
+      "מה היית ממליץ.ה למתנסה לשפר בעתיד?","מה רוצים לזכור מהסדנה כדי שישמש אותך בעתיד?",
       "מה ראית בסימולציה שלא מאפיין אותך והיית רוצה לנסות?"];
     return qs.flatMap((q,i) => a["g"+i] ? [q, a["g"+i], ""] : []);
   },
@@ -881,7 +881,7 @@ const FORMATTERS = {
   },
   treeFmt(a, treeKey){
     const lines = [];
-    if (a.participants) lines.push("משתתפות: " + a.participants, "");
+    if (a.participants) lines.push("משתתפים: " + a.participants, "");
     (a[treeKey]||[]).forEach((r,i) => { if (r.if || r.then) lines.push("סבב " + (i+1) + ", אם: " + r.if + " / אז: " + r.then); });
     if (a.insights) lines.push("", "תובנות משותפות ולקחת הביתה:", a.insights);
     return lines;
@@ -894,8 +894,8 @@ const FORMATTERS = {
     (a.whispersTrainee||[]).forEach(w => { if (w.whisper) lines.push("- (" + (w.when||"—") + ") " + w.whisper); });
     lines.push("", "לחישות לשחקנית:");
     (a.whispersActor||[]).forEach(w => { if (w.whisper) lines.push("- (" + (w.when||"—") + ") " + w.whisper); });
-    lines.push("", "מתי היית עוקצת את המתנסה: " + (a.stingTrainee||""));
-    lines.push("מתי היית עוקצת את השחקנית: " + (a.stingActor||""));
+    lines.push("", "מתי היית עוקץ.ת את המתנסה: " + (a.stingTrainee||""));
+    lines.push("מתי היית עוקץ.ת את השחקנית: " + (a.stingActor||""));
     lines.push("מה הזבוב סיפר לחברתו: " + (a.toldFriend||""));
     return lines;
   },
@@ -905,7 +905,7 @@ const FORMATTERS = {
       describeImage(im.image), "כותרת/מה השתנה: " + (im.title||""), "הסבר: " + (im.expl||""), ""]);
   },
   7(a){
-    return (a.gallery||[]).flatMap(g => ["סטודנטית: " + g.name, "כותרת: " + g.title,
+    return (a.gallery||[]).flatMap(g => ["משתתף/ת: " + g.name, "כותרת: " + g.title,
       describeImage(g.image), "הסבר: " + g.expl, ""]);
   },
   8(a){ return ["הדמות: " + (a.character||""), "", "המכתב:", a.letter||""]; },
@@ -970,7 +970,7 @@ const IMAGE_PREVIEWERS = {
     (answers.gallery||[]).forEach(g => {
       frag.append(el("h4",{}, g.title || "(ללא כותרת)"));
       if (g.image) frag.append(renderImageRecord(g.image));
-      frag.append(el("p",{}, el("b",{},"סטודנטית: "), g.name || "—"));
+      frag.append(el("p",{}, el("b",{},"משתתף/ת: "), g.name || "—"));
       frag.append(el("p",{}, el("b",{},"הסבר: "), g.expl || "—"));
     });
     if (!(answers.gallery||[]).length) frag.append(el("p",{},"עדיין לא נוסף כלום לגלריה."));

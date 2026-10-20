@@ -187,7 +187,7 @@ button:disabled{opacity:.4;cursor:not-allowed;}
 
 <div class="card" id="fbCard"><h2>הכנה: מדדי המשוב לסדנה<em id="fbSum"></em></h2>
   <div class="in">
-    <p class="hint" style="margin:0 0 12px" id="fbIntro">בכל אחד משלושת שאלוני המשוב אפשר לבחור 5–10 מדדים שמתאימים לסדנה הזו. רק הם יופיעו בטפסים של המנחה, של המתנסה ושל הצופות. הסימון הראשוני הוא ברירת המחדל של המוסד.</p>
+    <p class="hint" style="margin:0 0 12px" id="fbIntro">בכל אחד משלושת שאלוני המשוב אפשר לבחור 5–10 מדדים שמתאימים לסדנה הזו. רק הם יופיעו בטפסים של המנחה, של המתנסה ושל הצופים. הסימון הראשוני הוא ברירת המחדל של המוסד.</p>
     <div class="fbtabs" id="fbTabs"></div>
     <div id="fbList"></div>
     <div class="fbadd" id="fbAdd">
@@ -224,7 +224,7 @@ button:disabled{opacity:.4;cursor:not-allowed;}
   <div class="in" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
     <div id="fbQr" style="background:#fff;padding:10px;border-radius:8px;line-height:0" aria-label="קוד QR לטופס המשוב"></div>
     <div style="flex:1;min-width:220px">
-      <p class="hint" style="margin:0 0 10px">בסוף התחקיר: המשתתפות סורקות את הקוד בטלפון, או פותחות את הקישור. מי שנכנסה עם הקוד לקבוצה תמצא את המשוב גם ב"משוב" במסך שלה.</p>
+      <p class="hint" style="margin:0 0 10px">בסוף התחקיר: המשתתפים סורקים את הקוד בטלפון, או פותחים את הקישור. מי שנכנס/ה עם הקוד לקבוצה ימצא/תמצא את המשוב גם ב"משוב" במסך שלו/ה.</p>
       <div class="fblink"><input id="fbUrl" readonly aria-label="קישור לטפסי המשוב"><button type="button" id="bCopy">העתקה</button></div>
     </div>
   </div>
@@ -232,7 +232,7 @@ button:disabled{opacity:.4;cursor:not-allowed;}
 
 <div class="card"><h2>שתי שאלות לשיחה המקדימה<em>לפני הצפייה</em></h2>
   <div class="in"><ol class="q" id="pre"></ol>
-  <p class="hint" style="margin:12px 0 0">צופה בלי מיקוד מתנתקת אחרי שלוש דקות. השיחה הזו קודמת לצפייה ולא באה אחריה.</p></div></div>
+  <p class="hint" style="margin:12px 0 0">צופה בלי מיקוד מתנתק/ת אחרי שלוש דקות. השיחה הזו קודמת לצפייה ולא באה אחריה.</p></div></div>
 
 <div class="card"><h2>שתי תפניות הליבה<em>בחמש דקות יקרו שתיים</em></h2>
   <div class="in" id="core"></div></div>
@@ -242,7 +242,7 @@ button:disabled{opacity:.4;cursor:not-allowed;}
 
 <div class="card"><h2>שאלות לתחקיר<em>אחרי הוידאו</em></h2>
   <div class="in"><ol class="q" id="debrief"></ol>
-  <p class="hint" style="margin:12px 0 0">דף הצפייה מסמן לך באילו דקות לצפות: היכן שכמה צופות סימנו את אותה מיומנות.</p></div></div>
+  <p class="hint" style="margin:12px 0 0">דף הצפייה מסמן לך באילו דקות לצפות: היכן שכמה צופים סימנו את אותה מיומנות.</p></div></div>
 </div>
 
 <div class="bar"><div class="in">
@@ -291,7 +291,7 @@ const S = {
     "מה אמרת שהיה קשה לומר, ומה בחרת לא לומר?",
     "האם הבטחת משהו? מה בדיוק היה בידך לקיים?",
     "מה השתנה אצלך במהלך השיחה, ולא רק אצל רננה?",
-    "אילו היית מתחילה מחדש, מה היית עושה אחרת בשלושים השניות הראשונות?"
+    "אילו היית מתחיל/ה מחדש, מה היית עושה אחרת בשלושים השניות הראשונות?"
   ]
 };
 
@@ -326,7 +326,7 @@ function fill(){
 $("bOpen").addEventListener("click", async () => {
   if (!fbAllValid()) { drawFb(); return; }
   // קוד הסדנה נרשם בשרת: רק עם קוד פעיל המשתתפות נכנסות, והמשוב שלהן משויך לסדנה הזו
-  $("bOpen").disabled = true; $("hint").textContent = "פותחת את הסדנה... (בפעם הראשונה השרת יכול להתעורר עד דקה)";
+  $("bOpen").disabled = true; $("hint").textContent = "פותחים את הסדנה... (בפעם הראשונה השרת יכול להתעורר עד דקה)";
   WF = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   let facName = "", inst = "";
   try { facName = sessionStorage.getItem("sbe.session.name") || ""; const mm = /\(([^)]+)\)\s*$/.exec(sessionStorage.getItem("sbe.session.role") || ""); if (mm) inst = mm[1]; } catch(e){}
@@ -456,7 +456,7 @@ function drawFb(){
   const n = chosen.length;
   const st = document.createElement("p"); st.className = "fbstatus" + (FB.valid(n) ? "" : " bad");
   st.textContent = n < FB.MIN ? "נבחרו " + n + " מדדים. אפשר לבחור לפחות " + FB.MIN + "."
-    : n >= FB.MAX ? "נבחרו " + FB.MAX + " מדדים: המספר המרבי. כדי להוסיף מדד, הסירי מדד אחר."
+    : n >= FB.MAX ? "נבחרו " + FB.MAX + " מדדים: המספר המרבי. כדי להוסיף מדד, אפשר להסיר מדד אחר."
     : "נבחרו " + n + " מדדים. אפשר עד " + FB.MAX + ".";
   list.append(st);
   $("fbAddTtl").textContent = "חסר מדד בשאלון ה" + FB.ROLE_LABEL[fbRole] + "?";
@@ -520,7 +520,7 @@ $("fbAddBtn").addEventListener("click", () => {
   let note;
   if (sel.includes(id)) note = "המדד הזה כבר קיים ומסומן לסדנה.";
   else if (sel.length < FB.MAX) { sel.push(id); note = "המדד נוסף לשאלון ה" + FB.ROLE_LABEL[fbRole] + " וסומן לסדנה הזו."; }
-  else note = "המדד נוסף לבנק. כבר נבחרו " + FB.MAX + " מדדים, כדי לסמן אותו, הסירי מדד אחר.";
+  else note = "המדד נוסף לבנק. כבר נבחרו " + FB.MAX + " מדדים, כדי לסמן אותו, אפשר להסיר מדד אחר.";
   FB.saveWorkshop(fbSel, { scenario: S.name });
   $("fbAddText").value = "";
   drawFb();

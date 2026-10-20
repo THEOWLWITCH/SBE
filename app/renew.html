@@ -194,7 +194,7 @@ $("send").addEventListener("click", async () => {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { msg.textContent = "כתובת המייל לא תקינה."; return; }
   if (!/^(\+972|0)5\d{8}$/.test(phone)) { msg.textContent = "מספר הטלפון הנייד לא תקין (למשל 050-1234567)."; return; }
   if (!systems.length) { msg.textContent = "כדי לשלוח, אפשר לסמן לפחות כלי אחד."; return; }
-  $("send").disabled = true; msg.className = "msg"; msg.textContent = "שולחת... (לפעמים עד דקה)";
+  $("send").disabled = true; msg.className = "msg"; msg.textContent = "שולחים... (לפעמים עד דקה)";
   try {
     const r = await fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     const d = await r.json().catch(() => ({}));

@@ -60,7 +60,7 @@
     const box = el('section', { class: 'sbe-gift', 'aria-label': 'יש מה לעשות במתנה' });
     const to = el('textarea', { placeholder: 'שם אחד בכל שורה, למשל:\nנועה\nצוות שכבה ז׳', maxlength: '2000' });
     const from = el('input', { type: 'text', maxlength: '60', value: clip(opt.from, 60) });
-    const msg = el('textarea', { maxlength: '400', placeholder: 'למשל: שיהיה לך בטלפון, לכל רגע. תודה על כל מה שאת עושה.' });
+    const msg = el('textarea', { maxlength: '400', placeholder: 'למשל: שיהיה בטלפון, לכל רגע. תודה על כל העשייה.' });
     const lang = el('select', { 'data-closed': '' }, el('option', { value: 'he' }, 'עברית'), el('option', { value: 'ar' }, 'ערבית'));
     const go = el('button', { type: 'button', class: 'go' }, '🎁 הכנת קישורי המתנה');
     const out = el('div', { class: 'gl-out', 'aria-live': 'polite' });
