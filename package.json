@@ -1,0 +1,8 @@
+{
+  "name": "begood-site",
+  "private": true,
+  "description": "האתר ב-Netlify (app) ופונקציית קישור המתנה הקצר (netlify/functions)",
+  "dependencies": {
+    "@netlify/blobs": "8.2.0"
+  }
+}

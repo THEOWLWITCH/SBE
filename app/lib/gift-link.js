@@ -7,6 +7,16 @@
   'use strict';
   const PAGE = 'yesh-ma-laasot.html';
   const SHORT = 'https://be-good.co.il/g/';
+  // הקישורים הקצרים נשמרים ב-Netlify (netlify/functions/gift.mjs), לא בשרת ב-Render.
+  const API = 'https://be-good.co.il/api/gift';
+  async function post(body) {
+    const r = await fetch(API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(r.status + ' ' + (d.error || ''));
+    return d;
+  }
+  const createRemote = async (gifts) => (await post({ action: 'create', gifts })).gifts;
+  const removeRemote = async (id, key) => { await post({ action: 'delete', id, key }); };
   const clip = (s, n) => String(s || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
   function base() {
     try { const u = new URL(PAGE, location.href); if (/^https?:$/.test(u.protocol)) return u.origin + u.pathname.replace(/\/[^/]*$/, '/') + PAGE; } catch (e) {}
@@ -61,10 +71,11 @@
       // קישור קצר (20/10/2026: "ההודעה לא נראית טוב כי רואים את כל הכתובת הארוכה"): הפרטים נשמרים בשרת של Begood,
       // והקישור הוא be-good.co.il/g/<קוד>. אם השרת לא עונה, הקישור הארוך עובד כמו קודם.
       let made = null;
-      if (opt.create) {
+      const create = opt.create || createRemote, remove = opt.remove || removeRemote;
+      {
         go.disabled = true; const label = go.textContent; go.textContent = 'מכינים את הקישורים…';
         let why = '';
-        try { made = await opt.create(list); } catch (e) { made = null; why = String((e && (e.status || e.message)) || ''); }
+        try { made = await create(list); } catch (e) { made = null; why = String((e && (e.status || e.message)) || ''); }
         go.disabled = false; go.textContent = label;
         if (!Array.isArray(made) || made.length !== list.length) { made = null; out.append(el('p', { class: 'note' }, 'לא הצלחנו להכין קישורים קצרים כרגע. אלה קישורים ארוכים, והם עובדים באותה דרך. אפשר לנסות שוב בעוד רגע.' + (why ? ' (' + why.slice(0, 60) + ')' : ''))); }
       }
@@ -75,11 +86,11 @@
         const wa = el('a', { href: 'https://wa.me/?text=' + encodeURIComponent(shareText(o, url)), target: '_blank', rel: 'noopener' }, 'וואטסאפ');
         const pv = el('a', { href: url, target: '_blank', rel: 'noopener' }, 'תצוגה');
         const row = el('div', { class: 'row' }, el('b', null, '🎁 ' + (n || 'בלי שם')), cp, cpt, wa, pv);
-        if (made && opt.remove) {
+        if (made) {
           const del = el('button', { type: 'button' }, 'מחיקה');
           del.addEventListener('click', async () => {
             if (!confirm('למחוק את קישור המתנה' + (n ? ' של ' + n : '') + '? מי שיפתח אותו יראה את המדריכון בלי ברכת המתנה.')) return;
-            try { await opt.remove(made[i].id, made[i].key); row.replaceWith(el('div', { class: 'row' }, el('b', null, 'קישור המתנה' + (n ? ' של ' + n : '') + ' נמחק.'))); } catch (e) { alert('המחיקה לא הצליחה. אפשר לנסות שוב.'); }
+            try { await remove(made[i].id, made[i].key); row.replaceWith(el('div', { class: 'row' }, el('b', null, 'קישור המתנה' + (n ? ' של ' + n : '') + ' נמחק.'))); } catch (e) { alert('המחיקה לא הצליחה. אפשר לנסות שוב.'); }
           });
           row.append(del);
         }

@@ -1538,49 +1538,6 @@ async function handleStories(store, body, isSys) {
   return [400, { error: 'bad action' }];
 }
 
-// ── קישור מתנה קצר ל"יש מה לעשות" (20/10/2026: "ההודעה לא נראית טוב כי רואים את כל הכתובת הארוכה") ──
-// gift:<id> → { id, key, at, to, from, msg, lang }. be-good.co.il/g/<id> מפנה ל-yesh-ma-laasot.html?g=<id>,
-// והמדריכון קורא את הפרטים כאן (giftGet, פתוח לכולם). יוצרים רק מי שנכנס/ה; מפתח מחיקה חוזר למי שיצר/ה.
-const GIFT_MAX = 20000;
-const GIFT_ABC = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const giftId = () => Array.from(randomBytes(7), (b) => GIFT_ABC[b % GIFT_ABC.length]).join('');
-const giftLine = (v, n) => String(v == null ? '' : v).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
-async function handleGifts(store, body, isSys) {
-  const { action } = body;
-  if (action === 'giftGet') {
-    const id = String(body.id || '');
-    const rec = /^[A-Za-z0-9]{5,16}$/.test(id) ? await store.get('gift:' + id) : null;
-    if (!rec) { await pause(); return [404, { error: 'not found' }]; }
-    return [200, { gift: { to: rec.to, from: rec.from, msg: rec.msg, lang: rec.lang } }];
-  }
-  if (action === 'giftCreate') {
-    const t = await verifyToken(store, body.token);
-    if (!t && !isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
-    const list = (Array.isArray(body.gifts) ? body.gifts : []).slice(0, 60);
-    if (!list.length) return [400, { error: 'empty' }];
-    if ((await store.list('gift:', { keysOnly: true })).length + list.length > GIFT_MAX) return [429, { error: 'full' }];
-    const out = [];
-    for (const g of list) {
-      let id = giftId();
-      while (await store.get('gift:' + id)) id = giftId();
-      const key = randomBytes(10).toString('hex');
-      const rec = { id, key, at: new Date().toISOString(), to: giftLine(g && g.to, 60), from: giftLine(g && g.from, 60),
-        msg: String((g && g.msg) || '').replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, ' ').trim().slice(0, 400), lang: g && g.lang === 'ar' ? 'ar' : 'he' };
-      await store.set('gift:' + id, rec);
-      out.push({ id, key });
-    }
-    return [200, { gifts: out }];
-  }
-  if (action === 'giftDelete') {
-    const id = String(body.id || '');
-    const rec = /^[A-Za-z0-9]{5,16}$/.test(id) ? await store.get('gift:' + id) : null;
-    if (!rec || !(isSys || (body.key && same(String(body.key), String(rec.key))))) { await pause(); return [404, { error: 'not found' }]; }
-    await store.del('gift:' + id);
-    return [200, { ok: true }];
-  }
-  return [400, { error: 'bad action' }];
-}
-
 // מחזירה [status, body].
 export async function handleAccess(store, body) {
   const { action } = body || {};
@@ -1668,7 +1625,6 @@ export async function handleAccess(store, body) {
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
   if (/^open(Join|List|Create|Update|Revoke)$/.test(action || '')) return handleOpenLinks(store, body, isSys);
   if (/^story(Share|Withdraw|List|Status|Delete)$/.test(action || '')) return handleStories(store, body, isSys);
-  if (/^gift(Get|Create|Delete)$/.test(action || '')) return handleGifts(store, body, isSys);
 
   if (['renewRequest', 'codesList', 'codeCreate', 'codeRevoke', 'codeUse', 'setSubscription', 'renewSubscription',
     'getSettings', 'setSettings', 'renewList', 'renewDone', 'renewApprove'].includes(action)) {

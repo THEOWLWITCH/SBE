@@ -1270,9 +1270,9 @@ function openGift(){
   $("#giftOpen").onclick=()=>{$("#gift").hidden=true;try{sessionStorage.setItem("edu_giftSeen",giftKey())}catch(e){}};
 }
 if(isGift)openGift();
-/* קישור מתנה קצר (20/10/2026): be-good.co.il/g/<קוד> מפנה לכאן עם ?g=<קוד>; הפרטים נשמרים בשרת של Begood */
+/* קישור מתנה קצר (20/10/2026): be-good.co.il/g/<קוד> מפנה לכאן עם ?g=<קוד>; הפרטים נשמרים ב-Netlify (netlify/functions/gift.mjs) */
 if(GCODE&&!isGift){
-  fetch("https://sbe-server.onrender.com/api/access",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"giftGet",id:GCODE})})
+  fetch("https://be-good.co.il/api/gift?id="+encodeURIComponent(GCODE))
     .then(r=>r.ok?r.json():null).then(d=>{
       if(!d||!d.gift)return;
       const g=d.gift;GIFT.to=clip(g.to,60);GIFT.from=clip(g.from,60);GIFT.msg=String(g.msg||"").replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g," ").trim().slice(0,400);
