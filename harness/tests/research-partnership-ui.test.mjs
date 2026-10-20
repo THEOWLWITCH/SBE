@@ -66,6 +66,12 @@ function guidedSetup(owner=true){
  return {...s,sources,preparation,current:()=>current};
 }
 
+test('guided live preview is a collapsed disclosure that refreshes without hiding completion progress',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();
+ const preview=walk(s.root).find(n=>n.tagName==='details'&&n.children[0]?.textContent==='תצוגת נוסח ההסכם');assert.ok(preview);assert.notEqual(preview.open,true);assert.match(s.root.textContent,/להשלמת ההגשה נותרו/);
+ preview.open=true;const title=field(s.root,'כותרת');title.value='נוסח מעודכן בתצוגה';await title.listeners.input();assert.equal(preview.open,true);assert.match(preview.textContent,/נוסח מעודכן בתצוגה/);page.clear();
+});
+
 test('guided preparation uses the server draft and operational lead while grants stay separate from proposed tools',async()=>{
  const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await settle();
  assert.equal(field(s.root,'כותרת').value,'טיוטה שהוכנה בשרת');assert.equal(field(s.root,'שם החוקרת').value,'');assert.ok(s.calls.some(([a])=>a==='agreementPrepare'));assert.ok(!s.calls.some(([a])=>a==='recordSave'));
@@ -165,6 +171,15 @@ test('approved agreements show signing controls only when the provider readiness
   }
 });
 test('new safe partnership errors preserve dependency messages and clear private scope on denial',async()=>{const R=require('../../app/lib/research-client.js');let status=503;const clears=[];const client=R.create({getToken:()=> 'A',onClear:reason=>clears.push(reason),fetchImpl:async()=>({ok:false,status,json:async()=>({ok:false,code:status===503?'not_configured':'not_found',error:'arbitrary server details'})})});client.setScope(id(1));await assert.rejects(client.call('workspaceBootstrap'),e=>e.code==='not_configured'&&!e.userMessage.includes('arbitrary'));status=404;await assert.rejects(client.call('workspaceList'),e=>e.code==='not_found');assert.ok(clears.includes('not_found'));});
+test('client directs an export raced by execution to private signed originals without generic retries or scope clearing',async()=>{
+ const R=require('../../app/lib/research-client.js'),clears=[],requests=[];
+ const client=R.create({getToken:()=> 'A',onClear:reason=>clears.push(reason),fetchImpl:async(u,o)=>{requests.push(JSON.parse(o.body));return {ok:false,status:409,json:async()=>({code:'signed_original_required',error:'arbitrary confidential provider details'})};}});
+ client.setScope(id(1));const initial=clears.length;
+ await assert.rejects(client.call('workspaceExport',{studyId:id(1),partnerId:id(2),recordId:id(3),versionId:id(4),format:'docx'}),e=>{
+  assert.equal(e.code,'signed_original_required');assert.equal(e.status,409);assert.match(e.userMessage,/לרענן את התיק/);assert.match(e.userMessage,/העותק החתום המקורי/);assert.match(e.userMessage,/מסמכים הפרטיים/);assert.doesNotMatch(e.userMessage,/arbitrary|confidential|provider|לנסות שוב/);return true;
+ });
+ assert.equal(clears.length,initial);assert.equal(requests.length,1);
+});
 test('autosave creates server revisions and scope cleanup cancels a pending draft',async()=>{const UI=require('../../app/lib/research-partnership-ui.js'),s=setup(false),page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'בקשה חדשה').click();const title=field(s.root,'כותרת');title.value='טיוטה אוטומטית';title.listeners.input();await new Promise(resolve=>setTimeout(resolve,1100));assert.equal(s.calls.filter(([a])=>a==='recordSave').length,1);title.value='שינוי שלא נשלח';title.listeners.input();page.clear();await new Promise(resolve=>setTimeout(resolve,1100));assert.equal(s.calls.filter(([a])=>a==='recordSave').length,1);assert.equal(s.root.textContent,'');});
 test('same session refresh restores typed draft after authorization and ignores a sibling folder',async()=>{const UI=require('../../app/lib/research-partnership-ui.js'),s=setup(false),page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'בקשה חדשה').click();field(s.root,'כותרת').value='טיוטה בזיכרון';const saved=page.capture();await page.load(saved);assert.equal(field(s.root,'כותרת').value,'טיוטה בזיכרון');await page.openWorkspace({...s.workspace,partnerId:id(88),partnerName:'SIBLING SECRET'});assert.ok(!s.calls.some(([a,p])=>a==='partnerGet'&&p.partnerId===id(88)));assert.ok(!s.root.textContent.includes('SIBLING SECRET'));page.clear();});
 test('nested shell lifecycle captures workspace fields and reopens only after fresh authorization',async()=>{const UI=require('../../app/lib/research-management-ui.js'),s=setup(false),original=s.client.call;s.client.call=async(a,p)=>a==='bootstrap'?{owner:false,studies:[]}:original(a,p);const page=UI.mount({...s,search:'?workspace=1'});await page.load();await btn(s.root,'פתיחת התיק').click();await btn(s.root,'בקשה חדשה').click();field(s.root,'כותרת').value='נשמרת ברענון';const saved=page.capture();assert.equal(saved.workspace.editor.data.title,'נשמרת ברענון');await page.load(saved);assert.equal(field(s.root,'כותרת').value,'נשמרת ברענון');page.clear();});
@@ -246,6 +261,13 @@ test('agreement loads persisted approvals only for its exact current version and
   await page.openWorkspace(s.workspace);await btn(s.root,agreement.version.data.title).click();assert.ok(!s.root.textContent.includes('אישרה את הגרסה הזו'));page.clear();
 });
 
+test('executed agreement directs downloads to private immutable documents rather than regenerating exports',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=setup(),original=s.client.call,source={record:{id:id(80),studyId:id(1),partnerId:id(2),kind:'agreement',status:'executed',revision:5},version:{id:id(81),number:2,data:{title:'הסכם חתום בדוי'}}};
+ s.workspace.records=[{id:id(80),kind:'agreement',status:'executed',title:'הסכם חתום בדוי'}];s.client.call=async(a,p)=>a==='recordGet'?source:original(a,p);
+ const page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חתום בדוי').click();
+ assert.equal(btn(s.root,'הורדת Word'),undefined);assert.equal(btn(s.root,'PDF והדפסה'),undefined);assert.match(s.root.textContent,/ההסכם החתום ותיעוד החתימה/);assert.match(s.root.textContent,/מסמכים פרטיים/);assert.ok(!s.calls.some(([a])=>a==='workspaceExport'));page.clear();
+});
+
 test('linked amendments identify the exact executed source and open a separate editable draft',async()=>{
   const UI=require('../../app/lib/research-partnership-ui.js');
   for(const previousSource of [undefined,id(77)]){
@@ -282,4 +304,12 @@ test('authorized asynchronous document export and contribution report use the sh
     assert.equal(s.calls.find(([a])=>a==='workspaceExport')[1].versionId,id(4));assert.equal(printed[0].inline,true);assert.match(printed[0].node.textContent,/תוכן שאושר לייצוא/);
     await btn(s.root,'חזרה לתיק החוקרת').click();await btn(s.root,'דוח תרומות לפי מחקר').click();await btn(s.root,'PDF והדפסת דוח התרומות').click();assert.equal(printed[1].inline,true);assert.match(printed[1].node.textContent,/מחקר א/);
   }finally{page.clear();globalThis.DOMParser=originalParser;}
+});
+
+test('guided in-app PDF retains authorized document styles and right alignment while printing the title once',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),original=s.client.call,printed=[],originalParser=globalThis.DOMParser;
+ s.document.importNode=n=>n;globalThis.DOMParser=class{parseFromString(){const title=new Element('h1'),p=new Element('p');title.textContent='טיוטה שהוכנה בשרת';p.textContent='פסקה מורשית';return {body:{children:[title,p]},querySelector:selector=>selector==='style'?{textContent:'.agreement-row{break-inside:auto}'}:null};}};
+ s.client.call=async(a,p)=>a==='workspaceExport'?{contentBase64:Buffer.from('<html>authorized synthetic HTML</html>').toString('base64')}:original(a,p);
+ const page=UI.mount({...s,productDoc:{print:args=>printed.push(args)}});
+ try{await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await btn(s.root,'PDF והדפסה').click();assert.equal(printed.length,1);assert.equal(printed[0].inline,true);assert.equal(printed[0].title,'טיוטה שהוכנה בשרת');assert.match(printed[0].extraCss,/agreement-row\{break-inside:auto\}/);assert.match(printed[0].extraCss,/text-align:right!important/);assert.equal(walk(printed[0].node).some(n=>n.tagName==='h1'),false);assert.match(printed[0].node.textContent,/פסקה מורשית/);}finally{page.clear();globalThis.DOMParser=originalParser;}
 });

@@ -57,6 +57,17 @@ test('exports are exact authorized version bytes, escaped RTL HTML and actual OO
  assert.ok(calls.every(c=>c.a==='workspaceExport'));
  const revoked={async rpc(){throw Object.assign(new Error('not_found'),{code:'not_found'});}};assert.equal((await handleResearch(access,revoked,{token:token(),action:'workspaceExport',...scope(),versionId:v.id,format:'html'}))[0],404);
 });
+test('executed agreement exports stop after authorization and leave immutable signed evidence unchanged',async()=>{
+ const signed=Buffer.from('%PDF-synthetic immutable provider evidence'),before=Buffer.from(signed),v={id:randomUUID(),data:{unknown:'must never be regenerated'}},calls=[];
+ const store={async rpc(t,a,p){calls.push({a,p});return {record:{kind:'agreement',status:'executed'},version:v,signedDocumentBytes:signed};}};
+ for(const format of ['text','json','html','docx']){
+  const [status,out]=await handleResearch(access,store,{token:token(),action:'workspaceExport',...scope(),versionId:v.id,format});
+  assert.equal(status,409);assert.equal(out.code,'signed_original_required');assert.equal(out.contentBase64,undefined);assert.deepEqual(signed,before);
+ }
+ assert.equal(calls.length,4);assert.ok(calls.every(c=>c.a==='workspaceExport'));
+ const denied={async rpc(){throw Object.assign(new Error('not_found'),{code:'not_found'});}};
+ assert.equal((await handleResearch(access,denied,{token:token(),action:'workspaceExport',...scope(),versionId:v.id,format:'docx'}))[0],404);
+});
 test('canonical nested hashes and exact financial/date diffs do not depend on optional AI',async()=>{
  const before={title:'הצעה',sharedExpenses:[{description:'תשלום',amount:'100.00',party:'owner',dueDate:'2026-11-01'}]},after={...before,sharedExpenses:[{...before.sharedExpenses[0],amount:'125.25',dueDate:'2026-12-01'}]};
  assert.equal(canonicalJson({z:[{b:2,a:1}],a:'עברית'}),'{"a":"עברית","z":[{"a":1,"b":2}]}');assert.equal(contentHash({b:before,a:after}),contentHash({a:after,b:before}));

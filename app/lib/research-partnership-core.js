@@ -288,12 +288,76 @@
     if (Array.isArray(value)) return (definition.id === 'requestedPermissions' ? value.map(permissionLabel) : value).join(', ');
     return String(value);
   }
+  function completedValue(definition, value) {
+    if (empty(value)) return '[חסר: ' + definition.label + ']';
+    if (definition.type === 'date') return value.split('-').reverse().join('.');
+    if (definition.type === 'money') return value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (definition.type === 'rows') return value.map((row, i) => (i + 1) + '. ' + definition.fields.filter(f => !empty(row[f.id])).map(f => f.label + ': ' + completedValue(f, row[f.id])).join('\n')).join('\n\n');
+    if (Array.isArray(value)) return (['requestedPermissions', 'actions'].includes(definition.id) ? value.map(permissionLabel) : value).join(', ');
+    return formatValue(definition, value);
+  }
+  function renderGuidedAgreement(data, template, missing) {
+    const definitions = RECORD_SCHEMAS.agreement.fields, byId = new Map(definitions.map(f => [f.id, f]));
+    const consumed = new Set(['title', 'customClauses', 'guidedVersion', 'ipReadAcknowledgement']);
+    function paragraph(text, sectionId) {
+      const fieldIds = [];
+      text = text.replace(/\{\{([A-Za-z][A-Za-z0-9]*)\}\}/g, (_, id) => {
+        consumed.add(id); fieldIds.push(id);
+        if (empty(data[id]) && !missing.includes(id)) missing.push(id);
+        return completedValue(byId.get(id), data[id]);
+      });
+      return { type: 'paragraph', sectionId, text, fieldIds };
+    }
+    // Expand clauses before selecting labelled fields: a placeholder owns that field's body presentation.
+    const clauses = new Map(AGREEMENT_SECTIONS.map(s => [s.id, (template?.sectionClauses.find(c => c.sectionId === s.id)?.text || '').split(/\n\s*\n/).filter(Boolean).map(text => paragraph(text, s.id))]));
+    if (template) clauses.get('mutualIP').push(...template.mutualIPClause.split(/\n\s*\n/).filter(Boolean).map(text => paragraph(text, 'mutualIP')));
+    const explanation = template ? paragraph(template.ipExplanation, 'reviewSigning') : null;
+    const annexFields = new Set(GUIDED_AGREEMENT.annexes.flatMap(a => [a.statusField, a.reasonField, a.rowsField]));
+    const blocks = [{ type: 'title', text: data.title || 'טיוטת הסכם', fieldIds: ['title'] }];
+    function fieldsToBlocks(fields, sectionId) {
+      for (const f of fields) {
+        const value = data[f.id];
+        if (f.type === 'rows' && !empty(value)) {
+          value.forEach((row, index) => {
+            const label = f.label + ' · ' + (index + 1), lines = f.fields.filter(n => !empty(row[n.id])).map(n => ({ label: n.label, value: completedValue(n, row[n.id]), fieldId: n.id }));
+            blocks.push({ type: 'row', sectionId, label, lines, fieldIds: [f.id], text: label + '\n' + lines.map(n => n.label + ': ' + n.value).join('\n') });
+          });
+        } else {
+          let valueText = completedValue(f, value);
+          if (f.id === 'templateVersionId' && template) valueText = template.templateVersion + ' · מזהה גרסה: ' + valueText;
+          if (f.id === 'ipExplanationVersionId' && template) valueText = template.explanationVersion + ' · מזהה גרסה: ' + valueText;
+          const label = f.id === 'templateVersionId' ? 'תבנית הנוסח' : f.id === 'finalVersionLabel' ? 'סימון הגרסה שהוזן בהסכם' : f.label;
+          blocks.push({ type: 'field', sectionId, label, value: valueText, fieldIds: [f.id], text: label + ': ' + valueText });
+        }
+      }
+    }
+    const sections = AGREEMENT_SECTIONS.map(section => {
+      const sectionClauses = clauses.get(section.id);
+      const custom = (data.customClauses || []).filter(c => c.sectionId === section.id).map(c => ({ type: 'paragraph', sectionId: section.id, text: c.title + '\n' + c.text, fieldIds: ['customClauses'] }));
+      const fields = definitions.filter(f => f.section === section.id && own(data, f.id) && !consumed.has(f.id) && !annexFields.has(f.id) && (!empty(data[f.id]) || missing.includes(f.id)));
+      blocks.push({ type: 'heading', level: 2, sectionId: section.id, text: section.label, fieldIds: [] }, ...sectionClauses, ...custom);
+      fieldsToBlocks(fields, section.id);
+      return { id: section.id, label: section.label, text: [...sectionClauses, ...custom].map(b => b.text).join('\n\n'), fields: fields.map(f => ({ id: f.id, label: f.label, value: completedValue(f, data[f.id]) })) };
+    });
+    for (const annex of GUIDED_AGREEMENT.annexes) {
+      blocks.push({ type: 'heading', level: 2, sectionId: annex.section, text: 'נספח ' + annex.id + ': ' + annex.label, fieldIds: [] });
+      fieldsToBlocks([byId.get(annex.statusField)], annex.section);
+      if (data[annex.statusField] === 'applicable') fieldsToBlocks([byId.get(annex.rowsField)], annex.section);
+      else if (data[annex.statusField] === 'not_applicable') fieldsToBlocks([byId.get(annex.reasonField)], annex.section);
+    }
+    if (explanation) blocks.push({ type: 'heading', level: 2, text: 'הסבר הקניין הרוחני', fieldIds: [] }, explanation);
+    else blocks.push({ type: 'paragraph', text: 'להשלמת ההסכם נדרשים תבנית מאושרת והסבר קניין רוחני שסופק.', fieldIds: [] });
+    blocks.push({ type: 'heading', level: 2, text: 'חתימות', fieldIds: [] }, ...['חתימת בעלת המערכת', 'חתימת החוקרת'].map(text => ({ type: 'signature', text: text + '\n\nהסכמה לחתימה אלקטרונית וחתימה אצל ספק החתימה', fieldIds: [] })));
+    const document = { version: 'guided-v4-1', direction: 'rtl', lang: 'he', blocks };
+    return { direction: 'rtl', lang: 'he', title: data.title || 'טיוטת הסכם', templateVersion: template?.templateVersion || null, explanationVersion: template?.explanationVersion || null, sections, ipExplanation: explanation?.text || '', missingFields: missing, dependency: template ? null : 'approved_template_missing', ready: !!template && missing.length === 0, document, text: blocks.map(b => b.text).join('\n\n') };
+  }
   function renderAgreement(data, suppliedTemplate) {
     data = validateRecord('agreement', data);
     const template = suppliedTemplate ? validateRecord('agreement_template', suppliedTemplate, { complete: true }) : null;
     const definitions = RECORD_SCHEMAS.agreement.fields;
     const byId = new Map(definitions.map(f => [f.id, f]));
     const missing = missingFields('agreement', data, template ? template.requiredFieldIds : []);
+    if (data.guidedVersion === '4' || template?.requiredFieldIds?.includes('guidedVersion')) return renderGuidedAgreement(data, template, missing);
     const required = new Set(template ? template.requiredFieldIds : []);
     function replace(text) { return text.replace(/\{\{([A-Za-z][A-Za-z0-9]*)\}\}/g, (_, id) => { if (empty(data[id])) required.add(id); return formatValue(byId.get(id), data[id]); }); }
     const sections = AGREEMENT_SECTIONS.map(section => {

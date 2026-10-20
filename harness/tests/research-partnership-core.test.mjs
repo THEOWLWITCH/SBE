@@ -57,9 +57,11 @@ test('each guided field group renders in its own section without editor guidance
  const sample=f=>({text:'ערך בדוי '+f.id,email:'synthetic@example.invalid',date:'2026-11-01',id,type:null}[f.type] ?? (f.type==='enum'?Object.keys(f.choices)[0]:f.type==='integer'?7:f.type==='money'?'12.34':f.type==='boolean'?true:f.type==='tags'?[f.itemType==='id'?id:f.choices?f.choices[0]:'ערך בדוי']:f.type==='rows'?[Object.fromEntries(f.fields.map(n=>[n.id,sample(n)]))]:undefined));
  for(const definition of C.RECORD_SCHEMAS.agreement.fields){
   const value=sample(definition);
-  const rendered=C.renderAgreement({[definition.id]:value},catalog.templateData);
-  const ownSection=rendered.sections.find(s=>s.id===definition.section);
-  assert.ok(ownSection.fields.some(f=>f.id===definition.id),definition.id);
+  const annex=C.GUIDED_AGREEMENT.annexes.find(a=>a.rowsField===definition.id||a.reasonField===definition.id);
+  const data={[definition.id]:value,...(annex?{[annex.statusField]:annex.rowsField===definition.id?'applicable':'not_applicable'}:{})};
+  const rendered=C.renderAgreement(data,catalog.templateData);
+  if(['guidedVersion','ipReadAcknowledgement'].includes(definition.id))assert.doesNotMatch(rendered.text,/גרסת ההסכם המונחה|קראתי את הסבר הקניין הרוחני/);
+  else assert.ok(rendered.document.blocks.some(b=>(b.fieldIds||[]).includes(definition.id)&&(definition.id==='title'||b.sectionId===definition.section||definition.id==='customClauses')),definition.id);
  }
  const rendered=C.renderAgreement({},catalog.templateData);
  assert.doesNotMatch(rendered.text,/30 ימים|21 ימי עסקים|זו אפשרות לדיון|כיוון לדיון|\[להשלמה/);
