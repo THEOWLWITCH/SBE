@@ -1,0 +1,793 @@
+{
+  "run_id": "20261020-071346-971e504e",
+  "status": "complete",
+  "head_sha": "44eca17ae55ba59eaa16b94c71b5f651e1822a4b",
+  "findings": [
+    {
+      "#": 1,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-intake-ui.js:122 --       const studies=bootstrap.studies||[],study=D.field(approval,'מחקר לאישור','select',saved?.studyId||'',{choices:{'':'בחירת מחקר',...Object.fromEntries(studies.map(s=>[s.id,s.title||s.config?.title||'מחקר']))}}),identity=D.field(approval,'זהות אישית מאומתת','select',saved?.individualCode||'',{choices:{'':'בחירת קוד אישי',...Object.fromEntries((ownerInfo.identities||[]).map(i=>[i.code,i.label+' · '+i.institution]))}}),verified=D.field(approval,'וידוא זהות הפונה הושלם','checkbox',saved?.verified===true);",
+        "app/lib/research-partnership-ui.js:25,37 -- load assigns bootstrap from request('workspaceBootstrap'); openIntake passes that bootstrap directly to IUI.mountOwner.",
+        "harness/migrations/20261018-research-partnerships.sql:248,251-258,263 -- studies is appended only inside the partnership_partners loop and the study membership/record/document/invitation/snapshot predicate.",
+        "Executed the actual in-memory database fixture: createdStudy=646221a5-6531-40c4-97a8-3652aaf80bb1; partnershipStudyIds=[]; generalStudyIds=[646221a5-6531-40c4-97a8-3652aaf80bb1].",
+        "app/lib/research-partnership-ui.js:37 --     async function openIntake(view,saved){if(!bootstrap?.owner)return;workspace=null;editor=null;intakePage=IUI.mountOwner({document,root,client,bootstrap,onBack:()=>load()});if(saved)await intakePage.restore(saved);else await intakePage[view]();}",
+        "app/lib/research-partnership-ui.js:25 sets bootstrap from workspaceBootstrap; app/lib/research-intake-ui.js:122 builds every approval study option from bootstrap.studies.",
+        "harness/migrations/20261018-research-partnerships.sql:248-264 appends studies only inside the existing-partner loop and only for memberships or partner records/documents/invitations/snapshots.",
+        "Read-only PGlite reproduction using the frozen implementation: studyCreate created study 4d7c85bc-61f6-40e3-ab4c-5f48358f487d at revision 0; workspaceBootstrap immediately returned studies: [].",
+        "harness/migrations/20261013-research-management.sql:132-139 implements the ordinary bootstrap over all owner-visible studies, including this first study without partners."
+      ],
+      "file": "app/lib/research-intake-ui.js",
+      "first_evidence": "app/lib/research-intake-ui.js:122 --       const studies=bootstrap.studies||[],study=D.field(approval,'מחקר לאישור','select',saved?.studyId||'',{choices:{'':'בחירת מחקר',...Object.fromEntries(studies.map(s=>[s.id,s.title||s.config?.title||'מחקר']))}}),identity=D.field(approval,'זהות אישית מאומתת','select',saved?.individualCode||'',{choices:{'':'בחירת קוד אישי',...Object.fromEntries((ownerInfo.identities||[]).map(i=>[i.code,i.label+' · '+i.institution]))}}),verified=D.field(approval,'וידוא זהות הפונה הושלם','checkbox',saved?.verified===true);",
+      "independent_reviewers": [
+        "correctness",
+        "adversarial"
+      ],
+      "line": 122,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "correctness",
+        "adversarial"
+      ],
+      "severity": "P2",
+      "suggested_fix": "In the owner intake initialization, fetch the authenticated general bootstrap and use its complete studies array for the approval selector instead of workspaceBootstrap.studies; preserve the existing server-side study authorization and CAS checks.",
+      "title": "Populate approval choices from the complete owner study list",
+      "why_it_matters": "An owner cannot approve an incoming applicant into an existing study that has no partnership yet: the study selector is empty even though the ordinary research dashboard lists that study. This screen receives workspaceBootstrap.studies, which is built only inside the existing-partner/workspace loops, rather than the owner's complete study list. I reproduced an ordinary studyCreate followed by workspaceBootstrap returning studies: [] while bootstrap returned that study; loading the general owner bootstrap for the selector makes the promised existing-study path available."
+    },
+    {
+      "#": 2,
+      "autofix_class": "gated_auto",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-intake-ui.js:129 --       approval.append(D.button('אישור הבקשה וההרשאות שנבחרו',async()=>{if(!study.value||!identity.value||!verified.checked||!rights.values().includes('view_study')){note('להשלמת האישור אפשר לבחור מחקר, זהות אישית שנבדקה והרשאת צפייה במחקר, ולסמן את וידוא הזהות.',true);return;}let selected=(bootstrap.studies||[]).find(s=>s.id===study.value);if(!Number.isSafeInteger(selected?.revision)){const fresh=await call('studyGet',{studyId:study.value});if(!fresh)return;selected=fresh.study;}await review('approved',{studyId:study.value,studyExpectedRevision:selected.revision,individualCode:identity.value,permissions:rights.values()});}));",
+        "app/lib/research-intake-ui.js:126 -- created.study is appended directly to bootstrap.studies; line 119 returns to inbox after approval without updating this cached study.",
+        "harness/migrations/20261020-partnership-intake.sql:125 -- approval calls memberSet using studyExpectedRevision; harness/migrations/20261013-research-management.sql:289 -- s:=research_private.bump(sid).",
+        "Executed the actual in-memory database fixture: createdRevision=0, approvedRevision=1, secondApprovalUsingCachedRevision={error:conflict,status:409}."
+      ],
+      "file": "app/lib/research-intake-ui.js",
+      "first_evidence": "app/lib/research-intake-ui.js:129 --       approval.append(D.button('אישור הבקשה וההרשאות שנבחרו',async()=>{if(!study.value||!identity.value||!verified.checked||!rights.values().includes('view_study')){note('להשלמת האישור אפשר לבחור מחקר, זהות אישית שנבדקה והרשאת צפייה במחקר, ולסמן את וידוא הזהות.',true);return;}let selected=(bootstrap.studies||[]).find(s=>s.id===study.value);if(!Number.isSafeInteger(selected?.revision)){const fresh=await call('studyGet',{studyId:study.value});if(!fresh)return;selected=fresh.study;}await review('approved',{studyId:study.value,studyExpectedRevision:selected.revision,individualCode:identity.value,permissions:rights.values()});}));",
+      "independent_reviewers": [
+        "correctness"
+      ],
+      "line": 129,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "correctness"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Always call studyGet for the selected study immediately before constructing the approval payload and use fresh.study.revision, rather than refreshing only when the cached revision is missing.",
+      "title": "Refresh a created study revision before each approval",
+      "why_it_matters": "After the owner creates a draft study from one application and approves it, approving another applicant into that same study fails with conflict until the intake page is reloaded. The locally appended created.study retains revision 0, the first memberSet increments the real study to revision 1, and the approval handler deliberately skips studyGet because the cached revision is an integer. Reading the current study immediately before every approval prevents this self-created stale revision while preserving genuine concurrent-edit conflicts."
+    },
+    {
+      "#": 3,
+      "autofix_class": "gated_auto",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-intake-ui.js:25 --         const response=await fetchImpl(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'omit',cache:'no-store'}),data=await response.json();",
+        "app/lib/research-intake-ui.js:84 -- const at=epoch;submitting=true;",
+        "app/lib/research-intake-ui.js:85 -- try{const result=await client.call('intakeSubmit',{termsVersionId:info.terms.versionId,termsHash:info.terms.hash,acknowledged:true,application});if(at!==epoch)return;receipt=result.receipt;draft={};render();}"
+      ],
+      "file": "app/lib/research-intake-ui.js",
+      "first_evidence": "app/lib/research-intake-ui.js:25 --         const response=await fetchImpl(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'omit',cache:'no-store'}),data=await response.json();",
+      "independent_reviewers": [
+        "reliability"
+      ],
+      "line": 25,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "reliability"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Add a finite AbortController deadline to createPublicClient.call, clear its timer in finally, and retain pending.requestId on timeout; test that an unresolved fetch returns a network error and a retry reuses the same request ID.",
+      "title": "Time out a stalled public submission",
+      "why_it_matters": "If the browser connection stalls without a response, the public form remains in its submitting state and its button stays disabled indefinitely. The user cannot retry the uncertain submission without reloading, which discards the in-memory request ID and can create a second application if the first one committed. A client deadline lets the current page surface the network error and retry with the preserved request ID."
+    },
+    {
+      "#": 4,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-intake-ui.js:77 --       try{const data=await client.call('intakePublicInfo');if(at!==epoch)return;info=data;const changed=Boolean(previous&&(previous.versionId!==info.terms?.versionId||previous.hash!==info.terms?.hash));render(changed,readAcknowledged);}catch(e){if(at===epoch)note(e.userMessage||R.MESSAGES.network,true);}",
+        "app/lib/research-intake-ui.js:76 --       read();const previous=info?.terms,readAcknowledged=ack?.checked===true,at=++epoch;",
+        "app/lib/research-intake-ui.js:54,61,69 -- render replaces all children and initializes the new inputs from draft; the browser entry point invokes load on every window focus.",
+        "Executed mountPublic with the existing test DOM pattern and a delayed intakePublicInfo response: an edit made after load started was replaced with the pre-request title.",
+        "app/lib/research-intake-ui.js:77 awaits intakePublicInfo and then calls render(changed,readAcknowledged); lines 53-54 replace the form and clear its references, and line 71 restores the pre-request checkbox state when terms are unchanged.",
+        "app/lib/research-intake-ui.js:3 invokes load on window focus and persisted pageshow, making the pending-refresh editing window reachable during ordinary use.",
+        "In-memory reproduction evaluating the exact 44eca17 JavaScript: start refresh with title 'Earlier title' and acknowledgement checked; type 'Later title typed while refreshing' and uncheck acknowledgement; resolve the refresh with unchanged terms. Observed result: {\"titleAfterRefresh\":\"Earlier title\",\"acknowledgedAfterRefresh\":true}.",
+        "app/lib/research-intake-ui.js:77 -- try{const data=await client.call('intakePublicInfo');if(at!==epoch)return;info=data;const changed=Boolean(previous&&(previous.versionId!==info.terms?.versionId||previous.hash!==info.terms?.hash));render(changed,readAcknowledged);}catch(e){if(at===epoch)note(e.userMessage||R.MESSAGES.network,true);}",
+        "app/lib/research-intake-ui.js:76 -- read();const previous=info?.terms,readAcknowledged=ack?.checked===true,at=++epoch;",
+        "app/lib/research-intake-ui.js:2 -- else{root.SBE_RESEARCH_INTAKE_UI=factory(root.SBE_RESEARCH_INTAKE,root.SBE_RESEARCH_PARTNERSHIPS,root.SBE_RESEARCH_CLIENT);document.addEventListener('DOMContentLoaded',()=>{const target=document.getElementById('intake-root');if(!target)return;const page=root.SBE_RESEARCH_INTAKE_UI.mountPublic({root:target});page.load();window.addEventListener('focus',()=>page.load());window.addEventListener('pageshow',event=>{if(event.persisted)page.load();});});}"
+      ],
+      "file": "app/lib/research-intake-ui.js",
+      "first_evidence": "app/lib/research-intake-ui.js:77 --       try{const data=await client.call('intakePublicInfo');if(at!==epoch)return;info=data;const changed=Boolean(previous&&(previous.versionId!==info.terms?.versionId||previous.hash!==info.terms?.hash));render(changed,readAcknowledged);}catch(e){if(at===epoch)note(e.userMessage||R.MESSAGES.network,true);}",
+      "independent_reviewers": [
+        "correctness",
+        "adversarial",
+        "julik-frontend-races"
+      ],
+      "line": 77,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "correctness",
+        "adversarial",
+        "julik-frontend-races"
+      ],
+      "severity": "P2",
+      "suggested_fix": "After intakePublicInfo resolves and the epoch is verified, read the still-live form and current acknowledgement again before rebuilding it; reset acknowledgement only when the exact terms version/hash changed. Alternatively avoid replacing the form at all for unchanged terms.",
+      "title": "Preserve current edits and acknowledgement during terms refresh",
+      "why_it_matters": "Returning to the public tab can silently erase text entered while its terms request is pending and recheck an acknowledgement the applicant deliberately unchecked during that request. load snapshots the controls before awaiting the network, then rebuilds the form using those earlier values even when the exact terms have not changed. The reviewers reproduced both lost text and restored acknowledgement using the committed implementation. Read the current controls after the response or keep the existing controls when no rebuild is needed, while still clearing acknowledgement for changed terms."
+    },
+    {
+      "#": 5,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261020-partnership-intake.sql:122 --    IF d.revision<>(p_payload->>'expectedRevision')::integer OR d.status NOT IN ('submitted','under_review') OR d.status=p_payload->>'decision' THEN PERFORM research_private.fail('conflict');END IF;",
+        "harness/migrations/20261020-partnership-intake.sql:122 --     IF d.revision<>(p_payload->>'expectedRevision')::integer OR d.status NOT IN ('submitted','under_review') OR d.status=p_payload->>'decision' THEN PERFORM research_private.fail('conflict');END IF;",
+        "app/lib/research-intake-ui.js:118,120 -- only approved/rejected return before the UI unconditionally renders D.button('שמירה בבדיקה',()=>review('under_review'),'r-secondary').",
+        "harness/migrations/20261020-partnership-intake.sql:135-136 -- accepted decisions increment revision and append an immutable intake_reviews entry containing the note.",
+        "Executed the actual in-memory database fixture: the first under_review note succeeded at revision 1; a second under_review save using expectedRevision 1 and a different note returned {error:conflict,status:409}.",
+        "app/lib/research-intake-ui.js:117 initializes an editable notes field from the latest note; line 118 exits only for approved/rejected; lines 119-120 keep sending decision under_review from the save-in-review button for an already-under-review application.",
+        "Read-only PGlite reproduction using the frozen implementation: a first intakeReview with expectedRevision 0, decision under_review and 'First note' succeeds; a second request with the returned revision 1, decision under_review and 'Second note' returns {\"error\":\"conflict\",\"status\":409}.",
+        "harness/migrations/20261020-partnership-intake.sql:135-136 already increments revision and appends intake_reviews for accepted review events, providing the history-preserving path for this save."
+      ],
+      "file": "harness/migrations/20261020-partnership-intake.sql",
+      "first_evidence": "harness/migrations/20261020-partnership-intake.sql:122 --    IF d.revision<>(p_payload->>'expectedRevision')::integer OR d.status NOT IN ('submitted','under_review') OR d.status=p_payload->>'decision' THEN PERFORM research_private.fail('conflict');END IF;",
+      "independent_reviewers": [
+        "correctness",
+        "adversarial"
+      ],
+      "line": 122,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "correctness",
+        "adversarial"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Remove the same-status rejection for an under_review application while retaining expectedRevision and the submitted/under_review terminal-state guard, so saving another review note increments the revision and appends an immutable review event.",
+      "title": "Allow saving notes on an application already under review",
+      "why_it_matters": "Once an owner marks an application under review, the still-visible 'שמירה בבדיקה' button can no longer save any further review note: every click returns conflict despite a correct current revision. The UI offers that action for both submitted and under_review applications, but SQL rejects the latter solely because its status already equals the requested decision. Letting the CAS-protected under_review save append a new immutable review entry supports the displayed action without changing grants or permitting edits to a final decision."
+    },
+    {
+      "#": 6,
+      "autofix_class": "gated_auto",
+      "confidence": 75,
+      "evidence": [
+        "app/lib/research-intake-ui.js:111 --     async function detail(id,saved){if(!await ready())return;const result=await call('intakeGet',{applicationId:id});if(!result)return;route='detail';applicationId=id;const application=result.application,data=application.application||application.data||{},box=heading(data.title||'פרטי הפנייה');",
+        "app/lib/research-intake-ui.js:111 -- const result=await call('intakeGet',{applicationId:id});if(!result)return;route='detail';applicationId=id;const application=result.application,data=application.application||application.data||{},box=heading(data.title||'פרטי הפנייה');",
+        "app/lib/research-intake-ui.js:96 -- async function call(action,payload={}){const at=epoch;try{const data=await client.call(action,payload);return at===epoch?data:null;}catch(e){if(e.code!=='stale'&&at===epoch)note(e.userMessage||R.MESSAGES[e.code]||R.MESSAGES.invalid,true);return null;}",
+        "app/lib/research-intake-ui.js:99 -- async function terms(saved){if(!await ready())return;route='terms';applicationId=null;const state=ownerInfo.termsState||{revision:0,draftVersion:null,publishedVersionId:null},version=state.draftVersion,seed=saved||version||I.DEFAULT_TERMS_DRAFT,box=heading('תנאי פנייה');"
+      ],
+      "file": "app/lib/research-intake-ui.js",
+      "first_evidence": "app/lib/research-intake-ui.js:111 --     async function detail(id,saved){if(!await ready())return;const result=await call('intakeGet',{applicationId:id});if(!result)return;route='detail';applicationId=id;const application=result.application,data=application.application||application.data||{},box=heading(data.title||'פרטי הפנייה');",
+      "independent_reviewers": [
+        "julik-frontend-races"
+      ],
+      "line": 111,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "julik-frontend-races"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Increment a separate owner-view sequence at the start of inbox(), terms(), and detail(); capture it locally and check it after every awaited bootstrap or view request before changing route or replacing root. Include a deferred intakeGet response test that navigates to terms first and verifies terms remain visible.",
+      "title": "Late application detail response replaces a newer owner view",
+      "why_it_matters": "An owner who opens an application and switches to the terms page before the detail request returns is sent back to that application when the late response arrives. The request guard only tracks clear or account refresh, while navigating between owner intake views leaves its epoch unchanged. A navigation sequence check before rendering would make the latest selected view win."
+    },
+    {
+      "#": 8,
+      "autofix_class": "gated_auto",
+      "confidence": 75,
+      "evidence": [
+        "harness/practice-server.mjs:200 --       const [status, out] = await handleIntake(jobStore(), supabaseResearchStore(url, key), body, { clientAddress: req.socket.remoteAddress });",
+        "harness/practice-server.mjs:200 -- const [status, out] = await handleIntake(jobStore(), supabaseResearchStore(url, key), body, { clientAddress: req.socket.remoteAddress });",
+        "harness/practice-server.mjs:171 -- const jobStore = () => authStore || ((process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) ? supabaseStore(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY) : null);",
+        "harness/lib/access.mjs:1770 -- const request = (target, options) => fetchImpl(target, timeoutMs === undefined ? options : { ...options, signal: AbortSignal.timeout(timeoutMs) });",
+        "harness/lib/research-intake.mjs:35 -- const secret = (await accessStore?.get?.('token-secret'))?.secret;"
+      ],
+      "file": "harness/practice-server.mjs",
+      "first_evidence": "harness/practice-server.mjs:200 --       const [status, out] = await handleIntake(jobStore(), supabaseResearchStore(url, key), body, { clientAddress: req.socket.remoteAddress });",
+      "independent_reviewers": [
+        "reliability"
+      ],
+      "line": 200,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "reliability"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Pass a dedicated supabaseStore(url, key, { timeoutMs: 8000 }) to handleIntake in the new route, and keep injected authStore behavior bounded by the same intake deadline; verify a stalled access-store fetch returns unavailable within that deadline.",
+      "title": "Bound the new intake access-store calls",
+      "why_it_matters": "A slow or unresponsive access-settings request can leave each public submission open before it reaches the SQL RPC, because the new route passes an access store whose Supabase fetch has no timeout. Concurrent submissions then retain server connections and callers receive no result, even though the research RPC itself has an eight-second limit. Give the intake access store a bounded timeout so these requests fail with the existing unavailable response and clients can retry using their request ID."
+    },
+    {
+      "#": 11,
+      "autofix_class": "gated_auto",
+      "confidence": 75,
+      "evidence": [
+        "app/research-partnership.html:18 -- <body class=\"r-public-intake\">",
+        "CLAUDE.md:443 -- **מסך חדש:** מוסיפים ל-`screens-menu.js`, ובודקים שה\"מי רואה\" תואם ל-`app/lib/access-guard.js`.",
+        "app/lib/screens-menu.js:20-24 -- the public gateway group lists entry.html, map.html, examples.html, sources-library.html, and system-select.html but omits research-partnership.html; repository search finds no research-partnership entry in this menu."
+      ],
+      "file": "app/research-partnership.html",
+      "first_evidence": "app/research-partnership.html:18 -- <body class=\"r-public-intake\">",
+      "independent_reviewers": [
+        "project-standards"
+      ],
+      "line": 18,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "project-standards"
+      ],
+      "severity": "P3",
+      "suggested_fix": "Add research-partnership.html to the public gateway group in app/lib/screens-menu.js with who set to everyone, including visitors without sign-in; verify that this agrees with the page’s public access route.",
+      "title": "Add the new intake page to the screens menu",
+      "why_it_matters": "The owner’s central screen menu omits the new public intake page, so the menu no longer inventories all screens or documents who may view this one. Adding the page with an explicit public audience restores the repository’s documented navigation contract."
+    }
+  ],
+  "actionable_findings": [
+    {
+      "#": 1,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-intake-ui.js:122 --       const studies=bootstrap.studies||[],study=D.field(approval,'מחקר לאישור','select',saved?.studyId||'',{choices:{'':'בחירת מחקר',...Object.fromEntries(studies.map(s=>[s.id,s.title||s.config?.title||'מחקר']))}}),identity=D.field(approval,'זהות אישית מאומתת','select',saved?.individualCode||'',{choices:{'':'בחירת קוד אישי',...Object.fromEntries((ownerInfo.identities||[]).map(i=>[i.code,i.label+' · '+i.institution]))}}),verified=D.field(approval,'וידוא זהות הפונה הושלם','checkbox',saved?.verified===true);",
+        "app/lib/research-partnership-ui.js:25,37 -- load assigns bootstrap from request('workspaceBootstrap'); openIntake passes that bootstrap directly to IUI.mountOwner.",
+        "harness/migrations/20261018-research-partnerships.sql:248,251-258,263 -- studies is appended only inside the partnership_partners loop and the study membership/record/document/invitation/snapshot predicate.",
+        "Executed the actual in-memory database fixture: createdStudy=646221a5-6531-40c4-97a8-3652aaf80bb1; partnershipStudyIds=[]; generalStudyIds=[646221a5-6531-40c4-97a8-3652aaf80bb1].",
+        "app/lib/research-partnership-ui.js:37 --     async function openIntake(view,saved){if(!bootstrap?.owner)return;workspace=null;editor=null;intakePage=IUI.mountOwner({document,root,client,bootstrap,onBack:()=>load()});if(saved)await intakePage.restore(saved);else await intakePage[view]();}",
+        "app/lib/research-partnership-ui.js:25 sets bootstrap from workspaceBootstrap; app/lib/research-intake-ui.js:122 builds every approval study option from bootstrap.studies.",
+        "harness/migrations/20261018-research-partnerships.sql:248-264 appends studies only inside the existing-partner loop and only for memberships or partner records/documents/invitations/snapshots.",
+        "Read-only PGlite reproduction using the frozen implementation: studyCreate created study 4d7c85bc-61f6-40e3-ab4c-5f48358f487d at revision 0; workspaceBootstrap immediately returned studies: [].",
+        "harness/migrations/20261013-research-management.sql:132-139 implements the ordinary bootstrap over all owner-visible studies, including this first study without partners."
+      ],
+      "file": "app/lib/research-intake-ui.js",
+      "first_evidence": "app/lib/research-intake-ui.js:122 --       const studies=bootstrap.studies||[],study=D.field(approval,'מחקר לאישור','select',saved?.studyId||'',{choices:{'':'בחירת מחקר',...Object.fromEntries(studies.map(s=>[s.id,s.title||s.config?.title||'מחקר']))}}),identity=D.field(approval,'זהות אישית מאומתת','select',saved?.individualCode||'',{choices:{'':'בחירת קוד אישי',...Object.fromEntries((ownerInfo.identities||[]).map(i=>[i.code,i.label+' · '+i.institution]))}}),verified=D.field(approval,'וידוא זהות הפונה הושלם','checkbox',saved?.verified===true);",
+      "independent_reviewers": [
+        "correctness",
+        "adversarial"
+      ],
+      "line": 122,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "correctness",
+        "adversarial"
+      ],
+      "severity": "P2",
+      "suggested_fix": "In the owner intake initialization, fetch the authenticated general bootstrap and use its complete studies array for the approval selector instead of workspaceBootstrap.studies; preserve the existing server-side study authorization and CAS checks.",
+      "title": "Populate approval choices from the complete owner study list",
+      "why_it_matters": "An owner cannot approve an incoming applicant into an existing study that has no partnership yet: the study selector is empty even though the ordinary research dashboard lists that study. This screen receives workspaceBootstrap.studies, which is built only inside the existing-partner/workspace loops, rather than the owner's complete study list. I reproduced an ordinary studyCreate followed by workspaceBootstrap returning studies: [] while bootstrap returned that study; loading the general owner bootstrap for the selector makes the promised existing-study path available."
+    },
+    {
+      "#": 2,
+      "autofix_class": "gated_auto",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-intake-ui.js:129 --       approval.append(D.button('אישור הבקשה וההרשאות שנבחרו',async()=>{if(!study.value||!identity.value||!verified.checked||!rights.values().includes('view_study')){note('להשלמת האישור אפשר לבחור מחקר, זהות אישית שנבדקה והרשאת צפייה במחקר, ולסמן את וידוא הזהות.',true);return;}let selected=(bootstrap.studies||[]).find(s=>s.id===study.value);if(!Number.isSafeInteger(selected?.revision)){const fresh=await call('studyGet',{studyId:study.value});if(!fresh)return;selected=fresh.study;}await review('approved',{studyId:study.value,studyExpectedRevision:selected.revision,individualCode:identity.value,permissions:rights.values()});}));",
+        "app/lib/research-intake-ui.js:126 -- created.study is appended directly to bootstrap.studies; line 119 returns to inbox after approval without updating this cached study.",
+        "harness/migrations/20261020-partnership-intake.sql:125 -- approval calls memberSet using studyExpectedRevision; harness/migrations/20261013-research-management.sql:289 -- s:=research_private.bump(sid).",
+        "Executed the actual in-memory database fixture: createdRevision=0, approvedRevision=1, secondApprovalUsingCachedRevision={error:conflict,status:409}."
+      ],
+      "file": "app/lib/research-intake-ui.js",
+      "first_evidence": "app/lib/research-intake-ui.js:129 --       approval.append(D.button('אישור הבקשה וההרשאות שנבחרו',async()=>{if(!study.value||!identity.value||!verified.checked||!rights.values().includes('view_study')){note('להשלמת האישור אפשר לבחור מחקר, זהות אישית שנבדקה והרשאת צפייה במחקר, ולסמן את וידוא הזהות.',true);return;}let selected=(bootstrap.studies||[]).find(s=>s.id===study.value);if(!Number.isSafeInteger(selected?.revision)){const fresh=await call('studyGet',{studyId:study.value});if(!fresh)return;selected=fresh.study;}await review('approved',{studyId:study.value,studyExpectedRevision:selected.revision,individualCode:identity.value,permissions:rights.values()});}));",
+      "independent_reviewers": [
+        "correctness"
+      ],
+      "line": 129,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "correctness"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Always call studyGet for the selected study immediately before constructing the approval payload and use fresh.study.revision, rather than refreshing only when the cached revision is missing.",
+      "title": "Refresh a created study revision before each approval",
+      "why_it_matters": "After the owner creates a draft study from one application and approves it, approving another applicant into that same study fails with conflict until the intake page is reloaded. The locally appended created.study retains revision 0, the first memberSet increments the real study to revision 1, and the approval handler deliberately skips studyGet because the cached revision is an integer. Reading the current study immediately before every approval prevents this self-created stale revision while preserving genuine concurrent-edit conflicts."
+    },
+    {
+      "#": 3,
+      "autofix_class": "gated_auto",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-intake-ui.js:25 --         const response=await fetchImpl(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'omit',cache:'no-store'}),data=await response.json();",
+        "app/lib/research-intake-ui.js:84 -- const at=epoch;submitting=true;",
+        "app/lib/research-intake-ui.js:85 -- try{const result=await client.call('intakeSubmit',{termsVersionId:info.terms.versionId,termsHash:info.terms.hash,acknowledged:true,application});if(at!==epoch)return;receipt=result.receipt;draft={};render();}"
+      ],
+      "file": "app/lib/research-intake-ui.js",
+      "first_evidence": "app/lib/research-intake-ui.js:25 --         const response=await fetchImpl(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'omit',cache:'no-store'}),data=await response.json();",
+      "independent_reviewers": [
+        "reliability"
+      ],
+      "line": 25,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "reliability"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Add a finite AbortController deadline to createPublicClient.call, clear its timer in finally, and retain pending.requestId on timeout; test that an unresolved fetch returns a network error and a retry reuses the same request ID.",
+      "title": "Time out a stalled public submission",
+      "why_it_matters": "If the browser connection stalls without a response, the public form remains in its submitting state and its button stays disabled indefinitely. The user cannot retry the uncertain submission without reloading, which discards the in-memory request ID and can create a second application if the first one committed. A client deadline lets the current page surface the network error and retry with the preserved request ID."
+    },
+    {
+      "#": 4,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-intake-ui.js:77 --       try{const data=await client.call('intakePublicInfo');if(at!==epoch)return;info=data;const changed=Boolean(previous&&(previous.versionId!==info.terms?.versionId||previous.hash!==info.terms?.hash));render(changed,readAcknowledged);}catch(e){if(at===epoch)note(e.userMessage||R.MESSAGES.network,true);}",
+        "app/lib/research-intake-ui.js:76 --       read();const previous=info?.terms,readAcknowledged=ack?.checked===true,at=++epoch;",
+        "app/lib/research-intake-ui.js:54,61,69 -- render replaces all children and initializes the new inputs from draft; the browser entry point invokes load on every window focus.",
+        "Executed mountPublic with the existing test DOM pattern and a delayed intakePublicInfo response: an edit made after load started was replaced with the pre-request title.",
+        "app/lib/research-intake-ui.js:77 awaits intakePublicInfo and then calls render(changed,readAcknowledged); lines 53-54 replace the form and clear its references, and line 71 restores the pre-request checkbox state when terms are unchanged.",
+        "app/lib/research-intake-ui.js:3 invokes load on window focus and persisted pageshow, making the pending-refresh editing window reachable during ordinary use.",
+        "In-memory reproduction evaluating the exact 44eca17 JavaScript: start refresh with title 'Earlier title' and acknowledgement checked; type 'Later title typed while refreshing' and uncheck acknowledgement; resolve the refresh with unchanged terms. Observed result: {\"titleAfterRefresh\":\"Earlier title\",\"acknowledgedAfterRefresh\":true}.",
+        "app/lib/research-intake-ui.js:77 -- try{const data=await client.call('intakePublicInfo');if(at!==epoch)return;info=data;const changed=Boolean(previous&&(previous.versionId!==info.terms?.versionId||previous.hash!==info.terms?.hash));render(changed,readAcknowledged);}catch(e){if(at===epoch)note(e.userMessage||R.MESSAGES.network,true);}",
+        "app/lib/research-intake-ui.js:76 -- read();const previous=info?.terms,readAcknowledged=ack?.checked===true,at=++epoch;",
+        "app/lib/research-intake-ui.js:2 -- else{root.SBE_RESEARCH_INTAKE_UI=factory(root.SBE_RESEARCH_INTAKE,root.SBE_RESEARCH_PARTNERSHIPS,root.SBE_RESEARCH_CLIENT);document.addEventListener('DOMContentLoaded',()=>{const target=document.getElementById('intake-root');if(!target)return;const page=root.SBE_RESEARCH_INTAKE_UI.mountPublic({root:target});page.load();window.addEventListener('focus',()=>page.load());window.addEventListener('pageshow',event=>{if(event.persisted)page.load();});});}"
+      ],
+      "file": "app/lib/research-intake-ui.js",
+      "first_evidence": "app/lib/research-intake-ui.js:77 --       try{const data=await client.call('intakePublicInfo');if(at!==epoch)return;info=data;const changed=Boolean(previous&&(previous.versionId!==info.terms?.versionId||previous.hash!==info.terms?.hash));render(changed,readAcknowledged);}catch(e){if(at===epoch)note(e.userMessage||R.MESSAGES.network,true);}",
+      "independent_reviewers": [
+        "correctness",
+        "adversarial",
+        "julik-frontend-races"
+      ],
+      "line": 77,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "correctness",
+        "adversarial",
+        "julik-frontend-races"
+      ],
+      "severity": "P2",
+      "suggested_fix": "After intakePublicInfo resolves and the epoch is verified, read the still-live form and current acknowledgement again before rebuilding it; reset acknowledgement only when the exact terms version/hash changed. Alternatively avoid replacing the form at all for unchanged terms.",
+      "title": "Preserve current edits and acknowledgement during terms refresh",
+      "why_it_matters": "Returning to the public tab can silently erase text entered while its terms request is pending and recheck an acknowledgement the applicant deliberately unchecked during that request. load snapshots the controls before awaiting the network, then rebuilds the form using those earlier values even when the exact terms have not changed. The reviewers reproduced both lost text and restored acknowledgement using the committed implementation. Read the current controls after the response or keep the existing controls when no rebuild is needed, while still clearing acknowledgement for changed terms."
+    },
+    {
+      "#": 5,
+      "autofix_class": "manual",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261020-partnership-intake.sql:122 --    IF d.revision<>(p_payload->>'expectedRevision')::integer OR d.status NOT IN ('submitted','under_review') OR d.status=p_payload->>'decision' THEN PERFORM research_private.fail('conflict');END IF;",
+        "harness/migrations/20261020-partnership-intake.sql:122 --     IF d.revision<>(p_payload->>'expectedRevision')::integer OR d.status NOT IN ('submitted','under_review') OR d.status=p_payload->>'decision' THEN PERFORM research_private.fail('conflict');END IF;",
+        "app/lib/research-intake-ui.js:118,120 -- only approved/rejected return before the UI unconditionally renders D.button('שמירה בבדיקה',()=>review('under_review'),'r-secondary').",
+        "harness/migrations/20261020-partnership-intake.sql:135-136 -- accepted decisions increment revision and append an immutable intake_reviews entry containing the note.",
+        "Executed the actual in-memory database fixture: the first under_review note succeeded at revision 1; a second under_review save using expectedRevision 1 and a different note returned {error:conflict,status:409}.",
+        "app/lib/research-intake-ui.js:117 initializes an editable notes field from the latest note; line 118 exits only for approved/rejected; lines 119-120 keep sending decision under_review from the save-in-review button for an already-under-review application.",
+        "Read-only PGlite reproduction using the frozen implementation: a first intakeReview with expectedRevision 0, decision under_review and 'First note' succeeds; a second request with the returned revision 1, decision under_review and 'Second note' returns {\"error\":\"conflict\",\"status\":409}.",
+        "harness/migrations/20261020-partnership-intake.sql:135-136 already increments revision and appends intake_reviews for accepted review events, providing the history-preserving path for this save."
+      ],
+      "file": "harness/migrations/20261020-partnership-intake.sql",
+      "first_evidence": "harness/migrations/20261020-partnership-intake.sql:122 --    IF d.revision<>(p_payload->>'expectedRevision')::integer OR d.status NOT IN ('submitted','under_review') OR d.status=p_payload->>'decision' THEN PERFORM research_private.fail('conflict');END IF;",
+      "independent_reviewers": [
+        "correctness",
+        "adversarial"
+      ],
+      "line": 122,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "correctness",
+        "adversarial"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Remove the same-status rejection for an under_review application while retaining expectedRevision and the submitted/under_review terminal-state guard, so saving another review note increments the revision and appends an immutable review event.",
+      "title": "Allow saving notes on an application already under review",
+      "why_it_matters": "Once an owner marks an application under review, the still-visible 'שמירה בבדיקה' button can no longer save any further review note: every click returns conflict despite a correct current revision. The UI offers that action for both submitted and under_review applications, but SQL rejects the latter solely because its status already equals the requested decision. Letting the CAS-protected under_review save append a new immutable review entry supports the displayed action without changing grants or permitting edits to a final decision."
+    },
+    {
+      "#": 6,
+      "autofix_class": "gated_auto",
+      "confidence": 75,
+      "evidence": [
+        "app/lib/research-intake-ui.js:111 --     async function detail(id,saved){if(!await ready())return;const result=await call('intakeGet',{applicationId:id});if(!result)return;route='detail';applicationId=id;const application=result.application,data=application.application||application.data||{},box=heading(data.title||'פרטי הפנייה');",
+        "app/lib/research-intake-ui.js:111 -- const result=await call('intakeGet',{applicationId:id});if(!result)return;route='detail';applicationId=id;const application=result.application,data=application.application||application.data||{},box=heading(data.title||'פרטי הפנייה');",
+        "app/lib/research-intake-ui.js:96 -- async function call(action,payload={}){const at=epoch;try{const data=await client.call(action,payload);return at===epoch?data:null;}catch(e){if(e.code!=='stale'&&at===epoch)note(e.userMessage||R.MESSAGES[e.code]||R.MESSAGES.invalid,true);return null;}",
+        "app/lib/research-intake-ui.js:99 -- async function terms(saved){if(!await ready())return;route='terms';applicationId=null;const state=ownerInfo.termsState||{revision:0,draftVersion:null,publishedVersionId:null},version=state.draftVersion,seed=saved||version||I.DEFAULT_TERMS_DRAFT,box=heading('תנאי פנייה');"
+      ],
+      "file": "app/lib/research-intake-ui.js",
+      "first_evidence": "app/lib/research-intake-ui.js:111 --     async function detail(id,saved){if(!await ready())return;const result=await call('intakeGet',{applicationId:id});if(!result)return;route='detail';applicationId=id;const application=result.application,data=application.application||application.data||{},box=heading(data.title||'פרטי הפנייה');",
+      "independent_reviewers": [
+        "julik-frontend-races"
+      ],
+      "line": 111,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "julik-frontend-races"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Increment a separate owner-view sequence at the start of inbox(), terms(), and detail(); capture it locally and check it after every awaited bootstrap or view request before changing route or replacing root. Include a deferred intakeGet response test that navigates to terms first and verifies terms remain visible.",
+      "title": "Late application detail response replaces a newer owner view",
+      "why_it_matters": "An owner who opens an application and switches to the terms page before the detail request returns is sent back to that application when the late response arrives. The request guard only tracks clear or account refresh, while navigating between owner intake views leaves its epoch unchanged. A navigation sequence check before rendering would make the latest selected view win."
+    },
+    {
+      "#": 8,
+      "autofix_class": "gated_auto",
+      "confidence": 75,
+      "evidence": [
+        "harness/practice-server.mjs:200 --       const [status, out] = await handleIntake(jobStore(), supabaseResearchStore(url, key), body, { clientAddress: req.socket.remoteAddress });",
+        "harness/practice-server.mjs:200 -- const [status, out] = await handleIntake(jobStore(), supabaseResearchStore(url, key), body, { clientAddress: req.socket.remoteAddress });",
+        "harness/practice-server.mjs:171 -- const jobStore = () => authStore || ((process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) ? supabaseStore(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY) : null);",
+        "harness/lib/access.mjs:1770 -- const request = (target, options) => fetchImpl(target, timeoutMs === undefined ? options : { ...options, signal: AbortSignal.timeout(timeoutMs) });",
+        "harness/lib/research-intake.mjs:35 -- const secret = (await accessStore?.get?.('token-secret'))?.secret;"
+      ],
+      "file": "harness/practice-server.mjs",
+      "first_evidence": "harness/practice-server.mjs:200 --       const [status, out] = await handleIntake(jobStore(), supabaseResearchStore(url, key), body, { clientAddress: req.socket.remoteAddress });",
+      "independent_reviewers": [
+        "reliability"
+      ],
+      "line": 200,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "reliability"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Pass a dedicated supabaseStore(url, key, { timeoutMs: 8000 }) to handleIntake in the new route, and keep injected authStore behavior bounded by the same intake deadline; verify a stalled access-store fetch returns unavailable within that deadline.",
+      "title": "Bound the new intake access-store calls",
+      "why_it_matters": "A slow or unresponsive access-settings request can leave each public submission open before it reaches the SQL RPC, because the new route passes an access store whose Supabase fetch has no timeout. Concurrent submissions then retain server connections and callers receive no result, even though the research RPC itself has an eight-second limit. Give the intake access store a bounded timeout so these requests fail with the existing unavailable response and clients can retry using their request ID."
+    },
+    {
+      "#": 11,
+      "autofix_class": "gated_auto",
+      "confidence": 75,
+      "evidence": [
+        "app/research-partnership.html:18 -- <body class=\"r-public-intake\">",
+        "CLAUDE.md:443 -- **מסך חדש:** מוסיפים ל-`screens-menu.js`, ובודקים שה\"מי רואה\" תואם ל-`app/lib/access-guard.js`.",
+        "app/lib/screens-menu.js:20-24 -- the public gateway group lists entry.html, map.html, examples.html, sources-library.html, and system-select.html but omits research-partnership.html; repository search finds no research-partnership entry in this menu."
+      ],
+      "file": "app/research-partnership.html",
+      "first_evidence": "app/research-partnership.html:18 -- <body class=\"r-public-intake\">",
+      "independent_reviewers": [
+        "project-standards"
+      ],
+      "line": 18,
+      "owner": "downstream-resolver",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "project-standards"
+      ],
+      "severity": "P3",
+      "suggested_fix": "Add research-partnership.html to the public gateway group in app/lib/screens-menu.js with who set to everyone, including visitors without sign-in; verify that this agrees with the page’s public access route.",
+      "title": "Add the new intake page to the screens menu",
+      "why_it_matters": "The owner’s central screen menu omits the new public intake page, so the menu no longer inventories all screens or documents who may view this one. Adding the page with an explicit public audience restores the repository’s documented navigation contract."
+    }
+  ],
+  "pre_existing_findings": [],
+  "triage_groups": [
+    {
+      "title": "Owner review actions",
+      "findings": [
+        1,
+        2,
+        5
+      ],
+      "context": "Apply-queue: the owner review screen uses an incomplete study list, cached revisions and an unsavable repeated review action.",
+      "preferred_resolution": "Supply the full study list (#1), refresh the selected study revision (#2), and permit another CAS-protected under_review note (#5); preserve exact owner-selected grants.",
+      "why": "These distinct fixes make the documented owner review path usable across existing studies and repeated reviews."
+    },
+    {
+      "title": "Public submission deadlines",
+      "findings": [
+        3,
+        8
+      ],
+      "context": "Apply-queue: separate browser and access-store waits can keep one public submission pending indefinitely.",
+      "preferred_resolution": "Bound the server access-store wait (#8) and browser request lifetime (#3), preserving the same request ID for ambiguous retries.",
+      "why": "Both boundaries must settle so an applicant can retry without discarding an uncertain submission."
+    },
+    {
+      "title": "Refresh and navigation state",
+      "findings": [
+        4,
+        6
+      ],
+      "context": "Apply-queue: delayed responses can restore old form state or replace a newer owner view.",
+      "preferred_resolution": "Read live public controls immediately before any rebuild (#4) and guard owner renders with the current view sequence (#6).",
+      "why": "The most recent user edit and navigation should survive slower requests."
+    }
+  ],
+  "residual_risks": [
+    {
+      "autofix_class": "advisory",
+      "confidence": 75,
+      "evidence": [
+        "harness/migrations/20261020-partnership-intake.sql:154 -- definition:=pg_catalog.replace(definition,'''studyTitle'',s.config->>''title''','''studyTitle'',s.config->>''title'',''study'',pg_catalog.jsonb_build_object(''id'',s.id,''status'',s.status,''revision'',s.revision,''config'',s.config),''grantedPermissions'',COALESCE((SELECT pg_catalog.to_jsonb(m.permissions) FROM research_private.memberships m WHERE m.study_id=s.id AND m.actor_ref=p.actor_ref),''[]''::jsonb)');",
+        "harness/migrations/20261020-partnership-intake.sql:152 -- definition:=pg_catalog.pg_get_functiondef('research_private.partnership_workspace(research_private.studies,research_private.partnership_partners,text,text,text)'::regprocedure);"
+      ],
+      "file": "harness/migrations/20261020-partnership-intake.sql",
+      "first_evidence": "harness/migrations/20261020-partnership-intake.sql:154 -- definition:=pg_catalog.replace(definition,'''studyTitle'',s.config->>''title''','''studyTitle'',s.config->>''title'',''study'',pg_catalog.jsonb_build_object(''id'',s.id,''status'',s.status,''revision'',s.revision,''config'',s.config),''grantedPermissions'',COALESCE((SELECT pg_catalog.to_jsonb(m.permissions) FROM research_private.memberships m WHERE m.study_id=s.id AND m.actor_ref=p.actor_ref),''[]''::jsonb)');",
+      "independent_reviewers": [
+        "maintainability"
+      ],
+      "line": 154,
+      "owner": "human",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "maintainability"
+      ],
+      "severity": "P2",
+      "suggested_fix": "When editing the predecessor projection, run the complete migration fixture and inspect the resulting study/grantedPermissions projection; an explicit replacement definition is an optional maintenance choice.",
+      "title": "Workspace projection migration depends on an exact function-source marker",
+      "why_it_matters": "The additive migration rewrites the prior partnership_workspace definition at an exact text marker. It fails explicitly when that marker is absent, and current fixture tests exercise the new projection. No present information disclosure or failed migration was established. Changes to the predecessor definition must keep that marker compatible or update this migration and its fixture checks."
+    }
+  ],
+  "testing_gaps": [
+    {
+      "autofix_class": "advisory",
+      "confidence": 75,
+      "evidence": [
+        "harness/tests/research-intake-core.test.mjs:21 --   assert.deepEqual(C.PUBLIC_FIELDS, P.RECORD_SCHEMAS.application.fields.filter(field => !['questionnaireVersionIds', 'supportingDocumentIds'].includes(field.id)));",
+        "harness/migrations/20261020-partnership-intake.sql:3 defines the copied intake_contract JSON used by SQL validation.",
+        "harness/tests/research-partnership-database.test.mjs:159 --     assert.deepEqual(contract.schemas,CORE.RECORD_SCHEMAS);assert.deepEqual(contract.operations,CORE.OPERATIONS);",
+        "Repository search found no test referencing intake_contract."
+      ],
+      "file": "harness/tests/research-intake-core.test.mjs",
+      "first_evidence": "harness/tests/research-intake-core.test.mjs:21 --   assert.deepEqual(C.PUBLIC_FIELDS, P.RECORD_SCHEMAS.application.fields.filter(field => !['questionnaireVersionIds', 'supportingDocumentIds'].includes(field.id)));",
+      "independent_reviewers": [
+        "testing"
+      ],
+      "line": 21,
+      "owner": "human",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "testing"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Add a database contract test that SELECTs research_private.intake_contract() and deep-compares operations, publicFields, requiredFields, and defaultDraft with the corresponding research-intake-core exports, matching the existing partnership contract parity test.",
+      "title": "Compare the SQL intake contract with its source",
+      "why_it_matters": "A change to the copied SQL contract can silently diverge from the browser contract while these tests stay green. The current assertion only compares the JavaScript public fields with another JavaScript schema; the SQL copy controls server validation and can reject a field the form offers or admit a field the form does not know. Comparing the SQL descriptor with the JavaScript source, as the existing partnership database test does, catches that drift.",
+      "followup_context": "Parent reports that a SQL/core contract parity followup passed outside the reviewed snapshot. This is not a demonstrated current divergence."
+    },
+    {
+      "autofix_class": "advisory",
+      "confidence": 75,
+      "evidence": [
+        "harness/tests/research-intake-ui.test.mjs:52 --   info={terms:{...terms,versionId:id(2),number:2,hash:'b'.repeat(64)},acceptingApplications:true};await page.load();assert.equal(field(s.root,'כותרת הבקשה').value,'מחקר סינתטי');assert.equal(field(s.root,'קראתי את תנאי הפנייה. אישור הקריאה אינו חתימה על הסכם').checked,false);assert.match(s.root.textContent,/התנאים עודכנו/);",
+        "app/lib/research-intake-ui.js:2 attaches focus and persisted pageshow listeners that call page.load().",
+        "harness/tests/research-intake-ui.test.mjs:63 calls page.load() directly for its focus-refresh scenario; the browser check does not change terms or trigger either event."
+      ],
+      "file": "harness/tests/research-intake-ui.test.mjs",
+      "first_evidence": "harness/tests/research-intake-ui.test.mjs:52 --   info={terms:{...terms,versionId:id(2),number:2,hash:'b'.repeat(64)},acceptingApplications:true};await page.load();assert.equal(field(s.root,'כותרת הבקשה').value,'מחקר סינתטי');assert.equal(field(s.root,'קראתי את תנאי הפנייה. אישור הקריאה אינו חתימה על הסכם').checked,false);assert.match(s.root.textContent,/התנאים עודכנו/);",
+      "independent_reviewers": [
+        "testing"
+      ],
+      "line": 52,
+      "owner": "human",
+      "pre_existing": false,
+      "requires_verification": true,
+      "reviewers": [
+        "testing"
+      ],
+      "severity": "P2",
+      "suggested_fix": "Extend the browser check with an acknowledged, filled form, publish a newer synthetic terms version, then trigger focus and persisted pageshow separately; assert the new version is displayed, the draft remains, and acknowledgement is unchecked without calling page.load directly.",
+      "title": "Test focus and page restoration event refresh",
+      "why_it_matters": "A visitor returning to an open, acknowledged form may keep seeing old terms if the new focus or page-restoration listeners stop working. The tests prove that calling load directly clears acknowledgement after a version change, but would still pass if those browser listeners were removed. An event-driven browser test would verify that the refresh actually occurs when the visitor returns."
+    },
+    {
+      "title": "Verify intake locking across separate PostgreSQL connections",
+      "reviewers": [
+        "testing",
+        "data-migration"
+      ],
+      "file": "harness/migrations/20261020-partnership-intake.sql",
+      "note": "The isolated PGlite fixture serializes calls. It does not exercise simultaneous owner approvals or terms publication under separate PostgreSQL connections, so cross-connection locking and idempotency remain unverified.",
+      "evidence": [
+        "New intake_dispatch uses transaction advisory locks and FOR UPDATE for terms, receipts and decisions.",
+        "harness/fixtures/research-partnership-database.mjs uses a single PGlite fixture."
+      ],
+      "suggested_fix": "Exercise simultaneous approval replay and terms publication using separate synthetic PostgreSQL connections before relying on that concurrency evidence.",
+      "autofix_class": "advisory",
+      "owner": "release"
+    },
+    {
+      "title": "Keep the hardened release-order intake regression in the delivered tests",
+      "reviewers": [
+        "security"
+      ],
+      "file": "harness/tests/research-security.test.mjs",
+      "line": 39,
+      "note": "At reviewed revision 44eca17 the hardened non-superuser release test stops before the new profile/intake migrations. Parent followup outside this target has since added and passed the combined release-order intake test; retain that verified followup in the eventual delivery.",
+      "evidence": [
+        "Parent validation followup outside reviewed snapshot: complete hardened release test now applies profile/intake20 after real19 auth boundary as non-superuser migration_operator, exercises public terms/submission, owner approval/membership and anonymous RPC denial; existing credential/role/no-auth-write assertions preserved. node --test --test-name-pattern='complete hardened release' tests/research-security.test.mjs passed1/1 in11258ms. This addresses the security reviewer's combined migration-order testing gap as followup evidence without changing implementation/HEAD."
+      ],
+      "status": "followup-verified-outside-reviewed-snapshot",
+      "autofix_class": "advisory",
+      "owner": "human"
+    }
+  ],
+  "learnings": [],
+  "agent_native_gaps": [],
+  "deployment_notes": [],
+  "peer": {
+    "outcome": "in-process-fallback",
+    "coverage": "Cross-model pass: not run (no different-provider CLI route installed); the in-process adversarial reviewer covered the lens."
+  },
+  "coverage": {
+    "depth": "full",
+    "notes": [
+      "Full depth selected: review-scope.py reported exec_nontest_lines=601, changed_lines=1724, size_band=large and migrations hard_block_full=true.",
+      "Scope: explicit base against current checkout captured at44eca17; staged full.diff and files.txt are canonical. Parent's later test-only regression followups are excluded from reviewed snapshot.",
+      "Project standards: CLAUDE.md supplied fallback criteria for all changed paths; no CODING_STANDARDS.md found.",
+      "Plan is Hebrew prose with U0-U4 and seven numbered acceptance proofs under הוכחת התוצאה; requirements list preserves those proofs under proof-1..proof-7 rather than inventing R-IDs.",
+      "Cross-model route eligibility checked locally: Codex environment attested; claude, grok and antigravity CLIs absent. No peer job started, no review content sent externally, no lifecycle cleanup outstanding.",
+      "Parent validation followup outside reviewed snapshot: complete hardened release test now applies profile/intake20 after real19 auth boundary as non-superuser migration_operator, exercises public terms/submission, owner approval/membership and anonymous RPC denial; existing credential/role/no-auth-write assertions preserved. node --test --test-name-pattern='complete hardened release' tests/research-security.test.mjs passed1/1 in11258ms. This addresses the security reviewer's combined migration-order testing gap as followup evidence without changing implementation/HEAD.",
+      "Parent validation followups outside target further reproduced RED for hidden owner study selector, stale study revision, public focus edit loss, same-status under_review note save, stalled public HTTP/access-store request, and public client missing deadline. SQL/core parity followup passed; implementation stays44eca17. Followup tests are contextual evidence and not part of this review's canonical staged diff.",
+      "Cross-model pass: not run (no different-provider CLI route installed); the in-process adversarial reviewer covered the lens.",
+      "Merged four semantic duplicates across the study selector, public refresh and review-note failure modes; preserved original reviewer and helper-derived independent-reviewer attribution without same-model confidence promotion.",
+      "Discarded one automatic permission-union proposal because it contradicts the explicit exact owner-selected permissions contract; the implemented replacement semantics are intended.",
+      "Mode-aware demotions: 3 (one maintainability concern to residual risks, two missing-test concerns to testing gaps); no materially missing testing subsystem requires a primary umbrella gate.",
+      "Confidence suppression: 0; malformed reviewer returns/findings: 0; quote-check demotions: 0; first_evidence_backfilled: 0.",
+      "Corrected the public fetch motivating anchor from line 26 to committed line 25 and expanded truncated snippets to exact complete lines; all eight primary first_evidence quotes match the reviewed head.",
+      "Validator shortcut-skipped: 0. No finding has verified different-provider corroboration; all eight remaining actionable findings enter one batch in severity/stable-number order.",
+      "No source edits or additional tests were made by synthesis. Tests were inspected at committed 44eca17; later parent reproductions are followup context only."
+    ],
+    "suppressed_by_confidence": {},
+    "suppressed_count": 0,
+    "first_evidence_backfilled": 0,
+    "quote_check_demoted_count": 0,
+    "malformed_findings": 0,
+    "malformed_returns": 0,
+    "semantic_duplicates_merged": 4,
+    "contract_conflicts_discarded": 1,
+    "settlement_preference_suppressed": 0,
+    "mode_aware_demotion_count": 3,
+    "validator_shortcut_skipped": 0,
+    "validator_shortcut_basis": "No adversarial-<provider> artifact with independence_verified:true exists; in-process agreement is not different-model corroboration.",
+    "validator_selected_count": 8,
+    "validator_selected_numbers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      11
+    ],
+    "failed_reviewers": [],
+    "timed_out_reviewers": [],
+    "anchor_checks": [
+      {
+        "#": 1,
+        "file": "app/lib/research-intake-ui.js",
+        "line": 122,
+        "matched_reviewed_head": true
+      },
+      {
+        "#": 2,
+        "file": "app/lib/research-intake-ui.js",
+        "line": 129,
+        "matched_reviewed_head": true
+      },
+      {
+        "#": 3,
+        "file": "app/lib/research-intake-ui.js",
+        "line": 25,
+        "matched_reviewed_head": true
+      },
+      {
+        "#": 4,
+        "file": "app/lib/research-intake-ui.js",
+        "line": 77,
+        "matched_reviewed_head": true
+      },
+      {
+        "#": 5,
+        "file": "harness/migrations/20261020-partnership-intake.sql",
+        "line": 122,
+        "matched_reviewed_head": true
+      },
+      {
+        "#": 6,
+        "file": "app/lib/research-intake-ui.js",
+        "line": 111,
+        "matched_reviewed_head": true
+      },
+      {
+        "#": 8,
+        "file": "harness/practice-server.mjs",
+        "line": 200,
+        "matched_reviewed_head": true
+      },
+      {
+        "#": 11,
+        "file": "app/research-partnership.html",
+        "line": 18,
+        "matched_reviewed_head": true
+      }
+    ]
+  },
+  "semantic_reconciliation": [
+    {
+      "kept_title": "Populate approval choices from the complete owner study list",
+      "merged_titles": [
+        "Populate approval choices from the complete owner study list",
+        "Existing studies disappear from the intake approval selector"
+      ],
+      "reason": "Same defect and fix path; retain all source detail and union only mechanics-derived attribution."
+    },
+    {
+      "kept_title": "Preserve current edits and acknowledgement during terms refresh",
+      "merged_titles": [
+        "Preserve edits made while refreshing public terms",
+        "Terms refresh restores earlier edits and checked acknowledgement",
+        "Focus refresh discards edits made during the request"
+      ],
+      "reason": "Same defect and fix path; retain all source detail and union only mechanics-derived attribution."
+    },
+    {
+      "kept_title": "Allow saving notes on an application already under review",
+      "merged_titles": [
+        "Allow saving notes on an application already under review",
+        "Saving another review note always reports a conflict"
+      ],
+      "reason": "Same defect and fix path; retain all source detail and union only mechanics-derived attribution."
+    }
+  ],
+  "rejected_findings": [
+    {
+      "title": "Intake approval replaces existing study grants",
+      "reviewers": [
+        "api-contract"
+      ],
+      "reason": "Automatic union contradicts the explicit exact owner-selected permission contract in proof-4 and invocation.constraints; memberSet replacement implements that intended contract. No separate current-grants UX defect was evidenced."
+    }
+  ],
+  "demotions": [
+    {
+      "title": "Information Leakage: workspace projection hidden in source rewrite",
+      "destination": "residual_risks",
+      "reason": "Concrete migration coupling is relevant, but the asserted present defect is unproved; the marker is checked and the current projection is covered."
+    },
+    {
+      "title": "Compare the SQL intake contract with its source",
+      "destination": "testing_gaps",
+      "reason": "Single-source absence-of-coverage concern without current contract divergence or failing browser listener; retain the precise missing scenario as report-only coverage."
+    },
+    {
+      "title": "Test focus and page restoration event refresh",
+      "destination": "testing_gaps",
+      "reason": "Single-source absence-of-coverage concern without current contract divergence or failing browser listener; retain the precise missing scenario as report-only coverage."
+    }
+  ],
+  "counts": {
+    "raw_candidates": 16,
+    "primary": 8,
+    "pre_existing": 0,
+    "residual_risks": 1,
+    "testing_gaps": 4,
+    "validator_selected": 8
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "reviewer": "correctness",
+  "findings": [
+    {
+      "title": "Populate approval choices from the complete owner study list",
+      "severity": "P2",
+      "file": "app/lib/research-intake-ui.js",
+      "line": 122,
+      "why_it_matters": "An owner cannot approve an incoming applicant into an existing study that has no partnership yet: the study selector is empty even though the ordinary research dashboard lists that study. This screen receives workspaceBootstrap.studies, which is built only inside the existing-partner/workspace loops, rather than the owner's complete study list. I reproduced an ordinary studyCreate followed by workspaceBootstrap returning studies: [] while bootstrap returned that study; loading the general owner bootstrap for the selector makes the promised existing-study path available.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-intake-ui.js:122 --       const studies=bootstrap.studies||[],study=D.field(approval,'מחקר לאישור','select',saved?.studyId||'',{choices:{'':'בחירת מחקר',...Object.fromEntries(studies.map(s=>[s.id,s.title||s.config?.title||'מחקר']))}}),identity=D.field(approval,'זהות אישית מאומתת','select',saved?.individualCode||'',{choices:{'':'בחירת קוד אישי',...Object.fromEntries((ownerInfo.identities||[]).map(i=>[i.code,i.label+' · '+i.institution]))}}),verified=D.field(approval,'וידוא זהות הפונה הושלם','checkbox',saved?.verified===true);",
+        "app/lib/research-partnership-ui.js:25,37 -- load assigns bootstrap from request('workspaceBootstrap'); openIntake passes that bootstrap directly to IUI.mountOwner.",
+        "harness/migrations/20261018-research-partnerships.sql:248,251-258,263 -- studies is appended only inside the partnership_partners loop and the study membership/record/document/invitation/snapshot predicate.",
+        "Executed the actual in-memory database fixture: createdStudy=646221a5-6531-40c4-97a8-3652aaf80bb1; partnershipStudyIds=[]; generalStudyIds=[646221a5-6531-40c4-97a8-3652aaf80bb1]."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "In the owner intake initialization, fetch the authenticated general bootstrap and use its complete studies array for the approval selector instead of workspaceBootstrap.studies; preserve the existing server-side study authorization and CAS checks."
+    },
+    {
+      "title": "Refresh a created study revision before each approval",
+      "severity": "P2",
+      "file": "app/lib/research-intake-ui.js",
+      "line": 129,
+      "why_it_matters": "After the owner creates a draft study from one application and approves it, approving another applicant into that same study fails with conflict until the intake page is reloaded. The locally appended created.study retains revision 0, the first memberSet increments the real study to revision 1, and the approval handler deliberately skips studyGet because the cached revision is an integer. Reading the current study immediately before every approval prevents this self-created stale revision while preserving genuine concurrent-edit conflicts.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-intake-ui.js:129 --       approval.append(D.button('אישור הבקשה וההרשאות שנבחרו',async()=>{if(!study.value||!identity.value||!verified.checked||!rights.values().includes('view_study')){note('להשלמת האישור אפשר לבחור מחקר, זהות אישית שנבדקה והרשאת צפייה במחקר, ולסמן את וידוא הזהות.',true);return;}let selected=(bootstrap.studies||[]).find(s=>s.id===study.value);if(!Number.isSafeInteger(selected?.revision)){const fresh=await call('studyGet',{studyId:study.value});if(!fresh)return;selected=fresh.study;}await review('approved',{studyId:study.value,studyExpectedRevision:selected.revision,individualCode:identity.value,permissions:rights.values()});}));",
+        "app/lib/research-intake-ui.js:126 -- created.study is appended directly to bootstrap.studies; line 119 returns to inbox after approval without updating this cached study.",
+        "harness/migrations/20261020-partnership-intake.sql:125 -- approval calls memberSet using studyExpectedRevision; harness/migrations/20261013-research-management.sql:289 -- s:=research_private.bump(sid).",
+        "Executed the actual in-memory database fixture: createdRevision=0, approvedRevision=1, secondApprovalUsingCachedRevision={error:conflict,status:409}."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Always call studyGet for the selected study immediately before constructing the approval payload and use fresh.study.revision, rather than refreshing only when the cached revision is missing."
+    },
+    {
+      "title": "Preserve edits made while refreshing public terms",
+      "severity": "P2",
+      "file": "app/lib/research-intake-ui.js",
+      "line": 77,
+      "why_it_matters": "An applicant loses text entered while the automatic focus refresh is waiting for public terms, even when the published terms have not changed. load snapshots the form before the await and then destroys and rebuilds the controls from that earlier draft, so returning to the tab and continuing to type during a slow response silently rolls the form back. I reproduced a title changing from 'Before refresh' to 'Typed while checking terms' during the request and reverting to 'Before refresh' when it completed.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-intake-ui.js:77 --       try{const data=await client.call('intakePublicInfo');if(at!==epoch)return;info=data;const changed=Boolean(previous&&(previous.versionId!==info.terms?.versionId||previous.hash!==info.terms?.hash));render(changed,readAcknowledged);}catch(e){if(at===epoch)note(e.userMessage||R.MESSAGES.network,true);}",
+        "app/lib/research-intake-ui.js:76 --       read();const previous=info?.terms,readAcknowledged=ack?.checked===true,at=++epoch;",
+        "app/lib/research-intake-ui.js:54,61,69 -- render replaces all children and initializes the new inputs from draft; the browser entry point invokes load on every window focus.",
+        "Executed mountPublic with the existing test DOM pattern and a delayed intakePublicInfo response: an edit made after load started was replaced with the pre-request title."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "After intakePublicInfo resolves and the epoch is verified, read the still-live form and current acknowledgement again before rebuilding it; reset acknowledgement only when the exact terms version/hash changed. Alternatively avoid replacing the form at all for unchanged terms."
+    },
+    {
+      "title": "Allow saving notes on an application already under review",
+      "severity": "P2",
+      "file": "harness/migrations/20261020-partnership-intake.sql",
+      "line": 122,
+      "why_it_matters": "Once an owner marks an application under review, the still-visible 'שמירה בבדיקה' button can no longer save any further review note: every click returns conflict despite a correct current revision. The UI offers that action for both submitted and under_review applications, but SQL rejects the latter solely because its status already equals the requested decision. Letting the CAS-protected under_review save append a new immutable review entry supports the displayed action without changing grants or permitting edits to a final decision.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261020-partnership-intake.sql:122 --     IF d.revision<>(p_payload->>'expectedRevision')::integer OR d.status NOT IN ('submitted','under_review') OR d.status=p_payload->>'decision' THEN PERFORM research_private.fail('conflict');END IF;",
+        "app/lib/research-intake-ui.js:118,120 -- only approved/rejected return before the UI unconditionally renders D.button('שמירה בבדיקה',()=>review('under_review'),'r-secondary').",
+        "harness/migrations/20261020-partnership-intake.sql:135-136 -- accepted decisions increment revision and append an immutable intake_reviews entry containing the note.",
+        "Executed the actual in-memory database fixture: the first under_review note succeeded at revision 1; a second under_review save using expectedRevision 1 and a different note returned {error:conflict,status:409}."
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Remove the same-status rejection for an under_review application while retaining expectedRevision and the submitted/under_review terminal-state guard, so saving another review note increments the revision and appends an immutable review event."
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

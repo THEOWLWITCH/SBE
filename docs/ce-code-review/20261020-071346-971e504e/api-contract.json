@@ -1,0 +1,25 @@
+{
+  "reviewer": "api-contract",
+  "findings": [
+    {
+      "title": "Intake approval replaces existing study grants",
+      "severity": "P2",
+      "file": "harness/migrations/20261020-partnership-intake.sql",
+      "line": 125,
+      "why_it_matters": "Approving another application for a person who already belongs to the selected study removes any current permissions the owner did not select for this approval. The owner screen describes the checkboxes as permissions being approved for the application and defaults to a small preset, while the existing memberSet operation replaces the membership's entire permission array. The approval should preserve current grants and add only the explicitly selected grants; revocation can continue through the existing membership management flow.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "suggested_fix": "Before calling memberSet during intakeReview, lock and read the selected study/code membership, union its current permissions with the explicitly approved permissions, and pass that union to memberSet. Add a database test where an existing member retains an unrelated grant after a second intake approval for the same study.",
+      "confidence": 75,
+      "evidence": [
+        "harness/migrations/20261020-partnership-intake.sql:125 --      member_result:=research_private.dispatch(p_token,'memberSet',pg_catalog.jsonb_build_object('requestId',pg_catalog.gen_random_uuid(),'studyId',p_payload->>'studyId','expectedRevision',p_payload->'studyExpectedRevision','code',p_payload->>'individualCode','role','researcher','permissions',p_payload->'permissions','delegablePermissions','[]'::jsonb));IF member_result ? 'error' THEN PERFORM research_private.fail(member_result->>'error');END IF;",
+        "harness/migrations/20261013-research-management.sql:290 --     INSERT INTO research_private.memberships(study_id,actor_ref,role,permissions,delegable_permissions) VALUES(sid,'code:'||code,p_payload->>'role',permissions,CASE WHEN is_owner THEN delegation ELSE '{}'::text[] END) ON CONFLICT(study_id,actor_ref) DO UPDATE SET role=EXCLUDED.role,permissions=EXCLUDED.permissions,delegable_permissions=EXCLUDED.delegable_permissions RETURNING * INTO target;",
+        "app/lib/research-intake-ui.js:124 -- rights=D.choices(...,saved?.permissions||P.ACCESS_PRESETS.approved_findings,...) supplies the default grant selection."
+      ],
+      "pre_existing": false
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

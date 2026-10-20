@@ -1,0 +1,44 @@
+{
+  "reviewer": "reliability",
+  "findings": [
+    {
+      "title": "Bound the new intake access-store calls",
+      "severity": "P2",
+      "file": "harness/practice-server.mjs",
+      "line": 200,
+      "why_it_matters": "A slow or unresponsive access-settings request can leave each public submission open before it reaches the SQL RPC, because the new route passes an access store whose Supabase fetch has no timeout. Concurrent submissions then retain server connections and callers receive no result, even though the research RPC itself has an eight-second limit. Give the intake access store a bounded timeout so these requests fail with the existing unavailable response and clients can retry using their request ID.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 75,
+      "evidence": [
+        "harness/practice-server.mjs:200 -- const [status, out] = await handleIntake(jobStore(), supabaseResearchStore(url, key), body, { clientAddress: req.socket.remoteAddress });",
+        "harness/practice-server.mjs:171 -- const jobStore = () => authStore || ((process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) ? supabaseStore(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY) : null);",
+        "harness/lib/access.mjs:1770 -- const request = (target, options) => fetchImpl(target, timeoutMs === undefined ? options : { ...options, signal: AbortSignal.timeout(timeoutMs) });",
+        "harness/lib/research-intake.mjs:35 -- const secret = (await accessStore?.get?.('token-secret'))?.secret;"
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Pass a dedicated supabaseStore(url, key, { timeoutMs: 8000 }) to handleIntake in the new route, and keep injected authStore behavior bounded by the same intake deadline; verify a stalled access-store fetch returns unavailable within that deadline."
+    },
+    {
+      "title": "Time out a stalled public submission",
+      "severity": "P2",
+      "file": "app/lib/research-intake-ui.js",
+      "line": 26,
+      "why_it_matters": "If the browser connection stalls without a response, the public form remains in its submitting state and its button stays disabled indefinitely. The user cannot retry the uncertain submission without reloading, which discards the in-memory request ID and can create a second application if the first one committed. A client deadline lets the current page surface the network error and retry with the preserved request ID.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-intake-ui.js:26 -- const response=await fetchImpl(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'omit',cache:'no-store'}),data=await response.json();",
+        "app/lib/research-intake-ui.js:84 -- const at=epoch;submitting=true;",
+        "app/lib/research-intake-ui.js:85 -- try{const result=await client.call('intakeSubmit',{termsVersionId:info.terms.versionId,termsHash:info.terms.hash,acknowledged:true,application});if(at!==epoch)return;receipt=result.receipt;draft={};render();}"
+      ],
+      "pre_existing": false,
+      "suggested_fix": "Add a finite AbortController deadline to createPublicClient.call, clear its timer in finally, and retain pending.requestId on timeout; test that an unresolved fetch returns a network error and a retry reuses the same request ID."
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

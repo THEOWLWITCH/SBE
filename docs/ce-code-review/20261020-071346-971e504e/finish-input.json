@@ -1,0 +1,214 @@
+{
+  "run_id": "20261020-071346-971e504e",
+  "run_dir": "C:/Users/yaels/Documents/Codex/2026-10-13/files-pasted-by-the-user-codex/work/research-partnerships/docs/ce-code-review/20261020-071346-971e504e",
+  "skill_dir": "C:/Users/yaels/.codex/plugins/cache/compound-engineering-plugin/compound-engineering/3.31.0/skills/ce-code-review",
+  "docs_root": "docs",
+  "mode": {
+    "agent": true,
+    "apply_local": false,
+    "grouping": "auto",
+    "depth": "full"
+  },
+  "invocation": {
+    "arguments": "mode:agent base:ce688a195443917321deac30d773ed39305b6a97 plan:docs/plans/2026-10-20-partnership-self-service.md",
+    "constraints": [
+      "No independent shipping/commits/source fixes; only read-only review and skill artifacts in its resolved docs_root run directory (config.yaml absent=>docs).",
+      "Diff namedbase..HEAD contains ONLY this task (plan+U0-U4+small simplification); don't inspect unrelated historicalbranchchanges as scope.",
+      "No productiondeploy/migration/push/emails/paidservice/provideractivation authorized. Use syntheticlocal evidence only, no credentials/secrets/rawrealdata.",
+      "No reviewdepthoverride requested; skill choosesdepthfromscope. Final receipt needed beforeparentlocaldelivery.",
+      "Approval must assign exactly owner-selected explicit permissions; parent plan clarification: \"plan says atomic approval 'הקצאת הרשאות שנבחרו', 'grants רק הרשאות שנבחרו', frozen intakeReview requires exact permissions list. Root/tests deliberately enforce exact memberSet replacement, never requestedpermissions/automaticunion. Union would retain grants owner didn't select and violate verification#4. Reject automatic-union proposal; a current-grants UX note could be separate optional assessment, not changed authorization.\"",
+      "Review target remains committed snapshot44eca17; parent added uncommitted followup tests only in intake-ui/intake-database/security after dispatch. These are validation-followup context, outside staged full.diff/files.txt; source implementation and HEAD remain unchanged. Do not broaden reviewed diff to these followups."
+    ]
+  },
+  "scope": {
+    "mode": "standalone",
+    "base": "ce688a195443917321deac30d773ed39305b6a97",
+    "diff_a": "ce688a195443917321deac30d773ed39305b6a97",
+    "diff_b": null,
+    "pr": {
+      "number": null,
+      "url": null,
+      "title": null,
+      "body": null,
+      "base_ref_name": null,
+      "head_ref_oid": null,
+      "head_ref": null,
+      "base_ref": null,
+      "has_prior_comments": false
+    },
+    "branch": "feat/research-partnerships",
+    "head_sha": "44eca17ae55ba59eaa16b94c71b5f651e1822a4b",
+    "files": "C:/Users/yaels/Documents/Codex/2026-10-13/files-pasted-by-the-user-codex/work/research-partnerships/docs/ce-code-review/20261020-071346-971e504e/files.txt",
+    "diff": "C:/Users/yaels/Documents/Codex/2026-10-13/files-pasted-by-the-user-codex/work/research-partnerships/docs/ce-code-review/20261020-071346-971e504e/full.diff",
+    "tree_is_reviewed_head": true,
+    "untracked_excluded": []
+  },
+  "intent": {
+    "summary": "Add a Hebrew public application for individual researchers or institution representatives under owner-published exact conditions. Submission grants no identity or access; private owner review binds a live selected personal code to a study and explicit permissions, atomically imports a draft, and partner folders show each partner's actual current grants across authorized studies. Preserve existing owner authentication, personal-code/current-credential checks, RLS, revocation, consent, released-document rules and immutable signatures; no production, email, paid service, or provider activation.",
+    "confidence": "explicit"
+  },
+  "plan": {
+    "path": "docs/plans/2026-10-20-partnership-self-service.md",
+    "source": "explicit",
+    "requirements": [
+      {
+        "id": "proof-1",
+        "text": "An individual may apply without institution; institution representatives provide institution and personal contact; preserve exact application and terms; show missing fields/unpublished terms honestly."
+      },
+      {
+        "id": "proof-2",
+        "text": "Submission creates zero identities, study memberships or permissions; guessed IDs/email/forged authority/direct DB access disclose no application or folder."
+      },
+      {
+        "id": "proof-3",
+        "text": "Only authenticated owner publishes conditions or approves; retries are idempotent; revision collisions do not overwrite decisions."
+      },
+      {
+        "id": "proof-4",
+        "text": "Approval binds owner-selected identity and correct study, preserves proposal, grants only selected permissions; newly created research code receives neither tool nor research grants automatically."
+      },
+      {
+        "id": "proof-5",
+        "text": "Partner X's folder shows X's details, all authorized studies and X's actual grants per study; Y cannot see them; owner/requested permissions are never misrepresented as X's grants."
+      },
+      {
+        "id": "proof-6",
+        "text": "Revocation of permissions or personal code blocks further access; executed agreement terms, findings-release rules and participant consent remain enforced."
+      },
+      {
+        "id": "proof-7",
+        "text": "Hebrew RTL desktop/mobile UI with no horizontal overflow, no private browser persistence and no false claim of email/signature/deployment."
+      }
+    ],
+    "implementation_units": [
+      {
+        "id": "U0",
+        "title": "Contract and applicant types",
+        "text": "Shared intake contract, individual profile/application compatibility, exact terms/submission validation and SQL/core verification."
+      },
+      {
+        "id": "U1",
+        "title": "Database intake and approval",
+        "text": "Additive intake migration, partner workspace detail/current grants, isolated fixture and database tests using existing profile/draft/study-grant functions."
+      },
+      {
+        "id": "U2",
+        "title": "Public intake and owner queue",
+        "text": "Public RTL page/entry link, exact terms/receipt, owner conditions and inbox, all partner studies/grants and UI tests."
+      },
+      {
+        "id": "U3",
+        "title": "Gateway and identity allocation",
+        "text": "Public bounded HTTP intake, RPC routing, authenticated owner client actions and research-only personal codes through current authentication; no email identity matching or unselected tool rights."
+      },
+      {
+        "id": "U4",
+        "title": "Integration and user verification",
+        "text": "Synthetic local end-to-end HTTP/SQL and desktop/mobile/browser/security checks; setup/verification documentation; no production migration/push/deploy."
+      }
+    ],
+    "settled_decisions": []
+  },
+  "roster": {
+    "selected": [
+      {
+        "reviewer": "correctness",
+        "tier": "session",
+        "reason": "Always-on logic and intent compliance"
+      },
+      {
+        "reviewer": "security",
+        "tier": "session",
+        "reason": "Public admission, owner authentication and private study permissions"
+      },
+      {
+        "reviewer": "testing",
+        "tier": "mid-tier",
+        "reason": "Changed SQL/HTTP/UI tests, fixtures and browser harness"
+      },
+      {
+        "reviewer": "maintainability",
+        "tier": "mid-tier",
+        "reason": "601 executable non-test lines and new cross-layer intake abstraction"
+      },
+      {
+        "reviewer": "project-standards",
+        "tier": "mid-tier",
+        "reason": "CLAUDE.md fallback governs every changed path"
+      },
+      {
+        "reviewer": "performance",
+        "tier": "mid-tier",
+        "reason": "New SQL inbox and workspace projection queries plus identity-list filtering"
+      },
+      {
+        "reviewer": "api-contract",
+        "tier": "mid-tier",
+        "reason": "New public HTTP/RPC and authenticated owner request/response boundaries"
+      },
+      {
+        "reviewer": "data-migration",
+        "tier": "mid-tier",
+        "reason": "Two additive SQL migrations and partner workspace projection replacement"
+      },
+      {
+        "reviewer": "reliability",
+        "tier": "mid-tier",
+        "reason": "New HTTP/I/O, retry/idempotency and unavailable-service paths"
+      },
+      {
+        "reviewer": "adversarial",
+        "tier": "session",
+        "reason": "Public/auth/persistence and atomic approval cross-component sequences"
+      },
+      {
+        "reviewer": "julik-frontend-races",
+        "tier": "mid-tier",
+        "reason": "Async public focus/pageshow refresh and owner navigation/actions"
+      }
+    ],
+    "standards": {
+      "criteria": [
+        {
+          "path": "CLAUDE.md",
+          "governs": "All changed paths in files.txt (root fallback; no CODING_STANDARDS.md)"
+        }
+      ],
+      "fallback_named": true,
+      "not_run_reason": null
+    },
+    "packs": {
+      "roots": [],
+      "errors": [],
+      "warnings": []
+    }
+  },
+  "collection": {
+    "returns": "C:/Users/yaels/Documents/Codex/2026-10-13/files-pasted-by-the-user-codex/work/research-partnerships/docs/ce-code-review/20261020-071346-971e504e/raw-returns.json",
+    "unstructured_returns": [],
+    "failed_reviewers": [],
+    "bound_exceeded": [],
+    "fast_pass": {
+      "emitted_preliminary": false,
+      "candidates": []
+    }
+  },
+  "peer": {
+    "selected": true,
+    "target": null,
+    "route": null,
+    "preference_source": "default",
+    "outcome": "in-process-fallback",
+    "artifact": null,
+    "coverage": "Cross-model pass: not run (no different-provider CLI route installed); the in-process adversarial reviewer covered the lens."
+  },
+  "coverage_notes": [
+    "Full depth selected: review-scope.py reported exec_nontest_lines=601, changed_lines=1724, size_band=large and migrations hard_block_full=true.",
+    "Scope: explicit base against current checkout captured at44eca17; staged full.diff and files.txt are canonical. Parent's later test-only regression followups are excluded from reviewed snapshot.",
+    "Project standards: CLAUDE.md supplied fallback criteria for all changed paths; no CODING_STANDARDS.md found.",
+    "Plan is Hebrew prose with U0-U4 and seven numbered acceptance proofs under הוכחת התוצאה; requirements list preserves those proofs under proof-1..proof-7 rather than inventing R-IDs.",
+    "Cross-model route eligibility checked locally: Codex environment attested; claude, grok and antigravity CLIs absent. No peer job started, no review content sent externally, no lifecycle cleanup outstanding.",
+    "Parent validation followup outside reviewed snapshot: complete hardened release test now applies profile/intake20 after real19 auth boundary as non-superuser migration_operator, exercises public terms/submission, owner approval/membership and anonymous RPC denial; existing credential/role/no-auth-write assertions preserved. node --test --test-name-pattern='complete hardened release' tests/research-security.test.mjs passed1/1 in11258ms. This addresses the security reviewer's combined migration-order testing gap as followup evidence without changing implementation/HEAD.",
+    "Parent validation followups outside target further reproduced RED for hidden owner study selector, stale study revision, public focus edit loss, same-status under_review note save, stalled public HTTP/access-store request, and public client missing deadline. SQL/core parity followup passed; implementation stays44eca17. Followup tests are contextual evidence and not part of this review's canonical staged diff."
+  ]
+}

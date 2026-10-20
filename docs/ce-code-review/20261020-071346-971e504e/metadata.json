@@ -1,0 +1,85 @@
+{
+  "branch": "feat/research-partnerships",
+  "completed_at": "2026-10-20T07:52:25.134Z",
+  "cost": {
+    "host": "codex",
+    "scope": {
+      "changed_lines": 1724,
+      "depth": "full",
+      "exec_nontest_lines": 601,
+      "size_band": "large",
+      "unclassified_lines": {
+        ".css": 1,
+        ".html": 32,
+        ".md": 149,
+        ".sql": 207
+      }
+    },
+    "stages": [
+      {
+        "elapsed_seconds": 11.863,
+        "ended_at": "2026-10-20T07:14:00.216839+00:00",
+        "facts": {
+          "changed_lines": 1724,
+          "depth": "full",
+          "exec_nontest_lines": 601,
+          "size_band": "large",
+          "unclassified_lines": {
+            ".css": 1,
+            ".html": 32,
+            ".md": 149,
+            ".sql": 207
+          }
+        },
+        "stage": "scope",
+        "started_at": "2026-10-20T07:13:48.353812+00:00"
+      },
+      {
+        "elapsed_seconds": 132.762,
+        "ended_at": "2026-10-20T07:16:12.979240+00:00",
+        "reviewers": 11,
+        "stage": "select",
+        "started_at": "2026-10-20T07:14:00.216839+00:00"
+      },
+      {
+        "candidates": 16,
+        "elapsed_seconds": 1185.278,
+        "ended_at": "2026-10-20T07:35:58.257237+00:00",
+        "stage": "dispatch",
+        "started_at": "2026-10-20T07:16:12.979240+00:00"
+      },
+      {
+        "candidates": 8,
+        "elapsed_seconds": 312.86,
+        "ended_at": "2026-10-20T07:42:35.763534+00:00",
+        "stage": "merge",
+        "started_at": "2026-10-20T07:37:22.904005+00:00"
+      },
+      {
+        "candidates": 8,
+        "elapsed_seconds": 99.585,
+        "ended_at": "2026-10-20T07:44:43.837516+00:00",
+        "stage": "validate",
+        "started_at": "2026-10-20T07:43:04.252058+00:00"
+      },
+      {
+        "candidates": 8,
+        "elapsed_seconds": 385.51,
+        "ended_at": "2026-10-20T07:52:29.157201+00:00",
+        "stage": "report",
+        "started_at": "2026-10-20T07:46:03.647204+00:00"
+      }
+    ],
+    "status": "complete",
+    "totals": {
+      "artifact_bytes": 1335702,
+      "candidates": 16,
+      "elapsed_seconds": 2127.858,
+      "reviewers": 11
+    },
+    "truncated_events": 0
+  },
+  "head_sha": "44eca17ae55ba59eaa16b94c71b5f651e1822a4b",
+  "run_id": "20261020-071346-971e504e",
+  "verdict": "Ready with fixes"
+}

@@ -1,0 +1,8 @@
+{
+  "reviewer": "security",
+  "findings": [],
+  "residual_risks": [],
+  "testing_gaps": [
+    "The new intake SQL and HTTP-to-SQL tests use createPartnershipDatabase/createResearchDatabase, which do not enable the existing access_settings hardening or apply 20261019-research-auth-boundary.sql. The separate hardened-release test in harness/tests/research-security.test.mjs:39-42 applies only the pre-intake migrations. Extend that non-superuser release-order test with the two new migrations and public submission/owner approval/current-credential revocation checks so the new intake dispatcher is exercised with the deployed credential RLS policies."
+  ]
+}

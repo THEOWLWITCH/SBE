@@ -1,0 +1,25 @@
+{
+  "reviewer": "project-standards",
+  "findings": [
+    {
+      "title": "Add the new intake page to the screens menu",
+      "severity": "P3",
+      "file": "app/research-partnership.html",
+      "line": 18,
+      "why_it_matters": "The owner’s central screen menu omits the new public intake page, so the menu no longer inventories all screens or documents who may view this one. Adding the page with an explicit public audience restores the repository’s documented navigation contract.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "suggested_fix": "Add research-partnership.html to the public gateway group in app/lib/screens-menu.js with who set to everyone, including visitors without sign-in; verify that this agrees with the page’s public access route.",
+      "confidence": 75,
+      "evidence": [
+        "app/research-partnership.html:18 -- <body class=\"r-public-intake\">",
+        "CLAUDE.md:443 -- **מסך חדש:** מוסיפים ל-`screens-menu.js`, ובודקים שה\"מי רואה\" תואם ל-`app/lib/access-guard.js`.",
+        "app/lib/screens-menu.js:20-24 -- the public gateway group lists entry.html, map.html, examples.html, sources-library.html, and system-select.html but omits research-partnership.html; repository search finds no research-partnership entry in this menu."
+      ],
+      "pre_existing": false
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

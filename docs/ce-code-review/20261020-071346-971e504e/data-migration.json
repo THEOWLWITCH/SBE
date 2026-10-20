@@ -1,0 +1,8 @@
+{
+  "reviewer": "data-migration",
+  "findings": [],
+  "residual_risks": [],
+  "testing_gaps": [
+    "The migration and approval rollback are verified with isolated PGlite; concurrent owner approvals and terms publication have not been exercised against a multi-connection PostgreSQL deployment."
+  ]
+}

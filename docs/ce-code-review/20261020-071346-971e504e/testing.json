@@ -1,0 +1,46 @@
+{
+  "reviewer": "testing",
+  "findings": [
+    {
+      "title": "Compare the SQL intake contract with its source",
+      "severity": "P2",
+      "file": "harness/tests/research-intake-core.test.mjs",
+      "line": 21,
+      "why_it_matters": "A change to the copied SQL contract can silently diverge from the browser contract while these tests stay green. The current assertion only compares the JavaScript public fields with another JavaScript schema; the SQL copy controls server validation and can reject a field the form offers or admit a field the form does not know. Comparing the SQL descriptor with the JavaScript source, as the existing partnership database test does, catches that drift.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 75,
+      "evidence": [
+        "harness/tests/research-intake-core.test.mjs:21 --   assert.deepEqual(C.PUBLIC_FIELDS, P.RECORD_SCHEMAS.application.fields.filter(field => !['questionnaireVersionIds', 'supportingDocumentIds'].includes(field.id)));",
+        "harness/migrations/20261020-partnership-intake.sql:3 defines the copied intake_contract JSON used by SQL validation.",
+        "harness/tests/research-partnership-database.test.mjs:159 --     assert.deepEqual(contract.schemas,CORE.RECORD_SCHEMAS);assert.deepEqual(contract.operations,CORE.OPERATIONS);",
+        "Repository search found no test referencing intake_contract."
+      ],
+      "suggested_fix": "Add a database contract test that SELECTs research_private.intake_contract() and deep-compares operations, publicFields, requiredFields, and defaultDraft with the corresponding research-intake-core exports, matching the existing partnership contract parity test.",
+      "pre_existing": false
+    },
+    {
+      "title": "Test focus and page restoration event refresh",
+      "severity": "P2",
+      "file": "harness/tests/research-intake-ui.test.mjs",
+      "line": 52,
+      "why_it_matters": "A visitor returning to an open, acknowledged form may keep seeing old terms if the new focus or page-restoration listeners stop working. The tests prove that calling load directly clears acknowledgement after a version change, but would still pass if those browser listeners were removed. An event-driven browser test would verify that the refresh actually occurs when the visitor returns.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "confidence": 75,
+      "evidence": [
+        "harness/tests/research-intake-ui.test.mjs:52 --   info={terms:{...terms,versionId:id(2),number:2,hash:'b'.repeat(64)},acceptingApplications:true};await page.load();assert.equal(field(s.root,'כותרת הבקשה').value,'מחקר סינתטי');assert.equal(field(s.root,'קראתי את תנאי הפנייה. אישור הקריאה אינו חתימה על הסכם').checked,false);assert.match(s.root.textContent,/התנאים עודכנו/);",
+        "app/lib/research-intake-ui.js:2 attaches focus and persisted pageshow listeners that call page.load().",
+        "harness/tests/research-intake-ui.test.mjs:63 calls page.load() directly for its focus-refresh scenario; the browser check does not change terms or trigger either event."
+      ],
+      "suggested_fix": "Extend the browser check with an acknowledged, filled form, publish a newer synthetic terms version, then trigger focus and persisted pageshow separately; assert the new version is displayed, the draft remains, and acknowledgement is unchecked without calling page.load directly.",
+      "pre_existing": false
+    }
+  ],
+  "residual_risks": [
+    "The PGlite integration serializes database calls; it does not exercise the new advisory locks and idempotent approval under separate concurrent hosted PostgreSQL connections."
+  ],
+  "testing_gaps": []
+}

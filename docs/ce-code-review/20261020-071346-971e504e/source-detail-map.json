@@ -1,0 +1,139 @@
+{
+  "[\"correctness\", \"app/lib/research-intake-ui.js\", \"122\", \"populate approval choices from the complete owner study list\"]": {
+    "why_it_matters": "An owner cannot approve an incoming applicant into an existing study that has no partnership yet: the study selector is empty even though the ordinary research dashboard lists that study. This screen receives workspaceBootstrap.studies, which is built only inside the existing-partner/workspace loops, rather than the owner's complete study list. I reproduced an ordinary studyCreate followed by workspaceBootstrap returning studies: [] while bootstrap returned that study; loading the general owner bootstrap for the selector makes the promised existing-study path available.",
+    "evidence": [
+      "app/lib/research-intake-ui.js:122 --       const studies=bootstrap.studies||[],study=D.field(approval,'מחקר לאישור','select',saved?.studyId||'',{choices:{'':'בחירת מחקר',...Object.fromEntries(studies.map(s=>[s.id,s.title||s.config?.title||'מחקר']))}}),identity=D.field(approval,'זהות אישית מאומתת','select',saved?.individualCode||'',{choices:{'':'בחירת קוד אישי',...Object.fromEntries((ownerInfo.identities||[]).map(i=>[i.code,i.label+' · '+i.institution]))}}),verified=D.field(approval,'וידוא זהות הפונה הושלם','checkbox',saved?.verified===true);",
+      "app/lib/research-partnership-ui.js:25,37 -- load assigns bootstrap from request('workspaceBootstrap'); openIntake passes that bootstrap directly to IUI.mountOwner.",
+      "harness/migrations/20261018-research-partnerships.sql:248,251-258,263 -- studies is appended only inside the partnership_partners loop and the study membership/record/document/invitation/snapshot predicate.",
+      "Executed the actual in-memory database fixture: createdStudy=646221a5-6531-40c4-97a8-3652aaf80bb1; partnershipStudyIds=[]; generalStudyIds=[646221a5-6531-40c4-97a8-3652aaf80bb1]."
+    ]
+  },
+  "[\"correctness\", \"app/lib/research-intake-ui.js\", \"129\", \"refresh a created study revision before each approval\"]": {
+    "why_it_matters": "After the owner creates a draft study from one application and approves it, approving another applicant into that same study fails with conflict until the intake page is reloaded. The locally appended created.study retains revision 0, the first memberSet increments the real study to revision 1, and the approval handler deliberately skips studyGet because the cached revision is an integer. Reading the current study immediately before every approval prevents this self-created stale revision while preserving genuine concurrent-edit conflicts.",
+    "evidence": [
+      "app/lib/research-intake-ui.js:129 --       approval.append(D.button('אישור הבקשה וההרשאות שנבחרו',async()=>{if(!study.value||!identity.value||!verified.checked||!rights.values().includes('view_study')){note('להשלמת האישור אפשר לבחור מחקר, זהות אישית שנבדקה והרשאת צפייה במחקר, ולסמן את וידוא הזהות.',true);return;}let selected=(bootstrap.studies||[]).find(s=>s.id===study.value);if(!Number.isSafeInteger(selected?.revision)){const fresh=await call('studyGet',{studyId:study.value});if(!fresh)return;selected=fresh.study;}await review('approved',{studyId:study.value,studyExpectedRevision:selected.revision,individualCode:identity.value,permissions:rights.values()});}));",
+      "app/lib/research-intake-ui.js:126 -- created.study is appended directly to bootstrap.studies; line 119 returns to inbox after approval without updating this cached study.",
+      "harness/migrations/20261020-partnership-intake.sql:125 -- approval calls memberSet using studyExpectedRevision; harness/migrations/20261013-research-management.sql:289 -- s:=research_private.bump(sid).",
+      "Executed the actual in-memory database fixture: createdRevision=0, approvedRevision=1, secondApprovalUsingCachedRevision={error:conflict,status:409}."
+    ]
+  },
+  "[\"correctness\", \"app/lib/research-intake-ui.js\", \"77\", \"preserve edits made while refreshing public terms\"]": {
+    "why_it_matters": "An applicant loses text entered while the automatic focus refresh is waiting for public terms, even when the published terms have not changed. load snapshots the form before the await and then destroys and rebuilds the controls from that earlier draft, so returning to the tab and continuing to type during a slow response silently rolls the form back. I reproduced a title changing from 'Before refresh' to 'Typed while checking terms' during the request and reverting to 'Before refresh' when it completed.",
+    "evidence": [
+      "app/lib/research-intake-ui.js:77 --       try{const data=await client.call('intakePublicInfo');if(at!==epoch)return;info=data;const changed=Boolean(previous&&(previous.versionId!==info.terms?.versionId||previous.hash!==info.terms?.hash));render(changed,readAcknowledged);}catch(e){if(at===epoch)note(e.userMessage||R.MESSAGES.network,true);}",
+      "app/lib/research-intake-ui.js:76 --       read();const previous=info?.terms,readAcknowledged=ack?.checked===true,at=++epoch;",
+      "app/lib/research-intake-ui.js:54,61,69 -- render replaces all children and initializes the new inputs from draft; the browser entry point invokes load on every window focus.",
+      "Executed mountPublic with the existing test DOM pattern and a delayed intakePublicInfo response: an edit made after load started was replaced with the pre-request title."
+    ]
+  },
+  "[\"correctness\", \"harness/migrations/20261020-partnership-intake.sql\", \"122\", \"allow saving notes on an application already under review\"]": {
+    "why_it_matters": "Once an owner marks an application under review, the still-visible 'שמירה בבדיקה' button can no longer save any further review note: every click returns conflict despite a correct current revision. The UI offers that action for both submitted and under_review applications, but SQL rejects the latter solely because its status already equals the requested decision. Letting the CAS-protected under_review save append a new immutable review entry supports the displayed action without changing grants or permitting edits to a final decision.",
+    "evidence": [
+      "harness/migrations/20261020-partnership-intake.sql:122 --     IF d.revision<>(p_payload->>'expectedRevision')::integer OR d.status NOT IN ('submitted','under_review') OR d.status=p_payload->>'decision' THEN PERFORM research_private.fail('conflict');END IF;",
+      "app/lib/research-intake-ui.js:118,120 -- only approved/rejected return before the UI unconditionally renders D.button('שמירה בבדיקה',()=>review('under_review'),'r-secondary').",
+      "harness/migrations/20261020-partnership-intake.sql:135-136 -- accepted decisions increment revision and append an immutable intake_reviews entry containing the note.",
+      "Executed the actual in-memory database fixture: the first under_review note succeeded at revision 1; a second under_review save using expectedRevision 1 and a different note returned {error:conflict,status:409}."
+    ]
+  },
+  "[\"testing\", \"harness/tests/research-intake-core.test.mjs\", \"21\", \"compare the sql intake contract with its source\"]": {
+    "why_it_matters": "A change to the copied SQL contract can silently diverge from the browser contract while these tests stay green. The current assertion only compares the JavaScript public fields with another JavaScript schema; the SQL copy controls server validation and can reject a field the form offers or admit a field the form does not know. Comparing the SQL descriptor with the JavaScript source, as the existing partnership database test does, catches that drift.",
+    "evidence": [
+      "harness/tests/research-intake-core.test.mjs:21 --   assert.deepEqual(C.PUBLIC_FIELDS, P.RECORD_SCHEMAS.application.fields.filter(field => !['questionnaireVersionIds', 'supportingDocumentIds'].includes(field.id)));",
+      "harness/migrations/20261020-partnership-intake.sql:3 defines the copied intake_contract JSON used by SQL validation.",
+      "harness/tests/research-partnership-database.test.mjs:159 --     assert.deepEqual(contract.schemas,CORE.RECORD_SCHEMAS);assert.deepEqual(contract.operations,CORE.OPERATIONS);",
+      "Repository search found no test referencing intake_contract."
+    ]
+  },
+  "[\"testing\", \"harness/tests/research-intake-ui.test.mjs\", \"52\", \"test focus and page restoration event refresh\"]": {
+    "why_it_matters": "A visitor returning to an open, acknowledged form may keep seeing old terms if the new focus or page-restoration listeners stop working. The tests prove that calling load directly clears acknowledgement after a version change, but would still pass if those browser listeners were removed. An event-driven browser test would verify that the refresh actually occurs when the visitor returns.",
+    "evidence": [
+      "harness/tests/research-intake-ui.test.mjs:52 --   info={terms:{...terms,versionId:id(2),number:2,hash:'b'.repeat(64)},acceptingApplications:true};await page.load();assert.equal(field(s.root,'כותרת הבקשה').value,'מחקר סינתטי');assert.equal(field(s.root,'קראתי את תנאי הפנייה. אישור הקריאה אינו חתימה על הסכם').checked,false);assert.match(s.root.textContent,/התנאים עודכנו/);",
+      "app/lib/research-intake-ui.js:2 attaches focus and persisted pageshow listeners that call page.load().",
+      "harness/tests/research-intake-ui.test.mjs:63 calls page.load() directly for its focus-refresh scenario; the browser check does not change terms or trigger either event."
+    ]
+  },
+  "[\"maintainability\", \"harness/migrations/20261020-partnership-intake.sql\", \"154\", \"information leakage: workspace projection hidden in source rewrite\"]": {
+    "why_it_matters": "The effective partnership_workspace definition is assembled by replacing a string in the prior migration's function body. A later change to that function can miss these fields or make this migration fail on a text marker, while the SQL source no longer shows the actual deployed definition. Declaring the updated function explicitly gives maintainers one inspectable version and keeps the existing visibility predicates reviewable.",
+    "evidence": [
+      "harness/migrations/20261020-partnership-intake.sql:154 -- definition:=pg_catalog.replace(definition,'''studyTitle'',s.config->>''title''','''studyTitle'',s.config->>''title'',''study'',pg_catalog.jsonb_build_object(''id'',s.id,''status'',s.status,''revision'',s.revision,''config'',s.config),''grantedPermissions'',COALESCE((SELECT pg_catalog.to_jsonb(m.permissions) FROM research_private.memberships m WHERE m.study_id=s.id AND m.actor_ref=p.actor_ref),''[]''::jsonb)');",
+      "harness/migrations/20261020-partnership-intake.sql:152 -- definition:=pg_catalog.pg_get_functiondef('research_private.partnership_workspace(research_private.studies,research_private.partnership_partners,text,text,text)'::regprocedure);"
+    ]
+  },
+  "[\"project-standards\", \"app/research-partnership.html\", \"18\", \"add the new intake page to the screens menu\"]": {
+    "why_it_matters": "The owner’s central screen menu omits the new public intake page, so the menu no longer inventories all screens or documents who may view this one. Adding the page with an explicit public audience restores the repository’s documented navigation contract.",
+    "evidence": [
+      "app/research-partnership.html:18 -- <body class=\"r-public-intake\">",
+      "CLAUDE.md:443 -- **מסך חדש:** מוסיפים ל-`screens-menu.js`, ובודקים שה\"מי רואה\" תואם ל-`app/lib/access-guard.js`.",
+      "app/lib/screens-menu.js:20-24 -- the public gateway group lists entry.html, map.html, examples.html, sources-library.html, and system-select.html but omits research-partnership.html; repository search finds no research-partnership entry in this menu."
+    ]
+  },
+  "[\"api-contract\", \"harness/migrations/20261020-partnership-intake.sql\", \"125\", \"intake approval replaces existing study grants\"]": {
+    "why_it_matters": "Approving another application for a person who already belongs to the selected study removes any current permissions the owner did not select for this approval. The owner screen describes the checkboxes as permissions being approved for the application and defaults to a small preset, while the existing memberSet operation replaces the membership's entire permission array. The approval should preserve current grants and add only the explicitly selected grants; revocation can continue through the existing membership management flow.",
+    "evidence": [
+      "harness/migrations/20261020-partnership-intake.sql:125 --      member_result:=research_private.dispatch(p_token,'memberSet',pg_catalog.jsonb_build_object('requestId',pg_catalog.gen_random_uuid(),'studyId',p_payload->>'studyId','expectedRevision',p_payload->'studyExpectedRevision','code',p_payload->>'individualCode','role','researcher','permissions',p_payload->'permissions','delegablePermissions','[]'::jsonb));IF member_result ? 'error' THEN PERFORM research_private.fail(member_result->>'error');END IF;",
+      "harness/migrations/20261013-research-management.sql:290 --     INSERT INTO research_private.memberships(study_id,actor_ref,role,permissions,delegable_permissions) VALUES(sid,'code:'||code,p_payload->>'role',permissions,CASE WHEN is_owner THEN delegation ELSE '{}'::text[] END) ON CONFLICT(study_id,actor_ref) DO UPDATE SET role=EXCLUDED.role,permissions=EXCLUDED.permissions,delegable_permissions=EXCLUDED.delegable_permissions RETURNING * INTO target;",
+      "app/lib/research-intake-ui.js:124 -- rights=D.choices(...,saved?.permissions||P.ACCESS_PRESETS.approved_findings,...) supplies the default grant selection."
+    ]
+  },
+  "[\"reliability\", \"harness/practice-server.mjs\", \"200\", \"bound the new intake access-store calls\"]": {
+    "why_it_matters": "A slow or unresponsive access-settings request can leave each public submission open before it reaches the SQL RPC, because the new route passes an access store whose Supabase fetch has no timeout. Concurrent submissions then retain server connections and callers receive no result, even though the research RPC itself has an eight-second limit. Give the intake access store a bounded timeout so these requests fail with the existing unavailable response and clients can retry using their request ID.",
+    "evidence": [
+      "harness/practice-server.mjs:200 -- const [status, out] = await handleIntake(jobStore(), supabaseResearchStore(url, key), body, { clientAddress: req.socket.remoteAddress });",
+      "harness/practice-server.mjs:171 -- const jobStore = () => authStore || ((process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) ? supabaseStore(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY) : null);",
+      "harness/lib/access.mjs:1770 -- const request = (target, options) => fetchImpl(target, timeoutMs === undefined ? options : { ...options, signal: AbortSignal.timeout(timeoutMs) });",
+      "harness/lib/research-intake.mjs:35 -- const secret = (await accessStore?.get?.('token-secret'))?.secret;"
+    ]
+  },
+  "[\"reliability\", \"app/lib/research-intake-ui.js\", \"26\", \"time out a stalled public submission\"]": {
+    "why_it_matters": "If the browser connection stalls without a response, the public form remains in its submitting state and its button stays disabled indefinitely. The user cannot retry the uncertain submission without reloading, which discards the in-memory request ID and can create a second application if the first one committed. A client deadline lets the current page surface the network error and retry with the preserved request ID.",
+    "evidence": [
+      "app/lib/research-intake-ui.js:26 -- const response=await fetchImpl(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'omit',cache:'no-store'}),data=await response.json();",
+      "app/lib/research-intake-ui.js:84 -- const at=epoch;submitting=true;",
+      "app/lib/research-intake-ui.js:85 -- try{const result=await client.call('intakeSubmit',{termsVersionId:info.terms.versionId,termsHash:info.terms.hash,acknowledged:true,application});if(at!==epoch)return;receipt=result.receipt;draft={};render();}"
+    ]
+  },
+  "[\"adversarial\", \"app/lib/research-partnership-ui.js\", \"37\", \"existing studies disappear from the intake approval selector\"]": {
+    "why_it_matters": "An owner cannot approve an application into an existing study that does not yet have a partner folder. The intake screen receives workspaceBootstrap.studies, which is assembled only while iterating existing partners and their associated studies, and uses it as the entire approval selector. Loading the owner's ordinary study bootstrap supplies studies even before any partner has been linked.",
+    "evidence": [
+      "app/lib/research-partnership-ui.js:37 --     async function openIntake(view,saved){if(!bootstrap?.owner)return;workspace=null;editor=null;intakePage=IUI.mountOwner({document,root,client,bootstrap,onBack:()=>load()});if(saved)await intakePage.restore(saved);else await intakePage[view]();}",
+      "app/lib/research-partnership-ui.js:25 sets bootstrap from workspaceBootstrap; app/lib/research-intake-ui.js:122 builds every approval study option from bootstrap.studies.",
+      "harness/migrations/20261018-research-partnerships.sql:248-264 appends studies only inside the existing-partner loop and only for memberships or partner records/documents/invitations/snapshots.",
+      "Read-only PGlite reproduction using the frozen implementation: studyCreate created study 4d7c85bc-61f6-40e3-ab4c-5f48358f487d at revision 0; workspaceBootstrap immediately returned studies: [].",
+      "harness/migrations/20261013-research-management.sql:132-139 implements the ordinary bootstrap over all owner-visible studies, including this first study without partners."
+    ]
+  },
+  "[\"adversarial\", \"app/lib/research-intake-ui.js\", \"76\", \"terms refresh restores earlier edits and checked acknowledgement\"]": {
+    "why_it_matters": "Returning to the public tab can silently erase text entered while the terms request is pending, and can recheck an acknowledgement the applicant deliberately unchecked during that request. load snapshots the form and checkbox before awaiting the network, then renders those old values on completion. Reading the current controls immediately before rendering preserves the applicant's latest choices while still clearing acknowledgement when the terms change.",
+    "evidence": [
+      "app/lib/research-intake-ui.js:76 --       read();const previous=info?.terms,readAcknowledged=ack?.checked===true,at=++epoch;",
+      "app/lib/research-intake-ui.js:77 awaits intakePublicInfo and then calls render(changed,readAcknowledged); lines 53-54 replace the form and clear its references, and line 71 restores the pre-request checkbox state when terms are unchanged.",
+      "app/lib/research-intake-ui.js:3 invokes load on window focus and persisted pageshow, making the pending-refresh editing window reachable during ordinary use.",
+      "In-memory reproduction evaluating the exact 44eca17 JavaScript: start refresh with title 'Earlier title' and acknowledgement checked; type 'Later title typed while refreshing' and uncheck acknowledgement; resolve the refresh with unchanged terms. Observed result: {\"titleAfterRefresh\":\"Earlier title\",\"acknowledgedAfterRefresh\":true}."
+    ]
+  },
+  "[\"adversarial\", \"harness/migrations/20261020-partnership-intake.sql\", \"122\", \"saving another review note always reports a conflict\"]": {
+    "why_it_matters": "After moving an application into review, the owner can edit its review notes and click the still-visible save-in-review button, but the notes cannot be saved. The UI sends under_review again with the correct revision, while SQL rejects every decision equal to the current status. Allowing another under_review review event preserves both optimistic concurrency and the immutable note history.",
+    "evidence": [
+      "harness/migrations/20261020-partnership-intake.sql:122 --     IF d.revision<>(p_payload->>'expectedRevision')::integer OR d.status NOT IN ('submitted','under_review') OR d.status=p_payload->>'decision' THEN PERFORM research_private.fail('conflict');END IF;",
+      "app/lib/research-intake-ui.js:117 initializes an editable notes field from the latest note; line 118 exits only for approved/rejected; lines 119-120 keep sending decision under_review from the save-in-review button for an already-under-review application.",
+      "Read-only PGlite reproduction using the frozen implementation: a first intakeReview with expectedRevision 0, decision under_review and 'First note' succeeds; a second request with the returned revision 1, decision under_review and 'Second note' returns {\"error\":\"conflict\",\"status\":409}.",
+      "harness/migrations/20261020-partnership-intake.sql:135-136 already increments revision and appends intake_reviews for accepted review events, providing the history-preserving path for this save."
+    ]
+  },
+  "[\"julik-frontend-races\", \"app/lib/research-intake-ui.js\", \"77\", \"focus refresh discards edits made during the request\"]": {
+    "why_it_matters": "A public applicant can lose text or an acknowledgement they enter while the focus-triggered terms request is in flight. The page snapshots the form before fetching and then replaces the form from that older snapshot when the response arrives, even if the published terms did not change. Reading the current controls immediately before a necessary rerender, and skipping the rerender when the terms are unchanged, preserves the applicant's work.",
+    "evidence": [
+      "app/lib/research-intake-ui.js:77 -- try{const data=await client.call('intakePublicInfo');if(at!==epoch)return;info=data;const changed=Boolean(previous&&(previous.versionId!==info.terms?.versionId||previous.hash!==info.terms?.hash));render(changed,readAcknowledged);}catch(e){if(at===epoch)note(e.userMessage||R.MESSAGES.network,true);}",
+      "app/lib/research-intake-ui.js:76 -- read();const previous=info?.terms,readAcknowledged=ack?.checked===true,at=++epoch;",
+      "app/lib/research-intake-ui.js:2 -- else{root.SBE_RESEARCH_INTAKE_UI=factory(root.SBE_RESEARCH_INTAKE,root.SBE_RESEARCH_PARTNERSHIPS,root.SBE_RESEARCH_CLIENT);document.addEventListener('DOMContentLoaded',()=>{const target=document.getElementById('intake-root');if(!target)return;const page=root.SBE_RESEARCH_INTAKE_UI.mountPublic({root:target});page.load();window.addEventListener('focus',()=>page.load());window.addEventListener('pageshow',event=>{if(event.persisted)page.load();});});}"
+    ]
+  },
+  "[\"julik-frontend-races\", \"app/lib/research-intake-ui.js\", \"111\", \"late application detail response replaces a newer owner view\"]": {
+    "why_it_matters": "An owner who opens an application and switches to the terms page before the detail request returns is sent back to that application when the late response arrives. The request guard only tracks clear or account refresh, while navigating between owner intake views leaves its epoch unchanged. A navigation sequence check before rendering would make the latest selected view win.",
+    "evidence": [
+      "app/lib/research-intake-ui.js:111 -- const result=await call('intakeGet',{applicationId:id});if(!result)return;route='detail';applicationId=id;const application=result.application,data=application.application||application.data||{},box=heading(data.title||'פרטי הפנייה');",
+      "app/lib/research-intake-ui.js:96 -- async function call(action,payload={}){const at=epoch;try{const data=await client.call(action,payload);return at===epoch?data:null;}catch(e){if(e.code!=='stale'&&at===epoch)note(e.userMessage||R.MESSAGES[e.code]||R.MESSAGES.invalid,true);return null;}",
+      "app/lib/research-intake-ui.js:99 -- async function terms(saved){if(!await ready())return;route='terms';applicationId=null;const state=ownerInfo.termsState||{revision:0,draftVersion:null,publishedVersionId:null},version=state.draftVersion,seed=saved||version||I.DEFAULT_TERMS_DRAFT,box=heading('תנאי פנייה');"
+    ]
+  }
+}
