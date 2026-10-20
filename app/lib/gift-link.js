@@ -33,7 +33,7 @@
   }
   function shareText(o, url) {
     return o.lang === 'ar'
-      ? '🎁 ' + (clip(o.to, 60) ? clip(o.to, 60) + '، ' : '') + 'لديّ هدية لك: «هناك ما يمكن فعله»، دليل صغير: ماذا نفعل وماذا نقول للأطفال في الدقائق الأولى من حالات الطوارئ.\n' + url
+      ? '🎁 ' + (clip(o.to, 60) ? clip(o.to, 60) + '، ' : '') + 'لديّ هدية لك: «هناك ما يمكن فعله»، دليل صغير: ماذا نفعل وماذا نقول للأولاد في الدقائق الأولى في حالة طوارئ.\n' + url
       : '🎁 ' + (clip(o.to, 60) ? clip(o.to, 60) + ', ' : '') + 'יש לי מתנה בשבילך: "יש מה לעשות", מדריכון קטן: מה עושים ומה אומרים לילדים בדקות הראשונות במצבי חירום.\n' + url;
   }
   const CSS = '.sbe-gift{background:linear-gradient(180deg,#FFF6E2,#FFFDF8);border:1px solid #F1D9A6;border-radius:12px;padding:14px 16px;margin:14px 0;color:#0F2B45}' +
