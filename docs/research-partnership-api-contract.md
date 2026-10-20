@@ -1,4 +1,6 @@
-# Research partnerships contract · 1.0.0
+# Research partnerships contract · 1.1.0
+
+20 October extension: schema `2` adds optional `applicantType: individual|institution`. A complete explicit individual profile/application may omit institution; legacy and institutional profiles retain that requirement. Agreement engine remains `1.0.0`. Public intake has a separate [contract and workflow](research-intake.md), using the same existing research identity and partnership records.
 
 U1 shared contract for U2–U5 of [the continuation plan](plans/2026-10-18-research-partnerships-continuation.md). The authoritative machine vocabulary is `app/lib/research-partnership-core.js`: CommonJS or browser `SBE_RESEARCH_PARTNERSHIPS`. All exported metadata, nested fields, enums, presets and operation descriptions are deeply frozen. This module performs no persistence, authentication, provider calls or legal execution.
 
@@ -29,6 +31,8 @@ Server-created result types:
 - `PrivateDocumentMetadata`: `{id,studyId,partnerId,recordId,filename,mediaType,size,sha256,createdAt}`. Private encrypted bytes remain separate from record JSON; only an authorized exact document read/export returns bytes. No public URL. Content-free audit stores IDs, operation and outcome only.
 
 ## Operations
+
+`WorkspaceSummary` now also includes `study:{id,status,revision,config}` and `grantedPermissions:string[]`. These are the selected partner's current study grants, never the caller-owner's rights or requested application permissions. `partnerGet.workspaces` is the authoritative list for switching among that partner's authorized studies; existing released-record and current-consent filters still apply.
 
 The following are payloads besides common `token`, `action`, and mutation `requestId`. `scope` means **all** `{studyId,partnerId,recordId}`; `rev` means `expectedRevision`. UUIDs/arrays/enums follow `OPERATIONS` and schema descriptors. Reads are exactly `READ_ACTIONS`.
 
