@@ -4,6 +4,7 @@ import { OWNER_AUTH_VERSION } from './research-database.mjs';
 import { ResearchStoreError } from '../lib/research-store.mjs';
 import { isPartnershipAction } from '../lib/research-partnerships.mjs';
 import { handleResearch } from '../lib/research.mjs';
+import { handleIntake, isIntakeAction, isPublicIntakeAction } from '../lib/research-intake.mjs';
 export { token, request };
 export const DOCUMENT_KEY=Buffer.alloc(32,41).toString('base64');
 export async function createPartnershipIntegration(options={}){
@@ -12,10 +13,11 @@ export async function createPartnershipIntegration(options={}){
  const query=(sql,values)=>serial(()=>database.db.query(sql,values)),exec=sql=>serial(()=>database.db.exec(sql));
  const codes={a:'STAFFA',b:'STAFFB',participant:'PERSON1',ordinary:'ORDINARY1',multi:'MULTI1'};
  for(const code of Object.values(codes))await query('INSERT INTO public.access_settings(key,value) VALUES($1,$2) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value',['code:'+code,{code,kind:'staff',inst:'Synthetic School',perms:['writer'],revoked:false}]);
- const accessStore={async get(key){return structuredClone((await query('SELECT value FROM public.access_settings WHERE key=$1',[key])).rows[0]?.value??null);},async set(key,value){await query('INSERT INTO public.access_settings(key,value) VALUES($1,$2) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value',[key,value]);},async list(prefix){return (await query('SELECT key,value FROM public.access_settings WHERE key LIKE $1',[prefix+'%'])).rows;}};
+ const accessStore={async get(key){return structuredClone((await query('SELECT value FROM public.access_settings WHERE key=$1',[key])).rows[0]?.value??null);},async set(key,value){await query('INSERT INTO public.access_settings(key,value) VALUES($1,$2) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value',[key,value]);},async list(prefix){return (await query('SELECT key,value FROM public.access_settings WHERE key LIKE $1',[prefix+'%'])).rows;},async compareSet(key,expected,value){const result=expected===null?await query('INSERT INTO public.access_settings(key,value) VALUES($1,$2) ON CONFLICT(key) DO NOTHING RETURNING key',[key,value]):await query("UPDATE public.access_settings SET value=$3 WHERE key=$1 AND value->>'revision'=$2 RETURNING key",[key,String(expected),value]);return result.rows.length===1;}};
  const tokens={owner:token({k:'sys',authVersion:OWNER_AUTH_VERSION}),worker:token({k:'research_worker',purpose:'research',exp:Date.now()+300000})};for(const [name,code]of Object.entries(codes))tokens[name]=token({k:'code',c:code,kind:'staff',inst:'Synthetic School'});
- const researchStore={async rpc(credential,action,payload={}){const result=await serial(()=>(isPartnershipAction(action)||['signingPrepare','signingEvidencePut','signatureComplete','signingEventContext','signingStateUpdate'].includes(action)?database.partnershipRpc:database.rpc)(credential,action,payload));if(result?.error)throw new ResearchStoreError(result.error,result.status);return result;}};
+ const researchStore={async rpc(credential,action,payload={}){const route=isIntakeAction(action)||isPublicIntakeAction(action)?database.intakeRpc:isPartnershipAction(action)||['signingPrepare','signingEvidencePut','signatureComplete','signingEventContext','signingStateUpdate'].includes(action)?database.partnershipRpc:database.rpc;const result=await serial(()=>route(credential,action,payload));if(result?.error)throw new ResearchStoreError(result.error,result.status);return result;}};
  const callResearch=(body,extra={})=>handleResearch(accessStore,researchStore,body,{env:{},documentKey:DOCUMENT_KEY,contactKey:DOCUMENT_KEY,...options,...extra});
+ const publicCall=(body,extra={})=>handleIntake(accessStore,researchStore,body,{clientAddress:'synthetic-local-client',...options,...extra});
  const checked=async(credential,action,payload={})=>{const [status,out]=await callResearch({token:credential,action,...payload});assert.equal(status,200,action+': '+JSON.stringify(out));return out;};
  async function seedStudy(title='מחקר שותפויות סינתטי',{active=true,categories=['surveys','usage','historical','generated','identities','contacts']}={}){
   let study=(await checked(tokens.owner,'studyCreate',request({config:{title}}))).study;
@@ -30,5 +32,5 @@ export async function createPartnershipIntegration(options={}){
   const invite=active?(await checked(tokens.owner,'inviteCreate',request({studyId:study.id}))).invite:null;
   return {study,consent:consent.version,instrument:instrument.version,invite};
  }
- return {db:database.db,query,exec,tokens,codes,token,request,checked,callResearch,seedStudy,accessStore,researchStore,documentKey:DOCUMENT_KEY,close:async()=>{await queue;await database.close();}};
+ return {db:database.db,query,exec,tokens,codes,token,request,checked,callResearch,publicCall,seedStudy,accessStore,researchStore,documentKey:DOCUMENT_KEY,close:async()=>{await queue;await database.close();}};
 }
