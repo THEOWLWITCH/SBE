@@ -47,6 +47,7 @@ import { handleScenarios, supabaseScenarios } from './lib/scenarios.mjs';
 import { handleCommunication } from './lib/communication-continuity.mjs';
 import { handleResearch } from './lib/research.mjs';
 import { handleIntake } from './lib/research-intake.mjs';
+import {startPartnershipWorkScheduler} from './lib/research-partnership-work.mjs';
 import { handleResearchSigningWebhook } from './lib/research-partnerships.mjs';
 import { supabaseResearchStore } from './lib/research-store.mjs';
 import { resolveResearchGeneratedSample } from './lib/research-usage.mjs';
@@ -162,7 +163,7 @@ function readRawBody(req,maxBytes){return new Promise((resolve,reject)=>{let len
 // Dependencies are injected only by importing this factory for isolated tests.
 // HTTP input and environment flags cannot replace authentication or providers.
 export function createPracticeServer({ authStore, providerFactory = getProvider, saveScenarioImpl = saveScenario,
-  limits = createModelLimits() } = {}) {
+  limits = createModelLimits(), partnershipOptions = {}, partnershipWork = {} } = {}) {
 // עבודות צינור שרצות ברקע (בזיכרון; נמחקות אחרי 3 שעות)
 const PIPE_JOBS = new Map();
 // גם במאגר (05/10/2026): אם השרת מופעל מחדש באמצע בנייה (Deploy, עומס), מצב העבודה לא הולך לאיבוד —
@@ -210,11 +211,9 @@ const server = createServer(async (req, res) => {
     catch (error) { const status = error.status === 413 ? 413 : 400; return sendJson(res,status,{ok:false,status,error:'invalid',code:'invalid'}); }
     try {
       const access = jobStore();
-      let impactProvider;
-      try { impactProvider = providerFactory(process.env.PROVIDER || 'anthropic'); } catch {}
       const [status,out] = await handleResearch(access,supabaseResearchStore(url,key),body,{
         siteOrigin:CORS_ORIGIN, resolveGeneratedSample:request=>resolveResearchGeneratedSample(access,request),
-        ...(impactProvider ? { impactProviderFactory:()=>impactProvider } : {})
+        ...partnershipOptions
       });
       return sendJson(res,status,{...out,ok:status>=200&&status<300,status});
     } catch { return sendJson(res,503,{ok:false,status:503,error:'storage_unavailable',code:'storage_unavailable'}); }
@@ -539,6 +538,12 @@ const server = createServer(async (req, res) => {
 server.requestTimeout = 0;
 server.headersTimeout = 0;
 
+// Scheduling is server-owned and off by default. No browser endpoint can start
+// jobs or inject providers. Persistent leases survive process restarts.
+const workAccess=partnershipWork.enabled===true?jobStore():null;
+const workStore=partnershipWork.enabled===true&&process.env.SUPABASE_URL&&process.env.SUPABASE_SERVICE_KEY?supabaseResearchStore(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_KEY):null;
+const scheduler=startPartnershipWorkScheduler(workAccess,workStore,{...partnershipOptions,...partnershipWork});
+server.once('close',()=>scheduler.stop());
 return server;
 }
 

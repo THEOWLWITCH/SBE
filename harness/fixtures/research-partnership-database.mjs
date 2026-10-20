@@ -5,7 +5,7 @@ export { TOKENS, request, token } from './research-database.mjs';
 export async function createPartnershipDatabase() {
   const base = await createResearchDatabase();
   try {
-    for (const migration of ['20261018-research-partnerships.sql', '20261020-partnership-profile.sql', '20261020-partnership-intake.sql', '20261020-guided-agreement-contract.sql', '20261020-guided-agreements.sql', '20261020-guided-signing.sql']) await base.db.exec(await readFile(new URL('../migrations/' + migration, import.meta.url), 'utf8'));
+    for (const migration of ['20261018-research-partnerships.sql', '20261020-partnership-profile.sql', '20261020-partnership-intake.sql', '20261020-guided-agreement-contract.sql', '20261020-guided-agreements.sql', '20261020-guided-signing.sql', '20261020-guided-workflow.sql']) await base.db.exec(await readFile(new URL('../migrations/' + migration, import.meta.url), 'utf8'));
   }
   catch (error) { await base.close(); throw error; }
   const partnershipRpc = async (credential, action, payload = {}) => {

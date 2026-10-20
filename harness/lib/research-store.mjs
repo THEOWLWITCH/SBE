@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const PARTNERSHIP_ACTIONS = new Set([...require('../../app/lib/research-partnership-core.js').CLIENT_ACTIONS, 'signingPrepare', 'signatureComplete', 'signingEvidencePut', 'signingEventContext', 'signingStateUpdate', 'signingIntentReserve', 'signingIntentGet', 'signingIntentCreateClaim', 'signingIntentAttach', 'signingIntentLink', 'signingIntentSendClaim', 'signingIntentSent', 'signingTransferAuthorize']);
+const PARTNERSHIP_ACTIONS = new Set([...require('../../app/lib/research-partnership-core.js').CLIENT_ACTIONS, 'signingPrepare', 'signatureComplete', 'signingEvidencePut', 'signingEventContext', 'signingStateUpdate', 'signingIntentReserve', 'signingIntentGet', 'signingIntentCreateClaim', 'signingIntentAttach', 'signingIntentLink', 'signingIntentSendClaim', 'signingIntentSent', 'signingTransferAuthorize', 'signingWorkClaim', 'signingWorkComplete', 'partnershipCopyClaim', 'partnershipCopyComplete', 'impactAuthorize', 'impactOutcome']);
 const INTAKE = require('../../app/lib/research-intake-core.js');
 const INTAKE_ACTIONS = new Set([...INTAKE.PUBLIC_ACTIONS, ...INTAKE.CLIENT_ACTIONS]);
 const CODES = Object.freeze({ not_found: 404, unauthorized: 403, invalid: 400, conflict: 409, consent_changed: 409, rate_limited: 429, not_configured: 503, unavailable: 503 });
