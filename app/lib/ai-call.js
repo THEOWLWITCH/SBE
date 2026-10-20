@@ -54,9 +54,9 @@
     const m = String((e && e.message) || "");
     if (e && e.code === "incomplete") return partial || noModel;
     let t = noModel;
-    if (/היכנסו שוב|הכניסה הסתיימה|status 401|שגיאת שרת 401/.test(m)) t = "הכניסה הסתיימה. כדי להמשיך, אפשר להיכנס שוב. מה שמילאת נשמר במכשיר.";
-    else if (/max_tokens|התוצר נקטע/.test(m)) t = "התוצר יצא ארוך מהצפוי ונקטע. מה שמילאת נשמר, ואפשר לנסות שוב.";
-    else if (/timeout|נמשכה יותר מדי|נקטע/.test(m)) t = "המודל לא הספיק לענות בזמן. מה שמילאת נשמר, ואפשר לנסות שוב.";
+    if (/היכנסו שוב|הכניסה הסתיימה|status 401|שגיאת שרת 401/.test(m)) t = "הכניסה הסתיימה. כדי להמשיך, אפשר להיכנס שוב. מה שמולא נשמר במכשיר.";
+    else if (/max_tokens|התוצר נקטע/.test(m)) t = "התוצר יצא ארוך מהצפוי ונקטע. מה שמולא נשמר, ואפשר לנסות שוב.";
+    else if (/timeout|נמשכה יותר מדי|נקטע/.test(m)) t = "המודל לא הספיק לענות בזמן. מה שמולא נשמר, ואפשר לנסות שוב.";
     let sys = false; try { sys = sessionStorage.getItem("sbe.session.homeUrl") === "admin.html?role=sys"; } catch (x) {}
     return sys && m ? t + " (למנהלת המערכת: " + m.slice(0, 200) + ")" : t;
   };

@@ -60,8 +60,8 @@ test('the first card is about the contact itself; a goal card is an option for l
 });
 
 test('each family starts with a story, and feelings about the parents are treated as a guess to check', () => {
-  assert.deepEqual(M.STORY.map((x) => x.l), ['מה קרה', 'מה הקושי בתקשורת', 'מה המטרה של השיחה', 'מה אני מרגישה', 'מה אני חושבת שההורים מרגישים']);
-  assert.equal(M.storyText({ what: 'א', me: 'ב' }), 'מה קרה: א\nמה אני מרגישה: ב');
+  assert.deepEqual(M.STORY.map((x) => x.l), ['מה קרה', 'מה הקושי בתקשורת', 'מה המטרה של השיחה', 'מה אני מרגיש/ה', 'מה אני חושב/ת שההורים מרגישים']);
+  assert.equal(M.storyText({ what: 'א', me: 'ב' }), 'מה קרה: א\nמה אני מרגיש/ה: ב');
   const d = M.decideSystem(SRC.forAdvisor('bridge'), '', 'עברית');
   assert.match(d, /השערה ולא ידיעה/); assert.match(d, /"talk"/); assert.match(d, /שיחה אחת קצרה, לא שיח מתמשך/);
   assert.deepEqual(invite.find(M.STORY.map((x) => x.l + ' ' + x.ph).join(' ')), []);

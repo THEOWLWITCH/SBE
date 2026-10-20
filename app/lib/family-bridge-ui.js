@@ -10,8 +10,8 @@
   const STORE = window.sbeUserKey ? sbeUserKey('sbe.bridge.v1') : 'sbe.bridge.v1:anon';
   const SERVER = window.sbeAIOrigin ? window.sbeAIOrigin() : 'https://sbe-server.onrender.com';
   const F = (id) => document.getElementById(id);
-  const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התוצר לא הוכן. מה שמילאת נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
-  const PARTIAL = 'התוצר חזר חלקי. מה שמילאת נשמר, ואפשר לנסות שוב.';
+  const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התוצר לא הוכן. מה שמולא נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
+  const PARTIAL = 'התוצר חזר חלקי. מה שמולא נשמר, ואפשר לנסות שוב.';
   const why = (e) => (typeof window !== 'undefined' && window.sbeAIError) ? window.sbeAIError(e, NO_MODEL, PARTIAL) : ((e && e.code === 'incomplete') ? PARTIAL : NO_MODEL);
   try { const h = sessionStorage.getItem('sbe.session.homeUrl'); if (h) F('nav-home').href = h; } catch (e) {}
   function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = String(text); return n; }
@@ -244,7 +244,7 @@
     const s5 = el('div');
     if (f.summary) s5.appendChild(summaryView(f));
     const sb = btn(f.summary ? 'סיכום מעודכן' : 'הכנת סיכום', f.summary ? 'btn btn-ghost sm' : 'btn sm', () => summarize(f, sb)); s5.appendChild(sb);
-    s5.appendChild(el('p', 'remind', '📌 כדאי להוסיף את דרך הקשר המוסכמת עם המשפחה לתיק הרציפות, כדי שמי שתחליף אותך תדע איך להיות בקשר.'));
+    s5.appendChild(el('p', 'remind', '📌 כדאי להוסיף את דרך הקשר המוסכמת עם המשפחה לתיק הרציפות, כדי שבהחלפה יהיה ברור איך להיות בקשר.'));
     if (f.summary) { s5.appendChild(btn('🖨 הדפסה / PDF', 'btn btn-ghost sm', () => printSummary(f))); s5.appendChild(btn('💾 שמירה במחשב', 'btn btn-ghost sm', () => downloadSummary(f))); }
     item(4, s5);
     box.appendChild(ol);

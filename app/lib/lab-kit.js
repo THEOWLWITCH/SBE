@@ -26,8 +26,8 @@
   const arr = (x) => Array.isArray(x) ? x : [];
   const txt = (x) => window.SBE_REFS ? SBE_REFS.strip(String(x == null ? '' : x)) : String(x == null ? '' : x);
   const SERVER = () => (window.sbeAIOrigin ? sbeAIOrigin() : 'https://sbe-server.onrender.com');
-  const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התוצר לא הוכן. מה שמילאת נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
-  const PARTIAL = 'התוצר חזר חלקי. מה שמילאת נשמר, ואפשר לנסות שוב.';
+  const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התוצר לא הוכן. מה שמולא נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
+  const PARTIAL = 'התוצר חזר חלקי. מה שמולא נשמר, ואפשר לנסות שוב.';
   const LATE = 'התשובה הגיעה אחרי שינוי בעבודה, ולכן היא לא הוחלה. אפשר לבקש שוב.';
   const why = (e) => (typeof window !== 'undefined' && window.sbeAIError) ? window.sbeAIError(e, NO_MODEL, PARTIAL) : ((e && e.code === 'incomplete') ? PARTIAL : NO_MODEL);
 
