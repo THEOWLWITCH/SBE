@@ -354,9 +354,9 @@ const D = {
   instName:"מכללה לחינוך",
   users:[
     { n:"נועה ברששת", e:"noa@", r:"מנחה" },
-    { n:"רותם אלמוג", e:"rotem@", r:"יוצרת" },
+    { n:"רותם אלמוג", e:"rotem@", r:"יוצר/ת" },
     { n:"סמאח דיאב",  e:"samah@", r:"מנחה" },
-    { n:"דנה שגב",    e:"dana@", r:"מנהלת מוסדית" },
+    { n:"דנה שגב",    e:"dana@", r:"מנהל/ת מוסד" },
   ],
 };
 
@@ -445,7 +445,7 @@ function loadSuggestions(){
 function saveSuggestions(list){ try { localStorage.setItem("sbe.source.suggestions.v1", JSON.stringify(list)); } catch(e){} }
 
 const TABS = {
-  inst:[["codes","קודים"],["users","משתמשות"],["feedback","מדדי המשוב"],["data","נתונים"]],
+  inst:[["codes","קודים"],["users","משתמשים"],["feedback","מדדי המשוב"],["data","נתונים"]],
   sys: [["backup","גיבוי, שחזור ורציפות פעילות"],["home","🏠 מה מחכה לי"],["insts","🏫 מוסדות וקודים"],["studies","📚 לימודי חוסן חברתי"],["journeys","🧭 לוח המסעות: אישורים ומשוב"],["demolab","🧪 מעבדת הדמו: תוצרים לתיקיית הדוגמאות"],["inbox","✉️ פניות"],["stories","📖 סיפורים ושיחות"],["crit","✅ קריטריונים לאישור"],["taxonomies","📋 רשימות"],["libs","📚 מקורות"],["eval","🔎 בקרת איכות"],["data","📊 נתונים"],["open","🔗 קישור פתוח ליום אחד"],["access","🔑 סיסמת הניהול"]],
 };
 
@@ -486,7 +486,7 @@ function render(){
   studiesRenderPending = false;
   $("title").textContent = role==="inst" ? "אזור ניהול מוסד" : "אזור ניהול כלל המערכת";
   $("lead").textContent = role==="inst"
-    ? D.instName + " · ניפוק קודים, ניהול משתמשות וייצוא נתונים של המוסד שלך בלבד."
+    ? D.instName + " · ניפוק קודים, ניהול משתמשים וייצוא נתונים של המוסד שלך בלבד."
     : "כל הניהול של Begood במקום אחד. מתחילים ב\"מה מחכה לי\", שם מופיע כל מה שדורש טיפול.";
 
   const nav = $("navPanel"); nav.textContent = "";
@@ -611,10 +611,10 @@ function pHome(){
 function pCodes(){
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"קודים"),
-    el("p",{class:"sub"},"שני סוגים. קוד המוסד מנפיקה את, והקוד לקבוצה של סדנה נוצר לבד כשמנחה פותחת סדנה."));
+    el("p",{class:"sub"},"שני סוגים. את קוד המוסד מנפיקים כאן, והקוד לקבוצה של סדנה נוצר לבד כשמנחה פותח/ת סדנה."));
 
   // קוד המוסד נשמר ונבדק בשרת — מוצג רק אחרי סיסמת מנהלת המוסד.
-  if (!gate(w, myInst, async () => { myInst = await accessCall("instGetCode", { inst: D.instName }); }, "סיסמת מנהלת המוסד")) return w;
+  if (!gate(w, myInst, async () => { myInst = await accessCall("instGetCode", { inst: D.instName }); }, "סיסמת מנהל/ת המוסד")) return w;
 
   const c1 = el("div",{class:"card"});
   c1.append(el("h3",{},"קוד המוסד", el("em",{}, D.instName)));
@@ -622,14 +622,14 @@ function pCodes(){
   const big = el("div",{class:"bigcode"}, myInst.code);
   in1.append(el("div",{class:"codebox"}, big,
     el("div",{class:"meta"}, myInst.active ? "פעיל" : "מושהה: הכניסה עם הקוד חסומה כרגע",
-      el("br"), "יוצרות ומנחות נכנסות איתו")));
+      el("br"), "יוצרי תרחישים ומנחים נכנסים איתו")));
   const row = el("div",{class:"btnrow"});
   const bCopy = el("button",{class:"act"},"העתקה");
   bCopy.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(myInst.code);
     bCopy.textContent="הועתק"; setTimeout(()=>bCopy.textContent="העתקה",1400);}catch(e){} });
   const bNew = el("button",{class:"act d"},"החלפת קוד");
   bNew.addEventListener("click", ()=> ask("החלפת קוד המוסד",
-    "הקוד הנוכחי יפסיק לעבוד מיד. מי שכבר נכנסה תישאר מחוברת, אבל כל כניסה חדשה תדרוש את הקוד החדש.",
+    "הקוד הנוכחי יפסיק לעבוד מיד. מי שכבר נכנס/ה נשאר/ת מחובר/ת, אבל כל כניסה חדשה תדרוש את הקוד החדש.",
     ()=> accessCall("instNewCode", { inst: D.instName }).then(d => { myInst = d; render(); }).catch(accessFail)));
   row.append(bCopy,bNew); in1.append(row); c1.append(in1);
 
@@ -637,7 +637,7 @@ function pCodes(){
   c2.append(el("h3",{},"קודי סדנה", el("em",{},"פגים בסוף היום")));
   c2.append(el("div",{class:"in"},
     el("p",{style:"margin:0;font-size:14.5px;color:var(--muted);line-height:1.6"},
-      "נוצרים לבד כשמנחה פותחת סדנה, ואינם דורשים ניפוק. הצופות מקלידות אותם ואת שמן, בלי חשבון ובלי הרשמה.")));
+      "נוצרים לבד כשמנחה פותח/ת סדנה, ואינם דורשים ניפוק. המשתתפים מקלידים אותם ואת שמם, בלי חשבון ובלי הרשמה.")));
 
   w.append(c1,c2, el("div",{class:"note"},
     el("b",{},"למה קוד ולא סיסמה. "),
@@ -648,24 +648,24 @@ function pCodes(){
 // ── משתמשות ──
 function pUsers(){
   const w = el("div",{class:"panel on"});
-  w.append(el("h2",{},"משתמשות"), el("p",{class:"sub"},
-    "התפקיד קובע מה נגיש. ההרשאות מצטברות, ואישה אחת יכולה להחזיק כמה תפקידים."));
+  w.append(el("h2",{},"משתמשים"), el("p",{class:"sub"},
+    "התפקיד קובע מה נגיש. ההרשאות מצטברות, ואדם אחד יכול להחזיק כמה תפקידים."));
 
   const c = el("div",{class:"card"});
-  c.append(el("h3",{},D.instName, el("em",{}, D.users.length + " משתמשות")));
+  c.append(el("h3",{},D.instName, el("em",{}, D.users.length + " משתמשים")));
   const inn = el("div",{class:"in"});
   const rows = el("div",{class:"rows"});
   D.users.forEach((u,i)=>{
     const r = el("div",{class:"r"});
     r.append(el("span",{class:"nm"}, el("b",{},u.n), el("span",{},u.e)));
     const sel = el("select",{class:"f"});
-    ["יוצרת","מנחה","מנהלת מוסדית"].forEach(o=>{
+    ["יוצר/ת","מנחה","מנהל/ת מוסד"].forEach(o=>{
       const op=el("option",{},o); op.value=o; if(o===u.r) op.setAttribute("selected","");
       sel.append(op);});
     sel.addEventListener("change",()=>{ u.r=sel.value; });
     const del = el("button",{class:"act d"},"הסרה");
     del.addEventListener("click",()=> ask("הסרת "+u.n,
-      "היא לא תוכל להיכנס יותר. התרחישים שיצרה נשארים במאגר המוסד.",
+      "הכניסה תיחסם. התרחישים שנוצרו נשארים במאגר המוסד.",
       ()=>{ D.users.splice(i,1); render(); }));
     r.append(sel,del); rows.append(r);
   });
@@ -675,7 +675,7 @@ function pUsers(){
   const nm = el("input",{placeholder:"שם"});
   const bAdd = el("button",{class:"act p"},"הוספה");
   bAdd.addEventListener("click",()=>{ const v=nm.value.trim(); if(!v)return;
-    D.users.push({n:v,e:"",r:"יוצרת"}); render(); });
+    D.users.push({n:v,e:"",r:"יוצר/ת"}); render(); });
   add.append(nm,bAdd); inn.append(add); c.append(inn);
   w.append(c);
   return w;
@@ -688,11 +688,11 @@ function pFeedback(){
   const FB = SBE_FB;
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"מדדי המשוב"), el("p",{class:"sub"},
-    "שלושה שאלונים: למנחה, למתנסה ולצופה. המנחה בוחרת " + FB.MIN + "–" + FB.MAX + " מדדים לכל שאלון במסך הסדנה, לפני שהיא פותחת אותה. המדדים המסומנים כאן מוצעים לה כברירת המחדל של המוסד."));
+    "שלושה שאלונים: למנחה, למתנסה ולצופה. המנחה בוחר/ת " + FB.MIN + "–" + FB.MAX + " מדדים לכל שאלון במסך הסדנה, לפני פתיחת הסדנה. המדדים המסומנים כאן מוצעים לה כברירת המחדל של המוסד."));
 
   w.append(el("div",{class:"note"},
     el("b",{},"הבנק משותף בין כל המוסדות, בדיוק כמו מאגר התרחישים המשותף. "),
-    "מדד שהוספת כאן נגיש למוסדות אחרים, ומסומן בשם התורמת, בשם המוסד ובתאריך. ",
+    "מדד שהוספת כאן נגיש למוסדות אחרים, ומסומן בשם מי שתרם/ה, בשם המוסד ובתאריך. ",
     "הסימון של ברירת המחדל משפיע רק על המוסד שלך. מדד לא נמחק לעולם."));
 
   const bank = loadBank();
@@ -704,7 +704,7 @@ function pFeedback(){
     const c = el("div",{class:"card"});
     c.append(el("h3",{}, "שאלון " + FB.ROLE_LABEL[role], el("em",{}, n + " בברירת המחדל · " + total + " מדדים בבנק")));
     const inn = el("div",{class:"in"});
-    if (!FB.valid(n)) inn.append(el("div",{class:"note"}, "בברירת המחדל אפשר לבחור " + FB.MIN + "–" + FB.MAX + " מדדים, כדי שהמנחה תוכל לפתוח סדנה בלי לשנות דבר."));
+    if (!FB.valid(n)) inn.append(el("div",{class:"note"}, "בברירת המחדל אפשר לבחור " + FB.MIN + "–" + FB.MAX + " מדדים, כדי שאפשר יהיה לפתוח סדנה בלי לשנות דבר."));
     const full = n >= FB.MAX;
     FB.grouped(role, bank).forEach(({ g, items })=>{
       inn.append(el("div",{style:"font-size:12.5px;font-weight:700;color:var(--muted);margin:12px 0 4px"}, g));
@@ -1369,7 +1369,7 @@ function saveScenarioRecords(list){ try { localStorage.setItem("sbe.mock.scenari
 // מחושבים מהתרחישים שעדיין תואמים לכל הקריטריונים האחרים שנבחרו.
 const FACETS = [
   {key:"inst", label:"מוסד"},
-  {key:"creator", label:"שם יוצרת"},
+  {key:"creator", label:"שם יוצר/ת"},
   {key:"year", label:"שנה"},
   {key:"lang", label:"שפה"},
   {key:"age", label:"שכבת גיל"},
@@ -1584,7 +1584,7 @@ function pData(){
   bDel.addEventListener("click",()=> ask("מחיקת " + matching.length + " תרחישים",
     "התרחישים התואמים לסינון הנוכחי בלבד: " +
       matching.slice(0,3).map(r=>r.name).join("، ") + (matching.length>3 ? " ועוד "+(matching.length-3) : "") +
-      ". פעולה בלתי הפיכה. ודאי שייצאת קודם.",
+      ". פעולה בלתי הפיכה. כדאי לייצא קודם.",
     ()=>{
       const ids = new Set(matching.map(r=>r.id));
       saveScenarioRecords(loadScenarioRecords().filter(x=>!ids.has(x.id)));
@@ -1654,7 +1654,7 @@ function unlockCard(pwLabel, loader){
   const submit = async () => {
     accessAuth = pw.value.replace(/[‎‏؜]/g, "").trim();
     gateFailed = false;
-    go.disabled = true; go.textContent = "בודקת... (לפעמים עד דקה)";
+    go.disabled = true; go.textContent = "בודקים... (לפעמים עד דקה)";
     try { await loader(); render(); }
     catch (e) {
       accessAuth = "";
@@ -1676,7 +1676,7 @@ function unlockCard(pwLabel, loader){
 function gate(w, loaded, loader, pwLabel){
   if (loaded) return true;
   if ((accessAuth || sysToken()) && !gateFailed) {
-    w.append(el("p",{class:"sub"},"טוענת... (לפעמים עד דקה)"));
+    w.append(el("p",{class:"sub"},"טוענים... (לפעמים עד דקה)"));
     loader().then(() => render())
       .catch(e => { if (e.status === 403) resetAccessData(); else gateFailed = true; render(); });
     return false;
