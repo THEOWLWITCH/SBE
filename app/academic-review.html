@@ -288,7 +288,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <details class="grp" open>
   <summary>הנחיות המשימה או המחוון (רשות)<span class="count" id="n-task"></span></summary>
   <div class="grp-b">
-    <p class="note" data-info style="margin:0">קיבלת מהמרצה משימה, הנחיות או מחוון? אפשר להעלות או להדביק אותם כאן. הם <b>לא נבדקים כחלק מהעבודה</b>, הם המסגרת לבדיקה, בסוג המשוב "לפי הנחיות המנחה" או "משוב משולב" (בחירה למטה), המשוב יבדוק עד כמה העבודה עונה עליהן.</p>
+    <p class="note" data-info style="margin:0">יש משימה, הנחיות או מחוון מהמרצה? אפשר להעלות או להדביק אותם כאן. הם <b>לא נבדקים כחלק מהעבודה</b>, הם המסגרת לבדיקה, בסוג המשוב "לפי הנחיות המנחה" או "משוב משולב" (בחירה למטה), המשוב יבדוק עד כמה העבודה עונה עליהן.</p>
     <div class="uploadbox" style="margin-bottom:0">
       <input type="file" id="taskFile" accept=".txt,text/plain,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,application/pdf">
       <p class="note" id="taskStatus" style="margin-top:8px;"></p>
@@ -325,7 +325,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
         <label><input type="checkbox" id="critShare" checked> להציע לקהילה</label>
       </div>
       <p class="crit-msg" id="critMsg" hidden></p>
-      <p class="critadd-note" id="critAddNote">קריטריון מתאר <b>מה לבדוק</b>, הכלי נותן משוב ולא כותב במקומך, ולכן בקשות כמו "אפשר לכתוב לי את הסעיף" לא מתקבלות. הקריטריון נשמר אצלך ומשמש אותך מיד, ואפשר להסיר אותו בכל עת. אם סימנת "להציע לקהילה": הוא יופיע אצל כולן אחרי אישור של מנהלת המערכת. קריטריון כפול או דומה מדי לקיים לא יתקבל. הנחיות משימה ארוכות: בשדה "הנחיות המשימה" למעלה.</p>
+      <p class="critadd-note" id="critAddNote">קריטריון מתאר <b>מה לבדוק</b>, הכלי נותן משוב ולא כותב במקומך, ולכן בקשות כמו "אפשר לכתוב לי את הסעיף" לא מתקבלות. הקריטריון נשמר אצלך ומשמש אותך מיד, ואפשר להסיר אותו בכל עת. אם מסומן "להציע לקהילה": הוא יופיע אצל כולם אחרי אישור של מנהלת המערכת. קריטריון כפול או דומה מדי לקיים לא יתקבל. הנחיות משימה ארוכות: בשדה "הנחיות המשימה" למעלה.</p>
     </div>
     </div>
   </div>
@@ -429,7 +429,7 @@ function buildCustomSelect(container, hiddenInput, listName, baseOpts){
       panel.append(b);
     });
     const otherRow = el("div", { class:"customsel-other" });
-    otherInput = el("input", { type:"text", placeholder:"אפשר להקליד אפשרות משלך: נשמרת לכולן" });
+    otherInput = el("input", { type:"text", placeholder:"אפשר להקליד אפשרות משלך: נשמרת לכולם" });
     const addOther = () => {
       const t = otherInput.value.trim(); if (!t) return;
       addCustomListItem(listName, t);
@@ -715,7 +715,7 @@ $("critAddBtn").addEventListener("click", async () => {
   const setMine = (patch) => saveMyItems(myItems().map(x => x.value === title ? { ...x, ...patch } : x));
   try {
     const d = await accessApi({ action:"critPropose", token: token(), title, detail, cat, by: val("creatorName") });
-    if (d.ok) { setMine({ pid:d.id, pstatus:d.status }); critMsg(d.status === "approved" ? "נוסף לקהילה ✓" : "נוסף לקריטריונים שלך ונבחר ✓ ההצעה נשלחה לאישור מנהלת המערכת, והקריטריון יופיע אצל כולן אחרי אישור.", true); }
+    if (d.ok) { setMine({ pid:d.id, pstatus:d.status }); critMsg(d.status === "approved" ? "נוסף לקהילה ✓" : "נוסף לקריטריונים שלך ונבחר ✓ ההצעה נשלחה לאישור מנהלת המערכת, והקריטריון יופיע אצל כולם אחרי אישור.", true); }
     else if (d.error === "duplicate") { setMine({ pstatus:"dup" }); critMsg("נוסף לקריטריונים שלך, אבל לא נשלח לקהילה: הוא דומה מדי לקריטריון \"" + d.similar + "\"" + (d.status === "pending" ? " שכבר ממתין לאישור." : " שכבר קיים בקהילה."), false); }
     else if (d.error === "ghostwrite") { saveMyItems(myItems().filter(x => x.value !== title)); selectedCriteria.delete(title); critMsg(GHOST_MSG, false); }
     else if (d.error === "too many pending") critMsg("נוסף לקריטריונים שלך. יש לך כבר 10 הצעות שממתינות לאישור. אפשר להציע עוד אחרי שיאושרו.", false);
@@ -783,7 +783,7 @@ function syncHint(){
   else if (fbKind === "task" && !val("taskText")) need = "אפשר להעלות או להדביק את הנחיות המנחה בשדה \"הנחיות המשימה\"";
   const ok = !need;
   $("bReview").disabled = !ok;
-  $("hint").textContent = ok ? "מוכנה לקבלת משוב: " + FB_KINDS.find(x => x.k === fbKind).t : need;
+  $("hint").textContent = ok ? "אפשר לקבל משוב: " + FB_KINDS.find(x => x.k === fbKind).t : need;
   adjustActionsPadding();
 }
 $("creatorName").addEventListener("input", syncHint);
@@ -803,7 +803,7 @@ function adjustActionsPadding(){
 window.addEventListener("resize", adjustActionsPadding);
 
 $("bReset").addEventListener("click", () => {
-  if ((val("workText") || val("taskText")) && !confirm("לנקות את הטופס? העבודה, ההנחיות והמשוב האחרון יימחקו מהמכשיר הזה (קובץ עבודה ששמרת לא נפגע).")) return;
+  if ((val("workText") || val("taskText")) && !confirm("לנקות את הטופס? העבודה, ההנחיות והמשוב האחרון יימחקו מהמכשיר הזה (קובץ עבודה שנשמר לא נפגע).")) return;
   $("creatorName").value = ""; $("workText").value = ""; $("upStatus").textContent = "";
   $("taskText").value = ""; $("taskStatus").textContent = ""; $("upFile").value = ""; $("taskFile").value = "";
   LAST_FEEDBACK = null; $("bLastFb").hidden = true;

@@ -262,7 +262,7 @@ ul.tl li{margin:.25rem 0}
       <label for="f-worry">מה מדאיג אותך לקראת המפגש? <span class="opt">(רשות)</span></label>
       <textarea id="f-worry" maxlength="800" placeholder="למשל: שתהיה שתיקה ולא אדע מה לעשות; שאאבד שליטה; שמישהו יתחיל לבכות"></textarea>
       <label for="f-question">שאלה מרכזית לננה <span class="opt">(רשות)</span></label>
-      <textarea id="f-question" maxlength="600" placeholder="למשל: איך אני מנחה שיחה על נושא שגם אני מתרגשת ממנו?"></textarea>
+      <textarea id="f-question" maxlength="600" placeholder="למשל: איך אני מנחה שיחה על נושא שגם אני מתרגש/ת ממנו?"></textarea>
     </fieldset>
 
     <div class="btns">
@@ -286,7 +286,7 @@ ul.tl li{margin:.25rem 0}
       <div class="chips" id="ask-chips"></div>
       <div class="chat" id="ask-log"></div>
       <label for="ask-in" class="muted" style="font-weight:600">השאלה שלך</label>
-      <textarea id="ask-in" maxlength="1200" placeholder="למשל: איך אני מגיבה אם מישהו אומר שזה סתם בזבוז זמן?"></textarea>
+      <textarea id="ask-in" maxlength="1200" placeholder="למשל: איך אני מגיב/ה אם מישהו אומר שזה סתם בזבוז זמן?"></textarea>
       <div class="btns"><button class="btn" id="ask-go" type="button">שליחה</button><button class="btn btn-ghost" id="ask-clear" type="button">שיחה חדשה</button></div>
     </div>
     <div id="pane-practice" hidden>
@@ -498,7 +498,7 @@ F('btn-go').addEventListener('click',async()=>{
     STATE.report={at:new Date().toISOString(),input,f:form(),doc};STATE.chat=[];STATE.practice=null;STATE.after=null;save();
     renderGuide();renderMore();
   }catch(e){
-    g.textContent='';const cc=el('div','card');cc.appendChild(el('p','err',window.sbeAIError?sbeAIError(e,'המדריך לא הוכן: אין כרגע חיבור למודל. מה שמילאת נשמר, ואפשר לנסות שוב בעוד רגע.','המדריך חזר חלקי. מה שמילאת נשמר, ואפשר לנסות שוב.'):'המדריך לא הוכן ('+(e.message||'שגיאה')+'). מה שמילאת נשמר: אפשר לנסות שוב בעוד רגע.'));g.appendChild(cc);
+    g.textContent='';const cc=el('div','card');cc.appendChild(el('p','err',window.sbeAIError?sbeAIError(e,'המדריך לא הוכן: אין כרגע חיבור למודל. מה שמולא נשמר, ואפשר לנסות שוב בעוד רגע.','המדריך חזר חלקי. מה שמולא נשמר, ואפשר לנסות שוב.'):'המדריך לא הוכן ('+(e.message||'שגיאה')+'). מה שמולא נשמר: אפשר לנסות שוב בעוד רגע.'));g.appendChild(cc);
   }finally{stop();BUSY=false;b.disabled=false;}
 });
 
@@ -689,7 +689,7 @@ F('af-go').addEventListener('click',async()=>{
   const t=F('af-in').value.trim();if(!t||BUSY)return;
   BUSY=true;F('af-go').disabled=true;const o=F('af-out');o.textContent='';const th=el('div','muted');o.appendChild(th);const stop=waiting(th,'ננה קוראת ומכינה משוב.',80);
   try{const ans=await complete(N.debriefSystem(inputNow(),guideText(),KB,RULE),[{role:'user',content:t}],5000,true);STATE.after={text:t,answer:ans,at:new Date().toISOString()};save();renderAfter();}
-  catch(e){o.textContent='';o.appendChild(el('p','err','המשוב לא הגיע ('+e.message+'). מה שכתבת נשמר: אפשר לנסות שוב.'));}
+  catch(e){o.textContent='';o.appendChild(el('p','err','המשוב לא הגיע ('+e.message+'). מה שנכתב נשמר: אפשר לנסות שוב.'));}
   finally{stop();BUSY=false;F('af-go').disabled=false;}
 });
 F('af-in').addEventListener('input',()=>{STATE.after=Object.assign({},STATE.after||{},{text:F('af-in').value});save();});
