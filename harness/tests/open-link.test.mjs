@@ -101,3 +101,11 @@ test('a link can stay open for several days, and its dates can change without ch
   assert.equal(st, 200);
   assert.equal((await handleAccess(store, { action: 'openJoin', id: 'orit-14' }))[0], 200);
 });
+
+test('open link: title can change without touching dates', async () => {
+  const store = memoryStore(); const token = await sys(store);
+  const [, made] = await handleAccess(store, { action: 'openCreate', token, page: 'message-writer.html', date: ilToday(), id: 'title-1', label: 'הכרות' });
+  assert.equal(made.item.label, 'הכרות');
+  const [st, r] = await handleAccess(store, { action: 'openUpdate', token, id: 'title-1', label: 'היכרות והכנה' });
+  assert.equal(st, 200); assert.equal(r.item.label, 'היכרות והכנה'); assert.equal(r.item.date, ilToday());
+});

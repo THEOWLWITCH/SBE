@@ -1774,7 +1774,22 @@ function pOpen(){
     dBox.append(el("label",{}, el("b",{style:"display:block;font-size:13px"},"מתאריך"), d1), el("label",{}, el("b",{style:"display:block;font-size:13px"},"עד תאריך (רשות)"), d2), dSave);
     const dBtn = el("button",{class:"act"},"📅 שינוי תאריך");
     dBtn.addEventListener("click", () => { dBox.style.display = dBox.style.display === "none" ? "flex" : "none"; });
-    ci.append(el("div",{style:"margin:0 0 6px"}, dBtn), dBox);
+    // שינוי כותרת (20/10/2026): אותה כתובת ואותו QR
+    const tBox = el("div",{style:"display:none;gap:8px;flex-wrap:wrap;align-items:end;margin:6px 0 10px"});
+    const tIn = el("input",{type:"text", value: x.label || "", maxlength:"80", style:"min-width:260px;flex:1"});
+    const tSave = el("button",{class:"act p"},"שמירת הכותרת");
+    tSave.addEventListener("click", async () => {
+      const want = tIn.value.trim().slice(0, 80);
+      try {
+        const r = await accessCall("openUpdate", { id: x.id, label: want });
+        if (!r || !r.item || (r.item.label || "") !== want) { ask("הכותרת לא נשמרה", "השרת עוד לא מעודכן לשינוי כותרת. הקישור וה־QR לא השתנו.", () => {}); return; }
+        openData = null; render();
+      } catch(e){ const er = e.data && e.data.error; if (er === "bad date") ask("הכותרת לא נשמרה", "השרת עוד לא מעודכן לשינוי כותרת. הקישור וה־QR לא השתנו.", () => {}); else accessFail(e); }
+    });
+    tBox.append(el("label",{style:"flex:1"}, el("b",{style:"display:block;font-size:13px"},"כותרת"), tIn), tSave);
+    const tBtn = el("button",{class:"act"},"✏️ שינוי כותרת");
+    tBtn.addEventListener("click", () => { tBox.style.display = tBox.style.display === "none" ? "flex" : "none"; if (tBox.style.display === "flex") tIn.focus(); });
+    ci.append(el("div",{style:"margin:0 0 6px;display:flex;gap:8px;flex-wrap:wrap"}, dBtn, tBtn), dBox, tBox);
     if (!x.revoked && openEndOf(x) >= openData.today) {
       const qr = el("div",{style:"background:#fff;padding:10px;display:inline-block;border-radius:8px;margin:4px 0 8px"});
       if (window.QRCode) try { new QRCode(qr, { text: url, width: 168, height: 168, correctLevel: QRCode.CorrectLevel.M }); } catch(e){}

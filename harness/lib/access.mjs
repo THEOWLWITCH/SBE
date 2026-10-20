@@ -1466,10 +1466,15 @@ async function handleOpenLinks(store, body, isSys) {
     const id = String(body.id || '').toLowerCase();
     const rec = validOpenId(id) ? await store.get('open:' + id) : null;
     if (!rec) return [404, { error: 'not found' }];
-    const dates = openDates(body);
-    if (dates.error) return [400, { error: dates.error }];
-    rec.date = dates.date; if (dates.until) rec.until = dates.until; else delete rec.until;
-    rec.revoked = false; rec.updatedAt = new Date().toISOString();
+    // 20/10/2026 ("אני לא מצליחה לשנות את הכותרת"): אפשר לשנות גם את הכותרת, עם התאריכים או בלעדיהם
+    if (body.label !== undefined) rec.label = String(body.label || '').trim().slice(0, 80);
+    if (body.date !== undefined) {
+      const dates = openDates(body);
+      if (dates.error) return [400, { error: dates.error }];
+      rec.date = dates.date; if (dates.until) rec.until = dates.until; else delete rec.until;
+      rec.revoked = false;
+    } else if (body.label === undefined) return [400, { error: 'bad date' }];
+    rec.updatedAt = new Date().toISOString();
     await store.set('open:' + id, rec);
     return [200, { ok: true, item: rec }];
   }
