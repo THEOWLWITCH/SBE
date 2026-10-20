@@ -15,7 +15,7 @@
   const PUBLIC_ACTIONS = ['intakePublicInfo', 'intakeSubmit'];
   const CLIENT_ACTIONS = ['intakeOwnerBootstrap', 'intakeList', 'intakeGet', 'intakeTermsSave', 'intakeTermsPublish', 'intakeReview', 'intakeIdentityCreate'];
   const READ_ACTIONS = ['intakeOwnerBootstrap', 'intakeList', 'intakeGet'];
-  const APPLICANT_TYPES = { individual: 'אדם פרטי', institution: 'מוסד' };
+  const APPLICANT_TYPES = partnerships.RECORD_SCHEMAS.application.fields.find(field => field.id === 'applicantType').choices;
   const APPLICATION_STATUSES = { submitted: 'הוגשה', under_review: 'בבדיקה', approved: 'אושרה', rejected: 'נדחתה' };
   const PUBLIC_FIELDS = partnerships.RECORD_SCHEMAS.application.fields.filter(field => !['questionnaireVersionIds', 'supportingDocumentIds'].includes(field.id));
   const SUBMISSION_REQUIRED_FIELDS = ['title', 'applicationType', 'fullName', 'email', 'objectives', 'requestedTools', 'applicantType'];
@@ -24,8 +24,6 @@
     text: 'זהו נוסח מוצע לעיון בעלת המערכת לפני פרסום. הפנייה היא בקשה לבדיקה. הגשתה אינה יוצרת חשבון, הרשאה, שותפות פעילה או התחייבות. אישור הקריאה אינו חתימה על הסכם.'
   };
   function operation(request, result, authority) { return { request, result, authority }; }
-  // Terms versions use {versionId, number, title, text, hash, publishedAt?}.
-  // Owner applications retain the original typed application, exact terms and revision.
   const OPERATIONS = {
     intakePublicInfo: operation({}, { terms: 'IntakeTerms|null', acceptingApplications: 'boolean' }, 'public; published terms only'),
     intakeSubmit: operation({ requestId: 'uuid', termsVersionId: 'uuid', termsHash: 'sha256', acknowledged: 'true', application: 'PublicApplicationData' }, { receipt: 'IntakeReceipt {id,status:submitted,submittedAt}' }, 'public proposal only; no identity or grants'),

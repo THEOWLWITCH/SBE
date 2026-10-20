@@ -76,10 +76,10 @@ export async function activeResearchInstitutions(store) {
   });
 }
 
-export async function isActiveResearchIdentity(store, record) {
+export async function isActiveResearchIdentity(store, record, institutions) {
   return !!record && ['staff', 'instadmin'].includes(record.kind) && !record.revoked
     && (!record.expiresAt || record.expiresAt >= ilToday())
-    && (await activeResearchInstitutions(store)).some(institution => institution.name === record.inst);
+    && (institutions || await activeResearchInstitutions(store)).some(institution => institution.name === record.inst);
 }
 
 function newInstCode(list) {
@@ -497,7 +497,7 @@ async function handleCodes(store, body, isSys) {
     if (body.researchOnly !== undefined && !researchOnly) return [400, { error: 'invalid' }];
     if (researchOnly && !isSys) return [403, { error: 'unauthorized' }];
     if (researchOnly && (kind !== 'staff' || !Array.isArray(body.perms) || body.perms.length !== 0)) return [400, { error: 'invalid' }];
-    const existing = new Set((await allCodes(store)).map((c) => normCode(c.code)));
+    const existing = researchOnly ? null : new Set((await allCodes(store)).map((c) => normCode(c.code)));
     const list = await getInstitutions(store);
     const label = String(body.label || '').trim().slice(0, 60);
     if (kind === 'instadmin' || (kind === 'staff' && isSys)) {

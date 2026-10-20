@@ -40,9 +40,10 @@ export async function handleIntake(accessStore, researchStore, body, options = {
     if (action === 'intakeOwnerBootstrap') {
       const [status, listed] = await handleAccess(accessStore, { action: 'codesList', token: body.token });
       if (status !== 200) fail('unauthorized');
-      const live = await Promise.all(listed.codes.map(async record => await isActiveResearchIdentity(accessStore, record) ? identity(record) : null));
+      const institutions = await activeResearchInstitutions(accessStore);
+      const live = await Promise.all(listed.codes.map(async record => await isActiveResearchIdentity(accessStore, record, institutions) ? identity(record) : null));
       output.identities = live.filter(Boolean);
-      output.institutions = (await activeResearchInstitutions(accessStore)).map(institution => institution.name);
+      output.institutions = institutions.map(institution => institution.name);
     }
     return [200, output];
   } catch (error) {

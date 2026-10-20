@@ -1,7 +1,7 @@
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('./research-intake-core.js'),require('./research-partnership-core.js'),require('./research-client.js'),require('./research-core.js'));
-  else{root.SBE_RESEARCH_INTAKE_UI=factory(root.SBE_RESEARCH_INTAKE,root.SBE_RESEARCH_PARTNERSHIPS,root.SBE_RESEARCH_CLIENT,root.SBE_RESEARCH);document.addEventListener('DOMContentLoaded',()=>{const target=document.getElementById('intake-root');if(!target)return;const page=root.SBE_RESEARCH_INTAKE_UI.mountPublic({root:target});page.load();window.addEventListener('focus',()=>page.load());window.addEventListener('pageshow',()=>page.load());});}
-})(typeof self!=='undefined'?self:this,function(I,P,R,C){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('./research-intake-core.js'),require('./research-partnership-core.js'),require('./research-client.js'));
+  else{root.SBE_RESEARCH_INTAKE_UI=factory(root.SBE_RESEARCH_INTAKE,root.SBE_RESEARCH_PARTNERSHIPS,root.SBE_RESEARCH_CLIENT);document.addEventListener('DOMContentLoaded',()=>{const target=document.getElementById('intake-root');if(!target)return;const page=root.SBE_RESEARCH_INTAKE_UI.mountPublic({root:target});page.load();window.addEventListener('focus',()=>page.load());window.addEventListener('pageshow',event=>{if(event.persisted)page.load();});});}
+})(typeof self!=='undefined'?self:this,function(I,P,R){
   'use strict';
   const LABELS={title:'כותרת הבקשה',objectives:'מטרות בקצרה'};
   const ACK='קראתי את תנאי הפנייה. אישור הקריאה אינו חתימה על הסכם';
