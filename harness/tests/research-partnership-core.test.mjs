@@ -35,7 +35,7 @@ test('partnership vocabulary is a deeply frozen browser/CommonJS contract with n
   assert.ok(Object.isFrozen(C.OPERATIONS.recordSave.request));
   const context = {};
   vm.runInNewContext(readFileSync(new URL('../../app/lib/research-partnership-core.js',import.meta.url),'utf8'),context);
-  assert.equal(context.SBE_RESEARCH_PARTNERSHIPS.VERSIONS.schema,1);
+  assert.equal(context.SBE_RESEARCH_PARTNERSHIPS.VERSIONS.schema,2);
   assert.equal(context.SBE_RESEARCH_PARTNERSHIPS.CLIENT_ACTIONS.length,26);
 });
 
@@ -72,6 +72,27 @@ test('draft completion lists exact missing fields; submitted application rejects
   invalid(()=>C.validateRecord('application',{}, {complete:true}));
   invalid(()=>C.validateRecord('application',{...application(),startDate:'2026-02-30'}));
   invalid(()=>C.validateRecord('application',{...application(),endDate:'2026-10-01'}));
+});
+
+test('individual profiles and applications can be complete without an institution while legacy and institution profiles retain it', () => {
+  const profile = { fullName: 'אדם בדוי', email: 'individual@example.invalid', applicantType: 'individual' };
+  assert.deepEqual(C.validatePartner(profile, { complete: true }), profile);
+  const individual = { ...application(), applicantType: 'individual' };
+  delete individual.institution;
+  assert.deepEqual(C.validateRecord('application', individual, { complete: true }), individual);
+  assert.equal(C.missingFields('application', individual).includes('institution'), false);
+  for (const applicantType of ['institution', undefined]) {
+    const legacy = { ...profile };
+    if (applicantType) legacy.applicantType = applicantType; else delete legacy.applicantType;
+    invalid(() => C.validatePartner(legacy, { complete: true }));
+    const incomplete = { ...individual };
+    if (applicantType) incomplete.applicantType = applicantType; else delete incomplete.applicantType;
+    invalid(() => C.validateRecord('application', incomplete, { complete: true }));
+    assert.ok(C.missingFields('application', incomplete).includes('institution'));
+    assert.doesNotThrow(() => C.validatePartner({ ...legacy, institution: 'מוסד בדוי' }, { complete: true }));
+  }
+  invalid(() => C.validatePartner({ ...profile, applicantType: 'other' }));
+  invalid(() => C.validateRecord('application', { ...individual, applicantType: 'other' }));
 });
 
 test('contribution registry has exactly eight categories and seven statuses and keeps requested/agreed terms distinct', () => {

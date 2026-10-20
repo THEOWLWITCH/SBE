@@ -11,7 +11,7 @@
     }
     return value;
   }
-  const VERSIONS = { api: '1.0.0', schema: 1, agreement: '1.0.0' };
+  const VERSIONS = { api: '1.1.0', schema: 2, agreement: '1.0.0' };
   const PERMISSIONS = {
     view_approved_findings: 'צפייה בממצאים מאושרים', download_approved_findings: 'הורדת ממצאים מאושרים',
     propose_analysis: 'הצעת ניתוח', view_analysis_results: 'צפייה בתוצאות ניתוח מאושרות',
@@ -74,7 +74,7 @@
   const money = (id, label, options) => field(id, label, 'money', { category: 'financial', ...options });
   const choice = (id, label, choices, options) => field(id, label, 'enum', { choices, ...options });
   const expenseFields = [text('description', 'תיאור', { required: true }), money('amount', 'סכום', { required: true }), choice('party', 'הצד האחראי', PARTIES, { required: true }), date('dueDate', 'מועד תשלום', { category: 'deadline' }), text('terms', 'תנאים', { category: 'obligations' }), reference('contributionId', 'תרומה קשורה', 'contribution')];
-  const PARTNER_FIELDS = [text('fullName', 'שם מלא', { required: true }), field('email', 'דוא״ל', 'email', { required: true }), text('institution', 'מוסד', { required: true }), text('department', 'מחלקה'), text('position', 'תפקיד'), text('phone', 'טלפון'), text('profileNotes', 'פרטים מקצועיים'), tags('researchInterests', 'תחומי מחקר')];
+  const PARTNER_FIELDS = [text('fullName', 'שם מלא', { required: true }), field('email', 'דוא״ל', 'email', { required: true }), choice('applicantType', 'סוג הפונה', { individual: 'אדם פרטי', institution: 'מוסד' }), text('institution', 'מוסד', { required: true, requiredUnless: { field: 'applicantType', equals: 'individual' } }), text('department', 'מחלקה'), text('position', 'תפקיד'), text('phone', 'טלפון'), text('profileNotes', 'פרטים מקצועיים'), tags('researchInterests', 'תחומי מחקר')];
   const APPROVED_TERMS_FIELDS = [text('recognition', 'הכרה מוסכמת'), money('compensation', 'תמורה מוצעת לאישור'), choice('currency', 'מטבע', CURRENCIES), text('usage', 'שימוש מוסכם', { category: 'access' }), text('ip', 'תנאי קניין רוחני מוצעים', { category: 'IP' }), text('ownerObligations', 'התחייבויות מוצעות לבעלת המערכת', { category: 'obligations' }), text('partnerObligations', 'התחייבויות מוצעות לחוקרת', { category: 'obligations' }), date('deadline', 'מועד', { category: 'deadline' }), documents()];
   const RECORD_SCHEMAS = {
     application: { label: RECORD_KINDS.application, fields: [title(), choice('applicationType', 'סוג הבקשה', { partnership: 'שותפות', study: 'מחקר', access: 'גישה' }, { required: true }), ...PARTNER_FIELDS,
@@ -118,6 +118,7 @@
   function invalid() { throw safeError('invalid'); }
   function object(value) { return value !== null && typeof value === 'object' && !Array.isArray(value) && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null); }
   function empty(value) { return value === undefined || value === null || value === '' || (typeof value === 'string' && !value.trim()) || (Array.isArray(value) && value.length === 0); }
+  function required(definition, data) { return definition.required && !(definition.requiredUnless && data[definition.requiredUnless.field] === definition.requiredUnless.equals); }
   function validDate(value) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
     const parsed = new Date(value + 'T00:00:00.000Z');
@@ -155,7 +156,7 @@
     const result = {};
     for (const definition of fields) {
       if (own(data, definition.id)) result[definition.id] = validateValue(definition, data[definition.id], complete);
-      if (complete && definition.required && empty(result[definition.id])) invalid();
+      if (complete && required(definition, data) && empty(result[definition.id])) invalid();
     }
     return result;
   }
@@ -163,7 +164,7 @@
   function missingFields(kind, data, requiredIds = []) {
     const definitions = schema(kind).fields;
     const checked = validateFields(definitions, data, false);
-    const ids = new Set(definitions.filter(f => f.required).map(f => f.id));
+    const ids = new Set(definitions.filter(f => required(f, checked)).map(f => f.id));
     if (kind === 'analysis_request' && checked.operation === 'comparison') ids.add('groupingVariable');
     for (const id of requiredIds) { if (!definitions.some(f => f.id === id)) invalid(); ids.add(id); }
     const missing = [];

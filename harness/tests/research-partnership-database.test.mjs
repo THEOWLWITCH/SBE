@@ -160,6 +160,32 @@ test('partner profiles infer self identity and private immutable record versions
   } finally { await f.close(); }
 });
 
+test('SQL profile and complete application validation matches individual, institution and legacy conditional requirements', async () => {
+ const f=await createPartnershipDatabase();try{
+  const contract=(await f.db.query('SELECT research_private.partnership_contract() c')).rows[0].c;
+  assert.deepEqual(contract.partner,CORE.PARTNER_FIELDS);
+  assert.deepEqual(contract.schemas.application,CORE.RECORD_SCHEMAS.application);
+  const individual={applicantType:'individual',fullName:'Synthetic Individual',email:'individual@example.invalid'};
+  const created=await ok(f.partnershipRpc,TOKENS.a,'partnerSave',request({expectedRevision:null,profile:individual}));
+  assert.deepEqual(created.partner.profile,individual);
+  assert.deepEqual(contract.versions,CORE.VERSIONS);
+  await f.db.query("SELECT research_private.partnership_fields(research_private.partnership_contract()->'partner',$1::jsonb,NULL,NULL,true)",[individual]);
+  for(const applicantType of ['institution',undefined]){
+   const profile={...individual};if(applicantType)profile.applicantType=applicantType;else delete profile.applicantType;
+   await assert.rejects(f.db.query("SELECT research_private.partnership_fields(research_private.partnership_contract()->'partner',$1::jsonb,NULL,NULL,true)",[profile]),error=>error.message==='invalid');
+   await f.db.query("SELECT research_private.partnership_fields(research_private.partnership_contract()->'partner',$1::jsonb,NULL,NULL,true)",[{...profile,institution:'Synthetic'}]);
+  }
+  const complete={...individual,title:'Synthetic proposal',applicationType:'partnership',objectives:'Synthetic',researchQuestions:['Synthetic?'],method:'Synthetic',population:'Synthetic',requestedTools:['communication'],startDate:'2026-11-01',endDate:'2026-12-01',ethicsStatus:'pending',ethicsDetails:'Synthetic',consentPlan:'Synthetic',requestedPermissions:['view_study']};
+  await f.db.query("SELECT research_private.partnership_validate('application',$1::jsonb,NULL,NULL,true)",[complete]);
+  for(const applicantType of ['institution',undefined]){
+   const data={...complete};if(applicantType)data.applicantType=applicantType;else delete data.applicantType;
+   await assert.rejects(f.db.query("SELECT research_private.partnership_validate('application',$1::jsonb,NULL,NULL,true)",[data]),error=>error.message==='invalid');
+   await f.db.query("SELECT research_private.partnership_validate('application',$1::jsonb,NULL,NULL,true)",[{...data,institution:'Synthetic'}]);
+  }
+  await assert.rejects(f.db.query("SELECT research_private.partnership_validate('application',$1::jsonb,NULL,NULL,true)",[{...complete,owner:true}]),error=>error.message==='invalid');
+ }finally{await f.close();}
+});
+
 test('same-study researchers cannot discover folders, metadata, counts, nested references or history; CAS and receipts are exact',async()=>{
  const f=await createPartnershipDatabase();try{
  const {a,b,s}=await setup(f),data={title:'Private Shoshi proposal',category:'scientific',description:'Synthetic requested work',requestedCompensation:'125.25',currency:'ILS'};
