@@ -36,7 +36,6 @@ DECLARE p research_private.processing_policies;BEGIN
  IF p.id IS DISTINCT FROM i.processing_policy_id OR i.parties_hash IS DISTINCT FROM research_private.signing_parties_hash(i.study_id,i.partner_id,i.version_id) THEN PERFORM research_private.fail('conflict');END IF;
  PERFORM pg_catalog.set_config('research.signing','true',true);
 END $f$;
--- Preserve U5 reserve semantics, selecting the exact pre-signing route head.
 CREATE OR REPLACE FUNCTION research_private.partnership_dispatch(p_token text,p_action text,p_payload jsonb) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $f$
 #variable_conflict use_variable
 DECLARE i research_private.signing_intents;p research_private.processing_policies;r research_private.partnership_records;sg research_private.partnership_signings;a jsonb;result jsonb;preflight jsonb;claimed boolean:=false;next_state text;sid uuid;pid uuid;BEGIN
