@@ -63,9 +63,10 @@
       let made = null;
       if (opt.create) {
         go.disabled = true; const label = go.textContent; go.textContent = 'מכינים את הקישורים…';
-        try { made = await opt.create(list); } catch (e) { made = null; }
+        let why = '';
+        try { made = await opt.create(list); } catch (e) { made = null; why = String((e && (e.status || e.message)) || ''); }
         go.disabled = false; go.textContent = label;
-        if (!Array.isArray(made) || made.length !== list.length) { made = null; out.append(el('p', { class: 'note' }, 'לא הצלחנו להכין קישורים קצרים כרגע. אלה קישורים ארוכים, והם עובדים באותה דרך. אפשר לנסות שוב בעוד רגע.')); }
+        if (!Array.isArray(made) || made.length !== list.length) { made = null; out.append(el('p', { class: 'note' }, 'לא הצלחנו להכין קישורים קצרים כרגע. אלה קישורים ארוכים, והם עובדים באותה דרך. אפשר לנסות שוב בעוד רגע.' + (why ? ' (' + why.slice(0, 60) + ')' : ''))); }
       }
       list.forEach((o, i) => {
         const n = o.to, url = made ? SHORT + made[i].id : link(o);

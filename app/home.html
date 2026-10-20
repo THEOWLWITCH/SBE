@@ -228,7 +228,7 @@ async function api(action, extra = {}) {
     box.append(el("h3", { class: "rgroup" }, "📚 לעיון"), g);
   }
   if (window.SBE_GIFT) window.SBE_GIFT.mount(box, { from: ss("sbe.session.name") || "",
-    create: async (gifts) => { const d = await api("giftCreate", { gifts }); if (d._status !== 200) throw new Error(d.error || "error"); return d.gifts; },
+    create: async (gifts) => { const d = await api("giftCreate", { gifts }); if (d._status !== 200) throw new Error(d._status + " " + (d.error || "")); return d.gifts; },
     remove: async (id, key) => { const d = await api("giftDelete", { id, key }); if (d._status !== 200) throw new Error(d.error || "error"); } });
 }
 
