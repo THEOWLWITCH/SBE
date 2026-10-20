@@ -10,6 +10,38 @@ async function ok(rpc, credential, action, payload = {}) {
   return result;
 }
 const sha = x => createHash('sha256').update(x).digest('hex');
+
+test('actual SQL V4 vocabulary and conditional annex completion match the core without changing legacy drafts',async()=>{
+ const f=await createPartnershipDatabase();try{
+  const contract=(await f.db.query('SELECT research_private.partnership_contract() c')).rows[0].c;
+  assert.deepEqual(contract.versions,CORE.VERSIONS);
+  assert.deepEqual(contract.schemas,CORE.RECORD_SCHEMAS);
+  assert.deepEqual(contract.guidedAgreement,CORE.GUIDED_AGREEMENT);
+  const fields=CORE.RECORD_SCHEMAS.agreement.fields.filter(x=>['guidedVersion','ownerRegistration',...CORE.GUIDED_AGREEMENT.annexes.flatMap(a=>[a.statusField,a.reasonField,a.rowsField])].includes(x.id));
+  const check=d=>f.db.query('SELECT research_private.partnership_fields($1::jsonb,$2::jsonb,NULL,NULL,true)',[fields,d]);
+  await check({});
+  await assert.rejects(check({guidedVersion:'4'}),/invalid/);
+  const complete={guidedVersion:'4',ownerRegistration:'Synthetic registration'};
+  for(const annex of CORE.GUIDED_AGREEMENT.annexes){complete[annex.statusField]='not_applicable';complete[annex.reasonField]='לא חל במחקר בדוי';}
+  await check(complete);
+  for(const annex of CORE.GUIDED_AGREEMENT.annexes){
+   const missing={...complete};delete missing[annex.reasonField];await assert.rejects(check(missing),/invalid/);
+   await assert.rejects(check({...complete,[annex.statusField]:'applicable'}),/invalid/);
+   await assert.rejects(check({...complete,[annex.statusField]:'applicable',[annex.rowsField]:[{}]}),/invalid/);
+   await assert.rejects(check({[annex.statusField]:'applicable'}),/invalid/,'annex content required even without guidedVersion');
+  }
+  await assert.rejects(check({annexA:[{startDate:'2026-12-01',endDate:'2026-11-01'}]}),/invalid/);
+  await assert.rejects(check({annexC:[{estimatedAmount:'1.001'}]}),/invalid/);
+  const costFields=CORE.RECORD_SCHEMAS.agreement.fields.find(f=>f.id==='annexC').fields;
+  const operating=Object.fromEntries(costFields.filter(f=>f.required&&!f.requiredWhen).map(f=>[f.id,f.type==='money'?'0.00':f.type==='enum'?Object.keys(f.choices)[0]:'Synthetic decision']));
+  await check({...complete,annexCStatus:'applicable',annexC:[operating]});
+  const service={...operating,kind:'service'};
+  await assert.rejects(check({...complete,annexCStatus:'applicable',annexC:[service]}),/invalid/);
+  for(const def of costFields.filter(f=>f.requiredWhen))service[def.id]=def.type==='money'?'0.00':def.type==='enum'?'unpaid':'Synthetic decision';
+  await check({...complete,annexCStatus:'applicable',annexC:[service]});
+  for(const field of ['provider','serviceRecipient','deliverable','serviceAmount','estimatedAmount','approvedCap','ownerShare','partnerShare','acceptance']){const row={...service};delete row[field];await assert.rejects(check({...complete,annexCStatus:'applicable',annexC:[row]}),/invalid/);}
+ }finally{await f.close();}
+});
 const cipher = {v:1,iv:'AAAAAAAAAAAAAAAA',tag:'AAAAAAAAAAAAAAAAAAAAAA==',data:'c3ludGhldGlj'};
 const profile = fullName => ({fullName,email:fullName.toLowerCase()+'@example.invalid',institution:'Synthetic'});
 async function setup(f) {

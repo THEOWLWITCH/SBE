@@ -10,6 +10,7 @@ import { createModelLimits } from '../lib/model-limits.mjs';
 import { accessFixture } from '../fixtures/research-scenarios.mjs';
 import { once } from 'node:events';
 import { randomUUID } from 'node:crypto';
+import PARTNERSHIP_CORE from '../../app/lib/research-partnership-core.js';
 
 const version = record => createHash('sha256').update(record.salt + ':' + record.hash).digest('hex');
 
@@ -49,10 +50,15 @@ test('research authentication survives the complete hardened release migration o
     assert.equal((await db.query("SELECT count(*)::int n FROM pg_policy WHERE polname='synthetic_existing_auth_policy'")).rows[0].n, 1);
     await db.exec('DROP POLICY synthetic_existing_auth_policy ON public.access_settings');
     await db.exec(boundary);
-    for (const migration of ['20261020-partnership-profile.sql', '20261020-partnership-intake.sql']) {
+    for (const migration of ['20261020-partnership-profile.sql', '20261020-partnership-intake.sql', '20261020-guided-agreement-contract.sql']) {
       await db.exec(await readFile(new URL('../migrations/' + migration, import.meta.url), 'utf8'));
     }
     assert.deepEqual((await db.query("SELECT current_user,rolsuper,rolbypassrls FROM pg_roles WHERE rolname=current_user")).rows[0], { current_user: 'migration_operator', rolsuper: false, rolbypassrls: false });
+    const partnershipContract=(await db.query('SELECT research_private.partnership_contract() c')).rows[0].c;
+    assert.deepEqual(partnershipContract.schemas,PARTNERSHIP_CORE.RECORD_SCHEMAS);
+    assert.deepEqual(partnershipContract.operations,PARTNERSHIP_CORE.OPERATIONS);
+    assert.deepEqual(partnershipContract.versions,PARTNERSHIP_CORE.VERSIONS);
+    assert.deepEqual(partnershipContract.guidedAgreement,PARTNERSHIP_CORE.GUIDED_AGREEMENT);
     assert.equal((await db.query("SELECT has_schema_privilege('research_worker','research_private','CREATE') AS allowed")).rows[0].allowed, false);
 
     assert.equal((await rpc(TOKENS.owner, 'bootstrap')).owner, true, 'owner authentication must work after storage RLS hardening');

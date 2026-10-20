@@ -2,12 +2,95 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import vm from 'node:vm';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 
 const require = createRequire(import.meta.url);
 const C = require('../../app/lib/research-partnership-core.js');
 const id = '11111111-1111-4111-8111-111111111111';
 const invalid = fn => assert.throws(fn, error => error.code === 'invalid' && error.message === 'invalid' && !error.message.includes('PRIVATE'));
+
+test('private V4 catalog covers the supplied source and each body placeholder once', () => {
+  const catalog = JSON.parse(readFileSync(new URL('../content/research-agreement-guidance-v4.json', import.meta.url)));
+  const source = catalog.sourceDocument;
+  // Independent constants captured from the complete supplied unsigned source, not generated from the catalog.
+  assert.equal(catalog.source.sha256,'73a22c07e4df4cdac9560b95a77d6284d389e21aebcdacd64acc5e24a4c325ad');
+  assert.equal(createHash('sha256').update(JSON.stringify(source)).digest('hex'),'2688c94d99c624afb469b678e76fce3d2b8a35f49de97e678f4f619fa98ef0ac');
+  const supplied = new URL('../../../../outputs/agreement-guided-v4/content.json', import.meta.url);
+  if(existsSync(supplied)) assert.equal(createHash('sha256').update(readFileSync(supplied)).digest('hex'),catalog.source.sha256);
+  assert.deepEqual(catalog.sections.map(s => s.id), C.AGREEMENT_SECTIONS.map(s => s.id));
+  const actual = source.sections.flatMap((s, si) => s.paragraphs.flatMap((p, pi) => [...p.matchAll(/\[להשלמה[^\]]*\]/g)].map((m, oi) => ({sectionId:C.AGREEMENT_SECTIONS[si].id, paragraphIndex:pi, occurrence:oi, marker:m[0]}))));
+  assert.equal(actual.length, 19);
+  assert.deepEqual(catalog.bodyPlaceholders.map(({fieldId,fieldIds,...location})=>location),actual);
+  const paths = new Set(C.RECORD_SCHEMAS.agreement.fields.flatMap(f => [f.id,...(f.fields||[]).map(n=>f.id+'[].'+n.id)]));
+  for(const marker of catalog.bodyPlaceholders) {assert.ok(paths.has(marker.fieldId),marker.fieldId);assert.ok(marker.fieldIds.includes(marker.fieldId));for(const component of marker.fieldIds)assert.ok(paths.has(component),component);}
+  assert.deepEqual(catalog.bodyPlaceholders.find(m=>m.fieldId==='leadResearcher').fieldIds,['leadResearcher','leadResearcherRole','leadResearcherInstitution']);
+  for(const [si, section] of source.sections.entries()) for(const kind of ['complete','guidance']) for(const [index,text] of section[kind].entries()) {
+    const mapped = catalog.decisions.filter(d=>d.sectionId===C.AGREEMENT_SECTIONS[si].id&&d.kind===kind&&d.index===index);
+    assert.equal(mapped.length,1); assert.equal(mapped[0].text,text); assert.ok(mapped[0].fieldPaths.length);
+    for(const path of mapped[0].fieldPaths) assert.ok(paths.has(path),path);
+  }
+  assert.deepEqual(catalog.checklist.map(c=>c.text),source.completionChecklist);
+  for(const item of catalog.checklist) {assert.ok(item.fieldPaths.length);for(const path of item.fieldPaths)assert.ok(paths.has(path),path);}
+  assert.deepEqual(catalog.sections[7].paragraphs.slice(0,2).map(p=>p.text),source.sections[7].paragraphs.slice(0,2));
+  assert.deepEqual(catalog.sections.flatMap(s=>s.paragraphs).filter(p=>p.status==='owner_approved').map(p=>p.text),source.sections[7].paragraphs.slice(0,2));
+  assert.doesNotThrow(()=>C.validateRecord('agreement_template',catalog.templateData,{complete:true}));
+  assert.doesNotMatch(catalog.templateData.sectionClauses.map(c=>c.text).join('\n'),/\[להשלמה|השלמה מוצעת|מבנה נספחים מוצע|21 ימי עסקים|30 ימים|זו אפשרות לדיון|זו רשימת מסמכים להכנה/);
+  assert.doesNotMatch(readFileSync(new URL('../../app/lib/research-partnership-core.js',import.meta.url),'utf8'),new RegExp(source.sections[7].paragraphs[0]));
+});
+
+test('professional service annex rows require provider, separate recipient, output, price and acceptance decisions',()=>{
+ const fields=C.RECORD_SCHEMAS.agreement.fields.find(f=>f.id==='annexC').fields;
+ const operating=Object.fromEntries(fields.filter(f=>f.required&&!f.requiredWhen).map(f=>[f.id,f.type==='money'?'0.00':f.type==='enum'?Object.keys(f.choices)[0]:'החלטה בדויה']));
+ const agreement={title:'בדוי',ownerName:'בדויה',partnerName:'בדויה',studyTitle:'בדוי',purpose:'בדוי',effectiveDate:'2026-11-01',templateVersionId:id,ipExplanationVersionId:id,annexCStatus:'applicable',annexC:[operating]};
+ assert.doesNotThrow(()=>C.validateRecord('agreement',agreement,{complete:true}));
+ const service={...operating,kind:'service'};
+ for(const field of ['provider','serviceRecipient','deliverable','pricingMethod','serviceAmount','hourCap','acceptance','credit'])assert.ok(C.missingFields('agreement',{annexC:[service]}).includes('annexC[0].'+field));
+ invalid(()=>C.validateRecord('agreement',{...agreement,annexC:[service]},{complete:true}));
+ for(const f of fields.filter(f=>f.requiredWhen))service[f.id]=f.type==='money'?'0.00':f.type==='enum'?'unpaid':'החלטה בדויה';
+ assert.doesNotThrow(()=>C.validateRecord('agreement',{...agreement,annexC:[service]},{complete:true}));
+ for(const field of ['estimatedAmount','approvedCap','ownerShare','partnerShare']){const row={...service};delete row[field];invalid(()=>C.validateRecord('agreement',{...agreement,annexC:[row]},{complete:true}));}
+});
+
+test('each guided field group renders in its own section without editor guidance or numeric defaults',()=>{
+ const catalog=JSON.parse(readFileSync(new URL('../content/research-agreement-guidance-v4.json',import.meta.url)));
+ const sample=f=>({text:'ערך בדוי '+f.id,email:'synthetic@example.invalid',date:'2026-11-01',id,type:null}[f.type] ?? (f.type==='enum'?Object.keys(f.choices)[0]:f.type==='integer'?7:f.type==='money'?'12.34':f.type==='boolean'?true:f.type==='tags'?[f.itemType==='id'?id:f.choices?f.choices[0]:'ערך בדוי']:f.type==='rows'?[Object.fromEntries(f.fields.map(n=>[n.id,sample(n)]))]:undefined));
+ for(const definition of C.RECORD_SCHEMAS.agreement.fields){
+  const value=sample(definition);
+  const rendered=C.renderAgreement({[definition.id]:value},catalog.templateData);
+  const ownSection=rendered.sections.find(s=>s.id===definition.section);
+  assert.ok(ownSection.fields.some(f=>f.id===definition.id),definition.id);
+ }
+ const rendered=C.renderAgreement({},catalog.templateData);
+ assert.doesNotMatch(rendered.text,/30 ימים|21 ימי עסקים|זו אפשרות לדיון|כיוון לדיון|\[להשלמה/);
+ assert.equal(rendered.text.split(catalog.sourceDocument.sections[7].paragraphs[0]).length-1,1);
+ assert.equal(rendered.text.split(catalog.sourceDocument.sections[7].paragraphs[1]).length-1,1);
+ const data={guidedVersion:'4'};
+ for(const annex of C.GUIDED_AGREEMENT.annexes){data[annex.statusField]='not_applicable';data[annex.reasonField]='לא חל במחקר בדוי';}
+ const withoutVersion={...data};delete withoutVersion.guidedVersion;
+ assert.ok(C.renderAgreement(withoutVersion,catalog.templateData).missingFields.includes('guidedVersion'));
+ invalid(()=>C.validateRecord('agreement',{guidedVersion:'3'}));
+});
+
+test('V4 annex applicability has typed content or a reason, while legacy drafts remain readable',()=>{
+  assert.equal(C.GUIDED_AGREEMENT.version,'4');
+  assert.equal(C.GUIDED_AGREEMENT.annexes.length,6);
+  assert.ok(C.missingFields('agreement',{guidedVersion:'4'}).includes('ownerRegistration'));
+  for(const annex of C.GUIDED_AGREEMENT.annexes){
+    assert.ok(C.missingFields('agreement',{guidedVersion:'4'}).includes(annex.statusField));
+    assert.ok(C.missingFields('agreement',{guidedVersion:'4',[annex.statusField]:'applicable'}).includes(annex.rowsField));
+    assert.ok(C.missingFields('agreement',{guidedVersion:'4',[annex.statusField]:'not_applicable'}).includes(annex.reasonField));
+    assert.equal(C.missingFields('agreement',{guidedVersion:'4',[annex.statusField]:'not_applicable',[annex.reasonField]:'לא חל במחקר הבדוי'}).includes(annex.reasonField),false);
+    const def=C.RECORD_SCHEMAS.agreement.fields.find(f=>f.id===annex.rowsField);
+    const missing=C.missingFields('agreement',{guidedVersion:'4',[annex.statusField]:'applicable',[annex.rowsField]:[{}]});
+    for(const nested of def.fields.filter(f=>f.required&&!f.requiredWhen)) assert.ok(missing.includes(annex.rowsField+'[0].'+nested.id));
+    invalid(()=>C.validateRecord('agreement',{[annex.rowsField]:[{PRIVATE:'sentinel'}]}));
+  }
+  invalid(()=>C.validateRecord('agreement',{annexC:[{estimatedAmount:'1.001'}]}));
+  invalid(()=>C.validateRecord('agreement',{annexA:[{startDate:'2026-02-30'}]}));
+  invalid(()=>C.validateRecord('agreement',{annexA:[{startDate:'2026-12-01',endDate:'2026-11-01'}]}));
+  assert.doesNotThrow(()=>C.validateRecord('agreement',{title:'גרסה קודמת'}));
+});
 
 test('owner release of approved contributions and analysis results has explicit version viewer and download scopes', () => {
   assert.equal(C.OPERATIONS.recordReview.request.viewerPartnerIds, 'uuid[]? analysis_result publication or approved contribution only');
@@ -35,7 +118,7 @@ test('partnership vocabulary is a deeply frozen browser/CommonJS contract with n
   assert.ok(Object.isFrozen(C.OPERATIONS.recordSave.request));
   const context = {};
   vm.runInNewContext(readFileSync(new URL('../../app/lib/research-partnership-core.js',import.meta.url),'utf8'),context);
-  assert.equal(context.SBE_RESEARCH_PARTNERSHIPS.VERSIONS.schema,2);
+  assert.equal(context.SBE_RESEARCH_PARTNERSHIPS.VERSIONS.schema,3);
   assert.equal(context.SBE_RESEARCH_PARTNERSHIPS.CLIENT_ACTIONS.length,26);
 });
 
