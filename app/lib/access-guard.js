@@ -164,21 +164,36 @@
       t.style.cssText = "width:7.5em;direction:" + t.dir + ";text-align:right";
       var cal = document.createElement("button"); cal.type = "button"; cal.textContent = "📅"; cal.title = "לוח שנה"; cal.setAttribute("aria-label", "פתיחת לוח שנה");
       cal.style.cssText = "font:inherit;border:1px solid #CDD3D8;border-radius:6px;background:transparent;cursor:pointer;padding:.2rem .4rem;margin-inline-start:.25rem";
-      var sync = function(){ t.value = window.sbeDateIL(desc.get.call(inp)); t.style.borderColor = ""; };
+      var message = "כדי לשמור, אפשר לכתוב תאריך תקין כמו 25.10.26";
+      var validity = function(valid){ t.setCustomValidity(valid ? "" : message); inp.setCustomValidity(valid ? "" : message); t.setAttribute("aria-invalid", String(!valid)); t.style.borderColor = valid ? "" : "#B3261E"; t.title = valid ? "" : message; return valid; };
+      var sync = function(){ t.value = window.sbeDateIL(desc.get.call(inp)); validity(true); };
+      var locked = function(){ return inp.disabled || inp.readOnly; };
+      var syncLock = function(){ t.disabled = inp.disabled; t.readOnly = inp.readOnly; cal.disabled = locked(); };
       Object.defineProperty(inp, "value", { configurable: true, get: function(){ return desc.get.call(this); }, set: function(v){ desc.set.call(this, v); sync(); } });
       inp.style.cssText += ";position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;border:0;padding:0";
       inp.tabIndex = -1; inp.setAttribute("aria-hidden", "true");
       inp.parentNode.insertBefore(t, inp); inp.parentNode.insertBefore(cal, inp.nextSibling);
       inp.addEventListener("change", sync);
-      cal.addEventListener("click", function(){ try { if (inp.showPicker) { inp.style.pointerEvents = "auto"; inp.showPicker(); inp.style.pointerEvents = "none"; return; } } catch(e){} t.focus(); });
-      t.addEventListener("change", function(){
-        var v = t.value.trim();
-        if (!v) { desc.set.call(inp, ""); inp.dispatchEvent(new Event("change", { bubbles: true })); return; }
-        var iso = parseIL(v);
-        if (!iso) { t.style.borderColor = "#B3261E"; t.title = "כדי לשמור, אפשר לכתוב תאריך כמו 25.10.26"; return; }
-        desc.set.call(inp, iso); sync(); inp.dispatchEvent(new Event("input", { bubbles: true })); inp.dispatchEvent(new Event("change", { bubbles: true }));
-      });
-      sync();
+      cal.addEventListener("click", function(){ if (locked()) return; try { if (inp.showPicker) { inp.style.pointerEvents = "auto"; inp.showPicker(); inp.style.pointerEvents = "none"; return; } } catch(e){} t.focus(); });
+      var typed = function(commit){
+        if (locked()) { sync(); return; }
+        var v = t.value.trim(), iso = v ? parseIL(v) : "", valid = !v || !!iso;
+        validity(valid);
+        // Invalid visible text stays a local draft; keep the last ISO but notify dirty/validation listeners.
+        if (valid) { desc.set.call(inp, iso); if (commit) sync(); }
+        inp.dispatchEvent(new Event("input", { bubbles: true }));
+        if (valid && commit) inp.dispatchEvent(new Event("change", { bubbles: true }));
+      };
+      t.addEventListener("input", function(){ typed(false); });
+      t.addEventListener("change", function(){ typed(true); });
+      inp._sbeDateIL = {
+        check: function(focus){ var valid = validity(!t.value.trim() || !!parseIL(t.value)); if (!valid && focus) { for (var n = t.parentElement; n; n = n.parentElement) if (n.tagName === "DETAILS") n.open = true; t.focus(); } return valid; },
+        draft: function(){ return t.validity.valid ? null : t.value; },
+        restore: function(raw){ if (locked() || typeof raw !== "string") return; t.value = raw; validity(!raw.trim() || !!parseIL(raw)); }
+      };
+      sync(); syncLock();
+      if (typeof inp._sbeDateDraft === "string") { inp._sbeDateIL.restore(inp._sbeDateDraft); delete inp._sbeDateDraft; }
+      new MutationObserver(syncLock).observe(inp, {attributes:true, attributeFilter:["disabled", "readonly"]});
     };
     var scanDates = function(){ [].forEach.call(document.querySelectorAll('input[type="date"]:not([data-il])'), dateIL); };
     var dPending = 0;

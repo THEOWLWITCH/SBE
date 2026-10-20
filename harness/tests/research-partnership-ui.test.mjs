@@ -75,6 +75,21 @@ function guidedSetup(owner=true){
  return {...s,sources,preparation,current:()=>current};
 }
 
+test('invalid visible date blocks unchanged save, navigation and exact-version approval without putting raw text in API data',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),page=UI.mount(s);s.current().record.status='approved';await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();
+ const date=field(s.root,'תחילת המחקר');let focused=0;date.value='2026-11-12';date._sbeDateIL={check:focus=>{if(focus)focused++;return false;},draft:()=> '31.02.26'};
+ await date.listeners.input();await btn(s.root,'שמירת טיוטה').click();await btn(s.root,'חזרה לתיק החוקרת').click();
+ field(s.root,'קראתי את הסבר הקניין הרוחני של גרסה זו').checked=true;const approve=btn(s.root,'אישור הגרסה הסופית');approve.disabled=false;await approve.click();
+ assert.equal(s.calls.some(([a])=>['recordSave','agreementApprove'].includes(a)),false);assert.ok(field(s.root,'תחילת המחקר'));assert.ok(focused>=3);assert.match(s.root.textContent,/לתקן את התאריך/);
+ const captured=page.capture();assert.equal(captured.editor.dateDraft.startDate,'31.02.26');assert.equal(captured.editor.data.startDate,'2026-11-12');assert.equal(JSON.stringify(captured.editor.data).includes('31.02.26'),false);page.clear();
+});
+
+test('raw invalid date draft restores only at the freshly authorized exact record revision and is dropped for a newer head',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();
+ const date=field(s.root,'תחילת המחקר');date._sbeDateIL={check:()=>false,draft:()=> '31.02.26'};await date.listeners.input();const captured=page.capture();
+ await page.load(captured);assert.equal(field(s.root,'תחילת המחקר')._sbeDateDraft,'31.02.26');s.current().record.revision++;await page.load(captured);assert.equal(field(s.root,'תחילת המחקר'),undefined);assert.match(s.root.textContent,/התיק של/);page.clear();
+});
+
 test('guided live preview is a collapsed disclosure that refreshes without hiding completion progress',async()=>{
  const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();
  const preview=walk(s.root).find(n=>n.tagName==='details'&&n.children[0]?.textContent==='תצוגת נוסח ההסכם');assert.ok(preview);assert.notEqual(preview.open,true);assert.match(s.root.textContent,/להשלמת ההגשה נותרו/);

@@ -30,11 +30,16 @@ test('actual SQL V4 vocabulary and conditional annex completion match the core w
    await assert.rejects(check({...complete,[annex.statusField]:'applicable',[annex.rowsField]:[{}]}),/invalid/);
    await assert.rejects(check({[annex.statusField]:'applicable'}),/invalid/,'annex content required even without guidedVersion');
   }
-  await assert.rejects(check({annexA:[{startDate:'2026-12-01',endDate:'2026-11-01'}]}),/invalid/);
-  await assert.rejects(check({annexC:[{estimatedAmount:'1.001'}]}),/invalid/);
+  const studyFields=CORE.RECORD_SCHEMAS.agreement.fields.find(f=>f.id==='annexA').fields;
+  const studyRow=Object.fromEntries(studyFields.filter(f=>f.required).map(f=>[f.id,f.type==='date'?(f.id==='startDate'?'2026-11-01':'2026-12-01'):f.type==='integer'?0:'Synthetic study decision']));
+  const completeStudy={...complete,annexAStatus:'applicable',annexA:[studyRow]};
+  await check(completeStudy);
+  await assert.rejects(check({...completeStudy,annexA:[{...studyRow,endDate:'2026-10-31'}]}),/invalid/,'only the valid end date is changed to precede the start');
+  await assert.rejects(check({...completeStudy,annexA:[{...studyRow,startDate:'2026-02-30'}]}),/date\/time field value out of range/,'only the start date is changed to an impossible calendar date at the private SQL validator');
   const costFields=CORE.RECORD_SCHEMAS.agreement.fields.find(f=>f.id==='annexC').fields;
   const operating=Object.fromEntries(costFields.filter(f=>f.required&&!f.requiredWhen).map(f=>[f.id,f.type==='money'?'0.00':f.type==='enum'?Object.keys(f.choices)[0]:'Synthetic decision']));
   await check({...complete,annexCStatus:'applicable',annexC:[operating]});
+  await assert.rejects(check({...complete,annexCStatus:'applicable',annexC:[{...operating,estimatedAmount:'1.001'}]}),/invalid/,'only money precision changes from an accepted complete row');
   const service={...operating,kind:'service'};
   await assert.rejects(check({...complete,annexCStatus:'applicable',annexC:[service]}),/invalid/);
   for(const def of costFields.filter(f=>f.requiredWhen))service[def.id]=def.type==='money'?'0.00':def.type==='enum'?'unpaid':'Synthetic decision';
