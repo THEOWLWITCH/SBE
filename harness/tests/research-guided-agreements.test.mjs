@@ -52,6 +52,8 @@ test('guided SQL: source receipts and refresh preserve explicit empty overrides 
   const saved=await ok(f,'recordSave',request({...rs,kind:'agreement',expectedRevision:p.record.revision,data:{...p.version.data,objectives:'',requestedPermissions:[]}}),TOKENS.a);
   const profile=approved.partner;await ok(f,'partnerSave',request({partnerId:profile.id,expectedRevision:profile.revision,profile:{...profile.profile,fullName:'Synthetic updated researcher'}}));
   const preview=(await ok(f,'agreementRefreshPreview',{...rs,versionId:saved.version.id},TOKENS.a)).preview;
+  assert.equal(preview.preparation.versionId,saved.version.id,'the shared view contains the actual saved provenance receipt');
+  assert.equal(preview.preparation.fieldSources.objectives.versionId,p.preparation.fieldSources.objectives.versionId);
   assert.equal(preview.changes.find(c=>c.field==='objectives').overridden,true);assert.equal(preview.changes.find(c=>c.field==='requestedPermissions').overridden,true);
   assert.equal(preview.changes.find(c=>c.field==='leadResearcher').proposed,'Synthetic updated researcher');
   const apply=request({...rs,versionId:saved.version.id,expectedRevision:saved.record.revision,previewHash:preview.hash,replaceFields:['leadResearcher']});
@@ -76,7 +78,7 @@ test('guided SQL: private processing policy needs independent owner revision app
   await f.db.query("UPDATE research_private.memberships SET permissions=ARRAY['view_study','edit_study'] WHERE study_id=$1 AND actor_ref='code:STAFFA'",[scope.studyId]);
   const policy={purpose:'external_impact',provider:'synthetic-provider',providerVersion:'synthetic-v1',dataCategories:['agreement_changes','confidential'],authorizedActors:['sys','code:STAFFA'],...Object.fromEntries(['partyRoles','transferBasis','storageLocation','retention','backups','deletion','withdrawal','securityMeasures','ethicsReference','consentReview'].map(k=>[k,'Synthetic explicit decision '+k]))};
   for(const action of ['processingPolicyGet','processingPolicySave','processingPolicyApprove'])assert.equal((await f.partnershipRpc(TOKENS.a,action,action==='processingPolicyGet'?scope:action==='processingPolicySave'?request({...scope,expectedRevision:0,policy}):request({...scope,expectedRevision:0,policyVersionId:randomUUID(),policyHash:'a'.repeat(64)}))).error,'unauthorized');
-  assert.equal((await ok(f,'processingPolicyGet',scope)).policy,null);
+  const initialPolicy=await ok(f,'processingPolicyGet',scope);assert.equal(initialPolicy.policy,null);assert.deepEqual(initialPolicy.actorChoices,[{id:'sys',label:'בעלת המערכת'},{id:'code:STAFFA',label:'החוקרת בתיק'}]);
   const saved=(await ok(f,'processingPolicySave',request({...scope,expectedRevision:0,policy}))).policy;assert.equal(saved.approved,false);
   const authorize=async(extra={})=>(await f.db.query('SELECT research_private.processing_authorized($1,$2,$3,$4,$5,$6,$7::jsonb) allowed',[TOKENS.a,scope.studyId,scope.partnerId,extra.purpose||policy.purpose,extra.provider||policy.provider,extra.version||policy.providerVersion,extra.categories||['agreement_changes']])).rows[0].allowed;
   assert.equal(await authorize(),false);

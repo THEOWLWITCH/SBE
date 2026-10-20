@@ -18,6 +18,7 @@ const id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 const walk=root=>[root,...root.children.flatMap(walk)];
 const btn=(root,label)=>walk(root).find(n=>n.tagName==='button'&&n.textContent===label);
 const field=(root,label)=>walk(root).find(n=>n.attributes['data-research-field']===label);
+const settle=async()=>{for(let n=0;n<30;n++)await Promise.resolve();};
 function setup(owner=true){const root=new Element(),document={createElement:t=>new Element(t),body:new Element('body')},calls=[];
   const workspace={studyId:id(1),partnerId:id(2),studyTitle:'מחקר א',partnerName:'חוקרת א',pendingCount:2,deadlines:[{title:'השלמת בקשה',dueDate:'2026-11-01'}],records:[]};
   let saved;
@@ -40,7 +41,108 @@ test('legacy institution profiles infer applicant type while an individual profi
   const UI=require('../../app/lib/research-partnership-ui.js'),s=setup(false),page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'בקשה חדשה').click();assert.equal(field(s.root,'סוג הפונה').value,'institution');
   field(s.root,'סוג הפונה').value='individual';await field(s.root,'סוג הפונה').listeners.change();assert.equal(field(s.root,'מוסד').attributes['aria-required'],'false');page.clear();
 });
-test('nested agreement rows are fieldsets and unconfigured signature cannot execute',async()=>{const UI=require('../../app/lib/research-partnership-ui.js');const s=setup();const page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await btn(s.root,'הוספת הוצאות משותפות').click();assert.ok(walk(s.root).some(n=>n.tagName==='fieldset'));assert.ok(field(s.root,'סכום'));assert.match(s.root.textContent,/תבנית מאושרת/);assert.ok(!btn(s.root,'תחילת חתימה'));await btn(s.root,'שמירת טיוטה').click();assert.ok(!s.calls.some(([a])=>a==='signingStart'));});
+test('nested agreement rows are fieldsets and unconfigured signature cannot execute',async()=>{const UI=require('../../app/lib/research-partnership-ui.js');const s=guidedSetup();const page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await btn(s.root,'הוספת הוצאות משותפות').click();assert.ok(walk(s.root).some(n=>n.tagName==='fieldset'));assert.ok(field(s.root,'סכום'));assert.match(s.root.textContent,/תבנית מאושרת/);assert.ok(!btn(s.root,'תחילת חתימה'));await btn(s.root,'שמירת טיוטה').click();assert.ok(!s.calls.some(([a])=>a==='signingStart'));page.clear();});
+
+function guidedSetup(owner=true){
+ const s=setup(owner),original=s.client.call;
+ s.workspace.grantedPermissions=['view_study'];
+ const sources={profile:{id:id(2),revision:1,data:{fullName:'מובילת המחקר'}},study:{id:id(1),revision:2,config:{title:'מחקר א'}},currentGrants:['view_study'],applications:[{recordId:id(20),versionId:id(21),revision:1,data:{title:'בקשת המחקר',requestedTools:['כלי מוצע בלבד']}}],budgets:[],contributions:[],forms:[]};
+ let current={record:{id:id(30),studyId:id(1),partnerId:id(2),kind:'agreement',status:'draft',revision:1},version:{id:id(31),number:1,data:{title:'טיוטה שהוכנה בשרת',guidedVersion:'4',leadResearcher:'מובילת המחקר',objectives:'מטרה מקורית',toolIds:['כלי מוצע בלבד'],requestedPermissions:['export_data'],annexBStatus:'applicable',annexB:[{tool:'כלי מוצע בלבד',actions:['export_data'],authorizedUsers:['מורשה סינתטית']}]}}};
+ const preparation={id:id(32),initialReceiptId:id(32),recordId:id(30),versionId:id(31),snapshot:{sources,selection:{applicationVersionId:id(21),budgetVersionIds:[],contributionVersionIds:[]},candidate:structuredClone(current.version.data)},fieldSources:{leadResearcher:{source:'profile',id:id(2),revision:1},objectives:{recordId:id(20),versionId:id(21),revision:1}},overrides:[],sourceHash:'a'.repeat(64)};
+ const guidance={catalogVersion:'4',sections:[{id:'parties',complete:['אפשר להפריד בין מובילת המחקר לבין הצד המשפטי.'],guidance:[]}]};
+ s.client.call=async(action,payload)=>{
+  if(['agreementSources','agreementPrepare','agreementRefreshPreview','agreementRefreshApply','processingPolicyGet','processingPolicySave','processingPolicyApprove'].includes(action))s.calls.push([action,payload]);
+  if(action==='agreementSources')return structuredClone({sources,guidance});
+  if(action==='agreementPrepare'){s.workspace.records=[{id:current.record.id,kind:'agreement',title:current.version.data.title}];return {...structuredClone(current),sources:structuredClone(sources),guidance,preparation,resumed:false,template:null};}
+  if(action==='recordGet'&&payload.recordId===current.record.id){s.calls.push([action,payload]);return structuredClone(current);}
+  if(action==='recordSave'&&payload.kind==='agreement'){s.calls.push([action,payload]);current={record:{...current.record,revision:current.record.revision+1},version:{id:id(31+current.record.revision),number:current.version.number+1,data:structuredClone(payload.data)}};return structuredClone(current);}
+  if(action==='agreementRefreshPreview')return {preview:{recordId:current.record.id,versionId:current.version.id,expectedRevision:current.record.revision,hash:'b'.repeat(64),sources,selection:preparation.snapshot.selection,preparation,changes:[{field:'objectives',current:current.version.data.objectives,proposed:'מטרה עדכנית',proposedPresent:true,overridden:true,source:{recordId:id(20),versionId:id(22),revision:2}},{field:'leadResearcher',current:current.version.data.leadResearcher,proposed:'מובילה מעודכנת',proposedPresent:true,overridden:false,source:{source:'profile',revision:2}}]}};
+  if(action==='agreementRefreshApply'){const data=structuredClone(current.version.data);for(const key of payload.replaceFields)data[key]=key==='objectives'?'מטרה עדכנית':'מובילה מעודכנת';current={record:{...current.record,revision:current.record.revision+1},version:{id:id(40),number:current.version.number+1,data}};return {...structuredClone(current),preparation};}
+  if(action==='processingPolicyGet')return {policy:null,actorChoices:[{id:'sys',label:'בעלת המערכת'},{id:'code:SYNTHETIC',label:'החוקרת בתיק'}]};
+  if(action==='processingPolicySave')return {policy:{id:id(50),revision:1,data:payload.policy,hash:'c'.repeat(64),approved:false,current:true}};
+  if(action==='processingPolicyApprove')return {policy:{id:id(50),revision:1,data:s.calls.find(([a])=>a==='processingPolicySave')[1].policy,hash:'c'.repeat(64),approved:true,current:true}};
+  return original(action,payload);
+ };
+ return {...s,sources,preparation,current:()=>current};
+}
+
+test('guided preparation uses the server draft and operational lead while grants stay separate from proposed tools',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await settle();
+ assert.equal(field(s.root,'כותרת').value,'טיוטה שהוכנה בשרת');assert.equal(field(s.root,'שם החוקרת').value,'');assert.ok(s.calls.some(([a])=>a==='agreementPrepare'));assert.ok(!s.calls.some(([a])=>a==='recordSave'));
+ assert.match(s.root.textContent,/הרשאות פעילות כעת/);assert.match(s.root.textContent,/כלים מוצעים מתוך הבקשה/);assert.match(s.root.textContent,/אפשר להפריד בין מובילת המחקר/);assert.match(s.root.textContent,/מקור שנשמר/);page.clear();
+});
+
+test('guided refresh flushes draft, preserves intentional empty override, and replaces only explicitly selected fields',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await settle();
+ const objectives=field(s.root,'מטרות המחקר');objectives.value='';objectives.listeners.input();await btn(s.root,'בדיקת עדכונים מהמקורות').click();
+ assert.equal(s.calls.find(([a])=>a==='recordSave')[1].data.objectives,'');assert.match(s.root.textContent,/מטרה עדכנית/);assert.match(s.root.textContent,/ערך נוכחי/);assert.match(s.root.textContent,/ערך מוצע/);
+ assert.equal(field(s.root,'החלפת מטרות המחקר').checked,false);field(s.root,'החלפת שם החוקרת האחראית').checked=true;await btn(s.root,'החלת העדכונים שנבחרו').click();
+ const sent=s.calls.find(([a])=>a==='agreementRefreshApply')[1];assert.deepEqual(sent.replaceFields,['leadResearcher']);assert.equal(sent.previewHash,'b'.repeat(64));assert.equal(sent.versionId,id(32));assert.equal(sent.expectedRevision,2);assert.equal(field(s.root,'מטרות המחקר').value,'');assert.equal(field(s.root,'שם החוקרת האחראית').value,'מובילה מעודכנת');page.clear();
+});
+
+test('guided refresh save failure and stale server preview retain visible draft',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),original=s.client.call;let failSave=true;
+ s.client.call=async(a,p)=>{if(a==='recordSave'&&failSave)throw {code:'network'};if(a==='agreementRefreshApply'){s.calls.push([a,p]);throw {code:'conflict'};}return original(a,p);};
+ const page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await settle();const before=s.calls.filter(([a])=>a==='agreementRefreshPreview').length;
+ field(s.root,'מטרות המחקר').value='טיוטה שנשמרת כאן';field(s.root,'מטרות המחקר').listeners.input();await btn(s.root,'בדיקת עדכונים מהמקורות').click();assert.equal(s.calls.filter(([a])=>a==='agreementRefreshPreview').length,before);assert.equal(field(s.root,'מטרות המחקר').value,'טיוטה שנשמרת כאן');
+ failSave=false;await btn(s.root,'בדיקת עדכונים מהמקורות').click();field(s.root,'החלפת שם החוקרת האחראית').checked=true;await btn(s.root,'החלת העדכונים שנבחרו').click();assert.equal(field(s.root,'מטרות המחקר').value,'טיוטה שנשמרת כאן');assert.match(s.root.textContent,/השתנה|השתנתה/);page.clear();
+});
+
+test('annex applicability excludes inactive rows and marks only active decisions as primary',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await settle();
+ const status=field(s.root,'תחולת נספח B');status.value='not_applicable';status.listeners.change();field(s.root,'נימוק לאי תחולת נספח B').value='אינו נכלל בנוסח הנוכחי';await btn(s.root,'שמירת טיוטה').click();const data=s.calls.find(([a])=>a==='recordSave')[1].data;
+ assert.equal(data.annexB,undefined);assert.equal(field(s.root,'נימוק לאי תחולת נספח B').attributes['aria-required'],'true');assert.equal(field(s.root,'נימוק לאי תחולת נספח A').attributes['aria-required'],'false');page.clear();
+});
+
+test('researcher edits a prepared draft without owner preparation or processing policy controls',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(false);s.workspace.records=[{id:id(30),kind:'agreement',title:s.current().version.data.title}];const page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);
+ assert.equal(btn(s.root,'הסכם חדש'),undefined);await btn(s.root,'טיוטה שהוכנה בשרת').click();await settle();assert.equal(field(s.root,'מטרות המחקר').value,'מטרה מקורית');assert.equal(btn(s.root,'בדיקת הרשאת עיבוד'),undefined);assert.ok(!s.calls.some(([a])=>a==='agreementPrepare'||a.startsWith('processingPolicy')));page.clear();
+});
+
+test('owner policy form has Hebrew choices and separate exact saved approval',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),P=require('../../app/lib/research-partnership-core.js'),s=guidedSetup(),page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await settle();await btn(s.root,'בדיקת הרשאת עיבוד').click();
+ assert.ok(!/partyRoles|authorizedActors|agreement_changes/.test(s.root.textContent));field(s.root,'מטרת העברה').value='external_impact';field(s.root,'ספק').value='synthetic-provider';field(s.root,'גרסת ספק').value='1';field(s.root,'שינויי הסכם').checked=true;field(s.root,'בעלת המערכת, הרשאת עיבוד').checked=true;
+ for(const def of P.PROCESSING_POLICY_FIELDS.filter(f=>!['purpose','provider','providerVersion','dataCategories','authorizedActors'].includes(f.id))){const control=walk(s.root).find(n=>n.attributes['data-field-id']===def.id);control.value='החלטה סינתטית מפורשת';}
+ await btn(s.root,'שמירת הרשאת עיבוד כטיוטה').click();assert.ok(!s.calls.some(([a])=>a==='processingPolicyApprove'));assert.match(s.root.textContent,/טרם אושרה/);await btn(s.root,'אישור הרשאת העיבוד השמורה').click();const payload=s.calls.find(([a])=>a==='processingPolicyApprove')[1];assert.equal(payload.policyVersionId,id(50));assert.equal(payload.policyHash,'c'.repeat(64));assert.equal(payload.expectedRevision,1);page.clear();
+});
+
+test('preparation requires meaningful application choice and sends an explicit empty budget choice',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup();s.sources.applications.push({recordId:id(23),versionId:id(24),revision:2,data:{title:'בקשה שנייה'}});s.sources.budgets=[{recordId:id(60),versionId:id(61),revision:1,data:{title:'תקציב ראשון'}},{recordId:id(62),versionId:id(63),revision:1,data:{title:'תקציב שני'}}];const page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();
+ assert.ok(!s.calls.some(([a])=>a==='agreementPrepare'));await btn(s.root,'הכנת טיוטת ההסכם').click();assert.ok(!s.calls.some(([a])=>a==='agreementPrepare'));field(s.root,'בקשה כמקור להסכם').value=id(24);field(s.root,'תקציב ראשון · גרסה 1').checked=false;field(s.root,'תקציב שני · גרסה 1').checked=false;await btn(s.root,'הכנת טיוטת ההסכם').click();const payload=s.calls.find(([a])=>a==='agreementPrepare')[1];assert.equal(payload.applicationVersionId,id(24));assert.deepEqual(payload.budgetVersionIds,[]);assert.deepEqual(payload.contributionVersionIds,[]);page.clear();
+});
+
+test('late source preview cannot replace a different editor or offer an apply after typing while waiting',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js');for(const leave of [false,true]){const s=guidedSetup(),original=s.client.call;let release,delay=false;s.client.call=async(a,p)=>{if(a==='agreementRefreshPreview'&&delay){const result=await original(a,p);return new Promise(resolve=>release=()=>resolve(result));}return original(a,p);};const page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await settle();delay=true;const waiting=btn(s.root,'בדיקת עדכונים מהמקורות').click();await settle();
+ if(leave){await btn(s.root,'חזרה לתיק החוקרת').click();await btn(s.root,'בקשה חדשה').click();field(s.root,'כותרת').value='עורכת בקשה אחרת';}else{field(s.root,'מטרות המחקר').value='נוסח שנוסף בזמן ההמתנה';field(s.root,'מטרות המחקר').listeners.input();}release();await waiting;assert.equal(btn(s.root,'החלת העדכונים שנבחרו'),undefined);assert.equal(field(s.root,leave?'כותרת':'מטרות המחקר').value,leave?'עורכת בקשה אחרת':'נוסח שנוסף בזמן ההמתנה');page.clear();}
+});
+
+test('a previously approved intake reopens the prepared agreement only after fresh workspace and record reads',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),original=s.client.call;s.workspace.records=[{id:id(30),kind:'agreement',title:s.current().version.data.title}];
+ s.client.call=async(a,p)=>{if(a==='intakeOwnerBootstrap')return {termsState:{revision:0},identities:[],institutions:[]};if(a==='bootstrap')return {owner:true,studies:[]};if(a==='intakeList')return {applications:[{id:id(70),title:'פנייה שאושרה',status:'approved'}]};if(a==='intakeGet')return {application:{id:id(70),revision:1,status:'approved',studyId:id(1),partnerId:id(2),recordId:id(20),application:{title:'פנייה שאושרה'}}};return original(a,p);};
+ const page=UI.mount(s);await page.load();await btn(s.root,'בקשות לשותפות').click();await btn(s.root,'פנייה שאושרה').click();assert.ok(btn(s.root,'פתיחת טיוטת ההסכם שהוכנה'));const reads=s.calls.filter(([a])=>a==='recordGet').length;await btn(s.root,'פתיחת טיוטת ההסכם שהוכנה').click();assert.equal(field(s.root,'כותרת')?.value,'טיוטה שהוכנה בשרת');assert.ok(s.calls.filter(([a])=>a==='recordGet').length>reads);assert.ok(!s.calls.some(([a])=>a==='agreementPrepare'));page.clear();
+});
+
+test('a delayed policy reload preserves newly typed policy decisions and approval locks those exact decisions',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),P=require('../../app/lib/research-partnership-core.js'),s=guidedSetup(),original=s.client.call;let release,delay=false;
+ s.client.call=async(a,p)=>{const result=await original(a,p);if(a==='processingPolicyGet'&&delay)return new Promise(resolve=>release=()=>resolve(result));if(a==='processingPolicyApprove')return new Promise(resolve=>release=()=>resolve(result));return result;};const page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await settle();await btn(s.root,'בדיקת הרשאת עיבוד').click();delay=true;const pending=btn(s.root,'בדיקת הרשאת עיבוד').click();await settle();field(s.root,'תפקידי הצדדים בעיבוד').value='החלטה שנוספה בהמתנה';release();await pending;assert.equal(field(s.root,'תפקידי הצדדים בעיבוד').value,'החלטה שנוספה בהמתנה');
+ field(s.root,'מטרת העברה').value='external_impact';field(s.root,'ספק').value='synthetic';field(s.root,'גרסת ספק').value='1';field(s.root,'שינויי הסכם').checked=true;field(s.root,'בעלת המערכת, הרשאת עיבוד').checked=true;for(const def of P.PROCESSING_POLICY_FIELDS.filter(f=>!['purpose','provider','providerVersion','dataCategories','authorizedActors'].includes(f.id)))walk(s.root).find(n=>n.attributes['data-field-id']===def.id).value='החלטה סינתטית';await btn(s.root,'שמירת הרשאת עיבוד כטיוטה').click();const approving=btn(s.root,'אישור הרשאת העיבוד השמורה').click();await settle();assert.equal(field(s.root,'תפקידי הצדדים בעיבוד').disabled,true);release();await approving;page.clear();
+});
+
+test('navigation inside intake cancels a pending prepared-agreement handoff',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),original=s.client.call;let release,delay=false;s.workspace.records=[{id:id(30),kind:'agreement',title:s.current().version.data.title}];s.client.call=async(a,p)=>{if(a==='intakeOwnerBootstrap')return {termsState:{revision:0},identities:[],institutions:[]};if(a==='bootstrap')return {owner:true,studies:[]};if(a==='intakeList')return {applications:[{id:id(70),title:'פנייה שאושרה',status:'approved'}]};if(a==='intakeGet')return {application:{id:id(70),revision:1,status:'approved',studyId:id(1),partnerId:id(2),application:{title:'פנייה שאושרה'}}};const result=await original(a,p);if(a==='workspaceList'&&delay)return new Promise(resolve=>release=()=>resolve(result));return result;};const page=UI.mount(s);await page.load();await btn(s.root,'בקשות לשותפות').click();await btn(s.root,'פנייה שאושרה').click();delay=true;const opening=btn(s.root,'פתיחת טיוטת ההסכם שהוכנה').click();await settle();await btn(s.root,'בקשות לשותפות').click();release();await opening;assert.ok(btn(s.root,'פנייה שאושרה'));assert.equal(field(s.root,'כותרת'),undefined);page.clear();
+});
+
+test('source refresh follows selected record identities to newer source versions while preserving empty budget selection',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),original=s.client.call;let rejectOld=false;s.client.call=async(a,p)=>{if(a==='agreementRefreshPreview'&&rejectOld&&p.applicationVersionId===id(21))throw {code:'not_found',status:404};return original(a,p);};const page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await settle();s.sources.applications[0]={...s.sources.applications[0],versionId:id(22),revision:2};rejectOld=true;await btn(s.root,'בדיקת עדכונים מהמקורות').click();assert.ok(field(s.root,'החלפת שם החוקרת האחראית'));const payload=s.calls.filter(([a])=>a==='agreementRefreshPreview').at(-1)[1];assert.equal(payload.applicationVersionId,id(22));assert.deepEqual(payload.budgetVersionIds,[]);assert.equal(field(s.root,'בקשה כמקור להסכם').value,id(22));page.clear();
+});
+
+test('authorized editor resume retains an incomplete local policy draft and identifies nested missing decisions',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await settle();assert.ok(walk(s.root).some(n=>n.className==='r-notice'&&n.textContent.includes('פריט 1')));await btn(s.root,'בדיקת הרשאת עיבוד').click();field(s.root,'תפקידי הצדדים בעיבוד').value='החלטה חלקית מקומית';await page.load(page.capture());await settle();assert.equal(field(s.root,'תפקידי הצדדים בעיבוד')?.value,'החלטה חלקית מקומית');assert.ok(!s.calls.some(([a])=>a==='processingPolicySave'));page.clear();
+});
+
+test('applying selected source changes retains an incomplete policy draft in the same editor',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=guidedSetup(),page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await settle();await btn(s.root,'בדיקת הרשאת עיבוד').click();field(s.root,'תפקידי הצדדים בעיבוד').value='החלטה חלקית שלא נשמרה';await btn(s.root,'בדיקת עדכונים מהמקורות').click();field(s.root,'החלפת שם החוקרת האחראית').checked=true;await btn(s.root,'החלת העדכונים שנבחרו').click();await settle();assert.equal(field(s.root,'תפקידי הצדדים בעיבוד')?.value,'החלטה חלקית שלא נשמרה');assert.ok(!s.calls.some(([a])=>a==='processingPolicySave'||a==='processingPolicyApprove'));assert.equal(field(s.root,'שם החוקרת האחראית').value,'מובילה מעודכנת');page.clear();
+});
 
 test('approved agreements show signing controls only when the provider readiness is configured',async()=>{
   const UI=require('../../app/lib/research-partnership-ui.js');

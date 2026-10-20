@@ -105,6 +105,14 @@ test('owner terms begin as proposed draft and saving never publishes; publicatio
   await button(s.root,'שמירת טיוטת תנאים').click();assert.equal(s.calls.filter(([a])=>a==='intakeTermsPublish').length,0);await button(s.root,'פרסום הגרסה השמורה').click();assert.equal(s.calls.find(([a])=>a==='intakeTermsPublish')[1].versionId,terms.versionId);
 });
 
+test('approved intake exposes the linked prepared draft and opens it through scoped handoff',async()=>{
+ const UI=require('../../app/lib/research-intake-ui.js'),s=ownerSetup(),original=s.client.call,opened=[];
+ const linked={studyId:id(30),partnerId:id(40),recordId:id(41)};
+ s.client.call=async(a,p)=>a==='intakeReview'&&p.decision==='approved'?{application:{...s.application,status:'approved',...linked},preparation:{record:{id:linked.recordId,studyId:linked.studyId,partnerId:linked.partnerId},version:{id:id(42)}}}:original(a,p);
+ const page=UI.mountOwner({...s,onPreparedAgreement:scope=>opened.push(scope)});await page.detail(s.application.id);field(s.root,'מחקר לאישור').value=id(30);field(s.root,'זהות אישית מאומתת').value='SYNTHETIC';field(s.root,'וידוא זהות הפונה הושלם').checked=true;await button(s.root,'אישור הבקשה וההרשאות שנבחרו').click();
+ assert.ok(button(s.root,'פתיחת טיוטת ההסכם שהוכנה'));await button(s.root,'פתיחת טיוטת ההסכם שהוכנה').click();assert.deepEqual(opened,[linked]);assert.match(s.root.textContent,/אישור בקשה אינו חתימה/);page.clear();
+});
+
 test('owner can select an existing study without a partnership and every approval reads its current revision',async()=>{
   const UI=require('../../app/lib/research-intake-ui.js'),s=ownerSetup(),original=s.client.call;
   const standalone={id:id(44),revision:0,config:{title:'מחקר ללא שותפה קודמת'}};let revision=7;
