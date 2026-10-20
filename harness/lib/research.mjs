@@ -1,8 +1,9 @@
 import { createHmac } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { verifyToken, ilToday } from './access.mjs';
+import { verifyToken, ilToday, isActiveResearchIdentity } from './access.mjs';
 import { decryptResearchValue, encryptResearchValue, researchContactOptions, researchDigest } from './research-mail.mjs';
 import { handlePartnership, isPartnershipAction } from './research-partnerships.mjs';
+import { handleIntake, isIntakeAction } from './research-intake.mjs';
 
 const require = createRequire(import.meta.url);
 const CORE = require('../../app/lib/research-core.js');
@@ -196,18 +197,7 @@ export async function verifyResearchIdentity(accessStore, token) {
   if (actor.k === 'sys') return { ...actor, owner: true };
   if (actor.k !== 'code' || actor.c === 'LEGACY' || !['staff', 'instadmin'].includes(actor.kind) || typeof actor.c !== 'string' || !/^[A-Z0-9]+$/.test(actor.c)) fail(403, 'unauthorized');
   const rec = await accessStore.get('code:' + actor.c);
-  const today = ilToday();
-  if (!rec || rec.revoked || rec.kind !== actor.kind || rec.inst !== actor.inst || rec.expiresAt && rec.expiresAt < today) fail(403, 'unauthorized');
-  const institutions = await accessStore.get('institutions') || ['מכללה לחינוך', 'מכללה אקדמית ב׳', 'מרכז סימולציה אזורי', 'מוסד YS'].map(name => ({ name, active: true }));
-  const institution = institutions.find(value => value.name === actor.inst);
-  if (!institution || institution.active === false) fail(403, 'unauthorized');
-  const settings = await accessStore.get('settings') || {};
-  const grace = settings.graceDays ?? 14;
-  if (!Number.isFinite(grace)) fail(403, 'unauthorized');
-  if (institution.subEnd) {
-    const until = Date.parse(institution.subEnd + 'T00:00:00Z') + grace * 86400000;
-    if (!Number.isFinite(until) || today > new Date(until).toISOString().slice(0, 10)) fail(403, 'unauthorized');
-  }
+  if (!rec || rec.kind !== actor.kind || rec.inst !== actor.inst || !(await isActiveResearchIdentity(accessStore, rec))) fail(403, 'unauthorized');
   return { ...actor, owner: false };
 }
 
@@ -376,6 +366,7 @@ export function researchCsv(rows) {
 export async function handleResearch(accessStore, researchStore, body, options = {}) {
   try {
     object(body);
+    if (isIntakeAction(body.action)) return await handleIntake(accessStore, researchStore, body, { ...options, privateEndpoint: true, verifyIdentity: verifyResearchIdentity });
     if (isPartnershipAction(body.action)) return await handlePartnership(accessStore, researchStore, body, { ...options, verifyIdentity: verifyResearchIdentity });
     if (typeof body.action !== 'string' || !CLIENT.has(body.action)) invalid();
     const action = body.action;

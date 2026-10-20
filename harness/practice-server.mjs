@@ -46,6 +46,7 @@ import { handleBackupStatus } from './lib/backup-monitor.mjs';
 import { handleScenarios, supabaseScenarios } from './lib/scenarios.mjs';
 import { handleCommunication } from './lib/communication-continuity.mjs';
 import { handleResearch } from './lib/research.mjs';
+import { handleIntake } from './lib/research-intake.mjs';
 import { handleResearchSigningWebhook } from './lib/research-partnerships.mjs';
 import { supabaseResearchStore } from './lib/research-store.mjs';
 import { resolveResearchGeneratedSample } from './lib/research-usage.mjs';
@@ -177,7 +178,8 @@ const jobSave = (id, rec) => { const st = jobStore(); return st ? st.set('pj:' +
 const server = createServer(async (req, res) => {
   res._origin = req.headers.origin || '';
   const researchPath = (req.url || '').split('?')[0] === '/api/research';
-  if (researchPath) res.setHeader('cache-control', 'private, no-store');
+  const intakePath = (req.url || '').split('?')[0] === '/api/research-intake';
+  if (researchPath || intakePath) res.setHeader('cache-control', 'private, no-store');
   if (req.method === 'OPTIONS') return sendJson(res, 204, {});
 
   if (req.method === 'GET' && req.url === '/health') {
@@ -187,6 +189,18 @@ const server = createServer(async (req, res) => {
     return sendJson(res, 200, { ok: true, hasKey, hasWorkspace, hasSupabase });
   }
 
+  if (intakePath) {
+    if (req.method !== 'POST') { res.setHeader('allow', 'POST, OPTIONS'); return sendJson(res, 405, {ok:false,status:405,error:'invalid',code:'invalid'}); }
+    const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
+    if (!url || !key) return sendJson(res, 503, {ok:false,status:503,error:'not_configured',code:'not_configured'});
+    let body;
+    try { body = JSON.parse((await readRawBody(req, 128 * 1024)).toString('utf8')); }
+    catch (error) { const status = error.status === 413 ? 413 : 400; return sendJson(res,status,{ok:false,status,error:'invalid',code:'invalid'}); }
+    try {
+      const [status, out] = await handleIntake(jobStore(), supabaseResearchStore(url, key), body, { clientAddress: req.socket.remoteAddress });
+      return sendJson(res, status, { ...out, ok: status >= 200 && status < 300, status });
+    } catch { return sendJson(res, 503, {ok:false,status:503,error:'unavailable',code:'unavailable'}); }
+  }
   if (researchPath) {
     if (req.method !== 'POST') { res.setHeader('allow', 'POST, OPTIONS'); return sendJson(res, 405, {ok:false,status:405,error:'invalid',code:'invalid'}); }
     const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;

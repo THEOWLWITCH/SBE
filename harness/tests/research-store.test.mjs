@@ -1,5 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+
+test('intake public and owner operations use only the intake service RPC, with an empty public token', async () => {
+ const {supabaseResearchStore}=await import('../lib/research-store.mjs'); const calls=[];
+ const store=supabaseResearchStore('https://synthetic.invalid','sb_secret_synthetic',{fetchImpl:async(url,init)=>{calls.push({url,init});return Response.json({});}});
+ for(const action of ['intakePublicInfo','intakeSubmit','intakeOwnerBootstrap','intakeReview']) {
+  await store.rpc(action==='intakeSubmit'?'':'verified',action,{});
+  assert.equal(calls.at(-1).url,'https://synthetic.invalid/rest/v1/rpc/research_intake_rpc');
+  assert.equal(calls.at(-1).init.headers.apikey,'sb_secret_synthetic');
+ }
+ assert.equal(JSON.parse(calls[1].init.body).p_token,'');
+});
 test('partnership public and private actions use only their fixed RPC',async()=>{
  const {supabaseResearchStore}=await import('../lib/research-store.mjs');let endpoint;
  const store=supabaseResearchStore('https://synthetic.invalid','sb_secret_synthetic',{fetchImpl:async(url)=>{endpoint=url;return Response.json({});}});
