@@ -23,8 +23,8 @@
   }
   function shareText(o, url) {
     return o.lang === 'ar'
-      ? '🎁 ' + (clip(o.to, 60) ? clip(o.to, 60) + '، ' : '') + 'عندي هدية إلك: «في إشي نعمله»، دليل صغير للحظات الطوارئ مع الولاد.\n' + url
-      : '🎁 ' + (clip(o.to, 60) ? clip(o.to, 60) + ', ' : '') + 'יש לי מתנה בשבילך: "יש מה לעשות", מדריכון קטן לרגעי חירום עם ילדים.\n' + url;
+      ? '🎁 ' + (clip(o.to, 60) ? clip(o.to, 60) + '، ' : '') + 'عندي هدية إلك: «في إشي نعمله»، دليل صغير: شو بنعمل وشو بنحكي للولاد بأول دقايق بحالات الطوارئ.\n' + url
+      : '🎁 ' + (clip(o.to, 60) ? clip(o.to, 60) + ', ' : '') + 'יש לי מתנה בשבילך: "יש מה לעשות", מדריכון קטן: מה עושים ומה אומרים לילדים בדקות הראשונות במצבי חירום.\n' + url;
   }
   const CSS = '.sbe-gift{background:linear-gradient(180deg,#FFF6E2,#FFFDF8);border:1px solid #F1D9A6;border-radius:12px;padding:14px 16px;margin:14px 0;color:#0F2B45}' +
     '.sbe-gift h3{margin:0 0 4px;font-size:16px}.sbe-gift p{margin:0 0 8px;font-size:13.5px;line-height:1.55;color:#4a5a70}' +
