@@ -1,7 +1,7 @@
 import { createHash, createHmac } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { decryptResearchValue, encryptResearchValue, researchDigest } from './research-mail.mjs';
-import { exportPartnership } from './research-partnership-exports.mjs';
+import { exportPartnership,contentHash } from './research-partnership-exports.mjs';
 import {IMPACT_VERSIONS,minimizePartnershipImpact,impactRequest} from './research-partnership-impact.mjs';
 import { createSigningAdapter, researchSigningWorkerToken } from './research-signing.mjs';
 const require=createRequire(import.meta.url), CORE=require('../../app/lib/research-partnership-core.js'), BASE=require('../../app/lib/research-core.js');
@@ -17,6 +17,18 @@ const ids=v=>{if(!Array.isArray(v)||v.length>200||new Set(v).size!==v.length)inv
 const bool=v=>{if(typeof v!=='boolean')invalid();return v;};
 const digest=v=>{if(typeof v!=='string'||!HASH.test(v))invalid();return v;};
 const safeMessages={invalid:'אפשר לבדוק את הפרטים ולהשלים את השדות המסומנים.',unauthorized:'אין הרשאה לפעולה זו.',not_found:'הפריט אינו זמין.',conflict:'הגרסה השתנתה. אפשר לרענן לפני שמירה נוספת.',signed_original_required:'להורדת הסכם חתום יש לפתוח את העותק המקורי ותיעוד החתימה במסמכים הפרטיים שבתיק.',not_configured:'להשלמת הפעולה נדרשת הגדרת השירות בידי בעלת המערכת.',unavailable:'השירות אינו זמין כעת.'};
+function signerPartiesHash(partnerId,parties){
+ const exact=party=>{const p=parties?.[party];if(!p||typeof p.name!=='string'||!p.name.trim()||typeof p.authority!=='string'||!p.authority.trim()||typeof p.email!=='string'||!p.email.trim())fail('conflict');return {name:p.name,email:p.email.trim().toLowerCase(),authority:p.authority};};
+ return contentHash({owner:exact('owner'),partner:{id:partnerId,...exact('partner')}});
+}
+function signerBinding(signing,scope,state,ciphertext){
+ if(state?.provider!==signing.provider||state.versionId!==signing.versionId||state.documentHash!==signing.documentHash)fail('conflict');
+ if(!Array.isArray(state?.signers)||state.signers.length!==2||new Set(state.signers.map(p=>p.party)).size!==2||!state.signers.every(p=>['owner','partner'].includes(p.party)))fail('conflict');
+ const parties=Object.fromEntries(state.signers.map(p=>[p.party,p]));
+ // Use the SAME authenticated envelope/state used for provider verification.
+ // A legacy session must never be reconstructed from today's contact profile.
+ return {provider:state.provider,providerSessionId:state.provider==='signwell'?'signwell/'+state.providerSessionId:state.providerSessionId,versionId:state.versionId,documentHash:state.documentHash,providerDocumentHash:state.providerDocumentHash,authorityPolicyHash:state.authorityPolicyHash,providerStateHash:contentHash(ciphertext),partiesHash:signerPartiesHash(scope.partnerId,parties)};
+}
 export const isPartnershipAction=action=>CLIENT.has(action);
 export function validatePartnershipPayload(body){
  const action=body.action;if(!CLIENT.has(action))invalid();
@@ -144,10 +156,11 @@ async function handleSigning({accessStore,store,body,payload,adapter,options}){
   const file=exportPartnership(context,'docx');
   if(adapter.provider==='signwell')return beginSignWell({accessStore,store,body,payload,adapter,context,file,key,scope});
   const descriptor=adapter.transferDescriptor?.();if(!descriptor)fail('not_configured');
-  const authorizeTransfer=()=>call(store,body.token,'signingTransferAuthorize',{...scope,provider:descriptor.provider,providerVersion:descriptor.version});
+  const signerHash=signerPartiesHash(scope.partnerId,context.parties);
+  const authorizeTransfer=()=>call(store,body.token,'signingTransferAuthorize',{...scope,versionId:context.version.id,documentHash:context.version.contentHash,signerPartiesHash:signerHash,provider:descriptor.provider,providerVersion:descriptor.version});
   await authorizeTransfer();
   const started=await adapter.start({...context,contentBase64:file.contentBase64,documentHash:payload.documentHash,consent:true,requestId:payload.requestId,authorizeTransfer});
-  const prepared=await call(store,await worker(),'signingPrepare',{...scope,requestId:payload.requestId,expectedRevision:payload.expectedRevision,versionId:payload.versionId,documentHash:payload.documentHash,providerDocumentHash:started.providerDocumentHash,providerSessionId:started.providerSessionId,expiresAt:started.expiresAt,providerStateCiphertext:encryptResearchValue(started.state,key),authorityPolicyHash:started.authorityPolicyHash});
+  const prepared=await call(store,await worker(),'signingPrepare',{...scope,requestId:payload.requestId,expectedRevision:payload.expectedRevision,versionId:payload.versionId,documentHash:payload.documentHash,providerDocumentHash:started.providerDocumentHash,providerSessionId:started.providerSessionId,expiresAt:started.expiresAt,providerStateCiphertext:encryptResearchValue(started.state,key),authorityPolicyHash:started.authorityPolicyHash,signerPartiesHash:signerHash});
   return [200,{signing:publicSigning(prepared.signing)}];
  }
  if(context.signing?.state==='completed'&&action==='signingRefresh')return [200,{record:context.record,signing:publicSigning(context.signing)}];
@@ -160,13 +173,14 @@ async function handleSigning({accessStore,store,body,payload,adapter,options}){
  if(action==='signingView'){
   if(state.provider==='signwell')return viewSignWell({accessStore,store,body,adapter,context,state,scope});
   const descriptor=adapter.transferDescriptor?.();if(!descriptor)fail('not_configured');
-  const authorizeTransfer=()=>call(store,body.token,'signingTransferAuthorize',{...scope,provider:descriptor.provider,providerVersion:descriptor.version});
+  const binding=signerBinding(context.signing,scope,state,context.providerStateCiphertext);
+  const authorizeTransfer=()=>call(store,body.token,'signingTransferAuthorize',{...scope,signingId:context.signing.id,versionId:context.signing.versionId,documentHash:context.signing.documentHash,signerPartiesHash:binding.partiesHash,signerBinding:binding,provider:descriptor.provider,providerVersion:descriptor.version});
   await authorizeTransfer();
   const view=await adapter.view(state,context.party,{authorizeTransfer});await authorizeTransfer();return [200,{signing:{...publicSigning(context.signing),embeddedUrl:view.embeddedUrl,expiresAt:view.expiresAt}}];
  }
  const verification=await adapter.refresh(state);
  if(!verification.completed){const updated=await call(store,await worker(),'signingStateUpdate',{...scope,signingId:context.signing.id,state:verification.state});return [200,{record:updated.record,signing:publicSigning(updated.signing)}];}
- return [200,await completeSigning({accessStore,store,scope,signing:context.signing,verification,key})];
+ return [200,await completeSigning({accessStore,store,scope,signing:context.signing,verification,key,state,providerStateCiphertext:context.providerStateCiphertext})];
 }
 async function beginSignWell({accessStore,store,body,payload,adapter,context,file,key,scope}){
  const proposed=adapter.buildIntent({...context,contentBase64:file.contentBase64,documentHash:payload.documentHash,consent:true,requestId:payload.requestId});
@@ -209,12 +223,13 @@ async function viewSignWell({accessStore,store,body,adapter,context,state,scope}
  await call(store,body.token,'signingTransferAuthorize',{...scope,intentId});
  return [200,{signing:{...publicSigning(context.signing),embeddedUrl:view.embeddedUrl,expiresAt:view.expiresAt}}];
 }
-export async function completeSigning({accessStore,store,scope,signing,verification,key,workLeaseId}){
+export async function completeSigning({accessStore,store,scope,signing,verification,key,workLeaseId,state,providerStateCiphertext}){
+ const binding=signerBinding(signing,scope,state,providerStateCiphertext);
  const worker=()=>researchSigningWorkerToken(accessStore),evidence=[];
  for(const [purpose,bytes] of [['final',verification.finalDocument],['certificate',verification.auditCertificate]]){
   const saved=await call(store,await worker(),'signingEvidencePut',{...scope,...workLeaseId?{workLeaseId}:{},signingId:signing.id,purpose,filename:purpose==='final'?'executed-agreement.pdf':'signature-audit.pdf',mediaType:'application/pdf',size:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),contentCiphertext:encryptDocument(bytes,key)});evidence.push(saved.document);
  }
- const result=await call(store,await worker(),'signatureComplete',{...scope,...workLeaseId?{workLeaseId}:{},signingId:signing.id,versionId:signing.versionId,documentHash:signing.documentHash,providerEventId:verification.providerEventId,finalDocumentId:evidence[0].id,finalDocumentHash:evidence[0].sha256,auditCertificateDocumentId:evidence[1].id,verifiedSigners:verification.verifiedSigners,completedAt:verification.completedAt});
+ const result=await call(store,await worker(),'signatureComplete',{...scope,...workLeaseId?{workLeaseId}:{},signingId:signing.id,versionId:signing.versionId,documentHash:signing.documentHash,providerEventId:verification.providerEventId,finalDocumentId:evidence[0].id,finalDocumentHash:evidence[0].sha256,auditCertificateDocumentId:evidence[1].id,verifiedSigners:verification.verifiedSigners,completedAt:verification.completedAt,signerBinding:binding});
  return {record:result.record,signing:publicSigning(result.signing)};
 }
 export async function handleResearchSigningWebhook(accessStore,store,raw,headers,options={}){
@@ -228,7 +243,7 @@ export async function handleResearchSigningWebhook(accessStore,store,raw,headers
   if(state.providerSessionId!==event.providerSessionId)fail('conflict');
   const verification=await adapter.refresh(state);if(!verification.completed)fail('conflict');
   const scope={studyId:context.studyId,partnerId:context.partnerId,recordId:context.recordId};
-  await completeSigning({accessStore,store,scope,signing:context.signing,verification,key});return [200,{ok:true}];
+  await completeSigning({accessStore,store,scope,signing:context.signing,verification,key,state,providerStateCiphertext:context.providerStateCiphertext});return [200,{ok:true}];
  }catch(error){const code=own(safeMessages,error?.code)?error.code:'unavailable';return [{invalid:400,unauthorized:403,not_found:404,conflict:409,not_configured:503,unavailable:503}[code],{ok:false,code,error:safeMessages[code]}];}
 }
 function publicSigning(value){return Object.fromEntries(['id','recordId','versionId','documentHash','provider','state','configured','embeddedUrl','expiresAt','completedAt','ownerActionCode'].map(key=>[key,value?.[key]??(key==='configured'?true:null)]));}

@@ -50,7 +50,7 @@ test('research authentication survives the complete hardened release migration o
     assert.equal((await db.query("SELECT count(*)::int n FROM pg_policy WHERE polname='synthetic_existing_auth_policy'")).rows[0].n, 1);
     await db.exec('DROP POLICY synthetic_existing_auth_policy ON public.access_settings');
     await db.exec(boundary);
-    for (const migration of ['20261020-partnership-profile.sql', '20261020-partnership-intake.sql', '20261020-guided-agreement-contract.sql', '20261020-guided-agreements.sql', '20261020-guided-signing.sql', '20261020-guided-workflow.sql']) {
+    for (const migration of ['20261020-partnership-profile.sql', '20261020-partnership-intake.sql', '20261020-guided-agreement-contract.sql', '20261020-guided-agreements.sql', '20261020-guided-signing.sql', '20261020-guided-workflow.sql', '20261020-frozen-signing-identities.sql']) {
       await db.exec(await readFile(new URL('../migrations/' + migration, import.meta.url), 'utf8'));
     }
     assert.deepEqual((await db.query("SELECT current_user,rolsuper,rolbypassrls FROM pg_roles WHERE rolname=current_user")).rows[0], { current_user: 'migration_operator', rolsuper: false, rolbypassrls: false });

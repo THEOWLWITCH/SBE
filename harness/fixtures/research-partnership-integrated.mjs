@@ -12,8 +12,8 @@ export async function approveSigningProcessing(f,scope,{provider='docusign',prov
  const saved=(await f.checked(f.tokens.owner,'processingPolicySave',f.request({...scope,expectedRevision:0,policy}))).policy;
  await f.checked(f.tokens.owner,'processingPolicyApprove',f.request({...scope,expectedRevision:saved.revision,policyVersionId:saved.id,policyHash:saved.hash}));
 }
-export async function createPartnershipIntegration(options={}){
- const database=await createPartnershipDatabase();let queue=Promise.resolve();
+export async function createPartnershipIntegration(options={},databaseOptions={}){
+ const database=await createPartnershipDatabase(databaseOptions);let queue=Promise.resolve();
  const serial=fn=>{const next=queue.then(fn);queue=next.catch(()=>{});return next;};
  const query=(sql,values)=>serial(()=>database.db.query(sql,values)),exec=sql=>serial(()=>database.db.exec(sql));
  const codes={a:'STAFFA',b:'STAFFB',participant:'PERSON1',ordinary:'ORDINARY1',multi:'MULTI1'};

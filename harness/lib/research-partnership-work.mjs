@@ -33,7 +33,7 @@ export async function runPartnershipWork(accessStore,store,options={}){
     // Evidence retention for an already issued session does not authorize any
     // new disclosure. Every write still checks the exact live worker lease.
     if(verification.completed&&Date.parse(verification.completedAt)>Date.parse(fresh.signing.expiresAt)){await finish('blocked','completion_after_expiry');result.blocked++;continue;}
-    if(verification.completed){await completeSigning({accessStore,store,scope,signing:fresh.signing,verification,key:options.documentKey,workLeaseId:fresh.leaseId});await finish('completed');result.completed++;}
+    if(verification.completed){await completeSigning({accessStore,store,scope,signing:fresh.signing,verification,key:options.documentKey,workLeaseId:fresh.leaseId,state,providerStateCiphertext:fresh.providerStateCiphertext});await finish('completed');result.completed++;}
     else{await call('signingStateUpdate',{...scope,signingId:fresh.signingId,workLeaseId:fresh.leaseId,state:verification.state});await finish('pending');result.pending++;}
    }catch{await finish('failed','reconciliation_failed').catch(()=>{});result.pending++;}
   }
