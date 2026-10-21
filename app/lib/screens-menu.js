@@ -40,6 +40,7 @@ window.SBE_SCREENS = [
       { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה bridge)' },
       { file:'shared-dialogue-lab.html', label:'מעבדת שיח וחקר משותף', who:'הרשאת מעבדת שיח וחקר משותף (dialogue)' },
       { file:'team-thinking.html', label:'חשיבת צוות', who:'הרשאת חשיבת צוות (teamthink)' },
+      { file:'games.html', label:'משחקים', who:'הרשאת משחקים (games)' },
     ]},
     { title:'🎭 2. להתאמן: תוצרי הסימולציה', items:[
       { file:'doc-facilitator.html', label:'גרסת המנחה', who:'רק את ומנחות הסימולציה' },

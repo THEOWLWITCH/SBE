@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>משחקים</title>
+<script src="lib/access-guard.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&display=swap">
+<style>
+/* מחיצת המשחקים (21/10/2026): משחקים להורדה ומשחקים במסך. הרשאה: games */
+:root{--navy:#1B4F7A;--teal:#1A9BB5;--green:#3A9E6B;--sun:#FFC929;--ink:#1d2b36;--muted:#4a5a64;--line:#dbe7ea;--bg:#F5F9FA;--card:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e7eef1;--muted:#a9bac2;--line:#2c3d47;--bg:#0f1b22;--card:#16252e}}
+:root[data-theme="dark"]{--ink:#e7eef1;--muted:#a9bac2;--line:#2c3d47;--bg:#0f1b22;--card:#16252e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Assistant,Arial,sans-serif}
+.topnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--line);font-size:15px}
+.topnav a,.topnav button{color:var(--navy);font:inherit;font-weight:700;background:none;border:0;cursor:pointer;text-decoration:none;padding:6px 0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .topnav a,:root:not([data-theme="light"]) .topnav button{color:#8fd3e0}}
+.topnav .crumb{margin-inline-start:auto;color:var(--muted);font-weight:600}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.hero{display:flex;flex-direction:column;gap:6px;margin-bottom:26px}
+.hero h1{margin:0;font:900 40px/1.1 'Frank Ruhl Libre',Georgia,serif;color:var(--navy)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero h1{color:#8fd3e0}}
+.hero p{margin:0;font-size:17px;color:var(--muted)}
+.bar{height:3px;border-radius:2px;background:linear-gradient(90deg,var(--green),var(--teal),var(--navy));margin:14px 0 4px}
+.sec{margin-top:30px}
+.sec h2{display:flex;align-items:center;gap:10px;margin:0 0 4px;font:800 24px/1.2 Assistant,Arial,sans-serif}
+.sec .lead{margin:0 0 16px;color:var(--muted);font-size:15.5px}
+.game{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+@media screen and (max-width:760px){.game{grid-template-columns:1fr}}
+.game .pic{background:#EEF6F8;display:flex;align-items:center;justify-content:center;padding:16px}
+.game .pic img{width:100%;height:auto;display:block;border-radius:8px}
+.game .body{padding:20px 22px;display:flex;flex-direction:column;gap:10px}
+.game h3{margin:0;font:900 26px/1.15 'Frank Ruhl Libre',Georgia,serif;color:var(--navy)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .game h3{color:#8fd3e0}}
+.game p{margin:0;font-size:15.5px;line-height:1.55;text-align:justify}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font-size:13.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:#E6F3F6;color:#145a6b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chips span{background:#1e3640;color:#bfe6ee}}
+.dl{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:10px 18px;border-radius:12px;background:var(--navy);color:#fff;font:800 16px Assistant,Arial,sans-serif;text-decoration:none;align-self:flex-start}
+.dl:hover{background:#163f62}
+details{border-top:1px solid var(--line);padding-top:10px}
+details summary{cursor:pointer;font-weight:800;color:var(--navy)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) details summary{color:#8fd3e0}}
+details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15px}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:18px;padding:26px 22px;text-align:center;color:var(--muted);font-size:16px}
+</style>
+</head>
+<body>
+<nav class="topnav no-print">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › משחקים</span>
+</nav>
+<main class="wrap">
+  <header class="hero">
+    <h1>משחקים</h1>
+    <p>משחקים שמחזקים חוסן חברתי: בכיתה, בצוות ובבית.</p>
+    <div class="bar"></div>
+  </header>
+
+  <section class="sec" aria-labelledby="h-print">
+    <h2 id="h-print">🖨 משחקים להורדה</h2>
+    <p class="lead">מורידים, מדפיסים, גוזרים ומשחקים.</p>
+
+    <article class="game">
+      <div class="pic"><img src="assets/games-quartets.webp" alt="ארבעה קלפים מרביעיית אמון: מקשיבים לי, התיק בכיתה, עומדים במילה, מותר לטעות" width="900" height="297"></div>
+      <div class="body">
+        <h3>רביעיות חוסן</h3>
+        <p>משחק רביעיות עם 14 מושגי חוסן: אמון, שייכות, ערבות הדדית, תמונת עתיד משותפת ועוד. כל קלף מביא מצב או היגד מהחיים בכיתה ובקהילה. כשמשלימים רביעייה, עוצרים ל"רגע של חוסן" ומספרים איפה ראינו את זה אצלנו.</p>
+        <div class="chips"><span>14 רביעיות</span><span>56 קלפים</span><span>3 עד 6 משתתפים</span><span>כ־30 דקות</span></div>
+        <a class="dl" href="assets/resilience-quartets.pdf" download="רביעיות-חוסן-Begood.pdf">⬇ הורדת המשחק (PDF)</a>
+        <details>
+          <summary>מה בקובץ ואיך מדפיסים</summary>
+          <ul>
+            <li>הוראות המשחק, ודף עם הסבר קצר על כל מושג למנחה.</li>
+            <li>14 דפי קלפים, דף לכל רביעייה, ודף לגב הקלף.</li>
+            <li>מדפיסים בצבע, לרוחב הדף, בגודל אמיתי (100%). נייר עבה שומר על הקלפים לאורך זמן.</li>
+            <li>לגב הקלף: מדפיסים את הדף האחרון על הצד השני של דפי הקלפים, או מדביקים.</li>
+            <li>גוזרים לאורך הקצה של המסגרת הצבעונית.</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+  </section>
+
+  <section class="sec" aria-labelledby="h-screen">
+    <h2 id="h-screen">🖥 משחקים במסך</h2>
+    <p class="lead">משחקים שמשחקים ישר על המסך, בטלפון או במחשב.</p>
+    <div class="empty">המשחקים במסך עוד בהכנה, ויופיעו כאן.</div>
+  </section>
+</main>
+<script src="lib/screens-menu.js"></script>
+</body>
+</html>
