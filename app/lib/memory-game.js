@@ -113,8 +113,11 @@
     empathy: (t) => bg(t) + ground + heart(104, 46, .9, '#F06A7A') + heart(80, 34, .45, '#F7A9C9') +
       cr(82, 126, .8, 'lilac', { tear: true, mouth: 'sad', look: [-2, 2] }) +
       cr(128, 124, .82, 'sun', { flip: true, arms: { l: 'down', r: ['hug', 68] }, look: [3, 1], mouth: 'smile' }),
-    talk: (t) => bg(t) + ground + bubble(62, 48, 52, 38, heart(0, -3, .6, '#F06A7A'), 6) + bubble(140, 60, 52, 38, star(0, 0, 10), -6) +
-      cr(62, 130, .78, 'teal', { mouth: 'open', look: [3, 0], arms: { l: 'down', r: 'out' } }) + cr(140, 130, .78, 'coral', { flip: true, look: [3, 0], eyes: 'open', arms: { l: 'down', r: 'out' } }),
+    talk: (t) => bg(t) + ground +
+      bubble(46, 40, 40, 30, heart(0, -3, .5, '#F06A7A'), 6) + bubble(100, 30, 40, 30, star(0, 0, 8), 0) + bubble(154, 40, 40, 30, `<path d="M-8 -2 Q0 8 8 -2" fill="none" stroke="#1A9BB5" stroke-width="3" stroke-linecap="round"/>`, -6) +
+      cr(76, 104, .46, 'lilac', { mouth: 'open', look: [2, 1], arms: { l: 'wave', r: 'down' } }) + cr(124, 104, .46, 'sun', { flip: true, eyes: 'happy', arms: { l: 'down', r: 'wave' } }) +
+      cr(44, 142, .54, 'teal', { mouth: 'open', look: [3, -1], arms: { l: 'down', r: 'out' } }) + cr(100, 148, .52, 'green', { tuft: true, look: [0, -2], mouth: 'smile' }) +
+      cr(156, 142, .54, 'coral', { flip: true, look: [3, -1], mouth: 'open', arms: { l: 'down', r: 'out' } }),
     cando: (t) => bg(t) + ground + star(100, 34, 18) + spark(66, 40, .9) + spark(136, 52, .8) +
       cr(100, 140, .72, 'green', { arms: { l: 'up', r: 'up' }, mouth: 'open' }) + cr(100, 95, .5, 'sun', { arms: { l: 'up', r: 'up' }, eyes: 'happy' }),
     flexible: (t) => bg(t) + ground +
