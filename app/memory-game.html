@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>זיכרון חוסן</title>
+<script src="lib/access-guard.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&display=swap">
+<style>
+/* זיכרון חוסן (21/10/2026): משחק זיכרון במסך ולהדפסה. מקור אמת: lib/memory-game.js. הרשאה: games */
+:root{--navy:#1B4F7A;--teal:#1A9BB5;--green:#3A9E6B;--sun:#FFC929;--ink:#1d2b36;--muted:#4a5a64;--line:#dbe7ea;--bg:#F5F9FA;--card:#fff;--soft:#EAF5F7;--hl:#1B4F7A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e7eef1;--muted:#a9bac2;--line:#2c3d47;--bg:#0f1b22;--card:#16252e;--soft:#1b2f38;--hl:#8fd3e0}}
+:root[data-theme="dark"]{--ink:#e7eef1;--muted:#a9bac2;--line:#2c3d47;--bg:#0f1b22;--card:#16252e;--soft:#1b2f38;--hl:#8fd3e0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Assistant,Arial,sans-serif}
+button{font-family:inherit}
+.topnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--line);font-size:15px}
+.topnav a,.topnav button{color:var(--hl);font:inherit;font-weight:700;background:none;border:0;cursor:pointer;text-decoration:none;padding:6px 0}
+.topnav .crumb{margin-inline-start:auto;color:var(--muted);font-weight:600}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
+.hero{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.hero .mascot{width:76px;height:76px;flex:none;border-radius:22px;background:linear-gradient(135deg,#1B4F7A,#1A9BB5)}
+.hero h1{margin:0;font:900 38px/1.1 'Frank Ruhl Libre',Georgia,serif;color:var(--hl)}
+.hero p{margin:4px 0 0;font-size:16.5px;color:var(--muted)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px 22px;display:flex;flex-direction:column;gap:16px}
+.row{display:flex;flex-direction:column;gap:8px}
+.row>label,.row>.lbl{font-weight:800;font-size:16px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{min-height:44px;padding:8px 16px;border-radius:999px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:15.5px;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--teal);background:var(--soft);color:var(--hl)}
+.seg button:focus-visible,.mg-card:focus-visible,.btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.hint{margin:0;color:var(--muted);font-size:14.5px}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{min-height:46px;padding:10px 20px;border-radius:12px;border:0;background:var(--navy);color:#fff;font-weight:800;font-size:16px;cursor:pointer}
+.btn.alt{background:var(--card);color:var(--hl);border:2px solid var(--line)}
+details.how{border-top:1px solid var(--line);padding-top:10px}
+details.how summary{cursor:pointer;font-weight:800;color:var(--hl)}
+details.how ol,details.how ul{margin:8px 0 0;padding-inline-start:22px;line-height:1.65;font-size:15px}
+details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
+
+/* לוח המשחק */
+#game[hidden],#setup[hidden],#end[hidden]{display:none}
+.status{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 8px;display:flex;flex-direction:column;gap:8px}
+.score{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--card);border:2px solid var(--line);font-weight:800;font-size:15px}
+.chip.on{border-color:var(--sun);background:#FFF6D6;color:#5a4300}
+.chip .n{font-variant-numeric:tabular-nums}
+.score .sp{flex:1}
+.reveal{display:none;gap:10px;align-items:stretch;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:10px}
+.reveal.show{display:flex}
+.reveal.ok{border-color:var(--green)}
+.reveal .slot{flex:1;min-width:0;border-radius:12px;background:var(--soft);padding:8px 12px;display:flex;align-items:center;gap:10px;font-size:16px;line-height:1.4}
+.reveal .slot svg{width:52px;height:52px;flex:none}
+.reveal .slot b{font-size:17px}
+.reveal .side{display:flex;flex-direction:column;justify-content:center;gap:6px;flex:none;max-width:220px}
+.reveal .msg{font-weight:800;font-size:16px}
+.reveal .msg.yes{color:var(--green)}
+.reveal .ask{font-size:14.5px;color:var(--muted)}
+@media screen and (max-width:640px){.reveal{flex-wrap:wrap}.reveal .slot{flex-basis:calc(50% - 5px)}.reveal .side{max-width:none;flex-basis:100%;flex-direction:row;align-items:center;flex-wrap:wrap}}
+.board{display:grid;gap:10px;grid-template-columns:repeat(var(--cols,5),minmax(0,1fr));margin-top:6px}
+@media screen and (max-width:640px){.board{gap:6px;grid-template-columns:repeat(var(--mcols,4),minmax(0,1fr))}}
+.mg-card{position:relative;aspect-ratio:4/5;border:0;padding:0;background:none;cursor:pointer;perspective:800px;container-type:inline-size}
+.mg-card .in{position:absolute;inset:0;transition:transform .45s cubic-bezier(.3,.7,.3,1.2);transform-style:preserve-3d}
+.mg-card.up .in{transform:rotateY(180deg)}
+.mg-card .f,.mg-card .b{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.mg-card .b{background:linear-gradient(150deg,#1B4F7A,#1A9BB5);box-shadow:0 2px 0 #133a5a;display:flex;align-items:center;justify-content:center}
+.mg-card .b svg{width:78%;height:78%}
+.mg-card .f{transform:rotateY(180deg);background:#fff;border:2px solid #dbe7ea}
+.mg-card.got .f{border-color:var(--green);box-shadow:0 0 0 2px var(--green)}
+.mg-card.got .f::after{content:'✓';position:absolute;top:4px;inset-inline-start:6px;width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;font:800 14px/22px Assistant,Arial,sans-serif;text-align:center}
+.mg-card:hover:not(.up) .b{filter:brightness(1.08)}
+@media (prefers-reduced-motion:reduce){.mg-card .in{transition:none}}
+/* פני הקלף, במסך ובהדפסה */
+.mg-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#1d2b36}
+.mg-pic{background:var(--mgt);gap:2%;padding:6% 6% 8%}
+.mg-pic .mg-art{flex:1 1 auto;min-height:0;aspect-ratio:1;max-width:96%}
+.mg-pic .mg-art svg{display:block}
+.mg-pic b{font:800 clamp(11px,13cqi,22px)/1.1 Assistant,Arial,sans-serif;color:var(--mg)}
+.mg-sit{background:#fff;padding:10% 9%;}
+.mg-sit .mg-q{font:900 clamp(16px,22cqi,40px)/1 'Frank Ruhl Libre',Georgia,serif;color:#1A9BB5;height:.6em}
+.mg-sit p{margin:0;font:700 clamp(9px,10.5cqi,17px)/1.3 Assistant,Arial,sans-serif;text-wrap:pretty;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:7;overflow:hidden}
+.mg-sit::before{content:'';position:absolute;inset:auto 0 0 0;height:7%;background:linear-gradient(90deg,#3A9E6B,#1A9BB5,#1B4F7A)}
+/* סיום */
+.end{background:var(--card);border:2px solid var(--green);border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.end h2{margin:0;font:900 30px/1.15 'Frank Ruhl Libre',Georgia,serif;color:var(--hl)}
+.end ol{margin:0;padding-inline-start:22px;line-height:1.7;font-size:16px}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:20;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:3px;animation:fall 2.4s ease-in forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:.2}}
+@media (prefers-reduced-motion:reduce){.confetti{display:none}}
+
+/* הדפסה */
+#print{display:none}
+@media print{
+  @page{size:A4;margin:24mm 24mm}
+  @page{@bottom-center{content:"זיכרון חוסן · Begood · be-good.co.il · עמוד " counter(page) " מתוך " counter(pages);font:600 9pt Assistant,Arial,sans-serif;color:#4a5a64}}
+  body{background:#fff}
+  .topnav,.wrap,.confetti{display:none!important}
+  #print{display:block}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+.pr-page{break-after:page;color:#1d2b36;direction:rtl}
+.pr-page:last-child{break-after:auto}
+.pr-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;border-bottom:3px solid #1A9BB5;padding-bottom:4mm;margin-bottom:5mm}
+.pr-head h1{margin:0;font:900 26pt/1 'Frank Ruhl Libre',Georgia,serif;color:#1B4F7A}
+.pr-head p{margin:1.5mm 0 0;font:600 10.5pt Assistant,Arial,sans-serif;color:#2b6a7d}
+.pr-head img{width:30mm;height:auto}
+.pr-page h2{margin:5mm 0 2mm;font:800 14pt Assistant,Arial,sans-serif;color:#1B4F7A;border-inline-start:4px solid #1A9BB5;padding-inline-start:3mm;break-after:avoid}
+.pr-page p,.pr-page li{font:500 11pt/1.5 Assistant,Arial,sans-serif;text-align:justify;margin:0 0 1.5mm}
+.pr-page ol,.pr-page ul{margin:0;padding-inline-start:6mm}
+.pr-box{background:#F2F8F9;border-radius:3mm;padding:3mm 4mm;margin:2mm 0;break-inside:avoid}
+.pr-gl{width:100%;border-collapse:collapse;font:500 10pt/1.4 Assistant,Arial,sans-serif}
+.pr-gl th{background:#1B4F7A;color:#fff;text-align:right;padding:1.6mm 2.5mm;font-weight:800}
+.pr-gl td{padding:1.4mm 2.5mm;border-bottom:1px solid #dbe7ea;vertical-align:top;text-align:right}
+.pr-gl tr:nth-child(even) td{background:#F5F9FA}
+.pr-gl td:first-child{font-weight:800;color:#1B4F7A;white-space:nowrap;background:#EAF5F7}
+.pr-gl tr{break-inside:avoid}
+.pr-cap{font:700 10pt Assistant,Arial,sans-serif;color:#4a5a64;margin:0 0 3mm}
+.pr-grid{display:grid;grid-template-columns:repeat(3,52mm);grid-auto-rows:52mm;gap:2.5mm;justify-content:center}
+.pr-card{position:relative;border:1px dashed #9FB6C2;border-radius:3mm;overflow:hidden;container-type:inline-size;break-inside:avoid}
+.pr-card .mg-pic .mg-art{max-width:78%}
+.pr-card .mg-pic b{font-size:13pt}
+.pr-card .mg-sit p{font-size:11pt;text-align:center}
+.pr-card .mg-sit .mg-q{font-size:22pt}
+.pr-back{background:linear-gradient(150deg,#1B4F7A,#1A9BB5);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
+.pr-back svg{width:70%;height:70%}
+.pr-back span{font:900 12pt 'Frank Ruhl Libre',Georgia,serif;margin-top:-3mm}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a href="games.html">🎲 משחקים</a>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › משחקים › זיכרון חוסן</span>
+</nav>
+<main class="wrap">
+  <header class="hero">
+    <div class="mascot" id="mascot" aria-hidden="true"></div>
+    <div>
+      <h1>זיכרון חוסן</h1>
+      <p>מוצאים זוגות, ומדברים על מה שמחזק אותנו יחד.</p>
+    </div>
+  </header>
+
+  <section id="setup" class="panel" aria-label="הגדרות המשחק">
+    <div class="row"><span class="lbl" id="l-age">שכבת גיל</span><div class="seg" id="age" role="group" aria-labelledby="l-age"></div></div>
+    <div class="row"><span class="lbl" id="l-set">סוג הקלפים</span><div class="seg" id="set" role="group" aria-labelledby="l-set"></div><p class="hint" id="setHint"></p></div>
+    <div class="row"><span class="lbl" id="l-n">כמה זוגות?</span><div class="seg" id="pairs" role="group" aria-labelledby="l-n"></div></div>
+    <div class="row"><span class="lbl" id="l-p">איך משחקים?</span><div class="seg" id="players" role="group" aria-labelledby="l-p"></div></div>
+    <div class="actions">
+      <button class="btn" id="go" type="button">▶ מתחילים</button>
+      <button class="btn alt" id="printBtn" type="button">🖨 הדפסת הקלפים</button>
+    </div>
+    <details class="how">
+      <summary>איך משחקים</summary>
+      <div id="howBody"></div>
+    </details>
+  </section>
+
+  <section id="game" hidden aria-label="לוח המשחק">
+    <div class="status">
+      <div class="score" id="score"></div>
+      <div class="reveal" id="reveal" aria-live="polite"></div>
+    </div>
+    <div class="board" id="board"></div>
+    <div id="end" class="end" hidden></div>
+  </section>
+</main>
+<div id="print" aria-hidden="true"></div>
+<script src="lib/memory-game.js"></script>
+<script>
+(function () {
+  const M = window.SBE_MEMORY;
+  const $ = (id) => document.getElementById(id);
+  const KEY = (window.sbeUserKey ? window.sbeUserKey('sbe.memory.v1') : 'sbe.memory.v1');
+  let S = { age: 'young', set: 'same', pairs: 10, players: 0 };
+  try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  $('mascot').innerHTML = M.BACK_ART;
+
+  function seg(el, opts, key, after) {
+    el.innerHTML = '';
+    opts.forEach((o) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = o.label; b.setAttribute('aria-pressed', String(S[key] === o.id));
+      b.onclick = () => { S[key] = o.id; save(); seg(el, opts, key, after); if (after) after(); };
+      el.appendChild(b);
+    });
+  }
+  function drawSetup() {
+    seg($('age'), M.AGES, 'age', drawSetup);
+    seg($('set'), M.SETS, 'set', drawSetup);
+    $('setHint').textContent = M.SETS.find((s) => s.id === S.set).hint;
+    seg($('pairs'), [6, 10, 15, 20].map((n) => ({ id: n, label: n + ' זוגות' })), 'pairs');
+    seg($('players'), [{ id: 0, label: 'כולם יחד (שיתופי)' }, { id: 2, label: '2 משתתפים' }, { id: 3, label: '3 משתתפים' }, { id: 4, label: '4 משתתפים' }], 'players');
+  }
+  const R = M.RULES;
+  $('howBody').innerHTML =
+    '<ol>' + R.ready.concat(R.play).map((t) => '<li>' + M.esc(t) + '</li>').join('') + '</ol>' +
+    '<p><b>רגע של חוסן:</b> ' + M.esc(R.moment) + '</p><p>' + M.esc(R.coop) + '</p>' +
+    '<p><b>שאלות לסיכום:</b> ' + M.esc(R.closingWho) + '</p><ol>' + R.closing.map((q) => '<li>"' + M.esc(q) + '"</li>').join('') + '</ol>';
+  drawSetup();
+
+  // ---------- המשחק ----------
+  let G = null;
+  const COLS = { 6: [4, 3], 10: [5, 4], 15: [6, 4], 20: [8, 4] };
+  function start() {
+    const pick = M.shuffle(M.ITEMS).slice(0, S.pairs);
+    const cards = M.shuffle(M.deck(S.set, S.age, S.pairs, pick));
+    G = { cards, open: [], got: new Set(), moves: 0, turn: 0, scores: Array(S.players || 1).fill(0), lock: false, timer: null };
+    const board = $('board');
+    board.style.setProperty('--cols', COLS[S.pairs][0]);
+    board.style.setProperty('--mcols', COLS[S.pairs][1]);
+    board.innerHTML = '';
+    cards.forEach((c, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'mg-card'; b.dataset.i = i;
+      b.setAttribute('aria-label', 'קלף ' + (i + 1));
+      b.innerHTML = '<span class="in"><span class="b">' + M.BACK_ART + '</span><span class="f">' + M.face(c, S.age) + '</span></span>';
+      b.onclick = () => flip(i);
+      board.appendChild(b);
+    });
+    $('setup').hidden = true; $('game').hidden = false; $('end').hidden = true;
+    $('reveal').className = 'reveal'; $('reveal').innerHTML = '';
+    drawScore();
+    window.scrollTo({ top: 0 });
+  }
+  const cardEl = (i) => $('board').children[i];
+  function label(c) {
+    if (c.kind === 'sit') return c.it.sit[S.age];
+    return c.kind === 'pic' ? c.it.name.young : M.nameFor(c.it, S.age);
+  }
+  function drawScore() {
+    const n = G.cards.length / 2, found = G.got.size / 2;
+    let h = '';
+    if (S.players) h += G.scores.map((s, i) => '<span class="chip' + (i === G.turn ? ' on' : '') + '">' + (i === G.turn ? '▶ ' : '') + 'משתתף/ת ' + (i + 1) + ': <span class="n">' + s + '</span></span>').join('');
+    else h += '<span class="chip">🤝 תורות: <span class="n">' + G.moves + '</span></span>';
+    h += '<span class="sp"></span><span class="chip">זוגות: <span class="n">' + found + ' מתוך ' + n + '</span></span>';
+    h += '<button class="btn alt" type="button" id="toSetup" style="min-height:38px;padding:6px 14px;font-size:14.5px">הגדרות</button>';
+    $('score').innerHTML = h;
+    $('toSetup').onclick = () => { clearTimeout(G.timer); $('game').hidden = true; $('setup').hidden = false; };
+  }
+  function slot(c) {
+    const pic = c.kind === 'sit' ? '' : M.art(c.it);
+    return '<div class="slot">' + pic + '<span>' + (c.kind === 'sit' ? '' : '<b>') + M.esc(label(c)) + (c.kind === 'sit' ? '' : '</b>') + '</span></div>';
+  }
+  function showReveal(cs, state) {
+    const r = $('reveal');
+    if (S.set === 'same' && state !== 'yes') { r.className = 'reveal'; return; }
+    let side = '';
+    if (state === 'yes') side = '<div class="side"><span class="msg yes">✓ זוג! ' + M.esc(M.nameFor(cs[0].it, S.age)) + '</span><span class="ask">איפה ראינו את זה אצלנו?</span></div>';
+    else if (state === 'no') side = '<div class="side"><span class="msg">לא זוג, הפעם.</span><button class="btn alt" type="button" id="cont" style="min-height:40px;padding:6px 14px">ממשיכים</button></div>';
+    r.innerHTML = cs.map(slot).join('') + side;
+    r.className = 'reveal show' + (state === 'yes' ? ' ok' : '');
+    const k = $('cont'); if (k) k.onclick = closeOpen;
+  }
+  function closeOpen() {
+    clearTimeout(G.timer);
+    if (G.open.length === 2) {
+      G.open.forEach((i) => cardEl(i).classList.remove('up'));
+      G.open = []; G.lock = false;
+      if (S.players) G.turn = (G.turn + 1) % S.players;
+      drawScore();
+    }
+    $('reveal').className = 'reveal';
+  }
+  function flip(i) {
+    if (!G) return;
+    if (G.got.has(i)) { showReveal([G.cards[i]], 'look'); return; }
+    if (G.open.length === 2) { closeOpen(); return; }
+    if (G.open.includes(i)) return;
+    G.open.push(i); cardEl(i).classList.add('up');
+    const cs = G.open.map((k) => G.cards[k]);
+    if (G.open.length === 1) { if (S.set === 'match') showReveal(cs, 'one'); return; }
+    G.moves++;
+    const [a, b] = cs;
+    if (a.pair === b.pair) {
+      G.open.forEach((k) => { G.got.add(k); cardEl(k).classList.add('got'); });
+      if (S.players) G.scores[G.turn]++;
+      showReveal(cs, 'yes');
+      G.open = [];
+      drawScore();
+      if (G.got.size === G.cards.length) setTimeout(finish, 700);
+    } else {
+      showReveal(cs, 'no');
+      drawScore();
+      G.timer = setTimeout(closeOpen, S.set === 'same' ? 1200 : 6000);
+    }
+  }
+  function finish() {
+    const n = G.cards.length / 2;
+    let res;
+    if (S.players) {
+            res = '<p class="hint" style="font-size:16px">' + G.scores.map((s, i) => 'משתתף/ת ' + (i + 1) + ': ' + s + ' זוגות').join(' · ') + '</p>';
+    } else res = '<p class="hint" style="font-size:16px">מצאתם יחד ' + n + ' זוגות ב־' + G.moves + ' תורות. בפעם הבאה אפשר לנסות בפחות תורות.</p>';
+    $('end').innerHTML = '<h2>כל הזוגות נמצאו! 🎉</h2>' + res +
+      '<p style="margin:0;font-weight:800">שאלות לסיכום</p><p class="hint">' + M.esc(R.closingWho) + '</p><ol>' + R.closing.map((q) => '<li>"' + M.esc(q) + '"</li>').join('') + '</ol>' +
+      '<div class="actions"><button class="btn" type="button" id="again">🔄 משחק חדש</button><button class="btn alt" type="button" id="back2">הגדרות</button></div>';
+    $('end').hidden = false;
+    $('again').onclick = start;
+    $('back2').onclick = () => { $('game').hidden = true; $('setup').hidden = false; };
+    confetti();
+    $('end').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function confetti() {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const box = document.createElement('div'); box.className = 'confetti';
+    const cols = ['#FFC929', '#1A9BB5', '#3A9E6B', '#FF8F70', '#B096E8', '#F7A9C9'];
+    for (let k = 0; k < 60; k++) { const i = document.createElement('i'); i.style.left = Math.random() * 100 + 'vw'; i.style.background = cols[k % cols.length]; i.style.animationDelay = Math.random() * .8 + 's'; box.appendChild(i); }
+    document.body.appendChild(box); setTimeout(() => box.remove(), 3500);
+  }
+  $('go').onclick = start;
+
+  // ---------- הדפסה: כל 20 הזוגות, 12 קלפים בדף ----------
+  function buildPrint(set, age) {
+    const A = M.AGES.find((a) => a.id === age);
+    const setL = M.SETS.find((s) => s.id === set).label;
+    const sub = set === 'same' ? 'זוגות זהים · 20 זוגות · 40 קלפים' : 'מושג ומצב · ' + A.long + ' · 20 זוגות · 40 קלפים';
+    const head = (t, p) => '<div class="pr-head"><div><h1>' + t + '</h1><p>' + p + '</p></div><img src="assets/begood-logo.webp" alt="Begood"></div>';
+    let h = '<section class="pr-page">' + head('זיכרון חוסן', sub) +
+      '<h2>מתכוננים</h2><ol>' + R.ready.map((t) => '<li>' + M.esc(t) + '</li>').join('') + '<li>מדפיסים בצבע, בגודל אמיתי (100%), עדיף על נייר עבה, וגוזרים לאורך הקו המקווקו. לגב הקלף: מדפיסים את דף הגב על הצד השני של דפי הקלפים, או מדביקים.</li></ol>' +
+      '<h2>משחקים</h2><ol>' + R.play.map((t) => '<li>' + M.esc(t) + '</li>').join('') + '</ol>' +
+      '<h2>רגע של חוסן</h2><p>' + M.esc(R.moment) + '</p><p>' + M.esc(R.coop) + '</p>' +
+      '<h2>שאלות לסיכום</h2><p>' + M.esc(R.closingWho) + '</p><div class="pr-box"><ol>' + R.closing.map((q) => '<li>"' + M.esc(q) + '"</li>').join('') + '</ol></div>' +
+      '</section>';
+    h += '<section class="pr-page">' + head('המושגים', 'הסבר קצר למנחה על כל זוג') +
+      '<table class="pr-gl"><thead><tr><th>המושג</th><th>הסבר קצר</th></tr></thead><tbody>' +
+      M.ITEMS.map((it) => '<tr><td>' + M.esc(set === 'same' ? it.name.young : M.nameFor(it, age)) + '</td><td>' + M.esc(it.info) + '</td></tr>').join('') + '</tbody></table></section>';
+    const cards = M.deck(set, age, 20);
+    for (let p = 0; p < cards.length; p += 12) {
+      h += '<section class="pr-page"><p class="pr-cap">זיכרון חוסן · ' + setL + (set === 'match' ? ' · ' + A.label : '') + ' · דף ' + (p / 12 + 1) + ' מתוך ' + Math.ceil(cards.length / 12) + '</p><div class="pr-grid">' +
+        cards.slice(p, p + 12).map((c) => '<div class="pr-card">' + M.face(c, age) + '</div>').join('') + '</div></section>';
+    }
+    h += '<section class="pr-page"><p class="pr-cap">גב הקלף · מדפיסים על הצד השני של דפי הקלפים</p><div class="pr-grid">' +
+      Array(12).fill('<div class="pr-card pr-back">' + M.BACK_ART + '<span>זיכרון חוסן</span></div>').join('') + '</div></section>';
+    $('print').innerHTML = h;
+    document.title = 'זיכרון חוסן · ' + setL + (set === 'match' ? ' · ' + A.label : '') + ' · Begood';
+  }
+  $('printBtn').onclick = () => { buildPrint(S.set, S.age); setTimeout(() => window.print(), 300); };
+  window.sbeMemoryPrint = buildPrint;
+  const q = new URLSearchParams(location.search);
+  if (q.get('print')) buildPrint(q.get('print'), q.get('age') || 'young');
+})();
+</script>
+</body>
+</html>

@@ -41,6 +41,9 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:Assistant,Arial,
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chips span{background:#1e3640;color:#bfe6ee}}
 .dl{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:10px 18px;border-radius:12px;background:var(--navy);color:#fff;font:800 16px Assistant,Arial,sans-serif;text-decoration:none;align-self:flex-start}
 .dl:hover{background:#163f62}
+.dls{display:flex;flex-wrap:wrap;gap:8px}
+.dl.alt{background:var(--card);color:var(--navy);border:2px solid var(--line);min-height:42px;font-size:15px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dl.alt{color:#8fd3e0}}
 details{border-top:1px solid var(--line);padding-top:10px}
 details summary{cursor:pointer;font-weight:800;color:var(--navy)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) details summary{color:#8fd3e0}}
@@ -84,12 +87,45 @@ details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15
         </details>
       </div>
     </article>
+
+    <article class="game" style="margin-top:18px">
+      <div class="pic"><img src="assets/games-memory.webp" alt="קלפי זיכרון חוסן: זוג זהה של דואגים זה לזה, קלף מושג הכרת תודה, קלף מצב וגב הקלף" width="900" height="232"></div>
+      <div class="body">
+        <h3>זיכרון חוסן</h3>
+        <p>משחק זיכרון עם 20 זוגות ואיורים חביבים. שני סטים: <b>זוגות זהים</b>, איור ומילה, גם לילדים צעירים; ו<b>מושג ומצב</b>, קלף מושג וקלף מצב מהחיים שמתאים לו, עם משפטים לכל שכבת גיל. כשנמצא זוג, עוצרים ל"רגע של חוסן".</p>
+        <div class="chips"><span>20 זוגות</span><span>40 קלפים</span><span>גן עד צוות</span><span>אפשר לשחק עם חלק מהזוגות</span></div>
+        <div class="dls">
+          <a class="dl" href="assets/resilience-memory-same.pdf" download="זיכרון-חוסן-זוגות-זהים-Begood.pdf">⬇ זוגות זהים (גן–ב׳)</a>
+          <a class="dl alt" href="assets/resilience-memory-young.pdf" download="זיכרון-חוסן-מושג-ומצב-גן-ב-Begood.pdf">⬇ מושג ומצב: גן–ב׳</a>
+          <a class="dl alt" href="assets/resilience-memory-mid.pdf" download="זיכרון-חוסן-מושג-ומצב-ג-ו-Begood.pdf">⬇ מושג ומצב: ג׳–ו׳</a>
+          <a class="dl alt" href="assets/resilience-memory-teen.pdf" download="זיכרון-חוסן-מושג-ומצב-ז-יב-Begood.pdf">⬇ מושג ומצב: ז׳–י״ב</a>
+          <a class="dl alt" href="assets/resilience-memory-staff.pdf" download="זיכרון-חוסן-מושג-ומצב-צוות-Begood.pdf">⬇ מושג ומצב: צוות ומבוגרים</a>
+        </div>
+        <details>
+          <summary>מה בקובץ ואיך מדפיסים</summary>
+          <ul>
+            <li>הוראות המשחק, ודף עם הסבר קצר על כל מושג למנחה.</li>
+            <li>4 דפי קלפים, 12 קלפים בכל דף, ודף לגב הקלף.</li>
+            <li>מדפיסים בצבע, בגודל אמיתי (100%), עדיף על נייר עבה, וגוזרים לאורך הקו המקווקו.</li>
+            <li>לגב הקלף: מדפיסים את הדף האחרון על הצד השני של דפי הקלפים, או מדביקים.</li>
+          </ul>
+        </details>
+      </div>
+    </article>
   </section>
 
   <section class="sec" aria-labelledby="h-screen">
     <h2 id="h-screen">🖥 משחקים במסך</h2>
     <p class="lead">משחקים שמשחקים ישר על המסך, בטלפון או במחשב.</p>
-    <div class="empty">המשחקים במסך עוד בהכנה, ויופיעו כאן.</div>
+    <article class="game">
+      <div class="pic"><img src="assets/games-memory.webp" alt="" width="900" height="232"></div>
+      <div class="body">
+        <h3>זיכרון חוסן במסך</h3>
+        <p>הופכים קלפים ומחפשים זוגות, בטלפון, במחשב או על המסך בכיתה. בוחרים שכבת גיל, סוג קלפים, כמה זוגות, ואם משחקים כולם יחד או בתורות.</p>
+        <div class="chips"><span>6 עד 20 זוגות</span><span>שיתופי או 2 עד 4 משתתפים</span><span>גן עד צוות</span></div>
+        <a class="dl" href="memory-game.html">▶ למשחק</a>
+      </div>
+    </article>
   </section>
 </main>
 <script src="lib/screens-menu.js"></script>
