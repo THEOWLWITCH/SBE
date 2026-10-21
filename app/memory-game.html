@@ -20,25 +20,59 @@ button{font-family:inherit}
 .topnav a,.topnav button{color:var(--hl);font:inherit;font-weight:700;background:none;border:0;cursor:pointer;text-decoration:none;padding:6px 0}
 .topnav .crumb{margin-inline-start:auto;color:var(--muted);font-weight:600}
 .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
-.hero{display:flex;align-items:center;gap:16px;margin-bottom:18px}
-.hero .mascot{width:76px;height:76px;flex:none;border-radius:22px;background:linear-gradient(135deg,#1B4F7A,#1A9BB5)}
-.hero h1{margin:0;font:900 38px/1.1 'Frank Ruhl Libre',Georgia,serif;color:var(--hl)}
-.hero p{margin:4px 0 0;font-size:16.5px;color:var(--muted)}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px 22px;display:flex;flex-direction:column;gap:16px}
-.row{display:flex;flex-direction:column;gap:8px}
-.row>label,.row>.lbl{font-weight:800;font-size:16px}
-.seg{display:flex;flex-wrap:wrap;gap:8px}
-.seg button{min-height:44px;padding:8px 16px;border-radius:999px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:15.5px;cursor:pointer}
-.seg button[aria-pressed="true"]{border-color:var(--teal);background:var(--soft);color:var(--hl)}
-.seg button:focus-visible,.mg-card:focus-visible,.btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.hero{position:relative;overflow:hidden;border-radius:26px;background:linear-gradient(120deg,#1B4F7A,#1A9BB5 70%,#3A9E6B);color:#fff;padding:26px 26px 0;margin-bottom:20px;display:grid;grid-template-columns:1fr minmax(0,300px);gap:10px;align-items:end}
+.hero::after{content:'';position:absolute;inset:auto -40px -60px auto;width:220px;height:220px;border-radius:50%;background:#FFC929;opacity:.18}
+.hero .txt{padding-bottom:24px;position:relative;z-index:1}
+.hero .logo{display:inline-flex;background:#fff;border-radius:12px;padding:4px 8px;margin-bottom:10px}
+.hero .logo img{height:34px;width:auto;display:block}
+.hero h1{margin:0;font:900 44px/1.05 'Frank Ruhl Libre',Georgia,serif;color:#fff}
+.hero p{margin:8px 0 0;font-size:17.5px;color:#e6f6fa;max-width:34ch}
+.hero .parade{height:120px;position:relative;z-index:1}
+@media screen and (max-width:640px){.hero{grid-template-columns:1fr;padding:20px 18px 0}.hero h1{font-size:36px}.hero .txt{padding-bottom:4px}.hero .parade{height:88px}}
+@media screen{.hero .parade svg g>g{animation:hop 2.6s ease-in-out infinite}.hero .parade svg g>g:nth-child(2n){animation-delay:.4s}.hero .parade svg g>g:nth-child(3n){animation-delay:.9s}}
+@keyframes hop{0%,80%,100%{translate:0 0}88%{translate:0 -6px}}
+.setup{display:grid;gap:14px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.step h2{margin:0;display:flex;align-items:center;gap:10px;font:800 20px/1.2 Assistant,Arial,sans-serif}
+.step h2 .num{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font:900 16px Assistant,Arial,sans-serif;color:#fff;background:var(--c,#1A9BB5);flex:none}
+.tiles{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 10px;border-radius:18px;border:3px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font:800 17px Assistant,Arial,sans-serif;text-align:center;transition:transform .15s,border-color .15s}
+.tile small{font:600 13.5px/1.35 Assistant,Arial,sans-serif;color:var(--muted)}
+.tile:hover{transform:translateY(-2px)}
+.tile[aria-pressed="true"]{border-color:var(--c,#1A9BB5);background:var(--soft);box-shadow:0 4px 0 var(--c,#1A9BB5)}
+.tile[aria-pressed="true"]::after{content:'✓';position:absolute;top:8px;inset-inline-end:10px;width:24px;height:24px;border-radius:50%;background:var(--c,#1A9BB5);color:#fff;font:800 14px/24px Assistant,Arial,sans-serif}
+.tile .pv{display:flex;gap:6px;height:84px;align-items:stretch}
+.tile .pv .mini{width:64px;border-radius:10px;overflow:hidden;position:relative;border:2px solid #dbe7ea;container-type:inline-size;background:#fff}
+.tile .age{height:58px;width:100%}
+.chips2{display:flex;flex-wrap:wrap;gap:8px}
+.chips2 button{min-height:46px;padding:8px 16px;border-radius:999px;border:3px solid var(--line);background:var(--card);color:var(--ink);font:800 16px Assistant,Arial,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.chips2 button[aria-pressed="true"]{border-color:var(--c,#1A9BB5);background:var(--soft)}
+.chips2 .av{display:inline-flex;gap:0}
+.chips2 .av span{width:22px;height:24px;margin-inline-start:-6px}
+.go-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn.big{min-height:58px;padding:12px 30px;font-size:20px;border-radius:16px;background:linear-gradient(120deg,#1B4F7A,#1A9BB5);box-shadow:0 4px 0 #133a5a}
+.btn.big:active{translate:0 2px;box-shadow:0 2px 0 #133a5a}
+.seg button:focus-visible,.tile:focus-visible,.chips2 button:focus-visible,.mg-card:focus-visible,.btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 .hint{margin:0;color:var(--muted);font-size:14.5px}
 .actions{display:flex;flex-wrap:wrap;gap:10px}
 .btn{min-height:46px;padding:10px 20px;border-radius:12px;border:0;background:var(--navy);color:#fff;font-weight:800;font-size:16px;cursor:pointer}
-.btn.alt{background:var(--card);color:var(--hl);border:2px solid var(--line)}
-details.how{border-top:1px solid var(--line);padding-top:10px}
-details.how summary{cursor:pointer;font-weight:800;color:var(--hl)}
+.btn.alt{background:var(--card);color:var(--hl);border:2px solid var(--line);box-shadow:none}
+details.how{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:14px 20px}
+details.how summary{cursor:pointer;font-weight:800;color:var(--hl);font-size:17px}
 details.how ol,details.how ul{margin:8px 0 0;padding-inline-start:22px;line-height:1.65;font-size:15px}
 details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
+.pchip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 6px;border-radius:999px;background:var(--card);border:3px solid var(--line);font-weight:800;font-size:15px}
+.pchip .face{width:30px;height:32px}
+.pchip.on{border-color:var(--pc);box-shadow:0 3px 0 var(--pc)}
+.sound{min-height:38px;padding:6px 12px;border-radius:999px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:700 14.5px Assistant,Arial,sans-serif;cursor:pointer}
+@media screen{.mg-card.pop .in{animation:pop .5s ease}.mg-card.shake .in{animation:shake .4s ease}}
+@keyframes pop{0%{scale:1}40%{scale:1.12}100%{scale:1}}
+@keyframes shake{0%,100%{translate:0}25%{translate:-5px}75%{translate:5px}}
+.burst{position:fixed;pointer-events:none;z-index:30;width:0;height:0}
+.burst i{position:absolute;width:9px;height:9px;border-radius:50%;animation:burst .7s ease-out forwards}
+@keyframes burst{to{transform:translate(var(--dx),var(--dy)) scale(.3);opacity:0}}
+@media (prefers-reduced-motion:reduce){.hero .parade svg g>g,.mg-card.pop .in,.mg-card.shake .in{animation:none}.burst{display:none}.tile{transition:none}}
+.end .parade{height:110px}
 
 /* לוח המשחק */
 #game[hidden],#setup[hidden],#end[hidden]{display:none}
@@ -59,7 +93,8 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
 .reveal .msg.yes{color:var(--green)}
 .reveal .ask{font-size:14.5px;color:var(--muted)}
 @media screen and (max-width:640px){.reveal{flex-wrap:wrap}.reveal .slot{flex-basis:calc(50% - 5px)}.reveal .side{max-width:none;flex-basis:100%;flex-direction:row;align-items:center;flex-wrap:wrap}}
-.board{display:grid;gap:10px;grid-template-columns:repeat(var(--cols,5),minmax(0,1fr));margin-top:6px}
+.board{display:grid;gap:10px;grid-template-columns:repeat(var(--cols,5),minmax(0,1fr));margin:6px auto 0;max-width:calc(var(--cols,5) * 150px)}
+body.playing .hero{display:none}
 @media screen and (max-width:640px){.board{gap:6px;grid-template-columns:repeat(var(--mcols,4),minmax(0,1fr))}}
 .mg-card{position:relative;aspect-ratio:4/5;border:0;padding:0;background:none;cursor:pointer;perspective:800px;container-type:inline-size}
 .mg-card .in{position:absolute;inset:0;transition:transform .45s cubic-bezier(.3,.7,.3,1.2);transform-style:preserve-3d}
@@ -138,20 +173,23 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
 </nav>
 <main class="wrap">
   <header class="hero">
-    <div class="mascot" id="mascot" aria-hidden="true"></div>
-    <div>
+    <div class="txt">
+      <span class="logo"><img src="assets/begood-logo-sm.webp" alt="Begood"></span>
       <h1>זיכרון חוסן</h1>
-      <p>מוצאים זוגות, ומדברים על מה שמחזק אותנו יחד.</p>
+      <p>הופכים קלפים, מוצאים זוגות, ומדברים על מה שמחזק אותנו יחד.</p>
     </div>
+    <div class="parade" id="parade"></div>
   </header>
 
-  <section id="setup" class="panel" aria-label="הגדרות המשחק">
-    <div class="row"><span class="lbl" id="l-age">שכבת גיל</span><div class="seg" id="age" role="group" aria-labelledby="l-age"></div></div>
-    <div class="row"><span class="lbl" id="l-set">סוג הקלפים</span><div class="seg" id="set" role="group" aria-labelledby="l-set"></div><p class="hint" id="setHint"></p></div>
-    <div class="row"><span class="lbl" id="l-n">כמה זוגות?</span><div class="seg" id="pairs" role="group" aria-labelledby="l-n"></div></div>
-    <div class="row"><span class="lbl" id="l-p">איך משחקים?</span><div class="seg" id="players" role="group" aria-labelledby="l-p"></div></div>
-    <div class="actions">
-      <button class="btn" id="go" type="button">▶ מתחילים</button>
+  <section id="setup" class="setup" aria-label="הגדרות המשחק">
+    <div class="step" style="--c:#1A9BB5"><h2><span class="num">1</span>מי משחקים?</h2><div class="tiles" id="age" role="group" aria-label="שכבת גיל"></div></div>
+    <div class="step" style="--c:#E0A800"><h2><span class="num">2</span>איזה קלפים?</h2><div class="tiles" id="set" role="group" aria-label="סוג הקלפים"></div></div>
+    <div class="step" style="--c:#3A9E6B"><h2><span class="num">3</span>כמה זוגות, ואיך משחקים?</h2>
+      <div class="chips2" id="pairs" role="group" aria-label="כמה זוגות"></div>
+      <div class="chips2" id="players" role="group" aria-label="איך משחקים"></div>
+    </div>
+    <div class="go-row">
+      <button class="btn big" id="go" type="button">▶ מתחילים לשחק</button>
       <button class="btn alt" id="printBtn" type="button">🖨 הדפסת הקלפים</button>
     </div>
     <details class="how">
@@ -180,23 +218,24 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
   try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 
-  $('mascot').innerHTML = M.BACK_ART;
-
-  function seg(el, opts, key, after) {
-    el.innerHTML = '';
-    opts.forEach((o) => {
-      const b = document.createElement('button');
-      b.type = 'button'; b.textContent = o.label; b.setAttribute('aria-pressed', String(S[key] === o.id));
-      b.onclick = () => { S[key] = o.id; save(); seg(el, opts, key, after); if (after) after(); };
-      el.appendChild(b);
-    });
-  }
+  $('parade').innerHTML = M.parade(6, 360, 120);
+  let SOUND = true;
+  try { SOUND = localStorage.getItem('sbe.memory.sound') !== 'off'; } catch (e) {}
+  function press(el, key, val, after) { S[key] = val; save(); after(); }
   function drawSetup() {
-    seg($('age'), M.AGES, 'age', drawSetup);
-    seg($('set'), M.SETS, 'set', drawSetup);
-    $('setHint').textContent = M.SETS.find((s) => s.id === S.set).hint;
-    seg($('pairs'), [6, 10, 15, 20].map((n) => ({ id: n, label: n + ' זוגות' })), 'pairs');
-    seg($('players'), [{ id: 0, label: 'כולם יחד (שיתופי)' }, { id: 2, label: '2 משתתפים' }, { id: 3, label: '3 משתתפים' }, { id: 4, label: '4 משתתפים' }], 'players');
+    const pick = (el, html) => { el.innerHTML = html; };
+    const sample = M.ITEMS.find((i) => i.id === 'together');
+    pick($('age'), M.AGES.map((a, k) => `<button type="button" class="tile" data-v="${a.id}" aria-pressed="${S.age === a.id}"><span class="age">${M.parade(k + 2, 60 + k * 40, 70)}</span>${M.esc(a.label)}<small>${M.esc(a.long)}</small></button>`).join(''));
+    pick($('set'), M.SETS.map((st) => {
+      const a = st.id === 'same' ? { kind: 'pic', it: sample } : { kind: 'concept', it: sample };
+      const b = st.id === 'same' ? { kind: 'pic', it: sample } : { kind: 'sit', it: sample };
+      return `<button type="button" class="tile" data-v="${st.id}" aria-pressed="${S.set === st.id}"><span class="pv"><span class="mini">${M.face(a, S.age)}</span><span class="mini">${M.face(b, S.age)}</span></span>${M.esc(st.label)}<small>${M.esc(st.hint)}</small></button>`;
+    }).join(''));
+    pick($('pairs'), [6, 10, 15, 20].map((n) => `<button type="button" data-v="${n}" aria-pressed="${S.pairs === n}">${n} זוגות</button>`).join(''));
+    pick($('players'), [0, 2, 3, 4].map((n) => `<button type="button" data-v="${n}" aria-pressed="${S.players === n}"><span class="av">${(n ? Array.from({ length: n }, (_, k) => k) : [0, 1, 2]).map((k) => '<span>' + M.avatar(k % 4) + '</span>').join('')}</span>${n ? n + ' משתתפים, בתורות' : 'כולם יחד (שיתופי)'}</button>`).join(''));
+    [['age', $('age'), String], ['set', $('set'), String], ['pairs', $('pairs'), Number], ['players', $('players'), Number]].forEach(([key, el, cast]) => {
+      el.querySelectorAll('button').forEach((b) => { b.onclick = () => press(el, key, cast(b.dataset.v), drawSetup); });
+    });
   }
   const R = M.RULES;
   $('howBody').innerHTML =
@@ -224,7 +263,7 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
       b.onclick = () => flip(i);
       board.appendChild(b);
     });
-    $('setup').hidden = true; $('game').hidden = false; $('end').hidden = true;
+    $('setup').hidden = true; $('game').hidden = false; $('end').hidden = true; document.body.classList.add('playing');
     $('reveal').className = 'reveal'; $('reveal').innerHTML = '';
     drawScore();
     window.scrollTo({ top: 0 });
@@ -237,12 +276,14 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
   function drawScore() {
     const n = G.cards.length / 2, found = G.got.size / 2;
     let h = '';
-    if (S.players) h += G.scores.map((s, i) => '<span class="chip' + (i === G.turn ? ' on' : '') + '">' + (i === G.turn ? '▶ ' : '') + 'משתתף/ת ' + (i + 1) + ': <span class="n">' + s + '</span></span>').join('');
+    if (S.players) h += G.scores.map((s, i) => '<span class="pchip' + (i === G.turn ? ' on' : '') + '" style="--pc:' + M.PLAYER[i].hex + '"><span class="face">' + M.avatar(i) + '</span>' + (i === G.turn ? 'התור של ' : '') + 'משתתף/ת ' + (i + 1) + ': <span class="n">' + s + '</span></span>').join('');
     else h += '<span class="chip">🤝 תורות: <span class="n">' + G.moves + '</span></span>';
     h += '<span class="sp"></span><span class="chip">זוגות: <span class="n">' + found + ' מתוך ' + n + '</span></span>';
+    h += '<button class="sound" type="button" id="snd" aria-pressed="' + SOUND + '">' + (SOUND ? '🔊 צליל' : '🔈 בלי צליל') + '</button>';
     h += '<button class="btn alt" type="button" id="toSetup" style="min-height:38px;padding:6px 14px;font-size:14.5px">הגדרות</button>';
     $('score').innerHTML = h;
-    $('toSetup').onclick = () => { clearTimeout(G.timer); $('game').hidden = true; $('setup').hidden = false; };
+    $('snd').onclick = () => { SOUND = !SOUND; try { localStorage.setItem('sbe.memory.sound', SOUND ? 'on' : 'off'); } catch (e) {} drawScore(); };
+    $('toSetup').onclick = () => { clearTimeout(G.timer); $('game').hidden = true; $('setup').hidden = false; document.body.classList.remove('playing'); };
   }
   function slot(c) {
     const pic = c.kind === 'sit' ? '' : M.art(c.it);
@@ -279,7 +320,8 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
     G.moves++;
     const [a, b] = cs;
     if (a.pair === b.pair) {
-      G.open.forEach((k) => { G.got.add(k); cardEl(k).classList.add('got'); });
+      G.open.forEach((k) => { G.got.add(k); const el = cardEl(k); setTimeout(() => { el.classList.add('got', 'pop'); burst(el); }, 350); });
+      chime(true);
       if (S.players) G.scores[G.turn]++;
       showReveal(cs, 'yes');
       G.open = [];
@@ -287,9 +329,33 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
       if (G.got.size === G.cards.length) setTimeout(finish, 700);
     } else {
       showReveal(cs, 'no');
+      G.open.forEach((k) => { const el = cardEl(k); setTimeout(() => { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }, 450); });
+      chime(false);
       drawScore();
       G.timer = setTimeout(closeOpen, S.set === 'same' ? 1200 : 6000);
     }
+  }
+  let AC = null;
+  function chime(ok) {
+    if (!SOUND) return;
+    try {
+      AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+      if (AC.state === 'suspended') AC.resume();
+      const notes = ok ? [523.25, 659.25, 783.99] : [392, 349.23];
+      notes.forEach((f, k) => {
+        const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime + k * 0.11;
+        o.type = 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(ok ? 0.18 : 0.08, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+        o.connect(g).connect(AC.destination); o.start(t); o.stop(t + 0.4);
+      });
+    } catch (e) {}
+  }
+  function burst(el) {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const r = el.getBoundingClientRect(), b = document.createElement('div'); b.className = 'burst';
+    b.style.left = (r.left + r.width / 2) + 'px'; b.style.top = (r.top + r.height / 2) + 'px';
+    const cols = ['#FFC929', '#1A9BB5', '#3A9E6B', '#FF8F70', '#B096E8'];
+    for (let k = 0; k < 12; k++) { const i = document.createElement('i'), a = k / 12 * Math.PI * 2, d = 40 + Math.random() * 30; i.style.background = cols[k % 5]; i.style.setProperty('--dx', Math.cos(a) * d + 'px'); i.style.setProperty('--dy', Math.sin(a) * d + 'px'); b.appendChild(i); }
+    document.body.appendChild(b); setTimeout(() => b.remove(), 800);
   }
   function finish() {
     const n = G.cards.length / 2;
@@ -297,12 +363,12 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
     if (S.players) {
             res = '<p class="hint" style="font-size:16px">' + G.scores.map((s, i) => 'משתתף/ת ' + (i + 1) + ': ' + s + ' זוגות').join(' · ') + '</p>';
     } else res = '<p class="hint" style="font-size:16px">מצאתם יחד ' + n + ' זוגות ב־' + G.moves + ' תורות. בפעם הבאה אפשר לנסות בפחות תורות.</p>';
-    $('end').innerHTML = '<h2>כל הזוגות נמצאו! 🎉</h2>' + res +
+    $('end').innerHTML = '<div class="parade">' + M.parade(7, 420, 110) + '</div><h2>כל הזוגות נמצאו! 🎉</h2>' + res +
       '<p style="margin:0;font-weight:800">שאלות לסיכום</p><p class="hint">' + M.esc(R.closingWho) + '</p><ol>' + R.closing.map((q) => '<li>"' + M.esc(q) + '"</li>').join('') + '</ol>' +
       '<div class="actions"><button class="btn" type="button" id="again">🔄 משחק חדש</button><button class="btn alt" type="button" id="back2">הגדרות</button></div>';
     $('end').hidden = false;
     $('again').onclick = start;
-    $('back2').onclick = () => { $('game').hidden = true; $('setup').hidden = false; };
+    $('back2').onclick = () => { $('game').hidden = true; $('setup').hidden = false; document.body.classList.remove('playing'); };
     confetti();
     $('end').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }

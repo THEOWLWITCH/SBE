@@ -15,7 +15,7 @@
     { id: 'staff', label: 'צוות ומבוגרים', long: 'צוותים, הורים ומבוגרים' }
   ];
   const SETS = [
-    { id: 'same', label: 'זוגות זהים', hint: 'שני קלפים עם אותו איור ואותה מילה. מתאים במיוחד לגן ולכיתות א׳–ב׳.' },
+    { id: 'same', label: 'זוגות זהים', hint: 'שני קלפים עם אותו איור ואותו מושג. מתאים במיוחד לגן ולכיתות א׳–ב׳.' },
     { id: 'match', label: 'מושג ומצב', hint: 'קלף מושג עם איור, וקלף מצב מהחיים שמתאים לו. המשפטים לפי שכבת הגיל.' }
   ];
 
@@ -329,5 +329,18 @@
     closingWho: 'בסוף המשחק המנחה שואל/ת את הקבוצה, כדי לקשר בין הקלפים לחיים בכיתה, בצוות או בבית:'
   };
 
-  return { AGES, SETS, ITEMS, RULES, ART, art, face, deck, shuffle, nameFor, BACK_ART, esc };
+  // שורת יצורונים לכותרות ולמסכים (מצעד)
+  function parade(n, w, h) {
+    const cols = ['coral', 'sun', 'teal', 'green', 'lilac', 'navy', 'pink'];
+    const opts = [{ ears: 'bunny', body: 'tall' }, { body: 'square' }, { tuft: true }, { body: 'pear', eyes: 'one' }, { ears: 'round', body: 'wide' }, { antenna: true }, { ears: 'cat' }];
+    n = n || 6; w = w || 60 * n; h = h || 80;
+    let g = '';
+    for (let k = 0; k < n; k++) g += cr(30 + k * ((w - 60) / Math.max(1, n - 1)), h - 26, .5, cols[k % cols.length], Object.assign({ arms: { l: k % 2 ? 'up' : 'wave', r: k % 2 ? 'wave' : 'up' }, eyes: k % 3 ? 'happy' : 'open', mouth: k % 2 ? 'open' : 'smile' }, opts[k % opts.length]));
+    return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" aria-hidden="true">${g}</svg>`;
+  }
+  // לכל משתתף/ת יצורון וצבע
+  const PLAYER = [{ c: 'teal', hex: '#1A9BB5' }, { c: 'coral', hex: '#E0603F' }, { c: 'sun', hex: '#C98E00' }, { c: 'lilac', hex: '#7A5CC0' }];
+  const avatar = (k) => `<svg viewBox="-42 -50 84 92" width="100%" height="100%" aria-hidden="true">${cr(0, 0, 1, PLAYER[k].c, { eyes: 'happy', arms: { l: 'wave', r: 'wave' } })}</svg>`;
+
+  return { AGES, SETS, ITEMS, RULES, ART, art, face, deck, shuffle, nameFor, BACK_ART, esc, parade, avatar, PLAYER };
 });
