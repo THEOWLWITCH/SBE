@@ -85,80 +85,89 @@
   const bg = (t) => `<circle cx="100" cy="100" r="96" fill="${t}"/>`;
 
   const ART = {
-    trust: (t) => bg(t) + ground + heart(100, 40, 1.1, '#F06A7A') + spark(62, 44, .9) + spark(140, 40, .7) +
-      cr(72, 120, .8, 'navy', { rot: 16, eyes: 'closed', arms: { l: 'out', r: 'out' } }) +
-      cr(142, 124, .8, 'teal', { flip: true, look: [3, -1], arms: { l: 'wave', r: 'out' }, mouth: 'open' }),
+    trust: (t) => bg(t) + ground + heart(100, 40, 1.1, '#F06A7A') + spark(56, 46, .9) + spark(146, 40, .7) +
+      cr(64, 122, .7, 'navy', { rot: 16, eyes: 'closed', arms: { l: 'out', r: 'out' } }) +
+      cr(128, 124, .6, 'teal', { flip: true, look: [3, -1], arms: { l: 'wave', r: 'out' }, mouth: 'open' }) +
+      cr(166, 136, .5, 'green', { flip: true, look: [3, -1], arms: { l: 'up', r: 'out' }, tuft: true }),
     hope: (t) => bg(t) + ground +
       `<g fill="none" stroke-width="10" stroke-linecap="round"><path d="M28 128 A72 72 0 0 1 172 128" stroke="#FF8F70"/><path d="M40 128 A60 60 0 0 1 160 128" stroke="#FFD34F"/><path d="M52 128 A48 48 0 0 1 148 128" stroke="#66C592"/><path d="M64 128 A36 36 0 0 1 136 128" stroke="#43BED4"/></g>` +
-      cr(100, 132, .82, 'sun', { arms: { l: 'up', r: 'up' }, eyes: 'happy', mouth: 'open' }) + spark(30, 52, 1) + spark(170, 60, .8),
+      cr(100, 136, .66, 'sun', { arms: { l: 'up', r: 'up' }, eyes: 'happy', mouth: 'open' }) +
+      cr(46, 150, .46, 'teal', { look: [2, -4], arms: { l: 'down', r: 'up' } }) + cr(154, 150, .46, 'coral', { flip: true, look: [2, -4], arms: { l: 'down', r: 'up' }, bow: true }) + spark(30, 52, 1) + spark(170, 60, .8),
     belong: (t) => bg(t) + ground +
       `<rect x="48" y="84" width="104" height="82" rx="8" fill="#fff" stroke="#BFD6DE" stroke-width="3"/><path d="M36 92 L100 38 L164 92 Z" fill="#FF8F70" stroke="#C94F33" stroke-width="3" stroke-linejoin="round"/>` +
       heart(100, 66, .8, '#fff') +
       cr(70, 140, .48, 'teal', { arms: { l: 'down', r: 'wave' } }) + cr(100, 140, .48, 'sun', { eyes: 'happy', bow: true }) + cr(130, 140, .48, 'green', { arms: { l: 'wave', r: 'down' }, tuft: true }),
     care: (t) => bg(t) + ground +
-      `<g stroke="#7CC8EE" stroke-width="3.5" stroke-linecap="round"><path d="M26 70 l-4 10 M38 96 l-4 10 M22 120 l-4 10 M174 74 l-4 10 M182 104 l-4 10 M166 128 l-4 10"/></g>` +
+      `<g stroke="#7CC8EE" stroke-width="3.5" stroke-linecap="round"><path d="M26 70 l-4 10 M38 96 l-4 10 M22 120 l-4 10 M182 104 l-4 10 M186 132 l-4 10"/></g>` +
       `<path d="M60 70 A58 50 0 0 1 176 70 Q166 62 157 70 Q147 62 137 70 Q127 62 118 70 Q108 62 98 70 Q89 62 79 70 Q70 62 60 70 Z" fill="#43BED4" stroke="#14879E" stroke-width="3" stroke-linejoin="round"/>` +
       `<path d="M114 70 L114 98 Q114 104 108 104" fill="none" stroke="#6B4A2B" stroke-width="4" stroke-linecap="round"/>` +
-      cr(84, 128, .78, 'green', { arms: { l: 'down', r: 'up' }, look: [3, 1] }) + cr(144, 142, .55, 'lilac', { flip: true, eyes: 'happy' }),
-    listen: (t) => bg(t) + ground + bubble(66, 50, 70, 38, `<circle cx="-16" cy="0" r="4.5" fill="#43BED4"/><circle cx="0" cy="0" r="4.5" fill="#FFC929"/><circle cx="16" cy="0" r="4.5" fill="#FF8F70"/>`, 6) +
-      cr(66, 128, .78, 'coral', { mouth: 'open', arms: { l: 'down', r: 'out' }, look: [3, 0] }) +
-      cr(138, 124, .82, 'navy', { flip: true, look: [3, 0], arms: { l: 'down', r: 'cup' }, mouth: 'smile' }) +
-      `<g fill="none" stroke="#14879E" stroke-width="3" stroke-linecap="round"><path d="M100 96 q6 6 0 12"/><path d="M93 92 q10 10 0 20"/></g>`,
+      cr(84, 128, .78, 'green', { arms: { l: 'down', r: 'up' }, look: [3, 1] }) + cr(134, 144, .5, 'lilac', { flip: true, eyes: 'happy' }) + cr(164, 146, .46, 'pink', { flip: true, look: [3, -2], bow: true }),
+    listen: (t) => bg(t) + ground + bubble(52, 52, 64, 36, `<circle cx="-15" cy="0" r="4.5" fill="#43BED4"/><circle cx="0" cy="0" r="4.5" fill="#FFC929"/><circle cx="15" cy="0" r="4.5" fill="#FF8F70"/>`, 6) +
+      cr(50, 132, .66, 'coral', { mouth: 'open', arms: { l: 'down', r: 'out' }, look: [3, 0] }) +
+      cr(118, 116, .54, 'navy', { flip: true, look: [3, 0], arms: { l: 'down', r: 'cup' } }) +
+      cr(162, 124, .5, 'sun', { flip: true, look: [3, 0], arms: { l: 'down', r: 'cup' }, mouth: 'o' }) +
+      cr(138, 156, .44, 'green', { flip: true, look: [3, -1], tuft: true }) +
+      `<g fill="none" stroke="#14879E" stroke-width="3" stroke-linecap="round"><path d="M88 108 q6 6 0 12"/><path d="M81 104 q10 10 0 20"/></g>`,
     together: (t) => bg(t) + ground +
-      `<rect x="36" y="46" width="128" height="28" rx="8" fill="#FFD34F" stroke="#C98E00" stroke-width="3"/>` + heart(100, 56, .55, '#F06A7A') + star(60, 60, 7, '#fff') + star(140, 60, 7, '#fff') +
-      cr(66, 128, .8, 'teal', { arms: { l: 'up', r: 'up' }, eyes: 'happy' }) + cr(134, 128, .8, 'green', { arms: { l: 'up', r: 'up' }, mouth: 'open', tuft: true }),
+      `<rect x="22" y="58" width="156" height="26" rx="8" fill="#FFD34F" stroke="#C98E00" stroke-width="3"/>` + star(50, 71, 7, '#fff') + star(100, 71, 7, '#fff') + star(150, 71, 7, '#fff') +
+      cr(48, 136, .62, 'teal', { arms: { l: 'up', r: 'up' }, eyes: 'happy' }) + cr(100, 140, .6, 'coral', { arms: { l: 'up', r: 'up' }, mouth: 'open', bow: true }) + cr(152, 136, .62, 'green', { arms: { l: 'up', r: 'up' }, mouth: 'open', tuft: true }),
     diverse: (t) => bg(t) + ground + spark(50, 52, .9) + spark(150, 46, 1) + spark(100, 34, .7) +
       cr(38, 138, .5, 'coral', { arms: { l: 'wave', r: 'down' }, bow: true }) + cr(78, 130, .62, 'navy', { glasses: true, arms: { l: 'down', r: 'wave' } }) +
       cr(122, 134, .56, 'sun', { eyes: 'happy', arms: { l: 'up', r: 'up' }, mouth: 'open' }) + cr(162, 140, .46, 'lilac', { tuft: true, arms: { l: 'wave', r: 'down' } }),
-    empathy: (t) => bg(t) + ground + heart(104, 46, .9, '#F06A7A') + heart(80, 34, .45, '#F7A9C9') +
-      cr(82, 126, .8, 'lilac', { tear: true, mouth: 'sad', look: [-2, 2] }) +
-      cr(128, 124, .82, 'sun', { flip: true, arms: { l: 'down', r: ['hug', 68] }, look: [3, 1], mouth: 'smile' }),
+    empathy: (t) => bg(t) + ground + heart(100, 46, .9, '#F06A7A') + heart(76, 34, .45, '#F7A9C9') +
+      cr(100, 130, .64, 'lilac', { tear: true, mouth: 'sad', look: [0, 2] }) +
+      cr(150, 126, .64, 'sun', { flip: true, arms: { l: 'down', r: ['hug', 62] }, look: [3, 1] }) +
+      cr(50, 132, .6, 'teal', { arms: { l: 'down', r: ['reach', 44] }, look: [3, 1] }),
     talk: (t) => bg(t) + ground +
       bubble(46, 40, 40, 30, heart(0, -3, .5, '#F06A7A'), 6) + bubble(100, 30, 40, 30, star(0, 0, 8), 0) + bubble(154, 40, 40, 30, `<path d="M-8 -2 Q0 8 8 -2" fill="none" stroke="#1A9BB5" stroke-width="3" stroke-linecap="round"/>`, -6) +
       cr(76, 104, .46, 'lilac', { mouth: 'open', look: [2, 1], arms: { l: 'wave', r: 'down' } }) + cr(124, 104, .46, 'sun', { flip: true, eyes: 'happy', arms: { l: 'down', r: 'wave' } }) +
       cr(44, 142, .54, 'teal', { mouth: 'open', look: [3, -1], arms: { l: 'down', r: 'out' } }) + cr(100, 148, .52, 'green', { tuft: true, look: [0, -2], mouth: 'smile' }) +
       cr(156, 142, .54, 'coral', { flip: true, look: [3, -1], mouth: 'open', arms: { l: 'down', r: 'out' } }),
     cando: (t) => bg(t) + ground + star(100, 34, 18) + spark(66, 40, .9) + spark(136, 52, .8) +
-      cr(100, 140, .72, 'green', { arms: { l: 'up', r: 'up' }, mouth: 'open' }) + cr(100, 95, .5, 'sun', { arms: { l: 'up', r: 'up' }, eyes: 'happy' }),
+      cr(100, 140, .72, 'green', { arms: { l: 'up', r: 'up' }, mouth: 'open' }) + cr(100, 95, .5, 'sun', { arms: { l: 'up', r: 'up' }, eyes: 'happy' }) +
+      cr(42, 150, .48, 'teal', { arms: { l: 'down', r: 'up' }, look: [3, -2] }) + cr(158, 150, .48, 'coral', { flip: true, arms: { l: 'down', r: 'up' }, look: [3, -2] }),
     flexible: (t) => bg(t) + ground +
-      `<path d="M120 54 L120 166" stroke="#6B4A2B" stroke-width="7" stroke-linecap="round"/>` +
-      `<path d="M92 50 L150 50 L164 62 L150 74 L92 74 Z" fill="#43BED4" stroke="#14879E" stroke-width="3" stroke-linejoin="round"/><path d="M148 86 L92 86 L78 98 L92 110 L148 110 Z" fill="#FFD34F" stroke="#C98E00" stroke-width="3" stroke-linejoin="round"/>` +
-      heart(120, 92, .5, '#F06A7A') + `<path d="M108 62 h28" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 9"/>` +
-      cr(60, 136, .68, 'coral', { arms: { l: 'down', r: 'up' }, look: [3, -3] }),
+      `<path d="M136 54 L136 166" stroke="#6B4A2B" stroke-width="7" stroke-linecap="round"/>` +
+      `<path d="M108 50 L166 50 L180 62 L166 74 L108 74 Z" fill="#43BED4" stroke="#14879E" stroke-width="3" stroke-linejoin="round"/><path d="M164 86 L108 86 L94 98 L108 110 L164 110 Z" fill="#FFD34F" stroke="#C98E00" stroke-width="3" stroke-linejoin="round"/>` +
+      star(136, 98, 8, '#fff') + `<path d="M124 62 h28" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 9"/>` +
+      cr(70, 132, .6, 'coral', { arms: { l: 'down', r: 'up' }, look: [3, -3] }) + cr(34, 150, .44, 'teal', { look: [3, -2], arms: { l: 'down', r: 'wave' } }) + cr(100, 156, .42, 'lilac', { look: [3, -2], tuft: true }),
     lead: (t) => bg(t) + ground +
       `<path d="M58 64 A46 30 0 1 1 146 72" fill="none" stroke="#43BED4" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 10"/><path d="M146 58 L148 76 L132 70 Z" fill="#43BED4"/>` +
       `<path d="M44 68 L44 118" stroke="#6B4A2B" stroke-width="4" stroke-linecap="round"/><path d="M44 68 L70 75 L44 84 Z" fill="#FF8F70"/>` +
       cr(58, 136, .56, 'navy', { arms: { l: 'up', r: 'down' }, eyes: 'happy' }) + cr(102, 138, .52, 'green', { arms: { l: 'wave', r: 'down' }, look: [-3, 0] }) + cr(144, 140, .48, 'pink', { look: [-3, 0], bow: true }),
     routine: (t) => bg(t) + ground +
-      `<circle cx="122" cy="78" r="46" fill="#fff" stroke="#1B4F7A" stroke-width="6"/>` +
-      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => { const a = i * Math.PI / 6; return `<circle cx="${(122 + 36 * Math.sin(a)).toFixed(1)}" cy="${(78 - 36 * Math.cos(a)).toFixed(1)}" r="${i % 3 ? 2 : 3.6}" fill="${i % 3 ? '#9FB6C2' : '#1A9BB5'}"/>`; }).join('') +
-      `<path d="M122 78 L122 52 M122 78 L140 88" stroke="#1B4F7A" stroke-width="5" stroke-linecap="round"/><circle cx="122" cy="78" r="5" fill="#FF8F70"/>` +
-      `<path d="M92 36 l-10 -8 M152 36 l10 -8" stroke="#1B4F7A" stroke-width="5" stroke-linecap="round"/>` +
-      cr(58, 140, .64, 'sun', { arms: { l: 'down', r: 'up' }, look: [3, -2], mouth: 'open' }),
+      `<circle cx="100" cy="70" r="42" fill="#fff" stroke="#1B4F7A" stroke-width="6"/>` +
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => { const a = i * Math.PI / 6; return `<circle cx="${(100 + 33 * Math.sin(a)).toFixed(1)}" cy="${(70 - 33 * Math.cos(a)).toFixed(1)}" r="${i % 3 ? 2 : 3.4}" fill="${i % 3 ? '#9FB6C2' : '#1A9BB5'}"/>`; }).join('') +
+      `<path d="M100 70 L100 46 M100 70 L117 80" stroke="#1B4F7A" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="70" r="5" fill="#FF8F70"/>` +
+      `<path d="M72 30 l-10 -8 M128 30 l10 -8" stroke="#1B4F7A" stroke-width="5" stroke-linecap="round"/>` +
+      cr(46, 146, .5, 'sun', { arms: { l: 'down', r: 'wave' }, mouth: 'open' }) + cr(100, 150, .48, 'teal', { arms: { l: 'wave', r: 'wave' }, eyes: 'happy' }) + cr(154, 146, .5, 'green', { arms: { l: 'wave', r: 'down' }, tuft: true }),
     dream: (t) => bg(t) + ground +
-      `<g fill="#fff" stroke="#BFD6DE" stroke-width="2.5"><circle cx="70" cy="66" r="24"/><circle cx="100" cy="52" r="30"/><circle cx="132" cy="64" r="26"/><rect x="62" y="62" width="80" height="26" rx="13" stroke="none"/></g>` +
-      `<path d="M78 82 L78 66 L92 56 L106 66 L106 82 Z" fill="#FF8F70"/><rect x="88" y="70" width="8" height="12" fill="#fff"/><circle cx="124" cy="64" r="10" fill="#66C592"/><path d="M124 72 L124 84" stroke="#6B4A2B" stroke-width="4" stroke-linecap="round"/>` + star(104, 40, 6) +
-      `<circle cx="96" cy="100" r="5" fill="#fff" stroke="#BFD6DE" stroke-width="2"/><circle cx="104" cy="111" r="3.4" fill="#fff" stroke="#BFD6DE" stroke-width="2"/>` +
-      cr(72, 138, .66, 'navy', { look: [2, -4], arms: { l: 'down', r: ['reach', 44] } }) + cr(132, 138, .66, 'pink', { flip: true, look: [2, -4], eyes: 'open', arms: { l: 'down', r: ['reach', 44] }, mouth: 'o' }),
+      `<g fill="#fff" stroke="#BFD6DE" stroke-width="2.5"><circle cx="70" cy="62" r="24"/><circle cx="100" cy="48" r="30"/><circle cx="132" cy="60" r="26"/><rect x="62" y="58" width="80" height="26" rx="13" stroke="none"/></g>` +
+      `<path d="M78 78 L78 62 L92 52 L106 62 L106 78 Z" fill="#FF8F70"/><rect x="88" y="66" width="8" height="12" fill="#fff"/><circle cx="124" cy="60" r="10" fill="#66C592"/><path d="M124 68 L124 80" stroke="#6B4A2B" stroke-width="4" stroke-linecap="round"/>` + star(104, 36, 6) +
+      `<circle cx="96" cy="96" r="5" fill="#fff" stroke="#BFD6DE" stroke-width="2"/><circle cx="100" cy="106" r="3.4" fill="#fff" stroke="#BFD6DE" stroke-width="2"/>` +
+      cr(50, 142, .54, 'navy', { look: [2, -4] }) + cr(100, 146, .5, 'lilac', { look: [0, -4], mouth: 'o', tuft: true }) + cr(150, 142, .54, 'pink', { flip: true, look: [2, -4], bow: true }),
     rules: (t) => bg(t) + ground +
-      `<rect x="52" y="36" width="96" height="66" rx="8" fill="#fff" stroke="#1B4F7A" stroke-width="4"/>` +
-      [52, 68, 84].map((y, i) => `<path d="M64 ${y} l4 4 l8 -9" fill="none" stroke="#3A9E6B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="84" y="${y - 3}" width="${[50, 40, 46][i]}" height="6" rx="3" fill="${['#43BED4', '#FFD34F', '#FF8F70'][i]}"/>`).join('') +
-      cr(58, 136, .74, 'green', { arms: { l: 'down', r: 'up' }, eyes: 'happy', tuft: true }) + cr(142, 136, .74, 'lilac', { flip: true, arms: { l: 'down', r: 'up' }, mouth: 'open' }),
-    thanks: (t) => bg(t) + ground + heart(142, 52, .8, '#F06A7A') + spark(158, 78, .7) +
-      `<path d="M106 132 L104 92" stroke="#3A9E6B" stroke-width="4" stroke-linecap="round"/><path d="M105 112 q-12 -8 -16 2 q10 4 16 -2 Z" fill="#66C592"/>` +
-      [0, 72, 144, 216, 288].map((a) => `<circle cx="${(104 + 9 * Math.sin(a * Math.PI / 180)).toFixed(1)}" cy="${(84 - 9 * Math.cos(a * Math.PI / 180)).toFixed(1)}" r="7" fill="#F7A9C9"/>`).join('') + `<circle cx="104" cy="84" r="5" fill="#FFC929"/>` +
-      cr(70, 130, .8, 'coral', { arms: { l: 'down', r: ['reach', 44] }, look: [3, -1], eyes: 'happy' }) + cr(146, 130, .78, 'teal', { flip: true, look: [3, -2], mouth: 'open', arms: { l: 'down', r: 'cup' } }),
+      `<rect x="52" y="30" width="96" height="66" rx="8" fill="#fff" stroke="#1B4F7A" stroke-width="4"/>` +
+      [46, 62, 78].map((y, i) => `<path d="M64 ${y} l4 4 l8 -9" fill="none" stroke="#3A9E6B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="84" y="${y - 3}" width="${[50, 40, 46][i]}" height="6" rx="3" fill="${['#43BED4', '#FFD34F', '#FF8F70'][i]}"/>`).join('') +
+      cr(52, 136, .64, 'green', { arms: { l: 'down', r: 'up' }, eyes: 'happy', tuft: true }) + cr(148, 136, .64, 'lilac', { flip: true, arms: { l: 'down', r: 'up' }, mouth: 'open' }) + cr(100, 150, .46, 'sun', { eyes: 'happy', arms: { l: 'wave', r: 'wave' } }),
+    thanks: (t) => bg(t) + ground + spark(150, 50, 1) + spark(170, 76, .7) +
+      `<path d="M92 132 L90 92" stroke="#3A9E6B" stroke-width="4" stroke-linecap="round"/><path d="M91 112 q-12 -8 -16 2 q10 4 16 -2 Z" fill="#66C592"/>` +
+      [0, 72, 144, 216, 288].map((a) => `<circle cx="${(90 + 9 * Math.sin(a * Math.PI / 180)).toFixed(1)}" cy="${(84 - 9 * Math.cos(a * Math.PI / 180)).toFixed(1)}" r="7" fill="#F7A9C9"/>`).join('') + `<circle cx="90" cy="84" r="5" fill="#FFC929"/>` +
+      cr(56, 130, .7, 'coral', { arms: { l: 'down', r: ['reach', 44] }, look: [3, -1], eyes: 'happy' }) + cr(128, 130, .64, 'teal', { flip: true, look: [3, -2], mouth: 'open', arms: { l: 'down', r: 'cup' } }) +
+      cr(168, 148, .44, 'sun', { flip: true, eyes: 'happy', arms: { l: 'wave', r: 'wave' } }),
     calm: (t) => bg(t) + ground +
-      `<g fill="none" stroke="#43BED4" stroke-width="3.5" stroke-linecap="round" opacity=".8"><path d="M74 70 q-14 -10 -6 -24 q8 -10 0 -18"/><path d="M126 70 q14 -10 6 -24 q-8 -10 0 -18"/></g>` +
-      `<path d="M38 166 L38 128" stroke="#3A9E6B" stroke-width="4" stroke-linecap="round"/>` + [0, 60, 120, 180, 240, 300].map((a) => `<circle cx="${(38 + 9 * Math.sin(a * Math.PI / 180)).toFixed(1)}" cy="${(120 - 9 * Math.cos(a * Math.PI / 180)).toFixed(1)}" r="7" fill="#F7A9C9"/>`).join('') + `<circle cx="38" cy="120" r="5" fill="#FFC929"/>` +
-      `<rect x="154" y="132" width="16" height="34" rx="3" fill="#fff" stroke="#BFD6DE" stroke-width="2.5"/><path d="M162 132 L162 126" stroke="${INK}" stroke-width="2"/><path d="M162 104 C170 114 168 124 162 126 C156 124 154 114 162 104 Z" fill="#FFC929"/><path d="M162 112 C165 118 164 122 162 123 C160 122 159 118 162 112 Z" fill="#FF8F70"/>` +
-      cr(100, 128, .86, 'teal', { eyes: 'closed', mouth: 'o', arms: { l: 'down', r: 'down' } }),
-    help: (t) => bg(t) + ground + bubble(62, 58, 40, 40, `<text x="0" y="10" text-anchor="middle" font-family="Assistant,Arial,sans-serif" font-weight="800" font-size="28" fill="#1A9BB5">?</text>`, 4) +
-      cr(64, 144, .56, 'lilac', { arms: { l: 'down', r: 'up' }, look: [3, -2] }) +
-      cr(134, 126, .82, 'sun', { flip: true, look: [3, 2], arms: { l: 'down', r: ['reach', 62] }, eyes: 'happy' }),
+      `<g fill="none" stroke="#43BED4" stroke-width="3.5" stroke-linecap="round" opacity=".8"><path d="M84 70 q-12 -10 -5 -22 q7 -9 0 -16"/><path d="M116 70 q12 -10 5 -22 q-7 -9 0 -16"/></g>` +
+      `<path d="M24 166 L24 132" stroke="#3A9E6B" stroke-width="4" stroke-linecap="round"/>` + [0, 60, 120, 180, 240, 300].map((a) => `<circle cx="${(24 + 8 * Math.sin(a * Math.PI / 180)).toFixed(1)}" cy="${(124 - 8 * Math.cos(a * Math.PI / 180)).toFixed(1)}" r="6.4" fill="#F7A9C9"/>`).join('') + `<circle cx="24" cy="124" r="4.6" fill="#FFC929"/>` +
+      `<rect x="168" y="136" width="14" height="30" rx="3" fill="#fff" stroke="#BFD6DE" stroke-width="2.5"/><path d="M175 136 L175 131" stroke="${INK}" stroke-width="2"/><path d="M175 110 C182 119 180 128 175 130 C170 128 168 119 175 110 Z" fill="#FFC929"/><path d="M175 118 C178 123 177 127 175 128 C173 127 172 123 175 118 Z" fill="#FF8F70"/>` +
+      cr(100, 120, .66, 'teal', { eyes: 'closed', mouth: 'o' }) + cr(58, 148, .48, 'green', { eyes: 'closed', mouth: 'o', tuft: true }) + cr(142, 148, .48, 'lilac', { eyes: 'closed', mouth: 'o' }),
+    help: (t) => bg(t) + ground + bubble(58, 58, 40, 40, `<text x="0" y="10" text-anchor="middle" font-family="Assistant,Arial,sans-serif" font-weight="800" font-size="28" fill="#1A9BB5">?</text>`, 4) +
+      cr(60, 144, .54, 'lilac', { arms: { l: 'down', r: 'up' }, look: [3, -2] }) +
+      cr(126, 126, .7, 'sun', { flip: true, look: [3, 2], arms: { l: 'down', r: ['reach', 56] }, eyes: 'happy' }) +
+      cr(170, 146, .46, 'green', { flip: true, look: [3, 0], arms: { l: 'down', r: 'out' }, tuft: true }),
     peace: (t) => bg(t) + ground +
-      heart(100, 48, 1.3, '#F06A7A') + `<g transform="translate(100 56) rotate(-30)"><rect x="-20" y="-7" width="40" height="14" rx="7" fill="#FFE2B8" stroke="#E0B47A" stroke-width="1.5"/><circle cx="-4" cy="-2" r="1.2" fill="#E0B47A"/><circle cx="4" cy="2" r="1.2" fill="#E0B47A"/><circle cx="4" cy="-2" r="1.2" fill="#E0B47A"/><circle cx="-4" cy="2" r="1.2" fill="#E0B47A"/></g>` +
-      cr(62, 130, .8, 'navy', { arms: { l: 'down', r: ['reach', 46] }, eyes: 'happy' }) + cr(138, 130, .8, 'coral', { flip: true, arms: { l: 'down', r: ['reach', 46] }, eyes: 'happy' }),
+      heart(100, 44, 1.2, '#F06A7A') + `<g transform="translate(100 51) rotate(-30)"><rect x="-19" y="-7" width="38" height="14" rx="7" fill="#FFE2B8" stroke="#E0B47A" stroke-width="1.5"/><circle cx="-4" cy="-2" r="1.2" fill="#E0B47A"/><circle cx="4" cy="2" r="1.2" fill="#E0B47A"/><circle cx="4" cy="-2" r="1.2" fill="#E0B47A"/><circle cx="-4" cy="2" r="1.2" fill="#E0B47A"/></g>` +
+      cr(56, 128, .66, 'navy', { arms: { l: 'down', r: ['reach', 50] }, eyes: 'happy' }) + cr(144, 128, .66, 'coral', { flip: true, arms: { l: 'down', r: ['reach', 50] }, eyes: 'happy' }) +
+      cr(100, 154, .4, 'sun', { eyes: 'happy', arms: { l: 'up', r: 'up' }, mouth: 'open' }),
     roles: (t) => bg(t) + ground +
       `<rect x="56" y="34" width="88" height="70" rx="8" fill="#fff" stroke="#1B4F7A" stroke-width="4"/>` +
       [50, 68, 86].map((y, i) => `<circle cx="70" cy="${y}" r="6" fill="${['#43BED4', '#FFD34F', '#FF8F70'][i]}"/><rect x="82" y="${y - 3}" width="34" height="6" rx="3" fill="#DCE8EC"/><path d="M122 ${y} l4 4 l8 -9" fill="none" stroke="#3A9E6B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`).join('') +
@@ -257,7 +266,10 @@
     return `<div class="mg-face mg-pic" style="--mg:${it.col};--mgt:${it.tint}"><div class="mg-art">${art(it)}</div><b>${esc(label)}</b></div>`;
   }
   // גב הקלף: יצורון מציץ ושם המשחק
-  const BACK_ART = `<svg viewBox="0 0 200 200" width="100%" height="100%" aria-hidden="true"><circle cx="100" cy="104" r="64" fill="#fff" opacity=".14"/>${heart(100, 46, .7, '#FFC929')}${cr(100, 116, .9, 'teal', { arms: { l: 'wave', r: 'wave' }, eyes: 'happy', mouth: 'open' })}</svg>`;
+  // גב הקלף: הלוגו של Begood וקבוצת יצורונים (21/10/2026: "שלב את הלוגו של בי גוד. לב הוא לא סימן מתאים - עדיף כמה יצורים")
+  const LOGO = 'assets/begood-logo-sm.webp';
+  const BACK_ART = `<svg viewBox="0 0 200 200" width="100%" height="100%" aria-hidden="true"><rect x="44" y="6" width="112" height="78" rx="18" fill="#fff"/><image href="${LOGO}" x="49" y="9" width="102" height="70" preserveAspectRatio="xMidYMid meet"/>` +
+    cr(46, 148, .54, 'sun', { arms: { l: 'down', r: 'wave' }, eyes: 'happy' }) + cr(100, 140, .62, 'teal', { arms: { l: 'wave', r: 'wave' }, mouth: 'open' }) + cr(154, 148, .54, 'green', { arms: { l: 'wave', r: 'down' }, eyes: 'happy', tuft: true }) + `</svg>`;
 
   const RULES = {
     title: 'זיכרון חוסן',
