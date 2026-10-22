@@ -44,13 +44,17 @@
 .pr-grid>*{break-inside:avoid}
 `;
   // לפני הדפסה: מחכים שכל התמונות בדף ההדפסה נטענו, ורק אז מדפיסים
+  // גופנים שמופיעים רק בדף ההדפסה לא נטענים מעצמם, והטקסט יוצא ריק. טוענים אותם מראש.
+  const FONTS = ['700 16px "Amatic SC"', '800 16px Rubik', '700 16px Rubik', '900 16px "Frank Ruhl Libre"', '700 16px "Frank Ruhl Libre"', '400 16px Assistant', '700 16px Assistant', '800 16px Assistant'];
+  const loadFonts = () => (typeof document !== 'undefined' && document.fonts ? Promise.all(FONTS.map((f) => document.fonts.load(f, 'אבג 123').catch(() => {}))) : Promise.resolve());
   async function printWhenReady(el) {
+    await loadFonts();
     const imgs = [...el.querySelectorAll('img')];
     await Promise.all(imgs.map((im) => (im.complete ? Promise.resolve() : new Promise((r) => { im.onload = im.onerror = r; }))));
     setTimeout(() => window.print(), 150);
   }
   // החלפת התוכן רק כשמשהו השתנה, כדי שבנייה מחדש בזמן ההדפסה לא תעלים תמונות שעוד לא נטענו
-  function setPrint(el, html) { const key = html.replace(/id="[a-z]+\d+"|url\(#[a-z]+\d+\)/g, ''); if (el.dataset.k !== key) { el.innerHTML = html; el.dataset.k = key; } }
+  function setPrint(el, html) { loadFonts(); const key = html.replace(/id="[a-z]+\d+"|url\(#[a-z]+\d+\)/g, ''); if (el.dataset.k !== key) { el.innerHTML = html; el.dataset.k = key; } }
   let AC = null;
   function chime(kind) {
     try {

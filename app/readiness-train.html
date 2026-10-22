@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>רכבת המוכנות</title>
+<script src="lib/access-guard.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&family=Rubik:wght@700;800&display=swap">
+<style id="kitcss"></style>
+<style>
+/* רכבת המוכנות (22/10/2026), להדפסה, עם שעון וקלפי משימה על המסך. מקור אמת: lib/readiness-seq.js. הרשאה: games. עיצוב: רכבת וקרונות */
+:root{--ink:#1F2833;--muted:#5A6672;--bg:#F2F5F8;--card:#fff;--line:#D8E0E8;--hl:#1B4F7A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#E8EEF3;--muted:#AEBAC5;--bg:#11171D;--card:#1A222A;--line:#2C3742;--hl:#8fd3e0}}
+:root[data-theme="dark"]{--ink:#E8EEF3;--muted:#AEBAC5;--bg:#11171D;--card:#1A222A;--line:#2C3742;--hl:#8fd3e0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Assistant,Arial,sans-serif}
+button,input{font-family:inherit}
+.topnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--line);font-size:15px}
+.topnav a,.topnav button{color:var(--hl);font:inherit;font-weight:700;background:none;border:0;cursor:pointer;text-decoration:none;padding:6px 0}
+.topnav .crumb{margin-inline-start:auto;color:var(--muted);font-weight:600}
+.wrap{max-width:1150px;margin:0 auto;padding:22px 16px 60px}
+.hero{border-radius:28px;background:linear-gradient(180deg,#BFE4F2,#E8F5EE);padding:24px 26px 0;margin-bottom:18px;overflow:hidden}
+.hero .logo{display:inline-flex;background:#fff;border-radius:10px;padding:4px 8px;margin-bottom:8px}.hero .logo img{height:32px;width:auto;display:block}
+.hero h1{margin:0;font:800 50px/1 Rubik,sans-serif;color:#1B4F7A}
+.hero p{margin:10px 0 0;font-size:18px;line-height:1.5;color:#33506A;max-width:56ch}
+.train{display:block;width:100%;height:auto;margin-top:10px}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px 20px;margin-bottom:14px}
+.panel h2{margin:0 0 10px;font:800 21px Rubik,Assistant,sans-serif}
+.panel p,.panel li{line-height:1.6;font-size:16px}
+.panel ol{margin:0;padding-inline-start:22px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{min-height:46px;padding:8px 18px;border-radius:999px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:800 16px Assistant;cursor:pointer}
+.chips button[aria-pressed="true"]{background:#1B4F7A;color:#fff;border-color:#1B4F7A}
+.stages{display:flex;flex-wrap:wrap;gap:8px}
+.stages span{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:14px;padding:6px 12px;font-weight:800;color:var(--ink)}
+.stages span small{font-weight:600;color:var(--muted)}
+.btn{min-height:48px;padding:10px 22px;border-radius:14px;border:0;background:#1B4F7A;color:#fff;font:800 17px Assistant,sans-serif;cursor:pointer}
+.btn.alt{background:var(--card);color:var(--hl);border:2px solid var(--line)}
+.btn.go{background:#E0603F;box-shadow:0 5px 0 #A93F24;min-height:58px;font:800 21px Rubik,sans-serif}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.chips button:focus-visible{outline:3px solid #FFC929;outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+/* סבב */
+.round{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:center}
+@media screen and (max-width:720px){.round{grid-template-columns:1fr;justify-items:center}}
+.clock{position:relative;width:200px;height:200px}
+.clock svg{width:100%;height:100%;transform:rotate(-90deg)}
+.clock b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 54px Rubik,sans-serif}
+.clock.low b{color:#B23A26}
+.task{min-height:180px;border-radius:22px;border:3px dashed var(--line);display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;font:800 26px/1.45 Assistant;text-wrap:pretty}
+.task.on{border:3px solid #E0603F;background:#FFF3EE;color:#5A1C14}
+/* הרכבות */
+.trains{display:grid;gap:14px}
+.tr{border:2px solid var(--line);border-radius:18px;padding:10px 12px;background:var(--card)}
+.tr h3{margin:0 0 8px;display:flex;align-items:center;gap:8px;font:800 18px Rubik,Assistant,sans-serif}
+.tr h3 i{width:28px;height:28px;border-radius:50%;background:var(--sc);color:#fff;font:800 14px/28px Rubik;text-align:center;font-style:normal}
+.cars{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+@media screen and (max-width:900px){.cars{grid-template-columns:1fr}}
+.car{border-radius:12px;border:2px solid var(--sc);padding:8px;font-size:14.5px;line-height:1.45;position:relative;background:color-mix(in srgb,var(--sc) 8%,var(--card))}
+.car b{display:flex;align-items:center;gap:6px;color:var(--sc);font-weight:800}
+.car b svg{color:var(--sc)}
+/* הדפסה */
+.pr-car{border:.4mm dashed #9aa6ae;border-radius:3mm;display:flex;flex-direction:column;background:#fff;overflow:hidden;position:relative}
+.pr-car .roof{background:var(--sc);color:#fff;padding:1.6mm 2.5mm;display:flex;align-items:center;justify-content:space-between;font:800 8.6pt Assistant}
+.pr-car .roof b{background:#fff;color:var(--sc);border-radius:50%;width:6.4mm;height:6.4mm;display:flex;align-items:center;justify-content:center;font:800 9pt Rubik}
+.pr-car .st{display:flex;align-items:center;gap:2mm;padding:2mm 2.5mm 0;font:800 12pt Rubik,sans-serif;color:var(--sc)}
+.pr-car .st svg{width:10mm;height:10mm;color:var(--sc)}
+.pr-car .st small{font:700 7.5pt Assistant;color:#5A6672;display:block}
+.pr-car .tx{flex:1;display:flex;align-items:center;padding:2mm 3mm;font:700 10pt/1.45 Assistant;text-align:center;justify-content:center}
+.pr-car .wh{height:11mm;display:flex;align-items:center;justify-content:space-between;padding:0 4mm;border-top:.5mm solid var(--sc)}
+.pr-car .wh i{width:7mm;height:7mm;border-radius:50%;background:#1F2833;border:1.4mm solid #9aa6ae}
+.pr-car .wh img{width:15mm}
+.pr-tk{border:.4mm dashed #9aa6ae;border-radius:3mm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3mm;text-align:center;padding:4mm;background:#FFF3EE}
+.pr-tk .k{font:800 11pt Rubik,sans-serif;color:#E0603F}
+.pr-tk p{margin:0;font:700 11pt/1.45 Assistant}
+.pr-tk img{width:15mm}
+.pr-leg{display:grid;grid-template-columns:repeat(5,1fr);gap:2mm;margin:2mm 0}
+.pr-leg div{border:.3mm solid #D8E0E8;border-radius:2mm;padding:2mm;text-align:center;font:800 10pt Assistant}
+.pr-leg svg{width:9mm;height:9mm;color:#1B4F7A}
+.pr-leg small{display:block;font:600 8pt Assistant;color:#5A6672}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a href="games.html">🎲 משחקי חוסן</a>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › משחקי חוסן › רכבת המוכנות</span>
+</nav>
+<main class="wrap">
+  <header class="hero"><span class="logo"><img src="assets/begood-logo-sm.webp" alt="Begood"></span><h1>רכבת המוכנות</h1><p id="idea"></p><svg class="train" id="heroTrain" viewBox="0 0 1100 150" aria-hidden="true"></svg></header>
+
+  <div class="panel"><h2>חמשת השלבים</h2><div class="stages" id="stages"></div></div>
+  <div class="panel"><h2>לאיזה גיל?</h2><div class="chips" id="lv" role="group" aria-label="רמה"></div></div>
+  <div class="row" style="margin-bottom:14px"><button class="btn" id="printBtn" type="button">🖨 הדפסת הקלפים</button><button class="btn alt" id="showTrains" type="button">🚂 כל הרכבות (לבדיקה)</button></div>
+
+  <div class="panel"><h2>⏱ סבב של דקה</h2><div class="round"><div class="clock" id="clock"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--line)" stroke-width="10"/><circle id="arc" cx="50" cy="50" r="44" fill="none" stroke="#E0603F" stroke-width="10" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg><b id="sec">60</b></div>
+    <div><div class="task" id="task" aria-live="polite">לוחצים על "מזניקים", וכל הצוותים מקבלים את אותה משימה.</div><div class="row" style="margin-top:12px"><button class="btn go" id="go" type="button">🚦 מזניקים</button><button class="btn alt" id="stop" type="button">⏹ עצירה</button></div></div></div></div>
+
+  <div class="panel"><h2>איך משחקים</h2><ol id="ready"></ol><ol id="play" style="margin-top:10px"></ol><p id="coop" style="margin-top:8px"></p><p style="margin:10px 0 0"><b>שאלות לסיכום:</b> <span id="cw"></span></p><ol id="closing"></ol></div>
+  <div class="panel" id="trainsBox" hidden><h2>כל הרכבות</h2><div class="trains" id="trains"></div></div>
+</main>
+<div id="print" aria-hidden="true"></div>
+<script src="lib/game-kit.js"></script>
+<script src="lib/readiness-seq.js"></script>
+<script>
+(function () {
+  const K = window.SBE_GK, S = window.SBE_SEQ, R = S.RULES, esc = K.esc;
+  const $ = (id) => document.getElementById(id);
+  $('kitcss').textContent = K.printCss('רכבת המוכנות');
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const q = new URLSearchParams(location.search);
+  let lv = q.get('level') === 'teen' ? 'teen' : 'kids';
+  $('idea').textContent = R.idea;
+  // קטר וחמישה קרונות
+  $('heroTrain').innerHTML = `<path d="M0 138h1100" stroke="#8C6B4A" stroke-width="5"/>${Array.from({ length: 28 }, (_, i) => `<rect x="${i * 40 + 6}" y="136" width="24" height="10" rx="2" fill="#8C6B4A" opacity=".6"/>`).join('')}` +
+    S.STAGES.map((st, i) => { const x = 760 - i * 170, c = S.COLORS[i * 3]; return `<g transform="translate(${x} 40)"><rect width="150" height="80" rx="14" fill="${c}"/><rect x="10" y="12" width="130" height="30" rx="8" fill="#fff" opacity=".9"/><g transform="translate(30 27) scale(.7)" style="color:${c}">${st.icon}</g><text x="88" y="34" text-anchor="middle" font-family="Rubik,sans-serif" font-weight="800" font-size="18" fill="${c}">${st.name}</text><text x="75" y="68" text-anchor="middle" font-family="Rubik,sans-serif" font-weight="800" font-size="18" fill="#fff">${st.id}</text><circle cx="35" cy="86" r="12" fill="#1F2833"/><circle cx="115" cy="86" r="12" fill="#1F2833"/></g><rect x="${x + 150}" y="96" width="20" height="5" fill="#1F2833"/>`; }).join('') +
+    `<g transform="translate(940 22)"><rect y="20" width="130" height="98" rx="16" fill="#1B4F7A"/><rect x="70" width="44" height="40" rx="6" fill="#1B4F7A"/><rect x="14" y="36" width="44" height="34" rx="6" fill="#BFE6F0"/><circle cx="30" cy="104" r="16" fill="#1F2833"/><circle cx="100" cy="104" r="16" fill="#1F2833"/><path d="M-20 100h20" stroke="#1F2833" stroke-width="5"/><circle cx="92" cy="-6" r="10" fill="#fff" opacity=".7"/><circle cx="108" cy="-18" r="14" fill="#fff" opacity=".6"/></g>`;
+  $('stages').innerHTML = S.STAGES.map((st) => `<span>${S.icon(st.id, 30)}${st.id}. ${st.name} <small>${st.what}</small></span>`).join('');
+  function drawLv() { $('lv').innerHTML = S.LEVELS.map(([v, t]) => `<button type="button" data-v="${v}" aria-pressed="${v === lv}">${t}</button>`).join(''); $('lv').querySelectorAll('button').forEach((b) => { b.onclick = () => { lv = b.dataset.v; drawLv(); if (!$('trainsBox').hidden) drawTrains(); }; }); }
+  drawLv();
+  $('ready').innerHTML = R.ready.map((t) => `<li>${esc(t)}</li>`).join('');
+  $('play').innerHTML = R.play.map((t) => `<li>${esc(t)}</li>`).join('');
+  $('coop').textContent = R.coop; $('cw').textContent = R.closingWho;
+  $('closing').innerHTML = R.closing.map((t) => `<li>"${esc(t)}"</li>`).join('');
+  function drawTrains() { $('trains').innerHTML = S.SEQ[lv].map((s) => `<div class="tr" style="--sc:${s.c}"><h3><i>${s.n}</i>${esc(s.name)}</h3><div class="cars">${s.cards.map((c) => `<div class="car"><b>${S.icon(c.stage, 22)}${S.STAGES[c.stage - 1].name}</b>${esc(c.text)}</div>`).join('')}</div></div>`).join(''); }
+  $('showTrains').onclick = () => { $('trainsBox').hidden = !$('trainsBox').hidden; if (!$('trainsBox').hidden) { drawTrains(); $('trainsBox').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); } };
+
+  // סבב של דקה
+  let bag = [], timer = null;
+  const C = 276.5;
+  function stop() { clearInterval(timer); timer = null; }
+  $('go').onclick = () => {
+    stop(); if (!bag.length) bag = K.shuffle(S.TASKS);
+    $('task').className = 'task on'; $('task').textContent = bag.pop();
+    const t0 = Date.now(); $('clock').classList.remove('low');
+    const tick = () => { const left = Math.max(0, 60 - (Date.now() - t0) / 1000); $('sec').textContent = Math.ceil(left); $('arc').style.strokeDashoffset = (C * (1 - left / 60)).toFixed(1); if (left <= 10) $('clock').classList.add('low'); if (left <= 0) { stop(); $('sec').textContent = '✓'; K.chime('win'); } };
+    tick(); timer = setInterval(tick, 200); K.chime('up');
+  };
+  $('stop').onclick = () => { stop(); };
+
+  function buildPrint() {
+    const list = S.SEQ[lv], L = S.LEVELS.find((x) => x[0] === lv)[1];
+    let h = `<section class="pr-page">${K.head(R.title + ' · ' + L, R.sub, '#1B4F7A')}<p>${esc(R.idea)}</p><div class="pr-leg">${S.STAGES.map((st) => `<div>${S.icon(st.id, 30)}<br>${st.id}. ${st.name}<small>${st.what}</small></div>`).join('')}</div>` +
+      `<h2>מתכוננים</h2><ol>${R.ready.map((t) => `<li>${esc(t)}</li>`).join('')}</ol><h2>משחקים</h2><ol>${R.play.map((t) => `<li>${esc(t)}</li>`).join('')}</ol><p>${esc(R.coop)}</p><h2>שאלות לסיכום</h2><p>${esc(R.closingWho)}</p><div class="pr-box"><ol>${R.closing.map((t) => `<li>"${esc(t)}"</li>`).join('')}</ol></div></section>`;
+    h += `<section class="pr-page">${K.head('הרכבות', 'דף בדיקה למי שמנחה: כל רצף, ומה בכל קרון', '#1B4F7A')}<table class="pr-tb"><thead><tr><th>#</th><th>הרצף</th>${S.STAGES.map((st) => `<th>${st.name}</th>`).join('')}</tr></thead><tbody>${list.map((s) => `<tr><td style="font-weight:800;color:${s.c}">${s.n}</td><td style="font-weight:800;color:${s.c}">${esc(s.name)}</td>${s.cards.map((c) => `<td style="font-size:8.2pt">${esc(c.text)}</td>`).join('')}</tr>`).join('')}</tbody></table></section>`;
+    const cars = [];
+    list.forEach((s) => s.cards.forEach((c) => cars.push(`<div class="pr-car" style="--sc:${s.c}"><div class="roof"><span>${esc(s.name)}</span><b>${s.n}</b></div><div class="st">${S.icon(c.stage, 38)}<span>${S.STAGES[c.stage - 1].name}<small>שלב ${c.stage} מתוך 5</small></span></div><div class="tx">${esc(c.text)}</div><div class="wh"><i></i><img src="${K.LOGO}" alt="Begood"><i></i></div></div>`)));
+    for (let p = 0; p < cars.length; p += 9) h += `<section class="pr-page"><p class="pr-cap">קרונות · דף ${p / 9 + 1} מתוך ${Math.ceil(cars.length / 9)}</p><div class="pr-grid">${cars.slice(p, p + 9).join('')}</div></section>`;
+    for (let p = 0; p < S.TASKS.length; p += 9) h += `<section class="pr-page"><p class="pr-cap">קלפי משימה לדקה · ${p / 9 + 1} מתוך ${Math.ceil(S.TASKS.length / 9)}</p><div class="pr-grid">${S.TASKS.slice(p, p + 9).map((t) => `<div class="pr-tk"><span class="k">⏱ משימה לדקה</span><p>${esc(t)}</p><img src="${K.LOGO}" alt="Begood"></div>`).join('')}</div></section>`;
+    K.setPrint($('print'), h);
+    document.title = 'רכבת המוכנות · ' + L + ' · Begood';
+  }
+  $('printBtn').onclick = () => { buildPrint(); K.printWhenReady($('print')); };
+  window.addEventListener('beforeprint', buildPrint);
+  if (q.get('print')) buildPrint();
+})();
+</script>
+</body>
+</html>

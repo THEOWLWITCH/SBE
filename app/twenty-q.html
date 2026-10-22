@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>20 שאלות של חוסן</title>
+<script src="lib/access-guard.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&family=Amatic+SC:wght@700&display=swap">
+<style id="kitcss"></style>
+<style>
+/* 20 שאלות של חוסן (22/10/2026), על המסך ולהדפסה. מקור אמת: lib/twenty-q.js (המושגים והאיורים מ-memory-game.js). הרשאה: games. עיצוב: מחברת בלשים */
+:root{--ink:#2C2418;--muted:#6B5D48;--bg:#E9D8B4;--card:#FFF9EC;--line:#CDB98F;--hl:#1B4F7A;--yes:#2E7D4F;--no:#B23A26}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font-family:Assistant,Arial,sans-serif;background:var(--bg);background-image:linear-gradient(rgba(27,79,122,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(27,79,122,.08) 1px,transparent 1px);background-size:24px 24px}
+button{font-family:inherit}
+.topnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 20px;background:var(--card);border-bottom:2px solid var(--line);font-size:15px}
+.topnav a,.topnav button{color:var(--hl);font:inherit;font-weight:700;background:none;border:0;cursor:pointer;text-decoration:none;padding:6px 0}
+.topnav .crumb{margin-inline-start:auto;color:var(--muted);font-weight:600}
+.wrap{max-width:1100px;margin:0 auto;padding:22px 16px 60px}
+.hero{display:grid;grid-template-columns:1fr 220px;gap:16px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:6px 26px 26px 6px;padding:22px 26px;margin-bottom:18px;box-shadow:6px 6px 0 rgba(44,36,24,.12);position:relative}
+.hero::before{content:'';position:absolute;inset:0 auto 0 0;width:14px;background:repeating-linear-gradient(#B23A26 0 6px,transparent 6px 22px);border-radius:6px 0 0 6px;opacity:.5}
+.hero .logo{display:inline-flex;background:#fff;border-radius:10px;padding:4px 8px;margin-bottom:8px;border:1px solid var(--line)}.hero .logo img{height:32px;width:auto;display:block}
+.hero h1{margin:0;font:900 48px/1.05 'Frank Ruhl Libre',Georgia,serif}
+.hero h1 span{font:700 64px 'Amatic SC',sans-serif;color:#B23A26;vertical-align:-4px}
+.hero p{margin:10px 0 0;font-size:18px;line-height:1.5;color:var(--muted);max-width:44ch}
+.mag{width:200px;height:180px}
+@media screen and (max-width:700px){.hero{grid-template-columns:1fr}.mag{display:none}.hero h1{font-size:36px}}
+body.playing .hero{display:none}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:18px 20px;margin-bottom:14px;box-shadow:4px 4px 0 rgba(44,36,24,.08)}
+.panel h2{margin:0 0 10px;font:800 20px Assistant,sans-serif}
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.tile{display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:16px;border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font:800 19px Assistant,sans-serif;text-align:right}
+.tile small{font:600 15px/1.45 Assistant;color:var(--muted)}
+.tile .ic{font-size:30px}
+.tile[aria-pressed="true"]{border-color:var(--hl);box-shadow:4px 4px 0 var(--hl)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{min-height:46px;padding:8px 18px;border-radius:999px;border:2px solid var(--line);background:#fff;color:var(--ink);font:800 16px Assistant;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--hl);color:#fff;border-color:var(--hl)}
+.btn{min-height:48px;padding:10px 22px;border-radius:12px;border:0;background:var(--hl);color:#fff;font:800 17px Assistant,sans-serif;cursor:pointer}
+.btn.alt{background:#fff;color:var(--hl);border:2px solid var(--line)}
+.btn.red{background:#B23A26}
+.btn.big{min-height:58px;font-size:20px;box-shadow:4px 4px 0 #2C2418}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.tile:focus-visible,.chips button:focus-visible,.yn button:focus-visible{outline:3px solid #FFC929;outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+details.how{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px 20px}
+details.how summary{cursor:pointer;font-weight:800;color:var(--hl);font-size:17px}
+details.how ol,details.how ul{margin:8px 0 0;padding-inline-start:22px;line-height:1.65;font-size:15.5px}
+#game[hidden],#setup[hidden]{display:none}
+.play{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+@media screen and (max-width:860px){.play{grid-template-columns:1fr}}
+.note{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:18px;min-height:380px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px}
+.note h3{margin:0;font:800 22px Assistant}
+.note p{margin:0;color:var(--muted);font-size:17px;line-height:1.5;max-width:40ch}
+.polaroid{position:relative;background:#fff;padding:14px 14px 18px;width:min(320px,90%);box-shadow:0 10px 24px rgba(44,36,24,.22);transform:rotate(-2deg)}
+.polaroid::before{content:'';position:absolute;top:-12px;left:50%;width:90px;height:26px;margin-left:-45px;background:rgba(255,224,122,.75);transform:rotate(3deg)}
+.polaroid svg{display:block;width:100%;height:auto;aspect-ratio:1}
+.polaroid b{display:block;margin-top:8px;font:700 40px/1 'Amatic SC',sans-serif;color:var(--ink)}
+.polaroid small{display:block;margin-top:6px;font:600 14.5px/1.4 Assistant;color:var(--muted)}
+.polaroid img{position:absolute;bottom:8px;left:10px;width:48px}
+.side{display:flex;flex-direction:column;gap:12px}
+.dots{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.dots span{aspect-ratio:1;border-radius:50%;border:2px dashed var(--line);display:flex;align-items:center;justify-content:center;font:800 13px Assistant;color:var(--muted)}
+.dots span.y{background:var(--yes);border:2px solid var(--yes);color:#fff}
+.dots span.n{background:var(--no);border:2px solid var(--no);color:#fff;border-radius:4px}
+.dots span.s{background:#E0A800;border:2px solid #E0A800;color:#fff;transform:rotate(45deg);border-radius:3px}
+.dots span.s i{transform:rotate(-45deg);font-style:normal}
+.left{font:800 18px Assistant;text-align:center}
+.left b{font:900 34px 'Frank Ruhl Libre',serif;color:var(--hl)}
+.yn{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.yn button{min-height:56px;border-radius:14px;border:0;color:#fff;font:800 19px Assistant;cursor:pointer}
+.yn .y{background:var(--yes)}.yn .n{background:var(--no)}.yn .s{background:#C98E00}
+.yn button:disabled{opacity:.4;cursor:default}
+.ask{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.ask li{background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:14px}
+.res{background:#FFF2C4;border:2px dashed #C98E00;border-radius:16px;padding:12px;font-weight:700;display:none}
+.res.show{display:block}
+/* הדפסה */
+.pr-cc{border:.4mm dashed #b8a98f;border-radius:2mm;background:#FFF9EC;display:flex;flex-direction:column;align-items:center;padding:3mm;text-align:center}
+.pr-cc .ph{background:#fff;padding:2mm 2mm 3mm;box-shadow:0 .5mm 1.5mm rgba(0,0,0,.2);width:40mm}
+.pr-cc .ph svg{display:block;width:100%;height:auto;aspect-ratio:1}
+.pr-cc b{display:block;margin-top:2mm;font:700 20pt/1 'Amatic SC',sans-serif;color:#2C2418}
+.pr-cc i{font-style:normal;font:600 8pt/1.35 Assistant;color:#6B5D48;margin-top:1.5mm}
+.pr-cc img{width:14mm;margin-top:auto}
+.pr-track{width:100%;border-collapse:collapse;font:700 9.5pt Assistant;margin-bottom:5mm;break-inside:avoid}
+.pr-track td,.pr-track th{border:.3mm solid #b8a98f;height:9mm;text-align:center;width:4.5%}
+.pr-track th{background:#2C2418;color:#fff;font-weight:800}
+.pr-track td:first-child,.pr-track th:first-child{width:16%;text-align:right;padding:0 2mm}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a href="games.html">🎲 משחקי חוסן</a>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › משחקי חוסן › 20 שאלות של חוסן</span>
+</nav>
+<main class="wrap">
+  <header class="hero">
+    <div><span class="logo"><img src="assets/begood-logo-sm.webp" alt="Begood"></span>
+      <h1><span>20</span> שאלות של חוסן</h1>
+      <p>על הקלף יש מושג של חוסן חברתי ואיור. שואלים שאלות של כן או לא, ומנחשים מה המושג לפני שנגמרות עשרים השאלות.</p></div>
+    <svg class="mag" viewBox="0 0 200 180" aria-hidden="true"><circle cx="86" cy="80" r="56" fill="#fff" stroke="#2C2418" stroke-width="10"/><circle cx="86" cy="80" r="44" fill="#E3F4F8"/><text x="86" y="104" text-anchor="middle" font-family="Frank Ruhl Libre,serif" font-weight="900" font-size="70" fill="#B23A26">?</text><path d="M128 120l44 44" stroke="#2C2418" stroke-width="16" stroke-linecap="round"/><path d="M60 52q12-12 30-10" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/></svg>
+  </header>
+
+  <section id="setup">
+    <div class="panel"><h2>איך משחקים?</h2><div class="tiles" id="modes" role="group" aria-label="איך משחקים"></div></div>
+    <div class="panel"><h2>השמות של המושגים</h2><div class="chips" id="ages" role="group" aria-label="גיל"></div></div>
+    <div class="row" style="margin-bottom:14px"><button class="btn big" id="go" type="button">🔍 מתחילים</button><button class="btn alt" id="printBtn" type="button">🖨 הדפסת הקלפים</button></div>
+    <details class="how"><summary>איך משחקים</summary><div id="howBody"></div></details>
+  </section>
+
+  <section id="game" hidden aria-label="המשחק">
+    <div class="play">
+      <div class="note" id="note" aria-live="polite"></div>
+      <aside class="side">
+        <div class="panel" style="margin:0"><div class="left">נשארו <b id="left">20</b> שאלות</div><div class="dots" id="dots" aria-label="השאלות"></div></div>
+        <div class="panel" style="margin:0"><h2 style="font-size:17px">מה עונים?</h2><div class="yn"><button type="button" class="y" id="ansY">✓ כן</button><button type="button" class="n" id="ansN">✗ לא</button><button type="button" class="s" id="ansS">◆ לפעמים</button></div></div>
+        <div class="panel" style="margin:0"><h2 style="font-size:17px">שאלות שאפשר לשאול</h2><ul class="ask" id="ask"></ul></div>
+        <div class="row"><button class="btn red" id="got" type="button">🎉 ניחשנו!</button><button class="btn alt" id="clue" type="button">💡 רמז</button><button class="btn alt" id="new" type="button">קלף חדש</button></div>
+        <div class="res" id="res" role="status"></div>
+      </aside>
+    </div>
+  </section>
+</main>
+<div id="print" aria-hidden="true"></div>
+<script src="lib/game-kit.js"></script>
+<script src="lib/memory-game.js"></script>
+<script src="lib/twenty-q.js"></script>
+<script>
+(function () {
+  const K = window.SBE_GK, T = window.SBE_TWENTY, R = T.RULES, esc = K.esc;
+  const $ = (id) => document.getElementById(id);
+  $('kitcss').textContent = K.printCss('20 שאלות של חוסן');
+  let mode = 'one', age = 'kids';
+  function drawSetup() {
+    $('modes').innerHTML = T.MODES.map((m) => `<button type="button" class="tile" data-v="${m.id}" aria-pressed="${mode === m.id}"><span class="ic">${m.icon}</span>${m.title}<small>${esc(m.d)}</small></button>`).join('');
+    $('modes').querySelectorAll('button').forEach((b) => { b.onclick = () => { mode = b.dataset.v; drawSetup(); }; });
+    $('ages').innerHTML = [['kids', 'ילדים'], ['adults', 'נוער ומבוגרים']].map(([v, t]) => `<button type="button" data-v="${v}" aria-pressed="${age === v}">${t}</button>`).join('');
+    $('ages').querySelectorAll('button').forEach((b) => { b.onclick = () => { age = b.dataset.v; drawSetup(); }; });
+  }
+  drawSetup();
+  $('howBody').innerHTML = `<p><b>מתכוננים</b></p><ol>${R.ready.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>${R.modes.map(([t, d]) => `<p><b>${t}:</b> ${esc(d)}</p>`).join('')}<ul>${R.tips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul><p><b>שאלות לסיכום:</b> ${esc(R.closingWho)}</p><ol>${R.closing.map((q) => `<li>"${esc(q)}"</li>`).join('')}</ol>`;
+  $('ask').innerHTML = T.ASK.map((q) => `<li>${esc(q)}</li>`).join('');
+
+  let G = null;
+  const deck = () => K.shuffle(T.ITEMS);
+  function start() { G = { deck: deck(), cur: null, marks: [], shown: false, done: false }; document.body.classList.add('playing'); $('setup').hidden = true; $('game').hidden = false; nextCard(); }
+  function nextCard() {
+    if (!G.deck.length) G.deck = deck();
+    G.cur = G.deck.pop(); G.marks = []; G.done = false; G.clue = false;
+    $('res').className = 'res'; drawDots(); gate();
+  }
+  const polaroid = (it) => `<div class="polaroid">${T.art(it)}<b>${esc(T.name(it, age))}</b><small>${esc(it.info)}</small><img src="${K.LOGO}" alt="Begood"></div>`;
+  function gate() {
+    if (mode === 'one') $('note').innerHTML = `<h3>🕵️ מי מנחש/ת עכשיו?</h3><p>היא או הוא לא מסתכלים על המסך. כל השאר רואים את הקלף, ועונים רק "כן", "לא" או "לפעמים".</p><button class="btn big" type="button" id="reveal">מראים את הקלף לקבוצה</button>`;
+    else $('note').innerHTML = `<h3>👥 מי יודע/ת את המושג?</h3><p>רק היא או הוא מסתכלים על המסך. אחר כך מסתירים, וכל הקבוצה שואלת.</p><button class="btn big" type="button" id="reveal">מראים רק לי</button>`;
+    $('reveal').onclick = showCard; setAns(false);
+  }
+  function showCard() {
+    $('note').innerHTML = polaroid(G.cur) + (mode === 'all' ? `<button class="btn" type="button" id="hide">הסתרה, ואפשר להתחיל לשאול</button>` : `<p>שואלים, ועונים בכפתורים מימין.</p>`);
+    if ($('hide')) $('hide').onclick = showHidden;
+    setAns(true);
+  }
+  function showHidden() { $('note').innerHTML = `<h3>🔒 המושג מוסתר</h3><p>ממשיכים לשאול.</p><button class="btn alt" type="button" id="peek">הצצה (רק למי שיודע/ת)</button>`; $('peek').onclick = () => { $('note').innerHTML = polaroid(G.cur) + `<button class="btn" type="button" id="hide2">הסתרה</button>`; $('hide2').onclick = showHidden; }; }
+  function setAns(on) { ['ansY', 'ansN', 'ansS'].forEach((id) => { $(id).disabled = !on || G.done || G.marks.length >= 20; }); }
+  function drawDots() {
+    $('dots').innerHTML = Array.from({ length: 20 }, (_, i) => { const m = G.marks[i]; return `<span class="${m || ''}">${m ? `<i>${m === 'y' ? '✓' : m === 'n' ? '✗' : '◆'}</i>` : i + 1}</span>`; }).join('');
+    $('left').textContent = 20 - G.marks.length;
+  }
+  function mark(m) {
+    if (G.done || G.marks.length >= 20) return;
+    G.marks.push(m); drawDots(); K.chime('tick');
+    if (G.marks.length === 10 && !G.clue) say(`עברנו 10 שאלות. אפשר לבקש רמז, או להמשיך לבד.`);
+    if (G.marks.length >= 20) { G.done = true; setAns(false); end(false); }
+  }
+  function say(t) { $('res').className = 'res show'; $('res').textContent = t; }
+  function end(won) {
+    G.done = true; setAns(false);
+    $('note').innerHTML = polaroid(G.cur);
+    say(won ? `🎉 ניחשתם אחרי ${G.marks.length} שאלות! עכשיו מספרים: איפה ראינו את "${T.name(G.cur, age)}" אצלנו?` : `נגמרו 20 השאלות. המושג הוא "${T.name(G.cur, age)}". מה היה הכי קרוב?`);
+    K.chime(won ? 'win' : 'no');
+  }
+  $('ansY').onclick = () => mark('y'); $('ansN').onclick = () => mark('n'); $('ansS').onclick = () => mark('s');
+  $('got').onclick = () => { if (!G.done) end(true); };
+  $('clue').onclick = () => { G.clue = true; say('💡 רמז: ' + T.CLUE[G.cur.id]); };
+  $('new').onclick = nextCard;
+  $('go').onclick = start;
+
+  function buildPrint() {
+    let h = `<section class="pr-page">${K.head(R.title, R.sub, '#B23A26')}<h2>מתכוננים</h2><ol>${R.ready.map((t) => `<li>${esc(t)}</li>`).join('')}</ol><h2>שתי דרכים לשחק</h2>${R.modes.map(([t, d]) => `<p><b>${t}:</b> ${esc(d)}</p>`).join('')}<h2>טיפים</h2><ul>${R.tips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` +
+      `<h2>שאלות שאפשר לשאול</h2><div class="pr-box"><p>${T.ASK.map(esc).join(' · ')}</p></div><h2>שאלות לסיכום</h2><p>${esc(R.closingWho)}</p><ol>${R.closing.map((q) => `<li>"${esc(q)}"</li>`).join('')}</ol></section>`;
+    h += `<section class="pr-page">${K.head('דף המעקב', 'בכל שאלה מסמנים: ✓ כן · ✗ לא · ◆ לפעמים', '#B23A26')}${[1, 2, 3, 4, 5, 6].map((r) => `<table class="pr-track"><tr><th>סיבוב ${r}</th>${Array.from({ length: 20 }, (_, i) => `<th>${i + 1}</th>`).join('')}</tr><tr><td>המושג: ________</td>${'<td></td>'.repeat(20)}</tr></table>`).join('')}</section>`;
+    for (let p = 0; p < T.ITEMS.length; p += 9) h += `<section class="pr-page"><p class="pr-cap">קלפי מושגים · ${p / 9 + 1} מתוך 3</p><div class="pr-grid">${T.ITEMS.slice(p, p + 9).map((it) => `<div class="pr-cc"><div class="ph">${T.art(it)}</div><b>${esc(T.name(it, age))}</b><i>רמז: ${esc(T.CLUE[it.id])}</i><img src="${K.LOGO}" alt="Begood"></div>`).join('')}</div></section>`;
+    K.setPrint($('print'), h);
+    document.title = '20 שאלות של חוסן · Begood';
+  }
+  $('printBtn').onclick = () => { buildPrint(); K.printWhenReady($('print')); };
+  window.addEventListener('beforeprint', buildPrint);
+  if (new URLSearchParams(location.search).get('print')) buildPrint();
+})();
+</script>
+</body>
+</html>

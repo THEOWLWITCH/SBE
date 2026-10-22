@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>סימני דרך</title>
+<script src="lib/access-guard.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&family=Amatic+SC:wght@700&display=swap">
+<style id="kitcss"></style>
+<style>
+/* סימני דרך (22/10/2026), להדפסה, עם תצוגה על המסך. מקור אמת: lib/trail-signs.js. הרשאה: games. עיצוב: שלטי עץ ביער */
+:root{--ink:#2B2216;--muted:#5E5240;--bg:#EEF4E6;--card:#fff;--line:#D3DEC4;--hl:#2E6B47;--wood:#C99A62;--wood2:#A97A45}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#EDE9DF;--muted:#BDB6A6;--bg:#151A13;--card:#1E241B;--line:#2F3A2A;--hl:#8FD3A8}}
+:root[data-theme="dark"]{--ink:#EDE9DF;--muted:#BDB6A6;--bg:#151A13;--card:#1E241B;--line:#2F3A2A;--hl:#8FD3A8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Assistant,Arial,sans-serif}
+button{font-family:inherit}
+.topnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--line);font-size:15px}
+.topnav a,.topnav button{color:var(--hl);font:inherit;font-weight:700;background:none;border:0;cursor:pointer;text-decoration:none;padding:6px 0}
+.topnav .crumb{margin-inline-start:auto;color:var(--muted);font-weight:600}
+.wrap{max-width:1100px;margin:0 auto;padding:22px 16px 60px}
+.hero{border-radius:28px;overflow:hidden;background:linear-gradient(#CFE8D6,#EEF4E6);display:grid;grid-template-columns:1fr 300px;align-items:end;gap:10px;padding:24px 26px 0;margin-bottom:18px;position:relative}
+.hero .logo{display:inline-flex;background:#fff;border-radius:10px;padding:4px 8px;margin-bottom:8px}.hero .logo img{height:32px;width:auto;display:block}
+.hero h1{margin:0;font:900 50px/1 'Frank Ruhl Libre',Georgia,serif;color:#2E6B47}
+.hero p{margin:10px 0 22px;font-size:18px;line-height:1.5;color:#3F5A47;max-width:46ch}
+.post{width:280px;height:220px}
+@media screen and (max-width:760px){.hero{grid-template-columns:1fr}.post{display:none}.hero h1{font-size:38px}}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.tabs button{min-height:48px;padding:8px 18px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:800 17px Assistant;cursor:pointer;display:flex;align-items:center;gap:8px}
+.tabs button i{width:14px;height:14px;border-radius:50%;background:var(--ac)}
+.tabs button[aria-pressed="true"]{border-color:var(--ac);box-shadow:3px 3px 0 var(--ac)}
+.btn{min-height:48px;padding:10px 22px;border-radius:14px;border:0;background:#2E6B47;color:#fff;font:800 17px Assistant,sans-serif;cursor:pointer}
+.btn.alt{background:var(--card);color:var(--hl);border:2px solid var(--line)}
+.btn:focus-visible,.tabs button:focus-visible{outline:3px solid #FFC929;outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px 22px;margin-bottom:14px}
+.panel h2{margin:0 0 8px;font:800 21px Assistant,sans-serif;color:var(--hl)}
+.panel ol,.panel ul{margin:0;padding-inline-start:22px;line-height:1.7;font-size:16px}
+.panel p{margin:0 0 8px;line-height:1.6;font-size:16px}
+.signs{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.sign{position:relative;padding-bottom:40px}
+.sign .pl{position:relative;background:linear-gradient(180deg,var(--wood),var(--wood2));border-radius:10px;color:#2B1A08;padding:14px 18px 14px 44px;clip-path:polygon(0 50%,28px 0,100% 0,100% 100%,28px 100%);min-height:150px;box-shadow:0 6px 0 rgba(0,0,0,.12)}
+.sign .pl::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 13px,rgba(90,55,20,.18) 13px 14px);pointer-events:none}
+.sign .n{display:inline-flex;width:34px;height:34px;border-radius:50%;background:var(--ac);color:#fff;align-items:center;justify-content:center;font:800 17px Assistant;margin-inline-end:8px;border:2px solid #fff}
+.sign b{font:700 26px 'Amatic SC',sans-serif;vertical-align:middle}
+.sign p{margin:8px 0 0;font:700 17px/1.45 Assistant;position:relative}
+.sign .stick{position:absolute;bottom:0;left:50%;width:14px;height:44px;margin-left:-7px;background:#8C6B4A;border-radius:3px}
+/* הדפסה */
+.pr-signs{display:grid;gap:8mm}
+.pr-sign{position:relative;height:118mm;break-inside:avoid}
+.pr-sign .pl{position:absolute;inset:0;background:#E7C99A;border:.6mm solid #8C6B4A;clip-path:polygon(0 50%,16mm 0,100% 0,100% 100%,16mm 100%);padding:7mm 8mm 6mm 24mm;display:flex;flex-direction:column}
+.pr-sign .pl::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 9mm,rgba(140,107,74,.22) 9mm 9.4mm)}
+.pr-sign .top{display:flex;align-items:center;gap:3mm;position:relative}
+.pr-sign .top .n{width:14mm;height:14mm;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font:800 18pt Assistant;border:.8mm solid #fff}
+.pr-sign .top b{font:700 26pt 'Amatic SC',sans-serif;color:#2B1A08}
+.pr-sign .top span{margin-inline-start:auto;font:700 9pt Assistant;color:#5E4428}
+.pr-sign .task{position:relative;flex:1;display:flex;align-items:center;font:800 17pt/1.45 Assistant;color:#2B1A08}
+.pr-sign .clue{position:relative;font:700 11pt Assistant;color:#5E4428;border-top:.4mm dashed #8C6B4A;padding-top:3mm}
+.pr-sign .clue i{display:block;border-bottom:.3mm solid #8C6B4A;height:7mm}
+.pr-sign img{position:absolute;bottom:5mm;left:20mm;width:22mm;z-index:1}
+.pr-pass{border:.5mm solid #2E6B47;border-radius:4mm;padding:5mm;height:118mm;break-inside:avoid;display:flex;flex-direction:column;gap:2mm}
+.pr-pass h3{margin:0;font:900 18pt 'Frank Ruhl Libre',serif;color:#2E6B47;display:flex;justify-content:space-between;align-items:center}
+.pr-pass h3 img{width:22mm}
+.pr-pass .who{font:700 10pt Assistant;color:#3F5A47}
+.pr-pass .who span{display:inline-block;border-bottom:.3mm solid #2E6B47;width:55mm}
+.pr-pass .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:2mm;flex:1}
+.pr-pass .grid div{border:.35mm dashed #2E6B47;border-radius:2mm;padding:1.5mm;font:700 8.5pt Assistant;color:#2E6B47;position:relative}
+.pr-pass .grid div b{font:700 14pt 'Amatic SC',sans-serif}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a href="games.html">🎲 משחקי חוסן</a>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › משחקי חוסן › סימני דרך</span>
+</nav>
+<main class="wrap">
+  <header class="hero">
+    <div><span class="logo"><img src="assets/begood-logo-sm.webp" alt="Begood"></span><h1>סימני דרך</h1><p>מסלול של תחנות בחצר, בבית הספר או בטבע. בכל תחנה שלט עם משימה של חוסן חברתי, שהקבוצה עושה יחד, ורמז לתחנה הבאה.</p></div>
+    <svg class="post" viewBox="0 0 280 220" aria-hidden="true"><rect x="132" y="40" width="16" height="180" fill="#8C6B4A"/><path d="M40 52h150l26 22l-26 22H40z" fill="#C99A62" stroke="#8C6B4A" stroke-width="3"/><path d="M240 112H96l-26 22l26 22h144z" fill="#E0B57A" stroke="#8C6B4A" stroke-width="3"/><text x="118" y="82" text-anchor="middle" font-family="Amatic SC,sans-serif" font-weight="700" font-size="28" fill="#2B1A08">תחנה הבאה</text><text x="168" y="143" text-anchor="middle" font-family="Amatic SC,sans-serif" font-weight="700" font-size="28" fill="#2B1A08">קרקע יציבה</text><ellipse cx="140" cy="216" rx="90" ry="8" fill="#2E6B47" opacity=".25"/><circle cx="40" cy="190" r="26" fill="#3A9E6B"/><circle cx="246" cy="196" r="20" fill="#4FB27C"/></svg>
+  </header>
+
+  <div class="tabs" id="tabs" role="group" aria-label="גיל"></div>
+  <div class="row" style="margin-bottom:14px"><button class="btn" id="printBtn" type="button">🖨 הדפסת השלטים והדרכונים</button></div>
+  <div class="panel"><h2>מה זה</h2><p id="what"></p></div>
+  <div class="panel"><h2>מכינים את המסלול</h2><ol id="prep"></ol></div>
+  <div class="panel"><h2>משחקים</h2><ol id="play"></ol><p style="margin-top:8px" id="end"></p></div>
+  <div class="panel"><h2>השלטים של <span id="ageName"></span></h2><div class="signs" id="signs"></div></div>
+  <div class="panel"><h2>שאלות לסיכום</h2><p id="cw"></p><ol id="closing"></ol></div>
+</main>
+<div id="print" aria-hidden="true"></div>
+<script src="lib/game-kit.js"></script>
+<script src="lib/trail-signs.js"></script>
+<script>
+(function () {
+  const K = window.SBE_GK, T = window.SBE_TRAIL, R = T.RULES, esc = K.esc;
+  const $ = (id) => document.getElementById(id);
+  $('kitcss').textContent = K.printCss('סימני דרך');
+  const q = new URLSearchParams(location.search);
+  let age = T.AGES.some((a) => a.id === q.get('age')) ? q.get('age') : 'g34';
+  $('what').textContent = R.what;
+  $('prep').innerHTML = R.prepare.map((t) => `<li>${esc(t)}</li>`).join('');
+  $('play').innerHTML = R.play.map((t) => `<li>${esc(t)}</li>`).join('');
+  $('end').textContent = R.end; $('cw').textContent = R.closingWho;
+  $('closing').innerHTML = R.closing.map((t) => `<li>"${esc(t)}"</li>`).join('');
+  function draw() {
+    const A = T.AGES.find((a) => a.id === age);
+    $('tabs').innerHTML = T.AGES.map((a) => `<button type="button" data-v="${a.id}" style="--ac:${a.c}" aria-pressed="${a.id === age}"><i></i>${a.name}</button>`).join('');
+    $('tabs').querySelectorAll('button').forEach((b) => { b.onclick = () => { age = b.dataset.v; draw(); }; });
+    $('ageName').textContent = A.name;
+    $('signs').innerHTML = A.tasks.map((t, i) => `<div class="sign" style="--ac:${A.c}"><div class="pl"><span class="n">${i + 1}</span><b>תחנה ${i + 1}</b><p>${esc(t)}</p></div><span class="stick"></span></div>`).join('');
+  }
+  draw();
+  function buildPrint() {
+    const A = T.AGES.find((a) => a.id === age);
+    let h = `<section class="pr-page">${K.head(R.title + ' · ' + A.name, R.sub, '#2E6B47')}<h2>מה זה</h2><p>${esc(R.what)}</p><h2>מכינים את המסלול</h2><ol>${R.prepare.map((t) => `<li>${esc(t)}</li>`).join('')}</ol><h2>משחקים</h2><ol>${R.play.map((t) => `<li>${esc(t)}</li>`).join('')}</ol><p>${esc(R.end)}</p><h2>שאלות לסיכום</h2><p>${esc(R.closingWho)}</p><div class="pr-box"><ol>${R.closing.map((t) => `<li>"${esc(t)}"</li>`).join('')}</ol></div></section>`;
+    const sign = (n, title, task, last) => `<div class="pr-sign"><div class="pl"><div class="top"><span class="n" style="background:${A.c}">${n}</span><b>${title}</b><span>סימני דרך · ${A.name}</span></div><div class="task">${esc(task)}</div><div class="clue">${last ? 'כאן נפגשים כולם, ויושבים במעגל.' : 'הרמז לתחנה הבאה:<i></i>'}</div></div><img src="${K.LOGO}" alt="Begood"></div>`;
+    const all = A.tasks.map((t, i) => sign(i + 1, 'תחנה ' + (i + 1), t)).concat([sign('★', 'קרקע יציבה', R.end, true)]);
+    for (let i = 0; i < all.length; i += 2) h += `<section class="pr-page"><div class="pr-signs">${all.slice(i, i + 2).join('')}</div></section>`;
+    const pass = `<div class="pr-pass"><h3>דרכון דרך<img src="${K.LOGO}" alt="Begood"></h3><div class="who">שם הקבוצה: <span></span> &nbsp; מי בקבוצה: <span></span></div><div class="grid">${A.tasks.map((_, i) => `<div><b>תחנה ${i + 1}</b><br>מה עשינו?</div>`).join('')}</div><div class="who">התפקידים מתחלפים בכל תחנה: ${R.roles.join(' · ')}</div></div>`;
+    h += `<section class="pr-page"><div class="pr-signs">${pass}${pass}</div></section>`;
+    K.setPrint($('print'), h);
+    document.title = 'סימני דרך · ' + A.name + ' · Begood';
+  }
+  $('printBtn').onclick = () => { buildPrint(); K.printWhenReady($('print')); };
+  window.addEventListener('beforeprint', buildPrint);
+  if (q.get('print')) buildPrint();
+})();
+</script>
+</body>
+</html>
