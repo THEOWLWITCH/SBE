@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>לאן זה שייך? משחק התאמה</title>
+<script src="lib/access-guard.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&family=Amatic+SC:wght@700&display=swap">
+<style id="kitcss"></style>
+<style>
+/* לאן זה שייך? (22/10/2026), על המסך ולהדפסה. מקור אמת: lib/statement-sort.js. הרשאה: games. עיצוב: סניף דואר */
+:root{--ink:#1d2b36;--muted:#55616b;--line:#E3D9C8;--bg:#F7F1E6;--card:#fff;--paper:#FFFBF2;--hl:#1B4F7A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#ECE5D8;--muted:#B8AFA2;--line:#3A342C;--bg:#181512;--card:#221E19;--paper:#2B261F;--hl:#8fd3e0}}
+:root[data-theme="dark"]{--ink:#ECE5D8;--muted:#B8AFA2;--line:#3A342C;--bg:#181512;--card:#221E19;--paper:#2B261F;--hl:#8fd3e0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Assistant,Arial,sans-serif}
+button{font-family:inherit}
+.topnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--line);font-size:15px}
+.topnav a,.topnav button{color:var(--hl);font:inherit;font-weight:700;background:none;border:0;cursor:pointer;text-decoration:none;padding:6px 0}
+.topnav .crumb{margin-inline-start:auto;color:var(--muted);font-weight:600}
+.wrap{max-width:1100px;margin:0 auto;padding:22px 16px 60px}
+.hero{position:relative;overflow:hidden;border-radius:26px;background:#C9483A;background:repeating-linear-gradient(-45deg,#C9483A 0 22px,#fff 22px 30px,#1B4F7A 30px 52px,#fff 52px 60px);padding:10px;margin-bottom:18px}
+.hero .in{background:var(--paper);border-radius:18px;padding:22px 24px;display:grid;grid-template-columns:1fr minmax(0,420px);gap:12px;align-items:center}
+.hero .logo{display:inline-flex;background:#fff;border-radius:10px;padding:4px 8px;margin-bottom:8px;border:1px solid var(--line)}.hero .logo img{height:32px;width:auto;display:block}
+.hero h1{margin:0;font:900 44px/1.05 'Frank Ruhl Libre',Georgia,serif;color:#9A3426}
+.hero p{margin:8px 0 0;font-size:17.5px;line-height:1.5;color:var(--muted);max-width:42ch}
+.boxes-hero{display:flex;gap:6px;align-items:flex-end;justify-content:center}
+.boxes-hero svg{width:72px;height:80px}
+@media screen and (max-width:760px){.hero .in{grid-template-columns:1fr}.hero h1{font-size:34px}.boxes-hero svg{width:56px;height:62px}}
+body.playing .hero{display:none}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px 20px;margin-bottom:14px}
+.panel h2{margin:0 0 10px;font:800 20px Assistant,sans-serif}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{min-height:46px;padding:8px 18px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:800 17px Assistant,sans-serif;cursor:pointer}
+.chips button[aria-pressed="true"]{border-color:#C9483A;box-shadow:3px 3px 0 #C9483A}
+.btn{min-height:48px;padding:10px 22px;border-radius:14px;border:0;background:#1B4F7A;color:#fff;font:800 17px Assistant,sans-serif;cursor:pointer}
+.btn.alt{background:var(--card);color:var(--hl);border:2px solid var(--line)}
+.btn.big{min-height:58px;font-size:20px;background:#C9483A;box-shadow:0 5px 0 #8E2F24}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+details.how{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:14px 20px}
+details.how summary{cursor:pointer;font-weight:800;color:var(--hl);font-size:17px}
+details.how ol{margin:8px 0 0;padding-inline-start:22px;line-height:1.65;font-size:15.5px}
+details.how p{margin:8px 0 0;font-size:15.5px;line-height:1.6}
+#game[hidden],#setup[hidden],#end[hidden]{display:none}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;font-weight:800;color:var(--muted)}
+.prog{flex:1;height:10px;border-radius:999px;background:var(--line);overflow:hidden;max-width:360px}.prog i{display:block;height:100%;background:#C9483A;transition:width .3s}
+/* המעטפה */
+.stage{display:flex;justify-content:center;margin:6px 0 18px;min-height:230px}
+.env{position:relative;width:min(560px,100%);background:var(--paper);border:2px solid #D8CBB4;border-radius:10px;padding:26px 26px 22px;box-shadow:0 10px 24px rgba(80,50,20,.12)}
+.env::before{content:'';position:absolute;inset:0;border-radius:8px;border:6px solid transparent;border-image:repeating-linear-gradient(-45deg,#C9483A 0 10px,transparent 10px 16px,#1B4F7A 16px 26px,transparent 26px 32px) 6}
+.env .stamp{position:absolute;top:12px;left:14px;width:58px;height:66px;background:#fff;border:2px dashed #C9A66B;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transform:rotate(4deg)}
+.env .stamp img{width:46px}
+.env .stamp b{font:700 18px 'Amatic SC',sans-serif;color:#8C6B4A}
+.env .no{font:700 26px 'Amatic SC',sans-serif;color:#8C6B4A}
+.env p{margin:6px 0 0 78px;font:700 24px/1.45 Assistant,sans-serif;text-wrap:pretty}
+.env.fly{animation:fly .6s ease-in forwards}
+@keyframes fly{to{transform:translate(var(--fx),var(--fy)) scale(.15) rotate(-12deg);opacity:0}}
+.env.shake{animation:shake .45s}
+@keyframes shake{25%{transform:translateX(-10px)}50%{transform:translateX(9px)}75%{transform:translateX(-5px)}}
+.env.in{animation:in .35s ease-out}
+@keyframes in{from{transform:translateY(-24px) rotate(-3deg);opacity:0}}
+/* תיבות הדואר */
+.boxes{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.box{position:relative;border:3px solid var(--line);background:var(--card);border-radius:20px;padding:8px 6px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink)}
+.box svg{width:86px;height:92px}
+.box b{font:800 16px/1.15 Assistant,sans-serif;text-align:center}
+.box small{font:600 12.5px/1.2 Assistant,sans-serif;color:var(--muted);text-align:center}
+.box .cnt{position:absolute;top:6px;inset-inline-start:8px;min-width:28px;height:28px;border-radius:999px;background:var(--bc);color:#fff;font:800 14px/28px Assistant;text-align:center;padding:0 6px}
+.box:hover:not(:disabled){border-color:var(--bc);transform:translateY(-2px)}
+.box:disabled{opacity:.4;cursor:default}
+.box.got{animation:pop .5s}
+@keyframes pop{40%{transform:scale(1.08)}}
+.box:focus-visible,.btn:focus-visible,.chips button:focus-visible{outline:3px solid #FFC929;outline-offset:2px}
+@media screen and (max-width:760px){.boxes{grid-template-columns:repeat(3,1fr)}.box svg{width:62px;height:68px}.env p{font-size:20px;margin:62px 0 0}}
+.msg{margin:14px auto 0;max-width:640px;border-radius:16px;padding:12px 16px;font-weight:700;font-size:17px;line-height:1.5;display:none}
+.msg.show{display:block}
+.msg.ok{background:#E3F4EA;color:#1E5C3B;border:2px solid #3A9E6B}
+.msg.no{background:#FDECE8;color:#8E2F24;border:2px solid #E0603F}
+.msg.hint{background:#FFF6D6;color:#6B4B00;border:2px solid #E0A800}
+.tools{display:flex;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.end{background:var(--card);border:3px solid #C9483A;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px}
+.end h2{margin:0;font:900 30px 'Frank Ruhl Libre',Georgia,serif;color:#9A3426}
+.end .stats{display:flex;flex-wrap:wrap;gap:10px}
+.end .stats div{flex:1 1 160px;border-radius:16px;padding:12px;background:var(--paper);border:2px solid var(--line);font-weight:700}
+.end .stats b{display:block;font:900 30px Assistant}
+.end ol{margin:0;padding-inline-start:22px;line-height:1.7;font-size:16px}
+@media (prefers-reduced-motion:reduce){.env.fly,.env.shake,.env.in,.box.got{animation:none}}
+/* הדפסה */
+.pr-mats{display:grid;gap:6mm}
+.pr-mat{border:2px solid var(--gc);border-radius:5mm;height:116mm;display:grid;grid-template-columns:45mm 1fr;gap:5mm;align-items:center;padding:6mm;break-inside:avoid;background:#fff;position:relative}
+.pr-mat svg{width:45mm;height:50mm}
+.pr-mat h3{margin:0;font:900 22pt 'Frank Ruhl Libre',Georgia,serif;color:var(--gc)}
+.pr-mat .f{font:700 11pt Assistant;color:#55616b;margin-top:1mm}
+.pr-mat .w{font:600 12pt/1.5 Assistant;margin-top:3mm}
+.pr-mat .slot{margin-top:5mm;border:1.5px dashed var(--gc);border-radius:3mm;height:42mm;display:flex;align-items:center;justify-content:center;color:#9aa6ae;font:600 10pt Assistant}
+.pr-mat .lg{position:absolute;bottom:4mm;left:5mm;width:20mm}
+.pr-env{border:.4mm dashed #b8b0a3;border-radius:2mm;padding:3mm;display:flex;flex-direction:column;background:#FFFBF2;position:relative;overflow:hidden}
+.pr-env::before{content:'';position:absolute;inset:0;border:2.4mm solid transparent;border-image:repeating-linear-gradient(-45deg,#C9483A 0 4mm,transparent 4mm 6mm,#1B4F7A 6mm 10mm,transparent 10mm 12mm) 3}
+.pr-env .n{font:700 16pt 'Amatic SC',sans-serif;color:#8C6B4A;margin:2mm 2mm 0}
+.pr-env p{flex:1;display:flex;align-items:center;margin:0 3mm;font:700 11.2pt/1.45 Assistant;text-align:center;justify-content:center}
+.pr-env img{width:16mm;align-self:center;margin-bottom:3mm}
+.pr-key td.g{white-space:nowrap;font-weight:800}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a href="games.html">🎲 משחקי חוסן</a>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › משחקי חוסן › לאן זה שייך?</span>
+</nav>
+<main class="wrap">
+  <header class="hero"><div class="in">
+    <div>
+      <span class="logo"><img src="assets/begood-logo-sm.webp" alt="Begood"></span>
+      <h1>לאן זה שייך?</h1>
+      <p>בכל מעטפה משפט על מה שקורה בכיתה. מחליטים יחד לאיזו תיבת דואר של חוסן חברתי הוא שייך. לא בטוחים? אפשר לבקש רמז או לעבור הלאה.</p>
+    </div>
+    <div class="boxes-hero" id="heroBoxes" aria-hidden="true"></div>
+  </div></header>
+
+  <section id="setup">
+    <div class="panel"><h2>כמה מעטפות?</h2><div class="chips" id="count" role="group" aria-label="כמה מעטפות"></div></div>
+    <div class="row" style="margin-bottom:14px"><button class="btn big" id="go" type="button">✉️ מתחילים</button><button class="btn alt" id="printBtn" type="button">🖨 הדפסת המשחק</button></div>
+    <details class="how"><summary>איך משחקים</summary><div id="howBody"></div></details>
+  </section>
+
+  <section id="game" hidden aria-label="המשחק">
+    <div class="top"><span id="where"></span><span class="prog"><i id="progBar"></i></span></div>
+    <div class="stage"><div class="env" id="env" aria-live="polite"></div></div>
+    <div class="boxes" id="boxes" role="group" aria-label="תיבות הדואר"></div>
+    <div class="msg" id="msg" role="status"></div>
+    <div class="tools"><button class="btn alt" id="hintBtn" type="button">💡 רמז</button><button class="btn alt" id="skipBtn" type="button">↩ לעבור הלאה</button><button class="btn" id="nextBtn" type="button" hidden>הבא ←</button></div>
+    <div class="row" style="justify-content:center;margin-top:18px"><button class="btn alt" id="restart" type="button">🔄 משחק חדש</button></div>
+  </section>
+  <section id="end" class="end" hidden></section>
+</main>
+<div id="print" aria-hidden="true"></div>
+<script src="lib/game-kit.js"></script>
+<script src="lib/statement-sort.js"></script>
+<script>
+(function () {
+  const K = window.SBE_GK, G = window.SBE_SORT, R = G.RULES, esc = K.esc;
+  const $ = (id) => document.getElementById(id);
+  $('kitcss').textContent = K.printCss('לאן זה שייך?');
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let N = 10;
+  $('heroBoxes').innerHTML = G.GROUPS.map((g, i) => G.mailbox(g, { flag: i % 2 === 0 })).join('');
+  $('count').innerHTML = [10, 20, 30].map((n) => `<button type="button" data-v="${n}" aria-pressed="${n === N}">${n}</button>`).join('');
+  $('count').querySelectorAll('button').forEach((b) => { b.onclick = () => { N = +b.dataset.v; $('count').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b)); }; });
+  $('howBody').innerHTML = `<p>${esc(R.goal)}</p><ol>${R.play.map((t) => `<li>${esc(t)}</li>`).join('')}</ol><p><b>חמש התיבות:</b></p><ol>${G.GROUPS.map((g) => `<li><b>${g.name}</b> (${g.full}): ${esc(g.what)}</li>`).join('')}</ol>`;
+
+  let Q = null;
+  function start() {
+    Q = { deck: K.shuffle(G.STATEMENTS).slice(0, N), i: 0, done: 0, firstTry: 0, hints: 0, skips: 0, tries: 0, used: false, box: {} };
+    document.body.classList.add('playing'); $('setup').hidden = true; $('end').hidden = true; $('game').hidden = false;
+    drawBoxes(); show();
+  }
+  function drawBoxes() {
+    $('boxes').innerHTML = G.GROUPS.map((g) => `<button type="button" class="box" data-g="${g.id}" style="--bc:${g.c}"><span class="cnt">${Q.box[g.id] || 0}</span>${G.mailbox(g, { flag: !!Q.box[g.id] })}<b>${g.name}</b><small>${g.full}</small></button>`).join('');
+    $('boxes').querySelectorAll('.box').forEach((b) => { b.onclick = () => pick(b); });
+  }
+  function show() {
+    const c = Q.deck[Q.i];
+    Q.tries = 0; Q.used = false; Q.lock = false;
+    $('where').textContent = `מעטפה ${Q.done + 1} מתוך ${N}`;
+    $('progBar').style.width = (Q.done / N * 100) + '%';
+    $('env').className = 'env' + (reduce ? '' : ' in');
+    $('env').innerHTML = `<div class="stamp"><img src="${K.LOGO}" alt="Begood"><b>#${c.n}</b></div><div class="no">מעטפה מספר ${c.n}</div><p>${esc(c.text)}</p>`;
+    $('msg').className = 'msg'; $('msg').innerHTML = '';
+    $('boxes').querySelectorAll('.box').forEach((b) => { b.disabled = false; });
+    $('hintBtn').hidden = false; $('skipBtn').hidden = false; $('nextBtn').hidden = true;
+  }
+  function say(cls, html) { $('msg').className = 'msg show ' + cls; $('msg').innerHTML = html; }
+  function pick(b) {
+    if (Q.lock) return;
+    const c = Q.deck[Q.i], g = G.GROUPS.find((x) => x.id === b.dataset.g);
+    Q.tries++;
+    if (b.dataset.g === c.g) {
+      Q.lock = true;
+      if (Q.tries === 1 && !Q.used) Q.firstTry++;
+      Q.box[c.g] = (Q.box[c.g] || 0) + 1; Q.done++;
+      const er = $('env').getBoundingClientRect(), br = b.getBoundingClientRect();
+      $('env').style.setProperty('--fx', (br.left + br.width / 2 - (er.left + er.width / 2)) + 'px');
+      $('env').style.setProperty('--fy', (br.top + 30 - (er.top + er.height / 2)) + 'px');
+      $('env').className = 'env' + (reduce ? '' : ' fly');
+      K.chime('up');
+      setTimeout(() => { drawBoxes(); const nb = $('boxes').querySelector(`[data-g="${c.g}"]`); if (nb) { nb.classList.add('got'); } Q.lock = true; }, reduce ? 0 : 560);
+      say('ok', `✓ ${esc(g.name)}. ${esc(g.what)}<br><span style="font-weight:600">רוצים להוסיף דוגמה משלכם, מהכיתה שלנו?</span>`);
+      $('hintBtn').hidden = true; $('skipBtn').hidden = true; $('nextBtn').hidden = false; $('nextBtn').focus();
+      $('progBar').style.width = (Q.done / N * 100) + '%';
+    } else {
+      b.disabled = true; K.chime('no');
+      $('env').className = 'env'; void $('env').offsetWidth; if (!reduce) $('env').classList.add('shake');
+      say('no', `עוד לא. יש היגיון גם ב"${esc(g.name)}", אבל המשפט הזה קרוב יותר לתיבה אחרת. אפשר לנסות שוב או לבקש רמז.`);
+    }
+  }
+  $('hintBtn').onclick = () => { const c = Q.deck[Q.i]; Q.used = true; Q.hints++; say('hint', '💡 ' + esc(c.hint)); };
+  $('skipBtn').onclick = () => { const c = Q.deck.splice(Q.i, 1)[0]; Q.deck.push(c); Q.skips++; show(); };
+  $('nextBtn').onclick = () => { Q.i++; if (Q.i >= Q.deck.length) return finish(); show(); };
+  function finish() {
+    $('game').hidden = true; $('end').hidden = false;
+    const top = G.GROUPS.slice().sort((a, b) => (Q.box[b.id] || 0) - (Q.box[a.id] || 0))[0];
+    $('end').innerHTML = `<h2>כל המעטפות הגיעו לתיבות!</h2><div class="stats"><div><b>${N}</b>מעטפות</div><div><b>${Q.firstTry}</b>בניסיון הראשון</div><div><b>${Q.hints}</b>רמזים</div><div><b>${Q.skips}</b>פעמים עברנו הלאה וחזרנו</div></div>` +
+      `<p style="margin:0;font-size:16px">התיבה עם הכי הרבה מעטפות: <b style="color:${top.c}">${top.name}</b>.</p>` +
+      `<h3 style="margin:6px 0 0">שאלות לסיכום</h3><p style="margin:0">${esc(R.closingWho)}</p><ol>${R.closing.map((q) => `<li>"${esc(q)}"</li>`).join('')}</ol>` +
+      `<div class="row"><button class="btn big" type="button" id="again">🔄 משחק חדש</button><button class="btn alt" type="button" id="toSet">הגדרות</button></div>`;
+    $('again').onclick = start; $('toSet').onclick = toSetup; K.chime('win');
+    $('end').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+  }
+  function toSetup() { document.body.classList.remove('playing'); $('game').hidden = true; $('end').hidden = true; $('setup').hidden = false; }
+  $('go').onclick = start; $('restart').onclick = start;
+
+  // ---------- הדפסה ----------
+  function buildPrint() {
+    let h = `<section class="pr-page">${K.head(R.title, R.sub, '#C9483A')}<h2>מה עושים</h2><p>${esc(R.goal)}</p><h2>משחקים</h2><ol>${R.play.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>` +
+      `<h2>חמש התיבות</h2><table class="pr-tb"><thead><tr><th>התיבה</th><th>מה בה</th></tr></thead><tbody>${G.GROUPS.map((g) => `<tr><td class="g" style="color:${g.d};font-weight:800">${g.name}<br><span style="font-weight:600;color:#55616b">${g.full}</span></td><td>${esc(g.what)}</td></tr>`).join('')}</tbody></table>` +
+      `<h2>שאלות לסיכום</h2><p>${esc(R.closingWho)}</p><div class="pr-box"><ol>${R.closing.map((q) => `<li>"${esc(q)}"</li>`).join('')}</ol></div></section>`;
+    for (let i = 0; i < G.GROUPS.length; i += 2) h += `<section class="pr-page"><div class="pr-mats">${G.GROUPS.slice(i, i + 2).map((g) => `<div class="pr-mat" style="--gc:${g.c}">${G.mailbox(g, { flag: true })}<div><h3>${g.name}</h3><div class="f">${g.full}</div><div class="w">${esc(g.what)}</div><div class="slot">מניחים כאן את המעטפות</div></div><img class="lg" src="${K.LOGO}" alt="Begood"></div>`).join('')}</div></section>`;
+    for (let p = 0; p < G.STATEMENTS.length; p += 9) h += `<section class="pr-page"><p class="pr-cap">מעטפות · דף ${p / 9 + 1} מתוך ${Math.ceil(G.STATEMENTS.length / 9)}</p><div class="pr-grid">${G.STATEMENTS.slice(p, p + 9).map((c) => `<div class="pr-env"><span class="n">#${c.n}</span><p>${esc(c.text)}</p><img src="${K.LOGO}" alt="Begood"></div>`).join('')}</div></section>`;
+    h += `<section class="pr-page">${K.head('דף התשובות והרמזים', 'למי שמנחה את המשחק: הרמז עוזר לחשוב, והתשובה היא הצעה. ההסבר חשוב יותר מהתיבה.', '#C9483A')}<table class="pr-tb pr-key"><thead><tr><th>#</th><th>התיבה</th><th>רמז</th></tr></thead><tbody>${G.STATEMENTS.map((c) => { const g = G.GROUPS.find((x) => x.id === c.g); return `<tr><td>${c.n}</td><td class="g" style="color:${g.d}">${g.name}</td><td>${esc(c.hint)}</td></tr>`; }).join('')}</tbody></table></section>`;
+    K.setPrint($('print'), h);
+    document.title = 'לאן זה שייך? · משחק התאמה · Begood';
+  }
+  $('printBtn').onclick = () => { buildPrint(); K.printWhenReady($('print')); };
+  window.addEventListener('beforeprint', buildPrint);
+  if (new URLSearchParams(location.search).get('print')) buildPrint();
+})();
+</script>
+</body>
+</html>

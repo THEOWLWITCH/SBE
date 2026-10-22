@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חידות חוסן</title>
+<script src="lib/access-guard.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&display=swap">
+<style id="kitcss"></style>
+<style>
+/* חידות חוסן (22/10/2026), על המסך ולהדפסה. מקור אמת: lib/riddles.js. הרשאה: games. עיצוב: שמי לילה ופנס */
+:root{--ink:#EAF0FA;--muted:#AFC0D6;--bg:#0F1D33;--card:#16294A;--line:#2A4269;--sun:#FFC929}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#24406E,transparent),var(--bg);color:var(--ink);font-family:Assistant,Arial,sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(1.4px 1.4px at 12% 18%,#fff 50%,transparent 51%),radial-gradient(1.2px 1.2px at 32% 62%,#fff 50%,transparent 51%),radial-gradient(1.6px 1.6px at 72% 28%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 88% 74%,#fff 50%,transparent 51%),radial-gradient(1.3px 1.3px at 52% 8%,#fff 50%,transparent 51%),radial-gradient(1.1px 1.1px at 6% 82%,#fff 50%,transparent 51%);opacity:.7}
+button{font-family:inherit}
+.topnav{position:relative;display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 20px;background:rgba(10,20,38,.7);border-bottom:1px solid var(--line);font-size:15px}
+.topnav a,.topnav button{color:#8FD3E0;font:inherit;font-weight:700;background:none;border:0;cursor:pointer;text-decoration:none;padding:6px 0}
+.topnav .crumb{margin-inline-start:auto;color:var(--muted);font-weight:600}
+.wrap{position:relative;max-width:1000px;margin:0 auto;padding:24px 16px 60px}
+.hero{display:grid;grid-template-columns:1fr 200px;gap:10px;align-items:center;margin-bottom:20px}
+.hero .logo{display:inline-flex;background:#fff;border-radius:10px;padding:4px 8px;margin-bottom:10px}.hero .logo img{height:32px;width:auto;display:block}
+.hero h1{margin:0;font:900 52px/1 'Frank Ruhl Libre',Georgia,serif;color:#fff}
+.hero h1 span{color:var(--sun);text-shadow:0 0 22px rgba(255,201,41,.55)}
+.hero p{margin:10px 0 0;font-size:18px;line-height:1.5;color:var(--muted);max-width:44ch}
+.lantern{width:180px;height:200px}
+@media screen and (max-width:640px){.hero{grid-template-columns:1fr}.hero h1{font-size:40px}.lantern{display:none}}
+body.playing .hero{display:none}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px 20px;margin-bottom:14px}
+.panel h2{margin:0 0 10px;font:800 20px Assistant,sans-serif}
+.lv{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.lv button{display:flex;align-items:center;gap:10px;min-height:58px;padding:10px 14px;border-radius:16px;border:2px solid var(--line);background:#102039;color:var(--ink);font:800 17px Assistant,sans-serif;cursor:pointer;text-align:right}
+.lv button small{display:block;font-weight:600;font-size:13px;color:var(--muted)}
+.lv button[aria-pressed="true"]{border-color:var(--lc);box-shadow:0 0 0 2px var(--lc) inset,0 0 18px color-mix(in srgb,var(--lc) 45%,transparent)}
+.btn{min-height:48px;padding:10px 22px;border-radius:14px;border:0;background:var(--sun);color:#2B2200;font:800 17px Assistant,sans-serif;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn.big{min-height:58px;font-size:20px;box-shadow:0 0 24px rgba(255,201,41,.35)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+details.how{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:14px 20px}
+details.how summary{cursor:pointer;font-weight:800;color:#8FD3E0;font-size:17px}
+details.how ol{margin:8px 0 0;padding-inline-start:22px;line-height:1.65;font-size:15.5px}
+#game[hidden],#setup[hidden]{display:none}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;color:var(--muted);font-weight:800}
+.card{position:relative;max-width:640px;margin:0 auto;border-radius:28px;padding:28px 28px 24px;background:linear-gradient(160deg,#1C3560,#122648);border:1px solid #33508A;box-shadow:0 20px 50px rgba(0,0,0,.35);overflow:hidden}
+.card::after{content:'';position:absolute;width:260px;height:260px;border-radius:50%;inset:-120px -90px auto auto;background:radial-gradient(var(--lc),transparent 65%);opacity:.25}
+.card .lvl{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid var(--lc);color:#fff;border-radius:999px;padding:4px 12px;font-weight:800}
+.card .num{position:absolute;top:24px;left:26px;font:900 34px 'Frank Ruhl Libre',serif;color:rgba(255,255,255,.18)}
+.card .q{margin:18px 0 6px;font:800 28px/1.45 Assistant,sans-serif;color:#fff;text-wrap:pretty;position:relative}
+.card .lg{position:absolute;bottom:16px;left:20px;width:64px;background:#fff;border-radius:8px;padding:2px 4px}
+.reveal{margin-top:16px;border-radius:18px;padding:14px 16px;font-weight:700;font-size:19px;line-height:1.5;display:none;position:relative}
+.reveal.show{display:block;animation:glow .5s ease-out}
+.reveal.h{background:rgba(255,201,41,.12);border:1px dashed var(--sun);color:#FFE7A0}
+.reveal.a{background:var(--sun);color:#2B2200;box-shadow:0 0 30px rgba(255,201,41,.45)}
+.reveal.a b{display:block;font-size:26px}
+@keyframes glow{from{opacity:0;transform:translateY(8px)}}
+.tools{display:flex;justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap}
+.lv button:focus-visible,.btn:focus-visible{outline:3px solid #8FD3E0;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.reveal.show{animation:none}}
+@media print{body::before{display:none}body{background:#fff!important;color:#1d2b36}}
+@media screen and (max-width:640px){.card .q{font-size:22px}.card{padding:22px 18px}}
+/* הדפסה */
+.pr-rd{border:.4mm dashed #9FB6C2;border-radius:3mm;overflow:hidden;display:flex;flex-direction:column;background:#fff}
+.pr-rd .tp{display:flex;align-items:center;gap:1.5mm;padding:2mm 3mm;background:#122648;color:#fff;font:800 9pt Assistant}
+.pr-rd .tp b{margin-inline-start:auto;font:900 11pt 'Frank Ruhl Libre',serif;color:#FFC929}
+.pr-rd .tp svg{width:5mm;height:5mm}
+.pr-rd .bar{height:1.6mm;background:var(--lc)}
+.pr-rd .q{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:3mm;font:700 10.6pt/1.45 Assistant;color:#1d2b36}
+.pr-rd .fold{border-top:.35mm dashed #9FB6C2;position:relative;margin:0 2mm}
+.pr-rd .fold span{position:absolute;top:-2.2mm;right:2mm;background:#fff;padding:0 1mm;font:600 6.5pt Assistant;color:#7d8f99}
+.pr-rd .ans{transform:rotate(180deg);padding:2.5mm 3mm;text-align:center;font:700 9pt/1.35 Assistant;color:#1d2b36;min-height:16mm;display:flex;flex-direction:column;justify-content:center}
+.pr-rd .ans i{font-style:normal;font-weight:600;color:#55616b;font-size:7.6pt}
+.pr-rd img{width:13mm;align-self:center;margin:0 0 1.5mm}
+.pr-legend{display:flex;flex-wrap:wrap;gap:3mm;margin:2mm 0}
+.pr-legend span{display:flex;align-items:center;gap:1.5mm;border:1px solid #dbe7ea;border-radius:2mm;padding:1.5mm 3mm;font:700 10pt Assistant}
+.pr-legend svg{width:5mm;height:5mm}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a href="games.html">🎲 משחקי חוסן</a>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › משחקי חוסן › חידות חוסן</span>
+</nav>
+<main class="wrap">
+  <header class="hero">
+    <div><span class="logo"><img src="assets/begood-logo-sm.webp" alt="Begood"></span>
+      <h1>חידות <span>חוסן</span></h1>
+      <p>חידות על חוסן חברתי בארבע רמות, מהגן ועד הנוער. לכל רמה צבע וסימן. אפשר לבקש רמז, ולחשוף את התשובה כשמוכנים.</p></div>
+    <svg class="lantern" viewBox="0 0 180 200" aria-hidden="true"><circle cx="90" cy="110" r="80" fill="#FFC929" opacity=".12"/><path d="M90 8v20" stroke="#AFC0D6" stroke-width="3"/><path d="M70 28h40l8 14H62z" fill="#33508A"/><rect x="58" y="42" width="64" height="96" rx="14" fill="#FFE7A0"/><rect x="58" y="42" width="64" height="96" rx="14" fill="none" stroke="#33508A" stroke-width="6"/><path d="M90 62c-12 16-10 32 0 44c10-12 12-28 0-44z" fill="#FFC929"/><path d="M90 78c-5 8-4 16 0 22c4-6 5-14 0-22z" fill="#FF8F70"/><path d="M62 138h56l-8 14H70z" fill="#33508A"/></svg>
+  </header>
+
+  <section id="setup">
+    <div class="panel"><h2>איזו רמה?</h2><div class="lv" id="levels" role="group" aria-label="רמות"></div></div>
+    <div class="row" style="margin-bottom:14px"><button class="btn big" id="go" type="button">🏮 מתחילים</button><button class="btn alt" id="printBtn" type="button">🖨 הדפסת החידות</button></div>
+    <details class="how"><summary>איך משחקים</summary><div id="howBody"></div></details>
+  </section>
+
+  <section id="game" hidden aria-label="החידות">
+    <div class="top"><span id="where"></span><button class="btn alt" id="toSet" type="button" style="min-height:40px;padding:6px 14px">רמות</button></div>
+    <article class="card" id="card" aria-live="polite"></article>
+    <div class="tools"><button class="btn alt" id="hintBtn" type="button">💡 רמז</button><button class="btn" id="ansBtn" type="button">👀 התשובה</button><button class="btn alt" id="prevBtn" type="button">→ הקודמת</button><button class="btn alt" id="nextBtn" type="button">הבאה ←</button></div>
+  </section>
+</main>
+<div id="print" aria-hidden="true"></div>
+<script src="lib/game-kit.js"></script>
+<script src="lib/riddles.js"></script>
+<script>
+(function () {
+  const K = window.SBE_GK, D = window.SBE_RIDDLES, R = D.RULES, esc = K.esc;
+  const $ = (id) => document.getElementById(id);
+  $('kitcss').textContent = K.printCss('חידות חוסן');
+  let sel = new Set(['l1']);
+  function drawLevels() {
+    $('levels').innerHTML = D.LEVELS.map((l) => `<button type="button" data-v="${l.id}" style="--lc:${l.c}" aria-pressed="${sel.has(l.id)}">${D.sym(l.id, 26)}<span>${l.name}<small>${l.mark} · 12 חידות</small></span></button>`).join('');
+    $('levels').querySelectorAll('button').forEach((b) => { b.onclick = () => { if (sel.has(b.dataset.v)) { if (sel.size > 1) sel.delete(b.dataset.v); } else sel.add(b.dataset.v); drawLevels(); }; });
+  }
+  drawLevels();
+  $('howBody').innerHTML = `<ol>${R.play.map((t) => `<li>${esc(t)}</li>`).join('')}</ol><p><b>שאלות לסיכום:</b> ${esc(R.closingWho)}</p><ol>${R.closing.map((q) => `<li>"${esc(q)}"</li>`).join('')}</ol>`;
+  let G = null;
+  function start() { G = { list: K.shuffle(D.RIDDLES.filter((r) => sel.has(r.l))), i: 0 }; document.body.classList.add('playing'); $('setup').hidden = true; $('game').hidden = false; show(); }
+  function show() {
+    const r = G.list[G.i], L = D.LEVELS.find((x) => x.id === r.l);
+    $('where').textContent = `חידה ${G.i + 1} מתוך ${G.list.length}`;
+    $('card').style.setProperty('--lc', L.c);
+    $('card').innerHTML = `<span class="lvl">${D.sym(r.l, 18)} ${L.name}</span><span class="num">#${r.n}</span><p class="q">${esc(r.q)}</p><div class="reveal h" id="rh">💡 ${esc(r.h)}</div><div class="reveal a" id="ra"><b>${esc(r.a)}</b>יש עוד תשובות? מה ההסבר שלכם?</div><div style="height:30px"></div><img class="lg" src="${K.LOGO}" alt="Begood">`;
+    $('prevBtn').disabled = G.i === 0; $('nextBtn').textContent = G.i === G.list.length - 1 ? 'סיום ←' : 'הבאה ←';
+  }
+  $('hintBtn').onclick = () => $('rh').classList.add('show');
+  $('ansBtn').onclick = () => { $('ra').classList.add('show'); K.chime('up'); };
+  $('prevBtn').onclick = () => { if (G.i > 0) { G.i--; show(); } };
+  $('nextBtn').onclick = () => {
+    if (G.i < G.list.length - 1) { G.i++; show(); return; }
+    $('card').innerHTML = `<p class="q">פתרנו ${G.list.length} חידות!</p><p style="color:var(--muted);font-size:17px;margin:0 0 8px">${esc(R.closingWho)}</p><ol style="font-size:18px;line-height:1.7">${R.closing.map((q) => `<li>"${esc(q)}"</li>`).join('')}</ol><img class="lg" src="${K.LOGO}" alt="Begood">`;
+    K.chime('win');
+  };
+  $('go').onclick = start;
+  $('toSet').onclick = () => { document.body.classList.remove('playing'); $('game').hidden = true; $('setup').hidden = false; };
+  document.addEventListener('keydown', (e) => { if ($('game').hidden) return; if (e.key === 'ArrowLeft') $('nextBtn').click(); if (e.key === 'ArrowRight') $('prevBtn').click(); });
+
+  function buildPrint() {
+    let h = `<section class="pr-page">${K.head(R.title, R.sub, '#7A5CC0')}<h2>הרמות</h2><div class="pr-legend">${D.LEVELS.map((l) => `<span style="color:${l.d}">${D.sym(l.id, 20)} ${l.name} · ${l.mark}</span>`).join('')}</div>` +
+      `<h2>איך משחקים</h2><ol>${R.play.map((t) => `<li>${esc(t)}</li>`).join('')}</ol><h2>שאלות לסיכום</h2><p>${esc(R.closingWho)}</p><div class="pr-box"><ol>${R.closing.map((q) => `<li>"${esc(q)}"</li>`).join('')}</ol></div>` +
+      `<h2>הדפסה וגזירה</h2><p>מדפיסים בצבע, בגודל אמיתי, וגוזרים לאורך הקו המקווקו. מקפלים כל קלף לאורך הקו של "קיפול", כך שהתשובה מוסתרת מאחור.</p></section>`;
+    for (let p = 0; p < D.RIDDLES.length; p += 9) {
+      const sl = D.RIDDLES.slice(p, p + 9), L = D.LEVELS.find((x) => x.id === sl[0].l);
+      h += `<section class="pr-page"><p class="pr-cap">חידות · ${[...new Set(sl.map((r) => D.LEVELS.find((x) => x.id === r.l).name))].join(' · ')}</p><div class="pr-grid">${sl.map((r) => { const Lr = D.LEVELS.find((x) => x.id === r.l); return `<div class="pr-rd" style="--lc:${Lr.c}"><div class="tp">${D.sym(r.l, 18)} ${Lr.name}<b>#${r.n}</b></div><div class="bar"></div><div class="q">${esc(r.q)}</div><img src="${K.LOGO}" alt="Begood"><div class="fold"><span>קיפול</span></div><div class="ans"><span>${esc(r.a)}</span><i>רמז: ${esc(r.h)}</i></div></div>`; }).join('')}</div></section>`;
+    }
+    K.setPrint($('print'), h);
+    document.title = 'חידות חוסן · Begood';
+  }
+  $('printBtn').onclick = () => { buildPrint(); K.printWhenReady($('print')); };
+  window.addEventListener('beforeprint', buildPrint);
+  if (new URLSearchParams(location.search).get('print')) buildPrint();
+})();
+</script>
+</body>
+</html>
