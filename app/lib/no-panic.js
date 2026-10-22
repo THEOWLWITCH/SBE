@@ -153,7 +153,7 @@
     const lines = els.map(([t, o]) => `<${t} ${attr(o)} fill="none"/>`).join('');
     return `<svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="${id}" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="3.5" cy="3.5" r="1.25" fill="${T.c}" opacity=".32"/></pattern></defs>` +
       `<rect width="120" height="90" fill="${T.t}"/><rect width="120" height="90" fill="url(#${id})"/>` +
-      `<g transform="translate(2.6 2.6)" style="mix-blend-mode:multiply">${fills}</g>` +
+      `<g transform="translate(2.6 2.6)" opacity=".92">${fills}</g>` +
       `<g stroke="${INK}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${lines}</g>` +
       (BADGE[kind] || '') + `</svg>`;
   }

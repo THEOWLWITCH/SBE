@@ -220,7 +220,7 @@
     nana: ["facilitation-advisor.html", "resilience-advisor-sources.html"], // ננה — מהוראה להנחיה (07/10/2026)
     dialogue: ["shared-dialogue-lab.html", "resilience-advisor-sources.html"], // מעבדת שיח וחקר משותף (11/10/2026)
     teamthink: ["team-thinking.html", "resilience-advisor-sources.html"], // חשיבת צוות (11/10/2026)
-    games: ["games.html", "memory-game.html", "board-game.html"] // מחיצת המשחקים (21/10/2026)
+    games: ["games.html", "memory-game.html", "board-game.html", "no-panic.html"] // מחיצת המשחקים (21/10/2026)
   };
   var SIM_DOCS = ["doc-trainee.html", "doc-actor.html", "card-actor.html", "doc-facilitator.html"];
   var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html"].concat(SIM_DOCS);

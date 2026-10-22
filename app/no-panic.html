@@ -173,8 +173,8 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
 .pr-head h1{margin:0;font:800 28pt/1 Rubik,Assistant,sans-serif;color:#1F2A36}
 .pr-head p{margin:1.5mm 0 0;font:700 10.5pt Assistant,Arial,sans-serif;color:#9A4B08}
 .pr-head img{width:30mm;height:auto}
-.pr-page h2{margin:4mm 0 1.5mm;font:800 13.5pt Rubik,Assistant,sans-serif;color:#1F2A36;border-inline-start:4px solid #EE7D1E;padding-inline-start:3mm;break-after:avoid}
-.pr-page p,.pr-page li{font:400 10.2pt/1.45 Assistant,Arial,sans-serif;text-align:justify;margin:0 0 1mm}
+.pr-page h2{margin:3mm 0 1.2mm;font:800 12.5pt Rubik,Assistant,sans-serif;color:#1F2A36;border-inline-start:4px solid #EE7D1E;padding-inline-start:3mm;break-after:avoid}
+.pr-page p,.pr-page li{font:400 9.7pt/1.4 Assistant,Arial,sans-serif;text-align:justify;margin:0 0 1mm}
 .pr-page ol,.pr-page ul{margin:0;padding-inline-start:6mm}
 .pr-box{background:#FBF4E8;border-radius:3mm;padding:3mm 4mm;margin:2mm 0;break-inside:avoid}
 .pr-tb{width:100%;border-collapse:collapse;font:400 9.8pt/1.4 Assistant,Arial,sans-serif;break-inside:avoid}
@@ -185,7 +185,7 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
 .pr-tb td.k i{display:inline-block;width:5mm;height:5mm;vertical-align:-1.2mm;margin-inline-end:1.5mm}
 .pr-tb td.k svg{width:100%;height:100%}
 .pr-tb tr{break-inside:avoid}
-.pr-tb.list td{height:9mm}
+.pr-tb.list td{height:7.6mm;padding-top:.8mm;padding-bottom:.8mm}
 .pr-cap{font:700 10pt Assistant,Arial,sans-serif;color:#4a5a64;margin:0 0 3mm}
 .pr-cards{display:grid;grid-template-columns:repeat(3,52mm);grid-auto-rows:74.75mm;gap:3mm;justify-content:center}
 .pr-cards .np-card{font-size:3.25mm;break-inside:avoid;box-shadow:none;outline:.25mm dashed #b8b0a3;outline-offset:1.2mm}
@@ -521,8 +521,11 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
       '<h2>בכל תור</h2><ol><li><b>' + R.turn[0][0] + ':</b> ' + esc(R.turn[0][1]) + '</li><li><b>' + R.turn[1][0] + ':</b><ul>' + R.actions.map(([t, d]) => '<li><b>' + t + ':</b> ' + esc(d) + '</li>').join('') + '</ul></li></ol>' +
       '<h2>הסוף</h2><p>' + esc(R.end) + '</p>' + R.modes.map(([t, d]) => '<p><b>' + t + ':</b> ' + esc(d) + '</p>').join('') +
       '<div class="pr-box"><p>' + esc(R.after) + '</p></div>' +
-      '<h2>שאלות לסיכום</h2><p>' + esc(R.closingWho) + '</p><ol>' + R.closing.map((q) => '<li>"' + esc(q) + '"</li>').join('') + '</ol>' +
-      '<h2>הדפסה וגזירה</h2><p>' + esc(R.print) + '</p></section>';
+      '</section>' +
+      '<section class="pr-page"><h2>הדפסה וגזירה</h2><p>' + esc(R.print) + '</p><h2>שאלות לסיכום</h2><p>' + esc(R.closingWho) + '</p><ol>' + R.closing.map((q) => '<li>"' + esc(q) + '"</li>').join('') + '</ol>' +
+      '<h2>רשימת המוכנות שלנו</h2><p>אחרי המשחק עוברים יחד על הרשימה ומסמנים מה כבר יש בבית. אפשר לבחור שלושה פריטים לשבוע הקרוב, ולקבוע מי מטפל/ת בכל אחד ועד מתי.</p>' +
+      '<table class="pr-tb list"><thead><tr><th>#</th><th>ההכנה מראש</th><th>יש לנו</th><th>נכין עד</th><th>מי אחראי/ת</th></tr></thead><tbody>' +
+      P.READY.map((r, i) => `<tr><td>${P.pad(i + 1)}</td><td><b>${esc(r[0])}</b></td><td>☐</td><td></td><td></td></tr>`).join('') + '</tbody></table></section>';
     const all = P.deck({ diy: true });
     const groups = [['event', 'קלפי אירוע'], ['ready', 'קלפי הכנה מראש'], ['impro', 'קלפי אלתור'], ['more', 'קלפי פעולה וכרטיסים אישיים']];
     let cards = [];
@@ -533,10 +536,6 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
       h += `<section class="pr-page"><p class="pr-cap">דף קלפים ${p + 1} מתוך ${pages} · ${[...new Set(sl.map((c) => P.TYPES[c.kind].name))].join(' · ')}</p><div class="pr-cards">${sl.map((c) => P.cardHTML(c)).join('')}</div></section>`;
     }
     h += `<section class="pr-page"><p class="pr-cap">גב הקלפים · מדפיסים על הצד השני של דפי הקלפים</p><div class="pr-cards">${Array(9).fill(P.backHTML()).join('')}</div></section>`;
-    h += '<section class="pr-page">' + head('רשימת המוכנות שלנו', 'אחרי המשחק: מה כבר יש בבית, מה נכין, ומי אחראי/ת') +
-      '<p>עוברים יחד על הרשימה, ומסמנים. אפשר לבחור שלושה פריטים לשבוע הקרוב, ולקבוע מי מטפל/ת בכל אחד ועד מתי.</p>' +
-      '<table class="pr-tb list"><thead><tr><th>#</th><th>ההכנה מראש</th><th>יש לנו</th><th>נכין עד</th><th>מי אחראי/ת</th></tr></thead><tbody>' +
-      P.READY.map((r, i) => `<tr><td>${P.pad(i + 1)}</td><td><b>${esc(r[0])}</b></td><td>☐</td><td></td><td></td></tr>`).join('') + '</tbody></table></section>';
     $('print').innerHTML = h;
     document.title = 'בלי פאניקה! · משחק קלפים · Begood';
   }
