@@ -340,7 +340,7 @@ export const MODEL_PAGES = {
   'conversation-planner.html': ['conv'], 'activity-planner.html': ['activity'], 'academic-review.html': ['academic'],
   'resilience-team.html': ['resilience'], 'resilience-advisor.html': ['resilience', 'practi'], 'leadership-advisor.html': ['leadership'],
   'resilience-studio.html': ['studio'], 'journey.html': ['journey'], 'message-writer.html': ['writer'], 'communication-continuity.html': ['writer'], 'facilitation-advisor.html': ['nana'],
-  'shared-dialogue-lab.html': ['dialogue'], 'team-thinking.html': ['teamthink'], 'games.html': ['games'], 'memory-game.html': ['games']
+  'shared-dialogue-lab.html': ['dialogue'], 'team-thinking.html': ['teamthink'], 'games.html': ['games'], 'memory-game.html': ['games'], 'board-game.html': ['games']
 };
 export const WORKSHOP_MODEL_PAGES = ['practice.html', 'conversation-planner.html', 'activity-planner.html', 'academic-review.html', 'parent-input-screen.html'];
 const WORKSHOP_HOURS = 48;

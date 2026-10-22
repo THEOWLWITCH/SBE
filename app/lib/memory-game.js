@@ -342,5 +342,5 @@
   const PLAYER = [{ c: 'teal', hex: '#1A9BB5' }, { c: 'coral', hex: '#E0603F' }, { c: 'sun', hex: '#C98E00' }, { c: 'lilac', hex: '#7A5CC0' }];
   const avatar = (k) => `<svg viewBox="-42 -50 84 92" width="100%" height="100%" aria-hidden="true">${cr(0, 0, 1, PLAYER[k].c, { eyes: 'happy', arms: { l: 'wave', r: 'wave' } })}</svg>`;
 
-  return { AGES, SETS, ITEMS, RULES, ART, art, face, deck, shuffle, nameFor, BACK_ART, esc, parade, avatar, PLAYER };
+  return { AGES, SETS, ITEMS, RULES, ART, art, face, deck, shuffle, nameFor, BACK_ART, esc, parade, avatar, PLAYER, creature: cr, star, spark };
 });
