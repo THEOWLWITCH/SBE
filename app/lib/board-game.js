@@ -165,37 +165,75 @@ ${cr(x - 34, y + 14, .24, 'teal', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })
 <g transform="translate(${x} ${y + 64})"><path d="M-56 -15 H56 L48 0 L56 15 H-56 L-48 0 Z" fill="#1B4F7A"/>${T(0, 8, 23, 900, '#fff', 'חוסן', "'Frank Ruhl Libre',Georgia,serif")}</g>
 </g>`;
   }
-  // svg של הלוח: נוף רך בצבעי הלוגו, דרך מתפתלת ואבני דרך עגולות
+  // איור קטן לכל משבצת מיוחדת (22/10/2026: "תוסיף למסע דברים מעניינים ולא איקונים גנריים"), במרחב של עיגול ברדיוס 44
+  const house0 = (x, y, s, roof, body) => `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-13" y="-10" width="26" height="20" rx="2" fill="${body || '#FFFDF7'}"/><path d="M-17 -9L0 -24L17 -9Z" fill="${roof}"/><rect x="-4" y="1" width="8" height="9" rx="1.5" fill="#FFC929"/><rect x="5" y="-5" width="5" height="5" rx="1" fill="#BFE6F0"/></g>`;
+  const VIG = {
+    s1: ['#33465E', `<g fill="#9FB3C4"><ellipse cx="-8" cy="-24" rx="16" ry="9"/><circle cx="4" cy="-28" r="11"/><ellipse cx="14" cy="-22" rx="12" ry="8"/></g><path d="M6 -16l-6 11h6l-4 10l11-14h-6l4-7z" fill="#FFD34F"/><g stroke="#8FD3E0" stroke-width="2.2" stroke-linecap="round"><path d="M-24 -10l-3 6M-14 -6l-3 6M22 -8l-3 6M30 -2l-3 6"/></g>${house0(-6, 22, 1.15, '#7C8C95', '#5D7186')}<rect x="-11" y="20" width="9" height="12" fill="#22303F"/>`],
+    s2: ['#FFE6DD', `<rect x="-38" y="-10" width="44" height="40" fill="#fff"/><path d="M-42 -9L-16 -26L10 -9Z" fill="#E0603F"/><path d="M-16 -26v-12" stroke="#1B4F7A" stroke-width="2"/><path d="M-16 -38l10 4l-10 4z" fill="#FFC929"/><g fill="#BFE6F0"><rect x="-32" y="0" width="9" height="8"/><rect x="-10" y="0" width="9" height="8"/></g><rect x="-21" y="14" width="10" height="16" fill="#1A9BB5"/>${cr(24, 16, .3, 'lilac', { mouth: 'sad', look: [-3, 0], arms: { l: 'down', r: 'down' } })}`],
+    s3: ['#FFE6DD', `${cr(-17, 12, .32, 'teal', { flip: true, mouth: 'sad', look: [3, 0] })}${cr(18, 12, .32, 'coral', { mouth: 'sad', look: [3, 0], bow: true })}<path d="M-12 -30c4-8 8 6 12-2s8 6 12-2" fill="none" stroke="#B23A26" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`],
+    s4: ['#FFE6DD', `<rect x="-34" y="-12" width="66" height="30" rx="7" fill="#FFC929"/><g fill="#fff"><rect x="-28" y="-6" width="11" height="10" rx="2"/><rect x="-13" y="-6" width="11" height="10" rx="2"/><rect x="2" y="-6" width="11" height="10" rx="2"/></g><rect x="18" y="-6" width="10" height="20" rx="2" fill="#E8EEF2"/><circle cx="-20" cy="19" r="6" fill="#1F2A36"/><circle cx="18" cy="19" r="6" fill="#1F2A36"/><circle r="31" fill="none" stroke="#E0603F" stroke-width="5"/><path d="M-22 22L22 -22" stroke="#E0603F" stroke-width="5" stroke-linecap="round"/>`],
+    s5: ['#FFE6DD', `<rect x="-28" y="-26" width="52" height="36" rx="4" fill="#1B4F7A"/><rect x="-24" y="-22" width="44" height="28" rx="2" fill="#E3F4F8"/><path d="M-10 -14l6 6M-4 -14l-6 6M8 -14l6 6M14 -14l-6 6" stroke="#E0603F" stroke-width="2.4" stroke-linecap="round"/><path d="M-8 2q6-5 12 0" fill="none" stroke="#1F2A36" stroke-width="2.2" stroke-linecap="round"/><path d="M-34 12h64l-6 8h-52z" fill="#B9C6CF"/>${cr(22, 20, .2, 'green', { mouth: 'o', arms: { l: 'up', r: 'up' } })}`],
+    s6: ['#FFE6DD', `<rect x="-36" y="4" width="70" height="14" rx="4" fill="#1A9BB5"/><rect x="-36" y="-12" width="6" height="34" rx="3" fill="#1B4F7A"/><ellipse cx="-20" cy="2" rx="11" ry="6" fill="#fff"/>${cr(-18, -4, .2, 'sun', { eyes: 'closed', mouth: 'sad' })}<path d="M-12 4h44v12h-44z" fill="#9FD8E6"/><g transform="translate(22 -22) rotate(30)"><rect x="-3" y="-14" width="6" height="22" rx="3" fill="#fff" stroke="#1B4F7A" stroke-width="1.4"/><circle cy="10" r="5" fill="#E0603F"/></g>`],
+    b1: ['#E2F5EA', `${cr(-15, 12, .34, 'teal', { arms: { l: 'down', r: ['reach', 28] }, eyes: 'happy' })}${cr(18, 18, .28, 'sun', { flip: true, arms: { l: 'down', r: ['reach', 28] }, look: [3, -2] })}${MG.spark(0, -28, 1)}${MG.spark(22, -20, .6)}`],
+    b2: ['#E2F5EA', `<rect x="-32" y="-28" width="64" height="48" rx="4" fill="#C99A62" stroke="#8C6B4A" stroke-width="3"/><rect x="-26" y="-22" width="22" height="18" fill="#FFE07A" transform="rotate(-5 -15 -13)"/><rect x="4" y="-22" width="22" height="18" fill="#FFB3C4" transform="rotate(4 15 -13)"/><rect x="-24" y="0" width="22" height="16" fill="#9FE0C0"/><rect x="4" y="0" width="22" height="16" fill="#A8DDF0" transform="rotate(-3 15 8)"/><g fill="#E0603F"><circle cx="-15" cy="-22" r="2.2"/><circle cx="15" cy="-22" r="2.2"/><circle cx="-13" cy="0" r="2.2"/><circle cx="15" cy="0" r="2.2"/></g><path d="M-22 -14h12M-20 -9h8M8 -14h12M-20 8h12M8 8h12" stroke="#1F2A36" stroke-width="1.6" opacity=".5"/>${cr(0, 30, .16, 'green', { eyes: 'happy', arms: { l: 'up', r: 'up' } })}`],
+    b3: ['#E2F5EA', `<g stroke="#7C8C95" stroke-width="1.4" fill="none"><path d="M-18 -8q4 14 6 28M2 -14q-2 16 0 34M20 -6q-4 14-6 26"/></g><ellipse cx="-18" cy="-20" rx="10" ry="12" fill="#FF8F70"/><ellipse cx="2" cy="-26" rx="10" ry="12" fill="#FFC929"/><ellipse cx="20" cy="-18" rx="10" ry="12" fill="#1A9BB5"/>${cr(0, 26, .24, 'green', { arms: { l: 'up', r: 'up' }, eyes: 'happy', mouth: 'open', tuft: true })}<g><rect x="-34" y="0" width="4" height="7" fill="#F06A9B" transform="rotate(30 -32 3)"/><rect x="30" y="4" width="4" height="7" fill="#FFC929" transform="rotate(-25 32 7)"/><rect x="-26" y="18" width="4" height="7" fill="#1A9BB5"/><rect x="24" y="22" width="4" height="7" fill="#7A5CC0" transform="rotate(40 26 25)"/></g>`],
+    b4: ['#E2F5EA', `${cr(-24, 10, .24, 'teal', { arms: { l: 'down', r: 'wave' }, eyes: 'happy' })}${cr(-4, 18, .24, 'coral', { arms: { l: 'down', r: 'wave' }, eyes: 'happy', bow: true })}${cr(24, 8, .26, 'lilac', { flip: true, arms: { l: 'down', r: 'wave' }, look: [-2, -1], antenna: true })}${MG.spark(24, -26, .8)}${MG.spark(36, -14, .5)}`],
+    b5: ['#2E4157', `<path d="M-10 4L34 -26V30Z" fill="#FFE07A" opacity=".55"/><rect x="-24" y="-2" width="18" height="12" rx="3" fill="#1A9BB5" transform="rotate(-20 -15 4)"/>${cr(-17, 14, .24, 'green', { arms: { l: 'down', r: 'up' }, eyes: 'happy', tuft: true })}<g fill="#FFE07A">${MG.spark(24, -2, .6)}</g><circle cx="22" cy="-30" r="1.6" fill="#fff"/><circle cx="-26" cy="-26" r="1.4" fill="#fff"/>`],
+    b6: ['#E2F5EA', `<path d="M-26 12Q-14 -26 0 -10Q14 -26 26 12" fill="none" stroke="#1B4F7A" stroke-width="2.4" stroke-dasharray="4 4"/>${house0(-26, 14, .9, '#E0603F')}${house0(0, -8, .9, '#1A9BB5')}${house0(26, 14, .9, '#3A9E6B')}<g fill="#FFC929"><circle cx="-13" cy="-4" r="3.5"/><circle cx="13" cy="-4" r="3.5"/></g>`],
+    t1: ['#FFF4D2', `<path d="M-26 -34h52a8 8 0 0 1 8 8v16a8 8 0 0 1-8 8h-20l-8 8v-8h-24a8 8 0 0 1-8-8v-16a8 8 0 0 1 8-8z" fill="#fff" stroke="#E0A800" stroke-width="2"/>${MG.star(0, -18, 10)}${cr(-14, 24, .24, 'teal', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })}${cr(16, 24, .24, 'coral', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })}`],
+    t2: ['#FFF4D2', `<rect x="-24" y="-32" width="48" height="50" rx="4" fill="#fff" stroke="#E0A800" stroke-width="2"/><path d="M-16 -22h32M-16 -14h26M-16 -6h30" stroke="#7C8C95" stroke-width="2.4" stroke-linecap="round"/><path d="M-8 6l6 6l12 -12" fill="none" stroke="#3A9E6B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${cr(-24, 18, .2, 'sun', { arms: { l: 'up', r: 'down' }, eyes: 'happy' })}${cr(24, 18, .2, 'lilac', { flip: true, arms: { l: 'up', r: 'down' }, eyes: 'happy' })}`],
+    t3: ['#FFF4D2', `<rect x="-16" y="-24" width="32" height="26" rx="3" fill="#F06A9B"/><rect x="-19" y="-30" width="38" height="9" rx="2" fill="#F48FB5"/><rect x="-3" y="-30" width="6" height="32" fill="#FFC929"/><path d="M0 -30c-10-12-18-4-8 0M0 -30c10-12 18-4 8 0" fill="none" stroke="#FFC929" stroke-width="3"/>${cr(-19, 17, .22, 'green', { arms: { l: 'down', r: ['reach', 30] }, eyes: 'happy' })}${cr(19, 17, .22, 'navy', { flip: true, arms: { l: 'down', r: ['reach', 30] }, eyes: 'happy' })}`],
+    t4: ['#FFF4D2', `${cr(-22, 12, .24, 'teal', { arms: { l: 'up', r: 'down' }, eyes: 'happy' })}${cr(0, 4, .26, 'sun', { arms: { l: 'up', r: 'up' }, eyes: 'happy', mouth: 'open' })}${cr(22, 12, .24, 'lilac', { flip: true, arms: { l: 'up', r: 'down' }, eyes: 'happy' })}${MG.spark(-28, -24, .6)}${MG.spark(28, -26, .7)}`]
+  };
+  function vignette(id, x, y, r, uid) {
+    const v = VIG[id]; if (!v) return '';
+    const s = r / 38;
+    return `<g transform="translate(${x} ${y}) scale(${s})"><clipPath id="vc${uid}"><circle r="38"/></clipPath><g clip-path="url(#vc${uid})"><circle r="38" fill="${v[0]}"/>${v[1]}</g></g>`;
+  }
+  // תפאורה בין לולאות הדרך
+  const LAND = {
+    balloon: (x, y) => `<g transform="translate(${x} ${y})"><path d="M0 -34C22 -34 30 -16 24 0C20 10 8 16 6 22H-6C-8 16 -20 10 -24 0C-30 -16 -22 -34 0 -34Z" fill="#1A9BB5"/><path d="M0 -34C10 -34 12 -16 10 0C9 10 4 16 3 22H-3C-4 16 -9 10 -10 0C-12 -16 -10 -34 0 -34Z" fill="#FFC929"/><path d="M-24 -6H24" stroke="#fff" stroke-width="2" opacity=".6"/><path d="M-5 22L-6 30M5 22L6 30" stroke="#8C6B4A" stroke-width="1.4"/><rect x="-8" y="30" width="16" height="11" rx="2" fill="#B07A4A"/>${cr(0, 28, .13, 'coral', { arms: { l: 'wave', r: 'down' }, eyes: 'happy' })}</g>`,
+    kite: (x, y) => `<g transform="translate(${x} ${y}) rotate(-12)"><path d="M0 -24L16 0L0 24L-16 0Z" fill="#E0603F"/><path d="M0 -24L16 0L0 0Z" fill="#FF8F70"/><path d="M-16 0L0 24L0 0Z" fill="#FFC929"/><path d="M0 24c-6 10 6 16 0 26s6 16 0 26" fill="none" stroke="#1B4F7A" stroke-width="1.6"/><path d="M-4 40l8 0M-4 58l8 0" stroke="#3A9E6B" stroke-width="3"/></g>`,
+    camp: (x, y) => `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="18" rx="62" ry="10" fill="#1B4F7A" opacity=".08"/><path d="M-10 14l10-6l10 6z" fill="#8C6B4A"/><path d="M0 12c-8-6-4-14 0-22c2 8 10 10 0 22z" fill="#FF8F70"/><path d="M0 12c-4-4-2-8 0-12c2 4 5 6 0 12z" fill="#FFC929"/>${cr(-34, 8, .24, 'teal', { eyes: 'happy', arms: { l: 'down', r: 'out' } })}${cr(34, 8, .24, 'sun', { flip: true, eyes: 'happy', arms: { l: 'down', r: 'out' } })}${cr(-14, -16, .2, 'lilac', { eyes: 'happy', arms: { l: 'up', r: 'up' }, antenna: true })}${cr(16, -16, .2, 'green', { eyes: 'happy', tuft: true, mouth: 'open' })}</g>`,
+    pond: (x, y) => `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="58" ry="20" fill="#8FD3E0"/><ellipse cx="-10" cy="-4" rx="40" ry="10" fill="#BFE6F0"/><g transform="translate(-14 -2)"><ellipse rx="10" ry="6" fill="#fff"/><circle cx="8" cy="-6" r="5" fill="#fff"/><path d="M12 -6l5 1.5l-5 1.5z" fill="#FFC929"/></g><g transform="translate(16 4) scale(.75)"><ellipse rx="10" ry="6" fill="#FFE07A"/><circle cx="8" cy="-6" r="5" fill="#FFE07A"/><path d="M12 -6l5 1.5l-5 1.5z" fill="#E0A800"/></g><path d="M48 4v-22M52 6v-18M44 6v-14" stroke="#3A9E6B" stroke-width="2.4" stroke-linecap="round"/><ellipse cx="48" cy="-20" rx="2.6" ry="6" fill="#8C6B4A"/></g>`,
+    swing: (x, y) => `<g transform="translate(${x} ${y})"><rect x="-3" y="-30" width="6" height="46" rx="3" fill="#8C6B4A"/><ellipse cx="0" cy="-40" rx="30" ry="24" fill="#3A9E6B"/><ellipse cx="10" cy="-46" rx="16" ry="12" fill="#7CCB97" opacity=".7"/><path d="M14 -26v30M30 -26v30" stroke="#5D4A36" stroke-width="1.4"/><rect x="11" y="4" width="22" height="4" rx="2" fill="#E0603F"/>${cr(22, -6, .16, 'coral', { arms: { l: 'up', r: 'up' }, eyes: 'happy', bow: true })}</g>`,
+    garden: (x, y) => `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="8" rx="46" ry="9" fill="#8C6B4A" opacity=".35"/>${[-32, -16, 0, 16, 32].map((dx, i) => `<path d="M${dx} 8v-16" stroke="#3A9E6B" stroke-width="2.4"/><circle cx="${dx}" cy="-12" r="6" fill="${['#FF8F70', '#FFC929', '#F06A9B', '#1A9BB5', '#FFC929'][i]}"/><circle cx="${dx}" cy="-12" r="2.2" fill="#fff"/>`).join('')}${cr(48, 2, .18, 'navy', { eyes: 'happy', arms: { l: 'down', r: 'cup' } })}</g>`,
+    tent: (x, y) => `<g transform="translate(${x} ${y})"><path d="M-28 16L0 -24L28 16Z" fill="#FFC929"/><path d="M0 -24L28 16H8Z" fill="#E0A800"/><path d="M0 -24L-8 16H8Z" fill="#7A4E12" opacity=".5"/><path d="M0 -24v-10l10 4l-10 4" fill="#E0603F"/></g>`,
+    goal: (x, y) => `<g transform="translate(${x} ${y})"><path d="M-34 14V-18H34V14" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round"/><g stroke="#fff" stroke-width="1" opacity=".8"><path d="M-26 -18v32M-18 -18v32M-10 -18v32M-2 -18v32M6 -18v32M14 -18v32M22 -18v32M30 -18v32M-34 -10h68M-34 -2h68M-34 6h68"/></g><circle cx="-6" cy="22" r="7" fill="#fff" stroke="#1F2A36" stroke-width="1.4"/><path d="M-6 17l3 3l-1.5 4h-3l-1.5-4z" fill="#1F2A36"/>${cr(-38, 12, .2, 'sun', { arms: { l: 'up', r: 'up' }, eyes: 'happy', mouth: 'open' })}${cr(26, 22, .18, 'teal', { flip: true, arms: { l: 'out', r: 'out' }, look: [-3, 0] })}</g>`,
+    bench: (x, y) => `<g transform="translate(${x} ${y})"><rect x="-30" y="0" width="60" height="6" rx="2" fill="#B07A4A"/><rect x="-30" y="-12" width="60" height="5" rx="2" fill="#B07A4A"/><path d="M-24 6v10M24 6v10" stroke="#5D4A36" stroke-width="3"/>${cr(-12, -6, .18, 'sun', { eyes: 'happy', arms: { l: 'down', r: ['reach', 20] } })}${cr(12, -6, .18, 'teal', { flip: true, eyes: 'happy', arms: { l: 'down', r: ['reach', 20] } })}</g>`
+  };
+  // svg של הלוח: נוף רך בצבעי הלוגו, דרך מתפתלת, אבני דרך ואיורים
   function board() {
     const { d } = curve();
     const tree = (x, y, s, c1, c2) => `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-2.5" y="0" width="5" height="16" rx="2.5" fill="#8C6B4A"/><ellipse cx="0" cy="-10" rx="13" ry="16" fill="${c1}"/><ellipse cx="4" cy="-14" rx="6" ry="8" fill="${c2}" opacity=".7"/></g>`;
     const pine = (x, y, s, c) => `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-2" y="4" width="4" height="10" fill="#8C6B4A"/><path d="M0 -26L13 6H-13Z" fill="${c}"/><path d="M0 -26L13 6H0Z" fill="#000" opacity=".08"/></g>`;
-    const house = (x, y, s, roof) => `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-13" y="-10" width="26" height="20" rx="2" fill="#FFFDF7"/><path d="M-17 -9L0 -24L17 -9Z" fill="${roof}"/><rect x="-4" y="1" width="8" height="9" rx="1.5" fill="#FFC929"/><rect x="5" y="-5" width="5" height="5" rx="1" fill="#BFE6F0"/></g>`;
     const birds = [[520, 70], [548, 84], [880, 60]].map(([x, y]) => `<path d="M${x} ${y}q6 -6 12 0q6 -6 12 0" fill="none" stroke="#1B4F7A" stroke-width="2" stroke-linecap="round" opacity=".45"/>`).join('');
-    const clouds = [[300, 78, 1], [660, 46, .8], [1000, 96, .7]].map(([x, y, s]) => `<g transform="translate(${x} ${y}) scale(${s})" fill="#fff"><ellipse cx="0" cy="0" rx="34" ry="13"/><circle cx="-10" cy="-8" r="14"/><circle cx="12" cy="-10" r="17"/></g>`).join('');
-    // תפאורה: גבעות, עצים ובתים בין לולאות הדרך
+    const clouds = [[320, 70, .9], [760, 40, .8], [1000, 96, .7]].map(([x, y, s]) => `<g transform="translate(${x} ${y}) scale(${s})" fill="#fff"><ellipse cx="0" cy="0" rx="34" ry="13"/><circle cx="-10" cy="-8" r="14"/><circle cx="12" cy="-10" r="17"/></g>`).join('');
     const scene = `
 <path d="M260 470 C420 420 560 470 700 448 C860 424 980 470 1200 430 V800 H260 Z" fill="#DDF1E3"/>
 <path d="M260 640 C460 600 640 660 820 628 C980 600 1080 650 1200 620 V800 H260 Z" fill="#CBEAD6"/>
 <path d="M0 760 C240 720 520 780 800 752 C1000 732 1100 770 1200 750 V800 H0 Z" fill="#B7E0C5"/>
-${tree(460, 462, 1, '#3A9E6B', '#7CCB97')}${pine(500, 470, 1, '#1A9BB5')}${tree(840, 462, .9, '#4FB27C', '#9BD9B1')}${house(640, 452, 1, '#E0603F')}${pine(1180, 300, .9, '#3A9E6B')}
-${tree(700, 660, 1, '#3A9E6B', '#7CCB97')}${house(540, 656, 1, '#1A9BB5')}${pine(620, 650, .9, '#3A9E6B')}${tree(1000, 650, .85, '#1A9BB5', '#8FD3E0')}
-${house(800, 274, .9, '#FFC929')}${tree(560, 276, .9, '#4FB27C', '#9BD9B1')}${pine(1000, 268, .85, '#1A9BB5')}${tree(450, 276, .8, '#3A9E6B', '#7CCB97')}`;
+${LAND.balloon(630, 80)}${LAND.kite(440, 70)}
+${LAND.tent(560, 280)}${tree(640, 286, .9, '#4FB27C', '#9BD9B1')}${LAND.bench(820, 286)}${pine(1000, 280, .85, '#1A9BB5')}${tree(470, 288, .8, '#3A9E6B', '#7CCB97')}
+${LAND.swing(480, 486)}${LAND.camp(700, 470)}${LAND.garden(960, 470)}${pine(1180, 300, .9, '#3A9E6B')}
+${LAND.pond(560, 660)}${tree(760, 670, .95, '#3A9E6B', '#7CCB97')}${LAND.goal(930, 668)}${pine(420, 664, .9, '#1A9BB5')}`;
     let st = '', nums = '';
     for (let k = 1; k <= N; k++) {
-      const s = square(k), p = pos(k), [f, c, dk] = COL[s.type];
-      // התווית מתחת לאבן, ואם היא נוגעת באבן אחרת (בפניות): מעל או בצד
-      const hit = (x, y) => curve().spots.some((q, j) => { if (j === k || j > N) return false; const dx = Math.max(Math.abs(q.x - x) - 34, 0), dy = Math.max(Math.abs(q.y - y) - 11, 0); return Math.hypot(dx, dy) < 34; });
-      const lp = [[0, 42], [0, -46], [-70, 0], [70, 0]].map(([dx, dy]) => [p.x + dx, p.y + dy]).find(([x, y]) => !hit(x, y) && x > 300) || [p.x, p.y + 42];
-      const lab = s.type === 'task' ? '' : `<g transform="translate(${lp[0]} ${lp[1]})"><rect x="-34" y="-11" width="68" height="22" rx="11" fill="${c}"/>${T(0, 5.5, 13.5, 800, '#fff', label(s))}</g>`;
-      st += `<g class="bg-sq" data-k="${k}"><circle cx="${p.x}" cy="${p.y + 3}" r="30" fill="#1B4F7A" opacity=".16"/><circle cx="${p.x}" cy="${p.y}" r="30" fill="#fff"/><circle cx="${p.x}" cy="${p.y}" r="26.5" fill="${f}" stroke="${c}" stroke-width="4"/>` +
-        icon(s.type, p.x, p.y, .95) + lab + `</g>`;
-      nums += `<g transform="translate(${p.x - 22} ${p.y - 22})"><circle r="10.5" fill="#1B4F7A" stroke="#fff" stroke-width="2"/>${T(0, 4.3, 11.5, 800, '#fff', k)}</g>`;
+      const s = square(k), p = pos(k), c = COL[s.type][1];
+      if (s.type === 'task') {
+        st += `<g class="bg-sq" data-k="${k}"><circle cx="${p.x}" cy="${p.y + 3}" r="24" fill="#1B4F7A" opacity=".16"/><circle cx="${p.x}" cy="${p.y}" r="24" fill="#fff" stroke="${c}" stroke-width="4"/>${T(p.x, p.y + 7, 19, 800, '#14708A', k, "Assistant,Arial,sans-serif")}</g>`;
+      } else {
+        st += `<g class="bg-sq" data-k="${k}"><circle cx="${p.x}" cy="${p.y + 4}" r="38" fill="#1B4F7A" opacity=".18"/><circle cx="${p.x}" cy="${p.y}" r="38" fill="${c}"/><circle cx="${p.x}" cy="${p.y}" r="34.5" fill="#fff"/>${vignette(s.id, p.x, p.y, 32, k)}</g>`;
+        nums += `<g transform="translate(${p.x - 28} ${p.y - 28})"><circle r="11" fill="${c}" stroke="#fff" stroke-width="2.4"/>${T(0, 4.6, 12, 800, '#fff', k)}</g>`;
+      }
     }
     const sp = pos(0), ep = pos(END);
-    const legend = `<g transform="translate(30 404)"><rect width="222" height="244" rx="22" fill="#fff" opacity=".96"/><rect width="222" height="40" rx="20" fill="#1B4F7A"/><rect y="20" width="222" height="20" fill="#1B4F7A"/>${T(111, 27, 16, 800, '#fff', 'מה קורה במשבצת?')}` +
+    // המקרא: רק כאן ההסברים
+    const ring = (t, x, y) => t === 'task' ? `<circle cx="${x}" cy="${y}" r="15" fill="#fff" stroke="${COL.task[1]}" stroke-width="3.5"/>${T(x, y + 5, 13, 800, '#14708A', '7')}` : `<circle cx="${x}" cy="${y}" r="16" fill="${COL[t][1]}"/>${icon(t, x, y, .78)}`;
+    const legend = `<g transform="translate(30 418)"><rect width="222" height="244" rx="22" fill="#fff" opacity=".96"/><rect width="222" height="40" rx="20" fill="#1B4F7A"/><rect y="20" width="222" height="20" fill="#1B4F7A"/>${T(111, 27, 16, 800, '#fff', 'מה קורה במשבצת?')}` +
       [['task', 'משימה', 'לוקחים קלף ומבצעים'], ['together', 'כולם יחד', 'כל המשתתפים עושים'], ['boost', 'גשר', 'מתקדמים קדימה'], ['setback', 'מכשול', 'חוזרים אחורה']].map(([t, n, l], i) =>
-        `${icon(t, 192, 74 + i * 46, .95)}<text x="166" y="${70 + i * 46}" text-anchor="start" direction="rtl" font-family="Assistant,Arial,sans-serif" font-weight="800" font-size="15" fill="${COL[t][2]}">${n}</text><text x="166" y="${88 + i * 46}" text-anchor="start" direction="rtl" font-family="Assistant,Arial,sans-serif" font-weight="700" font-size="13" fill="#4a5a64">${l}</text>`).join('') + `</g>`;
+        `${ring(t, 192, 74 + i * 46)}<text x="166" y="${70 + i * 46}" text-anchor="start" direction="rtl" font-family="Assistant,Arial,sans-serif" font-weight="800" font-size="15" fill="${COL[t][2]}">${n}</text><text x="166" y="${88 + i * 46}" text-anchor="start" direction="rtl" font-family="Assistant,Arial,sans-serif" font-weight="700" font-size="13" fill="#4a5a64">${l}</text>`).join('') + `</g>`;
+    const pc = [[62, 330], [131, 322], [200, 330], [96, 392], [166, 392]].map(([x, y], i) => piece(i, x, y, .5)).join('');
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="לוח המשחק צועדים אל החוסן" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <defs><linearGradient id="bgSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D3EEF5"/><stop offset=".55" stop-color="#F1F9F3"/><stop offset="1" stop-color="#E6F4EA"/></linearGradient>
 <radialGradient id="bgSun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFC929" stop-opacity=".55"/><stop offset="1" stop-color="#FFC929" stop-opacity="0"/></radialGradient>
@@ -203,19 +241,18 @@ ${house(800, 274, .9, '#FFC929')}${tree(560, 276, .9, '#4FB27C', '#9BD9B1')}${pi
 <linearGradient id="bgSide" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B4F7A"/><stop offset="1" stop-color="#1A9BB5"/></linearGradient></defs>
 <rect width="${W}" height="${H}" rx="28" fill="url(#bgSky)"/>
 <circle cx="1040" cy="110" r="150" fill="url(#bgSun)"/>${clouds}${birds}
-${scene}
 <rect x="260" y="0" width="${W - 260}" height="${H}" fill="url(#bgDots)"/>
+${scene}
 <path d="${d}" fill="none" stroke="#D9BE86" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="${d}" fill="none" stroke="#F7EAC8" stroke-width="50" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="${d}" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="2 14" stroke-linecap="round" opacity=".95"/>
 <path d="M0 28a28 28 0 0 1 28-28H262V${H}H28a28 28 0 0 1-28-28Z" fill="url(#bgSide)"/>
-<circle cx="250" cy="120" r="70" fill="#FFC929" opacity=".14"/><circle cx="30" cy="700" r="90" fill="#3A9E6B" opacity=".25"/>
-<rect x="34" y="24" width="194" height="96" rx="20" fill="#fff"/><image href="${LOGO}" xlink:href="${LOGO}" x="46" y="30" width="170" height="84" preserveAspectRatio="xMidYMid meet"/>
-${T(131, 186, 42, 900, '#fff', 'צועדים', "'Frank Ruhl Libre',Georgia,serif")}${T(131, 232, 42, 900, '#FFC929', 'אל החוסן', "'Frank Ruhl Libre',Georgia,serif")}
-${T(131, 262, 15, 700, '#D9F1F6', 'משחק לוח · יחד בדרך')}
-<g transform="translate(6 278) scale(.57)">${MG.parade(5, 440, 120).replace(/^<svg[^>]*>|<\/svg>$/g, '')}</g>
+<circle cx="250" cy="120" r="70" fill="#FFC929" opacity=".14"/><circle cx="30" cy="720" r="90" fill="#3A9E6B" opacity=".25"/>
+<rect x="66" y="26" width="130" height="64" rx="16" fill="#fff"/><image href="${LOGO}" xlink:href="${LOGO}" x="74" y="30" width="114" height="56" preserveAspectRatio="xMidYMid meet"/>
+${T(131, 158, 44, 900, '#fff', 'צועדים', "'Frank Ruhl Libre',Georgia,serif")}${T(131, 206, 44, 900, '#FFC929', 'אל החוסן', "'Frank Ruhl Libre',Georgia,serif")}
+${T(131, 238, 16, 700, '#D9F1F6', 'משחק לוח')}
+${pc}
 ${legend}
-<text x="131" y="690" text-anchor="middle" font-family="Assistant,Arial,sans-serif" font-weight="700" font-size="13.5" fill="#E7F6FA">עוזרים זה לזה בדרך,</text><text x="131" y="710" text-anchor="middle" font-family="Assistant,Arial,sans-serif" font-weight="700" font-size="13.5" fill="#E7F6FA">ומגיעים יחד.</text>
 <g transform="translate(${ep.x} ${ep.y - 4}) scale(.98) translate(${-ep.x} ${-ep.y})">${island(ep.x, ep.y)}</g>
 ${st}${nums}
 <g transform="translate(${sp.x} ${sp.y})"><circle r="38" fill="#1B4F7A" opacity=".16" cy="3"/><circle r="38" fill="#1B4F7A"/><circle r="32" fill="none" stroke="#FFC929" stroke-width="2" stroke-dasharray="4 5"/>${T(0, -4, 14, 800, '#fff', 'יוצאים')}${T(0, 14, 14, 800, '#fff', 'לדרך')}<path d="M24 -50v26" stroke="#1B4F7A" stroke-width="3"/><path d="M24 -50l20 6l-20 6z" fill="#FFC929"/></g>

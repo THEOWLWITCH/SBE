@@ -271,7 +271,7 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
     g.innerHTML = G.pos.map((k, i) => {
       const slot = (occ[k] = (occ[k] || 0) + 1) - 1, p = B.piecePos(k, slot);
       const on = (cur != null ? cur : (G.mode === 'turns' ? G.turn : -1)) === i;
-      return `<g class="pc${on ? ' cur' : ''}" data-i="${i}" style="transform:translate(${p.x}px,${p.y}px)">${on ? '<circle r="26" fill="#FFC929" opacity=".55"/>' : ''}${B.piece(i, 0, 0, .34)}</g>`;
+      return `<g class="pc${on ? ' cur' : ''}" data-i="${i}" style="transform:translate(${p.x}px,${p.y}px)">${on ? '<circle r="30" fill="#FFC929" opacity=".55"/>' : ''}${B.piece(i, 0, 0, .44)}</g>`;
     }).join('');
   }
   function movePieceTo(i, k) {
