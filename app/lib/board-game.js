@@ -1,4 +1,4 @@
-// מסע אל החוסן: משחק לוח (22/10/2026), על המסך ולהדפסה. מקור אמת אחד ללוח, למשימות, לאירועים ולהוראות.
+// צועדים אל החוסן: משחק לוח (22/10/2026), על המסך ולהדפסה. מקור אמת אחד ללוח, למשימות, לאירועים ולהוראות.
 // "יש 4 משתתפים, מטילים קובייה ומתקדמים על לוח... בכל צעד יש משימה... בסוף המסלול מגיעים אל החוסן.
 //  אפשר לשחק בקבוצות. אפשר לשחק קבוצה אחת עם 5 כלי משחק והמטרה שיתופית: להביא את כל הכלים לסוף בזמן מסוים."
 (function (root, factory) {
@@ -77,7 +77,7 @@
   }
 
   const RULES = {
-    title: 'מסע אל החוסן',
+    title: 'צועדים אל החוסן',
     sub: 'משחק לוח · 2 עד 4 משתתפים או קבוצות, או משחק שיתופי עם 5 כלים',
     ready: ['כל משתתף/ת או קבוצה בוחר/ת כלי משחק ומניח/ה אותו ב"יוצאים לדרך".', 'מערבבים את קלפי המשימה ומניחים אותם הפוכים ליד הלוח.', 'צריכים קובייה אחת. אפשר להטיל קובייה רגילה, או להשתמש בקובייה שעל המסך.'],
     play: [
@@ -157,10 +157,10 @@ ${cr(x - 34, y + 14, .24, 'teal', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })
     }
     const sp = pos(0), ep = pos(END);
     const clouds = [[300, 70], [560, 52], [820, 92]].map(([x, y]) => `<g fill="#fff" opacity=".85"><circle cx="${x}" cy="${y}" r="14"/><circle cx="${x + 16}" cy="${y - 7}" r="18"/><circle cx="${x + 34}" cy="${y}" r="13"/><rect x="${x}" y="${y}" width="36" height="12" rx="6"/></g>`).join('');
-    const legend = `<g><rect x="34" y="402" width="212" height="226" rx="18" fill="#fff" fill-opacity=".92" stroke="#D7E6EA"/>${T(140, 432, 17, 800, '#1B4F7A', 'מקרא')}` +
-      [['task', 'משימה: מרימים קלף'], ['together', 'כולם יחד'], ['boost', 'גשר: מתקדמים'], ['setback', 'מכשול: חוזרים']].map(([t, l], i) =>
-        `${icon(t, 216, 468 + i * 44, .95)}<text x="190" y="${474 + i * 44}" text-anchor="start" direction="rtl" font-family="Assistant,Arial,sans-serif" font-weight="700" font-size="15" fill="#1d2b36">${l}</text>`).join('') + `</g>`;
-    return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="לוח המשחק מסע אל החוסן" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    const legend = `<g><rect x="30" y="396" width="222" height="244" rx="18" fill="#fff" fill-opacity=".94" stroke="#D7E6EA"/>${T(141, 424, 16, 800, '#1B4F7A', 'מה קורה במשבצת?')}` +
+      [['task', 'משימה', 'לוקחים קלף ומבצעים'], ['together', 'כולם יחד', 'כל המשתתפים עושים'], ['boost', 'גשר', 'מתקדמים קדימה'], ['setback', 'מכשול', 'חוזרים אחורה']].map(([t, n, l], i) =>
+        `${icon(t, 222, 462 + i * 46, .95)}<text x="196" y="${458 + i * 46}" text-anchor="start" direction="rtl" font-family="Assistant,Arial,sans-serif" font-weight="800" font-size="15" fill="${COL[t][2]}">${n}</text><text x="196" y="${476 + i * 46}" text-anchor="start" direction="rtl" font-family="Assistant,Arial,sans-serif" font-weight="700" font-size="13" fill="#4a5a64">${l}</text>`).join('') + `</g>`;
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="לוח המשחק צועדים אל החוסן" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <defs><linearGradient id="bgSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E6F4FA"/><stop offset="1" stop-color="#F6FBF4"/></linearGradient>
 <filter id="bgSh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation="2.4" flood-color="#1B4F7A" flood-opacity=".14"/></filter></defs>
 <rect width="${W}" height="${H}" rx="28" fill="url(#bgSky)"/>${clouds}
@@ -168,7 +168,7 @@ ${cr(x - 34, y + 14, .24, 'teal', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })
 <polyline points="${pts.join(' ')}" fill="none" stroke="#EADCBC" stroke-width="26" stroke-linejoin="round" stroke-linecap="round"/>
 <polyline points="${pts.join(' ')}" fill="none" stroke="#fff" stroke-width="2.4" stroke-dasharray="1 10" stroke-linecap="round" opacity=".9"/>
 <rect x="44" y="22" width="192" height="96" rx="18" fill="#fff" filter="url(#bgSh)"/><image href="${LOGO}" xlink:href="${LOGO}" x="56" y="28" width="168" height="84" preserveAspectRatio="xMidYMid meet"/>
-${T(140, 178, 40, 900, '#1B4F7A', 'מסע', "'Frank Ruhl Libre',Georgia,serif")}${T(140, 222, 40, 900, '#1B4F7A', 'אל החוסן', "'Frank Ruhl Libre',Georgia,serif")}
+${T(140, 178, 40, 900, '#1B4F7A', 'צועדים', "'Frank Ruhl Libre',Georgia,serif")}${T(140, 222, 40, 900, '#1B4F7A', 'אל החוסן', "'Frank Ruhl Libre',Georgia,serif")}
 ${T(140, 252, 16, 700, '#2b6a7d', 'משחק לוח')}
 <g transform="translate(14 270) scale(.6)">${MG.parade(5, 440, 120).replace(/^<svg[^>]*>|<\/svg>$/g, '')}</g>
 ${legend}

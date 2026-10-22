@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>מסע אל החוסן: משחק לוח</title>
+<title>צועדים אל החוסן: משחק לוח</title>
 <script src="lib/access-guard.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&display=swap">
 <style>
-/* מסע אל החוסן: משחק לוח (22/10/2026), על המסך ולהדפסה. מקור אמת: lib/board-game.js. הרשאה: games */
+/* צועדים אל החוסן: משחק לוח (22/10/2026), על המסך ולהדפסה. מקור אמת: lib/board-game.js. הרשאה: games */
 :root{--navy:#1B4F7A;--teal:#1A9BB5;--green:#3A9E6B;--sun:#FFC929;--ink:#1d2b36;--muted:#4a5a64;--line:#dbe7ea;--bg:#F5F9FA;--card:#fff;--soft:#EAF5F7;--hl:#1B4F7A}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e7eef1;--muted:#a9bac2;--line:#2c3d47;--bg:#0f1b22;--card:#16252e;--soft:#1b2f38;--hl:#8fd3e0}}
 :root[data-theme="dark"]{--ink:#e7eef1;--muted:#a9bac2;--line:#2c3d47;--bg:#0f1b22;--card:#16252e;--soft:#1b2f38;--hl:#8fd3e0}
@@ -119,7 +119,7 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
 @media print{
   @page{size:A4;margin:24mm 24mm}
   @page board{size:A4 landscape;margin:14mm}
-  @page{@bottom-center{content:"מסע אל החוסן · Begood · be-good.co.il · עמוד " counter(page) " מתוך " counter(pages);font:600 9pt Assistant,Arial,sans-serif;color:#4a5a64}}
+  @page{@bottom-center{content:"צועדים אל החוסן · Begood · be-good.co.il · עמוד " counter(page) " מתוך " counter(pages);font:600 9pt Assistant,Arial,sans-serif;color:#4a5a64}}
   body{background:#fff}
   .topnav,.wrap,.modal{display:none!important}
   #print{display:block}
@@ -169,13 +169,13 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
   <button type="button" onclick="history.back()">→ חזרה</button>
   <a href="games.html">🎲 משחקי חוסן</a>
   <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
-  <span class="crumb">Begood › משחקי חוסן › מסע אל החוסן</span>
+  <span class="crumb">Begood › משחקי חוסן › צועדים אל החוסן</span>
 </nav>
 <main class="wrap">
   <header class="hero">
     <div class="txt">
       <span class="logo"><img src="assets/begood-logo-sm.webp" alt="Begood"></span>
-      <h1>מסע אל החוסן</h1>
+      <h1>צועדים אל החוסן</h1>
       <p>משחק לוח: מטילים קובייה, מתקדמים יחד, עוצרים למשימות, עוזרים זה לזה במכשולים, ומגיעים אל החוסן.</p>
     </div>
     <div class="parade" id="parade"></div>
@@ -437,7 +437,7 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
   // ---------- הדפסה ----------
   function buildPrint() {
     const head = (t, p) => '<div class="pr-head"><div><h1>' + t + '</h1><p>' + p + '</p></div><img src="assets/begood-logo.webp" alt="Begood"></div>';
-    let h = '<section class="pr-page">' + head('מסע אל החוסן', R.sub) +
+    let h = '<section class="pr-page">' + head('צועדים אל החוסן', R.sub) +
       '<h2>מה בערכה</h2><p>לוח המשחק (לרוחב הדף, ואפשר להגדיל ל־A3) · 24 קלפי משימה וגב הקלפים · מה קורה במשבצות המיוחדות · חמישה כלי משחק לגזירה. צריכים גם קובייה אחת.</p>' +
       '<h2>מתכוננים</h2><ol>' + R.ready.map((t) => '<li>' + esc(t) + '</li>').join('') + '</ol>' +
       '<h2>משחקים</h2><ol>' + R.play.map((t) => '<li>' + esc(t) + '</li>').join('') + '</ol>' +
@@ -453,9 +453,9 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
       [0, 1, 2, 3, 4].map((i) => `<div class="pr-token"><div>${faceSvg(i)}</div><div>${faceSvg(i)}</div><i>לשונית להדבקה</i></div>`).join('') + '</div></div></section>';
     const card = (t) => `<div class="pr-card"><div class="ct"><svg viewBox="-20 -20 40 40">${B.icon('task', 0, 0, 1.1)}</svg>משימה</div><div class="cb">${esc(t)}</div><div class="cl"><img src="assets/begood-logo-sm.webp" alt="Begood"></div><div class="cf"></div></div>`;
     for (let p = 0; p < B.TASKS.length; p += 9) h += '<section class="pr-page"><p class="pr-cap">קלפי משימה · דף ' + (p / 9 + 1) + ' מתוך ' + Math.ceil(B.TASKS.length / 9) + '</p><div class="pr-cards">' + B.TASKS.slice(p, p + 9).map(card).join('') + '</div></section>';
-    h += '<section class="pr-page"><p class="pr-cap">גב הקלפים · מדפיסים על הצד השני של דפי הקלפים</p><div class="pr-cards">' + Array(9).fill(`<div class="pr-card pr-back"><img src="assets/begood-logo-sm.webp" alt=""><span>מסע אל החוסן</span>${M.parade(5, 300, 110)}</div>`).join('') + '</div></section>';
+    h += '<section class="pr-page"><p class="pr-cap">גב הקלפים · מדפיסים על הצד השני של דפי הקלפים</p><div class="pr-cards">' + Array(9).fill(`<div class="pr-card pr-back"><img src="assets/begood-logo-sm.webp" alt=""><span>צועדים אל החוסן</span>${M.parade(5, 300, 110)}</div>`).join('') + '</div></section>';
     $('print').innerHTML = h;
-    document.title = 'מסע אל החוסן · משחק לוח · Begood';
+    document.title = 'צועדים אל החוסן · משחק לוח · Begood';
   }
   $('printBtn').onclick = () => { buildPrint(); setTimeout(() => window.print(), 300); };
   if (new URLSearchParams(location.search).get('print')) buildPrint();

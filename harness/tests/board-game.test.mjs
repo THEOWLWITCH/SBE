@@ -1,4 +1,4 @@
-// מסע אל החוסן: משחק לוח (22/10/2026), על המסך ולהדפסה.
+// צועדים אל החוסן: משחק לוח (22/10/2026), על המסך ולהדפסה.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
