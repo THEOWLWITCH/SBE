@@ -100,21 +100,25 @@
   const W = 1200, H = 800;
   function pos(k) {
     if (k <= 0) return { x: 1112, y: 690 };
-    if (k >= END) return { x: 1114, y: 156 };
+    if (k >= END) return { x: 1108, y: 136 };
     const r = Math.floor((k - 1) / 6); let c = (k - 1) % 6;
     if (r % 2) c = 5 - c;
     return { x: 990 - c * 128, y: 690 - r * 100 };
   }
+  // צבעים: [רקע עדין, צבע הסוג, טקסט כהה]
   const COL = {
-    task: ['#E3F5F7', '#1A9BB5'], setback: ['#FFE6DE', '#D9583A'], boost: ['#E3F4EA', '#2E7D4F'], together: ['#FFF3CF', '#C98E00']
+    task: ['#EEF8FA', '#1A9BB5', '#14708A'], setback: ['#FFF1EC', '#E0603F', '#B23A26'], boost: ['#EEF8F1', '#2E9C61', '#21704A'], together: ['#FFF8E2', '#E0A800', '#8F5A00']
   };
+  const LOGO = 'assets/begood-logo-sm.webp';
+  // סמל בתוך עיגול צבעוני (תג), כדי שיהיה ברור גם בקטן ובהדפסה
   function icon(type, x, y, s) {
     s = s || 1;
-    const g = (inner) => `<g transform="translate(${x} ${y}) scale(${s})">${inner}</g>`;
-    if (type === 'task') return g(MG.star(0, 0, 15, '#FFC929'));
-    if (type === 'setback') return g(`<g fill="#9FB0B8"><circle cx="-8" cy="-2" r="9"/><circle cx="4" cy="-7" r="11"/><circle cx="13" cy="0" r="8"/><rect x="-16" y="-2" width="36" height="10" rx="5"/></g><path d="M2 8 L-3 18 L3 17 L0 26 L9 13 L3 14 L6 8 Z" fill="#FFC929" stroke="#C98E00" stroke-width="1"/>`);
-    if (type === 'boost') return g(`<path d="M-20 10 Q0 -14 20 10" fill="none" stroke="#2E7D4F" stroke-width="5" stroke-linecap="round"/><path d="M-14 10 V2 M-6 10 V-3 M2 10 V-3 M10 10 V2" stroke="#2E7D4F" stroke-width="3" stroke-linecap="round"/><path d="M-22 10 H22" stroke="#6B4A2B" stroke-width="4" stroke-linecap="round"/>`);
-    if (type === 'together') return g(`<circle cx="-12" cy="2" r="7" fill="#FF8F70"/><circle cx="12" cy="2" r="7" fill="#43BED4"/><circle cx="0" cy="-4" r="8" fill="#66C592"/><path d="M-20 14 Q-12 6 -4 14 M4 14 Q12 6 20 14 M-8 10 Q0 1 8 10" stroke="#C98E00" stroke-width="3" fill="none" stroke-linecap="round"/>`);
+    const c = (COL[type] || COL.task)[1];
+    const g = (inner) => `<g transform="translate(${x} ${y}) scale(${s})"><circle r="17" fill="${c}"/><circle r="17" fill="none" stroke="#fff" stroke-width="2" opacity=".6"/>${inner}</g>`;
+    if (type === 'task') return g(MG.star(0, 0.5, 10.5, '#fff').replace('stroke="#E0A800"', 'stroke="#fff"'));
+    if (type === 'setback') return g(`<g fill="#fff"><circle cx="-5" cy="-1" r="5.4"/><circle cx="2" cy="-4.5" r="6.4"/><circle cx="7.5" cy="0" r="4.6"/><rect x="-10" y="-1" width="22" height="6" rx="3"/></g><path d="M1.5 5.5 L-2 11 L1.5 10.5 L-0.5 15.5 L5.5 8.5 L2 9 L4 5.5 Z" fill="#FFD34F"/>`);
+    if (type === 'boost') return g(`<path d="M-11 5 Q0 -9 11 5" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><path d="M-7 5 V0 M-2.5 5 V-3 M2.5 5 V-3 M7 5 V0" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M-13 6 H13" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`);
+    if (type === 'together') return g(`<g fill="#fff"><circle cx="-7.5" cy="-3" r="3.6"/><circle cx="7.5" cy="-3" r="3.6"/><circle cx="0" cy="-6" r="4.2"/><path d="M-13 8 Q-7.5 -1 -2 8 Z M2 8 Q7.5 -1 13 8 Z M-6 9 Q0 -3 6 9 Z"/></g>`);
     return '';
   }
   function label(sq) {
@@ -124,38 +128,52 @@
     if (sq.type === 'boost') return sq.fwd + ' קדימה';
     return '';
   }
-  // svg של הלוח. opts.print: בלי מזהים לחיצה
-  function board(opts) {
-    opts = opts || {};
+  const T = (x, y, size, w, fill, txt, fam) => `<text x="${x}" y="${y}" text-anchor="middle" direction="rtl" font-family="${fam || 'Assistant,Arial,sans-serif'}" font-weight="${w}" font-size="${size}" fill="${fill}">${txt}</text>`;
+  // האי של החוסן: חוף, דשא, עצים, בית וקהילה, ושלט
+  function island(x, y) {
+    const tree = (tx, ty, s) => `<g transform="translate(${tx} ${ty}) scale(${s})"><rect x="-2" y="0" width="4" height="12" rx="2" fill="#8A6A45"/><circle cx="0" cy="-6" r="10" fill="#3A9E6B"/><circle cx="-6" cy="-1" r="7" fill="#4FB27C"/><circle cx="6" cy="-2" r="7" fill="#4FB27C"/></g>`;
+    return `<g>
+<ellipse cx="${x}" cy="${y + 8}" rx="88" ry="66" fill="#BFE6F0" opacity=".7"/>
+<path d="M${x - 80} ${y + 12} C${x - 82} ${y - 40} ${x - 40} ${y - 62} ${x} ${y - 60} C${x + 46} ${y - 60} ${x + 84} ${y - 34} ${x + 80} ${y + 14} C${x + 76} ${y + 52} ${x + 34} ${y + 64} ${x} ${y + 62} C${x - 38} ${y + 62} ${x - 78} ${y + 50} ${x - 80} ${y + 12} Z" fill="#F2E2B6"/>
+<path d="M${x - 70} ${y + 8} C${x - 70} ${y - 34} ${x - 36} ${y - 52} ${x} ${y - 51} C${x + 40} ${y - 51} ${x + 72} ${y - 30} ${x + 70} ${y + 10} C${x + 66} ${y + 40} ${x + 30} ${y + 50} ${x} ${y + 49} C${x - 32} ${y + 49} ${x - 68} ${y + 38} ${x - 70} ${y + 8} Z" fill="#9FDAB2"/>
+<path d="M${x - 62} ${y + 18} C${x - 30} ${y - 4} ${x + 24} ${y - 6} ${x + 62} ${y + 16} C${x + 50} ${y + 40} ${x + 20} ${y + 46} ${x} ${y + 46} C${x - 26} ${y + 46} ${x - 52} ${y + 38} ${x - 62} ${y + 18} Z" fill="#7CCB97"/>
+${tree(x - 50, y - 22, .9)}${tree(x + 52, y - 18, .8)}${tree(x - 34, y - 34, .7)}
+<path d="M${x - 20} ${y - 18} L${x} ${y - 38} L${x + 20} ${y - 18} Z" fill="#FF8F70"/><rect x="${x - 15}" y="${y - 19}" width="30" height="22" rx="2" fill="#fff"/><rect x="${x - 4}" y="${y - 9}" width="8" height="12" rx="1.5" fill="#FFC929"/><rect x="${x + 6}" y="${y - 15}" width="6" height="6" fill="#BFE6F0"/>
+${cr(x - 34, y + 14, .24, 'teal', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })}${cr(x - 12, y + 22, .24, 'sun', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })}${cr(x + 12, y + 22, .24, 'coral', { arms: { l: 'up', r: 'up' }, eyes: 'happy', bow: true })}${cr(x + 34, y + 14, .24, 'lilac', { arms: { l: 'up', r: 'up' }, eyes: 'happy', antenna: true })}${cr(x, y + 34, .22, 'green', { arms: { l: 'up', r: 'up' }, eyes: 'happy', tuft: true })}
+<g transform="translate(${x} ${y + 64})"><path d="M-56 -15 H56 L48 0 L56 15 H-56 L-48 0 Z" fill="#1B4F7A"/>${T(0, 8, 23, 900, '#fff', 'חוסן', "'Frank Ruhl Libre',Georgia,serif")}</g>
+</g>`;
+  }
+  // svg של הלוח
+  function board() {
     let pts = [];
     for (let k = 0; k <= END; k++) { const p = pos(k); pts.push(p.x + ',' + p.y); }
     let sq = '';
     for (let k = 1; k <= N; k++) {
-      const s = square(k), p = pos(k), [f, st] = COL[s.type];
-      sq += `<g class="bg-sq" data-k="${k}"><rect x="${p.x - 48}" y="${p.y - 38}" width="96" height="76" rx="16" fill="${f}" stroke="${st}" stroke-width="3"/>` +
-        `<text x="${p.x + 33}" y="${p.y - 20}" text-anchor="middle" font-family="Assistant,Arial,sans-serif" font-weight="800" font-size="15" fill="${st}">${k}</text>` +
-        icon(s.type, p.x, p.y - 8, 1) +
-        `<text x="${p.x}" y="${p.y + 27}" text-anchor="middle" font-family="Assistant,Arial,sans-serif" font-weight="800" font-size="15" fill="#1d2b36">${label(s)}</text></g>`;
+      const s = square(k), p = pos(k), [f, st, dk] = COL[s.type];
+      sq += `<g class="bg-sq" data-k="${k}"><rect x="${p.x - 48}" y="${p.y - 37}" width="96" height="78" rx="18" fill="#fff" filter="url(#bgSh)"/><rect x="${p.x - 48}" y="${p.y - 37}" width="96" height="78" rx="18" fill="${f}" stroke="${st}" stroke-opacity=".35" stroke-width="1.2"/>` +
+        T(p.x + 34, p.y - 22, 12, 700, '#7C8C95', k) +
+        icon(s.type, p.x, p.y - 9, 1) +
+        T(p.x, p.y + 28, 15, 800, dk, label(s)) + `</g>`;
     }
     const sp = pos(0), ep = pos(END);
-    const clouds = [[180, 90], [560, 60], [820, 110]].map(([x, y]) => `<g fill="#fff" opacity=".9"><circle cx="${x}" cy="${y}" r="18"/><circle cx="${x + 20}" cy="${y - 8}" r="22"/><circle cx="${x + 42}" cy="${y}" r="16"/><rect x="${x}" y="${y}" width="44" height="14" rx="7"/></g>`).join('');
-    const legend = [['task', 'משימה: מרימים קלף'], ['together', 'כולם יחד'], ['boost', 'גשר: קדימה'], ['setback', 'ענן: מכשול, אחורה']].map(([t, l], i) =>
-      `<g transform="translate(0 ${i * 52})"><rect x="40" y="430" width="200" height="42" rx="12" fill="#fff" stroke="${COL[t][1]}" stroke-width="2.5"/>${icon(t, 214, 451, .8)}<text x="124" y="457" text-anchor="middle" font-family="Assistant,Arial,sans-serif" font-weight="800" font-size="16" fill="#1d2b36">${l}</text></g>`).join('');
-    return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="לוח המשחק מסע אל החוסן" xmlns="http://www.w3.org/2000/svg">
-<defs><linearGradient id="bgSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E4F3FA"/><stop offset="1" stop-color="#F5FAF2"/></linearGradient></defs>
+    const clouds = [[300, 70], [560, 52], [820, 92]].map(([x, y]) => `<g fill="#fff" opacity=".85"><circle cx="${x}" cy="${y}" r="14"/><circle cx="${x + 16}" cy="${y - 7}" r="18"/><circle cx="${x + 34}" cy="${y}" r="13"/><rect x="${x}" y="${y}" width="36" height="12" rx="6"/></g>`).join('');
+    const legend = `<g><rect x="34" y="402" width="212" height="226" rx="18" fill="#fff" fill-opacity=".92" stroke="#D7E6EA"/>${T(140, 432, 17, 800, '#1B4F7A', 'מקרא')}` +
+      [['task', 'משימה: מרימים קלף'], ['together', 'כולם יחד'], ['boost', 'גשר: מתקדמים'], ['setback', 'מכשול: חוזרים']].map(([t, l], i) =>
+        `${icon(t, 216, 468 + i * 44, .95)}<text x="190" y="${474 + i * 44}" text-anchor="start" direction="rtl" font-family="Assistant,Arial,sans-serif" font-weight="700" font-size="15" fill="#1d2b36">${l}</text>`).join('') + `</g>`;
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="לוח המשחק מסע אל החוסן" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs><linearGradient id="bgSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E6F4FA"/><stop offset="1" stop-color="#F6FBF4"/></linearGradient>
+<filter id="bgSh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation="2.4" flood-color="#1B4F7A" flood-opacity=".14"/></filter></defs>
 <rect width="${W}" height="${H}" rx="28" fill="url(#bgSky)"/>${clouds}
-<path d="M0 720 Q200 650 420 700 T840 690 T1200 680 V800 H0 Z" fill="#CFEBD9"/><path d="M0 760 Q260 720 520 760 T1200 750 V800 H0 Z" fill="#B5E0C4"/>
-<polyline points="${pts.join(' ')}" fill="none" stroke="#E6D3AE" stroke-width="34" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="${pts.join(' ')}" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round"/>
-<g font-family="'Frank Ruhl Libre',Georgia,serif" text-anchor="middle"><text x="140" y="96" font-size="44" font-weight="900" fill="#1B4F7A">מסע</text><text x="140" y="146" font-size="44" font-weight="900" fill="#1B4F7A">אל החוסן</text></g>
-<text x="140" y="180" text-anchor="middle" font-family="Assistant,Arial,sans-serif" font-size="18" font-weight="700" fill="#2b6a7d">משחק לוח · Begood</text>
-<g transform="translate(14 196) scale(.6)">${MG.parade(5, 440, 120).replace(/^<svg[^>]*>|<\/svg>$/g, '')}</g>
+<path d="M0 724 Q200 664 420 708 T840 698 T1200 688 V800 H0 Z" fill="#D7EFE0"/><path d="M0 764 Q260 726 520 762 T1200 754 V800 H0 Z" fill="#C2E6CF"/>
+<polyline points="${pts.join(' ')}" fill="none" stroke="#EADCBC" stroke-width="26" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="${pts.join(' ')}" fill="none" stroke="#fff" stroke-width="2.4" stroke-dasharray="1 10" stroke-linecap="round" opacity=".9"/>
+<rect x="44" y="22" width="192" height="96" rx="18" fill="#fff" filter="url(#bgSh)"/><image href="${LOGO}" xlink:href="${LOGO}" x="56" y="28" width="168" height="84" preserveAspectRatio="xMidYMid meet"/>
+${T(140, 178, 40, 900, '#1B4F7A', 'מסע', "'Frank Ruhl Libre',Georgia,serif")}${T(140, 222, 40, 900, '#1B4F7A', 'אל החוסן', "'Frank Ruhl Libre',Georgia,serif")}
+${T(140, 252, 16, 700, '#2b6a7d', 'משחק לוח')}
+<g transform="translate(14 270) scale(.6)">${MG.parade(5, 440, 120).replace(/^<svg[^>]*>|<\/svg>$/g, '')}</g>
 ${legend}
-<g><rect x="${sp.x - 62}" y="${sp.y - 44}" width="124" height="88" rx="20" fill="#1B4F7A"/><text x="${sp.x}" y="${sp.y - 24}" text-anchor="middle" font-family="Assistant,Arial,sans-serif" font-weight="800" font-size="16" fill="#fff">יוצאים לדרך</text></g>
-<g><circle cx="${ep.x}" cy="${ep.y}" r="76" fill="#3A9E6B"/><circle cx="${ep.x}" cy="${ep.y}" r="69" fill="#E3F4EA"/>
-<path d="M${ep.x - 30} ${ep.y - 6} L${ep.x} ${ep.y - 34} L${ep.x + 30} ${ep.y - 6} Z" fill="#FF8F70"/><rect x="${ep.x - 22}" y="${ep.y - 7}" width="44" height="30" rx="3" fill="#fff" stroke="#BFD6DE" stroke-width="2"/><rect x="${ep.x - 6}" y="${ep.y + 6}" width="12" height="17" fill="#FFC929"/>
-${cr(ep.x - 40, ep.y + 28, .28, 'teal', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })}${cr(ep.x + 40, ep.y + 28, .28, 'coral', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })}${cr(ep.x - 22, ep.y + 46, .26, 'sun', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })}${cr(ep.x + 22, ep.y + 46, .26, 'lilac', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })}
-<text x="${ep.x}" y="${ep.y - 40}" text-anchor="middle" font-family="'Frank Ruhl Libre',Georgia,serif" font-weight="900" font-size="30" fill="#1B4F7A">חוסן</text></g>
+<g><rect x="${sp.x - 60}" y="${sp.y - 42}" width="120" height="84" rx="20" fill="#1B4F7A" filter="url(#bgSh)"/>${T(sp.x, sp.y - 20, 15, 800, '#fff', 'יוצאים לדרך')}</g>
+<g transform="translate(${ep.x} ${ep.y - 4}) scale(.98) translate(${-ep.x} ${-ep.y})">${island(ep.x, ep.y)}</g>
 ${sq}
 <g class="bg-pieces"></g>
 </svg>`;

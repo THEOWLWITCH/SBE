@@ -302,14 +302,16 @@
   }
   function shuffle(a, rnd) { a = a.slice(); rnd = rnd || Math.random; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  // פני הקלף (HTML). אותו מבנה במסך ובהדפסה.
+  // לוגו בכל קלף (22/10/2026: "עיקרון על - לא יהיה קלף או לוח בלי לוגו")
+  const LOGO_TAG = '<img class="mg-logo" src="assets/begood-logo-sm.webp" alt="Begood">';
+  // פני הקלף (HTML). אותו מבנה על המסך ובהדפסה.
   function face(c, age) {
     const it = c.it;
     if (c.kind === 'sit') {
-      return `<div class="mg-face mg-sit"><span class="mg-q" aria-hidden="true">❝</span><p>${esc(it.sit[age] || it.sit.mid)}</p></div>`;
+      return `<div class="mg-face mg-sit">${LOGO_TAG}<span class="mg-q" aria-hidden="true">❝</span><p>${esc(it.sit[age] || it.sit.mid)}</p></div>`;
     }
     const label = c.kind === 'pic' ? it.name.young : nameFor(it, age);
-    return `<div class="mg-face mg-pic" style="--mg:${it.col};--mgt:${it.tint}"><div class="mg-art">${art(it)}</div><b>${esc(label)}</b></div>`;
+    return `<div class="mg-face mg-pic" style="--mg:${it.col};--mgt:${it.tint}">${LOGO_TAG}<div class="mg-art">${art(it)}</div><b>${esc(label)}</b></div>`;
   }
   // גב הקלף: יצורון מציץ ושם המשחק
   // גב הקלף: הלוגו של Begood וקבוצת יצורונים (21/10/2026: "שלב את הלוגו של בי גוד. לב הוא לא סימן מתאים - עדיף כמה יצורים")
