@@ -339,7 +339,7 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
   function hintFor(sel) {
     if (!sel.length) return 'אפשר לבחור אירוע ותגובה עם אותו מספר, אירוע אחד כדי לבקש עזרה, קלף פעולה, או עד 2 קלפים להחלפה.';
     if (sel.length === 1 && sel[0].kind === 'event') return 'מסומנות בירוק התגובות שמתאימות. אפשר לבחור אחת ולהניח זוג, או לבקש עזרה מהשכנים.';
-    if (sel.length === 1 && sel[0].kind === 'action' && !actionOk(sel[0])) return sel[0].act === 'gold' ? 'שכנים מזהב משדרגים זוג אלתור. עוד אין לך זוג כזה.' : 'כדי להפעיל את התרגיל, צריך אירוע פתוח ותגובה מתאימה ביד.'.replace('צריך', 'יש צורך ב') ;
+    if (sel.length === 1 && sel[0].kind === 'action' && !actionOk(sel[0])) return sel[0].act === 'gold' ? 'שכנים מזהב משדרגים זוג אלתור. עוד אין לך זוג כזה.' : 'התרגיל פועל כשיש אירוע פתוח בשולחן הקהילה ותגובה מתאימה ביד.';
     if (sel.length === 2 && !P.isPair(sel[0], sel[1])) return 'שני הקלפים האלה לא זוג. אפשר להחליף אותם בקלפים מהקופה.';
     return '';
   }
@@ -450,7 +450,6 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
     if (G.mode === 'coop' && total() >= P.TARGET) return finish('target');
     if (G.last || !G.pile.length) return finish('pile');
     G.turn = (G.turn + 1) % G.pl.length; G.phase = 'draw';
-    G.say = msg ? msg + ' ' : '';
     G.say = '';
     draw();
     showCover();

@@ -199,6 +199,17 @@ ${cr(x - 34, y + 14, .24, 'teal', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })
     swing: (x, y) => `<g transform="translate(${x} ${y})"><rect x="-3" y="-30" width="6" height="46" rx="3" fill="#8C6B4A"/><ellipse cx="0" cy="-40" rx="30" ry="24" fill="#3A9E6B"/><ellipse cx="10" cy="-46" rx="16" ry="12" fill="#7CCB97" opacity=".7"/><path d="M14 -26v30M30 -26v30" stroke="#5D4A36" stroke-width="1.4"/><rect x="11" y="4" width="22" height="4" rx="2" fill="#E0603F"/>${cr(22, -6, .16, 'coral', { arms: { l: 'up', r: 'up' }, eyes: 'happy', bow: true })}</g>`,
     garden: (x, y) => `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="8" rx="46" ry="9" fill="#8C6B4A" opacity=".35"/>${[-32, -16, 0, 16, 32].map((dx, i) => `<path d="M${dx} 8v-16" stroke="#3A9E6B" stroke-width="2.4"/><circle cx="${dx}" cy="-12" r="6" fill="${['#FF8F70', '#FFC929', '#F06A9B', '#1A9BB5', '#FFC929'][i]}"/><circle cx="${dx}" cy="-12" r="2.2" fill="#fff"/>`).join('')}${cr(48, 2, .18, 'navy', { eyes: 'happy', arms: { l: 'down', r: 'cup' } })}</g>`,
     tent: (x, y) => `<g transform="translate(${x} ${y})"><path d="M-28 16L0 -24L28 16Z" fill="#FFC929"/><path d="M0 -24L28 16H8Z" fill="#E0A800"/><path d="M0 -24L-8 16H8Z" fill="#7A4E12" opacity=".5"/><path d="M0 -24v-10l10 4l-10 4" fill="#E0603F"/></g>`,
+    eagle: (x, y) => `<g transform="translate(${x} ${y})"><path d="M-30 0Q-16 -16 0 -2Q16 -16 30 0Q16 -6 0 6Q-16 -6 -30 0Z" fill="#5D7186"/>${cr(0, -2, .14, 'sun', { arms: { l: 'up', r: 'up' }, eyes: 'happy', mouth: 'open' })}</g>`,
+    cave: (x, y) => `<g transform="translate(${x} ${y})"><path d="M-46 22C-46 -18 -24 -34 0 -34C24 -34 46 -18 46 22Z" fill="#7F93A3"/><path d="M-26 22C-26 -2 -14 -14 0 -14C14 -14 26 -2 26 22Z" fill="#2B3A4D"/><circle cx="6" cy="6" r="16" fill="#FFE07A" opacity=".35"/>${cr(2, 12, .16, 'lilac', { arms: { l: 'down', r: 'up' }, look: [2, -1], antenna: true })}<rect x="9" y="-4" width="6" height="8" rx="1.5" fill="#FFC929"/><path d="M12 -4v-3" stroke="#5D4A36" stroke-width="1.4"/></g>`,
+    climb: (x, y) => `<g transform="translate(${x} ${y})"><path d="M-30 26L-18 -30L6 -40L24 -20L30 26Z" fill="#8FA3B0"/><path d="M-18 -30L6 -40L0 -10Z" fill="#A9BAC5"/><path d="M4 -38v-12l14 5l-14 5" fill="#E0603F"/><path d="M4 -36C-4 -20 6 -6 -2 10C-6 18 -10 22 -12 26" fill="none" stroke="#E0A800" stroke-width="2"/>${cr(-1, -6, .16, 'coral', { arms: { l: 'up', r: 'up' }, look: [0, -3], bow: true })}${cr(-12, 16, .15, 'teal', { arms: { l: 'up', r: 'down' }, look: [0, -3] })}</g>`,
+    sign: (x, y) => `<g transform="translate(${x} ${y})"><rect x="-2.5" y="-24" width="5" height="44" fill="#8C6B4A"/><path d="M-2 -22h28l8 7l-8 7h-28z" fill="#FFC929"/><path d="M2 -6h-28l-8 7l8 7h28z" fill="#1A9BB5"/>${cr(-22, 16, .16, 'navy', { arms: { l: 'down', r: 'up' }, look: [3, -2] })}</g>`,
+    boat: (x, y) => `<g transform="translate(${x} ${y})"><path d="M-40 -2H40L30 14H-30Z" fill="#B07A4A"/><path d="M-40 -2H40" stroke="#8C5A30" stroke-width="3"/>${cr(-14, -12, .17, 'sun', { arms: { l: 'out', r: 'out' }, eyes: 'happy', mouth: 'open' })}${cr(16, -12, .17, 'green', { flip: true, arms: { l: 'out', r: 'out' }, eyes: 'happy', tuft: true })}<path d="M-30 -8L-48 16M30 -8L48 16" stroke="#8C5A30" stroke-width="3" stroke-linecap="round"/><path d="M-60 12q8 -4 16 0M44 14q8 -4 16 0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g>`,
+    fish: (x, y) => `<g transform="translate(${x} ${y}) rotate(-30)"><path d="M-10 0C-4 -8 8 -8 12 0C8 8 -4 8 -10 0Z" fill="#FF8F70"/><path d="M-10 0L-18 -6V6Z" fill="#FF8F70"/><circle cx="6" cy="-1" r="1.6" fill="#1F2A36"/><path d="M-16 12q6 6 14 0" fill="none" stroke="#fff" stroke-width="2"/></g>`,
+    fisher: (x, y) => `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="-6" rx="34" ry="8" fill="#B3DFC3"/>${cr(-8, -16, .17, 'teal', { arms: { l: 'down', r: 'out' }, eyes: 'happy' })}<path d="M0 -18L30 -40" stroke="#8C6B4A" stroke-width="2"/><path d="M30 -40Q36 -20 34 12" fill="none" stroke="#5D7186" stroke-width="1"/><circle cx="34" cy="12" r="3" fill="#E0603F"/></g>`,
+    village: (x, y) => `<g transform="translate(${x} ${y})">${['#E0603F', '#1A9BB5', '#FFC929', '#3A9E6B'].map((c, i) => `<g transform="translate(${-48 + i * 32} ${i % 2 ? 4 : -6}) scale(1.05)"><rect x="-13" y="-10" width="26" height="20" rx="2" fill="#FFFDF7"/><path d="M-17 -9L0 -24L17 -9Z" fill="${c}"/><rect x="-4" y="1" width="8" height="9" rx="1.5" fill="#FFC929"/><rect x="5" y="-5" width="5" height="5" rx="1" fill="#BFE6F0"/></g>`).join('')}${cr(64, 6, .17, 'coral', { arms: { l: 'wave', r: 'down' }, eyes: 'happy' })}</g>`,
+    picnic: (x, y) => `<g transform="translate(${x} ${y})"><path d="M-40 10L-30 -8H34L44 10Z" fill="#F06A7A"/><path d="M-26 -8L-36 10M-12 -8L-16 10M4 -8L6 10M20 -8L26 10M-36 1H39" stroke="#fff" stroke-width="2" opacity=".7"/><rect x="-6" y="-14" width="16" height="10" rx="2" fill="#B07A4A"/>${cr(-30, -12, .16, 'lilac', { arms: { l: 'down', r: 'cup' }, eyes: 'happy' })}${cr(32, -12, .16, 'sun', { flip: true, arms: { l: 'down', r: 'cup' }, eyes: 'happy' })}</g>`,
+    sheep: (x, y) => `<g transform="translate(${x} ${y})">${[[-16, 0, 1], [16, 6, .85]].map(([dx, dy, k]) => `<g transform="translate(${dx} ${dy}) scale(${k})"><g fill="#fff"><circle cx="-8" cy="0" r="8"/><circle cx="0" cy="-4" r="9"/><circle cx="8" cy="0" r="8"/><circle cx="0" cy="4" r="8"/></g><ellipse cx="13" cy="-4" rx="5" ry="6" fill="#1F2A36"/><path d="M-6 10v6M6 10v6" stroke="#1F2A36" stroke-width="2.4"/></g>`).join('')}</g>`,
+    bridge: (x, y, rot) => `<g transform="translate(${x} ${y}) rotate(${rot})">${[-30, -20, -10, 0, 10, 20, 30].map((d) => `<rect x="${d - 3.5}" y="-27" width="7" height="54" rx="1.5" fill="#C99A62" stroke="#8C6B4A" stroke-width="1"/>`).join('')}<path d="M-38 -29H38M-38 29H38" stroke="#8C6B4A" stroke-width="4" stroke-linecap="round"/>${[-36, 0, 36].map((d) => `<circle cx="${d}" cy="-29" r="3.5" fill="#6E4F33"/><circle cx="${d}" cy="29" r="3.5" fill="#6E4F33"/>`).join('')}</g>`,
     goal: (x, y) => `<g transform="translate(${x} ${y})"><path d="M-34 14V-18H34V14" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round"/><g stroke="#fff" stroke-width="1" opacity=".8"><path d="M-26 -18v32M-18 -18v32M-10 -18v32M-2 -18v32M6 -18v32M14 -18v32M22 -18v32M30 -18v32M-34 -10h68M-34 -2h68M-34 6h68"/></g><circle cx="-6" cy="22" r="7" fill="#fff" stroke="#1F2A36" stroke-width="1.4"/><path d="M-6 17l3 3l-1.5 4h-3l-1.5-4z" fill="#1F2A36"/>${cr(-38, 12, .2, 'sun', { arms: { l: 'up', r: 'up' }, eyes: 'happy', mouth: 'open' })}${cr(26, 22, .18, 'teal', { flip: true, arms: { l: 'out', r: 'out' }, look: [-3, 0] })}</g>`,
     bench: (x, y) => `<g transform="translate(${x} ${y})"><rect x="-30" y="0" width="60" height="6" rx="2" fill="#B07A4A"/><rect x="-30" y="-12" width="60" height="5" rx="2" fill="#B07A4A"/><path d="M-24 6v10M24 6v10" stroke="#5D4A36" stroke-width="3"/>${cr(-12, -6, .18, 'sun', { eyes: 'happy', arms: { l: 'down', r: ['reach', 20] } })}${cr(12, -6, .18, 'teal', { flip: true, eyes: 'happy', arms: { l: 'down', r: ['reach', 20] } })}</g>`
   };
@@ -209,14 +220,27 @@ ${cr(x - 34, y + 14, .24, 'teal', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })
     const pine = (x, y, s, c) => `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-2" y="4" width="4" height="10" fill="#8C6B4A"/><path d="M0 -26L13 6H-13Z" fill="${c}"/><path d="M0 -26L13 6H0Z" fill="#000" opacity=".08"/></g>`;
     const birds = [[520, 70], [548, 84], [880, 60]].map(([x, y]) => `<path d="M${x} ${y}q6 -6 12 0q6 -6 12 0" fill="none" stroke="#1B4F7A" stroke-width="2" stroke-linecap="round" opacity=".45"/>`).join('');
     const clouds = [[320, 70, .9], [760, 40, .8], [1000, 96, .7]].map(([x, y, s]) => `<g transform="translate(${x} ${y}) scale(${s})" fill="#fff"><ellipse cx="0" cy="0" rx="34" ry="13"/><circle cx="-10" cy="-8" r="14"/><circle cx="12" cy="-10" r="17"/></g>`).join('');
+    // נוף של מסע (22/10/2026: "הרקע עדיין נראה עלוב ולא כמו נופים שרואים במסע - הלוח צריך להסעיר את הדמיון עם סיפורים על הרפתקאות של היצורונים"):
+    // הרים מושלגים, יער, מפל ונהר עם גשר, ועמק עם כפר. בכל מקום יצורונים בהרפתקה.
+    const snow = (x, y, w) => `<path d="M${x} ${y}L${x - w} ${y + w * 1.3}L${x - w * .45} ${y + w * 1.05}L${x} ${y + w * 1.45}L${x + w * .5} ${y + w * 1.05}L${x + w} ${y + w * 1.3}Z" fill="#fff"/>`;
+    const forest = [[300, 372, .7], [330, 380, .9], [372, 368, .75], [600, 362, .7], [640, 372, .85], [880, 352, .8], [915, 362, .65], [1010, 356, .9], [1050, 364, .7], [455, 380, .6]].map(([x, y, k], i) => pine(x, y, k, ['#2E8A63', '#3A9E6B', '#1A8A9B'][i % 3])).join('');
     const scene = `
-<path d="M260 470 C420 420 560 470 700 448 C860 424 980 470 1200 430 V800 H260 Z" fill="#DDF1E3"/>
-<path d="M260 640 C460 600 640 660 820 628 C980 600 1080 650 1200 620 V800 H260 Z" fill="#CBEAD6"/>
-<path d="M0 760 C240 720 520 780 800 752 C1000 732 1100 770 1200 750 V800 H0 Z" fill="#B7E0C5"/>
-${LAND.balloon(630, 80)}${LAND.kite(440, 70)}
-${LAND.tent(560, 280)}${tree(640, 286, .9, '#4FB27C', '#9BD9B1')}${LAND.bench(820, 286)}${pine(1000, 280, .85, '#1A9BB5')}${tree(470, 288, .8, '#3A9E6B', '#7CCB97')}
-${LAND.swing(480, 486)}${LAND.camp(700, 470)}${LAND.garden(960, 470)}${pine(1180, 300, .9, '#3A9E6B')}
-${LAND.pond(560, 660)}${tree(760, 670, .95, '#3A9E6B', '#7CCB97')}${LAND.goal(930, 668)}${pine(420, 664, .9, '#1A9BB5')}`;
+<path d="M262 330L300 250L350 205L400 240L455 150L520 228L585 178L650 236L720 118L790 214L850 166L915 230L985 138L1050 214L1110 176L1200 236V440H262Z" fill="#C6DCEA"/>
+${snow(455, 150, 18)}${snow(720, 118, 22)}${snow(985, 138, 20)}${snow(585, 178, 12)}${snow(850, 166, 13)}${snow(350, 205, 11)}
+<path d="M262 360L330 284L410 332L500 262L590 322L680 270L770 330L860 282L950 322L1040 268L1120 322L1200 290V470H262Z" fill="#A9CFE0"/>
+<path d="M262 400C380 334 520 384 640 352C780 316 900 372 1040 340C1110 326 1160 330 1200 318V560H262Z" fill="#B3DFC3"/>
+${forest}
+<path d="M1138 262C1156 236 1200 236 1200 246V450H1150C1132 400 1126 310 1138 262Z" fill="#8FA3B0"/><path d="M1150 300l14 -10l10 8z" fill="#A9BAC5"/>
+<rect x="1164" y="250" width="22" height="196" fill="#D8F2FA"/><path d="M1170 262v40M1178 290v50M1172 350v40M1180 390v40" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M1200 456C1120 470 1060 494 960 478C840 458 760 494 640 476C520 458 420 494 262 470" fill="none" stroke="#86CDE4" stroke-width="38" stroke-linecap="round"/>
+<path d="M1150 462C1100 476 1050 486 960 474M820 470C760 482 700 480 640 470M520 466C460 474 380 480 300 470" fill="none" stroke="#C9EEF8" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 18"/>
+<ellipse cx="1176" cy="452" rx="26" ry="8" fill="#fff" opacity=".7"/>
+<path d="M262 600C460 572 640 640 820 608C980 582 1080 630 1200 604V800H262Z" fill="#CBEAD6"/>
+<path d="M0 762C240 724 520 782 800 754C1000 734 1100 772 1200 752V800H0Z" fill="#B7E0C5"/>
+${LAND.balloon(632, 70)}${LAND.eagle(880, 64)}${LAND.kite(392, 62)}
+${LAND.cave(560, 290)}${LAND.climb(790, 280)}${LAND.camp(1000, 292)}${LAND.sign(430, 296)}
+${LAND.boat(770, 478)}${LAND.fish(560, 470)}${LAND.fisher(950, 452)}
+${LAND.village(470, 650)}${LAND.picnic(700, 652)}${LAND.sheep(880, 648)}${LAND.pond(990, 664)}`;
     let st = '', nums = '';
     for (let k = 1; k <= N; k++) {
       const s = square(k), p = pos(k), c = COL[s.type][1];
@@ -241,11 +265,11 @@ ${LAND.pond(560, 660)}${tree(760, 670, .95, '#3A9E6B', '#7CCB97')}${LAND.goal(93
 <linearGradient id="bgSide" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B4F7A"/><stop offset="1" stop-color="#1A9BB5"/></linearGradient></defs>
 <rect width="${W}" height="${H}" rx="28" fill="url(#bgSky)"/>
 <circle cx="1040" cy="110" r="150" fill="url(#bgSun)"/>${clouds}${birds}
-<rect x="260" y="0" width="${W - 260}" height="${H}" fill="url(#bgDots)"/>
 ${scene}
 <path d="${d}" fill="none" stroke="#D9BE86" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="${d}" fill="none" stroke="#F7EAC8" stroke-width="50" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="${d}" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="2 14" stroke-linecap="round" opacity=".95"/>
+${LAND.bridge(1128, 462, -66)}
 <path d="M0 28a28 28 0 0 1 28-28H262V${H}H28a28 28 0 0 1-28-28Z" fill="url(#bgSide)"/>
 <circle cx="250" cy="120" r="70" fill="#FFC929" opacity=".14"/><circle cx="30" cy="720" r="90" fill="#3A9E6B" opacity=".25"/>
 <rect x="66" y="26" width="130" height="64" rx="16" fill="#fff"/><image href="${LOGO}" xlink:href="${LOGO}" x="74" y="30" width="114" height="56" preserveAspectRatio="xMidYMid meet"/>
