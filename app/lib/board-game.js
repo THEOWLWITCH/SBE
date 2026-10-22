@@ -170,7 +170,7 @@ ${cr(x - 34, y + 14, .24, 'teal', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })
   const VIG = {
     s1: ['#33465E', `<g fill="#9FB3C4"><ellipse cx="-8" cy="-24" rx="16" ry="9"/><circle cx="4" cy="-28" r="11"/><ellipse cx="14" cy="-22" rx="12" ry="8"/></g><path d="M6 -16l-6 11h6l-4 10l11-14h-6l4-7z" fill="#FFD34F"/><g stroke="#8FD3E0" stroke-width="2.2" stroke-linecap="round"><path d="M-24 -10l-3 6M-14 -6l-3 6M22 -8l-3 6M30 -2l-3 6"/></g>${house0(-6, 22, 1.15, '#7C8C95', '#5D7186')}<rect x="-11" y="20" width="9" height="12" fill="#22303F"/>`],
     s2: ['#FFE6DD', `<rect x="-38" y="-10" width="44" height="40" fill="#fff"/><path d="M-42 -9L-16 -26L10 -9Z" fill="#E0603F"/><path d="M-16 -26v-12" stroke="#1B4F7A" stroke-width="2"/><path d="M-16 -38l10 4l-10 4z" fill="#FFC929"/><g fill="#BFE6F0"><rect x="-32" y="0" width="9" height="8"/><rect x="-10" y="0" width="9" height="8"/></g><rect x="-21" y="14" width="10" height="16" fill="#1A9BB5"/>${cr(24, 16, .3, 'lilac', { mouth: 'sad', look: [-3, 0], arms: { l: 'down', r: 'down' } })}`],
-    s3: ['#FFE6DD', `${cr(-17, 12, .32, 'teal', { flip: true, mouth: 'sad', look: [3, 0] })}${cr(18, 12, .32, 'coral', { mouth: 'sad', look: [3, 0], bow: true })}<path d="M-12 -30c4-8 8 6 12-2s8 6 12-2" fill="none" stroke="#B23A26" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`],
+    s3: ['#FFE6DD', `${cr(-17, 12, .32, 'teal', { flip: true, mouth: 'sad', look: [3, 0] })}${cr(18, 12, .32, 'coral', { mouth: 'sad', look: [3, 0], bow: true })}<g transform="translate(0 -26)"><g fill="#9FB3C4"><ellipse cx="-6" cy="0" rx="11" ry="7"/><circle cx="3" cy="-4" r="8"/><ellipse cx="10" cy="1" rx="8" ry="6"/></g><path d="M2 4l-4 7h4l-3 6l8-9h-4l3-4z" fill="#FFD34F"/></g>`],
     s4: ['#FFE6DD', `<rect x="-34" y="-12" width="66" height="30" rx="7" fill="#FFC929"/><g fill="#fff"><rect x="-28" y="-6" width="11" height="10" rx="2"/><rect x="-13" y="-6" width="11" height="10" rx="2"/><rect x="2" y="-6" width="11" height="10" rx="2"/></g><rect x="18" y="-6" width="10" height="20" rx="2" fill="#E8EEF2"/><circle cx="-20" cy="19" r="6" fill="#1F2A36"/><circle cx="18" cy="19" r="6" fill="#1F2A36"/><circle r="31" fill="none" stroke="#E0603F" stroke-width="5"/><path d="M-22 22L22 -22" stroke="#E0603F" stroke-width="5" stroke-linecap="round"/>`],
     s5: ['#FFE6DD', `<rect x="-28" y="-26" width="52" height="36" rx="4" fill="#1B4F7A"/><rect x="-24" y="-22" width="44" height="28" rx="2" fill="#E3F4F8"/><path d="M-10 -14l6 6M-4 -14l-6 6M8 -14l6 6M14 -14l-6 6" stroke="#E0603F" stroke-width="2.4" stroke-linecap="round"/><path d="M-8 2q6-5 12 0" fill="none" stroke="#1F2A36" stroke-width="2.2" stroke-linecap="round"/><path d="M-34 12h64l-6 8h-52z" fill="#B9C6CF"/>${cr(22, 20, .2, 'green', { mouth: 'o', arms: { l: 'up', r: 'up' } })}`],
     s6: ['#FFE6DD', `<rect x="-36" y="4" width="70" height="14" rx="4" fill="#1A9BB5"/><rect x="-36" y="-12" width="6" height="34" rx="3" fill="#1B4F7A"/><ellipse cx="-20" cy="2" rx="11" ry="6" fill="#fff"/>${cr(-18, -4, .2, 'sun', { eyes: 'closed', mouth: 'sad' })}<path d="M-12 4h44v12h-44z" fill="#9FD8E6"/><g transform="translate(22 -22) rotate(30)"><rect x="-3" y="-14" width="6" height="22" rx="3" fill="#fff" stroke="#1B4F7A" stroke-width="1.4"/><circle cy="10" r="5" fill="#E0603F"/></g>`],
@@ -224,36 +224,47 @@ ${cr(x - 34, y + 14, .24, 'teal', { arms: { l: 'up', r: 'up' }, eyes: 'happy' })
     // הרים מושלגים, יער, מפל ונהר עם גשר, ועמק עם כפר. בכל מקום יצורונים בהרפתקה.
     const snow = (x, y, w) => `<path d="M${x} ${y}L${x - w} ${y + w * 1.3}L${x - w * .45} ${y + w * 1.05}L${x} ${y + w * 1.45}L${x + w * .5} ${y + w * 1.05}L${x + w} ${y + w * 1.3}Z" fill="#fff"/>`;
     const forest = [[300, 372, .7], [330, 380, .9], [372, 368, .75], [600, 362, .7], [640, 372, .85], [880, 352, .8], [915, 362, .65], [1010, 356, .9], [1050, 364, .7], [455, 380, .6]].map(([x, y, k], i) => pine(x, y, k, ['#2E8A63', '#3A9E6B', '#1A8A9B'][i % 3])).join('');
+    let sd = 7; const rnd = () => { sd = (sd * 16807) % 2147483647; return sd / 2147483647; };
+    const hatch = [[455, 150, 65], [720, 118, 70], [985, 138, 68], [585, 178, 50], [850, 166, 50], [350, 205, 45], [500, 262, 40], [680, 270, 40], [860, 282, 40], [1040, 268, 40]].map(([x, y, h]) => Array.from({ length: 5 }, (_, i) => `<path d="M${x + 6 + i * 7} ${y + 18 + i * 9}l${10 + i * 2} ${h * .45}" />`).join('')).join('');
+    const tufts = [[[280, 560, 1200, 600], 34], [[262, 640, 1200, 700], 30], [[262, 410, 1150, 440], 22]].map(([[x0, y0, x1, y1], n]) => Array.from({ length: n }, () => { const x = x0 + rnd() * (x1 - x0), y = y0 + rnd() * (y1 - y0); return `<path d="M${x.toFixed(0)} ${y.toFixed(0)}l-3 -7M${x.toFixed(0)} ${y.toFixed(0)}l0 -9M${x.toFixed(0)} ${y.toFixed(0)}l3 -7"/>`; }).join('')).join('');
     const scene = `
-<path d="M262 330L300 250L350 205L400 240L455 150L520 228L585 178L650 236L720 118L790 214L850 166L915 230L985 138L1050 214L1110 176L1200 236V440H262Z" fill="#C6DCEA"/>
+<path d="M262 330L300 250L350 205L400 240L455 150L520 228L585 178L650 236L720 118L790 214L850 166L915 230L985 138L1050 214L1110 176L1200 236V440H262Z" fill="#C6DCEA" stroke="#3E4A5C" stroke-opacity=".55" stroke-width="2" stroke-linejoin="round"/>
 ${snow(455, 150, 18)}${snow(720, 118, 22)}${snow(985, 138, 20)}${snow(585, 178, 12)}${snow(850, 166, 13)}${snow(350, 205, 11)}
-<path d="M262 360L330 284L410 332L500 262L590 322L680 270L770 330L860 282L950 322L1040 268L1120 322L1200 290V470H262Z" fill="#A9CFE0"/>
-<path d="M262 400C380 334 520 384 640 352C780 316 900 372 1040 340C1110 326 1160 330 1200 318V560H262Z" fill="#B3DFC3"/>
+<g fill="none" stroke="#5D7186" stroke-width="1.6" stroke-linecap="round" opacity=".45">${hatch}</g>
+<path d="M262 360L330 284L410 332L500 262L590 322L680 270L770 330L860 282L950 322L1040 268L1120 322L1200 290V470H262Z" fill="#A9CFE0" stroke="#3E4A5C" stroke-opacity=".55" stroke-width="2" stroke-linejoin="round"/>
+<path d="M262 400C380 334 520 384 640 352C780 316 900 372 1040 340C1110 326 1160 330 1200 318V560H262Z" fill="#B3DFC3" stroke="#3E4A5C" stroke-opacity=".55" stroke-width="2" stroke-linejoin="round"/>
 ${forest}
-<path d="M1138 262C1156 236 1200 236 1200 246V450H1150C1132 400 1126 310 1138 262Z" fill="#8FA3B0"/><path d="M1150 300l14 -10l10 8z" fill="#A9BAC5"/>
+<path d="M1138 262C1156 236 1200 236 1200 246V450H1150C1132 400 1126 310 1138 262Z" fill="#8FA3B0" stroke="#3E4A5C" stroke-opacity=".55" stroke-width="2" stroke-linejoin="round"/><path d="M1150 300l14 -10l10 8z" fill="#A9BAC5"/>
 <rect x="1164" y="250" width="22" height="196" fill="#D8F2FA"/><path d="M1170 262v40M1178 290v50M1172 350v40M1180 390v40" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
 <path d="M1200 456C1120 470 1060 494 960 478C840 458 760 494 640 476C520 458 420 494 262 470" fill="none" stroke="#86CDE4" stroke-width="38" stroke-linecap="round"/>
 <path d="M1150 462C1100 476 1050 486 960 474M820 470C760 482 700 480 640 470M520 466C460 474 380 480 300 470" fill="none" stroke="#C9EEF8" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 18"/>
 <ellipse cx="1176" cy="452" rx="26" ry="8" fill="#fff" opacity=".7"/>
-<path d="M262 600C460 572 640 640 820 608C980 582 1080 630 1200 604V800H262Z" fill="#CBEAD6"/>
+<path d="M262 600C460 572 640 640 820 608C980 582 1080 630 1200 604V800H262Z" fill="#CBEAD6" stroke="#3E4A5C" stroke-opacity=".55" stroke-width="2" stroke-linejoin="round"/>
 <path d="M0 762C240 724 520 782 800 754C1000 734 1100 772 1200 752V800H0Z" fill="#B7E0C5"/>
+<g fill="none" stroke="#2E7D4F" stroke-width="1.6" stroke-linecap="round" opacity=".5">${tufts}</g>
 ${LAND.balloon(632, 70)}${LAND.eagle(880, 64)}${LAND.kite(392, 62)}
-${LAND.cave(560, 290)}${LAND.climb(790, 280)}${LAND.camp(1000, 292)}${LAND.sign(430, 296)}
-${LAND.boat(770, 478)}${LAND.fish(560, 470)}${LAND.fisher(950, 452)}
-${LAND.village(470, 650)}${LAND.picnic(700, 652)}${LAND.sheep(880, 648)}${LAND.pond(990, 664)}`;
-    let st = '', nums = '';
+${LAND.cave(672, 292)}${LAND.climb(455, 282)}${LAND.camp(1000, 292)}
+${LAND.boat(562, 478)}${LAND.fish(752, 468)}${LAND.fisher(950, 452)}
+${LAND.village(430, 650)}${LAND.sheep(730, 652)}${LAND.picnic(900, 650)}${LAND.pond(1000, 668)}`;
+    // אבני דרך מצוירות ביד (22/10/2026: "צא מהריבוע ותהיה יצירתי! האיקונים האלה לא מתאימים ללוח. חפש סגנון איור אחר"):
+    // אבן לא סדורה עם קו דיו, המספר בכתב יד, ובמשבצת מיוחדת אבן צבועה וסיפור קטן שעומד מעליה בנוף
+    const TINT = { task: ['#F6EEDF', '#E4D6BE'], setback: ['#F7B9A6', '#E79A84'], boost: ['#B4E2C3', '#93CFA8'], together: ['#F9DE8E', '#EBC664'] };
+    let st = '', tales = '';
     for (let k = 1; k <= N; k++) {
-      const s = square(k), p = pos(k), c = COL[s.type][1];
-      if (s.type === 'task') {
-        st += `<g class="bg-sq" data-k="${k}"><circle cx="${p.x}" cy="${p.y + 3}" r="24" fill="#1B4F7A" opacity=".16"/><circle cx="${p.x}" cy="${p.y}" r="24" fill="#fff" stroke="${c}" stroke-width="4"/>${T(p.x, p.y + 7, 19, 800, '#14708A', k, "Assistant,Arial,sans-serif")}</g>`;
-      } else {
-        st += `<g class="bg-sq" data-k="${k}"><circle cx="${p.x}" cy="${p.y + 4}" r="38" fill="#1B4F7A" opacity=".18"/><circle cx="${p.x}" cy="${p.y}" r="38" fill="${c}"/><circle cx="${p.x}" cy="${p.y}" r="34.5" fill="#fff"/>${vignette(s.id, p.x, p.y, 32, k)}</g>`;
-        nums += `<g transform="translate(${p.x - 28} ${p.y - 28})"><circle r="11" fill="${c}" stroke="#fff" stroke-width="2.4"/>${T(0, 4.6, 12, 800, '#fff', k)}</g>`;
-      }
+      const s0 = square(k), p = pos(k), [f1, f2] = TINT[s0.type];
+      let ss = k * 9301 + 49297; const r1 = () => { ss = (ss * 16807) % 2147483647; return ss / 2147483647; };
+      const R = s0.type === 'task' ? 25 : 28, pts = [];
+      for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2, rr = R * (0.86 + r1() * 0.22); pts.push([p.x + Math.cos(a) * rr * 1.12, p.y + Math.sin(a) * rr * .9]); }
+      const mid = (u, v) => [(u[0] + v[0]) / 2, (u[1] + v[1]) / 2];
+      let dd = 'M' + mid(pts[8], pts[0]).map((q) => q.toFixed(1)).join(' ');
+      for (let i = 0; i < 9; i++) { const m = mid(pts[i], pts[(i + 1) % 9]); dd += `Q${pts[i][0].toFixed(1)} ${pts[i][1].toFixed(1)} ${m[0].toFixed(1)} ${m[1].toFixed(1)}`; }
+      st += `<g class="bg-sq" data-k="${k}"><path d="${dd}" transform="translate(0 5)" fill="#5D4A36" opacity=".22"/><path d="${dd}" fill="${f1}" stroke="#3E4A5C" stroke-width="2.2"/><path d="${dd}" fill="${f2}" opacity=".7" clip-path="inset(55% 0 0 0)" style="clip-path:inset(55% 0 0 0)"/><path d="M${p.x - R * .55} ${p.y - R * .45}q${R * .3} -${R * .22} ${R * .7} -${R * .1}" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".8"/>` +
+        `<text x="${p.x}" y="${p.y + 10}" text-anchor="middle" font-family="'Amatic SC',Assistant,sans-serif" font-weight="700" font-size="30" fill="#3E4A5C">${k}</text></g>`;
+      if (s0.type !== 'task') tales += `<g transform="translate(${p.x} ${p.y - 64}) scale(.92)">${VIG[s0.id][1]}</g>`;
     }
     const sp = pos(0), ep = pos(END);
     // המקרא: רק כאן ההסברים
-    const ring = (t, x, y) => t === 'task' ? `<circle cx="${x}" cy="${y}" r="15" fill="#fff" stroke="${COL.task[1]}" stroke-width="3.5"/>${T(x, y + 5, 13, 800, '#14708A', '7')}` : `<circle cx="${x}" cy="${y}" r="16" fill="${COL[t][1]}"/>${icon(t, x, y, .78)}`;
+    const ring = (t, x, y) => `<ellipse cx="${x}" cy="${y + 3}" rx="17" ry="13" fill="#5D4A36" opacity=".2"/><ellipse cx="${x}" cy="${y}" rx="17" ry="13" fill="${TINT[t][0]}" stroke="#3E4A5C" stroke-width="2"/>${t === 'task' ? `<text x="${x}" y="${y + 7}" text-anchor="middle" font-family="'Amatic SC',Assistant,sans-serif" font-weight="700" font-size="20" fill="#3E4A5C">7</text>` : `<g transform="translate(${x} ${y - 4}) scale(.3)">${VIG[{ together: 't4', boost: 'b3', setback: 's1' }[t]][1]}</g>`}`;
     const legend = `<g transform="translate(30 418)"><rect width="222" height="244" rx="22" fill="#fff" opacity=".96"/><rect width="222" height="40" rx="20" fill="#1B4F7A"/><rect y="20" width="222" height="20" fill="#1B4F7A"/>${T(111, 27, 16, 800, '#fff', 'מה קורה במשבצת?')}` +
       [['task', 'משימה', 'לוקחים קלף ומבצעים'], ['together', 'כולם יחד', 'כל המשתתפים עושים'], ['boost', 'גשר', 'מתקדמים קדימה'], ['setback', 'מכשול', 'חוזרים אחורה']].map(([t, n, l], i) =>
         `${ring(t, 192, 74 + i * 46)}<text x="166" y="${70 + i * 46}" text-anchor="start" direction="rtl" font-family="Assistant,Arial,sans-serif" font-weight="800" font-size="15" fill="${COL[t][2]}">${n}</text><text x="166" y="${88 + i * 46}" text-anchor="start" direction="rtl" font-family="Assistant,Arial,sans-serif" font-weight="700" font-size="13" fill="#4a5a64">${l}</text>`).join('') + `</g>`;
@@ -262,15 +273,22 @@ ${LAND.village(470, 650)}${LAND.picnic(700, 652)}${LAND.sheep(880, 648)}${LAND.p
 <defs><linearGradient id="bgSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D3EEF5"/><stop offset=".55" stop-color="#F1F9F3"/><stop offset="1" stop-color="#E6F4EA"/></linearGradient>
 <radialGradient id="bgSun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFC929" stop-opacity=".55"/><stop offset="1" stop-color="#FFC929" stop-opacity="0"/></radialGradient>
 <pattern id="bgDots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="1.3" fill="#3A9E6B" opacity=".18"/><circle cx="15" cy="15" r="1" fill="#1A9BB5" opacity=".16"/></pattern>
+<filter id="bgWob" x="-2%" y="-2%" width="104%" height="104%"><feTurbulence type="fractalNoise" baseFrequency=".03" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="7" xChannelSelector="R" yChannelSelector="G"/></filter>
+<filter id="bgWob2" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".07" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="3.2" xChannelSelector="R" yChannelSelector="G"/></filter>
+<filter id="bgPaper" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3" seed="2"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .24  0 0 0 0 .16  0 0 0 -1.6 1.05"/></filter>
+<filter id="bgWash" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".006 .012" numOctaves="3" seed="11"/><feColorMatrix values="0 0 0 0 .35  0 0 0 0 .3  0 0 0 0 .5  0 0 0 -2.2 1.25"/></filter>
 <linearGradient id="bgSide" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B4F7A"/><stop offset="1" stop-color="#1A9BB5"/></linearGradient></defs>
 <rect width="${W}" height="${H}" rx="28" fill="url(#bgSky)"/>
-<circle cx="1040" cy="110" r="150" fill="url(#bgSun)"/>${clouds}${birds}
+<circle cx="1040" cy="110" r="150" fill="url(#bgSun)"/>
+<g filter="url(#bgWob)">${clouds}${birds}
 ${scene}
-<path d="${d}" fill="none" stroke="#D9BE86" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="${d}" fill="none" stroke="#F7EAC8" stroke-width="50" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="${d}" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="2 14" stroke-linecap="round" opacity=".95"/>
-${LAND.bridge(1128, 462, -66)}
-<path d="M0 28a28 28 0 0 1 28-28H262V${H}H28a28 28 0 0 1-28-28Z" fill="url(#bgSide)"/>
+<path d="${d}" fill="none" stroke="#3E4A5C" stroke-opacity=".45" stroke-width="54" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="${d}" fill="none" stroke="#E9CF9A" stroke-width="50" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="${d}" fill="none" stroke="#F5E4BE" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/>
+<path d="${d}" fill="none" stroke="#C9A66B" stroke-width="3" stroke-dasharray="1 23" stroke-linecap="round"/>
+${LAND.bridge(1128, 462, -66)}</g>
+<rect x="262" width="${W - 262}" height="${H}" filter="url(#bgWash)" opacity=".16" style="mix-blend-mode:multiply"/>
+<path d="M0 28a28 28 0 0 1 28-28H262V${H}H28a28 28 0 0 1-28-28Z" fill="url(#bgSide)" filter="url(#bgWob)"/>
 <circle cx="250" cy="120" r="70" fill="#FFC929" opacity=".14"/><circle cx="30" cy="720" r="90" fill="#3A9E6B" opacity=".25"/>
 <rect x="66" y="26" width="130" height="64" rx="16" fill="#fff"/><image href="${LOGO}" xlink:href="${LOGO}" x="74" y="30" width="114" height="56" preserveAspectRatio="xMidYMid meet"/>
 ${T(131, 158, 44, 900, '#fff', 'צועדים', "'Frank Ruhl Libre',Georgia,serif")}${T(131, 206, 44, 900, '#FFC929', 'אל החוסן', "'Frank Ruhl Libre',Georgia,serif")}
@@ -278,8 +296,9 @@ ${T(131, 238, 16, 700, '#D9F1F6', 'משחק לוח')}
 ${pc}
 ${legend}
 <g transform="translate(${ep.x} ${ep.y - 4}) scale(.98) translate(${-ep.x} ${-ep.y})">${island(ep.x, ep.y)}</g>
-${st}${nums}
-<g transform="translate(${sp.x} ${sp.y})"><circle r="38" fill="#1B4F7A" opacity=".16" cy="3"/><circle r="38" fill="#1B4F7A"/><circle r="32" fill="none" stroke="#FFC929" stroke-width="2" stroke-dasharray="4 5"/>${T(0, -4, 14, 800, '#fff', 'יוצאים')}${T(0, 14, 14, 800, '#fff', 'לדרך')}<path d="M24 -50v26" stroke="#1B4F7A" stroke-width="3"/><path d="M24 -50l20 6l-20 6z" fill="#FFC929"/></g>
+<g filter="url(#bgWob2)">${st}</g>${tales}
+<g transform="translate(${sp.x} ${sp.y})" filter="url(#bgWob2)"><rect x="-4" y="-6" width="8" height="46" fill="#8C6B4A" stroke="#3E4A5C" stroke-width="2"/><path d="M50 -40H-40L-54 -24L-40 -8H50Z" fill="#FFC929" stroke="#3E4A5C" stroke-width="2.2"/><text x="4" y="-14" text-anchor="middle" direction="rtl" font-family="'Amatic SC',Assistant,sans-serif" font-weight="700" font-size="27" fill="#3E4A5C">יוצאים לדרך</text></g>
+<rect width="${W}" height="${H}" rx="28" filter="url(#bgPaper)" opacity=".22" style="mix-blend-mode:multiply" pointer-events="none"/>
 <g class="bg-pieces"></g>
 </svg>`;
   }
@@ -291,5 +310,6 @@ ${st}${nums}
   const OFF = [[0, 0], [-26, 10], [26, 10], [-14, -14], [14, -14]];
   function piecePos(k, slot) { const p = pos(k), o = OFF[slot % OFF.length]; return { x: p.x + o[0], y: p.y + o[1] + (k <= 0 ? 16 : -6) }; }
 
-  return { N, END, TASKS, SETBACKS, BOOSTS, TOGETHER, SPECIAL, RULES, square, pos, board, piece, piecePos, PIECES, bridgeBack, label, icon, COL, esc };
+  const ART = 'assets/board-journey-art.jpg';
+  return { W, H, ART, N, END, TASKS, SETBACKS, BOOSTS, TOGETHER, SPECIAL, RULES, square, pos, board, piece, piecePos, PIECES, bridgeBack, label, icon, COL, esc };
 });

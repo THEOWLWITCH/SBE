@@ -17,6 +17,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Assistant,Arial,sans-serif}
 button{font-family:inherit}
+.hs{width:32px;height:32px;flex:none;vertical-align:middle}
 .topnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--line);font-size:15px}
 .topnav a,.topnav button{color:var(--hl);font:inherit;font-weight:700;background:none;border:0;cursor:pointer;text-decoration:none;padding:6px 0}
 .topnav .crumb{margin-inline-start:auto;color:var(--muted);font-weight:600}
@@ -90,7 +91,7 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
 .pile:disabled{cursor:default;opacity:.6}
 .pile b{position:absolute;top:-10px;inset-inline-start:-10px;z-index:2;background:#FFC929;color:#1F2A36;border-radius:999px;padding:3px 10px;font:800 14px Rubik,sans-serif}
 .cards{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}
-.cards .np-card{font-size:7.4px;cursor:pointer;transition:transform .15s}
+.cards .np-card{font-size:9px;cursor:pointer;transition:transform .15s}
 .cards.idle .np-card{cursor:default}
 .open{margin-top:10px}
 .open .np-card{font-size:5.2px;cursor:default}
@@ -103,7 +104,7 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
 .handzone h3{margin:0 0 10px;font:800 17px Rubik,Assistant,sans-serif;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .handzone h3 small{font:600 14px Assistant,sans-serif;color:var(--muted)}
 .hand{display:flex;gap:12px;overflow-x:auto;padding:10px 4px 14px;scroll-snap-type:x proximity}
-.hand .np-card{font-size:9px;flex:none;cursor:pointer;scroll-snap-align:start;transition:transform .15s,box-shadow .15s}
+.hand .np-card{font-size:11px;flex:none;cursor:pointer;scroll-snap-align:start;transition:transform .15s,box-shadow .15s}
 .hand .np-card:hover{transform:translateY(-4px)}
 .hand .np-card.sel{transform:translateY(-10px);box-shadow:0 0 0 4px #FFC929,6px 10px 0 rgba(0,0,0,.18)}
 .hand .np-card.match{box-shadow:0 0 0 3px #2B9C68}
@@ -111,7 +112,7 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
 .say{margin:10px 0 0;font-weight:700;color:var(--muted);min-height:1.4em}
 .mypairs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .mypairs span{border-radius:10px;padding:4px 10px;font-weight:700;font-size:14px;color:#fff}
-@media screen and (max-width:760px){.tablezone{grid-template-columns:1fr}.cards .np-card{font-size:6.2px}.hand .np-card{font-size:7.6px}}
+@media screen and (max-width:760px){.tablezone{gap:10px;padding:12px}.pile{font-size:4.6px}.tablezone h3{font-size:14px}.cards .np-card{font-size:6.6px}.hand .np-card{font-size:9.4px}}
 /* מסך מעבר בין תורות */
 .cover{position:fixed;inset:0;z-index:30;background:#1F2A36;display:flex;align-items:center;justify-content:center;padding:20px}
 .cover::before{content:'';position:absolute;inset:auto 0 0 0;height:22px;background:repeating-linear-gradient(-45deg,#EE7D1E 0 18px,#1F2A36 18px 34px)}
@@ -465,10 +466,10 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
     let head = '', titles = '';
     if (G.mode === 'coop') {
       head = total() >= P.TARGET ? `🎉 הצלחנו יחד: ${total()} נקודות!` : `הגענו יחד ל־${total()} נקודות`;
-      titles = `<div style="background:#2B9C68"><b>${total() >= P.TARGET ? 'שכונה מוכנה!' : 'כמעט שם'}</b>${total() >= P.TARGET ? 'הגענו ליעד לפני שהקופה נגמרה.' : `היעד היה ${P.TARGET}. בסיבוב הבא אפשר לבקש עזרה מוקדם יותר.`}</div>` + (helpers.length ? `<div style="background:#D9A400"><b>השכנים מזהב</b>${names(helpers)}: ${maxH} פעמים עזרו לאחרים.</div>` : '');
+      titles = `<div style="background:#2B9C68"><b>${total() >= P.TARGET ? 'שכונה מוכנה!' : 'כמעט שם'}</b>${total() >= P.TARGET ? 'הגענו ליעד לפני שהקופה נגמרה.' : `היעד היה ${P.TARGET}. בסיבוב הבא אפשר לבקש עזרה מוקדם יותר.`}</div>` + (helpers.length ? `<div style="background:#D9A400"><b>השכנים מזהב</b>${names(helpers)}: ${maxH} פעמים של עזרה לאחרים.</div>` : '');
     } else {
       head = why === 'pairs' ? `${esc(nameOf(G.turn))} השלים/ה 5 זוגות!` : 'הקופה נגמרה, והמשחק הסתיים';
-      titles = (top.length ? `<div style="background:#EE7D1E"><b>אלופי המוכנות של השכונה</b>${names(top)}: ${top[0].pts} נקודות</div>` : '') + (helpers.length ? `<div style="background:#2B9C68"><b>השכנים מזהב</b>${names(helpers)}: ${maxH} פעמים עזרו לאחרים</div>` : '') +
+      titles = (top.length ? `<div style="background:#EE7D1E"><b>אלופי המוכנות של השכונה</b>${names(top)}: ${top[0].pts} נקודות</div>` : '') + (helpers.length ? `<div style="background:#2B9C68"><b>השכנים מזהב</b>${names(helpers)}: ${maxH} פעמים של עזרה לאחרים</div>` : '') +
         `<div style="background:#1F2A36"><b>הנקודות</b>${order.map((o) => esc(nameOf(o.i)) + ': ' + o.pts).join(' · ')}</div>`;
     }
     const items = Object.keys(G.list).map((n) => G.list[n]);

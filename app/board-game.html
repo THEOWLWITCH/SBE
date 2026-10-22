@@ -7,7 +7,7 @@
 <script src="lib/access-guard.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&family=Amatic+SC:wght@700&display=swap">
 <style>
 /* צועדים אל החוסן: משחק לוח (22/10/2026), על המסך ולהדפסה. מקור אמת: lib/board-game.js. הרשאה: games */
 :root{--navy:#1B4F7A;--teal:#1A9BB5;--green:#3A9E6B;--sun:#FFC929;--ink:#1d2b36;--muted:#4a5a64;--line:#dbe7ea;--bg:#F5F9FA;--card:#fff;--soft:#EAF5F7;--hl:#1B4F7A}
@@ -128,7 +128,7 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
 .pr-page{break-after:page;color:#1d2b36;direction:rtl}
 .pr-page:last-child{break-after:auto}
 .pr-board{page:board;display:flex;align-items:center;justify-content:center;height:180mm}
-.pr-board svg{width:100%;height:100%}
+.pr-board svg,.pr-board img{width:100%;height:100%;object-fit:contain}
 .pr-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;border-bottom:3px solid #1A9BB5;padding-bottom:4mm;margin-bottom:5mm}
 .pr-head h1{margin:0;font:900 25pt/1 'Frank Ruhl Libre',Georgia,serif;color:#1B4F7A}
 .pr-head p{margin:1.5mm 0 0;font:600 10.5pt Assistant,Arial,sans-serif;color:#2b6a7d}
@@ -257,7 +257,8 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
     const n = S.mode === 'coop' ? 5 : S.players;
     G = { mode: S.mode, pos: Array(n).fill(0), turn: 0, deck: M.shuffle(B.TASKS.map((_, i) => i)), busy: false, rolled: 0, turns: 0,
       left: S.minutes * 60, timer: null, startedAt: 0, done: false, helped: 0, tasks: 0 };
-    $('board').innerHTML = B.board();
+    // הלוח כתמונה (הפילטרים של האיור כבדים לציור חוזר), והכלים בשכבה מעליה. מקור התמונה: B.board(), מופק מחדש אחרי כל שינוי בלוח
+    $('board').innerHTML = `<svg viewBox="0 0 ${B.W} ${B.H}" role="img" aria-label="לוח המשחק צועדים אל החוסן"><image href="${B.ART}" width="${B.W}" height="${B.H}"/><g class="bg-pieces"></g></svg>`;
     $('setup').hidden = true; $('game').hidden = false; $('end').hidden = true;
     document.body.classList.add('playing');
     drawPieces(); drawStatus(); setDice(1, true);
@@ -444,7 +445,7 @@ details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
       '<div class="pr-box"><p><b>מכשול ועזרה:</b> ' + esc(R.bridge.replace(/^מכשול ועזרה: /, '')) + '</p></div>' +
       '<h2>שתי דרכים לשחק</h2>' + R.modes.map(([t, d]) => '<p><b>' + esc(t) + ':</b> ' + esc(d) + '</p>').join('') +
       '<h2>שאלות לסיכום</h2><p>' + esc(R.closingWho) + '</p><div class="pr-box"><ol>' + R.closing.map((q) => '<li>"' + esc(q) + '"</li>').join('') + '</ol></div></section>';
-    h += '<section class="pr-page pr-board">' + B.board() + '</section>';
+    h += '<section class="pr-page pr-board"><img src="' + B.ART + '" alt="לוח המשחק צועדים אל החוסן"></section>';
     const rows = [];
     for (let k = 1; k <= B.N; k++) { const s = B.square(k); if (s.type === 'setback') rows.push([k, 'מכשול', s.text, `${s.back} אחורה. עם עזרה: ${B.bridgeBack(s.back)} אחורה.`]); else if (s.type === 'boost') rows.push([k, 'גשר', s.text, `${s.fwd} קדימה.`]); else if (s.type === 'together') rows.push([k, 'כולם יחד', s.text, 'כל המשתתפים מבצעים יחד.']); }
     h += '<section class="pr-page">' + head('מה קורה במשבצות', 'כשנוחתים על משבצת מיוחדת, מישהו קורא/ת בקול את מה שכתוב כאן') +
