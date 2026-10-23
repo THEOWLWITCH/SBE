@@ -54,3 +54,11 @@ test('pages: logo on every card and board, print with margins, and wiring', () =
   for (const p of ['game-where-it-belongs', 'game-riddles', 'game-bingo', 'game-twenty-questions', 'game-truth-challenge', 'game-trail-k2', 'game-trail-g34', 'game-trail-g56', 'game-trail-teen', 'game-readiness-train-kids', 'game-readiness-train-teen'])
     assert.ok(existsSync(app('assets/' + p + '.pdf')), p);
 });
+
+test('משחקים "על המסך", לא "במסך"', () => {
+  const pages = ['games','memory-game','board-game','no-panic','story-maker','statement-sort','riddles','bingo','twenty-q','truth-dare','trail-signs','readiness-train','home','about','map'];
+  for (const p of pages) {
+    const s = readFileSync(new URL(`../../app/${p}.html`, import.meta.url), 'utf8');
+    assert.ok(!/(משחק|משחקים|חוסן|לשחק|גרסה|גרסת)\s+במסך/.test(s), p);
+  }
+});
