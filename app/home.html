@@ -144,7 +144,10 @@ const jparse = (s, d) => { try { return JSON.parse(s) ?? d; } catch (e) { return
 const TOKEN = ss("sbe.session.token") || "";
 const PERMS = jparse(ss("sbe.session.perms"), []);
 const INFO = jparse(ss("sbe.session.info"), {});
-const has = (p) => PERMS.includes(p);
+// מנהלת המערכת (23/10/2026: "כשאני נכנסת כמנהלת הכל צריך להיות פתוח"): כל הכלים פתוחים במרחב שלי,
+// גם בלי הרשאות בקוד, וגם הכלים שטרם אושרו למשתמשים.
+const IS_SYS = ss("sbe.session.homeUrl") === "admin.html?role=sys";
+const has = (p) => IS_SYS ? p !== "lecturer" : PERMS.includes(p);
 const fmtDate = (ymd) => ymd ? ymd.slice(0,10).split("-").reverse().map((x,i)=>i===2?x.slice(2):x).join(".") : "";
 
 // מה כל הרשאה אומרת — בשפה פשוטה (אותה רשימה כמו PERMS בשרת).
@@ -169,7 +172,8 @@ async function api(action, extra = {}) {
 {
   const who = $("who");
   const kindLabel = { instadmin: "מנהל/ת מוסד", staff: "צוות", student: "סטודנט/ית", course: "סטודנט/ית בקורס", legacy: "צוות (קוד מוסד)", "academic-legacy": "משוב לעבודות" }[INFO.kind] || "";
-  who.append(INFO.label ? el("b", {}, INFO.label) : "", INFO.label && (INFO.inst || kindLabel) ? " · " : "",
+  if (IS_SYS) who.append(el("b", {}, "מנהלת המערכת"), " · כל הכלים פתוחים");
+  else who.append(INFO.label ? el("b", {}, INFO.label) : "", INFO.label && (INFO.inst || kindLabel) ? " · " : "",
     INFO.inst || "", INFO.inst && kindLabel ? " · " : "", kindLabel);
   if (INFO.inst) { try { sessionStorage.setItem("sbe_inst", INFO.inst); } catch (e) {} } // search.html — "התרחישים של המוסד"
   const box = $("banners");
@@ -187,7 +191,7 @@ async function api(action, extra = {}) {
 // ── הכלים ──
 {
   const T = [];
-  const fac = PERMS.some(p => /^fac_/.test(p));
+  const fac = IS_SYS || PERMS.some(p => /^fac_/.test(p));
   if (has("fac_trainee")) T.push(["input-screen.html", "יצירת תרחיש: סטודנטיות.ים", "דמויות ופרמטרים; השאר מוצע על ידי המערכת"]);
   if (has("fac_parent")) T.push(["parent-input-screen.html", "יצירת תרחיש: הורים", "שתי דמויות, ארבע גישות הוריות"]);
   if (has("fac_youth")) T.push(["student-input-screen.html", "יצירת תרחיש: נוער", "משחק תפקידים בין שני בני נוער"]);
@@ -208,6 +212,10 @@ async function api(action, extra = {}) {
   if (has("activity")) T.push(["activity-planner.html", "תכנון פעילות", "תכנון פעילות חינוכית או ניתוח פעילות קיימת"]);
   if (has("academic")) T.push(["academic-review.html", "משוב לעבודות", "להתכונן להגשת עבודה: משוב לפי קריטריונים"]);
   if (has("studies")) T.push(["social-resilience-studies.html", "לימודי חוסן חברתי", "חומרי לימוד לפי קבוצות: קבצים, קישורים ותצוגות מקדימות"]);
+  if (IS_SYS) T.push(["continuity-kit.html", "🔒 תיק רציפות", "טרם אושר למשתמשים: גלוי רק לך"],
+    ["routines-hub.html", "🔒 מרכז שגרות ויוזמות חברתיות", "טרם אושר למשתמשים: גלוי רק לך"],
+    ["family-bridge.html", "🔒 מעבדה לבניית גשר בין הבית לכיתה", "טרם אושר למשתמשים: גלוי רק לך"],
+    ["admin.html", "⚙️ ממשק הניהול", "מוסדות, קודים, בקשות, מעבדת הדמו וכל המסכים"]);
   // "יש מה לעשות" (19/10/2026): פתוח לכל מי שנכנס/ה, וגם בלי קוד. נפתח בלשונית חדשה, כי מהמדריכון אין מעבר לכלים אחרים.
   const hadTools = T.length > 0;
   T.push(["yesh-ma-laasot.html", "🎁 יש מה לעשות: מדריכון לחירום", "מה עושים ומה אומרים לילדים בדקה הראשונה, נשימה, קרקוע ופעילויות קצרות. אפשר גם לשלוח במתנה", true]);
