@@ -321,7 +321,7 @@ async function viewList(){
   const n = card(); n.appendChild(el('h2', null, 'יוצאים למסע חדש'));
   const row = el('div', 'row2'); const a = el('div'), b2 = el('div');
   a.appendChild(el('label', null, 'המסגרת')); const sel = document.createElement('select'); J.UNITS.forEach(u => { const o = el('option', null, u.t); o.value = u.k; sel.appendChild(o); }); a.appendChild(sel);
-  b2.appendChild(el('label', null, 'שם המסגרת')); const nm = document.createElement('input'); nm.type = 'text'; nm.maxLength = 80; nm.placeholder = 'למשל: גן רימון, כיתה ה׳2, בית ספר הדר'; b2.appendChild(nm);
+  b2.appendChild(el('label', null, 'שם המסגרת')); const nm = document.createElement('input'); nm.type = 'text'; nm.maxLength = 80; nm.placeholder = 'למשל: בית ספר הדר, קהילת השכונה, כיתה ה׳2'; b2.appendChild(nm);
   row.appendChild(a); row.appendChild(b2); n.appendChild(row);
   n.appendChild(el('label', null, 'השם שלך')); const by = document.createElement('input'); by.type = 'text'; by.maxLength = 60; try { by.value = sessionStorage.getItem('sbe.session.name') || ''; } catch(e){} n.appendChild(by);
   n.appendChild(el('p', 'muted', 'נתוני מרחב העבודה אינם נכללים בייצוא המחקרי. ההודעות במסע נקראות בתוך המערכת; אין במסלול זה עדכונים אוטומטיים במייל.'));

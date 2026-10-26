@@ -24,6 +24,34 @@
   function mount(host, options) {
     if (!M) throw new Error('מודל מרחב העבודה לא נטען');
     let journey = clone(options.journey), data = M.clean(journey.workspace || M.empty());
+    const unit = window.SBE_JOURNEY && SBE_JOURNEY.UNITS.find(u => u.k === journey.unit);
+    const unitLabel = unit ? unit.t : 'מסגרת אחרת';
+    const guidance = {
+      school: {
+        context:'בבית הספר אפשר להקים צוות חוסן בית ספרי, לעגן את המנדט מול ההנהלה ולברר כיצד צוותי החינוך, תלמידים והורים שותפים. אפשר לתחום יחד סמכות, זמן עבודה וקשרים לרשות. אחריות המבוגרים נשארת בידיהם.',
+        roles:'אפשר למפות הנהלה, מורים וצוותי חינוך, תלמידים והורים, לצד מי שמרכזים ראיות, קשרים ולמידה. כדאי לברר ייצוג, זמן שהוקצה וגיבוי, ולשמור על אחריות המבוגרים גם כשיש הובלת תלמידים.',
+        mechanisms:'אפשר לבחון מנגנונים שקיימים אצלכם, כמו צוותי למידה, מועצת תלמידים, חניכת מורים ושיח עם הורים. בודקים כיצד כל מנגנון מופעל ועבור מי הוא נגיש.',
+        infrastructures:'אפשר למפות מרחבי מפגש ולמידה, מערכות תקשורת ותיעוד וערוצים נגישים לתלמידים, לצוות ולהורים, אם הם זמינים במסגרת.',
+        resources:'אפשר לתעד ידע פדגוגי וארגוני, זמן עבודה ותקציב שהוקצו, ומיומנויות וקשרים של הצוות והשותפים. כדאי להבחין בין משאב מובטח למשאב שטרם הועמד לרשותכם.',
+        evidence:'אפשר לשלב תצפיות ומשוב מהצוות, מתלמידים ומהורים, ולברר מי עוד לא נשמעו. אפשר לתעד תמצית ללא פרטים מזהים.',
+        links:'אפשר לבחון קשרים אופקיים בין מורים, צוותים, תלמידים והורים, וקשרים אנכיים להנהלה ולרשות. קשר מתועד אינו מעיד כשלעצמו על סמכות או על העברת משאבים.',
+        decisions:'אפשר להבהיר מה מוסמך צוות החוסן להחליט, מה מצריך החלטת הנהלה, ואיך נשמעים תלמידים והורים. השיח וההשתתפות נבדלים מהסמכות להחלטה.',
+        actions:'אפשר להגדיר זמן עבודה למורים ולצוות, תיאום עם מערכת השעות, גיבוי וסמכות, ומה מצמצמים כדי לפנות מקום. הפעולה יכולה לשפר את איכות החיים בהווה ואת המוכנות לעתיד.',
+        reviews:'אפשר לבחון את השינוי עבור הצוות, התלמידים וההורים, את העומס על המורים ואת השפעת הקשרים לרשות. שומרים גם עדויות שלא תואמות את הציפייה.'
+      },
+      community: {
+        context:'בקהילה אפשר להקים צוות חוסן קהילתי ולברר מי נתנו לו מנדט, את מי הוא מייצג ואיך מצטרפים אליו. כדאי להגדיר גבולות קהילה, שפות ונגישות, קשרים לרשות ולשותפים, ודרך לשמיעת קבוצות שאינן מיוצגות.',
+        roles:'אפשר למפות תושבים ומתנדבים, הנהגה קהילתית, עובדים בשכר ושותפים מקומיים. כדאי לברר ייצוג ולגיטימיות, קבוצות שאינן נשמעות, זמן שהוקצה וגיבוי גם בתחלופת מתנדבים.',
+        mechanisms:'אפשר לבחון מנגנונים שקיימים אצלכם, כמו אספת תושבים, תיאום התנדבות, עזרה הדדית ותיווך בין קבוצות. בודקים מי יכולים להשתתף ומי נשארים מחוץ למענה.',
+        infrastructures:'אפשר למפות מרחבים ציבוריים, ערוצי תקשורת ותיעוד, נגישות פיזית ושפתית וחלופות למי שאינם משתמשים בערוצים דיגיטליים, לפי הקיים בקהילה.',
+        resources:'אפשר לתעד זמן התנדבות וזמן עבודה בשכר בנפרד, ידע מקומי, תקציב וקשרים עם ארגונים ועסקים. התחייבות שטרם אושרה נשארת מסומנת ככזו.',
+        evidence:'אפשר לשלב תצפיות ומשוב מתושבים, מתנדבים וקבוצות שונות, ולברר מי לא נגישים למיפוי ובאילו שפות וערוצים אפשר לשמוע אותם.',
+        links:'אפשר לבחון קשרים אופקיים בין תושבים, קבוצות וארגונים, וקשרים אנכיים לרשות ולשירותים. כדאי לברר תלות בשותף יחיד וגיבוי כשערוץ או אדם אינם זמינים.',
+        decisions:'אפשר להגדיר איך מתקבלת החלטה קהילתית, מי מיוצגים ומי מוסמכים להתחייב בשם כל שותף. השתתפות תושבים והתנדבות אינן מחליפות את אחריות הרשות והשירותים.',
+        actions:'אפשר להגדיר גבולות לזמן התנדבות, לצד זמן עבודה בשכר, גיבוי, נגישות ושפות, והתחייבויות שאושרו עם הרשות והשותפים. כדאי לתעד מה מצמצמים כדי למנוע עומס על אותם אנשים.',
+        reviews:'אפשר לבחון את השינוי עבור קבוצות שונות, עומס ושחיקה של מתנדבים, נגישות והמשכיות בתחלופת הנהגה, ומה השתנה בקשרים לרשות ולשותפים.'
+      }
+    }[journey.unit] || {};
     let saved = clone(data), revision = journey.revision || 0, metadataRevision = 0, dirty = false, busy = false, conflict = false;
     let conflictRevision = null, deferredMetadata = null;
     let section = 'overview', selected = Object.create(null), serial = 0, alive = true;
@@ -49,7 +77,7 @@
     }
     window.addEventListener('beforeunload', beforeUnload);
     function exportData() {
-      download({format:'begood-resilience-workspace', version:2, journeyId:journey.id, revision, exportedAt:new Date().toISOString(), unsaved:dirty, workspace:data}, 'begood-workspace-' + journey.id + '.json');
+      download({format:'begood-resilience-workspace', version:2, journeyId:journey.id, unit:journey.unit || 'other', unitName:journey.unitName || '', revision, exportedAt:new Date().toISOString(), unsaved:dirty, workspace:data}, 'begood-workspace-' + journey.id + '.json');
     }
     function labelFor(target, id) {
       const record = (data[target] || []).find(r => r.id === id);
@@ -66,6 +94,7 @@
     function report() {
       const root = node('div', 'jws-report');
       root.appendChild(node('h1', '', journey.unitName || 'מרחב העבודה לחוסן'));
+      root.appendChild(node('p', '', 'סוג המסגרת: ' + unitLabel));
       root.appendChild(node('p', '', 'גרסה ' + revision + (dirty ? '. כולל שינויים מקומיים שטרם נשמרו.' : '. הנתונים שנשמרו בשרת.')));
       root.appendChild(node('p', '', 'קיום, מימוש והתחדשות הן שלוש זוויות בחינה מקבילות. התיעוד אינו ציון חוסן או החלטת הסמכה.'));
       function table(fields, record) {
@@ -152,10 +181,11 @@
     }
     const head = node('header', 'card'); shell.appendChild(head);
     head.appendChild(node('h1', '', journey.unitName || 'מרחב עבודה לחוסן'));
+    head.appendChild(node('p', 'muted', unitLabel));
     head.appendChild(node('p', '', 'מסע אל החוסן. מרחב משותף למיפוי, לבחירת שינוי, לפעולה וללמידה לאורך זמן.'));
     head.appendChild(node('p', 'muted', 'הנתונים נשמרים בשרת במסגרת המסע. הגישה היא לבעלי קוד המסע ולמנהלי המערכת, לפי ההרשאות הקיימות. קוד משותף אינו הרשאה אישית לכל בעל תפקיד.'));
     const privacy = node('details', 'jws-explain'); privacy.appendChild(node('summary', '', 'פרטיות, תיעוד והסמכה'));
-    privacy.appendChild(node('p', '', 'אפשר לתעד תפקידים במקום שמות תלמידים ופרטים אישיים רגישים. מומלץ לשמור מסמכים מזהים במאגר המוסדי המורשה, ולתעד כאן תמצית והפניה שאינה חושפת מידע אישי. קובץ ייצוא מכיל את המידע שבמרחב, ולכן מתאים לשמירה במקום מאושר בלבד.'));
+    privacy.appendChild(node('p', '', 'אפשר לתעד תפקידים במקום שמות תלמידים, תושבים, מתנדבים ופרטים אישיים רגישים. מומלץ לשמור מסמכים מזהים במאגר המאושר של המסגרת, ולתעד כאן תמצית והפניה שאינה חושפת מידע אישי. קובץ ייצוא מכיל את המידע שבמרחב, ולכן מתאים לשמירה במקום מאושר בלבד.'));
     privacy.appendChild(node('p', '', 'הערכה עצמית ולמידה מופרדות מהסמכה חיצונית. תו חוסן ייבחן בהליך נפרד של גוף אקדמי מקצועי וצוות הסמכה ייעודי, לפי קריטריונים שקופים, ראיות ומשוב מעודד גם ללא תו, עם אפשרות לשיפור ולהגשה חוזרת. המרחב אינו מעניק תו באופן אוטומטי ואינו מדד שתוקף במחקר.'));
     head.appendChild(privacy);
     const toolbar = node('div', 'jws-toolbar no-print'); head.appendChild(toolbar);
@@ -199,12 +229,13 @@
     function overview() {
       content.appendChild(node('h2', '', 'מה עושים עם המיפוי'));
       content.appendChild(node('p', '', 'אפשר להתחיל בהגדרת המטרה וצוות החוסן, להצליב את ארבעת המאגרים עם ראיות, ולבחון את רשת המנגנונים. לאחר בירור משותף מתעדים החלטה, בוחרים שינוי אחד או שניים, מגדירים אחריות ומשאבים, וחוזרים ללמוד מן התוצאות.'));
+      if (guidance.context) content.appendChild(node('p', '', guidance.context));
       const grid = node('div', 'jws-counts'); content.appendChild(grid);
       sections.slice(0,4).forEach(s => { const item = node('div'); item.appendChild(node('strong', '', data[s.key].length)); item.appendChild(node('span', '', s.label)); grid.appendChild(item); });
       content.appendChild(node('h3', '', 'שלוש זוויות בחינה מקבילות'));
       content.appendChild(node('p', '', 'קיום: מה זמין ומוסכם. מימוש: מה מופעל בפועל, עבור מי ובאילו תנאים. התחדשות: מה נלמד, נשמר ומשתנה. אלה אינן מדרגות או רמות דירוג.'));
       content.appendChild(node('h3', '', 'מה שומר על איכות ההחלטה'));
-      const list = node('ul'); ['הבחנה בין תצפית, פרשנות, אי ודאות והחלטה. חוסר במידע נותר שאלה לבירור.', 'בחינה של איכות החיים בהווה לצד מוכנות לעתיד, סולידריות, אתוס והעצמת מורים ושותפים.', 'בחירת סדר עדיפות לפי חשיבות, הוגנות, השפעה על הרשת, ישימות, זמן ומשאבים, תוך תיעוד מחלוקת והנמקה.', 'מעקב אחר תוצאות, עומס, השלכות לא צפויות והחלטה מה לשמר, לשנות או להפסיק.'].forEach(t => list.appendChild(node('li', '', t))); content.appendChild(list);
+      const list = node('ul'); ['הבחנה בין תצפית, פרשנות, אי ודאות והחלטה. חוסר במידע נותר שאלה לבירור.', 'בחינה של איכות החיים בהווה לצד מוכנות לעתיד, סולידריות, אתוס והעצמת השותפים. בבית הספר נבחנת גם העצמת מורים; בקהילה נבחנת גם השפעת תושבים ומתנדבים.', 'בחירת סדר עדיפות לפי חשיבות, הוגנות, השפעה על הרשת, ישימות, זמן ומשאבים, תוך תיעוד מחלוקת והנמקה.', 'מעקב אחר תוצאות, עומס, השלכות לא צפויות והחלטה מה לשמר, לשנות או להפסיק.'].forEach(t => list.appendChild(node('li', '', t))); content.appendChild(list);
     }
     function sectionIntro(key) {
       return {
@@ -212,7 +243,7 @@
         mechanisms:'מנגנון חברתי הוא רכיב או הסדר בעל תפקיד מארגן במערכת החברתית. הוא עשוי לייצר משאבים, לשנות קשרים, לשמר יכולות ולתמוך בהתארגנות מחודשת. עקרונות הפעולה ואיכויות המנגנון מתועדים בנפרד משלוש זוויות הבחינה.',
         infrastructures:'כאן מתועדים מרחבים, ערוצים, מתקנים ומערכות שמאפשרים פעולה, עם זמינות, נגישות ואחריות לתחזוקה.',
         resources:'כאן מתועדים ידע, מיומנויות, זמן, תקציב ומשאבים נוספים. הזמינות אינה מבטיחה שימוש, ואפשר לתעד גם משאב שנוצר באמצעות מנגנון חברתי.',
-        evidence:'אפשר לרשום תצפית, פרוטוקול או תמצית משוב, לצד מקור, תאריך, מי אספו את המידע ומגבלותיו. אין כאן העלאת קבצים או מאגר לפרטים מזהים על תלמידים.',
+        evidence:'אפשר לרשום תצפית, פרוטוקול או תמצית משוב, לצד מקור, תאריך, מי אספו את המידע ומגבלותיו. אפשר לתעד כאן תמצית ללא פרטים מזהים על משתתפים, ולהפנות לחומר המקור במאגר המאושר של המסגרת.',
         links:'כל קשר מכוון ממנגנון מוצא למנגנון יעד. סוג הקשר מבחין במידע, סמכות, משאבים, תיאום, גיבוי והשפעה נורמטיבית. מתעדים בנפרד קשר פורמלי, קשר שנצפה וקשר מוצע. קשר מוצע או גיבוי מוצהר אינם ראיה לתפקוד.',
         findings:'אפשר להבחין בין חוזקה, פער שנמצא ושאלה שעדיין פתוחה. טיוטת AI מצריכה בחינה אנושית, ואישור מתועד בשם או בתפקיד. שינוי הטיוטה לנדחתה משמר את עקבות הבירור.',
         decisions:'אפשר להשוות חלופות לפי חשיבות, הוגנות, השפעה על הרשת, ישימות, זמן ומשאבים. מתעדים גם אי ודאות, מחלוקת, הסמכות להחלטה ומועד לבחינה מחדש. אישור אנושי נכתב במפורש.',
@@ -222,6 +253,7 @@
     }
     function records(s) {
       content.appendChild(node('h2', '', s.label)); content.appendChild(node('p', '', sectionIntro(s.key)));
+      if (guidance[s.key]) content.appendChild(node('p', '', guidance[s.key]));
       if (s.key === 'links') {
         const d = node('details', 'jws-explain'); d.appendChild(node('summary', '', 'כיצד בוחנים את רשת המנגנונים'));
         d.appendChild(node('p', '', 'אפשר לעקוב אחרי מסלול של צורך ממשי בין מנגנונים: היכן המידע עובר, מי מוסמכים להחליט, והאם משאבים מגיעים למי שמפעילים את המענה. בוחנים קשרים אופקיים בין עמיתים וקבוצות, וקשרים אנכיים להנהלה ולרשות.'));
@@ -267,7 +299,7 @@
     }
     function aiPayload(ids) {
       const related = name => saved[name].filter(r => (r.evidenceIds || []).some(id => ids.includes(id)));
-      return {context:{goal:saved.context.goal,scope:saved.context.scope,preserve:saved.context.preserve},evidence:saved.evidence.filter(e => ids.includes(e.id)),roles:related('roles').map(r => { const copy = {...r}; delete copy.person; return copy; }),mechanisms:related('mechanisms'),infrastructures:related('infrastructures'),resources:related('resources'),links:related('links')};
+      return {unit:{kind:unit ? unit.k : 'other',label:unitLabel},context:{goal:saved.context.goal,scope:saved.context.scope,preserve:saved.context.preserve,mandate:saved.context.mandate,delegation:saved.context.delegation},evidence:saved.evidence.filter(e => ids.includes(e.id)),roles:related('roles').map(r => { const copy = {...r}; delete copy.person; return copy; }),mechanisms:related('mechanisms'),infrastructures:related('infrastructures'),resources:related('resources'),links:related('links')};
     }
     function validateSuggestions(raw, allowed) {
       const result = typeof raw === 'string' ? JSON.parse(raw.trim().replace(/^\x60{3}(?:json)?\s*/i, '').replace(/\s*\x60{3}$/, '')) : raw;
@@ -283,6 +315,7 @@
     function previewFacts(payload) {
       const box = node('div', 'jws-input-review');
       box.appendChild(node('h3', '', 'המידע לעיון לפני שליחה'));
+      box.appendChild(node('p', '', 'סוג המסגרת: ' + payload.unit.label));
       const intro = node('dl');
       M.CONTEXT_FIELDS.filter(f => Object.hasOwn(payload.context, f.key)).forEach(f => {
         if (!payload.context[f.key]) return;
@@ -403,7 +436,7 @@
     function renderContent() {
       content.textContent = ''; nav.querySelectorAll('button').forEach(b => { if (b.dataset.section === section) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
       if (section === 'overview') overview();
-      else if (section === 'context') { content.appendChild(node('h2', '', 'מסגרת התהליך')); content.appendChild(node('p', '', 'אפשר לקבוע יחד גבולות, מטרה, מה רוצים לשמר, סמכות הצוות, מפגשי העבודה וכללי התיעוד.')); M.CONTEXT_FIELDS.forEach(f => content.appendChild(fieldControl(f, data.context, 'context'))); }
+      else if (section === 'context') { content.appendChild(node('h2', '', 'מסגרת התהליך')); content.appendChild(node('p', '', 'אפשר לקבוע יחד גבולות, מטרה, מה רוצים לשמר, סמכות הצוות, מפגשי העבודה וכללי התיעוד.')); if (guidance.context) content.appendChild(node('p', '', guidance.context)); M.CONTEXT_FIELDS.forEach(f => content.appendChild(fieldControl(f, data.context, 'context'))); }
       else if (section === 'ai') ai();
       else { const s = sections.find(s => s.key === section); if (s) records(s); }
     }
