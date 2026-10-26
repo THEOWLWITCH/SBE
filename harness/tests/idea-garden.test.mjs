@@ -1,4 +1,4 @@
-// להצמיח רעיון עם גני (26/10/2026).
+// גן הרעיונות עם גני (26/10/2026).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';

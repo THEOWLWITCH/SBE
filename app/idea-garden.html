@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>להצמיח רעיון</title>
+<title>גן הרעיונות</title>
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&family=Amatic+SC:wght@700&family=Rubik:wght@500;700;800&display=swap">
 <style>
-/* להצמיח רעיון (26/10/2026), עם גני. מקור אמת: lib/idea-garden.js. הרשאה: games. העיצוב לפי הגיל: body[data-age] */
+/* גן הרעיונות (26/10/2026), עם גני. מקור אמת: lib/idea-garden.js. הרשאה: games. העיצוב לפי הגיל: body[data-age] */
 :root{--navy:#1B4F7A;--teal:#1A9BB5;--green:#3A9E6B;--sun:#FFC929;--coral:#E0603F;--ink:#26323E;--muted:#5C6873;--line:#DCE6DA;--bg:#F6F9F1;--card:#fff;--soft:#EEF5EA;--hl:#1B4F7A;
   --a1:#3A9E6B;--a2:#1A9BB5;--a3:#FFC929;--hero1:#2F7D52;--hero2:#1A9BB5;--r:20px;--fs:17px;--hf:'Frank Ruhl Libre',Georgia,serif;--bf:Assistant,Arial,sans-serif}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#E8EEE6;--muted:#AEB9AE;--line:#33413A;--bg:#141A16;--card:#1C241F;--soft:#24302A;--hl:#8fd3e0}}
@@ -127,7 +127,7 @@ body[data-age="d5"] .idea-name{font-size:34px}
 .decide .tiles{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
 .wait{margin-top:14px;background:var(--soft);border-radius:16px;padding:14px;text-align:center}
 .wait-t{font-weight:800}.wait-bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin:10px auto;max-width:360px}.wait-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--a1),var(--a3));transition:width .9s linear}.wait-s{color:var(--muted);font-size:.9em}
-/* גינת הרעיונות */
+/* הרעיונות בגן */
 .garden{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));margin-top:10px}
 .garden .g{border:2px solid var(--line);border-radius:var(--r);background:var(--card);padding:10px;display:flex;gap:10px;align-items:center}
 .garden .g .p{width:62px;height:56px;flex:none}.garden .g .p svg{width:100%;height:100%}
@@ -174,13 +174,13 @@ body[data-age="d5"] .idea-name{font-size:34px}
   <button type="button" onclick="history.back()">→ חזרה</button>
   <a href="games.html">🎲 משחקי חוסן</a>
   <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
-  <span class="crumb">Begood › משחקי חוסן › להצמיח רעיון</span>
+  <span class="crumb">Begood › משחקי חוסן › גן הרעיונות</span>
 </nav>
 <main class="wrap">
   <header class="hero">
     <div>
       <span class="logo"><img src="assets/begood-logo-sm.webp" alt="Begood"></span>
-      <h1>להצמיח <span>רעיון</span></h1>
+      <h1>גן <span>הרעיונות</span></h1>
       <p id="heroP">מגדלים רעיון מזרע ועד פרי. בכל שלב בודקים מה טוב בו, מה פחות, ואם הוא לא פוגע באף אחד, ומחליטים איך להמשיך. גני מלווה אתכם, נותנת משוב ומתייעצת איתכם.</p>
     </div>
     <div class="geni" aria-hidden="true"><span id="heroGeni"></span><span class="pot" id="heroPot"></span></div>
@@ -196,7 +196,7 @@ body[data-age="d5"] .idea-name{font-size:34px}
     <input type="text" id="grower" maxlength="40" placeholder="שם פרטי, או שם הקבוצה">
     <div class="go-row"><button class="btn grow" type="button" id="plant">🌰 שותלים רעיון חדש</button></div>
     <div id="gardenBox" hidden>
-      <h3 class="q">🪴 גינת הרעיונות שלי</h3>
+      <h3 class="q">🪴 הרעיונות שלי בגן</h3>
       <div class="garden" id="garden"></div>
     </div>
   </section>
@@ -214,7 +214,7 @@ body[data-age="d5"] .idea-name{font-size:34px}
         <div id="versBox" hidden><h3 class="q" style="margin:14px 0 4px">איך הרעיון השתנה</h3><div class="vers" id="vers"></div></div>
         <label class="f" for="lookNow">רוצים לשנות את הציור? <small class="muted">רשות</small></label>
         <input type="text" id="lookNow" maxlength="200" placeholder="איך הרעיון נראה עכשיו?">
-        <div class="go-row" style="margin-top:12px"><button class="btn alt" type="button" id="toGarden">🪴 לגינת הרעיונות</button></div>
+        <div class="go-row" style="margin-top:12px"><button class="btn alt" type="button" id="toGarden">🪴 לכל הרעיונות בגן</button></div>
       </aside>
     </div>
   </section>
@@ -246,7 +246,7 @@ body[data-age="d5"] .idea-name{font-size:34px}
     $('heroP').textContent = kid() ? 'שותלים רעיון ומגדלים אותו. בכל שלב בודקים: מה טוב, מה פחות, והאם הרעיון שומר על כולם. גני עוזרת ומתייעצת איתכם.' : 'מגדלים רעיון מזרע ועד פרי. בכל שלב בודקים מה טוב בו, מה פחות, ואם הוא עלול לפגוע במישהו או במשהו, ומחליטים איך להמשיך. גני מלווה אתכם, נותנת משוב ומתייעצת איתכם.';
   }
 
-  // ---------- התחלה וגינת הרעיונות ----------
+  // ---------- התחלה והרעיונות בגן ----------
   function drawStart() {
     $('ages').innerHTML = G.AGES.map(([v, t, d]) => `<button type="button" class="tile" data-v="${v}" aria-pressed="${D.age === v}"><span class="ic">${{ k: '🧸', a3: '🎒', d5: '🧭', sec: '🎧', pro: '📐' }[v]}</span><span><b>${t}</b><span class="d">${d}</span></span></button>`).join('');
     $('ages').querySelectorAll('button').forEach((b) => { b.onclick = () => { D.age = b.dataset.v; save(); drawHero(); drawStart(); }; });
@@ -518,7 +518,7 @@ ${b.length ? `<h3 class="q">🏅 מה בלט בדרך שלכם</h3><div class="b
     const x = I(); if (!x) return;
     const S = x.stages, today = new Date().toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\//g, '.');
     const last = x.pics[x.pics.length - 1];
-    let h = `<div class="pr"><div class="pr-top"><img src="assets/begood-logo.webp" alt="Begood"><b>משחקי חוסן · להצמיח רעיון</b><span>${today}</span></div>
+    let h = `<div class="pr"><div class="pr-top"><img src="assets/begood-logo.webp" alt="Begood"><b>משחקי חוסן · גן הרעיונות</b><span>${today}</span></div>
 <div class="big">${last ? `<div>${last.svg}</div>` : ''}<div style="border:0;width:auto;height:auto"><h1>${esc(G.ideaName(x))}</h1>${D.grower ? `<p>גידלו: <b>${esc(D.grower)}</b></p>` : ''}<p>${x.end === 'go' ? '🍎 יוצאים לדרך' : x.end === 'other' ? '🍂 הפך לדשן לרעיון הבא' : ''}${x.endNote ? ': ' + esc(x.endNote) : ''}</p></div></div>`;
     if (x.pics.length > 1) h += `<h2>איך הרעיון גדל</h2><div class="vers">${x.pics.map((p) => `<figure><div>${p.svg}</div>${esc((G.STAGES.find((s) => s.id === p.stage) || {}).name || '')}${p.changed ? ': ' + esc(p.changed) : ''}</figure>`).join('')}</div>`;
     h += `<h2>🌰 זרע: הרעיון</h2><table>${rows([['מאיפה בא', ((G.SOURCES.find((s) => s[0] === S.seed.source) || [])[2] || '') + (S.seed.sourceText ? ': ' + S.seed.sourceText : '')], ['הרעיון', S.seed.what], ['למי', S.seed.forWho], ['איך נראה', S.seed.look]])}</table>`;
@@ -536,7 +536,7 @@ ${b.length ? `<h3 class="q">🏅 מה בלט בדרך שלכם</h3><div class="b
     }
     h += '</div>';
     if ($('print').dataset.h !== h) { $('print').innerHTML = h; $('print').dataset.h = h; }
-    document.title = 'משחקי חוסן · להצמיח רעיון · ' + G.ideaName(x) + ' · ' + today + ' · Begood';
+    document.title = 'משחקי חוסן · גן הרעיונות · ' + G.ideaName(x) + ' · ' + today + ' · Begood';
   }
   async function printIt() {
     buildPrint();
