@@ -168,6 +168,12 @@
     lantern: (x, y) => `<g transform="translate(${x} ${y})"><circle r="26" fill="#FFE07A" opacity=".3"/><rect x="-8" y="-12" width="16" height="22" rx="3" fill="#FFC929" stroke="#8C6B4A" stroke-width="2"/><path d="M-5 -16h10" stroke="#8C6B4A" stroke-width="3"/></g>`
   };
   let uid = 0;
+  // סגנון ספר סיפורים מצויר, כמו בלוח "צועדים אל החוסן" (26/10/2026: "עדיף הסגנון של משחק הלוח"):
+  // קו דיו, קצוות לא סדורים, כתמי צבע ומרקם נייר. פועל כש-STYLE.book (בסיפורים לבוגרים).
+  const STYLE = { book: false };
+  function setStyle(v) { STYLE.book = v === 'storybook'; }
+  const sbDefs = (k) => `<filter id="wb${k}" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="4.5" xChannelSelector="R" yChannelSelector="G"/></filter><filter id="wf${k}" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".07" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter><filter id="pp${k}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3" seed="2"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .24  0 0 0 0 .16  0 0 0 -1.6 1.05"/></filter><filter id="ws${k}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".008 .016" numOctaves="3" seed="11"/><feColorMatrix values="0 0 0 0 .35  0 0 0 0 .3  0 0 0 0 .5  0 0 0 -2.2 1.25"/></filter>`;
+  const INK = '#3E4A5C';
   function scene(page, chars, opt) {
     const o = opt || {};
     const m = page.mood || 'sunny', [s1, s2] = SKY[m] || SKY.sunny, dark = m === 'night' || page.place === 'camp' && m !== 'sunny';
@@ -181,11 +187,18 @@
     const p0 = cast.length ? x0 + 38 : 200;
     const prop = page.prop && PROP[page.prop] ? PROP[page.prop](p0, GY - 10) : '';
     const indoor = page.place === 'home' || page.place === 'work';
-    return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(o.label || 'איור לסיפור')}" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s1}"/><stop offset="1" stop-color="${s2}"/></linearGradient></defs><rect width="${W}" height="${H}" fill="url(#${id})"/>${indoor ? '' : weather(m)}${back}${ground}${page.place === 'home' && (m === 'storm' || m === 'rain' || m === 'night') ? `<rect x="236" y="40" width="110" height="90" fill="#1E3352" opacity=".5"/>` : ''}${figs}${prop}</svg>`;
+    const dim = page.place === 'home' && (m === 'storm' || m === 'rain' || m === 'night') ? `<rect x="236" y="40" width="110" height="90" fill="#1E3352" opacity=".5"/>` : '';
+    if (STYLE.book && !o.plain) {
+      return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(o.label || 'איור לסיפור')}" preserveAspectRatio="xMidYMid slice" class="sb"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s1}"/><stop offset="1" stop-color="${s2}"/></linearGradient>${sbDefs(id)}</defs><rect width="${W}" height="${H}" fill="url(#${id})"/><g filter="url(#wb${id})">${indoor ? '' : `<g stroke="${INK}" stroke-width="1.4" stroke-linejoin="round" stroke-opacity=".75">${weather(m)}</g>`}<g stroke="${INK}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">${back}${ground}</g>${dim}</g><rect width="${W}" height="${H}" filter="url(#ws${id})" opacity=".2" style="mix-blend-mode:multiply"/><g filter="url(#wf${id})"><g stroke="${INK}" stroke-width="1.3" stroke-opacity=".55">${figs}</g>${prop}</g><rect width="${W}" height="${H}" filter="url(#pp${id})" opacity=".22" style="mix-blend-mode:multiply" pointer-events="none"/></svg>`;
+    }
+    return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(o.label || 'איור לסיפור')}" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s1}"/><stop offset="1" stop-color="${s2}"/></linearGradient></defs><rect width="${W}" height="${H}" fill="url(#${id})"/>${indoor ? '' : weather(m)}${back}${ground}${dim}${figs}${prop}</svg>`;
   }
   // תמונת שער: כל הדמויות שמחות במקום הראשון
   function cover(story, chars, place) { return scene({ place: (story.pages[0] && story.pages[0].place) || place || 'park', mood: 'sunny', cast: chars.map((_, i) => ({ who: i, pose: i % 2 ? 'wave' : 'happy' })), prop: 'none' }, chars, { label: 'הדמויות של הסיפור' }); }
-  function portrait(c, pose) { return `<svg viewBox="-60 -80 120 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${character(c, 0, 0, 1, pose || 'wave')}</svg>`; }
+  function portrait(c, pose) {
+    if (STYLE.book) { const k = 'pt' + (++uid); return `<svg viewBox="-60 -80 120 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="sb"><defs><filter id="wf${k}" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".07" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="2.2" xChannelSelector="R" yChannelSelector="G"/></filter></defs><g filter="url(#wf${k})" stroke="${INK}" stroke-width="1.3" stroke-opacity=".55">${character(c, 0, 0, 1, pose || 'wave')}</g></svg>`; }
+    return `<svg viewBox="-60 -80 120 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${character(c, 0, 0, 1, pose || 'wave')}</svg>`;
+  }
 
   // הקדשה לילד/ה שיצר/ה את הסיפור, מהדמויות (26/10/2026: "הברכה צריכה להיות מהדמויות - כלומר לשים את שמות הדמויות")
   function joinNames(list) { const a = list.filter(Boolean); return a.length < 2 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' ו' + a[a.length - 1]; }
@@ -202,5 +215,5 @@
     return { head, line, from };
   }
 
-  return { isAdult, ADULT_THEMES, ADULT_TWISTS, themes, twists, MAX_CHARS, joinNames, COLORS, BODIES, EXTRAS, GENDERS, TRAITS, THEMES, PLACES, MOODS, POSES, PROPS, TWISTS, ENDINGS, AGES, system, input, normalize, valid, scene, cover, portrait, character, dedication, esc };
+  return { setStyle, STYLE, isAdult, ADULT_THEMES, ADULT_TWISTS, themes, twists, MAX_CHARS, joinNames, COLORS, BODIES, EXTRAS, GENDERS, TRAITS, THEMES, PLACES, MOODS, POSES, PROPS, TWISTS, ENDINGS, AGES, system, input, normalize, valid, scene, cover, portrait, character, dedication, esc };
 });

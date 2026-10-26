@@ -129,55 +129,45 @@ h3.q .clr{margin-inline-start:auto;font-size:14px}
 .audline{margin:0 0 6px;font-size:16px;color:var(--muted)}
 .linkb{border:0;background:none;color:var(--hl);font:inherit;font-weight:800;cursor:pointer;text-decoration:underline;padding:0}
 
-/* בוגרים (26/10/2026: "הגרפיקה המוצעת עכשיו מתאימה לילדים קטנים אבל לא מתאימה לבוגרים"):
-   שקט ומאופק: נייר, דיו כחול כהה וזהב עמום, פינות קטנות, כותרות בגופן ספר, איורים בצבעים רכים */
-body[data-age="adult"]{--navy:#1E2A38;--teal:#2E6E7A;--sun:#C9A46A;--coral:#8C5A46;--ink:#222B36;--muted:#5E6670;--line:#DAD4C8;--bg:#F4F1EA;--card:#FFFEFB;--soft:#F7F4EE;--hl:#1E2A38}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body[data-age="adult"]{--ink:#ECE7DE;--muted:#B5AFA5;--line:#3A3F46;--bg:#15191E;--card:#1D232A;--soft:#232A32;--hl:#D8BC8A}}
-:root[data-theme="dark"] body[data-age="adult"]{--ink:#ECE7DE;--muted:#B5AFA5;--line:#3A3F46;--bg:#15191E;--card:#1D232A;--soft:#232A32;--hl:#D8BC8A}
-body[data-age="adult"] .hero{background:#1E2A38;border-radius:8px;border-bottom:3px solid #C9A46A}
-body[data-age="adult"] .hero h1{font-weight:700;letter-spacing:.2px}
-body[data-age="adult"] .hero h1 span{color:#D8BC8A}
-body[data-age="adult"] .hero p{color:#D9DEE3}
-body[data-age="adult"] .book .pg{border-radius:2px;box-shadow:0 6px 18px rgba(0,0,0,.28)}
-body[data-age="adult"] .book .spine{background:#8C6B4A;border-radius:1px}
-body[data-age="adult"] svg{filter:saturate(.55) contrast(.96)}
-body[data-age="adult"] .marks{gap:0;border-bottom:1px solid var(--line);margin:0 0 18px;padding:0}
-body[data-age="adult"] .marks button{border:0;border-bottom:3px solid transparent;background:none;border-radius:0;font:700 16px Assistant,sans-serif;padding:10px 16px}
-body[data-age="adult"] .marks button b{background:none;border:1px solid var(--line);width:24px;height:24px;font-weight:700}
-body[data-age="adult"] .marks button[aria-current="step"]{background:none;border-bottom-color:var(--sun)}
-body[data-age="adult"] .marks button[aria-current="step"] b{background:var(--navy);color:#fff;border-color:var(--navy)}
-body[data-age="adult"] .sheet{border:1px solid var(--line);border-radius:6px;padding:28px}
-body[data-age="adult"] h2.t{font-weight:700;font-size:28px}
-body[data-age="adult"] h3.q{font:700 17px 'Frank Ruhl Libre',Georgia,serif}
-body[data-age="adult"] .ch{border:1px solid var(--line);border-radius:6px;background:var(--card)}
-body[data-age="adult"] .ch .pic{border-radius:4px;background:var(--soft)}
-body[data-age="adult"] .ch input.name,body[data-age="adult"] .ch textarea,body[data-age="adult"] .f textarea,body[data-age="adult"] .f input[type=text]{border-width:1px;border-radius:4px}
-body[data-age="adult"] .chip{border-width:1px;border-radius:4px;font-weight:600;min-height:34px}
-body[data-age="adult"] .chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
-body[data-age="adult"] .sw{border-width:2px}
-body[data-age="adult"] .add{border:1px dashed var(--muted);border-radius:6px;font-weight:700;font-size:16px}
-body[data-age="adult"] .place{border-width:1px;border-radius:4px;font-weight:600}
-body[data-age="adult"] .place[aria-pressed="true"]{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy)}
-body[data-age="adult"] .tw .one b{background:var(--navy);border-radius:4px}
-body[data-age="adult"] .btn{border-radius:4px}
-body[data-age="adult"] .btn.big{background:var(--navy);color:#fff;box-shadow:none;border-bottom:3px solid var(--sun);font-size:19px}
-body[data-age="adult"] .authorbox{border:1px solid var(--line);border-radius:6px;background:var(--soft);color:var(--ink)}
-body[data-age="adult"] .wait{border-radius:6px}
-body[data-age="adult"] .audc{border-radius:6px}
-body[data-age="adult"] .leaf{border-radius:2px;box-shadow:0 1px 0 #DAD4C8,0 12px 30px rgba(20,25,35,.08);background:#FFFEFB}
-body[data-age="adult"] .leaf .txt{font:400 19px/1.75 'Frank Ruhl Libre',Georgia,serif;text-align:justify}
-body[data-age="adult"] .leaf .num{font:600 14px Assistant,sans-serif;color:#8C6B4A;margin:4px 0 0 4px}
-body[data-age="adult"] .leaf.cover h2{font-weight:700;color:#1E2A38}
-body[data-age="adult"] .leaf.cover .by,body[data-age="adult"] .pp.cv .by{font:italic 400 20px 'Frank Ruhl Libre',Georgia,serif;color:#5E6670}
-body[data-age="adult"] .leaf.ded{background:#F7F4EE}
-body[data-age="adult"] .leaf.ded .h{font-weight:700;color:#1E2A38}
-body[data-age="adult"] .leaf.end h3{font:700 19px 'Frank Ruhl Libre',Georgia,serif;color:#1E2A38;border-bottom:1px solid #DAD4C8;padding-bottom:6px}
-body[data-age="adult"] .pp .tx{font:400 13.5pt/1.75 'Frank Ruhl Libre',Georgia,serif}
-body[data-age="adult"] .pp .pn{font:600 10pt Assistant,sans-serif;color:#8C6B4A}
-body[data-age="adult"] .pp.cv h1{font-weight:700;color:#1E2A38}
-body[data-age="adult"] .pp.dd{background:#F7F4EE;border-radius:1mm}
-body[data-age="adult"] .pp .art{border-radius:1mm}
-body[data-age="adult"] .pp.ed h2{font:700 15pt 'Frank Ruhl Libre',Georgia,serif;color:#1E2A38;border-inline-start-color:#C9A46A}
+/* בוגרים (26/10/2026: "הגרפיקה המוצעת עכשיו מתאימה לילדים קטנים אבל לא מתאימה לבוגרים"; "עדיף הסגנון של משחק הלוח צועדים אל החוסן"):
+   ספר סיפורים מצויר כמו בלוח: נייר חם, קו דיו כחול כהה, קצוות לא סדורים, צבעי הלוגו, כותרות בגופן ספר וכתב יד לפרטים. האיורים: S.setStyle('storybook') */
+body[data-age="adult"]{--ink:#3E4A5C;--muted:#6B6458;--line:#3E4A5C;--bg:#F3EAD6;--card:#FBF3DF;--soft:#F6ECD6;--hl:#1B4F7A;background:#F3EAD6 radial-gradient(rgba(140,107,74,.08) 1px,transparent 1.4px) 0 0/7px 7px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body[data-age="adult"]{--ink:#EDE6DA;--muted:#C9BFAE;--line:#C9BFAE;--bg:#221E19;--card:#2C2620;--soft:#2A241E;--hl:#FFD86B;background:#221E19}}
+:root[data-theme="dark"] body[data-age="adult"]{--ink:#EDE6DA;--muted:#C9BFAE;--line:#C9BFAE;--bg:#221E19;--card:#2C2620;--soft:#2A241E;--hl:#FFD86B;background:#221E19}
+body[data-age="adult"] .hero{background:#FBF3DF;color:#3E4A5C;border:2.5px solid #3E4A5C;border-radius:22px 8px 26px 10px;box-shadow:5px 6px 0 rgba(93,74,54,.22)}
+body[data-age="adult"] .hero h1{color:#1B4F7A}
+body[data-age="adult"] .hero h1 span{color:#E0603F}
+body[data-age="adult"] .hero p{color:#4A4338}
+body[data-age="adult"] .hero .logo{border:2px solid #3E4A5C}
+body[data-age="adult"] .book .pg{border:2px solid #3E4A5C;box-shadow:3px 4px 0 rgba(93,74,54,.25)}
+body[data-age="adult"] .book .spine{background:#8C6B4A;border:2px solid #3E4A5C}
+body[data-age="adult"] .marks button{border:2px solid var(--line);border-bottom:0;background:#EADFC6;font:700 25px 'Amatic SC',Assistant,sans-serif;padding:6px 16px 8px;border-radius:16px 8px 0 0}
+body[data-age="adult"] .marks button b{font:700 15px Assistant,sans-serif;border:2px solid #3E4A5C;background:#FBF3DF}
+body[data-age="adult"] .marks button[aria-current="step"]{background:var(--card)}
+body[data-age="adult"] .marks button[aria-current="step"] b{background:#FFC929;color:#3E4A5C}
+body[data-age="adult"] .sheet{border:2.5px solid var(--line);border-radius:4px 22px 18px 24px;box-shadow:5px 6px 0 rgba(93,74,54,.18)}
+body[data-age="adult"] h3.q{font:700 26px 'Amatic SC',Assistant,sans-serif}
+body[data-age="adult"] h3.q small{font:600 14px Assistant,sans-serif}
+body[data-age="adult"] .ch,body[data-age="adult"] .audc,body[data-age="adult"] .authorbox{border:2px solid var(--line);border-radius:18px 6px 20px 8px;background:var(--soft);color:var(--ink)}
+body[data-age="adult"] .ch .pic{border:2px solid var(--line);border-radius:14px 6px 16px 6px;background:#FFFDF6}
+body[data-age="adult"] .chip{border:2px solid var(--line);border-radius:14px 6px 14px 6px;background:#FFFDF6;color:#3E4A5C}
+body[data-age="adult"] .chip[aria-pressed="true"]{background:#FFC929;border-color:#3E4A5C;color:#3E4A5C;box-shadow:2px 3px 0 rgba(62,74,92,.35)}
+body[data-age="adult"] .place{border:2px solid var(--line);border-radius:14px 6px 16px 6px}
+body[data-age="adult"] .place[aria-pressed="true"]{border-color:#3E4A5C;box-shadow:0 0 0 3px #FFC929,3px 4px 0 rgba(62,74,92,.35)}
+body[data-age="adult"] .add{border:2.5px dashed var(--line);border-radius:18px 6px 20px 8px}
+body[data-age="adult"] .tw .one b{background:#E0603F;border:2px solid #3E4A5C}
+body[data-age="adult"] .btn{border-radius:14px 6px 14px 6px;border:2px solid #3E4A5C}
+body[data-age="adult"] .btn.big{background:#FFC929;color:#3E4A5C;box-shadow:3px 4px 0 rgba(62,74,92,.4);font:700 30px 'Amatic SC',Assistant,sans-serif}
+body[data-age="adult"] .audc[data-v="adult"]{background:#1B4F7A;color:#FBF3DF}
+body[data-age="adult"] .audc[aria-pressed="true"]{box-shadow:0 0 0 3px #FFC929,4px 5px 0 rgba(62,74,92,.35)}
+body[data-age="adult"] .leaf{background:#FBF3DF;border:2px solid #3E4A5C;border-radius:4px 18px 16px 6px;box-shadow:4px 5px 0 rgba(93,74,54,.2)}
+body[data-age="adult"] .leaf .art{border-bottom:2px solid #3E4A5C}
+body[data-age="adult"] .leaf .txt{font:400 20px/1.75 'Frank Ruhl Libre',Georgia,serif;text-align:justify;color:#3E4A5C}
+body[data-age="adult"] .leaf.cover h2{color:#1B4F7A}
+body[data-age="adult"] .leaf.ded{background:#FFF4D2}
+body[data-age="adult"] .pp .tx{font:400 13.5pt/1.75 'Frank Ruhl Libre',Georgia,serif;color:#3E4A5C}
+body[data-age="adult"] .pp .art{border:.6mm solid #3E4A5C;border-radius:1mm 4mm 3mm 1.5mm}
+body[data-age="adult"] .pp.dd{background:#FFF4D2;border:.5mm solid #3E4A5C}
 
 /* הדפסה */
 #print{display:none}
@@ -310,14 +300,14 @@ body[data-age="adult"] .pp.ed h2{font:700 15pt 'Frank Ruhl Libre',Georgia,serif;
   const F = () => D.form;
 
   // פתיח: ספר פתוח
-  $('heroBook').innerHTML = `<div class="pg l">${'<i></i>'.repeat(8)}</div><div class="spine"></div><div class="pg r">${S.scene({ place: 'forest', mood: 'sunny', cast: [{ who: 0, pose: 'wave' }, { who: 1, pose: 'happy' }, { who: 2, pose: 'hug' }], prop: 'map' }, [{ color: 'teal', body: 'round' }, { color: 'sun', body: 'tall', extra: 'bunny' }, { color: 'coral', body: 'pear', extra: 'bow' }])}</div>`;
+  const drawHero = () => $('heroBook').innerHTML = `<div class="pg l">${'<i></i>'.repeat(8)}</div><div class="spine"></div><div class="pg r">${S.scene({ place: 'forest', mood: 'sunny', cast: [{ who: 0, pose: 'wave' }, { who: 1, pose: 'happy' }, { who: 2, pose: 'hug' }], prop: 'map' }, [{ color: 'teal', body: 'round' }, { color: 'sun', body: 'tall', extra: 'bunny' }, { color: 'coral', body: 'pear', extra: 'bow' }])}</div>`;
 
   // ---------- צעדים ----------
   function go(n) {
     [0, 1, 2, 3].forEach((k) => { $('s' + k).hidden = k !== n; document.querySelector(`.marks [data-s="${k}"]`).setAttribute('aria-current', k === n ? 'step' : 'false'); });
     document.querySelector('.marks [data-s="3"]').disabled = !D.story;
-    if (n === 3) drawBook();
     setAge(n === 3 && D.story ? (D.storyAge || F().age) : F().age);
+    if (n === 3) drawBook();
     window.scrollTo({ top: document.querySelector('.marks').offsetTop - 10, behavior: 'smooth' });
   }
   document.querySelectorAll('.marks button').forEach((b) => { b.onclick = () => go(+b.dataset.s); });
@@ -325,7 +315,14 @@ body[data-age="adult"] .pp.ed h2{font:700 15pt 'Frank Ruhl Libre',Georgia,serif;
 
   // ---------- למי הסיפור (צעד ראשון, 26/10/2026) ----------
   const AUD = { k2: 'סיפור קצר ופשוט: משפטים קצרים, הרבה איורים, וסוף טוב ומרגיע.', g34: 'עלילה ברורה עם דמויות שעוזרות זו לזו, ומעט מילים חדשות.', g56: 'עלילה עם התלבטויות, רגשות ובחירות של הדמויות.', teen: 'סיפור עם מורכבות: דילמות, מחלוקת ותפקיד של כל אחד/ת בקבוצה.', adult: 'משל מודרני לצוות, להורים ולקהילה, עם שאלות לשיחה בקבוצה.' };
-  function setAge(a) { document.body.dataset.age = a || 'g34'; }
+  let lastStyle = null;
+  function setAge(a) {
+    document.body.dataset.age = a || 'g34';
+    const st = S.isAdult(a) ? 'storybook' : '';
+    if (st === lastStyle) return;
+    lastStyle = st; S.setStyle(st); drawHero();
+    if (D.form) { drawChars(); drawPlot(); }
+  }
   function drawAud() {
     const f = F();
     $('aud').innerHTML = S.AGES.map(([v, t, n, w]) => `<button type="button" class="audc" data-v="${v}" aria-pressed="${f.age === v}"><b>${t}</b><span>${AUD[v] || ''}</span><small>${n} עמודים · ${w} מילים בעמוד</small></button>`).join('');
@@ -506,7 +503,7 @@ body[data-age="adult"] .pp.ed h2{font:700 15pt 'Frank Ruhl Libre',Georgia,serif;
   };
   window.addEventListener('beforeprint', () => { if (D.story) buildPrint(); });
 
-  drawChars(); drawPlot(); drawAud(); drawMine();
+  setAge(F().age); drawChars(); drawPlot(); drawAud(); drawMine();
   const q = new URLSearchParams(location.search);
   if (q.get('print') && D.story) buildPrint();
   if (D.story && q.get('view')) go(3);
