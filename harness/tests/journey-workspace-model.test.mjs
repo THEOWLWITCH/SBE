@@ -7,6 +7,7 @@ const W = createRequire(import.meta.url)('../../app/lib/journey-workspace-model.
 
 test('one browser and server schema offers four inventories and parallel lenses', () => {
   const ctx = { window: {} };
+  vm.runInNewContext(readFileSync(new URL('../../app/lib/journey-analysis-model.js', import.meta.url), 'utf8'), ctx);
   vm.runInNewContext(readFileSync(new URL('../../app/lib/journey-workspace-model.js', import.meta.url), 'utf8'), ctx);
   assert.ok(ctx.window.SBE_JOURNEY_WORKSPACE);
   assert.deepEqual(W.SECTIONS.slice(0, 4).map(x => x.key), ['roles', 'mechanisms', 'infrastructures', 'resources']);
@@ -15,6 +16,18 @@ test('one browser and server schema offers four inventories and parallel lenses'
   assert.match(W.aiSystem(), /evidenceIds/);
   assert.match(W.aiSystem(), /טיוטה/);
   assert.match(W.aiSystem(), /הוראות/);
+});
+
+test('guided context, four inventory knowledge states, case evidence and link conditions are additive', () => {
+  const a = W.clean({ context: { population: 'צוות', periodStart: '2026-10-01', baselineAt: '2026-10-26' }, roles: [{ id: 'r', person: 'שמור מקומית' }], mechanisms: [{ id: 'm', knowledgeState: 'absent', updatedAt: '2026-10-26' }], evidence: [{ id: 'e', kind: 'observation', caseAction: 'נשלח מידע', caseResult: 'נבדקה הקבלה' }], links: [{ id: 'l', from: ['m'], to: ['m'], sharedDependency: 'אותו תפקיד', alternativeAvailability: 'לא נבדקה' }] });
+  assert.equal(a.context.population, 'צוות'); assert.equal(a.roles[0].person, 'שמור מקומית');
+  assert.equal(a.roles[0].knowledgeState, 'unknown'); assert.equal(a.mechanisms[0].knowledgeState, 'absent');
+  assert.equal(a.evidence[0].caseResult, 'נבדקה הקבלה'); assert.equal(a.links[0].sharedDependency, 'אותו תפקיד');
+  assert.deepEqual(a.analyses, []);
+  assert.throws(() => W.clean({ roles: [{ id: 'r', knowledgeState: 'effective' }] }));
+  assert.throws(() => W.clean({ roles: [{ id: 'r', updatedAt: '2026-02-30' }] }));
+  assert.throws(() => W.clean({ context: { periodEnd: '2026-02-30' } }));
+  assert.doesNotThrow(() => W.clean({ findings: [{ id: 'f', kind: 'tension' }] }));
 });
 
 test('normalization creates independent empty workspaces and preserves meaningful text without truncation', () => {
