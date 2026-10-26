@@ -60,6 +60,10 @@
     let aiSelection = [], aiReviewed = false, aiPending = null, aiGeneration = 0, aiError = '', reloadGeneration = 0;
     let activeAnalysisId = '', baselineId = '';
     const removedAnalysisIds = new Set();
+    const priorityDrafts = new Map();
+    let priorityDraftRevision = 0;
+    const priorityKey = (analysisId,priorityId) => analysisId + ':' + priorityId;
+    const priorityNotice = () => priorityDrafts.size ? ' יש טיוטות בחירה מקומיות. לשמירה בשרת יש ליצור טיוטת החלטה או פעולה ולשמור. אפשר גם לייצא עותק.' : '';
     const shell = node('div', 'jws'); host.appendChild(shell);
     const sections = M.SECTIONS;
     function message(text, error) { status.textContent = text; status.className = 'jws-status' + (error ? ' jws-error' : ''); }
@@ -67,7 +71,7 @@
       serial++; dirty = true; cancelAiRequest(); saveButton.disabled = busy || conflict;
       message('יש שינויים שעדיין לא נשמרו בשרת');
     }
-    function hasUnsaved() { return dirty || !!analysisDraft || !!aiPending; }
+    function hasUnsaved() { return dirty || !!analysisDraft || !!aiPending || priorityDrafts.size > 0; }
     function canLeave() { return !hasUnsaved() || window.confirm('יש שינויים או טיוטות שעדיין לא נשמרו. להמשיך בלי לשמור? אפשר להישאר ולבחון את הטיוטות או לשמור את העבודה.'); }
     function beforeUnload(event) { if (hasUnsaved()) { event.preventDefault(); event.returnValue = ''; } }
     function cancelAiRequest() {
@@ -84,7 +88,7 @@
     }
     window.addEventListener('beforeunload', beforeUnload);
     function exportData() {
-      download({format:'begood-resilience-workspace', version:2, journeyId:journey.id, unit:journey.unit || 'other', unitName:journey.unitName || '', revision, exportedAt:new Date().toISOString(), unsaved:hasUnsaved(), workspace:data, unsavedAnalysis:analysisDraft}, 'begood-workspace-' + journey.id + '.json');
+      download({format:'begood-resilience-workspace', version:2, journeyId:journey.id, unit:journey.unit || 'other', unitName:journey.unitName || '', revision, exportedAt:new Date().toISOString(), unsaved:hasUnsaved(), workspace:data, unsavedAnalysis:analysisDraft, unsavedPriorityChoices:[...priorityDrafts.values()]}, 'begood-workspace-' + journey.id + '.json');
     }
     function labelFor(target, id) {
       const record = (data[target] || []).find(r => r.id === id);
@@ -173,7 +177,7 @@
         removals.forEach(id => removedAnalysisIds.delete(id));
         [...removedAnalysisIds].filter(id => !saved.analyses.some(a => a.id === id)).forEach(id => removedAnalysisIds.delete(id));
         if (captured === serial) { data = clone(saved); dirty = false; renderContent(); }
-        message(dirty ? 'הגרסה נכתבה בשרת. יש שינויים נוספים שעדיין לא נשמרו.' : 'נשמר בשרת. גרסה ' + revision);
+        message((dirty ? 'הגרסה נכתבה בשרת. יש שינויים נוספים שעדיין לא נשמרו.' : 'נשמר בשרת. גרסה ' + revision) + priorityNotice());
         const pendingMetadata = deferredMetadata; deferredMetadata = null;
         if (pendingMetadata) applyMetadataRevision(pendingMetadata, false);
       } catch (e) { if (alive) message('החיבור לשרת לא הושלם. השינויים נשארו פתוחים ואפשר לנסות שוב.', true); }
@@ -181,14 +185,14 @@
     }
     async function reload() {
       if (!window.confirm('טעינת הגרסה מהשרת תחליף את השינויים המקומיים. אפשר לבטל ולייצא עותק קודם. להמשיך?')) return;
-      const captured = serial, capturedRevision = revision, load = ++reloadGeneration;
+      const captured = serial, capturedRevision = revision, capturedPriorityRevision = priorityDraftRevision, load = ++reloadGeneration;
       try {
         const result = await options.api('jrGet', {id:journey.id});
         if (!alive || load !== reloadGeneration) return;
-        if (serial !== captured || revision !== capturedRevision || busy) return message('נוספו שינויים במהלך הטעינה. העבודה המקומית נשארה פתוחה. אפשר לייצא עותק ולבקש שוב את הגרסה האחרונה.', true);
+        if (serial !== captured || revision !== capturedRevision || priorityDraftRevision !== capturedPriorityRevision || busy) return message('נוספו שינויים במהלך הטעינה. העבודה המקומית נשארה פתוחה. אפשר לייצא עותק ולבקש שוב את הגרסה האחרונה.', true);
         if (!result.journey || result.journey.mode !== 'workspace' && result.journey.version !== 2 && result.journey.status !== 'workspace') return message('הגרסה האחרונה לא נטענה. אפשר לנסות שוב.', true);
         data = M.clean(result.journey.workspace); saved = clone(data); revision = result.journey.revision || 0;
-        dirty = false; conflict = false; conflictRevision = null; resetAiInput(); aiSelection = []; analysisDraft = null; activeAnalysisId = ''; baselineId = ''; removedAnalysisIds.clear(); conflictBox.hidden = true; saveButton.disabled = true;
+        dirty = false; conflict = false; conflictRevision = null; resetAiInput(); aiSelection = []; analysisDraft = null; activeAnalysisId = ''; baselineId = ''; removedAnalysisIds.clear(); priorityDrafts.clear(); priorityDraftRevision++; conflictBox.hidden = true; saveButton.disabled = true;
         message('נטענה הגרסה האחרונה מהשרת. גרסה ' + revision); renderContent();
       } catch (e) { if (alive && load === reloadGeneration) message('הגרסה האחרונה לא נטענה. השינויים המקומיים נשארו פתוחים.', true); }
     }
@@ -220,7 +224,7 @@
     function navigate(key, step) {
       section = key; activeStep = step || (steps.find(s => s.sections.includes(key)) || {}).key || '';
       renderContent();
-      if (!dirty && !conflict) message('המידע שנשמר בשרת. גרסה ' + revision);
+      if (!dirty && !conflict) message('המידע שנשמר בשרת. גרסה ' + revision + priorityNotice());
     }
     const nav = node('nav', 'jws-tabs jws-steps no-print'); nav.setAttribute('aria-label', 'שלבי המסע'); shell.appendChild(nav);
     steps.forEach((s,index) => {
@@ -508,7 +512,7 @@
           action = {...A.draftFromPriority(analysis,priorityId,optionId,'action',reason),id:uid(),decisionId:[decision.id]};
           candidate.actions.push(action);
         }
-        data = M.clean(candidate); changed();
+        data = M.clean(candidate); priorityDrafts.delete(priorityKey(analysis.id,priorityId)); priorityDraftRevision++; changed();
         selected[kind === 'action' ? 'actions' : 'decisions'] = action ? action.id : decision.id;
         navigate(kind === 'action' ? 'actions' : 'decisions','learning');
         message('נוספה טיוטה לפי בקשת הצוות. אחריות, סמכות ומשאבים נשארו פתוחים להחלטה אנושית. אפשר לערוך ולשמור את השינויים.');
@@ -516,8 +520,19 @@
     }
     function renderAnalysis(parent, analysis, pending) {
       if (!window.SBE_JOURNEY_FEEDBACK) { parent.appendChild(node('p','jws-error','תצוגת הניתוח לא נטענה. המידע נשאר במרחב ואפשר לייצא עותק.')); return; }
-      const settings = {historical:isHistorical(analysis),currentInput:currentInputFor(analysis),baselineInput:baselineFor(analysis),readOnly:!!pending};
+      const settings = {historical:isHistorical(analysis),currentInput:currentInputFor(analysis),baselineInput:baselineFor(analysis),readOnly:!!pending,choiceDrafts:Object.fromEntries([...priorityDrafts.values()].filter(d=>d.analysisId===analysis.id).map(d=>[d.priorityId,d]))};
       if (!pending) {
+        settings.onChoice = (priorityId,choice) => {
+          if (!alive || !data.analyses.some(a=>a.id===analysis.id)) return;
+          const key=priorityKey(analysis.id,priorityId);
+          if (!choice.optionId && !choice.reason.trim()) priorityDrafts.delete(key);
+          else priorityDrafts.set(key,{analysisId:analysis.id,priorityId,optionId:choice.optionId,reason:choice.reason});
+          priorityDraftRevision++; message(priorityDrafts.size ? priorityNotice().trim() : 'טיוטת הבחירה המקומית ריקה.');
+        };
+        settings.onDiscardChoice = priorityId => {
+          if (!window.confirm('להסיר את בחירת החלופה ואת נימוק הצוות שטרם הפכו לטיוטת החלטה או פעולה? אפשר לבטל ולייצא עותק קודם.')) return false;
+          priorityDrafts.delete(priorityKey(analysis.id,priorityId)); priorityDraftRevision++; message('טיוטת הבחירה הוסרה.'); return true;
+        };
         settings.onResponse = (findingId,response) => {
           if (!alive) return;
           const current = data.analyses.find(a => a.id === analysis.id); if (!current) return;
@@ -530,6 +545,7 @@
         settings.onDelete = () => {
           if (!window.confirm('להסיר את הניתוח ואת תמונת המידע ההיסטורית שלו? ההסרה תישמר בשרת לאחר שמירת השינויים. אפשר לבטל.')) return;
           removedAnalysisIds.add(analysis.id); data.analyses = data.analyses.filter(a => a.id !== analysis.id);
+          [...priorityDrafts].filter(([,draft])=>draft.analysisId===analysis.id).forEach(([key])=>priorityDrafts.delete(key)); priorityDraftRevision++;
           activeAnalysisId = ''; changed(); renderAiIfVisible(); message('הניתוח הוסר מקומית. אפשר לשמור את השינויים כדי להסיר אותו גם מהשרת.');
         };
       }
@@ -647,7 +663,7 @@
       }
     }
     renderContent();
-    return {canLeave,acceptMetadataRevision,destroy() { alive = false; cancelAiRequest(); window.removeEventListener('beforeunload', beforeUnload); shell.remove(); },isDirty:() => dirty};
+    return {canLeave,hasUnsaved,acceptMetadataRevision,destroy() { alive = false; cancelAiRequest(); window.removeEventListener('beforeunload', beforeUnload); shell.remove(); },isDirty:() => dirty};
   }
   window.SBE_WORKSPACE_UI = {mount};
 })();

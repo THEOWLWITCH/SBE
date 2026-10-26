@@ -131,8 +131,11 @@
       fields(block,[['סוג החלופה',labels[option.kind]],['ההיגיון בבחירה',option.rationale],['תנאים לבדיקה',option.conditions],['עלות, עומס או ויתור אפשרי',option.costs],['צעד ראשון מוצע',option.firstStep],['תפקידים מוצעים לדיון',option.suggestedRoles.join(' · ')],['משאבים מוצעים לבדיקה',option.resources]]); detail.appendChild(block);
     });
     if (!opts.readOnly && opts.onDraft) {
-      const select = control(detail,'החלופה שנבחרה לדיון','select','',[['','יש לבחור חלופה'],...priority.options.map(x => [x.id,x.title])]);
-      const reason = control(detail,'נימוק הצוות לבחירה','textarea','');
+      const choice=opts.choiceDrafts?.[priority.id] || {};
+      const select = control(detail,'החלופה שנבחרה לדיון','select',choice.optionId,[['','יש לבחור חלופה'],...priority.options.map(x => [x.id,x.title])]);
+      const reason = control(detail,'נימוק הצוות לבחירה','textarea',choice.reason);
+      select.addEventListener('change',()=>opts.onChoice?.(priority.id,{optionId:select.value,reason:reason.value}));
+      reason.addEventListener('input',()=>opts.onChoice?.(priority.id,{optionId:select.value,reason:reason.value}));
       const status = el('p','','jrf-status'); status.setAttribute('role','status');
       function draft(kind) {
         if (!select.value || !reason.value.trim()) { status.textContent = 'יש לבחור חלופה ולתעד את נימוק הצוות.'; return; }
@@ -140,7 +143,12 @@
         catch (error) { status.textContent = error.message || 'הטיוטה לא נוצרה.'; }
       }
       const bar = el('div',undefined,'jrf-buttons'); button(bar,'יצירת טיוטת החלטה',()=>draft('decision')); button(bar,'יצירת טיוטת פעולה',()=>draft('action')); append(detail,bar,status);
-      detail.appendChild(el('p','התפקידים והמשאבים מוצעים לדיון. המערכת אינה ממנה אנשים, מקצה משאבים או מאשרת פעולה.','jrf-note'));
+      if (opts.onDiscardChoice) button(bar,'הסרת טיוטת הבחירה',()=>{
+        if (!opts.onDiscardChoice(priority.id)) return;
+        select.value=''; reason.value=''; status.textContent='טיוטת הבחירה הוסרה.';
+      });
+      if (opts.onChoice) detail.appendChild(el('p','הבחירה והנימוק נשמרים זמנית כל עוד המסע פתוח, ונכללים בייצוא. לשמירה בשרת יש ליצור טיוטת החלטה או פעולה ולשמור את השינויים.','jrf-note'));
+      detail.appendChild(el('p','התפקידים והמשאבים הם הצעות לדיון. החלטת הצוות המוסמך היא הבסיס למינוי בעלי אחריות, להקצאת משאבים ולאישור התכנית.','jrf-note'));
     }
     card.appendChild(detail); return card;
   }

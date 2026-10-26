@@ -640,7 +640,7 @@ function threadInline(c, mi){
       if (location.hash !== '#' + targetId || !JR || JR.id !== targetId || workspaceUI !== targetWorkspace) return;
       if (r.ok) {
         if (targetWorkspace) targetWorkspace.acceptMetadataRevision(r);
-        if (targetWorkspace && targetWorkspace.isDirty()) { tx.value = ''; err('ההודעה נשלחה. השינויים המקומיים נשארו פתוחים לשמירה.'); go.disabled = false; }
+        if (targetWorkspace && targetWorkspace.hasUnsaved()) { tx.value = ''; err('ההודעה נשלחה. השינויים המקומיים נשארו פתוחים לשמירה.'); go.disabled = false; }
         else await viewJourney(targetId);
       } else { err('לא נשלח. אפשר לנסות שוב.'); go.disabled = false; }
     });

@@ -477,7 +477,7 @@ function threadBox(mi, host){
     if (location.hash !== '#' + targetId || !JR || JR.id !== targetId || workspaceUI !== targetWorkspace) return;
     if (r.ok) {
       if (targetWorkspace) targetWorkspace.acceptMetadataRevision(r);
-      if (targetWorkspace && targetWorkspace.isDirty()) { tx.value = ''; go.disabled = false; tx.placeholder = 'התשובה נשלחה. השינויים המקומיים נשארו פתוחים לשמירה.'; }
+      if (targetWorkspace && targetWorkspace.hasUnsaved()) { tx.value = ''; go.disabled = false; tx.placeholder = 'התשובה נשלחה. השינויים המקומיים נשארו פתוחים לשמירה.'; }
       else viewOne(targetId);
     } else go.disabled = false;
   }); go.style.marginTop = '.3rem'; t.appendChild(go);
