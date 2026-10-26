@@ -89,7 +89,7 @@
   function input(f) {
     const chars = (f.chars || []).map((c, i) => `${i}. ${c.name || 'בלי שם'} (${c.g === 'm' ? 'הוא' : 'היא'}): ${[].concat(c.traits || []).join(', ')}${c.more ? '. ' + c.more : ''}${c.likes ? '. אוהב/ת: ' + c.likes : ''}`).join('\n');
     const place = f.place === 'other' ? (f.placeOther || '').trim() + (f.placeOther && f.placeOther.trim() ? ' (לאיור: המקום הקרוב ביותר מהרשימה)' : '') : (PLACES.find((p) => p[0] === f.place) || [])[1];
-    const end = (ENDINGS.find((e) => e[0] === f.ending) || [])[1];
+    const end = f.ending === 'other' ? (f.endOther || '').trim() : (ENDINGS.find((e) => e[0] === f.ending) || [])[1];
     return `הדמויות:\n${chars}\n\nהנושא: ${f.theme || ''}${place ? '\nאיפה הסיפור מתחיל: ' + place : ''}\n\nהתפניות בעלילה, לפי הסדר:\n${(f.twists || []).filter((t) => t && t.trim()).map((t, i) => (i + 1) + '. ' + t).join('\n') || 'אפשר לבחור תפנית אחת מתאימה'}\n\nאיך הסיפור נגמר: ${end || 'סוף טוב שבו כולם גאים'}${f.extra ? '\n\nעוד משהו ממי שיצר/ה את הסיפור: ' + f.extra : ''}`;
   }
   function normalize(v, f) {

@@ -72,6 +72,10 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
 .place[aria-pressed="true"]{border-color:var(--sun);box-shadow:0 4px 0 #E0A800}
 .tw{display:grid;gap:8px}
 .tw .one{display:flex;gap:8px;align-items:center}
+.tw .one input{flex:1}
+.tw .one .x{flex:none;width:40px;height:40px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--muted);font-size:16px;cursor:pointer}
+.tw .one .x:hover{color:#B23A26;border-color:#E0603F}
+h3.q .clr{margin-inline-start:auto;font-size:14px}
 .tw .one b{width:28px;height:28px;border-radius:50%;background:var(--coral);color:#fff;display:inline-flex;align-items:center;justify-content:center;flex:none}
 .go-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:20px}
 .btn{min-height:48px;padding:10px 22px;border-radius:14px;border:0;background:var(--navy);color:#fff;font-weight:800;font-size:17px;cursor:pointer}
@@ -252,11 +256,13 @@ body[data-age="adult"] .pp.ed h2{font:700 15pt 'Frank Ruhl Libre',Georgia,serif;
     <h3 class="q">איפה זה מתחיל?</h3>
     <div class="places" id="places"></div>
     <div id="placeOtherBox" hidden style="margin-top:8px"><input type="text" id="placeOther" maxlength="80" placeholder="איפה? למשל: חדר המורים, ספרייה, אוטובוס, מטבח של מסעדה"></div>
-    <h3 class="q">תפניות בעלילה <small>עד שלוש, לפי הסדר</small></h3>
+    <h3 class="q">תפניות בעלילה <small>עד שלוש, לפי הסדר</small><button type="button" class="linkb clr" id="twClear">🧹 ניקוי התפניות</button></h3>
+    <p class="hintline" style="margin:0 0 8px">אפשר לבחור רעיון מהרשימה, או לכתוב תפנית משלכם בשורה. כל שורה אפשר לשנות או לנקות (✕).</p>
     <div class="row" id="twistIdeas"></div>
     <div class="tw" id="twists" style="margin-top:10px"></div>
     <h3 class="q">איך הסיפור נגמר?</h3>
     <div class="row" id="endings"></div>
+    <div id="endOtherBox" hidden style="margin-top:8px"><input type="text" id="endOther" maxlength="160" placeholder="איך הסיפור נגמר? למשל: כולם נפגשים שוב אחרי שנה, ומספרים מה השתנה"></div>
     <h3 class="q">עוד משהו? <small>רשות</small></h3>
     <textarea id="extra" rows="2" maxlength="400" placeholder="למשל: שיהיה בסיפור כלב, או שהסיפור יתרחש בחנוכה"></textarea>
     <div class="authorbox">
@@ -269,7 +275,7 @@ body[data-age="adult"] .pp.ed h2{font:700 15pt 'Frank Ruhl Libre',Georgia,serif;
         <label>ממי? (רשות)<input type="text" id="dediFrom" maxlength="40" placeholder="למשל: המורה רותם"></label>
       </div>
     </div>
-    <div class="go-row"><button class="btn alt" type="button" id="back1">→ הדמויות</button><button class="btn big" type="button" id="write">✨ כותבים את הסיפור</button></div>
+    <div class="go-row"><button class="btn alt" type="button" id="back1">→ הדמויות</button><button class="btn alt" type="button" id="plotReset">🧹 ניקוי העלילה</button><button class="btn big" type="button" id="write">✨ כותבים את הסיפור</button></div>
     <p class="err" id="err" role="alert"></p>
     <div id="waitBox"></div>
   </section>
@@ -376,7 +382,11 @@ body[data-age="adult"] .pp.ed h2{font:700 15pt 'Frank Ruhl Libre',Georgia,serif;
     $('twistIdeas').querySelectorAll('button').forEach((b) => { b.onclick = () => { let k = f.twists.findIndex((x) => !x.trim()); if (k < 0) { if (f.twists.length < 3) { f.twists.push(''); k = f.twists.length - 1; } else k = 2; } f.twists[k] = b.dataset.v + '...'; save(); drawTwists(); }; });
     drawTwists();
     $('endings').innerHTML = S.ENDINGS.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${f.ending === v}">${t}</button>`).join('');
-    $('endings').querySelectorAll('button').forEach((b) => { b.onclick = () => { f.ending = b.dataset.v; save(); drawPlot(); }; });
+    $('endings').innerHTML += `<button type="button" class="chip" data-v="other" aria-pressed="${f.ending === 'other'}">✍️ סוף משלכם</button>`;
+    $('endings').querySelectorAll('button').forEach((b) => { b.onclick = () => { f.ending = b.dataset.v; save(); drawPlot(); if (f.ending === 'other') $('endOther').focus(); }; });
+    $('endOtherBox').hidden = f.ending !== 'other';
+    $('endOther').value = f.endOther || ''; $('endOther').oninput = () => { f.endOther = $('endOther').value; save(); };
+    $('twClear').onclick = () => { f.twists = ['', '']; save(); drawTwists(); };
     $('extra').value = f.extra || ''; $('extra').oninput = () => { f.extra = $('extra').value; save(); };
     const A = D.author;
     $('author').value = A.name; $('author').oninput = () => { A.name = $('author').value.trim(); save(); };
@@ -385,10 +395,15 @@ body[data-age="adult"] .pp.ed h2{font:700 15pt 'Frank Ruhl Libre',Georgia,serif;
     $('dedi').value = A.dedi; $('dedi').oninput = () => { A.dedi = $('dedi').value; save(); };
     $('dediFrom').value = A.from; $('dediFrom').oninput = () => { A.from = $('dediFrom').value; save(); };
   }
+  $('plotReset').onclick = () => {
+    if (!confirm('לנקות את הנושא, המקום, התפניות, הסוף ו"עוד משהו"? הדמויות ושם היוצר/ת נשארים.')) return;
+    Object.assign(F(), { theme: '', place: 'park', placeOther: '', twists: ['', ''], ending: 'party', endOther: '', extra: '' }); save(); drawPlot();
+  };
   function drawTwists() {
     const f = F();
-    $('twists').innerHTML = f.twists.map((t, i) => `<div class="one"><b>${i + 1}</b><input type="text" data-i="${i}" maxlength="160" value="${esc(t)}" placeholder="ואז..."></div>`).join('') + (f.twists.length < 3 ? '<button type="button" class="chip" id="addTw" style="justify-self:start">➕ עוד תפנית</button>' : '');
+    $('twists').innerHTML = f.twists.map((t, i) => `<div class="one"><b>${i + 1}</b><input type="text" data-i="${i}" maxlength="160" value="${esc(t)}" placeholder="כותבים תפנית משלכם, למשל: ואז התחיל לרדת שלג באמצע הקיץ" aria-label="תפנית ${i + 1}"><button type="button" class="x" data-x="${i}" aria-label="ניקוי תפנית ${i + 1}" title="ניקוי">✕</button></div>`).join('') + (f.twists.length < 3 ? '<button type="button" class="chip" id="addTw" style="justify-self:start">➕ עוד תפנית</button>' : '');
     $('twists').querySelectorAll('input').forEach((inp) => { inp.oninput = () => { f.twists[+inp.dataset.i] = inp.value; save(); }; });
+    $('twists').querySelectorAll('[data-x]').forEach((b) => { b.onclick = () => { const i = +b.dataset.x; if (f.twists.length > 1 && !f.twists[i].trim()) f.twists.splice(i, 1); else f.twists[i] = ''; save(); drawTwists(); const n = $('twists').querySelector(`input[data-i="${Math.min(i, f.twists.length - 1)}"]`); if (n) n.focus(); }; });
     if ($('addTw')) $('addTw').onclick = () => { f.twists.push(''); save(); drawTwists(); };
   }
 
