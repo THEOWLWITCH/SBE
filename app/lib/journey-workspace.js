@@ -1,6 +1,7 @@
 (function () {
   'use strict';
   const M = window.SBE_JOURNEY_WORKSPACE;
+  const A = window.SBE_JOURNEY_ANALYSIS;
   const clone = value => JSON.parse(JSON.stringify(value));
   function node(tag, cls, text) {
     const n = document.createElement(tag);
@@ -22,7 +23,7 @@
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   function mount(host, options) {
-    if (!M) throw new Error('מודל מרחב העבודה לא נטען');
+    if (!M || !A) throw new Error('מודל מרחב העבודה לא נטען');
     let journey = clone(options.journey), data = M.clean(journey.workspace || M.empty());
     const unit = window.SBE_JOURNEY && SBE_JOURNEY.UNITS.find(u => u.k === journey.unit);
     const unitLabel = unit ? unit.t : 'מסגרת אחרת';
@@ -54,9 +55,11 @@
     }[journey.unit] || {};
     let saved = clone(data), revision = journey.revision || 0, metadataRevision = 0, dirty = false, busy = false, conflict = false;
     let conflictRevision = null, deferredMetadata = null;
-    let section = 'overview', selected = Object.create(null), serial = 0, alive = true;
-    let aiInput = null, suggestions = [], status, saveButton, conflictBox, content;
-    let aiSelection = [], aiReviewed = false, aiChosen = new Set(), aiResultInput = null, aiPending = null, aiGeneration = 0, aiError = '', reloadGeneration = 0;
+    let section = 'context', selected = Object.create(null), serial = 0, alive = true;
+    let aiInput = null, analysisDraft = null, status, saveButton, conflictBox, content;
+    let aiSelection = [], aiReviewed = false, aiPending = null, aiGeneration = 0, aiError = '', reloadGeneration = 0;
+    let activeAnalysisId = '', baselineId = '';
+    const removedAnalysisIds = new Set();
     const shell = node('div', 'jws'); host.appendChild(shell);
     const sections = M.SECTIONS;
     function message(text, error) { status.textContent = text; status.className = 'jws-status' + (error ? ' jws-error' : ''); }
@@ -64,20 +67,24 @@
       serial++; dirty = true; cancelAiRequest(); saveButton.disabled = busy || conflict;
       message('יש שינויים שעדיין לא נשמרו בשרת');
     }
-    function hasUnsaved() { return dirty || suggestions.length > 0 || !!aiPending; }
+    function hasUnsaved() { return dirty || !!analysisDraft || !!aiPending; }
     function canLeave() { return !hasUnsaved() || window.confirm('יש שינויים או טיוטות שעדיין לא נשמרו. להמשיך בלי לשמור? אפשר להישאר ולבחון את הטיוטות או לשמור את העבודה.'); }
     function beforeUnload(event) { if (hasUnsaved()) { event.preventDefault(); event.returnValue = ''; } }
     function cancelAiRequest() {
       aiGeneration++;
       if (aiPending && aiPending.timer) clearInterval(aiPending.timer);
+      if (aiPending && content) {
+        const wait = content.querySelector('[data-ai-wait]');
+        if (wait) wait.textContent = 'הבקשה הקודמת הופסקה בעקבות שינוי. אפשר לשמור ולבחון שוב את המידע.';
+      }
       aiPending = null;
     }
     function resetAiInput() {
-      cancelAiRequest(); aiInput = null; aiReviewed = false; suggestions = []; aiResultInput = null; aiChosen = new Set(); aiError = '';
+      cancelAiRequest(); aiInput = null; aiReviewed = false; aiError = '';
     }
     window.addEventListener('beforeunload', beforeUnload);
     function exportData() {
-      download({format:'begood-resilience-workspace', version:2, journeyId:journey.id, unit:journey.unit || 'other', unitName:journey.unitName || '', revision, exportedAt:new Date().toISOString(), unsaved:dirty, workspace:data}, 'begood-workspace-' + journey.id + '.json');
+      download({format:'begood-resilience-workspace', version:2, journeyId:journey.id, unit:journey.unit || 'other', unitName:journey.unitName || '', revision, exportedAt:new Date().toISOString(), unsaved:hasUnsaved(), workspace:data, unsavedAnalysis:analysisDraft}, 'begood-workspace-' + journey.id + '.json');
     }
     function labelFor(target, id) {
       const record = (data[target] || []).find(r => r.id === id);
@@ -112,7 +119,10 @@
           root.appendChild(node('h3', '', (r.title || 'רשומה ללא שם') + ' (' + r.id + ')'));
           root.appendChild(table(s.fields, r));
         });
-      }); return root;
+      });
+      const analysis = data.analyses.find(a => a.id === activeAnalysisId) || data.analyses[data.analyses.length - 1];
+      if (analysis && window.SBE_JOURNEY_FEEDBACK) root.appendChild(SBE_JOURNEY_FEEDBACK.render(analysis,{readOnly:true,print:true,historical:isHistorical(analysis),currentInput:currentInputFor(analysis),baselineInput:baselineFor(analysis)}));
+      return root;
     }
     function print() {
       if (!window.SBE_DOC || !SBE_DOC.print) return message('כלי ההדפסה לא נטען. אפשר לייצא עותק ולנסות שוב.', true);
@@ -143,9 +153,10 @@
       if (busy || conflict || !dirty) return;
       let snapshot; try { snapshot = M.clean(data); } catch (e) { message('השמירה ממתינה לתיקון: ' + e.message, true); return; }
       const captured = serial, requestRevision = revision, requestBase = JSON.stringify(saved);
+      const removals = [...removedAnalysisIds].filter(id => saved.analyses.some(a => a.id === id) && !snapshot.analyses.some(a => a.id === id));
       busy = true; saveButton.disabled = true; message('שמירה בשרת...');
       try {
-        const result = await options.api('jrSaveWorkspace', {id:journey.id, revision:requestRevision, workspace:snapshot});
+        const result = await options.api('jrSaveWorkspace', {id:journey.id, revision:requestRevision, workspace:snapshot, removedAnalysisIds:removals});
         if (!alive) return;
         if (result._status === 409 || result.error === 'conflict') {
           if (result.revision === revision && revision > requestRevision && metadataRevision === revision && JSON.stringify(saved) === requestBase) {
@@ -159,6 +170,8 @@
           message(result._status === 413 ? 'המרחב גדול ממגבלת השמירה. אפשר לקצר תיאורים ולשמור הפניות למסמכים במאגר המורשה.' : 'השינויים לא נשמרו. אפשר לנסות שוב. ' + (result.message || ''), true); return;
         }
         revision = Math.max(revision, result.revision); saved = clone(result.workspace || snapshot);
+        removals.forEach(id => removedAnalysisIds.delete(id));
+        [...removedAnalysisIds].filter(id => !saved.analyses.some(a => a.id === id)).forEach(id => removedAnalysisIds.delete(id));
         if (captured === serial) { data = clone(saved); dirty = false; renderContent(); }
         message(dirty ? 'הגרסה נכתבה בשרת. יש שינויים נוספים שעדיין לא נשמרו.' : 'נשמר בשרת. גרסה ' + revision);
         const pendingMetadata = deferredMetadata; deferredMetadata = null;
@@ -175,7 +188,7 @@
         if (serial !== captured || revision !== capturedRevision || busy) return message('נוספו שינויים במהלך הטעינה. העבודה המקומית נשארה פתוחה. אפשר לייצא עותק ולבקש שוב את הגרסה האחרונה.', true);
         if (!result.journey || result.journey.mode !== 'workspace' && result.journey.version !== 2 && result.journey.status !== 'workspace') return message('הגרסה האחרונה לא נטענה. אפשר לנסות שוב.', true);
         data = M.clean(result.journey.workspace); saved = clone(data); revision = result.journey.revision || 0;
-        dirty = false; conflict = false; conflictRevision = null; resetAiInput(); aiSelection = []; conflictBox.hidden = true; saveButton.disabled = true;
+        dirty = false; conflict = false; conflictRevision = null; resetAiInput(); aiSelection = []; analysisDraft = null; activeAnalysisId = ''; baselineId = ''; removedAnalysisIds.clear(); conflictBox.hidden = true; saveButton.disabled = true;
         message('נטענה הגרסה האחרונה מהשרת. גרסה ' + revision); renderContent();
       } catch (e) { if (alive && load === reloadGeneration) message('הגרסה האחרונה לא נטענה. השינויים המקומיים נשארו פתוחים.', true); }
     }
@@ -195,10 +208,59 @@
     status = node('p', 'jws-status', 'נטען מהשרת. גרסה ' + revision); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); head.appendChild(status);
     conflictBox = node('div', 'jws-conflict'); conflictBox.hidden = true; conflictBox.appendChild(node('p', '', 'אפשר לשמור עותק של העבודה המקומית ולבחון את ההבדלים עם הצוות לפני המשך.'));
     conflictBox.appendChild(button('ייצוא השינויים המקומיים', exportData, true)); conflictBox.appendChild(button('טעינת הגרסה האחרונה', reload, true)); head.appendChild(conflictBox);
-    const nav = node('nav', 'jws-tabs no-print'); nav.setAttribute('aria-label', 'חלקי מרחב העבודה'); shell.appendChild(nav);
-    const tabs = [{key:'overview', label:'מבט על המסע'}, {key:'context',label:'מסגרת התהליך'}, ...sections, {key:'ai',label:'פרשנות בעזרת AI'}];
-    tabs.forEach(s => { const b = button(s.label, () => { section = s.key; renderContent(); if (!dirty && !conflict) message('המידע שנשמר בשרת. גרסה ' + revision); }, true); b.dataset.section = s.key; nav.appendChild(b); });
+    const steps = [
+      {key:'context',label:'מסגרת ושותפים',sections:['context']},
+      {key:'inventories',label:'ארבעת המיפויים',sections:['roles','mechanisms','infrastructures','resources']},
+      {key:'depth',label:'מנגנון ומקרה ממשי',sections:['mechanisms','evidence']},
+      {key:'network',label:'רשת המנגנונים',sections:['links']},
+      {key:'analysis',label:'ניתוח ושיחת צוות',sections:['ai','findings']},
+      {key:'learning',label:'פעולה ולמידה',sections:['decisions','actions','reviews']}
+    ];
+    let activeStep = 'context';
+    function navigate(key, step) {
+      section = key; activeStep = step || (steps.find(s => s.sections.includes(key)) || {}).key || '';
+      renderContent();
+      if (!dirty && !conflict) message('המידע שנשמר בשרת. גרסה ' + revision);
+    }
+    const nav = node('nav', 'jws-tabs jws-steps no-print'); nav.setAttribute('aria-label', 'שלבי המסע'); shell.appendChild(nav);
+    steps.forEach((s,index) => {
+      const b = button((index + 1) + '. ' + s.label, () => navigate(s.sections[0],s.key), true);
+      b.dataset.step = s.key; nav.appendChild(b);
+    });
+    const direct = node('details','jws-all-sections no-print'); direct.appendChild(node('summary','','גישה ישירה לתיעוד'));
+    const directNav = node('nav','jws-tabs'); directNav.setAttribute('aria-label','גישה ישירה לכל הרשומות'); direct.appendChild(directNav); shell.appendChild(direct);
+    const tabs = [{key:'overview', label:'מבט על המסע'}, {key:'context',label:'מסגרת התהליך'}, ...sections, {key:'ai',label:'ניתוח ומשוב'}];
+    tabs.forEach(s => { const b = button(s.label, () => navigate(s.key), true); b.dataset.section = s.key; directNav.appendChild(b); });
     content = node('section', 'card jws-content'); shell.appendChild(content);
+    const essential = {
+      context:['goal','preserve','scope','population','groups','periodStart','periodEnd','participants','missingVoices','baseline','baselineAt','mandate','delegation'],
+      roles:['title','authority','time','backup','knowledgeState','updatedBy','updatedAt','evidenceIds'],
+      mechanisms:['title','purpose','participants','activation','knowledgeState','updatedBy','updatedAt','evidenceIds'],
+      infrastructures:['title','availability','access','owner','knowledgeState','updatedBy','updatedAt','evidenceIds'],
+      resources:['title','availability','access','owner','knowledgeState','updatedBy','updatedAt','evidenceIds'],
+      evidence:['title','kind','source','observedAt','details','limits'],
+      links:['title','from','to','type','status','operators','conditions','actualFlow','evidenceIds'],
+      findings:['title','kind','evidenceIds','interpretation','uncertainty','state','approvedBy'],
+      decisions:['title','alternatives','reason','criteria','evidenceIds','authority','owner','approvedBy','reviewAt'],
+      actions:['title','decisionId','owner','backup','partners','authority','resources','stopDoing','presentOutcome','futureOutcome','processEvidence','outcomeEvidence','reviewAt','status'],
+      reviews:['title','actionId','observedAt','evidenceIds','learned','presentChange','futureChange','unintended','next']
+    };
+    function fields(parent, key, schema, record, prefix) {
+      const first = node('div','jws-fields'); parent.appendChild(first);
+      const extra = node('details','jws-depth'); extra.appendChild(node('summary','','הרחבה ופרטים נוספים'));
+      const deeper = node('div','jws-fields'); extra.appendChild(deeper);
+      const sourceFields = ['analysisId','priorityId','optionId'];
+      schema.filter(f => !sourceFields.includes(f.key)).forEach(f => {
+        const main = essential[key].includes(f.key) || key === 'mechanisms' && activeStep === 'depth' && ['existence','realization','renewal'].includes(f.key);
+        (main ? first : deeper).appendChild(fieldControl(f.key === 'title' ? {...f,label:'שם הרשומה'} : f,record,prefix));
+      });
+      if (deeper.children.length) parent.appendChild(extra);
+      if (record.analysisId) {
+        const source = data.analyses.find(a => a.id === record.analysisId);
+        if (source) parent.appendChild(button('פתיחת ניתוח המקור והחלופות',() => { activeAnalysisId = source.id; navigate('ai','analysis'); },true));
+        else parent.appendChild(node('p','muted','ניתוח המקור ' + record.analysisId + ' אינו זמין. ייתכן שהוסר במפורש. הטיוטה נשארת לאישור אנושי.'));
+      }
+    }
     function fieldControl(field, record, prefix) {
       const wrap = node('div', 'jws-field'); const id = 'jws-' + prefix + '-' + field.key;
       const label = node('label', '', field.label); label.htmlFor = id; wrap.appendChild(label);
@@ -226,21 +288,23 @@
       input.id = id; input.value = record[field.key] || ''; input.addEventListener(field.type === 'select' || field.type === 'date' ? 'change' : 'input', () => { record[field.key] = input.value; changed(); });
       wrap.appendChild(input); return wrap;
     }
-    function overview() {
-      content.appendChild(node('h2', '', 'מה עושים עם המיפוי'));
-      content.appendChild(node('p', '', 'אפשר להתחיל בהגדרת המטרה וצוות החוסן, להצליב את ארבעת המאגרים עם ראיות, ולבחון את רשת המנגנונים. לאחר בירור משותף מתעדים החלטה, בוחרים שינוי אחד או שניים, מגדירים אחריות ומשאבים, וחוזרים ללמוד מן התוצאות.'));
-      if (guidance.context) content.appendChild(node('p', '', guidance.context));
-      const grid = node('div', 'jws-counts'); content.appendChild(grid);
+    function overview(parent) {
+      parent.appendChild(node('h2', '', 'מה עושים עם המיפוי'));
+      parent.appendChild(node('p', '', 'אפשר להתחיל בהגדרת המטרה וצוות החוסן, להצליב את ארבעת המאגרים עם ראיות, ולבחון את רשת המנגנונים. לאחר בירור משותף מתעדים החלטה, בוחרים שינוי אחד או שניים, מגדירים אחריות ומשאבים, וחוזרים ללמוד מן התוצאות.'));
+      if (guidance.context) parent.appendChild(node('p', '', guidance.context));
+      const grid = node('div', 'jws-counts'); parent.appendChild(grid);
       sections.slice(0,4).forEach(s => { const item = node('div'); item.appendChild(node('strong', '', data[s.key].length)); item.appendChild(node('span', '', s.label)); grid.appendChild(item); });
-      content.appendChild(node('h3', '', 'שלוש זוויות בחינה מקבילות'));
-      content.appendChild(node('p', '', 'קיום: מה זמין ומוסכם. מימוש: מה מופעל בפועל, עבור מי ובאילו תנאים. התחדשות: מה נלמד, נשמר ומשתנה. אלה אינן מדרגות או רמות דירוג.'));
-      content.appendChild(node('h3', '', 'מה שומר על איכות ההחלטה'));
-      const list = node('ul'); ['הבחנה בין תצפית, פרשנות, אי ודאות והחלטה. חוסר במידע נותר שאלה לבירור.', 'בחינה של איכות החיים בהווה לצד מוכנות לעתיד, סולידריות, אתוס והעצמת השותפים. בבית הספר נבחנת גם העצמת מורים; בקהילה נבחנת גם השפעת תושבים ומתנדבים.', 'בחירת סדר עדיפות לפי חשיבות, הוגנות, השפעה על הרשת, ישימות, זמן ומשאבים, תוך תיעוד מחלוקת והנמקה.', 'מעקב אחר תוצאות, עומס, השלכות לא צפויות והחלטה מה לשמר, לשנות או להפסיק.'].forEach(t => list.appendChild(node('li', '', t))); content.appendChild(list);
+      parent.appendChild(node('h3', '', 'שלוש זוויות בחינה מקבילות'));
+      parent.appendChild(node('p', '', 'קיום: מה זמין ומוסכם. מימוש: מה מופעל בפועל, עבור מי ובאילו תנאים. התחדשות: מה נלמד, נשמר ומשתנה. אלה אינן מדרגות או רמות דירוג.'));
+      parent.appendChild(node('p','','מחויבות משותפת, אחריות מבוזרת, שימוש במנגנונים תוך בחינה ושיפור, ולמידה מתמשכת מכוונים את ההתבוננות. אלה אינם סולמות מדידה מתוקפים.'));
+      parent.appendChild(node('p','','תודעת חוסן רב ערוצית נוגעת לזירות הפרט, המשפחה, העמיתים, בית הספר, הקהילה והרשות. היא עשויה לארגן ציפיות ופעולה כמנגנון בפני עצמו. גם מעגל למידה יוזם עשוי להיות מנגנון. הצעת מדדים מפורטים תפותח בהמשך.'));
+      parent.appendChild(node('h3', '', 'מה שומר על איכות ההחלטה'));
+      const list = node('ul'); ['הבחנה בין תצפית, פרשנות, אי ודאות והחלטה. חוסר במידע נותר שאלה לבירור.', 'בחינה של איכות החיים בהווה לצד מוכנות לעתיד, סולידריות, אתוס והעצמת השותפים. בבית הספר נבחנת גם העצמת מורים; בקהילה נבחנת גם השפעת תושבים ומתנדבים.', 'בחירת סדר עדיפות לפי חשיבות, הוגנות, השפעה על הרשת, ישימות, זמן ומשאבים, תוך תיעוד מחלוקת והנמקה.', 'מעקב אחר תוצאות, עומס, השלכות לא צפויות והחלטה מה לשמר, לשנות או להפסיק.'].forEach(t => list.appendChild(node('li', '', t))); parent.appendChild(list);
     }
     function sectionIntro(key) {
       return {
         roles:'אפשר לתעד את צוות החוסן, בעלי הסמכות, מי שמובילים את התהליך, מי שמרכזים ראיות וקשרים, ואת הגיבוי והזמן שהוקצו לכל תפקיד. מינוי לבדו אינו מוכיח מימוש.',
-        mechanisms:'מנגנון חברתי הוא רכיב או הסדר בעל תפקיד מארגן במערכת החברתית. הוא עשוי לייצר משאבים, לשנות קשרים, לשמר יכולות ולתמוך בהתארגנות מחודשת. עקרונות הפעולה ואיכויות המנגנון מתועדים בנפרד משלוש זוויות הבחינה.',
+        mechanisms:'מנגנון חברתי הוא רכיב או הסדר בעל תפקיד מארגן במערכת חברתית, חומרי או בלתי חומרי, יציב או דינמי, שביכולתו להסדיר, לאפשר, לכוון או לחולל יחסים ופעולות בין בני אדם. באמצעות תפקידו במערכת הוא עשוי להשפיע על תפקודה, על עיצוב האתוס והתרבות המשותפת, ועל המשכיותה והתפתחותה לאורך זמן.',
         infrastructures:'כאן מתועדים מרחבים, ערוצים, מתקנים ומערכות שמאפשרים פעולה, עם זמינות, נגישות ואחריות לתחזוקה.',
         resources:'כאן מתועדים ידע, מיומנויות, זמן, תקציב ומשאבים נוספים. הזמינות אינה מבטיחה שימוש, ואפשר לתעד גם משאב שנוצר באמצעות מנגנון חברתי.',
         evidence:'אפשר לרשום תצפית, פרוטוקול או תמצית משוב, לצד מקור, תאריך, מי אספו את המידע ומגבלותיו. אפשר לתעד כאן תמצית ללא פרטים מזהים על משתתפים, ולהפנות לחומר המקור במאגר המאושר של המסגרת.',
@@ -254,6 +318,11 @@
     function records(s) {
       content.appendChild(node('h2', '', s.label)); content.appendChild(node('p', '', sectionIntro(s.key)));
       if (guidance[s.key]) content.appendChild(node('p', '', guidance[s.key]));
+      if (s.key === 'mechanisms') {
+        content.appendChild(node('p','','מנגנונים עשויים ליצור משאבים חדשים, לשנות קשרים, לשמר יכולות ולארגן מחדש את החברה כשהתנאים משתנים. אפשר להתחיל במנגנון אחד ולהעמיק בהדרגה.'));
+        content.appendChild(node('p','muted','שבעת עקרונות הפעולה מתארים כיצד המנגנון מארגן פעולה. שבע האיכויות מתארות את תנאי פעולתו בנפרד. קיום, מימוש והתחדשות הן זוויות בחינה מקבילות. אין צורך למלא הכול, ומידע שלא נבדק אינו חולשה.'));
+      }
+      if (s.key === 'evidence') content.appendChild(node('p','','אפשר להעמיק במקרה ממשי: באיזה הקשר, מה עורר פעולה, מה נעשה ומה קרה לאחריה. בהרחבה נשמרים גם אופן האיסוף, קולות חסרים ועדויות שאינן תואמות.'));
       if (s.key === 'links') {
         const d = node('details', 'jws-explain'); d.appendChild(node('summary', '', 'כיצד בוחנים את רשת המנגנונים'));
         d.appendChild(node('p', '', 'אפשר לעקוב אחרי מסלול של צורך ממשי בין מנגנונים: היכן המידע עובר, מי מוסמכים להחליט, והאם משאבים מגיעים למי שמפעילים את המענה. בוחנים קשרים אופקיים בין עמיתים וקבוצות, וקשרים אנכיים להנהלה ולרשות.'));
@@ -284,8 +353,7 @@
       if (!list.length) { content.appendChild(node('p', 'muted', 'טרם תועדו רשומות בחלק זה. אפשר להוסיף רשומה ראשונה.')); return; }
       const record = list.find(r => r.id === selected[s.key]);
       content.appendChild(node('p', 'muted', 'מזהה קבוע: ' + record.id));
-      const form = node('div', 'jws-fields'); content.appendChild(form);
-      s.fields.forEach(f => { if (f.key !== 'id') form.appendChild(fieldControl(f.key === 'title' ? {...f,label:'שם הרשומה'} : f, record, record.id)); });
+      fields(content,s.key,s.fields,record,record.id);
       content.appendChild(button('מחיקת הרשומה', () => {
         const uses = [];
         sections.forEach(other => other.fields.filter(f => f.type === 'refs' && f.target === s.key).forEach(f => {
@@ -297,42 +365,92 @@
         data = candidate; changed(); renderContent();
       }, true));
     }
-    function aiPayload(ids) {
-      const related = name => saved[name].filter(r => (r.evidenceIds || []).some(id => ids.includes(id)));
-      return {unit:{kind:unit ? unit.k : 'other',label:unitLabel},context:{goal:saved.context.goal,scope:saved.context.scope,preserve:saved.context.preserve,mandate:saved.context.mandate,delegation:saved.context.delegation},evidence:saved.evidence.filter(e => ids.includes(e.id)),roles:related('roles').map(r => { const copy = {...r}; delete copy.person; return copy; }),mechanisms:related('mechanisms'),infrastructures:related('infrastructures'),resources:related('resources'),links:related('links')};
-    }
-    function validateSuggestions(raw, allowed) {
-      const result = typeof raw === 'string' ? JSON.parse(raw.trim().replace(/^\x60{3}(?:json)?\s*/i, '').replace(/\s*\x60{3}$/, '')) : raw;
-      if (!result || !Array.isArray(result.suggestions) || result.suggestions.length > 20 || Object.keys(result).some(k => k !== 'suggestions')) throw new Error('תשובה שאינה מתאימה למבנה הפרשנות');
-      return result.suggestions.map(s => {
-        const keys = ['title','kind','evidenceIds','interpretation','uncertainty'];
-        if (!s || typeof s !== 'object' || Object.keys(s).some(k => !keys.includes(k)) || !['strength','gap','question'].includes(s.kind)) throw new Error('סוג פרשנות לא תקין');
-        for (const key of ['title','interpretation','uncertainty']) if (typeof s[key] !== 'string' || !s[key].trim() || s[key].length > 4000) throw new Error('חסרים נימוק או אי ודאות');
-        if (!Array.isArray(s.evidenceIds) || !s.evidenceIds.length || s.evidenceIds.length > 40 || s.evidenceIds.some(id => typeof id !== 'string' || !allowed.includes(id))) throw new Error('הטיוטה מפנה לראיה שלא נבחרה');
-        return {title:s.title,kind:s.kind,evidenceIds:[...new Set(s.evidenceIds)],interpretation:s.interpretation,uncertainty:s.uncertainty};
-      });
-    }
-    function previewFacts(payload) {
-      const box = node('div', 'jws-input-review');
-      box.appendChild(node('h3', '', 'המידע לעיון לפני שליחה'));
-      box.appendChild(node('p', '', 'סוג המסגרת: ' + payload.unit.label));
-      const intro = node('dl');
-      M.CONTEXT_FIELDS.filter(f => Object.hasOwn(payload.context, f.key)).forEach(f => {
-        if (!payload.context[f.key]) return;
-        intro.appendChild(node('dt', '', f.label)); intro.appendChild(node('dd', '', payload.context[f.key]));
-      }); box.appendChild(intro);
-      for (const key of ['evidence','roles','mechanisms','infrastructures','resources','links']) {
-        const s = sections.find(s => s.key === key); if (!payload[key].length) continue;
-        box.appendChild(node('h4', '', s.label));
-        payload[key].forEach(r => {
-          const record = node('article', 'jws-suggestion'); record.appendChild(node('strong', '', (r.title || 'רשומה ללא שם') + ' (' + r.id + ')'));
-          const dl = node('dl');
-          s.fields.filter(f => f.key !== 'title' && Object.hasOwn(r,f.key)).forEach(f => {
-            const v = fieldValue(f,r[f.key]); if (!v) return; dl.appendChild(node('dt','',f.label)); dl.appendChild(node('dd','',v));
-          }); record.appendChild(dl); box.appendChild(record);
-        });
+    function inputUnit() { return {kind:journey.unit || 'other',label:journey.unitName || unitLabel}; }
+    function factValue(input, field, value) {
+      if (Array.isArray(value)) {
+        if (!value.length) return 'לא נבחרו פריטים';
+        if (field.type === 'refs') return value.map(id => {
+          const record = input[field.target].find(r => r.id === id);
+          return (record && record.title || 'רשומה ללא שם') + ' (' + id + ')';
+        }).join('; ');
+        const choices = field.options || (field.key === 'principles' ? M.PRINCIPLES : []);
+        return value.map(v => (choices.find(o => o.value === v) || {}).label || v).join('; ');
       }
+      if (field.type === 'select') return ((field.options || []).find(o => o.value === value) || {}).label || value || 'לא תועד';
+      return value || 'לא תועד';
+    }
+    function previewFacts(input) {
+      const box = node('div','jws-input-review');
+      box.appendChild(node('h3','','כל המידע לעיון לפני שליחה'));
+      box.appendChild(node('p','','גרסת מבנה המידע: ' + input.version + '. סוג המסגרת: ' + input.unit.label + ' (' + input.unit.kind + ').'));
+      const context = node('dl');
+      A.INPUT_FIELDS.context.forEach(f => { context.appendChild(node('dt','',f.label)); context.appendChild(node('dd','',factValue(input,f,input.context[f.key]))); });
+      box.appendChild(context);
+      box.appendChild(node('p','','מזהי הראיות שנבחרו: ' + input.selectedEvidenceIds.join(', ')));
+      box.appendChild(node('p','','כיסוי הראיות: ' + input.coverage.selectedEvidence + ' שנבחרו מתוך ' + input.coverage.totalEvidence + ' מתועדות. אלה מספרי תיעוד, ולא ציון חוסן.'));
+      A.INPUT_SECTIONS.forEach(s => {
+        box.appendChild(node('h4','',s.label));
+        box.appendChild(node('p','','נכללים במידע: ' + input.coverage.selectedRecords[s.key] + ' מתוך ' + input.coverage.totalRecords[s.key] + ' במרחב.'));
+        box.appendChild(node('p','muted','פריטים שנוספו להבנת ההקשר: ' + (input.contextualClosure[s.key].join(', ') || 'אין') + '. עצם ההכללה אינה ראיה לפעולה.'));
+        input[s.key].forEach(r => {
+          const article = node('article','jws-suggestion');
+          article.appendChild(node('strong','',(r.title || 'רשומה ללא שם') + ' (' + r.id + ')'));
+          const dl = node('dl');
+          A.INPUT_FIELDS[s.key].forEach(f => { dl.appendChild(node('dt','',f.label)); dl.appendChild(node('dd','',factValue(input,f,r[f.key]))); });
+          article.appendChild(dl); box.appendChild(article);
+        });
+      });
       return box;
+    }
+    function currentInputFor(analysis) {
+      try {
+        const ids = analysis.input.selectedEvidenceIds.filter(id => data.evidence.some(e => e.id === id));
+        return A.buildInput(data,inputUnit(),ids);
+      } catch (e) { return null; }
+    }
+    function isHistorical(analysis) {
+      const current = currentInputFor(analysis);
+      return !current || JSON.stringify(current) !== JSON.stringify(analysis.input);
+    }
+    function baselineFor(analysis) {
+      const baseline = data.analyses.find(a => a.id === analysis.baselineId);
+      return baseline ? baseline.input : null;
+    }
+    function comparison(parent, previous, current) {
+      const diff = A.compareInputs(previous,current);
+      const box = node('details','jws-comparison'); box.appendChild(node('summary','','השוואת המידע שנבדק בין שתי תמונות המצב'));
+      box.appendChild(node('p','',diff.membershipMeaning));
+      const change = value => value ? 'השתנה' : 'ללא שינוי';
+      box.appendChild(node('p','','בחירת הראיות: ' + change(diff.selection.changed) + '. הראיות קודם: ' + (diff.selection.previous.join(', ') || 'אין') + '; כעת: ' + (diff.selection.current.join(', ') || 'אין') + '.'));
+      box.appendChild(node('p','','כיסוי המידע: ' + change(diff.coverage.changed) + '. סוג המסגרת: ' + change(diff.unit.changed) + '. תקופת המיפוי: ' + change(diff.period.changed) + '.'));
+      if (diff.unit.changed) box.appendChild(node('p','','מסגרת קודמת: ' + diff.unit.previous.label + ' (' + diff.unit.previous.kind + '). מסגרת נוכחית: ' + diff.unit.current.label + ' (' + diff.unit.current.kind + ').'));
+      const counts = node('ul');
+      A.INPUT_SECTIONS.forEach(s => counts.appendChild(node('li','',s.label + ': קודם ' + diff.coverage.previous.selectedRecords[s.key] + ' מתוך ' + diff.coverage.previous.totalRecords[s.key] + '; כעת ' + diff.coverage.current.selectedRecords[s.key] + ' מתוך ' + diff.coverage.current.totalRecords[s.key] + '.')));
+      box.appendChild(counts);
+      diff.context.changedFields.forEach(key => {
+        box.appendChild(node('h4','',A.FIELD_LABELS.context[key]));
+        box.appendChild(node('p','','קודם: ' + (diff.context.previous[key] || 'לא תועד')));
+        box.appendChild(node('p','','כעת: ' + (diff.context.current[key] || 'לא תועד')));
+      });
+      A.INPUT_SECTIONS.forEach(s => {
+        const changes = diff.sections[s.key];
+        if (!changes.included.length && !changes.excluded.length && !changes.changed.length) return;
+        box.appendChild(node('h4','',s.label));
+        const list = node('ul');
+        changes.included.forEach(r => list.appendChild(node('li','','נכלל כעת בתמונת המצב: ' + (r.title || r.id) + ' (' + r.id + ')')));
+        changes.excluded.forEach(r => list.appendChild(node('li','','אינו נכלל כעת בתמונת המצב: ' + (r.title || r.id) + ' (' + r.id + ')')));
+        changes.changed.forEach(r => {
+          const li = node('li','',(r.title || r.id) + ' (' + r.id + '): ' + r.fields.map(k => A.FIELD_LABELS[s.key][k] || k).join(', '));
+          const values = node('dl');
+          r.fields.forEach(key => {
+            const f = A.INPUT_FIELDS[s.key].find(f => f.key === key) || {key,label:'מזהה'};
+            const before = previous[s.key].find(x => x.id === r.id), after = current[s.key].find(x => x.id === r.id);
+            values.appendChild(node('dt','',f.label));
+            values.appendChild(node('dd','','קודם: ' + factValue(previous,f,before[key]) + '. כעת: ' + factValue(current,f,after[key])));
+          }); li.appendChild(values); list.appendChild(li);
+        }); box.appendChild(list);
+      });
+      parent.appendChild(box);
     }
     function currentAiInput(input) {
       return !!input && !!aiInput && !dirty && !conflict && input.serial === serial && input.revision === revision &&
@@ -343,102 +461,190 @@
       return alive && aiPending === request && request.generation === aiGeneration && aiReviewed && currentAiInput(request.input);
     }
     function renderAiIfVisible() { if (alive && section === 'ai') renderContent(); }
+    function progress(request) {
+      return (request.stage === 'audit' ? 'בחינת הטיוטה מול אותו מידע שנבדק.' : 'הכנת ניתוח על בסיס המידע שנבדק.') + ' חלפו ' + Math.floor((Date.now() - request.started)/1000) + ' שניות מתחילת הבקשה.';
+    }
     async function generateAi() {
       if (aiPending) return;
-      if (!aiReviewed) return message('כדי לשלוח למודל, אפשר לעיין במידע ולאשר שהוא מתאים לשליחה.', true);
-      if (!currentAiInput(aiInput)) return message('הנתונים השתנו. אפשר לשמור ולבחון שוב את המידע לשליחה.', true);
-      const request = {input:clone(aiInput),generation:++aiGeneration,started:Date.now()};
-      aiPending = request; aiError = ''; suggestions = []; aiResultInput = null; aiChosen = new Set();
-      renderAiIfVisible();
+      if (!aiReviewed) return message('כדי לשלוח למודל, אפשר לעיין במידע ולאשר שהוא מתאים לשליחה.',true);
+      if (!currentAiInput(aiInput)) return message('הנתונים השתנו. אפשר לשמור ולבחון שוב את המידע לשליחה.',true);
+      if (analysisDraft) return message('טיוטת ניתוח עדיין פתוחה. אפשר לשמור אותה בניתוחי הצוות או להסיר אותה במפורש לפני בקשה חדשה.',true);
+      const request = {input:clone(aiInput),baselineId,generation:++aiGeneration,started:Date.now(),stage:'draft'};
+      aiPending = request; aiError = ''; renderAiIfVisible();
       request.timer = setInterval(() => {
         if (!alive || aiPending !== request || section !== 'ai') return;
-        const wait = content.querySelector('[data-ai-wait]');
-        if (wait) wait.textContent = 'כתיבת הטיוטה נמשכת כשתי דקות. חלפו ' + Math.floor((Date.now() - request.started)/1000) + ' שניות.';
-      }, 1000);
+        const wait = content.querySelector('[data-ai-wait]'); if (wait) wait.textContent = progress(request);
+      },1000);
       try {
-        const check = value => { try { validateSuggestions(value, request.input.ids); return true; } catch (e) { return false; } };
-        const result = await options.completeJson(M.AI_SYSTEM || M.aiSystem(), [{role:'user',content:JSON.stringify(request.input.payload)}], 6000, true, check);
+        const check = value => { try { A.validateReport(value,request.input.payload); return true; } catch (e) { return false; } };
+        const first = await options.completeJson(A.AI_SYSTEM,[{role:'user',content:JSON.stringify(request.input.payload)}],16000,true,check);
         if (!currentAiRequest(request)) return;
-        suggestions = validateSuggestions(result, request.input.ids).map(s => ({...s,id:uid(),origin:'ai',state:'draft',approvedBy:'',note:''}));
-        aiResultInput = request.input; aiChosen = new Set(suggestions.map(s => s.id));
-        message(suggestions.length ? 'התקבלו טיוטות לעיון. הן עדיין לא נוספו לממצאי הצוות.' : 'המודל לא הציע ממצאים חדשים. אפשר להמשיך בבירור הצוות.');
+        const draft = A.validateReport(first,request.input.payload);
+        request.stage = 'audit'; renderAiIfVisible();
+        const audited = await options.completeJson(A.AUDIT_SYSTEM,[{role:'user',content:JSON.stringify({reviewedInput:request.input.payload,draft})}],16000,true,check);
+        if (!currentAiRequest(request)) return;
+        const output = A.validateReport(audited,request.input.payload);
+        analysisDraft = A.cleanAnalysis({id:uid(),createdAt:new Date().toISOString(),sourceRevision:request.input.revision,baselineId:request.baselineId,input:request.input.payload,output,responses:[]});
+        message('התקבלה טיוטת ניתוח לאחר בחינה מול המידע. אפשר לעיין בה ולשמור אותה בניתוחי הצוות. הפרשנות וההצעות נשארות לבחינה אנושית.');
       } catch (e) {
         if (currentAiRequest(request)) {
-          aiError = 'לא התקבלה טיוטה תקינה. ' + e.message + '. אפשר לנסות שוב. לא נוסף ממצא למרחב.';
-          message(aiError, true);
+          aiError = 'לא התקבל ניתוח תקין בשני שלבי הבדיקה. ' + e.message + '. המידע נשאר במרחב ואפשר לנסות שוב. לא נשמר דוח ולא נוספו החלטות.';
+          message(aiError,true);
         }
       } finally {
         clearInterval(request.timer);
         if (aiPending === request) { aiPending = null; renderAiIfVisible(); }
       }
     }
+    function requestDraft(analysis,priorityId,optionId,kind,reason) {
+      try {
+        const decision = A.draftFromPriority(analysis,priorityId,optionId,'decision',reason);
+        if (decision.evidenceIds.some(id => !data.evidence.some(e => e.id === id))) throw Error('חלק מראיות ניתוח המקור אינן קיימות עוד במיפוי. אפשר לעיין בניתוח ההיסטורי ולעדכן את המיפוי לפני יצירת טיוטה מקושרת.');
+        if (!['decision','action'].includes(kind)) throw Error('סוג טיוטה לא נתמך');
+        if (data.decisions.length >= 80 || kind === 'action' && data.actions.length >= 80) throw Error('מספר הרשומות בחלק זה הגיע למגבלת השמירה. אפשר לבחון עם הצוות את התיעוד לפני הוספת טיוטה.');
+        const candidate = clone(data); decision.id = uid(); candidate.decisions.push(decision);
+        let action;
+        if (kind === 'action') {
+          action = {...A.draftFromPriority(analysis,priorityId,optionId,'action',reason),id:uid(),decisionId:[decision.id]};
+          candidate.actions.push(action);
+        }
+        data = M.clean(candidate); changed();
+        selected[kind === 'action' ? 'actions' : 'decisions'] = action ? action.id : decision.id;
+        navigate(kind === 'action' ? 'actions' : 'decisions','learning');
+        message('נוספה טיוטה לפי בקשת הצוות. אחריות, סמכות ומשאבים נשארו פתוחים להחלטה אנושית. אפשר לערוך ולשמור את השינויים.');
+      } catch (e) { message('הטיוטה לא נוספה: ' + e.message,true); throw e; }
+    }
+    function renderAnalysis(parent, analysis, pending) {
+      if (!window.SBE_JOURNEY_FEEDBACK) { parent.appendChild(node('p','jws-error','תצוגת הניתוח לא נטענה. המידע נשאר במרחב ואפשר לייצא עותק.')); return; }
+      const settings = {historical:isHistorical(analysis),currentInput:currentInputFor(analysis),baselineInput:baselineFor(analysis),readOnly:!!pending};
+      if (!pending) {
+        settings.onResponse = (findingId,response) => {
+          if (!alive) return;
+          const current = data.analyses.find(a => a.id === analysis.id); if (!current) return;
+          try {
+            const responses = current.responses.filter(r => r.findingId !== findingId).concat({...response,findingId});
+            current.responses = A.cleanAnalysis({...current,responses}).responses; changed();
+          } catch (e) { message('התגובה עדיין לא נשמרה: ' + e.message,true); throw e; }
+        };
+        settings.onDraft = (priorityId,optionId,kind,reason) => requestDraft(analysis,priorityId,optionId,kind,reason);
+        settings.onDelete = () => {
+          if (!window.confirm('להסיר את הניתוח ואת תמונת המידע ההיסטורית שלו? ההסרה תישמר בשרת לאחר שמירת השינויים. אפשר לבטל.')) return;
+          removedAnalysisIds.add(analysis.id); data.analyses = data.analyses.filter(a => a.id !== analysis.id);
+          activeAnalysisId = ''; changed(); renderAiIfVisible(); message('הניתוח הוסר מקומית. אפשר לשמור את השינויים כדי להסיר אותו גם מהשרת.');
+        };
+      }
+      parent.appendChild(SBE_JOURNEY_FEEDBACK.render(analysis,settings));
+    }
+    function savedAnalyses() {
+      const box = node('section','jws-analysis-history'); content.appendChild(box);
+      box.appendChild(node('h3','','ניתוחים ושיחת צוות'));
+      box.appendChild(node('p','muted','כל ניתוח שומר את המידע המדויק שנבחן באותו מועד. אפשר לפתוח ניתוח קודם גם כשהמיפוי השתנה, לתעד תגובה או להסיר ניתוח במפורש.'));
+      if (!data.analyses.length) { box.appendChild(node('p','muted','טרם נשמרו ניתוחים. אפשר לפתוח מחזור ניתוח חדש בהמשך המסך.')); return; }
+      const chooser = node('select'); chooser.setAttribute('aria-label','בחירת ניתוח לעיון');
+      data.analyses.forEach(a => {
+        const o = node('option','',a.createdAt.slice(0,10) + ' · גרסה ' + a.sourceRevision + ' · ' + (a.input.context.periodStart || 'תחילה לא תועדה') + ' עד ' + (a.input.context.periodEnd || 'סיום לא תועד'));
+        o.value = a.id; chooser.appendChild(o);
+      });
+      const analysis = data.analyses.find(a => a.id === activeAnalysisId) || data.analyses[data.analyses.length - 1];
+      activeAnalysisId = analysis.id; chooser.value = analysis.id;
+      chooser.addEventListener('change',() => { activeAnalysisId = chooser.value; renderAiIfVisible(); }); box.appendChild(chooser);
+      if (!saved.analyses.some(a => a.id === analysis.id)) box.appendChild(node('p','jws-notice','הניתוח נוסף לעבודה המקומית. שמירת השינויים בראש המסך תשמור אותו בשרת.'));
+      if (analysis.baselineId && !baselineFor(analysis)) box.appendChild(node('p','jws-notice','תמונת המצב שנבחרה כבסיס השוואה אינה זמינה. ייתכן שהניתוח הקודם הוסר.'));
+      renderAnalysis(box,analysis,false);
+    }
     function ai() {
-      content.appendChild(node('h2', '', 'פרשנות בעזרת AI'));
-      content.appendChild(node('p', '', 'המודל יכול להציע חוזקות, פערים ושאלות על סמך ראיות שנבחרו ונשמרו. הוא מציג טיוטה עם הפניות ואי ודאות. הצוות בוחן את ההצעה ומקבל את ההחלטות. לא מחושבים ציונים ולא מתקבלת החלטת הסמכה.'));
+      content.appendChild(node('h2','','ניתוח הממצאים ושיחת צוות'));
+      content.appendChild(node('p','','תמצית ברורה תחילה, עם אפשרות לפתוח את הראיות, ההסברים החלופיים, המחלוקות ואי הוודאות. ההצעות עוברות בחינה נוספת מול אותו מידע, ואז הצוות דן ומחליט. אין כאן ציון חוסן, הוכחת סיבתיות או הסמכה.'));
+      savedAnalyses();
+      if (analysisDraft) {
+        const draft = node('section','jws-analysis-draft'); content.appendChild(draft);
+        draft.appendChild(node('h3','','טיוטת ניתוח שעדיין לא נשמרה'));
+        renderAnalysis(draft,analysisDraft,true);
+        draft.appendChild(button('שמירת הניתוח בניתוחי הצוות',() => {
+          if (data.analyses.length >= A.MAX_ANALYSES) return message('אפשר לשמור עד ' + A.MAX_ANALYSES + ' ניתוחים. אפשר לייצא עותק ולבחור במפורש ניתוח להסרה לפני שמירה נוספת.',true);
+          data.analyses.push(clone(analysisDraft)); activeAnalysisId = analysisDraft.id; analysisDraft = null; changed(); renderAiIfVisible();
+          message('הניתוח נוסף לעבודה המקומית. אפשר לתעד תגובות ולשמור את השינויים בראש המסך כדי לשמרו בשרת.');
+        }));
+        draft.appendChild(button('הסרת הטיוטה שלא נשמרה',() => {
+          if (!window.confirm('להסיר את טיוטת הניתוח שלא נשמרה? אפשר לבטל ולעיין בה או לשמור אותה קודם.')) return;
+          analysisDraft = null; renderAiIfVisible();
+        },true));
+      }
+      content.appendChild(node('h3','','מחזור ניתוח חדש'));
+      if (guidance.context) content.appendChild(node('p','',guidance.context));
+      content.appendChild(node('p','muted','אפשר לבחור מעט ראיות רלוונטיות ולהרחיב בהמשך. מידע שלא נבחר אינו משמש בסיס לניתוח, ופרשנויות קודמות אינן ראיות.'));
       if (dirty || conflict) {
-        content.appendChild(node('p', 'jws-error', 'כדי לעיין במידע העדכני לשליחה, אפשר לשמור את השינויים תחילה. במקרה של גרסאות שונות, אפשר לייצא עותק ולטעון את הגרסה האחרונה.'));
-        if (suggestions.length) showSuggestions(content);
+        content.appendChild(node('p','jws-error','כדי לבחון את המידע העדכני לשליחה, אפשר לשמור את השינויים תחילה. ניתוחים קיימים נשארים פתוחים לעיון. במקרה של פער גרסאות אפשר לייצא עותק ולטעון את הגרסה האחרונה.'));
         return;
       }
-      if (!saved.evidence.length) { content.appendChild(node('p', 'muted', 'אפשר לתעד ראיות לפני פנייה למודל. בלי ראיות לא מופקת טיוטת פרשנות.')); return; }
-      const picks = node('fieldset', 'jws-checks'); picks.appendChild(node('legend', '', 'בחירת הראיות לשליחה')); content.appendChild(picks);
+      if (!saved.evidence.length) { content.appendChild(node('p','muted','אפשר לתעד ראיות לפני פנייה למודל. בלי ראיות לא מופק ניתוח.')); return; }
+      const baselineLabel = node('label','','תמונת מצב קודמת להשוואה, לפי בחירת הצוות'); baselineLabel.htmlFor = 'jws-baseline'; content.appendChild(baselineLabel);
+      const baseline = node('select'); baseline.id = 'jws-baseline';
+      const noBaseline = node('option','','ללא תמונת מצב קודמת'); noBaseline.value = ''; baseline.appendChild(noBaseline);
+      data.analyses.forEach(a => { const o = node('option','',a.createdAt.slice(0,10) + ' · גרסה ' + a.sourceRevision + ' (' + a.id + ')'); o.value = a.id; baseline.appendChild(o); });
+      if (!data.analyses.some(a => a.id === baselineId)) baselineId = '';
+      baseline.value = baselineId; baseline.addEventListener('change',() => { baselineId = baseline.value; cancelAiRequest(); renderAiIfVisible(); }); content.appendChild(baseline);
+      const picks = node('fieldset','jws-checks'); picks.appendChild(node('legend','','בחירת הראיות לשליחה')); content.appendChild(picks);
       saved.evidence.forEach(e => {
-        const l = node('label', 'jws-check'), check = node('input'); check.type = 'checkbox'; check.value = e.id; check.checked = aiSelection.includes(e.id);
-        check.addEventListener('change', () => {
+        const l = node('label','jws-check'), check = node('input'); check.type = 'checkbox'; check.value = e.id; check.checked = aiSelection.includes(e.id);
+        check.addEventListener('change',() => {
           const ids = new Set(aiSelection); if (check.checked) ids.add(e.id); else ids.delete(e.id);
           aiSelection = saved.evidence.filter(e => ids.has(e.id)).map(e => e.id); resetAiInput(); renderAiIfVisible();
-        });
-        l.appendChild(check); l.appendChild(node('span', '', (e.title || 'ראיה ללא שם') + ' (' + e.id + ')')); picks.appendChild(l);
+        }); l.appendChild(check); l.appendChild(node('span','',(e.title || 'ראיה ללא שם') + ' (' + e.id + ')')); picks.appendChild(l);
       });
-      content.appendChild(button('הצגת המידע לשליחה', () => {
+      content.appendChild(button('הצגת המידע לשליחה',() => {
         const ids = aiSelection.slice();
-        if (!ids.length || !saved.evidence.some(e => ids.includes(e.id) && e.details.trim())) return message('אפשר לבחור לפחות ראיה אחת שיש בה תיאור של מה שנצפה.', true);
-        resetAiInput(); aiInput = {ids,payload:aiPayload(ids),serial,revision,generation:aiGeneration}; renderAiIfVisible();
-      }, true));
+        if (!ids.length || !saved.evidence.some(e => ids.includes(e.id) && e.details.trim())) return message('אפשר לבחור לפחות ראיה אחת שיש בה תיאור של מה שנצפה.',true);
+        try { resetAiInput(); aiInput = {ids,payload:A.buildInput(saved,inputUnit(),ids),serial,revision,generation:aiGeneration}; renderAiIfVisible(); }
+        catch (e) { message('המידע עדיין לא מוכן לשליחה: ' + e.message,true); }
+      },true));
       if (aiInput) {
-        const previewArea = node('div'); previewArea.appendChild(previewFacts(aiInput.payload));
-        previewArea.appendChild(node('p', 'muted', 'זה המידע שיישלח, ללא שדה שם האדם במאגר התפקידים. אפשר לבדוק שגם תיאורים חופשיים והפניות אינם חושפים מידע אישי רגיש, ולחזור לעריכה לפני השליחה. המידע ישמש גם לבקרת התוצר הקיימת במערכת.'));
-        const l = node('label', 'jws-check'), reviewed = node('input'); reviewed.type = 'checkbox'; reviewed.checked = aiReviewed;
-        reviewed.addEventListener('change', () => { aiReviewed = reviewed.checked; if (!aiReviewed) cancelAiRequest(); renderAiIfVisible(); });
-        l.appendChild(reviewed); l.appendChild(node('span', '', 'המידע נבדק ומתאים לשליחה למודל')); previewArea.appendChild(l);
-        const generate = button('בקשת טיוטת פרשנות', generateAi); generate.disabled = !!aiPending || !currentAiInput(aiInput); previewArea.appendChild(generate);
-        if (aiPending) {
-          const wait = node('p', 'muted', 'כתיבת הטיוטה נמשכת כשתי דקות. חלפו ' + Math.floor((Date.now()-aiPending.started)/1000) + ' שניות.');
-          wait.dataset.aiWait = '1'; previewArea.appendChild(wait);
-        }
-        if (!currentAiInput(aiInput)) previewArea.appendChild(node('p', 'jws-error', 'המידע השתנה מאז התצוגה הזאת. אפשר להציג ולבדוק שוב את המידע לשליחה.'));
-        content.appendChild(previewArea);
+        const preview = node('details','jws-exact-preview'); preview.open = true;
+        preview.appendChild(node('summary','','עיון במידע המדויק שיישלח')); preview.appendChild(previewFacts(aiInput.payload)); content.appendChild(preview);
+        const before = data.analyses.find(a => a.id === baselineId); if (before) comparison(content,before.input,aiInput.payload);
+        content.appendChild(node('p','muted','שדה שם האדם במאגר התפקידים אינו נשלח. גם תיאורים חופשיים והפניות עשויים להכיל מידע אישי. אפשר לעיין בכל המידע ולחזור לעריכה לפני שליחה. אותו מידע נשלח גם בשלב בחינת הטיוטה.'));
+        const l = node('label','jws-check'), reviewed = node('input'); reviewed.type = 'checkbox'; reviewed.checked = aiReviewed; reviewed.dataset.aiReviewed = '1';
+        reviewed.addEventListener('change',() => { aiReviewed = reviewed.checked; if (!aiReviewed) cancelAiRequest(); renderAiIfVisible(); });
+        l.appendChild(reviewed); l.appendChild(node('span','','המידע נבדק ומתאים לשליחה למודל')); content.appendChild(l);
+        const generate = button('בקשת ניתוח ומשוב',generateAi); generate.dataset.aiGenerate = '1'; generate.disabled = !!aiPending || !aiReviewed || !currentAiInput(aiInput) || !!analysisDraft; content.appendChild(generate);
+        if (aiPending) { const wait = node('p','jws-ai-progress',progress(aiPending)); wait.dataset.aiWait = '1'; wait.setAttribute('role','status'); content.appendChild(wait); }
+        if (!currentAiInput(aiInput)) content.appendChild(node('p','jws-error','המידע השתנה מאז התצוגה הזאת. אפשר להציג ולבדוק שוב את המידע לשליחה.'));
       }
-      if (aiError) content.appendChild(node('p', 'jws-error', aiError));
-      if (suggestions.length) showSuggestions(content);
-    }
-    function showSuggestions(parent) {
-      const old = parent.querySelector('.jws-suggestions'); if (old) old.remove();
-      const resultInput = aiResultInput, resultSuggestions = suggestions;
-      const box = node('div', 'jws-suggestions'); box.appendChild(node('h3', '', 'טיוטות לעיון'));
-      const current = currentAiInput(resultInput);
-      if (!current) box.appendChild(node('p', 'jws-error', 'הטיוטות נשמרו לעיון, אך המידע השתנה מאז שנכתבו. אפשר לבחון את המידע העדכני ולבקש טיוטה חדשה לפני הוספה.'));
-      suggestions.forEach(s => {
-        const article = node('article', 'jws-suggestion'); const l = node('label', 'jws-check'); const check = node('input'); check.type = 'checkbox'; check.checked = aiChosen.has(s.id);
-        check.addEventListener('change', () => { if (check.checked) aiChosen.add(s.id); else aiChosen.delete(s.id); });
-        l.appendChild(check); l.appendChild(node('strong', '', s.title)); article.appendChild(l);
-        article.appendChild(node('p', '', s.interpretation)); article.appendChild(node('p', '', 'אי ודאות: ' + s.uncertainty)); article.appendChild(node('p', 'muted', 'ראיות: ' + s.evidenceIds.map(id => labelFor('evidence', id)).join('; '))); box.appendChild(article);
-      });
-      const add = button('הוספת הטיוטות שנבחרו', () => {
-        if (resultInput !== aiResultInput || resultSuggestions !== suggestions || !currentAiInput(resultInput)) return message('הנתונים השתנו. אפשר לבחון שוב את המידע העדכני לפני הוספת טיוטות.', true);
-        const chosen = suggestions.filter(s => aiChosen.has(s.id));
-        if (data.findings.length + chosen.length > 80) return message('מספר הממצאים חורג ממגבלת 80 הרשומות. אפשר לבחור פחות טיוטות.', true);
-        if (!chosen.length) return message('אפשר לבחור טיוטה אחת או יותר להוספה.');
-        data.findings.push(...clone(chosen)); suggestions = []; aiResultInput = null; aiChosen = new Set(); changed(); section = 'findings'; selected.findings = chosen[0].id; renderContent();
-        message('הטיוטות נוספו במצב טיוטה. אפשר לערוך, לאשר במפורש או לדחות, ואז לשמור את השינויים.');
-      }); add.disabled = !current; box.appendChild(add); parent.appendChild(box);
+      if (aiError) content.appendChild(node('p','jws-error',aiError));
     }
     function renderContent() {
-      content.textContent = ''; nav.querySelectorAll('button').forEach(b => { if (b.dataset.section === section) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
-      if (section === 'overview') overview();
-      else if (section === 'context') { content.appendChild(node('h2', '', 'מסגרת התהליך')); content.appendChild(node('p', '', 'אפשר לקבוע יחד גבולות, מטרה, מה רוצים לשמר, סמכות הצוות, מפגשי העבודה וכללי התיעוד.')); if (guidance.context) content.appendChild(node('p', '', guidance.context)); M.CONTEXT_FIELDS.forEach(f => content.appendChild(fieldControl(f, data.context, 'context'))); }
-      else if (section === 'ai') ai();
+      content.textContent = '';
+      nav.querySelectorAll('button').forEach(b => { if (b.dataset.step === activeStep) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current'); });
+      directNav.querySelectorAll('button').forEach(b => { if (b.dataset.section === section) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+      const currentStep = steps.find(s => s.key === activeStep);
+      if (currentStep) {
+        content.appendChild(node('p','jws-step-label','שלב ' + (steps.indexOf(currentStep) + 1) + ' מתוך ' + steps.length + ': ' + currentStep.label));
+        if (currentStep.sections.length > 1) {
+          const subnav = node('nav','jws-subnav no-print'); subnav.setAttribute('aria-label','חלקים בשלב ' + currentStep.label);
+          currentStep.sections.forEach(key => {
+            const label = key === 'ai' ? 'ניתוח ומשוב' : sections.find(s => s.key === key).label;
+            const b = button(label,() => navigate(key,currentStep.key),true); b.dataset.subsection = key;
+            if (key === section) b.setAttribute('aria-current','page'); subnav.appendChild(b);
+          }); content.appendChild(subnav);
+        }
+      }
+      if (section === 'overview') overview(content);
+      else if (section === 'context') {
+        content.appendChild(node('h2','','מסגרת התהליך ושותפים'));
+        content.appendChild(node('p','','אפשר לקבוע יחד מטרה, גבולות, תקופה, קבוצות וקולות שעדיין לא נשמעו. המנדט וחלוקת האחריות מסבירים מה אפשר להציע ומי מוסמכים להחליט. אפשר להתחיל במה שידוע ולהשאיר סימן שאלה במה שטרם נבדק.'));
+        if (guidance.context) content.appendChild(node('p','',guidance.context));
+        fields(content,'context',M.CONTEXT_FIELDS,data.context,'context');
+        const intro = node('details','jws-explain'); intro.appendChild(node('summary','','כיווני ההתבוננות לאורך המסע'));
+        overview(intro);
+        content.appendChild(intro);
+      } else if (section === 'ai') ai();
       else { const s = sections.find(s => s.key === section); if (s) records(s); }
+      if (currentStep) {
+        const footer = node('div','jws-step-navigation no-print'), index = steps.indexOf(currentStep);
+        if (index) footer.appendChild(button('לשלב הקודם: ' + steps[index - 1].label,() => navigate(steps[index - 1].sections[0],steps[index - 1].key),true));
+        if (index < steps.length - 1) footer.appendChild(button('לשלב הבא: ' + steps[index + 1].label,() => navigate(steps[index + 1].sections[0],steps[index + 1].key),true));
+        content.appendChild(footer);
+      }
     }
     renderContent();
     return {canLeave,acceptMetadataRevision,destroy() { alive = false; cancelAiRequest(); window.removeEventListener('beforeunload', beforeUnload); shell.remove(); },isDirty:() => dirty};

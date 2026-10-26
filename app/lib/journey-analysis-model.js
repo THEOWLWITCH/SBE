@@ -209,7 +209,20 @@
     const sections = {};
     for (const section of SECTION_KEYS) {
       const label = r => ({id:r.id,title:r.title});
-      sections[section] = {included:b[section].filter(r => !a[section].some(x => x.id === r.id)).map(label),excluded:a[section].filter(r => !b[section].some(x => x.id === r.id)).map(label),changed:b[section].filter(r => a[section].some(x => x.id === r.id)).filter(r => !same(a[section].find(x => x.id === r.id),r)).map(r => ({...label(r),fields:Object.keys(r).filter(k => !same(a[section].find(x => x.id === r.id)[k],r[k]))}))};
+      const previousById = new Map(a[section].map(r => [r.id,r]));
+      const currentById = new Map(b[section].map(r => [r.id,r]));
+      const changed = [];
+      for (const record of b[section]) {
+        const before = previousById.get(record.id);
+        if (!before || same(before,record)) continue;
+        const fields = Object.keys(record).filter(key => !same(before[key],record[key]));
+        changed.push({...label(record),fields});
+      }
+      sections[section] = {
+        included:b[section].filter(r => !previousById.has(r.id)).map(label),
+        excluded:a[section].filter(r => !currentById.has(r.id)).map(label),
+        changed
+      };
     }
     const periodKeys = ['periodStart','periodEnd','baselineAt'];
     return {

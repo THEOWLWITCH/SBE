@@ -12,9 +12,12 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
 <script src="lib/resilience-advisor-sources.js"></script>
 <script src="lib/journey-model.js"></script>
+<script src="lib/journey-analysis-model.js"></script>
 <script src="lib/journey-workspace-model.js"></script>
+<script src="lib/journey-feedback.js"></script>
 <script src="lib/journey-workspace.js"></script>
 <link rel="stylesheet" href="lib/journey-workspace.css">
+<link rel="stylesheet" href="lib/journey-feedback.css">
 <script src="lib/report-table.js"></script>
 <link rel="stylesheet" href="lib/journey.css">
 <script src="lib/journey-demo.js"></script>
@@ -354,6 +357,7 @@ async function viewOne(id){
     return;
   }
   const c = card(); c.appendChild(btn('← לכל המסעות', 'btn-ghost', () => { location.hash = ''; }));
+  c.appendChild(el('p', null, 'זהו מסע במתכונת הקודמת. התיעוד המקורי נשמר. המסע המשודרג לבית ספר ולקהילה זמין במרחבי עבודה חדשים; אין העברה אוטומטית של נתונים או ניתוחים קודמים.'));
   c.appendChild(el('h1', null, j.unitName)); c.appendChild(el('p', 'muted', [unitT(j.unit), j.by, j.inst, 'נפתח ' + fmt(j.created), j.consent && j.consent.research ? 'הסכמה למחקר ✓' : 'בלי הסכמה למחקר'].filter(Boolean).join(' · ')));
   c.appendChild(journeyMap(j));
   // המיפוי והצעת המסע

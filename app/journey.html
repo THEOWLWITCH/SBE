@@ -14,9 +14,12 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
 <script src="lib/resilience-advisor-sources.js"></script>
 <script src="lib/journey-model.js"></script>
+<script src="lib/journey-analysis-model.js"></script>
 <script src="lib/journey-workspace-model.js"></script>
+<script src="lib/journey-feedback.js"></script>
 <script src="lib/journey-workspace.js"></script>
 <link rel="stylesheet" href="lib/journey-workspace.css">
+<link rel="stylesheet" href="lib/journey-feedback.css">
 <script src="lib/report-table.js"></script>
 <link rel="stylesheet" href="lib/journey.css">
 <style>
@@ -385,6 +388,8 @@ function render(){
     return;
   }
   F('app').textContent = ''; header();
+  const legacy = card();
+  legacy.appendChild(el('p', null, 'זהו מסע שנפתח במתכונת הקודמת. אפשר להמשיך לעיין בתיעוד הקיים. למסע החדש של בית ספר או קהילה יש לפתוח מרחב עבודה חדש מרשימת המסעות; הנתונים אינם מועברים אוטומטית.'));
   const back = el('p', 'no-print'); back.appendChild(btn('← לכל המסעות', 'btn-ghost', () => { location.hash = ''; }));
   if (JR.status === 'mapping') viewMapping();
   else if (JR.status === 'proposal') viewProposal();
