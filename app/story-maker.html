@@ -153,7 +153,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
     <div>
       <span class="logo"><img src="assets/begood-logo-sm.webp" alt="Begood"></span>
       <h1>מחולל <span>סיפורי חוסן</span></h1>
-      <p>ממציאים דמויות, בוחרים נושא ותפניות בעלילה, ומקבלים סיפור חוסן מאויר. אפשר לערוך, להדפיס ולשמור כ-PDF, עם הקדשה למי שיצר/ה את הסיפור.</p>
+      <p>ממציאים דמויות, בוחרים נושא ותפניות בעלילה, ומקבלים סיפור חוסן מאויר, לילדים מהגן ועד התיכון, וגם סיפור לבוגרים: לצוות, להורים ולקהילה. אפשר לערוך, להדפיס ולשמור כ-PDF, עם הקדשה למי שיצר/ה את הסיפור.</p>
     </div>
     <div class="book" id="heroBook" aria-hidden="true"></div>
   </header>
@@ -174,6 +174,8 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
   <section class="sheet f" id="s2" hidden aria-labelledby="h2t">
     <h2 class="t" id="h2t">על מה הסיפור?</h2>
     <p class="sub">בוחרים נושא, מקום ותפניות בעלילה. אפשר לבחור מהרעיונות או לכתוב משהו משלכם.</p>
+    <h3 class="q">למי הסיפור? <small>הנושאים והתפניות לדוגמה מתאימים את עצמם</small></h3>
+    <div class="row" id="ages"></div>
     <h3 class="q">הנושא</h3>
     <div class="row" id="themes"></div>
     <input type="text" id="theme" maxlength="160" placeholder="או כותבים נושא משלכם" style="margin-top:8px">
@@ -184,8 +186,6 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
     <div class="tw" id="twists" style="margin-top:10px"></div>
     <h3 class="q">איך הסיפור נגמר?</h3>
     <div class="row" id="endings"></div>
-    <h3 class="q">לאיזה גיל?</h3>
-    <div class="row" id="ages"></div>
     <h3 class="q">עוד משהו? <small>רשות</small></h3>
     <textarea id="extra" rows="2" maxlength="400" placeholder="למשל: שיהיה בסיפור כלב, או שהסיפור יתרחש בחנוכה"></textarea>
     <div class="authorbox">
@@ -279,12 +279,12 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
   // ---------- העלילה ----------
   function drawPlot() {
     const f = F();
-    $('themes').innerHTML = S.THEMES.map((t) => `<button type="button" class="chip" data-v="${esc(t)}" aria-pressed="${f.theme === t}">${esc(t)}</button>`).join('');
+    $('themes').innerHTML = S.themes(f.age).map((t) => `<button type="button" class="chip" data-v="${esc(t)}" aria-pressed="${f.theme === t}">${esc(t)}</button>`).join('');
     $('themes').querySelectorAll('button').forEach((b) => { b.onclick = () => { f.theme = b.dataset.v; $('theme').value = f.theme; save(); drawPlot(); }; });
     $('theme').value = f.theme; $('theme').oninput = () => { f.theme = $('theme').value; save(); $('themes').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === f.theme)); };
     $('places').innerHTML = S.PLACES.map(([v, t]) => `<button type="button" class="place" data-v="${v}" aria-pressed="${f.place === v}">${S.scene({ place: v, mood: v === 'camp' ? 'night' : 'sunny', cast: [], prop: 'none' }, [])}<span>${t}</span></button>`).join('');
     $('places').querySelectorAll('button').forEach((b) => { b.onclick = () => { f.place = b.dataset.v; save(); drawPlot(); }; });
-    $('twistIdeas').innerHTML = S.TWISTS.map((t) => `<button type="button" class="chip" data-v="${esc(t)}">${esc(t)}</button>`).join('');
+    $('twistIdeas').innerHTML = S.twists(f.age).map((t) => `<button type="button" class="chip" data-v="${esc(t)}">${esc(t)}</button>`).join('');
     $('twistIdeas').querySelectorAll('button').forEach((b) => { b.onclick = () => { let k = f.twists.findIndex((x) => !x.trim()); if (k < 0) { if (f.twists.length < 3) { f.twists.push(''); k = f.twists.length - 1; } else k = 2; } f.twists[k] = b.dataset.v + '...'; save(); drawTwists(); }; });
     drawTwists();
     $('endings').innerHTML = S.ENDINGS.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${f.ending === v}">${t}</button>`).join('');
@@ -332,7 +332,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
     if (revise) content += `\n\nזה הסיפור שכבר נכתב (JSON):\n${JSON.stringify(D.story)}\n\nהבקשה לשינוי: ${revise}\nכתבי את הסיפור מחדש לפי הבקשה, ושמרי על מה שלא התבקש לשנות.`;
     try {
       const v = await sbeCallAIJson(AI_SERVER, { system: S.system(f.age), messages: [{ role: 'user', content }], maxTokens: 9000, fast: true }, 240000, S.valid);
-      D.story = S.normalize(v, form); D.storyChars = chars; D.storyId = revise && D.storyId ? D.storyId : 'st' + Date.now();
+      D.story = S.normalize(v, form); D.storyChars = chars; D.storyAge = f.age; D.storyId = revise && D.storyId ? D.storyId : 'st' + Date.now();
       keepMine(); save(); stop(); go(3);
       if (revise) { $('rev').value = ''; $('revBox').hidden = true; }
     } catch (e) {
@@ -357,10 +357,12 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
     const m = D.mine || [];
     $('mine').hidden = !m.length;
     $('mineList').innerHTML = m.map((x, i) => `<li><button type="button" data-i="${i}">📖 ${esc(x.title)} <small style="color:var(--muted);font-weight:600">${x.date.split('-').reverse().join('.')}</small></button><button type="button" class="x" data-del="${i}" aria-label="מחיקת הסיפור">🗑</button></li>`).join('');
-    $('mineList').querySelectorAll('[data-i]').forEach((b) => { b.onclick = () => { const x = m[+b.dataset.i]; D.form = x.form; D.story = x.story; D.storyChars = x.chars; D.storyId = x.id; D.author = Object.assign(D.author, x.author || {}); save(); drawChars(); drawPlot(); go(3); }; });
+    $('mineList').querySelectorAll('[data-i]').forEach((b) => { b.onclick = () => { const x = m[+b.dataset.i]; D.form = x.form; D.story = x.story; D.storyChars = x.chars; D.storyId = x.id; D.storyAge = (x.form || {}).age; D.author = Object.assign(D.author, x.author || {}); save(); drawChars(); drawPlot(); go(3); }; });
     $('mineList').querySelectorAll('[data-del]').forEach((b) => { b.onclick = () => { if (!confirm('למחוק את הסיפור מהמכשיר?')) return; D.mine.splice(+b.dataset.del, 1); save(); drawMine(); }; });
   }
 
+  // הפתיח לשאלות: לילדים מבוגר/ת שואל/ת; לבוגרים שיחה בקבוצה
+  function qIntro() { return S.isAdult(D.storyAge || F().age) ? 'לשיחה בצוות, בקבוצת הורים או בין חברים, כדי לקשר בין הסיפור לחיים ולעבודה שלנו:' : 'מבוגר/ת שקורא/ת את הסיפור עם הילד/ה שואל/ת, כדי לקשר בין הסיפור לחיים:'; }
   // ---------- הספר ----------
   function drawBook() {
     const st = D.story; if (!st) return;
@@ -368,7 +370,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
     let h = `<article class="leaf cover"><div class="art">${S.cover(st, chars, F().place)}</div><h2 contenteditable="true" spellcheck="false" data-k="title">${esc(st.title)}</h2>${A.name ? `<div class="by">${A.g === 'm' ? 'כתב' : 'כתבה'}: ${esc(A.name)}</div>` : ''}</article>`;
     h += `<article class="leaf ded"><div class="h">${esc(ded.head)}</div><p>${esc(ded.line)}</p>${ded.from ? `<p class="dfrom" style="font-weight:800">${esc(ded.from)}</p><div class="dcast">${chars.map((c) => S.portrait(c, 'wave')).join('')}</div>` : ''}${A.dedi ? `<p>${esc(A.dedi)}</p>` : ''}${A.from ? `<p style="font-weight:800">${esc(A.from)}</p>` : ''}</article>`;
     st.pages.forEach((p, i) => { h += `<article class="leaf pg2"><div class="art">${S.scene(p, chars)}</div><div class="txt" contenteditable="true" spellcheck="false" data-k="p${i}"><span class="num" contenteditable="false">${i + 1}</span>${esc(p.text)}</div></article>`; });
-    h += `<article class="leaf end">${st.resilience ? `<h3>מה עזר לדמויות?</h3><p style="font-size:18px;margin:0 0 14px">${esc(st.resilience)}</p>` : ''}${st.questions.length ? `<h3>שאלות לשיחה אחרי הקריאה</h3><p style="margin:0 0 6px;color:#5a6672">מבוגר/ת שקורא/ת את הסיפור עם הילד/ה שואל/ת, כדי לקשר בין הסיפור לחיים:</p><ol>${st.questions.map((q) => `<li>${esc(q)}</li>`).join('')}</ol>` : ''}</article>`;
+    h += `<article class="leaf end">${st.resilience ? `<h3>מה עזר לדמויות?</h3><p style="font-size:18px;margin:0 0 14px">${esc(st.resilience)}</p>` : ''}${st.questions.length ? `<h3>שאלות לשיחה אחרי הקריאה</h3><p style="margin:0 0 6px;color:#5a6672">${qIntro()}</p><ol>${st.questions.map((q) => `<li>${esc(q)}</li>`).join('')}</ol>` : ''}</article>`;
     $('book').innerHTML = h;
     $('book').querySelectorAll('[contenteditable="true"]').forEach((el) => {
       el.oninput = () => {
@@ -390,7 +392,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
     let h = `<section class="pp cv"><img class="lgc" src="assets/begood-logo.webp" alt="Begood"><div class="art">${S.cover(st, chars, F().place)}</div><h1>${esc(st.title)}</h1>${A.name ? `<div class="by">${A.g === 'm' ? 'כתב' : 'כתבה'}: ${esc(A.name)}</div>` : ''}</section>`;
     h += `<section class="pp">${top}<div class="pp dd" style="min-height:auto;flex:1"><div class="h">${esc(ded.head)}</div><p>${esc(ded.line)}</p>${ded.from ? `<p class="dfrom" style="font-weight:800">${esc(ded.from)}</p><div class="dcast">${chars.map((c) => S.portrait(c, 'wave')).join('')}</div>` : ''}${A.dedi ? `<p>${esc(A.dedi)}</p>` : ''}${A.from ? `<p style="font-weight:800">${esc(A.from)}</p>` : ''}</div></section>`;
     st.pages.forEach((p, i) => { h += `<section class="pp">${top}<div class="art">${S.scene(p, chars)}</div><div class="tx">${esc(p.text)}</div><div class="pn">${i + 1}</div></section>`; });
-    h += `<section class="pp ed">${top}${st.resilience ? `<h2>מה עזר לדמויות?</h2><p>${esc(st.resilience)}</p>` : ''}${st.questions.length ? `<h2>שאלות לשיחה אחרי הקריאה</h2><p>מבוגר/ת שקורא/ת את הסיפור עם הילד/ה שואל/ת, כדי לקשר בין הסיפור לחיים:</p><ol>${st.questions.map((q) => `<li>${esc(q)}</li>`).join('')}</ol>` : ''}</section>`;
+    h += `<section class="pp ed">${top}${st.resilience ? `<h2>מה עזר לדמויות?</h2><p>${esc(st.resilience)}</p>` : ''}${st.questions.length ? `<h2>שאלות לשיחה אחרי הקריאה</h2><p>${qIntro()}</p><ol>${st.questions.map((q) => `<li>${esc(q)}</li>`).join('')}</ol>` : ''}</section>`;
     // רק כשמשהו השתנה: בנייה מחדש בזמן ההדפסה מחליפה את התמונות לפני שנטענו, והלוגו לא מודפס
     const key = h.replace(/sk\d+/g, '');
     if ($('print').dataset.h !== key) { $('print').innerHTML = h; $('print').dataset.h = key; }

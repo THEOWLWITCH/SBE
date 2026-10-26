@@ -51,3 +51,17 @@ test('הקדשה מהדמויות, ועד שש דמויות', () => {
   const n = S.normalize({ title: 'x', pages: [{ text: 'עמוד עם שש דמויות', cast: [0,1,2,3,4,5].map((w) => ({ who: w })) }] }, { ...form, chars: Array.from({ length: 6 }, (_, i) => ({ name: 'ד' + i })) });
   assert.equal(n.pages[0].cast.length, 6);
 });
+
+test('סיפורים לבוגרים: גיל, נושאים, תפניות ופרומפט משלהם', () => {
+  assert.ok(S.AGES.some((a) => a[0] === 'adult' && a[1] === 'בוגרים'));
+  assert.ok(S.isAdult('adult') && !S.isAdult('teen'));
+  assert.notDeepEqual(S.themes('adult'), S.themes('g34'));
+  assert.notDeepEqual(S.twists('adult'), S.twists('g34'));
+  const sys = S.system('adult');
+  assert.match(sys, /לבוגרים/);
+  assert.match(sys, /בצוות, בקבוצת הורים/);
+  assert.doesNotMatch(sys, /סופרת ילדים/);
+  assert.match(S.system('g34'), /סופרת ילדים/);
+  const page = readFileSync(app('story-maker.html'), 'utf8');
+  assert.ok(page.includes('S.themes(f.age)') && page.includes('qIntro()'));
+});
