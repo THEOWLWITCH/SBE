@@ -68,6 +68,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
 .place{border:3px solid var(--line);border-radius:16px;background:var(--card);padding:0;overflow:hidden;cursor:pointer;color:var(--ink);font:800 15px Assistant,sans-serif}
 .place svg{display:block;width:100%;height:76px}
 .place span{display:block;padding:6px}
+.place.other{display:flex;flex-direction:column;align-items:stretch;border-style:dashed}.place.other i{flex:1;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:30px;min-height:76px;background:var(--soft)}
 .place[aria-pressed="true"]{border-color:var(--sun);box-shadow:0 4px 0 #E0A800}
 .tw{display:grid;gap:8px}
 .tw .one{display:flex;gap:8px;align-items:center}
@@ -111,6 +112,69 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
 .mine li{display:flex;gap:8px;align-items:center;background:var(--soft);border-radius:14px;padding:8px 12px}
 .mine li button{border:0;background:none;color:var(--hl);font-weight:800;cursor:pointer;text-align:right;flex:1}
 .mine li .x{flex:none;color:var(--muted)}
+/* למי הסיפור */
+.aud{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.audc{display:flex;flex-direction:column;gap:6px;text-align:right;border:2px solid var(--line);border-radius:18px;background:var(--soft);color:var(--ink);padding:16px;cursor:pointer;font:inherit;min-height:150px}
+.audc b{font:900 22px 'Frank Ruhl Libre',Georgia,serif;color:var(--hl)}
+.audc span{font-size:16px;line-height:1.45}
+.audc small{margin-top:auto;color:var(--muted);font-size:13.5px;font-weight:600}
+.audc[aria-pressed="true"]{border-color:var(--teal);background:var(--card);box-shadow:0 0 0 2px var(--teal)}
+.audc:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.audc[data-v="adult"]{background:#1E2A38;color:#EEE8DC;border-color:#1E2A38}
+.audc[data-v="adult"] b{color:#D8BC8A}.audc[data-v="adult"] small{color:#B9B2A6}
+.audline{margin:0 0 6px;font-size:16px;color:var(--muted)}
+.linkb{border:0;background:none;color:var(--hl);font:inherit;font-weight:800;cursor:pointer;text-decoration:underline;padding:0}
+
+/* בוגרים (26/10/2026: "הגרפיקה המוצעת עכשיו מתאימה לילדים קטנים אבל לא מתאימה לבוגרים"):
+   שקט ומאופק: נייר, דיו כחול כהה וזהב עמום, פינות קטנות, כותרות בגופן ספר, איורים בצבעים רכים */
+body[data-age="adult"]{--navy:#1E2A38;--teal:#2E6E7A;--sun:#C9A46A;--coral:#8C5A46;--ink:#222B36;--muted:#5E6670;--line:#DAD4C8;--bg:#F4F1EA;--card:#FFFEFB;--soft:#F7F4EE;--hl:#1E2A38}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body[data-age="adult"]{--ink:#ECE7DE;--muted:#B5AFA5;--line:#3A3F46;--bg:#15191E;--card:#1D232A;--soft:#232A32;--hl:#D8BC8A}}
+:root[data-theme="dark"] body[data-age="adult"]{--ink:#ECE7DE;--muted:#B5AFA5;--line:#3A3F46;--bg:#15191E;--card:#1D232A;--soft:#232A32;--hl:#D8BC8A}
+body[data-age="adult"] .hero{background:#1E2A38;border-radius:8px;border-bottom:3px solid #C9A46A}
+body[data-age="adult"] .hero h1{font-weight:700;letter-spacing:.2px}
+body[data-age="adult"] .hero h1 span{color:#D8BC8A}
+body[data-age="adult"] .hero p{color:#D9DEE3}
+body[data-age="adult"] .book .pg{border-radius:2px;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+body[data-age="adult"] .book .spine{background:#8C6B4A;border-radius:1px}
+body[data-age="adult"] svg{filter:saturate(.55) contrast(.96)}
+body[data-age="adult"] .marks{gap:0;border-bottom:1px solid var(--line);margin:0 0 18px;padding:0}
+body[data-age="adult"] .marks button{border:0;border-bottom:3px solid transparent;background:none;border-radius:0;font:700 16px Assistant,sans-serif;padding:10px 16px}
+body[data-age="adult"] .marks button b{background:none;border:1px solid var(--line);width:24px;height:24px;font-weight:700}
+body[data-age="adult"] .marks button[aria-current="step"]{background:none;border-bottom-color:var(--sun)}
+body[data-age="adult"] .marks button[aria-current="step"] b{background:var(--navy);color:#fff;border-color:var(--navy)}
+body[data-age="adult"] .sheet{border:1px solid var(--line);border-radius:6px;padding:28px}
+body[data-age="adult"] h2.t{font-weight:700;font-size:28px}
+body[data-age="adult"] h3.q{font:700 17px 'Frank Ruhl Libre',Georgia,serif}
+body[data-age="adult"] .ch{border:1px solid var(--line);border-radius:6px;background:var(--card)}
+body[data-age="adult"] .ch .pic{border-radius:4px;background:var(--soft)}
+body[data-age="adult"] .ch input.name,body[data-age="adult"] .ch textarea,body[data-age="adult"] .f textarea,body[data-age="adult"] .f input[type=text]{border-width:1px;border-radius:4px}
+body[data-age="adult"] .chip{border-width:1px;border-radius:4px;font-weight:600;min-height:34px}
+body[data-age="adult"] .chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+body[data-age="adult"] .sw{border-width:2px}
+body[data-age="adult"] .add{border:1px dashed var(--muted);border-radius:6px;font-weight:700;font-size:16px}
+body[data-age="adult"] .place{border-width:1px;border-radius:4px;font-weight:600}
+body[data-age="adult"] .place[aria-pressed="true"]{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy)}
+body[data-age="adult"] .tw .one b{background:var(--navy);border-radius:4px}
+body[data-age="adult"] .btn{border-radius:4px}
+body[data-age="adult"] .btn.big{background:var(--navy);color:#fff;box-shadow:none;border-bottom:3px solid var(--sun);font-size:19px}
+body[data-age="adult"] .authorbox{border:1px solid var(--line);border-radius:6px;background:var(--soft);color:var(--ink)}
+body[data-age="adult"] .wait{border-radius:6px}
+body[data-age="adult"] .audc{border-radius:6px}
+body[data-age="adult"] .leaf{border-radius:2px;box-shadow:0 1px 0 #DAD4C8,0 12px 30px rgba(20,25,35,.08);background:#FFFEFB}
+body[data-age="adult"] .leaf .txt{font:400 19px/1.75 'Frank Ruhl Libre',Georgia,serif;text-align:justify}
+body[data-age="adult"] .leaf .num{font:600 14px Assistant,sans-serif;color:#8C6B4A;margin:4px 0 0 4px}
+body[data-age="adult"] .leaf.cover h2{font-weight:700;color:#1E2A38}
+body[data-age="adult"] .leaf.cover .by,body[data-age="adult"] .pp.cv .by{font:italic 400 20px 'Frank Ruhl Libre',Georgia,serif;color:#5E6670}
+body[data-age="adult"] .leaf.ded{background:#F7F4EE}
+body[data-age="adult"] .leaf.ded .h{font-weight:700;color:#1E2A38}
+body[data-age="adult"] .leaf.end h3{font:700 19px 'Frank Ruhl Libre',Georgia,serif;color:#1E2A38;border-bottom:1px solid #DAD4C8;padding-bottom:6px}
+body[data-age="adult"] .pp .tx{font:400 13.5pt/1.75 'Frank Ruhl Libre',Georgia,serif}
+body[data-age="adult"] .pp .pn{font:600 10pt Assistant,sans-serif;color:#8C6B4A}
+body[data-age="adult"] .pp.cv h1{font-weight:700;color:#1E2A38}
+body[data-age="adult"] .pp.dd{background:#F7F4EE;border-radius:1mm}
+body[data-age="adult"] .pp .art{border-radius:1mm}
+body[data-age="adult"] .pp.ed h2{font:700 15pt 'Frank Ruhl Libre',Georgia,serif;color:#1E2A38;border-inline-start-color:#C9A46A}
+
 /* הדפסה */
 #print{display:none}
 @media print{
@@ -159,28 +223,35 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
   </header>
 
   <nav class="marks" aria-label="הצעדים">
-    <button type="button" data-s="1" aria-current="step"><b>1</b>הדמויות</button>
-    <button type="button" data-s="2"><b>2</b>העלילה</button>
-    <button type="button" data-s="3" disabled><b>3</b>הסיפור</button>
+    <button type="button" data-s="0" aria-current="step"><b>1</b>למי הסיפור</button>
+    <button type="button" data-s="1"><b>2</b>הדמויות</button>
+    <button type="button" data-s="2"><b>3</b>העלילה</button>
+    <button type="button" data-s="3" disabled><b>4</b>הסיפור</button>
   </nav>
 
-  <section class="sheet" id="s1" aria-labelledby="h1t">
+  <section class="sheet" id="s0" aria-labelledby="h0t">
+    <h2 class="t" id="h0t">למי הסיפור?</h2>
+    <p class="sub">מתחילים בבחירת הקוראים. לפיהם נקבעים אורך הסיפור, השפה, העיצוב והרעיונות לנושא ולתפניות.</p>
+    <div class="aud" id="aud"></div>
+  </section>
+
+  <section class="sheet" id="s1" hidden aria-labelledby="h1t">
     <h2 class="t" id="h1t">מי בסיפור?</h2>
     <p class="sub">ממציאים עד שש דמויות: שם, איך הן נראות, ומה מיוחד בהן. כל דמות תעשה משהו חשוב בסיפור.</p>
     <div class="chars" id="chars"></div>
-    <div class="go-row"><button class="btn" type="button" id="to2">המשך: העלילה ←</button></div>
+    <div class="go-row"><button class="btn alt" type="button" id="back0">→ למי הסיפור</button><button class="btn" type="button" id="to2">המשך: העלילה ←</button></div>
   </section>
 
   <section class="sheet f" id="s2" hidden aria-labelledby="h2t">
     <h2 class="t" id="h2t">על מה הסיפור?</h2>
     <p class="sub">בוחרים נושא, מקום ותפניות בעלילה. אפשר לבחור מהרעיונות או לכתוב משהו משלכם.</p>
-    <h3 class="q">למי הסיפור? <small>הנושאים והתפניות לדוגמה מתאימים את עצמם</small></h3>
-    <div class="row" id="ages"></div>
+    <p class="audline" id="audline"></p>
     <h3 class="q">הנושא</h3>
     <div class="row" id="themes"></div>
     <input type="text" id="theme" maxlength="160" placeholder="או כותבים נושא משלכם" style="margin-top:8px">
     <h3 class="q">איפה זה מתחיל?</h3>
     <div class="places" id="places"></div>
+    <div id="placeOtherBox" hidden style="margin-top:8px"><input type="text" id="placeOther" maxlength="80" placeholder="איפה? למשל: חדר המורים, ספרייה, אוטובוס, מטבח של מסעדה"></div>
     <h3 class="q">תפניות בעלילה <small>עד שלוש, לפי הסדר</small></h3>
     <div class="row" id="twistIdeas"></div>
     <div class="tw" id="twists" style="margin-top:10px"></div>
@@ -237,13 +308,27 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
 
   // ---------- צעדים ----------
   function go(n) {
-    [1, 2, 3].forEach((k) => { $('s' + k).hidden = k !== n; document.querySelector(`.marks [data-s="${k}"]`).setAttribute('aria-current', k === n ? 'step' : 'false'); });
+    [0, 1, 2, 3].forEach((k) => { $('s' + k).hidden = k !== n; document.querySelector(`.marks [data-s="${k}"]`).setAttribute('aria-current', k === n ? 'step' : 'false'); });
     document.querySelector('.marks [data-s="3"]').disabled = !D.story;
     if (n === 3) drawBook();
+    setAge(n === 3 && D.story ? (D.storyAge || F().age) : F().age);
     window.scrollTo({ top: document.querySelector('.marks').offsetTop - 10, behavior: 'smooth' });
   }
   document.querySelectorAll('.marks button').forEach((b) => { b.onclick = () => go(+b.dataset.s); });
-  $('to2').onclick = () => go(2); $('back1').onclick = () => go(1);
+  $('to2').onclick = () => go(2); $('back1').onclick = () => go(1); $('back0').onclick = () => go(0);
+
+  // ---------- למי הסיפור (צעד ראשון, 26/10/2026) ----------
+  const AUD = { k2: 'סיפור קצר ופשוט: משפטים קצרים, הרבה איורים, וסוף טוב ומרגיע.', g34: 'עלילה ברורה עם דמויות שעוזרות זו לזו, ומעט מילים חדשות.', g56: 'עלילה עם התלבטויות, רגשות ובחירות של הדמויות.', teen: 'סיפור עם מורכבות: דילמות, מחלוקת ותפקיד של כל אחד/ת בקבוצה.', adult: 'משל מודרני לצוות, להורים ולקהילה, עם שאלות לשיחה בקבוצה.' };
+  function setAge(a) { document.body.dataset.age = a || 'g34'; }
+  function drawAud() {
+    const f = F();
+    $('aud').innerHTML = S.AGES.map(([v, t, n, w]) => `<button type="button" class="audc" data-v="${v}" aria-pressed="${f.age === v}"><b>${t}</b><span>${AUD[v] || ''}</span><small>${n} עמודים · ${w} מילים בעמוד</small></button>`).join('');
+    $('aud').querySelectorAll('button').forEach((b) => { b.onclick = () => { f.age = b.dataset.v; save(); drawAud(); drawPlot(); go(1); }; });
+    const cur = S.AGES.find((x) => x[0] === f.age);
+    $('audline').innerHTML = `הסיפור ל<b>${cur ? cur[1] : ''}</b> · <button type="button" class="linkb" id="audChange">שינוי</button>`;
+    $('audChange').onclick = () => go(0);
+    setAge(f.age);
+  }
 
   // ---------- הדמויות ----------
   function drawChars() {
@@ -283,14 +368,15 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
     $('themes').querySelectorAll('button').forEach((b) => { b.onclick = () => { f.theme = b.dataset.v; $('theme').value = f.theme; save(); drawPlot(); }; });
     $('theme').value = f.theme; $('theme').oninput = () => { f.theme = $('theme').value; save(); $('themes').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === f.theme)); };
     $('places').innerHTML = S.PLACES.map(([v, t]) => `<button type="button" class="place" data-v="${v}" aria-pressed="${f.place === v}">${S.scene({ place: v, mood: v === 'camp' ? 'night' : 'sunny', cast: [], prop: 'none' }, [])}<span>${t}</span></button>`).join('');
-    $('places').querySelectorAll('button').forEach((b) => { b.onclick = () => { f.place = b.dataset.v; save(); drawPlot(); }; });
+    $('places').innerHTML += `<button type="button" class="place other" data-v="other" aria-pressed="${f.place === 'other'}"><i aria-hidden="true">➕</i><span>מקום אחר</span></button>`;
+    $('places').querySelectorAll('button').forEach((b) => { b.onclick = () => { f.place = b.dataset.v; save(); drawPlot(); if (f.place === 'other') $('placeOther').focus(); }; });
+    $('placeOtherBox').hidden = f.place !== 'other';
+    $('placeOther').value = f.placeOther || ''; $('placeOther').oninput = () => { f.placeOther = $('placeOther').value; save(); };
     $('twistIdeas').innerHTML = S.twists(f.age).map((t) => `<button type="button" class="chip" data-v="${esc(t)}">${esc(t)}</button>`).join('');
     $('twistIdeas').querySelectorAll('button').forEach((b) => { b.onclick = () => { let k = f.twists.findIndex((x) => !x.trim()); if (k < 0) { if (f.twists.length < 3) { f.twists.push(''); k = f.twists.length - 1; } else k = 2; } f.twists[k] = b.dataset.v + '...'; save(); drawTwists(); }; });
     drawTwists();
     $('endings').innerHTML = S.ENDINGS.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${f.ending === v}">${t}</button>`).join('');
     $('endings').querySelectorAll('button').forEach((b) => { b.onclick = () => { f.ending = b.dataset.v; save(); drawPlot(); }; });
-    $('ages').innerHTML = S.AGES.map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${f.age === v}">${t}</button>`).join('');
-    $('ages').querySelectorAll('button').forEach((b) => { b.onclick = () => { f.age = b.dataset.v; save(); drawPlot(); }; });
     $('extra').value = f.extra || ''; $('extra').oninput = () => { f.extra = $('extra').value; save(); };
     const A = D.author;
     $('author').value = A.name; $('author').oninput = () => { A.name = $('author').value.trim(); save(); };
@@ -345,7 +431,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
   $('write').onclick = () => write();
   $('again').onclick = () => { $('revBox').hidden = !$('revBox').hidden; if (!$('revBox').hidden) $('rev').focus(); };
   $('revGo').onclick = () => { const r = $('rev').value.trim(); if (r) write(r); else $('rev').focus(); };
-  $('fresh').onclick = () => { D.story = null; D.storyId = null; D.form = { chars: [blankChar(0), blankChar(1)], theme: '', place: 'park', twists: ['', ''], ending: 'party', age: D.form.age, extra: '' }; save(); drawChars(); drawPlot(); go(1); };
+  $('fresh').onclick = () => { D.story = null; D.storyId = null; D.form = { chars: [blankChar(0), blankChar(1)], theme: '', place: 'park', twists: ['', ''], ending: 'party', age: D.form.age, extra: '' }; save(); drawChars(); drawPlot(); drawAud(); go(0); };
 
   // ---------- הסיפורים שלי ----------
   function keepMine() {
@@ -405,7 +491,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
   };
   window.addEventListener('beforeprint', () => { if (D.story) buildPrint(); });
 
-  drawChars(); drawPlot(); drawMine();
+  drawChars(); drawPlot(); drawAud(); drawMine();
   const q = new URLSearchParams(location.search);
   if (q.get('print') && D.story) buildPrint();
   if (D.story && q.get('view')) go(3);
