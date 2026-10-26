@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>להצמיח רעיון</title>
+<script src="lib/access-guard.js"></script>
+<script src="lib/ai-call.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&family=Amatic+SC:wght@700&family=Rubik:wght@500;700;800&display=swap">
+<style>
+/* להצמיח רעיון (26/10/2026), עם גני. מקור אמת: lib/idea-garden.js. הרשאה: games. העיצוב לפי הגיל: body[data-age] */
+:root{--navy:#1B4F7A;--teal:#1A9BB5;--green:#3A9E6B;--sun:#FFC929;--coral:#E0603F;--ink:#26323E;--muted:#5C6873;--line:#DCE6DA;--bg:#F6F9F1;--card:#fff;--soft:#EEF5EA;--hl:#1B4F7A;
+  --a1:#3A9E6B;--a2:#1A9BB5;--a3:#FFC929;--hero1:#2F7D52;--hero2:#1A9BB5;--r:20px;--fs:17px;--hf:'Frank Ruhl Libre',Georgia,serif;--bf:Assistant,Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#E8EEE6;--muted:#AEB9AE;--line:#33413A;--bg:#141A16;--card:#1C241F;--soft:#24302A;--hl:#8fd3e0}}
+:root[data-theme="dark"]{--ink:#E8EEE6;--muted:#AEB9AE;--line:#33413A;--bg:#141A16;--card:#1C241F;--soft:#24302A;--hl:#8fd3e0}
+/* חמישה עולמות לפי הגיל */
+body[data-age="k"]{--a1:#FFB800;--a2:#3A9E6B;--a3:#FF8A65;--hero1:#5BC0EB;--hero2:#9BE0A5;--r:30px;--fs:20px;--hf:Rubik,sans-serif;--bf:Rubik,Assistant,sans-serif}
+body[data-age="a3"]{--a1:#3A9E6B;--a2:#1A9BB5;--a3:#FFC929;--hero1:#46B07A;--hero2:#33B5CC;--r:26px;--fs:19px;--hf:Rubik,sans-serif;--bf:Rubik,Assistant,sans-serif}
+body[data-age="d5"]{--a1:#E0603F;--a2:#1B4F7A;--a3:#FFC929;--hero1:#1B4F7A;--hero2:#3A9E6B;--r:20px;--fs:17.5px;--hf:'Amatic SC',Rubik,sans-serif}
+body[data-age="sec"]{--a1:#1A9BB5;--a2:#1B4F7A;--a3:#57B97E;--hero1:#14283B;--hero2:#1B4F7A;--r:16px;--fs:17px;--hf:Rubik,sans-serif}
+body[data-age="pro"]{--a1:#2F5D4A;--a2:#A07A3F;--a3:#C9B27A;--hero1:#2F5D4A;--hero2:#5E7F62;--r:14px;--fs:16.5px;--hf:'Frank Ruhl Libre',Georgia,serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--bf);font-size:var(--fs);line-height:1.55}
+button,input,textarea,select{font-family:inherit;font-size:inherit}
+.topnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--line);font-size:15px}
+.topnav a,.topnav button{color:var(--hl);font-weight:700;background:none;border:0;cursor:pointer;text-decoration:none;padding:6px 0}
+.topnav .crumb{margin-inline-start:auto;color:var(--muted);font-weight:600}
+.wrap{max-width:1140px;margin:0 auto;padding:20px 16px 70px}
+/* פתיח */
+.hero{position:relative;border-radius:calc(var(--r) + 6px);overflow:hidden;background:linear-gradient(150deg,var(--hero1),var(--hero2));color:#fff;padding:24px 28px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;margin-bottom:18px}
+.hero .logo{display:inline-flex;background:#fff;border-radius:12px;padding:4px 8px;margin-bottom:10px}.hero .logo img{height:30px;width:auto;display:block}
+.hero h1{margin:0;font:900 44px/1.05 var(--hf)}
+body[data-age="d5"] .hero h1{font-size:58px}
+.hero h1 span{color:var(--a3)}
+.hero p{margin:10px 0 0;font-size:18px;line-height:1.5;max-width:46ch;opacity:.95}
+.hero .geni{display:flex;align-items:flex-end;gap:6px}
+.hero .geni svg{width:130px;height:130px}
+.hero .geni .pot svg{width:110px;height:104px}
+.hero .bubble{position:absolute;inset-inline-end:150px;top:18px;background:#fff;color:#1F2A36;border-radius:16px;padding:8px 12px;font-weight:700;font-size:15px;max-width:220px;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+@media screen and (max-width:760px){.hero{grid-template-columns:1fr;padding:18px}.hero h1{font-size:34px}.hero .bubble{position:static;margin-top:8px}.hero .geni svg{width:90px;height:90px}.hero .geni .pot svg{width:80px;height:76px}}
+/* כרטיסים */
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:20px}
+h2.t{margin:0 0 6px;font:900 28px var(--hf);color:var(--hl)}
+body[data-age="d5"] h2.t{font-size:40px}
+.sub{margin:0 0 14px;color:var(--muted)}
+h3.q{margin:18px 0 8px;font-weight:800;font-size:1.02em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h3.q small{font-weight:600;color:var(--muted);font-size:.85em}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{min-height:42px;padding:6px 14px;border-radius:999px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--a1);background:color-mix(in srgb,var(--a1) 16%,var(--card));}
+.tile{border:2px solid var(--line);border-radius:var(--r);background:var(--card);padding:14px;cursor:pointer;text-align:start;color:var(--ink);display:flex;gap:10px;align-items:flex-start}
+.tile b{display:block;font-size:1.05em}.tile span.d{display:block;color:var(--muted);font-size:.86em;font-weight:600}
+.tile .ic{font-size:30px;line-height:1}
+.tile[aria-pressed="true"]{border-color:var(--a1);box-shadow:0 0 0 3px color-mix(in srgb,var(--a1) 30%,transparent)}
+.tiles{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+input[type=text],textarea,select{width:100%;border:2px solid var(--line);border-radius:12px;padding:9px 12px;background:var(--card);color:var(--ink)}
+textarea{resize:vertical;min-height:70px}
+label.f{display:block;font-weight:800;margin:12px 0 4px}
+.btn{min-height:48px;padding:10px 22px;border-radius:14px;border:0;background:var(--a2);color:#fff;font-weight:800;cursor:pointer}
+.btn.alt{background:var(--card);color:var(--hl);border:2px solid var(--line)}
+.btn.grow{background:linear-gradient(120deg,var(--a1),var(--a3));color:#1F2A36;box-shadow:0 4px 0 color-mix(in srgb,var(--a1) 70%,#000)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.chip:focus-visible,.tile:focus-visible{outline:3px solid var(--a3);outline-offset:2px}
+.go-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px}
+.err{color:#B23A26;font-weight:700;margin:10px 0 0}
+.muted{color:var(--muted)}
+/* שביל הגידול */
+.path{display:flex;gap:6px;margin:0 0 14px;overflow-x:auto;padding-bottom:4px}
+.path button{flex:1;min-width:104px;border:2px solid var(--line);background:var(--card);border-radius:var(--r);padding:8px 6px 10px;cursor:pointer;color:var(--muted);font-weight:800;display:flex;flex-direction:column;align-items:center;gap:2px}
+.path button svg{width:54px;height:50px}
+.path button[aria-current="step"]{border-color:var(--a1);color:var(--ink);background:color-mix(in srgb,var(--a1) 12%,var(--card))}
+.path button.done{color:var(--ink)}
+.path button:disabled{opacity:.45;cursor:default}
+/* פריסה */
+.lay{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+@media screen and (max-width:900px){.lay{grid-template-columns:1fr}.side{order:-1}}
+.side{position:sticky;top:12px}
+@media screen and (max-width:900px){.side{position:static}.idea-pic{max-width:230px;margin:0 auto}}
+.idea-pic{background:linear-gradient(180deg,color-mix(in srgb,var(--a2) 10%,#fff),#fff);border-radius:calc(var(--r) - 4px);aspect-ratio:6/5;display:flex;align-items:center;justify-content:center;border:2px dashed var(--line);overflow:hidden}
+.idea-pic svg{width:100%;height:100%}
+.idea-name{margin:10px 0 2px;font:900 24px var(--hf);color:var(--hl);text-align:center}
+body[data-age="d5"] .idea-name{font-size:34px}
+.idea-cap{text-align:center;color:var(--muted);font-size:.9em;margin:0}
+.notme{margin:12px 0 0;background:var(--soft);border-radius:14px;padding:10px 12px;font-size:.9em;font-weight:700;display:flex;gap:8px;align-items:flex-start}
+.vers{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.vers button{width:62px;height:54px;border:2px solid var(--line);border-radius:10px;background:#fff;padding:2px;cursor:pointer}
+.vers button svg{width:100%;height:100%}
+.vers button[aria-pressed="true"]{border-color:var(--a1)}
+/* יתרונות וחסרונות */
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media screen and (max-width:700px){.pc{grid-template-columns:1fr}}
+.pc .col{border-radius:var(--r);padding:12px;border:2px solid var(--line)}
+.pc .col.pro{background:color-mix(in srgb,#57B97E 10%,var(--card))}.pc .col.con{background:color-mix(in srgb,#E0603F 9%,var(--card))}
+.pc h4{margin:0 0 8px;font-size:1.05em}
+.it{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:10px;margin-bottom:8px}
+.it .mini{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center;font-size:.88em}
+.it .mini .chip{min-height:32px;padding:3px 10px;font-size:.92em}
+.it .mini select{width:auto;padding:4px 8px;min-height:34px}
+.it .rm{float:inline-end;border:0;background:none;color:var(--muted);cursor:pointer;font-size:16px}
+.scale{display:flex;justify-content:center;margin:10px 0 0}.scale svg{width:240px;height:110px}
+/* פגיעה */
+.harm{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.harm .tile{flex-direction:column;align-items:center;text-align:center;padding:10px}
+.harmd{display:grid;gap:10px;margin-top:12px}
+.harmd .it b{display:block;margin-bottom:6px}
+/* משוב */
+.fb{margin-top:18px;border-radius:var(--r);border:2px solid color-mix(in srgb,var(--a1) 45%,var(--line));background:color-mix(in srgb,var(--a1) 6%,var(--card));padding:16px}
+.fb .head{display:flex;gap:12px;align-items:center}
+.fb .head svg{width:64px;height:64px;flex:none}
+.fb .frame{font-weight:800;margin:0}
+.fb .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-top:12px}
+.fb .box{background:var(--card);border-radius:14px;padding:10px 12px;border:2px solid var(--line)}
+.fb .box h4{margin:0 0 6px;font-size:.98em}
+.fb ul{margin:0;padding-inline-start:20px}.fb li{margin:3px 0}
+.fb .q{margin:12px 0 0;font-weight:800;background:var(--card);border-radius:14px;padding:10px 12px;border-inline-start:5px solid var(--a3)}
+.moves .chip{min-height:40px}
+.chat{margin-top:14px;border:2px solid var(--line);border-radius:var(--r);padding:12px;background:var(--card)}
+.chat .msgs{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow:auto;margin-bottom:8px}
+.chat .m{max-width:85%;padding:8px 12px;border-radius:14px;white-space:pre-wrap}
+.chat .m.me{align-self:flex-start;background:var(--soft)}
+.chat .m.geni{align-self:flex-end;background:color-mix(in srgb,var(--a1) 14%,var(--card))}
+.chat .send{display:flex;gap:8px}.chat .send input{flex:1}
+.consults li{margin:4px 0}
+.decide{margin-top:18px;border-top:2px dashed var(--line);padding-top:14px}
+.decide .tiles{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.wait{margin-top:14px;background:var(--soft);border-radius:16px;padding:14px;text-align:center}
+.wait-t{font-weight:800}.wait-bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin:10px auto;max-width:360px}.wait-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--a1),var(--a3));transition:width .9s linear}.wait-s{color:var(--muted);font-size:.9em}
+/* גינת הרעיונות */
+.garden{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));margin-top:10px}
+.garden .g{border:2px solid var(--line);border-radius:var(--r);background:var(--card);padding:10px;display:flex;gap:10px;align-items:center}
+.garden .g .p{width:62px;height:56px;flex:none}.garden .g .p svg{width:100%;height:100%}
+.garden .g b{display:block}.garden .g small{color:var(--muted);font-weight:600}
+.garden .g .acts{margin-inline-start:auto;display:flex;flex-direction:column;gap:4px}
+.garden .g .acts button{border:0;background:none;cursor:pointer;color:var(--hl);font-weight:800}
+.badges{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));margin-top:10px}
+.badge{border-radius:var(--r);padding:12px;background:color-mix(in srgb,var(--a3) 22%,var(--card));border:2px solid color-mix(in srgb,var(--a3) 60%,var(--line))}
+.badge b{display:block;font-size:1.05em}
+.sumv{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.sumv figure{margin:0;width:120px;text-align:center;font-size:.8em;color:var(--muted)}
+.sumv figure div{background:#fff;border:2px solid var(--line);border-radius:12px;height:100px}.sumv svg{width:100%;height:100%}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:no-preference){.grew{animation:pop .5s ease}@keyframes pop{0%{transform:scale(.85);opacity:.4}100%{transform:scale(1);opacity:1}}}
+/* הדפסה */
+#print{display:none}
+@media print{
+  @page{size:A4;margin:24mm 24mm;@bottom-center{content:"עמוד " counter(page) " מתוך " counter(pages) " · Begood · be-good.co.il";font:9pt Assistant,sans-serif;color:#5a6672}}
+  body{background:#fff;color:#1F2A36;font-size:12pt}
+  body>*:not(#print){display:none!important}
+  #print{display:block}
+  .pr-top{display:flex;align-items:center;gap:4mm;border-bottom:3px solid #1A9BB5;padding-bottom:3mm;margin-bottom:6mm}
+  .pr-top img{height:12mm}.pr-top span{color:#5a6672;font-size:10pt;margin-inline-start:auto}
+  .pr h1{font:900 26pt 'Frank Ruhl Libre',serif;color:#1B4F7A;margin:0 0 2mm}
+  .pr h2{font:800 15pt Assistant,sans-serif;color:#1B4F7A;border-inline-start:4px solid #1A9BB5;padding-inline-start:3mm;margin:7mm 0 3mm;break-after:avoid}
+  .pr p,.pr li{text-align:justify;line-height:1.55}
+  .pr table{width:100%;border-collapse:collapse;margin:2mm 0 4mm;break-inside:auto}
+  .pr th{background:#1B4F7A;color:#fff;text-align:start;padding:2mm 3mm;font-size:10.5pt}
+  .pr td{border:1px solid #CFD8DE;padding:2mm 3mm;vertical-align:top;font-size:10.5pt}
+  .pr td:first-child{background:#EEF6F8;font-weight:700;width:30%}
+  .pr tr{break-inside:avoid}
+  .pr .vers{display:flex;gap:3mm;flex-wrap:wrap}
+  .pr .vers figure{margin:0;width:34mm;text-align:center;font-size:8.5pt;color:#5a6672;break-inside:avoid}
+  .pr .vers figure div{border:1px solid #CFD8DE;border-radius:3mm;height:28mm}
+  .pr .vers svg{width:100%;height:100%}
+  .pr .big{display:flex;gap:6mm;align-items:center;break-inside:avoid}
+  .pr .big div{width:60mm;height:50mm;border:1px solid #CFD8DE;border-radius:4mm}.pr .big svg{width:100%;height:100%}
+  .pr .bdg{display:grid;grid-template-columns:1fr 1fr;gap:3mm}.pr .bdg div{border:1.5px solid #E9C766;border-radius:3mm;padding:2mm 3mm;break-inside:avoid}
+}
+</style>
+</head>
+<body data-age="d5">
+<nav class="topnav">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a href="games.html">🎲 משחקי חוסן</a>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › משחקי חוסן › להצמיח רעיון</span>
+</nav>
+<main class="wrap">
+  <header class="hero">
+    <div>
+      <span class="logo"><img src="assets/begood-logo-sm.webp" alt="Begood"></span>
+      <h1>להצמיח <span>רעיון</span></h1>
+      <p id="heroP">מגדלים רעיון מזרע ועד פרי. בכל שלב בודקים מה טוב בו, מה פחות, ואם הוא לא פוגע באף אחד, ומחליטים איך להמשיך. גני מלווה אתכם, נותנת משוב ומתייעצת איתכם.</p>
+    </div>
+    <div class="geni" aria-hidden="true"><span id="heroGeni"></span><span class="pot" id="heroPot"></span></div>
+    <div class="bubble" id="heroBubble">שלום, אני גני! בואו נגדל רעיון יחד.</div>
+  </header>
+
+  <!-- התחלה -->
+  <section id="start" class="card">
+    <h2 class="t">מי מגדלים?</h2>
+    <p class="sub">בוחרים גיל, והגינה מתאימה את עצמה: את השפה, את השאלות ואת העיצוב.</p>
+    <div class="tiles" id="ages"></div>
+    <label class="f" for="grower">איך קוראים למגדלים? <small class="muted">רשות. השם נשאר רק במכשיר, ומופיע בסיכום ובהדפסה.</small></label>
+    <input type="text" id="grower" maxlength="40" placeholder="שם פרטי, או שם הקבוצה">
+    <div class="go-row"><button class="btn grow" type="button" id="plant">🌰 שותלים רעיון חדש</button></div>
+    <div id="gardenBox" hidden>
+      <h3 class="q">🪴 גינת הרעיונות שלי</h3>
+      <div class="garden" id="garden"></div>
+    </div>
+  </section>
+
+  <!-- הגידול -->
+  <section id="growing" hidden>
+    <nav class="path" id="path" aria-label="שלבי הגידול"></nav>
+    <div class="lay">
+      <div class="card" id="stage"></div>
+      <aside class="side card" aria-label="הרעיון שלי עכשיו">
+        <div class="idea-pic" id="ideaPic"></div>
+        <div class="idea-name" id="ideaName"></div>
+        <p class="idea-cap" id="ideaCap"></p>
+        <div class="notme"><span>🌱</span><span>הרעיון הוא לא אני. משוב על הרעיון עוזר לו לגדול, והוא לא משוב עליי.</span></div>
+        <div id="versBox" hidden><h3 class="q" style="margin:14px 0 4px">איך הרעיון השתנה</h3><div class="vers" id="vers"></div></div>
+        <label class="f" for="lookNow">רוצים לשנות את הציור? <small class="muted">רשות</small></label>
+        <input type="text" id="lookNow" maxlength="200" placeholder="איך הרעיון נראה עכשיו?">
+        <div class="go-row" style="margin-top:12px"><button class="btn alt" type="button" id="toGarden">🪴 לגינת הרעיונות</button></div>
+      </aside>
+    </div>
+  </section>
+</main>
+<div id="print" aria-hidden="true"></div>
+<script src="lib/idea-garden.js"></script>
+<script>
+(function () {
+  const G = window.SBE_IDEA, esc = G.esc;
+  const AI_SERVER = 'https://sbe-server.onrender.com';
+  const $ = (id) => document.getElementById(id);
+  const KEY = window.sbeUserKey ? window.sbeUserKey('sbe.ideas.v1') : 'sbe.ideas.v1';
+  let D = { age: 'd5', grower: '', ideas: [], cur: null };
+  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && typeof s === 'object') D = Object.assign(D, s); } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) {} };
+  const I = () => D.ideas.find((x) => x.id === D.cur) || null;
+  const kid = () => G.KID(D.age);
+  const blank = () => ({ id: 'i' + Date.now(), created: new Date().toISOString().slice(0, 10), name: '', stage: 0, open: 0,
+    stages: { seed: { source: '', sourceText: '', what: '', forWho: '', lookKind: 'thing', look: '' }, sprout: { pros: [{ text: '', whom: '', w: 2 }], cons: [{ text: '', whom: '', w: 2, fix: '' }] }, guard: { items: G.HARM.map((h) => ({ id: h[0], on: false, how: '', protect: '' })), none: '' }, grow: { need: '', first: '', helpers: '', sign: '' } },
+    fb: {}, move: {}, chat: {}, pics: [], log: [], end: '', endNote: '', summary: null, lookNow: '' });
+
+  // ---------- פתיח ----------
+  function drawHero() {
+    document.body.dataset.age = D.age;
+    $('heroGeni').innerHTML = G.geni();
+    const x = I();
+    $('heroPot').innerHTML = G.pot(x ? (x.end === 'go' ? 5 : x.stage + (x.fb[G.STAGES[x.stage].id] ? 1 : 0)) : 1);
+    $('heroBubble').textContent = kid() ? 'שלום, אני גני! בואו נגדל רעיון יחד.' : 'שלום, אני גני. נגדל רעיון יחד: נבדוק, נתייעץ ונחליט.';
+    $('heroP').textContent = kid() ? 'שותלים רעיון ומגדלים אותו. בכל שלב בודקים: מה טוב, מה פחות, והאם הרעיון שומר על כולם. גני עוזרת ומתייעצת איתכם.' : 'מגדלים רעיון מזרע ועד פרי. בכל שלב בודקים מה טוב בו, מה פחות, ואם הוא עלול לפגוע במישהו או במשהו, ומחליטים איך להמשיך. גני מלווה אתכם, נותנת משוב ומתייעצת איתכם.';
+  }
+
+  // ---------- התחלה וגינת הרעיונות ----------
+  function drawStart() {
+    $('ages').innerHTML = G.AGES.map(([v, t, d]) => `<button type="button" class="tile" data-v="${v}" aria-pressed="${D.age === v}"><span class="ic">${{ k: '🧸', a3: '🎒', d5: '🧭', sec: '🎧', pro: '📐' }[v]}</span><span><b>${t}</b><span class="d">${d}</span></span></button>`).join('');
+    $('ages').querySelectorAll('button').forEach((b) => { b.onclick = () => { D.age = b.dataset.v; save(); drawHero(); drawStart(); }; });
+    $('grower').value = D.grower || ''; $('grower').oninput = () => { D.grower = $('grower').value.trim(); save(); };
+    $('gardenBox').hidden = !D.ideas.length;
+    $('garden').innerHTML = D.ideas.map((x) => {
+      const st = x.end === 'go' ? '🍎 יוצאים לדרך' : x.end === 'other' ? '🍂 הפך לדשן לרעיון הבא' : `${G.STAGES[x.stage].icon} בשלב ${G.STAGES[x.stage].name}`;
+      const pic = x.end === 'other' ? G.compost() : (x.pics.length ? x.pics[x.pics.length - 1].svg : G.pot(x.stage));
+      return `<div class="g"><div class="p">${pic}</div><div><b>${esc(G.ideaName(x))}</b><small>${st}</small></div><div class="acts"><button type="button" data-open="${x.id}">פתיחה</button><button type="button" data-del="${x.id}" aria-label="מחיקה">🗑</button></div></div>`;
+    }).join('');
+    $('garden').querySelectorAll('[data-open]').forEach((b) => { b.onclick = () => { D.cur = b.dataset.open; save(); show(); }; });
+    $('garden').querySelectorAll('[data-del]').forEach((b) => { b.onclick = () => { const x = D.ideas.find((y) => y.id === b.dataset.del); if (x && confirm(`למחוק את "${G.ideaName(x)}" מהגינה?`)) { D.ideas = D.ideas.filter((y) => y !== x); if (D.cur === x.id) D.cur = null; save(); drawStart(); } }; });
+  }
+  $('plant').onclick = () => { const x = blank(); D.ideas.unshift(x); D.cur = x.id; save(); show(); };
+  $('toGarden').onclick = () => { D.cur = null; save(); show(); };
+
+  function show() {
+    drawHero();
+    const x = I();
+    $('start').hidden = !!x; $('growing').hidden = !x;
+    if (!x) { drawStart(); return; }
+    drawPath(); drawSide(); drawStage();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---------- שביל הגידול ----------
+  function drawPath() {
+    const x = I();
+    $('path').innerHTML = G.STAGES.map((s, i) => `<button type="button" data-i="${i}" ${i === x.open ? 'aria-current="step"' : ''} class="${i < x.stage ? 'done' : ''}" ${i > x.stage ? 'disabled' : ''}>${G.pot(i < x.stage ? i + 1 : i)}<span>${s.icon} ${s.name}</span></button>`).join('');
+    $('path').querySelectorAll('button').forEach((b) => { b.onclick = () => { x.open = +b.dataset.i; save(); drawPath(); drawStage(); }; });
+  }
+
+  // ---------- הרעיון בצד ----------
+  let viewPic = -1;
+  function drawSide() {
+    const x = I();
+    const pics = x.pics;
+    const p = viewPic >= 0 && pics[viewPic] ? pics[viewPic] : pics[pics.length - 1];
+    $('ideaPic').innerHTML = x.end === 'other' && viewPic < 0 ? G.compost() : (p && p.svg ? p.svg : G.pot(x.stage));
+    $('ideaName').textContent = G.ideaName(x);
+    $('ideaCap').textContent = p ? (p.caption || '') : 'הציור של הרעיון יופיע כאן אחרי המשוב הראשון של גני.';
+    $('versBox').hidden = pics.length < 2;
+    $('vers').innerHTML = pics.map((q, i) => `<button type="button" data-i="${i}" aria-pressed="${(viewPic < 0 ? pics.length - 1 : viewPic) === i}" title="${esc((G.STAGES.find((s) => s.id === q.stage) || {}).name || '')}${q.changed ? ': ' + esc(q.changed) : ''}">${q.svg}</button>`).join('');
+    $('vers').querySelectorAll('button').forEach((b) => { b.onclick = () => { viewPic = +b.dataset.i === pics.length - 1 ? -1 : +b.dataset.i; drawSide(); }; });
+    $('lookNow').value = x.lookNow || ''; $('lookNow').oninput = () => { x.lookNow = $('lookNow').value; save(); };
+  }
+
+  // ---------- השלבים ----------
+  const prompts = (id) => { const p = G.PROMPTS[id]; return p ? (kid() ? p.kid : p.big) : []; };
+  const helpList = (id) => prompts(id).length ? `<p class="muted" style="margin:0 0 6px">שאלות שעוזרות לחשוב:</p><ul class="muted" style="margin:0 0 6px">${prompts(id).map((q) => `<li>${esc(q)}</li>`).join('')}</ul>` : '';
+  function drawStage() {
+    const x = I(), s = G.STAGES[x.open], box = $('stage');
+    let h = `<h2 class="t">${s.icon} ${s.name}: ${s.title}</h2><p class="sub">${esc(s.ask)}.</p>`;
+    if (s.id === 'seed') h += seedForm(x);
+    if (s.id === 'sprout') h += sproutForm(x);
+    if (s.id === 'guard') h += guardForm(x);
+    if (s.id === 'grow') h += growForm(x);
+    if (s.id === 'fruit') { box.innerHTML = h + fruitForm(x); bindFruit(x); return; }
+    h += `<div class="go-row"><button class="btn grow" type="button" id="askFb">🌱 ${x.fb[s.id] ? 'משוב חדש מגני' : 'משוב מגני'}</button></div><p class="err" id="err" role="alert"></p><div id="waitBox"></div><div id="fbBox"></div>`;
+    box.innerHTML = h;
+    bindForm(x, s.id);
+    $('askFb').onclick = () => askFeedback(s.id);
+    drawFeedback(x, s.id);
+  }
+  const val = (v) => esc(v || '');
+  function seedForm(x) {
+    const S = x.stages.seed;
+    return `${helpList('seed')}
+<h3 class="q">מאיפה הרעיון בא?</h3><div class="tiles" data-pick="source">${G.SOURCES.map(([v, ic, t, d]) => `<button type="button" class="tile" data-v="${v}" aria-pressed="${S.source === v}"><span class="ic">${ic}</span><span><b>${t}</b><span class="d">${d}</span></span></button>`).join('')}</div>
+<input type="text" data-k="seed.sourceText" maxlength="200" value="${val(S.sourceText)}" placeholder="${kid() ? 'מה קרה? (רשות)' : 'מה הצורך, ההשראה או המחשבה? (רשות)'}" style="margin-top:8px">
+<label class="f">איך נקרא לרעיון?</label><input type="text" data-k="name" maxlength="60" value="${val(x.name)}" placeholder="${kid() ? 'למשל: המכונית המעופפת' : 'שם קצר לרעיון'}">
+<label class="f">מה הרעיון?</label><textarea data-k="seed.what" maxlength="800" rows="3" placeholder="${kid() ? 'מספרים במשפט או שניים' : 'הרעיון במשפט או שניים, ומה הוא עושה'}">${val(S.what)}</textarea>
+<label class="f">למי הוא? <small class="muted">רשות</small></label><input type="text" data-k="seed.forWho" maxlength="200" value="${val(S.forWho)}" placeholder="${kid() ? 'למי הוא יעזור או ישמח?' : 'למי הרעיון מיועד, ומה ישתנה בזכותו?'}">
+<h3 class="q">איך הרעיון נראה? <small>גני תצייר אותו לפי התיאור</small></h3><div class="tiles" data-pick="lookKind">${G.LOOKS.map(([v, ic, t, d]) => `<button type="button" class="tile" data-v="${v}" aria-pressed="${S.lookKind === v}"><span class="ic">${ic}</span><span><b>${t}</b><span class="d">${d}</span></span></button>`).join('')}</div>
+<textarea data-k="seed.look" maxlength="400" rows="2" style="margin-top:8px" placeholder="${S.lookKind === 'image' ? 'הרעיון שלי... כמו... (למשל: עקשן כמו פרד ויפה כמו נסיכה ורודה)' : 'מה רואים? צבעים, צורה, גודל'}">${val(S.look)}</textarea>`;
+  }
+  function itemRow(it, i, kind) {
+    return `<div class="it" data-it="${kind}.${i}"><button type="button" class="rm" data-rm="${kind}.${i}" aria-label="הסרה">✕</button>
+<input type="text" data-ik="${kind}.${i}.text" maxlength="200" value="${val(it.text)}" placeholder="${kind === 'pros' ? (kid() ? 'מה טוב?' : 'יתרון') : (kid() ? 'מה פחות טוב?' : 'חיסרון')}">
+<div class="mini"><span>למי?</span><select data-ik="${kind}.${i}.whom"><option value="">בחירה</option>${G.FOR_WHOM.map(([v, t]) => `<option value="${v}" ${it.whom === v ? 'selected' : ''}>${t}</option>`).join('')}</select>
+<span>כמה חשוב?</span>${G.WEIGHT.map(([v, ic, t]) => `<button type="button" class="chip" data-w="${kind}.${i}.${v}" aria-pressed="${(it.w || 2) === v}" title="${t}">${ic} ${t}</button>`).join('')}
+${kind === 'cons' ? `<span>אפשר לתקן?</span><select data-ik="${kind}.${i}.fix"><option value="">בחירה</option>${G.FIX.map(([v, t]) => `<option value="${v}" ${it.fix === v ? 'selected' : ''}>${t}</option>`).join('')}</select>` : ''}</div></div>`;
+  }
+  function sproutForm(x) {
+    const S = x.stages.sprout;
+    return `${helpList('sprout')}<p class="notme" style="margin:6px 0 12px"><span>⚖️</span><span>${kid() ? 'בכל נקודה בודקים: למי זה טוב או לא טוב, וכמה זה חשוב.' : 'רשימה היא רק התחלה. לכל נקודה בודקים למי היא נוגעת, כמה היא חשובה, ואם אפשר לתקן אותה. כך רואים לאן הכף נוטה.'}</span></p>
+<div class="pc"><div class="col pro"><h4>👍 ${kid() ? 'מה טוב' : 'יתרונות'}</h4>${S.pros.map((it, i) => itemRow(it, i, 'pros')).join('')}<button type="button" class="chip" data-add="pros">➕ עוד</button></div>
+<div class="col con"><h4>🤔 ${kid() ? 'מה פחות טוב' : 'חסרונות'}</h4>${S.cons.map((it, i) => itemRow(it, i, 'cons')).join('')}<button type="button" class="chip" data-add="cons">➕ עוד</button></div></div>
+<div class="scale" id="scale">${scaleSvg(S)}</div>`;
+  }
+  function scaleSvg(S) {
+    const sum = (a) => a.filter((x) => x.text).reduce((n, x) => n + (x.w || 2), 0);
+    const p = sum(S.pros), c = sum(S.cons), t = Math.max(-14, Math.min(14, (c - p) * 3));
+    return `<svg viewBox="0 0 240 110" aria-label="כף המאזניים: ${p} מול ${c}"><path d="M120 22v70" stroke="#5C6873" stroke-width="5" stroke-linecap="round"/><path d="M90 100h60" stroke="#5C6873" stroke-width="6" stroke-linecap="round"/><g transform="rotate(${t} 120 24)"><path d="M40 24h160" stroke="#5C6873" stroke-width="5" stroke-linecap="round"/><path d="M40 24l-18 34h36z" fill="#57B97E" opacity=".25" stroke="#2F7D52" stroke-width="2"/><path d="M200 24l-18 34h36z" fill="#E0603F" opacity=".22" stroke="#8E2F18" stroke-width="2"/><text x="40" y="54" text-anchor="middle" font-size="16" font-weight="800" fill="#2F7D52">${p}</text><text x="200" y="54" text-anchor="middle" font-size="16" font-weight="800" fill="#8E2F18">${c}</text></g><circle cx="120" cy="24" r="6" fill="#FFC929" stroke="#5C6873" stroke-width="2"/></svg>`;
+  }
+  function guardForm(x) {
+    const S = x.stages.guard;
+    const on = S.items.filter((h) => h.on);
+    return `${helpList('guard')}<h3 class="q">מי או מה עלול להיפגע? <small>אפשר לבחור כמה</small></h3>
+<div class="harm">${G.HARM.map(([v, ic, t]) => { const it = S.items.find((h) => h.id === v); return `<button type="button" class="tile" data-harm="${v}" aria-pressed="${!!(it && it.on)}"><span class="ic">${ic}</span><b>${t}</b></button>`; }).join('')}</div>
+<div class="harmd">${on.map((h) => `<div class="it"><b>${G.HARM.find((y) => y[0] === h.id)[1]} ${G.HARM.find((y) => y[0] === h.id)[2]}</b><input type="text" data-hk="${h.id}.how" maxlength="200" value="${val(h.how)}" placeholder="${kid() ? 'איך זה יכול לקרות?' : 'איך הפגיעה עלולה לקרות?'}"><input type="text" data-hk="${h.id}.protect" maxlength="200" value="${val(h.protect)}" placeholder="${kid() ? 'איך שומרים?' : 'איך מגינים? מה משנים ברעיון?'}" style="margin-top:6px"></div>`).join('')}</div>
+${on.length ? '' : `<label class="f">בדקנו ולא מצאנו פגיעה? <small class="muted">איך בדקנו?</small></label><textarea data-k="guard.none" maxlength="400" rows="2" placeholder="${kid() ? 'חשבנו על... ולא מצאנו' : 'על מי ועל מה חשבנו, ולמה נראה שאין פגיעה'}">${val(S.none)}</textarea>`}`;
+  }
+  function growForm(x) {
+    const S = x.stages.grow;
+    const f = (k, l, ph) => `<label class="f">${l}</label><textarea data-k="grow.${k}" maxlength="500" rows="2" placeholder="${ph}">${val(S[k])}</textarea>`;
+    return helpList('grow') + f('need', kid() ? 'מה חסר בשביל הרעיון?' : 'מה נדרש: חומרים, אנשים, זמן ומקום', kid() ? 'למשל: קרטון, דבק וחבר שיעזור' : 'רשימה קצרה') +
+      f('first', kid() ? 'מה הדבר הקטן הראשון שננסה?' : 'הניסוי הקטן והבטוח הראשון', kid() ? 'למשל: לבנות מכונית קטנה מקרטון' : 'מה, מתי ואיפה') +
+      f('helpers', kid() ? 'מי יעזור לנו?' : 'מי מעורב/ת, ומי מחליט/ה', kid() ? 'למשל: אמא, המורה, חברים מהכיתה' : 'שותפים ותפקידים') +
+      f('sign', kid() ? 'איך נדע שזה עובד?' : 'איך נדע שהרעיון עובד, ומתי בודקים', kid() ? 'למשל: כולם צוחקים ומשחקים' : 'סימן ברור ונקודת בדיקה');
+  }
+  function bindForm(x, sid) {
+    const box = $('stage');
+    const setPath = (k, v) => { if (k === 'name') { x.name = v; $('ideaName').textContent = G.ideaName(x); return; } const [a, b] = k.split('.'); x.stages[a][b] = v; };
+    box.querySelectorAll('[data-k]').forEach((el) => { el.oninput = () => { setPath(el.dataset.k, el.value); save(); }; });
+    box.querySelectorAll('[data-pick]').forEach((g) => g.querySelectorAll('button').forEach((b) => { b.onclick = () => { x.stages.seed[g.dataset.pick] = b.dataset.v; save(); drawStage(); }; }));
+    // יתרונות וחסרונות
+    box.querySelectorAll('[data-ik]').forEach((el) => { const [k, i, f] = el.dataset.ik.split('.'); const h = () => { x.stages.sprout[k][+i][f] = el.value; save(); if (f === 'text') $('scale').innerHTML = scaleSvg(x.stages.sprout); }; el.oninput = h; el.onchange = h; });
+    box.querySelectorAll('[data-w]').forEach((b) => { b.onclick = () => { const [k, i, v] = b.dataset.w.split('.'); x.stages.sprout[k][+i].w = +v; save(); drawStage(); }; });
+    box.querySelectorAll('[data-add]').forEach((b) => { b.onclick = () => { const k = b.dataset.add; x.stages.sprout[k].push(k === 'cons' ? { text: '', whom: '', w: 2, fix: '' } : { text: '', whom: '', w: 2 }); save(); drawStage(); }; });
+    box.querySelectorAll('[data-rm]').forEach((b) => { b.onclick = () => { const [k, i] = b.dataset.rm.split('.'); x.stages.sprout[k].splice(+i, 1); if (!x.stages.sprout[k].length) x.stages.sprout[k].push({ text: '', whom: '', w: 2 }); save(); drawStage(); }; });
+    // פגיעה
+    box.querySelectorAll('[data-harm]').forEach((b) => { b.onclick = () => { const h = x.stages.guard.items.find((y) => y.id === b.dataset.harm); h.on = !h.on; save(); drawStage(); }; });
+    box.querySelectorAll('[data-hk]').forEach((el) => { const [id, f] = el.dataset.hk.split('.'); el.oninput = () => { x.stages.guard.items.find((y) => y.id === id)[f] = el.value; save(); }; });
+  }
+  function missing(x, sid) {
+    const S = x.stages;
+    if (sid === 'seed' && !String(S.seed.what || '').trim()) return kid() ? 'כדי לקבל משוב, אפשר לכתוב מה הרעיון.' : 'כדי לקבל משוב, אפשר לכתוב מה הרעיון.';
+    if (sid === 'sprout' && !S.sprout.pros.some((p) => p.text.trim()) && !S.sprout.cons.some((p) => p.text.trim())) return 'כדי לקבל משוב, אפשר לכתוב לפחות יתרון אחד או חיסרון אחד.';
+    if (sid === 'guard' && !S.guard.items.some((h) => h.on) && !String(S.guard.none || '').trim()) return 'כדי לקבל משוב, אפשר לבחור מי עלול להיפגע, או לכתוב איך בדקתם שאין פגיעה.';
+    if (sid === 'grow' && !String(S.grow.first || '').trim()) return 'כדי לקבל משוב, אפשר לכתוב מה הניסיון הקטן הראשון.';
+    return '';
+  }
+
+  // ---------- המתנה ----------
+  function waiting(node, text, exp, what) {
+    const t0 = Date.now();
+    node.innerHTML = `<div class="wait"><div class="wait-t">${esc(text)}</div><div class="wait-bar"><i></i></div><div class="wait-s"></div></div>`;
+    const fill = node.querySelector('i'), sub = node.querySelector('.wait-s');
+    const tick = () => { const s = Math.round((Date.now() - t0) / 1000); fill.style.width = Math.min(95, Math.round(s / exp * 90)) + '%'; sub.textContent = s <= exp ? `${what} נמשך כ־${exp} שניות. חלפו ${s} שניות.` : `${what} נמשך מעט יותר מהרגיל. חלפו ${s} שניות.`; };
+    tick(); const id = setInterval(tick, 1000);
+    return () => { clearInterval(id); node.innerHTML = ''; };
+  }
+  const NO_MODEL = 'אין כרגע חיבור לגני. כל מה שכתבתם נשמר, ואפשר לנסות שוב בעוד רגע.';
+
+  // ---------- משוב מגני ----------
+  let busy = false;
+  async function askFeedback(sid) {
+    if (busy) return;
+    const x = I();
+    const m = missing(x, sid); if (m) { $('err').textContent = m; return; }
+    $('err').textContent = ''; busy = true; $('askFb').disabled = true;
+    const stop = waiting($('waitBox'), 'גני מסתכלת על הרעיון ומכינה משוב וציור.', 45, 'המשוב של גני');
+    try {
+      const v = await sbeCallAIJson(AI_SERVER, { system: G.feedbackSystem(D.age), messages: [{ role: 'user', content: G.feedbackInput(x, sid) }], maxTokens: 9000, fast: true }, 240000, G.validFeedback);
+      const fb = G.normFeedback(v);
+      x.fb[sid] = fb; delete x.move[sid];
+      if (fb.picture.svg) { x.pics.push({ stage: sid, svg: fb.picture.svg, caption: fb.picture.caption, changed: fb.picture.changed }); viewPic = -1; x.lookNow = ''; }
+      x.log.push({ t: 'fb', stage: sid });
+      save(); stop(); drawHero(); drawSide(); drawStage();
+      const n = $('ideaPic'); n.classList.remove('grew'); void n.offsetWidth; n.classList.add('grew');
+      $('fbBox').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      stop();
+      $('err').textContent = window.sbeAIError ? window.sbeAIError(e, NO_MODEL, 'המשוב חזר חלקי. מה שכתבתם נשמר, ואפשר לבקש שוב.') : NO_MODEL;
+    } finally { busy = false; if ($('askFb')) $('askFb').disabled = false; }
+  }
+  const SECT = [['strengths', '💪', 'יתרונות וחוזקות'], ['risks', '⚠️', 'חסרונות וסכנות'], ['improve', '🔧', 'מה כדאי לשפר'], ['think', '💭', 'על מה כדאי לחשוב'], ['notice', '👀', 'למה כדאי לשים לב']];
+  function drawFeedback(x, sid) {
+    const fb = x.fb[sid], box = $('fbBox');
+    if (!fb) { box.innerHTML = ''; return; }
+    const mv = x.move[sid] || {};
+    const chat = x.chat[sid] || [];
+    const cons = x.log.filter((e) => e.t === 'consult' && e.stage === sid);
+    box.innerHTML = `<div class="fb"><div class="head">${G.geni('talk')}<p class="frame">${esc(fb.frame)}</p></div>
+<div class="grid">${SECT.filter(([k]) => fb[k] && fb[k].length).map(([k, ic, t]) => `<div class="box"><h4>${ic} ${t}</h4><ul>${fb[k].map((y) => `<li>${esc(y)}</li>`).join('')}</ul></div>`).join('')}
+${fb.consult.length ? `<div class="box"><h4>🗣 עם מי אפשר להתייעץ</h4><ul>${fb.consult.map((c) => `<li><b>${esc(c.who)}</b>${c.why ? ': ' + esc(c.why) : ''}</li>`).join('')}</ul></div>` : ''}</div>
+${fb.question ? `<p class="q">❓ ${esc(fb.question)}</p>` : ''}</div>
+<h3 class="q">מה עושים עם המשוב? <small>הבחירה שלכם. גם התנגדות מנומקת היא דרך טובה לגדל רעיון.</small></h3>
+<div class="row moves">${G.MOVES.map(([v, ic, t]) => `<button type="button" class="chip" data-move="${v}" aria-pressed="${mv.move === v}">${ic} ${t}</button>`).join('')}</div>
+${mv.move ? `<input type="text" id="moveNote" maxlength="300" value="${val(mv.note)}" style="margin-top:8px" placeholder="${{ all: 'מה הכי עזר? (רשות)', some: 'מה ההסתייגות?', part: 'לאיזה חלק מתנגדים, ולמה?', no: 'למה מתנגדים?', think: 'על מה רוצים לחשוב?', consult: 'עם מי רוצים להתייעץ?', try: 'מה ננסה בזהירות?' }[mv.move]}">` : ''}
+<div class="chat"><h3 class="q" style="margin-top:0">💬 שיחה עם גני <small>על המשוב, או כדי להתייעץ</small></h3><div class="msgs" id="msgs">${chat.map((c) => `<div class="m ${c.r === 'u' ? 'me' : 'geni'}">${esc(c.t)}</div>`).join('')}</div>
+<div class="send"><input type="text" id="chatIn" maxlength="500" placeholder="${kid() ? 'מה רוצים לשאול את גני?' : 'למשל: למה זה חיסרון? או: מה דעתך אם נשנה...'}"><button class="btn" type="button" id="chatGo">שליחה</button></div><p class="err" id="chatErr"></p></div>
+<div class="chat"><h3 class="q" style="margin-top:0">🤝 עם מי עוד התייעצנו? <small>רשות: התייעצות עם אנשים</small></h3>
+${cons.length ? `<ul class="consults">${cons.map((c) => `<li><b>${esc(c.who)}</b>${c.said ? ': ' + esc(c.said) : ''}</li>`).join('')}</ul>` : ''}
+<div class="row"><input type="text" id="cWho" maxlength="60" placeholder="עם מי?" style="flex:1;min-width:140px"><input type="text" id="cSaid" maxlength="300" placeholder="מה אמר/ה?" style="flex:2;min-width:180px"><button class="btn alt" type="button" id="cAdd">➕ הוספה</button></div></div>
+<div class="decide"><h3 class="q" style="margin-top:0">🧭 מחליטים: איך ממשיכים?</h3><div class="tiles">${G.DECIDE.map(([v, ic, t]) => `<button type="button" class="tile" data-dec="${v}"><span class="ic">${ic}</span><span><b>${t}</b><span class="d">${{ next: 'הרעיון מוכן לשלב הבא', improve: 'משנים את מה שכתבנו ומבקשים משוב חדש', other: 'הרעיון הזה הופך לדשן לרעיון הבא' }[v]}</span></span></button>`).join('')}</div>
+<div id="otherBox" hidden><label class="f" for="otherNote">מה הרעיון הזה השאיר לנו?</label><textarea id="otherNote" maxlength="400" rows="2" placeholder="מה למדנו ממנו, ומה ניקח לרעיון הבא"></textarea><div class="go-row"><button class="btn" type="button" id="otherGo">🍂 מגדלים רעיון אחר</button></div></div></div>`;
+    box.querySelectorAll('[data-move]').forEach((b) => { b.onclick = () => { x.move[sid] = { move: b.dataset.move, note: (x.move[sid] || {}).note || '' }; x.log = x.log.filter((e) => !(e.t === 'move' && e.stage === sid && e.fbN === fbN(x, sid))); x.log.push({ t: 'move', stage: sid, move: b.dataset.move, note: x.move[sid].note, fbN: fbN(x, sid) }); save(); drawFeedback(x, sid); }; });
+    if ($('moveNote')) $('moveNote').oninput = () => { x.move[sid].note = $('moveNote').value; const e = x.log.filter((y) => y.t === 'move' && y.stage === sid).pop(); if (e) e.note = $('moveNote').value; save(); };
+    $('chatGo').onclick = () => sendChat(sid);
+    $('chatIn').onkeydown = (e) => { if (e.key === 'Enter') sendChat(sid); };
+    $('cAdd').onclick = () => { const w = $('cWho').value.trim(); if (!w) { $('cWho').focus(); return; } x.log.push({ t: 'consult', stage: sid, who: w, said: $('cSaid').value.trim() }); save(); drawFeedback(x, sid); };
+    box.querySelectorAll('[data-dec]').forEach((b) => { b.onclick = () => decide(sid, b.dataset.dec); });
+    if ($('otherGo')) $('otherGo').onclick = () => { x.end = 'other'; x.endNote = $('otherNote').value.trim(); x.log.push({ t: 'decide', stage: sid, d: 'other', note: x.endNote }); x.stage = 4; x.open = 4; save(); show(); };
+    const msgs = $('msgs'); if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  }
+  const fbN = (x, sid) => x.log.filter((e) => e.t === 'fb' && e.stage === sid).length;
+  function decide(sid, d) {
+    const x = I(), i = G.STAGES.findIndex((s) => s.id === sid);
+    if (d === 'other') { $('otherBox').hidden = false; $('otherNote').focus(); return; }
+    x.log.push({ t: 'decide', stage: sid, d });
+    if (d === 'improve') { save(); window.scrollTo({ top: $('stage').offsetTop - 10, behavior: 'smooth' }); const f = $('stage').querySelector('textarea,input'); if (f) f.focus(); return; }
+    if (i + 1 > x.stage) x.stage = i + 1;
+    x.open = i + 1; save(); show();
+  }
+  async function sendChat(sid) {
+    const x = I(), t = $('chatIn').value.trim(); if (!t || busy) return;
+    const arr = x.chat[sid] = x.chat[sid] || [];
+    arr.push({ r: 'u', t }); x.log.push({ t: 'chat', stage: sid }); save(); drawFeedback(x, sid);
+    busy = true; $('chatGo').disabled = true;
+    const fb = x.fb[sid];
+    const ctx = `הרעיון:\n${G.describe(x)}\n\nהמשוב שנתת בשלב "${(G.STAGES.find((s) => s.id === sid) || {}).name}":\n${JSON.stringify({ frame: fb.frame, strengths: fb.strengths, risks: fb.risks, improve: fb.improve, think: fb.think, notice: fb.notice })}${x.move[sid] ? `\nהתגובה של המגדלים למשוב: ${(G.MOVES.find((m) => m[0] === x.move[sid].move) || [])[2]} ${x.move[sid].note || ''}` : ''}`;
+    const messages = [{ role: 'user', content: ctx }, { role: 'assistant', content: 'קראתי. אני כאן לשיחה.' }].concat(arr.map((c) => ({ role: c.r === 'u' ? 'user' : 'assistant', content: c.t })));
+    try {
+      const r = await sbeCallAI(AI_SERVER, { system: G.chatSystem(D.age), messages, maxTokens: 1200, fast: true }, 120000);
+      arr.push({ r: 'g', t: String(r || '').replace(/\*\*/g, '').trim() }); save(); drawFeedback(x, sid);
+    } catch (e) {
+      arr.pop(); x.log.pop(); save(); drawFeedback(x, sid); $('chatIn').value = t;
+      $('chatErr').textContent = window.sbeAIError ? window.sbeAIError(e, 'אין כרגע חיבור לגני. אפשר ללחוץ שוב בעוד רגע.') : 'אין כרגע חיבור לגני. אפשר ללחוץ שוב בעוד רגע.';
+    } finally { busy = false; if ($('chatGo')) $('chatGo').disabled = false; }
+  }
+
+  // ---------- הפרי: ההחלטה והסיכום ----------
+  function fruitForm(x) {
+    const done = !!x.summary;
+    let h = `<h3 class="q">${x.end === 'other' ? '🍂 החלטתם לגדל רעיון אחר' : 'מה מחליטים?'}</h3>`;
+    if (x.end !== 'other') h += `<div class="tiles">${[['go', '🍎', 'יוצאים לדרך', 'מוציאים את הרעיון לפועל'], ['other', '🍂', 'מגדלים רעיון אחר', 'הרעיון הזה הופך לדשן לרעיון הבא']].map(([v, ic, t, d]) => `<button type="button" class="tile" data-end="${v}" aria-pressed="${x.end === v}"><span class="ic">${ic}</span><span><b>${t}</b><span class="d">${d}</span></span></button>`).join('')}</div>`;
+    if (x.end) h += `<label class="f" for="endNote">${x.end === 'go' ? 'מה הצעד הראשון, ומתי?' : 'מה הרעיון השאיר לנו?'}</label><textarea id="endNote" maxlength="400" rows="2">${val(x.endNote)}</textarea>
+<div class="go-row"><button class="btn grow" type="button" id="sumGo">🌳 ${done ? 'סיכום חדש מגני' : 'הסיכום של גני'}</button>${done ? '<button class="btn alt" type="button" id="printGo">🖨 הדפסה / שמירה כ-PDF</button>' : ''}<button class="btn alt" type="button" id="newIdea">🌰 רעיון חדש</button></div><p class="err" id="err" role="alert"></p><div id="waitBox"></div>`;
+    if (done) h += summaryView(x);
+    return h;
+  }
+  function summaryView(x) {
+    const S = x.summary, b = G.badges(x);
+    return `<div class="fb"><div class="head">${G.geni('talk')}<p class="frame">${esc(S.frame)}</p></div>
+<div class="grid"><div class="box"><h4>🍎 על הרעיון: מה חזק בו</h4><ul>${S.product.strengths.map((y) => `<li>${esc(y)}</li>`).join('')}</ul></div>
+<div class="box"><h4>🌱 על הרעיון: איך ממשיכים</h4><ul>${S.product.next.map((y) => `<li>${esc(y)}</li>`).join('')}</ul></div>
+<div class="box"><h4>🛤 על הדרך: התייעצות</h4><p style="margin:0">${esc(S.path.consult)}</p></div>
+<div class="box"><h4>🧪 על הדרך: ניסיונות ושינויים</h4><p style="margin:0">${esc(S.path.trying)}</p></div>
+<div class="box"><h4>🌦 על הדרך: מה עשיתם עם המשוב</h4><p style="margin:0">${esc(S.path.feedback)}</p></div></div>
+${S.cheer ? `<p class="q">🌟 ${esc(S.cheer)}</p>` : ''}</div>
+${x.pics.length ? `<h3 class="q">איך הרעיון גדל</h3><div class="sumv">${x.pics.map((p) => `<figure><div>${p.svg}</div>${esc((G.STAGES.find((s) => s.id === p.stage) || {}).name || 'בסוף')}</figure>`).join('')}</div>` : ''}
+${b.length ? `<h3 class="q">🏅 מה בלט בדרך שלכם</h3><div class="badges">${b.map(([ic, t, d]) => `<div class="badge"><b>${ic} ${t}</b>${d}</div>`).join('')}</div>` : ''}`;
+  }
+  function bindFruit(x) {
+    $('stage').querySelectorAll('[data-end]').forEach((b) => { b.onclick = () => { x.end = b.dataset.end; x.log.push({ t: 'decide', stage: 'fruit', d: x.end === 'go' ? 'next' : 'other' }); save(); drawHero(); drawSide(); drawStage(); }; });
+    if ($('endNote')) $('endNote').oninput = () => { x.endNote = $('endNote').value; save(); };
+    if ($('sumGo')) $('sumGo').onclick = () => askSummary();
+    if ($('printGo')) $('printGo').onclick = () => printIt();
+    if ($('newIdea')) $('newIdea').onclick = () => { const y = blank(); D.ideas.unshift(y); D.cur = y.id; save(); show(); };
+  }
+  async function askSummary() {
+    if (busy) return;
+    const x = I(); busy = true; $('sumGo').disabled = true; $('err').textContent = '';
+    const stop = waiting($('waitBox'), 'גני מסכמת את הרעיון ואת הדרך.', 45, 'הסיכום של גני');
+    try {
+      const v = await sbeCallAIJson(AI_SERVER, { system: G.summarySystem(D.age), messages: [{ role: 'user', content: G.summaryInput(x) }], maxTokens: 9000, fast: true }, 240000, G.validSummary);
+      x.summary = G.normSummary(v);
+      if (x.summary.picture.svg) x.pics.push({ stage: 'fruit', svg: x.summary.picture.svg, caption: x.summary.picture.caption, changed: x.summary.picture.changed });
+      save(); stop(); viewPic = -1; drawHero(); drawSide(); drawStage();
+    } catch (e) { stop(); $('err').textContent = window.sbeAIError ? window.sbeAIError(e, NO_MODEL, 'הסיכום חזר חלקי. אפשר לבקש שוב.') : NO_MODEL; }
+    finally { busy = false; if ($('sumGo')) $('sumGo').disabled = false; }
+  }
+
+  // ---------- הדפסה ----------
+  function rows(list) { return list.filter((r) => r[1]).map(([a, b]) => `<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`).join(''); }
+  function buildPrint() {
+    const x = I(); if (!x) return;
+    const S = x.stages, today = new Date().toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\//g, '.');
+    const last = x.pics[x.pics.length - 1];
+    let h = `<div class="pr"><div class="pr-top"><img src="assets/begood-logo.webp" alt="Begood"><b>משחקי חוסן · להצמיח רעיון</b><span>${today}</span></div>
+<div class="big">${last ? `<div>${last.svg}</div>` : ''}<div style="border:0;width:auto;height:auto"><h1>${esc(G.ideaName(x))}</h1>${D.grower ? `<p>גידלו: <b>${esc(D.grower)}</b></p>` : ''}<p>${x.end === 'go' ? '🍎 יוצאים לדרך' : x.end === 'other' ? '🍂 הפך לדשן לרעיון הבא' : ''}${x.endNote ? ': ' + esc(x.endNote) : ''}</p></div></div>`;
+    if (x.pics.length > 1) h += `<h2>איך הרעיון גדל</h2><div class="vers">${x.pics.map((p) => `<figure><div>${p.svg}</div>${esc((G.STAGES.find((s) => s.id === p.stage) || {}).name || '')}${p.changed ? ': ' + esc(p.changed) : ''}</figure>`).join('')}</div>`;
+    h += `<h2>🌰 זרע: הרעיון</h2><table>${rows([['מאיפה בא', ((G.SOURCES.find((s) => s[0] === S.seed.source) || [])[2] || '') + (S.seed.sourceText ? ': ' + S.seed.sourceText : '')], ['הרעיון', S.seed.what], ['למי', S.seed.forWho], ['איך נראה', S.seed.look]])}</table>`;
+    const it = (a) => a.filter((y) => y.text).map((y) => `${y.text}${y.whom ? ' (' + ((G.FOR_WHOM.find((f) => f[0] === y.whom) || [])[1] || '') + ')' : ''}`).join(' · ');
+    if (x.stage >= 1) h += `<h2>🌱 נבט: יתרונות וחסרונות</h2><table>${rows([['יתרונות', it(S.sprout.pros)], ['חסרונות', it(S.sprout.cons)]])}</table>`;
+    if (x.stage >= 2) { const on = S.guard.items.filter((y) => y.on); h += `<h2>🪴 שתיל: שומרים שלא יפגע</h2><table>${on.length ? rows(on.map((y) => [(G.HARM.find((q) => q[0] === y.id) || [])[2], [y.how, y.protect && 'הגנה: ' + y.protect].filter(Boolean).join(' · ')])) : rows([['בדקנו ולא מצאנו פגיעה', S.guard.none]])}</table>`; }
+    if (x.stage >= 3) h += `<h2>🌿 צמח: מתכננים ומנסים בקטן</h2><table>${rows([['מה נדרש', S.grow.need], ['הניסיון הראשון', S.grow.first], ['מי מעורב/ת', S.grow.helpers], ['איך נדע', S.grow.sign]])}</table>`;
+    const fbRows = G.STAGES.filter((s) => x.fb[s.id]).map((s) => { const f = x.fb[s.id], mv = x.move[s.id]; return [s.icon + ' ' + s.name, [f.strengths[0] && 'חוזקה: ' + f.strengths[0], f.improve[0] && 'לשפר: ' + f.improve[0], mv && 'מה עשינו עם המשוב: ' + (G.MOVES.find((m) => m[0] === mv.move) || [])[2] + (mv.note ? ' (' + mv.note + ')' : '')].filter(Boolean).join(' · ')]; });
+    if (fbRows.length) h += `<h2>המשוב של גני בכל שלב</h2><table>${rows(fbRows)}</table>`;
+    if (x.summary) {
+      const Sm = x.summary;
+      h += `<h2>הסיכום של גני</h2><p><b>${esc(Sm.frame)}</b></p><table>${rows([['מה חזק ברעיון', Sm.product.strengths.join(' · ')], ['איך ממשיכים', Sm.product.next.join(' · ')], ['התייעצות', Sm.path.consult], ['ניסיונות ושינויים', Sm.path.trying], ['מה עשינו עם המשוב', Sm.path.feedback]])}</table>${Sm.cheer ? `<p>${esc(Sm.cheer)}</p>` : ''}`;
+      const b = G.badges(x);
+      if (b.length) h += `<h2>מה בלט בדרך</h2><div class="bdg">${b.map(([ic, t, d]) => `<div><b>${ic} ${t}</b><br>${d}</div>`).join('')}</div>`;
+    }
+    h += '</div>';
+    if ($('print').dataset.h !== h) { $('print').innerHTML = h; $('print').dataset.h = h; }
+    document.title = 'משחקי חוסן · להצמיח רעיון · ' + G.ideaName(x) + ' · ' + today + ' · Begood';
+  }
+  async function printIt() {
+    buildPrint();
+    await Promise.all([...$('print').querySelectorAll('img')].map((im) => (im.complete ? Promise.resolve() : new Promise((r) => { im.onload = im.onerror = r; }))));
+    setTimeout(() => window.print(), 150);
+  }
+  window.addEventListener('beforeprint', buildPrint);
+
+  // דמו להצגה ולבדיקה (מנהלת המערכת): מילוי לדוגמה בלי מודל
+  window.sbeIdeaDemo = function (age) { D.age = age || D.age; const x = blank(); Object.assign(x.stages.seed, { source: 'need', sourceText: 'בהפסקה אין מה לעשות כשיורד גשם', what: 'פינת משחקים מתקפלת למסדרון, שנפתחת בימי גשם', forWho: 'לכל הכיתה', lookKind: 'image', look: 'עקשנית כמו פרד ויפה כמו נסיכה ורודה' }); x.name = 'פינת הגשם'; D.ideas.unshift(x); D.cur = x.id; save(); show(); return x; };
+  show();
+})();
+</script>
+</body>
+</html>
