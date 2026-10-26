@@ -126,7 +126,7 @@
     }
     function print() {
       if (!window.SBE_DOC || !SBE_DOC.print) return message('כלי ההדפסה לא נטען. אפשר לייצא עותק ולנסות שוב.', true);
-      SBE_DOC.print({title:'מסע אל החוסן: ' + journey.unitName, node:report(), extraCss:'.jws-report h1,.jws-report h2,.jws-report h3{border:0!important;border-bottom:0!important}.jws-report table{width:100%;border-collapse:collapse;margin:8px 0 18px}.jws-report th,.jws-report td{border:1px solid #CDD3D8;padding:7px;white-space:pre-wrap;overflow-wrap:anywhere}.jws-report th{width:30%;text-align:right;background:#eef3f6}.jws-report tr{break-inside:avoid}.jws-report p,.jws-report td{text-align:justify}'});
+      SBE_DOC.print({title:'מסע אל החוסן: ' + journey.unitName, node:report(), extraCss:(window.SBE_JOURNEY_FEEDBACK ? SBE_JOURNEY_FEEDBACK.PRINT_CSS : '') + '.jws-report h1,.jws-report h2,.jws-report h3,.jws-report h4{border:0!important;border-bottom:0!important}.jws-report table{width:100%;border-collapse:collapse;margin:8px 0 18px}.jws-report th,.jws-report td{border:1px solid #CDD3D8;padding:7px;white-space:pre-wrap;overflow-wrap:anywhere}.jws-report th{width:30%;text-align:right;background:#eef3f6}.jws-report tr{break-inside:avoid}.jws-report p,.jws-report td{text-align:justify}'});
     }
     function acceptMetadataRevision(result) {
       return applyMetadataRevision(result, true);

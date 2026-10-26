@@ -1,6 +1,7 @@
 (function (root) {
   'use strict';
   const A = root.SBE_JOURNEY_ANALYSIS;
+  const PRINT_CSS = '.jrf{direction:rtl;line-height:1.65}.jrf h2,.jrf h3,.jrf h4{border:0!important;padding-inline-start:0}.jrf p,.jrf li,.jrf td,.jrf th,.jrf summary{white-space:pre-wrap;overflow-wrap:anywhere}.jrf table{width:100%;table-layout:fixed;border-collapse:collapse;margin:8px 0 16px}.jrf th,.jrf td{border:1px solid #CDD3D8;padding:7px;vertical-align:top;text-align:right}.jrf th{width:30%;background:#eef3f6}.jrf td{width:70%}.jrf-card,.jrf-option,.jrf-source{margin:12px 0}.jrf summary{font-weight:700;list-style:none}.jrf summary::marker{display:none}.jrf-note{font-size:.92em}.jrf-details{margin:10px 0}';
   const labels = {
     strength:'חוזקה', gap:'פער במידע שנבדק', question:'שאלה לבירור', tension:'מתח או סתירה',
     existence:'קיום', realization:'מימוש', renewal:'התחדשות',
@@ -199,7 +200,14 @@
       snapshot.input[section.key].forEach(record=>{const card=el('section',undefined,'jrf-source'); card.appendChild(el('h4',record.title || record.id)); fields(card,A.INPUT_FIELDS[section.key].map(f=>[f.label,readable(snapshot.input,section.key,f,record[f.key])])); box.appendChild(card);}); inputBox.appendChild(box);
     }); host.appendChild(inputBox);
     if (!opts.readOnly && opts.onDelete) { const box=el('div',undefined,'jrf-buttons'); button(box,'מחיקת הדוח השמור',opts.onDelete); host.appendChild(box); }
+    if (opts.print) host.querySelectorAll('dl.jrf-fields').forEach(dl=>{
+      const table=el('table'), body=el('tbody'); table.appendChild(body);
+      Array.from(dl.children).forEach(line=>{
+        const row=el('tr'), title=el('th',line.querySelector('dt').textContent); title.scope='row';
+        append(row,title,el('td',line.querySelector('dd').textContent)); body.appendChild(row);
+      }); dl.replaceWith(table);
+    });
     return host;
   }
-  root.SBE_JOURNEY_FEEDBACK = {render};
+  root.SBE_JOURNEY_FEEDBACK = {render,PRINT_CSS};
 })(typeof window !== 'undefined' ? window : this);
