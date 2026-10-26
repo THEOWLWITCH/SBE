@@ -14,6 +14,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
 <script src="lib/resilience-advisor-sources.js"></script>
 <script src="lib/journey-model.js"></script>
+<script src="lib/journey-workspace-model.js"></script>
+<script src="lib/journey-workspace.js"></script>
+<link rel="stylesheet" href="lib/journey-workspace.css">
 <script src="lib/report-table.js"></script>
 <link rel="stylesheet" href="lib/journey.css">
 <style>
@@ -228,10 +231,19 @@ async function complete(system,messages,maxTokens,review){
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
   return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},480000)||'');
 }
+function completeJson(system,messages,maxTokens,review,check){
+  return sbeCallAIJson(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},480000,check);
+}
 
 
 
-function accessApi(body){return fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json().catch(()=>({})).then(d=>{d._status=r.status;return d;}));}
+async function accessApi(body){
+  const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 90000);
+  try {
+    const r = await fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:controller.signal});
+    const d = await r.json().catch(()=>({})); d._status = r.status; return d;
+  } finally { clearTimeout(timer); }
+}
 function token(){try{return sessionStorage.getItem('sbe.session.token')||'';}catch(e){return '';}}
 const api = (action, extra) => accessApi({ action, token: token(), ...(extra || {}) });
 const fmt = d => d ? String(d).slice(0,10).split('-').reverse().map((x,i)=>i===2?x.slice(2):x).join('.') : '';
@@ -273,29 +285,32 @@ function exitRow(inJourney){
   return r;
 }
 async function viewList(){
+  if (/^#[a-z0-9]{6,24}$/.test(location.hash)) return;
+  const load = ++loadGeneration, hash = location.hash;
   const app = F('app'); app.textContent = '';
   const c = card();
   c.appendChild(exitRow(false)); c.appendChild(el('h1', null, 'מסע אל החוסן'));
-  const p = el('p'); p.appendChild(inlineRich('מסע מלווה בשלבים אל **תו חוסן לקהילת חוסן**, מגן ומכיתה ועד בית ספר וקהילה. מתחילים במיפוי קצר, מקבלים הצעת מסע עם אפשרויות, בוחרים יחד, ויוצאים לדרך עם אבני דרך ברורות ותעודה על כל אחת מהן. לאורך כל הדרך יש ליווי אישי של ד״ר יעל שדה.')); c.appendChild(p);
+  const p = el('p'); p.appendChild(inlineRich('מרחב מתמשך לפיתוח חוסן בבית הספר ובקהילה. מתחילים בצוות חוסן ובמיפוי של **בעלי תפקידים, מנגנונים חברתיים, תשתיות תומכות ומשאבים נוספים**. מחברים ראיות, בוחנים יחד את רשת המנגנונים, מקבלים החלטה מנומקת, מתכננים פעולה וחוזרים ללמוד מן התוצאות.')); c.appendChild(p);
   { const hk = el('p', 'intro'); hk.appendChild(inlineRich('**קהילת חוסן** היא קהילה שבוחרת להפוך את החוסן לחלק מוצהר מחייה, בשגרה כמו במשבר. זו אינה קהילה מסוג מיוחד: כל קהילה יכולה לבחור בדרך הזו ולהתקרב אליה צעד אחר צעד. הדרך מתחילה במנגנונים החברתיים שכבר פועלים בקהילה, ובוחנת יחד מה מהם משרת את החוסן ומה אפשר לשפר. **תו חוסן** הוא הכרה בעבודה של קהילת חוסן, ולא תנאי: אפשר להיות קהילת חוסן גם בלעדיו. התו נותן משוב והערכה על מה שעובד ועל מה שכדאי לנסות בהמשך, ולא ציון.')); hk.style.margin = '.6rem 0 0'; c.appendChild(hk); }
-  if (window.SBE_PEEK) SBE_PEEK.mount(null, c.lastElementChild); // תוצר לדוגמה (lib/example-peek.js)
-  const tmp = el('div', 'jmap'); J.STAGES.forEach(s => { const st = el('div', 'st'); st.appendChild(el('div', 'dot', s.k)); st.appendChild(el('div', 'nm', s.t)); st.appendChild(el('div', 'sb', s.sub)); tmp.appendChild(st); }); c.appendChild(tmp);
+  c.appendChild(el('p', 'muted', 'קיום, מימוש והתחדשות הן זוויות בחינה מקבילות לאורך כל התהליך. תו חוסן ייבחן בהליך הסמכה חיצוני נפרד, על בסיס קריטריונים שקופים וראיות. לא מוענק תו אוטומטי במרחב העבודה.'));
   const list = card(); list.appendChild(el('h2', null, 'המסעות שלי')); const lw = el('p', 'muted', 'טוענת...'); list.appendChild(lw);
-  const d = await api('jrMine'); lw.remove();
+  const d = await api('jrMine');
+  if (load !== loadGeneration || location.hash !== hash) return;
+  lw.remove();
   if (d._status === 403) { list.appendChild(el('p', 'err', 'כדי לצאת למסע, אפשר להיכנס עם קוד שיש בו הרשאת "מסע אל החוסן".')); return; }
   (d.items || []).forEach(s => {
     const r = el('div', 'ms'); const h = el('h3'); h.appendChild(document.createTextNode(s.unitName)); h.appendChild(el('span', 'tagx', unitT(s.unit))); r.appendChild(h);
     // סטטוס המסע ככפתור בולט (11/10/2026): מה המצב ומה הצעד הבא, ולחיצה נכנסת למסע
     const ST = { mapping: ['📝', 'מיפוי ראשוני', 'הצעד הבא: להשלים את המיפוי'], proposal: ['🧭', 'הצעת המסע מחכה לבחירות שלכם', 'הצעד הבא: לבחור ולהסביר'],
       review: ['⏳', 'ההצעה אצל ד״ר יעל שדה', 'אין צורך לעשות דבר עכשיו'], active: ['🚶', 'בדרך: ' + stT(s.stage), s.next ? 'אבן הדרך הבאה עד ' + fmt(s.next) : ''],
-      done: ['🎉', 'קהילת חוסן: המסע הושלם', ''] }[s.status] || ['', '', ''];
+      workspace: ['📋', 'מרחב עבודה לחוסן', 'מיפוי, החלטות, פעולה ולמידה מתמשכת'], done: ['🎉', 'קהילת חוסן: המסע הושלם', ''] }[s.status] || ['', '', ''];
     const sb = btn(ST[0] + ' ' + ST[1], 'status-btn st-' + s.status, () => { location.hash = s.id; });
     r.appendChild(sb);
     r.appendChild(el('div', 'meta', [ST[2], s.total ? s.approved + '/' + s.total + ' אבני דרך' : ''].filter(Boolean).join(' · ')));
     const acts = el('div', 'btns'); acts.style.marginTop = '.5rem';
     acts.appendChild(btn('כניסה למסע', 'btn-ghost', () => { location.hash = s.id; }));
     const del = btn('🗑 מחיקה', 'btn-ghost', async () => {
-      if (!confirm('למחוק את המסע "' + s.unitName + '"? המיפוי, הבחירות, אבני הדרך והתעודות יימחקו, ואי אפשר לשחזר אותם.')) return;
+      if (!confirm(s.status === 'workspace' ? 'למחוק את מרחב העבודה "' + s.unitName + '" ואת התיעוד שנשמר בו? אי אפשר לשחזר את המרחב לאחר מחיקה.' : 'למחוק את המסע "' + s.unitName + '"? המיפוי, הבחירות, אבני הדרך והתעודות יימחקו, ואי אפשר לשחזר אותם.')) return;
       del.disabled = true; const d2 = await api('jrDelete', { id: s.id });
       if (d2.ok) r.remove(); else { del.disabled = false; alert('המסע לא נמחק. אפשר לנסות שוב.'); }
     }); acts.appendChild(del);
@@ -305,35 +320,31 @@ async function viewList(){
   // מסע חדש
   const n = card(); n.appendChild(el('h2', null, 'יוצאים למסע חדש'));
   const row = el('div', 'row2'); const a = el('div'), b2 = el('div');
-  a.appendChild(el('label', null, 'המסגרת')); const sel = document.createElement('select'); J.UNITS.forEach(u => { const o = el('option', null, u.t + ' (כ-' + u.months + ' חודשים)'); o.value = u.k; sel.appendChild(o); }); a.appendChild(sel);
+  a.appendChild(el('label', null, 'המסגרת')); const sel = document.createElement('select'); J.UNITS.forEach(u => { const o = el('option', null, u.t); o.value = u.k; sel.appendChild(o); }); a.appendChild(sel);
   b2.appendChild(el('label', null, 'שם המסגרת')); const nm = document.createElement('input'); nm.type = 'text'; nm.maxLength = 80; nm.placeholder = 'למשל: גן רימון, כיתה ה׳2, בית ספר הדר'; b2.appendChild(nm);
   row.appendChild(a); row.appendChild(b2); n.appendChild(row);
   n.appendChild(el('label', null, 'השם שלך')); const by = document.createElement('input'); by.type = 'text'; by.maxLength = 60; try { by.value = sessionStorage.getItem('sbe.session.name') || ''; } catch(e){} n.appendChild(by);
-  const cons = el('label'); cons.style.cssText = 'display:flex;gap:.5rem;align-items:flex-start;font-weight:500;margin-top:.8rem';
-  const cb = document.createElement('input'); cb.type = 'checkbox'; cb.style.cssText = 'width:auto;margin-top:.3rem';
-  cons.appendChild(cb); cons.appendChild(document.createTextNode('אני מסכים/ה שהבחירות, ההסברים והרפלקציות שלנו ישמשו למחקר על חוסן קהילתי, באופן אנונימי, בלי שם המסגרת ובלי פרטים מזהים. (רשות: אפשר לצאת למסע גם בלי הסכמה.)'));
-  n.appendChild(cons);
-  // עדכונים במייל — רשות, בהסכמה מפורשת (אפשר לשנות או להפסיק בכל רגע במסך המסע)
-  n.appendChild(el('label', null, 'מייל לעדכונים (רשות)')); const em = document.createElement('input'); em.type = 'email'; em.maxLength = 254; em.dir = 'ltr'; em.placeholder = 'name@example.com'; n.appendChild(em);
-  const upl = el('label'); upl.style.cssText = 'display:flex;gap:.5rem;align-items:flex-start;font-weight:500;margin-top:.5rem';
-  const up = document.createElement('input'); up.type = 'checkbox'; up.style.cssText = 'width:auto;margin-top:.3rem';
-  upl.appendChild(up); upl.appendChild(document.createTextNode('אשמח לקבל עדכונים במייל: אישור המסע, תשובות ותעודות, ותזכורת שבוע לפני כל אבן דרך. אפשר להפסיק בכל רגע.'));
-  n.appendChild(upl);
-  const EM_RE = /^[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}$/i;
+  n.appendChild(el('p', 'muted', 'נתוני מרחב העבודה אינם נכללים בייצוא המחקרי. ההודעות במסע נקראות בתוך המערכת; אין במסלול זה עדכונים אוטומטיים במייל.'));
   const err = errLine(n);
   const go = btn('יוצאים לדרך', '', async () => {
     if (nm.value.trim().length < 2) return err('כדי להמשיך, אפשר לכתוב את שם המסגרת.');
-    if (up.checked && !EM_RE.test(em.value.trim())) return err('כדי לקבל עדכונים, נשמח לכתובת מייל תקינה.');
-    go.disabled = true; const r = await api('jrCreate', { unit: sel.value, unitName: nm.value.trim(), by: by.value.trim(), research: cb.checked, email: em.value.trim(), updates: up.checked }); go.disabled = false;
+    go.disabled = true; const r = await api('jrCreate', { mode:'workspace', unit: sel.value, unitName: nm.value.trim(), by: by.value.trim(), research:false, updates:false }); go.disabled = false;
     if (r.id) location.hash = r.id; else err(r._status === 403 ? 'אין הרשאה למסע אל החוסן.' : 'לא הצלחנו ליצור את המסע. אפשר לנסות שוב.');
   }); go.style.marginTop = '.8rem'; n.appendChild(go);
 }
 
 // ── מסע אחד ──
-let JR = null, SETTINGS = {};
+let JR = null, SETTINGS = {}, workspaceUI = null, loadGeneration = 0;
 async function viewJourney(id){
+  if (location.hash !== '#' + id) return;
+  if (workspaceUI) {
+    if (!workspaceUI.canLeave()) return;
+    workspaceUI.destroy(); workspaceUI = null;
+  }
+  const load = ++loadGeneration, hash = location.hash;
   const app = F('app'); app.textContent = ''; const w = card(); w.appendChild(el('p', 'muted', 'טוענת את המסע...'));
   const d = await api('jrGet', { id });
+  if (load !== loadGeneration || location.hash !== hash) return;
   if (!d.journey) { w.textContent = ''; w.appendChild(el('p', 'err', 'לא מצאנו את המסע.')); w.appendChild(btn('לרשימת המסעות', 'btn-ghost', () => { location.hash = ''; })); return; }
   JR = d.journey; SETTINGS = d.settings || {}; render();
 }
@@ -356,7 +367,7 @@ function contactBox(){
   const em = document.createElement('input'); em.type = 'email'; em.dir = 'ltr'; em.maxLength = 254; em.value = ct.email || ''; em.placeholder = 'name@example.com'; em.style.marginTop = '.4rem'; dt.appendChild(em);
   const l = el('label'); l.style.cssText = 'display:flex;gap:.5rem;align-items:flex-start;font-weight:500;margin-top:.4rem';
   const up = document.createElement('input'); up.type = 'checkbox'; up.checked = !!ct.updates; up.style.cssText = 'width:auto;margin-top:.3rem';
-  l.appendChild(up); l.appendChild(document.createTextNode('לקבל עדכונים במייל: אישור, תשובות, תעודות ותזכורת שבוע לפני כל אבן דרך')); dt.appendChild(l);
+  l.appendChild(up); l.appendChild(document.createTextNode(JR.status === 'workspace' ? 'קבלת עדכונים במייל על פניות ותשובות במסע' : 'לקבל עדכונים במייל: אישור, תשובות, תעודות ותזכורת שבוע לפני כל אבן דרך')); dt.appendChild(l);
   const msg = el('p', 'muted');
   const sv = btn('שמירה', 'btn-ghost', async () => {
     if (up.checked && !/^[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}$/i.test(em.value.trim())) { msg.textContent = 'נשמח לכתובת מייל תקינה.'; return; }
@@ -367,6 +378,12 @@ function contactBox(){
   return dt;
 }
 function render(){
+  if (JR.mode === 'workspace' || JR.version === 2 || JR.status === 'workspace') {
+    F('app').textContent = '';
+    workspaceUI = SBE_WORKSPACE_UI.mount(F('app'), {journey:JR, api, completeJson});
+    threadCard(null);
+    return;
+  }
   F('app').textContent = ''; header();
   const back = el('p', 'no-print'); back.appendChild(btn('← לכל המסעות', 'btn-ghost', () => { location.hash = ''; }));
   if (JR.status === 'mapping') viewMapping();
@@ -613,7 +630,15 @@ function threadInline(c, mi){
     const tx = document.createElement('textarea'); tx.maxLength = 2000; tx.placeholder = 'אפשר לכתוב כאן: ההודעה נשמרת במסע ומגיעה לד״ר יעל שדה'; det.appendChild(tx);
     const err = errLine(det);
     const go = btn('שליחה', 'btn-ghost', async () => { if (tx.value.trim().length < 2) return err('אפשר לכתוב כאן כמה מילים ואז לשלוח.'); go.disabled = true;
-      const r = await api('jrPost', { id: JR.id, mi, kind: mi === null ? 'comment' : kind.value, text: tx.value.trim() }); if (r.ok) await viewJourney(JR.id); else { err('לא נשלח. אפשר לנסות שוב.'); go.disabled = false; } });
+      const targetId = JR.id, targetWorkspace = workspaceUI;
+      const r = await api('jrPost', { id: targetId, mi, kind: mi === null ? 'comment' : kind.value, text: tx.value.trim() });
+      if (location.hash !== '#' + targetId || !JR || JR.id !== targetId || workspaceUI !== targetWorkspace) return;
+      if (r.ok) {
+        if (targetWorkspace) targetWorkspace.acceptMetadataRevision(r);
+        if (targetWorkspace && targetWorkspace.isDirty()) { tx.value = ''; err('ההודעה נשלחה. השינויים המקומיים נשארו פתוחים לשמירה.'); go.disabled = false; }
+        else await viewJourney(targetId);
+      } else { err('לא נשלח. אפשר לנסות שוב.'); go.disabled = false; }
+    });
     go.style.marginTop = '.4rem'; det.appendChild(go); t.appendChild(det);
   }
   c.appendChild(t);
@@ -627,7 +652,15 @@ function finalReflection(c){
   const go = btn('שליחה', 'btn-ghost', async () => { go.disabled = true; await api('jrFinalReflection', { id: JR.id, final: { learned: a.value.trim(), recommend: b.value.trim() } }); await viewJourney(JR.id); }); go.style.marginTop = '.5rem'; c.appendChild(go);
 }
 
-function route(){ const id = location.hash.replace('#', ''); if (/^[a-z0-9]{6,24}$/.test(id)) viewJourney(id); else viewList(); }
+let lastRouteHash = location.hash;
+function route(){
+  if (workspaceUI) {
+    if (!workspaceUI.canLeave()) { history.replaceState(null, '', location.pathname + location.search + lastRouteHash); return; }
+    workspaceUI.destroy(); workspaceUI = null;
+  }
+  lastRouteHash = location.hash;
+  const id = location.hash.replace('#', ''); if (/^[a-z0-9]{6,24}$/.test(id)) viewJourney(id); else viewList();
+}
 window.addEventListener('hashchange', route); route();
 })();
 </script>

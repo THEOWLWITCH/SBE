@@ -6,6 +6,7 @@
 import { scryptSync, randomBytes, timingSafeEqual, createHmac, createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
+const JOURNEY_WORKSPACE = createRequire(import.meta.url)('../../app/lib/journey-workspace-model.js');
 
 // First-use owner setup requires an explicitly provisioned deployment secret.
 // Existing stored hashes take precedence; the environment never overrides them.
@@ -1036,7 +1037,7 @@ const jrNow = () => new Date().toISOString();
 const jrDay = (d) => new Date(d).toISOString().slice(0, 10);
 function jrSummary(j) {
   const ms = j.milestones || [];
-  return { id: j.id, unit: j.unit, unitName: j.unitName, by: j.by, inst: j.inst, status: j.status, created: j.created,
+  return { id: j.id, version: j.version || 1, unit: j.unit, unitName: j.unitName, by: j.by, inst: j.inst, status: j.status, created: j.created,
     startStage: j.startStage || 1, stage: j.stage || j.startStage || 1, total: ms.length,
     approved: ms.filter((m) => m.status === 'approved').length, submitted: ms.filter((m) => m.status === 'submitted').length,
     needs: ms.filter((m) => m.status === 'needs').length,
@@ -1052,6 +1053,34 @@ async function jrSave(store, j) {
   if (Buffer.byteLength(JSON.stringify(j)) > JR_MAX_BYTES) return false;
   await store.set('jr:' + j.id, j); return true;
 }
+const jrIsWorkspace = j => j.version === 2 || j.status === 'workspace';
+async function jrWorkspaceCommit(store, j, expectedRevision, editor) {
+  if (typeof store.compareSet !== 'function') return [503, { error: 'atomic storage unavailable' }];
+  j.updated = jrNow(); j.revision = expectedRevision + 1;
+  j.workspaceHistory = (j.workspaceHistory || []).concat([{ at: j.updated, revision: j.revision, editor }]).slice(-20);
+  if (Buffer.byteLength(JSON.stringify(j)) > JR_MAX_BYTES) return [413, { error: 'too large' }];
+  try {
+    if (await store.compareSet('jr:' + j.id, expectedRevision, j)) return [200, { ok: true, revision: j.revision, updated: j.updated }];
+    const current = await jrLoad(store, j.id);
+    return current ? [409, { error: 'conflict', revision: current.revision }] : [404, { error: 'not found' }];
+  } catch { return [503, { error: 'save unavailable' }]; }
+}
+// Contact and conversation writes may arrive while a workspace is being saved.
+// Apply their patch to the latest record and retry only that small mutation.
+async function jrWorkspacePatch(store, id, editor, patch) {
+  if (typeof store.compareSet !== 'function') return [503, { error: 'atomic storage unavailable' }];
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const latest = await jrLoad(store, id);
+    if (!latest) return [404, { error: 'not found' }];
+    if (!jrIsWorkspace(latest) || !Number.isSafeInteger(latest.revision) || latest.revision < 0) return [409, { error: 'bad state' }];
+    patch(latest);
+    const result = await jrWorkspaceCommit(store, latest, latest.revision, editor);
+    if (result[0] === 200) result[1].workspace = latest.workspace;
+    if (result[0] !== 409) return result;
+  }
+  const latest = await jrLoad(store, id);
+  return [409, { error: 'conflict', revision: latest?.revision }];
+}
 // השלב הנוכחי: השלב של אבן הדרך הראשונה שעוד לא הושלמה (או 5 כשהכול הושלם)
 function jrStage(j) { const m = (j.milestones || []).find((x) => x.status !== 'approved'); return m ? m.stage : 5; }
 
@@ -1065,7 +1094,7 @@ async function handleJourney(store, body) {
   if (action === 'jrCert') {
     const j = await jrLoad(store, body.id);
     const code = String(body.code || '');
-    if (!j || !code) return [404, { error: 'not found' }];
+    if (!j || jrIsWorkspace(j) || !code) return [404, { error: 'not found' }];
     const ms = j.milestones || [];
     const i = ms.findIndex((m) => m.cert && m.cert.code === code);
     if (i < 0) return [404, { error: 'not found' }];
@@ -1077,7 +1106,7 @@ async function handleJourney(store, body) {
   if (action === 'jrTick') {
     const secret = (typeof process !== 'undefined' && process.env.CRON_SECRET) || '';
     if (!secret || body.secret !== secret) { await pause(); return [403, { error: 'unauthorized' }]; }
-    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && !j.demo && j.status !== 'done');
+    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && !jrIsWorkspace(j) && !j.demo && j.status !== 'done');
     const today = jrDay(Date.now()), in14 = jrDay(Date.now() + 14 * 864e5);
     const soon = [], late = [], waiting = [];
     rows.forEach((j) => {
@@ -1118,7 +1147,8 @@ async function handleJourney(store, body) {
     return [200, { ok: true, soon: soon.length, late: late.length, waiting: waiting.length, sent, reminded }];
   }
 
-  const canUse = isSys || (t && Array.isArray(t.perms) && t.perms.includes('journey'));
+  const hasOwnerCode = t && t.k === 'code' && typeof t.c === 'string' && t.c.trim().length > 0;
+  const canUse = isSys || (hasOwnerCode && await authorizePermission(store, body.token, 'journey'));
   if (!canUse) { await pause(); return [403, { error: 'unauthorized' }]; }
   const owner = t && t.c ? String(t.c) : (isSys ? 'sys' : '');
 
@@ -1126,16 +1156,22 @@ async function handleJourney(store, body) {
     const unit = JR_UNITS.includes(body.unit) ? body.unit : 'other';
     const unitName = jrClip(body.unitName, 80).trim();
     if (unitName.length < 2) return [400, { error: 'missing name' }];
-    const mine = (await store.list('jr:')).filter((r) => r.value && r.value.code === owner).length;
+    const mine = (await store.list('jr:')).filter((r) => r.value && r.value.code === owner && (isSys || r.value.inst === t.inst)).length;
     if (mine >= 10 && !isSys) return [429, { error: 'too many' }]; // מנהלת המערכת (מסעות דמו) — בלי מגבלה
     const id = Date.now().toString(36) + randomBytes(3).toString('hex');
     const j = { id, code: owner, inst: (t && t.inst) || '', by: jrClip(body.by, 60), unit, unitName, created: jrNow(), status: 'mapping', demo: !!(isSys && body.demo),
       consent: { research: !!body.research, at: jrNow() }, contact: jrContact(body), mapping: {}, thread: [], events: [] };
-    await jrSave(store, j);
+    if (body.mode === 'workspace') {
+      if (typeof store.compareSet !== 'function') return [503, { error: 'atomic storage unavailable' }];
+      j.version = 2; j.status = 'workspace'; j.revision = 0; j.workspace = JOURNEY_WORKSPACE.empty(); j.workspaceHistory = [];
+      j.updated = j.created;
+      try { if (!(await store.compareSet('jr:' + id, null, j))) return [409, { error: 'conflict' }]; }
+      catch { return [503, { error: 'save unavailable' }]; }
+    } else await jrSave(store, j);
     return [200, { ok: true, id }];
   }
   if (action === 'jrMine') {
-    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.id && (j.code === owner || isSys && body.all));
+    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.id && (j.code === owner && (isSys || j.inst === t.inst) || isSys && body.all));
     return [200, { items: rows.map(jrSummary) }];
   }
   if (action === 'jrAll') {
@@ -1149,7 +1185,7 @@ async function handleJourney(store, body) {
   }
   if (action === 'jrExport') {
     if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
-    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.id && !j.demo && j.consent && j.consent.research);
+    const rows = (await store.list('jr:')).map((r) => r.value).filter((j) => j && j.id && !jrIsWorkspace(j) && !j.demo && j.consent && j.consent.research);
     // שורה לכל אירוע מחקרי (בחירה, רפלקציה, תחקיר) — בלי שם המסגרת ובלי פרטים מזהים
     const out = [];
     rows.forEach((j, n) => (j.events || []).forEach((e) => out.push({ journey: 'J' + (n + 1), unit: j.unit, at: e.at, stage: e.stage || '', type: e.type, key: e.key || '', choice: e.choice || '',
@@ -1159,11 +1195,43 @@ async function handleJourney(store, body) {
 
   const j = await jrLoad(store, body.id);
   if (!j) return [404, { error: 'not found' }];
-  const isOwner = j.code === owner;
+  const isOwner = j.code === owner && (isSys || j.inst === t.inst);
   if (!isOwner && !isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
   const ev = (type, data) => { j.events = (j.events || []).concat([{ at: jrNow(), type, stage: jrStage(j), ...data }]).slice(-400); };
 
   if (action === 'jrGet') return [200, { journey: j, settings: (await store.get('jr:settings')) || {} }];
+
+  if (action === 'jrSaveWorkspace') {
+    if (!jrIsWorkspace(j)) return [409, { error: 'bad state' }];
+    if (!Number.isSafeInteger(body.revision) || body.revision < 0) return [400, { error: 'invalid revision' }];
+    if (body.revision !== j.revision) return [409, { error: 'conflict', revision: j.revision }];
+    let workspace;
+    try { workspace = JOURNEY_WORKSPACE.clean(body.workspace); }
+    catch (error) { return [400, { error: 'invalid workspace', message: error.message }]; }
+    j.workspace = workspace;
+    const result = await jrWorkspaceCommit(store, j, body.revision, isSys ? 'admin' : 'owner');
+    if (result[0] === 200) result[1].workspace = workspace;
+    return result;
+  }
+  if (jrIsWorkspace(j)) {
+    if (!['jrDelete', 'jrContact', 'jrPost'].includes(action)) return [409, { error: 'workspace route required' }];
+    if (action === 'jrContact') {
+      const contact = jrContact(body);
+      const result = await jrWorkspacePatch(store, j.id, isSys ? 'admin' : 'owner', latest => { latest.contact = contact; });
+      if (result[0] === 200) result[1].contact = contact;
+      return result;
+    }
+    if (action === 'jrPost') {
+      const text = jrClip(body.text, 2000).trim();
+      if (text.length < 2) return [400, { error: 'empty' }];
+      const kind = isSys && (!isOwner || body.as === 'admin') ? 'reply' : (['appeal', 'extension', 'comment'].includes(body.kind) ? body.kind : 'comment');
+      const post = { at: jrNow(), by: kind === 'reply' ? 'admin' : 'owner', kind, mi: null, text, open: kind !== 'reply' };
+      return jrWorkspacePatch(store, j.id, isSys ? 'admin' : 'owner', latest => {
+        latest.thread = (latest.thread || []).concat([post]).slice(-300);
+        if (kind === 'reply') latest.thread.forEach(x => { if (x.by === 'owner' && x.mi == null) x.open = false; });
+      });
+    }
+  }
 
   // ── המגישים ──
   if (isOwner || isSys) {
