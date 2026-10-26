@@ -4,8 +4,21 @@ import { createRequire } from 'node:module';
 import { createHmac } from 'node:crypto';
 import { handleAccess } from '../lib/access.mjs';
 import { seedOwnerPassword, SYNTHETIC_OWNER_PASSWORD } from './synthetic-access.mjs';
+import { workspaceFixture, reportFixture } from '../fixtures/journey-analysis.mjs';
 const W = createRequire(import.meta.url)('../../app/lib/journey-workspace-model.js');
+const A = createRequire(import.meta.url)('../../app/lib/journey-analysis-model.js');
 const clone = value => value == null ? null : JSON.parse(JSON.stringify(value));
+function analysis(workspace, { id = 'a1', sourceRevision = 0, baselineId = '', unit = 'school', large = false } = {}) {
+  const output = reportFixture();
+  if (large) {
+    const long = 'א'.repeat(4000);
+    output.summary.overview = long; output.summary.limits = long;
+    for (const field of ['title', 'observation', 'interpretation', 'uncertainty', 'presentImplication', 'futureImplication']) output.findings[0][field] = long;
+    output.findings[0].alternativeExplanations = [long, long, long];
+  }
+  return A.cleanAnalysis({ id, createdAt: '2026-10-26T12:00:00.000Z', sourceRevision, baselineId,
+    input: A.buildInput(workspace, { kind: unit, label: unit === 'school' ? 'בית ספר' : 'קהילה' }, ['e1']), output, responses: [] });
+}
 function memoryStore(seed = {}) {
   const data = new Map(Object.entries(seed));
   return { data,
@@ -52,16 +65,26 @@ test('workspace creation, save and retrieval are persistent and versioned; legac
 
 test('concurrent stale saves have exactly one winner and no overwrite', async () => {
   const { call, id } = await fixture();
-  const a = W.empty(), b = W.empty(); a.context.goal = 'א'; b.context.goal = 'ב';
-  const results = await Promise.all([call('jrSaveWorkspace', { id, revision: 0, workspace: a }), call('jrSaveWorkspace', { id, revision: 0, workspace: b })]);
+  const original = W.clean(workspaceFixture()); original.analyses = [analysis(original)];
+  assert.equal((await call('jrSaveWorkspace', { id, revision: 0, workspace: original }))[0], 200);
+  const a = clone(original), b = clone(original); a.context.goal = 'א'; b.context.goal = 'ב';
+  a.analyses[0].responses = [{ findingId: 'f1', state: 'accepted', comment: 'א' }];
+  b.analyses[0].responses = [{ findingId: 'f1', state: 'rejected', comment: 'ב' }];
+  const results = await Promise.all([call('jrSaveWorkspace', { id, revision: 1, workspace: a }), call('jrSaveWorkspace', { id, revision: 1, workspace: b })]);
   assert.deepEqual(results.map(x => x[0]).sort(), [200, 409]);
-  assert.equal(results.find(x => x[0] === 409)[1].revision, 1);
-  assert.equal((await call('jrGet', { id }))[1].journey.revision, 1);
+  assert.equal(results.find(x => x[0] === 409)[1].revision, 2);
+  const j = (await call('jrGet', { id }))[1].journey;
+  assert.equal(j.revision, 2);
+  assert.deepEqual(j.workspace, results.find(x => x[0] === 200)[1].workspace);
+  assert.deepEqual(j.workspace.analyses[0].input, original.analyses[0].input);
 });
 
 test('live permission and ownership protect workspace reads and writes', async () => {
   for (const reason of ['wrong-owner', 'invalid', 'revoked', 'ceiling', 'inactive', 'expired', 'token-expired', 'subscription-expired']) {
     const { store, call, id, other, token } = await fixture();
+    const w = W.clean(workspaceFixture()); w.analyses = [analysis(w)];
+    assert.equal((await call('jrSaveWorkspace', { id, revision: 0, workspace: w }))[0], 200);
+    const before = clone(store.data.get('jr:' + id));
     let actor = token;
     if (reason === 'wrong-owner') actor = other;
     if (reason === 'invalid') actor = 'invalid';
@@ -75,8 +98,9 @@ test('live permission and ownership protect workspace reads and writes', async (
       actor = payload + '.' + createHmac('sha256', store.data.get('token-secret').secret).update(payload).digest('base64url');
     }
     assert.equal((await call('jrGet', { id }, actor))[0], 403, reason);
-    assert.equal((await call('jrSaveWorkspace', { id, revision: 0, workspace: W.empty() }, actor))[0], 403, reason);
-    assert.equal(store.data.get('jr:' + id).revision, 0);
+    assert.equal((await call('jrSaveWorkspace', { id, revision: 1, workspace: W.empty(), removedAnalysisIds: ['a1'] }, actor))[0], 403, reason);
+    assert.equal((await call('jrDelete', { id }, actor))[0], 403, reason);
+    assert.deepEqual(store.data.get('jr:' + id), before, reason);
   }
 });
 
@@ -120,14 +144,17 @@ test('legacy owner codes remain scoped to their institution for reads, writes, l
   const [, createdA] = await call('jrCreate', { mode: 'workspace', unitName: 'מרחב א' }, a.token);
   const [, createdB] = await call('jrCreate', { mode: 'workspace', unitName: 'מרחב ב' }, b.token);
   assert.ok(createdA.id && createdB.id);
+  const w = W.clean(workspaceFixture()); w.analyses = [analysis(w)];
+  assert.equal((await call('jrSaveWorkspace', { id: createdA.id, revision: 0, workspace: w }, a.token))[0], 200);
+  const before = clone(store.data.get('jr:' + createdA.id));
   assert.equal((await call('jrGet', { id: createdA.id }, a.token))[0], 200);
   assert.equal((await call('jrGet', { id: createdB.id }, b.token))[0], 200);
   for (const [action, payload] of [
-    ['jrGet', { id: createdA.id }], ['jrSaveWorkspace', { id: createdA.id, revision: 0, workspace: W.empty() }],
+    ['jrGet', { id: createdA.id }], ['jrSaveWorkspace', { id: createdA.id, revision: 1, workspace: W.empty(), removedAnalysisIds: ['a1'] }],
     ['jrPost', { id: createdA.id, text: 'הודעה ממסגרת אחרת' }], ['jrDelete', { id: createdA.id }]
   ]) assert.equal((await call(action, payload, b.token))[0], 403, action);
   assert.deepEqual((await call('jrMine', {}, b.token))[1].items.map(j => j.id), [createdB.id]);
-  assert.equal(store.data.get('jr:' + createdA.id).revision, 0);
+  assert.deepEqual(store.data.get('jr:' + createdA.id), before);
   for (let i = 0; i < 10; i++) store.data.set('jr:seed' + i, { id: 'seed' + i, code: 'LEGACY', inst: 'School' });
   assert.equal((await call('jrCreate', { mode: 'workspace', unitName: 'עוד מרחב ב' }, b.token))[0], 200);
 });
@@ -158,28 +185,163 @@ test('legacy mutators and certificate routes cannot change or certify a workspac
 
 test('contact and posts use atomic latest-state patches and preserve concurrent workspace content', async () => {
   const { store, call, id } = await fixture();
-  const w = W.empty(); w.context.goal = 'שומרים על הנתונים';
-  const results = await Promise.all([call('jrSaveWorkspace', { id, revision: 0, workspace: w }), call('jrContact', { id, email: 'test@example.org' }), call('jrPost', { id, text: 'הודעה לצוות', kind: 'comment' })]);
+  const w = W.clean(workspaceFixture()); w.analyses = [analysis(w)];
+  assert.equal((await call('jrSaveWorkspace', { id, revision: 0, workspace: w }))[0], 200);
+  w.context.goal = 'שומרים על הנתונים';
+  const results = await Promise.all([call('jrSaveWorkspace', { id, revision: 1, workspace: w }), call('jrContact', { id, email: 'test@example.org' }), call('jrPost', { id, text: 'הודעה לצוות', kind: 'comment' })]);
   assert.equal(results[1][0], 200); assert.equal(results[2][0], 200);
   const j = store.data.get('jr:' + id);
   assert.equal(j.contact.email, 'test@example.org'); assert.equal(j.thread.length, 1);
   if (results[0][0] === 200) assert.equal(j.workspace.context.goal, w.context.goal);
   else assert.equal(results[0][0], 409);
-  assert.ok(j.revision >= 2);
+  assert.deepEqual(j.workspace.analyses, w.analyses);
+  assert.ok(j.revision >= 3);
 });
 
 test('a post returns its committed workspace base so clients can safely acknowledge metadata revisions', async () => {
   const { store, call, id } = await fixture();
-  const first = W.empty(); first.context.goal = 'הבסיס השמור';
+  const first = W.clean(workspaceFixture()); first.context.goal = 'הבסיס השמור'; first.analyses = [analysis(first)];
   const [, saved] = await call('jrSaveWorkspace', { id, revision: 0, workspace: first });
   const [, posted] = await call('jrPost', { id, text: 'הודעה ראשונה' });
   assert.equal(posted.revision, 2);
   assert.deepEqual(posted.workspace, saved.workspace);
-  const second = W.empty(); second.context.goal = 'בסיס שהשתנה';
+  const second = clone(first); second.context.goal = 'בסיס שהשתנה';
   await call('jrSaveWorkspace', { id, revision: 2, workspace: second });
   const [, nextPost] = await call('jrPost', { id, text: 'הודעה שנייה' });
   assert.equal(nextPost.revision, 4);
   assert.deepEqual(nextPost.workspace, W.clean(second));
   assert.notDeepEqual(nextPost.workspace, posted.workspace);
   assert.equal(store.data.get('jr:' + id).thread.length, 2);
+});
+
+test('analysis retrieval preserves reviewed facts exactly and allows later human responses in either setting', async () => {
+  for (const unit of ['school', 'community']) {
+    const { store, call, id } = await fixture();
+    const w = W.clean(workspaceFixture(unit)); w.analyses = [analysis(w, { unit })];
+    const original = clone(w.analyses[0]);
+    const [status, saved] = await call('jrSaveWorkspace', { id, revision: 0, workspace: w });
+    assert.equal(status, 200, unit);
+    assert.deepEqual(saved.workspace.analyses, [original]);
+    assert.deepEqual((await call('jrGet', { id }))[1].journey.workspace.analyses, [original]);
+    w.analyses[0].responses = [{ findingId: 'f1', state: 'edited', comment: 'ייתכן שיש גיבוי שלא תועד', priorityReason: 'בירור עם קולות חסרים', disagreement: 'אין עדיין הסכמה', reviewedBy: 'צוות בדוי', reviewedAt: '2026-10-26T13:00:00.000Z' }];
+    const [, updated] = await call('jrSaveWorkspace', { id, revision: 1, workspace: w });
+    assert.equal(updated.revision, 2);
+    assert.deepEqual(updated.workspace.analyses[0], { ...original, responses: w.analyses[0].responses });
+    assert.deepEqual(store.data.get('jr:' + id).workspace.analyses, updated.workspace.analyses);
+  }
+});
+
+test('retained analysis facts cannot change and every invalid evolution fails without a write', async () => {
+  const { store, call, id } = await fixture();
+  const w = W.clean(workspaceFixture()); w.analyses = [analysis(w)];
+  assert.equal((await call('jrSaveWorkspace', { id, revision: 0, workspace: w }))[0], 200);
+  const before = clone(store.data.get('jr:' + id));
+  const mutations = [
+    a => a.id = 'changed', a => a.createdAt = '2026-10-26T13:00:00.000Z', a => a.sourceRevision = 1,
+    a => a.baselineId = 'other', a => a.input.context.baseline = 'תיאור מוחלף',
+    a => a.output.findings[0].interpretation = 'פירוש מוחלף'
+  ];
+  for (const mutate of mutations) {
+    const changed = clone(w); mutate(changed.analyses[0]);
+    const [status] = await call('jrSaveWorkspace', { id, revision: 1, workspace: changed });
+    assert.equal(status, 400);
+    assert.deepEqual(store.data.get('jr:' + id), before);
+  }
+  const removed = clone(w); removed.analyses = [];
+  for (const declaration of [{}, { removedAnalysisIds: [] }, { removedAnalysisIds: ['unknown'] }, { removedAnalysisIds: ['a1', 'unknown'] }, { removedAnalysisIds: ['a1', 'a1'] }]) {
+    assert.equal((await call('jrSaveWorkspace', { id, revision: 1, workspace: removed, ...declaration }))[0], 400);
+    assert.deepEqual(store.data.get('jr:' + id), before);
+  }
+  for (const removedAnalysisIds of [null, false, 'a1', {}, ['a1'], ['unknown']]) {
+    assert.equal((await call('jrSaveWorkspace', { id, revision: 1, workspace: w, removedAnalysisIds }))[0], 400);
+    assert.deepEqual(store.data.get('jr:' + id), before);
+  }
+});
+
+test('explicit selected-report deletion permits dangling baseline and later analyses; whole deletion removes history', async () => {
+  const { store, call, id } = await fixture();
+  const w = W.clean(workspaceFixture());
+  w.analyses = [analysis(w), analysis(w, { id: 'a2', baselineId: 'a1' })];
+  assert.equal((await call('jrSaveWorkspace', { id, revision: 0, workspace: w }))[0], 200);
+  w.analyses.shift();
+  const [status, removed] = await call('jrSaveWorkspace', { id, revision: 1, workspace: w, removedAnalysisIds: ['a1'] });
+  assert.equal(status, 200); assert.equal(removed.revision, 2);
+  assert.equal(removed.workspace.analyses[0].baselineId, 'a1');
+  w.analyses.push(analysis(w, { id: 'a3', sourceRevision: 2, baselineId: 'a2' }));
+  assert.equal((await call('jrSaveWorkspace', { id, revision: 2, workspace: w }))[0], 200);
+  assert.deepEqual((await call('jrGet', { id }))[1].journey.workspace.analyses, w.analyses);
+  assert.equal((await call('jrDelete', { id }))[0], 200);
+  assert.equal(store.data.has('jr:' + id), false);
+  assert.equal((await call('jrGet', { id }))[0], 404);
+});
+
+test('current mapping removal never invalidates or rewrites historical snapshot references', async () => {
+  const { store, call, id } = await fixture();
+  const w = W.clean(workspaceFixture()); w.analyses = [analysis(w)];
+  const historical = clone(w.analyses);
+  assert.equal((await call('jrSaveWorkspace', { id, revision: 0, workspace: w }))[0], 200);
+  const changed = W.empty(); changed.analyses = clone(historical); changed.context.periodStart = '2026-11-01';
+  assert.equal((await call('jrSaveWorkspace', { id, revision: 1, workspace: changed }))[0], 200);
+  const j = store.data.get('jr:' + id);
+  assert.deepEqual(j.workspace.analyses, historical);
+  assert.equal(j.workspace.mechanisms.length, 0);
+  assert.equal(j.workspace.analyses[0].input.mechanisms[0].id, 'm1');
+  assert.equal(j.workspace.analyses[0].output.findings[0].entityRefs[0].id, 'l1');
+});
+
+test('new snapshots accept an older saved source revision but reject a future one atomically', async () => {
+  const { store, call, id } = await fixture();
+  const w = W.clean(workspaceFixture());
+  assert.equal((await call('jrPost', { id, text: 'הודעה ששינתה רק מטא נתונים' }))[0], 200);
+  w.analyses = [analysis(w)];
+  assert.equal((await call('jrSaveWorkspace', { id, revision: 1, workspace: w }))[0], 200);
+  const before = clone(store.data.get('jr:' + id));
+  w.analyses.push(analysis(w, { id: 'a2', sourceRevision: 3 }));
+  assert.equal((await call('jrSaveWorkspace', { id, revision: 2, workspace: w }))[0], 400);
+  assert.deepEqual(store.data.get('jr:' + id), before);
+});
+
+test('analysis history has its own whole-record budget without weakening base budget or silently truncating', async () => {
+  const { store, call, id } = await fixture();
+  const w = W.clean(workspaceFixture());
+  w.analyses = Array.from({ length: 6 }, (_, n) => analysis(w, { id: 'a' + n, large: true }));
+  assert.ok(Buffer.byteLength(JSON.stringify(w)) > 400000);
+  assert.ok(Buffer.byteLength(JSON.stringify(w)) < 1800000);
+  const [status] = await call('jrSaveWorkspace', { id, revision: 0, workspace: w });
+  assert.equal(status, 200);
+  const before = clone(store.data.get('jr:' + id));
+  const largeBase = clone(w); largeBase.roles = Array.from({ length: 80 }, (_, n) => ({ id: 'role' + n, title: 'א'.repeat(4000) }));
+  largeBase.mechanisms.forEach(m => m.roleIds = []);
+  assert.equal((await call('jrSaveWorkspace', { id, revision: 1, workspace: largeBase }))[0], 413);
+  assert.deepEqual(store.data.get('jr:' + id), before);
+  const tooMany = clone(w); tooMany.analyses = Array.from({ length: 21 }, (_, n) => analysis(w, { id: 'a' + n }));
+  assert.equal((await call('jrSaveWorkspace', { id, revision: 1, workspace: tooMany }))[0], 400);
+  assert.deepEqual(store.data.get('jr:' + id), before);
+  const tooLarge = clone(w); tooLarge.analyses = Array.from({ length: 20 }, (_, n) => analysis(w, { id: 'a' + n, large: true }));
+  assert.ok(Buffer.byteLength(JSON.stringify(tooLarge)) > 1800000);
+  assert.equal((await call('jrSaveWorkspace', { id, revision: 1, workspace: tooLarge }))[0], 413);
+  assert.deepEqual(store.data.get('jr:' + id), before);
+  assert.equal((await call('jrPost', { id, text: 'תוספת אחרי שמירת דוחות' }))[0], 200);
+  assert.equal((await call('jrContact', { id, email: 'test@example.org' }))[0], 200);
+  assert.deepEqual(store.data.get('jr:' + id).workspace.analyses, w.analyses);
+});
+
+test('metadata commits enforce both budgets and preserve exact stored analyses on any rejection', async () => {
+  const { store, call, id } = await fixture();
+  const w = W.clean(workspaceFixture()); w.analyses = [analysis(w)];
+  assert.equal((await call('jrSaveWorkspace', { id, revision: 0, workspace: w }))[0], 200);
+  for (const budget of ['base', 'whole']) {
+    const j = clone(store.data.get('jr:' + id));
+    if (budget === 'base') j.thread = [{ text: 'א'.repeat(200001) }];
+    else {
+      j.thread = [];
+      j.workspace.analyses = Array.from({ length: 20 }, (_, n) => analysis(w, { id: 'a' + n, large: true }));
+    }
+    store.data.set('jr:' + id, j);
+    const before = clone(j);
+    for (const [action, extra] of [['jrPost', { text: 'לא לשכתב דוחות' }], ['jrContact', { email: 'test@example.org' }]]) {
+      assert.equal((await call(action, { id, ...extra }))[0], 413, budget + ' ' + action);
+      assert.deepEqual(store.data.get('jr:' + id), before);
+    }
+  }
 });

@@ -7,6 +7,7 @@ import { scryptSync, randomBytes, timingSafeEqual, createHmac, createHash } from
 import { createRequire } from 'node:module';
 const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
 const JOURNEY_WORKSPACE = createRequire(import.meta.url)('../../app/lib/journey-workspace-model.js');
+const JOURNEY_ANALYSIS = createRequire(import.meta.url)('../../app/lib/journey-analysis-model.js');
 
 // First-use owner setup requires an explicitly provisioned deployment secret.
 // Existing stored hashes take precedence; the environment never overrides them.
@@ -1021,7 +1022,7 @@ async function handleReviewCriteria(store, body) {
 // (הגשה → משוב / השלמה → תעודה) → תו חוסן. הכול מתועד בתוך המערכת (שרשור לכל אבן דרך, ערעורים ובקשות דחייה).
 // הבעלים — הקוד שבאסימון (t.c); הרשאה journey. מנהלת המערכת רואה הכול ומאשרת.
 const JR_UNITS = ['gan', 'elem', 'sec', 'school', 'community', 'other'];
-const JR_MAX_BYTES = 400000, JR_TXT = 4000;
+const JR_MAX_BYTES = 400000, JR_WORKSPACE_MAX_BYTES = 1800000, JR_TXT = 4000;
 const jrClip = (v, n) => String(v == null ? '' : v).slice(0, n || JR_TXT);
 // ניקוי עמוק של אובייקט שמגיע מהדפדפן: מחרוזות מקוצרות, מספרים, מערכים ואובייקטים מוגבלים
 function jrClean(v, depth = 0) {
@@ -1054,11 +1055,17 @@ async function jrSave(store, j) {
   await store.set('jr:' + j.id, j); return true;
 }
 const jrIsWorkspace = j => j.version === 2 || j.status === 'workspace';
+function jrWorkspaceFits(j) {
+  const base = { ...j, workspace: { ...j.workspace } };
+  delete base.workspace.analyses;
+  return Buffer.byteLength(JSON.stringify(base), 'utf8') <= JR_MAX_BYTES &&
+    Buffer.byteLength(JSON.stringify(j), 'utf8') <= JR_WORKSPACE_MAX_BYTES;
+}
 async function jrWorkspaceCommit(store, j, expectedRevision, editor) {
   if (typeof store.compareSet !== 'function') return [503, { error: 'atomic storage unavailable' }];
   j.updated = jrNow(); j.revision = expectedRevision + 1;
   j.workspaceHistory = (j.workspaceHistory || []).concat([{ at: j.updated, revision: j.revision, editor }]).slice(-20);
-  if (Buffer.byteLength(JSON.stringify(j)) > JR_MAX_BYTES) return [413, { error: 'too large' }];
+  if (!jrWorkspaceFits(j)) return [413, { error: 'too large' }];
   try {
     if (await store.compareSet('jr:' + j.id, expectedRevision, j)) return [200, { ok: true, revision: j.revision, updated: j.updated }];
     const current = await jrLoad(store, j.id);
@@ -1206,7 +1213,15 @@ async function handleJourney(store, body) {
     if (!Number.isSafeInteger(body.revision) || body.revision < 0) return [400, { error: 'invalid revision' }];
     if (body.revision !== j.revision) return [409, { error: 'conflict', revision: j.revision }];
     let workspace;
-    try { workspace = JOURNEY_WORKSPACE.clean(body.workspace); }
+    try {
+      workspace = JOURNEY_WORKSPACE.clean(body.workspace);
+      const removedIds = Object.prototype.hasOwnProperty.call(body, 'removedAnalysisIds') ? body.removedAnalysisIds : [];
+      if (!Array.isArray(removedIds)) throw Error('מחיקת ניתוחים מפורשת נרשמת כרשימת מזהים');
+      const previous = j.workspace?.analyses || [];
+      JOURNEY_ANALYSIS.validateEvolution(previous, workspace.analyses, removedIds);
+      const retainedIds = new Set(previous.map(a => a.id));
+      if (workspace.analyses.some(a => !retainedIds.has(a.id) && a.sourceRevision > j.revision)) throw Error('גרסת המקור של ניתוח חדש מאוחרת לגרסה השמורה');
+    }
     catch (error) { return [400, { error: 'invalid workspace', message: error.message }]; }
     j.workspace = workspace;
     const result = await jrWorkspaceCommit(store, j, body.revision, isSys ? 'admin' : 'owner');
