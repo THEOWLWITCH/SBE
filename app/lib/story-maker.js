@@ -22,6 +22,7 @@
   const PROPS = ['none', 'map', 'flashlight', 'umbrella', 'gift', 'ball', 'book', 'balloon', 'lantern'];
   const TWISTS = ['ואז פתאום כבה האור', 'ואז התחיל גשם חזק', 'ואז מישהו הלך לאיבוד', 'ואז מצאו מפה ישנה', 'ואז הגיעה הודעה מפתיעה', 'ואז משהו נשבר', 'ואז הגיע/ה מישהו/י חדש/ה', 'ואז הדרך נחסמה'];
   const ENDINGS = [['party', 'חוגגים יחד'], ['learn', 'לומדים משהו חדש על עצמנו'], ['new', 'מוצאים דרך חדשה'], ['surprise', 'סוף מפתיע'], ['open', 'סוף פתוח, שממשיכים לדמיין']];
+  const MAX_CHARS = 6; // 26/10/2026: "לאפשר יותר דמויות"
   const AGES = [['k2', 'גן עד ב׳', 5, '35 עד 55'], ['g34', 'ג׳ עד ד׳', 6, '60 עד 85'], ['g56', 'ה׳ עד ו׳', 7, '90 עד 120'], ['teen', 'ז׳ ומעלה', 7, '120 עד 160']];
 
   // ---------- הפרומפט ----------
@@ -64,7 +65,7 @@
       text: p.text.trim(),
       place: pick(p.place, PLACES.map((x) => x[0]), f.place || 'park'),
       mood: pick(p.mood, MOODS, 'sunny'),
-      cast: (Array.isArray(p.cast) ? p.cast : []).filter((c) => c && Number.isInteger(+c.who) && +c.who >= 0 && +c.who < n).slice(0, 4).map((c) => ({ who: +c.who, pose: pick(c.pose, POSES, 'happy') })),
+      cast: (Array.isArray(p.cast) ? p.cast : []).filter((c) => c && Number.isInteger(+c.who) && +c.who >= 0 && +c.who < n).slice(0, MAX_CHARS).map((c) => ({ who: +c.who, pose: pick(c.pose, POSES, 'happy') })),
       prop: pick(p.prop, PROPS, 'none')
     }));
     pages.forEach((p) => { if (!p.cast.length) p.cast = Array.from({ length: Math.min(n, 3) }, (_, i) => ({ who: i, pose: 'happy' })); });
@@ -138,7 +139,7 @@
     const back = (BACK[page.place] || BACK.park)(dark);
     const ground = page.place === 'home' || page.place === 'school' || page.place === 'street' || page.place === 'beach' || page.place === 'park' ? '' : `<rect y="${GY + 10}" width="400" height="${H - GY}" fill="${dark ? '#24493B' : '#7FC79A'}"/>`;
     const cast = (page.cast && page.cast.length ? page.cast : chars.map((_, i) => ({ who: i, pose: 'happy' }))).filter((c) => chars[c.who]);
-    const n = cast.length, gap = Math.min(110, 300 / Math.max(n, 1)), x0 = 200 - gap * (n - 1) / 2, sc = n > 3 ? .64 : n > 2 ? .74 : .86;
+    const n = cast.length, gap = Math.min(110, 330 / Math.max(n, 1)), x0 = 200 - gap * (n - 1) / 2, sc = n > 5 ? .5 : n > 4 ? .56 : n > 3 ? .64 : n > 2 ? .74 : .86;
     let figs = '';
     cast.forEach((c, i) => { const x = x0 + i * gap, y = GY + 4 - (i % 2) * 6; figs += `<ellipse cx="${x}" cy="${y + 30 * sc}" rx="${30 * sc}" ry="${7 * sc}" fill="#1F2A36" opacity=".15"/>` + character(chars[c.who], x, y, sc, c.pose, i >= n / 2 && n > 1); });
     const p0 = cast.length ? x0 + 38 : 200;
@@ -150,13 +151,20 @@
   function cover(story, chars, place) { return scene({ place: (story.pages[0] && story.pages[0].place) || place || 'park', mood: 'sunny', cast: chars.map((_, i) => ({ who: i, pose: i % 2 ? 'wave' : 'happy' })), prop: 'none' }, chars, { label: 'הדמויות של הסיפור' }); }
   function portrait(c, pose) { return `<svg viewBox="-60 -80 120 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${character(c, 0, 0, 1, pose || 'wave')}</svg>`; }
 
-  // הקדשה לילד/ה שיצר/ה את הסיפור
-  function dedication(a) {
+  // הקדשה לילד/ה שיצר/ה את הסיפור, מהדמויות (26/10/2026: "הברכה צריכה להיות מהדמויות - כלומר לשים את שמות הדמויות")
+  function joinNames(list) { const a = list.filter(Boolean); return a.length < 2 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' ו' + a[a.length - 1]; }
+  function dedication(a, chars) {
     const name = (a.name || '').trim();
     const f = a.g !== 'm';
-    if (!name) return { head: 'הסיפור הזה נוצר בדמיון שלך', line: 'כל מילה בו התחילה ברעיון שלך.' };
-    return { head: `ל${name}, ${f ? 'שיצרה' : 'שיצר'} את הסיפור הזה`, line: 'מהדמויות, מהנושא ומהתפניות שבחרת. איזה דמיון, ואיזו דרך להתמודד יחד!' };
+    const names = (chars || []).map((c) => String((c && c.name) || '').trim()).filter(Boolean);
+    const many = names.length !== 1;
+    const head = name ? `ל${name}, ${f ? 'שיצרה' : 'שיצר'} את הסיפור הזה` : 'למי שיצר/ה את הסיפור הזה';
+    const line = many
+      ? `תודה שהמצאת אותנו ושלחת אותנו להרפתקה! בזכותך גילינו כמה כוח יש לנו כשאנחנו ביחד, ועוזרים זה לזה.`
+      : `תודה שהמצאת אותי ושלחת אותי להרפתקה! בזכותך גיליתי כמה כוח יש לי כשאני לא לבד.`;
+    const from = names.length ? 'באהבה, ' + joinNames(names) : '';
+    return { head, line, from };
   }
 
-  return { COLORS, BODIES, EXTRAS, GENDERS, TRAITS, THEMES, PLACES, MOODS, POSES, PROPS, TWISTS, ENDINGS, AGES, system, input, normalize, valid, scene, cover, portrait, character, dedication, esc };
+  return { MAX_CHARS, joinNames, COLORS, BODIES, EXTRAS, GENDERS, TRAITS, THEMES, PLACES, MOODS, POSES, PROPS, TWISTS, ENDINGS, AGES, system, input, normalize, valid, scene, cover, portrait, character, dedication, esc };
 });

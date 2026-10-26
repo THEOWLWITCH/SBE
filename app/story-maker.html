@@ -101,6 +101,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
 .leaf.ded{padding:30px 26px;text-align:center;background:#FFF8E2}
 .leaf.ded .h{font:900 28px/1.3 'Frank Ruhl Libre',Georgia,serif;color:#1B4F7A}
 .leaf.ded p{font-size:19px;line-height:1.6;margin:12px auto 0;max-width:46ch}
+.dcast{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;margin:10px auto 0}.dcast svg{width:64px;height:70px}
 .leaf.end{padding:22px 26px}
 .leaf.end h3{margin:0 0 8px;font:800 20px Assistant,sans-serif;color:#1B4F7A}
 .leaf.end ol{margin:0;padding-inline-start:22px;font-size:18px;line-height:1.7}
@@ -135,6 +136,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
 .pp.dd{justify-content:center;text-align:center;background:#FFF8E2;border-radius:6mm;padding:14mm}
 .pp.dd .h{font:900 24pt/1.35 'Frank Ruhl Libre',Georgia,serif;color:#1B4F7A}
 .pp.dd p{font:600 14pt/1.6 Assistant,sans-serif;margin:6mm 0 0}
+.pp.dd .dcast svg{width:20mm;height:22mm}
 .pp.ed h2{font:800 16pt Assistant,sans-serif;color:#1B4F7A;border-inline-start:4px solid #1A9BB5;padding-inline-start:3mm;margin:6mm 0 3mm}
 .pp.ed p,.pp.ed li{font:600 13pt/1.6 Assistant,sans-serif}
 </style>
@@ -164,7 +166,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
 
   <section class="sheet" id="s1" aria-labelledby="h1t">
     <h2 class="t" id="h1t">מי בסיפור?</h2>
-    <p class="sub">ממציאים עד ארבע דמויות: שם, איך הן נראות, ומה מיוחד בהן. כל דמות תעשה משהו חשוב בסיפור.</p>
+    <p class="sub">ממציאים עד שש דמויות: שם, איך הן נראות, ומה מיוחד בהן. כל דמות תעשה משהו חשוב בסיפור.</p>
     <div class="chars" id="chars"></div>
     <div class="go-row"><button class="btn" type="button" id="to2">המשך: העלילה ←</button></div>
   </section>
@@ -256,7 +258,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
       <div class="full"><span class="l" style="font-weight:800;font-size:14px">עוד משהו בתלבושת</span><div class="row">${S.EXTRAS.map(([v, t]) => `<button type="button" class="chip" data-a="extra" data-v="${v}" aria-pressed="${(c.extra || '') === v}">${t}</button>`).join('')}</div></div>
       <div class="full"><span class="l" style="font-weight:800;font-size:14px">מה מיוחד בדמות? <small style="font-weight:600;color:var(--muted)">עד שלוש</small></span><div class="row">${S.TRAITS.map((t) => `<button type="button" class="chip" data-a="trait" data-v="${esc(t)}" aria-pressed="${c.traits.includes(t)}">${esc(t)}</button>`).join('')}</div></div>
       <div class="full"><input type="text" data-a="more" maxlength="140" value="${esc(c.more || '')}" placeholder="עוד משהו על הדמות: מה היא אוהבת, ממה היא קצת חוששת..." style="width:100%;min-height:40px;border:2px solid var(--line);border-radius:12px;padding:6px 10px;font:600 15px Assistant;background:var(--card);color:var(--ink)"></div>
-    </div>`).join('') + (cs.length < 4 ? `<button class="add" type="button" id="addCh">➕ עוד דמות</button>` : '');
+    </div>`).join('') + (cs.length < S.MAX_CHARS ? `<button class="add" type="button" id="addCh">➕ עוד דמות</button>` : '');
     $('chars').querySelectorAll('.ch').forEach((el) => {
       const i = +el.dataset.i, c = cs[i];
       el.querySelectorAll('[data-a]').forEach((b) => {
@@ -362,9 +364,9 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
   // ---------- הספר ----------
   function drawBook() {
     const st = D.story; if (!st) return;
-    const chars = D.storyChars || F().chars, A = D.author, ded = S.dedication(A);
+    const chars = D.storyChars || F().chars, A = D.author, ded = S.dedication(A, chars);
     let h = `<article class="leaf cover"><div class="art">${S.cover(st, chars, F().place)}</div><h2 contenteditable="true" spellcheck="false" data-k="title">${esc(st.title)}</h2>${A.name ? `<div class="by">${A.g === 'm' ? 'כתב' : 'כתבה'}: ${esc(A.name)}</div>` : ''}</article>`;
-    h += `<article class="leaf ded"><div class="h">${esc(ded.head)}</div><p>${esc(ded.line)}</p>${A.dedi ? `<p>${esc(A.dedi)}</p>` : ''}${A.from ? `<p style="font-weight:800">${esc(A.from)}</p>` : ''}</article>`;
+    h += `<article class="leaf ded"><div class="h">${esc(ded.head)}</div><p>${esc(ded.line)}</p>${ded.from ? `<p class="dfrom" style="font-weight:800">${esc(ded.from)}</p><div class="dcast">${chars.map((c) => S.portrait(c, 'wave')).join('')}</div>` : ''}${A.dedi ? `<p>${esc(A.dedi)}</p>` : ''}${A.from ? `<p style="font-weight:800">${esc(A.from)}</p>` : ''}</article>`;
     st.pages.forEach((p, i) => { h += `<article class="leaf pg2"><div class="art">${S.scene(p, chars)}</div><div class="txt" contenteditable="true" spellcheck="false" data-k="p${i}"><span class="num" contenteditable="false">${i + 1}</span>${esc(p.text)}</div></article>`; });
     h += `<article class="leaf end">${st.resilience ? `<h3>מה עזר לדמויות?</h3><p style="font-size:18px;margin:0 0 14px">${esc(st.resilience)}</p>` : ''}${st.questions.length ? `<h3>שאלות לשיחה אחרי הקריאה</h3><p style="margin:0 0 6px;color:#5a6672">מבוגר/ת שקורא/ת את הסיפור עם הילד/ה שואל/ת, כדי לקשר בין הסיפור לחיים:</p><ol>${st.questions.map((q) => `<li>${esc(q)}</li>`).join('')}</ol>` : ''}</article>`;
     $('book').innerHTML = h;
@@ -382,11 +384,11 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
   // ---------- הדפסה ----------
   function buildPrint() {
     const st = D.story; if (!st) return;
-    const chars = D.storyChars || F().chars, A = D.author, ded = S.dedication(A);
+    const chars = D.storyChars || F().chars, A = D.author, ded = S.dedication(A, chars);
     const today = new Date().toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\//g, '.');
     const top = `<div class="lg"><img src="assets/begood-logo-sm.webp" alt="Begood"><span>מחולל סיפורי חוסן · ${today}</span></div>`;
     let h = `<section class="pp cv"><img class="lgc" src="assets/begood-logo.webp" alt="Begood"><div class="art">${S.cover(st, chars, F().place)}</div><h1>${esc(st.title)}</h1>${A.name ? `<div class="by">${A.g === 'm' ? 'כתב' : 'כתבה'}: ${esc(A.name)}</div>` : ''}</section>`;
-    h += `<section class="pp">${top}<div class="pp dd" style="min-height:auto;flex:1"><div class="h">${esc(ded.head)}</div><p>${esc(ded.line)}</p>${A.dedi ? `<p>${esc(A.dedi)}</p>` : ''}${A.from ? `<p style="font-weight:800">${esc(A.from)}</p>` : ''}</div></section>`;
+    h += `<section class="pp">${top}<div class="pp dd" style="min-height:auto;flex:1"><div class="h">${esc(ded.head)}</div><p>${esc(ded.line)}</p>${ded.from ? `<p class="dfrom" style="font-weight:800">${esc(ded.from)}</p><div class="dcast">${chars.map((c) => S.portrait(c, 'wave')).join('')}</div>` : ''}${A.dedi ? `<p>${esc(A.dedi)}</p>` : ''}${A.from ? `<p style="font-weight:800">${esc(A.from)}</p>` : ''}</div></section>`;
     st.pages.forEach((p, i) => { h += `<section class="pp">${top}<div class="art">${S.scene(p, chars)}</div><div class="tx">${esc(p.text)}</div><div class="pn">${i + 1}</div></section>`; });
     h += `<section class="pp ed">${top}${st.resilience ? `<h2>מה עזר לדמויות?</h2><p>${esc(st.resilience)}</p>` : ''}${st.questions.length ? `<h2>שאלות לשיחה אחרי הקריאה</h2><p>מבוגר/ת שקורא/ת את הסיפור עם הילד/ה שואל/ת, כדי לקשר בין הסיפור לחיים:</p><ol>${st.questions.map((q) => `<li>${esc(q)}</li>`).join('')}</ol>` : ''}</section>`;
     // רק כשמשהו השתנה: בנייה מחדש בזמן ההדפסה מחליפה את התמונות לפני שנטענו, והלוגו לא מודפס

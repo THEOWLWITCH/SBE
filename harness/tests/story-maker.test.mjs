@@ -38,3 +38,16 @@ test('page, print with logo, and wiring', () => {
   assert.match(readFileSync(new URL('../lib/access.mjs', import.meta.url), 'utf8'), /'story-maker\.html': \['games'\]/);
   assert.match(readFileSync(app('games.html'), 'utf8'), /href="story-maker\.html"/);
 });
+
+test('הקדשה מהדמויות, ועד שש דמויות', () => {
+  assert.equal(S.MAX_CHARS, 6);
+  const d = S.dedication({ name: 'יעל', g: 'f' }, [{ name: 'נוני' }, { name: 'פופי' }, { name: 'בוב' }]);
+  assert.equal(d.head, 'ליעל, שיצרה את הסיפור הזה');
+  assert.equal(d.from, 'באהבה, נוני, פופי ובוב');
+  assert.match(d.line, /אותנו/);
+  const one = S.dedication({ name: 'דן', g: 'm' }, [{ name: 'זיזי' }]);
+  assert.equal(one.head, 'לדן, שיצר את הסיפור הזה');
+  assert.match(one.line, /אותי/);
+  const n = S.normalize({ title: 'x', pages: [{ text: 'עמוד עם שש דמויות', cast: [0,1,2,3,4,5].map((w) => ({ who: w })) }] }, { ...form, chars: Array.from({ length: 6 }, (_, i) => ({ name: 'ד' + i })) });
+  assert.equal(n.pages[0].cast.length, 6);
+});
