@@ -34,7 +34,7 @@
     { key:'reviews',label:'למידה והתחדשות',fields:[title,refs('actionId','פעולה מקושרת','actions',1),date('observedAt','מועד הבחינה'),evidenceIds,long('learned','מה למדנו על המנגנון ועל הקשרים'),long('presentChange','מה השתנה באיכות החיים בהווה'),long('futureChange','מה השתנה במוכנות לעתיד'),long('unintended','תוצאות נוספות, עומס או השפעה לא צפויה'),long('next','מה נשמר, מה משתנה ומה עוד נבדוק'),text('approvedBy','שותפים לאישור הלמידה'),note] }
   ];
   CONTEXT_FIELDS.push(...A.INPUT_FIELDS.context.filter(f => !CONTEXT_FIELDS.some(x => x.key === f.key)).map(f => ({...f,type:f.type === 'date' ? 'date' : 'long'})));
-  for (const section of SECTIONS.slice(0,4)) section.fields.push(...A.INPUT_FIELDS[section.key].filter(f => ['knowledgeState','updatedBy','updatedAt'].includes(f.key)));
+  for (const section of SECTIONS.slice(0,4)) section.fields.push(...A.INPUT_FIELDS[section.key].filter(f => !section.fields.some(x => x.key === f.key)).map(f => ({...f,type:f.type === 'text' ? 'long' : f.type})));
   for (const key of ['evidence','links']) {
     const section = SECTIONS.find(s => s.key === key);
     section.fields.push(...A.INPUT_FIELDS[key].filter(f => !section.fields.some(x => x.key === f.key)).map(f => ({...f,type:f.type === 'text' ? 'long' : f.type})));

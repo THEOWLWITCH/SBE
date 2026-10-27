@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>מסע אל החוסן</title>
+<title>רשת החוסן החברתי</title>
 <script src="lib/access-guard.js"></script>
 <script src="lib/quotes.js"></script>
 <script src="lib/product-doc.js"></script>
@@ -16,6 +16,7 @@
 <script src="lib/journey-model.js"></script>
 <script src="lib/journey-analysis-model.js"></script>
 <script src="lib/journey-workspace-model.js"></script>
+<script src="lib/journey-starter-catalog.js"></script>
 <script src="lib/journey-feedback.js"></script>
 <script src="lib/journey-workspace.js"></script>
 <link rel="stylesheet" href="lib/journey-workspace.css">
@@ -184,7 +185,7 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 <nav class="topnav no-print">
   <button type="button" onclick="history.back()">→ חזרה</button>
   <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
-  <span class="crumb">Begood › מסע אל החוסן</span>
+  <span class="crumb">Begood › רשת החוסן החברתי</span>
 </nav>
 <div class="wrap" id="app"></div>
 <script>
@@ -292,7 +293,7 @@ async function viewList(){
   const load = ++loadGeneration, hash = location.hash;
   const app = F('app'); app.textContent = '';
   const c = card();
-  c.appendChild(exitRow(false)); c.appendChild(el('h1', null, 'מסע אל החוסן'));
+  c.appendChild(exitRow(false)); c.appendChild(el('h1', null, 'רשת החוסן החברתי'));
   const p = el('p'); p.appendChild(inlineRich('מרחב מתמשך לפיתוח חוסן בבית הספר ובקהילה. מתחילים בצוות חוסן ובמיפוי של **בעלי תפקידים, מנגנונים חברתיים, תשתיות תומכות ומשאבים נוספים**. מחברים ראיות, בוחנים יחד את רשת המנגנונים, מקבלים החלטה מנומקת, מתכננים פעולה וחוזרים ללמוד מן התוצאות.')); c.appendChild(p);
   { const hk = el('p', 'intro'); hk.appendChild(inlineRich('**קהילת חוסן** היא קהילה שבוחרת להפוך את החוסן לחלק מוצהר מחייה, בשגרה כמו במשבר. זו אינה קהילה מסוג מיוחד: כל קהילה יכולה לבחור בדרך הזו ולהתקרב אליה צעד אחר צעד. הדרך מתחילה במנגנונים החברתיים שכבר פועלים בקהילה, ובוחנת יחד מה מהם משרת את החוסן ומה אפשר לשפר. **תו חוסן** הוא הכרה בעבודה של קהילת חוסן, ולא תנאי: אפשר להיות קהילת חוסן גם בלעדיו. התו נותן משוב והערכה על מה שעובד ועל מה שכדאי לנסות בהמשך, ולא ציון.')); hk.style.margin = '.6rem 0 0'; c.appendChild(hk); }
   c.appendChild(el('p', 'muted', 'קיום, מימוש והתחדשות הן זוויות בחינה מקבילות לאורך כל התהליך. תו חוסן ייבחן בהליך הסמכה חיצוני נפרד, על בסיס קריטריונים שקופים וראיות. לא מוענק תו אוטומטי במרחב העבודה.'));

@@ -10,7 +10,7 @@ const M = require('../../app/lib/journey-workspace-model.js');
 const runtime = process.env.BE_GOOD_PLAYWRIGHT_MODULE;
 const executablePath = process.env.BE_GOOD_BROWSER_PATH;
 const source = name => readFileSync(new URL('../../app/lib/' + name, import.meta.url), 'utf8');
-const scripts = ['journey-analysis-model.js','journey-workspace-model.js','journey-feedback.js','journey-workspace.js'].map(source);
+const scripts = ['journey-analysis-model.js','journey-workspace-model.js','journey-starter-catalog.js','journey-feedback.js','journey-workspace.js'].map(source);
 const css = source('journey-workspace.css') + source('journey-feedback.css');
 
 test('guided school and community journey: reviewed analysis, deliberation, history and stale-response protection', {
@@ -62,6 +62,39 @@ test('guided school and community journey: reviewed analysis, deliberation, hist
   }
   async function save(page) { await page.getByRole('button',{name:'שמירת השינויים',exact:true}).click(); await page.waitForFunction(() => !controller.isDirty()); }
   try {
+    await t.test('catalog choices stay separate from facts, survive renaming and allow explicit additional occurrences',async () => {
+      for (const kind of ['school','community']) {
+        const {page,errors} = await pageFor(kind,390,M.empty());
+        await page.locator('[data-step="inventories"]').click();
+        assert.equal(await page.locator('[data-starter-section="roles"] input[type="checkbox"]').count(),8);
+        assert.equal(await page.evaluate(() => calls.length),0);
+        await page.locator('[data-subsection="mechanisms"]').click();
+        const first = page.locator('[data-starter-section="mechanisms"] input[type="checkbox"]').first();
+        const catalogId = await first.getAttribute('data-starter-id');
+        await first.check();
+        assert.equal(await page.locator('[data-starter-id="' + catalogId + '"]').isDisabled(),true);
+        await page.getByRole('button',{name:'סיום הבחירה ומעבר לפרטי הרשומה',exact:true}).click();
+        await page.getByLabel('שם הרשומה',{exact:true}).fill('שם מקומי שנבחר בצוות');
+        await page.getByLabel('מצב הידיעה',{exact:true}).selectOption('different');
+        await save(page);
+        const stored = await page.evaluate(() => serverWorkspace);
+        assert.equal(stored.mechanisms.length,1);
+        assert.equal(stored.mechanisms[0].title,'שם מקומי שנבחר בצוות');
+        assert.equal(stored.mechanisms[0].knowledgeState,'different');
+        assert.equal(stored.mechanisms[0].catalogId,catalogId);
+        assert.equal(stored.mechanisms[0].purpose,'');
+        assert.deepEqual(stored.mechanisms[0].evidenceIds,[]);
+        assert.equal(stored.links.length,0);
+        await page.locator('[data-starter-section="mechanisms"] > summary').click();
+        assert.equal(await page.locator('[data-starter-id="' + catalogId + '"]').isChecked(),true);
+        await page.locator('[data-starter-another="' + catalogId + '"]').click();
+        await save(page);
+        assert.equal(await page.evaluate(() => serverWorkspace.mechanisms.length),2);
+        assert.equal(await page.evaluate(() => serverWorkspace.mechanisms[0].title),'שם מקומי שנבחר בצוות');
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+        assert.deepEqual(errors,[]); await page.close();
+      }
+    });
     await t.test('six steps and essential/optional fields work in both settings at desktop and mobile widths',async () => {
       for (const kind of ['school','community']) for (const width of [1280,390]) {
         const {page,errors} = await pageFor(kind,width);
