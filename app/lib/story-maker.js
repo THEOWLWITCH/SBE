@@ -22,11 +22,19 @@
   const PROPS = ['none', 'map', 'flashlight', 'umbrella', 'gift', 'ball', 'book', 'balloon', 'lantern'];
   const TWISTS = ['ואז פתאום כבה האור', 'ואז התחיל גשם חזק', 'ואז מישהו הלך לאיבוד', 'ואז מצאו מפה ישנה', 'ואז הגיעה הודעה מפתיעה', 'ואז משהו נשבר', 'ואז הגיע/ה מישהו/י חדש/ה', 'ואז הדרך נחסמה'];
   const ENDINGS = [['party', 'חוגגים יחד'], ['learn', 'לומדים משהו חדש על עצמנו'], ['new', 'מוצאים דרך חדשה'], ['surprise', 'סוף מפתיע'], ['open', 'סוף פתוח, שממשיכים לדמיין']];
-  const AGES = [['k2', 'גן עד ב׳', 5, '35 עד 55'], ['g34', 'ג׳ עד ד׳', 6, '60 עד 85'], ['g56', 'ה׳ עד ו׳', 7, '90 עד 120'], ['teen', 'ז׳ ומעלה', 7, '120 עד 160']];
+  const MAX_CHARS = 6; // 26/10/2026: "לאפשר יותר דמויות"
+  const AGES = [['k2', 'גן עד ב׳', 5, '35 עד 55'], ['g34', 'ג׳ עד ד׳', 6, '60 עד 85'], ['g56', 'ה׳ עד ו׳', 7, '90 עד 120'], ['teen', 'ז׳ ומעלה', 7, '120 עד 160'], ['adult', 'בוגרים', 7, '160 עד 230']];
+  // סיפורים לבוגרים (26/10/2026: "במחולל הסיפורים הוסף גרסה של סיפורים לבוגרים"): לצוותים, להורים ולקהילה. משל עם היצורונים, בשפה בוגרת.
+  const isAdult = (age) => age === 'adult';
+  const ADULT_THEMES = ['צוות שמתמודד עם שינוי גדול', 'שגרה שנשברת בבת אחת', 'שכונה ביום שאחרי הסערה', 'מישהו חדש מצטרף לצוות', 'פרידה ממישהו שעוזב', 'החלטה קשה שהקהילה מקבלת יחד', 'מחלוקת בצוות, ואיך מגשרים', 'הורים שמחכים לחדשות', 'משהו שבנינו יחד מתקלקל', 'מתנדבים שמחזיקים את המקום', 'עייפות ארוכה, ואיך ממשיכים', 'מסורת ישנה שהגיע הזמן לשנות'];
+  const ADULT_TWISTS = ['ואז הגיעה הודעה ששינתה הכול', 'ואז התברר שטעינו', 'ואז מישהו/י ביקש/ה עזרה בפעם הראשונה', 'ואז נפתחה דלת שלא ציפינו לה', 'ואז הכוח נגמר באמצע הדרך', 'ואז מישהו/י מבחוץ הציע/ה כיוון אחר', 'ואז שתי דעות התנגשו', 'ואז הגיע הלילה הארוך ביותר'];
+  const themes = (age) => (isAdult(age) ? ADULT_THEMES : THEMES);
+  const twists = (age) => (isAdult(age) ? ADULT_TWISTS : TWISTS);
 
   // ---------- הפרומפט ----------
   function system(ageId) {
     const a = AGES.find((x) => x[0] === ageId) || AGES[1];
+    if (isAdult(ageId)) return adultSystem(a);
     return `את סופרת ילדים ישראלית. ילד או ילדה בגיל ${a[1]} יצרו דמויות, בחרו נושא ותפניות בעלילה, ואת כותבת מהם סיפור חוסן מלא ומרגש, בעברית חיה, טבעית ופשוטה לגיל.
 
 מה זה סיפור חוסן כאן: הדמויות פוגשות קושי, מרגישות (ואומרות מה הן מרגישות, במילים פשוטות), ומתמודדות יחד: מקשיבות זו לזו, מבקשות עזרה ומציעות עזרה, בוחרות יחד מה לעשות, מתכננות צעד קטן ומנסות, ומרגישות שייכות. מבוגר/ת מוכר/ת (הורה, מורה, סבתא, שכנה) יכול/ה להיות בסיפור ולעזור. בסוף יש תקווה וגאווה במה שעשו יחד.
@@ -51,11 +59,38 @@
 החזירי רק JSON, בלי שום טקסט אחר:
 {"title":"...","pages":[{"text":"...","place":"...","mood":"...","cast":[{"who":0,"pose":"..."}],"prop":"..."}],"resilience":"...","questions":["...","...","..."]}`;
   }
+  function adultSystem(a) {
+    return `את סופרת ישראלית שכותבת סיפורים קצרים לבוגרים: אנשי ונשות חינוך, הורים, צוותים וקהילות. מישהו/י יצר/ה דמויות (יצורונים צבעוניים), בחר/ה נושא ותפניות בעלילה, ואת כותבת מהם סיפור חוסן בוגר, בעברית עשירה, חיה וטבעית.
+
+הסגנון: משל מודרני. היצורונים הם דמויות אנושיות מאוד, עם עולם פנימי, ספקות, הומור יבש ורגעים של שקט. הסיפור לא מסביר את עצמו, ונותן לקוראים לזהות בו את חייהם: עבודה בצוות, הורות, קהילה, שגרה שנשברת וחזרה ממנה.
+
+מה זה סיפור חוסן כאן: הדמויות פוגשות קושי של ממש, מרגישות (גם עייפות, כעס, אשמה או חוסר אונים), ובכל זאת מוצאות דרך משותפת: מקשיבות, מבקשות עזרה ומציעות אותה, מקבלות החלטה יחד, מנסות צעד קטן, מתקנות טעות, ובונות משהו שימשיך לפעול גם בפעם הבאה (הסכם, שגרה, תפקיד, טקס קטן). חוסן הוא לא היעדר קושי, אלא מה שעושים יחד מולו.
+
+הכללים:
+- הדמויות הן בדיוק מה שנוצר: אותם שמות, אותו מין דקדוקי (לפי "היא" או "הוא"), אותן תכונות. לכל דמות תפקיד בסיפור, ולפחות פעם אחת התכונה שלה משנה משהו, לטוב או לרע.
+- הנושא הוא לב הסיפור, והתפניות מגיעות לפי הסדר, כל אחת כנקודת מפנה ברורה.
+- הסוף לפי מה שנבחר. מותר שיישאר משהו פתוח או מורכב.
+- ${a[2]} עמודים, ${a[3]} מילים בכל עמוד. דיאלוג חי במרכאות רגילות, תיאורים מדויקים, רגעים קטנים שאומרים הרבה.
+- בלי אלימות, בלי תיאורים גרפיים ובלי סכנה ממשית לחיים.
+- בלי מוסר השכל מפורש ובלי הטפה.
+- בלי סימני עיצוב (בלי כוכביות ובלי #), ובלי מקף ארוך.
+
+לכל עמוד בחרי גם איור: המקום (place), מזג האוויר והשעה (mood), מי מהדמויות בתמונה (cast, לפי המספר שלהן ברשימה, עם תנוחה pose), וחפץ אחד אם מתאים (prop).
+- place: ${PLACES.map((p) => p[0]).join(' | ')}
+- mood: ${MOODS.join(' | ')}
+- pose: happy | wave | sad | surprised | thinking | scared | hug | calm
+- prop: ${PROPS.join(' | ')}
+
+בסוף: "resilience": משפט אחד או שניים, מה אפשר לקחת מהסיפור על חוסן משותף. ו-"questions": שלוש שאלות פתוחות לשיחה בקבוצה של בוגרים אחרי הקריאה (בצוות, בקבוצת הורים או בין חברים), שמקשרות את הסיפור לחיים ולעבודה שלהם ("איפה אצלנו...", "מה היה עוזר לנו כש...", "איזה הסכם קטן...").
+
+החזירי רק JSON, בלי שום טקסט אחר:
+{"title":"...","pages":[{"text":"...","place":"...","mood":"...","cast":[{"who":0,"pose":"..."}],"prop":"..."}],"resilience":"...","questions":["...","...","..."]}`;
+  }
   function input(f) {
     const chars = (f.chars || []).map((c, i) => `${i}. ${c.name || 'בלי שם'} (${c.g === 'm' ? 'הוא' : 'היא'}): ${[].concat(c.traits || []).join(', ')}${c.more ? '. ' + c.more : ''}${c.likes ? '. אוהב/ת: ' + c.likes : ''}`).join('\n');
     const place = (PLACES.find((p) => p[0] === f.place) || [])[1];
     const end = (ENDINGS.find((e) => e[0] === f.ending) || [])[1];
-    return `הדמויות:\n${chars}\n\nהנושא: ${f.theme || ''}${place ? '\nאיפה הסיפור מתחיל: ' + place : ''}\n\nהתפניות בעלילה, לפי הסדר:\n${(f.twists || []).filter((t) => t && t.trim()).map((t, i) => (i + 1) + '. ' + t).join('\n') || 'אפשר לבחור תפנית אחת מתאימה'}\n\nאיך הסיפור נגמר: ${end || 'סוף טוב שבו כולם גאים'}${f.extra ? '\n\nעוד משהו מהילד/ה: ' + f.extra : ''}`;
+    return `הדמויות:\n${chars}\n\nהנושא: ${f.theme || ''}${place ? '\nאיפה הסיפור מתחיל: ' + place : ''}\n\nהתפניות בעלילה, לפי הסדר:\n${(f.twists || []).filter((t) => t && t.trim()).map((t, i) => (i + 1) + '. ' + t).join('\n') || 'אפשר לבחור תפנית אחת מתאימה'}\n\nאיך הסיפור נגמר: ${end || 'סוף טוב שבו כולם גאים'}${f.extra ? '\n\nעוד משהו ממי שיצר/ה את הסיפור: ' + f.extra : ''}`;
   }
   function normalize(v, f) {
     const n = (f.chars || []).length;
@@ -64,7 +99,7 @@
       text: p.text.trim(),
       place: pick(p.place, PLACES.map((x) => x[0]), f.place || 'park'),
       mood: pick(p.mood, MOODS, 'sunny'),
-      cast: (Array.isArray(p.cast) ? p.cast : []).filter((c) => c && Number.isInteger(+c.who) && +c.who >= 0 && +c.who < n).slice(0, 4).map((c) => ({ who: +c.who, pose: pick(c.pose, POSES, 'happy') })),
+      cast: (Array.isArray(p.cast) ? p.cast : []).filter((c) => c && Number.isInteger(+c.who) && +c.who >= 0 && +c.who < n).slice(0, MAX_CHARS).map((c) => ({ who: +c.who, pose: pick(c.pose, POSES, 'happy') })),
       prop: pick(p.prop, PROPS, 'none')
     }));
     pages.forEach((p) => { if (!p.cast.length) p.cast = Array.from({ length: Math.min(n, 3) }, (_, i) => ({ who: i, pose: 'happy' })); });
@@ -138,7 +173,7 @@
     const back = (BACK[page.place] || BACK.park)(dark);
     const ground = page.place === 'home' || page.place === 'school' || page.place === 'street' || page.place === 'beach' || page.place === 'park' ? '' : `<rect y="${GY + 10}" width="400" height="${H - GY}" fill="${dark ? '#24493B' : '#7FC79A'}"/>`;
     const cast = (page.cast && page.cast.length ? page.cast : chars.map((_, i) => ({ who: i, pose: 'happy' }))).filter((c) => chars[c.who]);
-    const n = cast.length, gap = Math.min(110, 300 / Math.max(n, 1)), x0 = 200 - gap * (n - 1) / 2, sc = n > 3 ? .64 : n > 2 ? .74 : .86;
+    const n = cast.length, gap = Math.min(110, 330 / Math.max(n, 1)), x0 = 200 - gap * (n - 1) / 2, sc = n > 5 ? .5 : n > 4 ? .56 : n > 3 ? .64 : n > 2 ? .74 : .86;
     let figs = '';
     cast.forEach((c, i) => { const x = x0 + i * gap, y = GY + 4 - (i % 2) * 6; figs += `<ellipse cx="${x}" cy="${y + 30 * sc}" rx="${30 * sc}" ry="${7 * sc}" fill="#1F2A36" opacity=".15"/>` + character(chars[c.who], x, y, sc, c.pose, i >= n / 2 && n > 1); });
     const p0 = cast.length ? x0 + 38 : 200;
@@ -150,13 +185,20 @@
   function cover(story, chars, place) { return scene({ place: (story.pages[0] && story.pages[0].place) || place || 'park', mood: 'sunny', cast: chars.map((_, i) => ({ who: i, pose: i % 2 ? 'wave' : 'happy' })), prop: 'none' }, chars, { label: 'הדמויות של הסיפור' }); }
   function portrait(c, pose) { return `<svg viewBox="-60 -80 120 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${character(c, 0, 0, 1, pose || 'wave')}</svg>`; }
 
-  // הקדשה לילד/ה שיצר/ה את הסיפור
-  function dedication(a) {
+  // הקדשה לילד/ה שיצר/ה את הסיפור, מהדמויות (26/10/2026: "הברכה צריכה להיות מהדמויות - כלומר לשים את שמות הדמויות")
+  function joinNames(list) { const a = list.filter(Boolean); return a.length < 2 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' ו' + a[a.length - 1]; }
+  function dedication(a, chars) {
     const name = (a.name || '').trim();
     const f = a.g !== 'm';
-    if (!name) return { head: 'הסיפור הזה נוצר בדמיון שלך', line: 'כל מילה בו התחילה ברעיון שלך.' };
-    return { head: `ל${name}, ${f ? 'שיצרה' : 'שיצר'} את הסיפור הזה`, line: 'מהדמויות, מהנושא ומהתפניות שבחרת. איזה דמיון, ואיזו דרך להתמודד יחד!' };
+    const names = (chars || []).map((c) => String((c && c.name) || '').trim()).filter(Boolean);
+    const many = names.length !== 1;
+    const head = name ? `ל${name}, ${f ? 'שיצרה' : 'שיצר'} את הסיפור הזה` : 'למי שיצר/ה את הסיפור הזה';
+    const line = many
+      ? `תודה שהמצאת אותנו ושלחת אותנו להרפתקה! בזכותך גילינו כמה כוח יש לנו כשאנחנו ביחד, ועוזרים זה לזה.`
+      : `תודה שהמצאת אותי ושלחת אותי להרפתקה! בזכותך גיליתי כמה כוח יש לי כשאני לא לבד.`;
+    const from = names.length ? 'באהבה, ' + joinNames(names) : '';
+    return { head, line, from };
   }
 
-  return { COLORS, BODIES, EXTRAS, GENDERS, TRAITS, THEMES, PLACES, MOODS, POSES, PROPS, TWISTS, ENDINGS, AGES, system, input, normalize, valid, scene, cover, portrait, character, dedication, esc };
+  return { isAdult, ADULT_THEMES, ADULT_TWISTS, themes, twists, MAX_CHARS, joinNames, COLORS, BODIES, EXTRAS, GENDERS, TRAITS, THEMES, PLACES, MOODS, POSES, PROPS, TWISTS, ENDINGS, AGES, system, input, normalize, valid, scene, cover, portrait, character, dedication, esc };
 });

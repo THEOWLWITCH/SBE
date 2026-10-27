@@ -38,3 +38,30 @@ test('page, print with logo, and wiring', () => {
   assert.match(readFileSync(new URL('../lib/access.mjs', import.meta.url), 'utf8'), /'story-maker\.html': \['games'\]/);
   assert.match(readFileSync(app('games.html'), 'utf8'), /href="story-maker\.html"/);
 });
+
+test('הקדשה מהדמויות, ועד שש דמויות', () => {
+  assert.equal(S.MAX_CHARS, 6);
+  const d = S.dedication({ name: 'יעל', g: 'f' }, [{ name: 'נוני' }, { name: 'פופי' }, { name: 'בוב' }]);
+  assert.equal(d.head, 'ליעל, שיצרה את הסיפור הזה');
+  assert.equal(d.from, 'באהבה, נוני, פופי ובוב');
+  assert.match(d.line, /אותנו/);
+  const one = S.dedication({ name: 'דן', g: 'm' }, [{ name: 'זיזי' }]);
+  assert.equal(one.head, 'לדן, שיצר את הסיפור הזה');
+  assert.match(one.line, /אותי/);
+  const n = S.normalize({ title: 'x', pages: [{ text: 'עמוד עם שש דמויות', cast: [0,1,2,3,4,5].map((w) => ({ who: w })) }] }, { ...form, chars: Array.from({ length: 6 }, (_, i) => ({ name: 'ד' + i })) });
+  assert.equal(n.pages[0].cast.length, 6);
+});
+
+test('סיפורים לבוגרים: גיל, נושאים, תפניות ופרומפט משלהם', () => {
+  assert.ok(S.AGES.some((a) => a[0] === 'adult' && a[1] === 'בוגרים'));
+  assert.ok(S.isAdult('adult') && !S.isAdult('teen'));
+  assert.notDeepEqual(S.themes('adult'), S.themes('g34'));
+  assert.notDeepEqual(S.twists('adult'), S.twists('g34'));
+  const sys = S.system('adult');
+  assert.match(sys, /לבוגרים/);
+  assert.match(sys, /בצוות, בקבוצת הורים/);
+  assert.doesNotMatch(sys, /סופרת ילדים/);
+  assert.match(S.system('g34'), /סופרת ילדים/);
+  const page = readFileSync(app('story-maker.html'), 'utf8');
+  assert.ok(page.includes('S.themes(f.age)') && page.includes('qIntro()'));
+});
