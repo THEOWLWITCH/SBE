@@ -50,6 +50,8 @@ async function fixture() {
 test('scenario alternatives and futures persist through the same authorized revision contract', async () => {
   const {call,id,other}=await fixture();
   const w=W.clean(workspaceFixture());
+  w.context.autonomy='בחירה בגבולות המנדט';
+  w.mechanisms[0].autonomyContribution='החלטה משותפת על דרכי הפעולה';
   const a=N.createAlternative(w,'scenario1',0,'2026-10-27T10:00:00.000Z');
   a.title='חלופה לבדיקה'; a.proposal.mechanisms.push({id:'hypothetical',title:'מנגנון מוצע ללא ראיות'});
   w.lab={futures:[{id:'future1',title:'פחות זמן',conditions:'צמצום הזמן המשותף'}],alternatives:[a]};
@@ -57,6 +59,8 @@ test('scenario alternatives and futures persist through the same authorized revi
   assert.equal(status,200);
   assert.equal(saved.workspace.mechanisms.some(m=>m.id==='hypothetical'),false);
   assert.equal(saved.workspace.lab.alternatives[0].proposal.mechanisms.at(-1).id,'hypothetical');
+  assert.equal(saved.workspace.context.autonomy,'בחירה בגבולות המנדט');
+  assert.equal(saved.workspace.lab.alternatives[0].baseline.mechanisms[0].autonomyContribution,'החלטה משותפת על דרכי הפעולה');
   assert.equal((await call('jrSaveWorkspace',{id,revision:0,workspace:w}))[0],409);
   assert.equal((await call('jrGet',{id},other))[0],403);
   const [,loaded]=await call('jrGet',{id});

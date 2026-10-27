@@ -48,8 +48,9 @@ test('separate reviewed input retains hypothetical records and all future assump
   assert.equal(input.assessments.length,0);
   assert.equal(input.proposal.roles[0].person,'');
   assert.deepEqual(N.cleanInput(input,cleanMap),input);
-  const report={summary:'טיוטה לשיחה',direct:[],conditional:[{title:'תלות אפשרית',explanation:'יש לברר זמינות',refs:['m3'],assumptions:'אם יוקצה זמן',inquiry:'מי פנויים?'}],hypotheses:[],comparisons:futures.map(f=>({futureId:f.id,present:'לבדיקה',future:'לבדיקה',tensions:'',needs:'',preparation:'',signals:'',unknown:''})),supportSuggestions:[{mechanismId:'m3',infrastructureId:'i1',reason:'אפשר לבחון מרחב למידה',gaps:'קיבולת טרם ידועה'}]};
+  const report={summary:'טיוטה לשיחה',direct:[],conditional:[{title:'תלות אפשרית',explanation:'יש לברר זמינות',refs:['m3'],assumptions:'אם יוקצה זמן',inquiry:'מי פנויים?'}],hypotheses:[],comparisons:futures.map(f=>({futureId:f.id,present:'לבדיקה',future:'לבדיקה',autonomy:'אפשרויות הבחירה לבירור',tensions:'',needs:'',preparation:'',signals:'',unknown:''})),supportSuggestions:[{mechanismId:'m3',infrastructureId:'i1',reason:'אפשר לבחון מרחב למידה',gaps:'קיבולת טרם ידועה'}]};
   assert.equal(N.validateReport(report,input).conditional[0].refs[0],'m3');
+  assert.equal(N.validateReport(report,input).comparisons[0].autonomy,'אפשרויות הבחירה לבירור');
   assert.doesNotThrow(()=>N.validateReport({...report,conditional:[{...report.conditional[0],refs:['e1']}]},input));
   assert.throws(()=>N.validateReport({...report,summary:''},input));
   assert.throws(()=>N.validateReport({...report,conditional:[{...report.conditional[0],refs:['invented']}]},input));
@@ -58,15 +59,27 @@ test('separate reviewed input retains hypothetical records and all future assump
   a.proposal.mechanisms[0].title='שם שהשתנה';
   const saved=N.clean({futures,alternatives:[a]},cleanMap);
   assert.equal(saved.alternatives[0].feedback.input.proposal.mechanisms[0].title,'תקשורת');
+  const legacy=JSON.parse(JSON.stringify(saved));
+  for(const map of [legacy.alternatives[0].baseline,legacy.alternatives[0].proposal,legacy.alternatives[0].feedback.input.baseline,legacy.alternatives[0].feedback.input.proposal]){
+    delete map.context.autonomy;map.mechanisms.forEach(m=>{delete m.autonomyContribution;delete m.autonomyConditions;});
+  }
+  legacy.alternatives[0].feedback.output.comparisons.forEach(c=>delete c.autonomy);
+  const restored=N.clean(legacy,cleanMap);
+  assert.equal(restored.alternatives[0].feedback.output.comparisons[0].autonomy,'');
+  assert.equal(restored.alternatives[0].feedback.input.proposal.mechanisms[2].title,'חדש ללא ראיות');
 });
 
 test('matrix uses stable future identities; decision is an unapproved editable draft', () => {
-  const a=alternative(); a.title='חלופה'; a.assessments=[{futureId:'f1',present:'פעולה יחד',future:'גמישות',unknown:'מי חסרים',reviewAt:'2026-11-10'}];
+  const a=alternative(); a.title='חלופה'; a.assessments=[{futureId:'f1',present:'פעולה יחד',future:'גמישות',autonomy:'שותפות חיצונית מרחיבה את אפשרויות הבחירה',unknown:'מי חסרים',reviewAt:'2026-11-10'}];
   const lab=N.clean({futures,alternatives:[a]},cleanMap);
   assert.equal(lab.alternatives[0].assessments[0].futureId,'f1');
+  assert.equal(lab.alternatives[0].assessments[0].autonomy,'שותפות חיצונית מרחיבה את אפשרויות הבחירה');
+  const input=N.buildInput(a,futures,{kind:'community',label:'קהילה'},cleanMap);
+  assert.equal(input.assessments[0].autonomy,'שותפות חיצונית מרחיבה את אפשרויות הבחירה');
   assert.throws(()=>N.clean({futures:[futures[1]],alternatives:[a]},cleanMap));
   const draft=N.decisionDraft(lab.alternatives[0]);
   assert.equal(draft.approvedBy,''); assert.match(draft.uncertainty,/מי חסרים/);
   assert.match(draft.note,/a1/); assert.equal(draft.reviewAt,'2026-11-10');
+  assert.match(draft.criteria,/אוטונומיה/);
   assert.throws(()=>N.clean({futures:[{id:'f1',reviewAt:'2026-02-30'}]},cleanMap));
 });

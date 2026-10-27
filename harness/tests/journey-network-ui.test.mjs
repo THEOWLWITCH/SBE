@@ -44,6 +44,7 @@ test('network workbench preserves baseline, captures future assessments and reje
       await page.locator('[data-network-view="assessment"]').click();
       assert.equal(await page.locator('[data-future-assessment]').count(),2);
       await page.locator('[data-future-assessment]').first().getByRole('textbox').first().fill('מקום לפעולה יחד');
+      await page.locator('[data-future-assessment]').first().getByLabel('תרומת החלופה לאוטונומיה בתנאי העתיד הזה',{exact:true}).fill('הרחבת יכולת הבחירה עם שותפים');
       assert.equal(await page.evaluate(()=>data.lab.alternatives[0].assessments.length),1);
       await page.locator('[data-network-view="feedback"]').click();
       await page.getByRole('button',{name:'הצגת המידע לתרחיש',exact:true}).click();
@@ -52,6 +53,7 @@ test('network workbench preserves baseline, captures future assessments and reje
       await page.getByText('משוב בדוי לבדיקת הממשק',{exact:true}).waitFor();
       assert.equal(await page.evaluate(()=>modelCalls.length),2);
       assert.equal(await page.evaluate(()=>modelCalls[0].proposal.mechanisms.length),3);
+      assert.equal(await page.evaluate(()=>modelCalls[0].assessments[0].autonomy),'הרחבת יכולת הבחירה עם שותפים');
       assert.deepEqual(await page.evaluate(()=>data.lab.alternatives[0].proposal.mechanisms[0].infrastructureIds),[]);
       await page.getByRole('button',{name:'הצגת המידע לתרחיש',exact:true}).click();
       await page.locator('[data-network-reviewed]').check();
@@ -75,6 +77,7 @@ test('network workbench preserves baseline, captures future assessments and reje
       assert.deepEqual(await page.evaluate(()=>data.lab.alternatives[0].baseline.mechanisms[0].infrastructureIds),[]);
       assert.deepEqual(await page.evaluate(()=>SBE_JOURNEY_WORKSPACE.clean(data).lab.alternatives[0].proposal.mechanisms[0].infrastructureIds),['i1']);
       assert.match(await page.evaluate(()=>controller.report().textContent),/מקום לפעולה יחד/);
+      assert.match(await page.evaluate(()=>controller.report().textContent),/הרחבת יכולת הבחירה עם שותפים/);
       assert.ok(await page.evaluate(()=>controller.report().querySelectorAll('table').length)>0);
       assert.match(await page.evaluate(()=>controller.report().textContent),/10\.11\.26/);
       await page.getByRole('button',{name:'יצירת טיוטת החלטה מהחלופה',exact:true}).click();

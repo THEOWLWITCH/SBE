@@ -244,9 +244,9 @@
     tabs.forEach(s => { const b = button(s.label, () => navigate(s.key), true); b.dataset.section = s.key; directNav.appendChild(b); });
     content = node('section', 'card jws-content'); shell.appendChild(content);
     const essential = {
-      context:['goal','preserve','scope','population','groups','periodStart','periodEnd','participants','missingVoices','baseline','baselineAt','mandate','delegation'],
+      context:['goal','preserve','scope','population','groups','periodStart','periodEnd','participants','missingVoices','baseline','baselineAt','mandate','delegation','autonomy'],
       roles:['title','authority','time','backup','knowledgeState','updatedBy','updatedAt','evidenceIds'],
-      mechanisms:['title','purpose','participants','activation','knowledgeState','updatedBy','updatedAt','evidenceIds'],
+      mechanisms:['title','purpose','participants','activation','autonomyContribution','knowledgeState','updatedBy','updatedAt','evidenceIds'],
       infrastructures:['title','availability','access','owner','knowledgeState','updatedBy','updatedAt','evidenceIds'],
       resources:['title','availability','access','owner','knowledgeState','updatedBy','updatedAt','evidenceIds'],
       evidence:['title','kind','source','observedAt','details','limits'],
@@ -311,6 +311,7 @@
       parent.appendChild(node('p','','מחויבות משותפת, אחריות מבוזרת, שימוש במנגנונים תוך בחינה ושיפור, ולמידה מתמשכת מכוונים את ההתבוננות. אלה אינם סולמות מדידה מתוקפים.'));
       parent.appendChild(node('p','','תודעת חוסן רב ערוצית נוגעת לזירות הפרט, המשפחה, העמיתים, בית הספר, הקהילה והרשות. היא עשויה לארגן ציפיות ופעולה כמנגנון בפני עצמו. גם מעגל למידה יוזם עשוי להיות מנגנון. הצעת מדדים מפורטים תפותח בהמשך.'));
       parent.appendChild(node('h3', '', 'מה שומר על איכות ההחלטה'));
+      parent.appendChild(node('p','','עקרון האוטונומיה: במודל המוצע פיתוח החוסן כרוך ביכולת בית הספר, הקהילה או הארגון לבחור, להחליט, לפעול ולשנות את דרכי פעולתם. בכל מנגנון נבחן כיצד הוא מרחיב או מצמצם יכולת זו, עבור מי ובאילו תנאים. קשרים ושותפויות עשויים להרחיב את מרחב הבחירה; בוחנים גם תלויות, משאבים, אחריות וקולות שאינם נשמעים.'));
       const list = node('ul'); ['הבחנה בין תצפית, פרשנות, אי ודאות והחלטה. חוסר במידע נותר שאלה לבירור.', 'בחינה של איכות החיים בהווה לצד מוכנות לעתיד, סולידריות, אתוס והעצמת השותפים. בבית הספר נבחנת גם העצמת מורים; בקהילה נבחנת גם השפעת תושבים ומתנדבים.', 'בחירת סדר עדיפות לפי חשיבות, הוגנות, השפעה על הרשת, ישימות, זמן ומשאבים, תוך תיעוד מחלוקת והנמקה.', 'מעקב אחר תוצאות, עומס, השלכות לא צפויות והחלטה מה לשמר, לשנות או להפסיק.'].forEach(t => list.appendChild(node('li', '', t))); parent.appendChild(list);
     }
     function sectionIntro(key) {
@@ -331,6 +332,7 @@
       content.appendChild(node('h2', '', s.label)); content.appendChild(node('p', '', sectionIntro(s.key)));
       if (guidance[s.key]) content.appendChild(node('p', '', guidance[s.key]));
       if (s.key === 'mechanisms') {
+        content.appendChild(node('p','','בכל מנגנון נבחן את התרומה לאוטונומיה של המסגרת: אילו אפשרויות הוא פותח או מצמצם, מי שותפים בהחלטה והאם יש יכולת מעשית לפעול. נבחין בין סמכות רשמית לבין בחירה ופעולה בפועל, ובין אוטונומיה של המסגרת לבין ריכוז כוח אצל בעלי תפקידים.'));
         content.appendChild(node('p','','מנגנונים עשויים ליצור משאבים חדשים, לשנות קשרים, לשמר יכולות ולארגן מחדש את החברה כשהתנאים משתנים. אפשר להתחיל במנגנון אחד ולהעמיק בהדרגה.'));
         content.appendChild(node('p','muted','שבעת עקרונות הפעולה מתארים כיצד המנגנון מארגן פעולה. שבע האיכויות מתארות את תנאי פעולתו בנפרד. קיום, מימוש והתחדשות הן זוויות בחינה מקבילות. אין צורך למלא הכול, ומידע שלא נבדק אינו חולשה.'));
         content.appendChild(node('p','','גם מנגנונים של חינוך, תרבות, פנאי וחיים משותפים יכולים להיות חשובים בפני עצמם ולזמן תרגול של עשייה יחד. תפקיד שעדיין לא הובן נשאר שאלה לבירור. שימוש מועט אינו מלמד שמנגנון מיותר.'));

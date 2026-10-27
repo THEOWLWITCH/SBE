@@ -48,9 +48,11 @@ test('explicit selection reports existence with stable provenance and no empiric
 
 test('parallel qualitative dimensions and nonbinary knowledge remain in factual input', () => {
   const w = M.clean({
+    context:{autonomy:'לצוות יש מרחב בחירה בהקצאת זמן, בגבולות המנדט'},
     evidence:[{id:'e1',title:'דיווח הצוות',kind:'account'}],
     mechanisms:[{id:'m1',title:'מסורת משותפת',knowledgeState:'different',evidenceIds:['e1'],
       socialValue:'ערך תרבותי בפני עצמו',hiddenFunctions:'עוד לא ברור',cooperationPractice:'חלוקת אחריות',
+      autonomyContribution:'המשתתפים מציעים ומחליטים יחד',autonomyConditions:'לא רק בעלי התפקידים; החלטות תקציביות דורשות אישור',
       use:'מועט',overlap:'חלקית',repetition:'יש פניות חוזרות',needFit:'לקבוצה קטנה',loadCapacity:'אותם אנשים',
       dependency:'ערוץ יחיד',trend:'התרשמות הצוות: מתרחב',trendBasis:'אין עדיין תצפיות בנות השוואה',trendPeriod:'ספטמבר–אוקטובר',supportRequirements:'זמן ומרחב נגיש'}],
     roles:[{id:'r1',knowledgeState:'planned'}], resources:[{id:'x1',knowledgeState:'not_applicable'}]
@@ -62,6 +64,9 @@ test('parallel qualitative dimensions and nonbinary knowledge remain in factual 
   assert.equal(input.mechanisms[0].knowledgeState,'different');
   assert.equal(input.mechanisms[0].trendBasis,'אין עדיין תצפיות בנות השוואה');
   assert.equal(input.mechanisms[0].supportRequirements,'זמן ומרחב נגיש');
+  assert.equal(input.context.autonomy,'לצוות יש מרחב בחירה בהקצאת זמן, בגבולות המנדט');
+  assert.equal(input.mechanisms[0].autonomyContribution,'המשתתפים מציעים ומחליטים יחד');
+  assert.equal(input.mechanisms[0].autonomyConditions,'לא רק בעלי התפקידים; החלטות תקציביות דורשות אישור');
   assert.equal(w.roles[0].knowledgeState,'planned');
   assert.equal(w.resources[0].knowledgeState,'not_applicable');
 });

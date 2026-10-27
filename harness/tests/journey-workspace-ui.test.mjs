@@ -102,10 +102,13 @@ test('guided school and community journey: reviewed analysis, deliberation, hist
         assert.equal(await page.locator('.jws-all-sections').getAttribute('open'),null);
         assert.equal(await page.getByLabel('האוכלוסייה שבמיפוי',{exact:true}).inputValue(),kind === 'school' ? 'צוות בית ספר בדוי' : 'תושבי קהילה בדויה');
         await page.getByLabel('מי עדיין לא נשמעו',{exact:true}).fill('עוד קבוצה לשמיעה');
+        await page.getByLabel('אוטונומיה: מרחב הבחירה, ההחלטה והפעולה של המסגרת',{exact:true}).fill('בחירה בדרכי פעולה עם שותפים');
         await page.locator('[data-step="inventories"]').click();
         assert.equal(await page.locator('.jws-subnav button').count(),4);
         await page.locator('[data-step="depth"]').click();
         assert.equal(await page.getByLabel('מימוש',{exact:true}).inputValue(),'טרם נבדק');
+        assert.equal(await page.getByLabel('תרומת המנגנון לאוטונומיה של המסגרת',{exact:true}).isVisible(),true);
+        await page.getByLabel('תרומת המנגנון לאוטונומיה של המסגרת',{exact:true}).fill('מרחיב את אפשרויות ההחלטה בצוות');
         assert.equal(await page.getByLabel('נגישות',{exact:true}).isVisible(),false);
         await page.locator('.jws-depth > summary').click();
         assert.equal(await page.getByLabel('נגישות',{exact:true}).isVisible(),true);
@@ -114,6 +117,9 @@ test('guided school and community journey: reviewed analysis, deliberation, hist
         await page.locator('[data-step="learning"]').click();
         await page.locator('[data-step="context"]').click();
         assert.equal(await page.getByLabel('מי עדיין לא נשמעו',{exact:true}).inputValue(),'עוד קבוצה לשמיעה');
+        await save(page);
+        assert.equal(await page.evaluate(()=>serverWorkspace.context.autonomy),'בחירה בדרכי פעולה עם שותפים');
+        assert.equal(await page.evaluate(()=>serverWorkspace.mechanisms[0].autonomyContribution),'מרחיב את אפשרויות ההחלטה בצוות');
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
         assert.deepEqual(errors,[]); await page.close();
       }
