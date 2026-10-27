@@ -6,11 +6,19 @@
   const details=(parent,title,open=false)=>{const d=node('details','jnw-detail');d.open=open;d.append(node('summary','',title));parent.append(d);return d;};
   const clone=v=>JSON.parse(JSON.stringify(v));
   const label=r=>r && (r.title || r.id) || 'רשומה ללא שם';
+  const displayDate=value=>window.sbeDateIL ? window.sbeDateIL(value) : String(value || '').replace(/^(\d{4})-(\d{2})-(\d{2})$/,(_,y,m,d)=>d+'.'+m+'.'+y.slice(2));
+  function appendPairs(parent,rows,asTable) {
+    if(!rows.length)return;
+    if(!asTable){const dl=node('dl');rows.forEach(([key,value])=>dl.append(node('dt','',key),node('dd','',value)));parent.append(dl);return;}
+    const table=node('table','jnw-table'),head=node('thead'),titles=node('tr'),body=node('tbody');
+    ['שדה','תוכן'].forEach(title=>{const th=node('th','',title);th.scope='col';titles.append(th);});head.append(titles);
+    rows.forEach(([key,value])=>{const row=node('tr'),th=node('th','',key);th.scope='row';row.append(th,node('td','',value));body.append(row);});table.append(head,body);parent.append(table);
+  }
   const classifications={direct:'שינוי או קשר הנראים בעותק',conditional:'השלכה מותנית בהנחות',inquiry:'שאלה לבירור'};
   function create(options) {
     if(!N) throw Error('כלי בחינת הרשת לא נטען');
     let selectedAlternative='',selectedFuture='',kind='mechanisms',view='futures',selectedRecord=Object.create(null);
-    let generation=0,pending=null,reviewed=null,approved=false,alive=true,error='',notice='';
+    let generation=0,pending=null,reviewed=null,approved=false,alive=true,error='',notice='',currentRoot=null;
     const workspace=()=>options.getWorkspace();
     const lab=()=>workspace().lab;
     const alternative=()=>lab().alternatives.find(a=>a.id===selectedAlternative);
@@ -19,6 +27,14 @@
     function invalidate() {
       generation++;reviewed=null;approved=false;
       if(pending){clearInterval(pending.timer);pending=null;notice='הנתונים או הבחירה השתנו. התשובה הקודמת לא תתווסף לחלופה; אפשר לבחון שוב את המידע.';}
+      if(currentRoot){
+        currentRoot.querySelectorAll('[data-network-reviewed]').forEach(c=>{c.checked=false;c.disabled=true;});
+        currentRoot.querySelectorAll('[data-network-generate],[data-network-support]').forEach(b=>{b.disabled=true;});
+        const prompt=currentRoot.querySelector('[data-network-invalidated]');if(prompt)prompt.hidden=false;
+        const a=alternative(),state=currentRoot.querySelector('[data-network-feedback-state]');
+        if(a && a.feedback && state && feedbackHistorical(a))state.textContent='החלופה או העתידים השתנו מאז המשוב. זו טיוטה על המידע הקודם; אפשר לבחון מחדש לפני חיבור תשתיות.';
+        const progress=currentRoot.querySelector('[data-network-progress]');if(progress && notice)progress.textContent=notice;
+      }
     }
     function changed(render=false) {options.changed();if(render)rerender();}
     function inputFor(a) {return N.buildInput(a,lab().futures,options.unit,options.cleanMap);}
@@ -85,6 +101,7 @@
     function recordValue(map,field,value) {
       if(Array.isArray(value))return value.map(v=>field.type==='refs'?label((map[field.target] || []).find(r=>r.id===v))+' ('+v+')':((field.options || []).find(o=>o.value===v)||{}).label || v).join('; ');
       if(field.type==='select')return ((field.options || []).find(o=>o.value===value)||{}).label || value || '';
+      if(field.type==='date')return displayDate(value);
       return value || '';
     }
     function exactChanges(parent,a,open=false) {
@@ -98,10 +115,10 @@
           const card=node('article','jnw-card');card.append(node('h4','',schema.label+': '+label(now || old)));
           if(!old)card.append(node('p','','נוסף בחלופה; לא היה בתמונת המוצא.'));
           if(!now)card.append(node('p','','הוסר מהחלופה; נשמר בתמונת המוצא.'));
-          const values=node('dl');schema.fields.forEach(f=>{
+          const values=[];schema.fields.forEach(f=>{
             if(JSON.stringify(old && old[f.key])===JSON.stringify(now && now[f.key]))return;
-            values.append(node('dt','',f.label),node('dd','','תמונת מוצא: '+(recordValue(a.baseline,f,old && old[f.key]) || 'לא תועד')+'\nהחלופה: '+(recordValue(a.proposal,f,now && now[f.key]) || 'לא תועד')));
-          });card.append(values);d.append(card);
+            values.push([f.label,'תמונת מוצא: '+(recordValue(a.baseline,f,old && old[f.key]) || 'לא תועד')+'\nהחלופה: '+(recordValue(a.proposal,f,now && now[f.key]) || 'לא תועד')]);
+          });appendPairs(card,values,open);d.append(card);
         });
       });
       const paused=a.inactiveIds.map(id=>label(N.EDIT_KEYS.flatMap(k=>a.proposal[k]).find(r=>r.id===id)));
@@ -146,6 +163,7 @@
       const f=a.feedback,historical=feedbackHistorical(a),box=node('section','jnw-feedback');parent.append(box);
       box.append(node('h3','','משוב לבחינת הצוות'),node('p','jnw-notice','טיוטת פרשנות בסיוע AI. נבדקה מול המידע שנשלח בתאריך '+new Date(f.createdAt).toLocaleString('he-IL')+'. '+(historical?'החלופה או העתידים השתנו מאז; זהו משוב על תמונה קודמת.':'המשוב תואם למידע הנוכחי בחלופה.')),
         node('p','jnw-summary',f.output.summary));
+      box.querySelector('.jnw-notice').dataset.networkFeedbackState='1';
       const d=details(box,'הרחבת ההסברים, ההנחות והחלופות',print);
       f.output.direct.forEach(item=>{const s=f.input.structure.find(x=>x.id===item.structuralId);d.append(node('h4','','פירוש שינוי שנראה בעותק'),node('p','',s.text),node('p','',item.comment));});
       for(const [key,title] of [['conditional','השלכות מותנות'],['hypotheses','השערות לבירור']]) {
@@ -158,7 +176,7 @@
       }
       f.output.comparisons.forEach(c=>{
         const future=f.input.futures.find(x=>x.id===c.futureId),article=node('article','jnw-card');article.append(node('h4','','הצעת פרשנות בתנאי: '+label(future)));
-        const dl=node('dl');Object.entries(N.ASSESSMENT_FIELDS).filter(([key])=>key!=='reviewAt').forEach(([key,title])=>{if(c[key])dl.append(node('dt','',title),node('dd','',c[key]));});article.append(dl);d.append(article);
+        appendPairs(article,Object.entries(N.ASSESSMENT_FIELDS).filter(([key])=>key!=='reviewAt' && c[key]).map(([key,title])=>[title,c[key]]),print);d.append(article);
       });
       if(f.output.supportSuggestions.length)d.append(node('h4','','הצעות לחיבור תשתיות לבחירת הצוות'));
       f.output.supportSuggestions.forEach(s=>{
@@ -167,10 +185,10 @@
         if(!print){
           const current=a.proposal.mechanisms.find(m=>m.id===s.mechanismId),already=current && (current.infrastructureIds || []).includes(s.infrastructureId);
           const b=button(already?'התשתית כבר מקושרת בחלופה':'אישור חיבור התשתית בעותק החלופה',()=>{
-            if(!current || historical || !a.proposal.infrastructures.some(i=>i.id===s.infrastructureId))return;
+            if(!current || feedbackHistorical(a) || !a.proposal.infrastructures.some(i=>i.id===s.infrastructureId))return;
             if((current.infrastructureIds || []).length>=40)return message('אפשר לקשר עד 40 תשתיות למנגנון. אפשר לבחון את ההפניות לפני הוספה.',true);
             current.infrastructureIds=[...(current.infrastructureIds || []),s.infrastructureId];changed(true);message('החיבור נוסף כהצעת הצוות בעותק החלופה. מפת המצב הקיים לא השתנתה.');
-          });b.disabled=historical || already || !current;card.append(b);
+          });b.dataset.networkSupport='1';b.disabled=historical || already || !current;card.append(b);
           if(historical)card.append(node('p','muted','אפשר לבחון מחדש מול הנתונים המעודכנים או לערוך את החיבור ידנית בחלופה.'));
         }d.append(card);
       });
@@ -219,12 +237,13 @@
         c.addEventListener('change',()=>{approved=c.checked;const b=parent.querySelector('[data-network-generate]');if(b)b.disabled=!approved || !!pending;});
         l.append(c,node('span','','עיינו במידע ובחנו שהוא מתאים לשליחה. ברור לנו שהחלופה והעתידים הם הצעות והנחות לבחינה.'));parent.append(l);
         const b=button('בקשת משוב לתרחיש',generate,false);b.dataset.networkGenerate='1';b.disabled=!approved || !!pending;parent.append(b);
+        const invalidated=node('p','jnw-notice','המידע השתנה לאחר העיון. אפשר להציג את המידע מחדש ולאשר את שליחתו.');invalidated.dataset.networkInvalidated='1';invalidated.hidden=true;parent.append(invalidated);
       }
       if(pending){const p=node('p','jnw-notice',progressText(pending));p.dataset.networkProgress='1';p.setAttribute('role','status');parent.append(p,button('הפסקת ההמתנה למשוב',()=>{invalidate();rerender();}));}
       displayFeedback(parent,a);
     }
     function render(parent) {
-      const root=node('section','jnw');parent.append(root);root.append(node('h2','','בחינת שינויים וכמה עתידים'),node('p','','אפשר לבנות חלופות ברשת החוסן החברתי, להשוות אותן למצב שמופה ולבחון כל חלופה בכמה תנאי עתיד. הנתונים וההנחות נשמרים במרחב לאחר שמירת השינויים.'));
+      const root=node('section','jnw');currentRoot=root;parent.append(root);root.append(node('h2','','בחינת שינויים וכמה עתידים'),node('p','','אפשר לבנות חלופות ברשת החוסן החברתי, להשוות אותן למצב שמופה ולבחון כל חלופה בכמה תנאי עתיד. הנתונים וההנחות נשמרים במרחב לאחר שמירת השינויים.'));
       const goal=workspace().context && workspace().context.goal;if(goal)root.append(node('p','jnw-notice','התמונה שרוצים לקדם: '+goal+'. זו מטרה רצויה, בנפרד מתנאי העתיד האפשריים.'));
       root.append(button('חלופה חדשה מהמיפוי הקיים',()=>{
         if(lab().alternatives.length>=20)return message('אפשר לשמור עד 20 חלופות. אפשר לבחון יחד את החלופות שתרצו להשאיר.',true);
@@ -256,20 +275,20 @@
       }
     }
     function printFields(parent,definitions,record) {
-      const dl=node('dl');Object.entries(definitions).forEach(([key,title])=>{if(record[key])dl.append(node('dt','',title),node('dd','',record[key]));});parent.append(dl);
+      appendPairs(parent,Object.entries(definitions).filter(([key])=>record[key]).map(([key,title])=>[title,key==='reviewAt'?displayDate(record[key]):record[key]]),true);
     }
     function printMap(parent,title,map) {
       const d=details(parent,title,true);
       options.schema.filter(s=>N.MAP_KEYS.includes(s.key)).forEach(s=>{
         d.append(node('h4','',s.label));if(!map[s.key].length)d.append(node('p','','טרם תועדו רשומות.'));
-        map[s.key].forEach(record=>{d.append(node('h5','',label(record)+' ('+record.id+')'));const dl=node('dl');s.fields.forEach(f=>{const value=recordValue(map,f,record[f.key]);if(value)dl.append(node('dt','',f.label),node('dd','',value));});d.append(dl);});
+        map[s.key].forEach(record=>{d.append(node('h5','',label(record)+' ('+record.id+')'));appendPairs(d,s.fields.map(f=>[f.label,recordValue(map,f,record[f.key])]).filter(([,value])=>value),true);});
       });
     }
     function report() {
       const root=node('section','jnw jnw-report');root.append(node('h2','','חלופות וכמה עתידים ברשת החוסן החברתי'),node('p','','עותקי החלופות והעתידים שלהלן הם הנחות והצעות לבחינה. הם נפרדים ממפת המצב הקיים ואינם תחזית או ציון חוסן.'));
       lab().futures.forEach(f=>{root.append(node('h3','','עתיד אפשרי: '+label(f)));printFields(root,N.FUTURE_FIELDS,f);});
       lab().alternatives.forEach(a=>{
-        root.append(node('h3','','חלופה: '+label(a)),node('p','','מזהה '+a.id+'; תמונת מוצא מתאריך '+a.createdAt+'; גרסה '+a.sourceRevision+'.'));
+        root.append(node('h3','','חלופה: '+label(a)),node('p','','מזהה '+a.id+'; תמונת מוצא מתאריך '+new Date(a.createdAt).toLocaleString('he-IL')+'; גרסה '+a.sourceRevision+'.'));
         printFields(root,{purpose:'מה רוצים לקדם',assumptions:'הנחות ואי ודאות',changeNotes:'מה מציעים לשנות'},a);
         printMap(root,'תמונת המוצא שנלכדה',a.baseline);printMap(root,'העותק המשוער של החלופה',a.proposal);structural(root,a,true);
         lab().futures.forEach(f=>{root.append(node('h4','','בחינת החלופה בתנאי '+label(f)));const c=a.assessments.find(c=>c.futureId===f.id);if(c)printFields(root,N.ASSESSMENT_FIELDS,c);else root.append(node('p','','טרם נבחן. המידע נשאר שאלה פתוחה.'));});
@@ -279,5 +298,6 @@
     return {render,report,hasPending:()=>!!pending,invalidate,destroy(){alive=false;invalidate();}};
   }
   const PRINT_CSS='.jnw-report{direction:rtl;max-width:100%}.jnw-report h2,.jnw-report h3,.jnw-report h4,.jnw-report h5{color:#000;border:0!important;break-after:avoid}.jnw-report p,.jnw-report li,.jnw-report dd{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}.jnw-report dt,.jnw-report summary{font-weight:700}.jnw-report dd{margin:.2rem 0 .8rem}.jnw-report details{display:block;margin:.8rem 0}.jnw-report .jnw-json{direction:ltr;text-align:left;max-height:none;overflow:visible;white-space:pre-wrap;overflow-wrap:anywhere;font:9pt/1.5 monospace}.jnw-report .jnw-card,.jnw-report .jnw-detail,.jnw-report .jnw-feedback{padding:0;border:0;break-inside:auto}';
-  window.SBE_NETWORK_UI={create,PRINT_CSS};
+  const TABLE_CSS='.jnw-table{width:100%;border-collapse:collapse;margin:.6rem 0 1rem}.jnw-table th,.jnw-table td{border:1px solid #cdd3d8;padding:7px;vertical-align:top;white-space:pre-wrap;overflow-wrap:anywhere}.jnw-table th{text-align:right}.jnw-table th:first-child{width:30%}.jnw-table thead th{background:#e4eef4}.jnw-table tbody tr:nth-child(even){background:#f5f7f8}';
+  window.SBE_NETWORK_UI={create,PRINT_CSS:PRINT_CSS+TABLE_CSS+'.hd h1,.jnw-report tr.sbe-rh-row th{color:#000!important}.jnw-report tr.sbe-rh-row th{box-shadow:none!important}'};
 })();

@@ -19,12 +19,12 @@ test('network workbench preserves baseline, captures future assessments and reje
       for(const content of scripts) await page.addScriptTag({content});
       await page.evaluate(kind=>{
         window.SBE_JOURNEY={};window.n=0;window.dirty=false;window.modelCalls=[];window.releases=[];window.hold=false;window.failAudit=false;window.confirm=()=>true;
-        window.data=SBE_JOURNEY_WORKSPACE.clean({mechanisms:[{id:'m1',title:'תקשורת'},{id:'m2',title:'למידה'}],links:[{id:'l1',from:['m1'],to:['m2'],type:'info',status:'observed'}]});
+        window.data=SBE_JOURNEY_WORKSPACE.clean({mechanisms:[{id:'m1',title:'תקשורת'},{id:'m2',title:'למידה'}],infrastructures:[{id:'i1',title:'מרחב נגיש'}],links:[{id:'l1',from:['m1'],to:['m2'],type:'info',status:'observed'}]});
         data.lab ||= SBE_JOURNEY_NETWORK.empty();
         const render=()=>{const host=document.querySelector('#host');host.replaceChildren();controller.render(host);};
         window.controller=SBE_NETWORK_UI.create({getWorkspace:()=>data,getRevision:()=>2,unit:{kind,label:'מסגרת בדויה'},cleanMap:v=>SBE_JOURNEY_NETWORK.mapOf(SBE_JOURNEY_WORKSPACE.clean(v)),schema:SBE_JOURNEY_WORKSPACE.SECTIONS,uid:()=> 'r_'+(++n),message:(t,error)=>window.lastMessage={t,error},changed:()=>{dirty=true;controller.invalidate();},rerender:render,draftDecision:v=>window.decision=v,
           renderFields:(parent,key,record,map,onChange,prefix)=>{const label=document.createElement('label');label.textContent='שם הרשומה המוצעת';const input=document.createElement('input');input.value=record.title || '';input.addEventListener('input',()=>{record.title=input.value;onChange();});label.append(input);parent.append(label);},
-          completeJson:async(system,messages,tokens,review,check)=>{const payload=JSON.parse(messages[0].content),input=payload.reviewedInput || payload;modelCalls.push(input);if(hold) await new Promise(resolve=>releases.push(resolve));const result={summary:'משוב בדוי לבדיקת הממשק',direct:[],conditional:[],hypotheses:[],comparisons:input.futures.map(f=>({futureId:f.id,present:'לבדיקה',future:'אפשרות',tensions:'',needs:'',preparation:'',signals:'',unknown:''})),supportSuggestions:[]};if(failAudit && payload.reviewedInput)result.comparisons=[];if(!check(result)) throw Error('invalid fixture');return result;}
+          completeJson:async(system,messages,tokens,review,check)=>{const payload=JSON.parse(messages[0].content),input=payload.reviewedInput || payload;modelCalls.push(input);if(hold) await new Promise(resolve=>releases.push(resolve));const result={summary:'משוב בדוי לבדיקת הממשק',direct:[],conditional:[],hypotheses:[],comparisons:input.futures.map(f=>({futureId:f.id,present:'לבדיקה',future:'אפשרות',tensions:'',needs:'',preparation:'',signals:'',unknown:''})),supportSuggestions:[{mechanismId:'m1',infrastructureId:'i1',reason:'אפשר לבחון מפגש נגיש',gaps:'זמינות וקיבולת לבירור'}]};if(failAudit && payload.reviewedInput)result.comparisons=[];if(!check(result)) throw Error('invalid fixture');return result;}
         });render();
       },kind);
       await page.getByRole('button',{name:'חלופה חדשה מהמיפוי הקיים',exact:true}).click();
@@ -39,6 +39,7 @@ test('network workbench preserves baseline, captures future assessments and reje
         await page.getByRole('button',{name:'הוספת עתיד אפשרי',exact:true}).click();
         await page.getByLabel('שם העתיד האפשרי',{exact:true}).fill(title);
         await page.getByLabel('תנאים אפשריים',{exact:true}).fill(conditions);
+        await page.getByLabel('מועד לבחינה מחדש',{exact:true}).fill('2026-11-10');
       }
       await page.locator('[data-network-view="assessment"]').click();
       assert.equal(await page.locator('[data-future-assessment]').count(),2);
@@ -51,7 +52,31 @@ test('network workbench preserves baseline, captures future assessments and reje
       await page.getByText('משוב בדוי לבדיקת הממשק',{exact:true}).waitFor();
       assert.equal(await page.evaluate(()=>modelCalls.length),2);
       assert.equal(await page.evaluate(()=>modelCalls[0].proposal.mechanisms.length),3);
+      assert.deepEqual(await page.evaluate(()=>data.lab.alternatives[0].proposal.mechanisms[0].infrastructureIds),[]);
+      await page.getByRole('button',{name:'הצגת המידע לתרחיש',exact:true}).click();
+      await page.locator('[data-network-reviewed]').check();
+      await page.locator('.jnw-feedback > details').first().locator('summary').first().click();
+      const support=page.getByRole('button',{name:'אישור חיבור התשתית בעותק החלופה',exact:true});
+      assert.equal(await support.isEnabled(),true);
+      await page.getByText('מטרת החלופה, הנחות ומה משתנה',{exact:true}).click();
+      await page.getByLabel('הנחות ואי ודאות בחלופה',{exact:true}).fill('הנחה שנערכה לאחר העיון');
+      assert.equal(await page.locator('[data-network-reviewed]').isChecked(),false);
+      assert.equal(await page.locator('[data-network-generate]').isDisabled(),true);
+      assert.equal(await support.isDisabled(),true);
+      assert.equal(await page.getByLabel('הנחות ואי ודאות בחלופה',{exact:true}).evaluate(n=>document.activeElement===n),true);
+      await page.getByRole('button',{name:'הצגת המידע לתרחיש',exact:true}).click();
+      await page.locator('[data-network-reviewed]').check();
+      await page.getByRole('button',{name:'בקשת משוב לתרחיש',exact:true}).click();
+      await page.waitForFunction(()=>data.lab.alternatives[0].feedback.input.assumptions==='הנחה שנערכה לאחר העיון');
+      await page.locator('.jnw-feedback > details').first().locator('summary').first().click();
+      await page.getByRole('button',{name:'אישור חיבור התשתית בעותק החלופה',exact:true}).click();
+      assert.deepEqual(await page.evaluate(()=>data.lab.alternatives[0].proposal.mechanisms[0].infrastructureIds),['i1']);
+      assert.deepEqual(await page.evaluate(()=>data.mechanisms[0].infrastructureIds),[]);
+      assert.deepEqual(await page.evaluate(()=>data.lab.alternatives[0].baseline.mechanisms[0].infrastructureIds),[]);
+      assert.deepEqual(await page.evaluate(()=>SBE_JOURNEY_WORKSPACE.clean(data).lab.alternatives[0].proposal.mechanisms[0].infrastructureIds),['i1']);
       assert.match(await page.evaluate(()=>controller.report().textContent),/מקום לפעולה יחד/);
+      assert.ok(await page.evaluate(()=>controller.report().querySelectorAll('table').length)>0);
+      assert.match(await page.evaluate(()=>controller.report().textContent),/10\.11\.26/);
       await page.getByRole('button',{name:'יצירת טיוטת החלטה מהחלופה',exact:true}).click();
       assert.equal(await page.evaluate(()=>decision.approvedBy),'');
       const previousFeedback=await page.evaluate(()=>JSON.stringify(data.lab.alternatives[0].feedback));
