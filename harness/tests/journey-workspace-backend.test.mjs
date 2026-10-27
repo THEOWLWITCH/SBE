@@ -7,6 +7,7 @@ import { seedOwnerPassword, SYNTHETIC_OWNER_PASSWORD } from './synthetic-access.
 import { workspaceFixture, reportFixture } from '../fixtures/journey-analysis.mjs';
 const W = createRequire(import.meta.url)('../../app/lib/journey-workspace-model.js');
 const A = createRequire(import.meta.url)('../../app/lib/journey-analysis-model.js');
+const N = createRequire(import.meta.url)('../../app/lib/journey-network-model.js');
 const clone = value => value == null ? null : JSON.parse(JSON.stringify(value));
 function analysis(workspace, { id = 'a1', sourceRevision = 0, baselineId = '', unit = 'school', large = false } = {}) {
   const output = reportFixture();
@@ -45,6 +46,31 @@ async function fixture() {
   const [, created] = await call('jrCreate', { mode: 'workspace', unit: 'school', unitName: 'בית ספר', research: true, demo: true });
   return { store, call, id: created.id, token: staff.token, other: other.token, admin: sys.token };
 }
+
+test('scenario alternatives and futures persist through the same authorized revision contract', async () => {
+  const {call,id,other}=await fixture();
+  const w=W.clean(workspaceFixture());
+  w.context.autonomy='בחירה בגבולות המנדט';
+  w.mechanisms[0].autonomyContribution='החלטה משותפת על דרכי הפעולה';
+  const a=N.createAlternative(w,'scenario1',0,'2026-10-27T10:00:00.000Z');
+  a.title='חלופה לבדיקה'; a.proposal.mechanisms.push({id:'hypothetical',title:'מנגנון מוצע ללא ראיות'});
+  w.lab={futures:[{id:'future1',title:'פחות זמן',conditions:'צמצום הזמן המשותף'}],alternatives:[a]};
+  const [status,saved]=await call('jrSaveWorkspace',{id,revision:0,workspace:w});
+  assert.equal(status,200);
+  assert.equal(saved.workspace.mechanisms.some(m=>m.id==='hypothetical'),false);
+  assert.equal(saved.workspace.lab.alternatives[0].proposal.mechanisms.at(-1).id,'hypothetical');
+  assert.equal(saved.workspace.context.autonomy,'בחירה בגבולות המנדט');
+  assert.equal(saved.workspace.lab.alternatives[0].baseline.mechanisms[0].autonomyContribution,'החלטה משותפת על דרכי הפעולה');
+  assert.equal((await call('jrSaveWorkspace',{id,revision:0,workspace:w}))[0],409);
+  assert.equal((await call('jrGet',{id},other))[0],403);
+  const [,loaded]=await call('jrGet',{id});
+  assert.deepEqual(loaded.journey.workspace.lab,saved.workspace.lab);
+  const invalid=clone(saved.workspace); invalid.lab.alternatives[0].proposal.mechanisms[0].infrastructureIds=['missing'];
+  assert.equal((await call('jrSaveWorkspace',{id,revision:1,workspace:invalid}))[0],400);
+  const input=A.buildInput(saved.workspace,{kind:'school',label:'מסגרת'},['e1']);
+  assert.equal('lab' in input,false);
+  assert.equal(input.mechanisms.some(m=>m.id==='hypothetical'),false);
+});
 
 test('workspace creation, save and retrieval are persistent and versioned; legacy creation stays unchanged', async () => {
   const { call, id, store } = await fixture();

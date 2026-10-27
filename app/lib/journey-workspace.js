@@ -2,6 +2,7 @@
   'use strict';
   const M = window.SBE_JOURNEY_WORKSPACE;
   const A = window.SBE_JOURNEY_ANALYSIS;
+  const C = window.SBE_JOURNEY_STARTERS;
   const clone = value => JSON.parse(JSON.stringify(value));
   function node(tag, cls, text) {
     const n = document.createElement(tag);
@@ -56,9 +57,11 @@
     let saved = clone(data), revision = journey.revision || 0, metadataRevision = 0, dirty = false, busy = false, conflict = false;
     let conflictRevision = null, deferredMetadata = null;
     let section = 'context', selected = Object.create(null), serial = 0, alive = true;
+    const starterOpen = Object.create(null);
     let aiInput = null, analysisDraft = null, status, saveButton, conflictBox, content;
     let aiSelection = [], aiReviewed = false, aiPending = null, aiGeneration = 0, aiError = '', reloadGeneration = 0;
     let activeAnalysisId = '', baselineId = '';
+    let network = null;
     const removedAnalysisIds = new Set();
     const priorityDrafts = new Map();
     let priorityDraftRevision = 0;
@@ -68,10 +71,10 @@
     const sections = M.SECTIONS;
     function message(text, error) { status.textContent = text; status.className = 'jws-status' + (error ? ' jws-error' : ''); }
     function changed() {
-      serial++; dirty = true; cancelAiRequest(); saveButton.disabled = busy || conflict;
+      serial++; dirty = true; cancelAiRequest(); if (network) network.invalidate(); saveButton.disabled = busy || conflict;
       message('יש שינויים שעדיין לא נשמרו בשרת');
     }
-    function hasUnsaved() { return dirty || !!analysisDraft || !!aiPending || priorityDrafts.size > 0; }
+    function hasUnsaved() { return dirty || !!analysisDraft || !!aiPending || priorityDrafts.size > 0 || !!(network && network.hasPending()); }
     function canLeave() { return !hasUnsaved() || window.confirm('יש שינויים או טיוטות שעדיין לא נשמרו. להמשיך בלי לשמור? אפשר להישאר ולבחון את הטיוטות או לשמור את העבודה.'); }
     function beforeUnload(event) { if (hasUnsaved()) { event.preventDefault(); event.returnValue = ''; } }
     function cancelAiRequest() {
@@ -104,7 +107,8 @@
     }
     function report() {
       const root = node('div', 'jws-report');
-      root.appendChild(node('h1', '', journey.unitName || 'מרחב העבודה לחוסן'));
+      root.appendChild(node('h1', '', 'רשת החוסן החברתי'));
+      root.appendChild(node('h2', '', journey.unitName || 'מרחב העבודה לחוסן'));
       root.appendChild(node('p', '', 'סוג המסגרת: ' + unitLabel));
       root.appendChild(node('p', '', 'גרסה ' + revision + (dirty ? '. כולל שינויים מקומיים שטרם נשמרו.' : '. הנתונים שנשמרו בשרת.')));
       root.appendChild(node('p', '', 'קיום, מימוש והתחדשות הן שלוש זוויות בחינה מקבילות. התיעוד אינו ציון חוסן או החלטת הסמכה.'));
@@ -126,11 +130,12 @@
       });
       const analysis = data.analyses.find(a => a.id === activeAnalysisId) || data.analyses[data.analyses.length - 1];
       if (analysis && window.SBE_JOURNEY_FEEDBACK) root.appendChild(SBE_JOURNEY_FEEDBACK.render(analysis,{readOnly:true,print:true,historical:isHistorical(analysis),currentInput:currentInputFor(analysis),baselineInput:baselineFor(analysis)}));
+      if (network) root.appendChild(network.report());
       return root;
     }
     function print() {
       if (!window.SBE_DOC || !SBE_DOC.print) return message('כלי ההדפסה לא נטען. אפשר לייצא עותק ולנסות שוב.', true);
-      SBE_DOC.print({title:'מסע אל החוסן: ' + journey.unitName, node:report(), extraCss:(window.SBE_JOURNEY_FEEDBACK ? SBE_JOURNEY_FEEDBACK.PRINT_CSS : '') + '.jws-report h1,.jws-report h2,.jws-report h3,.jws-report h4{border:0!important;border-bottom:0!important}.jws-report table{width:100%;border-collapse:collapse;margin:8px 0 18px}.jws-report th,.jws-report td{border:1px solid #CDD3D8;padding:7px;white-space:pre-wrap;overflow-wrap:anywhere}.jws-report th{width:30%;text-align:right;background:#eef3f6}.jws-report tr{break-inside:avoid}.jws-report p,.jws-report td{text-align:justify}'});
+      SBE_DOC.print({title:'רשת החוסן החברתי: ' + journey.unitName, node:report(), extraCss:(window.SBE_JOURNEY_FEEDBACK ? SBE_JOURNEY_FEEDBACK.PRINT_CSS : '') + (window.SBE_NETWORK_UI ? SBE_NETWORK_UI.PRINT_CSS || '' : '') + '.jws-report h1,.jws-report h2,.jws-report h3,.jws-report h4{border:0!important;border-bottom:0!important}.jws-report table{width:100%;border-collapse:collapse;margin:8px 0 18px}.jws-report th,.jws-report td{border:1px solid #CDD3D8;padding:7px;white-space:pre-wrap;overflow-wrap:anywhere}.jws-report th{width:30%;text-align:right;background:#eef3f6}.jws-report tr{break-inside:avoid}.jws-report p,.jws-report td{text-align:justify}'});
     }
     function acceptMetadataRevision(result) {
       return applyMetadataRevision(result, true);
@@ -185,6 +190,7 @@
     }
     async function reload() {
       if (!window.confirm('טעינת הגרסה מהשרת תחליף את השינויים המקומיים. אפשר לבטל ולייצא עותק קודם. להמשיך?')) return;
+      if (network) network.invalidate();
       const captured = serial, capturedRevision = revision, capturedPriorityRevision = priorityDraftRevision, load = ++reloadGeneration;
       try {
         const result = await options.api('jrGet', {id:journey.id});
@@ -197,9 +203,9 @@
       } catch (e) { if (alive && load === reloadGeneration) message('הגרסה האחרונה לא נטענה. השינויים המקומיים נשארו פתוחים.', true); }
     }
     const head = node('header', 'card'); shell.appendChild(head);
-    head.appendChild(node('h1', '', journey.unitName || 'מרחב עבודה לחוסן'));
-    head.appendChild(node('p', 'muted', unitLabel));
-    head.appendChild(node('p', '', 'מסע אל החוסן. מרחב משותף למיפוי, לבחירת שינוי, לפעולה וללמידה לאורך זמן.'));
+    head.appendChild(node('h1', '', 'רשת החוסן החברתי'));
+    head.appendChild(node('p', 'muted', (journey.unitName || 'מרחב עבודה לחוסן') + ' · ' + unitLabel));
+    head.appendChild(node('p', '', 'המסע אל החוסן נכלל במרחב המשותף למיפוי, לבחירת שינוי, לפעולה וללמידה לאורך זמן.'));
     head.appendChild(node('p', 'muted', 'הנתונים נשמרים בשרת במסגרת המסע. הגישה היא לבעלי קוד המסע ולמנהלי המערכת, לפי ההרשאות הקיימות. קוד משותף אינו הרשאה אישית לכל בעל תפקיד.'));
     const privacy = node('details', 'jws-explain'); privacy.appendChild(node('summary', '', 'פרטיות, תיעוד והסמכה'));
     privacy.appendChild(node('p', '', 'אפשר לתעד תפקידים במקום שמות תלמידים, תושבים, מתנדבים ופרטים אישיים רגישים. מומלץ לשמור מסמכים מזהים במאגר המאושר של המסגרת, ולתעד כאן תמצית והפניה שאינה חושפת מידע אישי. קובץ ייצוא מכיל את המידע שבמרחב, ולכן מתאים לשמירה במקום מאושר בלבד.'));
@@ -217,6 +223,7 @@
       {key:'inventories',label:'ארבעת המיפויים',sections:['roles','mechanisms','infrastructures','resources']},
       {key:'depth',label:'מנגנון ומקרה ממשי',sections:['mechanisms','evidence']},
       {key:'network',label:'רשת המנגנונים',sections:['links']},
+      {key:'scenarios',label:'חלופות וכמה עתידים',sections:['lab']},
       {key:'analysis',label:'ניתוח ושיחת צוות',sections:['ai','findings']},
       {key:'learning',label:'פעולה ולמידה',sections:['decisions','actions','reviews']}
     ];
@@ -233,13 +240,13 @@
     });
     const direct = node('details','jws-all-sections no-print'); direct.appendChild(node('summary','','גישה ישירה לתיעוד'));
     const directNav = node('nav','jws-tabs'); directNav.setAttribute('aria-label','גישה ישירה לכל הרשומות'); direct.appendChild(directNav); shell.appendChild(direct);
-    const tabs = [{key:'overview', label:'מבט על המסע'}, {key:'context',label:'מסגרת התהליך'}, ...sections, {key:'ai',label:'ניתוח ומשוב'}];
+    const tabs = [{key:'overview', label:'מבט על המסע'}, {key:'context',label:'מסגרת התהליך'}, ...sections, {key:'lab',label:'חלופות וכמה עתידים'}, {key:'ai',label:'ניתוח ומשוב'}];
     tabs.forEach(s => { const b = button(s.label, () => navigate(s.key), true); b.dataset.section = s.key; directNav.appendChild(b); });
     content = node('section', 'card jws-content'); shell.appendChild(content);
     const essential = {
-      context:['goal','preserve','scope','population','groups','periodStart','periodEnd','participants','missingVoices','baseline','baselineAt','mandate','delegation'],
+      context:['goal','preserve','scope','population','groups','periodStart','periodEnd','participants','missingVoices','baseline','baselineAt','mandate','delegation','autonomy'],
       roles:['title','authority','time','backup','knowledgeState','updatedBy','updatedAt','evidenceIds'],
-      mechanisms:['title','purpose','participants','activation','knowledgeState','updatedBy','updatedAt','evidenceIds'],
+      mechanisms:['title','purpose','participants','activation','autonomyContribution','knowledgeState','updatedBy','updatedAt','evidenceIds'],
       infrastructures:['title','availability','access','owner','knowledgeState','updatedBy','updatedAt','evidenceIds'],
       resources:['title','availability','access','owner','knowledgeState','updatedBy','updatedAt','evidenceIds'],
       evidence:['title','kind','source','observedAt','details','limits'],
@@ -249,28 +256,29 @@
       actions:['title','decisionId','owner','backup','partners','authority','resources','stopDoing','presentOutcome','futureOutcome','processEvidence','outcomeEvidence','reviewAt','status'],
       reviews:['title','actionId','observedAt','evidenceIds','learned','presentChange','futureChange','unintended','next']
     };
-    function fields(parent, key, schema, record, prefix) {
+    function fields(parent, key, schema, record, prefix, source = data, onChange = changed) {
       const first = node('div','jws-fields'); parent.appendChild(first);
       const extra = node('details','jws-depth'); extra.appendChild(node('summary','','הרחבה ופרטים נוספים'));
       const deeper = node('div','jws-fields'); extra.appendChild(deeper);
-      const sourceFields = ['analysisId','priorityId','optionId'];
+      const sourceFields = ['analysisId','priorityId','optionId','catalogId','catalogSource'];
       schema.filter(f => !sourceFields.includes(f.key)).forEach(f => {
         const main = essential[key].includes(f.key) || key === 'mechanisms' && activeStep === 'depth' && ['existence','realization','renewal'].includes(f.key);
-        (main ? first : deeper).appendChild(fieldControl(f.key === 'title' ? {...f,label:'שם הרשומה'} : f,record,prefix));
+        (main ? first : deeper).appendChild(fieldControl(f.key === 'title' ? {...f,label:'שם הרשומה'} : f,record,prefix,source,onChange));
       });
       if (deeper.children.length) parent.appendChild(extra);
+      if (record.catalogId) parent.appendChild(node('p','muted','מקור הבחירה: ' + (record.catalogSource || 'הצעת פתיחה לבחירה ולהתאמה') + '. השם המקומי ומצב הידיעה ניתנים לעריכה; ההצעה אינה ראיה לפעולה.'));
       if (record.analysisId) {
         const source = data.analyses.find(a => a.id === record.analysisId);
         if (source) parent.appendChild(button('פתיחת ניתוח המקור והחלופות',() => { activeAnalysisId = source.id; navigate('ai','analysis'); },true));
         else parent.appendChild(node('p','muted','ניתוח המקור ' + record.analysisId + ' אינו זמין. ייתכן שהוסר במפורש. הטיוטה נשארת לאישור אנושי.'));
       }
     }
-    function fieldControl(field, record, prefix) {
+    function fieldControl(field, record, prefix, source = data, onChange = changed) {
       const wrap = node('div', 'jws-field'); const id = 'jws-' + prefix + '-' + field.key;
       const label = node('label', '', field.label); label.htmlFor = id; wrap.appendChild(label);
       let input;
       if (field.type === 'refs' || field.type === 'multi') {
-        const choices = field.type === 'refs' ? (data[field.target] || []).map(r => ({value:r.id,label:(r.title || 'רשומה ללא שם') + ' (' + r.id + ')'})) : field.options || [];
+        const choices = field.type === 'refs' ? (source[field.target] || []).map(r => ({value:r.id,label:(r.title || 'רשומה ללא שם') + ' (' + r.id + ')'})) : field.options || [];
         const group = node('fieldset', 'jws-checks'); group.id = id;
         const legend = node('legend', 'jws-sr-only', field.label); group.appendChild(legend); label.remove();
         wrap.prepend(node('div', 'jws-field-label', field.label));
@@ -281,7 +289,7 @@
           checkbox.addEventListener('change', () => {
             const current = (record[field.key] || []).filter(v => v !== choice.value);
             if (checkbox.checked && current.length >= (field.max || 40)) { checkbox.checked = false; return message('אפשר לקשר עד ' + (field.max || 40) + ' רשומות בשדה זה.', true); }
-            if (checkbox.checked) current.push(choice.value); record[field.key] = current; changed();
+            if (checkbox.checked) current.push(choice.value); record[field.key] = current; onChange();
           }); l.appendChild(checkbox); l.appendChild(node('span', '', choice.label)); group.appendChild(l);
         }); wrap.appendChild(group); return wrap;
       }
@@ -289,7 +297,7 @@
         input = node('select'); const blank = node('option', '', 'טרם הוגדר'); blank.value = ''; input.appendChild(blank);
         (field.options || []).forEach(o => { const opt = node('option', '', o.label); opt.value = o.value; input.appendChild(opt); });
       } else { input = node(field.type === 'long' ? 'textarea' : 'input'); if (input.tagName === 'INPUT') input.type = field.type === 'date' ? 'date' : 'text'; input.maxLength = 4000; }
-      input.id = id; input.value = record[field.key] || ''; input.addEventListener(field.type === 'select' || field.type === 'date' ? 'change' : 'input', () => { record[field.key] = input.value; changed(); });
+      input.id = id; input.value = record[field.key] || ''; input.addEventListener(field.type === 'select' || field.type === 'date' ? 'change' : 'input', () => { record[field.key] = input.value; onChange(); });
       wrap.appendChild(input); return wrap;
     }
     function overview(parent) {
@@ -303,6 +311,7 @@
       parent.appendChild(node('p','','מחויבות משותפת, אחריות מבוזרת, שימוש במנגנונים תוך בחינה ושיפור, ולמידה מתמשכת מכוונים את ההתבוננות. אלה אינם סולמות מדידה מתוקפים.'));
       parent.appendChild(node('p','','תודעת חוסן רב ערוצית נוגעת לזירות הפרט, המשפחה, העמיתים, בית הספר, הקהילה והרשות. היא עשויה לארגן ציפיות ופעולה כמנגנון בפני עצמו. גם מעגל למידה יוזם עשוי להיות מנגנון. הצעת מדדים מפורטים תפותח בהמשך.'));
       parent.appendChild(node('h3', '', 'מה שומר על איכות ההחלטה'));
+      parent.appendChild(node('p','','עקרון האוטונומיה: במודל המוצע פיתוח החוסן כרוך ביכולת בית הספר, הקהילה או הארגון לבחור, להחליט, לפעול ולשנות את דרכי פעולתם. בכל מנגנון נבחן כיצד הוא מרחיב או מצמצם יכולת זו, עבור מי ובאילו תנאים. קשרים ושותפויות עשויים להרחיב את מרחב הבחירה; בוחנים גם תלויות, משאבים, אחריות וקולות שאינם נשמעים.'));
       const list = node('ul'); ['הבחנה בין תצפית, פרשנות, אי ודאות והחלטה. חוסר במידע נותר שאלה לבירור.', 'בחינה של איכות החיים בהווה לצד מוכנות לעתיד, סולידריות, אתוס והעצמת השותפים. בבית הספר נבחנת גם העצמת מורים; בקהילה נבחנת גם השפעת תושבים ומתנדבים.', 'בחירת סדר עדיפות לפי חשיבות, הוגנות, השפעה על הרשת, ישימות, זמן ומשאבים, תוך תיעוד מחלוקת והנמקה.', 'מעקב אחר תוצאות, עומס, השלכות לא צפויות והחלטה מה לשמר, לשנות או להפסיק.'].forEach(t => list.appendChild(node('li', '', t))); parent.appendChild(list);
     }
     function sectionIntro(key) {
@@ -323,8 +332,11 @@
       content.appendChild(node('h2', '', s.label)); content.appendChild(node('p', '', sectionIntro(s.key)));
       if (guidance[s.key]) content.appendChild(node('p', '', guidance[s.key]));
       if (s.key === 'mechanisms') {
+        content.appendChild(node('p','','בכל מנגנון נבחן את התרומה לאוטונומיה של המסגרת: אילו אפשרויות הוא פותח או מצמצם, מי שותפים בהחלטה והאם יש יכולת מעשית לפעול. נבחין בין סמכות רשמית לבין בחירה ופעולה בפועל, ובין אוטונומיה של המסגרת לבין ריכוז כוח אצל בעלי תפקידים.'));
         content.appendChild(node('p','','מנגנונים עשויים ליצור משאבים חדשים, לשנות קשרים, לשמר יכולות ולארגן מחדש את החברה כשהתנאים משתנים. אפשר להתחיל במנגנון אחד ולהעמיק בהדרגה.'));
         content.appendChild(node('p','muted','שבעת עקרונות הפעולה מתארים כיצד המנגנון מארגן פעולה. שבע האיכויות מתארות את תנאי פעולתו בנפרד. קיום, מימוש והתחדשות הן זוויות בחינה מקבילות. אין צורך למלא הכול, ומידע שלא נבדק אינו חולשה.'));
+        content.appendChild(node('p','','גם מנגנונים של חינוך, תרבות, פנאי וחיים משותפים יכולים להיות חשובים בפני עצמם ולזמן תרגול של עשייה יחד. תפקיד שעדיין לא הובן נשאר שאלה לבירור. שימוש מועט אינו מלמד שמנגנון מיותר.'));
+        content.appendChild(node('p','muted','בהרחבה אפשר לתעד שימוש, חפיפה, כפילות, צורך ועומס בנפרד. חפיפה יכולה לספק גיבוי וגם להכביד. מגמה מתועדת ביחס לתקופות ולמקורות בני השוואה; התרשמות הצוות מסומנת כהתרשמות.'));
       }
       if (s.key === 'evidence') content.appendChild(node('p','','אפשר להעמיק במקרה ממשי: באיזה הקשר, מה עורר פעולה, מה נעשה ומה קרה לאחריה. בהרחבה נשמרים גם אופן האיסוף, קולות חסרים ועדויות שאינן תואמות.'));
       if (s.key === 'links') {
@@ -373,6 +385,7 @@
           }); content.appendChild(list);
         }
       }
+      starterCatalog(s);
       const bar = node('div', 'jws-record-bar'); content.appendChild(bar);
       const chooser = node('select'); chooser.setAttribute('aria-label', 'בחירת רשומה ב' + s.label); bar.appendChild(chooser);
       const list = data[s.key]; if (!list.some(r => r.id === selected[s.key])) selected[s.key] = list[0] && list[0].id;
@@ -397,6 +410,52 @@
         if (!window.confirm('למחוק את הרשומה "' + (record.title || record.id) + '"? השינוי ייכנס לשרת לאחר שמירה.')) return;
         data = candidate; changed(); renderContent();
       }, true));
+    }
+    function starterCatalog(s) {
+      const catalog = C && C.getCatalog(journey.unit);
+      if (!catalog || !catalog[s.key]) return;
+      const box = node('details','jws-explain jws-starter-catalog no-print');
+      box.dataset.starterSection = s.key;
+      box.open = starterOpen[s.key] === undefined ? !data[s.key].length : starterOpen[s.key];
+      box.addEventListener('toggle',() => { if (box.isConnected) starterOpen[s.key] = box.open; });
+      box.appendChild(node('summary','','ספריית פתיחה: ' + s.label + (journey.unit === 'school' ? ' בבית הספר' : ' בקהילה')));
+      box.appendChild(node('p','','אלה הצעות לזיהוי ולהתאמה. סימון V מציין שלפי דיווח הצוות הפריט קיים אצלכם; הוא אינו מעיד על איכות, שימוש או תרומה לחוסן. פריט שלא סומן נשאר טרם נבדק. אפשר לשנות שם, לעדכן מצב ידיעה או להוסיף פריט שאינו ברשימה.'));
+      if (journey.unit === 'community') box.appendChild(node('p','muted','הקהילה יכולה להיות מקומית, מקצועית, דיגיטלית או מסוג אחר. אפשר לבחור רק מה שמתאים למסגרת שלכם.'));
+      if (s.key === 'roles') box.appendChild(node('p','muted','אלה תפקודים אפשריים לבחירה, ללא צורך ליצור משרות חדשות. אפשר לחלק או לשלב אותם בתפקידים קיימים.'));
+      catalog[s.key].forEach(item => {
+        const existing = data[s.key].filter(r => r.catalogId === item.id);
+        const row = node('article','jws-suggestion');
+        const label = node('label','jws-check'); const check = node('input');
+        check.type = 'checkbox'; check.checked = existing.length > 0; check.disabled = existing.length > 0; check.dataset.starterId = item.id;
+        label.append(check,node('span','',item.title)); row.appendChild(label);
+        const add = () => {
+          if (data[s.key].length >= 80) return message('בחלק זה אפשר לתעד עד 80 רשומות. אפשר לבחון עם הצוות את התיעוד לפני הוספה.',true);
+          const now = new Date();
+          const day = [now.getFullYear(),String(now.getMonth() + 1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
+          const record = C.createRecord(journey.unit,s.key,item.id,uid(),day);
+          data[s.key].push(record); selected[s.key] = record.id; starterOpen[s.key] = true; changed(); renderContent();
+          message('הפריט נוסף לפי דיווח הצוות. אפשר להתאים את השם ולהעמיק בפרטים; השינוי יישמר בשרת בלחיצה על שמירת השינויים.');
+        };
+        check.addEventListener('change',() => {
+          if (check.checked) add();
+          if (!data[s.key].some(r => r.catalogId === item.id)) check.checked = false;
+        });
+        if (item.description) row.appendChild(node('p','muted','תפקיד מוצע לבירור: ' + item.description));
+        if (item.questions) {
+          const hints = node('details'); hints.appendChild(node('summary','','שאלות וחיבורים אפשריים לבירור'));
+          hints.appendChild(node('p','','תנאים: ' + item.questions));
+          hints.appendChild(node('p','','חיבורים מוצעים: ' + item.connections + '. הצעות אלה אינן מתווספות למפה.'));
+          row.appendChild(hints);
+        }
+        if (existing.length) {
+          row.appendChild(node('p','muted','נבחרו ' + existing.length + ' מופעים. הסימון מציין בחירה מהספרייה; מצב הידיעה המעודכן מופיע ברשומה.'));
+          row.appendChild(button('פתיחת הרשומה שנבחרה',() => { selected[s.key] = existing[0].id; starterOpen[s.key] = false; renderContent(); },true));
+          const another = button('הוספת מופע נוסף',add,true); another.dataset.starterAnother = item.id; row.appendChild(another);
+        }
+        box.appendChild(row);
+      });
+      box.appendChild(button('סיום הבחירה ומעבר לפרטי הרשומה',() => { starterOpen[s.key] = false; box.open = false; },true));
+      content.appendChild(box);
     }
     function inputUnit() { return {kind:journey.unit || 'other',label:journey.unitName || unitLabel}; }
     function factValue(input, field, value) {
@@ -682,7 +741,8 @@
         const intro = node('details','jws-explain'); intro.appendChild(node('summary','','כיווני ההתבוננות לאורך המסע'));
         overview(intro);
         content.appendChild(intro);
-      } else if (section === 'ai') ai();
+      } else if (section === 'lab' && network) network.render(content);
+      else if (section === 'ai') ai();
       else { const s = sections.find(s => s.key === section); if (s) records(s); }
       if (currentStep) {
         const footer = node('div','jws-step-navigation no-print'), index = steps.indexOf(currentStep);
@@ -691,8 +751,18 @@
         content.appendChild(footer);
       }
     }
+    if (window.SBE_NETWORK_UI) network = SBE_NETWORK_UI.create({
+      getWorkspace:() => data,getRevision:() => revision,unit:inputUnit(),cleanMap:M.cleanMap,schema:sections,
+      renderFields:(parent,key,record,map,onChange,prefix) => fields(parent,key,sections.find(s => s.key === key).fields,record,prefix,map,onChange),
+      changed,rerender:renderContent,message,uid,completeJson:options.completeJson,
+      draftDecision(record) {
+        if (data.decisions.length >= 80) return message('אפשר לשמור עד 80 החלטות. אפשר לבחון עם הצוות את התיעוד לפני הוספה.',true);
+        const draft = {...record,id:uid()}; data.decisions.push(draft); selected.decisions = draft.id; changed(); navigate('decisions','learning');
+        message('נוצרה טיוטת החלטה מהחלופה. אפשר לערוך נימוק, סמכות ואחריות ולתעד אישור אנושי. הטיוטה טרם נשמרה בשרת.');
+      }
+    });
     renderContent();
-    return {canLeave,hasUnsaved,acceptMetadataRevision,destroy() { alive = false; cancelAiRequest(); window.removeEventListener('beforeunload', beforeUnload); shell.remove(); },isDirty:() => dirty};
+    return {canLeave,hasUnsaved,acceptMetadataRevision,destroy() { alive = false; cancelAiRequest(); if (network) network.destroy(); window.removeEventListener('beforeunload', beforeUnload); shell.remove(); },isDirty:() => dirty};
   }
   window.SBE_WORKSPACE_UI = {mount};
 })();

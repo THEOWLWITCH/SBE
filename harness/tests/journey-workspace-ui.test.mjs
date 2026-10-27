@@ -10,8 +10,8 @@ const M = require('../../app/lib/journey-workspace-model.js');
 const runtime = process.env.BE_GOOD_PLAYWRIGHT_MODULE;
 const executablePath = process.env.BE_GOOD_BROWSER_PATH;
 const source = name => readFileSync(new URL('../../app/lib/' + name, import.meta.url), 'utf8');
-const scripts = ['journey-analysis-model.js','journey-workspace-model.js','journey-feedback.js','journey-workspace.js'].map(source);
-const css = source('journey-workspace.css') + source('journey-feedback.css');
+const scripts = ['journey-analysis-model.js','journey-network-model.js','journey-workspace-model.js','journey-starter-catalog.js','journey-feedback.js','journey-network-ui.js','journey-workspace.js'].map(source);
+const css = source('journey-workspace.css') + source('journey-feedback.css') + source('journey-network.css');
 
 test('guided school and community journey: reviewed analysis, deliberation, history and stale-response protection', {
   skip: !runtime || !executablePath ? 'Set BE_GOOD_PLAYWRIGHT_MODULE and BE_GOOD_BROWSER_PATH to run the real browser acceptance test.' : false,
@@ -62,17 +62,53 @@ test('guided school and community journey: reviewed analysis, deliberation, hist
   }
   async function save(page) { await page.getByRole('button',{name:'שמירת השינויים',exact:true}).click(); await page.waitForFunction(() => !controller.isDirty()); }
   try {
-    await t.test('six steps and essential/optional fields work in both settings at desktop and mobile widths',async () => {
+    await t.test('catalog choices stay separate from facts, survive renaming and allow explicit additional occurrences',async () => {
+      for (const kind of ['school','community']) {
+        const {page,errors} = await pageFor(kind,390,M.empty());
+        await page.locator('[data-step="inventories"]').click();
+        assert.equal(await page.locator('[data-starter-section="roles"] input[type="checkbox"]').count(),8);
+        assert.equal(await page.evaluate(() => calls.length),0);
+        await page.locator('[data-subsection="mechanisms"]').click();
+        const first = page.locator('[data-starter-section="mechanisms"] input[type="checkbox"]').first();
+        const catalogId = await first.getAttribute('data-starter-id');
+        await first.check();
+        assert.equal(await page.locator('[data-starter-id="' + catalogId + '"]').isDisabled(),true);
+        await page.getByRole('button',{name:'סיום הבחירה ומעבר לפרטי הרשומה',exact:true}).click();
+        await page.getByLabel('שם הרשומה',{exact:true}).fill('שם מקומי שנבחר בצוות');
+        await page.getByLabel('מצב הידיעה',{exact:true}).selectOption('different');
+        await save(page);
+        const stored = await page.evaluate(() => serverWorkspace);
+        assert.equal(stored.mechanisms.length,1);
+        assert.equal(stored.mechanisms[0].title,'שם מקומי שנבחר בצוות');
+        assert.equal(stored.mechanisms[0].knowledgeState,'different');
+        assert.equal(stored.mechanisms[0].catalogId,catalogId);
+        assert.equal(stored.mechanisms[0].purpose,'');
+        assert.deepEqual(stored.mechanisms[0].evidenceIds,[]);
+        assert.equal(stored.links.length,0);
+        await page.locator('[data-starter-section="mechanisms"] > summary').click();
+        assert.equal(await page.locator('[data-starter-id="' + catalogId + '"]').isChecked(),true);
+        await page.locator('[data-starter-another="' + catalogId + '"]').click();
+        await save(page);
+        assert.equal(await page.evaluate(() => serverWorkspace.mechanisms.length),2);
+        assert.equal(await page.evaluate(() => serverWorkspace.mechanisms[0].title),'שם מקומי שנבחר בצוות');
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+        assert.deepEqual(errors,[]); await page.close();
+      }
+    });
+    await t.test('seven steps and essential/optional fields work in both settings at desktop and mobile widths',async () => {
       for (const kind of ['school','community']) for (const width of [1280,390]) {
         const {page,errors} = await pageFor(kind,width);
-        assert.equal(await page.locator('[data-step]').count(),6);
+        assert.equal(await page.locator('[data-step]').count(),7);
         assert.equal(await page.locator('.jws-all-sections').getAttribute('open'),null);
         assert.equal(await page.getByLabel('האוכלוסייה שבמיפוי',{exact:true}).inputValue(),kind === 'school' ? 'צוות בית ספר בדוי' : 'תושבי קהילה בדויה');
         await page.getByLabel('מי עדיין לא נשמעו',{exact:true}).fill('עוד קבוצה לשמיעה');
+        await page.getByLabel('אוטונומיה: מרחב הבחירה, ההחלטה והפעולה של המסגרת',{exact:true}).fill('בחירה בדרכי פעולה עם שותפים');
         await page.locator('[data-step="inventories"]').click();
         assert.equal(await page.locator('.jws-subnav button').count(),4);
         await page.locator('[data-step="depth"]').click();
         assert.equal(await page.getByLabel('מימוש',{exact:true}).inputValue(),'טרם נבדק');
+        assert.equal(await page.getByLabel('תרומת המנגנון לאוטונומיה של המסגרת',{exact:true}).isVisible(),true);
+        await page.getByLabel('תרומת המנגנון לאוטונומיה של המסגרת',{exact:true}).fill('מרחיב את אפשרויות ההחלטה בצוות');
         assert.equal(await page.getByLabel('נגישות',{exact:true}).isVisible(),false);
         await page.locator('.jws-depth > summary').click();
         assert.equal(await page.getByLabel('נגישות',{exact:true}).isVisible(),true);
@@ -81,7 +117,46 @@ test('guided school and community journey: reviewed analysis, deliberation, hist
         await page.locator('[data-step="learning"]').click();
         await page.locator('[data-step="context"]').click();
         assert.equal(await page.getByLabel('מי עדיין לא נשמעו',{exact:true}).inputValue(),'עוד קבוצה לשמיעה');
+        await save(page);
+        assert.equal(await page.evaluate(()=>serverWorkspace.context.autonomy),'בחירה בדרכי פעולה עם שותפים');
+        assert.equal(await page.evaluate(()=>serverWorkspace.mechanisms[0].autonomyContribution),'מרחיב את אפשרויות ההחלטה בצוות');
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+        assert.deepEqual(errors,[]); await page.close();
+      }
+    });
+    await t.test('scenario forms link within the proposal and persist, export, print and draft a human decision',async () => {
+      for (const kind of ['school','community']) {
+        const {page,errors}=await pageFor(kind,390);
+        await page.locator('[data-step="scenarios"]').click();
+        await page.getByRole('button',{name:'חלופה חדשה מהמיפוי הקיים',exact:true}).click();
+        await page.getByLabel('שם החלופה',{exact:true}).fill('חלופה משוערת לבדיקה');
+        await page.locator('[data-network-view="map"]').click();
+        await page.locator('[data-network-kind="roles"]').click();
+        await page.getByRole('button',{name:'הוספת פריט מוצע',exact:true}).click();
+        await page.getByLabel('שם הרשומה',{exact:true}).fill('תפקוד מוצע חדש');
+        await page.locator('[data-network-kind="mechanisms"]').click();
+        await page.getByRole('button',{name:'הוספת פריט מוצע',exact:true}).click();
+        await page.getByLabel('שם הרשומה',{exact:true}).fill('מנגנון מוצע חדש');
+        await page.locator('.jws-depth > summary').click();
+        await page.getByRole('group',{name:'בעלי תפקידים מקושרים',exact:true}).getByRole('checkbox',{name:/תפקוד מוצע חדש/}).check();
+        await page.locator('[data-network-view="futures"]').click();
+        await page.getByRole('button',{name:'הוספת עתיד אפשרי',exact:true}).click();
+        await save(page);
+        const lab=await page.evaluate(()=>serverWorkspace.lab);
+        assert.equal(lab.alternatives[0].proposal.mechanisms.at(-1).roleIds[0],lab.alternatives[0].proposal.roles.at(-1).id);
+        assert.equal(lab.alternatives[0].baseline.mechanisms.some(m=>m.title==='מנגנון מוצע חדש'),false);
+        assert.equal(lab.futures[0].title,'');
+        await page.getByRole('button',{name:'הדפסת תמונת המצב',exact:true}).click();
+        assert.match(await page.evaluate(()=>printed.text),/חלופה משוערת לבדיקה/);
+        assert.doesNotMatch(await page.evaluate(()=>printed.html),/<input|<textarea|<select/);
+        const downloaded=page.waitForEvent('download');
+        await page.getByRole('button',{name:'ייצוא עותק של המרחב',exact:true}).click();
+        const exported=JSON.parse(readFileSync(await (await downloaded).path(),'utf8'));
+        assert.equal(exported.workspace.lab.alternatives[0].title,'חלופה משוערת לבדיקה');
+        await page.getByRole('button',{name:'יצירת טיוטת החלטה מהחלופה',exact:true}).click();
+        assert.equal(await page.getByLabel('שם הרשומה',{exact:true}).inputValue(),'חלופה משוערת לבדיקה');
+        await save(page);
+        assert.equal(await page.evaluate(()=>serverWorkspace.decisions.at(-1).approvedBy),'');
         assert.deepEqual(errors,[]); await page.close();
       }
     });

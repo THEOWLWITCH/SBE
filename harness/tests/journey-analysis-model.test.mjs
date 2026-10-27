@@ -16,6 +16,7 @@ test('pure contract is shared by browser and CommonJS without importing the work
   const source = readFileSync(new URL('../../app/lib/journey-analysis-model.js', import.meta.url), 'utf8');
   vm.runInNewContext(source, ctx);
   assert.equal(typeof ctx.window.SBE_JOURNEY_ANALYSIS.buildInput, 'function');
+  vm.runInNewContext(readFileSync(new URL('../../app/lib/journey-network-model.js', import.meta.url), 'utf8'), ctx);
   vm.runInNewContext(readFileSync(new URL('../../app/lib/journey-workspace-model.js', import.meta.url), 'utf8'), ctx);
   assert.equal(ctx.window.SBE_JOURNEY_WORKSPACE.AI_SYSTEM, ctx.window.SBE_JOURNEY_ANALYSIS.AI_SYSTEM);
   assert.equal(W.AI_SYSTEM, A.AI_SYSTEM);

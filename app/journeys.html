@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>לוח המסעות: אישורים ומשוב</title>
+<title>רשת החוסן החברתי: לוח המסעות</title>
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/product-doc.js"></script>
@@ -13,10 +13,14 @@
 <script src="lib/resilience-advisor-sources.js"></script>
 <script src="lib/journey-model.js"></script>
 <script src="lib/journey-analysis-model.js"></script>
+<script src="lib/journey-network-model.js"></script>
 <script src="lib/journey-workspace-model.js"></script>
+<script src="lib/journey-starter-catalog.js"></script>
 <script src="lib/journey-feedback.js"></script>
+<script src="lib/journey-network-ui.js"></script>
 <script src="lib/journey-workspace.js"></script>
 <link rel="stylesheet" href="lib/journey-workspace.css">
+<link rel="stylesheet" href="lib/journey-network.css">
 <link rel="stylesheet" href="lib/journey-feedback.css">
 <script src="lib/report-table.js"></script>
 <link rel="stylesheet" href="lib/journey.css">
@@ -268,7 +272,7 @@ async function viewBoard(){
   if (/^#[a-z0-9]{6,24}$/.test(location.hash)) return;
   const load = ++loadGeneration, hash = location.hash;
   const app = F('app'); app.textContent = '';
-  const c = card(); c.appendChild(el('h1', null, 'לוח המסעות: אישורים ומשוב'));
+  const c = card(); c.appendChild(el('h1', null, 'רשת החוסן החברתי')); c.appendChild(el('p', 'muted', 'לוח המסעות: אישורים ומשוב'));
   c.appendChild(el('p', 'muted', 'כל המסעות והתקדמותם: מוצג רק לך. מה שממתין לך מופיע ראשון.'));
   const bar0 = el('div', 'btns');
   const tryA = el('a', 'btn btn-ghost', 'למסך המשתתפים'); tryA.href = 'journey.html'; tryA.style.textDecoration = 'none'; bar0.appendChild(tryA);
