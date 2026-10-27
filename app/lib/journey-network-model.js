@@ -102,6 +102,7 @@
   function isHistorical(a, current) { return JSON.stringify(a.baseline)!==JSON.stringify(mapOf(current)); }
   function buildInput(a, futures, unit, cleanMap) {
     const normalized=clean({futures,alternatives:[{...a,feedback:null}]},cleanMap), alt=normalized.alternatives[0];
+    for (const map of [alt.baseline,alt.proposal]) map.roles.forEach(r=>{r.person='';});
     return {kind:'scenario',version:1,unit:{kind:text(unit.kind),label:text(unit.label)},alternativeId:alt.id,title:alt.title,purpose:alt.purpose,assumptions:alt.assumptions,changeNotes:alt.changeNotes,capturedAt:alt.createdAt,sourceRevision:alt.sourceRevision,baseline:alt.baseline,proposal:alt.proposal,inactiveIds:alt.inactiveIds,futures:normalized.futures,assessments:alt.assessments,structure:inspect(alt)};
   }
   function cleanInput(v, cleanMap) {
@@ -114,7 +115,9 @@
   }
   function validateReport(v,input) {
     shape(v,['summary','direct','conditional','hypotheses','comparisons','supportSuggestions'],'משוב תרחיש');
-    const allIds=new Set([input.alternativeId,...input.futures.map(f=>f.id),...EDIT_KEYS.flatMap(k=>[...input.baseline[k],...input.proposal[k]].map(r=>r.id))]);
+    for (const key of ['summary','direct','conditional','hypotheses','comparisons','supportSuggestions']) if (!Object.prototype.hasOwnProperty.call(v,key)) throw Error('חסר שדה במשוב: '+key);
+    if (!text(v.summary)) throw Error('המשוב אינו כולל תמצית');
+    const allIds=new Set([input.alternativeId,...input.futures.map(f=>f.id),...MAP_KEYS.filter(k=>k!=='context').flatMap(k=>[...input.baseline[k],...input.proposal[k]].map(r=>r.id))]);
     const refs=values=>{const out=unique(list(values,40).map(id));out.forEach(r=>{if(!allIds.has(r)) throw Error('המשוב מפנה לפריט שאינו בקלט: '+r);});return out;};
     const direct=list(v.direct,40).map(d=>{shape(d,['structuralId','comment'],'פירוש ממצא מבני');const structuralId=id(d.structuralId);if (!input.structure.some(s=>s.id===structuralId && s.classification==='direct')) throw Error('ממצא ישיר שאינו במידע שנבדק');return {structuralId,comment:text(d.comment)};});
     const explanations=value=>list(value,40).map(d=>{shape(d,['title','explanation','refs','assumptions','inquiry'],'הסבר מותנה');return {title:text(d.title),explanation:text(d.explanation),refs:refs(d.refs),assumptions:text(d.assumptions),inquiry:text(d.inquiry)};});

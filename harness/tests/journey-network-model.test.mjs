@@ -40,13 +40,18 @@ test('support removal exposes edited dependencies and snapshots survive live evi
 
 test('separate reviewed input retains hypothetical records and all future assumptions', () => {
   const a=alternative(); a.title='הוספת מעגל'; a.proposal.mechanisms.push({id:'m3',title:'חדש ללא ראיות'});
+  a.proposal.roles.push({id:'r1',title:'תפקיד',person:'שם אישי שלא נשלח'});
+  a.proposal.evidence.push({id:'e1',title:'מקור מאושר',details:'תצפית'});
   const input=N.buildInput(a,futures,{kind:'school',label:'מסגרת בדויה'},cleanMap);
   assert.equal(input.kind,'scenario'); assert.equal(input.proposal.mechanisms[2].id,'m3');
   assert.equal(input.baseline.mechanisms.length,2); assert.equal(input.futures.length,2);
   assert.equal(input.assessments.length,0);
+  assert.equal(input.proposal.roles[0].person,'');
   assert.deepEqual(N.cleanInput(input,cleanMap),input);
   const report={summary:'טיוטה לשיחה',direct:[],conditional:[{title:'תלות אפשרית',explanation:'יש לברר זמינות',refs:['m3'],assumptions:'אם יוקצה זמן',inquiry:'מי פנויים?'}],hypotheses:[],comparisons:futures.map(f=>({futureId:f.id,present:'לבדיקה',future:'לבדיקה',tensions:'',needs:'',preparation:'',signals:'',unknown:''})),supportSuggestions:[{mechanismId:'m3',infrastructureId:'i1',reason:'אפשר לבחון מרחב למידה',gaps:'קיבולת טרם ידועה'}]};
   assert.equal(N.validateReport(report,input).conditional[0].refs[0],'m3');
+  assert.doesNotThrow(()=>N.validateReport({...report,conditional:[{...report.conditional[0],refs:['e1']}]},input));
+  assert.throws(()=>N.validateReport({...report,summary:''},input));
   assert.throws(()=>N.validateReport({...report,conditional:[{...report.conditional[0],refs:['invented']}]},input));
   assert.throws(()=>N.validateReport({...report,comparisons:[]},input));
   a.feedback={createdAt:'2026-10-27T11:00:00.000Z',input,output:report};

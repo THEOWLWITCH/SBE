@@ -110,7 +110,7 @@ No publication, new permissions system, automatic graph inference, scoring, pred
 ### U2. Hypothetical map model
 
 **Goal:** implement the data and deterministic comparison of R4–R6/R8.
-**Dependencies:** U1.
+**Dependencies:** none for the pure model; its shared-schema integration follows U1.
 **Files:** `app/lib/journey-network-model.js`, `app/lib/journey-workspace-model.js`, `harness/tests/journey-network-model.test.mjs`, `harness/tests/journey-workspace-model.test.mjs`, `harness/tests/journey-workspace-backend.test.mjs`.
 **Approach:** KTD2; futures and cross-product assessments; direct structural comparison; validated distinct scenario payload/report. Do not use evidence-closure input for scenarios.
 **Verification:** baseline independence, pause/remove/link effects, invalid references, save/reload old/new workspaces, multiple futures, missing assessments, strict report IDs and stale snapshots. Proof first for model behavior.
@@ -118,8 +118,8 @@ No publication, new permissions system, automatic graph inference, scoring, pred
 ### U3. Scenario workbench and reviewed feedback
 
 **Goal:** expose R4–R9 to teams.
-**Dependencies:** U2.
-**Files:** `app/lib/journey-network-ui.js`, `app/lib/journey-workspace.js`, `app/lib/journey-workspace.css`, both entry points, `harness/tests/journey-network-ui.test.mjs`.
+**Dependencies:** U1, U2.
+**Files:** `app/lib/journey-network-ui.js`, `app/lib/journey-workspace.js`, `app/lib/journey-network.css`, both entry points, `harness/tests/journey-network-ui.test.mjs`.
 **Approach:** KTD3/KTD4; create captured alternatives, edit proposed map, annotate assumptions, inspect changes, compare futures, review explicit AI payload, display summary and detail, and draft a human decision. Integrate unsaved-state/cancel/print behavior.
 **Verification:** desktop/mobile in both entry points and units; proposed additions without evidence; pause/removal explanation; matrix editing; saved JSON roundtrip; stale response ignored; failed AI leaves work intact; print/export contain labels and assumptions.
 

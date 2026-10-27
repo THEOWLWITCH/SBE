@@ -1,7 +1,7 @@
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('./journey-analysis-model.js'));
-  else root.SBE_JOURNEY_WORKSPACE = factory(root.SBE_JOURNEY_ANALYSIS);
-})(typeof window !== 'undefined' ? window : this, function (A) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./journey-analysis-model.js'),require('./journey-network-model.js'));
+  else root.SBE_JOURNEY_WORKSPACE = factory(root.SBE_JOURNEY_ANALYSIS,root.SBE_JOURNEY_NETWORK);
+})(typeof window !== 'undefined' ? window : this, function (A,N) {
   'use strict';
   const options = pairs => pairs.map(([value, label]) => ({ value, label }));
   const PRINCIPLES = options([['enable','אפשור'],['regulate','הסדרה'],['coordinate','תיאום'],['mediate','תיווך'],['meaning','יצירת משמעות'],['preserve','שימור והעברה'],['renew','שינוי והתארגנות מחדש']]);
@@ -34,10 +34,8 @@
     { key:'reviews',label:'למידה והתחדשות',fields:[title,refs('actionId','פעולה מקושרת','actions',1),date('observedAt','מועד הבחינה'),evidenceIds,long('learned','מה למדנו על המנגנון ועל הקשרים'),long('presentChange','מה השתנה באיכות החיים בהווה'),long('futureChange','מה השתנה במוכנות לעתיד'),long('unintended','תוצאות נוספות, עומס או השפעה לא צפויה'),long('next','מה נשמר, מה משתנה ומה עוד נבדוק'),text('approvedBy','שותפים לאישור הלמידה'),note] }
   ];
   CONTEXT_FIELDS.push(...A.INPUT_FIELDS.context.filter(f => !CONTEXT_FIELDS.some(x => x.key === f.key)).map(f => ({...f,type:f.type === 'date' ? 'date' : 'long'})));
-  for (const section of SECTIONS.slice(0,4)) section.fields.push(...A.INPUT_FIELDS[section.key].filter(f => !section.fields.some(x => x.key === f.key)).map(f => ({...f,type:f.type === 'text' ? 'long' : f.type})));
-  for (const key of ['evidence','links']) {
-    const section = SECTIONS.find(s => s.key === key);
-    section.fields.push(...A.INPUT_FIELDS[key].filter(f => !section.fields.some(x => x.key === f.key)).map(f => ({...f,type:f.type === 'text' ? 'long' : f.type})));
+  for (const section of SECTIONS.slice(0,6)) {
+    section.fields.push(...A.INPUT_FIELDS[section.key].filter(f => !section.fields.some(x => x.key === f.key)).map(f => ({...f,type:f.type === 'text' ? 'long' : f.type})));
   }
   for (const key of ['decisions','actions']) SECTIONS.find(s => s.key === key).fields.push(text('analysisId','ניתוח המקור','id'),text('priorityId','מוקד המקור','id'),text('optionId','חלופת המקור','id'));
   const ID = /^[a-z0-9_-]{1,64}$/;
@@ -81,13 +79,13 @@
     return s;
   }
   function empty() {
-    const result = { context: Object.fromEntries(CONTEXT_FIELDS.map(f => [f.key,''])), analyses:[] };
+    const result = { context: Object.fromEntries(CONTEXT_FIELDS.map(f => [f.key,''])), analyses:[],lab:N.empty() };
     for (const section of SECTIONS) result[section.key] = [];
     return result;
   }
   function clean(value) {
     object(value,'מרחב העבודה');
-    keys(value,new Set(['context','analyses',...SECTIONS.map(s => s.key)]),'מרחב העבודה');
+    keys(value,new Set(['context','analyses','lab',...SECTIONS.map(s => s.key)]),'מרחב העבודה');
     const result = empty(), ids = new Set();
     const context = value.context === undefined ? {} : value.context;
     object(context,'מסגרת העבודה'); keys(context,new Set(CONTEXT_FIELDS.map(f => f.key)),'מסגרת העבודה');
@@ -111,8 +109,13 @@
       for (const id of record[f.key]) if (!result[f.target].some(r => r.id === id)) throw Error(section.label + ' ' + (record.title || record.id) + ': ההפניה ' + id + ' אינה קיימת ברשימת ' + SECTIONS.find(s => s.key === f.target).label + '. אפשר לעדכן את הקישור לפני מחיקת הפריט');
     }
     result.analyses = A.cleanAnalyses(value.analyses);
+    result.lab = N.clean(value.lab,cleanMap);
     return result;
   }
+  function cleanMap(value) {
+    const normalized = clean({...value,lab:undefined,analyses:[]});
+    return N.mapOf(normalized);
+  }
   const AI_SYSTEM = A.AI_SYSTEM;
-  return { SCHEMA:SECTIONS,SECTIONS,CONTEXT_FIELDS,PRINCIPLES,QUALITIES,LENSES,LINK_TYPES,LINK_STATUSES,FINDING_KINDS,FINDING_STATES,ACTION_STATUSES,empty,clean,validate:clean,AI_SYSTEM,aiSystem:() => AI_SYSTEM };
+  return { SCHEMA:SECTIONS,SECTIONS,CONTEXT_FIELDS,PRINCIPLES,QUALITIES,LENSES,LINK_TYPES,LINK_STATUSES,FINDING_KINDS,FINDING_STATES,ACTION_STATUSES,empty,clean,cleanMap,validate:clean,AI_SYSTEM,aiSystem:() => AI_SYSTEM };
 });

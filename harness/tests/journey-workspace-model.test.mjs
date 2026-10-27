@@ -8,6 +8,7 @@ const W = createRequire(import.meta.url)('../../app/lib/journey-workspace-model.
 test('one browser and server schema offers four inventories and parallel lenses', () => {
   const ctx = { window: {} };
   vm.runInNewContext(readFileSync(new URL('../../app/lib/journey-analysis-model.js', import.meta.url), 'utf8'), ctx);
+  vm.runInNewContext(readFileSync(new URL('../../app/lib/journey-network-model.js', import.meta.url), 'utf8'), ctx);
   vm.runInNewContext(readFileSync(new URL('../../app/lib/journey-workspace-model.js', import.meta.url), 'utf8'), ctx);
   assert.ok(ctx.window.SBE_JOURNEY_WORKSPACE);
   assert.deepEqual(W.SECTIONS.slice(0, 4).map(x => x.key), ['roles', 'mechanisms', 'infrastructures', 'resources']);

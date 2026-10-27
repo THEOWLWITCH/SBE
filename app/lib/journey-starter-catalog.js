@@ -3,7 +3,6 @@
   else root.SBE_JOURNEY_STARTERS = factory();
 })(typeof window !== 'undefined' ? window : this, function () {
   'use strict';
-  // Candidate descriptions are suggestions; only explicit selection creates a team-reported record.
   const CATALOGS = {
   "school": {
     "roles": [

@@ -61,6 +61,7 @@
     let aiInput = null, analysisDraft = null, status, saveButton, conflictBox, content;
     let aiSelection = [], aiReviewed = false, aiPending = null, aiGeneration = 0, aiError = '', reloadGeneration = 0;
     let activeAnalysisId = '', baselineId = '';
+    let network = null;
     const removedAnalysisIds = new Set();
     const priorityDrafts = new Map();
     let priorityDraftRevision = 0;
@@ -70,10 +71,10 @@
     const sections = M.SECTIONS;
     function message(text, error) { status.textContent = text; status.className = 'jws-status' + (error ? ' jws-error' : ''); }
     function changed() {
-      serial++; dirty = true; cancelAiRequest(); saveButton.disabled = busy || conflict;
+      serial++; dirty = true; cancelAiRequest(); if (network) network.invalidate(); saveButton.disabled = busy || conflict;
       message('יש שינויים שעדיין לא נשמרו בשרת');
     }
-    function hasUnsaved() { return dirty || !!analysisDraft || !!aiPending || priorityDrafts.size > 0; }
+    function hasUnsaved() { return dirty || !!analysisDraft || !!aiPending || priorityDrafts.size > 0 || !!(network && network.hasPending()); }
     function canLeave() { return !hasUnsaved() || window.confirm('יש שינויים או טיוטות שעדיין לא נשמרו. להמשיך בלי לשמור? אפשר להישאר ולבחון את הטיוטות או לשמור את העבודה.'); }
     function beforeUnload(event) { if (hasUnsaved()) { event.preventDefault(); event.returnValue = ''; } }
     function cancelAiRequest() {
@@ -129,11 +130,12 @@
       });
       const analysis = data.analyses.find(a => a.id === activeAnalysisId) || data.analyses[data.analyses.length - 1];
       if (analysis && window.SBE_JOURNEY_FEEDBACK) root.appendChild(SBE_JOURNEY_FEEDBACK.render(analysis,{readOnly:true,print:true,historical:isHistorical(analysis),currentInput:currentInputFor(analysis),baselineInput:baselineFor(analysis)}));
+      if (network) root.appendChild(network.report());
       return root;
     }
     function print() {
       if (!window.SBE_DOC || !SBE_DOC.print) return message('כלי ההדפסה לא נטען. אפשר לייצא עותק ולנסות שוב.', true);
-      SBE_DOC.print({title:'רשת החוסן החברתי: ' + journey.unitName, node:report(), extraCss:(window.SBE_JOURNEY_FEEDBACK ? SBE_JOURNEY_FEEDBACK.PRINT_CSS : '') + '.jws-report h1,.jws-report h2,.jws-report h3,.jws-report h4{border:0!important;border-bottom:0!important}.jws-report table{width:100%;border-collapse:collapse;margin:8px 0 18px}.jws-report th,.jws-report td{border:1px solid #CDD3D8;padding:7px;white-space:pre-wrap;overflow-wrap:anywhere}.jws-report th{width:30%;text-align:right;background:#eef3f6}.jws-report tr{break-inside:avoid}.jws-report p,.jws-report td{text-align:justify}'});
+      SBE_DOC.print({title:'רשת החוסן החברתי: ' + journey.unitName, node:report(), extraCss:(window.SBE_JOURNEY_FEEDBACK ? SBE_JOURNEY_FEEDBACK.PRINT_CSS : '') + (window.SBE_NETWORK_UI ? SBE_NETWORK_UI.PRINT_CSS || '' : '') + '.jws-report h1,.jws-report h2,.jws-report h3,.jws-report h4{border:0!important;border-bottom:0!important}.jws-report table{width:100%;border-collapse:collapse;margin:8px 0 18px}.jws-report th,.jws-report td{border:1px solid #CDD3D8;padding:7px;white-space:pre-wrap;overflow-wrap:anywhere}.jws-report th{width:30%;text-align:right;background:#eef3f6}.jws-report tr{break-inside:avoid}.jws-report p,.jws-report td{text-align:justify}'});
     }
     function acceptMetadataRevision(result) {
       return applyMetadataRevision(result, true);
@@ -188,6 +190,7 @@
     }
     async function reload() {
       if (!window.confirm('טעינת הגרסה מהשרת תחליף את השינויים המקומיים. אפשר לבטל ולייצא עותק קודם. להמשיך?')) return;
+      if (network) network.invalidate();
       const captured = serial, capturedRevision = revision, capturedPriorityRevision = priorityDraftRevision, load = ++reloadGeneration;
       try {
         const result = await options.api('jrGet', {id:journey.id});
@@ -220,6 +223,7 @@
       {key:'inventories',label:'ארבעת המיפויים',sections:['roles','mechanisms','infrastructures','resources']},
       {key:'depth',label:'מנגנון ומקרה ממשי',sections:['mechanisms','evidence']},
       {key:'network',label:'רשת המנגנונים',sections:['links']},
+      {key:'scenarios',label:'חלופות וכמה עתידים',sections:['lab']},
       {key:'analysis',label:'ניתוח ושיחת צוות',sections:['ai','findings']},
       {key:'learning',label:'פעולה ולמידה',sections:['decisions','actions','reviews']}
     ];
@@ -236,7 +240,7 @@
     });
     const direct = node('details','jws-all-sections no-print'); direct.appendChild(node('summary','','גישה ישירה לתיעוד'));
     const directNav = node('nav','jws-tabs'); directNav.setAttribute('aria-label','גישה ישירה לכל הרשומות'); direct.appendChild(directNav); shell.appendChild(direct);
-    const tabs = [{key:'overview', label:'מבט על המסע'}, {key:'context',label:'מסגרת התהליך'}, ...sections, {key:'ai',label:'ניתוח ומשוב'}];
+    const tabs = [{key:'overview', label:'מבט על המסע'}, {key:'context',label:'מסגרת התהליך'}, ...sections, {key:'lab',label:'חלופות וכמה עתידים'}, {key:'ai',label:'ניתוח ומשוב'}];
     tabs.forEach(s => { const b = button(s.label, () => navigate(s.key), true); b.dataset.section = s.key; directNav.appendChild(b); });
     content = node('section', 'card jws-content'); shell.appendChild(content);
     const essential = {
@@ -252,14 +256,14 @@
       actions:['title','decisionId','owner','backup','partners','authority','resources','stopDoing','presentOutcome','futureOutcome','processEvidence','outcomeEvidence','reviewAt','status'],
       reviews:['title','actionId','observedAt','evidenceIds','learned','presentChange','futureChange','unintended','next']
     };
-    function fields(parent, key, schema, record, prefix) {
+    function fields(parent, key, schema, record, prefix, source = data, onChange = changed) {
       const first = node('div','jws-fields'); parent.appendChild(first);
       const extra = node('details','jws-depth'); extra.appendChild(node('summary','','הרחבה ופרטים נוספים'));
       const deeper = node('div','jws-fields'); extra.appendChild(deeper);
       const sourceFields = ['analysisId','priorityId','optionId','catalogId','catalogSource'];
       schema.filter(f => !sourceFields.includes(f.key)).forEach(f => {
         const main = essential[key].includes(f.key) || key === 'mechanisms' && activeStep === 'depth' && ['existence','realization','renewal'].includes(f.key);
-        (main ? first : deeper).appendChild(fieldControl(f.key === 'title' ? {...f,label:'שם הרשומה'} : f,record,prefix));
+        (main ? first : deeper).appendChild(fieldControl(f.key === 'title' ? {...f,label:'שם הרשומה'} : f,record,prefix,source,onChange));
       });
       if (deeper.children.length) parent.appendChild(extra);
       if (record.catalogId) parent.appendChild(node('p','muted','מקור הבחירה: ' + (record.catalogSource || 'הצעת פתיחה לבחירה ולהתאמה') + '. השם המקומי ומצב הידיעה ניתנים לעריכה; ההצעה אינה ראיה לפעולה.'));
@@ -269,12 +273,12 @@
         else parent.appendChild(node('p','muted','ניתוח המקור ' + record.analysisId + ' אינו זמין. ייתכן שהוסר במפורש. הטיוטה נשארת לאישור אנושי.'));
       }
     }
-    function fieldControl(field, record, prefix) {
+    function fieldControl(field, record, prefix, source = data, onChange = changed) {
       const wrap = node('div', 'jws-field'); const id = 'jws-' + prefix + '-' + field.key;
       const label = node('label', '', field.label); label.htmlFor = id; wrap.appendChild(label);
       let input;
       if (field.type === 'refs' || field.type === 'multi') {
-        const choices = field.type === 'refs' ? (data[field.target] || []).map(r => ({value:r.id,label:(r.title || 'רשומה ללא שם') + ' (' + r.id + ')'})) : field.options || [];
+        const choices = field.type === 'refs' ? (source[field.target] || []).map(r => ({value:r.id,label:(r.title || 'רשומה ללא שם') + ' (' + r.id + ')'})) : field.options || [];
         const group = node('fieldset', 'jws-checks'); group.id = id;
         const legend = node('legend', 'jws-sr-only', field.label); group.appendChild(legend); label.remove();
         wrap.prepend(node('div', 'jws-field-label', field.label));
@@ -285,7 +289,7 @@
           checkbox.addEventListener('change', () => {
             const current = (record[field.key] || []).filter(v => v !== choice.value);
             if (checkbox.checked && current.length >= (field.max || 40)) { checkbox.checked = false; return message('אפשר לקשר עד ' + (field.max || 40) + ' רשומות בשדה זה.', true); }
-            if (checkbox.checked) current.push(choice.value); record[field.key] = current; changed();
+            if (checkbox.checked) current.push(choice.value); record[field.key] = current; onChange();
           }); l.appendChild(checkbox); l.appendChild(node('span', '', choice.label)); group.appendChild(l);
         }); wrap.appendChild(group); return wrap;
       }
@@ -293,7 +297,7 @@
         input = node('select'); const blank = node('option', '', 'טרם הוגדר'); blank.value = ''; input.appendChild(blank);
         (field.options || []).forEach(o => { const opt = node('option', '', o.label); opt.value = o.value; input.appendChild(opt); });
       } else { input = node(field.type === 'long' ? 'textarea' : 'input'); if (input.tagName === 'INPUT') input.type = field.type === 'date' ? 'date' : 'text'; input.maxLength = 4000; }
-      input.id = id; input.value = record[field.key] || ''; input.addEventListener(field.type === 'select' || field.type === 'date' ? 'change' : 'input', () => { record[field.key] = input.value; changed(); });
+      input.id = id; input.value = record[field.key] || ''; input.addEventListener(field.type === 'select' || field.type === 'date' ? 'change' : 'input', () => { record[field.key] = input.value; onChange(); });
       wrap.appendChild(input); return wrap;
     }
     function overview(parent) {
@@ -735,7 +739,8 @@
         const intro = node('details','jws-explain'); intro.appendChild(node('summary','','כיווני ההתבוננות לאורך המסע'));
         overview(intro);
         content.appendChild(intro);
-      } else if (section === 'ai') ai();
+      } else if (section === 'lab' && network) network.render(content);
+      else if (section === 'ai') ai();
       else { const s = sections.find(s => s.key === section); if (s) records(s); }
       if (currentStep) {
         const footer = node('div','jws-step-navigation no-print'), index = steps.indexOf(currentStep);
@@ -744,8 +749,18 @@
         content.appendChild(footer);
       }
     }
+    if (window.SBE_NETWORK_UI) network = SBE_NETWORK_UI.create({
+      getWorkspace:() => data,getRevision:() => revision,unit:inputUnit(),cleanMap:M.cleanMap,schema:sections,
+      renderFields:(parent,key,record,map,onChange,prefix) => fields(parent,key,sections.find(s => s.key === key).fields,record,prefix,map,onChange),
+      changed,rerender:renderContent,message,uid,completeJson:options.completeJson,
+      draftDecision(record) {
+        if (data.decisions.length >= 80) return message('אפשר לשמור עד 80 החלטות. אפשר לבחון עם הצוות את התיעוד לפני הוספה.',true);
+        const draft = {...record,id:uid()}; data.decisions.push(draft); selected.decisions = draft.id; changed(); navigate('decisions','learning');
+        message('נוצרה טיוטת החלטה מהחלופה. אפשר לערוך נימוק, סמכות ואחריות ולתעד אישור אנושי. הטיוטה טרם נשמרה בשרת.');
+      }
+    });
     renderContent();
-    return {canLeave,hasUnsaved,acceptMetadataRevision,destroy() { alive = false; cancelAiRequest(); window.removeEventListener('beforeunload', beforeUnload); shell.remove(); },isDirty:() => dirty};
+    return {canLeave,hasUnsaved,acceptMetadataRevision,destroy() { alive = false; cancelAiRequest(); if (network) network.destroy(); window.removeEventListener('beforeunload', beforeUnload); shell.remove(); },isDirty:() => dirty};
   }
   window.SBE_WORKSPACE_UI = {mount};
 })();
