@@ -332,6 +332,20 @@
         d.appendChild(node('p', '', 'אפשר לעקוב אחרי מסלול של צורך ממשי בין מנגנונים: היכן המידע עובר, מי מוסמכים להחליט, והאם משאבים מגיעים למי שמפעילים את המענה. בוחנים קשרים אופקיים בין עמיתים וקבוצות, וקשרים אנכיים להנהלה ולרשות.'));
         d.appendChild(node('p', '', 'כדאי לברר צווארי בקבוק, קבוצות שאינן נשמעות, תלות באותו אדם או באותה תשתית, ומשמעותן של נורמות ואתוס משותף. גיבוי נבחן גם בתנאי הפרעה: שתי חלופות שתלויות באותו ערוץ אינן בהכרח גיבוי עצמאי. נשמר מקום למחלוקת ולתפקודים חברתיים שקשה למדוד.'));
         content.appendChild(d);
+        const example = node('details','jws-explain jws-network-example no-print');
+        example.appendChild(node('summary','','דוגמה לתוצר: מפת רשת של 20 מנגנונים'));
+        example.appendChild(node('p','','דוגמה קבועה לצפייה בתרחיש משוער בבית ספר ובקהילה. האיור מדגים קשרים בין אתוס ונורמות, תקנונים, ערוצי תקשורת, למידה, השתתפות וקבלת החלטות.'));
+        const exampleUrl = 'assets/examples/resilience-mechanisms-network-he.png';
+        const figure = node('figure'), image = node('img');
+        image.src = exampleUrl; image.loading = 'lazy'; image.decoding = 'async'; image.width = 1536; image.height = 1024;
+        image.alt = 'מפת מצב משוערת של עשרים מנגנונים בבית ספר ובקהילה, עם קשרים חוצים ולולאות משוב; התשתיות, המשאבים ובעלי התפקידים מסומנים בנפרד.';
+        figure.appendChild(image);
+        figure.appendChild(node('figcaption','','במפה מופיעים קשרי משמעות ונורמות, כללים וסמכות, מידע ותיאום, משאבים וגיבוי, מתח או חסימה אפשרית וקשרים מוצעים או לא מבוררים. אפשר לבחון בה את הפער בין אתוס מוצהר לנורמות בפועל ואת התלות המשותפת בזמן, בתשתית ובבעלת הרשאות.'));
+        example.appendChild(figure);
+        const exampleLinks = node('p','jws-example-links');
+        const fullSize = node('a','','פתיחת האיור בגודל מלא'); fullSize.href = exampleUrl; fullSize.target = '_blank'; fullSize.rel = 'noopener';
+        const downloadExample = node('a','','הורדת האיור כקובץ PNG'); downloadExample.href = exampleUrl; downloadExample.download = 'מפת-רשת-מנגנונים-לדוגמה.png';
+        exampleLinks.append(fullSize,downloadExample); example.appendChild(exampleLinks); content.appendChild(example);
         if (data.links.length) {
           const list = node('ul', 'jws-network');
           data.links.forEach(link => {
