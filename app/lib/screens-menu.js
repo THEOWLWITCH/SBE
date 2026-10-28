@@ -36,6 +36,7 @@ window.SBE_SCREENS = [
       { file:'observation-sheet.html', label:'דף צפייה (טלפון)', who:'מתנסות בסדנה' },
       { file:'practice.html', label:'תרגול עצמי', who:'משתתפות בסדנה' },
       { file:'yesh-ma-laasot.html', label:'🚨 יש מה לעשות: מדריכון לחירום', who:'כולם, גם בלי כניסה (בלי ניווט לכלים אחרים)' },
+      { file:'org-suite.html', label:'🤝 Begood together: תרגול צוותים', who:'הרשאת orgsuite; צופים וצופות בקישור ההצטרפות' },
       { file:'conversation-planner.html', label:'תכנון שיחה', who:'הרשאת תכנון שיחה' },
       { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
       { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'הרשאת גשר (bridge)' },
@@ -65,6 +66,7 @@ window.SBE_SCREENS = [
       { file:'hl-stress.html', label:'מעבדת האופק: בדיקת עמידות', who:'הרשאת מעבדת האופק (horizon)' },
     ]},
     { title:'📖 4. ללמוד מהעשייה: מה למדנו?', items:[
+      { file:'org-library.html', label:'📚 ספריית המחקר המשותפת', who:'כל מי שנכנס/ה' },
       { file:'social-resilience-studies.html', label:'לימודי חוסן חברתי', who:'הרשאת לימודי חוסן חברתי (studies)' },
       { file:'academic-review.html', label:'משוב לעבודות: להתכונן להגשה', who:'הרשאת משוב לעבודות' },
       { file:'feedback.html', label:'משוב', who:'משתתפות ומנחות' },

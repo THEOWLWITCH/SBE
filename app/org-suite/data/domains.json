@@ -1,0 +1,70 @@
+[
+  {
+    "code": "EXP",
+    "label": "שיתוף ניסיון",
+    "description": "שתי יחידות מחליפות מקרה מקצועי בדוי, מבררות מתי אינו מתאים ובוחרות בדיקת העברה.",
+    "sourceIds": [
+      "BG-SRC-012"
+    ],
+    "exerciseId": "BG-EX-EXP-01"
+  },
+  {
+    "code": "EMP",
+    "label": "אמפתיה הדדית",
+    "description": "שני צדדים מבררים אילוץ מקצועי ומאפשרים אישור ותיקון, בכתב או בדיבור, ללא דרישת חשיפה.",
+    "sourceIds": [
+      "BG-EXT-SRC-009",
+      "BG-EXT-SRC-002"
+    ],
+    "exerciseId": "BG-EX-EMP-01"
+  },
+  {
+    "code": "VOI",
+    "label": "קול מיעוט",
+    "description": "החלטת צוות נפתחת לנתון סותר מערוץ כתוב, נבחנת ומתועדת בתשובה עניינית.",
+    "sourceIds": [
+      "BG-EXT-SRC-010",
+      "BG-SRC-005"
+    ],
+    "exerciseId": "BG-EX-VOI-01"
+  },
+  {
+    "code": "ETH",
+    "label": "אתוס",
+    "description": "דילמה על משאב מוגבל מחברת מטרה משותפת למתח ערכי, עם אחריות ומקום להסתייגות.",
+    "sourceIds": [
+      "BG-EXT-SRC-008"
+    ],
+    "exerciseId": "BG-EX-ETH-01"
+  },
+  {
+    "code": "MUL",
+    "label": "ריבוי חוסנים",
+    "description": "פתרון משופר בתחום אחד נבחן לפי השפעתו על יחידה אחרת, חלופה ותנאי פתיחה מחדש.",
+    "sourceIds": [
+      "BG-SRC-006",
+      "BG-SRC-004"
+    ],
+    "exerciseId": "BG-EX-MUL-01"
+  },
+  {
+    "code": "EXT",
+    "label": "ידע חיצוני",
+    "description": "מגדירים פער ידע, משווים שני כרטיסי מקור ומתעדים למה מידע מסוים נכנס להחלטה.",
+    "sourceIds": [
+      "BG-EXT-SRC-005"
+    ],
+    "exerciseId": "BG-EX-EXT-01"
+  },
+  {
+    "code": "NET",
+    "label": "תיאום בין צוותים",
+    "description": "שלוש יחידות מעבירות אחריות, מאשרות הבנה ומפעילות גיבוי לאחר היעדרות איש הקשר.",
+    "sourceIds": [
+      "BG-EXT-SRC-004",
+      "BG-SRC-015",
+      "BG-SRC-008"
+    ],
+    "exerciseId": "BG-EX-NET-01"
+  }
+]

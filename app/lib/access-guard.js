@@ -24,7 +24,7 @@
   // המרחב שבו נמצא/ת מי שנכנס/ה (28/10/2026): 'org' (ארגוני) או 'edu' (חינוכי).
   // מהשרת בכניסה (המרחב שסומן למוסד), למנהלת המערכת לפי הבחירה במרחב שלי, ובמעבדת הדמו ?space=org.
   // כלים משותפים משתמשים בזה כדי להציג דוגמאות ומילים מהעולם הארגוני; השרת קובע בעצמו לפי הקוד.
-  var SHARED_PERMS = ["horizon", "journey", "teamthink", "writer", "studies"];
+  var SHARED_PERMS = ["horizon", "journey", "teamthink", "writer", "studies"], ORG_PERMS = ["orgsuite"];
   window.sbeSpace = function(){
     try {
       var q = (location.search.match(/[?&]space=(org|edu)(?:&|$)/) || [])[1];
@@ -37,7 +37,7 @@
       var info = JSON.parse(ss("sbe.session.info") || "{}") || {};
       if (info.space === "org" || info.space === "edu") return info.space;
       var perms = JSON.parse(ss("sbe.session.perms") || "[]") || [];
-      return perms.length && perms.every(function(p){ return SHARED_PERMS.indexOf(p) >= 0; }) ? "org" : "edu";
+      return perms.length && perms.every(function(p){ return SHARED_PERMS.indexOf(p) >= 0 || ORG_PERMS.indexOf(p) >= 0; }) ? "org" : "edu";
     } catch(e){ return "edu"; }
   };
 
@@ -232,7 +232,7 @@
   var base = inProducts ? "../" : "";
 
   var q = new URLSearchParams(home.split("?")[1] || "");
-  var ALL_USERS = ["entry.html", "index.html", "sources-library.html", "examples.html"];
+  var ALL_USERS = ["entry.html", "index.html", "sources-library.html", "examples.html", "org-library.html"];
   var WORKSHOP = {
     // תוצרי הסימולציה (גרסת המתנסה/השחקנית/המנחה, כרטיס שחקנית) — רק למנהלת המערכת ולמנחות הסימולציה (02/10/2026).
     trainee: ["observation-sheet.html", "practice.html", "feedback.html",
@@ -260,6 +260,7 @@
     dialogue: ["shared-dialogue-lab.html", "resilience-advisor-sources.html"], // מעבדת שיח וחקר משותף (11/10/2026)
     teamthink: ["team-thinking.html", "resilience-advisor-sources.html"], // חשיבת צוות (11/10/2026)
     games: ["games.html", "memory-game.html", "board-game.html", "no-panic.html", "story-maker.html", "statement-sort.html", "riddles.html", "bingo.html", "twenty-q.html", "truth-dare.html", "trail-signs.html", "readiness-train.html", "idea-garden.html"], // מחיצת המשחקים (21/10/2026)
+    orgsuite: ["org-suite.html", "org-library.html"], // Begood together: תרגול צוותים (המרחב הארגוני, 28/10/2026)
     horizon: ["horizon-lab.html", "hl-voice.html", "hl-radar.html", "hl-futures.html", "hl-circles.html", "hl-horizons.html", "hl-collage.html", "hl-roadmap.html", "hl-game.html", "hl-stress.html"], // מעבדת האופק (אושר 28/10/2026)
     bridge: ["family-bridge.html", "resilience-advisor-sources.html"], routines: ["routines-hub.html", "resilience-advisor-sources.html"], continuity: ["continuity-kit.html", "resilience-advisor-sources.html"], // אושרו 28/10/2026
   };
@@ -318,6 +319,9 @@
   // מעבדת האופק (28/10/2026): משתתפים בעבודה משותפת נכנסים בקישור (?room=), בלי קוד, רק לעבודה הזו.
   // השרת מאפשר כתיבה ופנייה למודל רק בתוך החדר, כל עוד מי שפתח/ה אותו לא סגר/ה אותו (hl-rooms.mjs).
   if (/^hl-(voice|futures|collage)\.html$/.test(page) && /[?&]room=[a-f0-9]{24}(&|$)/.test(location.search)) return;
+  // Begood together (28/10/2026): צופים וצופות מצטרפים לתצפית בקוד המפגש, בלי קוד Begood (?join= או ?observe=1).
+  // השרת נותן להם רק את התצפית שלהם במפגש שהצטרפו אליו (org-suite.mjs).
+  if (page === "org-suite.html" && /[?&](join=\d{6}|observe=1)(&|$)/.test(location.search)) return;
   // כניסה שהסתיימה (07/10/2026): האסימון החתום תקף 12 שעות, אבל לשונית פתוחה שומרת אותו גם אחר כך —
   // והשרת דוחה אותו ("אין הרשאה פעילה"). חוזרים למסך הכניסה עם הסבר, במקום הודעת הרשאה מבלבלת.
   if (ALL_USERS.indexOf(page) === -1) {

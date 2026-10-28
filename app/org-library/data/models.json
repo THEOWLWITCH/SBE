@@ -1,0 +1,473 @@
+{
+  "schema_version": "1.0",
+  "date": "2026-10-27",
+  "actual_recovered_count": 38,
+  "user_expected_count": 39,
+  "status": "Historic index only; model identity is distinct from source identity or product validation.",
+  "models": [
+    {
+      "model_id": "BG-MOD-001",
+      "title_he": "חוסן קהילתי כרשת יכולות הסתגלות",
+      "author_label": "Norris et al.",
+      "year_label": "2008",
+      "division": "A | מדעי החוסן",
+      "source_ids": [
+        "BG-SRC-013"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-002",
+      "title_he": "חוסן חברתי ותלות במערכות",
+      "author_label": "Adger",
+      "year_label": "2000",
+      "division": "A | מדעי החוסן",
+      "source_ids": [
+        "BG-SRC-001"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-003",
+      "title_he": "מרכיבים בהגדרות חוסן קהילתי",
+      "author_label": "Patel et al.",
+      "year_label": "2017",
+      "division": "A | מדעי החוסן",
+      "source_ids": [
+        "BG-SRC-014"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-004",
+      "title_he": "Multi-Resilience",
+      "author_label": "Fathi",
+      "year_label": "2022",
+      "division": "A | מדעי החוסן",
+      "source_ids": [
+        "BG-SRC-006"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-005",
+      "title_he": "חוסן ארגוני כיכולת",
+      "author_label": "Duchek",
+      "year_label": "2020",
+      "division": "A | מדעי החוסן",
+      "source_ids": [
+        "BG-SRC-004"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-006",
+      "title_he": "פיתוח יכולת חוסן באמצעות משאבי אנוש",
+      "author_label": "Lengnick-Hall, Beck, & Lengnick-Hall",
+      "year_label": "2011",
+      "division": "A | מדעי החוסן",
+      "source_ids": [
+        "BG-SRC-010"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-007",
+      "title_he": "בטיחות פסיכולוגית ולמידת צוות",
+      "author_label": "Edmondson",
+      "year_label": "1999",
+      "division": "B | מדעי הארגון",
+      "source_ids": [
+        "BG-SRC-005"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-008",
+      "title_he": "חמש יכולות לעבודת צוות",
+      "author_label": "Salas, Sims, & Burke",
+      "year_label": "2005",
+      "division": "B | מדעי הארגון",
+      "source_ids": [
+        "BG-SRC-015"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-009",
+      "title_he": "צדק ארגוני",
+      "author_label": "Colquitt",
+      "year_label": "2001",
+      "division": "B | מדעי הארגון",
+      "source_ids": [
+        "BG-SRC-003"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-010",
+      "title_he": "מודל דרישות ומשאבי עבודה JD-R",
+      "author_label": "Bakker & Demerouti",
+      "year_label": "2007",
+      "division": "B | מדעי הארגון",
+      "source_ids": [
+        "BG-SRC-002"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-011",
+      "title_he": "עוצמת הקשרים החלשים",
+      "author_label": "Granovetter",
+      "year_label": "1973",
+      "division": "B | מדעי הארגון",
+      "source_ids": [
+        "BG-SRC-008"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-012",
+      "title_he": "חורים מבניים ברשתות",
+      "author_label": "Burt",
+      "year_label": "לא נקבעה",
+      "division": "B | מדעי הארגון",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-013",
+      "title_he": "יצירת ידע ארגוני",
+      "author_label": "Nonaka",
+      "year_label": "1994",
+      "division": "B | מדעי הארגון",
+      "source_ids": [
+        "BG-SRC-012"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-014",
+      "title_he": "למידה ארגונית ובחינת הנחות",
+      "author_label": "Argyris & Schön",
+      "year_label": "לא נקבעה",
+      "division": "B | מדעי הארגון",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-015",
+      "title_he": "תרבות ארגונית",
+      "author_label": "Schein",
+      "year_label": "לא נקבעה",
+      "division": "B | מדעי הארגון",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-016",
+      "title_he": "הארגון הלומד",
+      "author_label": "Senge",
+      "year_label": "1990",
+      "division": "B | מדעי הארגון",
+      "source_ids": [
+        "BG-SRC-016"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-017",
+      "title_he": "ארגונים בעלי מהימנות גבוהה HRO",
+      "author_label": "Weick & Sutcliffe",
+      "year_label": "לא נקבעה",
+      "division": "B | מדעי הארגון",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-018",
+      "title_he": "מוכנות ארגונית לשינוי",
+      "author_label": "Weiner",
+      "year_label": "2009",
+      "division": "D | מודלים מקצועיים יישומיים",
+      "source_ids": [
+        "BG-SRC-018"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-019",
+      "title_he": "COM-B וגלגל שינוי ההתנהגות",
+      "author_label": "Michie, van Stralen, & West",
+      "year_label": "2011",
+      "division": "D | מודלים מקצועיים יישומיים",
+      "source_ids": [
+        "BG-SRC-011"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-020",
+      "title_he": "כוונות יישום",
+      "author_label": "Gollwitzer",
+      "year_label": "1999",
+      "division": "D | מודלים מקצועיים יישומיים",
+      "source_ids": [
+        "BG-SRC-007"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-021",
+      "title_he": "תרגול מכוון",
+      "author_label": "לא צוין מקור מסוים",
+      "year_label": "לא נקבעה",
+      "division": "D | מודלים מקצועיים יישומיים",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-022",
+      "title_he": "סימולציות מקצועיות",
+      "author_label": "לא צוין מקור מסוים",
+      "year_label": "לא נקבעה",
+      "division": "D | מודלים מקצועיים יישומיים",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-023",
+      "title_he": "תחקור מובנה Debriefing",
+      "author_label": "לא צוין מקור מסוים",
+      "year_label": "לא נקבעה",
+      "division": "D | מודלים מקצועיים יישומיים",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-024",
+      "title_he": "מנהיגות הסתגלותית",
+      "author_label": "לא נבחר מקור מרכזי",
+      "year_label": "לא נקבעה",
+      "division": "B | מדעי הארגון",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-025",
+      "title_he": "מנהיגות משותפת",
+      "author_label": "לא נבחר מקור מרכזי",
+      "year_label": "לא נקבעה",
+      "division": "B | מדעי הארגון",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-026",
+      "title_he": "Service Recovery ושיקום אמון",
+      "author_label": "לא צוין מקור מסוים",
+      "year_label": "לא נקבעה",
+      "division": "D | מודלים מקצועיים יישומיים",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-027",
+      "title_he": "שיתוף פעולה בין אדם ל-AI",
+      "author_label": "Dell’Acqua et al.",
+      "year_label": "2025",
+      "division": "C | ארגונים בעידן AI",
+      "source_ids": [
+        "BG-SRC-019"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-028",
+      "title_he": "צוותים היברידיים של אנשים וסוכני AI",
+      "author_label": "לא צוין מקור מסוים",
+      "year_label": "לא נקבעה",
+      "division": "C | ארגונים בעידן AI",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-029",
+      "title_he": "הטיות אוטומציה ואמון מותאם",
+      "author_label": "לא צוין מקור מסוים",
+      "year_label": "לא נקבעה",
+      "division": "C | ארגונים בעידן AI",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-030",
+      "title_he": "ניהול אלגוריתמי",
+      "author_label": "לא צוין מקור מסוים",
+      "year_label": "לא נקבעה",
+      "division": "C | ארגונים בעידן AI",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-031",
+      "title_he": "AI ולמידה ארגונית",
+      "author_label": "לא צוין מקור מסוים",
+      "year_label": "לא נקבעה",
+      "division": "C | ארגונים בעידן AI",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-032",
+      "title_he": "NIST AI RMF 1.0",
+      "author_label": "Tabassi / NIST",
+      "year_label": "2023",
+      "division": "C | ארגונים בעידן AI",
+      "source_ids": [
+        "BG-SRC-017"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-033",
+      "title_he": "ISO/IEC 42001:2023",
+      "author_label": "ISO & IEC",
+      "year_label": "2023",
+      "division": "C | ארגונים בעידן AI",
+      "source_ids": [
+        "BG-SRC-009"
+      ],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-034",
+      "title_he": "מודלים של קונפליקט",
+      "author_label": "לא צוין מקור מסוים",
+      "year_label": "לא נקבעה",
+      "division": "B | מדעי הארגון",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-035",
+      "title_he": "למידה התנסותית ותכנון הוראה",
+      "author_label": "לא צוין מקור מסוים",
+      "year_label": "לא נקבעה",
+      "division": "D | מודלים מקצועיים יישומיים",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-036",
+      "title_he": "למידה מבוססת כשירויות",
+      "author_label": "לא צוין מקור מסוים",
+      "year_label": "לא נקבעה",
+      "division": "D | מודלים מקצועיים יישומיים",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-037",
+      "title_he": "מתודולוגיה מדידה אתיקה והערכת תוכניות",
+      "author_label": "לא צוין מקור מסוים",
+      "year_label": "לא נקבעה",
+      "division": "D | מודלים מקצועיים יישומיים",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    },
+    {
+      "model_id": "BG-MOD-038",
+      "title_he": "מסגרות רציפות תפקודית",
+      "author_label": "לא צוין תקן או מקור מסוים",
+      "year_label": "לא נקבעה",
+      "division": "D | מודלים מקצועיים יישומיים",
+      "source_ids": [],
+      "record_version": "1.0",
+      "enrichment_version": "1.2-data-2026-10-27",
+      "approval_status": "preserved_historic_record_not_new_approval"
+    }
+  ],
+  "reconciliation": [
+    {
+      "expected_id": "BG-MOD-039",
+      "record_exists": false,
+      "title": null,
+      "status": "unverified_missing_record"
+    }
+  ]
+}

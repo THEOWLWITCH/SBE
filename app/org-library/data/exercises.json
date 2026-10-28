@@ -1,0 +1,195 @@
+{
+  "version": "1.0",
+  "date": "2026-10-27",
+  "exercises": [
+    {
+      "exercise_id": "BG-EX-EXP-01",
+      "version": "1.0",
+      "title_he": "שיתוף ניסיון",
+      "title_en": "experience sharing",
+      "audience": [
+        "adult_organizational_teams",
+        "adult_educational_staff"
+      ],
+      "description_he": "שתי יחידות מחליפות מקרה מקצועי בדוי, מבררות מתי אינו מתאים ובוחרות בדיקת העברה.",
+      "domain_codes": [
+        "EXP"
+      ],
+      "source_ids": [
+        "BG-SRC-012"
+      ],
+      "model_ids": [
+        "BG-MOD-013"
+      ],
+      "relation": "informs_exercise",
+      "attribution": "BE GOOD proposed training exercise; source relevance is bounded by registry reading scope",
+      "evidence_status": "not_validated",
+      "public_status": "editorial_training_card",
+      "assessment_material": false,
+      "accessibility": "spoken or written response; voluntary disclosure; facilitated pace and breaks"
+    },
+    {
+      "exercise_id": "BG-EX-EMP-01",
+      "version": "1.0",
+      "title_he": "אמפתיה הדדית",
+      "title_en": "reciprocal empathy",
+      "audience": [
+        "adult_organizational_teams",
+        "adult_educational_staff"
+      ],
+      "description_he": "שני צדדים מבררים אילוץ מקצועי ומאפשרים אישור ותיקון, בכתב או בדיבור, ללא דרישת חשיפה.",
+      "domain_codes": [
+        "EMP"
+      ],
+      "source_ids": [
+        "BG-EXT-SRC-009",
+        "BG-EXT-SRC-002"
+      ],
+      "model_ids": [],
+      "relation": "informs_exercise",
+      "attribution": "BE GOOD proposed training exercise; source relevance is bounded by registry reading scope",
+      "evidence_status": "not_validated",
+      "public_status": "editorial_training_card",
+      "assessment_material": false,
+      "accessibility": "spoken or written response; voluntary disclosure; facilitated pace and breaks"
+    },
+    {
+      "exercise_id": "BG-EX-VOI-01",
+      "version": "1.0",
+      "title_he": "קול מיעוט",
+      "title_en": "minority voice",
+      "audience": [
+        "adult_organizational_teams",
+        "adult_educational_staff"
+      ],
+      "description_he": "החלטת צוות נפתחת לנתון סותר מערוץ כתוב, נבחנת ומתועדת בתשובה עניינית.",
+      "domain_codes": [
+        "VOI"
+      ],
+      "source_ids": [
+        "BG-EXT-SRC-010",
+        "BG-SRC-005"
+      ],
+      "model_ids": [
+        "BG-MOD-007",
+        "BG-MOD-009"
+      ],
+      "relation": "informs_exercise",
+      "attribution": "BE GOOD proposed training exercise; source relevance is bounded by registry reading scope",
+      "evidence_status": "not_validated",
+      "public_status": "editorial_training_card",
+      "assessment_material": false,
+      "accessibility": "spoken or written response; voluntary disclosure; facilitated pace and breaks"
+    },
+    {
+      "exercise_id": "BG-EX-ETH-01",
+      "version": "1.0",
+      "title_he": "אתוס",
+      "title_en": "ethos",
+      "audience": [
+        "adult_organizational_teams",
+        "adult_educational_staff"
+      ],
+      "description_he": "דילמה על משאב מוגבל מחברת מטרה משותפת למתח ערכי, עם אחריות ומקום להסתייגות.",
+      "domain_codes": [
+        "ETH"
+      ],
+      "source_ids": [
+        "BG-EXT-SRC-008"
+      ],
+      "model_ids": [
+        "BG-MOD-015"
+      ],
+      "relation": "informs_exercise",
+      "attribution": "BE GOOD proposed training exercise; source relevance is bounded by registry reading scope",
+      "evidence_status": "not_validated",
+      "public_status": "editorial_training_card",
+      "assessment_material": false,
+      "accessibility": "spoken or written response; voluntary disclosure; facilitated pace and breaks"
+    },
+    {
+      "exercise_id": "BG-EX-MUL-01",
+      "version": "1.0",
+      "title_he": "ריבוי חוסנים",
+      "title_en": "multi-resilience",
+      "audience": [
+        "adult_organizational_teams",
+        "adult_educational_staff"
+      ],
+      "description_he": "פתרון משופר בתחום אחד נבחן לפי השפעתו על יחידה אחרת, חלופה ותנאי פתיחה מחדש.",
+      "domain_codes": [
+        "MUL"
+      ],
+      "source_ids": [
+        "BG-SRC-006",
+        "BG-SRC-004"
+      ],
+      "model_ids": [
+        "BG-MOD-004",
+        "BG-MOD-005"
+      ],
+      "relation": "informs_exercise",
+      "attribution": "BE GOOD proposed training exercise; source relevance is bounded by registry reading scope",
+      "evidence_status": "not_validated",
+      "public_status": "editorial_training_card",
+      "assessment_material": false,
+      "accessibility": "spoken or written response; voluntary disclosure; facilitated pace and breaks"
+    },
+    {
+      "exercise_id": "BG-EX-EXT-01",
+      "version": "1.0",
+      "title_he": "ידע חיצוני",
+      "title_en": "external knowledge",
+      "audience": [
+        "adult_organizational_teams",
+        "adult_educational_staff"
+      ],
+      "description_he": "מגדירים פער ידע, משווים שני כרטיסי מקור ומתעדים למה מידע מסוים נכנס להחלטה.",
+      "domain_codes": [
+        "EXT"
+      ],
+      "source_ids": [
+        "BG-EXT-SRC-005"
+      ],
+      "model_ids": [
+        "BG-MOD-011",
+        "BG-MOD-013"
+      ],
+      "relation": "informs_exercise",
+      "attribution": "BE GOOD proposed training exercise; source relevance is bounded by registry reading scope",
+      "evidence_status": "not_validated",
+      "public_status": "editorial_training_card",
+      "assessment_material": false,
+      "accessibility": "spoken or written response; voluntary disclosure; facilitated pace and breaks"
+    },
+    {
+      "exercise_id": "BG-EX-NET-01",
+      "version": "1.0",
+      "title_he": "תיאום בין צוותים",
+      "title_en": "multiteam coordination",
+      "audience": [
+        "adult_organizational_teams",
+        "adult_educational_staff"
+      ],
+      "description_he": "שלוש יחידות מעבירות אחריות, מאשרות הבנה ומפעילות גיבוי לאחר היעדרות איש הקשר.",
+      "domain_codes": [
+        "NET"
+      ],
+      "source_ids": [
+        "BG-EXT-SRC-004",
+        "BG-SRC-015",
+        "BG-SRC-008"
+      ],
+      "model_ids": [
+        "BG-MOD-008",
+        "BG-MOD-011"
+      ],
+      "relation": "informs_exercise",
+      "attribution": "BE GOOD proposed training exercise; source relevance is bounded by registry reading scope",
+      "evidence_status": "not_validated",
+      "public_status": "editorial_training_card",
+      "assessment_material": false,
+      "accessibility": "spoken or written response; voluntary disclosure; facilitated pace and breaks"
+    }
+  ]
+}

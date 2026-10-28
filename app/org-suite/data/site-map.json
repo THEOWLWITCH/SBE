@@ -1,0 +1,889 @@
+{
+  "inspectedDate": "2026-10-28",
+  "origin": "https://be-good.co.il/",
+  "method": "Read-only HTTP of current public deployed HTML and JS; public browser audit by main agent. Reading source does not establish access to protected UI.",
+  "root": {
+    "path": "/",
+    "behavior": "HTML meta refresh to entry.html",
+    "status": 200,
+    "host": "Netlify"
+  },
+  "navigationSources": [
+    "https://be-good.co.il/lib/readiness-groups.js",
+    "https://be-good.co.il/lib/screens-menu.js",
+    "https://be-good.co.il/map.html",
+    "https://be-good.co.il/home.html"
+  ],
+  "publicHeader": [
+    {
+      "label": "כניסה",
+      "href": "/entry"
+    },
+    {
+      "label": "אודות",
+      "href": "/about"
+    },
+    {
+      "label": "תוצרים לדוגמה",
+      "href": "/examples"
+    }
+  ],
+  "entryPublicLinks": [
+    "map.html",
+    "research-partnership.html",
+    "yesh-ma-laasot.html",
+    "about.html",
+    "examples.html",
+    "renew.html"
+  ],
+  "readinessGroups": [
+    {
+      "id": "see",
+      "label": "לראות",
+      "question": "איפה אנחנו היום?"
+    },
+    {
+      "id": "practice",
+      "label": "להתאמן",
+      "question": "מוכנים לרגע המאתגר?"
+    },
+    {
+      "id": "act",
+      "label": "לתכנן ולפעול",
+      "question": "מה עושים מחר בבוקר?"
+    },
+    {
+      "id": "learn",
+      "label": "ללמוד מהעשייה",
+      "question": "מה למדנו?"
+    },
+    {
+      "id": "anchor",
+      "label": "לעגן בשגרה",
+      "question": "מה ימשיך לפעול גם כשמשהו משתבש?"
+    }
+  ],
+  "toolKinds": {
+    "lab": "מעבדה ותרגול: מתנסים ומתאמנים במקום בטוח",
+    "work": "סביבת עבודה: מלווה עשייה אמיתית לאורך זמן"
+  },
+  "tools": [
+    {
+      "id": "mapping",
+      "label": "מיפוי חוסן חברתי",
+      "readinessGroup": "see",
+      "readinessLabel": "לראות",
+      "kind": "work",
+      "permission": "resilience",
+      "openToAll": false,
+      "href": "resilience-team.html",
+      "url": "https://be-good.co.il/resilience-team.html",
+      "purpose": "תלמידים, הורים ומורים עונים על שאלון קצר, ומקבלים תמונת מצב של הכיתה והמלצות."
+    },
+    {
+      "id": "practi",
+      "label": "פרקטי: חוסן חברתי בכיתה",
+      "readinessGroup": "see",
+      "readinessLabel": "לראות",
+      "kind": "work",
+      "permission": "practi",
+      "openToAll": false,
+      "href": "resilience-advisor.html",
+      "url": "https://be-good.co.il/resilience-advisor.html",
+      "purpose": "יועצת לחוסן החברתי בכיתה: ניתוח, פעולות מותאמות לגיל והדרכה לשיחה אישית."
+    },
+    {
+      "id": "nugi",
+      "label": "נוגי: מנהיגות תומכת חוסן",
+      "readinessGroup": "see",
+      "readinessLabel": "לראות",
+      "kind": "work",
+      "permission": "leadership",
+      "openToAll": false,
+      "href": "leadership-advisor.html",
+      "url": "https://be-good.co.il/leadership-advisor.html",
+      "purpose": "יועצת למנהיגות תומכת חוסן, להנהלה, לרכזים ולצוותי תלמידים."
+    },
+    {
+      "id": "scenario",
+      "label": "יצירת תרחיש",
+      "readinessGroup": "practice",
+      "readinessLabel": "להתאמן",
+      "kind": "lab",
+      "permission": "fac_trainee",
+      "openToAll": false,
+      "href": "input-screen.html",
+      "url": "https://be-good.co.il/input-screen.html",
+      "purpose": "לבנות מתיאור קצר תרחיש שלם לשיחה מאתגרת, עם דמויות, נקודות תפנית ותוצרים למנחה."
+    },
+    {
+      "id": "workshop",
+      "label": "סדנה",
+      "readinessGroup": "practice",
+      "readinessLabel": "להתאמן",
+      "kind": "lab",
+      "permission": "fac_trainee",
+      "openToAll": false,
+      "href": "facilitator-screen.html",
+      "url": "https://be-good.co.il/facilitator-screen.html",
+      "purpose": "סדנה פנים אל פנים, לא מול המסך: המשתתפים מתנסים בשיחה מול שחקן או שחקנית, או במשחק תפקידים בין שני משתתפים, צופים ונותנים משוב. הטלפון משמש רק לכניסה בקוד אחד, לדף הצפייה ולמשוב."
+    },
+    {
+      "id": "roleplay",
+      "label": "משחק תפקידים",
+      "readinessGroup": "practice",
+      "readinessLabel": "להתאמן",
+      "kind": "lab",
+      "permission": "fac_parent",
+      "openToAll": false,
+      "href": "parent-input-screen.html",
+      "url": "https://be-good.co.il/parent-input-screen.html",
+      "purpose": "שני משתתפים או יותר, וכל אחד נכנס לנעליים של האחר ומגלה כמה זה משנה."
+    },
+    {
+      "id": "practice",
+      "label": "תרגול עצמי",
+      "readinessGroup": "practice",
+      "readinessLabel": "להתאמן",
+      "kind": "lab",
+      "permission": "fac_trainee",
+      "openToAll": false,
+      "href": "practice.html",
+      "url": "https://be-good.co.il/practice.html",
+      "purpose": "להתאמן לבד, מתי שנוח, מול דמות שמגיבה כמו אדם אמיתי, ולקבל משוב."
+    },
+    {
+      "id": "conv",
+      "label": "תכנון שיחה",
+      "readinessGroup": "practice",
+      "readinessLabel": "להתאמן",
+      "kind": "lab",
+      "permission": "conv",
+      "openToAll": false,
+      "href": "conversation-planner.html",
+      "url": "https://be-good.co.il/conversation-planner.html",
+      "purpose": "להתכונן לשיחה חשובה: תדריך קצר, כרטיס תזכורת, ומה עושים אם השיחה מסתבכת."
+    },
+    {
+      "id": "nana",
+      "label": "ננה: מהוראה להנחיה",
+      "readinessGroup": "practice",
+      "readinessLabel": "להתאמן",
+      "kind": "lab",
+      "permission": "nana",
+      "openToAll": false,
+      "href": "facilitation-advisor.html",
+      "url": "https://be-good.co.il/facilitation-advisor.html",
+      "purpose": "מדריך הנחיה וכרטיס כיס למפגש, תרגול רגע מאתגר ורפלקציה אחרי המפגש."
+    },
+    {
+      "id": "bridge",
+      "label": "גשר בין הבית לכיתה",
+      "readinessGroup": "practice",
+      "readinessLabel": "להתאמן",
+      "kind": "lab",
+      "permission": "bridge",
+      "openToAll": false,
+      "href": "family-bridge.html",
+      "url": "https://be-good.co.il/family-bridge.html",
+      "purpose": "המשפחה והצוות בונים יחד שגרת קשר: כל משפחה בוחרת את הדרך שנוחה לה, ויחד מחליטים על הצעד הבא."
+    },
+    {
+      "id": "dialogue",
+      "label": "מעבדת שיח וחקר משותף",
+      "readinessGroup": "practice",
+      "readinessLabel": "להתאמן",
+      "kind": "lab",
+      "permission": "dialogue",
+      "openToAll": false,
+      "href": "shared-dialogue-lab.html",
+      "url": "https://be-good.co.il/shared-dialogue-lab.html",
+      "purpose": "קבוצה חוקרת שאלה בתחום הדעת: בונה טענות, בודקת ראיות ומתקנת יחד, והמורה מאשרת."
+    },
+    {
+      "id": "teamthink",
+      "label": "חשיבת צוות",
+      "readinessGroup": "practice",
+      "readinessLabel": "להתאמן",
+      "kind": "lab",
+      "permission": "teamthink",
+      "openToAll": false,
+      "href": "team-thinking.html",
+      "url": "https://be-good.co.il/team-thinking.html",
+      "purpose": "צוות חושב יחד על אתגר: כל הקולות, בעד ונגד, פרגון, ומה הרווחנו מהחשיבה ביחד."
+    },
+    {
+      "id": "games",
+      "label": "משחקי חוסן",
+      "readinessGroup": "practice",
+      "readinessLabel": "להתאמן",
+      "kind": "lab",
+      "permission": "games",
+      "openToAll": false,
+      "href": "games.html",
+      "url": "https://be-good.co.il/games.html",
+      "purpose": "משחקים שמחזקים חוסן חברתי: רביעיות חוסן, זיכרון חוסן, משחק הלוח צועדים אל החוסן משחק הקלפים בלי פאניקה!, מחולל סיפורי חוסן, גן הרעיונות עם גני, ועוד שבעה: לאן זה שייך?, חידות חוסן, בינגו חוסן, 20 שאלות, אמת או אתגר, סימני דרך ורכבת המוכנות, להדפסה ולמשחק על המסך."
+    },
+    {
+      "id": "ymd",
+      "label": "יש מה לעשות: מדריכון לחירום",
+      "readinessGroup": "practice",
+      "readinessLabel": "להתאמן",
+      "kind": "lab",
+      "permission": null,
+      "openToAll": true,
+      "href": "yesh-ma-laasot.html",
+      "url": "https://be-good.co.il/yesh-ma-laasot.html",
+      "purpose": "לרגעי חירום עם ילדים: הדקה הראשונה, מה עושים ומה אומרים, נשימה, קרקוע ופעילויות קצרות. פתוח לכולם, בלי קוד."
+    },
+    {
+      "id": "activity",
+      "label": "תכנון פעילות",
+      "readinessGroup": "act",
+      "readinessLabel": "לתכנן ולפעול",
+      "kind": "work",
+      "permission": "activity",
+      "openToAll": false,
+      "href": "activity-planner.html",
+      "url": "https://be-good.co.il/activity-planner.html",
+      "purpose": "מרעיון לפעילות חינוכית מוכנה להפעלה, או לרצף של מפגשים."
+    },
+    {
+      "id": "writer",
+      "label": "תקשורת מקדמת חוסן חברתי",
+      "readinessGroup": "act",
+      "readinessLabel": "לתכנן ולפעול",
+      "kind": "work",
+      "permission": "writer",
+      "openToAll": false,
+      "href": "message-writer.html",
+      "url": "https://be-good.co.il/message-writer.html",
+      "purpose": "ניסוח הודעה, מכתב או עדכון, או הובלת תקשורת לאורך זמן עם הקשר, טיוטות והחלטות. אפשר להמשיך מניסוח חד־פעמי לשיחה שמורה."
+    },
+    {
+      "id": "horizon",
+      "label": "מעבדת האופק",
+      "readinessGroup": "act",
+      "readinessLabel": "לתכנן ולפעול",
+      "kind": "lab",
+      "permission": "horizon",
+      "openToAll": false,
+      "href": "horizon-lab.html",
+      "url": "https://be-good.co.il/horizon-lab.html",
+      "purpose": "תשעה כלים לחוסן מול עתיד לא ידוע: לשמוע את הקהילה, לזהות אותות לשינוי, לבנות עולמות אפשריים, לתרגל ניהול משבר, ליצור תמונת עתיד משותפת, לבנות מפת דרכים ולבדוק כמה התכנית תעמוד בפני משברים."
+    },
+    {
+      "id": "studio",
+      "label": "סטודיו חוסן",
+      "readinessGroup": "act",
+      "readinessLabel": "לתכנן ולפעול",
+      "kind": "work",
+      "permission": "studio",
+      "openToAll": false,
+      "href": "resilience-studio.html",
+      "url": "https://be-good.co.il/resilience-studio.html",
+      "purpose": "מהשראה לערכת פעולה: מטרה, מוקד חוסן ומפגשים מוכנים להנחיה."
+    },
+    {
+      "id": "paths",
+      "label": "מסלולי השתתפות בלמידה",
+      "readinessGroup": "act",
+      "readinessLabel": "לתכנן ולפעול",
+      "kind": "work",
+      "permission": "activity",
+      "openToAll": false,
+      "href": "activity-planner.html",
+      "url": "https://be-good.co.il/activity-planner.html",
+      "purpose": "כמה דרכים להשתתף ולהראות הבנה סביב אותה מטרה, בתוך תכנון הפעילות."
+    },
+    {
+      "id": "review",
+      "label": "משוב לעבודות",
+      "readinessGroup": "learn",
+      "readinessLabel": "ללמוד מהעשייה",
+      "kind": "work",
+      "permission": "academic",
+      "openToAll": false,
+      "href": "academic-review.html",
+      "url": "https://be-good.co.il/academic-review.html",
+      "purpose": "להתכונן להגשת עבודה: משוב לפי קריטריונים. הכתיבה נשארת שלכם."
+    },
+    {
+      "id": "studies",
+      "label": "לימודי חוסן חברתי",
+      "readinessGroup": "learn",
+      "readinessLabel": "ללמוד מהעשייה",
+      "kind": "work",
+      "permission": "studies",
+      "openToAll": false,
+      "href": "social-resilience-studies.html",
+      "url": "https://be-good.co.il/social-resilience-studies.html",
+      "purpose": "חומרי לימוד לפי קבוצות: קבצים וקישורים, עם הסברים ותצוגות מקדימות."
+    },
+    {
+      "id": "routines",
+      "label": "מרכז שגרות ויוזמות חברתיות",
+      "readinessGroup": "anchor",
+      "readinessLabel": "לעגן בשגרה",
+      "kind": "work",
+      "permission": "routines",
+      "openToAll": false,
+      "href": "routines-hub.html",
+      "url": "https://be-good.co.il/routines-hub.html",
+      "purpose": "מנגנון חברתי קבוע בכיתה: בוחרים, מאשרים אחריות, מנסים פעמיים ופותחים לשינוי."
+    },
+    {
+      "id": "continuity",
+      "label": "תיק רציפות",
+      "readinessGroup": "anchor",
+      "readinessLabel": "לעגן בשגרה",
+      "kind": "work",
+      "permission": "continuity",
+      "openToAll": false,
+      "href": "continuity-kit.html",
+      "url": "https://be-good.co.il/continuity-kit.html",
+      "purpose": "מה ימשיך לפעול כשמישהו חסר: שגרה, חירום ולמידה מרחוק, הצטרפות וחזרה."
+    },
+    {
+      "id": "journey",
+      "label": "מסע אל החוסן",
+      "readinessGroup": "anchor",
+      "readinessLabel": "לעגן בשגרה",
+      "kind": "work",
+      "permission": "journey",
+      "openToAll": false,
+      "href": "journey.html",
+      "url": "https://be-good.co.il/journey.html",
+      "purpose": "דרך מלווה בחמישה שלבים, עם אבני דרך ומשוב, עד תו חוסן לקהילת חוסן."
+    }
+  ],
+  "menuGroups": [
+    {
+      "label": "ניהול ובקרה",
+      "items": [
+        {
+          "href": "admin.html",
+          "label": "מסך הניהול",
+          "audience": ""
+        },
+        {
+          "href": "journeys.html",
+          "label": "🧭 לוח המסעות: אישורים ומשוב",
+          "audience": ""
+        },
+        {
+          "href": "eval-set.html",
+          "label": "בקרת איכות",
+          "audience": ""
+        },
+        {
+          "href": "demo-lab.html",
+          "label": "🧪 מעבדת הדמו: תוצר מכל כלי",
+          "audience": ""
+        }
+      ]
+    },
+    {
+      "label": "🌅 השער: מתחילים כאן",
+      "items": [
+        {
+          "href": "entry.html",
+          "label": "מסך כניסה",
+          "audience": "כולם"
+        },
+        {
+          "href": "research-partnership.html",
+          "label": "פנייה לשותפות במחקר",
+          "audience": "כולם, גם בלי כניסה"
+        },
+        {
+          "href": "map.html",
+          "label": "🗺 מפת הכלים",
+          "audience": "כולם, גם בלי כניסה"
+        },
+        {
+          "href": "examples.html",
+          "label": "🗂 ספריית תוצרים לדוגמה",
+          "audience": "כולם, גם בלי כניסה (רק מה שסומן במעבדת הדמו)"
+        },
+        {
+          "href": "sources-library.html",
+          "label": "ספריית המקורות",
+          "audience": "כל מי שנכנס/ה"
+        },
+        {
+          "href": "system-select.html",
+          "label": "בחירת מערכת",
+          "audience": "כניסה בקוד מוסד (הדרך הישנה)"
+        }
+      ]
+    },
+    {
+      "label": "🔍 1. לראות: איפה אנחנו היום?",
+      "items": [
+        {
+          "href": "resilience-team.html",
+          "label": "מיפוי חוסן חברתי: מסך מחנך/ת",
+          "audience": "הרשאת מיפוי חוסן חברתי"
+        },
+        {
+          "href": "resilience-fill.html",
+          "label": "שאלון חוסן: מסך תלמיד/ה",
+          "audience": "תלמידים, בקישור מהמחנך/ת"
+        },
+        {
+          "href": "resilience-advisor.html",
+          "label": "פרקטי: יועצת לפיתוח חוסן חברתי",
+          "audience": "הרשאת חוסן חברתי או פרקטי"
+        },
+        {
+          "href": "leadership-advisor.html",
+          "label": "נוגי: יועצת למנהיגות תומכת חוסן",
+          "audience": "הרשאת נוגי"
+        }
+      ]
+    },
+    {
+      "label": "🎭 2. להתאמן: מוכנים לרגע המאתגר?",
+      "items": [
+        {
+          "href": "input-screen.html",
+          "label": "יצירת תרחיש: סטודנטיות.ים",
+          "audience": "מנחות סטודנטים"
+        },
+        {
+          "href": "parent-input-screen.html",
+          "label": "יצירת תרחיש: הורים",
+          "audience": "מנחות הורים"
+        },
+        {
+          "href": "student-input-screen.html",
+          "label": "יצירת תרחיש: נוער",
+          "audience": "מנחות נוער"
+        },
+        {
+          "href": "search.html",
+          "label": "חיפוש במאגר התרחישים",
+          "audience": "מנחות"
+        },
+        {
+          "href": "facilitator-screen.html",
+          "label": "מסך הסדנה",
+          "audience": "מנחות"
+        },
+        {
+          "href": "observation-sheet.html",
+          "label": "דף צפייה (טלפון)",
+          "audience": "מתנסות בסדנה"
+        },
+        {
+          "href": "practice.html",
+          "label": "תרגול עצמי",
+          "audience": "משתתפות בסדנה"
+        },
+        {
+          "href": "yesh-ma-laasot.html",
+          "label": "🎁 יש מה לעשות: מדריכון לחירום",
+          "audience": "כולם, גם בלי כניסה (בלי ניווט לכלים אחרים)"
+        },
+        {
+          "href": "conversation-planner.html",
+          "label": "תכנון שיחה",
+          "audience": "הרשאת תכנון שיחה"
+        },
+        {
+          "href": "facilitation-advisor.html",
+          "label": "ננה: מהוראה להנחיה",
+          "audience": "הרשאת ננה"
+        },
+        {
+          "href": "family-bridge.html",
+          "label": "גשר בין הבית לכיתה",
+          "audience": "הרשאת גשר (bridge)"
+        },
+        {
+          "href": "shared-dialogue-lab.html",
+          "label": "מעבדת שיח וחקר משותף",
+          "audience": "הרשאת מעבדת שיח וחקר משותף (dialogue)"
+        },
+        {
+          "href": "team-thinking.html",
+          "label": "חשיבת צוות",
+          "audience": "הרשאת חשיבת צוות (teamthink)"
+        },
+        {
+          "href": "games.html",
+          "label": "משחקי חוסן",
+          "audience": "הרשאת משחקים (games)"
+        }
+      ]
+    },
+    {
+      "label": "🎭 2. להתאמן: תוצרי הסימולציה",
+      "items": [
+        {
+          "href": "doc-facilitator.html",
+          "label": "גרסת המנחה",
+          "audience": "רק את ומנחות הסימולציה"
+        },
+        {
+          "href": "doc-trainee.html",
+          "label": "גרסת המתנסה",
+          "audience": "רק את ומנחות הסימולציה"
+        },
+        {
+          "href": "doc-actor.html",
+          "label": "גרסת השחקנית",
+          "audience": "רק את ומנחות הסימולציה"
+        },
+        {
+          "href": "card-actor.html",
+          "label": "כרטיס שחקנית",
+          "audience": "רק את ומנחות הסימולציה"
+        }
+      ]
+    },
+    {
+      "label": "🛠 3. לתכנן ולפעול: מה עושים מחר בבוקר?",
+      "items": [
+        {
+          "href": "activity-planner.html",
+          "label": "תכנון פעילות",
+          "audience": "הרשאת תכנון פעילות"
+        },
+        {
+          "href": "resilience-studio.html",
+          "label": "סטודיו חוסן: השראה ופעולה",
+          "audience": "הרשאת סטודיו, תכנון פעילות, מיפוי חוסן, פרקטי או נוגי"
+        },
+        {
+          "href": "message-writer.html",
+          "label": "תקשורת מקדמת חוסן חברתי",
+          "audience": "ניסוח חד־פעמי וניהול תקשורת; שמירת שיחות בקוד אישי"
+        },
+        {
+          "href": "horizon-lab.html",
+          "label": "🔭 מעבדת האופק: דף הבית",
+          "audience": "הרשאת מעבדת האופק (horizon)"
+        },
+        {
+          "href": "hl-voice.html",
+          "label": "מעבדת האופק: קול הקהילה",
+          "audience": "הרשאת מעבדת האופק (horizon)"
+        },
+        {
+          "href": "hl-radar.html",
+          "label": "מעבדת האופק: רדאר החוסן החברתי",
+          "audience": "הרשאת מעבדת האופק (horizon)"
+        },
+        {
+          "href": "hl-futures.html",
+          "label": "מעבדת האופק: מחולל העתידים",
+          "audience": "הרשאת מעבדת האופק (horizon)"
+        },
+        {
+          "href": "hl-circles.html",
+          "label": "מעבדת האופק: מעגלי העתיד",
+          "audience": "הרשאת מעבדת האופק (horizon)"
+        },
+        {
+          "href": "hl-horizons.html",
+          "label": "מעבדת האופק: שלושה אופקים",
+          "audience": "הרשאת מעבדת האופק (horizon)"
+        },
+        {
+          "href": "hl-collage.html",
+          "label": "מעבדת האופק: תמונת עתיד קבוצתית",
+          "audience": "הרשאת מעבדת האופק (horizon)"
+        },
+        {
+          "href": "hl-roadmap.html",
+          "label": "מעבדת האופק: מהחזון להיום",
+          "audience": "הרשאת מעבדת האופק (horizon)"
+        },
+        {
+          "href": "hl-game.html",
+          "label": "מעבדת האופק: משחק מצב עתידי",
+          "audience": "הרשאת מעבדת האופק (horizon)"
+        },
+        {
+          "href": "hl-stress.html",
+          "label": "מעבדת האופק: בדיקת עמידות",
+          "audience": "הרשאת מעבדת האופק (horizon)"
+        }
+      ]
+    },
+    {
+      "label": "📖 4. ללמוד מהעשייה: מה למדנו?",
+      "items": [
+        {
+          "href": "social-resilience-studies.html",
+          "label": "לימודי חוסן חברתי",
+          "audience": "הרשאת לימודי חוסן חברתי (studies)"
+        },
+        {
+          "href": "academic-review.html",
+          "label": "משוב לעבודות: להתכונן להגשה",
+          "audience": "הרשאת משוב לעבודות"
+        },
+        {
+          "href": "feedback.html",
+          "label": "משוב",
+          "audience": "משתתפות ומנחות"
+        },
+        {
+          "href": "feedback-results.html",
+          "label": "תוצאות המשוב",
+          "audience": "מנחות"
+        }
+      ]
+    },
+    {
+      "label": "🔁 5. לעגן בשגרה: מה ימשיך לפעול גם כשמשהו משתבש?",
+      "items": [
+        {
+          "href": "routines-hub.html",
+          "label": "מרכז שגרות ויוזמות חברתיות",
+          "audience": "הרשאת מרכז השגרות (routines)"
+        },
+        {
+          "href": "continuity-kit.html",
+          "label": "תיק רציפות",
+          "audience": "הרשאת תיק רציפות (continuity)"
+        },
+        {
+          "href": "journey.html",
+          "label": "מסע אל החוסן: מסך המשתתפים",
+          "audience": "הרשאת מסע אל החוסן"
+        }
+      ]
+    },
+    {
+      "label": "הצגה והדגמה",
+      "items": [
+        {
+          "href": "system-toc.html",
+          "label": "תוכן עניינים: כל המערכת",
+          "audience": ""
+        },
+        {
+          "href": "products/index.html",
+          "label": "תוצרים לדוגמה",
+          "audience": ""
+        },
+        {
+          "href": "demo-hub.html",
+          "label": "מסך הדגמה כולל",
+          "audience": ""
+        }
+      ]
+    },
+    {
+      "label": "סימולציה",
+      "items": [
+        {
+          "href": "creative-assessment.html",
+          "label": "הערכה יצירתית",
+          "audience": ""
+        },
+        {
+          "href": "practice-crossings.html",
+          "label": "חציות קווים אדומים",
+          "audience": ""
+        }
+      ]
+    }
+  ],
+  "educationalSkills": [
+    {
+      "id": "listening",
+      "name": "תקשורת",
+      "items": [
+        "הקשבה בלי לקטוע",
+        "שיקוף תוכן במילים אחרות",
+        "שיקוף רגש",
+        "שאילת שאלה פתוחה",
+        "שאילת שאלת הבהרה",
+        "בדיקת הבנה נכונה לפני המשך",
+        "זיהוי שינוי בטון או בשפת גוף והתייחסות אליו",
+        "הבחנה בין עובדה לפרשנות",
+        "החזקת שתיקה בלי מיהור למילויה",
+        "סיכום ביניים"
+      ]
+    },
+    {
+      "id": "trust",
+      "name": "יצירת קשר ואמון",
+      "items": [
+        "הכרה בקושי של הדמות במפורש",
+        "אמירה מפורשת של מה ניתן לעשות ומה לא",
+        "הימנעות מהבטחת מה שלא ניתן לקיים",
+        "שמירה על דיסקרטיות לפי בקשה",
+        "מתן בחירה או שליטה בקצב",
+        "הכרה בנקודת מבט שונה בלי ויתור על העמדה העצמית",
+        "תיקון רגע שנפגם בשיחה",
+        "הבעת הערכה או הכרה",
+        "הצבת גבול בלי דחיית האדם",
+        "הצעת המשך קונקרטי"
+      ]
+    },
+    {
+      "id": "speech",
+      "name": "דיבור והתנסחות",
+      "items": [
+        "ניסוח מסר קצר וברור",
+        "דיבור בשפה עשירה ורהוטה, המובנת גם לצד השני",
+        "הימנעות מניסוח מאשים",
+        "הימנעות מהכללות",
+        "אמירת דבר קשה בלי הקטנתו",
+        "התאמת רמת הישירות למצב",
+        "לקיחת אחריות במפורש",
+        "חזרה למיקוד אחרי סטייה",
+        "ניסוח הסכמה או צעד המשך בסיום"
+      ]
+    },
+    {
+      "id": "body",
+      "name": "שפת גוף והבעות",
+      "items": [
+        "קשר עין מותאם, לא נמנע ולא נועץ",
+        "מרחק וישיבה מותאמים",
+        "מחווה שמסמנת הקשבה",
+        "טון קול מותאם למצב",
+        "קצב דיבור מותאם",
+        "עוצמת קול מותאמת",
+        "הבעת פנים תואמת למה שנאמר",
+        "גוף פתוח ולא מתגונן",
+        "מחוות ידיים מלווות ותומכות, בלי אצבע מאשימה, תנועה חדה או ידיים שלובות",
+        "סימני מתח בגוף: נגיעה בשיער, הקפצת רגל, ליקוק שפתיים, מבט למעלה",
+        "שתיקה עם נוכחות ולא עם ניתוק"
+      ]
+    },
+    {
+      "id": "res_action",
+      "name": "חוסן חברתי · פעולה משותפת",
+      "items": [
+        "חלוקת תפקידים",
+        "לקיחת אחריות",
+        "חלוקת אחריות",
+        "תיאום",
+        "גמישות והסתגלות",
+        "ניהול מחלוקת",
+        "נכונות לפעול לטובת הכלל",
+        "תקשורת תחת לחץ"
+      ]
+    },
+    {
+      "id": "res_support",
+      "name": "חוסן חברתי · יחסים ותמיכה",
+      "items": [
+        "תמיכה והרגעה הדדית",
+        "הקשבה פעילה",
+        "אמפתיה",
+        "בניית אמון",
+        "בקשת עזרה",
+        "מתן עזרה",
+        "זיהוי צרכים של אחרים",
+        "שמירה על לכידות הקבוצה"
+      ]
+    },
+    {
+      "id": "res_thinking",
+      "name": "חוסן חברתי · חשיבה וקבלת החלטות יחד",
+      "items": [
+        "קבלת החלטות משותפת",
+        "פתרון בעיות יחד",
+        "שיתוף במידע",
+        "יצירת תמונת מצב משותפת",
+        "תעדוף משותף",
+        "משא ומתן",
+        "יוזמה",
+        "הובלה ומונהגות"
+      ]
+    }
+  ],
+  "library": {
+    "route": "sources-library.html",
+    "label": "ספריית המקורות",
+    "audience": "כל מי שנכנס/ה",
+    "shelves": [
+      "סימולציות ושיחות מאתגרות",
+      "חוסן חברתי, מנהיגות והנחיה (פרקטי, נוגי וננה)"
+    ],
+    "resilienceShelfSource": "lib/resilience-advisor-sources.js",
+    "embeddedSimulationSourceCount": 141,
+    "sourceSuggestionStorage": "sbe.source.suggestions.v1",
+    "reviewRequired": true
+  },
+  "palette": {
+    "mapNavy": "#0B3A6B",
+    "mapBlue": "#1C6FA8",
+    "mapTeal": "#1A9BB5",
+    "mapGreen": "#3A9E6B",
+    "mapLeaf": "#8CC63F",
+    "mapSun": "#FFC95C",
+    "workGround": "#EDEFF1",
+    "workSurface": "#FCFCFD",
+    "workInk": "#141C24",
+    "workMuted": "#5C6771",
+    "workLine": "#CDD3D8",
+    "workSpoken": "#2E5A7D",
+    "workSpokenSoft": "#DCE7EF"
+  },
+  "typography": [
+    "Assistant",
+    "Frank Ruhl Libre",
+    "IBM Plex Mono"
+  ],
+  "limitations": [
+    "Public source audit was followed by user-authorized read-only browser inspection of administration, research center and workshop.",
+    "Names and permissions come from current deployed source; not every destination was individually fetched.",
+    "sitemap.xml returned a Netlify Page not found body, so it was not used as architecture evidence.",
+    "The advisor source file was subsequently fetched with normal TLS validation and its visible catalog was reused with snapshot provenance.",
+    "No live API mutation, authentication bypass, or deployment performed."
+  ],
+  "integrationRecommendation": {
+    "proposedPath": "/organizational/",
+    "state": "Proposed additive integration path, not an observed deployed route",
+    "preserve": [
+      "index.html",
+      "entry.html",
+      "home.html",
+      "map.html",
+      "lib/access-guard.js",
+      "lib/readiness-groups.js",
+      "lib/screens-menu.js",
+      "sources-library.html"
+    ],
+    "taxonomyNote": "The seven organizational domains from the uploaded research bundle are distinct from these seven educational skill groups; preserve both IDs and labels."
+  },
+  "authenticatedBrowserVerification": {
+    "date": "2026-10-28",
+    "scope": "Read-only administrator navigation authorized by user; no credential or private records retained.",
+    "routes": [
+      "/admin.html?role=sys",
+      "/research-management.html",
+      "/research-management.html?workspace=1",
+      "/facilitator-screen.html"
+    ],
+    "workshopObserved": [
+      "תרחיש",
+      "מדדי משוב למנחה/מתנסה/צופה",
+      "קוד קבוצתי",
+      "שיחה מקדימה",
+      "סימולציה",
+      "תחקיר"
+    ],
+    "mutations": "No workshop, study, institution, source or permission was created or edited."
+  },
+  "libraryAudit": {
+    "liveSimulationOccurrences": 141,
+    "visibleAdvisorRecords": 245,
+    "hiddenRecordsExcluded": 2,
+    "mergedCards": 385,
+    "defaultSearchable": 384,
+    "reusedResearchCards": 50,
+    "addedSnapshotCards": 335,
+    "aliasedDuplicateOccurrences": 51
+  }
+}

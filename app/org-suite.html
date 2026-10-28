@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Begood together: תרגול צוותים בתרחיש, מתצפית ולמידה אל פעולה שנשארת בשגרה.">
+  <meta name="robots" content="noindex,nofollow"><meta name="color-scheme" content="light">
+  <title>Begood together · תרגול צוותים</title>
+  <link rel="icon" href="assets/begood-mark.png">
+  <script src="lib/access-guard.js"></script>
+  <link rel="stylesheet" href="org-suite/styles.css">
+  <style>
+    .brand-logo{height:66px;width:auto;display:block;mix-blend-mode:multiply}
+    .guest [data-action="new"],.guest a[href^="org-library"],.guest a[href="home.html"],.guest .sidebar-bottom{display:none!important}
+    .join-share{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .join-qr{display:flex;justify-content:center;margin-top:10px}
+    .join-qr img,.join-qr canvas{background:#fff;padding:8px;border-radius:8px}
+    .domain-box strong.no-score{font-size:15px;font-weight:600;color:#6b7b73}
+    .sys-only{display:none}
+    html.is-sys .sys-only{display:inline}
+    @media screen and (max-width:640px){.brand-logo{height:48px}}
+  </style>
+  <script type="module" src="org-suite/app.mjs"></script>
+</head>
+<body>
+  <a class="skip" href="#main">דילוג לתוכן</a>
+  <header class="topbar">
+    <a class="brand" href="#overview" aria-label="Begood together: דף הבית של הכלי"><img class="brand-logo" src="assets/begood-together-sm.webp" alt="Begood together"></a>
+    <nav class="topnav" aria-label="מעבר"><a href="#overview" class="selected">תרגול צוותים</a><a href="org-library.html">ספריית המחקר</a><a href="home.html">המרחב שלי</a></nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar" aria-label="שלבי העבודה">
+      <p class="eyebrow">מהתנסות לשגרה</p><a class="overview-link" href="#overview">דף הבית של הכלי <span>⌂</span></a>
+      <nav id="stage-nav" aria-label="חמשת שלבי המוכנות"></nav>
+      <div class="sidebar-bottom"><span class="small-icon">↗</span><strong>ידע אחד. הקשרים שונים.</strong><p>ספריית מחקר משותפת לחינוך ולארגונים.</p><a href="org-library.html">לספרייה <span>←</span></a></div>
+      <a class="quiet-link sys-only" href="#architecture">איך זה משתלב באתר?</a>
+    </aside>
+    <main id="main" tabindex="-1"><div id="app"><p class="loading">טוענים את המרחב…</p></div></main>
+  </div>
+  <footer><span>Begood together · תרגול צוותים</span><span>Begood · be-good.co.il</span></footer>
+  <dialog id="modal" aria-labelledby="modal-title"><button class="modal-close" aria-label="סגירה" type="button">×</button><div id="modal-body"></div></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <noscript><p>כדי להשתמש בכלי, אפשר להפעיל JavaScript בדפדפן.</p></noscript>
+  <script>try{if(sessionStorage.getItem("sbe.session.homeUrl")==="admin.html?role=sys")document.documentElement.classList.add("is-sys");}catch(e){}</script>
+  <script src="lib/screens-menu.js"></script>
+</body>
+</html>
