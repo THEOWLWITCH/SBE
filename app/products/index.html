@@ -210,11 +210,11 @@
   // שהשרת החזיר לקוד (sbe.session.perms).
   var PAGES_BY_PERM = {
     fac_trainee: ["input-screen.html"], fac_parent: ["parent-input-screen.html"], fac_youth: ["student-input-screen.html"],
-    conv: ["conversation-planner.html"], activity: ["activity-planner.html"], academic: ["academic-review.html"],
-    resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html"],
-    leadership: ["leadership-advisor.html", "resilience-advisor-sources.html"],
-    practi: ["resilience-advisor.html", "resilience-advisor-sources.html"],
-    studio: ["resilience-studio.html"], // עד לאישור המקצועי — רק בהרשאה הזאת (studio.mjs: STUDIO_PERMS)
+    conv: ["conversation-planner.html"], activity: ["activity-planner.html", "resilience-studio.html"], academic: ["academic-review.html"],
+    resilience: ["resilience-team.html", "resilience-fill.html", "resilience-advisor.html", "resilience-advisor-sources.html", "resilience-studio.html"],
+    leadership: ["leadership-advisor.html", "resilience-advisor-sources.html", "resilience-studio.html"],
+    practi: ["resilience-advisor.html", "resilience-advisor-sources.html", "resilience-studio.html"],
+    studio: ["resilience-studio.html"],
     journey: ["journey.html"],
     studies: ["social-resilience-studies.html"],
     writer: ["message-writer.html", "communication-continuity.html", "resilience-advisor-sources.html"], // כלי כתיבה ושיח בהרשאת writer
@@ -223,6 +223,7 @@
     teamthink: ["team-thinking.html", "resilience-advisor-sources.html"], // חשיבת צוות (11/10/2026)
     games: ["games.html", "memory-game.html"], // מחיצת המשחקים (21/10/2026)
     horizon: ["horizon-lab.html", "hl-voice.html", "hl-radar.html", "hl-futures.html", "hl-circles.html", "hl-horizons.html", "hl-collage.html", "hl-roadmap.html", "hl-game.html", "hl-stress.html"], // מעבדת האופק (אושר 28/10/2026)
+    bridge: ["family-bridge.html", "resilience-advisor-sources.html"], routines: ["routines-hub.html", "resilience-advisor-sources.html"], continuity: ["continuity-kit.html", "resilience-advisor-sources.html"], // אושרו 28/10/2026
   };
   var SIM_DOCS = ["doc-trainee.html", "doc-actor.html", "card-actor.html", "doc-facilitator.html"];
   var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html"].concat(SIM_DOCS);

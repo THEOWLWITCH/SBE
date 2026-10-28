@@ -14,9 +14,8 @@ function guardState(home,perms,modules={},token=''){
 }
 function screen(home,perms,modules={}){return guardState(home,perms,modules).allowed;}
 test('Studio screen matches its declared permissions across broad users',()=>{
-  // עד לאישור המקצועי — רק הרשאת studio
-  assert.equal(screen('home.html',['studio']),true);
-  for(const p of ['activity','resilience','practi','leadership'])assert.equal(screen('home.html',[p]),false,p);
+  // אושר 28/10/2026: הסטודיו פתוח עם studio, activity, resilience, practi או leadership
+  for(const p of ['studio','activity','resilience','practi','leadership'])assert.equal(screen('home.html',[p]),true,p);
   assert.equal(screen('home.html',['academic']),false);
   assert.equal(screen('',[]),false);
   assert.equal(screen('admin.html?role=sys',[]),true);

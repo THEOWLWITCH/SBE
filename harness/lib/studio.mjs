@@ -15,7 +15,7 @@ const CUSTOMER = createRequire(import.meta.url)('../../app/lib/customer-review.j
 const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js'); // מרכאות אחידות בכל ערכה
 // עד לאישור המקצועי (07/10/2026): רק הרשאת studio (ומנהלת המערכת). כשמאשרים — מוסיפים את
 // 'activity', 'resilience', 'practi', 'leadership' כאן, ב-access-guard.js וב-home.html.
-const STUDIO_PERMS = ['studio'];
+const STUDIO_PERMS = ['studio', 'activity', 'resilience', 'practi', 'leadership']; // אושר 28/10/2026
 const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
 const STR = { type:'string' };
 const strings = { type:'array', items:STR };
