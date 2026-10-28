@@ -387,6 +387,7 @@ test('folder native navigation reauthorizes through existing management forms an
  assert.ok(btn(s.root,'טופסי הסכמה'));await btn(s.root,'טופסי הסכמה').click();
  assert.ok(field(s.root,'נוסח ההסכמה'));assert.equal(page.capture().view,'consent');
  assert.equal(page.capture().workspace,undefined);assert.equal(s.calls.filter(([a])=>a==='studyGet').length,1);
+ field(s.root,'נוסח ההסכמה').value='טיוטה סינתטית שטרם נשמרה';const savedNative=page.capture();page.clear('refresh');await page.load(savedNative);assert.ok(field(s.root,'נוסח ההסכמה'),'native editor survives workspace route refresh');assert.equal(field(s.root,'נוסח ההסכמה').value,'טיוטה סינתטית שטרם נשמרה');
  await btn(s.root,'התיק והשותפויות שלי').click();await btn(s.root,'פתיחת התיק').click();permission='view_aggregate_results';await btn(s.root,'טופסי הסכמה').click();
  assert.equal(field(s.root,'נוסח ההסכמה'),undefined);assert.match(s.root.textContent,/ההרשאה למסך המבוקש/);
  await btn(s.root,'התיק והשותפויות שלי').click();await btn(s.root,'פתיחת התיק').click();complete=true;
@@ -421,4 +422,16 @@ test('real client account change drops an in-flight folder handoff before render
  }});
  page=UI.mount({...s,client,search:'?workspace=1'});await page.load();await btn(s.root,'פתיחת התיק').click();const pending=btn(s.root,'טופסי הסכמה').click();await settle();
  token='SYNTHETIC-B';complete();await pending;assert.equal(s.root.textContent,'');assert.equal(field(s.root,'נוסח ההסכמה'),undefined);page.clear();
+});
+
+test('real client retains verified owner context across native and partnership roundtrips',async()=>{
+ const R=require('../../app/lib/research-client.js'),UI=require('../../app/lib/research-management-ui.js'),s=setup(true),fixture=s.client.call;
+ let page;const study={id:id(1),revision:2,status:'draft',config:{title:'מחקר סינתטי'},permissions:[]};s.workspace.study=study;
+ const client=R.create({getToken:()=> 'SYNTHETIC-OWNER',onClear:reason=>page?.clear(reason),fetchImpl:async(url,options)=>{
+  const {action,...payload}=JSON.parse(options.body);let data;
+  if(action==='bootstrap')data={owner:true,studies:[study]};else if(action==='studyGet')data={study};else{data=await fixture(action,payload);if(action==='workspaceBootstrap')data.studies=[study];}
+  return {ok:true,status:200,json:async()=>({ok:true,...data})};
+ }});
+ page=UI.mount({...s,client,search:'?workspace=1'});
+ try{await page.load();for(let turn=0;turn<2;turn++){await btn(s.root,'פתיחת התיק').click();await btn(s.root,'טופסי הסכמה').click();assert.ok(field(s.root,'נוסח ההסכמה'),'consent at turn '+turn);assert.ok(btn(s.root,'מחקר חדש'),'owner controls at turn '+turn);if(turn===0)await btn(s.root,'ניהול שותפויות והסכמים').click();}}finally{page.clear();}
 });

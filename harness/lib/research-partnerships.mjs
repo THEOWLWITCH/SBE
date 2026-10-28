@@ -140,6 +140,7 @@ async function explainImpact({accessStore,store,token,payload,result,changes,opt
  let answer,failed=false;try{answer=await provider.complete(request);if(typeof answer?.text!=='string'||!answer.text.trim()||answer.text.length>12000)throw new Error();}catch{failed=true;}
  await call(store,await researchImpactWorkerToken(accessStore),'impactOutcome',{eventId:receipt.eventId,payloadHash:gate.payloadHash,outcome:failed?'failed':'succeeded'});
  await call(store,token,'workspaceImpact',payload);
+ if(!failed)try{await call(store,token,'impactAuthorize',{...gate,checkOnly:true});}catch(error){if(error.code==='not_configured')return {...base,state:'blocked',message:'הרשאת העיבוד השתנתה. ההשוואה זמינה, וההסבר לא מוצג.'};throw error;}
  return failed?{...base,state:'failed',message:'ההסבר לא הופק. ההשוואה המלאה נשארה זמינה.'}:{...base,state:'ready',summary:answer.text,engineVersion:IMPACT_VERSIONS.engine,promptVersion:IMPACT_VERSIONS.prompt};
 }
 async function handleSigning({accessStore,store,body,payload,adapter,options}){

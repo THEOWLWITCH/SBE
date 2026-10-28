@@ -245,7 +245,7 @@ export function getProvider(name) {
         }
         catch (e) {
           lastErr = e;
-          if (!(e instanceof ProviderError) || !e.retryable) throw e;
+          if (opts.policy === 'research-partnership-impact' || !(e instanceof ProviderError) || !e.retryable) throw e;
           await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
         }
       }

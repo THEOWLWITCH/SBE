@@ -23,9 +23,9 @@ function captureOpenAI(t, onCall = async () => {}) {
     const request = new EventEmitter(); let data = '';
     request.write = chunk => { data += chunk; };
     request.end = () => { queueMicrotask(async () => {
-      const body = JSON.parse(data); requests.push(body); await onCall(body);
-      const response = new EventEmitter(); response.statusCode = 200; response.setEncoding = () => {};
-      callback(response); response.emit('data', JSON.stringify({ output_text: 'הסבר סינתטי בלבד.', usage: {} })); response.emit('end');
+      const body = JSON.parse(data); requests.push(body); const reply = await onCall(body);
+      const response = new EventEmitter(); response.statusCode = reply?.status || 200; response.setEncoding = () => {};
+      callback(response); response.emit('data', JSON.stringify(reply?.body || { output_text: 'הסבר סינתטי בלבד.', usage: {} })); response.emit('end');
     }); };
     return request;
   });
@@ -50,7 +50,7 @@ test('provider metadata resolves defaults and model binding without any API key 
 
 test('existing OpenAI adapter preserves exact research input with no storage and keeps professional and communication policies', async t => {
   environment(t, { MODEL: 'synthetic-model', OPENAI_API_KEY: 'synthetic-key-only' });
-  const wire = captureOpenAI(t), provider = providers.getProvider('openai');
+  let transient = false;const wire = captureOpenAI(t,()=>{if(transient){transient=false;return {status:503,body:{error:{message:'synthetic unavailable'}}};}}), provider = providers.getProvider('openai');
   const request = impactRequest(minimizePartnershipImpact('agreement', [{ path: 'startDate', before: '2026-11-01', after: '2026-11-02' }]), { kind: 'agreement' });
   await provider.complete(request);
   assert.equal(wire[0].store, false); assert.equal(wire[0].temperature, 0.3);
@@ -60,12 +60,14 @@ test('existing OpenAI adapter preserves exact research input with no storage and
   assert.equal(wire[1].input, INVITE.apply('professional system') + '\n\nprofessional prompt');
   await provider.complete({ system: 'communication system', messages: [{ role: 'user', content: 'synthetic message' }], policy: 'communication-continuity', variation: 'fast', maxTokens: 100 });
   assert.equal(wire[2].store, false); assert.match(wire[2].input[0].content, /communication system/);
+  transient=true;await provider.complete({system:'professional retry',prompt:'synthetic',variation:'low',maxTokens:100});assert.equal(wire.length,5,'professional retries retain their existing behavior');
+  transient=true;await assert.rejects(()=>provider.complete(request),error=>error.retryable===true);assert.equal(wire.length,6,'research failures require an explicitly reauthorized new request');
 });
 
 test('HTTP default impact wiring constructs only after scoped approval, records exact provenance and suppresses revoked results', { timeout: 180000 }, async t => {
   environment(t, { PROVIDER: 'openai', MODEL: 'synthetic-model', OPENAI_API_KEY: undefined, SUPABASE_URL: 'https://impact.synthetic.invalid', SUPABASE_SERVICE_KEY: 'synthetic-service-only' });
   const f = await createPartnershipIntegration(); t.after(() => f.close());
-  const nativeFetch = globalThis.fetch, actions = []; let constructed = 0, revoke = false;
+  const nativeFetch = globalThis.fetch, actions = []; let constructed = 0, revoke = false, withdraw = false, unavailable = false;
   t.mock.method(globalThis, 'fetch', async (target, init) => {
     const url = new URL(target); assert.equal(url.origin, process.env.SUPABASE_URL); assert.match(url.pathname, /research_(?:partnership_)?rpc$/);
     const body = JSON.parse(init.body); actions.push(body.p_action);
@@ -75,6 +77,8 @@ test('HTTP default impact wiring constructs only after scoped approval, records 
   const wire = captureOpenAI(t, async () => {
     assert.deepEqual(actions.slice(-2), ['impactAuthorize', 'impactAuthorize']);
     if (revoke) await f.query("UPDATE public.access_settings SET value=value||'{\"revoked\":true}' WHERE key='code:STAFFA'");
+    if(withdraw){withdraw=false;await savePolicy();}
+    if(unavailable){unavailable=false;return {status:503,body:{error:{message:'synthetic unavailable'}}};}
   });
   const server = createPracticeServer({ authStore: f.accessStore, providerFactory: name => { constructed++; return providers.getProvider(name); } });
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
@@ -112,6 +116,7 @@ test('HTTP default impact wiring constructs only after scoped approval, records 
   const events = (await f.query("SELECT e.*,p.policy->>'providerVersion' AS provider_version FROM research_private.partnership_processing_events e JOIN research_private.processing_policies p ON p.id=e.policy_id ORDER BY e.created_at,e.id")).rows;
   assert.equal(events.length, 2); assert.ok(events.every(event => event.payload_hash === createHash('sha256').update(JSON.stringify(request)).digest('hex') && event.provider === descriptor.provider && event.provider_version === descriptor.version && event.model === descriptor.model && event.prompt_version === IMPACT_VERSIONS.prompt && event.engine_version === IMPACT_VERSIONS.engine));
   assert.doesNotMatch(JSON.stringify(events), /הסבר סינתטי בלבד|synthetic-key-only|Synthetic Partner/);
+  withdraw=true;const withdrawn=await api(f.tokens.a,'workspaceImpact',exact);assert.equal(withdrawn.ai.state,'blocked');assert.equal(withdrawn.ai.summary,null);assert.equal(wire.length,2);await approve();
   const originalBase = base;
   process.env.MODEL = 'synthetic-model-next';
   const changedModelServer = createPracticeServer({ authStore: f.accessStore, providerFactory: name => { constructed++; return providers.getProvider(name); } });
@@ -119,13 +124,16 @@ test('HTTP default impact wiring constructs only after scoped approval, records 
   try {
     base = 'http://127.0.0.1:' + changedModelServer.address().port;
     assert.equal((await api(f.tokens.a, 'workspaceImpact', exact)).ai.state, 'blocked');
-    assert.equal(constructed, 1); assert.equal(wire.length, 1, 'approval for a previous model never authorizes a new model');
+    assert.equal(constructed, 2); assert.equal(wire.length, 2, 'approval for a previous model never authorizes a new model');
   } finally {
     base = originalBase; process.env.MODEL = descriptor.model;
     changedModelServer.closeAllConnections(); await new Promise(resolve => changedModelServer.close(resolve));
   }
-  await savePolicy(); assert.equal((await api(f.tokens.a, 'workspaceImpact', exact)).ai.state, 'blocked'); assert.equal(constructed, 1); assert.equal(wire.length, 1);
+  await savePolicy(); assert.equal((await api(f.tokens.a, 'workspaceImpact', exact)).ai.state, 'blocked'); assert.equal(constructed, 2); assert.equal(wire.length, 2);
   await approve(); revoke = true;
   const revoked = await api(f.tokens.a, 'workspaceImpact', exact, 403); assert.doesNotMatch(JSON.stringify(revoked), /הסבר סינתטי בלבד/);
-  assert.equal(wire.length, 2); assert.equal((await f.query("SELECT count(*)::int n FROM research_private.partnership_processing_events WHERE outcome='succeeded'")).rows[0].n, 2);
+  assert.equal(wire.length, 3); assert.equal((await f.query("SELECT count(*)::int n FROM research_private.partnership_processing_events WHERE outcome='succeeded'")).rows[0].n, 3);
+  await f.query("UPDATE public.access_settings SET value=value-'revoked' WHERE key='code:STAFFA'");unavailable=true;
+  await api(f.tokens.a,'workspaceImpact',exact,403);assert.equal(wire.length,4,'revocation after a retryable response must prevent another transfer');
+  assert.equal((await f.query("SELECT count(*)::int n FROM research_private.partnership_processing_events WHERE outcome='failed'")).rows[0].n,1);
 });
