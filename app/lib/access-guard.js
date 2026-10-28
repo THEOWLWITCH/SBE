@@ -20,6 +20,13 @@
   var MIRROR = "sbe.session.mirror", HOURS = 12;
 
   function ss(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
+  // מכשיר מוכר למנהלת המערכת (28/10/2026): בלי כניסה בלשונית, עוברים לדף הכניסה שנכנס לבד וחוזר לדף הזה.
+  function sysDeviceKey(){ try { var d = JSON.parse(localStorage.getItem("sbe.sys.device") || "null"); return d && d.key && Date.parse(d.exp) > Date.now() ? d.key : ""; } catch(e){ return ""; } }
+  function sysNext(){
+    if (!sysDeviceKey()) return "entry.html";
+    var here = (location.pathname.split("/").pop() || "") + location.search + location.hash;
+    return "entry.html?next=" + encodeURIComponent(here);
+  }
 
   // המרחב שבו נמצא/ת מי שנכנס/ה (28/10/2026): 'org' (ארגוני) או 'edu' (חינוכי).
   // מהשרת בכניסה (המרחב שסומן למוסד), למנהלת המערכת לפי הבחירה במרחב שלי, ובמעבדת הדמו ?space=org.
@@ -345,7 +352,7 @@
           KEYS.forEach(function(k){ sessionStorage.removeItem(k); });
           localStorage.removeItem(MIRROR);
           document.documentElement.style.display = "none";
-          location.replace(base + "entry.html?expired=1");
+          location.replace(base + (sysDeviceKey() ? sysNext() : "entry.html?expired=1"));
           return;
         }
       }
@@ -364,5 +371,5 @@
 
   // אין הרשאה — לא מציגים את הדף, וחוזרים למסך הבית (או למסך הכניסה).
   document.documentElement.style.display = "none";
-  location.replace(base + (home || "entry.html"));
+  location.replace(base + (home || sysNext()));
 })();

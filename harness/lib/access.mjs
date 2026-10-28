@@ -126,6 +126,7 @@ async function status(store) {
 // הדפדפן לא יכול לזייף אותו, ולכן פעולות שדורשות כניסה (למשל פתיחת כיתת חוסן)
 // נבדקות מולו כאן בשרת. המפתח נוצר פעם אחת ונשמר במאגר (token-secret).
 const TOKEN_HOURS = 12;
+const SYS_DEVICE_DAYS = 90;
 const b64u = (buf) => Buffer.from(buf).toString('base64url');
 
 async function tokenSecret(store) {
@@ -1754,6 +1755,34 @@ export async function handleAccess(store, body) {
       return [200, { ok: true, token, kind: 'academic-legacy', inst: '', label: 'משוב לעבודות', perms: ['academic'], notices: [] }];
     }
     await pause(); return [403, { error: 'wrong' }];
+  }
+
+  // מכשיר מוכר למנהלת המערכת (28/10/2026: "תן לי להכנס בלי ססמה או קוד"): אחרי כניסה אחת עם הסיסמה,
+  // המכשיר מקבל מפתח ארוך שנשמר רק בו, ונכנס בלי סיסמה עד 90 יום. בשרת נשמר רק הגיבוב של המפתח.
+  // החלפת הסיסמה מבטלת את כל המכשירים (authVersion), ו"שכחת המכשיר" מבטלת אותו.
+  if (action === 'sysRemember') {
+    const t = await verifyToken(store, body.token);
+    if (!t || t.k !== 'sys') { await pause(); return [403, { error: 'unauthorized' }]; }
+    const key = randomBytes(32).toString('hex');
+    const exp = new Date(Date.now() + SYS_DEVICE_DAYS * 864e5).toISOString();
+    await store.set('sysdev:' + sha(key), { created: new Date().toISOString(), exp,
+      authVersion: passwordVersion(await store.get('pw-sys')), label: String(body.label || '').replace(/[<>]/g, '').slice(0, 60) });
+    return [200, { ok: true, key, exp }];
+  }
+  if (action === 'sysDevice') {
+    const key = typeof body.key === 'string' && /^[a-f0-9]{64}$/.test(body.key) ? body.key : '';
+    const rec = key ? await store.get('sysdev:' + sha(key)) : null;
+    const password = await store.get('pw-sys');
+    if (!rec || !(Date.parse(rec.exp) > Date.now()) || !password || rec.authVersion !== passwordVersion(password)) {
+      if (rec) await store.del('sysdev:' + sha(key));
+      await pause(); return [403, { error: 'wrong' }];
+    }
+    return [200, { ok: true, token: await signToken(store, { k: 'sys' }), exp: rec.exp }];
+  }
+  if (action === 'sysForget') {
+    const key = typeof body.key === 'string' && /^[a-f0-9]{64}$/.test(body.key) ? body.key : '';
+    if (key) await store.del('sysdev:' + sha(key));
+    return [200, { ok: true }];
   }
 
   if (action === 'login') {

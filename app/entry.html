@@ -156,6 +156,8 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 .linklist a b{display:block;font-weight:700;margin-bottom:1px;}
 .linklist a span{color:var(--muted);font-size:12px;}
 html .card.sbe-s{border-top:1px solid #e3e9ef!important}
+label.remember{display:flex;align-items:center;gap:8px;font-weight:400;font-size:13.5px;color:var(--muted);margin:0 0 12px;cursor:pointer}
+label.remember input{width:auto;margin:0}
 .logged{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 auto 14px;font-size:13.5px;color:var(--muted)}
 .logged .lg-who b{color:var(--ink);font-weight:600}
 .logged button{width:auto;margin:0;font:inherit;font-weight:600;font-size:13.5px;padding:5px 16px;border-radius:999px;cursor:pointer;transition:background .16s ease,border-color .16s ease}
@@ -450,6 +452,41 @@ function buildWorkshopPicker(prefill){
 }
 
 
+// מכשיר מוכר למנהלת המערכת (28/10/2026: "תן לי להכנס בלי ססמה או קוד"): אחרי כניסה אחת עם הסיסמה
+// נשמר במכשיר מפתח (90 יום), והכניסה הבאה בלי סיסמה. השרת שומר רק גיבוב (sysRemember / sysDevice ב-access.mjs).
+// "יציאה" שוכחת את המכשיר, והחלפת הסיסמה מבטלת את כל המכשירים.
+const SYS_DEV = "sbe.sys.device";
+function sysDevice(){ try { const d = JSON.parse(localStorage.getItem(SYS_DEV) || "null"); return d && d.key && Date.parse(d.exp) > Date.now() ? d : null; } catch(e){ return null; } }
+async function sysRemember(){
+  try {
+    const r = await fetch(ACCESS_URL, { method:"POST", headers:{ "content-type":"application/json" },
+      body: JSON.stringify({ action:"sysRemember", token: sessionStorage.getItem("sbe.session.token") || "", label: navigator.platform || "" }) });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.key) localStorage.setItem(SYS_DEV, JSON.stringify({ key:d.key, exp:d.exp }));
+  } catch(e){}
+}
+function sysForget(){
+  const d = sysDevice();
+  try { localStorage.removeItem(SYS_DEV); } catch(e){}
+  if (d) fetch(ACCESS_URL, { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ action:"sysForget", key:d.key }) }).catch(() => {});
+}
+async function sysAutoLogin(){
+  const d = sysDevice(); if (!d) return false;
+  const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 75000);
+  try {
+    const r = await fetch(ACCESS_URL, { method:"POST", headers:{ "content-type":"application/json" },
+      body: JSON.stringify({ action:"sysDevice", key:d.key }), signal: ctrl.signal });
+    const data = await r.json().catch(() => ({}));
+    if (r.status === 403) { try { localStorage.removeItem(SYS_DEV); } catch(e){} return false; }
+    if (!r.ok || !data.token) return false;
+    clearSession();
+    sessionStorage.setItem("sbe.session.token", data.token);
+    persistSession(null, "ניהול מערכת");
+    sessionStorage.setItem("sbe.session.homeUrl", "admin.html?role=sys");
+    return true;
+  } catch(e){ return false; } finally { clearTimeout(timer); }
+}
+
 // יציאה / התחלת כניסה חדשה: מוחקת את הכניסה של הלשונית ואת העותק שלה
 // ללשוניות חדשות (lib/access-guard.js).
 const SESSION_KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules", "sbe.session.perms", "sbe.session.info", "sbe.session.wf"];
@@ -570,6 +607,7 @@ function buildAdminField(role){
   const passWrap = el("div",{style:"display:flex;align-items:flex-start;margin-bottom:12px"}, pass, toggle);
   const err = el("div",{class:"err"},""); err.hidden = true;
   const btn = el("button",{class:"primary"},"כניסה");
+  const remember = el("input",{type:"checkbox"}); remember.checked = true;
   const submit = async () => {
     const clean = pass.value.replace(/[‎‏؜]/g, "").trim();
     if (!clean) { err.textContent = "אפשר להקליד סיסמה כדי להיכנס."; err.hidden = false; return; }
@@ -584,6 +622,7 @@ function buildAdminField(role){
     }
     err.hidden = true;
     persistSession(null, role === "sys" ? "ניהול מערכת" : "ניהול מוסד");
+    if (role === "sys" && remember.checked) { btn.disabled = true; btn.textContent = "שומרים את המכשיר..."; await sysRemember(); }
     const dest = "admin.html?role=" + role;
     try { sessionStorage.setItem("sbe.session.homeUrl", dest); } catch(e){}
     location.href = dest;
@@ -592,7 +631,9 @@ function buildAdminField(role){
   pass.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
   wrap.append(
     el("p",{class:"hint"},"כאן נכנסים עם סיסמה, לא עם קוד: לניהול מוסד אחד או לניהול כל המערכת."),
-    el("label",{},"סיסמה"), passWrap, err, btn);
+    el("label",{},"סיסמה"), passWrap,
+    role === "sys" ? el("label",{class:"remember"}, remember, " לזכור את המכשיר הזה: בפעם הבאה בלי סיסמה (עד 90 יום)") : "",
+    err, btn);
   return wrap;
 }
 
@@ -607,7 +648,7 @@ function buildAdminField(role){
   // יציאה רק כשמבקשים אותה (?logout=1 או כפתור "יציאה"), לא בכל הגעה למסך
   // הכניסה — אחרת קישור "Begood" או "מסך כניסה" ניתק את מנהלת המערכת וחסם
   // אותה מכל המסכים. כניסה חדשה מוחקת ממילא את הקודמת (clearSession).
-  if (new URLSearchParams(location.search).get("logout")) clearSession();
+  if (new URLSearchParams(location.search).get("logout")) { sysForget(); clearSession(); }
   // entry.html?practi — קישור ישיר להתנסות (לשקף/QR בהרצאה)
   if (new URLSearchParams(location.search).has("practi") && guestOpen()) { enterGuest(); return; }
   // entry.html?open=<מזהה>: קישור פתוח ליום אחד, בלי קוד (נוצר בניהול, "🔗 קישור פתוח ליום אחד")
@@ -626,13 +667,24 @@ function buildAdminField(role){
       }
     }
   } catch(e){}
+  // מכשיר מוכר של מנהלת המערכת: נכנסים לבד, וחוזרים לדף שביקשו (?next=) או נשארים כאן מחוברים.
+  if (!home && sysDevice()) {
+    var wait = el("p",{class:"logged"}, "נכנסים כמנהלת המערכת. הכניסה נמשכת לפעמים עד דקה.");
+    view.prepend(wait);
+    sysAutoLogin().then(function(ok){
+      var next = new URLSearchParams(location.search).get("next") || "";
+      if (ok && /^[a-z0-9-]+\.html([?#][^\s]*)?$/.test(next)) { location.replace(next); return; }
+      if (ok) { location.replace("entry.html"); return; }
+      wait.textContent = "הכניסה האוטומטית לא הצליחה. אפשר להיכנס עם הסיסמה בכניסת הניהול למטה.";
+    });
+  }
   if (home) {
     // מחובר/ת: שורה דקה אחת מעל הכניסה, בלי כרטיס (28/10/2026: "הסרגל העליון של הקוד לא נראה טוב")
     var bar = el("div",{class:"logged sbe-no-theme"});
     var goHome = el("button",{class:"lg-home sbe-no-theme"},"⌂ המרחב שלי");
     var out = el("button",{class:"lg-out sbe-no-theme"},"יציאה");
     goHome.addEventListener("click", function(){ location.href = home; });
-    out.addEventListener("click", function(){ clearSession(); bar.remove(); });
+    out.addEventListener("click", function(){ sysForget(); clearSession(); bar.remove(); });
     bar.append(el("span",{class:"lg-who"}, "מחובר/ת", roleLabel ? " · " : "", roleLabel ? el("b",{},roleLabel) : ""), goHome, out);
     view.prepend(bar);
   }
