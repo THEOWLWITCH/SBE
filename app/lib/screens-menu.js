@@ -11,6 +11,20 @@ window.SBE_SCREENS = [
       { file:'eval-set.html', label:'בקרת איכות' },
       { file:'demo-lab.html', label:'🧪 מעבדת הדמו: תוצר מכל כלי' },
     ]},
+    // מעבדת האופק (28/10/2026): תשעה כלים לחוסן מול עתיד לא ידוע. עד לאישור: מנהלת המערכת בלבד
+    // (הדפים לא נמצאים ב-PAGES_BY_PERM וב-MODEL_PAGES). מקור: lib/hl-runtime.js
+    { title:'🔭 מעבדת האופק (טרם אושר)', items:[
+      { file:'horizon-lab.html', label:'מעבדת האופק: דף הבית' },
+      { file:'hl-voice.html', label:'קול הקהילה' },
+      { file:'hl-radar.html', label:'רדאר החוסן החברתי' },
+      { file:'hl-futures.html', label:'מחולל העתידים' },
+      { file:'hl-circles.html', label:'מעגלי העתיד' },
+      { file:'hl-horizons.html', label:'שלושה אופקים' },
+      { file:'hl-collage.html', label:'תמונת עתיד קבוצתית' },
+      { file:'hl-roadmap.html', label:'מהחזון להיום' },
+      { file:'hl-game.html', label:'משחק מצב עתידי' },
+      { file:'hl-stress.html', label:'בדיקת עמידות' },
+    ]},
   ]},
   { part:'others', title:'👥 מה שאחרים רואים', groups:[
     { title:'🌅 השער: מתחילים כאן', items:[

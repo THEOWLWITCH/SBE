@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<script src="lib/access-guard.js"></script>
+<script src="lib/ai-call.js"></script>
+<script src="lib/hl-runtime.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מחולל עתידים · Be Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a single guided column of six numbered stages, the 2x2 of worlds as the visual centre. */
+:root{
+  --bg:#eef1f3;
+  --surface:#ffffff;
+  --ink:#16232e;
+  --muted:#5b6b78;
+  --line:#d5dde3;
+  --accent:#17607a;
+  --accent-soft:#dcecf1;
+  --known:#56697a;      --known-bg:#e6ebef;
+  --expected:#9a5b00;   --expected-bg:#fbefd9;
+  --rare:#6a3fb0;       --rare-bg:#eee6fb;
+  --wild:#b2275a;       --wild-bg:#fbe3ec;
+  --ai:#17607a;         --ai-bg:#dcecf1;
+  --good:#2f7a4b;
+  --font-display:"Rubik","Assistant",system-ui,sans-serif;
+  --font-body:"Assistant","Rubik",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+    --accent:#62b6cf; --accent-soft:#183644;
+    --known:#a9b9c6; --known-bg:#24323d;
+    --expected:#f0b45a; --expected-bg:#3a2a12;
+    --rare:#b79af0; --rare-bg:#2c2242;
+    --wild:#f2789f; --wild-bg:#40192a;
+    --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+  --accent:#62b6cf; --accent-soft:#183644;
+  --known:#a9b9c6; --known-bg:#24323d;
+  --expected:#f0b45a; --expected-bg:#3a2a12;
+  --rare:#b79af0; --rare-bg:#2c2242;
+  --wild:#f2789f; --wild-bg:#40192a;
+  --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 18px 80px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:30px;font-weight:700}
+h2{font-size:22px;font-weight:600}
+h3{font-size:18px;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:14.5px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{font-family:var(--font-display);font-size:14px;letter-spacing:.02em;color:var(--accent);font-weight:600}
+.notice{background:var(--accent-soft);border-radius:12px;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.principle{border-inline-start:4px solid var(--wild);background:var(--surface);border-radius:10px;padding:12px 16px}
+section.stage{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.stage-head{display:flex;gap:12px;align-items:baseline}
+.num{font-family:var(--font-display);font-weight:700;color:var(--accent);font-size:20px;min-width:22px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:15px}
+input[type=text],select,textarea{font:inherit;font-weight:400;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+textarea{min-height:76px;resize:vertical}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;font-weight:600}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] button.primary{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#0f171d}}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.drv:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#0f171d}}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px;white-space:nowrap}
+.t-known{color:var(--known);background:var(--known-bg)}
+.t-expected{color:var(--expected);background:var(--expected-bg)}
+.t-rare{color:var(--rare);background:var(--rare-bg)}
+.t-wild{color:var(--wild);background:var(--wild-bg)}
+.t-ai{color:var(--ai);background:var(--ai-bg)}
+.t-opp{color:var(--good);background:transparent;border:1px solid var(--good)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{padding:4px 12px;font-size:14.5px;border-radius:999px}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.drivers{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.drv{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:var(--surface);cursor:pointer}
+.drv input{margin-top:5px;accent-color:var(--accent)}
+.drv.on{border-color:var(--accent);background:var(--accent-soft)}
+.drv .nm{font-weight:700;line-height:1.3}
+.drv .ds{font-size:14px;color:var(--muted);line-height:1.4}
+.drv .tg{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.meter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:15px}
+.ok{color:var(--good);font-weight:700}
+.warn{color:var(--wild);font-weight:700}
+.axes-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.axopt{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:var(--surface)}
+.axopt.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.axline{font-size:15px}
+.axline b{font-family:var(--font-display);font-weight:600}
+.matrix{display:grid;grid-template-columns:28px 1fr 1fr;grid-template-rows:auto auto auto;gap:10px}
+.ylab{grid-row:1 / span 2;writing-mode:vertical-rl;transform:rotate(180deg);display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);font-weight:600}
+.xlab{grid-column:2 / span 2;display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);font-weight:600}
+.axis-name{color:var(--accent)}
+.world{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface);position:relative}
+.world.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.world .q{font-size:12.5px;color:var(--muted);font-weight:600}
+.world .hl{font-family:var(--font-display);font-weight:600;font-size:15.5px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 0}
+.world ul{margin:0;padding-inline-start:18px;font-size:14.5px}
+.world .lbl{font-size:13px;font-weight:700;color:var(--muted);margin-top:2px}
+.world .wc{font-size:14px;background:var(--rare-bg);color:var(--ink);border-radius:8px;padding:6px 8px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.tabs button{border-radius:999px;padding:5px 14px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.out{white-space:pre-wrap;background:var(--bg);border-radius:12px;padding:14px 16px;min-height:80px;max-width:72ch}
+.out.empty{color:var(--muted)}
+.chat{display:flex;flex-direction:column;gap:8px;max-width:72ch}
+.msg{padding:8px 12px;border-radius:12px;white-space:pre-wrap}
+.msg.u{background:var(--accent-soft);align-self:flex-start}
+.msg.a{background:var(--bg);align-self:flex-end}
+.event{border:1px solid var(--line);border-inline-start:5px solid var(--wild);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;max-width:80ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.box{background:var(--bg);border-radius:12px;padding:12px 14px}
+.box ul,.box ol{margin:6px 0 0;padding-inline-start:20px}
+.status{font-size:14.5px;color:var(--muted)}
+.toast{position:fixed;bottom:18px;inset-inline-start:50%;transform:translateX(50%);background:var(--ink);color:var(--surface);padding:8px 16px;border-radius:10px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.ai-off .needs-ai{display:none}
+.ai-note{display:none}
+.ai-off .ai-note{display:block}
+/* views + workshop bar */
+nav.views{display:flex;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line)}
+nav.views a{font-family:var(--font-display);font-weight:600;text-decoration:none;color:var(--ink);padding:7px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+nav.views a[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] nav.views a[aria-current="page"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav.views a[aria-current="page"]{color:#0f171d}}
+.view{display:flex;flex-direction:column;gap:22px}
+.view[hidden]{display:none}
+.wsbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:15px}
+.wsbar input{max-width:260px}
+.wslist{display:flex;flex-direction:column;gap:6px;width:100%}
+.wslist button{text-align:start;font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border-radius:999px;padding:5px 12px;font-size:14.5px;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0f171d}}
+.rate{display:flex;gap:4px;flex-wrap:wrap}
+.rate button{min-width:40px;padding:6px 0;font-variant-numeric:tabular-nums}
+.rate button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:minmax(150px,1.2fr) 3fr auto;gap:10px;align-items:center;font-size:15px}
+.bar .track{height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:6px}
+.bar .n{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;white-space:nowrap}
+.hist{display:flex;gap:3px;align-items:flex-end;height:34px}
+.hist span{width:14px;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px;opacity:.85}
+.pill{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px}
+.p-agree{background:#e3f3e8;color:#226b3d}
+.p-split{background:var(--wild-bg);color:var(--wild)}
+.p-minor{background:var(--rare-bg);color:var(--rare)}
+.lenses{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.lens{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.lens .line{font-family:var(--font-display);font-weight:600;font-size:16px}
+.lens img,.item img{width:100%;border-radius:10px;background:#fff;border:1px solid var(--line)}
+.items{display:flex;flex-direction:column;gap:8px}
+.item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:6px 12px;background:var(--surface)}
+.item .meta{font-size:13px;color:var(--muted)}
+.item .fb{grid-column:1/-1;background:var(--accent-soft);border-radius:8px;padding:8px 10px;font-size:14.5px;white-space:pre-wrap}
+.item img{max-width:220px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.thumb{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff;height:520px;position:relative}
+.thumb .np{transform:scale(.42);transform-origin:top right;width:238%}
+/* stress test */
+.vd{display:inline-block;font-size:13px;font-weight:700;border-radius:6px;padding:2px 10px;border:1px solid transparent}
+.v-robust{background:#e3f3e8;color:#1f6a3a;border-color:#b9dfc5}
+.v-adjust{background:#fdf0d6;color:#8a5200;border-color:#f1d39a}
+.v-break{background:#fbe1e4;color:#a8172f;border-color:#f0b4bd}
+.v-redundant{background:#eef1f4;color:#5b6b78;border-color:#d5dde3}
+.v-none{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.mx-wrap{overflow-x:auto}
+table.mx{border-collapse:separate;border-spacing:6px;width:100%;min-width:720px}
+table.mx th{font-family:var(--font-display);font-weight:600;font-size:14.5px;text-align:start;vertical-align:bottom;padding:4px}
+table.mx th .ax{display:block;font-family:var(--font-body);font-weight:400;font-size:12.5px;color:var(--muted)}
+table.mx td{vertical-align:top}
+table.mx td.el{font-weight:600;font-size:15px;max-width:230px}
+table.mx td.el .small{font-weight:400}
+.cell{width:100%;text-align:start;display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:10px;font-weight:400;font-size:13.5px;line-height:1.35;min-height:64px}
+.cell.on{outline:3px solid var(--accent);outline-offset:1px}
+.cell .vd{align-self:flex-start}
+.cell.v-robust,.cell.v-adjust,.cell.v-break,.cell.v-redundant{border-width:1px}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.score .box{display:flex;flex-direction:column;gap:6px}
+.stack{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--bg)}
+.stack span{display:block;height:100%}
+.ifthen{display:grid;grid-template-columns:1fr auto 1fr;gap:6px 10px;align-items:start;font-size:15px}
+.ifthen .arr{color:var(--muted);font-weight:700}
+@media (max-width:640px){
+  .ifthen{grid-template-columns:1fr}
+  .ifthen .arr{display:none}
+  .bar{grid-template-columns:1fr}
+  .matrix{grid-template-columns:1fr}
+  .ylab{display:none}
+  .xlab{grid-column:1}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+
+<header class="top">
+  <div>
+    <div class="brand">Be Good · חוסן מול עתיד לא ידוע</div>
+    <h1>מחולל עתידים</h1>
+    <p class="muted">בונים כמה עולמות אפשריים, מבקרים בהם, ובודקים מה כדאי להכין כבר היום.</p>
+  </div>
+</header>
+
+<nav class="views" aria-label="חלקי הכלי">
+  <a href="#flow" data-view="flow">מסע העתידים</a>
+  <a href="#vote" data-view="vote">הצבעה קבוצתית</a>
+  <a href="#paper" data-view="paper">עיתון מהעתיד</a>
+  <a href="#lenses" data-view="lenses">נקודות מבט</a>
+</nav>
+
+<div class="wsbar" id="wsbar">
+  <b>סדנה:</b>
+  <input type="text" id="wsTitle" placeholder="שם הסדנה, למשל: צוות הנהלה, כיתה ו׳2" aria-label="שם הסדנה">
+  <button type="button" id="wsSave" class="primary">שמירה</button>
+  <button type="button" id="wsOpen">סדנאות שמורות</button>
+  <button type="button" id="wsNew">סדנה חדשה</button>
+  <button type="button" id="wsActive" hidden>פתיחה למשתתפים</button>
+  <span class="status" id="wsStatus" aria-live="polite"></span>
+  <div class="wslist" id="wsList" hidden></div>
+</div>
+
+<p class="ai-note notice small">החלקים שמופעלים על ידי AI זמינים כשיש חיבור למודל. בינתיים אפשר לעיין בדוגמה ובספריית המניעים.</p>
+
+<div class="view" id="view-flow">
+<div class="notice" id="exampleBar">
+  <span><b>מוצגת דוגמה מוכנה:</b> <span id="exampleLabel">בית ספר יסודי בגליל העליון, 2035</span>. אפשר לשנות כל שלב, או להתחיל מאפס.</span>
+  <button id="resetBtn" type="button">ניקוי והתחלה חדשה</button>
+</div>
+
+<div class="principle small">
+  <b>עיקרון העתיד הלא ידוע:</b> העתיד תמיד מפתיע. לכן כל תרגיל כולל גם איומים מוכרים בישראל, וגם לפחות מניע אחד שכמעט לא מדברים עליו כאן, או קלף פרא. התרחישים אינם תחזית. הם כלי לחשוב ולהתכונן.
+</div>
+
+<!-- 1. Context -->
+<section class="stage" aria-labelledby="h1s">
+  <div class="stage-head"><span class="num">1</span><h2 id="h1s">על מי מדובר?</h2></div>
+  <div class="row">
+    <div class="seg" role="group" aria-label="סוג ההקשר" id="ctxType">
+      <button type="button" data-v="school">בית ספר</button>
+      <button type="button" data-v="community">קהילה ויישוב</button>
+      <button type="button" data-v="org">ארגון</button>
+      <button type="button" data-v="pro">קהילה מקצועית</button>
+    </div>
+  </div>
+  <div class="notice small" id="undoBar" hidden><span id="undoText"></span><button type="button" id="undoBtn">ביטול הניקוי</button></div>
+  <div class="grid2">
+    <label class="f" for="region">אזור בארץ
+      <select id="region"></select>
+    </label>
+    <label class="f" for="horizon">לאיזו שנה מסתכלים?
+      <select id="horizon"><option>2030</option><option>2035</option><option>2040</option><option>2045</option></select>
+    </label>
+  </div>
+  <label class="f" for="desc"><span id="descLabel">תיאור קצר</span>
+    <textarea id="desc"></textarea>
+  </label>
+  <p class="small muted" id="descHint"></p>
+</section>
+
+<!-- 2. Drivers -->
+<section class="stage" aria-labelledby="h2s">
+  <div class="stage-head"><span class="num">2</span><h2 id="h2s">מה עלול להשתנות? מניעים ואיומים</h2></div>
+  <p class="muted small" id="drvHint">לבחור 5–8 מניעים שרלוונטיים למקום. כדאי לשלב מוכרים עם כאלה שפחות מדברים עליהם בישראל.</p>
+  <div class="row small">
+    <span class="tag t-known">מוכר בישראל</span>
+    <span class="tag t-expected">צפוי, טרם נחווה בהיקף גדול</span>
+    <span class="tag t-rare">פחות מוכר בישראל</span>
+    <span class="tag t-wild">קלף פרא</span>
+    <span class="tag t-opp">הזדמנות</span>
+  </div>
+  <div class="filters" id="filters" role="group" aria-label="סינון לפי תחום"></div>
+  <div class="drivers" id="drivers"></div>
+  <div class="row">
+    <input type="text" id="customDriver" placeholder="מניע נוסף שלא מופיע ברשימה" style="flex:1;min-width:220px" aria-label="מניע נוסף">
+    <button type="button" id="addCustom">הוספה</button>
+    <button type="button" id="surpriseBtn" class="needs-ai">הפתעה: AI מציע מניע שלא חשבנו עליו</button>
+  </div>
+  <details class="box" id="impDrivers"><summary><b>ייבוא מניעים מכלי אחר</b> <span class="small muted">(מרדאר החוסן החברתי או מקול הקהילה)</span></summary>
+    <p class="small muted" style="margin-top:6px">בכלי השני לוחצים ״העתקת המניעים למחולל העתידים״ (או ״העתקת הסוגיות״), ומדביקים כאן. המניעים נכנסים לרשימה ונבחרים אוטומטית.</p>
+    <textarea id="impDrvText" aria-label="הדבקת המניעים" placeholder='{"type":"be-good-package", ...}'></textarea>
+    <div class="row" style="margin-top:6px"><button type="button" class="primary" id="impDrvGo">ייבוא</button><span class="status" id="impDrvStatus" aria-live="polite"></span></div>
+  </details>
+  <div class="meter" id="meter" aria-live="polite"></div>
+  <div class="notice small" id="voteLink"></div>
+  <p class="status" id="surpriseStatus" aria-live="polite"></p>
+</section>
+
+<!-- 3. Axes -->
+<section class="stage" aria-labelledby="h3s">
+  <div class="stage-head"><span class="num">3</span><h2 id="h3s">שני צירים של אי־ודאות</h2></div>
+  <p class="muted small">שני דברים חשובים שאי אפשר לדעת לאן יתפתחו. השילוב ביניהם יוצר ארבעה עולמות.</p>
+  <div class="row needs-ai"><button type="button" class="primary" id="axesBtn">הצעת צירים מהמניעים שנבחרו</button><span class="status" id="axesStatus" aria-live="polite"></span></div>
+  <div class="axes-opts" id="axesOpts"></div>
+  <div class="box" id="manualAxes">
+    <h3>צירים שלנו</h3>
+    <p class="small muted">אפשר להגדיר את הצירים בעצמנו, או לערוך את האפשרות שנבחרה. לכל ציר יש שם ושני קצוות, ושני הקצוות סבירים.</p>
+    <div class="grid2" style="margin-top:8px">
+      <label class="f" for="mxName">ציר ראשון: שם<input type="text" id="mxName" placeholder="למשל: המצב הביטחוני באזור"></label>
+      <label class="f" for="mxLow">קצה אחד<input type="text" id="mxLow" placeholder="למשל: רגיעה יציבה"></label>
+      <label class="f" for="mxHigh">הקצה השני<input type="text" id="mxHigh" placeholder="למשל: איום מתמשך"></label>
+    </div>
+    <div class="grid2" style="margin-top:8px">
+      <label class="f" for="myName">ציר שני: שם<input type="text" id="myName" placeholder="למשל: הלכידות בקהילה"></label>
+      <label class="f" for="myLow">קצה אחד<input type="text" id="myLow" placeholder="למשל: קהילה מפוזרת"></label>
+      <label class="f" for="myHigh">הקצה השני<input type="text" id="myHigh" placeholder="למשל: קהילה מלוכדת"></label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button type="button" class="primary" id="useManual">שימוש בצירים האלה</button>
+      <button type="button" id="editSelected">עריכת האפשרות שנבחרה</button>
+      <span class="status" id="manualStatus" aria-live="polite"></span>
+    </div>
+  </div>
+</section>
+
+<!-- 4. Worlds -->
+<section class="stage" aria-labelledby="h4s">
+  <div class="stage-head"><span class="num">4</span><h2 id="h4s">ארבעה עולמות אפשריים</h2></div>
+  <div class="row needs-ai"><button type="button" class="primary" id="worldsBtn">בניית העולמות</button><span class="status" id="worldsStatus" aria-live="polite"></span></div>
+  <div class="matrix" id="matrix"></div>
+</section>
+
+<!-- 5. Visit -->
+<section class="stage" aria-labelledby="h5s">
+  <div class="stage-head"><span class="num">5</span><h2 id="h5s">ביקור בעולם: <span id="visitName"></span></h2></div>
+  <div class="grid2">
+    <label class="f" for="role">דרך העיניים של
+      <select id="role"></select>
+    </label>
+  </div>
+  <div class="row" id="addRoleRow" hidden>
+    <input type="text" id="newRole" placeholder="למשל: אב בית, נהגת הסעות, רב או רבנית היישוב, עובד סוציאלי" style="flex:1;min-width:220px" aria-label="תפקיד חדש">
+    <button type="button" class="primary" id="addRole">הוספת התפקיד</button>
+    <button type="button" id="cancelRole">ביטול</button>
+  </div>
+  <div class="tabs" role="tablist" id="tabs">
+    <button type="button" role="tab" data-t="day">יום בחיים</button>
+    <button type="button" role="tab" data-t="news">כותרות מהעתיד</button>
+    <button type="button" role="tab" data-t="letter">מכתב מהעתיד</button>
+    <button type="button" role="tab" data-t="chat">שיחה עם דמות מהעולם</button>
+    <button type="button" role="tab" data-t="event">אירוע חירום בעולם הזה</button>
+  </div>
+  <div id="panel"></div>
+</section>
+
+<!-- 6. Synthesis -->
+<section class="stage" aria-labelledby="h6s">
+  <div class="stage-head"><span class="num">6</span><h2 id="h6s">מה עושים כבר היום?</h2></div>
+  <p class="muted small" id="synthHint">מה עובד בכל ארבעת העולמות, מה מתאים רק לחלק מהם, ועל אילו סימנים כדאי לעקוב.</p>
+  <div class="row"><button type="button" class="primary needs-ai" id="synthBtn">סיכום והמלצות</button><button type="button" id="copySynth">העתקת הסיכום</button><span class="status" id="synthStatus" aria-live="polite"></span></div>
+  <div id="synth"></div>
+  <div class="box needs-ai" id="askBox">
+    <h3>שאלה למודל</h3>
+    <p class="small muted">אפשר לשאול כל שאלה על העולמות, על הצעדים או על ההקשר, או ללחוץ על אחת משאלות הדיון.</p>
+    <div class="row" id="askChips" style="margin-top:8px"></div>
+    <form class="row" id="askForm" style="margin-top:8px">
+      <input type="text" id="askIn" placeholder="למשל: מה הצעד הראשון שהכי משתלם לעשות החודש?" style="flex:1;min-width:220px" aria-label="שאלה למודל">
+      <button type="submit" class="primary">לשאול</button>
+    </form>
+    <span class="status" id="askStatus" aria-live="polite"></span>
+    <div id="qaList" class="chat" style="margin-top:8px"></div>
+  </div>
+  <div class="box" id="exportBox">
+    <h3>העברה לכלי בדיקת העמידות</h3>
+    <p class="small muted">בכלי בדיקת העמידות של Be Good בודקים תוכנית קיימת, למשל נוהל חירום, מול העולמות שבניתם כאן. מעתיקים או מורידים את חבילת העולמות, ובכלי השני בוחרים ״ייבוא עולמות״.</p>
+    <div class="row" style="margin-top:8px"><button type="button" class="primary" id="expCopy">העתקת חבילת העולמות</button><button type="button" id="expDl">הורדת חבילת העולמות</button><a id="stressLink" href="#" target="_blank" rel="noopener">פתיחת כלי בדיקת העמידות</a><span class="status" id="expStatus" aria-live="polite"></span></div>
+  </div>
+</section>
+</div><!-- /view-flow -->
+
+<!-- ===== Group vote ===== -->
+<div class="view" id="view-vote" hidden>
+  <section class="stage">
+    <h2>הצבעה קבוצתית</h2>
+    <p class="muted">כל משתתף ומשתתפת, או כל צוות, בוחרים את המניעים החשובים בעיניהם ומדרגים את זוגות הצירים. אחר כך רואים יחד במה הקבוצה מסכימה ואיפה יש מחלוקת, וממשיכים לשיחה.</p>
+    <div class="box">
+      <b>איפה ההצבעה נכנסת למסע העתידים</b>
+      <ol class="small" style="margin:6px 0 0;padding-inline-start:20px">
+        <li>במסע העתידים מגדירים את ההקשר (שלב 1), ומציעים זוגות צירים (שלב 3).</li>
+        <li><b>כאן:</b> כל משתתף, משתתפת או צוות בוחרים מניעים ומדרגים את הצירים. במקום שאדם אחד יחליט, הקבוצה מחליטה.</li>
+        <li><b>כאן:</b> חושפים את התוצאות ומשוחחים על המחלוקות, בעזרת השאלות שה־AI מציע.</li>
+        <li>לוחצים ״אימוץ התוצאות״. המניעים והצירים שהקבוצה בחרה נכנסים למסע העתידים.</li>
+        <li>חוזרים למסע העתידים ובונים את העולמות (שלב 4) מתוך הבחירה של הקבוצה.</li>
+      </ol>
+    </div>
+    <div class="notice small" id="voteMode"></div>
+  </section>
+
+  <section class="stage" aria-labelledby="vfh">
+    <h2 id="vfh">ההצבעה שלי או של הצוות</h2>
+    <label class="f" for="vName" style="max-width:420px">שם או שם הצוות
+      <input type="text" id="vName" placeholder="למשל: דנה, או צוות הנשרים">
+    </label>
+    <div>
+      <h3>אילו מניעים הכי חשובים לנו? <span class="small muted" id="vPickCount"></span></h3>
+      <p class="small muted">לבחור עד 8. אפשר לבחור גם מניעים שפחות מוכרים בישראל.</p>
+    </div>
+    <div class="chips" id="vDrivers"></div>
+    <div>
+      <h3>עד כמה חשוב לנו לחקור כל זוג צירים?</h3>
+      <p class="small muted">1 = פחות חשוב לנו, 5 = חשוב מאוד לחקור את זה.</p>
+    </div>
+    <div class="cols" id="vAxes"></div>
+    <label class="f" for="vComment">הערה, חשש או רעיון (רשות)
+      <textarea id="vComment" placeholder="מה חשוב שהקבוצה תשמע?"></textarea>
+    </label>
+    <div class="row"><button type="button" class="primary" id="vSubmit">שליחת ההצבעה</button><span class="status" id="vStatus" aria-live="polite"></span></div>
+  </section>
+
+  <section class="stage" aria-labelledby="vrh">
+    <div class="row" style="justify-content:space-between">
+      <h2 id="vrh">מה הקבוצה בחרה <span class="muted small" id="vCount"></span></h2>
+      <div class="row"><button type="button" id="vReveal">חשיפת התוצאות</button><button type="button" id="vAdopt">אימוץ התוצאות למסע העתידים</button></div>
+    </div>
+    <p class="small muted" id="vHiddenNote">התוצאות מוסתרות כדי שההצבעה לא תושפע מהאחרים. לחשוף אותן כשכולם סיימו.</p>
+    <div id="vResults" hidden></div>
+  </section>
+
+  <section class="stage needs-ai" aria-labelledby="vth">
+    <h2 id="vth">שיחה אחרי ההצבעה</h2>
+    <p class="small muted">ה־AI קורא את התוצאות ומציע שאלות להמשך השיחה, בעיקר סביב המחלוקות ורעיונות של מיעוט. אפשר גם לשאול אותו ישירות.</p>
+    <div class="row"><button type="button" class="primary" id="vQs">שאלות להמשך השיחה</button><span class="status" id="vQsStatus" aria-live="polite"></span></div>
+    <div id="vQsOut"></div>
+    <form class="row" id="vAskForm">
+      <input type="text" id="vAskIn" placeholder="למשל: למה לדעתך יש מחלוקת על ציר האקלים?" style="flex:1;min-width:220px" aria-label="שאלה למודל על התוצאות">
+      <button type="submit" class="primary">לשאול</button>
+    </form>
+    <span class="status" id="vAskStatus" aria-live="polite"></span>
+    <div class="chat" id="vQa"></div>
+  </section>
+</div>
+
+<!-- ===== Newspaper ===== -->
+<div class="view" id="view-paper" hidden>
+  <section class="stage">
+    <h2>עיתון מהעתיד</h2>
+    <p class="muted">כל צוות לוקח עולם אחד וכותב את העיתון שלו: כותרות, ידיעות, פתקים, מודעות וציורים. בסוף מציגים זה לצד זה עיתונים מכמה עתידים, ומדפיסים לתלייה בכיתה.</p>
+    <div class="tabs" id="paperTabs" role="tablist"></div>
+  </section>
+  <div id="paperBody" class="view"></div>
+</div>
+
+<!-- ===== Perspectives ===== -->
+<div class="view" id="view-lenses" hidden>
+  <section class="stage">
+    <h2>אותו עולם, כמה נקודות מבט</h2>
+    <p class="muted">איך נראה אותו עתיד בעיני תלמידה, אב, מורה או רכזת? בוחרים עולם ו־2 עד 4 תפקידים, ורואים את נקודות המבט זו לצד זו.</p>
+    <div class="grid2">
+      <label class="f" for="lWorld">העולם<select id="lWorld"></select></label>
+    </div>
+    <div><h3>תפקידים <span class="small muted">(2 עד 4)</span></h3></div>
+    <div class="chips" id="lRoles"></div>
+    <div class="row">
+      <input type="text" id="lNewRole" placeholder="תפקיד נוסף" style="max-width:260px" aria-label="תפקיד נוסף">
+      <button type="button" id="lAddRole">הוספה</button>
+    </div>
+    <div class="row needs-ai"><button type="button" class="primary" id="lGen">יצירת נקודות המבט</button><span class="status" id="lStatus" aria-live="polite"></span></div>
+  </section>
+  <div class="lenses" id="lOut"></div>
+  <section class="stage needs-ai" id="lLearnBox" hidden>
+    <div class="row"><button type="button" class="primary" id="lLearn">מה ההבדלים מלמדים אותנו?</button><span class="status" id="lLearnStatus" aria-live="polite"></span></div>
+    <div class="out empty" id="lLearnOut">עוד לא נכתב.</div>
+  </section>
+</div>
+
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------- Data ---------- */
+const CATS = [
+  {id:"sec", name:"ביטחון"},
+  {id:"nat", name:"טבע ואקלים"},
+  {id:"hea", name:"בריאות"},
+  {id:"inf", name:"תשתיות וטכנולוגיה"},
+  {id:"soc", name:"חברה וכלכלה"},
+  {id:"wild", name:"קלפי פרא"}
+];
+const TAGS = {
+  known:{label:"מוכר בישראל", cls:"t-known"},
+  expected:{label:"צפוי, טרם נחווה", cls:"t-expected"},
+  rare:{label:"פחות מוכר בישראל", cls:"t-rare"},
+  wild:{label:"קלף פרא", cls:"t-wild"},
+  ai:{label:"הצעת AI", cls:"t-ai"},
+  imp:{label:"יובא מכלי אחר", cls:"t-ai"},
+  user:{label:"נוסף ידנית", cls:"t-known"}
+};
+const LIB = [
+  {id:"s1",cat:"sec",tag:"known",name:"ירי רקטות וטילים ממושך",desc:"חודשים של אזעקות, חיים ולמידה במרחב מוגן"},
+  {id:"s2",cat:"sec",tag:"known",name:"מלחמה בכמה חזיתות",desc:"עומס בו־זמני על מערכות החירום והשירותים"},
+  {id:"s3",cat:"sec",tag:"known",name:"חדירה ליישוב ואירוע טרור",desc:"אירוע פתאומי בתוך היישוב או המוסד"},
+  {id:"s4",cat:"sec",tag:"known",name:"פינוי ממושך של יישובים",desc:"קהילות שחיות חודשים ושנים הרחק מהבית"},
+  {id:"s5",cat:"sec",tag:"known",name:"תקיפות רחפנים",desc:"איום נמוך ומהיר עם זמן התרעה קצר"},
+  {id:"s6",cat:"sec",tag:"known",name:"שיבוש GPS ותקשורת",desc:"ניווט ואפליקציות שמראים מיקום שגוי"},
+  {id:"s7",cat:"sec",tag:"expected",name:"מתקפת סייבר על מים או חשמל",desc:"שיבוש מכוון של שירות חיוני לכמה ימים"},
+  {id:"s8",cat:"sec",tag:"rare",name:"נחילי רחפנים אוטונומיים",desc:"רחפנים רבים שפועלים יחד בלי מפעיל"},
+  {id:"n1",cat:"nat",tag:"expected",name:"רעידת אדמה חזקה",desc:"השבר הסורי־אפריקאי. צפויה, אך לא נחוותה בדורנו"},
+  {id:"n2",cat:"nat",tag:"known",name:"שריפות ענק",desc:"שריפות יער וחורש שמאיימות על יישובים"},
+  {id:"n3",cat:"nat",tag:"known",name:"גלי חום קיצוניים",desc:"ימים ארוכים מעל 40 מעלות. סכנה לילדים ולמבוגרים"},
+  {id:"n4",cat:"nat",tag:"known",name:"שיטפונות בזק",desc:"מים שמגיעים בדקות לאזור יבש"},
+  {id:"n5",cat:"nat",tag:"expected",name:"צונאמי בחוף הים התיכון",desc:"נדיר, אך אפשרי בעקבות רעידה בים"},
+  {id:"n6",cat:"nat",tag:"known",name:"בצורת ומחסור במים",desc:"כמה שנים ברצף של מעט גשם"},
+  {id:"n7",cat:"nat",tag:"rare",name:"סופות שלג וקור קיצוני",desc:"כבישים חסומים וחשמל שנופל בחורף"},
+  {id:"n8",cat:"nat",tag:"rare",name:"עליית מפלס הים וקריסת מצוקים",desc:"פגיעה בבתים ובתשתיות לאורך החוף"},
+  {id:"n9",cat:"nat",tag:"known",name:"סופות אבק וזיהום אוויר",desc:"ימים שבהם לא יוצאים החוצה"},
+  {id:"n10",cat:"nat",tag:"rare",name:"התפרצות געשית בחו״ל וסגירת השמיים",desc:"ענן אפר שמשבית טיסות. ישראל תלויה בתעופה"},
+  {id:"n11",cat:"nat",tag:"rare",name:"פלישת מזיקים או ארבה",desc:"פגיעה בחקלאות ובמזון המקומי"},
+  {id:"h1",cat:"hea",tag:"known",name:"מגפה עולמית",desc:"סגרים, למידה מרחוק, בידוד"},
+  {id:"h2",cat:"hea",tag:"known",name:"מחלות שמגיעות עם ההתחממות",desc:"מחלות שמועברות ביתושים ונעשות נפוצות"},
+  {id:"h3",cat:"hea",tag:"rare",name:"עמידות לאנטיביוטיקה",desc:"זיהומים פשוטים שקשה לטפל בהם"},
+  {id:"h4",cat:"hea",tag:"known",name:"משבר נפשי קהילתי ממושך",desc:"שחיקה, חרדה ואבל שמצטברים לאורך זמן"},
+  {id:"h5",cat:"hea",tag:"known",name:"אירוע רב־נפגעים",desc:"הרבה פצועים בבת אחת, עומס על בתי החולים"},
+  {id:"h6",cat:"hea",tag:"known",name:"דליפת חומרים מסוכנים",desc:"דליפה ממפעל או ממכלית"},
+  {id:"t1",cat:"inf",tag:"expected",name:"הפסקת חשמל ארוכה ונרחבת",desc:"ישראל היא ״אי אנרגטי״, בלי חיבור לרשתות שכנות"},
+  {id:"t2",cat:"inf",tag:"rare",name:"סערה גיאומגנטית (סערת שמש)",desc:"פגיעה בלוויינים, ב־GPS ובתקשורת"},
+  {id:"t3",cat:"inf",tag:"rare",name:"תקלה במתקני ההתפלה",desc:"רוב מי השתייה בישראל מגיעים מהתפלה"},
+  {id:"t4",cat:"inf",tag:"rare",name:"קריסת אינטרנט ושירותי ענן",desc:"מערכות לימוד, תשלום ותקשורת נעלמות"},
+  {id:"t5",cat:"inf",tag:"known",name:"זיופים עמוקים ומידע כוזב במשבר",desc:"הודעות וסרטונים מזויפים שמפיצים פאניקה"},
+  {id:"t6",cat:"inf",tag:"rare",name:"אוטומציה ו־AI בעולם העבודה",desc:"מקצועות שנעלמים ומקצועות חדשים"},
+  {id:"t7",cat:"inf",tag:"rare",name:"תלות ב־AI ואובדן מיומנויות",desc:"מה קורה כשהכלים לא זמינים"},
+  {id:"e1",cat:"soc",tag:"known",name:"קיטוב חברתי ושחיקת אמון",desc:"פחות אמון בין קבוצות ובמוסדות"},
+  {id:"e2",cat:"soc",tag:"known",name:"משבר כלכלי ויוקר מחיה",desc:"משפחות במצוקה, קיצוצים בשירותים"},
+  {id:"e3",cat:"soc",tag:"rare",name:"שיבוש ביבוא מזון",desc:"רוב הדגנים בישראל מיובאים בים"},
+  {id:"e4",cat:"soc",tag:"known",name:"הגירה החוצה ובריחת מוחות",desc:"משפחות ואנשי מקצוע שעוזבים"},
+  {id:"e5",cat:"soc",tag:"rare",name:"הזדקנות ובדידות",desc:"יותר מבוגרים שחיים לבד"},
+  {id:"e6",cat:"soc",tag:"known",name:"בידוד בינלאומי",desc:"פחות שיתופי פעולה, סחר ומחקר"},
+  {id:"e7",cat:"soc",tag:"known",name:"קליטת אוכלוסייה בהיקף גדול",desc:"מפונים, עולים או מהגרים שמגיעים בבת אחת"},
+  {id:"e8",cat:"soc",tag:"known",name:"מחסור במורים ובאנשי מקצוע",desc:"פחות אנשים לאייש תפקידים חיוניים"},
+  {id:"w1",cat:"wild",tag:"wild",opp:true,name:"הסכם שלום אזורי רחב",desc:"גבולות פתוחים ושגרה חדשה לגמרי"},
+  {id:"w2",cat:"wild",tag:"wild",opp:true,name:"אנרגיה זולה ונקייה בשפע",desc:"פריצת דרך שמשנה כלכלה ותשתיות"},
+  {id:"w3",cat:"wild",tag:"wild",name:"קריסת מערך הלוויינים",desc:"התנגשות בחלל שפוגעת בתקשורת ובניווט"},
+  {id:"w4",cat:"wild",tag:"wild",name:"מחסור עולמי במזון",desc:"מגפה בבעלי חיים או כישלון יבולים עולמי"},
+  {id:"w5",cat:"wild",tag:"wild",opp:true,name:"גל חזרה של ישראלים מחו״ל",desc:"צמיחה מהירה של קהילות"},
+  {id:"w6",cat:"wild",tag:"wild",name:"AI שמשנה את בית הספר מהיסוד",desc:"למידה שנראית אחרת לגמרי"}
+];
+const REGIONS = ["כל הארץ","גליל עליון וגבול לבנון","רמת הגולן","גליל מערבי","עמקים וגליל תחתון","חיפה והקריות","השרון","מרכז וגוש דן","ירושלים והסביבה","השפלה","יהודה ושומרון","עוטף עזה והנגב המערבי","באר שבע והנגב","בקעת הירדן וים המלח","ערבה ואילת","מישור החוף הדרומי"];
+const ROLES = {
+  school:["מורה מחנך או מחנכת","תלמיד או תלמידה בכיתה ו׳","הורה","מנהל או מנהלת בית הספר","יועץ או יועצת"],
+  community:["רכז או רכזת צח״י","תושב ותיק או תושבת ותיקה","נער או נערה בני 16","הורה לילדים קטנים","מתנדב או מתנדבת"],
+  org:["מנהל או מנהלת","עובד או עובדת שטח","אחראי או אחראית רציפות תפקודית","לקוח או לקוחה"],
+  pro:["חבר או חברה ותיקים בקהילה","חוקר או חוקרת","איש או אשת מקצוע בשטח","מנהל או מנהלת שמזמינים ידע מהקהילה"]
+};
+const TYPE_LABEL = {school:"בית ספר", community:"קהילה ויישוב", org:"ארגון", pro:"קהילה מקצועית או רשת מומחים"};
+const TYPE_COPY = {
+  school:{
+    descLabel:"תיאור בית הספר",
+    placeholder:"למשל: בית ספר יסודי, כ־300 תלמידים ממושב ומשני קיבוצים. חלק מהצוות גר מחוץ ליישוב. יש מרחב מוגן אחד לכל שתי כיתות.",
+    hint:"כדאי לציין: שכבות גיל ומספר תלמידים, מאיפה מגיעים התלמידים והצוות, מרחבים מוגנים, ואוכלוסיות שזקוקות לתמיכה מיוחדת.",
+    drv:"מה עלול להשפיע על הלמידה, על התלמידים, על המשפחות ועל הצוות? לבחור 5–8 מניעים, ולשלב מוכרים עם כאלה שפחות מדברים עליהם בישראל.",
+    synth:"מה בית הספר יכול להכין כבר השנה: צעדים שעובדים בכל העולמות, צעדים לעולם מסוים, וסימנים שכדאי לעקוב אחריהם."
+  },
+  community:{
+    descLabel:"תיאור הקהילה או היישוב",
+    placeholder:"למשל: מושב של כ־800 תושבים ותושבות, הרבה משפחות צעירות ומבוגרים שגרים לבד, דרך גישה אחת, צוות צח״י פעיל.",
+    hint:"כדאי לציין: גודל והרכב האוכלוסייה, דרכי גישה, מוסדות ושירותים ביישוב, מי מוביל בחירום, ומי עלול להישאר מאחור.",
+    drv:"מה עלול להשפיע על התושבים, על השירותים ועל הקשרים בקהילה? לבחור 5–8 מניעים, ולשלב מוכרים עם כאלה שפחות מדברים עליהם בישראל.",
+    synth:"מה הקהילה יכולה להכין כבר עכשיו: צעדים שעובדים בכל העולמות, צעדים לעולם מסוים, וסימנים שצוות היישוב כדאי שיעקוב אחריהם."
+  },
+  pro:{
+    descLabel:"תיאור הקהילה המקצועית",
+    placeholder:"למשל: קהילה מקוונת של חוקרים, חוקרות ואנשי ואנשות מקצוע מכל הארץ בתחומי AI, חוסן, חינוך וחירום, שנפגשים בזום ובקבוצת דיון.",
+    hint:"כדאי לציין: מי חברים בקהילה, איך היא נפגשת ומתקשרת, מה המטרה שלה, ולמי היא נותנת ידע או שירות.",
+    drv:"מה עלול להשפיע על החברים והחברות, על הידע המשותף ועל ההשפעה של הקהילה? לבחור 5–8 מניעים, ולשלב מוכרים עם כאלה שפחות מדברים עליהם בישראל.",
+    synth:"מה הקהילה המקצועית יכולה להכין כבר עכשיו: צעדים שעובדים בכל העולמות, צעדים לעולם מסוים, וסימנים שכדאי לעקוב אחריהם."
+  },
+  org:{
+    descLabel:"תיאור הארגון",
+    placeholder:"למשל: מפעל מזון עם כ־150 עובדים ועובדות במשמרות, ספקים מהצפון, לקוחות בכל הארץ, תלות גבוהה בחשמל ובקירור.",
+    hint:"כדאי לציין: תחום הפעילות, מספר העובדים ואיפה הם גרים, תלות בספקים ובתשתיות, ואילו שירותים חייבים להמשיך גם בחירום.",
+    drv:"מה עלול להשפיע על העובדים, על הלקוחות ועל הרציפות התפקודית? לבחור 5–8 מניעים, ולשלב מוכרים עם כאלה שפחות מדברים עליהם בישראל.",
+    synth:"מה הארגון יכול להכין כבר עכשיו: צעדים שעובדים בכל העולמות, צעדים לעולם מסוים, וסימנים שההנהלה כדאי שתעקוב אחריהם."
+  }
+};
+
+/* ---------- Example ---------- */
+const EXAMPLE = {
+  ctx:{type:"school", region:"גליל עליון וגבול לבנון", horizon:"2035", desc:"בית ספר יסודי ממלכתי, כ־320 תלמידים ממושב ומשני קיבוצים סמוכים. הקהילה פונתה לתקופה ארוכה וחזרה. חלק מהמשפחות חדשות באזור.", role:"מורה מחנך או מחנכת"},
+  selected:["s1","s4","n3","t1","t5","t2","w1"],
+  axesOptions:[
+    {x:{name:"המצב הביטחוני בגבול הצפון", low:"רגיעה יציבה", high:"איום מתמשך"}, y:{name:"יציבות התשתיות (חשמל, תקשורת, מים)", low:"תשתיות אמינות", high:"שיבושים חוזרים"}, why:"שני הצירים משפיעים ישירות על השגרה בבית הספר. ציר התשתיות מכניס לתמונה גם את סערות השמש ואת הרשת שעובדת בקצה גבול היכולת, נושאים שכמעט לא מדברים עליהם."},
+    {x:{name:"המצב הביטחוני בגבול הצפון", low:"רגיעה יציבה", high:"איום מתמשך"}, y:{name:"הלכידות בקהילה", low:"קהילה מפוזרת", high:"קהילה מלוכדת"}, why:"בודק אם החוסן נשען על הקשרים בין המשפחות הוותיקות והחדשות."},
+    {x:{name:"האקלים בקיץ", low:"חום נסבל", high:"גלי חום קיצוניים וארוכים"}, y:{name:"המידע בקבוצות ההורים", low:"מידע אמין", high:"הצפה של מידע מזויף"}, why:"צירים פחות צפויים, שמוציאים את החשיבה מהמסגרת הביטחונית."}
+  ],
+  axesIdx:0,
+  worlds:[
+    {x:"low",y:"low",name:"הכיתה הפתוחה",headline:"ספטמבר 2035: יותר ילדים נרשמו לכיתה א׳ בגליל העליון מאשר בכל שנה מאז הפינוי",story:"הגבול שקט כבר כמה שנים. משפחות חזרו, ונוספו גם משפחות חדשות. בית הספר מלמד הרבה בחוץ ובקהילה, ונעזר בתשתיות חדשות. האתגר הגדול הוא דווקא השקט: דור שלא מכיר אזעקות, צוות שמפסיק לתרגל, וזיכרונות מהפינוי שלא עובדו. גלי החום מקצרים את ימי הלימוד בקיץ.",strengths:["קהילה שגדלה וצעירה","תשתיות חדשות ואמינות","זמן ומשאבים לעבודה רגשית"],fragilities:["שאננות ותרגילים שנזנחים","פער בין משפחות ותיקות לחדשות","פגיעה רגשית סמויה מתקופת הפינוי"],signals:["קצב החזרה של משפחות מפונות","השקעה ממשלתית בתשתיות בצפון","ירידה בתדירות התרגילים במוסדות"],wildcard:"הסכם אזורי רחב פותח את הגבול לטיולים ולשיתופי פעולה, ומעלה שאלות חדשות על זהות ועל אמון."},
+    {x:"high",y:"low",name:"שגרה במרחב מוגן",headline:"שנת הלימודים נפתחה בזמן. גם הפעם, חלק מהשיעורים מתקיימים במרחב המוגן",story:"ירי לסירוגין הפך לחלק מהחיים. בית הספר עובד במתכונת משולבת: ימים בבית הספר, ימים מרחוק, ומרחבים מוגנים שהותאמו ללמידה. החשמל והאינטרנט אמינים, ולכן הלמידה לא נעצרת. השחיקה של הצוות ושל ההורים מצטברת, וחלק מהמשפחות עוזבות.",strengths:["נהלים מוכרים ומתורגלים","למידה מרחוק שעובדת","רשת תמיכה בין הורים"],fragilities:["שחיקה של הצוות","בדידות של ילדים בימים בבית","ירידה במספר התלמידים"],signals:["תדירות האירועים בגבול","שיעור העזיבה של אנשי צוות","עומס פניות ליועצות וליועצים"],wildcard:"מתקפת סייבר מנצלת את התלות בלמידה מרחוק ומשביתה את המערכות ביום מבחנים."},
+    {x:"low",y:"high",name:"ימים בלי רשת",headline:"סערת שמש שיבשה את הלוויינים. בתי הספר בגליל חזרו ללוח ולגיר ליומיים",story:"הגבול רגוע, אבל התשתיות לא. גלי חום מעמיסים על רשת החשמל, וסערה גיאומגנטית בשנים של שיא הפעילות של השמש פגעה בתקשורת ובניווט. בית הספר לומד לתפקד בלי מסכים: ערכות למידה מודפסות, לוח מודעות בכניסה, וגנרטור סולארי קטן. השמועות והסרטונים המזויפים מתפשטים מהר דווקא כשהרשת חוזרת.",strengths:["שקט ביטחוני שמאפשר להתכונן","הקהילה מכירה את עצמה","יצירתיות של הצוות"],fragilities:["תלות כמעט מלאה במסכים","מבוגרים וילדים פגיעים לחום","קושי לאמת מידע"],signals:["הפסקות חשמל בימי שיא בקיץ","התראות על סערות שמש","הפצה של סרטונים מזויפים בקבוצות הורים"],wildcard:"סערת השמש היא הדוגמה לאיום שכמעט לא מוכר בישראל, ובעולם הזה הוא משבש יומיים של חיים רגילים."},
+    {x:"high",y:"high",name:"האיים",headline:"בלי חשמל, בלי קליטה, עם שכנים: כך החזיק המושב שבוע שלם",story:"ירי מתמשך ותשתיות שקורסות שוב ושוב. כל יישוב הופך ל״אי״ שצריך להחזיק את עצמו, כלומר לתפקד באוטונומיה תפקודית. בית הספר הוא מרכז קהילתי: מים, חשמל סולארי, מקום לחדשות אמינות ולמפגש. הקהילות שפיתחו אוטונומיה תפקודית מראש מחזיקות. אחרות מתקשות.",strengths:["עזרה הדדית וידע מקומי","בית הספר כעוגן קהילתי","אוטונומיה תפקודית באנרגיה, במים ובקבלת החלטות"],fragilities:["בידוד ממשאבים מבחוץ","עומס רגשי כבד","מידע כוזב בלי דרך לבדוק"],signals:["ניסיונות להשבית תשתיות בצפון","מוכנות של צוותי צח״י","היקף מערכות סולאריות ביישובים"],wildcard:"קריסה של שירותי ענן מנתקת את המשפחות מהמערכות הדיגיטליות של בית הספר."}
+  ],
+  active:2,
+  exp:{2:{day:`שמי נועה, אני מחנכת כיתה ו׳. יוני 2035, יום שלישי.
+
+הטלפון התעורר בשש וחצי עם הודעה מהרשת: ״שיבושים בתקשורת בעקבות סערת שמש. זה לא אירוע ביטחוני.״ בשבע כבר לא הייתה קליטה בכלל.
+
+בכניסה לבית הספר עמד גבי, איש התחזוקה, ותלה על לוח השעם את הדף הצהוב. ככה אנחנו מתקשרים עם ההורים בימים כאלה. הילדים הגיעו לאט, חלקם ברגל. מישהו אמר שבקבוצה של ההורים התפרסם סרטון שבו ״הצבא מפנה את היישוב״. אף אחד לא ראה את הסרטון, כי אין רשת. רק שמעו עליו.
+
+פתחתי את ארגז הלמידה האדום: מפות מודפסות, משחקי קלפים בחשבון, חוברת ״מדע בלי חשמל״. ביקשתי מהכיתה לבדוק איך יודעים אם מידע נכון כשאי אפשר לבדוק בגוגל. אורי הציע ללכת לשאול את רכזת הביטחון. טליה אמרה: ״או לשאול שלושה אנשים שלא מכירים זה את זה.״
+
+בצהריים החום עלה ל־41, והמזגנים כבתו. עברנו לחדר הספרייה, שיש בו מאוורר על סוללה. קראנו בקול.
+
+בדרך הביתה נזכרתי במה שאמרו לנו לפני עשר שנים, כשהכנו את הארגזים האלה: ״זה בשביל מלחמה.״ בסוף השתמשנו בהם בגלל השמש.`}},
+  synth:{
+    no_regret:[
+      {action:"ערוץ קשר עם ההורים שלא תלוי באינטרנט: לוח מודעות קבוע, רצים לפי שכבות, וקשר דרך רכז או רכזת הביטחון",why:"עובד בכל ארבעת העולמות, ובמיוחד כשהרשת נופלת"},
+      {action:"ארגז למידה בלי חשמל לכל כיתה",why:"משמש גם בהפסקת חשמל, גם במרחב מוגן וגם ביום סערה"},
+      {action:"שגרות ויסות רגשי קבועות שלא תלויות במסכים",why:"מצמצמות שחיקה ותורמות גם בשקט וגם במשבר"},
+      {action:"חיבור מכוון בין משפחות ותיקות וחדשות",why:"לכידות היא המשאב שמחזיק ״איים״ ומונע פערים ב״כיתה הפתוחה״"},
+      {action:"לימוד אוריינות מידע: איך מזהים זיוף ובודקים שמועה",why:"מידע כוזב מופיע בכל העולמות"},
+      {action:"פיתוח אוטונומיה תפקודית: לבדוק איך בית הספר מתפקד כמה ימים בלי עזרה, חשמל או הנחיות מבחוץ, ולהכין את מה שחסר",why:"בכל העולמות יש ימים שבהם העזרה מבחוץ לא מגיעה בזמן"}
+    ],
+    hedges:[
+      {world:"שגרה במרחב מוגן",action:"תוכנית למניעת שחיקה של הצוות, עם רוטציות וימי התאוששות"},
+      {world:"ימים בלי רשת",action:"מקור אנרגיה סולארי ומאווררים על סוללה בחדר אחד לפחות"},
+      {world:"האיים",action:"הכנה של בית הספר לשמש מרכז קהילתי בחירום"},
+      {world:"הכיתה הפתוחה",action:"תרגול שנתי קבוע גם כשהכול שקט"}
+    ],
+    signals:["קצב החזרה של משפחות מפונות","מספר הפסקות החשמל בקיץ","התראות על סערות שמש","שיעור העזיבה של אנשי צוות","סרטונים מזויפים בקבוצות ההורים"],
+    questions:["על איזה מהעולמות הכי קשה לנו לחשוב, ולמה?","מה כבר יש לנו היום שעובד בכל העולמות?","מי בקהילה לא נמצא בחדר, וצריך להיות?"]
+  }
+};
+
+/* ---------- State ---------- */
+let state = JSON.parse(JSON.stringify(EXAMPLE));
+state.selected = new Set(EXAMPLE.selected);
+state.custom = [];
+state.filter = "all";
+state.tab = "day";
+state.chat = {};
+state.events = {};
+state.isExample = true;
+state.customRoles = {school:[], community:[], org:[]};
+state.qa = [];
+function rolesFor(type){ return ROLES[type].concat((state.customRoles||{})[type]||[]); }
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
+
+/* ---------- AI ---------- */
+let SAMPLE = null;
+document.documentElement.classList.add("ai-off");
+(async () => {
+  try { if (window.claude && window.claude.use) SAMPLE = await window.claude.use("sample"); } catch(e) { SAMPLE = null; }
+  document.documentElement.classList.toggle("ai-off", !SAMPLE);
+})();
+function errCopy(e){
+  const c = e && e.code;
+  if (c === "not_granted" || c === "sampling_disabled" || c === "not_declared" || c === "capability_disabled" || c === "capability_removed") { SAMPLE = null; document.documentElement.classList.add("ai-off"); return "ה־AI לא זמין בדף הזה."; }
+  if (c === "rate_limited") return "יותר מדי בקשות כרגע. אפשר לנסות שוב בעוד כמה דקות.";
+  if (c === "session_expired") return "אפשר לרענן את הדף ולנסות שוב.";
+  if (c === "refused") return "הבקשה לא נענתה. כדאי לנסח אחרת את התיאור או את המניעים.";
+  if (c === "invalid_json") return "התשובה הגיעה בפורמט לא תקין. אפשר לנסות שוב.";
+  if (c === "cancelled") return "";
+  return "משהו השתבש בחיבור. אפשר לנסות שוב.";
+}
+
+/* JSON from the model, tolerant of Hebrew acronyms written with a plain double quote (צח"י, צה"ל) */
+function repairJSON(t){
+  let s = String(t||"");
+  const a = s.indexOf("{"), b = s.lastIndexOf("}");
+  if(a>=0 && b>a) s = s.slice(a, b+1);
+  try { return JSON.parse(s); } catch(_){}
+  s = s.replace(/([֐-׿])"([֐-׿])/g, "$1״$2").replace(/[“”]/g, '"');
+  try { return JSON.parse(s); } catch(_){}
+  s = s.replace(/,\s*([}\]])/g, "$1");
+  return JSON.parse(s);
+}
+async function askJSON(prompt, opts){
+  const full = prompt + `\n\nחשוב לפורמט: JSON תקין בלבד, בלי טקסט לפניו או אחריו. בתוך מחרוזות לא להשתמש במירכאות רגילות ("). בקיצורים עבריים להשתמש בגרשיים עבריים (״), למשל צח״י.`;
+  try { return await SAMPLE.json(full, opts); }
+  catch(e){
+    if(e && e.code==="invalid_json" && e.text){ try { return repairJSON(e.text); } catch(_){} }
+    throw e;
+  }
+}
+
+const RULES = `את/ה עוזר/ת חשיבת עתידים (Futures Thinking) במערכת Be Good לחוסן קהילתי וחינוכי בישראל.
+כללים:
+- כתיבה בעברית טבעית וברורה. בפנייה לקהל: לשון ניטרלית מגדרית או פנייה לשני המינים. דמות שמדברת על עצמה מדברת במגדר שלה.
+- הקשר ישראלי מדויק ומציאותי: גיאוגרפיה, מוסדות (פיקוד העורף, הרשות המקומית, צוות צח״י, משרד החינוך, רכז/ת ביטחון). לא להמציא נתונים סטטיסטיים כאילו הם אמיתיים. לא להזכיר פוליטיקאים אמיתיים, ולא לנקוט עמדה פוליטית.
+- מסגור של חוסן: בכל עולם יש גם מקורות כוח, יכולת השפעה וקהילה, לא רק איום. בלי תיאורים גרפיים של אלימות או פציעות. בלי קטסטרופה מוגזמת. בהקשר של בית ספר: מותאם לגיל.
+- עיקרון העתיד הלא ידוע: לשלב גם איומים והזדמנויות שפחות מוכרים בישראל, כי העתיד תמיד מפתיע.
+- עיקרון האוטונומיה התפקודית: ארגון, קהילה או בית ספר צריכים לפתח מידה של אוטונומיה תפקודית, כלומר יכולת להמשיך לתפקד גם כשהעזרה, התשתיות או ההנחיות מבחוץ לא מגיעות. כשעולם או מצב דורשים זאת, לקרוא לזה בשמו: אוטונומיה תפקודית.
+- תרחישים אינם תחזית. הם עולמות אפשריים וסבירים לחשיבה.`;
+
+function ctxText(){
+  const c = state.ctx;
+  return `סוג: ${TYPE_LABEL[c.type]}\nאזור: ${c.region || "לא צוין"}\nשנת יעד: ${c.horizon}\nתיאור: ${c.desc || "לא נמסר"}`;
+}
+function allDrivers(){ return LIB.concat(state.custom); }
+function selectedDrivers(){ return allDrivers().filter(d => state.selected.has(d.id)); }
+function driversText(){
+  return selectedDrivers().map(d => `- ${d.name} (${TAGS[d.tag].label}${d.opp?", הזדמנות":""})${d.desc?": "+d.desc:""}`).join("\n") || "(לא נבחרו מניעים)";
+}
+function hasUnknown(){ return selectedDrivers().some(d => d.tag==="rare" || d.tag==="wild" || d.tag==="ai"); }
+function curAxes(){ return state.axesOptions[state.axesIdx]; }
+function leaveExample(){ if(state.isExample){ state.isExample=false; $("exampleBar").style.display="none"; } }
+
+/* ---------- Render: context ---------- */
+function renderCtx(){
+  document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v===state.ctx.type)));
+  $("region").innerHTML = `<option value="" ${state.ctx.region?"":"selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r===state.ctx.region?"selected":""}>${esc(r)}</option>`).join("");
+  $("horizon").value = state.ctx.horizon;
+  $("desc").value = state.ctx.desc;
+  const tc = TYPE_COPY[state.ctx.type];
+  $("descLabel").textContent = tc.descLabel;
+  $("desc").placeholder = tc.placeholder;
+  $("descHint").textContent = tc.hint;
+  $("drvHint").textContent = tc.drv;
+  $("synthHint").textContent = tc.synth;
+  const roles = rolesFor(state.ctx.type);
+  if(!roles.includes(state.ctx.role)) state.ctx.role = roles[0];
+  $("role").innerHTML = roles.map(r => `<option ${r===state.ctx.role?"selected":""}>${esc(r)}</option>`).join("") + `<option value="__add">+ הוספת תפקיד אחר…</option>`;
+}
+
+/* ---------- Render: drivers ---------- */
+function renderFilters(){
+  const opts = [{id:"all",name:"הכול"},{id:"unk",name:"פחות מוכרים וקלפי פרא"}].concat(CATS);
+  $("filters").innerHTML = opts.map(o => `<button type="button" data-f="${o.id}" aria-pressed="${state.filter===o.id}">${esc(o.name)}</button>`).join("");
+}
+function renderDrivers(){
+  let list = allDrivers();
+  if(state.filter==="unk") list = list.filter(d => d.tag==="rare"||d.tag==="wild"||d.tag==="ai");
+  else if(state.filter!=="all") list = list.filter(d => d.cat===state.filter);
+  $("drivers").innerHTML = list.map(d => {
+    const on = state.selected.has(d.id);
+    const catName = (CATS.find(c=>c.id===d.cat)||{}).name || "";
+    return `<label class="drv ${on?"on":""}" for="cb_${d.id}">
+      <input type="checkbox" id="cb_${d.id}" data-id="${d.id}" ${on?"checked":""}>
+      <span><span class="nm">${esc(d.name)}</span>
+      ${d.desc?`<span class="ds"><br>${esc(d.desc)}</span>`:""}
+      <span class="tg"><span class="tag ${TAGS[d.tag].cls}">${TAGS[d.tag].label}</span>${d.opp?'<span class="tag t-opp">הזדמנות</span>':""}${state.filter==="all"||state.filter==="unk"?`<span class="tag t-known" style="background:transparent">${esc(catName)}</span>`:""}</span></span>
+    </label>`;
+  }).join("");
+  renderMeter();
+}
+function renderMeter(){
+  const sel = selectedDrivers();
+  const unk = sel.filter(d => d.tag==="rare"||d.tag==="wild"||d.tag==="ai").length;
+  const exp = sel.filter(d => d.tag==="expected").length;
+  $("meter").innerHTML = `<span>נבחרו <b>${sel.length}</b> מניעים</span><span>·</span><span>${exp} צפויים שטרם נחוו</span><span>·</span><span>${unk} פחות מוכרים או קלפי פרא</span><span>·</span>` +
+    (unk>0 ? `<span class="ok">עיקרון העתיד הלא ידוע מתקיים</span>` : `<span class="warn">חסר מניע לא מוכר. אפשר לבחור אחד, או שה־AI יוסיף בעצמו בשלב הבא</span>`);
+}
+
+/* ---------- Render: axes ---------- */
+function axLine(a){ return `<div class="axline"><b>${esc(a.name)}</b><br>${esc(a.low)} ⟷ ${esc(a.high)}</div>`; }
+function renderAxes(){
+  if(!state.axesOptions.length){ $("axesOpts").innerHTML = `<p class="muted small">עוד אין צירים. לבחור מניעים ואז ללחוץ על ״הצעת צירים״.</p>`; return; }
+  $("axesOpts").innerHTML = state.axesOptions.map((o,i) => `<div class="axopt ${i===state.axesIdx?"on":""}" data-i="${i}" tabindex="0" role="radio" aria-checked="${i===state.axesIdx}">
+    <div class="small muted">אפשרות ${i+1}${i===state.axesIdx?" · נבחרה":""}</div>
+    ${axLine(o.x)}${axLine(o.y)}
+    <div class="small muted">${esc(o.why||"")}</div>
+  </div>`).join("");
+}
+
+/* ---------- Render: worlds ---------- */
+function renderWorlds(){
+  const ax = curAxes();
+  if(!state.worlds.length || !ax){ $("matrix").innerHTML = `<p class="muted small" style="grid-column:1/-1">עוד אין עולמות. לבחור צירים ואז ללחוץ על ״בניית העולמות״.</p>`; return; }
+  const cell = (x,y) => {
+    const i = state.worlds.findIndex(w => w.x===x && w.y===y);
+    if(i<0) return `<div class="world muted small">חסר עולם ברבע הזה</div>`;
+    const w = state.worlds[i];
+    return `<article class="world ${i===state.active?"active":""}">
+      <div class="q">${esc(x==="low"?ax.x.low:ax.x.high)} · ${esc(y==="low"?ax.y.low:ax.y.high)}</div>
+      <h3>${esc(w.name)}</h3>
+      <div class="hl">״${esc(w.headline)}״</div>
+      <p class="small">${esc(w.story)}</p>
+      <div class="lbl">מקורות כוח</div><ul>${(w.strengths||[]).map(s=>`<li>${esc(s)}</li>`).join("")}</ul>
+      <div class="lbl">נקודות שבירה</div><ul>${(w.fragilities||[]).map(s=>`<li>${esc(s)}</li>`).join("")}</ul>
+      <div class="lbl">סימנים שאפשר לראות כבר היום</div><ul>${(w.signals||[]).map(s=>`<li>${esc(s)}</li>`).join("")}</ul>
+      ${w.wildcard?`<div class="wc"><b>ההפתעה בעולם הזה:</b> ${esc(w.wildcard)}</div>`:""}
+      <button type="button" data-visit="${i}" ${i===state.active?'class="primary"':""}>${i===state.active?"מבקרים כאן עכשיו":"ביקור בעולם הזה"}</button>
+    </article>`;
+  };
+  $("matrix").innerHTML = `
+    <div class="ylab"><span>${esc(ax.y.high)}</span><span class="axis-name">${esc(ax.y.name)}</span><span>${esc(ax.y.low)}</span></div>
+    ${cell("low","high")}${cell("high","high")}
+    ${cell("low","low")}${cell("high","low")}
+    <div class="xlab"><span>${esc(ax.x.low)}</span><span class="axis-name">${esc(ax.x.name)}</span><span>${esc(ax.x.high)}</span></div>`;
+}
+
+/* ---------- Render: visit ---------- */
+function activeWorld(){ return state.worlds[state.active]; }
+function renderVisit(){
+  const w = activeWorld();
+  $("visitName").textContent = w ? w.name : "";
+  document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.t===state.tab)));
+  const p = $("panel");
+  if(!w){ p.innerHTML = `<p class="muted small">לבחור עולם בשלב 4.</p>`; return; }
+  const ex = (state.exp[state.active]||{});
+  const t = state.tab;
+  if(t==="day"||t==="news"||t==="letter"){
+    const labels = {day:"כתיבת יום בחיים", news:"כתיבת עמוד ראשון מהעתיד", letter:"כתיבת מכתב מהעתיד"};
+    p.innerHTML = `<div class="row needs-ai"><button type="button" class="primary" id="genExp">${labels[t]}</button><button type="button" id="stopExp" hidden>עצירה</button><span class="status" id="expStatus" aria-live="polite"></span></div>
+      <div class="out ${ex[t]?"":"empty"}" id="expOut">${ex[t]?esc(ex[t]):"עוד לא נכתב. ללחוץ על הכפתור כדי ליצור."}</div>
+      ${ex[t]?`<div class="row"><button type="button" id="copyExp">העתקה</button></div>`:""}`;
+  } else if(t==="chat"){
+    const msgs = state.chat[state.active] || [];
+    p.innerHTML = `<p class="small muted">שיחה עם ${esc(state.ctx.role)} שחיים בעולם ״${esc(w.name)}״ בשנת ${esc(state.ctx.horizon)}.</p>
+      <div class="chat" id="chatBox">${msgs.length?msgs.map(m=>`<div class="msg ${m.role==="user"?"u":"a"}">${esc(m.content)}</div>`).join(""):`<div class="muted small">אפשר להתחיל באחת השאלות:</div>`}</div>
+      <div class="row needs-ai" id="chips">${["מה הכי עזר לכם להחזיק מעמד?","מה הייתם רוצים שנכין כבר עכשיו?","איך נראה אצלכם יום רגיל?","מה הפתיע אתכם בעולם הזה?"].map(q=>`<button type="button" data-q="${esc(q)}" class="small">${esc(q)}</button>`).join("")}</div>
+      <form class="row needs-ai" id="chatForm"><input type="text" id="chatIn" placeholder="שאלה לדמות" style="flex:1;min-width:200px" aria-label="שאלה לדמות"><button type="submit" class="primary">שליחה</button></form>
+      <span class="status" id="chatStatus" aria-live="polite"></span>`;
+  } else if(t==="event"){
+    const ev = state.events[state.active];
+    p.innerHTML = `<p class="small muted">אירוע חירום שמתרחש בתוך העולם הזה. אפשר להעביר אותו לסימולטור החירום של Be Good לתרגול תגובה.</p>
+      <div class="row needs-ai"><button type="button" class="primary" id="genEvent">יצירת אירוע</button><span class="status" id="evStatus" aria-live="polite"></span></div>
+      <div id="evOut">${ev?eventHTML(ev):`<p class="muted small">עוד לא נוצר אירוע.</p>`}</div>`;
+  }
+}
+function eventHTML(ev){
+  return `<div class="event">
+    <h3>${esc(ev.title)}</h3>
+    <div class="small muted">${esc(ev.when)}</div>
+    <p>${esc(ev.what_happens)}</p>
+    <p class="small"><b>למה דווקא בעולם הזה:</b> ${esc(ev.why_this_world)}</p>
+    <div class="cols">
+      <div class="box"><b>האתגרים בשעות הראשונות</b><ul>${(ev.first_hours||[]).map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>
+      <div class="box"><b>על מה אפשר להישען</b><ul>${(ev.resources||[]).map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>
+    </div>
+    <div class="box small"><b>תדריך לסימולטור:</b> ${esc(ev.sim_brief)}</div>
+    <div class="row"><button type="button" id="copyEvent">העתקת התדריך לסימולטור</button></div>
+  </div>`;
+}
+
+/* ---------- Render: synthesis ---------- */
+function renderSynth(){
+  const s = state.synth;
+  if(!s){ $("synth").innerHTML = `<p class="muted small">עוד אין סיכום.</p>`; return; }
+  $("synth").innerHTML = `<div class="cols">
+    <div class="box"><b>צעדים שעובדים בכל העולמות</b><ol>${(s.no_regret||[]).map(a=>`<li><b>${esc(a.action)}</b><br><span class="small muted">${esc(a.why)}</span></li>`).join("")}</ol></div>
+    <div class="box"><b>צעדים לעולם מסוים</b><ul>${(s.hedges||[]).map(h=>`<li><b>${esc(h.world)}:</b> ${esc(h.action)}</li>`).join("")}</ul>
+      <div style="margin-top:10px"><b>סימנים למעקב</b></div><ul>${(s.signals||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+    <div class="box"><b>שאלות לדיון בצוות</b><ul>${(s.questions||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+  </div>`;
+}
+function synthText(){
+  const s = state.synth; if(!s) return "";
+  return `מחולל עתידים · Be Good\n${TYPE_LABEL[state.ctx.type]} · ${state.ctx.region} · ${state.ctx.horizon}\n\nצעדים שעובדים בכל העולמות:\n${(s.no_regret||[]).map((a,i)=>`${i+1}. ${a.action} (${a.why})`).join("\n")}\n\nצעדים לעולם מסוים:\n${(s.hedges||[]).map(h=>`- ${h.world}: ${h.action}`).join("\n")}\n\nסימנים למעקב:\n${(s.signals||[]).map(x=>`- ${x}`).join("\n")}\n\nשאלות לדיון:\n${(s.questions||[]).map(x=>`- ${x}`).join("\n")}`;
+}
+
+function renderAll(){ renderCtx(); renderFilters(); renderDrivers(); renderAxes(); renderWorlds(); renderVisit(); renderSynth(); if(typeof renderAsk==="function") renderAsk(); }
+
+/* ---------- Copy ---------- */
+async function copy(text){
+  try { await navigator.clipboard.writeText(text); toast("הועתק"); }
+  catch(e){ toast("ההעתקה לא הצליחה. אפשר לסמן ולהעתיק ידנית"); }
+}
+
+/* ---------- Busy helper ---------- */
+function busy(btn, statusEl, on, msg){
+  if(btn) btn.disabled = on;
+  if(statusEl) statusEl.textContent = on ? (msg||"חושב… זה יכול לקחת עד דקה") : "";
+}
+
+/* ---------- AI actions ---------- */
+async function surprise(){
+  if(!SAMPLE) return;
+  const btn=$("surpriseBtn"), st=$("surpriseStatus");
+  busy(btn, st, true, "מחפש הפתעה…");
+  const existing = allDrivers().map(d=>d.name).join(", ");
+  try{
+    const r = await askJSON(`${RULES}
+
+ההקשר:
+${ctxText()}
+
+המניעים שכבר ברשימה: ${existing}
+
+משימה: להציע מניע שינוי אחד שאנשים בישראל כמעט לא חושבים עליו, אבל הוא סביר ורלוונטי להקשר הזה עד שנת היעד. יכול להיות איום או הזדמנות. לא לחזור על מניע שכבר ברשימה.
+להחזיר JSON בלבד: {"name":"עד 6 מילים","desc":"משפט קצר אחד","cat":"sec|nat|hea|inf|soc|wild","opp":false,"why":"משפט אחד: למה זה רלוונטי כאן"}`, {modelTier:"quick", cache:false});
+    if(!r || !r.name) throw {code:"invalid_json"};
+    const id = "ai"+Date.now();
+    state.custom.push({id, name:String(r.name), desc:String(r.desc||""), cat:CATS.some(c=>c.id===r.cat)?r.cat:"wild", tag:"ai", opp:!!r.opp});
+    state.selected.add(id);
+    leaveExample();
+    renderDrivers();
+    st.textContent = r.why ? `נוסף: ${r.name}. ${r.why}` : `נוסף: ${r.name}`;
+    btn.disabled = false;
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+}
+
+async function suggestAxes(){
+  if(!SAMPLE) return;
+  const btn=$("axesBtn"), st=$("axesStatus");
+  if(selectedDrivers().length < 3){ st.textContent = "כדאי לבחור לפחות 3 מניעים."; return; }
+  busy(btn, st, true);
+  const unkNote = hasUnknown() ? "" : "\nשימו לב: לא נבחר אף מניע שפחות מוכר בישראל. להוסיף בעצמך מניע כזה, להשתמש בו לפחות באחת האפשרויות, ולהחזיר אותו בשדה added_driver.";
+  try{
+    const r = await askJSON(`${RULES}
+
+ההקשר:
+${ctxText()}
+
+המניעים שנבחרו:
+${driversText()}
+${unkNote}
+משימה: להציע 3 זוגות שונים של צירי אי־ודאות לבניית מטריצת תרחישים 2x2.
+- כל ציר הוא נושא חשוב שכיוון ההתפתחות שלו לא ידוע, עם שני קצוות שניהם סבירים.
+- שני הצירים בכל זוג בלתי תלויים זה בזה.
+- לפחות אחת משלוש האפשרויות כוללת ציר שנובע ממניע פחות מוכר בישראל או מקלף פרא.
+- שמות הקצוות קצרים (2–4 מילים) וניטרליים.
+להחזיר JSON בלבד:
+{"options":[{"x":{"name":"","low":"","high":""},"y":{"name":"","low":"","high":""},"why":"משפט אחד"}],"added_driver":{"name":"","desc":"","cat":"wild"}}
+(אם לא הוספת מניע, added_driver יהיה null)`, {modelTier:"default"});
+    if(!r || !Array.isArray(r.options) || !r.options.length) throw {code:"invalid_json"};
+    if(r.added_driver && r.added_driver.name){
+      const id="ai"+Date.now();
+      state.custom.push({id,name:String(r.added_driver.name),desc:String(r.added_driver.desc||""),cat:"wild",tag:"ai"});
+      state.selected.add(id);
+    }
+    state.axesOptions = r.options.slice(0,3); state.axesIdx = 0;
+    state.worlds = []; state.exp = {}; state.chat = {}; state.events = {}; state.synth = null;
+    leaveExample(); renderAll();
+    busy(btn, st, false);
+    st.textContent = "לבחור אפשרות אחת, ואז לבנות את העולמות.";
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+}
+
+async function buildWorlds(){
+  if(!SAMPLE) return;
+  const ax = curAxes(); const btn=$("worldsBtn"), st=$("worldsStatus");
+  if(!ax){ st.textContent="קודם כדאי לבחור צירים."; return; }
+  busy(btn, st, true, "בונה ארבעה עולמות… זה יכול לקחת עד דקה וחצי");
+  try{
+    const r = await askJSON(`${RULES}
+
+ההקשר:
+${ctxText()}
+
+המניעים שנבחרו:
+${driversText()}
+
+הצירים:
+ציר X: ${ax.x.name} — low: ${ax.x.low} | high: ${ax.x.high}
+ציר Y: ${ax.y.name} — low: ${ax.y.low} | high: ${ax.y.high}
+
+משימה: לבנות 4 עולמות, אחד לכל שילוב של הקצוות, כפי שייראו בשנת ${state.ctx.horizon} עבור ההקשר הזה.
+- שם לכל עולם: 2–3 מילים, ניטרלי. לא לתת לעולם אחד שם חיובי ולאחר שם שלילי.
+- headline: כותרת עיתון מתוך העולם, עם תאריך בשנת היעד.
+- story: 4–5 משפטים על החיים, הלמידה או העבודה, הקהילה והסביבה בעולם הזה, עבור ההקשר הספציפי.
+- strengths: 3 מקורות כוח. fragilities: 3 נקודות שבירה. signals: 3 סימנים שאפשר לזהות כבר היום, שמרמזים שמתקדמים לעולם הזה.
+- wildcard: משפט אחד על האופן שבו מניע פחות מוכר בישראל, או קלף פרא, מופיע בעולם הזה.
+להחזיר JSON בלבד:
+{"worlds":[{"x":"low|high","y":"low|high","name":"","headline":"","story":"","strengths":["","",""],"fragilities":["","",""],"signals":["","",""],"wildcard":""}]}`, {modelTier:"default"});
+    if(!r || !Array.isArray(r.worlds) || r.worlds.length<4) throw {code:"invalid_json"};
+    state.worlds = r.worlds.slice(0,4).map(w=>({...w, x:w.x==="high"?"high":"low", y:w.y==="high"?"high":"low"}));
+    state.active = 0; state.exp = {}; state.chat = {}; state.events = {}; state.synth = null; state.qa = [];
+    leaveExample(); renderWorlds(); renderVisit(); renderSynth(); renderAsk();
+    busy(btn, st, false); st.textContent = "מוכן. אפשר לבקר בכל עולם בשלב 5.";
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+}
+
+function worldText(w){
+  const ax = curAxes();
+  return `העולם: ״${w.name}״ (שנת ${state.ctx.horizon})
+מיקום בצירים: ${ax.x.name} = ${w.x==="low"?ax.x.low:ax.x.high}; ${ax.y.name} = ${w.y==="low"?ax.y.low:ax.y.high}
+כותרת: ${w.headline}
+תיאור: ${w.story}
+מקורות כוח: ${(w.strengths||[]).join("; ")}
+נקודות שבירה: ${(w.fragilities||[]).join("; ")}
+הפתעה: ${w.wildcard||""}`;
+}
+
+let expCtl = null;
+async function genExp(){
+  if(!SAMPLE) return;
+  const w = activeWorld(); const t = state.tab; const idx = state.active;
+  const btn=$("genExp"), st=$("expStatus"), stop=$("stopExp"), out=$("expOut");
+  const asks = {
+    day:`לכתוב ״יום בחיים״ בגוף ראשון, של ${state.ctx.role} שחי/ה בעולם הזה. לתת לדמות שם. 250–350 מילים. פרטים מוחשיים מהשגרה, אתגר אחד או שניים, ודרך התמודדות שמראה יכולת השפעה וקשר בין אנשים. לסיים ברגע אנושי, בלי מסר מתקתק. טקסט רציף, בלי כותרות.`,
+    news:`לכתוב עמוד ראשון של עיתון מקומי מהעולם הזה, בתאריך בשנת ${state.ctx.horizon}. 5 כותרות, ולכל אחת שורת משנה אחת. לשלב: חדשות מקומיות וארציות, לפחות כותרת אחת מפתיעה שקשורה למניע פחות מוכר בישראל, וכותרת אחת על יוזמה חיובית. בלי markdown, רק טקסט.`,
+    letter:`לכתוב מכתב מ${state.ctx.role} שחי/ה בעולם הזה, אל הצוות של המקום הזה היום. 180–250 מילים. מה הלוואי שהיו מכינים מראש, מה עזר באמת, ומה לא חשוב כמו שחשבו. טון חם וישיר. לחתום בשם.`
+  };
+  expCtl = new AbortController();
+  btn.disabled = true; stop.hidden = false; st.textContent = "חושב…"; out.classList.remove("empty");
+  try{
+    const r = await SAMPLE(`${RULES}
+
+ההקשר:
+${ctxText()}
+
+${worldText(w)}
+
+משימה: ${asks[t]}`, {modelTier:"default", cache:false, signal:expCtl.signal, onText:({text})=>{ out.textContent = text; st.textContent = "כותב…"; }});
+    state.exp[idx] = state.exp[idx] || {}; state.exp[idx][t] = r.text;
+    leaveExample(); renderVisit();
+  }catch(e){
+    if(e && e.text){ state.exp[idx] = state.exp[idx] || {}; state.exp[idx][t] = e.text; }
+    btn.disabled = false; stop.hidden = true; st.textContent = errCopy(e);
+  }
+}
+
+async function sendChat(q){
+  if(!SAMPLE || !q.trim()) return;
+  const w = activeWorld(); const idx = state.active;
+  state.chat[idx] = state.chat[idx] || [];
+  state.chat[idx].push({role:"user", content:q.trim()});
+  renderVisit();
+  const box = $("chatBox"); const st=$("chatStatus");
+  const bubble = document.createElement("div"); bubble.className="msg a"; bubble.textContent="…"; box.appendChild(bubble);
+  st.textContent = "חושב…";
+  const persona = `${RULES}
+
+ההקשר:
+${ctxText()}
+
+${worldText(w)}
+
+את/ה ${state.ctx.role} שחי/ה בעולם הזה בשנת ${state.ctx.horizon}. לבחור שם ולהישאר בדמות לאורך כל השיחה. לענות בעברית, 2–5 משפטים, מוחשי ואישי. מי שמדבר/ת איתך הוא/היא אדם מהיום (${new Date().getFullYear()}) שמנסה ללמוד מה כדאי להכין. אם שואלים על משהו מחוץ לעולם, לענות מתוך הדמות.`;
+  const turns = state.chat[idx].slice(-12);
+  try{
+    const r = await SAMPLE([{role:"user",content:persona}, ...turns], {modelTier:"quick", cache:false, onText:({text})=>{ bubble.textContent = text; }});
+    state.chat[idx].push({role:"assistant", content:r.text});
+    leaveExample(); renderVisit();
+  }catch(e){
+    state.chat[idx].pop(); renderVisit(); $("chatStatus").textContent = errCopy(e);
+  }
+}
+
+async function genEvent(){
+  if(!SAMPLE) return;
+  const w = activeWorld(); const idx = state.active; const btn=$("genEvent"), st=$("evStatus");
+  busy(btn, st, true);
+  try{
+    const r = await askJSON(`${RULES}
+
+ההקשר:
+${ctxText()}
+
+${worldText(w)}
+
+משימה: ליצור אירוע חירום אחד, סביר ומציאותי, שמתרחש בתוך העולם הזה ומושפע מהתנאים שלו. כדאי שהאירוע לא יהיה הצפוי ביותר. מותר שיהיה מאיום פחות מוכר בישראל. בלי פרטים גרפיים. האירוע ישמש לתרגול תגובה ראשונה בסימולטור.
+להחזיר JSON בלבד:
+{"title":"","when":"יום ושעה בשנת היעד","what_happens":"3–4 משפטים","why_this_world":"משפט אחד","first_hours":["","",""],"resources":["","",""],"sim_brief":"2–3 משפטים: מי המתרגל/ת, איפה זה קורה, ומה המשפט הראשון שהם שומעים"}`, {modelTier:"default", cache:false});
+    if(!r || !r.title) throw {code:"invalid_json"};
+    state.events[idx] = r; leaveExample(); renderVisit();
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+}
+
+async function synthesize(){
+  if(!SAMPLE) return;
+  const btn=$("synthBtn"), st=$("synthStatus");
+  if(state.worlds.length<4){ st.textContent="קודם כדאי לבנות את העולמות."; return; }
+  busy(btn, st, true);
+  const worlds = state.worlds.map(worldText).join("\n\n");
+  try{
+    const r = await askJSON(`${RULES}
+
+ההקשר:
+${ctxText()}
+
+ארבעת העולמות:
+${worlds}
+
+משימה: לסכם מה כדאי לעשות כבר היום.
+- no_regret: 4–6 צעדים מעשיים שמועילים בכל ארבעת העולמות, ולכל אחד הסבר קצר למה.
+- hedges: צעד אחד ספציפי לכל עולם, שמכין אותו בלי לבזבז משאבים אם העולם לא יתממש.
+- signals: 4–6 סימנים למעקב, שיראו לאיזה עולם מתקדמים.
+- questions: 3 שאלות לדיון בצוות.
+לפחות אחד מצעדי no_regret מפתח אוטונומיה תפקודית. הצעדים מותאמים למשאבים של ${TYPE_LABEL[state.ctx.type]} רגיל/ה בישראל. ניסוח קצר וברור.
+להחזיר JSON בלבד:
+{"no_regret":[{"action":"","why":""}],"hedges":[{"world":"","action":""}],"signals":[""],"questions":[""]}`, {modelTier:"default", cache:false});
+    if(!r || !Array.isArray(r.no_regret)) throw {code:"invalid_json"};
+    state.synth = r; leaveExample(); renderSynth(); renderAsk(); busy(btn, st, false);
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+}
+
+/* ---------- Events ---------- */
+let undoSnap = null, undoTimer = null;
+function snapState(){ return JSON.stringify({...state, selected:[...state.selected]}); }
+function clearWork(type){
+  state.ctx = {type, region:"", horizon:state.ctx.horizon || "2035", desc:"", role:ROLES[type][0]};
+  state.selected = new Set(); state.custom = []; state.axesOptions = []; state.axesIdx = 0;
+  state.worlds = []; state.exp = {}; state.chat = {}; state.events = {}; state.synth = null; state.active = 0; state.filter = "all"; state.qa = [];
+  if(!WID){ state.votes = []; state.items = []; state.fills = {}; }
+  if(state.lenses){ state.lenses.out = null; state.lenses.learn = ""; }
+}
+$("ctxType").addEventListener("click", e => {
+  const b=e.target.closest("button"); if(!b || b.dataset.v===state.ctx.type) return;
+  undoSnap = snapState();
+  const prev = TYPE_LABEL[state.ctx.type];
+  clearWork(b.dataset.v);
+  leaveExample(); renderAll();
+  $("undoText").textContent = `עברנו מ${prev} ל${TYPE_LABEL[b.dataset.v]}. השדות והתוצרים נוקו כדי להתחיל מחדש.`;
+  $("undoBar").hidden = false;
+  clearTimeout(undoTimer); undoTimer = setTimeout(() => { $("undoBar").hidden = true; undoSnap = null; }, 20000);
+  $("desc").focus();
+});
+$("undoBtn").addEventListener("click", () => {
+  if(!undoSnap) return;
+  const o = JSON.parse(undoSnap); o.selected = new Set(o.selected); state = o; undoSnap = null;
+  $("undoBar").hidden = true;
+  $("exampleBar").style.display = state.isExample ? "" : "none";
+  renderAll();
+});
+$("region").addEventListener("change", e => { state.ctx.region=e.target.value; leaveExample(); });
+$("horizon").addEventListener("change", e => { state.ctx.horizon=e.target.value; leaveExample(); });
+$("desc").addEventListener("input", e => { state.ctx.desc=e.target.value; leaveExample(); });
+$("role").addEventListener("change", e => {
+  if(e.target.value==="__add"){ $("addRoleRow").hidden=false; $("newRole").focus(); e.target.value=state.ctx.role; return; }
+  state.ctx.role=e.target.value; renderVisit();
+});
+function addRole(){
+  const v=$("newRole").value.trim(); if(!v) return;
+  const t=state.ctx.type; state.customRoles[t]=state.customRoles[t]||[];
+  if(!rolesFor(t).includes(v)) state.customRoles[t].push(v);
+  state.ctx.role=v; $("newRole").value=""; $("addRoleRow").hidden=true; renderCtx(); renderVisit(); toast("התפקיד נוסף");
+}
+$("addRole").addEventListener("click", addRole);
+$("newRole").addEventListener("keydown", e => { if(e.key==="Enter"){ e.preventDefault(); addRole(); } });
+$("cancelRole").addEventListener("click", () => { $("newRole").value=""; $("addRoleRow").hidden=true; });
+
+/* Manual axes */
+$("useManual").addEventListener("click", () => {
+  const v = id => $(id).value.trim();
+  const ids = ["mxName","mxLow","mxHigh","myName","myLow","myHigh"];
+  const missing = ids.find(id => !v(id));
+  if(missing){ $("manualStatus").textContent = "כדאי למלא שם ושני קצוות לכל אחד משני הצירים."; $(missing).focus(); return; }
+  state.axesOptions.push({x:{name:v("mxName"),low:v("mxLow"),high:v("mxHigh")}, y:{name:v("myName"),low:v("myLow"),high:v("myHigh")}, why:"צירים שהוגדרו על ידי המשתתפים.", manual:true});
+  state.axesIdx = state.axesOptions.length-1;
+  state.worlds=[]; state.exp={}; state.chat={}; state.events={}; state.synth=null; state.qa=[];
+  leaveExample(); renderAll();
+  $("manualStatus").textContent = "הצירים נבחרו. עכשיו אפשר לבנות את העולמות בשלב 4.";
+});
+$("editSelected").addEventListener("click", () => {
+  const ax = curAxes(); if(!ax){ $("manualStatus").textContent = "עוד לא נבחרה אפשרות."; return; }
+  $("mxName").value=ax.x.name; $("mxLow").value=ax.x.low; $("mxHigh").value=ax.x.high;
+  $("myName").value=ax.y.name; $("myLow").value=ax.y.low; $("myHigh").value=ax.y.high;
+  $("manualStatus").textContent = "אפשר לערוך, ואז ללחוץ ״שימוש בצירים האלה״."; $("mxName").focus();
+});
+
+/* Ask the model */
+function renderAsk(){
+  const qs = (state.synth && state.synth.questions) ? state.synth.questions : [];
+  const extra = ["מה הצעד הראשון שהכי משתלם לעשות החודש?","מי צריך להיות שותף או שותפה לתהליך הזה?","איך מציגים את העולמות לתלמידים, להורים או לעובדים בלי להפחיד?"];
+  $("askChips").innerHTML = qs.concat(extra).map(q => `<button type="button" class="small" data-ask="${esc(q)}">${esc(q)}</button>`).join("");
+  $("qaList").innerHTML = state.qa.map(x => `<div class="msg u">${esc(x.q)}</div><div class="msg a">${esc(x.a||"…")}</div>`).join("");
+}
+let askBusy = false;
+async function askModel(q){
+  if(!SAMPLE || !q.trim() || askBusy) return;
+  askBusy = true;
+  const st = $("askStatus"); st.textContent = "חושב…";
+  state.qa.push({q:q.trim(), a:""}); renderAsk();
+  const ax = curAxes();
+  const worlds = state.worlds.map(worldText).join("\n\n") || "(עוד לא נבנו עולמות)";
+  const synth = state.synth ? synthText() : "(עוד אין סיכום)";
+  const prev = state.qa.slice(-5,-1).map(x => `שאלה: ${x.q}\nתשובה: ${x.a}`).join("\n\n");
+  try{
+    const r = await SAMPLE(`${RULES}
+
+ההקשר:
+${ctxText()}
+
+המניעים שנבחרו:
+${driversText()}
+${ax ? `\nהצירים: ${ax.x.name} (${ax.x.low} / ${ax.x.high}); ${ax.y.name} (${ax.y.low} / ${ax.y.high})` : ""}
+
+העולמות:
+${worlds}
+
+הסיכום:
+${synth}
+${prev ? `\nשאלות קודמות בשיחה:\n${prev}` : ""}
+
+משימה: לענות על השאלה של הצוות כיועץ או יועצת לחשיבת עתידים ולחוסן. תשובה ממוקדת ומעשית, 80–200 מילים, שנשענת על העולמות ועל ההקשר. אם חסר מידע חשוב, לסיים בשאלה אחת קצרה לצוות. טקסט רגיל, בלי markdown.
+
+השאלה: ${q.trim()}`, {modelTier:"default", cache:false, onText:({text}) => { state.qa[state.qa.length-1].a = text; const last = $("qaList").lastElementChild; if(last) last.textContent = text; st.textContent = ""; }});
+    state.qa[state.qa.length-1].a = r.text; st.textContent = "";
+  }catch(e){
+    if(e && e.text) state.qa[state.qa.length-1].a = e.text; else state.qa.pop();
+    st.textContent = errCopy(e);
+  }
+  askBusy = false; renderAsk();
+}
+$("askChips").addEventListener("click", e => { const b=e.target.closest("[data-ask]"); if(b) askModel(b.dataset.ask); });
+$("askForm").addEventListener("submit", e => { e.preventDefault(); const v=$("askIn").value; $("askIn").value=""; askModel(v); });
+$("filters").addEventListener("click", e => { const b=e.target.closest("button"); if(!b) return; state.filter=b.dataset.f; renderFilters(); renderDrivers(); });
+$("drivers").addEventListener("change", e => {
+  const id = e.target.dataset.id; if(!id) return;
+  e.target.checked ? state.selected.add(id) : state.selected.delete(id);
+  leaveExample(); renderDrivers();
+});
+$("addCustom").addEventListener("click", () => {
+  const v = $("customDriver").value.trim(); if(!v) return;
+  const id="u"+Date.now(); state.custom.push({id,name:v,desc:"",cat:"soc",tag:"user"}); state.selected.add(id);
+  $("customDriver").value=""; leaveExample(); renderDrivers();
+});
+function parsePackage(txt){ let p; try { p = JSON.parse(String(txt||"").trim()); } catch(e){ const a = String(txt||"").indexOf("{"), b = String(txt||"").lastIndexOf("}"); try { p = JSON.parse(String(txt).slice(a, b+1)); } catch(_){ return null; } } return p && p.type === "be-good-package" ? p : null; }
+$("surpriseBtn").addEventListener("click", surprise);
+$("impDrvGo").addEventListener("click", () => {
+  const st = $("impDrvStatus"), p = parsePackage($("impDrvText").value);
+  if(!p || p.kind !== "drivers" || !Array.isArray(p.items)){ st.textContent = "זו לא חבילת מניעים. אפשר להעתיק אותה שוב מהכלי השני."; return; }
+  let n = 0;
+  p.items.slice(0, 12).forEach(it => { if(!it || !it.name) return; if(allDrivers().some(d => d.name === it.name)) return; const id = "imp" + Date.now().toString(36) + n; state.custom.push({id, name:String(it.name), desc:String(it.desc || it.note || ""), cat:"soc", tag:"imp"}); if(state.selected.size < 10) state.selected.add(id); n++; });
+  leaveExample(); renderDrivers(); $("impDrvText").value = "";
+  st.textContent = n ? `יובאו ${n} מניעים מ״${p.from || "כלי אחר"}״, והם מסומנים ברשימה.` : "כל המניעים כבר קיימים ברשימה.";
+});
+$("axesBtn").addEventListener("click", suggestAxes);
+function pickAxes(el){ const i=+el.dataset.i; if(i===state.axesIdx) return; state.axesIdx=i; state.worlds=[]; state.exp={}; state.chat={}; state.events={}; state.synth=null; leaveExample(); renderAll(); }
+$("axesOpts").addEventListener("click", e => { const el=e.target.closest(".axopt"); if(el) pickAxes(el); });
+$("axesOpts").addEventListener("keydown", e => { const el=e.target.closest(".axopt"); if(el && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); pickAxes(el); } });
+$("worldsBtn").addEventListener("click", buildWorlds);
+$("matrix").addEventListener("click", e => { const b=e.target.closest("[data-visit]"); if(!b) return; state.active=+b.dataset.visit; renderWorlds(); renderVisit(); $("h5s").scrollIntoView({behavior:"smooth",block:"start"}); });
+$("tabs").addEventListener("click", e => { const b=e.target.closest("button"); if(!b) return; state.tab=b.dataset.t; renderVisit(); });
+$("panel").addEventListener("click", e => {
+  if(e.target.id==="genExp") genExp();
+  else if(e.target.id==="stopExp") { if(expCtl) expCtl.abort(); }
+  else if(e.target.id==="copyExp") copy((state.exp[state.active]||{})[state.tab]||"");
+  else if(e.target.id==="genEvent") genEvent();
+  else if(e.target.id==="copyEvent"){ const ev=state.events[state.active]; const w=activeWorld(); if(ev) copy(`תדריך לסימולטור החירום · Be Good\nעולם: ${w.name} (${state.ctx.horizon})\nהקשר: ${TYPE_LABEL[state.ctx.type]}, ${state.ctx.region}\n\n${ev.title} · ${ev.when}\n${ev.what_happens}\n\nתדריך: ${ev.sim_brief}\n\nאתגרים בשעות הראשונות:\n${(ev.first_hours||[]).map(x=>"- "+x).join("\n")}\n\nעל מה אפשר להישען:\n${(ev.resources||[]).map(x=>"- "+x).join("\n")}`); }
+  else if(e.target.dataset && e.target.dataset.q) sendChat(e.target.dataset.q);
+});
+$("panel").addEventListener("submit", e => { if(e.target.id==="chatForm"){ e.preventDefault(); const v=$("chatIn").value; $("chatIn").value=""; sendChat(v); } });
+$("synthBtn").addEventListener("click", synthesize);
+$("copySynth").addEventListener("click", () => { const t=synthText(); if(t) copy(t); else toast("עוד אין סיכום להעתקה"); });
+$("resetBtn").addEventListener("click", () => {
+  clearWork(state.ctx.type);
+  leaveExample(); renderAll(); $("desc").focus();
+});
+
+renderAll();
+</script>
+<script>
+/* =====================================================================
+   Part 2: workshops (saved sessions), group vote, newspaper, perspectives
+   ===================================================================== */
+const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-5);
+let DB = null, USR = null, DL = null, WID = null, IS_OWNER = false, CAN_WRITE = null;
+let unsubs = [], lastSavedJSON = "", applyingRemote = false, lastRemoteAt = 0, mySaveAt = 0;
+
+state.votes = []; state.items = []; state.fills = {}; state.talk = {questions:[], opener:"", qa:[]};
+state.voteReveal = false; state.paperTab = 2; state.lenses = {world:2, roles:[], out:null, learn:""};
+
+/* ---------- Example content for the extra views ---------- */
+const EX_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260"><rect width="400" height="260" fill="#eaf3ff"/><g stroke="#1b1b1b" stroke-width="3"><line x1="80" y1="14" x2="80" y2="2"/><line x1="128" y1="30" x2="138" y2="22"/><line x1="32" y1="30" x2="22" y2="22"/><line x1="140" y1="70" x2="152" y2="70"/></g><circle cx="80" cy="70" r="42" fill="#ffc83d" stroke="#1b1b1b" stroke-width="3"/><g fill="#1b1b1b"><rect x="52" y="58" width="24" height="14" rx="4"/><rect x="84" y="58" width="24" height="14" rx="4"/></g><line x1="76" y1="64" x2="84" y2="64" stroke="#1b1b1b" stroke-width="3"/><path d="M64 88 q16 12 32 0" stroke="#1b1b1b" stroke-width="3" fill="none"/><polyline points="126,74 170,56 160,78 214,60" fill="none" stroke="#ff3d7f" stroke-width="5" stroke-linejoin="round"/><g transform="rotate(-18 262 52)"><rect x="250" y="42" width="26" height="22" fill="#9aa7b4" stroke="#1b1b1b" stroke-width="2"/><rect x="214" y="46" width="32" height="14" fill="#2f6bff" stroke="#1b1b1b" stroke-width="2"/><rect x="280" y="46" width="32" height="14" fill="#2f6bff" stroke="#1b1b1b" stroke-width="2"/></g><text x="312" y="34" font-size="22" font-family="Arial" font-weight="bold" fill="#ff3d7f">?!</text><rect y="205" width="400" height="55" fill="#cfe8c4"/><polygon points="226,142 300,104 374,142" fill="#ff7a59" stroke="#1b1b1b" stroke-width="3"/><rect x="232" y="142" width="136" height="70" fill="#fff" stroke="#1b1b1b" stroke-width="3"/><rect x="286" y="172" width="28" height="40" fill="#6b4a2b"/><rect x="246" y="156" width="24" height="18" fill="#bfe0ff" stroke="#1b1b1b" stroke-width="2"/><rect x="330" y="156" width="24" height="18" fill="#bfe0ff" stroke="#1b1b1b" stroke-width="2"/><rect x="34" y="138" width="150" height="72" fill="#2e4a3a" stroke="#8a5a2b" stroke-width="6"/><text x="109" y="182" font-size="20" fill="#fff" text-anchor="middle" font-family="Arial" direction="rtl">אין קליטה? יש גיר!</text><g stroke="#1b1b1b" stroke-width="3" fill="none"><circle cx="200" cy="186" r="9" fill="#ffd9b8"/><line x1="200" y1="195" x2="200" y2="222"/><line x1="200" y1="204" x2="186" y2="196"/><line x1="200" y1="204" x2="212" y2="212"/><line x1="200" y1="222" x2="192" y2="238"/><line x1="200" y1="222" x2="208" y2="238"/></g></svg>`;
+const svgURI = s => "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s);
+const EX_VOTES = [
+  {name:"צוות ההנהלה", drivers:["s1","s4","t1","n3","e1"], ratings:{0:5,1:4,2:2}, comment:"הפינוי עוד לא מאחורינו, גם אם הגבול שקט."},
+  {name:"מחנכות ומחנכי השכבה", drivers:["s1","h4","t5","n3","e8"], ratings:{0:4,1:5,2:3}, comment:"השחיקה של הצוות היא האיום שהכי פחות מדברים עליו."},
+  {name:"נציגות ההורים", drivers:["s1","s4","t5","t1","w1"], ratings:{0:3,1:5,2:4}, comment:"קבוצות הווטסאפ הן מקור הלחץ הגדול בימים קשים."},
+  {name:"מועצת התלמידים", drivers:["n3","t2","t5","w6","t4"], ratings:{0:5,1:2,2:5}, comment:"החום בכיתות בקיץ כבר עכשיו קשה."},
+  {name:"היועצת", drivers:["h4","s4","e1","t5","s1"], ratings:{0:3,1:5,2:2}, comment:""},
+  {name:"רכז הביטחון", drivers:["s1","s3","t1","t2","n1"], ratings:{0:5,1:3,2:2}, comment:"רעידת אדמה לא נמצאת בשום תוכנית שלנו."}
+];
+const EX_ITEMS = [
+  {world:2, kind:"lead", title:"יומיים בלי מסכים: בית הספר המשיך כרגיל", body:"סערת השמש שיבשה את הלוויינים, אבל ארגזי הלמידה האדומים יצאו מהמחסן. תלמידי ו׳2 לימדו את כיתה ג׳ לנווט עם מפה ומצפן.", by:"צוות הנשרים", img:"", ts:1},
+  {world:2, kind:"note", title:"פתק מהלוח בכניסה", body:"מי שיש לו אופניים, בבקשה להעביר את הדף הצהוב לבתים ברחוב הזיתים. תודה! הוועד", by:"צוות הנשרים", img:"", ts:2},
+  {world:2, kind:"cartoon", title:"השמש הולכת לבית הספר", body:"השמש עם משקפי שמש שולחת ברק ללוויין, והילדים מתחת כותבים על הלוח.", by:"נויה ואיתי", img:svgURI(EX_SVG), ts:3},
+  {world:2, kind:"ad", title:"למסירה: מאוורר על סוללה", body:"עובד מצוין, קצת רועש. מתאים לחדר ספרייה. לפנות לגבי, איש התחזוקה.", by:"צוות הנשרים", img:"", ts:4}
+].map(x => ({...x, id:uid()}));
+const EX_FILLS = {w2:{team:"צוות הנשרים", paperName:"הד הגליל 2035", date:"יום שלישי, 12 ביוני 2035", aiMode:true, markAI:true, ai:{
+  slogan:"החדשות שמגיעות גם כשאין קליטה",
+  briefs:[{title:"איסלנד: הלוויינים חזרו לפעול אחרי 40 שעות", body:"מדינות הצפון היו הראשונות לחזור לשגרה."},{title:"יפן מציגה רשת חשמל שמתקנת את עצמה", body:"משלחת ישראלית בדרך לבדוק."},{title:"מחסור עולמי במאווררים", body:"המחירים זינקו פי שלושה."}],
+  quotes:[{who:"עדי בן־שושן, ראשת המועצה (דמות בדויה)", text:"השכנים היו מהירים יותר מכל אפליקציה."},{who:"פרופ׳ נועם אלמוג, חוקר מזג אוויר בחלל (דמות בדויה)", text:"השמש לא כועסת עלינו. היא פשוט בשיא שלה."}],
+  humor:{title:"פינת הצחוק", body:"תלמיד בכיתה ד׳ שאל למה לא שולחים לשמש הודעה שתירגע. המורה הסבירה שאין קליטה."},
+  weather:"שמשי וחם, 39 מעלות. סיכוי של 20% לסערת שמש קלה. מומלץ כובע, מים ומחברת.",
+  ad:{title:"דרושים: רצים ורצות לפי שכבות", body:"להעברת הודעות לבתים בימים בלי רשת. תגמול: כבוד ועוגיות."}
+}}};
+EXAMPLE.votes = EX_VOTES.map(v => ({...v, id:uid()}));
+state.votes = EXAMPLE.votes.slice();
+state.items = EX_ITEMS.slice();
+state.fills = JSON.parse(JSON.stringify(EX_FILLS));
+state.lenses.roles = ["מורה מחנך או מחנכת","תלמיד או תלמידה בכיתה ו׳","הורה"];
+
+/* ---------- Capabilities ---------- */
+(async () => {
+  const use = async n => { try { return (window.claude && window.claude.use) ? await window.claude.use(n) : null; } catch(e){ return null; } };
+  [DB, USR, DL] = await Promise.all([use("db"), use("user"), use("downloads")]);
+  try { IS_OWNER = USR ? !!(await Promise.resolve(USR.isOwner())) : false; } catch(e){ IS_OWNER = false; }
+  try { CAN_WRITE = USR && USR.can ? await Promise.resolve(USR.can("data.write")) : null; } catch(e){ CAN_WRITE = null; }
+  renderWsBar(); renderVoteMode(); renderPaper();
+  if(DB){
+    try { const a = await DB.doc("config/active").get(); if(a.exists && a.data().wid && !WID) await openWorkshop(String(a.data().wid)); } catch(e){}
+  }
+})();
+
+/* ---------- Workshop persistence ---------- */
+function flowSnapshot(){
+  return {title: $("wsTitle").value.trim() || "סדנה ללא שם", ctx: state.ctx, custom: state.custom, selected: [...state.selected],
+    axesOptions: state.axesOptions, axesIdx: state.axesIdx, worlds: state.worlds, synth: state.synth, customRoles: state.customRoles};
+}
+function dbErr(e){
+  const c = e && e.code;
+  if(c === "invalid_argument") { CAN_WRITE = false; return "אין לך הרשאה לכתוב בסדנה הזו. אפשר להצביע על המסך של המנחה."; }
+  if(c === "quota_exceeded") return "המקום לשמירה התמלא. כדאי למחוק סדנאות ישנות.";
+  if(c === "resource_exhausted") return "יותר מדי פעולות ברגע אחד. לנסות שוב בעוד רגע.";
+  return "השמירה לא הצליחה. לנסות שוב.";
+}
+async function saveWorkshop(silent){
+  if(!DB){ $("wsStatus").textContent = "שמירה זמינה כשיש חיבור למודל."; return; }
+  const first = !WID; const wasExample = state.isExample;
+  if(first) WID = uid();
+  const snap = flowSnapshot(); const json = JSON.stringify(snap);
+  if(!first && json === lastSavedJSON) { if(!silent) $("wsStatus").textContent = "הכול שמור."; return; }
+  try{
+    if(first) leaveExample();
+    mySaveAt = Date.now();
+    await DB.doc(`workshops/${WID}`).set({...snap, updatedAt: mySaveAt});
+    lastSavedJSON = json;
+    if(first){
+      // carry over anything created before the first save
+      const votes = wasExample ? [] : state.votes, items = wasExample ? [] : state.items;
+      for(const v of votes){ const {id, ...rest} = v; await DB.doc(`workshops/${WID}/votes/${id}`).set(rest); }
+      for(const it of items){ const {id, ...rest} = it; await DB.doc(`workshops/${WID}/items/${id}`).set(rest); }
+      if(!wasExample) for(const k of Object.keys(state.fills)) await DB.doc(`workshops/${WID}/fills/${k}`).set(state.fills[k]);
+      subscribe();
+    }
+    $("wsStatus").textContent = silent ? "נשמר אוטומטית" : "נשמר";
+    renderWsBar();
+  }catch(e){ if(first) WID = null; $("wsStatus").textContent = dbErr(e); }
+}
+function applyFlow(d){
+  applyingRemote = true;
+  state.ctx = d.ctx || state.ctx; state.custom = d.custom || []; state.selected = new Set(d.selected || []);
+  state.axesOptions = d.axesOptions || []; state.axesIdx = d.axesIdx || 0; state.worlds = d.worlds || []; state.synth = d.synth || null;
+  state.customRoles = d.customRoles || state.customRoles;
+  $("wsTitle").value = d.title || "";
+  lastSavedJSON = JSON.stringify(flowSnapshot());
+  renderAll(); renderCurrentView();
+  applyingRemote = false;
+}
+function subscribe(){
+  unsubs.forEach(u => { try{u()}catch(e){} }); unsubs = [];
+  if(!DB || !WID) return;
+  const onErr = () => {};
+  unsubs.push(DB.doc(`workshops/${WID}`).onSnapshot(s => {
+    if(!s.exists || s.metadata.hasPendingWrites) return;
+    const d = s.data(); if(!d.updatedAt || d.updatedAt <= lastRemoteAt || d.updatedAt === mySaveAt) return;
+    lastRemoteAt = d.updatedAt;
+    const json = JSON.stringify({title:d.title, ctx:d.ctx, custom:d.custom, selected:d.selected, axesOptions:d.axesOptions, axesIdx:d.axesIdx, worlds:d.worlds, synth:d.synth, customRoles:d.customRoles});
+    if(json !== lastSavedJSON) applyFlow(d);
+  }, onErr));
+  unsubs.push(DB.collection(`workshops/${WID}/votes`).onSnapshot(s => { state.votes = s.docs.map(d => ({id:d.id, ...d.data()})); renderVoteResults(); }, onErr));
+  unsubs.push(DB.collection(`workshops/${WID}/items`).onSnapshot(s => { state.items = s.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b)=>(a.ts||0)-(b.ts||0)); if(currentView()==="paper") renderPaperParts(); }, onErr));
+  unsubs.push(DB.collection(`workshops/${WID}/fills`).onSnapshot(s => { const f = {}; s.docs.forEach(d => f[d.id] = d.data()); state.fills = f; if(currentView()==="paper") renderPaperParts(); }, onErr));
+  unsubs.push(DB.doc(`workshops/${WID}/talk/main`).onSnapshot(s => { if(s.exists){ state.talk = {questions:[], opener:"", qa:[], ...s.data()}; renderTalk(); } }, onErr));
+}
+async function openWorkshop(id){
+  if(!DB) return;
+  try{
+    const s = await DB.doc(`workshops/${id}`).get();
+    if(!s.exists){ $("wsStatus").textContent = "הסדנה לא נמצאה."; return; }
+    WID = id; leaveExample();
+    state.votes = []; state.items = []; state.fills = {}; state.talk = {questions:[], opener:"", qa:[]};
+    lastRemoteAt = s.data().updatedAt || 0;
+    applyFlow(s.data()); subscribe();
+    $("wsList").hidden = true; $("wsStatus").textContent = "הסדנה נפתחה";
+    renderWsBar();
+  }catch(e){ $("wsStatus").textContent = "לא הצלחנו לפתוח את הסדנה."; }
+}
+async function listWorkshops(){
+  const box = $("wsList");
+  if(!box.hidden){ box.hidden = true; return; }
+  if(!DB){ $("wsStatus").textContent = "סדנאות שמורות זמינות כשיש חיבור למודל."; return; }
+  box.hidden = false; box.innerHTML = `<span class="status">טוען…</span>`;
+  try{
+    const q = await DB.collection("workshops").orderBy("updatedAt","desc").limit(25).get();
+    box.innerHTML = q.empty ? `<span class="muted small">עוד אין סדנאות שמורות.</span>` :
+      q.docs.map(d => { const x = d.data(); const dt = new Date(x.updatedAt||0).toLocaleDateString("he-IL");
+        return `<button type="button" data-wid="${esc(d.id)}">${esc(x.title||"סדנה ללא שם")} · <span class="muted small">${esc(TYPE_LABEL[(x.ctx||{}).type]||"")} · ${esc(dt)}</span></button>`; }).join("");
+  }catch(e){ box.innerHTML = `<span class="muted small">לא הצלחנו לטעון את הרשימה.</span>`; }
+}
+function newWorkshop(){
+  unsubs.forEach(u => { try{u()}catch(e){} }); unsubs = [];
+  WID = null; lastSavedJSON = ""; $("wsTitle").value = "";
+  clearWork(state.ctx.type);
+  state.votes = []; state.items = []; state.fills = {}; state.talk = {questions:[], opener:"", qa:[]}; state.lenses.out = null; state.lenses.learn = "";
+  leaveExample(); renderAll(); renderCurrentView(); renderWsBar();
+  $("wsStatus").textContent = "סדנה חדשה. לתת לה שם ולשמור.";
+}
+async function makeActive(){
+  if(!DB || !WID) return;
+  try{ await DB.doc("config/active").set({wid: WID, at: Date.now()}); $("wsStatus").textContent = "זו הסדנה הפעילה במכשיר הזה."; }
+  catch(e){ $("wsStatus").textContent = dbErr(e); }
+}
+function renderWsBar(){
+  $("wsSave").disabled = !DB; $("wsOpen").disabled = !DB;
+  $("wsActive").hidden = !(DB && WID && IS_OWNER);
+  if(!DB) $("wsStatus").textContent = $("wsStatus").textContent || "שמירה ושיתוף זמינים כשיש חיבור למודל.";
+}
+setInterval(() => { if(DB && WID && !applyingRemote && CAN_WRITE !== false && !state.isExample) saveWorkshop(true); }, 10000);
+
+$("wsSave").addEventListener("click", () => saveWorkshop(false));
+$("wsOpen").addEventListener("click", listWorkshops);
+$("wsNew").addEventListener("click", newWorkshop);
+$("wsActive").addEventListener("click", makeActive);
+$("wsList").addEventListener("click", e => { const b = e.target.closest("[data-wid]"); if(b) openWorkshop(b.dataset.wid); });
+
+/* generic writers: db when a workshop is open, memory otherwise */
+async function putDoc(coll, id, data){
+  if(DB && WID){ await DB.doc(`workshops/${WID}/${coll}/${id}`).set(data); }
+  else {
+    if(coll === "fills"){ state.fills[id] = data; }
+    else { const arr = coll === "votes" ? state.votes : state.items; const i = arr.findIndex(x => x.id === id); i >= 0 ? arr[i] = {id, ...data} : arr.push({id, ...data}); }
+  }
+}
+async function delDoc(coll, id){
+  if(DB && WID){ await DB.doc(`workshops/${WID}/${coll}/${id}`).delete(); }
+  else { if(coll === "votes") state.votes = state.votes.filter(x => x.id !== id); else state.items = state.items.filter(x => x.id !== id); }
+}
+async function putTalk(){ if(DB && WID){ try{ await DB.doc(`workshops/${WID}/talk/main`).set(state.talk); }catch(e){} } }
+
+/* ---------- Views ---------- */
+const VIEWS = ["flow","vote","paper","lenses"];
+function currentView(){ const h = (location.hash||"").slice(1); return VIEWS.includes(h) ? h : "flow"; }
+function renderVoteLink(){
+  const el = $("voteLink"); if(!el) return;
+  el.innerHTML = state.adopted
+    ? `<span><b>המניעים נבחרו בהצבעה קבוצתית</b> של ${state.adopted.n} משתתפים ומשתתפות. אפשר לשנות כאן, או לחזור ל<a href="#vote">הצבעה</a>.</span>`
+    : `<span><b>רוצים שהקבוצה תחליט?</b> במקום לבחור כאן לבד, אפשר לעבור ל<a href="#vote">הצבעה קבוצתית</a>: כל אחד ואחת בוחרים מניעים ומדרגים צירים, משוחחים על התוצאות, ואז מאמצים אותן לכאן.</span>`;
+}
+function renderCurrentView(){
+  renderVoteLink();
+  const v = currentView();
+  VIEWS.forEach(x => { $("view-"+x).hidden = x !== v; });
+  document.querySelectorAll("nav.views a").forEach(a => a.setAttribute("aria-current", a.dataset.view === v ? "page" : "false"));
+  if(v === "vote") renderVote();
+  if(v === "paper") renderPaper();
+  if(v === "lenses") renderLenses();
+}
+window.addEventListener("hashchange", () => { renderCurrentView(); window.scrollTo(0,0); });
+
+/* ===================== Group vote ===================== */
+let vPick = new Set(), vRates = {};
+function renderVoteMode(){
+  let html;
+  if(DB && WID) html = `<span><b>הסדנה שמורה במכשיר הזה.</b> כל משתתף, משתתפת או צוות ניגשים בתורם ומצביעים כאן, והתוצאות מתעדכנות מיד.</span>`;
+  else if(DB) html = `<span><b>מצב מסך אחד.</b> כל משתתף, משתתפת או צוות ניגשים בתורם ומצביעים כאן. הסדנה נשמרת במכשיר הזה כשלוחצים ״שמירה״ בסרגל למעלה.</span>`;
+  else html = `<span><b>מצב מסך אחד.</b> כל משתתף, משתתפת או צוות ניגשים בתורם ומצביעים כאן. ההצבעות נשמרות רק עד שסוגרים את הדף.</span>`;
+  $("voteMode").innerHTML = html;
+}
+function renderVote(){ renderVoteMode(); renderVoteForm(); renderVoteResults(); renderTalk(); }
+function renderVoteForm(){
+  $("vDrivers").innerHTML = allDrivers().map(d => `<button type="button" class="chip" data-d="${d.id}" aria-pressed="${vPick.has(d.id)}" title="${esc(d.desc||"")}">${esc(d.name)}${d.tag==="rare"||d.tag==="wild"||d.tag==="ai" ? ' <span class="tag '+TAGS[d.tag].cls+'">'+TAGS[d.tag].label+'</span>' : ""}</button>`).join("");
+  $("vPickCount").textContent = `(${vPick.size} מתוך 8)`;
+  $("vAxes").innerHTML = state.axesOptions.length ? state.axesOptions.map((o,i) => `<div class="box">
+      <div class="small muted">זוג צירים ${i+1}</div>${axLine(o.x)}${axLine(o.y)}
+      <div class="rate" role="group" aria-label="דירוג זוג צירים ${i+1}" style="margin-top:8px">${[1,2,3,4,5].map(n => `<button type="button" data-ax="${i}" data-r="${n}" aria-pressed="${vRates[i]===n}">${n}</button>`).join("")}</div>
+    </div>`).join("") : `<p class="muted small">עוד אין צירים להצבעה. אפשר להציע צירים במסע העתידים (שלב 3), או להצביע עכשיו רק על המניעים.</p>`;
+}
+$("vDrivers").addEventListener("click", e => {
+  const b = e.target.closest("[data-d]"); if(!b) return;
+  const id = b.dataset.d;
+  if(vPick.has(id)) vPick.delete(id); else { if(vPick.size >= 8){ toast("אפשר לבחור עד 8 מניעים"); return; } vPick.add(id); }
+  renderVoteForm();
+});
+$("vAxes").addEventListener("click", e => { const b = e.target.closest("[data-ax]"); if(!b) return; vRates[+b.dataset.ax] = +b.dataset.r; renderVoteForm(); });
+$("vSubmit").addEventListener("click", async () => {
+  const name = $("vName").value.trim(), st = $("vStatus");
+  if(!name){ st.textContent = "כדאי לכתוב שם או שם צוות."; $("vName").focus(); return; }
+  if(!vPick.size){ st.textContent = "כדאי לבחור לפחות מניע אחד."; return; }
+  if(state.isExample){ state.votes = []; leaveExample(); }
+  const v = {name, drivers:[...vPick], ratings:{...vRates}, comment:$("vComment").value.trim(), ts:Date.now()};
+  try{
+    await putDoc("votes", uid(), v);
+    vPick = new Set(); vRates = {}; $("vName").value = ""; $("vComment").value = "";
+    renderVoteForm(); renderVoteResults();
+    st.textContent = "ההצבעה נקלטה. אפשר להעביר את המסך למשתתף או למשתתפת הבאים.";
+    toast("ההצבעה נקלטה");
+  }catch(e){ st.textContent = dbErr(e); }
+});
+
+function voteStats(){
+  const n = state.votes.length;
+  const counts = {};
+  state.votes.forEach(v => (v.drivers||[]).forEach(id => counts[id] = (counts[id]||0) + 1));
+  const drivers = Object.keys(counts).map(id => { const d = allDrivers().find(x => x.id === id) || {id, name:id, tag:"known"}; const p = counts[id]/n;
+    let label = null;
+    if(n >= 3 && p >= 0.7) label = "agree"; else if(n >= 4 && p >= 0.35 && p <= 0.65) label = "split"; else if(counts[id] === 1 && n >= 3 && (d.tag==="rare"||d.tag==="wild"||d.tag==="ai")) label = "minor";
+    return {d, c:counts[id], p, label}; }).sort((a,b) => b.c - a.c);
+  const axes = state.axesOptions.map((o,i) => {
+    const rs = state.votes.map(v => (v.ratings||{})[i]).filter(x => typeof x === "number");
+    const m = rs.length ? rs.reduce((a,b)=>a+b,0)/rs.length : 0;
+    const sd = rs.length > 1 ? Math.sqrt(rs.reduce((a,b)=>a+(b-m)**2,0)/rs.length) : 0;
+    const hist = [1,2,3,4,5].map(k => rs.filter(x => x === k).length);
+    return {o, i, m, sd, k:rs.length, hist, label: rs.length >= 3 ? (sd >= 1.2 ? "split" : sd < 0.8 ? "agree" : null) : null};
+  });
+  return {n, drivers, axes};
+}
+const PILL = {agree:'<span class="pill p-agree">הסכמה רחבה</span>', split:'<span class="pill p-split">מחלוקת</span>', minor:'<span class="pill p-minor">קול של מיעוט, כדאי לשמוע</span>'};
+function renderVoteResults(){
+  const {n, drivers, axes} = voteStats();
+  $("vCount").textContent = n ? `· ${n} הצבעות${state.isExample ? " (דוגמה)" : ""}` : "· עוד אין הצבעות";
+  $("vReveal").textContent = state.voteReveal ? "הסתרת התוצאות" : "חשיפת התוצאות";
+  $("vResults").hidden = !state.voteReveal; $("vHiddenNote").hidden = state.voteReveal;
+  if(!state.voteReveal) return;
+  if(!n){ $("vResults").innerHTML = `<p class="muted">עוד אין הצבעות.</p>`; return; }
+  const maxC = drivers.length ? drivers[0].c : 1;
+  const axesHTML = axes.length ? `<h3 style="margin-top:18px">זוגות הצירים</h3><div class="cols">${axes.map(a => `<div class="box">
+      <div class="small muted">זוג ${a.i+1} ${a.label ? PILL[a.label] : ""}</div>${axLine(a.o.x)}${axLine(a.o.y)}
+      <div class="row" style="margin-top:8px;align-items:flex-end"><div class="hist" aria-hidden="true">${a.hist.map(h => `<span style="height:${a.k ? Math.max(6, h/Math.max(...a.hist,1)*34) : 2}px" title="${h}"></span>`).join("")}</div>
+      <span class="small">ממוצע <b>${a.m.toFixed(1)}</b> מתוך 5 · ${a.k} דירוגים</span></div>
+      <div class="small muted">הדירוגים מ־1 (ימין) עד 5 (שמאל)</div>
+    </div>`).join("")}</div>` : "";
+  const comments = state.votes.filter(v => v.comment);
+  $("vResults").innerHTML = `<h3>המניעים</h3><div class="bars">${drivers.map(r => `<div class="bar"><span>${esc(r.d.name)} ${r.d.tag==="rare"||r.d.tag==="wild"||r.d.tag==="ai" ? '<span class="tag '+TAGS[r.d.tag].cls+'">'+TAGS[r.d.tag].label+'</span>' : ""}</span>
+      <span class="track"><span class="fill" style="width:${(r.c/maxC*100).toFixed(0)}%;display:block"></span></span>
+      <span class="n">${r.c} מתוך ${n} ${r.label ? PILL[r.label] : ""}</span></div>`).join("")}</div>
+    ${axesHTML}
+    ${comments.length ? `<h3 style="margin-top:18px">מה אמרו</h3><ul>${comments.map(v => `<li><b>${esc(v.name)}:</b> ${esc(v.comment)}</li>`).join("")}</ul>` : ""}
+    <details style="margin-top:12px"><summary class="small">מי הצביעו (${n})</summary><div class="chips" style="margin-top:8px">${state.votes.map(v => `<span class="chip" style="border:1px solid var(--line)">${esc(v.name)} <button type="button" data-delvote="${esc(v.id)}" aria-label="מחיקת ההצבעה של ${esc(v.name)}" style="padding:0 6px;border:0">×</button></span>`).join("")}</div></details>`;
+}
+$("vReveal").addEventListener("click", () => { state.voteReveal = !state.voteReveal; renderVoteResults(); });
+$("vResults").addEventListener("click", async e => { const b = e.target.closest("[data-delvote]"); if(!b) return; try{ await delDoc("votes", b.dataset.delvote); renderVoteResults(); }catch(err){ toast(dbErr(err)); } });
+$("vAdopt").addEventListener("click", () => {
+  const {n, drivers, axes} = voteStats();
+  if(!n){ toast("עוד אין הצבעות לאמץ"); return; }
+  let chosen = drivers.filter(r => r.p >= 0.4).map(r => r.d.id);
+  if(chosen.length < 5) chosen = drivers.slice(0, 6).map(r => r.d.id);
+  chosen = chosen.slice(0, 8);
+  const isUnk = id => { const d = allDrivers().find(x => x.id === id); return d && (d.tag==="rare"||d.tag==="wild"||d.tag==="ai"); };
+  if(!chosen.some(isUnk)){ const u = drivers.find(r => isUnk(r.d.id)); if(u) chosen.push(u.d.id); }
+  state.selected = new Set(chosen);
+  state.adopted = {n, at: Date.now()};
+  if(axes.some(a => a.k)){ const best = axes.filter(a => a.k).sort((a,b) => b.m - a.m)[0]; if(best.i !== state.axesIdx){ state.axesIdx = best.i; state.worlds = []; state.exp = {}; state.chat = {}; state.events = {}; state.synth = null; } }
+  leaveExample(); renderAll();
+  toast("התוצאות אומצו"); location.hash = "#flow"; renderVoteLink();
+});
+
+function voteSummaryText(){
+  const {n, drivers, axes} = voteStats();
+  return `מספר המצביעים: ${n}
+מניעים (כמה בחרו מתוך ${n}):
+${drivers.map(r => `- ${r.d.name} [${TAGS[r.d.tag].label}]: ${r.c}${r.label==="split"?" (מחלוקת)":r.label==="agree"?" (הסכמה רחבה)":r.label==="minor"?" (קול יחיד)":""}`).join("\n")}
+זוגות צירים (ממוצע 1–5, פיזור):
+${axes.map(a => `- זוג ${a.i+1}: ${a.o.x.name} × ${a.o.y.name}: ממוצע ${a.m.toFixed(1)}, סטיית תקן ${a.sd.toFixed(1)}, התפלגות ${a.hist.join("/")}`).join("\n") || "(אין)"}
+הערות המשתתפים:
+${state.votes.filter(v => v.comment).slice(0,25).map(v => `- ${v.name}: ${String(v.comment).slice(0,240)}`).join("\n") || "(אין)"}`;
+}
+function renderTalk(){
+  const t = state.talk;
+  $("vQsOut").innerHTML = (t.questions && t.questions.length) ? `<div class="box">${t.opener ? `<p><b>פתיחה למנחה:</b> ${esc(t.opener)}</p>` : ""}<ol>${t.questions.map(q => `<li style="margin-bottom:6px"><b>${esc(q.q)}</b><br><span class="small muted">${esc(q.why||"")}</span> <button type="button" class="small" data-vask="${esc(q.q)}">לשאול את המודל</button></li>`).join("")}</ol></div>` : "";
+  $("vQa").innerHTML = (t.qa||[]).map(x => `<div class="msg u">${esc(x.q)}</div><div class="msg a">${esc(x.a||"…")}</div>`).join("");
+}
+$("vQs").addEventListener("click", async () => {
+  if(!SAMPLE) return;
+  const btn = $("vQs"), st = $("vQsStatus");
+  if(!state.votes.length){ st.textContent = "עוד אין הצבעות."; return; }
+  busy(btn, st, true);
+  try{
+    const r = await askJSON(`${RULES}
+
+ההקשר:
+${ctxText()}
+
+תוצאות ההצבעה הקבוצתית:
+${voteSummaryText()}
+
+משימה: לעזור למנחה להמשיך את השיחה אחרי ההצבעה.
+- opener: משפט פתיחה אחד שהמנחה יכול להגיד לקבוצה, שמשקף את התמונה בלי לשפוט.
+- questions: 5 שאלות פתוחות להמשך השיחה. לפחות שתיים סביב מחלוקות, אחת סביב קול של מיעוט או מניע לא מוכר, ואחת שמחברת לפעולה. לכל שאלה why: משפט קצר על מה היא פותחת.
+ניסוח בגובה העיניים, מתאים לקבוצה מעורבת.
+להחזיר JSON בלבד: {"opener":"","questions":[{"q":"","why":""}]}`, {modelTier:"default", cache:false});
+    if(!r || !Array.isArray(r.questions)) throw {code:"invalid_json"};
+    state.talk = {...state.talk, opener: String(r.opener||""), questions: r.questions.slice(0,6)};
+    renderTalk(); putTalk(); busy(btn, st, false);
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+let vAskBusy = false;
+async function voteAsk(q){
+  if(!SAMPLE || !q.trim() || vAskBusy) return;
+  vAskBusy = true; const st = $("vAskStatus"); st.textContent = "חושב…";
+  state.talk.qa = state.talk.qa || []; state.talk.qa.push({q:q.trim(), a:""}); renderTalk();
+  const prev = state.talk.qa.slice(-5,-1).map(x => `שאלה: ${x.q}\nתשובה: ${x.a}`).join("\n\n");
+  try{
+    const r = await SAMPLE(`${RULES}
+
+ההקשר:
+${ctxText()}
+
+תוצאות ההצבעה הקבוצתית:
+${voteSummaryText()}
+${prev ? `\nשאלות קודמות:\n${prev}` : ""}
+
+משימה: לענות למנחה או לקבוצה על השאלה, על סמך תוצאות ההצבעה. 80–180 מילים, מעשי, בלי לפסוק מי צודק. לסיים בשאלה אחת שהמנחה יכול להפנות לקבוצה. טקסט רגיל בלי markdown.
+
+השאלה: ${q.trim()}`, {modelTier:"default", cache:false, onText:({text}) => { state.talk.qa[state.talk.qa.length-1].a = text; const last = $("vQa").lastElementChild; if(last) last.textContent = text; st.textContent = ""; }});
+    state.talk.qa[state.talk.qa.length-1].a = r.text; st.textContent = ""; putTalk();
+  }catch(e){ if(e && e.text) state.talk.qa[state.talk.qa.length-1].a = e.text; else state.talk.qa.pop(); st.textContent = errCopy(e); }
+  vAskBusy = false; renderTalk();
+}
+$("vQsOut").addEventListener("click", e => { const b = e.target.closest("[data-vask]"); if(b) voteAsk(b.dataset.vask); });
+$("vAskForm").addEventListener("submit", e => { e.preventDefault(); const v = $("vAskIn").value; $("vAskIn").value = ""; voteAsk(v); });
+
+/* ===================== SVG drawing ===================== */
+function sanitizeSVG(raw){
+  const m = String(raw||"").match(/<svg[\s\S]*<\/svg>/i);
+  if(!m) throw {code:"no_svg"};
+  let s = m[0]
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, "")
+    .replace(/<image\b[^>]*>/gi, "")
+    .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*')/gi, "")
+    .replace(/((?:xlink:)?href\s*=\s*)("|')(?!#)[^"']*\2/gi, '$1"#"');
+  if(!/xmlns=/.test(s)) s = s.replace(/<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+  if(s.length > 90000) throw {code:"too_big"};
+  return svgURI(s);
+}
+async function drawSVG(desc, extra){
+  const r = await SAMPLE(`צייר/י איור וקטורי צבעוני בסגנון קריקטורה של עיתון ילדים, לפי התיאור:
+"${desc}"
+${extra || ""}
+דרישות:
+- להחזיר קוד SVG בלבד, שמתחיל ב־<svg ונגמר ב־</svg>, בלי הסבר.
+- viewBox="0 0 400 260", רקע מלא, קווי מתאר שחורים עבים, צבעים עזים ושמחים, צורות פשוטות וברורות.
+- טקסט בתוך האיור: לכל היותר 4 מילים בעברית, עם direction="rtl".
+- בלי דמויות מוכרות מסרטים, ספרים או מותגים, ובלי אנשים אמיתיים.
+- מתאים לילדים, בלי אלימות.
+- בלי <script>, בלי <image>, בלי קישורים חיצוניים. עד 12,000 תווים.`, {modelTier:"default", cache:false});
+  return sanitizeSVG(r.text);
+}
+function svgErr(e){ return e && e.code === "no_svg" ? "הציור לא הצליח. לנסות שוב או לפשט את התיאור." : e && e.code === "too_big" ? "הציור יצא מורכב מדי. לפשט את התיאור." : errCopy(e); }
+
+/* image upload → small JPEG data URL */
+function fileToDataURL(file){
+  return new Promise((res, rej) => {
+    if(!file || !/^image\//.test(file.type)) return rej(new Error("type"));
+    const fr = new FileReader();
+    fr.onload = () => { const img = new Image(); img.onload = () => {
+      const max = 760, k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement("canvas"); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+      const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0,0,c.width,c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      res(c.toDataURL("image/jpeg", 0.78)); }; img.onerror = rej; img.src = fr.result; };
+    fr.onerror = rej; fr.readAsDataURL(file);
+  });
+}
+
+/* ===================== Newspaper ===================== */
+const KINDS = {lead:"כותרת ראשית", news:"ידיעה", note:"פתק או הודעה", quote:"ציטוט", ad:"מודעה", cartoon:"ציור או קריקטורה"};
+const ACCENTS = [["#0057ff","#ff3d7f"],["#7a2cff","#00a89a"],["#00995f","#ff6a00"],["#e0245e","#2f6bff"]];
+const PAPER_CSS = `
+.np{--np:#0057ff;--np2:#ff3d7f;background:#fff;color:#11161d;font-family:"Assistant","Rubik",Arial,sans-serif;max-width:900px;margin:0 auto;padding:26px 30px 18px;border:1px solid #d9dee5;box-shadow:0 10px 30px rgba(10,20,40,.08);direction:rtl;text-align:right;line-height:1.5}
+.np *{box-sizing:border-box}
+.np-top{display:flex;justify-content:space-between;gap:10px;font-size:12px;letter-spacing:.05em;color:#4a5563;border-bottom:2px solid #11161d;padding-bottom:6px;font-variant-numeric:tabular-nums}
+.np-code{width:120px;height:14px;background:repeating-linear-gradient(90deg,#11161d 0 2px,transparent 2px 4px,#11161d 4px 5px,transparent 5px 8px)}
+.np-mast{position:relative;padding:16px 0 12px;border-bottom:6px solid var(--np);margin-bottom:14px}
+.np-mast:after{content:"";position:absolute;bottom:-14px;right:0;left:0;height:4px;background:repeating-linear-gradient(90deg,var(--np2) 0 22px,transparent 22px 30px)}
+.np-name{font-family:"Rubik",Arial,sans-serif;font-weight:700;font-size:60px;line-height:1;margin:0;letter-spacing:-.01em;background:linear-gradient(90deg,var(--np2),var(--np));-webkit-background-clip:text;background-clip:text;color:transparent}
+.np-slogan{font-size:15px;color:#4a5563;margin-top:6px}
+.np-world{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;color:#fff;background:#11161d;padding:2px 10px;border-radius:2px;letter-spacing:.04em}
+.np-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px 22px;margin-top:18px;align-items:start}
+.np-lead{grid-column:1/-1;display:grid;grid-template-columns:1.35fr 1fr;gap:20px;border-bottom:1px solid #d9dee5;padding-bottom:16px}
+.np-lead.solo{grid-template-columns:1fr}
+.np-lead h2{font-family:"Rubik",Arial,sans-serif;font-size:34px;line-height:1.12;margin:0 0 8px}
+.np-kicker{font-size:12px;font-weight:700;color:var(--np);letter-spacing:.06em;margin-bottom:4px}
+.np-art{border-top:3px solid #11161d;padding-top:8px;break-inside:avoid}
+.np-art h3{font-family:"Rubik",Arial,sans-serif;font-size:19px;line-height:1.2;margin:0 0 6px}
+.np-art p,.np-lead p{font-size:14.5px;line-height:1.55;margin:0}
+.np-by{font-size:12px;color:#6b7684;margin-top:6px}
+.np-ai{display:inline-block;font-size:10.5px;font-weight:700;color:var(--np2);border:1px solid var(--np2);border-radius:3px;padding:0 5px;margin-inline-start:6px;vertical-align:middle;line-height:1.5}
+.np figure{margin:0}
+.np img{width:100%;border:1px solid #d9dee5;background:#fff;display:block}
+.np figcaption{font-size:12.5px;color:#4a5563;margin-top:4px;font-style:italic}
+.np-box{background:#f1f4f9;border-top:3px solid var(--np);padding:10px 12px;break-inside:avoid}
+.np-box h3{font-family:"Rubik",Arial,sans-serif;font-size:15px;margin:0 0 6px;letter-spacing:.03em}
+.np-box ul{margin:0;padding-inline-start:18px;font-size:14px}
+.np-quote{font-family:"Rubik",Arial,sans-serif;font-size:18px;line-height:1.3;border-inline-start:5px solid var(--np2);padding-inline-start:10px;break-inside:avoid}
+.np-quote .np-by{font-family:"Assistant",Arial,sans-serif}
+.np-ad{border:2px dashed #11161d;padding:10px;text-align:center;break-inside:avoid}
+.np-ad h3{font-family:"Rubik",Arial,sans-serif;font-size:17px;margin:0 0 4px}
+.np-wide{grid-column:span 2}
+.np-ph{border:2px dashed #c4ccd6;color:#8a95a3;padding:18px;text-align:center;font-size:14px}
+.np-foot{margin-top:22px;border-top:2px solid #11161d;padding-top:6px;font-size:11.5px;color:#4a5563;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+@media (max-width:700px){.np{padding:18px}.np-grid{grid-template-columns:1fr}.np-lead{grid-template-columns:1fr}.np-wide{grid-column:auto}.np-name{font-size:40px}}
+@media print{.np{box-shadow:none;border:0;max-width:none;padding:0}.np,.np *{-webkit-print-color-adjust:exact;print-color-adjust:exact}.np-ph{display:none}}
+`;
+(() => { const s = document.createElement("style"); s.textContent = PAPER_CSS; document.head.appendChild(s); })();
+
+function fillOf(w){
+  const f = state.fills["w"+w] || {};
+  const year = state.ctx.horizon;
+  return {team:"", paperName:"", date:"", aiMode:false, markAI:true, ai:null, ...f, dateDefault:`יום שני, 14 במרץ ${year}`};
+}
+async function setFill(w, patch){
+  const f = {...fillOf(w), ...patch}; delete f.dateDefault;
+  try{ await putDoc("fills", "w"+w, f); if(!(DB && WID)) renderPaperParts(); }catch(e){ toast(dbErr(e)); }
+}
+function itemsOf(w){ return state.items.filter(i => i.world === w).sort((a,b) => (a.ts||0)-(b.ts||0)); }
+
+function paperHTML(w, forPrint){
+  const world = state.worlds[w]; if(!world) return "";
+  const f = fillOf(w), its = itemsOf(w), ac = ACCENTS[w % ACCENTS.length];
+  const ai = f.aiMode && f.ai ? f.ai : null, tag = f.markAI ? '<span class="np-ai">AI</span>' : "";
+  const lead = its.find(i => i.kind === "lead"), rest = its.filter(i => i !== lead);
+  const fig = (src, cap) => src ? `<figure><img src="${esc(src)}" alt="${esc(cap||"איור")}">${cap ? `<figcaption>${esc(cap)}</figcaption>` : ""}</figure>` : "";
+  const by = i => i.by ? `<div class="np-by">מאת: ${esc(i.by)}</div>` : "";
+  let leadHTML;
+  if(lead) leadHTML = `<section class="np-lead ${lead.img ? "" : "solo"}"><div><div class="np-kicker">הכותרת הראשית</div><h2>${esc(lead.title)}</h2><p>${esc(lead.body)}</p>${by(lead)}</div>${lead.img ? fig(lead.img) : ""}</section>`;
+  else if(ai) leadHTML = `<section class="np-lead solo"><div><div class="np-kicker">הכותרת הראשית</div><h2>${esc(world.headline)}${tag}</h2><p>${esc(world.story)}</p></div></section>`;
+  else leadHTML = forPrint ? "" : `<section class="np-lead solo"><div class="np-ph">כאן תופיע הכותרת הראשית שלכם. להוסיף פריט מסוג ״כותרת ראשית״.</div></section>`;
+  const block = i => {
+    if(i.kind === "quote") return `<div class="np-quote">״${esc(i.body)}״<div class="np-by">${esc(i.title || i.by || "")}</div></div>`;
+    if(i.kind === "ad") return `<div class="np-ad"><h3>${esc(i.title)}</h3><div>${esc(i.body)}</div>${i.img ? fig(i.img) : ""}</div>`;
+    if(i.kind === "note") return `<div class="np-box"><h3>${esc(i.title || "פתק")}</h3><div>${esc(i.body)}</div>${by(i)}</div>`;
+    if(i.kind === "cartoon") return `<div class="np-art np-wide">${fig(i.img, i.title)}${i.body ? `<p class="np-by">${esc(i.body)}</p>` : ""}${by(i)}</div>`;
+    return `<article class="np-art ${i.kind==="lead" ? "np-wide" : ""}"><h3>${esc(i.title)}</h3>${i.img ? fig(i.img) : ""}<p>${esc(i.body)}</p>${by(i)}</article>`;
+  };
+  let aiBlocks = [];
+  if(ai){
+    if(ai.briefs && ai.briefs.length) aiBlocks.push(`<div class="np-box"><h3>מהעולם הרחב${tag}</h3><ul>${ai.briefs.map(b => `<li><b>${esc(b.title)}.</b> ${esc(b.body)}</li>`).join("")}</ul></div>`);
+    (ai.quotes||[]).forEach(q => aiBlocks.push(`<div class="np-quote">״${esc(q.text)}״${tag}<div class="np-by">${esc(q.who)}</div></div>`));
+    if(ai.humor) aiBlocks.push(`<article class="np-art"><h3>${esc(ai.humor.title || "פינת הצחוק")}${tag}</h3><p>${esc(ai.humor.body)}</p></article>`);
+    if(ai.weather) aiBlocks.push(`<div class="np-box"><h3>מזג האוויר${tag}</h3><div>${esc(ai.weather)}</div></div>`);
+    if(ai.ad) aiBlocks.push(`<div class="np-ad"><h3>${esc(ai.ad.title)}${tag}</h3><div>${esc(ai.ad.body)}</div></div>`);
+    if(ai.cartoon && ai.cartoon.img) aiBlocks.push(`<div class="np-art np-wide">${fig(ai.cartoon.img, ai.cartoon.caption)}${f.markAI ? '<div class="np-by">איור: AI</div>' : ""}</div>`);
+  }
+  // interleave student items and AI blocks: student first
+  const body = rest.map(block).concat(aiBlocks).join("");
+  const name = f.paperName || (ai && ai.paperName) || `חדשות ${world.name}`;
+  const slogan = (ai && ai.slogan) || (f.team ? `העיתון של ${f.team}` : "עיתון מעולם אפשרי");
+  return `<article class="np" style="--np:${ac[0]};--np2:${ac[1]}">
+    <div class="np-top"><span>${esc(f.date || f.dateDefault)}</span><span class="np-code" aria-hidden="true"></span><span>מהדורה מהעתיד · גיליון ${String(1000 + w*137 + its.length).slice(-4)}</span></div>
+    <header class="np-mast"><h1 class="np-name">${esc(name)}</h1><div class="np-slogan">${esc(slogan)}</div><span class="np-world">העולם: ${esc(world.name)}</span></header>
+    <div class="np-grid">${leadHTML}${body || (forPrint ? "" : `<div class="np-ph" style="grid-column:1/-1">עוד אין כתבות. מוסיפים כתבות, פתקים, מודעות וציורים בטופס למעלה.</div>`)}</div>
+    <footer class="np-foot"><span>${f.team ? `נכתב על ידי ${esc(f.team)} · ` : ""}סדנת עתידים של Be Good</span><span>העולם הזה הוא אפשרות לחשיבה, לא תחזית</span></footer>
+  </article>`;
+}
+
+let editing = {id:null, img:""};
+function renderPaper(){
+  const tabs = state.worlds.map((w,i) => `<button type="button" role="tab" data-pw="${i}" aria-selected="${state.paperTab===i}">${esc(w.name)}</button>`).join("") +
+    (state.worlds.length ? `<button type="button" role="tab" data-pw="all" aria-selected="${state.paperTab==="all"}">כל העיתונים</button>` : "");
+  $("paperTabs").innerHTML = tabs || `<p class="muted small">קודם כדאי לבנות עולמות ב<a href="#flow">מסע העתידים</a>.</p>`;
+  if(!state.worlds.length){ $("paperBody").innerHTML = ""; return; }
+  if(state.paperTab !== "all" && !state.worlds[state.paperTab]) state.paperTab = 0;
+  if(state.paperTab === "all"){
+    $("paperBody").innerHTML = `<section class="stage"><div class="row" style="justify-content:space-between"><h2>כל העיתונים, זה לצד זה</h2><button type="button" id="pDlAll" class="primary">הורדת כל העיתונים להדפסה</button></div>
+      <p class="small muted">כל עיתון מגיע מעולם אחר. מה דומה ביניהם? מה שונה? איזה עיתון הכי מפתיע?</p><span class="status" id="pAllStatus" aria-live="polite"></span>
+      <div class="gallery">${state.worlds.map((w,i) => `<div><div class="row" style="justify-content:space-between;margin-bottom:6px"><b>${esc(w.name)}</b><button type="button" class="small" data-pw="${i}">פתיחה</button></div><div class="thumb">${paperHTML(i)}</div></div>`).join("")}</div></section>`;
+    return;
+  }
+  const w = state.paperTab, f = fillOf(w), world = state.worlds[w];
+  $("paperBody").innerHTML = `
+  <section class="stage">
+    <h2>העיתון של העולם ״${esc(world.name)}״</h2>
+    <p class="small muted">${esc(world.headline)}</p>
+    <div class="grid2">
+      <label class="f" for="pTeam">שם הצוות<input type="text" id="pTeam" value="${esc(f.team)}" placeholder="למשל: צוות הנשרים"></label>
+      <label class="f" for="pName">שם העיתון<input type="text" id="pName" value="${esc(f.paperName)}" placeholder="למשל: הד הגליל 2035"></label>
+      <label class="f" for="pDate">תאריך הגיליון<input type="text" id="pDate" value="${esc(f.date)}" placeholder="${esc(f.dateDefault)}"></label>
+    </div>
+    <div class="row">
+      <div class="seg" role="group" aria-label="מי כותב את העיתון" id="pMode">
+        <button type="button" data-m="students" aria-pressed="${!f.aiMode}">רק עבודת המשתתפים</button>
+        <button type="button" data-m="ai" aria-pressed="${!!f.aiMode}">עם השלמות AI</button>
+      </div>
+      <label class="row small" for="pMark" style="gap:6px"><input type="checkbox" id="pMark" ${f.markAI ? "checked" : ""}> לסמן בעיתון חלקים שכתב AI</label>
+    </div>
+    <p class="small muted">${f.aiMode ? "ה־AI ישלים את העיתון: ידיעות מהעולם הרחב, ציטוטים של דמויות בדויות, פינת צחוק, מזג אוויר, מודעה וקריקטורה. הכתבות של המשתתפים תמיד מופיעות ראשונות." : "העיתון כולו מהכתיבה והציורים של המשתתפים. אפשר עדיין לבקש מה־AI תגובה על כתבה או ציור לפי תיאור."}</p>
+  </section>
+
+  <section class="stage" aria-labelledby="addh">
+    <h3 id="addh">${editing.id ? "עריכת פריט" : "הוספה לעיתון"}</h3>
+    <div class="grid2">
+      <label class="f" for="iKind">סוג<select id="iKind">${Object.entries(KINDS).map(([k,v]) => `<option value="${k}">${v}</option>`).join("")}</select></label>
+      <label class="f" for="iBy">מי כתבו<input type="text" id="iBy" placeholder="שמות או שם הצוות" value="${esc(f.team)}"></label>
+    </div>
+    <label class="f" for="iTitle"><span id="iTitleLbl">כותרת</span><input type="text" id="iTitle"></label>
+    <label class="f" for="iBody"><span id="iBodyLbl">הטקסט</span><textarea id="iBody"></textarea></label>
+    <div class="box">
+      <b>ציור או תמונה (רשות)</b>
+      <div class="row" style="margin-top:6px">
+        <label class="small" for="iFile" style="font-weight:600">העלאת ציור או צילום: <input type="file" id="iFile" accept="image/*"></label>
+      </div>
+      <div class="row needs-ai" style="margin-top:6px">
+        <input type="text" id="iImgDesc" placeholder="תיאור לציור, למשל: השמש עם משקפי שמש שולחת ברק ללוויין" style="flex:1;min-width:220px" aria-label="תיאור לציור">
+        <button type="button" id="iDraw">ציור עם AI</button>
+      </div>
+      <span class="status" id="iImgStatus" aria-live="polite"></span>
+      <div id="iImgPrev" class="row" style="margin-top:6px"></div>
+    </div>
+    <div class="row"><button type="button" class="primary" id="iAdd">${editing.id ? "שמירת השינויים" : "הוספה לעיתון"}</button>${editing.id ? '<button type="button" id="iCancel">ביטול העריכה</button>' : ""}<span class="status" id="iStatus" aria-live="polite"></span></div>
+  </section>
+
+  <section class="stage">
+    <h3>מה כבר בעיתון</h3>
+    <div class="items" id="itemsList"></div>
+  </section>
+
+  <section class="stage">
+    <div class="row" style="justify-content:space-between">
+      <h3>העיתון</h3>
+      <div class="row">
+        ${f.aiMode ? '<button type="button" class="primary needs-ai" id="pFill">השלמת העיתון עם AI</button>' : ""}
+        <button type="button" id="pDl">הורדה להדפסה</button>
+      </div>
+    </div>
+    <span class="status" id="pStatus" aria-live="polite"></span>
+    <div id="npPreview"></div>
+  </section>`;
+  if(editing.id){ const it = state.items.find(x => x.id === editing.id); if(it){ $("iKind").value = it.kind; $("iBy").value = it.by||""; $("iTitle").value = it.title||""; $("iBody").value = it.body||""; } }
+  updateKindLabels(); renderImgPrev(); renderPaperParts();
+}
+function updateKindLabels(){
+  const k = $("iKind") && $("iKind").value; if(!k) return;
+  const L = {lead:["הכותרת","הכתבה"], news:["הכותרת","הידיעה"], note:["למי או על מה","הפתק"], quote:["מי אמר, ובאיזה תפקיד (דמות בדויה)","הציטוט"], ad:["כותרת המודעה","המודעה"], cartoon:["כיתוב לציור","הסבר קצר (רשות)"]}[k];
+  $("iTitleLbl").textContent = L[0]; $("iBodyLbl").textContent = L[1];
+}
+function renderImgPrev(){
+  const p = $("iImgPrev"); if(!p) return;
+  p.innerHTML = editing.img ? `<img src="${esc(editing.img)}" alt="תצוגה מקדימה" style="max-width:220px;border-radius:10px;border:1px solid var(--line);background:#fff"><button type="button" id="iImgDel">הסרת התמונה</button>` : "";
+}
+function renderPaperParts(){
+  if(state.paperTab === "all"){ renderPaper(); return; }
+  const w = state.paperTab; if(!$("itemsList")) return;
+  const its = itemsOf(w);
+  $("itemsList").innerHTML = its.length ? its.map(i => `<div class="item">
+      <div><div class="meta">${KINDS[i.kind]||""}${i.by ? " · " + esc(i.by) : ""}</div><b>${esc(i.title||"")}</b><div class="small">${esc((i.body||"").slice(0,160))}${(i.body||"").length>160?"…":""}</div></div>
+      <div class="row" style="align-items:flex-start">${i.img ? `<img src="${esc(i.img)}" alt="" style="width:90px">` : ""}
+        <button type="button" class="small" data-edit="${esc(i.id)}">עריכה</button>
+        <button type="button" class="small" data-del="${esc(i.id)}">מחיקה</button>
+        <button type="button" class="small needs-ai" data-fb="${esc(i.id)}">תגובת AI</button></div>
+      ${i.feedback ? `<div class="fb"><b>תגובת העורך הדיגיטלי:</b> ${esc(i.feedback)}</div>` : ""}
+    </div>`).join("") : `<p class="muted small">עוד לא נוסף שום דבר.</p>`;
+  $("npPreview").innerHTML = paperHTML(w);
+}
+
+$("paperTabs").addEventListener("click", e => { const b = e.target.closest("[data-pw]"); if(!b) return; state.paperTab = b.dataset.pw === "all" ? "all" : +b.dataset.pw; editing = {id:null, img:""}; renderPaper(); });
+$("paperBody").addEventListener("click", async e => {
+  const t = e.target;
+  if(t.closest("[data-pw]")){ state.paperTab = +t.closest("[data-pw]").dataset.pw; editing = {id:null,img:""}; renderPaper(); return; }
+  const w = state.paperTab;
+  if(t.closest("#pMode button")){ const m = t.closest("#pMode button").dataset.m; await setFill(w, {aiMode: m === "ai"}); renderPaper(); return; }
+  if(t.id === "iAdd") return addItem();
+  if(t.id === "iCancel"){ editing = {id:null,img:""}; renderPaper(); return; }
+  if(t.id === "iImgDel"){ editing.img = ""; renderImgPrev(); return; }
+  if(t.id === "iDraw") return drawForItem();
+  if(t.dataset.edit){ const it = state.items.find(x => x.id === t.dataset.edit); editing = {id:it.id, img:it.img||""}; renderPaper(); $("iTitle").focus(); return; }
+  if(t.dataset.del){ try{ await delDoc("items", t.dataset.del); renderPaperParts(); }catch(err){ toast(dbErr(err)); } return; }
+  if(t.dataset.fb) return itemFeedback(t.dataset.fb, t);
+  if(t.id === "pFill") return fillPaper();
+  if(t.id === "pDl") return downloadPapers([w]);
+  if(t.id === "pDlAll") return downloadPapers(state.worlds.map((_,i) => i));
+});
+$("paperBody").addEventListener("change", async e => {
+  const t = e.target, w = state.paperTab;
+  if(t.id === "pTeam") await setFill(w, {team: t.value.trim()});
+  else if(t.id === "pName") await setFill(w, {paperName: t.value.trim()});
+  else if(t.id === "pDate") await setFill(w, {date: t.value.trim()});
+  else if(t.id === "pMark") await setFill(w, {markAI: t.checked});
+  else if(t.id === "iKind") updateKindLabels();
+  else if(t.id === "iFile"){
+    try{ editing.img = await fileToDataURL(t.files[0]); renderImgPrev(); $("iImgStatus").textContent = ""; }
+    catch(err){ $("iImgStatus").textContent = "אפשר להעלות רק קובץ תמונה (צילום או סריקה של ציור)."; }
+  }
+  if(["pTeam","pName","pDate","pMark"].includes(t.id)) renderPaperParts();
+});
+async function addItem(){
+  const w = state.paperTab, st = $("iStatus");
+  const it = {world:w, kind:$("iKind").value, title:$("iTitle").value.trim(), body:$("iBody").value.trim(), by:$("iBy").value.trim(), img:editing.img||""};
+  if(!it.title && !it.body && !it.img){ st.textContent = "כדאי לכתוב משהו או להוסיף ציור."; return; }
+  if(state.isExample) leaveExample();
+  const id = editing.id || uid();
+  const prev = state.items.find(x => x.id === id);
+  it.ts = prev ? prev.ts : Date.now(); it.feedback = prev && prev.title === it.title && prev.body === it.body ? (prev.feedback||"") : "";
+  try{ await putDoc("items", id, it); editing = {id:null, img:""}; renderPaper(); toast("נוסף לעיתון"); }
+  catch(e){ st.textContent = dbErr(e); }
+}
+async function drawForItem(){
+  if(!SAMPLE) return;
+  const desc = $("iImgDesc").value.trim() || $("iTitle").value.trim() || $("iBody").value.trim();
+  const st = $("iImgStatus"), btn = $("iDraw");
+  if(!desc){ st.textContent = "כדאי לכתוב תיאור לציור."; return; }
+  const world = state.worlds[state.paperTab];
+  busy(btn, st, true, "מצייר… זה יכול לקחת עד דקה");
+  try{ editing.img = await drawSVG(desc, `ההקשר: עיתון מהעולם ״${world.name}״ בשנת ${state.ctx.horizon}.`); renderImgPrev(); busy(btn, st, false); st.textContent = "הציור מוכן. לא לשכוח ללחוץ ״הוספה לעיתון״."; }
+  catch(e){ busy(btn, st, false); st.textContent = svgErr(e); }
+}
+async function itemFeedback(id, btn){
+  if(!SAMPLE) return;
+  const it = state.items.find(x => x.id === id); if(!it) return;
+  const world = state.worlds[it.world];
+  btn.disabled = true; btn.textContent = "חושב…";
+  try{
+    const r = await SAMPLE(`${RULES}
+
+את/ה העורך/ת הדיגיטלי/ת של עיתון מהעתיד, ומגיב/ה לכתיבה של ${state.ctx.type === "school" ? "תלמידים ותלמידות" : "משתתפים ומשתתפות"} בסדנה.
+העולם: ״${world.name}״ בשנת ${state.ctx.horizon}. ${world.story}
+
+הפריט (${KINDS[it.kind]}): ${it.title}
+${it.body}
+${it.img ? "(לפריט מצורף ציור)" : ""}
+
+משימה: תגובה קצרה, 2–4 משפטים: מה חזק בפריט, שאלה אחת שמעשירה את החשיבה על העולם הזה, והצעה לפרט אחד מהעולם שאפשר להוסיף. חם, מעודד, בגובה העיניים, בלשון רבים או ניטרלית מגדרית. לא לכתוב מחדש את הפריט. טקסט רגיל.`, {modelTier:"default", cache:false});
+    const {id:_omit, ...rest} = it; await putDoc("items", id, {...rest, feedback:r.text}); renderPaperParts();
+  }catch(e){ btn.disabled = false; btn.textContent = "תגובת AI"; toast(errCopy(e) || "לא הצלחנו"); }
+}
+async function fillPaper(){
+  if(!SAMPLE) return;
+  const w = state.paperTab, world = state.worlds[w], f = fillOf(w), its = itemsOf(w), st = $("pStatus"), btn = $("pFill");
+  busy(btn, st, true, "כותב את ההשלמות… עד דקה");
+  try{
+    const r = await askJSON(`${RULES}
+
+ההקשר:
+${ctxText()}
+
+${worldText(world)}
+
+העיתון: ״${f.paperName || "ללא שם"}״, תאריך: ${f.date || f.dateDefault}. ${f.team ? "נכתב על ידי " + f.team + "." : ""}
+מה המשתתפים כבר כתבו (לא לחזור על זה):
+${its.map(i => `- ${KINDS[i.kind]}: ${i.title} ${i.body ? "— " + i.body.slice(0,120) : ""}`).join("\n") || "(עוד כלום)"}
+
+משימה: להשלים את העיתון בחלקים שהמשתתפים לא כתבו, כך שירגיש כמו עיתון אמיתי מהעולם הזה.
+- paperName: שם קליט לעיתון, אם אין שם.
+- slogan: סלוגן קצר ושנון.
+- briefs: 3 ידיעות קצרות מהעולם הרחב בעולם הזה (title קצר, body משפט אחד).
+- quotes: 2 ציטוטים של מנהיגים או אנשים בעולם הזה. רק דמויות בדויות עם שם בדוי ותפקיד, ולצד השם לכתוב "(דמות בדויה)". אסור פוליטיקאים או אנשים אמיתיים.
+- humor: פינת צחוק עדינה, מתאימה ${state.ctx.type === "school" ? "לילדים" : "לכל גיל"}, בלי ללעוג לאף קבוצה.
+- weather: תחזית מזג אוויר שובבה מהעולם הזה, משפט או שניים.
+- ad: מודעה קטנה מהעתיד.
+- cartoon: {"desc": תיאור קריקטורה שמצחיקה ומלמדת על העולם, "caption": כיתוב קצר}.
+להחזיר JSON בלבד:
+{"paperName":"","slogan":"","briefs":[{"title":"","body":""}],"quotes":[{"who":"","text":""}],"humor":{"title":"","body":""},"weather":"","ad":{"title":"","body":""},"cartoon":{"desc":"","caption":""}}`, {modelTier:"default", cache:false});
+    if(!r || !r.slogan) throw {code:"invalid_json"};
+    const ai = {paperName:String(r.paperName||""), slogan:String(r.slogan||""), briefs:(r.briefs||[]).slice(0,4), quotes:(r.quotes||[]).slice(0,3), humor:r.humor||null, weather:String(r.weather||""), ad:r.ad||null, cartoon:{caption:(r.cartoon||{}).caption||"", img:""}};
+    await setFill(w, {ai}); renderPaperParts();
+    st.textContent = "הטקסטים מוכנים. עכשיו מצייר את הקריקטורה…";
+    if(r.cartoon && r.cartoon.desc){
+      try{ ai.cartoon.img = await drawSVG(r.cartoon.desc, `קריקטורה לעיתון מהעולם ״${world.name}״.`); await setFill(w, {ai}); renderPaperParts(); st.textContent = "העיתון הושלם."; }
+      catch(e){ st.textContent = "הטקסטים מוכנים, הקריקטורה לא הצליחה. אפשר ללחוץ שוב."; }
+    }
+    btn.disabled = false;
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+}
+async function downloadPapers(list){
+  const st = $("pStatus") || $("pAllStatus");
+  const pages = list.filter(i => state.worlds[i]).map(i => paperHTML(i, true)).join('<div style="break-after:page"></div>');
+  const html = `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>עיתון מהעתיד</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700&family=Assistant:wght@400;700&display=swap" rel="stylesheet">
+<style>${PAPER_CSS} body{margin:0;background:#e9edf2;padding:20px} @page{size:A4;margin:10mm} @media print{body{background:#fff;padding:0}} .tip{max-width:900px;margin:0 auto 14px;font-family:Arial;font-size:14px;color:#333} @media print{.tip{display:none}}</style></head>
+<body><p class="tip">להדפסה: Ctrl+P (או Cmd+P במק). כדאי לבחור ״גרפיקת רקע״ בהגדרות ההדפסה.</p>${pages}</body></html>`;
+  if(!DL){ if(st) st.textContent = "ההורדה זמינה כשיש חיבור למודל."; return; }
+  try{ await DL.save({filename: list.length > 1 ? "עיתונים-מהעתיד.html" : `עיתון-מהעתיד-${(state.worlds[list[0]]||{}).name||""}.html`, data: html}); if(st) st.textContent = "הקובץ ירד. לפתוח אותו בדפדפן ולהדפיס."; }
+  catch(e){ if(st) st.textContent = e && e.code === "declined" ? "" : "ההורדה לא הצליחה."; }
+}
+
+/* ===================== Perspectives ===================== */
+function renderLenses(){
+  const L = state.lenses;
+  if(!state.worlds.length){ $("lWorld").innerHTML = ""; $("lOut").innerHTML = `<p class="muted small">קודם כדאי לבנות עולמות ב<a href="#flow">מסע העתידים</a>.</p>`; $("lRoles").innerHTML = ""; return; }
+  if(!state.worlds[L.world]) L.world = 0;
+  $("lWorld").innerHTML = state.worlds.map((w,i) => `<option value="${i}" ${i===L.world?"selected":""}>${esc(w.name)}</option>`).join("");
+  const roles = [...new Set(rolesFor(state.ctx.type).concat(L.roles))];
+  $("lRoles").innerHTML = roles.map(r => `<button type="button" class="chip" data-role="${esc(r)}" aria-pressed="${L.roles.includes(r)}">${esc(r)}</button>`).join("");
+  const out = L.out && L.out.world === L.world ? L.out.views : null;
+  $("lOut").innerHTML = out ? out.map((v,i) => `<article class="lens">
+      <div class="small muted">${esc(v.role)}</div><h3>${esc(v.name)}</h3>
+      <div class="line">״${esc(v.line)}״</div>
+      ${v.img ? `<img src="${esc(v.img)}" alt="איור: ${esc(v.picture||v.role)}">` : `<button type="button" class="needs-ai" data-lpic="${i}">איור להמחשה</button>`}
+      <p class="small">${esc(v.view)}</p>
+      <div class="small"><b>מה מדאיג:</b> ${esc(v.worry)}</div>
+      <div class="small"><b>מה נותן תקווה:</b> ${esc(v.hope)}</div>
+      <div class="small"><b>מה יעזור לי מאיתנו היום:</b> ${esc(v.need)}</div>
+    </article>`).join("") : `<p class="muted small" style="grid-column:1/-1">עוד לא נוצרו נקודות מבט לעולם הזה.</p>`;
+  $("lLearnBox").hidden = !out;
+  const lo = $("lLearnOut"); lo.textContent = L.learn || "עוד לא נכתב."; lo.classList.toggle("empty", !L.learn);
+}
+$("lWorld").addEventListener("change", e => { state.lenses.world = +e.target.value; state.lenses.learn = ""; renderLenses(); });
+$("lRoles").addEventListener("click", e => {
+  const b = e.target.closest("[data-role]"); if(!b) return; const r = b.dataset.role, L = state.lenses;
+  if(L.roles.includes(r)) L.roles = L.roles.filter(x => x !== r); else { if(L.roles.length >= 4){ toast("אפשר לבחור עד 4 תפקידים"); return; } L.roles.push(r); }
+  renderLenses();
+});
+$("lAddRole").addEventListener("click", () => {
+  const v = $("lNewRole").value.trim(); if(!v) return; const L = state.lenses, t = state.ctx.type;
+  state.customRoles[t] = state.customRoles[t] || []; if(!rolesFor(t).includes(v)) state.customRoles[t].push(v);
+  if(L.roles.length < 4 && !L.roles.includes(v)) L.roles.push(v);
+  $("lNewRole").value = ""; renderLenses(); renderCtx();
+});
+$("lGen").addEventListener("click", async () => {
+  if(!SAMPLE) return;
+  const L = state.lenses, st = $("lStatus"), btn = $("lGen");
+  if(L.roles.length < 2){ st.textContent = "כדאי לבחור לפחות 2 תפקידים."; return; }
+  const world = state.worlds[L.world];
+  busy(btn, st, true);
+  try{
+    const r = await askJSON(`${RULES}
+
+ההקשר:
+${ctxText()}
+
+${worldText(world)}
+
+התפקידים: ${L.roles.join(" | ")}
+
+משימה: לתאר איך כל אחד מהתפקידים חווה את העולם הזה, כדי להשוות ביניהם. לכל תפקיד דמות עם שם ומגדר משלה (לבחור לפי התפקיד, לגוון), שמדברת בגוף ראשון.
+- line: משפט אחד, קולע, בגוף ראשון.
+- view: 60–90 מילים בגוף ראשון: איך נראה יום, מה השתנה, מה קשה ומה עובד.
+- worry, hope, need: משפט אחד לכל אחד. need = מה הדמות צריכה מאיתנו כבר היום.
+- picture: תיאור קצר של סצנה לאיור שממחישה את נקודת המבט.
+ההבדלים בין נקודות המבט צריכים להיות ברורים ומעניינים.
+להחזיר JSON בלבד: {"views":[{"role":"","name":"","line":"","view":"","worry":"","hope":"","need":"","picture":""}]}`, {modelTier:"default", cache:false});
+    if(!r || !Array.isArray(r.views) || !r.views.length) throw {code:"invalid_json"};
+    L.out = {world: L.world, views: r.views.slice(0,4)}; L.learn = ""; leaveExample();
+    busy(btn, st, false); renderLenses();
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+$("lOut").addEventListener("click", async e => {
+  const b = e.target.closest("[data-lpic]"); if(!b || !SAMPLE) return;
+  const v = state.lenses.out.views[+b.dataset.lpic];
+  b.disabled = true; b.textContent = "מצייר…";
+  try{ v.img = await drawSVG(v.picture || v.line, `נקודת המבט של ${v.role} בעולם ״${state.worlds[state.lenses.world].name}״.`); renderLenses(); }
+  catch(err){ b.disabled = false; b.textContent = "איור להמחשה"; toast(svgErr(err)); }
+});
+$("lLearn").addEventListener("click", async () => {
+  if(!SAMPLE) return;
+  const L = state.lenses, st = $("lLearnStatus"), btn = $("lLearn"), out = $("lLearnOut");
+  busy(btn, st, true); out.classList.remove("empty");
+  try{
+    const r = await SAMPLE(`${RULES}
+
+ההקשר:
+${ctxText()}
+
+העולם: ${state.worlds[L.world].name}
+
+נקודות המבט:
+${L.out.views.map(v => `${v.role} (${v.name}): ${v.view} | מדאיג: ${v.worry} | תקווה: ${v.hope} | צריך מאיתנו: ${v.need}`).join("\n")}
+
+משימה: מה ההבדלים בין נקודות המבט מלמדים את הצוות? 3 תובנות קצרות, ואחריהן 2 שאלות לדיון. טקסט רגיל עם מספור, בלי markdown, עד 180 מילים.`, {modelTier:"default", cache:false, onText:({text}) => { out.textContent = text; st.textContent = ""; }});
+    L.learn = r.text; busy(btn, st, false); renderLenses();
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+
+/* ---------- Example reset hooks ---------- */
+$("resetBtn").addEventListener("click", () => { state.votes = []; state.items = []; state.fills = {}; state.lenses.out = null; state.lenses.learn = ""; });
+
+
+/* ===================== Export worlds to the stress-test tool ===================== */
+const STRESS_URL = "hl-stress.html";
+$("stressLink").href = STRESS_URL;
+function worldsPackage(){
+  return JSON.stringify({type:"be-good-futures", version:1, exportedAt:new Date().toISOString(),
+    title: $("wsTitle").value.trim() || "", ctx: state.ctx, axes: curAxes() || null,
+    drivers: selectedDrivers().map(d => ({name:d.name, tag:d.tag})), worlds: state.worlds, synth: state.synth}, null, 1);
+}
+$("expCopy").addEventListener("click", async () => {
+  if(!state.worlds.length){ $("expStatus").textContent = "קודם כדאי לבנות עולמות."; return; }
+  await copy(worldsPackage()); $("expStatus").textContent = "הועתק. בכלי בדיקת העמידות: ״ייבוא עולמות״ ← הדבקה.";
+});
+$("expDl").addEventListener("click", async () => {
+  const st = $("expStatus");
+  if(!state.worlds.length){ st.textContent = "קודם כדאי לבנות עולמות."; return; }
+  if(!DL){ st.textContent = "ההורדה זמינה כשיש חיבור למודל. אפשר להעתיק במקום."; return; }
+  try{ await DL.save({filename:"עולמות-be-good.json", data:worldsPackage()}); st.textContent = "הקובץ ירד. בכלי בדיקת העמידות: ״ייבוא עולמות״ ← העלאת קובץ."; }
+  catch(e){ st.textContent = e && e.code === "declined" ? "" : "ההורדה לא הצליחה."; }
+});
+
+renderCurrentView();
+</script>
+<style id="bgkit-css">
+.bgkit-bar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+.bgkit-bar b{font-family:var(--font-display)}
+.bgkit-bar a{color:var(--ink);text-decoration:none;border-radius:999px;padding:3px 10px;border:1px solid transparent}
+.bgkit-bar a:hover{border-color:var(--accent)}
+.bgkit-bar a[aria-current="page"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .bgkit-bar a[aria-current="page"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bgkit-bar a[aria-current="page"]{color:#0f171d}}
+.bgkit-help-btn{align-self:flex-start;border-radius:999px;font-weight:700}
+.bgkit-q{width:26px;height:26px;padding:0;border-radius:50%;font-size:14px;line-height:1;font-family:var(--font-display);margin-inline-start:8px;vertical-align:middle;flex:0 0 auto}
+.bgkit-q[aria-expanded="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bgkit-tip{background:var(--accent-soft);border-radius:10px;padding:10px 14px;font-size:15px;max-width:80ch}
+.bgkit-ov{position:fixed;inset:0;background:rgba(10,20,30,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+.bgkit-ov[hidden]{display:none}
+.bgkit-dlg{background:var(--surface);color:var(--ink);border-radius:16px;max-width:720px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:8px;line-height:1.6}
+.bgkit-dlg h2{font-size:22px}
+.bgkit-dlg ul{margin:0;padding-inline-start:20px}
+.bgkit-dlg p{margin:0}
+.bgkit-dlg .src{font-size:13px;color:var(--muted);margin-top:6px}
+</style>
+<script id="bgkit-js">
+(function(){
+  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "משחק מצב עתידי", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "futures", HELP = {"title": "איך עובדים עם מחולל העתידים?", "html": "<p><b>מה הכלי עושה:</b> בונה ארבעה עולמות אפשריים לשנה שבחרתם, מתוך שני דברים חשובים שאי אפשר לדעת לאן יתפתחו. מבקרים בעולמות האלה דרך סיפורים, כותרות ושיחה עם דמויות, ובסוף מסכמים מה כדאי להכין כבר היום.</p>\n<p><b>מתי משתמשים בו:</b> כשרוצים להתכונן לכמה עתידים במקביל, במקום לנחש עתיד אחד. מתאים להנהלה, לצוות, לקהילה ולכיתה.</p>\n<p><b>כמה זמן:</b> מפגש של שעה וחצי עד שלוש שעות. אפשר גם לחלק לשני מפגשים.</p>\n<p><b>החלקים בכלי:</b></p><ul>\n<li><b>מסע העתידים:</b> הקשר, מניעים, צירים, ארבעה עולמות, ביקור בעולם וסיכום.</li>\n<li><b>הצבעה קבוצתית:</b> במקום שאדם אחד יבחר את המניעים והצירים, כל הקבוצה מצביעה, משוחחת על המחלוקות, ומאמצת את התוצאה למסע.</li>\n<li><b>עיתון מהעתיד:</b> כל צוות כותב עיתון מאחד העולמות. מתאים במיוחד לתלמידים, ואפשר להדפיס.</li>\n<li><b>נקודות מבט:</b> אותו עולם דרך העיניים של תלמידה, הורה, מורה ועוד.</li></ul>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>מאיפה מגיעים ולאן ממשיכים:</b> את המניעים אפשר לייבא מ<a href=\"hl-radar.html\" target=\"_blank\" rel=\"noopener\">רדאר החוסן החברתי</a> או מ<a href=\"hl-voice.html\" target=\"_blank\" rel=\"noopener\">קול הקהילה</a>. את העולמות מעבירים ל<a href=\"hl-stress.html\" target=\"_blank\" rel=\"noopener\">בדיקת עמידות</a> כדי לבדוק מולם תוכנית קיימת, או ל<a href=\"hl-game.html\" target=\"_blank\" rel=\"noopener\">משחק מצב עתידי</a> כדי לתרגל בהם ניהול משבר.</p>\n<p class=\"src\">מבוסס על Scenarios ו־Experiential Futures מערכת Futures Toolkit של ממשלת בריטניה (GO-Science).</p>", "steps": {"#h1s": "מתארים את המקום שעליו עובדים: סוג, אזור, ותיאור קצר. ככל שהתיאור מדויק יותר, העולמות יתאימו יותר למציאות שלכם. כשמחליפים בין בית ספר, קהילה וארגון, השדות מתנקים.", "#h2s": "מניע הוא כוח שעלול לשנות את המציאות שלכם, כמו גלי חום או שינוי באמון בין אנשים. בוחרים 5 עד 8 מניעים, וחשוב לבחור לפחות אחד שפחות מוכר בישראל, כי העתיד תמיד מפתיע. אפשר גם לייבא מניעים מכלי אחר.", "#h3s": "ציר הוא נושא חשוב שאי אפשר לדעת לאן יתפתח, עם שני קצוות אפשריים. משני צירים נבנים ארבעה עולמות. אפשר לבחור מהצעות ה־AI, להגדיר צירים בעצמכם, או לבחור אותם בהצבעה קבוצתית.", "#h4s": "כל עולם הוא שילוב של קצה אחד מכל ציר. העולמות אינם תחזית. הם אפשרויות שעוזרות לחשוב. כדאי לקרוא את כולם, גם את אלה שנראים פחות סבירים.", "#h5s": "בוחרים עולם ומבקרים בו: יום בחיים של דמות, כותרות מהעתיד, מכתב, שיחה עם דמות מהעולם, או אירוע חירום שאפשר להעביר לסימולטור. אפשר להוסיף תפקיד משלכם.", "#h6s": "כאן מסכמים מה כדאי לעשות כבר היום: צעדים שעובדים בכל העולמות, צעדים לעולם מסוים, וסימנים למעקב. אפשר לשאול את המודל שאלות, ולהעביר את העולמות לבדיקת העמידות.", "#vfh": "כל משתתף ומשתתפת, או כל צוות, בוחרים עד 8 מניעים ומדרגים כל זוג צירים מ־1 עד 5. אפשר להצביע בתורות על מסך אחד.", "#vrh": "התוצאות מוסתרות עד שכולם סיימו, כדי שאף אחד לא יושפע. אחרי החשיפה רואים במה יש הסכמה רחבה, איפה יש מחלוקת, ואילו רעיונות של מעטים כדאי לשמוע.", "#vth": "השיחה אחרי ההצבעה היא החלק החשוב. ה־AI מציע משפט פתיחה ושאלות סביב המחלוקות, ואפשר לשאול אותו ישירות."}};
+  const wrap = document.querySelector(".wrap"); if(!wrap) return;
+  // 1. toolkit bar
+  const bar = document.createElement("nav"); bar.className = "bgkit-bar"; bar.setAttribute("aria-label", "מעבדת האופק · Be Good");
+  bar.innerHTML = `<b>מעבדת האופק:</b><a href="${HUB}" target="_blank" rel="noopener">דף הבית</a>` + TOOLS.map(t => `<a href="${t.url}" ${t.k === ME ? 'aria-current="page"' : 'target="_blank" rel="noopener"'} title="${t.short}">${t.name}</a>`).join("");
+  wrap.insertBefore(bar, wrap.firstChild);
+  // 2. help button + dialog
+  const head = document.querySelector("header.top > div") || document.querySelector("header.top");
+  const btn = document.createElement("button"); btn.type = "button"; btn.className = "bgkit-help-btn"; btn.textContent = "איך עובדים עם הכלי?";
+  if(head) head.appendChild(btn);
+  const ov = document.createElement("div"); ov.className = "bgkit-ov"; ov.hidden = true;
+  ov.innerHTML = `<div class="bgkit-dlg" role="dialog" aria-modal="true" aria-labelledby="bgkitT"><div class="row" style="justify-content:space-between;align-items:center"><h2 id="bgkitT">${HELP.title}</h2><button type="button" id="bgkitX">סגירה</button></div>${HELP.html}<p style="margin-top:8px">וגם הסבר לכל שלב: ללחוץ על סימן השאלה שליד כותרת השלב.</p></div>`;
+  document.body.appendChild(ov);
+  let last = null;
+  const open = () => { last = document.activeElement; ov.hidden = false; ov.querySelector("#bgkitX").focus(); };
+  const close = () => { ov.hidden = true; if(last) last.focus(); };
+  btn.addEventListener("click", open);
+  ov.addEventListener("click", e => { if(e.target === ov || e.target.id === "bgkitX") close(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape" && !ov.hidden) close(); });
+  // 3. per-step ? buttons
+  Object.entries(HELP.steps || {}).forEach(([sel, text], i) => {
+    const h = document.querySelector(sel); if(!h) return;
+    const q = document.createElement("button"); q.type = "button"; q.className = "bgkit-q"; q.textContent = "?"; q.setAttribute("aria-label", "הסבר על השלב: " + h.textContent.trim()); q.setAttribute("aria-expanded", "false");
+    const tip = document.createElement("div"); tip.className = "bgkit-tip"; tip.hidden = true; tip.id = "bgkitTip" + i; tip.textContent = text; q.setAttribute("aria-controls", tip.id);
+    h.appendChild(q);
+    const anchor = h.closest(".stage-head") || h.closest(".row") || h;
+    anchor.insertAdjacentElement("afterend", tip);
+    q.addEventListener("click", () => { tip.hidden = !tip.hidden; q.setAttribute("aria-expanded", String(!tip.hidden)); });
+  });
+})();
+</script>
+<script src="lib/screens-menu.js"></script>
+</body>
+</html>

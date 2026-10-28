@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<script src="lib/access-guard.js"></script>
+<script src="lib/ai-call.js"></script>
+<script src="lib/hl-runtime.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>שלושה אופקים · Be Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one guided column — plan, what we test against, the matrix, autonomy, summary. */
+:root{
+  --bg:#eef1f3;
+  --surface:#ffffff;
+  --ink:#16232e;
+  --muted:#5b6b78;
+  --line:#d5dde3;
+  --accent:#17607a;
+  --accent-soft:#dcecf1;
+  --known:#56697a;      --known-bg:#e6ebef;
+  --expected:#9a5b00;   --expected-bg:#fbefd9;
+  --rare:#6a3fb0;       --rare-bg:#eee6fb;
+  --wild:#b2275a;       --wild-bg:#fbe3ec;
+  --ai:#17607a;         --ai-bg:#dcecf1;
+  --good:#2f7a4b;
+  --font-display:"Rubik","Assistant",system-ui,sans-serif;
+  --font-body:"Assistant","Rubik",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+    --accent:#62b6cf; --accent-soft:#183644;
+    --known:#a9b9c6; --known-bg:#24323d;
+    --expected:#f0b45a; --expected-bg:#3a2a12;
+    --rare:#b79af0; --rare-bg:#2c2242;
+    --wild:#f2789f; --wild-bg:#40192a;
+    --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+  --accent:#62b6cf; --accent-soft:#183644;
+  --known:#a9b9c6; --known-bg:#24323d;
+  --expected:#f0b45a; --expected-bg:#3a2a12;
+  --rare:#b79af0; --rare-bg:#2c2242;
+  --wild:#f2789f; --wild-bg:#40192a;
+  --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 18px 80px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:30px;font-weight:700}
+h2{font-size:22px;font-weight:600}
+h3{font-size:18px;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:14.5px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{font-family:var(--font-display);font-size:14px;letter-spacing:.02em;color:var(--accent);font-weight:600}
+.notice{background:var(--accent-soft);border-radius:12px;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.principle{border-inline-start:4px solid var(--wild);background:var(--surface);border-radius:10px;padding:12px 16px}
+section.stage{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.stage-head{display:flex;gap:12px;align-items:baseline}
+.num{font-family:var(--font-display);font-weight:700;color:var(--accent);font-size:20px;min-width:22px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:15px}
+input[type=text],select,textarea{font:inherit;font-weight:400;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+textarea{min-height:76px;resize:vertical}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;font-weight:600}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] button.primary{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#0f171d}}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.drv:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#0f171d}}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px;white-space:nowrap}
+.t-known{color:var(--known);background:var(--known-bg)}
+.t-expected{color:var(--expected);background:var(--expected-bg)}
+.t-rare{color:var(--rare);background:var(--rare-bg)}
+.t-wild{color:var(--wild);background:var(--wild-bg)}
+.t-ai{color:var(--ai);background:var(--ai-bg)}
+.t-opp{color:var(--good);background:transparent;border:1px solid var(--good)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{padding:4px 12px;font-size:14.5px;border-radius:999px}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.drivers{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.drv{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:var(--surface);cursor:pointer}
+.drv input{margin-top:5px;accent-color:var(--accent)}
+.drv.on{border-color:var(--accent);background:var(--accent-soft)}
+.drv .nm{font-weight:700;line-height:1.3}
+.drv .ds{font-size:14px;color:var(--muted);line-height:1.4}
+.drv .tg{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.meter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:15px}
+.ok{color:var(--good);font-weight:700}
+.warn{color:var(--wild);font-weight:700}
+.axes-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.axopt{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:var(--surface)}
+.axopt.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.axline{font-size:15px}
+.axline b{font-family:var(--font-display);font-weight:600}
+.matrix{display:grid;grid-template-columns:28px 1fr 1fr;grid-template-rows:auto auto auto;gap:10px}
+.ylab{grid-row:1 / span 2;writing-mode:vertical-rl;transform:rotate(180deg);display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);font-weight:600}
+.xlab{grid-column:2 / span 2;display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);font-weight:600}
+.axis-name{color:var(--accent)}
+.world{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface);position:relative}
+.world.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.world .q{font-size:12.5px;color:var(--muted);font-weight:600}
+.world .hl{font-family:var(--font-display);font-weight:600;font-size:15.5px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 0}
+.world ul{margin:0;padding-inline-start:18px;font-size:14.5px}
+.world .lbl{font-size:13px;font-weight:700;color:var(--muted);margin-top:2px}
+.world .wc{font-size:14px;background:var(--rare-bg);color:var(--ink);border-radius:8px;padding:6px 8px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.tabs button{border-radius:999px;padding:5px 14px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.out{white-space:pre-wrap;background:var(--bg);border-radius:12px;padding:14px 16px;min-height:80px;max-width:72ch}
+.out.empty{color:var(--muted)}
+.chat{display:flex;flex-direction:column;gap:8px;max-width:72ch}
+.msg{padding:8px 12px;border-radius:12px;white-space:pre-wrap}
+.msg.u{background:var(--accent-soft);align-self:flex-start}
+.msg.a{background:var(--bg);align-self:flex-end}
+.event{border:1px solid var(--line);border-inline-start:5px solid var(--wild);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;max-width:80ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.box{background:var(--bg);border-radius:12px;padding:12px 14px}
+.box ul,.box ol{margin:6px 0 0;padding-inline-start:20px}
+.status{font-size:14.5px;color:var(--muted)}
+.toast{position:fixed;bottom:18px;inset-inline-start:50%;transform:translateX(50%);background:var(--ink);color:var(--surface);padding:8px 16px;border-radius:10px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.ai-off .needs-ai{display:none}
+.ai-note{display:none}
+.ai-off .ai-note{display:block}
+/* views + workshop bar */
+nav.views{display:flex;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line)}
+nav.views a{font-family:var(--font-display);font-weight:600;text-decoration:none;color:var(--ink);padding:7px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+nav.views a[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] nav.views a[aria-current="page"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav.views a[aria-current="page"]{color:#0f171d}}
+.view{display:flex;flex-direction:column;gap:22px}
+.view[hidden]{display:none}
+.wsbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:15px}
+.wsbar input{max-width:260px}
+.wslist{display:flex;flex-direction:column;gap:6px;width:100%}
+.wslist button{text-align:start;font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border-radius:999px;padding:5px 12px;font-size:14.5px;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0f171d}}
+.rate{display:flex;gap:4px;flex-wrap:wrap}
+.rate button{min-width:40px;padding:6px 0;font-variant-numeric:tabular-nums}
+.rate button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:minmax(150px,1.2fr) 3fr auto;gap:10px;align-items:center;font-size:15px}
+.bar .track{height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:6px}
+.bar .n{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;white-space:nowrap}
+.hist{display:flex;gap:3px;align-items:flex-end;height:34px}
+.hist span{width:14px;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px;opacity:.85}
+.pill{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px}
+.p-agree{background:#e3f3e8;color:#226b3d}
+.p-split{background:var(--wild-bg);color:var(--wild)}
+.p-minor{background:var(--rare-bg);color:var(--rare)}
+.lenses{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.lens{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.lens .line{font-family:var(--font-display);font-weight:600;font-size:16px}
+.lens img,.item img{width:100%;border-radius:10px;background:#fff;border:1px solid var(--line)}
+.items{display:flex;flex-direction:column;gap:8px}
+.item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:6px 12px;background:var(--surface)}
+.item .meta{font-size:13px;color:var(--muted)}
+.item .fb{grid-column:1/-1;background:var(--accent-soft);border-radius:8px;padding:8px 10px;font-size:14.5px;white-space:pre-wrap}
+.item img{max-width:220px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.thumb{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff;height:520px;position:relative}
+.thumb .np{transform:scale(.42);transform-origin:top right;width:238%}
+/* stress test */
+.vd{display:inline-block;font-size:13px;font-weight:700;border-radius:6px;padding:2px 10px;border:1px solid transparent}
+.v-robust{background:#e3f3e8;color:#1f6a3a;border-color:#b9dfc5}
+.v-adjust{background:#fdf0d6;color:#8a5200;border-color:#f1d39a}
+.v-break{background:#fbe1e4;color:#a8172f;border-color:#f0b4bd}
+.v-redundant{background:#eef1f4;color:#5b6b78;border-color:#d5dde3}
+.v-none{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.mx-wrap{overflow-x:auto}
+table.mx{border-collapse:separate;border-spacing:6px;width:100%;min-width:720px}
+table.mx th{font-family:var(--font-display);font-weight:600;font-size:14.5px;text-align:start;vertical-align:bottom;padding:4px}
+table.mx th .ax{display:block;font-family:var(--font-body);font-weight:400;font-size:12.5px;color:var(--muted)}
+table.mx td{vertical-align:top}
+table.mx td.el{font-weight:600;font-size:15px;max-width:230px}
+table.mx td.el .small{font-weight:400}
+.cell{width:100%;text-align:start;display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:10px;font-weight:400;font-size:13.5px;line-height:1.35;min-height:64px}
+.cell.on{outline:3px solid var(--accent);outline-offset:1px}
+.cell .vd{align-self:flex-start}
+.cell.v-robust,.cell.v-adjust,.cell.v-break,.cell.v-redundant{border-width:1px}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.score .box{display:flex;flex-direction:column;gap:6px}
+.stack{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--bg)}
+.stack span{display:block;height:100%}
+.ifthen{display:grid;grid-template-columns:1fr auto 1fr;gap:6px 10px;align-items:start;font-size:15px}
+.ifthen .arr{color:var(--muted);font-weight:700}
+@media (max-width:640px){
+  .ifthen{grid-template-columns:1fr}
+  .ifthen .arr{display:none}
+  .bar{grid-template-columns:1fr}
+  .matrix{grid-template-columns:1fr}
+  .ylab{display:none}
+  .xlab{grid-column:1}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+.wrap{max-width:1240px}
+.h-col{border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.h1c{background:#fbe8e2}.h2c{background:#fdf0d6}.h3c{background:#e3f3e8}
+:root[data-theme="dark"] .h1c{background:#3a2420}:root[data-theme="dark"] .h2c{background:#3a2a12}:root[data-theme="dark"] .h3c{background:#1d3324}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .h1c{background:#3a2420}:root:not([data-theme="light"]) .h2c{background:#3a2a12}:root:not([data-theme="light"]) .h3c{background:#1d3324}}
+.note{display:grid;grid-template-columns:1fr auto;gap:4px 8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:15px}
+.note .k{font-size:12.5px;font-weight:700}
+.k-plus{color:#1f6a3a}.k-minus{color:#a8172f}.k-keep{color:#17607a}.k-fade{color:#8a5200}.k-seed{color:#1f6a3a}
+.diag{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px}
+.diag svg{width:100%;height:auto;display:block}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+
+<header class="top">
+  <div>
+    <div class="brand">Be Good · חוסן מול עתיד לא ידוע</div>
+    <h1>שלושה אופקים</h1>
+    <p class="muted">מסתכלים על אותו נושא בשלושה אופקים בבת אחת: מה שיש היום ומתחיל לדעוך, העתיד שאנחנו רוצים בו וכבר רואים ממנו זרעים, והמעבר שמחבר ביניהם. כך מחליטים ממה להיפרד, מה לשמור ובמה להשקיע.</p>
+  </div>
+</header>
+
+<div class="wsbar">
+  <b>מפה:</b>
+  <input type="text" id="hTitle" placeholder="שם, למשל: מוכנות לחירום 2035" aria-label="שם">
+  <button type="button" id="hSave" class="primary">שמירה</button>
+  <button type="button" id="hOpen">מפות שמורות</button>
+  <button type="button" id="hNew">מפה חדשה</button>
+  <span class="status" id="hStatus" aria-live="polite"></span>
+  <div class="wslist" id="hList" hidden></div>
+</div>
+
+<div class="notice" id="exampleBar">
+  <span><b>מוצגת דוגמה מוכנה:</b> איך בית ספר יסודי בגליל העליון והקהילה שלו מתכוננים למשברים, בשלושה אופקים.</span>
+  <button id="resetBtn" type="button">מפה חדשה</button>
+</div>
+<p class="ai-note notice small">החלקים שמופעלים על ידי AI זמינים כשיש חיבור למודל. בינתיים אפשר לעיין בדוגמה ולמלא ידנית.</p>
+
+<section class="stage" aria-labelledby="s1h">
+  <div class="stage-head"><span class="num">1</span><h2 id="s1h">על מה מסתכלים?</h2></div>
+  <div class="row" style="gap:6px 14px"><span class="small" style="font-weight:600">על מי מדובר?</span>
+    <div class="seg" role="group" aria-label="סוג ההקשר" id="ctxType" style="flex-wrap:wrap"><button type="button" data-v="school">בית ספר</button><button type="button" data-v="community">קהילה ויישוב</button><button type="button" data-v="org">ארגון</button><button type="button" data-v="pro">קהילה מקצועית</button></div>
+  </div>
+  <div class="grid2">
+    <label class="f" for="region">אזור בארץ<select id="region"></select></label>
+    <label class="f" for="horizon">עד איזו שנה מסתכלים?<select id="horizon"><option>2030</option><option>2035</option><option>2040</option></select></label>
+  </div>
+  <label class="f" for="topic">הנושא: על מה מסתכלים בשלושת האופקים?<input type="text" id="topic" placeholder="למשל: איך בית הספר והקהילה מתכוננים למשברים"></label>
+  <label class="f" for="desc">כמה מילים על המקום או על הקהילה (רשות)<textarea id="desc" style="min-height:56px"></textarea></label>
+</section>
+
+<section class="stage" aria-labelledby="s2h">
+  <div class="stage-head"><span class="num">2</span><h2 id="s2h">שלושת האופקים</h2></div>
+  <p class="small muted">כדאי למלא לפי הסדר: קודם אופק 1 (מה יש היום), אחר כך אופק 3 (העתיד הרצוי), ורק בסוף אופק 2 (המעבר ביניהם). בכל אופק אפשר להוסיף ידנית או לבקש הצעות מה־AI.</p>
+  <div class="cols" style="align-items:start">
+    <div class="h-col h1c">
+      <h3>אופק 1: מה יש היום</h3>
+      <p class="small">הדרך שבה הדברים עובדים עכשיו. חלק מזה כבר לא מתאים לעתיד ומתחיל לדעוך, וחלק חשוב לשמור.</p>
+      <div id="l-fade"></div>
+      <div class="row"><input type="text" id="n-fade" placeholder="מה כבר לא מתאים?" style="flex:1;min-width:160px" aria-label="מה כבר לא מתאים"><button type="button" data-add="fade">הוספה</button></div>
+      <div id="l-keep"></div>
+      <div class="row"><input type="text" id="n-keep" placeholder="מה חשוב לשמור?" style="flex:1;min-width:160px" aria-label="מה חשוב לשמור"><button type="button" data-add="keep">הוספה</button></div>
+      <button type="button" class="needs-ai" data-ai="1">הצעות לאופק 1 עם AI</button>
+    </div>
+    <div class="h-col h3c">
+      <h3>אופק 3: העתיד הרצוי</h3>
+      <p class="small">איך ייראו הדברים כשהם יעבדו כמו שאנחנו רוצים. וגם זרעים: דוגמאות קטנות לעתיד הזה שכבר קיימות היום, אצלנו או במקום אחר.</p>
+      <label class="f" for="vision">העתיד הרצוי<textarea id="vision" style="min-height:80px"></textarea></label>
+      <div id="l-seed"></div>
+      <div class="row"><input type="text" id="n-seed" placeholder="זרע של העתיד שכבר רואים היום" style="flex:1;min-width:160px" aria-label="זרע של העתיד"><button type="button" data-add="seed">הוספה</button></div>
+      <button type="button" class="needs-ai" data-ai="3">הצעות לאופק 3 עם AI</button>
+    </div>
+    <div class="h-col h2c">
+      <h3>אופק 2: המעבר</h3>
+      <p class="small">חידושים, ניסיונות ושינויים שקורים בדרך. חלקם מקרבים אותנו לאופק 3 (+), וחלקם רק מאריכים את החיים של אופק 1 (−). חשוב לדעת להבדיל.</p>
+      <div id="l-h2"></div>
+      <div class="row"><input type="text" id="n-h2" placeholder="חידוש או שינוי בדרך" style="flex:1;min-width:160px" aria-label="חידוש או שינוי"><select id="n-h2k" aria-label="סוג"><option value="plus">מקרב לעתיד (+)</option><option value="minus">מאריך את הקיים (−)</option></select><button type="button" data-add="h2">הוספה</button></div>
+      <button type="button" class="needs-ai" data-ai="2">הצעות לאופק 2 עם AI</button>
+    </div>
+  </div>
+  <span class="status" id="aiStatus" aria-live="polite"></span>
+</section>
+
+<section class="stage" aria-labelledby="s3h">
+  <div class="stage-head"><span class="num">3</span><h2 id="s3h">התמונה המלאה</h2></div>
+  <p class="small muted">שלושת הקווים מראים איך כל אופק מתחזק או נחלש לאורך הזמן, מהיום (בצד ימין) ועד שנת היעד (בצד שמאל). אופק 1 דועך, אופק 3 צומח, ואופק 2 הוא הגל של המעבר ביניהם.</p>
+  <div class="diag" id="diag"></div>
+  <div class="row"><button type="button" id="dlSvg">הורדת התמונה</button><span class="status" id="dlStatus" aria-live="polite"></span></div>
+</section>
+
+<section class="stage" aria-labelledby="s4h">
+  <div class="stage-head"><span class="num">4</span><h2 id="s4h">מה עושים עם זה?</h2></div>
+  <p class="small muted">ה־AI קורא את שלושת האופקים ומציע ממה להיפרד בהדרגה, מה לשמור, במה להשקיע ולמה להיזהר. אחר כך אפשר להעביר את העתיד הרצוי לכלי ״מהחזון להיום״ ולבנות ממנו מפת דרכים.</p>
+  <div class="row"><button type="button" class="primary needs-ai" id="aiSum">סיכום והמלצות</button><button type="button" id="toRoadmap" class="primary">העתקת העתיד הרצוי ל״מהחזון להיום״</button><button type="button" id="copyAll">העתקה כטקסט</button><span class="status" id="sumStatus" aria-live="polite"></span></div>
+  <div id="summary"></div>
+</section>
+
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4);
+function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1800); }
+async function copy(text){ try { await navigator.clipboard.writeText(text); toast("הועתק"); } catch(e){ toast("ההעתקה לא הצליחה"); } }
+function busy(btn, st, on, msg){ if(btn) btn.disabled = on; if(st) st.textContent = on ? (msg || "חושב… זה יכול לקחת עד דקה") : ""; }
+const TYPE_LABEL = {school:"בית ספר", community:"קהילה ויישוב", org:"ארגון", pro:"קהילה מקצועית או רשת מומחים"};
+const REGIONS = ["כל הארץ","גליל עליון וגבול לבנון","רמת הגולן","גליל מערבי","עמקים וגליל תחתון","חיפה והקריות","השרון","מרכז וגוש דן","ירושלים והסביבה","השפלה","יהודה ושומרון","עוטף עזה והנגב המערבי","באר שבע והנגב","בקעת הירדן וים המלח","ערבה ואילת","מישור החוף הדרומי"];
+const KIND = {fade:{t:"דועך", cls:"k-fade"}, keep:{t:"לשמור", cls:"k-keep"}, seed:{t:"זרע של העתיד", cls:"k-seed"}, plus:{t:"מקרב לעתיד (+)", cls:"k-plus"}, minus:{t:"מאריך את הקיים (−)", cls:"k-minus"}};
+const EX = {"title": "", "ctx": {"type": "school", "region": "גליל עליון וגבול לבנון", "desc": "בית ספר יסודי ממלכתי, כ־320 תלמידים ממושב ומשני קיבוצים. הקהילה פונתה לתקופה ארוכה וחזרה."}, "horizon": "2035", "topic": "איך בית הספר והקהילה מתכוננים למשברים", "vision": "בית ספר עם אוטונומיה תפקודית, שהוא עוגן לקהילה בשגרה ובחירום.", "notes": [{"id": "a1", "k": "fade", "t": "נהלים שמחכים להנחיות מבחוץ"}, {"id": "a2", "k": "fade", "t": "קשר עם ההורים רק דרך ווטסאפ"}, {"id": "a3", "k": "fade", "t": "תרגיל פעם בשנה, כטקס"}, {"id": "a4", "k": "fade", "t": "תמיכה רגשית רק אחרי אירוע"}, {"id": "b1", "k": "keep", "t": "הקשר האישי בין מורים לתלמידים"}, {"id": "b2", "k": "keep", "t": "קהילה שמתגייסת ברגע האמת"}, {"id": "c1", "k": "seed", "t": "הורים שהתארגנו לבד לבשל למפונים"}, {"id": "c2", "k": "seed", "t": "ארגז למידה בלי חשמל בכיתה ו׳"}, {"id": "c3", "k": "seed", "t": "תלמידים שמתנדבים כרצים בחירום"}, {"id": "d1", "k": "plus", "t": "הכשרת הצוות בעזרה רגשית ראשונה"}, {"id": "d2", "k": "plus", "t": "מערכת סולארית לספרייה"}, {"id": "d3", "k": "plus", "t": "שותפות קבועה עם צוות צח״י"}, {"id": "e1", "k": "minus", "t": "מערכת הודעות חדשה שתלויה רק באינטרנט"}, {"id": "e2", "k": "minus", "t": "עוד חוברת נהלים שאף אחד לא מתרגל"}], "summary": {"key": "הדרך שבה מתכוננים היום נשענת על הנחיות ועל טכנולוגיה מבחוץ, אבל הזרעים של העתיד כבר כאן: התארגנות עצמית של הורים ותלמידים, וכלים שעובדים גם בלי חשמל.", "release": ["כדאי להחליף בהדרגה את ההמתנה להנחיות מבחוץ בעקרונות החלטה מוסכמים, שמאפשרים לצוות לפעול לבד.", "כדאי להפוך את התרגיל השנתי מטקס לתרגול אמיתי של יום בלי רשת."], "keep": ["חשוב לשמור על הקשר האישי בין מורים לתלמידים, כי הוא מה שמחזיק ילדים בימים קשים.", "חשוב לשמור על ההתגייסות של הקהילה, ולתת לה מבנה קבוע."], "invest": ["כדאי להשקיע עכשיו בהכשרת הצוות בעזרה רגשית ראשונה.", "כדאי לקדם מערכת סולארית לספרייה, כצעד ראשון לעצמאות באנרגיה.", "כדאי למסד שותפות קבועה עם צוות צח״י."], "beware": ["מערכת הודעות חדשה שתלויה רק באינטרנט נראית כמו חידוש, אבל היא מגדילה את התלות ברשת.", "חוברת נהלים נוספת בלי תרגול לא תשנה את מה שקורה ברגע האמת."], "seeds": ["כדאי להפוך את ההתארגנות של ההורים לרשת עזרה קבועה.", "כדאי להרחיב את ארגז הלמידה בלי חשמל לכל הכיתות.", "כדאי לתת לתלמידים תפקיד קבוע ומתורגל בחירום."]}};
+function fresh(type){ return {title:"", ctx:{type:type||"school", region:"", desc:""}, horizon:"2035", topic:"", vision:"", notes:[], summary:null}; }
+let S = JSON.parse(JSON.stringify(EX));
+let isExample = true, HID = null;
+function leaveExample(){ if(isExample){ isExample = false; $("exampleBar").style.display = "none"; } }
+
+let SAMPLE = null, DB = null, DL = null;
+document.documentElement.classList.add("ai-off");
+(async () => {
+  const use = async n => { try { return (window.claude && window.claude.use) ? await window.claude.use(n) : null; } catch(e){ return null; } };
+  [SAMPLE, DB, DL] = await Promise.all([use("sample"), use("db"), use("downloads")]);
+  document.documentElement.classList.toggle("ai-off", !SAMPLE);
+  $("hSave").disabled = !DB; $("hOpen").disabled = !DB; if(!DB) $("hStatus").textContent = "שמירה זמינה כשיש חיבור למודל.";
+})();
+function errCopy(e){
+  const c = e && e.code;
+  if(["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(c)){ SAMPLE = null; document.documentElement.classList.add("ai-off"); return "ה־AI לא זמין בדף הזה."; }
+  if(c === "rate_limited") return "יותר מדי בקשות כרגע. אפשר לנסות שוב בעוד כמה דקות.";
+  if(c === "refused") return "הבקשה לא נענתה. כדאי לנסח אחרת.";
+  if(c === "invalid_json") return "התשובה הגיעה בפורמט לא תקין. אפשר לנסות שוב.";
+  if(c === "cancelled") return "";
+  return "משהו השתבש בחיבור. אפשר לנסות שוב.";
+}
+function repairJSON(t){ let s = String(t||""); const a = s.indexOf("{"), b = s.lastIndexOf("}"); if(a >= 0 && b > a) s = s.slice(a, b+1); try { return JSON.parse(s); } catch(_){} s = s.replace(/([֐-׿])"([֐-׿])/g, "$1״$2").replace(/[“”]/g, '"'); try { return JSON.parse(s); } catch(_){} return JSON.parse(s.replace(/,\s*([}\]])/g, "$1")); }
+async function askJSON(prompt, opts){
+  const full = prompt + `\n\nחשוב לפורמט: JSON תקין בלבד, בלי טקסט לפניו או אחריו. בתוך מחרוזות לא להשתמש במירכאות רגילות ("). בקיצורים עבריים להשתמש בגרשיים עבריים (״).`;
+  try { return await SAMPLE.json(full, opts); } catch(e){ if(e && e.code === "invalid_json" && e.text){ try { return repairJSON(e.text); } catch(_){} } throw e; }
+}
+function rules(){ return `את/ה עוזר/ת בכלי ״שלושה אופקים״ (Three Horizons מערכת Futures Toolkit) במערכת Be Good לחוסן קהילתי וחינוכי בישראל.
+ההקשר: ${TYPE_LABEL[S.ctx.type]}${S.ctx.region ? ", " + S.ctx.region : ""}.${S.ctx.desc ? " תיאור: " + S.ctx.desc : ""} מסתכלים עד שנת ${S.horizon}.
+הנושא: ${S.topic || "החוסן שלנו לקראת העתיד"}
+אופק 1 = הדרך שבה הדברים עובדים היום (חלק דועך, חלק כדאי לשמור). אופק 3 = העתיד הרצוי, וזרעים שלו שכבר קיימים היום. אופק 2 = חידושים ושינויים בדרך: + אם מקרבים לאופק 3, − אם רק מאריכים את אופק 1.
+כללים: משפטים קצרים, שלמים וברורים, בלשון רבים או ניטרלית מגדרית. מציאותי לישראל, בלי נתונים מומצאים ובלי עמדה פוליטית. לשים לב לאוטונומיה תפקודית: היכולת לתפקד לבד כשעזרה, תשתיות או הנחיות מבחוץ לא מגיעות.`; }
+function stateText(){ const by = k => S.notes.filter(n => n.k === k).map(n => "- " + n.t).join("\n") || "(אין)";
+  return `אופק 1, דועך:\n${by("fade")}\nאופק 1, לשמור:\n${by("keep")}\nאופק 3, העתיד הרצוי: ${S.vision || "(לא נכתב)"}\nאופק 3, זרעים:\n${by("seed")}\nאופק 2, מקרב (+):\n${by("plus")}\nאופק 2, מאריך (−):\n${by("minus")}`; }
+
+function noteHTML(n){ return `<div class="note"><div><span class="k ${KIND[n.k].cls}">${KIND[n.k].t}</span><div>${esc(n.t)}</div></div><div class="row" style="align-items:flex-start">${n.k === "plus" || n.k === "minus" ? `<button type="button" class="small" data-flip="${esc(n.id)}" title="החלפה בין + ל־−">± </button>` : ""}<button type="button" class="small" data-del="${esc(n.id)}" aria-label="מחיקה">×</button></div></div>`; }
+function render(){
+  document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.ctx.type)));
+  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
+  $("horizon").value = S.horizon; $("topic").value = S.topic || ""; $("desc").value = S.ctx.desc || ""; $("hTitle").value = S.title || "";
+  if(document.activeElement !== $("vision")) $("vision").value = S.vision || "";
+  ["fade","keep","seed"].forEach(k => $("l-" + k).innerHTML = S.notes.filter(n => n.k === k).map(noteHTML).join(""));
+  $("l-h2").innerHTML = S.notes.filter(n => n.k === "plus" || n.k === "minus").map(noteHTML).join("");
+  $("diag").innerHTML = diagSVG(false); renderSummary();
+}
+/* diagram: time runs right (now) → left (horizon) */
+const W = 1080, H = 600, L = 70, R = 1010, T = 40, B = 520;
+function diagSVG(forExport){
+  const X = t => R - t * (R - L), Y = v => B - v * (B - T);
+  const curve = f => { let d = ""; for(let i = 0; i <= 40; i++){ const t = i/40; d += (i ? " L" : "M") + X(t).toFixed(1) + " " + Y(f(t)).toFixed(1); } return d; };
+  const h1 = t => 0.85 - 0.75 * Math.pow(t, 1.4), h3 = t => 0.1 + 0.75 * Math.pow(t, 1.4), h2 = t => 0.12 + 0.55 * Math.sin(Math.PI * t);
+  let g = `<rect width="${W}" height="${H}" fill="${forExport ? "#fff" : "transparent"}"/>`;
+  g += `<line x1="${L}" y1="${B}" x2="${R}" y2="${B}" stroke="#aab6c1" stroke-width="1.5"/><line x1="${R}" y1="${T}" x2="${R}" y2="${B}" stroke="#aab6c1" stroke-width="1.5"/>`;
+  g += `<text x="${R}" y="${B + 24}" text-anchor="middle" font-size="15" fill="#5b6b78" font-family="Assistant, Arial">היום</text><text x="${L}" y="${B + 24}" text-anchor="middle" font-size="15" fill="#5b6b78" font-family="Assistant, Arial">${esc(S.horizon)}</text>`;
+  g += `<text x="${(L+R)/2}" y="${B + 24}" text-anchor="middle" font-size="14" fill="#7a8a97" font-family="Assistant, Arial" direction="rtl">הזמן ←</text>`;
+  g += `<path d="${curve(h1)}" fill="none" stroke="#d9714a" stroke-width="5"/><path d="${curve(h2)}" fill="none" stroke="#e0a237" stroke-width="5" stroke-dasharray="10 6"/><path d="${curve(h3)}" fill="none" stroke="#3f9a62" stroke-width="5"/>`;
+  const lab = (t, f, dy, txt, col) => { g += `<text x="${X(t)}" y="${Y(f(t)) + dy}" text-anchor="middle" font-size="17" font-weight="700" fill="${col}" font-family="Rubik, Arial" direction="rtl" style="paint-order:stroke;stroke:#fff;stroke-width:5px">${txt}</text>`; };
+  lab(0.36, h1, 30, "אופק 1: מה יש היום", "#b8532d");
+  lab(0.86, h2, -16, "אופק 2: המעבר", "#a06a00");
+  lab(0.64, h3, 30, "אופק 3: העתיד הרצוי", "#2f7a4b");
+  const wrap2 = t => { const words = String(t).split(/\s+/); const lines = [""]; words.forEach(w => { const cur = lines[lines.length-1]; if((cur + " " + w).trim().length > 21 && cur){ if(lines.length === 3){ lines[2] += "…"; return; } lines.push(w); } else lines[lines.length-1] = (cur + " " + w).trim(); }); return lines.slice(0,3).map(l => l.length > 24 ? l.slice(0,23) + "…" : l); };
+  const chip = (x, y, text, color, w) => { const ls = wrap2(text); const h = 10 + ls.length * 17; return {h, svg:`<g><rect x="${x - w/2}" y="${y}" width="${w}" height="${h}" rx="8" fill="#ffffff" fill-opacity=".93" stroke="${color}" stroke-width="2"/>${ls.map((l,i) => `<text x="${x}" y="${y + 19 + i*17}" text-anchor="middle" font-size="13.5" fill="#16232e" font-family="Assistant, Arial" direction="rtl">${esc(l)}</text>`).join("")}</g>`}; };
+  const column = (items, t, color, head, y0, cw) => { const x = X(t); g += `<text x="${x}" y="${y0 - 8}" text-anchor="middle" font-size="14.5" font-weight="700" fill="${color}" font-family="Assistant, Arial" direction="rtl">${head}</text>`; let y = y0; items.forEach(n => { const c = chip(x, y, n.t || n, color, cw); g += c.svg; y += c.h + 8; }); };
+  const cw = 168;
+  column(S.notes.filter(n => n.k === "fade"), 0.06, "#c45f36", "דועך", T + 22, cw);
+  column(S.notes.filter(n => n.k === "keep"), 0.27, "#17607a", "לשמור", T + 22, cw);
+  column(S.notes.filter(n => n.k === "plus"), 0.5, "#2f7a4b", "מעבר שמקרב (+)", T + 22, cw);
+  column(S.notes.filter(n => n.k === "minus"), 0.5, "#b8233f", "מעבר שמאריך (−)", B - 120, cw);
+  column(S.notes.filter(n => n.k === "seed"), 0.73, "#2f7a4b", "זרעים של העתיד", T + 22, cw);
+  if(S.vision) column([{t:S.vision}], 0.94, "#2f7a4b", "העתיד הרצוי", T + 22, 150);
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H + 20}" role="img" aria-label="שלושה אופקים">${g}</svg>`;
+}
+function renderSummary(){
+  const s = S.summary;
+  $("summary").innerHTML = s ? `<div class="box" style="border-inline-start:5px solid var(--accent)"><p style="font-size:18px">${esc(s.key||"")}</p></div>
+    <div class="cols" style="margin-top:10px">
+      <div class="box"><b>ממה כדאי להיפרד בהדרגה</b><ul>${(s.release||[]).map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+      <div class="box"><b>מה חשוב לשמור ולהעביר הלאה</b><ul>${(s.keep||[]).map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+      <div class="box"><b>במה כדאי להשקיע עכשיו</b><ul>${(s.invest||[]).map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+      <div class="box"><b>ממה כדאי להיזהר</b><ul>${(s.beware||[]).map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+      <div class="box"><b>אילו זרעים כדאי לטפח</b><ul>${(s.seeds||[]).map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+    </div>` : "";
+}
+
+/* inputs */
+$("ctxType").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.ctx.type = b.dataset.v; leaveExample(); render(); });
+$("region").addEventListener("change", e => { S.ctx.region = e.target.value; leaveExample(); });
+$("horizon").addEventListener("change", e => { S.horizon = e.target.value; leaveExample(); render(); });
+$("topic").addEventListener("change", e => { S.topic = e.target.value.trim(); leaveExample(); });
+$("desc").addEventListener("change", e => { S.ctx.desc = e.target.value.trim(); leaveExample(); });
+$("vision").addEventListener("change", e => { S.vision = e.target.value.trim(); leaveExample(); render(); });
+$("hTitle").addEventListener("change", e => { S.title = e.target.value.trim(); });
+document.addEventListener("click", e => {
+  const add = e.target.closest("[data-add]"), del = e.target.closest("[data-del]"), flip = e.target.closest("[data-flip]");
+  if(add){ const k = add.dataset.add, inp = $("n-" + k), v = inp.value.trim(); if(!v) return; S.notes.push({id:uid(), k: k === "h2" ? $("n-h2k").value : k, t:v}); inp.value = ""; leaveExample(); render(); inp.focus(); }
+  if(del){ S.notes = S.notes.filter(n => n.id !== del.dataset.del); leaveExample(); render(); }
+  if(flip){ const n = S.notes.find(x => x.id === flip.dataset.flip); n.k = n.k === "plus" ? "minus" : "plus"; leaveExample(); render(); }
+});
+["fade","keep","seed","h2"].forEach(k => $("n-" + k).addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); document.querySelector(`[data-add="${k}"]`).click(); } }));
+
+/* AI suggestions per horizon */
+document.querySelectorAll("[data-ai]").forEach(btn => btn.addEventListener("click", async () => {
+  if(!SAMPLE) return; const h = btn.dataset.ai, st = $("aiStatus");
+  if(!S.topic){ st.textContent = "קודם כדאי לכתוב את הנושא בשלב 1."; return; }
+  busy(btn, st, true);
+  const ask = {
+    "1": `להציע לאופק 1: fade = 3–4 דרכים שבהן הדברים עובדים היום ומתחילות לא להתאים לעתיד, keep = 2–3 דברים מהיום שחשוב לשמור. לא לחזור על מה שכבר יש.\nלהחזיר JSON בלבד: {"fade":[""],"keep":[""]}`,
+    "3": `להציע לאופק 3: vision = 2–3 משפטים על העתיד הרצוי בשנת ${S.horizon} (רק אם עוד לא נכתב), seed = 3–4 זרעים: דוגמאות קטנות לעתיד הזה שכבר קיימות היום, אצלנו או במקומות אחרים בישראל ובעולם (בלי להמציא שמות של מקומות או ארגונים).\nלהחזיר JSON בלבד: {"vision":"","seed":[""]}`,
+    "2": `להציע לאופק 2: 4–5 חידושים או שינויים שאפשר לעשות בדרך. לכל אחד k = plus אם הוא מקרב לאופק 3, או minus אם הוא רק מאריך את אופק 1 (לכלול לפחות אחד כזה, כי חשוב לזהות אותם). לשקול גם את מה שכבר כתוב.\nלהחזיר JSON בלבד: {"h2":[{"t":"","k":"plus"}]}`
+  }[h];
+  try{
+    const r = await askJSON(`${rules()}\n\nמה שכבר כתוב:\n${stateText()}\n\nמשימה: ${ask}`, {modelTier:"default", cache:false});
+    if(!r) throw {code:"invalid_json"};
+    (r.fade||[]).forEach(t => t && S.notes.push({id:uid(), k:"fade", t:String(t)}));
+    (r.keep||[]).forEach(t => t && S.notes.push({id:uid(), k:"keep", t:String(t)}));
+    (r.seed||[]).forEach(t => t && S.notes.push({id:uid(), k:"seed", t:String(t)}));
+    (r.h2||[]).forEach(x => x && x.t && S.notes.push({id:uid(), k: x.k === "minus" ? "minus" : "plus", t:String(x.t)}));
+    if(r.vision && !S.vision) S.vision = String(r.vision);
+    leaveExample(); busy(btn, st, false); render(); st.textContent = "ההצעות נוספו. אפשר למחוק את מה שלא מתאים.";
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+}));
+$("aiSum").addEventListener("click", async () => {
+  if(!SAMPLE) return; const btn = $("aiSum"), st = $("sumStatus");
+  if(S.notes.length < 4){ st.textContent = "כדאי למלא קודם את שלושת האופקים."; return; }
+  busy(btn, st, true);
+  try{
+    const r = await askJSON(`${rules()}\n\n${stateText()}\n\nמשימה: לסכם במשפטים שלמים.\n- key: 1–2 משפטים על התמונה המלאה.\n- release: 2–3 דברים מאופק 1 שכדאי להיפרד מהם בהדרגה, ואיך.\n- keep: 2–3 דברים מאופק 1 שחשוב לשמור ולהעביר לעתיד.\n- invest: 2–4 חידושים מאופק 2 (+) שכדאי להשקיע בהם עכשיו.\n- beware: 1–3 חידושים (−) שנראים כמו שינוי אבל רק מאריכים את הקיים, ולמה.\n- seeds: 2–3 זרעים של אופק 3 שכדאי לטפח, ואיך.\nלהחזיר JSON בלבד: {"key":"","release":[""],"keep":[""],"invest":[""],"beware":[""],"seeds":[""]}`, {modelTier:"default", cache:false});
+    if(!r || !r.key) throw {code:"invalid_json"};
+    S.summary = r; leaveExample(); busy(btn, st, false); renderSummary();
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+$("toRoadmap").addEventListener("click", async () => {
+  const by = k => S.notes.filter(n => n.k === k).map(n => n.t);
+  if(!S.vision){ $("sumStatus").textContent = "קודם כדאי לכתוב את העתיד הרצוי באופק 3."; return; }
+  await copy(JSON.stringify({type:"be-good-package", kind:"vision", from:"שלושה אופקים", title:S.topic || "", ctx:S.ctx, horizon:S.horizon, vision:S.vision, fade:by("fade"), keep:by("keep"), seeds:by("seed"), invest:(S.summary && S.summary.invest && S.summary.invest.length) ? S.summary.invest : by("plus")}));
+  $("sumStatus").textContent = "הועתק. בכלי ״מהחזון להיום״, בשלב 2, פותחים ״ייבוא חזון מכלי אחר״ ומדביקים.";
+});
+$("copyAll").addEventListener("click", () => copy(`שלושה אופקים: ${S.topic}\n${TYPE_LABEL[S.ctx.type]}${S.ctx.region ? " · " + S.ctx.region : ""} · עד ${S.horizon}\n\n${stateText()}${S.summary ? `\n\nסיכום: ${S.summary.key}` : ""}`));
+$("dlSvg").addEventListener("click", async () => { const st = $("dlStatus"); if(!DL){ st.textContent = "ההורדה זמינה כשיש חיבור למודל."; return; } try{ await DL.save({filename:`שלושה-אופקים-${S.topic || S.horizon}.svg`, data:diagSVG(true)}); st.textContent = "התמונה ירדה."; } catch(e){ st.textContent = e && e.code === "declined" ? "" : "ההורדה לא הצליחה."; } });
+
+async function save(){ const st = $("hStatus"); if(!DB) return; if(!HID) HID = uid(); S.title = $("hTitle").value.trim(); try{ await DB.doc(`horizons/${HID}`).set({name:S.title || S.topic || "שלושה אופקים", s:JSON.parse(JSON.stringify(S)), updatedAt:Date.now()}); leaveExample(); st.textContent = "נשמר"; } catch(e){ st.textContent = "השמירה לא הצליחה."; } }
+async function list(){ const box = $("hList"); if(!box.hidden){ box.hidden = true; return; } if(!DB) return; box.hidden = false; box.innerHTML = `<span class="status">טוען…</span>`; try{ const q = await DB.collection("horizons").orderBy("updatedAt","desc").limit(25).get(); box.innerHTML = q.empty ? `<span class="muted small">עוד אין מפות שמורות.</span>` : q.docs.map(d => `<button type="button" data-h="${esc(d.id)}">${esc(d.data().name)} · <span class="muted small">${esc(new Date(d.data().updatedAt||0).toLocaleDateString("he-IL"))}</span></button>`).join(""); } catch(e){ box.innerHTML = `<span class="muted small">לא הצלחנו לטעון.</span>`; } }
+$("hList").addEventListener("click", async e => { const b = e.target.closest("[data-h]"); if(!b) return; try{ const s = await DB.doc(`horizons/${b.dataset.h}`).get(); if(!s.exists) return; S = {...fresh(), ...s.data().s}; HID = b.dataset.h; $("hList").hidden = true; leaveExample(); render(); } catch(err){} });
+function newOne(){ S = fresh(S.ctx.type); HID = null; leaveExample(); render(); $("topic").focus(); }
+$("hSave").addEventListener("click", save); $("hOpen").addEventListener("click", list); $("hNew").addEventListener("click", newOne); $("resetBtn").addEventListener("click", newOne);
+render();
+</script>
+<style id="bgkit-css">
+.bgkit-bar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+.bgkit-bar b{font-family:var(--font-display)}
+.bgkit-bar a{color:var(--ink);text-decoration:none;border-radius:999px;padding:3px 10px;border:1px solid transparent}
+.bgkit-bar a:hover{border-color:var(--accent)}
+.bgkit-bar a[aria-current="page"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .bgkit-bar a[aria-current="page"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bgkit-bar a[aria-current="page"]{color:#0f171d}}
+.bgkit-help-btn{align-self:flex-start;border-radius:999px;font-weight:700}
+.bgkit-q{width:26px;height:26px;padding:0;border-radius:50%;font-size:14px;line-height:1;font-family:var(--font-display);margin-inline-start:8px;vertical-align:middle;flex:0 0 auto}
+.bgkit-q[aria-expanded="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bgkit-tip{background:var(--accent-soft);border-radius:10px;padding:10px 14px;font-size:15px;max-width:80ch}
+.bgkit-ov{position:fixed;inset:0;background:rgba(10,20,30,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+.bgkit-ov[hidden]{display:none}
+.bgkit-dlg{background:var(--surface);color:var(--ink);border-radius:16px;max-width:720px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:8px;line-height:1.6}
+.bgkit-dlg h2{font-size:22px}
+.bgkit-dlg ul{margin:0;padding-inline-start:20px}
+.bgkit-dlg p{margin:0}
+.bgkit-dlg .src{font-size:13px;color:var(--muted);margin-top:6px}
+</style>
+<script id="bgkit-js">
+(function(){
+  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "משחק מצב עתידי", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "horizons", HELP = {"title": "איך עובדים עם שלושה אופקים?", "html": "<p><b>מה הכלי עושה:</b> מסתכלים על נושא אחד בשלושה אופקים בבת אחת. <b>אופק 1</b> הוא הדרך שבה הדברים עובדים היום: חלק מזה דועך וחלק חשוב לשמור. <b>אופק 3</b> הוא העתיד הרצוי, וזרעים שלו שכבר קיימים היום. <b>אופק 2</b> הוא המעבר: חידושים שמקרבים לעתיד (+), או כאלה שרק מאריכים את הקיים (−).</p>\n<p><b>מתי משתמשים בו:</b> כשמרגישים שהדרך הנוכחית כבר לא מספיקה, ורוצים לתכנן שינוי בלי לזרוק את מה שטוב. מתאים להנהלה ולצוותים.</p>\n<p><b>כמה זמן:</b> מפגש של כשעתיים. כדאי למלא לפי הסדר: אופק 1, אחר כך אופק 3, ורק בסוף אופק 2.</p>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>לאן ממשיכים:</b> את העתיד הרצוי ואת ההשקעות מעבירים ל<a href=\"hl-roadmap.html\" target=\"_blank\" rel=\"noopener\">מהחזון להיום</a> ובונים מהם מפת דרכים.</p>\n<p class=\"src\">מבוסס על Three Horizons מערכת Futures Toolkit.</p>", "steps": {"#s1h": "בוחרים נושא אחד ממוקד, למשל ״איך מתכוננים למשברים״ או ״איך שומרים על קשר עם ההורים״. נושא רחב מדי יקשה על השיחה.", "#s2h": "ממלאים לפי הסדר: מה דועך ומה לשמור (אופק 1), העתיד הרצוי וזרעים שלו (אופק 3), ובסוף המעבר (אופק 2). בכל חידוש באופק 2 שואלים: האם הוא באמת מקרב לעתיד, או רק מאריך את הקיים?", "#s3h": "התמונה מראה את שלושת האופקים על ציר הזמן, מהיום ועד שנת היעד. אפשר להוריד אותה ולהציג בצוות.", "#s4h": "ה־AI מציע ממה להיפרד בהדרגה, מה לשמור, במה להשקיע, ממה להיזהר ואילו זרעים לטפח. משם ממשיכים לבניית מפת דרכים."}};
+  const wrap = document.querySelector(".wrap"); if(!wrap) return;
+  // 1. toolkit bar
+  const bar = document.createElement("nav"); bar.className = "bgkit-bar"; bar.setAttribute("aria-label", "מעבדת האופק · Be Good");
+  bar.innerHTML = `<b>מעבדת האופק:</b><a href="${HUB}" target="_blank" rel="noopener">דף הבית</a>` + TOOLS.map(t => `<a href="${t.url}" ${t.k === ME ? 'aria-current="page"' : 'target="_blank" rel="noopener"'} title="${t.short}">${t.name}</a>`).join("");
+  wrap.insertBefore(bar, wrap.firstChild);
+  // 2. help button + dialog
+  const head = document.querySelector("header.top > div") || document.querySelector("header.top");
+  const btn = document.createElement("button"); btn.type = "button"; btn.className = "bgkit-help-btn"; btn.textContent = "איך עובדים עם הכלי?";
+  if(head) head.appendChild(btn);
+  const ov = document.createElement("div"); ov.className = "bgkit-ov"; ov.hidden = true;
+  ov.innerHTML = `<div class="bgkit-dlg" role="dialog" aria-modal="true" aria-labelledby="bgkitT"><div class="row" style="justify-content:space-between;align-items:center"><h2 id="bgkitT">${HELP.title}</h2><button type="button" id="bgkitX">סגירה</button></div>${HELP.html}<p style="margin-top:8px">וגם הסבר לכל שלב: ללחוץ על סימן השאלה שליד כותרת השלב.</p></div>`;
+  document.body.appendChild(ov);
+  let last = null;
+  const open = () => { last = document.activeElement; ov.hidden = false; ov.querySelector("#bgkitX").focus(); };
+  const close = () => { ov.hidden = true; if(last) last.focus(); };
+  btn.addEventListener("click", open);
+  ov.addEventListener("click", e => { if(e.target === ov || e.target.id === "bgkitX") close(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape" && !ov.hidden) close(); });
+  // 3. per-step ? buttons
+  Object.entries(HELP.steps || {}).forEach(([sel, text], i) => {
+    const h = document.querySelector(sel); if(!h) return;
+    const q = document.createElement("button"); q.type = "button"; q.className = "bgkit-q"; q.textContent = "?"; q.setAttribute("aria-label", "הסבר על השלב: " + h.textContent.trim()); q.setAttribute("aria-expanded", "false");
+    const tip = document.createElement("div"); tip.className = "bgkit-tip"; tip.hidden = true; tip.id = "bgkitTip" + i; tip.textContent = text; q.setAttribute("aria-controls", tip.id);
+    h.appendChild(q);
+    const anchor = h.closest(".stage-head") || h.closest(".row") || h;
+    anchor.insertAdjacentElement("afterend", tip);
+    q.addEventListener("click", () => { tip.hidden = !tip.hidden; q.setAttribute("aria-expanded", String(!tip.hidden)); });
+  });
+})();
+</script>
+<script src="lib/screens-menu.js"></script>
+</body>
+</html>

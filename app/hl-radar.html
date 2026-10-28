@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<script src="lib/access-guard.js"></script>
+<script src="lib/ai-call.js"></script>
+<script src="lib/hl-runtime.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>רדאר החוסן החברתי · Be Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one guided column — plan, what we test against, the matrix, autonomy, summary. */
+:root{
+  --bg:#eef1f3;
+  --surface:#ffffff;
+  --ink:#16232e;
+  --muted:#5b6b78;
+  --line:#d5dde3;
+  --accent:#17607a;
+  --accent-soft:#dcecf1;
+  --known:#56697a;      --known-bg:#e6ebef;
+  --expected:#9a5b00;   --expected-bg:#fbefd9;
+  --rare:#6a3fb0;       --rare-bg:#eee6fb;
+  --wild:#b2275a;       --wild-bg:#fbe3ec;
+  --ai:#17607a;         --ai-bg:#dcecf1;
+  --good:#2f7a4b;
+  --font-display:"Rubik","Assistant",system-ui,sans-serif;
+  --font-body:"Assistant","Rubik",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+    --accent:#62b6cf; --accent-soft:#183644;
+    --known:#a9b9c6; --known-bg:#24323d;
+    --expected:#f0b45a; --expected-bg:#3a2a12;
+    --rare:#b79af0; --rare-bg:#2c2242;
+    --wild:#f2789f; --wild-bg:#40192a;
+    --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+  --accent:#62b6cf; --accent-soft:#183644;
+  --known:#a9b9c6; --known-bg:#24323d;
+  --expected:#f0b45a; --expected-bg:#3a2a12;
+  --rare:#b79af0; --rare-bg:#2c2242;
+  --wild:#f2789f; --wild-bg:#40192a;
+  --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 18px 80px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:30px;font-weight:700}
+h2{font-size:22px;font-weight:600}
+h3{font-size:18px;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:14.5px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{font-family:var(--font-display);font-size:14px;letter-spacing:.02em;color:var(--accent);font-weight:600}
+.notice{background:var(--accent-soft);border-radius:12px;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.principle{border-inline-start:4px solid var(--wild);background:var(--surface);border-radius:10px;padding:12px 16px}
+section.stage{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.stage-head{display:flex;gap:12px;align-items:baseline}
+.num{font-family:var(--font-display);font-weight:700;color:var(--accent);font-size:20px;min-width:22px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:15px}
+input[type=text],select,textarea{font:inherit;font-weight:400;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+textarea{min-height:76px;resize:vertical}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;font-weight:600}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] button.primary{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#0f171d}}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.drv:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#0f171d}}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px;white-space:nowrap}
+.t-known{color:var(--known);background:var(--known-bg)}
+.t-expected{color:var(--expected);background:var(--expected-bg)}
+.t-rare{color:var(--rare);background:var(--rare-bg)}
+.t-wild{color:var(--wild);background:var(--wild-bg)}
+.t-ai{color:var(--ai);background:var(--ai-bg)}
+.t-opp{color:var(--good);background:transparent;border:1px solid var(--good)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{padding:4px 12px;font-size:14.5px;border-radius:999px}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.drivers{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.drv{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:var(--surface);cursor:pointer}
+.drv input{margin-top:5px;accent-color:var(--accent)}
+.drv.on{border-color:var(--accent);background:var(--accent-soft)}
+.drv .nm{font-weight:700;line-height:1.3}
+.drv .ds{font-size:14px;color:var(--muted);line-height:1.4}
+.drv .tg{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.meter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:15px}
+.ok{color:var(--good);font-weight:700}
+.warn{color:var(--wild);font-weight:700}
+.axes-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.axopt{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:var(--surface)}
+.axopt.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.axline{font-size:15px}
+.axline b{font-family:var(--font-display);font-weight:600}
+.matrix{display:grid;grid-template-columns:28px 1fr 1fr;grid-template-rows:auto auto auto;gap:10px}
+.ylab{grid-row:1 / span 2;writing-mode:vertical-rl;transform:rotate(180deg);display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);font-weight:600}
+.xlab{grid-column:2 / span 2;display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);font-weight:600}
+.axis-name{color:var(--accent)}
+.world{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface);position:relative}
+.world.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.world .q{font-size:12.5px;color:var(--muted);font-weight:600}
+.world .hl{font-family:var(--font-display);font-weight:600;font-size:15.5px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 0}
+.world ul{margin:0;padding-inline-start:18px;font-size:14.5px}
+.world .lbl{font-size:13px;font-weight:700;color:var(--muted);margin-top:2px}
+.world .wc{font-size:14px;background:var(--rare-bg);color:var(--ink);border-radius:8px;padding:6px 8px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.tabs button{border-radius:999px;padding:5px 14px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.out{white-space:pre-wrap;background:var(--bg);border-radius:12px;padding:14px 16px;min-height:80px;max-width:72ch}
+.out.empty{color:var(--muted)}
+.chat{display:flex;flex-direction:column;gap:8px;max-width:72ch}
+.msg{padding:8px 12px;border-radius:12px;white-space:pre-wrap}
+.msg.u{background:var(--accent-soft);align-self:flex-start}
+.msg.a{background:var(--bg);align-self:flex-end}
+.event{border:1px solid var(--line);border-inline-start:5px solid var(--wild);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;max-width:80ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.box{background:var(--bg);border-radius:12px;padding:12px 14px}
+.box ul,.box ol{margin:6px 0 0;padding-inline-start:20px}
+.status{font-size:14.5px;color:var(--muted)}
+.toast{position:fixed;bottom:18px;inset-inline-start:50%;transform:translateX(50%);background:var(--ink);color:var(--surface);padding:8px 16px;border-radius:10px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.ai-off .needs-ai{display:none}
+.ai-note{display:none}
+.ai-off .ai-note{display:block}
+/* views + workshop bar */
+nav.views{display:flex;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line)}
+nav.views a{font-family:var(--font-display);font-weight:600;text-decoration:none;color:var(--ink);padding:7px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+nav.views a[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] nav.views a[aria-current="page"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav.views a[aria-current="page"]{color:#0f171d}}
+.view{display:flex;flex-direction:column;gap:22px}
+.view[hidden]{display:none}
+.wsbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:15px}
+.wsbar input{max-width:260px}
+.wslist{display:flex;flex-direction:column;gap:6px;width:100%}
+.wslist button{text-align:start;font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border-radius:999px;padding:5px 12px;font-size:14.5px;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0f171d}}
+.rate{display:flex;gap:4px;flex-wrap:wrap}
+.rate button{min-width:40px;padding:6px 0;font-variant-numeric:tabular-nums}
+.rate button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:minmax(150px,1.2fr) 3fr auto;gap:10px;align-items:center;font-size:15px}
+.bar .track{height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:6px}
+.bar .n{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;white-space:nowrap}
+.hist{display:flex;gap:3px;align-items:flex-end;height:34px}
+.hist span{width:14px;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px;opacity:.85}
+.pill{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px}
+.p-agree{background:#e3f3e8;color:#226b3d}
+.p-split{background:var(--wild-bg);color:var(--wild)}
+.p-minor{background:var(--rare-bg);color:var(--rare)}
+.lenses{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.lens{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.lens .line{font-family:var(--font-display);font-weight:600;font-size:16px}
+.lens img,.item img{width:100%;border-radius:10px;background:#fff;border:1px solid var(--line)}
+.items{display:flex;flex-direction:column;gap:8px}
+.item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:6px 12px;background:var(--surface)}
+.item .meta{font-size:13px;color:var(--muted)}
+.item .fb{grid-column:1/-1;background:var(--accent-soft);border-radius:8px;padding:8px 10px;font-size:14.5px;white-space:pre-wrap}
+.item img{max-width:220px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.thumb{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff;height:520px;position:relative}
+.thumb .np{transform:scale(.42);transform-origin:top right;width:238%}
+/* stress test */
+.vd{display:inline-block;font-size:13px;font-weight:700;border-radius:6px;padding:2px 10px;border:1px solid transparent}
+.v-robust{background:#e3f3e8;color:#1f6a3a;border-color:#b9dfc5}
+.v-adjust{background:#fdf0d6;color:#8a5200;border-color:#f1d39a}
+.v-break{background:#fbe1e4;color:#a8172f;border-color:#f0b4bd}
+.v-redundant{background:#eef1f4;color:#5b6b78;border-color:#d5dde3}
+.v-none{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.mx-wrap{overflow-x:auto}
+table.mx{border-collapse:separate;border-spacing:6px;width:100%;min-width:720px}
+table.mx th{font-family:var(--font-display);font-weight:600;font-size:14.5px;text-align:start;vertical-align:bottom;padding:4px}
+table.mx th .ax{display:block;font-family:var(--font-body);font-weight:400;font-size:12.5px;color:var(--muted)}
+table.mx td{vertical-align:top}
+table.mx td.el{font-weight:600;font-size:15px;max-width:230px}
+table.mx td.el .small{font-weight:400}
+.cell{width:100%;text-align:start;display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:10px;font-weight:400;font-size:13.5px;line-height:1.35;min-height:64px}
+.cell.on{outline:3px solid var(--accent);outline-offset:1px}
+.cell .vd{align-self:flex-start}
+.cell.v-robust,.cell.v-adjust,.cell.v-break,.cell.v-redundant{border-width:1px}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.score .box{display:flex;flex-direction:column;gap:6px}
+.stack{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--bg)}
+.stack span{display:block;height:100%}
+.ifthen{display:grid;grid-template-columns:1fr auto 1fr;gap:6px 10px;align-items:start;font-size:15px}
+.ifthen .arr{color:var(--muted);font-weight:700}
+@media (max-width:640px){
+  .ifthen{grid-template-columns:1fr}
+  .ifthen .arr{display:none}
+  .bar{grid-template-columns:1fr}
+  .matrix{grid-template-columns:1fr}
+  .ylab{display:none}
+  .xlab{grid-column:1}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+.wrap{max-width:1240px}
+.sig{display:grid;grid-template-columns:1fr auto;gap:4px 12px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface)}
+.sig .meta{font-size:13px;color:var(--muted)}
+.sig .imp{grid-column:1/-1;font-size:14.5px;background:var(--accent-soft);border-radius:8px;padding:6px 10px}
+.cat{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px;background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.drv-card{border:1px solid var(--line);border-inline-start:5px solid var(--accent);border-radius:12px;padding:12px;background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.drv-card.on{outline:3px solid var(--accent)}
+.mapgrid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.mapbox{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px}
+.mapbox svg{width:100%;height:auto;display:block;touch-action:none;user-select:none}
+.dot{cursor:grab}
+.dot:focus{outline:none}
+.dot:focus-visible circle{stroke:var(--ink);stroke-width:4}
+.quad{border-radius:12px;padding:12px 14px;background:var(--bg);display:flex;flex-direction:column;gap:6px}
+.quad h3{font-size:16px}
+.gap{border:1px dashed var(--wild);border-radius:10px;padding:8px 12px;font-size:14.5px}
+@media (max-width:900px){.mapgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+
+<header class="top">
+  <div>
+    <div class="brand">Be Good · חוסן מול עתיד לא ידוע</div>
+    <h1>רדאר החוסן החברתי</h1>
+    <p class="muted">הרדאר מבוסס על ״סריקת אופק״ ו״מיפוי מניעים״ מערכת Futures Toolkit. אוספים יחד אותות קטנים לשינוי, שאנשים שמים לב אליהם בחיים, בעבודה ובחדשות. מקבצים אותם למניעי שינוי, ומחליטים מה מהם דורש פעולה עכשיו, ממה כדאי לבנות תרחישים, ואחרי מה כדאי רק לעקוב.</p>
+  </div>
+</header>
+
+<div class="wsbar">
+  <b>סריקה:</b>
+  <input type="text" id="sTitle" placeholder="שם, למשל: סריקת סתיו 2026" aria-label="שם הסריקה">
+  <button type="button" id="sSave" class="primary">שמירה</button>
+  <button type="button" id="sOpen">סריקות שמורות</button>
+  <button type="button" id="sNew">סריקה חדשה</button>
+  <span class="status" id="sStatus" aria-live="polite"></span>
+  <div class="wslist" id="sList" hidden></div>
+</div>
+
+<div class="notice" id="exampleBar">
+  <span><b>מוצגת דוגמה מוכנה:</b> סריקה של בית ספר יסודי בגליל העליון, עם 12 אותות שהצוות וההורים אספו.</span>
+  <button id="resetBtn" type="button">סריקה חדשה</button>
+</div>
+<p class="ai-note notice small">החלקים שמופעלים על ידי AI זמינים כשיש חיבור למודל. בינתיים אפשר לעיין בדוגמה, להוסיף אותות ולמקם מניעים ידנית.</p>
+
+<!-- 1 -->
+<section class="stage" aria-labelledby="h1s">
+  <div class="stage-head"><span class="num">1</span><h2 id="h1s">מה סורקים?</h2></div>
+  <div class="row" style="gap:6px 14px"><span class="small" style="font-weight:600">על מי מדובר?</span>
+    <div class="seg" role="group" aria-label="סוג ההקשר" id="ctxType" style="flex-wrap:wrap"><button type="button" data-v="school">בית ספר</button><button type="button" data-v="community">קהילה ויישוב</button><button type="button" data-v="org">ארגון</button><button type="button" data-v="pro">קהילה מקצועית</button></div>
+  </div>
+  <div class="grid2">
+    <label class="f" for="region">אזור בארץ<select id="region"></select></label>
+    <label class="f" for="horizon">עד איזו שנה מסתכלים?<select id="horizon"><option>2028</option><option>2030</option><option>2035</option><option>2040</option></select></label>
+  </div>
+  <label class="f" for="question">שאלת הסריקה: מה אנחנו רוצים להבין?<input type="text" id="question" placeholder="למשל: מה ישפיע על החוסן החברתי של בית הספר והקהילה בעשור הקרוב?"></label>
+  <label class="f" for="desc">כמה מילים על המקום או על הקהילה (רשות)<textarea id="desc" style="min-height:56px"></textarea></label>
+</section>
+
+<!-- 2 -->
+<section class="stage" aria-labelledby="h2s">
+  <div class="stage-head"><span class="num">2</span><h2 id="h2s">האותות שאספנו</h2></div>
+  <p class="small muted">אות הוא משהו קטן ששמנו לב אליו ועשוי לבשר על שינוי גדול יותר: דבר חדש שקרה, הרגל שמשתנה, ידיעה בחדשות, מחקר או תלונה שחוזרת. כדאי לחפש גם בתחומים שפחות מדברים עליהם בישראל, כי העתיד תמיד מפתיע.</p>
+  <div class="box">
+    <div class="grid2">
+      <label class="f" for="nTitle">מה שמנו לב? (בקצרה)<input type="text" id="nTitle" placeholder="למשל: בקיץ האחרון המזגנים בכיתות כבו כמעט כל יום"></label>
+      <label class="f" for="nCat">תחום<select id="nCat"></select></label>
+    </div>
+    <label class="f" for="nWhat" style="margin-top:6px">פירוט: מה בדיוק ראינו, ולמה זה תפס את תשומת הלב? (רשות)<textarea id="nWhat" style="min-height:52px"></textarea></label>
+    <div class="grid2" style="margin-top:6px">
+      <label class="f" for="nSrc">מאיפה זה? (קישור, כתבה, שיחה, ניסיון אישי)<input type="text" id="nSrc"></label>
+      <label class="f" for="nBy">מי הוסיפו? (רשות)<input type="text" id="nBy" placeholder="למשל: צוות המורים, הורה"></label>
+    </div>
+    <div class="row" style="margin-top:8px"><button type="button" class="primary" id="addSig">הוספת האות</button><span class="status" id="addStatus" aria-live="polite"></span></div>
+  </div>
+  <div class="row needs-ai"><button type="button" id="aiWhere">איפה כדאי לחפש אותות?</button><span class="status" id="whereStatus" aria-live="polite"></span></div>
+  <div id="whereOut"></div>
+  <div id="catGaps"></div>
+  <div class="items" id="sigs"></div>
+</section>
+
+<!-- 3 -->
+<section class="stage" aria-labelledby="h3s">
+  <div class="stage-head"><span class="num">3</span><h2 id="h3s">מניעי השינוי</h2></div>
+  <p class="small muted">מניע שינוי הוא כוח גדול שעומד מאחורי כמה אותות, למשל ״התחממות והתגברות גלי החום״. ה־AI יכול לקבץ את האותות למניעים, ואפשר גם להוסיף מניע ידנית ולשייך אליו אותות.</p>
+  <div class="row"><button type="button" class="primary needs-ai" id="aiCluster">קיבוץ האותות למניעים עם AI</button><input type="text" id="newDrv" placeholder="מניע חדש" style="max-width:260px" aria-label="מניע חדש"><button type="button" id="addDrv">הוספת מניע</button><span class="status" id="clusterStatus" aria-live="polite"></span></div>
+  <div class="cols" id="drvs"></div>
+</section>
+
+<!-- 4 -->
+<section class="stage" aria-labelledby="h4s">
+  <div class="stage-head"><span class="num">4</span><h2 id="h4s">מפת המניעים: כמה זה חשוב, וכמה זה ודאי?</h2></div>
+  <p class="small muted">גוררים כל מניע למקום שלו. למעלה נמצא מה שחשוב מאוד עבורנו, ולמטה מה שפחות. בצד ימין נמצא מה שכמעט ודאי שיקרה, ובצד שמאל מה שלא ידוע אם יקרה ואיך. אפשר גם לבחור את הערכים מהרשימה שבצד, או לבקש מה־AI הצעה ראשונית ולתקן אותה.</p>
+  <div class="row needs-ai"><button type="button" id="aiPlace">הצעת מיקום עם AI</button><span class="status" id="placeStatus" aria-live="polite"></span></div>
+  <div class="mapgrid">
+    <div class="mapbox" id="map"></div>
+    <div class="panel box" id="placePanel"></div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="stage" aria-labelledby="h5s">
+  <div class="stage-head"><span class="num">5</span><h2 id="h5s">מה עושים עם כל מניע?</h2></div>
+  <div class="cols" id="quads"></div>
+  <div class="row"><button type="button" class="primary needs-ai" id="aiSum">סיכום הסריקה עם AI</button><button type="button" id="toFutures">העתקת המניעים למחולל העתידים</button><button type="button" id="copyAll">העתקת הסריקה כטקסט</button><button type="button" id="dl">הורדת הסריקה</button><span class="status" id="sumStatus" aria-live="polite"></span></div>
+  <div id="summary"></div>
+</section>
+
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4);
+function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1800); }
+async function copy(text){ try { await navigator.clipboard.writeText(text); toast("הועתק"); } catch(e){ toast("ההעתקה לא הצליחה"); } }
+function busy(btn, st, on, msg){ if(btn) btn.disabled = on; if(st) st.textContent = on ? (msg || "חושב… זה יכול לקחת עד דקה") : ""; }
+const TYPE_LABEL = {school:"בית ספר", community:"קהילה ויישוב", org:"ארגון", pro:"קהילה מקצועית או רשת מומחים"};
+const REGIONS = ["כל הארץ","גליל עליון וגבול לבנון","רמת הגולן","גליל מערבי","עמקים וגליל תחתון","חיפה והקריות","השרון","מרכז וגוש דן","ירושלים והסביבה","השפלה","יהודה ושומרון","עוטף עזה והנגב המערבי","באר שבע והנגב","בקעת הירדן וים המלח","ערבה ואילת","מישור החוף הדרומי"];
+const CATS = ["חברה וקהילה","טכנולוגיה","כלכלה ועבודה","סביבה ואקלים","שלטון ומדיניות","ערכים ותרבות","ביטחון","בריאות ונפש","חינוך ולמידה"];
+const QUADS = {
+  act:{t:"לפעול עכשיו", d:"חשוב מאוד וכמעט ודאי. אין מה לחכות: כדאי להכניס את זה לתוכנית העבודה כבר עכשיו.", link:["בדיקת העמידות","hl-stress.html"], link2:["מהחזון להיום","hl-roadmap.html"]},
+  scen:{t:"לבנות תרחישים", d:"חשוב מאוד, אבל לא ידוע איך יתפתח. אלה המועמדים הכי טובים לצירים במחולל העתידים.", link:["מחולל העתידים","hl-futures.html"]},
+  track:{t:"לעקוב", d:"פחות חשוב כרגע ולא ודאי. כדאי לחזור אליו בסריקה הבאה ולבדוק אם משהו השתנה."},
+  park:{t:"להניח בצד", d:"כמעט ודאי, אבל פחות חשוב עבורנו. כדאי לדעת שהוא שם, בלי להשקיע בו עכשיו."}
+};
+const quadOf = d => d.imp >= 3 ? (d.cert >= 3 ? "act" : "scen") : (d.cert >= 3 ? "park" : "track");
+
+/* ---------- example ---------- */
+const EX = {"title": "", "ctx": {"type": "school", "region": "גליל עליון וגבול לבנון", "desc": "בית ספר יסודי ממלכתי, כ־320 תלמידים ממושב ומשני קיבוצים. הקהילה פונתה לתקופה ארוכה וחזרה."}, "horizon": "2035", "question": "מה ישפיע על החוסן החברתי של בית הספר והקהילה בעשור הקרוב?", "signals": [{"id": "s1", "title": "בקיץ האחרון המזגנים בכיתות כבו כמעט כל יום", "what": "בימים חמים במיוחד הרשת לא עמדה בעומס, והתלמידים התקשו להתרכז.", "src": "ניסיון אישי", "by": "צוות המורים", "cat": "סביבה ואקלים", "meaning": ""}, {"id": "s2", "title": "יותר הורים שואלים בקבוצות אם מה שקראו נכון", "what": "אחרי כל אירוע מופיעים בקבוצות סרטונים והודעות שאף אחד לא יודע מאיפה הגיעו.", "src": "קבוצות הווטסאפ של ההורים", "by": "נציגות ההורים", "cat": "חברה וקהילה", "meaning": ""}, {"id": "s3", "title": "משפחות חדשות כמעט לא מגיעות לאירועי היישוב", "what": "", "src": "שיחה עם רכזת הקהילה", "by": "הנהלה", "cat": "חברה וקהילה", "meaning": ""}, {"id": "s4", "title": "מורים צעירים עוזבים אחרי שנה או שנתיים", "what": "", "src": "נתוני כוח אדם של בית הספר", "by": "הנהלה", "cat": "חינוך ולמידה", "meaning": ""}, {"id": "s5", "title": "תלמידים משתמשים בצ׳אטבוטים להכנת שיעורי בית", "what": "חלק מהמורים רואים בזה כלי, וחלק חוששים שהתלמידים מפסיקים לחשוב לבד.", "src": "שיחות בחדר המורים", "by": "צוות המורים", "cat": "טכנולוגיה", "meaning": ""}, {"id": "s6", "title": "יותר ותיקים ביישוב גרים לבד", "what": "", "src": "הרשימות של צוות צח״י", "by": "צוות צח״י", "cat": "חברה וקהילה", "meaning": ""}, {"id": "s7", "title": "קב״ט המועצה אחראי עכשיו על יותר יישובים", "what": "בזמן חירום יש לו פחות זמן לכל יישוב.", "src": "ישיבה במועצה", "by": "הנהלה", "cat": "שלטון ומדיניות", "meaning": ""}, {"id": "s8", "title": "כתבה על סערות שמש שעלולות לפגוע בלוויינים", "what": "", "src": "כתבה בעיתון", "by": "הורה", "cat": "טכנולוגיה", "meaning": ""}, {"id": "s9", "title": "הורים התארגנו לבד לבשל למשפחות מפונות", "what": "ההתארגנות קמה בלי הנחיה מאף אחד ועבדה מצוין.", "src": "ניסיון אישי", "by": "נציגות ההורים", "cat": "ערכים ותרבות", "meaning": ""}, {"id": "s10", "title": "חנות המכולת היחידה ביישוב שוקלת להיסגר", "what": "", "src": "שיחה עם בעל החנות", "by": "הורה", "cat": "כלכלה ועבודה", "meaning": ""}, {"id": "s11", "title": "יותר ילדים פונים ליועצת אחרי ימים של אזעקות", "what": "", "src": "היומן של היועצת", "by": "היועצת", "cat": "בריאות ונפש", "meaning": ""}, {"id": "s12", "title": "הורים עובדים מהבית יותר מבעבר", "what": "בבוקר יש יותר מבוגרים ביישוב, וחלקם מתנדבים בבית הספר.", "src": "ניסיון אישי", "by": "נציגות ההורים", "cat": "כלכלה ועבודה", "meaning": ""}], "drivers": [{"id": "d1", "name": "התחממות וגלי חום", "desc": "ימים חמים וארוכים יותר מעמיסים על רשת החשמל ופוגעים בלמידה.", "sigs": ["s1"], "imp": 4, "cert": 4.5, "why": ""}, {"id": "d2", "name": "הצפה של מידע לא אמין", "desc": "יותר הודעות וסרטונים שאי אפשר לדעת אם הם נכונים, במיוחד בזמן משבר.", "sigs": ["s2", "s8"], "imp": 4.5, "cert": 4, "why": ""}, {"id": "d3", "name": "פערים בין ותיקים לחדשים", "desc": "המשפחות החדשות והוותיקים בודדים פחות מחוברים לקהילה.", "sigs": ["s3", "s6"], "imp": 4, "cert": 2.5, "why": ""}, {"id": "d4", "name": "שחיקה ותחלופה של הצוות", "desc": "מורים עוזבים, והעומס הרגשי על הצוות גדל.", "sigs": ["s4", "s11"], "imp": 4.5, "cert": 2, "why": ""}, {"id": "d5", "name": "כוח ההתארגנות העצמית של הקהילה", "desc": "הקהילה יודעת להתארגן לבד, וזה מחזק את האוטונומיה התפקודית שלה.", "sigs": ["s9", "s12"], "imp": 4, "cert": 2, "why": ""}, {"id": "d6", "name": "AI בלמידה ובבית", "desc": "כלי AI נכנסים לשיעורי הבית ולחיי היום־יום של התלמידים.", "sigs": ["s5"], "imp": 2.5, "cert": 4, "why": ""}, {"id": "d7", "name": "שירותים שמתרחקים מהיישוב", "desc": "פחות שירותים ופחות אנשי מקצוע זמינים בתוך היישוב.", "sigs": ["s7", "s10"], "imp": 2.5, "cert": 2.5, "why": ""}], "where": null, "summary": {"key": "הסריקה מראה שהחוסן החברתי שלנו תלוי פחות בתשתיות ויותר בקשרים: באמון במידע, בחיבור בין ותיקים לחדשים ובצוות יציב. דווקא בתחומים האלה יש הכי הרבה אי־ודאות.", "now": ["כדאי להגדיר כבר עכשיו ערוץ מידע רשמי אחד להורים, ולהסביר בקבוצות איך מזהים הודעה אמינה.", "כדאי להכין תוכנית לימים חמים במיוחד: מקומות מוצלים, שעות לימוד מותאמות ומאווררים."], "scen": ["הפערים בין ותיקים לחדשים וכוח ההתארגנות העצמית של הקהילה יכולים לשמש שני צירים טובים במחולל העתידים, כי לא ידוע לאן כל אחד מהם יתפתח, ושניהם משפיעים מאוד על החוסן."], "next": ["כדאי לבדוק בסריקה הבאה אם חנות המכולת נסגרה, ומה זה עשה למקום המפגש ביישוב.", "כדאי לעקוב אחרי מספר הפניות ליועצת אחרי ימים קשים."], "autonomy": "ההתארגנות של ההורים בלי הנחיה מראה שיש לקהילה בסיס של אוטונומיה תפקודית. כדאי לחזק אותו, ולא לסמוך רק על שירותים שמתרחקים מהיישוב."}};
+
+/* ---------- state ---------- */
+function fresh(type){ return {title:"", ctx:{type:type||"school", region:"", desc:""}, horizon:"2035", question:"", signals:[], drivers:[], where:null, summary:null}; }
+let S = JSON.parse(JSON.stringify(EX));
+let isExample = true, SID = null, SELD = null;
+function leaveExample(){ if(isExample){ isExample = false; $("exampleBar").style.display = "none"; } }
+
+/* ---------- capabilities ---------- */
+let SAMPLE = null, DB = null, DL = null;
+document.documentElement.classList.add("ai-off");
+(async () => {
+  const use = async n => { try { return (window.claude && window.claude.use) ? await window.claude.use(n) : null; } catch(e){ return null; } };
+  [SAMPLE, DB, DL] = await Promise.all([use("sample"), use("db"), use("downloads")]);
+  document.documentElement.classList.toggle("ai-off", !SAMPLE);
+  $("sSave").disabled = !DB; $("sOpen").disabled = !DB; if(!DB) $("sStatus").textContent = "שמירה זמינה כשיש חיבור למודל.";
+})();
+function errCopy(e){
+  const c = e && e.code;
+  if(["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(c)){ SAMPLE = null; document.documentElement.classList.add("ai-off"); return "ה־AI לא זמין בדף הזה."; }
+  if(c === "rate_limited") return "יותר מדי בקשות כרגע. אפשר לנסות שוב בעוד כמה דקות.";
+  if(c === "refused") return "הבקשה לא נענתה. כדאי לנסח אחרת.";
+  if(c === "invalid_json") return "התשובה הגיעה בפורמט לא תקין. אפשר לנסות שוב.";
+  if(c === "cancelled") return "";
+  return "משהו השתבש בחיבור. אפשר לנסות שוב.";
+}
+function repairJSON(t){ let s = String(t||""); const a = s.indexOf("{"), b = s.lastIndexOf("}"); if(a >= 0 && b > a) s = s.slice(a, b+1); try { return JSON.parse(s); } catch(_){} s = s.replace(/([֐-׿])"([֐-׿])/g, "$1״$2").replace(/[“”]/g, '"'); try { return JSON.parse(s); } catch(_){} return JSON.parse(s.replace(/,\s*([}\]])/g, "$1")); }
+async function askJSON(prompt, opts){
+  const full = prompt + `\n\nחשוב לפורמט: JSON תקין בלבד, בלי טקסט לפניו או אחריו. בתוך מחרוזות לא להשתמש במירכאות רגילות ("). בקיצורים עבריים להשתמש בגרשיים עבריים (״).`;
+  try { return await SAMPLE.json(full, opts); } catch(e){ if(e && e.code === "invalid_json" && e.text){ try { return repairJSON(e.text); } catch(_){} } throw e; }
+}
+function rules(){ return `את/ה עוזר/ת בכלי ״רדאר החוסן החברתי״ (מבוסס על Horizon Scanning ו־Driver Mapping מערכת Futures Toolkit) במערכת Be Good לחוסן קהילתי וחינוכי בישראל.
+ההקשר: ${TYPE_LABEL[S.ctx.type]}${S.ctx.region ? ", " + S.ctx.region : ""}.${S.ctx.desc ? " תיאור: " + S.ctx.desc : ""} מסתכלים עד שנת ${S.horizon}.
+שאלת הסריקה: ${S.question || "מה ישפיע על החוסן החברתי שלנו בשנים הקרובות?"}
+המיקוד: חוסן חברתי וקהילתי: אמון, שייכות, לכידות, אחריות הדדית, שגרה, מנהיגות משותפת ויכולת לתפקד יחד בשעת משבר.
+כללים:
+- לכתוב במשפטים שלמים וברורים, בלשון רבים או ניטרלית מגדרית.
+- אין לך גישה לאינטרנט. לא להמציא ידיעות, נתונים, מחקרים או אירועים כאילו הם עובדות. לעבוד רק עם האותות שהמשתתפים הביאו, ולסמן בבירור כשמשהו הוא השערה.
+- עיקרון העתיד הלא ידוע: לשים לב גם לתחומים שפחות מדברים עליהם בישראל.
+- עיקרון האוטונומיה התפקודית: כשרלוונטי, לזהות מה מחזק או מחליש את היכולת לתפקד לבד כשעזרה מבחוץ לא מגיעה.
+- בלי עמדה פוליטית.`; }
+function sigList(){ return S.signals.map(x => `[${x.id}] (${x.cat}) ${x.title}${x.what ? " — " + x.what : ""}`).join("\n"); }
+
+/* ---------- render ---------- */
+function renderTop(){
+  document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.ctx.type)));
+  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
+  $("horizon").value = S.horizon; $("question").value = S.question || ""; $("desc").value = S.ctx.desc || ""; $("sTitle").value = S.title || "";
+  if(!$("nCat").options.length) $("nCat").innerHTML = CATS.map(c => `<option>${esc(c)}</option>`).join("");
+}
+function renderSignals(){
+  const used = new Set(S.signals.map(x => x.cat)), missing = CATS.filter(c => !used.has(c));
+  $("catGaps").innerHTML = S.signals.length >= 4 && missing.length ? `<div class="gap"><b>עוד לא אספנו אותות בתחומים:</b> ${missing.join(", ")}. כדאי לחפש גם שם, כי לפעמים השינוי הגדול מגיע מהמקום שלא הסתכלנו עליו.</div>` : "";
+  const dOf = id => S.drivers.filter(d => (d.sigs||[]).includes(id)).map(d => d.name);
+  $("sigs").innerHTML = S.signals.length ? `<div class="small muted">${S.signals.length} אותות</div>` + S.signals.map(x => `<div class="sig">
+      <div><b>${esc(x.title)}</b> <span class="cat">${esc(x.cat)}</span>${x.what ? `<div class="small">${esc(x.what)}</div>` : ""}
+        <div class="meta">${x.src ? `מקור: ${esc(x.src)}` : ""}${x.src && x.by ? " · " : ""}${x.by ? `הוסיפו: ${esc(x.by)}` : ""}${dOf(x.id).length ? ` · שייך למניע: ${esc(dOf(x.id).join(", "))}` : ""}</div></div>
+      <div class="row" style="align-items:flex-start"><button type="button" class="small needs-ai" data-mean="${esc(x.id)}">מה זה עשוי לבשר?</button><button type="button" class="small" data-delsig="${esc(x.id)}">מחיקה</button></div>
+      ${x.meaning ? `<div class="imp"><b>מה זה עשוי לבשר (השערה):</b> ${esc(x.meaning)}</div>` : ""}
+    </div>`).join("") : `<p class="muted small">עוד אין אותות.</p>`;
+  const w = S.where;
+  $("whereOut").innerHTML = w ? `<div class="box"><b>איפה כדאי לחפש</b><ul>${(w.places||[]).map(p => `<li>${esc(p)}</li>`).join("")}</ul><b>שאלות שעוזרות לשים לב</b><ul>${(w.questions||[]).map(p => `<li>${esc(p)}</li>`).join("")}</ul>${(w.blind||[]).length ? `<b>תחומים שקל לפספס</b><ul>${w.blind.map(p => `<li>${esc(p)}</li>`).join("")}</ul>` : ""}</div>` : "";
+}
+function renderDrivers(){
+  $("drvs").innerHTML = S.drivers.length ? S.drivers.map(d => `<div class="drv-card ${SELD === d.id ? "on" : ""}">
+      <div class="row" style="justify-content:space-between"><b style="font-size:16px">${esc(d.name)}</b><span class="pill" style="background:var(--accent-soft);color:var(--accent)">${QUADS[quadOf(d)].t}</span></div>
+      ${d.desc ? `<div class="small">${esc(d.desc)}</div>` : ""}
+      <div class="small muted">האותות: ${(d.sigs||[]).map(id => (S.signals.find(x => x.id === id)||{}).title).filter(Boolean).map(esc).join(" · ") || "עוד אין"}</div>
+      <details><summary class="small">שיוך אותות למניע</summary><div style="display:flex;flex-direction:column;gap:4px;margin-top:6px">${S.signals.map(x => `<label class="small"><input type="checkbox" data-assign="${esc(d.id)}:${esc(x.id)}" ${(d.sigs||[]).includes(x.id) ? "checked" : ""}> ${esc(x.title)}</label>`).join("")}</div></details>
+      <div class="row"><button type="button" class="small" data-deldrv="${esc(d.id)}">מחיקת המניע</button></div>
+    </div>`).join("") : `<p class="muted small">עוד אין מניעים.</p>`;
+}
+const MW = 640, MH = 520, PAD = 56;
+const toX = cert => PAD + (cert - 1) / 4 * (MW - 2*PAD); // certain on the right, as Hebrew readers expect
+const toY = imp => PAD + (5 - imp) / 4 * (MH - 2*PAD);
+function mapSVG(forExport){
+  const cx = MW/2, cy = MH/2;
+  let g = `<rect width="${MW}" height="${MH}" fill="${forExport ? "#fff" : "transparent"}"/>`;
+  const qs = [["act", MW-PAD, PAD, "end"], ["scen", PAD, PAD, "start"], ["park", MW-PAD, MH-PAD, "end"], ["track", PAD, MH-PAD, "start"]];
+  g += `<rect x="${cx}" y="${PAD-20}" width="${MW-PAD-cx+20}" height="${cy-PAD+20}" fill="#e3f3e8" opacity=".55"/><rect x="${PAD-20}" y="${PAD-20}" width="${cx-PAD+20}" height="${cy-PAD+20}" fill="#fdf0d6" opacity=".55"/><rect x="${PAD-20}" y="${cy}" width="${cx-PAD+20}" height="${MH-PAD-cy+20}" fill="#eef1f4" opacity=".55"/><rect x="${cx}" y="${cy}" width="${MW-PAD-cx+20}" height="${MH-PAD-cy+20}" fill="#eef1f4" opacity=".35"/>`;
+  g += `<line x1="${cx}" y1="${PAD-20}" x2="${cx}" y2="${MH-PAD+20}" stroke="#aab6c1" stroke-width="1.5"/><line x1="${PAD-20}" y1="${cy}" x2="${MW-PAD+20}" y2="${cy}" stroke="#aab6c1" stroke-width="1.5"/>`;
+  qs.forEach(([k, x, y, anchor]) => { const ty = y < cy ? PAD - 4 : MH - PAD + 14; g += `<text x="${anchor === "end" ? MW - PAD + 16 : PAD - 16}" y="${ty}" text-anchor="${anchor === "end" ? "start" : "end"}" direction="rtl" font-size="15" font-weight="700" fill="#5b6b78" font-family="Assistant, Arial">${QUADS[k].t}</text>`; });
+  g += `<text x="${cx}" y="${MH - 8}" text-anchor="middle" direction="rtl" font-size="14" fill="#7a8a97" font-family="Assistant, Arial">ודאי ← → לא ודאי</text>`;
+  g += `<text x="14" y="${cy}" text-anchor="middle" direction="rtl" font-size="14" fill="#7a8a97" font-family="Assistant, Arial" transform="rotate(-90 14 ${cy})">פחות חשוב ← → חשוב מאוד</text>`;
+  const placed = [];
+  S.drivers.forEach((d, i) => {
+    let x = toX(d.cert), y = toY(d.imp); const on = SELD === d.id && !forExport;
+    let n = 0; while(placed.some(q => Math.abs(q.x - x) < 26 && Math.abs(q.y - y) < 26) && n < 8){ x += (n % 2 ? -1 : 1) * 28 * (Math.floor(n/2) + 1); n++; }
+    const below = placed.some(q => Math.abs(q.x - x) < 150 && q.y - y > -40 && q.y - y < 12 && !q.below);
+    placed.push({x, y, below});
+    const label = d.name.length > 26 ? d.name.slice(0, 25) + "…" : d.name;
+    g += `<g class="dot" data-d="${esc(d.id)}" tabindex="0" role="button" aria-label="${esc(d.name)}: חשיבות ${d.imp} מתוך 5, ודאות ${d.cert} מתוך 5"><circle cx="${x}" cy="${y}" r="${on ? 13 : 11}" fill="#17607a" stroke="#fff" stroke-width="3"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Arial">${i+1}</text>
+      <text x="${x}" y="${below ? y + 30 : y - 17}" text-anchor="middle" direction="rtl" font-size="13.5" fill="#16232e" font-family="Assistant, Arial" style="paint-order:stroke;stroke:${forExport ? "#fff" : "var(--surface,#fff)"};stroke-width:4px;stroke-linejoin:round">${esc(label)}</text></g>`;
+  });
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${MW} ${MH}" role="img" aria-label="מפת המניעים">${g}</svg>`;
+}
+function renderMap(){
+  $("map").innerHTML = mapSVG(false);
+  const opt = (v) => [1,1.5,2,2.5,3,3.5,4,4.5,5].map(n => `<option value="${n}" ${Math.abs(n - v) < 0.01 ? "selected" : ""}>${n}</option>`).join("");
+  $("placePanel").innerHTML = S.drivers.length ? `<b>החשיבות והוודאות של כל מניע</b><p class="small muted">5 = חשוב מאוד או כמעט ודאי. 1 = פחות חשוב או לא ידוע בכלל.</p>` + S.drivers.map((d,i) => `<div style="border-top:1px solid var(--line);padding-top:6px">
+      <div class="small"><b>${i+1}. ${esc(d.name)}</b>${d.why ? `<br><span class="muted">${esc(d.why)}</span>` : ""}</div>
+      <div class="row small" style="gap:8px;margin-top:4px"><label for="imp_${esc(d.id)}">חשיבות <select id="imp_${esc(d.id)}" data-imp="${esc(d.id)}">${opt(d.imp)}</select></label><label for="cert_${esc(d.id)}">ודאות <select id="cert_${esc(d.id)}" data-cert="${esc(d.id)}">${opt(d.cert)}</select></label></div>
+    </div>`).join("") : `<p class="muted small">קודם כדאי לבנות מניעים (שלב 3).</p>`;
+}
+function renderQuads(){
+  $("quads").innerHTML = ["act","scen","track","park"].map(k => { const Q = QUADS[k], ds = S.drivers.filter(d => quadOf(d) === k); return `<div class="quad"><h3>${Q.t}</h3><p class="small muted">${Q.d}</p>
+    ${ds.length ? `<ul style="margin:0;padding-inline-start:20px">${ds.map(d => `<li>${esc(d.name)}</li>`).join("")}</ul>` : `<p class="small muted">אין כרגע מניעים כאן.</p>`}
+    ${Q.link && ds.length ? `<p class="small">הצעד הבא: <a href="${Q.link[1]}" target="_blank" rel="noopener">${Q.link[0]}</a>${Q.link2 ? ` או <a href="${Q.link2[1]}" target="_blank" rel="noopener">${Q.link2[0]}</a>` : ""}.</p>` : ""}</div>`; }).join("");
+  const s = S.summary;
+  $("summary").innerHTML = s ? `<div class="box" style="border-inline-start:5px solid var(--accent)"><p style="font-size:18px">${esc(s.key||"")}</p></div>
+    <div class="cols" style="margin-top:10px"><div class="box"><b>מה כדאי לעשות עכשיו</b><ul>${(s.now||[]).map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+    <div class="box"><b>אילו מניעים כדאי להעביר למחולל העתידים</b><ul>${(s.scen||[]).map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+    <div class="box"><b>על מה לחזור בסריקה הבאה</b><ul>${(s.next||[]).map(x => `<li>${esc(x)}</li>`).join("")}</ul>${s.autonomy ? `<b>מה זה מלמד על האוטונומיה התפקודית שלנו</b><p>${esc(s.autonomy)}</p>` : ""}</div></div>` : "";
+}
+function renderAll(){ renderTop(); renderSignals(); renderDrivers(); renderMap(); renderQuads(); }
+
+/* ---------- inputs ---------- */
+$("ctxType").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.ctx.type = b.dataset.v; leaveExample(); renderTop(); });
+$("region").addEventListener("change", e => { S.ctx.region = e.target.value; leaveExample(); });
+$("horizon").addEventListener("change", e => { S.horizon = e.target.value; leaveExample(); });
+$("question").addEventListener("change", e => { S.question = e.target.value.trim(); leaveExample(); });
+$("desc").addEventListener("change", e => { S.ctx.desc = e.target.value.trim(); leaveExample(); });
+$("sTitle").addEventListener("change", e => { S.title = e.target.value.trim(); });
+$("addSig").addEventListener("click", () => {
+  const t = $("nTitle").value.trim(), st = $("addStatus"); if(!t){ st.textContent = "כדאי לכתוב בקצרה מה שמתם לב."; $("nTitle").focus(); return; }
+  S.signals.unshift({id:uid(), title:t, what:$("nWhat").value.trim(), src:$("nSrc").value.trim(), by:$("nBy").value.trim(), cat:$("nCat").value, meaning:""});
+  ["nTitle","nWhat","nSrc"].forEach(id => $(id).value = ""); leaveExample(); renderSignals(); renderDrivers(); st.textContent = "האות נוסף. אפשר להוסיף עוד."; $("nTitle").focus();
+});
+$("sigs").addEventListener("click", async e => {
+  const del = e.target.closest("[data-delsig]"), mean = e.target.closest("[data-mean]");
+  if(del){ const id = del.dataset.delsig; S.signals = S.signals.filter(x => x.id !== id); S.drivers.forEach(d => d.sigs = (d.sigs||[]).filter(x => x !== id)); leaveExample(); renderSignals(); renderDrivers(); return; }
+  if(mean && SAMPLE){
+    const x = S.signals.find(s => s.id === mean.dataset.mean); mean.disabled = true; mean.textContent = "חושב…";
+    try{ const r = await askJSON(`${rules()}\n\nהאות: ${x.title}${x.what ? " — " + x.what : ""} (תחום: ${x.cat})\n\nמשימה: מה האות הזה עשוי לבשר עד שנת ${S.horizon}? 2–3 משפטים שלמים, בניסוח של השערה (״ייתכן ש…״). לציין גם אפשרות חיובית אחת אם יש.\nלהחזיר JSON בלבד: {"meaning":""}`, {modelTier:"quick", cache:false});
+      x.meaning = String(r && r.meaning || ""); leaveExample(); renderSignals(); }
+    catch(err){ mean.disabled = false; mean.textContent = "מה זה עשוי לבשר?"; toast(errCopy(err)); }
+  }
+});
+$("drvs").addEventListener("change", e => { const t = e.target; if(!t.dataset.assign) return; const [did, sid] = t.dataset.assign.split(":"); const d = S.drivers.find(x => x.id === did); d.sigs = d.sigs || []; if(t.checked){ if(!d.sigs.includes(sid)) d.sigs.push(sid); } else d.sigs = d.sigs.filter(x => x !== sid); leaveExample(); renderSignals(); renderDrivers(); });
+$("drvs").addEventListener("click", e => { const b = e.target.closest("[data-deldrv]"); if(!b) return; S.drivers = S.drivers.filter(d => d.id !== b.dataset.deldrv); leaveExample(); renderAll(); });
+$("addDrv").addEventListener("click", () => { const v = $("newDrv").value.trim(); if(!v) return; S.drivers.push({id:uid(), name:v, desc:"", sigs:[], imp:3, cert:3, why:""}); $("newDrv").value = ""; leaveExample(); renderAll(); });
+$("newDrv").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); $("addDrv").click(); } });
+$("placePanel").addEventListener("change", e => { const t = e.target; const id = t.dataset.imp || t.dataset.cert; if(!id) return; const d = S.drivers.find(x => x.id === id); if(t.dataset.imp) d.imp = +t.value; else d.cert = +t.value; leaveExample(); renderMap(); renderDrivers(); renderQuads(); });
+
+/* drag on the map */
+let drag = null;
+function svgPoint(evt){ const svg = $("map").querySelector("svg"); const r = svg.getBoundingClientRect(); return {x:(evt.clientX - r.left) / r.width * MW, y:(evt.clientY - r.top) / r.height * MH}; }
+const clamp = v => Math.max(1, Math.min(5, v));
+$("map").addEventListener("pointerdown", e => { const g = e.target.closest(".dot"); if(!g) return; SELD = g.dataset.d; drag = {id:g.dataset.d}; e.preventDefault(); $("map").setPointerCapture && $("map").setPointerCapture(e.pointerId); });
+$("map").addEventListener("pointermove", e => {
+  if(!drag) return; const p = svgPoint(e), d = S.drivers.find(x => x.id === drag.id); if(!d) return;
+  d.cert = Math.round(clamp(1 + (p.x - PAD) / (MW - 2*PAD) * 4) * 2) / 2; d.imp = Math.round(clamp(5 - (p.y - PAD) / (MH - 2*PAD) * 4) * 2) / 2;
+  $("map").innerHTML = mapSVG(false);
+});
+$("map").addEventListener("pointerup", () => { if(!drag) return; drag = null; leaveExample(); renderMap(); renderDrivers(); renderQuads(); });
+$("map").addEventListener("keydown", e => {
+  const g = e.target.closest(".dot"); if(!g) return; const d = S.drivers.find(x => x.id === g.dataset.d); const step = {ArrowUp:[0,0.5], ArrowDown:[0,-0.5], ArrowRight:[0.5,0], ArrowLeft:[-0.5,0]}[e.key]; if(!step) return;
+  e.preventDefault(); d.cert = clamp(d.cert + step[0]); d.imp = clamp(d.imp + step[1]); SELD = d.id; leaveExample(); renderMap(); renderDrivers(); renderQuads(); const ng = $("map").querySelector(`[data-d="${d.id}"]`); ng && ng.focus();
+});
+
+/* ---------- AI ---------- */
+$("aiWhere").addEventListener("click", async () => {
+  if(!SAMPLE) return; const btn = $("aiWhere"), st = $("whereStatus"); busy(btn, st, true);
+  try{
+    const r = await askJSON(`${rules()}
+
+האותות שכבר נאספו:
+${sigList() || "(עוד אין)"}
+
+משימה: לעזור למשתתפים לחפש אותות. לא להמציא אותות או ידיעות.
+- places: 5–7 מקומות שבהם כדאי לחפש, מותאמים להקשר (למשל ״שיחות במסדרון עם אנשי התחזוקה״, ״שאלות שהורים שואלים שוב ושוב״, ״כתבי עת מקצועיים בתחום״). משפטים שלמים.
+- questions: 4–5 שאלות שעוזרות לשים לב לשינוי.
+- blind: 2–3 תחומים שקל לפספס, כולל לפחות אחד שפחות מדברים עליו בישראל.
+להחזיר JSON בלבד: {"places":[""],"questions":[""],"blind":[""]}`, {modelTier:"default", cache:false});
+    if(!r || !Array.isArray(r.places)) throw {code:"invalid_json"};
+    S.where = r; leaveExample(); busy(btn, st, false); renderSignals();
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+$("aiCluster").addEventListener("click", async () => {
+  if(!SAMPLE) return; const btn = $("aiCluster"), st = $("clusterStatus");
+  if(S.signals.length < 3){ st.textContent = "כדאי להוסיף לפחות שלושה אותות."; return; }
+  busy(btn, st, true);
+  try{
+    const r = await askJSON(`${rules()}
+
+האותות:
+${sigList()}
+
+משימה: לקבץ את האותות ל־4–8 מניעי שינוי. מניע הוא כוח גדול שעומד מאחורי כמה אותות. אות יכול להשתייך ליותר ממניע אחד. מותר מניע עם אות אחד בלבד אם הוא חשוב ושונה.
+- name: שם קצר וברור למניע (עד 7 מילים).
+- desc: משפט שלם שמסביר מה המניע.
+- sigs: המזהים של האותות (מתוך הסוגריים המרובעים).
+להחזיר JSON בלבד: {"drivers":[{"name":"","desc":"","sigs":[""]}]}`, {modelTier:"default", cache:false});
+    if(!r || !Array.isArray(r.drivers) || !r.drivers.length) throw {code:"invalid_json"};
+    const ids = new Set(S.signals.map(x => x.id));
+    S.drivers = r.drivers.slice(0,10).map(d => ({id:uid(), name:String(d.name||""), desc:String(d.desc||""), sigs:(d.sigs||[]).map(String).filter(x => ids.has(x)), imp:3, cert:3, why:""}));
+    S.summary = null; leaveExample(); busy(btn, st, false); renderAll(); st.textContent = "המניעים מוכנים. עכשיו ממקמים אותם על המפה בשלב 4.";
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+$("aiPlace").addEventListener("click", async () => {
+  if(!SAMPLE) return; const btn = $("aiPlace"), st = $("placeStatus");
+  if(!S.drivers.length){ st.textContent = "קודם כדאי לבנות מניעים."; return; }
+  busy(btn, st, true);
+  try{
+    const r = await askJSON(`${rules()}
+
+המניעים והאותות שלהם:
+${S.drivers.map((d,i) => `[${i}] ${d.name}: ${d.desc} | אותות: ${(d.sigs||[]).map(id => (S.signals.find(x => x.id === id)||{}).title).filter(Boolean).join("; ")}`).join("\n")}
+
+משימה: להציע לכל מניע מיקום ראשוני: imp = כמה הוא חשוב עבור ההקשר (1–5), cert = כמה ודאי שהוא יתפתח כך עד שנת ${S.horizon} (1–5), why = משפט שלם שמסביר את המיקום. המשתתפים יתקנו.
+להחזיר JSON בלבד: {"places":[{"i":0,"imp":4,"cert":2,"why":""}]}`, {modelTier:"default", cache:false});
+    if(!r || !Array.isArray(r.places)) throw {code:"invalid_json"};
+    r.places.forEach(p => { const d = S.drivers[+p.i]; if(d){ d.imp = clamp(+p.imp || 3); d.cert = clamp(+p.cert || 3); d.why = String(p.why||""); } });
+    leaveExample(); busy(btn, st, false); renderAll(); st.textContent = "זו הצעה ראשונית. כדאי לגרור ולתקן לפי מה שאתם מכירים.";
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+$("aiSum").addEventListener("click", async () => {
+  if(!SAMPLE) return; const btn = $("aiSum"), st = $("sumStatus");
+  if(!S.drivers.length){ st.textContent = "קודם כדאי לבנות מניעים."; return; }
+  busy(btn, st, true);
+  try{
+    const r = await askJSON(`${rules()}
+
+מפת המניעים:
+${S.drivers.map(d => `- ${d.name} (חשיבות ${d.imp}, ודאות ${d.cert}, ${QUADS[quadOf(d)].t}): ${d.desc}`).join("\n")}
+
+משימה: לסכם את הסריקה במשפטים שלמים.
+- key: 1–2 משפטים: מה הדבר הכי חשוב שהסריקה מראה.
+- now: 2–4 צעדים שכדאי לעשות כבר עכשיו, לגבי המניעים שברבע ״לפעול עכשיו״.
+- scen: 1–3 משפטים שמציעים אילו מניעים מהרבע ״לבנות תרחישים״ להעביר כצירים למחולל העתידים, ולמה.
+- next: 2–3 דברים שכדאי לבדוק שוב בסריקה הבאה.
+- autonomy: משפט אחד על מה הסריקה מלמדת על האוטונומיה התפקודית, או "".
+להחזיר JSON בלבד: {"key":"","now":[""],"scen":[""],"next":[""],"autonomy":""}`, {modelTier:"default", cache:false});
+    if(!r || !r.key) throw {code:"invalid_json"};
+    S.summary = r; leaveExample(); busy(btn, st, false); renderQuads();
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+
+/* ---------- export ---------- */
+function allText(){
+  const L = [`רדאר החוסן החברתי: ${S.title || ""}`, `${TYPE_LABEL[S.ctx.type]}${S.ctx.region ? " · " + S.ctx.region : ""} · עד ${S.horizon}`, `שאלת הסריקה: ${S.question || ""}`, "", "האותות:"];
+  S.signals.forEach(x => L.push(`- (${x.cat}) ${x.title}${x.what ? ": " + x.what : ""}${x.src ? " [מקור: " + x.src + "]" : ""}`));
+  L.push("", "המניעים:"); S.drivers.forEach(d => L.push(`- ${d.name} · חשיבות ${d.imp} · ודאות ${d.cert} · ${QUADS[quadOf(d)].t}${d.desc ? ": " + d.desc : ""}`));
+  if(S.summary){ L.push("", "הסיכום: " + S.summary.key); (S.summary.now||[]).forEach(x => L.push("- עכשיו: " + x)); (S.summary.scen||[]).forEach(x => L.push("- לתרחישים: " + x)); (S.summary.next||[]).forEach(x => L.push("- לסריקה הבאה: " + x)); }
+  return L.join("\n");
+}
+$("copyAll").addEventListener("click", () => copy(allText()));
+$("toFutures").addEventListener("click", async () => {
+  if(!S.drivers.length){ toast("עוד אין מניעים"); return; }
+  const order = {scen:0, act:1, track:2, park:3};
+  const items = S.drivers.slice().sort((a,b) => order[quadOf(a)] - order[quadOf(b)]).map(d => ({name:d.name, desc:d.desc || "", note:QUADS[quadOf(d)].t}));
+  await copy(JSON.stringify({type:"be-good-package", kind:"drivers", from:"רדאר החוסן החברתי", title:S.title || S.question || "", items}));
+  $("sumStatus").textContent = "המניעים הועתקו. במחולל העתידים, בשלב 2, לוחצים ״ייבוא מניעים מכלי אחר״ ומדביקים.";
+});
+$("dl").addEventListener("click", async () => {
+  const st = $("sumStatus"); if(!DL){ st.textContent = "ההורדה זמינה כשיש חיבור למודל. אפשר להעתיק כטקסט."; return; }
+  const html = `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>רדאר החוסן החברתי</title><link href="https://fonts.googleapis.com/css2?family=Rubik:wght@600&family=Assistant:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:Assistant,Arial,sans-serif;direction:rtl;max-width:900px;margin:24px auto;color:#16232e;line-height:1.55}h1,h2{font-family:Rubik,Arial,sans-serif}svg{max-width:640px;border:1px solid #d5dde3;border-radius:10px}.m{color:#5b6b78;font-size:14px}@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>
+<h1>רדאר החוסן החברתי${S.title ? ": " + esc(S.title) : ""}</h1><p class="m">${esc(TYPE_LABEL[S.ctx.type])}${S.ctx.region ? " · " + esc(S.ctx.region) : ""} · עד ${esc(S.horizon)}</p><p><b>שאלת הסריקה:</b> ${esc(S.question||"")}</p>
+<h2>מפת המניעים</h2>${mapSVG(true)}<ol>${S.drivers.map(d => `<li><b>${esc(d.name)}</b> (${QUADS[quadOf(d)].t}, חשיבות ${d.imp}, ודאות ${d.cert}) ${esc(d.desc||"")}</li>`).join("")}</ol>
+${S.summary ? `<h2>הסיכום</h2><p>${esc(S.summary.key)}</p><ul>${(S.summary.now||[]).map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+<h2>האותות</h2><ul>${S.signals.map(x => `<li><b>${esc(x.title)}</b> <span class="m">(${esc(x.cat)}${x.src ? " · " + esc(x.src) : ""})</span>${x.what ? "<br>" + esc(x.what) : ""}</li>`).join("")}</ul>
+<p class="m">נוצר בכלי ״רדאר החוסן החברתי״ של Be Good.</p></body></html>`;
+  try{ await DL.save({filename:`רדאר-החוסן-החברתי-${S.title || S.horizon}.html`, data:html}); st.textContent = "הקובץ ירד."; } catch(e){ st.textContent = e && e.code === "declined" ? "" : "ההורדה לא הצליחה."; }
+});
+
+/* ---------- save ---------- */
+async function save(){ const st = $("sStatus"); if(!DB) return; if(!SID) SID = uid(); S.title = $("sTitle").value.trim();
+  try{ await DB.doc(`scans/${SID}`).set({name:S.title || S.question || "סריקה", s:JSON.parse(JSON.stringify(S)), updatedAt:Date.now()}); leaveExample(); st.textContent = "נשמר"; } catch(e){ st.textContent = "השמירה לא הצליחה."; } }
+async function list(){ const box = $("sList"); if(!box.hidden){ box.hidden = true; return; } if(!DB) return; box.hidden = false; box.innerHTML = `<span class="status">טוען…</span>`;
+  try{ const q = await DB.collection("scans").orderBy("updatedAt","desc").limit(25).get(); box.innerHTML = q.empty ? `<span class="muted small">עוד אין סריקות שמורות.</span>` : q.docs.map(d => `<button type="button" data-s="${esc(d.id)}">${esc(d.data().name)} · <span class="muted small">${esc(new Date(d.data().updatedAt||0).toLocaleDateString("he-IL"))}</span></button>`).join(""); } catch(e){ box.innerHTML = `<span class="muted small">לא הצלחנו לטעון.</span>`; } }
+$("sList").addEventListener("click", async e => { const b = e.target.closest("[data-s]"); if(!b) return; try{ const s = await DB.doc(`scans/${b.dataset.s}`).get(); if(!s.exists) return; S = {...fresh(), ...s.data().s}; SID = b.dataset.s; $("sList").hidden = true; leaveExample(); renderAll(); $("sStatus").textContent = "נפתח"; } catch(err){} });
+function newOne(){ S = fresh(S.ctx.type); SID = null; SELD = null; leaveExample(); renderAll(); $("question").focus(); }
+$("sSave").addEventListener("click", save); $("sOpen").addEventListener("click", list); $("sNew").addEventListener("click", newOne); $("resetBtn").addEventListener("click", newOne);
+
+renderAll();
+</script>
+<style id="bgkit-css">
+.bgkit-bar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+.bgkit-bar b{font-family:var(--font-display)}
+.bgkit-bar a{color:var(--ink);text-decoration:none;border-radius:999px;padding:3px 10px;border:1px solid transparent}
+.bgkit-bar a:hover{border-color:var(--accent)}
+.bgkit-bar a[aria-current="page"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .bgkit-bar a[aria-current="page"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bgkit-bar a[aria-current="page"]{color:#0f171d}}
+.bgkit-help-btn{align-self:flex-start;border-radius:999px;font-weight:700}
+.bgkit-q{width:26px;height:26px;padding:0;border-radius:50%;font-size:14px;line-height:1;font-family:var(--font-display);margin-inline-start:8px;vertical-align:middle;flex:0 0 auto}
+.bgkit-q[aria-expanded="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bgkit-tip{background:var(--accent-soft);border-radius:10px;padding:10px 14px;font-size:15px;max-width:80ch}
+.bgkit-ov{position:fixed;inset:0;background:rgba(10,20,30,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+.bgkit-ov[hidden]{display:none}
+.bgkit-dlg{background:var(--surface);color:var(--ink);border-radius:16px;max-width:720px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:8px;line-height:1.6}
+.bgkit-dlg h2{font-size:22px}
+.bgkit-dlg ul{margin:0;padding-inline-start:20px}
+.bgkit-dlg p{margin:0}
+.bgkit-dlg .src{font-size:13px;color:var(--muted);margin-top:6px}
+</style>
+<script id="bgkit-js">
+(function(){
+  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "משחק מצב עתידי", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "radar", HELP = {"title": "איך עובדים עם רדאר החוסן החברתי?", "html": "<p><b>מה הכלי עושה:</b> אוספים יחד ״אותות״: דברים קטנים ששמים לב אליהם בחיים, בעבודה ובחדשות, ושעשויים לבשר על שינוי. מקבצים אותם למניעי שינוי, וממקמים כל מניע לפי כמה הוא חשוב וכמה ודאי שיקרה. המיקום אומר מה עושים איתו.</p>\n<p><b>מתי משתמשים בו:</b> באופן קבוע, למשל פעם בעונה, כדי לא להיות מופתעים. וגם לפני שבונים תרחישים או תוכנית.</p>\n<p><b>כמה זמן:</b> איסוף האותות יכול להימשך כמה שבועות. המפגש לקיבוץ ולמיקום לוקח כשעה וחצי.</p>\n<p><b>ארבעת הרבעים:</b> <b>לפעול עכשיו</b> (חשוב וודאי), <b>לבנות תרחישים</b> (חשוב ולא ודאי), <b>לעקוב</b> (פחות חשוב ולא ודאי), <b>להניח בצד</b> (ודאי ופחות חשוב).</p>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>לאן ממשיכים:</b> מניעים חשובים ולא ודאיים מעבירים ל<a href=\"hl-futures.html\" target=\"_blank\" rel=\"noopener\">מחולל העתידים</a> כדי לבנות מהם צירים. מניעים שכדאי לפעול לגביהם מכניסים ל<a href=\"hl-roadmap.html\" target=\"_blank\" rel=\"noopener\">מהחזון להיום</a> או בודקים ב<a href=\"hl-stress.html\" target=\"_blank\" rel=\"noopener\">בדיקת עמידות</a>.</p>\n<p class=\"src\">מבוסס על Horizon Scanning ו־Driver Mapping מערכת Futures Toolkit.</p>", "steps": {"#h1s": "מגדירים מה רוצים להבין: שאלת סריקה, הקשר ושנת יעד. שאלה טובה פתוחה מספיק כדי לגלות דברים חדשים.", "#h2s": "כל משתתף ומשתתפת מוסיפים אותות: מה שמו לב, באיזה תחום, ומאיפה זה. ה־AI יכול להציע איפה לחפש, ולהציע השערה על מה כל אות עשוי לבשר. כדאי לחפש גם בתחומים שהכלי מסמן שעוד לא נגעתם בהם.", "#h3s": "מקבצים אותות למניעים: כוחות גדולים שעומדים מאחורי כמה אותות. ה־AI מציע קיבוץ, ואפשר לשנות, להוסיף ולשייך אותות ידנית.", "#h4s": "גוררים כל מניע למקום שלו במפה, או בוחרים ערכים מהרשימה. למעלה מה שחשוב יותר, ובצד ימין מה שוודאי יותר. כדאי לדון בקבוצה על כל מיקום.", "#h5s": "בכל רבע מופיעים המניעים שבו והצעד הבא, עם קישור לכלי המתאים. ה־AI מסכם את הסריקה, ואפשר להעביר את המניעים למחולל העתידים."}};
+  const wrap = document.querySelector(".wrap"); if(!wrap) return;
+  // 1. toolkit bar
+  const bar = document.createElement("nav"); bar.className = "bgkit-bar"; bar.setAttribute("aria-label", "מעבדת האופק · Be Good");
+  bar.innerHTML = `<b>מעבדת האופק:</b><a href="${HUB}" target="_blank" rel="noopener">דף הבית</a>` + TOOLS.map(t => `<a href="${t.url}" ${t.k === ME ? 'aria-current="page"' : 'target="_blank" rel="noopener"'} title="${t.short}">${t.name}</a>`).join("");
+  wrap.insertBefore(bar, wrap.firstChild);
+  // 2. help button + dialog
+  const head = document.querySelector("header.top > div") || document.querySelector("header.top");
+  const btn = document.createElement("button"); btn.type = "button"; btn.className = "bgkit-help-btn"; btn.textContent = "איך עובדים עם הכלי?";
+  if(head) head.appendChild(btn);
+  const ov = document.createElement("div"); ov.className = "bgkit-ov"; ov.hidden = true;
+  ov.innerHTML = `<div class="bgkit-dlg" role="dialog" aria-modal="true" aria-labelledby="bgkitT"><div class="row" style="justify-content:space-between;align-items:center"><h2 id="bgkitT">${HELP.title}</h2><button type="button" id="bgkitX">סגירה</button></div>${HELP.html}<p style="margin-top:8px">וגם הסבר לכל שלב: ללחוץ על סימן השאלה שליד כותרת השלב.</p></div>`;
+  document.body.appendChild(ov);
+  let last = null;
+  const open = () => { last = document.activeElement; ov.hidden = false; ov.querySelector("#bgkitX").focus(); };
+  const close = () => { ov.hidden = true; if(last) last.focus(); };
+  btn.addEventListener("click", open);
+  ov.addEventListener("click", e => { if(e.target === ov || e.target.id === "bgkitX") close(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape" && !ov.hidden) close(); });
+  // 3. per-step ? buttons
+  Object.entries(HELP.steps || {}).forEach(([sel, text], i) => {
+    const h = document.querySelector(sel); if(!h) return;
+    const q = document.createElement("button"); q.type = "button"; q.className = "bgkit-q"; q.textContent = "?"; q.setAttribute("aria-label", "הסבר על השלב: " + h.textContent.trim()); q.setAttribute("aria-expanded", "false");
+    const tip = document.createElement("div"); tip.className = "bgkit-tip"; tip.hidden = true; tip.id = "bgkitTip" + i; tip.textContent = text; q.setAttribute("aria-controls", tip.id);
+    h.appendChild(q);
+    const anchor = h.closest(".stage-head") || h.closest(".row") || h;
+    anchor.insertAdjacentElement("afterend", tip);
+    q.addEventListener("click", () => { tip.hidden = !tip.hidden; q.setAttribute("aria-expanded", String(!tip.hidden)); });
+  });
+})();
+</script>
+<script src="lib/screens-menu.js"></script>
+</body>
+</html>

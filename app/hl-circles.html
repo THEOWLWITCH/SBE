@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<script src="lib/access-guard.js"></script>
+<script src="lib/ai-call.js"></script>
+<script src="lib/hl-runtime.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מעגלי העתיד · Be Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one guided column — plan, what we test against, the matrix, autonomy, summary. */
+:root{
+  --bg:#eef1f3;
+  --surface:#ffffff;
+  --ink:#16232e;
+  --muted:#5b6b78;
+  --line:#d5dde3;
+  --accent:#17607a;
+  --accent-soft:#dcecf1;
+  --known:#56697a;      --known-bg:#e6ebef;
+  --expected:#9a5b00;   --expected-bg:#fbefd9;
+  --rare:#6a3fb0;       --rare-bg:#eee6fb;
+  --wild:#b2275a;       --wild-bg:#fbe3ec;
+  --ai:#17607a;         --ai-bg:#dcecf1;
+  --good:#2f7a4b;
+  --font-display:"Rubik","Assistant",system-ui,sans-serif;
+  --font-body:"Assistant","Rubik",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+    --accent:#62b6cf; --accent-soft:#183644;
+    --known:#a9b9c6; --known-bg:#24323d;
+    --expected:#f0b45a; --expected-bg:#3a2a12;
+    --rare:#b79af0; --rare-bg:#2c2242;
+    --wild:#f2789f; --wild-bg:#40192a;
+    --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+  --accent:#62b6cf; --accent-soft:#183644;
+  --known:#a9b9c6; --known-bg:#24323d;
+  --expected:#f0b45a; --expected-bg:#3a2a12;
+  --rare:#b79af0; --rare-bg:#2c2242;
+  --wild:#f2789f; --wild-bg:#40192a;
+  --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 18px 80px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:30px;font-weight:700}
+h2{font-size:22px;font-weight:600}
+h3{font-size:18px;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:14.5px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{font-family:var(--font-display);font-size:14px;letter-spacing:.02em;color:var(--accent);font-weight:600}
+.notice{background:var(--accent-soft);border-radius:12px;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.principle{border-inline-start:4px solid var(--wild);background:var(--surface);border-radius:10px;padding:12px 16px}
+section.stage{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.stage-head{display:flex;gap:12px;align-items:baseline}
+.num{font-family:var(--font-display);font-weight:700;color:var(--accent);font-size:20px;min-width:22px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:15px}
+input[type=text],select,textarea{font:inherit;font-weight:400;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+textarea{min-height:76px;resize:vertical}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;font-weight:600}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] button.primary{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#0f171d}}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.drv:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#0f171d}}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px;white-space:nowrap}
+.t-known{color:var(--known);background:var(--known-bg)}
+.t-expected{color:var(--expected);background:var(--expected-bg)}
+.t-rare{color:var(--rare);background:var(--rare-bg)}
+.t-wild{color:var(--wild);background:var(--wild-bg)}
+.t-ai{color:var(--ai);background:var(--ai-bg)}
+.t-opp{color:var(--good);background:transparent;border:1px solid var(--good)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{padding:4px 12px;font-size:14.5px;border-radius:999px}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.drivers{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.drv{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:var(--surface);cursor:pointer}
+.drv input{margin-top:5px;accent-color:var(--accent)}
+.drv.on{border-color:var(--accent);background:var(--accent-soft)}
+.drv .nm{font-weight:700;line-height:1.3}
+.drv .ds{font-size:14px;color:var(--muted);line-height:1.4}
+.drv .tg{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.meter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:15px}
+.ok{color:var(--good);font-weight:700}
+.warn{color:var(--wild);font-weight:700}
+.axes-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.axopt{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:var(--surface)}
+.axopt.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.axline{font-size:15px}
+.axline b{font-family:var(--font-display);font-weight:600}
+.matrix{display:grid;grid-template-columns:28px 1fr 1fr;grid-template-rows:auto auto auto;gap:10px}
+.ylab{grid-row:1 / span 2;writing-mode:vertical-rl;transform:rotate(180deg);display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);font-weight:600}
+.xlab{grid-column:2 / span 2;display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);font-weight:600}
+.axis-name{color:var(--accent)}
+.world{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface);position:relative}
+.world.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.world .q{font-size:12.5px;color:var(--muted);font-weight:600}
+.world .hl{font-family:var(--font-display);font-weight:600;font-size:15.5px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 0}
+.world ul{margin:0;padding-inline-start:18px;font-size:14.5px}
+.world .lbl{font-size:13px;font-weight:700;color:var(--muted);margin-top:2px}
+.world .wc{font-size:14px;background:var(--rare-bg);color:var(--ink);border-radius:8px;padding:6px 8px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.tabs button{border-radius:999px;padding:5px 14px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.out{white-space:pre-wrap;background:var(--bg);border-radius:12px;padding:14px 16px;min-height:80px;max-width:72ch}
+.out.empty{color:var(--muted)}
+.chat{display:flex;flex-direction:column;gap:8px;max-width:72ch}
+.msg{padding:8px 12px;border-radius:12px;white-space:pre-wrap}
+.msg.u{background:var(--accent-soft);align-self:flex-start}
+.msg.a{background:var(--bg);align-self:flex-end}
+.event{border:1px solid var(--line);border-inline-start:5px solid var(--wild);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;max-width:80ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.box{background:var(--bg);border-radius:12px;padding:12px 14px}
+.box ul,.box ol{margin:6px 0 0;padding-inline-start:20px}
+.status{font-size:14.5px;color:var(--muted)}
+.toast{position:fixed;bottom:18px;inset-inline-start:50%;transform:translateX(50%);background:var(--ink);color:var(--surface);padding:8px 16px;border-radius:10px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.ai-off .needs-ai{display:none}
+.ai-note{display:none}
+.ai-off .ai-note{display:block}
+/* views + workshop bar */
+nav.views{display:flex;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line)}
+nav.views a{font-family:var(--font-display);font-weight:600;text-decoration:none;color:var(--ink);padding:7px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+nav.views a[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] nav.views a[aria-current="page"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav.views a[aria-current="page"]{color:#0f171d}}
+.view{display:flex;flex-direction:column;gap:22px}
+.view[hidden]{display:none}
+.wsbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:15px}
+.wsbar input{max-width:260px}
+.wslist{display:flex;flex-direction:column;gap:6px;width:100%}
+.wslist button{text-align:start;font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border-radius:999px;padding:5px 12px;font-size:14.5px;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0f171d}}
+.rate{display:flex;gap:4px;flex-wrap:wrap}
+.rate button{min-width:40px;padding:6px 0;font-variant-numeric:tabular-nums}
+.rate button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:minmax(150px,1.2fr) 3fr auto;gap:10px;align-items:center;font-size:15px}
+.bar .track{height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:6px}
+.bar .n{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;white-space:nowrap}
+.hist{display:flex;gap:3px;align-items:flex-end;height:34px}
+.hist span{width:14px;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px;opacity:.85}
+.pill{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px}
+.p-agree{background:#e3f3e8;color:#226b3d}
+.p-split{background:var(--wild-bg);color:var(--wild)}
+.p-minor{background:var(--rare-bg);color:var(--rare)}
+.lenses{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.lens{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.lens .line{font-family:var(--font-display);font-weight:600;font-size:16px}
+.lens img,.item img{width:100%;border-radius:10px;background:#fff;border:1px solid var(--line)}
+.items{display:flex;flex-direction:column;gap:8px}
+.item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:6px 12px;background:var(--surface)}
+.item .meta{font-size:13px;color:var(--muted)}
+.item .fb{grid-column:1/-1;background:var(--accent-soft);border-radius:8px;padding:8px 10px;font-size:14.5px;white-space:pre-wrap}
+.item img{max-width:220px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.thumb{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff;height:520px;position:relative}
+.thumb .np{transform:scale(.42);transform-origin:top right;width:238%}
+/* stress test */
+.vd{display:inline-block;font-size:13px;font-weight:700;border-radius:6px;padding:2px 10px;border:1px solid transparent}
+.v-robust{background:#e3f3e8;color:#1f6a3a;border-color:#b9dfc5}
+.v-adjust{background:#fdf0d6;color:#8a5200;border-color:#f1d39a}
+.v-break{background:#fbe1e4;color:#a8172f;border-color:#f0b4bd}
+.v-redundant{background:#eef1f4;color:#5b6b78;border-color:#d5dde3}
+.v-none{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.mx-wrap{overflow-x:auto}
+table.mx{border-collapse:separate;border-spacing:6px;width:100%;min-width:720px}
+table.mx th{font-family:var(--font-display);font-weight:600;font-size:14.5px;text-align:start;vertical-align:bottom;padding:4px}
+table.mx th .ax{display:block;font-family:var(--font-body);font-weight:400;font-size:12.5px;color:var(--muted)}
+table.mx td{vertical-align:top}
+table.mx td.el{font-weight:600;font-size:15px;max-width:230px}
+table.mx td.el .small{font-weight:400}
+.cell{width:100%;text-align:start;display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:10px;font-weight:400;font-size:13.5px;line-height:1.35;min-height:64px}
+.cell.on{outline:3px solid var(--accent);outline-offset:1px}
+.cell .vd{align-self:flex-start}
+.cell.v-robust,.cell.v-adjust,.cell.v-break,.cell.v-redundant{border-width:1px}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.score .box{display:flex;flex-direction:column;gap:6px}
+.stack{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--bg)}
+.stack span{display:block;height:100%}
+.ifthen{display:grid;grid-template-columns:1fr auto 1fr;gap:6px 10px;align-items:start;font-size:15px}
+.ifthen .arr{color:var(--muted);font-weight:700}
+@media (max-width:640px){
+  .ifthen{grid-template-columns:1fr}
+  .ifthen .arr{display:none}
+  .bar{grid-template-columns:1fr}
+  .matrix{grid-template-columns:1fr}
+  .ylab{display:none}
+  .xlab{grid-column:1}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+.wrap{max-width:1240px}
+.board{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.mapbox{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px;position:relative}
+.mapbox svg{width:100%;height:auto;display:block}
+.side{position:sticky;top:64px;display:flex;flex-direction:column;gap:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.panel[hidden]{display:none}
+#kind{align-self:flex-start}
+.seg{flex-wrap:wrap}
+.node{cursor:pointer}
+.node:focus{outline:none}
+.node:focus-visible rect,.node:focus-visible circle{stroke:var(--accent);stroke-width:4}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:13.5px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:middle;margin-inline-end:4px;border:1.5px solid}
+.sugg{display:flex;flex-direction:column;gap:6px}
+.sugg .item{grid-template-columns:1fr auto}
+@media (max-width:900px){.board{grid-template-columns:1fr}.side{position:static}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+
+<header class="top">
+  <div>
+    <div class="brand">Be Good · חוסן מול עתיד לא ידוע</div>
+    <h1>מעגלי העתיד</h1>
+    <p class="muted">שמים במרכז אירוע, מגמה או החלטה, ושואלים: מה זה יגרום? ומה יגרום מה שזה גרם? כך רואים השלכות מדרגה ראשונה, שנייה ושלישית, כולל כאלה שלא צפינו.</p>
+  </div>
+</header>
+
+<div class="wsbar">
+  <b>מעגל:</b>
+  <input type="text" id="wTitle" placeholder="שם, למשל: כיתה ו׳1, הפסקת חשמל" aria-label="שם המעגל">
+  <button type="button" id="wSave" class="primary">שמירה</button>
+  <button type="button" id="wOpen">מעגלים שמורים</button>
+  <button type="button" id="wNew">מעגל חדש</button>
+  <span class="status" id="wStatus" aria-live="polite"></span>
+  <div class="wslist" id="wList" hidden></div>
+</div>
+
+<div class="notice" id="exampleBar">
+  <span><b>מוצגת דוגמה מוכנה:</b> מה תגרום הפסקת חשמל ארצית של שבוע לבית ספר יסודי בגליל העליון.</span>
+  <button id="resetBtn" type="button">מעגל חדש</button>
+</div>
+<p class="ai-note notice small">החלקים שמופעלים על ידי AI זמינים כשיש חיבור למודל. בינתיים אפשר להוסיף השלכות ידנית.</p>
+
+<section class="stage" aria-labelledby="h1s">
+  <div class="stage-head"><span class="num">1</span><h2 id="h1s">מה שמים במרכז?</h2></div>
+  <div class="seg" role="group" aria-label="סוג המרכז" id="kind">
+    <button type="button" data-k="event">אירוע או משבר</button><button type="button" data-k="trend">מגמה או שינוי</button><button type="button" data-k="initiative">החלטה או יוזמה שלנו</button>
+  </div>
+  <p class="small muted" id="kindHint"></p>
+  <div class="row"><input type="text" id="center" style="flex:1;min-width:260px;font-size:18px" aria-label="מה במרכז"><button type="button" class="primary" id="setCenter">הצבה במרכז</button></div>
+  <div class="chips" id="ideas"></div>
+  <div class="row" style="gap:6px 14px"><span class="small" style="font-weight:600">על מי מדובר?</span><div class="seg" role="group" aria-label="סוג ההקשר" id="ctxType"><button type="button" data-v="school">בית ספר</button><button type="button" data-v="community">קהילה ויישוב</button><button type="button" data-v="org">ארגון</button><button type="button" data-v="pro">קהילה מקצועית</button></div></div>
+  <div class="row" style="gap:6px 14px"><span class="small" style="font-weight:600">למי מיועדת הפעילות?</span><div class="seg" role="group" aria-label="למי מיועדת הפעילות" id="aud"><button type="button" data-a="adults">מבוגרים</button><button type="button" data-a="kids">תלמידים ותלמידות ביסודי</button><button type="button" data-a="teens">תלמידים ותלמידות בעל־יסודי</button></div></div>
+  <div class="grid2">
+    <label class="f" for="region">אזור בארץ<select id="region"></select></label>
+  </div>
+  <label class="f" for="cdesc">כמה מילים על ההקשר (רשות)<textarea id="cdesc" placeholder="למשל: קהילה מקוונת של חוקרים, חוקרות ואנשי ואנשות מקצוע מכל הארץ, שנפגשים בזום ובקבוצת דיון."></textarea></label>
+</section>
+
+<section class="stage" aria-labelledby="h2s">
+  <div class="stage-head"><span class="num">2</span><h2 id="h2s">המעגלים</h2></div>
+  <div class="row">
+    <button type="button" class="primary needs-ai" id="aiRing1">בניית שלושת המעגלים עם AI</button>
+    <button type="button" class="needs-ai" id="aiMissing">מה פספסנו?</button>
+    <span class="status" id="mapStatus" aria-live="polite"></span>
+  </div>
+  <div class="legend">
+    <span><span class="sw" style="background:#fbe1e4;border-color:#d6455d"></span>השלכה שלילית</span>
+    <span><span class="sw" style="background:#e3f3e8;border-color:#3f9a62"></span>השלכה חיובית</span>
+    <span><span class="sw" style="background:#fdf0d6;border-color:#e0a237"></span>גם וגם</span>
+    <span>· מעגל פנימי: השלכות ישירות (מיד ועד שנה) · מעגל אמצעי: השלכות של ההשלכות (2–5 שנים) · מעגל חיצוני: השלכות רחוקות (5 שנים ומעלה)</span><span>· ללחוץ על השלכה כדי לערוך, להוסיף השלכה ממנה, או לסמן מה עושים איתה.</span>
+  </div>
+  <div class="meter" id="stats"></div>
+  <div class="board">
+    <div class="mapbox" id="map"></div>
+    <aside class="side">
+      <div class="panel" id="panel"></div>
+      <div class="panel" id="suggBox" hidden><b>הצעות מה־AI</b><p class="small muted">כל הצעה נכנסת רק אם מחליטים להוסיף אותה.</p><div class="sugg" id="sugg"></div></div>
+    </aside>
+  </div>
+</section>
+
+<section class="stage" aria-labelledby="h3s">
+  <div class="stage-head"><span class="num">3</span><h2 id="h3s">מה עושים עם מה שגילינו?</h2></div>
+  <p class="small muted">ה־AI קורא את כל המעגלים ומסכם מה הדבר החשוב ביותר שהם מראים. הוא מציע מה כדאי לנסות למנוע, למה כדאי להתכונן מראש, ומה טוב שאפשר לנצל.</p>
+  <div class="row"><button type="button" class="primary needs-ai" id="aiSum">סיכום והצעות לפעולה</button><button type="button" id="dlSvg">הורדת המעגלים כתמונה</button><button type="button" id="copyOutline">העתקת המעגלים כטקסט</button><span class="status" id="sumStatus" aria-live="polite"></span></div>
+  <div id="summary"></div>
+</section>
+
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4);
+function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1800); }
+async function copy(text){ try { await navigator.clipboard.writeText(text); toast("הועתק"); } catch(e){ toast("ההעתקה לא הצליחה"); } }
+function busy(btn, st, on, msg){ if(btn) btn.disabled = on; if(st) st.textContent = on ? (msg || "חושב…") : ""; }
+const TYPE_LABEL = {school:"בית ספר", community:"קהילה ויישוב", org:"ארגון", pro:"קהילה מקצועית או רשת מומחים"};
+const AUD = {adults:"מבוגרים", kids:"תלמידים ותלמידות בבית ספר יסודי", teens:"תלמידים ותלמידות בחטיבת ביניים ותיכון"};
+const REGIONS = ["כל הארץ","גליל עליון וגבול לבנון","רמת הגולן","גליל מערבי","עמקים וגליל תחתון","חיפה והקריות","השרון","מרכז וגוש דן","ירושלים והסביבה","השפלה","יהודה ושומרון","עוטף עזה והנגב המערבי","באר שבע והנגב","בקעת הירדן וים המלח","ערבה ואילת","מישור החוף הדרומי"];
+const DOMAINS = ["חינוך ולמידה","רגש ונפש","קהילה וחברה","כלכלה ועבודה","בריאות","תשתיות וטכנולוגיה","סביבה","ביטחון","שירותים ושלטון"];
+const VAL = {neg:{fill:"#fbe1e4", stroke:"#d6455d", label:"שלילית"}, pos:{fill:"#e3f3e8", stroke:"#3f9a62", label:"חיובית"}, mix:{fill:"#fdf0d6", stroke:"#e0a237", label:"גם וגם"}};
+const MARKS = {prevent:"למנוע", prepare:"להתכונן", use:"לנצל"};
+const IDEAS_BY = {
+  event:["הפסקת חשמל ארצית של שבוע","גל חום של 45 מעלות","פינוי ממושך של היישוב","סערת שמש משביתה את הלוויינים","מחסור במי שתייה","מגפה חדשה","רעידת אדמה חזקה"],
+  trend:["AI עושה חצי מהעבודה של המורים","יותר משפחות צעירות עוברות לפריפריה","הזדקנות האוכלוסייה ביישוב","עבודה מהבית הופכת לנורמה","ירידה באמון במוסדות","הסכם שלום אזורי"],
+  initiative:["הקמת קהילה מקוונת של מומחים ומומחיות ב־AI, חוסן, חינוך וחירום","פתיחת מרכז חוסן קהילתי ביישוב","תוכנית חונכות בין תלמידים לוותיקי היישוב","מעבר לשבוע לימודים של ארבעה ימים","שימוש ב־AI ככלי עזר לכל המורים","הכשרת כל ההורים בעזרה רגשית ראשונה"]
+};
+const KIND_TEXT = {
+  event:{hint:"אירוע הוא משהו שקורה בבת אחת, כמו משבר או אסון. המעגלים יראו מה הוא יגרום.", ph:"למשל: הפסקת חשמל ארצית של שבוע", rule:"במרכז יש אירוע או משבר. לבחון מה הוא יגרום: נזקים, קשיים, וגם מה טוב יכול לצמוח ממנו."},
+  trend:{hint:"מגמה היא שינוי שמתפתח לאורך זמן. המעגלים יראו לאן הוא עלול להוביל.", ph:"למשל: AI עושה חצי מהעבודה של המורים", rule:"במרכז יש מגמה או שינוי מתמשך. לבחון לאן הוא מוביל לאורך זמן: הזדמנויות, סיכונים, ומי מרוויח ומי נפגע."},
+  initiative:{hint:"החלטה או יוזמה היא משהו שאנחנו בוחרים לעשות. המעגלים יראו את ההשפעה שלה: מה ירוויחו ממנה, אילו קשיים יעלו, ומה עלול לקרות בלי שהתכוונו.", ph:"למשל: הקמת קהילה מקוונת של מומחים ומומחיות ב־AI, חוסן, חינוך וחירום", rule:"במרכז יש החלטה או יוזמה שאנחנו שוקלים או כבר מקיימים. לבחון את ההשפעה שלה: התועלות המכוונות, הקשיים והחסמים, מי מושפע ואיך, השלכות שלא התכוונו אליהן (חיוביות ושליליות), ומה צריך כדי שהיוזמה תצליח ותחזיק לאורך זמן. סימון ״למנוע״ = סיכון שכדאי למנוע, ״להתכונן״ = קושי שכדאי להתכונן אליו, ״לנצל״ = תועלת שכדאי לחזק."}
+};
+const RING_LABEL = ["", "השלכות ישירות · מיד ועד שנה", "השלכות של ההשלכות · 2–5 שנים", "השלכות רחוקות · 5 שנים ומעלה"];
+const RING_SHORT = ["", "השלכות ישירות", "השלכות של השלכות", "השלכות רחוקות"];
+
+/* ---------- example ---------- */
+const EX = {"ctx": {"type": "school", "region": "גליל עליון וגבול לבנון", "desc": ""}, "kind": "event", "aud": "adults", "center": "הפסקת חשמל ארצית של שבוע", "nodes": [{"id": "n1", "p": "c", "t": "אין למידה מרחוק ואין מזגנים", "d": "חינוך ולמידה", "v": "neg", "ai": false, "mark": null}, {"id": "n2", "p": "c", "t": "הקשר עם ההורים נקטע", "d": "קהילה וחברה", "v": "neg", "ai": false, "mark": null}, {"id": "n3", "p": "c", "t": "שכנים מתארגנים יחד: אוכל, מים וטעינה", "d": "קהילה וחברה", "v": "pos", "ai": false, "mark": null}, {"id": "n4", "p": "c", "t": "מזון מתקלקל במקררים", "d": "כלכלה ועבודה", "v": "neg", "ai": false, "mark": null}, {"id": "n5", "p": "c", "t": "תרופות שצריכות קירור בסכנה", "d": "בריאות", "v": "neg", "ai": false, "mark": null}, {"id": "n1a", "p": "n1", "t": "בית הספר נפתח כמרכז קהילתי", "d": "חינוך ולמידה", "v": "pos", "ai": false, "mark": "use"}, {"id": "n1b", "p": "n1", "t": "פערים בלמידה בין משפחות", "d": "חינוך ולמידה", "v": "neg", "ai": false, "mark": null}, {"id": "n2a", "p": "n2", "t": "שמועות ומידע כוזב מתפשטים", "d": "קהילה וחברה", "v": "neg", "ai": false, "mark": "prevent"}, {"id": "n3a", "p": "n3", "t": "קשרים חדשים בין ותיקים לחדשים", "d": "קהילה וחברה", "v": "pos", "ai": false, "mark": null}, {"id": "n4a", "p": "n4", "t": "מחירים עולים והמדפים מתרוקנים", "d": "כלכלה ועבודה", "v": "neg", "ai": false, "mark": null}, {"id": "n5a", "p": "n5", "t": "מתנדבים מבקרים מבוגרים בבתים", "d": "בריאות", "v": "mix", "ai": false, "mark": "prepare"}, {"id": "n1a1", "p": "n1a", "t": "דרישה שבית הספר יהיה עצמאי באנרגיה", "d": "תשתיות וטכנולוגיה", "v": "pos", "ai": false, "mark": "prepare"}, {"id": "n2a1", "p": "n2a", "t": "ירידה באמון במוסדות", "d": "שירותים ושלטון", "v": "neg", "ai": false, "mark": null}, {"id": "n3a1", "p": "n3a", "t": "רשת עזרה הדדית קבועה, גם אחרי האירוע", "d": "קהילה וחברה", "v": "pos", "ai": false, "mark": "use"}], "sel": "n2a", "summary": {"key": "הפסקת חשמל ארוכה פוגעת קודם כול בקשר ובאמון בין האנשים, ורק אחר כך בלמידה. מה שמחזיק את כולם בשבוע כזה הוא הקהילה.", "chains": ["כשהקשר עם ההורים נקטע, מתחילות להתפשט שמועות ומידע כוזב, ולאורך זמן יורד האמון במוסדות.", "כשהשכנים מתארגנים יחד, נוצרים קשרים חדשים בין משפחות ותיקות וחדשות, ומהם יכולה לצמוח רשת עזרה הדדית שנשארת גם אחרי האירוע.", "כשאין למידה מרחוק ואין מזגנים, בית הספר יכול להיפתח כמרכז קהילתי, ובעקבות זה תעלה דרישה שיהיה עצמאי באנרגיה."], "actions": [{"type": "prevent", "text": "כדאי להקים ערוץ מידע רשמי שלא תלוי באינטרנט, כמו לוח מודעות קבוע ורצים לפי שכבות, כדי לעצור שמועות."}, {"type": "prepare", "text": "כדאי להתקין בבית הספר מקור חשמל סולארי ומקרר משותף לתרופות, כדי שיוכל לשמש מרכז לקהילה."}, {"type": "prepare", "text": "כדאי להכין מראש רשימה של מבוגרים שיזדקקו לביקור, ולהגדיר מתנדבים ומתנדבות שאחראים עליהם."}, {"type": "use", "text": "כדאי לשמר את רשת העזרה ההדדית שנוצרה ולהפוך אותה לקבועה, כדי שתהיה מוכנה גם לאירוע הבא."}, {"type": "use", "text": "כדאי להיעזר במשימות המשותפות כדי לחבר בין משפחות ותיקות לחדשות."}], "signals": ["הפסקות החשמל בקיץ נעשות ארוכות ותכופות יותר.", "יותר שמועות וסרטונים מזויפים מופיעים בקבוצות של ההורים."], "autonomy": "המעגלים מראים שמה שמחזיק בשבוע בלי חשמל הוא האוטונומיה התפקודית של הקהילה: מקורות אנרגיה, מים ומידע שנמצאים בתוך היישוב.", "questions": ["אילו מהשרשראות האלה כבר קרו אצלנו בעבר, ומה למדנו מהן?", "מה הצעד הראשון שאנחנו יכולים לעשות כבר החודש?"]}, "title": ""};
+
+/* ---------- state ---------- */
+function fresh(type){ return {ctx:{type:type||"school", region:"", desc:""}, kind:"event", aud:"adults", center:"", nodes:[], sel:"c", summary:null, title:""}; }
+let S = JSON.parse(JSON.stringify(EX));
+let isExample = true, WID = null;
+function leaveExample(){ if(isExample){ isExample = false; $("exampleBar").style.display = "none"; } }
+const depth = id => { let d = 0, n = S.nodes.find(x => x.id === id); while(n){ d++; n = S.nodes.find(x => x.id === n.p); } return d; };
+const kids = id => S.nodes.filter(n => n.p === id);
+
+/* ---------- capabilities ---------- */
+let SAMPLE = null, DB = null, DL = null;
+document.documentElement.classList.add("ai-off");
+(async () => {
+  const use = async n => { try { return (window.claude && window.claude.use) ? await window.claude.use(n) : null; } catch(e){ return null; } };
+  [SAMPLE, DB, DL] = await Promise.all([use("sample"), use("db"), use("downloads")]);
+  document.documentElement.classList.toggle("ai-off", !SAMPLE);
+  $("wSave").disabled = !DB; $("wOpen").disabled = !DB; if(!DB) $("wStatus").textContent = "שמירה זמינה כשיש חיבור למודל.";
+})();
+function errCopy(e){
+  const c = e && e.code;
+  if(["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(c)){ SAMPLE = null; document.documentElement.classList.add("ai-off"); return "ה־AI לא זמין בדף הזה."; }
+  if(c === "rate_limited") return "יותר מדי בקשות כרגע. אפשר לנסות שוב בעוד כמה דקות.";
+  if(c === "refused") return "הבקשה לא נענתה. כדאי לנסח אחרת.";
+  if(c === "invalid_json") return "התשובה הגיעה בפורמט לא תקין. אפשר לנסות שוב.";
+  if(c === "cancelled") return "";
+  return "משהו השתבש בחיבור. אפשר לנסות שוב.";
+}
+function repairJSON(t){ let s = String(t||""); const a = s.indexOf("{"), b = s.lastIndexOf("}"); if(a >= 0 && b > a) s = s.slice(a, b+1); try { return JSON.parse(s); } catch(_){} s = s.replace(/([֐-׿])"([֐-׿])/g, "$1״$2").replace(/[“”]/g, '"'); try { return JSON.parse(s); } catch(_){} return JSON.parse(s.replace(/,\s*([}\]])/g, "$1")); }
+async function askJSON(prompt, opts){
+  const full = prompt + `\n\nחשוב לפורמט: JSON תקין בלבד, בלי טקסט לפניו או אחריו. בתוך מחרוזות לא להשתמש במירכאות רגילות ("). בקיצורים עבריים להשתמש בגרשיים עבריים (״).`;
+  try { return await SAMPLE.json(full, opts); } catch(e){ if(e && e.code === "invalid_json" && e.text){ try { return repairJSON(e.text); } catch(_){} } throw e; }
+}
+function rules(){ return `את/ה עוזר/ת בכלי ״מעגלי העתיד״ (Futures Wheels) של Be Good לחוסן קהילתי וחינוכי בישראל.
+ההקשר: ${TYPE_LABEL[S.ctx.type]}${S.ctx.region ? ", " + S.ctx.region : ""}.${S.ctx.desc ? " תיאור: " + S.ctx.desc : ""} קהל המשתתפים: ${AUD[S.aud]}.
+${KIND_TEXT[S.kind || "event"].rule}
+כללים:
+- כל השלכה: משפט קצר, עד 9 מילים, מוחשי. ${S.aud === "adults" ? "" : "שפה פשוטה שמתאימה לגיל, בלי מושגים מקצועיים."}
+- להראות גם השלכות חיוביות, לא רק שליליות.
+- עיקרון העתיד הלא ידוע: לכלול גם השלכה לא צפויה, שאנשים בישראל כמעט לא חושבים עליה.
+- כשרלוונטי, לזהות אוטונומיה תפקודית: היכולת לתפקד לבד כשעזרה, תשתיות או הנחיות מבחוץ לא מגיעות.
+- הקשר ישראלי מציאותי, בלי נתונים מומצאים, בלי עמדה פוליטית, בלי תיאורים גרפיים.
+- תחומים אפשריים (d): ${DOMAINS.join(", ")}. ערכיות (v): neg שלילית, pos חיובית, mix גם וגם.`; }
+function chainOf(id){ const out = []; let n = S.nodes.find(x => x.id === id); while(n){ out.unshift(n.t); n = S.nodes.find(x => x.id === n.p); } return out; }
+function outlineText(){
+  const lines = [`במרכז: ${S.center || "(ריק)"}`];
+  const walk = (pid, lvl) => kids(pid).forEach(n => { lines.push(`${"  ".repeat(lvl)}- ${n.t} [${n.d}, ${VAL[n.v] ? VAL[n.v].label : ""}${n.mark ? ", " + MARKS[n.mark] : ""}] (id:${n.id})`); walk(n.id, lvl+1); });
+  walk("c", 0); return lines.join("\n");
+}
+
+/* ---------- layout & map ---------- */
+const W = 1160, CX = 580, CY = 580, R = [0, 200, 355, 500];
+function leaves(id){ const k = kids(id); return k.length ? k.reduce((a,c) => a + leaves(c.id), 0) : 1; }
+function layout(){
+  const pos = {c:{x:CX, y:CY, a:0}};
+  const place = (id, a0, a1, d) => {
+    const k = kids(id); const total = k.reduce((a,c) => a + leaves(c.id), 0) || 1; let a = a0;
+    k.forEach(c => { const span = (a1 - a0) * leaves(c.id) / total; const mid = a + span/2; pos[c.id] = {x: CX + R[d] * Math.cos(mid), y: CY + R[d] * Math.sin(mid), a: mid}; if(d < 3) place(c.id, a, a + span, d + 1); a += span; });
+  };
+  place("c", -Math.PI/2, Math.PI * 1.5, 1);
+  return pos;
+}
+function wrap(text, max, lines){
+  const words = String(text).split(/\s+/); const out = []; let cur = "";
+  words.forEach(w => { if((cur + " " + w).trim().length > max && cur){ out.push(cur); cur = w; } else cur = (cur + " " + w).trim(); });
+  if(cur) out.push(cur);
+  if(out.length > lines){ const keep = out.slice(0, lines); keep[lines-1] = keep[lines-1].replace(/.{0,2}$/, "…"); return keep; }
+  return out;
+}
+function mapSVG(forExport){
+  const pos = layout();
+  const countAt = d => S.nodes.filter(n => depth(n.id) === d).length || 1;
+  const width = d => Math.min([0,140,150,160][d], Math.max(112, (2 * Math.PI * R[d]) / countAt(d) - 10));
+  let g = `<rect width="${W}" height="${W}" fill="${forExport ? "#ffffff" : "transparent"}"/>`;
+  [3,2,1].forEach(d => { g += `<circle cx="${CX}" cy="${CY}" r="${R[d]}" fill="none" stroke="#c9d3db" stroke-width="1.5" stroke-dasharray="${d === 1 ? "0" : "6 6"}"/>`; });
+  // colour key in the top corner (part of the image, so a copied picture keeps its legend)
+  const halo = forExport ? "#ffffff" : "var(--surface, #ffffff)";
+  [["neg","השלכה שלילית"],["pos","השלכה חיובית"],["mix","גם וגם"]].forEach(([k,lbl],i) => {
+    g += `<rect x="${W - 40}" y="${20 + i*32}" width="22" height="22" rx="5" fill="${VAL[k].fill}" stroke="${VAL[k].stroke}" stroke-width="2"/><text x="${W - 50}" y="${37 + i*32}" text-anchor="start" font-size="18" fill="#5b6b78" font-family="Assistant, Arial" direction="rtl">${lbl}</text>`;
+  });
+  ["מעגל 1: מיד ועד שנה","מעגל 2: בעוד 2–5 שנים","מעגל 3: בעוד 5 שנים ומעלה"].forEach((t,i) => {
+    g += `<text x="${W - 18}" y="${W - 82 + i*28}" text-anchor="start" font-size="17" fill="#8a99a6" font-family="Assistant, Arial" direction="rtl">${t}</text>`;
+  });
+  S.nodes.forEach(n => { const a = pos[n.p], b = pos[n.id]; if(a && b) g += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#aab6c1" stroke-width="2"/>`; });
+  const cLong = (S.center||"").length > 34; const cFs = cLong ? 14.5 : 18; const cLines = wrap(S.center || "מה במרכז?", cLong ? 17 : 14, cLong ? 5 : 4);
+  g += `<g class="node" data-id="c" tabindex="0" role="button" aria-label="המרכז: ${esc(S.center)}"><circle cx="${CX}" cy="${CY}" r="${cLong ? 92 : 80}" fill="#17607a" stroke="${S.sel === "c" && !forExport ? "#0d3b4b" : "#17607a"}" stroke-width="${S.sel === "c" && !forExport ? 5 : 2}"/>
+    ${cLines.map((l,i) => `<text x="${CX}" y="${CY + (i - (cLines.length-1)/2) * (cFs + 4) + cFs/2.6}" text-anchor="middle" font-size="${cFs}" font-weight="700" fill="#fff" font-family="Rubik, Arial" direction="rtl">${esc(l)}</text>`).join("")}</g>`;
+  S.nodes.forEach(n => {
+    const p = pos[n.id]; if(!p) return; const d = depth(n.id); const w = width(d); const fs = w < 130 ? 15 : 16;
+    const lines = wrap(n.t, Math.floor(w / (fs * 0.55)), 4); const h = 16 + lines.length * (fs + 4) + (n.mark ? 16 : 0);
+    const V = VAL[n.v] || VAL.mix, on = S.sel === n.id && !forExport;
+    g += `<g class="node" data-id="${esc(n.id)}" tabindex="0" role="button" aria-label="${esc(n.t)}">
+      <rect x="${p.x - w/2}" y="${p.y - h/2}" width="${w}" height="${h}" rx="12" fill="${V.fill}" stroke="${on ? "#17607a" : V.stroke}" stroke-width="${on ? 4 : 2}"/>
+      ${n.mark ? `<text x="${p.x}" y="${p.y - h/2 + 14}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#17607a" font-family="Assistant, Arial" direction="rtl">✓ ${MARKS[n.mark]}</text>` : ""}
+      ${lines.map((l,i) => `<text x="${p.x}" y="${p.y - h/2 + (n.mark ? 16 : 0) + 8 + (i+1) * (fs + 4) - 3}" text-anchor="middle" font-size="${fs}" fill="#16232e" font-family="Assistant, Arial" direction="rtl">${esc(l)}</text>`).join("")}
+      ${n.ai && !forExport ? `<text x="${p.x + w/2 - 8}" y="${p.y + h/2 - 6}" text-anchor="end" font-size="9.5" fill="#7a8a97" font-family="Arial">AI</text>` : ""}
+    </g>`;
+  });
+  [1,2,3].forEach(d => {
+    const angs = S.nodes.filter(n => depth(n.id) === d && pos[n.id]).map(n => pos[n.id].a).map(a => ((a % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI)).sort((a,b) => a-b);
+    let mid = d === 1 ? Math.PI * 0.62 : d === 2 ? Math.PI * 0.75 : Math.PI * 0.88;
+    if(angs.length){ let best = -1; angs.forEach((a,i) => { const nx = i === angs.length-1 ? angs[0] + 2*Math.PI : angs[i+1]; if(nx - a > best){ best = nx - a; mid = a + (nx - a)/2; } }); }
+    const x = CX + R[d] * Math.cos(mid), y = CY + R[d] * Math.sin(mid) + 5;
+    g += `<text x="${x}" y="${y}" text-anchor="middle" font-size="${d === 1 ? 14 : 15.5}" fill="#8a99a6" font-family="Assistant, Arial" direction="rtl" style="paint-order:stroke;stroke:${halo};stroke-width:5px;stroke-linejoin:round">מעגל ${d} · ${esc(RING_SHORT[d])}</text>`;
+  });
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${W}" role="img" aria-label="מעגלי העתיד: ${esc(S.center)}">${g}</svg>`;
+}
+
+/* ---------- render ---------- */
+function renderTop(){
+  $("center").value = S.center || ""; $("wTitle").value = S.title || "";
+  const K = S.kind || "event";
+  document.querySelectorAll("#kind button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.k === K)));
+  $("kindHint").textContent = KIND_TEXT[K].hint; $("center").placeholder = KIND_TEXT[K].ph;
+  if(document.activeElement !== $("cdesc")) $("cdesc").value = S.ctx.desc || "";
+  $("ideas").innerHTML = IDEAS_BY[K].map(i => `<button type="button" class="chip" data-idea="${esc(i)}" aria-pressed="${i === S.center}">${esc(i)}</button>`).join("") + `<button type="button" class="chip needs-ai" id="aiIdea">הפתעה: הצעה לא צפויה מה־AI</button>`;
+  document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.ctx.type)));
+  document.querySelectorAll("#aud button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.a === S.aud)));
+  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
+}
+function renderMap(){
+  $("map").innerHTML = mapSVG(false);
+  const n = S.nodes.length, pos = S.nodes.filter(x => x.v === "pos").length, neg = S.nodes.filter(x => x.v === "neg").length;
+  const used = [...new Set(S.nodes.map(x => x.d))], missing = DOMAINS.filter(d => !used.includes(d));
+  $("stats").innerHTML = `<span><b>${n}</b> השלכות</span><span>·</span><span>${pos} חיוביות · ${neg} שליליות</span><span>·</span><span>${[1,2,3].map(d => S.nodes.filter(x => depth(x.id) === d).length).join(" / ")} במעגל 1 / 2 / 3</span>` +
+    (n && pos === 0 ? `<span>·</span><span class="warn">אין עדיין השלכה חיובית. מה טוב יכול לצמוח מזה?</span>` : "") +
+    (n >= 4 && missing.length ? `<span>·</span><span class="small muted">תחומים שעוד לא נגענו בהם: ${missing.slice(0,4).join(", ")}</span>` : "");
+  renderPanel();
+}
+function renderPanel(){
+  const p = $("panel");
+  if(S.sel === "c" || !S.nodes.find(n => n.id === S.sel)){
+    p.innerHTML = `<b>המרכז</b><p class="small">${esc(S.center || "עוד לא נבחר מה במרכז.")}</p>
+      <p class="small muted">מה זה יגרום ישירות? להוסיף השלכה ראשונה:</p>
+      <input type="text" id="newChild" placeholder="השלכה ישירה" aria-label="השלכה ישירה">
+      <div class="row"><button type="button" class="primary" id="addChild">הוספה</button><button type="button" class="needs-ai" id="aiChildren">AI: מה זה יגרום?</button></div>
+      <span class="status" id="panelStatus" aria-live="polite"></span>`;
+    return;
+  }
+  const n = S.nodes.find(x => x.id === S.sel), d = depth(n.id), chain = chainOf(n.id);
+  p.innerHTML = `<div class="small muted">מעגל ${d}: ${esc(RING_LABEL[d])}</div>
+    <div class="small muted">${esc(S.center)} ← ${chain.slice(0,-1).map(esc).join(" ← ")}${chain.length > 1 ? " ←" : ""}</div>
+    <label class="f" for="nText">ההשלכה<textarea id="nText" style="min-height:56px">${esc(n.t)}</textarea></label>
+    <label class="f" for="nDom">תחום<select id="nDom">${DOMAINS.map(x => `<option ${x === n.d ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></label>
+    <div class="seg" role="group" aria-label="ערכיות" id="nVal">${Object.entries(VAL).map(([k,v]) => `<button type="button" data-v="${k}" aria-pressed="${n.v === k}">${v.label}</button>`).join("")}</div>
+    <div><div class="small muted" style="margin-bottom:4px">מה נעשה עם ההשלכה הזו? אפשר לסמן:</div><div class="seg" role="group" aria-label="סימון" id="nMark">${Object.entries(MARKS).map(([k,v]) => `<button type="button" data-m="${k}" aria-pressed="${n.mark === k}">${v}</button>`).join("")}</div></div>
+    ${d < 3 ? `<p class="small muted" style="margin-top:4px">ומה זה יגרום?</p><input type="text" id="newChild" placeholder="השלכה של ההשלכה" aria-label="השלכה של ההשלכה">
+      <div class="row"><button type="button" class="primary" id="addChild">הוספה</button><button type="button" class="needs-ai" id="aiChildren">AI: מה זה יגרום?</button></div>` : `<p class="small muted">זה המעגל החיצוני.</p>`}
+    <div class="row"><button type="button" id="delNode">מחיקה${kids(n.id).length ? " (כולל מה שיוצא ממנה)" : ""}</button></div>
+    <span class="status" id="panelStatus" aria-live="polite"></span>`;
+}
+function renderSugg(list){
+  $("suggBox").hidden = !list.length;
+  $("sugg").innerHTML = list.map((s,i) => { const par = s.p === "c" ? S.center : (S.nodes.find(n => n.id === s.p) || {}).t; return `<div class="item"><div><b>${esc(s.t)}</b><div class="small muted">יוצא מ: ${esc(par || "המרכז")} · ${esc(s.d)} · ${esc((VAL[s.v]||VAL.mix).label)}</div>${s.why ? `<div class="small">${esc(s.why)}</div>` : ""}</div><div class="row"><button type="button" class="small primary" data-sadd="${i}">הוספה</button><button type="button" class="small" data-sskip="${i}">לא</button></div></div>`; }).join("");
+}
+let SUGG = [];
+function renderSummary(){
+  const s = S.summary;
+  if(!s){ $("summary").innerHTML = `<p class="muted small">עוד אין סיכום.</p>`; return; }
+  const by = t => (s.actions||[]).filter(a => a.type === t);
+  $("summary").innerHTML = `<div class="box" style="border-inline-start:5px solid var(--accent)"><p style="font-size:18px">${esc(s.key||"")}</p></div>
+    <div class="cols" style="margin-top:12px">
+      <div class="box"><b>מה כדאי לנסות למנוע?</b><ul>${by("prevent").map(a => `<li>${esc(a.text)}</li>`).join("") || "<li class='muted'>לא נמצא.</li>"}</ul></div>
+      <div class="box"><b>למה כדאי להתכונן מראש?</b><ul>${by("prepare").map(a => `<li>${esc(a.text)}</li>`).join("") || "<li class='muted'>לא נמצא.</li>"}</ul></div>
+      <div class="box"><b>מה טוב צמח כאן, ואיך אפשר לנצל אותו?</b><ul>${by("use").map(a => `<li>${esc(a.text)}</li>`).join("") || "<li class='muted'>לא נמצא.</li>"}</ul></div>
+    </div>
+    <div class="cols" style="margin-top:12px">
+      <div class="box"><b>אילו שרשראות של השלכות הכי חשובות?</b><ul>${(s.chains||[]).map(c => `<li>${esc(c)}</li>`).join("")}</ul></div>
+      <div class="box"><b>על אילו סימנים כדאי לעקוב כבר היום?</b><ul>${(s.signals||[]).map(c => `<li>${esc(c)}</li>`).join("")}</ul>${s.autonomy ? `<b>מה זה מלמד על האוטונומיה התפקודית שלנו?</b><p>${esc(s.autonomy)}</p>` : ""}</div>
+      <div class="box"><b>שאלות לשיחה בקבוצה</b><ul>${(s.questions||[]).map(c => `<li>${esc(c)}</li>`).join("")}</ul></div>
+    </div>`;
+}
+function renderAll(){ renderTop(); renderMap(); renderSummary(); }
+
+/* ---------- edits ---------- */
+function addNode(parent, t, extra){ const n = {id:uid(), p:parent, t:String(t).trim(), d:(extra && extra.d && DOMAINS.includes(extra.d)) ? extra.d : DOMAINS[2], v:(extra && VAL[extra.v]) ? extra.v : "mix", ai:!!(extra && extra.ai), mark:null}; S.nodes.push(n); return n; }
+function delNode(id){ const ids = new Set([id]); let grew = true; while(grew){ grew = false; S.nodes.forEach(n => { if(ids.has(n.p) && !ids.has(n.id)){ ids.add(n.id); grew = true; } }); } S.nodes = S.nodes.filter(n => !ids.has(n.id)); }
+function setCenter(v){ v = String(v||"").trim(); if(!v) return; if(S.center && S.center !== v && S.nodes.length){ S.nodes = []; S.summary = null; SUGG = []; renderSugg([]); } S.center = v; S.sel = "c"; leaveExample(); renderAll(); }
+$("setCenter").addEventListener("click", () => setCenter($("center").value));
+$("center").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); setCenter($("center").value); } });
+$("ideas").addEventListener("click", async e => {
+  const b = e.target.closest("[data-idea]"); if(b){ setCenter(b.dataset.idea); return; }
+  if(e.target.id === "aiIdea" && SAMPLE){
+    const st = $("mapStatus"); busy(e.target, st, true, "מחפש מרכז לא צפוי…");
+    try{ const r = await askJSON(`${rules()}\n\nמשימה: להציע ${S.kind === "initiative" ? "החלטה או יוזמה אחת שכדאי לבחון את ההשפעה שלה" : S.kind === "trend" ? "מגמה אחת" : "אירוע אחד"} לשים במרכז המעגל: משהו שאנשים בישראל כמעט לא חושבים עליו, אבל סביר בעשור הקרוב ומעניין לבדוק את ההשלכות שלו עבור ההקשר. עד 9 מילים.\nלהחזיר JSON בלבד: {"center":""}`, {modelTier:"quick", cache:false});
+      busy(e.target, st, false); if(r && r.center) setCenter(r.center); }
+    catch(err){ busy(e.target, st, false); st.textContent = errCopy(err); }
+  }
+});
+$("kind").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.kind = b.dataset.k; leaveExample(); renderTop(); });
+$("cdesc").addEventListener("change", e => { S.ctx.desc = e.target.value.trim(); leaveExample(); });
+$("ctxType").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.ctx.type = b.dataset.v; leaveExample(); renderTop(); });
+$("aud").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.aud = b.dataset.a; leaveExample(); renderTop(); });
+$("region").addEventListener("change", e => { S.ctx.region = e.target.value; leaveExample(); });
+$("wTitle").addEventListener("change", e => { S.title = e.target.value.trim(); });
+const selectNode = id => { S.sel = id; renderMap(); };
+$("map").addEventListener("click", e => { const g = e.target.closest(".node"); if(g) selectNode(g.dataset.id); });
+$("map").addEventListener("keydown", e => { const g = e.target.closest(".node"); if(g && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); selectNode(g.dataset.id); setTimeout(() => { const f = $("nText") || $("newChild"); if(f) f.focus(); }, 0); } });
+$("panel").addEventListener("change", e => {
+  const n = S.nodes.find(x => x.id === S.sel); if(!n) return;
+  if(e.target.id === "nText"){ n.t = e.target.value.trim() || n.t; n.ai = false; leaveExample(); renderMap(); }
+  if(e.target.id === "nDom"){ n.d = e.target.value; leaveExample(); renderMap(); }
+});
+$("panel").addEventListener("click", async e => {
+  const t = e.target, n = S.nodes.find(x => x.id === S.sel);
+  if(t.closest("#nVal button") && n){ n.v = t.closest("button").dataset.v; leaveExample(); renderMap(); return; }
+  if(t.closest("#nMark button") && n){ const m = t.closest("button").dataset.m; n.mark = n.mark === m ? null : m; leaveExample(); renderMap(); return; }
+  if(t.id === "addChild"){ const v = $("newChild").value.trim(); if(!v) return; if(!S.center){ toast("קודם לבחור מה במרכז"); return; } const c = addNode(S.sel, v, {}); leaveExample(); S.sel = S.sel; renderMap(); toast("נוסף"); setTimeout(() => $("newChild") && $("newChild").focus(), 0); return; }
+  if(t.id === "delNode" && n){ const p = n.p; delNode(n.id); S.sel = p; leaveExample(); renderMap(); return; }
+  if(t.id === "aiChildren") return aiChildren(S.sel, t);
+});
+$("panel").addEventListener("keydown", e => { if(e.target.id === "newChild" && e.key === "Enter"){ e.preventDefault(); $("addChild").click(); } });
+
+/* ---------- AI ---------- */
+async function aiChildren(pid, btn){
+  if(!SAMPLE) return; if(!S.center){ toast("קודם לבחור מה במרכז"); return; }
+  const st = $("panelStatus") || $("mapStatus"); const d = pid === "c" ? 1 : depth(pid) + 1; if(d > 3) return;
+  busy(btn, st, true);
+  const chain = pid === "c" ? [] : chainOf(pid);
+  const existing = kids(pid).map(k => k.t);
+  try{
+    const r = await askJSON(`${rules()}
+
+המעגל עד עכשיו:
+${outlineText()}
+
+משימה: ${pid === "c" ? `מה ״${S.center}״ יגרום ישירות? להציע 5 השלכות ישירות (מעגל ראשון), מתחומים שונים.` : `ההשלכה: ״${chain[chain.length-1]}״ (שרשרת: ${S.center} ← ${chain.join(" ← ")}). מה היא תגרום? להציע 3 השלכות מדרגה ${d}.`}
+לפחות השלכה אחת חיובית ולפחות אחת לא צפויה. לא לחזור על: ${existing.join("; ") || "אין"}.
+להחזיר JSON בלבד: {"items":[{"t":"","d":"","v":"neg"}]}`, {modelTier:"default", cache:false});
+    if(!r || !Array.isArray(r.items)) throw {code:"invalid_json"};
+    r.items.slice(0, pid === "c" ? 6 : 4).forEach(it => it.t && addNode(pid, it.t, {d:it.d, v:it.v, ai:true}));
+    leaveExample(); busy(btn, st, false); renderMap();
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+}
+$("aiRing1").addEventListener("click", async e => {
+  const btn = e.target, st = $("mapStatus");
+  if(!S.center){ st.textContent = "קודם לבחור מה במרכז."; return; }
+  if(!SAMPLE) return;
+  const r1 = kids("c").length;
+  busy(btn, st, true, "בונה את שלושת המעגלים… זה יכול לקחת עד דקה");
+  try{
+    const r = await askJSON(`${rules()}
+
+${S.nodes.length ? "המעגל עד עכשיו (לשמור את מה שיש ולהשלים):\n" + outlineText() : `במרכז: ${S.center}`}
+
+משימה: לבנות את שלושת המעגלים של ההשלכות.
+- מעגל 1 (השלכות ישירות של המרכז): ${r1 >= 4 ? "כבר יש מספיק. לא להוסיף." : `להוסיף ${5 - r1} השלכות ישירות, מתחומים שונים.`}
+- מעגל 2: לכל השלכה במעגל 1 שאין לה השלכות, להוסיף 2 השלכות שהיא תגרום.
+- מעגל 3: לכל השלכה במעגל 2 שאין לה השלכות, להוסיף השלכה רחוקה אחת שהיא תגרום.
+בכל מעגל לפחות השלכה אחת חיובית ולפחות אחת לא צפויה.
+כל פריט חדש: ref = מזהה חדש קצר (למשל a1, a2), p = ה־id של ההשלכה שממנה הוא יוצא (id קיים מהמעגל, ref של פריט חדש, או "c" למרכז), t, d, v.
+להחזיר JSON בלבד: {"items":[{"ref":"a1","p":"c","t":"","d":"","v":"neg"},{"ref":"a2","p":"a1","t":"","d":"","v":"pos"}]}`, {modelTier:"default", cache:false});
+    if(!r || !Array.isArray(r.items)) throw {code:"invalid_json"};
+    const map = {}; let added = 0;
+    const pending = r.items.filter(it => it && it.t).slice(0, 40);
+    for(let pass = 0; pass < 4 && pending.length; pass++){
+      for(let i = 0; i < pending.length; i++){
+        const it = pending[i]; const par = it.p === "c" ? "c" : (map[it.p] || (S.nodes.find(n => n.id === it.p) ? it.p : null));
+        if(!par) continue;
+        if(par !== "c" && depth(par) >= 3){ pending.splice(i--, 1); continue; }
+        const n = addNode(par, it.t, {d:it.d, v:it.v, ai:true}); if(it.ref) map[it.ref] = n.id; added++; pending.splice(i--, 1);
+      }
+    }
+    leaveExample(); busy(btn, st, false); S.sel = "c"; renderMap();
+    st.textContent = added ? `נוספו ${added} השלכות. ללחוץ על השלכה כדי לערוך, להעמיק או לסמן מה עושים איתה.` : "לא נוספו השלכות. אפשר לנסות שוב.";
+  }catch(err){ busy(btn, st, false); st.textContent = errCopy(err); }
+});
+$("aiMissing").addEventListener("click", async () => {
+  if(!SAMPLE) return; const btn = $("aiMissing"), st = $("mapStatus");
+  if(!S.nodes.length){ st.textContent = "קודם כדאי להוסיף כמה השלכות."; return; }
+  busy(btn, st, true, "מחפש מה פספסנו…");
+  try{
+    const r = await askJSON(`${rules()}
+
+המעגל עד עכשיו:
+${outlineText()}
+
+משימה: מה פספסנו? להציע 3–4 השלכות שחסרות במעגל: תחום שלא נגענו בו, השלכה חיובית, השלכה לא צפויה, או השלכה שקשורה לאוטונומיה תפקודית. לכל הצעה: p = ה־id של ההשלכה שממנה היא יוצאת, או "c" אם היא יוצאת מהמרכז (לא לבחור id של השלכה במעגל 3), t, d, v, why = משפט קצר למה זה חשוב.
+להחזיר JSON בלבד: {"items":[{"p":"c","t":"","d":"","v":"pos","why":""}]}`, {modelTier:"default", cache:false});
+    if(!r || !Array.isArray(r.items)) throw {code:"invalid_json"};
+    SUGG = r.items.filter(s => s.t && (s.p === "c" || (S.nodes.find(n => n.id === s.p) && depth(s.p) < 3))).slice(0,5);
+    busy(btn, st, false); renderSugg(SUGG); st.textContent = SUGG.length ? "יש הצעות בצד." : "לא נמצאו הצעות.";
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+$("sugg").addEventListener("click", e => {
+  const a = e.target.closest("[data-sadd]"), k = e.target.closest("[data-sskip]");
+  if(a){ const s = SUGG[+a.dataset.sadd]; addNode(s.p, s.t, {d:s.d, v:s.v, ai:true}); SUGG.splice(+a.dataset.sadd,1); leaveExample(); renderSugg(SUGG); renderMap(); }
+  if(k){ SUGG.splice(+k.dataset.sskip,1); renderSugg(SUGG); }
+});
+$("aiSum").addEventListener("click", async () => {
+  if(!SAMPLE) return; const btn = $("aiSum"), st = $("sumStatus");
+  if(S.nodes.length < 3){ st.textContent = "כדאי להוסיף לפחות שלוש השלכות."; return; }
+  busy(btn, st, true);
+  try{
+    const r = await askJSON(`${rules()}
+
+המעגל:
+${outlineText()}
+
+משימה: לסכם מה עושים עם המעגל. לשים לב לסימונים שהמשתתפים כבר עשו (למנוע / להתכונן / לנצל).
+חשוב מאוד: כל פריט נכתב כמשפט שלם וברור, שמובן גם למי שלא ראה את המעגל. בלי ראשי פרקים, בלי חיצים ובלי קיצורים.
+- key: 1–2 משפטים שלמים: מה הדבר הכי חשוב שהמעגל מראה.
+- chains: 2–3 שרשראות חשובות. כל שרשרת היא משפט שלם שמסביר את הרצף, למשל: ״כשהקשר עם ההורים נקטע, מתחילות להתפשט שמועות, ולאורך זמן יורד האמון במוסדות.״
+- actions: 4–7 הצעות לפעולה. type אחד מ prevent (למנוע), prepare (להתכונן), use (לנצל). text הוא משפט שלם שאומר מה כדאי לעשות ולמה, למשל: ״כדאי להקים ערוץ מידע רשמי שלא תלוי באינטרנט, כדי לעצור שמועות.״
+- signals: 2–4 משפטים שלמים על סימנים שאפשר לעקוב אחריהם כבר היום.
+- autonomy: משפט שלם על מה המעגל מלמד על האוטונומיה התפקודית, או "".
+- questions: 2–3 שאלות פתוחות לשיחה בקבוצה.
+${S.aud === "adults" ? "" : "ניסוח פשוט שמתאים לתלמידים."}
+להחזיר JSON בלבד: {"key":"","chains":[""],"actions":[{"type":"prepare","text":""}],"signals":[""],"autonomy":"","questions":[""]}`, {modelTier:"default", cache:false});
+    if(!r || !r.key) throw {code:"invalid_json"};
+    S.summary = r; leaveExample(); busy(btn, st, false); renderSummary();
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+
+/* ---------- export ---------- */
+$("dlSvg").addEventListener("click", async () => {
+  const st = $("sumStatus");
+  if(!DL){ st.textContent = "ההורדה זמינה כשיש חיבור למודל."; return; }
+  try{ await DL.save({filename:`מעגלי-העתיד-${S.center || "מעגל"}.svg`, data:mapSVG(true)}); st.textContent = "התמונה ירדה."; }
+  catch(e){ st.textContent = e && e.code === "declined" ? "" : "ההורדה לא הצליחה."; }
+});
+$("copyOutline").addEventListener("click", () => copy(outlineText().replace(/ \(id:[^)]+\)/g, "")));
+
+/* ---------- save ---------- */
+async function save(){
+  const st = $("wStatus"); if(!DB) return; if(!WID) WID = uid();
+  try{ await DB.doc(`circles/${WID}`).set({name: $("wTitle").value.trim() || S.center || "מעגל", s: JSON.parse(JSON.stringify(S)), updatedAt: Date.now()}); leaveExample(); st.textContent = "נשמר"; }
+  catch(e){ st.textContent = "השמירה לא הצליחה."; }
+}
+async function list(){
+  const box = $("wList"); if(!box.hidden){ box.hidden = true; return; } if(!DB) return;
+  box.hidden = false; box.innerHTML = `<span class="status">טוען…</span>`;
+  try{ const q = await DB.collection("circles").orderBy("updatedAt","desc").limit(25).get();
+    box.innerHTML = q.empty ? `<span class="muted small">עוד אין מעגלים שמורים.</span>` : q.docs.map(d => `<button type="button" data-w="${esc(d.id)}">${esc(d.data().name)} · <span class="muted small">${esc(new Date(d.data().updatedAt||0).toLocaleDateString("he-IL"))}</span></button>`).join(""); }
+  catch(e){ box.innerHTML = `<span class="muted small">לא הצלחנו לטעון.</span>`; }
+}
+$("wList").addEventListener("click", async e => { const b = e.target.closest("[data-w]"); if(!b) return; try{ const s = await DB.doc(`circles/${b.dataset.w}`).get(); if(!s.exists) return; S = {...fresh(), ...s.data().s}; WID = b.dataset.w; $("wList").hidden = true; leaveExample(); renderAll(); $("wStatus").textContent = "נפתח"; }catch(err){} });
+function newOne(){ S = fresh(S.ctx.type); WID = null; SUGG = []; renderSugg([]); leaveExample(); renderAll(); $("center").focus(); }
+$("wSave").addEventListener("click", save); $("wOpen").addEventListener("click", list); $("wNew").addEventListener("click", newOne); $("resetBtn").addEventListener("click", newOne);
+
+renderAll();
+</script>
+<style id="bgkit-css">
+.bgkit-bar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+.bgkit-bar b{font-family:var(--font-display)}
+.bgkit-bar a{color:var(--ink);text-decoration:none;border-radius:999px;padding:3px 10px;border:1px solid transparent}
+.bgkit-bar a:hover{border-color:var(--accent)}
+.bgkit-bar a[aria-current="page"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .bgkit-bar a[aria-current="page"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bgkit-bar a[aria-current="page"]{color:#0f171d}}
+.bgkit-help-btn{align-self:flex-start;border-radius:999px;font-weight:700}
+.bgkit-q{width:26px;height:26px;padding:0;border-radius:50%;font-size:14px;line-height:1;font-family:var(--font-display);margin-inline-start:8px;vertical-align:middle;flex:0 0 auto}
+.bgkit-q[aria-expanded="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bgkit-tip{background:var(--accent-soft);border-radius:10px;padding:10px 14px;font-size:15px;max-width:80ch}
+.bgkit-ov{position:fixed;inset:0;background:rgba(10,20,30,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+.bgkit-ov[hidden]{display:none}
+.bgkit-dlg{background:var(--surface);color:var(--ink);border-radius:16px;max-width:720px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:8px;line-height:1.6}
+.bgkit-dlg h2{font-size:22px}
+.bgkit-dlg ul{margin:0;padding-inline-start:20px}
+.bgkit-dlg p{margin:0}
+.bgkit-dlg .src{font-size:13px;color:var(--muted);margin-top:6px}
+</style>
+<script id="bgkit-js">
+(function(){
+  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "משחק מצב עתידי", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "circles", HELP = {"title": "איך עובדים עם מעגלי העתיד?", "html": "<p><b>מה הכלי עושה:</b> שמים במרכז אירוע, מגמה או החלטה, ושואלים שוב ושוב: מה זה יגרום? כך נבנים שלושה מעגלים של השלכות: ישירות, השלכות של השלכות, והשלכות רחוקות. לכל השלכה מסמנים אם היא שלילית, חיובית או גם וגם, ומה עושים איתה.</p>\n<p><b>מתי משתמשים בו:</b> כדי לגלות השלכות שלא חשבנו עליהן, כולל טובות. כדי לבחון יוזמה או החלטה לפני שמתחילים. ובכיתה, כפעילות חשיבה מערכתית לתלמידים.</p>\n<p><b>כמה זמן:</b> כ־45 עד 90 דקות למעגל. אפשר לעבוד בקבוצות, כל קבוצה על מרכז אחר, ולהשוות.</p>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>לאן ממשיכים:</b> הפעולות שעולות מהמעגל יכולות להיכנס ל<a href=\"hl-roadmap.html\" target=\"_blank\" rel=\"noopener\">מהחזון להיום</a>. יוזמה שנבחנה כאן כדאי לבדוק גם ב<a href=\"hl-stress.html\" target=\"_blank\" rel=\"noopener\">בדיקת עמידות</a>.</p>\n<p class=\"src\">מבוסס על Futures Wheels מערכת Futures Toolkit.</p>", "steps": {"#h1s": "בוחרים מה שמים במרכז: אירוע או משבר, מגמה או שינוי, או החלטה ויוזמה שלכם. מוסיפים כמה מילים על ההקשר, ובוחרים למי מיועדת הפעילות כדי שהשפה תתאים.", "#h2s": "בונים את המעגלים: עם AI בלחיצה אחת, או ידנית. לוחצים על כל השלכה כדי להעמיק ממנה, לשנות אותה, או לסמן אם כדאי למנוע אותה, להתכונן אליה או לנצל אותה. ״מה פספסנו?״ מציע השלכות חסרות.", "#h3s": "ה־AI מסכם את המעגלים במשפטים שלמים: השרשראות החשובות, מה למנוע, למה להתכונן ומה לנצל. אפשר להוריד את המעגלים כתמונה עם מקרא."}};
+  const wrap = document.querySelector(".wrap"); if(!wrap) return;
+  // 1. toolkit bar
+  const bar = document.createElement("nav"); bar.className = "bgkit-bar"; bar.setAttribute("aria-label", "מעבדת האופק · Be Good");
+  bar.innerHTML = `<b>מעבדת האופק:</b><a href="${HUB}" target="_blank" rel="noopener">דף הבית</a>` + TOOLS.map(t => `<a href="${t.url}" ${t.k === ME ? 'aria-current="page"' : 'target="_blank" rel="noopener"'} title="${t.short}">${t.name}</a>`).join("");
+  wrap.insertBefore(bar, wrap.firstChild);
+  // 2. help button + dialog
+  const head = document.querySelector("header.top > div") || document.querySelector("header.top");
+  const btn = document.createElement("button"); btn.type = "button"; btn.className = "bgkit-help-btn"; btn.textContent = "איך עובדים עם הכלי?";
+  if(head) head.appendChild(btn);
+  const ov = document.createElement("div"); ov.className = "bgkit-ov"; ov.hidden = true;
+  ov.innerHTML = `<div class="bgkit-dlg" role="dialog" aria-modal="true" aria-labelledby="bgkitT"><div class="row" style="justify-content:space-between;align-items:center"><h2 id="bgkitT">${HELP.title}</h2><button type="button" id="bgkitX">סגירה</button></div>${HELP.html}<p style="margin-top:8px">וגם הסבר לכל שלב: ללחוץ על סימן השאלה שליד כותרת השלב.</p></div>`;
+  document.body.appendChild(ov);
+  let last = null;
+  const open = () => { last = document.activeElement; ov.hidden = false; ov.querySelector("#bgkitX").focus(); };
+  const close = () => { ov.hidden = true; if(last) last.focus(); };
+  btn.addEventListener("click", open);
+  ov.addEventListener("click", e => { if(e.target === ov || e.target.id === "bgkitX") close(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape" && !ov.hidden) close(); });
+  // 3. per-step ? buttons
+  Object.entries(HELP.steps || {}).forEach(([sel, text], i) => {
+    const h = document.querySelector(sel); if(!h) return;
+    const q = document.createElement("button"); q.type = "button"; q.className = "bgkit-q"; q.textContent = "?"; q.setAttribute("aria-label", "הסבר על השלב: " + h.textContent.trim()); q.setAttribute("aria-expanded", "false");
+    const tip = document.createElement("div"); tip.className = "bgkit-tip"; tip.hidden = true; tip.id = "bgkitTip" + i; tip.textContent = text; q.setAttribute("aria-controls", tip.id);
+    h.appendChild(q);
+    const anchor = h.closest(".stage-head") || h.closest(".row") || h;
+    anchor.insertAdjacentElement("afterend", tip);
+    q.addEventListener("click", () => { tip.hidden = !tip.hidden; q.setAttribute("aria-expanded", String(!tip.hidden)); });
+  });
+})();
+</script>
+<script src="lib/screens-menu.js"></script>
+</body>
+</html>
