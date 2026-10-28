@@ -65,13 +65,21 @@ header{padding:14px 0 4px;}
 @media screen and (max-width:480px){.tagline3 i{display:none}.tagline3{flex-direction:column;gap:2px}}
 :root[data-theme="dark"] .tagline3 span{color:#cfe3f5}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tagline3 span{color:#cfe3f5}}
-.spaces{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 14px}
-.space{border-radius:16px;padding:13px 15px;display:flex;flex-direction:column;gap:6px;border:1.5px solid transparent}
-.space b{font-size:17px}.space p{margin:0;font-size:14px;line-height:1.5}
-.space a{font-size:14px;font-weight:700;text-decoration:none}
-.space.org{background:#e8eef5;color:#1d3f63;border-color:#c5d4e6}.space.org a{color:#1d3f63}
-.space.edu{background:#e7f3ec;color:#245c3a;border-color:#bfdccb}.space.edu a{color:#245c3a}
-.spaces .shared{grid-column:1/-1;background:#dff1f3;color:#0f5f68;border-radius:14px;padding:9px 14px;font-size:14px;line-height:1.5}
+.spaces{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 16px}
+.space{position:relative;display:flex;flex-direction:column;gap:8px;padding:16px 16px 14px;border-radius:18px;text-decoration:none;color:#16324a;background:#fff;border:1.5px solid var(--sp-line);box-shadow:0 2px 10px rgba(22,50,74,.07);overflow:hidden;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.space::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:var(--sp-band)}
+.space .sp-head{display:flex;align-items:center;gap:10px}
+.space .sp-ic{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:23px;background:var(--sp-soft)}
+.space b{font-size:17.5px;color:var(--sp-ink);line-height:1.25}
+.space p{margin:0;font-size:14px;line-height:1.55;color:#3d4f5e}
+.space .sp-go{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;font-size:14px;font-weight:700;color:#fff;background:var(--sp-ink)}
+.space .sp-go i{font-style:normal;transition:transform .18s ease}
+.space:hover,.space:focus-visible{transform:translateY(-2px);box-shadow:0 8px 22px rgba(22,50,74,.13);border-color:var(--sp-ink)}
+.space:hover .sp-go i,.space:focus-visible .sp-go i{transform:translateX(-4px)}
+.space:focus-visible{outline:3px solid var(--sp-band-solid);outline-offset:2px}
+.space.org{--sp-ink:#1d3f63;--sp-line:#c9d7e7;--sp-soft:#e8eef6;--sp-band:linear-gradient(90deg,#1b9aaa,#1d3f63);--sp-band-solid:#1d3f63}
+.space.edu{--sp-ink:#245c3a;--sp-line:#c6e0d0;--sp-soft:#e6f4ec;--sp-band:linear-gradient(90deg,#f2c14e,#3d9a5f);--sp-band-solid:#3d9a5f}
+@media (prefers-reduced-motion:reduce){.space,.space .sp-go i{transition:none}.space:hover,.space:focus-visible{transform:none}}
 @media screen and (max-width:520px){.spaces{grid-template-columns:1fr}}
 .credit{text-align:center;margin-top:20px;font-size:11px;color:var(--muted);line-height:1.7;}
 h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(20px,4.5vw,26px);
@@ -306,11 +314,12 @@ function renderEntry(){
   view.append(card);
   // ארבעה מרחבים, בית אחד (28/10/2026): שני מרחבי עבודה, וכלים משותפים לשניהם. כל מרחב עם ספריית תוצרים לדוגמה משלו.
   const sp = el("div",{class:"spaces"});
-  const spaceTile = (cls, title, text, href, linkText) => { const d = el("div",{class:"space " + cls}); d.append(el("b",{},title), el("p",{},text), el("a",{href},linkText)); return d; };
+  const spaceTile = (cls, icon, title, text, href, linkText) => { const d = el("a",{class:"space " + cls, href});
+    d.append(el("div",{class:"sp-head"}, el("span",{class:"sp-ic","aria-hidden":"true"},icon), el("b",{},title)), el("p",{},text),
+      el("span",{class:"sp-go"}, linkText, el("i",{"aria-hidden":"true"},"←"))); return d; };
   sp.append(
-    spaceTile("org", "🏢 המרחב הארגוני", "כלים לארגונים, לקהילות, לרשויות ולצוותי הנהלה: היערכות לעתיד לא ידוע, מנהיגות, תקשורת וחשיבה משותפת בצוות.", "examples-org.html", "תוצרים לדוגמה מהעולם הארגוני ←"),
-    spaceTile("edu", "🎒 המרחב החינוכי", "כלים לבתי ספר, לגנים, לאקדמיה ולהורים: עבודה עם הכיתה, הנחיית קבוצות, תרגול שיחות, משחקי חוסן ושגרות.", "examples.html", "תוצרים לדוגמה מעולם החינוך ←"),
-    el("div",{class:"shared"}, "↔ כלים שמופיעים בשני המרחבים: מעבדת האופק, מסע אל החוסן, חשיבת צוות, תקשורת מקדמת חוסן חברתי, יש מה לעשות, לימודי חוסן חברתי וספריית המקורות."));
+    spaceTile("org", "🏢", "המרחב הארגוני", "כלים לארגונים, לקהילות, לרשויות ולצוותי הנהלה: היערכות לעתיד לא ידוע, מנהיגות, תקשורת וחשיבה משותפת בצוות.", "examples-org.html", "תוצרים לדוגמה"),
+    spaceTile("edu", "🎒", "המרחב החינוכי", "כלים לבתי ספר, לגנים, לאקדמיה ולהורים: עבודה עם הכיתה, הנחיית קבוצות, תרגול שיחות, משחקי חוסן ושגרות.", "examples.html", "תוצרים לדוגמה"));
   view.append(sp);
   // מפת הכלים: לא בטוחים מאיפה להתחיל? (map.html, פתוח לכולם)
   const ml = el("a",{class:"maplink",href:"map.html"}), mt = el("div",{});
