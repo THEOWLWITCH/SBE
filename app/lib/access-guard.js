@@ -46,6 +46,9 @@
               }
             }
             b._auth = { token: token, page: location.pathname.split("/").pop() || "index.html", w: workshop };
+            // מעבדת האופק: עבודה משותפת בקישור (?room=) — המשתתפים פונים למודל רק בתוך העבודה הזו.
+            var hlRoom = (location.search.match(/[?&]room=([a-f0-9]{24})(?:&|$)/) || [])[1];
+            if (hlRoom) { b._auth.room = hlRoom; try { b._auth.g = localStorage.getItem("sbe.hl.g") || ""; } catch(e){} }
             opts = Object.assign({}, opts, { body: JSON.stringify(b) });
           }
         } catch(e){}
@@ -275,6 +278,9 @@
   // ספריית התוצרים לדוגמה — פתוחה לכל מי שמתעניין/ת, גם בלי כניסה (רק מה שמנהלת המערכת סימנה להצגה).
   if (page === "examples.html" || page === "search.html") return;
   if (page === "feedback.html" && /[?&]w=[a-z0-9]{8,32}(&|$)/.test(location.search)) return;
+  // מעבדת האופק (28/10/2026): משתתפים בעבודה משותפת נכנסים בקישור (?room=), בלי קוד, רק לעבודה הזו.
+  // השרת מאפשר כתיבה ופנייה למודל רק בתוך החדר, כל עוד מי שפתח/ה אותו לא סגר/ה אותו (hl-rooms.mjs).
+  if (/^hl-(voice|futures|collage)\.html$/.test(page) && /[?&]room=[a-f0-9]{24}(&|$)/.test(location.search)) return;
   // כניסה שהסתיימה (07/10/2026): האסימון החתום תקף 12 שעות, אבל לשונית פתוחה שומרת אותו גם אחר כך —
   // והשרת דוחה אותו ("אין הרשאה פעילה"). חוזרים למסך הכניסה עם הסבר, במקום הודעת הרשאה מבלבלת.
   if (ALL_USERS.indexOf(page) === -1) {
