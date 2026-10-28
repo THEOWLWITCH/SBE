@@ -111,12 +111,12 @@ test('every record uses its own trusted schema and unknown kinds or malformed ch
 test('impact request includes only revalidated minimal data and a versioned fixed Hebrew explanation prompt', () => {
   const minimal = minimizePartnershipImpact('agreement', [{ path: 'startDate', before: '2026-10-20', after: '2026-11-20' }, { path: 'ownerName', before: privateText, after: privateText + 'change' }]);
   const request = impactRequest({ ...minimal, rawRecord: privateText, versions: [{ document: privateText }] }, { ...descriptor, secret: privateText, model: privateText, provider: privateText });
-  assert.deepEqual(Object.keys(request).sort(), ['maxTokens', 'messages', 'system']);
-  assert.equal(request.maxTokens, 1200); assert.equal(request.messages.length, 1); assert.equal(request.messages[0].role, 'user');
+  assert.deepEqual(Object.keys(request).sort(), ['maxTokens', 'messages', 'policy', 'system', 'variation']);
+  assert.equal(request.policy, 'research-partnership-impact'); assert.equal(request.variation, 'low'); assert.equal(request.maxTokens, 1200); assert.equal(request.messages.length, 1); assert.equal(request.messages[0].role, 'user');
   assert.deepEqual(JSON.parse(request.messages[0].content), minimal);
-  assert.match(request.system, /מה המשמעות עבורי/); assert.match(request.system, /1\.0\.0/);
+  assert.match(request.system, /מה המשמעות עבורי/); assert.match(request.system, /1\.1\.0/);
   assert.doesNotMatch(JSON.stringify(request), /PRIVATE_|example\.invalid|123456789|rawRecord|versions|secret/);
-  assert.deepEqual(IMPACT_VERSIONS, { engine: '1.0.0', prompt: '1.0.0' }); assert.ok(Object.isFrozen(IMPACT_VERSIONS));
+  assert.deepEqual(IMPACT_VERSIONS, { engine: '1.1.0', prompt: '1.1.0' }); assert.ok(Object.isFrozen(IMPACT_VERSIONS));
 });
 
 test('forged minimal rows cannot smuggle text, unknown labels or extra nested values into a model request', () => {

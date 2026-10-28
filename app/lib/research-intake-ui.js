@@ -4,6 +4,17 @@
 })(typeof self!=='undefined'?self:this,function(I,P,R){
   'use strict';
   const LABELS={title:'כותרת הבקשה',objectives:'מטרות בקצרה'};
+  const SUGGESTED_NOTICE={title:'תנאי פנייה לשותפות במחקר. נוסח מוצע לעיון',text:[
+    'נוסח מוצע לעיון בעלת המערכת · 28.10.2026. אפשר להשלים ולבדוק את פרטי השימוש במידע לפני פרסום.',
+    'מטרת הפנייה: בקשה ראשונית לבדיקת התאמה לשותפות או למחקר ב־BE GOOD. הגשת הפנייה אינה יוצרת חשבון, הרשאה, שותפות פעילה, התחייבות או הסכם.',
+    'המידע העיקרי בפנייה: כותרת הבקשה, סוג הבקשה, שם מלא, דוא״ל, מטרות בקצרה, כלים מבוקשים וסוג הפונה. בפנייה בשם מוסד ממלאים גם את שם המוסד. כתובת הדוא״ל שהוקלדה אינה וידוא זהות ואינה הרשאה למשלוח הודעות.',
+    'פרטים נוספים לפי בחירה: מוסד לאדם פרטי, מחלקה, תפקיד, טלפון, פרטים מקצועיים ותחומי מחקר, רקע, שאלות המחקר, שיטה ואוכלוסייה, מועדי התחלה וסיום מוצעים, מצב ופירוט אישור אתי, תוכנית הסכמה, הרשאות וסיוע מבוקשים. אין בטופס הציבורי צירוף קבצים. הבקשה הראשונית מיועדת לתיאור ההצעה, ללא נתוני משתתפים או תוכן מחקר רגיש.',
+    'השימוש בפנייה: בעלת המערכת בוחנת את הפרטים והבקשות, מתעדת הערות והחלטות ועשויה להכין המשך עבודה פרטי. הבקשה המקורית, גרסת התנאים המדויקת שנקראה ואישור הקריאה נשמרים לעיון ולתיעוד הבדיקה. לאחר הגשה מוצג מספר פנייה לשמירה; אין בכך הבטחה למשלוח דוא״ל.',
+    'אישור פנייה: לאחר וידוא זהות נבחרים מחקר, זהות אישית והרשאות מפורשות למחקר הזה בלבד. הרשאה או כלי שהתבקשו בטופס אינם מוענקים אוטומטית. אפשר להכין תיק פרטי וטיוטות בקשה, תבנית והסכם לעיון. ההכנה אינה פרסום, חתימה או אישור הפעלת מחקר.',
+    'המשך המחקר מותנה בבדיקות נפרדות של אישורים אתיים, הסכמות המשתתפים, הרשאות וגרסאות הטפסים. ממצא או מסמך משותפים נפתחים לפי הרשאת צפייה מפורשת; אין חשיפה אוטומטית לחוקרות אחרות. עיבוד חיצוני של תוכן מותנה בהרשאה ובמדיניות מתאימות ונפרדות.',
+    'אישור הקריאה אינו חתימה על הסכם, הסכמה להשתתפות במחקר או אישור עיבוד חיצוני. חתימה אלקטרונית אינה פעילה במסלול ההכנה הזה.',
+    'להשלמת בעלת המערכת לפני פרסום: זהות הגורם האחראי ודרך פנייה אליו, מטרות ובסיסי השימוש המתאימים, למי המידע עשוי להימסר ולשם מה, משמעות בחירה שלא למסור מידע, מדיניות שמירה ומחיקה, ודרכי עיון, תיקון ובקשות הנוגעות למידע. אין בנוסח המוצע קביעה של תקופת שמירה, סמכות משפטית או אישור משפטי.'
+  ].join('\n\n')};
   const ACK='קראתי את תנאי הפנייה. אישור הקריאה אינו חתימה על הסכם';
   const PUBLIC_MESSAGES={rate_limited:'נשלחו כמה פניות. אפשר לנסות שוב בהמשך.',unavailable:'השירות אינו זמין כרגע. הפרטים נשארים כאן ואפשר לנסות שוב.'};
   const uuid=()=>crypto.randomUUID();
@@ -103,6 +114,13 @@
       const proposed=version?.number===1&&version.title===I.DEFAULT_TERMS_DRAFT.title&&version.text===I.DEFAULT_TERMS_DRAFT.text;
       D.paragraph(box,version?(proposed?'טיוטה מוצעת':'טיוטה שמורה')+' · גרסה '+version.number+(state.publishedVersionId===version.versionId?' · הגרסה פורסמה':' · הנוסח טרם פורסם'):'נוסח מוצע לעיון בעלת המערכת. הנוסח טרם אושר או פורסם.');
       const title=D.field(box,'כותרת תנאי הפנייה','text',seed.title),text=D.field(box,'נוסח תנאי הפנייה','textarea',seed.text);text.className='r-intake-terms-editor';readDraft=()=>({title:title.value,text:text.value});
+      const suggestion=D.node('details','r-fold');suggestion.append(D.node('summary','','הצעה מורחבת לתנאי הפנייה · 28.10.2026'));D.paragraph(suggestion,SUGGESTED_NOTICE.text,'r-pre');box.append(suggestion);
+      const original=version||I.DEFAULT_TERMS_DRAFT;
+      box.append(D.button('הכנת נוסח מורחב מוצע לעיון',()=>{
+        if(title.value!==original.title||text.value!==original.text){note('הטקסט שהוקלד נשמר ללא החלפה. אפשר לעיין בהצעה המורחבת ולהעתיק ממנה את החלקים הרצויים.');return;}
+        title.value=SUGGESTED_NOTICE.title;text.value=SUGGESTED_NOTICE.text;
+        note('הנוסח המורחב הוכן לעיון כטיוטה שלא נשמרה. אפשר לבדוק ולהשלים אותו לפני שמירה. פרסום הוא פעולה נפרדת.');
+      },'r-secondary'));
       box.append(D.button('שמירת טיוטת תנאים',async()=>{const result=await call('intakeTermsSave',{expectedRevision:state.revision,title:title.value,text:text.value});if(result){ownerInfo.termsState=result.termsState;await terms();note('הטיוטה נשמרה. פרסום הגרסה הוא פעולה נפרדת.');}}));
       if(version&&state.publishedVersionId!==version.versionId)box.append(D.button('פרסום הגרסה השמורה',async()=>{if(title.value!==version.title||text.value!==version.text){note('אפשר לשמור תחילה את השינויים כטיוטה, ולאחר מכן לפרסם את הגרסה השמורה.',true);return;}const result=await call('intakeTermsPublish',{expectedRevision:state.revision,versionId:version.versionId});if(result){ownerInfo.termsState=result.termsState;await terms();note('הגרסה השמורה פורסמה לתצוגה הציבורית.');}}));
     }
