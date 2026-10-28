@@ -95,6 +95,8 @@ test('HTTP default impact wiring constructs only after scoped approval, records 
   const partner = (await f.checked(f.tokens.owner, 'partnerSave', f.request({ individualCode: f.codes.a, expectedRevision: null, profile: { fullName: 'Synthetic Partner', email: 'partner@example.invalid' } }))).partner;
   await f.checked(f.tokens.owner, 'memberSet', f.request({ studyId: study.id, expectedRevision: study.revision, code: f.codes.a, role: 'researcher', permissions: CORE.ACCESS_PRESETS.approved_findings }));
   const scope = { studyId: study.id, partnerId: partner.id };
+  const service=await api(f.tokens.owner,'processingPolicyGet',{...scope,purpose:'external_impact'});assert.deepEqual(service.processingService,{provider:'openai',model:'synthetic-model',version:'provider-adapter-1.0.0:synthetic-model'});assert.equal(constructed,0);assert.equal(wire.length,0);
+  const deniedService=await api(f.tokens.a,'processingPolicyGet',{...scope,purpose:'external_impact'},403);assert.equal(Object.hasOwn(deniedService,'processingService'),false);
   let saved = await f.checked(f.tokens.a, 'recordSave', f.request({ ...scope, kind: 'agreement', expectedRevision: null, data: { title: 'Synthetic only', ownerName: 'Synthetic Owner', partnerName: 'Synthetic Partner', startDate: '2026-11-01' } }));
   const from = saved.version;
   saved = await f.checked(f.tokens.a, 'recordSave', f.request({ ...scope, recordId: saved.record.id, kind: 'agreement', expectedRevision: saved.record.revision, data: { ...saved.version.data, startDate: '2026-11-02' } }));

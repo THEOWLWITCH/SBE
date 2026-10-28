@@ -109,6 +109,7 @@ export async function handlePartnership(accessStore,store,body,options={}){
    out.owner=actor.owner;const db=result.readiness||{};
    out.readiness={signing:signingReadiness(adapter,options),approvedTemplate:db.approvedTemplate||readinessEntry(false,'נדרשת תבנית הסכם מאושרת.'),ipExplanation:db.ipExplanation||readinessEntry(false,'נדרש הסבר קניין רוחני מאושר.'),mail:readinessEntry(!!mailSettings(options),'דיוור מחייב שירות מוגדר.'),googleForms:readinessEntry(false,'נדרש חיבור Google Forms מאומת.'),impactAI:{configured:false,state:impactDescriptor(options)?'scope_policy_required':'not_configured',message:impactDescriptor(options)?'הסבר השלכות מחייב הרשאת עיבוד נפרדת ועדכנית לתיק, לספק ולגרסתו.':'הסבר השלכות דורש שירות מודל מזוהה וגרסת עיבוד מוגדרת.'}};
   }
+  if(action==='processingPolicyGet'&&payload.purpose==='external_impact')out.processingService=impactDescriptor(options);
   if(action==='partnerInviteCreate'){out.invitation={...out.invitation,token:returnedInvite};out.delivery=await invitationDelivery(store,body.token,payload,returnedInvite,options);}
   if(action==='workspaceDocumentGet'){
    const decrypted=decryptResearchValue(result.contentCiphertext,documentKey(options));if(decrypted?.purpose!=='research-partnership-document'||typeof decrypted.contentBase64!=='string')fail('unavailable');
