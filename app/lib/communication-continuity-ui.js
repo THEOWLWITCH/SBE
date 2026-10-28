@@ -79,8 +79,8 @@
     F('cc-text').placeholder = single ? (window.sbeSpace && window.sbeSpace() === 'org' ? 'למשל: הודעה לתושבים על מפגש היערכות במרכז הקהילתי ביום חמישי בשעה 18:00, עם הזמנה לשיתוף פעולה.' : 'למשל: הודעה להורים על מפגש הכיתה ביום חמישי בשעה 18:00, עם הזמנה לשיתוף פעולה.') : 'מה קרה? אפשר להדביק הודעה שהתקבלה, לתאר את המצב או לכתוב מה רוצים להשיג.';
     F('cc-ai-disclosure').textContent = single
       ? 'ההנחיה והחומרים שנבחרו נשלחים לעיבוד אצל ספק המודל שהוגדר במערכת. כדאי לכלול רק את הפרטים הנחוצים ולצמצם פרטים מזהים. בניסוח חד־פעמי הם והטיוטות נשארים בלשונית בלבד; מעבר לניהול תקשורת אינו שומר אותם. שמירה מתבצעת רק בפעולת "המשך בניהול תקשורת". התוצאה היא טיוטה לבדיקה ולעריכה לפני השימוש.'
-      : 'הפעולות של BE GOOD שולחות את היסטוריית השיחה וההנחיה לעיבוד אצל ספק המודל שהוגדר במערכת. בשיחות ארוכות אפשר שייווצרו סיכומי הקשר שיוצגו לצד המקורות; ההודעות המקוריות נשמרות במלואן. הטקסט והטיוטות נשמרים בחשבון האישי בשרת. כדאי לכלול רק את הפרטים הנחוצים לשיחה. תוצאה מוצעת היא טיוטה שאפשר לבדוק ולערוך לפני השימוש.';
-    F('cc-upload-disclosure').textContent = 'תמונות ו־PDF נשלחים לעיבוד אצל ספק המודל שהוגדר ב־BE GOOD, וייתכן שהם כוללים פרטים מזהים. אפשר להסיר פרטים שאינם נחוצים לפני הצירוף. קובצי TXT ו־Word נקראים בדפדפן. ' + (single ? 'בניסוח חד־פעמי, הטקסט או תיאור התמונה נשארים בלשונית.' : 'רק טקסט שחולץ בהצלחה נשמר בשיחה.') + ' הקובץ המקורי אינו נשמר בשרת.';
+      : 'הפעולות של Begood שולחות את היסטוריית השיחה וההנחיה לעיבוד אצל ספק המודל שהוגדר במערכת. בשיחות ארוכות אפשר שייווצרו סיכומי הקשר שיוצגו לצד המקורות; ההודעות המקוריות נשמרות במלואן. הטקסט והטיוטות נשמרים בחשבון האישי בשרת. כדאי לכלול רק את הפרטים הנחוצים לשיחה. תוצאה מוצעת היא טיוטה שאפשר לבדוק ולערוך לפני השימוש.';
+    F('cc-upload-disclosure').textContent = 'תמונות ו־PDF נשלחים לעיבוד אצל ספק המודל שהוגדר ב־Begood, וייתכן שהם כוללים פרטים מזהים. אפשר להסיר פרטים שאינם נחוצים לפני הצירוף. קובצי TXT ו־Word נקראים בדפדפן. ' + (single ? 'בניסוח חד־פעמי, הטקסט או תיאור התמונה נשארים בלשונית.' : 'רק טקסט שחולץ בהצלחה נשמר בשיחה.') + ' הקובץ המקורי אינו נשמר בשרת.';
     F('cc-file').value = ''; F('cc-file-clear').hidden = true; F('cc-file-status').textContent = '';
     renderConversation();
   }
@@ -185,7 +185,7 @@
   }
   function generateSingle(entryId, revisionStyle) {
     const input = singleInput(); const original = state.single;
-    return run('BE GOOD מנסחת את המסר.', async op => {
+    return run('מנסחים את המסר.', async op => {
       validateText(input.text);
       if (!input.text.trim()) throw new Error('אפשר לכתוב בכמה מילים מה לעשות, גם כשמצורף חומר.');
       await saveSingleEdits(op);
@@ -268,7 +268,7 @@
     if (ticker) { clearInterval(ticker); ticker = null; }
     if (on) {
       const start = Date.now();
-      const update = () => feedback(text + ' עברו ' + Math.floor((Date.now() - start) / 1000) + ' שניות. עיבוד BE GOOD עשוי להימשך עד כשתי דקות; בתוכן ארוך גם יותר.');
+      const update = () => feedback(text + ' עברו ' + Math.floor((Date.now() - start) / 1000) + ' שניות. עיבוד Begood עשוי להימשך עד כשתי דקות; בתוכן ארוך גם יותר.');
       update(); ticker = setInterval(update, 1000);
     }
   }
@@ -441,7 +441,7 @@
   }
   function generate(mode, entryId, revisionStyle) {
     const editedDraft = entryId ? state.edits.get(entryId) : null;
-    return contextOperation('BE GOOD מעבדת את רצף השיחה.', async op => {
+    return contextOperation('מעבדים את רצף השיחה.', async op => {
       await saveContext(op);
       if (entryId && editedDraft && !op.draftSaved) {
         validateText(editedDraft);
@@ -453,7 +453,7 @@
       op.conversation = apply((await request(op, 'generate', 'generate', { id: op.conversation.id, expectedRevision: op.conversation.revision, mode, instruction: op.instruction, ...(entryId ? { entryId } : {}), ...(revisionStyle ? { revisionStyle } : {}) }, true)).conversation);
       op.success = op.conversation.latestAI && op.conversation.latestAI.clarification
         ? 'נשמרה שאלה להשלמת פרט מרכזי. אפשר להוסיף תשובה בטקסט ולבקש ניסוח שוב.'
-        : mode === 'close' ? 'טיוטת סיום השיחה נשמרה. אפשר לעדכן את המצב ל"הסתיים" בפרטי השיחה.' : 'הצעת BE GOOD נשמרה. אפשר לבדוק ולערוך אותה.';
+        : mode === 'close' ? 'טיוטת סיום השיחה נשמרה. אפשר לעדכן את המצב ל"הסתיים" בפרטי השיחה.' : 'הצעת Begood נשמרה. אפשר לבדוק ולערוך אותה.';
       F('cc-timeline-title').scrollIntoView({ block: 'nearest', behavior: 'auto' });
     });
   }
@@ -524,7 +524,7 @@
     } else if (entry.kind === 'received' || entry.kind === 'sent' || entry.kind === 'note') item.append(el('div', 'cc-entry-text', entry.text));
     else {
       item.append(entry.kind === 'summary' ? summaryContent(entry) : rich(entry.text));
-      if (entry.kind === 'summary') item.append(el('p', 'muted', 'סיכום הקשר שנוצר ב־BE GOOD. ההודעות המקוריות נשמרות במלואן ברצף השיחה.'));
+      if (entry.kind === 'summary') item.append(el('p', 'muted', 'סיכום הקשר שנוצר ב־Begood. ההודעות המקוריות נשמרות במלואן ברצף השיחה.'));
       if (entry.clarification) item.append(el('p', 'cc-clarification', entry.clarification));
     }
     if (entry.draftId) item.append(el('p', 'cc-entry-id', (entry.kind === 'sent' ? 'הנוסח שנשלח מתוך טיוטה: ' : 'גרסה של טיוטה: ') + entry.draftId));
@@ -559,7 +559,7 @@
       F('cc-rename').value = metadataValue('title', c); F('cc-status').value = metadataValue('status', c); F('cc-audience').value = metadataValue('audience', c);
       const summaries = (c.entries || []).filter(e => e.kind === 'summary');
       if (summaries.length) {
-        const notice = details('סיכומי ההקשר בשיחה (' + summaries.length + ')', [el('p', 'muted', 'BE GOOD יצרה סיכומים כדי להתחשב ברצף של שיחה ארוכה. כל ההודעות המקוריות נשמרות במלואן. כל סיכום מזוהה בנפרד ומציג את מזהי הרשומות שעליהן הוא מבוסס.')]);
+        const notice = details('סיכומי ההקשר בשיחה (' + summaries.length + ')', [el('p', 'muted', 'Begood יצרה סיכומים כדי להתחשב ברצף של שיחה ארוכה. כל ההודעות המקוריות נשמרות במלואן. כל סיכום מזוהה בנפרד ומציג את מזהי הרשומות שעליהן הוא מבוסס.')]);
         notice.dataset.contextNotice = 'true'; F('cc-conversation').append(notice);
       }
     }
@@ -569,7 +569,7 @@
     // Draft text lives in the timeline. Empty-message analyses and clarification are shown distinctly here.
     result.hidden = !latest || (!!latest.message && !latest.clarification);
     if (!result.hidden) {
-      result.append(el('h2', '', latest.clarification ? 'פרט נוסף לפני הניסוח' : 'הצעת BE GOOD'));
+      result.append(el('h2', '', latest.clarification ? 'פרט נוסף לפני הניסוח' : 'הצעת Begood'));
       if (latest.clarification) result.append(el('p', 'cc-clarification', latest.clarification), el('p', 'muted', 'אפשר להוסיף את הפרט בטקסט למעלה ולבקש שוב. לא נוצרה הודעה לשליחה.'));
       appendAiDetails(result, latest);
     }
@@ -672,7 +672,7 @@
   }
   function textExport(c) {
     if (c.mode === 'single') return singleExportText(c);
-    const lines = [C.PRODUCT_NAME + ' · BE GOOD', C.MODES.continuity, c.title || '', 'מזהה: ' + c.id, 'מצב: ' + (C.STATUSES[c.status] || c.status), 'סבבי שיח: ' + c.rounds,
+    const lines = [C.PRODUCT_NAME + ' · Begood', C.MODES.continuity, c.title || '', 'מזהה: ' + c.id, 'מצב: ' + (C.STATUSES[c.status] || c.status), 'סבבי שיח: ' + c.rounds,
       'קהל: ' + (c.audience || 'לא צוין'), 'נוצרה: ' + date(c.createdAt), 'עודכנה: ' + date(c.updatedAt), 'גרסאות המערכת: ' + JSON.stringify(c.versions), ''];
     (c.entries || []).forEach((entry, i) => {
       lines.push((i + 1) + '. ' + (C.KINDS[entry.kind] || entry.kind) + ' · ' + date(entry.at), 'מזהה רשומה: ' + entry.id, entryExportText(entry, c));
@@ -731,7 +731,7 @@
     if (!state.single.document) return;
     return run('הכנת ייצוא המסמך.', async () => {
       const doc = exportData(state.single.document, state.single.edits);
-      const name = 'BE GOOD · ' + C.MODES.single + ' · ' + new Date().toLocaleDateString('he-IL', { timeZone: 'Asia/Jerusalem' }).replace(/\//g, '.');
+      const name = 'Begood · ' + C.MODES.single + ' · ' + new Date().toLocaleDateString('he-IL', { timeZone: 'Asia/Jerusalem' }).replace(/\//g, '.');
       if (format === 'pdf') printExport(doc);
       else if (format === 'json') saveFile(name + '.json', JSON.stringify(doc, null, 2), 'application/json;charset=utf-8');
       else saveFile(name + '.txt', '\uFEFF' + textExport(doc), 'text/plain;charset=utf-8');
@@ -742,7 +742,7 @@
     const id = state.selected.id;
     return run('הכנת ייצוא השיחה.', async op => {
       const c = exportData((await request(op, 'export', 'export', { id }, false)).conversation);
-      const name = 'BE GOOD · ' + C.MODES.continuity + ' · ' + (c.title || 'שיחה').replace(/[<>:"/\\|?*\u0000-\u001f]/g, '') + ' · ' + new Date().toLocaleDateString('he-IL', { timeZone: 'Asia/Jerusalem' }).replace(/\//g, '.');
+      const name = 'Begood · ' + C.MODES.continuity + ' · ' + (c.title || 'שיחה').replace(/[<>:"/\\|?*\u0000-\u001f]/g, '') + ' · ' + new Date().toLocaleDateString('he-IL', { timeZone: 'Asia/Jerusalem' }).replace(/\//g, '.');
       if (format === 'pdf') printExport(c);
       else if (format === 'json') saveFile(name + '.json', JSON.stringify(c, null, 2), 'application/json;charset=utf-8');
       else saveFile(name + '.txt', '\uFEFF' + textExport(c), 'text/plain;charset=utf-8');

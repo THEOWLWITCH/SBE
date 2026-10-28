@@ -141,13 +141,13 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
     <label><input type="radio" name="type" value="new"> מנוי חדש</label>
   </div>
   <div class="two">
-    <div><label for="fullName">שם מלא *</label><input id="fullName" maxlength="60" autocomplete="name"></div>
-    <div id="instWrap"><label for="instName">שם המוסד *</label>
-      <input id="instName" maxlength="80" autocomplete="organization" placeholder="השם המלא של המוסד"></div>
-    <div><label for="email">מייל *</label><input id="email" type="email" maxlength="80" dir="ltr" autocomplete="email"></div>
-    <div><label for="phone">טלפון נייד *</label><input id="phone" type="tel" maxlength="15" dir="ltr" autocomplete="tel" placeholder="05X-XXXXXXX"></div>
+    <div><label for="fullName">שם מלא (שדה עיקרי)</label><input id="fullName" maxlength="60" autocomplete="name"></div>
+    <div id="instWrap"><label for="instName">שם המוסד (שדה עיקרי)</label>
+      <input id="instName" maxlength="80" autocomplete="organization" placeholder="למשל: בית ספר הדר, רמת גן"></div>
+    <div><label for="email">מייל (שדה עיקרי)</label><input id="email" type="email" maxlength="80" dir="ltr" autocomplete="email"></div>
+    <div><label for="phone">טלפון נייד (שדה עיקרי)</label><input id="phone" type="tel" maxlength="15" dir="ltr" autocomplete="tel" placeholder="05X-XXXXXXX"></div>
   </div>
-  <label>אילו כלים רוצים לבקש? *</label>
+  <label>אילו כלים רוצים לבקש? (שדה עיקרי)</label>
   <div class="sys" id="systems"></div>
   <label>תקופה</label>
   <div class="per">
@@ -193,10 +193,10 @@ $("send").addEventListener("click", async () => {
     code: (type === "new" || priv) ? "" : $("code").value.trim() };
   const msg = $("msg"); msg.className = "msg err";
   if (!body.fullName || (!priv && !body.instName)) { msg.textContent = priv ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולשם המוסד."; return; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { msg.textContent = "כתובת המייל לא תקינה."; return; }
-  if (!/^(\+972|0)5\d{8}$/.test(phone)) { msg.textContent = "מספר הטלפון הנייד לא תקין (למשל 050-1234567)."; return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { msg.textContent = "כתובת המייל לא תקינה. אפשר לבדוק אותה ולנסות שוב."; return; }
+  if (!/^(\+972|0)5\d{8}$/.test(phone)) { msg.textContent = "מספר הטלפון הנייד לא תקין. אפשר לכתוב אותו כך: 050-1234567."; return; }
   if (!systems.length) { msg.textContent = "כדי לשלוח, אפשר לסמן לפחות כלי אחד."; return; }
-  $("send").disabled = true; msg.className = "msg"; msg.textContent = "שולחים... (לפעמים עד דקה)";
+  $("send").disabled = true; msg.className = "msg"; msg.textContent = "השליחה נמשכת לפעמים עד דקה...";
   try {
     const r = await fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     const d = await r.json().catch(() => ({}));

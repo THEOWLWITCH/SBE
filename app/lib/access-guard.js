@@ -143,7 +143,7 @@
     var qs = document.createElement("style");
     qs.textContent = ".sbe-q{display:none!important}.sbe-q.sbe-q-open{display:block!important;background:#F4F7FA;border:1px solid #CDD3D8;border-radius:8px;padding:.35rem .6rem;margin:.25rem 0;font-size:.88rem;color:#3C4650}" +
       "span.sbe-q.sbe-q-open{display:inline-block!important}" +
-      ".sbe-i{font:inherit;font-size:.9em;line-height:1;border:none;background:none;color:#2E5A7D;cursor:pointer;padding:0 .3em;vertical-align:baseline}.sbe-i:focus-visible{outline:2px solid #2E5A7D;border-radius:4px}" +
+      ".sbe-i{font:inherit;font-size:.9em;line-height:1;border:none;background:none;color:#2E5A7D;cursor:pointer;padding:0 .3em;vertical-align:baseline}@media screen and (max-width:640px){.sbe-i{min-width:32px;min-height:32px;padding:0 .5em;font-size:1em}}.sbe-i:focus-visible{outline:2px solid #2E5A7D;border-radius:4px}" +
       ".sbe-status-off{display:none!important}@media print{.sbe-i{display:none!important}}";
     (document.head || document.documentElement).appendChild(qs);
     var INFO = ".hint:not(.note):not([data-keep]),.crit-mode-d,.critadd-note,.seq-note,[data-info]";
@@ -153,6 +153,8 @@
     var quiet = function(){
       if (!keepInfo) document.querySelectorAll(INFO).forEach(function(el){
         if (el.getAttribute("data-quiet") || el.closest(".sbe-sysonly")) return;
+        // הסבר בתוך הסבר: סימן ⓘ אחד בלבד (28/10/2026, יועצת הממשק: "ⓘⓘ")
+        if (el.parentElement && el.parentElement.closest("[data-quiet]")) { el.setAttribute("data-quiet", "1"); return; }
         el.setAttribute("data-quiet", "1");
         var b = document.createElement("button"); b.type = "button"; b.className = "sbe-i"; b.textContent = "ⓘ";
         b.setAttribute("aria-label", "הסבר"); b.setAttribute("aria-expanded", "false");

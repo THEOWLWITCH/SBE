@@ -240,7 +240,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 
     <div class="card">
       <h2>2. מה רואים בכיתה</h2>
-      <p class="muted">לכל היגד אפשר לבחור עד כמה הוא מתאר את הכיתה בחודש האחרון. אם אין לך מספיק מידע, "לא יודע/ת" (גם זה מידע). היגדים שמסומנים <span class="rev">היגד הפוך</span> מתארים התנהגות פוגעת.</p>
+      <p class="muted">לכל היגד אפשר לבחור עד כמה הוא מתאר את הכיתה בחודש האחרון. כשאין מספיק מידע, אפשר לבחור "לא יודע/ת": גם זה מידע. היגדים שמסומנים <span class="rev">היגד הפוך</span> מתארים התנהגות פוגעת.</p>
       <div id="criteria"></div>
     </div>
 
@@ -250,7 +250,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
       <textarea id="f-strong" maxlength="800"></textarea>
       <label for="f-weak">מה מאתגר בכיתה כרגע?</label>
       <textarea id="f-weak" maxlength="800"></textarea>
-      <label for="f-questions">על אילו שאלות הייתם רוצים תשובה?</label>
+      <label for="f-questions">על אילו שאלות רוצים לקבל תשובה?</label>
       <textarea id="f-questions" maxlength="800"></textarea>
       <label for="f-worry">מה הכי מדאיג אותך?</label>
       <textarea id="f-worry" maxlength="800"></textarea>
@@ -403,7 +403,7 @@ function loadSituations(){accessApi({action:'listGet',name:SIT_LIST}).then(d=>{i
 F('btn-sit-add').addEventListener('click',()=>{
   const v=F('f-sit-new').value.replace(/\s+/g,' ').trim();const msg=F('sit-msg');
   if(v.length<2){msg.textContent='אפשר להקליד את המצב ואז ללחוץ על הוספה.';msg.hidden=false;return;}
-  const b=F('btn-sit-add');b.disabled=true;msg.hidden=false;msg.textContent='מוסיפה לרשימה...';
+  const b=F('btn-sit-add');b.disabled=true;msg.hidden=false;msg.textContent='מוסיפים לרשימה...';
   accessApi({action:'listAdd',name:SIT_LIST,value:v,token:token()}).then(d=>{
     if(d.items){SIT_COMMUNITY=d.items;renderSituations(d.value);F('f-sit-new').value='';msg.textContent='נוסף לרשימה של כולם ונבחר ✓';save();}
     else{renderSituations(v);msg.textContent=d._status===403?'נבחר לכיתה הזאת. כדי להוסיף לרשימה של כולם, אפשר להיכנס עם הרשאת חוסן חברתי.':'נבחר לכיתה הזאת, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).';save();}
@@ -450,7 +450,7 @@ function addableSelect(id,listName,what){
   btn.addEventListener('click',()=>{
     const v=inp.value.replace(/\s+/g,' ').trim();msg.hidden=false;
     if(v.length<2){msg.textContent='אפשר להקליד ערך ואז ללחוץ על "הוספה לרשימה".';return;}
-    btn.disabled=true;msg.textContent='מוסיפה לרשימה...';
+    btn.disabled=true;msg.textContent='מוסיפים לרשימה...';
     const done=(t)=>{render(v);inp.value='';msg.textContent=t;sel.dispatchEvent(new Event('change'));save();};
     accessApi({action:'listAdd',name:listName,value:v,token:token()}).then(d=>{
       if(d.items){extra=d.items;done('נוסף לרשימה של כולם ונבחר ✓');}
@@ -488,7 +488,7 @@ function decorateDim(sec,dm,listName,rebuild){
     const v=inp.value.replace(/\s+/g,' ').replace(/\|/g,' ').trim();msg.hidden=false;
     if(v.length<8){msg.textContent='אפשר לכתוב היגד שלם: משפט אחד.';return;}
     if(/^האם\b/.test(v)||/\?\s*$/.test(v)){msg.textContent='כדאי לנסח היגד נייטרלי ולא שאלה, למשל "הצוות מקבל עדכון קבוע..." ולא "האם הצוות...?"';return;}
-    btn.disabled=true;msg.textContent='מוסיפה...';
+    btn.disabled=true;msg.textContent='מוסיפים...';
     accessApi({action:'listAdd',name:listName,value:dm.t+'|'+v,token:token()}).then(d=>{
       if(d.items){STMTS=d.items;inp.value='';rebuild();}
       else msg.textContent=d._status===403?'כדי להוסיף היגד לרשימה של כולם, אפשר להיכנס עם ההרשאה המתאימה.':'ההיגד לא נשמר (אין חיבור לשרת).';
@@ -659,7 +659,7 @@ F('btn-analyze').addEventListener('click',async()=>{
     STATE.report={at:new Date().toISOString(),cls:F('f-cls').value.trim(),age:F('f-age').value,doc,picture:pictureText(a)};
     STATE.pre=talk;STATE.chat=[];save();renderReport();renderChat();
   }catch(e){
-    rep.textContent='';const c=el('div','card');c.appendChild(el('p','err',e.name==='AbortError'?'הניתוח לקח יותר מדי זמן. אפשר לנסות שוב.':(e.code==='incomplete'?'הדוח חזר חלקי. אפשר לנסות שוב בעוד רגע.':'הניתוח לא הצליח ('+e.message+'). אפשר לנסות שוב בעוד רגע.')));rep.appendChild(c);
+    rep.textContent='';const c=el('div','card');c.appendChild(el('p','err',e.name==='AbortError'?'הכנת הדוח נמשכה יותר מהצפוי ונעצרה. אפשר לנסות שוב.':(e.code==='incomplete'?'הדוח התקבל חלקי. אפשר לנסות שוב בעוד רגע.':'הכנת הדוח לא הצליחה ('+e.message+'). אפשר לנסות שוב בעוד רגע.')));rep.appendChild(c);
   }finally{BUSY=false;b.disabled=false;b.textContent=STATE.report?'הפקת דוח מעודכן':'הפקת הדוח';}
 });
 
@@ -841,7 +841,7 @@ F('fb-send').addEventListener('click',()=>{
   err.style.color='';
   if(!name||!contact||text.length<2){err.textContent='כדי לשלוח, נשמח לשם, למייל או לטלפון, ולתוכן ההודעה.';err.hidden=false;return;}
   if(!okContact){err.textContent='המייל או הטלפון לא נראים תקינים.';err.hidden=false;return;}
-  const b=F('fb-send');b.disabled=true;b.textContent='שולחת...';
+  const b=F('fb-send');b.disabled=true;b.textContent='שולחים...';
   let guest=false;try{guest=JSON.parse(sessionStorage.getItem('sbe.session.info')||'{}').kind==='guest';}catch(e){}
   accessApi({action:'fbSubmit',type:'פנייה',text,name,contact,
     source:guest?'פרקטי: התנסות הקהילה':'פרקטי',page:'resilience-advisor'}).then(d=>{

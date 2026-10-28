@@ -107,7 +107,7 @@
     const miss = M.FIELDS.filter((f) => f.main && !d[f.k]).map((f) => f.l);
     F('err1').hidden = true;
     if (miss.length) { F('err1').textContent = 'כדי להמשיך, אפשר למלא: ' + miss.join(', ') + '.'; F('err1').hidden = false; return; }
-    const b = F('go'); b.disabled = true; const stop = K.waiting(F('wait1'), 'מכינה מהלך חשיבה, תפקידים והסכמות.', 45);
+    const b = F('go'); b.disabled = true; const stop = K.waiting(F('wait1'), 'הכנת מהלך החשיבה, התפקידים וההסכמות.', 45);
     const it = I, st = it.rev || 0; let o = null, bad = null;
     try { o = await K.json(M.planSystem(KB), anon('השדות:\n' + M.inputText(d) + '\n\nהכיני את מהלך החשיבה.'), M.validPlan, 12000); }
     catch (e) { bad = e; console.warn('חשיבת צוות:', e.message); }
@@ -171,7 +171,7 @@
     const v = el('div'); v.id = 'voices'; out.appendChild(v); voicesLine();
     const kit = el('div', 'kit'); out.appendChild(kit);
     head(kit, 'ideas');
-    kit.appendChild(el('p', 'sub', 'לפני שמגיבים, משתתף/ת אחר/ת מסביר/ה את הרעיון במילים שלו/ה. "מי הציע/ה": תפקיד, או "משתתף/ת 1", "משתתף/ת 2".'));
+    kit.appendChild(el('p', 'sub', 'לפני שמגיבים, משתתף/ת אחר/ת מסביר/ה את הרעיון במילים שלו/ה. ב"מי הציע/ה" כותבים תפקיד או "משתתף/ת 1", בלי שמות.'));
     kit.appendChild(K.etable([{ k: 'idea', l: 'הרעיון', area: true }, { k: 'by', l: 'מי הציע/ה' }, { k: 'peer', l: 'במילים של עמית/ה', area: true }, { k: 'adds', l: 'מה זה מוסיף', area: true }], I.ideas,
       () => { edited(); voicesLine(); }, { add: 'הוספת רעיון', after: voicesLine }));
     const f = el('div', 'f'); f.append(el('label', null, 'מי עוד לא נשמע/ה, ואיך נזמין (בלי שמות)'), K.field(I, 'missing', 'מי עוד לא נשמע/ה', true, edited)); kit.appendChild(f);
@@ -211,7 +211,7 @@
     const go = btn('משוב על התהליך', 'btn', async () => {
       err.hidden = true;
       if (!I.ideas.length) { err.textContent = 'כדי לקבל משוב על התהליך, אפשר להוסיף רעיון אחד לפחות בצעד 2.'; err.hidden = false; return; }
-      go.disabled = true; const stop = K.waiting(w, 'קוראת את מה שעשיתם.', 30);
+      go.disabled = true; const stop = K.waiting(w, 'הכנת המשוב על התהליך.', 30);
       const it = I, st = it.rev || 0; let o = null, bad = null;
       const content = anon([context(), 'מי עוד לא נשמע/ה: ' + (I.missing || ''),
         'במילים של עמית/ה:\n' + I.ideas.map((x, i) => (i + 1) + '. ' + (x.peer || 'לא נכתב')).join('\n'),

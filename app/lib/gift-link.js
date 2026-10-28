@@ -36,13 +36,13 @@
       ? (clip(o.to, 60) ? clip(o.to, 60) + '، ' : '') + 'لديّ هدية لك: «هناك ما يمكن فعله»، دليل صغير: ماذا نفعل وماذا نقول للأولاد في الدقائق الأولى من حالة طوارئ.\n' + url
       : (clip(o.to, 60) ? clip(o.to, 60) + ', ' : '') + 'יש לי מתנה בשבילך: "יש מה לעשות", מדריכון קטן: מה עושים ומה אומרים לילדים בדקות הראשונות במצבי חירום.\n' + url;
   }
-  const CSS = '.sbe-gift{background:linear-gradient(180deg,#FFF6E2,#FFFDF8);border:1px solid #F1D9A6;border-radius:12px;padding:14px 16px;margin:14px 0;color:#0F2B45}' +
+  const CSS = '.sbe-gift{background:#fff;border:1px solid #e3e9ef;border-top:2px solid #f2c14e;border-radius:12px;padding:14px 16px;margin:14px 0;color:#16324a}' +
     '.sbe-gift h3{margin:0 0 4px;font-size:16px}.sbe-gift p{margin:0 0 8px;font-size:13.5px;line-height:1.55;color:#4a5a70}' +
     '.sbe-gift label{display:block;font-size:12.5px;font-weight:600;margin:8px 0 3px;color:#4a5a70}' +
-    '.sbe-gift input,.sbe-gift textarea,.sbe-gift select{font:inherit;font-size:14px;width:100%;box-sizing:border-box;border:1px solid #E3CFA2;border-radius:6px;padding:7px 10px;background:#fff;color:#141C24}' +
+    '.sbe-gift input,.sbe-gift textarea,.sbe-gift select{font:inherit;font-size:14px;width:100%;box-sizing:border-box;border:1px solid #d7e0ea;border-radius:10px;padding:7px 10px;background:#fff;color:#141C24}' +
     '.sbe-gift textarea{min-height:64px;resize:vertical}' +
     '.sbe-gift .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:0 12px}' +
-    '.sbe-gift .go{margin-top:10px;font:inherit;font-weight:700;font-size:14px;border:0;border-radius:8px;padding:9px 16px;background:#FFC929;color:#0F2B45;cursor:pointer}' +
+    '.sbe-gift .go{margin-top:10px;font:inherit;font-weight:600;font-size:14px;border:1px solid #1d3f63;border-radius:999px;padding:7px 18px;background:#1d3f63;color:#fff;cursor:pointer}' +
     '.sbe-gift .gl-out{display:grid;gap:8px;margin-top:10px}' +
     '.sbe-gift .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;background:#fff;border:1px solid #F1D9A6;border-radius:8px;padding:8px 10px}' +
     '.sbe-gift .row b{flex:1;min-width:120px}' +

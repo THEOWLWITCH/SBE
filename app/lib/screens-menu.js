@@ -98,15 +98,16 @@ window.SBE_SCREENS_RENDER = function(host, opts){
   var base = opts.base || '', here = (opts.here || '').toLowerCase();
   window.SBE_SCREENS.forEach(function(part){
     var ph = document.createElement('div'); ph.textContent = part.title;
-    ph.style.cssText = 'font-weight:800;font-size:.86rem;margin:.6rem 0 .15rem;padding:.35rem .6rem;border-radius:6px;' +
-      (part.part === 'mine' ? 'background:rgba(184,137,59,.16);color:#7A5A22' : 'background:rgba(47,125,122,.14);color:#1F5E5B');
+    // כותרת חלק: טקסט בלבד עם קו דק מתחת, בלי פס צבעוני (28/10/2026, יועצת העיצוב)
+    ph.style.cssText = 'font-weight:600;font-size:.9rem;margin:.8rem 0 .2rem;padding:.3rem .2rem;border-bottom:1px solid #e3e9ef;' +
+      (part.part === 'mine' ? 'color:#7A5A22' : 'color:#1d3f63');
     var box = host;
     if (part.collapsed) {
       // חלק מקופל: נפתח בלחיצה (ופתוח מראש אם המסך הנוכחי בתוכו)
       box = document.createElement('details');
       var inside = part.groups.some(function(g){ return g.items.some(function(it){ return it.file.toLowerCase() === here; }); });
       if (inside) box.open = true;
-      var sm = document.createElement('summary'); sm.textContent = part.title; sm.style.cssText = ph.style.cssText + 'cursor:pointer;background:rgba(91,104,115,.12);color:#5B6873';
+      var sm = document.createElement('summary'); sm.textContent = part.title; sm.style.cssText = ph.style.cssText + 'cursor:pointer;color:#5B6873';
       box.appendChild(sm); host.appendChild(box);
     } else host.appendChild(ph);
     if (opts.afterTitle) opts.afterTitle(part.part, host);
