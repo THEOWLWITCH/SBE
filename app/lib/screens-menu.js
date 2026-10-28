@@ -11,20 +11,6 @@ window.SBE_SCREENS = [
       { file:'eval-set.html', label:'בקרת איכות' },
       { file:'demo-lab.html', label:'🧪 מעבדת הדמו: תוצר מכל כלי' },
     ]},
-    // מעבדת האופק (28/10/2026): תשעה כלים לחוסן מול עתיד לא ידוע. עד לאישור: מנהלת המערכת בלבד
-    // (הדפים לא נמצאים ב-PAGES_BY_PERM וב-MODEL_PAGES). מקור: lib/hl-runtime.js
-    { title:'🔭 מעבדת האופק (טרם אושר)', items:[
-      { file:'horizon-lab.html', label:'מעבדת האופק: דף הבית' },
-      { file:'hl-voice.html', label:'קול הקהילה' },
-      { file:'hl-radar.html', label:'רדאר החוסן החברתי' },
-      { file:'hl-futures.html', label:'מחולל העתידים' },
-      { file:'hl-circles.html', label:'מעגלי העתיד' },
-      { file:'hl-horizons.html', label:'שלושה אופקים' },
-      { file:'hl-collage.html', label:'תמונת עתיד קבוצתית' },
-      { file:'hl-roadmap.html', label:'מהחזון להיום' },
-      { file:'hl-game.html', label:'משחק מצב עתידי' },
-      { file:'hl-stress.html', label:'בדיקת עמידות' },
-    ]},
   ]},
   { part:'others', title:'👥 מה שאחרים רואים', groups:[
     { title:'🌅 השער: מתחילים כאן', items:[
@@ -67,6 +53,16 @@ window.SBE_SCREENS = [
       { file:'activity-planner.html', label:'תכנון פעילות', who:'הרשאת תכנון פעילות' },
       { file:'resilience-studio.html', label:'סטודיו חוסן: השראה ופעולה', who:'הרשאת סטודיו בלבד (עד לאישור המקצועי)' },
       { file:'message-writer.html', label:'תקשורת מקדמת חוסן חברתי', who:'ניסוח חד־פעמי וניהול תקשורת; שמירת שיחות בקוד אישי' },
+      { file:'horizon-lab.html', label:'🔭 מעבדת האופק: דף הבית', who:'הרשאת מעבדת האופק (horizon)' },
+      { file:'hl-voice.html', label:'מעבדת האופק: קול הקהילה', who:'הרשאת מעבדת האופק (horizon)' },
+      { file:'hl-radar.html', label:'מעבדת האופק: רדאר החוסן החברתי', who:'הרשאת מעבדת האופק (horizon)' },
+      { file:'hl-futures.html', label:'מעבדת האופק: מחולל העתידים', who:'הרשאת מעבדת האופק (horizon)' },
+      { file:'hl-circles.html', label:'מעבדת האופק: מעגלי העתיד', who:'הרשאת מעבדת האופק (horizon)' },
+      { file:'hl-horizons.html', label:'מעבדת האופק: שלושה אופקים', who:'הרשאת מעבדת האופק (horizon)' },
+      { file:'hl-collage.html', label:'מעבדת האופק: תמונת עתיד קבוצתית', who:'הרשאת מעבדת האופק (horizon)' },
+      { file:'hl-roadmap.html', label:'מעבדת האופק: מהחזון להיום', who:'הרשאת מעבדת האופק (horizon)' },
+      { file:'hl-game.html', label:'מעבדת האופק: משחק מצב עתידי', who:'הרשאת מעבדת האופק (horizon)' },
+      { file:'hl-stress.html', label:'מעבדת האופק: בדיקת עמידות', who:'הרשאת מעבדת האופק (horizon)' },
     ]},
     { title:'📖 4. ללמוד מהעשייה: מה למדנו?', items:[
       { file:'social-resilience-studies.html', label:'לימודי חוסן חברתי', who:'הרשאת לימודי חוסן חברתי (studies)' },
