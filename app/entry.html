@@ -66,14 +66,14 @@ header{padding:14px 0 4px;}
 :root[data-theme="dark"] .tagline3 span{color:#cfe3f5}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tagline3 span{color:#cfe3f5}}
 .spaces{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 16px}
-.space{position:relative;display:flex;flex-direction:column;gap:8px;padding:16px 16px 14px;border-radius:18px;text-decoration:none;color:#16324a;background:#fff;border:1.5px solid var(--sp-line);box-shadow:0 2px 10px rgba(22,50,74,.07);overflow:hidden;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
-.space::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:var(--sp-band)}
+.space{position:relative;display:flex;flex-direction:column;gap:8px;padding:16px 16px 14px;border-radius:16px;text-decoration:none;color:#16324a;background:#fff;border:1px solid #e3e9ef;box-shadow:0 1px 3px rgba(22,50,74,.04);overflow:hidden;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.space::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:var(--sp-band)}
 .space .sp-logo{display:block;width:min(200px,70%);height:auto;margin:4px auto 2px}
 .space b{font-size:17.5px;color:var(--sp-ink);line-height:1.25}
 .space p{margin:0;font-size:14px;line-height:1.55;color:#3d4f5e}
-.space .sp-go{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;font-size:14px;font-weight:700;color:#fff;background:var(--sp-ink)}
+.space .sp-go{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:999px;font-size:13.5px;font-weight:600;color:#fff;background:var(--sp-ink)}
 .space .sp-go i{font-style:normal;transition:transform .18s ease}
-.space:hover,.space:focus-visible{transform:translateY(-2px);box-shadow:0 8px 22px rgba(22,50,74,.13);border-color:var(--sp-ink)}
+.space:hover,.space:focus-visible{transform:translateY(-1px);box-shadow:0 4px 14px rgba(22,50,74,.07);border-color:#c9d7e7}
 .space:hover .sp-go i,.space:focus-visible .sp-go i{transform:translateX(-4px)}
 .space:focus-visible{outline:3px solid var(--sp-band-solid);outline-offset:2px}
 .space.org{--sp-ink:#1d3f63;--sp-line:#c9d7e7;--sp-soft:#e8eef6;--sp-band:linear-gradient(90deg,#1b9aaa,#1d3f63);--sp-band-solid:#1d3f63}
@@ -86,10 +86,10 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 .lead{color:var(--muted);font-size:14px;margin:0 0 12px;max-width:60ch;}
 
 
-.card{background:var(--surface);border:1px solid var(--hair);border-radius:9px;
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:14px;
   margin-bottom:10px;box-shadow:0 1px 3px var(--shadow);}
-.card>h2{font-size:15px;font-weight:700;margin:0;padding:9px 15px;background:var(--surface-2);
-  border-bottom:1px solid var(--hair);font-family:"Frank Ruhl Libre",Georgia,serif;
+.card>h2{font-size:16px;font-weight:600;margin:0;padding:14px 15px 0;background:transparent;
+  border-bottom:0;font-family:"Frank Ruhl Libre",Georgia,serif;text-align:center;color:#1d3f63;
   border-radius:9px 9px 0 0;}
 .card .in{padding:12px 15px;}
 .card .hint{font-size:13px;color:var(--muted);margin:0 0 9px;line-height:1.5;}
@@ -101,6 +101,10 @@ input,select{width:100%;font-family:inherit;font-size:15px;color:var(--ink);
 input:focus,select:focus{outline:2px solid var(--spoken);outline-offset:1px;}
 input.code{font-family:"IBM Plex Mono",monospace;font-size:19px;letter-spacing:.15em;
   text-align:center;direction:ltr;}
+.code-lbl{text-align:center}
+.code-row{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.code-row input.code{width:170px;max-width:60vw;margin:0;font-size:15px;letter-spacing:.12em;padding:6px 12px;border-radius:999px}
+.code-row button.go-in{width:auto;font-size:14px;padding:6px 20px}
 
 button{font-family:inherit;font-size:14.5px;font-weight:600;padding:8px 18px;border-radius:6px;
   border:1px solid var(--hair);background:var(--surface-2);color:var(--ink);cursor:pointer;width:100%;}
@@ -161,13 +165,17 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 .role-pick-row button.on{background:var(--spoken-soft);border-color:var(--spoken);color:var(--spoken);font-weight:700;}
 .switchlink{font-size:13px;color:var(--spoken);cursor:pointer;background:none;border:none;
   padding:0;text-decoration:underline;width:auto;font-weight:600;}
-.maplink{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff;border-radius:18px;padding:14px 18px;margin:0 0 14px;
-  background:linear-gradient(100deg,#2E8F62,#1A9BB5 55%,#1C5F99);box-shadow:0 8px 22px rgba(11,58,107,.18);transition:transform .15s}
-.maplink:hover{transform:translateY(-2px)}
-.maplink .sun{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:radial-gradient(circle at 35% 35%,#FFE45C,#FFBE0B);box-shadow:0 0 0 2px rgba(255,255,255,.55)}
+.maplink{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;text-decoration:none;color:#16324a;border-radius:16px;padding:14px 18px;margin:0 0 14px;
+  background:#fff;border:1px solid #e3e9ef;box-shadow:0 1px 3px rgba(22,50,74,.04);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+.maplink::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,#3d9a5f,#1b9aaa,#1d3f63)}
+.maplink:hover,.maplink:focus-visible{transform:translateY(-1px);box-shadow:0 4px 14px rgba(22,50,74,.07);border-color:#c9d7e7}
+.maplink b{color:#1d3f63}
+.maplink .sun{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:#fff8e1;border:1px solid #f1d98a}
 @media screen and (max-width:520px){.maplink{padding:10px 14px;gap:10px;border-radius:14px}.maplink .sun{width:34px;height:34px;font-size:18px}.maplink b{font-size:15px}.maplink span{font-size:13px}}
 .maplink b{display:block;font-size:17px}.maplink span{font-size:14px;opacity:.92}
-.maplink.gift{display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(100deg,#FFC21A,#FFD84D);color:#0F2B45;box-shadow:0 2px 6px rgba(200,140,0,.18);padding:5px 12px;margin:0 0 14px;border-radius:10px;font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.maplink.gift{display:flex;align-items:center;justify-content:center;gap:6px;background:#fff;color:#16324a;border:1px solid #f1d98a;box-shadow:none;padding:6px 14px;margin:0 0 14px;border-radius:999px;font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.maplink.gift::before{display:none}
+.research-mini{text-align:center;margin:2px 0 12px}.research-mini a{display:inline-block;font-size:13.5px;font-weight:700;color:#1d3f63;text-decoration:none;border:1.5px solid #c9d7e7;background:#fff;border-radius:999px;padding:4px 16px}.research-mini a:hover,.research-mini a:focus-visible{border-color:#1d3f63}
 .maplink.gift b{display:inline;font-size:14px}.maplink.gift span{font-size:13px;opacity:.9}
 @media screen and (max-width:520px){.maplink.gift{padding:4px 10px;font-size:13px}.maplink.gift b{font-size:13px}.maplink.gift span{font-size:12px}}
 </style>
@@ -308,8 +316,10 @@ function renderEntry(){
   // קישור מהמרצה (entry.html?c=קוד) — הקוד כבר ממולא, נשאר רק ללחוץ "כניסה"
   const pre = fixCodeKeys(new URLSearchParams(location.search).get("c") || "").replace(/[^A-Z0-9-]/g, "").slice(0, 12);
   if (pre) code.value = pre;
+  // שדה הקוד וכפתור הכניסה באותה שורה, קטנים ועדינים (28/10/2026)
+  btn.classList.add("go-in");
   inn.append(
-    el("label",{},"הקוד שלך"), code, err, btn);
+    el("label",{class:"code-lbl"},"הקוד שלך"), el("div",{class:"code-row"}, code, btn), err);
   card.append(el("h2",{},"כניסה למערכת"), inn);
   view.append(card);
   // ארבעה מרחבים, בית אחד (28/10/2026): שני מרחבי עבודה, וכלים משותפים לשניהם. כל מרחב עם ספריית תוצרים לדוגמה משלו.
@@ -326,10 +336,6 @@ function renderEntry(){
   mt.append(el("b",{},"מאיפה מתחילים? מפת הכלים"), el("span",{},"מתארים מה רוצים לעשות, והמפה מציעה באיזה כלי להתחיל ובאילו כלים להמשיך."));
   ml.append(el("span",{class:"sun"},"🧭"), mt);
   view.append(ml);
-  const partnership = el("a",{class:"maplink",href:"research-partnership.html"}), partnershipText = el("div",{});
-  partnershipText.append(el("b",{},"שותפות במחקר"), el("span",{},"מוסדות ואנשים פרטיים מוזמנים להציע שיתוף פעולה במחקר. אפשר לקרוא את התנאים ולשלוח הצעה בלי להירשם."));
-  partnership.append(el("span",{class:"sun"},"🔬"), partnershipText);
-  view.append(partnership);
   // "יש מה לעשות" (19/10/2026): מדריכון לחירום, פתוח לכולם בלי קוד. מהמדריכון אין מעבר לכלים אחרים.
   const gl = el("a",{class:"maplink gift",href:"yesh-ma-laasot.html"});
   gl.append("🚨 ", el("b",{},"יש מה לעשות: מדריכון לחירום"), el("span",{},"· פתוח לכולם"));
@@ -347,6 +353,8 @@ function renderEntry(){
   minn.append(links, alt);
   more.append(minn);
   view.append(more);
+  // שותפות במחקר (28/10/2026: "כפתור המחקר... קטן למטה ויהיה כתוב עליו - מחקר בלבד")
+  view.append(el("div",{class:"research-mini"}, el("a",{href:"research-partnership.html",title:"שותפות במחקר: הצעה לשיתוף פעולה במחקר"},"מחקר")));
   // זמני — להרצאה (01/10/2026): כניסה ישירה לפרקטי בלי קוד, עד GUEST_UNTIL.
   if (guestOpen()) {
     const gc = el("div",{class:"card"});
