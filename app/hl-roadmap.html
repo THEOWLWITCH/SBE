@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<script src="lib/access-guard.js"></script>
+<script src="lib/ai-call.js"></script>
+<script src="lib/hl-runtime.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מהחזון להיום · Be Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one guided column — plan, what we test against, the matrix, autonomy, summary. */
+:root{
+  --bg:#eef1f3;
+  --surface:#ffffff;
+  --ink:#16232e;
+  --muted:#5b6b78;
+  --line:#d5dde3;
+  --accent:#17607a;
+  --accent-soft:#dcecf1;
+  --known:#56697a;      --known-bg:#e6ebef;
+  --expected:#9a5b00;   --expected-bg:#fbefd9;
+  --rare:#6a3fb0;       --rare-bg:#eee6fb;
+  --wild:#b2275a;       --wild-bg:#fbe3ec;
+  --ai:#17607a;         --ai-bg:#dcecf1;
+  --good:#2f7a4b;
+  --font-display:"Rubik","Assistant",system-ui,sans-serif;
+  --font-body:"Assistant","Rubik",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+    --accent:#62b6cf; --accent-soft:#183644;
+    --known:#a9b9c6; --known-bg:#24323d;
+    --expected:#f0b45a; --expected-bg:#3a2a12;
+    --rare:#b79af0; --rare-bg:#2c2242;
+    --wild:#f2789f; --wild-bg:#40192a;
+    --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+  --accent:#62b6cf; --accent-soft:#183644;
+  --known:#a9b9c6; --known-bg:#24323d;
+  --expected:#f0b45a; --expected-bg:#3a2a12;
+  --rare:#b79af0; --rare-bg:#2c2242;
+  --wild:#f2789f; --wild-bg:#40192a;
+  --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 18px 80px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:30px;font-weight:700}
+h2{font-size:22px;font-weight:600}
+h3{font-size:18px;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:14.5px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{font-family:var(--font-display);font-size:14px;letter-spacing:.02em;color:var(--accent);font-weight:600}
+.notice{background:var(--accent-soft);border-radius:12px;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.principle{border-inline-start:4px solid var(--wild);background:var(--surface);border-radius:10px;padding:12px 16px}
+section.stage{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.stage-head{display:flex;gap:12px;align-items:baseline}
+.num{font-family:var(--font-display);font-weight:700;color:var(--accent);font-size:20px;min-width:22px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:15px}
+input[type=text],select,textarea{font:inherit;font-weight:400;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+textarea{min-height:76px;resize:vertical}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;font-weight:600}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] button.primary{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#0f171d}}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.drv:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#0f171d}}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px;white-space:nowrap}
+.t-known{color:var(--known);background:var(--known-bg)}
+.t-expected{color:var(--expected);background:var(--expected-bg)}
+.t-rare{color:var(--rare);background:var(--rare-bg)}
+.t-wild{color:var(--wild);background:var(--wild-bg)}
+.t-ai{color:var(--ai);background:var(--ai-bg)}
+.t-opp{color:var(--good);background:transparent;border:1px solid var(--good)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{padding:4px 12px;font-size:14.5px;border-radius:999px}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.drivers{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.drv{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:var(--surface);cursor:pointer}
+.drv input{margin-top:5px;accent-color:var(--accent)}
+.drv.on{border-color:var(--accent);background:var(--accent-soft)}
+.drv .nm{font-weight:700;line-height:1.3}
+.drv .ds{font-size:14px;color:var(--muted);line-height:1.4}
+.drv .tg{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.meter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:15px}
+.ok{color:var(--good);font-weight:700}
+.warn{color:var(--wild);font-weight:700}
+.axes-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.axopt{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:var(--surface)}
+.axopt.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.axline{font-size:15px}
+.axline b{font-family:var(--font-display);font-weight:600}
+.matrix{display:grid;grid-template-columns:28px 1fr 1fr;grid-template-rows:auto auto auto;gap:10px}
+.ylab{grid-row:1 / span 2;writing-mode:vertical-rl;transform:rotate(180deg);display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);font-weight:600}
+.xlab{grid-column:2 / span 2;display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);font-weight:600}
+.axis-name{color:var(--accent)}
+.world{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface);position:relative}
+.world.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.world .q{font-size:12.5px;color:var(--muted);font-weight:600}
+.world .hl{font-family:var(--font-display);font-weight:600;font-size:15.5px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 0}
+.world ul{margin:0;padding-inline-start:18px;font-size:14.5px}
+.world .lbl{font-size:13px;font-weight:700;color:var(--muted);margin-top:2px}
+.world .wc{font-size:14px;background:var(--rare-bg);color:var(--ink);border-radius:8px;padding:6px 8px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.tabs button{border-radius:999px;padding:5px 14px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.out{white-space:pre-wrap;background:var(--bg);border-radius:12px;padding:14px 16px;min-height:80px;max-width:72ch}
+.out.empty{color:var(--muted)}
+.chat{display:flex;flex-direction:column;gap:8px;max-width:72ch}
+.msg{padding:8px 12px;border-radius:12px;white-space:pre-wrap}
+.msg.u{background:var(--accent-soft);align-self:flex-start}
+.msg.a{background:var(--bg);align-self:flex-end}
+.event{border:1px solid var(--line);border-inline-start:5px solid var(--wild);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;max-width:80ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.box{background:var(--bg);border-radius:12px;padding:12px 14px}
+.box ul,.box ol{margin:6px 0 0;padding-inline-start:20px}
+.status{font-size:14.5px;color:var(--muted)}
+.toast{position:fixed;bottom:18px;inset-inline-start:50%;transform:translateX(50%);background:var(--ink);color:var(--surface);padding:8px 16px;border-radius:10px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.ai-off .needs-ai{display:none}
+.ai-note{display:none}
+.ai-off .ai-note{display:block}
+/* views + workshop bar */
+nav.views{display:flex;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line)}
+nav.views a{font-family:var(--font-display);font-weight:600;text-decoration:none;color:var(--ink);padding:7px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+nav.views a[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] nav.views a[aria-current="page"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav.views a[aria-current="page"]{color:#0f171d}}
+.view{display:flex;flex-direction:column;gap:22px}
+.view[hidden]{display:none}
+.wsbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:15px}
+.wsbar input{max-width:260px}
+.wslist{display:flex;flex-direction:column;gap:6px;width:100%}
+.wslist button{text-align:start;font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border-radius:999px;padding:5px 12px;font-size:14.5px;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0f171d}}
+.rate{display:flex;gap:4px;flex-wrap:wrap}
+.rate button{min-width:40px;padding:6px 0;font-variant-numeric:tabular-nums}
+.rate button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:minmax(150px,1.2fr) 3fr auto;gap:10px;align-items:center;font-size:15px}
+.bar .track{height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:6px}
+.bar .n{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;white-space:nowrap}
+.hist{display:flex;gap:3px;align-items:flex-end;height:34px}
+.hist span{width:14px;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px;opacity:.85}
+.pill{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px}
+.p-agree{background:#e3f3e8;color:#226b3d}
+.p-split{background:var(--wild-bg);color:var(--wild)}
+.p-minor{background:var(--rare-bg);color:var(--rare)}
+.lenses{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.lens{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.lens .line{font-family:var(--font-display);font-weight:600;font-size:16px}
+.lens img,.item img{width:100%;border-radius:10px;background:#fff;border:1px solid var(--line)}
+.items{display:flex;flex-direction:column;gap:8px}
+.item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:6px 12px;background:var(--surface)}
+.item .meta{font-size:13px;color:var(--muted)}
+.item .fb{grid-column:1/-1;background:var(--accent-soft);border-radius:8px;padding:8px 10px;font-size:14.5px;white-space:pre-wrap}
+.item img{max-width:220px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.thumb{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff;height:520px;position:relative}
+.thumb .np{transform:scale(.42);transform-origin:top right;width:238%}
+/* stress test */
+.vd{display:inline-block;font-size:13px;font-weight:700;border-radius:6px;padding:2px 10px;border:1px solid transparent}
+.v-robust{background:#e3f3e8;color:#1f6a3a;border-color:#b9dfc5}
+.v-adjust{background:#fdf0d6;color:#8a5200;border-color:#f1d39a}
+.v-break{background:#fbe1e4;color:#a8172f;border-color:#f0b4bd}
+.v-redundant{background:#eef1f4;color:#5b6b78;border-color:#d5dde3}
+.v-none{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.mx-wrap{overflow-x:auto}
+table.mx{border-collapse:separate;border-spacing:6px;width:100%;min-width:720px}
+table.mx th{font-family:var(--font-display);font-weight:600;font-size:14.5px;text-align:start;vertical-align:bottom;padding:4px}
+table.mx th .ax{display:block;font-family:var(--font-body);font-weight:400;font-size:12.5px;color:var(--muted)}
+table.mx td{vertical-align:top}
+table.mx td.el{font-weight:600;font-size:15px;max-width:230px}
+table.mx td.el .small{font-weight:400}
+.cell{width:100%;text-align:start;display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:10px;font-weight:400;font-size:13.5px;line-height:1.35;min-height:64px}
+.cell.on{outline:3px solid var(--accent);outline-offset:1px}
+.cell .vd{align-self:flex-start}
+.cell.v-robust,.cell.v-adjust,.cell.v-break,.cell.v-redundant{border-width:1px}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.score .box{display:flex;flex-direction:column;gap:6px}
+.stack{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--bg)}
+.stack span{display:block;height:100%}
+.ifthen{display:grid;grid-template-columns:1fr auto 1fr;gap:6px 10px;align-items:start;font-size:15px}
+.ifthen .arr{color:var(--muted);font-weight:700}
+@media (max-width:640px){
+  .ifthen{grid-template-columns:1fr}
+  .ifthen .arr{display:none}
+  .bar{grid-template-columns:1fr}
+  .matrix{grid-template-columns:1fr}
+  .ylab{display:none}
+  .xlab{grid-column:1}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+.wrap{max-width:1240px}
+.vision{border-inline-start:6px solid var(--accent);background:var(--accent-soft);border-radius:12px;padding:14px 16px}
+.vision .hl{font-family:var(--font-display);font-weight:600;font-size:19px}
+.stmts li{margin-bottom:4px}
+.back{display:flex;flex-direction:column;gap:0}
+.bstage{display:grid;grid-template-columns:110px 1fr;gap:14px;position:relative;padding-bottom:16px}
+.bstage .when{font-family:var(--font-display);font-weight:700;font-size:19px;color:var(--accent);text-align:center;padding-top:8px;position:relative}
+.bstage .when::after{content:"";position:absolute;top:44px;bottom:-16px;inset-inline-start:50%;border-inline-start:2px dashed var(--line)}
+.bstage:last-child .when::after{display:none}
+.bstage .body{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.rm-wrap{overflow-x:auto}
+table.rm{border-collapse:separate;border-spacing:6px;min-width:900px;width:100%}
+table.rm th{font-family:var(--font-display);font-weight:600;font-size:15px;text-align:start;padding:6px 8px;vertical-align:bottom}
+table.rm th.lane{background:var(--bg);border-radius:10px;width:150px;vertical-align:top}
+table.rm td{vertical-align:top;background:var(--bg);border-radius:10px;padding:6px;min-width:150px}
+table.rm tr.gates td{background:transparent;padding:2px 6px}
+.card{display:block;width:100%;text-align:start;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 8px;margin-bottom:6px;font-weight:400;font-size:14px;line-height:1.35}
+.card.ms{border-inline-start:4px solid var(--accent);font-weight:600}
+.card.on{outline:3px solid var(--accent)}
+.card .own{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.gate{display:flex;gap:6px;align-items:flex-start;font-size:13px;color:var(--ink);background:var(--expected-bg);border-radius:8px;padding:5px 8px}
+.gate::before{content:"";flex:0 0 10px;height:10px;margin-top:4px;background:var(--expected);transform:rotate(45deg)}
+.addcell{width:100%;padding:3px;font-size:13px;color:var(--muted);border-style:dashed}
+.timeline-head{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin:0 160px 0 6px}
+.first table{border-collapse:collapse;width:100%}
+.first td,.first th{border-bottom:1px solid var(--line);padding:6px;text-align:start;vertical-align:middle}
+.first th{font-family:var(--font-display);font-weight:600;font-size:14px;color:var(--muted)}
+.first input[type=text],.first input[type=date]{padding:5px 8px}
+.edit{position:sticky;bottom:10px;z-index:4;background:var(--surface);border:2px solid var(--accent);border-radius:14px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:flex;flex-direction:column;gap:8px}
+.edit[hidden]{display:none}
+.pic{width:100%;border-radius:12px;border:1px solid var(--line);background:#fff;display:block}
+.req{color:var(--wild);font-weight:700}
+.vfield label{font-weight:600;font-size:15px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+
+<header class="top">
+  <div>
+    <div class="brand">Be Good · חוסן מול עתיד לא ידוע</div>
+    <h1>מהחזון להיום</h1>
+    <p class="muted">מתחילים מהעתיד שאנחנו רוצים להגיע אליו, וחוזרים ממנו אחורה, שלב אחר שלב, עד מה שעושים כבר החודש. כך נבנית מפת דרכים שמחברת בין החזון לצעדים הראשונים.</p>
+  </div>
+</header>
+
+<div class="wsbar">
+  <b>מפה:</b>
+  <input type="text" id="mTitle" placeholder="שם, למשל: בית הספר 2035" aria-label="שם המפה">
+  <button type="button" id="mSave" class="primary">שמירה</button>
+  <button type="button" id="mOpen">מפות שמורות</button>
+  <button type="button" id="mNew">מפה חדשה</button>
+  <span class="status" id="mStatus" aria-live="polite"></span>
+  <div class="wslist" id="mList" hidden></div>
+</div>
+
+<div class="notice" id="exampleBar">
+  <span><b>מוצגת דוגמה מוכנה:</b> החזון של בית ספר יסודי בגליל העליון לשנת 2035, ומפת הדרכים שמובילה אליו.</span>
+  <button id="resetBtn" type="button">מפה חדשה</button>
+</div>
+<p class="ai-note notice small">החלקים שמופעלים על ידי AI זמינים כשיש חיבור למודל. בינתיים אפשר לעיין בדוגמה ולערוך ידנית.</p>
+
+<!-- 1 context -->
+<section class="stage" aria-labelledby="h1s">
+  <div class="stage-head"><span class="num">1</span><h2 id="h1s">על מי מדובר?</h2></div>
+  <div class="row" style="gap:6px 14px"><span class="small" style="font-weight:600">סוג:</span>
+    <div class="seg" role="group" aria-label="סוג ההקשר" id="ctxType" style="flex-wrap:wrap"><button type="button" data-v="school">בית ספר</button><button type="button" data-v="community">קהילה ויישוב</button><button type="button" data-v="org">ארגון</button><button type="button" data-v="pro">קהילה מקצועית</button></div>
+  </div>
+  <div class="grid2">
+    <label class="f" for="region">אזור בארץ<select id="region"></select></label>
+    <label class="f" for="horizon">לאיזו שנה החזון?<select id="horizon"><option>2028</option><option>2030</option><option>2035</option><option>2040</option></select></label>
+  </div>
+  <label class="f" for="desc">כמה מילים על המקום או על הקהילה<textarea id="desc"></textarea></label>
+</section>
+
+<!-- 2 vision -->
+<section class="stage" aria-labelledby="h2s">
+  <div class="stage-head"><span class="num">2</span><h2 id="h2s">החזון: לאן רוצים להגיע?</h2></div>
+  <p class="small muted">בונים את החזון בשתי דרכים שמשלימות זו את זו: תמונה של העתיד, ותשובות לכמה שאלות. לפעמים קל יותר לתאר תמונה מאשר לכתוב חזון.</p>
+
+  <div class="cols" style="align-items:start">
+    <div class="box" style="display:flex;flex-direction:column;gap:8px">
+      <h3>תמונת העתיד</h3>
+      <p class="small muted">מדמיינים שנכנסים אלינו בשנת <span class="hz"></span>. מה רואים? איפה זה, מי נמצאים שם ומה הם עושים?</p>
+      <textarea id="picDesc" style="min-height:90px" aria-label="תיאור תמונת העתיד"></textarea>
+      <div class="row needs-ai"><button type="button" class="primary" id="aiPic">ציור תמונת העתיד עם AI</button><button type="button" id="aiPicFromVision">הצעת תיאור מתוך התשובות</button></div>
+      <label class="small" for="picFile" style="font-weight:600">או העלאת ציור או צילום משלכם: <input type="file" id="picFile" accept="image/*"></label>
+      <span class="status" id="picStatus" aria-live="polite"></span>
+      <div id="picOut"></div>
+    </div>
+    <div class="box" style="display:flex;flex-direction:column;gap:8px">
+      <h3>הבסיס של החזון</h3>
+      <p class="small muted">שלוש השאלות הראשונות הן הבסיס, והתשובות עליהן הופכות את המפה למשמעותית. שתי האחרונות עוזרות להעמיק.</p>
+      <div id="vFields" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+
+  <details class="box"><summary><b>ייבוא חזון מכלי אחר</b> <span class="small muted">(משלושה אופקים או מתמונת עתיד קבוצתית)</span></summary>
+    <p class="small muted" style="margin-top:6px">בכלי ״שלושה אופקים״ או בכלי ״תמונת עתיד קבוצתית״ לוחצים על כפתור ההעתקה ל״מהחזון להיום״, ומדביקים כאן. החזון והתשובות יתמלאו, ואם מגיעים מתמונת העתיד הקבוצתית, גם התמונה עוברת. אפשר לערוך הכול אחר כך.</p>
+    <textarea id="impVText" aria-label="הדבקת החבילה" placeholder='{"type":"be-good-package", ...}'></textarea>
+    <div class="row" style="margin-top:6px"><button type="button" class="primary" id="impVGo">ייבוא</button><span class="status" id="impVStatus" aria-live="polite"></span></div>
+  </details>
+  <div class="row"><button type="button" class="primary needs-ai" id="aiVision">ניסוח החזון מהתשובות עם AI</button><button type="button" id="joinVision">חיבור התשובות לטיוטת חזון, בלי AI</button><span class="status" id="visionStatus" aria-live="polite"></span></div>
+  <label class="f" for="vText">החזון<textarea id="vText" style="min-height:90px" placeholder="החזון ייכתב כאן אחרי שעונים על השאלות. אפשר גם לכתוב ישירות."></textarea></label>
+  <div>
+    <b>איך נדע שהחזון התממש? משפטים שאפשר לבדוק</b>
+    <div class="items" id="stmts" style="margin-top:6px"></div>
+    <div class="row" style="margin-top:6px"><input type="text" id="newStmt" placeholder="למשל: בית הספר יכול לתפקד שלושה ימים בלי חשמל ובלי הנחיות מבחוץ" style="flex:1;min-width:240px" aria-label="משפט נוסף"><button type="button" id="addStmt">הוספה</button></div>
+  </div>
+  <label class="f" for="vHead" style="max-width:780px">כותרת עיתון מהעתיד, ביום שהחזון התממש (רשות)<input type="text" id="vHead"></label>
+</section>
+
+<!-- 3 backcasting -->
+<section class="stage" aria-labelledby="h3s">
+  <div class="stage-head"><span class="num">3</span><h2 id="h3s">מהעתיד אחורה</h2></div>
+  <p class="small muted">כאן חוזרים אחורה מהחזון. לכל שלב שואלים: מה יהיה נכון עד אז, כדי שהשלב הבא יוכל לקרות? ה־AI מציע אבני דרך, פעולות, תנאים למעבר בין השלבים וסיכונים, וכל אלה נכנסים גם למפת הדרכים שבשלב 4. אפשר לערוך הכול.</p>
+  <div class="row needs-ai"><button type="button" class="primary" id="aiBack">בניית הדרך אחורה עם AI</button><span class="status" id="backStatus" aria-live="polite"></span></div>
+  <div class="back" id="back"></div>
+</section>
+
+<!-- 4 roadmap -->
+<section class="stage" aria-labelledby="h4s">
+  <div class="stage-head"><span class="num">4</span><h2 id="h4s">מפת הדרכים</h2></div>
+  <p class="small muted">כל שורה היא תחום עבודה, וכל עמודה היא שלב בזמן, מהיום (בצד ימין) ועד החזון (בצד שמאל). פריט עם פס צבעוני הוא אבן דרך, ופריט רגיל הוא פעולה. המעוינים הצהובים הם תנאים שמתקיימים לפני שעוברים לשלב הבא. ללחוץ על פריט כדי לערוך אותו.</p>
+  <div class="rm-wrap" id="rm"></div>
+  <div class="row"><input type="text" id="newLane" placeholder="תחום עבודה נוסף" style="max-width:280px" aria-label="תחום עבודה נוסף"><button type="button" id="addLane">הוספת תחום</button></div>
+  <div class="edit" id="edit" hidden></div>
+</section>
+
+<!-- 5 risks -->
+<section class="stage" aria-labelledby="h5s">
+  <div class="stage-head"><span class="num">5</span><h2 id="h5s">מה עלול לשבש את הדרך?</h2></div>
+  <p class="small muted">סיכונים, תלויות בגורמים מבחוץ והפתעות אפשריות, ומה עושים אם הם קורים. כדי לבדוק את המפה לעומק מול משברים ואסונות, אפשר להעביר אותה לכלי בדיקת העמידות.</p>
+  <div class="items" id="risks"></div>
+  <div class="row"><button type="button" id="toStress" class="primary">העתקת המפה לבדיקת העמידות</button><a href="hl-stress.html" target="_blank" rel="noopener">פתיחת כלי בדיקת העמידות</a><span class="status" id="stressStatus" aria-live="polite"></span></div>
+</section>
+
+<!-- 6 first steps -->
+<section class="stage first" aria-labelledby="h6s">
+  <div class="stage-head"><span class="num">6</span><h2 id="h6s">הצעדים הראשונים</h2></div>
+  <p class="small muted">מה עושים כבר בשלושת החודשים הקרובים. לכל צעד כדאי לרשום מי מוביל אותו ועד מתי, כדי שאפשר יהיה לבדוק בעוד חודש מה התקדם.</p>
+  <div class="mx-wrap"><table><thead><tr><th>בוצע</th><th>מה עושים</th><th>מי מוביל או מובילה</th><th>עד מתי</th><th></th></tr></thead><tbody id="first"></tbody></table></div>
+  <div class="row"><input type="text" id="newFirst" placeholder="צעד נוסף" style="flex:1;min-width:240px" aria-label="צעד נוסף"><button type="button" id="addFirst">הוספה</button></div>
+  <div class="row"><button type="button" id="copyAll">העתקת כל המפה כטקסט</button><button type="button" id="dlAll">הורדת המפה להדפסה</button><span class="status" id="dlStatus" aria-live="polite"></span></div>
+</section>
+
+<section class="stage needs-ai" aria-labelledby="h7s">
+  <h2 id="h7s">שאלה למודל על המפה</h2>
+  <div class="row" id="chips"></div>
+  <form class="row" id="askForm"><input type="text" id="askIn" placeholder="למשל: מה הכי חשוב לעשות כבר בחודש הראשון?" style="flex:1;min-width:240px" aria-label="שאלה על המפה"><button type="submit" class="primary">לשאול</button></form>
+  <span class="status" id="askStatus" aria-live="polite"></span>
+  <div class="chat" id="qa"></div>
+</section>
+
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4);
+function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1800); }
+async function copy(text){ try { await navigator.clipboard.writeText(text); toast("הועתק"); } catch(e){ toast("ההעתקה לא הצליחה"); } }
+function busy(btn, st, on, msg){ if(btn) btn.disabled = on; if(st) st.textContent = on ? (msg || "חושב… זה יכול לקחת עד דקה") : ""; }
+const TYPE_LABEL = {school:"בית ספר", community:"קהילה ויישוב", org:"ארגון", pro:"קהילה מקצועית או רשת מומחים"};
+const DESC_PH = {school:"למשל: בית ספר יסודי, כ־300 תלמידים ממושב ומשני קיבוצים. הקהילה פונתה וחזרה.", community:"למשל: מושב של כ־800 תושבים ותושבות, הרבה משפחות צעירות, דרך גישה אחת.", org:"למשל: מפעל מזון עם כ־150 עובדים ועובדות, תלות גבוהה בחשמל ובקירור.", pro:"למשל: קהילה מקוונת של חוקרים, חוקרות ואנשי ואנשות מקצוע מכל הארץ בתחומי AI, חוסן, חינוך וחירום."};
+const REGIONS = ["כל הארץ","גליל עליון וגבול לבנון","רמת הגולן","גליל מערבי","עמקים וגליל תחתון","חיפה והקריות","השרון","מרכז וגוש דן","ירושלים והסביבה","השפלה","יהודה ושומרון","עוטף עזה והנגב המערבי","באר שבע והנגב","בקעת הירדן וים המלח","ערבה ואילת","מישור החוף הדרומי"];
+const LANES_BY = {school:["צוות ולמידה","תלמידים והורים","תשתיות ומשאבים","שותפויות ורשות"], community:["אנשים וקהילה","מוכנות לחירום","תשתיות ומשאבים","שותפויות ומועצה"], org:["אנשים וצוותים","תהליכי עבודה","תשתיות ומשאבים","שותפים ולקוחות"], pro:["חברים ומעורבות","ידע ותוכן","כלים ותשתיות","שותפויות והשפעה"]};
+const NOW_YEAR = new Date().getFullYear();
+const VQ = [
+  {k:"day", req:true, q:h => `איך נראה אצלנו יום רגיל בשנת ${h}?`, ph:{school:"למשל: התלמידים לומדים גם בחוץ ובקהילה, הצוות יציב ומרגיש מוערך, ההורים שותפים.", community:"למשל: שכנים מכירים זה את זה, יש מקום מפגש פעיל, משפחות חדשות מרגישות בבית.", org:"למשל: הצוותים עובדים בביטחון, יש גיבוי לכל תפקיד, הלקוחות סומכים עלינו.", pro:"למשל: חברי וחברות הקהילה משתפים ידע כל שבוע, יש פרויקטים משותפים, חדשים מצטרפים בקלות."}},
+  {k:"crisis", req:true, q:h => `מה קורה אצלנו כשמגיע משבר או אסון?`, ph:{school:"למשל: כולם יודעים את תפקידם, בית הספר מתפקד כמה ימים לבד ומשמש מרכז לקהילה.", community:"למשל: צוות היישוב מתארגן תוך שעה, יש מים, חשמל ומידע אמין בתוך היישוב.", org:"למשל: השירותים החיוניים ממשיכים, יש ממלאי מקום לכל תפקיד, ומקבלים החלטות במקום.", pro:"למשל: הקהילה מגייסת תוך יום מומחים ומומחיות שעוזרים לבתי ספר ולקהילות בשטח."}},
+  {k:"change", req:true, q:h => `מה יהיה שונה לעומת היום?`, ph:{school:"למשל: היום אנחנו תלויים בהנחיות מבחוץ ובאינטרנט. אז נוכל להחליט ולתפקד לבד.", community:"למשל: היום יש פער בין ותיקים לחדשים. אז תהיה קהילה אחת.", org:"למשל: היום הידע נמצא אצל מעט אנשים. אז הוא יהיה משותף ומתועד.", pro:"למשל: היום הידע מפוזר. אז יהיה מקום אחד שבו מוצאים אותו ומיישמים אותו."}},
+  {k:"feel", req:false, q:h => "מה ירגישו האנשים אצלנו?", ph:{school:"למשל: ביטחון, שייכות, גאווה.", community:"למשל: ביטחון ואחריות הדדית.", org:"למשל: אמון ותחושת משמעות.", pro:"למשל: שייכות והשפעה."}},
+  {k:"proud", req:false, q:h => "במה נהיה גאים במיוחד?", ph:{school:"למשל: שבשבוע בלי חשמל אף ילד לא נשאר לבד.", community:"למשל: שאף משפחה לא נשארה מאחור.", org:"למשל: שלא הפסקנו לתת שירות גם בימים הקשים.", pro:"למשל: שהידע שלנו שינה את המוכנות של בתי ספר בכל הארץ."}}
+];
+function fieldsText(){ const f = S.vision.fields || {}; return VQ.map(x => `${x.q(S.horizon)} ${f[x.k] || "(לא נענה)"}`).join("\n"); }
+function missingReq(){ const f = S.vision.fields || {}; return VQ.filter(x => x.req && !(f[x.k]||"").trim()); }
+function stagesFor(h){
+  const H = +h, span = H - NOW_YEAR;
+  const ys = [...new Set([NOW_YEAR + 1, NOW_YEAR + Math.max(2, Math.round(span*0.35)), NOW_YEAR + Math.max(3, Math.round(span*0.65)), H])].filter(y => y <= H).sort((a,b) => a-b);
+  return [{key:"now", label:"שלושת החודשים הקרובים"}].concat(ys.map(y => ({key:String(y), label: y === H ? `${y}: החזון` : `עד ${y}`})));
+}
+
+/* ---------- example ---------- */
+const EX = {"title": "", "ctx": {"type": "school", "region": "גליל עליון וגבול לבנון", "desc": "בית ספר יסודי ממלכתי, כ־320 תלמידים ממושב ומשני קיבוצים. הקהילה פונתה לתקופה ארוכה וחזרה."}, "horizon": "2035", "vision": {"text": "בשנת 2035 בית הספר הוא העוגן של הקהילה. התלמידים לומדים גם בחוץ ובקהילה, הצוות יציב ומרגיש מוערך, וההורים שותפים. כשמגיע משבר, כולם יודעים מה תפקידם, ובית הספר מתפקד כמה ימים לבד ומשמש מרכז לקהילה, עם מים, חשמל ומידע אמין. המשפחות הוותיקות והחדשות הן קהילה אחת, וכולם מרגישים ביטחון ושייכות.", "stmts": ["בית הספר יכול לתפקד שלושה ימים בלי חשמל ובלי הנחיות מבחוץ.", "לכל תפקיד מרכזי בצוות יש שני ממלאי מקום מתורגלים.", "כל משפחה חדשה מחוברת למשפחה ותיקה בשנה הראשונה שלה.", "פחות מורים ומורות עוזבים את בית הספר מאשר היום."], "headline": "2035: בית הספר שהחזיק את הקהילה בשבוע בלי חשמל", "fields": {"day": "התלמידים לומדים גם בחוץ ובקהילה, הצוות יציב ומרגיש מוערך, וההורים שותפים בחיי בית הספר.", "crisis": "כולם יודעים מה תפקידם. בית הספר מתפקד כמה ימים לבד ומשמש מרכז לקהילה: מים, חשמל, מידע אמין ומקום להיפגש.", "change": "היום אנחנו תלויים בהנחיות מבחוץ, באינטרנט ובחשמל. אז נוכל להחליט ולתפקד לבד, והמשפחות הוותיקות והחדשות יהיו קהילה אחת.", "feel": "ביטחון, שייכות וגאווה.", "proud": "שבשבוע בלי חשמל אף ילד ואף משפחה לא נשארו לבד."}, "picture": {"desc": "חצר בית הספר בבוקר. על הגג לוחות סולאריים, תלמידים לומדים בצל העצים, הורים וסבים עוזרים בגינה, ובכניסה לוח מודעות קהילתי.", "img": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20640%20400%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22sk%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23cfe9f7%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23eef7fb%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22640%22%20height%3D%22400%22%20fill%3D%22url%28%23sk%29%22/%3E%3Ccircle%20cx%3D%22560%22%20cy%3D%2270%22%20r%3D%2236%22%20fill%3D%22%23ffd166%22/%3E%3Crect%20y%3D%22290%22%20width%3D%22640%22%20height%3D%22110%22%20fill%3D%22%23bfe3b4%22/%3E%3Cpath%20d%3D%22M0%20300%20Q160%20270%20320%20300%20T640%20295%20V400%20H0Z%22%20fill%3D%22%23a9d89c%22/%3E%3Crect%20x%3D%22250%22%20y%3D%22150%22%20width%3D%22250%22%20height%3D%22150%22%20fill%3D%22%23fff7ea%22%20stroke%3D%22%233a3a3a%22%20stroke-width%3D%223%22/%3E%3Cpolygon%20points%3D%22240%2C150%20375%2C95%20510%2C150%22%20fill%3D%22%23ef8a62%22%20stroke%3D%22%233a3a3a%22%20stroke-width%3D%223%22/%3E%3Cg%20fill%3D%22%232f5d8a%22%20stroke%3D%22%231d3c5a%22%20stroke-width%3D%222%22%3E%3Cpolygon%20points%3D%22300%2C128%20340%2C112%20352%2C122%20312%2C138%22/%3E%3Cpolygon%20points%3D%22350%2C108%20390%2C92%20402%2C102%20362%2C118%22/%3E%3Cpolygon%20points%3D%22400%2C100%20440%2C116%20428%2C126%20388%2C110%22/%3E%3C/g%3E%3Cg%20fill%3D%22%23bfe0ff%22%20stroke%3D%22%233a3a3a%22%20stroke-width%3D%222%22%3E%3Crect%20x%3D%22270%22%20y%3D%22175%22%20width%3D%2240%22%20height%3D%2232%22/%3E%3Crect%20x%3D%22330%22%20y%3D%22175%22%20width%3D%2240%22%20height%3D%2232%22/%3E%3Crect%20x%3D%22440%22%20y%3D%22175%22%20width%3D%2240%22%20height%3D%2232%22/%3E%3C/g%3E%3Crect%20x%3D%22385%22%20y%3D%22230%22%20width%3D%2240%22%20height%3D%2270%22%20fill%3D%22%238a5a2b%22%20stroke%3D%22%233a3a3a%22%20stroke-width%3D%222%22/%3E%3Crect%20x%3D%22515%22%20y%3D%22215%22%20width%3D%2280%22%20height%3D%2258%22%20fill%3D%22%23fff%22%20stroke%3D%22%233a3a3a%22%20stroke-width%3D%223%22/%3E%3Cline%20x1%3D%22535%22%20y1%3D%22273%22%20x2%3D%22535%22%20y2%3D%22300%22%20stroke%3D%22%233a3a3a%22%20stroke-width%3D%223%22/%3E%3Cline%20x1%3D%22575%22%20y1%3D%22273%22%20x2%3D%22575%22%20y2%3D%22300%22%20stroke%3D%22%233a3a3a%22%20stroke-width%3D%223%22/%3E%3Ctext%20x%3D%22555%22%20y%3D%22238%22%20font-size%3D%2213%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20direction%3D%22rtl%22%20fill%3D%22%2317607a%22%20font-weight%3D%22bold%22%3E%D7%9C%D7%95%D7%97%20%D7%94%D7%A7%D7%94%D7%99%D7%9C%D7%94%3C/text%3E%3Cg%20fill%3D%22%23ffd166%22%3E%3Crect%20x%3D%22527%22%20y%3D%22246%22%20width%3D%2220%22%20height%3D%2216%22/%3E%3C/g%3E%3Cg%20fill%3D%22%239fd3c7%22%3E%3Crect%20x%3D%22556%22%20y%3D%22246%22%20width%3D%2228%22%20height%3D%2216%22/%3E%3C/g%3E%3Crect%20x%3D%22100%22%20y%3D%22210%22%20width%3D%2216%22%20height%3D%2290%22%20fill%3D%22%237a5230%22/%3E%3Ccircle%20cx%3D%22108%22%20cy%3D%22190%22%20r%3D%2262%22%20fill%3D%22%235aa469%22/%3E%3Ccircle%20cx%3D%2270%22%20cy%3D%22215%22%20r%3D%2234%22%20fill%3D%22%236cbf7a%22/%3E%3Ccircle%20cx%3D%22148%22%20cy%3D%22212%22%20r%3D%2236%22%20fill%3D%22%236cbf7a%22/%3E%3Cg%20stroke%3D%22%233a3a3a%22%20stroke-width%3D%222%22%3E%3Ccircle%20cx%3D%2260%22%20cy%3D%22318%22%20r%3D%229%22%20fill%3D%22%23f2c9a0%22/%3E%3Crect%20x%3D%2251%22%20y%3D%22327%22%20width%3D%2218%22%20height%3D%2222%22%20rx%3D%226%22%20fill%3D%22%23ef8a62%22/%3E%3Ccircle%20cx%3D%2295%22%20cy%3D%22324%22%20r%3D%229%22%20fill%3D%22%238d5b3a%22/%3E%3Crect%20x%3D%2286%22%20y%3D%22333%22%20width%3D%2218%22%20height%3D%2222%22%20rx%3D%226%22%20fill%3D%22%236aa9d8%22/%3E%3Ccircle%20cx%3D%22130%22%20cy%3D%22322%22%20r%3D%229%22%20fill%3D%22%23e8b48a%22/%3E%3Crect%20x%3D%22121%22%20y%3D%22331%22%20width%3D%2218%22%20height%3D%2222%22%20rx%3D%226%22%20fill%3D%22%23ffd166%22/%3E%3Ccircle%20cx%3D%22165%22%20cy%3D%22318%22%20r%3D%229%22%20fill%3D%22%23c98e62%22/%3E%3Crect%20x%3D%22156%22%20y%3D%22327%22%20width%3D%2218%22%20height%3D%2222%22%20rx%3D%226%22%20fill%3D%22%239b8bd4%22/%3E%3Ccircle%20cx%3D%22112%22%20cy%3D%22290%22%20r%3D%2210%22%20fill%3D%22%23f2c9a0%22/%3E%3Crect%20x%3D%22102%22%20y%3D%22300%22%20width%3D%2220%22%20height%3D%2226%22%20rx%3D%226%22%20fill%3D%22%2317607a%22/%3E%3C/g%3E%3Cg%20stroke%3D%22%233a3a3a%22%20stroke-width%3D%222%22%3E%3Crect%20x%3D%22200%22%20y%3D%22330%22%20width%3D%22120%22%20height%3D%2230%22%20rx%3D%226%22%20fill%3D%22%238a5a2b%22/%3E%3Cpath%20d%3D%22M215%20330%20q6%20-18%2012%200%20M240%20330%20q6%20-22%2012%200%20M265%20330%20q6%20-16%2012%200%20M290%20330%20q6%20-20%2012%200%22%20fill%3D%22%234f9d5d%22/%3E%3Ccircle%20cx%3D%22215%22%20cy%3D%22300%22%20r%3D%229%22%20fill%3D%22%23d9d9d9%22/%3E%3Crect%20x%3D%22206%22%20y%3D%22309%22%20width%3D%2218%22%20height%3D%2224%22%20rx%3D%226%22%20fill%3D%22%23b5d99c%22/%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22298%22%20r%3D%229%22%20fill%3D%22%23e8b48a%22/%3E%3Crect%20x%3D%22291%22%20y%3D%22307%22%20width%3D%2218%22%20height%3D%2224%22%20rx%3D%226%22%20fill%3D%22%23f4a3a3%22/%3E%3C/g%3E%3C/svg%3E"}}, "lanes": [{"id": "L1", "name": "צוות ולמידה"}, {"id": "L2", "name": "תלמידים והורים"}, {"id": "L3", "name": "תשתיות ומשאבים"}, {"id": "L4", "name": "שותפויות ורשות"}], "items": [{"id": "i0", "stage": 4, "lane": "L1", "kind": "ms", "text": "הצוות יציב, מרגיש מוערך, ויודע להחליט לבד בשעת חירום.", "owner": ""}, {"id": "i1", "stage": 4, "lane": "L2", "kind": "ms", "text": "כל משפחה, ותיקה או חדשה, מחוברת לקהילת בית הספר.", "owner": ""}, {"id": "i2", "stage": 4, "lane": "L3", "kind": "ms", "text": "בית הספר יכול לתפקד שלושה ימים בלי חשמל ובלי עזרה מבחוץ.", "owner": ""}, {"id": "i3", "stage": 4, "lane": "L4", "kind": "ms", "text": "בית הספר הוא מרכז החירום הקהילתי המוסכם של היישוב.", "owner": ""}, {"id": "i4", "stage": 3, "lane": "L1", "kind": "ms", "text": "לכל תפקיד מרכזי יש שני ממלאי מקום מתורגלים.", "owner": ""}, {"id": "i5", "stage": 3, "lane": "L2", "kind": "act", "text": "פועלת תוכנית חונכות קבועה בין משפחות ותיקות לחדשות.", "owner": ""}, {"id": "i6", "stage": 3, "lane": "L3", "kind": "ms", "text": "מערכת סולארית וסוללות מחזיקות את הספרייה ואת המטבח.", "owner": ""}, {"id": "i7", "stage": 3, "lane": "L4", "kind": "act", "text": "יש הסכם עם המועצה שמגדיר מה בית הספר רשאי להחליט לבד.", "owner": ""}, {"id": "i8", "stage": 2, "lane": "L1", "kind": "act", "text": "פועלת תוכנית קבועה למניעת שחיקה: שעה שבועית לצוות ורוטציות בחירום.", "owner": ""}, {"id": "i9", "stage": 2, "lane": "L2", "kind": "ms", "text": "יש ערוץ קשר עם ההורים שעובד גם בלי רשת, ומתורגל פעמיים בשנה.", "owner": ""}, {"id": "i10", "stage": 2, "lane": "L3", "kind": "act", "text": "מגייסים תקציב למערכת סולארית ולמאגר מים.", "owner": "מנהלת בית הספר"}, {"id": "i11", "stage": 2, "lane": "L4", "kind": "act", "text": "מקיימים תרגיל משותף שנתי עם צוות צח״י של היישוב.", "owner": ""}, {"id": "i12", "stage": 1, "lane": "L1", "kind": "act", "text": "מכשירים את הצוות בעזרה רגשית ראשונה.", "owner": "היועצת"}, {"id": "i13", "stage": 1, "lane": "L2", "kind": "act", "text": "תלמידי ו׳ מתנדבים כרצים להעברת הודעות בחירום.", "owner": ""}, {"id": "i14", "stage": 1, "lane": "L3", "kind": "act", "text": "מכינים ארגז למידה בלי חשמל לכל כיתה.", "owner": ""}, {"id": "i15", "stage": 1, "lane": "L4", "kind": "act", "text": "נפגשים עם המועצה כדי לסכם את חלוקת הסמכויות בחירום.", "owner": ""}, {"id": "i16", "stage": 0, "lane": "L1", "kind": "act", "text": "מקיימים שיחת צוות על החזון ועל מה שהכי מדאיג.", "owner": "מנהלת בית הספר"}, {"id": "i17", "stage": 0, "lane": "L2", "kind": "act", "text": "ממפים את המשפחות החדשות ביישוב.", "owner": "רכזת הקהילה"}, {"id": "i18", "stage": 0, "lane": "L3", "kind": "act", "text": "בודקים מה קיים היום: גנרטור, מים, תאורה ודרכי קשר.", "owner": "אב הבית"}], "gates": [{"id": "g0", "stage": 0, "text": "הצוות מסכים על החזון ועל הצעדים הראשונים."}, {"id": "g1", "stage": 1, "text": "כל כיתה עברה תרגיל של יום בלי רשת."}, {"id": "g2", "stage": 2, "text": "יש תקציב מאושר למערכת הסולארית."}, {"id": "g3", "stage": 3, "text": "בית הספר תפקד יומיים מלאים בתרגיל, בלי עזרה מבחוץ."}], "risks": [{"stage": 2, "text": "התקציב למערכת הסולארית לא מאושר.", "response": "מתחילים בפתרון קטן, כמו סוללות ומאווררים לחדר אחד, ומגייסים תרומה מהקהילה."}, {"stage": 1, "text": "מורים ותיקים שמובילים את התהליך עוזבים.", "response": "מתעדים את הידע, ובכל תחום משתפים בהובלה שני אנשים."}, {"stage": 3, "text": "סערת שמש או מתקפת סייבר משביתות את התקשורת לכמה ימים.", "response": "מוודאים שערוץ הקשר הידני מתורגל, ושכל צוות יודע מה לעשות בלי הנחיות."}, {"stage": 2, "text": "המועצה לא מסכימה להעביר סמכויות לבית הספר.", "response": "מתחילים בהסכמה על תחום אחד, כמו פתיחת בית הספר כמרכז מפגש, ומרחיבים בהדרגה."}], "first": [{"text": "לקיים שיחת צוות על החזון ועל מה שהכי מדאיג.", "owner": "מנהלת בית הספר", "due": "סוף החודש", "done": false}, {"text": "למפות את המשפחות החדשות ביישוב ולהזמין אותן למפגש היכרות.", "owner": "רכזת הקהילה", "due": "סוף החודש הבא", "done": false}, {"text": "לבדוק מה קיים היום: גנרטור, מים, תאורה ודרכי קשר.", "owner": "אב הבית ורכז הביטחון", "due": "בעוד חודשיים", "done": false}, {"text": "להכין ארגז למידה בלי חשמל לכיתה אחת, כניסוי.", "owner": "מחנכת כיתה ו׳", "due": "בעוד שלושה חודשים", "done": false}], "qa": []};
+
+/* ---------- state ---------- */
+function fresh(type){ const t = type || "school"; return {title:"", ctx:{type:t, region:"", desc:""}, horizon:"2035", vision:{text:"", stmts:[], headline:"", fields:{}, picture:{desc:"", img:""}}, lanes:LANES_BY[t].map(n => ({id:uid(), name:n})), items:[], gates:[], risks:[], first:[], qa:[]}; }
+let S = JSON.parse(JSON.stringify(EX));
+let isExample = true, MID = null, SEL = null;
+function leaveExample(){ if(isExample){ isExample = false; $("exampleBar").style.display = "none"; } }
+const stages = () => stagesFor(S.horizon);
+
+/* ---------- capabilities ---------- */
+let SAMPLE = null, DB = null, DL = null;
+document.documentElement.classList.add("ai-off");
+(async () => {
+  const use = async n => { try { return (window.claude && window.claude.use) ? await window.claude.use(n) : null; } catch(e){ return null; } };
+  [SAMPLE, DB, DL] = await Promise.all([use("sample"), use("db"), use("downloads")]);
+  document.documentElement.classList.toggle("ai-off", !SAMPLE);
+  $("mSave").disabled = !DB; $("mOpen").disabled = !DB; if(!DB) $("mStatus").textContent = "שמירה זמינה כשיש חיבור למודל.";
+})();
+function errCopy(e){
+  const c = e && e.code;
+  if(["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(c)){ SAMPLE = null; document.documentElement.classList.add("ai-off"); return "ה־AI לא זמין בדף הזה."; }
+  if(c === "rate_limited") return "יותר מדי בקשות כרגע. אפשר לנסות שוב בעוד כמה דקות.";
+  if(c === "refused") return "הבקשה לא נענתה. כדאי לנסח אחרת.";
+  if(c === "invalid_json") return "התשובה הגיעה בפורמט לא תקין. אפשר לנסות שוב.";
+  if(c === "cancelled") return "";
+  return "משהו השתבש בחיבור. אפשר לנסות שוב.";
+}
+function repairJSON(t){ let s = String(t||""); const a = s.indexOf("{"), b = s.lastIndexOf("}"); if(a >= 0 && b > a) s = s.slice(a, b+1); try { return JSON.parse(s); } catch(_){} s = s.replace(/([֐-׿])"([֐-׿])/g, "$1״$2").replace(/[“”]/g, '"'); try { return JSON.parse(s); } catch(_){} return JSON.parse(s.replace(/,\s*([}\]])/g, "$1")); }
+async function askJSON(prompt, opts){
+  const full = prompt + `\n\nחשוב לפורמט: JSON תקין בלבד, בלי טקסט לפניו או אחריו. בתוך מחרוזות לא להשתמש במירכאות רגילות ("). בקיצורים עבריים להשתמש בגרשיים עבריים (״).`;
+  try { return await SAMPLE.json(full, opts); } catch(e){ if(e && e.code === "invalid_json" && e.text){ try { return repairJSON(e.text); } catch(_){} } throw e; }
+}
+function rules(){ return `את/ה עוזר/ת בכלי ״מהחזון להיום״ (Visioning, Backcasting ו־Roadmapping מערכת Futures Toolkit) במערכת Be Good לחוסן קהילתי וחינוכי בישראל.
+ההקשר: ${TYPE_LABEL[S.ctx.type]}${S.ctx.region ? ", " + S.ctx.region : ""}.${S.ctx.desc ? " תיאור: " + S.ctx.desc : ""} החזון לשנת ${S.horizon}. השנה עכשיו: ${NOW_YEAR}.
+כללים:
+- לכתוב במשפטים שלמים, ברורים ומעשיים, שמובנים גם למי שלא היה בתהליך. בלשון רבים או ניטרלית מגדרית.
+- להתאים למשאבים האמיתיים של ${TYPE_LABEL[S.ctx.type]} בישראל. בלי נתונים מומצאים ובלי עמדה פוליטית.
+- עיקרון האוטונומיה התפקודית: לכלול צעדים שמחזקים את היכולת לתפקד לבד כשעזרה, תשתיות או הנחיות מבחוץ לא מגיעות.
+- עיקרון העתיד הלא ידוע: הדרך לא תהיה ישרה. לזהות הפתעות אפשריות, כולל כאלה שפחות מוכרות בישראל.`; }
+function planText(){
+  const st = stages(); const L = [`מפת דרכים: ${S.title || "מהחזון להיום"}`, `${TYPE_LABEL[S.ctx.type]}${S.ctx.region ? " · " + S.ctx.region : ""} · חזון לשנת ${S.horizon}`, "", `החזון: ${S.vision.text}`];
+  if(S.vision.stmts.length){ L.push("איך נדע שהחזון התממש:"); S.vision.stmts.forEach(x => L.push(`- ${x}`)); }
+  st.slice().reverse().forEach((s, k) => {
+    const si = st.indexOf(s); L.push("", `${s.label}:`);
+    S.lanes.forEach(l => { S.items.filter(i => i.stage === si && i.lane === l.id).forEach(i => L.push(`- [${l.name}] ${i.kind === "ms" ? "אבן דרך: " : ""}${i.text}${i.owner ? ` (מוביל/ה: ${i.owner})` : ""}`)); });
+    S.gates.filter(g => g.stage === si).forEach(g => L.push(`- תנאי למעבר לשלב הבא: ${g.text}`));
+  });
+  if(S.risks.length){ L.push("", "מה עלול לשבש:"); S.risks.forEach(r => L.push(`- ${r.text} ← מה עושים: ${r.response}`)); }
+  if(S.first.length){ L.push("", "הצעדים הראשונים:"); S.first.forEach(f => L.push(`- ${f.text}${f.owner ? ` · מוביל/ה: ${f.owner}` : ""}${f.due ? ` · עד ${f.due}` : ""}${f.done ? " · בוצע" : ""}`)); }
+  return L.join("\n");
+}
+
+/* ---------- render ---------- */
+function renderCtx(){
+  document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.ctx.type)));
+  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
+  $("horizon").value = S.horizon; $("desc").value = S.ctx.desc || ""; $("desc").placeholder = DESC_PH[S.ctx.type]; $("mTitle").value = S.title || "";
+}
+function renderVision(){
+  S.vision.fields = S.vision.fields || {}; S.vision.picture = S.vision.picture || {desc:"", img:""};
+  document.querySelectorAll(".hz").forEach(x => x.textContent = S.horizon);
+  if(document.activeElement !== $("picDesc")) $("picDesc").value = S.vision.picture.desc || "";
+  $("picDesc").placeholder = S.ctx.type === "school" ? "למשל: חצר בית הספר בבוקר. על הגג לוחות סולאריים. תלמידים לומדים בצל העצים, הורים וסבים עוזרים בגינה, ובכניסה לוח מודעות קהילתי." : "למשל: מה רואים כשנכנסים, מי נמצאים שם, מה הם עושים, ואיך נראה המקום.";
+  $("picOut").innerHTML = S.vision.picture.img ? `<img class="pic" src="${esc(S.vision.picture.img)}" alt="תמונת העתיד: ${esc(S.vision.picture.desc || "")}"><div class="row" style="margin-top:6px"><button type="button" class="small" id="picDel">הסרת התמונה</button></div>` : "";
+  if(!$("vFields").querySelector("textarea") || $("vFields").dataset.type !== S.ctx.type + S.horizon){
+    $("vFields").dataset.type = S.ctx.type + S.horizon;
+    $("vFields").innerHTML = VQ.map(x => `<div class="vfield"><label for="vf_${x.k}">${esc(x.q(S.horizon))} ${x.req ? '<span class="req">(בסיס)</span>' : '<span class="small muted">(רשות)</span>'}</label><textarea id="vf_${x.k}" data-vf="${x.k}" style="min-height:${x.req ? 64 : 44}px" placeholder="${esc(x.ph[S.ctx.type])}"></textarea></div>`).join("");
+  }
+  VQ.forEach(x => { const el = $("vf_" + x.k); if(el && document.activeElement !== el) el.value = S.vision.fields[x.k] || ""; });
+  if(document.activeElement !== $("vText")) $("vText").value = S.vision.text || "";
+  if(document.activeElement !== $("vHead")) $("vHead").value = S.vision.headline || "";
+  $("vHead").placeholder = `למשל: ״${S.horizon}: בית הספר שהחזיק את הקהילה בשבוע בלי חשמל״`;
+  $("stmts").innerHTML = S.vision.stmts.length ? S.vision.stmts.map((x,i) => `<div class="item"><div>${esc(x)}</div><div><button type="button" class="small" data-dels="${i}" aria-label="מחיקה">מחיקה</button></div></div>`).join("") : `<p class="muted small">עוד אין משפטים.</p>`;
+}
+function renderBack(){
+  const st = stages();
+  $("back").innerHTML = `<div class="bstage"><div class="when">${esc(S.horizon)}</div><div class="body vision">${S.vision.picture && S.vision.picture.img ? `<img class="pic" src="${esc(S.vision.picture.img)}" alt="תמונת העתיד" style="max-width:420px">` : ""}<div class="small muted">החזון</div><div>${esc(S.vision.text || "עוד לא נוסח חזון.")}</div>${S.vision.headline ? `<div class="hl">״${esc(S.vision.headline)}״</div>` : ""}${(() => { const last = stages().length - 1, li = S.items.filter(i => i.stage === last); return li.length ? `<div class="small" style="margin-top:6px"><b>כך זה ייראה בכל תחום:</b><ul style="margin:4px 0 0;padding-inline-start:20px">${li.map(i => `<li><b>${esc((S.lanes.find(l => l.id === i.lane)||{}).name || "")}:</b> ${esc(i.text)}</li>`).join("")}</ul></div>` : ""; })()}</div></div>` +
+    st.map((s, si) => ({s, si})).reverse().filter(x => x.s.key !== String(S.horizon)).map(({s, si}) => {
+      const ms = S.items.filter(i => i.stage === si && i.kind === "ms"), acts = S.items.filter(i => i.stage === si && i.kind !== "ms"), gs = S.gates.filter(g => g.stage === si);
+      return `<div class="bstage"><div class="when">${s.key === "now" ? "היום" : esc(s.key)}</div><div class="body">
+        <div class="small muted">${s.key === "now" ? "בשלושת החודשים הקרובים מתחילים כך:" : `כדי שהשלב הבא יקרה, עד ${esc(s.key)} כדאי שיהיה נכון ש…`}</div>
+        ${ms.length ? `<ul class="stmts" style="margin:0;padding-inline-start:20px">${ms.map(i => `<li><b>${esc(i.text)}</b></li>`).join("")}</ul>` : ""}
+        ${acts.length ? `<div class="small"><b>מה עושים בשלב הזה:</b><ul style="margin:4px 0 0;padding-inline-start:20px">${acts.map(i => `<li>${esc(i.text)}${i.owner ? ` <span class="muted">(מוביל/ה: ${esc(i.owner)})</span>` : ""}</li>`).join("")}</ul></div>` : ""}
+        ${gs.map(g => `<div class="gate">תנאי למעבר לשלב הבא: ${esc(g.text)}</div>`).join("")}
+        ${!ms.length && !acts.length ? `<span class="muted small">עוד ריק.</span>` : ""}
+      </div></div>`; }).join("");
+}
+function renderRoadmap(){
+  const st = stages();
+  const head = `<tr><th></th>${st.map(s => `<th>${esc(s.label)}</th>`).join("")}</tr>`;
+  const gates = `<tr class="gates"><th></th>${st.map((s,si) => `<td>${S.gates.filter(g => g.stage === si).map(g => `<button type="button" class="gate card" data-gate="${esc(g.id)}" style="border:0">${esc(g.text)}</button>`).join("")}</td>`).join("")}</tr>`;
+  const rows = S.lanes.map(l => `<tr><th class="lane">${esc(l.name)}<br><button type="button" class="small" data-dellane="${esc(l.id)}" style="margin-top:6px;padding:2px 8px">הסרה</button></th>${st.map((s,si) => `<td>${S.items.filter(i => i.lane === l.id && i.stage === si).map(i => `<button type="button" class="card ${i.kind === "ms" ? "ms" : ""} ${SEL && SEL.type === "item" && SEL.id === i.id ? "on" : ""}" data-item="${esc(i.id)}">${esc(i.text)}${i.owner ? `<span class="own">מוביל/ה: ${esc(i.owner)}</span>` : ""}</button>`).join("")}<button type="button" class="addcell" data-add="${esc(l.id)}:${si}" aria-label="הוספה ל${esc(l.name)}, ${esc(s.label)}">+ הוספה</button></td>`).join("")}</tr>`).join("");
+  const gateAdd = `<tr class="gates"><th class="small muted" style="font-weight:400">תנאים למעבר</th>${st.map((s,si) => si < st.length - 1 ? `<td><button type="button" class="addcell" data-addgate="${si}">+ תנאי למעבר</button></td>` : "<td></td>").join("")}</tr>`;
+  $("rm").innerHTML = `<table class="rm"><thead>${head}</thead><tbody>${rows}${gates}${gateAdd}</tbody></table>`;
+}
+function renderEdit(){
+  const e = $("edit");
+  if(!SEL){ e.hidden = true; return; }
+  const st = stages();
+  if(SEL.type === "item"){
+    const i = S.items.find(x => x.id === SEL.id); if(!i){ SEL = null; e.hidden = true; return; }
+    e.hidden = false;
+    e.innerHTML = `<b>עריכת פריט</b>
+      <textarea id="eText" style="min-height:52px" aria-label="טקסט">${esc(i.text)}</textarea>
+      <div class="grid2">
+        <label class="f" for="eLane">תחום<select id="eLane">${S.lanes.map(l => `<option value="${esc(l.id)}" ${l.id === i.lane ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select></label>
+        <label class="f" for="eStage">שלב<select id="eStage">${st.map((s,si) => `<option value="${si}" ${si === i.stage ? "selected" : ""}>${esc(s.label)}</option>`).join("")}</select></label>
+        <label class="f" for="eKind">סוג<select id="eKind"><option value="act" ${i.kind !== "ms" ? "selected" : ""}>פעולה</option><option value="ms" ${i.kind === "ms" ? "selected" : ""}>אבן דרך</option></select></label>
+        <label class="f" for="eOwner">מי מוביל או מובילה (רשות)<input type="text" id="eOwner" value="${esc(i.owner||"")}" placeholder="תפקיד או שם"></label>
+      </div>
+      <div class="row"><button type="button" class="primary" id="eSave">שמירה</button><button type="button" id="eDel">מחיקה</button><button type="button" id="eClose">סגירה</button></div>`;
+  } else {
+    const g = S.gates.find(x => x.id === SEL.id); if(!g){ SEL = null; e.hidden = true; return; }
+    e.hidden = false;
+    e.innerHTML = `<b>עריכת תנאי למעבר</b><textarea id="eText" style="min-height:52px" aria-label="טקסט">${esc(g.text)}</textarea>
+      <div class="row"><button type="button" class="primary" id="eSave">שמירה</button><button type="button" id="eDel">מחיקה</button><button type="button" id="eClose">סגירה</button></div>`;
+  }
+}
+function renderRisks(){
+  const st = stages();
+  $("risks").innerHTML = S.risks.length ? S.risks.map((r,i) => `<div class="item"><div><b>${esc(r.text)}</b>${r.stage !== undefined && st[r.stage] ? ` <span class="small muted">(${esc(st[r.stage].label)})</span>` : ""}<div class="small">מה עושים: ${esc(r.response||"")}</div></div><div><button type="button" class="small" data-delr="${i}">מחיקה</button></div></div>`).join("") : `<p class="muted small">עוד אין. הסיכונים נוספים כשבונים את הדרך אחורה עם AI.</p>`;
+}
+function renderFirst(){
+  $("first").innerHTML = S.first.length ? S.first.map((f,i) => `<tr>
+      <td><input type="checkbox" data-fdone="${i}" ${f.done ? "checked" : ""} aria-label="בוצע"></td>
+      <td><input type="text" data-f="text" data-fi="${i}" value="${esc(f.text)}" aria-label="מה עושים"></td>
+      <td><input type="text" data-f="owner" data-fi="${i}" value="${esc(f.owner||"")}" placeholder="תפקיד או שם" aria-label="מי מוביל"></td>
+      <td><input type="text" data-f="due" data-fi="${i}" value="${esc(f.due||"")}" placeholder="למשל: סוף נובמבר" aria-label="עד מתי"></td>
+      <td><button type="button" class="small" data-delf="${i}">מחיקה</button></td></tr>`).join("") : `<tr><td colspan="5" class="muted small">עוד אין צעדים.</td></tr>`;
+}
+function renderQA(){
+  const qs = ["מה הכי חשוב לעשות כבר בחודש הראשון?","איפה המפה תלויה מדי בגורמים מבחוץ?","איך מציגים את המפה לצוות כך שירצו להצטרף?"];
+  $("chips").innerHTML = qs.map(q => `<button type="button" class="small" data-ask="${esc(q)}">${esc(q)}</button>`).join("");
+  $("qa").innerHTML = (S.qa||[]).map(x => `<div class="msg u">${esc(x.q)}</div><div class="msg a">${esc(x.a||"…")}</div>`).join("");
+}
+function renderAll(){ renderCtx(); renderVision(); renderBack(); renderRoadmap(); renderEdit(); renderRisks(); renderFirst(); renderQA(); }
+
+/* ---------- inputs ---------- */
+$("ctxType").addEventListener("click", e => { const b = e.target.closest("button"); if(!b || b.dataset.v === S.ctx.type) return; const had = S.items.length; S.ctx.type = b.dataset.v; if(!had) S.lanes = LANES_BY[S.ctx.type].map(n => ({id:uid(), name:n})); leaveExample(); renderAll(); });
+$("region").addEventListener("change", e => { S.ctx.region = e.target.value; leaveExample(); });
+$("desc").addEventListener("change", e => { S.ctx.desc = e.target.value.trim(); leaveExample(); });
+$("horizon").addEventListener("change", e => {
+  const oldN = stages().length; S.horizon = e.target.value; const n = stages().length;
+  S.items.forEach(i => { if(i.stage >= n) i.stage = n - 1; }); S.gates.forEach(g => { if(g.stage >= n - 1) g.stage = n - 2; });
+  leaveExample(); renderAll();
+});
+$("mTitle").addEventListener("change", e => { S.title = e.target.value.trim(); });
+$("vFields").addEventListener("change", e => { const k = e.target.dataset.vf; if(!k) return; S.vision.fields[k] = e.target.value.trim(); leaveExample(); });
+$("picDesc").addEventListener("change", e => { S.vision.picture.desc = e.target.value.trim(); leaveExample(); });
+$("picOut").addEventListener("click", e => { if(e.target.id === "picDel"){ S.vision.picture.img = ""; leaveExample(); renderVision(); renderBack(); } });
+$("picFile").addEventListener("change", async e => {
+  const st = $("picStatus");
+  try{ S.vision.picture.img = await fileToDataURL(e.target.files[0]); leaveExample(); renderVision(); renderBack(); st.textContent = "התמונה נוספה."; }
+  catch(err){ st.textContent = "אפשר להעלות רק קובץ תמונה."; }
+});
+$("joinVision").addEventListener("click", () => {
+  const st = $("visionStatus"), miss = missingReq();
+  if(miss.length){ st.textContent = `חסרות תשובות לשאלות הבסיס: ${miss.map(x => x.q(S.horizon)).join(" ")}`; return; }
+  const f = S.vision.fields;
+  S.vision.text = [`בשנת ${S.horizon}, ${f.day}`, `כשמגיע משבר, ${f.crisis}`, `לעומת היום, ${f.change}`, f.feel ? `האנשים אצלנו מרגישים ${f.feel}` : "", f.proud ? `אנחנו גאים במיוחד ${f.proud}` : ""].filter(Boolean).map(x => x.replace(/[.\s]+$/, "") + ".").join(" ");
+  leaveExample(); renderVision(); renderBack(); st.textContent = "זו טיוטה. כדאי לעבור עליה ולנסח מחדש במילים שלכם.";
+});$("vText").addEventListener("change", e => { S.vision.text = e.target.value.trim(); leaveExample(); renderBack(); });
+$("vHead").addEventListener("change", e => { S.vision.headline = e.target.value.trim(); leaveExample(); renderBack(); });
+$("stmts").addEventListener("click", e => { const b = e.target.closest("[data-dels]"); if(!b) return; S.vision.stmts.splice(+b.dataset.dels, 1); leaveExample(); renderVision(); });
+$("addStmt").addEventListener("click", () => { const v = $("newStmt").value.trim(); if(!v) return; S.vision.stmts.push(v); $("newStmt").value = ""; leaveExample(); renderVision(); });
+$("newStmt").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); $("addStmt").click(); } });
+$("rm").addEventListener("click", e => {
+  const it = e.target.closest("[data-item]"), gt = e.target.closest("[data-gate]"), add = e.target.closest("[data-add]"), ag = e.target.closest("[data-addgate]"), dl = e.target.closest("[data-dellane]");
+  if(it){ SEL = {type:"item", id:it.dataset.item}; renderRoadmap(); renderEdit(); $("eText").focus(); return; }
+  if(gt){ SEL = {type:"gate", id:gt.dataset.gate}; renderEdit(); $("eText").focus(); return; }
+  if(add){ const [lane, si] = add.dataset.add.split(":"); const n = {id:uid(), lane, stage:+si, kind:"act", text:"פריט חדש", owner:""}; S.items.push(n); SEL = {type:"item", id:n.id}; leaveExample(); renderAll(); $("eText").select(); return; }
+  if(ag){ const g = {id:uid(), stage:+ag.dataset.addgate, text:"תנאי חדש"}; S.gates.push(g); SEL = {type:"gate", id:g.id}; leaveExample(); renderAll(); $("eText").select(); return; }
+  if(dl){ const id = dl.dataset.dellane; if(S.items.some(i => i.lane === id) && !armed(id)) return; S.items = S.items.filter(i => i.lane !== id); S.lanes = S.lanes.filter(l => l.id !== id); leaveExample(); renderAll(); }
+});
+let armKey = "", armAt = 0;
+function armed(k){ if(armKey === k && Date.now() - armAt < 6000) return true; armKey = k; armAt = Date.now(); toast("בתחום יש פריטים. ללחוץ שוב כדי להסיר אותו עם הפריטים"); return false; }
+$("edit").addEventListener("click", e => {
+  if(e.target.id === "eClose"){ SEL = null; renderRoadmap(); renderEdit(); return; }
+  if(e.target.id === "eDel"){ if(SEL.type === "item") S.items = S.items.filter(i => i.id !== SEL.id); else S.gates = S.gates.filter(g => g.id !== SEL.id); SEL = null; leaveExample(); renderAll(); return; }
+  if(e.target.id === "eSave"){
+    const t = $("eText").value.trim(); if(!t) return;
+    if(SEL.type === "item"){ const i = S.items.find(x => x.id === SEL.id); Object.assign(i, {text:t, lane:$("eLane").value, stage:+$("eStage").value, kind:$("eKind").value, owner:$("eOwner").value.trim()}); }
+    else { S.gates.find(x => x.id === SEL.id).text = t; }
+    SEL = null; leaveExample(); renderAll(); toast("נשמר");
+  }
+});
+$("addLane").addEventListener("click", () => { const v = $("newLane").value.trim(); if(!v) return; S.lanes.push({id:uid(), name:v}); $("newLane").value = ""; leaveExample(); renderRoadmap(); });
+$("risks").addEventListener("click", e => { const b = e.target.closest("[data-delr]"); if(!b) return; S.risks.splice(+b.dataset.delr, 1); leaveExample(); renderRisks(); });
+$("first").addEventListener("change", e => { const t = e.target; if(t.dataset.fdone !== undefined){ S.first[+t.dataset.fdone].done = t.checked; } else if(t.dataset.fi !== undefined){ S.first[+t.dataset.fi][t.dataset.f] = t.value.trim(); } leaveExample(); });
+$("first").addEventListener("click", e => { const b = e.target.closest("[data-delf]"); if(!b) return; S.first.splice(+b.dataset.delf, 1); leaveExample(); renderFirst(); });
+$("addFirst").addEventListener("click", () => { const v = $("newFirst").value.trim(); if(!v) return; S.first.push({text:v, owner:"", due:"", done:false}); $("newFirst").value = ""; leaveExample(); renderFirst(); });
+$("newFirst").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); $("addFirst").click(); } });
+
+/* ---------- AI ---------- */
+function parsePackage(txt){ let p; try { p = JSON.parse(String(txt||"").trim()); } catch(e){ const a = String(txt||"").indexOf("{"), b = String(txt||"").lastIndexOf("}"); try { p = JSON.parse(String(txt).slice(a, b+1)); } catch(_){ return null; } } return p && p.type === "be-good-package" ? p : null; }
+$("impVGo").addEventListener("click", () => {
+  const st = $("impVStatus"), p = parsePackage($("impVText").value);
+  if(!p || p.kind !== "vision"){ st.textContent = "זו לא חבילת חזון. אפשר להעתיק אותה שוב מ״שלושה אופקים״ או מ״תמונת עתיד קבוצתית״."; return; }
+  if(p.ctx && p.ctx.type) S.ctx = {...S.ctx, ...p.ctx};
+  if(p.horizon && ["2028","2030","2035","2040"].includes(String(p.horizon))) S.horizon = String(p.horizon);
+  S.vision.text = String(p.vision || S.vision.text);
+  S.vision.fields = S.vision.fields || {};
+  if((p.fade||[]).length) S.vision.fields.change = `היום עדיין ${p.fade.join(", ")}. בעתיד שאנחנו רוצים זה ישתנה.`;
+  if((p.keep||[]).length) S.vision.fields.proud = `שהצלחנו לשמור על ${p.keep.join(", ")}.`;
+  if((p.seeds||[]).length) S.vision.picture = {...(S.vision.picture||{}), desc: S.vision.picture && S.vision.picture.desc ? S.vision.picture.desc : `רואים איך ${p.seeds.join(", ")} הפכו לחלק מהשגרה.`};
+  if(p.picture && (p.picture.img || p.picture.desc)) S.vision.picture = {desc:String(p.picture.desc || (S.vision.picture && S.vision.picture.desc) || ""), img:String(p.picture.img || "")};
+  (p.invest||[]).slice(0,6).forEach(t => S.first.push({text:String(t), owner:"", due:"", done:false}));
+  if(p.title && !S.title) S.title = String(p.title);
+  leaveExample(); $("impVText").value = ""; renderAll();
+  st.textContent = "יובא. כדאי להשלים את שאלות הבסיס שחסרות, ואז לבנות את הדרך אחורה.";
+});
+$("aiVision").addEventListener("click", async () => {
+  if(!SAMPLE) return; const btn = $("aiVision"), st = $("visionStatus");
+  S.vision.text = $("vText").value.trim();
+  const miss = missingReq();
+  if(miss.length && !S.vision.text){ st.textContent = `כדי לנסח חזון משמעותי, כדאי לענות קודם על שאלות הבסיס: ${miss.map(x => x.q(S.horizon)).join(" ")}`; return; }
+  busy(btn, st, true);
+  try{
+    const r = await askJSON(`${rules()}
+
+התשובות של הקבוצה לשאלות החזון:
+${fieldsText()}
+${S.vision.picture.desc ? "תמונת העתיד שתיארו: " + S.vision.picture.desc : ""}
+טיוטת חזון קיימת:
+${S.vision.text || "(אין)"}
+
+משימה: לנסח חזון לשנת ${S.horizon}, נאמן לתשובות של הקבוצה, ולא להוסיף מטרות שלא עלו.
+- text: 3–4 משפטים בזמן הווה, כאילו החזון כבר התממש. מוחשי ומעורר השראה, בלי סיסמאות.
+- stmts: 4–6 משפטים שאפשר לבדוק בשנת ${S.horizon} אם התממשו (למשל ״בית הספר יכול לתפקד שלושה ימים בלי חשמל ובלי הנחיות מבחוץ״). לפחות אחד על אוטונומיה תפקודית.
+- headline: כותרת עיתון מהיום שבו החזון התממש.
+להחזיר JSON בלבד: {"text":"","stmts":[""],"headline":""}`, {modelTier:"default", cache:false});
+    if(!r || !r.text) throw {code:"invalid_json"};
+    S.vision = {text:String(r.text), stmts:(r.stmts||[]).map(String).slice(0,8), headline:String(r.headline||"")};
+    leaveExample(); busy(btn, st, false); renderVision(); renderBack(); st.textContent = "החזון מוכן. אפשר לערוך.";
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+$("aiBack").addEventListener("click", async () => {
+  if(!SAMPLE) return; const btn = $("aiBack"), st = $("backStatus");
+  S.vision.text = $("vText").value.trim();
+  if(!S.vision.text){ st.textContent = "קודם כדאי לנסח חזון (שלב 2)."; return; }
+  if(!S.lanes.length) S.lanes = LANES_BY[S.ctx.type].map(n => ({id:uid(), name:n}));
+  const stg = stages();
+  busy(btn, st, true, "חוזר מהחזון אחורה, שלב אחר שלב… עד שתי דקות");
+  try{
+    const r = await askJSON(`${rules()}
+
+החזון לשנת ${S.horizon}: ${S.vision.text}
+התשובות של הקבוצה:
+${fieldsText()}
+איך נדע שהחזון התממש:
+${S.vision.stmts.map(x => "- " + x).join("\n") || "(אין)"}
+
+השלבים בזמן (מספר: תווית): ${stg.map((s,i) => `${i}: ${s.label}`).join(" | ")}
+תחומי העבודה (מספר: שם): ${S.lanes.map((l,i) => `${i}: ${l.name}`).join(" | ")}
+
+משימה: לבנות את הדרך מהחזון אחורה עד היום (Backcasting). מתחילים מהשלב האחרון ושואלים בכל שלב: מה צריך להיות נכון עד אז כדי שהשלב הבא יוכל לקרות?
+- items: לכל שלב ולכל תחום 1–2 פריטים. stage = מספר השלב, lane = מספר התחום, kind = ms (אבן דרך: מצב שצריך להיות נכון) או act (פעולה שעושים), text = משפט שלם וקצר. בשלב 0 (שלושת החודשים הקרובים) רק פעולות קטנות ומעשיות.
+- gates: לכל שלב חוץ מהאחרון, תנאי אחד שצריך להתקיים לפני שעוברים לשלב הבא. stage + text.
+- risks: 3–5 דברים שעלולים לשבש את הדרך, כולל תלות בגורמים מבחוץ והפתעה אחת פחות מוכרת בישראל. stage + text + response (משפט שלם: מה עושים אם זה קורה).
+- first: 4–6 צעדים ראשונים לשלושת החודשים הקרובים. text + owner (תפקיד, לא שם של אדם) + due (למשל ״סוף החודש הבא״).
+להחזיר JSON בלבד: {"items":[{"stage":0,"lane":0,"kind":"act","text":""}],"gates":[{"stage":0,"text":""}],"risks":[{"stage":1,"text":"","response":""}],"first":[{"text":"","owner":"","due":""}]}`, {modelTier:"default", cache:false});
+    if(!r || !Array.isArray(r.items) || !r.items.length) throw {code:"invalid_json"};
+    const okS = x => Number.isInteger(+x) && +x >= 0 && +x < stg.length;
+    S.items = r.items.filter(i => okS(i.stage) && S.lanes[+i.lane] && i.text).map(i => ({id:uid(), stage:+i.stage, lane:S.lanes[+i.lane].id, kind:i.kind === "ms" ? "ms" : "act", text:String(i.text), owner:""}));
+    S.gates = (r.gates||[]).filter(g => okS(g.stage) && +g.stage < stg.length - 1 && g.text).map(g => ({id:uid(), stage:+g.stage, text:String(g.text)}));
+    S.risks = (r.risks||[]).filter(x => x.text).map(x => ({text:String(x.text), response:String(x.response||""), stage: okS(x.stage) ? +x.stage : undefined}));
+    S.first = (r.first||[]).filter(x => x.text).map(x => ({text:String(x.text), owner:String(x.owner||""), due:String(x.due||""), done:false}));
+    SEL = null; leaveExample(); busy(btn, st, false); renderAll(); st.textContent = "הדרך מוכנה. היא מופיעה כאן וגם במפת הדרכים. אפשר לערוך הכול.";
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+function sanitizeSVG(raw){
+  const m = String(raw||"").match(/<svg[\s\S]*<\/svg>/i); if(!m) throw {code:"no_svg"};
+  let s = m[0].replace(/<script[\s\S]*?<\/script>/gi, "").replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, "").replace(/<image\b[^>]*>/gi, "").replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*')/gi, "").replace(/((?:xlink:)?href\s*=\s*)("|')(?!#)[^"']*\2/gi, '$1"#"');
+  if(!/xmlns=/.test(s)) s = s.replace(/<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+  if(s.length > 120000) throw {code:"too_big"};
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s);
+}
+function fileToDataURL(file){
+  return new Promise((res, rej) => {
+    if(!file || !/^image\//.test(file.type)) return rej(new Error("type"));
+    const fr = new FileReader();
+    fr.onload = () => { const img = new Image(); img.onload = () => { const max = 900, k = Math.min(1, max / Math.max(img.width, img.height)); const c = document.createElement("canvas"); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k); const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height); res(c.toDataURL("image/jpeg", 0.8)); }; img.onerror = rej; img.src = fr.result; };
+    fr.onerror = rej; fr.readAsDataURL(file);
+  });
+}
+$("aiPic").addEventListener("click", async () => {
+  if(!SAMPLE) return; const btn = $("aiPic"), st = $("picStatus");
+  const desc = $("picDesc").value.trim(); S.vision.picture.desc = desc;
+  if(!desc){ st.textContent = "כדאי לתאר מה רואים בתמונה, או ללחוץ ״הצעת תיאור מתוך התשובות״."; return; }
+  busy(btn, st, true, "מצייר את תמונת העתיד… עד דקה");
+  try{
+    const r = await SAMPLE(`צייר/י איור וקטורי צבעוני וחם של ״תמונת עתיד״: סצנה אחת שמראה עתיד טוב ומלא חיים, לפי התיאור:
+"${desc}"
+ההקשר: ${TYPE_LABEL[S.ctx.type]} בישראל, בשנת ${S.horizon}.
+דרישות:
+- להחזיר קוד SVG בלבד, שמתחיל ב־<svg ונגמר ב־</svg>, בלי הסבר.
+- viewBox="0 0 640 400", רקע מלא, סגנון איור שטוח ונעים, צבעים רכים ובהירים, הרבה פרטים קטנים מהתיאור.
+- אנשים כדמויות פשוטות ומגוונות, בלי פנים מפורטות. בלי אנשים אמיתיים ובלי דמויות מוכרות.
+- טקסט בתוך האיור: לכל היותר 4 מילים בעברית, עם direction="rtl".
+- בלי <script>, בלי <image>, בלי קישורים חיצוניים. עד 20,000 תווים.`, {modelTier:"default", cache:false});
+    S.vision.picture.img = sanitizeSVG(r.text); leaveExample(); busy(btn, st, false); renderVision(); renderBack(); st.textContent = "התמונה מוכנה. אפשר לשנות את התיאור ולצייר שוב.";
+  }catch(e){ busy(btn, st, false); st.textContent = e && e.code === "no_svg" ? "הציור לא הצליח. אפשר לנסות שוב או לפשט את התיאור." : e && e.code === "too_big" ? "הציור יצא מורכב מדי. כדאי לפשט את התיאור." : errCopy(e); }
+});
+$("aiPicFromVision").addEventListener("click", async () => {
+  if(!SAMPLE) return; const btn = $("aiPicFromVision"), st = $("picStatus");
+  if(missingReq().length && !$("vText").value.trim()){ st.textContent = "קודם כדאי לענות על שאלות הבסיס שבצד."; return; }
+  busy(btn, st, true, "כותב תיאור לתמונה…");
+  try{
+    const r = await askJSON(`${rules()}
+
+${fieldsText()}
+החזון: ${$("vText").value.trim() || "(עוד לא נכתב)"}
+
+משימה: לתאר סצנה אחת, כמו תמונה, שמראה את החזון הזה מתממש בשנת ${S.horizon}: איפה זה, מה רואים, מי נמצאים שם ומה הם עושים. 2–3 משפטים מוחשיים.
+להחזיר JSON בלבד: {"desc":""}`, {modelTier:"quick", cache:false});
+    if(!r || !r.desc) throw {code:"invalid_json"};
+    S.vision.picture.desc = String(r.desc); leaveExample(); busy(btn, st, false); renderVision(); st.textContent = "יש תיאור. אפשר לערוך אותו וללחוץ ״ציור תמונת העתיד״.";
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+
+let askBusy = false;
+async function ask(q){
+  if(!SAMPLE || !q.trim() || askBusy) return; askBusy = true; const st = $("askStatus"); st.textContent = "חושב…";
+  S.qa = S.qa || []; S.qa.push({q:q.trim(), a:""}); renderQA();
+  const prev = S.qa.slice(-5,-1).map(x => `שאלה: ${x.q}\nתשובה: ${x.a}`).join("\n\n");
+  try{
+    const r = await SAMPLE(`${rules()}
+
+מפת הדרכים:
+${planText().slice(0, 14000)}
+${prev ? "\nשאלות קודמות:\n" + prev : ""}
+
+משימה: לענות על השאלה במשפטים שלמים, מעשי וממוקד, 80–200 מילים. טקסט רגיל בלי markdown.
+
+השאלה: ${q.trim()}`, {modelTier:"default", cache:false, onText:({text}) => { S.qa[S.qa.length-1].a = text; const last = $("qa").lastElementChild; if(last) last.textContent = text; st.textContent = ""; }});
+    S.qa[S.qa.length-1].a = r.text; st.textContent = "";
+  }catch(e){ if(e && e.text) S.qa[S.qa.length-1].a = e.text; else S.qa.pop(); st.textContent = errCopy(e); }
+  askBusy = false; renderQA();
+}
+$("chips").addEventListener("click", e => { const b = e.target.closest("[data-ask]"); if(b) ask(b.dataset.ask); });
+$("askForm").addEventListener("submit", e => { e.preventDefault(); const v = $("askIn").value; $("askIn").value = ""; ask(v); });
+
+/* ---------- export ---------- */
+$("toStress").addEventListener("click", async () => { await copy(planText()); $("stressStatus").textContent = "המפה הועתקה. בכלי בדיקת העמידות מדביקים אותה בשלב ״התוכנית״."; });
+$("copyAll").addEventListener("click", () => copy(planText()));
+$("dlAll").addEventListener("click", async () => {
+  const st = $("dlStatus"); if(!DL){ st.textContent = "ההורדה זמינה כשיש חיבור למודל. אפשר להעתיק כטקסט."; return; }
+  const sg = stages();
+  const table = `<table><tr><th></th>${sg.map(s => `<th>${esc(s.label)}</th>`).join("")}</tr>${S.lanes.map(l => `<tr><th>${esc(l.name)}</th>${sg.map((s,si) => `<td>${S.items.filter(i => i.lane === l.id && i.stage === si).map(i => `<div class="${i.kind === "ms" ? "ms" : "act"}">${esc(i.text)}${i.owner ? `<br><small>מוביל/ה: ${esc(i.owner)}</small>` : ""}</div>`).join("")}</td>`).join("")}</tr>`).join("")}<tr><th>תנאים למעבר</th>${sg.map((s,si) => `<td>${S.gates.filter(g => g.stage === si).map(g => `<div class="gt">${esc(g.text)}</div>`).join("")}</td>`).join("")}</tr></table>`;
+  const html = `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>מפת דרכים</title><link href="https://fonts.googleapis.com/css2?family=Rubik:wght@600&family=Assistant:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:Assistant,Arial,sans-serif;direction:rtl;margin:20px;color:#16232e}h1,h2{font-family:Rubik,Arial,sans-serif}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #d5dde3;padding:6px;vertical-align:top;text-align:right}.ms{border-right:4px solid #17607a;padding:3px 6px;margin:3px 0;font-weight:700}.act{padding:3px 6px;margin:3px 0;background:#f2f5f8}.gt{background:#fbefd9;padding:3px 6px;margin:3px 0}.v{border-right:6px solid #17607a;background:#dcecf1;padding:10px 14px}@page{size:A4 landscape;margin:10mm}@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>
+<h1>${esc(S.title || "מהחזון להיום")}</h1><p>${esc(TYPE_LABEL[S.ctx.type])}${S.ctx.region ? " · " + esc(S.ctx.region) : ""} · חזון לשנת ${esc(S.horizon)}</p>
+${S.vision.picture && S.vision.picture.img ? `<img src="${S.vision.picture.img}" alt="תמונת העתיד" style="max-width:520px;border:1px solid #d5dde3;border-radius:10px;display:block;margin-bottom:10px">` : ""}<div class="v"><b>החזון:</b> ${esc(S.vision.text)}${S.vision.headline ? `<br><b>״${esc(S.vision.headline)}״</b>` : ""}</div>
+${S.vision.stmts.length ? `<h2>איך נדע שהחזון התממש</h2><ul>${S.vision.stmts.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+<h2>מפת הדרכים</h2>${table}
+${S.risks.length ? `<h2>מה עלול לשבש</h2><ul>${S.risks.map(r => `<li><b>${esc(r.text)}</b> מה עושים: ${esc(r.response)}</li>`).join("")}</ul>` : ""}
+${S.first.length ? `<h2>הצעדים הראשונים</h2><table><tr><th>מה עושים</th><th>מי מוביל/ה</th><th>עד מתי</th></tr>${S.first.map(f => `<tr><td>${esc(f.text)}</td><td>${esc(f.owner||"")}</td><td>${esc(f.due||"")}</td></tr>`).join("")}</table>` : ""}
+<p style="color:#5b6b78;font-size:12px">נוצר בכלי ״מהחזון להיום״ של Be Good.</p></body></html>`;
+  try{ await DL.save({filename:`מפת-דרכים-${S.title || S.horizon}.html`, data:html}); st.textContent = "הקובץ ירד. לפתוח בדפדפן ולהדפיס."; }
+  catch(e){ st.textContent = e && e.code === "declined" ? "" : "ההורדה לא הצליחה."; }
+});
+
+/* ---------- save ---------- */
+async function save(){ const st = $("mStatus"); if(!DB) return; if(!MID) MID = uid(); S.title = $("mTitle").value.trim();
+  try{ await DB.doc(`roadmaps/${MID}`).set({name:S.title || `חזון ${S.horizon}`, s:JSON.parse(JSON.stringify(S)), updatedAt:Date.now()}); leaveExample(); st.textContent = "נשמר"; } catch(e){ st.textContent = "השמירה לא הצליחה."; } }
+async function list(){ const box = $("mList"); if(!box.hidden){ box.hidden = true; return; } if(!DB) return; box.hidden = false; box.innerHTML = `<span class="status">טוען…</span>`;
+  try{ const q = await DB.collection("roadmaps").orderBy("updatedAt","desc").limit(25).get(); box.innerHTML = q.empty ? `<span class="muted small">עוד אין מפות שמורות.</span>` : q.docs.map(d => `<button type="button" data-m="${esc(d.id)}">${esc(d.data().name)} · <span class="muted small">${esc(new Date(d.data().updatedAt||0).toLocaleDateString("he-IL"))}</span></button>`).join(""); } catch(e){ box.innerHTML = `<span class="muted small">לא הצלחנו לטעון.</span>`; } }
+$("mList").addEventListener("click", async e => { const b = e.target.closest("[data-m]"); if(!b) return; try{ const s = await DB.doc(`roadmaps/${b.dataset.m}`).get(); if(!s.exists) return; S = {...fresh(), ...s.data().s}; MID = b.dataset.m; SEL = null; $("mList").hidden = true; leaveExample(); renderAll(); $("mStatus").textContent = "נפתח"; } catch(err){} });
+function newOne(){ S = fresh(S.ctx.type); MID = null; SEL = null; leaveExample(); renderAll(); $("desc").focus(); }
+$("mSave").addEventListener("click", save); $("mOpen").addEventListener("click", list); $("mNew").addEventListener("click", newOne); $("resetBtn").addEventListener("click", newOne);
+
+renderAll();
+</script>
+<style id="bgkit-css">
+.bgkit-bar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+.bgkit-bar b{font-family:var(--font-display)}
+.bgkit-bar a{color:var(--ink);text-decoration:none;border-radius:999px;padding:3px 10px;border:1px solid transparent}
+.bgkit-bar a:hover{border-color:var(--accent)}
+.bgkit-bar a[aria-current="page"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .bgkit-bar a[aria-current="page"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bgkit-bar a[aria-current="page"]{color:#0f171d}}
+.bgkit-help-btn{align-self:flex-start;border-radius:999px;font-weight:700}
+.bgkit-q{width:26px;height:26px;padding:0;border-radius:50%;font-size:14px;line-height:1;font-family:var(--font-display);margin-inline-start:8px;vertical-align:middle;flex:0 0 auto}
+.bgkit-q[aria-expanded="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bgkit-tip{background:var(--accent-soft);border-radius:10px;padding:10px 14px;font-size:15px;max-width:80ch}
+.bgkit-ov{position:fixed;inset:0;background:rgba(10,20,30,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+.bgkit-ov[hidden]{display:none}
+.bgkit-dlg{background:var(--surface);color:var(--ink);border-radius:16px;max-width:720px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:8px;line-height:1.6}
+.bgkit-dlg h2{font-size:22px}
+.bgkit-dlg ul{margin:0;padding-inline-start:20px}
+.bgkit-dlg p{margin:0}
+.bgkit-dlg .src{font-size:13px;color:var(--muted);margin-top:6px}
+</style>
+<script id="bgkit-js">
+(function(){
+  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "משחק מצב עתידי", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "roadmap", HELP = {"title": "איך עובדים עם מהחזון להיום?", "html": "<p><b>מה הכלי עושה:</b> מתחילים מהעתיד שרוצים להגיע אליו, וחוזרים ממנו אחורה, שלב אחר שלב, עד מה שעושים כבר החודש. כך נבנית מפת דרכים עם אבני דרך, תנאים למעבר בין השלבים, סיכונים וצעדים ראשונים.</p>\n<p><b>מתי משתמשים בו:</b> כשיש כיוון או חלום, ורוצים להפוך אותו לתוכנית. החשיבה מהעתיד אחורה עוזרת לא להיתקע במה שנראה אפשרי היום.</p>\n<p><b>כמה זמן:</b> מפגש של שעתיים עד שלוש לחזון ולדרך, ועוד מפגש קצר לצעדים הראשונים.</p>\n<p><b>החזון:</b> אפשר לתאר תמונת עתיד, וה־AI יצייר אותה, ולענות על שלוש שאלות בסיס. בלי שלוש השאלות האלה המפה לא תהיה משמעותית.</p>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>מאיפה מגיעים ולאן ממשיכים:</b> את העתיד הרצוי אפשר לייבא מ<a href=\"hl-horizons.html\" target=\"_blank\" rel=\"noopener\">שלושה אופקים</a> או מ<a href=\"hl-collage.html\" target=\"_blank\" rel=\"noopener\">תמונת עתיד קבוצתית</a>. את המפה המוכנה כדאי לבדוק ב<a href=\"hl-stress.html\" target=\"_blank\" rel=\"noopener\">בדיקת עמידות</a>.</p>\n<p class=\"src\">מבוסס על Visioning, Backcasting ו־Roadmapping מערכת Futures Toolkit.</p>", "steps": {"#h1s": "מתארים את המקום ובוחרים את שנת החזון. מהשנה הזו נגזרים השלבים של מפת הדרכים.", "#h2s": "שני חלקים: תמונת עתיד, שמתארים במילים וה־AI מצייר, ושאלות הבסיס. שלוש השאלות הראשונות הן הבסיס. מהתשובות נבנה החזון, עם AI או בלעדיו. אפשר גם לייבא חזון משלושה אופקים.", "#h3s": "חוזרים מהחזון אחורה. בכל שלב שואלים: מה יהיה נכון עד אז, כדי שהשלב הבא יקרה? כל מה שנכתב כאן מופיע גם במפת הדרכים.", "#h4s": "כל שורה היא תחום עבודה, וכל עמודה היא שלב בזמן. לוחצים על פריט כדי לערוך אותו, להעביר אותו או לרשום מי מוביל אותו. המעוינים הצהובים הם תנאים למעבר לשלב הבא.", "#h5s": "מה עלול לשבש את הדרך, ומה עושים אם זה קורה. כדי לבדוק לעומק מול משברים, מעתיקים את המפה לבדיקת העמידות.", "#h6s": "הצעדים לשלושת החודשים הקרובים, עם מי מוביל כל צעד ועד מתי. כך אפשר לבדוק בעוד חודש מה התקדם."}};
+  const wrap = document.querySelector(".wrap"); if(!wrap) return;
+  // 1. toolkit bar
+  const bar = document.createElement("nav"); bar.className = "bgkit-bar"; bar.setAttribute("aria-label", "מעבדת האופק · Be Good");
+  bar.innerHTML = `<b>מעבדת האופק:</b><a href="${HUB}" target="_blank" rel="noopener">דף הבית</a>` + TOOLS.map(t => `<a href="${t.url}" ${t.k === ME ? 'aria-current="page"' : 'target="_blank" rel="noopener"'} title="${t.short}">${t.name}</a>`).join("");
+  wrap.insertBefore(bar, wrap.firstChild);
+  // 2. help button + dialog
+  const head = document.querySelector("header.top > div") || document.querySelector("header.top");
+  const btn = document.createElement("button"); btn.type = "button"; btn.className = "bgkit-help-btn"; btn.textContent = "איך עובדים עם הכלי?";
+  if(head) head.appendChild(btn);
+  const ov = document.createElement("div"); ov.className = "bgkit-ov"; ov.hidden = true;
+  ov.innerHTML = `<div class="bgkit-dlg" role="dialog" aria-modal="true" aria-labelledby="bgkitT"><div class="row" style="justify-content:space-between;align-items:center"><h2 id="bgkitT">${HELP.title}</h2><button type="button" id="bgkitX">סגירה</button></div>${HELP.html}<p style="margin-top:8px">וגם הסבר לכל שלב: ללחוץ על סימן השאלה שליד כותרת השלב.</p></div>`;
+  document.body.appendChild(ov);
+  let last = null;
+  const open = () => { last = document.activeElement; ov.hidden = false; ov.querySelector("#bgkitX").focus(); };
+  const close = () => { ov.hidden = true; if(last) last.focus(); };
+  btn.addEventListener("click", open);
+  ov.addEventListener("click", e => { if(e.target === ov || e.target.id === "bgkitX") close(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape" && !ov.hidden) close(); });
+  // 3. per-step ? buttons
+  Object.entries(HELP.steps || {}).forEach(([sel, text], i) => {
+    const h = document.querySelector(sel); if(!h) return;
+    const q = document.createElement("button"); q.type = "button"; q.className = "bgkit-q"; q.textContent = "?"; q.setAttribute("aria-label", "הסבר על השלב: " + h.textContent.trim()); q.setAttribute("aria-expanded", "false");
+    const tip = document.createElement("div"); tip.className = "bgkit-tip"; tip.hidden = true; tip.id = "bgkitTip" + i; tip.textContent = text; q.setAttribute("aria-controls", tip.id);
+    h.appendChild(q);
+    const anchor = h.closest(".stage-head") || h.closest(".row") || h;
+    anchor.insertAdjacentElement("afterend", tip);
+    q.addEventListener("click", () => { tip.hidden = !tip.hidden; q.setAttribute("aria-expanded", String(!tip.hidden)); });
+  });
+})();
+</script>
+<script src="lib/screens-menu.js"></script>
+</body>
+</html>
