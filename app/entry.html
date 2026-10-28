@@ -257,7 +257,7 @@ function renderEntry(){
   view.textContent = "";
   const card = el("div",{class:"card"});
   const inn = el("div",{class:"in"});
-  const code = el("input",{class:"code", placeholder:"XXXX-XXXX או 6 ספרות", autocomplete:"off", spellcheck:"false", "aria-label":"הקוד שלך"});
+  const code = el("input",{class:"code", placeholder:"קוד", autocomplete:"off", spellcheck:"false", "aria-label":"הקוד שלך"});
   const err = el("div",{class:"err"},""); err.hidden = true;
   // הגעה מכניסה שהסתיימה (access-guard.js, ?expired=1)
   if (new URLSearchParams(location.search).get("expired")) { err.textContent = "הכניסה הקודמת הסתיימה (כניסה תקפה ל-12 שעות). אפשר להיכנס שוב: מה ששמרת במכשיר מחכה לך."; err.hidden = false; err.style.color = "var(--ink, #14212B)"; }
@@ -300,7 +300,7 @@ function renderEntry(){
   // קישור מהמרצה (entry.html?c=קוד) — הקוד כבר ממולא, נשאר רק ללחוץ "כניסה"
   const pre = fixCodeKeys(new URLSearchParams(location.search).get("c") || "").replace(/[^A-Z0-9-]/g, "").slice(0, 12);
   if (pre) code.value = pre;
-  inn.append(el("p",{class:"hint"},"אפשר להקליד את הקוד שקיבלתם: קוד אישי, או קוד לקבוצה מהמרצה או מהמנחה (גם 6 ספרות מהסדנה). הקוד קובע מה פתוח לכם."),
+  inn.append(
     el("label",{},"הקוד שלך"), code, err, btn);
   card.append(el("h2",{},"כניסה למערכת"), inn);
   view.append(card);
@@ -308,17 +308,17 @@ function renderEntry(){
   const sp = el("div",{class:"spaces"});
   const spaceTile = (cls, title, text, href, linkText) => { const d = el("div",{class:"space " + cls}); d.append(el("b",{},title), el("p",{},text), el("a",{href},linkText)); return d; };
   sp.append(
-    spaceTile("org", "🏢 המרחב הארגוני", "לארגונים, לקהילות, לרשויות ולצוותי הנהלה: חוסן מול עתיד לא ידוע, מנהיגות, תקשורת וחשיבה משותפת.", "examples-org.html", "תוצרים לדוגמה מהעולם הארגוני ←"),
-    spaceTile("edu", "🎒 המרחב החינוכי", "לבתי ספר, לגנים, לאקדמיה ולהורים: כיתה, הנחיה, תרגול שיחות, משחקי חוסן ושגרות.", "examples.html", "תוצרים לדוגמה מעולם החינוך ←"),
-    el("div",{class:"shared"}, "↔ חלק מהכלים משותפים לשני המרחבים: מעבדת האופק, מסע אל החוסן, חשיבת צוות, תקשורת מקדמת חוסן חברתי, יש מה לעשות, לימודי חוסן חברתי וספריית המקורות."));
+    spaceTile("org", "🏢 המרחב הארגוני", "כלים לארגונים, לקהילות, לרשויות ולצוותי הנהלה: היערכות לעתיד לא ידוע, מנהיגות, תקשורת וחשיבה משותפת בצוות.", "examples-org.html", "תוצרים לדוגמה מהעולם הארגוני ←"),
+    spaceTile("edu", "🎒 המרחב החינוכי", "כלים לבתי ספר, לגנים, לאקדמיה ולהורים: עבודה עם הכיתה, הנחיית קבוצות, תרגול שיחות, משחקי חוסן ושגרות.", "examples.html", "תוצרים לדוגמה מעולם החינוך ←"),
+    el("div",{class:"shared"}, "↔ כלים שמופיעים בשני המרחבים: מעבדת האופק, מסע אל החוסן, חשיבת צוות, תקשורת מקדמת חוסן חברתי, יש מה לעשות, לימודי חוסן חברתי וספריית המקורות."));
   view.append(sp);
   // מפת הכלים: לא בטוחים מאיפה להתחיל? (map.html, פתוח לכולם)
   const ml = el("a",{class:"maplink",href:"map.html"}), mt = el("div",{});
-  mt.append(el("b",{},"מאיפה מתחילים? מפת הכלים"), el("span",{},"אפשר לספר מה רוצים לעשות, ולקבל דרך: באיזה כלי מתחילים ומה בהמשך."));
+  mt.append(el("b",{},"מאיפה מתחילים? מפת הכלים"), el("span",{},"מתארים מה רוצים לעשות, והמפה מציעה באיזה כלי להתחיל ובאילו כלים להמשיך."));
   ml.append(el("span",{class:"sun"},"🧭"), mt);
   view.append(ml);
   const partnership = el("a",{class:"maplink",href:"research-partnership.html"}), partnershipText = el("div",{});
-  partnershipText.append(el("b",{},"שותפות במחקר"), el("span",{},"פנייה ראשונית למוסדות ולאנשים פרטיים. אפשר לעיין בתנאים ולהציע רעיון, בלי חשבון קודם."));
+  partnershipText.append(el("b",{},"שותפות במחקר"), el("span",{},"מוסדות ואנשים פרטיים מוזמנים להציע שיתוף פעולה במחקר. אפשר לקרוא את התנאים ולשלוח הצעה בלי להירשם."));
   partnership.append(el("span",{class:"sun"},"🔬"), partnershipText);
   view.append(partnership);
   // "יש מה לעשות" (19/10/2026): מדריכון לחירום, פתוח לכולם בלי קוד. מהמדריכון אין מעבר לכלים אחרים.
