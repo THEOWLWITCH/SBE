@@ -172,3 +172,35 @@ test('owner review selects explicit personal identity and study grants; creates 
   await button(s.root,'יצירת קוד אישי למחקר').click();assert.equal(field(s.root,'זהות אישית מאומתת').value,'NEW-SYNTHETIC');assert.match(s.root.textContent,/NEW-SYNTHETIC/);assert.ok(!s.calls.some(([a])=>a==='intakeReview'&&s.calls.at(-1)[1]?.decision==='approved'));
   field(s.root,'וידוא זהות הפונה הושלם').checked=true;await button(s.root,'אישור הבקשה וההרשאות שנבחרו').click();const sent=s.calls.find(([a,p])=>a==='intakeReview'&&p.decision==='approved')[1];assert.deepEqual(sent.permissions,['view_study','view_approved_findings']);assert.equal(sent.studyId,id(31));assert.equal(sent.studyExpectedRevision,0);assert.equal(sent.individualCode,'NEW-SYNTHETIC');assert.equal(sent.note,'שומרת הקשר');
 });
+
+test('owner approval cancels changed decisions during the study lookup and requires a fresh verified click',async t=>{
+  const UI=require('../../app/lib/research-intake-ui.js');
+  const edits=[
+    ['study',root=>{field(root,'מחקר לאישור').value=id(31);}],
+    ['identity',root=>{const input=field(root,'זהות אישית מאומתת');input.value='SECOND-SYNTHETIC';input.listeners.change();}],
+    ['verification',root=>{field(root,'וידוא זהות הפונה הושלם').checked=false;}],
+    ['permissions',root=>{walk(root).find(n=>n.attributes['data-intake-permission']==='export_data').checked=true;}],
+    ['review note',root=>{field(root,'הערות לבדיקה').value='הערה מעודכנת';}]
+  ];
+  for(const [name,edit]of edits)await t.test(name,async()=>{
+    const s=ownerSetup(),original=s.client.call,lookups=[];let release;
+    s.bootstrap.studies.push({id:id(31),revision:4,config:{title:'מחקר שני עם אותה גרסה'}});
+    s.bootstrap.identities.push({code:'SECOND-SYNTHETIC',label:'זהות שנייה לבדיקה',institution:'בדיקה'});
+    s.client.call=async(action,payload)=>{
+      if(action==='studyGet'){lookups.push(payload.studyId);return new Promise(resolve=>{release=()=>resolve({study:{id:payload.studyId,revision:4}});});}
+      return original(action,payload);
+    };
+    const page=UI.mountOwner(s);await page.detail(s.application.id);
+    field(s.root,'מחקר לאישור').value=id(30);field(s.root,'זהות אישית מאומתת').value='SYNTHETIC';field(s.root,'וידוא זהות הפונה הושלם').checked=true;
+    const pending=button(s.root,'אישור הבקשה וההרשאות שנבחרו').click();assert.equal(typeof release,'function');
+    edit(s.root);release();await pending;
+    assert.equal(s.calls.filter(([a,p])=>a==='intakeReview'&&p.decision==='approved').length,0,'no grant may use edited or unverified choices');
+    assert.match(s.root.textContent,/הפרטים שנבחרו השתנו/);
+    field(s.root,'וידוא זהות הפונה הושלם').checked=true;
+    const expected={studyId:field(s.root,'מחקר לאישור').value,individualCode:field(s.root,'זהות אישית מאומתת').value,note:field(s.root,'הערות לבדיקה').value,permissions:walk(s.root).filter(n=>n.attributes['data-intake-permission']&&n.checked).map(n=>n.attributes['data-intake-permission'])};
+    const confirmed=button(s.root,'אישור הבקשה וההרשאות שנבחרו').click();release();await confirmed;
+    const sent=s.calls.find(([a,p])=>a==='intakeReview'&&p.decision==='approved')[1];
+    assert.equal(sent.studyId,expected.studyId);assert.equal(sent.individualCode,expected.individualCode);assert.equal(sent.note||'',expected.note);assert.deepEqual(sent.permissions,expected.permissions);assert.equal(sent.studyExpectedRevision,4);
+    assert.deepEqual(lookups,[id(30),expected.studyId]);page.clear();
+  });
+});

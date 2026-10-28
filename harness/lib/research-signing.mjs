@@ -29,9 +29,6 @@ function configuration(options){
  return {token,accountId,base:base.href.replace(/\/$/,''),returnUrl:returnUrl.href,connectKey,connectUrl:connectUrl.href,policy};
 }
 export function createSigningAdapter(options={}){
- // Deployment enablement is trusted constructor input, independent of credentials.
- // Check it before provider selection so retained sessions and provider overrides
- // cannot reopen signing in a deployment that has disabled it.
  if(options.signingEnabled!==true)return Object.freeze({provider:'disabled',readiness:()=>({configured:false,state:'disabled',message:'החתימה האלקטרונית אינה פעילה בפריסה זו.'}),verifyEvent:()=>fail('not_configured'),start:async()=>fail('not_configured'),view:async()=>fail('not_configured'),refresh:async()=>fail('not_configured')});
  const provider=options.signingProvider??options.signing?.provider??(options.env||process.env).RESEARCH_SIGNING_PROVIDER??'docusign';
  // Retain provider-specific policy/credentials for already issued sessions.
