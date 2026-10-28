@@ -89,7 +89,7 @@ test('both screens: in the practice group, open by permission, inviting language
 });
 
 test('team thinking: a level to choose (elementary, secondary, educators), sent to the model and guiding the language', () => {
-  assert.deepEqual(TT.LEVELS, ['יסודי', 'על יסודי', 'אנשי ונשות חינוך (בוגרים)']);
+  assert.deepEqual(TT.LEVELS, ['יסודי', 'על יסודי', 'אנשי ונשות חינוך (בוגרים)', 'צוות בארגון או בקהילה (בוגרים)']);
   const f = TT.FIELDS.find((x) => x.k === 'level'); assert.ok(f && f.main && f.type === 'select');
   assert.match(TT.inputText({ level: 'על יסודי', team: 'כיתה' }), /רמה: על יסודי/);
   assert.match(TT.planSystem([]), /אנשי ונשות חינוך \(בוגרים\): שפה מקצועית/);

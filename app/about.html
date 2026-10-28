@@ -120,6 +120,11 @@ h3.grp{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:18px;margin:22px 0
 .tool>b{display:block;font-size:15.5px;margin-bottom:3px;color:var(--spoken);}
 .tool p{margin:0;font-size:14.5px;line-height:1.7;}
 /* שני סוגי כלים (10/10/2026): מעבדה ותרגול, וסביבת עבודה שמלווה עשייה במציאות */
+.spaces4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+.spaces4 .sp{border-radius:14px;padding:12px 14px}.spaces4 .sp b{display:block;font-size:16px;margin-bottom:4px}.spaces4 .sp p{margin:0;font-size:14.5px;line-height:1.55}
+.spaces4 .org{background:#e8eef5;color:#1d3f63}.spaces4 .edu{background:#e7f3ec;color:#245c3a}.spaces4 .shared{background:#dff1f3;color:#0f5f68}.spaces4 .base{background:#edf0f2;color:#3f4b56}
+@media screen and (max-width:640px){.spaces4{grid-template-columns:1fr}}
+.kind.sp-org{background:#e8eef5;color:#1d3f63}.kind.sp-edu{background:#e7f3ec;color:#245c3a}.kind.sp-shared{background:#dff1f3;color:#0f5f68}
 .kind{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:1px 9px;margin-inline-start:6px;vertical-align:2px;white-space:nowrap}
 .kind.lab{background:#EDE3F7;color:#5B2D8E}.kind.work{background:#DFE9E2;color:#2F5A43}.kind.gift{background:#FDF0D2;color:#7A5410}
 .tool .go{display:inline-block;margin-top:6px;font-weight:700}
@@ -151,11 +156,12 @@ section.card h3{font-size:17px;margin-bottom:8px;}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .brand{background:#EEF1F4;border-radius:12px;padding:8px 12px;} }
 :root[data-theme="dark"] .brand{background:#EEF1F4;border-radius:12px;padding:8px 12px;}
 </style>
+<script src="lib/brand-tagline.js" defer></script>
 </head>
 <body>
 <div class="wrap">
 <a class="back" id="back" href="entry.html">→ למסך הכניסה</a>
-<img class="brand" src="assets/begood-logo.webp" alt="Begood: חינוך לחוסן">
+<img class="brand" src="assets/begood-logo-mark.webp" alt="Begood" data-brand>
 
 <header class="hero">
   <h1>להיות מוכנים לאתגרי החיים</h1>
@@ -165,7 +171,7 @@ section.card h3{font-size:17px;margin-bottom:8px;}
 </header>
 
 <nav class="toc" aria-label="תוכן העמוד">
-  <a href="#value">ההזמנה שלנו</a><a href="#tools">הכלים</a><a href="#ai">בינה מלאכותית</a><a href="#start">איך מתחילים</a><a href="#privacy">פרטיות</a><a href="#contact">יצירת קשר</a>
+  <a href="#value">ההזמנה שלנו</a><a href="#spaces">ארבעה מרחבים</a><a href="#tools">הכלים</a><a href="#ai">בינה מלאכותית</a><a href="#start">איך מתחילים</a><a href="#privacy">פרטיות</a><a href="#contact">יצירת קשר</a>
 </nav>
 
 <section id="value">
@@ -174,8 +180,20 @@ section.card h3{font-size:17px;margin-bottom:8px;}
     <div class="val"><div class="ic">🎭</div><b>מתאמנים לפני שזה אמיתי</b><p>שיחה מאתגרת היא מיומנות, ואפשר לתרגל אותה. בסימולציה טועים בלי מחיר, מנסים שוב, ומגיעים לשיחה האמיתית עם ביטחון.</p></div>
     <div class="val"><div class="ic">🔍</div><b>רואים את התמונה כולה</b><p>מה התלמידים מרגישים באמת? מה מחזיק את הצוות בזמן משבר? Begood הופכת תחושות לתמונת מצב ברורה, ולהמלצות שאפשר ליישם כבר מחר.</p></div>
     <div class="val"><div class="ic">✍️</div><b>יוצאים עם משהו ביד</b><p>לא עוד המלצות כלליות: תדריך לשיחה, תוכנית פעילות, הודעה מוכנה לשליחה. כולם כתובים בשפה מחזקת, ומותאמים בדיוק למקרה שלכם.</p></div>
-    <div class="val"><div class="ic">🌱</div><b>אתם במרכז</b><p>Begood לא מחליפה את איש/אשת החינוך. היא מעצימה אותם. במקום "להפנות הלאה", היא נותנת הדרכה מעשית לשיחה אישית, מכילה ותומכת.</p></div>
+    <div class="val"><div class="ic">🌱</div><b>אתם במרכז</b><p>Begood לא מחליפה את מי שמוביל/ה את הקבוצה: איש/אשת חינוך, מנהל/ת או רכז/ת קהילה. היא מעצימה אותם. במקום "להפנות הלאה", היא נותנת הדרכה מעשית לשיחה אישית, מכילה ותומכת.</p></div>
   </div>
+</section>
+
+<section id="spaces">
+  <h2>ארבעה מרחבים, בית אחד</h2>
+  <p class="grp-lead">Begood בנויה משני מרחבי עבודה, על תשתית משותפת אחת. כולם נכנסים מדף הבית, וכל אחד ואחת עובדים במרחב שלהם.</p>
+  <div class="spaces4">
+    <div class="sp org"><b>🏢 המרחב הארגוני</b><p>לארגונים, לקהילות, לרשויות ולצוותי הנהלה: חוסן מול עתיד לא ידוע, מנהיגות, תקשורת וחשיבה משותפת. עם תיקיית תוצרים לדוגמה מהעולם הארגוני.</p></div>
+    <div class="sp edu"><b>🎒 המרחב החינוכי</b><p>לבתי ספר, לגנים, לאקדמיה ולהורים: כיתה, הנחיה, תרגול שיחות, משחקי חוסן ושגרות. עם ספריית תוצרים לדוגמה מעולם החינוך.</p></div>
+    <div class="sp shared"><b>↔ משותפים</b><p>כלים שמתאימים לשני העולמות ומופיעים בשני המרחבים: מעבדת האופק, מסע אל החוסן, חשיבת צוות, תקשורת מקדמת חוסן חברתי, יש מה לעשות, לימודי חוסן חברתי וספריית המקורות.</p></div>
+    <div class="sp base"><b>⚙️ ניהול · 🔬 מחקר ושותפויות</b><p>התשתית של שני המרחבים: כניסה, קודים ומוסדות, בקשות לכלים ובקרת איכות, ומחקר שנעשה בהסכמה בלבד.</p></div>
+  </div>
+  <p class="grp-lead"><b>מי רואה מה?</b> מי שנכנס/ת למרחב הארגוני רואה את הכלים הארגוניים ואת הכלים המשותפים. מי שנכנס/ת למרחב החינוכי רואה את הכלים החינוכיים ואת הכלים המשותפים. כלים של מרחב אחד לא מופיעים במרחב השני. ליד כל כלי ברשימה למטה מסומן המרחב שלו.</p>
 </section>
 
 <section id="tools">
@@ -208,7 +226,7 @@ section.card h3{font-size:17px;margin-bottom:8px;}
     <div class="tool"><b>מעבדת שיח וחקר משותף<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>קבוצה חוקרת שאלה בתחום הדעת: מנסחת שאלה, בונה טענות, בודקת ראיות ומתקנת יחד. לכל משתתף ומשתתפת תפקיד, גם בהכנת החומרים ובתיעוד, וכל אחד ואחת מביעים עמדה ומסבירים אותה. גם עמדה שלא נבחרה נשמרת, והמורה מאשרת את המסקנה.</p></div>
     <div class="tool" id="games"><b>משחקי חוסן<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>משחקים שמחזקים חוסן חברתי בכיתה, בצוות ובבית. "רביעיות חוסן": משחק רביעיות להדפסה עם 14 מושגי חוסן. "זיכרון חוסן": 20 זוגות עם איורים חביבים, על המסך ולהדפסה, בזוגות זהים לגיל הצעיר ובזוגות של מושג ומצב לכל שכבת גיל. בכל זוג או רביעייה שמשלימים עוצרים ל"רגע של חוסן". "צועדים אל החוסן": משחק לוח על המסך ולהדפסה, עם משימות בדרך, מכשולים שעוברים בעזרת האחרים, ומשחק שיתופי מול השעון. "בלי פאניקה!": משחק קלפים למוכנות בחירום, על המסך ולהדפסה, עם הכנות מראש, אלתורים מצחיקים, עזרה מהשכנים ורשימת מוכנות לבית. "מחולל סיפורי חוסן": ילדים ממציאים דמויות, נושא ותפניות, ומקבלים סיפור חוסן מאויר להדפסה, עם הקדשה למי שיצר/ה אותו. "גן הרעיונות": מגדלים רעיון מזרע ועד פרי עם גני, שנותנת משוב על הרעיון בכל שלב ומתייעצת, ומחליטים בכל שלב איך ממשיכים. ועוד: "לאן זה שייך?" (התאמת היגדים), "חידות חוסן" בארבע רמות, "בינגו חוסן", "20 שאלות של חוסן", "אמת או אתגר" עם גלגל, "סימני דרך" (מסלול תחנות לארבע שכבות גיל) ו"רכבת המוכנות" (השלמת רצפים של תכנון, היערכות, תרגול, ביצוע ותחקור).</p></div>
     <div class="tool" id="horizon-lab"><b>מעבדת האופק<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>תשעה כלים לחוסן מול עתיד לא ידוע, לבתי ספר, לקהילות, לארגונים ולקהילות מקצועיות. שומעים את הקהילה ("קול הקהילה"), מזהים אותות לשינוי ("רדאר החוסן החברתי"), בונים עולמות אפשריים ("מחולל העתידים"), בוחנים השלכות ("מעגלי העתיד"), מחליטים ממה להיפרד ובמה להשקיע ("שלושה אופקים"), יוצרים יחד תמונת עתיד ("תמונת עתיד קבוצתית"), בונים מפת דרכים ("מהחזון להיום"), מתרגלים ניהול משבר ("משחק מצב עתידי"), ובודקים כמה התכנית תעמוד בפני משברים ("בדיקת עמידות"). בכל הכלים: איומים מוכרים בישראל וגם פחות מוכרים, ואוטונומיה תפקודית.</p></div>
-    <div class="tool" id="yesh-ma-laasot"><b>יש מה לעשות: מדריכון לחירום<span class="kind gift">🎁 פתוח לכולם</span></b><p>לרגעי חירום, כשאתם המבוגר שנמצא עכשיו עם הילדים: מה עושים ומה אומרים בדקה הראשונה, פרוטוקול מעש״ה, נשימה וקרקוע, מה לעשות כשילד במצוקה חריגה, ופעילויות קצרות למרחב המוגן. בעברית ובערבית, בלי קוד ובלי כניסה. אפשר לשלוח אותו כמתנה, עם הקדשה אישית.</p><a class="go" href="yesh-ma-laasot.html">לפתיחת המדריכון ←</a></div>
+    <div class="tool" id="yesh-ma-laasot"><b>יש מה לעשות: מדריכון לחירום<span class="kind gift">🚨 פתוח לכולם</span></b><p>לרגעי חירום, כשאתם המבוגר שנמצא עכשיו עם הילדים: מה עושים ומה אומרים בדקה הראשונה, פרוטוקול מעש״ה, נשימה וקרקוע, מה לעשות כשילד במצוקה חריגה, ופעילויות קצרות למרחב המוגן. בעברית ובערבית, בלי קוד ובלי כניסה. אפשר לשלוח אותו כמתנה, עם הקדשה אישית.</p><a class="go" href="yesh-ma-laasot.html">לפתיחת המדריכון ←</a></div>
     <div class="tool" id="family-bridge"><b>גשר בין הבית לכיתה<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>המשפחה והצוות בונים יחד שגרת קשר: כל משפחה בוחרת את הדרך שנוחה לה, ויחד מחליטים על הצעד הבא, בכיתה ובבית. כרטיס בחירה למשפחה, תגובה והחלטה, תרגול השיחה עם הורה, ושאלון קשר לתחילת השנה.</p></div>
     <div class="tool"><b>חשיבת צוות<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>צוות של תלמידים או של מבוגרים חושב יחד על אתגר: כל הקולות נשמעים, כל רעיון מוסבר במילים של עמית לפני שמגיבים, שוקלים בעד ונגד ומפרגנים לתרומה. בכל שלב שואלים מה הרווחנו מהחשיבה ביחד, ובסוף הסבב התפקידים מתחלפים.</p></div>
   </div>
@@ -243,7 +261,7 @@ section.card h3{font-size:17px;margin-bottom:8px;}
   </div>
   <div class="lib" style="background:var(--spoken-soft)">
     <b>🗂 תוצרים לדוגמה</b>
-    <p>רוצים לראות איך זה נראה בפועל? ב<a href="examples.html">ספריית התוצרים לדוגמה</a>, דוחות, מדריכים, תוכניות ותרחישים, כפי שהם יוצאים מהמערכת.</p>
+    <p>רוצים לראות איך זה נראה בפועל? יש שתי ספריות, אחת לכל מרחב: <a href="examples.html">תוצרים לדוגמה מעולם החינוך</a> ו<a href="examples-org.html">תוצרים לדוגמה מהעולם הארגוני</a>. דוחות, מדריכים, תוכניות ותרחישים, כפי שהם יוצאים מהמערכת.</p>
   </div>
 </section>
 
@@ -273,5 +291,17 @@ section.card h3{font-size:17px;margin-bottom:8px;}
 </section>
 
 </div>
+<script>
+// המרחב של כל כלי (28/10/2026), לפי lib/spaces.js: תגית קטנה ליד הסוג
+(function(){
+  var SHARED=['מעבדת האופק','מסע אל החוסן','חשיבת צוות','תקשורת מקדמת חוסן חברתי','יש מה לעשות: מדריכון לחירום','לימודי חוסן חברתי'];
+  var L={edu:'🎒 חינוכי',shared:'↔ משותף לשני המרחבים'};
+  document.querySelectorAll('#tools .tool > b').forEach(function(b){
+    var name=(b.firstChild&&b.firstChild.nodeType===3?b.firstChild.textContent:b.textContent).trim();
+    var sp=SHARED.indexOf(name)>=0?'shared':'edu';
+    var t=document.createElement('span');t.className='kind sp-'+sp;t.textContent=L[sp];b.appendChild(t);
+  });
+})();
+</script>
 </body>
 </html>

@@ -46,6 +46,9 @@
               }
             }
             b._auth = { token: token, page: location.pathname.split("/").pop() || "index.html", w: workshop };
+            // מעבדת האופק: עבודה משותפת בקישור (?room=) — המשתתפים פונים למודל רק בתוך העבודה הזו.
+            var hlRoom = (location.search.match(/[?&]room=([a-f0-9]{24})(?:&|$)/) || [])[1];
+            if (hlRoom) { b._auth.room = hlRoom; try { b._auth.g = localStorage.getItem("sbe.hl.g") || ""; } catch(e){} }
             opts = Object.assign({}, opts, { body: JSON.stringify(b) });
           }
         } catch(e){}
@@ -159,25 +162,41 @@
     var dateIL = function(inp){
       if (inp.getAttribute("data-il") || inp.closest("[data-native-date]")) return; inp.setAttribute("data-il", "1");
       var t = document.createElement("input"); t.type = "text"; t.inputMode = "numeric"; t.className = "sbe-date " + (inp.className || "");
+      t.dir = inp.getAttribute("dir") === "rtl" ? "rtl" : "ltr";
       t.placeholder = "יום.חודש.שנה"; t.setAttribute("aria-label", inp.getAttribute("aria-label") || (inp.id && document.querySelector('label[for="' + inp.id + '"]') ? document.querySelector('label[for="' + inp.id + '"]').textContent : "תאריך"));
-      t.style.cssText = "width:7.5em;direction:ltr;text-align:right";
+      t.style.cssText = "width:7.5em;direction:" + t.dir + ";text-align:right";
       var cal = document.createElement("button"); cal.type = "button"; cal.textContent = "📅"; cal.title = "לוח שנה"; cal.setAttribute("aria-label", "פתיחת לוח שנה");
       cal.style.cssText = "font:inherit;border:1px solid #CDD3D8;border-radius:6px;background:transparent;cursor:pointer;padding:.2rem .4rem;margin-inline-start:.25rem";
-      var sync = function(){ t.value = window.sbeDateIL(desc.get.call(inp)); t.style.borderColor = ""; };
+      var message = "כדי לשמור, אפשר לכתוב תאריך תקין כמו 25.10.26";
+      var validity = function(valid){ t.setCustomValidity(valid ? "" : message); inp.setCustomValidity(valid ? "" : message); t.setAttribute("aria-invalid", String(!valid)); t.style.borderColor = valid ? "" : "#B3261E"; t.title = valid ? "" : message; return valid; };
+      var sync = function(){ t.value = window.sbeDateIL(desc.get.call(inp)); validity(true); };
+      var locked = function(){ return inp.disabled || inp.readOnly; };
+      var syncLock = function(){ t.disabled = inp.disabled; t.readOnly = inp.readOnly; cal.disabled = locked(); };
       Object.defineProperty(inp, "value", { configurable: true, get: function(){ return desc.get.call(this); }, set: function(v){ desc.set.call(this, v); sync(); } });
       inp.style.cssText += ";position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;border:0;padding:0";
       inp.tabIndex = -1; inp.setAttribute("aria-hidden", "true");
       inp.parentNode.insertBefore(t, inp); inp.parentNode.insertBefore(cal, inp.nextSibling);
       inp.addEventListener("change", sync);
-      cal.addEventListener("click", function(){ try { if (inp.showPicker) { inp.style.pointerEvents = "auto"; inp.showPicker(); inp.style.pointerEvents = "none"; return; } } catch(e){} t.focus(); });
-      t.addEventListener("change", function(){
-        var v = t.value.trim();
-        if (!v) { desc.set.call(inp, ""); inp.dispatchEvent(new Event("change", { bubbles: true })); return; }
-        var iso = parseIL(v);
-        if (!iso) { t.style.borderColor = "#B3261E"; t.title = "כדי לשמור, אפשר לכתוב תאריך כמו 25.10.26"; return; }
-        desc.set.call(inp, iso); sync(); inp.dispatchEvent(new Event("input", { bubbles: true })); inp.dispatchEvent(new Event("change", { bubbles: true }));
-      });
-      sync();
+      cal.addEventListener("click", function(){ if (locked()) return; try { if (inp.showPicker) { inp.style.pointerEvents = "auto"; inp.showPicker(); inp.style.pointerEvents = "none"; return; } } catch(e){} t.focus(); });
+      var typed = function(commit){
+        if (locked()) { sync(); return; }
+        var v = t.value.trim(), iso = v ? parseIL(v) : "", valid = !v || !!iso;
+        validity(valid);
+        // Invalid visible text stays a local draft; keep the last ISO but notify dirty/validation listeners.
+        if (valid) { desc.set.call(inp, iso); if (commit) sync(); }
+        inp.dispatchEvent(new Event("input", { bubbles: true }));
+        if (valid && commit) inp.dispatchEvent(new Event("change", { bubbles: true }));
+      };
+      t.addEventListener("input", function(){ typed(false); });
+      t.addEventListener("change", function(){ typed(true); });
+      inp._sbeDateIL = {
+        check: function(focus){ var valid = validity(!t.value.trim() || !!parseIL(t.value)); if (!valid && focus) { for (var n = t.parentElement; n; n = n.parentElement) if (n.tagName === "DETAILS") n.open = true; t.focus(); } return valid; },
+        draft: function(){ return t.validity.valid ? null : t.value; },
+        restore: function(raw){ if (locked() || typeof raw !== "string") return; t.value = raw; validity(!raw.trim() || !!parseIL(raw)); }
+      };
+      sync(); syncLock();
+      if (typeof inp._sbeDateDraft === "string") { inp._sbeDateIL.restore(inp._sbeDateDraft); delete inp._sbeDateDraft; }
+      new MutationObserver(syncLock).observe(inp, {attributes:true, attributeFilter:["disabled", "readonly"]});
     };
     var scanDates = function(){ [].forEach.call(document.querySelectorAll('input[type="date"]:not([data-il])'), dateIL); };
     var dPending = 0;
@@ -220,7 +239,7 @@
     nana: ["facilitation-advisor.html", "resilience-advisor-sources.html"], // ננה — מהוראה להנחיה (07/10/2026)
     dialogue: ["shared-dialogue-lab.html", "resilience-advisor-sources.html"], // מעבדת שיח וחקר משותף (11/10/2026)
     teamthink: ["team-thinking.html", "resilience-advisor-sources.html"], // חשיבת צוות (11/10/2026)
-    games: ["games.html", "memory-game.html"], // מחיצת המשחקים (21/10/2026)
+    games: ["games.html", "memory-game.html", "board-game.html", "no-panic.html", "story-maker.html", "statement-sort.html", "riddles.html", "bingo.html", "twenty-q.html", "truth-dare.html", "trail-signs.html", "readiness-train.html", "idea-garden.html"], // מחיצת המשחקים (21/10/2026)
     horizon: ["horizon-lab.html", "hl-voice.html", "hl-radar.html", "hl-futures.html", "hl-circles.html", "hl-horizons.html", "hl-collage.html", "hl-roadmap.html", "hl-game.html", "hl-stress.html"], // מעבדת האופק (אושר 28/10/2026)
     bridge: ["family-bridge.html", "resilience-advisor-sources.html"], routines: ["routines-hub.html", "resilience-advisor-sources.html"], continuity: ["continuity-kit.html", "resilience-advisor-sources.html"], // אושרו 28/10/2026
   };
@@ -247,7 +266,7 @@
     // הכלים הנוספים — רק מה שנפתח למוסד (sbe.session.modules, נשמר ב-system-select.html).
     var mods = {};
     try { mods = JSON.parse(ss("sbe.session.modules") || "{}") || {}; } catch(e){}
-    if (mods.studio === true) allowed.push("resilience-studio.html");
+    if (["studio", "activity", "resilience"].some(function(k){ return mods[k] === true; })) allowed.push("resilience-studio.html");
     if (mods.studies === true) allowed.push("social-resilience-studies.html");
     if (track !== "parent" && track !== "youth") {
       if (mods.conv === true) allowed.push("conversation-planner.html");
@@ -276,6 +295,9 @@
   // ספריית התוצרים לדוגמה — פתוחה לכל מי שמתעניין/ת, גם בלי כניסה (רק מה שמנהלת המערכת סימנה להצגה).
   if (page === "examples.html" || page === "search.html") return;
   if (page === "feedback.html" && /[?&]w=[a-z0-9]{8,32}(&|$)/.test(location.search)) return;
+  // מעבדת האופק (28/10/2026): משתתפים בעבודה משותפת נכנסים בקישור (?room=), בלי קוד, רק לעבודה הזו.
+  // השרת מאפשר כתיבה ופנייה למודל רק בתוך החדר, כל עוד מי שפתח/ה אותו לא סגר/ה אותו (hl-rooms.mjs).
+  if (/^hl-(voice|futures|collage)\.html$/.test(page) && /[?&]room=[a-f0-9]{24}(&|$)/.test(location.search)) return;
   // כניסה שהסתיימה (07/10/2026): האסימון החתום תקף 12 שעות, אבל לשונית פתוחה שומרת אותו גם אחר כך —
   // והשרת דוחה אותו ("אין הרשאה פעילה"). חוזרים למסך הכניסה עם הסבר, במקום הודעת הרשאה מבלבלת.
   if (ALL_USERS.indexOf(page) === -1) {

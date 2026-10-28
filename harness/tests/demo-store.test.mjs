@@ -75,3 +75,15 @@ test('a link with nothing chosen opens the whole folder, also products saved lat
   assert.deepEqual(view.items.map((d) => d.id).sort(), [a.item.id, b.item.id].sort());
   assert.equal((await handleAccess(store, { action: 'demoGet', id: b.item.id, share: out.share.sid }))[0], 200);
 });
+
+test('the demo lab has two parts: organizational products go only to the organizational folder', async () => {
+  const store = slowStore(); const token = await sys(store);
+  const [, e] = await handleAccess(store, { action: 'demoSave', token, tool: 'teamthink', title: 'edu', html: doc });
+  const [, o] = await handleAccess(store, { action: 'demoSave', token, tool: 'teamthink-org', space: 'org', title: 'org', html: doc });
+  assert.equal(e.item.space, 'edu'); assert.equal(o.item.space, 'org');
+  for (const id of [e.item.id, o.item.id]) await handleAccess(store, { action: 'demoPublish', token, id, public: true });
+  const [, edu] = await handleAccess(store, { action: 'demoPublicList' });
+  const [, org] = await handleAccess(store, { action: 'demoPublicList', space: 'org' });
+  assert.deepEqual(edu.items.map((d) => d.title), ['edu']);
+  assert.deepEqual(org.items.map((d) => d.title), ['org']);
+});

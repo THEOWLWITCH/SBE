@@ -150,6 +150,85 @@
     return [{ tool: tool, title: title, label: label, html: standalone($(capture), title), input: inp }];
   }
 
+
+  // ── מעבדת האופק (28/10/2026): תשעת הכלים נפתחים עם הדוגמה המוכנה שלהם (חינוכית, או ארגונית עם ?space=org) ──
+  // hl-runtime.js טוען את הקובץ הזה ושומר את העבודה רק בזיכרון של הדף. המתכון מפעיל את שלב ה-AI שמפיק את התוצר,
+  // מחכה שהמצב בכלי יתעדכן (או להודעת שגיאה בשורת המצב), ובונה מסמך הדפסה של Begood: מהדוח שהכלי מוריד, או מאזורי התוצר בדף.
+  var HL_ERR = /השתבש|לא זמין|יותר מדי בקשות|לא נענתה|פורמט לא תקין|לא הצליח|קודם כדאי|כדאי להוסיף|כדאי לאסוף|כדאי למלא|כדאי לענות/;
+  function hlGet(expr) { try { return (0, eval)(expr); } catch (e) { return undefined; } } // eslint-disable-line no-eval
+  function hlOrg() { return !!(window.sbeSpace && window.sbeSpace() === "org"); }
+  function hlInput() {
+    var b = document.querySelector("#exampleBar span") || document.querySelector("#exampleBar");
+    var t = b ? String(b.textContent || "").replace(/\s+/g, " ").replace(/^מוצגת דוגמה מוכנה:\s*/, "").trim() : "";
+    return "הדוגמה המוכנה של הכלי" + (hlOrg() ? " (המרחב הארגוני)" : "") + (t ? ": " + t : "");
+  }
+  function hlLoad(src) { return new Promise(function (res) { var sc = document.createElement("script"); sc.src = src; sc.onload = sc.onerror = function () { res(); }; document.head.appendChild(sc); }); }
+  async function hlReady() {
+    if (!window.SBE_DOC) { await hlLoad("lib/product-doc.js"); await sleep(1200); } // לוגו ומסמך ההדפסה של Begood
+    await waitFor(function () { return !document.documentElement.classList.contains("ai-off") && window.claude ? true : null; }, 60e3, "החיבור למודל בכלי");
+    await sleep(800);
+  }
+  // שלב AI אחד: לוחצים, ומחכים שהערך בכלי (expr) יוחלף בערך חדש, או לשגיאה בשורת המצב
+  async function hlStep(btn, status, expr, what) {
+    var before = hlGet(expr), b = $(btn); if (!b) throw new Error("לא נמצא הכפתור " + what);
+    var st = status ? $(status) : null, t0 = Date.now(), busy = false;
+    b.disabled = false; b.click();
+    var r = await waitFor(function () {
+      var now = hlGet(expr);
+      if (now && now !== before) return true;
+      var bb = $(btn); if (bb && bb.disabled) { busy = true; return null; }
+      var tx = st ? String(st.textContent || "").trim() : "";
+      if ((busy || Date.now() - t0 > 5000) && tx && HL_ERR.test(tx)) return { fail: tx };
+      if (Date.now() - t0 > 20000 && !busy) return { fail: what + " לא התחיל" + (tx ? ": " + tx : "") };
+      return null;
+    }, 15 * 60e3, what);
+    if (r.fail) throw new Error(r.fail.slice(0, 300));
+    await sleep(900);
+  }
+  // הדוח שהכלי מוריד (DL.save): נתפס כאן במקום להוריד קובץ
+  async function hlExport(btn, what, keepTitle) {
+    var D = await window.claude.use("downloads"), got = null, orig = D.save;
+    D.save = function (o) { got = o; return Promise.resolve({ ok: true }); };
+    try { click(btn); await waitFor(function () { return got; }, 30e3, what); } finally { D.save = orig; }
+    var doc = new DOMParser().parseFromString(String(got.data || ""), "text/html");
+    var css = [].map.call(doc.querySelectorAll("style"), function (x) { return x.textContent; }).join("\n")
+      .replace(/@page\s*\{[^}]*\}/g, "").replace(/(^|\})\s*body\s*\{[^}]*\}/g, "$1");
+    var body = doc.body; body.querySelectorAll("script").forEach(function (x) { x.remove(); });
+    var h1 = body.querySelector("h1"); // הכותרת נכנסת לראש המסמך; בתמונת העתיד שם התמונה נשאר ככותרת משנה
+    if (h1 && keepTitle) { var h2 = document.createElement("h2"); h2.innerHTML = h1.innerHTML; h1.replaceWith(h2); } else if (h1) h1.remove();
+    [].slice.call(body.querySelectorAll("p")).forEach(function (x) { if (/^(נוצר בכלי|Be Good · מעבדת האופק)/.test(String(x.textContent).trim())) x.remove(); });
+    var wrap = document.createElement("div"); wrap.className = "hl-product"; wrap.innerHTML = body.innerHTML;
+    return { node: wrap, css: css };
+  }
+  // אזורי התוצר מהדף: עותק נקי, בלי כפתורים, חלוניות עריכה וחלקים מוסתרים
+  function hlNodes(parts, drop) {
+    var wrap = document.createElement("div"); wrap.className = "hl-product";
+    parts.forEach(function (p) {
+      var n = typeof p.sel === "string" ? $(p.sel) : p.sel; if (!n) return;
+      if (p.h) { var h = document.createElement("h2"); h.textContent = p.h; wrap.appendChild(h); }
+      var c = n.cloneNode(true); c.removeAttribute("hidden");
+      c.querySelectorAll((drop ? drop + "," : "") + "[hidden],.stage-head,.row,.notice,.help,.qbtn,.sugg,#suggBox,.panel,.side").forEach(function (x) { x.remove(); });
+      c.querySelectorAll("[id]").forEach(function (x) { x.removeAttribute("id"); });
+      wrap.appendChild(c);
+    });
+    return wrap;
+  }
+  function hlDoc(node, title, extraCss, landscape) {
+    var D = window.SBE_DOC;
+    if (!D || !D.print) return standalone(node, title);
+    node.querySelectorAll(NOISE).forEach(function (x) { x.remove(); });
+    node.querySelectorAll("details").forEach(function (d) { d.setAttribute("open", ""); });
+    var pageCss = [].map.call(document.querySelectorAll("style"), function (x) { return x.textContent; }).join("\n") + "\n" + (extraCss || "") +
+      "\nhtml,body{height:auto!important;overflow:visible!important;background:#fff!important}*{max-height:none!important}.sbe-sysonly,.hlsh-btn,.hlsh-dlg{display:none!important}" +
+      "\n.hl-product svg{max-width:100%;height:auto}.hl-product .box,.hl-product .theme{break-inside:avoid}";
+    var h = D.print({ title: title, node: node, toHtml: true, extraCss: pageCss, landscape: !!landscape });
+    return withBase(h);
+  }
+  function hlItem(tool, name, product, html) {
+    var org = hlOrg(), title = name + ": " + product + (org ? " · מרכז קהילתי" : "");
+    return [{ tool: tool, title: title, label: name, html: html(title), input: hlInput() }];
+  }
+
   var RECIPES = {
     "message-writer.html": async function () {
       // Administrator-only synthetic input, processed by the real tool/provider.
@@ -158,9 +237,13 @@
       var go = ongoing ? '#cc-main-actions button[data-mode="suggest"]' : '#cc-single-generate';
       await waitFor(function () { return $(go) && !$(go).disabled; }, 30e3, "טעינת מרחב התקשורת");
       click(ongoing ? '#cc-new' : '#cc-single-new');
-      setVal("cc-text", ongoing ? "דוגמה בדויה: הורה כתב שהוא מבקש להבין מה קרה בשיעור ושואל אם אפשר לשוחח. אין עדיין מידע על האירוע או מועד מוסכם." : "דוגמה בדויה: כתבי להורים הודעה על מפגש ביום חמישי בשעה עשר בספריית בית הספר. בקשי לאשר השתתפות, בלי להבטיח תוצאה.");
-      setVal("cc-audience", "הורים");
-      setVal("cc-instruction", ongoing ? "עזרי לי להכיר בפנייה, לברר עובדות ולהציע תיאום שיחה בלי להבטיח תוצאה." : "הודעה קצרה ומזמינה לשיתוף פעולה.");
+      // החלק הארגוני (28/10/2026): אותו כלי, עם מקרה מהעולם הארגוני והקהילתי
+      var org = q.get('space') === 'org';
+      setVal("cc-text", org ? (ongoing ? "דוגמה בדויה: חבר ועד השכונה כתב שהתושבים לא קיבלו עדכון על הפסקת המים בשבוע שעבר, ושואל מי אחראי על ההודעות ואיך זה ייראה בפעם הבאה." : "דוגמה בדויה: כתוב.י לעובדי המרכז הקהילתי הודעה על תרגיל היערכות לחירום ביום שלישי בשעה תשע. בקש.י מכל צוות לבדוק מראש את רשימת הקשר שלו, בלי להפחיד.")
+        : (ongoing ? "דוגמה בדויה: הורה כתב שהוא מבקש להבין מה קרה בשיעור ושואל אם אפשר לשוחח. אין עדיין מידע על האירוע או מועד מוסכם." : "דוגמה בדויה: כתבי להורים הודעה על מפגש ביום חמישי בשעה עשר בספריית בית הספר. בקשי לאשר השתתפות, בלי להבטיח תוצאה."));
+      setVal("cc-audience", org ? (ongoing ? "ועד השכונה" : "צוות העובדים") : "הורים");
+      setVal("cc-instruction", org ? (ongoing ? "עזר.י לי להכיר בפנייה, לומר מה כבר ידוע, ולהציע דרך קבועה לעדכן את התושבים." : "הודעה קצרה, רגועה וברורה, שמזמינה כל צוות לקחת חלק.")
+        : (ongoing ? "עזרי לי להכיר בפנייה, לברר עובדות ולהציע תיאום שיחה בלי להבטיח תוצאה." : "הודעה קצרה ומזמינה לשיתוף פעולה."));
       var inp = inputSummary();
       click(go);
       var timeline = await waitFor(function () {
@@ -176,7 +259,7 @@
         copy.style.whiteSpace = 'pre-wrap'; copy.textContent = draft ? draft.value : question ? question.textContent : '';
       }
       copy.querySelectorAll("textarea").forEach(function (n) { var p = document.createElement("div"); p.style.whiteSpace = "pre-wrap"; p.textContent = n.value; n.replaceWith(p); });
-      var title = 'תקשורת מקדמת חוסן חברתי: ' + (ongoing ? 'ניהול תקשורת' : 'ניסוח חד־פעמי') + ' · דוגמה בדויה';
+      var title = 'תקשורת מקדמת חוסן חברתי: ' + (ongoing ? 'ניהול תקשורת' : 'ניסוח חד־פעמי') + (org ? ' בארגון' : '') + ' · דוגמה בדויה';
       return [{tool:ongoing?'communication-continuity':'writer',title:title,label:'תקשורת מקדמת חוסן חברתי',html:standalone(copy,title),input:inp}];
     },
     "resilience-advisor.html": function () { return inPage("practi", "פרקטי: דוח לכיתה", "פרקטי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
@@ -224,7 +307,12 @@
       return [{ tool: "dialogue", title: "מעבדת שיח וחקר משותף: נקודת הפתיחה", label: "שיח וחקר משותף", html: standalone(window.sbeDialoguePrintNode("all"), "מעבדת שיח וחקר משותף"), input: inp }];
     },
     "team-thinking.html": async function () {
-      click("#example"); await sleep(1200); var inp = inputSummary(); click("#go");
+      var org = q.get("space") === "org";
+      if (org && window.sbeTeamThinkDemoForm) window.sbeTeamThinkDemoForm({ level: 'צוות בארגון או בקהילה (בוגרים)', team: 'צוות עובדים', age: 'מבוגרים', size: '8', time: '50 דקות',
+        challenge: 'איך ממשיכים לתת שירות לתושבים ותיקים בשכונה גם כשיש הפסקת חשמל ארוכה, כשחלק מהצוות לא יכול להגיע.',
+        outcome: 'שתי דרכים לבחירה, ומי מוביל/ה כל אחת עד הישיבה הבאה.', known: 'בהפסקה האחרונה רק שני עובדים ידעו את מספרי הטלפון של המתנדבים.', hard: 'מי שבצוות שנים רבות מדברים הרבה, ועובדים חדשים כמעט לא משתתפים.' });
+      else click("#example");
+      await sleep(1200); var inp = inputSummary(); click("#go");
       await waitFor(function () { var e = $("#err1"); if (e && !e.hidden) return { fail: e.textContent }; return $("#out1 .tiles"); }, 15 * 60e3, "מהלך החשיבה")
         .then(function (r) { if (r.fail) throw new Error(r.fail); });
       await sleep(800);
@@ -234,9 +322,9 @@
         await waitFor(function () { var e = $("#out4 .err:not([hidden])"); if (e && e.textContent) return { fail: e.textContent }; return [].some.call(document.querySelectorAll("#out4 h3"), function (h) { return /מה עבד/.test(h.textContent); }); }, 15 * 60e3, "המשוב על התהליך")
           .then(function (r) { if (r && r.fail) throw new Error(r.fail); });
         await sleep(800);
-        return [{ tool: "teamthink-round", title: "חשיבת צוות: סיכום הסבב ומשוב על התהליך", label: "חשיבת צוות: סיכום הסבב", html: standalone(window.sbeTeamThinkPrintNode("round"), "סיכום הסבב"), input: inp }];
+        return [{ tool: "teamthink-round", title: "חשיבת צוות: סיכום הסבב ומשוב על התהליך" + (org ? " · צוות בארגון" : ""), label: "חשיבת צוות: סיכום הסבב", html: standalone(window.sbeTeamThinkPrintNode("round"), "סיכום הסבב"), input: inp }];
       }
-      return [{ tool: "teamthink", title: "חשיבת צוות: מהלך החשיבה ותפקידים", label: "חשיבת צוות", html: standalone(window.sbeTeamThinkPrintNode("plan"), "חשיבת צוות"), input: inp }];
+      return [{ tool: "teamthink", title: "חשיבת צוות: מהלך החשיבה ותפקידים" + (org ? " · צוות בארגון" : ""), label: "חשיבת צוות", html: standalone(window.sbeTeamThinkPrintNode("plan"), "חשיבת צוות"), input: inp }];
     },
     "family-bridge.html": function () { return inPage("bridge", "גשר בין הבית לכיתה: כרטיס בחירה", "גשר בין הבית לכיתה", "#example", "#go", "#out2 .card-family", "#out2", "#err1"); },
     "conversation-planner.html": function () { fillSample(); return dialogProduct("conv", "תכנון שיחה: תדריך לפני שיחה", "תכנון שיחה", function () { click("#bBuild"); }); },
@@ -335,15 +423,16 @@
         var r = await fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.assign({ action: action, token: tok }, b)) });
         return r.json().catch(function () { return {}; });
       };
-      var unit = (J.UNITS.find(function (u) { return /בית ספר/.test(u.t); }) || J.UNITS[0]);
-      var made = await api("jrCreate", { unit: unit.k, unitName: "בית ספר הדר (מסע לדוגמה)", by: "מעבדת הדמו", demo: true });
+      var org = q.get("space") === "org";
+      var unit = org ? (J.UNITS.find(function (u) { return u.k === "community"; }) || J.UNITS[0]) : (J.UNITS.find(function (u) { return /בית ספר/.test(u.t); }) || J.UNITS[0]);
+      var made = await api("jrCreate", { unit: unit.k, unitName: org ? "המרכז הקהילתי בעמק (מסע לדוגמה)" : "בית ספר הדר (מסע לדוגמה)", by: "מעבדת הדמו", demo: true });
       if (!made.id) throw new Error("לא נוצר מסע דמו");
       location.hash = made.id;
       var btnByText = function (re) { return [].find.call(document.querySelectorAll("#app button"), function (b) { return re.test(b.textContent); }); };
       await waitFor(function () { return btnByText(/לקבלת הצעת מסע/); }, 60e3, "המיפוי");
       [].forEach.call(document.querySelectorAll("#app select"), function (sel, i) { var n = sel.options.length; if (n > 1) { sel.selectedIndex = 1 + (i * 7) % (n - 1); sel.dispatchEvent(new Event("change", { bubbles: true })); } });
-      var notes = document.querySelector("#app textarea"); if (notes) { notes.value = "בית ספר יסודי, אחרי תקופה של שיבושים. הצוות מחויב אבל עייף; יש מועצת תלמידים פעילה וקשר טוב עם המתנ\"ס."; notes.dispatchEvent(new Event("input", { bubbles: true })); }
-      var inp = "בית ספר יסודי (מסע לדוגמה) · מיפוי מגוון בחמשת האשכולות ובנקודות השבירה · " + notes.value;
+      var notes = document.querySelector("#app textarea"); if (notes) { notes.value = org ? "מרכז קהילתי שמשרת ארבע שכונות, אחרי חורף עם הפסקות חשמל ארוכות. יש מתנדבים רבים אבל הקשר איתם תלוי בשני אנשים; ועד התושבים פעיל, והרשות שותפה." : "בית ספר יסודי, אחרי תקופה של שיבושים. הצוות מחויב אבל עייף; יש מועצת תלמידים פעילה וקשר טוב עם המתנ\"ס."; notes.dispatchEvent(new Event("input", { bubbles: true })); }
+      var inp = (org ? "מרכז קהילתי (מסע לדוגמה)" : "בית ספר יסודי (מסע לדוגמה)") + " · מיפוי מגוון בחמשת האשכולות ובנקודות השבירה · " + notes.value;
       await sleep(900);
       var errText = function () { var e = [].find.call(document.querySelectorAll("#app .err"), function (x) { return !x.hidden && x.textContent.trim(); }); return e ? e.textContent.trim() : ""; };
       btnByText(/לקבלת הצעת מסע/).click();
@@ -423,6 +512,63 @@
       wrap.querySelectorAll("[hidden]").forEach(function (x) { x.removeAttribute("hidden"); });
       if (story) return [{ tool: "practice-own", title: "תרגול על מקרה משלך: " + scName, label: "תרגול עצמי · מקרה משלך", html: standalone(wrap, "תרגול על מקרה משלך: " + scName), input: ownInput + "\n\nתורות אשת החינוך:\n" + lines.join("\n") }];
       return [{ tool: "practice", title: "תרגול עצמי: " + scName, label: "תרגול עצמי בסימולציה", html: standalone(wrap, "תרגול עצמי: " + scName), input: "התרחיש: " + scName + "\nתורות אשת החינוך:\n" + lines.join("\n") }];
+    },
+    // מעבדת האופק: תשעת הכלים (28/10/2026)
+    "hl-voice.html": async function () {
+      await hlReady(); location.hash = "#paper"; await sleep(800);
+      await hlStep("#buildPaper", "#paperStatus", "P.paper", "בניית מסמך הסוגיות");
+      var ex = await hlExport("#dlPaper", "מסמך הסוגיות");
+      return hlItem("hl-voice", "קול הקהילה", "מסמך הסוגיות", function (t) { return hlDoc(ex.node, t, ex.css); });
+    },
+    "hl-radar.html": async function () {
+      await hlReady();
+      await hlStep("#aiSum", "#sumStatus", "S.summary", "סיכום הסריקה");
+      var n = hlNodes([{ sel: "#summary", h: "הסיכום" }, { sel: "#map", h: "מפת המניעים: כמה זה חשוב, וכמה זה ודאי?" }, { sel: "#quads", h: "מה עושים עם כל מניע?" }]);
+      return hlItem("hl-radar", "רדאר החוסן החברתי", "סיכום הסריקה", function (t) { return hlDoc(n, t); });
+    },
+    "hl-futures.html": async function () {
+      await hlReady(); location.hash = "#flow"; await sleep(800);
+      await hlStep("#synthBtn", "#synthStatus", "state.synth", "הסיכום וההמלצות");
+      var n = hlNodes([{ sel: "#matrix", h: "ארבעה עולמות אפשריים" }, { sel: "#synth", h: "מה עושים כבר היום?" }]);
+      return hlItem("hl-futures", "מחולל העתידים", "ארבעה עולמות ומה עושים כבר היום", function (t) { return hlDoc(n, t); });
+    },
+    "hl-circles.html": async function () {
+      await hlReady();
+      await hlStep("#aiSum", "#sumStatus", "S.summary", "הסיכום וההצעות לפעולה");
+      var n = hlNodes([{ sel: "#map", h: "המעגלים" }, { sel: "#summary", h: "מה עושים עם מה שגילינו?" }]);
+      return hlItem("hl-circles", "מעגלי העתיד", "סיכום והצעות לפעולה", function (t) { return hlDoc(n, t); });
+    },
+    "hl-horizons.html": async function () {
+      await hlReady();
+      await hlStep("#aiSum", "#sumStatus", "S.summary", "הסיכום וההמלצות");
+      var n = hlNodes([{ sel: "#diag", h: "התמונה המלאה" }, { sel: "#summary", h: "מה עושים עם זה?" }]);
+      return hlItem("hl-horizons", "שלושה אופקים", "סיכום והמלצות", function (t) { return hlDoc(n, t); });
+    },
+    "hl-collage.html": async function () {
+      await hlReady(); location.hash = "#art"; await sleep(1000);
+      await hlStep("#aiCompose", "#artStatus", "S.art", "חיבור הפריטים לתמונה");
+      var ex = await hlExport("#dlPoster", "הפוסטר", true);
+      return hlItem("hl-collage", "תמונת עתיד קבוצתית", "התמונה ומה היא אומרת עלינו", function (t) { return hlDoc(ex.node, t, ex.css + "\n.hl-product .cols{display:block!important}"); });
+    },
+    "hl-roadmap.html": async function () {
+      await hlReady();
+      await hlStep("#aiVision", "#visionStatus", "S.vision", "ניסוח החזון");
+      await hlStep("#aiBack", "#backStatus", "S.items", "בניית הדרך אחורה");
+      var ex = await hlExport("#dlAll", "מפת הדרכים");
+      return hlItem("hl-roadmap", "מהחזון להיום", "החזון ומפת הדרכים", function (t) { return hlDoc(ex.node, t, ex.css, true); });
+    },
+    "hl-game.html": async function () {
+      await hlReady();
+      await hlStep("#aiFind", "#findStatus", "S.findings", "ניסוח הממצאים");
+      await hlStep("#aiDebrief", "#debStatus", "S.debrief", "סיכום הלקחים");
+      var ex = await hlExport("#dlReport", "דוח המשחק");
+      return hlItem("hl-game", "משחק מצב עתידי", "המשחק והתחקיר", function (t) { return hlDoc(ex.node, t, ex.css); });
+    },
+    "hl-stress.html": async function () {
+      await hlReady();
+      await hlStep("#sRun", "#sRunStatus", "state.result", "בדיקת העמידות");
+      var ex = await hlExport("#sDl", "דוח הבדיקה");
+      return hlItem("hl-stress", "בדיקת עמידות", "דוח הבדיקה", function (t) { return hlDoc(ex.node, t, ex.css, true); });
     },
     "input-screen.html": function () { return scenario("edu", "סימולציה: סטודנטים/ות"); },
     "parent-input-screen.html": function () { return scenario("parents", "סימולציה: הורים"); },

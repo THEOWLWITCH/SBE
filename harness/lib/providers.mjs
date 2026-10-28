@@ -238,7 +238,7 @@ export function getProvider(name) {
       let lastErr;
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
-          const r = await p.complete({ ...opts, system: providerSystem(opts.system, opts.policy), apiKey, model: opts.model || this.model });
+          const r = await p.complete({ ...opts, system: providerSystem(opts.system, opts.policy, opts.space), apiKey, model: opts.model || this.model });
           if (r && typeof r.text === 'string') r.text = QUOTES.text(r.text);
           if (r && Array.isArray(r.toolCalls)) r.toolCalls = r.toolCalls.map((c) => ({ ...c, input: QUOTES.deep(c.input) }));
           return r;

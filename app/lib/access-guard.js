@@ -21,6 +21,26 @@
 
   function ss(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
 
+  // המרחב שבו נמצא/ת מי שנכנס/ה (28/10/2026): 'org' (ארגוני) או 'edu' (חינוכי).
+  // מהשרת בכניסה (המרחב שסומן למוסד), למנהלת המערכת לפי הבחירה במרחב שלי, ובמעבדת הדמו ?space=org.
+  // כלים משותפים משתמשים בזה כדי להציג דוגמאות ומילים מהעולם הארגוני; השרת קובע בעצמו לפי הקוד.
+  var SHARED_PERMS = ["horizon", "journey", "teamthink", "writer", "studies"];
+  window.sbeSpace = function(){
+    try {
+      var q = (location.search.match(/[?&]space=(org|edu)(?:&|$)/) || [])[1];
+      var home = ss("sbe.session.homeUrl") || "";
+      var sys = home === "admin.html?role=sys";
+      if (q && sys) return q;
+      // משתתפים בקישור לעבודה משותפת של מעבדת האופק (בלי כניסה): המרחב של מי שפתח/ה את השיתוף
+      if (q && !ss("sbe.session.token") && /[?&]room=[a-f0-9]{24}(?:&|$)/.test(location.search)) return q;
+      if (sys) { var h = localStorage.getItem("sbe.home.space"); return h === "org" ? "org" : "edu"; }
+      var info = JSON.parse(ss("sbe.session.info") || "{}") || {};
+      if (info.space === "org" || info.space === "edu") return info.space;
+      var perms = JSON.parse(ss("sbe.session.perms") || "[]") || [];
+      return perms.length && perms.every(function(p){ return SHARED_PERMS.indexOf(p) >= 0; }) ? "org" : "edu";
+    } catch(e){ return "edu"; }
+  };
+
   // פנייה למודל (10/10/2026): השרת עונה רק למי שנכנס/ה, ורק לכלי שפתוח לו או לה (authorizeModel ב-harness/lib/access.mjs).
   // כאן, במקום אחד לכל הכלים, כל בקשה ל-/api/complete, /api/character-turn ו-/api/pipeline מקבלת את פרטי הכניסה:
   // האסימון החתום, הדף, ומזהה הסדנה למשתתפות סדנה.
@@ -45,7 +65,7 @@
                 try { token = await workshopLogin; } finally { workshopLogin = null; }
               }
             }
-            b._auth = { token: token, page: location.pathname.split("/").pop() || "index.html", w: workshop };
+            b._auth = { token: token, page: location.pathname.split("/").pop() || "index.html", w: workshop, space: window.sbeSpace() };
             // מעבדת האופק: עבודה משותפת בקישור (?room=) — המשתתפים פונים למודל רק בתוך העבודה הזו.
             var hlRoom = (location.search.match(/[?&]room=([a-f0-9]{24})(?:&|$)/) || [])[1];
             if (hlRoom) { b._auth.room = hlRoom; try { b._auth.g = localStorage.getItem("sbe.hl.g") || ""; } catch(e){} }
@@ -293,7 +313,7 @@
   // טופס המשוב מקישור/QR של סדנה (?w=) — פתוח גם בלי כניסה: המשתתפות סורקות בטלפון בסוף התחקיר.
   // השרת מקבל משוב רק לסדנה שנפתחה (wfSubmit), ולא חושף משובים של אחרים.
   // ספריית התוצרים לדוגמה — פתוחה לכל מי שמתעניין/ת, גם בלי כניסה (רק מה שמנהלת המערכת סימנה להצגה).
-  if (page === "examples.html" || page === "search.html") return;
+  if (page === "examples.html" || page === "examples-org.html" || page === "search.html") return;
   if (page === "feedback.html" && /[?&]w=[a-z0-9]{8,32}(&|$)/.test(location.search)) return;
   // מעבדת האופק (28/10/2026): משתתפים בעבודה משותפת נכנסים בקישור (?room=), בלי קוד, רק לעבודה הזו.
   // השרת מאפשר כתיבה ופנייה למודל רק בתוך החדר, כל עוד מי שפתח/ה אותו לא סגר/ה אותו (hl-rooms.mjs).

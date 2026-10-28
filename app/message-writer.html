@@ -17,6 +17,7 @@
   <script src="lib/communication-continuity-ui.js" defer></script>
   <script src="lib/example-peek.js" data-tool="writer,communication-continuity" defer></script>
   <script src="lib/demo-hook.js" defer></script>
+<script src="lib/brand-tagline.js" defer></script>
 </head>
 <body>
   <a class="cc-skip" href="#cc-text">מעבר לכתיבה</a>
@@ -27,7 +28,7 @@
   <header class="cc-header">
     <div><p class="cc-eyebrow">BE GOOD</p><h1>תקשורת מקדמת חוסן חברתי</h1>
       <p>מנסחים מסר ומובילים תקשורת מקצועית שמכוונת לאמון, לאמפתיה, לשותפות ולמוכנות.</p></div>
-    <img src="assets/begood-logo.webp" alt="Begood" width="115" height="68">
+    <div class="cc-brand" style="display:flex;flex-direction:column;align-items:center"><img src="assets/begood-mark.webp" alt="Begood" width="112" height="70" data-brand data-brand-width="230px"></div>
   </header>
   <div class="cc-mode-bar" aria-label="בחירת אופן העבודה">
     <button type="button" id="cc-mode-single" class="btn" aria-pressed="true">ניסוח חד־פעמי</button>
@@ -114,5 +115,14 @@
     </section>
   </main>
   <noscript><p class="card">להפעלת הכלי אפשר להפעיל JavaScript בדפדפן.</p></noscript>
+<script>
+/* המרחב הארגוני (28/10/2026): דוגמאות ונמענים מהעולם הארגוני, בלי בית ספר */
+(function(){ if (!(window.sbeSpace && window.sbeSpace() === "org")) return;
+  var t = document.getElementById("cc-text"); if (t) t.placeholder = "למשל: הודעה לתושבים על מפגש היערכות במרכז הקהילתי ביום חמישי בשעה 18:00, עם הזמנה לשיתוף פעולה.";
+  var a = document.getElementById("cc-audience"); if (a) a.placeholder = "למשל: צוות, מתנדבים או תושבים";
+  var g = document.getElementById("cc-signature"); if (g) g.placeholder = "למשל: צוות המרכז הקהילתי";
+  var d = document.getElementById("cc-audiences"); if (d) d.innerHTML = '<option value="צוות"><option value="מתנדבים"><option value="תושבים"><option value="חברי הוועד"><option value="קהילת הארגון">';
+})();
+</script>
 </body>
 </html>
