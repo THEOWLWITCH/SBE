@@ -150,21 +150,19 @@ table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-ch
 
   // הלוגו מוטמע במסמך (data URL) — חלון הדפסה ריק לא תמיד טוען תמונות מכתובת.
   // הלוגו נטען מראש כ-data URL כשהקובץ נטען, כדי שיופיע בכל PDF גם כשבדף אין תמונת לוגו (12/10/2026, בדיקת הלקוחה)
-  let LOGO_DATA = "";
+  // לוגו לפי המרחב (28/10/2026): "Be good בחינוך" במרחב החינוכי, "Be good בארגונים" במרחב הארגוני.
+  const LOGO_FILE = { edu: "assets/begood-edu.webp", org: "assets/begood-org.webp" };
+  const LOGO_DATA = { edu: "", org: "" };
+  const assetBase = () => document.baseURI.replace(/\/(products|lib)\/[^/]*$/, "/");
+  function spaceNow() { try { return typeof window.sbeSpace === "function" && window.sbeSpace() === "org" ? "org" : "edu"; } catch (e) { return "edu"; } }
   try {
-    const u = new URL("assets/begood-logo.webp", document.baseURI.replace(/\/(products|lib)\/[^/]*$/, "/")).href;
-    fetch(u).then((r) => r.ok ? r.blob() : null).then((b) => { if (!b) return; const fr = new FileReader(); fr.onload = () => { LOGO_DATA = String(fr.result || ""); }; fr.readAsDataURL(b); }).catch(() => {});
+    Object.keys(LOGO_FILE).forEach((k) => {
+      fetch(new URL(LOGO_FILE[k], assetBase()).href).then((r) => r.ok ? r.blob() : null).then((b) => { if (!b) return; const fr = new FileReader(); fr.onload = () => { LOGO_DATA[k] = String(fr.result || ""); }; fr.readAsDataURL(b); }).catch(() => {});
+    });
   } catch (e) {}
   function logoSrc() {
-    if (LOGO_DATA) return LOGO_DATA;
-    const url = new URL("assets/begood-logo.webp", document.baseURI.replace(/\/products\/[^/]*$/, "/")).href;
-    const img = [...document.images].find((i) => /begood-logo|alt="?Begood/i.test(i.src + ' alt="' + i.alt) && i.complete && i.naturalWidth);
-    if (!img) return url;
-    if (img.src.startsWith("data:")) return img.src;
-    try {
-      const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
-      c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png");
-    } catch (e) { return url; }
+    const k = spaceNow();
+    return LOGO_DATA[k] || new URL(LOGO_FILE[k], assetBase()).href;
   }
 
   function esc(s) { return String(s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
@@ -238,7 +236,7 @@ table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-ch
   // כרטיס כיס (08/10/2026): תוצר נפרד, אותיות גדולות שקל לקרוא בזמן המפגש
   const POCKET_CSS = `
 body{font-size:20px;line-height:1.55;max-width:760px}
-h1{font-size:26px}.hd img{height:44px}
+h1{font-size:26px}.hd img{height:56px}
 .pk-sec{border:2px solid #2E5A7D;border-radius:12px;padding:12px 18px;margin:0 0 14px;break-inside:avoid}
 .pk-sec h4{font-size:22px;color:#2E5A7D;margin:0 0 6px}
 .pk-sec ul{margin:0;padding-inline-start:24px}.pk-sec li{margin-bottom:6px}
@@ -375,7 +373,7 @@ ${extraCss ? "<style>" + extraCss + "</style>" : ""}<style>
 body{font-family:"Assistant","Segoe UI",Arial,sans-serif;color:#141C24;max-width:${landscape ? 1040 : 720}px;margin:24px auto;padding:0 16px;line-height:1.7;font-size:14.5px}
 .hd{display:flex;justify-content:space-between;align-items:center;border-top:5px solid #2E5A7D;border-bottom:1px solid #CDD3D8;padding:14px 0 12px;margin-bottom:22px;gap:16px;position:relative}
 .hd::after{content:"";position:absolute;top:-5px;left:0;width:22%;height:5px;background:#2BA39C;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.hd img{height:58px}
+.hd img{height:74px}
 .hd .dt{font-size:12.5px;color:#5C6771;margin-top:2px}
 .hd .ctx{font-size:12.5px;color:#2E5A7D;margin:0 0 4px;letter-spacing:.01em}.hd .ctx b{font-weight:700}
 h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:26px;line-height:1.25;color:#1E3F5A;margin:0 0 4px;break-after:avoid}

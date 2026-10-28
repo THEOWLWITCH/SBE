@@ -43,7 +43,7 @@ body{direction:rtl;background:var(--ground);color:var(--ink);margin:0;
   font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.6;padding:0 16px 40px}
 .wrap{max-width:860px;margin:0 auto}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 6px;flex-wrap:wrap}
-header img{height:44px;width:auto}
+header img{height:64px;width:auto}
 header a{font-size:14px;color:var(--spoken);font-weight:600;text-decoration:none}
 .hnav{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
 .hnav a.out{border:1px solid var(--hair);border-radius:6px;padding:4px 12px;background:var(--surface)}
@@ -81,7 +81,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 <body>
 <div class="wrap">
 <header>
-  <img src="assets/begood-mark.webp" alt="Begood">
+  <img id="libLogo" src="assets/begood-edu.webp" alt="Be good בחינוך">
   <nav class="hnav" aria-label="ניווט">
     <a href="about.html">אודות המערכת</a>
     <a href="home.html" id="nav-home" hidden>⌂ המרחב שלי</a>
@@ -129,6 +129,7 @@ const SHARE=(new URLSearchParams(location.search).get('share')||'').replace(/[^a
 // שתי ספריות (28/10/2026): חינוכית (ברירת המחדל, בדף הבית) וארגונית (examples-org.html → ?space=org)
 const SPACE=new URLSearchParams(location.search).get('space')==='org'?'org':'edu';
 if(SPACE==='org'){
+  {const lg=F('libLogo');if(lg){lg.src='assets/begood-org.webp';lg.alt='Be good בארגונים';}}
   document.title='תוצרים לדוגמה מהעולם הארגוני · Begood';
   F('libTitle').textContent='תוצרים לדוגמה מהעולם הארגוני';
   F('libLead').textContent='כך נראים תוצרים של הכלים כשעובדים איתם בארגון, בקהילה או ברשות: כפי שהם יוצאים מהמערכת, בלי עריכה. מוזמנות ומוזמנים לפתוח, לקרוא ולהתרשם.';
