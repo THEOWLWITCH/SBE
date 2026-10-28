@@ -125,6 +125,15 @@
     (document.head || document.documentElement).appendChild(st);
   } catch(e){}
 
+  // עיצוב אחיד לכפתורים ולקופסאות בכל המערכת (28/10/2026), מ-lib/theme.js
+  try {
+    if (!window.SBE_THEME && !document.getElementById("sbe-theme-js")) {
+      var me = document.currentScript && document.currentScript.src, th = document.createElement("script");
+      th.id = "sbe-theme-js"; th.src = me ? me.replace(/access-guard\.js(\?.*)?$/, "theme.js") : "lib/theme.js";
+      (document.head || document.documentElement).appendChild(th);
+    }
+  } catch(e){}
+
   // בלי הערות מערכת במסכים (09/10/2026: "ההנחיות האלה אינן למשתמשים"):
   //  - הסבר מתחת לבחירה או לשדה (.hint, .crit-mode-d, .critadd-note, .seq-note, [data-info]) הופך לסימן ⓘ:
   //    הטקסט מופיע בריחוף או בלחיצה. [data-keep] נשאר גלוי (למשל ההנחיה במסך הכניסה).
