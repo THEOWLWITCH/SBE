@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head><meta charset="utf-8">
+<script src="lib/access-guard.js"></script><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מעבדת האופק · Be Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one guided column — plan, what we test against, the matrix, autonomy, summary. */
+:root{
+  --bg:#eef1f3;
+  --surface:#ffffff;
+  --ink:#16232e;
+  --muted:#5b6b78;
+  --line:#d5dde3;
+  --accent:#17607a;
+  --accent-soft:#dcecf1;
+  --known:#56697a;      --known-bg:#e6ebef;
+  --expected:#9a5b00;   --expected-bg:#fbefd9;
+  --rare:#6a3fb0;       --rare-bg:#eee6fb;
+  --wild:#b2275a;       --wild-bg:#fbe3ec;
+  --ai:#17607a;         --ai-bg:#dcecf1;
+  --good:#2f7a4b;
+  --font-display:"Rubik","Assistant",system-ui,sans-serif;
+  --font-body:"Assistant","Rubik",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+    --accent:#62b6cf; --accent-soft:#183644;
+    --known:#a9b9c6; --known-bg:#24323d;
+    --expected:#f0b45a; --expected-bg:#3a2a12;
+    --rare:#b79af0; --rare-bg:#2c2242;
+    --wild:#f2789f; --wild-bg:#40192a;
+    --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+  --accent:#62b6cf; --accent-soft:#183644;
+  --known:#a9b9c6; --known-bg:#24323d;
+  --expected:#f0b45a; --expected-bg:#3a2a12;
+  --rare:#b79af0; --rare-bg:#2c2242;
+  --wild:#f2789f; --wild-bg:#40192a;
+  --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 18px 80px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:30px;font-weight:700}
+h2{font-size:22px;font-weight:600}
+h3{font-size:18px;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:14.5px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{font-family:var(--font-display);font-size:14px;letter-spacing:.02em;color:var(--accent);font-weight:600}
+.notice{background:var(--accent-soft);border-radius:12px;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.principle{border-inline-start:4px solid var(--wild);background:var(--surface);border-radius:10px;padding:12px 16px}
+section.stage{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.stage-head{display:flex;gap:12px;align-items:baseline}
+.num{font-family:var(--font-display);font-weight:700;color:var(--accent);font-size:20px;min-width:22px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:15px}
+input[type=text],select,textarea{font:inherit;font-weight:400;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+textarea{min-height:76px;resize:vertical}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;font-weight:600}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] button.primary{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#0f171d}}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.drv:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#0f171d}}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px;white-space:nowrap}
+.t-known{color:var(--known);background:var(--known-bg)}
+.t-expected{color:var(--expected);background:var(--expected-bg)}
+.t-rare{color:var(--rare);background:var(--rare-bg)}
+.t-wild{color:var(--wild);background:var(--wild-bg)}
+.t-ai{color:var(--ai);background:var(--ai-bg)}
+.t-opp{color:var(--good);background:transparent;border:1px solid var(--good)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{padding:4px 12px;font-size:14.5px;border-radius:999px}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.drivers{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.drv{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:var(--surface);cursor:pointer}
+.drv input{margin-top:5px;accent-color:var(--accent)}
+.drv.on{border-color:var(--accent);background:var(--accent-soft)}
+.drv .nm{font-weight:700;line-height:1.3}
+.drv .ds{font-size:14px;color:var(--muted);line-height:1.4}
+.drv .tg{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.meter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:15px}
+.ok{color:var(--good);font-weight:700}
+.warn{color:var(--wild);font-weight:700}
+.axes-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.axopt{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:var(--surface)}
+.axopt.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.axline{font-size:15px}
+.axline b{font-family:var(--font-display);font-weight:600}
+.matrix{display:grid;grid-template-columns:28px 1fr 1fr;grid-template-rows:auto auto auto;gap:10px}
+.ylab{grid-row:1 / span 2;writing-mode:vertical-rl;transform:rotate(180deg);display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);font-weight:600}
+.xlab{grid-column:2 / span 2;display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);font-weight:600}
+.axis-name{color:var(--accent)}
+.world{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface);position:relative}
+.world.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.world .q{font-size:12.5px;color:var(--muted);font-weight:600}
+.world .hl{font-family:var(--font-display);font-weight:600;font-size:15.5px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 0}
+.world ul{margin:0;padding-inline-start:18px;font-size:14.5px}
+.world .lbl{font-size:13px;font-weight:700;color:var(--muted);margin-top:2px}
+.world .wc{font-size:14px;background:var(--rare-bg);color:var(--ink);border-radius:8px;padding:6px 8px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.tabs button{border-radius:999px;padding:5px 14px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.out{white-space:pre-wrap;background:var(--bg);border-radius:12px;padding:14px 16px;min-height:80px;max-width:72ch}
+.out.empty{color:var(--muted)}
+.chat{display:flex;flex-direction:column;gap:8px;max-width:72ch}
+.msg{padding:8px 12px;border-radius:12px;white-space:pre-wrap}
+.msg.u{background:var(--accent-soft);align-self:flex-start}
+.msg.a{background:var(--bg);align-self:flex-end}
+.event{border:1px solid var(--line);border-inline-start:5px solid var(--wild);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;max-width:80ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.box{background:var(--bg);border-radius:12px;padding:12px 14px}
+.box ul,.box ol{margin:6px 0 0;padding-inline-start:20px}
+.status{font-size:14.5px;color:var(--muted)}
+.toast{position:fixed;bottom:18px;inset-inline-start:50%;transform:translateX(50%);background:var(--ink);color:var(--surface);padding:8px 16px;border-radius:10px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.ai-off .needs-ai{display:none}
+.ai-note{display:none}
+.ai-off .ai-note{display:block}
+/* views + workshop bar */
+nav.views{display:flex;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line)}
+nav.views a{font-family:var(--font-display);font-weight:600;text-decoration:none;color:var(--ink);padding:7px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+nav.views a[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] nav.views a[aria-current="page"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav.views a[aria-current="page"]{color:#0f171d}}
+.view{display:flex;flex-direction:column;gap:22px}
+.view[hidden]{display:none}
+.wsbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:15px}
+.wsbar input{max-width:260px}
+.wslist{display:flex;flex-direction:column;gap:6px;width:100%}
+.wslist button{text-align:start;font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border-radius:999px;padding:5px 12px;font-size:14.5px;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0f171d}}
+.rate{display:flex;gap:4px;flex-wrap:wrap}
+.rate button{min-width:40px;padding:6px 0;font-variant-numeric:tabular-nums}
+.rate button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:minmax(150px,1.2fr) 3fr auto;gap:10px;align-items:center;font-size:15px}
+.bar .track{height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:6px}
+.bar .n{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;white-space:nowrap}
+.hist{display:flex;gap:3px;align-items:flex-end;height:34px}
+.hist span{width:14px;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px;opacity:.85}
+.pill{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px}
+.p-agree{background:#e3f3e8;color:#226b3d}
+.p-split{background:var(--wild-bg);color:var(--wild)}
+.p-minor{background:var(--rare-bg);color:var(--rare)}
+.lenses{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.lens{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.lens .line{font-family:var(--font-display);font-weight:600;font-size:16px}
+.lens img,.item img{width:100%;border-radius:10px;background:#fff;border:1px solid var(--line)}
+.items{display:flex;flex-direction:column;gap:8px}
+.item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:6px 12px;background:var(--surface)}
+.item .meta{font-size:13px;color:var(--muted)}
+.item .fb{grid-column:1/-1;background:var(--accent-soft);border-radius:8px;padding:8px 10px;font-size:14.5px;white-space:pre-wrap}
+.item img{max-width:220px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.thumb{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff;height:520px;position:relative}
+.thumb .np{transform:scale(.42);transform-origin:top right;width:238%}
+/* stress test */
+.vd{display:inline-block;font-size:13px;font-weight:700;border-radius:6px;padding:2px 10px;border:1px solid transparent}
+.v-robust{background:#e3f3e8;color:#1f6a3a;border-color:#b9dfc5}
+.v-adjust{background:#fdf0d6;color:#8a5200;border-color:#f1d39a}
+.v-break{background:#fbe1e4;color:#a8172f;border-color:#f0b4bd}
+.v-redundant{background:#eef1f4;color:#5b6b78;border-color:#d5dde3}
+.v-none{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.mx-wrap{overflow-x:auto}
+table.mx{border-collapse:separate;border-spacing:6px;width:100%;min-width:720px}
+table.mx th{font-family:var(--font-display);font-weight:600;font-size:14.5px;text-align:start;vertical-align:bottom;padding:4px}
+table.mx th .ax{display:block;font-family:var(--font-body);font-weight:400;font-size:12.5px;color:var(--muted)}
+table.mx td{vertical-align:top}
+table.mx td.el{font-weight:600;font-size:15px;max-width:230px}
+table.mx td.el .small{font-weight:400}
+.cell{width:100%;text-align:start;display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:10px;font-weight:400;font-size:13.5px;line-height:1.35;min-height:64px}
+.cell.on{outline:3px solid var(--accent);outline-offset:1px}
+.cell .vd{align-self:flex-start}
+.cell.v-robust,.cell.v-adjust,.cell.v-break,.cell.v-redundant{border-width:1px}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.score .box{display:flex;flex-direction:column;gap:6px}
+.stack{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--bg)}
+.stack span{display:block;height:100%}
+.ifthen{display:grid;grid-template-columns:1fr auto 1fr;gap:6px 10px;align-items:start;font-size:15px}
+.ifthen .arr{color:var(--muted);font-weight:700}
+@media (max-width:640px){
+  .ifthen{grid-template-columns:1fr}
+  .ifthen .arr{display:none}
+  .bar{grid-template-columns:1fr}
+  .matrix{grid-template-columns:1fr}
+  .ylab{display:none}
+  .xlab{grid-column:1}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+.wrap{max-width:1180px}
+.bgkit-bar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+.bgkit-bar b{font-family:var(--font-display)}
+.bgkit-bar a{color:var(--ink);text-decoration:none;border-radius:999px;padding:3px 10px}
+.bgkit-bar a[aria-current="page"]{background:var(--accent);color:#fff}
+.tcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.tcard{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--accent);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.tcard h3 a{color:var(--ink);text-decoration:none}
+.tcard .go{align-self:flex-start;margin-top:6px;background:var(--accent);color:#fff;border-radius:10px;padding:7px 14px;text-decoration:none;font-weight:700}
+.paths{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.path{background:var(--bg);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.path .steps{font-weight:600}
+.diagram{background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px}
+.princ{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.princ .box b{font-family:var(--font-display)}
+</style></head>
+<body><div class="wrap">
+<nav class="bgkit-bar" aria-label="מעבדת האופק · Be Good"><b>מעבדת האופק:</b><a href="#" aria-current="page">דף הבית</a><a href="hl-futures.html" target="_blank" rel="noopener">מחולל העתידים</a><a href="hl-stress.html" target="_blank" rel="noopener">בדיקת עמידות</a><a href="hl-voice.html" target="_blank" rel="noopener">קול הקהילה</a><a href="hl-circles.html" target="_blank" rel="noopener">מעגלי העתיד</a><a href="hl-roadmap.html" target="_blank" rel="noopener">מהחזון להיום</a><a href="hl-radar.html" target="_blank" rel="noopener">רדאר החוסן החברתי</a><a href="hl-horizons.html" target="_blank" rel="noopener">שלושה אופקים</a></nav>
+<header class="top"><div>
+  <div class="brand">Be Good · חוסן | קהילה | חינוך</div>
+  <h1>מעבדת האופק: כלי עזר לפיתוח חוסן חברתי מול עתיד לא-ידוע</h1>
+  <p class="muted" style="max-width:80ch">תשעה כלים שעוזרים לבתי ספר, לקהילות, לארגונים ולקהילות מקצועיות להתכונן לעתיד שאי אפשר לנחש. הכלים מבוססים על ערכת Futures Toolkit של ממשלת בריטניה (GO-Science), מותאמים לישראל, ונעזרים ב־AI במקומות שבהם הוא נותן יתרון של ממש על פני עבודה ידנית.</p>
+</div></header>
+
+<section class="stage"><h2>שלושה עקרונות שמלווים את כל הכלים</h2>
+<div class="princ">
+  <div class="box"><b>העתיד תמיד לא ידוע.</b><p>כל כלי משלב גם איומים והזדמנויות שמוכרים בישראל, וגם כאלה שכמעט לא מדברים עליהם כאן. העולמות והתרחישים אינם תחזית. הם כלי לחשוב ולהתכונן.</p></div>
+  <div class="box"><b>אוטונומיה תפקודית.</b><p>כדאי שבית ספר, קהילה או ארגון יהיו מסוגלים להמשיך לתפקד לבד לזמן מה, כשעזרה, תשתיות או הנחיות מבחוץ לא מגיעות. הכלים בודקים את זה ומציעים איך לחזק.</p></div>
+  <div class="box"><b>ה־AI עוזר, אנשים מחליטים.</b><p>ה־AI מציע, מנסח, מסכם ומצייר. ההחלטות נשארות אצל הקבוצה. בכל כלי יש דוגמה מוכנה, וכפתור ״איך עובדים עם הכלי?״.</p></div>
+</div></section>
+
+<section class="stage"><h2>איך הכלים מתחברים</h2>
+<p class="small muted">החצים מראים מה אפשר להעביר מכלי לכלי. בכלי שממנו מעבירים לוחצים על כפתור ההעתקה, ובכלי שאליו מעבירים מדביקים בתיבת הייבוא. ללחוץ על כלי כדי לפתוח אותו. מעגלי העתיד עומד בפני עצמו: אפשר להעתיק ממנו את הפעולות כטקסט לכל כלי אחר.</p>
+<div class="diagram"><svg viewBox="0 0 1000 480" role="img" aria-label="הקשר בין הכלים" style="width:100%;height:auto;display:block"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#17607a"/></marker></defs><text x="820" y="24" text-anchor="middle" font-size="16" font-weight="700" fill="#5b6b78" font-family="Rubik, Arial" direction="rtl">1. להבין מה משתנה</text><text x="500" y="24" text-anchor="middle" font-size="16" font-weight="700" fill="#5b6b78" font-family="Rubik, Arial" direction="rtl">2. לחקור ולדמיין עתידים</text><text x="180" y="24" text-anchor="middle" font-size="16" font-weight="700" fill="#5b6b78" font-family="Rubik, Arial" direction="rtl">3. לתכנן, לתרגל ולבדוק</text><path d="M715 90 C 660.0 90, 660.0 72, 605 72" fill="none" stroke="#17607a" stroke-width="2.5" marker-end="url(#ar)"/><text x="660.0" y="75.0" text-anchor="middle" font-size="13.5" fill="#17607a" font-family="Assistant, Arial" direction="rtl" style="paint-order:stroke;stroke:#fff;stroke-width:5px">סוגיות</text><path d="M715 250 C 660.0 250, 660.0 82, 605 82" fill="none" stroke="#17607a" stroke-width="2.5" marker-end="url(#ar)"/><text x="660.0" y="160.0" text-anchor="middle" font-size="13.5" fill="#17607a" font-family="Assistant, Arial" direction="rtl" style="paint-order:stroke;stroke:#fff;stroke-width:5px">מניעים</text><path d="M395 72 C 340.0 72, 340.0 92, 285 92" fill="none" stroke="#17607a" stroke-width="2.5" marker-end="url(#ar)"/><text x="340.0" y="74.0" text-anchor="middle" font-size="13.5" fill="#17607a" font-family="Assistant, Arial" direction="rtl" style="paint-order:stroke;stroke:#fff;stroke-width:5px">עולמות</text><path d="M395 82 C 340.0 82, 340.0 232, 285 232" fill="none" stroke="#17607a" stroke-width="2.5" marker-end="url(#ar)"/><text x="340.0" y="167.0" text-anchor="middle" font-size="13.5" fill="#17607a" font-family="Assistant, Arial" direction="rtl" style="paint-order:stroke;stroke:#fff;stroke-width:5px">עולם</text><path d="M395 312 C 340.0 312, 340.0 404, 285 404" fill="none" stroke="#17607a" stroke-width="2.5" marker-end="url(#ar)"/><text x="340.0" y="352.0" text-anchor="middle" font-size="13.5" fill="#17607a" font-family="Assistant, Arial" direction="rtl" style="paint-order:stroke;stroke:#fff;stroke-width:5px">חזון</text><path d="M395 432 C 340.0 432, 340.0 420, 285 420" fill="none" stroke="#17607a" stroke-width="2.5" marker-end="url(#ar)"/><text x="340.0" y="442.0" text-anchor="middle" font-size="13.5" fill="#17607a" font-family="Assistant, Arial" direction="rtl" style="paint-order:stroke;stroke:#fff;stroke-width:5px">חזון ותמונה</text><path d="M180 200 L 180 126" fill="none" stroke="#17607a" stroke-width="2.5" marker-end="url(#ar)"/><text x="190" y="166.0" text-anchor="end" font-size="13.5" fill="#17607a" font-family="Assistant, Arial" direction="rtl" style="paint-order:stroke;stroke:#fff;stroke-width:5px">צעדים</text><path d="M75 412 C 18 412, 18 92, 73 92" fill="none" stroke="#17607a" stroke-width="2.5" marker-end="url(#ar)"/><text x="40" y="330" text-anchor="middle" font-size="13.5" fill="#17607a" font-family="Assistant, Arial" direction="rtl" style="paint-order:stroke;stroke:#fff;stroke-width:5px">מפת</text><text x="40" y="347" text-anchor="middle" font-size="13.5" fill="#17607a" font-family="Assistant, Arial" direction="rtl" style="paint-order:stroke;stroke:#fff;stroke-width:5px">דרכים</text><a href="hl-voice.html" target="_blank" rel="noopener"><rect x="715" y="58" width="210" height="64" rx="14" fill="#ffffff" stroke="#17607a" stroke-width="2.5"/><text x="820" y="97" text-anchor="middle" font-size="19" font-weight="700" fill="#16232e" font-family="Rubik, Arial" direction="rtl">קול הקהילה</text></a><a href="hl-radar.html" target="_blank" rel="noopener"><rect x="715" y="218" width="210" height="64" rx="14" fill="#ffffff" stroke="#17607a" stroke-width="2.5"/><text x="820" y="257" text-anchor="middle" font-size="19" font-weight="700" fill="#16232e" font-family="Rubik, Arial" direction="rtl">רדאר החוסן החברתי</text></a><a href="hl-futures.html" target="_blank" rel="noopener"><rect x="395" y="40" width="210" height="64" rx="14" fill="#ffffff" stroke="#17607a" stroke-width="2.5"/><text x="500" y="79" text-anchor="middle" font-size="19" font-weight="700" fill="#16232e" font-family="Rubik, Arial" direction="rtl">מחולל העתידים</text></a><a href="hl-circles.html" target="_blank" rel="noopener"><rect x="395" y="160" width="210" height="64" rx="14" fill="#ffffff" stroke="#17607a" stroke-width="2.5"/><text x="500" y="199" text-anchor="middle" font-size="19" font-weight="700" fill="#16232e" font-family="Rubik, Arial" direction="rtl">מעגלי העתיד</text></a><a href="hl-horizons.html" target="_blank" rel="noopener"><rect x="395" y="280" width="210" height="64" rx="14" fill="#ffffff" stroke="#17607a" stroke-width="2.5"/><text x="500" y="319" text-anchor="middle" font-size="19" font-weight="700" fill="#16232e" font-family="Rubik, Arial" direction="rtl">שלושה אופקים</text></a><a href="hl-collage.html" target="_blank" rel="noopener"><rect x="395" y="400" width="210" height="64" rx="14" fill="#ffffff" stroke="#17607a" stroke-width="2.5"/><text x="500" y="439" text-anchor="middle" font-size="19" font-weight="700" fill="#16232e" font-family="Rubik, Arial" direction="rtl">תמונת עתיד קבוצתית</text></a><a href="hl-stress.html" target="_blank" rel="noopener"><rect x="75" y="60" width="210" height="64" rx="14" fill="#ffffff" stroke="#17607a" stroke-width="2.5"/><text x="180" y="99" text-anchor="middle" font-size="19" font-weight="700" fill="#16232e" font-family="Rubik, Arial" direction="rtl">בדיקת עמידות</text></a><a href="hl-game.html" target="_blank" rel="noopener"><rect x="75" y="200" width="210" height="64" rx="14" fill="#ffffff" stroke="#17607a" stroke-width="2.5"/><text x="180" y="239" text-anchor="middle" font-size="19" font-weight="700" fill="#16232e" font-family="Rubik, Arial" direction="rtl">משחק מצב עתידי</text></a><a href="hl-roadmap.html" target="_blank" rel="noopener"><rect x="75" y="380" width="210" height="64" rx="14" fill="#ffffff" stroke="#17607a" stroke-width="2.5"/><text x="180" y="419" text-anchor="middle" font-size="19" font-weight="700" fill="#16232e" font-family="Rubik, Arial" direction="rtl">מהחזון להיום</text></a></svg></div></section>
+
+<section class="stage"><h2>מאיפה מתחילים? מסלולים מוכנים</h2>
+<p class="small muted">כל מסלול מתאים למטרה אחרת. אפשר להתחיל מכל כלי, ואפשר להשתמש בכלי אחד בלבד.</p>
+<div class="paths"><div class="path"><b>להבין מה משתנה סביבנו</b><div class="steps"><a href="hl-voice.html" target="_blank" rel="noopener">קול הקהילה</a> <span aria-hidden='true'>←</span> <a href="hl-radar.html" target="_blank" rel="noopener">רדאר החוסן החברתי</a> <span aria-hidden='true'>←</span> <a href="hl-futures.html" target="_blank" rel="noopener">מחולל העתידים</a></div><p class="small">שומעים את הקהילה, אוספים אותות, ובונים מהם עולמות אפשריים.</p></div><div class="path"><b>להתכונן לכמה עתידים</b><div class="steps"><a href="hl-futures.html" target="_blank" rel="noopener">מחולל העתידים</a> <span aria-hidden='true'>←</span> <a href="hl-stress.html" target="_blank" rel="noopener">בדיקת עמידות</a></div><p class="small">בונים עולמות, בוחרים אותם יחד בהצבעה, ובודקים מולם את התוכנית הקיימת.</p></div><div class="path"><b>לבדוק תוכנית קיימת מול משברים</b><div class="steps"><a href="hl-stress.html" target="_blank" rel="noopener">בדיקת עמידות</a></div><p class="small">מעלים נוהל חירום או תוכנית, ובודקים אותה מול אירועי לחץ מוכנים, גם בלי עולמות.</p></div><div class="path"><b>לבנות חזון ותוכנית פעולה</b><div class="steps"><a href="hl-horizons.html" target="_blank" rel="noopener">שלושה אופקים</a> <span aria-hidden='true'>←</span> <a href="hl-roadmap.html" target="_blank" rel="noopener">מהחזון להיום</a> <span aria-hidden='true'>←</span> <a href="hl-stress.html" target="_blank" rel="noopener">בדיקת עמידות</a></div><p class="small">מחליטים ממה להיפרד ובמה להשקיע, בונים מפת דרכים, ובודקים אותה מול משברים.</p></div><div class="path"><b>פעילות חווייתית עם תלמידים</b><div class="steps"><a href="hl-circles.html" target="_blank" rel="noopener">מעגלי העתיד</a> <span aria-hidden='true'>←</span> <a href="hl-futures.html" target="_blank" rel="noopener">מחולל העתידים</a></div><p class="small">מעגלי השלכות, ואחריהם עיתון מהעתיד ונקודות מבט במחולל העתידים.</p></div><div class="path"><b>לבחון יוזמה או החלטה</b><div class="steps"><a href="hl-circles.html" target="_blank" rel="noopener">מעגלי העתיד</a> <span aria-hidden='true'>←</span> <a href="hl-stress.html" target="_blank" rel="noopener">בדיקת עמידות</a></div><p class="small">בודקים את ההשפעה של יוזמה במעגלי העתיד, ואת העמידות שלה בבדיקת העמידות.</p></div><div class="path"><b>לתרגל ניהול משבר כצוות</b><div class="steps"><a href="hl-futures.html" target="_blank" rel="noopener">מחולל העתידים</a> <span aria-hidden='true'>←</span> <a href="hl-game.html" target="_blank" rel="noopener">משחק מצב עתידי</a> <span aria-hidden='true'>←</span> <a href="hl-stress.html" target="_blank" rel="noopener">בדיקת עמידות</a></div><p class="small">בוחרים עולם, מנהלים בו משבר סבב אחרי סבב, ובודקים את הצעדים שעלו בתחקיר.</p></div><div class="path"><b>לשמוע את כולם ולבנות חזון משותף</b><div class="steps"><a href="hl-collage.html" target="_blank" rel="noopener">תמונת עתיד קבוצתית</a> <span aria-hidden='true'>←</span> <a href="hl-roadmap.html" target="_blank" rel="noopener">מהחזון להיום</a></div><p class="small">כל אחד ואחת תורמים לתמונת העתיד, ומהחזון שעולה ממנה בונים מפת דרכים.</p></div></div></section>
+
+<section class="stage"><h2>הכלים</h2><div class="tcards"><article class="tcard"><div class="small muted">מה הקהילה חושבת ומרגישה?</div><h3><a href="hl-voice.html" target="_blank" rel="noopener">קול הקהילה</a></h3><p>ראיונות קצרים עם הרבה אנשים, מסמך שמרכז את מה שעלה, וסבבי דירוג עד שמתגבשת תמונה משותפת.</p><div class="small"><b>מתי:</b> בתחילת תהליך, לפני שמחליטים.</div><div class="small"><b>כמה זמן:</b> 10 דקות לראיון, ושבוע־שבועיים לאיסוף.</div><div class="small muted">מבוסס על: Seven Questions, Delphi</div><a class="go" href="hl-voice.html" target="_blank" rel="noopener">פתיחת הכלי</a></article><article class="tcard"><div class="small muted">מה כבר משתנה סביבנו?</div><h3><a href="hl-radar.html" target="_blank" rel="noopener">רדאר החוסן החברתי</a></h3><p>אוספים אותות קטנים לשינוי, מקבצים אותם למניעים, ומחליטים על מה לפעול, ממה לבנות תרחישים ואחרי מה לעקוב.</p><div class="small"><b>מתי:</b> פעם בעונה, כדי לא להיות מופתעים.</div><div class="small"><b>כמה זמן:</b> כשעה וחצי למפגש.</div><div class="small muted">מבוסס על: Horizon Scanning, Driver Mapping</div><a class="go" href="hl-radar.html" target="_blank" rel="noopener">פתיחת הכלי</a></article><article class="tcard"><div class="small muted">אילו עתידים אפשריים?</div><h3><a href="hl-futures.html" target="_blank" rel="noopener">מחולל העתידים</a></h3><p>ארבעה עולמות אפשריים, ביקור בהם, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט של תפקידים שונים.</p><div class="small"><b>מתי:</b> כשרוצים להתכונן לכמה עתידים במקביל.</div><div class="small"><b>כמה זמן:</b> שעה וחצי עד שלוש שעות.</div><div class="small muted">מבוסס על: Scenarios, Experiential Futures</div><a class="go" href="hl-futures.html" target="_blank" rel="noopener">פתיחת הכלי</a></article><article class="tcard"><div class="small muted">מה זה יגרום?</div><h3><a href="hl-circles.html" target="_blank" rel="noopener">מעגלי העתיד</a></h3><p>שלושה מעגלים של השלכות של אירוע, מגמה או יוזמה, כולל השלכות טובות ולא צפויות.</p><div class="small"><b>מתי:</b> כדי לבחון החלטה, או כפעילות לתלמידים.</div><div class="small"><b>כמה זמן:</b> 45 עד 90 דקות.</div><div class="small muted">מבוסס על: Futures Wheels</div><a class="go" href="hl-circles.html" target="_blank" rel="noopener">פתיחת הכלי</a></article><article class="tcard"><div class="small muted">ממה להיפרד ובמה להשקיע?</div><h3><a href="hl-horizons.html" target="_blank" rel="noopener">שלושה אופקים</a></h3><p>מה דועך היום ומה לשמור, העתיד הרצוי והזרעים שלו, והמעבר ביניהם.</p><div class="small"><b>מתי:</b> כשהדרך הנוכחית כבר לא מספיקה.</div><div class="small"><b>כמה זמן:</b> כשעתיים.</div><div class="small muted">מבוסס על: Three Horizons</div><a class="go" href="hl-horizons.html" target="_blank" rel="noopener">פתיחת הכלי</a></article><article class="tcard"><div class="small muted">איך מגיעים לשם?</div><h3><a href="hl-roadmap.html" target="_blank" rel="noopener">מהחזון להיום</a></h3><p>חזון עם תמונת עתיד, דרך אחורה מהעתיד להיום, מפת דרכים וצעדים ראשונים עם אחריות.</p><div class="small"><b>מתי:</b> כשיש כיוון ורוצים תוכנית.</div><div class="small"><b>כמה זמן:</b> שעתיים עד שלוש.</div><div class="small muted">מבוסס על: Visioning, Backcasting, Roadmapping</div><a class="go" href="hl-roadmap.html" target="_blank" rel="noopener">פתיחת הכלי</a></article><article class="tcard"><div class="small muted">כמה התוכנית תעמוד במשברים?</div><h3><a href="hl-stress.html" target="_blank" rel="noopener">בדיקת עמידות</a></h3><p>בודקים תוכנית קיימת מול עולמות עתידיים ואירועי לחץ, כולל אוטונומיה תפקודית ותוכנית מגירה.</p><div class="small"><b>מתי:</b> לפני שמאשרים תוכנית, ופעם בשנה.</div><div class="small"><b>כמה זמן:</b> שעה עד שעתיים.</div><div class="small muted">מבוסס על: Policy Stress-testing</div><a class="go" href="hl-stress.html" target="_blank" rel="noopener">פתיחת הכלי</a></article><article class="tcard"><div class="small muted">איך נתפקד ברגע האמת?</div><h3><a href="hl-game.html" target="_blank" rel="noopener">משחק מצב עתידי</a></h3><p>צוות מנהל משבר בעולם עתידי, סבב אחרי סבב. ה־AI הוא מנחה המשחק: מציג מצב ודילמה, מגיב להחלטות, ומוסיף קלפי הפתעה. בסוף ממצאים, דיון, לקחים וצעדים.</p><div class="small"><b>מתי:</b> כשרוצים לבדוק בפועל איך הצוות מחליט ומתפקד לבד.</div><div class="small"><b>כמה זמן:</b> שעה עד שעתיים, כולל תחקיר.</div><div class="small muted">מבוסס על: Gaming, Simulation</div><a class="go" href="hl-game.html" target="_blank" rel="noopener">פתיחת הכלי</a></article><article class="tcard"><div class="small muted">איזה עתיד כולנו רואים?</div><h3><a href="hl-collage.html" target="_blank" rel="noopener">תמונת עתיד קבוצתית</a></h3><p>כל אחד ואחת תורמים משפט, ציטוט, ציור, תמונה, צבע או שיר. ה־AI מסווג כל פריט לפי המשמעות שלו לחוסן, מוצא את הקשרים בין האנשים, ומחבר הכול ליצירה אחת שבה כל אחד ואחת מוצאים את עצמם.</p><div class="small"><b>מתי:</b> בפתיחה של תהליך, או בסיום כיצירה משותפת.</div><div class="small"><b>כמה זמן:</b> 10 דקות לכל משתתף או משתתפת, ומפגש קצר לקריאת התמונה.</div><div class="small muted">מבוסס על: Visioning</div><a class="go" href="hl-collage.html" target="_blank" rel="noopener">פתיחת הכלי</a></article></div></section>
+
+<p class="small muted">כל כלי פותח בלשונית חדשה. העבודה בכל כלי נשמרת בכלי עצמו, בכפתור ״שמירה״.</p>
+</div><script src="lib/screens-menu.js"></script>
+</body></html>

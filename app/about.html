@@ -121,9 +121,12 @@ h3.grp{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:18px;margin:22px 0
 .tool p{margin:0;font-size:14.5px;line-height:1.7;}
 /* שני סוגי כלים (10/10/2026): מעבדה ותרגול, וסביבת עבודה שמלווה עשייה במציאות */
 .kind{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:1px 9px;margin-inline-start:6px;vertical-align:2px;white-space:nowrap}
-.kind.lab{background:#EDE3F7;color:#5B2D8E}.kind.work{background:#DFE9E2;color:#2F5A43}
+.kind.lab{background:#EDE3F7;color:#5B2D8E}.kind.work{background:#DFE9E2;color:#2F5A43}.kind.gift{background:#FDF0D2;color:#7A5410}
+.tool .go{display:inline-block;margin-top:6px;font-weight:700}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .kind.lab{background:#2A1A42;color:#C9A8EC}:root:not([data-theme="light"]) .kind.work{background:#1B2A22;color:#9CCDB1}}
 :root[data-theme="dark"] .kind.lab{background:#2A1A42;color:#C9A8EC}:root[data-theme="dark"] .kind.work{background:#1B2A22;color:#9CCDB1}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .kind.gift{background:#33260f;color:#F2B25C}}
+:root[data-theme="dark"] .kind.gift{background:#33260f;color:#F2B25C}
 .kinds{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:10px;margin:8px 0 6px;align-items:start}
 .kinds>div{background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:12px 16px}
 .kinds b{display:block;font-size:15.5px;margin-bottom:4px}.kinds p{margin:0;font-size:14.5px;line-height:1.7}
@@ -198,11 +201,13 @@ section.card h3{font-size:17px;margin-bottom:8px;}
   <div class="tools">
     <div class="tool"><b>יצירת תרחיש<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>יש שיחה שאתם חוששים ממנה? תארו במשפט מי, מול מי ומה קרה, והמערכת תבנה ממנה תרחיש שלם: דמויות חיות, נקודות תפנית, ותוצרים מוכנים למנחה, למתנסה ולשחקנית. לסטודנטיות.ים בהכשרה להוראה, להורים ולנוער.</p></div>
     <div class="tool"><b>משחק תפקידים<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>משתתפים בגובה העיניים, ונקודות מבט שונות. כל אחד נכנס לנעליים של האחר, ומגלה כמה זה משנה.</p></div>
-    <div class="tool"><b>סדנה<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>סדנה פנים אל פנים, לא מול המסך: המשתתפות מתנסות בשיחה מול שחקן או שחקנית, או במשחק תפקידים בין שתי משתתפות, צופות ונותנות משוב. הטלפון משמש רק לכניסה בקוד אחד, לדף הצפייה ולמשוב, והמנחה רואה את המשובים מכל מכשיר.</p></div>
+    <div class="tool"><b>סדנה<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>סדנה פנים אל פנים, לא מול המסך: המשתתפים מתנסים בשיחה מול שחקן או שחקנית, או במשחק תפקידים בין שני משתתפים, צופים ונותנים משוב. הטלפון משמש רק לכניסה בקוד אחד, לדף הצפייה ולמשוב, והמנחה רואה את המשובים מכל מכשיר.</p></div>
     <div class="tool"><b>תרגול עצמי<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>להתאמן לבד, מתי שנוח, מול דמות שמגיבה כמו אדם אמיתי, ולקבל משוב בסוף.</p></div>
     <div class="tool"><b>תכנון שיחה<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>לפני שיחה חשובה, בעל פה או בכתב: תדריך קצר וברור, כרטיס תזכורת לשיחה עצמה, או טיוטת הודעה, כולל מה לעשות אם השיחה מסתבכת, ואיך לסיים בכבוד גם בלי הסכמה.</p></div>
     <div class="tool"><b>ננה: מהוראה להנחיה<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>למי שמנחה קבוצה ורוצה לעבור מהוראה להנחיה שמחזקת את הקבוצה. מספרים על המפגש ומקבלים מדריך הנחיה וכרטיס כיס. אפשר גם להתאמן על רגע מאתגר מול "הקבוצה", ולחזור אחרי המפגש לרפלקציה.</p></div>
     <div class="tool"><b>מעבדת שיח וחקר משותף<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>קבוצה חוקרת שאלה בתחום הדעת: מנסחת שאלה, בונה טענות, בודקת ראיות ומתקנת יחד. לכל משתתף ומשתתפת תפקיד, גם בהכנת החומרים ובתיעוד, וכל אחד ואחת מביעים עמדה ומסבירים אותה. גם עמדה שלא נבחרה נשמרת, והמורה מאשרת את המסקנה.</p></div>
+    <div class="tool" id="games"><b>משחקי חוסן<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>משחקים שמחזקים חוסן חברתי בכיתה, בצוות ובבית. "רביעיות חוסן": משחק רביעיות להדפסה עם 14 מושגי חוסן. "זיכרון חוסן": 20 זוגות עם איורים חביבים, על המסך ולהדפסה, בזוגות זהים לגיל הצעיר ובזוגות של מושג ומצב לכל שכבת גיל. בכל זוג או רביעייה שמשלימים עוצרים ל"רגע של חוסן". "צועדים אל החוסן": משחק לוח על המסך ולהדפסה, עם משימות בדרך, מכשולים שעוברים בעזרת האחרים, ומשחק שיתופי מול השעון. "בלי פאניקה!": משחק קלפים למוכנות בחירום, על המסך ולהדפסה, עם הכנות מראש, אלתורים מצחיקים, עזרה מהשכנים ורשימת מוכנות לבית. "מחולל סיפורי חוסן": ילדים ממציאים דמויות, נושא ותפניות, ומקבלים סיפור חוסן מאויר להדפסה, עם הקדשה למי שיצר/ה אותו. "גן הרעיונות": מגדלים רעיון מזרע ועד פרי עם גני, שנותנת משוב על הרעיון בכל שלב ומתייעצת, ומחליטים בכל שלב איך ממשיכים. ועוד: "לאן זה שייך?" (התאמת היגדים), "חידות חוסן" בארבע רמות, "בינגו חוסן", "20 שאלות של חוסן", "אמת או אתגר" עם גלגל, "סימני דרך" (מסלול תחנות לארבע שכבות גיל) ו"רכבת המוכנות" (השלמת רצפים של תכנון, היערכות, תרגול, ביצוע ותחקור).</p></div>
+    <div class="tool" id="yesh-ma-laasot"><b>יש מה לעשות: מדריכון לחירום<span class="kind gift">🎁 פתוח לכולם</span></b><p>לרגעי חירום, כשאתם המבוגר שנמצא עכשיו עם הילדים: מה עושים ומה אומרים בדקה הראשונה, פרוטוקול מעש״ה, נשימה וקרקוע, מה לעשות כשילד במצוקה חריגה, ופעילויות קצרות למרחב המוגן. בעברית ובערבית, בלי קוד ובלי כניסה. אפשר לשלוח אותו כמתנה, עם הקדשה אישית.</p><a class="go" href="yesh-ma-laasot.html">לפתיחת המדריכון ←</a></div>
     <div class="tool"><b>חשיבת צוות<span class="kind lab">🧪 מעבדה ותרגול</span></b><p>צוות של תלמידים או של מבוגרים חושב יחד על אתגר: כל הקולות נשמעים, כל רעיון מוסבר במילים של עמית לפני שמגיבים, שוקלים בעד ונגד ומפרגנים לתרומה. בכל שלב שואלים מה הרווחנו מהחשיבה ביחד, ובסוף הסבב התפקידים מתחלפים.</p></div>
   </div>
 

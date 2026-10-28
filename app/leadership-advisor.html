@@ -315,7 +315,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 <dialog id="fb-dlg">
   <div class="fbh">רעיונות, תקלות ושאלות על נוגי</div>
   <div class="fbb">
-    <p class="muted" style="font-size:.85rem">מה עבד, מה לא, מה חסר: כל הערה עוזרת לשפר. ההודעה מגיעה ישירות לד״ר יעל שדה. אני מבקשת את הפרטים שלך כדי שאוכל לחזור אלייך ולהתייעץ במידת הצורך.</p>
+    <p class="muted" style="font-size:.85rem">מה עבד, מה לא, מה חסר: כל הערה עוזרת לשפר. ההודעה מגיעה ישירות לד״ר יעל שדה. אני מבקשת את הפרטים שלך כדי שאוכל לחזור ולהתייעץ במידת הצורך.</p>
     <label for="fb-name">שם</label>
     <input type="text" id="fb-name" maxlength="80" autocomplete="name">
     <label for="fb-contact">מייל או טלפון</label>
@@ -942,7 +942,7 @@ function renderChat(){
   const hasRep=!!STATE.report;
   F('chat-h').textContent=hasRep?'שאלות המשך לנוגי':'4. שיחה עם נוגי (רשות)';
   F('chat-intro').textContent=hasRep?'אפשר לשאול על הדוח, לבקש פירוט או חלופה אחרת. למשל: "איך מתחילים לבנות צוות ממלאי מקום?"':'אפשר לשאול, לספר עוד על בית הספר או לבקש שנוגי תשאל שאלות הבהרה. מה שעולה בשיחה נכנס לדוח. למשל: "איך פותחים שיחה עם מורה שנראית שחוקה?" או "מה עוד חשוב לך לדעת?".';
-  F('report-note').textContent=hasRep?'אחרי שיחה נוספת אפשר להפיק דוח מעודכן, שכולל גם אותה.':'הדוח נשען על מה שמילאת ועל מה שעלה בשיחה. אפשר להפיק אותו גם בלי לשאול דבר. הפקת הדוח נמשכת עד כ־5 דקות.';
+  F('report-note').textContent=hasRep?'אחרי שיחה נוספת אפשר להפיק דוח מעודכן, שכולל גם אותה.':'הדוח נשען על מה שמולא ועל מה שעלה בשיחה. אפשר להפיק אותו גם בלי לשאול דבר. הפקת הדוח נמשכת עד כ־5 דקות.';
   if(!BUSY)F('btn-analyze').textContent=hasRep?'הפקת דוח מעודכן':'הפקת הדוח';
   const pre=F('chat-pre-log');pre.textContent='';F('chat-pre').hidden=!(hasRep&&STATE.pre.length);
   if(hasRep)STATE.pre.forEach(m=>{const d=el('div','msg '+(m.role==='user'?'me':'bot'));d.appendChild(m.role==='user'?withRefs(m.content):richText(m.content));pre.appendChild(d);});

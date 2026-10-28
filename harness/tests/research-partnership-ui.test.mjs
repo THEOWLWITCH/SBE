@@ -204,6 +204,25 @@ test('approved agreements show signing controls only when the provider readiness
     page.clear();
   }
 });
+test('persisted signing status stays readable but disabled deployment hides signing links and actions',async()=>{
+  const UI=require('../../app/lib/research-partnership-ui.js');
+  for(const configured of [false,true]){
+    const s=setup(),original=s.client.call;
+    const agreement={record:{id:id(80),studyId:id(1),partnerId:id(2),kind:'agreement',status:'signing',revision:3},version:{id:id(81),number:1,contentHash:'c'.repeat(64),data:{title:'הסכם עם תהליך חתימה שמור'}},signing:{id:id(82),recordId:id(80),state:'in_progress',configured:true,embeddedUrl:'https://synthetic.example.invalid/signing'}};
+    s.workspace.records=[{id:id(80),partnerId:id(2),kind:'agreement',status:'signing',title:agreement.version.data.title}];
+    s.client.call=async(a,p)=>{if(a==='recordGet'){s.calls.push([a,p]);return agreement;}const result=await original(a,p);if(a==='workspaceBootstrap')result.readiness.signing={configured,state:configured?'ready':'disabled',message:'החתימה האלקטרונית אינה פעילה בפריסה זו.'};return result;};
+    const page=UI.mount(s);await page.load();await page.openWorkspace(s.workspace);await btn(s.root,agreement.version.data.title).click();
+    assert.match(s.root.textContent,/החתימה בתהליך/);
+    assert.equal(walk(s.root).some(n=>n.tagName==='iframe'),configured);
+    assert.equal(walk(s.root).some(n=>n.tagName==='a'&&n.textContent==='פתיחת החתימה המאובטחת'),configured);
+    assert.equal(Boolean(btn(s.root,'פתיחת תהליך החתימה')),configured);
+    assert.equal(Boolean(btn(s.root,'עדכון מצב החתימה')),configured);
+    if(!configured)assert.match(s.root.textContent,/החתימה האלקטרונית אינה פעילה בפריסה זו/);
+    assert.ok(btn(s.root,'הורדת Word'));assert.ok(btn(s.root,'PDF והדפסה'));
+    assert.ok(!s.calls.some(([action])=>['signingStart','signingView','signingRefresh'].includes(action)));
+    page.clear();
+  }
+});
 test('new safe partnership errors preserve dependency messages and clear private scope on denial',async()=>{const R=require('../../app/lib/research-client.js');let status=503;const clears=[];const client=R.create({getToken:()=> 'A',onClear:reason=>clears.push(reason),fetchImpl:async()=>({ok:false,status,json:async()=>({ok:false,code:status===503?'not_configured':'not_found',error:'arbitrary server details'})})});client.setScope(id(1));await assert.rejects(client.call('workspaceBootstrap'),e=>e.code==='not_configured'&&!e.userMessage.includes('arbitrary'));status=404;await assert.rejects(client.call('workspaceList'),e=>e.code==='not_found');assert.ok(clears.includes('not_found'));});
 test('client directs an export raced by execution to private signed originals without generic retries or scope clearing',async()=>{
  const R=require('../../app/lib/research-client.js'),clears=[],requests=[];

@@ -79,7 +79,7 @@ function encryptDocument(bytes,key){return encryptResearchValue({purpose:'resear
 async function call(store,token,action,payload){if(!store?.rpc)fail('not_configured');const result=await store.rpc(token,action,payload);if(result?.error)fail(result.error);return result||{};}
 const publicResult=(action,result)=>Object.fromEntries(Object.keys(CORE.OPERATIONS[action].result).filter(key=>own(result,key)).map(key=>[key,result[key]]));
 const readinessEntry=(configured,message)=>({configured,state:configured?'ready':'not_configured',message});
-function signingReadiness(adapter,options){const result=adapter.readiness();if(result.configured){try{documentKey(options);}catch{return readinessEntry(false,'נדרש מפתח להצפנת מסמכי החתימה והראיות.');}}return result;}
+function signingReadiness(adapter,options){if(options.signingEnabled!==true)return createSigningAdapter().readiness();const result=adapter.readiness();if(result.configured){try{documentKey(options);}catch{return readinessEntry(false,'נדרש מפתח להצפנת מסמכי החתימה והראיות.');}}return result;}
 function mailSettings(options){const env=options.env||process.env,from=options.from??env.NOTIFY_FROM,apiKey=options.apiKey??env.RESEND_API_KEY;let origin;try{origin=new URL(options.siteOrigin??env.CORS_ORIGIN?.split(',')[0]?.trim());}catch{return null;}if(origin.protocol!=='https:'||origin.username||origin.password||origin.pathname!=='/'||origin.search||origin.hash||typeof from!=='string'||/[\r\n\0]/.test(from)||!/@/.test(from)||typeof apiKey!=='string'||!apiKey)return null;return {from,apiKey,origin:origin.origin};}
 async function invitationDelivery(store,token,payload,raw,options){
  const settings=mailSettings(options);if(!settings)return {configured:false,status:'not_configured'};
@@ -143,6 +143,7 @@ async function explainImpact({accessStore,store,token,payload,result,changes,opt
  return failed?{...base,state:'failed',message:'ההסבר לא הופק. ההשוואה המלאה נשארה זמינה.'}:{...base,state:'ready',summary:answer.text,engineVersion:IMPACT_VERSIONS.engine,promptVersion:IMPACT_VERSIONS.prompt};
 }
 async function handleSigning({accessStore,store,body,payload,adapter,options}){
+ if(options.signingEnabled!==true)fail('not_configured');
  const action=body.action;
  // Authorization precedes provider readiness so guessed scope never leaks.
  const context=await call(store,body.token,action,payload);
@@ -234,6 +235,7 @@ export async function completeSigning({accessStore,store,scope,signing,verificat
 }
 export async function handleResearchSigningWebhook(accessStore,store,raw,headers,options={}){
  try{
+  if(options.signingEnabled!==true)fail('not_configured');
   // This established route verifies DocuSign Connect. SignWell event hashes do
   // not bind a callback document ID and are deliberately unavailable here.
   const adapter=options.signingAdapter||createSigningAdapter({...options,signingProvider:'docusign'}),event=adapter.verifyEvent(raw,headers);if(!event.completed)return [200,{ok:true}];

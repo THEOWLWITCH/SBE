@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>לוח המסעות: אישורים ומשוב</title>
+<title>רשת החוסן החברתי: לוח המסעות</title>
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/product-doc.js"></script>
@@ -12,6 +12,16 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
 <script src="lib/resilience-advisor-sources.js"></script>
 <script src="lib/journey-model.js"></script>
+<script src="lib/journey-analysis-model.js"></script>
+<script src="lib/journey-network-model.js"></script>
+<script src="lib/journey-workspace-model.js"></script>
+<script src="lib/journey-starter-catalog.js"></script>
+<script src="lib/journey-feedback.js"></script>
+<script src="lib/journey-network-ui.js"></script>
+<script src="lib/journey-workspace.js"></script>
+<link rel="stylesheet" href="lib/journey-workspace.css">
+<link rel="stylesheet" href="lib/journey-network.css">
+<link rel="stylesheet" href="lib/journey-feedback.css">
 <script src="lib/report-table.js"></script>
 <link rel="stylesheet" href="lib/journey.css">
 <script src="lib/journey-demo.js"></script>
@@ -210,10 +220,19 @@ async function complete(system,messages,maxTokens,review){
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
   return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},480000)||'');
 }
+function completeJson(system,messages,maxTokens,review,check){
+  return sbeCallAIJson(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},480000,check);
+}
 
 
 
-function accessApi(body){return fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json().catch(()=>({})).then(d=>{d._status=r.status;return d;}));}
+async function accessApi(body){
+  const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 90000);
+  try {
+    const r = await fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:controller.signal});
+    const d = await r.json().catch(()=>({})); d._status = r.status; return d;
+  } finally { clearTimeout(timer); }
+}
 function token(){try{return sessionStorage.getItem('sbe.session.token')||'';}catch(e){return '';}}
 const api = (action, extra) => accessApi({ action, token: token(), ...(extra || {}) });
 const fmt = d => d ? String(d).slice(0,10).split('-').reverse().map((x,i)=>i===2?x.slice(2):x).join('.') : '';
@@ -250,8 +269,10 @@ function ta(v, ph, h){ const t = document.createElement('textarea'); t.value = v
 
 // ── הלוח: כל המסעות ──
 async function viewBoard(){
+  if (/^#[a-z0-9]{6,24}$/.test(location.hash)) return;
+  const load = ++loadGeneration, hash = location.hash;
   const app = F('app'); app.textContent = '';
-  const c = card(); c.appendChild(el('h1', null, 'לוח המסעות: אישורים ומשוב'));
+  const c = card(); c.appendChild(el('h1', null, 'רשת החוסן החברתי')); c.appendChild(el('p', 'muted', 'לוח המסעות: אישורים ומשוב'));
   c.appendChild(el('p', 'muted', 'כל המסעות והתקדמותם: מוצג רק לך. מה שממתין לך מופיע ראשון.'));
   const bar0 = el('div', 'btns');
   const tryA = el('a', 'btn btn-ghost', 'למסך המשתתפים'); tryA.href = 'journey.html'; tryA.style.textDecoration = 'none'; bar0.appendChild(tryA);
@@ -268,7 +289,9 @@ async function viewBoard(){
   const demoB = btn('יצירת מסעות דמו', 'btn-ghost', () => { demoBox.hidden = !demoBox.hidden; }); bar0.appendChild(demoB);
   c.appendChild(bar0); c.appendChild(demoBox);
   const w = el('p', 'muted', 'טוענת...'); c.appendChild(w);
-  const d = await api('jrAll'); w.remove();
+  const d = await api('jrAll');
+  if (load !== loadGeneration || location.hash !== hash) return;
+  w.remove();
   if (d._status === 403) { c.appendChild(el('p', 'err', 'המסך הזה נפתח בכניסת מנהלת מערכת.')); return; }
   const items = (d.items || []).sort((a, b) => (b.pendingAdmin - a.pendingAdmin) || String(b.created).localeCompare(String(a.created)));
   const sum = el('div', 'chips'); const cnt = (f) => items.filter(f).length;
@@ -281,12 +304,14 @@ async function viewBoard(){
     if (s.pendingAdmin) h.appendChild(el('span', 'tagx sub', 'ממתין לך'));
     r.appendChild(h);
     // מפה קטנה: חמש התחנות והמקום במסע
-    const mm = el('div', 'jmap'); mm.style.margin = '.5rem 0 .2rem'; const cur = s.status === 'done' ? 6 : (s.stage || s.startStage || 1);
-    J.STAGES.forEach(x => { const q = el('div', 'st' + (x.k < cur ? ' reached' : '') + (x.k === cur ? ' now' : '')); q.appendChild(el('div', 'dot', x.k < cur ? '✓' : x.k)); q.appendChild(el('div', 'nm', x.t)); mm.appendChild(q); }); r.appendChild(mm);
-    const st = { mapping: 'במיפוי הראשוני', proposal: 'בוחרים מתוך הצעת המסע', review: 'הצעת המסע חזרה לאישורך', active: 'בדרך: ' + stT(s.stage), done: '🎉 קהילת חוסן' }[s.status];
+    if (s.status !== 'workspace') {
+      const mm = el('div', 'jmap'); mm.style.margin = '.5rem 0 .2rem'; const cur = s.status === 'done' ? 6 : (s.stage || s.startStage || 1);
+      J.STAGES.forEach(x => { const q = el('div', 'st' + (x.k < cur ? ' reached' : '') + (x.k === cur ? ' now' : '')); q.appendChild(el('div', 'dot', x.k < cur ? '✓' : x.k)); q.appendChild(el('div', 'nm', x.t)); mm.appendChild(q); }); r.appendChild(mm);
+    }
+    const st = { workspace:'מרחב עבודה לחוסן', mapping: 'במיפוי הראשוני', proposal: 'בוחרים מתוך הצעת המסע', review: 'הצעת המסע חזרה לאישורך', active: 'בדרך: ' + stT(s.stage), done: '🎉 קהילת חוסן' }[s.status];
     const late = s.next && s.next < today() && s.status === 'active';
     r.appendChild(el('div', 'meta', [st, s.by, s.inst, s.total ? J.ICON.done + ' ' + s.approved + '/' + s.total + ' אבני דרך' : '', s.next ? (late ? J.ICON.rest + ' עצירת התרעננות' : 'הבאה: ' + fmt(s.next)) : '',
-      s.obstacles ? J.ICON.obstacle + ' ' + s.obstacles + ' מכשולים בדרך' : (s.status !== 'mapping' ? J.ICON.clear + ' לא נמצא כשל מערכתי משמעותי' : ''), s.consent ? 'מחקר ✓' : '', s.mail ? '📧 מקבלים עדכונים במייל' : ''].filter(Boolean).join(' · ')));
+      s.status === 'workspace' ? 'קיום, מימוש והתחדשות כזוויות מקבילות' : s.obstacles ? J.ICON.obstacle + ' ' + s.obstacles + ' מכשולים בדרך' : (s.status !== 'mapping' ? J.ICON.clear + ' לא נמצא כשל מערכתי משמעותי' : ''), s.consent && s.status !== 'workspace' ? 'מחקר ✓' : '', s.mail ? '📧 מקבלים עדכונים במייל' : ''].filter(Boolean).join(' · ')));
     const rb = el('div', 'btns'); rb.style.marginTop = '.4rem';
     rb.appendChild(btn('פתיחה', 'btn-ghost', () => { location.hash = s.id; }));
     const asP = el('a', 'btn btn-ghost', 'צפייה כמשתתפים'); asP.href = 'journey.html#' + s.id; asP.target = '_blank'; asP.style.textDecoration = 'none'; rb.appendChild(asP);
@@ -316,13 +341,27 @@ async function viewBoard(){
 }
 
 // ── מסע אחד ──
-let JR = null;
+let JR = null, workspaceUI = null, loadGeneration = 0;
 async function viewOne(id){
+  if (location.hash !== '#' + id) return;
+  if (workspaceUI) {
+    if (!workspaceUI.canLeave()) return;
+    workspaceUI.destroy(); workspaceUI = null;
+  }
+  const load = ++loadGeneration, hash = location.hash;
   const app = F('app'); app.textContent = ''; const w = card(); w.appendChild(el('p', 'muted', 'טוענת...'));
-  const d = await api('jrGet', { id }); app.textContent = '';
+  const d = await api('jrGet', { id });
+  if (load !== loadGeneration || location.hash !== hash) return;
+  app.textContent = '';
   if (!d.journey) { card().appendChild(el('p', 'err', 'לא נמצא.')); return; }
   JR = d.journey; const j = JR;
+  if (j.mode === 'workspace' || j.version === 2 || j.status === 'workspace') {
+    workspaceUI = SBE_WORKSPACE_UI.mount(app, {journey:j, api, completeJson});
+    threadBox(null);
+    return;
+  }
   const c = card(); c.appendChild(btn('← לכל המסעות', 'btn-ghost', () => { location.hash = ''; }));
+  c.appendChild(el('p', null, 'זהו מסע במתכונת הקודמת. התיעוד המקורי נשמר. המסע המשודרג לבית ספר ולקהילה זמין במרחבי עבודה חדשים; אין העברה אוטומטית של נתונים או ניתוחים קודמים.'));
   c.appendChild(el('h1', null, j.unitName)); c.appendChild(el('p', 'muted', [unitT(j.unit), j.by, j.inst, 'נפתח ' + fmt(j.created), j.consent && j.consent.research ? 'הסכמה למחקר ✓' : 'בלי הסכמה למחקר'].filter(Boolean).join(' · ')));
   c.appendChild(journeyMap(j));
   // המיפוי והצעת המסע
@@ -435,10 +474,28 @@ function threadBox(mi, host){
   const t = el('div', 'thread');
   (JR.thread || []).filter(x => x.mi === mi).forEach(x => { const m = el('div', 'm ' + (x.by === 'admin' ? 'admin' : 'owner')); m.appendChild(el('span', 'who', (x.by === 'admin' ? 'את' : ({ appeal: '🧭 ערעור', extension: '☕ בקשת דחייה', comment: 'הם' }[x.kind] || 'הם')) + ' · ' + fmt(x.at) + (x.open ? ' · ממתין לתשובה' : ''))); m.appendChild(document.createTextNode(x.text)); t.appendChild(m); });
   const tx = ta('', 'תשובה: נשמרת במסע ומוצגת להם', '3rem'); t.appendChild(tx);
-  const go = btn('שליחת תשובה', 'btn-ghost', async () => { if (tx.value.trim().length < 2) return; go.disabled = true; const r = await api('jrPost', { id: JR.id, mi, text: tx.value.trim(), as: 'admin' }); if (r.ok) viewOne(JR.id); else go.disabled = false; }); go.style.marginTop = '.3rem'; t.appendChild(go);
+  const go = btn('שליחת תשובה', 'btn-ghost', async () => {
+    if (tx.value.trim().length < 2) return;
+    go.disabled = true; const targetId = JR.id, targetWorkspace = workspaceUI;
+    const r = await api('jrPost', { id:targetId, mi, text:tx.value.trim(), as:'admin' });
+    if (location.hash !== '#' + targetId || !JR || JR.id !== targetId || workspaceUI !== targetWorkspace) return;
+    if (r.ok) {
+      if (targetWorkspace) targetWorkspace.acceptMetadataRevision(r);
+      if (targetWorkspace && targetWorkspace.hasUnsaved()) { tx.value = ''; go.disabled = false; tx.placeholder = 'התשובה נשלחה. השינויים המקומיים נשארו פתוחים לשמירה.'; }
+      else viewOne(targetId);
+    } else go.disabled = false;
+  }); go.style.marginTop = '.3rem'; t.appendChild(go);
   c.appendChild(t);
 }
-function route(){ const id = location.hash.replace('#', ''); if (/^[a-z0-9]{6,24}$/.test(id)) viewOne(id); else viewBoard(); }
+let lastRouteHash = location.hash;
+function route(){
+  if (workspaceUI) {
+    if (!workspaceUI.canLeave()) { history.replaceState(null, '', location.pathname + location.search + lastRouteHash); return; }
+    workspaceUI.destroy(); workspaceUI = null;
+  }
+  lastRouteHash = location.hash;
+  const id = location.hash.replace('#', ''); if (/^[a-z0-9]{6,24}$/.test(id)) viewOne(id); else viewBoard();
+}
 window.addEventListener('hashchange', route); route();
 })();
 </script>

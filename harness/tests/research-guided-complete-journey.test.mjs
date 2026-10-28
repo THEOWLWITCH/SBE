@@ -70,7 +70,7 @@ test('complete V4 public request, negotiation, bounded signing work, private del
       try { return Response.json(await f.researchStore.rpc(body.p_token, body.p_action, body.p_payload)); }
       catch (error) { return Response.json({ error: error.code || 'unavailable', status: error.status || 503 }); }
     };
-    server = createPracticeServer({ authStore: f.accessStore, partnershipOptions: {
+    server = createPracticeServer({ signingEnabled: true, authStore: f.accessStore, partnershipOptions: {
       ...provider.options, documentKey: f.documentKey, contactKey: f.documentKey,
       impactDescriptor: descriptor, impactProviderFactory: () => ({ id: descriptor.provider, model: descriptor.model,
         async complete(request) { impactRequests.push(structuredClone(request)); return { text: 'מה המשמעות עבורי? הסבר סינתטי בלבד.' }; } })

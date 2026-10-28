@@ -8,6 +8,12 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
+# קישור מתנה קצר ל"יש מה לעשות" (20/10/2026): be-good.co.il/g/<קוד>
+[[redirects]]
+  from = "/g/:id"
+  to = "/yesh-ma-laasot.html?g=:id"
+  status = 301
+
 [[headers]]
   for = "/*"
   [headers.values]

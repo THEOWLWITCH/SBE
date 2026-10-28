@@ -11,6 +11,20 @@ window.SBE_SCREENS = [
       { file:'eval-set.html', label:'בקרת איכות' },
       { file:'demo-lab.html', label:'🧪 מעבדת הדמו: תוצר מכל כלי' },
     ]},
+    // מעבדת האופק (28/10/2026): תשעה כלים לחוסן מול עתיד לא ידוע. עד לאישור: מנהלת המערכת בלבד
+    // (הדפים לא נמצאים ב-PAGES_BY_PERM וב-MODEL_PAGES). מקור: lib/hl-runtime.js
+    { title:'🔭 מעבדת האופק (טרם אושר)', items:[
+      { file:'horizon-lab.html', label:'מעבדת האופק: דף הבית' },
+      { file:'hl-voice.html', label:'קול הקהילה' },
+      { file:'hl-radar.html', label:'רדאר החוסן החברתי' },
+      { file:'hl-futures.html', label:'מחולל העתידים' },
+      { file:'hl-circles.html', label:'מעגלי העתיד' },
+      { file:'hl-horizons.html', label:'שלושה אופקים' },
+      { file:'hl-collage.html', label:'תמונת עתיד קבוצתית' },
+      { file:'hl-roadmap.html', label:'מהחזון להיום' },
+      { file:'hl-game.html', label:'משחק מצב עתידי' },
+      { file:'hl-stress.html', label:'בדיקת עמידות' },
+    ]},
   ]},
   { part:'others', title:'👥 מה שאחרים רואים', groups:[
     { title:'🌅 השער: מתחילים כאן', items:[
@@ -35,11 +49,13 @@ window.SBE_SCREENS = [
       { file:'facilitator-screen.html', label:'מסך הסדנה', who:'מנחות' },
       { file:'observation-sheet.html', label:'דף צפייה (טלפון)', who:'מתנסות בסדנה' },
       { file:'practice.html', label:'תרגול עצמי', who:'משתתפות בסדנה' },
+      { file:'yesh-ma-laasot.html', label:'🎁 יש מה לעשות: מדריכון לחירום', who:'כולם, גם בלי כניסה (בלי ניווט לכלים אחרים)' },
       { file:'conversation-planner.html', label:'תכנון שיחה', who:'הרשאת תכנון שיחה' },
       { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
       { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה bridge)' },
       { file:'shared-dialogue-lab.html', label:'מעבדת שיח וחקר משותף', who:'הרשאת מעבדת שיח וחקר משותף (dialogue)' },
       { file:'team-thinking.html', label:'חשיבת צוות', who:'הרשאת חשיבת צוות (teamthink)' },
+      { file:'games.html', label:'משחקי חוסן', who:'הרשאת משחקים (games)' },
     ]},
     { title:'🎭 2. להתאמן: תוצרי הסימולציה', items:[
       { file:'doc-facilitator.html', label:'גרסת המנחה', who:'רק את ומנחות הסימולציה' },

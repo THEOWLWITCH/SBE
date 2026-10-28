@@ -13,7 +13,7 @@ async function rpc(store,token,action,payload){const result=await store.rpc(toke
 // publishes, sends for signature or opens a signing view to repair uncertainty.
 export async function runPartnershipWork(accessStore,store,options={}){
  const result={checked:0,completed:0,pending:0,blocked:0,deliveryAccepted:0,deliveryPending:0};
- if(options.enabled!==true)return {...result,code:'disabled'};
+ if(options.enabled!==true||options.signingEnabled!==true)return {...result,code:'disabled'};
  if(!accessStore?.get||!store?.rpc||!keyValid(options.documentKey))return {...result,code:'not_configured'};
  const worker=()=>researchSigningWorkerToken(accessStore),call=async(action,payload)=>rpc(store,await worker(),action,payload);
  const limit=Number.isInteger(options.limit)&&options.limit>=1&&options.limit<=10?options.limit:3;
@@ -70,7 +70,7 @@ export async function runPartnershipWork(accessStore,store,options={}){
 }
 
 export function startPartnershipWorkScheduler(accessStore,store,options={}){
- if(options.enabled!==true)return Object.freeze({state:'disabled',stop(){}});
+ if(options.enabled!==true||options.signingEnabled!==true)return Object.freeze({state:'disabled',stop(){}});
  if(!accessStore?.get||!store?.rpc||!keyValid(options.documentKey)||!(typeof options.signingAdapterFactory==='function'||options.signingProviders||options.signing||options.copyMail))return Object.freeze({state:'not_configured',stop(){}});
  const intervalMs=Number.isInteger(options.intervalMs)&&options.intervalMs>=30000&&options.intervalMs<=3600000?options.intervalMs:60000;
  let running=false,stopped=false;

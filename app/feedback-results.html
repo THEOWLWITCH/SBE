@@ -298,7 +298,7 @@ function csvEscape(v){
   return /[",\n]/.test(s) ? "\"" + s.replace(/"/g,"\"\"") + "\"" : s;
 }
 document.getElementById("bCsv").addEventListener("click", () => {
-  const rows = [["תפקיד המשיבה","זמן","מוסד","מנחה","תרחיש","מזהה שאלה","שאלה","תשובה"]];
+  const rows = [["תפקיד המשיב/ה","זמן","מוסד","מנחה","תרחיש","מזהה שאלה","שאלה","תשובה"]];
   const responses = scopedResponses();
   const roleTitle = { fac:"מנחה", trainee:"מתנסה", obs:"צופה" };
   ROLE_ORDER.forEach(role => {

@@ -60,7 +60,7 @@ test('the readiness list, the parent letter and the emergency check', () => {
   assert.equal(C.fillLetter('תלמד [שם המחליפה] עד [משך ההחלפה]. [הנחיות מיוחדות]', { sub: 'מיכל', duration: 'סוף החודש' }), 'תלמד מיכל עד סוף החודש. [הנחיות מיוחדות]');
   assert.ok(C.validEmerg({ remote: [{}], chain: [{}], parentLetter: 'x'.repeat(50) }));
   assert.ok(!C.validEmerg({ remote: [], chain: [{}], parentLetter: 'x'.repeat(50) }));
-  assert.ok(C.ROLES.includes('מחנכת כיתה') && C.ROLES.includes('גננת'));
+  assert.ok(C.ROLES.includes('מחנך/ת כיתה') && C.ROLES.includes('גנן/ת'));
 });
 
 test('the student list is read in the browser: headers, no headers, quotes and teams', () => {

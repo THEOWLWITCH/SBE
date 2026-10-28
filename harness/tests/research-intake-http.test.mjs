@@ -60,3 +60,20 @@ test('public intake returns unavailable when the access-settings request stalls'
     globalThis.fetch=previous.fetch;if(previous.url===undefined)delete process.env.SUPABASE_URL;else process.env.SUPABASE_URL=previous.url;if(previous.key===undefined)delete process.env.SUPABASE_SERVICE_KEY;else process.env.SUPABASE_SERVICE_KEY=previous.key;server.close();
   }
 });
+
+
+test('production server signing gate defaults off and only top-level trusted opt-in wires callbacks',async()=>{
+ const previous={url:process.env.SUPABASE_URL,key:process.env.SUPABASE_SERVICE_KEY,fetch:globalThis.fetch};process.env.SUPABASE_URL='https://synthetic.invalid';process.env.SUPABASE_SERVICE_KEY='sb_secret_synthetic';
+ let providerCalls=0;const secret='synthetic-release-gate-secret',record={kind:'staff',inst:'Synthetic School'},access={async get(key){return key==='token-secret'?{secret}:key==='code:PERSON1'?record:key==='institutions'?[{name:record.inst,active:true}]:null;},async list(){return [];}};
+ const tokenBody=Buffer.from(JSON.stringify({k:'code',c:'PERSON1',...record,exp:Date.now()+60000})).toString('base64url'),token=tokenBody+'.'+createHmac('sha256',secret).update(tokenBody).digest('base64url');
+ const adapter={provider:'docusign',readiness(){providerCalls++;return {configured:true,state:'ready'};},verifyEvent(){providerCalls++;return {completed:false};}};
+ globalThis.fetch=async()=>Response.json({readiness:{}});
+ const partnershipOptions={signingEnabled:true,signingAdapter:adapter,documentKey:Buffer.alloc(32,8).toString('base64')},servers=[];
+ async function request(server,path,body){const req=new PassThrough();req.url=path;req.method='POST';req.headers={};req.socket={remoteAddress:'synthetic'};const res={setHeader(){},writeHead(status){this.status=status;},end(value){this.body=JSON.parse(value);}};const pending=server.listeners('request')[0](req,res);req.end(JSON.stringify(body));await pending;return res;}
+ try{
+  const disabled=createPracticeServer({authStore:access,partnershipOptions});servers.push(disabled);
+  const bootstrap=await request(disabled,'/api/research',{token,action:'workspaceBootstrap'});assert.equal(bootstrap.status,200);assert.equal(bootstrap.body.readiness.signing.configured,false);assert.equal(bootstrap.body.readiness.signing.state,'disabled');
+  assert.equal((await request(disabled,'/api/research-signing/webhook',{})).status,503);assert.equal(providerCalls,0);
+  const enabled=createPracticeServer({authStore:access,partnershipOptions,signingEnabled:true});servers.push(enabled);assert.equal((await request(enabled,'/api/research-signing/webhook',{})).status,200);assert.equal(providerCalls,1);
+ }finally{for(const server of servers)server.close();globalThis.fetch=previous.fetch;for(const [key,value]of [['SUPABASE_URL',previous.url],['SUPABASE_SERVICE_KEY',previous.key]])if(value===undefined)delete process.env[key];else process.env[key]=value;}
+});

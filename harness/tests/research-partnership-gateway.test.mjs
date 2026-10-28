@@ -101,3 +101,15 @@ test('actual SQL gateway isolates same-study documents/exports, rejects invitati
   assert.equal((await f.callResearch({token:f.tokens.a,action:'workspaceExport',...scope,recordId:saved.record.id,versionId:saved.version.id,format:'html'}))[0],404);
  }finally{await f.close();}
 });
+
+
+test('disabled signing blocks injected adapters, persisted providers and callbacks while bootstrap remains available',async()=>{
+ const {handlePartnership,handleResearchSigningWebhook}=await import('../lib/research-partnerships.mjs');let providerCalls=0,storeCalls=0;
+ const touched=()=>{providerCalls++;throw new Error('Disabled signing cannot touch providers');},adapter={provider:'docusign',readiness(){providerCalls++;return {configured:true,state:'ready'};},start:touched,view:touched,refresh:touched,verifyEvent:touched};
+ const store={async rpc(_token,action){storeCalls++;return action==='workspaceBootstrap'?{readiness:{}}:{signing:{provider:'docusign',id:randomUUID()}};}};
+ const options={env:{RESEARCH_SIGNING_ENABLED:'true'},signingEnabled:false,signingAdapter:adapter,verifyIdentity:async()=>({owner:true})};
+ const [status,bootstrap]=await handlePartnership({},store,{token:'synthetic',action:'workspaceBootstrap'},options);assert.equal(status,200);assert.equal(bootstrap.readiness.signing.configured,false);assert.equal(bootstrap.readiness.signing.state,'disabled');
+ const pair=scope(),versionId=randomUUID(),signingId=randomUUID();
+ for(const body of [{action:'signingStart',...pair,versionId,expectedRevision:1,documentHash:'a'.repeat(64),consent:true,requestId:randomUUID()},{action:'signingView',...pair,signingId},{action:'signingRefresh',...pair,signingId,expectedRevision:1,requestId:randomUUID()}])assert.equal((await handlePartnership({},store,{token:'synthetic',...body},options))[0],503);
+ assert.equal((await handleResearchSigningWebhook({},store,Buffer.from('{}'),{},options))[0],503);assert.equal(storeCalls,1);assert.equal(providerCalls,0);
+});

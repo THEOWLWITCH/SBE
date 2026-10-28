@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<script src="lib/access-guard.js"></script>
+<script src="lib/ai-call.js"></script>
+<script src="lib/hl-runtime.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>תמונת עתיד קבוצתית · Be Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+
+/* Layout idea: one guided column — plan, what we test against, the matrix, autonomy, summary. */
+:root{
+  --bg:#eef1f3;
+  --surface:#ffffff;
+  --ink:#16232e;
+  --muted:#5b6b78;
+  --line:#d5dde3;
+  --accent:#17607a;
+  --accent-soft:#dcecf1;
+  --known:#56697a;      --known-bg:#e6ebef;
+  --expected:#9a5b00;   --expected-bg:#fbefd9;
+  --rare:#6a3fb0;       --rare-bg:#eee6fb;
+  --wild:#b2275a;       --wild-bg:#fbe3ec;
+  --ai:#17607a;         --ai-bg:#dcecf1;
+  --good:#2f7a4b;
+  --font-display:"Rubik","Assistant",system-ui,sans-serif;
+  --font-body:"Assistant","Rubik",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+    --accent:#62b6cf; --accent-soft:#183644;
+    --known:#a9b9c6; --known-bg:#24323d;
+    --expected:#f0b45a; --expected-bg:#3a2a12;
+    --rare:#b79af0; --rare-bg:#2c2242;
+    --wild:#f2789f; --wild-bg:#40192a;
+    --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f171d; --surface:#17222b; --ink:#e4ecf1; --muted:#9aabb8; --line:#2b3a46;
+  --accent:#62b6cf; --accent-soft:#183644;
+  --known:#a9b9c6; --known-bg:#24323d;
+  --expected:#f0b45a; --expected-bg:#3a2a12;
+  --rare:#b79af0; --rare-bg:#2c2242;
+  --wild:#f2789f; --wild-bg:#40192a;
+  --ai:#62b6cf; --ai-bg:#183644; --good:#6fcf95;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 18px 80px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:30px;font-weight:700}
+h2{font-size:22px;font-weight:600}
+h3{font-size:18px;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:14.5px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{font-family:var(--font-display);font-size:14px;letter-spacing:.02em;color:var(--accent);font-weight:600}
+.notice{background:var(--accent-soft);border-radius:12px;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.principle{border-inline-start:4px solid var(--wild);background:var(--surface);border-radius:10px;padding:12px 16px}
+section.stage{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.stage-head{display:flex;gap:12px;align-items:baseline}
+.num{font-family:var(--font-display);font-weight:700;color:var(--accent);font-size:20px;min-width:22px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:15px}
+input[type=text],select,textarea{font:inherit;font-weight:400;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+textarea{min-height:76px;resize:vertical}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;font-weight:600}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] button.primary{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#0f171d}}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.drv:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#0f171d}}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px;white-space:nowrap}
+.t-known{color:var(--known);background:var(--known-bg)}
+.t-expected{color:var(--expected);background:var(--expected-bg)}
+.t-rare{color:var(--rare);background:var(--rare-bg)}
+.t-wild{color:var(--wild);background:var(--wild-bg)}
+.t-ai{color:var(--ai);background:var(--ai-bg)}
+.t-opp{color:var(--good);background:transparent;border:1px solid var(--good)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{padding:4px 12px;font-size:14.5px;border-radius:999px}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.drivers{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.drv{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:var(--surface);cursor:pointer}
+.drv input{margin-top:5px;accent-color:var(--accent)}
+.drv.on{border-color:var(--accent);background:var(--accent-soft)}
+.drv .nm{font-weight:700;line-height:1.3}
+.drv .ds{font-size:14px;color:var(--muted);line-height:1.4}
+.drv .tg{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.meter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:15px}
+.ok{color:var(--good);font-weight:700}
+.warn{color:var(--wild);font-weight:700}
+.axes-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.axopt{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:var(--surface)}
+.axopt.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.axline{font-size:15px}
+.axline b{font-family:var(--font-display);font-weight:600}
+.matrix{display:grid;grid-template-columns:28px 1fr 1fr;grid-template-rows:auto auto auto;gap:10px}
+.ylab{grid-row:1 / span 2;writing-mode:vertical-rl;transform:rotate(180deg);display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);font-weight:600}
+.xlab{grid-column:2 / span 2;display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);font-weight:600}
+.axis-name{color:var(--accent)}
+.world{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface);position:relative}
+.world.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.world .q{font-size:12.5px;color:var(--muted);font-weight:600}
+.world .hl{font-family:var(--font-display);font-weight:600;font-size:15.5px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 0}
+.world ul{margin:0;padding-inline-start:18px;font-size:14.5px}
+.world .lbl{font-size:13px;font-weight:700;color:var(--muted);margin-top:2px}
+.world .wc{font-size:14px;background:var(--rare-bg);color:var(--ink);border-radius:8px;padding:6px 8px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.tabs button{border-radius:999px;padding:5px 14px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.out{white-space:pre-wrap;background:var(--bg);border-radius:12px;padding:14px 16px;min-height:80px;max-width:72ch}
+.out.empty{color:var(--muted)}
+.chat{display:flex;flex-direction:column;gap:8px;max-width:72ch}
+.msg{padding:8px 12px;border-radius:12px;white-space:pre-wrap}
+.msg.u{background:var(--accent-soft);align-self:flex-start}
+.msg.a{background:var(--bg);align-self:flex-end}
+.event{border:1px solid var(--line);border-inline-start:5px solid var(--wild);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;max-width:80ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.box{background:var(--bg);border-radius:12px;padding:12px 14px}
+.box ul,.box ol{margin:6px 0 0;padding-inline-start:20px}
+.status{font-size:14.5px;color:var(--muted)}
+.toast{position:fixed;bottom:18px;inset-inline-start:50%;transform:translateX(50%);background:var(--ink);color:var(--surface);padding:8px 16px;border-radius:10px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.ai-off .needs-ai{display:none}
+.ai-note{display:none}
+.ai-off .ai-note{display:block}
+/* views + workshop bar */
+nav.views{display:flex;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line)}
+nav.views a{font-family:var(--font-display);font-weight:600;text-decoration:none;color:var(--ink);padding:7px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+nav.views a[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] nav.views a[aria-current="page"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav.views a[aria-current="page"]{color:#0f171d}}
+.view{display:flex;flex-direction:column;gap:22px}
+.view[hidden]{display:none}
+.wsbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:15px}
+.wsbar input{max-width:260px}
+.wslist{display:flex;flex-direction:column;gap:6px;width:100%}
+.wslist button{text-align:start;font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border-radius:999px;padding:5px 12px;font-size:14.5px;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0f171d}}
+.rate{display:flex;gap:4px;flex-wrap:wrap}
+.rate button{min-width:40px;padding:6px 0;font-variant-numeric:tabular-nums}
+.rate button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:minmax(150px,1.2fr) 3fr auto;gap:10px;align-items:center;font-size:15px}
+.bar .track{height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:6px}
+.bar .n{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;white-space:nowrap}
+.hist{display:flex;gap:3px;align-items:flex-end;height:34px}
+.hist span{width:14px;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px;opacity:.85}
+.pill{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px}
+.p-agree{background:#e3f3e8;color:#226b3d}
+.p-split{background:var(--wild-bg);color:var(--wild)}
+.p-minor{background:var(--rare-bg);color:var(--rare)}
+.lenses{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.lens{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.lens .line{font-family:var(--font-display);font-weight:600;font-size:16px}
+.lens img,.item img{width:100%;border-radius:10px;background:#fff;border:1px solid var(--line)}
+.items{display:flex;flex-direction:column;gap:8px}
+.item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:6px 12px;background:var(--surface)}
+.item .meta{font-size:13px;color:var(--muted)}
+.item .fb{grid-column:1/-1;background:var(--accent-soft);border-radius:8px;padding:8px 10px;font-size:14.5px;white-space:pre-wrap}
+.item img{max-width:220px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.thumb{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff;height:520px;position:relative}
+.thumb .np{transform:scale(.42);transform-origin:top right;width:238%}
+/* stress test */
+.vd{display:inline-block;font-size:13px;font-weight:700;border-radius:6px;padding:2px 10px;border:1px solid transparent}
+.v-robust{background:#e3f3e8;color:#1f6a3a;border-color:#b9dfc5}
+.v-adjust{background:#fdf0d6;color:#8a5200;border-color:#f1d39a}
+.v-break{background:#fbe1e4;color:#a8172f;border-color:#f0b4bd}
+.v-redundant{background:#eef1f4;color:#5b6b78;border-color:#d5dde3}
+.v-none{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.mx-wrap{overflow-x:auto}
+table.mx{border-collapse:separate;border-spacing:6px;width:100%;min-width:720px}
+table.mx th{font-family:var(--font-display);font-weight:600;font-size:14.5px;text-align:start;vertical-align:bottom;padding:4px}
+table.mx th .ax{display:block;font-family:var(--font-body);font-weight:400;font-size:12.5px;color:var(--muted)}
+table.mx td{vertical-align:top}
+table.mx td.el{font-weight:600;font-size:15px;max-width:230px}
+table.mx td.el .small{font-weight:400}
+.cell{width:100%;text-align:start;display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:10px;font-weight:400;font-size:13.5px;line-height:1.35;min-height:64px}
+.cell.on{outline:3px solid var(--accent);outline-offset:1px}
+.cell .vd{align-self:flex-start}
+.cell.v-robust,.cell.v-adjust,.cell.v-break,.cell.v-redundant{border-width:1px}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.score .box{display:flex;flex-direction:column;gap:6px}
+.stack{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--bg)}
+.stack span{display:block;height:100%}
+.ifthen{display:grid;grid-template-columns:1fr auto 1fr;gap:6px 10px;align-items:start;font-size:15px}
+.ifthen .arr{color:var(--muted);font-weight:700}
+@media (max-width:640px){
+  .ifthen{grid-template-columns:1fr}
+  .ifthen .arr{display:none}
+  .bar{grid-template-columns:1fr}
+  .matrix{grid-template-columns:1fr}
+  .ylab{display:none}
+  .xlab{grid-column:1}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+
+.wrap{max-width:1240px}
+.kinds{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.kind{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;border-radius:14px;text-align:center;font-weight:600}
+.kind .ic{font-size:26px;line-height:1}
+.kind[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset;background:var(--accent-soft)}
+.bigq{font-family:var(--font-display);font-size:26px;font-weight:600;line-height:1.35;max-width:40ch}
+.draw-wrap{display:flex;flex-direction:column;gap:8px}
+.draw-wrap canvas{width:100%;max-width:600px;aspect-ratio:3/2;background:#fff;border:1px solid var(--line);border-radius:12px;touch-action:none;cursor:crosshair}
+.sw{width:30px;height:30px;border-radius:50%;padding:0;border:2px solid var(--line)}
+.sw[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:2px}
+.preview img{max-width:260px;border-radius:10px;border:1px solid var(--line)}
+.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.wi{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.wi.hid{opacity:.45;border-style:dashed}
+.wi img{width:100%;border-radius:8px;border:1px solid var(--line);background:#fff}
+.wi .k{font-size:12.5px;font-weight:700;color:var(--muted)}
+.wi .sw2{width:44px;height:44px;border-radius:50%;border:1px solid var(--line)}
+.art{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;overflow:hidden}
+.art svg{width:100%;height:auto;display:block}
+.art svg .it{cursor:pointer}
+.art svg.dimming .it{opacity:.16;transition:opacity .25s}
+.art svg.dimming .it.hl{opacity:1}
+.art svg.dimming .lk{opacity:.08}
+.art svg.dimming .lk.hl{opacity:.95}
+.art svg .it:focus{outline:none}
+.art svg .it.sel > .frame{stroke:#b2275a;stroke-width:4}
+.detail{border:1px solid var(--line);border-inline-start:5px solid var(--accent);border-radius:12px;padding:12px 14px;background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.detail img{max-width:280px;border-radius:10px;border:1px solid var(--line)}
+.poem{font-family:var(--font-display);font-size:19px;line-height:1.7;white-space:pre-line}
+.styles{display:flex;flex-wrap:wrap;gap:6px}
+.confirm{color:var(--wild);font-weight:700}
+.share{background:var(--accent-soft);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+
+<header class="top">
+  <div>
+    <div class="brand">Be Good · חוסן מול עתיד לא ידוע</div>
+    <h1>תמונת עתיד קבוצתית</h1>
+    <p class="muted">כל אחד ואחת מהקבוצה תורמים משהו קטן לתמונת העתיד: משפט, מילה, ציטוט, ציור, תמונה, צבע, שיר שכתבו או מוזיקה שמזכירה להם את העתיד. ה־AI מוצא את הקשרים בין הפריטים, ומחבר אותם ליצירה אחת של הקהילה, שבה כל אחד ואחת יכולים למצוא את עצמם.</p>
+  </div>
+</header>
+
+<div class="wsbar">
+  <b>תמונה:</b>
+  <input type="text" id="cTitle" placeholder="שם, למשל: המושב שלנו 2035" aria-label="שם התמונה">
+  <button type="button" id="cSave" class="primary">שמירה</button>
+  <button type="button" id="cOpen">תמונות שמורות</button>
+  <button type="button" id="cNew">תמונה חדשה</button>
+  <span class="status" id="cStatus" aria-live="polite"></span>
+  <div class="wslist" id="cList" hidden></div>
+</div>
+
+<div class="notice" id="exampleBar">
+  <span><b>מוצגת דוגמה מוכנה:</b> תמונת העתיד של מושב בגליל לשנת 2035, מ־20 פריטים שתרמו התושבים והתושבות.</span>
+  <button id="resetBtn" type="button">תמונה חדשה</button>
+</div>
+<p class="ai-note notice small">החלקים שמופעלים על ידי AI זמינים כשיש חיבור למודל. בינתיים אפשר לעיין בדוגמה, להוסיף פריטים ולסדר אותם לפי סוגים, בלי AI.</p>
+
+<nav class="views" aria-label="חלקי הכלי">
+  <a href="#add" data-view="add">הוספת פריט</a>
+  <a href="#wall" data-view="wall">כל הפריטים</a>
+  <a href="#art" data-view="art">התמונה המשותפת</a>
+</nav>
+
+<!-- ===================== ADD ===================== -->
+<div class="view" id="view-add">
+  <section class="stage">
+    <p class="small muted">השאלה של הקבוצה:</p>
+    <p class="bigq" id="qShow"></p>
+    <p class="small">אפשר לתרום כמה פריטים, מכל סוג. אין תשובה נכונה. כדאי לחשוב על יום רגיל בעתיד, וגם על יום של משבר.</p>
+  </section>
+  <section class="stage" aria-labelledby="a1h">
+    <div class="stage-head"><span class="num">1</span><h2 id="a1h">מה רוצים להוסיף?</h2></div>
+    <div class="kinds" id="kinds" role="group" aria-label="סוג הפריט"></div>
+  </section>
+  <section class="stage" aria-labelledby="a2h">
+    <div class="stage-head"><span class="num">2</span><h2 id="a2h" >הפריט שלי</h2></div>
+    <div id="form"></div>
+    <div><div class="small" style="font-weight:600;margin-bottom:6px">על איזה חלק בחוסן הפריט שלך מדבר? (רשות, אפשר לבחור אחד)</div><div class="chips" id="dimPick"></div></div>
+    <div class="grid2">
+      <label class="f" for="byName">השם שיופיע ליד הפריט<input type="text" id="byName" placeholder="למשל: נועה, או ״משפחת כהן״"></label>
+      <label class="row small" style="font-weight:600;align-self:end"><input type="checkbox" id="anon"> בלי שם</label>
+    </div>
+    <div class="row"><button type="button" class="primary" id="addGo">הוספה לתמונה</button><span class="status" id="addStatus" aria-live="polite"></span></div>
+  </section>
+  <section class="stage" aria-labelledby="a3h">
+    <div class="stage-head"><span class="num">3</span><h2 id="a3h">מה כבר הוספתי</h2></div>
+    <div class="wall" id="mine"></div>
+  </section>
+</div>
+
+<!-- ===================== WALL ===================== -->
+<div class="view" id="view-wall" hidden>
+  <section class="stage" aria-labelledby="w1h">
+    <div class="stage-head"><span class="num">1</span><h2 id="w1h">השאלה שלנו</h2></div>
+    <div class="row" style="gap:6px 14px"><span class="small" style="font-weight:600">על מי מדובר?</span>
+      <div class="seg" role="group" aria-label="סוג ההקשר" id="ctxType" style="flex-wrap:wrap"><button type="button" data-v="school">בית ספר</button><button type="button" data-v="community">קהילה ויישוב</button><button type="button" data-v="org">ארגון</button><button type="button" data-v="pro">קהילה מקצועית</button></div>
+    </div>
+    <div class="grid2">
+      <label class="f" for="region">אזור בארץ<select id="region"></select></label>
+      <label class="f" for="year">לאיזו שנה?<select id="year"><option>2030</option><option>2035</option><option>2040</option><option>2050</option></select></label>
+    </div>
+    <label class="f" for="question">השאלה שכל המשתתפים והמשתתפות יראו<input type="text" id="question"></label>
+    <div class="row"><span class="small muted">רעיונות לשאלה:</span><div class="chips" id="qIdeas"></div></div>
+    <div class="share" id="shareBox"></div>
+  </section>
+  <section class="stage" aria-labelledby="w2h">
+    <div class="stage-head"><span class="num">2</span><h2 id="w2h">כל הפריטים</h2></div>
+    <p class="small muted" id="wallCount"></p>
+    <div class="wall" id="wall"></div>
+  </section>
+</div>
+
+<!-- ===================== ART ===================== -->
+<div class="view" id="view-art" hidden>
+  <section class="stage" aria-labelledby="t1h">
+    <div class="stage-head"><span class="num">1</span><h2 id="t1h">מחברים את הפריטים לתמונה אחת</h2></div>
+    <p class="small muted">ה־AI קורא את כל הפריטים ומוצא נושאים שחוזרים וקשרים בין פריטים של אנשים שונים. הצורה של היצירה נולדת מהקשרים האלה: פריטים שמתחברים נמשכים זה לזה, וביניהם עובר חוט בצבעים של שניהם. הכותרת, שמות הנושאים, המשפט שבמרכז והשיר נלקחים רק מהמילים של המשתתפים. הצבעים שהמשתתפים בחרו הופכים למשיכות מכחול ברקע. הסגנון משנה רק את המראה, לא את התוכן.</p>
+    <div class="row"><span class="small" style="font-weight:600">סגנון:</span><div class="styles" id="styles"></div></div>
+    <div class="row"><button type="button" class="primary needs-ai" id="aiCompose">חיבור הפריטים לתמונה עם AI</button><button type="button" id="autoCompose">סידור לפי ממדי החוסן שסומנו, בלי AI</button><button type="button" id="reshuffle">סידור אחר של אותה תמונה</button><span class="status" id="artStatus" aria-live="polite"></span></div>
+  </section>
+  <div class="art" id="art"></div>
+  <div class="row">
+    <label class="f" for="findMe" style="flex-direction:row;align-items:center;gap:8px">איפה אני בתמונה?<select id="findMe" style="max-width:240px"></select></label>
+    <span class="small muted">אפשר גם ללחוץ על כל פריט בתמונה.</span>
+  </div>
+  <div id="detail"></div>
+  <section class="stage" aria-labelledby="t2h">
+    <div class="stage-head"><span class="num">2</span><h2 id="t2h">מה התמונה אומרת עלינו?</h2></div>
+    <div id="reading"></div>
+    <div class="row"><button type="button" id="dlSvg" class="primary">הורדת התמונה</button><button type="button" id="dlPoster">הורדת פוסטר להדפסה</button><button type="button" id="toRoadmap">העתקת החזון ל״מהחזון להיום״</button><span class="status" id="expStatus" aria-live="polite"></span></div>
+  </section>
+</div>
+
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4);
+function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1800); }
+async function copy(text){ try { await navigator.clipboard.writeText(text); toast("הועתק"); return true; } catch(e){ toast("ההעתקה לא הצליחה"); return false; } }
+function busy(btn, st, on, msg){ if(btn) btn.disabled = on; if(st) st.textContent = on ? (msg || "חושב… זה יכול לקחת עד דקה") : ""; }
+const ls = {get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k, v){ try { localStorage.setItem(k, v); } catch(e){} }};
+const TYPE_LABEL = {school:"בית ספר", community:"קהילה ויישוב", org:"ארגון", pro:"קהילה מקצועית או רשת מומחים"};
+const REGIONS = ["כל הארץ","גליל עליון וגבול לבנון","רמת הגולן","גליל מערבי","עמקים וגליל תחתון","חיפה והקריות","השרון","מרכז וגוש דן","ירושלים והסביבה","השפלה","יהודה ושומרון","עוטף עזה והנגב המערבי","באר שבע והנגב","בקעת הירדן וים המלח","ערבה ואילת","מישור החוף הדרומי"];
+const Q_IDEAS = {
+  school:["איך ייראה בית הספר שלנו בשנת YEAR, ביום רגיל ובשעת משבר?","מה יגרום לילדים להרגיש בטוחים ושייכים בבית הספר בשנת YEAR?"],
+  community:["איך ייראה היישוב שלנו בשנת YEAR, ביום רגיל ובשעת משבר?","מה נרצה שהילדים שלנו יספרו על הקהילה הזו בשנת YEAR?"],
+  org:["איך ייראה הארגון שלנו בשנת YEAR, כשהוא חזק גם במשבר?","מה יגרום לעובדים ולעובדות להרגיש שזה מקום שמחזיק אותם בשנת YEAR?"],
+  pro:["איך תיראה הקהילה המקצועית שלנו בשנת YEAR, ומה ההשפעה שלה?","מה הקהילה שלנו תיתן לישראל בשנת YEAR?"]
+};
+const KINDS = {
+  sentence:{ic:"✎", t:"משפט על העתיד"},
+  word:{ic:"✱", t:"מילה אחת"},
+  quote:{ic:"״", t:"ציטוט"},
+  poem:{ic:"❦", t:"שיר שכתבתי"},
+  song:{ic:"♪", t:"שיר או מוזיקה"},
+  image:{ic:"▣", t:"תמונה"},
+  drawing:{ic:"✐", t:"ציור"},
+  color:{ic:"●", t:"צבע של העתיד"}
+};
+const COMP = {watercolor:{t:"צבעי מים", card:"tape"}, paper:{t:"גזרי נייר", card:"paper"}, night:{t:"לילה", card:"star"}, ink:{t:"קו ודיו", card:"ink"}};
+const DIMS = [
+  {k:"solidarity", t:"סולידריות ועזרה הדדית", c:"#d9714a"}, {k:"trust", t:"אמון", c:"#17607a"}, {k:"optimism", t:"אופטימיות ותקווה", c:"#e0a237"},
+  {k:"comm", t:"תקשורת ומידע", c:"#6a8fc7"}, {k:"belonging", t:"שייכות", c:"#b2275a"}, {k:"autonomy", t:"אוטונומיה תפקודית", c:"#3f9a62"},
+  {k:"leadership", t:"מנהיגות משותפת", c:"#8b6bd1"}, {k:"economy", t:"מצב כלכלי ופרנסה", c:"#8a5a2b"}, {k:"security", t:"ביטחון ומוגנות", c:"#56697a"},
+  {k:"emotional", t:"רווחה רגשית", c:"#d96d93"}, {k:"routine", t:"שגרות", c:"#2a9d8f"}, {k:"diversity", t:"כבוד לשונות", c:"#a7568e"},
+  {k:"vision", t:"חזון ועתיד משותף", c:"#e68a3c"}, {k:"values", t:"ערכים ואתוס", c:"#6d5aa6"}, {k:"skills", t:"ידע ומיומנויות משותפים", c:"#4d908e"},
+  {k:"health", t:"בריאות", c:"#c44f4f"}, {k:"environment", t:"סביבה ואקלים", c:"#7fa34f"}];
+const DIM = Object.fromEntries(DIMS.map(d => [d.k, d]));
+const SW = ["#16232e","#d9714a","#e0a237","#3f9a62","#17607a","#6a8fc7","#8b6bd1","#b2275a","#8a5a2b"];
+
+/* ---------- example drawings (simple hand-drawn SVG) ---------- */
+const svgURI = s => "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s);
+const D1 = svgURI(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"><rect width="300" height="200" fill="#fff"/><circle cx="245" cy="45" r="26" fill="#ffd166" stroke="#e0a237" stroke-width="4"/><g stroke="#e0a237" stroke-width="4" stroke-linecap="round"><path d="M245 8v-2M282 45h2M272 18l2-2M272 72l2 2"/></g><path d="M40 170V95h150v75" fill="#fff4e0" stroke="#333" stroke-width="4" stroke-linejoin="round"/><path d="M30 98l85-55 85 55" fill="#ef8a62" stroke="#333" stroke-width="4" stroke-linejoin="round"/><g fill="#2f5d8a" stroke="#1d3c5a" stroke-width="3"><path d="M70 72l30-19 10 7-30 19z"/><path d="M115 56l30 19-10 7-30-19z"/></g><rect x="100" y="125" width="30" height="45" fill="#8a5a2b" stroke="#333" stroke-width="3"/><rect x="58" y="112" width="26" height="22" fill="#bfe0ff" stroke="#333" stroke-width="3"/><rect x="148" y="112" width="26" height="22" fill="#bfe0ff" stroke="#333" stroke-width="3"/><path d="M0 172q75-12 150 0t150 0v28H0z" fill="#a9d89c"/></svg>`);
+const D2 = svgURI(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"><rect width="300" height="200" fill="#fff"/><path d="M142 150c2-30-2-55 8-80M158 150c-2-30 4-55-8-80" stroke="#7a5230" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="150" cy="60" r="46" fill="#6cbf7a" stroke="#3f9a62" stroke-width="4"/><circle cx="110" cy="80" r="26" fill="#86cf90" stroke="#3f9a62" stroke-width="3"/><circle cx="192" cy="80" r="26" fill="#86cf90" stroke="#3f9a62" stroke-width="3"/><g stroke="#7a5230" stroke-width="4" fill="none" stroke-linecap="round"><path d="M150 150q-30 20-70 22"/><path d="M150 150q-10 25-30 38"/><path d="M150 150q10 25 32 38"/><path d="M150 150q30 20 72 20"/></g><g fill="#f2c9a0" stroke="#333" stroke-width="2.5"><circle cx="74" cy="172" r="8"/><circle cx="118" cy="190" r="7"/><circle cx="184" cy="190" r="7"/><circle cx="228" cy="170" r="8"/></g><g fill="#e05a6e"><circle cx="135" cy="45" r="5"/><circle cx="168" cy="70" r="5"/><circle cx="160" cy="35" r="5"/></g></svg>`);
+const D3 = svgURI(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"><rect width="300" height="200" fill="#fff"/><rect x="40" y="28" width="220" height="130" rx="6" fill="#c89b6d" stroke="#5a3c22" stroke-width="5"/><g stroke="#333" stroke-width="2"><rect x="58" y="44" width="58" height="42" fill="#fff6a8" transform="rotate(-4 87 65)"/><rect x="128" y="42" width="56" height="44" fill="#bfe0ff" transform="rotate(3 156 64)"/><rect x="196" y="46" width="48" height="40" fill="#ffd1dc" transform="rotate(-2 220 66)"/><rect x="74" y="98" width="60" height="44" fill="#c8f0c8" transform="rotate(2 104 120)"/><rect x="150" y="100" width="80" height="42" fill="#fff" transform="rotate(-3 190 121)"/></g><g stroke="#555" stroke-width="2.5" stroke-linecap="round"><path d="M66 58h40M66 68h30M136 56h38M136 66h28M82 112h40M160 114h60M160 124h44"/></g><g fill="#e05a6e"><circle cx="87" cy="45" r="4"/><circle cx="156" cy="43" r="4"/><circle cx="220" cy="47" r="4"/><circle cx="104" cy="99" r="4"/><circle cx="190" cy="101" r="4"/></g><path d="M80 158v34M220 158v34" stroke="#5a3c22" stroke-width="6"/></svg>`);
+const D4 = svgURI(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"><rect width="300" height="200" fill="#fff"/><path d="M150 168C88 128 64 98 66 70c2-24 22-38 42-36 18 2 32 14 42 30 10-16 24-28 42-30 20-2 40 12 42 36 2 28-22 58-84 98z" fill="#f4a3a3" stroke="#b2275a" stroke-width="5" stroke-linejoin="round"/><g stroke="#333" stroke-width="4" fill="#f2c9a0" stroke-linejoin="round"><path d="M40 170q40-30 70-10q20 14 40 14q-30 18-70 14z"/><path d="M260 170q-40-30-70-10q-20 14-40 14q30 18 70 14z"/></g></svg>`);
+
+const EX_ITEMS = [
+ {id:"e1",dim:"solidarity",kind:"sentence",text:"בעוד עשר שנים כל בית במושב יודע למי לדפוק בדלת כשמשהו קורה.",by:"נועה"},
+ {id:"e2",kind:"word",text:"שייכות",by:""},
+ {id:"e3",dim:"autonomy",kind:"drawing",img:D1,text:"הגג של בית הספר עם לוחות שמש, ואור שנשאר דולק.",by:"איתי"},
+ {id:"e4",kind:"color",color:"#f2b632",text:"צהוב של חמנייה, כי יש לנו אור משלנו.",by:"מרים"},
+ {id:"e5",kind:"quote",text:"כשאין חשמל, יש שכנים.",src:"סבתא שלי, בימי הפינוי",by:"רותי"},
+ {id:"e6",kind:"song",title:"Here Comes the Sun",artist:"The Beatles",url:"",text:"כי אחרי חורף ארוך תמיד מגיע אור.",by:"דני"},
+ {id:"e7",kind:"poem",text:"בבוקר אחרי האזעקה\nהגינה עוד כאן\nוהילדים סופרים עגבניות\nבמקום שניות",by:"שירה"},
+ {id:"e8",dim:"autonomy",kind:"sentence",text:"המים, החשמל והמידע שלנו מגיעים גם מכאן, לא רק מבחוץ.",by:"יוסי"},
+ {id:"e9",kind:"drawing",img:D2,text:"עץ שהשורשים שלו מחזיקים זה בזה.",by:"מאיה"},
+ {id:"e10",kind:"word",text:"שקט",by:""},
+ {id:"e11",dim:"belonging",kind:"sentence",text:"המשפחות החדשות והוותיקות מכינות יחד את חג הקציר.",by:"סאמר"},
+ {id:"e12",kind:"color",color:"#3f9a62",text:"ירוק של שדות שחזרו לחיים.",by:"נועה"},
+ {id:"e13",kind:"song",title:"Lean on Me",artist:"Bill Withers",url:"",text:"כי כולנו צריכים מישהו להישען עליו.",by:"אלה"},
+ {id:"e14",dim:"emotional",kind:"sentence",text:"יש לנו מקום שבו מותר לפחד, ומישהו שמקשיב.",by:""},
+ {id:"e15",dim:"comm",kind:"drawing",img:D3,text:"לוח מודעות בכיכר, שעובד גם כשאין רשת.",by:"גיל"},
+ {id:"e16",kind:"quote",text:"אנחנו לא מחכים שיצילו אותנו. אנחנו מתכוננים יחד.",src:"מתוך מפגש התושבים",by:"נועה"},
+ {id:"e17",kind:"word",text:"גשר",by:"עומר"},
+ {id:"e18",kind:"color",color:"#4a7fc1",text:"כחול של מאגר מים מלא.",by:""},
+ {id:"e19",kind:"sentence",text:"בני הנוער מלמדים את הוותיקים להפעיל את הקשר האלחוטי, והוותיקים מלמדים אותם לבשל לכולם.",by:"דליה"},
+ {id:"e20",kind:"poem",text:"לא נחזור למה שהיה\nנבנה משהו\nשאפשר לחזור אליו",by:""},
+ {id:"e21",kind:"drawing",img:D4,text:"לב בין שתי ידיים.",by:"תמר"}
+];
+const EX_ART = {"title":"משהו שאפשר לחזור אליו","subtitle":"21 פריטים של תושבים ותושבות המושב, 2035","center":"כשאין חשמל, יש שכנים.","centerBy":"רותי, בשם סבתא שלה",
+ "themes":[
+  {"id":"solidarity","dim":"solidarity","name":"סולידריות ועזרה הדדית","color":"#d9714a","desc":"עתיד שבו כל בית יודע למי לדפוק בדלת, ויש על מי להישען.","items":["e1","e5","e13","e21"]},
+  {"id":"autonomy","dim":"autonomy","name":"אוטונומיה תפקודית","color":"#3f9a62","desc":"״המים, החשמל והמידע שלנו מגיעים גם מכאן, לא רק מבחוץ״.","items":["e3","e8","e16","e18"]},
+  {"id":"belonging","dim":"belonging","name":"שייכות","color":"#b2275a","desc":"ותיקים וחדשים, שורשים שמחזיקים זה בזה, וגשר ביניהם.","items":["e2","e9","e11","e17"]},
+  {"id":"comm","dim":"comm","name":"תקשורת ומידע","color":"#6a8fc7","desc":"לוח מודעות בכיכר וקשר אלחוטי: מידע שעובר גם כשאין רשת.","items":["e15","e19"]},
+  {"id":"optimism","dim":"optimism","name":"אופטימיות ותקווה","color":"#e0a237","desc":"אור שחוזר אחרי חורף ארוך, ושדות שחזרו לחיים.","items":["e4","e6","e12"]},
+  {"id":"emotional","dim":"emotional","name":"רווחה רגשית","color":"#d96d93","desc":"מקום שבו מותר לפחד, ושקט אחרי האזעקה.","items":["e7","e10","e14"]},
+  {"id":"vision","dim":"vision","name":"חזון ועתיד משותף","color":"#e68a3c","desc":"לא לחזור למה שהיה, אלא לבנות משהו שאפשר לחזור אליו.","items":["e20"]}],
+ "links":[{"a":"e5","b":"e1","why":"שני הפריטים אומרים שהשכנים הם הדבר הראשון שמחזיק אותנו."},{"a":"e3","b":"e8","why":"אנרגיה משלנו היא חלק מהאוטונומיה התפקודית של המושב."},{"a":"e19","b":"e15","why":"שתי דרכים להעביר מידע גם כשאין רשת: אנשים ולוח מודעות."},{"a":"e7","b":"e14","why":"גם אחרי אזעקה צריך מקום לפחד ולנשום."},{"a":"e6","b":"e4","why":"האור שחוזר אחרי תקופה קשה."},{"a":"e16","b":"e8","why":"לא מחכים לעזרה מבחוץ, אלא מתכוננים מקרוב."},{"a":"e11","b":"e2","why":"שייכות שנבנית כשחדשים וותיקים עושים משהו יחד."},{"a":"e20","b":"e9","why":"לבנות משהו עם שורשים, שאפשר לחזור אליו."},{"a":"e21","b":"e13","why":"ידיים שמחזיקות, ומישהו להישען עליו."}],
+ "poem":["כשאין חשמל, יש שכנים,","והאור שלנו מגיע גם מכאן.","בבוקר אחרי האזעקה הגינה עוד כאן,","ומותר לפחד, כי מישהו מקשיב.","לא נחזור למה שהיה,","נבנה יחד משהו שאפשר לחזור אליו."],
+ "reading":"החוסן שהמשתתפים מתארים בנוי בעיקר מסולידריות, משייכות ומאוטונומיה תפקודית: שכנים, חיבור בין דורות, ואנרגיה ומים מקומיים. כמעט לא הופיעו מצב כלכלי ופרנסה, מנהיגות משותפת וביטחון. כדאי לשאול את הקבוצה: מי יוביל ברגע האמת, ומה יקרה לפרנסה של המשפחות?",
+ "vision":"בשנת 2035 המושב הוא קהילה שבה כל בית יודע למי לפנות, והוותיקים והחדשים בונים יחד. יש לנו אור, מים ומידע משלנו, ולכן אנחנו מתפקדים גם כשהעזרה מבחוץ מתעכבת. יש מקום לפחד ולשקט, ותמיד יש מישהו שמקשיב.",
+ "palette":["#d9714a","#e0a237","#3f9a62","#6a8fc7","#b2275a"]};
+const EX = {title:"המושב שלנו 2035", ctx:{type:"community", region:"גליל עליון וגבול לבנון", desc:""}, year:"2035", question:"איך ייראה המושב שלנו בשנת 2035, ביום רגיל ובשעת משבר?", style:"watercolor", seed:7, items:EX_ITEMS, art:EX_ART};
+function fresh(type){ const t = type || "community"; return {title:"", ctx:{type:t, region:"", desc:""}, year:"2035", question:Q_IDEAS[t][0].replace("YEAR","2035"), style:"watercolor", seed:1, items:[], art:null}; }
+let S = JSON.parse(JSON.stringify(EX));
+let DIMSEL = "";
+let isExample = true, CID = null, KIND = "sentence", SEL = null, FIND = "", PENDING_IMG = null;
+function leaveExample(){ if(isExample){ isExample = false; $("exampleBar").style.display = "none"; } }
+
+/* ---------- capabilities ---------- */
+let SAMPLE = null, DB = null, DL = null, USR = null, IS_OWNER = true, IMG_OK = false, unsubs = [];
+document.documentElement.classList.add("ai-off");
+(async () => {
+  const use = async n => { try { return (window.claude && window.claude.use) ? await window.claude.use(n) : null; } catch(e){ return null; } };
+  [SAMPLE, DB, DL, USR] = await Promise.all([use("sample"), use("db"), use("downloads"), use("user")]);
+  document.documentElement.classList.toggle("ai-off", !SAMPLE);
+  try { if(SAMPLE && SAMPLE.limits){ const l = await SAMPLE.limits(); IMG_OK = !!(l && l.images); } } catch(e){ IMG_OK = false; }
+  try { IS_OWNER = USR ? !!(await Promise.resolve(USR.isOwner())) : true; } catch(e){ IS_OWNER = true; }
+  $("cSave").disabled = !DB; $("cOpen").disabled = !DB || !IS_OWNER; if(!DB) $("cStatus").textContent = "שמירה ושיתוף זמינים כשיש חיבור למודל.";
+  if(DB){ try { const a = await DB.doc("config/active").get(); if(a.exists && a.data().cid && !CID) await openCollage(String(a.data().cid), !IS_OWNER); } catch(e){} }
+  renderShare();
+})();
+function errCopy(e){
+  const c = e && e.code;
+  if(["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(c)){ SAMPLE = null; document.documentElement.classList.add("ai-off"); return "ה־AI לא זמין בדף הזה. אפשר לסדר לפי סוגים, בלי AI."; }
+  if(c === "rate_limited") return "יותר מדי בקשות כרגע. אפשר לנסות שוב בעוד כמה דקות.";
+  if(c === "refused") return "הבקשה לא נענתה. כדאי לבדוק את הפריטים ולנסות שוב.";
+  if(c === "invalid_json") return "התשובה הגיעה בפורמט לא תקין. אפשר לנסות שוב.";
+  if(c === "cancelled") return "";
+  return "משהו השתבש בחיבור. אפשר לנסות שוב.";
+}
+function repairJSON(t){ let s = String(t||""); const a = s.indexOf("{"), b = s.lastIndexOf("}"); if(a >= 0 && b > a) s = s.slice(a, b+1); try { return JSON.parse(s); } catch(_){} s = s.replace(/([֐-׿])"([֐-׿])/g, "$1״$2").replace(/[“”]/g, '"'); try { return JSON.parse(s); } catch(_){} return JSON.parse(s.replace(/,\s*([}\]])/g, "$1")); }
+async function askJSON(prompt, opts){
+  const full = prompt + `\n\nחשוב לפורמט: JSON תקין בלבד, בלי טקסט לפניו או אחריו. בתוך מחרוזות לא להשתמש במירכאות רגילות ("). בקיצורים עבריים להשתמש בגרשיים עבריים (״).`;
+  try { return await SAMPLE.json(full, opts); } catch(e){ if(e && e.code === "invalid_json" && e.text){ try { return repairJSON(e.text); } catch(_){} } throw e; }
+}
+
+/* ---------- shared persistence ---------- */
+function meta(){ return {title:S.title || "תמונת עתיד", ctx:S.ctx, year:S.year, question:S.question, style:S.style, seed:S.seed, art:S.art, updatedAt:Date.now()}; }
+async function saveMeta(){ if(DB && CID && IS_OWNER){ try { await DB.doc(`collages/${CID}`).set(meta()); } catch(e){} } }
+async function putItem(it){ if(DB && CID){ const {id, ...rest} = it; await DB.doc(`collages/${CID}/items/${id}`).set(rest); } }
+async function delItem(id){ if(DB && CID){ await DB.doc(`collages/${CID}/items/${id}`).delete(); } }
+async function openCollage(id, asGuest){
+  unsubs.forEach(u => { try { u(); } catch(e){} }); unsubs = [];
+  CID = id; leaveExample();
+  const onErr = () => { $("cStatus").textContent = "החיבור לתמונה המשותפת נקטע."; };
+  unsubs.push(DB.doc(`collages/${CID}`).onSnapshot(s => { if(!s.exists) return; const d = s.data(); S.title = d.title || ""; S.ctx = d.ctx || S.ctx; S.year = d.year || S.year; S.question = d.question || S.question; S.style = d.style || S.style; S.seed = d.seed || S.seed; S.art = d.art || null; renderAll(); }, onErr));
+  unsubs.push(DB.collection(`collages/${CID}/items`).onSnapshot(s => { S.items = s.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => (a.ts||0) - (b.ts||0)); renderAll(); }, onErr));
+  if(asGuest && !location.hash) location.hash = "#add";
+  $("cStatus").textContent = asGuest ? "התחברת לתמונה המשותפת של הקבוצה." : "התמונה פתוחה לשיתוף.";
+}
+async function saveShare(){
+  const st = $("cStatus"); if(!DB) return;
+  if(!IS_OWNER){ st.textContent = "רק מי שפתח או פתחה את הכלי יכולים לשמור את ההגדרות. הפריטים שלך נשמרים לבד."; return; }
+  S.title = $("cTitle").value.trim();
+  const isNew = !CID; if(isNew) CID = uid();
+  try{
+    await DB.doc(`collages/${CID}`).set(meta());
+    if(isNew){ for(const it of S.items){ await putItem(it); } await openCollage(CID, false); }
+    await DB.doc("config/active").set({cid:CID, at:Date.now()});
+    st.textContent = "נשמר במכשיר הזה."; renderShare();
+  }catch(e){ st.textContent = "השמירה לא הצליחה. אפשר לנסות שוב."; }
+}
+async function listSaved(){ const box = $("cList"); if(!box.hidden){ box.hidden = true; return; } if(!DB) return; box.hidden = false; box.innerHTML = `<span class="status">טוען…</span>`; try{ const q = await DB.collection("collages").orderBy("updatedAt","desc").limit(25).get(); box.innerHTML = q.empty ? `<span class="muted small">עוד אין תמונות שמורות.</span>` : q.docs.map(d => `<button type="button" data-c="${esc(d.id)}">${esc(d.data().title || "תמונת עתיד")} · <span class="muted small">${esc(new Date(d.data().updatedAt||0).toLocaleDateString("he-IL"))}</span></button>`).join(""); } catch(e){ box.innerHTML = `<span class="muted small">לא הצלחנו לטעון.</span>`; } }
+$("cList").addEventListener("click", async e => { const b = e.target.closest("[data-c]"); if(!b) return; $("cList").hidden = true; await openCollage(b.dataset.c, false); try { await DB.doc("config/active").set({cid:b.dataset.c, at:Date.now()}); } catch(err){} });
+let confirmNew = 0;
+function newOne(btn){
+  if(!isExample && S.items.length && Date.now() - confirmNew > 4000){ confirmNew = Date.now(); btn.dataset.l = btn.dataset.l || btn.textContent; btn.textContent = "ללחוץ שוב כדי להתחיל תמונה חדשה"; btn.classList.add("confirm"); setTimeout(() => { btn.textContent = btn.dataset.l; btn.classList.remove("confirm"); }, 4000); return; }
+  unsubs.forEach(u => { try { u(); } catch(e){} }); unsubs = []; CID = null; confirmNew = 0;
+  S = fresh(S.ctx.type); SEL = null; FIND = ""; leaveExample(); location.hash = "#wall"; renderAll(); $("cStatus").textContent = DB ? "תמונה חדשה. כשהשאלה מוכנה, לוחצים ״שמירה״." : "";
+}
+$("cSave").addEventListener("click", saveShare); $("cOpen").addEventListener("click", listSaved);
+$("cNew").addEventListener("click", e => newOne(e.currentTarget)); $("resetBtn").addEventListener("click", e => newOne(e.currentTarget));
+$("cTitle").addEventListener("change", e => { S.title = e.target.value.trim(); saveMeta(); });
+function renderShare(){
+  $("shareBox").innerHTML = `<b>איך כולם תורמים?</b><p class="small">התמונה נשמרת במכשיר הזה. מקרינים את ״הוספת פריט״ ומוסיפים יחד, או מעבירים את הטלפון או המחשב מיד ליד. כאן אפשר להסתיר פריט שלא מתאים או למחוק אותו.</p>`;
+}
+
+/* ---------- views ---------- */
+const VIEWS = ["add","wall","art"];
+function currentView(){ const h = (location.hash||"").slice(1); return VIEWS.includes(h) ? h : "art"; }
+function renderView(){ const v = currentView(); VIEWS.forEach(x => $("view-" + x).hidden = x !== v); document.querySelectorAll("nav.views a").forEach(a => a.setAttribute("aria-current", a.dataset.view === v ? "page" : "false")); if(v === "art") renderArt(); }
+window.addEventListener("hashchange", () => { renderView(); window.scrollTo(0,0); });
+function renderAll(){ renderSetup(); renderAdd(); renderWall(); renderView(); }
+
+/* ---------- setup (wall view) ---------- */
+function renderSetup(){
+  document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.ctx.type)));
+  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
+  $("year").value = S.year; if(document.activeElement !== $("question")) $("question").value = S.question || ""; $("cTitle").value = S.title || "";
+  $("qIdeas").innerHTML = Q_IDEAS[S.ctx.type].map((q, i) => `<button type="button" class="chip" data-q="${i}">${esc(q.replace("YEAR", S.year))}</button>`).join("");
+  ["ctxType","region","year","question"].forEach(id => { const el = $(id); el.disabled = !IS_OWNER; el.querySelectorAll && el.querySelectorAll("button").forEach(b => b.disabled = !IS_OWNER); });
+}
+$("ctxType").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; S.ctx.type = b.dataset.v; leaveExample(); renderSetup(); saveMeta(); });
+$("region").addEventListener("change", e => { S.ctx.region = e.target.value; leaveExample(); saveMeta(); });
+$("year").addEventListener("change", e => { S.year = e.target.value; leaveExample(); renderSetup(); saveMeta(); });
+$("question").addEventListener("change", e => { S.question = e.target.value.trim(); leaveExample(); renderAdd(); saveMeta(); });
+$("qIdeas").addEventListener("click", e => { const b = e.target.closest("[data-q]"); if(!b || !IS_OWNER) return; S.question = Q_IDEAS[S.ctx.type][b.dataset.q].replace("YEAR", S.year); leaveExample(); renderSetup(); renderAdd(); saveMeta(); });
+
+/* ---------- add ---------- */
+const myIds = () => { try { return JSON.parse(ls.get("bg-collage-mine") || "[]"); } catch(e){ return []; } };
+function renderAdd(){
+  $("qShow").textContent = S.question || "איך ייראה העתיד שלנו?";
+  $("kinds").innerHTML = Object.entries(KINDS).map(([k, v]) => `<button type="button" class="kind" data-k="${k}" aria-pressed="${k === KIND}"><span class="ic" aria-hidden="true">${v.ic}</span>${v.t}</button>`).join("");
+  $("dimPick").innerHTML = DIMS.map(d => `<button type="button" class="chip" data-dim="${d.k}" aria-pressed="${d.k === DIMSEL}" style="${d.k === DIMSEL ? `background:${d.c};border-color:${d.c}` : `border-color:${d.c}`}">${esc(d.t)}</button>`).join("");
+  if(!$("byName").value) $("byName").value = ls.get("bg-collage-name") || "";
+  const mine = new Set(myIds()), list = S.items.filter(i => mine.has(i.id));
+  $("mine").innerHTML = list.length ? list.map(i => wallItemHTML(i, true)).join("") : `<span class="muted small">עוד לא הוספת פריטים.</span>`;
+}
+function renderForm(){
+  const f = $("form"); PENDING_IMG = null;
+  const ta = (id, label, ph, h) => `<label class="f" for="${id}">${label}<textarea id="${id}" placeholder="${esc(ph)}" style="min-height:${h||80}px"></textarea></label>`;
+  const inp = (id, label, ph) => `<label class="f" for="${id}">${label}<input type="text" id="${id}" placeholder="${esc(ph)}"></label>`;
+  const H = {
+    sentence: ta("fText", "משפט אחד על העתיד שאת או אתה רואים", "למשל: בעוד עשר שנים כל בית יודע למי לפנות כשמשהו קורה."),
+    word: inp("fText", "מילה אחת שמתארת את העתיד שלנו", "למשל: שייכות"),
+    quote: ta("fText", "הציטוט", "משפט שמישהו אמר ונשאר איתך", 60) + inp("fSrc", "מי אמר את זה? (רשות)", "למשל: סבתא שלי, מורה, מישהו במפגש"),
+    poem: ta("fText", "שיר או כמה שורות שכתבת בעצמך (כל שורה בשורה חדשה)", "", 120),
+    song: inp("fTitle", "שם השיר או היצירה", "") + inp("fArtist", "מי מבצע או כתב (רשות)", "") + inp("fUrl", "קישור לשיר (רשות)", "https://…") + ta("fText", "מה השיר הזה אומר לך על העתיד?", "", 60),
+    image: `<div class="row"><label class="f">תמונה מהטלפון או מהמחשב<input type="file" id="fFile" accept="image/*"></label></div><div class="preview" id="fPrev"></div>` + ta("fText", "מה רואים בתמונה, ולמה בחרת בה?", "", 60) + `<p class="small muted">כדאי לבחור תמונה שצילמת בעצמך, או תמונה שמותר להשתמש בה. בלי תמונות של ילדים שאפשר לזהות.</p>`,
+    drawing: `<div class="draw-wrap"><canvas id="cv" width="600" height="400" aria-label="משטח ציור"></canvas><div class="row" id="swatches">${SW.map((c, i) => `<button type="button" class="sw" data-c="${c}" style="background:${c}" aria-label="צבע" aria-pressed="${i === 0}"></button>`).join("")}<select id="pen" aria-label="עובי"><option value="4">דק</option><option value="9" selected>בינוני</option><option value="18">עבה</option></select><button type="button" id="erase">מחק</button><button type="button" id="cvClear">ניקוי</button></div></div>` + ta("fText", "מה ציירת?", "", 50),
+    color: `<label class="f" for="fColor" style="max-width:200px">הצבע של העתיד שלנו<input type="color" id="fColor" value="#e0a237" style="height:56px;padding:2px"></label>` + inp("fText", "למה דווקא הצבע הזה?", "למשל: ירוק של שדות שחזרו לחיים")
+  };
+  f.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">${H[KIND]}</div>`;
+  if(KIND === "image") $("fFile").addEventListener("change", async e => { const file = e.target.files[0]; if(!file) return; try { PENDING_IMG = await shrink(file, 640, 0.74); $("fPrev").innerHTML = `<img src="${PENDING_IMG}" alt="">`; } catch(err){ $("addStatus").textContent = "לא הצלחנו לקרוא את התמונה."; } });
+  if(KIND === "drawing") setupCanvas();
+}
+function shrink(file, max, q){ return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => { const im = new Image(); im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height); res(c.toDataURL("image/jpeg", q)); }; im.onerror = rej; im.src = r.result; }; r.onerror = rej; r.readAsDataURL(file); }); }
+let CV = null;
+function setupCanvas(){
+  const c = $("cv"), x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.lineCap = "round"; x.lineJoin = "round";
+  CV = {c, x, color:SW[0], erase:false, drawn:false}; let down = false, last = null;
+  const pos = e => { const r = c.getBoundingClientRect(); return [(e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height]; };
+  c.addEventListener("pointerdown", e => { down = true; c.setPointerCapture(e.pointerId); last = pos(e); x.beginPath(); x.arc(last[0], last[1], $("pen").value / 2, 0, 7); x.fillStyle = CV.erase ? "#fff" : CV.color; x.fill(); CV.drawn = true; });
+  c.addEventListener("pointermove", e => { if(!down) return; const p = pos(e); x.strokeStyle = CV.erase ? "#fff" : CV.color; x.lineWidth = Number($("pen").value) * (CV.erase ? 2.5 : 1); x.beginPath(); x.moveTo(last[0], last[1]); x.lineTo(p[0], p[1]); x.stroke(); last = p; });
+  ["pointerup","pointercancel","pointerleave"].forEach(ev => c.addEventListener(ev, () => { down = false; }));
+  $("swatches").addEventListener("click", e => { const b = e.target.closest("[data-c]"); if(b){ CV.color = b.dataset.c; CV.erase = false; document.querySelectorAll("#swatches .sw").forEach(s => s.setAttribute("aria-pressed", String(s === b))); $("erase").removeAttribute("aria-pressed"); } });
+  $("erase").addEventListener("click", () => { CV.erase = !CV.erase; $("erase").setAttribute("aria-pressed", String(CV.erase)); });
+  $("cvClear").addEventListener("click", () => { x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); CV.drawn = false; });
+}
+$("dimPick").addEventListener("click", e => { const b = e.target.closest("[data-dim]"); if(!b) return; DIMSEL = DIMSEL === b.dataset.dim ? "" : b.dataset.dim; renderAdd(); });
+$("kinds").addEventListener("click", e => { const b = e.target.closest("[data-k]"); if(!b) return; KIND = b.dataset.k; document.querySelectorAll("#kinds .kind").forEach(k => k.setAttribute("aria-pressed", String(k.dataset.k === KIND))); renderForm(); $("addStatus").textContent = ""; });
+$("addGo").addEventListener("click", async () => {
+  const st = $("addStatus"), v = id => ($(id) && $(id).value.trim()) || "";
+  const it = {id:uid(), kind:KIND, text:v("fText"), ts:Date.now(), dim:DIMSEL, by: $("anon").checked ? "" : $("byName").value.trim()};
+  if(KIND === "quote") it.src = v("fSrc");
+  if(KIND === "song"){ it.title = v("fTitle"); it.artist = v("fArtist"); const u = v("fUrl"); it.url = /^https?:\/\//.test(u) ? u : ""; if(!it.title){ st.textContent = "כדאי לכתוב את שם השיר."; return; } }
+  if(KIND === "image"){ if(!PENDING_IMG){ st.textContent = "קודם בוחרים תמונה."; return; } it.img = PENDING_IMG; }
+  if(KIND === "drawing"){ if(!CV || !CV.drawn){ st.textContent = "קודם מציירים משהו."; return; } it.img = CV.c.toDataURL("image/jpeg", 0.8); }
+  if(KIND === "color") it.color = v("fColor") || "#e0a237";
+  if(["sentence","word","quote","poem"].includes(KIND) && !it.text){ st.textContent = "כדי להוסיף, אפשר לכתוב משהו."; return; }
+  if(KIND === "word") it.text = it.text.split(/\s+/).slice(0, 3).join(" ");
+  if(it.by) ls.set("bg-collage-name", it.by);
+  try{
+    if(DB && CID) await putItem(it); else { S.items.push(it); }
+    ls.set("bg-collage-mine", JSON.stringify([...myIds(), it.id].slice(-200)));
+    DIMSEL = ""; leaveExample(); renderForm(); if(!(DB && CID)) renderAll(); else renderAdd();
+    st.textContent = "נוסף. תודה! אפשר להוסיף עוד.";
+  }catch(e){ st.textContent = "ההוספה לא הצליחה. אפשר לנסות שוב."; }
+});
+
+/* ---------- wall ---------- */
+function itemSummary(i){ return i.kind === "song" ? `${i.title}${i.artist ? " · " + i.artist : ""}` : i.kind === "color" ? `${i.color} ${i.text || ""}` : (i.text || ""); }
+function wallItemHTML(i, mineOnly){
+  const k = KINDS[i.kind] || KINDS.sentence;
+  const dm = DIM[i.dim];
+  return `<div class="wi ${i.hidden ? "hid" : ""}"><span class="k">${k.ic} ${k.t}${i.hidden ? " · מוסתר" : ""}</span>
+    ${!mineOnly && IS_OWNER ? `<select class="small" data-setdim="${esc(i.id)}" aria-label="ממד החוסן">${[`<option value="">ממד החוסן: עוד לא סווג</option>`].concat(DIMS.map(d => `<option value="${d.k}" ${d.k === i.dim ? "selected" : ""}>${esc(d.t)}</option>`)).join("")}</select>` : dm ? `<span class="tag" style="background:${dm.c};color:#fff;align-self:flex-start">${esc(dm.t)}</span>` : ""}
+    ${i.img ? `<img src="${esc(i.img)}" alt="${esc(i.text || k.t)}">` : ""}
+    ${i.kind === "color" ? `<div class="row"><span class="sw2" style="background:${esc(i.color)}"></span></div>` : ""}
+    ${i.kind === "song" ? `<b>♪ ${esc(i.title)}</b>${i.artist ? `<span class="small">${esc(i.artist)}</span>` : ""}${i.url ? `<a class="small" href="${esc(i.url)}" target="_blank" rel="noopener">להאזנה</a>` : ""}` : ""}
+    ${i.text ? `<div style="white-space:pre-line${i.kind === "word" ? ";font-size:22px;font-weight:700" : ""}">${i.kind === "quote" ? "״" + esc(i.text) + "״" : esc(i.text)}</div>` : ""}
+    ${i.src ? `<span class="small muted">${esc(i.src)}</span>` : ""}
+    <span class="small muted">${i.by ? esc(i.by) : "בלי שם"}</span>
+    <div class="row">${!mineOnly && IS_OWNER ? `<button type="button" class="small" data-hide="${esc(i.id)}">${i.hidden ? "החזרה" : "הסתרה"}</button>` : ""}${(IS_OWNER || mineOnly) ? `<button type="button" class="small" data-del="${esc(i.id)}">מחיקה</button>` : ""}</div></div>`;
+}
+function renderWall(){
+  const n = S.items.length, h = S.items.filter(i => i.hidden).length, people = new Set(S.items.filter(i => i.by).map(i => i.by)).size;
+  $("wallCount").textContent = n ? `${n} פריטים${h ? `, מהם ${h} מוסתרים` : ""}. תרמו ${people} אנשים עם שם${S.items.some(i => !i.by) ? ", ועוד אנשים בלי שם" : ""}.` : "עוד אין פריטים. מעבירים את הקבוצה ל״הוספת פריט״.";
+  $("wall").innerHTML = S.items.map(i => wallItemHTML(i, false)).join("");
+}
+let delArm = {id:null, t:0};
+document.addEventListener("change", async e => { const sel = e.target.closest("[data-setdim]"); if(!sel) return; const it = S.items.find(x => x.id === sel.dataset.setdim); if(!it) return; it.dim = sel.value; leaveExample(); try { await putItem(it); } catch(err){} });
+document.addEventListener("click", async e => {
+  const h = e.target.closest("[data-hide]"), d = e.target.closest("[data-del]");
+  if(h){ const it = S.items.find(x => x.id === h.dataset.hide); if(!it) return; it.hidden = !it.hidden; leaveExample(); try { await putItem(it); } catch(err){} renderAll(); }
+  if(d){ const id = d.dataset.del; if(delArm.id !== id || Date.now() - delArm.t > 4000){ delArm = {id, t:Date.now()}; d.textContent = "ללחוץ שוב למחיקה"; d.classList.add("confirm"); return; }
+    delArm = {id:null, t:0}; leaveExample(); try { if(DB && CID) await delItem(id); } catch(err){} S.items = S.items.filter(x => x.id !== id); if(S.art) S.art.themes.forEach(t => t.items = t.items.filter(x => x !== id)); renderAll(); }
+});
+
+/* ---------- composing ---------- */
+const visible = () => S.items.filter(i => !i.hidden);
+function autoArt(){
+  const vis = visible(), themes = DIMS.map(d => ({id:d.k, dim:d.k, name:d.t, color:d.c, desc:"", items:vis.filter(it => it.dim === d.k).map(it => it.id)})).filter(t => t.items.length);
+  const rest = vis.filter(it => !DIM[it.dim]).map(it => it.id); if(rest.length) themes.push({id:"none", name:"עוד לא סווג", color:"#8a97a3", desc:"פריטים שעוד לא סומן להם ממד חוסן. אפשר לסמן ב״כל הפריטים״.", items:rest});
+  const q = vis.find(i => i.kind === "quote" || i.kind === "sentence");
+  return {title:S.title || "תמונת העתיד שלנו", subtitle:`${S.question || ""}`, center:q ? q.text : String(S.year), centerBy:q ? (q.by || "") : "", themes, links:[], poem:[], reading:"", vision:"", palette:themes.map(t => t.color), auto:true};
+}
+function dataURLtoBlob(u){ const [h, b] = u.split(","); const m = (h.match(/data:([^;,]+)/) || [])[1] || "image/jpeg"; if(/;base64/.test(h)){ const bin = atob(b), arr = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i); return new Blob([arr], {type:m}); } return new Blob([decodeURIComponent(b)], {type:m}); }
+$("aiCompose").addEventListener("click", async () => {
+  if(!SAMPLE) return; const btn = $("aiCompose"), st = $("artStatus"), items = visible();
+  if(items.length < 4){ st.textContent = "כדאי לאסוף לפחות 4 פריטים לפני שמחברים."; return; }
+  busy(btn, st, true, "ה־AI מחבר את הפריטים… זה יכול לקחת עד דקה");
+  const lines = items.map(i => `${i.id} | ${KINDS[i.kind].t} | ${i.kind === "song" ? `השיר ״${i.title}״${i.artist ? " של " + i.artist : ""}. למה: ${i.text}` : i.kind === "color" ? `הצבע ${i.color}. למה: ${i.text}` : i.kind === "quote" ? `״${i.text}״${i.src ? " (" + i.src + ")" : ""}` : (i.text || "(בלי טקסט)")}`).join("\n");
+  const imgs = IMG_OK ? items.filter(i => i.img && /^data:image\/(jpeg|png)/.test(i.img)).slice(0, 8) : [];
+  try{
+    const r = await askJSON(`את/ה אמן או אמנית קהילתיים ואוצר או אוצרת בכלי ״תמונת עתיד קבוצתית״ במערכת Be Good לחוסן קהילתי וחינוכי בישראל.
+הקבוצה: ${TYPE_LABEL[S.ctx.type]}${S.ctx.region ? ", " + S.ctx.region : ""}. השאלה שנשאלה: ${S.question}. השנה: ${S.year}.
+הפריטים שהמשתתפים והמשתתפות תרמו (מזהה | סוג | תוכן):
+${lines}
+${items.some(i => DIM[i.dim]) ? "ממדים שהמשתתפים סימנו בעצמם: " + items.filter(i => DIM[i.dim]).map(i => i.id + "=" + i.dim).join(", ") : ""}
+${imgs.length ? `מצורפות תמונות של הפריטים האלה, לפי הסדר: ${imgs.map(i => i.id).join(", ")}. אפשר להיעזר במה שרואים בהן.` : ""}
+משימה: לחבר את כל הפריטים לתמונת עתיד אחת של הקהילה, שבה כל אחד ואחת ימצאו את עצמם.
+- themes: לסווג כל פריט לפי המשמעות שלו לחוסן, ולא לפי הסוג שלו או הדמיון החיצוני. למשל ציור של לוח מודעות שייך ל״תקשורת ומידע״, וצבע ירוק ״של שדות שחזרו לחיים״ שייך ל״אופטימיות ותקווה״. ממדי החוסן האפשריים (dim = המזהה):
+${DIMS.map(d => d.k + " = " + d.t).join("\n")}
+לכל ממד שמופיע: dim, desc (משפט אחד שמתאר מה המשתתפים אומרים על הממד הזה, ככל האפשר במילים שלהם), items (מזהים). כל פריט שייך לממד אחד בדיוק, ואף פריט לא נשאר בחוץ. אם משתתף או משתתפת סימנו ממד (מופיע ברשימה), להתחשב בזה, אבל לבחור לפי המשמעות.
+- links: 4–10 קשרים בין פריטים של אנשים שונים, בעיקר בין נושאים שונים. לכל קשר a, b (מזהים) ו־why (משפט קצר ושלם: מה מחבר ביניהם).
+- title: כותרת לתמונה, עד 6 מילים, שלקוחה מהמילים של אחד הפריטים (אפשר לקצר, אבל לא להמציא). subtitle: משפט קצר ועובדתי על הקבוצה והשנה. center: משפט מתוך אחד הפריטים, כפי שנכתב, שמבטא הכי טוב את רוח כל הפריטים. centerBy: השם של מי שכתב אותו, כפי שמופיע ברשימה, או ריק אם אין שם.
+- poem: שיר של 4–6 שורות שבנוי מהמילים ומהביטויים שהמשתתפים כתבו בעצמם, כמעט בלי מילים שלך. כל שורה מגיעה מפריט אחר. לא לצטט מילים של שירים מוכרים.
+- חשוב: לא להוסיף מטאפורה או סיפור משלך. המשמעות של התמונה נגזרת רק מהפריטים ומהקשרים ביניהם.
+- reading: 2–3 משפטים: מה התמונה אומרת על החוסן של הקהילה, אילו ממדים חוזרים הכי הרבה, ואילו ממדים חשובים כמעט לא הופיעו (למשל מצב כלכלי או ביטחון), ושאלה אחת שכדאי לשאול בעקבות זה. vision: 2–3 משפטים של חזון לשנת ${S.year} שעולה מהתמונה, כולל משהו על אוטונומיה תפקודית אם זה עולה מהפריטים.
+- palette: 5 צבעי hex הרמוניים, שכוללים את הצבעים שהמשתתפים בחרו.
+- style: הסגנון החזותי שהכי מתאים לאווירה של הפריטים, אחד מאלה: watercolor (צבעי מים), paper (גזרי נייר), night (לילה), ink (קו ודיו). style_why: משפט קצר.
+כללים: לכתוב במשפטים שלמים, בלשון רבים או ניטרלית מגדרית. לכבד כל פריט, גם אם הוא שונה מהשאר. בלי עמדה פוליטית.
+להחזיר JSON בלבד: {"title":"","subtitle":"","center":"","themes":[{"dim":"","desc":"","items":[""]}],"centerBy":"","links":[{"a":"","b":"","why":""}],"poem":[""],"reading":"","vision":"","palette":["#"],"style":"watercolor","style_why":""}`, {modelTier:"default", cache:false, ...(imgs.length ? {images:imgs.map(i => dataURLtoBlob(i.img))} : {})});
+    if(!r || !Array.isArray(r.themes) || !r.themes.length) throw {code:"invalid_json"};
+    const ids = new Set(items.map(i => i.id)), used = new Set(), hex = c => /^#[0-9a-f]{6}$/i.test(String(c)) ? c : null;
+    const byDim = {}; r.themes.forEach(t => { const d = DIM[t.dim] || DIM[(DIMS.find(x => x.t === t.name) || {}).k]; if(!d) return; const th = byDim[d.k] || (byDim[d.k] = {id:d.k, dim:d.k, name:d.t, color:d.c, desc:String(t.desc || ""), items:[]}); (t.items||[]).map(String).forEach(x => { if(ids.has(x) && !used.has(x)){ used.add(x); th.items.push(x); } }); });
+    const themes = Object.values(byDim); if(!themes.length) throw {code:"invalid_json"};
+    items.filter(i => !used.has(i.id)).forEach(i => { const th = themes.find(t => t.dim === i.dim) || themes.slice().sort((a, b) => b.items.length - a.items.length)[0]; th.items.push(i.id); });
+    S.art = {title:String(r.title || "תמונת העתיד שלנו"), subtitle:String(r.subtitle || ""), center:String(r.center || ""), centerBy:String(r.centerBy || ""), themes:themes.filter(t => t.items.length), links:(r.links||[]).filter(l => ids.has(String(l.a)) && ids.has(String(l.b)) && l.a !== l.b).slice(0, 12).map(l => ({a:String(l.a), b:String(l.b), why:String(l.why || "")})), poem:(r.poem||[]).map(String).slice(0, 8), reading:String(r.reading || ""), vision:String(r.vision || ""), palette:(r.palette||[]).map(hex).filter(Boolean)};
+    if(COMP[r.style]) S.style = r.style; S.seed = Math.floor(Math.random() * 1000); leaveExample(); busy(btn, st, false); SEL = null; renderArt(); saveMeta(); st.textContent = `התמונה מוכנה, בסגנון ״${COMP[compOf()].t}״.${r.style_why ? " " + r.style_why : ""} אפשר ללחוץ על פריטים, להחליף סגנון או לסדר מחדש.`;
+  }catch(e){ busy(btn, st, false); st.textContent = errCopy(e); }
+});
+$("autoCompose").addEventListener("click", () => { if(visible().length < 1){ $("artStatus").textContent = "עוד אין פריטים."; return; } S.art = autoArt(); leaveExample(); SEL = null; renderArt(); saveMeta(); $("artStatus").textContent = "סודר לפי ממדי החוסן שסימנו המשתתפים, או שסומנו ב״כל הפריטים״. עם AI הסיווג נעשה לפי המשמעות של כל פריט, ונוספים הקשרים בין הפריטים."; });
+$("reshuffle").addEventListener("click", () => { S.seed = Math.floor(Math.random() * 1000); renderArt(); saveMeta(); });
+$("styles").addEventListener("click", e => { const b = e.target.closest("[data-s]"); if(!b) return; S.style = b.dataset.s; renderArt(); saveMeta(); });
+
+/* ---------- the collage (SVG): the arrangement comes from the participants' own connections ---------- */
+function rng(seed){ let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function wrapT(t, n, max){ const words = String(t || "").split(/\s+/).filter(Boolean), out = [""]; words.forEach(w => { const c = out[out.length - 1]; if((c + " " + w).trim().length > n && c){ out.push(w); } else out[out.length - 1] = (c + " " + w).trim(); }); if(out.length > max){ const k = out.slice(0, max); k[max - 1] = k[max - 1].replace(/.{0,2}$/, "") + "…"; return k; } return out; }
+function hexMix(h, w, a){ const p = x => parseInt(x, 16); h = /^#[0-9a-f]{6}$/i.test(h) ? h : "#888888"; const r = p(h.slice(1,3)), g = p(h.slice(3,5)), b = p(h.slice(5,7)), q = p(w.slice(1,3)), s = p(w.slice(3,5)), u = p(w.slice(5,7)), m = (x, y) => Math.round(x * (1 - a) + y * a).toString(16).padStart(2, "0"); return "#" + m(r, q) + m(g, s) + m(b, u); }
+const compOf = () => COMP[S.style] ? S.style : "watercolor";
+function sizeOf(it, card){
+  const round = card === "star";
+  switch(it.kind){
+    case "word": { const f = it.text.length > 8 ? 30 : 40; return {w:Math.max(80, it.text.length * f * 0.62 + 24), h:f + 22, f}; }
+    case "color": return {w:96, h:108};
+    case "image": case "drawing": return round ? {w:178, h:206} : {w:196, h:190};
+    case "song": return {w:262, h:74};
+    case "poem": { const ls = String(it.text||"").split(/\n+/).flatMap(l => wrapT(l, 22, 2)).slice(0, 6); return {w:236, h:30 + ls.length * 22 + (it.by ? 20 : 0), ls}; }
+    default: { const ls = wrapT(it.text, it.kind === "quote" ? 20 : 22, 5); return {w:236, h:30 + ls.length * 23 + (it.by || it.src ? 22 : 0) + (it.kind === "quote" ? 12 : 0), ls}; }
+  }
+}
+/* force layout: linked items pull together, items of a theme gather, nothing overlaps */
+function layout(art){
+  const style = compOf(), card = COMP[style].card, items = visible(), byId = Object.fromEntries(items.map(i => [i.id, i]));
+  const extra = items.filter(i => !art.themes.some(t => t.items.includes(i.id))).map(i => i.id);
+  const themes = art.themes.map(t => ({...t, items:t.items.filter(id => byId[id])})).filter(t => t.items.length);
+  if(extra.length) themes.push({id:"tx", name:"קולות חדשים", color:"#8b6bd1", desc:"פריטים שנוספו אחרי שהתמונה חוברה.", items:extra});
+  const N = items.length, big = N > 30, W = big ? 2000 : 1600, H = big ? 1450 : 1150, cx = W / 2, cy = H / 2;
+  const R = rng(S.seed || 1), n = Math.max(1, themes.length), off = R() * Math.PI * 2;
+  const center = {x:cx - 270, y:cy - 165, w:540, h:330};
+  const nodes = [], nodeOf = {};
+  themes.forEach((t, k) => { const ang = off + k * Math.PI * 2 / n; t.ax = cx + Math.cos(ang) * W * 0.32; t.ay = cy + Math.sin(ang) * H * 0.3;
+    t.items.forEach(id => { const s = sizeOf(byId[id], card), nd = {id, s, t, x:t.ax + (R() - .5) * 220, y:t.ay + (R() - .5) * 160}; nodes.push(nd); nodeOf[id] = nd; }); });
+  const links = (art.links || []).filter(l => nodeOf[l.a] && nodeOf[l.b]);
+  for(let step = 0; step < 420; step++){
+    const k = 1 - step / 420;
+    links.forEach(l => { const a = nodeOf[l.a], b = nodeOf[l.b], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1, want = (a.s.w + b.s.w) / 2 + 50, f = (d - want) / d * 0.06 * k; a.x += dx * f; a.y += dy * f; b.x -= dx * f; b.y -= dy * f; });
+    themes.forEach(t => { const ns = nodes.filter(v => v.t === t), mx = ns.reduce((s, v) => s + v.x, 0) / ns.length, my = ns.reduce((s, v) => s + v.y, 0) / ns.length; ns.forEach(v => { v.x += (mx - v.x) * 0.025 * k + (t.ax - v.x) * 0.004; v.y += (my - v.y) * 0.025 * k + (t.ay - v.y) * 0.004; }); });
+    for(let i = 0; i < nodes.length; i++){ const a = nodes[i];
+      for(let j = i + 1; j < nodes.length; j++){ const b = nodes[j], ox = (a.s.w + b.s.w) / 2 + 16 - Math.abs(a.x - b.x), oy = (a.s.h + b.s.h) / 2 + 16 - Math.abs(a.y - b.y); if(ox > 0 && oy > 0){ if(ox < oy){ const sgn = a.x < b.x ? -1 : 1; a.x += sgn * ox / 2; b.x -= sgn * ox / 2; } else { const sgn = a.y < b.y ? -1 : 1; a.y += sgn * oy / 2; b.y -= sgn * oy / 2; } } }
+      const ox = (a.s.w / 2 + center.w / 2 + 14) - Math.abs(a.x - cx), oy = (a.s.h / 2 + center.h / 2 + 14) - Math.abs(a.y - cy); if(ox > 0 && oy > 0){ if(ox / center.w < oy / center.h) a.x += (a.x < cx ? -1 : 1) * ox; else a.y += (a.y < cy ? -1 : 1) * oy; }
+      a.x = Math.max(a.s.w / 2 + 16, Math.min(W - a.s.w / 2 - 16, a.x)); a.y = Math.max(a.s.h / 2 + 56, Math.min(H - a.s.h / 2 - 34, a.y)); }
+  }
+  const pos = {};
+  nodes.forEach(v => { pos[v.id] = {x:v.x - v.s.w / 2, y:v.y - v.s.h / 2, w:v.s.w, h:v.s.h, s:v.s, theme:v.t, rot:byId[v.id].kind === "word" ? (R() - .5) * 8 : (R() - .5) * 8}; });
+  themes.forEach(t => { t.boxes = nodes.filter(v => v.t === t).map(v => pos[v.id]); if(t.boxes.length){ const xs = t.boxes.flatMap(b => [b.x, b.x + b.w]), ys = t.boxes.flatMap(b => [b.y, b.y + b.h]); t.x0 = Math.min(...xs); t.x1 = Math.max(...xs); t.y0 = Math.min(...ys); t.y1 = Math.max(...ys); t.bx = (t.x0 + t.x1) / 2; t.by = (t.y0 + t.y1) / 2; } });
+  return {style, card, W, H, cx, cy, themes, pos, byId, links, forbid:[center]};
+}
+function blobPath(cx, cy, rx, ry, R){ const n = 12, pts = []; for(let i = 0; i < n; i++){ const a = i / n * Math.PI * 2, k = 0.86 + R() * 0.26; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); } let d = ""; for(let i = 0; i < n; i++){ const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n]; if(!i) d = `M${p1[0].toFixed(1)} ${p1[1].toFixed(1)}`; const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6]; d += ` C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`; } return d + "Z"; }
+function brush(p0, p1, p2, p3, w, R){ const pt = t => { const u = 1 - t; return [u*u*u*p0[0] + 3*u*u*t*p1[0] + 3*u*t*t*p2[0] + t*t*t*p3[0], u*u*u*p0[1] + 3*u*u*t*p1[1] + 3*u*t*t*p2[1] + t*t*t*p3[1]]; }; const A = [], B = []; const n = 36; for(let i = 0; i <= n; i++){ const t = i / n, a = pt(t), b = pt(Math.min(1, t + 0.01)), dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1, wd = w * Math.pow(Math.sin(Math.PI * t), 0.6) * (0.8 + R() * 0.4); A.push([a[0] - dy / L * wd, a[1] + dx / L * wd]); B.push([a[0] + dy / L * wd, a[1] - dx / L * wd]); } return "M" + A.map(p => p[0].toFixed(0) + " " + p[1].toFixed(0)).join(" L") + " L" + B.reverse().map(p => p[0].toFixed(0) + " " + p[1].toFixed(0)).join(" L") + "Z"; }
+function sparkle(x, y, r, fill){ return `<path d="M${x} ${y - r} Q${x + r * .18} ${y - r * .18} ${x + r} ${y} Q${x + r * .18} ${y + r * .18} ${x} ${y + r} Q${x - r * .18} ${y + r * .18} ${x - r} ${y} Q${x - r * .18} ${y - r * .18} ${x} ${y - r}Z" fill="${fill}"/>`; }
+function collageSVG(forExport){
+  const art = S.art; if(!art) return "";
+  const L = layout(art), style = L.style, card = L.card, R = rng((S.seed || 1) + 99), W = L.W, H = L.H, cx = L.cx, cy = L.cy;
+  const dark = style === "night", ink = style === "ink";
+  const pal = (art.palette && art.palette.length ? art.palette : L.themes.map(t => t.color)).concat(["#d9714a","#e0a237","#3f9a62","#6a8fc7","#b2275a"]);
+  const userColors = visible().filter(i => i.kind === "color").map(i => i.color);
+  const txt = dark ? "#f1f5fb" : "#1d2a35", sub = dark ? "#c3cfdd" : "#5b6b78", bgc = dark ? "#0d1730" : style === "paper" ? "#f1ece2" : "#fbf8f2", halo = dark ? "#0d1730" : "#fbf8f2";
+  const F = `font-family="Assistant, Rubik, Arial, sans-serif"`, FD = `font-family="Rubik, Assistant, Arial, sans-serif"`;
+  let defs = `<filter id="wc" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" seed="${(S.seed||1) % 50}"/><feDisplacementMap in="SourceGraphic" scale="46"/><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter>
+    <filter id="sh" x="-10%" y="-10%" width="130%" height="140%"><feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#000" flood-opacity="${dark ? .5 : .18}"/></filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="30"/></filter>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="paper" x="-5%" y="-5%" width="110%" height="115%"><feDropShadow dx="2" dy="5" stdDeviation="5" flood-color="#3b2a1a" flood-opacity=".25"/></filter>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .08 0"/></filter>
+    <radialGradient id="skyg" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#26306a"/><stop offset=".55" stop-color="#141c44"/><stop offset="1" stop-color="#070b1d"/></radialGradient>`;
+  let g = `<rect width="${W}" height="${H}" fill="${dark ? "url(#skyg)" : bgc}"/>`;
+  /* background: the colors the participants chose become brush strokes */
+  const strokeCols = userColors.concat(pal.slice(0, Math.max(0, 5 - userColors.length)));
+  if(dark){
+    strokeCols.slice(0, 8).forEach(c => { g += `<circle cx="${(R() * W).toFixed(0)}" cy="${(R() * H).toFixed(0)}" r="${(140 + R() * 160).toFixed(0)}" fill="${c}" opacity=".24" filter="url(#glow)"/>`; });
+    for(let i = 0; i < 200; i++) g += `<circle cx="${(R() * W).toFixed(0)}" cy="${(R() * H).toFixed(0)}" r="${(R() * 1.7 + .3).toFixed(1)}" fill="#fff" opacity="${(R() * .7 + .2).toFixed(2)}"/>`;
+  } else if(!ink){
+    strokeCols.slice(0, 9).forEach(c => { const y0 = H * (0.12 + R() * 0.76), y1 = H * (0.12 + R() * 0.76), x0 = -80 + R() * 200, x1 = W + 80 - R() * 200; g += `<path d="${brush([x0, y0], [W * (.25 + R() * .2), y0 + (R() - .5) * 400], [W * (.55 + R() * .2), y1 + (R() - .5) * 400], [x1, y1], 34 + R() * 46, R)}" fill="${c}" opacity="${style === "paper" ? .16 : .2}" filter="url(#${style === "paper" ? "rough" : "wc"})"/>`; });
+  } else {
+    strokeCols.slice(0, 6).forEach(c => { const y0 = H * (0.1 + R() * 0.8); g += `<path d="M-20 ${y0.toFixed(0)} C${W * .3} ${(y0 + (R() - .5) * 300).toFixed(0)} ${W * .7} ${(y0 + (R() - .5) * 300).toFixed(0)} ${W + 20} ${(H * (0.1 + R() * 0.8)).toFixed(0)}" fill="none" stroke="${c}" stroke-width="2" opacity=".5"/>`; });
+  }
+  /* theme areas */
+  L.themes.forEach(t => { if(!t.boxes.length) return; const d = blobPath(t.bx, t.by, (t.x1 - t.x0) / 2 + 55, (t.y1 - t.y0) / 2 + 55, R);
+    if(style === "watercolor") g += `<path d="${d}" fill="${t.color}" opacity=".3" filter="url(#wc)"/><path d="${blobPath(t.bx + 18, t.by - 10, (t.x1 - t.x0) * .4 + 40, (t.y1 - t.y0) * .38 + 40, R)}" fill="${t.color}" opacity=".18" filter="url(#wc)"/>`;
+    else if(style === "paper") g += `<path d="${d}" fill="${hexMix(t.color, "#ffffff", .45)}" filter="url(#paper)"/><path d="${blobPath(t.bx, t.by, (t.x1 - t.x0) / 2 + 40, (t.y1 - t.y0) / 2 + 40, R)}" fill="none" stroke="${hexMix(t.color, "#ffffff", .15)}" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>`;
+    else if(dark) g += `<path d="${d}" fill="${t.color}" opacity=".35" filter="url(#glow)"/>`;
+    else g += `<path d="${d}" fill="none" stroke="${t.color}" stroke-width="2.5" stroke-dasharray="1 8" stroke-linecap="round" opacity=".8"/>`; });
+  /* the threads: every connection the AI found between two participants, in the colors of both */
+  L.links.forEach((l, i) => { const a = L.pos[l.a], b = L.pos[l.b]; const ax = a.x + a.w / 2, ay = a.y + a.h / 2, bx = b.x + b.w / 2, by = b.y + b.h / 2, mx = (ax + bx) / 2 + (cy - (ay + by) / 2) * .12, my = (ay + by) / 2 + ((ax + bx) / 2 - cx) * .12;
+    defs += `<linearGradient id="lg${i}" gradientUnits="userSpaceOnUse" x1="${ax.toFixed(0)}" y1="${ay.toFixed(0)}" x2="${bx.toFixed(0)}" y2="${by.toFixed(0)}"><stop offset="0" stop-color="${a.theme.color}"/><stop offset="1" stop-color="${b.theme.color}"/></linearGradient>`;
+    const d = `M${ax.toFixed(0)} ${ay.toFixed(0)} Q${mx.toFixed(0)} ${my.toFixed(0)} ${bx.toFixed(0)} ${by.toFixed(0)}`;
+    g += `<g class="lk" data-a="${esc(l.a)}" data-b="${esc(l.b)}"><path d="${d}" fill="none" stroke="url(#lg${i})" stroke-width="${dark ? 3 : 5}" opacity="${dark ? .55 : .45}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${dark ? "#ffffff" : hexMix(a.theme.color, "#000000", .3)}" stroke-width="1.4" stroke-dasharray="2 7" opacity=".7" stroke-linecap="round"/></g>`; });
+  /* the center: only the participants' own words */
+  const tl = wrapT(art.title, 18, 2), cl = wrapT(art.center, 28, 2), pl = (art.poem || []).slice(0, 4);
+  g += dark ? `<ellipse cx="${cx}" cy="${cy}" rx="285" ry="178" fill="#0d1730" opacity=".82" stroke="#ffe9a8" stroke-opacity=".35" stroke-width="2"/>` : `<ellipse cx="${cx}" cy="${cy}" rx="285" ry="178" fill="#fff" opacity="${style === "paper" ? .95 : .9}" ${style === "paper" ? 'filter="url(#paper)"' : ink ? 'stroke="#1d2a35" stroke-width="1.5"' : 'filter="url(#rough)"'}/>`;
+  let y = cy - 122; const accent = dark ? "#ffd98a" : (pal[4] || "#b2275a");
+  tl.forEach(t => { y += 44; g += `<text x="${cx}" y="${y}" text-anchor="middle" font-size="40" font-weight="700" fill="${txt}" ${FD} direction="rtl">${esc(t)}</text>`; });
+  if(art.subtitle){ y += 30; g += `<text x="${cx}" y="${y}" text-anchor="middle" font-size="17" fill="${sub}" ${F} direction="rtl">${esc(wrapT(art.subtitle, 46, 1)[0])}</text>`; }
+  cl.forEach(t => { y += 30; g += `<text x="${cx}" y="${y}" text-anchor="middle" font-size="22" font-weight="600" fill="${accent}" ${FD} direction="rtl">${esc(t)}</text>`; });
+  if(art.centerBy){ y += 22; g += `<text x="${cx}" y="${y}" text-anchor="middle" font-size="14" fill="${sub}" ${F} direction="rtl">${esc(art.centerBy)}</text>`; }
+  if(pl.length){ y += 8; pl.forEach(t => { y += 24; g += `<text x="${cx}" y="${y}" text-anchor="middle" font-size="16.5" font-style="italic" fill="${sub}" ${F} direction="rtl">${esc(wrapT(t, 44, 1)[0])}</text>`; }); }
+  /* items */
+  const shadow = card === "tape" || card === "star" || card === "ink" ? "" : `filter="url(#paper)"`;
+  Object.entries(L.pos).forEach(([id, b]) => {
+    const it = L.byId[id], s = b.s, col = b.theme.color, x = b.x, y0 = b.y, mx = x + b.w / 2, dk = hexMix(col, "#000000", .35), lt = hexMix(col, "#ffffff", .45);
+    const tc = card === "star" ? "#f1f5fb" : "#1d2a35", sc = card === "star" ? "#c3cfdd" : "#5b6b78";
+    const cardFill = card === "star" ? "rgba(13,23,48,.86)" : "#fffdf8", inkStroke = "#1d2a35";
+    let inner = "";
+    const byLine = (yy, t) => t ? `<text x="${mx}" y="${yy}" text-anchor="middle" font-size="13.5" fill="${sc}" ${F} direction="rtl">${esc(t)}</text>` : "";
+    if(it.kind === "word"){ inner = `<rect class="frame" x="${x}" y="${y0}" width="${b.w}" height="${b.h}" rx="10" fill="transparent" stroke="none"/>${card === "star" ? sparkle(x + b.w - 6, y0 + 8, 9, "#ffe9a8") : ""}<text x="${mx}" y="${y0 + b.h / 2 + s.f * .36}" text-anchor="middle" font-size="${s.f}" font-weight="700" fill="${card === "star" ? lt : ink ? col : dk}" ${FD} direction="rtl" style="paint-order:stroke;stroke:${halo};stroke-width:6px;stroke-opacity:.8">${esc(it.text)}</text>`; }
+    else if(it.kind === "color"){ const cyc = y0 + 42;
+      inner = `<rect class="frame" x="${x}" y="${y0}" width="${b.w}" height="${b.h}" rx="12" fill="transparent" stroke="none"/>` + (card === "star" ? `<circle cx="${mx}" cy="${cyc}" r="40" fill="${esc(it.color)}" opacity=".55" filter="url(#soft)"/>${sparkle(mx, cyc, 26, esc(it.color))}<circle cx="${mx}" cy="${cyc}" r="5" fill="#fff"/>` : `<path d="${blobPath(mx, cyc, 38, 36, rng(id.length * 31 + 7))}" fill="${esc(it.color)}" ${shadow} ${ink ? `stroke="${inkStroke}" stroke-width="1.5"` : ""}/>`) + `<text x="${mx}" y="${y0 + 100}" text-anchor="middle" font-size="13" fill="${sc}" ${F} direction="rtl">${esc(it.by || "")}</text>`; }
+    else if(it.kind === "image" || it.kind === "drawing"){ const cap = wrapT(it.text, 22, 1)[0] || "";
+      if(card === "star"){ const r = 80, ccx = mx, ccy = y0 + 4 + r; defs += `<clipPath id="cp-${esc(id)}"><circle cx="${ccx}" cy="${ccy}" r="${r - 6}"/></clipPath>`;
+        inner = `<rect class="frame" x="${x}" y="${y0}" width="${b.w}" height="${b.h}" rx="20" fill="transparent" stroke="none"/><circle cx="${ccx}" cy="${ccy}" r="${r + 14}" fill="${col}" opacity=".5" filter="url(#soft)"/><circle cx="${ccx}" cy="${ccy}" r="${r}" fill="#fff" stroke="${lt}" stroke-width="5"/><image href="${esc(it.img)}" x="${ccx - r}" y="${ccy - r}" width="${r * 2}" height="${r * 2}" preserveAspectRatio="xMidYMid ${it.kind === "image" ? "slice" : "meet"}" clip-path="url(#cp-${esc(id)})"/><text x="${mx}" y="${y0 + b.h - 20}" text-anchor="middle" font-size="13.5" fill="${tc}" ${F} direction="rtl" style="paint-order:stroke;stroke:${halo};stroke-width:4px">${esc(cap)}</text><text x="${mx}" y="${y0 + b.h - 3}" text-anchor="middle" font-size="12.5" fill="${sc}" ${F} direction="rtl">${esc(it.by || "")}</text>`;
+      } else {
+        inner = `<rect class="frame" x="${x}" y="${y0}" width="${b.w}" height="${b.h}" rx="4" fill="#ffffff" stroke="${ink ? inkStroke : hexMix(col, "#ffffff", .3)}" stroke-width="1.5" ${shadow}/><image href="${esc(it.img)}" x="${x + 10}" y="${y0 + 10}" width="${b.w - 20}" height="${b.h - 56}" preserveAspectRatio="xMidYMid ${it.kind === "image" ? "slice" : "meet"}"/><text x="${mx}" y="${y0 + b.h - 27}" text-anchor="middle" font-size="13.5" fill="#2a3640" ${F} direction="rtl">${esc(cap)}</text><text x="${mx}" y="${y0 + b.h - 10}" text-anchor="middle" font-size="12.5" fill="#6b7a86" ${F} direction="rtl">${esc(it.by || "")}</text>`;
+        if(card === "tape") inner += `<rect x="${mx - 30}" y="${y0 - 8}" width="60" height="18" fill="${col}" opacity=".45" transform="rotate(-3 ${mx} ${y0})"/>`; } }
+    else if(it.kind === "song"){ let wave = ""; for(let i = 0; i < 9; i++){ const hh = 6 + Math.abs(Math.sin(i * 1.7 + id.length)) * 16; wave += `<rect x="${x + 22 + i * 7}" y="${y0 + b.h / 2 - hh / 2}" width="3.5" height="${hh}" rx="1.7" fill="${card === "star" ? lt : col}" opacity=".8"/>`; }
+      inner = `<rect class="frame" x="${x}" y="${y0}" width="${b.w}" height="${b.h}" rx="37" fill="${card === "star" ? "rgba(13,23,48,.86)" : "#fffdf8"}" stroke="${card === "star" ? lt : ink ? inkStroke : col}" stroke-width="2.5" ${shadow}/><circle cx="${x + b.w - 37}" cy="${y0 + 37}" r="24" fill="${col}"/><text x="${x + b.w - 37}" y="${y0 + 46}" text-anchor="middle" font-size="26" fill="#fff" ${F}>♪</text>${wave}<text x="${x + b.w - 72}" y="${y0 + 32}" text-anchor="start" font-size="16" font-weight="700" fill="${tc}" ${F} direction="rtl">${esc(wrapT(it.title, 18, 1)[0])}</text><text x="${x + b.w - 72}" y="${y0 + 54}" text-anchor="start" font-size="13" fill="${sc}" ${F} direction="rtl">${esc(wrapT([it.artist, it.by ? "בחירה של " + it.by : ""].filter(Boolean).join(" · "), 18, 1)[0])}</text>`; }
+    else { const quote = it.kind === "quote", poem = it.kind === "poem"; let yy = y0 + 30 + (quote ? 10 : 0);
+      const stroke = card === "star" ? hexMix(col, "#ffffff", .4) : ink ? inkStroke : (poem || quote ? col : hexMix(col, "#ffffff", .35));
+      inner = `<rect class="frame" x="${x}" y="${y0}" width="${b.w}" height="${b.h}" rx="${poem ? 4 : 10}" fill="${cardFill}" stroke="${stroke}" stroke-width="${poem || quote || ink ? 2 : 1.5}" ${shadow}/>`;
+      if(ink) inner += `<rect x="${x + 4}" y="${y0 + b.h - 4}" width="${b.w - 8}" height="4" fill="${col}" opacity=".8"/>`;
+      if(card === "star") inner += sparkle(x + b.w - 4, y0 + 4, 10, "#ffe9a8");
+      if(quote) inner += `<text x="${x + b.w - 16}" y="${y0 + 40}" font-size="52" fill="${col}" opacity=".55" ${FD}>״</text>`;
+      if(!quote && !poem && card === "tape") inner += `<rect x="${mx - 26}" y="${y0 - 7}" width="52" height="16" fill="${col}" opacity=".4" transform="rotate(4 ${mx} ${y0})"/>`;
+      s.ls.forEach(l => { inner += `<text x="${mx}" y="${yy}" text-anchor="middle" font-size="${poem ? 16 : 17}" ${poem ? 'font-style="italic"' : ""} fill="${tc}" ${F} direction="rtl">${esc(l)}</text>`; yy += poem ? 22 : 23; });
+      inner += byLine(yy + 4, [it.by, it.src].filter(Boolean).join(", ")); }
+    g += `<g class="it" data-id="${esc(id)}" tabindex="0" role="button" aria-label="${esc(KINDS[it.kind].t + ": " + itemSummary(it))}" transform="rotate(${b.rot.toFixed(1)} ${mx.toFixed(0)} ${(y0 + b.h / 2).toFixed(0)})">${inner}</g>`;
+  });
+  /* theme names (participants' own words), placed where they do not cover anyone */
+  const boxes = Object.values(L.pos), done = [];
+  const clash = (x, yy, lw) => { const bb = {x:x - lw / 2, y:yy - 28, w:lw, h:36}; const ov = b => bb.x < b.x + b.w && bb.x + bb.w > b.x && bb.y < b.y + b.h && bb.y + bb.h > b.y; return bb.x < 8 || bb.x + bb.w > W - 8 || bb.y < 8 || bb.y + bb.h > H - 8 || boxes.some(ov) || done.some(ov) || L.forbid.some(ov); };
+  L.themes.forEach(t => { if(!t.boxes.length) return; const lw = t.name.length * 13 + 34;
+    const cands = [[t.bx, t.y0 - 14], [t.bx, t.y1 + 34], [t.x0 + lw / 2, t.y0 - 14], [t.x1 - lw / 2, t.y0 - 14], [t.bx, t.y0 - 50], [t.x0 + lw / 2, t.y1 + 34], [t.x1 - lw / 2, t.y1 + 34], [t.x0 - lw / 2 - 10, t.by], [t.x1 + lw / 2 + 10, t.by]];
+    let [x, yy] = cands.find(c => !clash(c[0], c[1], lw)) || cands[0]; x = Math.max(lw / 2 + 10, Math.min(W - lw / 2 - 10, x)); yy = Math.max(34, Math.min(H - 14, yy)); done.push({x:x - lw / 2, y:yy - 28, w:lw, h:36});
+    const col = dark ? hexMix(t.color, "#ffffff", .45) : hexMix(t.color, "#000000", .32);
+    g += `<text x="${x.toFixed(0)}" y="${yy.toFixed(0)}" text-anchor="middle" font-size="23" font-weight="700" fill="${col}" ${FD} direction="rtl" style="paint-order:stroke;stroke:${halo};stroke-width:7px;stroke-opacity:.85">${esc(t.name)}</text>`; });
+  if(!dark) g += `<rect width="${W}" height="${H}" filter="url(#grain)" pointer-events="none"/>`;
+  const count = visible().length, names = new Set(visible().filter(i => i.by).map(i => i.by)).size;
+  g += `<text x="${W - 24}" y="${H - 16}" text-anchor="start" font-size="14" fill="${sub}" ${F} direction="rtl" style="paint-order:stroke;stroke:${halo};stroke-width:4px">${esc(`${count} פריטים · ${names} אנשים עם שם, ועוד אנשים בלי שם · Be Good · מעבדת האופק`)}</text>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(art.title)}"><defs>${defs}</defs>${g}</svg>`;
+}
+
+function renderArt(){
+  $("styles").innerHTML = Object.entries(COMP).map(([k, v]) => `<button type="button" class="chip" data-s="${k}" aria-pressed="${k === compOf()}">${v.t}</button>`).join("");
+  if(!S.art && visible().length) S.art = autoArt();
+  $("art").innerHTML = S.art ? collageSVG(false) : `<div class="box"><p>עוד אין פריטים. כשהקבוצה תוסיף פריטים, התמונה תופיע כאן.</p></div>`;
+  const names = [...new Set(visible().filter(i => i.by).map(i => i.by))].sort((a, b) => a.localeCompare(b, "he"));
+  $("findMe").innerHTML = `<option value="">לבחור שם</option>` + names.map(n => `<option ${n === FIND ? "selected" : ""}>${esc(n)}</option>`).join("");
+  applyHighlight(); renderDetail(); renderReading();
+}
+function applyHighlight(){
+  const svg = $("art").querySelector("svg"); if(!svg) return;
+  const ids = new Set(); if(FIND) visible().filter(i => i.by === FIND).forEach(i => ids.add(i.id)); if(SEL){ ids.add(SEL); (S.art.links||[]).forEach(l => { if(l.a === SEL) ids.add(l.b); if(l.b === SEL) ids.add(l.a); }); }
+  svg.classList.toggle("dimming", ids.size > 0);
+  svg.querySelectorAll(".it").forEach(g => { g.classList.toggle("hl", ids.has(g.dataset.id)); g.classList.toggle("sel", g.dataset.id === SEL); });
+  svg.querySelectorAll(".lk").forEach(p => p.classList.toggle("hl", !!SEL && (p.dataset.a === SEL || p.dataset.b === SEL)));
+}
+function renderDetail(){
+  const box = $("detail"); const it = SEL && S.items.find(i => i.id === SEL); if(!it){ box.innerHTML = ""; return; }
+  const th = S.art && S.art.themes.find(t => t.items.includes(it.id)), k = KINDS[it.kind];
+  const links = (S.art.links||[]).filter(l => l.a === it.id || l.b === it.id).map(l => { const o = S.items.find(i => i.id === (l.a === it.id ? l.b : l.a)); return o ? `<li><b>${esc(o.by || "מישהו בלי שם")}:</b> ${esc(itemSummary(o).slice(0, 70))}. <span class="muted">${esc(l.why)}</span></li>` : ""; }).join("");
+  box.innerHTML = `<div class="detail" style="border-inline-start-color:${th ? th.color : "var(--accent)"}"><div class="row" style="justify-content:space-between"><span class="small" style="font-weight:700">${k.ic} ${k.t}${th ? ` · בנושא ״${esc(th.name)}״` : ""}</span><button type="button" class="small" id="detX">סגירה</button></div>
+    ${it.img ? `<img src="${esc(it.img)}" alt="">` : ""}${it.kind === "color" ? `<span class="sw2" style="display:inline-block;width:44px;height:44px;border-radius:50%;background:${esc(it.color)}"></span>` : ""}
+    ${it.kind === "song" ? `<b>♪ ${esc(it.title)}${it.artist ? " · " + esc(it.artist) : ""}</b>${it.url ? `<a href="${esc(it.url)}" target="_blank" rel="noopener">להאזנה</a>` : ""}` : ""}
+    ${it.text ? `<p style="white-space:pre-line;font-size:18px">${it.kind === "quote" ? "״" + esc(it.text) + "״" : esc(it.text)}</p>` : ""}${it.src ? `<span class="small muted">${esc(it.src)}</span>` : ""}
+    <span class="small muted">${it.by ? "מאת " + esc(it.by) : "בלי שם"}</span>
+    ${th && th.desc ? `<p class="small">${esc(th.desc)}</p>` : ""}
+    ${links ? `<div><b class="small">מתחבר אל:</b><ul class="small" style="margin:4px 0 0;padding-inline-start:20px">${links}</ul></div>` : ""}</div>`;
+  $("detX").addEventListener("click", () => { SEL = null; applyHighlight(); renderDetail(); });
+}
+function missingDims(){ const have = new Set((S.art && S.art.themes || []).map(t => t.dim)); return DIMS.filter(d => !have.has(d.k)).map(d => d.t); }
+function renderReading(){
+  const a = S.art; if(!a){ $("reading").innerHTML = ""; return; }
+  $("reading").innerHTML = a.auto ? `<div class="box"><b>ממדי החוסן בתמונה</b><ul>${a.themes.map(t => `<li><span style="color:${t.color};font-weight:700">●</span> <b>${esc(t.name)}</b> <span class="muted small">(${t.items.length})</span></li>`).join("")}</ul>${missingDims().length ? `<p class="small" style="margin-top:8px"><b>ממדים שלא הופיעו:</b> ${esc(missingDims().join(", "))}.</p>` : ""}<p class="small muted" style="margin-top:8px">כשמחברים את הפריטים עם AI, כל פריט מסווג לפי המשמעות שלו לחוסן, ונוספים הקשרים בין הפריטים, שיר של הקבוצה, הסבר על מה שהתמונה אומרת, וחזון שעולה ממנה.</p></div>` : `<div class="cols">
+    <div class="box"><b>השיר של הקבוצה</b><p class="poem" style="margin-top:6px">${esc((a.poem||[]).join("\n"))}</p><p class="small muted" style="margin-top:6px">נכתב מהמילים של המשתתפים והמשתתפות.</p></div>
+    <div class="box" style="display:flex;flex-direction:column;gap:8px"><b>מה התמונה אומרת עלינו</b><p>${esc(a.reading)}</p><b>החזון שעולה מהתמונה</b><p>${esc(a.vision)}</p></div>
+    <div class="box"><b>ממדי החוסן בתמונה</b><ul>${a.themes.map(t => `<li><span style="color:${t.color};font-weight:700">●</span> <b>${esc(t.name)}</b> <span class="muted small">(${t.items.length})</span>${t.desc ? ": " + esc(t.desc) : ""}</li>`).join("")}</ul>${missingDims().length ? `<p class="small" style="margin-top:8px"><b>ממדים שלא הופיעו:</b> ${esc(missingDims().join(", "))}. כדאי לשאול את הקבוצה למה, ואולי להוסיף פריטים.</p>` : ""}</div></div>`;
+}
+$("art").addEventListener("click", e => { const g = e.target.closest(".it"); SEL = g ? (SEL === g.dataset.id ? null : g.dataset.id) : null; applyHighlight(); renderDetail(); if(SEL) $("detail").scrollIntoView({behavior:"smooth", block:"nearest"}); });
+$("art").addEventListener("keydown", e => { if((e.key === "Enter" || e.key === " ") && e.target.closest(".it")){ e.preventDefault(); e.target.closest(".it").dispatchEvent(new MouseEvent("click", {bubbles:true})); } });
+$("findMe").addEventListener("change", e => { FIND = e.target.value; SEL = null; applyHighlight(); renderDetail(); });
+
+/* ---------- export ---------- */
+const fname = ext => `תמונת-עתיד-${(S.title || S.art && S.art.title || S.year).replace(/[\\/:*?"<>|]/g, "")}.${ext}`;
+$("dlSvg").addEventListener("click", async () => { const st = $("expStatus"); if(!S.art){ st.textContent = "עוד אין תמונה."; return; } if(!DL){ st.textContent = "ההורדה זמינה כשיש חיבור למודל."; return; } try{ await DL.save({filename:fname("svg"), data:collageSVG(true)}); st.textContent = "התמונה ירדה. אפשר לפתוח אותה בדפדפן, להגדיל ולהדפיס בכל גודל."; } catch(e){ st.textContent = e && e.code === "declined" ? "" : "ההורדה לא הצליחה."; } });
+$("dlPoster").addEventListener("click", async () => {
+  const st = $("expStatus"), a = S.art; if(!a){ st.textContent = "עוד אין תמונה."; return; } if(!DL){ st.textContent = "ההורדה זמינה כשיש חיבור למודל."; return; }
+  const names = [...new Set(visible().filter(i => i.by).map(i => i.by))];
+  const html = `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(a.title)}</title><style>@page{size:A3 landscape;margin:12mm}body{font-family:Assistant,Arial,sans-serif;margin:0;padding:18px;color:#1d2a35;line-height:1.6}h1{font-family:Rubik,Arial,sans-serif;margin:0}svg{width:100%;height:auto;display:block;border-radius:12px}.cols{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px}.poem{white-space:pre-line;font-size:19px;font-style:italic}.muted{color:#5b6b78}</style></head><body>
+  ${collageSVG(true)}<div class="cols"><div><h1>${esc(a.title)}</h1><p class="muted">${esc(S.question || "")}</p>${(a.poem||[]).length ? `<p class="poem">${esc(a.poem.join("\n"))}</p>` : ""}</div><div>${a.reading ? `<p>${esc(a.reading)}</p>` : ""}${a.vision ? `<p><b>החזון:</b> ${esc(a.vision)}</p>` : ""}<p class="muted">תרמו לתמונה: ${esc(names.join(", ") || "חברי וחברות הקבוצה")}${visible().some(i => !i.by) ? ", ועוד אנשים שבחרו לא לכתוב את שמם" : ""}.</p><p class="muted">Be Good · מעבדת האופק</p></div></div></body></html>`;
+  try{ await DL.save({filename:fname("html"), data:html}); st.textContent = "הפוסטר ירד. פותחים אותו בדפדפן ומדפיסים, רצוי בגודל A3."; } catch(e){ st.textContent = e && e.code === "declined" ? "" : "ההורדה לא הצליחה."; }
+});
+$("toRoadmap").addEventListener("click", async () => {
+  const st = $("expStatus"), a = S.art; if(!a || !a.vision){ st.textContent = "קודם מחברים את הפריטים עם AI, כדי שיהיה חזון."; return; }
+  const svg = collageSVG(true), pic = svg.length < 1500000 ? svgURI(svg) : "";
+  const ok = await copy(JSON.stringify({type:"be-good-package", kind:"vision", from:"תמונת עתיד קבוצתית", title:S.title || a.title, ctx:S.ctx, horizon:S.year, vision:a.vision, fade:[], keep:[], seeds:a.themes.map(t => t.name), invest:[], picture:{desc:a.reading, img:pic}}));
+  if(ok) st.textContent = "הועתק. בכלי ״מהחזון להיום״, בשלב 2, פותחים ״ייבוא חזון מכלי אחר״ ומדביקים. גם התמונה עוברת.";
+});
+
+renderForm(); renderAll();
+</script>
+<style id="bgkit-css">
+.bgkit-bar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+.bgkit-bar b{font-family:var(--font-display)}
+.bgkit-bar a{color:var(--ink);text-decoration:none;border-radius:999px;padding:3px 10px;border:1px solid transparent}
+.bgkit-bar a:hover{border-color:var(--accent)}
+.bgkit-bar a[aria-current="page"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .bgkit-bar a[aria-current="page"]{color:#0f171d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bgkit-bar a[aria-current="page"]{color:#0f171d}}
+.bgkit-help-btn{align-self:flex-start;border-radius:999px;font-weight:700}
+.bgkit-q{width:26px;height:26px;padding:0;border-radius:50%;font-size:14px;line-height:1;font-family:var(--font-display);margin-inline-start:8px;vertical-align:middle;flex:0 0 auto}
+.bgkit-q[aria-expanded="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bgkit-tip{background:var(--accent-soft);border-radius:10px;padding:10px 14px;font-size:15px;max-width:80ch}
+.bgkit-ov{position:fixed;inset:0;background:rgba(10,20,30,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+.bgkit-ov[hidden]{display:none}
+.bgkit-dlg{background:var(--surface);color:var(--ink);border-radius:16px;max-width:720px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:8px;line-height:1.6}
+.bgkit-dlg h2{font-size:22px}
+.bgkit-dlg ul{margin:0;padding-inline-start:20px}
+.bgkit-dlg p{margin:0}
+.bgkit-dlg .src{font-size:13px;color:var(--muted);margin-top:6px}
+</style>
+<script id="bgkit-js">
+(function(){
+  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "משחק מצב עתידי", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "collage", HELP = {"title": "איך עובדים עם תמונת עתיד קבוצתית?", "html": "<p><b>מה הכלי עושה:</b> כל אחד ואחת מהקבוצה תורמים פריטים לתמונת העתיד: משפט, מילה, ציטוט, שיר שכתבו, שיר או מוזיקה שמזכירים להם את העתיד, תמונה, ציור או צבע. ה־AI מסווג כל פריט לפי המשמעות שלו לחוסן, כמו אמון, סולידריות, תקשורת, אופטימיות, מצב כלכלי או ביטחון, ומוצא קשרים בין פריטים של אנשים שונים. מזה נבנית יצירה אחת.</p>\n<p><b>המשמעות מגיעה מהמשתתפים:</b> פריטים שקשורים זה לזה יושבים קרוב, וחוט בצבעים של שניהם מחבר ביניהם. הכותרת, המשפט שבמרכז והשיר נלקחים מהמילים של המשתתפים, עם השמות שלהם. הסגנון משנה רק את המראה.</p>\n<p><b>מתי משתמשים בו:</b> בפתיחה של תהליך, כדי לשמוע את כולם, או בסיום, כדי ליצור משהו משותף שאפשר לתלות. מתאים גם לילדים.</p>\n<p><b>איך כולם תורמים:</b> התמונה נשמרת במכשיר הזה. מקרינים את ״הוספת פריט״ ומוסיפים יחד, או מעבירים את הטלפון או המחשב מיד ליד.</p>\n<p><b>מה לומדים מהתמונה:</b> אילו ממדי חוסן חוזרים הכי הרבה, ואילו כמעט לא הופיעו. גם מה שחסר הוא ממצא חשוב.</p>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>לאן ממשיכים:</b> את החזון ואת התמונה מעבירים ל<a href=\"hl-roadmap.html\" target=\"_blank\" rel=\"noopener\">מהחזון להיום</a>, ובונים מהם מפת דרכים.</p>\n<p class=\"src\">מבוסס על Visioning מערכת Futures Toolkit, ועל יצירה קהילתית משותפת.</p>", "steps": {"#a1h": "בוחרים סוג אחד. אפשר לחזור ולהוסיף עוד פריטים מכל סוג.", "#a2h": "ממלאים את הפריט. אפשר לסמן על איזה חלק בחוסן הוא מדבר, למשל אמון או תקשורת. זה רשות, אבל זה עוזר לסידור.", "#w1h": "מנסחים שאלה אחת ברורה שכולם יראו. כדאי לבקש לחשוב גם על יום רגיל וגם על יום של משבר.", "#w2h": "כאן רואים את כל הפריטים. אפשר לסמן ממד חוסן לפריט, להסתיר פריט שלא מתאים או למחוק אותו.", "#t1h": "ה־AI מסווג לפי המשמעות לחוסן ומחבר בין הפריטים. אפשר לבחור סגנון ולסדר מחדש. לוחצים על פריט כדי לראות למה הוא מתחבר, ובוחרים שם כדי למצוא את עצמכם בתמונה.", "#t2h": "קוראים יחד מה התמונה אומרת, ושמים לב לממדים שלא הופיעו. משם אפשר להוריד את התמונה ואת הפוסטר, ולהעביר את החזון למפת דרכים."}};
+  const wrap = document.querySelector(".wrap"); if(!wrap) return;
+  // 1. toolkit bar
+  const bar = document.createElement("nav"); bar.className = "bgkit-bar"; bar.setAttribute("aria-label", "מעבדת האופק · Be Good");
+  bar.innerHTML = `<b>מעבדת האופק:</b><a href="${HUB}" target="_blank" rel="noopener">דף הבית</a>` + TOOLS.map(t => `<a href="${t.url}" ${t.k === ME ? 'aria-current="page"' : 'target="_blank" rel="noopener"'} title="${t.short}">${t.name}</a>`).join("");
+  wrap.insertBefore(bar, wrap.firstChild);
+  // 2. help button + dialog
+  const head = document.querySelector("header.top > div") || document.querySelector("header.top");
+  const btn = document.createElement("button"); btn.type = "button"; btn.className = "bgkit-help-btn"; btn.textContent = "איך עובדים עם הכלי?";
+  if(head) head.appendChild(btn);
+  const ov = document.createElement("div"); ov.className = "bgkit-ov"; ov.hidden = true;
+  ov.innerHTML = `<div class="bgkit-dlg" role="dialog" aria-modal="true" aria-labelledby="bgkitT"><div class="row" style="justify-content:space-between;align-items:center"><h2 id="bgkitT">${HELP.title}</h2><button type="button" id="bgkitX">סגירה</button></div>${HELP.html}<p style="margin-top:8px">וגם הסבר לכל שלב: ללחוץ על סימן השאלה שליד כותרת השלב.</p></div>`;
+  document.body.appendChild(ov);
+  let last = null;
+  const open = () => { last = document.activeElement; ov.hidden = false; ov.querySelector("#bgkitX").focus(); };
+  const close = () => { ov.hidden = true; if(last) last.focus(); };
+  btn.addEventListener("click", open);
+  ov.addEventListener("click", e => { if(e.target === ov || e.target.id === "bgkitX") close(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape" && !ov.hidden) close(); });
+  // 3. per-step ? buttons
+  Object.entries(HELP.steps || {}).forEach(([sel, text], i) => {
+    const h = document.querySelector(sel); if(!h) return;
+    const q = document.createElement("button"); q.type = "button"; q.className = "bgkit-q"; q.textContent = "?"; q.setAttribute("aria-label", "הסבר על השלב: " + h.textContent.trim()); q.setAttribute("aria-expanded", "false");
+    const tip = document.createElement("div"); tip.className = "bgkit-tip"; tip.hidden = true; tip.id = "bgkitTip" + i; tip.textContent = text; q.setAttribute("aria-controls", tip.id);
+    h.appendChild(q);
+    const anchor = h.closest(".stage-head") || h.closest(".row") || h;
+    anchor.insertAdjacentElement("afterend", tip);
+    q.addEventListener("click", () => { tip.hidden = !tip.hidden; q.setAttribute("aria-expanded", String(!tip.hidden)); });
+  });
+})();
+</script>
+<script src="lib/screens-menu.js"></script>
+</body>
+</html>

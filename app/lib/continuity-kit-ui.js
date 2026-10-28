@@ -11,7 +11,7 @@
   const STORE = window.sbeUserKey ? sbeUserKey('sbe.continuity.v2') : 'sbe.continuity.v2:anon';
   const SERVER = window.sbeAIOrigin ? window.sbeAIOrigin() : 'https://sbe-server.onrender.com';
   const F = (id) => document.getElementById(id);
-  const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התיק לא הוכן. מה שמילאת נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
+  const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התיק לא הוכן. מה שמולא נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
   try { const h = sessionStorage.getItem('sbe.session.homeUrl'); if (h) F('nav-home').href = h; } catch (e) {}
   function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = String(text); return n; }
   function btn(text, cls, fn) { const b = el('button', cls || 'btn btn-ghost', text); b.type = 'button'; if (fn) b.addEventListener('click', fn); return b; }
@@ -80,7 +80,7 @@
     return { set: (t) => { text = t; tick(); }, stop: () => { clearInterval(iv); node.hidden = true; } };
   }
   // תשובה חלקית או לא תקינה: ניסיון נוסף אחד (sbeCallAIJson ב-lib/ai-call.js), ואחר כך הודעה שונה מ"אין חיבור"
-  const PARTIAL = 'התיק חזר חלקי. מה שמילאת נשמר, ואפשר לנסות שוב.';
+  const PARTIAL = 'התיק חזר חלקי. מה שמולא נשמר, ואפשר לנסות שוב.';
   async function ask(system, content, check) {
     return window.sbeCallAIJson(SERVER, { system, messages: [{ role: 'user', content }], maxTokens: 16000, customerReview: true }, 300000, check);
   }
@@ -510,7 +510,7 @@
 
   // ── קובץ התיק (למסירה למחליפה) ותזכורת ביומן ──
   F('saveFile').addEventListener('click', () => {
-    if (!confirm('הקובץ כולל את כל התיק, גם מידע רגיש (רשימת התלמידים, פרטי ההורים, מידע חשוב). מעבירים אותו רק בדרך מאובטחת, למי שתחליף אותך. להמשיך?')) return;
+    if (!confirm('הקובץ כולל את כל התיק, גם מידע רגיש (רשימת התלמידים, פרטי ההורים, מידע חשוב). מעבירים אותו רק בדרך מאובטחת, למי שמחליף/ה אותך. להמשיך?')) return;
     const blob = new Blob([JSON.stringify({ type: 'begood-continuity', v: 2, savedAt: new Date().toISOString(), S })], { type: 'application/json' });
     const a = el('a'); a.href = URL.createObjectURL(blob); a.download = 'תיק-רציפות-' + (S.form.group || 'כיתה').replace(/[^\w֐-׿-]+/g, '-') + '.json';
     document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
@@ -564,7 +564,7 @@
   });
 
   F('example').addEventListener('click', () => {
-    const ex = { role: 'מחנכת כיתה', receiver: 'ממלאת מקום לכמה שבועות', age: 'ה–ו', group: 'ו׳2, 31 תלמידים, כיתה פעילה שאוהבת עבודה בקבוצות',
+    const ex = { role: 'מחנך/ת כיתה', receiver: 'ממלאת מקום לכמה שבועות', age: 'ה–ו', group: 'ו׳2, 31 תלמידים, כיתה פעילה שאוהבת עבודה בקבוצות',
       routines: 'פתיחת בוקר 8:00: מעגל "מה שלומך" בסבב מילה אחת, ואז לוח היום. מעבר להפסקה: תורני השבוע מכבים אור וסוגרים חלונות. אחרי הפסקה: שתי דקות שקט עם מוזיקה. סיום יום: כל אחד כותב משפט אחד ביומן הכיתה.',
       roles: 'תורנים שבועיים (שניים, מתחלפים כל ראשון). אחראית לוח היום. ועדת הפסקה פעילה (ארבעה תלמידים).',
       decisions: 'משנה את סדר השיעורים ביום בעצמה. יציאה לחצר בשיעור רק אחרי בדיקה עם רכזת השכבה. שינוי מקומות ישיבה מחכה לי.',

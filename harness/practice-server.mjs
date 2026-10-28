@@ -163,7 +163,8 @@ function readRawBody(req,maxBytes){return new Promise((resolve,reject)=>{let len
 // Dependencies are injected only by importing this factory for isolated tests.
 // HTTP input and environment flags cannot replace authentication or providers.
 export function createPracticeServer({ authStore, providerFactory = getProvider, saveScenarioImpl = saveScenario,
-  limits = createModelLimits(), partnershipOptions = {}, partnershipWork = {} } = {}) {
+  limits = createModelLimits(), partnershipOptions = {}, partnershipWork = {}, signingEnabled = false } = {}) {
+const researchPartnershipOptions={...partnershipOptions,signingEnabled:signingEnabled===true};
 // עבודות צינור שרצות ברקע (בזיכרון; נמחקות אחרי 3 שעות)
 const PIPE_JOBS = new Map();
 // גם במאגר (05/10/2026): אם השרת מופעל מחדש באמצע בנייה (Deploy, עומס), מצב העבודה לא הולך לאיבוד —
@@ -187,7 +188,8 @@ const server = createServer(async (req, res) => {
     const hasKey = !!process.env[getProviderEnvKeyName()];
     const hasWorkspace = !!(process.env.ANTHROPIC_WORKSPACE_ID || '').trim();
     const hasSupabase = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
-    return sendJson(res, 200, { ok: true, hasKey, hasWorkspace, hasSupabase });
+    // הגרסה שרצה (20/10/2026): כדי לבדוק מבחוץ שהשרת התעדכן אחרי פריסה. Render מוסיף את RENDER_GIT_COMMIT.
+    return sendJson(res, 200, { ok: true, hasKey, hasWorkspace, hasSupabase, commit: String(process.env.RENDER_GIT_COMMIT || '').slice(0, 7), gifts: true });
   }
 
   if (intakePath) {
@@ -213,7 +215,7 @@ const server = createServer(async (req, res) => {
       const access = jobStore();
       const [status,out] = await handleResearch(access,supabaseResearchStore(url,key),body,{
         siteOrigin:CORS_ORIGIN, resolveGeneratedSample:request=>resolveResearchGeneratedSample(access,request),
-        ...partnershipOptions
+        ...researchPartnershipOptions
       });
       return sendJson(res,status,{...out,ok:status>=200&&status<300,status});
     } catch { return sendJson(res,503,{ok:false,status:503,error:'storage_unavailable',code:'storage_unavailable'}); }
@@ -223,7 +225,7 @@ const server = createServer(async (req, res) => {
     const url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_KEY;
     if(!url||!key)return sendJson(res,503,{ok:false,code:'not_configured'});
     let raw;try{raw=await readRawBody(req,262144);}catch(error){return sendJson(res,error.status===413?413:400,{ok:false,code:'invalid'});}
-    const [status,out]=await handleResearchSigningWebhook(jobStore(),supabaseResearchStore(url,key),raw,req.headers);
+    const [status,out]=await handleResearchSigningWebhook(jobStore(),supabaseResearchStore(url,key),raw,req.headers,researchPartnershipOptions);
     return sendJson(res,status,out);
   }
 
@@ -540,9 +542,10 @@ server.headersTimeout = 0;
 
 // Scheduling is server-owned and off by default. No browser endpoint can start
 // jobs or inject providers. Persistent leases survive process restarts.
-const workAccess=partnershipWork.enabled===true?jobStore():null;
-const workStore=partnershipWork.enabled===true&&process.env.SUPABASE_URL&&process.env.SUPABASE_SERVICE_KEY?supabaseResearchStore(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_KEY):null;
-const scheduler=startPartnershipWorkScheduler(workAccess,workStore,{...partnershipOptions,...partnershipWork});
+const workEnabled=signingEnabled===true&&partnershipWork.enabled===true;
+const workAccess=workEnabled?jobStore():null;
+const workStore=workEnabled&&process.env.SUPABASE_URL&&process.env.SUPABASE_SERVICE_KEY?supabaseResearchStore(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_KEY):null;
+const scheduler=startPartnershipWorkScheduler(workAccess,workStore,{...researchPartnershipOptions,...partnershipWork,signingEnabled:signingEnabled===true,enabled:workEnabled});
 server.once('close',()=>scheduler.stop());
 return server;
 }

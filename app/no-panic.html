@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>בלי פאניקה! משחק קלפים למוכנות בחירום</title>
+<script src="lib/access-guard.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&family=Rubik:wght@400;700;800&display=swap">
+<style id="npcss"></style>
+<style>
+/* בלי פאניקה! (22/10/2026), על המסך ולהדפסה. מקור אמת: lib/no-panic.js. הרשאה: games */
+:root{--navy:#1B4F7A;--teal:#1A9BB5;--green:#2B9C68;--orange:#EE7D1E;--purple:#8A5CC7;--sun:#FFC929;--ink:#1F2A36;--muted:#4a5a64;--line:#dfe6ea;--bg:#FBF8F2;--card:#fff;--soft:#F3EEE4;--hl:#1B4F7A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#ece7df;--muted:#b3b9bd;--line:#3a3530;--bg:#191613;--card:#24201c;--soft:#2e2924;--hl:#8fd3e0}}
+:root[data-theme="dark"]{--ink:#ece7df;--muted:#b3b9bd;--line:#3a3530;--bg:#191613;--card:#24201c;--soft:#2e2924;--hl:#8fd3e0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Assistant,Arial,sans-serif}
+button{font-family:inherit}
+.hs{width:32px;height:32px;flex:none;vertical-align:middle}
+.topnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--line);font-size:15px}
+.topnav a,.topnav button{color:var(--hl);font:inherit;font-weight:700;background:none;border:0;cursor:pointer;text-decoration:none;padding:6px 0}
+.topnav .crumb{margin-inline-start:auto;color:var(--muted);font-weight:600}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 16px 60px}
+/* פתיח: פס סרט אזהרה, כותרת גדולה וקלפים בזווית */
+.hero{position:relative;overflow:hidden;border-radius:28px;background:#1F2A36;color:#fff;margin-bottom:20px;display:grid;grid-template-columns:1fr minmax(0,380px);gap:6px;align-items:center;padding:30px 30px 30px}
+.hero::before{content:'';position:absolute;inset:auto 0 0 0;height:16px;background:repeating-linear-gradient(-45deg,#EE7D1E 0 16px,#1F2A36 16px 30px)}
+.hero::after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;inset:-120px auto auto -80px;background:radial-gradient(#8A5CC7 0 30%,transparent 31%) 0 0/22px 22px;opacity:.35}
+.hero .txt{position:relative;z-index:1}
+.hero .logo{display:inline-flex;background:#fff;border-radius:12px;padding:4px 8px;margin-bottom:12px}
+.hero .logo img{height:34px;width:auto;display:block}
+.hero h1{margin:0;font:800 64px/.95 Rubik,Assistant,Arial,sans-serif;letter-spacing:-.5px}
+.hero h1 span{color:#FFC929;text-shadow:4px 4px 0 #EE7D1E}
+.hero p{margin:12px 0 0;font-size:18px;line-height:1.5;color:#E8E2D6;max-width:40ch}
+.hero .facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.hero .facts b{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:5px 12px;font-size:14.5px}
+.fan{position:relative;height:250px;z-index:1}
+.fan .np-card{position:absolute;top:10px;left:50%;font-size:8.6px;transform-origin:50% 120%;box-shadow:6px 8px 0 rgba(0,0,0,.25)}
+.fan .np-card:nth-child(1){transform:translateX(-50%) rotate(-16deg) translateX(-38px)}
+.fan .np-card:nth-child(2){transform:translateX(-50%) rotate(-2deg);z-index:2}
+.fan .np-card:nth-child(3){transform:translateX(-50%) rotate(13deg) translateX(40px)}
+@media screen and (max-width:760px){.hero{grid-template-columns:1fr;padding:22px 18px 30px}.hero h1{font-size:46px}.fan{height:200px}.fan .np-card{font-size:7px}}
+body.playing .hero{display:none}
+/* הגדרות */
+.setup{display:grid;gap:14px}
+.step{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.step h2{margin:0;display:flex;align-items:center;gap:10px;font:800 20px/1.2 Rubik,Assistant,Arial,sans-serif}
+.step h2 .num{width:34px;height:34px;border-radius:10px;transform:rotate(-6deg);display:inline-flex;align-items:center;justify-content:center;font:800 17px Rubik,Assistant,sans-serif;color:#fff;background:var(--c,#EE7D1E);flex:none}
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:16px;border-radius:18px;border:2px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font:800 19px Rubik,Assistant,Arial,sans-serif;text-align:right}
+.tile small{font:600 14.5px/1.45 Assistant,Arial,sans-serif;color:var(--muted)}
+.tile .ic{font-size:30px;line-height:1}
+.tile[aria-pressed="true"]{border-color:var(--c);box-shadow:5px 5px 0 var(--c)}
+.chips2{display:flex;flex-wrap:wrap;gap:8px}
+.chips2 button{min-width:52px;min-height:48px;padding:8px 16px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:800 18px Rubik,Assistant,sans-serif;cursor:pointer}
+.chips2 button[aria-pressed="true"]{border-color:#EE7D1E;box-shadow:4px 4px 0 #EE7D1E}
+.names{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.names label{display:flex;align-items:center;gap:8px;font-weight:700}
+.names .hs{width:36px;height:36px;flex:none}
+.names input{flex:1;min-width:0;min-height:42px;border:2px solid var(--line);border-radius:10px;padding:6px 10px;font:600 16px Assistant,Arial,sans-serif;background:var(--card);color:var(--ink)}
+.go-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{min-height:46px;padding:10px 20px;border-radius:12px;border:0;background:var(--navy);color:#fff;font-weight:800;font-size:16px;cursor:pointer}
+.btn.alt{background:var(--card);color:var(--hl);border:2px solid var(--line)}
+.btn.big{min-height:60px;padding:12px 32px;font:800 21px Rubik,Assistant,sans-serif;border-radius:16px;background:#EE7D1E;box-shadow:5px 5px 0 #1F2A36}
+.btn.go{background:#2B9C68}
+.btn.pur{background:#8A5CC7}
+.btn.blue{background:#1A86B5}
+.btn:disabled{opacity:.4;cursor:default}
+.small{min-height:38px;padding:6px 12px;font-size:14.5px}
+.tile:focus-visible,.chips2 button:focus-visible,.btn:focus-visible,.np-card:focus-visible,.pile:focus-visible{outline:3px solid #FFC929;outline-offset:3px}
+details.how{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:14px 20px}
+details.how summary{cursor:pointer;font-weight:800;color:var(--hl);font-size:17px}
+details.how ol,details.how ul{margin:8px 0 0;padding-inline-start:22px;line-height:1.65;font-size:15px}
+details.how p{margin:8px 0 0;font-size:15px;line-height:1.6;text-align:justify}
+/* המשחק */
+#game[hidden],#setup[hidden],#end[hidden],#cover[hidden]{display:none}
+.hood{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.house{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border-radius:16px;background:var(--card);border:2px solid var(--line);font-weight:700}
+.house.on{border-color:var(--pc);box-shadow:4px 4px 0 var(--pc)}
+.house .hs{width:32px;height:32px;flex:none}
+.house small{color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums}
+.house .pt{background:var(--pc);color:#fff;border-radius:999px;padding:1px 9px;font:800 14px Rubik,Assistant,sans-serif}
+.coopbar{flex:1 1 260px;display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:8px 12px;font-weight:800}
+.coopbar .bar{flex:1;height:14px;border-radius:999px;background:var(--soft);overflow:hidden}
+.coopbar .bar i{display:block;height:100%;background:repeating-linear-gradient(-45deg,#2B9C68 0 10px,#3fb37e 10px 20px);transition:width .4s}
+.tablezone{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;background:#2C5F4F;background:radial-gradient(circle at 20% 10%,#3E7C67,#24503F);border-radius:24px;padding:16px;color:#fff;margin-bottom:14px;position:relative}
+.tablezone h3{margin:0 0 8px;font:800 16px Rubik,Assistant,sans-serif;color:#FFE8B0}
+.pilebox{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pile{position:relative;border:0;padding:0;background:none;cursor:pointer;font-size:7px;border-radius:1em}
+.pile .np-card{box-shadow:.5em .5em 0 #1F2A36,1em 1em 0 rgba(0,0,0,.25)}
+.pile:disabled{cursor:default;opacity:.6}
+.pile b{position:absolute;top:-10px;inset-inline-start:-10px;z-index:2;background:#FFC929;color:#1F2A36;border-radius:999px;padding:3px 10px;font:800 14px Rubik,sans-serif}
+.cards{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}
+.cards .np-card{font-size:9px;cursor:pointer;transition:transform .15s}
+.cards.idle .np-card{cursor:default}
+.open{margin-top:10px}
+.open .np-card{font-size:5.2px;cursor:default}
+.hint{margin:6px 0 0;font-size:14.5px;color:#E7F3EC}
+.stepbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.stepbar span{padding:6px 12px;border-radius:999px;background:var(--card);border:2px solid var(--line);font-weight:800;color:var(--muted)}
+.stepbar span.on{border-color:#EE7D1E;color:var(--ink);box-shadow:3px 3px 0 #EE7D1E}
+.stepbar span.done{text-decoration:line-through;opacity:.6}
+.handzone{background:var(--card);border:2px solid var(--line);border-radius:24px;padding:14px 16px 16px}
+.handzone h3{margin:0 0 10px;font:800 17px Rubik,Assistant,sans-serif;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.handzone h3 small{font:600 14px Assistant,sans-serif;color:var(--muted)}
+.hand{display:flex;gap:12px;overflow-x:auto;padding:10px 4px 14px;scroll-snap-type:x proximity}
+.hand .np-card{font-size:11px;flex:none;cursor:pointer;scroll-snap-align:start;transition:transform .15s,box-shadow .15s}
+.hand .np-card:hover{transform:translateY(-4px)}
+.hand .np-card.sel{transform:translateY(-10px);box-shadow:0 0 0 4px #FFC929,6px 10px 0 rgba(0,0,0,.18)}
+.hand .np-card.match{box-shadow:0 0 0 3px #2B9C68}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.say{margin:10px 0 0;font-weight:700;color:var(--muted);min-height:1.4em}
+.mypairs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mypairs span{border-radius:10px;padding:4px 10px;font-weight:700;font-size:14px;color:#fff}
+@media screen and (max-width:760px){.tablezone{gap:10px;padding:12px}.pile{font-size:4.6px}.tablezone h3{font-size:14px}.cards .np-card{font-size:6.6px}.hand .np-card{font-size:9.4px}}
+/* מסך מעבר בין תורות */
+.cover{position:fixed;inset:0;z-index:30;background:#1F2A36;display:flex;align-items:center;justify-content:center;padding:20px}
+.cover::before{content:'';position:absolute;inset:auto 0 0 0;height:22px;background:repeating-linear-gradient(-45deg,#EE7D1E 0 18px,#1F2A36 18px 34px)}
+.cover .in{background:#fff;color:#1F2A36;border-radius:26px;padding:28px;max-width:440px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:8px 8px 0 #8A5CC7}
+.cover .in .hs{width:80px;height:80px}
+.cover h2{margin:0;font:800 30px/1.1 Rubik,Assistant,sans-serif}
+.cover p{margin:0;color:#4a5a64;font-size:16px;line-height:1.5}
+/* חלון */
+.modal{position:fixed;inset:0;z-index:40;background:rgba(20,18,15,.6);display:none;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex}
+.mcard{width:min(560px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#fff;color:#1F2A36;border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.35);border:3px solid #1F2A36}
+.mcard .top{display:flex;align-items:center;gap:10px;padding:14px 18px;background:repeating-linear-gradient(-45deg,var(--mc,#EE7D1E) 0 14px,var(--md,#9A4B08) 14px 22px);color:#fff}
+.mcard .top b{font:800 22px/1.15 Rubik,Assistant,sans-serif;background:#1F2A36;padding:4px 12px;border-radius:10px}
+.mcard .top img{margin-inline-start:auto;width:70px;background:#fff;border-radius:8px;padding:2px 4px}
+.mcard .body{padding:16px 20px 20px;display:flex;flex-direction:column;gap:12px}
+.mcard .duo{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.mcard .duo .np-card{font-size:8.6px}
+.mcard p{margin:0;font:600 17px/1.5 Assistant,Arial,sans-serif}
+.mcard .note{font-size:15px;color:#4a5a64}
+.mcard .acts button{flex:1 1 auto}
+.mcard .who{display:flex;flex-direction:column;gap:8px}
+.mcard .who button{display:flex;align-items:center;gap:10px;text-align:right;min-height:52px;padding:8px 12px;border-radius:14px;border:2px solid #dfe6ea;background:#fff;cursor:pointer;font:700 16px Assistant,sans-serif;color:#1F2A36}
+.mcard .who button .hs{width:30px;height:30px;flex:none}
+.mcard .who button:hover{border-color:#2B9C68}
+.ck{display:flex;gap:10px;align-items:flex-start;background:#F3F9F5;border:2px dashed #2B9C68;border-radius:14px;padding:10px 12px;font:700 16px/1.4 Assistant,sans-serif;cursor:pointer}
+.ck input{width:22px;height:22px;accent-color:#2B9C68;flex:none;margin-top:2px}
+/* סוף */
+.end{background:var(--card);border:3px solid #1F2A36;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:14px;margin-top:14px;box-shadow:8px 8px 0 #EE7D1E}
+.end h2{margin:0;font:800 34px/1.1 Rubik,Assistant,sans-serif}
+.end h3{margin:6px 0 0;font:800 19px Rubik,Assistant,sans-serif}
+.end .titles{display:flex;flex-wrap:wrap;gap:10px}
+.end .titles div{flex:1 1 220px;border-radius:18px;padding:12px 14px;color:#fff;font-weight:700}
+.end .titles b{display:block;font:800 20px Rubik,Assistant,sans-serif}
+.end ol{margin:0;padding-inline-start:22px;line-height:1.7;font-size:16px}
+.rlist{list-style:none;padding:0;margin:0;display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rlist label{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:12px;background:var(--soft);font-weight:700;cursor:pointer}
+.rlist input{width:20px;height:20px;accent-color:#2B9C68}
+.burst{position:fixed;pointer-events:none;z-index:50;width:0;height:0}
+.burst i{position:absolute;width:10px;height:10px;border-radius:2px;animation:burst .9s ease-out forwards}
+@keyframes burst{to{transform:translate(var(--dx),var(--dy)) rotate(260deg) scale(.3);opacity:0}}
+.flyin{animation:flyin .35s ease-out}
+@keyframes flyin{from{transform:translateY(-30px) rotate(-8deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.flyin,.burst{animation:none;display:none}.hand .np-card,.cards .np-card{transition:none}}
+
+/* הדפסה */
+#print{display:none}
+@media print{
+  @page{size:A4;margin:24mm 24mm}
+  @page{@bottom-center{content:"בלי פאניקה! · Begood · be-good.co.il · עמוד " counter(page) " מתוך " counter(pages);font:600 9pt Assistant,Arial,sans-serif;color:#4a5a64}}
+  body{background:#fff}
+  .topnav,.wrap,.modal,.cover{display:none!important}
+  #print{display:block}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+.pr-page{break-after:page;color:#1F2A36;direction:rtl}
+.pr-page:last-child{break-after:auto}
+.pr-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding-bottom:4mm;margin-bottom:5mm;border-bottom:3mm solid transparent;border-image:repeating-linear-gradient(-45deg,#EE7D1E 0 3mm,#1F2A36 3mm 5mm) 1}
+.pr-head h1{margin:0;font:800 28pt/1 Rubik,Assistant,sans-serif;color:#1F2A36}
+.pr-head p{margin:1.5mm 0 0;font:700 10.5pt Assistant,Arial,sans-serif;color:#9A4B08}
+.pr-head img{width:30mm;height:auto}
+.pr-page h2{margin:3mm 0 1.2mm;font:800 12.5pt Rubik,Assistant,sans-serif;color:#1F2A36;border-inline-start:4px solid #EE7D1E;padding-inline-start:3mm;break-after:avoid}
+.pr-page p,.pr-page li{font:400 9.7pt/1.4 Assistant,Arial,sans-serif;text-align:justify;margin:0 0 1mm}
+.pr-page ol,.pr-page ul{margin:0;padding-inline-start:6mm}
+.pr-box{background:#FBF4E8;border-radius:3mm;padding:3mm 4mm;margin:2mm 0;break-inside:avoid}
+.pr-tb{width:100%;border-collapse:collapse;font:400 9.8pt/1.4 Assistant,Arial,sans-serif;break-inside:avoid}
+.pr-tb th{background:#1F2A36;color:#fff;text-align:right;padding:1.6mm 2.5mm;font-weight:800}
+.pr-tb td{padding:1.5mm 2.5mm;border-bottom:1px solid #e5ded3;vertical-align:middle;text-align:right}
+.pr-tb tr:nth-child(even) td{background:#FBF8F2}
+.pr-tb td.k{font-weight:800;white-space:nowrap}
+.pr-tb td.k i{display:inline-block;width:5mm;height:5mm;vertical-align:-1.2mm;margin-inline-end:1.5mm}
+.pr-tb td.k svg{width:100%;height:100%}
+.pr-tb tr{break-inside:avoid}
+.pr-tb.list td{height:7.6mm;padding-top:.8mm;padding-bottom:.8mm}
+.pr-cap{font:700 10pt Assistant,Arial,sans-serif;color:#4a5a64;margin:0 0 3mm}
+.pr-cards{display:grid;grid-template-columns:repeat(3,52mm);grid-auto-rows:74.75mm;gap:3mm;justify-content:center}
+.pr-cards .np-card{font-size:3.25mm;break-inside:avoid;box-shadow:none;outline:.25mm dashed #b8b0a3;outline-offset:1.2mm}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a href="games.html">🎲 משחקי חוסן</a>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › משחקי חוסן › בלי פאניקה!</span>
+</nav>
+<main class="wrap">
+  <header class="hero">
+    <div class="txt">
+      <span class="logo"><img src="assets/begood-logo-sm.webp" alt="Begood"></span>
+      <h1>בלי <span>פאניקה!</span></h1>
+      <p>משחק קלפים למוכנות בחירום: אירועים מפתיעים בבית ובשכונה, הכנות מראש, אלתורים מצחיקים, ושכנים שעוזרים זה לזה.</p>
+      <div class="facts"><b>2 עד 6 משתתפים</b><b>מגיל 8</b><b>20 עד 30 דקות</b></div>
+    </div>
+    <div class="fan" id="fan" aria-hidden="true"></div>
+  </header>
+
+  <section id="setup" class="setup" aria-label="הגדרות המשחק">
+    <div class="step" style="--c:#EE7D1E"><h2><span class="num">1</span>איך משחקים?</h2><div class="tiles" id="mode" role="group" aria-label="איך משחקים"></div></div>
+    <div class="step" style="--c:#8A5CC7"><h2><span class="num">2</span>כמה משתתפים?</h2><div class="chips2" id="count" role="group" aria-label="כמה משתתפים"></div><div class="names" id="names"></div></div>
+    <div class="go-row">
+      <button class="btn big" id="go" type="button">▶ מתחילים</button>
+      <button class="btn alt" id="printBtn" type="button">🖨 הדפסת המשחק</button>
+    </div>
+    <details class="how"><summary>איך משחקים</summary><div id="howBody"></div></details>
+  </section>
+
+  <section id="game" hidden aria-label="המשחק">
+    <div class="hood" id="hood"></div>
+    <div class="tablezone">
+      <div class="pilebox"><h3>הקופה</h3><button class="pile" id="pile" type="button" aria-label="לוקחים קלף מהקופה"></button></div>
+      <div><h3>שולחן הקהילה</h3><div class="cards" id="table"></div><p class="hint" id="tableHint"></p>
+        <div class="open" id="openBox" hidden><h3>אירועים פתוחים: מחכים לעזרה</h3><div class="cards" id="open"></div></div></div>
+    </div>
+    <div class="stepbar" id="stepbar"></div>
+    <div class="handzone">
+      <h3 id="handTitle"></h3>
+      <div class="hand" id="hand" role="list"></div>
+      <div class="acts" id="acts"></div>
+      <p class="say" id="say" aria-live="polite"></p>
+      <div class="mypairs" id="mypairs"></div>
+    </div>
+    <div class="go-row" style="margin-top:12px"><button class="btn alt small" id="toSetup" type="button">הגדרות</button><button class="btn alt small" id="restart" type="button">🔄 משחק חדש</button></div>
+    <div id="end" class="end" hidden></div>
+  </section>
+</main>
+<div class="cover" id="cover" hidden><div class="in" id="coverIn"></div></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle"><div class="mcard" id="mcard"></div></div>
+<div id="print" aria-hidden="true"></div>
+<script src="lib/no-panic.js"></script>
+<script>
+(function () {
+  const P = window.SBE_NOPANIC, R = P.RULES;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  $('npcss').textContent = P.CSS;
+  const KEY = (window.sbeUserKey ? window.sbeUserKey('sbe.nopanic.v1') : 'sbe.nopanic.v1');
+  let S = { mode: 'compete', players: 3, names: [] };
+  try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // כל משתתף/ת הוא בית בשכונה
+  const HC = ['#EE7D1E', '#2B9C68', '#8A5CC7', '#1A86B5', '#D9A400', '#D9567A'];
+  const houseSvg = (i) => `<svg viewBox="0 0 40 40" class="hs" aria-hidden="true"><rect x="3" y="3" width="34" height="34" rx="10" fill="${HC[i]}"/><path d="M10 20L20 11L30 20" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="13" y="19" width="14" height="11" rx="1.5" fill="#fff"/><rect x="18" y="23" width="4" height="7" fill="${HC[i]}"/></svg>`;
+
+  $('fan').innerHTML = [P.deck()[0], P.deck()[1], P.deck()[2]].map((c) => P.cardHTML(c)).join('');
+
+  // ---------- הגדרות ----------
+  function drawSetup() {
+    $('mode').innerHTML = [['compete', '🏅', 'תחרות ידידותית', 'כל אחד/ת אוסף/ת זוגות ונקודות. בסוף: "אלופי המוכנות של השכונה" ו"השכנים מזהב" למי שעזר/ה הכי הרבה.', '#EE7D1E'], ['coop', '🤝', 'שכונה אחת', 'כולם משחקים יחד, והנקודות של כולם נספרות יחד. המטרה: 30 נקודות לפני שהקופה נגמרת.', '#2B9C68']]
+      .map(([id, ic, t, d, c]) => `<button type="button" class="tile" style="--c:${c}" data-v="${id}" aria-pressed="${S.mode === id}"><span class="ic">${ic}</span>${t}<small>${d}</small></button>`).join('');
+    $('mode').querySelectorAll('button').forEach((b) => { b.onclick = () => { S.mode = b.dataset.v; save(); drawSetup(); }; });
+    $('count').innerHTML = [2, 3, 4, 5, 6].map((n) => `<button type="button" data-v="${n}" aria-pressed="${S.players === n}">${n}</button>`).join('');
+    $('count').querySelectorAll('button').forEach((b) => { b.onclick = () => { S.players = +b.dataset.v; save(); drawSetup(); }; });
+    $('names').innerHTML = Array.from({ length: S.players }, (_, i) => `<label>${houseSvg(i)}<input data-i="${i}" maxlength="22" placeholder="שם (רשות)" value="${esc(S.names[i] || '')}"></label>`).join('');
+    $('names').querySelectorAll('input').forEach((inp) => { inp.oninput = () => { S.names[+inp.dataset.i] = inp.value.trim(); save(); }; });
+  }
+  $('howBody').innerHTML = '<p>' + esc(R.goal) + '</p><p><b>מתכוננים</b></p><ol>' + R.ready.map((t) => '<li>' + esc(t) + '</li>').join('') + '</ol>' +
+    '<p><b>בכל תור</b></p><ol><li><b>' + R.turn[0][0] + ':</b> ' + esc(R.turn[0][1]) + '</li><li><b>' + R.turn[1][0] + ':</b><ul>' + R.actions.map(([t, d]) => '<li><b>' + t + ':</b> ' + esc(d) + '</li>').join('') + '</ul></li></ol>' +
+    '<p><b>הסוף:</b> ' + esc(R.end) + '</p>' + R.modes.map(([t, d]) => '<p><b>' + t + ':</b> ' + esc(d) + '</p>').join('') + '<p>' + esc(R.after) + '</p>' +
+    '<p><b>שאלות לסיכום:</b> ' + esc(R.closingWho) + '</p><ol>' + R.closing.map((q) => '<li>"' + esc(q) + '"</li>').join('') + '</ol>' +
+    '<p>על המסך משחקים עם 66 קלפים. ששת הכרטיסים האישיים, למילוי בכתב יד, נמצאים בגרסת ההדפסה.</p>';
+  drawSetup();
+
+  // ---------- המשחק ----------
+  let G = null;
+  const nameOf = (i) => S.names[i] || 'בית ' + (i + 1);
+  const cur = () => G.pl[G.turn];
+  const pts = (p) => p.pairs.reduce((s, x) => s + x.pts, 0);
+  const total = () => G.pl.reduce((s, p) => s + pts(p), 0);
+  function start() {
+    const deck = P.shuffle(P.deck());
+    G = { mode: S.mode, pl: Array.from({ length: S.players }, () => ({ hand: [], pairs: [], helps: 0 })), pile: deck, table: [], open: [], disc: [], turn: 0, phase: 'draw', sel: [], over: false, last: false, list: {} };
+    for (let r = 0; r < 5; r++) G.pl.forEach((p) => p.hand.push(G.pile.pop()));
+    for (let k = 0; k < 3; k++) G.table.push(G.pile.pop());
+    document.body.classList.add('playing');
+    $('setup').hidden = true; $('game').hidden = false; $('end').hidden = true;
+    showCover();
+  }
+  function showCover() {
+    if (G.pl.length < 2) { draw(); return; }
+    $('coverIn').innerHTML = `${houseSvg(G.turn)}<h2>התור של ${esc(nameOf(G.turn))}</h2><p>הקלפים ביד מוסתרים בין התורות. אפשר להעביר את המסך, ואז ללחוץ.</p><button class="btn big" id="coverGo" type="button">מראים את הקלפים</button>`;
+    $('cover').hidden = false;
+    $('coverGo').onclick = () => { $('cover').hidden = true; draw(); };
+    $('coverGo').focus();
+  }
+  function draw() {
+    const me = cur();
+    // השכונה
+    $('hood').innerHTML = G.pl.map((p, i) => `<div class="house${i === G.turn ? ' on' : ''}" style="--pc:${HC[i]}">${houseSvg(i)}<span>${esc(nameOf(i))}</span><small>${p.hand.length} ביד</small>${G.mode === 'compete' ? `<span class="pt">${pts(p)}</span>` : ''}</div>`).join('') +
+      (G.mode === 'coop' ? `<div class="coopbar"><span>🤝 יחד: ${total()} מתוך ${P.TARGET}</span><span class="bar"><i style="width:${Math.min(100, total() / P.TARGET * 100)}%"></i></span></div>` : '');
+    // הקופה ושולחן הקהילה
+    const canDraw = G.phase === 'draw' && !G.over;
+    $('pile').innerHTML = (G.pile.length ? P.backHTML() : '<div class="np-card np-back" style="opacity:.3"></div>') + `<b>${G.pile.length}</b>`;
+    $('pile').disabled = !canDraw || !G.pile.length;
+    $('table').className = 'cards' + (canDraw ? '' : ' idle');
+    $('table').innerHTML = G.table.map((c, i) => P.cardHTML(c).replace('class="np-card', `tabindex="${canDraw ? 0 : -1}" role="button" aria-label="לוקחים משולחן הקהילה: ${esc(c.title)}" data-t="${i}" class="np-card`)).join('');
+    $('tableHint').textContent = canDraw ? 'צעד 1: לוקחים קלף מהקופה, או קלף גלוי משולחן הקהילה.' : '';
+    $('openBox').hidden = !G.open.length;
+    $('open').innerHTML = G.open.map((c) => P.cardHTML(c)).join('');
+    $('stepbar').innerHTML = `<span class="${G.phase === 'draw' ? 'on' : 'done'}">1. לוקחים קלף</span><span class="${G.phase === 'act' ? 'on' : ''}">2. פעולה אחת</span>`;
+    // היד
+    $('handTitle').innerHTML = `${houseSvg(G.turn)} הקלפים של ${esc(nameOf(G.turn))} <small>${G.phase === 'act' ? 'בוחרים קלף או שניים, ואז פעולה' : ''}</small>`;
+    const selC = G.sel.map((u) => me.hand.find((c) => c.uid === u)).filter(Boolean);
+    const one = selC.length === 1 ? selC[0] : null;
+    $('hand').innerHTML = me.hand.map((c) => {
+      const isSel = G.sel.includes(c.uid);
+      const match = one && P.isPair(one, c);
+      return P.cardHTML(c, { cls: (isSel ? 'sel' : '') + (match ? ' match' : '') }).replace('class="np-card', `role="listitem" tabindex="0" aria-pressed="${isSel}" class="np-card`);
+    }).join('');
+    // פעולות
+    const act = G.phase === 'act' && !G.over;
+    const pairOk = act && selC.length === 2 && P.isPair(selC[0], selC[1]);
+    const helpOk = act && one && one.kind === 'event';
+    const actOk = act && one && one.kind === 'action' && actionOk(one);
+    const swapOk = act && selC.length >= 1 && selC.length <= 2 && G.pile.length >= selC.length;
+    $('acts').innerHTML = `<button class="btn go" data-a="pair" type="button" ${pairOk ? '' : 'disabled'}>🃏 מניחים זוג</button>` +
+      `<button class="btn" data-a="help" type="button" ${helpOk ? '' : 'disabled'}>🙋 מבקשים עזרה מהשכנים</button>` +
+      `<button class="btn blue" data-a="action" type="button" ${actOk ? '' : 'disabled'}>⚡ מפעילים קלף פעולה</button>` +
+      `<button class="btn pur" data-a="swap" type="button" ${swapOk ? '' : 'disabled'}>🔄 מחליפים ${selC.length === 2 ? '2 קלפים' : 'קלף'}</button>` +
+      `<button class="btn alt" data-a="pass" type="button" ${act ? '' : 'disabled'}>סיום התור בלי פעולה</button>`;
+    $('say').textContent = G.say || (G.phase === 'draw' ? 'מתחילים בלקיחת קלף.' : hintFor(selC));
+    $('mypairs').innerHTML = me.pairs.map((x) => `<span style="background:${P.TYPES[x.kind].c}">#${P.pad(x.n)} ${esc(P.EVENTS[x.n - 1][0])} · ${x.pts}</span>`).join('');
+    bind();
+  }
+  function hintFor(sel) {
+    if (!sel.length) return 'אפשר לבחור אירוע ותגובה עם אותו מספר, אירוע אחד כדי לבקש עזרה, קלף פעולה, או עד 2 קלפים להחלפה.';
+    if (sel.length === 1 && sel[0].kind === 'event') return 'מסומנות בירוק התגובות שמתאימות. אפשר לבחור אחת ולהניח זוג, או לבקש עזרה מהשכנים.';
+    if (sel.length === 1 && sel[0].kind === 'action' && !actionOk(sel[0])) return sel[0].act === 'gold' ? 'שכנים מזהב משדרגים זוג אלתור. עוד אין לך זוג כזה.' : 'התרגיל פועל כשיש אירוע פתוח בשולחן הקהילה ותגובה מתאימה ביד.';
+    if (sel.length === 2 && !P.isPair(sel[0], sel[1])) return 'שני הקלפים האלה לא זוג. אפשר להחליף אותם בקלפים מהקופה.';
+    return '';
+  }
+  function actionOk(c) {
+    const me = cur();
+    if (c.act === 'gold') return me.pairs.some((x) => x.kind === 'impro' && x.pts === 1);
+    if (c.act === 'battery') return G.pile.length > 0;
+    if (c.act === 'drill') return G.open.some((e) => me.hand.some((r) => P.isPair(e, r)));
+    return true;
+  }
+  function bind() {
+    $('table').querySelectorAll('.np-card').forEach((el) => { const go = () => takeTable(+el.dataset.t); el.onclick = go; el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }; });
+    $('hand').querySelectorAll('.np-card').forEach((el) => { const go = () => toggle(el.dataset.uid); el.onclick = go; el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }; });
+    $('acts').querySelectorAll('button').forEach((b) => { b.onclick = () => doAct(b.dataset.a); });
+  }
+  $('pile').onclick = () => { if (G.phase !== 'draw' || !G.pile.length) return; const c = G.pile.pop(); cur().hand.push(c); afterDraw('לקחת קלף מהקופה: ' + c.title + '.', c); };
+  function takeTable(i) {
+    if (G.phase !== 'draw' || G.over) return;
+    const c = G.table.splice(i, 1)[0]; cur().hand.push(c);
+    if (G.pile.length) G.table.splice(i, 0, G.pile.pop());
+    afterDraw('לקחת משולחן הקהילה: ' + c.title + '.', c);
+  }
+  function afterDraw(msg, c) {
+    G.phase = 'act'; G.sel = []; G.say = msg + ' עכשיו פעולה אחת.';
+    if (!G.pile.length) G.last = true;
+    draw();
+    const el = $('hand').querySelector(`[data-uid="${c.uid}"]`); if (el && !reduce) { el.classList.add('flyin'); el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' }); }
+  }
+  function toggle(uid) {
+    if (G.phase !== 'act' || G.over) return;
+    G.say = '';
+    if (G.sel.includes(uid)) G.sel = G.sel.filter((u) => u !== uid); else { G.sel.push(uid); if (G.sel.length > 2) G.sel.shift(); }
+    draw();
+  }
+  const take = (p, uid) => { const i = p.hand.findIndex((c) => c.uid === uid); return i >= 0 ? p.hand.splice(i, 1)[0] : null; };
+  function addPair(p, ev, resp, extra) {
+    p.pairs.push({ n: ev.n, kind: resp.kind, pts: resp.pts, ev, resp });
+    pairModal(ev, resp, extra);
+  }
+  function doAct(a) {
+    const me = cur(), selC = G.sel.map((u) => me.hand.find((c) => c.uid === u)).filter(Boolean);
+    if (a === 'pass') return endTurn();
+    if (a === 'pair') { const ev = selC.find((c) => c.kind === 'event'), rs = selC.find((c) => c.kind !== 'event'); take(me, ev.uid); take(me, rs.uid); G.sel = []; addPair(me, ev, rs, ''); return; }
+    if (a === 'swap') { selC.forEach((c) => { take(me, c.uid); G.disc.push(c); me.hand.push(G.pile.pop()); }); G.sel = []; G.say = ''; if (!G.pile.length) G.last = true; return endTurn('החלפת ' + (selC.length === 2 ? '2 קלפים' : 'קלף') + '.'); }
+    if (a === 'help') return helpModal(selC[0]);
+    if (a === 'action') return actionPlay(selC[0]);
+  }
+  // ---------- בקשת עזרה ----------
+  function helpModal(ev) {
+    const me = cur(), offers = [];
+    for (let k = 1; k < G.pl.length; k++) {
+      const i = (G.turn + k) % G.pl.length, p = G.pl[i];
+      p.hand.filter((c) => P.isPair(ev, c)).sort((x, y) => y.pts - x.pts).forEach((c) => offers.push({ i, c }));
+    }
+    const body = offers.length
+      ? `<p>"למי יש פתרון ל${esc(ev.title)}?"</p><p class="note">${offers.length === 1 ? 'יש מי שיכול/ה לעזור' : 'יש כמה הצעות לעזרה'}. בוחרים הצעה: הזוג והנקודות שלך, ומי שעזר/ה לוקח/ת 2 קלפים מהקופה.</p><div class="who">${offers.map((o, k) => `<button type="button" data-k="${k}">${houseSvg(o.i)}<span><b>${esc(nameOf(o.i))}</b>: ${esc(o.c.title)} (${o.c.pts === 2 ? 'הכנה מראש, 2 נקודות' : 'אלתור, נקודה אחת'})</span></button>`).join('')}</div>`
+      : `<p>"למי יש פתרון ל${esc(ev.title)}?"</p><p class="note">כרגע לאף אחד/ת אין פתרון. האירוע נשאר פתוח בשולחן הקהילה, ואפשר לפתור אותו בהמשך עם קלף "תרגיל עזרה הדדית".</p><div class="acts"><button class="btn" type="button" id="mOk">הבנתי</button></div>`;
+    modal('🙋 בקשת עזרה', '#1A86B5', '#114E72', `<div class="duo">${P.cardHTML(ev)}</div>${body}`);
+    if (!offers.length) { $('mOk').onclick = () => { take(me, ev.uid); G.open.push(ev); G.sel = []; closeModal(); endTurn('האירוע נשאר פתוח בשולחן הקהילה.'); }; $('mOk').focus(); return; }
+    $('mcard').querySelectorAll('.who button').forEach((b) => { b.onclick = () => {
+      const o = offers[+b.dataset.k], helper = G.pl[o.i];
+      take(me, ev.uid); take(helper, o.c.uid); helper.helps++;
+      for (let k = 0; k < 2 && G.pile.length; k++) helper.hand.push(G.pile.pop());
+      if (!G.pile.length) G.last = true;
+      G.sel = []; closeModal();
+      addPair(me, ev, o.c, `🤝 ${esc(nameOf(o.i))} עזר/ה, ולקח/ה 2 קלפים מהקופה.`);
+    }; });
+    $('mcard').querySelector('.who button').focus();
+  }
+  // ---------- קלפי פעולה ----------
+  function actionPlay(c) {
+    const me = cur(); take(me, c.uid); G.disc.push(c); G.sel = [];
+    let msg = '';
+    if (c.act === 'gold') { const x = me.pairs.find((y) => y.kind === 'impro' && y.pts === 1); x.pts = 2; x.gold = true; msg = `השכנים השאילו בדיוק את מה שחסר: הזוג "${x.ev.title}" עולה ל־2 נקודות.`; }
+    if (c.act === 'battery') { let k = 0; for (; k < 2 && G.pile.length; k++) me.hand.push(G.pile.pop()); msg = `לקחת עוד ${k === 2 ? '2 קלפים' : 'קלף'} מהקופה.`; if (!G.pile.length) G.last = true; }
+    if (c.act === 'group') { const give = G.pl.map((p) => p.hand.length ? p.hand.splice(Math.floor(Math.random() * p.hand.length), 1)[0] : null); give.forEach((g, i) => { if (g) G.pl[(i + 1) % G.pl.length].hand.push(g); }); msg = 'כל אחד/ת העביר/ה קלף אחד לבית הבא בשכונה.'; }
+    if (c.act === 'drill') {
+      let best = null; G.open.forEach((e) => me.hand.forEach((r) => { if (P.isPair(e, r) && (!best || r.pts > best.r.pts)) best = { e, r }; }));
+      G.open = G.open.filter((e) => e !== best.e); take(me, best.r.uid);
+      modalAction(c, '');
+      return addPair(me, best.e, best.r, '🤝 תרגיל עזרה הדדית: פתרת אירוע פתוח מהשולחן.');
+    }
+    modalAction(c, msg, true);
+  }
+  function modalAction(c, msg, final) {
+    if (!final) return;
+    modal('⚡ קלף פעולה', '#1A86B5', '#114E72', `<div class="duo">${P.cardHTML(c)}</div><p>${esc(msg)}</p><div class="acts"><button class="btn" type="button" id="mOk">ממשיכים</button></div>`);
+    $('mOk').onclick = () => { closeModal(); endTurn(msg); }; $('mOk').focus();
+  }
+  // ---------- זוג ----------
+  function pairModal(ev, rs, extra) {
+    const ready = rs.kind === 'ready';
+    const alt = P.READY[ev.n - 1][0];
+    const ask = ready ? `יש לנו בבית "${rs.title}"?` : `ההכנה מראש הייתה: "${alt}". רוצים להוסיף אותה לרשימה שלנו?`;
+    const on = !!G.list[ev.n];
+    modal(ready ? '✅ הכנה מראש · 2 נקודות' : '😅 אלתור · נקודה אחת', ready ? '#2B9C68' : '#8A5CC7', ready ? '#16613F' : '#553187',
+      `<div class="duo">${P.cardHTML(ev)}${P.cardHTML(rs)}</div><p>מקריאים בקול לכולם: מה קרה, ואיך התמודדו.</p>${extra ? `<p class="note">${extra}</p>` : ''}` +
+      `<label class="ck"><input type="checkbox" id="mList" ${on ? 'checked' : ''}><span>${esc(ask)}<br><small style="font-weight:600;color:#4a5a64">${ready ? 'אם עוד אין, מסמנים, וזה נכנס לרשימת המוכנות שלנו בסוף המשחק.' : 'מסמנים, וזה נכנס לרשימת המוכנות שלנו בסוף המשחק.'}</small></span></label>` +
+      `<div class="acts"><button class="btn" type="button" id="mOk">ממשיכים</button></div>`);
+    $('mList').onchange = (e) => { if (e.target.checked) G.list[ev.n] = alt; else delete G.list[ev.n]; };
+    $('mOk').onclick = () => { closeModal(); burst(); chime(ready ? 'up' : 'soft'); endTurn(); };
+    $('mOk').focus();
+  }
+  function endTurn(msg) {
+    G.sel = [];
+    const me = cur();
+    if (G.mode === 'compete' && me.pairs.length >= 5) return finish('pairs');
+    if (G.mode === 'coop' && total() >= P.TARGET) return finish('target');
+    if (G.last || !G.pile.length) return finish('pile');
+    G.turn = (G.turn + 1) % G.pl.length; G.phase = 'draw';
+    G.say = '';
+    draw();
+    showCover();
+  }
+  // ---------- סוף ----------
+  function finish(why) {
+    G.over = true; draw();
+    const order = G.pl.map((p, i) => ({ i, pts: pts(p), helps: p.helps, pairs: p.pairs.length })).sort((a, b) => b.pts - a.pts);
+    const top = order.filter((o) => o.pts === order[0].pts && o.pts > 0);
+    const maxH = Math.max(...G.pl.map((p) => p.helps));
+    const helpers = maxH > 0 ? G.pl.map((p, i) => ({ i, h: p.helps })).filter((o) => o.h === maxH) : [];
+    const names = (arr) => arr.map((o) => esc(nameOf(o.i))).join(' ו');
+    let head = '', titles = '';
+    if (G.mode === 'coop') {
+      head = total() >= P.TARGET ? `🎉 הצלחנו יחד: ${total()} נקודות!` : `הגענו יחד ל־${total()} נקודות`;
+      titles = `<div style="background:#2B9C68"><b>${total() >= P.TARGET ? 'שכונה מוכנה!' : 'כמעט שם'}</b>${total() >= P.TARGET ? 'הגענו ליעד לפני שהקופה נגמרה.' : `היעד היה ${P.TARGET}. בסיבוב הבא אפשר לבקש עזרה מוקדם יותר.`}</div>` + (helpers.length ? `<div style="background:#D9A400"><b>השכנים מזהב</b>${names(helpers)}: ${maxH} פעמים של עזרה לאחרים.</div>` : '');
+    } else {
+      head = why === 'pairs' ? `${esc(nameOf(G.turn))} השלים/ה 5 זוגות!` : 'הקופה נגמרה, והמשחק הסתיים';
+      titles = (top.length ? `<div style="background:#EE7D1E"><b>אלופי המוכנות של השכונה</b>${names(top)}: ${top[0].pts} נקודות</div>` : '') + (helpers.length ? `<div style="background:#2B9C68"><b>השכנים מזהב</b>${names(helpers)}: ${maxH} פעמים של עזרה לאחרים</div>` : '') +
+        `<div style="background:#1F2A36"><b>הנקודות</b>${order.map((o) => esc(nameOf(o.i)) + ': ' + o.pts).join(' · ')}</div>`;
+    }
+    const items = Object.keys(G.list).map((n) => G.list[n]);
+    $('end').hidden = false;
+    $('end').innerHTML = `<h2>${head}</h2><div class="titles">${titles}</div>` +
+      `<h3>📋 רשימת המוכנות שלנו</h3>${items.length ? `<p style="margin:0">מה שסימנו במשחק. מה כבר יש בבית? מה נכין השבוע, ומי אחראי/ת?</p><ul class="rlist">${items.map((t) => `<li><label><input type="checkbox"> ${esc(t)}</label></li>`).join('')}</ul>` : '<p style="margin:0">במשחק הזה לא סימנו פריטים. אפשר להדפיס את הרשימה המלאה (20 הכנות מראש) מגרסת ההדפסה.</p>'}` +
+      `<div class="go-row">${items.length ? '<button class="btn go" id="printList" type="button">🖨 הדפסת הרשימה</button>' : ''}<button class="btn" id="again" type="button">🔄 משחק חדש</button></div>` +
+      `<h3>שאלות לסיכום</h3><p style="margin:0">${esc(R.closingWho)}</p><ol>${R.closing.map((q) => `<li>"${esc(q)}"</li>`).join('')}</ol>`;
+    $('again').onclick = start;
+    if (items.length) $('printList').onclick = () => { buildList(items); setTimeout(() => window.print(), 250); };
+    $('end').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+    burst(); chime('win');
+  }
+  // ---------- חלון ----------
+  let lastFocus = null;
+  function modal(title, c, d, html) {
+    lastFocus = document.activeElement;
+    $('mcard').style.setProperty('--mc', c); $('mcard').style.setProperty('--md', d);
+    $('mcard').innerHTML = `<div class="top"><b id="mTitle">${title}</b><img src="${P.LOGO}" alt="Begood"></div><div class="body">${html}</div>`;
+    $('modal').classList.add('show');
+  }
+  function closeModal() { $('modal').classList.remove('show'); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+  function burst() {
+    if (reduce) return;
+    const b = document.createElement('div'); b.className = 'burst'; b.style.left = '50%'; b.style.top = '40%';
+    b.innerHTML = Array.from({ length: 22 }, (_, k) => { const a = k / 22 * Math.PI * 2, r = 90 + Math.random() * 90; return `<i style="background:${HC[k % 6]};--dx:${Math.cos(a) * r}px;--dy:${Math.sin(a) * r}px"></i>`; }).join('');
+    document.body.appendChild(b); setTimeout(() => b.remove(), 1000);
+  }
+  let AC = null;
+  function chime(kind) {
+    try {
+      AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume();
+      const notes = kind === 'win' ? [523.25, 659.25, 783.99, 1046.5] : kind === 'up' ? [659.25, 880] : [440, 554.37];
+      notes.forEach((f, k) => { const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime + k * 0.1; o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + 0.35); });
+    } catch (e) {}
+  }
+  $('go').onclick = start;
+  $('restart').onclick = start;
+  $('toSetup').onclick = () => { document.body.classList.remove('playing'); $('game').hidden = true; $('setup').hidden = false; $('cover').hidden = true; };
+
+  // ---------- הדפסה ----------
+  const head = (t, p) => `<div class="pr-head"><div><h1>${t}</h1><p>${p}</p></div><img src="assets/begood-logo.webp" alt="Begood"></div>`;
+  function buildPrint() {
+    let h = '<section class="pr-page">' + head('בלי פאניקה!', esc(R.sub)) +
+      '<h2>מטרת המשחק</h2><p>' + esc(R.goal) + '</p>' +
+      '<h2>הקלפים</h2><table class="pr-tb"><thead><tr><th>הסוג</th><th>כמה</th><th>שווה</th><th>מה זה אומר</th></tr></thead><tbody>' +
+      R.kinds.map(([k, n, v, d]) => `<tr><td class="k" style="color:${P.TYPES[k].d}"><i style="color:${P.TYPES[k].c}">${P.MARK[k]}</i>${P.TYPES[k].name}</td><td>${n}</td><td>${v}</td><td>${esc(d)}</td></tr>`).join('') + '</tbody></table>' +
+      '<h2>מתכוננים</h2><ol>' + R.ready.map((t) => '<li>' + esc(t) + '</li>').join('') + '</ol>' +
+      '<h2>בכל תור</h2><ol><li><b>' + R.turn[0][0] + ':</b> ' + esc(R.turn[0][1]) + '</li><li><b>' + R.turn[1][0] + ':</b><ul>' + R.actions.map(([t, d]) => '<li><b>' + t + ':</b> ' + esc(d) + '</li>').join('') + '</ul></li></ol>' +
+      '<h2>הסוף</h2><p>' + esc(R.end) + '</p>' + R.modes.map(([t, d]) => '<p><b>' + t + ':</b> ' + esc(d) + '</p>').join('') +
+      '<div class="pr-box"><p>' + esc(R.after) + '</p></div>' +
+      '</section>' +
+      '<section class="pr-page"><h2>הדפסה וגזירה</h2><p>' + esc(R.print) + '</p><h2>שאלות לסיכום</h2><p>' + esc(R.closingWho) + '</p><ol>' + R.closing.map((q) => '<li>"' + esc(q) + '"</li>').join('') + '</ol>' +
+      '<h2>רשימת המוכנות שלנו</h2><p>אחרי המשחק עוברים יחד על הרשימה ומסמנים מה כבר יש בבית. אפשר לבחור שלושה פריטים לשבוע הקרוב, ולקבוע מי מטפל/ת בכל אחד ועד מתי.</p>' +
+      '<table class="pr-tb list"><thead><tr><th>#</th><th>ההכנה מראש</th><th>יש לנו</th><th>נכין עד</th><th>מי אחראי/ת</th></tr></thead><tbody>' +
+      P.READY.map((r, i) => `<tr><td>${P.pad(i + 1)}</td><td><b>${esc(r[0])}</b></td><td>☐</td><td></td><td></td></tr>`).join('') + '</tbody></table></section>';
+    const all = P.deck({ diy: true });
+    const groups = [['event', 'קלפי אירוע'], ['ready', 'קלפי הכנה מראש'], ['impro', 'קלפי אלתור'], ['more', 'קלפי פעולה וכרטיסים אישיים']];
+    let cards = [];
+    groups.forEach(([k]) => { cards = cards.concat(all.filter((c) => (k === 'more' ? (c.kind === 'action' || c.kind === 'diy') : c.kind === k))); });
+    const pages = Math.ceil(cards.length / 9);
+    for (let p = 0; p < pages; p++) {
+      const sl = cards.slice(p * 9, p * 9 + 9);
+      h += `<section class="pr-page"><p class="pr-cap">דף קלפים ${p + 1} מתוך ${pages} · ${[...new Set(sl.map((c) => P.TYPES[c.kind].name))].join(' · ')}</p><div class="pr-cards">${sl.map((c) => P.cardHTML(c)).join('')}</div></section>`;
+    }
+    h += `<section class="pr-page"><p class="pr-cap">גב הקלפים · מדפיסים על הצד השני של דפי הקלפים</p><div class="pr-cards">${Array(9).fill(P.backHTML()).join('')}</div></section>`;
+    $('print').innerHTML = h;
+    document.title = 'בלי פאניקה! · משחק קלפים · Begood';
+  }
+  function buildList(items) {
+    $('print').innerHTML = '<section class="pr-page">' + head('רשימת המוכנות שלנו', 'מתוך המשחק בלי פאניקה!') +
+      '<table class="pr-tb list"><thead><tr><th>ההכנה מראש</th><th>יש לנו</th><th>נכין עד</th><th>מי אחראי/ת</th></tr></thead><tbody>' +
+      items.map((t) => `<tr><td><b>${esc(t)}</b></td><td>☐</td><td></td><td></td></tr>`).join('') + '</tbody></table></section>';
+    document.title = 'רשימת המוכנות שלנו · בלי פאניקה! · Begood';
+  }
+  $('printBtn').onclick = () => { buildPrint(); setTimeout(() => window.print(), 300); };
+  window.addEventListener('beforeprint', () => { if (!$('print').innerHTML) buildPrint(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('modal').classList.contains('show')) { const b = $('mOk'); if (b) b.click(); } });
+  if (new URLSearchParams(location.search).get('print')) buildPrint();
+})();
+</script>
+</body>
+</html>

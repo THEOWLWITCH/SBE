@@ -6,6 +6,7 @@
 <title>המרחב שלי</title>
 <script src="lib/access-guard.js"></script>
 <script src="lib/readiness-groups.js"></script>
+<script src="lib/gift-link.js"></script>
 <script src="lib/research-core.js" defer></script>
 <script src="lib/research-partnership-core.js" defer></script>
 <script src="lib/research-client.js" defer></script>
@@ -143,14 +144,17 @@ const jparse = (s, d) => { try { return JSON.parse(s) ?? d; } catch (e) { return
 const TOKEN = ss("sbe.session.token") || "";
 const PERMS = jparse(ss("sbe.session.perms"), []);
 const INFO = jparse(ss("sbe.session.info"), {});
-const has = (p) => PERMS.includes(p);
+// מנהלת המערכת (23/10/2026: "כשאני נכנסת כמנהלת הכל צריך להיות פתוח"): כל הכלים פתוחים במרחב שלי,
+// גם בלי הרשאות בקוד, וגם הכלים שטרם אושרו למשתמשים.
+const IS_SYS = ss("sbe.session.homeUrl") === "admin.html?role=sys";
+const has = (p) => IS_SYS ? p !== "lecturer" : PERMS.includes(p);
 const fmtDate = (ymd) => ymd ? ymd.slice(0,10).split("-").reverse().map((x,i)=>i===2?x.slice(2):x).join(".") : "";
 
 // מה כל הרשאה אומרת — בשפה פשוטה (אותה רשימה כמו PERMS בשרת).
 const PERM_LABEL = {
   fac_trainee: "הנחיית סטודנטים", fac_parent: "הנחיית הורים", fac_youth: "הנחיית נוער",
   conv: "תכנון שיחה", activity: "תכנון פעילות", academic: "משוב לעבודות",
-  lecturer: "קוד לקבוצה: משוב לעבודות", resilience: "מיפוי חוסן חברתי", leadership: "נוגי: יועצת למנהיגות תומכת חוסן", practi: "פרקטי: יועצת לחוסן", journey: "מסע אל החוסן", writer: "תקשורת מקדמת חוסן חברתי", nana: "ננה: מהוראה להנחיה", studio: "סטודיו חוסן", dialogue: "מעבדת שיח וחקר משותף", teamthink: "חשיבת צוות", studies: "לימודי חוסן חברתי",
+  lecturer: "קוד לקבוצה: משוב לעבודות", resilience: "מיפוי חוסן חברתי", leadership: "נוגי: יועצת למנהיגות תומכת חוסן", practi: "פרקטי: יועצת לחוסן", journey: "מסע אל החוסן", writer: "תקשורת מקדמת חוסן חברתי", nana: "ננה: מהוראה להנחיה", studio: "סטודיו חוסן", dialogue: "מעבדת שיח וחקר משותף", teamthink: "חשיבת צוות", games: "משחקי חוסן", studies: "לימודי חוסן חברתי",
 };
 const PRESETS = [
   ["מחנך/ת", ["resilience"]], ["פרקטי בלבד", ["practi"]], ["הנהלה", ["leadership", "resilience"]], ["מנחה סטודנטים", ["fac_trainee"]], ["מנחה הורים", ["fac_parent"]],
@@ -168,7 +172,8 @@ async function api(action, extra = {}) {
 {
   const who = $("who");
   const kindLabel = { instadmin: "מנהל/ת מוסד", staff: "צוות", student: "סטודנט/ית", course: "סטודנט/ית בקורס", legacy: "צוות (קוד מוסד)", "academic-legacy": "משוב לעבודות" }[INFO.kind] || "";
-  who.append(INFO.label ? el("b", {}, INFO.label) : "", INFO.label && (INFO.inst || kindLabel) ? " · " : "",
+  if (IS_SYS) who.append(el("b", {}, "מנהלת המערכת"), " · כל הכלים פתוחים");
+  else who.append(INFO.label ? el("b", {}, INFO.label) : "", INFO.label && (INFO.inst || kindLabel) ? " · " : "",
     INFO.inst || "", INFO.inst && kindLabel ? " · " : "", kindLabel);
   if (INFO.inst) { try { sessionStorage.setItem("sbe_inst", INFO.inst); } catch (e) {} } // search.html — "התרחישים של המוסד"
   const box = $("banners");
@@ -186,7 +191,7 @@ async function api(action, extra = {}) {
 // ── הכלים ──
 {
   const T = [];
-  const fac = PERMS.some(p => /^fac_/.test(p));
+  const fac = IS_SYS || PERMS.some(p => /^fac_/.test(p));
   if (has("fac_trainee")) T.push(["input-screen.html", "יצירת תרחיש: סטודנטיות.ים", "דמויות ופרמטרים; השאר מוצע על ידי המערכת"]);
   if (has("fac_parent")) T.push(["parent-input-screen.html", "יצירת תרחיש: הורים", "שתי דמויות, ארבע גישות הוריות"]);
   if (has("fac_youth")) T.push(["student-input-screen.html", "יצירת תרחיש: נוער", "משחק תפקידים בין שני בני נוער"]);
@@ -199,6 +204,7 @@ async function api(action, extra = {}) {
   if (has("leadership")) T.push(["leadership-advisor.html", "נוגי: יועצת למנהיגות תומכת חוסן", "להנהלה, לרכזים ולצוותי תלמידים: שאלון פתיחה, דוח סיכום והמלצות ושיחת המשך"]);
   if (has("nana")) T.push(["facilitation-advisor.html", "ננה: מהוראה להנחיה", "מספרים על הקבוצה, הנושא והמטרה, ומקבלים מדריך הנחיה אישי שמחזק את החוסן החברתי, עם תרגול רגעים מאתגרים ורפלקציה אחרי המפגש"]);
   if (has("dialogue")) T.push(["shared-dialogue-lab.html", "מעבדת שיח וחקר משותף", "קבוצה חוקרת שאלה בתחום הדעת: בונה טענות, בודקת ראיות ומתקנת יחד, והמורה מאשרת"]);
+  if (has("games")) T.push(["games.html", "משחקי חוסן", "משחקים שמחזקים חוסן חברתי: רביעיות חוסן, זיכרון חוסן, משחק הלוח צועדים אל החוסן משחק הקלפים בלי פאניקה!, מחולל סיפורי חוסן, גן הרעיונות עם גני, ועוד שבעה: לאן זה שייך?, חידות חוסן, בינגו חוסן, 20 שאלות, אמת או אתגר, סימני דרך ורכבת המוכנות, להדפסה ולמשחק על המסך"]);
   if (has("teamthink")) T.push(["team-thinking.html", "חשיבת צוות", "צוות חושב יחד על אתגר: כל הקולות, בעד ונגד, פרגון, ומה הרווחנו מהחשיבה ביחד"]);
   if (has("writer")) T.push(["message-writer.html", "תקשורת מקדמת חוסן חברתי", "ניסוח חד־פעמי של הודעה, מכתב או עדכון, או ניהול תקשורת לאורך זמן. אותו מנוע ו־18 עקרונות; אפשר להמשיך מטיוטה לשיחה שמורה"]);
   if (has("journey")) T.push(["journey.html", "מסע אל החוסן", "מסע מלווה בשלבים אל תו חוסן לקהילת חוסן (מיפוי, הצעה עם אפשרויות, אבני דרך ותעודות)"]);
@@ -206,12 +212,20 @@ async function api(action, extra = {}) {
   if (has("activity")) T.push(["activity-planner.html", "תכנון פעילות", "תכנון פעילות חינוכית או ניתוח פעילות קיימת"]);
   if (has("academic")) T.push(["academic-review.html", "משוב לעבודות", "להתכונן להגשת עבודה: משוב לפי קריטריונים"]);
   if (has("studies")) T.push(["social-resilience-studies.html", "לימודי חוסן חברתי", "חומרי לימוד לפי קבוצות: קבצים, קישורים ותצוגות מקדימות"]);
+  if (IS_SYS) T.push(["continuity-kit.html", "🔒 תיק רציפות", "טרם אושר למשתמשים: גלוי רק לך"],
+    ["routines-hub.html", "🔒 מרכז שגרות ויוזמות חברתיות", "טרם אושר למשתמשים: גלוי רק לך"],
+    ["family-bridge.html", "🔒 מעבדה לבניית גשר בין הבית לכיתה", "טרם אושר למשתמשים: גלוי רק לך"],
+    ["admin.html", "⚙️ ממשק הניהול", "מוסדות, קודים, בקשות, מעבדת הדמו וכל המסכים"]);
+  // "יש מה לעשות" (19/10/2026): פתוח לכל מי שנכנס/ה, וגם בלי קוד. נפתח בלשונית חדשה, כי מהמדריכון אין מעבר לכלים אחרים.
+  const hadTools = T.length > 0;
+  T.push(["yesh-ma-laasot.html", "🎁 יש מה לעשות: מדריכון לחירום", "מה עושים ומה אומרים לילדים בדקה הראשונה, נשימה, קרקוע ופעילויות קצרות. אפשר גם לשלוח במתנה", true]);
   const box = $("tiles");
-  if (!T.length && INFO.kind !== "instadmin" && !has("lecturer")) {
+  if (!hadTools && INFO.kind !== "instadmin" && !has("lecturer")) {
     box.append(el("div", { class: "empty" }, "עדיין לא נפתחו לך כלים. אפשר לפנות למי שנתן/ה לך את הקוד."));
-  } else {
+  }
+  {
     // הכלים לפי חמש שאלות של מוכנות יומיומית (SBE_READY), ובסוף ספריית המקורות
-    const R = window.SBE_READY, tile = ([h, t, d]) => el("a", { class: "tile", href: h }, el("b", {}, t), el("span", {}, d));
+    const R = window.SBE_READY, tile = ([h, t, d, blank]) => el("a", { class: "tile", href: h, target: blank ? "_blank" : null, rel: blank ? "noopener" : null }, el("b", {}, t), el("span", {}, d));
     const rest = T.filter(x => !(R && R.groupOf(x[0])));
     (R ? R.GROUPS : []).forEach(gr => {
       const its = T.filter(x => R.groupOf(x[0]) === gr); if (!its.length) return;
@@ -222,6 +236,7 @@ async function api(action, extra = {}) {
     rest.concat([["sources-library.html", "ספריית המקורות", "המקורות התיאורטיים של המערכת"]]).forEach(x => g.append(tile(x)));
     box.append(el("h3", { class: "rgroup" }, "📚 לעיון"), g);
   }
+  if (window.SBE_GIFT) window.SBE_GIFT.mount(box, { from: ss("sbe.session.name") || "" });
 }
 
 function statusOf(c) {
@@ -258,7 +273,7 @@ async function renderAdmin() {
     el("ul", { style: "margin:10px 0 4px;padding-inline-start:20px;line-height:1.8;font-size:14px" },
       el("li", {}, el("b", {}, "את/ה"), " מפיק/ה כאן ", el("b", {}, "קוד אישי לכל איש/אשת צוות"), ", ובוחר/ת לו/ה כלים: רק מתוך מה שפתוח למוסד."),
       el("li", {}, el("b", {}, "מרצה"), " (הרשאת \"" + PERM_LABEL.lecturer + "\") יוצר/ת ", el("b", {}, "קוד לקבוצה לקורס"), ", הסטודנטים נכנסים איתו למשוב לעבודות."),
-      el("li", {}, el("b", {}, "מנחת סימולציה"), " פותחת סדנה ונותנת למשתתפות ", el("b", {}, "קוד לקבוצה לסדנה"), " (6 ספרות, 24 שעות): לסטודנטיות, לשחקניות, להורים ולנוער."),
+      el("li", {}, el("b", {}, "מנחה סימולציה"), " פותח/ת סדנה ונותן/ת למשתתפים ", el("b", {}, "קוד לקבוצה לסדנה"), " (6 ספרות, 24 שעות): לסטודנטים, לשחקניות, להורים ולנוער."),
       el("li", {}, el("b", {}, "מחנך/ת עם \"חוסן חברתי\""), " פותח/ת כיתה ושולח/ת לתלמידים ", el("b", {}, "קישור או QR"), " לשאלון, בלי קודים.")),
     el("p", { class: "sub", style: "margin:4px 0 0" }, "כך את/ה מנהל/ת רק את קודי הצוות, וכל איש/אשת צוות מעביר/ה את הגישה הלאה בעצמו/ה."));
   card.append(tree);
@@ -269,7 +284,7 @@ async function renderAdmin() {
   // יצירת קוד
   const f = el("div", { class: "card" });
   f.append(el("h3", {}, "קוד חדש לאיש/אשת צוות"));
-  f.append(el("p", { class: "sub" }, "אפשר קוד לאדם אחד או לקבוצה (למשל \"מחנכות שכבה ה׳\"). מסמנים כל צירוף של הרשאות מתוך מה שפתוח למוסד."));
+  f.append(el("p", { class: "sub" }, "אפשר קוד לאדם אחד או לקבוצה (למשל \"צוות שכבה ה׳\"). מסמנים כל צירוף של הרשאות מתוך מה שפתוח למוסד."));
   const lbl = el("input", { placeholder: "שם או תיאור (למשל: רחל כהן, מחנכת ה׳2)", maxlength: "60" });
   const permsBox = el("div", { class: "perms" });
   const cbs = {};
@@ -299,7 +314,7 @@ async function renderAdmin() {
     let expiresAt = null;
     if (exp.value === "date") expiresAt = expDate.value || null;
     else if (exp.value) expiresAt = new Date(Date.now() + Number(exp.value) * 864e5).toISOString().slice(0, 10);
-    go.disabled = true; msg.className = "msg"; msg.textContent = "מפיקה...";
+    go.disabled = true; msg.className = "msg"; msg.textContent = "מפיקים...";
     const r = await api("codeCreate", { kind: "staff", perms, label: lbl.value.trim(), expiresAt }).catch(() => ({}));
     go.disabled = false;
     if (!r.code) { msg.className = "msg err"; msg.textContent = r.error === "above ceiling" ? "אחת ההרשאות לא פתוחה למוסד." : "ההפקה לא הצליחה. אפשר לנסות שוב."; return; }
@@ -358,7 +373,7 @@ function renderGroupCode() {
   if (!fac && !lect) return;
   const box = $("lecturer"); box.textContent = "";
   box.append(el("h2", {}, "🎟 קוד לקבוצה"));
-  box.append(el("p", { class: "sub", style: "margin:-4px 0 10px;color:var(--muted)" }, "קוד אחד לכל הקבוצה, לא קוד לכל משתתפת. כולן נכנסות איתו באותו שדה במסך הכניסה."));
+  box.append(el("p", { class: "sub", style: "margin:-4px 0 10px;color:var(--muted)" }, "קוד אחד לכל הקבוצה, לא קוד לכל משתתף/ת. כל המשתתפים נכנסים איתו באותו שדה במסך הכניסה."));
   const panes = {};
   const seg = el("div", { class: "row", style: "gap:8px;margin-bottom:10px" });
   const opts = [];
@@ -375,8 +390,8 @@ function renderGroupCode() {
     pn.append(el("h3", {}, "קוד לקבוצה: לסדנה"),
       el("ol", { style: "margin:6px 0 10px;padding-inline-start:20px;line-height:1.8;font-size:14px" },
         el("li", {}, "פותחים סדנה: נוצר ", el("b", {}, "קוד לקבוצה בן 6 ספרות"), ", וקישור למשוב עם QR."),
-        el("li", {}, "המשתתפות מקלידות את הקוד במסך הכניסה של be-good.co.il, ובוחרות תפקיד: מתנסה, שחקנית, הורה או נוער."),
-        el("li", {}, "פתוח להן: דף צפייה, תרגול עצמי, משוב וכלי ההכנה של התפקיד. ", el("b", {}, "תוצרי הסימולציה"), " נשארים אצלך בלבד."),
+        el("li", {}, "המשתתפים מקלידים את הקוד במסך הכניסה של be-good.co.il, ובוחרים תפקיד: מתנסה, שחקנית, הורה או נוער."),
+        el("li", {}, "פתוח להם: דף צפייה, תרגול עצמי, משוב וכלי ההכנה של התפקיד. ", el("b", {}, "תוצרי הסימולציה"), " נשארים אצלך בלבד."),
         el("li", {}, "הקוד פעיל 24 שעות.")),
       el("a", { class: "btn", href: "facilitator-screen.html", style: "text-decoration:none;display:inline-block" }, "פתיחת סדנה ויצירת קוד לקבוצה"));
     box.append(pn);
@@ -411,8 +426,8 @@ async function renderLecturer(box) {
     const go = el("button", { class: "btn", disabled: room === 0 }, "יצירת קוד לקבוצה");
     const msg = el("div", {});
     go.addEventListener("click", async () => {
-      if (!name.value.trim()) { msg.className = "msg err"; msg.textContent = "כדאי לתת שם לקורס, כדי שתזהי אותו ברשימה."; name.focus(); return; }
-      go.disabled = true; msg.className = "msg"; msg.textContent = "יוצרת...";
+      if (!name.value.trim()) { msg.className = "msg err"; msg.textContent = "כדאי לתת שם לקורס, כדי לזהות אותו ברשימה."; name.focus(); return; }
+      go.disabled = true; msg.className = "msg"; msg.textContent = "יוצרים...";
       const r = await api("codeCreate", { kind: "course", label: name.value.trim(), seats: Number(seats.value) || 40, days: Number(days.value) || 30 }).catch(() => ({}));
       if (!r.code) { msg.className = "msg err"; msg.textContent = r.error === "limit" ? "הגעת למספר הקודים הפעילים המרבי." : "היצירה לא הצליחה. אפשר לנסות שוב."; go.disabled = false; return; }
       fresh = r.code.code;
@@ -439,7 +454,7 @@ async function renderLecturer(box) {
     const msg2 = el("div", {});
     go2.addEventListener("click", async () => {
       const n = Math.max(1, Math.min(room, Number(cnt.value) || 1));
-      go2.disabled = true; msg2.className = "msg"; msg2.textContent = "מפיקה...";
+      go2.disabled = true; msg2.className = "msg"; msg2.textContent = "מפיקים...";
       const r = await api("codeCreate", { kind: "student", count: n, label: lbl.value.trim() }).catch(() => ({}));
       if (!r.codes) { msg2.className = "msg err"; msg2.textContent = r.error === "limit" ? "הגעת למספר הקודים הפעילים המרבי." : "ההפקה לא הצליחה. אפשר לנסות שוב."; go2.disabled = false; return; }
       d = await api("codesList").catch(() => d);

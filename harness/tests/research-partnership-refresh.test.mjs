@@ -9,7 +9,7 @@ import CORE from '../../app/lib/research-partnership-core.js';
 test('failed provider refresh keeps the same request retryable and throttles only a verified successful check',async()=>{
  let calls=0,failNext=true;
  const adapter={readiness:()=>({configured:true,state:'ready'}),async refresh(){calls++;if(failNext){failNext=false;throw Object.assign(new Error('unavailable'),{code:'unavailable'});}return {completed:false,state:'in_progress'};}};
- const f=await createPartnershipIntegration({signingAdapter:adapter});
+ const f=await createPartnershipIntegration({signingEnabled:true,signingAdapter:adapter});
  try{
   const {study}=await f.seedStudy();
   const partner=(await f.checked(f.tokens.owner,'partnerSave',f.request({individualCode:f.codes.a,expectedRevision:null,profile:{fullName:'Synthetic Partner',email:'partner@example.invalid'}}))).partner;

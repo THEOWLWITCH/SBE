@@ -14,7 +14,7 @@
   else root.SBE_CONT = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
-  const ROLES = ['מחנכת כיתה', 'מורה מקצועית', 'גננת', 'מורת שילוב', 'רכזת שכבה', 'רכזת מקצוע', 'רכזת חברתית', 'יועצת', 'סגנית מנהלת', 'מנהלת'];
+  const ROLES = ['מחנך/ת כיתה', 'מורה מקצועי/ת', 'גנן/ת', 'מורה שילוב', 'רכז/ת שכבה', 'רכז/ת מקצוע', 'רכז/ת חברתי/ת', 'יועץ/ת', 'סגן/ית מנהל/ת', 'מנהל/ת'];
   const FIELDS = [
     { k: 'role', l: 'התפקיד שלי', type: 'select', main: true, opts: ROLES },
     { k: 'receiver', l: 'למי התיק', type: 'select', main: true,

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>אמת או אתגר</title>
+<script src="lib/access-guard.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&family=Rubik:wght@700;800&display=swap">
+<style id="kitcss"></style>
+<style>
+/* אמת או אתגר (22/10/2026), על המסך ולהדפסה. מקור אמת: lib/truth-dare.js. הרשאה: games. עיצוב: יריד עם גגון פסים ונורות */
+:root{--ink:#2A1F1A;--muted:#6A5A50;--bg:#FFF4E6;--card:#fff;--line:#F0D9BF;--hl:#1B4F7A;--red:#D9483A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#F3E8DC;--muted:#C2B4A7;--bg:#1B1512;--card:#261E19;--line:#3F332B;--hl:#8fd3e0}}
+:root[data-theme="dark"]{--ink:#F3E8DC;--muted:#C2B4A7;--bg:#1B1512;--card:#261E19;--line:#3F332B;--hl:#8fd3e0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Assistant,Arial,sans-serif}
+button,input{font-family:inherit}
+.topnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--line);font-size:15px}
+.topnav a,.topnav button{color:var(--hl);font:inherit;font-weight:700;background:none;border:0;cursor:pointer;text-decoration:none;padding:6px 0}
+.topnav .crumb{margin-inline-start:auto;color:var(--muted);font-weight:600}
+.awning{height:56px;background:repeating-linear-gradient(90deg,var(--red) 0 60px,#FFF8EE 60px 120px);-webkit-mask:radial-gradient(30px at 30px 100%,#0000 98%,#000) 0 0/60px 100%;mask:radial-gradient(30px at 30px 100%,#0000 98%,#000) 0 0/60px 100%}
+.lights{display:flex;justify-content:space-around;margin-top:-6px;padding:0 20px}
+.lights i{width:12px;height:12px;border-radius:50%;background:#FFC929;box-shadow:0 0 10px #FFC929;animation:blink 1.6s infinite}
+.lights i:nth-child(even){animation-delay:.8s;background:#FF8F70;box-shadow:0 0 10px #FF8F70}
+@keyframes blink{50%{opacity:.35}}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 16px 60px}
+.hero{text-align:center;margin-bottom:16px}
+.hero .logo{display:inline-flex;background:#fff;border-radius:10px;padding:4px 8px;border:1px solid var(--line)}.hero .logo img{height:32px;width:auto;display:block}
+.hero h1{margin:8px 0 0;font:800 56px/1 Rubik,sans-serif;color:var(--red);text-shadow:3px 3px 0 #FFC929}
+.hero h1 span{color:#1A9BB5}
+.hero p{margin:10px auto 0;font-size:18px;color:var(--muted);max-width:52ch;line-height:1.5}
+@media screen and (max-width:640px){.hero h1{font-size:40px}}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px 20px;margin-bottom:14px}
+.panel h2{margin:0 0 10px;font:800 20px Rubik,Assistant,sans-serif}
+.names{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.names span{display:inline-flex;align-items:center;gap:6px;background:#FFF0DC;border:2px solid var(--line);border-radius:999px;padding:6px 6px 6px 12px;font-weight:800;color:#2A1F1A}
+.names span button{border:0;background:#fff;border-radius:50%;width:24px;height:24px;cursor:pointer}
+.names input{min-height:44px;border:2px solid var(--line);border-radius:12px;padding:6px 12px;font:600 16px Assistant;background:var(--card);color:var(--ink)}
+.btn{min-height:48px;padding:10px 22px;border-radius:14px;border:0;background:var(--red);color:#fff;font:800 17px Assistant,sans-serif;cursor:pointer}
+.btn.alt{background:var(--card);color:var(--hl);border:2px solid var(--line)}
+.btn.big{min-height:60px;font:800 22px Rubik,sans-serif;box-shadow:0 5px 0 #9E2F25}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible{outline:3px solid #FFC929;outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+details.how{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:14px 20px}
+details.how summary{cursor:pointer;font-weight:800;color:var(--hl);font-size:17px}
+details.how ol{margin:8px 0 0;padding-inline-start:22px;line-height:1.65;font-size:15.5px}
+#game[hidden],#setup[hidden]{display:none}
+.play{display:grid;grid-template-columns:minmax(0,440px) 1fr;gap:20px;align-items:center}
+@media screen and (max-width:860px){.play{grid-template-columns:1fr}}
+.wheelbox{position:relative;width:100%;max-width:440px;margin:0 auto}
+.wheelbox svg.w{width:100%;height:auto;display:block;filter:drop-shadow(0 10px 18px rgba(0,0,0,.18))}
+.wheelbox #rot{transition:transform 3.2s cubic-bezier(.12,.66,.14,1)}
+.ptr{position:absolute;top:-8px;left:50%;width:44px;margin-left:-22px;z-index:2}
+.turn{text-align:center;font:800 22px Rubik,sans-serif;margin-bottom:10px}
+.turn b{color:var(--red)}
+.cardx{min-height:280px;border-radius:26px;padding:24px;display:flex;flex-direction:column;justify-content:center;gap:12px;background:var(--card);border:3px dashed var(--line);text-align:center}
+.cardx.truth{background:#FFF6D6;border:3px solid #E0A800;color:#3d2f00}
+.cardx.dare{background:#FDE7E3;border:3px solid var(--red);color:#5A1C14}
+.cardx.pass{background:#E3F4F8;border:3px solid #1A9BB5;color:#0F4F5E}
+.cardx.again{background:#E3F4EA;border:3px solid #3A9E6B;color:#1E5C3B}
+.cardx .kind{font:800 30px Rubik,sans-serif}
+.cardx .txt{font:700 25px/1.45 Assistant;text-wrap:pretty}
+.cardx .ans{display:none;background:rgba(255,255,255,.75);border-radius:14px;padding:10px;font-weight:700;font-size:18px}
+.cardx .ans.show{display:block}
+.cardx img{width:70px;align-self:center}
+.cardx.flip{animation:flip .45s ease-out}
+@keyframes flip{from{transform:rotateY(90deg)}}
+@media (prefers-reduced-motion:reduce){.wheelbox #rot{transition:none}.cardx.flip{animation:none}.lights i{animation:none}}
+/* הדפסה */
+.pr-wheel{display:flex;flex-direction:column;align-items:center;gap:4mm}
+.pr-wheel svg{width:150mm;height:150mm}
+.pr-td{border:.4mm dashed #c9b49b;border-radius:3mm;display:flex;flex-direction:column;overflow:hidden;background:#fff}
+.pr-td .tp{padding:2mm 3mm;color:#fff;font:800 11pt Rubik,sans-serif;display:flex;justify-content:space-between;align-items:center}
+.pr-td .tx{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:3mm;font:700 10.6pt/1.45 Assistant}
+.pr-td .an{transform:rotate(180deg);border-top:.3mm dashed #c9b49b;margin:0 2mm;padding:2mm 1mm;font:600 8.2pt/1.35 Assistant;color:#5a4a40;text-align:center}
+.pr-td img{width:13mm;align-self:center;margin:0 0 2mm}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a href="games.html">🎲 משחקי חוסן</a>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › משחקי חוסן › אמת או אתגר</span>
+</nav>
+<div class="awning" aria-hidden="true"></div>
+<div class="lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<main class="wrap">
+  <header class="hero"><span class="logo"><img src="assets/begood-logo-sm.webp" alt="Begood"></span><h1>אמת <span>או</span> אתגר</h1><p>מסובבים את הגלגל: אמת היא חידה על חוסן חברתי, אתגר הוא פעילות קטנה ומצחיקה. ויש גם "מעבירים את התור" ו"תור נוסף".</p></header>
+
+  <section id="setup">
+    <div class="panel"><h2>מי משחק? <small style="font:600 14px Assistant;color:var(--muted)">רשות: אפשר לשחק גם בלי שמות</small></h2><div class="names" id="names"></div></div>
+    <div class="row" style="margin-bottom:14px"><button class="btn big" id="go" type="button">🎡 מתחילים</button><button class="btn alt" id="printBtn" type="button">🖨 הדפסת הגלגל והקלפים</button></div>
+    <details class="how"><summary>איך משחקים</summary><div id="howBody"></div></details>
+  </section>
+
+  <section id="game" hidden aria-label="המשחק">
+    <div class="turn" id="turn"></div>
+    <div class="play">
+      <div><div class="wheelbox"><svg class="ptr" viewBox="0 0 44 52" aria-hidden="true"><path d="M22 50L4 12a18 18 0 1 1 36 0z" fill="#22303C"/><circle cx="22" cy="18" r="7" fill="#FFC929"/></svg><svg class="w" id="wheel" viewBox="-110 -110 220 220" role="img" aria-label="הגלגל"></svg></div>
+        <div class="row" style="justify-content:center;margin-top:14px"><button class="btn big" id="spin" type="button">🎡 מסובבים</button></div></div>
+      <div><div class="cardx" id="card" aria-live="polite"><div class="kind">🎡</div><div class="txt">מסובבים את הגלגל, ונראה מה יצא.</div></div>
+        <div class="row" style="justify-content:center;margin-top:12px"><button class="btn alt" id="ansBtn" type="button" hidden>👀 התשובה</button><button class="btn alt" id="skip" type="button" hidden>דילוג: קלף אחר</button><button class="btn" id="next" type="button" hidden>התור הבא ←</button></div></div>
+    </div>
+    <div class="row" style="justify-content:center;margin-top:20px"><button class="btn alt" id="toSet" type="button">הגדרות</button></div>
+  </section>
+</main>
+<div id="print" aria-hidden="true"></div>
+<script src="lib/game-kit.js"></script>
+<script src="lib/truth-dare.js"></script>
+<script>
+(function () {
+  const K = window.SBE_GK, D = window.SBE_TD, R = D.RULES, esc = K.esc;
+  const $ = (id) => document.getElementById(id);
+  $('kitcss').textContent = K.printCss('אמת או אתגר');
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let names = [];
+  function drawNames() {
+    $('names').innerHTML = names.map((n, i) => `<span>${esc(n)}<button type="button" data-i="${i}" aria-label="הסרה">✕</button></span>`).join('') + (names.length < 16 ? `<input id="nm" maxlength="20" placeholder="שם, ואז Enter"><button class="btn alt" type="button" id="addNm" style="min-height:44px">➕</button>` : '');
+    $('names').querySelectorAll('[data-i]').forEach((b) => { b.onclick = () => { names.splice(+b.dataset.i, 1); drawNames(); }; });
+    const add = () => { const v = $('nm').value.trim(); if (v) { names.push(v); drawNames(); $('nm').focus(); } };
+    if ($('nm')) { $('nm').onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } }; $('addNm').onclick = add; }
+  }
+  drawNames();
+  $('howBody').innerHTML = `<ol>${R.play.map((t) => `<li>${esc(t)}</li>`).join('')}</ol><p><b>שאלות לסיכום:</b> ${esc(R.closingWho)}</p><ol>${R.closing.map((q) => `<li>"${esc(q)}"</li>`).join('')}</ol>`;
+  $('wheel').innerHTML = `<g id="rot">${D.wheel(100)}</g><image href="${K.LOGO}" x="-14" y="-8" width="28" height="16"/>`;
+
+  let G = null;
+  function start() { G = { t: K.shuffle(D.TRUTH), d: K.shuffle(D.DARE), who: 0, rot: 0, busy: false, cur: null, skipped: new Set() }; $('setup').hidden = true; $('game').hidden = false; drawTurn(); resetCard(); }
+  const whoName = () => (names.length ? names[G.who % names.length] : '');
+  function drawTurn() { $('turn').innerHTML = names.length ? `התור של <b>${esc(whoName())}</b>` : 'מסובבים את הגלגל'; }
+  function resetCard() { $('card').className = 'cardx'; $('card').innerHTML = `<div class="kind">🎡</div><div class="txt">מסובבים את הגלגל, ונראה מה יצא.</div>`; ['ansBtn', 'skip', 'next'].forEach((id) => { $(id).hidden = true; }); $('spin').disabled = false; }
+  $('spin').onclick = () => {
+    if (G.busy) return; G.busy = true; $('spin').disabled = true;
+    const n = D.WHEEL.length, seg = 360 / n, t = Math.floor(Math.random() * n);
+    const base = Math.ceil(G.rot / 360) * 360 + 360 * 4;
+    G.rot = base - t * seg + (Math.random() - .5) * seg * .6;
+    $('rot').style.transform = `rotate(${G.rot}deg)`;
+    setTimeout(() => show(D.WHEEL[t]), reduce ? 50 : 3300);
+    K.chime('tick');
+  };
+  function show(w) {
+    G.busy = false;
+    const c = $('card'); c.className = 'cardx ' + w.k + (reduce ? '' : ' flip');
+    if (w.k === 'truth') { const q = G.t.pop() || (G.t = K.shuffle(D.TRUTH)).pop(); G.cur = q; c.innerHTML = `<div class="kind">? אמת</div><div class="txt">${esc(q.q)}</div><div class="ans" id="ans">${esc(q.a)}</div><img src="${K.LOGO}" alt="Begood">`; $('ansBtn').hidden = false; $('skip').hidden = false; }
+    else if (w.k === 'dare') { const d = G.d.pop() || (G.d = K.shuffle(D.DARE)).pop(); G.cur = d; c.innerHTML = `<div class="kind">★ אתגר</div><div class="txt">${esc(d.t)}</div><img src="${K.LOGO}" alt="Begood">`; $('skip').hidden = false; }
+    else if (w.k === 'pass') { c.innerHTML = `<div class="kind">↩ מעבירים את התור</div><div class="txt">התור עובר הלאה${names.length ? ' אל ' + esc(names[(G.who + 1) % names.length]) : ''}.</div>`; }
+    else { c.innerHTML = `<div class="kind">+1 תור נוסף</div><div class="txt">איזה מזל! מסובבים שוב.</div>`; $('spin').disabled = false; K.chime('up'); return; }
+    G.kind = w.k; $('next').hidden = false; K.chime('up');
+  }
+  $('ansBtn').onclick = () => { const a = $('ans'); if (a) a.classList.add('show'); };
+  $('skip').onclick = () => { if (G.skipped.has(G.who % Math.max(1, names.length))) { $('skip').textContent = 'הדילוג כבר נוצל'; $('skip').disabled = true; return; } G.skipped.add(G.who % Math.max(1, names.length)); show(D.WHEEL.find((w) => w.k === G.kind)); $('skip').hidden = true; };
+  $('next').onclick = () => { G.who++; drawTurn(); resetCard(); $('skip').disabled = false; $('skip').textContent = 'דילוג: קלף אחר'; };
+  $('go').onclick = start;
+  $('toSet').onclick = () => { $('game').hidden = true; $('setup').hidden = false; };
+
+  function buildPrint() {
+    let h = `<section class="pr-page">${K.head(R.title, R.sub, '#D9483A')}<h2>מתכוננים</h2><ol>${R.ready.map((t) => `<li>${esc(t)}</li>`).join('')}</ol><h2>משחקים</h2><ol>${R.play.map((t) => `<li>${esc(t)}</li>`).join('')}</ol><h2>שאלות לסיכום</h2><p>${esc(R.closingWho)}</p><div class="pr-box"><ol>${R.closing.map((q) => `<li>"${esc(q)}"</li>`).join('')}</ol></div></section>`;
+    h += `<section class="pr-page"><p class="pr-cap">הגלגל: גוזרים, מדביקים על קרטון, ומסובבים מהדק משרדי סביב עיפרון במרכז</p><div class="pr-wheel"><svg viewBox="-112 -112 224 224">${D.wheel(105)}<image href="${K.LOGO}" x="-16" y="-9" width="32" height="18"/></svg></div></section>`;
+    for (let p = 0; p < D.TRUTH.length; p += 9) h += `<section class="pr-page"><p class="pr-cap">קלפי אמת · ${p / 9 + 1} מתוך ${Math.ceil(D.TRUTH.length / 9)} · התשובה הפוכה בתחתית</p><div class="pr-grid">${D.TRUTH.slice(p, p + 9).map((q) => `<div class="pr-td"><div class="tp" style="background:#E0A800"><span>? אמת</span><span>#${q.n}</span></div><div class="tx">${esc(q.q)}</div><img src="${K.LOGO}" alt="Begood"><div class="an">${esc(q.a)}</div></div>`).join('')}</div></section>`;
+    for (let p = 0; p < D.DARE.length; p += 9) h += `<section class="pr-page"><p class="pr-cap">קלפי אתגר · ${p / 9 + 1} מתוך ${Math.ceil(D.DARE.length / 9)}</p><div class="pr-grid">${D.DARE.slice(p, p + 9).map((d) => `<div class="pr-td"><div class="tp" style="background:#D9483A"><span>★ אתגר</span><span>#${d.n}</span></div><div class="tx">${esc(d.t)}</div><img src="${K.LOGO}" alt="Begood"></div>`).join('')}</div></section>`;
+    K.setPrint($('print'), h);
+    document.title = 'אמת או אתגר · Begood';
+  }
+  $('printBtn').onclick = () => { buildPrint(); K.printWhenReady($('print')); };
+  window.addEventListener('beforeprint', buildPrint);
+  if (new URLSearchParams(location.search).get('print')) buildPrint();
+})();
+</script>
+</body>
+</html>

@@ -203,7 +203,7 @@ const FILTERS = [
   { k:'language',     l:'שפה',           opts:['עברית','ערבית','אנגלית'] },
   { k:'product_type', l:'סוג תוצר',      opts:['תרחיש','משחק תפקידים'] },
   { k:'domain',       l:'תחום',          opts:[] },
-  { k:'creator',      l:'יוצרת',         opts:[] },
+  { k:'creator',      l:'יוצר/ת',         opts:[] },
 ];
 
 // מאכלס אפשרויות דינמיות מהנתונים שנטענו
@@ -273,7 +273,7 @@ function render() { clearTimeout(_rt); _rt = setTimeout(doRender, 100); }
 async function doRender() {
   const q = state.q.trim();
   const box = $('res');
-  box.innerHTML = '<div class="empty" style="color:var(--muted)">טוענת…</div>';
+  box.innerHTML = '<div class="empty" style="color:var(--muted)">טוענים…</div>';
   $('count').textContent = '';
 
   let data;
@@ -357,7 +357,7 @@ async function doRender() {
     if (r.runs) add('הועבר ב־' + r.runs + ' סדנאות', 'use');
     if (r.rating) {
       const rate = document.createElement('span'); rate.className = 'rate';
-      rate.title = 'דירוג המנחות שהעבירו';
+      rate.title = 'דירוג המנחים שהעבירו';
       for (let i = 1; i <= 5; i++) {
         const d = document.createElement('i'); if (i <= r.rating) d.className = 'on'; rate.append(d);
       }

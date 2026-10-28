@@ -819,7 +819,7 @@ const AI_SERVER = "https://sbe-server.onrender.com";
 // שורת סטטוס גלויה במקום הצהרה טכנית תמידית — מתעדכנת בפועל לפי תוצאת
 // הקריאה האחרונה למודל (19/09/2026), לא לפי הנחה סטטית.
 // בלי חיבור למודל — אין תוצר (07/10/2026, כלל של ד״ר יעל שדה לכל המערכת): לא דוגמה קבועה, לא משוב היוריסטי ולא מסמך מהשדות.
-var NO_MODEL = "אין כרגע חיבור למודל, ולכן לא הופק תוצר. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים.";
+var NO_MODEL = "אין כרגע חיבור למודל, ולכן לא הופק תוצר. מה שמולא נשמר. אפשר לנסות שוב בעוד דקה–שתיים.";
 function setAIStatus(status){
   const chip = document.getElementById("aiStatusChip");
   if (!chip) return;
@@ -1001,7 +1001,7 @@ function render() {
           });
           if (f.other) {
             const otherRow = el("div", { class:"customsel-other" });
-            otherInput = el("input", { type:"text", placeholder:"אפשר להקליד אפשרות משלך: נשמרת לכולן" });
+            otherInput = el("input", { type:"text", placeholder:"אפשר להקליד אפשרות משלך: נשמרת לכולם" });
             const addOther = () => {
               const t = otherInput.value.trim(); if (!t) return;
               addCustomListItem(f.k, t);
@@ -1175,7 +1175,7 @@ function renderIdeas() {
   ideas.forEach(idea => {
     const row = el("div", { class:"idea" });
     row.append(el("b",{}, idea.t + ": " + idea.approach), idea.d);
-    const useBtn = el("button", { type:"button" }, "השתמשי כבסיס");
+    const useBtn = el("button", { type:"button" }, "שימוש כבסיס");
     useBtn.addEventListener("click", () => {
       const n = document.getElementById("i-mainActivity");
       n.value = idea.t + "\n" + idea.d;
@@ -1223,7 +1223,7 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
     // תיוג לא-שקט: אם הופקה מהתבנית הקבועה (אין חיבור למודל), היוצרת
     // צריכה לדעת שזו לא הצעה שנוצרה במיוחד עבור המטרה שהיא כתבה (19/09/2026).
     if (hintEl) hintEl.textContent = out._mock
-      ? "⚠ אין חיבור למודל כרגע. זו הצעת דוגמה קבועה (הדגמה), לא הצעה שנוצרה במיוחד עבור המטרה שכתבת."
+      ? "⚠ אין חיבור למודל כרגע. זו הצעת דוגמה קבועה (הדגמה), לא הצעה שנוצרה במיוחד עבור המטרה שנכתבה."
       : "";
   } finally { e.target.disabled = false; e.target.textContent = "מילוי הצעות"; }
 });
@@ -1300,14 +1300,14 @@ function computeFeedbackFromFields(d) {
 
   if (d.technology) check.push("שילוב הטכנולוגיה: הוא משרת את המטרה בפועל, או נכנס כי אפשר להוסיף כלי דיגיטלי?");
 
-  if (d.resources) check.push("רשימת המשאבים: היא ריאלית וזמינה בפועל במרחב שבו תעשי את הפעילות?");
+  if (d.resources) check.push("רשימת המשאבים: היא ריאלית וזמינה בפועל במרחב שבו הפעילות מתקיימת?");
   else gaps.push("רשימת משאבים/עזרים עדיין חסרה.");
 
   const missingMin = [];
   if (d.opening && !d.openingMin) missingMin.push("לפתיחה");
   if (d.mainActivity && !d.mainMin) missingMin.push("לפעילות המרכזית");
   if (d.closing && !d.closingMin) missingMin.push("לסיכום");
-  if (d.openingMin || d.mainMin || d.closingMin) check.push("חלוקת הזמן: סכמי בעצמך את הדקות שרשמת לכל שלב. הן מסתכמות למשך הכולל שהגדרת למעלה?");
+  if (d.openingMin || d.mainMin || d.closingMin) check.push("חלוקת הזמן: כדאי לסכם את הדקות שנרשמו לכל שלב. הן מסתכמות למשך הכולל שהוגדר למעלה?");
   if (missingMin.length) gaps.push("חסר משך זמן " + missingMin.join(", ") + ".");
 
   if (d.goal && d.mainActivity) {
@@ -1813,7 +1813,7 @@ const REPORT_CRITERIA = [
   { t:"פיתוח מיומנויות למידה יצירתית", ask:"היכן הלומדים יוצרים משהו שלא היה קיים לפני המפגש?" },
   { t:"פיתוח מיומנויות למידה בין-תחומית", ask:"האם הרצף מחבר בין תחום הדעת לתחום אחר, או לחיים עצמם?" },
   { t:"התאמה למגבלות ולהעדפות שהוגדרו", ask:"האם יש מפגש שדורש משהו שהגדרת כמגבלה, או מתעלם מהעדפה שציינת?" },
-  { t:"יישום גישות הלמידה שנבחרו", ask:"האם גישות הלמידה שבחרת באות לידי ביטוי בפעילויות עצמן, או שהן מופיעות רק כשם?" },
+  { t:"יישום גישות הלמידה שנבחרו", ask:"האם גישות הלמידה שנבחרו באות לידי ביטוי בפעילויות עצמן, או שהן מופיעות רק כשם?" },
 ];
 
 function today(){ return new Date().toISOString().slice(0,10); }
@@ -1995,7 +1995,7 @@ function mechanicalChecks(){
   });
   const customLimits = seq.limits.filter(l => !LIMIT_KEYWORDS[l.item]);
   if (customLimits.length) facts.push({ type:"check",
-    text:`למגבלות שהוספת בעצמך (${customLimits.map(l => "״" + l.item + "״").join(", ")}) אין בדיקה מכנית: ההתאמה אליהן נבדקת רק במשוב המודל.` });
+    text:`למגבלות שנוספו ידנית (${customLimits.map(l => "״" + l.item + "״").join(", ")}) אין בדיקה מכנית: ההתאמה אליהן נבדקת רק במשוב המודל.` });
   return facts;
 }
 
@@ -2399,12 +2399,12 @@ function renderSeq(){
   env.querySelector('input[type="text"]:not([placeholder])');
   const prefs = grp("העדפות", isOpen("prefs", false), [
     checklistF("סגנונות הוראה ופעילות שחשובים לך", "prefs", PREF_ITEMS, "seqPrefs",
-      { hint:"אפשר לסמן, והרחיבי בשורה שתיפתח", notePh:"הרחבה (רשות), לדוגמה: ישיבה במעגל, בלי שולחנות באמצע", addPh:"העדפה שאינה ברשימה: נשמרת לכולן" }),
+      { hint:"אפשר לסמן ולהרחיב בשורה שתיפתח", notePh:"הרחבה (רשות), לדוגמה: ישיבה במעגל, בלי שולחנות באמצע", addPh:"העדפה שאינה ברשימה: נשמרת לכולם" }),
   ]);
   prefs.dataset.g = "prefs";
   const limits = grp("מגבלות", isOpen("limits", false), [
     checklistF("מה מגביל את התכנון", "limits", LIMIT_ITEMS, "seqLimits",
-      { hint:"גם שיקולי דת או מסורת, נגישות, לוח זמנים. אפשר להוסיף", notePh:"פירוט המגבלה, לדוגמה: אין מקרן קבוע בחדר", addPh:"מגבלה שאינה ברשימה: נשמרת לכולן" }),
+      { hint:"גם שיקולי דת או מסורת, נגישות, לוח זמנים. אפשר להוסיף", notePh:"פירוט המגבלה, לדוגמה: אין מקרן קבוע בחדר", addPh:"מגבלה שאינה ברשימה: נשמרת לכולם" }),
   ]);
   limits.dataset.g = "limits";
   const bg = grp("פרטי רקע למפגשים / לקורס", isOpen("bg", true), [
@@ -2421,7 +2421,7 @@ function renderSeq(){
   const sessWrap = el("div");
   seq.sessions.forEach((_, i) => sessWrap.append(sessionEl(i)));
   const addS = el("button", { type:"button", class:"addsess" },
-    seq.sessions.length >= MAX_SESSIONS ? `הגעת למספר המפגשים המרבי (${MAX_SESSIONS})` : `הוספת מפגש (${seq.sessions.length}/${MAX_SESSIONS})`);
+    seq.sessions.length >= MAX_SESSIONS ? `זה המספר המרבי של מפגשים (${MAX_SESSIONS})` : `הוספת מפגש (${seq.sessions.length}/${MAX_SESSIONS})`);
   addS.disabled = seq.sessions.length >= MAX_SESSIONS;
   addS.addEventListener("click", () => {
     seq.sessions.push(emptySession());
@@ -2445,8 +2445,8 @@ function renderSeq(){
       (() => { const b = el("button", { type:"button", class:"linkbtn" }, "ניקוי והתחלת תכנון משלך"); b.addEventListener("click", resetSeq); return b; })());
   } else if (seq._imported) {
     note.hidden = false; note.textContent = "";
-    note.append(el("b", {}, "התכנית נבנתה מתוך המסמך שהעלית. "),
-      "כל שדה שהמערכת מילאה מסומן בקו מקווקו. זו הצעה עד שתשני או תאשרי אותה בעריכה. " + str(seq._importNotes) + " ",
+    note.append(el("b", {}, "התכנית נבנתה מתוך המסמך שהועלה. "),
+      "כל שדה שהמערכת מילאה מסומן בקו מקווקו. זו הצעה עד שמשנים או מאשרים אותה בעריכה. " + str(seq._importNotes) + " ",
       (() => { const b = el("button", { type:"button", class:"linkbtn" }, "הסתרת ההודעה"); b.addEventListener("click", () => { seq._imported = false; touch(); renderSeq(); }); return b; })());
   } else note.hidden = true;
   updateStatus();
@@ -2973,7 +2973,7 @@ document.getElementById("bSeqFill").addEventListener("click", async (e) => {
     n = await aiFillAll((d, t, again) => { btnEl.textContent = again ? `משלימה שוב את ${again}: ${d} מתוך ${t} מנות הושלמו` : t > 1 ? `ההשלמה נמשכת עד כ־8 דקות: ${d} מתוך ${t} חלקים הושלמו` : "ההשלמה נמשכת עד כ־8 דקות"; });
     setAIStatus("ok");
     seqDialog("השלמת נתונים חסרים", el("p", {}, n
-      ? `הושלמו ${n} שדות. הם מסומנים בקו מקווקו: הצעה של המערכת שנשארת כך אלא אם תשני אותה. שדות שכבר מילאת לא שונו, ועובדות על המציאות שלך (מרחב, תקציב, העדפות, מספר משתתפים) לא הומצאו.`
+      ? `הושלמו ${n} שדות. הם מסומנים בקו מקווקו: הצעה של המערכת שנשארת כך עד שמשנים אותה. שדות שכבר מולאו לא שונו, ועובדות על המציאות שלך (מרחב, תקציב, העדפות, מספר משתתפים) לא הומצאו.`
       : "לא נמצאו שדות תוכן ריקים להשלמה."));
   } catch (err) {
     console.warn("השלמה לא זמינה:", err.message);
@@ -2984,8 +2984,8 @@ document.getElementById("bSeqFill").addEventListener("click", async (e) => {
     }
     setAIStatus("mock");
     const body = el("div");
-    body.append(mockNote("אין כרגע חיבור למודל, ולכן הנתונים לא הושלמו. מה שמילאת נשמר, ואפשר לנסות שוב בעוד דקה או שתיים."),
-      el("p", {}, "מה שמילאת נשמר, ואפשר לנסות שוב בעוד רגע."));
+    body.append(mockNote("אין כרגע חיבור למודל, ולכן הנתונים לא הושלמו. מה שמולא נשמר, ואפשר לנסות שוב בעוד דקה או שתיים."),
+      el("p", {}, "מה שמולא נשמר, ואפשר לנסות שוב בעוד רגע."));
     // דוגמה — רק למנהלת המערכת (08/10/2026)
     const sys = document.documentElement.classList.contains("sbe-sys");
     seqDialog("השלמת נתונים חסרים", body, sys ? [btn("טעינת רצף לדוגמה", () => { document.getElementById("dlg").close(); loadSample(); }, "primary")] : []);
@@ -3063,7 +3063,7 @@ document.getElementById("bSeqUndo").addEventListener("click", () => {
 
 document.getElementById("bSeqBuild").addEventListener("click", async (e) => {
   if (!seq.sessions.some(s => !isEmptySession(s))) {
-    seqDialog("הפקת התוצר", el("p", {}, "עוד אין אף מפגש עם יעד או מהלך. אפשר למלא לפחות מפגש אחד, או השתמשי ב״השלמת נתונים חסרים״."));
+    seqDialog("הפקת התוצר", el("p", {}, "עוד אין אף מפגש עם יעד או מהלך. אפשר למלא לפחות מפגש אחד, או להשתמש ב״השלמת נתונים חסרים״."));
     return;
   }
   const done = busy(e.target, "ניסוח פתיחת המסמך ובחירת המקורות נמשכים עד כ־4 דקות");
@@ -3212,7 +3212,7 @@ document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
   if (!Number.isFinite(n) || n < 1) { st.textContent = "כדי להתחיל את הניתוח, אפשר לכתוב כמה מפגשים רוצים ברצף (1–" + MAX_SESSIONS + ")."; document.getElementById("sqDocN").focus(); return; }
   n = Math.max(1, Math.min(MAX_SESSIONS, n));
   const nonEmpty = str(seq.topic) || seq.sessions.some(s => !isEmptySession(s));
-  if (nonEmpty && !confirm("התכנית שתיבנה מהמסמך תחליף את מה שכבר מילאת בטופס הרצף. להמשיך?")) return;
+  if (nonEmpty && !confirm("התכנית שתיבנה מהמסמך תחליף את מה שכבר מולא בטופס הרצף. להמשיך?")) return;
   const btnEl = e.target;
   const done = busy(btnEl, "קריאת המסמך ובניית המתווה נמשכות עד כ־4 דקות");
   let head = null, built = null;
@@ -3256,7 +3256,7 @@ document.getElementById("sqImportBtn").addEventListener("click", async (e) => {
     console.warn("ייבוא מסמך לא זמין:", err.message);
     setAIStatus("mock");
     st.textContent = "";
-    st.append(mockNote("אין חיבור למודל כרגע: ניתוח מסמך ופריסתו למפגשים דורשים קריאה אמיתית של המסמך, ולכן לא נבנתה תכנית. התוכן שהעלית נשאר בתיבה."));
+    st.append(mockNote("אין חיבור למודל כרגע: ניתוח מסמך ופריסתו למפגשים דורשים קריאה אמיתית של המסמך, ולכן לא נבנתה תכנית. התוכן שהועלה נשאר בתיבה."));
   } finally { done(); }
 });
 
@@ -3328,7 +3328,7 @@ const SEQ_SAMPLE = {
 };
 function loadSample(){
   const nonEmpty = str(seq.topic) || seq.sessions.some(s => !isEmptySession(s));
-  if (nonEmpty && !seq._sample && !confirm("הטעינה תחליף את מה שמילאת בטופס הרצף בדוגמה מלאה. להמשיך?")) return;
+  if (nonEmpty && !seq._sample && !confirm("הטעינה תחליף את מה שמולא בטופס הרצף בדוגמה מלאה. להמשיך?")) return;
   const creator = seq.creator;
   seq = normalize(JSON.parse(JSON.stringify(SEQ_SAMPLE)));
   seq.creator = creator; seq.date = todayHe(); seq._sample = true; seq._imported = false;
