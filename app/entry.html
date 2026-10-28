@@ -319,7 +319,7 @@ function renderEntry(){
   // שדה הקוד וכפתור הכניסה באותה שורה, קטנים ועדינים (28/10/2026)
   btn.classList.add("go-in");
   inn.append(
-    el("label",{class:"code-lbl"},"הקוד שלך"), el("div",{class:"code-row"}, code, btn), err);
+    el("div",{class:"code-row"}, code, btn), err);
   card.append(el("h2",{},"כניסה למערכת"), inn);
   view.append(card);
   // ארבעה מרחבים, בית אחד (28/10/2026): שני מרחבי עבודה, וכלים משותפים לשניהם. כל מרחב עם ספריית תוצרים לדוגמה משלו.
