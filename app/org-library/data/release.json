@@ -1,0 +1,76 @@
+{
+  "release": "BE-GOOD-shared-library-local-1.1",
+  "date": "2026-10-28",
+  "input_release": "BE_GOOD_Research_Library_v1_2",
+  "input_archive_sha256": "ff1f6dcbf5f0ffbc25eb75271dfe00c7385167804cb044c58b0bebc76e5b12c4",
+  "publication": "local_development_shared_library",
+  "public_release_approved": false,
+  "independent_source_reverification_performed": false,
+  "counts": {
+    "source_records_in_upload": 51,
+    "public_safe_cards": 385,
+    "default_search_cards": 384,
+    "metadata_only_cards": 1,
+    "legacy_occurrences_preserved_off_site": 388,
+    "legacy_occurrences_pending_off_site": 380,
+    "legacy_public_pending_off_site": 378,
+    "legacy_restricted_off_site": 2,
+    "doi_alias_candidates": 8,
+    "historic_models_recovered": 38,
+    "historic_models_expected": 39,
+    "missing_model_records": 1,
+    "public_training_cards": 7,
+    "bilingual_concepts": 7
+  },
+  "data_files": [
+    {
+      "file": "library.json",
+      "sha256": "008d7e6d4cc6ff3c41c6039e80768459af244c666626e933ad32eb0b370b2fce",
+      "bytes": 1312695
+    },
+    {
+      "file": "vocabulary.json",
+      "sha256": "f70836b5b51fd03ea5167ae1a30f60faa93a62595b8c7248cce83af4a65b26c7",
+      "bytes": 3192
+    },
+    {
+      "file": "exercises.json",
+      "sha256": "5a1a32be5cb76452bea029d94d371b3cb25f48719556b0bf626127b7929d92b1",
+      "bytes": 7145
+    },
+    {
+      "file": "models.json",
+      "sha256": "9ed5a7dd9f134ff2e1ad14cbff526bf086dde5c4783bd495270761e17af315b1",
+      "bytes": 17255
+    }
+  ],
+  "boundaries": {
+    "summaries": "Original bilingual paraphrases inherited from upload; bounded to each recorded inspected scope.",
+    "application": "Source relevance and proposed exercises do not establish BE GOOD efficacy.",
+    "search": "Local keyword ranking with curated bilingual concept expansion; no embedding service or independently judged relevance benchmark.",
+    "restricted_data": "Raw legacy records, internal draft and research assessment content are excluded from website files and search.",
+    "unclassified_metadata": "Publication language, population, method, open access and analysis level are not inferred from titles or links.",
+    "live_snapshots": "Website catalog metadata; underlying source identity, reading scope and website quality claims were not independently verified. Hidden unpublished advisor sources excluded."
+  },
+  "snapshot_import": {
+    "originalCards": 50,
+    "snapshotOccurrences": 386,
+    "excludedHidden": 2,
+    "matchedOccurrences": 51,
+    "addedCards": 335
+  },
+  "live_catalogs": [
+    {
+      "url": "https://be-good.co.il/sources-library.html",
+      "captured_on": "2026-10-28",
+      "occurrences": 141
+    },
+    {
+      "url": "https://be-good.co.il/lib/resilience-advisor-sources.js",
+      "captured_on": "2026-10-28",
+      "occurrences": 247,
+      "excluded_hidden": 2
+    }
+  ],
+  "deduplication": "Exact normalized DOI or complete exact normalized citation including year; no inferred title matching."
+}

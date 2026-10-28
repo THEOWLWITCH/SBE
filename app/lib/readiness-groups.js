@@ -18,10 +18,10 @@
     see: ['resilience-team.html', 'resilience-fill.html', 'resilience-advisor.html', 'leadership-advisor.html'],
     practice: ['input-screen.html', 'parent-input-screen.html', 'student-input-screen.html', 'search.html', 'facilitator-screen.html', 'observation-sheet.html',
       'practice.html', 'conversation-planner.html', 'facilitation-advisor.html', 'family-bridge.html', 'shared-dialogue-lab.html', 'team-thinking.html', 'games.html',
-      'doc-facilitator.html', 'doc-trainee.html', 'doc-actor.html', 'card-actor.html', 'yesh-ma-laasot.html'],
+      'doc-facilitator.html', 'doc-trainee.html', 'doc-actor.html', 'card-actor.html', 'yesh-ma-laasot.html', 'org-suite.html'],
     act: ['activity-planner.html', 'resilience-studio.html', 'message-writer.html',
       'horizon-lab.html', 'hl-voice.html', 'hl-radar.html', 'hl-futures.html', 'hl-circles.html', 'hl-horizons.html', 'hl-collage.html', 'hl-roadmap.html', 'hl-game.html', 'hl-stress.html'],
-    learn: ['social-resilience-studies.html', 'academic-review.html', 'feedback.html', 'feedback-results.html'],
+    learn: ['org-library.html', 'social-resilience-studies.html', 'academic-review.html', 'feedback.html', 'feedback-results.html'],
     anchor: ['routines-hub.html', 'continuity-kit.html', 'journey.html']
   };
   const title = (g) => g.i + ' ' + (GROUPS.indexOf(g) + 1) + '. ' + g.n + ': ' + g.q;

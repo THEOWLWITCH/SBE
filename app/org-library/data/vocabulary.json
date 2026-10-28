@@ -1,0 +1,127 @@
+{
+  "version": "BG-SEARCH-VOCAB-1.0",
+  "date": "2026-10-27",
+  "non_equivalences": [
+    [
+      "trust",
+      "psychological safety"
+    ],
+    [
+      "Multi-Resilience",
+      "multisystemic resilience"
+    ],
+    [
+      "Eyal Lewin",
+      "Kurt Lewin"
+    ],
+    [
+      "identity verified",
+      "intervention validated"
+    ]
+  ],
+  "concepts": [
+    {
+      "concept_id": "EXP",
+      "label_he": "שיתוף ניסיון",
+      "label_en": "experience sharing",
+      "related_terms": [
+        "שיתוף לקחים",
+        "למידה מניסיון",
+        "knowledge sharing"
+      ],
+      "relation_rule": "related terms are not construct equivalence",
+      "source_ids": [
+        "BG-SRC-012"
+      ]
+    },
+    {
+      "concept_id": "EMP",
+      "label_he": "אמפתיה הדדית",
+      "label_en": "reciprocal empathy",
+      "related_terms": [
+        "בירור הדדי",
+        "בדיקת הבנה",
+        "perspective getting"
+      ],
+      "relation_rule": "related terms are not construct equivalence",
+      "source_ids": [
+        "BG-EXT-SRC-009",
+        "BG-EXT-SRC-002"
+      ]
+    },
+    {
+      "concept_id": "VOI",
+      "label_he": "קול מיעוט",
+      "label_en": "minority voice",
+      "related_terms": [
+        "עמדה חולקת",
+        "employee voice",
+        "dissent"
+      ],
+      "relation_rule": "related terms are not construct equivalence",
+      "source_ids": [
+        "BG-EXT-SRC-010",
+        "BG-SRC-005"
+      ]
+    },
+    {
+      "concept_id": "ETH",
+      "label_he": "אתוס",
+      "label_en": "ethos",
+      "related_terms": [
+        "משמעות משותפת",
+        "shared purpose",
+        "אחריות הדדית"
+      ],
+      "relation_rule": "related terms are not construct equivalence",
+      "source_ids": [
+        "BG-EXT-SRC-008"
+      ]
+    },
+    {
+      "concept_id": "MUL",
+      "label_he": "ריבוי חוסנים",
+      "label_en": "multi-resilience",
+      "related_terms": [
+        "רב חוסן",
+        "multiresilience",
+        "השפעות מצטלבות"
+      ],
+      "relation_rule": "related terms are not construct equivalence",
+      "source_ids": [
+        "BG-SRC-006",
+        "BG-SRC-004"
+      ]
+    },
+    {
+      "concept_id": "EXT",
+      "label_he": "ידע חיצוני",
+      "label_en": "external knowledge",
+      "related_terms": [
+        "חיפוש ידע",
+        "boundary spanning",
+        "מקור מידע"
+      ],
+      "relation_rule": "related terms are not construct equivalence",
+      "source_ids": [
+        "BG-EXT-SRC-005"
+      ]
+    },
+    {
+      "concept_id": "NET",
+      "label_he": "תיאום בין צוותים",
+      "label_en": "multiteam coordination",
+      "related_terms": [
+        "אינטראקציות רשת",
+        "network interactions",
+        "קשרי גישור"
+      ],
+      "relation_rule": "related terms are not construct equivalence",
+      "source_ids": [
+        "BG-EXT-SRC-004",
+        "BG-SRC-015",
+        "BG-SRC-008"
+      ]
+    }
+  ]
+}

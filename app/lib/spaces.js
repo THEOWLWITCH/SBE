@@ -21,10 +21,10 @@
   const HORIZON = ['horizon-lab.html', 'hl-voice.html', 'hl-radar.html', 'hl-futures.html', 'hl-circles.html', 'hl-horizons.html', 'hl-collage.html',
     'hl-roadmap.html', 'hl-game.html', 'hl-stress.html'];
   const PAGES = {
-    // כרגע כל כלי העבודה הארגוניים משותפים; כאן תיכנס התיקייה הארגונית וכלים שיוכנו לארגונים
-    org: ['examples-org.html'],
+    // הכלים של המרחב הארגוני בלבד: התיקייה הארגונית ו-Begood together (28/10/2026); כאן ייכנסו כלים שיוכנו לארגונים
+    org: ['examples-org.html', 'org-suite.html'],
     shared: [...HORIZON, 'journey.html', 'journey-cert.html', 'team-thinking.html', 'message-writer.html', 'communication-continuity.html',
-      'yesh-ma-laasot.html', 'social-resilience-studies.html', 'sources-library.html', 'resilience-advisor-sources.html'],
+      'yesh-ma-laasot.html', 'social-resilience-studies.html', 'sources-library.html', 'org-library.html', 'resilience-advisor-sources.html'],
     edu: ['resilience-team.html', 'resilience-fill.html', 'resilience-advisor.html', 'leadership-advisor.html', 'facilitation-advisor.html',
       'activity-planner.html', 'conversation-planner.html', 'resilience-studio.html',
       'input-screen.html', 'parent-input-screen.html', 'student-input-screen.html', 'search.html', 'facilitator-screen.html',

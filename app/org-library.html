@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Begood: ספריית מחקר משותפת לחינוך ולארגונים, עם חיפוש דו־לשוני, תקצירים ומקורות שקופים.">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="color-scheme" content="light">
+  <title>Begood · ספריית המחקר המשותפת</title>
+  <link rel="icon" href="org-library/icon.svg" type="image/svg+xml">
+  <script src="lib/access-guard.js"></script>
+  <link rel="stylesheet" href="org-library/styles.css">
+  <style>.brand-logo{height:62px;width:auto;display:block;mix-blend-mode:multiply}@media screen and (max-width:640px){.brand-logo{height:46px}}</style>
+  <script type="module" src="org-library/app.mjs"></script>
+</head>
+<body>
+  <a class="skip" href="#results" data-i18n="skip">דילוג לתוצאות</a>
+  <div class="suite-return"><a href="home.html">← המרחב שלי</a><a href="org-suite.html">Begood together: תרגול צוותים</a><a href="sources-library.html">ספריית המקורות</a></div>
+  <header class="site-header">
+    <a class="brand" href="org-library.html" aria-label="Begood together"><img class="brand-logo" src="assets/begood-together-sm.webp" alt="Begood together"></a>
+    <nav class="main-nav" aria-label="ניווט ראשי" id="navigation">
+      <button class="nav-button active" data-page="library" data-i18n="library">הספרייה</button>
+      <button class="nav-button" data-page="exercises" data-i18n="exercises">תרגול ומקורות</button>
+      <button class="nav-button" data-page="about" data-i18n="about">על המאגר</button>
+    </nav>
+    <div class="header-actions"><span class="edition" data-i18n="edition">מהדורת מחקר 1.2</span><button class="language-button" id="language" lang="en">English <span aria-hidden="true">↗</span></button></div>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy"><div class="eyebrow"><span class="tiny-dot"></span><span data-i18n="eyebrow">ממחקר להבנה. מהבנה לעשייה.</span></div><h1 id="hero-title"><span data-i18n="title1">ידע משותף.</span><br><span class="title-accent" data-i18n="title2">מחשבה קדימה.</span></h1><p data-i18n="intro">מחקרים, מסגרות ורעיונות שמחברים בין חוסן, למידה ועבודת צוות. ספרייה אחת, לחינוך ולארגונים.</p></div>
+      <div class="hero-aside"><div class="orbit" aria-hidden="true"><span class="orbit-label top">LEARN</span><div class="orbit-circle one"></div><div class="orbit-circle two"></div><div class="orbit-circle three"></div><span class="orbit-center">be<br><em>good.</em></span><span class="orbit-label bottom">CONNECT · GROW</span><i class="orbit-dot"></i></div><div class="hero-stats"><div><strong id="stat-source-count">384</strong><span data-i18n="statSources">מקורות עם תקציר מתועד</span></div><div><strong>2</strong><span data-i18n="statViews">מבטים, מאגר משותף</span></div><div><strong>7</strong><span data-i18n="statConcepts">תחומי עשייה</span></div></div></div>
+    </section>
+    <div class="workspace" id="library-page">
+      <section class="search-zone" aria-label="חיפוש בספרייה" id="search-zone">
+        <div class="view-row"><div class="segmented" role="group" aria-label="מבט" id="views"><button data-view="combined" aria-pressed="true" data-i18n="combined">מבט משולב</button><button data-view="education" aria-pressed="false" data-i18n="education">חינוך</button><button data-view="organization" aria-pressed="false" data-i18n="organization">ארגונים</button></div><span class="index-label" dir="ltr">THE RESEARCH INDEX <span>↙</span></span></div>
+        <form id="search-form" role="search"><label for="query" data-i18n="searchLabel">מה תרצו להבין היום?</label><div class="search-input-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input id="query" type="search" autocomplete="off" maxlength="300" placeholder="נושא, שאלה, מחבר/ת או DOI, בעברית או באנגלית" dir="auto"><button class="search-submit" type="submit"><span data-i18n="search">חיפוש</span><span aria-hidden="true">←</span></button></div></form>
+        <div class="search-options"><div class="suggestions"><span data-i18n="try">אפשר להתחיל כאן:</span><button data-query-he="בטיחות פסיכולוגית" data-query-en="psychological safety" data-i18n="chipSafety">בטיחות פסיכולוגית</button><button data-query-he="קול מיעוט" data-query-en="minority voice" data-i18n="chipVoice">קול מיעוט</button><button data-query-he="רציפות חינוכית" data-query-en="educational continuity" data-i18n="chipContinuity">רציפות חינוכית</button></div><label class="search-mode"><input type="checkbox" id="expanded" checked><span data-i18n="expanded">הרחבת מושגים דו־לשונית</span><button type="button" class="info" id="search-info" aria-label="על החיפוש">?</button></label></div>
+        <p class="context-note" id="context-note"></p><p class="snapshot-note" id="snapshot-note"></p>
+      </section>
+      <div class="catalog-layout">
+        <aside class="filters" aria-labelledby="filter-title"><div class="filter-heading"><h2 id="filter-title" data-i18n="filterTitle">לדייק את החיפוש</h2><button class="text-button" id="reset" data-i18n="reset">איפוס</button></div><div id="filter-fields"></div><label class="check-row"><input type="checkbox" id="metadata"><span data-i18n="metadata">הצגת מטא־נתונים ללא תקציר שנבדק (1)</span></label><label class="check-row"><input type="checkbox" id="saved-only"><span data-i18n="savedOnly">השמורים במכשיר שלי</span><span id="saved-count" class="count-bubble">0</span></label><div class="filter-note"><span aria-hidden="true">↗</span><p data-i18n="filterNote">לכל מקור יש הקשר. היקף הקריאה ומגבלות ההעברה גלויים בכרטיס המלא.</p></div><a class="download-link" href="org-library/data/release.json" download data-i18n="manifestDownload">הורדת פרטי הגרסה ↓</a></aside>
+        <section class="results-section" id="results" tabindex="-1" aria-labelledby="results-title"><div class="results-toolbar"><div><h2 id="results-title" data-i18n="resultsTitle">מדף המחקר</h2><p id="result-count" role="status" aria-live="polite" aria-atomic="true">טוען מקורות…</p></div><div class="result-actions"><label class="sort-label"><span data-i18n="sort">סידור</span><select id="sort"><option value="relevance" data-i18n="relevance">רלוונטיות</option><option value="newest" data-i18n="newest">שנה: מהחדש לישן</option><option value="oldest" data-i18n="oldest">שנה: מהישן לחדש</option><option value="title" data-i18n="byTitle">כותרת</option></select></label><button id="export" class="export-button"><span aria-hidden="true">↓</span><span data-i18n="export">ייצוא</span></button></div></div><div class="active-filters" id="active-filters"></div><div id="cards" class="cards"><div class="loading" data-i18n="loading">טוען את הספרייה…</div></div><button id="load-more" class="load-more" hidden data-i18n="loadMore">מקורות נוספים ↓</button></section>
+      </div>
+    </div>
+    <section class="content-page" id="exercises-page" hidden aria-labelledby="exercise-title"><div class="section-eyebrow" data-i18n="practiceEyebrow">לחשוב עם הידע</div><h2 id="exercise-title" data-i18n="exerciseTitle">מהמקור אל התרגול</h2><p class="page-intro" data-i18n="exerciseIntro">שבעה כיווני תרגול מוצעים של Begood לצוותים בוגרים. הקשרים למקורות הם בסיס לחשיבה ולתכנון, ואינם מעידים שהתרגילים תוקפו.</p><div class="exercise-grid" id="exercise-cards"></div></section>
+    <section class="content-page" id="about-page" hidden aria-labelledby="about-title"><div class="section-eyebrow" data-i18n="aboutEyebrow">לקרוא בשקיפות</div><h2 id="about-title" data-i18n="aboutTitle">מה יש כאן, ואיך לקרוא אותו</h2><div class="about-grid" id="about-content"></div></section>
+  </main>
+  <footer><a class="footer-brand" href="org-library.html" dir="ltr">Begood</a><p data-i18n="footer">ידע משותף לחינוך ולארגונים · גרסת תצוגה פרטית · 27.10.2026</p><span class="footer-end" data-i18n="footerEnd">לקרוא. לחבר. לחשוב מחדש.</span></footer>
+  <dialog id="source-dialog" aria-labelledby="dialog-title"><div class="dialog-shell"><button class="dialog-close" id="close-dialog" aria-label="סגירה">×</button><div id="dialog-content"></div></div></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <noscript><p class="fatal">כדי לחפש, אפשר להפעיל JavaScript בדפדפן. נתוני המקורות זמינים בקובץ <a href="org-library/data/library.json">JSON</a>.</p></noscript>
+<script src="lib/screens-menu.js"></script>
+</body>
+</html>
