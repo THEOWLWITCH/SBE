@@ -218,8 +218,6 @@ const openai = {
 
 const REGISTRY = { anthropic, openai };
 
-// Resolve only public routing metadata. The model is part of the policy version
-// so changing MODEL invalidates processing approval for the previous model.
 export function getProviderDescriptor(name = process.env.PROVIDER || 'anthropic') {
   const p = REGISTRY[name];
   if (!p) throw new Error(`ספק לא מוכר: ${name}. אפשרויות: ${Object.keys(REGISTRY).join(', ')}`);

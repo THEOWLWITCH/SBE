@@ -164,14 +164,12 @@ function readRawBody(req,maxBytes){return new Promise((resolve,reject)=>{let len
 // HTTP input and environment flags cannot replace authentication or providers.
 export function createPracticeServer({ authStore, providerFactory = getProvider, saveScenarioImpl = saveScenario,
   limits = createModelLimits(), partnershipOptions = {}, partnershipWork = {}, signingEnabled = false } = {}) {
-// Trusted callers can supply their own impact pair or explicitly leave it
-// unconfigured. Normal startup resolves metadata without reading API keys.
 let impactDefaults = {};
 if (!Object.hasOwn(partnershipOptions, 'impactDescriptor') && !Object.hasOwn(partnershipOptions, 'impactProviderFactory')) {
   try {
     const descriptor = getProviderDescriptor();
     impactDefaults = { impactDescriptor: descriptor, impactProviderFactory: () => providerFactory(descriptor.provider) };
-  } catch { /* Unknown provider remains visibly unconfigured. */ }
+  } catch {}
 }
 const researchPartnershipOptions={...impactDefaults,...partnershipOptions,signingEnabled:signingEnabled===true};
 // עבודות צינור שרצות ברקע (בזיכרון; נמחקות אחרי 3 שעות)
