@@ -23,6 +23,8 @@ export function openAIInput(system, prompt, messages) {
 }
 
 export function providerSystem(system, policy) {
+  // Research processing authorizes the exact fixed, hashed system prompt.
+  if (policy === 'research-partnership-impact') return system;
   if (policy !== 'communication-continuity') return INVITE.apply(system);
   // Current module brief supersedes historical mandatory multi-step output
   // and no-referral rules. Other tools still receive their original policies.

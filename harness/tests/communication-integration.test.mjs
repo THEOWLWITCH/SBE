@@ -87,3 +87,8 @@ test('saved-conversation list projects metadata at storage without private histo
   assert.ok(!/(?:^|,)value(?:,|$)|entries|latestAI|research|_requests/.test(select));
   assert.deepEqual(await store.list('cc:owner:',{keysOnly:true,conversationSummaries:true}),[{key:'cc:owner:id'}]);
 });
+
+test('research impact preserves the exact fixed system prompt without educational invitation policies', () => {
+  const system = 'הסבירי רק את השינוי הסינתטי שסופק.';
+  assert.equal(providerSystem(system, 'research-partnership-impact'), system);
+});
