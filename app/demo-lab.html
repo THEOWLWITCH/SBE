@@ -169,17 +169,23 @@ const date=s=>{const t=new Date(s),z=n=>String(n).padStart(2,'0');return z(t.get
 const TOOLS={studio:'סטודיו חוסן: ערכת פעולה',practi:'פרקטי: יועצת לחוסן בכיתה',nugi:'נוגי: מנהיגות תומכת חוסן',nana:'ננה: מהוראה להנחיה',writer:'תקשורת מקדמת חוסן חברתי',continuity:'תיק רציפות','cont-join':'תיק רציפות: הצטרפות וחזרה','cont-proc':'תיק רציפות: נוהל עבודה בכלים שלכם',routines:'מרכז שגרות ויוזמות חברתיות','routines-proc':'מרכז שגרות: נוהל עבודה בכלים שלכם',bridge:'גשר בין הבית לכיתה',dialogue:'מעבדת שיח וחקר משותף','dialogue-full':'מעבדת שיח וחקר: תיק החקר עם גרסה מתוקנת',teamthink:'חשיבת צוות','teamthink-round':'חשיבת צוות: סיכום הסבב ומשוב',
   resil:'מיפוי חוסן חברתי: סיכום לכיתה',conv:'תכנון שיחה','act-single':'תכנון פעילות: מפגש אחד','act-seq':'תכנון פעילות: רצף מפגשים',paths:'מסלולי השתתפות בלמידה',
   'communication-continuity':'תקשורת מקדמת חוסן חברתי: ניהול תקשורת',
+  // החלק הארגוני (28/10/2026): אותם כלים, עם מקרים מהעולם הארגוני והקהילתי, לתיקייה הארגונית
+  'writer-org':'🏢 תקשורת מקדמת חוסן חברתי: ארגון','cc-org':'🏢 תקשורת מקדמת חוסן חברתי: ניהול תקשורת בארגון','teamthink-org':'🏢 חשיבת צוות: צוות בארגון','teamthink-round-org':'🏢 חשיבת צוות: סיכום סבב בארגון','journey-org':'🏢 מסע אל החוסן: קהילה',
   review:'משוב לעבודות',journey:'מסע אל החוסן',practice:'תרגול עצמי בסימולציה','practice-own':'תרגול עצמי: מקרה משלך',edu:'סימולציה: סטודנטים/ות',parents:'סימולציה: הורים',youth:'סימולציה: נוער'};
 const RUNS=[
   ['communication-continuity','message-writer.html?mode=continuity',15],
   ['studio','resilience-studio.html',40],['practi','resilience-advisor.html',20],['nugi','leadership-advisor.html',20],['nana','facilitation-advisor.html',20],['writer','message-writer.html',10],['continuity','continuity-kit.html',15],['cont-join','continuity-kit.html?part=join',20],['cont-proc','continuity-kit.html?part=proc',20],['routines','routines-hub.html',10],['routines-proc','routines-hub.html?part=proc',15],['bridge','family-bridge.html',10],['dialogue','shared-dialogue-lab.html',10],['teamthink','team-thinking.html',10],['dialogue-full','shared-dialogue-lab.html?part=full',15],['teamthink-round','team-thinking.html?part=round',15],
   ['resil','resilience-team.html',20],['conv','conversation-planner.html',20],['act-single','activity-planner.html',20],['act-seq','activity-planner.html?part=seq',35],['paths','activity-planner.html?part=paths',10],
-  ['review','academic-review.html',20],['journey','journey.html',30],['practice','practice.html?minTurns=3',20],['practice-own','practice.html?part=own&minTurns=3',25],['edu','input-screen.html',50],['parents','parent-input-screen.html',50],['youth','student-input-screen.html',50]];
+  ['review','academic-review.html',20],['journey','journey.html',30],['practice','practice.html?minTurns=3',20],['practice-own','practice.html?part=own&minTurns=3',25],['edu','input-screen.html',50],['parents','parent-input-screen.html',50],['youth','student-input-screen.html',50],
+  ['writer-org','message-writer.html?space=org',10],['cc-org','message-writer.html?mode=continuity&space=org',15],['teamthink-org','team-thinking.html?space=org',10],['teamthink-round-org','team-thinking.html?part=round&space=org',15],['journey-org','journey.html?space=org',30]];
+const isOrg=id=>/-org$/.test(id);
 const ORDER=Object.keys(TOOLS);
 const state={};
 
 // ── רשימת ההפקה ──
-RUNS.forEach(([id])=>{
+RUNS.forEach(([id],i)=>{
+  // שני חלקים (28/10/2026): חינוכי (ספריית התוצרים בדף הבית) וארגוני (התיקייה הארגונית)
+  if(i===0||isOrg(id)!==isOrg(RUNS[i-1][0]))F('runs').appendChild(el('div','tool-h',isOrg(id)?'🏢 החלק הארגוני: לתיקיית התוצרים הארגונית':'🎒 החלק החינוכי: לספריית התוצרים בדף הבית'));
   const r=el('div','run');r.id='run-'+id;
   const lab=el('label');const cb=el('input');cb.type='checkbox';cb.checked=true;cb.id='cb-'+id;
   const tx=el('span',null,TOOLS[id]);const st=el('span','st','');st.id='st-'+id;tx.appendChild(st);
@@ -271,7 +277,7 @@ function runOne(id,batch,opts){
           try{const out=await reviewAndFix(html,it.input||'',it.title,t=>{F('st-'+id).textContent=t;});html=out.html;r=out.r;}
           catch(x){console.warn('בדיקת הלקוחה:',x.message);}
           F('st-'+id).textContent='שומר...';
-          try{const sv=await api({action:'demoSave',tool:it.tool||id,title:it.title,label:it.label,html,input:it.input||'',run:batch,order:ORDER.indexOf(id),rv:r||undefined});saved++;if(sv&&sv.item)news.push(sv.item);}
+          try{const sv=await api({action:'demoSave',tool:isOrg(id)?id:(it.tool||id),space:isOrg(id)?'org':'edu',title:it.title,label:it.label,html,input:it.input||'',run:batch,order:ORDER.indexOf(id),rv:r||undefined});saved++;if(sv&&sv.item)news.push(sv.item);}
           catch(x){err=x.message;}
         }
         end(saved?'done':'error',saved?'נשמר ✓ ('+saved+' '+(saved>1?'מסמכים':'מסמך')+', '+Math.max(1,Math.round((Date.now()-t0)/60000))+' דק׳)':('השמירה לא הצליחה: '+err));
@@ -385,7 +391,7 @@ async function loadList(){
     groups[tool].forEach(d=>{
       const c=el('div','card item');
       const ck=el('input');ck.type='checkbox';ck.className='sh-ck';ck.title='לקישור הצפייה הפרטי';ck.checked=SHARE_SEL.has(d.id);ck.onchange=()=>{ck.checked?SHARE_SEL.add(d.id):SHARE_SEL.delete(d.id);F('shN').textContent=SHARE_SEL.size;};c.appendChild(ck);
-      const t=el('div','t');t.appendChild(el('b',null,d.title));t.appendChild(el('span','muted','הופק: '+date(d.at)));c.appendChild(t);
+      const t=el('div','t');t.appendChild(el('b',null,d.title));t.appendChild(el('span','muted',(d.space==='org'?'🏢 תיקייה ארגונית · ':'')+'הופק: '+date(d.at)));c.appendChild(t);
       const v=el('button','btn ghost sm','צפייה');v.onclick=()=>view(d);c.appendChild(v);
       const rv=el('button','btn ghost sm rv-btn',rvLabel(d));rv.dataset.id=d.id;rv.onclick=()=>review(d,rv,true);c.appendChild(rv);
       const rp=el('button','btn ghost sm','🔄 החלפה');rp.title='הפקה חדשה של התוצר הזה, עם בדיקה ותיקון, במקום הנוכחי';rp.onclick=()=>replaceItem(d);c.appendChild(rp);
@@ -430,7 +436,7 @@ F('sharePanel').addEventListener('toggle',()=>{if(F('sharePanel').open)loadShare
 let VIEW_N=0;
 function vmsg(t){return '<!doctype html><html dir="rtl" lang="he"><body style="font-family:Assistant,Arial,sans-serif;font-size:17px;color:#5C6771;text-align:center;padding:60px 20px">'+t+'</body></html>';}
 // כפתור הספרייה: אותו מצב בשורה ובחלון הצפייה
-function pubLabel(b,d){b.textContent=d.public?'✓ בספריית הדוגמאות · הסרה':'📚 שמירה בספריית הדוגמאות';b.classList.toggle('on',!!d.public);
+function pubLabel(b,d){const lib=d.space==='org'?'בתיקייה הארגונית':'בספריית הדוגמאות';b.textContent=d.public?'✓ '+lib+' · הסרה':'📚 שמירה '+lib;b.classList.toggle('on',!!d.public);
   b.title=d.public?'התוצר מוצג בספריית הדוגמאות הפתוחה. לחיצה מסירה אותו משם (הוא נשאר בתיקייה).':'התוצר יוצג בספריית הדוגמאות הפתוחה לכולם, וגם בחלונית "איך נראה התוצר?" בראש הכלי.';}
 let VIEWED=null;
 async function togglePublic(d){
@@ -441,7 +447,7 @@ async function togglePublic(d){
     }catch(e){}
   }
   const btns=[...document.querySelectorAll('.pub-btn[data-id="'+d.id+'"]'),...(VIEWED===d?[F('dlgPub')]:[])];
-  btns.forEach(b=>{b.disabled=true;b.textContent='שומרת...';});
+  btns.forEach(b=>{b.disabled=true;b.textContent='שמירה...';});
   try{await api({action:'demoPublish',id:d.id,public:on});d.public=on;}
   catch(e){alert('השינוי לא נשמר: '+e.message);}
   finally{btns.forEach(b=>{b.disabled=false;pubLabel(b,d);});}

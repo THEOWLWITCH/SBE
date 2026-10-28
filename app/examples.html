@@ -81,7 +81,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 <body>
 <div class="wrap">
 <header>
-  <img src="assets/begood-logo.webp" alt="Begood: חינוך מבוסס סימולציה">
+  <img src="assets/begood-mark.webp" alt="Begood">
   <nav class="hnav" aria-label="ניווט">
     <a href="about.html">אודות המערכת</a>
     <a href="home.html" id="nav-home" hidden>⌂ המרחב שלי</a>
@@ -95,8 +95,9 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
   if(t){home.hidden=false;if(h)home.href=h;}else{out.textContent='למסך הכניסה';out.href='entry.html';}})();
 </script>
 
-<h1>תוצרים לדוגמה</h1>
-<p class="lead">כך נראים תוצרים אמיתיים של הכלים: כפי שהם יוצאים מהמערכת, בלי עריכה. מוזמנות ומוזמנים לפתוח, לקרוא ולהתרשם.</p>
+<h1 id="libTitle">תוצרים לדוגמה מעולם החינוך</h1>
+<p class="lead" id="libLead">כך נראים תוצרים אמיתיים של הכלים: כפי שהם יוצאים מהמערכת, בלי עריכה. מוזמנות ומוזמנים לפתוח, לקרוא ולהתרשם.</p>
+<p class="lead" id="libSwitch"></p>
 
 <div class="dev-note" role="note"><span class="dn-ico" aria-hidden="true">🌱</span><p><b>Begood עדיין בפיתוח.</b> הכלים והתוצרים משתפרים כל הזמן, ונשמח מאוד לשמוע מה עבד, מה לא ברור ומה חסר. <a href="mailto:yael.sade@gmail.com?subject=%D7%9E%D7%A9%D7%95%D7%91%20%D7%A2%D7%9C%20Begood">לשליחת משוב</a></p></div>
 
@@ -125,6 +126,14 @@ const ACCESS='https://sbe-server.onrender.com/api/access';
 const F=id=>document.getElementById(id);
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=String(text);return n;}
 const SHARE=(new URLSearchParams(location.search).get('share')||'').replace(/[^a-z0-9]/g,'');
+// שתי ספריות (28/10/2026): חינוכית (ברירת המחדל, בדף הבית) וארגונית (examples-org.html → ?space=org)
+const SPACE=new URLSearchParams(location.search).get('space')==='org'?'org':'edu';
+if(SPACE==='org'){
+  document.title='תוצרים לדוגמה מהעולם הארגוני · Begood';
+  F('libTitle').textContent='תוצרים לדוגמה מהעולם הארגוני';
+  F('libLead').textContent='כך נראים תוצרים של הכלים כשעובדים איתם בארגון, בקהילה או ברשות: כפי שהם יוצאים מהמערכת, בלי עריכה. מוזמנות ומוזמנים לפתוח, לקרוא ולהתרשם.';
+}
+{const a=el('a',null,SPACE==='org'?'לתוצרים לדוגמה מעולם החינוך ←':'לתוצרים לדוגמה מהעולם הארגוני ←');a.href=SPACE==='org'?'examples.html':'examples-org.html';a.style.cssText='color:var(--spoken);font-weight:700';if(!SHARE)F('libSwitch').appendChild(a);}
 async function api(body){const r=await fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw new Error(String(r.status));return r.json();}
 const TOOLS=[
   ['studio','סטודיו חוסן: ערכת פעולה','מהשראה לערכת פעולה: מטרה, מוקד חוסן, טבלה לכל מפגש עם איך מנחים, מרחב ועזרים, וחומרים למשתתפים.'],
@@ -154,6 +163,13 @@ const TOOLS=[
   ['edu','סימולציה: סטודנטים/ות','תרחיש לסימולציה עם גרסת המתנסה, גרסת השחקנית, כרטיס השחקנית וגרסת המנחה.'],
   ['parents','סימולציה: הורים','תרחיש לסדנת הורים, עם כל המסמכים לסדנה.'],
   ['youth','סימולציה: נוער','תרחיש לסדנת נוער, עם כל המסמכים לסדנה.']];
+// התיקייה הארגונית: אותם כלים, עם מקרים מארגונים, מקהילות ומרשויות (החלק הארגוני במעבדת הדמו)
+const TOOLS_ORG=[
+  ['journey-org','מסע אל החוסן','הצעת מסע למרכז קהילתי: אשכולות, מכשולים וגשרים, החלטות לבחירה ואבני דרך עד תו חוסן.'],
+  ['teamthink-org','חשיבת צוות','מהלך חשיבה לצוות עובדים: כל הקולות, בעד ונגד, פרגון ותפקידים מתחלפים.'],
+  ['teamthink-round-org','חשיבת צוות: סיכום הסבב','סבב שלם של צוות בארגון: רעיונות, שקילה, החלטה, פרגון ומשוב על התהליך.'],
+  ['writer-org','תקשורת מקדמת חוסן חברתי','הודעה לצוות העובדים לפני תרגיל היערכות, בשפה רגועה וברורה.'],
+  ['cc-org','תקשורת מקדמת חוסן חברתי: ניהול תקשורת','מענה לפנייה של ועד שכונה, ודרך קבועה לעדכן את התושבים.']];
 async function load(){
   const box=F('lib');
   let items=[];
@@ -165,11 +181,11 @@ async function load(){
       n.appendChild(p);box.parentNode.insertBefore(n,box);}
     catch(e){box.textContent='';box.appendChild(el('p','empty','הקישור הזה כבר לא פתוח. אפשר לבקש קישור חדש.'));return;}
   } else {
-    try{items=(await api({action:'demoPublicList'})).items||[];}
+    try{items=(await api({action:'demoPublicList',space:SPACE})).items||[];}
     catch(e){box.textContent='';box.appendChild(el('p','empty','לא הצלחנו לטעון את הדוגמאות כרגע. אפשר לנסות שוב בעוד רגע.'));return;}
   }
   box.textContent='';
-  if(!items.length){box.appendChild(el('p','empty','הדוגמאות בהכנה: מוזמנות ומוזמנים לחזור בקרוב, או ליצור קשר ונשמח להראות.'));return;}
+  if(!items.length){box.appendChild(el('p','empty',SPACE==='org'?'התוצרים מהעולם הארגוני בהכנה: מוזמנות ומוזמנים לחזור בקרוב, או ליצור קשר ונשמח להראות.':'הדוגמאות בהכנה: מוזמנות ומוזמנים לחזור בקרוב, או ליצור קשר ונשמח להראות.'));return;}
   // ?tool=nana (מהקישור "איך נראה התוצר?" בכלי) — רק הדוגמאות של הכלי, וקישור לכל השאר
   // Existing approved continuity examples belong to the same unified product.
   items=items.map(d=>d.tool==='communication-continuity'?{...d,tool:'writer'}:d);
@@ -177,6 +193,15 @@ async function load(){
   if(only.length&&items.some(d=>only.includes(d.tool))){
     items=items.filter(d=>only.includes(d.tool));
     const all=el('p','about');const a=el('a',null,'לכל התוצרים לדוגמה ←');a.href='examples.html';a.style.cssText='color:var(--spoken);font-weight:700';all.appendChild(a);box.appendChild(all);
+  }
+  if(SPACE==='org'){ // בלי חמש השאלות: כלי אחרי כלי
+    const knownO=TOOLS_ORG.map(t=>t[0]);
+    TOOLS_ORG.concat([['_other','תוצרים נוספים','']]).forEach(([id,name,about])=>{
+      const its=items.filter(d=>id==='_other'?!knownO.includes(d.tool):d.tool===id);if(!its.length)return;
+      box.appendChild(el('h2',null,name));if(about)box.appendChild(el('p','about',about));
+      const g=el('div','grid');its.forEach(d=>{const b=el('button','ex');b.type='button';b.appendChild(el('b',null,d.title));b.appendChild(el('span','open','לצפייה ←'));b.onclick=()=>view(d);g.appendChild(b);});box.appendChild(g);
+    });
+    return;
   }
   const known=TOOLS.map(t=>t[0]);
   // לפי חמש שאלות של מוכנות יומיומית (SBE_READY)

@@ -280,6 +280,8 @@
   };
   function print(what) { window.SBE_DOC.print({ title: nameOf(I), kind: what === 'plan' ? 'מהלך החשיבה והתפקידים' : 'סיכום הסבב', node: printNode(what) }); }
 
+  // מעבדת הדמו, החלק הארגוני (28/10/2026): טופס מהעולם הארגוני
+  window.sbeTeamThinkDemoForm = (form) => { I.form = Object.assign({}, form); edited(); buildForm(); };
   F('example').addEventListener('click', () => {
     I.form = { level: 'יסודי', team: 'קבוצת תלמידים', age: 'ה–ו', size: '6', time: '40 דקות', challenge: 'איך מארגנים הפסקה ארוכה שבה לכל אחד ואחת בכיתה יש עם מי לשחק.',
       outcome: 'שתי הצעות שהצוות בוחר ביניהן, ומי מוביל/ה כל אחת בשבוע הבא.', known: 'ניסינו פעם משחק כיתתי בחצר, ורק חלק הצטרפו.', hard: 'אותם שניים מדברים הרבה, ויש שמחכים בשקט.' };

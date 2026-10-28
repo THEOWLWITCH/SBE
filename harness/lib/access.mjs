@@ -780,10 +780,13 @@ async function handleDemosLocked(store, body) {
   if (action === 'demoShareGet') {
     const sh = await shareOf(body.share);
     if (!sh) { await pause(); return [404, { error: 'expired' }]; }
-    const items = index.filter((d) => sh.all || sh.ids.includes(d.id)).map(({ id, tool, title, label, at, order }) => ({ id, tool, title, label, at, order }));
+    const items = index.filter((d) => sh.all || sh.ids.includes(d.id)).map(({ id, tool, title, label, at, order, space }) => ({ id, tool, title, label, at, order, space: space || 'edu' }));
     return [200, { name: sh.name, exp: sh.exp, items }];
   }
-  if (action === 'demoPublicList') return [200, { items: index.filter((d) => d.public).map(({ id, tool, title, label, at, order }) => ({ id, tool, title, label, at, order })) }];
+  if (action === 'demoPublicList') {
+    const space = body.space === 'org' ? 'org' : 'edu';
+    return [200, { space, items: index.filter((d) => d.public && (d.space || 'edu') === space).map(({ id, tool, title, label, at, order }) => ({ id, tool, title, label, at, order })) }];
+  }
   if (action === 'demoGet') {
     const id = String(body.id || '');
     const meta = index.find((d) => d.id === id);
@@ -828,7 +831,9 @@ async function handleDemosLocked(store, body) {
     if (!html || html.length > DEMO_MAX) return [400, { error: 'bad html' }];
     const id = (Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).slice(0, 16);
     const meta = { id, tool: clean(body.tool, 40), title: clean(body.title, 120), label: clean(body.label, 80), input: String(body.input || '').replace(/[ \t]+/g, ' ').trim().slice(0, 3000),
-      run: clean(body.run, 40), order: Number(body.order) || 0, at: new Date().toISOString(), public: false };
+      run: clean(body.run, 40), order: Number(body.order) || 0, at: new Date().toISOString(), public: false,
+      // מעבדת הדמו בשני חלקים (28/10/2026): חינוכי (ספריית התוצרים בדף הבית) וארגוני (התיקייה הארגונית)
+      space: body.space === 'org' ? 'org' : 'edu' };
     if (body.rv) meta.rv = cleanRv(body.rv);
     await store.set('demo:' + id, { html });
     const next = [meta, ...index].slice(0, DEMO_LIMIT);

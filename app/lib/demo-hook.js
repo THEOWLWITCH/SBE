@@ -158,9 +158,13 @@
       var go = ongoing ? '#cc-main-actions button[data-mode="suggest"]' : '#cc-single-generate';
       await waitFor(function () { return $(go) && !$(go).disabled; }, 30e3, "טעינת מרחב התקשורת");
       click(ongoing ? '#cc-new' : '#cc-single-new');
-      setVal("cc-text", ongoing ? "דוגמה בדויה: הורה כתב שהוא מבקש להבין מה קרה בשיעור ושואל אם אפשר לשוחח. אין עדיין מידע על האירוע או מועד מוסכם." : "דוגמה בדויה: כתבי להורים הודעה על מפגש ביום חמישי בשעה עשר בספריית בית הספר. בקשי לאשר השתתפות, בלי להבטיח תוצאה.");
-      setVal("cc-audience", "הורים");
-      setVal("cc-instruction", ongoing ? "עזרי לי להכיר בפנייה, לברר עובדות ולהציע תיאום שיחה בלי להבטיח תוצאה." : "הודעה קצרה ומזמינה לשיתוף פעולה.");
+      // החלק הארגוני (28/10/2026): אותו כלי, עם מקרה מהעולם הארגוני והקהילתי
+      var org = q.get('space') === 'org';
+      setVal("cc-text", org ? (ongoing ? "דוגמה בדויה: חבר ועד השכונה כתב שהתושבים לא קיבלו עדכון על הפסקת המים בשבוע שעבר, ושואל מי אחראי על ההודעות ואיך זה ייראה בפעם הבאה." : "דוגמה בדויה: כתוב.י לעובדי המרכז הקהילתי הודעה על תרגיל היערכות לחירום ביום שלישי בשעה תשע. בקש.י מכל צוות לבדוק מראש את רשימת הקשר שלו, בלי להפחיד.")
+        : (ongoing ? "דוגמה בדויה: הורה כתב שהוא מבקש להבין מה קרה בשיעור ושואל אם אפשר לשוחח. אין עדיין מידע על האירוע או מועד מוסכם." : "דוגמה בדויה: כתבי להורים הודעה על מפגש ביום חמישי בשעה עשר בספריית בית הספר. בקשי לאשר השתתפות, בלי להבטיח תוצאה."));
+      setVal("cc-audience", org ? (ongoing ? "ועד השכונה" : "צוות העובדים") : "הורים");
+      setVal("cc-instruction", org ? (ongoing ? "עזר.י לי להכיר בפנייה, לומר מה כבר ידוע, ולהציע דרך קבועה לעדכן את התושבים." : "הודעה קצרה, רגועה וברורה, שמזמינה כל צוות לקחת חלק.")
+        : (ongoing ? "עזרי לי להכיר בפנייה, לברר עובדות ולהציע תיאום שיחה בלי להבטיח תוצאה." : "הודעה קצרה ומזמינה לשיתוף פעולה."));
       var inp = inputSummary();
       click(go);
       var timeline = await waitFor(function () {
@@ -176,7 +180,7 @@
         copy.style.whiteSpace = 'pre-wrap'; copy.textContent = draft ? draft.value : question ? question.textContent : '';
       }
       copy.querySelectorAll("textarea").forEach(function (n) { var p = document.createElement("div"); p.style.whiteSpace = "pre-wrap"; p.textContent = n.value; n.replaceWith(p); });
-      var title = 'תקשורת מקדמת חוסן חברתי: ' + (ongoing ? 'ניהול תקשורת' : 'ניסוח חד־פעמי') + ' · דוגמה בדויה';
+      var title = 'תקשורת מקדמת חוסן חברתי: ' + (ongoing ? 'ניהול תקשורת' : 'ניסוח חד־פעמי') + (org ? ' בארגון' : '') + ' · דוגמה בדויה';
       return [{tool:ongoing?'communication-continuity':'writer',title:title,label:'תקשורת מקדמת חוסן חברתי',html:standalone(copy,title),input:inp}];
     },
     "resilience-advisor.html": function () { return inPage("practi", "פרקטי: דוח לכיתה", "פרקטי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
@@ -224,7 +228,12 @@
       return [{ tool: "dialogue", title: "מעבדת שיח וחקר משותף: נקודת הפתיחה", label: "שיח וחקר משותף", html: standalone(window.sbeDialoguePrintNode("all"), "מעבדת שיח וחקר משותף"), input: inp }];
     },
     "team-thinking.html": async function () {
-      click("#example"); await sleep(1200); var inp = inputSummary(); click("#go");
+      var org = q.get("space") === "org";
+      if (org && window.sbeTeamThinkDemoForm) window.sbeTeamThinkDemoForm({ level: 'צוות בארגון או בקהילה (בוגרים)', team: 'צוות עובדים', age: 'מבוגרים', size: '8', time: '50 דקות',
+        challenge: 'איך ממשיכים לתת שירות לתושבים ותיקים בשכונה גם כשיש הפסקת חשמל ארוכה, כשחלק מהצוות לא יכול להגיע.',
+        outcome: 'שתי דרכים לבחירה, ומי מוביל/ה כל אחת עד הישיבה הבאה.', known: 'בהפסקה האחרונה רק שני עובדים ידעו את מספרי הטלפון של המתנדבים.', hard: 'מי שבצוות שנים רבות מדברים הרבה, ועובדים חדשים כמעט לא משתתפים.' });
+      else click("#example");
+      await sleep(1200); var inp = inputSummary(); click("#go");
       await waitFor(function () { var e = $("#err1"); if (e && !e.hidden) return { fail: e.textContent }; return $("#out1 .tiles"); }, 15 * 60e3, "מהלך החשיבה")
         .then(function (r) { if (r.fail) throw new Error(r.fail); });
       await sleep(800);
@@ -234,9 +243,9 @@
         await waitFor(function () { var e = $("#out4 .err:not([hidden])"); if (e && e.textContent) return { fail: e.textContent }; return [].some.call(document.querySelectorAll("#out4 h3"), function (h) { return /מה עבד/.test(h.textContent); }); }, 15 * 60e3, "המשוב על התהליך")
           .then(function (r) { if (r && r.fail) throw new Error(r.fail); });
         await sleep(800);
-        return [{ tool: "teamthink-round", title: "חשיבת צוות: סיכום הסבב ומשוב על התהליך", label: "חשיבת צוות: סיכום הסבב", html: standalone(window.sbeTeamThinkPrintNode("round"), "סיכום הסבב"), input: inp }];
+        return [{ tool: "teamthink-round", title: "חשיבת צוות: סיכום הסבב ומשוב על התהליך" + (org ? " · צוות בארגון" : ""), label: "חשיבת צוות: סיכום הסבב", html: standalone(window.sbeTeamThinkPrintNode("round"), "סיכום הסבב"), input: inp }];
       }
-      return [{ tool: "teamthink", title: "חשיבת צוות: מהלך החשיבה ותפקידים", label: "חשיבת צוות", html: standalone(window.sbeTeamThinkPrintNode("plan"), "חשיבת צוות"), input: inp }];
+      return [{ tool: "teamthink", title: "חשיבת צוות: מהלך החשיבה ותפקידים" + (org ? " · צוות בארגון" : ""), label: "חשיבת צוות", html: standalone(window.sbeTeamThinkPrintNode("plan"), "חשיבת צוות"), input: inp }];
     },
     "family-bridge.html": function () { return inPage("bridge", "גשר בין הבית לכיתה: כרטיס בחירה", "גשר בין הבית לכיתה", "#example", "#go", "#out2 .card-family", "#out2", "#err1"); },
     "conversation-planner.html": function () { fillSample(); return dialogProduct("conv", "תכנון שיחה: תדריך לפני שיחה", "תכנון שיחה", function () { click("#bBuild"); }); },
@@ -335,15 +344,16 @@
         var r = await fetch("https://sbe-server.onrender.com/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.assign({ action: action, token: tok }, b)) });
         return r.json().catch(function () { return {}; });
       };
-      var unit = (J.UNITS.find(function (u) { return /בית ספר/.test(u.t); }) || J.UNITS[0]);
-      var made = await api("jrCreate", { unit: unit.k, unitName: "בית ספר הדר (מסע לדוגמה)", by: "מעבדת הדמו", demo: true });
+      var org = q.get("space") === "org";
+      var unit = org ? (J.UNITS.find(function (u) { return u.k === "community"; }) || J.UNITS[0]) : (J.UNITS.find(function (u) { return /בית ספר/.test(u.t); }) || J.UNITS[0]);
+      var made = await api("jrCreate", { unit: unit.k, unitName: org ? "המרכז הקהילתי בעמק (מסע לדוגמה)" : "בית ספר הדר (מסע לדוגמה)", by: "מעבדת הדמו", demo: true });
       if (!made.id) throw new Error("לא נוצר מסע דמו");
       location.hash = made.id;
       var btnByText = function (re) { return [].find.call(document.querySelectorAll("#app button"), function (b) { return re.test(b.textContent); }); };
       await waitFor(function () { return btnByText(/לקבלת הצעת מסע/); }, 60e3, "המיפוי");
       [].forEach.call(document.querySelectorAll("#app select"), function (sel, i) { var n = sel.options.length; if (n > 1) { sel.selectedIndex = 1 + (i * 7) % (n - 1); sel.dispatchEvent(new Event("change", { bubbles: true })); } });
-      var notes = document.querySelector("#app textarea"); if (notes) { notes.value = "בית ספר יסודי, אחרי תקופה של שיבושים. הצוות מחויב אבל עייף; יש מועצת תלמידים פעילה וקשר טוב עם המתנ\"ס."; notes.dispatchEvent(new Event("input", { bubbles: true })); }
-      var inp = "בית ספר יסודי (מסע לדוגמה) · מיפוי מגוון בחמשת האשכולות ובנקודות השבירה · " + notes.value;
+      var notes = document.querySelector("#app textarea"); if (notes) { notes.value = org ? "מרכז קהילתי שמשרת ארבע שכונות, אחרי חורף עם הפסקות חשמל ארוכות. יש מתנדבים רבים אבל הקשר איתם תלוי בשני אנשים; ועד התושבים פעיל, והרשות שותפה." : "בית ספר יסודי, אחרי תקופה של שיבושים. הצוות מחויב אבל עייף; יש מועצת תלמידים פעילה וקשר טוב עם המתנ\"ס."; notes.dispatchEvent(new Event("input", { bubbles: true })); }
+      var inp = (org ? "מרכז קהילתי (מסע לדוגמה)" : "בית ספר יסודי (מסע לדוגמה)") + " · מיפוי מגוון בחמשת האשכולות ובנקודות השבירה · " + notes.value;
       await sleep(900);
       var errText = function () { var e = [].find.call(document.querySelectorAll("#app .err"), function (x) { return !x.hidden && x.textContent.trim(); }); return e ? e.textContent.trim() : ""; };
       btnByText(/לקבלת הצעת מסע/).click();

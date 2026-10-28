@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>המרחב שלי</title>
 <script src="lib/access-guard.js"></script>
+<script src="lib/brand-tagline.js" defer></script>
 <script src="lib/readiness-groups.js"></script>
+<script src="lib/spaces.js"></script>
 <script src="lib/gift-link.js"></script>
 <script src="lib/research-core.js" defer></script>
 <script src="lib/research-partnership-core.js" defer></script>
@@ -64,6 +66,14 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 .banner a{color:var(--spoken);font-weight:700;}
 h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:18px;margin:22px 0 10px;}
 .rgroup{font-size:15.5px;margin:18px 0 8px;color:var(--spoken);}
+/* ארבעה מרחבים (28/10/2026): המרחב שלי מראה את הכלים של המרחב שלך ואת המשותפים */
+.spacebar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;border-radius:14px;padding:10px 14px;margin:6px 0 4px}
+.spacebar b{font-size:16px}.spacebar span{font-size:13.5px;opacity:.9}
+.spacebar.org{background:#e8eef5;color:#1d3f63}.spacebar.edu{background:#e7f3ec;color:#245c3a}
+.spacebar .sw{margin-inline-start:auto;display:flex;gap:6px}
+.spacebar .sw button{font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:4px 12px;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer}
+.spacebar .sw button[aria-pressed=true]{background:currentColor}.spacebar .sw button[aria-pressed=true] span{color:#fff}
+.tile .shared{display:inline-block;margin-top:6px;font-size:11.5px;font-weight:700;color:#0f5f68;background:#dff1f3;border-radius:999px;padding:1px 8px}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
 .tile{display:block;background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:13px 15px;
   text-decoration:none;color:var(--ink);box-shadow:0 1px 3px var(--shadow);transition:border-color .12s;}
@@ -114,7 +124,7 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 </head>
 <body>
 <div class="wrap">
-<img class="brand" src="assets/begood-logo.webp" alt="Begood: חינוך לחוסן">
+<img class="brand" src="assets/begood-logo-mark.webp" alt="Begood" data-brand>
 <header>
   <div>
     <h1>המרחב שלי</h1>
@@ -224,19 +234,46 @@ async function api(action, extra = {}) {
   if (!hadTools && INFO.kind !== "instadmin" && !has("lecturer")) {
     box.append(el("div", { class: "empty" }, "עדיין לא נפתחו לך כלים. אפשר לפנות למי שנתן/ה לך את הקוד."));
   }
-  {
-    // הכלים לפי חמש שאלות של מוכנות יומיומית (SBE_READY), ובסוף ספריית המקורות
-    const R = window.SBE_READY, tile = ([h, t, d, blank]) => el("a", { class: "tile", href: h, target: blank ? "_blank" : null, rel: blank ? "noopener" : null }, el("b", {}, t), el("span", {}, d));
-    const rest = T.filter(x => !(R && R.groupOf(x[0])));
+  // ארבעה מרחבים, בית אחד (28/10/2026): "מי שנכנס למרחב הארגוני או החינוכי לא רואה כלים שמיועדים רק למרחב השני".
+  // המרחב נקבע לפי הכלים שבקוד: מי שיש לו/ה כלי חינוכי נמצא/ת במרחב החינוכי; מי שיש לו/ה רק כלים משותפים, במרחב הארגוני.
+  // מנהלת המערכת רואה את שני המרחבים ומחליפה ביניהם. הכלים המשותפים מופיעים בשניהם (lib/spaces.js).
+  const SP = window.SBE_SPACES, sOf = x => SP ? SP.spaceOf(x[0]) : null;
+  const SPACE_KEY = "sbe.home.space";
+  const mySpace = () => {
+    if (!SP) return null;
+    if (IS_SYS) { try { const s = localStorage.getItem(SPACE_KEY); if (s === "org" || s === "edu") return s; } catch (e) {} return "edu"; }
+    return T.some(x => sOf(x) === "edu") ? "edu" : "org";
+  };
+  const drawTiles = () => {
+    box.querySelectorAll(".spacebar,.rgroup,.tiles").forEach(n => n.remove());
+    const space = mySpace();
+    const VIEW = space ? T.filter(x => { const s = sOf(x); return !s || s === "admin" || s === "research" || SP.visibleIn(space, x[0]); }) : T.slice();
+    if (space) {
+      const m = SP.meta(space), bar = el("div", { class: "spacebar " + space });
+      bar.append(el("b", {}, m.i + " " + m.n), el("span", {}, m.who + ", והכלים המשותפים לשני המרחבים"));
+      if (IS_SYS) {
+        const sw = el("div", { class: "sw" });
+        ["edu", "org"].forEach(id => { const b = el("button", { type: "button", "aria-pressed": String(id === space) }, el("span", {}, SP.meta(id).n)); b.addEventListener("click", () => { try { localStorage.setItem(SPACE_KEY, id); } catch (e) {} drawTiles(); }); sw.append(b); });
+        bar.append(sw);
+      }
+      box.prepend(bar);
+    }
+    // הכלים לפי חמש שאלות של מוכנות יומיומית (SBE_READY), ובסוף ספריית המקורות והתוצרים לדוגמה של המרחב
+    const R = window.SBE_READY, tile = (x) => { const [h, t, d, blank] = x; const a = el("a", { class: "tile", href: h, target: blank ? "_blank" : null, rel: blank ? "noopener" : null }, el("b", {}, t), el("span", {}, d)); if (space && sOf(x) === "shared") a.append(el("span", { class: "shared" }, "↔ משותף לשני המרחבים")); return a; };
+    const gift = box.querySelector(".sbe-gift");
+    const add = (n) => gift ? box.insertBefore(n, gift) : box.append(n);
+    const rest = VIEW.filter(x => !(R && R.groupOf(x[0])));
     (R ? R.GROUPS : []).forEach(gr => {
-      const its = T.filter(x => R.groupOf(x[0]) === gr); if (!its.length) return;
-      box.append(el("h3", { class: "rgroup" }, R.title(gr)));
-      const g = el("div", { class: "tiles" }); its.forEach(x => g.append(tile(x))); box.append(g);
+      const its = VIEW.filter(x => R.groupOf(x[0]) === gr); if (!its.length) return;
+      add(el("h3", { class: "rgroup" }, R.title(gr)));
+      const g = el("div", { class: "tiles" }); its.forEach(x => g.append(tile(x))); add(g);
     });
     const g = el("div", { class: "tiles" });
-    rest.concat([["sources-library.html", "ספריית המקורות", "המקורות התיאורטיים של המערכת"]]).forEach(x => g.append(tile(x)));
-    box.append(el("h3", { class: "rgroup" }, "📚 לעיון"), g);
-  }
+    const ex = space === "org" ? ["examples-org.html", "תוצרים לדוגמה מהעולם הארגוני", "כך נראים תוצרים של הכלים בארגון, בקהילה וברשות"] : ["examples.html", "תוצרים לדוגמה מעולם החינוך", "כך נראים תוצרים אמיתיים של הכלים"];
+    rest.concat([["sources-library.html", "ספריית המקורות", "המקורות התיאורטיים של המערכת"], ex]).forEach(x => g.append(tile(x)));
+    add(el("h3", { class: "rgroup" }, "📚 לעיון")); add(g);
+  };
+  drawTiles();
   if (window.SBE_GIFT) window.SBE_GIFT.mount(box, { from: ss("sbe.session.name") || "" });
 }
 
