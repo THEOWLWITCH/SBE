@@ -155,6 +155,16 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 .linklist a:hover{border-color:var(--spoken);}
 .linklist a b{display:block;font-weight:700;margin-bottom:1px;}
 .linklist a span{color:var(--muted);font-size:12px;}
+html .card.sbe-s{border-top:1px solid #e3e9ef!important}
+.logged{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 auto 14px;font-size:13.5px;color:var(--muted)}
+.logged .lg-who b{color:var(--ink);font-weight:600}
+.logged button{width:auto;margin:0;font:inherit;font-weight:600;font-size:13.5px;padding:5px 16px;border-radius:999px;cursor:pointer;transition:background .16s ease,border-color .16s ease}
+.logged .lg-home{background:#1d3f63;border:1px solid #1d3f63;color:#fff}
+.logged .lg-home:hover{background:#16324f}
+.logged .lg-out{background:transparent;border:1px solid #d7e0ea;color:#1d3f63}
+.logged .lg-out:hover{border-color:#1d3f63}
+.code-row input.code{background:#fff;border:1px solid #d7e0ea}
+.code-row input.code:focus{border-color:#1b9aaa;box-shadow:0 0 0 3px rgba(27,154,170,.12);outline:none}
 .whoami{font-size:13px;color:var(--muted);margin-bottom:8px;}
 .whoami b{color:var(--ink);}
 .morelinks{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:center;font-size:13.5px;line-height:1.6}
@@ -617,15 +627,13 @@ function buildAdminField(role){
     }
   } catch(e){}
   if (home) {
-    var bar = el("div",{class:"card", style:"margin-bottom:14px"});
-    var inn = el("div",{class:"in"});
-    var goHome = el("button",{class:"primary", style:"width:auto;margin-inline-end:8px"},"חזרה למסך שלי");
-    var out = el("button",{style:"width:auto"},"יציאה");
+    // מחובר/ת: שורה דקה אחת מעל הכניסה, בלי כרטיס (28/10/2026: "הסרגל העליון של הקוד לא נראה טוב")
+    var bar = el("div",{class:"logged sbe-no-theme"});
+    var goHome = el("button",{class:"lg-home sbe-no-theme"},"⌂ המרחב שלי");
+    var out = el("button",{class:"lg-out sbe-no-theme"},"יציאה");
     goHome.addEventListener("click", function(){ location.href = home; });
     out.addEventListener("click", function(){ clearSession(); bar.remove(); });
-    inn.append(el("p",{class:"whoami", style:"margin-top:0"}, "את/ה מחובר/ת", roleLabel ? " · " : "", roleLabel ? el("b",{},roleLabel) : ""),
-      goHome, out);
-    bar.append(inn);
+    bar.append(el("span",{class:"lg-who"}, "מחובר/ת", roleLabel ? " · " : "", roleLabel ? el("b",{},roleLabel) : ""), goHome, out);
     view.prepend(bar);
   }
 })();
