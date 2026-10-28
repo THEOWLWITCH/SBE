@@ -206,7 +206,7 @@ const openai = {
     const input = openAIInput(system, prompt, messages);
     const r = await post('https://api.openai.com/v1/responses', {
       authorization: `Bearer ${apiKey}`,
-    }, { model, input, max_output_tokens: maxTokens, ...(policy === 'communication-continuity' ? { store: false } : {}), ...VARIATION[variation].openai });
+    }, { model, input, max_output_tokens: maxTokens, ...(['communication-continuity', 'research-partnership-impact'].includes(policy) ? { store: false } : {}), ...VARIATION[variation].openai });
     if (r.status === 'incomplete') throw new ProviderError('התוצר נקטע. max_output_tokens נמוך מדי');
     let text = r.output_text || '';
     if (!text && Array.isArray(r.output)) {
@@ -218,14 +218,21 @@ const openai = {
 
 const REGISTRY = { anthropic, openai };
 
-export function getProvider(name) {
+export function getProviderDescriptor(name = process.env.PROVIDER || 'anthropic') {
   const p = REGISTRY[name];
   if (!p) throw new Error(`ספק לא מוכר: ${name}. אפשרויות: ${Object.keys(REGISTRY).join(', ')}`);
+  const model = process.env.MODEL || p.defaultModel;
+  return Object.freeze({ provider: p.id, model, version: `provider-adapter-1.0.0:${model}` });
+}
+
+export function getProvider(name) {
+  const descriptor = getProviderDescriptor(name);
+  const p = REGISTRY[descriptor.provider];
   const apiKey = process.env[p.envKey];
   if (!apiKey) throw new Error(`חסר מפתח. הגדירי ${p.envKey}`);
   return {
     id: p.id,
-    model: process.env.MODEL || p.defaultModel,
+    model: descriptor.model,
     contextWindowTokens: Number(process.env.COMMUNICATION_CONTEXT_TOKENS) || undefined,
     async complete(opts) {
       let lastErr;
@@ -238,7 +245,7 @@ export function getProvider(name) {
         }
         catch (e) {
           lastErr = e;
-          if (!(e instanceof ProviderError) || !e.retryable) throw e;
+          if (opts.policy === 'research-partnership-impact' || !(e instanceof ProviderError) || !e.retryable) throw e;
           await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
         }
       }

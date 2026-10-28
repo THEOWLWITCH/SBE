@@ -34,7 +34,7 @@ import { createServer } from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
-import { getProvider } from './lib/providers.mjs';
+import { getProvider, getProviderDescriptor } from './lib/providers.mjs';
 import { runPipeline } from './lib/pipeline.mjs';
 import { toScenario } from './lib/to-scenario.mjs';
 import { handleAccess, supabaseStore, authorizeModel } from './lib/access.mjs';
@@ -164,7 +164,14 @@ function readRawBody(req,maxBytes){return new Promise((resolve,reject)=>{let len
 // HTTP input and environment flags cannot replace authentication or providers.
 export function createPracticeServer({ authStore, providerFactory = getProvider, saveScenarioImpl = saveScenario,
   limits = createModelLimits(), partnershipOptions = {}, partnershipWork = {}, signingEnabled = false } = {}) {
-const researchPartnershipOptions={...partnershipOptions,signingEnabled:signingEnabled===true};
+let impactDefaults = {};
+if (!Object.hasOwn(partnershipOptions, 'impactDescriptor') && !Object.hasOwn(partnershipOptions, 'impactProviderFactory')) {
+  try {
+    const descriptor = getProviderDescriptor();
+    impactDefaults = { impactDescriptor: descriptor, impactProviderFactory: () => providerFactory(descriptor.provider) };
+  } catch {}
+}
+const researchPartnershipOptions={...impactDefaults,...partnershipOptions,signingEnabled:signingEnabled===true};
 // עבודות צינור שרצות ברקע (בזיכרון; נמחקות אחרי 3 שעות)
 const PIPE_JOBS = new Map();
 // גם במאגר (05/10/2026): אם השרת מופעל מחדש באמצע בנייה (Deploy, עומס), מצב העבודה לא הולך לאיבוד —
