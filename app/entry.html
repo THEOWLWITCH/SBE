@@ -58,11 +58,12 @@ header{padding:14px 0 4px;}
 }
 :root[data-theme="dark"] .logo-hero img{filter:none;background:#EEF1F4;border-radius:14px;padding:10px 16px;}
 /* ארבעה מרחבים (28/10/2026): הכיתוב מתחת ללוגו בשלוש שפות, ושני המרחבים בדף הבית */
-.tagline3{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 14px;border-top:1.5px solid #c9d7e3;padding-top:10px;margin:2px auto 0;max-width:700px}
-.tagline3 span{font-weight:700;color:#1d3f63;font-size:clamp(13px,3.4vw,16px);white-space:nowrap}
-.tagline3 span[lang=he]{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:clamp(15px,3.8vw,18px)}
-.tagline3 i{width:1.5px;height:18px;background:#c9d7e3}
-@media screen and (max-width:480px){.tagline3 i{display:none}.tagline3{flex-direction:column;gap:2px}}
+.tagline3{display:flex;flex-wrap:nowrap;justify-content:center;align-items:center;gap:0 clamp(4px,1.5cqi,14px);border-top:1px solid #d6e0ea;padding-top:9px;margin:2px auto 0;max-width:760px;white-space:nowrap}
+.logo-hero{container-type:inline-size}
+@media screen and (max-width:480px){.logo-hero{padding-inline:6px}}
+.tagline3 span{font-weight:600;color:#1d3f63;font-size:clamp(7px,2.05cqi,14.5px);white-space:nowrap;letter-spacing:.01em}
+.tagline3 span[lang=he]{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:clamp(7.6px,2.35cqi,16px)}
+.tagline3 i{flex:none;width:1px;height:14px;background:#c9d7e3}
 :root[data-theme="dark"] .tagline3 span{color:#cfe3f5}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tagline3 span{color:#cfe3f5}}
 .spaces{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 16px}
@@ -155,9 +156,9 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 .linklist a span{color:var(--muted);font-size:12px;}
 .whoami{font-size:13px;color:var(--muted);margin-bottom:8px;}
 .whoami b{color:var(--ink);}
-.morelinks{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:13px;}
-.morelinks a{color:var(--spoken);font-weight:600;}
-.morelinks .sep{color:var(--muted);}
+.morelinks{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:center;font-size:13.5px;line-height:1.6}
+.morelinks a,.morelinks .switchlink{color:#1d3f63;font-weight:500;text-decoration:none;font-size:13.5px}.morelinks a:hover,.morelinks a:focus-visible,.morelinks .switchlink:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.morelinks .sep{color:#c3cfdb}
 #altField{margin-top:12px;padding-top:12px;border-top:1px solid var(--hair);}
 #altField[hidden]{display:none;}
 .role-pick-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;}
@@ -175,7 +176,6 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 .maplink b{display:block;font-size:17px}.maplink span{font-size:14px;opacity:.92}
 .maplink.gift{display:flex;align-items:center;justify-content:center;gap:6px;background:#fff;color:#16324a;border:1px solid #f1d98a;box-shadow:none;padding:6px 14px;margin:0 0 14px;border-radius:999px;font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .maplink.gift::before{display:none}
-.research-mini{text-align:center;margin:2px 0 12px}.research-mini a{display:inline-block;font-size:13.5px;font-weight:700;color:#1d3f63;text-decoration:none;border:1.5px solid #c9d7e7;background:#fff;border-radius:999px;padding:4px 16px}.research-mini a:hover,.research-mini a:focus-visible{border-color:#1d3f63}
 .maplink.gift b{display:inline;font-size:14px}.maplink.gift span{font-size:13px;opacity:.9}
 @media screen and (max-width:520px){.maplink.gift{padding:4px 10px;font-size:13px}.maplink.gift b{font-size:13px}.maplink.gift span{font-size:12px}}
 </style>
@@ -349,12 +349,10 @@ function renderEntry(){
   const admBtn = el("button",{class:"switchlink"},"כניסת ניהול");
   admBtn.addEventListener("click", () => { alt.hidden = false; alt.textContent = ""; alt.append(buildAdminField("sys")); });
   links.append(admBtn, el("span",{class:"sep"},"·"),
-    el("a",{href:"about.html"},"אודות המערכת"), el("span",{class:"sep"},"·"), el("a",{href:"map.html"},"מפת הכלים"), el("span",{class:"sep"},"·"), el("a",{href:"examples.html"},"תוצרים לדוגמה: חינוך"), el("span",{class:"sep"},"·"), el("a",{href:"examples-org.html"},"תוצרים לדוגמה: ארגונים"), el("span",{class:"sep"},"·"), el("a",{href:"renew.html"},"בקשה לכלים של Begood"));
+    el("a",{href:"about.html"},"אודות המערכת"), el("span",{class:"sep"},"·"), el("a",{href:"map.html"},"מפת הכלים"), el("span",{class:"sep"},"·"), el("a",{href:"examples.html"},"תוצרים לדוגמה: חינוך"), el("span",{class:"sep"},"·"), el("a",{href:"examples-org.html"},"תוצרים לדוגמה: ארגונים"), el("span",{class:"sep"},"·"), el("a",{href:"renew.html"},"בקשה לכלים של Begood"), el("span",{class:"sep"},"·"), el("a",{href:"research-partnership.html",title:"שותפות במחקר: הצעה לשיתוף פעולה במחקר"},"מחקר"));
   minn.append(links, alt);
   more.append(minn);
   view.append(more);
-  // שותפות במחקר (28/10/2026: "כפתור המחקר... קטן למטה ויהיה כתוב עליו - מחקר בלבד")
-  view.append(el("div",{class:"research-mini"}, el("a",{href:"research-partnership.html",title:"שותפות במחקר: הצעה לשיתוף פעולה במחקר"},"מחקר")));
   // זמני — להרצאה (01/10/2026): כניסה ישירה לפרקטי בלי קוד, עד GUEST_UNTIL.
   if (guestOpen()) {
     const gc = el("div",{class:"card"});
