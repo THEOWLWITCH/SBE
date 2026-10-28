@@ -58,9 +58,11 @@ test('AE22: legacy access rechecks institution and ceiling; activity access cann
   assert.ok(await authorizePermission(store,legacy.token,['studio']));
   store.data.get('institutions')[0].active=false;
   assert.equal(await authorizePermission(store,legacy.token,['studio']),null);
-  // עד לאישור המקצועי: רק הרשאת studio פותחת את הסטודיו; תכנון פעילות לבד — לא
+  // אושר 28/10/2026: גם תכנון פעילות פותח את הסטודיו, אבל לא את נתוני המיפוי
   const onlyActivity=await signed(['activity']);
-  assert.equal((await handleStudio(onlyActivity.store,{token:onlyActivity.token,action:'authorize'}))[1].code,'studio_forbidden');
+  assert.deepEqual(await handleStudio(onlyActivity.store,{token:onlyActivity.token,action:'authorize'},{fetchImpl:()=>{throw Error('AI must not run');}}),[200,{ok:true}]);
+  const onlyWriter=await signed(['writer']);
+  assert.equal((await handleStudio(onlyWriter.store,{token:onlyWriter.token,action:'authorize'}))[1].code,'studio_forbidden');
   const actor=await signed(['studio']);
   const denied=await handleStudio(actor.store,{token:actor.token,action:'mapping',mapping:{id:'abcdefgh',key:'key'}},{fetchImpl:()=>{throw Error('AI must not run');}});
   assert.equal(denied[0],403);assert.equal(denied[1].code,'mapping_forbidden');

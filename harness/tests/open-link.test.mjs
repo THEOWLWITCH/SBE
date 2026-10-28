@@ -74,9 +74,10 @@ test('a daily link can open any listed tool, or all of them at once', async () =
   [st, out] = await handleAccess(store, { action: 'openJoin', id: 'all-day' });
   assert.equal(out.page, 'home.html'); assert.ok(out.perms.includes('writer') && out.perms.includes('leadership') && out.perms.includes('teamthink'));
   const guest = out.token;
-  for (const page of ['message-writer.html', 'leadership-advisor.html', 'shared-dialogue-lab.html', 'academic-review.html'])
+  // סטודיו חוסן אושר (28/10/2026): פתוח גם עם נוגי, שנמצאת בקישור היומי לכל הכלים
+  for (const page of ['message-writer.html', 'leadership-advisor.html', 'shared-dialogue-lab.html', 'academic-review.html', 'resilience-studio.html'])
     assert.ok((await authorizeModel(store, { token: guest, page })).ok, page);
-  for (const page of ['resilience-studio.html', 'journey.html', 'practice.html'])
+  for (const page of ['journey.html', 'practice.html'])
     assert.equal((await authorizeModel(store, { token: guest, page })).ok, false, page);
   await handleAccess(store, { action: 'openRevoke', token, id: 'all-day' });
   assert.equal((await authorizeModel(store, { token: guest, page: 'message-writer.html' })).ok, false);
