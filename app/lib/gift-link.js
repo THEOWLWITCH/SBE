@@ -101,7 +101,7 @@
     box.append(el('h3', null, '🎁 "יש מה לעשות" במתנה'),
       el('p', null, 'המדריכון לחירום פתוח לכולם. אפשר לשלוח אותו כמתנה אישית: מי שפותח/ת את הקישור רואה "מתנה בשבילך", ממי, ואת ההקדשה. Begood לא שולחת דבר: מעתיקים את הקישור או שולחים בוואטסאפ.'),
       el('div', { class: 'grid' },
-        el('div', null, el('label', null, 'למי (שם אחד בכל שורה, רשות)'), to),
+        el('div', null, el('label', null, 'למי (רשות)'), to),
         el('div', null, el('label', null, 'ממי (רשות)'), from, el('label', null, 'שפת המדריכון'), lang)),
       el('label', null, 'הקדשה (רשות)'), msg, go, out);
     node.append(box);

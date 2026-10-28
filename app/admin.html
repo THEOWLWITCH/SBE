@@ -1682,7 +1682,7 @@ function unlockCard(pwLabel, loader){
   go.addEventListener("click", submit);
   pw.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
   inn.append(el("p",{style:"margin:0 0 10px;font-size:14.5px;color:var(--muted)"},
-    "כדי לראות ולשנות, אפשר להקליד את " + pwLabel + ". היא נשמרת רק כל עוד הדף הזה פתוח."),
+    "הסיסמה נשמרת רק כל עוד הדף הזה פתוח."),
     pw, err, el("div",{class:"btnrow"}, go));
   c.append(inn);
   return c;

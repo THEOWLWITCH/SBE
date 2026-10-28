@@ -37,6 +37,7 @@
     'html input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]):not(.code):not(.sbe-no-theme),html select:not(.sbe-no-theme),html textarea:not(.sbe-no-theme){border-radius:10px!important;border-width:1px!important;transition:border-color .16s ease,box-shadow .16s ease}',
     'html input:not([type=checkbox]):not([type=radio]):not([type=range]):focus-visible,html select:focus-visible,html textarea:focus-visible{outline:none!important;border-color:#1b9aaa!important;box-shadow:0 0 0 3px rgba(27,154,170,.16)!important}',
     'html :focus-visible{outline-color:#1b9aaa}',
+    'html .sbe-vh{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;margin:0!important;padding:0!important;border:0!important}',
     '@media (prefers-reduced-motion:reduce){html .sbe-b{transition:none!important}html .sbe-b:hover{transform:none!important}}',
     '}'
   ].join('\n');
@@ -97,12 +98,23 @@
     el.classList.add('sbe-s'); if (ht < 60) el.classList.add('sbe-s-thin');
   }
 
+  // כיתוב שחוזר על מה שכתוב בתוך שדה הקלט (28/10/2026: "אם משהו כתוב בתוך תיבת הקלט לא צריך לחזור עליו כהסבר"):
+  // תווית זהה לטקסט שבתוך השדה מוסתרת מהעין ונשארת לקוראי מסך. תווית עם "(רשות)" או "שדה עיקרי" נשארת.
+  var norm = function (s) { return String(s || '').replace(/[ⓘ:.*…"״]/g, '').replace(/\s+/g, ' ').trim(); };
+  function dedupeLabel(f) {
+    if (f.hasAttribute('data-sbe-l')) return; f.setAttribute('data-sbe-l', '');
+    var ph = norm(f.getAttribute('placeholder')); if (!ph) return;
+    var l = (f.id && document.querySelector('label[for="' + (window.CSS && CSS.escape ? CSS.escape(f.id) : f.id) + '"]')) || (f.previousElementSibling && f.previousElementSibling.tagName === 'LABEL' ? f.previousElementSibling : null);
+    if (!l || l.contains(f) || /רשות|שדה עיקרי/.test(l.textContent)) return;
+    if (norm(l.textContent) === ph) l.classList.add('sbe-vh');
+  }
   var pend = [], queued = false;
   function scan(root) {
     if (!root || root.nodeType !== 1) return;
     var bs = root.matches('button,.btn,a.btn,input[type=submit],input[type=button]') ? [root] : [];
     bs = bs.concat([].slice.call(root.querySelectorAll('button,.btn,a.btn,input[type=submit],input[type=button]')));
     bs.forEach(classifyButton);
+    [].slice.call(root.querySelectorAll('input[placeholder],textarea[placeholder]')).forEach(dedupeLabel);
     var ss = [root].concat([].slice.call(root.querySelectorAll('div,section,aside,article,details,p,header,footer,nav,fieldset,form,ul,ol,li,blockquote')));
     ss.forEach(classifySurface);
   }
