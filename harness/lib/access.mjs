@@ -5,6 +5,7 @@
 // store: { get(key) → value|null, set(key, value), del(key), list(prefix), delPrefix(prefix) }.
 import { scryptSync, randomBytes, timingSafeEqual, createHmac, createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
+import { handleHlRooms, roomModelGate } from './hl-rooms.mjs';
 const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
 const JOURNEY_WORKSPACE = createRequire(import.meta.url)('../../app/lib/journey-workspace-model.js');
 const JOURNEY_ANALYSIS = createRequire(import.meta.url)('../../app/lib/journey-analysis-model.js');
@@ -385,6 +386,11 @@ export async function authorizeModel(store, auth, route = '/api/complete') {
   const a = auth && typeof auth === 'object' ? auth : {};
   const page = modelPage(a.page);
   if (!Object.hasOwn(MODEL_ROUTES, route) || (MODEL_ROUTES[route] && !MODEL_ROUTES[route].includes(page))) return { ok: false };
+  // מעבדת האופק: משתתפים בעבודה משותפת (?room=) פונים למודל רק בדף של החדר, כל עוד הוא פתוח.
+  if (a.room && route === '/api/complete') {
+    const g = await roomModelGate(store, a, page);
+    if (g) return { ok: true, who: 'hlroom', page, route, ...modelIdentity({ k: 'hlroom', c: g.principal, inst: g.institution }, g.principal), institutionId: null };
+  }
   if (a.token) {
     const t = await verifyToken(store, a.token);
     if (t?.k === 'workshop') {
@@ -1709,6 +1715,10 @@ export async function handleAccess(store, body) {
   if (/^crit(List|Propose|Mine|Use|Admin|Approve|Reject|Remove)$/.test(action || '')) return handleReviewCriteria(store, body);
   if (/^jr[A-Z]/.test(action || '')) return handleJourney(store, body);
   if (/^wf(Open|Submit|List|Delete|Join|Get)$/.test(action || '')) return handleWorkshopFeedback(store, body);
+  if (/^hl(RoomCreate|Poll|Write|RoomClose)$/.test(action || '')) return handleHlRooms(store, body, { authorize: async (token) => {
+    const t = await authorizePermission(store, token, ['horizon']);
+    return t ? { principal: modelIdentity(t, token).principal, inst: t.inst || null } : null;
+  } });
 
   const sysTok = await verifyToken(store, body?.token);
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
