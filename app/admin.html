@@ -1651,7 +1651,10 @@ function resetAccessData(){ if (!accessAuth && sysToken()) tokenFailed = true; a
 
 function accessFail(e){
   ask("הפעולה לא בוצעה",
-    e.status === 403 ? "הסיסמה כבר לא תקפה. אפשר להקליד אותה מחדש." : "אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע.",
+    e.status === 403 ? "הסיסמה כבר לא תקפה. אפשר להקליד אותה מחדש."
+    : e.status === 400 && e.message === "unknown action" ? "השרת עוד לא מכיר את הפעולה הזו: כנראה הוא עוד לא עודכן לגרסה האחרונה. אפשר לנסות שוב אחרי שהשרת יתעדכן."
+    : e.status ? "השרת החזיר שגיאה (" + e.status + (e.message && e.message !== String(e.status) ? ": " + e.message : "") + "). אפשר לנסות שוב בעוד רגע."
+    : "אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע.",
     () => { if (e.status === 403) { resetAccessData(); render(); } });
 }
 
