@@ -708,7 +708,7 @@ const GROUPS = [
   { id:"char1", title:"הדמות הראשונה", fields:[
     { k:"char1Name", l:"שם", hint:"אפשר למלא בעצמך; אם לא, המערכת משלימה" },
     { k:"char1Gender", l:"מגדר", type:"select", other:true, opts:["","נקבה","זכר","אחר"],
-      hint:"המערכת מציעה לפי השם; אפשר לשנות, ואם תשאירו ריק, היא תשלים. אפשר גם להקליד זהות אחרת (למשל זהות להט\"ב) בשדה \"אחר\"",
+      hint:"המערכת מציעה לפי השם; אפשר לשנות, ואם תשאירו ריק, היא תשלים.",
       deps:["char1Register","char1Tic","char1Valve","char1Trust","char1Contra","turningPoints"] },
     { k:"char1Age", l:"גיל", type:"number",
       hint:"המערכת מציעה לפי התיאור שכתבת בדמות 1 למעלה; אפשר לשנות" },
@@ -746,7 +746,7 @@ const GROUPS = [
   { id:"other", title:"הדמות השנייה", fields:[
     { k:"otherName", l:"שם", hint:"אפשר למלא בעצמך; אם לא, המערכת משלימה" },
     { k:"otherGender", l:"מגדר", type:"select", other:true, opts:["","נקבה","זכר","אחר"],
-      hint:"המערכת מציעה לפי השם; אפשר לשנות, ואם תשאירו ריק, היא תשלים. אפשר גם להקליד זהות אחרת (למשל זהות להט\"ב) בשדה \"אחר\"",
+      hint:"המערכת מציעה לפי השם; אפשר לשנות, ואם תשאירו ריק, היא תשלים.",
       deps:["register","tic","valve","trust","contra","turningPoints"] },
     { k:"otherAge", l:"גיל", type:"number",
       hint:"המערכת מציעה לפי גיל דמות 2 והתיאור שכתבת למעלה; אפשר לשנות" },
@@ -1611,7 +1611,7 @@ body.sbe-hasnav{padding-top:38px;}
 </style>
 <div id="navBar">
   <button type="button" id="navBack" title="חזרה צעד אחד">→ חזרה</button>
-  <button type="button" id="navHome" title="חזרה למסך שנפתח אחרי הכניסה שלך" hidden>⌂ המסך שלי</button>
+  <button type="button" id="navHome" title="חזרה למסך שנפתח אחרי הכניסה שלך" hidden>⌂ המרחב שלי</button>
   <button type="button" id="navMenuBtn" title="כל המסכים">☰ תפריט</button>
 </div>
 <div id="navPanel" hidden></div>
@@ -1647,7 +1647,7 @@ body.sbe-hasnav{padding-top:38px;}
     if (window.history.length > 1) window.history.back();
     else location.href = base + "entry.html";
   });
-  // כפתור "⌂ המסך שלי" — ראו ההערה המלאה בראש הקובץ. מוצג רק אם יש ערך
+  // כפתור "⌂ המרחב שלי" — ראו ההערה המלאה בראש הקובץ. מוצג רק אם יש ערך
   // שמור וזה לא כבר המסך הנוכחי (כדי לא להציע "לחזור" למקום שכבר עומדים בו).
   try {
     var homeUrl = sessionStorage.getItem("sbe.session.homeUrl");

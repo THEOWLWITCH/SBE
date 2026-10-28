@@ -293,7 +293,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 
 <div id="navBar">
   <button type="button" id="navBack" title="חזרה צעד אחד">→ חזרה</button>
-  <button type="button" id="navHome" title="חזרה למסך שנפתח אחרי הכניסה שלך" hidden>⌂ המסך שלי</button>
+  <button type="button" id="navHome" title="חזרה למסך שנפתח אחרי הכניסה שלך" hidden>⌂ המרחב שלי</button>
   <button type="button" id="navMenuBtn" title="כל המסכים">☰ תפריט</button>
 </div>
 <div id="navPanel" hidden></div>
@@ -1682,7 +1682,7 @@ function unlockCard(pwLabel, loader){
   go.addEventListener("click", submit);
   pw.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
   inn.append(el("p",{style:"margin:0 0 10px;font-size:14.5px;color:var(--muted)"},
-    "כדי לראות ולשנות, אפשר להקליד את " + pwLabel + ". היא נשמרת רק כל עוד הדף הזה פתוח."),
+    "הסיסמה נשמרת רק כל עוד הדף הזה פתוח."),
     pw, err, el("div",{class:"btnrow"}, go));
   c.append(inn);
   return c;
@@ -2201,7 +2201,7 @@ $("navBack").addEventListener("click", () => {
   if (window.history.length > 1) window.history.back();
   else location.href = "entry.html";
 });
-// כפתור "⌂ המסך שלי" (22/09/2026) — אותה לוגיקה כמו lib/nav-widget.html,
+// כפתור "⌂ המרחב שלי" (22/09/2026) — אותה לוגיקה כמו lib/nav-widget.html,
 // מוטמעת כאן כי admin.html לא משתמש בקובץ המשותף. admin.html עצמו הוא לרוב
 // ה-homeUrl של מנהלת/ניהול מערכת — הכפתור מוסתר אוטומטית כשכבר נמצאים כאן.
 try {

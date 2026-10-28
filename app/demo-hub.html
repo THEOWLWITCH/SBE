@@ -75,7 +75,7 @@
 
 <div id="navBar">
   <button type="button" id="navBack" title="חזרה צעד אחד">→ חזרה</button>
-  <button type="button" id="navHome" title="חזרה למסך שנפתח אחרי הכניסה שלך" hidden>⌂ המסך שלי</button>
+  <button type="button" id="navHome" title="חזרה למסך שנפתח אחרי הכניסה שלך" hidden>⌂ המרחב שלי</button>
   <button type="button" id="navMenuBtn" title="כל המסכים">☰ תפריט</button>
 </div>
 <div id="navPanel" hidden></div>
@@ -203,7 +203,7 @@ document.getElementById("navBack").addEventListener("click", () => {
   if (window.history.length > 1) window.history.back();
   else location.href = "entry.html";
 });
-// כפתור "⌂ המסך שלי" (22/09/2026) — אותה לוגיקה כמו lib/nav-widget.html,
+// כפתור "⌂ המרחב שלי" (22/09/2026) — אותה לוגיקה כמו lib/nav-widget.html,
 // מוטמעת כאן כי demo-hub.html לא משתמש בקובץ המשותף.
 try {
   const homeUrl = sessionStorage.getItem("sbe.session.homeUrl");

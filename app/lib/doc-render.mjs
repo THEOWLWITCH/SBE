@@ -39,7 +39,7 @@ body{direction:rtl;background:var(--ground);margin:0;padding:26px 16px 60px;
   border-radius:3px;box-shadow:0 8px 30px rgba(16,22,28,.16);overflow:hidden;
   font-size:15px;line-height:1.66;}
 /* כותרת אחידה עם שאר תוצרי Begood (12/10/2026, בדיקת הלקוחה): פס מותג, לוגו בגודל מלא ושורת הכלי */
-.lg{height:48px;width:auto;display:block;float:left;margin:0 0 6px 12px;}
+.lg{height:62px;width:auto;display:block;float:left;margin:0 0 6px 12px;}
 .head{padding:20px 36px 16px;text-align:right;border-top:5px solid #2E5A7D;position:relative;}
 .head::after{content:"";position:absolute;top:-5px;left:0;width:22%;height:5px;background:#2BA39C;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 .badge{display:block;font-size:13px;font-weight:600;color:#2E5A7D;margin:0 0 6px;}
@@ -180,7 +180,7 @@ body{direction:rtl;background:var(--ground);margin:0;padding:22px 14px 50px;
 .card{max-width:560px;margin:0 auto;background:var(--paper);color:var(--ink);
  border-radius:4px;box-shadow:0 8px 26px rgba(16,22,28,.16);overflow:hidden;
  font-size:14.5px;line-height:1.5;}
-.lg{height:30px;width:auto;display:block;flex:0 0 auto;}
+.lg{height:38px;width:auto;display:block;flex:0 0 auto;}
 .ch{padding:14px 20px 12px;border-top:5px solid #2E5A7D;border-bottom:1px solid #CDD3D8;display:flex;
  justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;}
 .ch b{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:19px;font-weight:900;}

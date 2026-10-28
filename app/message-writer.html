@@ -26,7 +26,7 @@
     <span>Begood › תקשורת מקדמת חוסן חברתי</span>
   </nav>
   <header class="cc-header">
-    <div><p class="cc-eyebrow">BE GOOD</p><h1>תקשורת מקדמת חוסן חברתי</h1>
+    <div><p class="cc-eyebrow">Begood</p><h1>תקשורת מקדמת חוסן חברתי</h1>
       <p>מנסחים מסר ומובילים תקשורת מקצועית שמכוונת לאמון, לאמפתיה, לשותפות ולמוכנות.</p></div>
     <div class="cc-brand" style="display:flex;flex-direction:column;align-items:center"><img src="assets/begood-mark.webp" alt="Begood" width="112" height="70" data-brand data-brand-width="230px"></div>
   </header>
@@ -43,7 +43,7 @@
       <button type="button" id="cc-refresh" class="btn ghost cc-refresh">רענון הרשימה</button>
       <p id="cc-list-status" class="muted" role="status"></p>
       <div id="cc-list"></div>
-      <p class="cc-privacy-small">השיחות נשמרות בחשבון האישי בשרת. שיתוף קוד הכניסה האישי מאפשר גישה גם לשיחות. אפשר לייצא ולמחוק בכל עת.</p>
+      <p class="cc-privacy-small">השיחות נשמרות בשרת, בחשבון האישי. מי שמקבל/ת את קוד הכניסה האישי יכול/ה לראות גם אותן. אפשר לייצא ולמחוק בכל עת.</p>
     </aside>
     <section class="cc-workspace" aria-label="מרחב התקשורת">
       <div class="card cc-conversation" id="cc-conversation" data-communication-mode="continuity" hidden>
@@ -77,17 +77,17 @@
           <div class="cc-fields">
             <div data-communication-mode="continuity" hidden><label for="cc-input-kind">סוג הטקסט</label><select id="cc-input-kind"><option value="received">הודעה שהתקבלה</option><option value="sent">הודעה שכבר נשלחה</option><option value="note">תיאור מצב, החלטה או הערה</option></select></div>
             <div><label for="cc-audience">למי פונים?</label><input id="cc-audience" type="text" maxlength="120" list="cc-audiences" placeholder="למשל: הורים, צוות או תלמידים"><datalist id="cc-audiences"><option value="הורים"><option value="צוות"><option value="תלמידים"><option value="קהילת בית הספר"></datalist></div>
-            <div data-communication-mode="single"><label for="cc-format">מה כותבים?</label><input id="cc-format" type="text" maxlength="120" list="cc-formats" placeholder="הודעה, מכתב, הזמנה או כל נוסח מקצועי"><datalist id="cc-formats"><option value="הודעה שוטפת"><option value="מכתב"><option value="מכתב אישי"><option value="עלון או ניוזלטר"><option value="עדכון בזמן חירום"><option value="הזמנה לאירוע"><option value="הודעה על אירוע קשה"><option value="מכתב תודה והוקרה"></datalist></div>
-            <div data-communication-mode="single"><label for="cc-local">פרטים מקומיים לשילוב (רשות)</label><textarea id="cc-local" rows="2" maxlength="12000" placeholder="שמות, מקום מוכר או עובדות נוספות שאפשר לשלב"></textarea></div>
+            <div data-communication-mode="single"><label for="cc-format">מה כותבים?</label><input id="cc-format" type="text" maxlength="120" list="cc-formats" placeholder="למשל: הודעה, מכתב או הזמנה"><datalist id="cc-formats"><option value="הודעה שוטפת"><option value="מכתב"><option value="מכתב אישי"><option value="עלון או ניוזלטר"><option value="עדכון בזמן חירום"><option value="הזמנה לאירוע"><option value="הודעה על אירוע קשה"><option value="מכתב תודה והוקרה"></datalist></div>
+            <div data-communication-mode="single"><label for="cc-local">פרטים מקומיים לשילוב (רשות)</label><textarea id="cc-local" rows="2" maxlength="12000" placeholder="למשל: שמות, מקום מוכר או עובדה שכדאי לשלב"></textarea></div>
             <div data-communication-mode="single"><label for="cc-signature">חתימה (רשות)</label><input id="cc-signature" type="text" maxlength="500" placeholder="למשל: צוות בית הספר"></div>
           </div>
           <label for="cc-instruction">מה כדאי לקחת בחשבון?</label>
-          <textarea id="cc-instruction" rows="2" placeholder="אפשר לכתוב מטרה, סגנון או פרטים נוספים לניסוח"></textarea>
-          <div data-communication-mode="single" class="cc-buttons"><button type="button" id="cc-single-import" class="btn ghost">ייבוא פרטי טיוטה מהכותב הקודם</button><p id="cc-single-import-status" class="muted" role="status"></p></div>
+          <textarea id="cc-instruction" rows="2" placeholder="למשל: המטרה, הסגנון או פרט שחשוב לנוסח"></textarea>
+          <div data-communication-mode="single" class="cc-buttons"><button type="button" id="cc-single-import" class="btn ghost">ייבוא טיוטה מהגרסה הקודמת של הכלי</button><p id="cc-single-import-status" class="muted" role="status"></p></div>
         </details>
         <details class="cc-fold cc-attachment">
           <summary>צירוף תמונה, צילום מסך או קובץ (רשות)</summary>
-          <p class="cc-disclosure" id="cc-upload-disclosure">תמונות ו־PDF נשלחים לעיבוד אצל ספק המודל שהוגדר ב־BE GOOD, וייתכן שהם כוללים פרטים מזהים. אפשר להסיר פרטים שאינם נחוצים לפני הצירוף. קובצי TXT ו־Word נקראים בדפדפן. בניסוח חד־פעמי, הטקסט או תיאור התמונה נשארים בלשונית. הקובץ המקורי אינו נשמר בשרת.</p>
+          <p class="cc-disclosure" id="cc-upload-disclosure">תמונות ו־PDF נשלחים לעיבוד אצל ספק המודל שהוגדר ב־Begood, וייתכן שהם כוללים פרטים מזהים. אפשר להסיר פרטים שאינם נחוצים לפני הצירוף. קובצי TXT ו־Word נקראים בדפדפן. בניסוח חד־פעמי, הטקסט או תיאור התמונה נשארים בלשונית. הקובץ המקורי אינו נשמר בשרת.</p>
           <label for="cc-file">בחירת קובץ: תמונה, PDF, DOCX או TXT</label>
           <input id="cc-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,.pdf,application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.txt,text/plain">
           <p id="cc-file-status" class="muted" role="status"></p>
@@ -97,24 +97,24 @@
         <div class="cc-buttons" data-communication-mode="continuity" hidden><button type="button" id="cc-save-input" class="btn ghost">שמירת הטקסט בשיחה</button></div>
         <p class="cc-disclosure" id="cc-ai-disclosure">ההנחיה והחומרים שנבחרו נשלחים לעיבוד אצל ספק המודל שהוגדר במערכת. בניסוח חד־פעמי הם והטיוטות נשארים בלשונית בלבד; מעבר לניהול תקשורת אינו שומר אותם. שמירה מתבצעת רק בפעולת "המשך בניהול תקשורת". התוצאה היא טיוטה לבדיקה ולעריכה לפני השימוש.</p>
         <div class="cc-buttons" data-communication-mode="single"><button type="button" id="cc-single-generate" class="btn">ניסוח המסר</button><button type="button" id="cc-single-new" class="btn ghost">ניסוח חדש</button></div>
-        <div id="cc-main-actions" class="cc-main-actions" aria-label="פעולות BE GOOD" data-communication-mode="continuity" hidden></div>
+        <div id="cc-main-actions" class="cc-main-actions" aria-label="פעולות Begood" data-communication-mode="continuity" hidden></div>
         <p class="muted cc-sent-notice" data-communication-mode="continuity" hidden>סימון "שלחתי את ההודעה" שומר את הנוסח שנשלח. השליחה עצמה נעשית בדרך שנבחרה.</p>
       </section>
       <div id="cc-feedback" class="card cc-feedback" aria-live="polite" hidden>
         <p id="cc-feedback-text"></p><progress id="cc-progress" hidden aria-label="עיבוד הבקשה"></progress>
         <div class="cc-buttons"><button type="button" id="cc-retry" class="btn ghost" hidden>ניסיון חוזר של אותה בקשה</button><button type="button" id="cc-conflict-refresh" class="btn ghost" hidden>טעינת השיחה העדכנית</button></div>
       </div>
-      <section class="card" id="cc-current-result" aria-label="הצעת BE GOOD" hidden></section>
+      <section class="card" id="cc-current-result" aria-label="הצעת Begood" hidden></section>
       <section class="card" id="cc-single-result" aria-label="הנוסח החד־פעמי" data-communication-mode="single" hidden></section>
       <section class="cc-timeline-section" aria-labelledby="cc-timeline-title" data-communication-mode="continuity" hidden>
         <h2 id="cc-timeline-title">רצף השיחה</h2>
         <p id="cc-empty" class="cc-empty">כאן יופיעו הודעות שהתקבלו, טיוטות, הודעות שנשלחו והחלטות. אפשר להתחיל בטקסט קצר או בקובץ.</p>
         <ol id="cc-timeline" class="cc-timeline"></ol>
       </section>
-    <details class="card cc-fold cc-principles"><summary>עקרונות התקשורת של BE GOOD</summary><div id="cc-principles"></div></details>
+    <details class="card cc-fold cc-principles"><summary>עקרונות התקשורת של Begood</summary><div id="cc-principles"></div></details>
     </section>
   </main>
-  <noscript><p class="card">להפעלת הכלי אפשר להפעיל JavaScript בדפדפן.</p></noscript>
+  <noscript><p class="card">הכלי פועל כש־JavaScript מופעל בדפדפן.</p></noscript>
 <script>
 /* המרחב הארגוני (28/10/2026): דוגמאות ונמענים מהעולם הארגוני, בלי בית ספר */
 (function(){ if (!(window.sbeSpace && window.sbeSpace() === "org")) return;

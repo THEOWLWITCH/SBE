@@ -192,7 +192,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 <div class="wrap">
   <div class="card">
     <h1>נוגי: יועצת למנהיגות תומכת חוסן</h1>
-    <p><b>נוגי היא יועצת לפיתוח מנהיגות שתומכת בחוסן חברתי</b>, לא יועצת מנהיגות כללית: כל ניתוח וכל המלצה שלה מוסברים במונחי החוסן החברתי של בית הספר, שייכות, אמון, מנגנונים משותפים, רשתות תמיכה ומסוגלות קולקטיבית. נוגי עוזרת למי שמוביל/ה בבית הספר (מנהל/ת, צוות הנהלה, רכזים, וגם מועצת תלמידים וצוותי תלמידים) לבנות מנהיגות שמחזקת את החוסן החברתי: תקשורת, פירגון ועידוד, אמון, גיבוי וממלאי מקום, רווחת הצוות, ידע על מערכות החירום, ושותפות עם תלמידים, הורים וקהילה. ממלאים שאלון פתיחה, משוחחים עם נוגי, ומקבלים <b>דוח סיכום והמלצות</b> עם רק מה שרלוונטי.</p>
+    <p><b>נוגי היא יועצת לפיתוח מנהיגות שתומכת בחוסן חברתי</b>, לא יועצת מנהיגות כללית: כל ניתוח וכל המלצה שלה מוסברים במונחי החוסן החברתי של בית הספר: שייכות, אמון, מנגנונים משותפים, רשתות תמיכה ומסוגלות קולקטיבית. נוגי עוזרת למי שמוביל/ה בבית הספר (מנהל/ת, צוות הנהלה, רכזים, וגם מועצת תלמידים וצוותי תלמידים) לבנות מנהיגות שמחזקת את החוסן החברתי: תקשורת, פרגון ועידוד, אמון, גיבוי וממלאי מקום, רווחת הצוות, ידע על מערכות החירום, ושותפות עם תלמידים, הורים וקהילה. ממלאים שאלון פתיחה, משוחחים עם נוגי, ומקבלים <b>דוח סיכום והמלצות</b> רק עם מה שרלוונטי.</p>
     <div class="howto">
       <b>איך זה עובד</b>
       <ol>
@@ -224,7 +224,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
       <div class="row2">
         <div><label for="f-school">בית הספר (רשות)</label><input type="text" id="f-school" maxlength="60"></div>
         <div><label for="f-stage">שלב חינוכי (שדה עיקרי)</label>
-          <select id="f-stage"><option value="">בחירה...</option><option>גן ילדים</option><option>יסודי</option><option>חטיבת ביניים</option><option>תיכון</option><option>שש־שנתי</option><option>כמה שלבים / רשות</option></select></div>
+          <select id="f-stage"><option value="">בחירה...</option><option>גן ילדים</option><option>יסודי</option><option>חטיבת ביניים</option><option>תיכון</option><option>שש־שנתי</option><option value="כמה שלבים / רשות">כמה שלבים / רשות מקומית</option></select></div>
       </div>
       <div class="row2">
         <div><label for="f-staff">מספר אנשי צוות, בערך (רשות)</label><input type="number" id="f-staff" min="1" max="2000"></div>
@@ -267,7 +267,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 
     <div class="card">
       <h2>2. שאלון פתיחה: תמונת המצב</h2>
-      <p class="muted" id="crit-help">הממדים הראשונים הם ליבת השאלון; אחריהם ממדי רשות להעמקה. לכל היגד אפשר לבחור עד כמה הוא מתאר את המצב בחודש האחרון. אם אין לך מספיק מידע, "לא יודע/ת" (גם זה מידע). היגדים שמסומנים <span class="rev">היגד הפוך</span> מתארים מצב שפוגע בחוסן.</p>
+      <p class="muted" id="crit-help">הממדים הראשונים הם ליבת השאלון; אחריהם ממדי רשות להעמקה. לכל היגד אפשר לבחור עד כמה הוא מתאר את המצב בחודש האחרון. כשאין מספיק מידע, אפשר לבחור "לא יודע/ת": גם זה מידע. היגדים שמסומנים <span class="rev">היגד הפוך</span> מתארים מצב שפוגע בחוסן.</p>
       <div id="criteria"></div>
     </div>
 
@@ -277,7 +277,7 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
       <textarea id="f-strong" maxlength="800"></textarea>
       <label for="f-weak" id="l-weak">מה מאתגר את ההנהגה והצוות כרגע?</label>
       <textarea id="f-weak" maxlength="800"></textarea>
-      <label for="f-questions">על אילו שאלות הייתם רוצים תשובה?</label>
+      <label for="f-questions">על אילו שאלות רוצים לקבל תשובה?</label>
       <textarea id="f-questions" maxlength="800"></textarea>
       <label for="f-worry">מה הכי מדאיג אותך?</label>
       <textarea id="f-worry" maxlength="800"></textarea>
@@ -530,7 +530,7 @@ function addableSelect(id,listName,what){
   btn.addEventListener('click',()=>{
     const v=inp.value.replace(/\s+/g,' ').trim();msg.hidden=false;
     if(v.length<2){msg.textContent='אפשר להקליד ערך ואז ללחוץ על "הוספה לרשימה".';return;}
-    btn.disabled=true;msg.textContent='מוסיפה לרשימה...';
+    btn.disabled=true;msg.textContent='מוסיפים לרשימה...';
     const done=(t)=>{render(v);inp.value='';msg.textContent=t;sel.dispatchEvent(new Event('change'));save();};
     accessApi({action:'listAdd',name:listName,value:v,token:token()}).then(d=>{
       if(d.items){extra=d.items;done('נוסף לרשימה של כולם ונבחר ✓');}
@@ -568,7 +568,7 @@ function decorateDim(sec,dm,listName,rebuild){
     const v=inp.value.replace(/\s+/g,' ').replace(/\|/g,' ').trim();msg.hidden=false;
     if(v.length<8){msg.textContent='אפשר לכתוב היגד שלם: משפט אחד.';return;}
     if(/^האם\b/.test(v)||/\?\s*$/.test(v)){msg.textContent='כדאי לנסח היגד נייטרלי ולא שאלה, למשל "הצוות מקבל עדכון קבוע..." ולא "האם הצוות...?"';return;}
-    btn.disabled=true;msg.textContent='מוסיפה...';
+    btn.disabled=true;msg.textContent='מוסיפים...';
     accessApi({action:'listAdd',name:listName,value:dm.t+'|'+v,token:token()}).then(d=>{
       if(d.items){STMTS=d.items;inp.value='';rebuild();}
       else msg.textContent=d._status===403?'כדי להוסיף היגד לשאלון של כולם, אפשר להיכנס עם ההרשאה המתאימה.':'ההיגד לא נשמר (אין חיבור לשרת).';
@@ -609,7 +609,7 @@ function loadSituations(){accessApi({action:'listGet',name:SIT_LIST}).then(d=>{i
 F('btn-sit-add').addEventListener('click',()=>{
   const v=F('f-sit-new').value.replace(/\s+/g,' ').trim();const msg=F('sit-msg');
   if(v.length<2){msg.textContent='אפשר להקליד את המצב ואז ללחוץ על הוספה.';msg.hidden=false;return;}
-  const b=F('btn-sit-add');b.disabled=true;msg.hidden=false;msg.textContent='מוסיפה לרשימה...';
+  const b=F('btn-sit-add');b.disabled=true;msg.hidden=false;msg.textContent='מוסיפים לרשימה...';
   accessApi({action:'listAdd',name:SIT_LIST,value:v,token:token()}).then(d=>{
     if(d.items){SIT_COMMUNITY=d.items;renderSituations(d.value);F('f-sit-new').value='';msg.textContent='נוסף לרשימה של כולם ונבחר ✓';save();}
     else{renderSituations(v);msg.textContent=d._status===403?'נבחר כאן. כדי להוסיף לרשימה של כולם, אפשר להיכנס עם הרשאת נוגי.':'נבחר כאן, אבל לא נשמר ברשימה של כולם (אין חיבור לשרת).';save();}
@@ -790,7 +790,7 @@ F('btn-analyze').addEventListener('click',async()=>{
     STATE.report={at:new Date().toISOString(),who:F('f-who').value,mode:F('f-mode').value,school:F('f-school').value.trim(),stage:F('f-stage').value,sit:F('f-sit').value,doc,picture:pictureText(a)};
     STATE.pre=talk;STATE.chat=[];save();renderReport();renderChat();
   }catch(e){
-    rep.textContent='';const c=el('div','card');c.appendChild(el('p','err',e.name==='AbortError'?'הניתוח לקח יותר מדי זמן. אפשר לנסות שוב.':(e.code==='incomplete'?'הדוח חזר חלקי. אפשר לנסות שוב בעוד רגע.':'הניתוח לא הצליח ('+e.message+'). אפשר לנסות שוב בעוד רגע.')));rep.appendChild(c);
+    rep.textContent='';const c=el('div','card');c.appendChild(el('p','err',e.name==='AbortError'?'הכנת הדוח נמשכה יותר מהצפוי ונעצרה. אפשר לנסות שוב.':(e.code==='incomplete'?'הדוח התקבל חלקי. אפשר לנסות שוב בעוד רגע.':'הכנת הדוח לא הצליחה ('+e.message+'). אפשר לנסות שוב בעוד רגע.')));rep.appendChild(c);
   }finally{BUSY=false;b.disabled=false;b.textContent=STATE.report?'הפקת דוח מעודכן':'הפקת הדוח';}
 });
 
@@ -898,7 +898,7 @@ function renderReport(){
   rec.appendChild(el('h2',null,'ב. המלצות לפיתוח מנהיגות תומכת חוסן'));
   recTable(rec,'1. פעולות מרכזיות',d.actions,'הפעולה');
   recTable(rec,'2. צוות, שותפים וממלאי מקום',d.team);
-  recTable(rec,'3. תקשורת, פירגון ועידוד',d.communication);
+  recTable(rec,'3. תקשורת, פרגון ועידוד',d.communication);
   recTable(rec,'4. רווחת הצוות וההנהגה',d.wellbeing);
   recTable(rec,'5. שותפות עם תלמידים',d.students);
   if((d.conversations||[]).length){rec.appendChild(el('h3',null,'6. שיחות מומלצות והנחיות לשיחה'));d.conversations.forEach(c=>{rec.appendChild(el('h4',null,'שיחה עם '+(c.with||'')));
@@ -925,7 +925,7 @@ function plain(){
   if((d.priorities||[]).length){L.push('','שלוש העדיפויות המרכזיות');d.priorities.forEach((p,i)=>{const o=typeof p==='string'?{text:p}:p;L.push((i+1)+'. '+o.text+rs(o));});}
   L.push('','ב. המלצות לפיתוח מנהיגות תומכת חוסן');
   if((d.actions||[]).length){L.push('','1. פעולות מרכזיות');d.actions.forEach(a=>L.push('• '+a.title+' ['+[a.kind,a.lead?'מוביל/ה: '+a.lead:'',a.for].filter(Boolean).join(' · ')+']\n  '+(a.description||'')+(a.mechanism?'\n  תרומה לחוסן החברתי: '+a.mechanism:'')+rs(a)));}
-  [['2. צוות, שותפים וממלאי מקום',d.team],['3. תקשורת, פירגון ועידוד',d.communication],['4. רווחת הצוות וההנהגה',d.wellbeing],['5. שותפות עם תלמידים',d.students]].forEach(([t,xs])=>{if((xs||[]).length){L.push('',t);xs.forEach(x=>L.push(rec(x)));}});
+  [['2. צוות, שותפים וממלאי מקום',d.team],['3. תקשורת, פרגון ועידוד',d.communication],['4. רווחת הצוות וההנהגה',d.wellbeing],['5. שותפות עם תלמידים',d.students]].forEach(([t,xs])=>{if((xs||[]).length){L.push('',t);xs.forEach(x=>L.push(rec(x)));}});
   if((d.conversations||[]).length){L.push('','6. שיחות מומלצות');d.conversations.forEach(c=>L.push('• שיחה עם '+c.with+'\n  מטרה: '+(c.goal||'')+rs(c)+'\n  איפה ומתי: '+(c.setting||'')+'\n  פתיחה: '+(c.opening||'')+'\n  שאלות המשך: '+(c.followups||[]).join(' · ')+'\n  סיום: '+(c.closing||'')));}
   if((d.plan||[]).length){L.push('','7. תוכנית צעדים');d.plan.forEach(p=>L.push('• '+p.when+': '+p.what+(p.who?'\n  מי אחראי/ת: '+p.who:'')+(p.update?'\n  איך מעדכנים: '+p.update:'')));}
   L.push(...SBE_WRITER.reportPlain(d,'8. עקרונות החוסן בתקשורת של ההנהגה','הודעות מוכנות לשליחה: כתובות לפי עקרונות החוסן'));
@@ -1002,7 +1002,7 @@ F('fb-send').addEventListener('click',()=>{
   err.style.color='';
   if(!name||!contact||text.length<2){err.textContent='כדי לשלוח, נשמח לשם, למייל או לטלפון, ולתוכן ההודעה.';err.hidden=false;return;}
   if(!okContact){err.textContent='המייל או הטלפון לא נראים תקינים.';err.hidden=false;return;}
-  const b=F('fb-send');b.disabled=true;b.textContent='שולחת...';
+  const b=F('fb-send');b.disabled=true;b.textContent='שולחים...';
   accessApi({action:'fbSubmit',type:'פנייה',text,name,contact,source:'נוגי',page:'leadership-advisor'}).then(d=>{
     if(!d.ok)throw new Error();
     F('fb-text').value='';err.hidden=false;err.style.color='var(--auto)';err.textContent='נשלח, תודה! ✓';

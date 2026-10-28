@@ -326,7 +326,7 @@ async function viewBoard(){
   }
   // הגדרות: קהילת הווטסאפ + ייצוא מחקרי
   const s = card(); const sd = document.createElement('details'); s.appendChild(sd); sd.appendChild(el('summary', null, 'קהילת המסע בווטסאפ: קישורי הזמנה')); sd.firstChild.style.cssText = 'cursor:pointer;font-weight:700;color:var(--spoken)';
-  sd.appendChild(el('p', 'muted', 'קישורי הזמנה (https://chat.whatsapp.com/...) שמוצגים למשתתפים. קישור לפי מסגרת גובר על הקישור הכללי.'));
+  sd.appendChild(el('p', 'muted', 'קישורי הזמנה שמוצגים למשתתפים. קישור לפי מסגרת גובר על הקישור הכללי.'));
   const wa = (d.settings || {}).wa || {}; const inputs = {};
   [['all', 'כללי: לכל המצטרפים'], ...J.UNITS.map(u => [u.k, u.t])].forEach(([k, t]) => { sd.appendChild(el('label', null, t)); const i = document.createElement('input'); i.type = 'text'; i.value = wa[k] || ''; i.placeholder = 'https://chat.whatsapp.com/...'; inputs[k] = i; sd.appendChild(i); });
   const msg = el('p', 'muted'); const sv = btn('שמירה', 'btn-ghost', async () => { const w2 = {}; Object.keys(inputs).forEach(k => { w2[k] = inputs[k].value.trim(); }); const r = await api('jrSettings', { settings: { ...(d.settings || {}), wa: w2 } }); msg.textContent = r.ok ? 'נשמר ✓' : 'לא נשמר'; });
