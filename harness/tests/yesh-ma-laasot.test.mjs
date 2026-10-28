@@ -25,7 +25,7 @@ test('reachable from the entry screen, the map, the about page and my space', ()
   assert.match(map, /id: 'emergency', n: 'להיערך לחירום ולתגובה ראשונה'/);
   assert.match(map, /if \(t\.open\)/);
   assert.match(read('about.html'), /href="yesh-ma-laasot\.html"/);
-  assert.match(read('home.html'), /"yesh-ma-laasot\.html", "🎁 יש מה לעשות/);
+  assert.match(read('home.html'), /"yesh-ma-laasot\.html", "🚨 יש מה לעשות/);
   assert.equal(R.groupOf(PAGE).id, 'practice');
 });
 

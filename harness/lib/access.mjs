@@ -65,6 +65,23 @@ async function getInstitutions(store) {
   return (await store.get('institutions')) || DEFAULT_INSTITUTIONS.map((x) => ({ ...x }));
 }
 
+// ── המרחב של כל מוסד (28/10/2026: "לסמן אותו בהגדרות המוסד? כן") ──
+// space במוסד: 'edu' (חינוכי) או 'org' (ארגוני). בלי סימון: לפי הכלים שבקוד, כמו קודם:
+// קוד עם כלי חינוכי כלשהו הוא חינוכי; קוד עם כלים משותפים בלבד הוא ארגוני.
+export const SHARED_PERMS = ['horizon', 'journey', 'teamthink', 'writer', 'studies'];
+export const SPACES = ['edu', 'org'];
+export const spaceFromPerms = (perms) => {
+  const list = Array.isArray(perms) ? perms : [];
+  return list.length && list.every((p) => SHARED_PERMS.includes(p)) ? 'org' : 'edu';
+};
+export async function spaceOf(store, inst, perms) {
+  if (inst) {
+    const x = (await getInstitutions(store)).find((i) => i.name === inst);
+    if (x && SPACES.includes(x.space)) return x.space;
+  }
+  return spaceFromPerms(perms);
+}
+
 // Research accepts personal identities without requiring unrelated tool rights.
 // Reuse the same Israel-calendar subscription check for sessions and owner choices.
 export async function activeResearchInstitutions(store) {
@@ -410,18 +427,19 @@ export async function authorizeModel(store, auth, route = '/api/complete') {
   // מעבדת האופק: משתתפים בעבודה משותפת (?room=) פונים למודל רק בדף של החדר, כל עוד הוא פתוח.
   if (a.room && route === '/api/complete') {
     const g = await roomModelGate(store, a, page);
-    if (g) return { ok: true, who: 'hlroom', page, route, ...modelIdentity({ k: 'hlroom', c: g.principal, inst: g.institution }, g.principal), institutionId: null };
+    if (g) return { ok: true, who: 'hlroom', page, route, ...modelIdentity({ k: 'hlroom', c: g.principal, inst: g.institution }, g.principal), institutionId: null, space: g.space === 'org' ? 'org' : 'edu' };
   }
   if (a.token) {
     const t = await verifyToken(store, a.token);
     if (t?.k === 'workshop') {
       const live = WORKSHOP_MODEL_PAGES.includes(page) && await liveWorkshop(store,t.w);
-      return live ? { ok:true, who:'workshop', page, route, ...modelIdentity({...t,inst:live.inst},a.token) } : {ok:false};
+      return live ? { ok:true, who:'workshop', page, route, ...modelIdentity({...t,inst:live.inst},a.token), space: 'edu' } : {ok:false};
     }
-    if (t && t.k === 'sys') return { ok: true, who: 'sys', page, route, ...modelIdentity(t, a.token) };
+    // מנהלת המערכת: המרחב שבחרה במרחב שלי (_auth.space)
+    if (t && t.k === 'sys') return { ok: true, who: 'sys', page, route, ...modelIdentity(t, a.token), space: a.space === 'org' ? 'org' : 'edu' };
     const perms = MODEL_PAGES[page];
     const live = t && perms && await authorizePermission(store, a.token, perms);
-    if (live) return { ok: true, who: 'code', page, route, ...modelIdentity(live, a.token) };
+    if (live) return { ok: true, who: 'code', page, route, ...modelIdentity(live, a.token), space: await spaceOf(store, live.inst, live.perms) };
     return { ok: false }; // a rejected token cannot fall back to workshop access
   }
   return { ok: false };
@@ -694,7 +712,7 @@ async function handleCodes(store, body, isSys) {
       name = String(body.instName || '').trim().slice(0, 80);
       if (!name) return [400, { error: 'missing institution name' }];
       if (list.find((i) => i.name === name)) return [409, { error: 'institution exists' }];
-      list.push({ name, code: newInstCode(list), active: true, since: String(new Date().getFullYear()) });
+      list.push({ name, code: newInstCode(list), active: true, since: String(new Date().getFullYear()), ...(SPACES.includes(body.space) ? { space: body.space } : {}) });
     }
     const x = list.find((i) => i.name === name);
     const from = x.subEnd && x.subEnd >= today() ? x.subEnd : today();
@@ -1712,7 +1730,7 @@ export async function handleAccess(store, body) {
         if (courseFull(rec, sid)) { await pause(); return [403, { error: 'full' }]; }
       }
       const token = await signToken(store, { k: 'code', c, kind: rec.kind, inst: r.inst, perms: r.perms, ...(sid ? { s: sid } : {}) });
-      return [200, { ok: true, token, kind: rec.kind, inst: r.inst, label: rec.label || '', perms: r.perms, ...(sid ? { sid } : {}),
+      return [200, { ok: true, token, kind: rec.kind, inst: r.inst, label: rec.label || '', perms: r.perms, space: await spaceOf(store, r.inst, r.perms), ...(sid ? { sid } : {}),
         notices: notices(rec.kind, r.sub, rec), sub: rec.kind === 'instadmin' ? r.sub : undefined }];
     }
     // קוד מוסד ישן (6 ספרות): איש/אשת צוות עם כל מה שפתוח למוסד — עד שיעברו לקודים אישיים.
@@ -1724,7 +1742,7 @@ export async function handleAccess(store, body) {
       const ceiling = await getCeiling(store, legacy.name);
       const perms = PERMS.filter((p) => ceiling[p] && p !== 'lecturer');
       const token = await signToken(store, { k: 'code', c: 'LEGACY', kind: 'legacy', inst: legacy.name, perms });
-      return [200, { ok: true, token, kind: 'legacy', inst: legacy.name, label: 'צוות ' + legacy.name, perms, notices: notices('staff', sub) }];
+      return [200, { ok: true, token, kind: 'legacy', inst: legacy.name, label: 'צוות ' + legacy.name, perms, space: await spaceOf(store, legacy.name, perms), notices: notices('staff', sub) }];
     }
     // קוד "משוב לעבודות" הכללי הישן.
     const ac = await store.get('code-academic');
@@ -1771,7 +1789,8 @@ export async function handleAccess(store, body) {
   if (/^wf(Open|Submit|List|Delete|Join|Get)$/.test(action || '')) return handleWorkshopFeedback(store, body);
   if (/^hl(RoomCreate|Poll|Write|RoomClose)$/.test(action || '')) return handleHlRooms(store, body, { authorize: async (token) => {
     const t = await authorizePermission(store, token, ['horizon']);
-    return t ? { principal: modelIdentity(t, token).principal, inst: t.inst || null } : null;
+    return t ? { principal: modelIdentity(t, token).principal, inst: t.inst || null,
+      space: t.k === 'sys' ? (body.space === 'org' ? 'org' : 'edu') : await spaceOf(store, t.inst, t.perms) } : null;
   } });
 
   const sysTok = await verifyToken(store, body?.token);
@@ -1800,6 +1819,15 @@ export async function handleAccess(store, body) {
 
   if (action === 'listInstitutions') return [200, { institutions: await institutionsView(store), settings: await getSettings(store) }];
 
+  if (action === 'setInstitutionSpace') {
+    const list = await getInstitutions(store);
+    const x = list.find((i) => i.name === String(body.name || '').trim());
+    if (!x) return [404, { error: 'no such institution' }];
+    if (SPACES.includes(body.space)) x.space = body.space; else delete x.space;
+    await store.set('institutions', list);
+    return [200, { institutions: await institutionsView(store) }];
+  }
+
   if (action === 'addInstitution' || action === 'newInstitutionCode' || action === 'setInstitutionActive') {
     const list = await getInstitutions(store);
     const name = String(body.name || '').trim();
@@ -1807,7 +1835,7 @@ export async function handleAccess(store, body) {
     const x = list.find((i) => i.name === name);
     if (action === 'addInstitution') {
       if (x) return [409, { error: 'exists' }];
-      list.push({ name, code: newInstCode(list), active: true, since: String(new Date().getFullYear()) });
+      list.push({ name, code: newInstCode(list), active: true, since: String(new Date().getFullYear()), ...(SPACES.includes(body.space) ? { space: body.space } : {}) });
     } else {
       if (!x) return [404, { error: 'no such institution' }];
       if (action === 'newInstitutionCode') x.code = newInstCode(list);

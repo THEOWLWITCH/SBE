@@ -115,5 +115,14 @@
     </section>
   </main>
   <noscript><p class="card">להפעלת הכלי אפשר להפעיל JavaScript בדפדפן.</p></noscript>
+<script>
+/* המרחב הארגוני (28/10/2026): דוגמאות ונמענים מהעולם הארגוני, בלי בית ספר */
+(function(){ if (!(window.sbeSpace && window.sbeSpace() === "org")) return;
+  var t = document.getElementById("cc-text"); if (t) t.placeholder = "למשל: הודעה לתושבים על מפגש היערכות במרכז הקהילתי ביום חמישי בשעה 18:00, עם הזמנה לשיתוף פעולה.";
+  var a = document.getElementById("cc-audience"); if (a) a.placeholder = "למשל: צוות, מתנדבים או תושבים";
+  var g = document.getElementById("cc-signature"); if (g) g.placeholder = "למשל: צוות המרכז הקהילתי";
+  var d = document.getElementById("cc-audiences"); if (d) d.innerHTML = '<option value="צוות"><option value="מתנדבים"><option value="תושבים"><option value="חברי הוועד"><option value="קהילת הארגון">';
+})();
+</script>
 </body>
 </html>

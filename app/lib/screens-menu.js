@@ -35,7 +35,7 @@ window.SBE_SCREENS = [
       { file:'facilitator-screen.html', label:'מסך הסדנה', who:'מנחות' },
       { file:'observation-sheet.html', label:'דף צפייה (טלפון)', who:'מתנסות בסדנה' },
       { file:'practice.html', label:'תרגול עצמי', who:'משתתפות בסדנה' },
-      { file:'yesh-ma-laasot.html', label:'🎁 יש מה לעשות: מדריכון לחירום', who:'כולם, גם בלי כניסה (בלי ניווט לכלים אחרים)' },
+      { file:'yesh-ma-laasot.html', label:'🚨 יש מה לעשות: מדריכון לחירום', who:'כולם, גם בלי כניסה (בלי ניווט לכלים אחרים)' },
       { file:'conversation-planner.html', label:'תכנון שיחה', who:'הרשאת תכנון שיחה' },
       { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
       { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'הרשאת גשר (bridge)' },

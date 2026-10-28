@@ -61,6 +61,11 @@
       I.ideas.length ? 'רעיונות:\n' + I.ideas.map((x, i) => (i + 1) + '. ' + (x.idea || '')).join('\n') : ''].filter(Boolean).join('\n'));
   }
   const ADULT = () => /בוגרים/.test(I.form.level || '');
+  // המרחב הארגוני (28/10/2026): רק הרמה של צוות בארגון או בקהילה, ודוגמאות מהעולם הארגוני
+  const ORG = !!(window.sbeSpace && window.sbeSpace() === 'org');
+  const ORG_LEVEL = 'צוות בארגון או בקהילה (בוגרים)';
+  const ORG_PH = { challenge: 'בעיה, החלטה, רעיון או תכנית. למשל: איך מקבלים בברכה מתנדבים חדשים כך שירצו להישאר.',
+    hard: 'למשל: אותם שניים מדברים, ויש שמחכים בשקט. בלי שמות.' };
   const chatOpts = (n) => ({ ph: 'למשל: איך מזמינים מי שעוד לא דיבר/ה?', history: () => (I.chats[n] = I.chats[n] || []), save: () => save(), context, system: () => M.stageSystem(n) });
   const fbOpts = { adult: ADULT, context, log: (x) => { I.feedback.push(x); save(); } };
   function withRefs(root, build) {
@@ -81,12 +86,13 @@
         input = el('select'); input.appendChild(new Option('בחירה…', ''));
         // גיל וצוות לפי הרמה שנבחרה; הרמה עצמה רשימה סגורה (12/10/2026, בדיקת הלקוחה)
         const by = f.k === 'age' ? M.AGES_BY_LEVEL : f.k === 'team' ? M.TEAMS_BY_LEVEL : null;
-        ((by && by[I.form.level]) || f.opts).forEach((o) => input.appendChild(new Option(o, o)));
+        if (ORG && f.k === 'level' && !I.form.level) I.form.level = ORG_LEVEL;
+        ((by && by[I.form.level]) || (ORG && f.k === 'level' ? [ORG_LEVEL] : f.opts)).forEach((o) => input.appendChild(new Option(o, o)));
         if (f.k === 'level') input.setAttribute('data-closed', '');
       }
       else if (f.type === 'area') input = el('textarea');
       else { input = el('input'); input.type = 'text'; }
-      input.id = id; if (f.ph) input.placeholder = f.ph;
+      input.id = id; if (f.ph) input.placeholder = (ORG && ORG_PH[f.k]) || f.ph;
       const v = I.form[f.k];
       if (v) { if (f.type === 'select' && ![...input.options].some((o) => o.value === v)) input.appendChild(new Option(v, v)); input.value = v; }
       const keep = () => { I.form[f.k] = input.value; edited(); if (f.k === 'level') { M.FIELDS.forEach((g) => { const n = F('f-' + g.k); if (n && g.k !== 'level') I.form[g.k] = n.value; }); [['age', M.AGES_BY_LEVEL], ['team', M.TEAMS_BY_LEVEL]].forEach(([k, by]) => { const ok = by[I.form.level]; if (ok && I.form[k] && !ok.includes(I.form[k])) I.form[k] = ''; }); save(); buildForm(); } };
@@ -283,6 +289,8 @@
   // מעבדת הדמו, החלק הארגוני (28/10/2026): טופס מהעולם הארגוני
   window.sbeTeamThinkDemoForm = (form) => { I.form = Object.assign({}, form); edited(); buildForm(); };
   F('example').addEventListener('click', () => {
+    if (ORG) { I.form = { level: ORG_LEVEL, team: 'צוות מתנדבים', age: 'מבוגרים', size: '8', time: '60 דקות', challenge: 'איך מקבלים בברכה מתנדבים חדשים במרכז הקהילתי, כך שירצו להישאר גם אחרי החודש הראשון.',
+      outcome: 'שתי הצעות שהצוות בוחר ביניהן, ומי מוביל/ה כל אחת בחודש הקרוב.', known: 'ניסינו ערב היכרות אחד, והגיעו רק חלק מהמתנדבים.', hard: 'הוותיקים מכירים זה את זה, והחדשים מחכים בצד.' }; edited(); buildForm(); return; }
     I.form = { level: 'יסודי', team: 'קבוצת תלמידים', age: 'ה–ו', size: '6', time: '40 דקות', challenge: 'איך מארגנים הפסקה ארוכה שבה לכל אחד ואחת בכיתה יש עם מי לשחק.',
       outcome: 'שתי הצעות שהצוות בוחר ביניהן, ומי מוביל/ה כל אחת בשבוע הבא.', known: 'ניסינו פעם משחק כיתתי בחצר, ורק חלק הצטרפו.', hard: 'אותם שניים מדברים הרבה, ויש שמחכים בשקט.' };
     edited(); buildForm();

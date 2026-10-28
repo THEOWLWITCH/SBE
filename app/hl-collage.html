@@ -363,6 +363,7 @@ table.mx td.el .small{font-weight:400}
 
 <script>
 const $ = id => document.getElementById(id);
+const IS_ORG = !!(window.sbeSpace && window.sbeSpace() === "org");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4);
 function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1800); }
@@ -405,7 +406,7 @@ const D2 = svgURI(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"
 const D3 = svgURI(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"><rect width="300" height="200" fill="#fff"/><rect x="40" y="28" width="220" height="130" rx="6" fill="#c89b6d" stroke="#5a3c22" stroke-width="5"/><g stroke="#333" stroke-width="2"><rect x="58" y="44" width="58" height="42" fill="#fff6a8" transform="rotate(-4 87 65)"/><rect x="128" y="42" width="56" height="44" fill="#bfe0ff" transform="rotate(3 156 64)"/><rect x="196" y="46" width="48" height="40" fill="#ffd1dc" transform="rotate(-2 220 66)"/><rect x="74" y="98" width="60" height="44" fill="#c8f0c8" transform="rotate(2 104 120)"/><rect x="150" y="100" width="80" height="42" fill="#fff" transform="rotate(-3 190 121)"/></g><g stroke="#555" stroke-width="2.5" stroke-linecap="round"><path d="M66 58h40M66 68h30M136 56h38M136 66h28M82 112h40M160 114h60M160 124h44"/></g><g fill="#e05a6e"><circle cx="87" cy="45" r="4"/><circle cx="156" cy="43" r="4"/><circle cx="220" cy="47" r="4"/><circle cx="104" cy="99" r="4"/><circle cx="190" cy="101" r="4"/></g><path d="M80 158v34M220 158v34" stroke="#5a3c22" stroke-width="6"/></svg>`);
 const D4 = svgURI(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"><rect width="300" height="200" fill="#fff"/><path d="M150 168C88 128 64 98 66 70c2-24 22-38 42-36 18 2 32 14 42 30 10-16 24-28 42-30 20-2 40 12 42 36 2 28-22 58-84 98z" fill="#f4a3a3" stroke="#b2275a" stroke-width="5" stroke-linejoin="round"/><g stroke="#333" stroke-width="4" fill="#f2c9a0" stroke-linejoin="round"><path d="M40 170q40-30 70-10q20 14 40 14q-30 18-70 14z"/><path d="M260 170q-40-30-70-10q-20 14-40 14q30 18 70 14z"/></g></svg>`);
 
-const EX_ITEMS = [
+const EX_ITEMS_EDU = [
  {id:"e1",dim:"solidarity",kind:"sentence",text:"בעוד עשר שנים כל בית במושב יודע למי לדפוק בדלת כשמשהו קורה.",by:"נועה"},
  {id:"e2",kind:"word",text:"שייכות",by:""},
  {id:"e3",dim:"autonomy",kind:"drawing",img:D1,text:"הגג של בית הספר עם לוחות שמש, ואור שנשאר דולק.",by:"איתי"},
@@ -428,7 +429,7 @@ const EX_ITEMS = [
  {id:"e20",kind:"poem",text:"לא נחזור למה שהיה\nנבנה משהו\nשאפשר לחזור אליו",by:""},
  {id:"e21",kind:"drawing",img:D4,text:"לב בין שתי ידיים.",by:"תמר"}
 ];
-const EX_ART = {"title":"משהו שאפשר לחזור אליו","subtitle":"21 פריטים של תושבים ותושבות המושב, 2035","center":"כשאין חשמל, יש שכנים.","centerBy":"רותי, בשם סבתא שלה",
+const EX_ART_EDU = {"title":"משהו שאפשר לחזור אליו","subtitle":"21 פריטים של תושבים ותושבות המושב, 2035","center":"כשאין חשמל, יש שכנים.","centerBy":"רותי, בשם סבתא שלה",
  "themes":[
   {"id":"solidarity","dim":"solidarity","name":"סולידריות ועזרה הדדית","color":"#d9714a","desc":"עתיד שבו כל בית יודע למי לדפוק בדלת, ויש על מי להישען.","items":["e1","e5","e13","e21"]},
   {"id":"autonomy","dim":"autonomy","name":"אוטונומיה תפקודית","color":"#3f9a62","desc":"״המים, החשמל והמידע שלנו מגיעים גם מכאן, לא רק מבחוץ״.","items":["e3","e8","e16","e18"]},
@@ -442,7 +443,52 @@ const EX_ART = {"title":"משהו שאפשר לחזור אליו","subtitle":"21
  "reading":"החוסן שהמשתתפים מתארים בנוי בעיקר מסולידריות, משייכות ומאוטונומיה תפקודית: שכנים, חיבור בין דורות, ואנרגיה ומים מקומיים. כמעט לא הופיעו מצב כלכלי ופרנסה, מנהיגות משותפת וביטחון. כדאי לשאול את הקבוצה: מי יוביל ברגע האמת, ומה יקרה לפרנסה של המשפחות?",
  "vision":"בשנת 2035 המושב הוא קהילה שבה כל בית יודע למי לפנות, והוותיקים והחדשים בונים יחד. יש לנו אור, מים ומידע משלנו, ולכן אנחנו מתפקדים גם כשהעזרה מבחוץ מתעכבת. יש מקום לפחד ולשקט, ותמיד יש מישהו שמקשיב.",
  "palette":["#d9714a","#e0a237","#3f9a62","#6a8fc7","#b2275a"]};
-const EX = {title:"המושב שלנו 2035", ctx:{type:"community", region:"גליל עליון וגבול לבנון", desc:""}, year:"2035", question:"איך ייראה המושב שלנו בשנת 2035, ביום רגיל ובשעת משבר?", style:"watercolor", seed:7, items:EX_ITEMS, art:EX_ART};
+const EX_EDU = {title:"המושב שלנו 2035", ctx:{type:"community", region:"גליל עליון וגבול לבנון", desc:""}, year:"2035", question:"איך ייראה המושב שלנו בשנת 2035, ביום רגיל ובשעת משבר?", style:"watercolor", seed:7, items:EX_ITEMS_EDU, art:EX_ART_EDU};
+/* ---------- org example: the community center (same story as the other Horizon tools) ---------- */
+const EX_ITEMS_ORG = [
+ {id:"e1",dim:"solidarity",kind:"sentence",text:"בעוד עשר שנים כל בית במושב ובקיבוצים יודע למי במרכז הקהילתי לפנות כשמשהו קורה.",by:"נועה"},
+ {id:"e2",kind:"word",text:"ביחד",by:""},
+ {id:"e3",dim:"autonomy",kind:"drawing",img:D1,text:"הגג של המרכז הקהילתי עם לוחות שמש, ואולם ממוזג שנשאר פתוח גם כשהחשמל נופל.",by:"איתי"},
+ {id:"e4",kind:"color",color:"#f2b632",text:"צהוב של חמנייה, כי יש לנו אור משלנו.",by:"מרים"},
+ {id:"e5",kind:"quote",text:"כשאין חשמל, יש שכנים.",src:"סבתא שלי, בימי הפינוי",by:"רותי"},
+ {id:"e6",kind:"song",title:"Here Comes the Sun",artist:"The Beatles",url:"",text:"כי אחרי חורף ארוך תמיד מגיע אור.",by:"דני"},
+ {id:"e7",kind:"poem",text:"בערב אחרי האזעקה\nהאולם עוד פתוח\nמישהו מכין קפה\nומישהו נשאר לשבת",by:"שירה"},
+ {id:"e8",dim:"autonomy",kind:"sentence",text:"המים, החשמל והמידע שלנו מגיעים גם מכאן, לא רק מבחוץ.",by:"יוסי"},
+ {id:"e9",kind:"drawing",img:D2,text:"עץ שהשורשים שלו מחזיקים זה בזה: ותיקים, חדשים, מתנדבים ועסקים.",by:"מאיה"},
+ {id:"e10",kind:"word",text:"שקט",by:""},
+ {id:"e11",dim:"belonging",kind:"sentence",text:"המשפחות החדשות והוותיקות מכינות יחד את חג הקציר באולם של המרכז.",by:"סאמר"},
+ {id:"e12",kind:"color",color:"#3f9a62",text:"ירוק של שדות שחזרו לחיים.",by:"נועה"},
+ {id:"e13",kind:"song",title:"Lean on Me",artist:"Bill Withers",url:"",text:"כי גם מי שמחזיקים את המרכז זקוקים למישהו להישען עליו.",by:"אלה"},
+ {id:"e14",dim:"emotional",kind:"sentence",text:"לצוות המרכז ולמתנדבים יש זמן קבוע לנוח ולדבר, לא רק בחירום.",by:""},
+ {id:"e15",dim:"comm",kind:"drawing",img:D3,text:"לוח מודעות בכניסה למרכז, שעובד גם כשאין רשת וגם כשהווטסאפ מוצף בשמועות.",by:"גיל"},
+ {id:"e16",kind:"quote",text:"אנחנו לא מחכים שיצילו אותנו. אנחנו מתכוננים יחד.",src:"מתוך מפגש של צוות החירום היישובי",by:"נועה"},
+ {id:"e17",dim:"economy",kind:"sentence",text:"המכולת נשארה פתוחה, כי תושבים ועסקים מקומיים הקימו לה קואופרטיב.",by:"עומר"},
+ {id:"e18",kind:"color",color:"#4a7fc1",text:"כחול של מאגר מים מלא.",by:""},
+ {id:"e19",kind:"sentence",text:"בני הנוער מלמדים את הוותיקים להפעיל את הקשר האלחוטי, והוותיקים מלמדים אותם לבשל לכולם.",by:"דליה"},
+ {id:"e20",kind:"poem",text:"לא נחזור למה שהיה\nנבנה משהו\nשאפשר לחזור אליו",by:""},
+ {id:"e21",kind:"drawing",img:D4,text:"לב בין שתי ידיים: מי שגרים לבד לא נשארים לבד.",by:"תמר"}
+];
+const EX_ART_ORG = {"title":"מרכז שאפשר לחזור אליו","subtitle":"21 פריטים של צוות המרכז הקהילתי, מתנדבים ותושבים, 2035","center":"כשאין חשמל, יש שכנים.","centerBy":"רותי, בשם סבתא שלה",
+ "themes":[
+  {"id":"solidarity","dim":"solidarity","name":"סולידריות ועזרה הדדית","color":"#d9714a","desc":"עתיד שבו כל בית יודע למי לפנות, ומי שגרים לבד לא נשארים לבד.","items":["e1","e5","e13","e21"]},
+  {"id":"autonomy","dim":"autonomy","name":"אוטונומיה תפקודית","color":"#3f9a62","desc":"״המים, החשמל והמידע שלנו מגיעים גם מכאן, לא רק מבחוץ״, ואולם שנשאר פתוח.","items":["e3","e8","e16","e18"]},
+  {"id":"belonging","dim":"belonging","name":"שייכות","color":"#b2275a","desc":"ותיקים וחדשים, מתנדבים ועסקים, שורשים שמחזיקים זה בזה.","items":["e2","e9","e11"]},
+  {"id":"comm","dim":"comm","name":"תקשורת ומידע","color":"#6a8fc7","desc":"לוח מודעות בכניסה למרכז וקשר אלחוטי: מידע אמין שעובר גם כשאין רשת.","items":["e15","e19"]},
+  {"id":"economy","dim":"economy","name":"מצב כלכלי ופרנסה","color":"#8a5a2b","desc":"שירותים שנשארים ביישוב, כי התושבים והעסקים מחזיקים אותם יחד.","items":["e17"]},
+  {"id":"optimism","dim":"optimism","name":"אופטימיות ותקווה","color":"#e0a237","desc":"אור שחוזר אחרי חורף ארוך, ושדות שחזרו לחיים.","items":["e4","e6","e12"]},
+  {"id":"emotional","dim":"emotional","name":"רווחה רגשית","color":"#d96d93","desc":"זמן קבוע למנוחה לצוות ולמתנדבים, ושקט אחרי האזעקה.","items":["e7","e10","e14"]},
+  {"id":"vision","dim":"vision","name":"חזון ועתיד משותף","color":"#e68a3c","desc":"לא לחזור למה שהיה, אלא לבנות משהו שאפשר לחזור אליו.","items":["e20"]}],
+ "links":[{"a":"e5","b":"e1","why":"שני הפריטים אומרים שהשכנים והמרכז הם הדבר הראשון שמחזיק אותנו."},{"a":"e3","b":"e8","why":"אנרגיה משלנו היא חלק מהאוטונומיה התפקודית של המרכז והיישובים."},{"a":"e19","b":"e15","why":"שתי דרכים להעביר מידע אמין גם כשאין רשת: אנשים ולוח מודעות."},{"a":"e7","b":"e14","why":"גם אחרי אזעקה, מי שמחזיק את כולם זקוק למקום לנוח."},{"a":"e6","b":"e4","why":"האור שחוזר אחרי תקופה קשה."},{"a":"e16","b":"e8","why":"לא מחכים לעזרה מבחוץ, אלא מתכוננים מקרוב."},{"a":"e11","b":"e2","why":"שייכות שנבנית כשחדשים וותיקים עושים משהו יחד."},{"a":"e17","b":"e9","why":"עסקים ותושבים שמחזיקים זה את זה, כמו שורשים."},{"a":"e21","b":"e13","why":"ידיים שמחזיקות, ומישהו להישען עליו."}],
+ "poem":["כשאין חשמל, יש שכנים,","והאור שלנו מגיע גם מכאן.","בערב אחרי האזעקה האולם עוד פתוח,","ומי שגרים לבד לא נשארים לבד.","לא נחזור למה שהיה,","נבנה יחד משהו שאפשר לחזור אליו."],
+ "reading":"החוסן שהמשתתפים מתארים בנוי בעיקר מסולידריות, משייכות ומאוטונומיה תפקודית: שכנים, חיבור בין ותיקים וחדשים, ואנרגיה, מים ומידע מקומיים. מנהיגות משותפת וביטחון כמעט לא הופיעו, והפרנסה עלתה רק בפריט אחד. כדאי לשאול את הקבוצה: מי יוביל ברגע האמת, ואיך שומרים על צוות המרכז והמתנדבים כדי שלא יישחקו?",
+ "vision":"בשנת 2035 המרכז הקהילתי הוא בית לכל היישובים: כל בית יודע למי לפנות, והוותיקים והחדשים בונים יחד. יש לנו אור, מים ומידע משלנו, ולכן אנחנו מתפקדים גם כשהעזרה מבחוץ מתעכבת. לצוות ולמתנדבים יש זמן לנוח, ומי שגרים לבד תמיד מוצאים מישהו שמקשיב.",
+ "palette":["#d9714a","#e0a237","#3f9a62","#6a8fc7","#b2275a"]};
+const EX_ORG = {title:"המרכז הקהילתי שלנו 2035", ctx:{type:"community", region:"גליל עליון וגבול לבנון", desc:"המרכז הקהילתי של מועצה אזורית בגליל העליון, שמשרת מושב ושני קיבוצים ליד גבול לבנון. הקהילה פונתה לתקופה ארוכה וחזרה."}, year:"2035", question:"איך ייראו המרכז הקהילתי והיישובים שלנו בשנת 2035, ביום רגיל ובשעת משבר?", style:"watercolor", seed:7, items:EX_ITEMS_ORG, art:EX_ART_ORG};
+const EX = IS_ORG ? EX_ORG : EX_EDU;
+if(IS_ORG){
+  document.querySelectorAll('#ctxType [data-v="school"]').forEach(b => b.remove());
+  const eb = document.querySelector("#exampleBar span"); if(eb) eb.innerHTML = "<b>מוצגת דוגמה מוכנה:</b> תמונת העתיד של מרכז קהילתי בגליל העליון לשנת 2035, מ־21 פריטים שתרמו הצוות, המתנדבים והתושבים.";
+}
 function fresh(type){ const t = type || "community"; return {title:"", ctx:{type:t, region:"", desc:""}, year:"2035", question:Q_IDEAS[t][0].replace("YEAR","2035"), style:"watercolor", seed:1, items:[], art:null}; }
 let S = JSON.parse(JSON.stringify(EX));
 let DIMSEL = "";
@@ -558,7 +604,7 @@ function renderForm(){
   const H = {
     sentence: ta("fText", "משפט אחד על העתיד שאת או אתה רואים", "למשל: בעוד עשר שנים כל בית יודע למי לפנות כשמשהו קורה."),
     word: inp("fText", "מילה אחת שמתארת את העתיד שלנו", "למשל: שייכות"),
-    quote: ta("fText", "הציטוט", "משפט שמישהו אמר ונשאר איתך", 60) + inp("fSrc", "מי אמר את זה? (רשות)", "למשל: סבתא שלי, מורה, מישהו במפגש"),
+    quote: ta("fText", "הציטוט", "משפט שמישהו אמר ונשאר איתך", 60) + inp("fSrc", "מי אמר את זה? (רשות)", IS_ORG ? "למשל: סבתא שלי, שכנה, מישהו במפגש" : "למשל: סבתא שלי, מורה, מישהו במפגש"),
     poem: ta("fText", "שיר או כמה שורות שכתבת בעצמך (כל שורה בשורה חדשה)", "", 120),
     song: inp("fTitle", "שם השיר או היצירה", "") + inp("fArtist", "מי מבצע או כתב (רשות)", "") + inp("fUrl", "קישור לשיר (רשות)", "https://…") + ta("fText", "מה השיר הזה אומר לך על העתיד?", "", 60),
     image: `<div class="row"><label class="f">תמונה מהטלפון או מהמחשב<input type="file" id="fFile" accept="image/*"></label></div><div class="preview" id="fPrev"></div>` + ta("fText", "מה רואים בתמונה, ולמה בחרת בה?", "", 60) + `<p class="small muted">כדאי לבחור תמונה שצילמת בעצמך, או תמונה שמותר להשתמש בה. בלי תמונות של ילדים שאפשר לזהות.</p>`,

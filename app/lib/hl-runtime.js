@@ -20,6 +20,15 @@
     "hl-futures.html": { root: "workshops", v: "WID", f: "wid", what: "הסדנה", verb: "להצביע ולמלא", start: "vote" },
     "hl-collage.html": { root: "collages",  v: "CID", f: "cid", what: "התמונה", verb: "להוסיף פריטים" }
   }[PAGE] || null;
+  // מעבדת הדמו (28/10/2026): הכלי נפתח במסגרת עם ?demolab=1, בכניסת מנהלת המערכת. אז העבודה נשמרת רק בזיכרון של הדף
+  // (לא נוגעת בעבודות השמורות במכשיר, ותמיד מתחילה מהדוגמה), בלי שיתוף, והמתכון של הכלי (lib/demo-hook.js) נטען.
+  var DEMO = false;
+  try { DEMO = /[?&]demolab=1(?:&|$)/.test(location.search) && window.parent !== window && sessionStorage.getItem("sbe.session.homeUrl") === "admin.html?role=sys"; } catch (e) {}
+  if (DEMO) {
+    SHARE = null;
+    var hook = function () { var sc = document.createElement("script"); sc.src = "lib/demo-hook.js"; document.body.appendChild(sc); };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hook); else hook();
+  }
 
   /* ---------- sample ---------- */
   function blobToPart(b) {
@@ -69,7 +78,14 @@
   var lsGet = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
   var lsSet = function (k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
   var NS = (window.sbeUserKey ? window.sbeUserKey("sbe.hl.db") : "sbe.hl.db") + ":";
-  var LOCAL = {
+  var MEM = new Map();
+  var LOCAL = DEMO ? {
+    ready: Promise.resolve(),
+    get: function (k) { return MEM.has(k) ? clone(MEM.get(k)) : null; },
+    set: function (k, v) { MEM.set(k, clone(v)); return Promise.resolve(); },
+    del: function (k) { MEM.delete(k); return Promise.resolve(); },
+    keys: function () { return Array.from(MEM.keys()); }
+  } : {
     ready: Promise.resolve(),
     get: function (k) { try { var v = localStorage.getItem(NS + k); return v == null ? null : JSON.parse(v); } catch (e) { return null; } },
     set: function (k, v) { try { localStorage.setItem(NS + k, JSON.stringify(v)); return Promise.resolve(); } catch (e) { return Promise.reject(err("quota", "המקום לשמירה במכשיר התמלא")); } },
@@ -254,7 +270,7 @@
     if (window.QRCode) return cb();
     var s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"; s.onload = cb; s.onerror = cb; document.head.appendChild(s);
   }
-  function link() { return location.origin + location.pathname + "?room=" + B.room; }
+  function link() { return location.origin + location.pathname + "?room=" + B.room + (window.sbeSpace && window.sbeSpace() === "org" ? "&space=org" : ""); }
   function renderPanel() {
     if (!btn) return;
     if (GUEST_MODE) { btn.hidden = true; return; }
@@ -288,7 +304,7 @@
     st.textContent = "פותחים שיתוף…";
     try {
       var tok = sessionStorage.getItem("sbe.session.token") || "";
-      var r = await api("hlRoomCreate", { token: tok, page: PAGE });
+      var r = await api("hlRoomCreate", { token: tok, page: PAGE, space: window.sbeSpace ? window.sbeSpace() : "edu" });
       var base = SHARE.root + "/" + id, ops = [];
       LOCAL.keys().forEach(function (k) { if (k === base || k.indexOf(base + "/") === 0) ops.push({ p: k, d: LOCAL.get(k) }); });
       var act = {}; act[SHARE.f] = id; act.at = Date.now();

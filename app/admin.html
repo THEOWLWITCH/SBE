@@ -940,8 +940,9 @@ function pInsts(){
   const add = el("div",{class:"in"});
   const nm = el("input",{placeholder:"שם המוסד", style:"flex:1;min-width:180px"});
   const bAdd = el("button",{class:"act p"},"פתיחה");
-  bAdd.addEventListener("click",()=>{ const v=nm.value.trim(); if(!v)return; act("addInstitution", { name: v }); });
-  add.append(el("div",{class:"btnrow"}, nm, bAdd),
+  const nsp = el("select",{"aria-label":"המרחב של המוסד", "data-closed":""}, el("option",{value:"edu"},"🎒 מרחב חינוכי"), el("option",{value:"org"},"🏢 מרחב ארגוני"));
+  bAdd.addEventListener("click",()=>{ const v=nm.value.trim(); if(!v)return; act("addInstitution", { name: v, space: nsp.value }); });
+  add.append(el("div",{class:"btnrow"}, nm, nsp, bAdd),
     el("p",{class:"hint"},"אחרי הפתיחה: בוחרים מערכות פתוחות, ומפיקים קוד למנהל/ת המוסד או קוד אישי."));
   addC.append(add); w.append(addC);
 
@@ -964,12 +965,25 @@ function pInsts(){
       el("span",{class:"nm"}, el("b",{},x.name),
         el("span",{}, [openNames.length ? openNames.length + " מערכות פתוחות" : "עדיין בלי מערכות",
           x.adminCode ? "יש קוד מנהל/ת" : "בלי קוד מנהל/ת", pcs.length ? pcs.length + " קודים אישיים" : "",
-          (x.staffCodes || 0) ? x.staffCodes + " קודי צוות" : ""].filter(Boolean).join(" · "))),
+          (x.staffCodes || 0) ? x.staffCodes + " קודי צוות" : "", x.space === "org" ? "🏢 ארגוני" : x.space === "edu" ? "🎒 חינוכי" : ""].filter(Boolean).join(" · "))),
       el("span",{class:"pill " + sk}, sl)));
     const body = el("div",{class:"ibody"});
 
-    // 1. מערכות פתוחות
-    const s1 = el("section",{class:"isec"}, el("h4",{},"1. מערכות פתוחות"),
+    // 1. המרחב (28/10/2026): חינוכי או ארגוני. המרחב קובע אילו כלים רואים במרחב שלי, ואת השפה והדוגמאות בכלים המשותפים.
+    const s0 = el("section",{class:"isec"}, el("h4",{},"1. המרחב"),
+      el("p",{class:"hint"},"במרחב הארגוני רואים רק את הכלים הארגוניים והמשותפים, והכלים כותבים בשפה של ארגון וקהילה, בלי מחנכים ומורים."));
+    const spRow = el("div",{class:"btnrow", role:"group", "aria-label":"המרחב של " + x.name});
+    [["edu","🎒 חינוכי"],["org","🏢 ארגוני"],["","לפי הכלים בקוד"]].forEach(([v,t]) => {
+      const cur = x.space === "edu" || x.space === "org" ? x.space : "";
+      const b = el("button",{class: "act" + (cur === v ? " p" : ""), type:"button", "aria-pressed": String(cur === v)}, t);
+      b.addEventListener("click", () => { if (cur !== v) act("setInstitutionSpace", { name: x.name, space: v || null }); });
+      spRow.append(b);
+    });
+    s0.append(spRow);
+    if (!x.space) s0.append(el("p",{class:"hint"},"בלי סימון: קוד עם כלי חינוכי נכנס למרחב החינוכי, וקוד עם כלים משותפים בלבד נכנס למרחב הארגוני."));
+
+    // 2. מערכות פתוחות
+    const s1 = el("section",{class:"isec"}, el("h4",{},"2. מערכות פתוחות"),
       el("p",{class:"hint"},"מנהל/ת המוסד יכול/ה לתת לצוות רק מתוך הרשימה הזו."));
     s1.append(openNames.length ? el("div",{class:"chips"}, ...openNames.map(n => el("span",{class:"chip"}, n)))
       : el("p",{style:"margin:0;color:var(--brick);font-weight:600"},"עדיין לא נפתחו מערכות."));
@@ -977,8 +991,8 @@ function pInsts(){
     bMod.addEventListener("click",()=> openModDlg(x.name));
     s1.append(el("div",{class:"btnrow"}, bMod));
 
-    // 2. מנוי
-    const s2 = el("section",{class:"isec"}, el("h4",{},"2. מנוי"),
+    // 3. מנוי
+    const s2 = el("section",{class:"isec"}, el("h4",{},"3. מנוי"),
       el("p",{style:"margin:0"}, x.subEnd ? "בתוקף עד " + fmt(x.subEnd) : "ללא תאריך סיום"));
     const bRenew = el("button",{class:"act p"},"חידוש לשנה");
     bRenew.addEventListener("click", () => ask("חידוש המנוי של " + x.name + " לשנה", "לפני החידוש: וידאת שהתשלום התקבל, ושהמערכות הפתוחות למוסד מתאימות לתשלום? (המערכות נבדקות ב\"מערכות פתוחות\" שבתוך המוסד.)", () => act("renewSubscription", { name: x.name, months: 12 })));
@@ -986,8 +1000,8 @@ function pInsts(){
     bDate.addEventListener("click", () => openSubDlg(x, act));
     s2.append(el("div",{class:"btnrow"}, bRenew, bDate));
 
-    // 3. קודים
-    const s3 = el("section",{class:"isec"}, el("h4",{},"3. קודים"));
+    // 4. קודים
+    const s3 = el("section",{class:"isec"}, el("h4",{},"4. קודים"));
     const admRow = el("div",{class:"coderow"}, el("span",{class:"cl"},"מנהל/ת המוסד"));
     if (x.adminCode) admRow.append(el("b",{class:"mono"}, x.adminCode), copyBtn(x.adminCode));
     else admRow.append(el("i",{},"עדיין לא הופק"));
@@ -1022,8 +1036,8 @@ function pInsts(){
     old.append(el("div",{class:"coderow"}, el("b",{class:"mono"}, x.code), copyBtn(x.code), bOld));
     s3.append(old);
 
-    // 4. השהיה ומחיקה
-    const s4 = el("section",{class:"isec quiet"}, el("h4",{},"4. השהיה ומחיקה"));
+    // 5. השהיה ומחיקה
+    const s4 = el("section",{class:"isec quiet"}, el("h4",{},"5. השהיה ומחיקה"));
     const status = el("button",{class:"act"}, active ? "השהיה" : "הפעלה מחדש");
     status.addEventListener("click",()=> active
       ? ask("השהיית " + x.name, "אף קוד של המוסד לא יאפשר כניסה עד שתפעילי אותו מחדש. הנתונים נשמרים.",
@@ -1035,7 +1049,7 @@ function pInsts(){
       () => act("deleteInstitution", { name: x.name })));
     s4.append(el("div",{class:"btnrow"}, status, bDel));
 
-    body.append(s1, s2, s3, s4); box.append(body);
+    body.append(s0, s1, s2, s3, s4); box.append(body);
     inn.append(box);
   });
   c.append(inn);

@@ -35,6 +35,7 @@ import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { getProvider, getProviderDescriptor } from './lib/providers.mjs';
+import { withSpace } from './lib/provider-input.mjs';
 import { runPipeline } from './lib/pipeline.mjs';
 import { toScenario } from './lib/to-scenario.mjs';
 import { handleAccess, supabaseStore, authorizeModel } from './lib/access.mjs';
@@ -277,11 +278,11 @@ const server = createServer(async (req, res) => {
     let body;
     try { body = JSON.parse(await readBody(req, 16 * 1024 * 1024)); }
     catch (error) { const status = error.status === 413 ? 413 : 400; return sendJson(res, status, { ok: false, status, code: 'invalid', error: status === 413 ? 'הקובץ גדול מדי. אפשר לצרף עמוד רלוונטי או טקסט קצר יותר.' : 'הבקשה אינה תקינה. אפשר לרענן ולנסות שוב.' }); }
-    let finish, lease;
+    let finish, lease, gate;
     try {
       if (['singleGenerate','singleExtract','generate','extract'].includes(body?.action)) {
         const page = body.action.startsWith('single') ? 'message-writer.html' : 'communication-continuity.html';
-        const gate = await authorizeModel(access,{token:body.token,page});
+        gate = await authorizeModel(access,{token:body.token,page,space:body.space});
         if (!gate.ok) return sendJson(res,403,{ok:false,status:403,code:'ACCESS_DENIED',error:'כדי להמשיך, היכנסו שוב עם הקוד שלכם.'});
         lease = limits.acquire(gate);
         if (!lease.ok) {
@@ -290,7 +291,7 @@ const server = createServer(async (req, res) => {
         }
       }
       const [status, out] = await handleCommunication(access, body, {
-        providerFactory: () => providerFactory(process.env.PROVIDER || 'anthropic'),
+        providerFactory: () => withSpace(providerFactory(process.env.PROVIDER || 'anthropic'), gate?.space),
         onReady: () => { finish = startKeepAlive(res); },
         // Only server observations reach the separately consent-gated SQL RPC.
         onUsage: url && key ? event => supabaseResearchStore(url,key,{timeoutMs:2000}).rpc(body.token,'recordUsage',event) : undefined
@@ -430,7 +431,7 @@ const server = createServer(async (req, res) => {
       return sendJson(res, 400, { error: 'חסר input.given (who / whatHappened / goals)' });
     }
     let provider;
-    try { provider = providerFactory(process.env.PROVIDER || 'anthropic'); }
+    try { provider = withSpace(providerFactory(process.env.PROVIDER || 'anthropic'), gate.space); }
     catch (e) { return sendJson(res,503,{error:'שירות היצירה אינו זמין כעת.'}); }
     // מצב רקע (04/10/2026): מחזירים מיד מזהה עבודה, והדפדפן שואל על ההתקדמות כל כמה שניות.
     // בקשה אחת של 10–20 דקות נקטעה (טלפון שנכנס להמתנה, ניתוק רגעי, פרוקסי) — והמשתמשת ראתה "נתקע".
@@ -490,7 +491,7 @@ const server = createServer(async (req, res) => {
 
   let provider;
   try {
-    provider = providerFactory(process.env.PROVIDER || 'anthropic');
+    provider = withSpace(providerFactory(process.env.PROVIDER || 'anthropic'), gate.space);
   } catch (e) {
     return sendJson(res,503,{error:'שירות היצירה אינו זמין כעת.'});
   }

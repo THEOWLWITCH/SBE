@@ -282,7 +282,7 @@ function renderEntry(){
       sessionStorage.setItem("sbe.session.token", res.token);
       sessionStorage.setItem("sbe.session.perms", JSON.stringify(res.perms || []));
       sessionStorage.setItem("sbe.session.info", JSON.stringify({ kind:res.kind, inst:res.inst, label:res.label,
-        notices:res.notices || [], sub:res.sub || null }));
+        notices:res.notices || [], sub:res.sub || null, space:res.space || null }));
       sessionStorage.setItem("sbe.session.role", res.label || res.inst || "");
       sessionStorage.setItem("sbe.session.homeUrl", "home.html");
     } catch(e){}
@@ -323,7 +323,7 @@ function renderEntry(){
   view.append(partnership);
   // "יש מה לעשות" (19/10/2026): מדריכון לחירום, פתוח לכולם בלי קוד. מהמדריכון אין מעבר לכלים אחרים.
   const gl = el("a",{class:"maplink gift",href:"yesh-ma-laasot.html"});
-  gl.append("🎁 ", el("b",{},"יש מה לעשות: מדריכון לחירום"), el("span",{},"· פתוח לכולם"));
+  gl.append("🚨 ", el("b",{},"יש מה לעשות: מדריכון לחירום"), el("span",{},"· פתוח לכולם"));
   view.append(gl);
 
   // קישורים משניים: כניסת ניהול, אודות, חידוש מנוי (קוד לקבוצה של סדנה נכנס בשדה הראשי)

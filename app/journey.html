@@ -192,6 +192,8 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 </nav>
 <div class="wrap" id="app"></div>
 <script>
+// המרחב הארגוני (28/10/2026): דוגמאות מהעולם הארגוני, בלי בית ספר
+const ORG_SPACE = !!(window.sbeSpace && window.sbeSpace() === 'org');
 (function(){
 'use strict';
 // מסע אל החוסן — מסך המשתתפים: מיפוי → הצעת מסע עם אפשרויות → בחירות והסבר → אישור (ד״ר יעל שדה) → אבני דרך → תעודות → תו חוסן.
@@ -297,7 +299,7 @@ async function viewList(){
   const app = F('app'); app.textContent = '';
   const c = card();
   c.appendChild(exitRow(false)); c.appendChild(el('h1', null, 'רשת החוסן החברתי'));
-  const p = el('p'); p.appendChild(inlineRich('מרחב מתמשך לפיתוח חוסן בבית הספר ובקהילה. מתחילים בצוות חוסן ובמיפוי של **בעלי תפקידים, מנגנונים חברתיים, תשתיות תומכות ומשאבים נוספים**. מחברים ראיות, בוחנים יחד את רשת המנגנונים, מקבלים החלטה מנומקת, מתכננים פעולה וחוזרים ללמוד מן התוצאות.')); c.appendChild(p);
+  const p = el('p'); p.appendChild(inlineRich((ORG_SPACE ? 'מרחב מתמשך לפיתוח חוסן בארגון ובקהילה.' : 'מרחב מתמשך לפיתוח חוסן בבית הספר ובקהילה.') + ' מתחילים בצוות חוסן ובמיפוי של **בעלי תפקידים, מנגנונים חברתיים, תשתיות תומכות ומשאבים נוספים**. מחברים ראיות, בוחנים יחד את רשת המנגנונים, מקבלים החלטה מנומקת, מתכננים פעולה וחוזרים ללמוד מן התוצאות.')); c.appendChild(p);
   { const hk = el('p', 'intro'); hk.appendChild(inlineRich('**קהילת חוסן** היא קהילה שבוחרת להפוך את החוסן לחלק מוצהר מחייה, בשגרה כמו במשבר. זו אינה קהילה מסוג מיוחד: כל קהילה יכולה לבחור בדרך הזו ולהתקרב אליה צעד אחר צעד. הדרך מתחילה במנגנונים החברתיים שכבר פועלים בקהילה, ובוחנת יחד מה מהם משרת את החוסן ומה אפשר לשפר. **תו חוסן** הוא הכרה בעבודה של קהילת חוסן, ולא תנאי: אפשר להיות קהילת חוסן גם בלעדיו. התו נותן משוב והערכה על מה שעובד ועל מה שכדאי לנסות בהמשך, ולא ציון.')); hk.style.margin = '.6rem 0 0'; c.appendChild(hk); }
   c.appendChild(el('p', 'muted', 'קיום, מימוש והתחדשות הן זוויות בחינה מקבילות לאורך כל התהליך. תו חוסן ייבחן בהליך הסמכה חיצוני נפרד, על בסיס קריטריונים שקופים וראיות. לא מוענק תו אוטומטי במרחב העבודה.'));
   const list = card(); list.appendChild(el('h2', null, 'המסעות שלי')); const lw = el('p', 'muted', 'טוענת...'); list.appendChild(lw);
@@ -327,8 +329,8 @@ async function viewList(){
   // מסע חדש
   const n = card(); n.appendChild(el('h2', null, 'יוצאים למסע חדש'));
   const row = el('div', 'row2'); const a = el('div'), b2 = el('div');
-  a.appendChild(el('label', null, 'המסגרת')); const sel = document.createElement('select'); J.UNITS.forEach(u => { const o = el('option', null, u.t); o.value = u.k; sel.appendChild(o); }); a.appendChild(sel);
-  b2.appendChild(el('label', null, 'שם המסגרת')); const nm = document.createElement('input'); nm.type = 'text'; nm.maxLength = 80; nm.placeholder = 'למשל: בית ספר הדר, קהילת השכונה, כיתה ה׳2'; b2.appendChild(nm);
+  a.appendChild(el('label', null, 'המסגרת')); const sel = document.createElement('select'); J.UNITS.filter(u => !ORG_SPACE || ['community','other'].includes(u.k)).forEach(u => { const o = el('option', null, u.t); o.value = u.k; sel.appendChild(o); }); a.appendChild(sel);
+  b2.appendChild(el('label', null, 'שם המסגרת')); const nm = document.createElement('input'); nm.type = 'text'; nm.maxLength = 80; nm.placeholder = ORG_SPACE ? 'למשל: המרכז הקהילתי בעמק, קהילת השכונה, צוות החירום היישובי' : 'למשל: בית ספר הדר, קהילת השכונה, כיתה ה׳2'; b2.appendChild(nm);
   row.appendChild(a); row.appendChild(b2); n.appendChild(row);
   n.appendChild(el('label', null, 'השם שלך')); const by = document.createElement('input'); by.type = 'text'; by.maxLength = 60; try { by.value = sessionStorage.getItem('sbe.session.name') || ''; } catch(e){} n.appendChild(by);
   n.appendChild(el('p', 'muted', 'נתוני מרחב העבודה אינם נכללים בייצוא המחקרי. ההודעות במסע נקראות בתוך המערכת; אין במסלול זה עדכונים אוטומטיים במייל.'));
@@ -393,7 +395,7 @@ function render(){
   }
   F('app').textContent = ''; header();
   const legacy = card();
-  legacy.appendChild(el('p', null, 'זהו מסע שנפתח במתכונת הקודמת. אפשר להמשיך לעיין בתיעוד הקיים. למסע החדש של בית ספר או קהילה יש לפתוח מרחב עבודה חדש מרשימת המסעות; הנתונים אינם מועברים אוטומטית.'));
+  legacy.appendChild(el('p', null, 'זהו מסע שנפתח במתכונת הקודמת. אפשר להמשיך לעיין בתיעוד הקיים. למסע החדש של ' + (ORG_SPACE ? 'ארגון' : 'בית ספר') + ' או קהילה יש לפתוח מרחב עבודה חדש מרשימת המסעות; הנתונים אינם מועברים אוטומטית.'));
   const back = el('p', 'no-print'); back.appendChild(btn('← לכל המסעות', 'btn-ghost', () => { location.hash = ''; }));
   if (JR.status === 'mapping') viewMapping();
   else if (JR.status === 'proposal') viewProposal();
@@ -473,7 +475,7 @@ function decisionBlock(dec, state, onChange){
   box.appendChild(ch);
   const ex = document.createElement('textarea'); ex.maxLength = 1000; ex.placeholder = 'במילים שלכם: מה השיקולים שעמדו מאחורי הבחירה'; ex.value = v.explain; ex.addEventListener('input', () => { v.explain = ex.value; onChange(); }); box.appendChild(ex);
   box.appendChild(el('label', null, 'מי היו שותפים להחלטה? (רשות)'));
-  const wh = el('div', 'chips'); ['הנהלה','צוות','תלמידים','הורים','תושבים','שותפים מבחוץ'].forEach(x => { const l = el('label', v.who.includes(x) ? 'on' : ''); const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = v.who.includes(x);
+  const wh = el('div', 'chips'); (ORG_SPACE ? ['הנהלה','צוות','מתנדבים','תושבים','ועד','שותפים מבחוץ'] : ['הנהלה','צוות','תלמידים','הורים','תושבים','שותפים מבחוץ']).forEach(x => { const l = el('label', v.who.includes(x) ? 'on' : ''); const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = v.who.includes(x);
     cb.addEventListener('change', () => { v.who = cb.checked ? v.who.concat(x) : v.who.filter(y => y !== x); l.classList.toggle('on', cb.checked); onChange(); }); l.appendChild(cb); l.appendChild(document.createTextNode(x)); wh.appendChild(l); });
   box.appendChild(wh);
   box.appendChild(el('label', null, 'מה היה מאתגר בהחלטה? (רשות)'));

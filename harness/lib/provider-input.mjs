@@ -22,10 +22,17 @@ export function openAIInput(system, prompt, messages) {
   return input;
 }
 
-export function providerSystem(system, policy) {
+export function providerSystem(system, policy, space) {
   if (policy === 'research-partnership-impact') return system;
-  if (policy !== 'communication-continuity') return INVITE.apply(system);
+  const sp = space === 'org' ? 'org' : 'edu';
+  if (policy !== 'communication-continuity') return INVITE.apply(system, sp);
   // Current module brief supersedes historical mandatory multi-step output
   // and no-referral rules. Other tools still receive their original policies.
-  return [system, INVITE.rule, INVITE.nonjudging, INVITE.plain].filter(Boolean).join('\n\n');
+  return [system, ...INVITE.basicFor(sp)].filter(Boolean).join('\n\n');
+}
+
+// המרחב של מי שפונה (28/10/2026): כל קריאה דרך הספק הזה מקבלת את כללי המרחב.
+export function withSpace(provider, space) {
+  if (space !== 'org' || !provider) return provider;
+  return { ...provider, complete: (opts) => provider.complete({ ...opts, space: 'org' }) };
 }

@@ -73,7 +73,7 @@ export async function roomModelGate(store, a, page) {
   const rec = await getRoom(store, a.room);
   if (!live(rec) || rec.page !== pageOf(page)) return null;
   const g = okGuest(a.g) ? a.g : 'anon';
-  return { k: 'hlroom', principal: 'hlroom:' + a.room + ':' + g, institution: 'hlroom:' + a.room, inst: rec.inst || null };
+  return { k: 'hlroom', principal: 'hlroom:' + a.room + ':' + g, institution: 'hlroom:' + a.room, inst: rec.inst || null, space: rec.space === 'org' ? 'org' : 'edu' };
 }
 
 export async function handleHlRooms(store, body, { authorize }) {
@@ -89,7 +89,7 @@ export async function handleHlRooms(store, body, { authorize }) {
     const id = randomBytes(12).toString('hex');
     const key = randomBytes(18).toString('hex');
     const exp = new Date(Date.now() + HL_ROOM_DAYS * 86400000).toISOString();
-    const rec = { id, page, keyHash: sha(key), owner: who.principal, inst: who.inst || null, at: new Date().toISOString(), exp, ver: 0, revision: 0, size: 0, count: 0 };
+    const rec = { id, page, keyHash: sha(key), owner: who.principal, inst: who.inst || null, space: who.space === 'org' ? 'org' : 'edu', at: new Date().toISOString(), exp, ver: 0, revision: 0, size: 0, count: 0 };
     await store.set('hlr:' + id, rec);
     recCache.set(id, { at: Date.now(), rec });
     return [200, { ok: true, room: id, key, exp, page }];
