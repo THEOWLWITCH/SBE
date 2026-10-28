@@ -204,3 +204,28 @@ test('owner approval cancels changed decisions during the study lookup and requi
     assert.deepEqual(lookups,[id(30),expected.studyId]);page.clear();
   });
 });
+test('expanded notice is explicitly prepared as an unsaved proposal and never overwrites typed wording',async()=>{
+  const UI=require('../../app/lib/research-intake-ui.js'),I=require('../../app/lib/research-intake-core.js'),s=ownerSetup(),page=UI.mountOwner(s);
+  await page.terms();assert.equal(field(s.root,'נוסח תנאי הפנייה').value,I.DEFAULT_TERMS_DRAFT.text);
+  const prepare=button(s.root,'הכנת נוסח מורחב מוצע לעיון');assert.ok(prepare);
+  field(s.root,'נוסח תנאי הפנייה').value='נוסח אישי שלא נשמר';await prepare.click();
+  assert.equal(field(s.root,'נוסח תנאי הפנייה').value,'נוסח אישי שלא נשמר');assert.match(s.root.textContent,/הטקסט שהוקלד נשמר/);
+  await page.terms();await button(s.root,'הכנת נוסח מורחב מוצע לעיון').click();
+  const proposal=field(s.root,'נוסח תנאי הפנייה').value;
+  assert.match(proposal,/28\.10\.2026/);assert.match(proposal,/סוג הבקשה.*שם מלא.*דוא״ל/);
+  assert.match(proposal,/פרטים.*לפי בחירה/);assert.match(proposal,/אישור הקריאה אינו חתימה/);
+  assert.match(proposal,/המקור/);assert.match(proposal,/זהות אישית/);
+  assert.equal(s.calls.some(([a])=>a==='intakeTermsSave'||a==='intakeTermsPublish'),false);
+  assert.match(s.root.textContent,/טיוטה שלא נשמרה/);
+  await button(s.root,'שמירת טיוטת תנאים').click();
+  assert.equal(s.calls.find(([a])=>a==='intakeTermsSave')[1].text,proposal);
+  assert.equal(s.calls.some(([a])=>a==='intakeTermsPublish'),false);
+  const stored=field(s.root,'נוסח תנאי הפנייה').value;await page.terms();assert.equal(field(s.root,'נוסח תנאי הפנייה').value,stored);page.clear();
+});
+
+test('prepared notice preserves edits restored after same-session reauthorization',async()=>{
+ const UI=require('../../app/lib/research-intake-ui.js'),s=ownerSetup(),page=UI.mountOwner(s);
+ await page.terms();field(s.root,'נוסח תנאי הפנייה').value='נוסח שנשמר זמנית ברענון';const saved=page.capture();
+ await page.restore(saved);await button(s.root,'הכנת נוסח מורחב מוצע לעיון').click();
+ assert.equal(field(s.root,'נוסח תנאי הפנייה').value,'נוסח שנשמר זמנית ברענון');page.clear();
+});

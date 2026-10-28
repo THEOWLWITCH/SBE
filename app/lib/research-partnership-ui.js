@@ -21,7 +21,7 @@
     function scope(){return {studyId:workspace.studyId,partnerId:workspace.partnerId};}
     function exact(record,version){return {...scope(),recordId:record.id,versionId:version.id,expectedRevision:record.revision};}
     function heading(title,withFolder=false){epoch++;if(timer)clearTimeout(timer);timer=null;root.replaceChildren();signingPanel=null;status=null;const card=D.card(root,title),nav=D.node('nav','r-toolbar');nav.setAttribute('aria-label','ניווט בתיק המחקר');if(options.onBack)nav.append(D.button('מרכז המחקר',()=>leaveEditor(options.onBack),'r-secondary'));if(workspace)nav.append(D.button(bootstrap.owner?'כל השותפויות':'המחקרים והתיק שלי',()=>leaveEditor(()=>load()),'r-secondary'));if(withFolder&&workspace&&ownFolder())nav.append(D.button('חזרה לתיק החוקרת',returnToFolder,'r-secondary'));card.append(nav);card.setAttribute('tabindex','-1');card.focus?.();return card;}
-    function dependencies(parent){const fold=D.node('details','r-fold');fold.append(D.node('summary','','מצב השירותים והמסמכים'));for(const [key,label]of Object.entries(READINESS_LABELS)){const state=bootstrap.readiness?.[key];D.paragraph(fold,label+': '+(state?.message||(state?.configured?'מוגדר.':'טרם הוגדר.')));}parent.append(fold);}
+    function dependencies(parent){if(!bootstrap.owner)return;const fold=D.node('details','r-fold');fold.append(D.node('summary','','מצב השירותים והמסמכים'));for(const [key,label]of Object.entries(READINESS_LABELS)){const state=bootstrap.readiness?.[key];D.paragraph(fold,label+': '+(state?.message||(state?.configured?'מוגדר.':'טרם הוגדר.')));}if(bootstrap.owner){D.paragraph(fold,'להמשך ההכנה: תנאי הפנייה נשמרים ומפורסמים בנפרד במסך "תנאי פנייה". תבנית והסבר קניין רוחני מאושרים לאחר בדיקה של גרסה מדויקת.');for(const [key,text]of [['mail','משלוח דוא״ל מותנה בתצורת שרת ובשירות משלוח.'],['googleForms','אפשר להשלים חיבור Google Forms לאחר בחירת טופס, חיבור OAuth מורשה ומיפוי למחקר. הטפסים המקומיים נפתחים במסכי המחקר.'],['impactAI','הסבר AI זמין לאחר הגדרת ספק ואישור מדיניות עיבוד עדכנית בתיק.']])if(!bootstrap.readiness?.[key]?.configured)D.paragraph(fold,text,'r-muted');}parent.append(fold);}
     async function load(saved){clear();client.setScope('');notice('טעינת השותפויות...');const data=await request('workspaceBootstrap');if(!data)return;bootstrap=data;const result=await request('workspaceList');if(!result)return;workspaces=result.workspaces||[];listCursor=result.nextCursor||null;
       if(saved?.intake&&bootstrap.owner){await openIntake(saved.intake.route,saved.intake);return;}
       if(saved?.workspace){const allowed=workspaces.find(w=>w.studyId===saved.workspace.studyId&&w.partnerId===saved.workspace.partnerId);if(allowed&&ownFolder(allowed)){await openWorkspace(allowed,saved);return;}}
@@ -60,6 +60,7 @@
     function studyDetails(parent){
       const section=D.card(parent,'המחקר וההרשאות בתיק'),study=workspace.study;
       D.paragraph(section,'ההרשאות האישיות של השותפה במחקר הזה: '+((workspace.grantedPermissions||[]).map(P.permissionLabel).join(', ')||'לא הוקצו הרשאות למחקר.'));
+      studyActions(section);
       if(!study){D.paragraph(section,'פרטי הגדרות המחקר אינם זמינים בתצוגה הנוכחית.','r-muted');return;}
       D.paragraph(section,'מצב המחקר: '+(C.STUDY_STATUSES[study.status]||study.status)+' · גרסת הגדרות: '+study.revision);
       const config=study.config||{},labels={title:'כותרת המחקר',description:'תיאור המחקר',researchQuestions:'שאלות המחקר',population:'אוכלוסיית המחקר',principalInvestigator:'חוקר.ת ראשי.ת',startDate:'מועד התחלה',endDate:'מועד סיום',expectations:'מה כוללת ההשתתפות',eligibleInstitutions:'מסגרות זכאיות',approvals:'אישורים',dataCategories:'קטגוריות הנתונים',exportCategories:'נתונים שאושרו לייצוא',contactKinds:'אפשרויות קשר',retentionDays:'תקופת שמירת נתונים בימים',withdrawalPolicy:'טיפול בנתונים לאחר פרישה',schedule:'מועדי מדידה'};
@@ -73,6 +74,19 @@
       }
       for(const[key,label]of Object.entries(labels))if(config[key]!==undefined&&config[key]!==null){D.paragraph(section,label,'r-intake-label');D.paragraph(section,valueLabel(key,config[key]),'r-pre');}
       const versions=D.node('details','r-fold');versions.append(D.node('summary','','פרטי גרסאות'));D.paragraph(versions,'מזהי הטפסים וההגדרות המקוריות של גרסת המחקר, לעיון ותיעוד.','r-muted');D.paragraph(versions,JSON.stringify({studyId:study.id,revision:study.revision,config},null,2),'r-pre');section.append(versions);
+    }
+    function studyActions(parent){
+      if(!options.onStudy)return;
+      const actorStudy=(bootstrap.studies||[]).find(s=>s.id===workspace.studyId),allowed=p=>C.hasPermission({owner:bootstrap.owner===true,permissions:actorStudy?.permissions||[]},p);
+      const at=epoch,studyId=workspace.studyId,active=()=>at===epoch&&workspace?.studyId===studyId;
+      const nav=D.node('nav','r-toolbar');nav.setAttribute('aria-label','מסכי המחקר');
+      for(const [label,view,permissions]of [['סקירת המחקר','overview',['view_study']],['הגדרות המחקר','configuration',['edit_study']],['טופסי הסכמה','consent',['manage_consent']],['שאלונים','instrument',['manage_questionnaires']],['משתתפים','participants',['manage_participants']],['תוצאות ודוחות','results',['view_aggregate_results','view_pseudonymized_data']]]){
+        if(permissions.some(allowed))nav.append(D.button(label,()=>{if(!active())return;return leaveEditor(()=>active()&&options.onStudy({studyId,view},active));},'r-secondary'));
+      }
+      parent.append(nav);
+      D.paragraph(parent,bootstrap.owner?'לפני הפצת הזמנות למשתתפים אפשר לבדוק הצפנת פרטי קשר ותשתית אימות דוא״ל, לצד מחקר פעיל, אישור אתי וגרסת הסכמה שפורסמה ונבחרה בהגדרות. במחקר הכולל שאלונים, אפשר לבדוק גם את פרסומם ובחירתם בהגדרות. עצם קיום הטפסים אינו אישור שמסלול ההשתתפות מוכן להפצה.':'לפני הפצת הזמנות למשתתפים אפשר לבדוק עם בעלת המערכת שהמחקר והאישורים בתוקף ושמסלול ההצטרפות ואימות דוא״ל זמינים. עצם קיום הטפסים אינו אישור שההזמנה מוכנה להפצה.','r-notice');
+      const cfg=workspace.study?.config||{};
+      if(bootstrap.owner){const missing=[cfg.approvals?.status!=='approved'?'בדיקת האישורים בהגדרות המחקר':null,!cfg.consentVersionId?'בחירת גרסת הסכמה שפורסמה':null,cfg.schedule?.length&&!cfg.instrumentVersionIds?.length?'בחירת שאלונים שפורסמו עבור מועדי המדידה':null].filter(Boolean);D.paragraph(parent,missing.length?'להשלמת ההכנה במחקר הזה: '+missing.join(' · '):'אפשר לבדוק את ההגדרות ואת מצב ההפעלה במסכי המחקר.');}
     }
     async function leaveEditor(next){const current=editor;if(current&&!current.checkDates(true))return;while(current&&(current.dirty||current.saving)){if(!await current.save())return;if(editor!==current)return;}return next();}
     function returnToFolder(){return leaveEditor(folder);}

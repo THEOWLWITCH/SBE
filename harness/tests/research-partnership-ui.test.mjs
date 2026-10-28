@@ -366,3 +366,59 @@ test('guided in-app PDF retains authorized document styles and right alignment w
  const page=UI.mount({...s,productDoc:{print:args=>printed.push(args)}});
  try{await page.load();await page.openWorkspace(s.workspace);await btn(s.root,'הסכם חדש').click();await btn(s.root,'PDF והדפסה').click();assert.equal(printed.length,1);assert.equal(printed[0].inline,true);assert.equal(printed[0].title,'טיוטה שהוכנה בשרת');assert.match(printed[0].extraCss,/agreement-row\{break-inside:auto\}/);assert.match(printed[0].extraCss,/text-align:right!important/);assert.equal(walk(printed[0].node).some(n=>n.tagName==='h1'),false);assert.match(printed[0].node.textContent,/פסקה מורשית/);}finally{page.clear();globalThis.DOMParser=originalParser;}
 });
+
+test('folder native actions use actor study permissions and a current-view handoff rather than partner grants',async()=>{
+ const UI=require('../../app/lib/research-partnership-ui.js'),s=setup(false),original=s.client.call,opened=[];
+ s.workspace.grantedPermissions=['view_study','edit_study'];s.workspace.study={id:id(1),status:'draft',revision:1,config:{title:'מחקר א'}};
+ s.client.call=async(a,p)=>{const out=await original(a,p);if(a==='workspaceBootstrap')out.studies[0].permissions=['view_study','manage_consent','view_aggregate_results'];return out;};
+ const page=UI.mount({...s,onStudy:(target,isActive)=>opened.push({target,isActive})});await page.load();await page.openWorkspace(s.workspace);
+ assert.ok(btn(s.root,'טופסי הסכמה'));assert.ok(btn(s.root,'תוצאות ודוחות'));assert.equal(btn(s.root,'הגדרות המחקר'),undefined);
+ assert.match(s.root.textContent,/מסלול ההצטרפות ואימות דוא״ל/);assert.doesNotMatch(s.root.textContent,/הצפנת פרטי קשר|OAuth|מצב השירותים/);
+ const consent=btn(s.root,'טופסי הסכמה');await consent.click();assert.deepEqual(opened[0].target,{studyId:id(1),view:'consent'});assert.equal(opened[0].isActive(),true);
+ await btn(s.root,'בקשה חדשה').click();assert.equal(opened[0].isActive(),false);await consent.click();assert.equal(opened.length,1);page.clear();
+});
+test('folder native navigation reauthorizes through existing management forms and drops revoked or stale targets',async()=>{
+ const UI=require('../../app/lib/research-management-ui.js'),s=setup(false),original=s.client.call;
+ let permission='manage_consent',complete;
+ const study=()=>({id:id(1),revision:3,status:'draft',permissions:['view_study',permission],config:{title:'מחקר א'}});
+ s.workspace.study=study();s.workspace.grantedPermissions=['view_study'];
+ s.client.call=async(a,p)=>{if(a==='bootstrap')return {owner:false,studies:[study()]};if(a==='workspaceBootstrap'){const out=await original(a,p);out.studies=[study()];return out;}if(a==='studyGet'){s.calls.push([a,p]);return complete===true?new Promise(resolve=>{complete=()=>resolve({study:study()});}):{study:study()};}return original(a,p);};
+ const page=UI.mount({...s,search:'?workspace=1'});await page.load();await btn(s.root,'פתיחת התיק').click();
+ assert.ok(btn(s.root,'טופסי הסכמה'));await btn(s.root,'טופסי הסכמה').click();
+ assert.ok(field(s.root,'נוסח ההסכמה'));assert.equal(page.capture().view,'consent');
+ assert.equal(page.capture().workspace,undefined);assert.equal(s.calls.filter(([a])=>a==='studyGet').length,1);
+ await btn(s.root,'התיק והשותפויות שלי').click();await btn(s.root,'פתיחת התיק').click();permission='view_aggregate_results';await btn(s.root,'טופסי הסכמה').click();
+ assert.equal(field(s.root,'נוסח ההסכמה'),undefined);assert.match(s.root.textContent,/ההרשאה למסך המבוקש/);
+ await btn(s.root,'התיק והשותפויות שלי').click();await btn(s.root,'פתיחת התיק').click();complete=true;
+ const pending=btn(s.root,'תוצאות ודוחות').click();await settle();page.clear('account');complete();await pending;assert.equal(s.root.textContent,'');
+});
+
+test('each authorized folder action opens its existing native study panel after a fresh read',async()=>{
+ const UI=require('../../app/lib/research-management-ui.js');
+ for(const [permission,label,view,expected]of [
+  ['edit_study','הגדרות המחקר','configuration','שמירת גרסת הגדרות'],
+  ['manage_questionnaires','שאלונים','instrument','שמירת גרסה חדשה'],
+  ['manage_participants','משתתפים','participants','יצירת הזמנה למחקר'],
+  ['view_aggregate_results','תוצאות ודוחות','results','הצגת נתונים']
+ ]){
+  const s=setup(false),original=s.client.call,study={id:id(1),revision:3,status:'draft',permissions:['view_study',permission],config:{title:'מחקר א',dataCategories:['surveys']}};
+  s.workspace.study=study;s.workspace.grantedPermissions=['view_study'];
+  s.client.call=async(a,p)=>{if(a==='bootstrap')return {owner:false,studies:[study]};if(a==='workspaceBootstrap'){const out=await original(a,p);out.studies=[study];return out;}if(a==='studyGet'){s.calls.push([a,p]);return {study};}return original(a,p);};
+  const page=UI.mount({...s,search:'?workspace=1'});await page.load();await btn(s.root,'פתיחת התיק').click();await btn(s.root,label).click();
+  assert.ok(btn(s.root,expected),label);assert.equal(page.capture().view,view);assert.equal(s.calls.filter(([a])=>a==='studyGet').length,1);page.clear();
+ }
+});
+test('real client account change drops an in-flight folder handoff before rendering native forms',async()=>{
+ const R=require('../../app/lib/research-client.js'),UI=require('../../app/lib/research-management-ui.js'),s=setup(false),fixture=s.client.call;
+ let token='SYNTHETIC-A',page,complete;
+ const study={id:id(1),revision:2,status:'draft',config:{title:'מחקר סינתטי'},permissions:['view_study','manage_consent']};s.workspace.study=study;
+ const client=R.create({getToken:()=>token,onClear:reason=>page?.clear(reason),fetchImpl:async(url,options)=>{
+  const {action,...payload}=JSON.parse(options.body);let data;
+  if(action==='bootstrap')data={owner:false,studies:[study]};
+  else if(action==='studyGet')return new Promise(resolve=>{complete=()=>resolve({ok:true,status:200,json:async()=>({ok:true,study})});});
+  else {data=await fixture(action,payload);if(action==='workspaceBootstrap')data.studies=[study];}
+  return {ok:true,status:200,json:async()=>({ok:true,...data})};
+ }});
+ page=UI.mount({...s,client,search:'?workspace=1'});await page.load();await btn(s.root,'פתיחת התיק').click();const pending=btn(s.root,'טופסי הסכמה').click();await settle();
+ token='SYNTHETIC-B';complete();await pending;assert.equal(s.root.textContent,'');assert.equal(field(s.root,'נוסח ההסכמה'),undefined);page.clear();
+});
