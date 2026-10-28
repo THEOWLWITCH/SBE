@@ -8,6 +8,10 @@ origin: user continuation of research management and supplied partnership specif
 
 # המשך ניהול המחקר והשותפויות
 
+## הרחבת המסלול לפי הבעלים, 20.10.2026
+
+הגרסה הבסיסית נפרסה באישור ב־19.10.2026. לפי ההנחיה החדשה, אדם פרטי או נציגת מוסד יוכלו לפתוח פנייה עצמאית: לעיין בתנאים שפורסמו, למלא פרטים ולשלוח לבדיקה. אישור בעלת המערכת יקשר את הפנייה למחקר, לזהות אישית ולהרשאות שנבחרו במפורש. תיק שותפה ירכז את המחקרים שלה ואת ההרשאות הנוכחיות בכל מחקר. [תוכנית ההרחבה](2026-10-20-partnership-self-service.md) מגדירה את ההמשך; אין בכך אישור לפריסה נוספת או להפעלת חתימות.
+
 ## Goal and authority
 
 Continue the existing Hebrew RTL research administration rather than create another product. The owner can find each researcher and her studies, requests, contributions, agreements and approved findings in one place. Researchers work only within individually authorized study workspaces. Preserve professional communication and its shared eighteen-principle engine.

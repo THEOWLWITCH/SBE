@@ -1,0 +1,65 @@
+{
+  "reviewer": "adversarial",
+  "findings": [
+    {
+      "title": "Existing studies disappear from the intake approval selector",
+      "severity": "P2",
+      "file": "app/lib/research-partnership-ui.js",
+      "line": 37,
+      "why_it_matters": "An owner cannot approve an application into an existing study that does not yet have a partner folder. The intake screen receives workspaceBootstrap.studies, which is assembled only while iterating existing partners and their associated studies, and uses it as the entire approval selector. Loading the owner's ordinary study bootstrap supplies studies even before any partner has been linked.",
+      "autofix_class": "manual",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "suggested_fix": "Before mounting the intake owner page, fetch the existing authenticated core bootstrap action and pass its complete owner study list to mountOwner. Keep the partnership bootstrap for partnership permissions/readiness, and add a test that creates a study with no partners and selects it while approving the first intake application.",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-partnership-ui.js:37 --     async function openIntake(view,saved){if(!bootstrap?.owner)return;workspace=null;editor=null;intakePage=IUI.mountOwner({document,root,client,bootstrap,onBack:()=>load()});if(saved)await intakePage.restore(saved);else await intakePage[view]();}",
+        "app/lib/research-partnership-ui.js:25 sets bootstrap from workspaceBootstrap; app/lib/research-intake-ui.js:122 builds every approval study option from bootstrap.studies.",
+        "harness/migrations/20261018-research-partnerships.sql:248-264 appends studies only inside the existing-partner loop and only for memberships or partner records/documents/invitations/snapshots.",
+        "Read-only PGlite reproduction using the frozen implementation: studyCreate created study 4d7c85bc-61f6-40e3-ab4c-5f48358f487d at revision 0; workspaceBootstrap immediately returned studies: [].",
+        "harness/migrations/20261013-research-management.sql:132-139 implements the ordinary bootstrap over all owner-visible studies, including this first study without partners."
+      ],
+      "pre_existing": false
+    },
+    {
+      "title": "Terms refresh restores earlier edits and checked acknowledgement",
+      "severity": "P2",
+      "file": "app/lib/research-intake-ui.js",
+      "line": 76,
+      "why_it_matters": "Returning to the public tab can silently erase text entered while the terms request is pending, and can recheck an acknowledgement the applicant deliberately unchecked during that request. load snapshots the form and checkbox before awaiting the network, then renders those old values on completion. Reading the current controls immediately before rendering preserves the applicant's latest choices while still clearing acknowledgement when the terms change.",
+      "autofix_class": "manual",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "suggested_fix": "After intakePublicInfo resolves and the epoch check passes, capture the current form data and current acknowledgement immediately before replacing the DOM. Reset acknowledgement when the exact terms version/hash changes. Add a deferred-response test that changes text and unchecks acknowledgement while a refresh is pending.",
+      "confidence": 100,
+      "evidence": [
+        "app/lib/research-intake-ui.js:76 --       read();const previous=info?.terms,readAcknowledged=ack?.checked===true,at=++epoch;",
+        "app/lib/research-intake-ui.js:77 awaits intakePublicInfo and then calls render(changed,readAcknowledged); lines 53-54 replace the form and clear its references, and line 71 restores the pre-request checkbox state when terms are unchanged.",
+        "app/lib/research-intake-ui.js:3 invokes load on window focus and persisted pageshow, making the pending-refresh editing window reachable during ordinary use.",
+        "In-memory reproduction evaluating the exact 44eca17 JavaScript: start refresh with title 'Earlier title' and acknowledgement checked; type 'Later title typed while refreshing' and uncheck acknowledgement; resolve the refresh with unchanged terms. Observed result: {\"titleAfterRefresh\":\"Earlier title\",\"acknowledgedAfterRefresh\":true}."
+      ],
+      "pre_existing": false
+    },
+    {
+      "title": "Saving another review note always reports a conflict",
+      "severity": "P2",
+      "file": "harness/migrations/20261020-partnership-intake.sql",
+      "line": 122,
+      "why_it_matters": "After moving an application into review, the owner can edit its review notes and click the still-visible save-in-review button, but the notes cannot be saved. The UI sends under_review again with the correct revision, while SQL rejects every decision equal to the current status. Allowing another under_review review event preserves both optimistic concurrency and the immutable note history.",
+      "autofix_class": "manual",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "suggested_fix": "Allow under_review to under_review in intakeReview when saving a further review note, incrementing the decision revision and appending an immutable intake_reviews row as for other reviews. Keep approved/rejected terminal and retain requestId replay and expectedRevision checks. Verify two consecutive review-note saves through the owner UI and SQL.",
+      "confidence": 100,
+      "evidence": [
+        "harness/migrations/20261020-partnership-intake.sql:122 --     IF d.revision<>(p_payload->>'expectedRevision')::integer OR d.status NOT IN ('submitted','under_review') OR d.status=p_payload->>'decision' THEN PERFORM research_private.fail('conflict');END IF;",
+        "app/lib/research-intake-ui.js:117 initializes an editable notes field from the latest note; line 118 exits only for approved/rejected; lines 119-120 keep sending decision under_review from the save-in-review button for an already-under-review application.",
+        "Read-only PGlite reproduction using the frozen implementation: a first intakeReview with expectedRevision 0, decision under_review and 'First note' succeeds; a second request with the returned revision 1, decision under_review and 'Second note' returns {\"error\":\"conflict\",\"status\":409}.",
+        "harness/migrations/20261020-partnership-intake.sql:135-136 already increments revision and appends intake_reviews for accepted review events, providing the history-preserving path for this save."
+      ],
+      "pre_existing": false
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

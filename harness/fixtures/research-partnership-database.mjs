@@ -2,14 +2,23 @@ import { readFile } from 'node:fs/promises';
 import { createResearchDatabase } from './research-database.mjs';
 export { TOKENS, request, token } from './research-database.mjs';
 
-export async function createPartnershipDatabase() {
+export async function createPartnershipDatabase({frozenSigningIdentities=true}={}) {
   const base = await createResearchDatabase();
-  try { await base.db.exec(await readFile(new URL('../migrations/20261018-research-partnerships.sql', import.meta.url), 'utf8')); }
+  try {
+    const migrations=['20261018-research-partnerships.sql', '20261020-partnership-profile.sql', '20261020-partnership-intake.sql', '20261020-guided-agreement-contract.sql', '20261020-guided-agreements.sql', '20261020-guided-signing.sql', '20261020-guided-workflow.sql'];
+    if(frozenSigningIdentities)migrations.push('20261020-frozen-signing-identities.sql');
+    for (const migration of migrations) await base.db.exec(await readFile(new URL('../migrations/' + migration, import.meta.url), 'utf8'));
+  }
   catch (error) { await base.close(); throw error; }
   const partnershipRpc = async (credential, action, payload = {}) => {
     await base.db.exec('SET ROLE service_role');
     try { return (await base.db.query('SELECT public.research_partnership_rpc($1,$2,$3::jsonb) AS result', [credential, action, payload])).rows[0].result; }
     finally { await base.db.exec('RESET ROLE'); }
   };
-  return { ...base, partnershipRpc };
+  const intakeRpc = async (credential, action, payload = {}) => {
+    await base.db.exec('SET ROLE service_role');
+    try { return (await base.db.query('SELECT public.research_intake_rpc($1,$2,$3::jsonb) AS result', [credential, action, payload])).rows[0].result; }
+    finally { await base.db.exec('RESET ROLE'); }
+  };
+  return { ...base, partnershipRpc, intakeRpc };
 }

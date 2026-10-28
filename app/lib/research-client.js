@@ -1,11 +1,11 @@
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('./research-core.js'),require('./research-partnership-core.js'));
-  else root.SBE_RESEARCH_CLIENT = factory(root.SBE_RESEARCH,root.SBE_RESEARCH_PARTNERSHIPS);
-})(typeof self !== 'undefined' ? self : this, function (C,P) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./research-core.js'),require('./research-partnership-core.js'),require('./research-intake-core.js'));
+  else root.SBE_RESEARCH_CLIENT = factory(root.SBE_RESEARCH,root.SBE_RESEARCH_PARTNERSHIPS,root.SBE_RESEARCH_INTAKE);
+})(typeof self !== 'undefined' ? self : this, function (C,P,I) {
   'use strict';
-  const ACTIONS=new Set([...C.CLIENT_ACTIONS,...(P?.CLIENT_ACTIONS||[])]);
-  const READS = new Set(['bootstrap','studyGet','memberList','versionList','participantList','contactGet','resultsGet','exportData','auditList','mailList','inviteInfo','myStudies','participationGet','sampleGet',...(P?.READ_ACTIONS||[])]);
-  const MESSAGES = { unauthorized:'הכניסה או ההרשאה הסתיימו. אפשר להיכנס מחדש בקוד האישי.', not_found:'המחקר או הנתונים אינם זמינים לחשבון הזה.', invalid:'אפשר לבדוק את הפרטים ולנסות שוב.', conflict:'המחקר השתנה בזמן העריכה. אפשר לרענן את המחקר לפני שמירה נוספת.', consent_changed:'טופס ההסכמה השתנה. אפשר לפתוח את הטופס העדכני ולאשר את הבחירה מחדש.', rate_limited:'בקשת האימות האחרונה עדיין בטיפול. אפשר לבדוק את תיבת הדוא״ל ולנסות שוב בהמשך.', not_configured:'השירות עדיין לא מוגדר. אפשר לפנות לבעלת המערכת להשלמת ההגדרה.', network:'החיבור לא הושלם. הפרטים שהוקלדו נשארים כאן ואפשר לנסות שוב.', stale:'התצוגה התחלפה.' };
+  const ACTIONS=new Set([...C.CLIENT_ACTIONS,...(P?.CLIENT_ACTIONS||[]),...(I?.CLIENT_ACTIONS||[])]);
+  const READS = new Set(['bootstrap','studyGet','memberList','versionList','participantList','contactGet','resultsGet','exportData','auditList','mailList','inviteInfo','myStudies','participationGet','sampleGet',...(P?.READ_ACTIONS||[]),...(I?.READ_ACTIONS||[])]);
+  const MESSAGES = { unauthorized:'הכניסה או ההרשאה הסתיימו. אפשר להיכנס מחדש בקוד האישי.', not_found:'המחקר או הנתונים אינם זמינים לחשבון הזה.', invalid:'אפשר לבדוק את הפרטים ולנסות שוב.', conflict:'המחקר השתנה בזמן העריכה. אפשר לרענן את המחקר לפני שמירה נוספת.', signed_original_required:'אפשר לרענן את התיק ולפתוח את העותק החתום המקורי ואת תיעוד החתימה במסמכים הפרטיים שבתיק.', consent_changed:'טופס ההסכמה השתנה. אפשר לפתוח את הטופס העדכני ולאשר את הבחירה מחדש.', rate_limited:'בקשת האימות האחרונה עדיין בטיפול. אפשר לבדוק את תיבת הדוא״ל ולנסות שוב בהמשך.', not_configured:'השירות עדיין לא מוגדר. אפשר לפנות לבעלת המערכת להשלמת ההגדרה.', network:'החיבור לא הושלם. הפרטים שהוקלדו נשארים כאן ואפשר לנסות שוב.', stale:'התצוגה התחלפה.' };
   function error(code, status) { const e=new Error(code); e.code=code; e.status=status||0; e.userMessage=MESSAGES[code]||'הפעולה לא הושלמה. אפשר לנסות שוב.'; return e; }
   function create(options={}) {
     const getToken=options.getToken||(()=>{try{return sessionStorage.getItem('sbe.session.token')||'';}catch(_){return '';}});

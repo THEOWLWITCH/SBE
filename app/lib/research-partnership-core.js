@@ -11,7 +11,7 @@
     }
     return value;
   }
-  const VERSIONS = { api: '1.0.0', schema: 1, agreement: '1.0.0' };
+  const VERSIONS = { api: '1.1.0', schema: 3, agreement: '1.1.0' };
   const PERMISSIONS = {
     view_approved_findings: 'צפייה בממצאים מאושרים', download_approved_findings: 'הורדת ממצאים מאושרים',
     propose_analysis: 'הצעת ניתוח', view_analysis_results: 'צפייה בתוצאות ניתוח מאושרות',
@@ -26,12 +26,13 @@
   };
   const ROLE_PRESETS = { researcher: ACCESS_PRESETS.approved_findings };
   const CLIENT_ACTIONS = [
+    'agreementSources', 'agreementPrepare', 'agreementRefreshPreview', 'agreementRefreshApply', 'processingPolicyGet', 'processingPolicySave', 'processingPolicyApprove',
     'workspaceBootstrap', 'partnerSave', 'partnerGet', 'workspaceList', 'recordGet', 'recordSave', 'recordSubmit', 'recordReview', 'recordVersions',
     'findingPublish', 'findingWithdraw', 'findingComment', 'partnerInviteCreate', 'partnerInviteGet', 'partnerInviteAccept', 'partnerInviteRevoke',
     'agreementApprove', 'agreementAmend', 'signingStart', 'signingView', 'signingRefresh', 'workspaceDocumentPut', 'workspaceDocumentGet',
     'workspaceExport', 'workspaceImpact', 'workspaceAnalysis'
   ];
-  const READ_ACTIONS = ['workspaceBootstrap', 'partnerGet', 'workspaceList', 'recordGet', 'recordVersions', 'partnerInviteGet', 'signingView', 'workspaceDocumentGet', 'workspaceExport', 'workspaceImpact'];
+  const READ_ACTIONS = ['workspaceBootstrap', 'partnerGet', 'workspaceList', 'recordGet', 'recordVersions', 'partnerInviteGet', 'signingView', 'workspaceDocumentGet', 'workspaceExport', 'workspaceImpact', 'agreementSources', 'agreementRefreshPreview', 'processingPolicyGet'];
   const INTERNAL_ACTIONS = ['signatureComplete'];
   const CONTRIBUTION_CATEGORIES = {
     scientific: 'תרומה מדעית', methodological: 'תרומה מתודולוגית', questionnaires: 'שאלונים', educational_content: 'תוכן חינוכי',
@@ -74,7 +75,7 @@
   const money = (id, label, options) => field(id, label, 'money', { category: 'financial', ...options });
   const choice = (id, label, choices, options) => field(id, label, 'enum', { choices, ...options });
   const expenseFields = [text('description', 'תיאור', { required: true }), money('amount', 'סכום', { required: true }), choice('party', 'הצד האחראי', PARTIES, { required: true }), date('dueDate', 'מועד תשלום', { category: 'deadline' }), text('terms', 'תנאים', { category: 'obligations' }), reference('contributionId', 'תרומה קשורה', 'contribution')];
-  const PARTNER_FIELDS = [text('fullName', 'שם מלא', { required: true }), field('email', 'דוא״ל', 'email', { required: true }), text('institution', 'מוסד', { required: true }), text('department', 'מחלקה'), text('position', 'תפקיד'), text('phone', 'טלפון'), text('profileNotes', 'פרטים מקצועיים'), tags('researchInterests', 'תחומי מחקר')];
+  const PARTNER_FIELDS = [text('fullName', 'שם מלא', { required: true }), field('email', 'דוא״ל', 'email', { required: true }), choice('applicantType', 'סוג הפונה', { individual: 'אדם פרטי', institution: 'מוסד' }), text('institution', 'מוסד', { required: true, requiredUnless: { field: 'applicantType', equals: 'individual' } }), text('department', 'מחלקה'), text('position', 'תפקיד'), text('phone', 'טלפון'), text('profileNotes', 'פרטים מקצועיים'), tags('researchInterests', 'תחומי מחקר')];
   const APPROVED_TERMS_FIELDS = [text('recognition', 'הכרה מוסכמת'), money('compensation', 'תמורה מוצעת לאישור'), choice('currency', 'מטבע', CURRENCIES), text('usage', 'שימוש מוסכם', { category: 'access' }), text('ip', 'תנאי קניין רוחני מוצעים', { category: 'IP' }), text('ownerObligations', 'התחייבויות מוצעות לבעלת המערכת', { category: 'obligations' }), text('partnerObligations', 'התחייבויות מוצעות לחוקרת', { category: 'obligations' }), date('deadline', 'מועד', { category: 'deadline' }), documents()];
   const RECORD_SCHEMAS = {
     application: { label: RECORD_KINDS.application, fields: [title(), choice('applicationType', 'סוג הבקשה', { partnership: 'שותפות', study: 'מחקר', access: 'גישה' }, { required: true }), ...PARTNER_FIELDS,
@@ -108,6 +109,54 @@
     ...section('reviewSigning', [reference('templateVersionId', 'גרסת תבנית מאושרת', 'agreement_template_version', { required: true }), field('ipReadAcknowledgement', 'קראתי את הסבר הקניין הרוחני', 'boolean'), text('reviewNotes', 'הערות לעיון'), reference('amendsAgreementVersionId', 'גרסה חתומה לתיקון', 'agreement_version')])
   ];
 
+  // Field vocabulary is public; source clauses and hints stay in the private server catalog.
+  const GUIDED_AGREEMENT = { version: '4', annexes: [
+    ['A', 'תוכנית המחקר, מועדים ואחריות', 'study'], ['B', 'כלים והרשאות', 'tools'], ['C', 'תקציב, הוצאות ושכר', 'sharedExpenses'],
+    ['D', 'תרומות ופיתוח', 'contributions'], ['E', 'פרטיות, הסכמות ואתיקה', 'privacyEthics'], ['F', 'תוצרים, זכויות ופרסום', 'mutualIP']
+  ].map(([id, label, section]) => ({ id, label, section, statusField: 'annex' + id + 'Status', reasonField: 'annex' + id + 'Reason', rowsField: 'annex' + id })) };
+  const guided = { required: true, requiredWhen: { field: 'guidedVersion', equals: '4' } };
+  const guidedText = (id, label, category) => text(id, label, { ...guided, ...(category ? { category } : {}) });
+  const rowText = (id, label) => text(id, label, { required: true });
+  const partyKinds = { individual: 'אדם פרטי', institution: 'מוסד', both: 'אדם ומוסד' };
+  RECORD_SCHEMAS.agreement.fields.push(
+    ...section('parties', [choice('guidedVersion', 'גרסת ההסכם המונחה', { '4': 'גרסה 4' }), choice('ownerPartyKind', 'הגורם המתקשר מטעם בעלת המערכת', partyKinds, guided), choice('partnerPartyKind', 'הגורם המתקשר מטעם השותפה', partyKinds, guided),
+      ...[['ownerRegistration','מספר זיהוי או רישום בעלת המערכת'],['partnerRegistration','מספר זיהוי או רישום השותפה'],['ownerSignatoryRole','תפקיד מורשית חתימת בעלת המערכת'],['partnerSignatoryRole','תפקיד מורשית חתימת השותפה'],['institutionApproval','אישור מוסדי להתקשרות או אי תחולה'],['leadResearcher','שם החוקרת האחראית'],['leadResearcherRole','תפקיד החוקרת האחראית'],['leadResearcherInstitution','מוסד החוקרת האחראית או אי תחולה']].map(([id,label])=>guidedText(id,label)),
+      rows('agreementContacts', 'אנשי קשר מקצועיים ולהודעות', [choice('party','צד',PARTIES,{required:true}),rowText('name','שם'),rowText('role','תפקיד'),field('email','דוא״ל','email',{required:true}),text('phone','טלפון'),rowText('purpose','תחום פנייה')],guided)]),
+    ...section('study', [['studyIdentifier','מזהה המחקר'],['centralResearchQuestion','שאלת המחקר המרכזית'],['researchLimits','מגבלות המסקנות'],['humanAIReview','אחריות לבדיקה אנושית של תוצרי AI']].map(([id,label])=>guidedText(id,label))),
+    ...section('sharedExpenses', [guidedText('freeTierTerms','שימוש חינמי וטיפול בהגעה למכסה','financial')]),
+    ...section('development', [rows('developmentTasks','משימות התאמה ופיתוח',[
+      ...[['school','בית הספר והצורך'],['users','משתמשות'],['requestedChange','השינוי המבוקש'],['deliverable','תוצר מדיד'],['performer','מבצעת'],['milestones','אבני דרך'],['testEnvironment','סביבת בדיקה'],['acceptance','תנאי קבלה והגורם המאשר'],['training','הדרכה'],['usabilityEvaluation','בדיקת התאמה ושימושיות'],['maintenance','אחריות לתחזוקה'],['rights','זכויות בתוצר']].map(([id,label])=>rowText(id,label)),money('budget','תקציב'),choice('currency','מטבע',CURRENCIES),date('dueDate','מועד')],{category:'obligations'}),
+      ...[['supportChannels','ערוצי תמיכה'],['supportDays','ימי תמיכה'],['supportExtent','היקף תמיכה'],['supportResponse','זמני מענה ותחזוקה'],['supportEscalation','טיפול בהסלמה']].map(([id,label])=>guidedText(id,label))]),
+    ...section('privacyEthics', [['consentConfiguration','הסכמות למשתתפים ולקטינים או אי תחולה'],['confidentialScope','סוגי מידע סודי'],['confidentialDuration','משך הסודיות'],['confidentialExceptions','חריגים וחובות גילוי']].map(([id,label])=>guidedText(id,label,'privacy'))),
+    ...section('durationTermination',[field('breachCureDays','ימי תיקון הפרה','integer',{category:'deadline'}),... [['breachNoticeTerms','הודעה על הפרה ותנאי תיקון או אי תחולה'],['suspensionTerms','עצירה והגבלת גישה'],['handoverTerms','העברת תוצרים וסגירת הרשאות'],['finalSettlement','התחשבנות בסיום']].map(([id,label])=>guidedText(id,label,'obligations'))]),
+    ...section('annexes',[field('publicationReviewPeriod','תקופת עיון מוקדם בפרסום','integer',{...guided,category:'deadline'}),choice('publicationReviewUnit','יחידת תקופת העיון',{days:'ימים',business_days:'ימי עסקים'},guided),
+      ...[['authorshipTerms','מחברות וקרדיט לפי התרומה'],['logoUseTerms','הרשאה לשם, ללוגו ולשיווק'],['disputeContacts','אנשי קשר וגורמים מוסמכים למחלוקת'],['disputePeriod','פרק זמן ליישוב מחלוקת'],['documentPrecedence','סדר עדיפות בין המסמכים'],['governingLaw','דין מוסכם'],['jurisdiction','סמכות שיפוט מוסכמת'],['liabilityTerms','אחריות ופיצוי או אי תחולה מנומקת'],['insuranceTerms','ביטוח או אי תחולה מנומקת']].map(([id,label])=>guidedText(id,label))]),
+    ...section('reviewSigning',[... [['finalVersionLabel','מספר הגרסה הסופית'],['finalAnnexReferences','גרסאות הנספחים הנבחרים'],['signerIdentityChecks','בדיקת זהות וסמכות החותמות'],['signatureProvider','ספק חתימה מוצע'],['signatureType','סוג חתימה ודרישות מוסד'],['signaturePolicy','מדיניות חתימה מוסכמת'],['signatureVerification','ראיות ובדיקות אימות נדרשות'],['signingConsentTerms','הסכמה לחתום'],['signedStorage','מקום שמירה והרשאות לעותק חתום'],['activationConditions','תנאי תחילת הפעילות']].map(([id,label])=>guidedText(id,label)),
+      rows('copyRecipients','נמעני עותק ודרך מסירה',[choice('party','צד',PARTIES,{required:true}),rowText('name','שם'),field('email','דוא״ל','email',{required:true}),rowText('deliveryMethod','אופן מסירה')],guided)])
+  );
+  const annexTextFields = {
+    A: [['stage','שלב המחקר'],['questions','שאלות ושיטה'],['population','אוכלוסייה'],['sites','מסגרות חינוכיות'],['recruitment','דרך גיוס'],['measurementVersions','כלי מדידה, מקור וגרסה'],['responsible','אחראית לשלב'],['deliverables','תוצרים'],['schoolAdaptation','התאמה לבית הספר'],['adaptationEvaluation','בדיקת ההתאמה'],['permits','היתרים ואישורים'],['terminationHandover','העברת תוצרים בסיום']],
+    B: [['tool','כלי או שאלון'],['source','מקור'],['version','גרסה'],['dataScope','מידע מותר'],['exportTerms','ייצוא מותר או אי תחולה'],['quota','מכסות והיקף'],['training','הדרכה'],['humanReview','בדיקה אנושית של תוצרי AI']],
+    C: [['description','שירות וצורך'],['purpose','מטרה ותכולה'],['calculationBasis','בסיס חישוב ותמחור'],['taxTerms','מסים או אי תחולה'],['shareTerms','חלוקת עלויות'],['payer','משלמת בפועל'],['payee','מקבלת התשלום'],['approver','גורם מאשר'],['approvalEvidence','אישור ואסמכתאות או טרם אושר'],['paymentTerms','תנאי ומועד תשלום'],['invoiceTerms','מסמכי חיוב או אי תחולה'],['partialWorkTerms','עבודה חלקית וסיום מוקדם'],['unpaidTerms','החלטה על תמורה או תרומה ללא תשלום']],
+    D: [['contributionIdentifier','מזהה תרומה'],['contributor','תורמת'],['institution','מוסד או אי תחולה'],['description','תיאור'],['deliverable','תוצר'],['milestones','אבני דרך'],['acceptance','בדיקת ביצוע'],['ownerDuties','התחייבות מוצעת לבעלת המערכת'],['requestedRecognition','קרדיט מבוקש'],['requestedRights','זכויות מבוקשות'],['agreedRecognition','קרדיט מוסכם או טרם הוסכם'],['agreedRights','זכויות מוסכמות או טרם הוסכמו'],['agreedConditions','תנאים מוסכמים או טרם הוסכמו'],['confirmingVersion','מסמך וגרסה מאשרים או טרם אושר']],
+    E: [['dataCategories','סוגי מידע'],['purposes','מטרות עיבוד'],['partyRoles','תפקידי הצדדים בעיבוד'],['providers','ספקי עיבוד או אין ספק'],['transferBasis','תנאי ובסיס העברה או אין העברה'],['storageLocation','מקום אחסון'],['retention','תקופות שמירה ובסיסן'],['backups','גיבויים ושמירתם'],['deletion','מחיקה ומגבלותיה'],['withdrawal','פרישה ומגבלות לאחר איגום'],['ethicsReferences','אישורי אתיקה ומוסד'],['participantConsent','הסכמות וקטינים או אי תחולה'],['securityResponsible','אחראית אבטחה'],['securityMeasures','הפרדת הרשאות והגנת מסמכים'],['incidentHandling','בקשות ואירועים'],['contact','פרטי פנייה'],['terminationHandling','סיום, שמירה וסגירת גישה']],
+    F: [['description','תיאור נכס או תוצר'],['creators','יוצרות'],['rightsHolders','בעלי זכויות וסמכות'],['ownership','בעלות מוסכמת'],['licence','רישיון או אי תחולה'],['permittedUses','תחומים ושימושים מותרים'],['modification','שינוי'],['distribution','הפצה'],['commercialUse','שימוש מסחרי'],['term','תקופת הרשאה'],['compensation','תמורה או אי תחולה'],['publication','פרסום'],['credit','קרדיט']]
+  };
+  const annexTypedFields = {
+    A: [field('populationSize','היקף משתתפים','integer',{required:true}),date('startDate','התחלה',{required:true}),date('endDate','סיום',{required:true})],
+    B: [tags('authorizedUsers','משתמשות מורשות',{required:true}),tags('actions','פעולות מותרות',{required:true}),date('startDate','התחלה',{required:true}),date('endDate','סיום',{required:true})],
+    C: [choice('kind','סוג',{operating:'הוצאה תפעולית',service:'שירות מקצועי'},{required:true}),... [['estimatedAmount','הערכה'],['approvedCap','תקרה מוצעת לאישור'],['ownerShare','חלק בעלת המערכת'],['partnerShare','חלק השותפה']].map(([id,label])=>money(id,label,{required:true})),money('actualAmount','ביצוע מתועד'),choice('currency','מטבע',CURRENCIES,{required:true}),date('settlementDate','מועד התחשבנות'),choice('pricingMethod','שיטת תמחור השירות',{fixed:'לפי תוצר',hourly:'לפי שעה',mixed:'שילוב מוגדר',unpaid:'תרומה ללא תשלום'},{required:true,requiredWhen:{field:'kind',equals:'service'}}),money('serviceAmount','סכום השירות',{required:true,requiredWhen:{field:'kind',equals:'service'}}),... [['provider','נותנת שירות'],['serviceRecipient','מקבלת השירות'],['deliverable','תוצר השירות'],['hourCap','תקרת שעות והיקף או אי תחולה'],['acceptance','קבלת התוצר'],['credit','קרדיט לשירות או אי תחולה']].map(([id,label])=>text(id,label,{required:true,requiredWhen:{field:'kind',equals:'service'}}))],
+    D: [choice('category','סוג תרומה',CONTRIBUTION_CATEGORIES,{required:true}),date('dueDate','מועד',{required:true}),money('requestedPayment','תשלום מבוקש'),money('agreedPayment','תשלום שהוסכם'),choice('currency','מטבע',CURRENCIES),text('executionEvidence','ראיות לביצוע')],
+    E: [tags('authorizedPeople','מורשות גישה',{required:true})],
+    F: [choice('assetKind','סוג נכס',{owner_prior:'נכס קודם של בעלת המערכת',partner_prior:'נכס קודם של השותפה או המוסד',third_party:'נכס צד שלישי',new_output:'תוצר חדש'},{required:true})]
+  };
+  for (const annex of GUIDED_AGREEMENT.annexes) RECORD_SCHEMAS.agreement.fields.push(...section(annex.section,[
+    choice(annex.statusField,'תחולת נספח '+annex.id,{applicable:'נכלל בהסכם',not_applicable:'לא חל, עם נימוק'},guided),
+    text(annex.reasonField,'נימוק לאי תחולת נספח '+annex.id,{required:true,requiredWhen:{field:annex.statusField,equals:'not_applicable'}}),
+    rows(annex.rowsField,'נספח '+annex.id+': '+annex.label,[...annexTextFields[annex.id].map(([id,label])=>rowText(id,label)),...annexTypedFields[annex.id]],{required:true,requiredWhen:{field:annex.statusField,equals:'applicable'},category:{B:'access',C:'financial',D:'obligations',E:'privacy',F:'IP'}[annex.id]||'content'})
+  ]));
+  for (const definition of RECORD_SCHEMAS.agreement.fields) if (['ownerEmail','ownerAddress','ownerSignatory','ownerAuthority','partnerEmail','partnerAddress','partnerSignatory','partnerAuthority','objectives','researchQuestions','method','population','startDate','endDate','ownerResponsibilities','partnerResponsibilities','ethicsApproval','terminationDate','terminationNoticeDays','terminationTerms','postTermination'].includes(definition.id)) Object.assign(definition,guided);
+
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
   function safeError(code) {
@@ -118,6 +167,7 @@
   function invalid() { throw safeError('invalid'); }
   function object(value) { return value !== null && typeof value === 'object' && !Array.isArray(value) && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null); }
   function empty(value) { return value === undefined || value === null || value === '' || (typeof value === 'string' && !value.trim()) || (Array.isArray(value) && value.length === 0); }
+  function required(definition, data) { return definition.required && (!definition.requiredWhen || data[definition.requiredWhen.field] === definition.requiredWhen.equals) && !(definition.requiredUnless && data[definition.requiredUnless.field] === definition.requiredUnless.equals); }
   function validDate(value) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
     const parsed = new Date(value + 'T00:00:00.000Z');
@@ -155,22 +205,23 @@
     const result = {};
     for (const definition of fields) {
       if (own(data, definition.id)) result[definition.id] = validateValue(definition, data[definition.id], complete);
-      if (complete && definition.required && empty(result[definition.id])) invalid();
+      if (complete && required(definition, data) && empty(result[definition.id])) invalid();
     }
+    for (const [start, end] of [['startDate','endDate'],['effectiveDate','terminationDate']]) if (result[start] && result[end] && result[start] > result[end]) invalid();
     return result;
   }
   function schema(kind) { if (!own(RECORD_SCHEMAS, kind)) invalid(); return RECORD_SCHEMAS[kind]; }
   function missingFields(kind, data, requiredIds = []) {
     const definitions = schema(kind).fields;
     const checked = validateFields(definitions, data, false);
-    const ids = new Set(definitions.filter(f => f.required).map(f => f.id));
+    const ids = new Set(definitions.filter(f => required(f, checked)).map(f => f.id));
     if (kind === 'analysis_request' && checked.operation === 'comparison') ids.add('groupingVariable');
     for (const id of requiredIds) { if (!definitions.some(f => f.id === id)) invalid(); ids.add(id); }
     const missing = [];
     for (const definition of definitions) {
       const value = checked[definition.id];
       if (ids.has(definition.id) && empty(value)) missing.push(definition.id);
-      if (definition.type === 'rows' && Array.isArray(value)) value.forEach((row, index) => definition.fields.forEach(nested => { if (nested.required && empty(row[nested.id])) missing.push(definition.id + '[' + index + '].' + nested.id); }));
+      if (definition.type === 'rows' && Array.isArray(value)) value.forEach((row, index) => definition.fields.forEach(nested => { if (required(nested, row) && empty(row[nested.id])) missing.push(definition.id + '[' + index + '].' + nested.id); }));
     }
     return missing;
   }
@@ -195,6 +246,8 @@
   }
   function validatePartner(data, options = {}) { return validateFields(PARTNER_FIELDS, data, options.complete === true); }
   function validateApprovedTerms(data) { return validateFields(APPROVED_TERMS_FIELDS, data, false); }
+  const PROCESSING_POLICY_FIELDS = [choice('purpose','מטרת העברה',{external_impact:'הסבר שינויים',pre_signing_document:'מסמך לפני חתימה',signed_copy_delivery:'מסירת עותק חתום'},{required:true}),text('provider','ספק',{required:true,maxLength:240}),text('providerVersion','גרסת ספק',{required:true,maxLength:240}),tags('dataCategories','סוגי מידע',{required:true,choices:['agreement_changes','agreement_document','personal','confidential']}),tags('authorizedActors','מורשות גישה',{required:true}),...['partyRoles','transferBasis','storageLocation','retention','backups','deletion','withdrawal','securityMeasures','ethicsReference','consentReview'].map(id=>text(id,id,{required:true}))];
+  function validateProcessingPolicy(data) { return validateFields(PROCESSING_POLICY_FIELDS,data,true); }
 
   function transition(from, to, action, authority) { return { from, to, action, authority }; }
   function proposalTransitions() { return [
@@ -235,12 +288,76 @@
     if (Array.isArray(value)) return (definition.id === 'requestedPermissions' ? value.map(permissionLabel) : value).join(', ');
     return String(value);
   }
+  function completedValue(definition, value) {
+    if (empty(value)) return '[חסר: ' + definition.label + ']';
+    if (definition.type === 'date') return value.split('-').reverse().join('.');
+    if (definition.type === 'money') return value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (definition.type === 'rows') return value.map((row, i) => (i + 1) + '. ' + definition.fields.filter(f => !empty(row[f.id])).map(f => f.label + ': ' + completedValue(f, row[f.id])).join('\n')).join('\n\n');
+    if (Array.isArray(value)) return (['requestedPermissions', 'actions'].includes(definition.id) ? value.map(permissionLabel) : value).join(', ');
+    return formatValue(definition, value);
+  }
+  function renderGuidedAgreement(data, template, missing) {
+    const definitions = RECORD_SCHEMAS.agreement.fields, byId = new Map(definitions.map(f => [f.id, f]));
+    const consumed = new Set(['title', 'customClauses', 'guidedVersion', 'ipReadAcknowledgement']);
+    function paragraph(text, sectionId) {
+      const fieldIds = [];
+      text = text.replace(/\{\{([A-Za-z][A-Za-z0-9]*)\}\}/g, (_, id) => {
+        consumed.add(id); fieldIds.push(id);
+        if (empty(data[id]) && !missing.includes(id)) missing.push(id);
+        return completedValue(byId.get(id), data[id]);
+      });
+      return { type: 'paragraph', sectionId, text, fieldIds };
+    }
+    // Expand clauses before selecting labelled fields: a placeholder owns that field's body presentation.
+    const clauses = new Map(AGREEMENT_SECTIONS.map(s => [s.id, (template?.sectionClauses.find(c => c.sectionId === s.id)?.text || '').split(/\n\s*\n/).filter(Boolean).map(text => paragraph(text, s.id))]));
+    if (template) clauses.get('mutualIP').push(...template.mutualIPClause.split(/\n\s*\n/).filter(Boolean).map(text => paragraph(text, 'mutualIP')));
+    const explanation = template ? paragraph(template.ipExplanation, 'reviewSigning') : null;
+    const annexFields = new Set(GUIDED_AGREEMENT.annexes.flatMap(a => [a.statusField, a.reasonField, a.rowsField]));
+    const blocks = [{ type: 'title', text: data.title || 'טיוטת הסכם', fieldIds: ['title'] }];
+    function fieldsToBlocks(fields, sectionId) {
+      for (const f of fields) {
+        const value = data[f.id];
+        if (f.type === 'rows' && !empty(value)) {
+          value.forEach((row, index) => {
+            const label = f.label + ' · ' + (index + 1), lines = f.fields.filter(n => !empty(row[n.id])).map(n => ({ label: n.label, value: completedValue(n, row[n.id]), fieldId: n.id }));
+            blocks.push({ type: 'row', sectionId, label, lines, fieldIds: [f.id], text: label + '\n' + lines.map(n => n.label + ': ' + n.value).join('\n') });
+          });
+        } else {
+          let valueText = completedValue(f, value);
+          if (f.id === 'templateVersionId' && template) valueText = template.templateVersion + ' · מזהה גרסה: ' + valueText;
+          if (f.id === 'ipExplanationVersionId' && template) valueText = template.explanationVersion + ' · מזהה גרסה: ' + valueText;
+          const label = f.id === 'templateVersionId' ? 'תבנית הנוסח' : f.id === 'finalVersionLabel' ? 'סימון הגרסה שהוזן בהסכם' : f.label;
+          blocks.push({ type: 'field', sectionId, label, value: valueText, fieldIds: [f.id], text: label + ': ' + valueText });
+        }
+      }
+    }
+    const sections = AGREEMENT_SECTIONS.map(section => {
+      const sectionClauses = clauses.get(section.id);
+      const custom = (data.customClauses || []).filter(c => c.sectionId === section.id).map(c => ({ type: 'paragraph', sectionId: section.id, text: c.title + '\n' + c.text, fieldIds: ['customClauses'] }));
+      const fields = definitions.filter(f => f.section === section.id && own(data, f.id) && !consumed.has(f.id) && !annexFields.has(f.id) && (!empty(data[f.id]) || missing.includes(f.id)));
+      blocks.push({ type: 'heading', level: 2, sectionId: section.id, text: section.label, fieldIds: [] }, ...sectionClauses, ...custom);
+      fieldsToBlocks(fields, section.id);
+      return { id: section.id, label: section.label, text: [...sectionClauses, ...custom].map(b => b.text).join('\n\n'), fields: fields.map(f => ({ id: f.id, label: f.label, value: completedValue(f, data[f.id]) })) };
+    });
+    for (const annex of GUIDED_AGREEMENT.annexes) {
+      blocks.push({ type: 'heading', level: 2, sectionId: annex.section, text: 'נספח ' + annex.id + ': ' + annex.label, fieldIds: [] });
+      fieldsToBlocks([byId.get(annex.statusField)], annex.section);
+      if (data[annex.statusField] === 'applicable') fieldsToBlocks([byId.get(annex.rowsField)], annex.section);
+      else if (data[annex.statusField] === 'not_applicable') fieldsToBlocks([byId.get(annex.reasonField)], annex.section);
+    }
+    if (explanation) blocks.push({ type: 'heading', level: 2, text: 'הסבר הקניין הרוחני', fieldIds: [] }, explanation);
+    else blocks.push({ type: 'paragraph', text: 'להשלמת ההסכם נדרשים תבנית מאושרת והסבר קניין רוחני שסופק.', fieldIds: [] });
+    blocks.push({ type: 'heading', level: 2, text: 'חתימות', fieldIds: [] }, ...['חתימת בעלת המערכת', 'חתימת החוקרת'].map(text => ({ type: 'signature', text: text + '\n\nהסכמה לחתימה אלקטרונית וחתימה אצל ספק החתימה', fieldIds: [] })));
+    const document = { version: 'guided-v4-1', direction: 'rtl', lang: 'he', blocks };
+    return { direction: 'rtl', lang: 'he', title: data.title || 'טיוטת הסכם', templateVersion: template?.templateVersion || null, explanationVersion: template?.explanationVersion || null, sections, ipExplanation: explanation?.text || '', missingFields: missing, dependency: template ? null : 'approved_template_missing', ready: !!template && missing.length === 0, document, text: blocks.map(b => b.text).join('\n\n') };
+  }
   function renderAgreement(data, suppliedTemplate) {
     data = validateRecord('agreement', data);
     const template = suppliedTemplate ? validateRecord('agreement_template', suppliedTemplate, { complete: true }) : null;
     const definitions = RECORD_SCHEMAS.agreement.fields;
-    const byId = new Map(definitions.map(f => [f.id, f]));
     const missing = missingFields('agreement', data, template ? template.requiredFieldIds : []);
+    if (data.guidedVersion === '4' || template?.requiredFieldIds?.includes('guidedVersion')) return renderGuidedAgreement(data, template, missing);
+    const byId = new Map(definitions.map(f => [f.id, f]));
     const required = new Set(template ? template.requiredFieldIds : []);
     function replace(text) { return text.replace(/\{\{([A-Za-z][A-Za-z0-9]*)\}\}/g, (_, id) => { if (empty(data[id])) required.add(id); return formatValue(byId.get(id), data[id]); }); }
     const sections = AGREEMENT_SECTIONS.map(section => {
@@ -264,6 +381,13 @@
   const scope = { studyId: 'uuid', partnerId: 'uuid', recordId: 'uuid' };
   function operation(request, result, authority) { return { request, result, authority }; }
   const OPERATIONS = {
+    agreementSources: operation({studyId:'uuid',partnerId:'uuid'}, {sources:'AgreementSources',guidance:'ScopedGuidance'}, 'owner or current actual partner; current target membership'),
+    agreementPrepare: operation({studyId:'uuid',partnerId:'uuid',applicationVersionId:'uuid?',budgetVersionIds:'uuid[]?',contributionVersionIds:'uuid[]?'}, {record:'Record',version:'RecordVersion',template:'PreparedTemplate|null',preparation:'PreparationReceipt|null',sources:'AgreementSources',guidance:'ScopedGuidance',resumed:'boolean'}, 'owner only; preserve existing agreement'),
+    agreementRefreshPreview: operation({...scope,versionId:'uuid',applicationVersionId:'uuid?',budgetVersionIds:'uuid[]?',contributionVersionIds:'uuid[]?'}, {preview:'AgreementRefreshPreview'}, 'owner or current actual partner; server-derived exact sources'),
+    agreementRefreshApply: operation({...scope,versionId:'uuid',expectedRevision:'integer',previewHash:'sha256',replaceFields:'string[]',applicationVersionId:'uuid?',budgetVersionIds:'uuid[]?',contributionVersionIds:'uuid[]?'}, {record:'Record',version:'RecordVersion',preparation:'PreparationReceipt'}, 'owner or current actual partner; exact preview and selected fields only'),
+    processingPolicyGet: operation({studyId:'uuid',partnerId:'uuid',purpose:'string?'}, {policy:'ProcessingPolicy|null',actorChoices:'ProcessingActorChoice[]'}, 'owner only; private operational authorization'),
+    processingPolicySave: operation({studyId:'uuid',partnerId:'uuid',expectedRevision:'integer',policy:'ProcessingPolicyData'}, {policy:'ProcessingPolicy'}, 'owner only; new unapproved immutable revision'),
+    processingPolicyApprove: operation({studyId:'uuid',partnerId:'uuid',expectedRevision:'integer',policyVersionId:'uuid',policyHash:'sha256'}, {policy:'ProcessingPolicy'}, 'owner only; exact revision and current consent/ethics restriction snapshot'),
     workspaceBootstrap: operation({}, { owner: 'boolean', partners: 'PartnerSummary[]', studies: 'StudySummary[]', capabilities: 'string[]', readiness: 'Readiness' }, 'verified session'),
     partnerSave: operation({ partnerId: 'uuid?', expectedRevision: 'integer|null', individualCode: 'string? owner only', profile: 'PartnerData' }, { partner: 'Partner' }, 'owner or self; self identity is session-derived'),
     partnerGet: operation({ partnerId: 'uuid' }, { partner: 'Partner', workspaces: 'WorkspaceSummary[]' }, 'owner or self'),
@@ -291,5 +415,5 @@
     workspaceImpact: operation({ ...scope, fromVersionId: 'uuid', toVersionId: 'uuid', includeAI: 'boolean?' }, { changes: 'FieldChange[]', approvalsInvalidated: 'boolean', binding: 'false', ai: 'ImpactAIState' }, 'owner or actual record author'),
     workspaceAnalysis: operation({ studyId: 'uuid', partnerId: 'uuid', requestRecordId: 'uuid', sourceSnapshotId: 'uuid? omit to create consent-bound snapshot', operation: 'AnalysisOperation' }, { operation: 'AnalysisOperation', sourceSnapshotId: 'uuid', summary: 'ApprovedAnalysisProjection', provenance: 'AnalysisProvenance', record: 'Record draft analysis_result', version: 'RecordVersion' }, 'owner only; approved request and fixed allowlisted parameters; requestId required')
   };
-  return freeze({ VERSIONS, PERMISSIONS, PERMISSION_ALIASES, ACCESS_PRESETS, ROLE_PRESETS, CLIENT_ACTIONS, READ_ACTIONS, INTERNAL_ACTIONS, CONTRIBUTION_CATEGORIES, RECORD_KINDS, RECORD_STATUSES, RECORD_SCHEMAS, RECORD_TRANSITIONS, AGREEMENT_SECTIONS, ANALYSIS_OPERATIONS, PARTNER_FIELDS, APPROVED_TERMS_FIELDS, OPERATIONS, safeError, validateRecord, validatePartner, validateApprovedTerms, missingFields, canTransition, compareRecords, renderAgreement, isBindingObligation, permissionLabel });
+  return freeze({ VERSIONS, GUIDED_AGREEMENT, PERMISSIONS, PERMISSION_ALIASES, ACCESS_PRESETS, ROLE_PRESETS, CLIENT_ACTIONS, READ_ACTIONS, INTERNAL_ACTIONS, CONTRIBUTION_CATEGORIES, RECORD_KINDS, RECORD_STATUSES, RECORD_SCHEMAS, RECORD_TRANSITIONS, AGREEMENT_SECTIONS, ANALYSIS_OPERATIONS, PARTNER_FIELDS, APPROVED_TERMS_FIELDS, PROCESSING_POLICY_FIELDS, OPERATIONS, safeError, validateRecord, validatePartner, validateApprovedTerms, validateProcessingPolicy, missingFields, canTransition, compareRecords, renderAgreement, isBindingObligation, permissionLabel });
 });

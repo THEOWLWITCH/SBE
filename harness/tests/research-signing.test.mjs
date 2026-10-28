@@ -5,16 +5,23 @@ import { randomUUID, createHash, createHmac } from 'node:crypto';
 import CORE from '../../app/lib/research-partnership-core.js';
 import { contentHash } from '../lib/research-partnership-exports.mjs';
 import { handleResearchSigningWebhook } from '../lib/research-partnerships.mjs';
+import { approveSigningProcessing } from '../fixtures/research-partnership-integrated.mjs';
 test('signing readiness requires credentials, owner policy and explicit supported identity checks',async()=>{
- const adapter=createSigningAdapter({env:{}});assert.equal(adapter.readiness().state,'not_configured');await assert.rejects(adapter.start({}),e=>e.code==='not_configured');
+ const adapter=createSigningAdapter({signingEnabled:true,env:{}});assert.equal(adapter.readiness().state,'not_configured');await assert.rejects(adapter.start({}),e=>e.code==='not_configured');
  const token=await researchSigningWorkerToken({get:async()=>({secret:'synthetic'})});const payload=JSON.parse(Buffer.from(token.split('.')[0],'base64url'));assert.equal(payload.k,'research_signing_worker');assert.equal(payload.purpose,'research-signing');
+});
+test('explicit server provider selection fails closed and never falls back from unknown or unassured SignWell',async()=>{
+ let calls=0;const options={signingEnabled:true,env:{},signingFetchImpl:async()=>{calls++;throw new Error('synthetic should not call');}};
+ assert.equal(createSigningAdapter(options).provider,'docusign');
+ const unknown=createSigningAdapter({...options,signingProvider:'unsupported'});assert.equal(unknown.readiness().state,'unsupported_provider');await assert.rejects(unknown.start({}),e=>e.code==='not_configured');
+ const signwell=createSigningAdapter({...options,signingProvider:'signwell',signing:{apiKey:'synthetic-not-live',testMode:false}});assert.equal(signwell.provider,'signwell');assert.equal(signwell.readiness().configured,false);assert.throws(()=>signwell.buildIntent({}),e=>e.code==='not_configured');assert.equal(calls,0);
 });
 test('synthetic authenticated Connect event completes actual SQL execution without an open browser and stores encrypted immutable evidence',async()=>{
  const {createPartnershipIntegration}=await import('../fixtures/research-partnership-integrated.mjs');
  const accountId=randomUUID(),envelopeId=randomUUID(),workflowId=randomUUID(),connectKey='synthetic-connect-event-key-not-live',signedAt=new Date(Date.now()-1000).toISOString();let created,complete=false,starts=0,envelopeReads=0,signerMismatch;
  const identities=[{name:'Synthetic Owner',email:'owner@example.invalid',authority:'Owner synthetic authority'},{name:'Synthetic Partner',email:'partner@example.invalid',authority:'Partner synthetic authority'}];
  const policy={approved:true,institutionRequirementsReviewed:true,version:'synthetic-policy',identityWorkflowId:workflowId,signerAuthorities:identities};
- const options={env:{},signing:{accessToken:'synthetic-not-live',accountId,baseUrl:'https://demo.docusign.net/restapi',returnUrl:'https://synthetic.example.invalid/research-management.html',connectKey,connectUrl:'https://synthetic.example.invalid/api/research-signing/webhook'},signingPolicy:policy,signingFetchImpl:async(url,init)=>{
+ const options={signingEnabled:true,env:{},signing:{accessToken:'synthetic-not-live',accountId,baseUrl:'https://demo.docusign.net/restapi',returnUrl:'https://synthetic.example.invalid/research-management.html',connectKey,connectUrl:'https://synthetic.example.invalid/api/research-signing/webhook'},signingPolicy:policy,signingFetchImpl:async(url,init)=>{
   if(url.includes('/envelopes?transaction_ids='))return Response.json({envelopeTransactionStatuses:[]});
   if(init.method==='POST'&&url.endsWith('/envelopes')){starts++;created=JSON.parse(init.body);return Response.json({envelopeId,status:'created'});}
   if(url.endsWith('/custom_fields'))return Response.json({textCustomFields:created.customFields.textCustomFields});
@@ -35,7 +42,10 @@ test('synthetic authenticated Connect event completes actual SQL execution witho
   const agreementScope={...scope,recordId:agreement.record.id},versionId=agreement.version.id,documentHash=agreement.version.contentHash;
   agreement=await f.checked(f.tokens.a,'recordSubmit',f.request({...agreementScope,versionId,expectedRevision:agreement.record.revision}));let reviewed=await f.checked(f.tokens.owner,'recordReview',f.request({...agreementScope,versionId,expectedRevision:agreement.record.revision,decision:'approved'}));
   for(const who of ['owner','a'])reviewed=await f.checked(f.tokens[who],'agreementApprove',f.request({...agreementScope,versionId,expectedRevision:reviewed.record.revision,documentHash,ipExplanationVersionId:template.version.id,ipReadAcknowledged:true}));
-  const startRequest=f.request({...agreementScope,versionId,expectedRevision:reviewed.record.revision,documentHash,consent:true});const started=await f.checked(f.tokens.owner,'signingStart',startRequest);assert.equal(started.signing.state,'awaiting_signers');assert.equal((await f.checked(f.tokens.owner,'recordGet',agreementScope)).record.status,'signing');assert.equal((await f.checked(f.tokens.owner,'signingStart',startRequest)).signing.id,started.signing.id);assert.equal(starts,1);
+  const startRequest=f.request({...agreementScope,versionId,expectedRevision:reviewed.record.revision,documentHash,consent:true});
+  assert.equal((await f.callResearch({token:f.tokens.owner,action:'signingStart',...startRequest}))[0],503);assert.equal(starts,0,'editable agreement privacy never authorizes a transfer');
+  await approveSigningProcessing(f,scope);
+  const started=await f.checked(f.tokens.owner,'signingStart',startRequest);assert.equal(started.signing.state,'awaiting_signers');assert.equal((await f.checked(f.tokens.owner,'recordGet',agreementScope)).record.status,'signing');assert.equal((await f.checked(f.tokens.owner,'signingStart',startRequest)).signing.id,started.signing.id);assert.equal(starts,1);
   const currentRecord=(await f.checked(f.tokens.a,'recordGet',agreementScope)).record,refresh=f.request({...agreementScope,signingId:started.signing.id,expectedRevision:currentRecord.revision});
   assert.equal((await f.checked(f.tokens.a,'signingRefresh',refresh)).signing.state,'in_progress');assert.equal(envelopeReads,1);
   assert.equal((await f.checked(f.tokens.a,'signingRefresh',refresh)).signing.state,'in_progress');assert.equal(envelopeReads,1);
@@ -48,6 +58,7 @@ test('synthetic authenticated Connect event completes actual SQL execution witho
    assert.equal((await webhook())[0],409,JSON.stringify(signerMismatch));assert.equal((await f.query('SELECT count(*)::int n FROM research_private.partnership_executions')).rows[0].n,0);
   }
   signerMismatch=undefined;const completed=await webhook();assert.equal(completed[0],200,JSON.stringify({completed,internalErrors}));assert.deepEqual(completed[1],{ok:true});assert.equal((await webhook())[0],200);
+  assert.equal((await handleResearchSigningWebhook(f.accessStore,f.researchStore,raw,{'x-docusign-signature-1':signature},{...options,signingProvider:'signwell',documentKey:f.documentKey}))[0],200,'issued Connect callbacks keep their provider when new-document default changes');
   assert.equal((await f.checked(f.tokens.a,'recordGet',agreementScope)).record.status,'executed');
   const evidence=(await f.query('SELECT id,size,sha256,content_ciphertext FROM research_private.partnership_documents WHERE record_id=$1',[agreementScope.recordId])).rows;assert.equal(evidence.length,2);assert.ok(evidence.every(d=>d.sha256!==documentHash&&d.content_ciphertext.v===1));
   const bytes=await f.checked(f.tokens.a,'workspaceDocumentGet',{...scope,documentId:evidence[0].id,download:true});assert.match(Buffer.from(bytes.contentBase64,'base64').toString(),/^%PDF-/);
@@ -59,7 +70,7 @@ test('provider draft remains non-signable after local preparation failure and th
  for(const failure of ['before-commit','after-commit'])await t.test(failure,async()=>{
   const accountId=randomUUID(),envelopeId=randomUUID(),workflowId=randomUUID(),identities=[{name:'Owner',email:'owner@example.invalid',authority:'Owner authority'},{name:'Partner',email:'partner@example.invalid',authority:'Partner authority'}];
   let created,providerStatus,starts=0,activations=0,views=0,loseActivationResponse=true,f;
-  const options={env:{},signing:{accessToken:'synthetic-not-live',accountId,baseUrl:'https://demo.docusign.net/restapi',returnUrl:'https://synthetic.example.invalid/research-management.html',connectKey:'synthetic-connect-event-key-not-live',connectUrl:'https://synthetic.example.invalid/api/research-signing/webhook'},signingPolicy:{approved:true,institutionRequirementsReviewed:true,version:'synthetic-policy',identityWorkflowId:workflowId,signerAuthorities:identities},signingFetchImpl:async(url,init)=>{
+  const options={signingEnabled:true,env:{},signing:{accessToken:'synthetic-not-live',accountId,baseUrl:'https://demo.docusign.net/restapi',returnUrl:'https://synthetic.example.invalid/research-management.html',connectKey:'synthetic-connect-event-key-not-live',connectUrl:'https://synthetic.example.invalid/api/research-signing/webhook'},signingPolicy:{approved:true,institutionRequirementsReviewed:true,version:'synthetic-policy',identityWorkflowId:workflowId,signerAuthorities:identities},signingFetchImpl:async(url,init)=>{
    if(url.includes('/envelopes?transaction_ids='))return Response.json({envelopeTransactionStatuses:created?[{transactionId:created.transactionId,envelopeId,status:providerStatus}]:[]});
    if(init.method==='POST'&&url.endsWith('/envelopes')){starts++;created=JSON.parse(init.body);providerStatus=created.status;return Response.json({envelopeId,status:providerStatus});}
    if(url.endsWith('/custom_fields'))return Response.json({textCustomFields:created.customFields.textCustomFields});
@@ -81,6 +92,7 @@ test('provider draft remains non-signable after local preparation failure and th
    const agreementScope={...scope,recordId:agreement.record.id},versionId=agreement.version.id,documentHash=agreement.version.contentHash;
    agreement=await f.checked(f.tokens.a,'recordSubmit',f.request({...agreementScope,versionId,expectedRevision:agreement.record.revision}));agreement=await f.checked(f.tokens.owner,'recordReview',f.request({...agreementScope,versionId,expectedRevision:agreement.record.revision,decision:'approved'}));
    for(const who of ['owner','a'])agreement=await f.checked(f.tokens[who],'agreementApprove',f.request({...agreementScope,versionId,expectedRevision:agreement.record.revision,documentHash,ipExplanationVersionId:template.version.id,ipReadAcknowledged:true}));
+   await approveSigningProcessing(f,scope);
    const start=f.request({...agreementScope,versionId,expectedRevision:agreement.record.revision,documentHash,consent:true}),rpc=f.researchStore.rpc;let failPrepare=true;
    f.researchStore.rpc=async(...args)=>{if(args[1]==='signingPrepare'&&failPrepare){failPrepare=false;if(failure==='after-commit')await rpc(...args);throw Object.assign(new Error('unavailable'),{code:'unavailable'});}return rpc(...args);};
    assert.equal((await f.callResearch({token:f.tokens.owner,action:'signingStart',...start}))[0],503);
@@ -97,7 +109,7 @@ test('provider draft remains non-signable after local preparation failure and th
 test('uncertain draft creation recovers by transaction ID and refuses reuse for different agreement bytes',async()=>{
  const envelopeId=randomUUID(),accountId=randomUUID(),workflowId=randomUUID(),hash='a'.repeat(64),parties={owner:{email:'owner@example.invalid',name:'Owner',authority:'Owner authority'},partner:{email:'partner@example.invalid',name:'Partner',authority:'Partner authority'}};
  let created,starts=0;
- const options={env:{},signing:{accessToken:'synthetic-not-live',accountId,baseUrl:'https://demo.docusign.net/restapi',returnUrl:'https://synthetic.example.invalid/research-management.html',connectKey:'synthetic-connect-key-never-live',connectUrl:'https://synthetic.example.invalid/api/research-signing/webhook'},signingPolicy:{approved:true,institutionRequirementsReviewed:true,version:'synthetic-policy',identityWorkflowId:workflowId,signerAuthorities:Object.values(parties)},signingFetchImpl:async(url,init)=>{
+ const options={signingEnabled:true,env:{},signing:{accessToken:'synthetic-not-live',accountId,baseUrl:'https://demo.docusign.net/restapi',returnUrl:'https://synthetic.example.invalid/research-management.html',connectKey:'synthetic-connect-key-never-live',connectUrl:'https://synthetic.example.invalid/api/research-signing/webhook'},signingPolicy:{approved:true,institutionRequirementsReviewed:true,version:'synthetic-policy',identityWorkflowId:workflowId,signerAuthorities:Object.values(parties)},signingFetchImpl:async(url,init)=>{
   if(url.includes('/envelopes?transaction_ids='))return Response.json({envelopeTransactionStatuses:created?[{envelopeId,transactionId:created.transactionId,status:'created'}]:[]});
   if(init.method==='POST'&&url.endsWith('/envelopes')){starts++;created=JSON.parse(init.body);throw new Error('synthetic creation response lost');}
   if(url.endsWith('/custom_fields'))return Response.json({textCustomFields:created.customFields.textCustomFields});
@@ -113,7 +125,7 @@ test('synthetic DocuSign REST evidence verifies both exact identities, mandatory
  const envelopeId=randomUUID(),workflowId=randomUUID(),versionId=randomUUID(),recordId=randomUUID(),hash='a'.repeat(64),now=new Date().toISOString();let created,forged=false,wrongHash=false,activated=false;
  const policy={approved:true,institutionRequirementsReviewed:true,version:'synthetic-policy-v1',identityWorkflowId:workflowId,signerAuthorities:[{email:'owner@example.invalid',name:'Synthetic Owner',authority:'Synthetic owner approval'},{email:'partner@example.invalid',name:'Synthetic Partner',authority:'Synthetic institution approval'}]};
  const accountId=randomUUID(),connectKey='synthetic-connect-key-never-live';
- const calls=[];const adapter=createSigningAdapter({env:{},signing:{accessToken:'synthetic-not-live',accountId,baseUrl:'https://demo.docusign.net/restapi',returnUrl:'https://synthetic.example.invalid/research-management.html',connectKey,connectUrl:'https://synthetic.example.invalid/api/research-signing/webhook'},signingPolicy:policy,signingFetchImpl:async(url,init)=>{
+ const calls=[];const adapter=createSigningAdapter({signingEnabled:true,env:{},signing:{accessToken:'synthetic-not-live',accountId,baseUrl:'https://demo.docusign.net/restapi',returnUrl:'https://synthetic.example.invalid/research-management.html',connectKey,connectUrl:'https://synthetic.example.invalid/api/research-signing/webhook'},signingPolicy:policy,signingFetchImpl:async(url,init)=>{
   calls.push({url,method:init.method});assert.match(init.headers.Authorization,/synthetic-not-live/);
   if(url.includes('/envelopes?transaction_ids='))return Response.json({envelopeTransactionStatuses:[]});
   if(init.method==='POST'&&url.endsWith('/envelopes')){created=JSON.parse(init.body);return Response.json({envelopeId,status:'created'});}
@@ -137,4 +149,16 @@ test('synthetic DocuSign REST evidence verifies both exact identities, mandatory
  assert.equal(adapter.verifyEvent(raw,{'x-docusign-signature-1':signature}).providerSessionId,envelopeId);
  assert.throws(()=>adapter.verifyEvent(Buffer.concat([raw,Buffer.from(' ')]),{'x-docusign-signature-1':signature}),e=>e.code==='unauthorized');
  assert.throws(()=>adapter.verifyEvent(raw,{'x-docusign-signature-1':'forged'}),e=>e.code==='unauthorized');
+});
+
+
+test('signing is disabled until trusted opt-in even when complete credentials and provider overrides appear',async()=>{
+ const accountId=randomUUID(),workflowId=randomUUID(),policy={approved:true,institutionRequirementsReviewed:true,version:'synthetic-policy',identityWorkflowId:workflowId,signerAuthorities:[{name:'Synthetic Owner',email:'owner@example.invalid',authority:'Owner'},{name:'Synthetic Partner',email:'partner@example.invalid',authority:'Partner'}]};
+ let calls=0;const options={env:{RESEARCH_SIGNING_ENABLED:'true',RESEARCH_SIGNING_PROVIDER:'docusign',RESEARCH_SIGNING_ACCESS_TOKEN:'synthetic-not-live',RESEARCH_SIGNING_ACCOUNT_ID:accountId,RESEARCH_SIGNING_BASE_URL:'https://demo.docusign.net/restapi',RESEARCH_SIGNING_RETURN_URL:'https://synthetic.example.invalid/research-management.html',RESEARCH_SIGNING_CONNECT_URL:'https://synthetic.example.invalid/api/research-signing/webhook',RESEARCH_SIGNING_CONNECT_KEY:'synthetic-connect-key-never-live',RESEARCH_SIGNING_POLICY:JSON.stringify(policy)},signingProviders:{docusign:{signingEnabled:true}},signingFetchImpl:async()=>{calls++;throw new Error('No provider requests are allowed');}};
+ for(const signingEnabled of [undefined,false]){
+  const adapter=createSigningAdapter({...options,signingEnabled});assert.equal(adapter.readiness().configured,false);assert.equal(adapter.readiness().state,'disabled');
+  for(const method of ['start','view','refresh'])await assert.rejects(adapter[method]({}),error=>error.code==='not_configured');
+  assert.throws(()=>adapter.verifyEvent(Buffer.from('{}'),{}),error=>error.code==='not_configured');
+ }
+ assert.equal(calls,0);assert.equal(createSigningAdapter({...options,signingEnabled:true}).readiness().configured,true);
 });

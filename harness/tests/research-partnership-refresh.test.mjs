@@ -9,7 +9,7 @@ import CORE from '../../app/lib/research-partnership-core.js';
 test('failed provider refresh keeps the same request retryable and throttles only a verified successful check',async()=>{
  let calls=0,failNext=true;
  const adapter={readiness:()=>({configured:true,state:'ready'}),async refresh(){calls++;if(failNext){failNext=false;throw Object.assign(new Error('unavailable'),{code:'unavailable'});}return {completed:false,state:'in_progress'};}};
- const f=await createPartnershipIntegration({signingAdapter:adapter});
+ const f=await createPartnershipIntegration({signingEnabled:true,signingAdapter:adapter});
  try{
   const {study}=await f.seedStudy();
   const partner=(await f.checked(f.tokens.owner,'partnerSave',f.request({individualCode:f.codes.a,expectedRevision:null,profile:{fullName:'Synthetic Partner',email:'partner@example.invalid'}}))).partner;
@@ -22,7 +22,7 @@ test('failed provider refresh keeps the same request retryable and throttles onl
   a=await f.checked(f.tokens.a,'recordSubmit',f.request({...exact,expectedRevision:a.record.revision}));a=await f.checked(f.tokens.owner,'recordReview',f.request({...exact,expectedRevision:a.record.revision,decision:'approved'}));
   for(const who of [f.tokens.owner,f.tokens.a])a=await f.checked(who,'agreementApprove',f.request({...exact,expectedRevision:a.record.revision,documentHash:hash,ipExplanationVersionId:t.version.id,ipReadAcknowledged:true}));
   const worker=await researchSigningWorkerToken(f.accessStore),session=randomUUID(),digest=createHash('sha256').update('synthetic-provider-document').digest('hex');
-  const prepared=await f.researchStore.rpc(worker,'signingPrepare',f.request({...exact,expectedRevision:a.record.revision,documentHash:hash,providerSessionId:session,providerDocumentHash:digest,authorityPolicyHash:digest,expiresAt:new Date(Date.now()+3600000).toISOString(),providerStateCiphertext:encryptResearchValue({providerSessionId:session},f.documentKey)}));
+  const prepared=await f.researchStore.rpc(worker,'signingPrepare',f.request({...exact,expectedRevision:a.record.revision,documentHash:hash,signerPartiesHash:(await f.query('SELECT research_private.signing_current_identity_hash($1,$2,$3) AS hash',[study.id,partner.id,exact.versionId])).rows[0].hash,providerSessionId:session,providerDocumentHash:digest,authorityPolicyHash:digest,expiresAt:new Date(Date.now()+3600000).toISOString(),providerStateCiphertext:encryptResearchValue({providerSessionId:session},f.documentKey)}));
   const refresh=f.request({...scope,recordId:a.record.id,signingId:prepared.signing.id,expectedRevision:prepared.record.revision});
   assert.equal((await f.callResearch({token:f.tokens.a,action:'signingRefresh',...refresh}))[0],503);assert.equal(calls,1);
   assert.equal((await f.query('SELECT provider_checked_at FROM research_private.partnership_signings WHERE id=$1',[prepared.signing.id])).rows[0].provider_checked_at,null);

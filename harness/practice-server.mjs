@@ -46,6 +46,8 @@ import { handleBackupStatus } from './lib/backup-monitor.mjs';
 import { handleScenarios, supabaseScenarios } from './lib/scenarios.mjs';
 import { handleCommunication } from './lib/communication-continuity.mjs';
 import { handleResearch } from './lib/research.mjs';
+import { handleIntake } from './lib/research-intake.mjs';
+import {startPartnershipWorkScheduler} from './lib/research-partnership-work.mjs';
 import { handleResearchSigningWebhook } from './lib/research-partnerships.mjs';
 import { supabaseResearchStore } from './lib/research-store.mjs';
 import { resolveResearchGeneratedSample } from './lib/research-usage.mjs';
@@ -161,7 +163,8 @@ function readRawBody(req,maxBytes){return new Promise((resolve,reject)=>{let len
 // Dependencies are injected only by importing this factory for isolated tests.
 // HTTP input and environment flags cannot replace authentication or providers.
 export function createPracticeServer({ authStore, providerFactory = getProvider, saveScenarioImpl = saveScenario,
-  limits = createModelLimits() } = {}) {
+  limits = createModelLimits(), partnershipOptions = {}, partnershipWork = {}, signingEnabled = false } = {}) {
+const researchPartnershipOptions={...partnershipOptions,signingEnabled:signingEnabled===true};
 // עבודות צינור שרצות ברקע (בזיכרון; נמחקות אחרי 3 שעות)
 const PIPE_JOBS = new Map();
 // גם במאגר (05/10/2026): אם השרת מופעל מחדש באמצע בנייה (Deploy, עומס), מצב העבודה לא הולך לאיבוד —
@@ -177,7 +180,8 @@ const jobSave = (id, rec) => { const st = jobStore(); return st ? st.set('pj:' +
 const server = createServer(async (req, res) => {
   res._origin = req.headers.origin || '';
   const researchPath = (req.url || '').split('?')[0] === '/api/research';
-  if (researchPath) res.setHeader('cache-control', 'private, no-store');
+  const intakePath = (req.url || '').split('?')[0] === '/api/research-intake';
+  if (researchPath || intakePath) res.setHeader('cache-control', 'private, no-store');
   if (req.method === 'OPTIONS') return sendJson(res, 204, {});
 
   if (req.method === 'GET' && req.url === '/health') {
@@ -188,6 +192,18 @@ const server = createServer(async (req, res) => {
     return sendJson(res, 200, { ok: true, hasKey, hasWorkspace, hasSupabase, commit: String(process.env.RENDER_GIT_COMMIT || '').slice(0, 7), gifts: true });
   }
 
+  if (intakePath) {
+    if (req.method !== 'POST') { res.setHeader('allow', 'POST, OPTIONS'); return sendJson(res, 405, {ok:false,status:405,error:'invalid',code:'invalid'}); }
+    const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
+    if (!url || !key) return sendJson(res, 503, {ok:false,status:503,error:'not_configured',code:'not_configured'});
+    let body;
+    try { body = JSON.parse((await readRawBody(req, 128 * 1024)).toString('utf8')); }
+    catch (error) { const status = error.status === 413 ? 413 : 400; return sendJson(res,status,{ok:false,status,error:'invalid',code:'invalid'}); }
+    try {
+      const [status, out] = await handleIntake(authStore || supabaseStore(url, key, { timeoutMs: 8000 }), supabaseResearchStore(url, key), body, { clientAddress: req.socket.remoteAddress });
+      return sendJson(res, status, { ...out, ok: status >= 200 && status < 300, status });
+    } catch { return sendJson(res, 503, {ok:false,status:503,error:'unavailable',code:'unavailable'}); }
+  }
   if (researchPath) {
     if (req.method !== 'POST') { res.setHeader('allow', 'POST, OPTIONS'); return sendJson(res, 405, {ok:false,status:405,error:'invalid',code:'invalid'}); }
     const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
@@ -197,11 +213,9 @@ const server = createServer(async (req, res) => {
     catch (error) { const status = error.status === 413 ? 413 : 400; return sendJson(res,status,{ok:false,status,error:'invalid',code:'invalid'}); }
     try {
       const access = jobStore();
-      let impactProvider;
-      try { impactProvider = providerFactory(process.env.PROVIDER || 'anthropic'); } catch {}
       const [status,out] = await handleResearch(access,supabaseResearchStore(url,key),body,{
         siteOrigin:CORS_ORIGIN, resolveGeneratedSample:request=>resolveResearchGeneratedSample(access,request),
-        ...(impactProvider ? { impactProviderFactory:()=>impactProvider } : {})
+        ...researchPartnershipOptions
       });
       return sendJson(res,status,{...out,ok:status>=200&&status<300,status});
     } catch { return sendJson(res,503,{ok:false,status:503,error:'storage_unavailable',code:'storage_unavailable'}); }
@@ -211,7 +225,7 @@ const server = createServer(async (req, res) => {
     const url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_KEY;
     if(!url||!key)return sendJson(res,503,{ok:false,code:'not_configured'});
     let raw;try{raw=await readRawBody(req,262144);}catch(error){return sendJson(res,error.status===413?413:400,{ok:false,code:'invalid'});}
-    const [status,out]=await handleResearchSigningWebhook(jobStore(),supabaseResearchStore(url,key),raw,req.headers);
+    const [status,out]=await handleResearchSigningWebhook(jobStore(),supabaseResearchStore(url,key),raw,req.headers,researchPartnershipOptions);
     return sendJson(res,status,out);
   }
 
@@ -526,6 +540,13 @@ const server = createServer(async (req, res) => {
 server.requestTimeout = 0;
 server.headersTimeout = 0;
 
+// Scheduling is server-owned and off by default. No browser endpoint can start
+// jobs or inject providers. Persistent leases survive process restarts.
+const workEnabled=signingEnabled===true&&partnershipWork.enabled===true;
+const workAccess=workEnabled?jobStore():null;
+const workStore=workEnabled&&process.env.SUPABASE_URL&&process.env.SUPABASE_SERVICE_KEY?supabaseResearchStore(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_KEY):null;
+const scheduler=startPartnershipWorkScheduler(workAccess,workStore,{...researchPartnershipOptions,...partnershipWork,signingEnabled:signingEnabled===true,enabled:workEnabled});
+server.once('close',()=>scheduler.stop());
 return server;
 }
 

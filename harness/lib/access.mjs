@@ -65,6 +65,26 @@ async function getInstitutions(store) {
   return (await store.get('institutions')) || DEFAULT_INSTITUTIONS.map((x) => ({ ...x }));
 }
 
+// Research accepts personal identities without requiring unrelated tool rights.
+// Reuse the same Israel-calendar subscription check for sessions and owner choices.
+export async function activeResearchInstitutions(store) {
+  const list = await getInstitutions(store), settings = await store.get('settings') || {};
+  const grace = settings.graceDays ?? 14, current = ilToday();
+  if (!Number.isFinite(grace)) return [];
+  return list.filter(institution => {
+    if (institution.active === false) return false;
+    if (!institution.subEnd) return true;
+    const until = Date.parse(institution.subEnd + 'T00:00:00Z') + grace * 86400000;
+    return Number.isFinite(until) && current <= new Date(until).toISOString().slice(0, 10);
+  });
+}
+
+export async function isActiveResearchIdentity(store, record, institutions) {
+  return !!record && ['staff', 'instadmin'].includes(record.kind) && !record.revoked
+    && (!record.expiresAt || record.expiresAt >= ilToday())
+    && (institutions || await activeResearchInstitutions(store)).some(institution => institution.name === record.inst);
+}
+
 function newInstCode(list) {
   for (;;) {
     const c = String(100000 + (randomBytes(4).readUInt32BE(0) % 900000));
@@ -422,6 +442,7 @@ function notices(kind, sub, rec) {
 const publicCode = (r) => ({ code: r.code, kind: r.kind, inst: r.inst, perms: r.perms || [], label: r.label || '',
   createdAt: r.createdAt, expiresAt: r.expiresAt || null, uses: r.uses || 0, maxUses: r.maxUses || null,
   revoked: !!r.revoked, createdBy: r.createdBy || '',
+  ...(r.researchOnly === true ? { researchOnly: true } : {}),
   ...(r.kind === 'course' ? { seats: r.seats, usesPer: r.usesPer, seatsUsed: Object.keys(r.taken || {}).length } : {}) });
 // מקום בקורס פנוי? (מי שכבר רשום/ה — תמיד ממשיך/ה)
 const courseFull = (rec, sid) => !(sid && (rec.taken || {})[sid] !== undefined) && Object.keys(rec.taken || {}).length >= rec.seats;
@@ -481,13 +502,40 @@ async function handleCodes(store, body, isSys) {
 
   if (action === 'codeCreate') {
     const kind = body.kind;
-    const existing = new Set((await allCodes(store)).map((c) => normCode(c.code)));
+    const researchOnly = body.researchOnly === true;
+    if (body.researchOnly !== undefined && !researchOnly) return [400, { error: 'invalid' }];
+    if (researchOnly && !isSys) return [403, { error: 'unauthorized' }];
+    if (researchOnly && (kind !== 'staff' || !Array.isArray(body.perms) || body.perms.length !== 0)) return [400, { error: 'invalid' }];
+    const existing = researchOnly ? null : new Set((await allCodes(store)).map((c) => normCode(c.code)));
     const list = await getInstitutions(store);
     const label = String(body.label || '').trim().slice(0, 60);
     if (kind === 'instadmin' || (kind === 'staff' && isSys)) {
       if (!isSys) { await pause(); return [403, { error: 'unauthorized' }]; }
       const x = list.find((i) => i.name === String(body.inst || ''));
       if (!x) return [404, { error: 'no such institution' }];
+      if (researchOnly) {
+        if (!(await activeResearchInstitutions(store)).some(institution => institution.name === x.name)) return [403, { error: 'unauthorized' }];
+        if (typeof body.requestId !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(body.requestId)) return [400, { error: 'invalid' }];
+        const secret = (await store.get('token-secret'))?.secret;
+        if (typeof secret !== 'string' || !secret || typeof store.compareSet !== 'function') return [503, { error: 'not_configured' }];
+        const requestId = body.requestId.toLowerCase();
+        const expiresAt = validYmd(body.expiresAt) ? body.expiresAt : null;
+        const hash = createHash('sha256').update(JSON.stringify({ inst: x.name, label, expiresAt })).digest('hex');
+        const digest = createHmac('sha256', secret).update('BEGOOD/research-identity/v1/' + requestId).digest();
+        const normalized = Array.from(digest.subarray(0, 8), byte => CODE_ALPHABET[byte % CODE_ALPHABET.length]).join('');
+        const key = 'code:' + normalized;
+        const currentResult = async record => {
+          if (record?.researchRequestId !== requestId || record.researchRequestHash !== hash || record.researchOnly !== true || !(await isActiveResearchIdentity(store, record))) return [409, { error: 'conflict' }];
+          return [200, { code: publicCode(record) }];
+        };
+        const previous = await store.get(key);
+        if (previous) return currentResult(previous);
+        const record = { code: normalized.slice(0, 4) + '-' + normalized.slice(4), kind: 'staff', inst: x.name, perms: [], label,
+          createdBy: 'sys', createdAt: new Date().toISOString(), expiresAt, uses: 0, revoked: false,
+          researchOnly: true, researchRequestId: requestId, researchRequestHash: hash };
+        if (await store.compareSet(key, null, record)) return [200, { code: publicCode(record) }];
+        return currentResult(await store.get(key));
+      }
       // קוד אישי שמנהלת המערכת מפיקה ישירות (למשל לאדם יחיד בלי צוות): רק מתוך התקרה של המוסד.
       if (kind === 'staff') {
         const want = [...new Set((body.perms || []).filter((p) => PERMS.includes(p)))];

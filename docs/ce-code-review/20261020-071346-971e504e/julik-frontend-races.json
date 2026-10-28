@@ -1,0 +1,43 @@
+{
+  "reviewer": "julik-frontend-races",
+  "findings": [
+    {
+      "title": "Focus refresh discards edits made during the request",
+      "severity": "P2",
+      "file": "app/lib/research-intake-ui.js",
+      "line": 77,
+      "why_it_matters": "A public applicant can lose text or an acknowledgement they enter while the focus-triggered terms request is in flight. The page snapshots the form before fetching and then replaces the form from that older snapshot when the response arrives, even if the published terms did not change. Reading the current controls immediately before a necessary rerender, and skipping the rerender when the terms are unchanged, preserves the applicant's work.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "suggested_fix": "On a successful public-info response, compare the returned terms and availability with the displayed state; if unchanged, keep the live form. If a rerender is needed, call read() and capture ack.checked immediately before render() rather than before await client.call. Add a deferred-response UI test that types and checks acknowledgement between load() start and resolution.",
+      "confidence": 75,
+      "evidence": [
+        "app/lib/research-intake-ui.js:77 -- try{const data=await client.call('intakePublicInfo');if(at!==epoch)return;info=data;const changed=Boolean(previous&&(previous.versionId!==info.terms?.versionId||previous.hash!==info.terms?.hash));render(changed,readAcknowledged);}catch(e){if(at===epoch)note(e.userMessage||R.MESSAGES.network,true);}",
+        "app/lib/research-intake-ui.js:76 -- read();const previous=info?.terms,readAcknowledged=ack?.checked===true,at=++epoch;",
+        "app/lib/research-intake-ui.js:2 -- else{root.SBE_RESEARCH_INTAKE_UI=factory(root.SBE_RESEARCH_INTAKE,root.SBE_RESEARCH_PARTNERSHIPS,root.SBE_RESEARCH_CLIENT);document.addEventListener('DOMContentLoaded',()=>{const target=document.getElementById('intake-root');if(!target)return;const page=root.SBE_RESEARCH_INTAKE_UI.mountPublic({root:target});page.load();window.addEventListener('focus',()=>page.load());window.addEventListener('pageshow',event=>{if(event.persisted)page.load();});});}"
+      ],
+      "pre_existing": false
+    },
+    {
+      "title": "Late application detail response replaces a newer owner view",
+      "severity": "P2",
+      "file": "app/lib/research-intake-ui.js",
+      "line": 111,
+      "why_it_matters": "An owner who opens an application and switches to the terms page before the detail request returns is sent back to that application when the late response arrives. The request guard only tracks clear or account refresh, while navigating between owner intake views leaves its epoch unchanged. A navigation sequence check before rendering would make the latest selected view win.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "suggested_fix": "Increment a separate owner-view sequence at the start of inbox(), terms(), and detail(); capture it locally and check it after every awaited bootstrap or view request before changing route or replacing root. Include a deferred intakeGet response test that navigates to terms first and verifies terms remain visible.",
+      "confidence": 75,
+      "evidence": [
+        "app/lib/research-intake-ui.js:111 -- const result=await call('intakeGet',{applicationId:id});if(!result)return;route='detail';applicationId=id;const application=result.application,data=application.application||application.data||{},box=heading(data.title||'פרטי הפנייה');",
+        "app/lib/research-intake-ui.js:96 -- async function call(action,payload={}){const at=epoch;try{const data=await client.call(action,payload);return at===epoch?data:null;}catch(e){if(e.code!=='stale'&&at===epoch)note(e.userMessage||R.MESSAGES[e.code]||R.MESSAGES.invalid,true);return null;}",
+        "app/lib/research-intake-ui.js:99 -- async function terms(saved){if(!await ready())return;route='terms';applicationId=null;const state=ownerInfo.termsState||{revision:0,draftVersion:null,publishedVersionId:null},version=state.draftVersion,seed=saved||version||I.DEFAULT_TERMS_DRAFT,box=heading('תנאי פנייה');"
+      ],
+      "pre_existing": false
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}

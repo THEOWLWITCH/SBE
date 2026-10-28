@@ -10,6 +10,43 @@ async function ok(rpc, credential, action, payload = {}) {
   return result;
 }
 const sha = x => createHash('sha256').update(x).digest('hex');
+
+test('actual SQL V4 vocabulary and conditional annex completion match the core without changing legacy drafts',async()=>{
+ const f=await createPartnershipDatabase();try{
+  const contract=(await f.db.query('SELECT research_private.partnership_contract() c')).rows[0].c;
+  assert.deepEqual(contract.versions,CORE.VERSIONS);
+  assert.deepEqual(contract.schemas,CORE.RECORD_SCHEMAS);
+  assert.deepEqual(contract.guidedAgreement,CORE.GUIDED_AGREEMENT);
+  const fields=CORE.RECORD_SCHEMAS.agreement.fields.filter(x=>['guidedVersion','ownerRegistration',...CORE.GUIDED_AGREEMENT.annexes.flatMap(a=>[a.statusField,a.reasonField,a.rowsField])].includes(x.id));
+  const check=d=>f.db.query('SELECT research_private.partnership_fields($1::jsonb,$2::jsonb,NULL,NULL,true)',[fields,d]);
+  await check({});
+  await assert.rejects(check({guidedVersion:'4'}),/invalid/);
+  const complete={guidedVersion:'4',ownerRegistration:'Synthetic registration'};
+  for(const annex of CORE.GUIDED_AGREEMENT.annexes){complete[annex.statusField]='not_applicable';complete[annex.reasonField]='לא חל במחקר בדוי';}
+  await check(complete);
+  for(const annex of CORE.GUIDED_AGREEMENT.annexes){
+   const missing={...complete};delete missing[annex.reasonField];await assert.rejects(check(missing),/invalid/);
+   await assert.rejects(check({...complete,[annex.statusField]:'applicable'}),/invalid/);
+   await assert.rejects(check({...complete,[annex.statusField]:'applicable',[annex.rowsField]:[{}]}),/invalid/);
+   await assert.rejects(check({[annex.statusField]:'applicable'}),/invalid/,'annex content required even without guidedVersion');
+  }
+  const studyFields=CORE.RECORD_SCHEMAS.agreement.fields.find(f=>f.id==='annexA').fields;
+  const studyRow=Object.fromEntries(studyFields.filter(f=>f.required).map(f=>[f.id,f.type==='date'?(f.id==='startDate'?'2026-11-01':'2026-12-01'):f.type==='integer'?0:'Synthetic study decision']));
+  const completeStudy={...complete,annexAStatus:'applicable',annexA:[studyRow]};
+  await check(completeStudy);
+  await assert.rejects(check({...completeStudy,annexA:[{...studyRow,endDate:'2026-10-31'}]}),/invalid/,'only the valid end date is changed to precede the start');
+  await assert.rejects(check({...completeStudy,annexA:[{...studyRow,startDate:'2026-02-30'}]}),/date\/time field value out of range/,'only the start date is changed to an impossible calendar date at the private SQL validator');
+  const costFields=CORE.RECORD_SCHEMAS.agreement.fields.find(f=>f.id==='annexC').fields;
+  const operating=Object.fromEntries(costFields.filter(f=>f.required&&!f.requiredWhen).map(f=>[f.id,f.type==='money'?'0.00':f.type==='enum'?Object.keys(f.choices)[0]:'Synthetic decision']));
+  await check({...complete,annexCStatus:'applicable',annexC:[operating]});
+  await assert.rejects(check({...complete,annexCStatus:'applicable',annexC:[{...operating,estimatedAmount:'1.001'}]}),/invalid/,'only money precision changes from an accepted complete row');
+  const service={...operating,kind:'service'};
+  await assert.rejects(check({...complete,annexCStatus:'applicable',annexC:[service]}),/invalid/);
+  for(const def of costFields.filter(f=>f.requiredWhen))service[def.id]=def.type==='money'?'0.00':def.type==='enum'?'unpaid':'Synthetic decision';
+  await check({...complete,annexCStatus:'applicable',annexC:[service]});
+  for(const field of ['provider','serviceRecipient','deliverable','serviceAmount','estimatedAmount','approvedCap','ownerShare','partnerShare','acceptance']){const row={...service};delete row[field];await assert.rejects(check({...complete,annexCStatus:'applicable',annexC:[row]}),/invalid/);}
+ }finally{await f.close();}
+});
 const cipher = {v:1,iv:'AAAAAAAAAAAAAAAA',tag:'AAAAAAAAAAAAAAAAAAAAAA==',data:'c3ludGhldGlj'};
 const profile = fullName => ({fullName,email:fullName.toLowerCase()+'@example.invalid',institution:'Synthetic'});
 async function setup(f) {
@@ -160,6 +197,32 @@ test('partner profiles infer self identity and private immutable record versions
   } finally { await f.close(); }
 });
 
+test('SQL profile and complete application validation matches individual, institution and legacy conditional requirements', async () => {
+ const f=await createPartnershipDatabase();try{
+  const contract=(await f.db.query('SELECT research_private.partnership_contract() c')).rows[0].c;
+  assert.deepEqual(contract.partner,CORE.PARTNER_FIELDS);
+  assert.deepEqual(contract.schemas.application,CORE.RECORD_SCHEMAS.application);
+  const individual={applicantType:'individual',fullName:'Synthetic Individual',email:'individual@example.invalid'};
+  const created=await ok(f.partnershipRpc,TOKENS.a,'partnerSave',request({expectedRevision:null,profile:individual}));
+  assert.deepEqual(created.partner.profile,individual);
+  assert.deepEqual(contract.versions,CORE.VERSIONS);
+  await f.db.query("SELECT research_private.partnership_fields(research_private.partnership_contract()->'partner',$1::jsonb,NULL,NULL,true)",[individual]);
+  for(const applicantType of ['institution',undefined]){
+   const profile={...individual};if(applicantType)profile.applicantType=applicantType;else delete profile.applicantType;
+   await assert.rejects(f.db.query("SELECT research_private.partnership_fields(research_private.partnership_contract()->'partner',$1::jsonb,NULL,NULL,true)",[profile]),error=>error.message==='invalid');
+   await f.db.query("SELECT research_private.partnership_fields(research_private.partnership_contract()->'partner',$1::jsonb,NULL,NULL,true)",[{...profile,institution:'Synthetic'}]);
+  }
+  const complete={...individual,title:'Synthetic proposal',applicationType:'partnership',objectives:'Synthetic',researchQuestions:['Synthetic?'],method:'Synthetic',population:'Synthetic',requestedTools:['communication'],startDate:'2026-11-01',endDate:'2026-12-01',ethicsStatus:'pending',ethicsDetails:'Synthetic',consentPlan:'Synthetic',requestedPermissions:['view_study']};
+  await f.db.query("SELECT research_private.partnership_validate('application',$1::jsonb,NULL,NULL,true)",[complete]);
+  for(const applicantType of ['institution',undefined]){
+   const data={...complete};if(applicantType)data.applicantType=applicantType;else delete data.applicantType;
+   await assert.rejects(f.db.query("SELECT research_private.partnership_validate('application',$1::jsonb,NULL,NULL,true)",[data]),error=>error.message==='invalid');
+   await f.db.query("SELECT research_private.partnership_validate('application',$1::jsonb,NULL,NULL,true)",[{...data,institution:'Synthetic'}]);
+  }
+  await assert.rejects(f.db.query("SELECT research_private.partnership_validate('application',$1::jsonb,NULL,NULL,true)",[{...complete,owner:true}]),error=>error.message==='invalid');
+ }finally{await f.close();}
+});
+
 test('same-study researchers cannot discover folders, metadata, counts, nested references or history; CAS and receipts are exact',async()=>{
  const f=await createPartnershipDatabase();try{
  const {a,b,s}=await setup(f),data={title:'Private Shoshi proposal',category:'scientific',description:'Synthetic requested work',requestedCompensation:'125.25',currency:'ILS'};
@@ -241,7 +304,7 @@ test('mutual approvals bind canonical head and revision invalidates them; worker
 
 test('trusted execution keeps evidence immutable, extracts reviewable obligations and rejects unilateral term edits',async()=>{
  const f=await createPartnershipDatabase();try{const {a,s}=await setup(f);const {x,read}=await approvedAgreement(f,s,a);const worker=token({k:'research_signing_worker',purpose:'research-signing',exp:Date.now()+300000});
- const prep=await ok(f.partnershipRpc,worker,'signingPrepare',request({...scope(s,a,x),documentHash:read.version.contentHash,providerSessionId:'synthetic-provider-session',expiresAt:new Date(Date.now()+3600000).toISOString(),providerStateCiphertext:cipher,providerDocumentHash:sha('synthetic-provider-bytes'),authorityPolicyHash:sha('synthetic-authority-policy')}));assert.equal(prep.record.status,'signing');
+ const prep=await ok(f.partnershipRpc,worker,'signingPrepare',request({...scope(s,a,x),documentHash:read.version.contentHash,signerPartiesHash:(await f.db.query('SELECT research_private.signing_current_identity_hash($1,$2,$3) AS hash',[s.id,a.id,read.version.id])).rows[0].hash,providerSessionId:'synthetic-provider-session',expiresAt:new Date(Date.now()+3600000).toISOString(),providerStateCiphertext:cipher,providerDocumentHash:sha('synthetic-provider-bytes'),authorityPolicyHash:sha('synthetic-authority-policy')}));assert.equal(prep.record.status,'signing');
  const poll=request({...readScope(s,a,prep,false),signingId:prep.signing.id,expectedRevision:prep.record.revision});assert.equal((await ok(f.partnershipRpc,TOKENS.owner,'signingRefresh',poll)).providerCheckDue,true);assert.equal((await ok(f.partnershipRpc,TOKENS.owner,'signingRefresh',poll)).providerCheckDue,true);
  const state=await ok(f.partnershipRpc,worker,'signingStateUpdate',{...readScope(s,a,prep,false),signingId:prep.signing.id,state:'in_progress'});assert.equal(state.signing.state,'in_progress');assert.equal((await ok(f.partnershipRpc,TOKENS.owner,'signingRefresh',poll)).providerCheckDue,false);assert.equal((await ok(f.partnershipRpc,TOKENS.owner,'signingRefresh',{...poll,requestId:randomUUID()})).providerCheckDue,false);assert.equal((await f.partnershipRpc(token({k:'research_signing_worker',exp:Date.now()+300000}),'signingEventContext',{providerSessionId:'synthetic-provider-session'})).error,'unauthorized');
  const ctx=await ok(f.partnershipRpc,worker,'signingEventContext',{providerSessionId:'synthetic-provider-session'});assert.equal(ctx.recordId,x.record.id);
@@ -259,7 +322,7 @@ test('revoked researchers lose access while owner history and verified existing 
   const {a,s}=await setup(f);await provenance(f,s,a);
   await f.db.query("UPDATE research_private.studies SET status='active',config=config||$1 WHERE id=$2",[{approvals:{status:'approved'}},s.id]);
   const {x,read}=await approvedAgreement(f,s,a),worker=token({k:'research_signing_worker',purpose:'research-signing',exp:Date.now()+300000});
-  const prep=await ok(f.partnershipRpc,worker,'signingPrepare',request({...scope(s,a,x),documentHash:read.version.contentHash,providerSessionId:'retained-synthetic-session',expiresAt:new Date(Date.now()+3600000).toISOString(),providerStateCiphertext:cipher,providerDocumentHash:sha('synthetic-provider-bytes'),authorityPolicyHash:sha('synthetic-authority-policy')}));
+  const prep=await ok(f.partnershipRpc,worker,'signingPrepare',request({...scope(s,a,x),documentHash:read.version.contentHash,signerPartiesHash:(await f.db.query('SELECT research_private.signing_current_identity_hash($1,$2,$3) AS hash',[s.id,a.id,read.version.id])).rows[0].hash,providerSessionId:'retained-synthetic-session',expiresAt:new Date(Date.now()+3600000).toISOString(),providerStateCiphertext:cipher,providerDocumentHash:sha('synthetic-provider-bytes'),authorityPolicyHash:sha('synthetic-authority-policy')}));
   await f.db.query("UPDATE public.access_settings SET value=jsonb_set(value,'{revoked}','true') WHERE key='code:STAFFA'");
   assert.equal((await ok(f.partnershipRpc,TOKENS.owner,'recordGet',readScope(s,a,prep))).record.id,x.record.id);
   assert.ok((await ok(f.partnershipRpc,TOKENS.owner,'partnerGet',{partnerId:a.id})).workspaces.some(w=>w.studyId===s.id));

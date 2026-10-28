@@ -9,6 +9,24 @@ const access={async get(key){return key==='token-secret'?{secret}:key==='code:PE
 function token(){const b=Buffer.from(JSON.stringify({k:'code',c:'PERSON1',...code,exp:Date.now()+3600000})).toString('base64url');return b+'.'+createHmac('sha256',secret).update(b).digest('base64url');}
 const scope=()=>({studyId:randomUUID(),partnerId:randomUUID(),recordId:randomUUID()});
 
+test('guided gateway validates source selection refresh and private policy commands and projects only contracted results',async()=>{
+ const {handlePartnership,validatePartnershipPayload}=await import('../lib/research-partnerships.mjs');
+ const pair={studyId:randomUUID(),partnerId:randomUUID()},s={...pair,recordId:randomUUID()},versionId=randomUUID(),requestId=randomUUID();
+ const policy={purpose:'pre_signing_document',provider:'synthetic-provider',providerVersion:'synthetic-v1',dataCategories:['agreement_document'],authorizedActors:['sys'],...Object.fromEntries(['partyRoles','transferBasis','storageLocation','retention','backups','deletion','withdrawal','securityMeasures','ethicsReference','consentReview'].map(k=>[k,'Synthetic explicit decision']))};
+ const samples=[
+  {action:'agreementSources',...pair},
+  {action:'agreementPrepare',...pair,requestId,applicationVersionId:versionId,budgetVersionIds:[],contributionVersionIds:[]},
+  {action:'agreementRefreshPreview',...s,versionId},
+  {action:'agreementRefreshApply',...s,versionId,requestId,expectedRevision:1,previewHash:'a'.repeat(64),replaceFields:['leadResearcher']},
+  {action:'processingPolicyGet',...pair},
+  {action:'processingPolicySave',...pair,requestId,expectedRevision:0,policy},
+  {action:'processingPolicyApprove',...pair,requestId,expectedRevision:1,policyVersionId:versionId,policyHash:'a'.repeat(64)}
+ ];
+ for(const body of samples){let observed;const store={async rpc(t,a,p){observed={a,p};return {sources:{currentGrants:['view_study']},guidance:{decisions:[]},record:{id:s.recordId},version:{id:versionId},preparation:{id:randomUUID()},template:null,resumed:false,preview:{hash:'a'.repeat(64)},policy:{id:versionId},privateProviderSecret:'never returned'};}};const [status,out]=await handlePartnership({},store,{token:'synthetic',...body},{env:{},verifyIdentity:async()=>({owner:true})});assert.equal(status,200,body.action);assert.deepEqual(observed,{a:body.action,p:validatePartnershipPayload(body)});assert.equal(out.privateProviderSecret,undefined);}
+ for(const bad of [{...samples[1],provenance:{verified:true}},{...samples[1],budgetVersionIds:[versionId,versionId]},{...samples[3],replaceFields:['population','population']},{...samples[3],previewHash:'forged'},{...samples[5],policy:{...policy,approved:true}},{...samples[5],expectedRevision:null}])assert.throws(()=>validatePartnershipPayload(bad));
+ let calls=0;for(const body of samples.filter(b=>b.action==='agreementPrepare'||b.action.startsWith('processingPolicy')))assert.equal((await handlePartnership({},{async rpc(){calls++;return {}; }},{token:'synthetic',...body},{env:{},verifyIdentity:async()=>({owner:false})}))[0],403);assert.equal(calls,0);
+});
+
 test('human document exports use Hebrew permission names without changing structured data',async()=>{
  const version={id:randomUUID(),data:{title:'בקשה בדויה',requestedPermissions:['view_study','view_approved_findings']}},store={async rpc(){return {record:{kind:'application'},version};}};
  for(const format of ['text','html']){const [status,result]=await handleResearch(access,store,{token:token(),action:'workspaceExport',...scope(),versionId:version.id,format});assert.equal(status,200);const text=Buffer.from(result.contentBase64,'base64').toString('utf8');assert.match(text,/צפייה במחקר/);assert.match(text,/צפייה בממצאים מאושרים/);assert.doesNotMatch(text,/view_study|view_approved_findings/);}
@@ -38,6 +56,17 @@ test('exports are exact authorized version bytes, escaped RTL HTML and actual OO
  const [status,out]=await handleResearch(access,store,{token:token(),action:'workspaceExport',...scope(),versionId:v.id,format});assert.equal(status,200);const bytes=Buffer.from(out.contentBase64,'base64');assert.equal(out.documentHash,createHash('sha256').update(bytes).digest('hex'));assert.notEqual(out.documentHash,v.contentHash);assert.ok(bytes.length);if(format==='html'){assert.match(bytes.toString(),/&lt;script&gt;/);assert.match(bytes.toString(),/24mm/);assert.doesNotMatch(bytes.toString(),/<script>/);}if(format==='docx'){assert.equal(bytes.readUInt32LE(),0x04034b50);assert.match(bytes.toString(),/word\/document.xml/);assert.match(bytes.toString(),/w:bidi/);assert.match(bytes.toString(),/w:rtl/);}}
  assert.ok(calls.every(c=>c.a==='workspaceExport'));
  const revoked={async rpc(){throw Object.assign(new Error('not_found'),{code:'not_found'});}};assert.equal((await handleResearch(access,revoked,{token:token(),action:'workspaceExport',...scope(),versionId:v.id,format:'html'}))[0],404);
+});
+test('executed agreement exports stop after authorization and leave immutable signed evidence unchanged',async()=>{
+ const signed=Buffer.from('%PDF-synthetic immutable provider evidence'),before=Buffer.from(signed),v={id:randomUUID(),data:{unknown:'must never be regenerated'}},calls=[];
+ const store={async rpc(t,a,p){calls.push({a,p});return {record:{kind:'agreement',status:'executed'},version:v,signedDocumentBytes:signed};}};
+ for(const format of ['text','json','html','docx']){
+  const [status,out]=await handleResearch(access,store,{token:token(),action:'workspaceExport',...scope(),versionId:v.id,format});
+  assert.equal(status,409);assert.equal(out.code,'signed_original_required');assert.equal(out.contentBase64,undefined);assert.deepEqual(signed,before);
+ }
+ assert.equal(calls.length,4);assert.ok(calls.every(c=>c.a==='workspaceExport'));
+ const denied={async rpc(){throw Object.assign(new Error('not_found'),{code:'not_found'});}};
+ assert.equal((await handleResearch(access,denied,{token:token(),action:'workspaceExport',...scope(),versionId:v.id,format:'docx'}))[0],404);
 });
 test('canonical nested hashes and exact financial/date diffs do not depend on optional AI',async()=>{
  const before={title:'הצעה',sharedExpenses:[{description:'תשלום',amount:'100.00',party:'owner',dueDate:'2026-11-01'}]},after={...before,sharedExpenses:[{...before.sharedExpenses[0],amount:'125.25',dueDate:'2026-12-01'}]};
@@ -71,4 +100,16 @@ test('actual SQL gateway isolates same-study documents/exports, rejects invitati
   assert.equal((await f.callResearch({token:f.tokens.a,action:'workspaceDocumentGet',...docQuery}))[0],404);
   assert.equal((await f.callResearch({token:f.tokens.a,action:'workspaceExport',...scope,recordId:saved.record.id,versionId:saved.version.id,format:'html'}))[0],404);
  }finally{await f.close();}
+});
+
+
+test('disabled signing blocks injected adapters, persisted providers and callbacks while bootstrap remains available',async()=>{
+ const {handlePartnership,handleResearchSigningWebhook}=await import('../lib/research-partnerships.mjs');let providerCalls=0,storeCalls=0;
+ const touched=()=>{providerCalls++;throw new Error('Disabled signing cannot touch providers');},adapter={provider:'docusign',readiness(){providerCalls++;return {configured:true,state:'ready'};},start:touched,view:touched,refresh:touched,verifyEvent:touched};
+ const store={async rpc(_token,action){storeCalls++;return action==='workspaceBootstrap'?{readiness:{}}:{signing:{provider:'docusign',id:randomUUID()}};}};
+ const options={env:{RESEARCH_SIGNING_ENABLED:'true'},signingEnabled:false,signingAdapter:adapter,verifyIdentity:async()=>({owner:true})};
+ const [status,bootstrap]=await handlePartnership({},store,{token:'synthetic',action:'workspaceBootstrap'},options);assert.equal(status,200);assert.equal(bootstrap.readiness.signing.configured,false);assert.equal(bootstrap.readiness.signing.state,'disabled');
+ const pair=scope(),versionId=randomUUID(),signingId=randomUUID();
+ for(const body of [{action:'signingStart',...pair,versionId,expectedRevision:1,documentHash:'a'.repeat(64),consent:true,requestId:randomUUID()},{action:'signingView',...pair,signingId},{action:'signingRefresh',...pair,signingId,expectedRevision:1,requestId:randomUUID()}])assert.equal((await handlePartnership({},store,{token:'synthetic',...body},options))[0],503);
+ assert.equal((await handleResearchSigningWebhook({},store,Buffer.from('{}'),{},options))[0],503);assert.equal(storeCalls,1);assert.equal(providerCalls,0);
 });

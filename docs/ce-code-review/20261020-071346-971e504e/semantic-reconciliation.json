@@ -1,0 +1,77 @@
+{
+  "merges": [
+    {
+      "kept_title": "Populate approval choices from the complete owner study list",
+      "merged_titles": [
+        "Populate approval choices from the complete owner study list",
+        "Existing studies disappear from the intake approval selector"
+      ],
+      "reason": "Same defect and fix path; retain all source detail and union only mechanics-derived attribution."
+    },
+    {
+      "kept_title": "Preserve current edits and acknowledgement during terms refresh",
+      "merged_titles": [
+        "Preserve edits made while refreshing public terms",
+        "Terms refresh restores earlier edits and checked acknowledgement",
+        "Focus refresh discards edits made during the request"
+      ],
+      "reason": "Same defect and fix path; retain all source detail and union only mechanics-derived attribution."
+    },
+    {
+      "kept_title": "Allow saving notes on an application already under review",
+      "merged_titles": [
+        "Allow saving notes on an application already under review",
+        "Saving another review note always reports a conflict"
+      ],
+      "reason": "Same defect and fix path; retain all source detail and union only mechanics-derived attribution."
+    }
+  ],
+  "rejected_findings": [
+    {
+      "title": "Intake approval replaces existing study grants",
+      "reviewers": [
+        "api-contract"
+      ],
+      "reason": "Automatic union contradicts the explicit exact owner-selected permission contract in proof-4 and invocation.constraints; memberSet replacement implements that intended contract. No separate current-grants UX defect was evidenced."
+    }
+  ],
+  "source_keys": {
+    "app/lib/research-intake-ui.js|122|populate approval choices from the complete owner study list": [
+      "[\"correctness\", \"app/lib/research-intake-ui.js\", \"122\", \"populate approval choices from the complete owner study list\"]",
+      "[\"adversarial\", \"app/lib/research-partnership-ui.js\", \"37\", \"existing studies disappear from the intake approval selector\"]"
+    ],
+    "app/lib/research-intake-ui.js|129|refresh a created study revision before each approval": [
+      "[\"correctness\", \"app/lib/research-intake-ui.js\", \"129\", \"refresh a created study revision before each approval\"]"
+    ],
+    "app/lib/research-intake-ui.js|25|time out a stalled public submission": [
+      "[\"reliability\", \"app/lib/research-intake-ui.js\", \"26\", \"time out a stalled public submission\"]"
+    ],
+    "app/lib/research-intake-ui.js|77|preserve current edits and acknowledgement during terms refresh": [
+      "[\"correctness\", \"app/lib/research-intake-ui.js\", \"77\", \"preserve edits made while refreshing public terms\"]",
+      "[\"adversarial\", \"app/lib/research-intake-ui.js\", \"76\", \"terms refresh restores earlier edits and checked acknowledgement\"]",
+      "[\"julik-frontend-races\", \"app/lib/research-intake-ui.js\", \"77\", \"focus refresh discards edits made during the request\"]"
+    ],
+    "harness/migrations/20261020-partnership-intake.sql|122|allow saving notes on an application already under review": [
+      "[\"correctness\", \"harness/migrations/20261020-partnership-intake.sql\", \"122\", \"allow saving notes on an application already under review\"]",
+      "[\"adversarial\", \"harness/migrations/20261020-partnership-intake.sql\", \"122\", \"saving another review note always reports a conflict\"]"
+    ],
+    "app/lib/research-intake-ui.js|111|late application detail response replaces a newer owner view": [
+      "[\"julik-frontend-races\", \"app/lib/research-intake-ui.js\", \"111\", \"late application detail response replaces a newer owner view\"]"
+    ],
+    "harness/migrations/20261020-partnership-intake.sql|154|information leakage: workspace projection hidden in source rewrite": [
+      "[\"maintainability\", \"harness/migrations/20261020-partnership-intake.sql\", \"154\", \"information leakage: workspace projection hidden in source rewrite\"]"
+    ],
+    "harness/practice-server.mjs|200|bound the new intake access-store calls": [
+      "[\"reliability\", \"harness/practice-server.mjs\", \"200\", \"bound the new intake access-store calls\"]"
+    ],
+    "harness/tests/research-intake-core.test.mjs|21|compare the sql intake contract with its source": [
+      "[\"testing\", \"harness/tests/research-intake-core.test.mjs\", \"21\", \"compare the sql intake contract with its source\"]"
+    ],
+    "harness/tests/research-intake-ui.test.mjs|52|test focus and page restoration event refresh": [
+      "[\"testing\", \"harness/tests/research-intake-ui.test.mjs\", \"52\", \"test focus and page restoration event refresh\"]"
+    ],
+    "app/research-partnership.html|18|add the new intake page to the screens menu": [
+      "[\"project-standards\", \"app/research-partnership.html\", \"18\", \"add the new intake page to the screens menu\"]"
+    ]
+  }
+}

@@ -15,6 +15,7 @@ window.SBE_SCREENS = [
   { part:'others', title:'👥 מה שאחרים רואים', groups:[
     { title:'🌅 השער: מתחילים כאן', items:[
       { file:'entry.html', label:'מסך כניסה', who:'כולם' },
+      { file:'research-partnership.html', label:'פנייה לשותפות במחקר', who:'כולם, גם בלי כניסה' },
       { file:'map.html', label:'🗺 מפת הכלים', who:'כולם, גם בלי כניסה' },
       { file:'examples.html', label:'🗂 ספריית תוצרים לדוגמה', who:'כולם, גם בלי כניסה (רק מה שסומן במעבדת הדמו)' },
       { file:'sources-library.html', label:'ספריית המקורות', who:'כל מי שנכנס/ה' },

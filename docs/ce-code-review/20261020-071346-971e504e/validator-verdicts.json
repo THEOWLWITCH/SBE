@@ -1,0 +1,52 @@
+{
+  "verdicts": [
+    {
+      "#": 1,
+      "status": "confirmed",
+      "protected_subject": null,
+      "reason": "At 44eca17, owner detail builds the selector solely from workspaceBootstrap.studies (research-intake-ui.js:122), while partnership SQL appends studies only inside a partner loop (20261018-research-partnerships.sql:248-263); an owner study created before any partnership is reachable through the ordinary bootstrap query (20261013-research-management.sql:132-139) but absent from this selector, though incidence in stored data was not measured."
+    },
+    {
+      "#": 2,
+      "status": "confirmed",
+      "protected_subject": null,
+      "reason": "At 44eca17, creating a draft appends created.study with revision 0 to the local list (research-intake-ui.js:126), approval reuses any integer cached revision without studyGet (line 129), and memberSet bumps the study revision (20261013-research-management.sql:289); approving a second application into that same draft on the still-open intake page therefore sends stale revision 0 and conflicts, with the reachable first-then-second approval path shown by these callers."
+    },
+    {
+      "#": 3,
+      "status": "confirmed",
+      "protected_subject": null,
+      "reason": "At 44eca17, createPublicClient awaits fetch without a signal or deadline (research-intake-ui.js:25), while the shared button helper disables its button until the async submit handler settles (research-client.js button); a fetch that never settles therefore leaves submission pending and blocks a same-page retry, and reloading loses the in-memory pending requestId, though network-stall incidence was not measured."
+    },
+    {
+      "#": 4,
+      "status": "confirmed",
+      "protected_subject": "concurrency",
+      "reason": "At 44eca17, focus or persisted pageshow calls load (research-intake-ui.js:2-3), which snapshots draft and acknowledgement before awaiting intakePublicInfo (lines 76-77) and then replaces the controls using that snapshot (lines 53-71); editing or unchecking during the pending request is a reachable ordering that loses the newer state, though incidence was not measured independently."
+    },
+    {
+      "#": 5,
+      "status": "confirmed",
+      "protected_subject": null,
+      "reason": "At 44eca17, the UI still offers 'save in review' when application.status is under_review (research-intake-ui.js:118-120), but intakeReview rejects any decision equal to the current status before writing the revision and review entry (20261020-partnership-intake.sql:122,135-136); a second note on an already-under-review application therefore always conflicts even with the current revision."
+    },
+    {
+      "#": 6,
+      "status": "confirmed",
+      "protected_subject": "concurrency",
+      "reason": "At 44eca17, detail waits for intakeGet before setting route and replacing root (research-intake-ui.js:111), whereas terms renders immediately once ownerInfo is loaded (line 99), and the shared epoch guard changes only on clear, not view navigation (lines 93-96); opening detail then terms before intakeGet resolves lets the late detail response overwrite the newer terms view, though incidence was not measured."
+    },
+    {
+      "#": 8,
+      "status": "confirmed",
+      "protected_subject": null,
+      "reason": "At 44eca17, the new intake route passes jobStore() to handleIntake (practice-server.mjs:200), jobStore constructs supabaseStore without timeoutMs (line 171), and supabaseStore only adds AbortSignal.timeout when that option is supplied (access.mjs:1766-1770); a stalled token-secret lookup on intakeSubmit (research-intake.mjs:35) can therefore hold the request indefinitely, though incidence was not measured."
+    },
+    {
+      "#": 11,
+      "status": "confirmed",
+      "protected_subject": null,
+      "reason": "At 44eca17, the diff adds public research-partnership.html, but screens-menu.js:20-24 omits it from the gateway inventory even though CLAUDE.md:443 explicitly requires adding each new screen there with matching audience; the precondition is simply viewing the owner's central menu after this page is introduced."
+    }
+  ]
+}

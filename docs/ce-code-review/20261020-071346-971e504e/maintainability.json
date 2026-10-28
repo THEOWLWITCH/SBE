@@ -1,0 +1,24 @@
+{
+  "reviewer": "maintainability",
+  "findings": [
+    {
+      "title": "Information Leakage: workspace projection hidden in source rewrite",
+      "severity": "P2",
+      "file": "harness/migrations/20261020-partnership-intake.sql",
+      "line": 154,
+      "why_it_matters": "The effective partnership_workspace definition is assembled by replacing a string in the prior migration's function body. A later change to that function can miss these fields or make this migration fail on a text marker, while the SQL source no longer shows the actual deployed definition. Declaring the updated function explicitly gives maintainers one inspectable version and keeps the existing visibility predicates reviewable.",
+      "autofix_class": "gated_auto",
+      "owner": "downstream-resolver",
+      "requires_verification": true,
+      "suggested_fix": "Replace the pg_get_functiondef/replace/EXECUTE block with an explicit CREATE OR REPLACE FUNCTION partnership_workspace definition that includes study and grantedPermissions in its return object; preserve the previous function's visibility, released-version, consent, and document predicates verbatim, then rerun the database fixture tests.",
+      "confidence": 75,
+      "evidence": [
+        "harness/migrations/20261020-partnership-intake.sql:154 -- definition:=pg_catalog.replace(definition,'''studyTitle'',s.config->>''title''','''studyTitle'',s.config->>''title'',''study'',pg_catalog.jsonb_build_object(''id'',s.id,''status'',s.status,''revision'',s.revision,''config'',s.config),''grantedPermissions'',COALESCE((SELECT pg_catalog.to_jsonb(m.permissions) FROM research_private.memberships m WHERE m.study_id=s.id AND m.actor_ref=p.actor_ref),''[]''::jsonb)');",
+        "harness/migrations/20261020-partnership-intake.sql:152 -- definition:=pg_catalog.pg_get_functiondef('research_private.partnership_workspace(research_private.studies,research_private.partnership_partners,text,text,text)'::regprocedure);"
+      ],
+      "pre_existing": false
+    }
+  ],
+  "residual_risks": [],
+  "testing_gaps": []
+}
