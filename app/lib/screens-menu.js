@@ -38,7 +38,7 @@ window.SBE_SCREENS = [
       { file:'yesh-ma-laasot.html', label:'🎁 יש מה לעשות: מדריכון לחירום', who:'כולם, גם בלי כניסה (בלי ניווט לכלים אחרים)' },
       { file:'conversation-planner.html', label:'תכנון שיחה', who:'הרשאת תכנון שיחה' },
       { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
-      { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה bridge)' },
+      { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'הרשאת גשר (bridge)' },
       { file:'shared-dialogue-lab.html', label:'מעבדת שיח וחקר משותף', who:'הרשאת מעבדת שיח וחקר משותף (dialogue)' },
       { file:'team-thinking.html', label:'חשיבת צוות', who:'הרשאת חשיבת צוות (teamthink)' },
       { file:'games.html', label:'משחקי חוסן', who:'הרשאת משחקים (games)' },
@@ -51,7 +51,7 @@ window.SBE_SCREENS = [
     ]},
     { title:'🛠 3. לתכנן ולפעול: מה עושים מחר בבוקר?', items:[
       { file:'activity-planner.html', label:'תכנון פעילות', who:'הרשאת תכנון פעילות' },
-      { file:'resilience-studio.html', label:'סטודיו חוסן: השראה ופעולה', who:'הרשאת סטודיו בלבד (עד לאישור המקצועי)' },
+      { file:'resilience-studio.html', label:'סטודיו חוסן: השראה ופעולה', who:'הרשאת סטודיו, תכנון פעילות, מיפוי חוסן, פרקטי או נוגי' },
       { file:'message-writer.html', label:'תקשורת מקדמת חוסן חברתי', who:'ניסוח חד־פעמי וניהול תקשורת; שמירת שיחות בקוד אישי' },
       { file:'horizon-lab.html', label:'🔭 מעבדת האופק: דף הבית', who:'הרשאת מעבדת האופק (horizon)' },
       { file:'hl-voice.html', label:'מעבדת האופק: קול הקהילה', who:'הרשאת מעבדת האופק (horizon)' },
@@ -71,8 +71,8 @@ window.SBE_SCREENS = [
       { file:'feedback-results.html', label:'תוצאות המשוב', who:'מנחות' },
     ]},
     { title:'🔁 5. לעגן בשגרה: מה ימשיך לפעול גם כשמשהו משתבש?', items:[
-      { file:'routines-hub.html', label:'מרכז שגרות ויוזמות חברתיות', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה routines)' },
-      { file:'continuity-kit.html', label:'תיק רציפות', who:'מנהלת המערכת בלבד, עד לאישור (אחר כך: הרשאה continuity)' },
+      { file:'routines-hub.html', label:'מרכז שגרות ויוזמות חברתיות', who:'הרשאת מרכז השגרות (routines)' },
+      { file:'continuity-kit.html', label:'תיק רציפות', who:'הרשאת תיק רציפות (continuity)' },
       { file:'journey.html', label:'מסע אל החוסן: מסך המשתתפים', who:'הרשאת מסע אל החוסן' },
     ]},
   ]},

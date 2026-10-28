@@ -17,7 +17,7 @@ const MIN_PASSWORD = 8;
 // ההרשאות במערכת. לכל מוסד יש "תקרה" (modules:<מוסד>) — מה שמנהלת המערכת פתחה
 // לו; ברירת המחדל: שום דבר. קודי הצוות שמנהל/ת המוסד מפיק/ה מקבלים רק צירוף
 // מתוך התקרה.
-export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi', 'journey', 'writer', 'nana', 'studio', 'dialogue', 'teamthink', 'studies', 'games', 'horizon'];
+export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi', 'journey', 'writer', 'nana', 'studio', 'dialogue', 'teamthink', 'studies', 'games', 'horizon', 'bridge', 'routines', 'continuity'];
 const DEFAULT_MODULES = Object.fromEntries(PERMS.map((p) => [p, false]));
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
@@ -362,9 +362,10 @@ export const MODEL_PAGES = {
   'practice.html': ['fac_trainee', 'fac_parent', 'fac_youth'], 'facilitator-screen.html': ['fac_trainee', 'fac_parent', 'fac_youth'],
   'conversation-planner.html': ['conv'], 'activity-planner.html': ['activity'], 'academic-review.html': ['academic'],
   'resilience-team.html': ['resilience'], 'resilience-advisor.html': ['resilience', 'practi'], 'leadership-advisor.html': ['leadership'],
-  'resilience-studio.html': ['studio'], 'journey.html': ['journey'], 'message-writer.html': ['writer'], 'communication-continuity.html': ['writer'], 'facilitation-advisor.html': ['nana'],
+  'resilience-studio.html': ['studio', 'activity', 'resilience', 'practi', 'leadership'], 'journey.html': ['journey'], 'message-writer.html': ['writer'], 'communication-continuity.html': ['writer'], 'facilitation-advisor.html': ['nana'],
   'shared-dialogue-lab.html': ['dialogue'], 'team-thinking.html': ['teamthink'], 'games.html': ['games'], 'memory-game.html': ['games'], 'board-game.html': ['games'], 'no-panic.html': ['games'], 'story-maker.html': ['games'], 'statement-sort.html': ['games'], 'riddles.html': ['games'], 'bingo.html': ['games'], 'twenty-q.html': ['games'], 'truth-dare.html': ['games'], 'trail-signs.html': ['games'], 'readiness-train.html': ['games'], 'idea-garden.html': ['games'],
-  'horizon-lab.html': ['horizon'], 'hl-voice.html': ['horizon'], 'hl-radar.html': ['horizon'], 'hl-futures.html': ['horizon'], 'hl-circles.html': ['horizon'], 'hl-horizons.html': ['horizon'], 'hl-collage.html': ['horizon'], 'hl-roadmap.html': ['horizon'], 'hl-game.html': ['horizon'], 'hl-stress.html': ['horizon'] // מעבדת האופק (אושר 28/10/2026)
+  'horizon-lab.html': ['horizon'], 'hl-voice.html': ['horizon'], 'hl-radar.html': ['horizon'], 'hl-futures.html': ['horizon'], 'hl-circles.html': ['horizon'], 'hl-horizons.html': ['horizon'], 'hl-collage.html': ['horizon'], 'hl-roadmap.html': ['horizon'], 'hl-game.html': ['horizon'], 'hl-stress.html': ['horizon'], // מעבדת האופק (אושר 28/10/2026)
+  'family-bridge.html': ['bridge'], 'routines-hub.html': ['routines'], 'continuity-kit.html': ['continuity'] // אושרו 28/10/2026
 };
 export const WORKSHOP_MODEL_PAGES = ['practice.html', 'conversation-planner.html', 'activity-planner.html', 'academic-review.html', 'parent-input-screen.html'];
 const WORKSHOP_HOURS = 48;
