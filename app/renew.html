@@ -114,7 +114,7 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 <a class="back" href="entry.html">→ למסך הכניסה</a>
 <img class="brand" src="assets/begood-logo-mark.webp" alt="Begood" data-brand>
 
-<header><div><h1>בקשה לכלים של Begood</h1><p class="who">מסמנים את הכלים שתרצו לבקש, למוסד או לשימוש פרטי. הבקשה מגיעה לד״ר יעל שדה, והיא תיצור איתכם קשר להשלמת המנוי ולהסדרת התשלום.</p></div></header>
+<header><div><h1>בקשה לכלים של Begood</h1><p class="who">מסמנים את הכלים שתרצו לבקש, למוסד או לשימוש פרטי. הבקשה מגיעה ל-Begood, וניצור איתכם קשר להשלמת המנוי ולהסדרת התשלום.</p></div></header>
 <!-- בקשת חידוש (30/09/2026): טופס בלי טקסט חופשי. אין סליקה — הבקשה נשמרת
      בשרת ומופיעה למנהלת המערכת במסך הניהול ← מוסדות ← "בקשות חידוש", והיא
      מתקשרת להאריך ולקבל פרטי תשלום. התאריך נרשם אוטומטית בשרת. -->
@@ -201,7 +201,7 @@ $("send").addEventListener("click", async () => {
       const when = z(t.getDate()) + "." + z(t.getMonth() + 1) + "." + String(t.getFullYear()).slice(2) + ", " + z(t.getHours()) + ":" + z(t.getMinutes());
       $("form").textContent = "";
       const p = document.createElement("p"); p.className = "msg";
-      p.textContent = "הבקשה נשלחה לד״ר יעל שדה (" + when + "). היא תיצור איתכם קשר בהקדם. הכלים ייפתחו אחרי האישור שלה.";
+      p.textContent = "הבקשה נשלחה ל-Begood (" + when + "). ניצור איתכם קשר בהקדם, והכלים ייפתחו אחרי האישור.";
       $("form").append(p); return;
     }
     msg.className = "msg err";
