@@ -19,3 +19,7 @@
 @media screen and (max-width:1100px){.space-logos img{width:118px}.space-logos{gap:12px}}
 @media screen and (max-width:800px){.space-logos{margin-bottom:18px;justify-content:flex-end}.space-logos img{width:96px}}
 @media screen and (max-width:540px){.hero-aside{flex-direction:column;align-items:flex-start}.space-logos{justify-content:flex-start}}
+
+/* באנר במקום הכותרת (29/10/2026) */
+h1.hero-banner{margin:22px 0 18px;line-height:0;letter-spacing:0}h1.hero-banner img{display:block;width:min(520px,100%);height:auto}
+@media (prefers-color-scheme:dark){h1.hero-banner img{background:#fff;border-radius:14px;padding:6px 12px}}

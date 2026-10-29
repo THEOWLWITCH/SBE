@@ -72,7 +72,7 @@ svg.map{display:block;width:100%;height:auto;overflow:visible}
 .st:focus-visible .disc{stroke:var(--sun);stroke-width:5}
 .st .disc{transition:transform .25s}
 .st:hover .disc{transform:scale(1.08)}
-.st .lab{font-family:"Assistant",sans-serif;font-weight:700;fill:var(--ink);paint-order:stroke;stroke:var(--sky1);stroke-width:5px;stroke-linejoin:round}
+.st .lab{font-family:"Assistant",sans-serif;font-weight:600;fill:var(--ink);paint-order:stroke;stroke:var(--sky1);stroke-width:5px;stroke-linejoin:round}
 .st .sublab{font-family:"Assistant",sans-serif;font-weight:600;fill:var(--muted);paint-order:stroke;stroke:var(--sky1);stroke-width:5px}
 .st.dim{opacity:var(--fade)}
 .st .badge{opacity:0;transition:opacity .3s}
@@ -275,10 +275,11 @@ footer a{margin:0 6px}
   // ── המפה: נהר שמתפתל מ"אתם כאן" אל השמש, כמו בלוגו ──
   const box = $('#mapbox');
   const LAYOUT = {
-    wide: { w: 1000, h: 650, river: 'M 925 565 C 700 590, 330 575, 140 525 C 30 495, 40 410, 160 400 C 400 380, 660 420, 850 385 C 975 360, 965 260, 840 250 C 640 232, 430 262, 270 222 C 190 200, 165 150, 150 112',
+    // 29/10/2026, עידון הגרפיקה כשהכלים רבים: ארבע שורות נהר במקום שלוש, תחנות קטנות ושמות בשתי שורות
+    wide: { w: 1000, h: 900, river: 'M 110 805 C 320 830, 680 815, 860 785 C 975 765, 975 645, 850 635 C 640 615, 360 655, 160 625 C 30 605, 30 475, 160 465 C 400 445, 660 485, 850 455 C 975 435, 975 305, 840 300 C 640 290, 430 305, 300 280 C 210 262, 165 160, 150 112',
       sun: [150, 92, 62], ground: { coast: 'M -10 236 C 60 250, 120 196, 172 172 C 222 150, 290 178, 338 142 C 380 110, 384 62, 432 40 C 470 22, 520 12, 566 -10 L -10 -10 Z',
         hills: ['M -10 120 C 60 70, 150 64, 240 96 C 300 116, 380 70, 480 -10 L -10 -10 Z', 'M 160 -10 C 230 40, 330 50, 470 -10 Z'],
-        trees: [[48, 150, 1], [78, 162, 0.8], [260, 112, 1.05], [300, 66, 0.9], [404, 28, 0.85], [32, 58, 0.9]], trail: 'M 176 166 C 168 146, 160 132, 152 120', label: [150, -6] }, start: [972, 540], hills: ['M0 650 L0 330 C 160 270, 330 330, 470 300 S 760 230, 1000 300 L1000 650 Z', 'M0 650 L0 470 C 200 440, 380 480, 560 450 S 840 420, 1000 470 L1000 650 Z'], fs: 17, r: 27 },
+        trees: [[48, 150, 1], [78, 162, 0.8], [260, 112, 1.05], [300, 66, 0.9], [404, 28, 0.85], [32, 58, 0.9]], trail: 'M 176 166 C 168 146, 160 132, 152 120', label: [150, -6] }, start: [52, 868], hills: ['M0 900 L0 380 C 160 320, 330 380, 470 350 S 760 280, 1000 350 L1000 900 Z', 'M0 900 L0 620 C 200 590, 380 630, 560 600 S 840 570, 1000 620 L1000 900 Z'], fs: 14.5, r: 21 },
     tall: (() => { // בטלפון: תחנה בכל שורה, בצדדים מתחלפים, והנהר מתפתל ביניהן
       const n = TOOLS.length - 1, gap = 82, h = 200 + n * gap, pts = [];
       for (let i = 0; i < n; i++) pts.push([i % 2 ? 285 : 115, h - 60 - i * gap]);
@@ -343,6 +344,13 @@ footer a{margin:0 6px}
     const tick = (now) => { if (now - last > 33) { last = now; draw((now - t0) / 1000); } waveRAF = requestAnimationFrame(tick); };
     waveRAF = requestAnimationFrame(tick);
   }
+  // שם ארוך: שתי שורות, בשבירה ליד האמצע
+  function wrap(t, max) {
+    if (t.length <= max || t.indexOf(' ') < 0) return [t];
+    const mid = t.length / 2; let best = -1;
+    for (let k = 0; k < t.length; k++) if (t[k] === ' ' && (best < 0 || Math.abs(k - mid) < Math.abs(best - mid))) best = k;
+    return [t.slice(0, best).replace(/:$/, ''), t.slice(best + 1)];
+  }
   function draw() {
     const m = box.clientWidth < 640 ? 'tall' : 'wide'; if (m === mode) return; mode = m; L = LAYOUT[m];
     box.textContent = ''; nodes = {};
@@ -361,15 +369,15 @@ footer a{margin:0 6px}
     svg.appendChild(defs);
     // שמש וגבעות
     // עומק המים (10/10/2026: "הצבע הכהה יהיה למטה, והוא ילך ויתבהר לכיוון הקרקע")
-    const dg = S('linearGradient', { id: 'depth', x1: m === 'wide' ? '.9' : '.5', y1: '1', x2: m === 'wide' ? '.1' : '.5', y2: '0' });
+    const dg = S('linearGradient', { id: 'depth', x1: m === 'wide' ? '.6' : '.5', y1: '1', x2: m === 'wide' ? '.3' : '.5', y2: '0' });
     [['0', 'var(--deep1)', '1'], ['.4', 'var(--deep2)', '.85'], ['.75', 'var(--deep3)', '.35'], ['1', 'var(--deep3)', '0']].forEach(([o, c, a]) => dg.appendChild(S('stop', { offset: o, 'stop-color': c, 'stop-opacity': a })));
     defs.appendChild(dg);
     svg.appendChild(S('rect', { x: 0, y: 0, width: L.w, height: L.h, fill: 'url(#depth)' }));
     // הנהר: פס רחב, ועליו זרם בהיר שזורם
-    svg.appendChild(S('path', { d: L.river, fill: 'none', stroke: '#fff', 'stroke-opacity': '.35', 'stroke-width': (m === 'wide' ? 26 : 22) + 6, 'stroke-linecap': 'round' }));
-    svg.appendChild(S('path', { d: L.river, fill: 'none', stroke: 'url(#rv)', 'stroke-width': m === 'wide' ? 26 : 22, 'stroke-linecap': 'round', opacity: '.9' }));
+    svg.appendChild(S('path', { d: L.river, fill: 'none', stroke: '#fff', 'stroke-opacity': '.35', 'stroke-width': (m === 'wide' ? 18 : 22) + 5, 'stroke-linecap': 'round' }));
+    svg.appendChild(S('path', { d: L.river, fill: 'none', stroke: 'url(#rv)', 'stroke-width': m === 'wide' ? 18 : 22, 'stroke-linecap': 'round', opacity: '.8' }));
     const probe = S('path', { d: L.river }); svg.appendChild(probe); probe.setAttribute('fill', 'none');
-    waves(svg, probe, m === 'wide' ? 26 : 22);
+    waves(svg, probe, m === 'wide' ? 18 : 22);
     ground(svg, L.ground);
     // אתם כאן: שתי דמויות כמו בלוגו
     const [sx, sy] = L.start, me = S('g', { transform: 'translate(' + (sx - 30) + ',' + (sy - 78) + ')' });
@@ -387,10 +395,10 @@ footer a{margin:0 6px}
       const g = S('g', { class: 'st', tabindex: '0', role: 'button', 'aria-label': t.n + ': ' + t.goal, transform: 'translate(' + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ')' });
       g.appendChild(S('circle', { class: 'halo', r: r + 6, fill: 'var(--sun)', opacity: '0', style: 'transform-box:fill-box;transform-origin:center' }));
       if (t.pending) g.appendChild(S('circle', { r: r + 7, fill: 'none', stroke: 'var(--sun)', 'stroke-width': 3, 'stroke-dasharray': '5 5' }));
-      g.appendChild(S('circle', { class: 'disc', r, fill: last ? 'url(#gr)' : (t.k === 'lab' ? 'url(#lb)' : 'url(#wk)'), stroke: 'var(--paper)', 'stroke-width': 4, style: 'transform-box:fill-box;transform-origin:center' }));
-      const ic = S('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': r * 0.95 }); ic.textContent = t.i; g.appendChild(ic);
-      const dy = last ? (mode === 'wide' ? L.ground.label[1] : -(r + 34)) : side * (r + 18) + (side > 0 ? 6 : 0);
-      const nm = t.short || t.n, hw0 = nm.length * L.fs * 0.27 + 6;
+      g.appendChild(S('circle', { class: 'disc', r, fill: last ? 'url(#gr)' : (t.k === 'lab' ? 'url(#lb)' : 'url(#wk)'), stroke: 'var(--paper)', 'stroke-width': mode === 'wide' ? 2.5 : 4, style: 'transform-box:fill-box;transform-origin:center' }));
+      const ic = S('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': r * (mode === 'wide' ? 0.85 : 0.95) }); ic.textContent = t.i; g.appendChild(ic);
+      const dy = last ? (mode === 'wide' ? L.ground.label[1] : -(r + 34)) : side * (r + 14) + (side > 0 ? 5 : 0);
+      const nm = t.short || t.n, hw0 = Math.max.apply(null, (mode === 'wide' ? wrap(nm, 13) : [nm]).map((x) => x.length)) * L.fs * 0.27 + 6;
       let lx = last ? L.ground.label[0] : Math.min(Math.max(p.x, hw0), L.w - hw0) - p.x, ly = dy;
       let fs = L.fs;
       if (mode === 'tall' && !last) { // בטלפון: השם ליד התחנה, בצד הפנוי, ובגודל שנכנס בו
@@ -398,7 +406,12 @@ footer a{margin:0 6px}
         fs = Math.min(L.fs, room / (nm.length * 0.52)); const half = nm.length * fs * 0.26;
         lx = (right ? 1 : -1) * (r + 8 + half); ly = 6;
       }
-      const lab = S('text', { class: 'lab', 'text-anchor': 'middle', x: lx, y: ly, 'font-size': fs.toFixed(1) }); lab.textContent = nm; g.appendChild(lab);
+      const lab = S('text', { class: 'lab', 'text-anchor': 'middle', x: lx, y: ly, 'font-size': fs.toFixed(1) });
+      const rows = (mode === 'wide' && !last) ? wrap(nm, 13) : [nm];
+      if (rows.length > 1) { const lh = fs * 1.12, y0 = side < 0 ? ly - (rows.length - 1) * lh : ly;
+        rows.forEach((tx, k) => { const ts = S('tspan', { x: lx, y: (y0 + k * lh).toFixed(1) }); ts.textContent = tx; lab.appendChild(ts); }); }
+      else lab.textContent = nm;
+      g.appendChild(lab);
       if (last) { const s2 = S('text', { class: 'sublab', 'text-anchor': 'middle', x: lx, y: dy + 19, 'font-size': 14 }); s2.textContent = '🔁 לעגן בשגרה · קרקע יציבה'; g.appendChild(s2); }
       const bd = S('g', { class: 'badge', transform: 'translate(' + (r * 0.75) + ',' + (-r * 0.75) + ')' });
       bd.appendChild(S('circle', { r: 13, fill: 'var(--sun)', stroke: 'var(--paper)', 'stroke-width': 3 }));
@@ -406,7 +419,7 @@ footer a{margin:0 6px}
       const open = () => show(t.id); g.addEventListener('click', open); g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
       svg.appendChild(g); nodes[t.id] = { g, x: p.x, y: p.y, bt, side };
       // תחילת קבוצה: שם השאלה של המוכנות, בצד הפנוי של התחנה
-      if (R && !last && (i === 0 || TOOLS[i - 1].g !== t.g)) { const gr = GR(t.g), zy = p.y - side * (r + 44) - (side < 0 ? 0 : 0);
+      if (R && mode === 'tall' && !last && (i === 0 || TOOLS[i - 1].g !== t.g)) { const gr = GR(t.g), zy = p.y - side * (r + 44) - (side < 0 ? 0 : 0);
         const z = S('text', { class: 'zone', 'text-anchor': 'middle', x: Math.min(Math.max(p.x, 90), L.w - 90), y: mode === 'tall' ? p.y - r - 14 : zy, 'font-size': mode === 'tall' ? 14 : 15 });
         z.textContent = gr.i + ' ' + gr.n; svg.insertBefore(z, routeG); }
     });
