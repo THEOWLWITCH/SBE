@@ -9,7 +9,9 @@
   if (window.SBE_THEME) return;
   var path = (location.pathname.split('/').pop() || '').toLowerCase();
   var SKIP = /^(games|memory-game|board-game|no-panic|story-maker|statement-sort|riddles|bingo|twenty-q|truth-dare|trail-signs|readiness-train|idea-garden|yesh-ma-laasot|doc-[a-z-]+|card-[a-z-]+|journey-cert)\.html$/;
-  if (SKIP.test(path) || /\/products\//.test(location.pathname) || document.documentElement.hasAttribute('data-no-theme')) { window.SBE_THEME = { off: true }; return; }
+  // דף משחקי החוסן עצמו מקבל רק את הלוגו והנתיב (brandMark), בלי שינוי בעיצוב המשחקים.
+  var MARK_ONLY = path === 'games.html';
+  if (!MARK_ONLY && (SKIP.test(path) || /\/products\//.test(location.pathname) || document.documentElement.hasAttribute('data-no-theme'))) { window.SBE_THEME = { off: true }; return; }
 
   var CSS = [
     '@media screen{',
@@ -173,6 +175,7 @@
     setTimeout(function () { var n = document.querySelector(NAV); if (n && bar.parentNode) { var c2 = bar.querySelector('.sbe-crumb'); n.insertBefore(a, n.firstChild); if (c2 && !n.querySelector('.crumb')) a.insertAdjacentElement('afterend', c2); bar.remove(); } }, 700);
   }
   function start() {
+    if (MARK_ONLY) { brandMark(); window.SBE_THEME = { off: true }; return; }
     brandMark(); fabLabel(); setTimeout(fabLabel, 800);
     var extra = /^(horizon-lab|hl-[a-z]+)\.html$/.test(path) ? '@media screen{html a:not([class]){color:#1d3f63;text-decoration-color:#c9d7e7;text-underline-offset:3px}}' : ''; // מעבדת האופק: קישורים בכחול המותג
     var st = document.createElement('style'); st.id = 'sbe-theme'; st.textContent = CSS + extra; document.head.appendChild(st);

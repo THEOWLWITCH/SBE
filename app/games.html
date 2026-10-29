@@ -49,6 +49,17 @@ details summary{cursor:pointer;font-weight:800;color:var(--navy)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) details summary{color:#8fd3e0}}
 details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15px}
 .empty{background:var(--card);border:1px dashed var(--line);border-radius:18px;padding:26px 22px;text-align:center;color:var(--muted);font-size:16px}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:6px 0 4px}
+@media screen and (max-width:560px){.pick{grid-template-columns:1fr}}
+.pk{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:22px 16px;border-radius:16px;border:1px solid var(--line);border-top:2px solid var(--teal);background:var(--card);color:var(--ink);cursor:pointer;font:inherit;box-shadow:0 1px 3px rgba(22,50,74,.05);transition:border-color .16s ease,box-shadow .16s ease}
+.pk:hover{border-color:#9fc9d6;box-shadow:0 4px 14px rgba(22,50,74,.08)}
+.pk[aria-pressed="true"]{border-color:var(--navy);box-shadow:0 0 0 2px rgba(27,79,122,.18)}
+.pk-ic{font-size:30px;line-height:1}
+.pk b{font:800 20px/1.2 Assistant,Arial,sans-serif;color:var(--navy)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pk b{color:#8fd3e0}}
+.pk span:last-child{font-size:14.5px;color:var(--muted)}
+.hero-banner{line-height:0}.hero-banner img{display:block;width:100%;max-width:420px;height:auto}
+:root[data-theme="dark"] .hero-banner img{background:#fff;border-radius:10px;padding:6px 12px}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero-banner img{background:#fff;border-radius:10px;padding:6px 12px}}
 </style>
 </head>
 <body>
@@ -59,12 +70,18 @@ details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15
 </nav>
 <main class="wrap">
   <header class="hero">
-    <h1>משחקי חוסן</h1>
+    <h1 class="hero-banner"><img src="assets/games-banner.webp" alt="משחקי חוסן" width="1168" height="300"></h1>
     <p>משחקים שמחזקים חוסן חברתי: בכיתה, בצוות ובבית.</p>
     <div class="bar"></div>
   </header>
 
-  <section class="sec" aria-labelledby="h-print">
+  <!-- בחירה קודם (29/10/2026: "לחלק לשני חלקים - משחקים להורדה / משחקים על המסך. רק אחרי הבחירה תפתח רשימת המשחקים כי אחרת יש יותר מידי גלילה") -->
+  <div class="pick no-print" role="group" aria-label="איזה משחקים">
+    <button type="button" class="pk sbe-no-theme" data-sec="print" aria-pressed="false"><span class="pk-ic" aria-hidden="true">🖨</span><b>משחקים להורדה</b><span>מדפיסים ומשחקים בכיתה, בצוות או בבית</span></button>
+    <button type="button" class="pk sbe-no-theme" data-sec="screen" aria-pressed="false"><span class="pk-ic" aria-hidden="true">🖥</span><b>משחקים על המסך</b><span>משחקים ישר בטלפון או במחשב</span></button>
+  </div>
+
+  <section class="sec" id="sec-print" aria-labelledby="h-print" hidden>
     <h2 id="h-print">🖨 משחקים להורדה</h2>
     <p class="lead">מורידים, מדפיסים, גוזרים ומשחקים.</p>
 
@@ -221,7 +238,7 @@ details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15
     </article>
   </section>
 
-  <section class="sec" aria-labelledby="h-screen">
+  <section class="sec" id="sec-screen" aria-labelledby="h-screen" hidden>
     <h2 id="h-screen">🖥 משחקים על המסך</h2>
     <p class="lead">משחקים שמשחקים ישר על המסך, בטלפון או במחשב.</p>
     <article class="game">
@@ -271,6 +288,18 @@ details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15
     </article>
   </section>
 </main>
+<script>
+(function(){
+  var btns=[].slice.call(document.querySelectorAll('.pk'));
+  function show(k,scroll){
+    btns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.sec===k)); });
+    ['print','screen'].forEach(function(x){ var el=document.getElementById('sec-'+x); if(el) el.hidden = x!==k; });
+    if (k) { try{ history.replaceState(null,'','#'+k); }catch(e){} if (scroll) document.getElementById('sec-'+k).scrollIntoView({behavior:'smooth',block:'start'}); }
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.sec, true); }); });
+  var h=(location.hash||'').slice(1); if (h==='print'||h==='screen') show(h,false);
+})();
+</script>
 <script src="lib/screens-menu.js"></script>
 </body>
 </html>
