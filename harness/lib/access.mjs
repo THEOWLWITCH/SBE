@@ -814,7 +814,7 @@ async function handleDemosLocked(store, body) {
   }
   if (action === 'demoPublicList') {
     const space = body.space === 'org' ? 'org' : 'edu';
-    return [200, { space, items: index.filter((d) => d.public && (d.space || 'edu') === space).map(({ id, tool, title, label, at, order }) => ({ id, tool, title, label, at, order })) }];
+    return [200, { space, items: index.filter((d) => d.public && (d.space || (/-org$/.test(d.tool || '') ? 'org' : 'edu')) === space).map(({ id, tool, title, label, at, order }) => ({ id, tool, title, label, at, order })) }];
   }
   if (action === 'demoGet') {
     const id = String(body.id || '');

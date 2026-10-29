@@ -208,7 +208,9 @@ async function load(){
       n.appendChild(p);box.parentNode.insertBefore(n,box);}
     catch(e){box.textContent='';box.appendChild(el('p','empty','הקישור הזה כבר לא פתוח. אפשר לבקש קישור חדש.'));return;}
   } else {
-    try{items=(await api({action:'demoPublicList',space:SPACE})).items||[];}
+    try{items=(await api({action:'demoPublicList',space:SPACE})).items||[];
+      // 29/10/2026 ("עדיין יש כאן דוגמאות מהשדה החינוכי"): גם בדפדפן, לפי מזהה הכלי (כל תוצר ארגוני הוא <כלי>-org), כדי שלא יתערבבו גם כשהשרת לא מסנן.
+      items=items.filter(d=>(d.space?d.space==='org':/-org$/.test(d.tool||''))===(SPACE==='org'));}
     catch(e){box.textContent='';box.appendChild(el('p','empty','לא הצלחנו לטעון את הדוגמאות כרגע. אפשר לנסות שוב בעוד רגע.'));return;}
   }
   box.textContent='';
