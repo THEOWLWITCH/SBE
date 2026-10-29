@@ -59,7 +59,7 @@
   function pageName(oldCrumb) {
     if (file === 'home.html') return 'המרחב שלי';
     if (file === 'admin.html') return 'ניהול';
-    var b = document.body.getAttribute('data-crumb'); if (b) return clean(b);
+    var b = document.body.getAttribute('data-crumb') || document.documentElement.getAttribute('data-crumb'); if (b) return clean(b);
     if (oldCrumb) { var c = clean(oldCrumb); if (c && !/^be ?good$/i.test(c)) return c; }
     var h = document.querySelector('h1'), im = h && h.querySelector('img[alt]');
     var t = (im && im.alt) || (h && h.textContent) || '';
