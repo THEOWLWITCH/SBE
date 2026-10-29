@@ -301,7 +301,7 @@ function copyBtn(text, label = "העתקה") {
 async function renderAdmin() {
   if (INFO.kind !== "instadmin") return;
   const box = $("admin"); box.textContent = "";
-  box.append(el("h2", {}, "קודי הצוות של המוסד"));
+  box.append(el("h2", {}, "ניהול המוסד: קודי צוות"));
   const card = el("div", { class: "card" });
   card.append(el("p", { class: "sub" }, "הטעינה נמשכת לפעמים עד דקה..."));
   box.append(card);
@@ -323,7 +323,7 @@ async function renderAdmin() {
   card.append(tree);
   card.append(el("p", { class: "sub" },
     sub.subEnd ? "המנוי של המוסד בתוקף עד " + fmtDate(sub.subEnd) + ". קודי הצוות פוקעים לכל המאוחר אז." : "המנוי של המוסד ללא תאריך סיום.",
-    " מה שפתוח למוסד: ", open.length ? open.map(p => PERM_LABEL[p]).join(", ") : "עדיין שום דבר: אפשר לפנות למנהלת המערכת."));
+    " המערכות הפתוחות למוסד: ", open.length ? open.map(p => PERM_LABEL[p]).join(", ") : "עדיין אין. אפשר לפנות למנהלת המערכת."));
 
   // יצירת קוד
   const f = el("div", { class: "card" });
@@ -364,7 +364,7 @@ async function renderAdmin() {
     if (!r.code) { msg.className = "msg err"; msg.textContent = r.error === "above ceiling" ? "אחת ההרשאות לא פתוחה למוסד." : "ההפקה לא הצליחה. אפשר לנסות שוב."; return; }
     msg.className = ""; msg.textContent = "";
     msg.append(el("div", { class: "newcodes" }, "הקוד החדש: ", el("span", { class: "code" }, r.code.code), " ", copyBtn(r.code.code),
-      el("div", { class: "sub", style: "font-size:13px;margin-top:4px" }, "מוסרים אותו לאיש/אשת הצוות. נכנסים איתו במסך הכניסה, בשדה \"הקוד שלך\".")));
+      el("div", { class: "sub", style: "font-size:13px;margin-top:4px" }, "מוסרים אותו לאיש/אשת הצוות. נכנסים איתו במסך הכניסה.")));
     Object.values(cbs).forEach(cb => { cb.checked = false; }); lbl.value = "";
     loadList();
   });
@@ -384,7 +384,7 @@ async function renderAdmin() {
       const t = el("table", {}, el("tr", {}, ...["למי", "הקוד", "הרשאות", "תוקף", "מצב", ""].map(h => el("th", {}, h))));
       codes.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).forEach(c => {
         const [stl, stc] = statusOf(c);
-        const tr = el("tr", {}, el("td", {}, c.label || (c.kind === "student" ? "סטודנט/ית" : "—")), el("td", {}, el("span", { class: "code" }, c.code)),
+        const tr = el("tr", {}, el("td", {}, c.label || (c.kind === "student" ? "סטודנט/ית" : "")), el("td", {}, el("span", { class: "code" }, c.code)),
           el("td", {}, ...(c.perms || []).map(p => el("span", ceiling[p] ? { class: "chip" } : { class: "chip off", title: "לא פעיל: המערכת כבר לא פתוחה למוסד" }, PERM_LABEL[p] || p))),
           el("td", {}, c.expiresAt ? fmtDate(c.expiresAt) : "סוף המנוי"), el("td", {}, el("span", { class: "st " + stc }, stl)));
         const cell = el("td", {});
