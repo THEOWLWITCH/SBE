@@ -40,8 +40,17 @@
       desc.set.call(this, v);
     }
   });
+  // דף שבונה את התפריט מחדש (innerHTML) מוחק את "➕ חסר משהו?" ואת מה שהוסף: מחזירים אותם, בלי לשנות את הבחירה (29/10/2026)
+  function refill(sel) {
+    if (sel.querySelector('option[value="' + OTHER + '"]')) return;
+    var v = sel.value;
+    listFor(sel).forEach(function (x) { addOption(sel, x); });
+    var other = document.createElement("option"); other.value = OTHER; other.textContent = "➕ חסר משהו? הוספה…"; sel.appendChild(other);
+    if (sel.value !== v) desc.set.call(sel, v);
+  }
   function enhance(sel) {
-    if (sel.dataset.openDone || closed(sel)) return;
+    if (sel.dataset.openDone) { if (!closed(sel)) refill(sel); return; }
+    if (closed(sel)) return;
     sel.dataset.openDone = "1";
     listFor(sel).forEach(function (v) { addOption(sel, v); });
     var other = document.createElement("option"); other.value = OTHER; other.textContent = "➕ חסר משהו? הוספה…"; sel.appendChild(other);
@@ -78,7 +87,7 @@
   function later() { setTimeout(scan, 0); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", later); else later();
   window.addEventListener("load", later);
-  try { new MutationObserver(function (ms) { if (ms.some(function (m) { return [].some.call(m.addedNodes, function (n) { return n.nodeType === 1 && (n.tagName === "SELECT" || (n.querySelector && n.querySelector("select"))); }); })) later(); })
+  try { new MutationObserver(function (ms) { if (ms.some(function (m) { return (m.target && m.target.tagName === "SELECT") || [].some.call(m.addedNodes, function (n) { return n.nodeType === 1 && (n.tagName === "SELECT" || (n.querySelector && n.querySelector("select"))); }); })) later(); })
     .observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
   window.SBE_OPEN = { enhance: enhance, scan: scan, OTHER: OTHER };
 })();

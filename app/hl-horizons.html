@@ -5,6 +5,8 @@
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/hl-runtime.js"></script>
+<!-- רשימות פתוחות (29/10/2026): "אזור בארץ" מקבל "➕ חסר משהו? הוספה…"; שאר התפריטים כאן סגורים (data-closed): שנים, ממדים ושלבים שהחישוב נשען עליהם, והפניות לפריטים שכבר בעבודה -->
+<script src="lib/open-select.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>שלושה אופקים · Be Good</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -266,7 +268,7 @@ table.mx td.el .small{font-weight:400}
   </div>
   <div class="grid2">
     <label class="f" for="region">אזור בארץ<select id="region"></select></label>
-    <label class="f" for="horizon">עד איזו שנה מסתכלים?<select id="horizon"><option>2030</option><option>2035</option><option>2040</option></select></label>
+    <label class="f" for="horizon">עד איזו שנה מסתכלים?<select data-closed id="horizon"><option>2030</option><option>2035</option><option>2040</option></select></label>
   </div>
   <label class="f" for="topic">הנושא: על מה מסתכלים בשלושת האופקים?<input type="text" id="topic" placeholder="למשל: איך בית הספר והקהילה מתכוננים למשברים"></label>
   <label class="f" for="desc">כמה מילים על המקום או על הקהילה (רשות)<textarea id="desc" style="min-height:56px"></textarea></label>
@@ -297,7 +299,7 @@ table.mx td.el .small{font-weight:400}
       <h3>אופק 2: המעבר</h3>
       <p class="small">חידושים, ניסיונות ושינויים שקורים בדרך. חלקם מקרבים אותנו לאופק 3 (+), וחלקם רק מאריכים את החיים של אופק 1 (−). חשוב לדעת להבדיל.</p>
       <div id="l-h2"></div>
-      <div class="row"><input type="text" id="n-h2" placeholder="חידוש או שינוי בדרך" style="flex:1;min-width:160px" aria-label="חידוש או שינוי"><select id="n-h2k" aria-label="סוג"><option value="plus">מקרב לעתיד (+)</option><option value="minus">מאריך את הקיים (−)</option></select><button type="button" data-add="h2">הוספה</button></div>
+      <div class="row"><input type="text" id="n-h2" placeholder="חידוש או שינוי בדרך" style="flex:1;min-width:160px" aria-label="חידוש או שינוי"><select data-closed id="n-h2k" aria-label="סוג"><option value="plus">מקרב לעתיד (+)</option><option value="minus">מאריך את הקיים (−)</option></select><button type="button" data-add="h2">הוספה</button></div>
       <button type="button" class="needs-ai" data-ai="2">הצעות לאופק 2 עם AI</button>
     </div>
   </div>
@@ -378,7 +380,7 @@ function stateText(){ const by = k => S.notes.filter(n => n.k === k).map(n => "-
 function noteHTML(n){ return `<div class="note"><div><span class="k ${KIND[n.k].cls}">${KIND[n.k].t}</span><div>${esc(n.t)}</div></div><div class="row" style="align-items:flex-start">${n.k === "plus" || n.k === "minus" ? `<button type="button" class="small" data-flip="${esc(n.id)}" title="החלפה בין + ל־−">± </button>` : ""}<button type="button" class="small" data-del="${esc(n.id)}" aria-label="מחיקה">×</button></div></div>`; }
 function render(){
   document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.ctx.type)));
-  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
+  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.concat(S.ctx.region && !REGIONS.includes(S.ctx.region) ? [S.ctx.region] : []).map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
   $("horizon").value = S.horizon; $("topic").value = S.topic || ""; $("desc").value = S.ctx.desc || ""; $("hTitle").value = S.title || "";
   if(document.activeElement !== $("vision")) $("vision").value = S.vision || "";
   ["fade","keep","seed"].forEach(k => $("l-" + k).innerHTML = S.notes.filter(n => n.k === k).map(noteHTML).join(""));

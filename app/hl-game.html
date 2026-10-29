@@ -5,6 +5,8 @@
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/hl-runtime.js"></script>
+<!-- רשימות פתוחות (29/10/2026): "אזור בארץ" מקבל "➕ חסר משהו? הוספה…"; שאר התפריטים כאן סגורים (data-closed): שנים, ממדים ושלבים שהחישוב נשען עליהם, והפניות לפריטים שכבר בעבודה -->
+<script src="lib/open-select.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>רואים את האופק · Be Good</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -306,7 +308,7 @@ body.big .rcard .box,body.big .card{font-size:19px}
   </div>
   <div class="grid2">
     <label class="f" for="region">אזור בארץ<select id="region"></select></label>
-    <label class="f" for="year">באיזו שנה המשחק מתרחש?<select id="year"><option>היום</option><option>2030</option><option>2035</option><option>2040</option></select></label>
+    <label class="f" for="year">באיזו שנה המשחק מתרחש?<select data-closed id="year"><option>היום</option><option>2030</option><option>2035</option><option>2040</option></select></label>
   </div>
   <label class="f" for="desc"><span id="descLabel">תיאור</span><textarea id="desc" style="min-height:60px"></textarea></label>
   <div>
@@ -337,8 +339,8 @@ body.big .rcard .box,body.big .card{font-size:19px}
   </div>
   <p id="wm-today" class="small muted" hidden>המשחק מתרחש בישראל של היום, עם האיומים המוכרים, ועם הפתעות פחות מוכרות.</p>
   <div class="grid2">
-    <label class="f" for="nRounds">כמה סבבים?<select id="nRounds"><option value="3">3 סבבים (כשעה)</option><option value="4">4 סבבים (כשעה וחצי)</option><option value="5">5 סבבים (כשעתיים)</option></select></label>
-    <label class="f" for="intensity">כמה קשה?<select id="intensity"><option value="low">מתון: מתאים להתחלה ולתלמידים</option><option value="mid">מאתגר</option><option value="high">קשה מאוד: כמה משברים בבת אחת</option></select></label>
+    <label class="f" for="nRounds">כמה סבבים?<select data-closed id="nRounds"><option value="3">3 סבבים (כשעה)</option><option value="4">4 סבבים (כשעה וחצי)</option><option value="5">5 סבבים (כשעתיים)</option></select></label>
+    <label class="f" for="intensity">כמה קשה?<select data-closed id="intensity"><option value="low">מתון: מתאים להתחלה ולתלמידים</option><option value="mid">מאתגר</option><option value="high">קשה מאוד: כמה משברים בבת אחת</option></select></label>
   </div>
   <label class="row small" style="font-weight:600"><input type="checkbox" id="surprise"> לשלב באמצע המשחק הפתעה מאיום שפחות מוכר בישראל</label>
 </section>
@@ -353,7 +355,7 @@ body.big .rcard .box,body.big .card{font-size:19px}
       <div class="box" style="display:flex;flex-direction:column;gap:10px">
         <div class="row"><button type="button" id="drawCard">שליפת קלף הפתעה</button><span class="small muted">אם יש סבב פתוח, הקלף נכנס אליו. אם לא, הוא יצטרף לסבב הבא. הקלפים עובדים גם בלי AI.</span></div>
         <div id="cardShow"></div><span class="status" id="cardStatus" aria-live="polite"></span>
-        <div class="row tmw"><b class="small">זמן לדיון:</b><span class="timer tm">10:00</span><select class="tlen" aria-label="אורך הדיון"><option value="5">5 דקות</option><option value="10" selected>10 דקות</option><option value="15">15 דקות</option><option value="20">20 דקות</option></select><button type="button" class="tgo">התחלה</button><button type="button" class="treset">איפוס</button></div>
+        <div class="row tmw"><b class="small">זמן לדיון:</b><span class="timer tm">10:00</span><select data-closed class="tlen" aria-label="אורך הדיון"><option value="5">5 דקות</option><option value="10" selected>10 דקות</option><option value="15">15 דקות</option><option value="20">20 דקות</option></select><button type="button" class="tgo">התחלה</button><button type="button" class="treset">איפוס</button></div>
       </div>
       <div id="controls"></div>
     </div>
@@ -377,7 +379,7 @@ body.big .rcard .box,body.big .card{font-size:19px}
   <div id="findings"></div>
   <h3>ב. הדיון</h3>
   <p class="small muted">דנים בשאלות שלמעלה. אפשר להפעיל טיימר, ולרשום מה עלה.</p>
-  <div class="row tmw"><b class="small">זמן לדיון:</b><span class="timer tm">10:00</span><select class="tlen" aria-label="אורך הדיון"><option value="5">5 דקות</option><option value="10" selected>10 דקות</option><option value="15">15 דקות</option><option value="20">20 דקות</option></select><button type="button" class="tgo">התחלה</button><button type="button" class="treset">איפוס</button></div>
+  <div class="row tmw"><b class="small">זמן לדיון:</b><span class="timer tm">10:00</span><select data-closed class="tlen" aria-label="אורך הדיון"><option value="5">5 דקות</option><option value="10" selected>10 דקות</option><option value="15">15 דקות</option><option value="20">20 דקות</option></select><button type="button" class="tgo">התחלה</button><button type="button" class="treset">איפוס</button></div>
   <label class="f" for="discNotes">מה עלה בדיון? (רשות, וזה משפר את הסיכום)<textarea id="discNotes" placeholder="למשל: עלה שהמשפחות המארחות לא יודעות על התפקיד הזה מראש, ושצריך לשאול אותן."></textarea></label>
   <h3>ג. לקחים וצעדים</h3>
   <div class="row"><button type="button" class="primary needs-ai" id="aiDebrief">סיכום הלקחים והצעדים</button><span class="status" id="debStatus" aria-live="polite"></span></div>
@@ -553,7 +555,7 @@ function normRound(x, i){ return {id:uid(), t:String(x.t || `סבב ${i+1}`), ti
 /* ---------- render ---------- */
 function render(){
   document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.ctx.type)));
-  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
+  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.concat(S.ctx.region && !REGIONS.includes(S.ctx.region) ? [S.ctx.region] : []).map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
   $("year").value = S.year; $("desc").value = S.ctx.desc || ""; $("descLabel").textContent = DESC_LABEL[S.ctx.type]; $("desc").placeholder = DESC_PH[S.ctx.type];
   $("gTitle").value = S.title || ""; $("nRounds").value = String(S.nRounds); $("intensity").value = S.intensity; $("surprise").checked = !!S.surprise; $("ownWorld").value = S.ownWorld || "";
   const all = [...new Set([...ROLES[S.ctx.type], ...S.roles])];
@@ -602,7 +604,7 @@ function renderControls(){
     box.innerHTML = `<div class="box" style="display:flex;flex-direction:column;gap:10px">
       <div class="row needs-ai"><input type="text" id="qText" placeholder="שאלה למנחה המשחק, למשל: יש לנו גנרטור?" style="flex:1;min-width:200px" aria-label="שאלה למנחה המשחק"><button type="button" id="qGo">לשאול</button></div>
       <label class="f" for="decText">מה הצוות מחליט? מי עושה מה, ומתי?<textarea id="decText" style="min-height:110px" placeholder="כדאי לכתוב את ההחלטה במשפטים שלמים, ולציין לכל צעד מי אחראי או אחראית עליו."></textarea></label>
-      ${last.manual || !SAMPLE ? `<label class="f" for="resText">מה קרה בעקבות ההחלטה? (המנחה כותב או כותבת)<textarea id="resText" style="min-height:70px"></textarea></label><div class="mgrid">${MK.map(k => `<label>${ML[k]}<select data-md="${k}">${[-3,-2,-1,0,1,2,3].map(v => `<option value="${v}" ${v === 0 ? "selected" : ""}>${v > 0 ? "+" + v : v}</option>`).join("")}</select></label>`).join("")}</div>` : ""}
+      ${last.manual || !SAMPLE ? `<label class="f" for="resText">מה קרה בעקבות ההחלטה? (המנחה כותב או כותבת)<textarea id="resText" style="min-height:70px"></textarea></label><div class="mgrid">${MK.map(k => `<label>${ML[k]}<select data-closed data-md="${k}">${[-3,-2,-1,0,1,2,3].map(v => `<option value="${v}" ${v === 0 ? "selected" : ""}>${v > 0 ? "+" + v : v}</option>`).join("")}</select></label>`).join("")}</div>` : ""}
       <div class="row">${last.manual || !SAMPLE ? `<button type="button" class="primary" id="decManual">שמירת ההחלטה והתוצאה</button>` : `<button type="button" class="primary" id="decGo">שליחת ההחלטה למנחה המשחק</button>`}<span class="status" id="playStatus" aria-live="polite"></span></div>
     </div>`;
     const d = $("decText"); d.value = last.draft || ""; d.addEventListener("input", () => { last.draft = d.value; });
