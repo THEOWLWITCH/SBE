@@ -142,7 +142,7 @@
     var css = document.createElement('style'); css.id = 'sbe-mark-css';
     css.textContent = '@media screen{.brandrow,img[data-brand],.sbe-tagline,.cc-brand{display:none!important}'
       + '.sbe-mark{display:inline-flex;align-items:center;flex:none;margin-inline-end:10px;line-height:0;text-decoration:none!important;background:none!important;border:0!important;padding:0!important}'
-      + '.sbe-mark img{height:32px;width:auto;display:block}#navBar .sbe-mark{margin-inline-end:auto}#navBar .sbe-mark img{height:28px}'
+      + '.sbe-mark img{height:32px;width:auto;display:block}#navBar .sbe-mark{margin-inline-end:10px}#navBar .sbe-mark+.sbe-crumb{margin-inline-end:10px}#navBar .sbe-mark:has(+.sbe-crumb){margin-inline-end:10px}.sbe-crumb-moved{margin-inline-start:0!important;margin-inline-end:10px!important}.sbe-crumb{color:#5b6b7a;font-size:12.5px;font-family:Assistant,"Segoe UI",system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}#navBar .sbe-mark img{height:28px}'
       + '.sbe-markbar{display:flex;justify-content:flex-start;align-items:center;height:38px;padding:0 10px;box-sizing:border-box;direction:rtl;position:relative;width:100vw;left:50%;right:50%;margin:0 -50vw;transform:none}.sbe-markbar .sbe-mark img{height:28px}'
       + ':root[data-theme="dark"] .sbe-mark img{background:#fff;border-radius:8px;padding:2px 6px}'
       + '@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sbe-mark img{background:#fff;border-radius:8px;padding:2px 6px}}}'
@@ -152,12 +152,25 @@
     var a = document.createElement('a'); a.className = 'sbe-mark sbe-no-theme'; a.href = home || 'entry.html';
     a.setAttribute('aria-label', home ? 'Begood: המרחב שלי' : 'Begood: דף הבית');
     var img = document.createElement('img'); img.src = 'assets/begood-logo-mark.webp'; img.alt = 'Begood'; img.width = 53; img.height = 32; a.appendChild(img);
+    // הנתיב ליד הלוגו (29/10/2026: "לוודא שמעל כל כותרת של כלי מופיע הלוגו של בי גוד והנתיב"): Begood › שם הכלי
+    function toolName() {
+      var h = document.querySelector('h1'), im = h && h.querySelector('img[alt]');
+      var t = (im && im.alt) || (h && h.textContent) || document.title || '';
+      t = t.replace(/\s*[·|]\s*Begood\s*$/i, '').replace(/^Begood\s*[·|›]\s*/i, '').split(/\s[·|]\s/)[0].split(':')[0].trim();
+      return t.length > 40 ? t.slice(0, 40) + '…' : t;
+    }
+    function crumbFor(host) {
+      if (host.querySelector('.crumb, .sbe-crumb')) return null;
+      var n = toolName(); if (!n || /^Begood$/i.test(n)) return null;
+      var c = document.createElement('span'); c.className = 'sbe-crumb'; c.textContent = 'Begood › ' + n; return c;
+    }
     var NAV = '#navBar, nav.topnav, nav.r-topnav, nav.studies-topnav';
     var nav = document.querySelector(NAV);
-    if (nav) { nav.insertBefore(a, nav.firstChild); return; }
+    if (nav) { var c0 = nav.querySelector('.crumb') || crumbFor(nav); nav.insertBefore(a, nav.firstChild); if (c0) { c0.classList.add('sbe-crumb-moved'); a.insertAdjacentElement('afterend', c0); } return; }
     var bar = document.createElement('div'); bar.className = 'sbe-markbar no-print'; bar.appendChild(a);
+    var c1 = crumbFor(document.body); if (c1) bar.appendChild(c1);
     document.body.insertBefore(bar, document.body.firstChild);
-    setTimeout(function () { var n = document.querySelector(NAV); if (n && bar.parentNode) { n.insertBefore(a, n.firstChild); bar.remove(); } }, 700);
+    setTimeout(function () { var n = document.querySelector(NAV); if (n && bar.parentNode) { var c2 = bar.querySelector('.sbe-crumb'); n.insertBefore(a, n.firstChild); if (c2 && !n.querySelector('.crumb')) a.insertAdjacentElement('afterend', c2); bar.remove(); } }, 700);
   }
   function start() {
     brandMark(); fabLabel(); setTimeout(fabLabel, 800);
