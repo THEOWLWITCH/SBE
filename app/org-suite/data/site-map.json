@@ -346,7 +346,7 @@
     },
     {
       "id": "journey",
-      "label": "מסע אל החוסן",
+      "label": "מסע אל החוסן החברתי",
       "readinessGroup": "anchor",
       "readinessLabel": "לעגן בשגרה",
       "kind": "work",
@@ -653,8 +653,8 @@
         },
         {
           "href": "journey.html",
-          "label": "מסע אל החוסן: מסך המשתתפים",
-          "audience": "הרשאת מסע אל החוסן"
+          "label": "מסע אל החוסן החברתי: מסך המשתתפים",
+          "audience": "הרשאת מסע אל החוסן החברתי"
         }
       ]
     },

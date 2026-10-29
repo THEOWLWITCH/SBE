@@ -497,7 +497,7 @@ function render(){
   nav.append(el("h5",{}, role==="inst" ? "ניהול המוסד" : "ניהול המערכת"));
   const unseenCount = role==="sys" ? countUnseenAdditions() : 0;
   list.forEach(([k,l]) => {
-    // "מסע אל החוסן" — מסך נפרד (journeys.html), לא לשונית פנימית
+    // "מסע אל החוסן החברתי" — מסך נפרד (journeys.html), לא לשונית פנימית
     if (k === "journeys") { const a = el("a",{ class:"nlink", href:"journeys.html" }, l); if (jrPendingN) a.append(el("span",{class:"navbadge"}, String(jrPendingN))); nav.append(a); return; }
     if (k === "demolab") { nav.append(el("a",{ class:"nlink", href:"demo-lab.html" }, l)); return; }
     const b = el("button",{ class: "nlink" + (k===tab ? " on" : "") }, l);
@@ -527,7 +527,7 @@ function render(){
     const go = el("a",{class:"act p",href:"journeys.html",style:"text-decoration:none;display:inline-block"},"למסעות");
     al.append(el("div",{class:"in",style:"display:flex;gap:12px;align-items:center;flex-wrap:wrap"},
       el("b",{}, jrPendingN === 1 ? "מסע אחד ממתין לך" : jrPendingN + " מסעות ממתינים לך"),
-      el("span",{style:"color:var(--muted);font-size:13.5px"},"מסע אל החוסן: אישור הצעות, משוב על אבני דרך, ערעורים והודעות"), go));
+      el("span",{style:"color:var(--muted);font-size:13.5px"},"מסע אל החוסן החברתי: אישור הצעות, משוב על אבני דרך, ערעורים והודעות"), go));
     p.append(al);
   }
   if (role === "sys" && critPendingN && tab !== "crit") {
@@ -2047,7 +2047,7 @@ const MOD_LABELS = {
   lecturer:    "הפקת קודים לסטודנטים (משוב לעבודות)",
   leadership:  "נוגי: יועצת למנהיגות שמקדמת חוסן",
   practi:      "פרקטי: יועצת לפיתוח חוסן חברתי",
-  journey:     "מסע אל החוסן",
+  journey:     "מסע אל החוסן החברתי",
   writer:      "תקשורת שמקדמת חוסן חברתי",
   studio:      "סטודיו חוסן: השראה ופעולה",
   nana:        "ננה: מהוראה להנחיה",
@@ -2185,7 +2185,7 @@ function checkCritPending(){
   accessCall("critAdmin").then(d => { const n = (d.pending || []).length; critData = d; if (n !== critPendingN) { critPendingN = n; render(); } }).catch(() => {});
 }
 checkCritPending(); setInterval(checkCritPending, 300000);
-// מסע אל החוסן — כמה מסעות ממתינים למנהלת המערכת
+// מסע אל החוסן החברתי — כמה מסעות ממתינים למנהלת המערכת
 function checkJourneys(){
   if (role !== "sys" || !sysToken()) return;
   accessCall("jrAll").then(d => { const n = (d.items || []).filter(x => x.pendingAdmin).length; if (n !== jrPendingN) { jrPendingN = n; render(); } }).catch(() => {});

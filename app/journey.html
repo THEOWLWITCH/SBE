@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>רשת החוסן החברתי</title>
+<title>מסע אל החוסן החברתי</title>
 <script src="lib/access-guard.js"></script>
 <script src="lib/quotes.js"></script>
 <script src="lib/product-doc.js"></script>
@@ -189,17 +189,17 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 <nav class="topnav no-print">
   <button type="button" onclick="history.back()">→ חזרה</button>
   <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
-  <span class="crumb">Begood › רשת החוסן החברתי</span>
+  <span class="crumb">Begood › מסע אל החוסן החברתי</span>
 </nav>
 <div class="wrap" id="app"></div>
 <script>
-function netBanner(){ var h=document.createElement('h1'); h.className='hero-banner'; var im=document.createElement('img'); im.src='assets/network-banner.webp'; im.alt='רשת החוסן החברתי'; im.width=1200; im.height=244; h.appendChild(im); return h; }
+function netBanner(){ var h=document.createElement('h1'); h.className='hero-banner'; var im=document.createElement('img'); im.src='assets/network-banner.webp'; im.alt='מסע אל החוסן החברתי'; im.width=1200; im.height=244; h.appendChild(im); return h; }
 
 // המרחב הארגוני (28/10/2026): דוגמאות מהעולם הארגוני, בלי בית ספר
 const ORG_SPACE = !!(window.sbeSpace && window.sbeSpace() === 'org');
 (function(){
 'use strict';
-// מסע אל החוסן — מסך המשתתפים: מיפוי → הצעת מסע עם אפשרויות → בחירות והסבר → אישור (ד״ר יעל שדה) → אבני דרך → תעודות → תו חוסן.
+// מסע אל החוסן החברתי — מסך המשתתפים: מיפוי → הצעת מסע עם אפשרויות → בחירות והסבר → אישור (ד״ר יעל שדה) → אבני דרך → תעודות → תו חוסן.
 const J = window.SBE_JOURNEY, SRC = window.SBE_ADVISOR_SOURCES;
 const AI_SERVER = 'https://sbe-server.onrender.com', ACCESS = AI_SERVER + '/api/access';
 const F = k=>document.getElementById(k);
@@ -309,7 +309,7 @@ async function viewList(){
   const d = await api('jrMine');
   if (load !== loadGeneration || location.hash !== hash) return;
   lw.remove();
-  if (d._status === 403) { list.appendChild(el('p', 'err', 'כדי לצאת למסע, אפשר להיכנס עם קוד שיש בו הרשאת "מסע אל החוסן".')); return; }
+  if (d._status === 403) { list.appendChild(el('p', 'err', 'כדי לצאת למסע, אפשר להיכנס עם קוד שיש בו הרשאת "מסע אל החוסן החברתי".')); return; }
   (d.items || []).forEach(s => {
     const r = el('div', 'ms'); const h = el('h3'); h.appendChild(document.createTextNode(s.unitName)); h.appendChild(el('span', 'tagx', unitT(s.unit))); r.appendChild(h);
     // סטטוס המסע ככפתור בולט (11/10/2026): מה המצב ומה הצעד הבא, ולחיצה נכנסת למסע
@@ -341,7 +341,7 @@ async function viewList(){
   const go = btn('יוצאים לדרך', '', async () => {
     if (nm.value.trim().length < 2) return err('כדי להמשיך, אפשר לכתוב את שם המסגרת.');
     go.disabled = true; const r = await api('jrCreate', { mode:'workspace', unit: sel.value, unitName: nm.value.trim(), by: by.value.trim(), research:false, updates:false }); go.disabled = false;
-    if (r.id) location.hash = r.id; else err(r._status === 403 ? 'אין הרשאה למסע אל החוסן.' : 'לא הצלחנו ליצור את המסע. אפשר לנסות שוב.');
+    if (r.id) location.hash = r.id; else err(r._status === 403 ? 'אין הרשאה למסע אל החוסן החברתי.' : 'לא הצלחנו ליצור את המסע. אפשר לנסות שוב.');
   }); go.style.marginTop = '.8rem'; n.appendChild(go);
 }
 
@@ -532,7 +532,7 @@ function viewReview(){
 // PDF כמוצר מוגמר (12/10/2026, בדיקת הלקוחה): רק הטבלאות, במסמך ההדפסה של Begood
 function printBtn(node, kind){
   const b = btn('🖨 הדפסה / שמירה כ-PDF', 'ghost no-print', () => { const n = node.cloneNode(true); n.querySelectorAll('.banner-soft,.no-print,button,h2').forEach(x => x.remove());
-    if (window.SBE_DOC) SBE_DOC.print({ title: (JR.unitName || 'מסע אל החוסן'), kind, node: n, landscape: true }); });
+    if (window.SBE_DOC) SBE_DOC.print({ title: (JR.unitName || 'מסע אל החוסן החברתי'), kind, node: n, landscape: true }); });
   b.style.marginTop = '.6rem'; return b;
 }
 
@@ -541,7 +541,7 @@ function ics(){
   const ms = JR.milestones || []; const esc = s => String(s).replace(/[,;\\]/g, m => '\\' + m).replace(/\n/g, '\\n');
   const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Begood//Journey//HE'];
   ms.forEach((m, i) => { const d = String(m.due).replace(/-/g, ''); L.push('BEGIN:VEVENT', 'UID:' + JR.id + '-' + i + '@begood', 'DTSTAMP:' + d + 'T080000Z', 'DTSTART;VALUE=DATE:' + d,
-    'SUMMARY:' + esc((m.gate ? 'שער: ' : 'אבן דרך: ') + m.title + ' · ' + JR.unitName), 'DESCRIPTION:' + esc('מסע אל החוסן · ' + stT(m.stage)),
+    'SUMMARY:' + esc((m.gate ? 'שער: ' : 'אבן דרך: ') + m.title + ' · ' + JR.unitName), 'DESCRIPTION:' + esc('מסע אל החוסן החברתי · ' + stT(m.stage)),
     'BEGIN:VALARM', 'TRIGGER:-P7D', 'ACTION:DISPLAY', 'DESCRIPTION:' + esc('בעוד שבוע: ' + m.title), 'END:VALARM', 'BEGIN:VALARM', 'TRIGGER:-P2D', 'ACTION:DISPLAY', 'DESCRIPTION:' + esc('בעוד יומיים: ' + m.title), 'END:VALARM', 'END:VEVENT'); });
   L.push('END:VCALENDAR');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([L.join('\r\n')], { type: 'text/calendar' })); a.download = 'begood-journey.ics'; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 1500);

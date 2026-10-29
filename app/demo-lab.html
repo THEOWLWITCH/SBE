@@ -118,7 +118,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
   <a href="#list-h" class="btn ghost sm" id="toFolder">📁 לתיקייה (<span id="nItems">0</span>)</a>
 </div>
 <div class="runs" id="runs"></div>
-<p class="muted" style="margin-top:10px">מסע אל החוסן נוצר כמסע דמו (בלי מיילים, ולא נספר בדוחות ובמחקר). אפשר למחוק אותו בלוח המסעות.</p>
+<p class="muted" style="margin-top:10px">מסע אל החוסן החברתי נוצר כמסע דמו (בלי מיילים, ולא נספר בדוחות ובמחקר). אפשר למחוק אותו בלוח המסעות.</p>
 
 <h2 id="list-h">התיקייה שלי: התוצרים שהופקו</h2>
 <div class="row" style="margin-bottom:10px"><button class="btn sm" id="rvAll" type="button">🧐 בדיקה ותיקון לכל התוצרים</button><button class="btn danger sm" id="clearAll" type="button">🗑 מחיקת כל התוצרים</button><a href="examples.html" target="_blank" rel="noopener" class="btn ghost sm">📚 לספריית התוצרים לדוגמה ←</a><span class="muted">שם מופיע רק מה ששמרת בספרייה.</span></div>
@@ -170,11 +170,11 @@ const TOOLS={studio:'סטודיו חוסן: ערכת פעולה',practi:'פרק�
   resil:'מיפוי חוסן חברתי: סיכום לכיתה',conv:'תכנון שיחה','act-single':'תכנון פעילות: מפגש אחד','act-seq':'תכנון פעילות: רצף מפגשים',paths:'מסלולי השתתפות בלמידה',
   'communication-continuity':'תקשורת שמקדמת חוסן חברתי: ניהול תקשורת',
   // החלק הארגוני (28/10/2026): אותם כלים, עם מקרים מהעולם הארגוני והקהילתי, לתיקייה הארגונית
-  'writer-org':'🏢 תקשורת שמקדמת חוסן חברתי: ארגון','cc-org':'🏢 תקשורת שמקדמת חוסן חברתי: ניהול תקשורת בארגון','teamthink-org':'🏢 חשיבת צוות: צוות בארגון','teamthink-round-org':'🏢 חשיבת צוות: סיכום סבב בארגון','journey-org':'🏢 מסע אל החוסן: קהילה',
+  'writer-org':'🏢 תקשורת שמקדמת חוסן חברתי: ארגון','cc-org':'🏢 תקשורת שמקדמת חוסן חברתי: ניהול תקשורת בארגון','teamthink-org':'🏢 חשיבת צוות: צוות בארגון','teamthink-round-org':'🏢 חשיבת צוות: סיכום סבב בארגון','journey-org':'🏢 מסע אל החוסן החברתי: קהילה',
   // מעבדת האופק (28/10/2026): תשעת הכלים, עם הדוגמה המוכנה של כל כלי, בשני החלקים
   'hl-voice':'מעבדת האופק: קול הקהילה','hl-radar':'מעבדת האופק: רדאר החוסן החברתי','hl-futures':'מעבדת האופק: מחולל העתידים','hl-circles':'מעבדת האופק: מעגלי העתיד','hl-horizons':'מעבדת האופק: שלושה אופקים','hl-collage':'מעבדת האופק: תמונת עתיד קבוצתית','hl-roadmap':'מעבדת האופק: מהחזון להיום','hl-game':'מעבדת האופק: רואים את האופק','hl-stress':'מעבדת האופק: בדיקת עמידות',
   'hl-voice-org':'🏢 מעבדת האופק: קול הקהילה','hl-radar-org':'🏢 מעבדת האופק: רדאר החוסן החברתי','hl-futures-org':'🏢 מעבדת האופק: מחולל העתידים','hl-circles-org':'🏢 מעבדת האופק: מעגלי העתיד','hl-horizons-org':'🏢 מעבדת האופק: שלושה אופקים','hl-collage-org':'🏢 מעבדת האופק: תמונת עתיד קבוצתית','hl-roadmap-org':'🏢 מעבדת האופק: מהחזון להיום','hl-game-org':'🏢 מעבדת האופק: רואים את האופק','hl-stress-org':'🏢 מעבדת האופק: בדיקת עמידות',
-  review:'משוב לעבודות',journey:'מסע אל החוסן',practice:'תרגול לפי תרחיש','practice-own':'תרגול לפי תרחיש: מקרה משלך',edu:'סימולציה: סטודנטים/ות',parents:'סימולציה: הורים',youth:'סימולציה: נוער'};
+  review:'משוב לעבודות',journey:'מסע אל החוסן החברתי',practice:'תרגול לפי תרחיש','practice-own':'תרגול לפי תרחיש: מקרה משלך',edu:'סימולציה: סטודנטים/ות',parents:'סימולציה: הורים',youth:'סימולציה: נוער'};
 const RUNS=[
   ['communication-continuity','message-writer.html?mode=continuity',15],
   ['studio','resilience-studio.html',40],['practi','resilience-advisor.html',20],['nugi','leadership-advisor.html',20],['nana','facilitation-advisor.html',20],['writer','message-writer.html',10],['continuity','continuity-kit.html',15],['cont-join','continuity-kit.html?part=join',20],['cont-proc','continuity-kit.html?part=proc',20],['routines','routines-hub.html',10],['routines-proc','routines-hub.html?part=proc',15],['bridge','family-bridge.html',10],['dialogue','shared-dialogue-lab.html',10],['teamthink','team-thinking.html',10],['dialogue-full','shared-dialogue-lab.html?part=full',15],['teamthink-round','team-thinking.html?part=round',15],

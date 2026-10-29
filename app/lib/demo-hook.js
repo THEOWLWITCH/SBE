@@ -416,7 +416,7 @@
       var part = await printed("#print-participant", "סטודיו חוסן: חומרי המשתתפים", "סטודיו חוסן · חומרי המשתתפים");
       return [kit, part];
     },
-    // מסע אל החוסן (07/10/2026): מסע דמו (בלי מיילים, לא נספר בדוחות ובמחקר) ← מיפוי לדוגמה ← הצעת מסע ← בחירות ← טיוטת אבני הדרך
+    // מסע אל החוסן החברתי (07/10/2026): מסע דמו (בלי מיילים, לא נספר בדוחות ובמחקר) ← מיפוי לדוגמה ← הצעת מסע ← בחירות ← טיוטת אבני הדרך
     "journey.html": async function () {
       var J = window.SBE_JOURNEY, tok = ""; try { tok = sessionStorage.getItem("sbe.session.token") || ""; } catch (e) {}
       var api = async function (action, b) {
@@ -441,7 +441,7 @@
       await sleep(600);
       var wrap = document.createElement("div");
       [].forEach.call(document.querySelectorAll("#app .card"), function (c) { var h = c.querySelector("h2"); if (h && /הצעת המסע שלכם|ההחלטות שלכם/.test(h.textContent)) wrap.appendChild(c.cloneNode(true)); });
-      var items = [{ tool: "journey", title: "מסע אל החוסן: הצעת המסע", label: "מסע אל החוסן · הצעה", html: standalone(wrap, "מסע אל החוסן: הצעת המסע"), input: inp }];
+      var items = [{ tool: "journey", title: "מסע אל החוסן החברתי: הצעת המסע", label: "מסע אל החוסן החברתי · הצעה", html: standalone(wrap, "מסע אל החוסן החברתי: הצעת המסע"), input: inp }];
       // בחירות לדוגמה: האפשרות הראשונה בכל החלטה, סיבה אחת והסבר קצר
       [].forEach.call(document.querySelectorAll("#app .dec"), function (box) {
         var r = box.querySelector("input[type=radio]"); if (r) { r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true })); }
@@ -464,7 +464,7 @@
         var t = document.createElement("div");
         t.innerHTML = "<h2>טיוטת אבני הדרך: " + ms.length + "</h2><table class=\"jr-plan\" style=\"width:100%;border-collapse:collapse\"><thead><tr><th>#</th><th>אבן הדרך</th><th>שלב</th><th>יעדים ואיך יודעים שהושגו</th></tr></thead><tbody>" + rows + "</tbody></table>" +
           "<style>.jr-plan th,.jr-plan td{border:1px solid #CDD3D8;padding:6px 8px;text-align:right;vertical-align:top}.jr-plan thead th{background:#2E5A7D;color:#fff}.jr-plan ul{margin:0;padding-inline-start:18px}.jr-plan tr{break-inside:avoid}</style>";
-        items.push({ tool: "journey", title: "מסע אל החוסן: טיוטת אבני הדרך", label: "מסע אל החוסן · אבני דרך", html: standalone(t, "מסע אל החוסן: טיוטת אבני הדרך").replace("</main>", t.querySelector("style").outerHTML + "</main>"), input: inp });
+        items.push({ tool: "journey", title: "מסע אל החוסן החברתי: טיוטת אבני הדרך", label: "מסע אל החוסן החברתי · אבני דרך", html: standalone(t, "מסע אל החוסן החברתי: טיוטת אבני הדרך").replace("</main>", t.querySelector("style").outerHTML + "</main>"), input: inp });
       }
       return items;
     },

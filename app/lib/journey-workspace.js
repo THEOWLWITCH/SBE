@@ -107,7 +107,7 @@
     }
     function report() {
       const root = node('div', 'jws-report');
-      root.appendChild(node('h1', '', 'רשת החוסן החברתי'));
+      root.appendChild(node('h1', '', 'מסע אל החוסן החברתי'));
       root.appendChild(node('h2', '', journey.unitName || 'מרחב העבודה לחוסן'));
       root.appendChild(node('p', '', 'סוג המסגרת: ' + unitLabel));
       root.appendChild(node('p', '', 'גרסה ' + revision + (dirty ? '. כולל שינויים מקומיים שטרם נשמרו.' : '. הנתונים שנשמרו בשרת.')));
@@ -135,7 +135,7 @@
     }
     function print() {
       if (!window.SBE_DOC || !SBE_DOC.print) return message('כלי ההדפסה לא נטען. אפשר לייצא עותק ולנסות שוב.', true);
-      SBE_DOC.print({title:'רשת החוסן החברתי: ' + journey.unitName, node:report(), extraCss:(window.SBE_JOURNEY_FEEDBACK ? SBE_JOURNEY_FEEDBACK.PRINT_CSS : '') + (window.SBE_NETWORK_UI ? SBE_NETWORK_UI.PRINT_CSS || '' : '') + '.jws-report h1,.jws-report h2,.jws-report h3,.jws-report h4{border:0!important;border-bottom:0!important}.jws-report table{width:100%;border-collapse:collapse;margin:8px 0 18px}.jws-report th,.jws-report td{border:1px solid #CDD3D8;padding:7px;white-space:pre-wrap;overflow-wrap:anywhere}.jws-report th{width:30%;text-align:right;background:#eef3f6}.jws-report tr{break-inside:avoid}.jws-report p,.jws-report td{text-align:justify}'});
+      SBE_DOC.print({title:'מסע אל החוסן החברתי: ' + journey.unitName, node:report(), extraCss:(window.SBE_JOURNEY_FEEDBACK ? SBE_JOURNEY_FEEDBACK.PRINT_CSS : '') + (window.SBE_NETWORK_UI ? SBE_NETWORK_UI.PRINT_CSS || '' : '') + '.jws-report h1,.jws-report h2,.jws-report h3,.jws-report h4{border:0!important;border-bottom:0!important}.jws-report table{width:100%;border-collapse:collapse;margin:8px 0 18px}.jws-report th,.jws-report td{border:1px solid #CDD3D8;padding:7px;white-space:pre-wrap;overflow-wrap:anywhere}.jws-report th{width:30%;text-align:right;background:#eef3f6}.jws-report tr{break-inside:avoid}.jws-report p,.jws-report td{text-align:justify}'});
     }
     function acceptMetadataRevision(result) {
       return applyMetadataRevision(result, true);
@@ -203,9 +203,9 @@
       } catch (e) { if (alive && load === reloadGeneration) message('הגרסה האחרונה לא נטענה. השינויים המקומיים נשארו פתוחים.', true); }
     }
     const head = node('header', 'card'); shell.appendChild(head);
-    { const h1 = node('h1', 'hero-banner'); const im = document.createElement('img'); im.src = 'assets/network-banner.webp'; im.alt = 'רשת החוסן החברתי'; im.width = 1200; im.height = 244; h1.appendChild(im); head.appendChild(h1); }
+    { const h1 = node('h1', 'hero-banner'); const im = document.createElement('img'); im.src = 'assets/network-banner.webp'; im.alt = 'מסע אל החוסן החברתי'; im.width = 1200; im.height = 244; h1.appendChild(im); head.appendChild(h1); }
     head.appendChild(node('p', 'muted', (journey.unitName || 'מרחב עבודה לחוסן') + ' · ' + unitLabel));
-    head.appendChild(node('p', '', 'המסע אל החוסן נכלל במרחב המשותף למיפוי, לבחירת שינוי, לפעולה וללמידה לאורך זמן.'));
+    head.appendChild(node('p', '', 'המסע אל החוסן החברתי נכלל במרחב המשותף למיפוי, לבחירת שינוי, לפעולה וללמידה לאורך זמן.'));
     head.appendChild(node('p', 'muted', 'הנתונים נשמרים בשרת במסגרת המסע. הגישה היא לבעלי קוד המסע ולמנהלי המערכת, לפי ההרשאות הקיימות. קוד משותף אינו הרשאה אישית לכל בעל תפקיד.'));
     const privacy = node('details', 'jws-explain'); privacy.appendChild(node('summary', '', 'פרטיות, תיעוד והסמכה'));
     privacy.appendChild(node('p', '', 'אפשר לתעד תפקידים במקום שמות תלמידים, תושבים, מתנדבים ופרטים אישיים רגישים. מומלץ לשמור מסמכים מזהים במאגר המאושר של המסגרת, ולתעד כאן תמצית והפניה שאינה חושפת מידע אישי. קובץ ייצוא מכיל את המידע שבמרחב, ולכן מתאים לשמירה במקום מאושר בלבד.'));

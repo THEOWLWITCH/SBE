@@ -1,4 +1,4 @@
-/* מסע אל החוסן — רכיבים משותפים למסך המשתתפים ולמסך הניהול */
+/* מסע אל החוסן החברתי — רכיבים משותפים למסך המשתתפים ולמסך הניהול */
 .jmap{display:flex;align-items:flex-start;gap:0;margin:.9rem 0 .4rem;position:relative}
 .jmap .st{flex:1;text-align:center;position:relative;padding-top:.1rem}
 .jmap .st::before{content:"";position:absolute;top:1.15rem;inset-inline-start:-50%;width:100%;height:3px;background:var(--hair);z-index:0}
