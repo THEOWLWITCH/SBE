@@ -98,6 +98,8 @@ header.top.hl-hero{display:flex;justify-content:center;flex-direction:column;ali
 .tcard h3{font-size:20px}
 .diagram{border-radius:var(--hl-radius);border-color:var(--line)}
 
+header.top h1.hero-banner{display:block;line-height:0;margin:0}header.top h1.hero-banner::before{display:none}header.top h1.hero-banner img{display:block;width:min(440px,88vw);height:auto}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) header.top h1.hero-banner img{background:#fff;border-radius:14px;padding:4px 10px}}
 @media (max-width:640px){
   section.stage{padding:20px 18px;border-radius:16px}
   header.top h1{font-size:26px}
