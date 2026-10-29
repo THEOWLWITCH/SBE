@@ -6,7 +6,7 @@
 <script src="lib/ai-call.js"></script>
 <script src="lib/hl-runtime.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>משחק מצב עתידי · Be Good</title>
+<title>רואים את האופק · Be Good</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
@@ -270,14 +270,15 @@ body.big .rcard .box,body.big .card{font-size:19px}
 .confirm{color:var(--wild);font-weight:700}
 .chart svg{width:100%;height:auto;display:block}
 </style>
+<link rel="stylesheet" href="lib/hl-skin.css">
 </head>
 <body>
 <div class="wrap" id="app">
 
 <header class="top">
   <div>
-    <div class="brand">Be Good · חוסן מול עתיד לא ידוע</div>
-    <h1>משחק מצב עתידי</h1>
+    <div class="brand">Begood · מעבדת האופק</div>
+    <h1 class="hero-banner"><img src="assets/hl-game-banner.webp" alt="רואים את האופק" width="1200" height="250"></h1>
     <p class="muted">צוות מנהל משבר בתוך עולם עתידי, סבב אחרי סבב. ה־AI הוא מנחה המשחק: הוא מציג את המצב, מגיב להחלטות של הצוות ומוסיף התפתחויות והפתעות. בסוף עושים תחקיר: מה עבד, מה חסר, ומה עושים כבר מחר.</p>
   </div>
 </header>
@@ -296,7 +297,7 @@ body.big .rcard .box,body.big .card{font-size:19px}
   <span><b>מוצג משחק לדוגמה שכבר שוחק:</b> צוות של בית ספר יסודי בגליל העליון מנהל חמישה ימים בעולם ״האיים״ של שנת 2035.</span>
   <button id="resetBtn" type="button">משחק חדש</button>
 </div>
-<p class="ai-note notice small">החלקים שמופעלים על ידי AI זמינים כשיש חיבור למודל. בינתיים אפשר לעיין בדוגמה, או לנהל משחק ידני: מנחה אנושי כותב את המצב, וקלפי ההפתעה עובדים גם בלי AI.</p>
+<p class="ai-note notice small">אין כרגע חיבור לבינה המלאכותית. בינתיים אפשר לעיין בדוגמה, או לנהל משחק ידני: מנחה אנושי כותב את המצב, וקלפי ההפתעה עובדים גם בלי AI.</p>
 
 <section class="stage" aria-labelledby="s1h">
   <div class="stage-head"><span class="num">1</span><h2 id="s1h">מי משחקים?</h2></div>
@@ -502,7 +503,7 @@ document.documentElement.classList.add("ai-off");
   const use = async n => { try { return (window.claude && window.claude.use) ? await window.claude.use(n) : null; } catch(e){ return null; } };
   [SAMPLE, DB, DL] = await Promise.all([use("sample"), use("db"), use("downloads")]);
   document.documentElement.classList.toggle("ai-off", !SAMPLE);
-  $("gSave").disabled = !DB; $("gOpen").disabled = !DB; if(!DB) $("gStatus").textContent = "שמירה זמינה כשיש חיבור למודל.";
+  $("gSave").disabled = !DB; $("gOpen").disabled = !DB; if(!DB) $("gStatus").textContent = "השמירה לא זמינה כרגע.";
   renderControls();
 })();
 function errCopy(e){
@@ -525,7 +526,7 @@ function worldText(){
   return "ישראל של היום, עם האיומים המוכרים.";
 }
 const INT = {low:IS_ORG ? "מתון: משבר אחד ברור בכל סבב, בלי עומס יתר. מתאים גם לבני ובנות נוער." : "מתון: משבר אחד ברור בכל סבב, בלי עומס יתר. מתאים גם לתלמידים ולתלמידות.", mid:"מאתגר: משבר מתפתח, עם החמרה הדרגתית ודילמות אמיתיות.", high:"קשה מאוד: כמה משברים בבת אחת, משאבים מצטמצמים, ודילמות קשות בלי תשובה טובה."};
-function rules(){ return `את/ה מנחה משחק מצב (תרגיל שולחני, tabletop exercise) בכלי ״משחק מצב עתידי״ במערכת Be Good לחוסן קהילתי וחינוכי בישראל.
+function rules(){ return `את/ה מנחה משחק מצב (תרגיל שולחני, tabletop exercise) בכלי ״רואים את האופק״ במערכת Be Good לחוסן קהילתי וחינוכי בישראל.
 מי משחקים: צוות של ${TYPE_LABEL[S.ctx.type]}${S.ctx.region ? ", " + S.ctx.region : ""}.${S.ctx.desc ? " תיאור: " + S.ctx.desc : ""}
 התפקידים בצוות: ${S.roles.join(", ") || "צוות כללי"}.
 השנה: ${S.year}. ${worldText()}
@@ -797,20 +798,20 @@ $("aiDebrief").addEventListener("click", async () => {
 });
 function gameText(){
   const d = S.debrief;
-  return `משחק מצב עתידי${S.title ? ": " + S.title : ""}\n${TYPE_LABEL[S.ctx.type]}${S.ctx.region ? " · " + S.ctx.region : ""} · ${S.year}\n${worldText()}\nהתפקידים: ${S.roles.join(", ")}\n${S.opening ? "\n" + S.opening + "\n" : ""}\n${historyText()}${S.findings ? `\n\nממצאים עיקריים:\n${S.findings.findings.map(x => "- " + x).join("\n")}\nשאלות לדיון:\n${S.findings.questions.map((x, i) => `${i+1}. ${x}`).join("\n")}` : ""}${S.notes ? `\n\nמה עלה בדיון: ${S.notes}` : ""}${d ? `\n\nתחקיר\n${d.summary}\nמה עבד:\n${(d.worked||[]).map(x => "- " + x).join("\n")}\nמה חסר:\n${(d.gaps||[]).map(x => "- " + x).join("\n")}\nאוטונומיה תפקודית: ${d.autonomy}\nלקחים:\n${(d.lessons||[]).map(x => "- " + x).join("\n")}\nצעדים:\n${(d.actions||[]).map((a, i) => `${i+1}. ${a.text}${a.owner ? " (" + a.owner + ")" : ""}`).join("\n")}` : ""}`;
+  return `רואים את האופק${S.title ? ": " + S.title : ""}\n${TYPE_LABEL[S.ctx.type]}${S.ctx.region ? " · " + S.ctx.region : ""} · ${S.year}\n${worldText()}\nהתפקידים: ${S.roles.join(", ")}\n${S.opening ? "\n" + S.opening + "\n" : ""}\n${historyText()}${S.findings ? `\n\nממצאים עיקריים:\n${S.findings.findings.map(x => "- " + x).join("\n")}\nשאלות לדיון:\n${S.findings.questions.map((x, i) => `${i+1}. ${x}`).join("\n")}` : ""}${S.notes ? `\n\nמה עלה בדיון: ${S.notes}` : ""}${d ? `\n\nתחקיר\n${d.summary}\nמה עבד:\n${(d.worked||[]).map(x => "- " + x).join("\n")}\nמה חסר:\n${(d.gaps||[]).map(x => "- " + x).join("\n")}\nאוטונומיה תפקודית: ${d.autonomy}\nלקחים:\n${(d.lessons||[]).map(x => "- " + x).join("\n")}\nצעדים:\n${(d.actions||[]).map((a, i) => `${i+1}. ${a.text}${a.owner ? " (" + a.owner + ")" : ""}`).join("\n")}` : ""}`;
 }
 $("copyAll").addEventListener("click", () => copy(gameText()));
 $("copySteps").addEventListener("click", async () => {
   const st = $("expStatus"), d = S.debrief;
   if(!d || !(d.actions||[]).length){ st.textContent = "קודם כדאי להכין תחקיר עם צעדים."; return; }
-  const ok = await copy(`צעדים שעלו ממשחק מצב עתידי${S.title ? " (" + S.title + ")" : ""}:\n${d.actions.map((a, i) => `${i+1}. ${a.text}${a.owner ? " אחריות: " + a.owner + "." : ""}`).join("\n")}\n\nפערים שנחשפו במשחק:\n${(d.gaps||[]).map(x => "- " + x).join("\n")}`);
+  const ok = await copy(`צעדים שעלו במשחק "רואים את האופק"${S.title ? " (" + S.title + ")" : ""}:\n${d.actions.map((a, i) => `${i+1}. ${a.text}${a.owner ? " אחריות: " + a.owner + "." : ""}`).join("\n")}\n\nפערים שנחשפו במשחק:\n${(d.gaps||[]).map(x => "- " + x).join("\n")}`);
   if(ok) st.innerHTML = `הועתק. בכלי <a href="${STRESS_URL}" target="_blank" rel="noopener">בדיקת העמידות</a> מדביקים את זה בתיבת התכנית, יחד עם התכנית הקיימת, ובודקים אם עכשיו היא מחזיקה יותר.`;
 });
 $("dlReport").addEventListener("click", async () => {
-  const st = $("expStatus"); if(!DL){ st.textContent = "ההורדה זמינה כשיש חיבור למודל. אפשר להעתיק כטקסט במקום."; return; }
+  const st = $("expStatus"); if(!DL){ st.textContent = "ההורדה לא זמינה כרגע. אפשר להעתיק כטקסט."; return; }
   const d = S.debrief, li = a => (a||[]).map(x => `<li>${esc(x)}</li>`).join("");
-  const html = `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>משחק מצב עתידי</title><style>body{font-family:Assistant,Arial,sans-serif;max-width:860px;margin:30px auto;padding:0 18px;line-height:1.6;color:#16232e}h1,h2,h3{font-family:Rubik,Arial,sans-serif}.r{border:1px solid #d5dde3;border-inline-start:6px solid #17607a;border-radius:12px;padding:12px 16px;margin:12px 0}.res{background:#e3f3e8;border-radius:10px;padding:8px 12px}.muted{color:#5b6b78}svg{max-width:100%;height:auto}</style></head><body>
-  <p class="muted">Be Good · מעבדת האופק</p><h1>משחק מצב עתידי${S.title ? ": " + esc(S.title) : ""}</h1><p class="muted">${esc(TYPE_LABEL[S.ctx.type])}${S.ctx.region ? " · " + esc(S.ctx.region) : ""} · ${esc(S.year)} · ${esc(S.roles.join(", "))}</p><p>${esc(worldText())}</p>${S.opening ? `<p>${esc(S.opening)}</p>` : ""}
+  const html = `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>רואים את האופק</title><style>body{font-family:Assistant,Arial,sans-serif;max-width:860px;margin:30px auto;padding:0 18px;line-height:1.6;color:#16232e}h1,h2,h3{font-family:Rubik,Arial,sans-serif}.r{border:1px solid #d5dde3;border-inline-start:6px solid #17607a;border-radius:12px;padding:12px 16px;margin:12px 0}.res{background:#e3f3e8;border-radius:10px;padding:8px 12px}.muted{color:#5b6b78}svg{max-width:100%;height:auto}</style></head><body>
+  <p class="muted">Begood · מעבדת האופק</p><h1>רואים את האופק${S.title ? ": " + esc(S.title) : ""}</h1><p class="muted">${esc(TYPE_LABEL[S.ctx.type])}${S.ctx.region ? " · " + esc(S.ctx.region) : ""} · ${esc(S.year)} · ${esc(S.roles.join(", "))}</p><p>${esc(worldText())}</p>${S.opening ? `<p>${esc(S.opening)}</p>` : ""}
   ${S.rounds.map((r, i) => `<div class="r"><h3>סבב ${i+1} · ${esc(r.t)}: ${esc(r.title)}</h3><p>${esc(r.situation)}</p>${(r.cards||[]).map(c => `<p><b>קלף: ${esc(c.t)}.</b> ${esc(c.d)}</p>`).join("")}<p><b>השאלה:</b> ${esc(r.ask)}</p>${r.decision ? `<p><b>ההחלטה:</b> ${esc(r.decision)}</p>` : ""}${r.result ? `<div class="res"><b>מה קרה:</b> ${esc(r.result)} ${esc(r.why || "")}</div>` : ""}</div>`).join("")}
   ${chartSVG()}
   ${S.findings ? `<h2>ממצאים עיקריים</h2><ul>${li(S.findings.findings)}</ul><h3>שאלות לדיון</h3><ol>${li(S.findings.questions)}</ol>` : ""}${S.notes ? `<h3>מה עלה בדיון</h3><p>${esc(S.notes)}</p>` : ""}
@@ -853,7 +854,7 @@ render();
 </style>
 <script id="bgkit-js">
 (function(){
-  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "משחק מצב עתידי", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "game", HELP = {"title": "איך עובדים עם משחק מצב עתידי?", "html": "<p><b>מה הכלי עושה:</b> צוות מנהל משבר בתוך עולם עתידי, סבב אחרי סבב. ה־AI הוא מנחה המשחק: הוא מציג את המצב, מה ידוע ומה לא, ושאלה עם דילמה. הצוות מחליט מה עושים ומי עושה מה, ומנחה המשחק מגיב, מעדכן את המדדים ומוסיף התפתחויות.</p>\n<p><b>מתי משתמשים בו:</b> כשרוצים לבדוק בפועל, ולא רק על הנייר, איך הצוות מחליט ומתפקד במשבר, ובמיוחד כמה הוא מצליח לתפקד לבד, באוטונומיה תפקודית.</p>\n<p><b>כמה זמן:</b> שלושה סבבים לוקחים כשעה, וחמישה סבבים כשעתיים, כולל תחקיר.</p>\n<p><b>איך מנחים:</b> כל משתתף או משתתפת לוקחים תפקיד. מקרינים את הסבב על מסך גדול, מפעילים טיימר לדיון, ואפשר לשלוף קלף הפתעה בכל רגע. אפשר גם לשאול את מנחה המשחק שאלות, למשל ״יש לנו גנרטור?״.</p>\n<p><b>התחקיר:</b> קודם ממצאים עיקריים ושאלות לדיון, אחר כך דיון של הצוות, ורק בסוף לקחים וצעדים.</p>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>מאיפה מגיעים ולאן ממשיכים:</b> את העולם אפשר לייבא מ<a href=\"hl-futures.html\" target=\"_blank\" rel=\"noopener\">מחולל העתידים</a>. את הצעדים שעלו מעבירים ל<a href=\"hl-stress.html\" target=\"_blank\" rel=\"noopener\">בדיקת עמידות</a>, ובודקים אם התכנית מחזיקה יותר.</p>\n<p class=\"src\">מבוסס על Gaming ו־Simulation מערכת Futures Toolkit, ועל תרגילים שולחניים (tabletop exercises).</p>", "steps": {"#s1h": "בוחרים מי משחקים ומה התפקידים. כדאי שכל משתתף או משתתפת יקחו תפקיד אחד, ושיהיה גם מי שמייצג את ההורים או את הקהילה.", "#s2h": "בוחרים עולם. כדאי לבחור דווקא עולם שבו התכנית שלכם נראית חלשה. אפשר לייבא עולמות ממחולל העתידים, לתאר עולם בעצמכם, או לשחק בישראל של היום.", "#s3h": "בכל סבב: קוראים את המצב יחד, שואלים את מנחה המשחק מה שרוצים לדעת, דנים עם טיימר, וכותבים החלטה עם אחראי או אחראית לכל צעד. בלי AI אפשר לשחק ידנית: מנחה אנושי כותב את המצב ואת התוצאה.", "#s4h": "שלושה צעדים: ממצאים ושאלות לדיון, דיון של הצוות, ובסוף לקחים וצעדים שמתחשבים במה שעלה בדיון."}};
+  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "רואים את האופק", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "game", HELP = {"title": "איך עובדים עם רואים את האופק?", "html": "<p><b>מה הכלי עושה:</b> צוות מנהל משבר בתוך עולם עתידי, סבב אחרי סבב. ה־AI הוא מנחה המשחק: הוא מציג את המצב, מה ידוע ומה לא, ושאלה עם דילמה. הצוות מחליט מה עושים ומי עושה מה, ומנחה המשחק מגיב, מעדכן את המדדים ומוסיף התפתחויות.</p>\n<p><b>מתי משתמשים בו:</b> כשרוצים לבדוק בפועל, ולא רק על הנייר, איך הצוות מחליט ומתפקד במשבר, ובמיוחד כמה הוא מצליח לתפקד לבד, באוטונומיה תפקודית.</p>\n<p><b>כמה זמן:</b> שלושה סבבים לוקחים כשעה, וחמישה סבבים כשעתיים, כולל תחקיר.</p>\n<p><b>איך מנחים:</b> כל משתתף או משתתפת לוקחים תפקיד. מקרינים את הסבב על מסך גדול, מפעילים טיימר לדיון, ואפשר לשלוף קלף הפתעה בכל רגע. אפשר גם לשאול את מנחה המשחק שאלות, למשל ״יש לנו גנרטור?״.</p>\n<p><b>התחקיר:</b> קודם ממצאים עיקריים ושאלות לדיון, אחר כך דיון של הצוות, ורק בסוף לקחים וצעדים.</p>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>מאיפה מגיעים ולאן ממשיכים:</b> את העולם אפשר לייבא מ<a href=\"hl-futures.html\" target=\"_blank\" rel=\"noopener\">מחולל העתידים</a>. את הצעדים שעלו מעבירים ל<a href=\"hl-stress.html\" target=\"_blank\" rel=\"noopener\">בדיקת עמידות</a>, ובודקים אם התכנית מחזיקה יותר.</p>\n<p class=\"src\">מבוסס על Gaming ו־Simulation מתוך ערכת Futures Toolkit, ועל תרגילים שולחניים (tabletop exercises).</p>", "steps": {"#s1h": "בוחרים מי משחקים ומה התפקידים. כדאי שכל משתתף או משתתפת יקחו תפקיד אחד, ושיהיה גם מי שמייצג את ההורים או את הקהילה.", "#s2h": "בוחרים עולם. כדאי לבחור דווקא עולם שבו התכנית שלכם נראית חלשה. אפשר לייבא עולמות ממחולל העתידים, לתאר עולם בעצמכם, או לשחק בישראל של היום.", "#s3h": "בכל סבב: קוראים את המצב יחד, שואלים את מנחה המשחק מה שרוצים לדעת, דנים עם טיימר, וכותבים החלטה עם אחראי או אחראית לכל צעד. בלי AI אפשר לשחק ידנית: מנחה אנושי כותב את המצב ואת התוצאה.", "#s4h": "שלושה צעדים: ממצאים ושאלות לדיון, דיון של הצוות, ובסוף לקחים וצעדים שמתחשבים במה שעלה בדיון."}};
   const wrap = document.querySelector(".wrap"); if(!wrap) return;
   // 1. toolkit bar
   const bar = document.createElement("nav"); bar.className = "bgkit-bar"; bar.setAttribute("aria-label", "מעבדת האופק · Be Good");

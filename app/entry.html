@@ -155,6 +155,24 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 .linklist a:hover{border-color:var(--spoken);}
 .linklist a b{display:block;font-weight:700;margin-bottom:1px;}
 .linklist a span{color:var(--muted);font-size:12px;}
+html .card.sbe-s{border-top:1px solid #e3e9ef!important}
+label.remember{display:flex;align-items:center;gap:8px;font-weight:400;font-size:13.5px;color:var(--muted);margin:0 0 12px;cursor:pointer}
+label.remember input{width:auto;margin:0}
+.login-card .in{padding:16px 18px}
+.code-row input.code,.code-row button.go-in,.code-row a.ask-code{height:38px!important;box-sizing:border-box!important;padding-top:0!important;padding-bottom:0!important;line-height:36px!important}
+.code-row a.ask-code{display:inline-flex;align-items:center;font-size:14px;font-weight:600;padding:6px 20px;border-radius:999px;border:1px solid #1d3f63;color:#1d3f63;background:#fff;text-decoration:none;line-height:1.5;transition:background .16s ease}
+.code-row a.ask-code:hover{background:#f2f6fa}
+.code-row a.ask-code:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(27,154,170,.25)}
+@media screen and (max-width:520px){.code-row input.code{width:130px}.code-row a.ask-code,.code-row button.go-in{padding:6px 14px;font-size:13.5px}}
+.logged{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 auto 14px;font-size:13.5px;color:var(--muted)}
+.logged .lg-who b{color:var(--ink);font-weight:600}
+.logged button{width:auto;margin:0;font:inherit;font-weight:600;font-size:13.5px;padding:5px 16px;border-radius:999px;cursor:pointer;transition:background .16s ease,border-color .16s ease}
+.logged .lg-home{background:#1d3f63;border:1px solid #1d3f63;color:#fff}
+.logged .lg-home:hover{background:#16324f}
+.logged .lg-out{background:transparent;border:1px solid #d7e0ea;color:#1d3f63}
+.logged .lg-out:hover{border-color:#1d3f63}
+.code-row input.code{background:#fff;border:1px solid #d7e0ea}
+.code-row input.code:focus{border-color:#1b9aaa;box-shadow:0 0 0 3px rgba(27,154,170,.12);outline:none}
 .whoami{font-size:13px;color:var(--muted);margin-bottom:8px;}
 .whoami b{color:var(--ink);}
 .morelinks{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:center;font-size:13.5px;line-height:1.6}
@@ -175,9 +193,9 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 .maplink .sun{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:#fff8e1;border:1px solid #f1d98a}
 @media screen and (max-width:520px){.maplink{padding:10px 14px;gap:10px;border-radius:14px}.maplink .sun{width:34px;height:34px;font-size:18px}.maplink b{font-size:15px}.maplink span{font-size:13px}}
 .maplink b{display:block;font-size:17px}.maplink span{font-size:14px;opacity:.92}
-.maplink.gift{display:flex;align-items:center;justify-content:center;gap:6px;background:#fff;color:#16324a;border:1px solid #f1d98a;box-shadow:none;padding:6px 14px;margin:0 0 14px;border-radius:999px;font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.maplink.gift{display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(180deg,#fffdf7,#fff7df);color:#16324a;border:1.5px solid #f2c14e;box-shadow:0 0 0 4px rgba(242,193,78,.18),0 3px 10px rgba(200,140,0,.14);padding:10px 18px;margin:0 0 14px;border-radius:999px;font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .maplink.gift::before{display:none}
-.maplink.gift b{display:inline;font-size:14px}.maplink.gift span{font-size:13px;opacity:.9}
+.maplink.gift b{display:inline;font-size:16px;font-weight:700;color:#1d3f63}.maplink.gift .em{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#f2c14e;font-size:15px;flex:none}.maplink.gift span{font-size:13px;opacity:.9}
 @media screen and (max-width:520px){.maplink.gift{padding:4px 10px;font-size:13px}.maplink.gift b{font-size:13px}.maplink.gift span{font-size:12px}}
 </style>
 
@@ -319,29 +337,31 @@ function renderEntry(){
   if (pre) code.value = pre;
   // שדה הקוד וכפתור הכניסה באותה שורה, קטנים ועדינים (28/10/2026)
   btn.classList.add("go-in");
+  // שורה אחת, בלי כותרת (29/10/2026: "לעצב יפה בשורה אחת: בלי הכותרת כניסה למערכת. כפתור נוסף בדומה לכפתור הכניסה ולידו - לבקש קוד")
+  code.setAttribute("aria-label", "קוד כניסה");
   inn.append(
-    el("div",{class:"code-row"}, code, btn), err,
-    el("p",{class:"no-code"}, "אין עדיין קוד? ", el("a",{href:"renew.html"},"בקשה לכלים")));
-  card.append(el("h2",{},"כניסה למערכת"), inn);
+    el("div",{class:"code-row"}, code, btn, el("a",{class:"ask-code sbe-no-theme",href:"renew.html"},"בקשת קוד")), err);
+  card.classList.add("login-card");
+  card.append(inn);
   view.append(card);
   // ארבעה מרחבים, בית אחד (28/10/2026): שני מרחבי עבודה, וכלים משותפים לשניהם. כל מרחב עם ספריית תוצרים לדוגמה משלו.
   const sp = el("div",{class:"spaces"});
   const spaceTile = (cls, icon, title, text, href, linkText) => { const d = el("a",{class:"space " + cls, href});
-    d.append(el("img",{class:"sp-logo",src:"assets/begood-" + cls + ".webp",alt:"",width:"200",height:"150"}), el("b",{},icon + " " + title), el("p",{},text),
+    d.append(el("img",{class:"sp-logo",src:cls === "org" ? "assets/begood-together.webp" : "assets/begood-" + cls + ".webp",alt:"",width:"200",height:"150"}), el("b",{},icon + " " + title), el("p",{},text),
       el("span",{class:"sp-go"}, linkText, el("i",{"aria-hidden":"true"},"←"))); return d; };
   sp.append(
     spaceTile("org", "🏢", "המרחב הארגוני", "כלים לארגונים, לקהילות, לרשויות ולצוותי הנהלה: היערכות לעתיד לא ידוע, מנהיגות, תקשורת וחשיבה משותפת בצוות.", "examples-org.html", "תוצרים לדוגמה"),
     spaceTile("edu", "🎒", "המרחב החינוכי", "כלים לבתי ספר, לגנים, לאקדמיה ולהורים: עבודה עם הכיתה, הנחיית קבוצות, תרגול שיחות, משחקי חוסן ושגרות.", "examples.html", "תוצרים לדוגמה"));
   view.append(sp);
+  // "יש מה לעשות" (19/10/2026): מדריכון לחירום, פתוח לכולם בלי קוד. מהמדריכון אין מעבר לכלים אחרים.
+  const gl = el("a",{class:"maplink gift",href:"yesh-ma-laasot.html"});
+  gl.append(el("span",{class:"em","aria-hidden":"true"},"🚨"), el("b",{},"יש מה לעשות: מדריכון לחירום"), el("span",{},"· פתוח לכולם"));
+  view.append(gl);
   // מפת הכלים: לא בטוחים מאיפה להתחיל? (map.html, פתוח לכולם)
   const ml = el("a",{class:"maplink",href:"map.html"}), mt = el("div",{});
   mt.append(el("b",{},"מאיפה מתחילים? מפת הכלים"), el("span",{},"מתארים מה רוצים לעשות, והמפה מציעה באיזה כלי להתחיל ובאילו כלים להמשיך."));
   ml.append(el("span",{class:"sun"},"🧭"), mt);
   view.append(ml);
-  // "יש מה לעשות" (19/10/2026): מדריכון לחירום, פתוח לכולם בלי קוד. מהמדריכון אין מעבר לכלים אחרים.
-  const gl = el("a",{class:"maplink gift",href:"yesh-ma-laasot.html"});
-  gl.append("🚨 ", el("b",{},"יש מה לעשות: מדריכון לחירום"), el("span",{},"· פתוח לכולם"));
-  view.append(gl);
 
   // קישורים משניים: כניסת ניהול, אודות, חידוש מנוי (קוד לקבוצה של סדנה נכנס בשדה הראשי)
   const more = el("div",{class:"card"});
@@ -440,6 +460,41 @@ function buildWorkshopPicker(prefill){
 }
 
 
+// מכשיר מוכר למנהלת המערכת (28/10/2026: "תן לי להכנס בלי ססמה או קוד"): אחרי כניסה אחת עם הסיסמה
+// נשמר במכשיר מפתח (90 יום), והכניסה הבאה בלי סיסמה. השרת שומר רק גיבוב (sysRemember / sysDevice ב-access.mjs).
+// "יציאה" שוכחת את המכשיר, והחלפת הסיסמה מבטלת את כל המכשירים.
+const SYS_DEV = "sbe.sys.device";
+function sysDevice(){ try { const d = JSON.parse(localStorage.getItem(SYS_DEV) || "null"); return d && d.key && Date.parse(d.exp) > Date.now() ? d : null; } catch(e){ return null; } }
+async function sysRemember(){
+  try {
+    const r = await fetch(ACCESS_URL, { method:"POST", headers:{ "content-type":"application/json" },
+      body: JSON.stringify({ action:"sysRemember", token: sessionStorage.getItem("sbe.session.token") || "", label: navigator.platform || "" }) });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.key) localStorage.setItem(SYS_DEV, JSON.stringify({ key:d.key, exp:d.exp }));
+  } catch(e){}
+}
+function sysForget(){
+  const d = sysDevice();
+  try { localStorage.removeItem(SYS_DEV); } catch(e){}
+  if (d) fetch(ACCESS_URL, { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ action:"sysForget", key:d.key }) }).catch(() => {});
+}
+async function sysAutoLogin(){
+  const d = sysDevice(); if (!d) return false;
+  const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 75000);
+  try {
+    const r = await fetch(ACCESS_URL, { method:"POST", headers:{ "content-type":"application/json" },
+      body: JSON.stringify({ action:"sysDevice", key:d.key }), signal: ctrl.signal });
+    const data = await r.json().catch(() => ({}));
+    if (r.status === 403) { try { localStorage.removeItem(SYS_DEV); } catch(e){} return false; }
+    if (!r.ok || !data.token) return false;
+    clearSession();
+    sessionStorage.setItem("sbe.session.token", data.token);
+    persistSession(null, "ניהול מערכת");
+    sessionStorage.setItem("sbe.session.homeUrl", "admin.html?role=sys");
+    return true;
+  } catch(e){ return false; } finally { clearTimeout(timer); }
+}
+
 // יציאה / התחלת כניסה חדשה: מוחקת את הכניסה של הלשונית ואת העותק שלה
 // ללשוניות חדשות (lib/access-guard.js).
 const SESSION_KEYS = ["sbe.session.homeUrl", "sbe.session.name", "sbe.session.role", "sbe.session.token", "sbe.session.modules", "sbe.session.perms", "sbe.session.info", "sbe.session.wf"];
@@ -508,7 +563,7 @@ function renderWorkshopSuccess(role, name){
   const CONV_LINK = { href:"conversation-planner.html", t:"תכנון שיחה", d:"הכנה לשיחה אמיתית (לא סימולציה). פתוח לכל תפקיד." };
   const ACTIVITY_LINK = { href:"activity-planner.html", t:"תכנון פעילות", d:"בניית פעילות חינוכית או ניתוח של פעילות קיימת. פתוח לכל תפקיד." };
   const ACADEMIC_LINK = { href:"academic-review.html", t:"ניתוח ומשוב לעבודה אקדמית או פרויקט לפני הגשה", d:"משוב לפי קריטריונים על עבודה או פרויקט, לפני ההגשה." };
-  const PRACTICE_LINK = { href:"practice.html", t:"תרגול עצמי", d:"תרגול מול AI שמגלם דמות" };
+  const PRACTICE_LINK = { href:"practice.html", t:"תרגול לפי תרחיש", d:"תרגול מול AI שמגלם דמות" };
   const SOURCES_LINK = { href:"sources-library.html", t:"ספריית המקורות", d:"חיפוש במקורות התיאורטיים" };
   const TRAINEE_LINKS = [
     { href:"observation-sheet.html", t:"דף צפייה (טלפון)", d:"למי שצופה, בסבב של מתנסה אחר/ת" },
@@ -560,6 +615,7 @@ function buildAdminField(role){
   const passWrap = el("div",{style:"display:flex;align-items:flex-start;margin-bottom:12px"}, pass, toggle);
   const err = el("div",{class:"err"},""); err.hidden = true;
   const btn = el("button",{class:"primary"},"כניסה");
+  const remember = el("input",{type:"checkbox"}); remember.checked = true;
   const submit = async () => {
     const clean = pass.value.replace(/[‎‏؜]/g, "").trim();
     if (!clean) { err.textContent = "אפשר להקליד סיסמה כדי להיכנס."; err.hidden = false; return; }
@@ -574,6 +630,7 @@ function buildAdminField(role){
     }
     err.hidden = true;
     persistSession(null, role === "sys" ? "ניהול מערכת" : "ניהול מוסד");
+    if (role === "sys" && remember.checked) { btn.disabled = true; btn.textContent = "שומרים את המכשיר..."; await sysRemember(); }
     const dest = "admin.html?role=" + role;
     try { sessionStorage.setItem("sbe.session.homeUrl", dest); } catch(e){}
     location.href = dest;
@@ -582,7 +639,9 @@ function buildAdminField(role){
   pass.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
   wrap.append(
     el("p",{class:"hint"},"כאן נכנסים עם סיסמה, לא עם קוד: לניהול מוסד אחד או לניהול כל המערכת."),
-    el("label",{},"סיסמה"), passWrap, err, btn);
+    el("label",{},"סיסמה"), passWrap,
+    role === "sys" ? el("label",{class:"remember"}, remember, " לזכור את המכשיר הזה: בפעם הבאה בלי סיסמה (עד 90 יום)") : "",
+    err, btn);
   return wrap;
 }
 
@@ -597,7 +656,7 @@ function buildAdminField(role){
   // יציאה רק כשמבקשים אותה (?logout=1 או כפתור "יציאה"), לא בכל הגעה למסך
   // הכניסה — אחרת קישור "Begood" או "מסך כניסה" ניתק את מנהלת המערכת וחסם
   // אותה מכל המסכים. כניסה חדשה מוחקת ממילא את הקודמת (clearSession).
-  if (new URLSearchParams(location.search).get("logout")) clearSession();
+  if (new URLSearchParams(location.search).get("logout")) { sysForget(); clearSession(); }
   // entry.html?practi — קישור ישיר להתנסות (לשקף/QR בהרצאה)
   if (new URLSearchParams(location.search).has("practi") && guestOpen()) { enterGuest(); return; }
   // entry.html?open=<מזהה>: קישור פתוח ליום אחד, בלי קוד (נוצר בניהול, "🔗 קישור פתוח ליום אחד")
@@ -616,16 +675,25 @@ function buildAdminField(role){
       }
     }
   } catch(e){}
+  // מכשיר מוכר של מנהלת המערכת: נכנסים לבד, וחוזרים לדף שביקשו (?next=) או נשארים כאן מחוברים.
+  if (!home && sysDevice()) {
+    var wait = el("p",{class:"logged"}, "נכנסים כמנהלת המערכת. הכניסה נמשכת לפעמים עד דקה.");
+    view.prepend(wait);
+    sysAutoLogin().then(function(ok){
+      var next = new URLSearchParams(location.search).get("next") || "";
+      if (ok && /^[a-z0-9-]+\.html([?#][^\s]*)?$/.test(next)) { location.replace(next); return; }
+      if (ok) { location.replace("entry.html"); return; }
+      wait.textContent = "הכניסה האוטומטית לא הצליחה. אפשר להיכנס עם הסיסמה בכניסת הניהול למטה.";
+    });
+  }
   if (home) {
-    var bar = el("div",{class:"card", style:"margin-bottom:14px"});
-    var inn = el("div",{class:"in"});
-    var goHome = el("button",{class:"primary", style:"width:auto;margin-inline-end:8px"},"חזרה למסך שלי");
-    var out = el("button",{style:"width:auto"},"יציאה");
+    // מחובר/ת: שורה דקה אחת מעל הכניסה, בלי כרטיס (28/10/2026: "הסרגל העליון של הקוד לא נראה טוב")
+    var bar = el("div",{class:"logged sbe-no-theme"});
+    var goHome = el("button",{class:"lg-home sbe-no-theme"},"⌂ המרחב שלי");
+    var out = el("button",{class:"lg-out sbe-no-theme"},"יציאה");
     goHome.addEventListener("click", function(){ location.href = home; });
-    out.addEventListener("click", function(){ clearSession(); bar.remove(); });
-    inn.append(el("p",{class:"whoami", style:"margin-top:0"}, "את/ה מחובר/ת", roleLabel ? " · " : "", roleLabel ? el("b",{},roleLabel) : ""),
-      goHome, out);
-    bar.append(inn);
+    out.addEventListener("click", function(){ sysForget(); clearSession(); bar.remove(); });
+    bar.append(el("span",{class:"lg-who"}, "מחובר/ת", roleLabel ? " · " : "", roleLabel ? el("b",{},roleLabel) : ""), goHome, out);
     view.prepend(bar);
   }
 })();

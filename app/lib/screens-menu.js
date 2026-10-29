@@ -25,7 +25,7 @@ window.SBE_SCREENS = [
       { file:'resilience-team.html', label:'מיפוי חוסן חברתי: מסך מחנך/ת', who:'הרשאת מיפוי חוסן חברתי' },
       { file:'resilience-fill.html', label:'שאלון חוסן: מסך תלמיד/ה', who:'תלמידים, בקישור מהמחנך/ת' },
       { file:'resilience-advisor.html', label:'פרקטי: יועצת לפיתוח חוסן חברתי', who:'הרשאת חוסן חברתי או פרקטי' },
-      { file:'leadership-advisor.html', label:'נוגי: יועצת למנהיגות תומכת חוסן', who:'הרשאת נוגי' },
+      { file:'leadership-advisor.html', label:'נוגי: יועצת למנהיגות שמקדמת חוסן', who:'הרשאת נוגי' },
     ]},
     { title:'🎭 2. להתאמן: מוכנים לרגע המאתגר?', items:[
       { file:'input-screen.html', label:'יצירת תרחיש: סטודנטיות.ים', who:'מנחות סטודנטים' },
@@ -34,9 +34,9 @@ window.SBE_SCREENS = [
       { file:'search.html', label:'חיפוש במאגר התרחישים', who:'מנחות' },
       { file:'facilitator-screen.html', label:'מסך הסדנה', who:'מנחות' },
       { file:'observation-sheet.html', label:'דף צפייה (טלפון)', who:'מתנסות בסדנה' },
-      { file:'practice.html', label:'תרגול עצמי', who:'משתתפות בסדנה' },
+      { file:'practice.html', label:'תרגול לפי תרחיש', who:'משתתפות בסדנה' },
       { file:'yesh-ma-laasot.html', label:'🚨 יש מה לעשות: מדריכון לחירום', who:'כולם, גם בלי כניסה (בלי ניווט לכלים אחרים)' },
-      { file:'org-suite.html', label:'🤝 Begood together: תרגול צוותים', who:'הרשאת orgsuite; צופים וצופות בקישור ההצטרפות' },
+      { file:'org-suite.html', label:'🤝 תרגול צוותים', who:'הרשאת orgsuite; צופים וצופות בקישור ההצטרפות' },
       { file:'conversation-planner.html', label:'תכנון שיחה', who:'הרשאת תכנון שיחה' },
       { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
       { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'הרשאת גשר (bridge)' },
@@ -53,7 +53,7 @@ window.SBE_SCREENS = [
     { title:'🛠 3. לתכנן ולפעול: מה עושים מחר בבוקר?', items:[
       { file:'activity-planner.html', label:'תכנון פעילות', who:'הרשאת תכנון פעילות' },
       { file:'resilience-studio.html', label:'סטודיו חוסן: השראה ופעולה', who:'הרשאת סטודיו, תכנון פעילות, מיפוי חוסן, פרקטי או נוגי' },
-      { file:'message-writer.html', label:'תקשורת מקדמת חוסן חברתי', who:'ניסוח חד־פעמי וניהול תקשורת; שמירת שיחות בקוד אישי' },
+      { file:'message-writer.html', label:'תקשורת שמקדמת חוסן חברתי', who:'ניסוח חד־פעמי וניהול תקשורת; שמירת שיחות בקוד אישי' },
       { file:'horizon-lab.html', label:'🔭 מעבדת האופק: דף הבית', who:'הרשאת מעבדת האופק (horizon)' },
       { file:'hl-voice.html', label:'מעבדת האופק: קול הקהילה', who:'הרשאת מעבדת האופק (horizon)' },
       { file:'hl-radar.html', label:'מעבדת האופק: רדאר החוסן החברתי', who:'הרשאת מעבדת האופק (horizon)' },
@@ -62,7 +62,7 @@ window.SBE_SCREENS = [
       { file:'hl-horizons.html', label:'מעבדת האופק: שלושה אופקים', who:'הרשאת מעבדת האופק (horizon)' },
       { file:'hl-collage.html', label:'מעבדת האופק: תמונת עתיד קבוצתית', who:'הרשאת מעבדת האופק (horizon)' },
       { file:'hl-roadmap.html', label:'מעבדת האופק: מהחזון להיום', who:'הרשאת מעבדת האופק (horizon)' },
-      { file:'hl-game.html', label:'מעבדת האופק: משחק מצב עתידי', who:'הרשאת מעבדת האופק (horizon)' },
+      { file:'hl-game.html', label:'מעבדת האופק: רואים את האופק', who:'הרשאת מעבדת האופק (horizon)' },
       { file:'hl-stress.html', label:'מעבדת האופק: בדיקת עמידות', who:'הרשאת מעבדת האופק (horizon)' },
     ]},
     { title:'📖 4. ללמוד מהעשייה: מה למדנו?', items:[
@@ -75,7 +75,7 @@ window.SBE_SCREENS = [
     { title:'🔁 5. לעגן בשגרה: מה ימשיך לפעול גם כשמשהו משתבש?', items:[
       { file:'routines-hub.html', label:'מרכז שגרות ויוזמות חברתיות', who:'הרשאת מרכז השגרות (routines)' },
       { file:'continuity-kit.html', label:'תיק רציפות', who:'הרשאת תיק רציפות (continuity)' },
-      { file:'journey.html', label:'מסע אל החוסן: מסך המשתתפים', who:'הרשאת מסע אל החוסן' },
+      { file:'journey.html', label:'מסע אל החוסן החברתי: מסך המשתתפים', who:'הרשאת מסע אל החוסן החברתי' },
     ]},
   ]},
   // דפי עזר מתהליך הבנייה — מקופלים בסוף התפריט, כדי שלא יפריעו (04/10/2026)

@@ -253,14 +253,15 @@ table.rm tr.gates td{background:transparent;padding:2px 6px}
 .req{color:var(--wild);font-weight:700}
 .vfield label{font-weight:600;font-size:15px}
 </style>
+<link rel="stylesheet" href="lib/hl-skin.css">
 </head>
 <body>
 <div class="wrap" id="app">
 
 <header class="top">
   <div>
-    <div class="brand">Be Good · חוסן מול עתיד לא ידוע</div>
-    <h1>מהחזון להיום</h1>
+    <div class="brand">Begood · מעבדת האופק</div>
+    <h1 class="hero-banner"><img src="assets/hl-roadmap-banner.webp" alt="מהחזון להיום" width="1200" height="235"></h1>
     <p class="muted">מתחילים מהעתיד שאנחנו רוצים להגיע אליו, וחוזרים ממנו אחורה, שלב אחר שלב, עד מה שעושים כבר החודש. כך נבנית מפת דרכים שמחברת בין החזון לצעדים הראשונים.</p>
   </div>
 </header>
@@ -279,7 +280,7 @@ table.rm tr.gates td{background:transparent;padding:2px 6px}
   <span><b>מוצגת דוגמה מוכנה:</b> החזון של בית ספר יסודי בגליל העליון לשנת 2035, ומפת הדרכים שמובילה אליו.</span>
   <button id="resetBtn" type="button">מפה חדשה</button>
 </div>
-<p class="ai-note notice small">החלקים שמופעלים על ידי AI זמינים כשיש חיבור למודל. בינתיים אפשר לעיין בדוגמה ולערוך ידנית.</p>
+<p class="ai-note notice small">אין כרגע חיבור לבינה המלאכותית. בינתיים אפשר לעיין בדוגמה ולערוך ידנית.</p>
 
 <!-- 1 context -->
 <section class="stage" aria-labelledby="h1s">
@@ -432,7 +433,7 @@ document.documentElement.classList.add("ai-off");
   const use = async n => { try { return (window.claude && window.claude.use) ? await window.claude.use(n) : null; } catch(e){ return null; } };
   [SAMPLE, DB, DL] = await Promise.all([use("sample"), use("db"), use("downloads")]);
   document.documentElement.classList.toggle("ai-off", !SAMPLE);
-  $("mSave").disabled = !DB; $("mOpen").disabled = !DB; if(!DB) $("mStatus").textContent = "שמירה זמינה כשיש חיבור למודל.";
+  $("mSave").disabled = !DB; $("mOpen").disabled = !DB; if(!DB) $("mStatus").textContent = "השמירה לא זמינה כרגע.";
 })();
 function errCopy(e){
   const c = e && e.code;
@@ -762,7 +763,7 @@ $("askForm").addEventListener("submit", e => { e.preventDefault(); const v = $("
 $("toStress").addEventListener("click", async () => { await copy(planText()); $("stressStatus").textContent = "המפה הועתקה. בכלי בדיקת העמידות מדביקים אותה בשלב ״התוכנית״."; });
 $("copyAll").addEventListener("click", () => copy(planText()));
 $("dlAll").addEventListener("click", async () => {
-  const st = $("dlStatus"); if(!DL){ st.textContent = "ההורדה זמינה כשיש חיבור למודל. אפשר להעתיק כטקסט."; return; }
+  const st = $("dlStatus"); if(!DL){ st.textContent = "ההורדה לא זמינה כרגע. אפשר להעתיק כטקסט."; return; }
   const sg = stages();
   const table = `<table><tr><th></th>${sg.map(s => `<th>${esc(s.label)}</th>`).join("")}</tr>${S.lanes.map(l => `<tr><th>${esc(l.name)}</th>${sg.map((s,si) => `<td>${S.items.filter(i => i.lane === l.id && i.stage === si).map(i => `<div class="${i.kind === "ms" ? "ms" : "act"}">${esc(i.text)}${i.owner ? `<br><small>מוביל/ה: ${esc(i.owner)}</small>` : ""}</div>`).join("")}</td>`).join("")}</tr>`).join("")}<tr><th>תנאים למעבר</th>${sg.map((s,si) => `<td>${S.gates.filter(g => g.stage === si).map(g => `<div class="gt">${esc(g.text)}</div>`).join("")}</td>`).join("")}</tr></table>`;
   const html = `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>מפת דרכים</title><link href="https://fonts.googleapis.com/css2?family=Rubik:wght@600&family=Assistant:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:Assistant,Arial,sans-serif;direction:rtl;margin:20px;color:#16232e}h1,h2{font-family:Rubik,Arial,sans-serif}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #d5dde3;padding:6px;vertical-align:top;text-align:right}.ms{border-right:4px solid #17607a;padding:3px 6px;margin:3px 0;font-weight:700}.act{padding:3px 6px;margin:3px 0;background:#f2f5f8}.gt{background:#fbefd9;padding:3px 6px;margin:3px 0}.v{border-right:6px solid #17607a;background:#dcecf1;padding:10px 14px}@page{size:A4 landscape;margin:10mm}@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>
@@ -810,7 +811,7 @@ renderAll();
 </style>
 <script id="bgkit-js">
 (function(){
-  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "משחק מצב עתידי", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "roadmap", HELP = {"title": "איך עובדים עם מהחזון להיום?", "html": "<p><b>מה הכלי עושה:</b> מתחילים מהעתיד שרוצים להגיע אליו, וחוזרים ממנו אחורה, שלב אחר שלב, עד מה שעושים כבר החודש. כך נבנית מפת דרכים עם אבני דרך, תנאים למעבר בין השלבים, סיכונים וצעדים ראשונים.</p>\n<p><b>מתי משתמשים בו:</b> כשיש כיוון או חלום, ורוצים להפוך אותו לתוכנית. החשיבה מהעתיד אחורה עוזרת לא להיתקע במה שנראה אפשרי היום.</p>\n<p><b>כמה זמן:</b> מפגש של שעתיים עד שלוש לחזון ולדרך, ועוד מפגש קצר לצעדים הראשונים.</p>\n<p><b>החזון:</b> אפשר לתאר תמונת עתיד, וה־AI יצייר אותה, ולענות על שלוש שאלות בסיס. בלי שלוש השאלות האלה המפה לא תהיה משמעותית.</p>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>מאיפה מגיעים ולאן ממשיכים:</b> את העתיד הרצוי אפשר לייבא מ<a href=\"hl-horizons.html\" target=\"_blank\" rel=\"noopener\">שלושה אופקים</a> או מ<a href=\"hl-collage.html\" target=\"_blank\" rel=\"noopener\">תמונת עתיד קבוצתית</a>. את המפה המוכנה כדאי לבדוק ב<a href=\"hl-stress.html\" target=\"_blank\" rel=\"noopener\">בדיקת עמידות</a>.</p>\n<p class=\"src\">מבוסס על Visioning, Backcasting ו־Roadmapping מערכת Futures Toolkit.</p>", "steps": {"#h1s": "מתארים את המקום ובוחרים את שנת החזון. מהשנה הזו נגזרים השלבים של מפת הדרכים.", "#h2s": "שני חלקים: תמונת עתיד, שמתארים במילים וה־AI מצייר, ושאלות הבסיס. שלוש השאלות הראשונות הן הבסיס. מהתשובות נבנה החזון, עם AI או בלעדיו. אפשר גם לייבא חזון משלושה אופקים.", "#h3s": "חוזרים מהחזון אחורה. בכל שלב שואלים: מה יהיה נכון עד אז, כדי שהשלב הבא יקרה? כל מה שנכתב כאן מופיע גם במפת הדרכים.", "#h4s": "כל שורה היא תחום עבודה, וכל עמודה היא שלב בזמן. לוחצים על פריט כדי לערוך אותו, להעביר אותו או לרשום מי מוביל אותו. המעוינים הצהובים הם תנאים למעבר לשלב הבא.", "#h5s": "מה עלול לשבש את הדרך, ומה עושים אם זה קורה. כדי לבדוק לעומק מול משברים, מעתיקים את המפה לבדיקת העמידות.", "#h6s": "הצעדים לשלושת החודשים הקרובים, עם מי מוביל כל צעד ועד מתי. כך אפשר לבדוק בעוד חודש מה התקדם."}};
+  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "רואים את האופק", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "roadmap", HELP = {"title": "איך עובדים עם מהחזון להיום?", "html": "<p><b>מה הכלי עושה:</b> מתחילים מהעתיד שרוצים להגיע אליו, וחוזרים ממנו אחורה, שלב אחר שלב, עד מה שעושים כבר החודש. כך נבנית מפת דרכים עם אבני דרך, תנאים למעבר בין השלבים, סיכונים וצעדים ראשונים.</p>\n<p><b>מתי משתמשים בו:</b> כשיש כיוון או חלום, ורוצים להפוך אותו לתוכנית. החשיבה מהעתיד אחורה עוזרת לא להיתקע במה שנראה אפשרי היום.</p>\n<p><b>כמה זמן:</b> מפגש של שעתיים עד שלוש לחזון ולדרך, ועוד מפגש קצר לצעדים הראשונים.</p>\n<p><b>החזון:</b> אפשר לתאר תמונת עתיד, וה־AI יצייר אותה, ולענות על שלוש שאלות בסיס. בלי שלוש השאלות האלה המפה לא תהיה משמעותית.</p>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>מאיפה מגיעים ולאן ממשיכים:</b> את העתיד הרצוי אפשר לייבא מ<a href=\"hl-horizons.html\" target=\"_blank\" rel=\"noopener\">שלושה אופקים</a> או מ<a href=\"hl-collage.html\" target=\"_blank\" rel=\"noopener\">תמונת עתיד קבוצתית</a>. את המפה המוכנה כדאי לבדוק ב<a href=\"hl-stress.html\" target=\"_blank\" rel=\"noopener\">בדיקת עמידות</a>.</p>\n<p class=\"src\">מבוסס על Visioning, Backcasting ו־Roadmapping מתוך ערכת Futures Toolkit.</p>", "steps": {"#h1s": "מתארים את המקום ובוחרים את שנת החזון. מהשנה הזו נגזרים השלבים של מפת הדרכים.", "#h2s": "שני חלקים: תמונת עתיד, שמתארים במילים וה־AI מצייר, ושאלות הבסיס. שלוש השאלות הראשונות הן הבסיס. מהתשובות נבנה החזון, עם AI או בלעדיו. אפשר גם לייבא חזון משלושה אופקים.", "#h3s": "חוזרים מהחזון אחורה. בכל שלב שואלים: מה יהיה נכון עד אז, כדי שהשלב הבא יקרה? כל מה שנכתב כאן מופיע גם במפת הדרכים.", "#h4s": "כל שורה היא תחום עבודה, וכל עמודה היא שלב בזמן. לוחצים על פריט כדי לערוך אותו, להעביר אותו או לרשום מי מוביל אותו. המעוינים הצהובים הם תנאים למעבר לשלב הבא.", "#h5s": "מה עלול לשבש את הדרך, ומה עושים אם זה קורה. כדי לבדוק לעומק מול משברים, מעתיקים את המפה לבדיקת העמידות.", "#h6s": "הצעדים לשלושת החודשים הקרובים, עם מי מוביל כל צעד ועד מתי. כך אפשר לבדוק בעוד חודש מה התקדם."}};
   const wrap = document.querySelector(".wrap"); if(!wrap) return;
   // 1. toolkit bar
   const bar = document.createElement("nav"); bar.className = "bgkit-bar"; bar.setAttribute("aria-label", "מעבדת האופק · Be Good");

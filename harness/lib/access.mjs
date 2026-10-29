@@ -126,6 +126,7 @@ async function status(store) {
 // הדפדפן לא יכול לזייף אותו, ולכן פעולות שדורשות כניסה (למשל פתיחת כיתת חוסן)
 // נבדקות מולו כאן בשרת. המפתח נוצר פעם אחת ונשמר במאגר (token-secret).
 const TOKEN_HOURS = 12;
+const SYS_DEVICE_DAYS = 90;
 const b64u = (buf) => Buffer.from(buf).toString('base64url');
 
 async function tokenSecret(store) {
@@ -383,7 +384,7 @@ export const MODEL_PAGES = {
   'resilience-team.html': ['resilience'], 'resilience-advisor.html': ['resilience', 'practi'], 'leadership-advisor.html': ['leadership'],
   'resilience-studio.html': ['studio', 'activity', 'resilience', 'practi', 'leadership'], 'journey.html': ['journey'], 'message-writer.html': ['writer'], 'communication-continuity.html': ['writer'], 'facilitation-advisor.html': ['nana'],
   'shared-dialogue-lab.html': ['dialogue'], 'team-thinking.html': ['teamthink'], 'games.html': ['games'], 'memory-game.html': ['games'], 'board-game.html': ['games'], 'no-panic.html': ['games'], 'story-maker.html': ['games'], 'statement-sort.html': ['games'], 'riddles.html': ['games'], 'bingo.html': ['games'], 'twenty-q.html': ['games'], 'truth-dare.html': ['games'], 'trail-signs.html': ['games'], 'readiness-train.html': ['games'], 'idea-garden.html': ['games'],
-  'org-suite.html': ['orgsuite'], 'org-library.html': ['orgsuite'], // Begood together: תרגול צוותים (בלי מודל; כאן כדי שהרשימות יתאימו)
+  'org-suite.html': ['orgsuite'], 'org-library.html': ['orgsuite'], // תרגול צוותים (בלי מודל; כאן כדי שהרשימות יתאימו)
   'horizon-lab.html': ['horizon'], 'hl-voice.html': ['horizon'], 'hl-radar.html': ['horizon'], 'hl-futures.html': ['horizon'], 'hl-circles.html': ['horizon'], 'hl-horizons.html': ['horizon'], 'hl-collage.html': ['horizon'], 'hl-roadmap.html': ['horizon'], 'hl-game.html': ['horizon'], 'hl-stress.html': ['horizon'], // מעבדת האופק (אושר 28/10/2026)
   'family-bridge.html': ['bridge'], 'routines-hub.html': ['routines'], 'continuity-kit.html': ['continuity'] // אושרו 28/10/2026
 };
@@ -999,7 +1000,7 @@ export function notifyAdmin(title, message, link, detail) {
   return Promise.allSettled(jobs);
 }
 const ADMIN_URL = (((typeof process !== 'undefined' && process.env.CORS_ORIGIN) || 'https://s-b-e.netlify.app').split(',')[0].trim().replace(/\/$/, '')) + '/admin.html';
-// מייל למשתתפי מסע אל החוסן (04/10/2026) — רק בהסכמה (j.contact.updates), לא במסעות דמו, ורק כשיש
+// מייל למשתתפי מסע אל החוסן החברתי (04/10/2026) — רק בהסכמה (j.contact.updates), לא במסעות דמו, ורק כשיש
 // שולח מאומת (NOTIFY_FROM בדומיין be-good.co.il; הכתובת הזמנית של Resend שולחת רק לבעלת החשבון).
 // כתוב ברוח השפה המחזקת: חם, ענייני, מה כבר קיים ומה הצעד הבא, הזמנה לשותפות. בלי "איחור".
 const SITE_URL = (((typeof process !== 'undefined' && process.env.CORS_ORIGIN) || 'https://s-b-e.netlify.app').split(',')[0].trim().replace(/\/$/, ''));
@@ -1010,7 +1011,7 @@ export function notifyParticipant(j, subject, paras, link, linkText) {
   const to = j && j.contact && j.contact.updates && j.contact.email;
   if (!to || j.demo || !JR_EMAIL_RE.test(to) || !env.RESEND_API_KEY || !env.NOTIFY_FROM) return Promise.resolve(false);
   const own = SITE_URL + '/journey.html#' + j.id;
-  const foot = 'קיבלתם את המייל כי ביקשתם עדכונים על "' + j.unitName + '" במסע אל החוסן. אפשר להפסיק בכל רגע במסך המסע.';
+  const foot = 'קיבלתם את המייל כי ביקשתם עדכונים על "' + j.unitName + '" במסע אל החוסן החברתי. אפשר להפסיק בכל רגע במסך המסע.';
   const text = ['שלום ' + (j.by || 'לכם') + ',', ...paras, link ? (linkText || 'לצפייה') + ': ' + link : '', 'למסך המסע: ' + own, '',
     'ד״ר יעל שדה · Begood · חוסן · קהילה · חינוך', '', foot].filter((x) => x !== '').join('\n\n');
   const btn = (href, label) => '<a href="' + jrEsc(href) + '" style="display:inline-block;background:#1F4E6B;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:700;margin:6px 0 6px 8px">' + jrEsc(label) + '</a>';
@@ -1020,7 +1021,7 @@ export function notifyParticipant(j, subject, paras, link, linkText) {
     '<p style="color:#2F7D7A;font-weight:700">ד״ר יעל שדה · Begood<br><span style="font-weight:400">חוסן · קהילה · חינוך</span></p>' +
     '<p style="font-size:12.5px;color:#5B6873;border-top:1px solid #ddd;padding-top:8px">' + jrEsc(foot) + '</p></div>';
   return fetch('https://api.resend.com/emails', { method: 'POST', headers: { authorization: 'Bearer ' + env.RESEND_API_KEY, 'content-type': 'application/json' },
-    body: JSON.stringify({ from: env.NOTIFY_FROM, to: [to], subject: 'מסע אל החוסן — ' + subject, text, html }) }).then((r) => r.ok).catch(() => false);
+    body: JSON.stringify({ from: env.NOTIFY_FROM, to: [to], subject: 'מסע אל החוסן החברתי — ' + subject, text, html }) }).then((r) => r.ok).catch(() => false);
 }
 // תאריך בסגנון הישראלי 06.10.26 (06/10/2026)
 const jrFmt = (d) => String(d || '').slice(0, 10).split('-').reverse().map((x, i) => (i === 2 ? x.slice(2) : x)).join('.');
@@ -1099,7 +1100,7 @@ async function handleReviewCriteria(store, body) {
   return [400, { error: 'bad action' }];
 }
 
-// ── מסע אל החוסן (02/10/2026) ──
+// ── מסע אל החוסן החברתי (02/10/2026) ──
 // jr:<id> → מסע אחד: מיפוי → הצעת מסע (עם אפשרויות) → בחירות + הסבר → אישור מנהלת המערכת → אבני דרך
 // (הגשה → משוב / השלמה → תעודה) → תו חוסן. הכול מתועד בתוך המערכת (שרשור לכל אבן דרך, ערעורים ובקשות דחייה).
 // הבעלים — הקוד שבאסימון (t.c); הרשאה journey. מנהלת המערכת רואה הכול ומאשרת.
@@ -1228,7 +1229,7 @@ async function handleJourney(store, body) {
     const week = today.slice(0, 4) + '-' + Math.floor((Date.parse(today) / 864e5 + 4) / 7);
     let sent = false;
     if (new Date(today).getUTCDay() === 0 && st.week !== week && (soon.length || late.length || waiting.length)) {
-      await notifyAdmin('מסע אל החוסן — סיכום שבועי', 'ממתינים לך: ' + waiting.length + ' · מתקרבים בשבועיים: ' + soon.length + ' · בעצירת התרעננות: ' + late.length, ADMIN_J,
+      await notifyAdmin('מסע אל החוסן החברתי — סיכום שבועי', 'ממתינים לך: ' + waiting.length + ' · מתקרבים בשבועיים: ' + soon.length + ' · בעצירת התרעננות: ' + late.length, ADMIN_J,
         [waiting.length ? 'ממתינים לאישור או למשוב שלך:\n' + waiting.map((x) => '• ' + x).join('\n') : '', soon.length ? 'אבני דרך מתקרבות:\n' + soon.map((x) => '• ' + x).join('\n') : '',
           late.length ? 'בעצירת התרעננות (עבר המועד):\n' + late.map((x) => '• ' + x).join('\n') : ''].filter(Boolean).join('\n\n')).catch(() => {});
       await store.set('jr:tick', { week, at: jrNow() }); sent = true;
@@ -1433,7 +1434,7 @@ async function handleJourney(store, body) {
     if (m.status === 'approved') {
       const certUrl = SITE_URL + '/journey-cert.html?id=' + j.id + '&code=' + m.cert.code;
       notifyParticipant(j, j.status === 'done' ? 'תו חוסן לקהילת חוסן 🎉' : (m.gate ? 'עברתם שער! 🎉' : 'אבן דרך הושלמה ✓'),
-        [j.status === 'done' ? 'השלמתם את המסע אל החוסן, ו"' + j.unitName + '" מקבלים תו חוסן לקהילת חוסן. זו דרך שבניתם יחד, צעד אחרי צעד.' : '"' + m.title + '" הושלמה, ומחכה לכם תעודה.',
+        [j.status === 'done' ? 'השלמתם את המסע אל החוסן החברתי, ו"' + j.unitName + '" מקבלים תו חוסן לקהילת חוסן. זו דרך שבניתם יחד, צעד אחרי צעד.' : '"' + m.title + '" הושלמה, ומחכה לכם תעודה.',
           said, nx ? 'הצעד הבא: "' + nx.title + '", עד ' + jrFmt(nx.due) + '.' : ''].filter(Boolean), certUrl, j.status === 'done' ? 'לתו החוסן' : 'לתעודה').catch(() => {});
     } else {
       notifyParticipant(j, 'השלמה קטנה בדרך', ['קראתי את מה שהגשתם ב"' + m.title + '". חסרה השלמה קטנה, ואז ממשיכים:', said, 'אפשר להגיש שוב במסך המסע. אם משהו לא ברור, כתבו לי שם.']).catch(() => {});
@@ -1574,7 +1575,7 @@ async function handleFeedbackInbox(store, body) {
 // entry.html?open=<id>: בלי קוד, רק בתאריך הזה, רק לכלי אחד. האסימון { k:'open', o:id } נבדק מול הרשומה בכל פנייה
 // למודל (authorizePermission), כך שאחרי היום, או אחרי ביטול, הכלי נסגר מיד.
 // 13/10/2026 ("תאפשר לי לתת קוד יומי לכל כלי המערכת"): כל הכלים שפתוחים למשתמשים ועובדים בלי קוד אישי, וגם "כל הכלים"
-// (OPEN_ALL: הכניסה למרחב שלי, עם כל ההרשאות של הרשימה). לא כאן: מיפוי החוסן ומסע אל החוסן (נשענים על קוד אישי בשרת),
+// (OPEN_ALL: הכניסה למרחב שלי, עם כל ההרשאות של הרשימה). לא כאן: מיפוי החוסן ומסע אל החוסן החברתי (נשענים על קוד אישי בשרת),
 // כלי הסימולציה (סדנה וקוד מנחה), וכלים שטרם אושרו.
 export const OPEN_PAGES = { 'message-writer.html': 'writer', 'conversation-planner.html': 'conv', 'activity-planner.html': 'activity',
   'facilitation-advisor.html': 'nana', 'resilience-advisor.html': 'practi', 'leadership-advisor.html': 'leadership',
@@ -1756,6 +1757,34 @@ export async function handleAccess(store, body) {
     await pause(); return [403, { error: 'wrong' }];
   }
 
+  // מכשיר מוכר למנהלת המערכת (28/10/2026: "תן לי להכנס בלי ססמה או קוד"): אחרי כניסה אחת עם הסיסמה,
+  // המכשיר מקבל מפתח ארוך שנשמר רק בו, ונכנס בלי סיסמה עד 90 יום. בשרת נשמר רק הגיבוב של המפתח.
+  // החלפת הסיסמה מבטלת את כל המכשירים (authVersion), ו"שכחת המכשיר" מבטלת אותו.
+  if (action === 'sysRemember') {
+    const t = await verifyToken(store, body.token);
+    if (!t || t.k !== 'sys') { await pause(); return [403, { error: 'unauthorized' }]; }
+    const key = randomBytes(32).toString('hex');
+    const exp = new Date(Date.now() + SYS_DEVICE_DAYS * 864e5).toISOString();
+    await store.set('sysdev:' + sha(key), { created: new Date().toISOString(), exp,
+      authVersion: passwordVersion(await store.get('pw-sys')), label: String(body.label || '').replace(/[<>]/g, '').slice(0, 60) });
+    return [200, { ok: true, key, exp }];
+  }
+  if (action === 'sysDevice') {
+    const key = typeof body.key === 'string' && /^[a-f0-9]{64}$/.test(body.key) ? body.key : '';
+    const rec = key ? await store.get('sysdev:' + sha(key)) : null;
+    const password = await store.get('pw-sys');
+    if (!rec || !(Date.parse(rec.exp) > Date.now()) || !password || rec.authVersion !== passwordVersion(password)) {
+      if (rec) await store.del('sysdev:' + sha(key));
+      await pause(); return [403, { error: 'wrong' }];
+    }
+    return [200, { ok: true, token: await signToken(store, { k: 'sys' }), exp: rec.exp }];
+  }
+  if (action === 'sysForget') {
+    const key = typeof body.key === 'string' && /^[a-f0-9]{64}$/.test(body.key) ? body.key : '';
+    if (key) await store.del('sysdev:' + sha(key));
+    return [200, { ok: true }];
+  }
+
   if (action === 'login') {
     const { kind, secret } = body;
     let ok = false;
@@ -1790,7 +1819,7 @@ export async function handleAccess(store, body) {
   if (/^crit(List|Propose|Mine|Use|Admin|Approve|Reject|Remove)$/.test(action || '')) return handleReviewCriteria(store, body);
   if (/^jr[A-Z]/.test(action || '')) return handleJourney(store, body);
   if (/^wf(Open|Submit|List|Delete|Join|Get)$/.test(action || '')) return handleWorkshopFeedback(store, body);
-  // Begood together: תרגול צוותים בתרחיש (המרחב הארגוני, 28/10/2026)
+  // תרגול צוותים בתרחיש (המרחב הארגוני, 28/10/2026)
   if (action === 'orsCall') return handleOrgSuite(store, body, { pause, who: async (token) => {
     const t = token ? await authorizePermission(store, token, ['orgsuite']) : null;
     return t ? { principal: modelIdentity(t, token).principal, sys: t.k === 'sys' } : null;

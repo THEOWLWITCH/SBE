@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>תעודת מסע אל החוסן</title>
+<title>תעודת מסע אל החוסן החברתי</title>
 <!-- עמוד ציבורי (בלי access-guard): תעודה של אבן דרך או "תו חוסן לקהילת חוסן", מאומתת בשרת לפי מזהה המסע וקוד התעודה. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -80,14 +80,14 @@ fetch('https://sbe-server.onrender.com/api/access', { method:'POST', headers:{ '
     document.getElementById('bar').hidden = false;
     const c = el('div', d.final ? 'final' : ''); c.id = 'cert';
     const top = el('div', 'top'); const logo = el('img'); logo.src = 'assets/begood-logo.png'; logo.alt = 'Begood'; top.appendChild(logo);
-    top.appendChild(el('div', 'kicker', 'מסע אל החוסן')); c.appendChild(top);
+    top.appendChild(el('div', 'kicker', 'מסע אל החוסן החברתי')); c.appendChild(top);
     c.appendChild(el('h1', null, d.final ? 'תו חוסן לקהילת חוסן' : (d.gate ? 'תעודת שער' : 'תעודת אבן דרך')));
     const stg = (J.STAGES.find(s => s.k === +d.stage) || {});
     c.appendChild(el('div', 'sub', d.final ? 'קהילת חוסן: מנגנונים משותפים, תמונת עתיד ודרך שמחזיקה לאורך זמן' : stg.t + ' · ' + stg.sub));
     c.appendChild(el('div', 'to', d.final ? 'מוענק בהוקרה ל' : 'מוענקת בהוקרה ל'));
     c.appendChild(el('div', 'unit', d.unitName));
     const u = (J.UNITS.find(x => x.k === d.unit) || {}).t;
-    c.appendChild(el('div', 'what', d.final ? 'על השלמת המסע אל החוסן' + (u ? ' (' + u + ')' : '') : 'על השלמת "' + d.title + '": אבן דרך ' + d.n + ' מתוך ' + d.total + ' במסע אל החוסן' + (u ? ' (' + u + ')' : '')));
+    c.appendChild(el('div', 'what', d.final ? 'על השלמת המסע אל החוסן החברתי' + (u ? ' (' + u + ')' : '') : 'על השלמת "' + d.title + '": אבן דרך ' + d.n + ' מתוך ' + d.total + ' במסע אל החוסן החברתי' + (u ? ' (' + u + ')' : '')));
     const reached = k => d.final || k < d.stage || (d.gate && k === +d.stage);
     const map = el('div', 'map'); J.STAGES.forEach(s => { const x = el('div', 's' + (reached(s.k) ? ' r' : '') + (s.k === +d.stage && !reached(s.k) ? ' n' : '')); x.appendChild(el('div', 'd', reached(s.k) ? '✓' : s.k)); x.appendChild(el('div', 't', s.t)); map.appendChild(x); }); c.appendChild(map);
     if (d.assessment) c.appendChild(el('p', 'assess', d.assessment));

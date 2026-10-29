@@ -3,7 +3,7 @@
   else root.SBE_COMMUNICATION = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
-  const PRODUCT_NAME = 'תקשורת מקדמת חוסן חברתי';
+  const PRODUCT_NAME = 'תקשורת שמקדמת חוסן חברתי';
   const MODES = Object.freeze({single:'ניסוח חד־פעמי',continuity:'ניהול תקשורת'});
   const VERSIONS = Object.freeze({ tool: '1.2.0', prompt: '1.1.1', engine: '1.1.1', principles: '18-1.0.0', schema: 2 });
   const PRINCIPLES = Object.freeze([
@@ -60,7 +60,7 @@
     Object.freeze({ title: 'שמונה עקרונות לתקשורת מקדמת חוסן', items: Object.freeze(PRINCIPLES.slice(10).map((rule, index) => Object.freeze({ number: index + 11, title: principleTitles[index + 10], explanation: principleExplanations[index + 10], rule }))) })
   ]);
   const STATUSES = Object.freeze({ active: 'פעיל', awaiting_response: 'ממתין לתגובה', meeting_proposed: 'הוצעה פגישה', resolved: 'הסתיים', archived: 'בארכיון' });
-  const KINDS = Object.freeze({ received: 'הודעה שהתקבלה', sent: 'הודעה שנשלחה', draft: 'טיוטת BE GOOD', note: 'החלטה או הערה', summary: 'סיכום BE GOOD', analysis: 'הצעת BE GOOD' });
+  const KINDS = Object.freeze({ received: 'הודעה שהתקבלה', sent: 'הודעה שנשלחה', draft: 'טיוטת Begood', note: 'החלטה או הערה', summary: 'סיכום Begood', analysis: 'הצעת Begood' });
   const ACTIONS = Object.freeze({ suggest: 'הציעי תשובה', continue: 'המשך השיחה', understand: 'נתחי את מצב השיח', next: 'הציעי דרך פעולה', boundaries: 'הציבי גבולות', summarize: 'סיכום השיחה', close: 'סיום השיחה' });
   const REVISIONS = Object.freeze({ shorter: 'קצר יותר', warmer: 'חם יותר', assertive: 'אסרטיבי יותר', formal: 'רשמי יותר', empathetic: 'אמפתי יותר', boundaries: 'גבולות ברורים יותר', another: 'גרסה נוספת' });
   return Object.freeze({ PRODUCT_NAME, MODES, VERSIONS, PRINCIPLES, PRINCIPLE_GROUPS, STATUSES, KINDS, ACTIONS, REVISIONS });

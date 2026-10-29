@@ -114,7 +114,7 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 <a class="back" href="entry.html">→ למסך הכניסה</a>
 <img class="brand" src="assets/begood-logo-mark.webp" alt="Begood" data-brand>
 
-<header><div><h1>בקשה לכלים של Begood</h1><p class="who">מסמנים את הכלים שתרצו לבקש, למוסד או לשימוש פרטי. זו בקשה בלבד: שום כלי לא נפתח מהטופס. הבקשה מגיעה לד״ר יעל שדה, והיא תיצור איתכם קשר להשלמת המנוי ולהסדרת התשלום.</p></div></header>
+<header><div><h1>בקשה לכלים של Begood</h1><p class="who">מסמנים את הכלים שתרצו לבקש, למוסד או לשימוש פרטי. הבקשה מגיעה ל-Begood, וניצור איתכם קשר להשלמת המנוי ולהסדרת התשלום.</p></div></header>
 <!-- בקשת חידוש (30/09/2026): טופס בלי טקסט חופשי. אין סליקה — הבקשה נשמרת
      בשרת ומופיעה למנהלת המערכת במסך הניהול ← מוסדות ← "בקשות חידוש", והיא
      מתקשרת להאריך ולקבל פרטי תשלום. התאריך נרשם אוטומטית בשרת. -->
@@ -149,14 +149,9 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
   </div>
   <label>אילו כלים רוצים לבקש? (שדה עיקרי)</label>
   <div class="sys" id="systems"></div>
-  <label>תקופה</label>
-  <div class="per">
-    <label><input type="radio" name="period" value="year" checked> שנה</label>
-    <label><input type="radio" name="period" value="half"> חצי שנה</label>
-  </div>
   <div id="codeWrap"><label for="code">קוד מנהל/ת המוסד (רשות)</label>
   <input id="code" class="code" dir="ltr" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX"></div>
-  <div style="margin-top:12px"><button class="btn" id="send">שליחת הבקשה לד״ר יעל שדה</button></div>
+  <div style="margin-top:12px"><button class="btn" id="send">שליחת הבקשה ל-Begood</button></div>
   <div id="msg"></div>
 </div>
 <script>
@@ -165,7 +160,7 @@ const $ = (id) => document.getElementById(id);
 // המערכות — אותן הרשאות כמו בשרת (PERMS). "משוב לעבודות" כולל גם הפקת קודים לסטודנטים.
 const SYSTEMS = [
   ["הנחיית סדנאות: סטודנטים", ["fac_trainee"]], ["הנחיית סדנאות: הורים", ["fac_parent"]], ["הנחיית סדנאות: נוער", ["fac_youth"]],
-  ["מיפוי חוסן חברתי", ["resilience"]], ["נוגי: יועצת למנהיגות תומכת חוסן", ["leadership"]], ["פרקטי: יועצת לחוסן", ["practi"]], ["מסע אל החוסן", ["journey"]], ["כתיבה מקדמת חוסן", ["writer"]], ["ננה: מהוראה להנחיה", ["nana"]], ["מעבדת שיח וחקר משותף", ["dialogue"]], ["חשיבת צוות", ["teamthink"]], ["משחקי חוסן", ["games"]], ["מעבדת האופק", ["horizon"]], ["גשר בין הבית לכיתה", ["bridge"]], ["מרכז שגרות ויוזמות חברתיות", ["routines"]], ["תיק רציפות", ["continuity"]], ["סטודיו חוסן", ["studio"]], ["תכנון שיחה", ["conv"]], ["תכנון פעילות", ["activity"]], ["משוב לעבודות", ["academic", "lecturer"]], ["לימודי חוסן חברתי", ["studies"]], ["Begood together: תרגול צוותים", ["orgsuite"]]
+  ["מיפוי חוסן חברתי", ["resilience"]], ["נוגי: יועצת למנהיגות שמקדמת חוסן", ["leadership"]], ["פרקטי: יועצת לחוסן", ["practi"]], ["מסע אל החוסן החברתי", ["journey"]], ["כתיבה מקדמת חוסן", ["writer"]], ["ננה: מהוראה להנחיה", ["nana"]], ["מעבדת שיח וחקר משותף", ["dialogue"]], ["חשיבת צוות", ["teamthink"]], ["משחקי חוסן", ["games"]], ["מעבדת האופק", ["horizon"]], ["גשר בין הבית לכיתה", ["bridge"]], ["מרכז שגרות ויוזמות חברתיות", ["routines"]], ["תיק רציפות", ["continuity"]], ["סטודיו חוסן", ["studio"]], ["תכנון שיחה", ["conv"]], ["תכנון פעילות", ["activity"]], ["משוב לעבודות", ["academic", "lecturer"]], ["לימודי חוסן חברתי", ["studies"]], ["תרגול צוותים", ["orgsuite"]]
 ];
 SYSTEMS.forEach(([l, ps], i) => {
   const cb = Object.assign(document.createElement("input"), { type: "checkbox", id: "s" + i });
@@ -189,7 +184,7 @@ $("send").addEventListener("click", async () => {
   const priv = forWho() === "private";
   const instName = priv ? "" : $("instName").value.trim();
   const body = { action: "renewRequest", type, forWho: priv ? "private" : "inst", fullName: $("fullName").value.trim(), instName,
-    email: $("email").value.trim(), phone, systems, other: "", period: document.querySelector("input[name=period]:checked").value,
+    email: $("email").value.trim(), phone, systems, other: "",
     code: (type === "new" || priv) ? "" : $("code").value.trim() };
   const msg = $("msg"); msg.className = "msg err";
   if (!body.fullName || (!priv && !body.instName)) { msg.textContent = priv ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולשם המוסד."; return; }
@@ -206,7 +201,7 @@ $("send").addEventListener("click", async () => {
       const when = z(t.getDate()) + "." + z(t.getMonth() + 1) + "." + String(t.getFullYear()).slice(2) + ", " + z(t.getHours()) + ":" + z(t.getMinutes());
       $("form").textContent = "";
       const p = document.createElement("p"); p.className = "msg";
-      p.textContent = "הבקשה נשלחה לד״ר יעל שדה (" + when + "). היא תיצור איתך קשר בהקדם. שום כלי לא נפתח עד שהיא תאשר.";
+      p.textContent = "הבקשה נשלחה ל-Begood (" + when + "). ניצור איתכם קשר בהקדם, והכלים ייפתחו אחרי האישור.";
       $("form").append(p); return;
     }
     msg.className = "msg err";

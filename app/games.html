@@ -49,6 +49,22 @@ details summary{cursor:pointer;font-weight:800;color:var(--navy)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) details summary{color:#8fd3e0}}
 details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15px}
 .empty{background:var(--card);border:1px dashed var(--line);border-radius:18px;padding:26px 22px;text-align:center;color:var(--muted);font-size:16px}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:6px 0 4px}
+@media screen and (max-width:560px){.pick{grid-template-columns:1fr}}
+.pk{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:22px 16px;border-radius:16px;border:1px solid var(--line);border-top:2px solid var(--teal);background:var(--card);color:var(--ink);cursor:pointer;font:inherit;box-shadow:0 1px 3px rgba(22,50,74,.05);transition:border-color .16s ease,box-shadow .16s ease}
+.pk:hover{border-color:#9fc9d6;box-shadow:0 4px 14px rgba(22,50,74,.08)}
+.pk[aria-pressed="true"]{border-color:var(--navy);box-shadow:0 0 0 2px rgba(27,79,122,.18)}
+.pk-ic{font-size:30px;line-height:1}
+.pk b{font:800 20px/1.2 Assistant,Arial,sans-serif;color:var(--navy)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pk b{color:#8fd3e0}}
+.pk span:last-child{font-size:14.5px;color:var(--muted)}
+.hero-banner{line-height:0}.hero-banner img{display:block;width:100%;max-width:420px;height:auto}
+:root[data-theme="dark"] .hero-banner img{background:#fff;border-radius:10px;padding:6px 12px}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero-banner img{background:#fff;border-radius:10px;padding:6px 12px}}
+</style>
+<style>
+.adult{display:inline-block;width:fit-content;align-self:flex-start;margin:2px 0 6px;font-size:12.5px;font-weight:700;color:#1d3f63;border:1px solid #c9d7e7;background:#fff;border-radius:999px;padding:2px 10px}
+.adult-filter{display:flex;justify-content:center;margin:6px 0 2px}.adult-filter label{display:inline-flex;gap:8px;align-items:center;font-weight:600;color:#1d3f63;cursor:pointer;border:1px solid #c9d7e7;border-radius:999px;padding:6px 14px;background:#fff}
+body.only-adult article.game:not([data-adult]){display:none}
 </style>
 </head>
 <body>
@@ -59,12 +75,19 @@ details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15
 </nav>
 <main class="wrap">
   <header class="hero">
-    <h1>משחקי חוסן</h1>
+    <h1 class="hero-banner"><img src="assets/games-banner.webp" alt="משחקי חוסן" width="1168" height="300"></h1>
     <p>משחקים שמחזקים חוסן חברתי: בכיתה, בצוות ובבית.</p>
     <div class="bar"></div>
   </header>
 
-  <section class="sec" aria-labelledby="h-print">
+  <!-- בחירה קודם (29/10/2026: "לחלק לשני חלקים - משחקים להורדה / משחקים על המסך. רק אחרי הבחירה תפתח רשימת המשחקים כי אחרת יש יותר מידי גלילה") -->
+  <div class="pick no-print" role="group" aria-label="איזה משחקים">
+    <button type="button" class="pk sbe-no-theme" data-sec="print" aria-pressed="false"><span class="pk-ic" aria-hidden="true">🖨</span><b>משחקים להורדה</b><span>מדפיסים ומשחקים בכיתה, בצוות או בבית</span></button>
+    <button type="button" class="pk sbe-no-theme" data-sec="screen" aria-pressed="false"><span class="pk-ic" aria-hidden="true">🖥</span><b>משחקים על המסך</b><span>משחקים ישר בטלפון או במחשב</span></button>
+  </div>
+
+  <div class="adult-filter" id="adultFilter" hidden><label><input type="checkbox" id="onlyAdult"> רק משחקים שמתאימים גם למבוגרים ולצוותים</label></div>
+  <section class="sec" id="sec-print" aria-labelledby="h-print" hidden>
     <h2 id="h-print">🖨 משחקים להורדה</h2>
     <p class="lead">מורידים, מדפיסים, גוזרים ומשחקים.</p>
 
@@ -88,10 +111,10 @@ details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15
       </div>
     </article>
 
-    <article class="game" style="margin-top:18px">
+    <article data-adult="1" class="game" style="margin-top:18px">
       <div class="pic"><img src="assets/games-memory.webp" alt="קלפי זיכרון חוסן: זוג זהה של ערבות הדדית, קלף מושג הכרת תודה, קלף מצב וגב הקלף" width="900" height="232"></div>
       <div class="body">
-        <h3>זיכרון חוסן</h3>
+        <h3>זיכרון חוסן</h3><span class="adult">👥 מתאים גם למבוגרים: הגרסה לצוות ולמבוגרים</span>
         <p>משחק זיכרון עם 20 זוגות ואיורים חביבים. שני סטים: <b>זוגות זהים</b>, איור ומושג, גם לילדים צעירים; ו<b>מושג ומצב</b>, קלף מושג וקלף מצב מהחיים שמתאים לו, עם משפטים לכל שכבת גיל. כשנמצא זוג, עוצרים ל"רגע של חוסן".</p>
         <div class="chips"><span>20 זוגות</span><span>40 קלפים</span><span>גן עד צוות</span><span>אפשר לשחק עם חלק מהזוגות</span></div>
         <div class="dls">
@@ -130,10 +153,10 @@ details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15
         </details>
       </div>
     </article>
-    <article class="game" style="margin-top:18px">
+    <article data-adult="1" class="game" style="margin-top:18px">
       <div class="pic"><img src="assets/games-nopanic.webp" alt="קלפי המשחק בלי פאניקה: אירוע, הכנה מראש, אלתור וקלף פעולה" width="900" height="600"></div>
       <div class="body">
-        <h3>בלי פאניקה! משחק קלפים למוכנות בחירום</h3>
+        <h3>בלי פאניקה! משחק קלפים למוכנות בחירום</h3><span class="adult">👥 מתאים גם למבוגרים</span>
         <p>אירועים מפתיעים בבית ובשכונה (הפסקת חשמל, אין מים, מפתח שנתקע), ולכל אירוע תגובה: הכנה מראש שווה 2 נקודות, ואלתור מצחיק שווה נקודה אחת. אפשר לבקש עזרה מהשכנים, וקלפי הפעולה הם עזרה הדדית. בסוף: רשימת המוכנות שלנו לבית.</p>
         <div class="chips"><span>2 עד 6 משתתפים</span><span>מגיל 8</span><span>72 קלפים</span><span>תחרות ידידותית או שכונה אחת</span></div>
         <div class="dls"><a class="dl" href="assets/no-panic-cards.pdf" download="בלי-פאניקה-משחק-קלפים-Begood.pdf">⬇ הורדת המשחק (PDF)</a><a class="dl alt" href="no-panic.html">▶ משחק על המסך</a></div>
@@ -165,28 +188,28 @@ details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15
         <div class="dls"><a class="dl" href="assets/game-riddles.pdf" download="חידות-חוסן-Begood.pdf">⬇ הורדת החידות (PDF)</a><a class="dl alt" href="riddles.html">▶ משחק על המסך</a></div>
       </div>
     </article>
-    <article class="game" style="margin-top:18px">
+    <article data-adult="1" class="game" style="margin-top:18px">
       <div class="pic"><img src="assets/games-bingo.webp" alt="כדורי בינגו בצבעי המותג" width="900" height="224"></div>
       <div class="body">
-        <h3>בינגו חוסן</h3>
+        <h3>בינגו חוסן</h3><span class="adult">👥 מתאים גם למבוגרים</span>
         <p>מי שמנחה קורא/ת משפט, וכולם מחפשים בלוח את המושג שמתאים לו. בקובץ 12 לוחות שונים, רשימת קריאה וקלפי קריאה. בדף המשחק אפשר להדפיס עד 30 לוחות, לקרוא על המסך ולבדוק בינגו לפי מספר הלוח.</p>
         <div class="chips"><span>36 מושגים</span><span>12 עד 30 לוחות</span><span>לוגו באמצע כל לוח</span></div>
         <div class="dls"><a class="dl" href="assets/game-bingo.pdf" download="בינגו-חוסן-Begood.pdf">⬇ הורדת המשחק (PDF)</a><a class="dl alt" href="bingo.html">▶ משחק על המסך</a></div>
       </div>
     </article>
-    <article class="game" style="margin-top:18px">
+    <article data-adult="1" class="game" style="margin-top:18px">
       <div class="pic"><img src="assets/games-twenty.webp" alt="זכוכית מגדלת ומחברת בלשים" width="900" height="251"></div>
       <div class="body">
-        <h3>20 שאלות של חוסן</h3>
+        <h3>20 שאלות של חוסן</h3><span class="adult">👥 מתאים גם למבוגרים</span>
         <p>על הקלף מושג של חוסן חברתי ואיור. מי שלקח/ה את הקלף לא מסתכל/ת ומנחש/ת בעשרים שאלות של כן או לא. או הפוך: רק אחד/ת יודע/ת, וכולם מנחשים יחד.</p>
         <div class="chips"><span>20 מושגים עם איור</span><span>שתי דרכים לשחק</span><span>דף מעקב</span></div>
         <div class="dls"><a class="dl" href="assets/game-twenty-questions.pdf" download="20-שאלות-של-חוסן-Begood.pdf">⬇ הורדת הקלפים (PDF)</a><a class="dl alt" href="twenty-q.html">▶ משחק על המסך</a></div>
       </div>
     </article>
-    <article class="game" style="margin-top:18px">
+    <article data-adult="1" class="game" style="margin-top:18px">
       <div class="pic"><img src="assets/games-idea.webp" alt="" width="900" height="300"></div>
       <div class="body">
-        <h3>גן הרעיונות, עם גני</h3>
+        <h3>גן הרעיונות, עם גני</h3><span class="adult">👥 מתאים גם למבוגרים: לאנשי ונשות מקצוע</span>
         <p>מגדלים רעיון מזרע ועד פרי: שותלים אותו, בודקים מה טוב בו ומה פחות, שומרים שלא יפגע באף אחד ומנסים בקטן. בכל שלב גני נותנת משוב על הרעיון (לא על מי שהגה אותו), אפשר לשוחח איתה ולהתייעץ, ומחליטים: ממשיכים, משפרים או מגדלים רעיון אחר. הרעיון מקבל ציור שמשתנה יחד איתו, ובסוף יש סיכום על הרעיון ועל הדרך, להדפסה.</p>
         <div class="chips"><span>חמש קבוצות גיל: גן עד אנשי ונשות מקצוע</span><span>לבד, בזוג או בקבוצה</span><span>סיכום להדפסה</span></div>
         <a class="dl" href="idea-garden.html">▶ שותלים רעיון</a>
@@ -221,13 +244,13 @@ details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15
     </article>
   </section>
 
-  <section class="sec" aria-labelledby="h-screen">
+  <section class="sec" id="sec-screen" aria-labelledby="h-screen" hidden>
     <h2 id="h-screen">🖥 משחקים על המסך</h2>
     <p class="lead">משחקים שמשחקים ישר על המסך, בטלפון או במחשב.</p>
-    <article class="game">
+    <article data-adult="1" class="game">
       <div class="pic"><img src="assets/games-memory.webp" alt="" width="900" height="232"></div>
       <div class="body">
-        <h3>זיכרון חוסן על המסך</h3>
+        <h3>זיכרון חוסן על המסך</h3><span class="adult">👥 מתאים גם למבוגרים: הגרסה לצוות ולמבוגרים</span>
         <p>הופכים קלפים ומחפשים זוגות, בטלפון, במחשב או על המסך בכיתה. בוחרים שכבת גיל, סוג קלפים, כמה זוגות, ואם משחקים כולם יחד או בתורות.</p>
         <div class="chips"><span>6 עד 20 זוגות</span><span>שיתופי או 2 עד 4 משתתפים</span><span>גן עד צוות</span></div>
         <a class="dl" href="memory-game.html">▶ למשחק</a>
@@ -243,19 +266,19 @@ details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15
         <a class="dl" href="board-game.html">▶ למשחק</a>
       </div>
     </article>
-    <article class="game" style="margin-top:18px">
+    <article data-adult="1" class="game" style="margin-top:18px">
       <div class="pic"><img src="assets/games-nopanic.webp" alt="" width="900" height="600"></div>
       <div class="body">
-        <h3>בלי פאניקה! על המסך</h3>
+        <h3>בלי פאניקה! על המסך</h3><span class="adult">👥 מתאים גם למבוגרים</span>
         <p>הקופה, שולחן הקהילה והקלפים ביד על המסך. כל משתתף/ת הוא בית בשכונה, והקלפים מוסתרים בין התורות. בסוף המשחק: רשימת המוכנות שלנו להדפסה.</p>
         <div class="chips"><span>2 עד 6 משתתפים</span><span>תחרות ידידותית או שכונה אחת</span></div>
         <a class="dl" href="no-panic.html">▶ למשחק</a>
       </div>
     </article>
-    <article class="game" style="margin-top:18px">
+    <article data-adult="1" class="game" style="margin-top:18px">
       <div class="pic"><img src="assets/games-story.webp" alt="" width="900" height="221"></div>
       <div class="body">
-        <h3>מחולל סיפורי חוסן</h3>
+        <h3>מחולל סיפורי חוסן</h3><span class="adult">👥 מתאים גם למבוגרים: הגרסה לבוגרים</span>
         <p>ילדים ממציאים דמויות (שם, צבע, צורה ומה מיוחד בהן), בוחרים נושא, מקום ותפניות בעלילה, ומקבלים סיפור חוסן מאויר. אפשר לערוך כל מילה, לבקש שינוי, ולהדפיס או לשמור כ-PDF עם לוגו, שער והקדשה למי שיצר/ה את הסיפור.</p>
         <div class="chips"><span>עד 6 דמויות</span><span>מהגן ועד הבוגרים</span><span>איור לכל עמוד</span><span>PDF עם הקדשה</span></div>
         <a class="dl" href="story-maker.html">▶ יוצרים סיפור</a>
@@ -271,6 +294,19 @@ details ul{margin:8px 0 0;padding-inline-start:20px;line-height:1.6;font-size:15
     </article>
   </section>
 </main>
+<script>
+(function(){
+  var btns=[].slice.call(document.querySelectorAll('.pk'));
+  var oa=document.getElementById('onlyAdult'); if(oa) oa.addEventListener('change',function(){document.body.classList.toggle('only-adult',oa.checked);});
+  function show(k,scroll){ var af=document.getElementById('adultFilter'); if(af) af.hidden=!k;
+    btns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.sec===k)); });
+    ['print','screen'].forEach(function(x){ var el=document.getElementById('sec-'+x); if(el) el.hidden = x!==k; });
+    if (k) { try{ history.replaceState(null,'','#'+k); }catch(e){} if (scroll) document.getElementById('sec-'+k).scrollIntoView({behavior:'smooth',block:'start'}); }
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.sec, true); }); });
+  var h=(location.hash||'').slice(1); if (h==='print'||h==='screen') show(h,false);
+})();
+</script>
 <script src="lib/screens-menu.js"></script>
 </body>
 </html>

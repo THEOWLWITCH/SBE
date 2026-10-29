@@ -361,3 +361,12 @@
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount); else mount();
 })();
+/* בטלפון פס הכלים נגלל לרוחב: פותחים אותו על הכלי הנוכחי */
+(function () {
+  function center() {
+    var bar = document.querySelector(".bgkit-bar"); if (!bar || bar.scrollWidth <= bar.clientWidth) return;
+    var cur = bar.querySelector('[aria-current="page"]'); if (!cur) return;
+    bar.scrollLeft += (cur.getBoundingClientRect().left + cur.offsetWidth / 2) - (bar.getBoundingClientRect().left + bar.clientWidth / 2);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", center); else center();
+})();

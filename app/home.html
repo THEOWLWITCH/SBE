@@ -121,13 +121,14 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 :root[data-theme="dark"] .brand{background:#EEF1F4;border-radius:12px;padding:8px 12px;}
 .chip.off{text-decoration:line-through;opacity:.55;}
 </style>
+<style>.hero-banner{margin:.2rem 0 .4rem;line-height:0}.hero-banner img{display:block;width:100%;max-width:340px;height:auto}:root[data-theme="dark"] .hero-banner img{background:#fff;border-radius:10px;padding:6px 12px}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero-banner img{background:#fff;border-radius:10px;padding:6px 12px}}</style>
 </head>
 <body>
 <div class="wrap">
 <img class="brand" src="assets/begood-logo-mark.webp" alt="Begood" data-brand>
 <header>
   <div>
-    <h1>המרחב שלי</h1>
+    <h1 class="hero-banner"><img src="assets/home-banner.webp" alt="המרחב שלי" width="1149" height="300"></h1>
     <p class="who" id="who"></p>
   </div>
   <button class="out" id="logout">יציאה</button>
@@ -164,7 +165,7 @@ const fmtDate = (ymd) => ymd ? ymd.slice(0,10).split("-").reverse().map((x,i)=>i
 const PERM_LABEL = {
   fac_trainee: "הנחיית סטודנטים", fac_parent: "הנחיית הורים", fac_youth: "הנחיית נוער",
   conv: "תכנון שיחה", activity: "תכנון פעילות", academic: "משוב לעבודות",
-  lecturer: "קוד לקבוצה: משוב לעבודות", resilience: "מיפוי חוסן חברתי", leadership: "נוגי: יועצת למנהיגות תומכת חוסן", practi: "פרקטי: יועצת לחוסן", journey: "מסע אל החוסן", writer: "תקשורת מקדמת חוסן חברתי", nana: "ננה: מהוראה להנחיה", studio: "סטודיו חוסן", dialogue: "מעבדת שיח וחקר משותף", teamthink: "חשיבת צוות", games: "משחקי חוסן", horizon: "מעבדת האופק", bridge: "גשר בין הבית לכיתה", routines: "מרכז שגרות ויוזמות חברתיות", continuity: "תיק רציפות", studies: "לימודי חוסן חברתי", orgsuite: "Begood together: תרגול צוותים"
+  lecturer: "קוד לקבוצה: משוב לעבודות", resilience: "מיפוי חוסן חברתי", leadership: "נוגי: יועצת למנהיגות שמקדמת חוסן", practi: "פרקטי: יועצת לחוסן", journey: "מסע אל החוסן החברתי", writer: "תקשורת שמקדמת חוסן חברתי", nana: "ננה: מהוראה להנחיה", studio: "סטודיו חוסן", dialogue: "מעבדת שיח וחקר משותף", teamthink: "חשיבת צוות", games: "משחקי חוסן", horizon: "מעבדת האופק", bridge: "גשר בין הבית לכיתה", routines: "מרכז שגרות ויוזמות חברתיות", continuity: "תיק רציפות", studies: "לימודי חוסן חברתי", orgsuite: "תרגול צוותים"
 };
 const PRESETS = [
   ["מחנך/ת", ["resilience"]], ["פרקטי בלבד", ["practi"]], ["הנהלה", ["leadership", "resilience"]], ["מנחה סטודנטים", ["fac_trainee"]], ["מנחה הורים", ["fac_parent"]],
@@ -181,7 +182,7 @@ async function api(action, extra = {}) {
 // ── כותרת ובאנרים ──
 {
   const who = $("who");
-  const kindLabel = { instadmin: "מנהל/ת מוסד", staff: "צוות", student: "סטודנט/ית", course: "סטודנט/ית בקורס", legacy: "צוות (קוד מוסד)", "academic-legacy": "משוב לעבודות" }[INFO.kind] || "";
+  const kindLabel = { instadmin: "מנהל/ת מוסד", staff: "צוות", student: "סטודנט/ית", course: "סטודנט/ית בקורס", legacy: "צוות", "academic-legacy": "משוב לעבודות" }[INFO.kind] || "";
   if (IS_SYS) who.append(el("b", {}, "מנהלת המערכת"), " · כל הכלים פתוחים");
   else who.append(INFO.label ? el("b", {}, INFO.label) : "", INFO.label && (INFO.inst || kindLabel) ? " · " : "",
     INFO.inst || "", INFO.inst && kindLabel ? " · " : "", kindLabel);
@@ -211,15 +212,15 @@ async function api(action, extra = {}) {
   if (has("resilience")) T.push(["resilience-team.html", "מיפוי חוסן חברתי", "פתיחת כיתה, QR לשאלון, תוצאות וסיכום והמלצות"]);
   if (["studio", "activity", "resilience", "practi", "leadership"].some(has)) T.push(["resilience-studio.html", "סטודיו חוסן", "השראה, תקציר וערכת פעולה: מטרה, רכיבי חוסן ומיומנויות אישיות ומשותפות"]);
   if (has("resilience") || has("practi")) T.push(["resilience-advisor.html", "פרקטי: יועצת לפיתוח חוסן חברתי", "מתארים את הכיתה, משוחחים עם פרקטי, ומקבלים דוח עם תמונת מצב והמלצות מבוססות מחקר"]);
-  if (has("leadership")) T.push(["leadership-advisor.html", "נוגי: יועצת למנהיגות תומכת חוסן", "להנהלה, לרכזים ולצוותי תלמידים: שאלון פתיחה, דוח סיכום והמלצות ושיחת המשך"]);
+  if (has("leadership")) T.push(["leadership-advisor.html", "נוגי: יועצת למנהיגות שמקדמת חוסן", "להנהלה, לרכזים ולצוותי תלמידים: שאלון פתיחה, דוח סיכום והמלצות ושיחת המשך"]);
   if (has("nana")) T.push(["facilitation-advisor.html", "ננה: מהוראה להנחיה", "מספרים על הקבוצה, הנושא והמטרה, ומקבלים מדריך הנחיה אישי שמחזק את החוסן החברתי, עם תרגול רגעים מאתגרים ורפלקציה אחרי המפגש"]);
   if (has("dialogue")) T.push(["shared-dialogue-lab.html", "מעבדת שיח וחקר משותף", "קבוצה חוקרת שאלה בתחום הדעת: בונה טענות, בודקת ראיות ומתקנת יחד, והמורה מאשרת"]);
   if (has("games")) T.push(["games.html", "משחקי חוסן", "משחקים שמחזקים חוסן חברתי: רביעיות חוסן, זיכרון חוסן, משחק הלוח צועדים אל החוסן, משחק הקלפים בלי פאניקה!, מחולל סיפורי חוסן, גן הרעיונות עם גני, ועוד שבעה: לאן זה שייך?, חידות חוסן, בינגו חוסן, 20 שאלות, אמת או אתגר, סימני דרך ורכבת המוכנות, להדפסה ולמשחק על המסך"]);
-  if (has("orgsuite")) T.push(["org-suite.html", "Begood together: תרגול צוותים", "צוותים מתרגלים יחד תרחיש מאתגר: מנחה, תפקידים, צופים וצופות שמתעדים ראיות, תחקיר ופעולה שנשארת בשגרה."], ["org-library.html", "ספריית המחקר המשותפת", "מקורות על חוסן, למידה ועבודת צוות, עם חיפוש בעברית ובאנגלית ומבט לחינוך ולארגונים."]);
+  if (has("orgsuite")) T.push(["org-suite.html", "תרגול צוותים", "צוותים מתרגלים יחד תרחיש מאתגר: מנחה, תפקידים, צופים וצופות שמתעדים ראיות, תחקיר ופעולה שנשארת בשגרה."], ["org-library.html", "ספריית המחקר המשותפת", "מקורות על חוסן, למידה ועבודת צוות, עם חיפוש בעברית ובאנגלית ומבט לחינוך ולארגונים."]);
   if (has("horizon")) T.push(["horizon-lab.html", "מעבדת האופק", "תשעה כלים לחוסן מול עתיד לא ידוע: קול הקהילה, רדאר, עולמות אפשריים, משחק מצב, תמונת עתיד קבוצתית, מפת דרכים ובדיקת עמידות"]);
   if (has("teamthink")) T.push(["team-thinking.html", "חשיבת צוות", "צוות חושב יחד על אתגר: כל הקולות, בעד ונגד, פרגון, ומה הרווחנו מהחשיבה ביחד"]);
-  if (has("writer")) T.push(["message-writer.html", "תקשורת מקדמת חוסן חברתי", "ניסוח חד־פעמי של הודעה, מכתב או עדכון, או ניהול תקשורת לאורך זמן, לפי 18 עקרונות. אפשר להמשיך מטיוטה לשיחה שמורה"]);
-  if (has("journey")) T.push(["journey.html", "מסע אל החוסן", "מסע מלווה בשלבים אל תו חוסן לקהילת חוסן (מיפוי, הצעה עם אפשרויות, אבני דרך ותעודות)"]);
+  if (has("writer")) T.push(["message-writer.html", "תקשורת שמקדמת חוסן חברתי", "ניסוח חד־פעמי של הודעה, מכתב או עדכון, או ניהול תקשורת לאורך זמן, לפי 18 עקרונות. אפשר להמשיך מטיוטה לשיחה שמורה"]);
+  if (has("journey")) T.push(["journey.html", "מסע אל החוסן החברתי", "מסע מלווה בשלבים אל תו חוסן לקהילת חוסן (מיפוי, הצעה עם אפשרויות, אבני דרך ותעודות)"]);
   if (has("conv")) T.push(["conversation-planner.html", "תכנון שיחה", "הכנה לשיחה אמיתית: בעל פה או בכתב"]);
   if (has("activity")) T.push(["activity-planner.html", "תכנון פעילות", "תכנון פעילות חינוכית או ניתוח פעילות קיימת"]);
   if (has("academic")) T.push(["academic-review.html", "משוב לעבודות", "להתכונן להגשת עבודה: משוב לפי קריטריונים"]);
@@ -251,7 +252,7 @@ async function api(action, extra = {}) {
     box.querySelectorAll(".spacebar,.rgroup,.tiles").forEach(n => n.remove());
     const space = mySpace();
     // הלוגו לפי המרחב (28/10/2026): "Be good בחינוך" או "Be good בארגונים"
-    { const lg = document.querySelector("img.brand"); if (lg) { lg.src = space === "org" ? "assets/begood-org.webp" : space === "edu" ? "assets/begood-edu.webp" : "assets/begood-logo-mark.webp"; lg.alt = space === "org" ? "Be good בארגונים" : space === "edu" ? "Be good בחינוך" : "Begood"; } }
+    { const lg = document.querySelector("img.brand"); if (lg) { lg.src = space === "org" ? "assets/begood-together.webp" : space === "edu" ? "assets/begood-edu.webp" : "assets/begood-logo-mark.webp"; lg.alt = space === "org" ? "Be good בארגונים" : space === "edu" ? "Be good בחינוך" : "Begood"; } }
     const VIEW = space ? T.filter(x => { const s = sOf(x); return !s || s === "admin" || s === "research" || SP.visibleIn(space, x[0]); }) : T.slice();
     if (space) {
       const m = SP.meta(space), bar = el("div", { class: "spacebar " + space });
@@ -434,7 +435,7 @@ function renderGroupCode() {
       el("ol", { style: "margin:6px 0 10px;padding-inline-start:20px;line-height:1.8;font-size:14px" },
         el("li", {}, "פותחים סדנה: נוצר ", el("b", {}, "קוד לקבוצה בן 6 ספרות"), ", וקישור למשוב עם QR."),
         el("li", {}, "המשתתפים מקלידים את הקוד במסך הכניסה של be-good.co.il, ובוחרים תפקיד: מתנסה, שחקנית, הורה או נוער."),
-        el("li", {}, "פתוח להם: דף צפייה, תרגול עצמי, משוב וכלי ההכנה של התפקיד. ", el("b", {}, "תוצרי הסימולציה"), " נשארים אצלך בלבד."),
+        el("li", {}, "פתוח להם: דף צפייה, תרגול לפי תרחיש, משוב וכלי ההכנה של התפקיד. ", el("b", {}, "תוצרי הסימולציה"), " נשארים אצלך בלבד."),
         el("li", {}, "הקוד פעיל 24 שעות.")),
       el("a", { class: "btn", href: "facilitator-screen.html", style: "text-decoration:none;display:inline-block" }, "פתיחת סדנה ויצירת קוד לקבוצה"));
     box.append(pn);

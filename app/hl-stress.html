@@ -231,14 +231,15 @@ table.deps th,table.deps td{border-bottom:1px solid var(--line);padding:8px 6px;
 table.deps th{font-family:var(--font-display);font-weight:600;font-size:14px;color:var(--muted)}
 .evgroups{display:flex;flex-direction:column;gap:10px}
 </style>
+<link rel="stylesheet" href="lib/hl-skin.css">
 </head>
 <body>
 <div class="wrap" id="app">
 
 <header class="top">
   <div>
-    <div class="brand">Be Good · חוסן מול עתיד לא ידוע</div>
-    <h1>בדיקת עמידות</h1>
+    <div class="brand">Begood · מעבדת האופק</div>
+    <h1 class="hero-banner"><img src="assets/hl-stress-banner.webp" alt="בדיקת עמידות" width="1200" height="218"></h1>
     <p class="muted">כמה התוכנית שלנו תעמוד בפני משברים ואסונות? בודקים אותה מול עולמות עתידיים ואירועי לחץ, מוצאים איפה היא נשברת, ומחזקים אותה מראש.</p>
   </div>
 </header>
@@ -257,7 +258,7 @@ table.deps th{font-family:var(--font-display);font-weight:600;font-size:14px;col
   <span><b>מוצגת דוגמה מוכנה:</b> נוהל חירום של בית ספר יסודי בגליל העליון, מול ארבעה עולמות ממחולל העתידים.</span>
   <button id="resetBtn" type="button">בדיקה חדשה</button>
 </div>
-<p class="ai-note notice small">החלקים שמופעלים על ידי AI זמינים כשיש חיבור למודל. בינתיים אפשר לעיין בדוגמה.</p>
+<p class="ai-note notice small">אין כרגע חיבור לבינה המלאכותית. בינתיים אפשר לעיין בדוגמה.</p>
 
 <div class="principle small">
   <b>השאלה המרכזית:</b> כמה התוכנית תעמוד בפני משברים ואסונות, גם כאלה שעוד לא הכרנו.<br>
@@ -452,7 +453,7 @@ document.documentElement.classList.add("ai-off");
   [SAMPLE, DB, DL] = await Promise.all([use("sample"), use("db"), use("downloads")]);
   document.documentElement.classList.toggle("ai-off", !SAMPLE);
   $("ckSave").disabled = !DB; $("ckOpen").disabled = !DB;
-  if(!DB) $("ckStatus").textContent = "שמירה זמינה כשיש חיבור למודל.";
+  if(!DB) $("ckStatus").textContent = "השמירה לא זמינה כרגע.";
 })();
 function errCopy(e){
   const c = e && e.code;
@@ -748,7 +749,7 @@ $("sCopy").addEventListener("click", () => { const t = reportText(); t ? copy(t)
 $("sDl").addEventListener("click", async () => {
   const st = $("sDlStatus"), r = state.result, sc = scenarios();
   if(!r || stale()){ st.textContent = "עוד אין דוח."; return; }
-  if(!DL){ st.textContent = "ההורדה זמינה כשיש חיבור למודל. אפשר להעתיק את הדוח."; return; }
+  if(!DL){ st.textContent = "ההורדה לא זמינה כרגע. אפשר להעתיק את הדוח."; return; }
   const css = `body{font-family:Assistant,Arial,sans-serif;direction:rtl;margin:24px;color:#16232e}h1,h2{font-family:Rubik,Arial,sans-serif}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #d5dde3;padding:6px;vertical-align:top;text-align:right}.v-robust{background:#e3f3e8}.v-adjust{background:#fdf0d6}.v-break{background:#fbe1e4}.v-redundant{background:#eef1f4}@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`;
   const table = `<table><tr><th>רכיב</th>${sc.map(s => `<th>${esc(s.name)}</th>`).join("")}</tr>${state.elements.map((el,e) => `<tr><th>${esc(el.name)}</th>${sc.map((s,wi) => { const c = cellOf(e,wi); return c ? `<td class="${VERDICT[c.v].cls}"><b>${VERDICT[c.v].label}</b><br>${esc(c.why)}${c.fix ? `<br><i>${esc(c.fix)}</i>` : ""}</td>` : "<td></td>"; }).join("")}</tr>`).join("")}</table>`;
   const a = r.autonomy;
@@ -792,7 +793,7 @@ $("sAskForm").addEventListener("submit", e => { e.preventDefault(); const v = $(
 
 /* ---------- save / open checks ---------- */
 async function saveCheck(){
-  const st = $("ckStatus"); if(!DB){ st.textContent = "שמירה זמינה כשיש חיבור למודל."; return; }
+  const st = $("ckStatus"); if(!DB){ st.textContent = "השמירה לא זמינה כרגע."; return; }
   if(!CKID) CKID = uid();
   try{ await DB.doc(`checks/${CKID}`).set({name: $("ckTitle").value.trim() || state.title || "בדיקה ללא שם", state: JSON.parse(JSON.stringify(state)), updatedAt: Date.now()}); leaveExample(); st.textContent = "נשמר"; }
   catch(e){ st.textContent = e && e.code === "quota_exceeded" ? "המקום לשמירה התמלא." : "השמירה לא הצליחה."; }
@@ -841,7 +842,7 @@ renderAll();
 </style>
 <script id="bgkit-js">
 (function(){
-  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "משחק מצב עתידי", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "stress", HELP = {"title": "איך עובדים עם בדיקת העמידות?", "html": "<p><b>מה הכלי עושה:</b> עונה על השאלה <b>כמה התוכנית שלנו תעמוד בפני משברים ואסונות</b>. מפרקים תוכנית קיימת לרכיבים, ובודקים כל רכיב מול עולמות עתידיים ואירועי לחץ: איפה הוא עומד, איפה כדאי לחזק ואיפה הוא נשבר.</p>\n<p><b>מתי משתמשים בו:</b> כשיש נוהל חירום, תוכנית שנתית, תוכנית רציפות תפקודית או מפת דרכים, ורוצים לדעת אם היא תחזיק גם במצבים שלא תכננו.</p>\n<p><b>כמה זמן:</b> שעה עד שעתיים. כדאי לעבוד בצוות קטן, ולהזמין גם מי שלא כתבו את התוכנית.</p>\n<p><b>חוקי הבדיקה:</b> לא משנים את העולם או את האירוע כדי שהתוכנית תעבוד. מחפשים איפה היא נחלשת, ולא מגינים עליה. וגם מסמנים מה עובד טוב.</p>\n<p><b>אוטונומיה תפקודית:</b> הבדיקה מראה גם כמה התוכנית מאפשרת לתפקד לבד כשעזרה, תשתיות או הנחיות מבחוץ לא מגיעות, ומה יחזק את העצמאות.</p>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>מאיפה מגיעים ולאן ממשיכים:</b> את העולמות מייבאים מ<a href=\"hl-futures.html\" target=\"_blank\" rel=\"noopener\">מחולל העתידים</a>, ואת התוכנית אפשר להעתיק מ<a href=\"hl-roadmap.html\" target=\"_blank\" rel=\"noopener\">מהחזון להיום</a>. אחרי הבדיקה כדאי לעדכן את התוכנית, ואפשר לחזור לבדיקה.</p>\n<p class=\"src\">מבוסס על Policy Stress-testing (\"מנהרת רוח\") מערכת Futures Toolkit.</p>", "steps": {"#c1": "מתארים את המקום. זה עוזר ל־AI להבין אילו משאבים באמת קיימים אצלכם.", "#c2": "מדביקים את התוכנית, או מעלים קובץ Word או טקסט. מ־PDF כדאי להעתיק את הטקסט. אחר כך ה־AI מפרק אותה לרכיבים ולהנחות.", "#c3": "רכיב הוא פעולה או החלטה בתוכנית. הנחה סמויה היא משהו שהתוכנית מניחה בלי לכתוב, כמו ״יש קליטה״. ההנחות הן לרוב המקום שבו תוכניות נשברות.", "#c4": "בוחרים מול מה בודקים: עולמות ממחולל העתידים, אירועי לחץ מוכנים, או אירוע משלכם. עד 6 בסך הכול. כדאי לכלול לפחות אירוע אחד שפחות מוכר בישראל.", "#c5": "התשובה המרכזית מופיעה למעלה: כמה התוכנית תחזיק. מתחת לה הטבלה, וכל משבצת מסבירה למה ומה לשנות.", "#c6": "כאן רואים במה התוכנית תלויה בגורמים מבחוץ, מה קורה כשהם נעלמים, ואיזה צעד מחזק את היכולת לתפקד לבד.", "#c7": "הסיכום: כמה התוכנית עומדת בכל מצב, הנקודה הכי שבירה, השינויים שהכי משתלמים, ותוכנית מגירה של ״אם רואים את זה, עושים את זה״."}};
+  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "רואים את האופק", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "stress", HELP = {"title": "איך עובדים עם בדיקת העמידות?", "html": "<p><b>מה הכלי עושה:</b> עונה על השאלה <b>כמה התוכנית שלנו תעמוד בפני משברים ואסונות</b>. מפרקים תוכנית קיימת לרכיבים, ובודקים כל רכיב מול עולמות עתידיים ואירועי לחץ: איפה הוא עומד, איפה כדאי לחזק ואיפה הוא נשבר.</p>\n<p><b>מתי משתמשים בו:</b> כשיש נוהל חירום, תוכנית שנתית, תוכנית רציפות תפקודית או מפת דרכים, ורוצים לדעת אם היא תחזיק גם במצבים שלא תכננו.</p>\n<p><b>כמה זמן:</b> שעה עד שעתיים. כדאי לעבוד בצוות קטן, ולהזמין גם מי שלא כתבו את התוכנית.</p>\n<p><b>חוקי הבדיקה:</b> לא משנים את העולם או את האירוע כדי שהתוכנית תעבוד. מחפשים איפה היא נחלשת, ולא מגינים עליה. וגם מסמנים מה עובד טוב.</p>\n<p><b>אוטונומיה תפקודית:</b> הבדיקה מראה גם כמה התוכנית מאפשרת לתפקד לבד כשעזרה, תשתיות או הנחיות מבחוץ לא מגיעות, ומה יחזק את העצמאות.</p>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>מאיפה מגיעים ולאן ממשיכים:</b> את העולמות מייבאים מ<a href=\"hl-futures.html\" target=\"_blank\" rel=\"noopener\">מחולל העתידים</a>, ואת התוכנית אפשר להעתיק מ<a href=\"hl-roadmap.html\" target=\"_blank\" rel=\"noopener\">מהחזון להיום</a>. אחרי הבדיקה כדאי לעדכן את התוכנית, ואפשר לחזור לבדיקה.</p>\n<p class=\"src\">מבוסס על Policy Stress-testing (\"מנהרת רוח\") מתוך ערכת Futures Toolkit.</p>", "steps": {"#c1": "מתארים את המקום. זה עוזר ל־AI להבין אילו משאבים באמת קיימים אצלכם.", "#c2": "מדביקים את התוכנית, או מעלים קובץ Word או טקסט. מ־PDF כדאי להעתיק את הטקסט. אחר כך ה־AI מפרק אותה לרכיבים ולהנחות.", "#c3": "רכיב הוא פעולה או החלטה בתוכנית. הנחה סמויה היא משהו שהתוכנית מניחה בלי לכתוב, כמו ״יש קליטה״. ההנחות הן לרוב המקום שבו תוכניות נשברות.", "#c4": "בוחרים מול מה בודקים: עולמות ממחולל העתידים, אירועי לחץ מוכנים, או אירוע משלכם. עד 6 בסך הכול. כדאי לכלול לפחות אירוע אחד שפחות מוכר בישראל.", "#c5": "התשובה המרכזית מופיעה למעלה: כמה התוכנית תחזיק. מתחת לה הטבלה, וכל משבצת מסבירה למה ומה לשנות.", "#c6": "כאן רואים במה התוכנית תלויה בגורמים מבחוץ, מה קורה כשהם נעלמים, ואיזה צעד מחזק את היכולת לתפקד לבד.", "#c7": "הסיכום: כמה התוכנית עומדת בכל מצב, הנקודה הכי שבירה, השינויים שהכי משתלמים, ותוכנית מגירה של ״אם רואים את זה, עושים את זה״."}};
   const wrap = document.querySelector(".wrap"); if(!wrap) return;
   // 1. toolkit bar
   const bar = document.createElement("nav"); bar.className = "bgkit-bar"; bar.setAttribute("aria-label", "מעבדת האופק · Be Good");

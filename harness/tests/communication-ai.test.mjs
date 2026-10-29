@@ -27,7 +27,7 @@ test('single composition uses the same eighteen-principle engine and optional wr
   const request=JSON.parse(textRequest(p.calls[0]));
   assert.equal(request.communicationMode,'single');assert.deepEqual(request.composition,composition);
   const core=createRequire(import.meta.url)('../../app/lib/communication-core.js');
-  assert.equal(core.PRODUCT_NAME,'תקשורת מקדמת חוסן חברתי');assert.equal(core.VERSIONS.engine,'1.1.1');
+  assert.equal(core.PRODUCT_NAME,'תקשורת שמקדמת חוסן חברתי');assert.equal(core.VERSIONS.engine,'1.1.1');
   assert.equal(core.PRINCIPLES.length,18);
   for(const principle of core.PRINCIPLES)assert.ok(p.calls[0].system.includes(principle));
   assert.equal(p.calls[0].policy,'communication-continuity');

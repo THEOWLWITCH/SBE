@@ -94,7 +94,7 @@
     },
     {
       "id": "nugi",
-      "label": "נוגי: מנהיגות תומכת חוסן",
+      "label": "נוגי: יועצת למנהיגות שמקדמת חוסן",
       "readinessGroup": "see",
       "readinessLabel": "לראות",
       "kind": "work",
@@ -102,7 +102,7 @@
       "openToAll": false,
       "href": "leadership-advisor.html",
       "url": "https://be-good.co.il/leadership-advisor.html",
-      "purpose": "יועצת למנהיגות תומכת חוסן, להנהלה, לרכזים ולצוותי תלמידים."
+      "purpose": "יועצת למנהיגות שמקדמת חוסן, להנהלה, לרכזים ולצוותי תלמידים."
     },
     {
       "id": "scenario",
@@ -346,7 +346,7 @@
     },
     {
       "id": "journey",
-      "label": "מסע אל החוסן",
+      "label": "מסע אל החוסן החברתי",
       "readinessGroup": "anchor",
       "readinessLabel": "לעגן בשגרה",
       "kind": "work",
@@ -438,7 +438,7 @@
         },
         {
           "href": "leadership-advisor.html",
-          "label": "נוגי: יועצת למנהיגות תומכת חוסן",
+          "label": "נוגי: יועצת למנהיגות שמקדמת חוסן",
           "audience": "הרשאת נוגי"
         }
       ]
@@ -603,7 +603,7 @@
         },
         {
           "href": "hl-game.html",
-          "label": "מעבדת האופק: משחק מצב עתידי",
+          "label": "מעבדת האופק: רואים את האופק",
           "audience": "הרשאת מעבדת האופק (horizon)"
         },
         {
@@ -653,8 +653,8 @@
         },
         {
           "href": "journey.html",
-          "label": "מסע אל החוסן: מסך המשתתפים",
-          "audience": "הרשאת מסע אל החוסן"
+          "label": "מסע אל החוסן החברתי: מסך המשתתפים",
+          "audience": "הרשאת מסע אל החוסן החברתי"
         }
       ]
     },
