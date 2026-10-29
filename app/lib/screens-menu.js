@@ -62,7 +62,7 @@ window.SBE_SCREENS = [
       { file:'hl-horizons.html', label:'מעבדת האופק: שלושה אופקים', who:'הרשאת מעבדת האופק (horizon)' },
       { file:'hl-collage.html', label:'מעבדת האופק: תמונת עתיד קבוצתית', who:'הרשאת מעבדת האופק (horizon)' },
       { file:'hl-roadmap.html', label:'מעבדת האופק: מהחזון להיום', who:'הרשאת מעבדת האופק (horizon)' },
-      { file:'hl-game.html', label:'מעבדת האופק: משחק מצב עתידי', who:'הרשאת מעבדת האופק (horizon)' },
+      { file:'hl-game.html', label:'מעבדת האופק: רואים את האופק', who:'הרשאת מעבדת האופק (horizon)' },
       { file:'hl-stress.html', label:'מעבדת האופק: בדיקת עמידות', who:'הרשאת מעבדת האופק (horizon)' },
     ]},
     { title:'📖 4. ללמוד מהעשייה: מה למדנו?', items:[

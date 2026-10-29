@@ -562,7 +562,7 @@
       await hlStep("#aiFind", "#findStatus", "S.findings", "ניסוח הממצאים");
       await hlStep("#aiDebrief", "#debStatus", "S.debrief", "סיכום הלקחים");
       var ex = await hlExport("#dlReport", "דוח המשחק");
-      return hlItem("hl-game", "משחק מצב עתידי", "המשחק והתחקיר", function (t) { return hlDoc(ex.node, t, ex.css); });
+      return hlItem("hl-game", "רואים את האופק", "המשחק והתחקיר", function (t) { return hlDoc(ex.node, t, ex.css); });
     },
     "hl-stress.html": async function () {
       await hlReady();
