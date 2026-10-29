@@ -157,7 +157,7 @@
     // הנתיב ליד הלוגו (29/10/2026: "לוודא שמעל כל כותרת של כלי מופיע הלוגו של בי גוד והנתיב"): Begood › שם הכלי
     function toolName() {
       var h = document.querySelector('h1'), im = h && h.querySelector('img[alt]');
-      var t = (im && im.alt) || (h && h.textContent) || document.title || '';
+      var t = document.body.getAttribute('data-crumb') || (im && im.alt) || (h && h.textContent) || document.title || ''; // data-crumb: כשהכותרת היא סיסמה ולא שם הכלי
       t = t.replace(/\s*[·|]\s*Begood\s*$/i, '').replace(/^Begood\s*[·|›]\s*/i, '').split(/\s[·|]\s/)[0].split(':')[0].trim();
       return t.length > 40 ? t.slice(0, 40) + '…' : t;
     }

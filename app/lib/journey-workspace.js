@@ -203,7 +203,7 @@
       } catch (e) { if (alive && load === reloadGeneration) message('הגרסה האחרונה לא נטענה. השינויים המקומיים נשארו פתוחים.', true); }
     }
     const head = node('header', 'card'); shell.appendChild(head);
-    head.appendChild(node('h1', '', 'רשת החוסן החברתי'));
+    { const h1 = node('h1', 'hero-banner'); const im = document.createElement('img'); im.src = 'assets/network-banner.webp'; im.alt = 'רשת החוסן החברתי'; im.width = 1200; im.height = 244; h1.appendChild(im); head.appendChild(h1); }
     head.appendChild(node('p', 'muted', (journey.unitName || 'מרחב עבודה לחוסן') + ' · ' + unitLabel));
     head.appendChild(node('p', '', 'המסע אל החוסן נכלל במרחב המשותף למיפוי, לבחירת שינוי, לפעולה וללמידה לאורך זמן.'));
     head.appendChild(node('p', 'muted', 'הנתונים נשמרים בשרת במסגרת המסע. הגישה היא לבעלי קוד המסע ולמנהלי המערכת, לפי ההרשאות הקיימות. קוד משותף אינו הרשאה אישית לכל בעל תפקיד.'));

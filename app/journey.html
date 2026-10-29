@@ -183,6 +183,7 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 .status-btn.st-active{background:#E1F0E3;border-color:#A6CFAD;color:#22593A}
 .status-btn.st-done{background:#2F7A52;border-color:#2F7A52;color:#fff}
 </style>
+<style>h1.hero-banner{margin:6px 0 10px;line-height:0}h1.hero-banner img{display:block;width:min(460px,88vw);height:auto}@media (prefers-color-scheme:dark){h1.hero-banner img{background:#fff;border-radius:14px;padding:6px 12px}}</style>
 </head>
 <body>
 <nav class="topnav no-print">
@@ -192,6 +193,8 @@ dialog#rw-dlg::backdrop{background:rgba(10,14,18,.55)}
 </nav>
 <div class="wrap" id="app"></div>
 <script>
+function netBanner(){ var h=document.createElement('h1'); h.className='hero-banner'; var im=document.createElement('img'); im.src='assets/network-banner.webp'; im.alt='רשת החוסן החברתי'; im.width=1200; im.height=244; h.appendChild(im); return h; }
+
 // המרחב הארגוני (28/10/2026): דוגמאות מהעולם הארגוני, בלי בית ספר
 const ORG_SPACE = !!(window.sbeSpace && window.sbeSpace() === 'org');
 (function(){
@@ -298,7 +301,7 @@ async function viewList(){
   const load = ++loadGeneration, hash = location.hash;
   const app = F('app'); app.textContent = '';
   const c = card();
-  c.appendChild(exitRow(false)); c.appendChild(el('h1', null, 'רשת החוסן החברתי'));
+  c.appendChild(exitRow(false)); c.appendChild(netBanner());
   const p = el('p'); p.appendChild(inlineRich((ORG_SPACE ? 'מרחב מתמשך לפיתוח חוסן בארגון ובקהילה.' : 'מרחב מתמשך לפיתוח חוסן בבית הספר ובקהילה.') + ' מתחילים בצוות חוסן ובמיפוי של **בעלי תפקידים, מנגנונים חברתיים, תשתיות תומכות ומשאבים נוספים**. מחברים ראיות, בוחנים יחד את רשת המנגנונים, מקבלים החלטה מנומקת, מתכננים פעולה וחוזרים ללמוד מן התוצאות.')); c.appendChild(p);
   { const hk = el('p', 'intro'); hk.appendChild(inlineRich('**קהילת חוסן** היא קהילה שבוחרת להפוך את החוסן לחלק מוצהר מחייה, בשגרה כמו במשבר. זו אינה קהילה מסוג מיוחד: כל קהילה יכולה לבחור בדרך הזו ולהתקרב אליה צעד אחר צעד. הדרך מתחילה במנגנונים החברתיים שכבר פועלים בקהילה, ובוחנת יחד מה מהם משרת את החוסן ומה אפשר לשפר. **תו חוסן** הוא הכרה בעבודה של קהילת חוסן, ולא תנאי: אפשר להיות קהילת חוסן גם בלעדיו. התו נותן משוב והערכה על מה שעובד ועל מה שכדאי לנסות בהמשך, ולא ציון.')); hk.style.margin = '.6rem 0 0'; c.appendChild(hk); }
   c.appendChild(el('p', 'muted', 'קיום, מימוש והתחדשות הן זוויות בחינה מקבילות לאורך כל התהליך. תו חוסן ייבחן בהליך הסמכה חיצוני נפרד, על בסיס קריטריונים שקופים וראיות. לא מוענק תו אוטומטי במרחב העבודה.'));
