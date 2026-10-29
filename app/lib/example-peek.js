@@ -31,7 +31,7 @@
     if (pending) return pending;
     try { var c = JSON.parse(sessionStorage.getItem(CACHE + '.' + SP()) || 'null'); if (c && Date.now() - c.t < TTL) { items = c.items; return Promise.resolve(items); } } catch (e) {}
     pending = api({ action: 'demoPublicList', space: SP() }).then(function (d) {
-      items = d.items || [];
+      items = (d.items || []).filter(function (x) { return /-org$/.test(x.tool || '') === (SP() === 'org'); }); // גם כשהשרת לא מסנן לפי מרחב
       try { sessionStorage.setItem(CACHE + '.' + SP(), JSON.stringify({ t: Date.now(), items: items })); } catch (e) {}
       return items;
     }).catch(function () { items = []; return items; });
