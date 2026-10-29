@@ -18,6 +18,7 @@
 <script src="lib/ref-collect.js"></script>
 <script src="lib/resilience-writer.js"></script>
 <script src="lib/resilience-leadership.js"></script>
+<script src="lib/org-words.js"></script>
 <style>
 :root{
   --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
@@ -335,8 +336,40 @@ dialog#fb-dlg::backdrop{background:rgba(10,14,18,.55)}
 // בנק הידע: SBE_ADVISOR_SOURCES.forAdvisor('nugi') — מתעדכן מדי שבוע.
 const SRC = window.SBE_ADVISOR_SOURCES;
 const AI_SERVER = 'https://sbe-server.onrender.com';
-const STORE = window.sbeUserKey ? sbeUserKey('sbe.nugi.v1') : 'sbe.nugi.v1:anon'; // לפי משתמש/ת (lib/access-guard.js)
+const STORE = window.sbeUserKey ? sbeUserKey('sbe.nugi.v1'+((window.SBE_ORGW&&SBE_ORGW.isOrg())?'.org':'')) : 'sbe.nugi.v1:anon'; // לפי משתמש/ת (lib/access-guard.js)
 try{ const h=sessionStorage.getItem('sbe.session.homeUrl'); if(h) document.getElementById('nav-home').href=h; }catch(e){}
+
+// ── המרחב הארגוני (29/10/2026: נוגי זמינה גם בארגונים, "לבצע") ──
+// מנהיגות ארגונית וקהילתית: מנהל/ת, רכז/ת קהילה, ראש צוות, ועד. אותו מהלך (טופס ← שיחה ← דוח) ואותו שאלון,
+// במילים ובדוגמאות מהעולם הארגוני (SBE_ORGW). הנתונים נשמרים בנפרד, והרשימות הפתוחות של הארגונים נפרדות (leader-org-*).
+const ORG=!!(window.SBE_ORGW&&SBE_ORGW.isOrg());
+const NUGI_X=[
+  ['מנהיגות חינוכית','מנהיגות ארגונית וקהילתית'],['מנהיגות בית־ספרית','מנהיגות בארגון ובקהילה'],['לשלב החינוכי','לסוג הארגון'],['השלב החינוכי','סוג הארגון'],['שלב חינוכי','סוג הארגון'],
+  ['וגם מועצת תלמידים וצוותי תלמידים','וגם ועדים וצוותי מתנדבים'],['ושותפות עם תלמידים, הורים וקהילה','ושותפות עם עובדים, מתנדבים, תושבים וקהילה'],
+  ['שותפות עם תלמידים, הורים וקהילה','שותפות עם עובדים, מתנדבים, תושבים וקהילה'],['שותפות עם תלמידים','שותפות עם עובדים, מתנדבים וקהילה'],
+  ['אם המוביל/ה היא מועצת תלמידים, צוות תלמידים או תלמיד/ה: ההמלצות הן פעולות שהתלמידים מובילים בעצמם, עם מבוגר/ת מלווה','אם המוביל/ה הוא ועד או צוות מתנדבים: ההמלצות הן פעולות שהם מובילים בעצמם, עם בעל/ת תפקיד מלווה'],
+  ['(עם אנשי צוות, תלמידים או הורים)','(עם אנשי צוות, מתנדבים, תושבים או שותפים)'],['ההנהגה עם הצוות, עם התלמידים ועם ההורים','ההנהגה עם הצוות, עם המתנדבים ועם הקהילה'],
+  ['לצוות, להורים או לתלמידים, לפי הממצאים','לצוות, למתנדבים או לקהילה, לפי הממצאים'],['עם אנשי צוות, עם תלמידים, עם הורים','עם אנשי צוות, עם מתנדבים, עם תושבים ושותפים'],
+  ['ערוץ לשאלות, שיתוף בהחלטות','ערוץ לשאלות, שיתוף בהחלטות'],['(צוות, תלמידים והורים)','(צוות, מתנדבים ותושבים)'],['(צוות, הורים, תלמידים)','(צוות, מתנדבים, תושבים)'],
+  ['תיק כיתה ושגרות שהכיתה מכירה','תיק תפקיד ושגרות שהצוות מכיר'],['כשמורה נעדר/ת','כשאיש או אשת צוות נעדרים'],['לא "שעה חופשית"','לא "יום שהשירות נעצר"'],
+  ['לרכזים ולמורים','לרכזים ולאנשי הצוות'],['בין מורים מתחומים שונים, בין הורים לצ','בין אנשי צוות מתחומים שונים, בין תושבים לצ'],
+  ['מבתי ספר, מקהילות ומצוותים אחרים','מארגונים, מקהילות ומצוותים אחרים'],['ובתי ספר שכנים','וארגונים שכנים'],['שכבות וצוותים','יחידות וצוותים'],
+  ['אמנה בית־ספרית','אמנה ארגונית'],['עם נציגי צוות, תלמידים והורים','עם נציגי צוות, מתנדבים ותושבים'],['של תלמידים, הורים או צוות','של עובדים, מתנדבים, תושבים או צוות'],
+  ['נוספו על ידי אנשי חינוך','נוספו על ידי משתמשים'],['נוסף על ידי אנשי חינוך','נוסף על ידי משתמשים'],
+  ['מה קרה לאחרונה, ומה מעסיק את בית הספר?','מה קרה לאחרונה, ומה מעסיק את הארגון או הקהילה?']
+];
+const NUGI_W=t=>ORG?SBE_ORGW.swap(t,NUGI_X):t;
+const NUGI_INTRO='המרחב הארגוני: מי שמוביל/ה הוא/היא בארגון, ברשות, במרכז קהילתי, בעמותה, בצוות עובדים או מתנדבים, בוועד או בקהילה. נוגי מייעצת למנהיגות ארגונית וקהילתית שמקדמת חוסן חברתי. במקום בית הספר: הארגון או הקהילה; במקום תלמידים והורים: עובדים, מתנדבים, תושבים, משפחות ושותפים; במקום מורים: אנשי ונשות הצוות. כל שאר העקרונות נשארים.';
+const NUGI_SYS=t=>ORG?NUGI_INTRO+'\n\n'+NUGI_W(t):t;
+if(ORG){
+  const opts=(id,list)=>{const s=document.getElementById(id);s.textContent='';s.appendChild(new Option('בחירה...',''));list.forEach(v=>s.appendChild(new Option(v,v)));};
+  opts('f-who',['מנהל/ת הארגון','סגן/ית מנהל/ת','צוות הנהלה','ראש צוות','רכז/ת קהילה','רכז/ת מתנדבים','צוות רכזים','ועד (עובדים, שכונה או יישוב)','צוות מתנדבים מוביל']);
+  opts('f-stage',['עמותה או ארגון חברתי','רשות מקומית או מועצה','מרכז קהילתי','ארגון עסקי','ועד שכונה או יישוב','מסגרת בריאות או רווחה','כמה יחידות או ארגונים']);
+  opts('f-sit',['שגרה','תחילת שנת עבודה','תחילת דרך כצוות הנהלה','מנהל/ת חדש/ה בארגון','הרבה אנשי צוות או מתנדבים חדשים','שחיקה בצוות','מחסור בעובדים ובממלאי מקום','היעדרויות רבות של אנשי צוות','משבר אמון בצוות','קונפליקט עם תושבים או לקוחות','היערכות לחירום','פרצה מלחמה','מלחמה מתמשכת','פינוי הארגון או היישוב','קליטת מפונים','אחרי אירוע חריג בארגון','אובדן בקהילה','התפרצות מגפה','עבודה מרחוק','מיזוג או שינוי מבני','הקמת ועד או צוות מתנדבים']);
+  const lab=(f,t)=>{const l=document.querySelector('label[for="'+f+'"]');if(l)l.textContent=t;};
+  lab('f-school','הארגון או הקהילה (רשות)');lab('f-stage','סוג הארגון (שדה עיקרי)');lab('f-size','מספר מתנדבים, משתתפים או תושבים, בערך (רשות)');
+  lab('f-recent','מה קרה לאחרונה, ומה מעסיק את הארגון או הקהילה? (רשות)');
+}
 
 // ── שאלון הפתיחה: היגדים נייטרליים, מקובצים לפי ממדי מנהיגות שתומכת חוסן.
 // שני סטים: להנהגה של אנשי צוות, ולהנהגת תלמידים (מועצה / צוות תלמידים). r = היגד הפוך.
@@ -461,13 +494,14 @@ const STU_DIMS = [
   ]}
 ];
 const STUDENT_WHO = ['מועצת תלמידים','צוות תלמידים מוביל','תלמיד/ה מוביל/ה'];
+const STAFF = ORG ? SBE_ORGW.deep(STAFF_DIMS, NUGI_X) : STAFF_DIMS;
 const SCALE = ['כמעט לא','לפעמים','לרוב','כמעט תמיד','לא יודע/ת'];
 const F = k=>document.getElementById(k);
-let DIMS = STAFF_DIMS, ITEMS = [];
-const isStudents = ()=>STUDENT_WHO.includes(F('f-who').value);
+let DIMS = STAFF, ITEMS = [];
+const isStudents = ()=>!ORG&&STUDENT_WHO.includes(F('f-who').value);
 
 function buildCriteria(){
-  DIMS = isStudents() ? STU_DIMS : STAFF_DIMS;
+  DIMS = isStudents() ? STU_DIMS : STAFF;
   ITEMS = DIMS.flatMap(d=>[...d.items,...communityItems(d)].map(it=>({...it,dim:d.t,opt:!!d.opt})));
   const crit=F('criteria');crit.textContent='';let optHead=false;
   DIMS.forEach(dm=>{
@@ -578,13 +612,13 @@ function decorateDim(sec,dm,listName,rebuild){
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();btn.click();}});
   sec.appendChild(wrap);
 }
-const STMT_LIST='leader-stmt';
+const STMT_LIST=ORG?'leader-org-stmt':'leader-stmt';
 function rebuildCriteria(){const a=answers();Object.assign(ALL_ANS,a);buildCriteria();setAnswers(ALL_ANS);}
 const TEXT_FIELDS=['f-who','f-mode','f-school','f-stage','f-staff','f-size','f-sit','f-recent','f-strong','f-weak','f-questions','f-worry'];
 
 // ── "מה המצב עכשיו" — רשימה פתוחה לקהילה (חכמת ההמונים), נשמרת בשרת ומופיעה לכולם.
 const ACCESS='https://sbe-server.onrender.com/api/access';
-const SIT_LIST='leader-situation';
+const SIT_LIST=ORG?'leader-org-situation':'leader-situation';
 const SIT_BASE=[...F('f-sit').options].map(o=>o.value).filter(Boolean);
 let SIT_COMMUNITY=[];
 function accessApi(body){return fetch(ACCESS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json().catch(()=>({})).then(d=>{d._status=r.status;return d;}));}
@@ -668,7 +702,7 @@ function pictureText(a){
   if(f('f-weak'))L.push('חולשות ואתגרים (במילים של המוביל/ה): '+f('f-weak'));
   if(f('f-questions'))L.push('השאלות המרכזיות שהמוביל/ה מחפש/ת להן מענה: '+f('f-questions'));
   if(f('f-worry'))L.push('מה הכי מדאיג את המוביל/ה: '+f('f-worry'));
-  return L.join('\n');
+  return NUGI_W(L.join('\n'));
 }
 
 // ── תמונת המצב (מיידית, בלי מודל) ──
@@ -753,7 +787,7 @@ const ADVISOR_SYSTEM = [
 
 async function complete(system,messages,maxTokens,review){
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
-  return String(await sbeCallAI(AI_SERVER,{system,messages,maxTokens,customerReview:!!review},480000)||'');
+  return String(await sbeCallAI(AI_SERVER,{system:NUGI_SYS(system),messages,maxTokens,customerReview:!!review},480000)||'');
 }
 
 // ── ניתוח ──
@@ -763,7 +797,7 @@ function checkForm(){
   const a=answers();const err=F('form-err');
   const miss=ITEMS.filter(it=>!it.c&&!it.opt&&a[it.k]==null);
   document.querySelectorAll('.q').forEach(q=>q.classList.remove('miss'));
-  const need=[];if(!F('f-who').value)need.push('תפקיד');if(!F('f-stage').value)need.push('שלב חינוכי');if(!F('f-sit').value)need.push('מצב');
+  const need=[];if(!F('f-who').value)need.push('תפקיד');if(!F('f-stage').value)need.push(ORG?'סוג הארגון':'שלב חינוכי');if(!F('f-sit').value)need.push('מצב');
   if(need.length||miss.length){
     miss.forEach(it=>F('q-'+it.k).classList.add('miss'));
     err.textContent=(need.length?'כדי להמשיך, אפשר לבחור: '+need.join(', ')+'. ':'')+(miss.length?'חסרות תשובות ל-'+miss.length+' היגדים (מסומנים באדום). אפשר לבחור "לא יודע/ת".':'');
@@ -787,7 +821,7 @@ F('btn-analyze').addEventListener('click',async()=>{
     // מבנה לא תקין: ניסיון נוסף אחד (sbeCallAIJson ב-lib/ai-call.js)
     const talk=STATE.report?STATE.pre.concat(STATE.chat):STATE.chat;
     const input=pictureText(a)+(talk.length?'\n\nהשיחה לפני הדוח. הדוח נשען עליה כמו על התיאור: מה שסופר בשיחה הוא מידע נוסף על המצב; תשובות לשאלות ההבהרה מדייקות את תמונת המצב ואת ההמלצות; כל שאלה שנשאלה בשיחה מקבלת מענה בדוח, ב-"answers" או בהמלצה המתאימה. אל תצטטי את השיחה ואל תחזרי עליה כמו שהיא.\n'+chatText(talk):'');
-    const doc=await sbeCallAIJson(AI_SERVER,{system:ADVISOR_SYSTEM,messages:[{role:'user',content:input}],maxTokens:32000,customerReview:true},480000);
+    const doc=await sbeCallAIJson(AI_SERVER,{system:NUGI_SYS(ADVISOR_SYSTEM),messages:[{role:'user',content:input}],maxTokens:32000,customerReview:true},480000);
     STATE.report={at:new Date().toISOString(),who:F('f-who').value,mode:F('f-mode').value,school:F('f-school').value.trim(),stage:F('f-stage').value,sit:F('f-sit').value,doc,picture:pictureText(a)};
     STATE.pre=talk;STATE.chat=[];save();renderReport();renderChat();
   }catch(e){
@@ -975,7 +1009,12 @@ F('chat-send').addEventListener('click',async()=>{
 
 // ── מילוי לדוגמה ──
 F('btn-example').addEventListener('click',()=>{
-  const ex={'f-who':'מנהל/ת בית הספר','f-mode':'בצוות או עם שותפים','f-school':'אופק','f-stage':'חטיבת ביניים','f-staff':'52','f-size':'640','f-sit':'מלחמה מתמשכת',
+  const ex=ORG?{'f-who':'רכז/ת קהילה','f-mode':'בצוות או עם שותפים','f-school':'המרכז הקהילתי בגליל העליון','f-stage':'מרכז קהילתי','f-staff':'18','f-size':'120','f-sit':'מלחמה מתמשכת',
+    'f-recent':'שנה שנייה של מלחמה. שלושה אנשי צוות במילואים לסירוגין, ושתי רכזות בחופשת לידה. קלטנו 60 משפחות מפונות, ומתנדבים חדשים הצטרפו בלי הכשרה מסודרת. התושבים מבקשים עדכונים תכופים.',
+    'f-strong':'צוות הנהלה מגובש, רכזות תחום חזקות שמכירות את התושבים, וקבוצת מתנדבים עם רצון לעשות. יש לנו מסורת חזקה של אירועים קהילתיים.',
+    'f-weak':'אין לנו מערך מסודר של ממלאי מקום: כל היעדרות עוצרת פעילות. הצוות עייף, ואני מרגישה שהכול עובר דרכי. המידע לצוות ולמתנדבים מגיע באיחור ובכמה ערוצים.',
+    'f-questions':'איך בונים מערך ממלאי מקום לתפקידי המפתח? איך מפרגנים לצוות ולמתנדבים כשאין זמן ואין תקציב? איך משתפים את הוועד בקליטת המפונים?',
+    'f-worry':'שחיקה של הרכזות, ושבחירום הבא לא נדע מי מעדכן את מי.'}:{'f-who':'מנהל/ת בית הספר','f-mode':'בצוות או עם שותפים','f-school':'אופק','f-stage':'חטיבת ביניים','f-staff':'52','f-size':'640','f-sit':'מלחמה מתמשכת',
     'f-recent':'שנה שנייה של מלחמה. שלושה מורים מגויסים במילואים לסירוגין, ועוד שתי מורות בחופשת לידה. קלטנו 40 תלמידים מפונים ושני מורים מפונים. ההורים לחוצים ושולחים הרבה הודעות.',
     'f-strong':'צוות הנהלה מגובש, רכזות שכבה חזקות שמכירות את התלמידים, ומועצת תלמידים עם רצון לעשות. יש לנו מסורת חזקה של טקסים.',
     'f-weak':'אין לנו מערך מסודר של ממלאי מקום: כל היעדרות הופכת לשעה חופשית. המורים עייפים, ואני מרגישה שהכול עובר דרכי. המידע לצוות מגיע באיחור ובכמה ערוצים.',
@@ -1012,14 +1051,15 @@ F('fb-send').addEventListener('click',()=>{
   .finally(()=>{b.disabled=false;b.textContent='שליחה';});
 });
 
-const ADD_WHO=addableSelect('f-who','leader-role','תפקיד');
-const ADD_STAGE=addableSelect('f-stage','leader-stage','שלב או מסגרת');
+const ADD_WHO=addableSelect('f-who',ORG?'leader-org-role':'leader-role','תפקיד');
+const ADD_STAGE=addableSelect('f-stage',ORG?'leader-org-stage':'leader-stage',ORG?'סוג ארגון':'שלב או מסגרת');
 buildCriteria();
 load();
 loadSituations();
 loadStatements(STMT_LIST,rebuildCriteria);
 modeNote();
 const a0=answers();if(Object.keys(a0).length)renderPicture(a0);
+if(ORG)SBE_ORGW.dom(document.body,NUGI_X);
 if(STATE.report){renderReport();renderChat();}else if(STATE.ready){F('chat-area').hidden=false;renderChat();}
 })();
 </script>

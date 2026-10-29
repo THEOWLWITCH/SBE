@@ -5,6 +5,8 @@
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/hl-runtime.js"></script>
+<!-- רשימות פתוחות (29/10/2026): "אזור בארץ" מקבל "➕ חסר משהו? הוספה…"; שאר התפריטים כאן סגורים (data-closed): שנים, ממדים ושלבים שהחישוב נשען עליהם, והפניות לפריטים שכבר בעבודה -->
+<script src="lib/open-select.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>רדאר החוסן החברתי · Be Good</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -274,7 +276,7 @@ table.mx td.el .small{font-weight:400}
   </div>
   <div class="grid2">
     <label class="f" for="region">אזור בארץ<select id="region"></select></label>
-    <label class="f" for="horizon">עד איזו שנה מסתכלים?<select id="horizon"><option>2028</option><option>2030</option><option>2035</option><option>2040</option></select></label>
+    <label class="f" for="horizon">עד איזו שנה מסתכלים?<select data-closed id="horizon"><option>2028</option><option>2030</option><option>2035</option><option>2040</option></select></label>
   </div>
   <label class="f" for="question">שאלת הסריקה: מה אנחנו רוצים להבין?<input type="text" id="question" placeholder="למשל: מה ישפיע על החוסן החברתי של בית הספר והקהילה בעשור הקרוב?"></label>
   <label class="f" for="desc">כמה מילים על המקום או על הקהילה (רשות)<textarea id="desc" style="min-height:56px"></textarea></label>
@@ -287,7 +289,7 @@ table.mx td.el .small{font-weight:400}
   <div class="box">
     <div class="grid2">
       <label class="f" for="nTitle">מה שמנו לב? (בקצרה)<input type="text" id="nTitle" placeholder="למשל: בקיץ האחרון המזגנים בכיתות כבו כמעט כל יום"></label>
-      <label class="f" for="nCat">תחום<select id="nCat"></select></label>
+      <label class="f" for="nCat">תחום<select data-closed id="nCat"></select></label>
     </div>
     <label class="f" for="nWhat" style="margin-top:6px">פירוט: מה בדיוק ראינו, ולמה זה תפס את תשומת הלב? (רשות)<textarea id="nWhat" style="min-height:52px"></textarea></label>
     <div class="grid2" style="margin-top:6px">
@@ -411,7 +413,7 @@ function sigList(){ return S.signals.map(x => `[${x.id}] (${x.cat}) ${x.title}${
 function renderTop(){
   if(IS_ORG && S.ctx.type === "school") S.ctx.type = "community";
   document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.ctx.type)));
-  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
+  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.concat(S.ctx.region && !REGIONS.includes(S.ctx.region) ? [S.ctx.region] : []).map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
   $("horizon").value = S.horizon; $("question").value = S.question || ""; $("desc").value = S.ctx.desc || ""; $("sTitle").value = S.title || "";
   if(!$("nCat").options.length) $("nCat").innerHTML = CATS.map(c => `<option>${esc(c)}</option>`).join("");
 }
@@ -466,7 +468,7 @@ function renderMap(){
   const opt = (v) => [1,1.5,2,2.5,3,3.5,4,4.5,5].map(n => `<option value="${n}" ${Math.abs(n - v) < 0.01 ? "selected" : ""}>${n}</option>`).join("");
   $("placePanel").innerHTML = S.drivers.length ? `<b>החשיבות והוודאות של כל מניע</b><p class="small muted">5 = חשוב מאוד או כמעט ודאי. 1 = פחות חשוב או לא ידוע בכלל.</p>` + S.drivers.map((d,i) => `<div style="border-top:1px solid var(--line);padding-top:6px">
       <div class="small"><b>${i+1}. ${esc(d.name)}</b>${d.why ? `<br><span class="muted">${esc(d.why)}</span>` : ""}</div>
-      <div class="row small" style="gap:8px;margin-top:4px"><label for="imp_${esc(d.id)}">חשיבות <select id="imp_${esc(d.id)}" data-imp="${esc(d.id)}">${opt(d.imp)}</select></label><label for="cert_${esc(d.id)}">ודאות <select id="cert_${esc(d.id)}" data-cert="${esc(d.id)}">${opt(d.cert)}</select></label></div>
+      <div class="row small" style="gap:8px;margin-top:4px"><label for="imp_${esc(d.id)}">חשיבות <select data-closed id="imp_${esc(d.id)}" data-imp="${esc(d.id)}">${opt(d.imp)}</select></label><label for="cert_${esc(d.id)}">ודאות <select data-closed id="cert_${esc(d.id)}" data-cert="${esc(d.id)}">${opt(d.cert)}</select></label></div>
     </div>`).join("") : `<p class="muted small">קודם כדאי לבנות מניעים (שלב 3).</p>`;
 }
 function renderQuads(){

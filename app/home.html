@@ -246,7 +246,9 @@ async function api(action, extra = {}) {
     if (IS_SYS) { try { const s = localStorage.getItem(SPACE_KEY); if (s === "org" || s === "edu") return s; } catch (e) {} return "edu"; }
     // המרחב שסומן למוסד בניהול (INFO.space, מהשרת בכניסה); בלי סימון: לפי הכלים שבקוד
     if (INFO.space === "org" || INFO.space === "edu") return INFO.space;
-    return T.some(x => sOf(x) === "edu") ? "edu" : "org";
+    // נוגי, מרכז השגרות ותיק הרציפות (משותפים מ-29/10/2026) לא מעבירים לארגוני בלי כלי ארגוני, כמו בשרת (spaceFromPerms)
+    if (T.some(x => sOf(x) === "edu")) return "edu";
+    return ["leadership", "routines", "continuity"].some(p => PERMS.includes(p)) && !PERMS.includes("orgsuite") ? "edu" : "org";
   };
   const drawTiles = () => {
     box.querySelectorAll(".spacebar,.rgroup,.tiles").forEach(n => n.remove());
@@ -265,7 +267,11 @@ async function api(action, extra = {}) {
       box.prepend(bar);
     }
     // הכלים לפי חמש שאלות של מוכנות יומיומית (SBE_READY), ובסוף ספריית המקורות והתוצרים לדוגמה של המרחב
-    const R = window.SBE_READY, tile = (x) => { const [h, t, d, blank] = x; const a = el("a", { class: "tile", href: h, target: blank ? "_blank" : null, rel: blank ? "noopener" : null }, el("b", {}, t), el("span", {}, d)); if (space && sOf(x) === "shared") a.append(el("span", { class: "shared" }, "↔ משותף לשני המרחבים")); return a; };
+    // במרחב הארגוני: תיאור במילים של ארגון לכלים שעברו מהמרחב החינוכי (29/10/2026)
+    const ORG_DESC = { "leadership-advisor.html": "למנהלים, לרכזים, לראשי צוותים ולוועדים: שאלון פתיחה, שיחה עם נוגי, ודוח סיכום והמלצות",
+      "routines-hub.html": "מנגנון קבוע בצוות או בקהילה: בוחרים פעולה, מאשרים אחריות, מנסים פעמיים ופותחים לשינוי",
+      "continuity-kit.html": "מה ימשיך לפעול כשמישהו חסר בצוות: מסירת תפקיד, חירום ועבודה מרחוק, הצטרפות וחזרה" };
+    const R = window.SBE_READY, tile = (x) => { const [h, t, d0, blank] = x; const d = (space === "org" && ORG_DESC[h]) || d0; const a = el("a", { class: "tile", href: h, target: blank ? "_blank" : null, rel: blank ? "noopener" : null }, el("b", {}, t), el("span", {}, d)); if (space && sOf(x) === "shared") a.append(el("span", { class: "shared" }, "↔ משותף לשני המרחבים")); return a; };
     const gift = box.querySelector(".sbe-gift");
     const add = (n) => gift ? box.insertBefore(n, gift) : box.append(n);
     const rest = VIEW.filter(x => !(R && R.groupOf(x[0])));
@@ -301,7 +307,7 @@ function copyBtn(text, label = "העתקה") {
 async function renderAdmin() {
   if (INFO.kind !== "instadmin") return;
   const box = $("admin"); box.textContent = "";
-  box.append(el("h2", {}, "קודי הצוות של המוסד"));
+  box.append(el("h2", {}, "ניהול המוסד: קודי צוות"));
   const card = el("div", { class: "card" });
   card.append(el("p", { class: "sub" }, "הטעינה נמשכת לפעמים עד דקה..."));
   box.append(card);
@@ -323,7 +329,7 @@ async function renderAdmin() {
   card.append(tree);
   card.append(el("p", { class: "sub" },
     sub.subEnd ? "המנוי של המוסד בתוקף עד " + fmtDate(sub.subEnd) + ". קודי הצוות פוקעים לכל המאוחר אז." : "המנוי של המוסד ללא תאריך סיום.",
-    " מה שפתוח למוסד: ", open.length ? open.map(p => PERM_LABEL[p]).join(", ") : "עדיין שום דבר: אפשר לפנות למנהלת המערכת."));
+    " המערכות הפתוחות למוסד: ", open.length ? open.map(p => PERM_LABEL[p]).join(", ") : "עדיין אין. אפשר לפנות למנהלת המערכת."));
 
   // יצירת קוד
   const f = el("div", { class: "card" });
@@ -364,7 +370,7 @@ async function renderAdmin() {
     if (!r.code) { msg.className = "msg err"; msg.textContent = r.error === "above ceiling" ? "אחת ההרשאות לא פתוחה למוסד." : "ההפקה לא הצליחה. אפשר לנסות שוב."; return; }
     msg.className = ""; msg.textContent = "";
     msg.append(el("div", { class: "newcodes" }, "הקוד החדש: ", el("span", { class: "code" }, r.code.code), " ", copyBtn(r.code.code),
-      el("div", { class: "sub", style: "font-size:13px;margin-top:4px" }, "מוסרים אותו לאיש/אשת הצוות. נכנסים איתו במסך הכניסה, בשדה \"הקוד שלך\".")));
+      el("div", { class: "sub", style: "font-size:13px;margin-top:4px" }, "מוסרים אותו לאיש/אשת הצוות. נכנסים איתו במסך הכניסה.")));
     Object.values(cbs).forEach(cb => { cb.checked = false; }); lbl.value = "";
     loadList();
   });
@@ -384,7 +390,7 @@ async function renderAdmin() {
       const t = el("table", {}, el("tr", {}, ...["למי", "הקוד", "הרשאות", "תוקף", "מצב", ""].map(h => el("th", {}, h))));
       codes.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).forEach(c => {
         const [stl, stc] = statusOf(c);
-        const tr = el("tr", {}, el("td", {}, c.label || (c.kind === "student" ? "סטודנט/ית" : "—")), el("td", {}, el("span", { class: "code" }, c.code)),
+        const tr = el("tr", {}, el("td", {}, c.label || (c.kind === "student" ? "סטודנט/ית" : "")), el("td", {}, el("span", { class: "code" }, c.code)),
           el("td", {}, ...(c.perms || []).map(p => el("span", ceiling[p] ? { class: "chip" } : { class: "chip off", title: "לא פעיל: המערכת כבר לא פתוחה למוסד" }, PERM_LABEL[p] || p))),
           el("td", {}, c.expiresAt ? fmtDate(c.expiresAt) : "סוף המנוי"), el("td", {}, el("span", { class: "st " + stc }, stl)));
         const cell = el("td", {});

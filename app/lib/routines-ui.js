@@ -4,11 +4,14 @@
 // לא נשלחים למודל (anonymize) ולא לשרת, ומופיעים רק בהדפסה המקומית.
 (function () {
   'use strict';
-  const M = window.SBE_ROUTINES, SRC = window.SBE_ADVISOR_SOURCES;
+  // המרחב הארגוני (29/10/2026): אותו כלי, עם מנגנונים, דוגמאות ומילים מהעולם הארגוני (SBE_ROUTINES.forSpace, SBE_ORGW)
+  const ORG = !!(window.SBE_ORGW && window.SBE_ORGW.isOrg());
+  const M = window.SBE_ROUTINES.forSpace(ORG ? 'org' : 'edu'), SRC = window.SBE_ADVISOR_SOURCES;
+  const W = M.words;
   const KB = SRC.forAdvisor('routines');
   const WRITER = window.SBE_WRITER ? window.SBE_WRITER.rule : '';
   const KEY = (b) => window.sbeUserKey ? sbeUserKey(b) : b + ':anon';
-  const STORE = KEY('sbe.routines.v1');
+  const STORE = KEY('sbe.routines.v1' + (ORG ? '.org' : ''));
   const SERVER = window.sbeAIOrigin ? window.sbeAIOrigin() : 'https://sbe-server.onrender.com';
   const F = (id) => document.getElementById(id);
   const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התוצר לא הוכן. מה שמולא נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
@@ -37,7 +40,8 @@
   const names = () => Object.values(I.people || {}).flatMap((p) => [p.who, p.backup]).flatMap((n) => String(n || '').split(/[,،]/));
 
   // ── סרגל המנגנונים: אריח לכל מנגנון, עם סמל לפי הסוג ופס התקדמות של ארבעה צעדים ──
-  const MECH_ICON = { 'מועצת כיתה': '🗳️', 'לוח עזרה': '🤝', 'ועדה': '🧩', 'צוות פעולה': '🚀', 'מפגש חוסן קבוע': '🌱' };
+  const MECH_ICON = { 'מועצת כיתה': '🗳️', 'לוח עזרה': '🤝', 'ועדה': '🧩', 'צוות פעולה': '🚀', 'מפגש חוסן קבוע': '🌱',
+    'ישיבת צוות קבועה': '🗳️', 'לוח עזרה בין עמיתים': '🤝', 'צוות חירום שכונתי': '🛟', 'מפגש חוסן קבוע לצוות': '🌱' };
   const STEP_ICON = ['🧭', '🤝', '🔁', '🌱'];
   // חגיגה קטנה כשמאשרים (בלי תנועה למי שביקש פחות תנועה)
   function celebrate() {
@@ -109,7 +113,7 @@
       return { a, m, b: st.activityBrief || st.brief || {} };
     } catch (e) { return null; }
   }
-  const STUDIO_TYPES = { routine: 'מפגש חוסן קבוע', board: 'לוח עזרה', 'monthly-day': 'מפגש חוסן קבוע', agreement: 'מועצת כיתה', 'action-team': 'צוות פעולה', committee: 'ועדה' };
+  const STUDIO_TYPES = { routine: ORG ? 'מפגש חוסן קבוע לצוות' : 'מפגש חוסן קבוע', board: ORG ? 'לוח עזרה בין עמיתים' : 'לוח עזרה', 'monthly-day': ORG ? 'מפגש חוסן קבוע לצוות' : 'מפגש חוסן קבוע', agreement: ORG ? 'ישיבת צוות קבועה' : 'מועצת כיתה', 'action-team': 'צוות פעולה', committee: 'ועדה' };
   (function studioButton() {
     const s = studioMech(); if (!s) return;
     const b = F('fromStudio'); b.hidden = false;
@@ -330,7 +334,7 @@
       s.addEventListener('change', () => { run.status[i] = s.value; save(); });
       return [txt(t.task), txt(t.role), s];
     }), 'kit-t'));
-    [['worked', 'מה עבד'], ['hard', 'מה היה קשה'], ['gave', 'מה זה נתן לנו (במילים של התלמידים)'], ['slipped', 'מה לא נשמר, ואיך חזרנו להסכם']].forEach(([k, l]) => { const f = el('div', 'f'); f.appendChild(el('label', null, l)); f.lastChild.htmlFor = 'r' + n + k; const t = field(run, k, l, true); t.id = 'r' + n + k; t.placeholder = 'בלי שמות. מה קרה בפעולה.'; f.appendChild(t); c.appendChild(f); });
+    [['worked', 'מה עבד'], ['hard', 'מה היה קשה'], ['gave', W('מה זה נתן לנו (במילים של התלמידים)')], ['slipped', 'מה לא נשמר, ואיך חזרנו להסכם']].forEach(([k, l]) => { const f = el('div', 'f'); f.appendChild(el('label', null, l)); f.lastChild.htmlFor = 'r' + n + k; const t = field(run, k, l, true); t.id = 'r' + n + k; t.placeholder = 'בלי שמות. מה קרה בפעולה.'; f.appendChild(t); c.appendChild(f); });
     const nx = el('div', 'f'); nx.appendChild(el('label', null, 'בסוף ההפעלה, כולם ידעו מה הצעד הבא ומי אחראי/ת עליו?')); nx.appendChild(choice(run, 'next', 'כולם ידעו מה הצעד הבא', ['כן, כולם', 'חלק', 'עוד לא'])); c.appendChild(nx);
     c.appendChild(el('h4', null, M.SECTIONS.requests.h));
     c.appendChild(etable(M.SECTIONS.requests.cols, run.reqs, ['role', 'what', 'why'], { add: 'הוספת בקשה לשינוי', area: true }));
@@ -381,7 +385,7 @@
     box.appendChild(boardBlock(P, true));
     box.appendChild(keepBlock(P, true));
     const row = el('div', 'actions no-print'), lab = el('label', null, 'מי אישר/ה'), by = el('input');
-    by.type = 'text'; by.id = 'approver'; lab.htmlFor = 'approver'; by.value = I.approver || 'הקבוצה, והמחנכת אישרה את הגבולות';
+    by.type = 'text'; by.id = 'approver'; lab.htmlFor = 'approver'; by.value = I.approver || W('הקבוצה, והמחנכת אישרה את הגבולות');
     by.addEventListener('input', () => { I.approver = by.value; save(); });
     row.append(lab, by, btn('✓ אישור גרסה ' + (I.version + 1), 'btn sm', approveNext)); box.appendChild(row);
     return box;
@@ -392,7 +396,7 @@
     reqs.forEach((x) => { const d = I.decided[x.id] || {}; if (d.status) I.log.push({ d: today(), what: 'בקשה לשינוי: ' + x.q.what + '. ' + d.status + (d.note ? ': ' + d.note : ''), how: I.how || '', who: '' }); });
     I.rounds.push({ version: I.version, runs: I.runs, decided: I.decided });
     I.version += 1; I.plan = P; I.at = today();
-    I.versions.push({ v: I.version, at: today(), by: I.approver || 'הקבוצה, והמחנכת אישרה את הגבולות', note: I.changes.map((c) => txt(c.what)).filter(Boolean).slice(0, 3).join('; ') || 'גרסה חדשה' });
+    I.versions.push({ v: I.version, at: today(), by: I.approver || W('הקבוצה, והמחנכת אישרה את הגבולות'), note: I.changes.map((c) => txt(c.what)).filter(Boolean).slice(0, 3).join('; ') || 'גרסה חדשה' });
     I.log.push({ d: today(), what: 'אישרנו את גרסה ' + I.version + ' של ההסכם, לתקופת ניסיון נוספת', how: I.how || '', who: '' });
     Object.assign(I, { proposal: null, changes: [], ansAI: [], balance: '', runs: [RUN(), RUN()], decided: {} });
     save(); goStep(2);
@@ -423,7 +427,7 @@
       }));
       const v = versionsBlock(); if (v) box.appendChild(v);
       const row = el('div', 'actions no-print'), lab = el('label', null, 'מי אישר/ה'), by = el('input');
-      by.type = 'text'; by.id = 'approver1'; lab.htmlFor = 'approver1'; by.value = I.approver || 'הקבוצה, והמחנכת אישרה את הגבולות';
+      by.type = 'text'; by.id = 'approver1'; lab.htmlFor = 'approver1'; by.value = I.approver || W('הקבוצה, והמחנכת אישרה את הגבולות');
       by.addEventListener('input', () => { I.approver = by.value; save(); });
       const signed = I.versions.some((x) => x.v === I.version);
       row.append(lab, by, btn(signed ? '✓ גרסה ' + I.version + ' אושרה · מנסים פעמיים ←' : '✓ אישור ההסכם לתקופת ניסיון', 'btn sm', () => {
@@ -541,7 +545,13 @@
   });
 
   F('example').addEventListener('click', () => {
-    const ex = { mechType: 'לוח עזרה', age: 'ה–ו', size: 'כל הכיתה, 30 תלמידים', when: 'כל יום ראשון, 15 דקות בשיעור חינוך, ובמשך השבוע לפי הלוח', trial: 'שתי הפעלות',
+    const ex = ORG ? { mechType: 'לוח עזרה בין עמיתים', age: 'צוות עובדים', size: 'כל הצוות של המרכז הקהילתי, 14 אנשים', when: 'כל יום ראשון, 15 דקות בפתיחת ישיבת הצוות, ובמשך השבוע לפי הלוח', trial: 'שתי הפעלות',
+      purpose: 'שמי שרוצה עזרה במשימה, בכלי חדש או בעומס של השבוע ימצא אותה אצל עמיתים בצוות, בלי להתבייש לבקש.',
+      future: 'בעוד חצי שנה בקשת עזרה היא דבר רגיל בצוות, ויותר אנשים גם נותנים עזרה ולא רק מקבלים. כשיש אירוע חריג, כבר ברור מי מגבה את מי.',
+      now: 'כבר בשבוע הראשון שניים או שלושה אנשים יקבלו עזרה שביקשו, ויהיה רגע נעים של תודה בסוף ישיבת הצוות.',
+      bounds: 'הקבוצה בוחרת את המשימות והתפקידים. שינוי בשעות העבודה או תקציב באישור ראש הצוות.',
+      context: 'בצוות יש עובדים ותיקים וחדשים, וחלק עובדים במשמרות. יש קבוצת הודעות של הצוות, ולוח מודעות בחדר הצוות שלא משתמשים בו.',
+      chosen: 'לוח עזרה שבועי בין עמיתים: כל אחד ואחת יכולים לכתוב "אשמח לעזרה ב..." או "אני יכול/ה לעזור ב...", וצוות הלוח מחבר בין הבקשות להצעות.' } : { mechType: 'לוח עזרה', age: 'ה–ו', size: 'כל הכיתה, 30 תלמידים', when: 'כל יום ראשון, 15 דקות בשיעור חינוך, ובמשך השבוע לפי הלוח', trial: 'שתי הפעלות',
       purpose: 'שמי שרוצה עזרה בשיעורי הבית או בהפסקה ימצא אותה בכיתה, בלי להתבייש לבקש.',
       future: 'בעוד חצי שנה בקשת עזרה היא דבר רגיל בכיתה, ויותר תלמידים גם נותנים עזרה ולא רק מקבלים.',
       now: 'כבר בשבוע הראשון שניים או שלושה תלמידים יקבלו עזרה שביקשו, ויהיה רגע נעים של תודה בסוף ההפעלה.',
@@ -553,7 +563,7 @@
     // שיהיה ברור שמשהו קרה: השדות מלמעלה, והכפתור למטה
     F('form').scrollIntoView({ behavior: 'smooth', block: 'start' });
     const n = F('exNote') || el('p', 'hint'); n.id = 'exNote'; n.setAttribute('data-keep', '');
-    n.textContent = '✓ הדוגמה נטענה לשדות למעלה (לוח עזרה, כיתה ה–ו). אפשר לשנות, ואז ללחוץ "בניית לוח הביצוע וההסכם".';
+    n.textContent = '✓ הדוגמה נטענה לשדות למעלה (' + (ORG ? 'לוח עזרה בין עמיתים, צוות עובדים' : 'לוח עזרה, כיתה ה–ו') + '). אפשר לשנות, ואז ללחוץ "בניית לוח הביצוע וההסכם".';
     F('example').parentNode.after(n); setTimeout(() => n.remove(), 9000);
   });
 
@@ -563,4 +573,5 @@
     goStep(I.plan ? (I.step || 2) : 1);
   }
   openItem();
+  if (ORG) window.SBE_ORGW.dom(document.body);
 })();

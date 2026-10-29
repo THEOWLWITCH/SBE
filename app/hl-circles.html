@@ -5,6 +5,8 @@
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/hl-runtime.js"></script>
+<!-- רשימות פתוחות (29/10/2026): "אזור בארץ" מקבל "➕ חסר משהו? הוספה…"; שאר התפריטים כאן סגורים (data-closed): שנים, ממדים ושלבים שהחישוב נשען עליהם, והפניות לפריטים שכבר בעבודה -->
+<script src="lib/open-select.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>מעגלי העתיד · Be Good</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -480,7 +482,7 @@ function renderTop(){
   $("ideas").innerHTML = IDEAS_BY[K].map(i => `<button type="button" class="chip" data-idea="${esc(i)}" aria-pressed="${i === S.center}">${esc(i)}</button>`).join("") + `<button type="button" class="chip needs-ai" id="aiIdea">הפתעה: הצעה לא צפויה מה־AI</button>`;
   document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.ctx.type)));
   document.querySelectorAll("#aud button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.a === S.aud)));
-  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
+  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.concat(S.ctx.region && !REGIONS.includes(S.ctx.region) ? [S.ctx.region] : []).map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
 }
 function renderMap(){
   $("map").innerHTML = mapSVG(false);
@@ -505,7 +507,7 @@ function renderPanel(){
   p.innerHTML = `<div class="small muted">מעגל ${d}: ${esc(RING_LABEL[d])}</div>
     <div class="small muted">${esc(S.center)} ← ${chain.slice(0,-1).map(esc).join(" ← ")}${chain.length > 1 ? " ←" : ""}</div>
     <label class="f" for="nText">ההשלכה<textarea id="nText" style="min-height:56px">${esc(n.t)}</textarea></label>
-    <label class="f" for="nDom">תחום<select id="nDom">${DOMAINS.map(x => `<option ${x === n.d ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></label>
+    <label class="f" for="nDom">תחום<select data-closed id="nDom">${DOMAINS.map(x => `<option ${x === n.d ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></label>
     <div class="seg" role="group" aria-label="ערכיות" id="nVal">${Object.entries(VAL).map(([k,v]) => `<button type="button" data-v="${k}" aria-pressed="${n.v === k}">${v.label}</button>`).join("")}</div>
     <div><div class="small muted" style="margin-bottom:4px">מה נעשה עם ההשלכה הזו? אפשר לסמן:</div><div class="seg" role="group" aria-label="סימון" id="nMark">${Object.entries(MARKS).map(([k,v]) => `<button type="button" data-m="${k}" aria-pressed="${n.mark === k}">${v}</button>`).join("")}</div></div>
     ${d < 3 ? `<p class="small muted" style="margin-top:4px">ומה זה יגרום?</p><input type="text" id="newChild" placeholder="השלכה של ההשלכה" aria-label="השלכה של ההשלכה">

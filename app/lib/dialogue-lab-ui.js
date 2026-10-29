@@ -135,7 +135,7 @@
       const own = el('div', 'f'), ol = el('label', null, 'שאלת החקר שנבחרה (אפשר לנסח מחדש)');
       own.append(ol, K.field(I, 'question', 'שאלת החקר', true, () => { I.pick = I.pick || 'own'; edited(); renderHub(); }));
       root.appendChild(own);
-      const hw = el('div', 'f'); hw.append(el('label', null, 'איך הקבוצה בחרה'), K.choice(I, 'how', 'איך הקבוצה בחרה', ['הסכמה בשיחה', 'הצבעה', 'בחירה של נציגים', 'המורה הציעה והקבוצה הסכימה'], edited));
+      const hw = el('div', 'f'); hw.append(el('label', null, 'איך הקבוצה בחרה'), K.choice(I, 'how', 'איך הקבוצה בחרה', ['הסכמה בשיחה', 'הצבעה', 'בחירה של נציגים', 'המורה הציעה והקבוצה הסכימה'], edited, true));
       root.appendChild(hw);
       head(root, 'criteria');
       root.appendChild(K.etable([{ k: 'what', l: M.SECTIONS.criteria.cols[0], area: true }, { k: 'why', l: M.SECTIONS.criteria.cols[1], area: true }], I.criteria, edited, { add: 'הוספת תנאי' }));
@@ -201,8 +201,8 @@
     const gaps = el('div'); gaps.id = 'gaps'; out.appendChild(gaps); drawGaps();
     const kit = el('div', 'kit'); out.appendChild(kit);
     head(kit, 'evidence');
-    kit.appendChild(K.etable([{ k: 'what', l: 'מה בודקים', area: true }, { k: 'kind', l: 'סוג', opts: M.EVIDENCE_KINDS }, { k: 'source', l: 'מקור' }, { k: 'by', l: 'מי אחראי/ת', opts: roleNames },
-      { k: 'until', l: 'עד מתי' }, { k: 'claim', l: 'לאיזו טענה', opts: claimOpts }, { k: 'found', l: 'מה נמצא', area: true }, { k: 'limits', l: 'מגבלות', area: true }, { k: 'stance', l: 'מה זה אומר', opts: M.EV_STANCE }],
+    kit.appendChild(K.etable([{ k: 'what', l: 'מה בודקים', area: true }, { k: 'kind', l: 'סוג', opts: M.EVIDENCE_KINDS, open: true }, { k: 'source', l: 'מקור' }, { k: 'by', l: 'מי אחראי/ת', opts: roleNames },
+      { k: 'until', l: 'עד מתי' }, { k: 'claim', l: 'לאיזו טענה', opts: claimOpts }, { k: 'found', l: 'מה נמצא', area: true }, { k: 'limits', l: 'מגבלות', area: true }, { k: 'stance', l: 'מה זה אומר', opts: M.EV_STANCE, open: true }],
       I.evidence, edited, { add: 'הוספת ראיה' }));
     head(kit, 'plan');
     kit.appendChild(K.etable([{ k: 'who', l: 'מי (תפקיד)', opts: roleNames }, { k: 'what', l: 'מה עושים', area: true }, { k: 'when', l: 'מתי' }, { k: 'conditions', l: 'באילו תנאים', area: true }, { k: 'check', l: 'איך נבדוק מול היעד', area: true }], I.plan, edited, { add: 'הוספת שורה' }));

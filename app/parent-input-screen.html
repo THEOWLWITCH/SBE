@@ -207,6 +207,9 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 .traits-panel{display:none;margin-top:6px;max-height:min(430px,70vh);overflow-y:auto;
   border:1px solid var(--hair);border-radius:6px;padding:7px;background:var(--surface);}
 .traits-combo.open .traits-panel{display:block;}
+.traits-other{position:sticky;top:-6px;z-index:1;display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--surface,#fff);padding:6px 0 8px;margin-bottom:4px;border-bottom:1px solid var(--hair);font-size:13px;}
+.traits-other input{flex:1 1 9rem;min-width:0;font-family:inherit;font-size:13px;padding:6px 8px;}
+.traits-other .btn{font-size:12.5px;padding:5px 11px;}
 .traitfield{display:flex;flex-direction:column;gap:5px;}
 .traitgrp{border:1px solid var(--hair);border-radius:6px;overflow:hidden;background:var(--surface);flex:0 0 auto;}
 .traitrow label input[type=checkbox]{width:auto;flex:0 0 auto;margin:0;}
@@ -952,15 +955,15 @@ function render() {
           try { arr = JSON.parse(inp.value || "[]"); } catch (e) {}
           trigger.textContent = arr.length ? `${arr.length} תכונות נבחרו` : "בחירה מהרשימה...";
         }
-        TRAITS_AXES.forEach(g => {
-          const det = el("details", { class:"traitgrp" });
-          const gbody = el("div", { class:"traitgrp-b" });
-          g.axes.forEach(ax => {
+        // שורה לכל תכונה; גם לתכונה שנוספה (29/10/2026: "להוסיף אפשרות הוספה לרשימה ... בכל הרשימות")
+        const known = new Set();
+        function axisRow(ax, gbody) {
+            known.add(ax.name);
             const cb = el("input", { type:"checkbox" });
             const note = el("textarea", { class:"traitnote", placeholder:"איך זה בא לידי ביטוי אצלה/ו?" });
             const row = el("div", { class:"traitrow" });
             row.append(
-              el("label", {}, cb, el("span", {}, ax.name), el("span", { class:"poles" }, ` (${ax.poleA} ↔ ${ax.poleB})`)),
+              el("label", {}, cb, el("span", {}, ax.name), (ax.poleA ? el("span", { class:"poles" }, ` (${ax.poleA} ↔ ${ax.poleB})`) : "")),
               note
             );
             function commit() {
@@ -984,10 +987,45 @@ function render() {
               row.classList.toggle("on", !!found);
             });
             gbody.append(row);
-          });
+            return row;
+        }
+        TRAITS_AXES.forEach(g => {
+          const det = el("details", { class:"traitgrp" });
+          const gbody = el("div", { class:"traitgrp-b" });
+          g.axes.forEach(ax => axisRow(ax, gbody));
           det.append(el("summary", {}, g.name), gbody);
           wrapTraits.append(det);
         });
+        // תכונות שנוספו: נשמרות במכשיר לפי משתמש/ת, ונשלחות כמו כל תכונה (axis)
+        const ADD_KEY = (window.sbeUserKey ? window.sbeUserKey("sbe.open.traits.v1") : "sbe.open.traits.v1");
+        const loadAdded = () => { try { return JSON.parse(localStorage.getItem(ADD_KEY) || "[]") || []; } catch (e) { return []; } };
+        const ownDet = el("details", { class:"traitgrp", open:"" });
+        const ownBody = el("div", { class:"traitgrp-b" });
+        ownDet.append(el("summary", {}, "תכונות שהוספתי"), ownBody);
+        const syncOwn = () => { ownDet.hidden = !ownBody.children.length; };
+        loadAdded().forEach(n => { if (!known.has(n)) axisRow({ name:n }, ownBody); });
+        syncFns.unshift(() => { // תכונה שהגיעה מטופס שמור או מקובץ, ועוד לא ברשימה
+          let arr = []; try { arr = JSON.parse(inp.value || "[]"); } catch (e) {}
+          arr.forEach(x => { if (x && x.axis && !known.has(x.axis)) axisRow({ name:x.axis }, ownBody); });
+          syncOwn();
+        });
+        wrapTraits.append(ownDet); syncOwn();
+        const addInp = el("input", { type:"text", maxlength:"60", placeholder:"למשל: נדיבות", "aria-label":"תכונה שחסרה ברשימה" });
+        const addBtn = el("button", { type:"button", class:"btn ghost" }, "הוספה");
+        const addRow = el("div", { class:"traits-other no-print" }, el("span", {}, "➕ חסר משהו?"), addInp, addBtn);
+        function addTrait() {
+          const v = addInp.value.replace(/\s+/g, " ").trim(); if (v.length < 2) { addInp.focus(); return; }
+          const list = loadAdded().filter(x => x !== v).concat([v]).slice(-30);
+          try { localStorage.setItem(ADD_KEY, JSON.stringify(list)); } catch (e) {}
+          const row = known.has(v) ? [...wrapTraits.querySelectorAll(".traitrow")].find(r => r.querySelector("span") && r.querySelector("span").textContent === v) : axisRow({ name:v }, ownBody);
+          syncOwn(); addInp.value = "";
+          const cb = row && row.querySelector('input[type="checkbox"]');
+          if (cb && !cb.checked) { cb.checked = true; cb.dispatchEvent(new Event("change")); }
+          if (row) { const d = row.closest("details"); if (d) d.open = true; }
+        }
+        addBtn.addEventListener("click", addTrait);
+        addInp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addTrait(); } });
+        panel.append(addRow);
         panel.append(wrapTraits);
         trigger.addEventListener("click", () => {
           document.querySelectorAll(".traits-combo.open").forEach(c => { if (c !== combo) c.classList.remove("open"); });

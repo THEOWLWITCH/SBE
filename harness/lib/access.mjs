@@ -69,12 +69,17 @@ async function getInstitutions(store) {
 // ── המרחב של כל מוסד (28/10/2026: "לסמן אותו בהגדרות המוסד? כן") ──
 // space במוסד: 'edu' (חינוכי) או 'org' (ארגוני). בלי סימון: לפי הכלים שבקוד, כמו קודם:
 // קוד עם כלי חינוכי כלשהו הוא חינוכי; קוד עם כלים משותפים בלבד הוא ארגוני.
-export const SHARED_PERMS = ['horizon', 'journey', 'teamthink', 'writer', 'studies'];
+// נוגי, מרכז השגרות ותיק הרציפות משותפים לשני המרחבים (29/10/2026, "לבצע"). הם היו חינוכיים, ולכן בלי סימון של המוסד
+// הם לא מעבירים קוד למרחב הארגוני (MOVED_PERMS): קוד שיש בו אחד מהם הוא ארגוני רק כשיש בו גם כלי ארגוני (orgsuite).
+// מוסד ארגוני מסמנים בהגדרות המוסד, ואז הכלים האלה מוצגים במילים של ארגון.
+export const MOVED_PERMS = ['leadership', 'routines', 'continuity'];
+export const SHARED_PERMS = ['horizon', 'journey', 'teamthink', 'writer', 'studies', ...MOVED_PERMS];
 export const ORG_PERMS = ['orgsuite']; // כלים של המרחב הארגוני בלבד
 export const SPACES = ['edu', 'org'];
 export const spaceFromPerms = (perms) => {
   const list = Array.isArray(perms) ? perms : [];
-  return list.length && list.every((p) => SHARED_PERMS.includes(p) || ORG_PERMS.includes(p)) ? 'org' : 'edu';
+  if (!list.length || !list.every((p) => SHARED_PERMS.includes(p) || ORG_PERMS.includes(p))) return 'edu';
+  return list.some((p) => MOVED_PERMS.includes(p)) && !list.some((p) => ORG_PERMS.includes(p)) ? 'edu' : 'org';
 };
 export async function spaceOf(store, inst, perms) {
   if (inst) {
@@ -764,11 +769,13 @@ async function institutionsView(store) {
 // practi — פרקטי ככלי עצמאי (02/10/2026); גם resilience ממשיכה לפתוח את פרקטי.
 const OPEN_LISTS = { 'advisor-situation': ['resilience', 'practi'], 'advisor-age': ['resilience', 'practi'], 'advisor-stmt': ['resilience', 'practi'],
   'leader-situation': 'leadership', 'leader-role': 'leadership', 'leader-stage': 'leadership', 'leader-stmt': 'leadership',
+  // נוגי במרחב הארגוני (29/10/2026): רשימות פתוחות נפרדות, כדי שתוספות מבתי ספר לא יופיעו לארגונים ולהפך
+  'leader-org-situation': 'leadership', 'leader-org-role': 'leadership', 'leader-org-stage': 'leadership', 'leader-org-stmt': 'leadership',
   // כתיבה מקדמת חוסן: נמענים וסוגי הודעות שאנשי חינוך מוסיפים
   'writer-aud': 'writer', 'writer-kind': 'writer',
   // ננה — מהוראה להנחיה (07/10/2026): סוגי קבוצות, גילים ומצבים שמנחים מוסיפים
   'nana-group': 'nana', 'nana-age': 'nana', 'nana-sit': 'nana' };
-const LIST_ITEM_MAX = { 'advisor-stmt': 200, 'leader-stmt': 200 };
+const LIST_ITEM_MAX = { 'advisor-stmt': 200, 'leader-stmt': 200, 'leader-org-stmt': 200 };
 const LIST_MAX = 200, ITEM_MAX = 80;
 // ── תוצרי דמו (07/10/2026): מעבדת הדמו של מנהלת המערכת מפיקה תוצר אחד מכל כלי מול המודל האמיתי,
 // ושומרת אותו כאן. רק מנהלת המערכת רואה את התיקייה; מה שהיא מסמנת "להצגה" מופיע בספריית התוצרים
