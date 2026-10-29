@@ -122,7 +122,10 @@ h3.grp{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:18px;margin:22px 0
 /* שני סוגי כלים (10/10/2026): מעבדה ותרגול, וסביבת עבודה שמלווה עשייה במציאות */
 .spaces4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
 .spaces4 .sp{border-radius:14px;padding:12px 14px}.spaces4 .sp b{display:block;font-size:16px;margin-bottom:4px}.spaces4 .sp p{margin:0;font-size:14.5px;line-height:1.55;color:#3d4a57}
-.spaces4 .org{background:#e8eef5;color:#1d3f63}.spaces4 .edu{background:#e7f3ec;color:#245c3a}.spaces4 .shared{background:#dff1f3;color:#0f5f68}.spaces4 .base{background:#edf0f2;color:#3f4b56}
+/* 29/10/2026: "הכנס את הניהולי למסגרת": ארבעת המרחבים ככרטיסים לבנים זהים, עם פס דק בצבע המרחב */
+.spaces4 .sp{background:#fff;border:1px solid #e3e9ef;border-top:2px solid var(--sp-c);box-shadow:0 1px 3px rgba(22,50,74,.05);border-radius:12px}
+.spaces4 .org{--sp-c:#1d3f63;color:#1d3f63}.spaces4 .edu{--sp-c:#3d9a5f;color:#245c3a}.spaces4 .shared{--sp-c:#1b9aaa;color:#0f5f68}.spaces4 .base{--sp-c:#8a97a3;color:#3f4b56}
+:root[data-theme="dark"] .spaces4 .sp{background:#18222d;border-color:#2e4256;border-top-color:var(--sp-c)}:root[data-theme="dark"] .spaces4 .sp p{color:#b9c8d6}
 @media screen and (max-width:640px){.spaces4{grid-template-columns:1fr}}
 .kind.sp-org{background:#e8eef5;color:#1d3f63}.kind.sp-edu{background:#e7f3ec;color:#245c3a}.kind.sp-shared{background:#dff1f3;color:#0f5f68}
 .kind{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:0 9px;margin-inline-start:6px;vertical-align:2px;white-space:nowrap;border:1px solid transparent}
@@ -208,10 +211,10 @@ body:not(.sp-chosen) #tools{display:none}
   <h2>ארבעה מרחבים, בית אחד</h2>
   <p class="grp-lead">Begood בנויה משני מרחבי עבודה, על תשתית משותפת אחת. כולם נכנסים מדף הבית, וכל אחד ואחת עובדים במרחב שלהם.</p>
   <div class="spaces4">
-    <div class="sp org"><b>🏢 המרחב הארגוני</b><p>לארגונים, לקהילות, לרשויות ולצוותי הנהלה: חוסן מול עתיד לא ידוע, מנהיגות, תקשורת וחשיבה משותפת. עם תיקיית תוצרים לדוגמה מהעולם הארגוני.</p></div>
-    <div class="sp edu"><b>🎒 המרחב החינוכי</b><p>לבתי ספר, לגנים, לאקדמיה ולהורים: כיתה, הנחיה, תרגול שיחות, משחקי חוסן ושגרות. עם ספריית תוצרים לדוגמה מעולם החינוך.</p></div>
-    <div class="sp shared"><b>↔ משותפים</b><p>כלים שמתאימים לשני העולמות ומופיעים בשני המרחבים: מעבדת האופק, מסע אל החוסן החברתי, חשיבת צוות, תקשורת שמקדמת חוסן חברתי, נוגי, מרכז השגרות, תיק הרציפות, יש מה לעשות, לימודי חוסן חברתי וספריית המקורות.</p></div>
-    <div class="sp base"><b>⚙️ ניהול · 🔬 מחקר ושותפויות</b><p>התשתית של שני המרחבים: כניסה, קודים ומוסדות, בקשות לכלים ובקרת איכות, ומחקר שנעשה בהסכמה בלבד.</p></div>
+    <div class="sp org sbe-no-theme"><b>🏢 המרחב הארגוני</b><p>לארגונים, לקהילות, לרשויות ולצוותי הנהלה: חוסן מול עתיד לא ידוע, מנהיגות, תקשורת וחשיבה משותפת. עם תיקיית תוצרים לדוגמה מהעולם הארגוני.</p></div>
+    <div class="sp edu sbe-no-theme"><b>🎒 המרחב החינוכי</b><p>לבתי ספר, לגנים, לאקדמיה ולהורים: כיתה, הנחיה, תרגול שיחות, משחקי חוסן ושגרות. עם ספריית תוצרים לדוגמה מעולם החינוך.</p></div>
+    <div class="sp shared sbe-no-theme"><b>↔ משותפים</b><p>כלים שמתאימים לשני העולמות ומופיעים בשני המרחבים: מעבדת האופק, מסע אל החוסן החברתי, חשיבת צוות, תקשורת שמקדמת חוסן חברתי, נוגי, מרכז השגרות, תיק הרציפות, יש מה לעשות, לימודי חוסן חברתי וספריית המקורות.</p></div>
+    <div class="sp base sbe-no-theme"><b>⚙️ ניהול · 🔬 מחקר ושותפויות</b><p>התשתית של שני המרחבים: כניסה, קודים ומוסדות, בקשות לכלים ובקרת איכות, ומחקר שנעשה בהסכמה בלבד.</p></div>
   </div>
   <p class="grp-lead"><b>מי רואה מה?</b> מי שנכנס/ת למרחב הארגוני רואה את הכלים הארגוניים ואת הכלים המשותפים. מי שנכנס/ת למרחב החינוכי רואה את הכלים החינוכיים ואת הכלים המשותפים. כלים של מרחב אחד לא מופיעים במרחב השני. ליד כל כלי ברשימה למטה מסומן המרחב שלו.</p>
 </section>
