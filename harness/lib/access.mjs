@@ -506,6 +506,7 @@ async function handleCodes(store, body, isSys) {
     const other = String(body.other || '').trim().slice(0, 80);
     const period = ['year', 'half'].includes(body.period) ? body.period : 'year';
     const type = body.type === 'new' ? 'new' : 'renew';
+    const space = body.space === 'org' || body.space === 'edu' ? body.space : null; // המרחב שנבחר בטופס (29/10/2026)
     if (!fullName || !instTyped || (!systems.length && !other)) return [400, { error: 'missing fields' }];
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return [400, { error: 'bad email' }];
     if (!/^(\+972|0)5\d{8}$/.test(phone)) return [400, { error: 'bad phone' }];
@@ -514,7 +515,7 @@ async function handleCodes(store, body, isSys) {
     if (open.filter((v) => (v.inst || null) === inst).length >= (inst ? 5 : 30)) return [429, { error: 'too many' }];
     const at = new Date().toISOString();
     await store.set('renewreq:' + at + ':' + randomBytes(3).toString('hex'),
-      { type, forWho: priv ? 'private' : 'inst', inst, instTyped, fullName, email, phone, systems, other, period, at, done: false });
+      { type, forWho: priv ? 'private' : 'inst', inst, instTyped, fullName, email, phone, systems, other, period, space, at, done: false });
     return [200, { ok: true, at, inst: inst || instTyped }];
   }
 

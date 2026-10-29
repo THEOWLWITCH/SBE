@@ -123,6 +123,7 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
 .sys label{display:flex;gap:8px;align-items:center;margin:0;padding:8px 10px;border:1px solid var(--hair);border-radius:8px;
   background:var(--ground);font-size:14.5px;font-weight:600;color:var(--ink);cursor:pointer;}
 .sys input{width:auto;margin:0;}
+.sys label[hidden]{display:none;}
 .per{display:flex;gap:14px;margin-top:4px;}
 .per label{display:flex;gap:6px;align-items:center;margin:0;font-size:14.5px;color:var(--ink);font-weight:600;}
 .per input{width:auto;margin:0;}
@@ -147,8 +148,15 @@ td{padding:7px 6px;border-bottom:1px solid var(--hair);vertical-align:top;}
     <div><label for="email">מייל (שדה עיקרי)</label><input id="email" type="email" maxlength="80" dir="ltr" autocomplete="email"></div>
     <div><label for="phone">טלפון נייד (שדה עיקרי)</label><input id="phone" type="tel" maxlength="15" dir="ltr" autocomplete="tel" placeholder="05X-XXXXXXX"></div>
   </div>
+  <label>לאיזה מרחב? (שדה עיקרי)</label>
+  <div class="per" id="spacePick">
+    <label><input type="radio" name="space" value="edu"> 🎒 המרחב החינוכי</label>
+    <label><input type="radio" name="space" value="org"> 🏢 המרחב הארגוני</label>
+  </div>
+  <div id="sysWrap" hidden>
   <label>אילו כלים רוצים לבקש? (שדה עיקרי)</label>
   <div class="sys" id="systems"></div>
+  </div>
   <div id="codeWrap"><label for="code">קוד מנהל/ת המוסד (רשות)</label>
   <input id="code" class="code" dir="ltr" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX"></div>
   <div style="margin-top:12px"><button class="btn" id="send">שליחת הבקשה ל-Begood</button></div>
@@ -160,16 +168,28 @@ const $ = (id) => document.getElementById(id);
 // המערכות — אותן הרשאות כמו בשרת (PERMS). "משוב לעבודות" כולל גם הפקת קודים לסטודנטים.
 const SYSTEMS = [
   ["הנחיית סדנאות: סטודנטים", ["fac_trainee"]], ["הנחיית סדנאות: הורים", ["fac_parent"]], ["הנחיית סדנאות: נוער", ["fac_youth"]],
-  ["מיפוי חוסן חברתי", ["resilience"]], ["נוגי: יועצת למנהיגות שמקדמת חוסן", ["leadership"]], ["פרקטי: יועצת לחוסן", ["practi"]], ["מסע אל החוסן החברתי", ["journey"]], ["כתיבה מקדמת חוסן", ["writer"]], ["ננה: מהוראה להנחיה", ["nana"]], ["מעבדת שיח וחקר משותף", ["dialogue"]], ["חשיבת צוות", ["teamthink"]], ["משחקי חוסן", ["games"]], ["מעבדת האופק", ["horizon"]], ["גשר בין הבית לכיתה", ["bridge"]], ["מרכז שגרות ויוזמות חברתיות", ["routines"]], ["תיק רציפות", ["continuity"]], ["סטודיו חוסן", ["studio"]], ["תכנון שיחה", ["conv"]], ["תכנון פעילות", ["activity"]], ["משוב לעבודות", ["academic", "lecturer"]], ["לימודי חוסן חברתי", ["studies"]], ["תרגול צוותים", ["orgsuite"]]
+  ["מיפוי חוסן חברתי", ["resilience"]], ["נוגי: יועצת למנהיגות שמקדמת חוסן", ["leadership"]], ["פרקטי: יועצת לחוסן", ["practi"]], ["מסע אל החוסן החברתי", ["journey"]], ["תקשורת שמקדמת חוסן חברתי", ["writer"]], ["ננה: מהוראה להנחיה", ["nana"]], ["מעבדת שיח וחקר משותף", ["dialogue"]], ["חשיבת צוות", ["teamthink"]], ["משחקי חוסן", ["games"]], ["מעבדת האופק", ["horizon"]], ["גשר בין הבית לכיתה", ["bridge"]], ["מרכז שגרות ויוזמות חברתיות", ["routines"]], ["תיק רציפות", ["continuity"]], ["סטודיו חוסן", ["studio"]], ["תכנון שיחה", ["conv"]], ["תכנון פעילות", ["activity"]], ["משוב לעבודות", ["academic", "lecturer"]], ["לימודי חוסן חברתי", ["studies"]], ["תרגול צוותים", ["orgsuite"]]
 ];
 SYSTEMS.forEach(([l, ps], i) => {
   const cb = Object.assign(document.createElement("input"), { type: "checkbox", id: "s" + i });
   cb.dataset.perms = ps.join(",");
   const lb = document.createElement("label"); lb.append(cb, l); $("systems").append(lb);
 });
+// שני מרחבים (29/10/2026: "כשבוחרים מרחב ניתן לראות ולבחור רק את הכלים המתאימים"): כלים משותפים מופיעים בשניהם
+const SHARED = ["horizon", "journey", "teamthink", "writer", "studies", "leadership", "routines", "continuity"], ORG_ONLY = ["orgsuite"];
+const spaceOfCb = (cb) => { const ps = cb.dataset.perms.split(","); return ps.some(p => ORG_ONLY.includes(p)) ? "org" : ps.every(p => SHARED.includes(p)) ? "shared" : "edu"; };
+const chosenSpace = () => (document.querySelector("input[name=space]:checked") || {}).value || "";
+function syncSpace(){ const sp = chosenSpace(); $("sysWrap").hidden = !sp;
+  document.querySelectorAll("#systems input[data-perms]").forEach(cb => { const k = spaceOfCb(cb), show = k === "shared" || k === sp;
+    cb.closest("label").hidden = !show; if (!show) cb.checked = false; }); }
+document.querySelectorAll("input[name=space]").forEach(r => r.addEventListener("change", syncSpace));
 // מפת הכלים: "אין לי עדיין: בקשה לכלי" מגיע עם renew.html?perms=conv — הכלי כבר מסומן
 { const want = (new URLSearchParams(location.search).get("perms") || "").split(",").filter(Boolean);
-  document.querySelectorAll("#systems input[type=checkbox]").forEach(cb => { if (cb.dataset.perms.split(",").some(p => want.includes(p))) cb.checked = true; }); }
+  const wanted = [...document.querySelectorAll("#systems input[type=checkbox]")].filter(cb => cb.dataset.perms.split(",").some(p => want.includes(p)));
+  const sp = (new URLSearchParams(location.search).get("space") || "").match(/^(org|edu)$/) ? new URLSearchParams(location.search).get("space")
+    : wanted.some(cb => spaceOfCb(cb) === "org") ? "org" : wanted.some(cb => spaceOfCb(cb) === "edu") ? "edu" : "";
+  if (sp) document.querySelector("input[name=space][value=" + sp + "]").checked = true;
+  syncSpace(); wanted.forEach(cb => { if (!cb.closest("label").hidden) cb.checked = true; }); }
 // המוסד — שדה טקסט חופשי. אין רשימה ציבורית של המוסדות (07/10/2026): מנהלת המערכת מזהה את המוסד בבדיקה.
 // עבור מוסד או לשימוש פרטי (08/10/2026). בפרטי אין שם מוסד ואין קוד מנהל/ת מוסד.
 const forWho = () => document.querySelector("input[name=for]:checked").value;
@@ -184,12 +204,13 @@ $("send").addEventListener("click", async () => {
   const priv = forWho() === "private";
   const instName = priv ? "" : $("instName").value.trim();
   const body = { action: "renewRequest", type, forWho: priv ? "private" : "inst", fullName: $("fullName").value.trim(), instName,
-    email: $("email").value.trim(), phone, systems, other: "",
+    email: $("email").value.trim(), phone, systems, space: chosenSpace(), other: chosenSpace() === "org" ? "המרחב הארגוני" : "המרחב החינוכי",
     code: (type === "new" || priv) ? "" : $("code").value.trim() };
   const msg = $("msg"); msg.className = "msg err";
   if (!body.fullName || (!priv && !body.instName)) { msg.textContent = priv ? "כדי לשלוח, נשמח לשם מלא." : "כדי לשלוח, נשמח לשם מלא ולשם המוסד."; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { msg.textContent = "כתובת המייל לא תקינה. אפשר לבדוק אותה ולנסות שוב."; return; }
   if (!/^(\+972|0)5\d{8}$/.test(phone)) { msg.textContent = "מספר הטלפון הנייד לא תקין. אפשר לכתוב אותו כך: 050-1234567."; return; }
+  if (!body.space) { msg.textContent = "כדי לשלוח, אפשר לבחור מרחב: חינוכי או ארגוני."; return; }
   if (!systems.length) { msg.textContent = "כדי לשלוח, אפשר לסמן לפחות כלי אחד."; return; }
   $("send").disabled = true; msg.className = "msg"; msg.textContent = "השליחה נמשכת לפעמים עד דקה...";
   try {

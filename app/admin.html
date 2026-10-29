@@ -1065,7 +1065,10 @@ function pRenew(){
         el("b",{}, q.fullName || q.name || ""), " · ",
         el("a",{href:"tel:" + (q.phone || q.contact || ""), style:"direction:ltr;unicode-bidi:isolate"}, String(q.phone || q.contact || "").replace(/^(05\d)(\d{7})$/, "$1-$2")), " · ",
         q.email ? el("a",{href:"mailto:" + q.email, style:"direction:ltr;unicode-bidi:isolate"}, q.email) : ""));
-      if (sysNames.length || q.other) box.append(el("div",{class:"icodes"}, "סומנו בטופס: " + sysNames.concat(q.other ? ["אחר: " + q.other] : []).join(", ")));
+      const qSpace = q.space === "org" || q.other === "המרחב הארגוני" ? "🏢 המרחב הארגוני" : q.space === "edu" || q.other === "המרחב החינוכי" ? "🎒 המרחב החינוכי" : "";
+      const qOther = /^המרחב (הארגוני|החינוכי)$/.test(q.other || "") ? "" : q.other;
+      if (qSpace) box.append(el("div",{class:"icodes"}, "המרחב שנבחר בטופס: " + qSpace));
+      if (sysNames.length || qOther) box.append(el("div",{class:"icodes"}, "סומנו בטופס: " + sysNames.concat(qOther ? ["אחר: " + qOther] : []).join(", ")));
 
       const acts = el("div",{class:"iacts"});
       const bOpen = el("button",{class:"act p"},"פתיחת הבקשה לבדיקה");

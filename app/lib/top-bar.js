@@ -30,7 +30,7 @@
     + '#sbeTop{display:flex;align-items:center;gap:12px;min-height:50px;padding:7px 16px;box-sizing:border-box;direction:rtl;background:#fff;border-bottom:1px solid #e3e9ef;'
     + 'font:500 13.5px/1.4 Assistant,"Segoe UI",system-ui,sans-serif;color:#5b6b7a;position:relative;z-index:60;text-align:right}'
     + '#sbeTop *{box-sizing:border-box}'
-    + '#sbeTop .t-logo{flex:none;line-height:0;text-decoration:none;border:0;background:none;padding:0}#sbeTop .t-logo img{height:30px;width:auto;display:block}'
+    + '#sbeTop .t-logo{flex:none;line-height:0;text-decoration:none;border:0;background:none;padding:0}#sbeTop .t-logo img{height:30px;width:auto;display:block}#sbeTop .t-logo.t-space img{height:52px;margin:-8px 0}'
     + '#sbeTop .t-path{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden}'
     + '#sbeTop .t-path a{color:#1d3f63;text-decoration:none;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:2.5em}#sbeTop .t-path a:hover{text-decoration:underline;text-underline-offset:3px}'
     + '#sbeTop .t-path .sep{color:#a9b6c3;flex:none}#sbeTop .t-path b{color:#1f2f3d;font-weight:700;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}'
@@ -124,7 +124,10 @@
     var bar = document.createElement('div'); bar.id = 'sbeTop'; bar.className = 'no-print sbe-no-theme'; bar.setAttribute('role', 'navigation'); bar.setAttribute('aria-label', 'איפה אני ואיך חוזרים');
     var logo = document.createElement('a'); logo.className = 't-logo sbe-no-theme'; logo.href = token ? HOME : 'entry.html';
     logo.setAttribute('aria-label', token ? 'Begood: המרחב שלי' : 'Begood: דף הבית');
-    var img = document.createElement('img'); img.src = 'assets/begood-logo-mark.webp'; img.alt = 'Begood'; img.width = 53; img.height = 32; logo.appendChild(img);
+    // הלוגו של המרחב (29/10/2026: "אני לא רואה את הלוגו המתאים לכל מרחב בפינה הימנית העליונה"): Begood בחינוך או Begood together; בלי כניסה הלוגו הכללי
+    var SPACE = null; try { SPACE = token && typeof window.sbeSpace === 'function' ? window.sbeSpace() : null; } catch (e) {}
+    var LG = SPACE === 'org' ? ['assets/begood-together.webp', 'Begood together', 1249, 934] : SPACE === 'edu' ? ['assets/begood-edu.webp', 'Be good בחינוך', 1306, 988] : ['assets/begood-logo-mark.webp', 'Begood', 1248, 756];
+    var img = document.createElement('img'); img.src = LG[0]; img.alt = LG[1]; img.width = LG[2]; img.height = LG[3]; if (SPACE) logo.classList.add('t-space'); logo.appendChild(img);
     bar.appendChild(logo);
 
     var path = document.createElement('div'); path.className = 't-path';
