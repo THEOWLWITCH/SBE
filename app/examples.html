@@ -219,7 +219,7 @@ async function load(){
   const only=(new URLSearchParams(location.search).get('tool')||'').split(',').filter(Boolean).map(id=>id==='communication-continuity'?'writer':id);
   if(only.length&&items.some(d=>only.includes(d.tool))){
     items=items.filter(d=>only.includes(d.tool));
-    const all=el('p','about');const a=el('a',null,'לכל התוצרים לדוגמה ←');a.href='examples.html';a.style.cssText='color:var(--spoken);font-weight:700';all.appendChild(a);box.appendChild(all);
+    const all=el('p','about');const a=el('a',null,'לכל התוצרים לדוגמה ←');a.href=SPACE==='org'?'examples-org.html':'examples.html';a.style.cssText='color:var(--spoken);font-weight:700';all.appendChild(a);box.appendChild(all);
   }
   if(SPACE==='org'){ // בלי חמש השאלות: כלי אחרי כלי
     // תוצר אחד לכל כלי (29/10/2026: "יש דוגמאות שחוזרות על עצמן. להשאיר רק דוגמה אחת מכל כלי"): החדש ביותר
