@@ -7,9 +7,9 @@
 //  - optionsSystem, planSystem, reviseSystem: ההנחיות למודל.  parse, validOptions, valid.
 //  - anonymize(text, names): מחליף שמות שהוקלדו במכשיר ב"[משתתף/ת]" לפני שליחה למודל.
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory();
-  else root.SBE_ROUTINES = factory();
-})(typeof self !== 'undefined' ? self : this, function () {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./org-words.js'));
+  else root.SBE_ROUTINES = factory(root.SBE_ORGW);
+})(typeof self !== 'undefined' ? self : this, function (ORGW) {
   'use strict';
   const STAGES = [
     { n: 1, t: 'בוחרים פעולה', d: 'כמה אפשרויות, והקבוצה בוחרת' },
@@ -154,6 +154,49 @@
   function valid(o) {
     return !!(o && typeof o === 'object' && arr(o.board).length && arr(o.roles).length && o.agreement && o.agreement.what && arr(o.run).length);
   }
-  return { STAGES, MECH_TYPES, RESILIENCE, PERSONAL, SHARED, FIELDS, SECTIONS, AGREEMENT_ROWS, ROLE_ROWS, STATUS, ANSWER,
+  const API = { STAGES, MECH_TYPES, RESILIENCE, PERSONAL, SHARED, FIELDS, SECTIONS, AGREEMENT_ROWS, ROLE_ROWS, STATUS, ANSWER,
     inputText, anonymize, optionsSystem, planSystem, reviseSystem, parse, validOptions, valid };
+
+  // ── המרחב הארגוני (29/10/2026: מרכז השגרות זמין גם בארגונים, "לבצע") ──
+  // אותו מהלך ואותו מבנה תוצר, עם מנגנונים, דוגמאות ומילים מהעולם הארגוני: ישיבת צוות קבועה, לוח עזרה בין עמיתים,
+  // צוות חירום שכונתי, מפגש חוסן קבוע לצוות. ראש הצוות במקום המחנכת, משתתפים במקום תלמידים.
+  const ORG_MECH = ['ישיבת צוות קבועה', 'לוח עזרה בין עמיתים', 'ועדה', 'צוות פעולה', 'צוות חירום שכונתי', 'מפגש חוסן קבוע לצוות'];
+  const ORG_EXTRA = [
+    ['מועצת כיתה, לוח עזרה, ועדה, צוות פעולה או מפגש חוסן קבוע', ORG_MECH.slice(0, -1).join(', ') + ' או ' + ORG_MECH[ORG_MECH.length - 1]],
+    ['קבוצה של תלמידים (או צוות)', 'צוות, קבוצת עובדים או מתנדבים, או קבוצה בקהילה'],
+    ['בשפה שמתאימה לגיל המשתתפים', 'בשפה של אנשים בוגרים בארגון או בקהילה'],
+    ['(מועצה, לוח עזרה, ועדה, צוות פעולה)', '(ישיבת צוות, לוח עזרה, ועדה, צוות חירום)'],
+    ['"לוח עזרה בשיעורי הבית"', '"לוח עזרה בין עמיתים"'],
+    ['עדיף תפקיד של תלמיד/ה', 'עדיף תפקיד של אחד המשתתפים, מתחלף'],
+    ['רכז/ת שגרה, מתחלף/ת', 'רכז/ת שגרה מתוך המשתתפים, מתחלף/ת'],
+    ['בלי השוואה בין תלמידים', 'בלי השוואה בין אנשים'],
+    ['יציאה מהכיתה', 'יציאה מהמקום'], ['ויציאה מהכיתה', 'ויציאה מהמקום']
+  ];
+  const ORG_FIELDS = FIELDS.map((f) => {
+    const o = Object.assign({}, f);
+    if (f.k === 'mechType') o.opts = ORG_MECH;
+    if (f.k === 'age') { o.l = 'מי המשתתפים'; o.opts = ['צוות עובדים', 'מתנדבים', 'צוות ומתנדבים יחד', 'תושבים וחברי קהילה', 'צוות הנהלה']; }
+    if (f.k === 'size') o.ph = 'למשל: כל הצוות, 12 אנשים; או ועדה של 5';
+    if (f.k === 'when') o.ph = 'למשל: כל יום ראשון, 15 דקות בפתיחת ישיבת הצוות';
+    if (f.k === 'trial') o.opts = ['שתי הפעלות', 'שבועיים', 'חודש', 'רבעון'];
+    if (f.k === 'purpose') o.ph = 'משפט אחד של פעולה ותוצר. למשל: שמי שרוצה עזרה במשימה ימצא אותה אצל עמיתים בצוות.';
+    if (f.k === 'future') o.ph = 'איך ייראו הצוות או הארגון בעוד חצי שנה, אם המנגנון יעבוד.';
+    if (f.k === 'bounds') o.ph = 'מה הקבוצה מחליטה לבד, ומה ראש הצוות מאשר/ת. למשל: הקבוצה בוחרת את הפעולה והתפקידים; תקציב ושעות עבודה באישור ראש הצוות.';
+    return ORGW ? ORGW.deep(o, ORG_EXTRA) : o;
+  });
+  const ORG_INTRO = 'המרחב הארגוני: המנגנון פועל בארגון, ברשות, במרכז קהילתי, בצוות עובדים או מתנדבים, או בקהילה. המשתתפים הם אנשים בוגרים. מי שמאשר/ת את גבולות ההחלטה הוא ראש הצוות, הרכז/ת או מי שמוביל/ה את הקבוצה. הדוגמאות מעולם העבודה והקהילה: ישיבת צוות קבועה, לוח עזרה בין עמיתים, צוות חירום שכונתי, מפגש חוסן קבוע לצוות. בלי מילים ודוגמאות מעולם החינוך.';
+  const orgSys = (fn) => function () { const s = fn.apply(null, arguments); return ORG_INTRO + '\n\n' + (ORGW ? ORGW.swap(s, ORG_EXTRA) : s); };
+  const ORG = Object.assign({}, API, {
+    space: 'org', MECH_TYPES: ORG_MECH, FIELDS: ORG_FIELDS,
+    SECTIONS: ORGW ? ORGW.deep(SECTIONS, ORG_EXTRA) : SECTIONS,
+    AGREEMENT_ROWS: ORGW ? ORGW.deep(AGREEMENT_ROWS, ORG_EXTRA) : AGREEMENT_ROWS,
+    ROLE_ROWS: ORGW ? ORGW.deep(ROLE_ROWS, ORG_EXTRA) : ROLE_ROWS,
+    inputText(d) { return ORG_FIELDS.map((f) => (d && String(d[f.k] || '').trim()) ? f.l + ': ' + String(d[f.k]).trim() : '').filter(Boolean).join('\n'); },
+    optionsSystem: orgSys(optionsSystem), planSystem: orgSys(planSystem), reviseSystem: orgSys(reviseSystem),
+    words: (t) => ORGW ? ORGW.swap(t, ORG_EXTRA) : t
+  });
+  API.space = 'edu'; API.words = (t) => t;
+  API.forSpace = (space) => space === 'org' ? ORG : API;
+  ORG.forSpace = API.forSpace;
+  return API;
 });

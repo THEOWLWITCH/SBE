@@ -5,10 +5,12 @@
 // בלי חיבור למודל אין תוצר. הכול נשמר במכשיר לפי משתמש/ת (sbeUserKey), ואפשר להעביר את התיק כקובץ.
 (function () {
   'use strict';
-  const C = window.SBE_CONT, SRC = window.SBE_ADVISOR_SOURCES;
+  // המרחב הארגוני (29/10/2026): תיק רציפות לבעלי תפקידים בארגון ובקהילה (SBE_CONT.forSpace, SBE_ORGW)
+  const ORG = !!(window.SBE_ORGW && window.SBE_ORGW.isOrg());
+  const C = window.SBE_CONT.forSpace(ORG ? 'org' : 'edu'), SRC = window.SBE_ADVISOR_SOURCES, W = C.words;
   const KB = SRC.forAdvisor('continuity');
   const WRITER = window.SBE_WRITER ? window.SBE_WRITER.rule : '';
-  const STORE = window.sbeUserKey ? sbeUserKey('sbe.continuity.v2') : 'sbe.continuity.v2:anon';
+  const STORE = window.sbeUserKey ? sbeUserKey('sbe.continuity.v2' + (ORG ? '.org' : '')) : 'sbe.continuity.v2:anon';
   const SERVER = window.sbeAIOrigin ? window.sbeAIOrigin() : 'https://sbe-server.onrender.com';
   const F = (id) => document.getElementById(id);
   const NO_MODEL = 'אין כרגע חיבור למודל, ולכן התיק לא הוכן. מה שמולא נשמר, ואפשר לנסות שוב בעוד דקה או שתיים.';
@@ -199,7 +201,7 @@
     const tools = el('div', 'btns no-print');
     const names = () => (S.local.students || []).map((s) => s.c0 || s.name).filter(Boolean);
     tools.appendChild(btn('חלוקה לצוותים מתוך רשימת התלמידים', 'btn btn-ghost sm', () => {
-      const n = names(); if (!n.length) { alert('כדי לחלק לצוותים, אפשר קודם להוסיף את רשימת התלמידים בלשונית "התלמידים".'); return; }
+      const n = names(); if (!n.length) { alert(ORG ? 'כדי לחלק לצוותי משנה, אפשר קודם להוסיף את רשימת אנשי הצוות בלשונית "אנשי הצוות".' : 'כדי לחלק לצוותים, אפשר קודם להוסיף את רשימת התלמידים בלשונית "התלמידים".'); return; }
       if ((S.local.teams || []).length && !confirm('להחליף את הצוותים הקיימים בחלוקה חדשה?')) return;
       S.local.teams = C.splitTeams(n, 4).map((m, i) => ({ c0: 'צוות ' + (i + 1), c1: m.join(', '), c3: '' })); save(); draw();
     }));
@@ -225,7 +227,7 @@
     box.appendChild(grid); box.appendChild(out); update();
     const row = el('div', 'btns no-print');
     row.appendChild(btn('העתקת המכתב', 'btn btn-ghost sm', (e) => { navigator.clipboard && navigator.clipboard.writeText(out.textContent).then(() => { e.target.textContent = 'הועתק ✓'; setTimeout(() => { e.target.textContent = 'העתקת המכתב'; }, 1600); }); }));
-    row.appendChild(btn('🖨 הדפסת המכתב', 'btn btn-ghost sm', () => window.SBE_DOC.print({ title: 'מכתב להורים', subtitle: S.form.group || '', kind: 'מכתב להורים', node: out })));
+    row.appendChild(btn('🖨 הדפסת המכתב', 'btn btn-ghost sm', () => window.SBE_DOC.print({ title: W('מכתב להורים'), subtitle: S.form.group || '', kind: W('מכתב להורים'), node: out })));
     box.appendChild(row);
     return box;
   }
@@ -291,7 +293,7 @@
     const msg = el('p', 'muted');
     const apply = (rows) => {
       if (!rows.length) { msg.textContent = 'לא זוהו שורות. אפשר לבדוק שבעמודה הראשונה יש שמות, ולנסות שוב.'; return; }
-      if ((S.local.students || []).length && !confirm('להחליף את הרשימה הקיימת (' + S.local.students.length + ' תלמידים) ברשימה החדשה (' + rows.length + ')?')) return;
+      if ((S.local.students || []).length && !confirm('להחליף את הרשימה הקיימת (' + S.local.students.length + (ORG ? ' אנשים)' : ' תלמידים)') + ' ברשימה החדשה (' + rows.length + ')?')) return;
       S.local.students = rows.map((r) => ({ c0: r.name, c1: r.parent, c2: r.phone, c3: r.parent2, c4: r.phone2, c5: r.email }));
       save(); showKit(); F('kit').querySelector('[data-tab="students"]').click();
     };
@@ -429,7 +431,7 @@
   // נוהל עבודה בכלים שלכם: איפה כל חלק בתיק נמצא בכלים שכבר יש לבית הספר (SBE_PROC)
   const PROC_ITEMS = ['כרטיס פתיחה ושגרות', 'תפקידים וגיבוי', 'נהלי בית הספר', 'תכניות הלימודים והעבודה', 'מידע חשוב רפואי ונפשי (רגיש)',
     'רשימת התלמידים ופרטי ההורים (רגיש)', 'מענה פרטני (רגיש)', 'צוותי עבודה', 'שרשרת הקשר', 'מכתב להורים', 'עדכוני המחליפה (רגיש)',
-    'תיק כניסה קבוצתי', 'רשומת התאמות (רגיש)'];
+    'תיק כניסה קבוצתי', 'רשומת התאמות (רגיש)'].map((x) => ORG ? W(x).replace('רשימת המשתתפים', 'רשימת אנשי הצוות') : x);
   function renderProc() {
     const box = el('div', 'proc-box');
     box.appendChild(el('h3', null, '🗂 נוהל עבודה בכלים שלכם'));
@@ -437,10 +439,10 @@
     if (!window.SBE_PROC) return box;
     if (!S.proc) S.proc = {};
     window.SBE_PROC.mount(inner, { state: S.proc, save, kind: 'continuity', items: () => PROC_ITEMS,
-      context: () => ['תפקיד: ' + (S.form.role || ''), 'שכבת גיל: ' + (S.form.age || ''), 'איפה לומדים מרחוק: ' + (S.form.platform || ''), 'איפה הדברים היום: ' + (S.form.where || '')].join('\n') });
+      context: () => ['תפקיד: ' + (S.form.role || ''), (ORG ? 'מי בצוות: ' : 'שכבת גיל: ') + (S.form.age || ''), (ORG ? 'איפה עובדים מרחוק: ' : 'איפה לומדים מרחוק: ') + (S.form.platform || ''), 'איפה הדברים היום: ' + (S.form.where || '')].join('\n') });
     return box;
   }
-  const TABS = [['routine', '🏫 שגרה'], ['emerg', '🚨 חירום ולמידה מרחוק'], ['join', '🤝 הצטרפות וחזרה'], ['students', '👥 התלמידים'], ['updates', '📝 עדכוני המחליפה'], ['proc', '🗂 נוהל עבודה']];
+  const TABS = [['routine', '🏫 שגרה'], ['emerg', '🚨 חירום ולמידה מרחוק'], ['join', '🤝 הצטרפות וחזרה'], ['students', ORG ? '👥 אנשי הצוות' : '👥 התלמידים'], ['updates', '📝 עדכוני המחליפה'], ['proc', '🗂 נוהל עבודה']];
   function showKit() {
     const box = F('kit'); box.textContent = '';
     const bar = el('div', 'tabs no-print'); bar.setAttribute('role', 'tablist');
@@ -510,9 +512,9 @@
 
   // ── קובץ התיק (למסירה למחליפה) ותזכורת ביומן ──
   F('saveFile').addEventListener('click', () => {
-    if (!confirm('הקובץ כולל את כל התיק, גם מידע רגיש (רשימת התלמידים, פרטי ההורים, מידע חשוב). מעבירים אותו רק בדרך מאובטחת, למי שמחליף/ה אותך. להמשיך?')) return;
+    if (!confirm(W('הקובץ כולל את כל התיק, גם מידע רגיש (רשימת התלמידים, פרטי ההורים, מידע חשוב).')+' מעבירים אותו רק בדרך מאובטחת, למי שמחליף/ה אותך. להמשיך?')) return;
     const blob = new Blob([JSON.stringify({ type: 'begood-continuity', v: 2, savedAt: new Date().toISOString(), S })], { type: 'application/json' });
-    const a = el('a'); a.href = URL.createObjectURL(blob); a.download = 'תיק-רציפות-' + (S.form.group || 'כיתה').replace(/[^\w֐-׿-]+/g, '-') + '.json';
+    const a = el('a'); a.href = URL.createObjectURL(blob); a.download = 'תיק-רציפות-' + (S.form.group || (ORG ? 'צוות' : 'כיתה')).replace(/[^\w֐-׿-]+/g, '-') + '.json';
     document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   });
   F('openFile').addEventListener('change', async (e) => {
@@ -564,7 +566,14 @@
   });
 
   F('example').addEventListener('click', () => {
-    const ex = { role: 'מחנך/ת כיתה', receiver: 'ממלאת מקום לכמה שבועות', age: 'ה–ו', group: 'ו׳2, 31 תלמידים, כיתה פעילה שאוהבת עבודה בקבוצות',
+    const ex = ORG ? { role: 'רכז/ת קהילה', receiver: 'ממלא/ת מקום לכמה שבועות', age: 'צוות ומתנדבים יחד', group: 'צוות הקליטה במרכז הקהילתי: 6 אנשי צוות ו-20 מתנדבים, עובדים במשמרות',
+      routines: 'פתיחת יום 8:30: בדיקת קשר קצרה בקבוצת ההודעות של הצוות, ואז לוח המשמרות. ישיבת צוות ביום ראשון ב-9:00, 30 דקות. קבלת קהל בימים שני ורביעי 10:00 עד 13:00. סיום יום: עדכון קצר ביומן המשמרות.',
+      roles: 'אחראי/ת משמרת (מתחלף/ת כל שבוע). רכז/ת מתנדבים. אחראי/ת קבלת קהל. צוות חירום שכונתי של ארבעה מתנדבים.',
+      decisions: 'משנה את סדר המשימות ביום בעצמו/ה. הוצאה כספית רק אחרי התייעצות עם מנהל/ת המרכז. שינוי בשעות קבלת הקהל מחכה לי.',
+      support: 'הצוות עובד טוב עם סדר יום צפוי ועדכון קצר בכתב. מתנדבים חדשים נעזרים בעמית/ה ותיק/ה במשמרת הראשונה.',
+      procedures: 'נוכחות ומשמרות ביומן המשמרות. קבלת קהל לפי תור. אירוע חריג: מדווחים למנהל/ת המרכז באותו יום. תרגיל חירום פעם ברבעון.',
+      contacts: 'מנהל/ת המרכז, המזכירות, רכז/ת הנוער מהצוות הסמוך.', where: 'רשימות ותוכנית השבוע בתיקייה המשותפת של הצוות. מפתחות במזכירות. לוח המשמרות בחדר הצוות.', update: 'פעם בחודש',
+      platform: 'Microsoft Teams', emergNow: 'יש קבוצת הודעות של הצוות ושל המתנדבים. לכל איש ואשת צוות יש רשימת משימות לעבודה מהבית.' } : { role: 'מחנך/ת כיתה', receiver: 'ממלאת מקום לכמה שבועות', age: 'ה–ו', group: 'ו׳2, 31 תלמידים, כיתה פעילה שאוהבת עבודה בקבוצות',
       routines: 'פתיחת בוקר 8:00: מעגל "מה שלומך" בסבב מילה אחת, ואז לוח היום. מעבר להפסקה: תורני השבוע מכבים אור וסוגרים חלונות. אחרי הפסקה: שתי דקות שקט עם מוזיקה. סיום יום: כל אחד כותב משפט אחד ביומן הכיתה.',
       roles: 'תורנים שבועיים (שניים, מתחלפים כל ראשון). אחראית לוח היום. ועדת הפסקה פעילה (ארבעה תלמידים).',
       decisions: 'משנה את סדר השיעורים ביום בעצמה. יציאה לחצר בשיעור רק אחרי בדיקה עם רכזת השכבה. שינוי מקומות ישיבה מחכה לי.',
@@ -577,4 +586,5 @@
   });
   if (S.kit) showKit();
   goStep(1);
+  if (ORG) window.SBE_ORGW.dom(document.body, C.DOM_EXTRA);
 })();

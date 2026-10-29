@@ -26,7 +26,7 @@
   // המרחב שבו נמצא/ת מי שנכנס/ה (28/10/2026): 'org' (ארגוני) או 'edu' (חינוכי).
   // מהשרת בכניסה (המרחב שסומן למוסד), למנהלת המערכת לפי הבחירה במרחב שלי, ובמעבדת הדמו ?space=org.
   // כלים משותפים משתמשים בזה כדי להציג דוגמאות ומילים מהעולם הארגוני; השרת קובע בעצמו לפי הקוד.
-  var SHARED_PERMS = ["horizon", "journey", "teamthink", "writer", "studies"], ORG_PERMS = ["orgsuite"];
+  var MOVED_PERMS = ["leadership", "routines", "continuity"], SHARED_PERMS = ["horizon", "journey", "teamthink", "writer", "studies"].concat(MOVED_PERMS), ORG_PERMS = ["orgsuite"];
   window.sbeSpace = function(){
     try {
       var q = (location.search.match(/[?&]space=(org|edu)(?:&|$)/) || [])[1];
@@ -39,7 +39,9 @@
       var info = JSON.parse(ss("sbe.session.info") || "{}") || {};
       if (info.space === "org" || info.space === "edu") return info.space;
       var perms = JSON.parse(ss("sbe.session.perms") || "[]") || [];
-      return perms.length && perms.every(function(p){ return SHARED_PERMS.indexOf(p) >= 0 || ORG_PERMS.indexOf(p) >= 0; }) ? "org" : "edu";
+      if (!perms.length || !perms.every(function(p){ return SHARED_PERMS.indexOf(p) >= 0 || ORG_PERMS.indexOf(p) >= 0; })) return "edu";
+      // נוגי, מרכז השגרות ותיק הרציפות (משותפים מ-29/10/2026) לא מעבירים קוד לארגוני בלי כלי ארגוני (כמו spaceFromPerms בשרת)
+      return perms.some(function(p){ return MOVED_PERMS.indexOf(p) >= 0; }) && !perms.some(function(p){ return ORG_PERMS.indexOf(p) >= 0; }) ? "edu" : "org";
     } catch(e){ return "edu"; }
   };
 
