@@ -48,3 +48,10 @@ test('no referral to professionals; only 104 and 100; regular quotes', () => {
   assert.doesNotMatch(h, /—/);
   assert.doesNotMatch(h, /(^|[\s(:"])״[^״\n"]{1,160}״(?=[\s.,:;)!?<"])/, 'Hebrew gershayim used as quotation marks');
 });
+
+test('back to my space only for those who came from inside the system (29/10/2026)', () => {
+  const h = read(PAGE);
+  assert.match(h, /id="backBtn"[^>]*hidden/);
+  assert.match(h, /q\.get\("back"\)==="home"/);
+  assert.match(read('home.html'), /yesh-ma-laasot\.html" \? h \+ "\?back=home"/);
+});

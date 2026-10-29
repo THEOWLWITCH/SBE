@@ -229,9 +229,9 @@ async function api(action, extra = {}) {
   if (has("routines")) T.push(["routines-hub.html", "מרכז שגרות ויוזמות חברתיות", "מנגנון חברתי קבוע: בוחרים פעולה, מאשרים אחריות, מנסים פעמיים ופותחים לשינוי"]);
   if (has("continuity")) T.push(["continuity-kit.html", "תיק רציפות", "מה ימשיך לפעול כשמישהו חסר: שגרה, חירום ולמידה מרחוק, הצטרפות וחזרה"]);
   if (IS_SYS) T.push(["admin.html", "⚙️ ממשק הניהול", "מוסדות, קודים, בקשות, מעבדת הדמו וכל המסכים"]);
-  // "יש מה לעשות" (19/10/2026): פתוח לכל מי שנכנס/ה, וגם בלי קוד. נפתח בלשונית חדשה, כי מהמדריכון אין מעבר לכלים אחרים.
+  // "יש מה לעשות" (19/10/2026): פתוח לכל מי שנכנס/ה, וגם בלי קוד. נפתח באותה לשונית, ובמדריכון כפתור "→ המרחב שלי" (29/10/2026); אין בו מעבר לכלים אחרים.
   const hadTools = T.length > 0;
-  T.push(["yesh-ma-laasot.html", "🚨 יש מה לעשות: מדריכון לחירום", "מה עושים ומה אומרים לילדים בדקה הראשונה, נשימה, קרקוע ופעילויות קצרות. אפשר גם לשלוח במתנה", true]);
+  T.push(["yesh-ma-laasot.html", "🚨 יש מה לעשות: מדריכון לחירום", "מה עושים ומה אומרים לילדים בדקה הראשונה, נשימה, קרקוע ופעילויות קצרות. אפשר גם לשלוח במתנה"]);
   const box = $("tiles");
   if (!hadTools && INFO.kind !== "instadmin" && !has("lecturer")) {
     box.append(el("div", { class: "empty" }, "עדיין לא נפתחו לך כלים. אפשר לפנות למי שנתן/ה לך את הקוד."));
@@ -271,7 +271,7 @@ async function api(action, extra = {}) {
     const ORG_DESC = { "leadership-advisor.html": "למנהלים, לרכזים, לראשי צוותים ולוועדים: שאלון פתיחה, שיחה עם נוגי, ודוח סיכום והמלצות",
       "routines-hub.html": "מנגנון קבוע בצוות או בקהילה: בוחרים פעולה, מאשרים אחריות, מנסים פעמיים ופותחים לשינוי",
       "continuity-kit.html": "מה ימשיך לפעול כשמישהו חסר בצוות: מסירת תפקיד, חירום ועבודה מרחוק, הצטרפות וחזרה" };
-    const R = window.SBE_READY, tile = (x) => { const [h, t, d0, blank] = x; const d = (space === "org" && ORG_DESC[h]) || d0; const a = el("a", { class: "tile", href: h, target: blank ? "_blank" : null, rel: blank ? "noopener" : null }, el("b", {}, t), el("span", {}, d)); if (space && sOf(x) === "shared") a.append(el("span", { class: "shared" }, "↔ משותף לשני המרחבים")); return a; };
+    const R = window.SBE_READY, tile = (x) => { const [h, t, d0, blank] = x; const d = (space === "org" && ORG_DESC[h]) || d0; const a = el("a", { class: "tile", href: h === "yesh-ma-laasot.html" ? h + "?back=home" : h, target: blank ? "_blank" : null, rel: blank ? "noopener" : null }, el("b", {}, t), el("span", {}, d)); if (space && sOf(x) === "shared") a.append(el("span", { class: "shared" }, "↔ משותף לשני המרחבים")); return a; };
     const gift = box.querySelector(".sbe-gift");
     const add = (n) => gift ? box.insertBefore(n, gift) : box.append(n);
     const rest = VIEW.filter(x => !(R && R.groupOf(x[0])));
