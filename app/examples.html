@@ -216,6 +216,8 @@ async function load(){
     const all=el('p','about');const a=el('a',null,'לכל התוצרים לדוגמה ←');a.href='examples.html';a.style.cssText='color:var(--spoken);font-weight:700';all.appendChild(a);box.appendChild(all);
   }
   if(SPACE==='org'){ // בלי חמש השאלות: כלי אחרי כלי
+    // תוצר אחד לכל כלי (29/10/2026: "יש דוגמאות שחוזרות על עצמן. להשאיר רק דוגמה אחת מכל כלי"): החדש ביותר
+    if(!SHARE){const one={};items.forEach(d=>{const k=d.tool;if(!one[k]||(+d.at||0)>(+one[k].at||0))one[k]=d;});items=Object.values(one);}
     const knownO=TOOLS_ORG.map(t=>t[0]);
     TOOLS_ORG.concat([['_other','תוצרים נוספים','']]).forEach(([id,name,about])=>{
       const its=items.filter(d=>id==='_other'?!knownO.includes(d.tool):d.tool===id);if(!its.length)return;
