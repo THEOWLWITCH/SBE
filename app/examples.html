@@ -77,11 +77,12 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
 .dlg iframe{width:100%;height:100%;min-height:0;border:0;background:#fff;display:block}
 .rgroup{font-weight:800;font-size:1.15rem;color:var(--spoken);margin:28px 0 0;padding-top:10px;border-top:2px solid var(--hair)}
 </style>
+<style>.hero-banner{margin:.4rem 0 .8rem;line-height:0}.hero-banner img{display:block;width:100%;max-width:520px;height:auto}:root[data-theme="dark"] .hero-banner img{background:#fff;border-radius:10px;padding:6px 12px}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero-banner img{background:#fff;border-radius:10px;padding:6px 12px}}</style>
 </head>
 <body>
 <div class="wrap">
 <header>
-  <img id="libLogo" src="assets/begood-edu.webp" alt="Be good בחינוך">
+  <img id="libLogo" src="assets/begood-edu.webp" alt="Be good בחינוך" hidden>
   <nav class="hnav" aria-label="ניווט">
     <a href="about.html">אודות המערכת</a>
     <a href="home.html" id="nav-home" hidden>⌂ המרחב שלי</a>
@@ -95,7 +96,7 @@ dialog::backdrop{background:rgba(10,14,18,.55)}
   if(t){home.hidden=false;if(h)home.href=h;}else{out.textContent='למסך הכניסה';out.href='entry.html';}})();
 </script>
 
-<h1 id="libTitle">תוצרים לדוגמה מעולם החינוך</h1>
+<h1 id="libTitle" class="hero-banner"><img src="assets/examples-edu-banner.webp" alt="תוצרים לדוגמה משדה החינוך" width="1200" height="259"></h1>
 <p class="lead" id="libLead">כך נראים תוצרים אמיתיים של הכלים: כפי שהם יוצאים מהמערכת, בלי עריכה. מוזמנות ומוזמנים לפתוח, לקרוא ולהתרשם.</p>
 <p class="lead" id="libSwitch"></p>
 
@@ -129,9 +130,9 @@ const SHARE=(new URLSearchParams(location.search).get('share')||'').replace(/[^a
 // שתי ספריות (28/10/2026): חינוכית (ברירת המחדל, בדף הבית) וארגונית (examples-org.html → ?space=org)
 const SPACE=new URLSearchParams(location.search).get('space')==='org'?'org':'edu';
 if(SPACE==='org'){
-  {const lg=F('libLogo');if(lg){lg.src='assets/begood-org.webp';lg.alt='Be good בארגונים';}}
+  {const lg=F('libLogo');if(lg){lg.src='assets/begood-org.webp';lg.alt='Be good בארגונים';lg.hidden=false;}}
   document.title='תוצרים לדוגמה מהעולם הארגוני · Begood';
-  F('libTitle').textContent='תוצרים לדוגמה מהעולם הארגוני';
+  F('libTitle').classList.remove('hero-banner');F('libTitle').textContent='תוצרים לדוגמה מהעולם הארגוני';
   F('libLead').textContent='כך נראים תוצרים של הכלים כשעובדים איתם בארגון, בקהילה או ברשות: כפי שהם יוצאים מהמערכת, בלי עריכה. מוזמנות ומוזמנים לפתוח, לקרוא ולהתרשם.';
 }
 {const a=el('a',null,SPACE==='org'?'לתוצרים לדוגמה מעולם החינוך ←':'לתוצרים לדוגמה מהעולם הארגוני ←');a.href=SPACE==='org'?'examples.html':'examples-org.html';a.style.cssText='color:var(--spoken);font-weight:700';if(!SHARE)F('libSwitch').appendChild(a);}
