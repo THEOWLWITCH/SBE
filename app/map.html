@@ -65,17 +65,19 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 .heard b{display:block;color:var(--navy);font-size:16px;margin:6px 0 8px}
 
 /* ── המפה ── */
-.mapbox{position:relative;margin:22px auto 0;max-width:1120px;border-radius:32px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:radial-gradient(700px 360px at 8% 6%,var(--land-soft),transparent 70%),linear-gradient(180deg,var(--sky1),var(--sky2))}
+/* 29/10/2026: "אני מצפה לעיצוב איכותי ומעודן ואלגנטי": רקע בהיר ושקט, נהר דק, תחנות לבנות עם טבעת דקה, שמות בלי מסגרות */
+.mapbox{position:relative;margin:22px auto 0;max-width:1120px;border-radius:20px;overflow:hidden;border:1px solid #e3e9ef;box-shadow:0 1px 3px rgba(22,50,74,.05);background:#fbfdfe}
 svg.map{display:block;width:100%;height:auto;overflow:visible}
 .st{cursor:pointer;transition:opacity .35s}
 .st:focus{outline:none}
-.st:focus-visible .disc{stroke:var(--sun);stroke-width:5}
+.st:focus-visible .disc{stroke:var(--sun);stroke-width:3}
 .st .disc{transition:transform .25s}
-.st:hover .disc{transform:scale(1.08)}
+.st:hover .disc{transform:scale(1.06)}.st:hover .lab{fill:var(--blue)}
 /* 29/10/2026: "תשנה את המסגרת הלבנה הגסה של הגופן. תעדן את המילים": בלי קו מתאר עבה; גלולה רכה ושקופה מאחורי השם (`pill`) */
-.st .lab{font-family:"Assistant",sans-serif;font-weight:500;fill:var(--ink);letter-spacing:.01em}
-.st .lab-bg{fill:var(--paper);fill-opacity:.9;stroke:var(--line);stroke-width:1px}
-.st .sublab{font-family:"Assistant",sans-serif;font-weight:500;fill:var(--muted)}
+.mapbox{color-scheme:light}
+.st .lab{font-family:"Assistant",sans-serif;font-weight:500;fill:#1d3f63;letter-spacing:.005em;paint-order:stroke;stroke:#fbfdfe;stroke-width:3px;stroke-linejoin:round;transition:fill .2s}
+.st .lab-bg{display:none}
+.st .sublab{font-family:"Assistant",sans-serif;font-weight:400;fill:var(--muted);paint-order:stroke;stroke:#fbfdfe;stroke-width:3px}
 .st.dim{opacity:var(--fade)}
 .st .badge{opacity:0;transition:opacity .3s}
 .st.on .badge{opacity:1}
@@ -129,7 +131,7 @@ footer a{margin:0 6px}
 .gh{font-size:17px;color:var(--navy);margin:18px 0 0}
 .step5{font-weight:700;color:var(--navy);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 12px}
 #steps5{margin-top:12px}
-.zone{font-family:"Assistant",sans-serif;font-weight:600;fill:var(--navy);paint-order:stroke;stroke:var(--sky1);stroke-width:2.5px;stroke-linejoin:round;stroke-opacity:.8;opacity:.9}
+.zone{font-family:"Assistant",sans-serif;font-weight:600;fill:#5a7187;letter-spacing:.02em;paint-order:stroke;stroke:#fbfdfe;stroke-width:3px;stroke-linejoin:round}
 .quick{margin-top:14px}
 .q-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-radius:18px;padding:12px 16px;color:#fff;background:linear-gradient(100deg,#2E8F62,#1A9BB5 55%,#1C5F99)}
 .q-line .q-sun{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:21px;background:radial-gradient(circle at 35% 35%,#FFF1C9,#FFC95C)}
@@ -298,22 +300,21 @@ footer a{margin:0 6px}
   // מישור עם עשב ושכבות אדמה, ועליו התחנה האחרונה. הנהר נגמר בחוף שלה.
   function ground(svg, G) {
     const g = S('g', { 'aria-hidden': 'true' });
-    g.appendChild(S('path', { d: G.coast, fill: 'var(--sand)', transform: 'translate(0,9)' }));          // חוף חול
-    g.appendChild(S('path', { d: G.coast, fill: 'url(#earth)', transform: 'translate(0,4)' }));          // גדת אדמה
-    g.appendChild(S('path', { d: G.coast, fill: 'url(#meadow)' }));                                      // אחו
+    g.appendChild(S('path', { d: G.coast, fill: '#efe5cf', transform: 'translate(0,5)' }));              // חוף חול דק
+    g.appendChild(S('path', { d: G.coast, fill: 'url(#meadow)', stroke: '#cfe0c2', 'stroke-width': 1 })); // אחו רך                                      // אחו
     const cp = S('clipPath', { id: 'landclip' }); cp.appendChild(S('path', { d: G.coast })); g.appendChild(cp);
     const inLand = S('g', { 'clip-path': 'url(#landclip)' }); g.appendChild(inLand);
-    G.hills.forEach((d, i) => inLand.appendChild(S('path', { d, fill: 'var(--green)', opacity: i ? '.16' : '.22' })));
-    g.appendChild(S('path', { d: G.trail, fill: 'none', stroke: 'var(--sand)', 'stroke-width': 7, 'stroke-linecap': 'round', opacity: '.95' }));
+    G.hills.forEach((d, i) => inLand.appendChild(S('path', { d, fill: 'var(--green)', opacity: i ? '.06' : '.09' })));
+    g.appendChild(S('path', { d: G.trail, fill: 'none', stroke: '#efe5cf', 'stroke-width': 5, 'stroke-linecap': 'round' }));
     // עשב: קווים קטנים על האחו
-    for (let i = 0; i < 40; i++) { const x = 20 + (i * 97) % (L.w > 500 ? 520 : 380), y = 14 + (i * 53) % (L.w > 500 ? 150 : 120);
-      inLand.appendChild(S('path', { d: `M ${x} ${y} l 3 -7 M ${x + 4} ${y} l 1 -8 M ${x + 8} ${y} l -2 -6`, stroke: 'var(--grass-line)', 'stroke-width': 1.4, 'stroke-linecap': 'round', fill: 'none', opacity: '.55' })); }
-    G.trees.forEach(([x, y, sc]) => {
-      g.appendChild(S('ellipse', { cx: x + 2, cy: y + 1, rx: 12 * sc, ry: 3.5 * sc, fill: 'var(--earth2)', opacity: '.25' }));
-      g.appendChild(S('rect', { x: x - 2.5 * sc, y: y - 20 * sc, width: 5 * sc, height: 20 * sc, rx: 2, fill: 'var(--earth2)' }));
-      g.appendChild(S('circle', { cx: x, cy: y - 27 * sc, r: 13 * sc, fill: 'url(#gr)' }));
-      g.appendChild(S('circle', { cx: x - 8 * sc, cy: y - 20 * sc, r: 9 * sc, fill: 'var(--green)' }));
-      g.appendChild(S('circle', { cx: x + 7 * sc, cy: y - 19 * sc, r: 8 * sc, fill: 'var(--leaf)', opacity: '.9' })); });
+    for (let i = 0; i < 18; i++) { const x = 20 + (i * 97) % (L.w > 500 ? 520 : 380), y = 14 + (i * 53) % (L.w > 500 ? 150 : 120);
+      inLand.appendChild(S('path', { d: `M ${x} ${y} l 3 -7 M ${x + 4} ${y} l 1 -8 M ${x + 8} ${y} l -2 -6`, stroke: '#9cc59a', 'stroke-width': 1, 'stroke-linecap': 'round', fill: 'none', opacity: '.6' })); }
+    G.trees.forEach(([x, y, sc]) => { sc *= 0.8;   // עצים קטנים ורכים
+      g.appendChild(S('ellipse', { cx: x + 1, cy: y + 1, rx: 9 * sc, ry: 2.5 * sc, fill: '#7a9a7a', opacity: '.18' }));
+      g.appendChild(S('rect', { x: x - 1.5 * sc, y: y - 16 * sc, width: 3 * sc, height: 16 * sc, rx: 1.5, fill: '#9b8468', opacity: '.8' }));
+      g.appendChild(S('circle', { cx: x, cy: y - 24 * sc, r: 11 * sc, fill: '#8fc79a', opacity: '.9' }));
+      g.appendChild(S('circle', { cx: x - 6 * sc, cy: y - 18 * sc, r: 7.5 * sc, fill: '#6fb388', opacity: '.85' }));
+      g.appendChild(S('circle', { cx: x + 6 * sc, cy: y - 18 * sc, r: 7 * sc, fill: '#b5d98f', opacity: '.85' })); });
     svg.appendChild(g);
   }
 
@@ -328,9 +329,9 @@ footer a{margin:0 6px}
       pts.push({ x: c.x, y: c.y, nx: -dy / n, ny: dx / n, d });
     }
     const lines = [
-      { off: -width * 0.2, amp: width * 0.12, k: 0.045, sp: 1.6, ph: 0, w: 2.4, o: 0.7, dash: [70, 55], v: 38 },
-      { off: width * 0.04, amp: width * 0.14, k: 0.032, sp: 1.15, ph: 2.1, w: 1.8, o: 0.5, dash: [45, 75], v: 30 },
-      { off: width * 0.24, amp: width * 0.09, k: 0.058, sp: 2.0, ph: 4.0, w: 1.5, o: 0.6, dash: [90, 65], v: 46 }
+      { off: -width * 0.15, amp: width * 0.1, k: 0.045, sp: 1.2, ph: 0, w: 1.2, o: 0.75, dash: [60, 80], v: 24 },
+      { off: width * 0.1, amp: width * 0.1, k: 0.032, sp: 0.9, ph: 2.1, w: 1, o: 0.55, dash: [40, 110], v: 18 },
+      { off: 0, amp: width * 0.06, k: 0.058, sp: 1.4, ph: 4.0, w: 0.8, o: 0.5, dash: [80, 120], v: 30 }
     ].map((ln) => Object.assign(ln, { el: svg.appendChild(S('path', { fill: 'none', stroke: '#fff', 'stroke-opacity': ln.o, 'stroke-width': ln.w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-dasharray': ln.dash.join(' ') })) }));
     const fade = (d) => Math.min(1, d / 60, (len - d) / 60);
     const rough = (d) => 1.55 - 1.2 * (d / len); // סוער בהתחלה, רגוע ליד הקרקע היציבה
@@ -360,7 +361,7 @@ footer a{margin:0 6px}
     const defs = S('defs');
     defs.innerHTML = '<linearGradient id="rv" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="var(--blue)"/><stop offset=".55" stop-color="var(--teal)"/><stop offset="1" stop-color="var(--green)"/></linearGradient>' +
       '<linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--leaf)"/><stop offset="1" stop-color="var(--green)"/></linearGradient>' +
-      '<linearGradient id="meadow" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--meadow1)"/><stop offset="1" stop-color="var(--meadow2)"/></linearGradient>' +
+      '<linearGradient id="meadow" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e4f2dc"/><stop offset="1" stop-color="#d2e9cc"/></linearGradient>' +
       '<linearGradient id="earth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--earth1)"/><stop offset="1" stop-color="var(--earth2)"/></linearGradient>' +
       '<radialGradient id="sn"><stop offset="0" stop-color="#FFF4D6"/><stop offset=".55" stop-color="var(--sun)"/><stop offset="1" stop-color="var(--sun)" stop-opacity="0"/></radialGradient>' +
       '<linearGradient id="h1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--hill2)"/><stop offset="1" stop-color="var(--hill2)" stop-opacity=".1"/></linearGradient>' +
@@ -372,19 +373,20 @@ footer a{margin:0 6px}
     // שמש וגבעות
     // עומק המים (10/10/2026: "הצבע הכהה יהיה למטה, והוא ילך ויתבהר לכיוון הקרקע")
     const dg = S('linearGradient', { id: 'depth', x1: m === 'wide' ? '.6' : '.5', y1: '1', x2: m === 'wide' ? '.3' : '.5', y2: '0' });
-    [['0', 'var(--deep1)', '1'], ['.4', 'var(--deep2)', '.85'], ['.75', 'var(--deep3)', '.35'], ['1', 'var(--deep3)', '0']].forEach(([o, c, a]) => dg.appendChild(S('stop', { offset: o, 'stop-color': c, 'stop-opacity': a })));
+    [['0', '#dcecf3', '.9'], ['.45', '#eaf4f8', '.6'], ['1', '#ffffff', '0']].forEach(([o, c, a]) => dg.appendChild(S('stop', { offset: o, 'stop-color': c, 'stop-opacity': a })));
     defs.appendChild(dg);
     svg.appendChild(S('rect', { x: 0, y: 0, width: L.w, height: L.h, fill: 'url(#depth)' }));
     // הנהר: פס רחב, ועליו זרם בהיר שזורם
-    svg.appendChild(S('path', { d: L.river, fill: 'none', stroke: '#fff', 'stroke-opacity': '.35', 'stroke-width': (m === 'wide' ? 18 : 22) + 5, 'stroke-linecap': 'round' }));
-    svg.appendChild(S('path', { d: L.river, fill: 'none', stroke: 'url(#rv)', 'stroke-width': m === 'wide' ? 18 : 22, 'stroke-linecap': 'round', opacity: '.8' }));
+    const RW = m === 'wide' ? 10 : 12;
+    svg.appendChild(S('path', { d: L.river, fill: 'none', stroke: 'url(#rv)', 'stroke-width': RW + 12, 'stroke-linecap': 'round', opacity: '.10' }));
+    svg.appendChild(S('path', { d: L.river, fill: 'none', stroke: 'url(#rv)', 'stroke-width': RW, 'stroke-linecap': 'round', opacity: '.55' }));
     const probe = S('path', { d: L.river }); svg.appendChild(probe); probe.setAttribute('fill', 'none');
-    waves(svg, probe, m === 'wide' ? 18 : 22);
+    waves(svg, probe, RW);
     ground(svg, L.ground);
     // אתם כאן: שתי דמויות כמו בלוגו
     const [sx, sy] = L.start, me = S('g', { transform: 'translate(' + (sx - 30) + ',' + (sy - 78) + ')' });
     me.innerHTML = '<circle cx="14" cy="10" r="10" fill="url(#fg)"/><path d="M0 52 C 4 28, 24 26, 28 52 Z" fill="url(#fg)"/><circle cx="36" cy="22" r="7.5" fill="url(#wk)"/><path d="M26 54 C 29 36, 44 34, 47 54 Z" fill="url(#wk)"/>' +
-      '<text x="24" y="74" text-anchor="middle" font-family="Assistant" font-weight="600" font-size="15" fill="#fff" stroke="var(--deep1)" stroke-width="2" paint-order="stroke">אתם כאן</text>';
+      '<text x="24" y="74" text-anchor="middle" font-family="Assistant" font-weight="600" font-size="14" fill="#1d3f63" stroke="#fbfdfe" stroke-width="3" paint-order="stroke">אתם כאן</text>';
     svg.appendChild(me);
     box.appendChild(svg);
     routeG = S('g'); svg.appendChild(routeG);
@@ -394,12 +396,13 @@ footer a{margin:0 6px}
     TOOLS.forEach((t, i) => {
       const last = i === n - 1;
       const p = last ? { x: L.sun[0], y: L.sun[1] } : L.pts ? { x: L.pts[i][0], y: L.pts[i][1] } : probe.getPointAtLength(len * (0.03 + 0.88 * i / (n - 2)));
-      const side = i % 2 ? 1 : -1, r = last ? L.sun[2] * 0.62 : L.r;
+      const side = i % 2 ? 1 : -1, r = last ? L.sun[2] * 0.48 : L.r;
       const g = S('g', { class: 'st', tabindex: '0', role: 'button', 'aria-label': t.n + ': ' + t.goal, transform: 'translate(' + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ')' });
       g.appendChild(S('circle', { class: 'halo', r: r + 6, fill: 'var(--sun)', opacity: '0', style: 'transform-box:fill-box;transform-origin:center' }));
       if (t.pending) g.appendChild(S('circle', { r: r + 7, fill: 'none', stroke: 'var(--sun)', 'stroke-width': 3, 'stroke-dasharray': '5 5' }));
-      g.appendChild(S('circle', { class: 'disc', r, fill: last ? 'url(#gr)' : (t.k === 'lab' ? 'url(#lb)' : 'url(#wk)'), stroke: 'var(--paper)', 'stroke-width': mode === 'wide' ? 2.5 : 4, style: 'transform-box:fill-box;transform-origin:center' }));
-      const ic = S('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': r * (mode === 'wide' ? 0.85 : 0.95) }); ic.textContent = t.i; g.appendChild(ic);
+      g.appendChild(S('circle', { r: r + 3, fill: last ? 'var(--green)' : (t.k === 'lab' ? 'var(--teal)' : 'var(--green)'), opacity: '.10' }));
+      g.appendChild(S('circle', { class: 'disc', r, fill: '#fff', stroke: last ? 'url(#gr)' : (t.k === 'lab' ? 'url(#lb)' : 'url(#wk)'), 'stroke-width': 1.6, style: 'transform-box:fill-box;transform-origin:center;filter:drop-shadow(0 1px 1.5px rgba(22,50,74,.12))' }));
+      const ic = S('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': r * (mode === 'wide' ? 0.78 : 0.85) }); ic.textContent = t.i; g.appendChild(ic);
       const dy = last ? (mode === 'wide' ? L.ground.label[1] : -(r + 34)) : side * (r + 14) + (side > 0 ? 5 : 0);
       const nm = t.short || t.n, hw0 = Math.max.apply(null, (mode === 'wide' ? wrap(nm, 13) : [nm]).map((x) => x.length)) * L.fs * 0.27 + 6;
       let lx = last ? L.ground.label[0] : Math.min(Math.max(p.x, hw0), L.w - hw0) - p.x, ly = dy;
@@ -417,7 +420,7 @@ footer a{margin:0 6px}
       g.appendChild(lab);
       if (last) { const s2 = S('text', { class: 'sublab', 'text-anchor': 'middle', x: lx, y: dy + 19, 'font-size': 14 }); s2.textContent = '🔁 לעגן בשגרה · קרקע יציבה'; g.appendChild(s2); }
       const bd = S('g', { class: 'badge', transform: 'translate(' + (r * 0.75) + ',' + (-r * 0.75) + ')' });
-      bd.appendChild(S('circle', { r: 13, fill: 'var(--sun)', stroke: 'var(--paper)', 'stroke-width': 3 }));
+      bd.appendChild(S('circle', { r: 11, fill: 'var(--sun)', stroke: '#fff', 'stroke-width': 2 }));
       const bt = S('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 14, 'font-weight': 800, fill: '#0B2236', 'font-family': 'Assistant' }); bd.appendChild(bt); g.appendChild(bd);
       const open = () => show(t.id); g.addEventListener('click', open); g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
       svg.appendChild(g); nodes[t.id] = { g, x: p.x, y: p.y, bt, side };
