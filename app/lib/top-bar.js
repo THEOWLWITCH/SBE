@@ -74,14 +74,26 @@
     var list = []; try { list = JSON.parse(ss('sbe.trail') || '[]') || []; } catch (e) {}
     var sameSite = false; try { sameSite = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (e) {}
     if (!sameSite) list = [];
+    // 29/10/2026 ("המרחב שלי › תכנון שיחה › נוגי › תרגול צוותים"): הנתיב לא מצטבר בין כלים שלא קשורים.
+    // דף בסיס (המרחב שלי, ניהול) או מעבר דרך תפריט ☰ מתחילים נתיב חדש; וכלי נוסף לנתיב רק כשהגענו אליו מהדף האחרון שבנתיב.
+    if (ROOTS.test(file) || ss('sbe.trail.reset')) list = [];
+    try { sessionStorage.removeItem('sbe.trail.reset'); } catch (e) {}
+    var ref = ''; try { ref = sameSite ? (new URL(document.referrer).pathname.split('/').pop() || '') : ''; } catch (e) {}
     var at = -1; list.forEach(function (x, i) { if (x.f === file) at = i; });
     if (at >= 0) list = list.slice(0, at);
+    else if (list.length && list[list.length - 1].f !== ref) list = [];
     list = list.filter(function (x) { return !ROOTS.test(x.f); });
     list.push({ f: file, p: me, n: name });
     list = list.slice(-4);
     ss('sbe.trail', JSON.stringify(list));
     return list;
   }
+
+  // מעבר דרך תפריט ☰: נתיב חדש
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href]');
+    if (a && a.closest('#sbeAutoPanel, #navPanel, .sbe-menu-grp')) { try { sessionStorage.setItem('sbe.trail.reset', '1'); } catch (er) {} }
+  }, true);
 
   function build() {
     if (document.getElementById('sbeTop')) return;
