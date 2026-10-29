@@ -24,22 +24,22 @@
     // הכלים של המרחב הארגוני בלבד: התיקייה הארגונית ו-Begood together (28/10/2026); כאן ייכנסו כלים שיוכנו לארגונים
     org: ['examples-org.html', 'org-suite.html'],
     shared: [...HORIZON, 'journey.html', 'journey-cert.html', 'team-thinking.html', 'message-writer.html', 'communication-continuity.html',
-      'yesh-ma-laasot.html', 'social-resilience-studies.html', 'sources-library.html', 'org-library.html', 'resilience-advisor-sources.html'],
-    edu: ['resilience-team.html', 'resilience-fill.html', 'resilience-advisor.html', 'leadership-advisor.html', 'facilitation-advisor.html',
+      'yesh-ma-laasot.html', 'social-resilience-studies.html', 'sources-library.html', 'org-library.html', 'resilience-advisor-sources.html',
+      // עברו מהמרחב החינוכי (29/10/2026, "לבצע"): במרחב הארגוני הם מציגים מילים ודוגמאות מהעולם הארגוני (lib/org-words.js)
+      'leadership-advisor.html', 'routines-hub.html', 'continuity-kit.html'],
+    edu: ['resilience-team.html', 'resilience-fill.html', 'resilience-advisor.html', 'facilitation-advisor.html',
       'activity-planner.html', 'conversation-planner.html', 'resilience-studio.html',
       'input-screen.html', 'parent-input-screen.html', 'student-input-screen.html', 'search.html', 'facilitator-screen.html',
       'observation-sheet.html', 'practice.html', 'doc-facilitator.html', 'doc-trainee.html', 'doc-actor.html', 'card-actor.html',
       'feedback.html', 'feedback-results.html', 'shared-dialogue-lab.html', ...GAMES, 'academic-review.html',
-      'family-bridge.html', 'routines-hub.html', 'continuity-kit.html', 'examples.html'],
+      'family-bridge.html', 'examples.html'],
     admin: ['entry.html', 'index.html', 'home.html', 'map.html', 'about.html', 'renew.html', 'admin.html', 'demo-lab.html', 'eval-set.html',
       'journeys.html', 'system-select.html'],
     research: ['research-management.html', 'research-participation.html']
   };
-  // בדרך למרחב הארגוני (28/10/2026: "בינתיים היא תשאר בחינוכי אבל תכין אותה גם לארגוני. תזכור להזכיר לי")
+  // בדרך למרחב הארגוני (28/10/2026: "בינתיים היא תשאר בחינוכי אבל תכין אותה גם לארגוני. תזכור להזכיר לי").
+  // נוגי, מרכז השגרות ותיק הרציפות כבר משותפים (29/10/2026, "לבצע"); נשארו משחקי החוסן למבוגרים.
   const COMING_TO_ORG = [
-    { page: 'leadership-advisor.html', n: 'נוגי', why: 'לצוותי הנהלה בארגונים' },
-    { page: 'routines-hub.html', n: 'מרכז השגרות', why: 'מנגנונים קבועים בצוות ובארגון' },
-    { page: 'continuity-kit.html', n: 'תיק הרציפות', why: 'רציפות כשמישהו חסר בצוות' },
     { page: 'games.html', n: 'משחקי חוסן למבוגרים', why: 'תרגול לצוותים' }
   ];
   const norm = (p) => String(p || '').split('?')[0].split('#')[0].split('/').pop().toLowerCase();

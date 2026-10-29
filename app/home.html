@@ -246,7 +246,9 @@ async function api(action, extra = {}) {
     if (IS_SYS) { try { const s = localStorage.getItem(SPACE_KEY); if (s === "org" || s === "edu") return s; } catch (e) {} return "edu"; }
     // המרחב שסומן למוסד בניהול (INFO.space, מהשרת בכניסה); בלי סימון: לפי הכלים שבקוד
     if (INFO.space === "org" || INFO.space === "edu") return INFO.space;
-    return T.some(x => sOf(x) === "edu") ? "edu" : "org";
+    // נוגי, מרכז השגרות ותיק הרציפות (משותפים מ-29/10/2026) לא מעבירים לארגוני בלי כלי ארגוני, כמו בשרת (spaceFromPerms)
+    if (T.some(x => sOf(x) === "edu")) return "edu";
+    return ["leadership", "routines", "continuity"].some(p => PERMS.includes(p)) && !PERMS.includes("orgsuite") ? "edu" : "org";
   };
   const drawTiles = () => {
     box.querySelectorAll(".spacebar,.rgroup,.tiles").forEach(n => n.remove());
@@ -265,7 +267,11 @@ async function api(action, extra = {}) {
       box.prepend(bar);
     }
     // הכלים לפי חמש שאלות של מוכנות יומיומית (SBE_READY), ובסוף ספריית המקורות והתוצרים לדוגמה של המרחב
-    const R = window.SBE_READY, tile = (x) => { const [h, t, d, blank] = x; const a = el("a", { class: "tile", href: h, target: blank ? "_blank" : null, rel: blank ? "noopener" : null }, el("b", {}, t), el("span", {}, d)); if (space && sOf(x) === "shared") a.append(el("span", { class: "shared" }, "↔ משותף לשני המרחבים")); return a; };
+    // במרחב הארגוני: תיאור במילים של ארגון לכלים שעברו מהמרחב החינוכי (29/10/2026)
+    const ORG_DESC = { "leadership-advisor.html": "למנהלים, לרכזים, לראשי צוותים ולוועדים: שאלון פתיחה, שיחה עם נוגי, ודוח סיכום והמלצות",
+      "routines-hub.html": "מנגנון קבוע בצוות או בקהילה: בוחרים פעולה, מאשרים אחריות, מנסים פעמיים ופותחים לשינוי",
+      "continuity-kit.html": "מה ימשיך לפעול כשמישהו חסר בצוות: מסירת תפקיד, חירום ועבודה מרחוק, הצטרפות וחזרה" };
+    const R = window.SBE_READY, tile = (x) => { const [h, t, d0, blank] = x; const d = (space === "org" && ORG_DESC[h]) || d0; const a = el("a", { class: "tile", href: h, target: blank ? "_blank" : null, rel: blank ? "noopener" : null }, el("b", {}, t), el("span", {}, d)); if (space && sOf(x) === "shared") a.append(el("span", { class: "shared" }, "↔ משותף לשני המרחבים")); return a; };
     const gift = box.querySelector(".sbe-gift");
     const add = (n) => gift ? box.insertBefore(n, gift) : box.append(n);
     const rest = VIEW.filter(x => !(R && R.groupOf(x[0])));

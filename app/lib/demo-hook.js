@@ -263,33 +263,35 @@
       return [{tool:ongoing?'communication-continuity':'writer',title:title,label:'תקשורת שמקדמת חוסן חברתי',html:standalone(copy,title),input:inp}];
     },
     "resilience-advisor.html": function () { return inPage("practi", "פרקטי: דוח לכיתה", "פרקטי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
-    "leadership-advisor.html": function () { return inPage("nugi", "נוגי: דוח סיכום והמלצות", "נוגי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
+    // החלק הארגוני (29/10/2026): נוגי, תיק הרציפות ומרכז השגרות עם ?space=org: הדוגמה הארגונית של הכלי (מרכז קהילתי), והמילים של ארגון
+    "leadership-advisor.html": function () { var org = hlOrg(); return inPage(org ? "nugi-org" : "nugi", "נוגי: דוח סיכום והמלצות" + (org ? " · מרכז קהילתי" : ""), "נוגי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
     "facilitation-advisor.html": function () { return inPage("nana", "ננה: מדריך הנחיה", "ננה", "#btn-example", "#btn-go", "#guide-doc", "#guide-doc", "#guide"); },
     "continuity-kit.html": async function () {
-      var part = q.get("part");
-      var kit = await inPage("continuity", "תיק רציפות: למורה המחליפה", "תיק רציפות", "#example", "#go", "#kit .kit h2", "#kit", "#err1");
+      var part = q.get("part"), org = hlOrg(), sfx = org ? "-org" : "";
+      var kit = await inPage("continuity" + sfx, org ? "תיק רציפות: למחליף/ה בתפקיד · מרכז קהילתי" : "תיק רציפות: למורה המחליפה", "תיק רציפות", "#example", "#go", "#kit .kit h2", "#kit", "#err1");
       if (!part) return kit;
       if (part === "join") { // ערכת הצטרפות וחזרה (לשונית "הצטרפות וחזרה")
         click('[data-tab="join"]'); await sleep(800);
         var J = $('[data-pane="join"]'), sels = J.querySelectorAll("select");
         if (sels[0]) { sels[0].value = sels[0].options[2] ? sels[0].options[2].value : sels[0].value; sels[0].dispatchEvent(new Event("change", { bubbles: true })); }
         if (sels[1] && sels[1].options[2]) { sels[1].value = sels[1].options[2].value; sels[1].dispatchEvent(new Event("change", { bubbles: true })); }
-        var ta = J.querySelector("textarea"); if (ta) { ta.value = "חוזרים אחרי היעדרות ארוכה, ושמחים לקראתם."; ta.dispatchEvent(new Event("input", { bubbles: true })); }
+        var ta = J.querySelector("textarea"); if (ta) { ta.value = org ? "הצוות חוזר לעבודה אחרי תקופה ארוכה מרחוק, ושמחים לקראת המפגש." : "חוזרים אחרי היעדרות ארוכה, ושמחים לקראתם."; ta.dispatchEvent(new Event("input", { bubbles: true })); }
         var inp = inputSummary(J);
         var jb = [].slice.call(J.querySelectorAll("button")).filter(function (b) { return /הכנת ערכת ההצטרפות/.test(b.textContent); })[0]; click(jb);
         // הלשונית נבנית מחדש אחרי ההפקה, ולכן מחפשים אותה מחדש בכל בדיקה
         var JP = await waitFor(function () { var P = $('[data-pane="join"]'); return P && [].some.call(P.querySelectorAll("h3"), function (h) { return /תיק כניסה קבוצתי/.test(h.textContent); }) ? P : null; }, 15 * 60e3, "ערכת ההצטרפות");
         await sleep(800);
-        return [{ tool: "cont-join", title: "תיק רציפות: הצטרפות וחזרה של תלמידים לכיתה", label: "הצטרפות וחזרה", html: standalone($('[data-pane="join"]') || JP, "ערכת הצטרפות וחזרה"), input: inp }];
+        return [{ tool: "cont-join" + sfx, title: org ? "תיק רציפות: הצטרפות וחזרה לצוות · מרכז קהילתי" : "תיק רציפות: הצטרפות וחזרה של תלמידים לכיתה", label: "הצטרפות וחזרה", html: standalone($('[data-pane="join"]') || JP, "ערכת הצטרפות וחזרה"), input: inp }];
       }
       // נוהל עבודה בכלים שלכם (לשונית "נוהל עבודה")
       click('[data-tab="proc"]'); await sleep(800);
-      return procDemo($('[data-pane="proc"]'), "cont-proc", "תיק רציפות: נוהל עבודה בכלים שלכם", "נוהל עבודה · תיק רציפות", ["תיקייה משותפת", "מערכת בית הספר", "קלסר"]);
+      return procDemo($('[data-pane="proc"]'), "cont-proc" + sfx, "תיק רציפות: נוהל עבודה בכלים שלכם" + (org ? " · מרכז קהילתי" : ""), "נוהל עבודה · תיק רציפות", ["תיקייה משותפת", org ? "מערכת הארגון" : "מערכת בית הספר", "קלסר"]);
     },
     "routines-hub.html": async function () {
-      var plan = await inPage("routines", "מרכז שגרות: לוח ביצוע והסכם", "מרכז שגרות ויוזמות חברתיות", "#example", "#go", "#out2 .roles", "#out2", "#err1");
+      var org = hlOrg(), sfx = org ? "-org" : "", at = org ? " · מרכז קהילתי" : "";
+      var plan = await inPage("routines" + sfx, "מרכז שגרות: לוח ביצוע והסכם" + at, "מרכז שגרות ויוזמות חברתיות", "#example", "#go", "#out2 .roles", "#out2", "#err1");
       if (q.get("part") !== "proc") return plan;
-      return procDemo($("#procR"), "routines-proc", "מרכז שגרות: נוהל עבודה בכלים שלכם", "נוהל עבודה · מרכז שגרות", ["גיליון משותף", "לוח מודפס"]);
+      return procDemo($("#procR"), "routines-proc" + sfx, "מרכז שגרות: נוהל עבודה בכלים שלכם" + at, "נוהל עבודה · מרכז שגרות", ["גיליון משותף", "לוח מודפס"]);
     },
     // מעבדת שיח וחקר משותף וחשיבת צוות (11/10/2026): נקודת הפתיחה כתוצר (שאלות, תנאי בדיקה, תפקידים ותכנית; מהלך חשיבה ותפקידים)
     "shared-dialogue-lab.html": async function () {

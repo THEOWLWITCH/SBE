@@ -25,7 +25,21 @@
   const LEVELS = ['פתוח לקבוצה', 'לצוות בלבד', 'רגיש: במכשיר או בתיק סגור בלבד'];
   const SHAPE = '{"title":"","map":[{"item":"","level":"","where":"","who":"","when":""}],"structure":[{"name":"","what":""}],' +
     '"roles":[{"role":"","can":"","does":""}],"never":[""],"handover":[""],"ask":[""],"start":[""],"check":{"every":"","questions":[""]}}';
-  function system(kind) {
+  // המרחב הארגוני (29/10/2026): סוגי כלים, דוגמאות ומילים מהעולם הארגוני (SBE_ORGW)
+  const ORGW = (typeof module === 'object' && module.exports) ? require('./org-words.js') : (typeof self !== 'undefined' ? self.SBE_ORGW : null);
+  const orgNow = () => !!(ORGW && ORGW.isOrg());
+  const ORG_TOOL = { school: { n: 'מערכת הארגון', ex: 'מערכת הנוכחות, המשמרות וההודעות של הארגון' }, class: { n: 'מרחב עבודה מקוון', ex: 'למשל Teams, Slack או Google Workspace' },
+    mail: { ex: 'רשימת תפוצה של הצוות או של המתנדבים' }, board: { n: 'לוח מודפס בחדר הצוות', ex: 'לוח מודעות, דף על הקיר' }, binder: { ex: 'תיק סגור בחדר הצוות או במשרד' } };
+  const toolTypes = (org) => org ? TOOL_TYPES.map((t) => Object.assign({}, t, ORG_TOOL[t.k] || {})) : TOOL_TYPES;
+  const ORG_EXTRA = [['תיק רציפות של מחנכת (שגרה, חירום, הצטרפות וחזרה)', 'תיק רציפות של בעל/ת תפקיד בארגון או בקהילה (שגרה, חירום, הצטרפות וחזרה)'],
+    ['מנגנון חברתי קבוע בכיתה (מועצה, לוח עזרה, ועדה, צוות פעולה)', 'מנגנון חברתי קבוע בצוות או בקהילה (ישיבת צוות, לוח עזרה, ועדה, צוות חירום)'],
+    ['מה מותר לשתף עם הורים ותלמידים', 'מה מותר לשתף עם מתנדבים, משתתפים ובני משפחה'],
+    ['ייכנס לבית הספר', 'ייכנס לארגון']];
+  function system(kind, space) {
+    const s = systemEdu(kind);
+    return (space === 'org' || (space == null && orgNow())) && ORGW ? ORGW.swap(s, ORG_EXTRA) : s;
+  }
+  function systemEdu(kind) {
     return [
       'את כותבת "נוהל עבודה בכלים שלכם" ל' + (kind === 'continuity' ? 'תיק רציפות של מחנכת (שגרה, חירום, הצטרפות וחזרה)' : 'מנגנון חברתי קבוע בכיתה (מועצה, לוח עזרה, ועדה, צוות פעולה)') +
         ' ב-Begood. Begood לא שומרת את העבודה המשותפת. הנוהל אומר איך לעבוד בכלים שכבר יש למוסד, כך שהעבודה תימשך, תהיה שקופה, ותעבור הלאה כשמישהו מתחלף.',
@@ -45,8 +59,9 @@
       'כתבי בעברית פשוטה ובמשפטים קצרים. בלי שמות של אנשים. החזירי אך ורק JSON במבנה הזה: ' + SHAPE
     ].join('\n\n');
   }
-  function reviseSystem(kind) {
-    return system(kind) + '\n\nעכשיו מעדכנים את הנוהל: המחנכת בדקה אותו בפועל וכתבה מה עבד ומה לא. עדכני רק את מה שעלה, ושמרי את השאר. הוסיפי לשורש ה-JSON "changes": [{"where":"","what":""}].';
+  function reviseSystem(kind, space) {
+    const org = space === 'org' || (space == null && orgNow());
+    return system(kind, org ? 'org' : 'edu') + '\n\nעכשיו מעדכנים את הנוהל: ' + (org ? 'מי שמוביל/ה את העבודה בדק/ה אותו בפועל וכתב/ה' : 'המחנכת בדקה אותו בפועל וכתבה') + ' מה עבד ומה לא. עדכני רק את מה שעלה, ושמרי את השאר. הוסיפי לשורש ה-JSON "changes": [{"where":"","what":""}].';
   }
   const arr = (x) => Array.isArray(x) ? x : [];
   const valid = (o) => !!(o && arr(o.map).length && arr(o.never).length && arr(o.handover).length);
@@ -65,6 +80,7 @@
   // ── המסך ──
   function mount(node, opts) {
     const S = opts.state, save = opts.save || function () {};
+    const ORG = orgNow(), TT = toolTypes(ORG);
     if (!S.tools) S.tools = []; if (!S.checks) S.checks = [];
     const SERVER = window.sbeAIOrigin ? window.sbeAIOrigin() : 'https://sbe-server.onrender.com';
     const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = String(x); return n; };
@@ -76,7 +92,7 @@
     async function make(b, err, wait, revise) {
       err.hidden = true;
       if (!S.tools.length && !(S.other || '').trim()) { err.textContent = 'כדי להמשיך, אפשר לבחור באילו כלים אתם עובדים (אפשר גם "עוד לא ברור").'; err.hidden = false; return; }
-      const tools = TOOL_TYPES.filter((t) => S.tools.includes(t.k)).map((t) => t.n).concat((S.other || '').trim() ? ['כלי אחר: ' + S.other.trim()] : []);
+      const tools = TT.filter((t) => S.tools.includes(t.k)).map((t) => t.n).concat((S.other || '').trim() ? ['כלי אחר: ' + S.other.trim()] : []);
       const last = S.checks[0];
       const content = 'הכלים שבהם המוסד עובד: ' + tools.join('; ') + '\nמי משתמש: ' + (S.who || 'לא צוין') +
         '\n\nהפריטים בסביבת העבודה (רשימה קבועה; פריט עם "רגיש" נשאר רגיש):\n' + opts.items().map((x) => '- ' + x).join('\n') +
@@ -95,14 +111,15 @@
       node.textContent = '';
       node.appendChild(el('p', 'hint', 'נוהל לעבודה בכלים שכבר יש לכם: מה נמצא איפה, מי מעדכן, מה לא נכנס לשם, ואיך מעבירים הלאה כשמישהו מתחלף.'));
       const pick = el('div', 'proc-tools');
-      TOOL_TYPES.forEach((t) => { const l = el('label', 'proc-tool'), c = el('input'); c.type = 'checkbox'; c.checked = S.tools.includes(t.k);
+      TT.forEach((t) => { const l = el('label', 'proc-tool'), c = el('input'); c.type = 'checkbox'; c.checked = S.tools.includes(t.k);
         c.addEventListener('change', () => { S.tools = c.checked ? S.tools.concat(t.k) : S.tools.filter((x) => x !== t.k); save(); });
         l.append(c, el('b', null, ' ' + t.n)); l.appendChild(el('span', 'proc-ex', t.ex)); pick.appendChild(l); });
       node.appendChild(el('h4', null, 'באילו כלים אתם עובדים? (אפשר כמה)')); node.appendChild(pick);
       const row = el('div', 'grid2');
       const o = el('div', 'f'); o.appendChild(el('label', null, 'כלי אחר')); const oi = el('input'); oi.type = 'text'; oi.value = S.other || ''; oi.placeholder = 'שם או תיאור של כלי שלא ברשימה'; oi.addEventListener('input', () => { S.other = oi.value; save(); }); o.appendChild(oi);
       const w = el('div', 'f'); w.appendChild(el('label', null, 'מי משתמש')); const ws = el('select'); ws.name = 'proc-who'; // רשימה פתוחה: "➕ חסר משהו?" מ-open-select.js (29/10/2026)
-      ['', 'רק אני', 'אני והצוות', 'הצוות והתלמידים', 'הצוות, התלמידים וההורים'].concat(S.who && !['רק אני', 'אני והצוות', 'הצוות והתלמידים', 'הצוות, התלמידים וההורים'].includes(S.who) ? [S.who] : []).forEach((x) => ws.appendChild(new Option(x || 'בחירה…', x))); ws.value = S.who || ''; ws.addEventListener('change', () => { S.who = ws.value; save(); }); w.appendChild(ws);
+      const WHO = ORG ? ['רק אני', 'אני והצוות', 'הצוות והמתנדבים', 'הצוות, המתנדבים והקהילה'] : ['רק אני', 'אני והצוות', 'הצוות והתלמידים', 'הצוות, התלמידים וההורים'];
+      [''].concat(WHO).concat(S.who && !WHO.includes(S.who) ? [S.who] : []).forEach((x) => ws.appendChild(new Option(x || 'בחירה…', x))); ws.value = S.who || ''; ws.addEventListener('change', () => { S.who = ws.value; save(); }); w.appendChild(ws);
       row.append(o, w); node.appendChild(row);
       const err = el('p', 'err'); err.hidden = true; const wait = el('div', 'wait'); wait.hidden = true;
       const go = btn(S.proc ? 'כתיבה מחדש' : 'כתיבת הנוהל', S.proc ? 'btn btn-ghost sm' : 'btn', () => make(go, err, wait, false));
@@ -116,7 +133,7 @@
       doc.appendChild(T(['הפריט', 'רמת פרטיות', 'איפה', 'מי מעדכן/ת', 'מתי'], arr(p.map).map((m) => { const lv = el('span', 'lvl ' + (/רגיש/.test(m.level) ? 'l3' : /צוות/.test(m.level) ? 'l2' : 'l1'), txt(m.level)); return [txt(m.item), lv, txt(m.where), txt(m.who), txt(m.when)]; })));
       if (arr(p.structure).length) { doc.appendChild(el('h4', null, 'המבנה')); doc.appendChild(T(['השם', 'מה נמצא שם'], p.structure.map((s) => [txt(s.name), txt(s.what)]))); }
       if (arr(p.roles).length) { doc.appendChild(el('h4', null, 'מי עושה מה')); doc.appendChild(T(['התפקיד', 'מה רואים ועורכים', 'מה עושים'], p.roles.map((r) => [txt(r.role), txt(r.can), txt(r.does)]))); }
-      const lists = [['מה לא נכנס לכלים המשותפים', p.never], ['כשמישהו מתחלף', p.handover], ['מה לברר מול בית הספר', p.ask], ['שלושה צעדים לשבוע הקרוב', p.start]];
+      const lists = [['מה לא נכנס לכלים המשותפים', p.never], ['כשמישהו מתחלף', p.handover], [ORG ? 'מה לברר מול הארגון' : 'מה לברר מול בית הספר', p.ask], ['שלושה צעדים לשבוע הקרוב', p.start]];
       doc.appendChild(T(['', ''].map((x, i) => i ? 'פירוט' : 'החלק'), lists.concat(p.check ? [['בודקים את הנוהל ' + txt(p.check.every), p.check.questions]] : []).filter((l) => arr(l[1]).length).map(([h, xs]) => { const u = el('ul'); xs.forEach((x) => u.appendChild(el('li', null, txt(x)))); return [h, u]; })));
       const acts = el('div', 'actions no-print');
       const cp = btn('📋 העתקת הנוהל (להדבקה בראש התיקייה או הגיליון)', 'btn btn-ghost sm', () => { const t = text(p); try { navigator.clipboard.writeText(t).then(() => { cp.textContent = '✓ הועתק'; }, () => prompt('להעתקה:', t)); } catch (e) { prompt('להעתקה:', t); } });
