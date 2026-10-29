@@ -1831,7 +1831,7 @@ function pOpen(){
 let stories = null;
 function pStories(){
   const w = el("div",{class:"panel on"});
-  w.append(el("h2",{},"סיפורים ושיחות"), el("p",{class:"sub"},"מקרים ששותפו בהסכמה מ\"מקרה משלך\", ושיחות תרגול שנשמרו במאגר ממסך המשוב בתרגול העצמי, בלי שם ובלי קוד. לפני כל שימוש: לקרוא, לערוך ולהסיר פרטים מזהים. מחקר רק כשסומן \"מותר במחקר\"."));
+  w.append(el("h2",{},"סיפורים ושיחות"), el("p",{class:"sub"},"מקרים ששותפו בהסכמה מ\"מקרה משלך\", ושיחות תרגול שנשמרו במאגר ממסך המשוב בתרגול לפי תרחיש, בלי שם ובלי קוד. לפני כל שימוש: לקרוא, לערוך ולהסיר פרטים מזהים. מחקר רק כשסומן \"מותר במחקר\"."));
   if (!gate(w, stories, async () => { stories = await accessCall("storyList"); }, "סיסמת מנהלת המערכת")) return w;
   const items = stories.items || [];
   if (!items.length) { w.append(el("p",{class:"sub"},"עדיין לא שותפו סיפורים.")); return w; }

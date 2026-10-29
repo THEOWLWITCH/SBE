@@ -510,8 +510,8 @@
       var h1 = document.createElement("h2"); h1.textContent = "השיחה: " + scName; wrap.appendChild(h1); wrap.appendChild($("#transcript").cloneNode(true));
       var h2 = document.createElement("h2"); h2.textContent = "המשוב"; wrap.appendChild(h2); wrap.appendChild($("#screen-feedback").cloneNode(true));
       wrap.querySelectorAll("[hidden]").forEach(function (x) { x.removeAttribute("hidden"); });
-      if (story) return [{ tool: "practice-own", title: "תרגול על מקרה משלך: " + scName, label: "תרגול עצמי · מקרה משלך", html: standalone(wrap, "תרגול על מקרה משלך: " + scName), input: ownInput + "\n\nתורות אשת החינוך:\n" + lines.join("\n") }];
-      return [{ tool: "practice", title: "תרגול עצמי: " + scName, label: "תרגול עצמי בסימולציה", html: standalone(wrap, "תרגול עצמי: " + scName), input: "התרחיש: " + scName + "\nתורות אשת החינוך:\n" + lines.join("\n") }];
+      if (story) return [{ tool: "practice-own", title: "תרגול על מקרה משלך: " + scName, label: "תרגול לפי תרחיש · מקרה משלך", html: standalone(wrap, "תרגול על מקרה משלך: " + scName), input: ownInput + "\n\nתורות אשת החינוך:\n" + lines.join("\n") }];
+      return [{ tool: "practice", title: "תרגול לפי תרחיש: " + scName, label: "תרגול לפי תרחיש", html: standalone(wrap, "תרגול לפי תרחיש: " + scName), input: "התרחיש: " + scName + "\nתורות אשת החינוך:\n" + lines.join("\n") }];
     },
     // מעבדת האופק: תשעת הכלים (28/10/2026)
     "hl-voice.html": async function () {
