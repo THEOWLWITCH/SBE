@@ -94,7 +94,7 @@
     },
     {
       "id": "nugi",
-      "label": "נוגי: מנהיגות תומכת חוסן",
+      "label": "נוגי: יועצת למנהיגות שמקדמת חוסן",
       "readinessGroup": "see",
       "readinessLabel": "לראות",
       "kind": "work",
@@ -102,7 +102,7 @@
       "openToAll": false,
       "href": "leadership-advisor.html",
       "url": "https://be-good.co.il/leadership-advisor.html",
-      "purpose": "יועצת למנהיגות תומכת חוסן, להנהלה, לרכזים ולצוותי תלמידים."
+      "purpose": "יועצת למנהיגות שמקדמת חוסן, להנהלה, לרכזים ולצוותי תלמידים."
     },
     {
       "id": "scenario",
@@ -438,7 +438,7 @@
         },
         {
           "href": "leadership-advisor.html",
-          "label": "נוגי: יועצת למנהיגות תומכת חוסן",
+          "label": "נוגי: יועצת למנהיגות שמקדמת חוסן",
           "audience": "הרשאת נוגי"
         }
       ]

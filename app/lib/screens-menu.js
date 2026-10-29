@@ -25,7 +25,7 @@ window.SBE_SCREENS = [
       { file:'resilience-team.html', label:'מיפוי חוסן חברתי: מסך מחנך/ת', who:'הרשאת מיפוי חוסן חברתי' },
       { file:'resilience-fill.html', label:'שאלון חוסן: מסך תלמיד/ה', who:'תלמידים, בקישור מהמחנך/ת' },
       { file:'resilience-advisor.html', label:'פרקטי: יועצת לפיתוח חוסן חברתי', who:'הרשאת חוסן חברתי או פרקטי' },
-      { file:'leadership-advisor.html', label:'נוגי: יועצת למנהיגות תומכת חוסן', who:'הרשאת נוגי' },
+      { file:'leadership-advisor.html', label:'נוגי: יועצת למנהיגות שמקדמת חוסן', who:'הרשאת נוגי' },
     ]},
     { title:'🎭 2. להתאמן: מוכנים לרגע המאתגר?', items:[
       { file:'input-screen.html', label:'יצירת תרחיש: סטודנטיות.ים', who:'מנחות סטודנטים' },
