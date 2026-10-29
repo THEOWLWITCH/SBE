@@ -384,7 +384,7 @@ export const MODEL_PAGES = {
   'resilience-team.html': ['resilience'], 'resilience-advisor.html': ['resilience', 'practi'], 'leadership-advisor.html': ['leadership'],
   'resilience-studio.html': ['studio', 'activity', 'resilience', 'practi', 'leadership'], 'journey.html': ['journey'], 'message-writer.html': ['writer'], 'communication-continuity.html': ['writer'], 'facilitation-advisor.html': ['nana'],
   'shared-dialogue-lab.html': ['dialogue'], 'team-thinking.html': ['teamthink'], 'games.html': ['games'], 'memory-game.html': ['games'], 'board-game.html': ['games'], 'no-panic.html': ['games'], 'story-maker.html': ['games'], 'statement-sort.html': ['games'], 'riddles.html': ['games'], 'bingo.html': ['games'], 'twenty-q.html': ['games'], 'truth-dare.html': ['games'], 'trail-signs.html': ['games'], 'readiness-train.html': ['games'], 'idea-garden.html': ['games'],
-  'org-suite.html': ['orgsuite'], 'org-library.html': ['orgsuite'], // Begood together: תרגול צוותים (בלי מודל; כאן כדי שהרשימות יתאימו)
+  'org-suite.html': ['orgsuite'], 'org-library.html': ['orgsuite'], // תרגול צוותים (בלי מודל; כאן כדי שהרשימות יתאימו)
   'horizon-lab.html': ['horizon'], 'hl-voice.html': ['horizon'], 'hl-radar.html': ['horizon'], 'hl-futures.html': ['horizon'], 'hl-circles.html': ['horizon'], 'hl-horizons.html': ['horizon'], 'hl-collage.html': ['horizon'], 'hl-roadmap.html': ['horizon'], 'hl-game.html': ['horizon'], 'hl-stress.html': ['horizon'], // מעבדת האופק (אושר 28/10/2026)
   'family-bridge.html': ['bridge'], 'routines-hub.html': ['routines'], 'continuity-kit.html': ['continuity'] // אושרו 28/10/2026
 };
@@ -1819,7 +1819,7 @@ export async function handleAccess(store, body) {
   if (/^crit(List|Propose|Mine|Use|Admin|Approve|Reject|Remove)$/.test(action || '')) return handleReviewCriteria(store, body);
   if (/^jr[A-Z]/.test(action || '')) return handleJourney(store, body);
   if (/^wf(Open|Submit|List|Delete|Join|Get)$/.test(action || '')) return handleWorkshopFeedback(store, body);
-  // Begood together: תרגול צוותים בתרחיש (המרחב הארגוני, 28/10/2026)
+  // תרגול צוותים בתרחיש (המרחב הארגוני, 28/10/2026)
   if (action === 'orsCall') return handleOrgSuite(store, body, { pause, who: async (token) => {
     const t = token ? await authorizePermission(store, token, ['orgsuite']) : null;
     return t ? { principal: modelIdentity(t, token).principal, sys: t.k === 'sys' } : null;

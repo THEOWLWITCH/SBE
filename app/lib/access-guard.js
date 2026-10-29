@@ -102,7 +102,7 @@
   } catch(e){}
 
   // ── שמירה במכשיר לפי משתמש/ת (02/10/2026) ──
-  // טופס שנשמר בדפדפן (פרקטי, נוגי, תקשורת מקדמת חוסן חברתי, משוב לעבודות) נשמר תחת מפתח של מי שנכנס/ה —
+  // טופס שנשמר בדפדפן (פרקטי, נוגי, תקשורת שמקדמת חוסן חברתי, משוב לעבודות) נשמר תחת מפתח של מי שנכנס/ה —
   // לפי הקוד שבאסימון — כדי שמי שנכנס/ת עם קוד אחר באותו דפדפן יקבל/תקבל טופס נקי.
   window.sbeUserKey = function(base){
     var id = "anon";
@@ -278,7 +278,7 @@
     dialogue: ["shared-dialogue-lab.html", "resilience-advisor-sources.html"], // מעבדת שיח וחקר משותף (11/10/2026)
     teamthink: ["team-thinking.html", "resilience-advisor-sources.html"], // חשיבת צוות (11/10/2026)
     games: ["games.html", "memory-game.html", "board-game.html", "no-panic.html", "story-maker.html", "statement-sort.html", "riddles.html", "bingo.html", "twenty-q.html", "truth-dare.html", "trail-signs.html", "readiness-train.html", "idea-garden.html"], // מחיצת המשחקים (21/10/2026)
-    orgsuite: ["org-suite.html", "org-library.html"], // Begood together: תרגול צוותים (המרחב הארגוני, 28/10/2026)
+    orgsuite: ["org-suite.html", "org-library.html"], // תרגול צוותים (המרחב הארגוני, 28/10/2026)
     horizon: ["horizon-lab.html", "hl-voice.html", "hl-radar.html", "hl-futures.html", "hl-circles.html", "hl-horizons.html", "hl-collage.html", "hl-roadmap.html", "hl-game.html", "hl-stress.html"], // מעבדת האופק (אושר 28/10/2026)
     bridge: ["family-bridge.html", "resilience-advisor-sources.html"], routines: ["routines-hub.html", "resilience-advisor-sources.html"], continuity: ["continuity-kit.html", "resilience-advisor-sources.html"], // אושרו 28/10/2026
   };

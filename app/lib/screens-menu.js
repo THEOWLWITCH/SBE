@@ -36,7 +36,7 @@ window.SBE_SCREENS = [
       { file:'observation-sheet.html', label:'דף צפייה (טלפון)', who:'מתנסות בסדנה' },
       { file:'practice.html', label:'תרגול לפי תרחיש', who:'משתתפות בסדנה' },
       { file:'yesh-ma-laasot.html', label:'🚨 יש מה לעשות: מדריכון לחירום', who:'כולם, גם בלי כניסה (בלי ניווט לכלים אחרים)' },
-      { file:'org-suite.html', label:'🤝 Begood together: תרגול צוותים', who:'הרשאת orgsuite; צופים וצופות בקישור ההצטרפות' },
+      { file:'org-suite.html', label:'🤝 תרגול צוותים', who:'הרשאת orgsuite; צופים וצופות בקישור ההצטרפות' },
       { file:'conversation-planner.html', label:'תכנון שיחה', who:'הרשאת תכנון שיחה' },
       { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
       { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'הרשאת גשר (bridge)' },
@@ -53,7 +53,7 @@ window.SBE_SCREENS = [
     { title:'🛠 3. לתכנן ולפעול: מה עושים מחר בבוקר?', items:[
       { file:'activity-planner.html', label:'תכנון פעילות', who:'הרשאת תכנון פעילות' },
       { file:'resilience-studio.html', label:'סטודיו חוסן: השראה ופעולה', who:'הרשאת סטודיו, תכנון פעילות, מיפוי חוסן, פרקטי או נוגי' },
-      { file:'message-writer.html', label:'תקשורת מקדמת חוסן חברתי', who:'ניסוח חד־פעמי וניהול תקשורת; שמירת שיחות בקוד אישי' },
+      { file:'message-writer.html', label:'תקשורת שמקדמת חוסן חברתי', who:'ניסוח חד־פעמי וניהול תקשורת; שמירת שיחות בקוד אישי' },
       { file:'horizon-lab.html', label:'🔭 מעבדת האופק: דף הבית', who:'הרשאת מעבדת האופק (horizon)' },
       { file:'hl-voice.html', label:'מעבדת האופק: קול הקהילה', who:'הרשאת מעבדת האופק (horizon)' },
       { file:'hl-radar.html', label:'מעבדת האופק: רדאר החוסן החברתי', who:'הרשאת מעבדת האופק (horizon)' },

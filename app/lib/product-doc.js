@@ -151,7 +151,7 @@ table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-ch
   // הלוגו מוטמע במסמך (data URL) — חלון הדפסה ריק לא תמיד טוען תמונות מכתובת.
   // הלוגו נטען מראש כ-data URL כשהקובץ נטען, כדי שיופיע בכל PDF גם כשבדף אין תמונת לוגו (12/10/2026, בדיקת הלקוחה)
   // לוגו לפי המרחב (28/10/2026): "Be good בחינוך" במרחב החינוכי, "Be good בארגונים" במרחב הארגוני.
-  const LOGO_FILE = { edu: "assets/begood-edu.webp", org: "assets/begood-org.webp" };
+  const LOGO_FILE = { edu: "assets/begood-edu.webp", org: "assets/begood-together.webp" };
   const LOGO_DATA = { edu: "", org: "" };
   const assetBase = () => document.baseURI.replace(/\/(products|lib)\/[^/]*$/, "/");
   function spaceNow() { try { return typeof window.sbeSpace === "function" && window.sbeSpace() === "org" ? "org" : "edu"; } catch (e) { return "edu"; } }
@@ -251,8 +251,8 @@ h1{font-size:26px}.hd img{height:56px}
     "resilience-advisor.html": ["פרקטי", "יועצת לחוסן חברתי בכיתה: תמונת מצב והמלצות מעשיות למחנכים"],
     "leadership-advisor.html": ["נוגי", "יועצת למנהיגות תומכת חוסן: תמונת מצב והמלצות להנהלה ולצוותים"],
     "facilitation-advisor.html": ["ננה", "מהוראה להנחיה: הנחיית קבוצה שמקדמת חוסן חברתי"],
-    "message-writer.html": ["תקשורת מקדמת חוסן חברתי", "ניסוח חד־פעמי וניהול תקשורת לאורך זמן לפי 18 עקרונות Begood"],
-    "communication-continuity.html": ["תקשורת מקדמת חוסן חברתי", "ניהול תקשורת לאורך זמן מתוך מרחב התקשורת המשותף"],
+    "message-writer.html": ["תקשורת שמקדמת חוסן חברתי", "ניסוח חד־פעמי וניהול תקשורת לאורך זמן לפי 18 עקרונות Begood"],
+    "communication-continuity.html": ["תקשורת שמקדמת חוסן חברתי", "ניהול תקשורת לאורך זמן מתוך מרחב התקשורת המשותף"],
     "continuity-kit.html": ["תיק רציפות", "רציפות בכיתה: תיק הפעלה למורה המחליפה, ומסלול הצטרפות וחזרה לתלמידים"],
     "routines-hub.html": ["מרכז שגרות ויוזמות חברתיות", "קבוצה מפעילה מנגנון חברתי קבוע: בוחרת פעולה, מאשרת אחריות, מנסה פעמיים ופותחת את ההסכם לשינוי"],
     "shared-dialogue-lab.html": ["מעבדת שיח וחקר משותף", "קבוצה חוקרת שאלה בתחום הדעת: בונה טענות, בודקת ראיות ומתקנת יחד, והמורה מאשרת"],

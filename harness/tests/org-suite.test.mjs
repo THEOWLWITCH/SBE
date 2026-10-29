@@ -1,4 +1,4 @@
-// Begood together: תרגול צוותים בתרחיש (28/10/2026). מנחה עם קוד Begood והרשאת orgsuite; צופים עם קוד המפגש בלבד.
+// תרגול צוותים בתרחיש (28/10/2026). מנחה עם קוד Begood והרשאת orgsuite; צופים עם קוד המפגש בלבד.
 // אותה בדיקה כמו בחבילה (api.test.mjs), מול השרת של Begood ובמסד שלו.
 import test from 'node:test';
 import assert from 'node:assert/strict';

@@ -3,7 +3,7 @@
   else root.SBE_COMMUNICATION = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
-  const PRODUCT_NAME = 'תקשורת מקדמת חוסן חברתי';
+  const PRODUCT_NAME = 'תקשורת שמקדמת חוסן חברתי';
   const MODES = Object.freeze({single:'ניסוח חד־פעמי',continuity:'ניהול תקשורת'});
   const VERSIONS = Object.freeze({ tool: '1.2.0', prompt: '1.1.1', engine: '1.1.1', principles: '18-1.0.0', schema: 2 });
   const PRINCIPLES = Object.freeze([

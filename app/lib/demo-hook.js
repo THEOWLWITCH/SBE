@@ -259,8 +259,8 @@
         copy.style.whiteSpace = 'pre-wrap'; copy.textContent = draft ? draft.value : question ? question.textContent : '';
       }
       copy.querySelectorAll("textarea").forEach(function (n) { var p = document.createElement("div"); p.style.whiteSpace = "pre-wrap"; p.textContent = n.value; n.replaceWith(p); });
-      var title = 'תקשורת מקדמת חוסן חברתי: ' + (ongoing ? 'ניהול תקשורת' : 'ניסוח חד־פעמי') + (org ? ' בארגון' : '') + ' · דוגמה בדויה';
-      return [{tool:ongoing?'communication-continuity':'writer',title:title,label:'תקשורת מקדמת חוסן חברתי',html:standalone(copy,title),input:inp}];
+      var title = 'תקשורת שמקדמת חוסן חברתי: ' + (ongoing ? 'ניהול תקשורת' : 'ניסוח חד־פעמי') + (org ? ' בארגון' : '') + ' · דוגמה בדויה';
+      return [{tool:ongoing?'communication-continuity':'writer',title:title,label:'תקשורת שמקדמת חוסן חברתי',html:standalone(copy,title),input:inp}];
     },
     "resilience-advisor.html": function () { return inPage("practi", "פרקטי: דוח לכיתה", "פרקטי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
     "leadership-advisor.html": function () { return inPage("nugi", "נוגי: דוח סיכום והמלצות", "נוגי", "#btn-example", "#btn-analyze", "#report h2", "#report"); },
