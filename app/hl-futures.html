@@ -5,6 +5,8 @@
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/hl-runtime.js"></script>
+<!-- רשימות פתוחות (29/10/2026): "אזור בארץ" מקבל "➕ חסר משהו? הוספה…"; שאר התפריטים כאן סגורים (data-closed): שנים, ממדים ושלבים שהחישוב נשען עליהם, והפניות לפריטים שכבר בעבודה -->
+<script src="lib/open-select.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>מחולל עתידים · Be Good</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -279,7 +281,7 @@ table.mx td.el .small{font-weight:400}
       <select id="region"></select>
     </label>
     <label class="f" for="horizon">לאיזו שנה מסתכלים?
-      <select id="horizon"><option>2030</option><option>2035</option><option>2040</option><option>2045</option></select>
+      <select data-closed id="horizon"><option>2030</option><option>2035</option><option>2040</option><option>2045</option></select>
     </label>
   </div>
   <label class="f" for="desc"><span id="descLabel">תיאור קצר</span>
@@ -355,7 +357,7 @@ table.mx td.el .small{font-weight:400}
   <div class="stage-head"><span class="num">5</span><h2 id="h5s">ביקור בעולם: <span id="visitName"></span></h2></div>
   <div class="grid2">
     <label class="f" for="role">דרך העיניים של
-      <select id="role"></select>
+      <select data-closed id="role"></select>
     </label>
   </div>
   <div class="row" id="addRoleRow" hidden>
@@ -476,7 +478,7 @@ table.mx td.el .small{font-weight:400}
     <h2>אותו עולם, כמה נקודות מבט</h2>
     <p class="muted">איך נראה אותו עתיד בעיני תלמידה, אב, מורה או רכזת? בוחרים עולם ו־2 עד 4 תפקידים, ורואים את נקודות המבט זו לצד זו.</p>
     <div class="grid2">
-      <label class="f" for="lWorld">העולם<select id="lWorld"></select></label>
+      <label class="f" for="lWorld">העולם<select data-closed id="lWorld"></select></label>
     </div>
     <div><h3>תפקידים <span class="small muted">(2 עד 4)</span></h3></div>
     <div class="chips" id="lRoles"></div>
@@ -791,7 +793,7 @@ function leaveExample(){ if(state.isExample){ state.isExample=false; $("exampleB
 /* ---------- Render: context ---------- */
 function renderCtx(){
   document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v===state.ctx.type)));
-  $("region").innerHTML = `<option value="" ${state.ctx.region?"":"selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r===state.ctx.region?"selected":""}>${esc(r)}</option>`).join("");
+  $("region").innerHTML = `<option value="" ${state.ctx.region?"":"selected"}>לבחור אזור</option>` + REGIONS.concat(state.ctx.region && !REGIONS.includes(state.ctx.region) ? [state.ctx.region] : []).map(r => `<option ${r===state.ctx.region?"selected":""}>${esc(r)}</option>`).join("");
   $("horizon").value = state.ctx.horizon;
   $("desc").value = state.ctx.desc;
   const tc = TYPE_COPY[state.ctx.type];
@@ -1872,7 +1874,7 @@ function renderPaper(){
   <section class="stage" aria-labelledby="addh">
     <h3 id="addh">${editing.id ? "עריכת פריט" : "הוספה לעיתון"}</h3>
     <div class="grid2">
-      <label class="f" for="iKind">סוג<select id="iKind">${Object.entries(KINDS).map(([k,v]) => `<option value="${k}">${v}</option>`).join("")}</select></label>
+      <label class="f" for="iKind">סוג<select data-closed id="iKind">${Object.entries(KINDS).map(([k,v]) => `<option value="${k}">${v}</option>`).join("")}</select></label>
       <label class="f" for="iBy">מי כתבו<input type="text" id="iBy" placeholder="שמות או שם הצוות" value="${esc(f.team)}"></label>
     </div>
     <label class="f" for="iTitle"><span id="iTitleLbl">כותרת</span><input type="text" id="iTitle"></label>

@@ -5,6 +5,8 @@
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/hl-runtime.js"></script>
+<!-- רשימות פתוחות (29/10/2026): "אזור בארץ" מקבל "➕ חסר משהו? הוספה…"; שאר התפריטים כאן סגורים (data-closed): שנים, ממדים ושלבים שהחישוב נשען עליהם, והפניות לפריטים שכבר בעבודה -->
+<script src="lib/open-select.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>מהחזון להיום · Be Good</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -290,7 +292,7 @@ table.rm tr.gates td{background:transparent;padding:2px 6px}
   </div>
   <div class="grid2">
     <label class="f" for="region">אזור בארץ<select id="region"></select></label>
-    <label class="f" for="horizon">לאיזו שנה החזון?<select id="horizon"><option>2028</option><option>2030</option><option>2035</option><option>2040</option></select></label>
+    <label class="f" for="horizon">לאיזו שנה החזון?<select data-closed id="horizon"><option>2028</option><option>2030</option><option>2035</option><option>2040</option></select></label>
   </div>
   <label class="f" for="desc">כמה מילים על המקום או על הקהילה<textarea id="desc"></textarea></label>
 </section>
@@ -472,7 +474,7 @@ function planText(){
 /* ---------- render ---------- */
 function renderCtx(){
   document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.ctx.type)));
-  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
+  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.concat(S.ctx.region && !REGIONS.includes(S.ctx.region) ? [S.ctx.region] : []).map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
   $("horizon").value = S.horizon; $("desc").value = S.ctx.desc || ""; $("desc").placeholder = DESC_PH[S.ctx.type]; $("mTitle").value = S.title || "";
 }
 function renderVision(){
@@ -522,9 +524,9 @@ function renderEdit(){
     e.innerHTML = `<b>עריכת פריט</b>
       <textarea id="eText" style="min-height:52px" aria-label="טקסט">${esc(i.text)}</textarea>
       <div class="grid2">
-        <label class="f" for="eLane">תחום<select id="eLane">${S.lanes.map(l => `<option value="${esc(l.id)}" ${l.id === i.lane ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select></label>
-        <label class="f" for="eStage">שלב<select id="eStage">${st.map((s,si) => `<option value="${si}" ${si === i.stage ? "selected" : ""}>${esc(s.label)}</option>`).join("")}</select></label>
-        <label class="f" for="eKind">סוג<select id="eKind"><option value="act" ${i.kind !== "ms" ? "selected" : ""}>פעולה</option><option value="ms" ${i.kind === "ms" ? "selected" : ""}>אבן דרך</option></select></label>
+        <label class="f" for="eLane">תחום<select data-closed id="eLane">${S.lanes.map(l => `<option value="${esc(l.id)}" ${l.id === i.lane ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select></label>
+        <label class="f" for="eStage">שלב<select data-closed id="eStage">${st.map((s,si) => `<option value="${si}" ${si === i.stage ? "selected" : ""}>${esc(s.label)}</option>`).join("")}</select></label>
+        <label class="f" for="eKind">סוג<select data-closed id="eKind"><option value="act" ${i.kind !== "ms" ? "selected" : ""}>פעולה</option><option value="ms" ${i.kind === "ms" ? "selected" : ""}>אבן דרך</option></select></label>
         <label class="f" for="eOwner">מי מוביל או מובילה (רשות)<input type="text" id="eOwner" value="${esc(i.owner||"")}" placeholder="תפקיד או שם"></label>
       </div>
       <div class="row"><button type="button" class="primary" id="eSave">שמירה</button><button type="button" id="eDel">מחיקה</button><button type="button" id="eClose">סגירה</button></div>`;

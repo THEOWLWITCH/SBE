@@ -5,6 +5,8 @@
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/hl-runtime.js"></script>
+<!-- רשימות פתוחות (29/10/2026): "אזור בארץ" מקבל "➕ חסר משהו? הוספה…"; שאר התפריטים כאן סגורים (data-closed): שנים, ממדים ושלבים שהחישוב נשען עליהם, והפניות לפריטים שכבר בעבודה -->
+<script src="lib/open-select.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>בדיקת עמידות · Be Good</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -502,7 +504,7 @@ function cellOf(e, w){ const r = state.result; return r ? (r.cells||[]).find(c =
 /* ---------- render ---------- */
 function renderCtx(){
   document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === state.ctx.type)));
-  $("region").innerHTML = `<option value="" ${state.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r === state.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
+  $("region").innerHTML = `<option value="" ${state.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.concat(state.ctx.region && !REGIONS.includes(state.ctx.region) ? [state.ctx.region] : []).map(r => `<option ${r === state.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
   $("desc").value = state.ctx.desc || ""; $("descLabel").textContent = DESC_LABEL[state.ctx.type]; $("desc").placeholder = DESC_PH[state.ctx.type];
 }
 function renderPlan(){

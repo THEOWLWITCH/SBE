@@ -101,8 +101,8 @@
       node.appendChild(el('h4', null, 'באילו כלים אתם עובדים? (אפשר כמה)')); node.appendChild(pick);
       const row = el('div', 'grid2');
       const o = el('div', 'f'); o.appendChild(el('label', null, 'כלי אחר')); const oi = el('input'); oi.type = 'text'; oi.value = S.other || ''; oi.placeholder = 'שם או תיאור של כלי שלא ברשימה'; oi.addEventListener('input', () => { S.other = oi.value; save(); }); o.appendChild(oi);
-      const w = el('div', 'f'); w.appendChild(el('label', null, 'מי משתמש')); const ws = el('select'); ws.setAttribute('data-closed', '');
-      ['', 'רק אני', 'אני והצוות', 'הצוות והתלמידים', 'הצוות, התלמידים וההורים'].forEach((x) => ws.appendChild(new Option(x || 'בחירה…', x))); ws.value = S.who || ''; ws.addEventListener('change', () => { S.who = ws.value; save(); }); w.appendChild(ws);
+      const w = el('div', 'f'); w.appendChild(el('label', null, 'מי משתמש')); const ws = el('select'); ws.name = 'proc-who'; // רשימה פתוחה: "➕ חסר משהו?" מ-open-select.js (29/10/2026)
+      ['', 'רק אני', 'אני והצוות', 'הצוות והתלמידים', 'הצוות, התלמידים וההורים'].concat(S.who && !['רק אני', 'אני והצוות', 'הצוות והתלמידים', 'הצוות, התלמידים וההורים'].includes(S.who) ? [S.who] : []).forEach((x) => ws.appendChild(new Option(x || 'בחירה…', x))); ws.value = S.who || ''; ws.addEventListener('change', () => { S.who = ws.value; save(); }); w.appendChild(ws);
       row.append(o, w); node.appendChild(row);
       const err = el('p', 'err'); err.hidden = true; const wait = el('div', 'wait'); wait.hidden = true;
       const go = btn(S.proc ? 'כתיבה מחדש' : 'כתיבת הנוהל', S.proc ? 'btn btn-ghost sm' : 'btn', () => make(go, err, wait, false));

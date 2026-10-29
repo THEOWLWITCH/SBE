@@ -5,6 +5,8 @@
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/hl-runtime.js"></script>
+<!-- רשימות פתוחות (29/10/2026): "אזור בארץ" מקבל "➕ חסר משהו? הוספה…"; שאר התפריטים כאן סגורים (data-closed): שנים, ממדים ושלבים שהחישוב נשען עליהם, והפניות לפריטים שכבר בעבודה -->
+<script src="lib/open-select.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>קול הקהילה · Be Good</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -303,7 +305,7 @@ table.mx td.el .small{font-weight:400}
     </div></div>
     <div class="grid2">
       <label class="f" for="region">אזור בארץ<select id="region"></select></label>
-      <label class="f" for="horizon">לאיזו שנה מסתכלים?<select id="horizon"><option>2030</option><option>2035</option><option>2040</option></select></label>
+      <label class="f" for="horizon">לאיזו שנה מסתכלים?<select data-closed id="horizon"><option>2030</option><option>2035</option><option>2040</option></select></label>
     </div>
     <label class="f" for="desc"><span id="descLabel">תיאור קצר</span><textarea id="desc"></textarea></label>
     <label class="f" for="topic">על מה מדברים? (נושא התהליך)<input type="text" id="topic" placeholder="למשל: החוסן של בית הספר והקהילה בעשור הקרוב"></label>
@@ -328,7 +330,7 @@ table.mx td.el .small{font-weight:400}
     <h2>ראיון <span class="small muted">(למשתתפים)</span></h2>
     <p id="ivIntro"></p>
     <div class="principle small"><b>פרטיות:</b> לא שואלים ולא שומרים שמות. בסוף הראיון מוצג סיכום קצר של התשובות, ורק הוא נשמר, אחרי אישור. השיחה המלאה לא נשמרת. אפשר לדלג על כל שאלה.<br><b>מה יקרה עם התשובות שלי?</b> ה־AI יקרא את הסיכומים של כל המשתתפים יחד, וירכז מהם את הנושאים שחוזרים, את התקוות, את החששות ואת ההבדלים בין הקבוצות. אחר כך כל המשתתפים ידרגו יחד מה הכי חשוב לטפל בו. התשובות של אף אחד לא יוצגו בנפרד, אלא רק ציטוטים קצרים בלי שם.</div>
-    <div style="max-width:420px"><label class="f" for="ivGroup">לאיזו קבוצה אני שייך או שייכת?<select id="ivGroup"></select></label><div class="row otherRow" hidden style="margin-top:6px"><input type="text" placeholder="לכתוב את הקבוצה, למשל: מתנדבים ומתנדבות" aria-label="קבוצה אחרת"><button type="button" class="small">אישור</button></div></div>
+    <div style="max-width:420px"><label class="f" for="ivGroup">לאיזו קבוצה אני שייך או שייכת?<select data-closed id="ivGroup"></select></label><div class="row otherRow" hidden style="margin-top:6px"><input type="text" placeholder="לכתוב את הקבוצה, למשל: מתנדבים ומתנדבות" aria-label="קבוצה אחרת"><button type="button" class="small">אישור</button></div></div>
     <div class="row">
       <div class="seg" role="group" aria-label="איך עונים" id="ivMode">
         <button type="button" data-m="ai" class="needs-ai">שיחה עם מראיין AI</button>
@@ -395,7 +397,7 @@ table.mx td.el .small{font-weight:400}
   </section>
   <section class="stage" id="dRateBox">
     <h3 id="dRateTitle">הדירוג שלי</h3>
-    <div style="max-width:420px"><label class="f" for="dGroup">הקבוצה שלי<select id="dGroup"></select></label><div class="row otherRow" hidden style="margin-top:6px"><input type="text" placeholder="לכתוב את הקבוצה" aria-label="קבוצה אחרת"><button type="button" class="small">אישור</button></div></div>
+    <div style="max-width:420px"><label class="f" for="dGroup">הקבוצה שלי<select data-closed id="dGroup"></select></label><div class="row otherRow" hidden style="margin-top:6px"><input type="text" placeholder="לכתוב את הקבוצה" aria-label="קבוצה אחרת"><button type="button" class="small">אישור</button></div></div>
     <p class="small muted">1 = פחות חשוב, 5 = הכי חשוב לטפל בזה. אפשר להוסיף נימוק קצר.</p>
     <div class="items" id="dIssues"></div>
     <div class="row"><button type="button" class="primary" id="dSubmit">שליחת הדירוג</button><span class="status" id="dStatus" aria-live="polite"></span></div>
@@ -564,7 +566,7 @@ function renderSetup(){
   const c = P.cfg;
   $("cTitle").value = c.title || "";
   document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === c.ctx.type)));
-  $("region").innerHTML = `<option value="" ${c.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r === c.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
+  $("region").innerHTML = `<option value="" ${c.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.concat(c.ctx.region && !REGIONS.includes(c.ctx.region) ? [c.ctx.region] : []).map(r => `<option ${r === c.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
   $("horizon").value = c.horizon; $("desc").value = c.ctx.desc || ""; $("descLabel").textContent = DESC_LABEL[c.ctx.type]; $("topic").value = c.topic || "";
   $("groups").innerHTML = c.groups.map((g,i) => `<span class="chip" style="border:1px solid var(--line)">${esc(g)} <button type="button" data-delg="${i}" aria-label="הסרת הקבוצה ${esc(g)}" style="padding:0 6px;border:0">×</button></span>`).join("");
   $("qlist").innerHTML = c.questions.map((q,i) => `<div class="qrow"><span class="qn">${i+1}</span><label for="q${i}"><span class="qk">${Q_KEYS[i]}</span><textarea id="q${i}" data-q="${i}" style="min-height:52px">${esc(q)}</textarea></label></div>`).join("");

@@ -5,6 +5,8 @@
 <script src="lib/access-guard.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/hl-runtime.js"></script>
+<!-- רשימות פתוחות (29/10/2026): "אזור בארץ" מקבל "➕ חסר משהו? הוספה…"; שאר התפריטים כאן סגורים (data-closed): שנים, ממדים ושלבים שהחישוב נשען עליהם, והפניות לפריטים שכבר בעבודה -->
+<script src="lib/open-select.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>תמונת עתיד קבוצתית · Be Good</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -325,7 +327,7 @@ table.mx td.el .small{font-weight:400}
     </div>
     <div class="grid2">
       <label class="f" for="region">אזור בארץ<select id="region"></select></label>
-      <label class="f" for="year">לאיזו שנה?<select id="year"><option>2030</option><option>2035</option><option>2040</option><option>2050</option></select></label>
+      <label class="f" for="year">לאיזו שנה?<select data-closed id="year"><option>2030</option><option>2035</option><option>2040</option><option>2050</option></select></label>
     </div>
     <label class="f" for="question">השאלה שכל המשתתפים והמשתתפות יראו<input type="text" id="question"></label>
     <div class="row"><span class="small muted">רעיונות לשאלה:</span><div class="chips" id="qIdeas"></div></div>
@@ -348,7 +350,7 @@ table.mx td.el .small{font-weight:400}
   </section>
   <div class="art" id="art"></div>
   <div class="row">
-    <label class="f" for="findMe" style="flex-direction:row;align-items:center;gap:8px">איפה אני בתמונה?<select id="findMe" style="max-width:240px"></select></label>
+    <label class="f" for="findMe" style="flex-direction:row;align-items:center;gap:8px">איפה אני בתמונה?<select data-closed id="findMe" style="max-width:240px"></select></label>
     <span class="small muted">אפשר גם ללחוץ על כל פריט בתמונה.</span>
   </div>
   <div id="detail"></div>
@@ -577,7 +579,7 @@ function renderAll(){ renderSetup(); renderAdd(); renderWall(); renderView(); }
 /* ---------- setup (wall view) ---------- */
 function renderSetup(){
   document.querySelectorAll("#ctxType button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.ctx.type)));
-  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
+  $("region").innerHTML = `<option value="" ${S.ctx.region ? "" : "selected"}>לבחור אזור</option>` + REGIONS.concat(S.ctx.region && !REGIONS.includes(S.ctx.region) ? [S.ctx.region] : []).map(r => `<option ${r === S.ctx.region ? "selected" : ""}>${esc(r)}</option>`).join("");
   $("year").value = S.year; if(document.activeElement !== $("question")) $("question").value = S.question || ""; $("cTitle").value = S.title || "";
   $("qIdeas").innerHTML = Q_IDEAS[S.ctx.type].map((q, i) => `<button type="button" class="chip" data-q="${i}">${esc(q.replace("YEAR", S.year))}</button>`).join("");
   ["ctxType","region","year","question"].forEach(id => { const el = $(id); el.disabled = !IS_OWNER; el.querySelectorAll && el.querySelectorAll("button").forEach(b => b.disabled = !IS_OWNER); });
@@ -609,7 +611,7 @@ function renderForm(){
     poem: ta("fText", "שיר או כמה שורות שכתבת בעצמך (כל שורה בשורה חדשה)", "", 120),
     song: inp("fTitle", "שם השיר או היצירה", "") + inp("fArtist", "מי מבצע או כתב (רשות)", "") + inp("fUrl", "קישור לשיר (רשות)", "https://…") + ta("fText", "מה השיר הזה אומר לך על העתיד?", "", 60),
     image: `<div class="row"><label class="f">תמונה מהטלפון או מהמחשב<input type="file" id="fFile" accept="image/*"></label></div><div class="preview" id="fPrev"></div>` + ta("fText", "מה רואים בתמונה, ולמה בחרת בה?", "", 60) + `<p class="small muted">כדאי לבחור תמונה שצילמת בעצמך, או תמונה שמותר להשתמש בה. בלי תמונות של ילדים שאפשר לזהות.</p>`,
-    drawing: `<div class="draw-wrap"><canvas id="cv" width="600" height="400" aria-label="משטח ציור"></canvas><div class="row" id="swatches">${SW.map((c, i) => `<button type="button" class="sw" data-c="${c}" style="background:${c}" aria-label="צבע" aria-pressed="${i === 0}"></button>`).join("")}<select id="pen" aria-label="עובי"><option value="4">דק</option><option value="9" selected>בינוני</option><option value="18">עבה</option></select><button type="button" id="erase">מחק</button><button type="button" id="cvClear">ניקוי</button></div></div>` + ta("fText", "מה ציירת?", "", 50),
+    drawing: `<div class="draw-wrap"><canvas id="cv" width="600" height="400" aria-label="משטח ציור"></canvas><div class="row" id="swatches">${SW.map((c, i) => `<button type="button" class="sw" data-c="${c}" style="background:${c}" aria-label="צבע" aria-pressed="${i === 0}"></button>`).join("")}<select data-closed id="pen" aria-label="עובי"><option value="4">דק</option><option value="9" selected>בינוני</option><option value="18">עבה</option></select><button type="button" id="erase">מחק</button><button type="button" id="cvClear">ניקוי</button></div></div>` + ta("fText", "מה ציירת?", "", 50),
     color: `<label class="f" for="fColor" style="max-width:200px">הצבע של העתיד שלנו<input type="color" id="fColor" value="#e0a237" style="height:56px;padding:2px"></label>` + inp("fText", "למה דווקא הצבע הזה?", "למשל: ירוק של שדות שחזרו לחיים")
   };
   f.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">${H[KIND]}</div>`;
@@ -656,7 +658,7 @@ function wallItemHTML(i, mineOnly){
   const k = KINDS[i.kind] || KINDS.sentence;
   const dm = DIM[i.dim];
   return `<div class="wi ${i.hidden ? "hid" : ""}"><span class="k">${k.ic} ${k.t}${i.hidden ? " · מוסתר" : ""}</span>
-    ${!mineOnly && IS_OWNER ? `<select class="small" data-setdim="${esc(i.id)}" aria-label="ממד החוסן">${[`<option value="">ממד החוסן: עוד לא סווג</option>`].concat(DIMS.map(d => `<option value="${d.k}" ${d.k === i.dim ? "selected" : ""}>${esc(d.t)}</option>`)).join("")}</select>` : dm ? `<span class="tag" style="background:${dm.c};color:#fff;align-self:flex-start">${esc(dm.t)}</span>` : ""}
+    ${!mineOnly && IS_OWNER ? `<select data-closed class="small" data-setdim="${esc(i.id)}" aria-label="ממד החוסן">${[`<option value="">ממד החוסן: עוד לא סווג</option>`].concat(DIMS.map(d => `<option value="${d.k}" ${d.k === i.dim ? "selected" : ""}>${esc(d.t)}</option>`)).join("")}</select>` : dm ? `<span class="tag" style="background:${dm.c};color:#fff;align-self:flex-start">${esc(dm.t)}</span>` : ""}
     ${i.img ? `<img src="${esc(i.img)}" alt="${esc(i.text || k.t)}">` : ""}
     ${i.kind === "color" ? `<div class="row"><span class="sw2" style="background:${esc(i.color)}"></span></div>` : ""}
     ${i.kind === "song" ? `<b>♪ ${esc(i.title)}</b>${i.artist ? `<span class="small">${esc(i.artist)}</span>` : ""}${i.url ? `<a class="small" href="${esc(i.url)}" target="_blank" rel="noopener">להאזנה</a>` : ""}` : ""}

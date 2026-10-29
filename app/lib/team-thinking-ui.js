@@ -198,7 +198,7 @@
     head(kit, 'decision');
     const D = I.decision;
     [['what', 'מה בחרנו', true], ['how', 'איך החלטנו', false, M.DECIDE], ['who', 'מי מוביל/ה את הצעד הבא (תפקיד)', false], ['when', 'עד מתי', false], ['kept', 'אפשרויות שנשמרות, עם הנימוק שלהן', true]].forEach(([k, l, area, opts]) => {
-      const f = el('div', 'f'); f.append(el('label', null, l), opts ? K.choice(D, k, l, opts, edited) : K.field(D, k, l, area, edited)); kit.appendChild(f);
+      const f = el('div', 'f'); f.append(el('label', null, l), opts ? K.choice(D, k, l, opts, edited, true) : K.field(D, k, l, area, edited)); kit.appendChild(f);
     });
     head(kit, 'thanks');
     kit.appendChild(K.etable([{ k: 'who', l: 'מי (תפקיד או משתתף/ת)' }, { k: 'did', l: 'מה עשה/תה', area: true }, { k: 'enabled', l: 'מה זה אפשר לנו', area: true }], I.thanks, edited, { add: 'הוספת פרגון' }));

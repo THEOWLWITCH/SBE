@@ -60,14 +60,19 @@
     i.value = obj[k] == null ? '' : String(obj[k]); i.setAttribute('aria-label', label);
     i.addEventListener('input', () => { obj[k] = i.value; if (onChange) onChange(); }); return i;
   }
-  function choice(obj, k, label, opts, onChange) {
-    const s = el('select'); s.setAttribute('data-closed', ''); s.setAttribute('aria-label', label);
+  // open: רשימת ערכים (למשל "איך החלטנו") שמקבלת "➕ חסר משהו? הוספה…" מ-open-select.js (29/10/2026).
+  // בלי open הרשימה סגורה: הפניה לשורה אחרת (רעיון, טענה, תפקיד) או מצב שהלוגיקה נשענת עליו.
+  function choice(obj, k, label, opts, onChange, open) {
+    const s = el('select'); s.setAttribute('aria-label', label);
+    if (open) s.name = 'lab-' + k; else s.setAttribute('data-closed', '');
     s.appendChild(new Option('בחירה…', ''));
     opts.forEach((o) => { const v = Array.isArray(o) ? o : [o, o]; s.appendChild(new Option(v[1], v[0])); });
-    s.value = obj[k] == null ? '' : String(obj[k]);
+    const cur = obj[k] == null ? '' : String(obj[k]);
+    if (open && cur && ![...s.options].some((o) => o.value === cur)) s.appendChild(new Option(cur, cur)); // ערך שנוסף או שהגיע מקובץ
+    s.value = cur;
     s.addEventListener('change', () => { obj[k] = s.value; if (onChange) onChange(); }); return s;
   }
-  // טבלה לעריכה: עמודה לכל מפתח; spec: {k, l, area, opts: [..] | () => [..]}
+  // טבלה לעריכה: עמודה לכל מפתח; spec: {k, l, area, opts: [..] | () => [..], open: רשימה פתוחה להוספה}
   function etable(cols, list, onChange, opts) {
     opts = opts || {};
     const wrap = el('div');
@@ -76,7 +81,7 @@
       const rows = list.map((r, ri) => cols.map((c, ci) => {
         const cell = el('div');
         const o = typeof c.opts === 'function' ? c.opts() : c.opts;
-        cell.appendChild(o ? choice(r, c.k, c.l, o, onChange) : field(r, c.k, c.l, c.area, onChange));
+        cell.appendChild(o ? choice(r, c.k, c.l, o, onChange, c.open) : field(r, c.k, c.l, c.area, onChange));
         if (ci === cols.length - 1 && opts.remove !== false) {
           const x = btn('✕', 'xbtn no-print', () => { list.splice(ri, 1); onChange(); redraw(); if (opts.after) opts.after(); });
           x.setAttribute('aria-label', 'הסרת השורה'); cell.appendChild(x);
