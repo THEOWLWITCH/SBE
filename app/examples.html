@@ -130,9 +130,9 @@ const SHARE=(new URLSearchParams(location.search).get('share')||'').replace(/[^a
 // שתי ספריות (28/10/2026): חינוכית (ברירת המחדל, בדף הבית) וארגונית (examples-org.html → ?space=org)
 const SPACE=new URLSearchParams(location.search).get('space')==='org'?'org':'edu';
 if(SPACE==='org'){
-  {const lg=F('libLogo');if(lg){lg.src='assets/begood-org.webp';lg.alt='Be good בארגונים';lg.hidden=false;}}
-  document.title='תוצרים לדוגמה מהעולם הארגוני · Begood';
-  F('libTitle').classList.remove('hero-banner');F('libTitle').textContent='תוצרים לדוגמה מהעולם הארגוני';
+  
+  document.title='תוצרים לדוגמה מהשדה הארגוני · Begood';
+  {const im=F('libTitle').querySelector('img');if(im){im.src='assets/examples-org-banner.webp';im.alt='תוצרים לדוגמה מהשדה הארגוני';}}
   F('libLead').textContent='כך נראים תוצרים של הכלים כשעובדים איתם בארגון, בקהילה או ברשות: כפי שהם יוצאים מהמערכת, בלי עריכה. מוזמנות ומוזמנים לפתוח, לקרוא ולהתרשם.';
 }
 {const a=el('a',null,SPACE==='org'?'לתוצרים לדוגמה מעולם החינוך ←':'לתוצרים לדוגמה מהעולם הארגוני ←');a.href=SPACE==='org'?'examples.html':'examples-org.html';a.style.cssText='color:var(--spoken);font-weight:700';if(!SHARE)F('libSwitch').appendChild(a);}
