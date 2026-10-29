@@ -134,8 +134,33 @@
   function flush() { queued = false; var list = pend; pend = []; list.forEach(scan); }
   function queue(n) { pend.push(n); if (!queued) { queued = true; (window.requestAnimationFrame || setTimeout)(flush, 16); } }
   function fabLabel() { ['rptFab', 'fb-fab'].forEach(function (id) { var f = document.getElementById(id); if (f && !f.hasAttribute('data-sbe-fab')) { f.setAttribute('data-sbe-fab', ''); f.textContent = '💬 רעיון או תקלה'; f.setAttribute('aria-label', 'רעיון או תקלה'); f.title = 'רעיון, תקלה או שאלה'; } }); }
+  // לוגו קבוע בדפים הפנימיים (29/10/2026: "בדפים הפנימיים יהיה לוגו בלי כיתוב והוא יופיע מימין באופן קבוע באותו מקום"):
+  // הלוגו בלי הכיתוב, בראש הדף מימין: בתוך הסרגל העליון אם יש, ואחרת בפס דק משלו. הלוגואים הגדולים והכיתוב מוסתרים.
+  // דף הבית (entry.html) נשאר עם הלוגו הגדול והכיתוב.
+  function brandMark() {
+    if (!path || path === 'entry.html' || path === 'index.html' || document.querySelector('.sbe-mark')) return;
+    var css = document.createElement('style'); css.id = 'sbe-mark-css';
+    css.textContent = '@media screen{.brandrow,img[data-brand],.sbe-tagline,.cc-brand{display:none!important}'
+      + '.sbe-mark{display:inline-flex;align-items:center;flex:none;margin-inline-end:10px;line-height:0;text-decoration:none!important;background:none!important;border:0!important;padding:0!important}'
+      + '.sbe-mark img{height:32px;width:auto;display:block}#navBar .sbe-mark{margin-inline-end:auto}#navBar .sbe-mark img{height:28px}'
+      + '.sbe-markbar{display:flex;justify-content:flex-start;align-items:center;height:38px;padding:0 10px;box-sizing:border-box;direction:rtl;position:relative;width:100vw;left:50%;right:50%;margin:0 -50vw;transform:none}.sbe-markbar .sbe-mark img{height:28px}'
+      + ':root[data-theme="dark"] .sbe-mark img{background:#fff;border-radius:8px;padding:2px 6px}'
+      + '@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sbe-mark img{background:#fff;border-radius:8px;padding:2px 6px}}}'
+      + '@media print{.sbe-mark,.sbe-markbar{display:none!important}}';
+    document.head.appendChild(css);
+    var home = ''; try { home = sessionStorage.getItem('sbe.session.homeUrl') || ''; } catch (e) {}
+    var a = document.createElement('a'); a.className = 'sbe-mark sbe-no-theme'; a.href = home || 'entry.html';
+    a.setAttribute('aria-label', home ? 'Begood: המרחב שלי' : 'Begood: דף הבית');
+    var img = document.createElement('img'); img.src = 'assets/begood-logo-mark.webp'; img.alt = 'Begood'; img.width = 53; img.height = 32; a.appendChild(img);
+    var NAV = '#navBar, nav.topnav, nav.r-topnav, nav.studies-topnav';
+    var nav = document.querySelector(NAV);
+    if (nav) { nav.insertBefore(a, nav.firstChild); return; }
+    var bar = document.createElement('div'); bar.className = 'sbe-markbar no-print'; bar.appendChild(a);
+    document.body.insertBefore(bar, document.body.firstChild);
+    setTimeout(function () { var n = document.querySelector(NAV); if (n && bar.parentNode) { n.insertBefore(a, n.firstChild); bar.remove(); } }, 700);
+  }
   function start() {
-    fabLabel(); setTimeout(fabLabel, 800);
+    brandMark(); fabLabel(); setTimeout(fabLabel, 800);
     var extra = /^(horizon-lab|hl-[a-z]+)\.html$/.test(path) ? '@media screen{html a:not([class]){color:#1d3f63;text-decoration-color:#c9d7e7;text-underline-offset:3px}}' : ''; // מעבדת האופק: קישורים בכחול המותג
     var st = document.createElement('style'); st.id = 'sbe-theme'; st.textContent = CSS + extra; document.head.appendChild(st);
     dark = pageDark();
