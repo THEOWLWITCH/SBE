@@ -12,9 +12,9 @@
 
 <style>
 :root{
-  --ground:#EDEFF1; --surface:#FCFCFD; --surface-2:#E4E7EA;
-  --ink:#141C24; --muted:#5C6771; --hair:#CDD3D8;
-  --spoken:#2E5A7D; --spoken-soft:#DCE7EF;
+  --ground:#F5F6F7; --surface:#FFFFFF; --surface-2:#EEF0F2;
+  --ink:#1f2f3d; --muted:#5C6771; --hair:#E1E7ED;
+  --spoken:#1d3f63; --spoken-soft:#EAF1F7;
   --hidden:#8F5F2E; --hidden-soft:#F5EAD9;
   --auto:#4A6B5A; --auto-soft:#DFE9E2;
   --brick:#8C3A34; --brick-soft:#F5E4E2;
@@ -45,63 +45,89 @@ body{direction:rtl;background:var(--ground);color:var(--ink);margin:0;
   font-family:"Assistant","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.55;
   -webkit-font-smoothing:antialiased;padding:0 16px 70px;}
 body.sbe-hasnav{padding-top:38px;}
-.wrap{max-width:860px;margin:0 auto;}
+.wrap{max-width:1180px;margin:0 auto;}
 
-/* ניווט — הוחלף מתפריט-צד קבוע לסרגל דק + תפריט נפתח (09/09/2026), כדי
-   שיהיה עקבי עם כל שאר המסכים ("תוריד את תפריט הצד במקומות שעדיין יש
-   ותחליף בתפריט הזה"). התפריט הנפתח כולל שלוש קבוצות: לשוניות אזור הניהול
-   (לוחצת מחליפה tab בתוך admin.html, לא מנווטת), מסכים נוספים (קישור אמיתי
-   לקובץ אחר), וכניסה. נבנה מחדש בכל render() כדי לשקף את הלשונית הפעילה. */
-#navBar{position:fixed;top:0;inset-inline-start:0;inset-inline-end:0;height:38px;z-index:9997;
-  display:flex;align-items:center;gap:6px;padding:0 10px;direction:rtl;
-  background:var(--surface);border-bottom:1px solid var(--hair);
-  font-family:"Assistant","Segoe UI",system-ui,sans-serif;}
-#navBack,#navHome,#navMenuBtn{font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:12px;
-  border:1px solid var(--hair);background:var(--surface);color:var(--ink);cursor:pointer;line-height:1.4;}
-#navBack:hover,#navHome:hover,#navMenuBtn:hover{border-color:var(--spoken);}
+/* תפריט כל המסכים (☰) — נפתח מהסרגל העליון, בכל רוחב מסך (29/10/2026) */
+#navBar{display:flex;align-items:center;gap:6px;}
+#navBack,#navHome,#navMenuBtn{font-family:inherit;font-size:13px;font-weight:600;padding:6px 13px;border-radius:999px;
+  border:1px solid #c9d7e7;background:#fff;color:#1d3f63;cursor:pointer;line-height:1.3;}
 #navHome[hidden]{display:none;}
-#navPanel{position:fixed;top:38px;inset-inline-start:10px;z-index:9997;width:260px;
-  max-height:75vh;overflow-y:auto;background:var(--surface);border:1px solid var(--hair);border-radius:10px;
-  box-shadow:0 14px 40px var(--shadow);padding:10px 0;direction:rtl;
-  font-family:"Assistant","Segoe UI",system-ui,sans-serif;}
+#navPanel{position:fixed;top:58px;inset-inline-end:14px;z-index:9997;width:290px;
+  max-height:78vh;overflow-y:auto;background:var(--surface);border:1px solid var(--hair);border-radius:12px;
+  box-shadow:0 12px 32px var(--shadow);padding:8px 12px 12px;direction:rtl;}
 #navPanel[hidden]{display:none;}
-#navPanel h5{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);
-  margin:12px 16px 4px;font-weight:700;}
-#navPanel h5:first-child{margin-top:0;}
+#navPanel h5{font-size:12px;color:var(--muted);margin:12px 4px 4px;font-weight:600;}
 #navPanel button.nlink,#navPanel a.nlink{display:block;width:100%;text-align:inherit;
-  font-family:inherit;font-size:13px;padding:6px 16px;border:none;background:none;
-  color:var(--ink);text-decoration:none;cursor:pointer;border-inline-start:3px solid transparent;}
+  font-family:inherit;font-size:13.5px;padding:6px 8px;border:none;background:none;border-radius:8px;
+  color:var(--ink);text-decoration:none;cursor:pointer;}
 #navPanel button.nlink:hover,#navPanel a.nlink:hover{background:var(--ground);}
-#navPanel button.nlink.on{border-inline-start-color:var(--spoken);background:var(--spoken-soft);
-  color:var(--spoken);font-weight:700;}
-/* התראה על תוספות "אחר" חדשות שממתינות לסקירה (22/09/2026) — ראו
-   countUnseenAdditions(). לא שער אישור (הוכרע 09/09/2026 שתוספת אינה
-   צריכה אישור), רק תזכורת גלויה שיש מה לעבור עליו. */
 .navbadge{display:inline-flex;align-items:center;justify-content:center;
-  margin-inline-start:6px;min-width:17px;height:17px;padding:0 5px;border-radius:9px;
-  background:var(--brick);color:#fff;font-family:"IBM Plex Mono",monospace;
-  font-size:10.5px;font-weight:700;line-height:1;}
+  margin-inline-start:6px;min-width:18px;height:18px;padding:0 6px;border-radius:9px;
+  background:var(--brick);color:#fff;font-size:11px;font-weight:700;line-height:1;}
 .newtag{font-size:11px;font-weight:700;color:var(--brick);border:1px solid var(--brick-soft);
   background:var(--brick-soft);border-radius:9px;padding:2px 7px;flex:0 0 auto;}
 
-/* תפריט צד קבוע במסכי הניהול (20/09/2026) — בקשה חוזרת: "עדיין אין תפריט
-   צד". ב-09/09/2026 תפריט צד קבוע הוחלף בסרגל+תפריט-נפתח לאחידות עם שאר
-   המערכת ("תוריד את תפריט הצד... ותחליף בתפריט הזה") — אבל מסך הניהול הוא
-   המסך שבו משתמשת הכי הרבה בין כל המסכים, וקליק נדרש בכל טעינה לא מספיק
-   טוב. פתרון: היברידי, לא חזרה מלאה לישן ולא ויתור על התפריט הנפתח —
-   ברוחב מסך רחב (≥900px) התפריט קבוע וגלוי תמיד לצד התוכן; במסך צר (טלפון)
-   נשאר בדיוק אותו כפתור-טריגר כמו קודם. אותו #navPanel/render() בדיוק,
-   רק ה-CSS קובע אם הוא "נפתח בלחיצה" או "תמיד גלוי". */
-@media (min-width:900px){
-  #navMenuBtn{display:none;}
-  #navPanel{position:fixed;inset-inline-start:0;top:38px;bottom:0;width:260px;
-    height:auto;max-height:none;border-radius:0;box-shadow:none;
-    border-inline-end:1px solid var(--hair);}
-  #navPanel[hidden]{display:block;}
-  body.sbe-hasnav{padding-inline-start:280px;}
+/* ── מסך ניהול אחד (29/10/2026: "לאחד מסכי ניהול למערכת אחת ולעצב מחדש") ──
+   מימין: שבעה חלקים קבועים. בתוך חלק: לשוניות משנה קטנות. בטלפון: החלקים בשורה נגללת. */
+.adm{display:grid;grid-template-columns:236px minmax(0,1fr);gap:28px;align-items:start;max-width:1180px;margin:0 auto;}
+#admNav{position:sticky;top:16px;display:flex;flex-direction:column;gap:2px;background:var(--surface);
+  border:1px solid var(--hair);border-radius:12px;padding:10px;box-shadow:0 1px 2px var(--shadow);}
+#admNav .an-eyebrow{font-size:12px;font-weight:600;color:var(--muted);padding:4px 10px 6px;}
+#admNav button.sec{display:flex;align-items:center;gap:10px;width:100%;text-align:start;font:inherit;font-size:14.5px;
+  color:var(--ink);background:none;border:0;border-radius:9px;padding:8px 10px;cursor:pointer;}
+#admNav button.sec .ic{width:22px;text-align:center;flex:none;}
+#admNav button.sec .lb{flex:1;min-width:0;}
+#admNav button.sec:hover{background:var(--ground);}
+#admNav button.sec[aria-current="page"]{background:var(--spoken-soft);color:var(--spoken);font-weight:700;}
+#admNav button.sec:focus-visible,.subtabs button:focus-visible{outline:2px solid #2a9d9a;outline-offset:2px;}
+#admNav .an-sep{height:1px;background:var(--hair);margin:8px 4px;}
+#admNav a.more{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px;}
+#admNav a.more:hover{background:var(--ground);color:var(--spoken);}
+.secHead{margin:6px 0 14px;}
+.secHead .eyebrow2{font-size:13px;color:var(--muted);margin:0 0 2px;}
+.secHead h1{margin:0;}
+.secHead .lead{margin-top:4px;}
+.subtabs[hidden]{display:none!important;}
+.subtabs{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 18px;padding:4px;background:var(--surface);
+  border:1px solid var(--hair);border-radius:999px;width:max-content;max-width:100%;}
+.subtabs button{font:inherit;font-size:14px;font-weight:600;color:var(--muted);background:none;border:0;
+  border-radius:999px;padding:6px 14px;cursor:pointer;display:inline-flex;align-items:center;}
+.subtabs button:hover{color:var(--spoken);}
+.subtabs button[aria-selected="true"]{background:var(--spoken);color:#fff;}
+#panels select{font-family:inherit;font-size:15px;color:var(--ink);background:#fff;border:1px solid var(--hair);border-radius:8px;padding:8px 10px;}
+#panels a:not(.act):not(.sbe-no-theme){color:var(--spoken);}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:4px 20px;margin-bottom:8px;}
+.frow{display:block;margin:0 0 12px;}
+.frow>b{display:block;font-size:14px;margin-bottom:4px;}
+.frow>input,.frow>select,.frow>span>input{width:100%;}
+.empty{text-align:center;padding:26px 18px;color:var(--muted);font-size:14.5px;}
+.empty .ei{display:block;font-size:26px;margin-bottom:6px;}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.tiles a{display:flex;flex-direction:column;gap:2px;text-decoration:none;color:var(--ink);background:var(--surface);
+  border:1px solid var(--hair);border-radius:10px;padding:12px 14px;}
+.tiles a:hover{border-color:var(--spoken);}
+.tiles a b{font-size:14.5px;}
+@media screen and (min-width:901px){.moreCard{display:none;}} .tiles a span{font-size:12.5px;color:var(--muted);}
+@media screen and (max-width:900px){
+  .adm{grid-template-columns:minmax(0,1fr);gap:12px;}
+  #admNav{position:static;flex-direction:row;overflow-x:auto;gap:6px;padding:6px;border-radius:999px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  #admNav::-webkit-scrollbar{display:none;}
+  #admNav .an-eyebrow,#admNav .an-sep,#admNav a.more{display:none;}
+  #admNav button.sec{width:auto;flex:none;white-space:nowrap;border-radius:999px;padding:7px 13px;font-size:14px;}
+  .subtabs{width:auto;border-radius:12px;}
+}
+@media screen and (max-width:600px){
+  body{padding:0 12px 80px;}
+  #panels .homegrid{grid-template-columns:1fr 1fr;gap:8px;}
+  #panels .hcard{padding:10px 12px;} #panels .hcard .hn{font-size:24px;} #panels .hcard .ht{font-size:14px;} #panels .hcard .hd{display:none;}
+  #panels .stat{grid-template-columns:repeat(3,1fr);gap:8px;} #panels .stat>div{padding:10px 12px;}
+  .subtabs button{padding:6px 11px;font-size:13.5px;}
+  .card .in{padding:14px;}
+  .card>h3{padding:13px 14px 10px;}
 }
 
-header{padding:32px 0 10px;}
+header{padding:18px 0 0;}
 .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--muted);margin:0 0 10px;}
 h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(26px,5vw,34px);
@@ -127,8 +153,8 @@ h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:700;font-size:19px;m
 .card>h3{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:16.5px;font-weight:700;margin:0;
   padding:15px 18px 12px;border-bottom:1px solid var(--hair);
   display:flex;gap:10px;align-items:baseline;}
-.card>h3 em{font-style:normal;font-size:11.5px;font-weight:400;color:var(--muted);margin-inline-start:auto;
-  font-family:"IBM Plex Mono",monospace;}
+.card>h3 em{font-style:normal;font-size:13px;font-weight:400;color:var(--muted);margin-inline-start:auto;
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif;}
 .card .in{padding:17px 18px;}
 
 .codebox{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
@@ -169,11 +195,11 @@ input:focus,select.f:focus{outline:2px solid var(--spoken);outline-offset:1px;}
 .inst{padding:12px 0;}
 .inst+.inst{border-top:1px solid var(--hair);}
 /* מוסד מקופל: שורה אחת, ובפתיחה ארבעה חלקים ממוספרים (04/10/2026) */
-.homegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-bottom:14px;}
+.homegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-bottom:14px;}
 .hcard{display:grid;gap:2px;text-align:start;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:12px 14px;cursor:pointer;}
 .hcard:hover{border-color:var(--spoken);}
 .hcard:focus-visible{outline:2px solid var(--spoken);outline-offset:2px;}
-.hcard .hn{font-family:"IBM Plex Mono",monospace;font-size:26px;color:var(--muted);font-variant-numeric:tabular-nums;}
+.hcard .hn{font-size:28px;font-weight:700;line-height:1.1;color:var(--muted);font-variant-numeric:tabular-nums;}
 .hcard .ht{font-weight:700;font-size:15px;}
 .hcard .hd{font-size:12.5px;color:var(--muted);}
 .hcard.has{border-inline-start:4px solid var(--spoken);} .hcard.has .hn{color:var(--spoken);}
@@ -184,7 +210,9 @@ details.ibox>summary::before{content:"◂";color:var(--muted);font-size:13px;tra
 details.ibox[open]>summary::before{transform:rotate(-90deg);}
 details.ibox>summary:hover{background:var(--surface-2);}
 details.ibox>summary:focus-visible{outline:2px solid var(--spoken);outline-offset:2px;}
-.ibody{display:grid;gap:10px;padding:6px 0 10px;}
+.ibody{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 0 12px;}
+.ibody>.wide{grid-column:1/-1;}
+@media screen and (max-width:700px){.ibody{grid-template-columns:1fr;}}
 .isec{border:1px solid var(--hair);border-radius:8px;padding:10px 12px;background:var(--surface);}
 .isec.quiet{background:transparent;}
 .isec h4{margin:0 0 6px;font-size:14.5px;color:var(--ink);}
@@ -300,19 +328,24 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <div class="wrap">
 <header>
   <div class="brandrow"><img src="data:image/webp;base64,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" alt="Begood"></div>
-  <h1 id="title">ניהול</h1>
-  <p class="lead" id="lead"></p>
 </header>
 
 <div class="roleswitch">
-  <b>תצוגה:</b> כך נראה המסך למנהלת מוסד, או לך.
+  <b>תצוגה:</b> כך נראה המסך למנהל/ת מוסד, או לך.
   <select id="role">
     <option value="inst">אזור ניהול מוסד</option>
     <option value="sys">אזור ניהול כלל המערכת</option>
   </select>
 </div>
 
-<div id="panels"></div>
+<div class="adm">
+  <nav id="admNav" aria-label="חלקי הניהול"></nav>
+  <main id="admMain">
+    <div class="secHead"><p class="eyebrow2" id="title">ניהול</p><h1 id="secTitle"></h1><p class="lead" id="lead"></p></div>
+    <div class="subtabs" id="subtabs" role="tablist" hidden></div>
+    <div id="panels"></div>
+  </main>
+</div>
 </div>
 
 <dialog id="dlg">
@@ -444,10 +477,34 @@ function loadSuggestions(){
 }
 function saveSuggestions(list){ try { localStorage.setItem("sbe.source.suggestions.v1", JSON.stringify(list)); } catch(e){} }
 
-const TABS = {
-  inst:[["codes","קודים"],["users","משתמשים"],["feedback","מדדי המשוב"],["data","נתונים"]],
-  sys: [["backup","גיבוי, שחזור ורציפות פעילות"],["home","🏠 מה מחכה לי"],["insts","🏫 מוסדות וקודים"],["studies","📚 לימודי חוסן חברתי"],["journeys","🧭 לוח המסעות: אישורים ומשוב"],["demolab","🧪 מעבדת הדמו: תוצרים לתיקיית הדוגמאות"],["inbox","✉️ פניות"],["stories","📖 סיפורים ושיחות"],["crit","✅ קריטריונים לאישור"],["taxonomies","📋 רשימות"],["libs","📚 מקורות"],["eval","🔎 בקרת איכות"],["data","📊 נתונים"],["open","🔗 קישור פתוח ליום אחד"],["access","🔑 סיסמת הניהול"]],
+// ── החלקים של מסך הניהול (29/10/2026: "לאחד מסכי ניהול למערכת אחת ולעצב מחדש") ──
+// כל חלק: סמל, שם, משפט הסבר ולשוניות משנה [מפתח, שם]. המפתח הוא שם הלשונית הפנימית (p* בהמשך).
+const SECTIONS = {
+  sys: [
+    { k:"home", ic:"🏠", t:"מה מחכה לי", lead:"כל מה שדורש טיפול, במקום אחד. לחיצה על כרטיס מובילה למקום הטיפול.", tabs:[["home","מה מחכה לי"]] },
+    { k:"insts", ic:"🏫", t:"מוסדות וקודים", lead:"לכל מוסד: המרחב, המערכות הפתוחות, המנוי, הקודים, השהיה ומחיקה.", tabs:[["insts","המוסדות"]] },
+    { k:"requests", ic:"📨", t:"בקשות ופניות", lead:"בקשות לכלים מהטופס, ורעיונות, תקלות ושאלות שנשלחו מכל המערכת.", tabs:[["renew","בקשות לכלים"],["inbox","רעיונות ותקלות"]] },
+    { k:"links", ic:"🔗", t:"קישורים פתוחים", lead:"קישור או QR בלי קוד: לכלי ליום אחד, או ל\"יש מה לעשות\" במתנה.", tabs:[["open","קישור ליום אחד"],["gift","יש מה לעשות במתנה"]] },
+    { k:"community", ic:"🤝", t:"תוכן מהקהילה", lead:"מה שמשתמשים הציעו ושיתפו: קריטריונים, סיפורים ושיחות, מקורות ורשימות.", tabs:[["crit","קריטריונים לאישור"],["stories","סיפורים ושיחות"],["libs","מקורות"],["taxonomies","רשימות"]] },
+    { k:"content", ic:"📚", t:"תוכן ולמידה", lead:"החומרים של לימודי החוסן החברתי, התרחישים ובקרת האיכות.", tabs:[["studies","לימודי חוסן חברתי"],["data","התרחישים"],["eval","בקרת איכות"]] },
+    { k:"settings", ic:"⚙️", t:"הגדרות", lead:"הסיסמה, כללי המנויים והקודים, וגיבוי.", tabs:[["access","סיסמת הניהול"],["subs","מנויים וקודים"],["backup","גיבוי ורציפות"]] },
+  ],
+  inst: [
+    { k:"codes", ic:"🔑", t:"קודים", lead:"", tabs:[["codes","קודים"]] },
+    { k:"users", ic:"👥", t:"משתמשים", lead:"", tabs:[["users","משתמשים"]] },
+    { k:"feedback", ic:"📝", t:"מדדי המשוב", lead:"", tabs:[["feedback","מדדי המשוב"]] },
+    { k:"data", ic:"📊", t:"התרחישים", lead:"", tabs:[["data","התרחישים"]] },
+  ],
 };
+// מסכים נפרדים שמנוהלים מכאן (קישור, לא לשונית)
+const MORE_SCREENS = [
+  ["journeys.html","🧭","לוח המסעות","אישורים, משוב על אבני דרך וערעורים"],
+  ["demo-lab.html","🧪","מעבדת הדמו","תוצר מכל כלי לספריית הדוגמאות"],
+  ["research-management.html","🔬","מרכז המחקר","מחקרים, נתונים והסכמות"],
+  ["research-management.html?workspace=1","🤝","שותפויות והסכמים","ניהול שותפויות במחקר"],
+  ["home.html","⌂","המרחב שלי","כל הכלים, כמו שמשתמשים רואים אותם"],
+];
+const secOf = (k) => (SECTIONS[role] || []).find(s => s.tabs.some(t => t[0] === k));
 
 // קישורים למסכים אחרים בפרויקט — לא לשוניות בתוך admin.html, אלא ניווט
 // אמיתי לקובץ אחר. אותה רשימה לשני התפקידים: גם ניהול מערכת רוצה גישה
@@ -479,69 +536,91 @@ if (!isSysSession || roleParam === "sys" || roleParam === "inst") {
   if (rs) rs.style.display = 'none';
 }
 
+// כתובת ישירה לחלק: admin.html?role=sys#insts (גם אחרי רענון)
+{ const h = decodeURIComponent((location.hash || "").slice(1)); if (h) tab = h; }
+window.addEventListener("hashchange", () => { const h = decodeURIComponent((location.hash || "").slice(1)); if (h && h !== tab) { tab = h; render(); } });
+const goTab = (k) => { tab = k; render(); window.scrollTo(0, 0); };
+
 let studiesRenderPending = false;
 function render(){
   // Background inbox counters do not discard an open material editor.
   if (tab === "studies" && document.querySelector(".studies-admin dialog[open]")) { studiesRenderPending = true; return; }
   studiesRenderPending = false;
-  $("title").textContent = role==="inst" ? "אזור ניהול מוסד" : "אזור ניהול כלל המערכת";
-  $("lead").textContent = role==="inst"
-    ? D.instName + " · ניפוק קודים, ניהול משתמשים וייצוא נתונים של המוסד שלך בלבד."
-    : "כל הניהול של Begood במקום אחד. מתחילים ב\"מה מחכה לי\", שם מופיע כל מה שדורש טיפול.";
+  const secs = SECTIONS[role];
+  if (!secOf(tab)) tab = secs[0].tabs[0][0];
+  const sec = secOf(tab);
+  try { if (decodeURIComponent((location.hash || "").slice(1)) !== tab) history.replaceState(null, "", "#" + tab); } catch(e){}
 
-  const nav = $("navPanel"); nav.textContent = "";
-  const list = TABS[role];
-  if (!list.some(t => t[0] === tab && t[0] !== "journeys")) tab = list.find(t => t[0] !== "journeys")[0];
+  $("title").textContent = role==="inst" ? "ניהול המוסד · " + D.instName : "ניהול המערכת";
+  $("secTitle").textContent = sec.t;
+  $("lead").textContent = sec.lead || "";
+  $("lead").hidden = !sec.lead;
 
-  const addTabs = () => {
-  nav.append(el("h5",{}, role==="inst" ? "ניהול המוסד" : "ניהול המערכת"));
+  // ── החלקים (מימין במחשב, שורה נגללת בטלפון) ──
   const unseenCount = role==="sys" ? countUnseenAdditions() : 0;
-  list.forEach(([k,l]) => {
-    // "מסע אל החוסן החברתי" — מסך נפרד (journeys.html), לא לשונית פנימית
-    if (k === "journeys") { const a = el("a",{ class:"nlink", href:"journeys.html" }, l); if (jrPendingN) a.append(el("span",{class:"navbadge"}, String(jrPendingN))); nav.append(a); return; }
-    if (k === "demolab") { nav.append(el("a",{ class:"nlink", href:"demo-lab.html" }, l)); return; }
-    const b = el("button",{ class: "nlink" + (k===tab ? " on" : "") }, l);
-    if (k === "taxonomies" && unseenCount) b.append(el("span",{class:"navbadge"}, String(unseenCount)));
-    if (k === "crit" && critPendingN) b.append(el("span",{class:"navbadge"}, String(critPendingN)));
-    b.addEventListener("click", () => { tab = k; nav.hidden = true; render(); });
-    nav.append(b);
+  const badgeOf = { community: critPendingN + unseenCount, requests: homeData ? homeData.renew : 0 };
+  const an = $("admNav"); an.textContent = "";
+  an.append(el("div",{class:"an-eyebrow"}, role==="inst" ? "ניהול המוסד" : "ניהול המערכת"));
+  secs.forEach(x => {
+    const b = el("button",{class:"sec sbe-no-theme", type:"button"}, el("span",{class:"ic","aria-hidden":"true"}, x.ic), el("span",{class:"lb"}, x.t));
+    if (x === sec) b.setAttribute("aria-current","page");
+    if (badgeOf[x.k]) b.append(el("span",{class:"navbadge"}, String(badgeOf[x.k])));
+    b.addEventListener("click", () => goTab(x.tabs[0][0]));
+    an.append(b);
   });
-  if (role === 'sys' && isSysSession) {
-    nav.append(el('a',{class:'nlink',href:'research-management.html'},'מרכז המחקר של Begood'));
-    nav.append(el('a',{class:'nlink',href:'research-management.html?workspace=1'},'ניהול שותפויות והסכמים'));
+  if (role === "sys") {
+    an.append(el("div",{class:"an-sep"}), el("div",{class:"an-eyebrow"},"מסכים נוספים"));
+    MORE_SCREENS.forEach(([href, ic, t]) => {
+      if (href === "research-management.html?workspace=1" || (href.startsWith("research") && !isSysSession)) return;
+      const a = el("a",{class:"more sbe-no-theme", href}, el("span",{"aria-hidden":"true"}, ic), el("span",{}, t));
+      if (href === "journeys.html" && jrPendingN) a.append(el("span",{class:"navbadge"}, String(jrPendingN)));
+      an.append(a);
+    });
   }
+  an.append(el("div",{class:"an-sep"}), el("a",{class:"more sbe-no-theme", href:"entry.html?logout=1"}, el("span",{"aria-hidden":"true"},"↩"), el("span",{},"יציאה")));
+  // בטלפון: החלק הנוכחי גלוי בשורה
+  const cur = an.querySelector('[aria-current="page"]'); if (cur && window.innerWidth <= 900) cur.scrollIntoView({ block:"nearest", inline:"center" });
 
-  };
-  // מנהלת מוסדית: רק לשוניות המוסד. מנהלת המערכת: "רק את רואה" (הלשוניות ומסכי העבודה שלה) ואז "מה שאחרים רואים".
-  if (role === "sys" && window.SBE_SCREENS_RENDER) window.SBE_SCREENS_RENDER(nav, { linkClass:"nlink", skip:["admin.html","journeys.html","eval-set.html"], afterTitle: k => { if (k === "mine") addTabs(); } });
-  else addTabs();
+  // ── לשוניות משנה, רק כשיש יותר מאחת ──
+  const st = $("subtabs"); st.textContent = "";
+  st.hidden = sec.tabs.length < 2;
+  sec.tabs.forEach(([k, l]) => {
+    const b = el("button",{type:"button", role:"tab", "aria-selected": String(k === tab), class:"sbe-no-theme"}, l);
+    if (k === "crit" && critPendingN) b.append(el("span",{class:"navbadge"}, String(critPendingN)));
+    if (k === "taxonomies" && unseenCount) b.append(el("span",{class:"navbadge"}, String(unseenCount)));
+    if (k === "renew" && homeData && homeData.renew) b.append(el("span",{class:"navbadge"}, String(homeData.renew)));
+    b.addEventListener("click", () => goTab(k));
+    st.append(b);
+  });
 
-  // "יציאה" — כותרת נפרדת בסוף התפריט.
+  // ── תפריט ☰: כל המסכים במערכת ──
+  const nav = $("navPanel"); nav.textContent = "";
+  if (role === "sys" && window.SBE_SCREENS_RENDER) window.SBE_SCREENS_RENDER(nav, { linkClass:"nlink", skip:["admin.html"] });
   nav.append(el("h5",{}, "יציאה"));
   nav.append(el("a",{ class:"nlink", href:"entry.html?logout=1" }, "יציאה / החלפת תפקיד"));
 
   const p = $("panels"); p.textContent = "";
-  // התראה: קריטריונים מהקהילה שממתינים לאישור (משוב לעבודות)
-  if (role === "sys" && jrPendingN) {
-    const al = el("div",{class:"card",style:"border-inline-start:4px solid var(--spoken);margin-bottom:14px"});
+  // התראות קצרות מעל התוכן, רק כשלא נמצאים כבר במקום הטיפול
+  if (role === "sys" && jrPendingN && tab !== "home") {
     const go = el("a",{class:"act p",href:"journeys.html",style:"text-decoration:none;display:inline-block"},"למסעות");
-    al.append(el("div",{class:"in",style:"display:flex;gap:12px;align-items:center;flex-wrap:wrap"},
+    p.append(el("div",{class:"card"}, el("div",{class:"in",style:"display:flex;gap:12px;align-items:center;flex-wrap:wrap"},
       el("b",{}, jrPendingN === 1 ? "מסע אחד ממתין לך" : jrPendingN + " מסעות ממתינים לך"),
-      el("span",{style:"color:var(--muted);font-size:13.5px"},"מסע אל החוסן החברתי: אישור הצעות, משוב על אבני דרך, ערעורים והודעות"), go));
-    p.append(al);
+      el("span",{style:"color:var(--muted);font-size:13.5px;flex:1"},"מסע אל החוסן החברתי: אישור הצעות, משוב על אבני דרך, ערעורים והודעות"), go)));
   }
-  if (role === "sys" && critPendingN && tab !== "crit") {
-    const al = el("div",{class:"card",style:"border-inline-start:4px solid var(--hidden);margin-bottom:14px"});
+  if (role === "sys" && critPendingN && tab !== "crit" && tab !== "home") {
     const go = el("button",{class:"act p"},"לאישור");
-    go.addEventListener("click", () => { tab = "crit"; render(); });
-    al.append(el("div",{class:"in",style:"display:flex;gap:12px;align-items:center;flex-wrap:wrap"},
-      el("b",{}, critPendingN === 1 ? "ממתין לאישורך קריטריון אחד מהקהילה" : "ממתינים לאישורך " + critPendingN + " קריטריונים מהקהילה"),
-      el("span",{style:"color:var(--muted);font-size:13.5px"},"משוב לעבודות: הצעות של משתמשות לקריטריונים לבדיקה"), go));
-    p.append(al);
+    go.addEventListener("click", () => goTab("crit"));
+    p.append(el("div",{class:"card"}, el("div",{class:"in",style:"display:flex;gap:12px;align-items:center;flex-wrap:wrap"},
+      el("b",{}, critPendingN === 1 ? "קריטריון אחד מהקהילה ממתין לאישור" : critPendingN + " קריטריונים מהקהילה ממתינים לאישור"),
+      el("span",{style:"color:var(--muted);font-size:13.5px;flex:1"},"משוב לעבודות: הצעות של משתמשים לקריטריונים לבדיקה"), go)));
   }
-  document.title = (role === "sys" && critPendingN ? "(" + critPendingN + ") " : "") + document.title.replace(/^\(\d+\) /, "");
-  p.append(({ codes:pCodes, users:pUsers, feedback:pFeedback, data:pData, insts:pInsts, studies:pStudies, backup:pBackup, inbox:pInbox, stories:pStories, crit:pCrit, access:pAccess, home:pHome, open:pOpen, taxonomies:pTaxonomies, libs:pLibs, eval:pEvalSet })[tab]());
+  document.title = (role === "sys" && critPendingN ? "(" + critPendingN + ") " : "") + "ניהול · " + sec.t;
+  const panel = ({ codes:pCodes, users:pUsers, feedback:pFeedback, data:pData, insts:pInsts, renew:pRenew, subs:pSubs, gift:pGift, studies:pStudies, backup:pBackup, inbox:pInbox, stories:pStories, crit:pCrit, access:pAccess, home:pHome, open:pOpen, taxonomies:pTaxonomies, libs:pLibs, eval:pEvalSet })[tab]();
+  // שם הלשונית כבר מופיע בכותרת החלק ובלשוניות: בלי כותרת כפולה
+  const h = panel.querySelector(":scope>h2"); if (h) h.remove();
+  p.append(panel);
 }
+window.__admGo = goTab;
 
 function pBackup(){
   const p = el("section", {class:"panel on"});
@@ -567,11 +646,22 @@ function pStudies(){
   return p;
 }
 
+// מסכים נפרדים שמנוהלים מכאן: כרטיס קישורים (גם בטלפון, שבו אין עמודת צד)
+function moreScreensCard(){
+  const c = el("div",{class:"card moreCard"}); c.append(el("h3",{},"מסכים נוספים"));
+  const t = el("div",{class:"tiles"});
+  MORE_SCREENS.forEach(([href, ic, title, d]) => { if (href.startsWith("research") && !isSysSession) return;
+    const a = el("a",{href, class:"sbe-no-theme"}, el("b",{}, ic + " " + title), el("span",{}, d));
+    if (href === "journeys.html" && jrPendingN) a.querySelector("b").append(el("span",{class:"navbadge"}, String(jrPendingN)));
+    t.append(a); });
+  c.append(el("div",{class:"in"}, t));
+  return c;
+}
+
 // ── מה מחכה לי (04/10/2026): דף הבית של ניהול המערכת — כל מה שדורש טיפול, במקום אחד ──
 let homeData = null;
 function pHome(){
   const w = el("div",{class:"panel on"});
-  w.append(el("h2",{},"מה מחכה לי"), el("p",{class:"sub"},"כל מה שדורש את תשומת לבך, במקום אחד. לחיצה על כרטיס מובילה למקום הטיפול."));
   if (!gate(w, homeData, async () => {
     const [ins, inb, ren, jr, cr] = await Promise.all([accessCall("listInstitutions"), accessCall("fbList").catch(() => ({ items: [] })),
       accessCall("renewList").catch(() => ({ requests: [] })), accessCall("jrAll").catch(() => ({ items: [] })), accessCall("critAdmin").catch(() => ({ pending: [] }))]);
@@ -588,22 +678,26 @@ function pHome(){
     c.append(el("b",{class:"hn"}, String(n)), el("span",{class:"ht"}, title), el("span",{class:"hd"}, desc));
     c.addEventListener("click", go); return c;
   };
-  const toTab = (k) => () => { tab = k; render(); };
+  const toTab = (k) => () => goTab(k);
   grid.append(
     card(H.jr, "מסעות ממתינים לך", "הצעות לאישור, הגשות, ערעורים והודעות", () => { location.href = "journeys.html"; }, true),
     card(H.crit, "קריטריונים לאישור", "הצעות מהקהילה למשוב לעבודות", toTab("crit"), true),
-    card(H.renew, "בקשות חידוש ורכישה", "מוסדות שביקשו לחדש או להצטרף", toTab("insts"), true),
+    card(H.renew, "בקשות לכלים", "מוסדות ואנשים שביקשו לחדש או להצטרף", toTab("renew"), true),
     card(H.expiring, "מנויים שמסתיימים", "בקרוב, בתקופת חסד או שהסתיימו", toTab("insts"), true),
     card(H.noSystems, "מוסדות בלי מערכות פתוחות", "אפשר לבחור להם מה פתוח", toTab("insts"), false),
-    card(H.inbox, "פניות", "רעיונות, תקלות ושאלות שנשלחו", toTab("inbox"), false));
+    card(H.inbox, "רעיונות ותקלות", "פניות שנשלחו מכל המערכת", toTab("inbox"), false));
+  const calm = !(H.jr || H.crit || H.renew || H.expiring);
+  if (calm) w.append(el("div",{class:"card"}, el("div",{class:"empty"}, el("span",{class:"ei"},"🌿"), "אין כרגע משהו דחוף. הכרטיסים למטה מראים מה קורה במערכת.")));
   w.append(grid);
   const quick = el("div",{class:"card"});
-  quick.append(el("h3",{},"פעולות מהירות"));
+  quick.append(el("h3",{},"פעולות מהירות", el("em",{}, H.insts + " מוסדות במערכת")));
   const q = el("div",{class:"in"});
   const b1 = el("button",{class:"act p"},"פתיחת מוסד או הפקת קוד"); b1.addEventListener("click", toTab("insts"));
+  const b2 = el("button",{class:"act"},"קישור פתוח ליום אחד"); b2.addEventListener("click", toTab("open"));
   const b3 = el("button",{class:"act"},"רענון"); b3.addEventListener("click", () => { homeData = null; render(); });
-  q.append(el("div",{class:"btnrow",style:"margin-top:0"}, b1, b3), el("p",{class:"hint",style:"margin-top:10px"}, H.insts + " מוסדות במערכת."));
+  q.append(el("div",{class:"btnrow",style:"margin-top:0"}, b1, b2, b3));
   quick.append(q); w.append(quick);
+  w.append(moreScreensCard());
   return w;
 }
 
@@ -756,8 +850,7 @@ function pFeedback(){
 // ── מוסדות ──
 function pInsts(){
   const w = el("div",{class:"panel on"});
-  w.append(el("h2",{},"מוסדות וקודים"), el("p",{class:"sub"},
-    "לכל מוסד: אילו מערכות פתוחות לו, עד מתי המנוי, והקודים שלו. מנהל/ת מוסד מפיק/ה קודים לצוות רק מתוך המערכות הפתוחות."));
+  w.append(el("h2",{},"מוסדות וקודים"));
 
   if (!gate(w, instList, async () => { const d = await accessCall("listInstitutions"); instList = d.institutions; sysSettings = d.settings; }, "סיסמת מנהלת המערכת")) return w;
   homeData = null; // כל שינוי כאן מתעדכן גם ב"מה מחכה לי"
@@ -796,16 +889,163 @@ function pInsts(){
     c.append(inn); w.append(c);
   }
 
+  // בקשות לכלים שממתינות: תזכורת קצרה, והטיפול בחלק "בקשות ופניות"
+  const rn = el("div",{class:"card"}); rn.hidden = true; w.append(rn);
+  accessCall("renewList").then(d => {
+    const n = (d.requests || []).filter(q => !q.done).length;
+    if (!n) return;
+    const go = el("button",{class:"act p"},"לבקשות"); go.addEventListener("click", () => goTab("renew"));
+    rn.append(el("div",{class:"in",style:"display:flex;gap:12px;align-items:center;flex-wrap:wrap"},
+      el("b",{style:"flex:1"}, n === 1 ? "בקשה אחת לכלים ממתינה לבדיקה" : n + " בקשות לכלים ממתינות לבדיקה"), go));
+    rn.hidden = false;
+  }).catch(() => {});
+
+  // פתיחת מוסד חדש — למעלה, פעולה אחת ברורה
+  const addC = el("div",{class:"card"});
+  addC.append(el("h3",{},"פתיחת מוסד חדש"));
+  const add = el("div",{class:"in"});
+  const nm = el("input",{placeholder:"שם המוסד", style:"flex:1;min-width:180px"});
+  const bAdd = el("button",{class:"act p"},"פתיחה");
+  const nsp = el("select",{"aria-label":"המרחב של המוסד", "data-closed":""}, el("option",{value:"edu"},"🎒 מרחב חינוכי"), el("option",{value:"org"},"🏢 מרחב ארגוני"));
+  bAdd.addEventListener("click",()=>{ const v=nm.value.trim(); if(!v)return; act("addInstitution", { name: v, space: nsp.value }); });
+  add.append(el("div",{class:"btnrow"}, nm, nsp, bAdd),
+    el("p",{class:"hint"},"אחרי הפתיחה: בוחרים מערכות פתוחות, ומפיקים קוד למנהל/ת המוסד או קוד אישי."));
+  addC.append(add);
+
+  // רשימת המוסדות — כל מוסד מקופל לשורה אחת; בפתיחה: ארבעה חלקים ברורים
+  const c = el("div",{class:"card"});
+  c.append(el("h3",{},"המוסדות", el("em",{}, instList.length ? "לחיצה על מוסד פותחת אותו" : "")));
+  const inn = el("div",{class:"in"});
+  if (!instList.length) inn.append(el("div",{class:"empty"}, el("span",{class:"ei"},"🏫"), "עדיין אין מוסדות. אפשר לפתוח מוסד ראשון בכרטיס שלמטה."));
+  // חיפוש מוסד, כשהרשימה ארוכה
+  if (instList.length > 5) {
+    const q = el("input",{type:"search", placeholder:"למשל: אורנים", "aria-label":"חיפוש מוסד", style:"width:100%;margin-bottom:6px"});
+    q.addEventListener("input", () => { const v = q.value.trim(); inn.querySelectorAll("details.inst").forEach(d => { d.hidden = !!v && !d.dataset.name.includes(v); }); });
+    inn.append(q);
+  }
+  const copyBtn = (txt) => { const b = el("button",{class:"linkbtn"},"העתקה");
+    b.addEventListener("click", async () => { try { await navigator.clipboard.writeText(txt); b.textContent = "הועתק ✓"; setTimeout(() => b.textContent = "העתקה", 1400); } catch(e){} }); return b; };
+  instList.forEach(x=>{
+    const active = x.active !== false;
+    const [sl, sk] = active ? SUB[(x.sub && x.sub.state) || "ok"] : SUB.inactive;
+    const openNames = (x.open || []).map(p => (MOD_LABELS[p] || p).replace(/ \(.*\)$/, ""));
+    const pcs = x.personalCodes || [];
+    const box = el("details",{class:"inst ibox"}); box.dataset.name = x.name;
+    if (openInst === x.name) box.open = true;
+    box.addEventListener("toggle", () => { if (box.open) openInst = x.name; else if (openInst === x.name) openInst = null; });
+    box.append(el("summary",{class:"irow"},
+      el("span",{class:"nm"}, el("b",{},x.name),
+        el("span",{}, [openNames.length === 1 ? "מערכת אחת פתוחה" : openNames.length ? openNames.length + " מערכות פתוחות" : "עדיין בלי מערכות",
+          x.adminCode ? "יש קוד מנהל/ת" : "בלי קוד מנהל/ת", pcs.length === 1 ? "קוד אישי אחד" : pcs.length ? pcs.length + " קודים אישיים" : "",
+          (x.staffCodes || 0) ? x.staffCodes + " קודי צוות" : "", x.space === "org" ? "🏢 ארגוני" : x.space === "edu" ? "🎒 חינוכי" : ""].filter(Boolean).join(" · "))),
+      el("span",{class:"pill " + sk}, sl)));
+    const body = el("div",{class:"ibody"});
+
+    // 1. המרחב (28/10/2026): חינוכי או ארגוני. המרחב קובע אילו כלים רואים במרחב שלי, ואת השפה והדוגמאות בכלים המשותפים.
+    const s0 = el("section",{class:"isec"}, el("h4",{},"1. המרחב"),
+      el("p",{class:"hint"},"במרחב הארגוני רואים רק את הכלים הארגוניים והמשותפים, והכלים כותבים בשפה של ארגון וקהילה, בלי מחנכים ומורים."));
+    const spRow = el("div",{class:"btnrow", role:"group", "aria-label":"המרחב של " + x.name});
+    [["edu","🎒 חינוכי"],["org","🏢 ארגוני"],["","לפי הכלים בקוד"]].forEach(([v,t]) => {
+      const cur = x.space === "edu" || x.space === "org" ? x.space : "";
+      const b = el("button",{class: "act" + (cur === v ? " p" : ""), type:"button", "aria-pressed": String(cur === v)}, t);
+      b.addEventListener("click", () => { if (cur !== v) act("setInstitutionSpace", { name: x.name, space: v || null }); });
+      spRow.append(b);
+    });
+    s0.append(spRow);
+    if (!x.space) s0.append(el("p",{class:"hint"},"בלי סימון: קוד עם כלי חינוכי נכנס למרחב החינוכי, וקוד עם כלים משותפים בלבד נכנס למרחב הארגוני."));
+
+    // 2. מערכות פתוחות
+    const s1 = el("section",{class:"isec wide"}, el("h4",{},"3. מערכות פתוחות"),
+      el("p",{class:"hint"},"מנהל/ת המוסד יכול/ה לתת לצוות רק מתוך הרשימה הזו."));
+    s1.append(openNames.length ? el("div",{class:"chips"}, ...openNames.map(n => el("span",{class:"chip"}, n)))
+      : el("p",{style:"margin:0;color:var(--brick);font-weight:600"},"עדיין לא נפתחו מערכות."));
+    const bMod = el("button",{class:"act"}, openNames.length ? "עריכה" : "בחירת מערכות");
+    bMod.addEventListener("click",()=> openModDlg(x.name));
+    s1.append(el("div",{class:"btnrow"}, bMod));
+
+    // 3. מנוי
+    const s2 = el("section",{class:"isec"}, el("h4",{},"2. מנוי"),
+      el("p",{style:"margin:0"}, x.subEnd ? "בתוקף עד " + fmt(x.subEnd) : "ללא תאריך סיום"));
+    const bRenew = el("button",{class:"act p"},"חידוש לשנה");
+    bRenew.addEventListener("click", () => ask("חידוש המנוי של " + x.name + " לשנה", "לפני החידוש: וידאת שהתשלום התקבל, ושהמערכות הפתוחות למוסד מתאימות לתשלום? (המערכות נבדקות ב\"מערכות פתוחות\" שבתוך המוסד.)", () => act("renewSubscription", { name: x.name, months: 12 })));
+    const bDate = el("button",{class:"act"},"שינוי תאריך");
+    bDate.addEventListener("click", () => openSubDlg(x, act));
+    s2.append(el("div",{class:"btnrow"}, bRenew, bDate));
+
+    // 4. קודים
+    const s3 = el("section",{class:"isec wide"}, el("h4",{},"4. קודים"));
+    const admRow = el("div",{class:"coderow"}, el("span",{class:"cl"},"מנהל/ת המוסד"));
+    if (x.adminCode) admRow.append(el("b",{class:"mono"}, x.adminCode), copyBtn(x.adminCode));
+    else admRow.append(el("i",{},"עדיין לא הופק"));
+    const bAdm = el("button",{class: x.adminCode ? "linkbtn" : "act p"}, x.adminCode ? "החלפה" : "הפקת קוד למנהל/ת");
+    bAdm.addEventListener("click",()=> ask(x.adminCode ? "קוד חדש למנהל/ת " + x.name : "קוד למנהל/ת " + x.name,
+      x.adminCode ? "הקוד הנוכחי של מנהל/ת המוסד יבוטל ויופק חדש. קודי הצוות שכבר הופקו ממשיכים לעבוד." : "מנהל/ת המוסד נכנס/ת עם כל המערכות הפתוחות למוסד, ומפיק/ה קודים לצוות: רק מתוך המערכות האלה.",
+      async () => {
+        try {
+          if (x.adminCode) await accessCall("codeRevoke", { code: x.adminCode });
+          await accessCall("codeCreate", { kind: "instadmin", inst: x.name });
+          instList = null; render();
+        } catch (e) { accessFail(e); }
+      }));
+    admRow.append(bAdm);
+    s3.append(admRow, el("p",{class:"hint"},"קוד אישי: לאדם אחד, בלי ניהול צוות, רק המערכות שבוחרים."));
+    pcs.forEach(pc => {
+      const what = pc.perms.map(p => (MOD_LABELS[p] || p).replace(/ \(.*\)$/, "")).join(", ");
+      const rv = el("button",{class:"linkbtn danger"},"ביטול");
+      rv.addEventListener("click",()=> ask("ביטול הקוד " + pc.code, "הקוד יפסיק לעבוד מיד.",
+        async () => { try { await accessCall("codeRevoke", { code: pc.code }); instList = null; render(); } catch (e) { accessFail(e); } }));
+      s3.append(el("div",{class:"coderow"}, el("span",{class:"cl"}, pc.label || "קוד אישי"), el("b",{class:"mono"}, pc.code), copyBtn(pc.code), rv,
+        el("span",{class:"what"}, what)));
+    });
+    const bPc = el("button",{class:"act"},"+ קוד אישי חדש");
+    bPc.addEventListener("click",()=> openPersonalDlg(x));
+    s3.append(el("div",{class:"btnrow"}, bPc));
+    const old = el("details",{class:"old"}, el("summary",{},"קוד מוסד ישן (כל הצוות, השיטה הקודמת)"));
+    const bOld = el("button",{class:"linkbtn"},"החלפה");
+    bOld.addEventListener("click",()=> ask("קוד מוסד ישן חדש ל" + x.name,
+      "הקוד הישן, שכל הצוות נכנס איתו עד עכשיו, יוחלף מיד. עדיף לעבור לקודי צוות אישיים שמנהל/ת המוסד מפיק/ה.",
+      () => act("newInstitutionCode", { name: x.name })));
+    old.append(el("div",{class:"coderow"}, el("b",{class:"mono"}, x.code), copyBtn(x.code), bOld));
+    s3.append(old);
+
+    // 5. השהיה ומחיקה
+    const s4 = el("section",{class:"isec quiet wide"}, el("h4",{},"5. השהיה ומחיקה"));
+    const status = el("button",{class:"act"}, active ? "השהיה" : "הפעלה מחדש");
+    status.addEventListener("click",()=> active
+      ? ask("השהיית " + x.name, "אף קוד של המוסד לא יאפשר כניסה עד שתפעילי אותו מחדש. הנתונים נשמרים.",
+          () => act("setInstitutionActive", { name: x.name, active: false }))
+      : act("setInstitutionActive", { name: x.name, active: true }));
+    const bDel = el("button",{class:"act d"},"מחיקת המוסד");
+    bDel.addEventListener("click",()=> ask("מחיקת " + x.name,
+      "המוסד יימחק לגמרי: כל הקודים שלו (מנהל/ת וצוות וסטודנטים) יפסיקו לעבוד, והמערכות שנפתחו לו וכיתות החוסן שלו עם כל התשובות יימחקו. אי אפשר לבטל את זה.",
+      () => act("deleteInstitution", { name: x.name })));
+    s4.append(el("div",{class:"btnrow"}, status, bDel));
+
+    body.append(s0, s2, s1, s3, s4); box.append(body);
+    inn.append(box);
+  });
+  c.append(inn);
+  w.append(c, addC);
+
+  return w;
+}
+
+// ── בקשות לכלים (מהטופס renew.html): בדיקה לפני פתיחה ──
+function pRenew(){
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"בקשות לכלים"), el("p",{class:"sub"},"בקשות שנשלחו מהטופס \"בקשה לכלים\". שום דבר לא נפתח מהבקשה עצמה: פותחים את הבקשה, מוודאים בשיחה מי פנה ומה שולם, ובוחרים בדיוק את הכלים."));
+  if (!gate(w, instList, async () => { const d = await accessCall("listInstitutions"); instList = d.institutions; sysSettings = d.settings; }, "סיסמת מנהלת המערכת")) return w;
+  const fmt = (ymd) => ymd ? ymd.slice(0,10).split("-").reverse().map((x,i)=>i===2?x.slice(2):x).join(".") : "";
   // בקשות חידוש ורכישה שהגיעו מהטופס — מוצגות רק כשיש בקשה פתוחה
-  const rc = el("div",{class:"card"}); rc.hidden = true;
-  rc.append(el("h3",{},"בקשות חידוש ורכישה", el("em",{},"ממתינות לך")));
-  const rin = el("div",{class:"in"});
+  const rc = el("div",{class:"card"});
+  rc.append(el("h3",{},"בקשות שממתינות לבדיקה"));
+  const rin = el("div",{class:"in"}, el("p",{class:"sub",style:"margin:0"},"טוענים..."));
   rc.append(rin); w.append(rc);
   accessCall("renewList").then(d => {
     rin.textContent = "";
     const open = (d.requests || []).filter(q => !q.done);
-    if (!open.length) return;
-    rc.hidden = false;
+    if (homeData) homeData.renew = open.length;
+    if (!open.length) { rin.append(el("div",{class:"empty"}, el("span",{class:"ei"},"📭"), "אין כרגע בקשות שממתינות. בקשה חדשה מהטופס \"בקשה לכלים\" תופיע כאן.")); return; }
     // בדיקה לפני אישור (07/10/2026): הטופס ציבורי — כל אחד/ת יכול/ה לכתוב שם של מוסד קיים ולסמן כל מערכת.
     // לכן שום דבר לא נפתח מהבקשה עצמה. פותחים את הבקשה, מוודאים בשיחה מי פנה ומה הבקשה, מוודאים תשלום,
     // ובוחרים בעצמך את המערכות שמתאימות לתשלום. רק אז "אישור ופתיחה" (renewApprove בשרת בודק את כל אלה שוב).
@@ -831,7 +1071,7 @@ function pInsts(){
       const bOpen = el("button",{class:"act p"},"פתיחת הבקשה לבדיקה");
       const done = el("button",{class:"act"},"סגירה בלי פתיחה");
       done.addEventListener("click", () => ask("סגירת הבקשה בלי פתיחה", "הבקשה תיסגר, ושום מערכת או מנוי לא ייפתחו. אפשר תמיד לפתוח ידנית מתוך המוסד.",
-        () => accessCall("renewDone", { id: q.id }).then(() => render()).catch(accessFail)));
+        () => accessCall("renewDone", { id: q.id }).then(() => { homeData = null; render(); }).catch(accessFail)));
       acts.append(bOpen, done); box.append(acts);
 
       // ── טופס הבדיקה ──
@@ -924,140 +1164,25 @@ function pInsts(){
           "מנוי ל" + (months() === 6 ? "חצי שנה" : "שנה") + ". המערכות שיהיו פתוחות למוסד: " + list + ". אסמכתה: " + payRef.value.trim() + ".",
           () => accessCall("renewApprove", { id: q.id, kind: k, inst: k === "renew" ? name : "", instName: k === "new" ? name : "",
               verified: cbWho.checked, paid: cbPaid.checked, payRef: payRef.value.trim(), months: months(), systems: chosen() })
-            .then(() => { instList = null; render(); }).catch(accessFail));
+            .then(() => { instList = null; homeData = null; render(); }).catch(accessFail));
       });
       bOther.addEventListener("click", () => ask("סגירת הבקשה", "טיפלת בבקשה ידנית. הבקשה תיסגר, ושום דבר לא ייפתח אוטומטית.",
-        () => accessCall("renewDone", { id: q.id, note: "אחר: טופל ידנית" }).then(() => render()).catch(accessFail)));
+        () => accessCall("renewDone", { id: q.id, note: "אחר: טופל ידנית" }).then(() => { homeData = null; render(); }).catch(accessFail)));
 
       box.append(rv);
       rin.append(box);
     });
   }).catch(() => { rin.textContent = "לא הצלחתי לטעון את הבקשות."; });
+  return w;
+}
 
-  // פתיחת מוסד חדש — למעלה, פעולה אחת ברורה
-  const addC = el("div",{class:"card"});
-  addC.append(el("h3",{},"פתיחת מוסד חדש"));
-  const add = el("div",{class:"in"});
-  const nm = el("input",{placeholder:"שם המוסד", style:"flex:1;min-width:180px"});
-  const bAdd = el("button",{class:"act p"},"פתיחה");
-  const nsp = el("select",{"aria-label":"המרחב של המוסד", "data-closed":""}, el("option",{value:"edu"},"🎒 מרחב חינוכי"), el("option",{value:"org"},"🏢 מרחב ארגוני"));
-  bAdd.addEventListener("click",()=>{ const v=nm.value.trim(); if(!v)return; act("addInstitution", { name: v, space: nsp.value }); });
-  add.append(el("div",{class:"btnrow"}, nm, nsp, bAdd),
-    el("p",{class:"hint"},"אחרי הפתיחה: בוחרים מערכות פתוחות, ומפיקים קוד למנהל/ת המוסד או קוד אישי."));
-  addC.append(add); w.append(addC);
-
-  // רשימת המוסדות — כל מוסד מקופל לשורה אחת; בפתיחה: ארבעה חלקים ברורים
-  const c = el("div",{class:"card"});
-  c.append(el("h3",{},"המוסדות", el("em",{}, "אפשר ללחוץ על מוסד כדי לנהל אותו")));
-  const inn = el("div",{class:"in"});
-  if (!instList.length) inn.append(el("p",{class:"sub",style:"margin:0"},"עדיין אין מוסדות."));
-  const copyBtn = (txt) => { const b = el("button",{class:"linkbtn"},"העתקה");
-    b.addEventListener("click", async () => { try { await navigator.clipboard.writeText(txt); b.textContent = "הועתק ✓"; setTimeout(() => b.textContent = "העתקה", 1400); } catch(e){} }); return b; };
-  instList.forEach(x=>{
-    const active = x.active !== false;
-    const [sl, sk] = active ? SUB[(x.sub && x.sub.state) || "ok"] : SUB.inactive;
-    const openNames = (x.open || []).map(p => (MOD_LABELS[p] || p).replace(/ \(.*\)$/, ""));
-    const pcs = x.personalCodes || [];
-    const box = el("details",{class:"inst ibox"});
-    if (openInst === x.name) box.open = true;
-    box.addEventListener("toggle", () => { if (box.open) openInst = x.name; else if (openInst === x.name) openInst = null; });
-    box.append(el("summary",{class:"irow"},
-      el("span",{class:"nm"}, el("b",{},x.name),
-        el("span",{}, [openNames.length ? openNames.length + " מערכות פתוחות" : "עדיין בלי מערכות",
-          x.adminCode ? "יש קוד מנהל/ת" : "בלי קוד מנהל/ת", pcs.length ? pcs.length + " קודים אישיים" : "",
-          (x.staffCodes || 0) ? x.staffCodes + " קודי צוות" : "", x.space === "org" ? "🏢 ארגוני" : x.space === "edu" ? "🎒 חינוכי" : ""].filter(Boolean).join(" · "))),
-      el("span",{class:"pill " + sk}, sl)));
-    const body = el("div",{class:"ibody"});
-
-    // 1. המרחב (28/10/2026): חינוכי או ארגוני. המרחב קובע אילו כלים רואים במרחב שלי, ואת השפה והדוגמאות בכלים המשותפים.
-    const s0 = el("section",{class:"isec"}, el("h4",{},"1. המרחב"),
-      el("p",{class:"hint"},"במרחב הארגוני רואים רק את הכלים הארגוניים והמשותפים, והכלים כותבים בשפה של ארגון וקהילה, בלי מחנכים ומורים."));
-    const spRow = el("div",{class:"btnrow", role:"group", "aria-label":"המרחב של " + x.name});
-    [["edu","🎒 חינוכי"],["org","🏢 ארגוני"],["","לפי הכלים בקוד"]].forEach(([v,t]) => {
-      const cur = x.space === "edu" || x.space === "org" ? x.space : "";
-      const b = el("button",{class: "act" + (cur === v ? " p" : ""), type:"button", "aria-pressed": String(cur === v)}, t);
-      b.addEventListener("click", () => { if (cur !== v) act("setInstitutionSpace", { name: x.name, space: v || null }); });
-      spRow.append(b);
-    });
-    s0.append(spRow);
-    if (!x.space) s0.append(el("p",{class:"hint"},"בלי סימון: קוד עם כלי חינוכי נכנס למרחב החינוכי, וקוד עם כלים משותפים בלבד נכנס למרחב הארגוני."));
-
-    // 2. מערכות פתוחות
-    const s1 = el("section",{class:"isec"}, el("h4",{},"2. מערכות פתוחות"),
-      el("p",{class:"hint"},"מנהל/ת המוסד יכול/ה לתת לצוות רק מתוך הרשימה הזו."));
-    s1.append(openNames.length ? el("div",{class:"chips"}, ...openNames.map(n => el("span",{class:"chip"}, n)))
-      : el("p",{style:"margin:0;color:var(--brick);font-weight:600"},"עדיין לא נפתחו מערכות."));
-    const bMod = el("button",{class:"act"}, openNames.length ? "עריכה" : "בחירת מערכות");
-    bMod.addEventListener("click",()=> openModDlg(x.name));
-    s1.append(el("div",{class:"btnrow"}, bMod));
-
-    // 3. מנוי
-    const s2 = el("section",{class:"isec"}, el("h4",{},"3. מנוי"),
-      el("p",{style:"margin:0"}, x.subEnd ? "בתוקף עד " + fmt(x.subEnd) : "ללא תאריך סיום"));
-    const bRenew = el("button",{class:"act p"},"חידוש לשנה");
-    bRenew.addEventListener("click", () => ask("חידוש המנוי של " + x.name + " לשנה", "לפני החידוש: וידאת שהתשלום התקבל, ושהמערכות הפתוחות למוסד מתאימות לתשלום? (המערכות נבדקות ב\"מערכות פתוחות\" שבתוך המוסד.)", () => act("renewSubscription", { name: x.name, months: 12 })));
-    const bDate = el("button",{class:"act"},"שינוי תאריך");
-    bDate.addEventListener("click", () => openSubDlg(x, act));
-    s2.append(el("div",{class:"btnrow"}, bRenew, bDate));
-
-    // 4. קודים
-    const s3 = el("section",{class:"isec"}, el("h4",{},"4. קודים"));
-    const admRow = el("div",{class:"coderow"}, el("span",{class:"cl"},"מנהל/ת המוסד"));
-    if (x.adminCode) admRow.append(el("b",{class:"mono"}, x.adminCode), copyBtn(x.adminCode));
-    else admRow.append(el("i",{},"עדיין לא הופק"));
-    const bAdm = el("button",{class: x.adminCode ? "linkbtn" : "act p"}, x.adminCode ? "החלפה" : "הפקת קוד למנהל/ת");
-    bAdm.addEventListener("click",()=> ask(x.adminCode ? "קוד חדש למנהל/ת " + x.name : "קוד למנהל/ת " + x.name,
-      x.adminCode ? "הקוד הנוכחי של מנהל/ת המוסד יבוטל ויופק חדש. קודי הצוות שכבר הופקו ממשיכים לעבוד." : "מנהל/ת המוסד נכנס/ת עם כל המערכות הפתוחות למוסד, ומפיק/ה קודים לצוות: רק מתוך המערכות האלה.",
-      async () => {
-        try {
-          if (x.adminCode) await accessCall("codeRevoke", { code: x.adminCode });
-          await accessCall("codeCreate", { kind: "instadmin", inst: x.name });
-          instList = null; render();
-        } catch (e) { accessFail(e); }
-      }));
-    admRow.append(bAdm);
-    s3.append(admRow, el("p",{class:"hint"},"קוד אישי: לאדם אחד, בלי ניהול צוות, רק המערכות שבוחרים."));
-    pcs.forEach(pc => {
-      const what = pc.perms.map(p => (MOD_LABELS[p] || p).replace(/ \(.*\)$/, "")).join(", ");
-      const rv = el("button",{class:"linkbtn danger"},"ביטול");
-      rv.addEventListener("click",()=> ask("ביטול הקוד " + pc.code, "הקוד יפסיק לעבוד מיד.",
-        async () => { try { await accessCall("codeRevoke", { code: pc.code }); instList = null; render(); } catch (e) { accessFail(e); } }));
-      s3.append(el("div",{class:"coderow"}, el("span",{class:"cl"}, pc.label || "קוד אישי"), el("b",{class:"mono"}, pc.code), copyBtn(pc.code), rv,
-        el("span",{class:"what"}, what)));
-    });
-    const bPc = el("button",{class:"act"},"+ קוד אישי חדש");
-    bPc.addEventListener("click",()=> openPersonalDlg(x));
-    s3.append(el("div",{class:"btnrow"}, bPc));
-    const old = el("details",{class:"old"}, el("summary",{},"קוד מוסד ישן (כל הצוות, השיטה הקודמת)"));
-    const bOld = el("button",{class:"linkbtn"},"החלפה");
-    bOld.addEventListener("click",()=> ask("קוד מוסד ישן חדש ל" + x.name,
-      "הקוד הישן, שכל הצוות נכנס איתו עד עכשיו, יוחלף מיד. עדיף לעבור לקודי צוות אישיים שמנהל/ת המוסד מפיק/ה.",
-      () => act("newInstitutionCode", { name: x.name })));
-    old.append(el("div",{class:"coderow"}, el("b",{class:"mono"}, x.code), copyBtn(x.code), bOld));
-    s3.append(old);
-
-    // 5. השהיה ומחיקה
-    const s4 = el("section",{class:"isec quiet"}, el("h4",{},"5. השהיה ומחיקה"));
-    const status = el("button",{class:"act"}, active ? "השהיה" : "הפעלה מחדש");
-    status.addEventListener("click",()=> active
-      ? ask("השהיית " + x.name, "אף קוד של המוסד לא יאפשר כניסה עד שתפעילי אותו מחדש. הנתונים נשמרים.",
-          () => act("setInstitutionActive", { name: x.name, active: false }))
-      : act("setInstitutionActive", { name: x.name, active: true }));
-    const bDel = el("button",{class:"act d"},"מחיקת המוסד");
-    bDel.addEventListener("click",()=> ask("מחיקת " + x.name,
-      "המוסד יימחק לגמרי: כל הקודים שלו (מנהל/ת וצוות וסטודנטים) יפסיקו לעבוד, והמערכות שנפתחו לו וכיתות החוסן שלו עם כל התשובות יימחקו. אי אפשר לבטל את זה.",
-      () => act("deleteInstitution", { name: x.name })));
-    s4.append(el("div",{class:"btnrow"}, status, bDel));
-
-    body.append(s0, s1, s2, s3, s4); box.append(body);
-    inn.append(box);
-  });
-  c.append(inn);
-  w.append(c);
-
-  // הגדרות כלליות — מקופלות
-  const sc = el("details",{class:"card setcard"});
-  sc.append(el("summary",{},"הגדרות מנויים וקודים"));
+// ── מנויים וקודים: כללים לכל המוסדות (עבר מ"מוסדות וקודים" ל"הגדרות", 29/10/2026) ──
+function pSubs(){
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"מנויים וקודים"), el("p",{class:"sub"},"ימי החסד אחרי סוף מנוי, והמגבלות של קודי \"משוב לעבודות\" שמרצים מפיקים."));
+  if (!gate(w, instList, async () => { const d = await accessCall("listInstitutions"); instList = d.institutions; sysSettings = d.settings; }, "סיסמת מנהלת המערכת")) return w;
+  const sc = el("div",{class:"card"});
+  sc.append(el("h3",{},"כללים לכל המוסדות"));
   const sin = el("div",{class:"in"});
   const S = sysSettings || { graceDays:14, academic:{ maxActive:50, days:7, uses:3 } };
   const num = (v, min, max) => el("input",{type:"number", min:String(min), max:String(max), value:String(v), style:"width:90px"});
@@ -1071,6 +1196,14 @@ function pInsts(){
     .then(d => { sysSettings = d.settings; instList = null; render(); }).catch(accessFail));
   sin.append(el("div",{class:"btnrow"}, save));
   sc.append(sin); w.append(sc);
+  return w;
+}
+
+// ── יש מה לעשות במתנה: בלי שרת ובלי סיסמה ──
+function pGift(){
+  const w = el("div",{class:"panel on"});
+  w.append(el("h2",{},"יש מה לעשות במתנה"), el("p",{class:"sub"},"המדריכון לחירום פתוח לכולם, בלי קוד. כאן מכינים קישור אישי עם שם והקדשה, לשליחה בוואטסאפ."));
+  if (window.SBE_GIFT) window.SBE_GIFT.mount(w, { from: "ד״ר יעל שדה" });
   return w;
 }
 
@@ -1730,8 +1863,7 @@ function openIdProblem(v){
 function pOpen(){
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"קישור פתוח ליום אחד"), el("p",{class:"sub"},"קישור או QR בלי קוד, לכלי אחד או לכל הכלים, שפתוח רק בתאריך שבחרת (לפי שעון ישראל). מתאים להתנסות בהרצאה או בסדנה. השרת בודק את התאריך בכל פנייה, ולמחרת הקישור נסגר מעצמו."));
-  // "יש מה לעשות" במתנה (19/10/2026): המדריכון פתוח לכולם, בלי קוד ובלי שרת, ולכן גם בלי סיסמה כאן.
-  if (window.SBE_GIFT) window.SBE_GIFT.mount(w, { from: "ד״ר יעל שדה" });
+  // "יש מה לעשות" במתנה: לשונית משלה (pGift), באותו חלק.
   if (!gate(w, openData, async () => { openData = await accessCall("openList"); }, "סיסמת מנהלת המערכת")) return w;
   // יצירה
   const c = el("div",{class:"card"}), inn = el("div",{class:"in"});
@@ -1748,7 +1880,7 @@ function pOpen(){
     preview.style.direction = why ? "rtl" : "ltr";
     preview.textContent = why ? why : id ? "be-good.co.il/entry.html?open=" + id : ""; };
   name.addEventListener("input", showId);
-  const row = (l, n, hint) => el("label",{style:"display:block;margin:0 0 10px"}, el("b",{style:"display:block;font-size:14px;margin-bottom:4px"}, l), n, hint ? el("span",{class:"hint"}, hint) : "");
+  const row = (l, n, hint) => el("label",{class:"frow"}, el("b",{}, l), n, hint ? el("span",{class:"hint"}, hint) : "");
   go.addEventListener("click", async () => {
     const id = openId(name.value), why = openIdProblem(name.value);
     if (why) { ask("השם של הקישור", why + " למשל: orit-14. אפשר גם להשאיר ריק, ונבחר שם בעצמנו.", () => {}); return; }
@@ -1765,13 +1897,14 @@ function pOpen(){
       else accessFail(e); }
     });
   });
-  inn.append(el("h3",{style:"margin-top:0"},"קישור חדש"), row("הכלי", tool, "\"כל הכלים\" פותח את המרחב שלי עם כל הכלים שברשימה."), row("התאריך", date, "הקישור פתוח מתחילת היום הזה (שעון ישראל)."), row("עד תאריך (רשות)", until, "כדי שהקישור יהיה פתוח כמה ימים ברצף, עד חודש. בלי תאריך: יום אחד בלבד."),
+  c.append(el("h3",{},"קישור חדש"));
+  inn.append(el("div",{class:"formgrid"}, row("הכלי", tool, "\"כל הכלים\" פותח את המרחב שלי עם כל הכלים שברשימה."), row("התאריך", date, "הקישור פתוח מתחילת היום הזה (שעון ישראל)."), row("עד תאריך (רשות)", until, "כדי שהקישור יהיה פתוח כמה ימים ברצף, עד חודש. בלי תאריך: יום אחד בלבד."),
     row("שם לקישור", el("span",{}, name, preview), "אותיות באנגלית, ספרות ומקף (רווח הופך למקף). השם מופיע בכתובת. אפשר להשאיר ריק, ונבחר שם אקראי."), row("כותרת", label, "מופיעה למשתתפות על המסך."),
-    row("מספר משתתפות מרבי", max), go);
+    row("מספר משתתפים מרבי", max)), go);
   c.append(inn); w.append(c);
   // הקישורים
   const items = openData.items || [];
-  if (!items.length) { w.append(el("p",{class:"sub"},"עדיין אין קישורים.")); return w; }
+  if (!items.length) { w.append(el("div",{class:"card"}, el("div",{class:"empty"}, el("span",{class:"ei"},"🔗"), "עדיין אין קישורים. קישור חדש יופיע כאן, עם QR, העתקה ושליחה בוואטסאפ."))); return w; }
   items.forEach(x => {
     const card = el("div",{class:"card",style:"margin-top:12px"}), ci = el("div",{class:"in"});
     const st = openState(x, openData.today);
@@ -1834,7 +1967,7 @@ function pStories(){
   w.append(el("h2",{},"סיפורים ושיחות"), el("p",{class:"sub"},"מקרים ששותפו בהסכמה מ\"מקרה משלך\", ושיחות תרגול שנשמרו במאגר ממסך המשוב בתרגול לפי תרחיש, בלי שם ובלי קוד. לפני כל שימוש: לקרוא, לערוך ולהסיר פרטים מזהים. מחקר רק כשסומן \"מותר במחקר\"."));
   if (!gate(w, stories, async () => { stories = await accessCall("storyList"); }, "סיסמת מנהלת המערכת")) return w;
   const items = stories.items || [];
-  if (!items.length) { w.append(el("p",{class:"sub"},"עדיין לא שותפו סיפורים.")); return w; }
+  if (!items.length) { w.append(el("div",{class:"card"}, el("div",{class:"empty"}, el("span",{class:"ei"},"📖"), "עדיין לא שותפו סיפורים או שיחות."))); return w; }
   const bRef = el("button",{class:"act"},"רענון"); bRef.addEventListener("click", () => { stories = null; render(); }); w.append(bRef);
   items.forEach(x => {
     const card = el("div",{class:"card",style:"margin-top:12px"}), ci = el("div",{class:"in"});
@@ -1869,7 +2002,8 @@ function pInbox(){
   const c = el("div",{class:"card"}); const inn = el("div",{class:"in"});
   const counts = {}; inbox.forEach(x => counts[x.type] = (counts[x.type]||0) + 1);
   inn.append(el("p",{style:"margin:0 0 10px;font-size:13.5px;color:var(--muted)"},
-    inbox.length ? inbox.length + " פניות · " + Object.entries(counts).map(([t,n]) => n + " " + t).join(" · ") : "עדיין אין פניות."));
+    inbox.length ? inbox.length + " פניות · " + Object.entries(counts).map(([t,n]) => n + " " + t).join(" · ") : ""));
+  if (!inbox.length) inn.append(el("div",{class:"empty"}, el("span",{class:"ei"},"✉️"), "עדיין אין פניות. פנייה מכפתור \"רעיון או תקלה\" תופיע כאן."));
   const bRef = el("button",{class:"act"},"רענון");
   bRef.addEventListener("click", () => { inbox = null; render(); });
   inn.append(bRef);
@@ -1901,7 +2035,7 @@ function pCrit(){
   bRef.addEventListener("click", () => { critData = null; render(); });
   const c1 = el("div",{class:"card"}); const in1 = el("div",{class:"in"});
   in1.append(el("h3",{style:"margin:0 0 8px"}, "ממתינים לאישור (" + critData.pending.length + ")"), bRef);
-  if (!critData.pending.length) in1.append(el("p",{style:"color:var(--muted)"},"אין הצעות שממתינות."));
+  if (!critData.pending.length) in1.append(el("div",{class:"empty"}, el("span",{class:"ei"},"✅"), "אין הצעות שממתינות."));
   critData.pending.forEach(x => {
     const box = el("div",{style:"border-top:1px solid var(--hair);padding:10px 0;margin-top:8px"});
     box.append(el("div",{style:"font-size:12.5px;color:var(--muted)"}, [new Date(x.at).toLocaleString("he-IL"), x.by, x.inst].filter(Boolean).join(" · ")));
@@ -1941,7 +2075,7 @@ function pCrit(){
 function pAccess(){
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"סיסמת הניהול"),
-    el("p",{class:"sub"},"החלפת הסיסמה שלך. הקודים של המוסדות נמצאים בלשונית \"מוסדות וקודים\"."));
+    el("p",{class:"sub"},"החלפת הסיסמה שלך. הקודים של המוסדות נמצאים בחלק \"מוסדות וקודים\"."));
 
   if (!gate(w, accessState, async () => { accessState = await accessCall("status"); }, "סיסמת מנהלת המערכת")) return w;
   const fail = accessFail;
