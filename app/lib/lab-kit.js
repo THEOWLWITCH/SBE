@@ -132,6 +132,8 @@
       } catch (e) { hist.pop(); o.save(); draw(); ta.value = q; err.textContent = NO_MODEL; err.hidden = false; }
       finally { stop(); send.disabled = false; }
     });
+    ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send.click(); } }); // Enter שולח, Shift+Enter שורה חדשה
+    ta.title = 'Enter לשליחה · Shift+Enter לשורה חדשה';
     det.append(log, ta, el('div', 'btns'), w, err); det.querySelector('.btns').appendChild(send);
     draw(); host.appendChild(det); return det;
   }
