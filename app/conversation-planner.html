@@ -239,9 +239,9 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 </div>
 
 <div class="bar">
-  <span class="chip"><span class="dot d-w"></span>נקבע <b id="cW">0</b></span>
-  <span class="chip"><span class="dot d-p"></span>הצעות <b id="cP">0</b></span>
-  <span class="chip"><span class="dot d-r"></span>ייבנה מחדש <b id="cS">0</b></span>
+  <span class="chip" hidden><span class="dot d-w"></span>נקבע <b id="cW">0</b></span>
+  <span class="chip" hidden><span class="dot d-p"></span>הצעות <b id="cP">0</b></span>
+  <span class="chip" hidden><span class="dot d-r"></span>ייבנה מחדש <b id="cS">0</b></span>
   <span class="spacer"></span>
   <span class="note" id="ready"></span>
 </div>
@@ -886,13 +886,13 @@ function refresh() {
       p++;
     } else if (state[k] === "locked") {
       st.className = "state s-locked";
-      st.append(el("span",{class:"dot d-w"}), "נקבע. נעול");
+      st.append(el("span",{class:"dot d-w"}), "מה שכתבת");
       const d = (f.deps||[]).filter(x => FIELDS.has(x));
-      if (d.length) st.append(el("span",{class:"deps"}, ` · משפיע על ${d.length} שדות`));
+      
       w++;
     } else if (state[k] === "stale") {
       st.className = "state s-stale";
-      st.append(el("span",{class:"dot d-r"}), "ייבנה מחדש בעת האישור");
+      st.append(el("span",{class:"dot d-r"}), "יתעדכן לפי השינוי");
       s++;
     } else { st.className = "state"; }
   }

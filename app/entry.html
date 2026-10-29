@@ -158,6 +158,12 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 html .card.sbe-s{border-top:1px solid #e3e9ef!important}
 label.remember{display:flex;align-items:center;gap:8px;font-weight:400;font-size:13.5px;color:var(--muted);margin:0 0 12px;cursor:pointer}
 label.remember input{width:auto;margin:0}
+.login-card .in{padding:16px 18px}
+.code-row input.code,.code-row button.go-in,.code-row a.ask-code{height:38px!important;box-sizing:border-box!important;padding-top:0!important;padding-bottom:0!important;line-height:36px!important}
+.code-row a.ask-code{display:inline-flex;align-items:center;font-size:14px;font-weight:600;padding:6px 20px;border-radius:999px;border:1px solid #1d3f63;color:#1d3f63;background:#fff;text-decoration:none;line-height:1.5;transition:background .16s ease}
+.code-row a.ask-code:hover{background:#f2f6fa}
+.code-row a.ask-code:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(27,154,170,.25)}
+@media screen and (max-width:520px){.code-row input.code{width:130px}.code-row a.ask-code,.code-row button.go-in{padding:6px 14px;font-size:13.5px}}
 .logged{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 auto 14px;font-size:13.5px;color:var(--muted)}
 .logged .lg-who b{color:var(--ink);font-weight:600}
 .logged button{width:auto;margin:0;font:inherit;font-weight:600;font-size:13.5px;padding:5px 16px;border-radius:999px;cursor:pointer;transition:background .16s ease,border-color .16s ease}
@@ -331,10 +337,12 @@ function renderEntry(){
   if (pre) code.value = pre;
   // שדה הקוד וכפתור הכניסה באותה שורה, קטנים ועדינים (28/10/2026)
   btn.classList.add("go-in");
+  // שורה אחת, בלי כותרת (29/10/2026: "לעצב יפה בשורה אחת: בלי הכותרת כניסה למערכת. כפתור נוסף בדומה לכפתור הכניסה ולידו - לבקש קוד")
+  code.setAttribute("aria-label", "קוד כניסה");
   inn.append(
-    el("div",{class:"code-row"}, code, btn), err,
-    el("p",{class:"no-code"}, "אין עדיין קוד? ", el("a",{href:"renew.html"},"בקשה לכלים")));
-  card.append(el("h2",{},"כניסה למערכת"), inn);
+    el("div",{class:"code-row"}, code, btn, el("a",{class:"ask-code sbe-no-theme",href:"renew.html"},"בקשת קוד")), err);
+  card.classList.add("login-card");
+  card.append(inn);
   view.append(card);
   // ארבעה מרחבים, בית אחד (28/10/2026): שני מרחבי עבודה, וכלים משותפים לשניהם. כל מרחב עם ספריית תוצרים לדוגמה משלו.
   const sp = el("div",{class:"spaces"});

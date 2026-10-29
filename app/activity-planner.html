@@ -386,8 +386,8 @@ dialog.wide .dlg-b{max-height:none;overflow:visible;}
 <section class="screen on" id="screen-plan">
 
 <div class="bar">
-  <span class="chip"><span class="dot d-w"></span>נקבע <b id="cW">0</b></span>
-  <span class="chip"><span class="dot d-p"></span>הצעות <b id="cP">0</b></span>
+  <span class="chip" hidden><span class="dot d-w"></span>נקבע <b id="cW">0</b></span>
+  <span class="chip" hidden><span class="dot d-p"></span>הצעות <b id="cP">0</b></span>
   <span class="spacer"></span>
   <span class="note" id="ready"></span>
 </div>
@@ -1127,7 +1127,7 @@ function refresh() {
       p++;
     } else if (state[k] === "locked") {
       st.className = "state s-locked";
-      st.append(el("span",{class:"dot d-w"}), "נקבע. נעול");
+      st.append(el("span",{class:"dot d-w"}), "מה שכתבת");
       w++;
     } else { st.className = "state"; }
   }

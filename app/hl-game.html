@@ -276,7 +276,7 @@ body.big .rcard .box,body.big .card{font-size:19px}
 
 <header class="top">
   <div>
-    <div class="brand">Be Good · חוסן מול עתיד לא ידוע</div>
+    <div class="brand">Begood · מעבדת האופק</div>
     <h1>משחק מצב עתידי</h1>
     <p class="muted">צוות מנהל משבר בתוך עולם עתידי, סבב אחרי סבב. ה־AI הוא מנחה המשחק: הוא מציג את המצב, מגיב להחלטות של הצוות ומוסיף התפתחויות והפתעות. בסוף עושים תחקיר: מה עבד, מה חסר, ומה עושים כבר מחר.</p>
   </div>
@@ -810,7 +810,7 @@ $("dlReport").addEventListener("click", async () => {
   const st = $("expStatus"); if(!DL){ st.textContent = "ההורדה זמינה כשיש חיבור למודל. אפשר להעתיק כטקסט במקום."; return; }
   const d = S.debrief, li = a => (a||[]).map(x => `<li>${esc(x)}</li>`).join("");
   const html = `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>משחק מצב עתידי</title><style>body{font-family:Assistant,Arial,sans-serif;max-width:860px;margin:30px auto;padding:0 18px;line-height:1.6;color:#16232e}h1,h2,h3{font-family:Rubik,Arial,sans-serif}.r{border:1px solid #d5dde3;border-inline-start:6px solid #17607a;border-radius:12px;padding:12px 16px;margin:12px 0}.res{background:#e3f3e8;border-radius:10px;padding:8px 12px}.muted{color:#5b6b78}svg{max-width:100%;height:auto}</style></head><body>
-  <p class="muted">Be Good · מעבדת האופק</p><h1>משחק מצב עתידי${S.title ? ": " + esc(S.title) : ""}</h1><p class="muted">${esc(TYPE_LABEL[S.ctx.type])}${S.ctx.region ? " · " + esc(S.ctx.region) : ""} · ${esc(S.year)} · ${esc(S.roles.join(", "))}</p><p>${esc(worldText())}</p>${S.opening ? `<p>${esc(S.opening)}</p>` : ""}
+  <p class="muted">Begood · מעבדת האופק</p><h1>משחק מצב עתידי${S.title ? ": " + esc(S.title) : ""}</h1><p class="muted">${esc(TYPE_LABEL[S.ctx.type])}${S.ctx.region ? " · " + esc(S.ctx.region) : ""} · ${esc(S.year)} · ${esc(S.roles.join(", "))}</p><p>${esc(worldText())}</p>${S.opening ? `<p>${esc(S.opening)}</p>` : ""}
   ${S.rounds.map((r, i) => `<div class="r"><h3>סבב ${i+1} · ${esc(r.t)}: ${esc(r.title)}</h3><p>${esc(r.situation)}</p>${(r.cards||[]).map(c => `<p><b>קלף: ${esc(c.t)}.</b> ${esc(c.d)}</p>`).join("")}<p><b>השאלה:</b> ${esc(r.ask)}</p>${r.decision ? `<p><b>ההחלטה:</b> ${esc(r.decision)}</p>` : ""}${r.result ? `<div class="res"><b>מה קרה:</b> ${esc(r.result)} ${esc(r.why || "")}</div>` : ""}</div>`).join("")}
   ${chartSVG()}
   ${S.findings ? `<h2>ממצאים עיקריים</h2><ul>${li(S.findings.findings)}</ul><h3>שאלות לדיון</h3><ol>${li(S.findings.questions)}</ol>` : ""}${S.notes ? `<h3>מה עלה בדיון</h3><p>${esc(S.notes)}</p>` : ""}
