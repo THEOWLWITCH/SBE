@@ -277,13 +277,13 @@ table.mx td.el .small{font-weight:400}
   <span><b>מוצגת דוגמה מוכנה:</b> תהליך של בית ספר יסודי בגליל העליון, עם 5 ראיונות, מסמך סוגיות ושני סבבי דירוג.</span>
   <button id="resetBtn" type="button">תהליך חדש</button>
 </div>
-<p class="ai-note notice small">החלקים שמופעלים על ידי AI זמינים כשיש חיבור למודל. בינתיים אפשר לעיין בדוגמה ולמלא ראיון בטופס.</p>
+<p class="ai-note notice small">אין כרגע חיבור לבינה המלאכותית. בינתיים אפשר לעיין בדוגמה ולמלא ראיון בטופס.</p>
 
 <!-- ===== setup ===== -->
 <div class="view" id="view-setup">
   <section class="stage">
     <h2>הגדרת התהליך <span class="small muted">(למנחה)</span></h2>
-    <p class="muted">מגדירים על מה מדברים, מי משתתפים, ומה שואלים. השאלות מבוססות על ״שבע השאלות״ מערכת Futures Toolkit, ואפשר לערוך אותן.</p>
+    <p class="muted">מגדירים על מה מדברים, מי משתתפים, ומה שואלים. השאלות מבוססות על ״שבע השאלות״ מתוך ערכת Futures Toolkit, ואפשר לערוך אותן.</p>
     <div class="box" id="afterBox">
       <h3>מה ה־AI עושה אחרי הראיונות</h3>
       <ol class="small" style="margin:6px 0 0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px">
@@ -494,7 +494,7 @@ function mainSnapshot(){ return {cfg:P.cfg, paper:P.paper, delphi:P.delphi}; }
 let lastSaved = "", mySaveAt = 0;
 async function saveProcess(silent){
   const st = $("pStatus");
-  if(!DB){ st.textContent = "שמירה זמינה כשיש חיבור למודל."; return; }
+  if(!DB){ st.textContent = "השמירה לא זמינה כרגע."; return; }
   const first = !PID, wasExample = isExample; if(first) PID = uid();
   const json = JSON.stringify(mainSnapshot()); if(!first && json === lastSaved){ if(!silent) st.textContent = "הכול שמור."; return; }
   try{
@@ -536,7 +536,7 @@ function newProcess(){ unsubs.forEach(u => { try{u()}catch(e){} }); unsubs = [];
 function renderBar(){
   $("pName").textContent = P.cfg.title || (isExample ? "דוגמה" : "ללא שם");
   $("pSave").disabled = !DB; $("pOpen").disabled = !DB; $("pActive").hidden = !(DB && PID && IS_OWNER);
-  if(!DB && !$("pStatus").textContent) $("pStatus").textContent = "שמירה ושיתוף זמינים כשיש חיבור למודל.";
+  if(!DB && !$("pStatus").textContent) $("pStatus").textContent = "השמירה והשיתוף לא זמינים כרגע.";
 }
 $("pSave").addEventListener("click", () => saveProcess(false));
 $("pOpen").addEventListener("click", listProcesses);
@@ -788,7 +788,7 @@ ${data}
 });
 $("dlPaper").addEventListener("click", async () => {
   const st = $("paperStatus"); if(!P.paper){ st.textContent = "עוד אין מסמך."; return; }
-  if(!DL){ st.textContent = "ההורדה זמינה כשיש חיבור למודל."; return; }
+  if(!DL){ st.textContent = "ההורדה לא זמינה כרגע."; return; }
   const p = P.paper;
   const html = `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>מסמך סוגיות</title><link href="https://fonts.googleapis.com/css2?family=Rubik:wght@600&family=Assistant:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:Assistant,Arial,sans-serif;direction:rtl;max-width:820px;margin:30px auto;color:#16232e;line-height:1.6}h1,h2,h3{font-family:Rubik,Arial,sans-serif}.q{border-right:3px solid #ccd;padding-right:10px;margin:4px 0;font-weight:600}.t{border:1px solid #d5dde3;border-right:5px solid #17607a;border-radius:8px;padding:10px 14px;margin:10px 0}.m{color:#5b6b78;font-size:14px}</style></head><body>
 <h1>${esc(P.cfg.title || "קול הקהילה")}: מסמך הסוגיות</h1><p class="m">${esc(TYPE_LABEL[P.cfg.ctx.type])} · ${esc(P.cfg.ctx.region||"")} · ${p.n || P.interviews.length} ראיונות</p><p>${esc(p.overview||"")}</p>
@@ -917,7 +917,7 @@ renderView();
 </style>
 <script id="bgkit-js">
 (function(){
-  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "משחק מצב עתידי", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "voice", HELP = {"title": "איך עובדים עם קול הקהילה?", "html": "<p><b>מה הכלי עושה:</b> אוסף את הקולות של הרבה אנשים, במילים שלהם. כל אחד ואחת מרואיינים בנפרד, ה־AI מרכז את כל הראיונות ל״מסמך סוגיות״, ואחר כך כל המשתתפים מדרגים יחד מה הכי חשוב, בכמה סבבים, עד שמתגבשת תמונה משותפת.</p>\n<p><b>מתי משתמשים בו:</b> בתחילת תהליך, לפני שמחליטים. כשרוצים לשמוע גם את מי שלא מדברים בישיבות, ולגלות נושאים שלא חשבנו עליהם.</p>\n<p><b>כמה זמן:</b> ראיון לוקח כעשר דקות. כדאי לאסוף לפחות 8 עד 12 ראיונות מכמה קבוצות. כל סבב דירוג לוקח כמה דקות לכל משתתף.</p>\n<p><b>פרטיות:</b> לא שואלים ולא שומרים שמות. נשמר רק סיכום שהמשתתף או המשתתפת אישרו, והשיחה המלאה לא נשמרת.</p>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>לאן ממשיכים:</b> את הסוגיות אפשר להעביר כמניעים ל<a href=\"hl-futures.html\" target=\"_blank\" rel=\"noopener\">מחולל העתידים</a>, או להשתמש בסדר העדיפויות כדי לבנות חזון ב<a href=\"hl-roadmap.html\" target=\"_blank\" rel=\"noopener\">מהחזון להיום</a>.</p>\n<p class=\"src\">מבוסס על Seven Questions ו־Delphi מערכת Futures Toolkit.</p>", "steps": {"#view-setup h2": "המנחה מגדיר או מגדירה את הנושא, את קבוצות המשתתפים ואת השאלות. השאלות מבוססות על ״שבע השאלות״, ואפשר לערוך אותן או לבקש מה־AI להתאים אותן לנושא.", "#view-interview h2": "המשתתפים בוחרים קבוצה, ואז משוחחים עם מראיין AI או ממלאים טופס. אפשר לדלג על כל שאלה. בסוף מאשרים את הסיכום, ורק הוא נשמר.", "#view-paper h2": "כשיש מספיק ראיונות, ה־AI קורא את כולם יחד ובונה מסמך: נושאים שחוזרים, ציטוטים אנונימיים, הבדלים בין קבוצות וקולות של מיעוט. כדאי לקרוא, לתקן ולשתף.", "#view-delphi h2": "כל משתתף ומשתתפת מדרגים את הסוגיות. אחרי כל סבב רואים את הממוצע ואת סיכום הנימוקים, ומדרגים שוב. כשהקווים בגרף מתקצרים, הקבוצה מתכנסת להסכמה."}};
+  const TOOLS = [{"k": "futures", "name": "מחולל העתידים", "url": "hl-futures.html", "short": "עולמות אפשריים, הצבעה קבוצתית, עיתון מהעתיד ונקודות מבט"}, {"k": "stress", "name": "בדיקת עמידות", "url": "hl-stress.html", "short": "כמה תוכנית תעמוד בפני משברים ואסונות"}, {"k": "voice", "name": "קול הקהילה", "url": "hl-voice.html", "short": "ראיונות, מסמך סוגיות וסבבי דירוג"}, {"k": "circles", "name": "מעגלי העתיד", "url": "hl-circles.html", "short": "השלכות של אירוע, מגמה או יוזמה"}, {"k": "roadmap", "name": "מהחזון להיום", "url": "hl-roadmap.html", "short": "חזון, דרך אחורה ומפת דרכים"}, {"k": "radar", "name": "רדאר החוסן החברתי", "url": "hl-radar.html", "short": "אותות לשינוי ומפת מניעים"}, {"k": "horizons", "name": "שלושה אופקים", "url": "hl-horizons.html", "short": "ממה להיפרד, מה לשמור ובמה להשקיע"}, {"k": "game", "name": "משחק מצב עתידי", "url": "hl-game.html", "short": "צוות מנהל משבר בעולם עתידי, סבב אחרי סבב"}, {"k": "collage", "name": "תמונת עתיד קבוצתית", "url": "hl-collage.html", "short": "כל אחד ואחת תורמים, וה־AI מחבר ליצירה אחת"}], HUB = "horizon-lab.html", ME = "voice", HELP = {"title": "איך עובדים עם קול הקהילה?", "html": "<p><b>מה הכלי עושה:</b> אוסף את הקולות של הרבה אנשים, במילים שלהם. כל אחד ואחת מרואיינים בנפרד, ה־AI מרכז את כל הראיונות ל״מסמך סוגיות״, ואחר כך כל המשתתפים מדרגים יחד מה הכי חשוב, בכמה סבבים, עד שמתגבשת תמונה משותפת.</p>\n<p><b>מתי משתמשים בו:</b> בתחילת תהליך, לפני שמחליטים. כשרוצים לשמוע גם את מי שלא מדברים בישיבות, ולגלות נושאים שלא חשבנו עליהם.</p>\n<p><b>כמה זמן:</b> ראיון לוקח כעשר דקות. כדאי לאסוף לפחות 8 עד 12 ראיונות מכמה קבוצות. כל סבב דירוג לוקח כמה דקות לכל משתתף.</p>\n<p><b>פרטיות:</b> לא שואלים ולא שומרים שמות. נשמר רק סיכום שהמשתתף או המשתתפת אישרו, והשיחה המלאה לא נשמרת.</p>\n<p><b>ה־AI הוא עוזר, לא מחליט.</b> הוא מציע, מנסח ומסכם, אבל אתם מחליטים מה נשאר. כדאי לקרוא כל הצעה ולתקן אותה. ה־AI לא גולש באינטרנט, ולכן הוא לא מביא ידיעות או נתונים עדכניים.</p>\n<p><b>לאן ממשיכים:</b> את הסוגיות אפשר להעביר כמניעים ל<a href=\"hl-futures.html\" target=\"_blank\" rel=\"noopener\">מחולל העתידים</a>, או להשתמש בסדר העדיפויות כדי לבנות חזון ב<a href=\"hl-roadmap.html\" target=\"_blank\" rel=\"noopener\">מהחזון להיום</a>.</p>\n<p class=\"src\">מבוסס על Seven Questions ו־Delphi מתוך ערכת Futures Toolkit.</p>", "steps": {"#view-setup h2": "המנחה מגדיר או מגדירה את הנושא, את קבוצות המשתתפים ואת השאלות. השאלות מבוססות על ״שבע השאלות״, ואפשר לערוך אותן או לבקש מה־AI להתאים אותן לנושא.", "#view-interview h2": "המשתתפים בוחרים קבוצה, ואז משוחחים עם מראיין AI או ממלאים טופס. אפשר לדלג על כל שאלה. בסוף מאשרים את הסיכום, ורק הוא נשמר.", "#view-paper h2": "כשיש מספיק ראיונות, ה־AI קורא את כולם יחד ובונה מסמך: נושאים שחוזרים, ציטוטים אנונימיים, הבדלים בין קבוצות וקולות של מיעוט. כדאי לקרוא, לתקן ולשתף.", "#view-delphi h2": "כל משתתף ומשתתפת מדרגים את הסוגיות. אחרי כל סבב רואים את הממוצע ואת סיכום הנימוקים, ומדרגים שוב. כשהקווים בגרף מתקצרים, הקבוצה מתכנסת להסכמה."}};
   const wrap = document.querySelector(".wrap"); if(!wrap) return;
   // 1. toolkit bar
   const bar = document.createElement("nav"); bar.className = "bgkit-bar"; bar.setAttribute("aria-label", "מעבדת האופק · Be Good");

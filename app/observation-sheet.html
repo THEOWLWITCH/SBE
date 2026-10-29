@@ -164,7 +164,7 @@ button.ghost{background:transparent;}
   <div class="top">
     <span class="clock" id="clk">00:00</span>
     <span class="who" id="me"></span>
-    <span class="net ok" id="net">מסתנכרן</span>
+    <span class="net ok" id="net">מתעדכן</span>
   </div>
   <h2>סימון בכל פעם שרואים</h2>
   <div class="skills" id="skills"></div>
@@ -234,7 +234,7 @@ function net(){
   const el = $("net");
   if (!navigator.onLine) { el.className = "net off"; el.textContent = "אין חיבור · נשמר"; }
   else if (queued) { el.className = "net ok"; el.textContent = "שולח " + queued; }
-  else { el.className = "net ok"; el.textContent = "מסתנכרן"; }
+  else { el.className = "net ok"; el.textContent = "מתעדכן"; }
 }
 addEventListener("online", () => { flush(); net(); });
 addEventListener("offline", net);

@@ -78,9 +78,9 @@
     F('cc-composer-title').textContent = single ? 'מה רוצים לומר?' : state.selected ? 'הוספת הודעה או עדכון לשיחה' : 'מאיפה נתחיל את השיחה?';
     F('cc-text').placeholder = single ? (window.sbeSpace && window.sbeSpace() === 'org' ? 'למשל: הודעה לתושבים על מפגש היערכות במרכז הקהילתי ביום חמישי בשעה 18:00, עם הזמנה לשיתוף פעולה.' : 'למשל: הודעה להורים על מפגש הכיתה ביום חמישי בשעה 18:00, עם הזמנה לשיתוף פעולה.') : 'מה קרה? אפשר להדביק הודעה שהתקבלה, לתאר את המצב או לכתוב מה רוצים להשיג.';
     F('cc-ai-disclosure').textContent = single
-      ? 'ההנחיה והחומרים שנבחרו נשלחים לעיבוד אצל ספק המודל שהוגדר במערכת. כדאי לכלול רק את הפרטים הנחוצים ולצמצם פרטים מזהים. בניסוח חד־פעמי הם והטיוטות נשארים בלשונית בלבד; מעבר לניהול תקשורת אינו שומר אותם. שמירה מתבצעת רק בפעולת "המשך בניהול תקשורת". התוצאה היא טיוטה לבדיקה ולעריכה לפני השימוש.'
-      : 'הפעולות של Begood שולחות את היסטוריית השיחה וההנחיה לעיבוד אצל ספק המודל שהוגדר במערכת. בשיחות ארוכות אפשר שייווצרו סיכומי הקשר שיוצגו לצד המקורות; ההודעות המקוריות נשמרות במלואן. הטקסט והטיוטות נשמרים בחשבון האישי בשרת. כדאי לכלול רק את הפרטים הנחוצים לשיחה. תוצאה מוצעת היא טיוטה שאפשר לבדוק ולערוך לפני השימוש.';
-    F('cc-upload-disclosure').textContent = 'תמונות ו־PDF נשלחים לעיבוד אצל ספק המודל שהוגדר ב־Begood, וייתכן שהם כוללים פרטים מזהים. אפשר להסיר פרטים שאינם נחוצים לפני הצירוף. קובצי TXT ו־Word נקראים בדפדפן. ' + (single ? 'בניסוח חד־פעמי, הטקסט או תיאור התמונה נשארים בלשונית.' : 'רק טקסט שחולץ בהצלחה נשמר בשיחה.') + ' הקובץ המקורי אינו נשמר בשרת.';
+      ? 'הטקסט והחומרים נשלחים לעיבוד בבינה מלאכותית. כדאי להסיר פרטים מזהים. כדי לשמור ולהמשיך אחר כך, אפשר לבחור "המשך בניהול תקשורת". התוצאה היא טיוטה לבדיקה ולעריכה לפני השימוש.'
+      : 'השיחה וההנחיה נשלחות לעיבוד בבינה מלאכותית, והשיחה נשמרת בחשבון האישי. כדאי להסיר פרטים מזהים. התוצאה היא טיוטה לבדיקה ולעריכה לפני השימוש.';
+    F('cc-upload-disclosure').textContent = 'תמונות ו־PDF נשלחים לעיבוד בבינה מלאכותית. כדאי להסיר פרטים מזהים לפני הצירוף. הקובץ עצמו לא נשמר.';
     F('cc-file').value = ''; F('cc-file-clear').hidden = true; F('cc-file-status').textContent = '';
     renderConversation();
   }
@@ -126,7 +126,7 @@
       const dirty = el('p', 'cc-unsaved', 'יש עריכה שטרם תועדה כגרסה.'); dirty.hidden = !state.single.edits.has(draft.id);
       editor.addEventListener('input', () => { if (editor.value === draft.text) state.single.edits.delete(draft.id); else state.single.edits.set(draft.id, editor.value); dirty.hidden = !state.single.edits.has(draft.id); });
       const controls = el('div', 'cc-buttons');
-      const edit = button('תיעוד העריכה', () => run('תיעוד גרסת הנוסח.', op => saveSingleEdit(op, draft.id), 'העריכה תועדה. הנוסח הקודם נשמר בגרסאות המסמך בלשונית.')); edit.id = 'cc-single-edit';
+      const edit = button('שמירת הנוסח הערוך', () => run('תיעוד גרסת הנוסח.', op => saveSingleEdit(op, draft.id), 'העריכה תועדה. הנוסח הקודם נשמר בגרסאות המסמך בלשונית.')); edit.id = 'cc-single-edit';
       const copied = button('העתקת הנוסח', () => copy(editor.value)); copied.id = 'cc-single-copy';
       controls.append(edit, copied); result.append(label, editor, dirty, controls);
       const revisions = el('div', 'cc-revisions');
@@ -141,21 +141,21 @@
       const pending = el('textarea', 'cc-draft-editor cc-single-editor'); pending.value = text; pending.disabled = state.busy;
       pending.id = 'cc-single-pending-' + entryId; pending.setAttribute('aria-label', 'עריכה ממתינה לנוסח קודם');
       pending.addEventListener('input', () => { if (pending.value === previous.text) state.single.edits.delete(entryId); else state.single.edits.set(entryId, pending.value); });
-      result.append(details('עריכה שטרם תועדה לנוסח קודם', [pending, button('תיעוד העריכה', () => run('תיעוד גרסת הנוסח.', op => saveSingleEdit(op, entryId), 'העריכה תועדה בגרסאות המסמך.'))]));
+      result.append(details('עריכה שטרם תועדה לנוסח קודם', [pending, button('שמירת הנוסח הערוך', () => run('תיעוד גרסת הנוסח.', op => saveSingleEdit(op, entryId), 'העריכה תועדה בגרסאות המסמך.'))]));
     }
     const exports = el('div', 'cc-buttons');
-    for (const [format, title] of [['json', 'ייצוא JSON עם גרסאות'], ['text', 'ייצוא טקסט'], ['pdf', 'הדפסה / PDF מעוצב']]) {
+    for (const [format, title] of [['json', 'שמירת קובץ לגיבוי'], ['text', 'ייצוא טקסט'], ['pdf', 'הדפסה / PDF מעוצב']]) {
       const b = button(title, () => exportSingle(format)); b.id = 'cc-single-export-' + format; exports.append(b);
     }
     result.append(exports);
-    result.append(el('p', 'muted', 'טקסט ו־PDF כוללים רק את הנוסח הנוכחי. JSON הוא ארכיון מלא של המקורות, החומרים והגרסאות, כולל עריכות מקומיות שטרם תועדו.'));
+    result.append(el('p', 'muted', 'טקסט ו־PDF כוללים את הנוסח הנוכחי. קובץ הגיבוי שומר הכול, כדי להמשיך אחר כך.'));
     const convert = button('המשך בניהול תקשורת', convertSingle, ''); convert.id = 'cc-single-convert';
     const conversion = el('div', 'cc-buttons'); conversion.append(convert); result.append(conversion);
     result.append(el('p', 'muted', 'המשך בניהול תקשורת ישמור בחשבון האישי את ההנחיה, החומרים וכל גרסאות הנוסח. הטיוטה תישאר מסומנת כטיוטה שלא נשלחה.'));
     const provenance = [el('p', 'muted', 'גרסאות המערכת: ' + JSON.stringify(doc.versions)), el('p', 'muted', 'גרסת מסמך: ' + doc.revision + ' · ' + date(doc.updatedAt))];
     if (draft?.model) provenance.push(el('p', 'muted', 'מודל: ' + (draft.model.provider || '') + ' / ' + (draft.model.id || '')));
-    provenance.push(el('p', 'muted', 'ייצוא JSON כולל את ההנחיות, החומרים, הטיוטות ותיעוד הגרסאות שנוצרו בלשונית הזו.'));
-    result.append(details('פרטי מקור וגרסאות', provenance));
+    
+    { const pv = details('פרטי מקור וגרסאות', provenance); pv.className += ' sbe-sysonly'; result.append(pv); }
   }
   function renderMaterials() {
     const box = F('cc-single-materials'); box.replaceChildren();
@@ -316,7 +316,7 @@
     setBusy(true, op.label);
     try {
       await op.work(op);
-      feedback(op.success || 'הפעולה הושלמה בשרת.');
+      feedback(op.success || 'נשמר.');
       return true;
     } catch (error) {
       if (state.single.pendingConversion === op && error instanceof ApiError
@@ -372,7 +372,7 @@
       state.conversations = Array.isArray(result.conversations) ? result.conversations : [];
       state.listLoaded = true;
       renderList();
-    }, 'רשימת השיחות נטענה מהשרת.');
+    }, 'רשימת השיחות נטענה.');
   }
   async function selectConversation(id) {
     if (state.busy) return;
@@ -437,7 +437,7 @@
     return contextOperation('שמירת הטקסט בשיחה.', async op => {
       if (!op.text.trim()) throw new Error('אפשר לכתוב או להדביק טקסט לשמירה.');
       await saveContext(op);
-    }, 'הטקסט המלא נשמר בשיחה בשרת.');
+    }, 'הטקסט המלא נשמר בשיחה.');
   }
   function generate(mode, entryId, revisionStyle) {
     const editedDraft = entryId ? state.edits.get(entryId) : null;
@@ -510,7 +510,7 @@
     if (entry.kind === 'draft') {
       const label = el('label', 'sr-only', 'עריכת טיוטה ' + (index + 1)); const editor = el('textarea', 'cc-draft-editor');
       editor.id = 'cc-draft-' + entry.id; label.htmlFor = editor.id; editor.value = state.edits.has(entry.id) ? state.edits.get(entry.id) : entry.text || ''; editor.rows = 6;
-      const dirty = el('p', 'cc-unsaved', 'יש עריכה שעדיין לא נשמרה בשרת.'); dirty.hidden = !state.edits.has(entry.id);
+      const dirty = el('p', 'cc-unsaved', 'יש שינוי שעוד לא נשמר.'); dirty.hidden = !state.edits.has(entry.id);
       editor.addEventListener('input', () => { if (editor.value === entry.text) state.edits.delete(entry.id); else state.edits.set(entry.id, editor.value); dirty.hidden = !state.edits.has(entry.id); });
       const controls = el('div', 'cc-buttons');
       controls.append(button('שמירת העריכה', () => editDraft(entry.id, editor.value)), button('העתקת הטיוטה', () => copy(editor.value)));
@@ -540,7 +540,7 @@
       if (entry.kind === 'draft') v.append(button('שימוש בנוסח הזה לעריכה', () => { state.edits.set(entry.id, s.text || ''); renderTimeline(); }));
       provenance.push(v);
     });
-    item.append(details('היסטוריית גרסאות ופרטי מקור' + (snapshots.length ? ' (' + snapshots.length + ')' : ''), provenance));
+    { const pv = details('היסטוריית גרסאות ופרטי מקור' + (snapshots.length ? ' (' + snapshots.length + ')' : ''), provenance); pv.className += ' sbe-sysonly'; item.append(pv); }
     return item;
   }
   function renderTimeline() {
@@ -625,7 +625,7 @@
         op.attachment = await SBE_COMMUNICATION_ATTACHMENTS.prepare(file);
       }
       await ensureConversation(op, op.text || file.name);
-      F('cc-file-status').textContent = op.attachment.kind === 'text' ? 'הטקסט נקרא במלואו. המתנה לאישור השמירה בשרת.' : 'הקובץ נשלח לקריאת תמונה או PDF. עדיין אין אישור לחילוץ טקסט.';
+      F('cc-file-status').textContent = op.attachment.kind === 'text' ? 'הטקסט נקרא במלואו. השמירה מתבצעת.' : 'הקובץ נשלח לקריאת תמונה או PDF. עדיין אין אישור לחילוץ טקסט.';
       const previousIds = new Set((op.conversation.entries || []).map(e => e.id));
       const extracted = (await request(op, 'extract', 'extract', { id: op.conversation.id, expectedRevision: op.conversation.revision, attachment: op.attachment }, true)).conversation;
       if (!extracted || !extracted.entries.some(e => !previousIds.has(e.id) && e.kind === 'received' && e.text.trim())) throw new ApiError('השרת לא אישר שמירת טקסט שחולץ. אפשר לפתוח שוב את השיחה ולבדוק.', 'response', 502);
@@ -714,17 +714,11 @@
         node.append(el('h3', '', label)); const list = el('ul'); values.forEach(t => list.append(el('li', '', t))); node.append(list);
       });
       const source = sourceText(entry); if (source) node.append(el('p', '', source));
-      if (entry.versions) node.append(el('p', 'muted', 'גרסאות: ' + JSON.stringify(entry.versions)));
-      if (entry.model) node.append(el('p', 'muted', 'מודל: ' + JSON.stringify(entry.model)));
-      if (entry.draftId) node.append(el('p', '', 'טיוטת מקור: ' + entry.draftId));
       (entry.revisions || []).forEach((v, j) => {
-        node.append(el('h3', '', 'גרסה קודמת ' + (j + 1)), el('p', '', date(v.at)), el('div', 'cc-entry-text', v.text), el('p', 'muted', 'גרסאות: ' + JSON.stringify(v.versions)));
-        if (v.model) node.append(el('p', 'muted', 'מודל: ' + JSON.stringify(v.model)));
+        node.append(el('h3', '', 'גרסה קודמת ' + (j + 1)), el('p', '', date(v.at)), el('div', 'cc-entry-text', v.text));
       });
     });
     if (c.latestAI && c.latestAI.clarification) node.append(el('h2', '', 'פרט נוסף לפני הניסוח'), el('p', '', c.latestAI.clarification));
-    if (Array.isArray(c.actions) && c.actions.length) { node.append(el('h2', '', 'תיעוד פעולות וגרסאות')); c.actions.forEach(a => node.append(el('p', 'cc-entry-id', JSON.stringify(a)))); }
-    if (Array.isArray(c.exportLocalDraftRevisions)) { node.append(el('h2', '', 'תיעוד עריכות ידניות מקומיות בייצוא')); c.exportLocalDraftRevisions.forEach(a => node.append(el('p', 'cc-entry-id', JSON.stringify(a)))); }
     SBE_DOC.print({ title: c.title, kind: C.MODES.continuity, subtitle: C.PRODUCT_NAME, node, inline: true, extraCss: '.cc-entry-text{white-space:pre-wrap;overflow-wrap:anywhere;text-align:justify}h2,h3{break-after:avoid}li{break-inside:avoid}' });
   }
   function exportSingle(format) {

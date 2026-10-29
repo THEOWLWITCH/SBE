@@ -181,7 +181,7 @@ async function api(action, extra = {}) {
 // ── כותרת ובאנרים ──
 {
   const who = $("who");
-  const kindLabel = { instadmin: "מנהל/ת מוסד", staff: "צוות", student: "סטודנט/ית", course: "סטודנט/ית בקורס", legacy: "צוות (קוד מוסד)", "academic-legacy": "משוב לעבודות" }[INFO.kind] || "";
+  const kindLabel = { instadmin: "מנהל/ת מוסד", staff: "צוות", student: "סטודנט/ית", course: "סטודנט/ית בקורס", legacy: "צוות", "academic-legacy": "משוב לעבודות" }[INFO.kind] || "";
   if (IS_SYS) who.append(el("b", {}, "מנהלת המערכת"), " · כל הכלים פתוחים");
   else who.append(INFO.label ? el("b", {}, INFO.label) : "", INFO.label && (INFO.inst || kindLabel) ? " · " : "",
     INFO.inst || "", INFO.inst && kindLabel ? " · " : "", kindLabel);

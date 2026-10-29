@@ -33,7 +33,7 @@
   <div class="cc-mode-bar" aria-label="בחירת אופן העבודה">
     <button type="button" id="cc-mode-single" class="btn" aria-pressed="true">ניסוח חד־פעמי</button>
     <button type="button" id="cc-mode-continuity" class="btn ghost" aria-pressed="false">ניהול תקשורת</button>
-    <p id="cc-mode-description" class="muted">מסר אחד מתוך הנחיה קצרה. התוכן נשאר בלשונית עד ייצוא או המשך מפורש בניהול תקשורת.</p>
+    <p id="cc-mode-description" class="muted">מסר אחד. כדי לשמור ולהמשיך אחר כך, אפשר לעבור לניהול תקשורת.</p>
   </div>
   <main class="cc-layout">
     <aside class="cc-saved card" aria-labelledby="cc-saved-title" data-communication-mode="continuity" hidden>
@@ -62,7 +62,7 @@
             <button type="button" id="cc-delete" class="btn danger">מחיקת השיחה</button>
           </div>
           <div class="cc-buttons" aria-label="ייצוא השיחה">
-            <button type="button" id="cc-export-json" class="btn ghost">ייצוא JSON</button>
+            <button type="button" id="cc-export-json" class="btn ghost">שמירת קובץ לגיבוי</button>
             <button type="button" id="cc-export-text" class="btn ghost">ייצוא טקסט</button>
             <button type="button" id="cc-export-pdf" class="btn ghost">הדפסה / PDF מעוצב</button>
           </div>
@@ -83,11 +83,11 @@
           </div>
           <label for="cc-instruction">מה כדאי לקחת בחשבון?</label>
           <textarea id="cc-instruction" rows="2" placeholder="למשל: המטרה, הסגנון או פרט שחשוב לנוסח"></textarea>
-          <div data-communication-mode="single" class="cc-buttons"><button type="button" id="cc-single-import" class="btn ghost">ייבוא טיוטה מהגרסה הקודמת של הכלי</button><p id="cc-single-import-status" class="muted" role="status"></p></div>
+          <div data-communication-mode="single" class="cc-buttons"><button type="button" id="cc-single-import" class="btn ghost sbe-sysonly">ייבוא טיוטה מהגרסה הקודמת של הכלי</button><p id="cc-single-import-status" class="muted" role="status"></p></div>
         </details>
         <details class="cc-fold cc-attachment">
           <summary>צירוף תמונה, צילום מסך או קובץ (רשות)</summary>
-          <p class="cc-disclosure" id="cc-upload-disclosure">תמונות ו־PDF נשלחים לעיבוד אצל ספק המודל שהוגדר ב־Begood, וייתכן שהם כוללים פרטים מזהים. אפשר להסיר פרטים שאינם נחוצים לפני הצירוף. קובצי TXT ו־Word נקראים בדפדפן. בניסוח חד־פעמי, הטקסט או תיאור התמונה נשארים בלשונית. הקובץ המקורי אינו נשמר בשרת.</p>
+          <p class="cc-disclosure" id="cc-upload-disclosure">תמונות ו־PDF נשלחים לעיבוד בבינה מלאכותית. כדאי להסיר פרטים מזהים לפני הצירוף. הקובץ עצמו לא נשמר.</p>
           <label for="cc-file">בחירת קובץ: תמונה, PDF, DOCX או TXT</label>
           <input id="cc-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,.pdf,application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.txt,text/plain">
           <p id="cc-file-status" class="muted" role="status"></p>
@@ -95,7 +95,7 @@
           <div id="cc-single-materials" data-communication-mode="single"></div>
         </details>
         <div class="cc-buttons" data-communication-mode="continuity" hidden><button type="button" id="cc-save-input" class="btn ghost">שמירת הטקסט בשיחה</button></div>
-        <p class="cc-disclosure" id="cc-ai-disclosure">ההנחיה והחומרים שנבחרו נשלחים לעיבוד אצל ספק המודל שהוגדר במערכת. בניסוח חד־פעמי הם והטיוטות נשארים בלשונית בלבד; מעבר לניהול תקשורת אינו שומר אותם. שמירה מתבצעת רק בפעולת "המשך בניהול תקשורת". התוצאה היא טיוטה לבדיקה ולעריכה לפני השימוש.</p>
+        <p class="cc-disclosure" id="cc-ai-disclosure">הטקסט והחומרים נשלחים לעיבוד בבינה מלאכותית. כדאי להסיר פרטים מזהים. התוצאה היא טיוטה לבדיקה ולעריכה לפני השימוש.</p>
         <div class="cc-buttons" data-communication-mode="single"><button type="button" id="cc-single-generate" class="btn">ניסוח המסר</button><button type="button" id="cc-single-new" class="btn ghost">ניסוח חדש</button></div>
         <div id="cc-main-actions" class="cc-main-actions" aria-label="פעולות Begood" data-communication-mode="continuity" hidden></div>
         <p class="muted cc-sent-notice" data-communication-mode="continuity" hidden>סימון "שלחתי את ההודעה" שומר את הנוסח שנשלח. השליחה עצמה נעשית בדרך שנבחרה.</p>

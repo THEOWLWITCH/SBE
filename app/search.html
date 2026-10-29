@@ -165,7 +165,7 @@ mark{background:var(--spoken-soft);color:inherit;border-radius:2px;padding:0 2px
   <span class="sortwrap">מיון
     <select id="sort">
       <option value="new">החדשים ביותר</option>
-      <option value="used">הועברו הכי הרבה</option>
+      <option value="used">שימשו בהכי הרבה סדנאות</option>
       <option value="name">לפי שם</option>
     </select>
   </span>
@@ -354,7 +354,7 @@ async function doRender() {
     };
     add(r.creator); add(dateStr);
     add(r.duration_min ? r.duration_min + ' דק׳' : '');
-    if (r.runs) add('הועבר ב־' + r.runs + ' סדנאות', 'use');
+    if (r.runs) add('שימש ב־' + r.runs + ' סדנאות', 'use');
     if (r.rating) {
       const rate = document.createElement('span'); rate.className = 'rate';
       rate.title = 'דירוג המנחים שהעבירו';

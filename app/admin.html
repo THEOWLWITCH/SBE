@@ -818,7 +818,7 @@ function pInsts(){
       const typed = q.instTyped || q.inst || "—";
       box.append(el("div",{class:"irow"},
         el("span",{class:"nm"}, el("b",{}, typed),
-          el("span",{}, ilDate(q.at) + " · ביקשו: " + (PER[q.period] || "שנה"))),
+          el("span",{}, ilDate(q.at))),
         el("span",{class:"pill warn"}, (q.forWho === "private" ? "שימוש פרטי · " : "") + (q.type === "new" ? "לפי הטופס: מנוי חדש" : "לפי הטופס: חידוש")),
         el("span",{class:"pill danger"},"ממתין לבדיקה")));
       box.append(el("div",{class:"icodes"},
