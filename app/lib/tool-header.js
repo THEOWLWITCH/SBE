@@ -60,6 +60,14 @@
     + '@media screen and (max-width:640px){h1.sbe-th{gap:11px;margin:4px 0 14px!important}h1.sbe-th .sbe-th-ic{width:48px;height:48px}h1.sbe-th .sbe-th-ic img{max-width:34px!important;max-height:30px!important}'
     + 'h1.sbe-th .sbe-th-n{font-size:22px!important}h1.sbe-th .sbe-th-ln{width:32px;margin:6px 0 5px}h1.sbe-th .sbe-th-s{font-size:13.5px}}'
     + '@media print{h1.sbe-th .sbe-th-ic,h1.sbe-th .sbe-th-ln{display:none}h1.sbe-th .sbe-th-s{display:block;font-size:13px;font-weight:400;color:#5C6771}}';
+  // כל הכותרות בגופן הכותרות, גם בלי איור (30/10/2026: "תשנה את כל הכותרות לגופן הכותרות החדש גם אם אין איור").
+  // לא בדפי המשחקים, ביש מה לעשות, במסמכי הסימולציה ובתעודה (יש להם גופנים משלהם).
+  var FONT_SKIP = /^(games|memory-game|board-game|no-panic|story-maker|statement-sort|riddles|bingo|twenty-q|truth-dare|trail-signs|readiness-train|idea-garden|yesh-ma-laasot|doc-[a-z-]+|card-[a-z-]+|journey-cert)\.html$/;
+  var page = (location.pathname.split('/').pop() || 'index.html');
+  if (!FONT_SKIP.test(page) && !/\/products\//.test(location.pathname) && !document.documentElement.hasAttribute('data-no-theme')) {
+    CSS += '@media screen{:is(h1,h2,h3,h4):not(.sbe-no-theme):not(.sbe-no-theme *){font-family:"Fredoka","Assistant",sans-serif!important;letter-spacing:.005em}'
+      + 'h1:not(.sbe-th):not(.sbe-no-theme *){font-weight:600!important}:is(h2,h3,h4):not(.sbe-no-theme *){font-weight:500!important}}';
+  }
   function css() {
     if (document.getElementById('sbe-th-css')) return;
     var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap'; document.head.appendChild(l);
