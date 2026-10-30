@@ -16,7 +16,7 @@ body{line-height:1.7;letter-spacing:.005em}
 /* כותרת הכלי: הסמל של מעבדת האופק, בלי שורת המותג הכפולה */
 header.top .brand{display:none}
 header.top h1{font-size:32px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:14px;letter-spacing:-.01em}
-header.top:not(.hl-hero) h1::before{content:"";flex:none;width:52px;height:50px;background:url(../assets/horizon-mark.webp) center/contain no-repeat}
+header.top:not(.hl-hero) h1:not(.sbe-th)::before{content:"";flex:none;width:52px;height:50px;background:url(../assets/horizon-mark.webp) center/contain no-repeat}
 header.top p.muted{font-size:18px;color:var(--muted);max-width:68ch;margin-top:6px}
 :root:not([data-theme="dark"]) h1,:root:not([data-theme="dark"]) h2{color:#1d3f63}
 h2{font-size:23px;letter-spacing:-.005em}
@@ -103,7 +103,7 @@ header.top h1.hero-banner{display:block;line-height:0;margin:0}header.top h1.her
 @media (max-width:640px){
   section.stage{padding:20px 18px;border-radius:16px}
   header.top h1{font-size:26px}
-  header.top:not(.hl-hero) h1::before{width:40px;height:38px}
+  header.top:not(.hl-hero) h1:not(.sbe-th)::before{width:40px;height:38px}
   nav.views{border-radius:18px}
   .seg{border-radius:18px;flex-wrap:wrap}
   .bgkit-bar{flex-wrap:nowrap!important;overflow-x:auto;white-space:nowrap;scrollbar-width:none;border-radius:999px!important}
