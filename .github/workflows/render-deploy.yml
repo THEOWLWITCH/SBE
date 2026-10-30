@@ -1,0 +1,30 @@
+# עדכון השרת ב-Render אחרי כל מיזוג ל-main (30/10/2026: "רואים את הכלי אבל לא מחובר לשרת").
+# הכלים החדשים (תרגול צוותים, חדרי מעבדת האופק ועוד) עובדים רק אחרי שהשרת מתעדכן.
+# הגדרה חד־פעמית: ב-Render, sbe-server › Settings › Deploy Hook › Copy,
+# וב-GitHub, Settings › Secrets and variables › Actions › New repository secret בשם RENDER_DEPLOY_HOOK.
+name: render-deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Trigger Render deploy
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then echo "RENDER_DEPLOY_HOOK לא הוגדר. אפשר לעדכן ידנית: Manual Deploy ב-Render."; exit 0; fi
+          curl -sS -X POST "$HOOK" -o /dev/null -w "deploy hook: %{http_code}\n"
+      - name: Wait for the new version
+        run: |
+          want="${GITHUB_SHA:0:7}"
+          for i in $(seq 1 40); do
+            got=$(curl -sS -m 60 https://sbe-server.onrender.com/health | sed -n 's/.*"commit":"\([0-9a-f]*\)".*/\1/p')
+            echo "server: ${got:-?} · want: $want"
+            [ "$got" = "$want" ] && exit 0
+            sleep 20
+          done
+          echo "השרת עוד לא על הגרסה החדשה"
