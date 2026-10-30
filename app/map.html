@@ -359,6 +359,42 @@ footer a{margin:0 6px}
   }
   // צבע לכל אחת מחמש שאלות המוכנות, בצבעי המותג
   const GC = { see: '#1b9aaa', practice: '#2f6fa8', act: '#3d9a5f', learn: '#c9952e', anchor: '#d9765a' };
+  // סערה בתחילת הדרך: עננים כבדים, גשם אלכסוני ומשבי רוח, שנחלשים ככל שעולים
+  function storm(svg, m) {
+    const g = S('g', { 'aria-hidden': 'true' }), H = L.h, W = L.w;
+    let seed = 11; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    const cloud = (x, y, k, fill, op) => { const c = S('g', { transform: `translate(${x},${y}) scale(${k})`, opacity: op });
+      [[0, 0, 34], [30, -12, 28], [58, 2, 30], [24, 12, 30], [-26, 8, 24]].forEach(([cx, cy, r]) => c.appendChild(S('circle', { cx, cy, r, fill })));
+      g.appendChild(c); };
+    const clouds = m === 'wide'
+      ? [[900, H - 40, 1.25, '#7d8a96', .55], [700, H - 18, 1.1, '#8a96a1', .45], [430, H - 10, 1.2, '#8c97a1', .42], [160, H - 30, .9, '#96a1aa', .35], [960, H - 230, .8, '#a7b1ba', .32], [60, H - 330, .7, '#b4bdc4', .25], [880, H - 470, .55, '#c9d0d5', .2]]
+      : [[330, H - 30, 1.05, '#7d8a96', .5], [90, H - 20, .9, '#8c97a1', .42], [360, H - 300, .75, '#a7b1ba', .3], [40, H * 0.62, .6, '#bfc7cd', .22]];
+    clouds.forEach((c) => cloud(...c));
+    // גשם: קווים דקים באלכסון, צפופים למטה ונעלמים כלפי מעלה
+    const top = H * (m === 'wide' ? 0.45 : 0.55);
+    let rain = '';
+    for (let i = 0; i < (m === 'wide' ? 170 : 120); i++) {
+      const y = H - Math.pow(rnd(), 1.7) * (H - top), x = rnd() * W, len = 7 + rnd() * 7;
+      rain += `M ${x.toFixed(1)} ${y.toFixed(1)} l ${(-len * 0.35).toFixed(1)} ${len.toFixed(1)} `;
+    }
+    g.appendChild(S('path', { d: rain, stroke: '#6f7f8c', 'stroke-width': .9, 'stroke-linecap': 'round', opacity: '.38', fill: 'none' }));
+    // משבי רוח
+    (m === 'wide' ? [[620, H - 150], [240, H - 210], [860, H - 330]] : [[250, H - 180], [120, H - 420]]).forEach(([x, y], k) =>
+      g.appendChild(S('path', { d: `M ${x} ${y} c 30 -8 60 6 90 -2 c 14 -4 18 -16 6 -18 M ${x + 20} ${y + 12} c 26 -6 44 4 66 0`, fill: 'none', stroke: '#8795a1', 'stroke-width': 1.2, 'stroke-linecap': 'round', opacity: (0.5 - k * 0.12).toFixed(2) })));
+    // ברק דק בענן הכבד
+    if (m === 'wide') g.appendChild(S('path', { d: `M ${W - 70} ${H - 70} l -12 26 l 10 -2 l -14 30`, fill: 'none', stroke: '#e6c35a', 'stroke-width': 2, 'stroke-linejoin': 'round', opacity: '.75' }));
+    svg.appendChild(g);
+  }
+  // פרצי קצף על המים הגועשים, רק בחלק הראשון של הדרך
+  function whitecaps(svg, probe) {
+    const g = S('g', { 'aria-hidden': 'true' }), len = probe.getTotalLength();
+    for (let d = 30; d < len * 0.36; d += 26) {
+      const k = 1 - d / (len * 0.36), a = probe.getPointAtLength(d), b = probe.getPointAtLength(d + 2), dx = b.x - a.x, dy = b.y - a.y, n = Math.hypot(dx, dy) || 1;
+      const side = (Math.floor(d / 26) % 2 ? 1 : -1) * 2.5, x = a.x - dy / n * side, y = a.y + dx / n * side;
+      g.appendChild(S('path', { d: `M ${(x - 4).toFixed(1)} ${y.toFixed(1)} q 4 -4.5 8 0`, fill: 'none', stroke: '#fff', 'stroke-width': 1.3, 'stroke-linecap': 'round', opacity: (0.35 + 0.5 * k).toFixed(2) }));
+    }
+    svg.appendChild(g);
+  }
   // פרטים קטנים על הגדות: קני סוף, אבנים ועלי שושן, בין התחנות ובצד שאין בו שם
   function decor(svg, probe) {
     const g = S('g', { 'aria-hidden': 'true' }), len = probe.getTotalLength(), n = TOOLS.length - 1;
@@ -426,18 +462,26 @@ footer a{margin:0 6px}
       '<filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .25  0 0 0 .06 0"/></filter>' +
       '<filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="38"/></filter>' +
       '<filter id="lift" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="1.6" stdDeviation="1.6" flood-color="#2b3d33" flood-opacity=".18"/></filter>' +
-      '<linearGradient id="water" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#5f9fc6"/><stop offset=".5" stop-color="#62b7c4"/><stop offset="1" stop-color="#8cc9a4"/></linearGradient>' +
       '<radialGradient id="glow"><stop offset="0" stop-color="#ffe3a3" stop-opacity=".75"/><stop offset="1" stop-color="#ffe3a3" stop-opacity="0"/></radialGradient>';
     svg.appendChild(defs);
     // שמש וגבעות
     // עומק המים (10/10/2026: "הצבע הכהה יהיה למטה, והוא ילך ויתבהר לכיוון הקרקע")
-    // נייר חם, כתמי צבע רכים כמו צבעי מים, ומרקם עדין
-    svg.appendChild(S('rect', { x: 0, y: 0, width: L.w, height: L.h, fill: '#fbf8f1' }));
+    // 30/10/2026: "הרקע (...) להראות שבהתחלה המצב מעורער ולא טוב ובהמשך רגוע ויש חוסן":
+    // מלמטה (אתם כאן) שמיים אפורים, עננים כבדים, גשם ורוח, ומים כהים וגועשים; ככל שעולים בדרך העננים מתפזרים,
+    // האור מתחמם, והמים נרגעים ומתבהרים, עד הקרקע היציבה למעלה.
+    const sky = S('linearGradient', { id: 'sky', gradientUnits: 'userSpaceOnUse', x1: 0, y1: L.h, x2: 0, y2: 0 });
+    [['0', '#b9c3cc'], ['.22', '#d3d9de'], ['.45', '#ebecea'], ['.7', '#f8f5ee'], ['1', '#fbf7ec']].forEach(([o, c]) => sky.appendChild(S('stop', { offset: o, 'stop-color': c })));
+    defs.appendChild(sky);
+    const wg = S('linearGradient', { id: 'water', gradientUnits: 'userSpaceOnUse', x1: 0, y1: L.h, x2: 0, y2: 0 });
+    [['0', '#3d5a70'], ['.25', '#4b7893'], ['.55', '#5aa5bd'], ['.8', '#6cbcc2'], ['1', '#8fcaa6']].forEach(([o, c]) => wg.appendChild(S('stop', { offset: o, 'stop-color': c })));
+    defs.appendChild(wg);
+    svg.appendChild(S('rect', { x: 0, y: 0, width: L.w, height: L.h, fill: 'url(#sky)' }));
     const wash = S('g', { filter: 'url(#soft)', 'aria-hidden': 'true' });
-    (m === 'wide' ? [[860, 800, 230, '#d6ebf1', .9], [120, 560, 200, '#dcefe9', .8], [780, 420, 180, '#e4f0f4', .8], [520, 250, 210, '#f3ead6', .7], [170, 110, 220, '#e3f1d9', .9]]
-      : [[300, L.h - 140, 200, '#d6ebf1', .9], [100, L.h * 0.55, 170, '#dcefe9', .8], [300, L.h * 0.3, 170, '#f3ead6', .7], [200, 120, 190, '#e3f1d9', .9]])
+    (m === 'wide' ? [[880, 860, 240, '#9eabb6', .55], [300, 900, 220, '#a7b2bb', .5], [620, 720, 170, '#c3cbd1', .45], [120, 560, 190, '#dce9e4', .7], [780, 420, 170, '#e6f0ef', .7], [520, 240, 220, '#f6ead0', .8], [170, 110, 230, '#e4f1d6', .95]]
+      : [[300, L.h - 120, 210, '#9eabb6', .55], [80, L.h - 300, 170, '#b3bdc5', .45], [100, L.h * 0.55, 170, '#dce9e4', .7], [300, L.h * 0.3, 170, '#f6ead0', .8], [200, 120, 190, '#e4f1d6', .95]])
       .forEach(([cx, cy, r, c, o]) => wash.appendChild(S('circle', { cx, cy, r, fill: c, opacity: o })));
     svg.appendChild(wash);
+    storm(svg, m);
     svg.appendChild(S('rect', { x: 0, y: 0, width: L.w, height: L.h, filter: 'url(#grain)', opacity: '.9', 'aria-hidden': 'true' }));
     // הנהר: פס רחב, ועליו זרם בהיר שזורם
     const RW = m === 'wide' ? 9 : 10;
@@ -448,6 +492,7 @@ footer a{margin:0 6px}
     svg.appendChild(S('path', { d: L.river, fill: 'none', stroke: '#fff', 'stroke-opacity': '.35', 'stroke-width': 1.2, 'stroke-linecap': 'round', transform: 'translate(0,-1.5)' }));
     const probe = S('path', { d: L.river }); svg.appendChild(probe); probe.setAttribute('fill', 'none');
     waves(svg, probe, RW + 4);
+    whitecaps(svg, probe);
     decor(svg, probe);
     ground(svg, L.ground);
     if (m === 'wide') cartouche(svg);

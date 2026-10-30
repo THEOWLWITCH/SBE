@@ -22,6 +22,13 @@
   var MIRROR = "sbe.session.mirror", HOURS = 12;
 
   function ss(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
+  // מכשיר מוכר למנהלת המערכת (28/10/2026): בלי כניסה בלשונית, עוברים לדף הכניסה שנכנס לבד וחוזר לדף הזה.
+  function sysDeviceKey(){ try { var d = JSON.parse(localStorage.getItem("sbe.sys.device") || "null"); return d && d.key && Date.parse(d.exp) > Date.now() ? d.key : ""; } catch(e){ return ""; } }
+  function sysNext(){
+    if (!sysDeviceKey()) return "entry.html";
+    var here = (location.pathname.split("/").pop() || "") + location.search + location.hash;
+    return "entry.html?next=" + encodeURIComponent(here);
+  }
 
   // המרחב שבו נמצא/ת מי שנכנס/ה (28/10/2026): 'org' (ארגוני) או 'edu' (חינוכי).
   // מהשרת בכניסה (המרחב שסומן למוסד), למנהלת המערכת לפי הבחירה במרחב שלי, ובמעבדת הדמו ?space=org.
@@ -99,7 +106,7 @@
   } catch(e){}
 
   // ── שמירה במכשיר לפי משתמש/ת (02/10/2026) ──
-  // טופס שנשמר בדפדפן (פרקטי, נוגי, תקשורת מקדמת חוסן חברתי, משוב לעבודות) נשמר תחת מפתח של מי שנכנס/ה —
+  // טופס שנשמר בדפדפן (פרקטי, נוגי, תקשורת שמקדמת חוסן חברתי, משוב לעבודות) נשמר תחת מפתח של מי שנכנס/ה —
   // לפי הקוד שבאסימון — כדי שמי שנכנס/ת עם קוד אחר באותו דפדפן יקבל/תקבל טופס נקי.
   window.sbeUserKey = function(base){
     var id = "anon";
@@ -275,7 +282,7 @@
     dialogue: ["shared-dialogue-lab.html", "resilience-advisor-sources.html"], // מעבדת שיח וחקר משותף (11/10/2026)
     teamthink: ["team-thinking.html", "resilience-advisor-sources.html"], // חשיבת צוות (11/10/2026)
     games: ["games.html", "memory-game.html", "board-game.html", "no-panic.html", "story-maker.html", "statement-sort.html", "riddles.html", "bingo.html", "twenty-q.html", "truth-dare.html", "trail-signs.html", "readiness-train.html", "idea-garden.html"], // מחיצת המשחקים (21/10/2026)
-    orgsuite: ["org-suite.html", "org-library.html"], // Begood together: תרגול צוותים (המרחב הארגוני, 28/10/2026)
+    orgsuite: ["org-suite.html", "org-library.html"], // תרגול צוותים (המרחב הארגוני, 28/10/2026)
     horizon: ["horizon-lab.html", "hl-voice.html", "hl-radar.html", "hl-futures.html", "hl-circles.html", "hl-horizons.html", "hl-collage.html", "hl-roadmap.html", "hl-game.html", "hl-stress.html"], // מעבדת האופק (אושר 28/10/2026)
     bridge: ["family-bridge.html", "resilience-advisor-sources.html"], routines: ["routines-hub.html", "resilience-advisor-sources.html"], continuity: ["continuity-kit.html", "resilience-advisor-sources.html"], // אושרו 28/10/2026
   };
@@ -349,7 +356,7 @@
           KEYS.forEach(function(k){ sessionStorage.removeItem(k); });
           localStorage.removeItem(MIRROR);
           document.documentElement.style.display = "none";
-          location.replace(base + "entry.html?expired=1");
+          location.replace(base + (sysDeviceKey() ? sysNext() : "entry.html?expired=1"));
           return;
         }
       }
@@ -368,12 +375,12 @@
 
   // אין הרשאה — לא מציגים את הדף, וחוזרים למסך הבית (או למסך הכניסה).
   document.documentElement.style.display = "none";
-  location.replace(base + (home || "entry.html"));
+  location.replace(base + (home || sysNext()));
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root{
   --paper:#FFFFFF; --ink:#1A2129; --muted:#5E6872; --hair:#D8DCE0; --sub:#F4F5F6;
@@ -399,7 +406,7 @@ body{direction:rtl;background:var(--ground);margin:0;padding:26px 16px 60px;
 .head::after{content:"";position:absolute;top:-5px;left:0;width:22%;height:5px;background:#2BA39C;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 .badge{display:block;font-size:13px;font-weight:600;color:#2E5A7D;margin:0 0 6px;}
 .badge::before{content:"תוצרי הסימולציה · ";font-weight:700;}
-.ttl{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:27px;
+.ttl{font-family:"Fredoka","Assistant",sans-serif;font-weight:600;font-size:27px;
   line-height:1.16;margin:0 0 5px;}
 .sub{font-size:14.5px;color:var(--muted);margin:0 0 12px;}
 .meta{font-size:12.5px;color:var(--muted);}

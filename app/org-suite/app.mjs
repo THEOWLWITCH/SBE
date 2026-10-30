@@ -228,4 +228,6 @@ try{
   render();
   if(window.__orsServerErr)toast(window.__orsServerErr);
   if(JOIN_PARAM&&!session){joinModal();const f=$('join-code');if(f)f.value=JOIN_PARAM;const c=$('coder');if(c)c.focus();}
-}catch(error){$('app').innerHTML=`<div class="empty"><h2>אין כרגע חיבור לשרת</h2><p>מה שנשמר במפגשים לא נמחק. אפשר לנסות שוב בעוד רגע.</p><p>${esc(error.message)}</p><a class="button" href="org-suite.html">ניסיון נוסף</a></div>`;}
+}catch(error){$('app').innerHTML=`<div class="empty"><h2>אין כרגע חיבור לשרת</h2><p>מה שנשמר במפגשים לא נמחק. אפשר לנסות שוב בעוד רגע.</p><p>${esc(error.message)}</p><p id="srvVer" class="sbe-sysonly"></p><a class="button" href="org-suite.html">ניסיון נוסף</a></div>`;
+  // למנהלת המערכת: איזו גרסה רצה בשרת, כדי לראות אם הוא התעדכן
+  if(IS_SYS)fetch(`${SERVER}/health`).then(r=>r.json()).then(h=>{const el=$('srvVer');if(el)el.textContent=`השרת רץ על הגרסה ${h.commit||'לא ידועה'}. אם זו לא הגרסה האחרונה ב-GitHub, אפשר לעדכן את השרת ב-Render: sbe-server › Manual Deploy › Deploy latest commit.`;}).catch(()=>{});}

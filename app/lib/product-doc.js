@@ -364,7 +364,7 @@ h1{font-size:26px}.hd img{height:56px}
     }
     if (!w) { alert("הדפדפן חסם את חלון ההדפסה. אפשר לאפשר חלונות קופצים לאתר ולנסות שוב."); return; }
     w.document.write(`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(fileTitle(title, undefined, kind))}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Frank+Ruhl+Libre:wght@700&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Fredoka:wght@500;600&display=swap">
 ${extraCss ? "<style>" + extraCss + "</style>" : ""}<style>
 /* עיצוב של מוצר מוגמר (12/10/2026: "התוצרים ב PDF יהיו מעוצבים כמוצר למכירה בחנות"): גופני המותג, כותרת עם לוגו, מספרי עמודים */
 @page{size:A4${landscape ? " landscape" : ""};margin:24mm 24mm;
@@ -376,9 +376,9 @@ body{font-family:"Assistant","Segoe UI",Arial,sans-serif;color:#141C24;max-width
 .hd img{height:74px}
 .hd .dt{font-size:12.5px;color:#5C6771;margin-top:2px}
 .hd .ctx{font-size:12.5px;color:#2E5A7D;margin:0 0 4px;letter-spacing:.01em}.hd .ctx b{font-weight:700}
-h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:26px;line-height:1.25;color:#1E3F5A;margin:0 0 4px;break-after:avoid}
+h1{font-family:"Fredoka","Assistant",sans-serif;font-weight:600;font-size:26px;line-height:1.25;color:#1E3F5A;margin:0 0 4px;break-after:avoid}
 .sub{color:#5C6771;margin:0 0 4px;font-size:13.5px}
-h4,h3,h2{break-after:avoid;break-inside:avoid;font-size:15.5px;margin:22px 0 8px;color:#1E3F5A}
+h4,h3,h2{font-family:"Fredoka","Assistant",sans-serif;font-weight:500;break-after:avoid;break-inside:avoid;font-size:15.5px;margin:22px 0 8px;color:#1E3F5A}
 h2,h3,h4{padding-inline-start:10px;border-inline-start:4px solid #2BA39C}
 .keep{break-inside:avoid;page-break-inside:avoid}
 .keep-start+*{break-before:avoid;page-break-before:avoid}

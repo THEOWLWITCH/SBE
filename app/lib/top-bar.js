@@ -47,7 +47,15 @@
     + ':root[data-theme="dark"] #sbeTop .t-logo img{background:#fff;border-radius:8px;padding:2px 6px}'
     + '@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #sbeTop{background:#141c24;border-color:#2b3a46;color:#9aabb8}:root:not([data-theme="light"]) #sbeTop .t-path b{color:#e4ecf1}:root:not([data-theme="light"]) #sbeTop .t-path a{color:#8cc3e0}:root:not([data-theme="light"]) #sbeTop .t-logo img{background:#fff;border-radius:8px;padding:2px 6px}}'
     + '}'
-    + '@media screen and (max-width:640px){#sbeTop{flex-wrap:wrap;gap:6px 8px;padding:7px 10px}#sbeTop .t-path{order:3;flex-basis:100%;font-size:12.5px}#sbeTop .t-act>a,#sbeTop .t-act>button,#sbeTop .t-extra>a,#sbeTop .t-extra>button{padding:5px 10px!important;font-size:12.5px}#sbeTop .t-extra{display:none}}'
+    + '#sbeTop .t-ic{font-style:normal}'
+    // 30/10/2026: "כל הסרגל העליון בנייד נראה מאוד צפוף ולא אלגנטי": בטלפון כפתורים עגולים קטנים עם סמל בלבד, לוגו קטן יותר, והנתיב בשורה דקה מתחת
+    + '@media screen and (max-width:640px){#sbeTop{flex-wrap:wrap;gap:4px 6px;padding:6px 12px 7px;min-height:0}'
+    + '#sbeTop .t-logo.t-space img{height:40px;margin:-4px 0}#sbeTop .t-logo img{height:26px}'
+    + '#sbeTop .t-path{order:3;flex-basis:100%;font-size:12px;color:#7a8a98;padding-top:5px;border-top:1px solid #eef2f5}#sbeTop .t-path b{font-weight:600}'
+    + '#sbeTop .t-act{gap:6px}#sbeTop .t-extra{display:none}'
+    + '#sbeTop .t-act>a,#sbeTop .t-act>button,#sbeTop #sbeAutoMenu>button{width:34px!important;height:34px!important;min-height:34px!important;padding:0!important;justify-content:center;border-radius:50%!important;border-color:#dfe7ef!important;font-size:0!important;gap:0!important}'
+    + '#sbeTop .t-act .t-tx{display:none}#sbeTop .t-act .t-ic{font-size:16px;line-height:1}'
+    + '#sbeTop #sbeAutoMenu>button::before{content:"☰";font-size:15px;line-height:1}}'
     + '@media print{#sbeTop{display:none!important}}';
 
   function clean(t) {
@@ -145,7 +153,7 @@
 
     var act = document.createElement('div'); act.className = 't-act';
     var ex = document.createElement('div'); ex.className = 't-extra'; extras.forEach(function (el) { ex.appendChild(el); }); act.appendChild(ex);
-    var back = document.createElement('button'); back.type = 'button'; back.textContent = '→ חזרה'; back.title = 'חזרה למסך הקודם'; back.className = 'sbe-no-theme';
+    var back = document.createElement('button'); back.type = 'button'; back.innerHTML = '<i class="t-ic" aria-hidden="true">→</i><span class="t-tx">חזרה</span>'; back.title = 'חזרה למסך הקודם'; back.setAttribute('aria-label', 'חזרה'); back.className = 'sbe-no-theme';
     back.addEventListener('click', function () {
       if (oldBack && oldBack.tagName === 'BUTTON') { oldBack.click(); return; }
       if (oldBack && oldBack.href) { location.href = oldBack.href; return; }
@@ -156,8 +164,9 @@
     act.appendChild(back);
     if (file !== 'home.html') {
       var home = document.createElement('a'); home.className = 'sbe-no-theme';
-      if (token) { home.textContent = '⌂ המרחב שלי'; home.href = HOME; home.addEventListener('click', function () { if (oldHome && oldHome.getAttribute('href')) home.href = oldHome.getAttribute('href'); }); }
-      else { home.textContent = '⌂ דף הבית'; home.href = 'entry.html'; }
+      home.setAttribute('aria-label', token ? 'המרחב שלי' : 'דף הבית'); home.title = home.getAttribute('aria-label');
+      if (token) { home.innerHTML = '<i class="t-ic" aria-hidden="true">⌂</i><span class="t-tx">המרחב שלי</span>'; home.href = HOME; home.addEventListener('click', function () { if (oldHome && oldHome.getAttribute('href')) home.href = oldHome.getAttribute('href'); }); }
+      else { home.innerHTML = '<i class="t-ic" aria-hidden="true">⌂</i><span class="t-tx">דף הבית</span>'; home.href = 'entry.html'; }
       act.appendChild(home);
     }
     menus.forEach(function (el) { act.appendChild(el); }); // ☰ תמיד אחרון, בקצה השמאלי
