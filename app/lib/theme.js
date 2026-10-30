@@ -14,6 +14,8 @@
     var me = document.currentScript && document.currentScript.src, s = document.createElement('script');
     s.id = 'sbe-top-js'; s.src = me ? me.replace(/theme\.js(\?.*)?$/, 'top-bar.js') : 'lib/top-bar.js';
     (document.head || document.documentElement).appendChild(s);
+    // כותרת אחידה לכלים (lib/tool-header.js, 30/10/2026): סמל בעיגול, שם הכלי ב-Fredoka, קו דק ושורת הסבר
+    if (!document.getElementById('sbe-th-js')) { var t = document.createElement('script'); t.id = 'sbe-th-js'; t.src = me ? me.replace(/theme\.js(\?.*)?$/, 'tool-header.js') : 'lib/tool-header.js'; (document.head || document.documentElement).appendChild(t); }
   })();
   var SKIP = /^(games|memory-game|board-game|no-panic|story-maker|statement-sort|riddles|bingo|twenty-q|truth-dare|trail-signs|readiness-train|idea-garden|yesh-ma-laasot|doc-[a-z-]+|card-[a-z-]+|journey-cert)\.html$/;
   // דף משחקי החוסן עצמו מקבל רק את הלוגו והנתיב (brandMark), בלי שינוי בעיצוב המשחקים.

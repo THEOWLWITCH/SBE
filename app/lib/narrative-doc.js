@@ -20,7 +20,7 @@ const esc = (t) => String(t ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<'
 
 const FONTS = `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">`;
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">`;
 
 const CSS = `
 :root{
@@ -47,7 +47,7 @@ body{direction:rtl;background:var(--ground);margin:0;padding:26px 16px 60px;
 .head::after{content:"";position:absolute;top:-5px;left:0;width:22%;height:5px;background:#2BA39C;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 .badge{display:block;font-size:13px;font-weight:600;color:#2E5A7D;margin:0 0 6px;}
 .badge::before{content:"תוצרי הסימולציה · ";font-weight:700;}
-.ttl{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:27px;
+.ttl{font-family:"Fredoka","Assistant",sans-serif;font-weight:600;font-size:27px;
   line-height:1.16;margin:0 0 5px;}
 .sub{font-size:14.5px;color:var(--muted);margin:0 0 12px;}
 .meta{font-size:12.5px;color:var(--muted);}
@@ -186,7 +186,7 @@ body{direction:rtl;background:var(--ground);margin:0;padding:22px 14px 50px;
 .lg{height:38px;width:auto;display:block;flex:0 0 auto;}
 .ch{padding:14px 20px 12px;border-top:5px solid #2E5A7D;border-bottom:1px solid #CDD3D8;display:flex;
  justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;}
-.ch b{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:19px;font-weight:900;}
+.ch b{font-family:"Fredoka","Assistant",sans-serif;font-size:19px;font-weight:600;}
 .ch span{font-size:12px;font-weight:600;color:#2E5A7D;}
 .cb{padding:14px 20px 18px;}
 .blk{margin-bottom:13px;}
