@@ -27,11 +27,29 @@ const joinLink = () => `${location.origin}${location.pathname.replace(/[^/]*$/, 
 function loadQR(cb) { if (window.QRCode) return cb(); const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; sc.onload = cb; sc.onerror = cb; document.head.appendChild(sc); }
 document.body.classList.toggle('guest', !CAN_LEAD);
 function toast(message) { $('toast').textContent = message; $('toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').hidden = true, 4800); }
-async function api(path, body, method = 'POST') {
-  const response = await fetch(`${SERVER}/api/access`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'orsCall', path, method, input:body || undefined, token:TOKEN || undefined, key:active?.role === 'observer' ? active.token : undefined})});
+// 30/10/2026: השרת ב-Render נרדם; ניסיון חוזר עם המתנה. תשובה "unknown action" = השרת עוד לא עודכן.
+async function api(path, body, method = 'POST', tries = 4) {
+  let response;
+  for (let i = 0; ; i++) {
+    try {
+      response = await fetch(`${SERVER}/api/access`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'orsCall', path, method, input:body || undefined, token:TOKEN || undefined, key:active?.role === 'observer' ? active.token : undefined})});
+      if (response.status < 500 || i >= tries - 1) break;
+    } catch (e) { if (i >= tries - 1) throw new Error('השרת לא עונה כרגע. אפשר לנסות שוב בעוד דקה.'); }
+    if ($('app') && !session) $('app').innerHTML = '<div class="empty"><h2>מתחברים לשרת…</h2><p>החיבור הראשון ביום נמשך עד כדקה.</p></div>';
+    await new Promise(r => setTimeout(r, 8000));
+  }
   const data = await response.json().catch(() => ({error:'לא התקבלה תשובה תקינה מהשרת'}));
+  if (/unknown action/i.test(data.error || '')) throw new Error('השרת עוד לא עודכן לכלי הזה. אחרי עדכון השרת הכלי יעבוד.');
   if (!response.ok) throw new Error(data.error || 'הפעולה לא הושלמה');
   return data;
+}
+async function loadCatalog() {
+  try { return await api('/catalog', null, 'GET'); }
+  catch (e) {
+    const [domains, scenarios] = await Promise.all(['domains','scenarios'].map(n => fetch(`org-suite/data/${n}.json`).then(r => r.json())));
+    window.__orsServerErr = e.message;
+    return {domains: domains.domains || domains, scenarios: scenarios.scenarios || scenarios};
+  }
 }
 function setActive(entry) { active=entry;try{sessionStorage.setItem('bg-suite-active',JSON.stringify({id:entry.id,role:entry.role}));}catch{} }
 const facilitator = () => active?.role === 'facilitator';
@@ -202,11 +220,12 @@ $('modal').querySelector('.modal-close').addEventListener('click',()=>$('modal')
 window.addEventListener('hashchange',()=>{route=location.hash.slice(1)||'overview';if(route==='architecture'&&!IS_SYS)route='overview';render();window.scrollTo(0,0);});
 setInterval(()=>{if($('clock'))$('clock').textContent=time(elapsed());},1000);
 try{
-  [catalog,siteMap]=await Promise.all([api('/catalog',null,'GET'),fetch('org-suite/data/site-map.json').then(r=>r.json()).catch(()=>null)]);
+  [catalog,siteMap]=await Promise.all([loadCatalog(),fetch('org-suite/data/site-map.json').then(r=>r.json()).catch(()=>null)]);
   if(CAN_LEAD){try{const mine=await api('/mine',null,'GET');for(const m of mine.sessions||[]){const e=entries.find(x=>x.id===m.id&&x.role==='facilitator');if(e){e.title=m.title;e.status=m.status;}else entries.push({id:m.id,title:m.title,role:'facilitator',createdAt:m.createdAt,status:m.status});}const ids=new Set((mine.sessions||[]).map(m=>m.id));entries=entries.filter(e=>e.role!=='facilitator'||ids.has(e.id));saveEntries();}catch{}}
   route=location.hash.slice(1)||'overview';
   if(route==='architecture'&&!IS_SYS)route='overview';
   if(!['overview','architecture'].includes(route)){let last;try{last=JSON.parse(sessionStorage.getItem('bg-suite-active')||'null');}catch{}const e=entries.find(x=>x.id===last?.id&&x.role===last?.role);if(e){setActive(e);try{updateSession(await api(`/sessions/${e.id}`,null,'GET'));}catch{active=null;session=null;toast('לא ניתן לשחזר את המפגש. אפשר לפתוח מפגש אחר מהמרחב שלי.');}}}
   render();
+  if(window.__orsServerErr)toast(window.__orsServerErr);
   if(JOIN_PARAM&&!session){joinModal();const f=$('join-code');if(f)f.value=JOIN_PARAM;const c=$('coder');if(c)c.focus();}
 }catch(error){$('app').innerHTML=`<div class="empty"><h2>אין כרגע חיבור לשרת</h2><p>מה שנשמר במפגשים לא נמחק. אפשר לנסות שוב בעוד רגע.</p><p>${esc(error.message)}</p><a class="button" href="org-suite.html">ניסיון נוסף</a></div>`;}

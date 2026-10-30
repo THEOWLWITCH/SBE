@@ -254,7 +254,7 @@ async function api(action, extra = {}) {
     box.querySelectorAll(".spacebar,.rgroup,.tiles").forEach(n => n.remove());
     const space = mySpace();
     // הלוגו לפי המרחב (28/10/2026): "Be good בחינוך" או "Be good בארגונים"
-    { const lg = document.querySelector("img.brand"); if (lg) { lg.src = space === "org" ? "assets/begood-together.webp" : space === "edu" ? "assets/begood-edu.webp" : "assets/begood-logo-mark.webp"; lg.alt = space === "org" ? "Be good בארגונים" : space === "edu" ? "Be good בחינוך" : "Begood"; } }
+    { const lg = document.querySelector("img.brand"); if (lg) { lg.src = space === "org" ? "assets/begood-org.webp" : space === "edu" ? "assets/begood-edu.webp" : "assets/begood-logo-mark.webp"; lg.alt = space === "org" ? "Be good בארגונים" : space === "edu" ? "Be good בחינוך" : "Begood"; } }
     const VIEW = space ? T.filter(x => { const s = sOf(x); return !s || s === "admin" || s === "research" || SP.visibleIn(space, x[0]); }) : T.slice();
     if (space) {
       const m = SP.meta(space), bar = el("div", { class: "spacebar " + space });

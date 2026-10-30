@@ -347,7 +347,7 @@ function renderEntry(){
   // ארבעה מרחבים, בית אחד (28/10/2026): שני מרחבי עבודה, וכלים משותפים לשניהם. כל מרחב עם ספריית תוצרים לדוגמה משלו.
   const sp = el("div",{class:"spaces"});
   const spaceTile = (cls, icon, title, text, href, linkText) => { const d = el("a",{class:"space " + cls, href});
-    d.append(el("img",{class:"sp-logo",src:cls === "org" ? "assets/begood-together.webp" : "assets/begood-" + cls + ".webp",alt:"",width:"200",height:"150"}), el("b",{},icon + " " + title), el("p",{},text),
+    d.append(el("img",{class:"sp-logo",src:"assets/begood-" + cls + ".webp",alt:"",width:"200",height:"150"}), el("b",{},icon + " " + title), el("p",{},text),
       el("span",{class:"sp-go"}, linkText, el("i",{"aria-hidden":"true"},"←"))); return d; };
   sp.append(
     spaceTile("org", "🏢", "המרחב הארגוני", "כלים לארגונים, לקהילות, לרשויות ולצוותי הנהלה: היערכות לעתיד לא ידוע, מנהיגות, תקשורת וחשיבה משותפת בצוות.", "examples-org.html", "תוצרים לדוגמה"),
