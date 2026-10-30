@@ -126,7 +126,7 @@
     logo.setAttribute('aria-label', token ? 'Begood: המרחב שלי' : 'Begood: דף הבית');
     // הלוגו של המרחב (29/10/2026: "אני לא רואה את הלוגו המתאים לכל מרחב בפינה הימנית העליונה"): Begood בחינוך או Begood together; בלי כניסה הלוגו הכללי
     var SPACE = null; try { SPACE = token && typeof window.sbeSpace === 'function' ? window.sbeSpace() : null; } catch (e) {}
-    var LG = SPACE === 'org' ? ['assets/begood-together.webp', 'Begood together', 1249, 934] : SPACE === 'edu' ? ['assets/begood-edu.webp', 'Be good בחינוך', 1306, 988] : ['assets/begood-logo-mark.webp', 'Begood', 1248, 756];
+    var LG = SPACE === 'org' ? ['assets/begood-org.webp', 'Be good בארגונים', 1306, 988] : SPACE === 'edu' ? ['assets/begood-edu.webp', 'Be good בחינוך', 1306, 988] : ['assets/begood-logo-mark.webp', 'Begood', 1248, 756];
     var img = document.createElement('img'); img.src = LG[0]; img.alt = LG[1]; img.width = LG[2]; img.height = LG[3]; if (SPACE) logo.classList.add('t-space'); logo.appendChild(img);
     bar.appendChild(logo);
 

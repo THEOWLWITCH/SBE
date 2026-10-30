@@ -51,6 +51,7 @@
     // כפתור הפניות הצף (דיווח, רעיון או תקלה): שם אחד, ובטלפון עיגול קטן בצד שלא מסתיר כפתורים
     'html #rptFab,html #fb-fab{border-radius:999px!important;font-weight:600!important;box-shadow:0 2px 8px rgba(22,50,74,.14)!important}',
     '@media screen and (max-width:640px){html #rptFab,html #fb-fab{font-size:0!important;width:44px!important;height:44px!important;min-width:0!important;padding:0!important;inset-inline-start:10px!important;inset-inline-end:auto!important;bottom:84px!important}html #rptFab::before,html #fb-fab::before{content:"💬";font-size:19px}}',
+    'h1.hero-banner{max-width:100%;overflow:hidden}h1.hero-banner img{max-width:100%!important;height:auto!important;box-sizing:border-box}@media screen and (max-width:640px){h1,.hero h1{font-size:clamp(1.3rem,6.4vw,1.75rem);overflow-wrap:anywhere}h2{overflow-wrap:anywhere}}',
     // תוויות קטנות בגופן מונו בלי אותיות עבריות: הגופן של הדף, בלי ריווח רחב
     'html .eyebrow,html .sc-tag,html [class*=count],html .kicker{font-family:inherit!important;letter-spacing:0!important}',
     // קו דק במקום קו שחור עבה מתחת לכותרת הדף

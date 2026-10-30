@@ -151,7 +151,7 @@ table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-ch
   // הלוגו מוטמע במסמך (data URL) — חלון הדפסה ריק לא תמיד טוען תמונות מכתובת.
   // הלוגו נטען מראש כ-data URL כשהקובץ נטען, כדי שיופיע בכל PDF גם כשבדף אין תמונת לוגו (12/10/2026, בדיקת הלקוחה)
   // לוגו לפי המרחב (28/10/2026): "Be good בחינוך" במרחב החינוכי, "Be good בארגונים" במרחב הארגוני.
-  const LOGO_FILE = { edu: "assets/begood-edu.webp", org: "assets/begood-together.webp" };
+  const LOGO_FILE = { edu: "assets/begood-edu.webp", org: "assets/begood-org.webp" };
   const LOGO_DATA = { edu: "", org: "" };
   const assetBase = () => document.baseURI.replace(/\/(products|lib)\/[^/]*$/, "/");
   function spaceNow() { try { return typeof window.sbeSpace === "function" && window.sbeSpace() === "org" ? "org" : "edu"; } catch (e) { return "edu"; } }

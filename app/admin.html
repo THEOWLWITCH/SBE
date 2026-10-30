@@ -1031,9 +1031,26 @@ function pInsts(){
 }
 
 // ── בקשות לכלים (מהטופס renew.html): בדיקה לפני פתיחה ──
+// איך התהליך עובד (30/10/2026: "לא מובן לי איך קורה התהליך"): קופסה קצרה בראש כל לשונית בחלק "בקשות ופניות"
+function howBox(title, steps, links){
+  const d = el("details",{class:"card how-box",open:""});
+  d.append(el("summary",{style:"cursor:pointer;font-weight:600;color:#1d3f63;padding:12px 16px"}, "ⓘ " + title));
+  const ol = el("ol",{style:"margin:0;padding:0 34px 6px 16px;line-height:1.7"});
+  steps.forEach(t => ol.append(el("li",{}, t)));
+  d.append(ol);
+  if (links && links.length) { const r = el("p",{style:"margin:4px 16px 14px;display:flex;gap:8px;flex-wrap:wrap"}); links.forEach(([h,t]) => r.append(el("a",{class:"act",href:h,target:"_blank",rel:"noopener",style:"text-decoration:none"},t))); d.append(r); }
+  return d;
+}
 function pRenew(){
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"בקשות לכלים"), el("p",{class:"sub"},"בקשות שנשלחו מהטופס \"בקשה לכלים\". שום דבר לא נפתח מהבקשה עצמה: פותחים את הבקשה, מוודאים בשיחה מי פנה ומה שולם, ובוחרים בדיוק את הכלים."));
+  w.append(howBox("איך מגיעה בקשה, ומה עושים איתה", [
+    "מי שרוצה כלים ממלא/ת את הטופס \"בקשה לכלים\" (מדף הבית: \"בקשת קוד\", או מכל כלי במפת הכלים). בוחרים מרחב, כלים ופרטי קשר.",
+    "הבקשה מופיעה כאן, ומגיע אלייך מייל. שום כלי לא נפתח לבד.",
+    "\"פתיחת הבקשה לבדיקה\": מוודאים בשיחה מי פנה/תה, מוודאים תשלום, ובוחרים מוסד, תקופה ורק את הכלים ששולמו.",
+    "\"אישור ופתיחה\": הכלים נפתחים למוסד, והקודים מופיעים ב\"מוסדות וקודים\". את הקוד שולחים לפונה.",
+    "בקשה שלא מתאימה: \"סגירה בלי פתיחה\"."
+  ], [["renew.html","לטופס הבקשה, כמו שהפונים רואים אותו"]]));
   if (!gate(w, instList, async () => { const d = await accessCall("listInstitutions"); instList = d.institutions; sysSettings = d.settings; }, "סיסמת מנהלת המערכת")) return w;
   const fmt = (ymd) => ymd ? ymd.slice(0,10).split("-").reverse().map((x,i)=>i===2?x.slice(2):x).join(".") : "";
   // בקשות חידוש ורכישה שהגיעו מהטופס — מוצגות רק כשיש בקשה פתוחה
@@ -2001,6 +2018,11 @@ function pStories(){
 function pInbox(){
   const w = el("div",{class:"panel on"});
   w.append(el("h2",{},"פניות"), el("p",{class:"sub"},"רעיונות, תקלות, שאלות ובקשות מכל המערכת: מכפתור \"דיווח / רעיון\", מפרקטי ומנוגי (כולל התנסות הקהילה). על כל פנייה חדשה נשלח אלייך מייל. החדשות למעלה."));
+  w.append(howBox("איך מגיעה פנייה, ומה עושים איתה", [
+    "בכל מסך במערכת יש כפתור צף \"💬 רעיון או תקלה\" (בטלפון: עיגול קטן בצד). לוחצים, כותבים ושולחים.",
+    "הפנייה מופיעה כאן, ומגיע אלייך מייל.",
+    "קוראים, עונים במייל כשיש כתובת, ובסוף \"טופל: מחיקה\"."
+  ], [["home.html","למרחב שלי, כדי לנסות את הכפתור"]]));
   if (!gate(w, inbox, async () => { inbox = (await accessCall("fbList")).items || []; }, "סיסמת מנהלת המערכת")) return w;
   const c = el("div",{class:"card"}); const inn = el("div",{class:"in"});
   const counts = {}; inbox.forEach(x => counts[x.type] = (counts[x.type]||0) + 1);
