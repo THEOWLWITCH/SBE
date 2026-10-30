@@ -53,7 +53,7 @@
     + 'h1.sbe-th .sbe-th-n{font-family:"Fredoka","Assistant",sans-serif;font-weight:600;font-size:32px;line-height:1.12;color:#1d3f63;letter-spacing:.005em}'
     + 'h1.sbe-th .sbe-th-ln{display:block;width:44px;height:2px;border-radius:2px;margin:8px 0 6px;background:linear-gradient(90deg,#1d3f63,#1b9aaa,#3d9a5f)}'
     + 'h1.sbe-th .sbe-th-s{font-family:"Assistant",sans-serif;font-weight:400;font-size:16px;line-height:1.45;color:#5b6b7a}'
-    + '.hero h1.sbe-th,.hl-hero h1.sbe-th{justify-content:flex-start}'
+    + '.hero h1.sbe-th,.hl-hero h1.sbe-th{justify-content:flex-start}.sbe-th-absorbed{display:none!important}'
     + ':root[data-theme="dark"] h1.sbe-th .sbe-th-n{color:#e4ecf1}:root[data-theme="dark"] h1.sbe-th .sbe-th-s{color:#9aabb8}'
     + '@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) h1.sbe-th .sbe-th-n{color:#e4ecf1}:root:not([data-theme="light"]) h1.sbe-th .sbe-th-s{color:#9aabb8}}'
     + '}'
@@ -80,6 +80,17 @@
     tx.appendChild(n); tx.appendChild(ln); tx.appendChild(sb);
     h.textContent = ''; h.appendChild(ic); h.appendChild(tx);
     h.classList.remove('hero-banner'); h.classList.add('sbe-th'); h.setAttribute('data-th', k);
+    absorb(h, sb);
+  }
+  // תת-כותרת שכבר יש בדף (30/10/2026: "במקומות כמו מעבדת האופק שיש תת-כותרת - מה תעשה?"):
+  // משפט קצר אחד מיד אחרי הכותרת נכנס לשורת ההסבר של הכותרת, ולא חוזר פעמיים. פסקת פתיחה ארוכה נשארת במקומה.
+  function absorb(h, sb) {
+    var n = h.nextElementSibling;
+    if (!n || n.tagName !== 'P' || n.classList.contains('sbe-th-absorbed') || n.querySelector('a,button,input,img')) return;
+    var t = (n.textContent || '').replace(/\s+/g, ' ').trim();
+    if (t.length < 8 || t.length > 60 || /[.!?]\s+\S/.test(t)) return;
+    sb.textContent = t.replace(/\.$/, '');
+    n.classList.add('sbe-th-absorbed');
   }
   function scan(root) {
     (root.querySelectorAll ? root : document).querySelectorAll('h1 img[src*="-banner.webp"]').forEach(build);
