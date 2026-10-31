@@ -2,6 +2,8 @@
 <title>ספריית המקורות</title>
 <script src="lib/access-guard.js"></script>
 <script src="lib/resilience-advisor-sources.js"></script>
+<script src="lib/quality-journals.js"></script>
+<script src="lib/source-quality.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -135,6 +137,19 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 .rsrc .meta{font-size:12.5px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;}
 .rsrc .meta a{color:var(--spoken);font-weight:600;}
 .rsrc .tagr{background:var(--surface-2);border-radius:99px;padding:1px 9px;color:var(--muted);}
+.tag.ev{background:var(--surface);border:1px solid var(--spoken);color:var(--spoken);}
+.tag.ev.bg{border-color:var(--hair);color:var(--muted);}
+.tag.sp{background:var(--surface);border:1px solid var(--hair);color:var(--ink);}
+.card .he,.rsrc .he{font-weight:700;font-size:15px;margin:0 0 4px;}
+.card .note,.rsrc .note{font-size:13.5px;line-height:1.55;margin:0 0 7px;color:var(--ink);}
+.card .note b,.rsrc .note b{color:var(--ink);}
+.rsrc details{margin:0 0 6px;font-size:13.5px;color:var(--muted);}
+.rsrc details summary{cursor:pointer;color:var(--spoken);font-weight:600;}
+.rsrc .ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px;font-size:13px;color:var(--muted);}
+.rsrc .ctl select,.rctl select{font:inherit;font-size:13.5px;border:1px solid var(--hair);border-radius:7px;padding:5px 9px;background:var(--surface);color:var(--ink);}
+.rctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 12px;font-size:13px;color:var(--muted);}
+.rctl label{display:flex;align-items:center;gap:6px;}
+.spaces{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px;}
 .rsrc .priv{font-size:12px;font-weight:700;color:var(--brick,#9b3d2e);margin:0 0 4px;}
 </style>
 
@@ -152,9 +167,14 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 </div>
 
 <div id="tabRes" hidden>
-  <p class="lead" style="margin-top:0">המקורות שעליהם נשענות פרקטי (חוסן בכיתה) ונוגי (מנהיגות שתומכת בחוסן). לכל מקור: התובנה המרכזית ל-Begood וקישור. המדף מתעדכן מדי שבוע.</p>
+  <p class="lead" style="margin-top:0">המקורות שעליהם נשענות פרקטי (חוסן בכיתה), נוגי (מנהיגות שמקדמת חוסן) וננה (הנחיה). לכל מקור: רמת הראיות, המרחב, התרומה ל-Begood וקישור. המקורות החזקים ראשונים. המדף מתעדכן מדי שבוע.</p>
   <div class="searchbox"><input id="rq" placeholder="חיפוש לפי מחבר/ת, נושא או מילה..."></div>
+  <div class="spaces" id="rSpaces" role="group" aria-label="מרחב"></div>
   <div class="filters" id="rFilters"></div>
+  <div class="rctl">
+    <label>רמת ראיות: <select id="rEv"></select></label>
+    <label>מיון: <select id="rSort"><option value="ev">חוזק הראיות</option><option value="new">שנה (חדש → ישן)</option><option value="abc">א-ת</option></select></label>
+  </div>
   <div class="bar"><b id="rCount"></b></div>
   <div id="rList"></div>
 </div>
@@ -165,6 +185,9 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
 <div class="disclosure">
   אלה מקורות נבחרים ולא סקירת ספרות. הם נבחרו ואומתו ידנית לפי התאמה לנושא, איכות ועדכניות.
   היעדר מקור אינו אומר שאינו קיים או שאינו ראוי.
+  <br><b>איך מסודר:</b> המקורות החזקים ראשונים: סקירה שיטתית או מטא-אנליזה, ניסוי מבוקר, מחקר אורך, מחקר חתך, מחקר איכותני, ואחר כך דוחות של גופים מוסמכים.
+  "מקור רקע" הוא ספר, פרק, כלי או דף מקצועי: מקור יסוד שנשאר בספרייה, ומקור חדש מסוג כזה כבר לא נכנס אליה.
+  רמת הראיות נקבעת לפי סוג המקור ומקום הפרסום.
 </div>
 
 <div class="suggestRow">
@@ -179,7 +202,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
   <label>שם מלא <span class="req">*</span></label>
   <input id="sgName" placeholder="לקרדיט על ההצעה">
   <label>מוסד</label>
-  <input id="sgInst" placeholder="לא חובה">
+  <input id="sgInst" placeholder="(רשות)">
   <label>המקור <span class="req">*</span></label>
   <input id="sgText" placeholder="למשל: Vygotsky, L. (1978). Mind in Society">
   <label>למי רלוונטי <span class="req">*</span></label>
@@ -197,6 +220,7 @@ h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(
   <button class="clearq" id="clearq">✕</button>
 </div>
 
+<div class="spaces" id="spaces" role="group" aria-label="מרחב"></div>
 <div class="filters" id="filters"></div>
 
 <div class="bar">
@@ -3384,13 +3408,42 @@ const SOURCES = [
 }
 ];
 
+// רמת הראיות והמרחב של כל מקור (31/10/2026, "שיפור הספרייה לפי ההנחיה"): lib/source-quality.js.
+// שדה ev או sp ברשומה גובר על ההערכה האוטומטית. שדות נוספים שהסוכן השבועי ממלא: he (כותרת בעברית),
+// found (מה נמצא), be (התרומה ל-Begood), q (נקודה לדיון), oa (גרסת גישה פתוחה).
+const SQ = window.SBE_SRCQ;
+SOURCES.forEach(s => {
+  s._ev = SQ ? SQ.level(s) : "";
+  s._evl = SQ ? SQ.label(s._ev) : "";
+  s._sp = SQ ? SQ.space(s, "sim") : "shared";
+});
+// מה מוצג כברירת מחדל: במרחב הארגוני מקורות ארגוניים ומשותפים; בשאר המקרים כל המקורות
+const SPACE_DEFAULT = (function(){
+  try {
+    const sys = sessionStorage.getItem("sbe.session.homeUrl") === "admin.html?role=sys";
+    if (!sys && window.sbeSpace && window.sbeSpace() === "org") return "org";
+  } catch(e){}
+  return "all";
+})();
+const SPACE_CHIPS = [["all","כל המקורות"],["edu","🎒 המרחב החינוכי"],["org","🏢 המרחב הארגוני"]];
+function drawSpaceChips(box, cur, onPick){
+  box.textContent = "";
+  SPACE_CHIPS.forEach(([k,l]) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "fchip" + (cur === k ? " on" : "");
+    b.textContent = l; b.setAttribute("aria-pressed", String(cur === k));
+    if (k !== "all") b.title = "מקורות המרחב, ומקורות משותפים לשני המרחבים";
+    b.addEventListener("click", () => onPick(k)); box.append(b);
+  });
+}
+
 const FILTERS = [
   { k:"domain",   l:"תחום" },
   { k:"type",     l:"סוג" },
   { k:"approach", l:"גישה", multi:true },
+  { k:"_evl",     l:"רמת ראיות", all:"כל רמות הראיות", order: SQ ? SQ.LEVELS.map(x => x.l) : null },
 ];
 
-const state = { q:"", domain:"", type:"", approach:"", sort:"topic" };
+const state = { q:"", domain:"", type:"", approach:"", _evl:"", space:SPACE_DEFAULT, sort:"evidence" };
 
 const filtersEl = document.getElementById("filters");
 const cardsEl = document.getElementById("cards");
@@ -3404,6 +3457,7 @@ const sortEl = document.getElementById("sortSel");
 // או חלק ממנה לפי מיון." כל אפשרות פועלת על התוצאה המסוננת, לא רק על 139
 // המקורות המלאים, כדי שמיון וסינון יעבדו יחד.
 const SORTS = {
+  evidence:   { l:"חוזק הראיות",       fn:(a,b)=>(SQ ? SQ.rank(a._ev)-SQ.rank(b._ev) : 0) || (b.year||0)-(a.year||0) || a.topic.localeCompare(b.topic,"he") },
   topic:      { l:"נושא (א-ת)",        fn:(a,b)=>a.topic.localeCompare(b.topic,"he") },
   domain:     { l:"תחום (א-ת)",        fn:(a,b)=>a.domain.localeCompare(b.domain,"he") || a.topic.localeCompare(b.topic,"he") },
   yearNewest: { l:"שנה (חדש → ישן)",    fn:(a,b)=>(b.year||0)-(a.year||0) },
@@ -3417,12 +3471,13 @@ Object.entries(SORTS).forEach(([k,s]) => {
 sortEl.value = state.sort;
 sortEl.addEventListener("change", () => { state.sort = sortEl.value; render(); });
 
-function optionsFor(key, multi){
+function optionsFor(key, multi, order){
   const set = new Set();
   SOURCES.forEach(s => {
     if (multi) (s[key]||[]).forEach(v => set.add(v));
     else if (s[key]) set.add(s[key]);
   });
+  if (order) return order.filter(v => set.has(v));
   return [...set].sort((a,b)=>a.localeCompare(b,"he"));
 }
 
@@ -3430,9 +3485,9 @@ FILTERS.forEach(f => {
   const sel = document.createElement("select");
   sel.dataset.k = f.k;
   const optAll = document.createElement("option");
-  optAll.value = ""; optAll.textContent = "כל " + f.l;
+  optAll.value = ""; optAll.textContent = f.all || ("כל " + f.l);
   sel.appendChild(optAll);
-  optionsFor(f.k, f.multi).forEach(v => {
+  optionsFor(f.k, f.multi, f.order).forEach(v => {
     const o = document.createElement("option");
     o.value = v; o.textContent = v;
     sel.appendChild(o);
@@ -3481,16 +3536,28 @@ document.getElementById("sgSend").addEventListener("click", () => {
   list.push({ id:"sg_"+Date.now(), text, forWhom:whom, why, creator:name, by:inst||null,
     date:new Date().toISOString().slice(0,10), status:"pending" });
   saveSourceSuggestions(list);
+  // גם לתיבת הפניות בשרת (31/10/2026): הרשימה במכשיר נראית רק במכשיר הזה, ובלי זה הצעה ממכשיר אחר לא מגיעה לניהול המערכת
+  try {
+    fetch("https://sbe-server.onrender.com/api/access", { method:"POST", headers:{ "content-type":"application/json" },
+      body: JSON.stringify({ action:"fbSubmit", type:"בקשה", name, contact:"", source:"הצעת מקור לספרייה", page:"ספריית המקורות",
+        text: ["הצעת מקור לספריית המקורות", "המקור: " + text, "למי רלוונטי: " + whom, "למה רלוונטי: " + why, inst ? "מוסד: " + inst : ""].filter(Boolean).join("\n") }) }).catch(() => {});
+  } catch(e){}
   ["sgName","sgInst","sgText","sgWhom","sgWhy"].forEach(id => document.getElementById(id).value = "");
   ok.hidden = false;
 });
 
+const spacesEl = document.getElementById("spaces");
+function drawSpaces(){ drawSpaceChips(spacesEl, state.space, k => { state.space = k; drawSpaces(); render(); }); }
+drawSpaces();
+
 function matches(s){
+  if (SQ && !SQ.inSpace(s._sp, state.space)) return false;
+  if (state._evl && s._evl !== state._evl) return false;
   if (state.domain && s.domain !== state.domain) return false;
   if (state.type && s.type !== state.type) return false;
   if (state.approach && !(s.approach||[]).includes(state.approach)) return false;
   if (state.q){
-    const hay = [s.topic, s.citation, s.domain, ...(s.tags||[])].join(" ").toLowerCase();
+    const hay = [s.topic, s.he, s.citation, s.domain, s._evl, s.found, s.be, s.q, ...(s.tags||[])].join(" ").toLowerCase();
     if (!hay.includes(state.q.toLowerCase())) return false;
   }
   return true;
@@ -3504,10 +3571,19 @@ function render(){
   list.forEach(s => {
     const c = document.createElement("div"); c.className = "card";
     const h3 = document.createElement("h3"); h3.textContent = s.topic; c.appendChild(h3);
+    if (s.he){ const he = document.createElement("p"); he.className = "he"; he.textContent = s.he; c.appendChild(he); }
     const cite = document.createElement("p"); cite.className = "cite"; cite.textContent = s.citation + (s.year ? " (" + s.year + ")" : ""); c.appendChild(cite);
+    [["found","מה נמצא: "],["be","התרומה ל-Begood: "],["q","נקודה לדיון: "]].forEach(([k,l]) => {
+      if (!s[k]) return;
+      const n = document.createElement("p"); n.className = "note"; const b = document.createElement("b"); b.textContent = l;
+      n.append(b, document.createTextNode(s[k])); c.appendChild(n);
+    });
     const tags = document.createElement("div"); tags.className = "tags";
+    if (s._evl){ const t = document.createElement("span"); t.className = "tag ev" + (SQ && SQ.belowBar(s._ev) ? " bg" : ""); t.textContent = s._evl;
+      if (SQ && SQ.belowBar(s._ev)) t.title = "ספר, פרק, כלי או דף מקצועי: מקור יסוד שנשאר בספרייה"; tags.appendChild(t); }
+    if (SQ && s._sp){ const t = document.createElement("span"); t.className = "tag sp"; t.textContent = SQ.SPACES[s._sp]; tags.appendChild(t); }
     if (s.domain){ const t = document.createElement("span"); t.className = "tag domain"; t.textContent = s.domain; tags.appendChild(t); }
-    if (s.type){ const t = document.createElement("span"); t.className = "tag type"; t.textContent = s.type; tags.appendChild(t); }
+    if (s.type && s.type !== s._evl){ const t = document.createElement("span"); t.className = "tag type"; t.textContent = s.type; tags.appendChild(t); }
     (s.approach||[]).forEach(a => { const t = document.createElement("span"); t.className = "tag approach"; t.textContent = a; tags.appendChild(t); });
     (s.tags||[]).forEach(tg => { const t = document.createElement("span"); t.className = "tag"; t.textContent = tg; tags.appendChild(t); });
     c.appendChild(tags);
@@ -3515,6 +3591,7 @@ function render(){
     const q = document.createElement("span"); q.textContent = s.quality || "";
     const links = document.createElement("span"); links.className = "links";
     if (s.url){ const a = document.createElement("a"); a.href = s.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "קישור ישיר"; links.appendChild(a); }
+    if (s.oa){ const a = document.createElement("a"); a.href = s.oa; a.target = "_blank"; a.rel = "noopener"; a.textContent = "גישה פתוחה"; links.appendChild(a); }
     if (s.scholar){ const a = document.createElement("a"); a.href = s.scholar; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Scholar"; links.appendChild(a); }
     foot.append(q, links);
     c.appendChild(foot);
@@ -3529,7 +3606,7 @@ qEl.addEventListener("input", () => {
 });
 clearqEl.addEventListener("click", () => { qEl.value=""; state.q=""; clearqEl.classList.remove("on"); render(); });
 document.getElementById("reset").addEventListener("click", () => {
-  state.q=""; state.domain=""; state.type=""; state.approach="";
+  state.q=""; state.domain=""; state.type=""; state.approach=""; state._evl=""; state.space=SPACE_DEFAULT; drawSpaces();
   qEl.value=""; clearqEl.classList.remove("on");
   filtersEl.querySelectorAll("select").forEach(s => { s.value=""; s.classList.remove("set"); });
   render();
@@ -3831,7 +3908,14 @@ body.sbe-hasnav{padding-top:38px;}
   const ALL = A.list.filter(x => IS_SYS || !x.hidden);
   const P = new Set(A.forAdvisor("practi").map(x => x.k)), N = new Set(A.forAdvisor("nugi").map(x => x.k)), NN = new Set(A.forAdvisor("nana").map(x => x.k));
   const BY = { practi: P, nugi: N, nana: NN };
-  const st = { q: "", who: "all", g: "" };
+  const Q = window.SBE_SRCQ;
+  ALL.forEach(x => { x._ev = Q ? Q.level(x) : ""; x._sp = Q ? Q.space(x, "res") : "shared"; x._y = Q ? Q.year(x) : 0; });
+  const st = { q: "", who: "all", g: "", space: SPACE_DEFAULT, ev: "", sort: "ev" };
+  const evSel = document.getElementById("rEv"), sortSel = document.getElementById("rSort");
+  (function(){ const o = document.createElement("option"); o.value = ""; o.textContent = "כל רמות הראיות"; evSel.append(o);
+    if (Q) Q.LEVELS.filter(l => ALL.some(x => x._ev === l.id)).forEach(l => { const p = document.createElement("option"); p.value = l.id; p.textContent = l.l; evSel.append(p); }); })();
+  evSel.addEventListener("change", () => { st.ev = evSel.value; draw(); });
+  sortSel.addEventListener("change", () => { st.sort = sortSel.value; draw(); });
   document.getElementById("nRes").textContent = "(" + ALL.length + ")";
   try { document.getElementById("nSim").textContent = "(" + SOURCES.length + ")"; } catch(e){}
   const fb = document.getElementById("rFilters");
@@ -3839,27 +3923,41 @@ body.sbe-hasnav{padding-top:38px;}
   function drawFilters(){
     fb.textContent = "";
     [["all","הכול"],["practi","של פרקטי"],["nugi","של נוגי"],["nana","של ננה"]].forEach(([k,l]) => fb.append(chip(l, st.who === k, () => { st.who = k; draw(); })));
-    Object.entries(A.groups).forEach(([k,l]) => fb.append(chip(l, st.g === k, () => { st.g = st.g === k ? "" : k; draw(); })));
+    // רק קבוצות שיש בהן מקורות (קבוצות חדשות מתמלאות בסבבים השבועיים)
+    Object.entries(A.groups).filter(([k]) => k === st.g || ALL.some(x => x.g === k && (!Q || Q.inSpace(x._sp, st.space)))).forEach(([k,l]) => fb.append(chip(l, st.g === k, () => { st.g = st.g === k ? "" : k; draw(); })));
+    drawSpaceChips(document.getElementById("rSpaces"), st.space, k => { st.space = k; draw(); });
   }
   function draw(){
     drawFilters();
     const q = st.q.trim().toLowerCase();
     const items = ALL.filter(x => (st.who === "all" || BY[st.who].has(x.k)) && (!st.g || x.g === st.g)
-      && (!q || (x.apa + " " + (x.be || "") + " " + (x.gist || "") + " " + (A.groups[x.g] || "")).toLowerCase().includes(q)));
+      && (!Q || Q.inSpace(x._sp, st.space)) && (!st.ev || x._ev === st.ev)
+      && (!q || (x.apa + " " + (x.he || "") + " " + (x.be || "") + " " + (x.gist || "") + " " + (x.q || "") + " " + (A.groups[x.g] || "") + " " + (Q ? Q.label(x._ev) : "")).toLowerCase().includes(q)));
     const isHe = s => /^[\u0590-\u05FF]/.test(s.apa);
-    items.sort((a,b) => (isHe(b) - isHe(a)) || a.apa.localeCompare(b.apa, isHe(a) ? "he" : "en", { sensitivity:"base" }));
+    const abc = (a,b) => (isHe(b) - isHe(a)) || a.apa.localeCompare(b.apa, isHe(a) ? "he" : "en", { sensitivity:"base" });
+    // דירוג לפני ההצגה (ההנחיה): החזקים ראשונים, ובתוך כל רמה החדש קודם
+    if (st.sort === "abc" || !Q) items.sort(abc);
+    else if (st.sort === "new") items.sort((a,b) => (b._y - a._y) || abc(a,b));
+    else items.sort((a,b) => (Q.rank(a._ev) - Q.rank(b._ev)) || (b._y - a._y) || abc(a,b));
     document.getElementById("rCount").textContent = items.length + " מקורות";
     const box = document.getElementById("rList"); box.textContent = "";
     items.forEach(x => {
       const d = document.createElement("div"); d.className = "rsrc"; d.id = x.k;
       if (x.hidden) { const t = document.createElement("p"); t.className = "priv"; t.textContent = "טרם פורסם: גלוי רק לך"; d.append(t); }
+      if (x.he) { const he = document.createElement("p"); he.className = "he"; he.textContent = x.he; d.append(he); }
       const p = document.createElement("p"); p.className = "apa"; p.textContent = x.apa; if (!/[\u0590-\u05FF]/.test(x.apa)) { p.dir = "ltr"; p.style.textAlign = "left"; } d.append(p);
-      const be = document.createElement("p"); be.className = "be"; const bb = document.createElement("b"); bb.textContent = "התובנה ל-Begood: "; be.append(bb, document.createTextNode(x.be || x.gist || "")); d.append(be);
+      const be = document.createElement("p"); be.className = "be"; const bb = document.createElement("b"); bb.textContent = "התרומה ל-Begood: "; be.append(bb, document.createTextNode(x.be || x.gist || "")); d.append(be);
+      if (x.q) { const n = document.createElement("p"); n.className = "be"; const nb = document.createElement("b"); nb.textContent = "נקודה לדיון: "; n.append(nb, document.createTextNode(x.q)); d.append(n); }
+      if (x.be && x.gist) { const det = document.createElement("details"); const sm = document.createElement("summary"); sm.textContent = "מה נמצא"; det.append(sm, document.createTextNode(x.gist)); d.append(det); }
       const m = document.createElement("div"); m.className = "meta";
+      if (Q && x._ev) { const e = document.createElement("span"); e.className = "tag ev" + (Q.belowBar(x._ev) ? " bg" : ""); e.textContent = Q.label(x._ev);
+        if (Q.belowBar(x._ev)) e.title = "ספר, פרק, כלי, דף מקצועי או מחקר שעוד לא פורסם: מקור יסוד שנשאר בספרייה"; m.append(e); }
+      if (Q && x._sp) { const sp = document.createElement("span"); sp.className = "tag sp"; sp.textContent = Q.SPACES[x._sp]; m.append(sp); }
       const g = document.createElement("span"); g.className = "tagr"; g.textContent = A.groups[x.g] || ""; m.append(g);
       const who = [P.has(x.k) ? "פרקטי" : "", N.has(x.k) ? "נוגי" : "", NN.has(x.k) ? "ננה" : ""].filter(Boolean).join(" · ");
       if (who) { const w = document.createElement("span"); w.className = "tagr"; w.textContent = who; m.append(w); }
       if (x.url) { const a = document.createElement("a"); a.href = x.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "לקריאת המקור ↗"; m.append(a); }
+      if (x.oa) { const a = document.createElement("a"); a.href = x.oa; a.target = "_blank"; a.rel = "noopener"; a.textContent = "גישה פתוחה ↗"; m.append(a); }
       d.append(m); box.append(d);
     });
   }
