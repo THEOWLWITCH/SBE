@@ -24,7 +24,12 @@
     routine: 'שגרות, מנגנונים חברתיים ויוזמות תלמידים',
     family: 'שותפות עם משפחות',
     paths: 'מסלולי השתתפות, בחירה ועדות ללמידה',
-    dialog: 'שיח, חקר משותף וחשיבת צוות'
+    dialog: 'שיח, חקר משותף וחשיבת צוות',
+    // ארבעת הקהלים של ספריית המקורות (31/10/2026, ההנחיה לחיפוש מקורות): מקורות לארגונים, להשכלה גבוהה ולמוכנות ועתיד.
+    // לא נכנסות לפרקטי (הכיתה). המרחב של כל קבוצה: G_SPACE ב-lib/source-quality.js.
+    org:  'ארגונים וחברות: חוסן ארגוני, המשכיות ורווחת עובדים',
+    hed:  'השכלה גבוהה: חוסן של סטודנטים וסגל ורציפות אקדמית',
+    prep: 'מוכנות, תרגול וחשיבת עתיד'
   };
   var S = [
     // ── ישראל ──
@@ -1037,6 +1042,7 @@
   // לכל יועצת בנק משלה: פרקטי (הכיתה) — בלי קבוצות המנהיגות; נוגי (מנהיגות) — קבוצות המנהיגות,
   // ישראל, חוסן קהילתי, בית הספר כקהילה, ומקורות נבחרים על אקלים, צוות ורווחה.
   var LEAD_G = { lead: 1, leadcr: 1, stu: 1 };
+  var NOT_PRACTI_G = { cont: 1, routine: 1, family: 1, paths: 1, dialog: 1, org: 1, hed: 1, prep: 1 };
   var NUGI_G = { lead: 1, leadcr: 1, stu: 1, il: 1, comm: 1, sys: 1 };
   var NUGI_K = { Edmondson1999: 1, Frazier2017: 1, JenningsGreenberg2009: 1, Allen2018: 1, WangDegol2016: 1,
     Battistich1997: 1, RyanDeci2017: 1, Moore2026: 1, Gregory2016: 1, Augustine2018: 1, Miao2023: 1, Brookings2026: 1 };
@@ -1051,7 +1057,7 @@
   // מעבדת שיח וחקר משותף וחשיבת צוות (11/10/2026): קבוצת השיח ומקורות קיימים על שיח, למידה שיתופית ואמון
   var DIALOG_K = { CohenLotan2014: 1, Johnson2009: 1, MercerLittleton2007: 1, Resnick2015: 1, HoweAbedin2013: 1, Edmondson1999: 1, Bohm1996: 1, Kaner2014: 1, Topping2005: 1, RyanDeci2017: 1, Sade2024: 1 };
   var ADV = {
-    practi: function(s){ return !LEAD_G[s.g] && s.g !== 'cont' && s.g !== 'routine' && s.g !== 'family' && s.g !== 'paths' && s.g !== 'dialog'; },
+    practi: function(s){ return !LEAD_G[s.g] && !NOT_PRACTI_G[s.g]; },
     nugi:   function(s){ return !!(NUGI_G[s.g] || NUGI_K[s.k]); },
     // תיק הרציפות (09/10/2026): קבוצת הרציפות ומקורות קיימים על רציפות חינוכית, מנהיגות מבוזרת, שגרה ואמון
     continuity: function(s){ return s.g === 'cont' || !!CONT_K[s.k]; },
@@ -1060,7 +1066,7 @@
     paths: function(s){ return s.g === 'paths' || !!PATHS_K[s.k]; },
     dialogue: function(s){ return s.g === 'dialog' || !!DIALOG_K[s.k]; },
     teamthink: function(s){ return s.g === 'dialog' || !!DIALOG_K[s.k]; },
-    nana:   function(){ return true; } // ננה — כל בנק הידע (07/10/2026): ההמלצות והמשוב שלה נשענים על כל מקורות החוסן
+    nana:   function(s){ return s.g !== 'org' && s.g !== 'hed'; } // ננה — כל בנק הידע (07/10/2026), חוץ ממקורות שנכתבו לארגונים ולהשכלה גבוהה (31/10/2026)
   };
   function forAdvisor(name){ var f = ADV[name]; return f ? S.filter(f) : S.slice(); }
   window.SBE_ADVISOR_SOURCES = { groups: G, list: S, byKey: byKey, forAdvisor: forAdvisor };

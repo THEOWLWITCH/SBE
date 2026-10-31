@@ -1436,30 +1436,32 @@ function pLibs(){
     cp.append(el("h3",{},"מקורות שהוצעו לאישור", el("em",{}, pending.length + " ממתינים")));
     const innp = el("div",{class:"in"});
     const rows = el("div",{class:"rows"});
+    // תיבת האישור (31/10/2026, ההנחיה לחיפוש מקורות): הכפתורים לפני הפרטים המשניים, והרשימה לא קופצת אחרי לחיצה:
+    // השורה מתעדכנת במקומה ("✓ אושר" או "נדחה"), והיא יוצאת מהרשימה רק בכניסה הבאה למסך.
+    const em = cp.querySelector("em");
+    let left = pending.length;
     pending.forEach(s=>{
       const r = el("div",{class:"r"});
-      const nm = el("span",{class:"nm"}, el("b",{},s.text),
-        el("span",{}, [s.creator, s.by, s.date].filter(Boolean).join(" · ")));
+      const acts = el("span",{class:"acts",style:"display:flex;gap:6px;align-items:flex-start;flex-shrink:0"});
+      const ok = el("button",{class:"act p"},"אישור");
+      const no = el("button",{class:"act d"},"דחייה");
+      const decide = (status, text) => {
+        const list = loadSuggestions();
+        const item = list.find(x=>x.id===s.id); if (item) item.status = status;
+        saveSuggestions(list);
+        // הכנסת המקור בפועל לספרייה דורשת עדכון של המערך ב-sources-library.html (או של lib/resilience-advisor-sources.js):
+        // "אושר" כאן מסמן שהמקור נבדק ומוכן לעדכון הבא. מקור שנדחה נשמר כנדחה ולא חוזר.
+        acts.replaceChildren(el("b",{style:"font-size:13px;white-space:nowrap"}, text));
+        left -= 1; if (em) em.textContent = left ? left + " ממתינים" : "אין עוד ממתינים";
+      };
+      ok.addEventListener("click",()=>decide("approved","✓ אושר"));
+      no.addEventListener("click",()=>decide("rejected","נדחה"));
+      acts.append(ok,no);
+      const nm = el("span",{class:"nm"}, el("b",{},s.text));
       if (s.forWhom) nm.append(el("span",{}, "למי: " + s.forWhom));
       if (s.why) nm.append(el("span",{}, "למה: " + s.why));
-      r.append(nm);
-      const ok = el("button",{class:"act p"},"אישור");
-      ok.addEventListener("click",()=>{
-        const list = loadSuggestions();
-        const item = list.find(x=>x.id===s.id); if (item) item.status = "approved";
-        saveSuggestions(list);
-        // הכנסת המקור בפועל לרשימה המלאה (139) דורשת עדכון ידני של המערך
-        // המוטמע ב-sources-library.html — אין שרת שמאפשר הזרקה אוטומטית
-        // לקובץ סטטי. "אושר" כאן מסמן שהוא עבר בדיקה ומוכן לעדכון הבא.
-        render();
-      });
-      const no = el("button",{class:"act d"},"דחייה");
-      no.addEventListener("click",()=>{
-        const list = loadSuggestions();
-        const item = list.find(x=>x.id===s.id); if (item) item.status = "rejected";
-        saveSuggestions(list); render();
-      });
-      r.append(ok,no); rows.append(r);
+      nm.append(el("span",{}, [s.creator, s.by, s.date].filter(Boolean).join(" · ")));
+      r.append(acts, nm); rows.append(r);
     });
     innp.append(rows); cp.append(innp); w.append(cp);
   }
@@ -1470,7 +1472,7 @@ function pLibs(){
   // הרשומות שוב כאן, מוטמע כלי הדפדוף האמיתי עם החיפוש/סינון/מיון שכבר
   // קיימים בו, אותו היגיון בדיוק כמו "בקרת איכות" (eval-set.html).
   const c = el("div",{class:"card"});
-  c.append(el("h3",{},"כל המקורות", el("em",{},"139 פריטים")));
+  c.append(el("h3",{},"כל המקורות", el("em",{},"בשני המדפים")));
   const frame = document.createElement("iframe");
   frame.src = "sources-library.html";
   frame.className = "evalframe";
