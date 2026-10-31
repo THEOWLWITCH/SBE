@@ -1088,7 +1088,7 @@
       be:'לא מבקשים מהמחנך/ת להציג רוגע. מזמינים לחבר את השיחה עם הכיתה למה שחשוב לו/ה, ומפחיתים לחץ חיצוני.',
       q:'מדגם נוחות ודיווח עצמי. הפרטים אומתו מהודעת האוניברסיטה, ועוד כדאי לבדוק את התקציר המקורי ואת הכרך.',
       tags:['רווחת מורים','מלחמה','מוטיבציה']},
-    {k:'StateComptroller2026Edu', g:'il', sp:'edu', ev:'rep', he:'מבקר המדינה: מוכנות מערכת החינוך ללמידה בחירום במלחמת "חרבות ברזל"',
+    {k:'Mevaker2026', g:'il', sp:'edu', ev:'rep', he:'מבקר המדינה: מוכנות מערכת החינוך ללמידה בחירום במלחמת "חרבות ברזל"',
       apa:'State Comptroller of Israel. (2026). Preparedness of the education system for learning in an emergency and its operation during the Swords of Iron war (Executive summary). Office of the State Comptroller.',
       url:'https://library.mevaker.gov.il/sites/DigitalLibrary/Documents/2026/Emergency/EN/2026-Emergency-102-Education-Taktzir-EN.pdf', oa:true,
       gist:'דוח ביקורת. כ-59% מהמנהלים דיווחו שהלמידה מרחוק כמעט לא משולבת בשגרה, ו-36% עד 40% מהמורים לא הרגישו מיומנים בה. הקשר עם ההורים עבר בעיקר בקבוצות הודעות ובמייל, ויותר ממחצית ההורים היו מרוצים ממנו במידה בינונית או מועטה, בעיקר בגלל מעט קשר אישי.',
@@ -1137,7 +1137,7 @@
       be:'במסע אל החוסן החברתי: התשתית המקומית והתושבים שלוקחים תפקידים הם מנגנון של השתתפות ומנהיגות משותפת.',
       q:'נבדק בזמן החירום עצמו, ולא ידוע אם המעורבות נשמרת בחזרה לשגרה. נתון המעורבות לקוח מסיכום של האוניברסיטה.',
       tags:['קהילה','פינוי','מעורבות','ישראל']},
-    {k:'StateComptroller2025Reservists', g:'il', sp:'shared', ev:'rep', he:'מבקר המדינה: היבטים בתמיכה במשרתי המילואים',
+    {k:'Mevaker2025', g:'il', sp:'shared', ev:'rep', he:'מבקר המדינה: היבטים בתמיכה במשרתי המילואים',
       apa:'State Comptroller and Ombudsman of Israel. (2025). The October 7th terror attack and the Iron Swords War: Special report, aspects of support for reservists. Office of the State Comptroller.',
       url:'https://library.mevaker.gov.il/sites/DigitalLibrary/Documents/2025/Reservists/2025-Reservists-001-EN.pdf', oa:true,
       gist:'דוח ביקורת. בעשרת החודשים הראשונים גויסו כ-318 אלף איש, ולהם כ-290 אלף ילדים. הגנות התעסוקה הורחבו בחקיקה זמנית, שיצרה אי-ודאות. כ-60 אלף סטודנטים שירתו, ושביעות רצונם מתמיכת המוסדות הייתה נמוכה עד בינונית.',
@@ -1157,19 +1157,22 @@
   // ישראל, חוסן קהילתי, בית הספר כקהילה, ומקורות נבחרים על אקלים, צוות ורווחה.
   var LEAD_G = { lead: 1, leadcr: 1, stu: 1 };
   var NOT_PRACTI_G = { cont: 1, routine: 1, family: 1, paths: 1, dialog: 1, org: 1, hed: 1, prep: 1 };
-  var NUGI_G = { lead: 1, leadcr: 1, stu: 1, il: 1, comm: 1, sys: 1 };
+  var NUGI_G = { lead: 1, leadcr: 1, stu: 1, il: 1, comm: 1, sys: 1, org: 1, hed: 1 };
   var NUGI_K = { Edmondson1999: 1, Frazier2017: 1, JenningsGreenberg2009: 1, Allen2018: 1, WangDegol2016: 1,
     Battistich1997: 1, RyanDeci2017: 1, Moore2026: 1, Gregory2016: 1, Augustine2018: 1, Miao2023: 1, Brookings2026: 1 };
-  var CONT_K = { Allen2018: 1, Topping2005: 1, EvenZahav2024: 1, Hazzan2026: 1, Miller2007: 1, Spillane2005: 1, Hobfoll2007: 1, Emmer2001: 1, BrykSchneider2002: 1, Sade2024: 1, Fuchs2025: 1 };
+  var CONT_K = { Allen2018: 1, Topping2005: 1, EvenZahav2024: 1, Hazzan2026: 1, Miller2007: 1, Spillane2005: 1, Hobfoll2007: 1, Emmer2001: 1, BrykSchneider2002: 1, Sade2024: 1, Fuchs2025: 1,
+    Mevaker2026: 1, Mevaker2025: 1, KalfonHakhmigari2025: 1 };
   // מרכז השגרות והיוזמות החברתיות (10/10/2026): קבוצת השגרות ומקורות קיימים על השתתפות, קהילה דואגת, אחריות משותפת ואמון
   var ROUT_K = { Sade2024: 1, SadeTools2026: 1, Battistich1997: 1, Durlak2011: 1, Hobfoll2007: 1, Johnson2009: 1, RyanDeci2017: 1,
-    MitraGross2009: 1, Spillane2005: 1, Edmondson1999: 1, Kaner2014: 1, Rogelberg2019: 1 };
+    MitraGross2009: 1, Spillane2005: 1, Edmondson1999: 1, Kaner2014: 1, Rogelberg2019: 1,
+    KalfonHakhmigari2025: 1, BalasooriyaLekamge2025: 1 };
   // המעבדה לבניית גשר שותפות בין הבית לכיתה (10/10/2026): קבוצת המשפחות ומקורות קיימים על שותפות, אמון והשתתפות
-  var FAM_K = { HendersonMapp2002: 1, Epstein2011: 1, BrykSchneider2002: 1, Lundy2007: 1, Sade2024: 1, SadeTools2026: 1, Hobfoll2007: 1, Ungar2011: 1 };
+  var FAM_K = { HendersonMapp2002: 1, Epstein2011: 1, BrykSchneider2002: 1, Lundy2007: 1, Sade2024: 1, SadeTools2026: 1, Hobfoll2007: 1, Ungar2011: 1,
+    Mevaker2026: 1, Oberman2026: 1 };
   // מסלולי השתתפות בלמידה (10/10/2026): קבוצת המסלולים ומקורות קיימים על UDL, למידה שיתופית ושיח
   var PATHS_K = { CAST2024: 1, Johnson2009: 1, RyanDeci2017: 1, Topping2005: 1, HoweAbedin2013: 1, MercerLittleton2007: 1, Resnick2015: 1, Sade2024: 1 };
   // מעבדת שיח וחקר משותף וחשיבת צוות (11/10/2026): קבוצת השיח ומקורות קיימים על שיח, למידה שיתופית ואמון
-  var DIALOG_K = { CohenLotan2014: 1, Johnson2009: 1, MercerLittleton2007: 1, Resnick2015: 1, HoweAbedin2013: 1, Edmondson1999: 1, Bohm1996: 1, Kaner2014: 1, Topping2005: 1, RyanDeci2017: 1, Sade2024: 1 };
+  var DIALOG_K = { CohenLotan2014: 1, Johnson2009: 1, MercerLittleton2007: 1, Resnick2015: 1, HoweAbedin2013: 1, Edmondson1999: 1, Bohm1996: 1, Kaner2014: 1, Topping2005: 1, RyanDeci2017: 1, Sade2024: 1, MarlowLacerenza2025: 1, BrennerPeretzBenhaiem2026: 1 };
   var ADV = {
     practi: function(s){ return !LEAD_G[s.g] && !NOT_PRACTI_G[s.g]; },
     nugi:   function(s){ return !!(NUGI_G[s.g] || NUGI_K[s.k]); },

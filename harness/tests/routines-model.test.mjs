@@ -21,7 +21,7 @@ test('several academic sources support the routines hub', () => {
 
 test('four stages, the five mechanisms, and prompts with every part and the sources', () => {
   assert.deepEqual(M.STAGES.map((s) => s.t), ['בוחרים פעולה', 'מאשרים אחריות', 'מנסים פעמיים', 'פותחים לשינוי']);
-  assert.deepEqual(M.MECH_TYPES, ['מועצת כיתה', 'לוח עזרה', 'ועדה', 'צוות פעולה', 'מפגש חוסן קבוע']);
+  assert.deepEqual(M.MECH_TYPES, ['מועצת כיתה', 'לוח עזרה', 'ועדה', 'צוות פעולה', 'מפגש חוסן קבוע', 'צוות התנדבות']);
   const kb = SRC.forAdvisor('routines'), plan = M.planSystem(kb, 'WRITER');
   for (const part of ['action', 'board', 'roles', 'agreement', 'run', 'after', 'future', 'resilience', 'skills']) assert.ok(plan.includes('- ' + part + ':'), part);
   for (const t of [plan, M.optionsSystem(kb), M.reviseSystem(kb, '')]) {
