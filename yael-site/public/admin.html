@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>ניהול האתר · ד״ר יעל שדה</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="site.css">
+  <script src="site-data.js"></script>
+  <script src="site.js"></script>
+  <style>
+    body{font-size:16px}
+    .adm-top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line)}
+    .adm-top .wrap{max-width:1180px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-height:60px}
+    .adm-top h1{font-size:1.25rem;margin:0}
+    .status{font-size:.9rem;color:var(--muted);margin-inline-start:auto}
+    .status.dirty{color:#a35b00;font-weight:600}
+    .status.err{color:#b3261e;font-weight:600}
+    button,.b{font:inherit;font-weight:600;font-size:.92rem;border-radius:999px;border:1px solid var(--blue);background:#fff;color:var(--blue);padding:6px 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+    button.pri{background:var(--blue);color:#fff}
+    button.red{border-color:#c0392b;color:#c0392b}
+    button.ic{border-color:var(--line);padding:4px 10px;color:var(--ink)}
+    button:disabled{opacity:.45;cursor:default}
+    .layout{max-width:1180px;margin:0 auto;padding:22px;display:grid;grid-template-columns:250px 1fr;gap:24px;align-items:start}
+    aside{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:12px;position:sticky;top:76px}
+    aside h2{font-size:.95rem;font-family:Assistant,sans-serif;color:var(--muted);margin:6px 6px 8px}
+    .pg{display:flex;align-items:center;gap:4px;border-radius:10px;padding:4px 6px}
+    .pg.sel{background:#eef6f6;outline:1px solid var(--teal)}
+    .pg .name{flex:1;text-align:start;border:0;background:none;color:var(--ink);padding:6px 4px;font-weight:600;border-radius:8px}
+    .pg.off .name{color:var(--muted);text-decoration:line-through}
+    .pg button.ic{padding:2px 7px;font-size:.8rem}
+    .side-actions{display:flex;flex-direction:column;gap:6px;margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+    .panel{background:#fff;border:1px solid var(--line);border-top:2px solid var(--teal);border-radius:var(--radius);padding:20px 22px;margin-bottom:18px}
+    .panel h2{font-size:1.3rem}
+    label.f{display:block;font-weight:600;margin:12px 0 4px;color:var(--blue)}
+    label.f small{font-weight:400;color:var(--muted)}
+    input[type=text],input[type=password],input[type=url],textarea{width:100%;font:inherit;font-size:1rem;border:1px solid #d6d0c4;border-radius:10px;padding:8px 12px;background:#fff;color:var(--ink)}
+    textarea{min-height:110px;line-height:1.6;resize:vertical}
+    input:focus,textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(42,157,155,.15)}
+    .hint{font-size:.85rem;color:var(--muted);margin:4px 0 0}
+    .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    .row.end{justify-content:flex-end}
+    .items{display:flex;flex-direction:column;gap:12px}
+    .it{border:1px solid var(--line);border-radius:12px;background:#fdfcfa}
+    .it.off{opacity:.65;border-style:dashed}
+    .it-h{display:flex;align-items:center;gap:6px;padding:8px 10px}
+    .it-h .t{flex:1;font-weight:600;cursor:pointer;background:none;border:0;text-align:start;color:var(--ink);padding:4px}
+    .it-h .k{font-size:.78rem;color:var(--muted);font-weight:400}
+    .it-b{padding:4px 14px 14px;border-top:1px solid var(--line)}
+    .add{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;padding:12px;border:1px dashed var(--teal);border-radius:12px;background:#f6fbfb}
+    .add b{width:100%;color:var(--blue)}
+    .filebox{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+    .filebox img{max-width:120px;max-height:90px;border-radius:8px}
+    .tabs{display:flex;gap:6px;margin-bottom:14px}
+    .tabs button[aria-pressed=true]{background:var(--blue);color:#fff}
+    .preview{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+    .login{max-width:420px;margin:12vh auto;padding:0 22px}
+    .login .panel{text-align:start}
+    .msg{margin:10px 0 0;font-weight:600}
+    .msg.err{color:#b3261e}
+    .chk{display:flex;gap:8px;align-items:center;margin:10px 0}
+    @media screen and (max-width:860px){
+      .layout{grid-template-columns:1fr;padding:14px}
+      aside{position:static}
+    }
+  </style>
+</head>
+<body>
+  <div id="login" class="login" hidden>
+    <div class="panel">
+      <h1 style="font-size:1.6rem">ניהול האתר</h1>
+      <form id="loginForm">
+        <label class="f" for="pw">סיסמה</label>
+        <input type="password" id="pw" autocomplete="current-password" required>
+        <label class="chk"><input type="checkbox" id="remember" checked> לזכור את המכשיר הזה (90 יום)</label>
+        <button class="pri" type="submit">כניסה</button>
+        <p class="msg err" id="loginMsg" role="alert"></p>
+      </form>
+    </div>
+    <p class="hint" style="text-align:center"><a href="/">לאתר</a></p>
+  </div>
+
+  <div id="app" hidden>
+    <header class="adm-top">
+      <div class="wrap">
+        <h1>ניהול האתר</h1>
+        <span class="status" id="status" role="status"></span>
+        <button class="pri" id="saveBtn" disabled>שמירה ופרסום</button>
+        <a class="b" href="/" target="_blank" rel="noopener">לאתר ↗</a>
+        <button class="ic" id="logoutBtn">יציאה</button>
+      </div>
+    </header>
+    <div class="layout">
+      <aside>
+        <h2>הדפים באתר</h2>
+        <div id="pages"></div>
+        <div class="side-actions">
+          <button id="addPage">➕ דף חדש</button>
+          <button id="brandBtn">⚙ פרטים כלליים ותמונה</button>
+        </div>
+      </aside>
+      <section id="editor"></section>
+    </div>
+  </div>
+
+<script>
+(function () {
+  var API = '/api/site', MAX = 4 * 1024 * 1024;
+  var TKEY = 'ys.admin.token', DKEY = 'ys.admin.draft';
+  var esc = YS.esc, $ = function (id) { return document.getElementById(id); };
+  var TYPE = {
+    text: { icon: '📝', name: 'טקסט' }, file: { icon: '📄', name: 'קובץ' }, link: { icon: '🔗', name: 'קישור' },
+    image: { icon: '🖼', name: 'תמונה' }, video: { icon: '🎬', name: 'סרטון' }
+  };
+  var ACCEPT = '.pdf,.jpg,.jpeg,.png,.webp,.gif,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.mp3,.m4a,.mp4,.txt,.zip';
+  var token = localStorage.getItem(TKEY) || sessionStorage.getItem(TKEY) || '';
+  var site = null, base = null, dirty = false, sel = null, view = 'edit', open = {};
+
+  var uid = function () { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); };
+  var clone = function (o) { return JSON.parse(JSON.stringify(o)); };
+  var page = function () { return site.pages.filter(function (p) { return p.id === sel; })[0]; };
+
+  function call(body) {
+    return fetch(API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(Object.assign({ token: token }, body)) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { d._status = r.status; return d; }); })
+      .catch(function () { return { _status: 0, message: 'אין חיבור לשרת של האתר. אם האתר עוד לא עלה ל-Netlify, הניהול יפעל אחרי ההעלאה.' }; });
+  }
+  function status(text, cls) { var s = $('status'); s.textContent = text; s.className = 'status' + (cls ? ' ' + cls : ''); }
+  function mark() {
+    dirty = true; $('saveBtn').disabled = false; status('יש שינויים שעוד לא פורסמו', 'dirty');
+    try { localStorage.setItem(DKEY, JSON.stringify({ site: site, base: base })); } catch (e) {}
+  }
+
+  // ── כניסה ──
+  function showLogin(msg) { $('app').hidden = true; $('login').hidden = false; $('loginMsg').textContent = msg || ''; $('pw').focus(); }
+  $('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    $('loginMsg').textContent = '';
+    call({ action: 'login', password: $('pw').value, remember: $('remember').checked }).then(function (d) {
+      if (!d.token) { $('loginMsg').textContent = d.message || 'הכניסה לא הצליחה.'; return; }
+      token = d.token;
+      ($('remember').checked ? localStorage : sessionStorage).setItem(TKEY, token);
+      $('pw').value = '';
+      start();
+    });
+  });
+  $('logoutBtn').addEventListener('click', function () {
+    if (dirty && !confirm('יש שינויים שעוד לא פורסמו. לצאת בכל זאת?')) return;
+    call({ action: 'logout' });
+    localStorage.removeItem(TKEY); sessionStorage.removeItem(TKEY); token = ''; dirty = false;
+    showLogin('יצאת מהניהול.');
+  });
+
+  function start() {
+    call({ action: 'check' }).then(function (d) {
+      if (!d.ok) { showLogin(token && d._status !== 401 ? d.message : ''); return; }
+      return fetch(API, { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (g) {
+        site = g.site && g.site.pages ? g.site : clone(window.YS_DEFAULT);
+        base = g.site ? g.site.updatedAt : null;
+        var draft = null;
+        try { draft = JSON.parse(localStorage.getItem(DKEY) || 'null'); } catch (e) {}
+        if (draft && draft.site && draft.base === base && JSON.stringify(draft.site) !== JSON.stringify(site) &&
+            confirm('נמצאו שינויים שלא פורסמו מהפעם הקודמת. להמשיך מהם?')) { site = draft.site; dirty = true; }
+        else localStorage.removeItem(DKEY);
+        sel = (site.pages[0] || {}).id || null;
+        $('login').hidden = true; $('app').hidden = false;
+        $('saveBtn').disabled = !dirty;
+        status(dirty ? 'יש שינויים שעוד לא פורסמו' : (g.site ? 'האתר מעודכן' : 'עדיין לא נשמר: מוצג תוכן הפתיחה'), dirty ? 'dirty' : '');
+        draw();
+      });
+    });
+  }
+
+  // ── שמירה ──
+  $('saveBtn').addEventListener('click', function () {
+    var btn = this; btn.disabled = true; status('שומרים…');
+    call({ action: 'save', site: site, base: base }).then(function (d) {
+      if (!d.ok) { btn.disabled = false; status(d.message || 'השמירה לא הצליחה. אפשר לנסות שוב.', 'err'); if (d._status === 401) showLogin(d.message); return; }
+      base = d.updatedAt; dirty = false; localStorage.removeItem(DKEY);
+      status('נשמר ופורסם ✓');
+    });
+  });
+  window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+  // ── העלאת קובץ ──
+  function upload(file, done) {
+    if (!file) return;
+    if (file.size > MAX) { alert('הקובץ גדול מ-4 מגה. קובץ גדול יותר: מעלים ל-Google Drive או ל-YouTube, ומוסיפים אותו כקישור או כסרטון.'); return; }
+    status('מעלים את ' + file.name + '…');
+    var fr = new FileReader();
+    fr.onload = function () {
+      call({ action: 'upload', name: file.name, data: fr.result }).then(function (d) {
+        if (!d.file) { status(d.message || 'ההעלאה לא הצליחה.', 'err'); return; }
+        done({ id: d.file.id, name: d.file.name, type: d.file.type, size: d.file.size });
+        mark(); draw();
+      });
+    };
+    fr.readAsDataURL(file);
+  }
+
+  // ── ציור ──
+  function draw() { drawPages(); drawEditor(); }
+
+  function drawPages() {
+    $('pages').innerHTML = site.pages.map(function (p, i) {
+      return '<div class="pg' + (p.id === sel ? ' sel' : '') + (p.hidden ? ' off' : '') + '">' +
+        '<button class="name" data-pg="' + esc(p.id) + '">' + (p.home ? '🏠 ' : '') + esc(p.title) + '</button>' +
+        '<button class="ic" data-pmove="' + i + ':-1" title="למעלה" aria-label="להזיז למעלה"' + (i ? '' : ' disabled') + '>↑</button>' +
+        '<button class="ic" data-pmove="' + i + ':1" title="למטה" aria-label="להזיז למטה"' + (i < site.pages.length - 1 ? '' : ' disabled') + '>↓</button>' +
+        '</div>';
+    }).join('');
+  }
+
+  var fld = function (label, key, val, opt) {
+    opt = opt || {};
+    var id = 'f_' + key.replace(/\W/g, '_');
+    var input = opt.area
+      ? '<textarea id="' + id + '" data-k="' + key + '"' + (opt.rows ? ' rows="' + opt.rows + '"' : '') + ' placeholder="' + esc(opt.ph || '') + '">' + esc(val) + '</textarea>'
+      : '<input type="' + (opt.type || 'text') + '" id="' + id + '" data-k="' + key + '" value="' + esc(val) + '" placeholder="' + esc(opt.ph || '') + '"' + (opt.ltr ? ' dir="ltr"' : '') + '>';
+    return '<label class="f" for="' + id + '">' + label + (opt.small ? ' <small>' + opt.small + '</small>' : '') + '</label>' + input + (opt.hint ? '<p class="hint">' + opt.hint + '</p>' : '');
+  };
+  var FMT = 'הדגשה: כוכביות כפולות משני הצדדים (<bdi>**מילה**</bdi>) · תבליט: מקף ורווח בתחילת שורה · רשימה ממוספרת: <bdi>1.</bdi> בתחילת שורה · שורה ריקה בין פסקאות · קישור ומייל נעשים לחיצים.';
+
+  function fileBox(f, key, isImg) {
+    var u = f ? YS.fileUrl(f) : '';
+    return '<div class="filebox">' +
+      (f ? (isImg ? '<img src="' + u + '" alt="">' : '') + '<span>' + esc(f.name) + ' · ' + YS.kb(f.size) + '</span> <a href="' + u + '" target="_blank" rel="noopener">פתיחה</a>' : '<span class="muted">עוד לא נבחר ' + (isImg ? 'תמונה' : 'קובץ') + '</span>') +
+      '<label class="b" style="margin-inline-start:auto">' + (f ? 'החלפה' : 'בחירה והעלאה') + '<input type="file" hidden data-up="' + key + '" accept="' + (isImg ? '.jpg,.jpeg,.png,.webp,.gif' : ACCEPT) + '"></label>' +
+      (f ? '<button class="ic" data-rmfile="' + key + '">הסרה</button>' : '') +
+      '</div><p class="hint">עד 4 מגה. קובץ גדול יותר: מעלים ל-Google Drive ומוסיפים "🔗 קישור".</p>';
+  }
+
+  function itemEditor(it, idx) {
+    var k = 'items.' + idx + '.', h = '';
+    h += fld('כותרת', k + 'title', it.title, { ph: it.type === 'file' ? 'למשל: מצגת ההרצאה בכנס' : '' });
+    if (it.type === 'file') { h += '<label class="f">הקובץ</label>' + fileBox(it.file, k + 'file'); h += fld('הכיתוב על הכפתור', k + 'label', it.label, { small: '(רשות)', ph: 'לקובץ' }); }
+    if (it.type === 'image') h += '<label class="f">התמונה</label>' + fileBox(it.file, k + 'file', true);
+    if (it.type === 'link') { h += fld('הכתובת', k + 'url', it.url, { type: 'url', ltr: true, ph: 'https://' }); h += fld('הכיתוב על הכפתור', k + 'label', it.label, { small: '(רשות)', ph: 'לקישור' }); }
+    if (it.type === 'video') h += fld('קישור לסרטון', k + 'url', it.url, { type: 'url', ltr: true, ph: 'https://www.youtube.com/watch?v=…', hint: 'YouTube או Vimeo: הסרטון יוצג בתוך הדף.' });
+    h += fld(it.type === 'image' ? 'כיתוב מתחת לתמונה' : 'טקסט', k + 'body', it.body, { area: true, rows: it.type === 'text' ? 8 : 4, small: it.type === 'text' ? '' : '(רשות)', hint: FMT });
+    h += fld('תאריך', k + 'date', it.date, { small: '(רשות)', ph: 'למשל: אוקטובר 2026' });
+    return h;
+  }
+
+  function drawEditor() {
+    var ed = $('editor');
+    if (sel === '__brand') { drawBrand(); return; }
+    var p = page();
+    if (!p) { ed.innerHTML = '<div class="panel"><p>אין דפים. אפשר להוסיף דף חדש.</p></div>'; return; }
+    var h = '<div class="tabs"><button data-view="edit" aria-pressed="' + (view === 'edit') + '">עריכה</button><button data-view="preview" aria-pressed="' + (view === 'preview') + '">תצוגה מקדימה</button></div>';
+    if (view === 'preview') {
+      ed.innerHTML = h + '<div class="preview">' + YS.renderPage(site, p.id, { preview: true }) + '</div>';
+      return;
+    }
+    h += '<div class="panel"><h2>' + (p.home ? '🏠 ' : '') + esc(p.title) + '</h2>';
+    h += fld('שם הדף', 'title', p.title);
+    h += fld('השם בתפריט', 'nav', p.nav, { small: '(רשות, קצר)' });
+    h += fld(p.home ? 'פתיחה בדף הבית' : 'פתיחה', 'intro', p.intro, { area: true, rows: 5, hint: FMT });
+    h += '<div class="row" style="margin-top:14px">';
+    if (!p.home) h += '<button class="ic" data-act="togglePage">' + (p.hidden ? '👁 להציג את הדף באתר' : '🙈 להסתיר את הדף מהאתר') + '</button>';
+    if (!p.home) h += '<button class="ic" data-act="makeHome">🏠 לקבוע כדף הבית</button>';
+    if (!p.home) h += '<button class="red" data-act="deletePage">🗑 מחיקת הדף</button>';
+    h += '</div></div>';
+
+    h += '<div class="panel"><h2>החומרים בדף</h2><div class="items">';
+    if (!p.items.length) h += '<p class="muted">עוד אין חומרים בדף הזה.</p>';
+    p.items.forEach(function (it, i) {
+      var t = TYPE[it.type] || TYPE.text, isOpen = !!open[it.id];
+      h += '<div class="it' + (it.hidden ? ' off' : '') + '">' +
+        '<div class="it-h"><span aria-hidden="true">' + t.icon + '</span>' +
+        '<button class="t" data-open="' + esc(it.id) + '" aria-expanded="' + isOpen + '">' + esc(it.title || '(בלי כותרת)') + ' <span class="k">· ' + t.name + (it.hidden ? ' · טיוטה, לא מוצג' : '') + '</span></button>' +
+        '<button class="ic" data-move="' + i + ':-1" aria-label="להזיז למעלה"' + (i ? '' : ' disabled') + '>↑</button>' +
+        '<button class="ic" data-move="' + i + ':1" aria-label="להזיז למטה"' + (i < p.items.length - 1 ? '' : ' disabled') + '>↓</button>' +
+        '<button class="ic" data-hide="' + i + '" title="' + (it.hidden ? 'להציג באתר' : 'להסתיר מהאתר') + '">' + (it.hidden ? '👁 הצגה' : '🙈 הסתרה') + '</button>' +
+        '<button class="ic red" data-del="' + i + '" aria-label="מחיקה">🗑</button></div>' +
+        (isOpen ? '<div class="it-b">' + itemEditor(it, i) + '<div class="row end" style="margin-top:12px"><button data-open="' + esc(it.id) + '">סגירה</button></div></div>' : '') +
+        '</div>';
+    });
+    h += '</div><div class="add"><b>➕ הוספת חומר לדף</b>' + Object.keys(TYPE).map(function (k) { return '<button data-add="' + k + '">' + TYPE[k].icon + ' ' + TYPE[k].name + '</button>'; }).join('') + '</div></div>';
+    ed.innerHTML = h;
+  }
+
+  function drawBrand() {
+    var b = site.brand;
+    $('editor').innerHTML = '<div class="panel"><h2>⚙ פרטים כלליים</h2>' +
+      fld('השם', 'brand.name', b.name) + fld('תואר בשורה אחת', 'brand.title', b.title) + fld('משפט מוביל בדף הבית', 'brand.tagline', b.tagline, { area: true, rows: 2 }) +
+      '<label class="f">תמונה בדף הבית <small>(רשות)</small></label>' + fileBox(b.photo, 'brand.photo', true) +
+      fld('מייל', 'brand.email', b.email, { ltr: true }) + fld('טלפון', 'brand.phone', b.phone, { ltr: true, hint: 'מוצג בדף "יצירת קשר" (עם וואטסאפ) ובתחתית כל דף.' }) +
+      fld('שורה בתחתית', 'brand.footer', b.footer) + '</div>';
+  }
+
+  // ── עריכה ──
+  function setPath(path, val) {
+    var parts = path.split('.'), o = path.indexOf('brand.') === 0 ? site : page();
+    for (var i = 0; i < parts.length - 1; i++) o = o[parts[i]];
+    o[parts[parts.length - 1]] = val;
+  }
+  $('editor').addEventListener('input', function (e) {
+    var k = e.target.getAttribute('data-k');
+    if (!k) return;
+    setPath(k, e.target.value);
+    mark();
+    if (k === 'title' || k === 'nav') drawPages();
+  });
+  $('editor').addEventListener('change', function (e) {
+    var k = e.target.getAttribute('data-up');
+    if (k && e.target.files[0]) upload(e.target.files[0], function (f) { setPath(k, f); });
+  });
+  $('editor').addEventListener('click', function (e) {
+    var t = e.target.closest('button'); if (!t) return;
+    var p = page(), a;
+    if ((a = t.getAttribute('data-view'))) { view = a; drawEditor(); return; }
+    if ((a = t.getAttribute('data-open'))) { open[a] = !open[a]; drawEditor(); return; }
+    if ((a = t.getAttribute('data-add'))) {
+      var it = { id: uid(), type: a, title: '', body: '', url: '', label: '', date: '', file: null, hidden: false };
+      p.items.push(it); open[it.id] = true; mark(); drawEditor();
+      setTimeout(function () { var last = document.querySelector('[data-k="items.' + (p.items.length - 1) + '.title"]'); if (last) last.focus(); }, 0);
+      return;
+    }
+    if ((a = t.getAttribute('data-move'))) {
+      var m = a.split(':').map(Number), j = m[0] + m[1], x = p.items[m[0]];
+      p.items[m[0]] = p.items[j]; p.items[j] = x; mark(); drawEditor(); return;
+    }
+    if ((a = t.getAttribute('data-hide')) != null) { var h = p.items[+a]; h.hidden = !h.hidden; mark(); drawEditor(); return; }
+    if ((a = t.getAttribute('data-del')) != null) {
+      var d = p.items[+a];
+      if (!confirm('למחוק את "' + (d.title || TYPE[d.type].name) + '"?' + (d.file ? '\nהקובץ יימחק מהאתר אחרי השמירה.' : ''))) return;
+      p.items.splice(+a, 1); mark(); drawEditor(); return;
+    }
+    if ((a = t.getAttribute('data-rmfile'))) { setPath(a, null); mark(); drawEditor(); return; }
+    if ((a = t.getAttribute('data-act'))) {
+      if (a === 'togglePage') p.hidden = !p.hidden;
+      if (a === 'makeHome') { site.pages.forEach(function (q) { q.home = false; }); p.home = true; p.hidden = false; }
+      if (a === 'deletePage') {
+        if (!confirm('למחוק את הדף "' + p.title + '" וכל החומרים שבו?')) return;
+        site.pages = site.pages.filter(function (q) { return q !== p; }); sel = (site.pages[0] || {}).id;
+      }
+      mark(); draw();
+    }
+  });
+  $('pages').addEventListener('click', function (e) {
+    var t = e.target.closest('button'); if (!t) return;
+    var a;
+    if ((a = t.getAttribute('data-pg'))) { sel = a; view = 'edit'; draw(); return; }
+    if ((a = t.getAttribute('data-pmove'))) {
+      var m = a.split(':').map(Number), j = m[0] + m[1], x = site.pages[m[0]];
+      site.pages[m[0]] = site.pages[j]; site.pages[j] = x; mark(); drawPages();
+    }
+  });
+  $('addPage').addEventListener('click', function () {
+    var name = prompt('שם הדף החדש:');
+    if (!name || !name.trim()) return;
+    var p = { id: 'p' + uid(), title: name.trim(), nav: '', intro: '', hidden: false, home: false, items: [] };
+    site.pages.push(p); sel = p.id; view = 'edit'; mark(); draw();
+  });
+  $('brandBtn').addEventListener('click', function () { sel = '__brand'; draw(); });
+
+  if (token) start(); else showLogin();
+})();
+</script>
+</body>
+</html>

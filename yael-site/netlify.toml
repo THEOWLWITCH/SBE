@@ -1,0 +1,30 @@
+# האתר האישי של ד״ר יעל שדה: אתר Netlify נפרד מ-Begood, עם דומיין משלו.
+# ב-Netlify: Add new site → Import from Git → המאגר הזה → Base directory: yael-site
+# משתנה סביבה: YAEL_SITE_PASSWORD (הסיסמה לניהול, לפחות 6 תווים).
+[build]
+  publish = "public"
+  command = ""
+  # כמו ב-Begood: בונים רק מ-main
+  ignore = "test \"$BRANCH\" != \"main\""
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 301
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/admin.html"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+    Cache-Control = "no-store"

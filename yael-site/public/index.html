@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ד״ר יעל שדה · חוסן חברתי</title>
+  <meta name="description" content="ד״ר יעל שדה: מחקר, הרצאות וכלים לחוסן חברתי ולמוכנות בבתי ספר, בארגונים ובקהילות.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Assistant:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="site.css">
+  <script src="site-data.js"></script>
+  <script src="site.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">מעבר לתוכן</a>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="#/" id="brand"></a>
+      <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="nav">☰ תפריט</button>
+      <nav class="main" id="nav" aria-label="דפי האתר"></nav>
+    </div>
+  </header>
+  <main id="main" class="wrap" tabindex="-1"></main>
+  <footer class="foot">
+    <div class="wrap" id="foot"></div>
+  </footer>
+<script>
+(function () {
+  var site = window.YS_DEFAULT;
+  var $ = function (id) { return document.getElementById(id); };
+  var current = function () { return decodeURIComponent((location.hash.match(/^#\/([\w-]+)/) || [])[1] || ''); };
+
+  function draw(scroll) {
+    var b = site.brand || {}, id = current();
+    var pages = (site.pages || []).filter(function (p) { return !p.hidden; });
+    var page = pages.filter(function (p) { return p.id === id; })[0] || pages.filter(function (p) { return p.home; })[0] || pages[0];
+    $('brand').innerHTML = YS.esc(b.name) + '<small>' + YS.esc(b.title) + '</small>';
+    $('nav').innerHTML = YS.nav(site, page && page.id);
+    $('main').innerHTML = YS.renderPage(site, page && page.id);
+    $('foot').innerHTML = '<span>' + YS.esc(b.footer || '') + '</span><span class="fill"></span>' +
+      (b.email ? '<a href="mailto:' + YS.esc(b.email) + '" dir="ltr">' + YS.esc(b.email) + '</a>' : '') +
+      (b.phone ? '<a href="tel:' + YS.esc(String(b.phone).replace(/[^\d]/g, '')) + '" dir="ltr">' + YS.esc(b.phone) + '</a>' : '');
+    document.title = (page && !page.home ? page.title + ' · ' : '') + (b.name || '') + (page && page.home && b.title ? ' · ' + b.title : '');
+    $('nav').classList.remove('open'); $('menuBtn').setAttribute('aria-expanded', 'false');
+    if (scroll) { window.scrollTo(0, 0); $('main').focus({ preventScroll: true }); }
+  }
+  $('menuBtn').addEventListener('click', function () {
+    var open = $('nav').classList.toggle('open');
+    this.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  window.addEventListener('hashchange', function () { draw(true); });
+  // התוכן השמור מהניהול. בלי חיבור (או אחרי שתי שניות): תוכן הפתיחה.
+  var done = false, show = function () { if (!done) { done = true; draw(false); } };
+  var timer = setTimeout(show, 2000);
+  fetch('/api/site', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+    if (d && d.site && d.site.pages && d.site.pages.length) { site = d.site; if (done) draw(false); }
+  }).catch(function () {}).then(function () { clearTimeout(timer); show(); });
+})();
+</script>
+</body>
+</html>

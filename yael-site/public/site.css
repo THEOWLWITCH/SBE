@@ -1,0 +1,98 @@
+/* האתר האישי של ד״ר יעל שדה: עדין ואלגנטי, קווים דקים, צבעי המותג (כחול #1d3f63, טורקיז) על נייר חם */
+:root{--ink:#1f2a37;--muted:#5d6b7a;--blue:#1d3f63;--teal:#2a9d9b;--sun:#e9b949;--paper:#fbf8f3;--card:#fff;--line:#e6e0d6;--radius:14px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Assistant,system-ui,sans-serif;font-size:18px;line-height:1.7;color:var(--ink);background:var(--paper)}
+a{color:var(--blue)}
+h1,h2,h3{font-family:"Frank Ruhl Libre",Georgia,serif;color:var(--blue);line-height:1.25;margin:0 0 .4em}
+h1{font-size:clamp(2rem,5vw,3rem);font-weight:700}
+h2{font-size:1.45rem;font-weight:700}
+h3{font-size:1.15rem}
+.wrap{max-width:980px;margin:0 auto;padding:0 22px}
+.skip{position:absolute;inset-inline-start:-999px}.skip:focus{inset-inline-start:12px;top:12px;background:#fff;padding:6px 12px;z-index:9}
+
+/* סרגל עליון */
+.top{position:sticky;top:0;z-index:5;background:rgba(251,248,243,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:18px;min-height:64px}
+.brand{font-family:"Frank Ruhl Libre",serif;font-weight:700;font-size:1.25rem;color:var(--blue);text-decoration:none;white-space:nowrap}
+.brand small{display:block;font-family:Assistant,sans-serif;font-weight:400;font-size:.78rem;color:var(--muted);margin-top:-4px}
+nav.main{display:flex;gap:4px;flex-wrap:wrap;margin-inline-start:auto}
+nav.main a{text-decoration:none;color:var(--ink);font-weight:600;font-size:.95rem;padding:6px 12px;border-radius:999px;border:1px solid transparent}
+nav.main a:hover{border-color:var(--line);background:#fff}
+nav.main a[aria-current]{color:var(--blue);border-color:var(--teal);background:#fff}
+.menu-btn{display:none;margin-inline-start:auto;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font:inherit;font-size:.95rem;color:var(--blue);cursor:pointer}
+
+main{padding:36px 0 60px;min-height:60vh}
+
+/* פתיח בדף הבית */
+.hero{display:flex;gap:34px;align-items:center;padding:28px 0 30px;border-bottom:1px solid var(--line);margin-bottom:28px}
+.portrait{width:170px;height:170px;border-radius:50%;object-fit:cover;flex:none;border:1px solid var(--line);box-shadow:0 0 0 6px #fff,0 0 0 7px var(--teal)}
+.portrait.mono{display:grid;place-items:center;background:linear-gradient(135deg,#e7f3f2,#fff);font-family:"Frank Ruhl Libre",serif;font-size:4.4rem;color:var(--blue)}
+.eyebrow{margin:0 0 6px;color:var(--teal);font-weight:700;letter-spacing:.02em}
+.tagline{font-size:1.2rem;color:var(--muted);margin:.2em 0 0;max-width:34em}
+.page-head{border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:22px;position:relative}
+.page-head::after{content:"";position:absolute;bottom:-1px;inset-inline-start:0;width:70px;height:2px;background:linear-gradient(90deg,var(--teal),var(--blue))}
+
+.intro{font-size:1.12rem;margin-bottom:26px}
+.rich p,.rich li{text-align:justify}
+.rich p{margin:0 0 .85em}
+.rich ul,.rich ol{margin:0 0 .9em;padding-inline-start:1.3em}
+.rich li{margin-bottom:.35em}
+.rich b{color:var(--blue)}
+
+/* פריטים */
+.item{background:var(--card);border:1px solid var(--line);border-top:2px solid var(--teal);border-radius:var(--radius);padding:22px 26px;margin:0 0 18px;box-shadow:0 1px 3px rgba(29,63,99,.04)}
+.it-file{border-top-color:var(--blue)}.it-link{border-top-color:var(--sun)}.it-video{border-top-color:#d97a6c}
+figure.item{padding:14px}
+figure.item img{display:block;width:100%;height:auto;border-radius:10px}
+figure.item figcaption{padding:12px 8px 2px}
+.date{color:var(--muted);font-size:.9rem;margin:-4px 0 10px}
+.vid{position:relative;padding-top:56.25%;border-radius:10px;overflow:hidden;margin-bottom:12px;background:#eee}
+.vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;text-decoration:none;font-weight:600;padding:8px 18px;border-radius:999px;border:1px solid var(--blue);font-size:.95rem}
+.btn small{font-weight:400;opacity:.8}
+.btn.ghost{background:#fff;color:var(--blue)}
+.btn:hover{filter:brightness(1.08)}
+.muted{color:var(--muted)}
+.draft{opacity:.6;border-style:dashed}
+.draft-tag{display:inline-block;font-size:.8rem;font-weight:600;color:#8a5a00;background:#fff6e0;border:1px solid #f0d9a0;border-radius:999px;padding:1px 10px;margin-bottom:8px}
+
+/* כרטיסי הדפים בדף הבית */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:10px}
+.card{display:flex;flex-direction:column;gap:6px;background:#fff;border:1px solid var(--line);border-top:2px solid var(--teal);border-radius:var(--radius);padding:18px 20px;text-decoration:none;color:var(--ink);transition:box-shadow .2s,transform .2s}
+.card:nth-child(3n+2){border-top-color:var(--blue)}.card:nth-child(3n){border-top-color:var(--sun)}
+.card b{font-family:"Frank Ruhl Libre",serif;font-size:1.25rem;color:var(--blue)}
+.card span{color:var(--muted);font-size:.95rem;line-height:1.55}
+.card i{font-style:normal;color:var(--teal);margin-top:auto;font-weight:700}
+.card:hover{box-shadow:0 6px 18px rgba(29,63,99,.08);transform:translateY(-2px)}
+
+/* יצירת קשר */
+.contact{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 22px}
+.ct{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:10px 20px;text-decoration:none;color:var(--blue)}
+.ct span{font-size:1.1rem}
+
+footer.foot{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--muted);font-size:.92rem}
+footer.foot .wrap{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center}
+footer.foot a{color:var(--muted)}
+footer.foot .fill{flex:1}
+
+@media screen and (max-width:760px){
+  body{font-size:17px}
+  .menu-btn{display:block}
+  nav.main{display:none;position:absolute;top:64px;inset-inline:0;background:var(--paper);border-bottom:1px solid var(--line);flex-direction:column;padding:10px 22px 16px}
+  nav.main.open{display:flex}
+  nav.main a{padding:10px 12px}
+  .hero{flex-direction:column;text-align:center;gap:18px}
+  .tagline{margin-inline:auto}
+  .portrait{width:130px;height:130px}
+  .item{padding:18px}
+  .rich p,.rich li{text-align:start}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media print{
+  @page{size:A4;margin:24mm 24mm}
+  .top,.menu-btn,footer.foot .admin{display:none}
+  body{background:#fff}
+  .item,.card{break-inside:avoid;box-shadow:none}
+  h1,h2{break-after:avoid}
+}

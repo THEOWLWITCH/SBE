@@ -1,0 +1,8 @@
+{
+  "name": "yael-sade-site",
+  "private": true,
+  "description": "האתר האישי של ד״ר יעל שדה (public) ופונקציית התוכן והקבצים לניהול (netlify/functions)",
+  "dependencies": {
+    "@netlify/blobs": "8.2.0"
+  }
+}
