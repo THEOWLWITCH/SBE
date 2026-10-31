@@ -27,7 +27,7 @@ test('the journal list: the 75 verified journals keep their ISSN, the new ones a
 
 test('a journal is found in a citation only as the venue, not inside the title', () => {
   assert.equal(J.inCitation('Chernikova, O. (2020). Simulation-Based Learning in Higher Education: A Meta-Analysis. Review of Educational Research.').name, 'Review of Educational Research');
-  assert.equal(J.inCitation('W. (2020). T. Journal of Management Studies, 5'), null);
+  assert.equal(J.inCitation('W. (2020). T. Journal of Imaginary Studies, 5'), null);
   assert.equal(J.inCitation('א׳ (2020). כותרת. מגמות, 55(1)').name, 'מגמות');
 });
 
