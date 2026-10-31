@@ -123,6 +123,14 @@
     { name: "עיונים במינהל ובארגון החינוך", issn: [], area: "israel", check: true },
     { name: "ביטחון סוציאלי", issn: [], area: "israel", check: true },
     { name: "חברה ורווחה", issn: [], area: "israel", check: true },
+    // נוספו בסבב המקורות של 31/10/2026, ה-ISSN עוד לא אומת.
+    { name: "Psychological Bulletin", issn: [], area: "evidence", check: true },
+    { name: "School Psychology", issn: [], area: "resilience", check: true },
+    { name: "Journal of Management Studies", issn: [], area: "work", check: true },
+    { name: "Urban Studies", issn: [], area: "org", check: true },
+    { name: "European Journal of Teacher Education", issn: [], area: "teachers", check: true },
+    { name: "Interactive Learning Environments", issn: [], area: "tech", check: true },
+    { name: "Journal of Medical Internet Research", issn: [], area: "tech", aliases: ["JMIR"], check: true },
   ];
   const HE = /[֐-׿]/;
   const norm = (s) => String(s || '').toLowerCase().replace(/&/g, 'and').replace(/^the\s+/, '').replace(/[^a-z0-9֐-׿]+/g, '');
