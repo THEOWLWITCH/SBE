@@ -1,0 +1,157 @@
+{
+  "site": {
+    "lang": "en",
+    "name": "Baranes Lab",
+    "title": "Prof. Danny Baranes",
+    "subtitle": "Department of Molecular Biology · Ariel University",
+    "tagline": "[Add the opening line from the Canva site]",
+    "heroImage": "",
+    "logo": "",
+    "accent": "#8fd3ff",
+    "ctaText": "Our research",
+    "ctaLink": "#research",
+    "cta2Text": "Contact",
+    "cta2Link": "#contact",
+    "footer": "© Baranes Lab · Ariel University",
+    "seoDescription": "Prof. Danny Baranes lab, Department of Molecular Biology, Ariel University."
+  },
+  "sections": [
+    {
+      "id": "about",
+      "type": "text",
+      "title": "About",
+      "nav": true,
+      "visible": true,
+      "image": "",
+      "body": "[Add the 'About' text from the Canva site.]\n\nYou can edit this text, add an image, rename or hide this section from the admin page (/admin)."
+    },
+    {
+      "id": "research",
+      "type": "cards",
+      "title": "Research",
+      "nav": true,
+      "visible": true,
+      "intro": "[Add a short introduction to the lab's research.]",
+      "items": [
+        {
+          "title": "[Research topic 1]",
+          "text": "[Short description]",
+          "image": "",
+          "link": ""
+        },
+        {
+          "title": "[Research topic 2]",
+          "text": "[Short description]",
+          "image": "",
+          "link": ""
+        },
+        {
+          "title": "[Research topic 3]",
+          "text": "[Short description]",
+          "image": "",
+          "link": ""
+        }
+      ]
+    },
+    {
+      "id": "team",
+      "type": "people",
+      "title": "Team",
+      "nav": true,
+      "visible": true,
+      "intro": "",
+      "items": [
+        {
+          "name": "Prof. Danny Baranes",
+          "role": "Principal Investigator",
+          "group": "Principal Investigator",
+          "bio": "[Short bio]",
+          "image": "",
+          "email": "",
+          "link": "",
+          "lead": true
+        },
+        {
+          "name": "[Name]",
+          "role": "[PhD student]",
+          "group": "Lab members",
+          "bio": "",
+          "image": "",
+          "email": "",
+          "link": ""
+        },
+        {
+          "name": "[Name]",
+          "role": "[MSc student]",
+          "group": "Lab members",
+          "bio": "",
+          "image": "",
+          "email": "",
+          "link": ""
+        }
+      ]
+    },
+    {
+      "id": "publications",
+      "type": "publications",
+      "title": "Publications",
+      "nav": true,
+      "visible": true,
+      "intro": "",
+      "items": [
+        {
+          "year": "",
+          "authors": "[Authors]",
+          "title": "[Publication title]",
+          "venue": "[Journal]",
+          "link": ""
+        }
+      ]
+    },
+    {
+      "id": "news",
+      "type": "news",
+      "title": "News",
+      "nav": true,
+      "visible": true,
+      "intro": "",
+      "items": [
+        {
+          "date": "",
+          "title": "[News title]",
+          "text": "[Short text]",
+          "image": "",
+          "link": ""
+        }
+      ]
+    },
+    {
+      "id": "gallery",
+      "type": "gallery",
+      "title": "Gallery",
+      "nav": false,
+      "visible": false,
+      "intro": "",
+      "items": []
+    },
+    {
+      "id": "contact",
+      "type": "contact",
+      "title": "Contact",
+      "nav": true,
+      "visible": true,
+      "body": "[Add contact text]",
+      "email": "",
+      "phone": "",
+      "address": "Department of Molecular Biology, Ariel University, Ariel, Israel",
+      "mapUrl": "",
+      "items": [
+        {
+          "label": "Ariel University",
+          "url": "https://www.ariel.ac.il"
+        }
+      ],
+      "showMap": true
+    }
+  ]
+}
