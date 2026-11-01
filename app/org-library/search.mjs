@@ -3,7 +3,8 @@ const STOP = new Set(`a an the and or of to for in on at by with from this that 
 const cache = new WeakMap();
 
 export function normalizeText(value='') {
-  return String(value).normalize('NFKD').replace(/\p{M}/gu,'').toLocaleLowerCase('en').replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
+  // כתיב חסר כמו כתיב מלא (01/11/2026): "חרום" = "חירום", כדי שחיפוש בכתיב חסר ימצא את המקורות.
+  return String(value).normalize('NFKD').replace(/\p{M}/gu,'').replace(/חרום/g,'חירום').toLocaleLowerCase('en').replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
 }
 function words(value) { return normalizeText(value).split(' ').filter(x=>x&&!STOP.has(x)); }
 function forms(word) {
