@@ -32,6 +32,8 @@
       none2: 'אין עדיין.', mailSent: 'נשלחו', reloaded: 'מישהו אחר עדכן את המערך. המסך נטען מחדש.', serverOld: 'השרת עוד לא עודכן לכלי הזה. אחרי עדכון השרת הכלי יעבוד.',
       waking: 'מתחברים לשרת… החיבור הראשון ביום נמשך עד כדקה.', missed: 'פעמים שעבר המועד', moveNext: 'עדכון מועד', when: 'מתי', extra: 'עוד', annexText: 'מה כתוב בנספח',
       callAfter: 'אחרי שההודעה נשלחת', recNo: 'בלי טלפון או בלי הסכמה: מסמנים רגעי החלטה כאן, בכפתור.', ledByDeputy: 'ממלא/ת המקום הוביל/ה', builtByTeam: 'התרחיש נבנה על ידי הצוות',
+      decmapT: 'מפת ההחלטות לפי רמות', decmapNotApproved: 'עוד לא אושרה עם הרשות והמפקח/ת', printDecmap: '🖨 מפת ההחלטות', ideasT: 'דיון החלטות', ideasOpen: 'רעיונות מחכים להחלטה',
+      discussBy: 'הדיון עד', whyNot: 'הסבר למי שהציע/ה', sendDecisions: '✉️ שליחת ההחלטות לכל המשתתפים', printIdeas: '🖨 ההחלטות',
       s4: 'מפגש 4', s5: 'מפגש 5', routineStep: '🎲 בשגרה: מחולל התרחישים', intent: 'כוונת בית הספר', success: 'מה נחשב הצלחה', scenario: 'התרחיש',
       ourTeam: 'הצוות שלנו', sayIt: 'מה אומרים לדמות', roleplay: 'משחק תפקידים: דמויות מבחוץ', roleInfo: 'הכלי מגלם את הדמות ומגיב למה שאתם אומרים. אפשר לעבור בין הדמויות.', character: 'הדמות',
       learnWhat: 'מה לומדים במפגש', pickGap: 'הפער שהצוות בחר מהתחקיר', aidDate: 'מתי הצוות עבר עזרה ראשונה פיזית ונפשית', annexToUpdate: 'הנספח שמתעדכן', updatedAfter: 'סימון: עודכן אחרי תחקיר', learnPlan: 'מה לומדים, ואיך', noGaps: 'עוד אין פערים. הם נוספים ממפגש 2 ומהתחקיר של מפגש 3.',
@@ -55,6 +57,8 @@
       none2: 'لا يوجد بعد.', mailSent: 'أُرسلت', reloaded: 'قام شخص آخر بتحديث المنظومة. أُعيد تحميل الشاشة.', serverOld: 'لم يُحدَّث الخادم بعد لهذه الأداة. بعد التحديث ستعمل الأداة.',
       waking: 'نتصل بالخادم… الاتصال الأول في اليوم يستغرق حتى دقيقة.', missed: 'مرات تجاوز الموعد', moveNext: 'تحديث الموعد', when: 'متى', extra: 'المزيد', annexText: 'ما هو مكتوب في الملحق',
       callAfter: 'بعد إرسال الرسالة', recNo: 'بدون هاتف أو بدون موافقة: نشير إلى لحظات القرار هنا، بالزر.', ledByDeputy: 'قاد/ت القائم/ة بالأعمال', builtByTeam: 'بنى الطاقم السيناريو',
+      decmapT: 'مفتاح القرارات حسب المستويات', decmapNotApproved: 'لم يُصادَق عليه بعد مع السلطة المحلية والمفتّش/ة', printDecmap: '🖨 مفتاح القرارات', ideasT: 'نقاش القرارات', ideasOpen: 'أفكار تنتظر قرارًا',
+      discussBy: 'النقاش حتى', whyNot: 'شرح لمن اقترح/ت', sendDecisions: '✉️ إرسال القرارات لكل المشاركين', printIdeas: '🖨 القرارات',
       s4: 'اللقاء 4', s5: 'اللقاء 5', routineStep: '🎲 في الروتين: مولّد السيناريوهات', intent: 'نية المدرسة', success: 'ما الذي يُعدّ نجاحًا', scenario: 'السيناريو',
       ourTeam: 'طاقمنا', sayIt: 'ماذا نقول للشخصية', roleplay: 'لعب أدوار: شخصيات من الخارج', roleInfo: 'تؤدّي الأداة دور الشخصية وتتجاوب مع ما تقولونه. يمكن التنقّل بين الشخصيات.', character: 'الشخصية',
       learnWhat: 'ماذا نتعلّم في اللقاء', pickGap: 'الفجوة التي اختارها الطاقم من استخلاص العبر', aidDate: 'متى اجتاز الطاقم الإسعاف الأولي الجسدي والنفسي', annexToUpdate: 'الملحق الذي يُحدَّث', updatedAfter: 'إشارة: حُدِّث بعد استخلاص العبر', learnPlan: 'ماذا نتعلّم، وكيف', noGaps: 'لا توجد فجوات بعد. تُضاف من اللقاء 2 ومن استخلاص العبر في اللقاء 3.',
@@ -186,8 +190,9 @@
     const side = h('div', { class: 'side noprint' },
       h('button', { class: 'btn ghost sm', type: 'button', onclick: () => { S.panel = S.panel === 'ends' ? '' : 'ends'; render(); } }, T('ends') + ' ', h('span', { class: 'pill' + (st.escalate ? ' red' : ''), text: String(st.openEnds) })),
       h('button', { class: 'btn ghost sm', type: 'button', text: T('actions'), onclick: () => { S.panel = S.panel === 'actions' ? '' : 'actions'; render(); } }),
+      h('button', { class: 'btn ghost sm', type: 'button', onclick: () => { S.panel = S.panel === 'ideas' ? '' : 'ideas'; render(); } }, Y('ideasT') + ' ', h('span', { class: 'pill' + (P.ideasState(arr('ideas')).open ? ' red' : ''), text: String(P.ideasState(arr('ideas')).open) })),
       h('button', { class: 'btn ghost sm', type: 'button', text: T('log'), onclick: () => { S.panel = S.panel === 'log' ? '' : 'log'; render(); } }));
-    const body = S.panel === 'ends' ? viewEnds() : S.panel === 'actions' ? viewActions() : S.panel === 'log' ? viewLog()
+    const body = S.panel === 'ends' ? viewEnds() : S.panel === 'actions' ? viewActions() : S.panel === 'ideas' ? viewIdeas() : S.panel === 'log' ? viewLog()
       : ([viewHome, viewPlan, viewS1, viewS2, viewS3, viewS4, viewS5, viewRoutine][S.step] || viewHome)();
     app.replaceChildren(head, steps, side, body);
   }
@@ -239,7 +244,11 @@
     const indep = h('div', { class: 'card' }, h('h2', { text: T('independence') }),
       h('div', { class: 'grid3' }, L.INDEPENDENCE.map((x) => h('div', { class: 'tile' }, h('span', { class: 'big', text: String(ind[x.k] || 0) }), h('div', { text: x.name })))));
     const esc = st.escalate ? h('div', { class: 'warn' }, h('b', { text: Y('escalate') + ': ' + st.escalate + ' ' }), h('button', { class: 'btn sm', type: 'button', text: T('ends'), onclick: () => { S.panel = 'ends'; render(); } })) : null;
-    return h('div', {}, esc, nextCard, prog, pillars, indep, viewPartners(), routineCard(), h('p', { class: 'muted', text: L.TABLETOP_NOTE }));
+    const dm = obj('decmap');
+    const dmWarn = (dm.intent || dm.rows) && P.decmapDue(dm) ? h('div', { class: 'sunny' }, h('b', { text: Y('decmapT') + ': ' }), dm.approvedAuth && dm.approvedSup ? L.APPROVE.due : Y('decmapNotApproved'), ' ', h('button', { class: 'btn ghost sm', type: 'button', text: Y('decmapT'), onclick: () => { S.step = 1; render(); } })) : null;
+    const ist = P.ideasState(arr('ideas'));
+    const ideaWarn = ist.open ? h('div', { class: ist.late ? 'warn' : 'sunny' }, h('b', { text: Y('ideasT') + ': ' }), ist.open + ' ' + Y('ideasOpen'), ' ', h('button', { class: 'btn ghost sm', type: 'button', text: Y('ideasT'), onclick: () => { S.panel = 'ideas'; render(); } })) : null;
+    return h('div', {}, esc, dmWarn, ideaWarn, nextCard, prog, pillars, indep, viewPartners(), routineCard(), h('p', { class: 'muted', text: L.TABLETOP_NOTE }));
   }
   function routineCard() {
     return h('div', { class: 'card' }, h('h2', { text: T('routine') }), h('p', { text: String(L.ROUTINE).replace(/^[^:：]{2,30}[:：]\s*/, '') }),
@@ -299,7 +308,7 @@
           return h('tr', {}, h('td', { 'data-h': T('annexes') }, h('b', { text: base.name || a.name })), h('td', { 'data-h': T('team'), text: teamName(a.team) }), h('td', { 'data-h': T('maturity') }, sel), h('td', { 'data-h': Y('annexText') }, ta));
         }))));
     const pm = bindText(h('textarea', { rows: 3 }), () => plan.premortem, (v) => { plan.premortem = v; }, 'plan', 'תחקיר מקדים');
-    return h('div', {}, h('div', { class: 'note', text: L.TABLETOP_NOTE }), steps, annex,
+    return h('div', {}, h('div', { class: 'note', text: L.TABLETOP_NOTE }), steps, annex, viewDecmap(),
       h('div', { class: 'card' }, h('h2', { text: T('premortem') }), h('p', { text: L.REMS[4].q[1] }), pm),
       h('div', { class: 'row noprint' }, h('button', { class: 'btn ghost', type: 'button', text: Y('printPlan'), onclick: printPlan })));
   }
@@ -439,7 +448,7 @@
       text: dateIL(x.startedAt) + ' · ' + x.title, onclick: () => { S.exIds[n] = x.id; render(); } }))) : null;
     const scn = scnOf(curEx(n)) || (defaultScn === 'disconnect' ? L.DISCONNECT : L.SIRENS);
     return h('div', { class: 'card' }, h('h2', { text: scn.title }), h('p', { text: scn.intro }),
-      scn.intent ? h('p', {}, h('b', { text: Y('intent') + ': ' }), scn.intent) : null,
+      (obj('decmap').intent || scn.intent) ? h('p', {}, h('b', { text: Y('intent') + ': ' }), obj('decmap').intent || scn.intent) : null,
       (scn.success || (scn.card && scn.card.success) || []).length ? h('div', {}, h('b', { text: Y('success') }), h('ul', { class: 'list' }, (scn.success || scn.card.success).map((x) => h('li', { text: x })))) : null,
       h('div', { class: 'row noprint' }, field(Y('scenario'), pickS), field(Y('version'), pickV), startBtn), pastRow);
   }
@@ -603,7 +612,7 @@
       else if (!tr) tr = { segments: [], marks: ex.marks };
       try {
         const srcs = window.SBE_ADVISOR_SOURCES ? window.SBE_ADVISOR_SOURCES.forAdvisor('readiness') : [];
-        const v = await window.sbeCallAIJson(SERVER, { system: P.debriefSystem(S.lang), messages: [{ role: 'user', content: P.debriefInput(ex, tr, srcs) }], maxTokens: 12000, customerReview: true }, 300000, P.validDebrief);
+        const v = await window.sbeCallAIJson(SERVER, { system: P.debriefSystem(S.lang), messages: [{ role: 'user', content: P.debriefInput(ex, tr, srcs, (obj('decmap').intent ? 'כוונת בית הספר: ' + obj('decmap').intent + '\n' : '') + decmapRows().map((r) => r.filter(Boolean).join(' · ')).join('\n')) }], maxTokens: 12000, customerReview: true }, 300000, P.validDebrief);
         ex.draft = v;
         ex.report = ex.report || {};
         ex.report.rows = (v.gaps || []).map((g) => ({ topic: g.topic || '', planned: g.planned || '', happened: g.happened || '', how: g.how || '', keep: g.keep === 'keep' ? 'keep' : 'improve', action: g.action || '', owner: g.team ? teamName(g.team) : '', due: plus(14), team: g.team || '' }));
@@ -652,7 +661,7 @@
         if (row.keep === 'improve' && row.action) acts.push({ id: uid('a'), text: row.action, team: row.team || '', owner: row.owner || '', due: row.due || plus(14), status: 'todo', src });
         if (row.keep === 'improve' && row.topic) gaps.push({ id: uid('g'), text: row.topic + (row.happened ? ': ' + row.happened : ''), team: row.team || '', src, at: nowIso() });
       }
-      for (const x of v.ideas || []) ideas.push({ id: uid('i'), text: x.text, ifThen: x.ifThen || '', at: nowIso(), decision: '' });
+      for (const x of v.ideas || []) ideas.push({ id: uid('i'), text: x.text, ifThen: x.ifThen || '', at: nowIso(), decision: '', exId: ex.id, src: src });
       S.doc.parts.actions = acts; S.doc.parts.gaps = gaps; S.doc.parts.ideas = ideas;
       const n = ex.session || 3, sess = obj('sessions'); if (!(sess[n] && sess[n].done)) { sess[n] = { done: true, at: nowIso() }; S.doc.parts.sessions = sess; await save('sessions', 'מפגש ' + n + ' הושלם'); }
       await save('exercises', 'אישור דוח התחקיר'); await save('actions', ''); await save('gaps', ''); await save('ideas', '');
@@ -839,6 +848,97 @@
           h('button', { class: 'btn ghost sm', type: 'button', text: T('del'), onclick: () => { if (!confirm(Y('confirmDel'))) return; const l = arr('scenarios').filter((x) => x.id !== it.id); S.doc.parts.scenarios = l; save('scenarios', 'מחיקת תרחיש: ' + scn.title); render(); } }))) : null;
       return h('div', { class: 'teamcard' }, h('button', { class: 'btn ghost sm', type: 'button', 'aria-expanded': open ? 'true' : 'false', text: '🎲 ' + scn.title, onclick: () => { S.genOpen = open ? '' : it.id; render(); } }), body);
     }));
+  }
+
+  // ---------- מפת ההחלטות לפי רמות (בתוכנית) ----------
+  function viewDecmap() {
+    const dm = obj('decmap'); dm.rows = dm.rows || {}; S.doc.parts.decmap = dm;
+    const intent = bindText(h('input', { type: 'text', placeholder: L.INTENT_EX }), () => dm.intent, (v) => { dm.intent = v; }, 'decmap', 'כוונת בית הספר');
+    const rows = L.DEC_ROWS.map((r) => {
+      const v = dm.rows[r.k] = dm.rows[r.k] || {};
+      let who;
+      if (r.fixed) {
+        const m = procOf(r.proc), lv = L.DEC_LEVELS.find((l) => l.k === r.level);
+        who = h('div', {}, h('b', { text: lv ? lv.name : '' }), h('div', { class: 'muted', text: L.FIXED_NOTE + (m ? ': ' + m.topic : '') }));
+      } else {
+        who = h('select', { 'data-closed': '', 'aria-label': L.DEC_COLS[1] + ': ' + r.text }, L.DEC_LEVELS.map((l) => h('option', { value: l.k, text: l.name })));
+        who.value = v.level || r.level;
+        who.addEventListener('change', () => { v.level = who.value; save('decmap', 'מפת ההחלטות: ' + r.text); });
+      }
+      const inp = (k) => bindText(h('textarea', { rows: 2, class: 'cell' }), () => v[k], (x) => { v[k] = x; }, 'decmap', 'מפת ההחלטות');
+      return h('tr', {}, h('td', { 'data-h': L.DEC_COLS[0] }, h('b', { text: r.text })), h('td', { 'data-h': L.DEC_COLS[1] }, who),
+        h('td', { 'data-h': L.DEC_COLS[2] }, inp('trigger')), h('td', { 'data-h': L.DEC_COLS[3] }, r.k === 'exitShelter' ? h('span', { class: 'muted', text: (procOf('disconnect') || {}).rule || '' }) : inp('nolink')), h('td', { 'data-h': L.DEC_COLS[4] }, inp('redline')));
+    });
+    const a = h('input', { type: 'date', value: dm.approvedAuth || '' }); a.onchange = () => { dm.approvedAuth = a.value; save('decmap', L.APPROVE.auth); render(); };
+    const b = h('input', { type: 'date', value: dm.approvedSup || '' }); b.onchange = () => { dm.approvedSup = b.value; save('decmap', L.APPROVE.sup); render(); };
+    const last = dm.approvedAuth && dm.approvedSup ? (dm.approvedAuth < dm.approvedSup ? dm.approvedAuth : dm.approvedSup) : '';
+    const next = last ? new Date(Date.parse(last) + 365 * 864e5).toISOString().slice(0, 10) : '';
+    return h('div', { class: 'card' }, h('h2', { text: Y('decmapT') }), h('p', { class: 'muted', text: L.DEC_INFO }),
+      field(L.INTENT_Q, intent),
+      h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, L.DEC_COLS.map((c) => h('th', { text: c })))), h('tbody', {}, rows)),
+      h('div', { class: 'row' }, h('div', { class: 'grow' }, field(L.APPROVE.auth, a)), h('div', { class: 'grow' }, field(L.APPROVE.sup, b)),
+        h('div', { class: 'grow' }, next ? h('p', {}, h('b', { text: L.APPROVE.next + ': ' }), dateIL(next)) : null, P.decmapDue(dm) && last ? h('span', { class: 'pill red', text: L.APPROVE.due }) : null)),
+      h('div', { class: 'row noprint' }, h('button', { class: 'btn ghost', type: 'button', text: Y('printDecmap'), onclick: printDecmap })));
+  }
+  function decmapRows() {
+    const dm = obj('decmap'); const rows = dm.rows || {};
+    return L.DEC_ROWS.map((r) => { const v = rows[r.k] || {}; const lv = L.DEC_LEVELS.find((l) => l.k === (r.fixed ? r.level : v.level || r.level));
+      return [r.text, (lv ? lv.name : '') + (r.fixed ? ' (' + L.FIXED_NOTE + ')' : ''), v.trigger || '', r.k === 'exitShelter' ? (procOf('disconnect') || {}).rule || '' : v.nolink || '', v.redline || '']; });
+  }
+  function printDecmap() {
+    const dm = obj('decmap');
+    doPrint(Y('decmapT'), Y('decmapT'), [dm.intent ? h('p', {}, h('b', { text: Y('intent') + ': ' }), dm.intent) : null, h('h2', { text: Y('decmapT') }), tbl(L.DEC_COLS, decmapRows()),
+      h('p', { text: L.APPROVE.auth + ': ' + (dateIL(dm.approvedAuth) || '____') + ' · ' + L.APPROVE.sup + ': ' + (dateIL(dm.approvedSup) || '____') }), h('p', { class: 'muted', text: L.DEC_INFO })]);
+  }
+
+  // ---------- דיון החלטות (צד) ----------
+  function viewIdeas() {
+    const ideas = arr('ideas'); S.doc.parts.ideas = ideas;
+    const exs = arr('exercises').filter((x) => x.report && x.report.approvedAt);
+    const heads = exs.map((ex) => { const st = P.ideasState(ideas, ex); return st.total ? h('div', { class: st.late ? 'warn' : 'note' }, h('b', { text: ex.title + ' · ' + dateIL(ex.report.approvedAt) + ': ' }),
+      Y('discussBy') + ' ' + dateIL(st.by) + ' · ' + st.open + ' ' + Y('ideasOpen') + (st.late ? ' · ' + T('late') : '')) : null; });
+    const markCycle = () => {
+      let changed = false;
+      for (const ex of exs) { const st = P.ideasState(ideas, ex); if (st.total && !st.open && !ex.ideasDecidedAt) { ex.ideasDecidedAt = nowIso(); changed = true; } }
+      if (changed) save('exercises', 'דיון ההחלטות הושלם');
+    };
+    const rows = ideas.map((it, i) => {
+      const dec = h('select', { 'data-closed': '' }, h('option', { value: '', text: '…' }), Object.entries(L.IDEA_DEC).map(([k, v]) => h('option', { value: k, text: v })));
+      dec.value = it.decision || '';
+      dec.onchange = async () => {
+        it.decision = dec.value; it.decidedAt = nowIso();
+        if (it.decision === 'adopt' && !it.actionId) {
+          const acts = arr('actions'); const a = { id: uid('a'), text: it.text + (it.ifThen ? ' · ' + it.ifThen : ''), team: '', owner: it.owner || '', due: it.due || plus(14), status: 'todo', src: Y('ideasT') };
+          acts.push(a); S.doc.parts.actions = acts; it.actionId = a.id; await save('actions', '');
+        }
+        if (it.decision === 'check' && !it.due) it.due = plus(14);
+        await save('ideas', 'דיון החלטות: ' + (L.IDEA_DEC[it.decision] || '') + ': ' + String(it.text).slice(0, 60));
+        markCycle(); render();
+      };
+      const due = h('input', { type: 'date', value: it.due || '' }); due.onchange = () => { it.due = due.value; save('ideas', ''); };
+      const needWhy = it.decision === 'reject' && !String(it.answer || '').trim();
+      return h('tr', {},
+        h('td', { 'data-h': L.IDEA_COLS[0] }, bindText(h('textarea', { rows: 2, class: 'cell' }), () => it.text + (it.ifThen && !it.edited ? ' · ' + it.ifThen : ''), (v) => { it.text = v; it.edited = true; }, 'ideas', '')),
+        h('td', { 'data-h': L.IDEA_COLS[1] }, bindText(h('input', { type: 'text' }), () => it.by, (v) => { it.by = v; }, 'ideas', '')),
+        h('td', { 'data-h': L.IDEA_COLS[2] }, dec),
+        h('td', { 'data-h': L.IDEA_COLS[3] }, bindText(h('textarea', { rows: 2, class: 'cell', placeholder: it.decision === 'reject' ? Y('whyNot') : '' }), () => it.answer, (v) => { it.answer = v; }, 'ideas', ''), needWhy ? h('span', { class: 'pill red', text: Y('whyNot') }) : null),
+        h('td', { 'data-h': L.IDEA_COLS[4] }, bindText(h('input', { type: 'text' }), () => it.owner, (v) => { it.owner = v; }, 'ideas', '')),
+        h('td', { 'data-h': L.IDEA_COLS[5] }, due),
+        h('td', { class: 'noprint' }, h('button', { class: 'btn ghost sm', type: 'button', text: T('del'), onclick: () => { ideas.splice(i, 1); save('ideas', ''); render(); } })));
+    });
+    const sendAll = h('button', { class: 'btn ghost', type: 'button', text: Y('sendDecisions'), onclick: async () => {
+      const decided = ideas.filter((x) => x.decision);
+      if (!decided.length) { toast(Y('none2')); return; }
+      const text = decided.map((x) => '• ' + x.text + ': ' + L.IDEA_DEC[x.decision] + (x.answer ? ' (' + x.answer + ')' : '') + (x.owner ? ' · ' + T('owner') + ': ' + x.owner : '') + (x.due ? ' · ' + dateIL(x.due) : '')).join('\n');
+      sendAll.disabled = true;
+      const [s2, o] = await api('rdyMail', { id: S.doc.id, subject: Y('ideasT'), items: L.TEAMS.map((t) => ({ teamId: t.id, text })) });
+      sendAll.disabled = false;
+      toast(s2 === 200 ? (o.available ? Y('mailSent') + ': ' + o.sent : T('mailOff')) : (o.error || ''));
+    } });
+    return h('div', { class: 'card' }, h('h2', { text: Y('ideasT') }), h('p', { class: 'muted', text: L.IDEA_INFO }), heads,
+      ideas.length ? h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, L.IDEA_COLS.map((c) => h('th', { text: c })), h('th', { class: 'noprint' }))), h('tbody', {}, rows)) : h('p', { class: 'muted', text: Y('none2') }),
+      h('div', { class: 'row noprint' }, h('button', { class: 'btn ghost sm', type: 'button', text: T('add'), onclick: () => { ideas.push({ id: uid('i'), text: '', at: nowIso(), decision: '', by: S.by }); save('ideas', ''); render(); } }), sendAll,
+        h('button', { class: 'btn ghost', type: 'button', text: Y('printIdeas'), onclick: () => doPrint(Y('ideasT'), Y('ideasT'), [h('h2', { text: Y('ideasT') }), tbl(L.IDEA_COLS, ideas.map((x) => [x.text, x.by || '', L.IDEA_DEC[x.decision] || '', x.answer || '', x.owner || '', dateIL(x.due)]))]) })));
   }
 
   // ---------- צד: קצוות פתוחים, פעולות, רישום ----------

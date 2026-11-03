@@ -366,6 +366,42 @@
   C.EM_ABSENT = 'מנהל/ת מצב החירום לא נמצא/ת, וממלא/ת המקום מוביל/ה';
   C.COMMUNITY = 'אחרי חמשת המפגשים בית הספר מצטרף לקהילת חוסן, שחולקת לקחים, תרחישים והצלחות. ההוקרה היא השייכות.';
 
+  // ---------- מפת ההחלטות לפי רמות (02, החלטה 12; 04, רמה 4: כוונה, טריגרים, קווים אדומים) ----------
+  // אוטונומיה תפקודית מוגדרת (עיקרון 7): מחליטים לבד, בתוך גבולות שסוכמו מראש. מאשרים עם הרשות והמפקח/ת פעם בשנה.
+  C.DEC_LEVELS = [
+    { k: 'edu', name: 'מחנך/ת או מבוגר/ת במקום' },
+    { k: 'lead', name: 'מוביל/ת צוות' },
+    { k: 'em', name: 'מנהל/ת מצב החירום' },
+    { k: 'auth', name: 'הרשות או המפקח/ת' },
+    { k: 'hfc', name: 'פיקוד העורף או גורם מוסמך' }
+  ];
+  // fixed: ההחלטה נקבעת בנוהל מחייב (proc), ולא בבית הספר
+  C.DEC_ROWS = [
+    { k: 'shelter', text: 'כניסה למרחב המוגן', level: 'edu', fixed: true, proc: 'siren' },
+    { k: 'exitShelter', text: 'יציאה מהמרחב המוגן', level: 'hfc', fixed: true, proc: 'siren' },
+    { k: 'evacWing', text: 'פינוי אגף לאגף אחר', level: 'em' },
+    { k: 'evacAll', text: 'פינוי כל בית הספר לאתר החלופי', level: 'em' },
+    { k: 'callHelp', text: 'קריאה לעזרה (כבאות, משטרה, מוקד הרשות)', level: 'lead' },
+    { k: 'release', text: 'שחרור תלמידים להורים', level: 'em' },
+    { k: 'parentsMsg', text: 'הודעה להורים', level: 'em' },
+    { k: 'continue', text: 'המשך יום הלימודים או סיום מוקדם', level: 'em' },
+    { k: 'remote', text: 'מעבר ללמידה מרחוק', level: 'auth' },
+    { k: 'volunteers', text: 'הכנסת מתנדבים לבית הספר', level: 'em', proc: 'volunteers' },
+    { k: 'media', text: 'שיחה עם התקשורת', level: 'em' },
+    { k: 'unusual', text: 'דיווח על אירוע חריג', level: 'em', fixed: true, proc: 'unusual' }
+  ];
+  C.DEC_COLS = ['ההחלטה', 'מי מחליט/ה', 'מתי (הטריגר)', 'כשאין קשר', 'קו אדום'];
+  C.DEC_INFO = 'המפה קובעת מראש מי מחליט/ה מה, ובאילו גבולות. כך בזמן אירוע אפשר להחליט לבד, בלי לחכות. כשנותק הקשר עם גורם מוסמך, המבוגר/ת האחראי/ת במקום מפעיל/ה שיקול דעת לפי כוונת בית הספר והקווים האדומים, רושם/ת את ההחלטה ומדווח/ת כשהקשר חוזר.';
+  C.INTENT_Q = 'כוונת בית הספר: משפט אחד שכל החלטה נבדקת מולו';
+  C.INTENT_EX = 'למשל: "כולם מוגנים, ספורים ומחוברים, והלמידה ממשיכה."';
+  C.FIXED_NOTE = 'נקבע בנוהל מחייב';
+  C.APPROVE = { auth: 'אושר עם הרשות', sup: 'אושר עם המפקח/ת', next: 'בדיקה שנתית הבאה', due: 'הגיע מועד הבדיקה השנתית' };
+
+  // ---------- דיון החלטות (03, "דיון החלטות"; 02, החלטה 29) ----------
+  C.IDEA_DEC = { adopt: 'מאמצים', reject: 'לא מאמצים', check: 'בודקים עוד' };
+  C.IDEA_INFO = 'תוך שבוע מכל תחקיר צוות הניהול מחליט על הרעיונות. רעיון שאומץ הופך לפעולה עם אחראי/ת ומועד. רעיון שלא אומץ נרשם עם הסבר, ומי שהציע/ה מקבל/ת תשובה. רעיון שבודקים עוד מקבל אחראי/ת לבדיקה ומועד שבו הוא חוזר לדיון.';
+  C.IDEA_COLS = ['הרעיון', 'מי הציע/ה', 'ההחלטה', 'הסבר או תשובה', 'אחראי/ת', 'עד מתי'];
+
   function pick(base, over) {
     if (over == null) return base;
     if (Array.isArray(base)) return base.map((x, i) => pick(x, Array.isArray(over) ? over[i] : undefined));
@@ -432,6 +468,7 @@
       'את/ה עוזר/ת לצוות בית ספר לסכם תרגיל שולחן במערך המוכנות שלו. הצוות הוא הגורם המקצועי, והוא מחליט.',
       'התחקיר בודק את המערך ולא את האנשים: שואלים מה קרה, איך קרה ואיך אפשר לשפר, בלי "למה" ובלי מי אשם/ה. בלי שמות של אנשים: רק תפקידים וצוותים.',
       'אין הפניה לאנשי מקצוע: המענה הרגשי בידי אנשי החינוך. לא ממציאים נהלים: נוהל שלא מופיע במה שנאמר נרשם כ"נוהל חסר: כדאי לברר".',
+      'כשיש מפת החלטות וכוונת בית ספר, בדקו כל החלטה גם מולן: מי החליט/ה, והאם זה בגבולות שסוכמו. החלטה מחוץ למפה נרשמת כפער במערך, לא כטעות של אדם.',
       'כתבו רק מה שעולה מהחומר. מה שלא ידוע נשאר ריק.',
       'החזירו JSON בלבד, במבנה:',
       '{"timeline":[{"t":"10:42","what":"..."}],"worked":["..."],"gaps":[{"topic":"...","planned":"...","happened":"...","how":"...","keep":"improve","action":"...","team":"<מזהה צוות>"}],"ends":[{"text":"...","team":"<מזהה צוות>"}],"ideas":[{"text":"...","ifThen":"אם ... אז ..."}],"feedback":[{"text":"...","source":"<מפתח מקור מהרשימה>"}]}',
@@ -440,13 +477,13 @@
       lang === 'ar' ? 'כתבו את כל הטקסט בערבית ספרותית פשוטה.' : 'כתבו בעברית פשוטה, לשני המינים, בלי מקף ארוך.'
     ].join('\n');
   }
-  function debriefInput(ex, transcript, sources) {
+  function debriefInput(ex, transcript, sources, mapText) {
     const segs = (transcript && transcript.segments || []).map((s) => '[סבב ' + s.round + '] ' + s.text).join('\n');
     const marks = (transcript && transcript.marks || []).map((m) => '⭐ סבב ' + m.round + ' · ' + Math.round(m.t / 60000) + ' דק׳ · ' + (m.note || 'רגע החלטה')).join('\n');
     const rounds = (ex.rounds || []).map((r, i) => 'סבב ' + (i + 1) + ': החלטה: ' + (r.decision || '') + (r.plan ? ' · במערך: ' + r.plan : '') + (r.worked ? ' · מה עבד: ' + r.worked : '') + (r.improved ? ' · השתפרנו: ' + r.improved : '')).join('\n');
     const steps = Object.entries(ex.debrief || {}).map(([k, v]) => k + ': ' + v).join('\n');
     return ['התרחיש: ' + (ex.title || C.SIRENS.title), 'ההחלטות בסבבים:\n' + rounds, ex.callHelp ? 'הקריאה לעזרה: ' + ex.callHelp : '', ex.hardTalk ? 'השיחה הקשה: ' + ex.hardTalk : '',
-      steps ? 'מה נרשם בתחקיר:\n' + steps : '', marks ? 'רגעי החלטה שסומנו:\n' + marks : '', segs ? 'התמליל:\n' + segs.slice(0, 60000) : '',
+      steps ? 'מה נרשם בתחקיר:\n' + steps : '', mapText ? 'מפת ההחלטות וכוונת בית הספר:\n' + mapText : '', marks ? 'רגעי החלטה שסומנו:\n' + marks : '', segs ? 'התמליל:\n' + segs.slice(0, 60000) : '',
       'המקורות שאפשר להפנות אליהם (מפתח: מה נמצא):\n' + (sources || []).map((s) => s.k + ': ' + String(s.gist || '').slice(0, 220)).join('\n')].filter(Boolean).join('\n\n');
   }
   function validDebrief(o) {
@@ -496,7 +533,9 @@
     const annexes = (plan.annexes || []).filter((a) => a && a.text).map((a) => a.name + ': ' + String(a.text).slice(0, 300)).join('\n');
     const teams = (p.teams || []).map((t) => t.name + (t.deputy && t.deputy.name ? ' (יש ממלא/ת מקום)' : ' (אין ממלא/ת מקום)')).join(', ');
     const lines = C.AXES.map((a) => a.label + ': ' + [].concat(sel[a.k] || '').join(', ')).join('\n');
-    return ['מה בודקים (הצוות החליט): ' + (sel.tests || ''), lines,
+    const dm = p.decmap || {};
+    const dmap = C.DEC_ROWS.map((r) => { const v = (dm.rows || {})[r.k] || {}; const lv = C.DEC_LEVELS.find((l) => l.k === (r.fixed ? r.level : v.level || r.level)); return r.text + ': ' + (lv ? lv.name : '') + (v.trigger ? ' · מתי: ' + v.trigger : '') + (v.redline ? ' · קו אדום: ' + v.redline : ''); }).join('\n');
+    return ['מה בודקים (הצוות החליט): ' + (sel.tests || ''), lines, dm.intent ? 'כוונת בית הספר: ' + dm.intent : '', 'מפת ההחלטות של בית הספר (מי מחליט/ה):\n' + dmap,
       'בית הספר: ' + (p.profile && p.profile.name || '') + (p.profile && p.profile.levels ? ', ' + p.profile.levels : ''), 'הצוותים: ' + teams,
       annexes ? 'הנהלים שבית הספר כתב (נוהל בית ספרי):\n' + annexes : 'בית הספר עוד לא כתב נספחים.',
       'הנהלים המחייבים (מפתח: נושא):\n' + C.MANDATORY.filter((m) => !m.sensitive || /רגשי/.test(sel.crisis || '')).map((m) => m.key + ': ' + m.topic).join('\n')].join('\n\n');
@@ -547,8 +586,22 @@
       'החזירו JSON בלבד: {"rows":[{"topic":"...","s3":"...","s5":"...","state":"closed|better|open|fresh","todo":"..."}]}', langLine(lang)].join('\n');
   }
   const validCompare = (o) => !!o && Array.isArray(o.rows);
+  // מפת ההחלטות: שנה מהאישור האחרון (מול הרשות ומול המפקח/ת)
+  function decmapDue(dm, now = Date.now()) {
+    const a = dm && dm.approvedAuth, b = dm && dm.approvedSup;
+    if (!a || !b) return true;
+    const last = Math.min(Date.parse(a), Date.parse(b));
+    return !Number.isFinite(last) || last + 365 * 864e5 < now;
+  }
+  // דיון החלטות: מועד הדיון (שבוע מאישור הדוח), ומה עוד מחכה
+  function ideasState(ideas, ex, now = Date.now()) {
+    const mine = (ideas || []).filter((i) => i && (!ex || i.exId === ex.id));
+    const open = mine.filter((i) => !i.decision);
+    const by = ex && ex.report && ex.report.approvedAt ? Date.parse(ex.report.approvedAt) + 7 * 864e5 : null;
+    return { total: mine.length, open: open.length, late: !!(by && open.length && by < now), by: by ? new Date(by).toISOString().slice(0, 10) : '' };
+  }
   const PII_RX = /(05\d[- ]?\d{3}[- ]?\d{4}|0[2-489][- ]?\d{7}|(^|[^\d])\d{9}([^\d]|$))/;
 
   return Object.assign({}, C, { content, t, endState, detectEnds, stats, independence, debriefSystem, debriefInput, validDebrief, planSystem, validPlan, PII_RX,
-    checkSelection, generatorSystem, generatorInput, normalizeScenario, validScenario, altSystem, validAlts, roleSystem, compareSystem, validCompare });
+    checkSelection, generatorSystem, generatorInput, normalizeScenario, validScenario, altSystem, validAlts, roleSystem, compareSystem, validCompare, decmapDue, ideasState });
 });

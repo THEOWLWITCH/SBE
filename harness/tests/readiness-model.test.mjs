@@ -106,3 +106,26 @@ test('generator: selection check, prompt rules, and the scenario check keeps onl
   assert.match(P.roleSystem(P.DISCONNECT.characters[0], P.DISCONNECT, P.DISCONNECT.rounds[1], 'he'), /הורה בפארק/);
   assert.match(P.compareSystem('he'), /closed/);
 });
+
+test('decision map: fixed rows come from binding guidelines, yearly approval, and the map reaches the generator and the debrief', () => {
+  const keys = new Set(P.MANDATORY.map((m) => m.key));
+  for (const r of P.DEC_ROWS.filter((x) => x.fixed)) assert.ok(keys.has(r.proc), r.k);
+  assert.ok(P.DEC_ROWS.every((r) => P.DEC_LEVELS.some((l) => l.k === r.level)));
+  assert.equal(P.DEC_ROWS.find((r) => r.k === 'exitShelter').level, 'hfc');
+  assert.ok(P.decmapDue({}));
+  const recent = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10), old = new Date(Date.now() - 400 * 864e5).toISOString().slice(0, 10);
+  assert.ok(!P.decmapDue({ approvedAuth: recent, approvedSup: recent }));
+  assert.ok(P.decmapDue({ approvedAuth: recent, approvedSup: old }));
+  const input = P.generatorInput({ tests: 'x' }, { parts: { decmap: { intent: 'כולם מוגנים', rows: { evacWing: { level: 'lead', redline: 'לא יוצאים בלי ספירה' } } } } });
+  assert.match(input, /כוונת בית הספר: כולם מוגנים/); assert.match(input, /פינוי אגף לאגף אחר: מוביל\/ת צוות/); assert.match(input, /לא יוצאים בלי ספירה/);
+  assert.match(P.debriefSystem('he'), /מפת החלטות/);
+  assert.match(P.debriefInput({ rounds: [] }, null, [], 'כוונת בית הספר: א'), /מפת ההחלטות וכוונת בית הספר/);
+});
+
+test('decision discussion: a week from the approved report, and what is still open', () => {
+  const ex = { id: 'e1', report: { approvedAt: new Date(Date.now() - 10 * 864e5).toISOString() } };
+  const st = P.ideasState([{ exId: 'e1' }, { exId: 'e1', decision: 'reject' }, { exId: 'e2' }], ex);
+  assert.deepEqual([st.total, st.open, st.late], [2, 1, true]);
+  assert.equal(P.ideasState([{ exId: 'e1', decision: 'adopt' }], ex).late, false);
+  assert.deepEqual(Object.keys(P.IDEA_DEC), ['adopt', 'reject', 'check']);
+});
