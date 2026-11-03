@@ -13,9 +13,10 @@ const A = globalThis.window.SBE_ADVISOR_SOURCES;
 const lib = read('sources-library.html');
 const SIM = (() => { const i = lib.indexOf('const SOURCES = ['); const j = lib.indexOf('];', i); return JSON.parse(lib.slice(i + 16, j + 1)); })();
 
-test('the journal list: the 75 verified journals keep their ISSN, the new ones are marked to check', () => {
+test('the journal list: the 76 verified journals keep their ISSN, the new ones are marked to check', () => {
   const verified = J.LIST.filter((j) => !j.check);
-  assert.equal(verified.length, 75);
+  // 75 מאתר הקהילה, ועוד Progress in Disaster Science (03/11/2026, ISSN מ-Crossref)
+  assert.equal(verified.length, 76);
   for (const j of verified) assert.ok(j.issn.length && j.issn.every((i) => /^\d{4}-\d{3}[\dX]$/.test(i)), j.name);
   for (const j of J.LIST.filter((x) => x.check)) assert.deepEqual(j.issn, [], j.name + ': an unverified ISSN is not written');
   for (const j of J.LIST) assert.ok(J.AREAS[j.area], j.name);

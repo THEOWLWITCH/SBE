@@ -28,6 +28,7 @@
     { name: "Compare: A Journal of Comparative and International Education", issn: ["0305-7925","1469-3623"], area: "eie", aliases: ["Compare"] },
     { name: "International Journal of Disaster Risk Reduction", issn: ["2212-4209"], area: "eie" },
     { name: "Disasters", issn: ["0361-3666","1467-7717"], area: "eie" },
+    { name: "Progress in Disaster Science", issn: ["2590-0617"], area: "eie" },
     { name: "Journal of Refugee Studies", issn: ["0951-6328","1471-6925"], area: "eie" },
     { name: "Conflict and Health", issn: ["1752-1505"], area: "eie" },
     { name: "Intervention", issn: ["1571-8883","1872-1001"], area: "eie", aliases: ["Intervention: Journal of Mental Health and Psychosocial Support in Conflict Affected Areas"] },
