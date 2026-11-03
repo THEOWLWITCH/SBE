@@ -129,3 +129,13 @@ test('decision discussion: a week from the approved report, and what is still op
   assert.equal(P.ideasState([{ exId: 'e1', decision: 'adopt' }], ex).late, false);
   assert.deepEqual(Object.keys(P.IDEA_DEC), ['adopt', 'reject', 'check']);
 });
+
+test('crisis in routine: not war or terror, offered first, and the generator keeps it inside the school day', () => {
+  const r = P.CRISIS[0];
+  assert.equal(r.k, 'routine'); assert.ok(!r.sensitive);
+  assert.ok(r.what.some((w) => /גשם חזק שמציף.*חשמל/.test(w)));
+  assert.ok(r.what.some((w) => /אלימות של הורה/.test(w)));
+  assert.match(P.generatorSystem('he'), /משבר בשגרה .*אינו חירום ביטחוני/);
+  assert.match(P.generatorSystem('he'), /בלי תיאור של האלימות עצמה/);
+  assert.equal(P.content('ar').CRISIS.length, P.CRISIS.length);
+});
