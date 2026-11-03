@@ -144,6 +144,8 @@ const TOOLS=[
   ['nana','ננה: מהוראה להנחיה','מדריך הנחיה למפגש: עמדה, שפה, מהלכי שיחה, רגעים מאתגרים וסיום שהופך למנגנון חוזר.'],
   ['writer','תקשורת שמקדמת חוסן חברתי','ניסוח חד־פעמי וניהול תקשורת לאורך זמן, באותו מנוע ולפי 18 עקרונות התקשורת.'],
   ['continuity','תיק רציפות: למורה המחליפה','תיק הפעלה קצר למי שתחליף את המורה: שגרות, תפקידים וגיבוי, גבולות החלטה, רגעים שכדאי להתכונן אליהם ודף תרגול לעמיתה.'],
+  ['readiness','מערך המוכנות: תרחיש משבר וחירום','תרחיש לתרגיל צוות שהצוות בנה במחולל: מה בודקים, שלושה סבבים עם עדכון לכל צוות, נהלים מחייבים שקופצים ונוהל חסר, דמויות מבחוץ ושיחה קשה.'],
+  ['readiness-debrief','מערך המוכנות: דוח תחקיר','דוח תחקיר מתרגיל צוות: מה עבד, טבלה של מה תכננו ומה קרה, פעולות עם אחראים ומועדים, רעיונות לדיון החלטות ומשוב מקצועי עם מקור.'],
   ['cont-join','תיק רציפות: הצטרפות וחזרה של תלמידים','ערכה לתלמיד/ה שמצטרף/ת או חוזר/ת, או לכל הכיתה: תיק כניסה קבוצתי, דרכי הצטרפות לבחירה, תפקידי עמיתים ולוח לשבועיים.'],
   ['cont-proc','תיק רציפות: נוהל עבודה בכלים שלכם','איפה כל חלק בתיק נמצא בכלים שכבר יש לבית הספר, מי מעדכן, ומה נשאר רק במכשיר.'],
   ['routines','מרכז שגרות ויוזמות חברתיות','מנגנון חברתי קבוע בכיתה: לוח ביצוע, כרטיסי תפקיד וגיבוי, הסכם לתקופת ניסיון ויומן החלטות.'],
@@ -180,6 +182,8 @@ const TOOLS_ORG=[
   ['journey-org','מסע אל החוסן החברתי','הצעת מסע למרכז קהילתי: אשכולות, מכשולים וגשרים, החלטות לבחירה ואבני דרך עד תו חוסן.'],
   ['teamthink-org','חשיבת צוות','מהלך חשיבה לצוות עובדים: כל הקולות, בעד ונגד, פרגון ותפקידים מתחלפים.'],
   ['nugi-org','נוגי: יועצת למנהיגות שמקדמת חוסן','דוח סיכום והמלצות לרכז/ת קהילה במרכז קהילתי: תמונת מצב, צוות וממלאי מקום, תקשורת ופעולות.'],
+  ['readiness-org','מערך המוכנות: תרחיש משבר בקהילה','תרחיש לתרגיל צוות במרכז קהילתי, ברשות או בארגון: מה בודקים, שלושה סבבים, נהלים מחייבים ודמויות מבחוץ.'],
+  ['readiness-debrief-org','מערך המוכנות: דוח תחקיר בקהילה','דוח תחקיר מתרגיל צוות בקהילה: מה עבד, מה תכננו ומה קרה, ופעולות עם אחראים ומועדים.'],
   ['continuity-org','תיק רציפות: מחליף/ה בתפקיד','תיק הפעלה קצר למי שמחליף/ה בעל/ת תפקיד במרכז קהילתי: שגרות, תפקידים וגיבוי, גבולות החלטה ומוכנות הצוות לחירום.'],
   ['cont-join-org','תיק רציפות: הצטרפות וחזרה לצוות','ערכה לאיש/אשת צוות או מתנדב/ת שמצטרפים או חוזרים: תיק כניסה, דרכי הצטרפות, משימה ראשונה ולוח לשבועיים.'],
   ['cont-proc-org','תיק רציפות: נוהל עבודה בכלים שלכם','איפה כל חלק בתיק נמצא בכלים שכבר יש לארגון, מי מעדכן, ומה נשאר רק במכשיר.'],
@@ -236,7 +240,7 @@ async function load(){
   }
   const known=TOOLS.map(t=>t[0]);
   // לפי חמש שאלות של מוכנות יומיומית (SBE_READY)
-  const RG={"dialogue": "practice", "dialogue-full": "practice", "teamthink": "practice", "teamthink-round": "practice", "cont-join": "anchor", "cont-proc": "anchor", "routines-proc": "anchor", "paths": "act", "practice-own": "practice", "studio": "act", "practi": "see", "nugi": "see", "nana": "practice", "writer": "act", "continuity": "anchor", "routines": "anchor", "bridge": "practice", "resil": "see", "conv": "practice", "act-single": "act", "act-seq": "act", "review": "learn", "journey": "anchor", "practice": "practice", "edu": "practice", "parents": "practice", "youth": "practice", "hl-voice": "act", "hl-radar": "act", "hl-futures": "act", "hl-circles": "act", "hl-horizons": "act", "hl-collage": "act", "hl-roadmap": "act", "hl-game": "act", "hl-stress": "act"}, R=window.SBE_READY, order=R?R.GROUPS.map(g=>g.id):[];
+  const RG={"readiness": "anchor", "readiness-debrief": "anchor", "dialogue": "practice", "dialogue-full": "practice", "teamthink": "practice", "teamthink-round": "practice", "cont-join": "anchor", "cont-proc": "anchor", "routines-proc": "anchor", "paths": "act", "practice-own": "practice", "studio": "act", "practi": "see", "nugi": "see", "nana": "practice", "writer": "act", "continuity": "anchor", "routines": "anchor", "bridge": "practice", "resil": "see", "conv": "practice", "act-single": "act", "act-seq": "act", "review": "learn", "journey": "anchor", "practice": "practice", "edu": "practice", "parents": "practice", "youth": "practice", "hl-voice": "act", "hl-radar": "act", "hl-futures": "act", "hl-circles": "act", "hl-horizons": "act", "hl-collage": "act", "hl-roadmap": "act", "hl-game": "act", "hl-stress": "act"}, R=window.SBE_READY, order=R?R.GROUPS.map(g=>g.id):[];
   const sorted=TOOLS.slice().sort((a,b)=>order.indexOf(RG[a[0]])-order.indexOf(RG[b[0]]));
   const groups=sorted.concat([['_other','תוצרים נוספים','']]);
   let lastG=null;

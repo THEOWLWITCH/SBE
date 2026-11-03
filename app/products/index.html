@@ -32,7 +32,7 @@
   // המרחב שבו נמצא/ת מי שנכנס/ה (28/10/2026): 'org' (ארגוני) או 'edu' (חינוכי).
   // מהשרת בכניסה (המרחב שסומן למוסד), למנהלת המערכת לפי הבחירה במרחב שלי, ובמעבדת הדמו ?space=org.
   // כלים משותפים משתמשים בזה כדי להציג דוגמאות ומילים מהעולם הארגוני; השרת קובע בעצמו לפי הקוד.
-  var MOVED_PERMS = ["leadership", "routines", "continuity"], SHARED_PERMS = ["horizon", "journey", "teamthink", "writer", "studies"].concat(MOVED_PERMS), ORG_PERMS = ["orgsuite"];
+  var MOVED_PERMS = ["leadership", "routines", "continuity", "readiness"], SHARED_PERMS = ["horizon", "journey", "teamthink", "writer", "studies"].concat(MOVED_PERMS), ORG_PERMS = ["orgsuite"];
   window.sbeSpace = function(){
     try {
       var q = (location.search.match(/[?&]space=(org|edu)(?:&|$)/) || [])[1];

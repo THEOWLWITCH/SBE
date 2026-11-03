@@ -287,6 +287,16 @@
       click('[data-tab="proc"]'); await sleep(800);
       return procDemo($('[data-pane="proc"]'), "cont-proc" + sfx, "תיק רציפות: נוהל עבודה בכלים שלכם" + (org ? " · מרכז קהילתי" : ""), "נוהל עבודה · תיק רציפות", ["תיקייה משותפת", org ? "מערכת הארגון" : "מערכת בית הספר", "קלסר"]);
     },
+    // מערך המוכנות (03/11/2026): תרחיש משבר בשגרה מהמחולל, ודוח תחקיר מתרגיל לדוגמה. לא נשמר במערך.
+    "readiness.html": async function () {
+      var org = hlOrg(), sfx = org ? "-org" : "", at = org ? " · מרכז קהילתי" : "";
+      var R = await waitFor(function () { return window.sbeReadiness && window.sbeReadiness.demo ? window.sbeReadiness : null; }, 30000, "מערך המוכנות");
+      var part = q.get("part") === "debrief" ? "debrief" : "scenario";
+      var items = await R.demo(part);
+      return items.map(function (it) {
+        return { tool: (part === "debrief" ? "readiness-debrief" : "readiness") + sfx, title: it.title + at, label: "מערך המוכנות", html: standalone(it.node, it.title + at), input: it.input };
+      });
+    },
     "routines-hub.html": async function () {
       var org = hlOrg(), sfx = org ? "-org" : "", at = org ? " · מרכז קהילתי" : "";
       var plan = await inPage("routines" + sfx, "מרכז שגרות: לוח ביצוע והסכם" + at, "מרכז שגרות ויוזמות חברתיות", "#example", "#go", "#out2 .roles", "#out2", "#err1");

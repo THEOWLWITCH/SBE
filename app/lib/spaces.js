@@ -26,15 +26,15 @@
     shared: [...HORIZON, 'journey.html', 'journey-cert.html', 'team-thinking.html', 'message-writer.html', 'communication-continuity.html',
       'yesh-ma-laasot.html', 'social-resilience-studies.html', 'sources-library.html', 'org-library.html', 'resilience-advisor-sources.html',
       // עברו מהמרחב החינוכי (29/10/2026, "לבצע"): במרחב הארגוני הם מציגים מילים ודוגמאות מהעולם הארגוני (lib/org-words.js)
-      'leadership-advisor.html', 'routines-hub.html', 'continuity-kit.html'],
+      'leadership-advisor.html', 'routines-hub.html', 'continuity-kit.html',
+      // מערך המוכנות (03/11/2026): בית הספר במרחב החינוכי, והגרסה לקהילה, לרשות ולארגון במרחב הארגוני. readiness-rec.html: ההקלטה בטלפון
+      'readiness.html', 'readiness-rec.html'],
     edu: ['resilience-team.html', 'resilience-fill.html', 'resilience-advisor.html', 'facilitation-advisor.html',
       'activity-planner.html', 'conversation-planner.html', 'resilience-studio.html',
       'input-screen.html', 'parent-input-screen.html', 'student-input-screen.html', 'search.html', 'facilitator-screen.html',
       'observation-sheet.html', 'practice.html', 'doc-facilitator.html', 'doc-trainee.html', 'doc-actor.html', 'card-actor.html',
       'feedback.html', 'feedback-results.html', 'shared-dialogue-lab.html', ...GAMES, 'academic-review.html',
-      'family-bridge.html', 'examples.html',
-      // מערך המוכנות (03/11/2026): קודם בית הספר; הגרסה לקהילה במרחב הארגוני בהמשך. readiness-rec.html: ההקלטה בטלפון
-      'readiness.html', 'readiness-rec.html'],
+      'family-bridge.html', 'examples.html'],
     admin: ['entry.html', 'index.html', 'home.html', 'map.html', 'about.html', 'renew.html', 'admin.html', 'demo-lab.html', 'eval-set.html',
       'journeys.html', 'system-select.html'],
     research: ['research-management.html', 'research-participation.html']

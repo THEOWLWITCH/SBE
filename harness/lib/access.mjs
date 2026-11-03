@@ -73,7 +73,7 @@ async function getInstitutions(store) {
 // נוגי, מרכז השגרות ותיק הרציפות משותפים לשני המרחבים (29/10/2026, "לבצע"). הם היו חינוכיים, ולכן בלי סימון של המוסד
 // הם לא מעבירים קוד למרחב הארגוני (MOVED_PERMS): קוד שיש בו אחד מהם הוא ארגוני רק כשיש בו גם כלי ארגוני (orgsuite).
 // מוסד ארגוני מסמנים בהגדרות המוסד, ואז הכלים האלה מוצגים במילים של ארגון.
-export const MOVED_PERMS = ['leadership', 'routines', 'continuity'];
+export const MOVED_PERMS = ['leadership', 'routines', 'continuity', 'readiness'];
 export const SHARED_PERMS = ['horizon', 'journey', 'teamthink', 'writer', 'studies', ...MOVED_PERMS];
 export const ORG_PERMS = ['orgsuite']; // כלים של המרחב הארגוני בלבד
 export const SPACES = ['edu', 'org'];

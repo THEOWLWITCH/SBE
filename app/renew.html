@@ -176,7 +176,7 @@ SYSTEMS.forEach(([l, ps], i) => {
   const lb = document.createElement("label"); lb.append(cb, l); $("systems").append(lb);
 });
 // שני מרחבים (29/10/2026: "כשבוחרים מרחב ניתן לראות ולבחור רק את הכלים המתאימים"): כלים משותפים מופיעים בשניהם
-const SHARED = ["horizon", "journey", "teamthink", "writer", "studies", "leadership", "routines", "continuity"], ORG_ONLY = ["orgsuite"];
+const SHARED = ["horizon", "journey", "teamthink", "writer", "studies", "leadership", "routines", "continuity", "readiness"], ORG_ONLY = ["orgsuite"];
 const spaceOfCb = (cb) => { const ps = cb.dataset.perms.split(","); return ps.some(p => ORG_ONLY.includes(p)) ? "org" : ps.every(p => SHARED.includes(p)) ? "shared" : "edu"; };
 const chosenSpace = () => (document.querySelector("input[name=space]:checked") || {}).value || "";
 function syncSpace(){ const sp = chosenSpace(); $("sysWrap").hidden = !sp;

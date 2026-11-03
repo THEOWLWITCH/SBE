@@ -139,3 +139,21 @@ test('crisis in routine: not war or terror, offered first, and the generator kee
   assert.match(P.generatorSystem('he'), /בלי תיאור של האלימות עצמה/);
   assert.equal(P.content('ar').CRISIS.length, P.CRISIS.length);
 });
+
+test('community version: no school words, no school-only guidelines, prompts marked for the org space, same data ids', () => {
+  const O = P.forSpace('org');
+  assert.equal(O.space, 'org'); assert.equal(P.forSpace('edu'), P); assert.equal(O.forSpace('org'), O);
+  assert.deepEqual(O.TEAMS.map((t) => t.id), P.TEAMS.map((t) => t.id));
+  const keys = ['TEAMS', 'TEAM_NOTES', 'TASKS', 'EM', 'REMS', 'ANNEXES', 'SESSIONS', 'MAPPING', 'SIRENS', 'DISCONNECT', 'DEBRIEF', 'UI', 'S4', 'CRISIS', 'AXES', 'DEC_ROWS', 'DEC_INFO', 'IDEA_INFO', 'COMMUNITY'];
+  const left = keys.flatMap((k) => leaves(O[k])).filter((s) => /מחנכ|מורה|תלמיד|כיתה|כיתת|בית ספר|בית הספר|שיעור|שכבה|הורים|יועץ|מפקח/.test(s));
+  assert.deepEqual(left, []);
+  for (const k of ['drills', 'file', 'unusual', 'gate', 'evacuees', 'remote']) assert.ok(!O.MANDATORY.some((m) => m.key === k), k);
+  assert.ok(!O.DEC_ROWS.find((r) => r.k === 'unusual').fixed);
+  assert.ok(O.DISCONNECT.rounds.every((r) => (r.procedures || []).every((k) => O.MANDATORY.some((m) => m.key === k))));
+  for (const fn of ['generatorSystem', 'debriefSystem', 'planSystem', 'altSystem', 'compareSystem']) assert.match(O[fn]('he'), /^המרחב הארגוני/, fn);
+  assert.match(O.roleSystem(O.DISCONNECT.characters[0], O.DISCONNECT, null, 'he'), /^המרחב הארגוני/);
+  assert.ok(O.CRISIS[0].what.some((w) => /אלימות כלפי איש\/אשת צוות/.test(w)));
+  assert.equal(O.content('ar').MANDATORY.length, O.MANDATORY.length);
+  assert.ok(!/مدرسة|طالب|معلّم/.test(JSON.stringify(O.content('ar').TEAMS)));
+  assert.ok(O.checkSelection({ complications: ['בני משפחה בכניסה'] }).pillars.rel);
+});

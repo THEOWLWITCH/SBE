@@ -3,9 +3,12 @@
 // ובצד: קצוות פתוחים, טבלת הפעולות ורישום השינויים. docs/readiness-program/00-screen-plan.md.
 (function () {
   'use strict';
-  const P = window.SBE_PREP;
+  // המרחב הארגוני: הגרסה לקהילה, לרשות ולארגון (SBE_PREP.forSpace('org'); בלי "מחנך/ת" ו"מורה")
+  const ORGSP = !!(window.SBE_ORGW && window.SBE_ORGW.isOrg());
+  const P = window.SBE_PREP && (ORGSP ? window.SBE_PREP.forSpace('org') : window.SBE_PREP);
   const app = document.getElementById('app');
   if (!P || !app) return;
+  const DEMO = new URLSearchParams(location.search).get('demolab') === '1';
   const ss = (k) => { try { return sessionStorage.getItem(k); } catch (e) { return null; } };
   const SERVER = (typeof window.sbeAIOrigin === 'function' && window.sbeAIOrigin()) || 'https://sbe-server.onrender.com';
   const TOKEN = ss('sbe.session.token');
@@ -71,7 +74,8 @@
       min: 'د', byName: 'اسمي', allTeams: 'كل الطاقم', exportNote: 'أسماء الطلاب لا تدخل الأداة. التفاصيل تُحفظ في المدرسة.' }
   };
   const T = (k) => P.t(S.lang, k);
-  const Y = (k) => (X[S.lang] && X[S.lang][k]) || X.he[k] || k;
+  const Y0 = (k) => (X[S.lang] && X[S.lang][k]) || X.he[k] || k;
+  const Y = (k) => (!ORGSP ? Y0(k) : S.lang === 'ar' ? P.arWords(Y0(k)) : P.words(Y0(k)));
 
   // ---------- עזרים ----------
   function h(tag, attrs, ...kids) {
@@ -155,6 +159,8 @@
   }
 
   async function start() {
+    if (ORGSP) { document.getElementById('subtitle').textContent = T('sub'); }
+    if (DEMO) { app.replaceChildren(h('p', { class: 'muted', text: '…' })); return; }
     if (S.lang === 'ar') { document.documentElement.lang = 'ar'; document.getElementById('title').textContent = T('tool'); document.getElementById('subtitle').textContent = T('sub'); }
     if (!TOKEN) { app.replaceChildren(h('div', { class: 'card', text: Y('login') })); return; }
     const [st, out] = await api('rdyMine');
@@ -201,7 +207,7 @@
     const list = h('div', { class: 'card' }, h('h2', { text: Y('ours') }),
       (S.list || []).length ? h('ul', { class: 'list' }, S.list.map((x) => h('li', {}, h('button', { class: 'btn ghost sm', type: 'button', text: x.name, onclick: () => openDoc(x.id) }),
         ' ', h('span', { class: 'muted', text: Y('updated') + ' ' + dateIL(x.updatedAt) + ' · ' + x.sessionsDone + '/5 · ' + T('ends') + ': ' + x.openEnds })))) : h('p', { class: 'muted', text: Y('none') }));
-    const f = { name: h('input', { type: 'text', required: true }), levels: h('input', { type: 'text', placeholder: 'למשל: א׳ עד ו׳' }),
+    const f = { name: h('input', { type: 'text', required: true }), levels: h('input', { type: 'text', placeholder: ORGSP ? P.words('למשל: א׳ עד ו׳') : 'למשל: א׳ עד ו׳' }),
       lang: h('select', { 'data-closed': '' }, ['he', 'ar', 'both'].map((v) => h('option', { value: v, text: T(v) }))),
       size: h('select', { 'data-closed': '' }, h('option', { value: 'big', text: T('big') }), h('option', { value: 'small', text: T('small') })) };
     if (S.lang === 'ar') f.lang.value = 'ar';
@@ -1018,7 +1024,11 @@
   }
   function printCards(ex) {
     const scn = scnOf(ex || curEx(3));
+    doPrint(scn.title, Y('printCards').replace('🖨 ', ''), scenarioNodes(scn));
+  }
+  function scenarioNodes(scn) {
     const cards = [h('p', { text: scn.intro || '' })];
+    if (scn.card && scn.card.tests) cards.unshift(tbl([Y('genTests'), Y('success')], [[scn.card.tests, (scn.card.success || []).join(' · ')]]));
     for (const R of scn.rounds) {
       cards.push(h('h2', { text: T('round') + ' ' + R.n + (R.time ? ' · ' + R.time : '') + ' · ' + R.title }));
       cards.push(tbl([T('team'), T('round') + ' ' + R.n], [[T('toAll'), R.all], ...L.TEAMS.filter((t) => R.teams[t.id]).map((t) => [t.name, R.teams[t.id]])]));
@@ -1030,16 +1040,17 @@
     if (scn.rounds.some((R) => R.callHelp)) cards.push(h('h2', { text: T('callHelp') }), h('ol', {}, L.SIRENS.callHelp.map((x) => h('li', { text: x }))));
     if (scn.hardTalk && scn.hardTalk.q) cards.push(h('h2', { text: T('hardTalk') }), h('p', { text: scn.hardTalk.q }), h('ul', {}, (scn.hardTalk.feedback || []).map((x) => h('li', { text: x }))));
     if ((scn.characters || []).length) cards.push(h('h2', { text: Y('roleplay') }), tbl([Y('character'), T('text')], scn.characters.map((c) => [c.name, c.brief])));
-    doPrint(scn.title, Y('printCards').replace('🖨 ', ''), cards);
+    return cards;
   }
-  function printReport(ex) {
+  function printReport(ex) { doPrint(T('reportT') + ' · ' + ex.title, T('reportT'), reportNodes(ex)); }
+  function reportNodes(ex) {
     const rep = ex.report || { rows: [] }, v = ex.draft || {};
-    doPrint(T('reportT') + ' · ' + ex.title, T('reportT'), [
+    return [
       h('p', { text: dateIL(ex.startedAt) + ' · ' + ex.title + (rep.approvedAt ? ' · ' + T('approved') + ' ' + dateIL(rep.approvedAt) : '') }),
       (v.worked || []).length ? h('div', {}, h('h2', { text: Y('worked') }), h('ul', {}, v.worked.map((x) => h('li', { text: x })))) : null,
       h('h2', { text: T('reportT') }), tbl(L.REPORT_COLS, rep.rows.map((r) => [r.topic, r.planned, r.happened, r.how, L.KEEP[r.keep] || '', r.action, r.owner, dateIL(r.due)])),
       (v.ideas || []).length ? h('div', {}, h('h2', { text: T('ideas') }), tbl([T('text'), T('ifThen')], v.ideas.map((x) => [x.text, x.ifThen]))) : null,
-      (v.feedback || []).length ? h('div', {}, h('h2', { text: Y('fb') }), tbl([T('text'), Y('src')], v.feedback.map((x) => [x.text, srcLabel(x.source)]))) : null]);
+      (v.feedback || []).length ? h('div', {}, h('h2', { text: Y('fb') }), tbl([T('text'), Y('src')], v.feedback.map((x) => [x.text, srcLabel(x.source)]))) : null];
   }
   function printSummary(n) {
     const acts = arr('actions'), ends = arr('ends').filter((e) => e.status !== 'closed');
@@ -1050,6 +1061,36 @@
       h('h2', { text: T('ends') }), tbl([T('text'), T('owner'), T('endNext')], ends.map((e) => [e.text, e.owner, dateIL(e.next)]))]);
   }
 
-  window.sbeReadiness = { state: S, render, model: P };
+  // ---------- מעבדת הדמו (demo-hook.js): שני תוצרים מול המודל האמיתי, בלי לשמור במערך ----------
+  // 1. תרחיש משבר בשגרה מהמחולל. 2. דוח תחקיר מתרגיל "אזעקות ופינוי" לדוגמה.
+  async function demo(part) {
+    const base = P.content('he');
+    const routine = base.CRISIS.find((c) => c.k === 'routine');
+    const sel = ORGSP
+      ? { tests: 'ספירה ויציאה מסודרת כשהמבנה מוצף ובלי חשמל; הודעה אחת למשפחות ממקור אחד', kind: 'תרגיל שולחן', audience: ['צוות הניהול', 'כל הצוות'], missingRole: 'מנהל/ת מצב החירום', time: 'בזמן המשבר', crisis: routine.name, what: routine.what[0], complications: ['שמועה ברשתות', 'הורים בשער'], start: 'שיעור', level: base.AXES.find((a) => a.k === 'level').opts[2], scope: 'כל בית הספר', length: '20 דקות, בלי הכנה' }
+      : { tests: 'ספירה ודיווח על חסרים כשהמבנה מוצף ובלי חשמל; הודעה להורים ממקור אחד', kind: 'תרגיל שולחן', audience: ['צוות הניהול', 'מחנכים ומחנכות'], missingRole: 'מנהל/ת מצב החירום', time: 'בזמן המשבר', crisis: routine.name, what: routine.what[0], complications: ['שמועה ברשתות', 'הורים בשער'], start: 'שיעור', level: base.AXES.find((a) => a.k === 'level').opts[2], scope: 'כל בית הספר', length: '20 דקות, בלי הכנה' };
+    const fake = { parts: { profile: { name: ORGSP ? 'מרכז קהילתי לדוגמה' : 'בית ספר לדוגמה' }, decmap: { intent: ORGSP ? 'כולם מוגנים, ספורים ומחוברים, והפעילות ממשיכה.' : 'כולם מוגנים, ספורים ומחוברים, והלמידה ממשיכה.' } } };
+    const items = [];
+    if (part !== 'debrief') {
+    const o = await window.sbeCallAIJson(SERVER, { system: P.generatorSystem('he'), messages: [{ role: 'user', content: P.generatorInput(sel, fake) }], maxTokens: 9000, customerReview: true }, 300000, P.validScenario);
+    const scn = P.normalizeScenario(o);
+    items.push({ node: h('div', {}, h('h2', { text: scn.title }), scenarioNodes(scn)), title: T('tool') + ': ' + scn.title, kind: 'scenario', input: [Y('genTests') + ': ' + sel.tests, ...base.AXES.map((a) => a.label + ': ' + [].concat(sel[a.k] || '').join(', '))].join('\n') });
+    return items;
+    }
+    const SR = L.SIRENS;
+    const ex = { id: 'ex-demo', session: 3, title: SR.title, rounds: [
+      { decision: ORGSP ? 'איש/אשת צוות מהקבוצה הסמוכה נשאר/ת עם המשתתף בכיסא הגלגלים בחדר המדרגות הפנימי.' : 'מורה מהכיתה הסמוכה נשארת עם התלמיד בכיסא הגלגלים בחדר המדרגות הפנימי.', worked: 'כולם הגיעו למרחבים תוך דקה וחצי.' },
+      { decision: 'מפנים את האגף המזרחי בלבד לאגף המערבי, ומזעיקים כבאות דרך צוות הקשר עם הרשויות.', worked: 'ההודעה לכבאות נמסרה בששת החלקים.', improved: 'מנהל/ת מצב החירום לא ענה/תה לטלפון בעצמו/ה.' },
+      { decision: ORGSP ? 'יציאה מסודרת לפי קבוצות, עם רישום בכניסה.' : 'שחרור מסודר לפי כיתות, עם רישום בשער.', worked: 'לא היו יציאות בלי רישום.' }],
+      callHelp: 'רכזת הביטחון מבית הספר הדר · ריח גז ליד המטבח · האגף המזרחי · 120 איש באגף · פינינו את האגף · צריכים כבאות', hardTalk: 'אני לא יודעת מה יהיה מחר. אני כן יודעת שהיום כולנו פה, יחד, ועשינו את מה שתרגלנו.',
+      debrief: { worked: 'הספירה הייתה מהירה; ההודעה לכבאות הייתה ברורה.', hard: 'מפתח אחד בלבד למרחב בקומה השנייה; ההודעה להורים יצאה אחרי 25 דקות.', ideas: 'מפתח נוסף בארון החירום; נוסח מוכן לנפילה קרובה.' }, marks: [] };
+    const srcs = window.SBE_ADVISOR_SOURCES ? window.SBE_ADVISOR_SOURCES.forAdvisor('readiness') : [];
+    const v = await window.sbeCallAIJson(SERVER, { system: P.debriefSystem('he'), messages: [{ role: 'user', content: P.debriefInput(ex, { segments: [], marks: [] }, srcs, 'כוונת בית הספר: ' + fake.parts.decmap.intent) }], maxTokens: 12000, customerReview: true }, 300000, P.validDebrief);
+    ex.draft = v; ex.report = { rows: (v.gaps || []).map((g) => ({ topic: g.topic || '', planned: g.planned || '', happened: g.happened || '', how: g.how || '', keep: g.keep === 'keep' ? 'keep' : 'improve', action: g.action || '', owner: g.team ? teamName(g.team) : '', due: plus(14) })) };
+    items.push({ node: h('div', {}, h('h2', { text: T('reportT') + ' · ' + SR.title }), reportNodes(ex)), title: T('tool') + ': ' + T('reportT') + ' · ' + SR.title, kind: 'debrief', input: ex.rounds.map((r, i) => T('round') + ' ' + (i + 1) + ': ' + r.decision).join('\n') });
+    return items;
+  }
+
+  window.sbeReadiness = { state: S, render, model: P, demo, org: ORGSP };
   start();
 })();

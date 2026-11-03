@@ -41,7 +41,7 @@ test('Nugi, the routines hub and the continuity kit are shared by both spaces', 
     assert.ok(S.visibleIn('org', p) && S.visibleIn('edu', p), p);
     assert.ok(!S.COMING_TO_ORG.some((c) => c.page === p), p + ' is still waiting for the org space');
   }
-  for (const perm of ['leadership', 'routines', 'continuity']) assert.ok(SHARED_PERMS.includes(perm) && MOVED_PERMS.includes(perm), perm);
+  for (const perm of ['leadership', 'routines', 'continuity', 'readiness']) assert.ok(SHARED_PERMS.includes(perm) && MOVED_PERMS.includes(perm), perm);
   // בלי סימון של המוסד: קודים קיימים של בתי ספר נשארים חינוכיים; עם כלי ארגוני, ארגוני
   assert.equal(spaceFromPerms(['leadership']), 'edu');
   assert.equal(spaceFromPerms(['routines', 'horizon']), 'edu');
@@ -50,7 +50,7 @@ test('Nugi, the routines hub and the continuity kit are shared by both spaces', 
   assert.equal(spaceFromPerms(['leadership', 'resilience']), 'edu');
   // הדפדפן גוזר את המרחב באותה דרך
   const guard = readFileSync(new URL('../../app/lib/access-guard.js', import.meta.url), 'utf8');
-  assert.match(guard, /MOVED_PERMS = \["leadership", "routines", "continuity"\]/);
+  assert.match(guard, /MOVED_PERMS = \["leadership", "routines", "continuity", "readiness"\]/);
 });
 
 test('in the org space the three tools show no school words in fixed text', () => {
