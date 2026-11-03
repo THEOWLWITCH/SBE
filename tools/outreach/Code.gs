@@ -10,7 +10,12 @@
  * מרעננים את הגיליון ← בתפריט "📮 הפצה" בוחרים "הכנת הגיליון". ההוראות המלאות: tools/outreach/README.md
  */
 
-const SH = { C: 'אנשי קשר', T: 'גרסאות', L: 'יומן שליחות', S: 'הגדרות', X: 'הסרות' };
+const SH = { C: 'אנשי קשר', T: 'גרסאות', L: 'יומן שליחות', S: 'הגדרות', X: 'הסרות', M: 'לחילוץ ידני' };
+
+// לשונית "לחילוץ ידני" (03/11/2026: "עדיף שהרשימה הזאת תהיה גיליון בתוך הקובץ הראשי"):
+// מוסדות שלא נמצא להם מייל. ממלאים "המייל שמצאתי" (ו"השם הנכון" אם יש), ו"העברת מה שמצאתי" מעבירה לאנשי קשר.
+const M_COLS = ['עדיפות', 'סוג', 'מוסד', 'עיר / רשות', 'מוסדות חינוך ברשות', 'מה לחפש', 'אתר', 'טלפון',
+  'שם שנמצא (לבדיקה)', 'למה לא נמצא', 'הערות', 'המייל שמצאתי', 'השם הנכון', 'הועבר'];
 
 const COLS = ['דוא"ל', 'שם', 'תפקיד', 'מוסד', 'סוג', 'עיר / רשות', 'מחוז', 'טלפון', 'נייד', 'אתר',
   'מקור המידע', 'קבוצה', 'גרסה', 'סטטוס', 'נשלח בתאריך', 'אופן שליחה', 'ענה בתאריך', 'קישור למענה',
@@ -133,6 +138,7 @@ function onOpen() {
   SpreadsheetApp.getUi().createMenu('📮 הפצה')
     .addItem('לוח ההפצה', 'openSidebar')
     .addItem('ייבוא אנשי קשר (הדבקה מאקסל)', 'openImport')
+    .addItem('העברת מה שמצאתי בחילוץ הידני לאנשי קשר', 'moveFoundMenu')
     .addSeparator()
     .addItem('בדיקת מענים ומיילים שחזרו', 'checkRepliesMenu')
     .addItem('סיכום', 'summaryMenu')
@@ -183,10 +189,68 @@ function setup() {
 
   make(SH.L, ['תאריך', 'אופן', 'גרסה', 'נמענים', 'נושא', 'למי', 'הערה']);
   make(SH.X, ['דוא"ל', 'תאריך', 'סיבה']);
+  makeManual_(make);
   const def = ss.getSheetByName('Sheet1') || ss.getSheetByName('גיליון1');
   if (def && def.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(def);
   ss.setActiveSheet(c);
   SpreadsheetApp.getUi().alert('הגיליון מוכן.\n\n1. בלשונית "גרסאות" מדביקים את שלושת הנוסחים.\n2. בלשונית "הגדרות" מוסיפים את הקישור לחוברת.\n3. בלשונית "אנשי קשר" מוסיפים אנשים (או "ייבוא אנשי קשר").\n4. "לוח ההפצה" לשליחה.');
+}
+
+function makeManual_(make) {
+  const m = make(SH.M, M_COLS);
+  const w = [8, 18, 30, 14, 10, 28, 30, 16, 20, 22, 50, 28, 18, 12];
+  w.forEach((x, i) => m.setColumnWidth(i + 1, x * 7));
+  const col = (n) => M_COLS.indexOf(n) + 1;
+  m.getRange(1, col('המייל שמצאתי'), 1, 2).setBackground('#2bb3b1');
+  m.getRange(2, col('סוג'), 2000).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(TYPES, true).setAllowInvalid(true).build());
+  const prio = m.getRange(2, 1, 2000, M_COLS.length);
+  m.setConditionalFormatRules([
+    SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=$N2<>""').setBackground('#eeeeee').setRanges([prio]).build(),
+    SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=$A2=1').setBackground('#e3f1fb').setRanges([prio]).build(),
+  ]);
+  return m;
+}
+
+function manualSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  return ss.getSheetByName(SH.M) || makeManual_((name, head) => {
+    const s = ss.insertSheet(name); s.setRightToLeft(true);
+    s.getRange(1, 1, 1, head.length).setValues([head]).setFontWeight('bold').setBackground('#1d3f63').setFontColor('#ffffff');
+    s.setFrozenRows(1); return s;
+  });
+}
+
+// שורה שמילאו בה "המייל שמצאתי" ועוד לא הועברה עוברת לאנשי קשר, ומסומנת "הועבר" עם התאריך.
+function moveFound() {
+  const m = manualSheet_();
+  const last = m.getLastRow();
+  if (last < 2) return { moved: 0, updated: 0, skipped: 0 };
+  const head = m.getRange(1, 1, 1, m.getLastColumn()).getValues()[0].map((h) => String(h).trim());
+  const ix = (n) => head.indexOf(n);
+  const vals = m.getRange(2, 1, last - 1, head.length).getValues();
+  const recs = [], rowsIdx = [];
+  vals.forEach((v, i) => {
+    const e = norm_(v[ix('המייל שמצאתי')]);
+    if (!e || String(v[ix('הועבר')]).trim()) return;
+    recs.push({
+      'דוא"ל': e, 'שם': String(v[ix('השם הנכון')] || '').trim(), 'מוסד': String(v[ix('מוסד')] || '').trim(),
+      'סוג': String(v[ix('סוג')] || '').trim(), 'עיר / רשות': String(v[ix('עיר / רשות')] || '').trim(),
+      'טלפון': String(v[ix('טלפון')] || '').trim(), 'אתר': String(v[ix('אתר')] || '').trim(),
+      'מקור המידע': 'חילוץ ידני', 'קבוצה': 'חילוץ ידני',
+    });
+    rowsIdx.push(i + 2);
+  });
+  const r = addContacts_(recs);
+  const today = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'dd.MM.yy');
+  r.results.forEach((res, k) => m.getRange(rowsIdx[k], ix('הועבר') + 1).setValue(
+    res === 'added' ? 'הועבר ' + today : res === 'updated' ? 'עודכן ' + today : res === 'exists' ? 'כבר ברשימה' : 'כתובת לא תקינה'));
+  return { moved: r.added, updated: r.updated, skipped: r.skipped };
+}
+
+function moveFoundMenu() {
+  const r = moveFound();
+  SpreadsheetApp.getUi().alert('הועברו לאנשי קשר: ' + r.moved + '\nעודכנו (כבר היו ברשימה, נוספו פרטים): ' + r.updated +
+    '\nדולגו: ' + r.skipped + '\n\nבעמודה "הועבר" כתוב מה קרה בכל שורה.');
 }
 
 // כותב לגיליון רק את הגרסאות שהנוסח שלהן מוכן בקוד; שאר השורות בלשונית נשארות כמו שהן
@@ -733,7 +797,48 @@ function parseTable_(text) {
   return rows.filter((r) => r.some((c) => String(c).trim()));
 }
 
+// מוסיף אנשי קשר בלי כפילויות: כתובת קיימת מקבלת רק פרטים שחסרים בה; כתובת מרשימת ההסרות מדלגת.
+function addContacts_(recs) {
+  const C = contacts_();
+  const byEmail = {};
+  C.rows.forEach((p) => { const e = norm_(p.rec['דוא"ל']); if (e) byEmail[e] = p; });
+  const sup = suppressed_();
+  let added = 0, updated = 0, skipped = 0;
+  const fresh = [], results = [];
+  recs.forEach((rec) => {
+    const e = norm_(rec['דוא"ל']);
+    if (!EMAIL_RE.test(e) || sup[e]) { skipped++; results.push('bad'); return; }
+    rec['דוא"ל'] = e;
+    const old = byEmail[e];
+    if (old) {
+      if (!old.row) { skipped++; results.push('exists'); return; }
+      const fill = {};
+      Object.keys(rec).forEach((k) => { if (rec[k] && !String(old.rec[k] || '').trim()) fill[k] = rec[k]; });
+      if (Object.keys(fill).length) { setCells_(C, old.row, fill); updated++; results.push('updated'); } else { skipped++; results.push('exists'); }
+      return;
+    }
+    rec['סטטוס'] = ST.NEW;
+    byEmail[e] = { rec: rec };
+    fresh.push(COLS.map((c) => rec[c] || ''));
+    added++; results.push('added');
+  });
+  if (fresh.length) C.sheet.getRange(C.sheet.getLastRow() + 1, 1, fresh.length, COLS.length).setValues(fresh);
+  return { added: added, updated: updated, skipped: skipped, results: results };
+}
+
+// הדבקה ללשונית "לחילוץ ידני": העמודות מזוהות לפי השם בשורת הכותרות
+function importManual(text) {
+  const rows = parseTable_(text);
+  if (rows.length < 2) throw new Error('כדי לייבא, מדביקים שורת כותרות ולפחות שורה אחת.');
+  const head = rows[0].map((h) => String(h).trim());
+  const m = manualSheet_();
+  const out = rows.slice(1).map((r) => M_COLS.map((c) => { const i = head.indexOf(c); return i >= 0 ? r[i] : ''; }));
+  m.getRange(m.getLastRow() + 1, 1, out.length, M_COLS.length).setValues(out);
+  return 'נוספו ' + out.length + ' שורות ללשונית "לחילוץ ידני".';
+}
+
 function importContacts(text, extra) {
+  if (extra && extra.target === 'manual') return importManual(text);
   const rows = parseTable_(text);
   if (rows.length < 2) throw new Error('כדי לייבא, מדביקים שורת כותרות ולפחות שורה אחת של אנשי קשר.');
   const head = rows[0].map((h) => String(h).trim().toLowerCase());
@@ -743,34 +848,15 @@ function importContacts(text, extra) {
     if (i >= 0) map[col] = i;
   });
   if (!('דוא"ל' in map)) throw new Error('לא נמצאה עמודת דוא"ל בשורת הכותרות (למשל: דוא"ל, מייל, email).');
-  const C = contacts_();
-  const byEmail = {};
-  C.rows.forEach((p) => { const e = norm_(p.rec['דוא"ל']); if (e) byEmail[e] = p; });
-  const sup = suppressed_();
-  let added = 0, updated = 0, skipped = 0;
-  const fresh = [];
-  rows.slice(1).forEach((r) => {
+  const recs = rows.slice(1).map((r) => {
     const rec = {};
     Object.keys(map).forEach((col) => { rec[col] = String(r[map[col]] == null ? '' : r[map[col]]).trim(); });
     if (extra && extra.group && !rec['קבוצה']) rec['קבוצה'] = extra.group;
     if (extra && extra.type && !rec['סוג']) rec['סוג'] = extra.type;
     if (extra && extra.source && !rec['מקור המידע']) rec['מקור המידע'] = extra.source;
-    const e = norm_(rec['דוא"ל']);
-    if (!EMAIL_RE.test(e) || sup[e]) { skipped++; return; }
-    rec['דוא"ל'] = e;
-    const old = byEmail[e];
-    if (old) {
-      const fill = {};
-      Object.keys(rec).forEach((k) => { if (rec[k] && !String(old.rec[k] || '').trim()) fill[k] = rec[k]; });
-      if (Object.keys(fill).length) { setCells_(C, old.row, fill); updated++; } else skipped++;
-      return;
-    }
-    rec['סטטוס'] = ST.NEW;
-    byEmail[e] = { rec: rec };
-    fresh.push(COLS.map((c) => rec[c] || ''));
-    added++;
+    return rec;
   });
-  if (fresh.length) C.sheet.getRange(C.sheet.getLastRow() + 1, 1, fresh.length, COLS.length).setValues(fresh);
+  const { added, updated, skipped } = addContacts_(recs);
   return 'נוספו ' + added + ' · עודכנו ' + updated + ' · דולגו ' + skipped + ' (כפולים, בלי כתובת תקינה, או ברשימת ההסרות).';
 }
 
@@ -895,11 +981,12 @@ const IMPORT_HTML = BASE_CSS + `
 <label>סוג (רשות)<input type="text" id="ty" list="types" placeholder="למשל: בית ספר יסודי"></label>
 </div>
 <label>מקור המידע (רשות)<input type="text" id="s" placeholder="למשל: אתר העירייה, 03.11.26"></label>
+<label>לאיזו לשונית<select id="tg"><option value="">אנשי קשר</option><option value="manual">לחילוץ ידני</option></select></label>
 <datalist id="types">${TYPES.map((t) => '<option>' + t + '</option>').join('')}</datalist>
 <button class="main" onclick="go()">ייבוא</button>
 <div id="m" style="margin-top:8px"></div>
 <script>
 function go(){var m=document.getElementById('m');m.textContent='מייבאים…';
 google.script.run.withSuccessHandler(function(t){m.className='ok';m.textContent=t;}).withFailureHandler(function(e){m.className='err';m.textContent=e.message||e;})
-.importContacts(document.getElementById('t').value,{group:document.getElementById('g').value.trim(),type:document.getElementById('ty').value.trim(),source:document.getElementById('s').value.trim()});}
+.importContacts(document.getElementById('t').value,{target:document.getElementById('tg').value,group:document.getElementById('g').value.trim(),type:document.getElementById('ty').value.trim(),source:document.getElementById('s').value.trim()});}
 </script>`;
