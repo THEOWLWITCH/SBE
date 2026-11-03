@@ -70,3 +70,39 @@ test('the debrief prompt keeps the system rules and asks only for JSON', () => {
   assert.match(input, /פינוי האגף/); assert.match(input, /Moktan2026/);
   assert.ok(P.PII_RX.test('054-1234567')); assert.ok(P.PII_RX.test('ת.ז 123456789')); assert.ok(!P.PII_RX.test('סבב 2 בשעה 10:40'));
 });
+
+test('session 5 scenario and the binding guidelines: no self-harm, no referral, keys resolve', () => {
+  assert.equal(P.DISCONNECT.rounds.length, 3);
+  assert.ok(P.DISCONNECT.emAbsent);
+  const keys = new Set(P.MANDATORY.map((m) => m.key));
+  for (const r of P.DISCONNECT.rounds) for (const k of r.procedures || []) assert.ok(keys.has(k), k);
+  const text = JSON.stringify(P.MANDATORY) + JSON.stringify(P.DISCONNECT) + JSON.stringify(P.CRISIS);
+  assert.ok(!/פגיעה עצמית|אובדנ|פסיכולוג|גורמי מקצוע/.test(text));
+  assert.ok(P.CRISIS.find((c) => c.k === 'emo').sensitive);
+  assert.ok(P.MANDATORY.filter((m) => m.sensitive).every((m) => ['sexual', 'loss'].includes(m.key)));
+  assert.match(P.PROC_KIND.missing, /כדאי לברר/);
+});
+
+test('generator: selection check, prompt rules, and the scenario check keeps only known guidelines', () => {
+  const chk = P.checkSelection({ complications: ['שמועה ברשתות', 'הורים בשער'], missingRole: 'מנהל/ת מצב החירום', level: '4: x', time: 'חודש אחרי: הסתגלות ולמידה' });
+  assert.deepEqual(chk.pillars, { rel: true, info: true, inst: true });
+  assert.ok(chk.domains.find((d) => d.k === 'eval').hit);
+  assert.deepEqual(P.checkSelection({}).pillars, { rel: false, info: false, inst: false });
+  const sys = P.generatorSystem('he');
+  for (const rx of [/בלי פגיעה עצמית/, /אין הפניה לאנשי מקצוע/, /לא ממציאים נהלים/, /בדיוק שלושה סבבים/, /adapt/]) assert.match(sys, rx);
+  const input = P.generatorInput({ tests: 'ספירה תוך 5 דקות', crisis: 'ביטחוני' }, { parts: { profile: { name: 'הדר' }, plan: { annexes: [{ name: 'פינוי', text: 'מסלול א' }] }, teams: [] } });
+  assert.match(input, /ספירה תוך 5 דקות/); assert.match(input, /פינוי: מסלול א/); assert.ok(!/sexual:/.test(input));
+  assert.match(P.generatorInput({ crisis: 'רגשי־חברתי' }, {}), /sexual:/);
+  const round = (i) => ({ time: '10:0' + i, title: 't' + i, all: 'עדכון', teams: { mgmt: 'א', nope: 'ב', adapt: 'ג' }, decision: 'מה עושים?', procedures: ['siren', 'invented'], missing: ['אין נוהל לשחרור'] });
+  const o = { title: 'תרחיש', intro: 'פתיחה', rounds: [round(1), round(2), round(3)], characters: [{ id: 'p!', name: 'הורה', brief: 'לחוץ' }] };
+  assert.ok(P.validScenario(o));
+  const n = P.normalizeScenario(o);
+  assert.deepEqual(n.rounds[0].procedures, ['siren']);
+  assert.deepEqual(Object.keys(n.rounds[0].teams), ['mgmt', 'adapt']);
+  assert.equal(n.characters[0].id, 'p');
+  assert.ok(!P.validScenario({ ...o, rounds: [round(1), round(2)] }));
+  assert.ok(!P.validScenario({ ...o, intro: 'מומלץ לפנות לפסיכולוג' }));
+  assert.ok(P.validAlts({ alts: [['a', 'b', 'c']] })); assert.ok(!P.validAlts({ alts: [['a']] }));
+  assert.match(P.roleSystem(P.DISCONNECT.characters[0], P.DISCONNECT, P.DISCONNECT.rounds[1], 'he'), /הורה בפארק/);
+  assert.match(P.compareSystem('he'), /closed/);
+});

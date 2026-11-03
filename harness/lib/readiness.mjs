@@ -8,7 +8,7 @@
 // הקול לא נשמר בשום מקום: קטע עובר לתמלול ונזרק (החלטה 28, 03/11/2026: "להוסיף במכשיר נייד").
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
-export const RDY_PARTS = ['profile', 'plan', 'teams', 'tasks', 'em', 'mapping', 'gaps', 'ends', 'actions', 'exercises', 'sessions', 'partners', 'ideas'];
+export const RDY_PARTS = ['profile', 'plan', 'teams', 'tasks', 'em', 'mapping', 'gaps', 'ends', 'actions', 'exercises', 'sessions', 'partners', 'ideas', 'scenarios', 'learning', 'compare'];
 const MAX_PART = 400_000, MAX_DOC = 1_800_000, MAX_MINE = 30, MAX_LOG = 400;
 const MAX_MAIL_DAY = 300, REC_HOURS = 6, MAX_CHUNKS = 400, MAX_AUDIO_B64 = 3_000_000, MAX_TRANSCRIPT = 600_000;
 

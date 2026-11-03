@@ -32,6 +32,15 @@
       none2: 'אין עדיין.', mailSent: 'נשלחו', reloaded: 'מישהו אחר עדכן את המערך. המסך נטען מחדש.', serverOld: 'השרת עוד לא עודכן לכלי הזה. אחרי עדכון השרת הכלי יעבוד.',
       waking: 'מתחברים לשרת… החיבור הראשון ביום נמשך עד כדקה.', missed: 'פעמים שעבר המועד', moveNext: 'עדכון מועד', when: 'מתי', extra: 'עוד', annexText: 'מה כתוב בנספח',
       callAfter: 'אחרי שההודעה נשלחת', recNo: 'בלי טלפון או בלי הסכמה: מסמנים רגעי החלטה כאן, בכפתור.', ledByDeputy: 'ממלא/ת המקום הוביל/ה', builtByTeam: 'התרחיש נבנה על ידי הצוות',
+      s4: 'מפגש 4', s5: 'מפגש 5', routineStep: '🎲 בשגרה: מחולל התרחישים', intent: 'כוונת בית הספר', success: 'מה נחשב הצלחה', scenario: 'התרחיש',
+      ourTeam: 'הצוות שלנו', sayIt: 'מה אומרים לדמות', roleplay: 'משחק תפקידים: דמויות מבחוץ', roleInfo: 'הכלי מגלם את הדמות ומגיב למה שאתם אומרים. אפשר לעבור בין הדמויות.', character: 'הדמות',
+      learnWhat: 'מה לומדים במפגש', pickGap: 'הפער שהצוות בחר מהתחקיר', aidDate: 'מתי הצוות עבר עזרה ראשונה פיזית ונפשית', annexToUpdate: 'הנספח שמתעדכן', updatedAfter: 'סימון: עודכן אחרי תחקיר', learnPlan: 'מה לומדים, ואיך', noGaps: 'עוד אין פערים. הם נוספים ממפגש 2 ומהתחקיר של מפגש 3.',
+      noPrep: 'התרחיש לא מתפרסם מראש.', compareT: 'השוואה בין מפגש 3 למפגש 5', compareInfo: 'לכל נושא מדוח מפגש 3: מה קרה אז, מה קרה עכשיו, והמצב. מתחילים במה שהשתפר. פער שנסגר נכנס כנוהל למערך; פער שהשתפר, פתוח או חדש מקבל פעולה ונבדק ביום החוסן הבא.',
+      needS3: 'ההשוואה נפתחת אחרי שיש דוח תחקיר של מפגש 3.', needS5: 'הטיוטה נבנית אחרי שיש דוח תחקיר של מפגש 5.', compareDraft: 'טיוטת השוואה משני הדוחות', compareApply: 'עדכון המערך לפי ההשוואה', printCompare: '🖨 ההשוואה',
+      genT: 'מחולל תרחישי החירום', genInfo: 'אתם בונים את התרחיש, והכלי עוזר: קודם מחליטים מה בודקים, אחר כך בוחרים את הצירים, ורק אז הכלי כותב טיוטה שאפשר לערוך. נהלים מחייבים קופצים בתרחיש, ונוהל שחסר נכנס לקצוות הפתוחים.',
+      notPracticed: 'נספח שעוד לא תורגל', genTests: 'מה בודקים', teamOnly: 'רק בבחירה שלכם', noSensitive: 'הכלי לא בוחר משבר רגשי־חברתי', genAxes: 'הצירים', genCheck: 'בדיקה לפני הבנייה (הצעה)',
+      adaptNote: 'בכל תרחיש יש לפחות עדכון אחד על מענה מותאם לכל קושי.', genBuild: 'בניית טיוטה', genBad: 'הטיוטה לא עמדה בכללים (שלושה סבבים, בלי הפניה ובלי פגיעה עצמית). אפשר לנסות שוב.', ourScenarios: 'התרחישים שבניתם',
+      builtBy: 'נבנה על ידי הצוות', runS5: 'להרצה במפגש 5', runS3: 'להרצה בתרגיל צוות', confirmDel: 'למחוק את התרחיש?',
       min: 'דק׳', byName: 'השם שלי', allTeams: 'כל הצוות', exportNote: 'שמות של תלמידים לא נכנסים לכלי. הפרטים נשמרים בבית הספר.' },
     ar: { login: 'لفتح منظومة الجاهزية، يمكن الدخول برمز يشمل هذه الأداة.', ours: 'منظوماتنا', none: 'لا توجد منظومة جاهزية بعد.', updated: 'آخر تحديث',
       sessions: 'اللقاءات', later: 'في المرحلة القادمة', escalate: 'أطراف تُرفع إلى مدير/ة حالة الطوارئ', partners: 'الشركاء: مع من ننسّق في الطوارئ؟', expect: 'ما نتوقع أن نحصل عليه', provide: 'ما نقدّمه',
@@ -46,6 +55,15 @@
       none2: 'لا يوجد بعد.', mailSent: 'أُرسلت', reloaded: 'قام شخص آخر بتحديث المنظومة. أُعيد تحميل الشاشة.', serverOld: 'لم يُحدَّث الخادم بعد لهذه الأداة. بعد التحديث ستعمل الأداة.',
       waking: 'نتصل بالخادم… الاتصال الأول في اليوم يستغرق حتى دقيقة.', missed: 'مرات تجاوز الموعد', moveNext: 'تحديث الموعد', when: 'متى', extra: 'المزيد', annexText: 'ما هو مكتوب في الملحق',
       callAfter: 'بعد إرسال الرسالة', recNo: 'بدون هاتف أو بدون موافقة: نشير إلى لحظات القرار هنا، بالزر.', ledByDeputy: 'قاد/ت القائم/ة بالأعمال', builtByTeam: 'بنى الطاقم السيناريو',
+      s4: 'اللقاء 4', s5: 'اللقاء 5', routineStep: '🎲 في الروتين: مولّد السيناريوهات', intent: 'نية المدرسة', success: 'ما الذي يُعدّ نجاحًا', scenario: 'السيناريو',
+      ourTeam: 'طاقمنا', sayIt: 'ماذا نقول للشخصية', roleplay: 'لعب أدوار: شخصيات من الخارج', roleInfo: 'تؤدّي الأداة دور الشخصية وتتجاوب مع ما تقولونه. يمكن التنقّل بين الشخصيات.', character: 'الشخصية',
+      learnWhat: 'ماذا نتعلّم في اللقاء', pickGap: 'الفجوة التي اختارها الطاقم من استخلاص العبر', aidDate: 'متى اجتاز الطاقم الإسعاف الأولي الجسدي والنفسي', annexToUpdate: 'الملحق الذي يُحدَّث', updatedAfter: 'إشارة: حُدِّث بعد استخلاص العبر', learnPlan: 'ماذا نتعلّم، وكيف', noGaps: 'لا توجد فجوات بعد. تُضاف من اللقاء 2 ومن استخلاص العبر في اللقاء 3.',
+      noPrep: 'لا يُنشر السيناريو مسبقًا.', compareT: 'مقارنة بين اللقاء 3 واللقاء 5', compareInfo: 'لكل موضوع من تقرير اللقاء 3: ما الذي حدث آنذاك، ما الذي حدث الآن، والوضع. نبدأ بما تحسّن. الفجوة التي أُغلقت تدخل كإجراء في المنظومة؛ والفجوة التي تحسّنت أو بقيت مفتوحة أو جديدة تحصل على إجراء وتُفحص في يوم الصمود القادم.',
+      needS3: 'تُفتح المقارنة بعد وجود تقرير استخلاص العبر للقاء 3.', needS5: 'تُبنى المسودة بعد وجود تقرير استخلاص العبر للقاء 5.', compareDraft: 'مسودة مقارنة من التقريرين', compareApply: 'تحديث المنظومة حسب المقارنة', printCompare: '🖨 المقارنة',
+      genT: 'مولّد سيناريوهات الطوارئ', genInfo: 'أنتم تبنون السيناريو والأداة تساعد: أولًا تقرّرون ما الذي نفحصه، ثم تختارون المحاور، وبعدها فقط تكتب الأداة مسودة يمكن تحريرها. تظهر الإجراءات المُلزِمة في السيناريو، والإجراء الناقص يدخل إلى الأطراف المفتوحة.',
+      notPracticed: 'ملحق لم يُتدرَّب عليه بعد', genTests: 'ما الذي نفحصه', teamOnly: 'فقط باختياركم', noSensitive: 'الأداة لا تختار أزمة عاطفية اجتماعية', genAxes: 'المحاور', genCheck: 'فحص قبل البناء (اقتراح)',
+      adaptNote: 'في كل سيناريو تحديث واحد على الأقل حول الاستجابة الملائمة لكل صعوبة.', genBuild: 'بناء مسودة', genBad: 'المسودة لم تستوفِ القواعد (ثلاث جولات، دون إحالة ودون إيذاء ذاتي). يمكن المحاولة من جديد.', ourScenarios: 'السيناريوهات التي بنيتموها',
+      builtBy: 'بناه الطاقم', runS5: 'للتشغيل في اللقاء 5', runS3: 'للتشغيل في تمرين طاقم', confirmDel: 'هل نحذف السيناريو؟',
       min: 'د', byName: 'اسمي', allTeams: 'كل الطاقم', exportNote: 'أسماء الطلاب لا تدخل الأداة. التفاصيل تُحفظ في المدرسة.' }
   };
   const T = (k) => P.t(S.lang, k);
@@ -161,15 +179,16 @@
       h('label', { class: 'row muted' }, Y('byName') + ': ', piiCheck(h('input', { type: 'text', value: S.by, style: 'width:150px', 'aria-label': T('by'), oninput: (e) => { S.by = e.target.value.slice(0, 60); LS.set('sbe.prep.by', S.by); } }))),
       h('button', { class: 'btn ghost sm', type: 'button', text: T('lang2'), onclick: () => setLang(S.lang === 'ar' ? 'he' : 'ar') }),
       h('button', { class: 'btn ghost sm', type: 'button', text: Y('ours'), onclick: () => { S.doc = null; LS.set('sbe.prep.last', ''); start(); } }));
-    const steps = h('ol', { class: 'steps noprint', 'aria-label': T('tool') }, T('steps').map((label, i) =>
-      h('li', {}, h('button', { type: 'button', class: (i >= 2 && sessions[i - 1] && sessions[i - 1].done) ? 'done' : '', 'aria-current': S.step === i ? 'step' : null,
+    const sessOf = (i) => (i >= 2 && i <= 6 ? i - 1 : 0);
+    const steps = h('ol', { class: 'steps noprint', 'aria-label': T('tool') }, T('steps').concat([Y('s4'), Y('s5'), Y('routineStep')]).map((label, i) =>
+      h('li', {}, h('button', { type: 'button', class: (sessOf(i) && sessions[sessOf(i)] && sessions[sessOf(i)].done) ? 'done' : '', 'aria-current': S.step === i ? 'step' : null,
         text: label, onclick: () => { S.step = i; S.panel = ''; LS.set('sbe.prep.step.' + S.doc.id, i); render(); window.scrollTo(0, 0); } }))));
     const side = h('div', { class: 'side noprint' },
       h('button', { class: 'btn ghost sm', type: 'button', onclick: () => { S.panel = S.panel === 'ends' ? '' : 'ends'; render(); } }, T('ends') + ' ', h('span', { class: 'pill' + (st.escalate ? ' red' : ''), text: String(st.openEnds) })),
       h('button', { class: 'btn ghost sm', type: 'button', text: T('actions'), onclick: () => { S.panel = S.panel === 'actions' ? '' : 'actions'; render(); } }),
       h('button', { class: 'btn ghost sm', type: 'button', text: T('log'), onclick: () => { S.panel = S.panel === 'log' ? '' : 'log'; render(); } }));
     const body = S.panel === 'ends' ? viewEnds() : S.panel === 'actions' ? viewActions() : S.panel === 'log' ? viewLog()
-      : [viewHome, viewPlan, viewS1, viewS2, viewS3][S.step]();
+      : ([viewHome, viewPlan, viewS1, viewS2, viewS3, viewS4, viewS5, viewRoutine][S.step] || viewHome)();
     app.replaceChildren(head, steps, side, body);
   }
 
@@ -208,7 +227,7 @@
     const next = L.SESSIONS.find((s) => !(sessions[s.n] && sessions[s.n].done)) || null;
     const prog = h('div', { class: 'card' }, h('h2', { text: Y('sessions') }),
       h('div', { class: 'grid3' }, L.SESSIONS.map((s) => h('div', { class: 'tile' }, h('b', { text: s.n + '. ' + s.title }),
-        (sessions[s.n] && sessions[s.n].done) ? h('span', { class: 'pill green', text: '✓ ' + dateIL(sessions[s.n].at) }) : s.n > 3 ? h('span', { class: 'pill', text: Y('later') }) : null))));
+        (sessions[s.n] && sessions[s.n].done) ? h('span', { class: 'pill green', text: '✓ ' + dateIL(sessions[s.n].at) }) : null))));
     const nextCard = next ? h('div', { class: 'note' }, h('b', { text: T('next1') + ': ' + next.n + '. ' + next.title }), h('div', { text: Y('before') + ': ' + next.before })) : null;
     const pill = (p) => {
       const lines = p.k === 'rel' ? [Y('partners').split(':')[0] + ': ' + st.rel.partners, T('deputy') + ': ' + st.rel.withDeputy + '/' + st.rel.teams]
@@ -240,10 +259,14 @@
   }
 
   // ---------- ✍️ התוכנית ----------
-  function viewPlan() {
+  // התוכנית והנספחים: נוצרים בפעם הראשונה מכל מסך שצריך אותם (התוכנית, מפגש 4, המחולל)
+  function planObj() {
     const plan = obj('plan'); plan.steps = plan.steps || {}; plan.fb = plan.fb || {};
     if (!Array.isArray(plan.annexes) || !plan.annexes.length) plan.annexes = L.ANNEXES.map((a) => ({ id: a.id, name: a.name, team: a.team, maturity: -1, text: '' }));
-    S.doc.parts.plan = plan;
+    S.doc.parts.plan = plan; return plan;
+  }
+  function viewPlan() {
+    const plan = planObj();
     const steps = L.REMS.map((r) => {
       const ta = bindText(h('textarea', { rows: 4 }), () => plan.steps[r.n], (v) => { plan.steps[r.n] = v; }, 'plan', 'התוכנית: ' + r.title);
       const out = h('div', {});
@@ -384,21 +407,47 @@
       h('div', { class: 'row noprint' }, h('button', { class: 'btn ghost', type: 'button', text: Y('printSummary'), onclick: () => printSummary(2) })));
   }
 
-  // ---------- 🎬 מפגש 3: תרגיל ותחקיר ----------
-  const curEx = () => arr('exercises').find((x) => x.id === S.exId) || null;
-  function viewS3() {
-    const ex = curEx();
+  // ---------- 🎬 תרגילים: מפגש 3, מפגש 5 ותרחיש שהצוות בנה ----------
+  // תרחיש: sirens (מפגש 3), disconnect (מפגש 5), או gen: תרחיש מהמחולל (עותק נשמר בתרגיל, ex.scn).
+  function scnOf(ex) {
+    if (!ex) return L.SIRENS;
+    if (ex.scenario === 'disconnect') return L.DISCONNECT;
+    if (ex.scenario === 'gen' && ex.scn) return ex.scn;
+    return L.SIRENS;
+  }
+  const exList = (n) => arr('exercises').filter((x) => (x.session || 3) === n);
+  S.exIds = S.exIds || {};
+  const curEx = (n) => { const list = exList(n); return list.find((x) => x.id === S.exIds[n]) || list[list.length - 1] || null; };
+  const procOf = (key) => L.MANDATORY.find((m) => m.key === key) || null;
+
+  function exerciseTop(n, defaultScn) {
+    const gens = arr('scenarios');
+    const pickS = h('select', { 'data-closed': '' }, h('option', { value: defaultScn, text: (defaultScn === 'disconnect' ? L.DISCONNECT : L.SIRENS).title }),
+      gens.map((g) => h('option', { value: 'gen:' + g.id, text: '🎲 ' + (g.scn.title || '') })));
+    if (S.pickScn && S.pickScn[n]) pickS.value = S.pickScn[n];
     const pickV = h('select', { 'data-closed': '' }, h('option', { value: '20', text: Y('v20') }), h('option', { value: '60', text: Y('v60') }));
     const startBtn = h('button', { class: 'btn', type: 'button', text: Y('startEx'), onclick: async () => {
       const list = arr('exercises');
-      const e = { id: uid('ex'), session: 3, scenario: 'sirens', title: L.SIRENS.title, version: Number(pickV.value), startedAt: nowIso(), round: 1, rounds: [{}, {}, {}], marks: [], debrief: {}, ledByTeam: true };
-      list.push(e); S.doc.parts.exercises = list; S.exId = e.id; await save('exercises', 'התחלת תרגיל: ' + e.title); render();
+      const v = pickS.value, gen = v.startsWith('gen:') ? gens.find((g) => 'gen:' + g.id === v) : null;
+      const scn = gen ? gen.scn : (v === 'disconnect' ? L.DISCONNECT : L.SIRENS);
+      const e = { id: uid('ex'), session: n, scenario: gen ? 'gen' : v, scn: gen ? gen.scn : null, title: scn.title, version: Number(pickV.value), startedAt: nowIso(), round: 1,
+        rounds: [{}, {}, {}], marks: [], debrief: {}, ledByTeam: true, builtByTeam: !!gen, ledByDeputy: n === 5 || !!scn.emAbsent };
+      list.push(e); S.doc.parts.exercises = list; S.exIds[n] = e.id; await save('exercises', 'התחלת תרגיל: ' + e.title); render();
     } });
-    const pastList = arr('exercises').length ? h('div', { class: 'row' }, h('span', { class: 'muted', text: Y('exercises') + ':' }), arr('exercises').map((x) => h('button', { class: 'btn ghost sm', type: 'button', 'aria-pressed': x.id === S.exId ? 'true' : 'false', text: dateIL(x.startedAt) + ' · ' + x.title, onclick: () => { S.exId = x.id; render(); } }))) : null;
-    const top = h('div', {}, sessionHead(3), h('div', { class: 'note', text: L.TABLETOP_NOTE }),
-      h('div', { class: 'card' }, h('h2', { text: L.SIRENS.title }), h('p', { text: L.SIRENS.intro }),
-        h('table', { class: 'rt' }, h('thead', {}, h('tr', {}, [Y('step'), '20', '60'].map((x) => h('th', { text: x })))), h('tbody', {}, L.SIRENS.timing.map((r) => h('tr', {}, r.map((c) => h('td', { text: String(c) })))))),
-        h('div', { class: 'row noprint' }, field(Y('version'), pickV), startBtn), pastList));
+    const past = exList(n);
+    const pastRow = past.length ? h('div', { class: 'row' }, h('span', { class: 'muted', text: Y('exercises') + ':' }), past.map((x) => h('button', { class: 'btn ghost sm', type: 'button', 'aria-pressed': curEx(n) && x.id === curEx(n).id ? 'true' : 'false',
+      text: dateIL(x.startedAt) + ' · ' + x.title, onclick: () => { S.exIds[n] = x.id; render(); } }))) : null;
+    const scn = scnOf(curEx(n)) || (defaultScn === 'disconnect' ? L.DISCONNECT : L.SIRENS);
+    return h('div', { class: 'card' }, h('h2', { text: scn.title }), h('p', { text: scn.intro }),
+      scn.intent ? h('p', {}, h('b', { text: Y('intent') + ': ' }), scn.intent) : null,
+      (scn.success || (scn.card && scn.card.success) || []).length ? h('div', {}, h('b', { text: Y('success') }), h('ul', { class: 'list' }, (scn.success || scn.card.success).map((x) => h('li', { text: x })))) : null,
+      h('div', { class: 'row noprint' }, field(Y('scenario'), pickS), field(Y('version'), pickV), startBtn), pastRow);
+  }
+
+  function viewS3() {
+    const ex = curEx(3);
+    const top = h('div', {}, sessionHead(3), h('div', { class: 'note', text: L.TABLETOP_NOTE }), exerciseTop(3, 'sirens'),
+      h('table', { class: 'rt' }, h('thead', {}, h('tr', {}, [Y('step'), '20', '60'].map((x) => h('th', { text: x })))), h('tbody', {}, L.SIRENS.timing.map((r) => h('tr', {}, r.map((c) => h('td', { text: String(c) })))))));
     if (!ex) return top;
     return h('div', {}, top, viewRec(ex), viewRun(ex), viewDebrief(ex));
   }
@@ -420,35 +469,61 @@
         h('button', { class: 'btn ghost sm', type: 'button', text: Y('copy'), onclick: () => { navigator.clipboard && navigator.clipboard.writeText(link); toast(Y('copied')); } })), qr);
       if (window.QRCode) { try { new window.QRCode(qr, { text: link, width: 168, height: 168, correctLevel: window.QRCode.CorrectLevel.M }); } catch (e) {} }
     } });
-    box.append(h('label', { class: 'row', for: 'rdyConsent' }, consent, ' ', T('consent')), open, out,
-      h('p', { class: 'muted', text: Y('recNo') }));
+    box.append(h('label', { class: 'row', for: 'rdyConsent' }, consent, ' ', T('consent')), open, out, h('p', { class: 'muted', text: Y('recNo') }));
     if (ex.rec && ex.rec.on) box.append(h('p', {}, h('span', { class: 'pill green', text: Y('recOn') })));
     return box;
   }
 
+  function procCards(R, ex) {
+    const out = [];
+    for (const key of R.procedures || []) {
+      const m = procOf(key); if (!m) continue;
+      out.push(h('div', { class: 'note' }, h('b', { text: L.PROC_KIND.binding + ': ' + m.topic }), h('div', { text: m.rule }),
+        h('div', { class: 'muted' }, m.url ? h('a', { href: m.url, target: '_blank', rel: 'noopener', text: m.source }) : m.source, ' · ' + L.VERIFY)));
+    }
+    const annexes = (obj('plan').annexes || []).filter((a) => a && a.text && (R.annexes || []).includes(a.id));
+    for (const a of annexes) out.push(h('div', { class: 'sunny' }, h('b', { text: L.PROC_KIND.school + ': ' + a.name }), h('div', { text: a.text })));
+    for (const miss of R.missing || []) {
+      out.push(h('div', { class: 'warn' }, h('b', { text: L.PROC_KIND.missing }), h('div', { text: miss }), h('div', { class: 'muted', text: L.MISSING_ASK }),
+        h('button', { class: 'btn ghost sm noprint', type: 'button', text: Y('toEnds'), onclick: () => addEnd(L.PROC_KIND.missing + ': ' + miss, 'mgmt', T('round') + ' ' + R.n + ' · ' + (ex.title || '')) })));
+    }
+    return out;
+  }
+
   function viewRun(ex) {
+    const scn = scnOf(ex);
     const r = Math.min(3, Math.max(1, ex.round || 1));
-    const R = L.SIRENS.rounds[r - 1];
+    const R = scn.rounds[r - 1];
     const st = ex.rounds[r - 1] = ex.rounds[r - 1] || {};
-    const tabs = h('div', { class: 'row noprint' }, L.SIRENS.rounds.map((x) => h('button', { class: 'btn ghost sm', type: 'button', 'aria-pressed': x.n === r ? 'true' : 'false', text: T('round') + ' ' + x.n + ' · ' + x.time, onclick: () => { ex.round = x.n; save('exercises', ''); render(); } })));
+    const tabs = h('div', { class: 'row noprint' }, scn.rounds.map((x, i) => h('button', { class: 'btn ghost sm', type: 'button', 'aria-pressed': i + 1 === r ? 'true' : 'false', text: T('round') + ' ' + (i + 1) + (x.time ? ' · ' + x.time : ''), onclick: () => { ex.round = i + 1; save('exercises', ''); render(); } })));
     const mark = h('button', { class: 'btn ghost sm', type: 'button', text: T('markManual'), onclick: () => { ex.marks.push({ t: Date.now() - Date.parse(ex.startedAt), round: r, note: '' }); save('exercises', ''); toast('⭐'); } });
     const updates = [h('div', { class: 'update all' }, h('b', { text: T('toAll') }), h('div', { text: R.all })),
       ...L.TEAMS.filter((t) => R.teams[t.id]).map((t) => h('div', { class: 'update' }, h('b', { text: t.name }), h('div', { text: R.teams[t.id] })))];
     const mail = h('button', { class: 'btn ghost sm', type: 'button', text: T('sendMail'), onclick: async () => {
       mail.disabled = true;
       const items = L.TEAMS.map((t) => ({ teamId: t.id, text: R.all + (R.teams[t.id] ? '\n\n' + R.teams[t.id] : '') }));
-      const [s, o] = await api('rdyMail', { id: S.doc.id, subject: T('round') + ' ' + r + ' · ' + R.time + ' · ' + R.title, items });
+      const [s, o] = await api('rdyMail', { id: S.doc.id, subject: T('round') + ' ' + r + (R.time ? ' · ' + R.time : '') + ' · ' + R.title, items });
       mail.disabled = false;
       toast(s === 200 ? (o.available ? Y('mailSent') + ': ' + o.sent : T('mailOff')) : (o.error || ''));
     } });
     const decision = bindText(h('textarea', { rows: 2 }), () => st.decision, (v) => { st.decision = v; }, 'exercises', '');
     const planQ = bindText(h('input', { type: 'text' }), () => st.plan, (v) => { st.plan = v; }, 'exercises', '');
-    const noPlan = h('button', { class: 'btn ghost sm', type: 'button', text: T('noPlan'), onclick: () => { st.noPlan = true; addGap(R.decision + ': ' + (L.SIRENS.planQuestion), 'מפגש 3'); save('exercises', ''); } });
+    const noPlan = h('button', { class: 'btn ghost sm', type: 'button', text: T('noPlan'), onclick: () => { st.noPlan = true; addGap(R.decision + ': ' + L.SIRENS.planQuestion, T('round') + ' ' + r); save('exercises', ''); } });
     const altsBox = h('div', {});
-    const drawAlts = () => altsBox.replaceChildren(h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, [T('alt'), T('allows'), T('gives')].map((x) => h('th', { text: x })))),
-      h('tbody', {}, R.alts.map((a) => h('tr', {}, a.map((c, i) => h('td', { 'data-h': [T('alt'), T('allows'), T('gives')][i], text: c })))))));
-    if (st.altsShown) drawAlts();
-    const showAlts = h('button', { class: 'btn ghost sm', type: 'button', text: T('showAlts'), onclick: () => { if (!String(st.decision || '').trim()) { decision.focus(); toast(T('decision')); return; } st.altsShown = true; save('exercises', ''); drawAlts(); } });
+    const drawAlts = (alts) => altsBox.replaceChildren(h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, [T('alt'), T('allows'), T('gives')].map((x) => h('th', { text: x })))),
+      h('tbody', {}, alts.map((a) => h('tr', {}, a.slice(0, 3).map((c, i) => h('td', { 'data-h': [T('alt'), T('allows'), T('gives')][i], text: c })))))));
+    if (st.altsShown) drawAlts(R.alts || st.alts || []);
+    const showAlts = h('button', { class: 'btn ghost sm', type: 'button', text: T('showAlts'), onclick: async () => {
+      if (!String(st.decision || '').trim()) { decision.focus(); toast(T('decision')); return; }
+      if (R.alts) { st.altsShown = true; save('exercises', ''); drawAlts(R.alts); return; }
+      showAlts.disabled = true; altsBox.replaceChildren(h('p', { class: 'muted', text: Y('working') }));
+      try {
+        const content = 'התרחיש: ' + scn.title + '\nמה קורה: ' + R.all + '\nנקודת ההחלטה: ' + R.decision + '\nההחלטה של הצוות: ' + st.decision + '\nנהלים מחייבים שקפצו: ' + (R.procedures || []).map((k) => (procOf(k) || {}).topic).join(', ');
+        const v = await window.sbeCallAIJson(SERVER, { system: P.altSystem(S.lang), messages: [{ role: 'user', content }], maxTokens: 2000, fast: true }, 120000, P.validAlts);
+        st.alts = v.alts.slice(0, 3).map((a) => a.slice(0, 3).map((x) => String(x).slice(0, 300))); st.altsShown = true; await save('exercises', ''); drawAlts(st.alts);
+      } catch (e) { altsBox.replaceChildren(h('div', { class: 'warn', text: T('noModel') })); }
+      showAlts.disabled = false;
+    } });
     const extra = [];
     if (R.callHelp) {
       ex.callHelpParts = ex.callHelpParts || [];
@@ -456,14 +531,14 @@
         L.SIRENS.callHelp.map((label, i) => field((i + 1) + '. ' + label, bindText(h('input', { type: 'text' }), () => ex.callHelpParts[i], (v) => { ex.callHelpParts[i] = v; ex.callHelp = ex.callHelpParts.filter(Boolean).join(' · '); }, 'exercises', ''))),
         h('b', { text: Y('callAfter') }), L.SIRENS.callHelpAfter.map((q, i) => field(q, bindText(h('input', { type: 'text' }), () => (ex.callHelpAfter || [])[i], (v) => { ex.callHelpAfter = ex.callHelpAfter || []; ex.callHelpAfter[i] = v; }, 'exercises', '')))));
     }
-    if (R.hardTalk) {
-      const HT = L.SIRENS.hardTalk;
+    const HT = scn.hardTalk;
+    if (R.hardTalk && HT && HT.q) {
       const ans = bindText(h('textarea', { rows: 3 }), () => ex.hardTalk, (v) => { ex.hardTalk = v; }, 'exercises', '');
       const after = h('div', {});
-      const reveal = () => after.replaceChildren(h('ul', { class: 'list' }, HT.feedback.map((q) => h('li', { text: q }))), h('p', { class: 'muted' }, HT.card + ' ', h('a', { href: 'yesh-ma-laasot.html?back=home', target: '_blank', rel: 'noopener', text: 'يوجد ما نفعله / יש מה לעשות'.split(' / ')[S.lang === 'ar' ? 0 : 1] })));
+      const reveal = () => after.replaceChildren(h('ul', { class: 'list' }, (HT.feedback || []).map((q) => h('li', { text: q }))), h('p', { class: 'muted' }, (HT.card || '') + ' ', h('a', { href: 'yesh-ma-laasot.html?back=home', target: '_blank', rel: 'noopener', text: S.lang === 'ar' ? 'يوجد ما نفعله' : 'יש מה לעשות' })));
       if (String(ex.hardTalk || '').trim()) reveal();
       ans.addEventListener('change', () => { if (String(ans.value).trim()) reveal(); });
-      extra.push(h('div', { class: 'card' }, h('h3', { text: T('hardTalk') }), h('p', { class: 'big', style: 'font-size:1.15rem', text: HT.q }), h('p', { class: 'muted', text: HT.how }), field(T('answer'), ans), after));
+      extra.push(h('div', { class: 'card' }, h('h3', { text: T('hardTalk') }), h('p', { class: 'big', style: 'font-size:1.15rem', text: HT.q }), h('p', { class: 'muted', text: HT.how || '' }), field(T('answer'), ans), after));
     }
     const rd = h('div', { class: 'card' }, h('h3', { text: T('roundDebrief') }), makeTimer(150),
       field(L.ROUND_DEBRIEF[0], bindText(h('textarea', { rows: 2 }), () => st.worked, (v) => { st.worked = v; }, 'exercises', '')),
@@ -471,12 +546,45 @@
     const nav = h('div', { class: 'row noprint' },
       r < 3 ? h('button', { class: 'btn', type: 'button', text: Y('cont') + ': ' + T('round') + ' ' + (r + 1), onclick: () => { ex.round = r + 1; save('exercises', ''); render(); window.scrollTo(0, 0); } })
         : h('button', { class: 'btn', type: 'button', text: Y('finish'), onclick: () => { ex.finishedAt = ex.finishedAt || nowIso(); save('exercises', 'סיום התרחיש: ' + ex.title); render(); } }),
-      h('button', { class: 'btn ghost', type: 'button', text: Y('printCards'), onclick: () => printCards() }));
-    return h('div', { class: 'card' }, h('h2', { text: T('round') + ' ' + r + ' · ' + R.time + ' · ' + R.title }),
-      r === 1 ? h('div', { class: 'note' }, h('b', { text: Y('opening') + ': ' }), L.SIRENS.opening) : null,
-      h('div', { class: 'row' }, tabs, mark), updates, h('div', { class: 'row noprint' }, mail),
+      h('button', { class: 'btn ghost', type: 'button', text: Y('printCards'), onclick: () => printCards(ex) }));
+    const deputy = (ex.session === 5 || scn.emAbsent) ? h('label', { class: 'row sunny' }, h('input', { type: 'checkbox', checked: !!ex.ledByDeputy, onchange: (e) => { ex.ledByDeputy = e.target.checked; save('exercises', e.target.checked ? L.EM_ABSENT : ''); } }), ' ', L.EM_ABSENT) : null;
+    return h('div', {}, h('div', { class: 'card' }, h('h2', { text: T('round') + ' ' + r + (R.time ? ' · ' + R.time : '') + ' · ' + R.title }),
+      deputy, r === 1 ? h('div', { class: 'note' }, h('b', { text: Y('opening') + ': ' }), scn.opening || L.SIRENS.opening) : null,
+      h('div', { class: 'row' }, tabs, mark), updates, h('div', { class: 'row noprint' }, mail), procCards(R, ex),
       h('h3', { text: R.decision }), field(T('decision'), decision), field(T('planQ'), planQ), noPlan, h('div', { class: 'row noprint' }, showAlts), altsBox,
-      extra, rd, r === 3 && ex.finishedAt ? h('div', { class: 'note' }, h('b', { text: Y('closing') + ': ' }), L.SIRENS.closing) : null, nav);
+      extra, rd, r === 3 && ex.finishedAt ? h('div', { class: 'note' }, h('b', { text: Y('closing') + ': ' }), scn.closing || '') : null, nav),
+      (scn.characters || []).length ? viewRole(ex, scn, R) : null);
+  }
+
+  // משחק התפקידים: המודל מגלם דמות מבחוץ ומגיב למה שהצוות אומר (03, "סוגי תרגול"; 04, "דמויות מבחוץ")
+  function viewRole(ex, scn, R) {
+    ex.role = ex.role || {};
+    const pick = h('select', { 'data-closed': '' }, scn.characters.map((c) => h('option', { value: c.id, text: c.name })));
+    pick.value = S.roleCh && scn.characters.some((c) => c.id === S.roleCh) ? S.roleCh : scn.characters[0].id;
+    const log = h('div', {});
+    const draw = () => {
+      const ch = scn.characters.find((c) => c.id === pick.value);
+      const msgs = ex.role[ch.id] || [];
+      log.replaceChildren(h('p', { class: 'muted', text: ch.brief }), ...msgs.map((m) => h('div', { class: m.who === 'char' ? 'update' : 'update all' }, h('b', { text: m.who === 'char' ? ch.name : Y('ourTeam') }), h('div', { text: m.text }))));
+    };
+    pick.addEventListener('change', () => { S.roleCh = pick.value; draw(); });
+    const input = piiCheck(h('textarea', { rows: 2, 'aria-label': Y('sayIt') }));
+    const send = h('button', { class: 'btn', type: 'button', text: Y('sayIt'), onclick: async () => {
+      const text = String(input.value || '').trim(); if (!text) return;
+      const ch = scn.characters.find((c) => c.id === pick.value);
+      const msgs = ex.role[ch.id] = ex.role[ch.id] || [];
+      msgs.push({ who: 'team', text: text.slice(0, 1000) }); input.value = ''; draw();
+      send.disabled = true;
+      try {
+        const messages = msgs.slice(-12).map((m) => ({ role: m.who === 'char' ? 'assistant' : 'user', content: m.text }));
+        const reply = await window.sbeCallAI(SERVER, { system: P.roleSystem(ch, scn, R, S.lang), messages, maxTokens: 400, fast: true }, 90000);
+        msgs.push({ who: 'char', text: String(reply || '').trim().slice(0, 1000) });
+        save('exercises', '');
+      } catch (e) { toast(T('noModel')); }
+      send.disabled = false; draw();
+    } });
+    draw();
+    return h('div', { class: 'card' }, h('h2', { text: Y('roleplay') }), h('p', { class: 'muted', text: Y('roleInfo') }), field(Y('character'), pick), log, field(Y('sayIt'), input), h('div', { class: 'row noprint' }, send));
   }
 
   function viewDebrief(ex) {
@@ -511,8 +619,8 @@
       if (s !== 200) { toast(o.error || ''); return; }
       const segs = o.transcript.segments || [];
       const areas = segs.map((g) => { const ta = h('textarea', { rows: 2 }); ta.value = g.text; ta.addEventListener('input', () => { g.text = ta.value; }); return field(T('round') + ' ' + g.round, piiCheck(ta)); });
-      trBox.replaceChildren(h('p', { class: 'muted', text: Y('segs') + ': ' + segs.length + ' · ' + Y('marks') + ': ' + (o.transcript.marks || []).length }), areas,
-        segs.length ? h('button', { class: 'btn ghost sm', type: 'button', text: Y('saveTr'), onclick: async () => { const [s2, o2] = await api('rdyTranscriptSave', { id: S.doc.id, exId: ex.id, segments: segs }); toast(s2 === 200 ? T('saved') : (o2.error || '')); } }) : null);
+      trBox.replaceChildren(h('p', { class: 'muted', text: Y('segs') + ': ' + segs.length + ' · ' + Y('marks') + ': ' + (o.transcript.marks || []).length }), ...areas,
+        segs.length ? h('button', { class: 'btn ghost sm', type: 'button', text: Y('saveTr'), onclick: async () => { const [s2, o2] = await api('rdyTranscriptSave', { id: S.doc.id, exId: ex.id, segments: segs }); toast(s2 === 200 ? T('saved') : (o2.error || '')); } }) : '');
     } });
     return h('div', {}, h('div', { class: 'card' }, h('h2', { text: T('debrief') }), h('p', { class: 'muted', text: L.SIRENS.timing.map((x) => x[0] + ' ' + x[1] + '/' + x[2]).join(' · ') })), steps,
       h('div', { class: 'card noprint' }, h('h3', { text: T('transcript') }), h('p', { class: 'muted', text: Y('editTr') }), trBtn, trBox),
@@ -532,26 +640,205 @@
         return h('td', { 'data-h': cols[j] }, bindText(h('textarea', { rows: 3, class: 'cell' }), () => row[k], (val) => { row[k] = val; }, 'exercises', ''));
       }), h('td', { class: 'noprint' }, h('button', { class: 'btn ghost sm', type: 'button', text: T('del'), onclick: () => { rep.rows.splice(i, 1); save('exercises', ''); render(); } })))))),
     h('button', { class: 'btn ghost sm noprint', type: 'button', text: Y('addRow'), onclick: () => { rep.rows.push({ keep: 'improve', due: plus(14) }); save('exercises', ''); render(); } }));
-    if ((v.ends || []).length) box.append(h('h3', { text: T('ends') }), h('ul', { class: 'list' }, v.ends.map((e) => h('li', {}, e.text + ' ', h('button', { class: 'btn ghost sm noprint', type: 'button', text: Y('toEnds'), onclick: () => { addEnd(e.text, e.team, 'תחקיר מפגש 3'); } })))));
+    if ((v.ends || []).length) box.append(h('h3', { text: T('ends') }), h('ul', { class: 'list' }, v.ends.map((e) => h('li', {}, e.text + ' ', h('button', { class: 'btn ghost sm noprint', type: 'button', text: Y('toEnds'), onclick: () => { addEnd(e.text, e.team, 'תחקיר מפגש ' + (ex.session || 3)); } })))));
     if ((v.ideas || []).length) box.append(h('h3', { text: T('ideas') }), h('ul', { class: 'list' }, v.ideas.map((x) => h('li', { text: x.text + (x.ifThen ? ' · ' + x.ifThen : '') }))));
     if ((v.feedback || []).length) box.append(h('h3', { text: Y('fb') }), h('ul', { class: 'list' }, v.feedback.map((x) => h('li', {}, x.text, x.source ? h('span', { class: 'muted', text: ' · ' + srcLabel(x.source) }) : null))));
     const approve = h('button', { class: 'btn noprint', type: 'button', text: T('approve'), onclick: async () => {
       if (!confirm(Y('confirmApprove'))) return;
       rep.approvedAt = nowIso();
+      const src = 'תחקיר מפגש ' + (ex.session || 3);
       const acts = arr('actions'), gaps = arr('gaps'), ideas = arr('ideas');
       for (const row of rep.rows) {
-        if (row.keep === 'improve' && row.action) acts.push({ id: uid('a'), text: row.action, team: row.team || '', owner: row.owner || '', due: row.due || plus(14), status: 'todo', src: 'תחקיר מפגש 3' });
-        if (row.keep === 'improve' && row.topic) gaps.push({ id: uid('g'), text: row.topic + (row.happened ? ': ' + row.happened : ''), team: row.team || '', src: 'תחקיר מפגש 3', at: nowIso() });
+        if (row.keep === 'improve' && row.action) acts.push({ id: uid('a'), text: row.action, team: row.team || '', owner: row.owner || '', due: row.due || plus(14), status: 'todo', src });
+        if (row.keep === 'improve' && row.topic) gaps.push({ id: uid('g'), text: row.topic + (row.happened ? ': ' + row.happened : ''), team: row.team || '', src, at: nowIso() });
       }
       for (const x of v.ideas || []) ideas.push({ id: uid('i'), text: x.text, ifThen: x.ifThen || '', at: nowIso(), decision: '' });
       S.doc.parts.actions = acts; S.doc.parts.gaps = gaps; S.doc.parts.ideas = ideas;
-      const sess = obj('sessions'); if (!(sess[3] && sess[3].done)) { sess[3] = { done: true, at: nowIso() }; S.doc.parts.sessions = sess; await save('sessions', 'מפגש 3 הושלם'); }
+      const n = ex.session || 3, sess = obj('sessions'); if (!(sess[n] && sess[n].done)) { sess[n] = { done: true, at: nowIso() }; S.doc.parts.sessions = sess; await save('sessions', 'מפגש ' + n + ' הושלם'); }
       await save('exercises', 'אישור דוח התחקיר'); await save('actions', ''); await save('gaps', ''); await save('ideas', '');
       await api('rdyTranscriptDelete', { id: S.doc.id, exId: ex.id });
       render();
     } });
-    box.append(h('div', { class: 'row noprint' }, rep.approvedAt ? null : approve, h('button', { class: 'btn ghost', type: 'button', text: Y('printReport'), onclick: () => printReport(ex) }), h('button', { class: 'btn ghost', type: 'button', text: Y('printSummary'), onclick: () => printSummary(3) })));
+    box.append(h('div', { class: 'row noprint' }, rep.approvedAt ? null : approve, h('button', { class: 'btn ghost', type: 'button', text: Y('printReport'), onclick: () => printReport(ex) }), h('button', { class: 'btn ghost', type: 'button', text: Y('printSummary'), onclick: () => printSummary(ex.session || 3) })));
     return box;
+  }
+
+  // ---------- 📚 מפגש 4: למידה והיערכות ----------
+  function viewS4() {
+    const learn = obj('learning'); S.doc.parts.learning = learn;
+    const gaps = arr('gaps');
+    const plan = planObj();
+    const res = h('div', { class: 'card' }, h('h2', { text: Y('learnWhat') }), h('div', { class: 'grid3' }, L.S4.map((x) => h('div', { class: 'tile' }, h('b', { text: x.title }), h('p', { text: x.how }),
+      x.k === 'call' ? h('ol', { class: 'list' }, L.SIRENS.callHelp.map((c) => h('li', { text: c }))) : null,
+      h('div', { class: 'row' }, (x.links || []).map(([f, label]) => h('a', { class: 'btn ghost sm', href: f, target: '_blank', rel: 'noopener', text: label })))))));
+    const cards = L.TEAMS.map((t) => {
+      const m = learn[t.id] = learn[t.id] || {};
+      const sel = h('select', { 'data-closed': '', 'aria-label': Y('pickGap') }, h('option', { value: '', text: '…' }), gaps.map((g) => h('option', { value: g.id, text: String(g.text).slice(0, 90) })));
+      sel.value = m.gap || '';
+      sel.addEventListener('change', () => { m.gap = sel.value; save('learning', 'מפגש 4: ' + t.name + ' בחר/ה פער'); });
+      const aid = h('input', { type: 'date', value: m.aid || '', 'aria-label': Y('aidDate') });
+      aid.onchange = () => { m.aid = aid.value; save('learning', 'עזרה ראשונה: ' + t.name); };
+      const annexSel = h('select', { 'data-closed': '' }, h('option', { value: '', text: '…' }), plan.annexes.map((a) => h('option', { value: a.id, text: a.name })));
+      annexSel.value = m.annex || (L.ANNEXES.find((a) => a.team === t.id) || {}).id || '';
+      const annexBox = h('div', {});
+      const drawAnnex = () => {
+        const a = plan.annexes.find((x) => x.id === annexSel.value);
+        if (!a) { annexBox.replaceChildren(); return; }
+        const ta = bindText(h('textarea', { rows: 3 }), () => a.text, (v) => { a.text = v; a.updatedAt = nowIso(); a.by = S.by; }, 'plan', 'נספח ' + a.name);
+        annexBox.replaceChildren(h('p', { class: 'muted', text: T('maturity') + ': ' + (L.MATURITY[a.maturity] || '…') }), ta,
+          h('button', { class: 'btn ghost sm', type: 'button', text: Y('updatedAfter'), onclick: () => { a.maturity = 3; a.updatedAt = nowIso(); a.by = S.by; save('plan', 'נספח ' + a.name + ': ' + L.MATURITY[3]); toast(L.MATURITY[3] + ' ✓'); render(); } }));
+      };
+      annexSel.addEventListener('change', () => { m.annex = annexSel.value; save('learning', ''); drawAnnex(); });
+      drawAnnex();
+      return h('details', { class: 'card' }, h('summary', { text: t.name + (m.gap ? ' ✓' : '') }),
+        field(Y('pickGap'), sel), field(Y('learnPlan'), bindText(h('textarea', { rows: 2 }), () => m.plan, (v) => { m.plan = v; }, 'learning', '')),
+        field(Y('aidDate'), aid), field(Y('annexToUpdate'), annexSel), annexBox);
+    });
+    return h('div', {}, sessionHead(4), res, gaps.length ? null : h('p', { class: 'muted', text: Y('noGaps') }), cards);
+  }
+
+  // ---------- 🎯 מפגש 5: תרחיש בלי הכנה, והשוואה למפגש 3 ----------
+  function viewS5() {
+    const ex = curEx(5);
+    const top = h('div', {}, sessionHead(5), h('div', { class: 'sunny', text: L.EM_ABSENT + '. ' + Y('noPrep') }), h('div', { class: 'note', text: L.TABLETOP_NOTE }), exerciseTop(5, 'disconnect'));
+    return h('div', {}, top, ex ? viewRec(ex) : null, ex ? viewRun(ex) : null, ex ? viewDebrief(ex) : null, viewCompare(), h('div', { class: 'note', text: L.COMMUNITY }));
+  }
+  function viewCompare() {
+    const r3 = exList(3).filter((x) => x.report && x.report.rows && x.report.rows.length).pop();
+    const r5 = exList(5).filter((x) => x.report && x.report.rows && x.report.rows.length).pop();
+    const cmp = obj('compare'); cmp.rows = cmp.rows || []; S.doc.parts.compare = cmp;
+    const box = h('div', { class: 'card' }, h('h2', { text: Y('compareT') }), h('p', { class: 'muted', text: Y('compareInfo') }));
+    if (!r3) { box.append(h('p', { class: 'muted', text: Y('needS3') })); return box; }
+    if (!cmp.rows.length) cmp.rows = r3.report.rows.map((x) => ({ topic: x.topic || '', s3: x.happened || '', s5: '', state: '', todo: '' }));
+    const draft = h('button', { class: 'btn ghost', type: 'button', text: Y('compareDraft'), onclick: async () => {
+      if (!r5) { toast(Y('needS5')); return; }
+      draft.disabled = true;
+      try {
+        const rows = (rep) => rep.report.rows.map((x) => '- ' + [x.topic, x.happened, x.how, L.KEEP[x.keep] || ''].filter(Boolean).join(' · ')).join('\n');
+        const v = await window.sbeCallAIJson(SERVER, { system: P.compareSystem(S.lang), messages: [{ role: 'user', content: 'דוח מפגש 3:\n' + rows(r3) + '\n\nדוח מפגש 5:\n' + rows(r5) }], maxTokens: 6000, customerReview: true }, 240000, P.validCompare);
+        cmp.rows = v.rows.map((x) => ({ topic: String(x.topic || ''), s3: String(x.s3 || ''), s5: String(x.s5 || ''), state: ['closed', 'better', 'open', 'fresh'].includes(x.state) ? x.state : '', todo: String(x.todo || '') }));
+        await save('compare', 'טיוטת השוואה בין מפגש 3 למפגש 5'); render();
+      } catch (e) { toast(T('noModel')); }
+      draft.disabled = false;
+    } });
+    const keys = ['topic', 's3', 's5', 'state', 'todo'];
+    const order = { better: 0, closed: 1, open: 2, fresh: 3, '': 4 };
+    const rows = cmp.rows.slice().sort((a, b) => order[a.state || ''] - order[b.state || '']);
+    const table = h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, L.COMPARE_COLS.map((c) => h('th', { text: c })))),
+      h('tbody', {}, rows.map((row) => h('tr', {}, keys.map((k, j) => {
+        if (k === 'state') { const s = h('select', { 'data-closed': '' }, h('option', { value: '', text: '…' }), Object.entries(L.COMPARE).map(([a, b]) => h('option', { value: a, text: b }))); s.value = row.state || ''; s.onchange = () => { row.state = s.value; save('compare', ''); }; return h('td', { 'data-h': L.COMPARE_COLS[j] }, s); }
+        return h('td', { 'data-h': L.COMPARE_COLS[j] }, bindText(h('textarea', { rows: 2, class: 'cell' }), () => row[k], (v) => { row[k] = v; }, 'compare', ''));
+      })))));
+    const apply = h('button', { class: 'btn', type: 'button', text: Y('compareApply'), onclick: async () => {
+      const acts = arr('actions'); let n = 0;
+      for (const row of cmp.rows) {
+        if (!row.state || row.applied) continue;
+        if (row.state === 'closed') S.doc.log.push({ at: nowIso(), by: S.by, what: 'נסגר ונכנס למערך: ' + row.topic });
+        else { acts.push({ id: uid('a'), text: row.todo || row.topic, team: '', owner: '', due: plus(30), status: 'todo', src: Y('compareT') }); n++; }
+        row.applied = true;
+      }
+      S.doc.parts.actions = acts; await save('compare', 'ההשוואה עודכנה במערך'); await save('actions', ''); toast(T('actions') + ': +' + n); render();
+    } });
+    box.append(h('div', { class: 'row noprint' }, draft), table, h('div', { class: 'row noprint' }, h('button', { class: 'btn ghost sm', type: 'button', text: Y('addRow'), onclick: () => { cmp.rows.push({ topic: '', s3: '', s5: '', state: 'fresh', todo: '' }); save('compare', ''); render(); } }), apply,
+      h('button', { class: 'btn ghost', type: 'button', text: Y('printCompare'), onclick: () => doPrint(Y('compareT'), Y('compareT'), [h('h2', { text: Y('compareT') }), tbl(L.COMPARE_COLS, rows.map((r) => [r.topic, r.s3, r.s5, L.COMPARE[r.state] || '', r.todo]))]) })));
+    return box;
+  }
+
+  // ---------- 🔁 בשגרה: מחולל תרחישי החירום ----------
+  // הצוות מגדיר מה בודקים ובוחר את הצירים (Moktan2026); הערכים נשמרים בעברית (P), והתצוגה בשפת המסך (L).
+  function viewRoutine() {
+    const g = S.gen = S.gen || LS.get('sbe.prep.gen', { open: {}, sel: {} });
+    const keep = () => LS.set('sbe.prep.gen', g);
+    const sel = g.sel;
+    const box = h('div', { class: 'card' }, h('h2', { text: Y('genT') }), h('p', { class: 'muted', text: Y('genInfo') }));
+    // 1. מה בודקים: הצעות מתוך המערך
+    const tests = h('textarea', { rows: 3 }); tests.value = sel.tests || '';
+    tests.addEventListener('input', () => { sel.tests = tests.value; keep(); });
+    const sug = [].concat(arr('gaps').slice(-5).map((x) => x.text), arr('ends').filter((e) => e.status !== 'closed').slice(-3).map((e) => e.text),
+      (obj('plan').annexes || []).filter((a) => a.text && (a.maturity == null || a.maturity < 2)).map((a) => Y('notPracticed') + ': ' + a.name)).filter(Boolean);
+    box.append(h('h3', { text: '1. ' + Y('genTests') }), sug.length ? h('div', { class: 'row' }, sug.map((s) => h('button', { class: 'btn ghost sm', type: 'button', text: String(s).slice(0, 70), onclick: () => { tests.value = (tests.value ? tests.value + '; ' : '') + s; sel.tests = tests.value; keep(); } }))) : null, piiCheck(tests));
+    // 2. שנים עשר הצירים
+    const base = P.content('he');
+    const optsOf = (ax) => ax.k === 'crisis' ? base.CRISIS.map((c) => c.name) : ax.k === 'what' ? ((base.CRISIS.find((c) => c.name === sel.crisis) || {}).what || []) : base.AXES.find((a) => a.k === ax.k).opts;
+    const labelsOf = (ax) => ax.k === 'crisis' ? L.CRISIS.map((c) => c.name + (c.sensitive ? ' · ' + Y('teamOnly') : '')) : ax.k === 'what' ? ((L.CRISIS[base.CRISIS.findIndex((c) => c.name === sel.crisis)] || {}).what || []) : ax.opts;
+    const axes = L.AXES.map((ax) => {
+      const opts = optsOf(ax), labels = labelsOf(ax);
+      const wrap = h('div', { class: 'teamcard' }, h('b', { text: ax.n + '. ' + ax.label }), h('div', { class: 'muted', text: ax.q }));
+      if (ax.multi) {
+        const cur = new Set([].concat(sel[ax.k] || []));
+        wrap.append(h('div', { class: 'row' }, opts.map((o, i) => h('label', { class: 'pill' }, h('input', { type: 'checkbox', checked: cur.has(o), onchange: (e) => { if (e.target.checked) cur.add(o); else cur.delete(o); sel[ax.k] = [...cur]; keep(); } }), ' ', labels[i] || o))));
+      } else {
+        const s = h('select', { 'data-closed': '', 'aria-label': ax.label }, h('option', { value: '', text: '…' }), opts.map((o, i) => h('option', { value: o, text: labels[i] || o })), h('option', { value: '__new', text: L.NEW_OPT }));
+        const custom = h('input', { type: 'text', placeholder: L.NEW_OPT.replace('➕ ', '') });
+        const isCustom = sel[ax.k] && !opts.includes(sel[ax.k]);
+        s.value = isCustom ? '__new' : (sel[ax.k] || ''); custom.value = isCustom ? sel[ax.k] : ''; custom.hidden = !isCustom;
+        s.addEventListener('change', () => { custom.hidden = s.value !== '__new'; sel[ax.k] = s.value === '__new' ? custom.value : s.value; if (ax.k === 'crisis') sel.what = ''; keep(); if (ax.k === 'crisis') render(); });
+        custom.addEventListener('input', () => { sel[ax.k] = custom.value; keep(); });
+        wrap.append(s, piiCheck(custom));
+      }
+      const sensitiveAxis = ax.k === 'crisis' || ax.k === 'what';
+      wrap.append(h('label', { class: 'row muted' }, h('input', { type: 'checkbox', checked: !!g.open[ax.k], onchange: (e) => { g.open[ax.k] = e.target.checked; keep(); } }), ' ', L.SURPRISE + (sensitiveAxis ? ' · ' + Y('noSensitive') : '')));
+      return wrap;
+    });
+    box.append(h('h3', { text: '2. ' + Y('genAxes') }), h('div', { class: 'grid3' }, axes));
+    // 3. בדיקת שלמות: שלושת העמודים וששת התחומים (הצעה)
+    const chk = P.checkSelection(sel);
+    box.append(h('h3', { text: '3. ' + Y('genCheck') }),
+      h('ul', { class: 'list' }, L.PILLARS.map((p) => h('li', {}, (chk.pillars[p.k] ? '✓ ' : '◯ ') + p.name + ': ', h('span', { class: 'muted', text: L.PILLAR_CHECK[p.k] })))),
+      h('div', { class: 'row' }, chk.domains.map((d, i) => h('span', { class: 'pill' + (d.hit ? ' green' : ''), text: (d.hit ? '✓ ' : '') + L.DOMAINS[i].name }))),
+      h('p', { class: 'muted', text: Y('adaptNote') }));
+    // 4. בנייה
+    const out = h('div', {});
+    const build = h('button', { class: 'btn', type: 'button', text: Y('genBuild'), onclick: async () => {
+      if (!String(sel.tests || '').trim()) { tests.focus(); toast(Y('genTests') + ': ' + T('main')); return; }
+      const final = Object.assign({}, sel);
+      // "הפתיעו אותנו": הכלי בוחר רק בצירים שהצוות השאיר פתוחים, ולעולם לא משבר רגשי־חברתי
+      for (const ax of base.AXES) {
+        if (!g.open[ax.k] || (final[ax.k] && [].concat(final[ax.k]).length)) continue;
+        let opts = ax.k === 'crisis' ? base.CRISIS.filter((c) => !c.sensitive).map((c) => c.name) : ax.k === 'what' ? ((base.CRISIS.find((c) => c.name === final.crisis && !c.sensitive) || {}).what || []) : ax.opts;
+        if (!opts || !opts.length) continue;
+        const one = opts[Math.floor(Math.random() * opts.length)];
+        final[ax.k] = ax.multi ? [one] : one;
+      }
+      if (!final.what && final.crisis) { const c = base.CRISIS.find((x) => x.name === final.crisis && !x.sensitive); if (c && g.open.what) final.what = c.what[0]; }
+      build.disabled = true; out.replaceChildren(h('p', { class: 'muted', text: Y('working') }));
+      try {
+        const o = await window.sbeCallAIJson(SERVER, { system: P.generatorSystem(S.lang), messages: [{ role: 'user', content: P.generatorInput(final, S.doc) }], maxTokens: 9000, customerReview: true }, 300000, P.validScenario);
+        const scn = P.normalizeScenario(o);
+        const list = arr('scenarios'); const item = { id: uid('sc'), createdAt: nowIso(), by: S.by, sel: final, scn };
+        list.push(item); S.doc.parts.scenarios = list; await save('scenarios', 'תרחיש חדש: ' + scn.title);
+        S.genOpen = item.id; render();
+      } catch (e) { out.replaceChildren(h('div', { class: 'warn', text: e && e.code === 'incomplete' ? Y('genBad') : T('noModel') })); }
+      build.disabled = false;
+    } });
+    box.append(h('h3', { text: '4. ' + Y('genBuild') }), h('div', { class: 'row noprint' }, build), out);
+    return h('div', {}, box, viewScenarios(), routineCard());
+  }
+  function viewScenarios() {
+    const list = arr('scenarios');
+    if (!list.length) return null;
+    return h('div', { class: 'card' }, h('h2', { text: Y('ourScenarios') }), list.slice().reverse().map((it) => {
+      const scn = it.scn;
+      const open = S.genOpen === it.id;
+      const edit = (getter, setter) => bindText(h('textarea', { rows: 2 }), getter, setter, 'scenarios', '');
+      const body = open ? h('div', {},
+        h('p', { class: 'muted', text: Y('builtBy') + (it.by ? ' · ' + it.by : '') + ' · ' + dateIL(it.createdAt) }),
+        field(Y('genTests'), h('div', { text: (scn.card && scn.card.tests) || it.sel.tests || '' })),
+        field(Y('intent'), edit(() => scn.intent, (v) => { scn.intent = v; })), field(Y('opening'), edit(() => scn.intro, (v) => { scn.intro = v; })),
+        scn.rounds.map((R, i) => h('details', { class: 'teamcard' }, h('summary', { text: T('round') + ' ' + (i + 1) + ' · ' + R.time + ' · ' + R.title }),
+          field(T('toAll'), edit(() => R.all, (v) => { R.all = v; })),
+          L.TEAMS.filter((t) => R.teams[t.id] != null).map((t) => field(t.name, edit(() => R.teams[t.id], (v) => { R.teams[t.id] = v; }))),
+          field(T('decision'), edit(() => R.decision, (v) => { R.decision = v; })),
+          (R.procedures || []).length ? h('p', { class: 'muted', text: L.PROC_KIND.binding + ': ' + R.procedures.map((k) => (procOf(k) || {}).topic).join(', ') }) : null,
+          (R.missing || []).length ? h('p', { class: 'muted', text: L.PROC_KIND.missing + ': ' + R.missing.join(' · ') }) : null)),
+        (scn.characters || []).length ? h('p', { class: 'muted', text: Y('roleplay') + ': ' + scn.characters.map((c) => c.name).join(', ') }) : null,
+        h('div', { class: 'row noprint' },
+          h('button', { class: 'btn', type: 'button', text: Y('runS5'), onclick: () => { S.pickScn = { 5: 'gen:' + it.id }; S.step = 6; LS.set('sbe.prep.step.' + S.doc.id, 6); render(); window.scrollTo(0, 0); } }),
+          h('button', { class: 'btn ghost', type: 'button', text: Y('runS3'), onclick: () => { S.pickScn = { 3: 'gen:' + it.id }; S.step = 4; LS.set('sbe.prep.step.' + S.doc.id, 4); render(); window.scrollTo(0, 0); } }),
+          h('button', { class: 'btn ghost', type: 'button', text: Y('printCards'), onclick: () => printCards({ scenario: 'gen', scn, title: scn.title }) }),
+          h('button', { class: 'btn ghost sm', type: 'button', text: T('del'), onclick: () => { if (!confirm(Y('confirmDel'))) return; const l = arr('scenarios').filter((x) => x.id !== it.id); S.doc.parts.scenarios = l; save('scenarios', 'מחיקת תרחיש: ' + scn.title); render(); } }))) : null;
+      return h('div', { class: 'teamcard' }, h('button', { class: 'btn ghost sm', type: 'button', 'aria-expanded': open ? 'true' : 'false', text: '🎲 ' + scn.title, onclick: () => { S.genOpen = open ? '' : it.id; render(); } }), body);
+    }));
   }
 
   // ---------- צד: קצוות פתוחים, פעולות, רישום ----------
@@ -629,16 +916,21 @@
       plan.premortem ? h('div', {}, h('h2', { text: T('premortem') }), h('p', { text: plan.premortem })) : null,
       h('h2', { text: T('log') }), tbl([Y('when'), T('fullName'), T('text')], (S.doc.log || []).slice(-40).map((l) => [dateIL(l.at), l.by, l.what]))]);
   }
-  function printCards() {
-    const cards = [];
-    for (const R of L.SIRENS.rounds) {
-      cards.push(h('h2', { text: T('round') + ' ' + R.n + ' · ' + R.time + ' · ' + R.title }));
+  function printCards(ex) {
+    const scn = scnOf(ex || curEx(3));
+    const cards = [h('p', { text: scn.intro || '' })];
+    for (const R of scn.rounds) {
+      cards.push(h('h2', { text: T('round') + ' ' + R.n + (R.time ? ' · ' + R.time : '') + ' · ' + R.title }));
       cards.push(tbl([T('team'), T('round') + ' ' + R.n], [[T('toAll'), R.all], ...L.TEAMS.filter((t) => R.teams[t.id]).map((t) => [t.name, R.teams[t.id]])]));
-      cards.push(tbl([T('alt'), T('allows'), T('gives')], R.alts));
+      cards.push(h('p', {}, h('b', { text: T('decision') + ': ' }), R.decision || ''));
+      for (const k of R.procedures || []) { const m = procOf(k); if (m) cards.push(tbl([L.PROC_KIND.binding, m.topic], [[m.rule, m.source + ' · ' + L.VERIFY]])); }
+      for (const miss of R.missing || []) cards.push(tbl([L.PROC_KIND.missing], [[miss]]));
+      if (R.alts) cards.push(tbl([T('alt'), T('allows'), T('gives')], R.alts));
     }
-    cards.push(h('h2', { text: T('callHelp') }), h('ol', {}, L.SIRENS.callHelp.map((x) => h('li', { text: x }))));
-    cards.push(h('h2', { text: T('hardTalk') }), h('p', { text: L.SIRENS.hardTalk.q }), h('ul', {}, L.SIRENS.hardTalk.feedback.map((x) => h('li', { text: x }))));
-    doPrint(L.SIRENS.title, Y('printCards').replace('🖨 ', ''), cards);
+    if (scn.rounds.some((R) => R.callHelp)) cards.push(h('h2', { text: T('callHelp') }), h('ol', {}, L.SIRENS.callHelp.map((x) => h('li', { text: x }))));
+    if (scn.hardTalk && scn.hardTalk.q) cards.push(h('h2', { text: T('hardTalk') }), h('p', { text: scn.hardTalk.q }), h('ul', {}, (scn.hardTalk.feedback || []).map((x) => h('li', { text: x }))));
+    if ((scn.characters || []).length) cards.push(h('h2', { text: Y('roleplay') }), tbl([Y('character'), T('text')], scn.characters.map((c) => [c.name, c.brief])));
+    doPrint(scn.title, Y('printCards').replace('🖨 ', ''), cards);
   }
   function printReport(ex) {
     const rep = ex.report || { rows: [] }, v = ex.draft || {};
@@ -651,7 +943,7 @@
   }
   function printSummary(n) {
     const acts = arr('actions'), ends = arr('ends').filter((e) => e.status !== 'closed');
-    const ex = n === 3 ? curEx() : null;
+    const ex = (n === 3 || n === 5) ? curEx(n) : null;
     doPrint(L.SESSIONS[n - 1].title, Y('printSummary').replace('🖨 ', ''), [
       ex ? h('div', {}, h('h2', { text: T('decision') }), tbl([T('round'), T('decision')], (ex.rounds || []).map((r, i) => [String(i + 1), r.decision || '']))) : null,
       h('h2', { text: T('actions') }), tbl([T('text'), T('team'), T('owner'), T('due'), T('status')], acts.map((a) => [a.text, teamName(a.team), a.owner, dateIL(a.due), L.STATUS[a.status] || ''])),
