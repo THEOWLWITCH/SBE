@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-no-topbar>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>הקלטת התרגיל · מערך המוכנות</title>
+<!-- מערך המוכנות: ההקלטה בטלפון של הרשם/ת (03/11/2026, החלטה 28: "להוסיף במכשיר נייד").
+     בלי קוד Begood: מפתח הקלטה בקישור (6 שעות). הקול עובר לתמלול ונזרק; קטע שלא עלה נשמר בטלפון (IndexedDB) ונשלח שוב.
+     בלי access-guard ובלי מעבר לכלים אחרים. -->
+<style>
+:root{--ink:#14212B;--muted:#5B6873;--hair:#D9DFE4;--brand:#1d3f63;--teal:#2F7D7A;--coral:#B5523F;--bg:#F4F6F8;--card:#fff}
+@media (prefers-color-scheme:dark){:root{--ink:#E4E8EB;--muted:#9AA6AF;--hair:#2E3A44;--brand:#9CC3E6;--bg:#11171C;--card:#182027}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Assistant,Arial,sans-serif;font-size:18px;line-height:1.55}
+.wrap{max-width:520px;margin:0 auto;padding:16px}
+h1{font-size:1.3rem;margin:4px 0}
+.card{background:var(--card);border:1px solid var(--hair);border-radius:14px;padding:14px;margin:12px 0}
+.muted{color:var(--muted)}
+button{font:inherit;cursor:pointer;border-radius:999px;border:1px solid var(--brand);padding:10px 18px;font-weight:600;background:var(--card);color:var(--brand)}
+button.main{background:var(--brand);color:#fff;width:100%;padding:16px;font-size:1.2rem}
+button.mark{width:100%;padding:22px;font-size:1.4rem;border-color:var(--teal);color:var(--teal);margin-top:10px}
+button:disabled{opacity:.45}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.rounds button[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--coral);margin-inline-end:6px;animation:p 1.2s infinite}
+@keyframes p{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+.warn{color:var(--coral)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="t">הקלטת התרגיל</h1>
+  <p class="muted" id="school"></p>
+  <div id="app"><p class="muted">…</p></div>
+</div>
+<script>
+(function () {
+  'use strict';
+  var SERVER = 'https://sbe-server.onrender.com';
+  var rk = new URLSearchParams(location.search).get('rk') || '';
+  var app = document.getElementById('app');
+  var W = {
+    he: { t: 'הקלטת התרגיל', info: 'ההקלטה עוברת לתמלול ולא נשמרת. התמליל נמחק כשהדוח מאושר. כל אחד ואחת יכולים לבקש לעצור.', start: '🎙 התחלת ההקלטה', pause: '⏸ עצירה',
+      resume: '🎙 המשך ההקלטה', mark: '⭐ רגע החלטה', stop: 'סיום ההקלטה', round: 'סבב', rec: 'מקליטים', paused: 'ההקלטה עצורה', sent: 'קטעים שעלו', wait: 'קטעים שמחכים לרשת',
+      marks: 'רגעי החלטה', done: 'ההקלטה הסתיימה. אפשר לסגור את הדף.', bad: 'הקישור להקלטה הסתיים. אפשר לפתוח קישור חדש ממסך התרגיל.', mic: 'אין גישה למיקרופון. אפשר לאשר גישה בהגדרות הדפדפן ולנסות שוב.',
+      nosupport: 'הדפדפן הזה לא מקליט. אפשר לסמן רגעי החלטה בכפתור, או לנסות בדפדפן אחר.', screen: 'כדאי להשאיר את המסך דולק ואת הדף פתוח.', marked: 'סומן', note: 'מה הוחלט? (רשות)' },
+    ar: { t: 'تسجيل التمرين', info: 'يُرسل التسجيل للتحويل إلى نص ولا يُحفظ. يُحذف النص المكتوب عند المصادقة على التقرير. يمكن لكل شخص أن يطلب التوقف.', start: '🎙 بدء التسجيل', pause: '⏸ توقف',
+      resume: '🎙 متابعة التسجيل', mark: '⭐ لحظة قرار', stop: 'إنهاء التسجيل', round: 'جولة', rec: 'نسجّل', paused: 'التسجيل متوقف', sent: 'مقاطع أُرسلت', wait: 'مقاطع تنتظر الشبكة',
+      marks: 'لحظات قرار', done: 'انتهى التسجيل. يمكن إغلاق الصفحة.', bad: 'انتهى رابط التسجيل. يمكن فتح رابط جديد من شاشة التمرين.', mic: 'لا يوجد وصول إلى الميكروفون. يمكن السماح بالوصول في إعدادات المتصفح والمحاولة من جديد.',
+      nosupport: 'هذا المتصفح لا يسجّل. يمكن الإشارة إلى لحظات القرار بالزر، أو تجربة متصفح آخر.', screen: 'من المفيد إبقاء الشاشة مضاءة والصفحة مفتوحة.', marked: 'تمت الإشارة', note: 'ما الذي تقرّر؟ (اختياري)' }
+  };
+  var lang = 'he', w = W.he;
+  var st = { round: 1, seq: 0, t0: 0, rec: null, stream: null, on: false, sent: 0, marks: 0, lock: null, timer: null, chunkStart: 0, queue: 0 };
+
+  function call(action, extra) {
+    var body = Object.assign({ action: action, rk: rk }, extra || {});
+    return fetch(SERVER + '/api/access', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (j) { return [r.status, j]; }); });
+  }
+
+  // תור של קטעים שלא עלו: IndexedDB בטלפון בלבד, נמחק אחרי שהקטע עלה.
+  var dbp = new Promise(function (res) {
+    try { var o = indexedDB.open('sbe-rdy-rec', 1); o.onupgradeneeded = function () { o.result.createObjectStore('q', { keyPath: 'k' }); }; o.onsuccess = function () { res(o.result); }; o.onerror = function () { res(null); }; }
+    catch (e) { res(null); }
+  });
+  function qPut(item) { return dbp.then(function (db) { if (!db) return; return new Promise(function (r) { var tx = db.transaction('q', 'readwrite'); tx.objectStore('q').put(item); tx.oncomplete = r; tx.onerror = r; }); }); }
+  function qDel(k) { return dbp.then(function (db) { if (!db) return; return new Promise(function (r) { var tx = db.transaction('q', 'readwrite'); tx.objectStore('q').delete(k); tx.oncomplete = r; tx.onerror = r; }); }); }
+  function qAll() { return dbp.then(function (db) { if (!db) return []; return new Promise(function (r) { var out = []; var c = db.transaction('q').objectStore('q').openCursor(); c.onsuccess = function () { var x = c.result; if (x) { if (x.value.rk === rk) out.push(x.value); x.continue(); } else r(out); }; c.onerror = function () { r(out); }; }); }); }
+
+  function b64(blob) { return new Promise(function (r) { var fr = new FileReader(); fr.onload = function () { r(String(fr.result).split(',')[1] || ''); }; fr.readAsDataURL(blob); }); }
+  var flushing = false;
+  function flush() {
+    if (flushing) return Promise.resolve();
+    flushing = true;
+    return qAll().then(function (items) {
+      st.queue = items.length; draw();
+      return items.sort(function (a, b) { return a.seq - b.seq; }).reduce(function (p, it) {
+        return p.then(function () {
+          return call('rdyRecChunk', { seq: it.seq, t: it.t, round: it.round, mime: it.mime, audio: it.audio }).then(function (res) {
+            if (res[0] === 200) { st.sent++; return qDel(it.k); }
+            if (res[0] === 401) { bad(); throw new Error('stop'); }
+          }).catch(function (e) { if (e && e.message === 'stop') throw e; });
+        });
+      }, Promise.resolve());
+    }).catch(function () {}).then(function () { flushing = false; return qAll(); }).then(function (left) { st.queue = left.length; draw(); });
+  }
+  setInterval(flush, 15000);
+  window.addEventListener('online', flush);
+
+  function pickMime() {
+    var opts = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+    for (var i = 0; i < opts.length; i++) if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(opts[i])) return opts[i];
+    return '';
+  }
+  // כל דקה ההקלטה נסגרת לקטע עצמאי (כדי שכל קטע יתומלל לבד) ונפתחת מחדש.
+  function startChunk() {
+    var mime = pickMime();
+    var rec = new MediaRecorder(st.stream, mime ? { mimeType: mime, audioBitsPerSecond: 32000 } : undefined);
+    var parts = [], t = Date.now() - st.t0, round = st.round;
+    rec.ondataavailable = function (e) { if (e.data && e.data.size) parts.push(e.data); };
+    rec.onstop = function () {
+      if (!parts.length) return;
+      var blob = new Blob(parts, { type: rec.mimeType || mime || 'audio/webm' });
+      var seq = st.seq++;
+      b64(blob).then(function (a) { return qPut({ k: rk + ':' + seq, rk: rk, seq: seq, t: t, round: round, mime: blob.type, audio: a }); }).then(flush);
+      if (st.on) startChunk();
+    };
+    rec.start();
+    st.rec = rec;
+    clearTimeout(st.timer);
+    st.timer = setTimeout(function () { if (st.rec === rec && rec.state === 'recording') rec.stop(); }, 60000);
+  }
+  function begin() {
+    if (!navigator.mediaDevices || !window.MediaRecorder) { msg(w.nosupport); return; }
+    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }).then(function (s) {
+      st.stream = s; st.on = true; if (!st.t0) st.t0 = Date.now();
+      startChunk();
+      if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function (l) { st.lock = l; }).catch(function () {});
+      draw();
+    }).catch(function () { msg(w.mic); });
+  }
+  function pause() {
+    st.on = false; clearTimeout(st.timer);
+    if (st.rec && st.rec.state === 'recording') st.rec.stop();
+    if (st.stream) st.stream.getTracks().forEach(function (t) { t.stop(); });
+    if (st.lock) { try { st.lock.release(); } catch (e) {} st.lock = null; }
+    draw();
+  }
+  function mark() {
+    var note = (document.getElementById('note') || {}).value || '';
+    call('rdyRecMark', { t: st.t0 ? Date.now() - st.t0 : 0, round: st.round, note: note }).then(function (r) { if (r[0] === 200) { st.marks = r[1].marks; var n = document.getElementById('note'); if (n) n.value = ''; draw(w.marked + ' ⭐'); } else if (r[0] === 401) bad(); });
+  }
+  function stop() {
+    pause();
+    setTimeout(function () { flush().then(function () { return call('rdyRecStop'); }).then(function () { app.innerHTML = '<div class="card"><p>' + w.done + '</p></div>'; }); }, 800);
+  }
+  function msg(text, ok) { var m = document.getElementById('msg'); if (m) { m.textContent = text; m.style.color = ok ? 'var(--teal)' : ''; } }
+  function bad() { st.on = false; app.innerHTML = '<div class="card"><p class="warn">' + w.bad + '</p></div>'; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function draw(flash) {
+    if (!app.querySelector('#main')) {
+      app.innerHTML = '<div class="card"><p class="muted">' + w.info + '</p><p class="muted">' + w.screen + '</p>' +
+        '<button class="main" id="main" type="button"></button>' +
+        '<div class="row rounds" style="margin-top:12px">' + [1, 2, 3].map(function (n) { return '<button type="button" data-r="' + n + '">' + w.round + ' ' + n + '</button>'; }).join('') + '</div>' +
+        '<input id="note" type="text" placeholder="' + esc(w.note) + '" style="width:100%;margin-top:12px;font:inherit;padding:10px;border:1px solid var(--hair);border-radius:10px">' +
+        '<button class="mark" id="mark" type="button">' + w.mark + '</button>' +
+        '<p id="status" style="margin:12px 0 4px"></p><p class="muted" id="counts"></p><p class="warn" id="msg" role="status"></p>' +
+        '<button id="stop" type="button" style="margin-top:6px">' + w.stop + '</button></div>';
+      app.querySelector('#main').onclick = function () { if (st.on) pause(); else begin(); };
+      app.querySelector('#mark').onclick = mark;
+      app.querySelector('#stop').onclick = stop;
+      app.querySelectorAll('[data-r]').forEach(function (b) { b.onclick = function () { st.round = Number(b.getAttribute('data-r')); draw(); }; });
+    }
+    app.querySelector('#main').textContent = st.on ? w.pause : (st.t0 ? w.resume : w.start);
+    app.querySelectorAll('[data-r]').forEach(function (b) { b.setAttribute('aria-pressed', String(Number(b.getAttribute('data-r')) === st.round)); });
+    app.querySelector('#status').innerHTML = st.on ? '<span class="dot"></span>' + w.rec : w.paused;
+    app.querySelector('#counts').textContent = w.sent + ': ' + st.sent + ' · ' + w.wait + ': ' + st.queue + ' · ' + w.marks + ': ' + st.marks;
+    if (flash) msg(flash, true);
+  }
+
+  if (!/^[a-f0-9]{48}$/.test(rk)) { bad(); return; }
+  call('rdyRecPing').then(function (r) {
+    if (r[0] !== 200) { bad(); return; }
+    lang = r[1].lang === 'ar' ? 'ar' : 'he'; w = W[lang];
+    document.documentElement.lang = lang;
+    document.getElementById('t').textContent = w.t;
+    document.getElementById('school').textContent = r[1].title || '';
+    st.round = r[1].round || 1; st.marks = r[1].marks || 0; st.sent = r[1].segments || 0; st.seq = r[1].segments || 0;
+    qAll().then(function (q) { q.forEach(function (it) { if (it.seq >= st.seq) st.seq = it.seq + 1; }); draw(); flush(); });
+  }).catch(function () { msg('…'); });
+})();
+</script>
+</body>
+</html>

@@ -16,7 +16,8 @@
 | `05-example-scenario-disconnection.md` | תרחיש לדוגמה: ניתוק קשר | `0eed4e65-2962` | 21 |
 | `06-script-sirens-evacuation.md` | תסריט: אזעקות ופינוי | `15d4f803-c99d` | 102 |
 | `07-school-in-emergency.md` | בית הספר בחירום | `0c47b006-8f48` | 6 |
-| `00-screen-plan.md` | (לא במסמך) תוכנית המסכים לחיבור למערכת | | |
+| `08-rems-template.md` | מסמך נפרד: "תבנית לתוכנית חירום בית ספרית לפי REMS" (https://claude.ai/artifact/5tCLZJ9mqMo8LCn86uniF8) | `01ac80e6-62fa` | 18 |
+| `00-screen-plan.md` | (לא במסמך) תוכנית המסכים לחיבור למערכת. אושרה 03.11.26 | | |
 
 ייצוא: 03.11.26, דרך ה-connector של Claude Docs, בפורמט markdown, בלי עריכה. בלשונית ההמלצות יש תרשים מוטמע ("מהלך תרגיל צוות · 6 שלבים") שלא עובר בייצוא, ובמקומו מופיע מציין מקום.
 

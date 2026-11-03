@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מערך המוכנות</title>
+<script src="lib/access-guard.js"></script>
+<script src="lib/example-peek.js" data-tool="readiness" defer></script>
+<script src="lib/open-select.js"></script>
+<script src="lib/ai-call.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&display=swap">
+<script src="lib/resilience-advisor-sources.js"></script>
+<script src="lib/quotes.js"></script>
+<script src="lib/product-doc.js"></script>
+<script src="lib/readiness-ar.js"></script>
+<script src="lib/readiness-model.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<style>
+:root{
+  --ground:#F4F6F8; --surface:#FFFFFF; --ink:#14212B; --muted:#5B6873; --hair:#D9DFE4;
+  --brand:#1d3f63; --teal:#2F7D7A; --teal-soft:#E5F2F1; --sun:#C58B12; --sun-soft:#FBF3DF;
+  --coral:#B5523F; --coral-soft:#FBEAE6; --green:#3E7A4F; --green-soft:#E6F2E9;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --ground:#11171C; --surface:#182027; --ink:#E4E8EB; --muted:#9AA6AF; --hair:#2E3A44;
+    --teal-soft:#16302F; --sun-soft:#33280F; --coral-soft:#3A1F1A; --green-soft:#17291C; --brand:#9CC3E6; }
+}
+:root[data-theme="dark"]{ --ground:#11171C; --surface:#182027; --ink:#E4E8EB; --muted:#9AA6AF; --hair:#2E3A44;
+  --teal-soft:#16302F; --sun-soft:#33280F; --coral-soft:#3A1F1A; --green-soft:#17291C; --brand:#9CC3E6; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:Assistant,Arial,sans-serif;font-size:17px;line-height:1.6}
+.wrap{max-width:1080px;margin:0 auto;padding:12px 16px 80px}
+h1{margin:6px 0 2px}
+.sub{color:var(--muted);margin:0 0 14px}
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:12px;padding:14px 16px;margin:12px 0}
+.card h2{margin:0 0 8px;font-size:1.25rem}
+.card h3{margin:14px 0 6px;font-size:1.05rem}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.grow{flex:1 1 220px}
+label.f{display:block;margin:8px 0 2px;font-weight:600}
+label.f small{font-weight:400;color:var(--muted)}
+input[type=text],input[type=email],input[type=date],input[type=number],select,textarea{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--hair);border-radius:10px;background:var(--surface);color:var(--ink)}
+textarea{min-height:76px;resize:vertical}
+button{font:inherit;cursor:pointer}
+.btn{border:1px solid var(--brand);background:var(--brand);color:#fff;border-radius:999px;padding:7px 16px;font-weight:600}
+.btn.ghost{background:var(--surface);color:var(--brand)}
+.btn.sm{padding:4px 12px;font-size:.92rem}
+.btn:disabled{opacity:.45;cursor:default}
+.muted{color:var(--muted)}
+.note{border-inline-start:3px solid var(--teal);background:var(--teal-soft);padding:8px 12px;border-radius:8px;margin:10px 0}
+.warn{border-inline-start:3px solid var(--coral);background:var(--coral-soft);padding:8px 12px;border-radius:8px;margin:8px 0}
+.sunny{border-inline-start:3px solid var(--sun);background:var(--sun-soft);padding:8px 12px;border-radius:8px;margin:8px 0}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px;padding:0;list-style:none}
+.steps button{border:1px solid var(--hair);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px}
+.steps button[aria-current="step"]{border-color:var(--brand);background:var(--brand);color:#fff}
+.steps .done::after{content:" ✓";color:var(--green)}
+.side{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.pill{display:inline-block;border:1px solid var(--hair);border-radius:999px;padding:1px 10px;font-size:.88rem;background:var(--surface)}
+.pill.red{border-color:var(--coral);color:var(--coral)}
+.pill.green{border-color:var(--green);color:var(--green)}
+table.rt{width:100%;border-collapse:collapse;margin:8px 0;font-size:.97rem}
+table.rt th,table.rt td{border:1px solid var(--hair);padding:6px 8px;vertical-align:top;text-align:right}
+table.rt th{background:var(--teal-soft);font-weight:700}
+table.rt td input,table.rt td select,table.rt td textarea{padding:5px 7px;border-radius:7px}
+table.rt td textarea.cell{min-height:58px;font-size:.92rem;min-width:84px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--hair);border-top:2px solid var(--teal);border-radius:12px;padding:10px 12px}
+.tile b{display:block}
+.big{font-size:1.6rem;font-weight:700}
+.teamcard{border:1px solid var(--hair);border-radius:10px;padding:8px 10px;margin:6px 0;background:var(--surface)}
+.teamcard b{color:var(--teal)}
+.update{border:1px solid var(--hair);border-top:2px solid var(--sun);border-radius:10px;padding:8px 10px;margin:6px 0;background:var(--surface)}
+.update.all{border-top-color:var(--brand)}
+.timer{font-variant-numeric:tabular-nums;font-size:1.3rem;font-weight:700}
+.qr{display:inline-block;background:#fff;padding:6px;border-radius:8px}
+details>summary{cursor:pointer;font-weight:600}
+.list li{margin:3px 0}
+.hidden{display:none!important}
+.toast{position:fixed;inset-inline-start:16px;bottom:16px;background:var(--brand);color:#fff;padding:8px 14px;border-radius:10px;z-index:50}
+@media screen and (max-width:640px){ table.rt.stack thead{display:none} table.rt.stack tr{display:block;border:1px solid var(--hair);border-radius:10px;margin:8px 0} table.rt.stack td{display:block;border:0;border-bottom:1px solid var(--hair)} table.rt.stack td::before{content:attr(data-h);display:block;font-size:.82rem;color:var(--muted)} }
+@media print{ .noprint{display:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="title" data-peek>מערך המוכנות</h1>
+  <p class="sub" id="subtitle">בונים, מתרגלים ומשפרים יחד את המוכנות של בית הספר</p>
+  <div id="app"><p class="muted">טוען…</p></div>
+</div>
+<script src="lib/readiness-ui.js"></script>
+<script src="lib/screens-menu.js"></script>
+<script src="lib/demo-hook.js"></script>
+</body>
+</html>

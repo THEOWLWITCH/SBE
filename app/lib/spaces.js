@@ -32,7 +32,9 @@
       'input-screen.html', 'parent-input-screen.html', 'student-input-screen.html', 'search.html', 'facilitator-screen.html',
       'observation-sheet.html', 'practice.html', 'doc-facilitator.html', 'doc-trainee.html', 'doc-actor.html', 'card-actor.html',
       'feedback.html', 'feedback-results.html', 'shared-dialogue-lab.html', ...GAMES, 'academic-review.html',
-      'family-bridge.html', 'examples.html'],
+      'family-bridge.html', 'examples.html',
+      // מערך המוכנות (03/11/2026): קודם בית הספר; הגרסה לקהילה במרחב הארגוני בהמשך. readiness-rec.html: ההקלטה בטלפון
+      'readiness.html', 'readiness-rec.html'],
     admin: ['entry.html', 'index.html', 'home.html', 'map.html', 'about.html', 'renew.html', 'admin.html', 'demo-lab.html', 'eval-set.html',
       'journeys.html', 'system-select.html'],
     research: ['research-management.html', 'research-participation.html']

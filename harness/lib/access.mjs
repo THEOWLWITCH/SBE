@@ -7,6 +7,7 @@ import { scryptSync, randomBytes, timingSafeEqual, createHmac, createHash } from
 import { createRequire } from 'node:module';
 import { handleHlRooms, roomModelGate } from './hl-rooms.mjs';
 import { handleOrgSuite } from './org-suite.mjs';
+import { handleReadiness } from './readiness.mjs';
 const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
 const JOURNEY_WORKSPACE = createRequire(import.meta.url)('../../app/lib/journey-workspace-model.js');
 const JOURNEY_ANALYSIS = createRequire(import.meta.url)('../../app/lib/journey-analysis-model.js');
@@ -18,7 +19,7 @@ const MIN_PASSWORD = 8;
 // ההרשאות במערכת. לכל מוסד יש "תקרה" (modules:<מוסד>) — מה שמנהלת המערכת פתחה
 // לו; ברירת המחדל: שום דבר. קודי הצוות שמנהל/ת המוסד מפיק/ה מקבלים רק צירוף
 // מתוך התקרה.
-export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi', 'journey', 'writer', 'nana', 'studio', 'dialogue', 'teamthink', 'studies', 'games', 'horizon', 'bridge', 'routines', 'continuity', 'orgsuite'];
+export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi', 'journey', 'writer', 'nana', 'studio', 'dialogue', 'teamthink', 'studies', 'games', 'horizon', 'bridge', 'routines', 'continuity', 'orgsuite', 'readiness'];
 const DEFAULT_MODULES = Object.fromEntries(PERMS.map((p) => [p, false]));
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
@@ -391,7 +392,8 @@ export const MODEL_PAGES = {
   'shared-dialogue-lab.html': ['dialogue'], 'team-thinking.html': ['teamthink'], 'games.html': ['games'], 'memory-game.html': ['games'], 'board-game.html': ['games'], 'no-panic.html': ['games'], 'story-maker.html': ['games'], 'statement-sort.html': ['games'], 'riddles.html': ['games'], 'bingo.html': ['games'], 'twenty-q.html': ['games'], 'truth-dare.html': ['games'], 'trail-signs.html': ['games'], 'readiness-train.html': ['games'], 'idea-garden.html': ['games'],
   'org-suite.html': ['orgsuite'], 'org-library.html': ['orgsuite'], // תרגול צוותים (בלי מודל; כאן כדי שהרשימות יתאימו)
   'horizon-lab.html': ['horizon'], 'hl-voice.html': ['horizon'], 'hl-radar.html': ['horizon'], 'hl-futures.html': ['horizon'], 'hl-circles.html': ['horizon'], 'hl-horizons.html': ['horizon'], 'hl-collage.html': ['horizon'], 'hl-roadmap.html': ['horizon'], 'hl-game.html': ['horizon'], 'hl-stress.html': ['horizon'], // מעבדת האופק (אושר 28/10/2026)
-  'family-bridge.html': ['bridge'], 'routines-hub.html': ['routines'], 'continuity-kit.html': ['continuity'] // אושרו 28/10/2026
+  'family-bridge.html': ['bridge'], 'routines-hub.html': ['routines'], 'continuity-kit.html': ['continuity'], // אושרו 28/10/2026
+  'readiness.html': ['readiness'] // מערך המוכנות (03/11/2026)
 };
 export const WORKSHOP_MODEL_PAGES = ['practice.html', 'conversation-planner.html', 'activity-planner.html', 'academic-review.html', 'parent-input-screen.html'];
 const WORKSHOP_HOURS = 48;
@@ -1831,6 +1833,11 @@ export async function handleAccess(store, body) {
   if (action === 'orsCall') return handleOrgSuite(store, body, { pause, who: async (token) => {
     const t = token ? await authorizePermission(store, token, ['orgsuite']) : null;
     return t ? { principal: modelIdentity(t, token).principal, sys: t.k === 'sys' } : null;
+  } });
+  // מערך המוכנות (03/11/2026): המערך נשמר בשרת תחת הקוד של המוסד; ההקלטה בטלפון עם מפתח בלבד.
+  if (/^rdy[A-Z]/.test(action || '')) return handleReadiness(store, body, { who: async (token) => {
+    const t = token ? await authorizePermission(store, token, ['readiness']) : null;
+    return t ? { principal: modelIdentity(t, token).principal, inst: t.inst || null, sys: t.k === 'sys' } : null;
   } });
   if (/^hl(RoomCreate|Poll|Write|RoomClose)$/.test(action || '')) return handleHlRooms(store, body, { authorize: async (token) => {
     const t = await authorizePermission(store, token, ['horizon']);

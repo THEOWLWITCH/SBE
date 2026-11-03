@@ -262,10 +262,10 @@
       url:'https://gadrrres.net/comprehensive-school-safety-framework',
       gist:'בטיחות וחוסן בית־ספרי משלבים מתקנים בטוחים, ניהול רציפות וחירום וחינוך להפחתת סיכונים.',
       be:"חוסן בית־ספרי כולל ניהול רציפות וחירום: המסגרת שבה מודול החוסן הוא רכיב אחד."},
-    {k:'Marzban2025', g:'sys', ev:'sr', oa:true, apa:'Marzban, A., Dowlati, M., Moslehi, S., & Ahmadi Marzaleh, M. (2025). Role of schools in disaster risk management: A systematic review. BMC Emergency Medicine, 26, 23.',
+    {k:'Marzban2026', g:'sys', ev:'sr', oa:true, apa:'Marzban, A., Dowlati, M., Moslehi, S., & Ahmadi Marzaleh, M. (2026). Role of schools in disaster risk management: A systematic review. BMC Emergency Medicine, 26, 23.',
       url:'https://doi.org/10.1186/s12873-025-01453-z',
       gist:'סקירה של 17 מקורות (עד 2024). שישה תחומים של השתתפות בית הספר בניהול סיכוני אסון: תכנון ומוכנות (ועדת חירום עם תפקידים ומפגשים קבועים, זיהוי סיכונים מקומיים, מוכנות רגשית וחברתית), חינוך ומודעות (תרגילים מעשיים, הכשרת צוות, מפגשים להורים), תקשורת ושיתוף פעולה (משפחות, ארגונים, רשויות, תרגילים משותפים, שיתוף ניסיון בין בתי ספר), ציוד ותשתית (ערכות, מרחבים בטוחים, מפות בטיחות, נוהלי פינוי), הערכה ושיפור (הערכה שוטפת, זיהוי חוזקות וחולשות, משוב מתלמידים ומשפחות, עדכון לפי ניסיון), ואתגרים (מימון, לוגיסטיקה, תקשורת ורגולציה). בית הספר הוא צומת קהילתי ולא רק אוכלוסייה שמגנים עליה.',
-      be:'הרשימה של שישת התחומים משמשת לבדיקה שהתרחיש ומפגש המיפוי לא מדלגים על תחום (למשל משוב מתלמידים ומשפחות, או תרגיל משותף עם הרשות).',
+      be:'מקור מרכזי לתכנון מערך המוכנות לבתי ספר: ששת התחומים בודקים שהתרחיש ומפגש המיפוי לא מדלגים על תחום (למשל משוב מתלמידים ומשפחות, או תרגיל משותף עם הרשות). הנהלת בית הספר מובילה, ותלות יתר בגורמים חיצוניים יוצרת פערים (הדיון, עמ׳ 9). תרגיל שולחן ותרגול עם AI לא באים במקום תרגילי פינוי, תרגול בציוד, בדיקת תשתיות והכשרות מוסמכות. הערכה פשוטה ומכוונת פעולה, בלי עומס דוחות.',
       q:'רוב המקורות מארצות הברית ובאנגלית בלבד. נקודת המבט של תלמידים, הורים וקבוצות מוחלשות חסרה במחקרים. אחות בית ספר ושירותי ייעוץ ופסיכולוגיה בתוך בית הספר, שמופיעים בסקירה, לא קיימים כך בישראל, ולא נכנסים להמלצות.'},
     {k:'Agarwal2025', g:'sys', apa:'Agarwal, Parajuli, Xanthou, & Sextos. (2025). Inclusive resilience: A participatory methodology for self-improving seismic resilience of school communities in Nepal. International Journal of Disaster Risk Reduction.',
       url:'https://doi.org/10.1016/j.ijdrr.2025.105759',
@@ -1238,7 +1238,11 @@
   var PATHS_K = { CAST2024: 1, Johnson2009: 1, RyanDeci2017: 1, Topping2005: 1, HoweAbedin2013: 1, MercerLittleton2007: 1, Resnick2015: 1, Sade2024: 1 };
   // מעבדת שיח וחקר משותף וחשיבת צוות (11/10/2026): קבוצת השיח ומקורות קיימים על שיח, למידה שיתופית ואמון
   var DIALOG_K = { CohenLotan2014: 1, Johnson2009: 1, MercerLittleton2007: 1, Resnick2015: 1, HoweAbedin2013: 1, Edmondson1999: 1, Bohm1996: 1, Kaner2014: 1, Topping2005: 1, RyanDeci2017: 1, Sade2024: 1, MarlowLacerenza2025: 1, BrennerPeretzBenhaiem2026: 1 };
+  // מערך המוכנות (03/11/2026): קבוצת המוכנות, ומקורות על תחקיר, בטיחות פסיכולוגית, תיאום, מסוגלות קולקטיבית ובית הספר בחירום
+  var READY_K = { Marzban2026: 1, Edmondson1999: 1, Gollwitzer1999: 1, MarlowLacerenza2025: 1, Bandura1997: 1, Goddard2000: 1, Hobfoll2007: 1,
+    Hazzan2025: 1, Hazzan2026: 1, EvenZahav2024: 1, EvenZahav2026: 1, KalfonHakhmigari2025: 1, Mevaker2025: 1, Mevaker2026: 1, Sade2024: 1 };
   var ADV = {
+    readiness: function(s){ return s.g === 'prep' || !!READY_K[s.k]; },
     practi: function(s){ return !LEAD_G[s.g] && !NOT_PRACTI_G[s.g]; },
     nugi:   function(s){ return !!(NUGI_G[s.g] || NUGI_K[s.k]); },
     // תיק הרציפות (09/10/2026): קבוצת הרציפות ומקורות קיימים על רציפות חינוכית, מנהיגות מבוזרת, שגרה ואמון

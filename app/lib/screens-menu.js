@@ -73,6 +73,7 @@ window.SBE_SCREENS = [
       { file:'feedback-results.html', label:'תוצאות המשוב', who:'מנחות' },
     ]},
     { title:'🔁 5. לעגן בשגרה: מה ימשיך לפעול גם כשמשהו משתבש?', items:[
+      { file:'readiness.html', label:'מערך המוכנות', who:'הרשאת מערך המוכנות (readiness)' },
       { file:'routines-hub.html', label:'מרכז שגרות ויוזמות חברתיות', who:'הרשאת מרכז השגרות (routines)' },
       { file:'continuity-kit.html', label:'תיק רציפות', who:'הרשאת תיק רציפות (continuity)' },
       { file:'journey.html', label:'מסע אל החוסן החברתי: מסך המשתתפים', who:'הרשאת מסע אל החוסן החברתי' },
