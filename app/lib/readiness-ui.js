@@ -371,9 +371,11 @@
   // לשוניות בתוך מסך, במקום גלילה ארוכה
   function tabs(key, list, def) {
     const cur = Math.max(0, Math.min(S.tab[key] == null ? (def || 0) : S.tab[key], list.length - 1));
-    const bar = h('div', { class: 'tabs noprint sbe-no-theme', role: 'tablist' }, list.map(([label], i) => h('button', { type: 'button', role: 'tab', 'aria-selected': i === cur ? 'true' : 'false', text: label,
+    const base = 'rt-' + String(key).replace(/[^a-z0-9]/gi, '');
+    const bar = h('div', { class: 'tabs noprint sbe-no-theme', role: 'tablist' }, list.map(([label], i) => h('button', { type: 'button', role: 'tab', id: base + '-t' + i, 'aria-controls': base + '-p', tabindex: i === cur ? '0' : '-1', 'aria-selected': i === cur ? 'true' : 'false', text: label,
       onclick: () => { S.tab[key] = i; render(); } })));
-    return h('div', {}, bar, list[cur][1]());
+    tabKeys(bar, (j) => { S.tab[key] = j; render(); });
+    return h('div', {}, bar, h('div', { role: 'tabpanel', id: base + '-p', 'aria-labelledby': base + '-t' + cur }, list[cur][1]()));
   }
   const typeName = (k) => ((L.MEET_TYPES.find((t) => t.k === k) || L.MEET_TYPES[L.MEET_TYPES.length - 1]).name);
   const isMeetingView = () => /^s[1-5]$/.test(S.view) || S.view.startsWith('mt:') || S.view === 'new';
@@ -385,8 +387,34 @@
     return { open: acts + ends + ist.open, alert: !!P.stats(S.doc).escalate || late };
   }
 
+  // נגישות (בדיקת המומחים, 04/11/2026): אחרי כל לחיצה המסך נבנה מחדש, והמיקוד חוזר לפריט שנלחץ (לשונית, מילה בסרגל),
+  // ואם הוא כבר לא קיים: לכותרת המסך. כך מקלדת וקורא מסך לא קופצים לראש הדף.
+  function focusKey() {
+    const a = document.activeElement;
+    if (!a || !app.contains(a) || !/^(A|BUTTON|SELECT|SUMMARY)$/.test(a.tagName)) return null;
+    return { tag: a.tagName, role: a.getAttribute('role') || '', text: (a.textContent || '').trim(), al: a.getAttribute('aria-label') || '' };
+  }
+  function restoreFocus(fk) {
+    if (S.focusText) { const t = S.focusText; S.focusText = ''; const el = [...app.querySelectorAll('[role=tab],[role=menuitem]')].find((e) => (e.textContent || '').trim() === t); if (el) { el.focus({ preventScroll: true }); return; } }
+    if (!fk) return;
+    const el = [...app.querySelectorAll(fk.tag)].find((e) => (e.getAttribute('role') || '') === fk.role && (e.textContent || '').trim() === fk.text && (e.getAttribute('aria-label') || '') === fk.al);
+    if (el) { el.focus({ preventScroll: true }); return; }
+    const hd = app.querySelector('.navrow ~ * h2, .navrow ~ h2'); if (hd) { hd.setAttribute('tabindex', '-1'); hd.focus({ preventScroll: true }); }
+  }
+  // חצים בשורת לשוניות (מימין לשמאל: שמאלה = הבאה)
+  function tabKeys(bar, pick) {
+    bar.addEventListener('keydown', (e) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+      const tabsEls = [...bar.querySelectorAll('[role=tab]')]; const i = tabsEls.indexOf(document.activeElement); if (i < 0) return;
+      const rtl = getComputedStyle(bar).direction === 'rtl';
+      let j = e.key === 'Home' ? 0 : e.key === 'End' ? tabsEls.length - 1 : i + ((e.key === 'ArrowLeft') === rtl ? 1 : -1);
+      j = (j + tabsEls.length) % tabsEls.length; e.preventDefault(); S.focusText = (tabsEls[j].textContent || '').trim(); pick(j);
+    });
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.menu) { S.menu = false; S.focusText = ''; render(); const t = app.querySelector('[aria-haspopup]'); if (t) t.focus(); } });
   function render() {
     if (!S.doc) return renderList();
+    const fk = focusKey();
     // שורה אחת: שם בית הספר, מי אני, שפה. במילים, לא בכפתורים.
     const me = h('details', { class: 'me' }, h('summary', { text: '👤 ' + (S.by || Y('whoAmI')) }),
       piiCheck(h('input', { type: 'text', value: S.by, 'aria-label': T('by'), placeholder: Y('byName'), oninput: (e) => { S.by = e.target.value.slice(0, 60); LS.set('sbe.prep.by', S.by); } })));
@@ -407,6 +435,9 @@
     const body = v === 'plan' ? viewPlan() : /^s[1-5]$/.test(v) ? viewMeeting('s', Number(v[1])) : v.startsWith('mt:') ? viewMeeting('m', v.slice(3)) : v === 'new' ? viewNewMeeting()
       : v === 'gen' ? viewRoutine() : v === 'index' ? viewIndex() : v === 'track' ? viewTrack(false) : v === 'partners' ? viewPartners() : viewHome();
     app.replaceChildren(head, nav, S.menu ? meetingsMenu() : '', body);
+    if (S.menu && fk && fk.text.includes('▾')) { const first = app.querySelector('.menu [role=menuitem]'); if (first) first.focus({ preventScroll: true }); } else restoreFocus(fk);
+    const more = (el) => el && el.classList.toggle('more', el.scrollWidth > el.clientWidth + 4);
+    more(nav); app.querySelectorAll('.tabs').forEach(more);
     const cur = nav.querySelector('[aria-current]'); if (cur && cur.scrollIntoView && nav.scrollWidth > nav.clientWidth) cur.scrollIntoView({ block: 'nearest', inline: 'center' });
   }
   // הרשימה הנפתחת של המפגשים: חמשת המפגשים, הפגישות שתוכננו, ותכנון פגישה חדשה
@@ -481,7 +512,7 @@
     // מה הלאה: המפגש הבא, במילה שנפתחת. בלי אריחים שחוזרים על הסרגל.
     const nextCard = nexts.length ? h('div', { class: 'card' }, h('h2', { text: T('next1') }), h('ul', { class: 'list' }, nexts.map((x) => h('li', {},
       lnk(x.label, () => { if (x.pre) S.newPre = x.pre; go(x.view); }, { class: 'lnk strong' }), x.sub ? h('div', { class: 'muted small', text: x.sub }) : null)))) : null;
-    return h('div', {}, esc, dmWarn, ideaWarn, nextCard, routineCard(), h('p', { class: 'small' }, lnk(Y('binder'), printBinder), ' · ', h('a', { class: 'lnk', href: 'continuity-kit.html#binder', text: Y('bFiles') })), h('p', { class: 'muted small', text: L.TABLETOP_NOTE }));
+    return h('div', {}, esc, dmWarn, ideaWarn, nextCard, routineCard(), h('p', { class: 'small' }, lnk(Y('binder'), printBinder), !window.sbeCanOpen || window.sbeCanOpen('continuity-kit.html') ? [' · ', h('a', { class: 'lnk', href: 'continuity-kit.html#binder', text: Y('bFiles') })] : null), h('p', { class: 'muted small', text: L.TABLETOP_NOTE }));
   }
   // 📊 מדד המוכנות: שלושת העמודים, ומה הצוות כבר עושה בעצמו
   function viewIndex() {
@@ -497,7 +528,7 @@
   }
   function routineCard() {
     return h('div', { class: 'card' }, h('h2', { text: T('routine') }), h('p', { text: String(L.ROUTINE).replace(/^[^:：]{2,30}[:：]\s*/, '') }),
-      h('p', { class: 'links' }, L.ROUTINE_LINKS.map(([f, label]) => h('a', { class: 'lnk', href: f, text: label }))));
+      h('p', { class: 'links' }, L.ROUTINE_LINKS.filter(([f]) => !window.sbeCanOpen || window.sbeCanOpen(f)).map(([f, label]) => h('a', { class: 'lnk', href: f, text: label }))));
   }
   function viewPartners() {
     const list = arr('partners');
@@ -1051,7 +1082,11 @@
     const labelsOf = (ax) => ax.k === 'crisis' ? L.CRISIS.map((c) => c.name + (c.sensitive ? ' · ' + Y('teamOnly') : '')) : ax.k === 'what' ? ((L.CRISIS[base.CRISIS.findIndex((c) => c.name === sel.crisis)] || {}).what || []) : ax.opts;
     const axes = L.AXES.map((ax) => {
       const opts = optsOf(ax), labels = labelsOf(ax);
-      const wrap = h('div', { class: 'teamcard' }, h('b', { text: ax.n + '. ' + ax.label }), h('div', { class: 'muted', text: ax.q }));
+      // כל ציר מקופל, ובשורה רואים מה נבחר; פתוח רק הציר שעובדים עליו (בהתחלה: סוג המשבר). פחות גלילה בטלפון.
+      const chosen = [].concat(sel[ax.k] || []).filter(Boolean).map((v) => { const i = opts.indexOf(v); return i >= 0 ? (labels[i] || v) : v; }).join(', ');
+      S.axOpen = S.axOpen || 'crisis';
+      const wrap = h('details', { class: 'teamcard axis', open: S.axOpen === ax.k }, h('summary', {}, h('b', { text: ax.n + '. ' + ax.label }), chosen ? h('span', { class: 'muted', text: ': ' + chosen }) : (g.open[ax.k] ? h('span', { class: 'muted', text: ': ' + L.SURPRISE }) : null)), h('div', { class: 'muted', text: ax.q }));
+      wrap.addEventListener('toggle', () => { if (wrap.open) { S.axOpen = ax.k; wrap.parentNode && wrap.parentNode.querySelectorAll('details.axis[open]').forEach((d) => { if (d !== wrap) d.open = false; }); } });
       if (ax.multi) {
         const cur = new Set([].concat(sel[ax.k] || []));
         wrap.append(h('div', { class: 'row' }, opts.map((o, i) => h('label', { class: 'pill' }, h('input', { type: 'checkbox', checked: cur.has(o), onchange: (e) => { if (e.target.checked) cur.add(o); else cur.delete(o); sel[ax.k] = [...cur]; keep(); } }), ' ', labels[i] || o))));
@@ -1535,10 +1570,11 @@
     const keys = ['tasks', 'decisions', 'ends', 'gaps', 'done'].concat(compact ? [] : ['log']);
     const cur = keys.includes(S.sheet) ? S.sheet : 'tasks';
     const bar = h('div', { class: 'tabs noprint sbe-no-theme', role: 'tablist', 'aria-label': Y('trackT') }, keys.map((k) => h('button', { type: 'button', role: 'tab', 'aria-selected': k === cur ? 'true' : 'false',
-      onclick: () => { S.sheet = k; render(); } }, k === 'log' ? T('log') : L.SHEETS[k], k === 'log' ? null : h('span', { class: 'pill', text: String(count(k)) }))));
+      tabindex: k === cur ? '0' : '-1', onclick: () => { S.sheet = k; render(); } }, k === 'log' ? T('log') : L.SHEETS[k], k === 'log' ? null : h('span', { class: 'pill', text: String(count(k)) }))));
+    tabKeys(bar, (j) => { S.sheet = keys[j]; render(); });
     setTimeout(() => { const sel = bar.querySelector('[aria-selected="true"]'); if (sel && bar.scrollWidth > bar.clientWidth) sel.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }, 0);
     const body = cur === 'decisions' ? viewIdeas() : cur === 'gaps' ? viewGaps() : cur === 'ends' ? viewEnds() : cur === 'done' ? viewDone() : cur === 'log' ? viewLog() : viewActions();
-    return h('div', {}, bar, people().length ? null : h('p', { class: 'muted small' }, Y('noPeople') + ' ', lnk(Y('teamsT'), () => { S.tab.s1 = 1; go('s1'); })), body, peopleList());
+    return h('div', {}, bar, people().length ? null : h('p', { class: 'muted small' }, Y('noPeople') + ' ', lnk(Y('teamsT'), () => { S.tab.s1 = 1; go('s1'); })), h('div', { role: 'tabpanel', 'aria-label': cur === 'log' ? T('log') : L.SHEETS[cur] }, body), peopleList());
   }
   function moveSel(kind, it) {
     const here = P.sheetOf(kind, it);
@@ -1696,14 +1732,15 @@
   }
   function viewActions() {
     const acts = arr('actions'); S.doc.parts.actions = acts;
-    const teamSel = (a) => { const s = h('select', { 'data-closed': '' }, h('option', { value: '', text: '…' }), [...allTeams().map((t) => h('option', { value: t.id, text: t.name })), h('option', { value: 'all', text: Y('allTeams') })]); s.value = a.team || ''; s.onchange = () => { a.team = s.value; save('actions', ''); }; return s; };
+    const teamSel = (a) => { const s = h('select', { 'data-closed': '', 'aria-label': T('team') }, h('option', { value: '', text: '…' }), [...allTeams().map((t) => h('option', { value: t.id, text: t.name })), h('option', { value: 'all', text: Y('allTeams') })]); s.value = a.team || ''; s.onchange = () => { a.team = s.value; save('actions', ''); }; return s; };
     const rows = acts.filter((a) => P.sheetOf('actions', a) === 'tasks').map((a) => {
       const i = acts.indexOf(a);
       const st = h('select', { 'data-closed': '' }, Object.entries(L.STATUS).map(([k, v]) => h('option', { value: k, text: v }))); st.value = a.status || 'todo';
       st.onchange = () => actStatus(a, st);
       const due = h('input', { type: 'date', value: a.due || '' }); due.onchange = () => { a.due = due.value; save('actions', ''); };
-      return h('tr', {}, h('td', { 'data-h': T('text') }, bindText(h('textarea', { rows: 2, class: 'cell wide' }), () => a.text, (v) => { a.text = v; }, 'actions', '')),
-        h('td', { 'data-h': T('team') }, teamSel(a)), h('td', { 'data-h': T('owner') }, bindText(h('input', { type: 'text', list: 'rdyPeople' }), () => a.owner, (v) => { a.owner = v; }, 'actions', ''), ownerWarn(a.owner)),
+      st.setAttribute('aria-label', T('status')); due.setAttribute('aria-label', T('due'));
+      return h('tr', {}, h('td', { 'data-h': T('text') }, bindText(h('textarea', { rows: 2, class: 'cell wide', 'aria-label': T('text') }), () => a.text, (v) => { a.text = v; }, 'actions', '')),
+        h('td', { 'data-h': T('team') }, teamSel(a)), h('td', { 'data-h': T('owner') }, bindText(h('input', { type: 'text', list: 'rdyPeople', 'aria-label': T('owner') }), () => a.owner, (v) => { a.owner = v; }, 'actions', ''), ownerWarn(a.owner)),
         h('td', { 'data-h': T('due') }, due), h('td', { 'data-h': T('status') }, st),
         h('td', { class: 'noprint' }, moveSel('actions', a), ' ', lnk(T('del'), () => { const before = snap(['actions']); acts.splice(i, 1); save('actions', T('del') + ': ' + String(a.text || '').slice(0, 60)); render(); undoToast(T('del'), before); }, { class: 'lnk muted small' })));
     });
