@@ -36,6 +36,7 @@
       a.decisions && a.decisions.length ? tbl(['החלטות'], a.decisions.map((x) => [x])) : null,
       a.tasks && a.tasks.length ? tbl(['משימות', 'אחראי/ת', 'עד מתי'], a.tasks.map((x) => [x[0], x[1], dateIL(x[2])])) : null,
       a.ends && a.ends.length ? tbl(['קצוות פתוחים', 'אחראי/ת'], a.ends) : null,
+      a.notes ? h('details', {}, h('summary', { text: 'הפרוטוקול מהקובץ' }), h('p', { style: 'white-space:pre-line', text: a.notes })) : null,
       a.next ? h('p', {}, h('b', { text: 'המפגש הבא: ' }), dateIL(a.next)) : null);
   }
   async function api(action, extra) {
