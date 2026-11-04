@@ -28,7 +28,7 @@
       sessions: 'המפגשים', later: 'בשלב הבא', escalate: 'קצוות שעולים למנהל/ת מצב החירום', partners: 'שותפים: עם מי מתאמים בחירום?', expect: 'מה אנחנו מצפים לקבל', provide: 'מה אנחנו מספקים',
       ifGap: 'פער ממשק: חסר צד אחד', partner: 'שותף/ה', step: 'שלב', product: 'התוצר', questions: 'שאלות לצוות', ourText: 'מה כתבנו', ask: 'חוליות חלשות וחלופות', working: 'עובדים על זה…',
       gaps: 'פערים', alts: 'חלופות שאולי לא עלו', nextSteps: 'צעדי המשך', toEnds: 'לקצוות הפתוחים', addGap: 'לרשימת הפערים', before: 'לפני המפגש', during: 'במפגש', our: 'שלנו',
-      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', editT: 'עריכה', closeT: 'סגירה', undoT: '↩ ביטול', undoneT: 'השינוי בוטל', cancelWhy: 'למה הפעולה בוטלה? (רשות, נשמר לתיעוד)', ownerPerson: 'אחראי/ת: שם של אדם מהצוות', noPeople: 'כדי לבחור אחראי/ת בשם, אפשר למלא את השמות בטבלת הצוותים:', delQ: 'למחוק את המשימה?', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
+      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', editT: 'עריכה', closeT: 'סגירה', ownerFilled: 'אחראי/ת הושלם/ה לפי ראש הצוות או מנהל/ת מצב החירום', undoT: '↩ ביטול', undoneT: 'השינוי בוטל', cancelWhy: 'למה הפעולה בוטלה? (רשות, נשמר לתיעוד)', ownerPerson: 'אחראי/ת: שם של אדם מהצוות', noPeople: 'עוד אין שמות בטבלת הצוותים, ולכן האחראי/ת הוא/היא מנהל/ת מצב החירום. כדי שיופיעו שמות, אפשר למלא אותם:', delQ: 'למחוק את המשימה?', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
       version: 'אורך התרגיל', v20: '20 דקות (ישיבת צוות)', v60: 'שעה', startEx: 'התחלת התרגיל', exercises: 'התרגילים', cont: 'המשך', finish: 'סיום התרחיש', opening: 'פתיחה',
       closing: 'סגירה', copy: 'העתקה', copied: 'הועתק', openRec: 'פתיחת קישור לטלפון', recOn: 'ההקלטה פתוחה', marks: 'רגעי החלטה', segs: 'קטעים בתמליל', loadTr: 'טעינת התמליל',
       editTr: 'עריכת התמליל (לפני שהוא משמש לדוח)', saveTr: 'שמירת התמליל', worked: 'מה עבד', timeline: 'ציר הזמן', fb: 'משוב מקצועי', src: 'מקור', addRow: '➕ שורה',
@@ -70,7 +70,7 @@
       sessions: 'اللقاءات', later: 'في المرحلة القادمة', escalate: 'أطراف تُرفع إلى مدير/ة حالة الطوارئ', partners: 'الشركاء: مع من ننسّق في الطوارئ؟', expect: 'ما نتوقع أن نحصل عليه', provide: 'ما نقدّمه',
       ifGap: 'فجوة في التنسيق: ينقص أحد الطرفين', partner: 'الشريك/ة', step: 'مرحلة', product: 'الناتج', questions: 'أسئلة للطاقم', ourText: 'ما كتبناه', ask: 'حلقات ضعيفة وبدائل', working: 'نعمل على ذلك…',
       gaps: 'فجوات', alts: 'بدائل ربما لم تُطرح', nextSteps: 'خطوات تالية', toEnds: 'إلى الأطراف المفتوحة', addGap: 'إلى قائمة الفجوات', before: 'قبل اللقاء', during: 'في اللقاء', our: 'لنا',
-      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', editT: 'تعديل', closeT: 'إغلاق', undoT: '↩ تراجع', undoneT: 'أُلغي التغيير', cancelWhy: 'لماذا أُلغي الإجراء؟ (اختياري، يُحفظ للتوثيق)', ownerPerson: 'المسؤول/ة: اسم شخص من الطاقم', noPeople: 'لاختيار مسؤول/ة بالاسم، يمكن تعبئة الأسماء في جدول الطواقم:', delQ: 'حذف المهمة؟', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
+      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', editT: 'تعديل', closeT: 'إغلاق', ownerFilled: 'أُكمل المسؤول/ة حسب رئيس/ة الطاقم أو مدير/ة حالة الطوارئ', undoT: '↩ تراجع', undoneT: 'أُلغي التغيير', cancelWhy: 'لماذا أُلغي الإجراء؟ (اختياري، يُحفظ للتوثيق)', ownerPerson: 'المسؤول/ة: اسم شخص من الطاقم', noPeople: 'لاختيار مسؤول/ة بالاسم، يمكن تعبئة الأسماء في جدول الطواقم:', delQ: 'حذف المهمة؟', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
       version: 'مدة التمرين', v20: '20 دقيقة (جلسة طاقم)', v60: 'ساعة', startEx: 'بدء التمرين', exercises: 'التمارين', cont: 'متابعة', finish: 'إنهاء السيناريو', opening: 'افتتاح',
       closing: 'إغلاق', copy: 'نسخ', copied: 'تم النسخ', openRec: 'فتح رابط للهاتف', recOn: 'التسجيل مفتوح', marks: 'لحظات قرار', segs: 'مقاطع في النص المكتوب', loadTr: 'تحميل النص المكتوب',
       editTr: 'تحرير النص المكتوب (قبل استخدامه في التقرير)', saveTr: 'حفظ النص المكتوب', worked: 'ما الذي نجح', timeline: 'التسلسل الزمني', fb: 'ملاحظات مهنية', src: 'مصدر', addRow: '➕ سطر',
@@ -160,11 +160,26 @@
       for (const [lab, pp] of [[T('lead') + ' · ' + tn, tm.lead], [T('deputy') + ' · ' + tn, tm.deputy]]) if (x === lab && pp && String(pp.name || '').trim()) return pp.name.trim();
       if (x && (x === tn || x === tm.name)) return leadOf(tm.id);
     }
-    if (notPerson(x)) return teamId && teamId !== 'all' ? leadOf(teamId) : '';
+    if (notPerson(x)) return fallbackOwner(teamId || (allTeams().find((t) => t.name === x) || {}).id);
     return x;
   }
+  // אין מצב שאין אחראי/ת (04/11/2026: "אין מצב שאין שם. אם אין שם אז מי שמעל נכתב, ראש הצוות או המנהלת"):
+  // ראש הצוות, ואם אין, מנהל/ת מצב החירום (מוביל/ת צוות הניהול, ואחריו/ה ממלא/ת המקום).
+  const deputyOf = (teamId) => { const tm = (S.doc && Array.isArray(S.doc.parts.teams) ? S.doc.parts.teams : []).find((t) => t && t.id === teamId); return (tm && tm.deputy && String(tm.deputy.name || '').trim()) || ''; };
+  const fallbackOwner = (teamId) => (teamId && teamId !== 'all' && leadOf(teamId)) || leadOf('mgmt') || deputyOf('mgmt') || '';
+  const emRole = () => L.TEAMS[0].lead.split(',')[0];
+  // משלימים אחראי/ת בכל פריט פתוח שבו כתוב צוות או שאין שם; נשמר פעם אחת
+  function fixOwners() {
+    const changed = new Set();
+    const fix = (k, it, teamId) => { if (!notPerson(it.owner)) return; const v = personOwner(it.owner, teamId); if (v && v !== it.owner) { it.owner = v; changed.add(k); } };
+    for (const a of arr('actions')) if (P.sheetOf('actions', a) !== 'done') fix('actions', a, a.team);
+    for (const e of arr('ends')) if (e.status !== 'closed') fix('ends', e, (allTeams().find((t) => t.name === String(e.owner || '').trim()) || {}).id);
+    for (const it of arr('ideas')) if (!it.done && (it.decision === 'adopt' || it.decision === 'check')) fix('ideas', it, '');
+    for (const k of changed) save(k, Y('ownerFilled'));
+  }
   const peopleList = () => h('datalist', { id: 'rdyPeople' }, people().map((pp) => h('option', { value: pp.name, label: pp.role })));
-  const ownerWarn = (v) => (notPerson(v) ? h('span', { class: 'pill red', text: String(v || '').trim() ? Y('ownerPerson') : T('noOwner') }) : null);
+  // כשאין עדיין אף שם בטבלת הצוותים: מנהל/ת מצב החירום, עם הזמנה למלא שמות
+  const ownerWarn = (v) => (notPerson(v) ? h('span', { class: 'pill', text: emRole() }) : null);
   // הוספת צוות: שם (ותפקיד, רשות). מחזיר את המזהה, או '' אם לא נוסף.
   async function addTeam(name, duty) {
     const nm = String(name || '').trim();
@@ -1166,7 +1181,7 @@
       const rp = (r.reports || {})[t.id]; if (!rp) continue;
       for (const [i, sheet] of Object.entries(REPORT_TO)) {
         const v = String(rp['r' + i] || '').trim(); if (!v) continue;
-        out.push({ sheet, pick: true, text: (i === '4' ? L.REPORT[4][0] + ': ' : i === '3' ? L.REPORT[3][0] + ': ' : '') + v, owner: leadOf(t.id), team: t.id, due: sheet === 'tasks' ? (r.next || plus(7)) : '' });
+        out.push({ sheet, pick: true, text: (i === '4' ? L.REPORT[4][0] + ': ' : i === '3' ? L.REPORT[3][0] + ': ' : '') + v, owner: fallbackOwner(t.id), team: t.id, due: sheet === 'tasks' ? (r.next || plus(7)) : '' });
       }
     }
     return out;
@@ -1325,6 +1340,7 @@
         for (const x of found) {
           if (x.pick === false) continue;
           const base = { id: uid(x.sheet[0]), text: x.text, src: R.title };
+          if (x.sheet !== 'decisions') x.owner = personOwner(x.owner, x.team);
           if (x.sheet === 'tasks') acts.push(Object.assign(base, { team: x.team || '', owner: x.owner || '', due: x.due || plus(14), status: 'todo' }));
           else if (x.sheet === 'ends') ends.push(Object.assign(base, { owner: x.owner || '', openedAt: nowIso(), next: plus(3), status: 'open', missed: 0, by: S.by }));
           else ideas.push(Object.assign(base, { by: x.by || '', at: nowIso(), decision: 'adopt', decidedAt: nowIso(), owner: x.owner || '', fromMeeting: true }));
@@ -1388,6 +1404,7 @@
   const KIND_OF = { tasks: 'actions', ends: 'ends', decisions: 'ideas' };
   function viewTrack(compact) {
     S.doc.parts.actions = arr('actions'); S.doc.parts.ends = arr('ends'); S.doc.parts.ideas = arr('ideas');
+    fixOwners();
     const count = (sh) => ['actions', 'ends', 'ideas'].reduce((n, k) => n + arr(k).filter((x) => P.sheetOf(k, x) === sh).length, 0);
     const keys = ['tasks', 'decisions', 'ends', 'done'].concat(compact ? [] : ['log']);
     const cur = keys.includes(S.sheet) ? S.sheet : 'tasks';
@@ -1492,7 +1509,7 @@
   // ---------- צד: קצוות פתוחים, פעולות, רישום ----------
   function addEnd(text, team, src) {
     const ends = arr('ends');
-    ends.push({ id: uid('e'), text: String(text || ''), owner: team ? leadOf(team) : '', openedAt: nowIso(), next: plus(1), status: 'open', missed: 0, src: src || '', by: S.by });
+    ends.push({ id: uid('e'), text: String(text || ''), owner: fallbackOwner(team), openedAt: nowIso(), next: plus(1), status: 'open', missed: 0, src: src || '', by: S.by });
     S.doc.parts.ends = ends; save('ends', 'קצה פתוח: ' + String(text).slice(0, 80)); toast(Y('toEnds') + ' ✓');
   }
   // טבלת המעקב בטלפון (04/11/2026, אחרי צילום המסך): שורה קצרה לכל פריט, מה · מי · עד מתי, ושינוי מצב במקום.
@@ -1521,7 +1538,7 @@
         h('td', { 'data-h': T('endOpened'), text: e.src || dateIL(e.openedAt) }),
         h('td', { 'data-h': T('owner') }, bindText(h('input', { type: 'text', list: 'rdyPeople' }), () => e.owner, (v) => { e.owner = v; }, 'ends', '')),
         h('td', { 'data-h': T('endNext') }, next),
-        h('td', { 'data-h': T('endState') }, st, moveSel('ends', e), state !== 'noOwner' && notPerson(e.owner) ? h('span', { class: 'pill red', text: Y('ownerPerson') }) : null, state === 'noOwner' ? h('span', { class: 'pill red', text: T('noOwner') }) : state === 'escalate' ? h('span', { class: 'pill red', text: Y('escalate') }) : state === 'late' ? h('span', { class: 'pill red', text: T('late') }) : null));
+        h('td', { 'data-h': T('endState') }, st, moveSel('ends', e),  state === 'noOwner' ? h('span', { class: 'pill red', text: T('noOwner') }) : state === 'escalate' ? h('span', { class: 'pill red', text: Y('escalate') }) : state === 'late' ? h('span', { class: 'pill red', text: T('late') }) : null));
     };
     const mob = (e) => {
       const state = P.endState(e);
@@ -1529,8 +1546,8 @@
       next.onchange = () => { if (state === 'late' || state === 'escalate') e.missed = (e.missed || 0) + 1; e.next = next.value; save('ends', ''); render(); };
       const st = h('select', { 'data-closed': '', class: 'msel', 'aria-label': T('endState') }, Object.entries(L.END_STATUS).map(([k, v]) => h('option', { value: k, text: v }))); st.value = e.status || 'open';
       st.onchange = () => { const before = snap(['ends']); if (st.value === 'closed' && !confirm(Y('confirmClose'))) { st.value = e.status; return; } if (st.value === 'closed') { e.closedAt = nowIso(); e.closedLate = state === 'late' || state === 'escalate'; } e.status = st.value; save('ends', (st.value === 'closed' ? 'קצה נסגר: ' : L.END_STATUS[st.value] + ': ') + String(e.text).slice(0, 80)); render(); undoToast(L.END_STATUS[st.value], before); };
-      const warn = state === 'noOwner' ? T('noOwner') : state === 'escalate' ? Y('escalate') : state === 'late' ? T('late') : '';
-      return mrow(e.id, e.text, [e.owner && !notPerson(e.owner) ? h('span', { text: e.owner }) : e.owner ? h('span', { class: 'late', text: e.owner + ': ' + Y('ownerPerson') }) : null, e.next ? h('span', { class: lateDate(e.next) ? 'late' : '', text: T('endNext') + ' ' + dateIL(e.next) }) : null, warn ? h('span', { class: 'late', text: warn }) : null],
+      const warn = state === 'noOwner' ? '' : state === 'escalate' ? Y('escalate') : state === 'late' ? T('late') : '';
+      return mrow(e.id, e.text, [h('span', { text: !notPerson(e.owner) ? e.owner : emRole() }), e.next ? h('span', { class: lateDate(e.next) ? 'late' : '', text: T('endNext') + ' ' + dateIL(e.next) }) : null, warn ? h('span', { class: 'late', text: warn }) : null],
         [st, moveSel('ends', e)],
         [field(T('text'), bindText(h('textarea', { rows: 2 }), () => e.text, (v) => { e.text = v; }, 'ends', '')),
           field(T('owner'), bindText(h('input', { type: 'text', list: 'rdyPeople' }), () => e.owner, (v) => { e.owner = v; }, 'ends', '')),
@@ -1569,7 +1586,7 @@
       st.onchange = () => actStatus(a, st);
       const due = h('input', { type: 'date', value: a.due || '', 'aria-label': T('due') }); due.onchange = () => { a.due = due.value; save('actions', ''); render(); };
       const late = lateDate(a.due) && a.status !== 'done' && a.status !== 'tested';
-      const who = notPerson(a.owner) ? h('span', { class: 'late', text: String(a.owner || '').trim() ? a.owner + ': ' + Y('ownerPerson') : T('noOwner') }) : h('span', { text: a.owner + (a.team ? ' · ' + teamName(a.team) : '') });
+      const who = h('span', { text: (!notPerson(a.owner) ? a.owner : emRole()) + (a.team && a.team !== 'all' ? ' · ' + teamName(a.team) : '') });
       return mrow(a.id, a.text, [who, a.due ? h('span', { class: late ? 'late' : '', text: T('due') + ' ' + dateIL(a.due) + (late ? ' · ' + T('late') : '') }) : null],
         [st, moveSel('actions', a)],
         [field(T('text'), bindText(h('textarea', { rows: 2 }), () => a.text, (v) => { a.text = v; }, 'actions', '')),
@@ -1580,7 +1597,7 @@
     return h('div', { class: 'card' }, h('h2', { text: T('actions') }),
       h('p', { class: 'muted', text: L.STATUS.tested + ': ' + (S.lang === 'ar' ? 'يُغلق الإجراء فقط بعد فحصه في تمرين أو في يوم الصمود.' : 'פעולה נסגרת רק אחרי שנבדקה בתרגיל או ביום החוסן.') }),
       rows.length ? (MOB() ? h('ul', { class: 'mlist' }, mine.map(mob)) : h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, [T('text'), T('team'), T('owner'), T('due'), T('status'), ''].map((x) => h('th', { text: x })))), h('tbody', {}, rows))) : h('p', { class: 'muted', text: Y('none2') }),
-      h('p', { class: 'noprint' }, lnk(T('add'), () => { const a = { id: uid('a'), text: '', team: '', owner: '', due: plus(14), status: 'todo' }; acts.push(a); S.edit = a.id; save('actions', ''); render(); })));
+      h('p', { class: 'noprint' }, lnk(T('add'), () => { const a = { id: uid('a'), text: '', team: '', owner: fallbackOwner(''), due: plus(14), status: 'todo' }; acts.push(a); S.edit = a.id; save('actions', ''); render(); })));
   }
   function viewLog() {
     const log = (S.doc.log || []).slice().reverse();
