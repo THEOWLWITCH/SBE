@@ -28,7 +28,7 @@
       sessions: 'המפגשים', later: 'בשלב הבא', escalate: 'קצוות שעולים למנהל/ת מצב החירום', partners: 'שותפים: עם מי מתאמים בחירום?', expect: 'מה אנחנו מצפים לקבל', provide: 'מה אנחנו מספקים',
       ifGap: 'פער ממשק: חסר צד אחד', partner: 'שותף/ה', step: 'שלב', product: 'התוצר', questions: 'שאלות לצוות', ourText: 'מה כתבנו', ask: 'חוליות חלשות וחלופות', working: 'עובדים על זה…',
       gaps: 'פערים', alts: 'חלופות שאולי לא עלו', nextSteps: 'צעדי המשך', toEnds: 'לקצוות הפתוחים', addGap: 'לרשימת הפערים', before: 'לפני המפגש', during: 'במפגש', our: 'שלנו',
-      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
+      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', editT: 'עריכה', closeT: 'סגירה', delQ: 'למחוק את המשימה?', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
       version: 'אורך התרגיל', v20: '20 דקות (ישיבת צוות)', v60: 'שעה', startEx: 'התחלת התרגיל', exercises: 'התרגילים', cont: 'המשך', finish: 'סיום התרחיש', opening: 'פתיחה',
       closing: 'סגירה', copy: 'העתקה', copied: 'הועתק', openRec: 'פתיחת קישור לטלפון', recOn: 'ההקלטה פתוחה', marks: 'רגעי החלטה', segs: 'קטעים בתמליל', loadTr: 'טעינת התמליל',
       editTr: 'עריכת התמליל (לפני שהוא משמש לדוח)', saveTr: 'שמירת התמליל', worked: 'מה עבד', timeline: 'ציר הזמן', fb: 'משוב מקצועי', src: 'מקור', addRow: '➕ שורה',
@@ -70,7 +70,7 @@
       sessions: 'اللقاءات', later: 'في المرحلة القادمة', escalate: 'أطراف تُرفع إلى مدير/ة حالة الطوارئ', partners: 'الشركاء: مع من ننسّق في الطوارئ؟', expect: 'ما نتوقع أن نحصل عليه', provide: 'ما نقدّمه',
       ifGap: 'فجوة في التنسيق: ينقص أحد الطرفين', partner: 'الشريك/ة', step: 'مرحلة', product: 'الناتج', questions: 'أسئلة للطاقم', ourText: 'ما كتبناه', ask: 'حلقات ضعيفة وبدائل', working: 'نعمل على ذلك…',
       gaps: 'فجوات', alts: 'بدائل ربما لم تُطرح', nextSteps: 'خطوات تالية', toEnds: 'إلى الأطراف المفتوحة', addGap: 'إلى قائمة الفجوات', before: 'قبل اللقاء', during: 'في اللقاء', our: 'لنا',
-      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
+      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', editT: 'تعديل', closeT: 'إغلاق', delQ: 'حذف المهمة؟', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
       version: 'مدة التمرين', v20: '20 دقيقة (جلسة طاقم)', v60: 'ساعة', startEx: 'بدء التمرين', exercises: 'التمارين', cont: 'متابعة', finish: 'إنهاء السيناريو', opening: 'افتتاح',
       closing: 'إغلاق', copy: 'نسخ', copied: 'تم النسخ', openRec: 'فتح رابط للهاتف', recOn: 'التسجيل مفتوح', marks: 'لحظات قرار', segs: 'مقاطع في النص المكتوب', loadTr: 'تحميل النص المكتوب',
       editTr: 'تحرير النص المكتوب (قبل استخدامه في التقرير)', saveTr: 'حفظ النص المكتوب', worked: 'ما الذي نجح', timeline: 'التسلسل الزمني', fb: 'ملاحظات مهنية', src: 'مصدر', addRow: '➕ سطر',
@@ -1428,7 +1428,7 @@
         h('td', { 'data-h': L.IDEA_COLS[3] }, bindText(h('textarea', { rows: 2, class: 'cell', placeholder: it.decision === 'reject' ? Y('whyNot') : '' }), () => it.answer, (v) => { it.answer = v; }, 'ideas', ''), needWhy ? h('span', { class: 'pill red', text: Y('whyNot') }) : null),
         h('td', { 'data-h': L.IDEA_COLS[4] }, bindText(h('input', { type: 'text' }), () => it.owner, (v) => { it.owner = v; }, 'ideas', '')),
         h('td', { 'data-h': L.IDEA_COLS[5] }, due),
-        h('td', { class: 'noprint' }, moveSel('ideas', it), h('button', { class: 'btn ghost sm', type: 'button', text: T('del'), onclick: () => { ideas.splice(i, 1); save('ideas', ''); render(); } })));
+        h('td', { class: 'noprint' }, moveSel('ideas', it), ' ', lnk(T('del'), () => { ideas.splice(i, 1); save('ideas', ''); render(); }, { class: 'lnk muted small' })));
     });
     const sendAll = h('button', { class: 'btn ghost', type: 'button', text: Y('sendDecisions'), onclick: async () => {
       const decided = ideas.filter((x) => x.decision);
@@ -1451,6 +1451,18 @@
     ends.push({ id: uid('e'), text: String(text || ''), owner: team ? teamName(team) : '', openedAt: nowIso(), next: plus(1), status: 'open', missed: 0, src: src || '', by: S.by });
     S.doc.parts.ends = ends; save('ends', 'קצה פתוח: ' + String(text).slice(0, 80)); toast(Y('toEnds') + ' ✓');
   }
+  // טבלת המעקב בטלפון (04/11/2026, אחרי צילום המסך): שורה קצרה לכל פריט, מה · מי · עד מתי, ושינוי מצב במקום.
+  // העריכה המלאה נפתחת רק בפריט שבוחרים ("עריכה"), כדי שלא תהיה גלילה ארוכה של טפסים.
+  const MOB = () => !!(window.matchMedia && window.matchMedia('screen and (max-width:640px)').matches);
+  function mrow(id, title, meta, quick, form) {
+    const open = S.edit === id;
+    return h('li', { class: 'mrow' + (open ? ' open' : '') },
+      h('div', { class: 'mtext', text: String(title || '').trim() || '…' }),
+      h('div', { class: 'mmeta' }, meta.filter(Boolean).flatMap((x, i) => (i ? [' · ', x] : [x]))),
+      h('div', { class: 'mq' }, quick, lnk(open ? Y('closeT') : Y('editT'), () => { S.edit = open ? '' : id; render(); })),
+      open ? h('div', { class: 'mform' }, form) : null);
+  }
+  const lateDate = (iso) => !!iso && String(iso).slice(0, 10) < new Date().toISOString().slice(0, 10);
   function viewEnds() {
     const ends = arr('ends'); S.doc.parts.ends = ends;
     const open = ends.filter((e) => e.status !== 'closed');
@@ -1467,10 +1479,23 @@
         h('td', { 'data-h': T('endNext') }, next),
         h('td', { 'data-h': T('endState') }, st, moveSel('ends', e), state === 'noOwner' ? h('span', { class: 'pill red', text: T('noOwner') }) : state === 'escalate' ? h('span', { class: 'pill red', text: Y('escalate') }) : state === 'late' ? h('span', { class: 'pill red', text: T('late') }) : null));
     };
+    const mob = (e) => {
+      const state = P.endState(e);
+      const next = h('input', { type: 'date', value: String(e.next || '').slice(0, 10), 'aria-label': T('endNext') });
+      next.onchange = () => { if (state === 'late' || state === 'escalate') e.missed = (e.missed || 0) + 1; e.next = next.value; save('ends', ''); render(); };
+      const st = h('select', { 'data-closed': '', class: 'msel', 'aria-label': T('endState') }, Object.entries(L.END_STATUS).map(([k, v]) => h('option', { value: k, text: v }))); st.value = e.status || 'open';
+      st.onchange = () => { if (st.value === 'closed' && !confirm(Y('confirmClose'))) { st.value = e.status; return; } if (st.value === 'closed') { e.closedAt = nowIso(); e.closedLate = state === 'late' || state === 'escalate'; } e.status = st.value; save('ends', st.value === 'closed' ? 'קצה נסגר: ' + String(e.text).slice(0, 80) : ''); render(); };
+      const warn = state === 'noOwner' ? T('noOwner') : state === 'escalate' ? Y('escalate') : state === 'late' ? T('late') : '';
+      return mrow(e.id, e.text, [e.owner ? h('span', { text: e.owner }) : null, e.next ? h('span', { class: lateDate(e.next) ? 'late' : '', text: T('endNext') + ' ' + dateIL(e.next) }) : null, warn ? h('span', { class: 'late', text: warn }) : null],
+        [st, moveSel('ends', e)],
+        [field(T('text'), bindText(h('textarea', { rows: 2 }), () => e.text, (v) => { e.text = v; }, 'ends', '')),
+          field(T('owner'), bindText(h('input', { type: 'text', list: 'rdyTeams' }), () => e.owner, (v) => { e.owner = v; }, 'ends', '')),
+          field(T('endNext'), next), h('p', { class: 'muted small', text: T('endOpened') + ': ' + (e.src || dateIL(e.openedAt)) })]);
+    };
     const head = h('thead', {}, h('tr', {}, [T('text'), T('endOpened'), T('owner'), T('endNext'), T('endState')].map((x) => h('th', { text: x }))));
     return h('div', { class: 'card' }, h('h2', { text: T('ends') }),
-      open.length ? h('table', { class: 'rt stack' }, head, h('tbody', {}, open.map(row))) : h('p', { class: 'muted', text: Y('none2') }),
-      h('button', { class: 'btn ghost sm noprint', type: 'button', text: T('add'), onclick: () => { addEnd('', '', ''); render(); } }));
+      open.length ? (MOB() ? h('ul', { class: 'mlist' }, open.map(mob)) : h('table', { class: 'rt stack' }, head, h('tbody', {}, open.map(row)))) : h('p', { class: 'muted', text: Y('none2') }),
+      h('p', { class: 'noprint' }, lnk(T('add'), () => { addEnd('', '', ''); const l = arr('ends'); S.edit = l.length ? l[l.length - 1].id : ''; render(); })));
   }
   function viewActions() {
     const acts = arr('actions'); S.doc.parts.actions = acts;
@@ -1483,12 +1508,26 @@
       return h('tr', {}, h('td', { 'data-h': T('text') }, bindText(h('textarea', { rows: 2, class: 'cell wide' }), () => a.text, (v) => { a.text = v; }, 'actions', '')),
         h('td', { 'data-h': T('team') }, teamSel(a)), h('td', { 'data-h': T('owner') }, bindText(h('input', { type: 'text' }), () => a.owner, (v) => { a.owner = v; }, 'actions', '')),
         h('td', { 'data-h': T('due') }, due), h('td', { 'data-h': T('status') }, st),
-        h('td', { class: 'noprint' }, moveSel('actions', a), h('button', { class: 'btn ghost sm', type: 'button', text: T('del'), onclick: () => { acts.splice(i, 1); save('actions', ''); render(); } })));
+        h('td', { class: 'noprint' }, moveSel('actions', a), ' ', lnk(T('del'), () => { acts.splice(i, 1); save('actions', ''); render(); }, { class: 'lnk muted small' })));
     });
+    const mob = (a) => {
+      const i = acts.indexOf(a);
+      const st = h('select', { 'data-closed': '', class: 'msel', 'aria-label': T('status') }, Object.entries(L.STATUS).map(([k, v]) => h('option', { value: k, text: v }))); st.value = a.status || 'todo';
+      st.onchange = () => { if (st.value === 'tested' && !confirm(Y('confirmTested'))) { st.value = a.status || 'todo'; return; } a.status = st.value; if (a.status === 'tested') a.doneAt = nowIso(); save('actions', 'פעולה: ' + L.STATUS[a.status] + ': ' + String(a.text).slice(0, 60)); render(); };
+      const due = h('input', { type: 'date', value: a.due || '', 'aria-label': T('due') }); due.onchange = () => { a.due = due.value; save('actions', ''); render(); };
+      const who = a.owner || teamName(a.team);
+      const late = lateDate(a.due) && a.status !== 'done' && a.status !== 'tested';
+      return mrow(a.id, a.text, [who ? h('span', { text: who }) : null, a.due ? h('span', { class: late ? 'late' : '', text: T('due') + ' ' + dateIL(a.due) + (late ? ' · ' + T('late') : '') }) : null],
+        [st, moveSel('actions', a)],
+        [field(T('text'), bindText(h('textarea', { rows: 2 }), () => a.text, (v) => { a.text = v; }, 'actions', '')),
+          field(T('team'), teamSel(a)), field(T('owner'), bindText(h('input', { type: 'text', list: 'rdyTeams' }), () => a.owner, (v) => { a.owner = v; }, 'actions', '')),
+          field(T('due'), due), h('p', { class: 'small' }, lnk(T('del'), () => { if (!confirm(Y('delQ'))) return; acts.splice(i, 1); S.edit = ''; save('actions', ''); render(); }, { class: 'lnk muted' }))]);
+    };
+    const mine = acts.filter((a) => P.sheetOf('actions', a) === 'tasks');
     return h('div', { class: 'card' }, h('h2', { text: T('actions') }),
       h('p', { class: 'muted', text: L.STATUS.tested + ': ' + (S.lang === 'ar' ? 'يُغلق الإجراء فقط بعد فحصه في تمرين أو في يوم الصمود.' : 'פעולה נסגרת רק אחרי שנבדקה בתרגיל או ביום החוסן.') }),
-      rows.length ? h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, [T('text'), T('team'), T('owner'), T('due'), T('status'), ''].map((x) => h('th', { text: x })))), h('tbody', {}, rows)) : h('p', { class: 'muted', text: Y('none2') }),
-      h('button', { class: 'btn ghost sm noprint', type: 'button', text: T('add'), onclick: () => { acts.push({ id: uid('a'), text: '', team: '', owner: '', due: plus(14), status: 'todo' }); save('actions', ''); render(); } }));
+      rows.length ? (MOB() ? h('ul', { class: 'mlist' }, mine.map(mob)) : h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, [T('text'), T('team'), T('owner'), T('due'), T('status'), ''].map((x) => h('th', { text: x })))), h('tbody', {}, rows))) : h('p', { class: 'muted', text: Y('none2') }),
+      h('p', { class: 'noprint' }, lnk(T('add'), () => { const a = { id: uid('a'), text: '', team: '', owner: '', due: plus(14), status: 'todo' }; acts.push(a); S.edit = a.id; save('actions', ''); render(); })));
   }
   function viewLog() {
     const log = (S.doc.log || []).slice().reverse();
