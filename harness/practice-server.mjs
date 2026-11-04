@@ -327,6 +327,22 @@ const server = createServer(async (req, res) => {
     }
   }
 
+  // POST /api/readiness-file: קבצים לתיקיית הרציפות במערך המוכנות (עד כ־4 מגה). נתיב נפרד, כדי ש-/api/access ישמור על המגבלה הקטנה.
+  if (req.method === 'POST' && req.url === '/api/readiness-file') {
+    if (!jobStore()) return sendJson(res, 503, { error: 'storage unavailable' });
+    let body;
+    try { body = JSON.parse(await readBody(req, 6 * 1024 * 1024)); }
+    catch (e) { return sendJson(res, e && e.status === 413 ? 413 : 400, { error: e && e.status === 413 ? 'הקובץ גדול מדי (עד כ־4 מגה)' : 'invalid JSON' }); }
+    if (!body || !/^rdyFile(Put|Get|Del)$/.test(body.action || '')) return sendJson(res, 400, { error: 'פעולה אינה נתמכת' });
+    try {
+      const [status, out] = await handleAccess(jobStore(), body);
+      return sendJson(res, status, out);
+    } catch (e) {
+      console.error('readiness-file: storage unavailable');
+      return sendJson(res, 503, { error: 'storage unavailable' });
+    }
+  }
+
   // Studio is a separate authenticated boundary; client prompts never bypass
   // its live permissions, source filtering or server-side mapping aggregation.
   if (req.method === 'POST' && req.url === '/api/studio') {

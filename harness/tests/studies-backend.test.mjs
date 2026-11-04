@@ -378,4 +378,11 @@ test('HTTP studies route accepts larger attachments, serves protected binary wit
     const oldRoute = await post('/api/access', { action: 'status', padding: 'x'.repeat(2_000_001) });
     assert.equal(oldRoute.status, 400, 'the existing route retains its smaller body limit');
   } catch (error) { assert.equal(error.name, 'TypeError', 'the existing parser may close an oversized connection'); }
+  // קבצים לתיקיית הרציפות: נתיב נפרד עם מגבלה גדולה יותר, ורק לפעולות הקבצים
+  const notFile = await post('/api/readiness-file', { action: 'status', token });
+  assert.equal(notFile.status, 400);
+  const bigFile = await post('/api/readiness-file', { action: 'rdyFilePut', token, id: '00000000-0000-0000-0000-000000000000', key: 'm2', data: 'x'.repeat(3_000_000) });
+  assert.notEqual(bigFile.status, 413, 'a binder file of a few megabytes reaches the handler');
+  const tooBig = await post('/api/readiness-file', { action: 'rdyFilePut', token, data: 'x'.repeat(7 * 1024 * 1024) });
+  assert.equal(tooBig.status, 413);
 });

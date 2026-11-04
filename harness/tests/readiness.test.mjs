@@ -147,3 +147,43 @@ test('meeting summary goes only to the people checked in at that meeting', async
   assert.deepEqual(sent.map((m) => m.to[0]).sort(), ['dana@example.org', 'guest@example.org']);
   assert.equal(out.sent, 2);
 });
+
+test('continuity binder files: clear name and date, a new file replaces the old one, sensitive items stay at school', async () => {
+  const { store, a, b, other } = await setup();
+  const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S' } }))[1].doc.id;
+  const data = Buffer.from('%PDF-1.4 map').toString('base64');
+  const put = (token, extra) => call(store, Object.assign({ action: 'rdyFilePut', token, id, key: 'm2', title: 'מפת המבנה, קומה א׳', date: '2026-11-01', name: 'map.pdf', mime: 'application/pdf', data }, extra));
+  assert.equal((await put(a, { title: 'IMG_2034' }))[0], 400);
+  assert.equal((await put(a, { title: 'map.pdf' }))[0], 400);
+  assert.equal((await put(a, { date: '' }))[0], 400);
+  assert.equal((await put(a, { mime: 'application/x-msdownload' }))[0], 400);
+  assert.equal((await put(a, { key: 'm0' }))[0], 400); // רשימות כיתות: רגיש
+  const [s1, o1] = await put(a);
+  assert.equal(s1, 200); assert.equal(o1.replaced, false); assert.equal(o1.files.m2.title, 'מפת המבנה, קומה א׳');
+  const data2 = Buffer.from('%PDF-1.4 map v2').toString('base64');
+  const [s2, o2] = await put(b, { title: 'מפת המבנה, אחרי השיפוץ', date: '2026-11-03', data: data2 });
+  assert.equal(s2, 200); assert.equal(o2.replaced, true);
+  assert.equal((await store.list('rdyf:' + id + ':')).length, 1);
+  const [g, got] = await call(store, { action: 'rdyFileGet', token: a, id, key: 'm2' });
+  assert.equal(g, 200); assert.equal(got.file.data, data2);
+  assert.equal((await call(store, { action: 'rdyFileGet', token: other, id, key: 'm2' }))[0], 404);
+  // פריט שנוסף לרשימה: רגיש לא עולה, רגיל עולה
+  await call(store, { action: 'rdySave', token: a, id, part: 'binder', value: { items: [{ key: 'cabc12345', text: 'ציוד חירום' }, { key: 'csens1234', text: 'רשימת תלמידים בהסעות', sens: true }] } });
+  assert.equal((await put(a, { key: 'cabc12345', title: 'רשימת ציוד החירום' }))[0], 200);
+  assert.equal((await put(a, { key: 'csens1234', title: 'רשימת ההסעות' }))[0], 400);
+  assert.equal((await put(a, { key: 'cnothere1' }))[0], 404);
+  const doc = (await call(store, { action: 'rdyGet', token: a, id }))[1].doc;
+  assert.ok(doc.files.cabc12345 && doc.log.some((l) => /גרסה חדשה בתיקיית הרציפות/.test(l.what)));
+  assert.equal((await call(store, { action: 'rdyFileDel', token: a, id, key: 'm2' }))[0], 200);
+  assert.equal(await store.get('rdyf:' + id + ':m2'), null);
+  await call(store, { action: 'rdyDelete', token: a, id });
+  assert.equal((await store.list('rdyf:' + id + ':')).length, 0);
+});
+
+test('binder sensitive items match the model', async () => {
+  const { BINDER_SENS } = await import('../lib/readiness.mjs');
+  const { createRequire } = await import('node:module');
+  const P = createRequire(import.meta.url)('../../app/lib/readiness-model.js');
+  assert.deepEqual(P.BINDER_SENS, BINDER_SENS);
+  assert.equal(P.content('he').BINDER_MANUAL.length, 8);
+});

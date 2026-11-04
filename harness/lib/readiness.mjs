@@ -8,8 +8,29 @@
 // הקול לא נשמר בשום מקום: קטע עובר לתמלול ונזרק (החלטה 28, 03/11/2026: "להוסיף במכשיר נייד").
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
-export const RDY_PARTS = ['profile', 'plan', 'teams', 'tasks', 'em', 'mapping', 'gaps', 'ends', 'actions', 'exercises', 'sessions', 'partners', 'ideas', 'scenarios', 'learning', 'compare', 'decmap', 'meetings'];
+export const RDY_PARTS = ['profile', 'plan', 'teams', 'tasks', 'em', 'mapping', 'gaps', 'ends', 'actions', 'exercises', 'sessions', 'partners', 'ideas', 'scenarios', 'learning', 'compare', 'decmap', 'meetings', 'binder'];
 const MAX_PART = 400_000, MAX_DOC = 1_800_000, MAX_MINE = 30, MAX_LOG = 400;
+// תיקיית הרציפות: קובץ אחד לכל פריט, קובץ חדש מחליף את הקודם (הגרסה הקודמת נמחקת). פריטים רגישים לא עולים.
+// BINDER_SENS: אותם מספרים כמו C.BINDER_SENS ב-readiness-model.js (רשימות כיתות, פרטי הורים, מענה מותאם, תיקי המחנכים).
+export const BINDER_SENS = [0, 1, 4, 7];
+const BINDER_N = 8, MAX_FILE_B64 = 5_600_000, MAX_FILES = 40;
+const FILE_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'text/plain', 'text/csv',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/msword', 'application/vnd.ms-excel'];
+const okDate = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
+// שם ברור: לא שם קובץ אוטומטי (IMG_1234, scan, document) ולא רק סיומת
+export function vagueTitle(t) {
+  const s = String(t || '').trim();
+  return s.length < 4 || /\.(pdf|docx?|xlsx?|pptx?|png|jpe?g|webp|txt|csv)$/i.test(s) || /^(img|dsc|scan|scanned|document|doc|file|image|photo|whatsapp|screenshot|צילום|מסמך|קובץ|תמונה|סריקה)[\s_\-\d.()]*$/i.test(s);
+}
+function binderItem(d, key) {
+  const m = /^m(\d)$/.exec(key || '');
+  if (m) { const i = Number(m[1]); return i < BINDER_N ? { key, sens: BINDER_SENS.includes(i) } : null; }
+  if (!/^c[a-z0-9]{4,14}$/.test(key || '')) return null;
+  const items = d.parts.binder && Array.isArray(d.parts.binder.items) ? d.parts.binder.items : [];
+  const it = items.find((x) => x && x.key === key);
+  return it ? { key, sens: !!it.sens } : null;
+}
 const MAX_MAIL_DAY = 300, REC_HOURS = 6, MAX_CHUNKS = 400, MAX_AUDIO_B64 = 3_000_000, MAX_TRANSCRIPT = 600_000;
 
 const hash = (v) => createHash('sha256').update(String(v)).digest('hex');
@@ -51,7 +72,7 @@ function summary(d) {
   return { id: d.id, name: d.parts.profile?.name || '', updatedAt: d.updatedAt, createdAt: d.createdAt,
     sessionsDone: [1, 2, 3, 4, 5].filter((n) => sessions[n] && sessions[n].done).length, openEnds: ends };
 }
-const publicDoc = (d) => ({ id: d.id, createdAt: d.createdAt, updatedAt: d.updatedAt, rev: d.rev, revs: d.revs, parts: d.parts, log: d.log.slice(-120) });
+const publicDoc = (d) => ({ id: d.id, createdAt: d.createdAt, updatedAt: d.updatedAt, rev: d.rev, revs: d.revs, parts: d.parts, files: d.files || {}, log: d.log.slice(-120) });
 
 async function loadDoc(store, id, me) {
   if (!okId(id)) return null;
@@ -171,6 +192,7 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
 
       if (action === 'rdyDelete') {
         for (const r of await store.list('rdyt:' + d.id + ':', { keysOnly: true })) await store.del(r.key);
+        for (const r of await store.list('rdyf:' + d.id + ':', { keysOnly: true })) await store.del(r.key);
         await store.del('rdy:' + d.id);
         return [200, { ok: true }];
       }
@@ -257,6 +279,46 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
         if (hasIdNumber(segs)) return err(400, 'נראה שיש כאן מספר זהות. אפשר למחוק אותו לפני השמירה');
         await store.set(tKey, next);
         return [200, { ok: true }];
+      }
+
+      // תיקיית הרציפות: העלאה (מחליפה את הגרסה הקודמת), פתיחה ומחיקה
+      if (/^rdyFile(Put|Get|Del)$/.test(action)) {
+        const it = binderItem(d, body.key);
+        if (!it) return err(404, 'הפריט לא נמצא ברשימה');
+        const fKey = 'rdyf:' + d.id + ':' + it.key;
+        d.files = d.files && typeof d.files === 'object' ? d.files : {};
+        if (action === 'rdyFileGet') {
+          const f = await store.get(fKey);
+          return f ? [200, { file: f, meta: d.files[it.key] || null }] : err(404, 'הקובץ לא נמצא');
+        }
+        const at = new Date(now()).toISOString(), by = str(body.by, 60) || 'צוות';
+        const logIt = (what) => { d.log.push({ at, by, part: 'binder', what }); if (d.log.length > MAX_LOG) d.log = d.log.slice(-MAX_LOG); };
+        if (action === 'rdyFileDel') {
+          const old = d.files[it.key];
+          await store.del(fKey); delete d.files[it.key];
+          d.updatedAt = at; if (old) logIt('מחיקת קובץ מתיקיית הרציפות: ' + str(old.title, 120));
+          await store.set('rdy:' + d.id, d);
+          return [200, { ok: true, files: d.files }];
+        }
+        // rdyFilePut
+        if (it.sens) return err(400, 'זה פריט עם פרטים של תלמידים, הורים או אנשי צוות. הוא נשמר בבית הספר, ובמערך רק כותבים איפה הוא נמצא ומתי עודכן');
+        const title = str(body.title, 120);
+        if (vagueTitle(title)) return err(400, 'כדי שכולם ימצאו את הקובץ, אפשר לתת לו שם ברור, למשל: מפת המבנה, קומה א׳ וב׳');
+        if (hasIdNumber(title)) return err(400, 'נראה שיש בשם מספר זהות. אפשר למחוק אותו');
+        if (!okDate(body.date)) return err(400, 'תאריך העדכון של הקובץ הוא שדה עיקרי');
+        if (Date.parse(body.date) > now() + 2 * 864e5) return err(400, 'תאריך העדכון לא יכול להיות בעתיד');
+        const mime = str(body.mime, 120).toLowerCase();
+        if (!FILE_TYPES.includes(mime)) return err(400, 'אפשר להעלות PDF, תמונה, Word, Excel, PowerPoint או טקסט');
+        const data = typeof body.data === 'string' ? body.data : '';
+        if (!data || data.length > MAX_FILE_B64 || !/^[A-Za-z0-9+/=]+$/.test(data)) return err(413, 'הקובץ גדול מדי (עד כ־4 מגה) או אינו תקין');
+        if (/^text\//.test(mime) && hasIdNumber(Buffer.from(data, 'base64').toString('utf8'))) return err(400, 'נראה שיש בקובץ מספר זהות. פרטים של תלמידים לא נשמרים במערך');
+        if (!d.files[it.key] && Object.keys(d.files).length >= MAX_FILES) return err(409, 'הגענו למספר הקבצים המרבי בתיקייה. אפשר למחוק קובץ שכבר לא בשימוש');
+        const replaced = !!d.files[it.key];
+        await store.set(fKey, { data, mime, name: str(body.name, 160) });
+        d.files[it.key] = { title, date: body.date, name: str(body.name, 160), mime, size: Math.round(data.length * 0.75), at, by };
+        d.updatedAt = at; logIt((replaced ? 'גרסה חדשה בתיקיית הרציפות: ' : 'קובץ חדש בתיקיית הרציפות: ') + title);
+        await store.set('rdy:' + d.id, d);
+        return [200, { ok: true, replaced, files: d.files }];
       }
 
       return err(405, 'פעולה אינה נתמכת');
