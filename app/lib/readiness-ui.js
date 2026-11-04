@@ -299,7 +299,7 @@
     app.replaceChildren(SYS ? list : '', form);
   }
 
-  // ---------- 🏠 המערך שלנו: מבט אחד, וכפתורים לכל מרחב ----------
+  // ---------- 🏠 מערך המוכנות: מבט אחד ----------
   function nextUp() {
     const sessions = obj('sessions'), today = new Date().toISOString().slice(0, 10);
     const fixed = L.SESSIONS.find((s) => !(sessions[s.n] && sessions[s.n].done));
