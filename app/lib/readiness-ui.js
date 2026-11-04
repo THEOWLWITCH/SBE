@@ -58,7 +58,8 @@
       track: '📋 טבלת מעקב', trackT: 'טבלת מעקב', moveTo: 'העברה לגיליון', index: '📊 מדד המוכנות', contKit: '🗂 תיק הרציפות', partnersBtn: '🤝 שותפים',
       contInfo: 'מוכנות הכיתה לחירום, צוותי העבודה בכיתה ושרשרת הקשר נמצאים בתיק הרציפות של כל מחנך/ת. כך לא כותבים פעמיים.', contAfter: 'מה המחנכים מוסיפים לתיק הרציפות אחרי התחקיר',
       openMeeting: 'פתיחת המפגש', confirmTested: 'הפעולה נבדקה בתרגיל או ביום החוסן? רק אז היא עוברת להושלמו.', kindT: 'מאיפה', closedAt: 'נסגר',
-      contShort: 'מוכנות הכיתה לחירום ושרשרת הקשר', whoAmI: 'מי אני?', whoHere: '👥 מי כאן היום', whoInfo: 'מסמנים מי הגיע/ה. הסיכום נשלח רק למי שסומן/ה ויש לו/ה מייל.', addPerson: '➕ משתתף/ת', pName: 'שם', pRole: 'תפקיד', pMail: 'מייל', noEmailYet: 'כדי לשלוח את הסיכום, אפשר לסמן בסבב העדכון מי השתתף/ה, עם מייל.', sendTo: '✉️ שליחת הסיכום למשתתפים', attendT: 'משתתפים', docT: 'תיעוד הדיון', docInfo: 'במפגש מדברים ולא כותבים. אפשר לתעד בדרך אחת או בכמה, והכלי קורא את הכול:', tProto: '✍️ פרוטוקול תוך כדי', tRec: '🎙 הקלטה בטלפון', tFile: '📄 תמליל או טקסט',
+      contShort: 'מוכנות הכיתה לחירום ושרשרת הקשר', whoAmI: 'מי אני?', toArchive: '📁 העברת הפרוטוקול לתיק הרציפות', archived: 'בארכיון תיק הרציפות', archiveInfo: 'בארכיון נשמרים המשתתפים, הפרוטוקול שהוקלד וההחלטות, המשימות והקצוות מהמפגש. התמליל לא נכנס לארכיון.', toCont: 'לארכיון בתיק הרציפות',
+      binder: '🖨 תיקיית הרציפות להדפסה', binderT: 'תיקיית הרציפות', binderManual: 'מה מוסיפים לתיקייה ידנית (לא נשמר בכלי)', protoT: 'פרוטוקולים', mandT: 'הנהלים המחייבים', callT: 'קריאה לעזרה: ששת החלקים', reportT2: 'תבנית הדיווח', whoHere: '👥 מי כאן היום', whoInfo: 'מסמנים מי הגיע/ה. הסיכום נשלח רק למי שסומן/ה ויש לו/ה מייל.', addPerson: '➕ משתתף/ת', pName: 'שם', pRole: 'תפקיד', pMail: 'מייל', noEmailYet: 'כדי לשלוח את הסיכום, אפשר לסמן בסבב העדכון מי השתתף/ה, עם מייל.', sendTo: '✉️ שליחת הסיכום למשתתפים', attendT: 'משתתפים', docT: 'תיעוד הדיון', docInfo: 'במפגש מדברים ולא כותבים. אפשר לתעד בדרך אחת או בכמה, והכלי קורא את הכול:', tProto: '✍️ פרוטוקול תוך כדי', tRec: '🎙 הקלטה בטלפון', tFile: '📄 תמליל או טקסט',
       pWho: 'דובר/ת', pWhat: 'עיקרי הדברים', pKind: 'מה זה', kSaid: 'נאמר', kDecision: 'החלטה', kTask: 'משימה', kEnd: 'קצה פתוח', addLine: '➕ שורה',
       protoInfo: 'מישהו/י מהצוות מקליד/ה תוך כדי, בקצרה. שורה שסומנה כהחלטה, משימה או קצה פתוח נכנסת ישר לרשימה, ומה שנאמר הכלי קורא ומציע.',
       recMeetInfo: 'הטלפון מקליט בדפדפן, וכל דקה הקול עובר לתמלול ונזרק. התמליל נמחק כשמסמנים שהמפגש הושלם.', loadToNotes: 'הכנסת התמליל לדיון', trAdded: 'התמליל נוסף לדיון',
@@ -99,7 +100,8 @@
       track: '📋 جدول المتابعة', trackT: 'جدول المتابعة', moveTo: 'نقل إلى ورقة', index: '📊 مؤشّر الجاهزية', contKit: '🗂 ملف الاستمرارية', partnersBtn: '🤝 الشركاء',
       contInfo: 'جاهزية الصف للطوارئ، وطواقم العمل في الصف وسلسلة الاتصال موجودة في ملف الاستمرارية لكل مربٍّ/ية. هكذا لا نكتب مرتين.', contAfter: 'ما الذي يضيفه المربّون إلى ملف الاستمرارية بعد استخلاص العبر',
       openMeeting: 'فتح اللقاء', confirmTested: 'هل فُحص الإجراء في تمرين أو في يوم الصمود؟ عندها فقط ينتقل إلى اكتملت.', kindT: 'من أين', closedAt: 'أُغلق',
-      contShort: 'جاهزية الصف للطوارئ وسلسلة الاتصال', whoAmI: 'من أنا؟', whoHere: '👥 من هنا اليوم', whoInfo: 'نعلّم من حضر. يُرسل التلخيص فقط لمن عُلِّم ولديه بريد إلكتروني.', addPerson: '➕ مشارك/ة', pName: 'الاسم', pRole: 'الدور', pMail: 'البريد الإلكتروني', noEmailYet: 'لإرسال التلخيص، يمكن أن نعلّم في جولة التحديث من شارك، مع البريد الإلكتروني.', sendTo: '✉️ إرسال التلخيص للمشاركين', attendT: 'المشاركون', docT: 'توثيق النقاش', docInfo: 'في اللقاء نتحدّث ولا نكتب. يمكن التوثيق بطريقة واحدة أو بعدّة طرق، والأداة تقرأ كل شيء:', tProto: '✍️ محضر أثناء اللقاء', tRec: '🎙 تسجيل بالهاتف', tFile: '📄 نص مكتوب أو ملف',
+      contShort: 'جاهزية الصف للطوارئ وسلسلة الاتصال', whoAmI: 'من أنا؟', toArchive: '📁 نقل المحضر إلى ملف الاستمرارية', archived: 'في أرشيف ملف الاستمرارية', archiveInfo: 'يُحفظ في الأرشيف المشاركون والمحضر المكتوب والقرارات والمهام والأطراف من اللقاء. النص المفرَّغ لا يدخل الأرشيف.', toCont: 'إلى الأرشيف في ملف الاستمرارية',
+      binder: '🖨 ملف الاستمرارية للطباعة', binderT: 'ملف الاستمرارية', binderManual: 'ما يُضاف إلى الملف يدويًا (لا يُحفظ في الأداة)', protoT: 'المحاضر', mandT: 'الإجراءات المُلزِمة', callT: 'طلب المساعدة: الأجزاء الستة', reportT2: 'نموذج التقرير', whoHere: '👥 من هنا اليوم', whoInfo: 'نعلّم من حضر. يُرسل التلخيص فقط لمن عُلِّم ولديه بريد إلكتروني.', addPerson: '➕ مشارك/ة', pName: 'الاسم', pRole: 'الدور', pMail: 'البريد الإلكتروني', noEmailYet: 'لإرسال التلخيص، يمكن أن نعلّم في جولة التحديث من شارك، مع البريد الإلكتروني.', sendTo: '✉️ إرسال التلخيص للمشاركين', attendT: 'المشاركون', docT: 'توثيق النقاش', docInfo: 'في اللقاء نتحدّث ولا نكتب. يمكن التوثيق بطريقة واحدة أو بعدّة طرق، والأداة تقرأ كل شيء:', tProto: '✍️ محضر أثناء اللقاء', tRec: '🎙 تسجيل بالهاتف', tFile: '📄 نص مكتوب أو ملف',
       pWho: 'المتحدّث/ة', pWhat: 'أهم ما قيل', pKind: 'ما هذا', kSaid: 'قيل', kDecision: 'قرار', kTask: 'مهمة', kEnd: 'طرف مفتوح', addLine: '➕ سطر',
       protoInfo: 'أحد أفراد الطاقم يكتب أثناء اللقاء، باختصار. السطر المعلَّم كقرار أو مهمة أو طرف مفتوح يدخل مباشرة إلى القائمة، وما قيل تقرؤه الأداة وتقترح.',
       recMeetInfo: 'يسجّل الهاتف في المتصفح، وكل دقيقة ينتقل الصوت إلى التفريغ ثم يُحذف. يُحذف النص المكتوب عند تعليم أن اللقاء اكتمل.', loadToNotes: 'إدخال النص المكتوب إلى النقاش', trAdded: 'أُضيف النص المكتوب إلى النقاش',
@@ -214,7 +216,11 @@
     if (st !== 200) { toast(out.error || ''); S.doc = null; render(); return; }
     S.doc = out.doc; LS.set('sbe.prep.last', id);
     S.view = LS.get('sbe.prep.view.' + id, 'home') || 'home';
+    const q = new URLSearchParams(location.search);
+    if (/^(home|plan|track|index|gen|s[1-5])$/.test(q.get('view') || '')) S.view = q.get('view');
+    if (/^(tasks|decisions|ends|done)$/.test(q.get('sheet') || '')) S.sheet = q.get('sheet');
     if (S.view.startsWith('mt:') && !arr('meetings').some((m) => 'mt:' + m.id === S.view)) S.view = 'home';
+    if (q.get('print') === 'binder') setTimeout(printBinder, 600);
     const ex = arr('exercises'); S.exId = ex.length ? ex[ex.length - 1].id : '';
     render();
   }
@@ -332,7 +338,7 @@
     // מה הלאה: המפגש הבא, במילה שנפתחת. בלי אריחים שחוזרים על הסרגל.
     const nextCard = nexts.length ? h('div', { class: 'card' }, h('h2', { text: T('next1') }), h('ul', { class: 'list' }, nexts.map((x) => h('li', {},
       lnk(x.label, () => go(x.view), { class: 'lnk strong' }), x.sub ? h('div', { class: 'muted small', text: x.sub }) : null)))) : null;
-    return h('div', {}, esc, dmWarn, ideaWarn, nextCard, routineCard(), h('p', { class: 'muted small', text: L.TABLETOP_NOTE }));
+    return h('div', {}, esc, dmWarn, ideaWarn, nextCard, routineCard(), h('p', { class: 'small' }, lnk(Y('binder'), printBinder)), h('p', { class: 'muted small', text: L.TABLETOP_NOTE }));
   }
   // 📊 מדד המוכנות: שלושת העמודים, ומה הצוות כבר עושה בעצמו
   function viewIndex() {
@@ -1237,7 +1243,19 @@
       R.n === 3 || R.n === 5 ? contBox(Y('contAfter')) : null,
       h('div', { class: 'card' }, h('h2', { text: Y('summaryT') }),
         h('div', { class: 'row' }, h('div', {}, field(T('next1'), next)), sched),
-        h('div', { class: 'row noprint' }, send, h('button', { class: 'btn ghost', type: 'button', text: Y('printSummary'), onclick: () => printMeeting(R) })), doneBox));
+        h('div', { class: 'row noprint' }, send, h('button', { class: 'btn ghost', type: 'button', text: Y('printSummary'), onclick: () => printMeeting(R) })),
+        h('p', { class: 'noprint small' }, lnk(Y('toArchive'), async () => { r.archive = archiveSnap(R); await save(R.part, R.title + ': ' + Y('archived')); toast(Y('archived') + ' ✓'); render(); }),
+          r.archive ? h('span', { class: 'muted' }, ' · ✓ ' + Y('archived') + ' ' + dateIL(r.archive.at) + ' · ', h('a', { class: 'lnk', href: 'continuity-kit.html#archive', text: Y('toCont') })) : null,
+          h('span', { class: 'muted', text: ' ' }), h('span', { class: 'muted small', title: Y('archiveInfo'), text: 'ⓘ' })), doneBox));
+  }
+  // ארכיון הפרוטוקולים בתיק הרציפות (04/11/2026): צילום של המפגש, בלי התמליל
+  function archiveSnap(R) {
+    const mine = (x) => x.src === R.title;
+    return { at: nowIso(), by: S.by || '', title: R.title, date: R.m ? R.m.date || '' : String(R.r.at || nowIso()).slice(0, 10), type: R.m ? typeName(R.m.type) : '',
+      attendees: attendees(R).filter((a) => a.here && a.name).map((a) => ({ name: a.name, role: a.role || '' })),
+      proto: (R.r.proto || []).filter((x) => String(x.what || '').trim()).map((x) => ({ who: x.who || '', kind: x.kind || 'said', what: x.what })),
+      decisions: arr('ideas').filter(mine).map((x) => x.text), tasks: arr('actions').filter(mine).map((x) => [x.text, x.owner || '', x.due || '']),
+      ends: arr('ends').filter(mine).map((x) => [x.text, x.owner || '']), next: R.r.next || '' };
   }
   // מה נכנס לסיכום: ההחלטות והקצוות מהמפגש הזה, הפעולות הפתוחות (לצוות, אם נבחר) והמפגש הבא
   function summaryText(R, teamId) {
@@ -1455,6 +1473,46 @@
       (v.ideas || []).length ? h('div', {}, h('h2', { text: T('ideas') }), tbl([T('text'), T('ifThen')], v.ideas.map((x) => [x.text, x.ifThen]))) : null,
       (v.feedback || []).length ? h('div', {}, h('h2', { text: Y('fb') }), tbl([T('text'), Y('src')], v.feedback.map((x) => [x.text, srcLabel(x.source)]))) : null];
   }
+  // תיקיית הרציפות המודפסת: מה שצריך להיות ביד כשאין חשמל או רשת
+  function protocolNodes(a) {
+    const KIND = { said: '', decision: L.SHEETS.decisions, task: L.SHEETS.tasks, end: L.SHEETS.ends };
+    return [h('h3', { text: a.title + (a.date ? ' · ' + dateIL(a.date) : '') }),
+      a.attendees.length ? h('p', {}, h('b', { text: Y('attendT') + ': ' }), a.attendees.map((x) => x.name + (x.role ? ' (' + x.role + ')' : '')).join(' · ')) : null,
+      a.proto.length ? tbl([Y('pWho'), Y('pKind'), Y('pWhat')], a.proto.map((x) => [x.who, KIND[x.kind] || '', x.what])) : null,
+      a.decisions.length ? tbl([L.SHEETS.decisions], a.decisions.map((x) => [x])) : null,
+      a.tasks.length ? tbl([L.SHEETS.tasks, T('owner'), T('due')], a.tasks.map((x) => [x[0], x[1], dateIL(x[2])])) : null,
+      a.ends.length ? tbl([L.SHEETS.ends, T('owner')], a.ends) : null,
+      a.next ? h('p', {}, h('b', { text: T('next1') + ': ' }), dateIL(a.next)) : null];
+  }
+  function archives() {
+    const out = [];
+    const ss = obj('sessions'); for (const n of Object.keys(ss)) if (ss[n] && ss[n].archive) out.push(ss[n].archive);
+    for (const m of arr('meetings')) if (m.archive) out.push(m.archive);
+    return out.sort((a, b) => String(b.date || b.at).localeCompare(String(a.date || a.at)));
+  }
+  function printBinder() {
+    const teams = arr('teams'), em = obj('em'), plan = obj('plan'), dm = obj('decmap');
+    const openActs = arr('actions').filter((a) => a.status !== 'tested'), openEnds = arr('ends').filter((e) => e.status !== 'closed');
+    const MANUAL = L.BINDER_MANUAL;
+    const sec = (title, cols, rows, extra) => (rows.length ? [h('h2', { text: title }), extra || null, tbl(cols, rows)] : []);
+    const teamRows = teams.filter((t) => (t.lead && t.lead.name) || (t.deputy && t.deputy.name) || (t.members || []).some((m) => m.name)).map((t) => [teamName(t.id) || t.name, t.lead && t.lead.name, t.deputy && t.deputy.name, (t.members || []).map((m) => m.name).filter(Boolean).join(', ')]);
+    const emRows = Array.from({ length: Math.max((em.does || []).length, (em.doesnt || []).length) }, (_, i) => [(em.does || [])[i], (em.doesnt || [])[i]]).filter((r) => r[0] || r[1]);
+    const annexRows = (plan.annexes || []).filter((a) => a.text || a.maturity >= 0).map((a) => [a.name, L.MATURITY[a.maturity] || '', a.text || '']);
+    doPrint(Y('binderT'), Y('binderT'), [
+      h('h2', { text: Y('binderManual') }), h('ul', { class: 'checklist', style: 'list-style:none;padding-inline-start:0' }, MANUAL.map((x) => h('li', { text: '☐ ' + x }))),
+      ...sec(Y('teamsT'), [T('team'), T('lead'), T('deputy'), T('members')], teamRows),
+      ...sec(L.TEAMS[0].lead.split(',')[0], [T('emDoes'), T('emDoesnt')], emRows),
+      h('h2', { text: Y('callT') }), h('ol', {}, L.SIRENS.callHelp.map((x) => h('li', { text: x }))),
+      h('h2', { text: Y('reportT2') }), h('ol', {}, L.REPORT.map((r) => h('li', { text: r[0] }))),
+      ...sec(Y('decmapT'), L.DEC_COLS, decmapRows(), dm.intent ? h('p', {}, h('b', { text: Y('intent') + ': ' }), dm.intent) : null),
+      ...sec(T('annexes'), [T('annexes'), T('maturity'), Y('annexText')], annexRows),
+      ...sec(Y('mandT'), [L.PROC_KIND.binding, T('text'), Y('src')], L.MANDATORY.filter((m) => !m.sensitive).map((m) => [m.topic, m.rule, m.source + ' · ' + L.VERIFY])),
+      ...sec(L.SHEETS.tasks, [T('text'), T('team'), T('owner'), T('due'), T('status')], openActs.map((a) => [a.text, teamName(a.team), a.owner, dateIL(a.due), L.STATUS[a.status] || ''])),
+      ...sec(L.SHEETS.ends, [T('text'), T('owner'), T('endNext')], openEnds.map((e) => [e.text, e.owner, dateIL(e.next)])),
+      ...sec(L.SHEETS.decisions, [T('text'), T('owner')], arr('ideas').filter((x) => x.decision === 'adopt' && !x.done).map((x) => [x.text, x.owner || x.by || ''])),
+      archives().length ? h('div', {}, h('h2', { text: Y('protoT') }), archives().slice(0, 6).flatMap(protocolNodes)) : null]);
+  }
+  window.sbeReadinessBinder = () => printBinder();
   function printSummary(n) { printMeeting(meetRec('s', n)); }
   function printMeeting(R) {
     const acts = arr('actions').filter((a) => a.status !== 'tested'), ends = arr('ends').filter((e) => e.status !== 'closed');

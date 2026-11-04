@@ -221,6 +221,13 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
 .lvl{display:inline-block;border-radius:999px;padding:.05rem .55rem;font-size:.85rem;white-space:nowrap}
 .lvl.l1{background:var(--auto-soft);color:var(--auto)}.lvl.l2{background:var(--spoken-soft);color:var(--spoken)}.lvl.l3{background:var(--brick-soft);color:var(--brick);font-weight:600}
 .proc-box textarea{width:100%}
+#archive .links{display:flex;flex-wrap:wrap;gap:4px 8px;margin:4px 0 8px}
+#archive .links a,#archive a{color:#1d3f63;font-weight:600;text-decoration:none}
+.arch{border-top:1px solid #D9DFE4;padding:6px 0}
+.arch>summary{cursor:pointer;font-weight:600}
+#archive table{width:100%;border-collapse:collapse;margin:6px 0;font-size:.93rem}
+#archive th,#archive td{border:1px solid #D9DFE4;padding:5px 7px;text-align:right;vertical-align:top}
+#archive th{background:#E5F2F1}
 </style>
 </head>
 <body>
@@ -239,6 +246,7 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
     <li data-step="2"><b>2. התיק</b>שגרה, חירום, הצטרפות וחזרה, תלמידים ועדכונים</li>
     <li data-step="3"><b>3. עמיתה מנסה</b>ומתקנים את מה שחסר</li>
   </ol>
+  <div id="rdyArchive"></div>
   <section class="card no-print" id="s1">
     <div id="form"></div>
     <div class="btns">
@@ -287,6 +295,7 @@ tr.st-1 td:first-child{border-inline-start:4px solid var(--auto)}tr.st-2 td:firs
   </section>
 </div>
 <script src="lib/continuity-kit-ui.js"></script>
+<script src="lib/readiness-archive.js"></script>
 <script src="lib/screens-menu.js"></script>
 <script src="lib/demo-hook.js"></script>
 </body>

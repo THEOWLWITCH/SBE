@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url);
 const P = require('../../app/lib/readiness-model.js');
 
 const leaves = (o, out = []) => { if (typeof o === 'string') out.push(o); else if (o && typeof o === 'object') for (const v of Object.values(o)) leaves(v, out); return out; };
-const TEXT = ['TEAMS', 'TEAM_NOTES', 'TASKS', 'EM', 'REPORT', 'REMS', 'ANNEXES', 'SESSIONS', 'MAPPING', 'TABLETOP_NOTE', 'SIRENS', 'ROUND_DEBRIEF', 'DEBRIEF', 'PILLARS', 'INDEPENDENCE', 'ROUTINE', 'UI', 'MEET_TYPES', 'SHEETS'];
+const TEXT = ['TEAMS', 'TEAM_NOTES', 'TASKS', 'EM', 'REPORT', 'REMS', 'ANNEXES', 'SESSIONS', 'MAPPING', 'TABLETOP_NOTE', 'SIRENS', 'ROUND_DEBRIEF', 'DEBRIEF', 'PILLARS', 'INDEPENDENCE', 'ROUTINE', 'UI', 'MEET_TYPES', 'SHEETS', 'BINDER_MANUAL', 'INDEX_HOW', 'INDEX_INFO'];
 
 test('structure follows the outline: seven teams, 23 tasks, five sessions, three rounds, eight debrief steps', () => {
   assert.equal(P.TEAMS.length, 7);
@@ -144,7 +144,7 @@ test('community version: no school words, no school-only guidelines, prompts mar
   const O = P.forSpace('org');
   assert.equal(O.space, 'org'); assert.equal(P.forSpace('edu'), P); assert.equal(O.forSpace('org'), O);
   assert.deepEqual(O.TEAMS.map((t) => t.id), P.TEAMS.map((t) => t.id));
-  const keys = ['TEAMS', 'TEAM_NOTES', 'TASKS', 'EM', 'REMS', 'ANNEXES', 'SESSIONS', 'MAPPING', 'SIRENS', 'DISCONNECT', 'DEBRIEF', 'UI', 'S4', 'CRISIS', 'AXES', 'DEC_ROWS', 'DEC_INFO', 'IDEA_INFO', 'COMMUNITY', 'MEET_TYPES', 'SHEETS'];
+  const keys = ['TEAMS', 'TEAM_NOTES', 'TASKS', 'EM', 'REMS', 'ANNEXES', 'SESSIONS', 'MAPPING', 'SIRENS', 'DISCONNECT', 'DEBRIEF', 'UI', 'S4', 'CRISIS', 'AXES', 'DEC_ROWS', 'DEC_INFO', 'IDEA_INFO', 'COMMUNITY', 'MEET_TYPES', 'SHEETS', 'BINDER_MANUAL', 'INDEX_HOW', 'INDEX_INFO'];
   const left = keys.flatMap((k) => leaves(O[k])).filter((s) => /מחנכ|מורה|תלמיד|כיתה|כיתת|בית ספר|בית הספר|שיעור|שכבה|הורים|יועץ|מפקח/.test(s));
   assert.deepEqual(left, []);
   for (const k of ['drills', 'file', 'unusual', 'gate', 'evacuees', 'remote']) assert.ok(!O.MANDATORY.some((m) => m.key === k), k);
