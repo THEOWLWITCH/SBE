@@ -99,7 +99,7 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
     if (/^rdyRec(Chunk|Mark|Stop|Ping)$/.test(action)) {
       const rk = typeof body.rk === 'string' && /^[a-f0-9]{48}$/.test(body.rk) ? body.rk : '';
       const ref = rk ? await store.get('rdyk:' + hash(rk)) : null;
-      if (!ref || ref.exp < now()) return err(401, 'הקישור להקלטה הסתיים. אפשר לפתוח קישור חדש ממסך התרגיל');
+      if (!ref || ref.exp < now()) return err(401, 'הקישור להקלטה הסתיים. אפשר לפתוח קישור חדש ממסך התרגיל או המפגש');
       return await locked(ref.id, async () => {
         const d = await store.get('rdy:' + ref.id);
         const ex = recTarget(d, ref.exId);
@@ -205,20 +205,26 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
         const teams = Array.isArray(d.parts.teams) ? d.parts.teams : [];
         const subject = str(body.subject, 140) || 'עדכון בתרגיל';
         let sent = 0, skipped = 0;
+        // סיכום מפגש: נשלח רק למי שנרשם/ה כמשתתף/ת במפגש (צ'ק־אין), וכתובת רק מתוך הצוותים או מרשימת המשתתפים של המפגש
+        const rec = body.meetingId ? recTarget(d, body.meetingId) : null;
+        const teamMail = teams.flatMap((t) => (t && (t.members || []).concat(t.lead || [], t.deputy || [])) || []).map((m) => str(m && m.email, 254).toLowerCase());
+        const attMail = rec && Array.isArray(rec.attendees) ? rec.attendees.filter((a) => a && a.here).map((a) => str(a.email, 254).toLowerCase()) : [];
+        const allowed = new Set(teamMail.concat(attMail).filter((e) => EMAIL_RE.test(e)));
         for (const it of items) {
           const team = teams.find((t) => t && t.id === it.teamId);
           const text = str(it.text, 4000);
-          if (!team || !text) { skipped++; continue; }
-          const emails = [...new Set((team.members || []).concat(team.lead || [], team.deputy || []).map((m) => str(m && m.email, 254)).filter((e) => EMAIL_RE.test(e)))];
+          const direct = Array.isArray(it.to) ? [...new Set(it.to.map((e) => str(e, 254).toLowerCase()).filter((e) => allowed.has(e)))].slice(0, 60) : null;
+          if (!text || (!team && !direct)) { skipped++; continue; }
+          const emails = direct || [...new Set((team.members || []).concat(team.lead || [], team.deputy || []).map((m) => str(m && m.email, 254)).filter((e) => EMAIL_RE.test(e)))];
           for (const to of emails) {
             if (d.mail.n >= MAX_MAIL_DAY) { skipped++; continue; }
-            const head = (str(d.parts.profile?.name, 120) || 'מערך המוכנות') + ' · ' + str(team.name, 80);
+            const head = (str(d.parts.profile?.name, 120) || 'מערך המוכנות') + (team ? ' · ' + str(team.name, 80) : '');
             const html = '<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.7;color:#14212B;max-width:560px">' +
               '<p style="color:#2F7D7A;font-weight:700;margin:0 0 6px">' + esc(head) + '</p>' +
               '<p style="font-size:20px;font-weight:700;margin:0 0 10px">' + esc(subject) + '</p>' +
               '<p>' + esc(text).replace(/\n/g, '<br>') + '</p>' +
-              '<p style="font-size:12.5px;color:#5B6873;border-top:1px solid #ddd;padding-top:8px">זה עדכון מתרגיל צוות במערך המוכנות של Begood. העדכון מגיע רק לצוות שלך. מה לשתף עם שאר הצוותים, מחליטים אתם.</p></div>';
-            const ok = await sendMail(fetchImpl, env, to, subject + ' · ' + str(team.name, 60), head + '\n\n' + subject + '\n\n' + text, html);
+              '<p style="font-size:12.5px;color:#5B6873;border-top:1px solid #ddd;padding-top:8px">' + (direct ? 'זה סיכום מפגש במערך המוכנות של Begood. הוא נשלח למי שהשתתף/ה במפגש.' : 'זה עדכון מתרגיל צוות במערך המוכנות של Begood. העדכון מגיע רק לצוות שלך. מה לשתף עם שאר הצוותים, מחליטים אתם.') + '</p></div>';
+            const ok = await sendMail(fetchImpl, env, to, subject + (team ? ' · ' + str(team.name, 60) : ''), head + '\n\n' + subject + '\n\n' + text, html);
             if (ok) { sent++; d.mail.n++; } else skipped++;
           }
         }

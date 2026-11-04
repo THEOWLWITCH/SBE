@@ -132,3 +132,18 @@ test('recording a meeting: a planned meeting and one of the five sessions, but n
   assert.equal((await call(store, { action: 'rdyRecStart', token: a, id, exId: 'sess-9', consent: true }))[0], 404);
   assert.equal((await call(store, { action: 'rdyTranscriptGet', token: a, id, exId: 'mt-abc123' }))[0], 200);
 });
+
+test('meeting summary goes only to the people checked in at that meeting', async () => {
+  const { store, a } = await setup();
+  const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S' } }))[1].doc.id;
+  await call(store, { action: 'rdySave', token: a, id, part: 'teams', value: [{ id: 't1', name: 'ניהול', lead: { name: 'דנה', email: 'dana@example.org' } }] });
+  await call(store, { action: 'rdySave', token: a, id, part: 'meetings', value: [{ id: 'mt-abc123', title: 'זמן מוכנות', attendees: [{ name: 'אורח', role: 'נציג הרשות', email: 'guest@example.org', here: true }, { name: 'לא הגיע', email: 'away@example.org', here: false }] }] });
+  const sent = [];
+  const fetchImpl = async (url, o) => { sent.push(JSON.parse(o.body)); return { ok: true }; };
+  const who = async () => ({ principal: 'p', inst: 'School', sys: false });
+  const env = { RESEND_API_KEY: 'k', NOTIFY_FROM: 'Begood <noreply@example.org>' };
+  const [st, out] = await handleReadiness(store, { action: 'rdyMail', token: 'x', id, meetingId: 'mt-abc123', subject: 'סיכום', items: [{ to: ['guest@example.org', 'away@example.org', 'dana@example.org', 'evil@example.org'], text: 'סיכום המפגש' }] }, { who, fetchImpl, env });
+  assert.equal(st, 200);
+  assert.deepEqual(sent.map((m) => m.to[0]).sort(), ['dana@example.org', 'guest@example.org']);
+  assert.equal(out.sent, 2);
+});
