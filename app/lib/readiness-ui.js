@@ -28,7 +28,7 @@
       sessions: 'המפגשים', later: 'בשלב הבא', escalate: 'קצוות שעולים למנהל/ת מצב החירום', partners: 'שותפים: עם מי מתאמים בחירום?', expect: 'מה אנחנו מצפים לקבל', provide: 'מה אנחנו מספקים',
       ifGap: 'פער ממשק: חסר צד אחד', partner: 'שותף/ה', step: 'שלב', product: 'התוצר', questions: 'שאלות לצוות', ourText: 'מה כתבנו', ask: 'חוליות חלשות וחלופות', working: 'עובדים על זה…',
       gaps: 'פערים', alts: 'חלופות שאולי לא עלו', nextSteps: 'צעדי המשך', toEnds: 'לקצוות הפתוחים', addGap: 'לרשימת הפערים', before: 'לפני המפגש', during: 'במפגש', our: 'שלנו',
-      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', editT: 'עריכה', closeT: 'סגירה', draftReplace: 'טיוטה חדשה תחליף את הטבלה, כולל מה שהצוות ערך בה. להמשיך?', saveFirst: 'הסיכום לא נשלח, כי השמירה לא הצליחה. אפשר לנסות שוב בעוד רגע.', mailSkipped: 'לא נשלח', safeLine: 'מי שהתרחיש קרוב מדי אליו/ה יכול/ה לבחור תפקיד של רשם/ת או צופה, ולצאת לרגע בכל שלב.', howAnswer: 'איך עונים', parentsMsgT: 'ההודעה להורים', parentsMsgCues: 'כותבים את ההודעה כמו שתישלח: מה קרה, בעובדות · איפה הילדים ומה עושים · מה מבקשים מההורים · מתי העדכון הבא.', parentsMsgPh: 'למשל: הורים יקרים, לפני כרבע שעה...', heOnly: 'הרשימה מתיק הרציפות כתובה בעברית.', toJourney: 'למסע אל החוסן החברתי', unsaved: 'אין חיבור כרגע. השינויים נשמרו במסך וייכנסו כשהחיבור יחזור.', trNotLoaded: 'התמליל של ההקלטה עוד לא נכנס לדיון, והוא יימחק כשהמפגש מסומן כהושלם. להמשיך?', notSummed: 'המפגש עבר ועוד לא סוכם', nextSet: 'המפגש הבא נקבע ל־', ownerFilled: 'אחראי/ת הושלם/ה לפי ראש הצוות או מנהל/ת מצב החירום', undoT: '↩ ביטול', undoneT: 'השינוי בוטל', cancelWhy: 'למה הפעולה בוטלה? (רשות, נשמר לתיעוד)', ownerPerson: 'אחראי/ת: שם של אדם מהצוות', noPeople: 'עוד אין שמות בטבלת הצוותים, ולכן האחראי/ת הוא/היא מנהל/ת מצב החירום. כדי שיופיעו שמות, אפשר למלא אותם:', delQ: 'למחוק את המשימה?', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
+      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', editT: 'עריכה', closeT: 'סגירה', keptT: 'נשמר (עבד, ממשיכים כך)', gapT: 'פער', gapsClosed: 'פערים נסגרו: הפעולה שלהם נבדקה בתרגיל', noAction: 'עוד אין פעולה', linkedAct: 'הפעולה', gapsInfo: 'פער נסגר כשהפעולה שנוצרה ממנו נבדקה בתרגיל או ביום החוסן, או בהעברה להושלמו.', lastEx: 'התרגיל האחרון', draftReplace: 'טיוטה חדשה תחליף את הטבלה, כולל מה שהצוות ערך בה. להמשיך?', saveFirst: 'הסיכום לא נשלח, כי השמירה לא הצליחה. אפשר לנסות שוב בעוד רגע.', mailSkipped: 'לא נשלח', safeLine: 'מי שהתרחיש קרוב מדי אליו/ה יכול/ה לבחור תפקיד של רשם/ת או צופה, ולצאת לרגע בכל שלב.', howAnswer: 'איך עונים', parentsMsgT: 'ההודעה להורים', parentsMsgCues: 'כותבים את ההודעה כמו שתישלח: מה קרה, בעובדות · איפה הילדים ומה עושים · מה מבקשים מההורים · מתי העדכון הבא.', parentsMsgPh: 'למשל: הורים יקרים, לפני כרבע שעה...', heOnly: 'הרשימה מתיק הרציפות כתובה בעברית.', toJourney: 'למסע אל החוסן החברתי', unsaved: 'אין חיבור כרגע. השינויים נשמרו במסך וייכנסו כשהחיבור יחזור.', trNotLoaded: 'התמליל של ההקלטה עוד לא נכנס לדיון, והוא יימחק כשהמפגש מסומן כהושלם. להמשיך?', notSummed: 'המפגש עבר ועוד לא סוכם', nextSet: 'המפגש הבא נקבע ל־', ownerFilled: 'אחראי/ת הושלם/ה לפי ראש הצוות או מנהל/ת מצב החירום', undoT: '↩ ביטול', undoneT: 'השינוי בוטל', cancelWhy: 'למה הפעולה בוטלה? (רשות, נשמר לתיעוד)', ownerPerson: 'אחראי/ת: שם של אדם מהצוות', noPeople: 'עוד אין שמות בטבלת הצוותים, ולכן האחראי/ת הוא/היא מנהל/ת מצב החירום. כדי שיופיעו שמות, אפשר למלא אותם:', delQ: 'למחוק את המשימה?', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
       version: 'אורך התרגיל', v20: '20 דקות (ישיבת צוות)', v60: 'שעה', startEx: 'התחלת התרגיל', exercises: 'התרגילים', cont: 'המשך', finish: 'סיום התרחיש', opening: 'פתיחה',
       closing: 'סגירה', copy: 'העתקה', copied: 'הועתק', openRec: 'פתיחת קישור לטלפון', recOn: 'ההקלטה פתוחה', marks: 'רגעי החלטה', segs: 'קטעים בתמליל', loadTr: 'טעינת התמליל',
       editTr: 'עריכת התמליל (לפני שהוא משמש לדוח)', saveTr: 'שמירת התמליל', worked: 'מה עבד', timeline: 'ציר הזמן', fb: 'משוב מקצועי', src: 'מקור', addRow: '➕ שורה',
@@ -70,7 +70,7 @@
       sessions: 'اللقاءات', later: 'في المرحلة القادمة', escalate: 'أطراف تُرفع إلى مدير/ة حالة الطوارئ', partners: 'الشركاء: مع من ننسّق في الطوارئ؟', expect: 'ما نتوقع أن نحصل عليه', provide: 'ما نقدّمه',
       ifGap: 'فجوة في التنسيق: ينقص أحد الطرفين', partner: 'الشريك/ة', step: 'مرحلة', product: 'الناتج', questions: 'أسئلة للطاقم', ourText: 'ما كتبناه', ask: 'حلقات ضعيفة وبدائل', working: 'نعمل على ذلك…',
       gaps: 'فجوات', alts: 'بدائل ربما لم تُطرح', nextSteps: 'خطوات تالية', toEnds: 'إلى الأطراف المفتوحة', addGap: 'إلى قائمة الفجوات', before: 'قبل اللقاء', during: 'في اللقاء', our: 'لنا',
-      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', editT: 'تعديل', closeT: 'إغلاق', draftReplace: 'مسودة جديدة ستستبدل الجدول، بما في ذلك ما عدّله الطاقم. هل نتابع؟', saveFirst: 'لم يُرسل التلخيص لأن الحفظ لم ينجح. يمكن المحاولة بعد لحظة.', mailSkipped: 'لم يُرسل', safeLine: 'من يشعر/تشعر أن السيناريو قريب جدًا منه/ها يمكنه/ها اختيار دور المسجِّل/ة أو المراقب/ة، والخروج للحظة في أي مرحلة.', howAnswer: 'كيف نجيب', parentsMsgT: 'الرسالة إلى الأهالي', parentsMsgCues: 'نكتب الرسالة كما ستُرسل: ماذا حدث، بالحقائق · أين الأبناء وماذا نفعل · ماذا نطلب من الأهالي · متى التحديث القادم.', parentsMsgPh: 'مثلًا: أهالينا الأعزاء، قبل نحو ربع ساعة...', heOnly: 'القائمة من ملف الاستمرارية مكتوبة بالعبرية.', toJourney: 'إلى الرحلة نحو الصمود الاجتماعي', unsaved: 'لا يوجد اتصال حاليًا. التغييرات محفوظة على الشاشة وستدخل عند عودة الاتصال.', trNotLoaded: 'نص التسجيل لم يدخل إلى النقاش بعد، وسيُحذف عند تعليم اللقاء كمكتمل. هل نتابع؟', notSummed: 'اللقاء مضى ولم يُلخَّص بعد', nextSet: 'اللقاء القادم مُحدَّد في ', ownerFilled: 'أُكمل المسؤول/ة حسب رئيس/ة الطاقم أو مدير/ة حالة الطوارئ', undoT: '↩ تراجع', undoneT: 'أُلغي التغيير', cancelWhy: 'لماذا أُلغي الإجراء؟ (اختياري، يُحفظ للتوثيق)', ownerPerson: 'المسؤول/ة: اسم شخص من الطاقم', noPeople: 'لاختيار مسؤول/ة بالاسم، يمكن تعبئة الأسماء في جدول الطواقم:', delQ: 'حذف المهمة؟', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
+      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', editT: 'تعديل', closeT: 'إغلاق', keptT: 'حُفظ (نجح، نستمر هكذا)', gapT: 'فجوة', gapsClosed: 'أُغلقت فجوات: الإجراء الخاص بها فُحص في تمرين', noAction: 'لا يوجد إجراء بعد', linkedAct: 'الإجراء', gapsInfo: 'تُغلق الفجوة عندما يُفحص الإجراء الناتج عنها في تمرين أو في يوم الصمود، أو بنقلها إلى اكتملت.', lastEx: 'التمرين الأخير', draftReplace: 'مسودة جديدة ستستبدل الجدول، بما في ذلك ما عدّله الطاقم. هل نتابع؟', saveFirst: 'لم يُرسل التلخيص لأن الحفظ لم ينجح. يمكن المحاولة بعد لحظة.', mailSkipped: 'لم يُرسل', safeLine: 'من يشعر/تشعر أن السيناريو قريب جدًا منه/ها يمكنه/ها اختيار دور المسجِّل/ة أو المراقب/ة، والخروج للحظة في أي مرحلة.', howAnswer: 'كيف نجيب', parentsMsgT: 'الرسالة إلى الأهالي', parentsMsgCues: 'نكتب الرسالة كما ستُرسل: ماذا حدث، بالحقائق · أين الأبناء وماذا نفعل · ماذا نطلب من الأهالي · متى التحديث القادم.', parentsMsgPh: 'مثلًا: أهالينا الأعزاء، قبل نحو ربع ساعة...', heOnly: 'القائمة من ملف الاستمرارية مكتوبة بالعبرية.', toJourney: 'إلى الرحلة نحو الصمود الاجتماعي', unsaved: 'لا يوجد اتصال حاليًا. التغييرات محفوظة على الشاشة وستدخل عند عودة الاتصال.', trNotLoaded: 'نص التسجيل لم يدخل إلى النقاش بعد، وسيُحذف عند تعليم اللقاء كمكتمل. هل نتابع؟', notSummed: 'اللقاء مضى ولم يُلخَّص بعد', nextSet: 'اللقاء القادم مُحدَّد في ', ownerFilled: 'أُكمل المسؤول/ة حسب رئيس/ة الطاقم أو مدير/ة حالة الطوارئ', undoT: '↩ تراجع', undoneT: 'أُلغي التغيير', cancelWhy: 'لماذا أُلغي الإجراء؟ (اختياري، يُحفظ للتوثيق)', ownerPerson: 'المسؤول/ة: اسم شخص من الطاقم', noPeople: 'لاختيار مسؤول/ة بالاسم، يمكن تعبئة الأسماء في جدول الطواقم:', delQ: 'حذف المهمة؟', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
       version: 'مدة التمرين', v20: '20 دقيقة (جلسة طاقم)', v60: 'ساعة', startEx: 'بدء التمرين', exercises: 'التمارين', cont: 'متابعة', finish: 'إنهاء السيناريو', opening: 'افتتاح',
       closing: 'إغلاق', copy: 'نسخ', copied: 'تم النسخ', openRec: 'فتح رابط للهاتف', recOn: 'التسجيل مفتوح', marks: 'لحظات قرار', segs: 'مقاطع في النص المكتوب', loadTr: 'تحميل النص المكتوب',
       editTr: 'تحرير النص المكتوب (قبل استخدامه في التقرير)', saveTr: 'حفظ النص المكتوب', worked: 'ما الذي نجح', timeline: 'التسلسل الزمني', fb: 'ملاحظات مهنية', src: 'مصدر', addRow: '➕ سطر',
@@ -357,7 +357,7 @@
     S.view = LS.get('sbe.prep.view.' + id, 'home') || 'home';
     const q = new URLSearchParams(location.search);
     if (/^(home|plan|track|index|gen|s[1-5])$/.test(q.get('view') || '')) S.view = q.get('view');
-    if (/^(tasks|decisions|ends|done)$/.test(q.get('sheet') || '')) S.sheet = q.get('sheet');
+    if (/^(tasks|decisions|ends|gaps|done)$/.test(q.get('sheet') || '')) S.sheet = q.get('sheet');
     if (S.view.startsWith('mt:') && !arr('meetings').some((m) => 'mt:' + m.id === S.view)) S.view = 'home';
     if (q.get('print') === 'binder') setTimeout(printBinder, 600);
     const ex = arr('exercises'); S.exId = ex.length ? ex[ex.length - 1].id : '';
@@ -572,8 +572,9 @@
     return s ? String(s.apa || k).split('. (')[0] + ' (' + (String(s.apa).match(/\((\d{4})/) || [, ''])[1] + ')' : '';
   }
   function addGap(text, src, team) {
-    const gaps = arr('gaps'); gaps.push({ id: uid('g'), text, src: src || '', team: team || '', at: nowIso() }); S.doc.parts.gaps = gaps; save('gaps', 'פער: ' + String(text).slice(0, 80));
-    const acts = arr('actions'); acts.push({ id: uid('a'), text, team: team || '', owner: '', due: plus(14), status: 'todo', src: src || '' }); S.doc.parts.actions = acts; save('actions', '');
+    const aid = uid('a');
+    const gaps = arr('gaps'); gaps.push({ id: uid('g'), text, src: src || '', team: team || '', at: nowIso(), actionId: aid }); S.doc.parts.gaps = gaps; save('gaps', Y('gapT') + ': ' + String(text).slice(0, 80));
+    const acts = arr('actions'); acts.push({ id: aid, text, team: team || '', owner: fallbackOwner(team), due: plus(14), status: 'todo', src: src || '' }); S.doc.parts.actions = acts; save('actions', '');
     toast(Y('addGap') + ' ✓');
   }
 
@@ -925,15 +926,21 @@
       if (!confirm(Y('confirmApprove'))) return;
       rep.approvedAt = nowIso();
       const src = 'תחקיר מפגש ' + (ex.session || 3);
-      const acts = arr('actions'), gaps = arr('gaps'), ideas = arr('ideas');
+      const acts = arr('actions'), gaps = arr('gaps'), ideas = arr('ideas'), ends = arr('ends');
       for (const row of rep.rows) {
-        if (row.keep === 'improve' && row.action) acts.push({ id: uid('a'), text: row.action, team: row.team || '', owner: row.owner || '', due: row.due || plus(14), status: 'todo', src });
-        if (row.keep === 'improve' && row.topic) gaps.push({ id: uid('g'), text: row.topic + (row.happened ? ': ' + row.happened : ''), team: row.team || '', src, at: nowIso() });
+        let aid = '';
+        if (row.keep === 'improve' && row.action) { aid = uid('a'); acts.push({ id: aid, text: row.action, team: row.team || '', owner: personOwner(row.owner, row.team), due: row.due || plus(14), status: 'todo', src, srcId: ex.id }); }
+        if (row.keep === 'improve' && row.topic) gaps.push({ id: uid('g'), text: row.topic + (row.happened ? ': ' + row.happened : ''), team: row.team || '', src, at: nowIso(), actionId: aid });
+        if (row.keep === 'keep' && row.topic) S.doc.log.push({ at: nowIso(), by: S.by || '', part: 'exercises', what: Y('keptT') + ': ' + row.topic });
       }
+      // קצוות פתוחים מהטיוטה נכנסים לטבלת המעקב (בלי כפילויות)
+      const have = new Set(ends.map((e) => String(e.text || '').trim()));
+      for (const e of v.ends || []) { const t = String(e.text || '').trim(); if (t && !have.has(t)) { have.add(t); ends.push({ id: uid('e'), text: t, owner: personOwner(e.owner, e.team), openedAt: nowIso(), next: plus(3), status: 'open', missed: 0, src, srcId: ex.id, by: S.by }); } }
+      S.doc.parts.ends = ends;
       for (const x of v.ideas || []) ideas.push({ id: uid('i'), text: x.text, ifThen: x.ifThen || '', at: nowIso(), decision: '', exId: ex.id, src: src });
       S.doc.parts.actions = acts; S.doc.parts.gaps = gaps; S.doc.parts.ideas = ideas;
       const n = ex.session || 3, sess = obj('sessions'); if (!(sess[n] && sess[n].done)) { sess[n] = { done: true, at: nowIso() }; S.doc.parts.sessions = sess; await save('sessions', 'מפגש ' + n + ' הושלם'); }
-      await save('exercises', 'אישור דוח התחקיר'); await save('actions', ''); await save('gaps', ''); await save('ideas', '');
+      await save('exercises', 'אישור דוח התחקיר'); await save('actions', ''); await save('gaps', ''); await save('ideas', ''); await save('ends', '');
       await api('rdyTranscriptDelete', { id: S.doc.id, exId: ex.id });
       render();
     } });
@@ -1011,7 +1018,10 @@
       const acts = arr('actions'); let n = 0;
       for (const row of cmp.rows) {
         if (!row.state || row.applied) continue;
-        if (row.state === 'closed') S.doc.log.push({ at: nowIso(), by: S.by, what: 'נסגר ונכנס למערך: ' + row.topic });
+        const norm = (t) => String(t || '').replace(/\s+/g, ' ').trim();
+        const match = acts.find((a) => openAct(a) && (norm(a.text) === norm(row.todo) || (row.topic && norm(a.text).includes(norm(row.topic)))));
+        if (row.state === 'closed') { S.doc.log.push({ at: nowIso(), by: S.by, what: 'נסגר ונכנס למערך: ' + row.topic }); if (match) { match.status = 'tested'; match.doneAt = nowIso(); } }
+        else if (match) { match.text = row.todo || match.text; match.due = plus(30); }
         else { acts.push({ id: uid('a'), text: row.todo || row.topic, team: '', owner: '', due: plus(30), status: 'todo', src: Y('compareT') }); n++; }
         row.applied = true;
       }
@@ -1498,17 +1508,36 @@
   }
 
   // ---------- 📋 טבלת מעקב: גיליון לכל סוג, ופריט עובר מגיליון לגיליון לפי סימון ----------
-  const KIND_OF = { tasks: 'actions', ends: 'ends', decisions: 'ideas' };
+  const KIND_OF = { tasks: 'actions', ends: 'ends', decisions: 'ideas', gaps: 'gaps' };
+  // פער נסגר כשהפעולה שנוצרה ממנו נבדקה בתרגיל (או בסגירה ידנית)
+  function syncGaps() {
+    const acts = arr('actions'); let changed = false;
+    for (const g of arr('gaps')) { if (g.closed || !g.actionId) continue; const a = acts.find((x) => x.id === g.actionId); if (a && a.status === 'tested') { g.closed = true; g.closedAt = nowIso(); changed = true; } }
+    if (changed) save('gaps', Y('gapsClosed'));
+  }
+  function viewGaps() {
+    const gaps = arr('gaps'), acts = arr('actions');
+    const open = gaps.filter((g) => !g.closed);
+    const actOf = (g) => acts.find((a) => a.id === g.actionId);
+    const st = (g) => { const a = actOf(g); return a ? L.SHEETS.tasks + ': ' + (L.STATUS[a.status] || '') + (a.owner ? ' · ' + a.owner : '') : Y('noAction'); };
+    const list = MOB() ? h('ul', { class: 'mlist' }, open.map((g) => mrow(g.id, g.text, [g.src ? h('span', { text: g.src }) : null, h('span', { class: actOf(g) ? '' : 'late', text: st(g) })], [moveSel('gaps', g)],
+      [field(T('text'), bindText(h('textarea', { rows: 2 }), () => g.text, (v) => { g.text = v; }, 'gaps', ''))])))
+      : h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, [T('text'), Y('kindT'), Y('linkedAct'), ''].map((c) => h('th', { text: c })))),
+        h('tbody', {}, open.map((g) => h('tr', {}, h('td', { 'data-h': T('text') }, bindText(h('textarea', { rows: 2, class: 'cell wide', 'aria-label': T('text') }), () => g.text, (v) => { g.text = v; }, 'gaps', '')),
+          h('td', { 'data-h': Y('kindT'), text: g.src || dateIL(g.at) }), h('td', { 'data-h': Y('linkedAct'), text: st(g) }), h('td', { class: 'noprint' }, moveSel('gaps', g))))));
+    return h('div', { class: 'card' }, h('h2', { text: L.SHEETS.gaps }), h('p', { class: 'muted small', text: Y('gapsInfo') }), open.length ? list : h('p', { class: 'muted', text: Y('none2') }));
+  }
   function viewTrack(compact) {
     S.doc.parts.actions = arr('actions'); S.doc.parts.ends = arr('ends'); S.doc.parts.ideas = arr('ideas');
     fixOwners();
-    const count = (sh) => ['actions', 'ends', 'ideas'].reduce((n, k) => n + arr(k).filter((x) => P.sheetOf(k, x) === sh).length, 0);
-    const keys = ['tasks', 'decisions', 'ends', 'done'].concat(compact ? [] : ['log']);
+    S.doc.parts.gaps = arr('gaps'); syncGaps();
+    const count = (sh) => ['actions', 'ends', 'ideas', 'gaps'].reduce((n, k) => n + arr(k).filter((x) => P.sheetOf(k, x) === sh).length, 0);
+    const keys = ['tasks', 'decisions', 'ends', 'gaps', 'done'].concat(compact ? [] : ['log']);
     const cur = keys.includes(S.sheet) ? S.sheet : 'tasks';
     const bar = h('div', { class: 'tabs noprint sbe-no-theme', role: 'tablist', 'aria-label': Y('trackT') }, keys.map((k) => h('button', { type: 'button', role: 'tab', 'aria-selected': k === cur ? 'true' : 'false',
       onclick: () => { S.sheet = k; render(); } }, k === 'log' ? T('log') : L.SHEETS[k], k === 'log' ? null : h('span', { class: 'pill', text: String(count(k)) }))));
     setTimeout(() => { const sel = bar.querySelector('[aria-selected="true"]'); if (sel && bar.scrollWidth > bar.clientWidth) sel.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }, 0);
-    const body = cur === 'decisions' ? viewIdeas() : cur === 'ends' ? viewEnds() : cur === 'done' ? viewDone() : cur === 'log' ? viewLog() : viewActions();
+    const body = cur === 'decisions' ? viewIdeas() : cur === 'gaps' ? viewGaps() : cur === 'ends' ? viewEnds() : cur === 'done' ? viewDone() : cur === 'log' ? viewLog() : viewActions();
     return h('div', {}, bar, people().length ? null : h('p', { class: 'muted small' }, Y('noPeople') + ' ', lnk(Y('teamsT'), () => { S.tab.s1 = 1; go('s1'); })), body, peopleList());
   }
   function moveSel(kind, it) {
@@ -1519,18 +1548,19 @@
     return sl;
   }
   async function moveItem(kind, it, to) {
-    const before = snap(['actions', 'ends', 'ideas']);
+    const before = snap(['actions', 'ends', 'ideas', 'gaps']);
     const from = arr(kind); S.doc.parts[kind] = from;
     if (to === 'done') {
       if (kind === 'actions') { if (!confirm(Y('confirmTested'))) return; it.status = 'tested'; }
       else if (kind === 'ends') { if (!confirm(Y('confirmClose'))) return; it.status = 'closed'; it.closedAt = nowIso(); }
+      else if (kind === 'gaps') { if (!confirm(Y('confirmClose'))) return; it.closed = true; it.closedAt = nowIso(); }
       else it.done = true;
       it.doneAt = nowIso();
       await save(kind, L.SHEETS.done + ': ' + String(it.text || '').slice(0, 60)); render(); undoToast(L.SHEETS.done, before); return;
     }
     const target = KIND_OF[to];
     if (target === kind) { // חזרה מהושלמו
-      if (kind === 'actions') it.status = it.status === 'cancelled' ? 'todo' : 'done'; else if (kind === 'ends') it.status = 'open'; else it.done = false;
+      if (kind === 'actions') it.status = it.status === 'cancelled' ? 'todo' : 'done'; else if (kind === 'ends') it.status = 'open'; else if (kind === 'gaps') it.closed = false; else it.done = false;
       await save(kind, Y('moveTo') + ': ' + L.SHEETS[to] + ': ' + String(it.text || '').slice(0, 60)); render(); undoToast(Y('moveTo') + ': ' + L.SHEETS[to], before); return;
     }
     const base = { id: uid(target[0]), text: it.text || '', src: it.src || '', srcId: it.srcId || '' }, owner = it.owner || '';
@@ -1544,8 +1574,8 @@
   }
   function viewDone() {
     const rows = [];
-    for (const k of ['actions', 'ends', 'ideas']) for (const it of arr(k)) if (P.sheetOf(k, it) === 'done') rows.push([k, it]);
-    const label = { actions: L.SHEETS.tasks, ends: L.SHEETS.ends, ideas: L.SHEETS.decisions };
+    for (const k of ['actions', 'ends', 'ideas', 'gaps']) for (const it of arr(k)) if (P.sheetOf(k, it) === 'done') rows.push([k, it]);
+    const label = { actions: L.SHEETS.tasks, ends: L.SHEETS.ends, ideas: L.SHEETS.decisions, gaps: L.SHEETS.gaps };
     return h('div', { class: 'card' }, h('h2', { text: L.SHEETS.done }),
       rows.length ? h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, [T('text'), Y('kindT'), T('owner'), Y('closedAt'), ''].map((c) => h('th', { text: c })))),
         h('tbody', {}, rows.map(([k, it]) => h('tr', {}, h('td', { 'data-h': T('text'), text: it.text || '' }), h('td', { 'data-h': Y('kindT'), text: (it.status === 'cancelled' ? L.STATUS.cancelled + (it.cancelWhy ? ': ' + it.cancelWhy : '') : label[k]) + (it.src ? ' · ' + it.src : '') }),
@@ -1796,7 +1826,8 @@
       h('h2', { text: Y('reportT2') }), h('ol', {}, L.REPORT.map((r) => h('li', { text: r[0] }))),
       ...sec(Y('decmapT'), L.DEC_COLS, decmapRows(), dm.intent ? h('p', {}, h('b', { text: Y('intent') + ': ' }), dm.intent) : null),
       ...sec(T('annexes'), [T('annexes'), T('maturity'), Y('annexText')], annexRows),
-      ...sec(Y('mandT'), [L.PROC_KIND.binding, T('text'), Y('src')], L.MANDATORY.filter((m) => !m.sensitive).map((m) => [m.topic, m.rule, m.source + ' · ' + L.VERIFY])),
+      ...sec(Y('mandT'), [L.PROC_KIND.binding, T('text'), Y('src')], L.MANDATORY.filter((m) => !m.sensitive).map((m) => [m.topic, m.rule, m.source]), h('p', { class: 'muted', text: L.VERIFY })),
+      ...lastExercise(),
       ...sec(L.SHEETS.tasks, [T('text'), T('team'), T('owner'), T('due'), T('status')], openActs.map((a) => [a.text, teamName(a.team), a.owner, dateIL(a.due), L.STATUS[a.status] || ''])),
       ...sec(L.SHEETS.ends, [T('text'), T('owner'), T('endNext')], openEnds.map((e) => [e.text, e.owner, dateIL(e.next)])),
       ...sec(L.SHEETS.decisions, [T('text'), T('owner')], arr('ideas').filter((x) => x.decision === 'adopt' && !x.done).map((x) => [x.text, x.owner || x.by || ''])),
@@ -1807,6 +1838,14 @@
     const sens = L.BINDER_SENS || P.BINDER_SENS || [];
     return L.BINDER_MANUAL.map((text, i) => ({ key: 'm' + i, text, sens: sens.includes(i) }))
       .concat((Array.isArray(bd && bd.items) ? bd.items : []).filter((x) => x && x.key && x.text).map((x) => ({ key: x.key, text: x.text, sens: !!x.sens, custom: true })));
+  }
+  // בתיקייה המודפסת: התרגיל האחרון שהדוח שלו אושר: תאריך, מה עבד, ומה משפרים
+  function lastExercise() {
+    const ex = arr('exercises').filter((x) => x.report && x.report.approvedAt).sort((a, b) => String(a.report.approvedAt).localeCompare(String(b.report.approvedAt))).pop();
+    if (!ex) return [];
+    const rows = (ex.report.rows || []).map((r) => [r.topic || '', L.KEEP[r.keep] || '', r.action || r.how || '']);
+    return [h('h2', { text: Y('lastEx') + ': ' + ex.title + ' · ' + dateIL(ex.startedAt) }), (ex.draft && ex.draft.worked || []).length ? h('ul', {}, ex.draft.worked.map((w) => h('li', { text: typeof w === 'string' ? w : (w.text || '') }))) : null,
+      rows.length ? tbl([T('text'), Y('kindT'), T('action') || T('actions')], rows) : null];
   }
   window.sbeReadinessBinder = () => printBinder();
   function printSummary(n) { printMeeting(meetRec('s', n)); }

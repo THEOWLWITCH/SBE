@@ -328,6 +328,11 @@
   ];
   C.VERIFY = 'לוודא נוסח עדכני. מספרים שמשתנים (זמן התגוננות, שהייה במרחב, מגבלות התקהלות) בודקים בפורטל החירום הלאומי, באפליקציית פיקוד העורף ובמוקד 104.';
   C.PROC_KIND = { binding: 'נוהל מחייב', school: 'נוהל בית ספרי', missing: 'נוהל חסר: כדאי לברר' };
+  // מפגש 3 (בדיקת המומחים, 04/11/2026): הנהלים המחייבים קופצים בכל סבב, ויש רשימה של מה נחשב הצלחה
+  C.SIRENS.rounds[0].procedures = ['siren', 'shelters'];
+  C.SIRENS.rounds[1].procedures = ['policy', 'hazmat'];
+  C.SIRENS.rounds[2].procedures = ['unusual', 'gate'];
+  C.SIRENS.success = ['כל התלמידים והצוות הגיעו למרחב מוגן בזמן', 'הספירה הושלמה, והחסר דווח', 'הפינוי נעשה בדרך שנבחרה, עם מישהו/י שמלווה כל מי שזקוק/ה לעזרה', 'הקריאה לעזרה נאמרה בששת החלקים', 'ההורים קיבלו הודעה אחת ממקור אחד', 'כל צוות דיווח לפי התבנית'];
   C.MISSING_ASK = 'אפשר לברר מול קב"ט הרשות, מכלול החינוך ברשות, המפקח/ת, מחוז משרד החינוך או מחוז פיקוד העורף. בתרגיל עצמו מחליטים לפי כוונת בית הספר והקווים האדומים, ורושמים את ההחלטה.';
 
   // ---------- מחולל תרחישי משבר וחירום (04, "שלבי בניית התרחיש"; השם מ-03/11/2026) ----------
@@ -430,7 +435,7 @@
   // אותם מספרים כמו BINDER_SENS ב-harness/lib/readiness.mjs. סדר הרשימה קבוע: פריט חדש נוסף בסוף.
   C.BINDER_SENS = [0, 1, 4, 7];
   // טבלת מעקב אחת, בגיליונות. פריט עובר מגיליון לגיליון לפי סימון.
-  C.SHEETS = { tasks: 'משימות', decisions: 'החלטות', ends: 'קצוות פתוחים', done: 'הושלמו' };
+  C.SHEETS = { tasks: 'משימות', decisions: 'החלטות', ends: 'קצוות פתוחים', gaps: 'פערים', done: 'הושלמו' };
 
   // ---------- מילים לגרסה הארגונית (לפני הרשימה הכללית של org-words.js; הארוך לפני הקצר) ----------
   const ORG_INTRO = 'המרחב הארגוני: מערך המוכנות של קהילה, רשות, מרכז קהילתי או ארגון. בלי המילים מחנך/ת ומורה, ודוגמאות מעולם הקהילה והארגון.';
@@ -513,7 +518,7 @@
     return {
       rel: { partners: partners.length, withDeputy, teams: teams.length },
       info: { actionsDone: actions.filter((a) => a && (a.status === 'done' || a.status === 'tested')).length, actions: actions.filter((a) => a && a.status !== 'cancelled').length, logs: (doc && doc.log || []).length },
-      inst: { staffed: teams.filter((t) => t && t.lead && t.lead.name).length, teams: teams.length, exercises: ex.length },
+      inst: { staffed: teams.filter((t) => t && t.lead && t.lead.name).length, teams: teams.length, exercises: ex.filter((x) => x && x.finishedAt).length },
       openEnds: ends.filter((e) => e && e.status !== 'closed').length,
       escalate: ends.filter((e) => ['noOwner', 'escalate'].includes(endState(e))).length
     };
@@ -527,7 +532,7 @@
     return {
       built: ex.filter((x) => x && x.builtByTeam).length,
       led: ex.filter((x) => x && x.ledByTeam !== false && x.finishedAt).length,
-      deputy: ex.filter((x) => x && x.ledByDeputy).length,
+      deputy: ex.filter((x) => x && x.ledByDeputy && x.finishedAt).length,
       gaps: gaps.length,
       closed: ends.filter((e) => e && e.status === 'closed' && !e.closedLate).length,
       tested: actions.filter((a) => a && a.status === 'tested').length,
@@ -555,7 +560,11 @@
     const marks = (transcript && transcript.marks || []).map((m) => '⭐ סבב ' + m.round + ' · ' + Math.round(m.t / 60000) + ' דק׳ · ' + (m.note || 'רגע החלטה')).join('\n');
     const rounds = (ex.rounds || []).map((r, i) => 'סבב ' + (i + 1) + ': החלטה: ' + (r.decision || '') + (r.plan ? ' · במערך: ' + r.plan : '') + (r.worked ? ' · מה עבד: ' + r.worked : '') + (r.parentsMsg ? ' · ההודעה להורים: ' + r.parentsMsg : '') + (r.improved ? ' · השתפרנו: ' + r.improved : '')).join('\n');
     const steps = Object.entries(ex.debrief || {}).map(([k, v]) => k + ': ' + v).join('\n');
-    return ['התרחיש: ' + (ex.title || C.SIRENS.title), 'ההחלטות בסבבים:\n' + rounds, ex.callHelp ? 'הקריאה לעזרה: ' + ex.callHelp : '', ex.hardTalk ? 'השיחה הקשה: ' + ex.hardTalk : '',
+    const scn = ex.scenario === 'gen' && ex.scn ? ex.scn : ex.scenario === 'disconnect' ? C.DISCONNECT : C.SIRENS;
+    const success = [].concat(scn.success || (scn.card && scn.card.success) || []);
+    const noPlan = (ex.rounds || []).map((r, i) => (r && r.noPlan ? 'סבב ' + (i + 1) : '')).filter(Boolean);
+    return ['התרחיש: ' + (ex.title || C.SIRENS.title), success.length ? 'מה נחשב הצלחה בתרגיל (לבדוק כל סעיף בדוח: הושג, חלקית, לא הושג):\n- ' + success.join('\n- ') : '',
+      (scn.expectedEnds || []).length ? 'קצוות פתוחים שכדאי לחפש:\n- ' + scn.expectedEnds.join('\n- ') : '', noPlan.length ? 'סבבים שבהם לא היה במערך מענה: ' + noPlan.join(', ') : '', 'ההחלטות בסבבים:\n' + rounds, ex.callHelp ? 'הקריאה לעזרה: ' + ex.callHelp : '', ex.hardTalk ? 'השיחה הקשה: ' + ex.hardTalk : '',
       steps ? 'מה נרשם בתחקיר:\n' + steps : '', mapText ? 'מפת ההחלטות וכוונת בית הספר:\n' + mapText : '', marks ? 'רגעי החלטה שסומנו:\n' + marks : '', segs ? 'התמליל:\n' + segs.slice(0, 60000) : '',
       'המקורות שאפשר להפנות אליהם (מפתח: מה נמצא):\n' + (sources || []).map((s) => s.k + ': ' + String(s.gist || '').slice(0, 220)).join('\n')].filter(Boolean).join('\n\n');
   }
@@ -686,6 +695,7 @@
     // פעולה שנבדקה בתרגיל, או שבוטלה (עם סיבה), עוברת להושלמו ונשארת שם לתיעוד
     if (kind === 'actions') return it.status === 'tested' || it.status === 'cancelled' ? 'done' : 'tasks';
     if (kind === 'ends') return it.status === 'closed' ? 'done' : 'ends';
+    if (kind === 'gaps') return it.closed ? 'done' : 'gaps';
     return it.done ? 'done' : 'decisions';
   }
   // מפת ההחלטות: שנה מהאישור האחרון (מול הרשות ומול המפקח/ת)

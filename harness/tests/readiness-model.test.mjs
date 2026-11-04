@@ -168,7 +168,7 @@ test('meetings: types from the rituals, the discussion becomes tasks, decisions 
   const n = P.normalizeMeeting({ tasks: [{ text: ' מפתח נוסף ', team: 'security', due: '2026-12-01' }, { text: 'x', team: 'nope', due: 'מחר' }, { text: '' }], decisions: [{ text: 'יום חוסן ביום שלישי' }], ends: [{ text: 'מחכים לרשות', owner: 'קשר עם הרשויות' }] });
   assert.deepEqual(n.tasks.map((t) => [t.text, t.team, t.due]), [['מפתח נוסף', 'security', '2026-12-01'], ['x', '', '']]);
   assert.equal(n.decisions.length, 1); assert.equal(n.ends[0].owner, 'קשר עם הרשויות');
-  assert.deepEqual(Object.keys(P.SHEETS), ['tasks', 'decisions', 'ends', 'done']);
+  assert.deepEqual(Object.keys(P.SHEETS), ['tasks', 'decisions', 'ends', 'gaps', 'done']);
   assert.equal(P.sheetOf('actions', { status: 'done' }), 'tasks');
   assert.equal(P.sheetOf('actions', { status: 'tested' }), 'done');
   assert.equal(P.sheetOf('ends', { status: 'closed' }), 'done');
