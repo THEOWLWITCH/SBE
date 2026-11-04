@@ -28,7 +28,7 @@
       sessions: 'המפגשים', later: 'בשלב הבא', escalate: 'קצוות שעולים למנהל/ת מצב החירום', partners: 'שותפים: עם מי מתאמים בחירום?', expect: 'מה אנחנו מצפים לקבל', provide: 'מה אנחנו מספקים',
       ifGap: 'פער ממשק: חסר צד אחד', partner: 'שותף/ה', step: 'שלב', product: 'התוצר', questions: 'שאלות לצוות', ourText: 'מה כתבנו', ask: 'חוליות חלשות וחלופות', working: 'עובדים על זה…',
       gaps: 'פערים', alts: 'חלופות שאולי לא עלו', nextSteps: 'צעדי המשך', toEnds: 'לקצוות הפתוחים', addGap: 'לרשימת הפערים', before: 'לפני המפגש', during: 'במפגש', our: 'שלנו',
-      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', editT: 'עריכה', closeT: 'סגירה', delQ: 'למחוק את המשימה?', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
+      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', editT: 'עריכה', closeT: 'סגירה', undoT: '↩ ביטול', undoneT: 'השינוי בוטל', cancelWhy: 'למה הפעולה בוטלה? (רשות, נשמר לתיעוד)', ownerPerson: 'אחראי/ת: שם של אדם מהצוות', noPeople: 'כדי לבחור אחראי/ת בשם, אפשר למלא את השמות בטבלת הצוותים:', delQ: 'למחוק את המשימה?', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
       version: 'אורך התרגיל', v20: '20 דקות (ישיבת צוות)', v60: 'שעה', startEx: 'התחלת התרגיל', exercises: 'התרגילים', cont: 'המשך', finish: 'סיום התרחיש', opening: 'פתיחה',
       closing: 'סגירה', copy: 'העתקה', copied: 'הועתק', openRec: 'פתיחת קישור לטלפון', recOn: 'ההקלטה פתוחה', marks: 'רגעי החלטה', segs: 'קטעים בתמליל', loadTr: 'טעינת התמליל',
       editTr: 'עריכת התמליל (לפני שהוא משמש לדוח)', saveTr: 'שמירת התמליל', worked: 'מה עבד', timeline: 'ציר הזמן', fb: 'משוב מקצועי', src: 'מקור', addRow: '➕ שורה',
@@ -70,7 +70,7 @@
       sessions: 'اللقاءات', later: 'في المرحلة القادمة', escalate: 'أطراف تُرفع إلى مدير/ة حالة الطوارئ', partners: 'الشركاء: مع من ننسّق في الطوارئ؟', expect: 'ما نتوقع أن نحصل عليه', provide: 'ما نقدّمه',
       ifGap: 'فجوة في التنسيق: ينقص أحد الطرفين', partner: 'الشريك/ة', step: 'مرحلة', product: 'الناتج', questions: 'أسئلة للطاقم', ourText: 'ما كتبناه', ask: 'حلقات ضعيفة وبدائل', working: 'نعمل على ذلك…',
       gaps: 'فجوات', alts: 'بدائل ربما لم تُطرح', nextSteps: 'خطوات تالية', toEnds: 'إلى الأطراف المفتوحة', addGap: 'إلى قائمة الفجوات', before: 'قبل اللقاء', during: 'في اللقاء', our: 'لنا',
-      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', editT: 'تعديل', closeT: 'إغلاق', delQ: 'حذف المهمة؟', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
+      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', editT: 'تعديل', closeT: 'إغلاق', undoT: '↩ تراجع', undoneT: 'أُلغي التغيير', cancelWhy: 'لماذا أُلغي الإجراء؟ (اختياري، يُحفظ للتوثيق)', ownerPerson: 'المسؤول/ة: اسم شخص من الطاقم', noPeople: 'لاختيار مسؤول/ة بالاسم، يمكن تعبئة الأسماء في جدول الطواقم:', delQ: 'حذف المهمة؟', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
       version: 'مدة التمرين', v20: '20 دقيقة (جلسة طاقم)', v60: 'ساعة', startEx: 'بدء التمرين', exercises: 'التمارين', cont: 'متابعة', finish: 'إنهاء السيناريو', opening: 'افتتاح',
       closing: 'إغلاق', copy: 'نسخ', copied: 'تم النسخ', openRec: 'فتح رابط للهاتف', recOn: 'التسجيل مفتوح', marks: 'لحظات قرار', segs: 'مقاطع في النص المكتوب', loadTr: 'تحميل النص المكتوب',
       editTr: 'تحرير النص المكتوب (قبل استخدامه في التقرير)', saveTr: 'حفظ النص المكتوب', worked: 'ما الذي نجح', timeline: 'التسلسل الزمني', fb: 'ملاحظات مهنية', src: 'مصدر', addRow: '➕ سطر',
@@ -140,6 +140,31 @@
     return L.TEAMS.concat(extra.map((t) => ({ id: t.id, name: t.name.trim(), duty: t.duty || '', lead: '', custom: true })));
   }
   const teamName = (id) => { const t = allTeams().find((x) => x.id === id); return t ? t.name : id === 'all' ? Y('allTeams') : (id || ''); };
+  // אחראי/ת הוא תמיד אדם מהצוות, בשם, ולא צוות (04/11/2026: "אחראי = תמיד יהיה שם של מישהו מהצוות ולא 'צוות'").
+  // השמות מטבלת הצוותים; כשנאמר רק צוות, האחראי/ת הוא/היא מוביל/ת הצוות; בלי שם: "בלי אחראי/ת" באדום.
+  function people() {
+    const out = [];
+    for (const tm of (S.doc && Array.isArray(S.doc.parts.teams) ? S.doc.parts.teams : [])) {
+      const tn = teamName(tm.id);
+      const add = (pp, role) => { const n = pp && String(pp.name || '').trim(); if (n && !out.some((x) => x.name === n)) out.push({ name: n, role }); };
+      add(tm.lead, T('lead') + ' · ' + tn); add(tm.deputy, T('deputy') + ' · ' + tn); (tm.members || []).forEach((m) => add(m, tn));
+    }
+    return out;
+  }
+  const leadOf = (teamId) => { const tm = (S.doc && Array.isArray(S.doc.parts.teams) ? S.doc.parts.teams : []).find((t) => t && t.id === teamId); return (tm && tm.lead && String(tm.lead.name || '').trim()) || ''; };
+  const notPerson = (v) => { const x = String(v || '').trim(); return !x || x === 'all' || x === Y('allTeams') || allTeams().some((t) => t.name === x) || /^(צוות|طاقم)(\s|$)/.test(x) || /^(כולם|الجميع)$/.test(x); };
+  function personOwner(v, teamId) {
+    const x = String(v || '').trim().replace(/^\[|\]$/g, '');
+    for (const tm of (S.doc && Array.isArray(S.doc.parts.teams) ? S.doc.parts.teams : [])) {
+      const tn = teamName(tm.id);
+      for (const [lab, pp] of [[T('lead') + ' · ' + tn, tm.lead], [T('deputy') + ' · ' + tn, tm.deputy]]) if (x === lab && pp && String(pp.name || '').trim()) return pp.name.trim();
+      if (x && (x === tn || x === tm.name)) return leadOf(tm.id);
+    }
+    if (notPerson(x)) return teamId && teamId !== 'all' ? leadOf(teamId) : '';
+    return x;
+  }
+  const peopleList = () => h('datalist', { id: 'rdyPeople' }, people().map((pp) => h('option', { value: pp.name, label: pp.role })));
+  const ownerWarn = (v) => (notPerson(v) ? h('span', { class: 'pill red', text: String(v || '').trim() ? Y('ownerPerson') : T('noOwner') }) : null);
   // הוספת צוות: שם (ותפקיד, רשות). מחזיר את המזהה, או '' אם לא נוסף.
   async function addTeam(name, duty) {
     const nm = String(name || '').trim();
@@ -163,6 +188,21 @@
       h('div', { class: 'row' }, h('button', { class: 'btn sm', type: 'button', text: Y('addTeamBtn'), onclick: go2 }), lnk(Y('cancelT'), () => { S.addTeamOpen = false; render(); })));
   }
   function toast(msg) { const t = h('div', { class: 'toast', role: 'status', text: msg }); document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
+  // ביטול פעולה (04/11/2026: "מה עושים אם רוצים לבטל פעולה? לשנות בחירה? לעדכן?"): לפני כל שינוי בטבלת המעקב שומרים צילום של החלקים,
+  // ואחרי השינוי מופיע "↩ ביטול" לעשר שניות, שמחזיר את המצב הקודם (וגם נרשם ברישום השינויים).
+  const snap = (kinds) => Object.fromEntries(kinds.map((k) => [k, JSON.parse(JSON.stringify(parts()[k] === undefined ? null : parts()[k]))]));
+  function undoToast(msg, before) {
+    document.querySelectorAll('.toast.undo').forEach((x) => x.remove());
+    const t = h('div', { class: 'toast undo sbe-no-theme', role: 'status' }, h('span', { text: msg + ' ' }),
+      h('button', { type: 'button', class: 'undo-btn', text: Y('undoT'), onclick: async () => {
+        t.remove();
+        for (const [k, v] of Object.entries(before)) S.doc.parts[k] = v;
+        for (const k of Object.keys(before)) await save(k, Y('undoneT') + ': ' + msg);
+        toast(Y('undoneT')); render();
+      } }));
+    document.body.appendChild(t); setTimeout(() => t.remove(), 10000);
+  }
+  const openAct = (a) => a.status !== 'tested' && a.status !== 'cancelled';
   function piiCheck(el) { el.addEventListener('blur', () => { if (P.PII_RX.test(el.value)) toast(T('piiWarn')); }); return el; }
   const parts = () => (S.doc ? S.doc.parts : {});
   const arr = (k) => (Array.isArray(parts()[k]) ? parts()[k] : []);
@@ -1126,7 +1166,7 @@
       const rp = (r.reports || {})[t.id]; if (!rp) continue;
       for (const [i, sheet] of Object.entries(REPORT_TO)) {
         const v = String(rp['r' + i] || '').trim(); if (!v) continue;
-        out.push({ sheet, pick: true, text: (i === '4' ? L.REPORT[4][0] + ': ' : i === '3' ? L.REPORT[3][0] + ': ' : '') + v, owner: t.name, team: t.id, due: sheet === 'tasks' ? (r.next || plus(7)) : '' });
+        out.push({ sheet, pick: true, text: (i === '4' ? L.REPORT[4][0] + ': ' : i === '3' ? L.REPORT[3][0] + ': ' : '') + v, owner: leadOf(t.id), team: t.id, due: sheet === 'tasks' ? (r.next || plus(7)) : '' });
       }
     }
     return out;
@@ -1206,7 +1246,7 @@
         const what = bindText(h('textarea', { rows: 2, class: 'cell wide' }), () => row.what, (v) => { row.what = v; }, R.part, '');
         what.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && i === r.proto.length - 1) { e.preventDefault(); addRow(true); } });
         what.placeholder = Y('pWhat'); what.setAttribute('aria-label', Y('pWhat'));
-        tb.append(h('tr', {}, h('td', { 'data-h': Y('pWho') }, bindText(h('input', { type: 'text', list: 'rdyTeams', placeholder: Y('pWho'), 'aria-label': Y('pWho') }), () => row.who, (v) => { row.who = v; }, R.part, '')),
+        tb.append(h('tr', {}, h('td', { 'data-h': Y('pWho') }, bindText(h('input', { type: 'text', list: 'rdyPeople', placeholder: Y('pWho'), 'aria-label': Y('pWho') }), () => row.who, (v) => { row.who = v; }, R.part, '')),
           h('td', { 'data-h': Y('pKind') }, kind), h('td', { 'data-h': Y('pWhat'), class: 'what' }, what),
           h('td', { class: 'noprint' }, lnk('✕', () => { r.proto.splice(i, 1); save(R.part, ''); render(); }, { 'aria-label': T('del') }))));
       });
@@ -1249,7 +1289,7 @@
     const out = h('div', {});
     const ex = h('button', { class: 'btn', type: 'button', text: Y('extract'), onclick: async () => {
       const typed = r.proto.filter((x) => String(x.what || '').trim());
-      const direct = reportItems(R).concat(typed.filter((x) => x.kind && x.kind !== 'said').map((x) => ({ sheet: x.kind === 'task' ? 'tasks' : x.kind === 'end' ? 'ends' : 'decisions', pick: true, text: x.what.trim(), owner: x.who || '' })));
+      const direct = reportItems(R).concat(typed.filter((x) => x.kind && x.kind !== 'said').map((x) => ({ sheet: x.kind === 'task' ? 'tasks' : x.kind === 'end' ? 'ends' : 'decisions', pick: true, text: x.what.trim(), owner: personOwner(x.who) })));
       const said = reportSaid(R).concat(typed.filter((x) => !x.kind || x.kind === 'said').map((x) => (x.who ? x.who + ': ' : '') + x.what.trim())).join('\n');
       const material = [said, String(r.notes || '').trim()].filter(Boolean).join('\n\n');
       if (!direct.length && material.length < 20) { toast(Y('noMaterial')); return; }
@@ -1260,7 +1300,7 @@
           const content = 'המפגש: ' + R.title + (R.m && R.m.agenda ? '\nסדר היום:\n' + anon(R.m.agenda) : '') + '\n\nמה עלה בדיון:\n' + anon(material);
           const v = await window.sbeCallAIJson(SERVER, { system: P.meetingSystem(S.lang), messages: [{ role: 'user', content }], maxTokens: 4000, fast: true }, 180000, P.validMeeting);
           const n = P.normalizeMeeting(v);
-          fromAI = [].concat(n.tasks.map((x) => Object.assign({ sheet: 'tasks', pick: true }, x)), n.decisions.map((x) => Object.assign({ sheet: 'decisions', pick: true }, x)), n.ends.map((x) => Object.assign({ sheet: 'ends', pick: true }, x)));
+          fromAI = [].concat(n.tasks.map((x) => Object.assign({ sheet: 'tasks', pick: true }, x, { owner: personOwner(x.owner, x.team) })), n.decisions.map((x) => Object.assign({ sheet: 'decisions', pick: true }, x, { owner: personOwner(x.owner || x.by) })), n.ends.map((x) => Object.assign({ sheet: 'ends', pick: true }, x, { owner: personOwner(x.owner, x.team) })));
         }
       } catch (e) { if (!direct.length) { out.replaceChildren(h('div', { class: 'warn', text: T('noModel') })); ex.disabled = false; return; } toast(T('noModel')); }
       // מה שכבר בטבלת המעקב לא מוצע שוב (גם כשגוזרים פעם נוספת)
@@ -1278,20 +1318,21 @@
         h('td', { 'data-h': Y('pick') }, h('input', { type: 'checkbox', checked: x.pick !== false, 'aria-label': Y('pick'), onchange: (e) => { x.pick = e.target.checked; saveSoon(R.part, ''); } })),
         h('td', { 'data-h': Y('sheet') }, sheetSel(x)),
         h('td', { 'data-h': T('text'), class: 'own' }, bindText(h('textarea', { rows: 2, class: 'cell wide', 'aria-label': T('text') }), () => x.text, (v) => { x.text = v; }, R.part, '')),
-        h('td', { 'data-h': T('owner'), class: 'own' }, bindText(h('input', { type: 'text', list: 'rdyTeams', placeholder: T('owner'), 'aria-label': T('owner') }), () => x.owner || x.by || (x.team ? teamName(x.team) : ''), (v) => { x.owner = v; }, R.part, ''))));
+        h('td', { 'data-h': T('owner'), class: 'own' }, bindText(h('input', { type: 'text', list: 'rdyPeople', placeholder: T('owner'), 'aria-label': T('owner') }), () => x.owner || '', (v) => { x.owner = v; }, R.part, ''), x.sheet !== 'decisions' ? ownerWarn(x.owner) : null)));
       const add = h('button', { class: 'btn', type: 'button', text: Y('toTrack'), onclick: async () => {
+        const before = snap(['actions', 'ends', 'ideas', R.part]);
         const acts = arr('actions'), ends = arr('ends'), ideas = arr('ideas'); let n = 0;
         for (const x of found) {
           if (x.pick === false) continue;
           const base = { id: uid(x.sheet[0]), text: x.text, src: R.title };
           if (x.sheet === 'tasks') acts.push(Object.assign(base, { team: x.team || '', owner: x.owner || '', due: x.due || plus(14), status: 'todo' }));
           else if (x.sheet === 'ends') ends.push(Object.assign(base, { owner: x.owner || '', openedAt: nowIso(), next: plus(3), status: 'open', missed: 0, by: S.by }));
-          else ideas.push(Object.assign(base, { by: x.by || x.owner || '', at: nowIso(), decision: 'adopt', decidedAt: nowIso(), owner: x.owner || '', fromMeeting: true }));
+          else ideas.push(Object.assign(base, { by: x.by || '', at: nowIso(), decision: 'adopt', decidedAt: nowIso(), owner: x.owner || '', fromMeeting: true }));
           x.added = true; n++;
         }
         S.doc.parts.actions = acts; S.doc.parts.ends = ends; S.doc.parts.ideas = ideas;
         await save('actions', ''); await save('ends', ''); await save('ideas', ''); await save(R.part, R.title + ': ' + Y('added') + ' (' + n + ')');
-        toast(Y('added') + ': ' + n); render();
+        render(); undoToast(Y('added') + ': ' + n, before);
       } });
       out.append(h('p', { class: 'muted', text: Y('extractInfo') }),
         h('table', { class: 'rt stack found' }, h('thead', {}, h('tr', {}, ['', Y('sheet'), T('text'), T('owner')].map((c) => h('th', { text: c })))), h('tbody', {}, rows)), add);
@@ -1313,7 +1354,7 @@
       h('div', { class: 'card' }, h('h2', { text: Y('docT') }), h('p', { class: 'muted small', text: Y('docInfo') }),
         tabs('doc:' + recId, [[Y('tProto'), protoView], [Y('tRec'), recView], [Y('tFile'), fileView]]),
         r.notes && S.tab['doc:' + recId] !== 2 ? h('p', { class: 'muted small', text: '📄 ' + String(r.notes).length + ' · ' + Y('pasteLbl') }) : null,
-        h('div', { class: 'row noprint' }, ex), out, h('datalist', { id: 'rdyTeams' }, allTeams().map((t) => h('option', { value: t.name })))),
+        h('div', { class: 'row noprint' }, ex), out, peopleList()),
       R.n === 3 || R.n === 5 ? contBox(Y('contAfter')) : null,
       h('div', { class: 'card' }, h('h2', { text: Y('summaryT') }),
         h('div', { class: 'row' }, h('div', {}, field(T('next1'), next)), sched),
@@ -1336,7 +1377,7 @@
   function summaryText(R, teamId) {
     const mine = (x) => x.src === R.title;
     const dec = arr('ideas').filter(mine).map((x) => '• ' + x.text);
-    const acts = arr('actions').filter((a) => a.status !== 'tested' && (!teamId || !a.team || a.team === teamId || a.team === 'all')).map((a) => '• ' + a.text + (a.owner ? ' · ' + a.owner : '') + (a.due ? ' · ' + dateIL(a.due) : '') + ' · ' + (L.STATUS[a.status] || ''));
+    const acts = arr('actions').filter((a) => openAct(a) && (!teamId || !a.team || a.team === teamId || a.team === 'all')).map((a) => '• ' + a.text + (a.owner ? ' · ' + a.owner : '') + (a.due ? ' · ' + dateIL(a.due) : '') + ' · ' + (L.STATUS[a.status] || ''));
     const ends = arr('ends').filter((e) => e.status !== 'closed').map((e) => '• ' + e.text + (e.owner ? ' · ' + e.owner : ''));
     const reps = reportSaid(R).map((x) => '• ' + x);
     return [R.title, reps.length ? Y('repT') + ':\n' + reps.join('\n') : '', dec.length ? L.SHEETS.decisions + ':\n' + dec.join('\n') : '', acts.length ? L.SHEETS.tasks + ':\n' + acts.join('\n') : '', ends.length ? L.SHEETS.ends + ':\n' + ends.join('\n') : '',
@@ -1352,8 +1393,9 @@
     const cur = keys.includes(S.sheet) ? S.sheet : 'tasks';
     const bar = h('div', { class: 'tabs noprint sbe-no-theme', role: 'tablist', 'aria-label': Y('trackT') }, keys.map((k) => h('button', { type: 'button', role: 'tab', 'aria-selected': k === cur ? 'true' : 'false',
       onclick: () => { S.sheet = k; render(); } }, k === 'log' ? T('log') : L.SHEETS[k], k === 'log' ? null : h('span', { class: 'pill', text: String(count(k)) }))));
+    setTimeout(() => { const sel = bar.querySelector('[aria-selected="true"]'); if (sel && bar.scrollWidth > bar.clientWidth) sel.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }, 0);
     const body = cur === 'decisions' ? viewIdeas() : cur === 'ends' ? viewEnds() : cur === 'done' ? viewDone() : cur === 'log' ? viewLog() : viewActions();
-    return h('div', {}, bar, body, h('datalist', { id: 'rdyTeams' }, allTeams().map((t) => h('option', { value: t.name }))));
+    return h('div', {}, bar, people().length ? null : h('p', { class: 'muted small' }, Y('noPeople') + ' ', lnk(Y('teamsT'), () => { S.tab.s1 = 1; go('s1'); })), body, peopleList());
   }
   function moveSel(kind, it) {
     const here = P.sheetOf(kind, it);
@@ -1363,18 +1405,19 @@
     return sl;
   }
   async function moveItem(kind, it, to) {
+    const before = snap(['actions', 'ends', 'ideas']);
     const from = arr(kind); S.doc.parts[kind] = from;
     if (to === 'done') {
       if (kind === 'actions') { if (!confirm(Y('confirmTested'))) return; it.status = 'tested'; }
       else if (kind === 'ends') { if (!confirm(Y('confirmClose'))) return; it.status = 'closed'; it.closedAt = nowIso(); }
       else it.done = true;
       it.doneAt = nowIso();
-      await save(kind, L.SHEETS.done + ': ' + String(it.text || '').slice(0, 60)); render(); return;
+      await save(kind, L.SHEETS.done + ': ' + String(it.text || '').slice(0, 60)); render(); undoToast(L.SHEETS.done, before); return;
     }
     const target = KIND_OF[to];
     if (target === kind) { // חזרה מהושלמו
-      if (kind === 'actions') it.status = 'done'; else if (kind === 'ends') it.status = 'open'; else it.done = false;
-      await save(kind, Y('moveTo') + ': ' + L.SHEETS[to] + ': ' + String(it.text || '').slice(0, 60)); render(); return;
+      if (kind === 'actions') it.status = it.status === 'cancelled' ? 'todo' : 'done'; else if (kind === 'ends') it.status = 'open'; else it.done = false;
+      await save(kind, Y('moveTo') + ': ' + L.SHEETS[to] + ': ' + String(it.text || '').slice(0, 60)); render(); undoToast(Y('moveTo') + ': ' + L.SHEETS[to], before); return;
     }
     const base = { id: uid(target[0]), text: it.text || '', src: it.src || '' }, owner = it.owner || '';
     const item = target === 'actions' ? Object.assign(base, { team: it.team || '', owner, due: it.due || String(it.next || '').slice(0, 10) || plus(14), status: 'todo' })
@@ -1383,6 +1426,7 @@
     const i = from.indexOf(it); if (i >= 0) from.splice(i, 1);
     const dst = arr(target); dst.push(item); S.doc.parts[target] = dst;
     await save(kind, Y('moveTo') + ': ' + L.SHEETS[to] + ': ' + String(item.text).slice(0, 60)); await save(target, ''); render();
+    undoToast(Y('moveTo') + ': ' + L.SHEETS[to], before);
   }
   function viewDone() {
     const rows = [];
@@ -1390,7 +1434,7 @@
     const label = { actions: L.SHEETS.tasks, ends: L.SHEETS.ends, ideas: L.SHEETS.decisions };
     return h('div', { class: 'card' }, h('h2', { text: L.SHEETS.done }),
       rows.length ? h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, [T('text'), Y('kindT'), T('owner'), Y('closedAt'), ''].map((c) => h('th', { text: c })))),
-        h('tbody', {}, rows.map(([k, it]) => h('tr', {}, h('td', { 'data-h': T('text'), text: it.text || '' }), h('td', { 'data-h': Y('kindT'), text: label[k] + (it.src ? ' · ' + it.src : '') }),
+        h('tbody', {}, rows.map(([k, it]) => h('tr', {}, h('td', { 'data-h': T('text'), text: it.text || '' }), h('td', { 'data-h': Y('kindT'), text: (it.status === 'cancelled' ? L.STATUS.cancelled + (it.cancelWhy ? ': ' + it.cancelWhy : '') : label[k]) + (it.src ? ' · ' + it.src : '') }),
           h('td', { 'data-h': T('owner'), text: it.owner || '' }), h('td', { 'data-h': Y('closedAt'), text: dateIL(it.doneAt || it.closedAt || '') }), h('td', { class: 'noprint' }, moveSel(k, it)))))) : h('p', { class: 'muted', text: Y('none2') }));
   }
 
@@ -1426,9 +1470,9 @@
         h('td', { 'data-h': L.IDEA_COLS[1] }, bindText(h('input', { type: 'text' }), () => it.by, (v) => { it.by = v; }, 'ideas', '')),
         h('td', { 'data-h': L.IDEA_COLS[2] }, dec),
         h('td', { 'data-h': L.IDEA_COLS[3] }, bindText(h('textarea', { rows: 2, class: 'cell', placeholder: it.decision === 'reject' ? Y('whyNot') : '' }), () => it.answer, (v) => { it.answer = v; }, 'ideas', ''), needWhy ? h('span', { class: 'pill red', text: Y('whyNot') }) : null),
-        h('td', { 'data-h': L.IDEA_COLS[4] }, bindText(h('input', { type: 'text' }), () => it.owner, (v) => { it.owner = v; }, 'ideas', '')),
+        h('td', { 'data-h': L.IDEA_COLS[4] }, bindText(h('input', { type: 'text', list: 'rdyPeople' }), () => it.owner, (v) => { it.owner = v; }, 'ideas', ''), it.decision === 'adopt' || it.decision === 'check' ? ownerWarn(it.owner) : null),
         h('td', { 'data-h': L.IDEA_COLS[5] }, due),
-        h('td', { class: 'noprint' }, moveSel('ideas', it), ' ', lnk(T('del'), () => { ideas.splice(i, 1); save('ideas', ''); render(); }, { class: 'lnk muted small' })));
+        h('td', { class: 'noprint' }, moveSel('ideas', it), ' ', lnk(T('del'), () => { const before = snap(['ideas']); ideas.splice(i, 1); save('ideas', T('del') + ': ' + String(it.text || '').slice(0, 60)); render(); undoToast(T('del'), before); }, { class: 'lnk muted small' })));
     });
     const sendAll = h('button', { class: 'btn ghost', type: 'button', text: Y('sendDecisions'), onclick: async () => {
       const decided = ideas.filter((x) => x.decision);
@@ -1448,7 +1492,7 @@
   // ---------- צד: קצוות פתוחים, פעולות, רישום ----------
   function addEnd(text, team, src) {
     const ends = arr('ends');
-    ends.push({ id: uid('e'), text: String(text || ''), owner: team ? teamName(team) : '', openedAt: nowIso(), next: plus(1), status: 'open', missed: 0, src: src || '', by: S.by });
+    ends.push({ id: uid('e'), text: String(text || ''), owner: team ? leadOf(team) : '', openedAt: nowIso(), next: plus(1), status: 'open', missed: 0, src: src || '', by: S.by });
     S.doc.parts.ends = ends; save('ends', 'קצה פתוח: ' + String(text).slice(0, 80)); toast(Y('toEnds') + ' ✓');
   }
   // טבלת המעקב בטלפון (04/11/2026, אחרי צילום המסך): שורה קצרה לכל פריט, מה · מי · עד מתי, ושינוי מצב במקום.
@@ -1471,25 +1515,25 @@
       const next = h('input', { type: 'date', value: String(e.next || '').slice(0, 10) });
       next.onchange = () => { if (state === 'late' || state === 'escalate') e.missed = (e.missed || 0) + 1; e.next = next.value; save('ends', ''); render(); };
       const st = h('select', { 'data-closed': '' }, Object.entries(L.END_STATUS).map(([k, v]) => h('option', { value: k, text: v }))); st.value = e.status || 'open';
-      st.onchange = () => { if (st.value === 'closed' && !confirm(Y('confirmClose'))) { st.value = e.status; return; } if (st.value === 'closed') { e.closedAt = nowIso(); e.closedLate = state === 'late' || state === 'escalate'; } e.status = st.value; save('ends', st.value === 'closed' ? 'קצה נסגר: ' + String(e.text).slice(0, 80) : ''); render(); };
+      st.onchange = () => { const before = snap(['ends']); if (st.value === 'closed' && !confirm(Y('confirmClose'))) { st.value = e.status; return; } if (st.value === 'closed') { e.closedAt = nowIso(); e.closedLate = state === 'late' || state === 'escalate'; } e.status = st.value; save('ends', (st.value === 'closed' ? 'קצה נסגר: ' : L.END_STATUS[st.value] + ': ') + String(e.text).slice(0, 80)); render(); undoToast(L.END_STATUS[st.value], before); };
       return h('tr', {},
         h('td', { 'data-h': T('text') }, bindText(h('textarea', { rows: 2, class: 'cell wide' }), () => e.text, (v) => { e.text = v; }, 'ends', '')),
         h('td', { 'data-h': T('endOpened'), text: e.src || dateIL(e.openedAt) }),
-        h('td', { 'data-h': T('owner') }, bindText(h('input', { type: 'text', list: 'rdyTeams' }), () => e.owner, (v) => { e.owner = v; }, 'ends', '')),
+        h('td', { 'data-h': T('owner') }, bindText(h('input', { type: 'text', list: 'rdyPeople' }), () => e.owner, (v) => { e.owner = v; }, 'ends', '')),
         h('td', { 'data-h': T('endNext') }, next),
-        h('td', { 'data-h': T('endState') }, st, moveSel('ends', e), state === 'noOwner' ? h('span', { class: 'pill red', text: T('noOwner') }) : state === 'escalate' ? h('span', { class: 'pill red', text: Y('escalate') }) : state === 'late' ? h('span', { class: 'pill red', text: T('late') }) : null));
+        h('td', { 'data-h': T('endState') }, st, moveSel('ends', e), state !== 'noOwner' && notPerson(e.owner) ? h('span', { class: 'pill red', text: Y('ownerPerson') }) : null, state === 'noOwner' ? h('span', { class: 'pill red', text: T('noOwner') }) : state === 'escalate' ? h('span', { class: 'pill red', text: Y('escalate') }) : state === 'late' ? h('span', { class: 'pill red', text: T('late') }) : null));
     };
     const mob = (e) => {
       const state = P.endState(e);
       const next = h('input', { type: 'date', value: String(e.next || '').slice(0, 10), 'aria-label': T('endNext') });
       next.onchange = () => { if (state === 'late' || state === 'escalate') e.missed = (e.missed || 0) + 1; e.next = next.value; save('ends', ''); render(); };
       const st = h('select', { 'data-closed': '', class: 'msel', 'aria-label': T('endState') }, Object.entries(L.END_STATUS).map(([k, v]) => h('option', { value: k, text: v }))); st.value = e.status || 'open';
-      st.onchange = () => { if (st.value === 'closed' && !confirm(Y('confirmClose'))) { st.value = e.status; return; } if (st.value === 'closed') { e.closedAt = nowIso(); e.closedLate = state === 'late' || state === 'escalate'; } e.status = st.value; save('ends', st.value === 'closed' ? 'קצה נסגר: ' + String(e.text).slice(0, 80) : ''); render(); };
+      st.onchange = () => { const before = snap(['ends']); if (st.value === 'closed' && !confirm(Y('confirmClose'))) { st.value = e.status; return; } if (st.value === 'closed') { e.closedAt = nowIso(); e.closedLate = state === 'late' || state === 'escalate'; } e.status = st.value; save('ends', (st.value === 'closed' ? 'קצה נסגר: ' : L.END_STATUS[st.value] + ': ') + String(e.text).slice(0, 80)); render(); undoToast(L.END_STATUS[st.value], before); };
       const warn = state === 'noOwner' ? T('noOwner') : state === 'escalate' ? Y('escalate') : state === 'late' ? T('late') : '';
-      return mrow(e.id, e.text, [e.owner ? h('span', { text: e.owner }) : null, e.next ? h('span', { class: lateDate(e.next) ? 'late' : '', text: T('endNext') + ' ' + dateIL(e.next) }) : null, warn ? h('span', { class: 'late', text: warn }) : null],
+      return mrow(e.id, e.text, [e.owner && !notPerson(e.owner) ? h('span', { text: e.owner }) : e.owner ? h('span', { class: 'late', text: e.owner + ': ' + Y('ownerPerson') }) : null, e.next ? h('span', { class: lateDate(e.next) ? 'late' : '', text: T('endNext') + ' ' + dateIL(e.next) }) : null, warn ? h('span', { class: 'late', text: warn }) : null],
         [st, moveSel('ends', e)],
         [field(T('text'), bindText(h('textarea', { rows: 2 }), () => e.text, (v) => { e.text = v; }, 'ends', '')),
-          field(T('owner'), bindText(h('input', { type: 'text', list: 'rdyTeams' }), () => e.owner, (v) => { e.owner = v; }, 'ends', '')),
+          field(T('owner'), bindText(h('input', { type: 'text', list: 'rdyPeople' }), () => e.owner, (v) => { e.owner = v; }, 'ends', '')),
           field(T('endNext'), next), h('p', { class: 'muted small', text: T('endOpened') + ': ' + (e.src || dateIL(e.openedAt)) })]);
     };
     const head = h('thead', {}, h('tr', {}, [T('text'), T('endOpened'), T('owner'), T('endNext'), T('endState')].map((x) => h('th', { text: x }))));
@@ -1497,31 +1541,40 @@
       open.length ? (MOB() ? h('ul', { class: 'mlist' }, open.map(mob)) : h('table', { class: 'rt stack' }, head, h('tbody', {}, open.map(row)))) : h('p', { class: 'muted', text: Y('none2') }),
       h('p', { class: 'noprint' }, lnk(T('add'), () => { addEnd('', '', ''); const l = arr('ends'); S.edit = l.length ? l[l.length - 1].id : ''; render(); })));
   }
+  // שינוי סטטוס של פעולה: "נבדק בתרגיל" באישור; "בוטלה" עם סיבה (רשות), והפעולה עוברת להושלמו לתיעוד; תמיד אפשר לבטל את השינוי
+  function actStatus(a, st) {
+    const was = a.status || 'todo', before = snap(['actions']);
+    if (st.value === 'tested' && !confirm(Y('confirmTested'))) { st.value = was; return; }
+    if (st.value === 'cancelled') { const why = window.prompt(Y('cancelWhy'), ''); if (why === null) { st.value = was; return; } a.cancelWhy = String(why).trim().slice(0, 200); }
+    a.status = st.value; if (a.status === 'tested' || a.status === 'cancelled') a.doneAt = nowIso();
+    save('actions', 'פעולה: ' + L.STATUS[a.status] + ': ' + String(a.text).slice(0, 60)); render();
+    undoToast(L.STATUS[a.status], before);
+  }
   function viewActions() {
     const acts = arr('actions'); S.doc.parts.actions = acts;
     const teamSel = (a) => { const s = h('select', { 'data-closed': '' }, h('option', { value: '', text: '…' }), [...allTeams().map((t) => h('option', { value: t.id, text: t.name })), h('option', { value: 'all', text: Y('allTeams') })]); s.value = a.team || ''; s.onchange = () => { a.team = s.value; save('actions', ''); }; return s; };
     const rows = acts.filter((a) => P.sheetOf('actions', a) === 'tasks').map((a) => {
       const i = acts.indexOf(a);
       const st = h('select', { 'data-closed': '' }, Object.entries(L.STATUS).map(([k, v]) => h('option', { value: k, text: v }))); st.value = a.status || 'todo';
-      st.onchange = () => { if (st.value === 'tested' && !confirm(Y('confirmTested'))) { st.value = a.status || 'todo'; return; } a.status = st.value; if (a.status === 'tested') a.doneAt = nowIso(); save('actions', 'פעולה: ' + L.STATUS[a.status] + ': ' + String(a.text).slice(0, 60)); if (a.status === 'tested') render(); };
+      st.onchange = () => actStatus(a, st);
       const due = h('input', { type: 'date', value: a.due || '' }); due.onchange = () => { a.due = due.value; save('actions', ''); };
       return h('tr', {}, h('td', { 'data-h': T('text') }, bindText(h('textarea', { rows: 2, class: 'cell wide' }), () => a.text, (v) => { a.text = v; }, 'actions', '')),
-        h('td', { 'data-h': T('team') }, teamSel(a)), h('td', { 'data-h': T('owner') }, bindText(h('input', { type: 'text' }), () => a.owner, (v) => { a.owner = v; }, 'actions', '')),
+        h('td', { 'data-h': T('team') }, teamSel(a)), h('td', { 'data-h': T('owner') }, bindText(h('input', { type: 'text', list: 'rdyPeople' }), () => a.owner, (v) => { a.owner = v; }, 'actions', ''), ownerWarn(a.owner)),
         h('td', { 'data-h': T('due') }, due), h('td', { 'data-h': T('status') }, st),
-        h('td', { class: 'noprint' }, moveSel('actions', a), ' ', lnk(T('del'), () => { acts.splice(i, 1); save('actions', ''); render(); }, { class: 'lnk muted small' })));
+        h('td', { class: 'noprint' }, moveSel('actions', a), ' ', lnk(T('del'), () => { const before = snap(['actions']); acts.splice(i, 1); save('actions', T('del') + ': ' + String(a.text || '').slice(0, 60)); render(); undoToast(T('del'), before); }, { class: 'lnk muted small' })));
     });
     const mob = (a) => {
       const i = acts.indexOf(a);
       const st = h('select', { 'data-closed': '', class: 'msel', 'aria-label': T('status') }, Object.entries(L.STATUS).map(([k, v]) => h('option', { value: k, text: v }))); st.value = a.status || 'todo';
-      st.onchange = () => { if (st.value === 'tested' && !confirm(Y('confirmTested'))) { st.value = a.status || 'todo'; return; } a.status = st.value; if (a.status === 'tested') a.doneAt = nowIso(); save('actions', 'פעולה: ' + L.STATUS[a.status] + ': ' + String(a.text).slice(0, 60)); render(); };
+      st.onchange = () => actStatus(a, st);
       const due = h('input', { type: 'date', value: a.due || '', 'aria-label': T('due') }); due.onchange = () => { a.due = due.value; save('actions', ''); render(); };
-      const who = a.owner || teamName(a.team);
       const late = lateDate(a.due) && a.status !== 'done' && a.status !== 'tested';
-      return mrow(a.id, a.text, [who ? h('span', { text: who }) : null, a.due ? h('span', { class: late ? 'late' : '', text: T('due') + ' ' + dateIL(a.due) + (late ? ' · ' + T('late') : '') }) : null],
+      const who = notPerson(a.owner) ? h('span', { class: 'late', text: String(a.owner || '').trim() ? a.owner + ': ' + Y('ownerPerson') : T('noOwner') }) : h('span', { text: a.owner + (a.team ? ' · ' + teamName(a.team) : '') });
+      return mrow(a.id, a.text, [who, a.due ? h('span', { class: late ? 'late' : '', text: T('due') + ' ' + dateIL(a.due) + (late ? ' · ' + T('late') : '') }) : null],
         [st, moveSel('actions', a)],
         [field(T('text'), bindText(h('textarea', { rows: 2 }), () => a.text, (v) => { a.text = v; }, 'actions', '')),
-          field(T('team'), teamSel(a)), field(T('owner'), bindText(h('input', { type: 'text', list: 'rdyTeams' }), () => a.owner, (v) => { a.owner = v; }, 'actions', '')),
-          field(T('due'), due), h('p', { class: 'small' }, lnk(T('del'), () => { if (!confirm(Y('delQ'))) return; acts.splice(i, 1); S.edit = ''; save('actions', ''); render(); }, { class: 'lnk muted' }))]);
+          field(T('team'), teamSel(a)), field(T('owner'), bindText(h('input', { type: 'text', list: 'rdyPeople' }), () => a.owner, (v) => { a.owner = v; }, 'actions', '')),
+          field(T('due'), due), h('p', { class: 'small' }, lnk(T('del'), () => { const before = snap(['actions']); acts.splice(i, 1); S.edit = ''; save('actions', T('del') + ': ' + String(a.text || '').slice(0, 60)); render(); undoToast(T('del'), before); }, { class: 'lnk muted' }))]);
     };
     const mine = acts.filter((a) => P.sheetOf('actions', a) === 'tasks');
     return h('div', { class: 'card' }, h('h2', { text: T('actions') }),
@@ -1608,7 +1661,7 @@
   }
   function printBinder() {
     const teams = arr('teams'), em = obj('em'), plan = obj('plan'), dm = obj('decmap');
-    const openActs = arr('actions').filter((a) => a.status !== 'tested'), openEnds = arr('ends').filter((e) => e.status !== 'closed');
+    const openActs = arr('actions').filter(openAct), openEnds = arr('ends').filter((e) => e.status !== 'closed');
     // מה מוסיפים לתיקייה: לכל פריט מה כבר עלה למערכת (שם ותאריך עדכון), או איפה הוא נשמר בבית הספר
     const files = (S.doc && S.doc.files) || {}, bd = obj('binder'), where = bd.where || {};
     const MANUAL = binderItems(bd).map((it) => {
@@ -1643,7 +1696,7 @@
   window.sbeReadinessBinder = () => printBinder();
   function printSummary(n) { printMeeting(meetRec('s', n)); }
   function printMeeting(R) {
-    const acts = arr('actions').filter((a) => a.status !== 'tested'), ends = arr('ends').filter((e) => e.status !== 'closed');
+    const acts = arr('actions').filter(openAct), ends = arr('ends').filter((e) => e.status !== 'closed');
     const dec = arr('ideas').filter((x) => x.src === R.title);
     const ex = (R.n === 3 || R.n === 5) ? curEx(R.n) : null;
     const att = attendees(R).filter((a) => a.here && a.name);

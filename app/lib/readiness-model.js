@@ -87,7 +87,7 @@
     ['מה חסר לנו, וממי', ''],
     ['הצעד הבא', 'ומתי נעדכן שוב.']
   ];
-  C.STATUS = { todo: 'לא התחיל', doing: 'בתהליך', done: 'הושלם', tested: 'נבדק בתרגיל' };
+  C.STATUS = { todo: 'לא התחיל', doing: 'בתהליך', done: 'הושלם', tested: 'נבדק בתרגיל', cancelled: 'בוטלה' };
   C.END_STATUS = { open: 'פתוח', doing: 'בתהליך', closed: 'נסגר' };
 
   C.MATURITY = ['נכתב', 'נבדק בסימולציה', 'תורגל', 'עודכן אחרי תחקיר'];
@@ -511,7 +511,7 @@
     const withDeputy = teams.filter((t) => t && t.deputy && t.deputy.name).length;
     return {
       rel: { partners: partners.length, withDeputy, teams: teams.length },
-      info: { actionsDone: actions.filter((a) => a && (a.status === 'done' || a.status === 'tested')).length, actions: actions.length, logs: (doc && doc.log || []).length },
+      info: { actionsDone: actions.filter((a) => a && (a.status === 'done' || a.status === 'tested')).length, actions: actions.filter((a) => a && a.status !== 'cancelled').length, logs: (doc && doc.log || []).length },
       inst: { staffed: teams.filter((t) => t && t.lead && t.lead.name).length, teams: teams.length, exercises: ex.length },
       openEnds: ends.filter((e) => e && e.status !== 'closed').length,
       escalate: ends.filter((e) => ['noOwner', 'escalate'].includes(endState(e))).length
@@ -662,9 +662,9 @@
   // הדיון במפגש: המודל גוזר משימות, החלטות וקצוות פתוחים, והצוות בוחר מה נכנס לטבלת המעקב
   function meetingSystem(lang) {
     return ['מתוך מה שנרשם בדיון במפגש של צוות מערך המוכנות, גזרו שלושה סוגים של פריטים:',
-      'tasks: משימה שמישהו לקח/ה על עצמו/ה או שהוחלט שתיעשה. team הוא אחד מהמזהים: ' + C.TEAMS.map((x) => x.id + ' (' + x.name + ')').join(', ') + ', או all. owner ו-due (YYYY-MM-DD) רק אם נאמרו.',
+      'tasks: משימה שמישהו לקח/ה על עצמו/ה או שהוחלט שתיעשה. team הוא אחד מהמזהים: ' + C.TEAMS.map((x) => x.id + ' (' + x.name + ')').join(', ') + ', או all. owner הוא אדם (שם או התפקיד בסוגריים המרובעים כמו בטקסט), לא צוות; owner ו-due (YYYY-MM-DD) רק אם נאמרו.',
       'decisions: מה שהוחלט בדיון. by רק אם נאמר מי החליט/ה.',
-      'ends: קצה פתוח: "אבדוק", "אחזור אליך", "נחליט אחר כך", "מחכים ל...", או שאלה שנשארה בלי תשובה. owner רק אם נאמר.',
+      'ends: קצה פתוח: "אבדוק", "אחזור אליך", "נחליט אחר כך", "מחכים ל...", או שאלה שנשארה בלי תשובה. owner הוא אדם ולא צוות, רק אם נאמר.',
       'רק מה שעולה מהדיון, בלי להמציא ובלי לחזור על אותו פריט בשני סוגים. ניסוח קצר כשם פעולה ("הזמנת מפתח נוסף למרחב בקומה השנייה"). בלי שמות של תלמידים. על המערך, לא על אנשים.',
       'החזירו JSON בלבד: {"tasks":[{"text":"...","team":"...","owner":"","due":""}],"decisions":[{"text":"...","by":""}],"ends":[{"text":"...","owner":""}]}', langLine(lang)].join('\n');
   }
@@ -682,7 +682,8 @@
   }
   // באיזה גיליון נמצא פריט: פעולה שנבדקה בתרגיל, קצה שנסגר והחלטה שסומנה "בוצע" עוברים להושלמו
   function sheetOf(kind, it) {
-    if (kind === 'actions') return it.status === 'tested' ? 'done' : 'tasks';
+    // פעולה שנבדקה בתרגיל, או שבוטלה (עם סיבה), עוברת להושלמו ונשארת שם לתיעוד
+    if (kind === 'actions') return it.status === 'tested' || it.status === 'cancelled' ? 'done' : 'tasks';
     if (kind === 'ends') return it.status === 'closed' ? 'done' : 'ends';
     return it.done ? 'done' : 'decisions';
   }
