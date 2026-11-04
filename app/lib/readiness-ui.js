@@ -328,7 +328,6 @@
       tile(Y('track'), [L.SHEETS.tasks + ': ' + arr('actions').filter((a) => P.sheetOf('actions', a) === 'tasks').length + ' · ' + L.SHEETS.ends + ': ' + st.openEnds, L.SHEETS.decisions + ': ' + ist.open + ' ' + Y('ideasOpen')], () => go('track')),
       tile(Y('index'), [L.PILLARS.map((p) => p.name).join(' · ')], () => go('index')),
       tile(Y('partnersBtn'), [String(arr('partners').length)], () => go('partners')),
-      tile(Y('routineStep'), [Y('ourScenarios') + ': ' + arr('scenarios').length], () => go('gen')),
       h('a', { class: 'tile tbtn sbe-no-theme', href: 'continuity-kit.html', target: '_blank', rel: 'noopener' }, h('b', { text: Y('contKit') }), h('div', { class: 'muted', text: Y('contShort') })));
     return h('div', {}, esc, dmWarn, ideaWarn, nextCard, tiles, routineCard(), h('p', { class: 'muted', text: L.TABLETOP_NOTE }));
   }
@@ -1059,9 +1058,9 @@
     const date = h('input', { type: 'date', value: m.date || '' }); date.onchange = () => { m.date = date.value; save('meetings', ''); };
     const goBtn = (label, fn) => h('button', { class: 'btn ghost sm', type: 'button', text: label, onclick: fn });
     const quick = {
-      weekly: [goBtn(Y('routineStep'), () => go('gen'))], resday: [goBtn(Y('routineStep'), () => go('gen')), goBtn(L.SHEETS.tasks, () => go('track', 'tasks'))],
+      weekly: [goBtn(L.SHEETS.ends, () => go('track', 'ends'))], resday: [goBtn(L.SHEETS.tasks, () => go('track', 'tasks')), goBtn(L.SHEETS.ends, () => go('track', 'ends'))],
       decide: [goBtn(L.SHEETS.decisions, () => go('track', 'decisions')), goBtn(Y('sendDecisions'), () => go('track', 'decisions'))],
-      drill: [goBtn(Y('routineStep'), () => go('gen')), goBtn(Y('runS3'), () => { S.tab['mt:s3'] = 1; go('s3'); })],
+      drill: [goBtn(Y('runS3'), () => { S.tab['mt:s3'] = 1; go('s3'); })],
       annual: [goBtn(Y('decmapT'), () => { S.tab.plan = 2; go('plan'); }), goBtn(T('annexes'), () => { S.tab.plan = 1; go('plan'); })],
       onboard: [goBtn(Y('goTeams'), printTeams), goBtn(Y('teamsT'), () => { S.tab.s1 = 1; go('s1'); })], other: []
     }[m.type] || [];
