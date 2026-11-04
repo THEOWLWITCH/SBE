@@ -15,6 +15,15 @@ const MAX_MAIL_DAY = 300, REC_HOURS = 6, MAX_CHUNKS = 400, MAX_AUDIO_B64 = 3_000
 const hash = (v) => createHash('sha256').update(String(v)).digest('hex');
 const okId = (id) => typeof id === 'string' && /^[a-f0-9-]{36}$/.test(id);
 const okExId = (id) => typeof id === 'string' && /^[a-z0-9-]{4,40}$/i.test(id);
+// מה מוקלט: תרגיל, מפגש שתוכנן (meetings), או אחד מחמשת המפגשים (sess-1 עד sess-5). 04/11/2026: "המשתתפים מדברים ולא כותבים".
+function recTarget(d, id) {
+  if (!d || !okExId(id)) return null;
+  const ex = (d.parts.exercises || []).find((x) => x && x.id === id); if (ex) return ex;
+  const m = (Array.isArray(d.parts.meetings) ? d.parts.meetings : []).find((x) => x && x.id === id); if (m) return m;
+  const n = /^sess-([1-5])$/.exec(id);
+  if (n) { const ss = d.parts.sessions && typeof d.parts.sessions === 'object' && !Array.isArray(d.parts.sessions) ? d.parts.sessions : (d.parts.sessions = {}); return (ss[n[1]] = ss[n[1]] && typeof ss[n[1]] === 'object' ? ss[n[1]] : {}); }
+  return null;
+}
 const EMAIL_RE = /^[^\s@<>()",;:]+@[^\s@<>()",;:]+\.[^\s@<>()",;:]{2,}$/;
 const str = (v, max = 200) => String(v == null ? '' : v).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim().slice(0, max);
 const err = (status, error) => [status, { error }];
@@ -93,8 +102,8 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
       if (!ref || ref.exp < now()) return err(401, 'הקישור להקלטה הסתיים. אפשר לפתוח קישור חדש ממסך התרגיל');
       return await locked(ref.id, async () => {
         const d = await store.get('rdy:' + ref.id);
-        const ex = d && (d.parts.exercises || []).find((x) => x.id === ref.exId);
-        if (!ex) return err(404, 'התרגיל לא נמצא');
+        const ex = recTarget(d, ref.exId);
+        if (!ex) return err(404, 'התרגיל או המפגש לא נמצאו');
         const tKey = 'rdyt:' + ref.id + ':' + ref.exId;
         const tr = (await store.get(tKey)) || { segments: [], marks: [] };
         if (action === 'rdyRecPing') return [200, { ok: true, title: str(d.parts.profile?.name, 120), round: ex.round || 1, lang: d.parts.profile?.lang === 'ar' ? 'ar' : 'he', segments: tr.segments.length, marks: tr.marks.length }];
@@ -219,18 +228,18 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
 
       // הקלטה בטלפון: פתיחת קישור לרשם/ת, אחרי הסכמה של כל המשתתפים.
       if (action === 'rdyRecStart') {
-        const ex = (d.parts.exercises || []).find((x) => x && x.id === body.exId);
-        if (!ex || !okExId(ex.id)) return err(404, 'התרגיל לא נמצא');
+        const ex = recTarget(d, body.exId);
+        if (!ex) return err(404, 'התרגיל או המפגש לא נמצאו');
         if (body.consent !== true) return err(400, 'ההקלטה מתחילה רק אחרי שכולם הסכימו');
         const rk = randomBytes(24).toString('hex');
-        await store.set('rdyk:' + hash(rk), { id: d.id, exId: ex.id, exp: now() + REC_HOURS * 3600e3 });
+        await store.set('rdyk:' + hash(rk), { id: d.id, exId: body.exId, exp: now() + REC_HOURS * 3600e3 });
         ex.rec = { on: true, consentAt: new Date(now()).toISOString() };
         await store.set('rdy:' + d.id, d);
         return [200, { rk, hours: REC_HOURS }];
       }
 
       if (/^rdyTranscript(Get|Save|Delete)$/.test(action)) {
-        if (!okExId(body.exId) || !(d.parts.exercises || []).some((x) => x && x.id === body.exId)) return err(404, 'התרגיל לא נמצא');
+        if (!recTarget(d, body.exId)) return err(404, 'התרגיל או המפגש לא נמצאו');
         const tKey = 'rdyt:' + d.id + ':' + body.exId;
         if (action === 'rdyTranscriptDelete') { await store.del(tKey); return [200, { ok: true }]; }
         const tr = (await store.get(tKey)) || { segments: [], marks: [] };

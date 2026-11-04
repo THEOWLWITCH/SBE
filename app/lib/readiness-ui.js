@@ -58,7 +58,12 @@
       track: '📋 טבלת מעקב', trackT: 'טבלת מעקב', moveTo: 'העברה לגיליון', index: '📊 מדד המוכנות', contKit: '🗂 תיק הרציפות', partnersBtn: '🤝 שותפים',
       contInfo: 'מוכנות הכיתה לחירום, צוותי העבודה בכיתה ושרשרת הקשר נמצאים בתיק הרציפות של כל מחנך/ת. כך לא כותבים פעמיים.', contAfter: 'מה המחנכים מוסיפים לתיק הרציפות אחרי התחקיר',
       openMeeting: 'פתיחת המפגש', confirmTested: 'הפעולה נבדקה בתרגיל או ביום החוסן? רק אז היא עוברת להושלמו.', kindT: 'מאיפה', closedAt: 'נסגר',
-      contShort: 'מוכנות הכיתה לחירום ושרשרת הקשר', whoAmI: 'מי אני?', partnersT: 'שותפים', indexInd: 'מה הצוות עושה בעצמו', remsT: 'ששת השלבים', exRun: 'הרצת התרגיל', exDebrief: 'התחקיר', timing: 'לוח הזמנים של התרגיל', goTeams: '🖨 טבלת הצוותים וכרטיס הכיס', allOpen: 'פתוחים', ours2: 'כל המערכים (רק לך)',
+      contShort: 'מוכנות הכיתה לחירום ושרשרת הקשר', whoAmI: 'מי אני?', docT: 'תיעוד הדיון', docInfo: 'במפגש מדברים ולא כותבים. אפשר לתעד בדרך אחת או בכמה, והכלי קורא את הכול:', tProto: '✍️ פרוטוקול תוך כדי', tRec: '🎙 הקלטה בטלפון', tFile: '📄 תמליל או טקסט',
+      pWho: 'דובר/ת', pWhat: 'עיקרי הדברים', pKind: 'מה זה', kSaid: 'נאמר', kDecision: 'החלטה', kTask: 'משימה', kEnd: 'קצה פתוח', addLine: '➕ שורה',
+      protoInfo: 'מישהו/י מהצוות מקליד/ה תוך כדי, בקצרה. שורה שסומנה כהחלטה, משימה או קצה פתוח נכנסת ישר לרשימה, ומה שנאמר הכלי קורא ומציע.',
+      recMeetInfo: 'הטלפון מקליט בדפדפן, וכל דקה הקול עובר לתמלול ונזרק. התמליל נמחק כשמסמנים שהמפגש הושלם.', loadToNotes: 'הכנסת התמליל לדיון', trAdded: 'התמליל נוסף לדיון',
+      fileInfo: 'תמליל מ-Zoom או מ-Teams, או פרוטוקול שנכתב ב-Word או כטקסט. הקובץ נקרא בדפדפן.', fileRead: 'הקובץ נקרא ונוסף לדיון', fileBad: 'את הקובץ הזה אי אפשר לקרוא. אפשר להדביק את הטקסט.', pasteLbl: 'הטקסט של הדיון (אפשר להדביק כאן)',
+      noMaterial: 'עוד אין מה לקרוא: אפשר להקליד פרוטוקול, להכניס תמליל או להעלות קובץ.', partnersT: 'שותפים', indexInd: 'מה הצוות עושה בעצמו', remsT: 'ששת השלבים', exRun: 'הרצת התרגיל', exDebrief: 'התחקיר', timing: 'לוח הזמנים של התרגיל', goTeams: '🖨 טבלת הצוותים וכרטיס הכיס', allOpen: 'פתוחים', ours2: 'כל המערכים (רק לך)',
       min: 'דק׳', byName: 'השם שלי', allTeams: 'כל הצוות', exportNote: 'שמות של תלמידים לא נכנסים לכלי. הפרטים נשמרים בבית הספר.' },
     ar: { login: 'لفتح منظومة الجاهزية، يمكن الدخول برمز يشمل هذه الأداة.', ours: 'منظوماتنا', none: 'لا توجد منظومة جاهزية بعد.', updated: 'آخر تحديث',
       sessions: 'اللقاءات', later: 'في المرحلة القادمة', escalate: 'أطراف تُرفع إلى مدير/ة حالة الطوارئ', partners: 'الشركاء: مع من ننسّق في الطوارئ؟', expect: 'ما نتوقع أن نحصل عليه', provide: 'ما نقدّمه',
@@ -94,7 +99,12 @@
       track: '📋 جدول المتابعة', trackT: 'جدول المتابعة', moveTo: 'نقل إلى ورقة', index: '📊 مؤشّر الجاهزية', contKit: '🗂 ملف الاستمرارية', partnersBtn: '🤝 الشركاء',
       contInfo: 'جاهزية الصف للطوارئ، وطواقم العمل في الصف وسلسلة الاتصال موجودة في ملف الاستمرارية لكل مربٍّ/ية. هكذا لا نكتب مرتين.', contAfter: 'ما الذي يضيفه المربّون إلى ملف الاستمرارية بعد استخلاص العبر',
       openMeeting: 'فتح اللقاء', confirmTested: 'هل فُحص الإجراء في تمرين أو في يوم الصمود؟ عندها فقط ينتقل إلى اكتملت.', kindT: 'من أين', closedAt: 'أُغلق',
-      contShort: 'جاهزية الصف للطوارئ وسلسلة الاتصال', whoAmI: 'من أنا؟', partnersT: 'الشركاء', indexInd: 'ما يفعله الطاقم بنفسه', remsT: 'المراحل الست', exRun: 'تشغيل التمرين', exDebrief: 'استخلاص العبر', timing: 'الجدول الزمني للتمرين', goTeams: '🖨 جدول الطواقم وبطاقة الجيب', allOpen: 'مفتوحة', ours2: 'كل المنظومات (لك فقط)',
+      contShort: 'جاهزية الصف للطوارئ وسلسلة الاتصال', whoAmI: 'من أنا؟', docT: 'توثيق النقاش', docInfo: 'في اللقاء نتحدّث ولا نكتب. يمكن التوثيق بطريقة واحدة أو بعدّة طرق، والأداة تقرأ كل شيء:', tProto: '✍️ محضر أثناء اللقاء', tRec: '🎙 تسجيل بالهاتف', tFile: '📄 نص مكتوب أو ملف',
+      pWho: 'المتحدّث/ة', pWhat: 'أهم ما قيل', pKind: 'ما هذا', kSaid: 'قيل', kDecision: 'قرار', kTask: 'مهمة', kEnd: 'طرف مفتوح', addLine: '➕ سطر',
+      protoInfo: 'أحد أفراد الطاقم يكتب أثناء اللقاء، باختصار. السطر المعلَّم كقرار أو مهمة أو طرف مفتوح يدخل مباشرة إلى القائمة، وما قيل تقرؤه الأداة وتقترح.',
+      recMeetInfo: 'يسجّل الهاتف في المتصفح، وكل دقيقة ينتقل الصوت إلى التفريغ ثم يُحذف. يُحذف النص المكتوب عند تعليم أن اللقاء اكتمل.', loadToNotes: 'إدخال النص المكتوب إلى النقاش', trAdded: 'أُضيف النص المكتوب إلى النقاش',
+      fileInfo: 'نص مكتوب من Zoom أو من Teams، أو محضر كُتب في Word أو كنص. يُقرأ الملف في المتصفح.', fileRead: 'قُرئ الملف وأُضيف إلى النقاش', fileBad: 'لا يمكن قراءة هذا الملف. يمكن لصق النص.', pasteLbl: 'نص النقاش (يمكن اللصق هنا)',
+      noMaterial: 'لا يوجد ما يُقرأ بعد: يمكن كتابة محضر أو إدخال نص مكتوب أو رفع ملف.', partnersT: 'الشركاء', indexInd: 'ما يفعله الطاقم بنفسه', remsT: 'المراحل الست', exRun: 'تشغيل التمرين', exDebrief: 'استخلاص العبر', timing: 'الجدول الزمني للتمرين', goTeams: '🖨 جدول الطواقم وبطاقة الجيب', allOpen: 'مفتوحة', ours2: 'كل المنظومات (لك فقط)',
       min: 'د', byName: 'اسمي', allTeams: 'كل الطاقم', exportNote: 'أسماء الطلاب لا تدخل الأداة. التفاصيل تُحفظ في المدرسة.' }
   };
   const T = (k) => P.t(S.lang, k);
@@ -1074,18 +1084,79 @@
   // 3. דיון וסיכום: מה עלה בדיון ← הכלי גוזר משימות, החלטות וקצוות ← הצוות בוחר ← טבלת המעקב; ובסוף: המפגש הבא, שליחה והדפסה
   function viewTalk(R) {
     const r = R.r;
-    const notes = bindText(h('textarea', { rows: 6, placeholder: Y('notesPh') }), () => r.notes, (v) => { r.notes = v; }, R.part, '');
+    r.proto = Array.isArray(r.proto) ? r.proto : [];
+    const recId = R.m ? R.m.id : 'sess-' + R.n;
+    // 1. פרוטוקול תוך כדי: דובר/ת · עיקרי הדברים · מה זה (נאמר, החלטה, משימה, קצה פתוח)
+    const KINDS = { said: Y('kSaid'), decision: Y('kDecision'), task: Y('kTask'), end: Y('kEnd') };
+    const protoView = () => {
+      const tb = h('tbody', {});
+      const addRow = (focus) => { r.proto.push({ who: '', what: '', kind: 'said' }); saveSoon(R.part, ''); render(); if (focus) setTimeout(() => { const all = app.querySelectorAll('.proto textarea'); if (all.length) all[all.length - 1].focus(); }, 0); };
+      r.proto.forEach((row, i) => {
+        const kind = h('select', { 'data-closed': '', 'aria-label': Y('pKind') }, Object.entries(KINDS).map(([k, v]) => h('option', { value: k, text: v }))); kind.value = row.kind || 'said';
+        kind.onchange = () => { row.kind = kind.value; saveSoon(R.part, ''); };
+        const what = bindText(h('textarea', { rows: 2, class: 'cell wide' }), () => row.what, (v) => { row.what = v; }, R.part, '');
+        what.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && i === r.proto.length - 1) { e.preventDefault(); addRow(true); } });
+        what.placeholder = Y('pWhat'); what.setAttribute('aria-label', Y('pWhat'));
+        tb.append(h('tr', {}, h('td', { 'data-h': Y('pWho') }, bindText(h('input', { type: 'text', list: 'rdyTeams', placeholder: Y('pWho'), 'aria-label': Y('pWho') }), () => row.who, (v) => { row.who = v; }, R.part, '')),
+          h('td', { 'data-h': Y('pKind') }, kind), h('td', { 'data-h': Y('pWhat'), class: 'what' }, what),
+          h('td', { class: 'noprint' }, lnk('✕', () => { r.proto.splice(i, 1); save(R.part, ''); render(); }, { 'aria-label': T('del') }))));
+      });
+      return h('div', { class: 'proto' }, h('p', { class: 'muted small', text: Y('protoInfo') }),
+        r.proto.length ? h('table', { class: 'rt stack protot' }, h('thead', {}, h('tr', {}, [Y('pWho'), Y('pKind'), Y('pWhat'), ''].map((c) => h('th', { text: c })))), tb) : null,
+        lnk(Y('addLine'), () => addRow(true)));
+    };
+    // 2. הקלטה בטלפון (אותה הקלטה כמו בתרגיל), והתמליל נכנס לטקסט של הדיון
+    const notes = bindText(h('textarea', { rows: 4, placeholder: Y('notesPh') }), () => r.notes, (v) => { r.notes = v; }, R.part, '');
+    const addToNotes = (text) => { r.notes = (r.notes ? r.notes + '\n\n' : '') + text; notes.value = r.notes; save(R.part, ''); };
+    const recView = () => {
+      const box = viewRec({ id: recId, rec: r.rec });
+      box.querySelector('p').textContent = Y('recMeetInfo');
+      box.append(h('p', {}, lnk(Y('loadToNotes'), async () => {
+        const [st, o] = await api('rdyTranscriptGet', { id: S.doc.id, exId: recId });
+        const segs = st === 200 && o.transcript ? o.transcript.segments || [] : [];
+        if (!segs.length) { toast(Y('none2')); return; }
+        addToNotes(segs.map((x) => x.text).join(' ')); toast(Y('trAdded'));
+      })));
+      return box;
+    };
+    // 3. קובץ: תמליל (Zoom, Teams: vtt, srt, txt) או פרוטוקול (Word, טקסט). נקרא בדפדפן בלבד.
+    const fileView = () => {
+      const inp = h('input', { type: 'file', accept: '.txt,.vtt,.srt,.md,.docx', 'aria-label': Y('tFile') });
+      inp.onchange = async () => {
+        const f = inp.files && inp.files[0]; if (!f) return;
+        try {
+          let text = '';
+          if (/\.docx$/i.test(f.name)) {
+            if (!window.mammoth) await new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js'; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+            text = (await window.mammoth.extractRawText({ arrayBuffer: await f.arrayBuffer() })).value;
+          } else text = await f.text();
+          text = text.replace(/^WEBVTT.*$/m, '').replace(/^\d+\s*$/gm, '').replace(/^[\d:.,]+\s*-->\s*[\d:.,]+.*$/gm, '').replace(/\n{3,}/g, '\n\n').trim();
+          if (!text) throw new Error('empty');
+          addToNotes(text.slice(0, 60000)); toast(Y('fileRead'));
+        } catch (e) { toast(Y('fileBad')); }
+      };
+      return h('div', {}, h('p', { class: 'muted small', text: Y('fileInfo') }), inp, field(Y('pasteLbl'), notes));
+    };
     const out = h('div', {});
     const ex = h('button', { class: 'btn', type: 'button', text: Y('extract'), onclick: async () => {
-      if (String(notes.value).trim().length < 20) { notes.focus(); toast(Y('notes') + ': ' + T('main')); return; }
+      const typed = r.proto.filter((x) => String(x.what || '').trim());
+      const direct = typed.filter((x) => x.kind && x.kind !== 'said').map((x) => ({ sheet: x.kind === 'task' ? 'tasks' : x.kind === 'end' ? 'ends' : 'decisions', pick: true, text: x.what.trim(), owner: x.who || '' }));
+      const said = typed.filter((x) => !x.kind || x.kind === 'said').map((x) => (x.who ? x.who + ': ' : '') + x.what.trim()).join('\n');
+      const material = [said, String(r.notes || '').trim()].filter(Boolean).join('\n\n');
+      if (!direct.length && material.length < 20) { toast(Y('noMaterial')); return; }
       ex.disabled = true; out.replaceChildren(h('p', { class: 'muted', text: Y('working') }));
+      let fromAI = [];
       try {
-        const content = 'המפגש: ' + R.title + (R.m && R.m.agenda ? '\nסדר היום:\n' + anon(R.m.agenda) : '') + '\n\nמה עלה בדיון:\n' + anon(notes.value);
-        const v = await window.sbeCallAIJson(SERVER, { system: P.meetingSystem(S.lang), messages: [{ role: 'user', content }], maxTokens: 4000, fast: true }, 180000, P.validMeeting);
-        const n = P.normalizeMeeting(v);
-        r.found = [].concat(n.tasks.map((x) => Object.assign({ sheet: 'tasks', pick: true }, x)), n.decisions.map((x) => Object.assign({ sheet: 'decisions', pick: true }, x)), n.ends.map((x) => Object.assign({ sheet: 'ends', pick: true }, x)));
-        await save(R.part, ''); render();
-      } catch (e) { out.replaceChildren(h('div', { class: 'warn', text: T('noModel') })); ex.disabled = false; }
+        if (material.length >= 20) {
+          const content = 'המפגש: ' + R.title + (R.m && R.m.agenda ? '\nסדר היום:\n' + anon(R.m.agenda) : '') + '\n\nמה עלה בדיון:\n' + anon(material);
+          const v = await window.sbeCallAIJson(SERVER, { system: P.meetingSystem(S.lang), messages: [{ role: 'user', content }], maxTokens: 4000, fast: true }, 180000, P.validMeeting);
+          const n = P.normalizeMeeting(v);
+          fromAI = [].concat(n.tasks.map((x) => Object.assign({ sheet: 'tasks', pick: true }, x)), n.decisions.map((x) => Object.assign({ sheet: 'decisions', pick: true }, x)), n.ends.map((x) => Object.assign({ sheet: 'ends', pick: true }, x)));
+        }
+      } catch (e) { if (!direct.length) { out.replaceChildren(h('div', { class: 'warn', text: T('noModel') })); ex.disabled = false; return; } toast(T('noModel')); }
+      const seen = new Set(direct.map((x) => x.text));
+      r.found = direct.concat(fromAI.filter((x) => !seen.has(x.text)));
+      await save(R.part, ''); render();
     } });
     const found = (r.found || []).filter((x) => !x.added);
     if (found.length) {
@@ -1093,8 +1164,8 @@
       const rows = found.map((x) => h('tr', {},
         h('td', { 'data-h': Y('pick') }, h('input', { type: 'checkbox', checked: x.pick !== false, 'aria-label': Y('pick'), onchange: (e) => { x.pick = e.target.checked; saveSoon(R.part, ''); } })),
         h('td', { 'data-h': Y('sheet') }, sheetSel(x)),
-        h('td', { 'data-h': T('text') }, bindText(h('input', { type: 'text' }), () => x.text, (v) => { x.text = v; }, R.part, '')),
-        h('td', { 'data-h': T('owner') }, bindText(h('input', { type: 'text', list: 'rdyTeams' }), () => x.owner || x.by || (x.team ? teamName(x.team) : ''), (v) => { x.owner = v; }, R.part, ''))));
+        h('td', { 'data-h': T('text'), class: 'own' }, bindText(h('textarea', { rows: 2, class: 'cell wide', 'aria-label': T('text') }), () => x.text, (v) => { x.text = v; }, R.part, '')),
+        h('td', { 'data-h': T('owner'), class: 'own' }, bindText(h('input', { type: 'text', list: 'rdyTeams', placeholder: T('owner'), 'aria-label': T('owner') }), () => x.owner || x.by || (x.team ? teamName(x.team) : ''), (v) => { x.owner = v; }, R.part, ''))));
       const add = h('button', { class: 'btn', type: 'button', text: Y('toTrack'), onclick: async () => {
         const acts = arr('actions'), ends = arr('ends'), ideas = arr('ideas'); let n = 0;
         for (const x of found) {
@@ -1110,7 +1181,7 @@
         toast(Y('added') + ': ' + n); render();
       } });
       out.append(h('p', { class: 'muted', text: Y('extractInfo') }),
-        h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, ['', Y('sheet'), T('text'), T('owner')].map((c) => h('th', { text: c })))), h('tbody', {}, rows)), add);
+        h('table', { class: 'rt stack found' }, h('thead', {}, h('tr', {}, ['', Y('sheet'), T('text'), T('owner')].map((c) => h('th', { text: c })))), h('tbody', {}, rows)), add);
     }
     // הסיכום: המפגש הבא, שליחה לכולם והדפסה
     const next = h('input', { type: 'date', value: r.next || plus(7) }); next.onchange = () => { r.next = next.value; save(R.part, ''); };
@@ -1121,9 +1192,12 @@
       send.disabled = false;
       toast(s2 === 200 ? (o.available ? Y('mailSent') + ': ' + o.sent : T('mailOff')) : (o.error || ''));
     } });
-    const doneBox = h('label', { class: 'row noprint' }, h('input', { type: 'checkbox', checked: !!r.done, onchange: (e) => { r.done = e.target.checked; r.at = nowIso(); save(R.part, R.title + (r.done ? ': הושלם' : '')); render(); } }), ' ', T('sessionDone'));
+    const doneBox = h('label', { class: 'row noprint' }, h('input', { type: 'checkbox', checked: !!r.done, onchange: (e) => { r.done = e.target.checked; r.at = nowIso(); if (r.done) api('rdyTranscriptDelete', { id: S.doc.id, exId: recId }); save(R.part, R.title + (r.done ? ': הושלם' : '')); render(); } }), ' ', T('sessionDone'));
     return h('div', {},
-      h('div', { class: 'card' }, h('h2', { text: Y('notes') }), notes, h('div', { class: 'row noprint' }, ex), out, h('datalist', { id: 'rdyTeams' }, L.TEAMS.map((t) => h('option', { value: t.name })))),
+      h('div', { class: 'card' }, h('h2', { text: Y('docT') }), h('p', { class: 'muted small', text: Y('docInfo') }),
+        tabs('doc:' + recId, [[Y('tProto'), protoView], [Y('tRec'), recView], [Y('tFile'), fileView]]),
+        r.notes && S.tab['doc:' + recId] !== 2 ? h('p', { class: 'muted small', text: '📄 ' + String(r.notes).length + ' · ' + Y('pasteLbl') }) : null,
+        h('div', { class: 'row noprint' }, ex), out, h('datalist', { id: 'rdyTeams' }, L.TEAMS.map((t) => h('option', { value: t.name })))),
       R.n === 3 || R.n === 5 ? contBox(Y('contAfter')) : null,
       h('div', { class: 'card' }, h('h2', { text: Y('summaryT') }),
         h('div', { class: 'row' }, h('div', {}, field(T('next1'), next)), sched),

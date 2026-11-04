@@ -120,3 +120,15 @@ test('deleting a program removes it and its transcripts', async () => {
   assert.equal(await store.get('rdy:' + id), null);
   assert.equal(await store.get('rdyt:' + id + ':ex-1'), null);
 });
+
+test('recording a meeting: a planned meeting and one of the five sessions, but not an unknown id', async () => {
+  const { store, a } = await setup();
+  const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S', lang: 'he' } }))[1].doc.id;
+  await call(store, { action: 'rdySave', token: a, id, part: 'meetings', value: [{ id: 'mt-abc123', type: 'weekly', title: 'זמן מוכנות' }] });
+  const [s1, m] = await call(store, { action: 'rdyRecStart', token: a, id, exId: 'mt-abc123', consent: true });
+  assert.equal(s1, 200); assert.equal((await call(store, { action: 'rdyRecPing', rk: m.rk }))[1].ok, true);
+  const [s2] = await call(store, { action: 'rdyRecStart', token: a, id, exId: 'sess-2', consent: true });
+  assert.equal(s2, 200);
+  assert.equal((await call(store, { action: 'rdyRecStart', token: a, id, exId: 'sess-9', consent: true }))[0], 404);
+  assert.equal((await call(store, { action: 'rdyTranscriptGet', token: a, id, exId: 'mt-abc123' }))[0], 200);
+});
