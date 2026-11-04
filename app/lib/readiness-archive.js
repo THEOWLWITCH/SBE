@@ -77,10 +77,12 @@
     const file = h('input', { type: 'file', accept: ACCEPT, 'aria-label': 'הקובץ' });
     const title = h('input', { type: 'text', maxlength: '120', placeholder: 'למשל: ' + W(it.text.replace(/\s*\(.*\)\s*$/, '')).slice(0, 60), value: f ? f.title : '', 'aria-label': 'שם ברור לקובץ' });
     const date = h('input', { type: 'date', value: today(), 'aria-label': 'תאריך העדכון של הקובץ' });
+    const ok = h('input', { type: 'checkbox' });
     const note = h('p', { class: 'bnote', role: 'status' });
     const send = async (e) => {
       e.preventDefault();
       const fl = file.files && file.files[0];
+      if (!ok.checked) { note.textContent = 'לפני ההעלאה, אפשר לסמן שאין בקובץ פרטים של תלמידים או הורים.'; return; }
       if (!fl) { note.textContent = 'כדי להעלות, אפשר לבחור קובץ.'; return; }
       if (vague(title.value)) { note.textContent = 'כדי שכולם ימצאו את הקובץ, אפשר לתת לו שם ברור שאומר מה יש בו.'; title.focus(); return; }
       if (!date.value) { note.textContent = 'תאריך העדכון של הקובץ הוא שדה עיקרי.'; return; }
@@ -89,7 +91,7 @@
       if (fl.size > MAX_BYTES) { note.textContent = 'הקובץ גדול מ־4 מגה. אפשר לשמור אותו מוקטן (למשל PDF דחוס) ולהעלות שוב.'; return; }
       if (f && !confirm('הקובץ החדש יחליף את "' + f.title + '", והגרסה הקודמת תימחק. להמשיך?')) return;
       note.textContent = 'מעלים את הקובץ...';
-      const [st, out] = await api('rdyFilePut', { id: doc.id, key: it.key, title: title.value.trim(), date: date.value, name: fl.name, mime, data: await b64(fl), by: by() });
+      const [st, out] = await api('rdyFilePut', { id: doc.id, key: it.key, title: title.value.trim(), date: date.value, name: fl.name, mime, data: await b64(fl), noStudents: true, by: by() });
       if (st !== 200) { note.textContent = out.error || 'ההעלאה לא הצליחה. אפשר לנסות שוב.'; return; }
       doc.files = out.files; openKey = ''; msg = out.replaced ? 'הגרסה החדשה נשמרה, והקודמת נמחקה.' : 'הקובץ נשמר בתיקייה.'; draw();
     };
@@ -97,6 +99,7 @@
       h('label', {}, h('span', { text: 'הקובץ' }), file),
       h('label', {}, h('span', { text: 'שם ברור לקובץ' }), title),
       h('label', {}, h('span', { text: 'תאריך העדכון של הקובץ' }), date),
+      h('label', { class: 'bchk' }, ok, h('span', { text: W('אין בקובץ פרטים של תלמידים או הורים') })),
       h('div', {}, h('button', { type: 'submit', text: f ? 'העלאת הגרסה החדשה' : 'העלאה' }), ' ', lnk('ביטול', () => { openKey = ''; draw(); })), note);
   }
   function whereForm(it, w) {
@@ -133,7 +136,7 @@
   async function removeItem(it) {
     const f = (doc.files || {})[it.key];
     if (!confirm('להסיר את "' + it.text + '" מהרשימה?' + (f ? ' גם הקובץ שלו יימחק.' : ''))) return;
-    if (f) { const [st, out] = await api('rdyFileDel', { id: doc.id, key: it.key, by: by() }); if (st === 200) doc.files = out.files; }
+    if (f) { const [st, out] = await api('rdyFileDel', { id: doc.id, key: it.key, by: by() }); if (st !== 200) { msg = out.error || 'הקובץ לא נמחק, ולכן הפריט נשאר ברשימה. אפשר לנסות שוב.'; draw(); return; } doc.files = out.files; }
     const bd = binder(), where = Object.assign({}, bd.where || {}); delete where[it.key];
     if (await saveBinder(Object.assign({}, bd, { items: (bd.items || []).filter((x) => x && x.key !== it.key), where }), 'הסרה מתיקיית הרציפות: ' + it.text.slice(0, 80))) { msg = 'הוסר מהרשימה.'; draw(); }
   }

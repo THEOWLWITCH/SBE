@@ -43,11 +43,11 @@ button:disabled{opacity:.45}
   var W = {
     he: { t: 'הקלטת התרגיל', info: 'ההקלטה עוברת לתמלול ולא נשמרת. התמליל נמחק כשהדוח מאושר. כל אחד ואחת יכולים לבקש לעצור.', start: '🎙 התחלת ההקלטה', pause: '⏸ עצירה',
       resume: '🎙 המשך ההקלטה', mark: '⭐ רגע החלטה', stop: 'סיום ההקלטה', round: 'סבב', rec: 'מקליטים', paused: 'ההקלטה עצורה', sent: 'קטעים שעלו', wait: 'קטעים שמחכים לרשת',
-      marks: 'רגעי החלטה', done: 'ההקלטה הסתיימה. אפשר לסגור את הדף.', bad: 'הקישור להקלטה הסתיים. אפשר לפתוח קישור חדש ממסך התרגיל או המפגש.', mic: 'אין גישה למיקרופון. אפשר לאשר גישה בהגדרות הדפדפן ולנסות שוב.',
+      marks: 'רגעי החלטה', done: 'ההקלטה הסתיימה. אפשר לסגור את הדף.', waiting: 'עוד {n} קטעים לא עלו (אין חיבור או שהתמלול לא זמין). אם מסיימים עכשיו, הם יימחקו מהטלפון ולא ייכנסו לתמליל. לסיים?', bad: 'הקישור להקלטה הסתיים. אפשר לפתוח קישור חדש ממסך התרגיל או המפגש.', mic: 'אין גישה למיקרופון. אפשר לאשר גישה בהגדרות הדפדפן ולנסות שוב.',
       nosupport: 'הדפדפן הזה לא מקליט. אפשר לסמן רגעי החלטה בכפתור, או לנסות בדפדפן אחר.', screen: 'כדאי להשאיר את המסך דולק ואת הדף פתוח.', marked: 'סומן', note: 'מה הוחלט? (רשות)' },
     ar: { t: 'تسجيل التمرين', info: 'يُرسل التسجيل للتحويل إلى نص ولا يُحفظ. يُحذف النص المكتوب عند المصادقة على التقرير. يمكن لكل شخص أن يطلب التوقف.', start: '🎙 بدء التسجيل', pause: '⏸ توقف',
       resume: '🎙 متابعة التسجيل', mark: '⭐ لحظة قرار', stop: 'إنهاء التسجيل', round: 'جولة', rec: 'نسجّل', paused: 'التسجيل متوقف', sent: 'مقاطع أُرسلت', wait: 'مقاطع تنتظر الشبكة',
-      marks: 'لحظات قرار', done: 'انتهى التسجيل. يمكن إغلاق الصفحة.', bad: 'انتهى رابط التسجيل. يمكن فتح رابط جديد من شاشة التمرين أو اللقاء.', mic: 'لا يوجد وصول إلى الميكروفون. يمكن السماح بالوصول في إعدادات المتصفح والمحاولة من جديد.',
+      marks: 'لحظات قرار', done: 'انتهى التسجيل. يمكن إغلاق الصفحة.', waiting: 'لم تُرفع بعد {n} مقاطع (لا يوجد اتصال أو التفريغ غير متاح). إذا أنهينا الآن، ستُحذف من الهاتف ولن تدخل النص المفرّغ. هل ننهي؟', bad: 'انتهى رابط التسجيل. يمكن فتح رابط جديد من شاشة التمرين أو اللقاء.', mic: 'لا يوجد وصول إلى الميكروفون. يمكن السماح بالوصول في إعدادات المتصفح والمحاولة من جديد.',
       nosupport: 'هذا المتصفح لا يسجّل. يمكن الإشارة إلى لحظات القرار بالزر، أو تجربة متصفح آخر.', screen: 'من المفيد إبقاء الشاشة مضاءة والصفحة مفتوحة.', marked: 'تمت الإشارة', note: 'ما الذي تقرّر؟ (اختياري)' }
   };
   var lang = 'he', w = W.he;
@@ -131,12 +131,19 @@ button:disabled{opacity:.45}
     var note = (document.getElementById('note') || {}).value || '';
     call('rdyRecMark', { t: st.t0 ? Date.now() - st.t0 : 0, round: st.round, note: note }).then(function (r) { if (r[0] === 200) { st.marks = r[1].marks; var n = document.getElementById('note'); if (n) n.value = ''; draw(w.marked + ' ⭐'); } else if (r[0] === 401) bad(); });
   }
+  // סיום: קודם שולחים את מה שמחכה. אם עדיין יש קטעים שלא עלו, שואלים; בסיום מוחקים מהטלפון את מה שנשאר מההקלטה הזאת.
+  function clearQueue() { return qAll().then(function (q) { return Promise.all(q.map(function (it) { return qDel(it.k); })); }); }
   function stop() {
     pause();
-    setTimeout(function () { flush().then(function () { return call('rdyRecStop'); }).then(function () { app.innerHTML = '<div class="card"><p>' + w.done + '</p></div>'; }); }, 800);
+    setTimeout(function () {
+      flush().then(function () { return qAll(); }).then(function (left) {
+        if (left.length && !confirm(w.waiting.replace('{n}', left.length))) { draw(); return; }
+        return call('rdyRecStop').then(clearQueue).then(function () { app.innerHTML = '<div class="card"><p>' + w.done + '</p></div>'; });
+      });
+    }, 800);
   }
   function msg(text, ok) { var m = document.getElementById('msg'); if (m) { m.textContent = text; m.style.color = ok ? 'var(--teal)' : ''; } }
-  function bad() { st.on = false; app.innerHTML = '<div class="card"><p class="warn">' + w.bad + '</p></div>'; }
+  function bad() { st.on = false; clearQueue(); app.innerHTML = '<div class="card"><p class="warn">' + w.bad + '</p></div>'; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
   function draw(flash) {

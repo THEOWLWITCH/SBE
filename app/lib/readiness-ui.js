@@ -28,7 +28,7 @@
       sessions: 'המפגשים', later: 'בשלב הבא', escalate: 'קצוות שעולים למנהל/ת מצב החירום', partners: 'שותפים: עם מי מתאמים בחירום?', expect: 'מה אנחנו מצפים לקבל', provide: 'מה אנחנו מספקים',
       ifGap: 'פער ממשק: חסר צד אחד', partner: 'שותף/ה', step: 'שלב', product: 'התוצר', questions: 'שאלות לצוות', ourText: 'מה כתבנו', ask: 'חוליות חלשות וחלופות', working: 'עובדים על זה…',
       gaps: 'פערים', alts: 'חלופות שאולי לא עלו', nextSteps: 'צעדי המשך', toEnds: 'לקצוות הפתוחים', addGap: 'לרשימת הפערים', before: 'לפני המפגש', during: 'במפגש', our: 'שלנו',
-      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', editT: 'עריכה', closeT: 'סגירה', unsaved: 'אין חיבור כרגע. השינויים נשמרו במסך וייכנסו כשהחיבור יחזור.', trNotLoaded: 'התמליל של ההקלטה עוד לא נכנס לדיון, והוא יימחק כשהמפגש מסומן כהושלם. להמשיך?', notSummed: 'המפגש עבר ועוד לא סוכם', nextSet: 'המפגש הבא נקבע ל־', ownerFilled: 'אחראי/ת הושלם/ה לפי ראש הצוות או מנהל/ת מצב החירום', undoT: '↩ ביטול', undoneT: 'השינוי בוטל', cancelWhy: 'למה הפעולה בוטלה? (רשות, נשמר לתיעוד)', ownerPerson: 'אחראי/ת: שם של אדם מהצוות', noPeople: 'עוד אין שמות בטבלת הצוותים, ולכן האחראי/ת הוא/היא מנהל/ת מצב החירום. כדי שיופיעו שמות, אפשר למלא אותם:', delQ: 'למחוק את המשימה?', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
+      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', editT: 'עריכה', closeT: 'סגירה', draftReplace: 'טיוטה חדשה תחליף את הטבלה, כולל מה שהצוות ערך בה. להמשיך?', saveFirst: 'הסיכום לא נשלח, כי השמירה לא הצליחה. אפשר לנסות שוב בעוד רגע.', mailSkipped: 'לא נשלח', safeLine: 'מי שהתרחיש קרוב מדי אליו/ה יכול/ה לבחור תפקיד של רשם/ת או צופה, ולצאת לרגע בכל שלב.', howAnswer: 'איך עונים', parentsMsgT: 'ההודעה להורים', parentsMsgCues: 'כותבים את ההודעה כמו שתישלח: מה קרה, בעובדות · איפה הילדים ומה עושים · מה מבקשים מההורים · מתי העדכון הבא.', parentsMsgPh: 'למשל: הורים יקרים, לפני כרבע שעה...', heOnly: 'הרשימה מתיק הרציפות כתובה בעברית.', toJourney: 'למסע אל החוסן החברתי', unsaved: 'אין חיבור כרגע. השינויים נשמרו במסך וייכנסו כשהחיבור יחזור.', trNotLoaded: 'התמליל של ההקלטה עוד לא נכנס לדיון, והוא יימחק כשהמפגש מסומן כהושלם. להמשיך?', notSummed: 'המפגש עבר ועוד לא סוכם', nextSet: 'המפגש הבא נקבע ל־', ownerFilled: 'אחראי/ת הושלם/ה לפי ראש הצוות או מנהל/ת מצב החירום', undoT: '↩ ביטול', undoneT: 'השינוי בוטל', cancelWhy: 'למה הפעולה בוטלה? (רשות, נשמר לתיעוד)', ownerPerson: 'אחראי/ת: שם של אדם מהצוות', noPeople: 'עוד אין שמות בטבלת הצוותים, ולכן האחראי/ת הוא/היא מנהל/ת מצב החירום. כדי שיופיעו שמות, אפשר למלא אותם:', delQ: 'למחוק את המשימה?', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
       version: 'אורך התרגיל', v20: '20 דקות (ישיבת צוות)', v60: 'שעה', startEx: 'התחלת התרגיל', exercises: 'התרגילים', cont: 'המשך', finish: 'סיום התרחיש', opening: 'פתיחה',
       closing: 'סגירה', copy: 'העתקה', copied: 'הועתק', openRec: 'פתיחת קישור לטלפון', recOn: 'ההקלטה פתוחה', marks: 'רגעי החלטה', segs: 'קטעים בתמליל', loadTr: 'טעינת התמליל',
       editTr: 'עריכת התמליל (לפני שהוא משמש לדוח)', saveTr: 'שמירת התמליל', worked: 'מה עבד', timeline: 'ציר הזמן', fb: 'משוב מקצועי', src: 'מקור', addRow: '➕ שורה',
@@ -70,7 +70,7 @@
       sessions: 'اللقاءات', later: 'في المرحلة القادمة', escalate: 'أطراف تُرفع إلى مدير/ة حالة الطوارئ', partners: 'الشركاء: مع من ننسّق في الطوارئ؟', expect: 'ما نتوقع أن نحصل عليه', provide: 'ما نقدّمه',
       ifGap: 'فجوة في التنسيق: ينقص أحد الطرفين', partner: 'الشريك/ة', step: 'مرحلة', product: 'الناتج', questions: 'أسئلة للطاقم', ourText: 'ما كتبناه', ask: 'حلقات ضعيفة وبدائل', working: 'نعمل على ذلك…',
       gaps: 'فجوات', alts: 'بدائل ربما لم تُطرح', nextSteps: 'خطوات تالية', toEnds: 'إلى الأطراف المفتوحة', addGap: 'إلى قائمة الفجوات', before: 'قبل اللقاء', during: 'في اللقاء', our: 'لنا',
-      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', editT: 'تعديل', closeT: 'إغلاق', unsaved: 'لا يوجد اتصال حاليًا. التغييرات محفوظة على الشاشة وستدخل عند عودة الاتصال.', trNotLoaded: 'نص التسجيل لم يدخل إلى النقاش بعد، وسيُحذف عند تعليم اللقاء كمكتمل. هل نتابع؟', notSummed: 'اللقاء مضى ولم يُلخَّص بعد', nextSet: 'اللقاء القادم مُحدَّد في ', ownerFilled: 'أُكمل المسؤول/ة حسب رئيس/ة الطاقم أو مدير/ة حالة الطوارئ', undoT: '↩ تراجع', undoneT: 'أُلغي التغيير', cancelWhy: 'لماذا أُلغي الإجراء؟ (اختياري، يُحفظ للتوثيق)', ownerPerson: 'المسؤول/ة: اسم شخص من الطاقم', noPeople: 'لاختيار مسؤول/ة بالاسم، يمكن تعبئة الأسماء في جدول الطواقم:', delQ: 'حذف المهمة؟', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
+      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', editT: 'تعديل', closeT: 'إغلاق', draftReplace: 'مسودة جديدة ستستبدل الجدول، بما في ذلك ما عدّله الطاقم. هل نتابع؟', saveFirst: 'لم يُرسل التلخيص لأن الحفظ لم ينجح. يمكن المحاولة بعد لحظة.', mailSkipped: 'لم يُرسل', safeLine: 'من يشعر/تشعر أن السيناريو قريب جدًا منه/ها يمكنه/ها اختيار دور المسجِّل/ة أو المراقب/ة، والخروج للحظة في أي مرحلة.', howAnswer: 'كيف نجيب', parentsMsgT: 'الرسالة إلى الأهالي', parentsMsgCues: 'نكتب الرسالة كما ستُرسل: ماذا حدث، بالحقائق · أين الأبناء وماذا نفعل · ماذا نطلب من الأهالي · متى التحديث القادم.', parentsMsgPh: 'مثلًا: أهالينا الأعزاء، قبل نحو ربع ساعة...', heOnly: 'القائمة من ملف الاستمرارية مكتوبة بالعبرية.', toJourney: 'إلى الرحلة نحو الصمود الاجتماعي', unsaved: 'لا يوجد اتصال حاليًا. التغييرات محفوظة على الشاشة وستدخل عند عودة الاتصال.', trNotLoaded: 'نص التسجيل لم يدخل إلى النقاش بعد، وسيُحذف عند تعليم اللقاء كمكتمل. هل نتابع؟', notSummed: 'اللقاء مضى ولم يُلخَّص بعد', nextSet: 'اللقاء القادم مُحدَّد في ', ownerFilled: 'أُكمل المسؤول/ة حسب رئيس/ة الطاقم أو مدير/ة حالة الطوارئ', undoT: '↩ تراجع', undoneT: 'أُلغي التغيير', cancelWhy: 'لماذا أُلغي الإجراء؟ (اختياري، يُحفظ للتوثيق)', ownerPerson: 'المسؤول/ة: اسم شخص من الطاقم', noPeople: 'لاختيار مسؤول/ة بالاسم، يمكن تعبئة الأسماء في جدول الطواقم:', delQ: 'حذف المهمة؟', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
       version: 'مدة التمرين', v20: '20 دقيقة (جلسة طاقم)', v60: 'ساعة', startEx: 'بدء التمرين', exercises: 'التمارين', cont: 'متابعة', finish: 'إنهاء السيناريو', opening: 'افتتاح',
       closing: 'إغلاق', copy: 'نسخ', copied: 'تم النسخ', openRec: 'فتح رابط للهاتف', recOn: 'التسجيل مفتوح', marks: 'لحظات قرار', segs: 'مقاطع في النص المكتوب', loadTr: 'تحميل النص المكتوب',
       editTr: 'تحرير النص المكتوب (قبل استخدامه في التقرير)', saveTr: 'حفظ النص المكتوب', worked: 'ما الذي نجح', timeline: 'التسلسل الزمني', fb: 'ملاحظات مهنية', src: 'مصدر', addRow: '➕ سطر',
@@ -679,6 +679,9 @@
     const pickS = h('select', { 'data-closed': '' }, h('option', { value: defaultScn, text: (defaultScn === 'disconnect' ? L.DISCONNECT : L.SIRENS).title }),
       gens.map((g) => h('option', { value: 'gen:' + g.id, text: '🎲 ' + (g.scn.title || '') })));
     if (S.pickScn && S.pickScn[n]) pickS.value = S.pickScn[n];
+    // לפני שמתחילים: התצוגה לפי התרחיש שנבחר ברשימה (בדיקת המומחים: במפגש 5 הוצג תרחיש אחר)
+    pickS.onchange = () => { S.pickScn = S.pickScn || {}; S.pickScn[n] = pickS.value; render(); };
+    const picked = () => { const v = pickS.value; const g = v.startsWith('gen:') ? gens.find((x) => 'gen:' + x.id === v) : null; return g ? g.scn : (v === 'disconnect' ? L.DISCONNECT : L.SIRENS); };
     const pickV = h('select', { 'data-closed': '' }, h('option', { value: '20', text: Y('v20') }), h('option', { value: '60', text: Y('v60') }));
     const startBtn = h('button', { class: 'btn', type: 'button', text: Y('startEx'), onclick: async () => {
       const list = arr('exercises');
@@ -691,10 +694,11 @@
     const past = exList(n);
     const pastRow = past.length ? h('div', { class: 'row' }, h('span', { class: 'muted', text: Y('exercises') + ':' }), past.map((x) => h('button', { class: 'btn ghost sm', type: 'button', 'aria-pressed': curEx(n) && x.id === curEx(n).id ? 'true' : 'false',
       text: dateIL(x.startedAt) + ' · ' + x.title, onclick: () => { S.exIds[n] = x.id; render(); } }))) : null;
-    const scn = scnOf(curEx(n)) || (defaultScn === 'disconnect' ? L.DISCONNECT : L.SIRENS);
+    const scn = curEx(n) ? scnOf(curEx(n)) : picked();
     return h('div', { class: 'card' }, h('h2', { text: scn.title }), h('p', { text: scn.intro }),
       (obj('decmap').intent || scn.intent) ? h('p', {}, h('b', { text: Y('intent') + ': ' }), obj('decmap').intent || scn.intent) : null,
       (scn.success || (scn.card && scn.card.success) || []).length ? h('div', {}, h('b', { text: Y('success') }), h('ul', { class: 'list' }, (scn.success || scn.card.success).map((x) => h('li', { text: x })))) : null,
+      h('p', { class: 'note small', text: Y('safeLine') }),
       h('div', { class: 'row noprint' }, field(Y('scenario'), pickS), field(Y('version'), pickV), startBtn), pastRow);
   }
 
@@ -715,8 +719,8 @@
   // תיק הרציפות: מוכנות הכיתה לחירום כבר כתובה שם, כדי לא לכתוב פעמיים
   function contBox(text) {
     const CK = window.SBE_CONT && (ORGSP && window.SBE_CONT.forSpace ? window.SBE_CONT.forSpace('org') : window.SBE_CONT);
-    const list = !text && S.lang === 'he' && CK && Array.isArray(CK.DEFAULT_READINESS) ? CK.DEFAULT_READINESS : [];
-    return h('div', { class: 'note' }, h('b', { text: Y('contKit') }), h('p', { text: text || Y('contInfo') }),
+    const list = !text && CK && Array.isArray(CK.DEFAULT_READINESS) ? CK.DEFAULT_READINESS : [];
+    return h('div', { class: 'note' }, h('b', { text: Y('contKit') }), h('p', { text: text || Y('contInfo') }), list.length && S.lang === 'ar' ? h('p', { class: 'muted small', text: Y('heOnly') }) : null,
       list.length ? h('ul', { class: 'list' }, list.map((x) => h('li', { text: x }))) : null,
       h('a', { class: 'btn ghost sm', href: 'continuity-kit.html', target: '_blank', rel: 'noopener', text: Y('contKit') }));
   }
@@ -803,10 +807,15 @@
     if (R.hardTalk && HT && HT.q) {
       const ans = bindText(h('textarea', { rows: 3 }), () => ex.hardTalk, (v) => { ex.hardTalk = v; }, 'exercises', '');
       const after = h('div', {});
-      const reveal = () => after.replaceChildren(h('ul', { class: 'list' }, (HT.feedback || []).map((q) => h('li', { text: q }))), h('p', { class: 'muted' }, (HT.card || '') + ' ', h('a', { href: 'yesh-ma-laasot.html?back=home', target: '_blank', rel: 'noopener', text: S.lang === 'ar' ? 'يوجد ما نفعله' : 'יש מה לעשות' })));
+      const talkHow = (L.S4.find((x) => x.k === 'talk') || {}).how;
+      const reveal = () => after.replaceChildren(talkHow ? h('div', { class: 'note' }, h('b', { text: Y('howAnswer') + ': ' }), talkHow) : null, h('ul', { class: 'list' }, (HT.feedback || []).map((q) => h('li', { text: q }))), h('p', { class: 'muted' }, (HT.card || '') + ' ', h('a', { href: 'yesh-ma-laasot.html?back=home', target: '_blank', rel: 'noopener', text: S.lang === 'ar' ? 'يوجد ما نفعله' : 'יש מה לעשות' })));
       if (String(ex.hardTalk || '').trim()) reveal();
       ans.addEventListener('change', () => { if (String(ans.value).trim()) reveal(); });
       extra.push(h('div', { class: 'card' }, h('h3', { text: T('hardTalk') }), h('p', { class: 'big', style: 'font-size:1.15rem', text: HT.q }), h('p', { class: 'muted', text: HT.how || '' }), field(T('answer'), ans), after));
+    }
+    if (R.teams && R.teams.parents) {
+      extra.push(h('div', { class: 'card' }, h('h3', { text: Y('parentsMsgT') }), h('p', { class: 'muted small', text: Y('parentsMsgCues') }),
+        field(Y('parentsMsgT'), bindText(h('textarea', { rows: 4, placeholder: Y('parentsMsgPh') }), () => st.parentsMsg, (v) => { st.parentsMsg = v; }, 'exercises', ''))));
     }
     const rd = h('div', { class: 'card' }, h('h3', { text: T('roundDebrief') }), makeTimer(150),
       field(L.ROUND_DEBRIEF[0], bindText(h('textarea', { rows: 2 }), () => st.worked, (v) => { st.worked = v; }, 'exercises', '')),
@@ -864,6 +873,7 @@
     const draftBox = h('div', {});
     if (ex.draft) draftBox.appendChild(draftView(ex));
     const draftBtn = h('button', { class: 'btn', type: 'button', text: T('draft'), onclick: async () => {
+      if (ex.draft && !confirm(Y('draftReplace'))) return;
       draftBtn.disabled = true; draftBox.replaceChildren(h('p', { class: 'muted', text: Y('working') }));
       let tr = null;
       const [s, o] = await api('rdyTranscriptGet', { id: S.doc.id, exId: ex.id }); if (s === 200) tr = o.transcript;
@@ -871,7 +881,7 @@
       else if (!tr) tr = { segments: [], marks: ex.marks };
       try {
         const srcs = window.SBE_ADVISOR_SOURCES ? window.SBE_ADVISOR_SOURCES.forAdvisor('readiness') : [];
-        const v = await window.sbeCallAIJson(SERVER, { system: P.debriefSystem(S.lang), messages: [{ role: 'user', content: P.debriefInput(ex, tr, srcs, (obj('decmap').intent ? 'כוונת בית הספר: ' + obj('decmap').intent + '\n' : '') + decmapRows().map((r) => r.filter(Boolean).join(' · ')).join('\n')) }], maxTokens: 12000, customerReview: true }, 300000, P.validDebrief);
+        const v = await window.sbeCallAIJson(SERVER, { system: P.debriefSystem(S.lang), messages: [{ role: 'user', content: anon(P.debriefInput(ex, tr, srcs, (obj('decmap').intent ? 'כוונת בית הספר: ' + obj('decmap').intent + '\n' : '') + decmapRows().map((r) => r.filter(Boolean).join(' · ')).join('\n')) )}], maxTokens: 12000, customerReview: true }, 300000, P.validDebrief);
         ex.draft = v;
         ex.report = ex.report || {};
         ex.report.rows = (v.gaps || []).map((g) => ({ topic: g.topic || '', planned: g.planned || '', happened: g.happened || '', how: g.how || '', keep: g.keep === 'keep' ? 'keep' : 'improve', action: g.action || '', owner: g.team ? teamName(g.team) : '', due: plus(14), team: g.team || '' }));
@@ -969,7 +979,7 @@
   function viewS5() {
     const ex = curEx(5);
     const top = h('div', {}, h('div', { class: 'sunny', text: L.EM_ABSENT + '. ' + Y('noPrep') }), h('div', { class: 'note', text: L.TABLETOP_NOTE }), exerciseTop(5, 'disconnect'));
-    return h('div', {}, top, ex ? exTabs(5, ex) : viewCompare(), h('div', { class: 'note', text: L.COMMUNITY }));
+    return h('div', {}, top, ex ? exTabs(5, ex) : viewCompare(), h('div', { class: 'note' }, L.COMMUNITY + ' ', h('a', { class: 'lnk', href: 'journey.html', text: Y('toJourney') })));
   }
   function viewCompare() {
     const r3 = exList(3).filter((x) => x.report && x.report.rows && x.report.rows.length).pop();
@@ -1278,9 +1288,9 @@
     const who = h('div', { class: 'row' }, allTeams().map((t) => h('label', { class: 'pill' }, h('input', { type: 'checkbox', checked: teams.has(t.id), onchange: (e) => { if (e.target.checked) teams.add(t.id); else teams.delete(t.id); } }), ' ', t.name)));
     const create = h('button', { class: 'btn', type: 'button', text: Y('createMeeting'), onclick: async () => {
       const list = arr('meetings'); S.doc.parts.meetings = list;
-      const m = { id: uid('mt'), type: type.value, title: title.value.trim() || tp().name, date: date.value, time: time.value.trim(), teams: [...teams], agenda: agenda.value, notes: '', createdAt: nowIso(), by: S.by, from: pre.from || '' };
+      const m = { id: uid('mt'), type: type.value, title: title.value.trim() && title.value.trim() !== tp().name ? title.value.trim() : '', date: date.value, time: time.value.trim(), teams: [...teams], agenda: agenda.value, notes: '', createdAt: nowIso(), by: S.by, from: pre.from || '' };
       list.push(m); create.disabled = true;
-      await save('meetings', 'פגישה חדשה: ' + m.title + ' · ' + dateIL(m.date));
+      await save('meetings', Y('newMeeting').replace('➕ ', '') + ': ' + (m.title || typeName(m.type)) + ' · ' + dateIL(m.date));
       S.newPre = null; S.tab['mt:m' + m.id] = 1; go('mt:' + m.id);
     } });
     return h('div', { class: 'card' }, h('h2', { text: Y('newMeeting').replace('➕ ', '') }),
@@ -1439,7 +1449,7 @@
     const send = h('button', { class: 'btn ghost', type: 'button', text: Y('sendTo') + ' (' + to.length + ')', onclick: async () => {
       if (!to.length) { toast(Y('noEmailYet')); S.tab['mt:' + (R.m ? 'm' + R.m.id : 's' + R.n)] = 0; render(); window.scrollTo(0, 0); return; }
       send.disabled = true;
-      await save(R.part, '');
+      if (!(await save(R.part, ''))) { send.disabled = false; toast(Y('saveFirst')); return; }
       const [s2, o] = await api('rdyMail', { id: S.doc.id, meetingId: recIdOf(R), subject: Y('summaryT') + ': ' + R.title, items: [{ to, text: summaryText(R, null) }] });
       send.disabled = false;
       toast(s2 === 200 ? (o.available ? Y('mailSent') + ': ' + o.sent : T('mailOff')) : (o.error || ''));

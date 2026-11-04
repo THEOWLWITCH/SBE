@@ -53,8 +53,10 @@ test('saving a part: whitelist, revision check, change log and no ID numbers', a
   assert.equal(s1, 200); assert.equal(r1.rev, 1);
   const [s2, r2] = await call(store, { action: 'rdySave', token: b, id, part: 'teams', rev: 0, value: [] });
   assert.equal(s2, 409); assert.equal(r2.doc.parts.teams[0].name, 'צוות ניהול');
-  assert.equal((await call(store, { action: 'rdySave', token: a, id, part: 'gaps', value: [{ text: 'תלמיד ת.ז. 123456789' }] }))[0], 400);
+  assert.equal((await call(store, { action: 'rdySave', token: a, id, part: 'gaps', value: [{ text: 'תלמיד ת.ז. 000000018' }] }))[0], 400);
   assert.equal(hasIdNumber('טלפון 050-1234567'), false);
+  assert.equal(hasIdNumber('טלפון קווי 039876543'), false);
+  assert.equal(hasIdNumber('ת.ז. 000000018'), true);
   const doc = (await call(store, { action: 'rdyGet', token: a, id }))[1].doc;
   assert.equal(doc.log.at(-1).what, 'טבלת צוותים');
   assert.equal(doc.log.at(-1).by, 'דנה');
@@ -105,18 +107,19 @@ test('recording: consent first, phone key only, audio transcribed and dropped, t
   for (const [k, v] of store.data) assert.ok(!JSON.stringify(v).includes(audio), 'audio is not stored: ' + k);
   const tr = (await call(store, { action: 'rdyTranscriptGet', token: a, id, exId: 'ex-1' }))[1].transcript;
   assert.equal(tr.segments.length, 1); assert.equal(tr.marks.length, 1);
-  assert.equal((await call(store, { action: 'rdyTranscriptSave', token: a, id, exId: 'ex-1', segments: [{ seq: 0, text: 'שם 123456789' }] }))[0], 400);
+  assert.equal((await call(store, { action: 'rdyTranscriptSave', token: a, id, exId: 'ex-1', segments: [{ seq: 0, text: 'שם 000000018' }] }))[0], 400);
   await call(store, { action: 'rdyRecStop', rk: start.rk });
   assert.equal((await call(store, { action: 'rdyRecPing', rk: start.rk }))[0], 401);
   await call(store, { action: 'rdyTranscriptDelete', token: a, id, exId: 'ex-1' });
   assert.equal((await call(store, { action: 'rdyTranscriptGet', token: a, id, exId: 'ex-1' }))[1].transcript.segments.length, 0);
 });
 
-test('deleting a program removes it and its transcripts', async () => {
+test('deleting a program (system admin only) removes it and its transcripts', async () => {
   const { store, a } = await setup();
   const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S' } }))[1].doc.id;
   await store.set('rdyt:' + id + ':ex-1', { segments: [{ text: 'x' }], marks: [] });
-  assert.equal((await call(store, { action: 'rdyDelete', token: a, id }))[0], 200);
+  assert.equal((await call(store, { action: 'rdyDelete', token: a, id }))[0], 403);
+  assert.equal((await handleReadiness(store, { action: 'rdyDelete', token: 'x', id }, { who: async () => ({ principal: 'sys', sys: true }) }))[0], 200);
   assert.equal(await store.get('rdy:' + id), null);
   assert.equal(await store.get('rdyt:' + id + ':ex-1'), null);
 });
@@ -152,7 +155,7 @@ test('continuity binder files: clear name and date, a new file replaces the old 
   const { store, a, b, other } = await setup();
   const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S' } }))[1].doc.id;
   const data = Buffer.from('%PDF-1.4 map').toString('base64');
-  const put = (token, extra) => call(store, Object.assign({ action: 'rdyFilePut', token, id, key: 'm2', title: 'מפת המבנה, קומה א׳', date: '2026-11-01', name: 'map.pdf', mime: 'application/pdf', data }, extra));
+  const put = (token, extra) => call(store, Object.assign({ action: 'rdyFilePut', token, id, noStudents: true, key: 'm2', title: 'מפת המבנה, קומה א׳', date: '2026-11-01', name: 'map.pdf', mime: 'application/pdf', data }, extra));
   assert.equal((await put(a, { title: 'IMG_2034' }))[0], 400);
   assert.equal((await put(a, { title: 'map.pdf' }))[0], 400);
   assert.equal((await put(a, { date: '' }))[0], 400);
@@ -176,7 +179,9 @@ test('continuity binder files: clear name and date, a new file replaces the old 
   assert.ok(doc.files.cabc12345 && doc.log.some((l) => /גרסה חדשה בתיקיית הרציפות/.test(l.what)));
   assert.equal((await call(store, { action: 'rdyFileDel', token: a, id, key: 'm2' }))[0], 200);
   assert.equal(await store.get('rdyf:' + id + ':m2'), null);
-  await call(store, { action: 'rdyDelete', token: a, id });
+  assert.equal((await put(a, { noStudents: false }))[0], 400);
+  assert.equal((await call(store, { action: 'rdyDelete', token: a, id }))[0], 403);
+  await handleReadiness(store, { action: 'rdyDelete', token: 'x', id }, { who: async () => ({ principal: 'sys', sys: true }) });
   assert.equal((await store.list('rdyf:' + id + ':')).length, 0);
 });
 

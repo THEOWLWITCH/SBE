@@ -253,7 +253,7 @@
     decision: 'ההחלטה שלנו', showAlts: 'הצגת חלופות', alt: 'חלופה', allows: 'מה זה מאפשר', gives: 'על מה זה מוותר',
     planQ: 'מה מופיע על זה במערך המוכנות שלנו?', noPlan: 'אין: לרשום כפער',
     callHelp: 'קריאה לעזרה', hardTalk: 'השיחה הקשה', answer: 'מה עניתם', roundDebrief: 'תחקיר קצר לסבב',
-    rec: '🎙 הקלטת התרגיל בטלפון', consent: 'כל המשתתפים הסכימו להקלטה', recInfo: 'ההקלטה עוברת לתמלול ולא נשמרת. התמליל נמחק כשהדוח מאושר. כל אחד ואחת יכולים לבקש לעצור.',
+    rec: '🎙 הקלטת התרגיל בטלפון', consent: 'כל המשתתפים הסכימו להקלטה', recInfo: 'ההקלטה עוברת לתמלול בשירות חיצוני (OpenAI) ולא נשמרת. התמליל נמחק כשדוח התרגיל מאושר או כשהמפגש מסומן כהושלם, ולכל המאוחר אחרי 30 יום. כל אחד ואחת יכולים לבקש לעצור.',
     recLink: 'הקישור לטלפון של הרשם/ת', markManual: '⭐ רגע החלטה', transcript: 'התמליל', draft: 'הכנת טיוטה מהתמליל ומהסימונים',
     debrief: 'תחקיר מיידי', reportT: 'דוח התחקיר', approve: 'אישור הדוח (התמליל נמחק)', approved: 'הדוח אושר',
     ideas: 'רעיונות לדיון ההחלטות', ifThen: 'אם… אז…', strengths: 'חוזקות', toImprove: 'לשיפור',
@@ -553,7 +553,7 @@
   function debriefInput(ex, transcript, sources, mapText) {
     const segs = (transcript && transcript.segments || []).map((s) => '[סבב ' + s.round + '] ' + s.text).join('\n');
     const marks = (transcript && transcript.marks || []).map((m) => '⭐ סבב ' + m.round + ' · ' + Math.round(m.t / 60000) + ' דק׳ · ' + (m.note || 'רגע החלטה')).join('\n');
-    const rounds = (ex.rounds || []).map((r, i) => 'סבב ' + (i + 1) + ': החלטה: ' + (r.decision || '') + (r.plan ? ' · במערך: ' + r.plan : '') + (r.worked ? ' · מה עבד: ' + r.worked : '') + (r.improved ? ' · השתפרנו: ' + r.improved : '')).join('\n');
+    const rounds = (ex.rounds || []).map((r, i) => 'סבב ' + (i + 1) + ': החלטה: ' + (r.decision || '') + (r.plan ? ' · במערך: ' + r.plan : '') + (r.worked ? ' · מה עבד: ' + r.worked : '') + (r.parentsMsg ? ' · ההודעה להורים: ' + r.parentsMsg : '') + (r.improved ? ' · השתפרנו: ' + r.improved : '')).join('\n');
     const steps = Object.entries(ex.debrief || {}).map(([k, v]) => k + ': ' + v).join('\n');
     return ['התרחיש: ' + (ex.title || C.SIRENS.title), 'ההחלטות בסבבים:\n' + rounds, ex.callHelp ? 'הקריאה לעזרה: ' + ex.callHelp : '', ex.hardTalk ? 'השיחה הקשה: ' + ex.hardTalk : '',
       steps ? 'מה נרשם בתחקיר:\n' + steps : '', mapText ? 'מפת ההחלטות וכוונת בית הספר:\n' + mapText : '', marks ? 'רגעי החלטה שסומנו:\n' + marks : '', segs ? 'התמליל:\n' + segs.slice(0, 60000) : '',

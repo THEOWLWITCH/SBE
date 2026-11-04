@@ -49,9 +49,18 @@ const EMAIL_RE = /^[^\s@<>()",;:]+@[^\s@<>()",;:]+\.[^\s@<>()",;:]{2,}$/;
 const str = (v, max = 200) => String(v == null ? '' : v).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim().slice(0, max);
 const err = (status, error) => [status, { error }];
 
-// פרטים מזהים של תלמידים לא נכנסים: תעודת זהות (9 ספרות רצופות) בשום שדה.
+// פרטים מזהים של תלמידים לא נכנסים: תעודת זהות בשום שדה. 9 ספרות רצופות שעוברות את ספרת הביקורת של תעודת זהות ישראלית;
+// מספר טלפון קווי של 9 ספרות (למשל 039876543) לא נחסם (בדיקת המומחים, 04/11/2026).
+export function validIsraeliId(d) {
+  if (!/^\d{9}$/.test(d)) return false;
+  let sum = 0;
+  for (let i = 0; i < 9; i++) { let x = Number(d[i]) * (i % 2 ? 2 : 1); if (x > 9) x -= 9; sum += x; }
+  return sum % 10 === 0;
+}
 export function hasIdNumber(value) {
-  return /(^|[^\d])\d{9}([^\d]|$)/.test(typeof value === 'string' ? value : JSON.stringify(value));
+  const text = typeof value === 'string' ? value : JSON.stringify(value);
+  for (const m of text.matchAll(/(?:^|[^\d])(\d{9})(?=[^\d]|$)/g)) if (validIsraeliId(m[1])) return true;
+  return false;
 }
 
 const locks = new Map();
@@ -144,6 +153,7 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
         if (!audio || audio.length > MAX_AUDIO_B64 || !/^[A-Za-z0-9+/=]+$/.test(audio)) return err(413, 'הקטע גדול מדי או אינו תקין');
         const out = await transcribe(fetchImpl, env, audio, str(body.mime, 60), d.parts.profile?.lang);
         if (out.error) return err(503, out.error);
+        tr.at = tr.at || new Date(now()).toISOString();
         tr.segments.push({ seq, t: Math.max(0, Number(body.t) || 0), round: Math.max(1, Math.min(9, Number(body.round) || 1)), text: out.text });
         tr.segments.sort((a, b) => a.seq - b.seq);
         if (JSON.stringify(tr).length > MAX_TRANSCRIPT) return err(413, 'התמליל ארוך מדי. אפשר לסיים את ההקלטה');
@@ -191,6 +201,8 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
       if (action === 'rdyGet') return [200, { doc: publicDoc(d) }];
 
       if (action === 'rdyDelete') {
+        // מחיקת המערך כולו (כולל תמלילים וקבצים): רק מנהלת המערכת
+        if (!me.sys) return err(403, 'מחיקת המערך נעשית רק דרך Begood');
         for (const r of await store.list('rdyt:' + d.id + ':', { keysOnly: true })) await store.del(r.key);
         for (const r of await store.list('rdyf:' + d.id + ':', { keysOnly: true })) await store.del(r.key);
         await store.del('rdy:' + d.id);
@@ -230,7 +242,9 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
         // סיכום מפגש: נשלח רק למי שנרשם/ה כמשתתף/ת במפגש (צ'ק־אין), וכתובת רק מתוך הצוותים או מרשימת המשתתפים של המפגש
         const rec = body.meetingId ? recTarget(d, body.meetingId) : null;
         const teamMail = teams.flatMap((t) => (t && (t.members || []).concat(t.lead || [], t.deputy || [])) || []).map((m) => str(m && m.email, 254).toLowerCase());
-        const attMail = rec && Array.isArray(rec.attendees) ? rec.attendees.filter((a) => a && a.here).map((a) => str(a.email, 254).toLowerCase()) : [];
+        // אורחים: עד 10 למפגש, כדי שהשליחה לא תהיה פתוחה לכל כתובת
+        const teamSet = new Set(teams.flatMap((t) => (t && (t.members || []).concat(t.lead || [], t.deputy || [])) || []).map((m) => str(m && m.email, 254).toLowerCase()));
+        const attMail = rec && Array.isArray(rec.attendees) ? rec.attendees.filter((a) => a && a.here).map((a) => str(a.email, 254).toLowerCase()).filter((e, i, all) => teamSet.has(e) || all.filter((x) => !teamSet.has(x)).indexOf(e) < 10) : [];
         const allowed = new Set(teamMail.concat(attMail).filter((e) => EMAIL_RE.test(e)));
         for (const it of items) {
           const team = teams.find((t) => t && t.id === it.teamId);
@@ -271,6 +285,8 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
         const tKey = 'rdyt:' + d.id + ':' + body.exId;
         if (action === 'rdyTranscriptDelete') { await store.del(tKey); return [200, { ok: true }]; }
         const tr = (await store.get(tKey)) || { segments: [], marks: [] };
+        // תמליל נשמר עד 30 יום, גם כשהתרגיל או המפגש לא הושלמו
+        if (tr.at && Date.parse(tr.at) < now() - 30 * 864e5) { await store.del(tKey); return [200, { transcript: { segments: [], marks: [] }, expired: true }]; }
         if (action === 'rdyTranscriptGet') return [200, { transcript: tr }];
         // עריכת התמליל לפני שהוא משמש לדוח (למשל שם שנאמר בטעות)
         const segs = Array.isArray(body.segments) ? body.segments.slice(0, MAX_CHUNKS).map((s, i) => ({ seq: Number(s && s.seq) || i, t: Number(s && s.t) || 0, round: Number(s && s.round) || 1, text: str(s && s.text, 20000) })) : tr.segments;
@@ -283,7 +299,9 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
 
       // תיקיית הרציפות: העלאה (מחליפה את הגרסה הקודמת), פתיחה ומחיקה
       if (/^rdyFile(Put|Get|Del)$/.test(action)) {
-        const it = binderItem(d, body.key);
+        let it = binderItem(d, body.key);
+        // קובץ של פריט שכבר הוסר מהרשימה: אפשר עדיין לפתוח ולמחוק אותו
+        if (!it && action !== 'rdyFilePut' && d.files && d.files[body.key] && /^(m\d|c[a-z0-9]{4,14})$/.test(body.key)) it = { key: body.key, sens: false };
         if (!it) return err(404, 'הפריט לא נמצא ברשימה');
         const fKey = 'rdyf:' + d.id + ':' + it.key;
         d.files = d.files && typeof d.files === 'object' ? d.files : {};
@@ -301,6 +319,7 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
           return [200, { ok: true, files: d.files }];
         }
         // rdyFilePut
+        if (body.noStudents !== true) return err(400, 'לפני ההעלאה, אפשר לאשר שאין בקובץ פרטים של תלמידים או הורים');
         if (it.sens) return err(400, 'זה פריט עם פרטים של תלמידים, הורים או אנשי צוות. הוא נשמר בבית הספר, ובמערך רק כותבים איפה הוא נמצא ומתי עודכן');
         const title = str(body.title, 120);
         if (vagueTitle(title)) return err(400, 'כדי שכולם ימצאו את הקובץ, אפשר לתת לו שם ברור, למשל: מפת המבנה, קומה א׳ וב׳');
