@@ -8,7 +8,7 @@
 // הקול לא נשמר בשום מקום: קטע עובר לתמלול ונזרק (החלטה 28, 03/11/2026: "להוסיף במכשיר נייד").
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
-export const RDY_PARTS = ['profile', 'plan', 'teams', 'tasks', 'em', 'mapping', 'gaps', 'ends', 'actions', 'exercises', 'sessions', 'partners', 'ideas', 'scenarios', 'learning', 'compare', 'decmap'];
+export const RDY_PARTS = ['profile', 'plan', 'teams', 'tasks', 'em', 'mapping', 'gaps', 'ends', 'actions', 'exercises', 'sessions', 'partners', 'ideas', 'scenarios', 'learning', 'compare', 'decmap', 'meetings'];
 const MAX_PART = 400_000, MAX_DOC = 1_800_000, MAX_MINE = 30, MAX_LOG = 400;
 const MAX_MAIL_DAY = 300, REC_HOURS = 6, MAX_CHUNKS = 400, MAX_AUDIO_B64 = 3_000_000, MAX_TRANSCRIPT = 600_000;
 
@@ -139,6 +139,11 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
       if (hasIdNumber(profile)) return err(400, 'נראה שיש כאן מספר זהות. פרטים של תלמידים לא נשמרים במערך');
       const owner = ownerOf(me);
       const count = (await store.list('rdy:')).filter((r) => r.value && r.value.owner === owner).length;
+      // לבית ספר (או לארגון) יש מערך מוכנות אחד (04/11/2026: "לבי"ס יש מערך מוכנות אחד"). רק מנהלת המערכת פותחת כמה.
+      if (owner !== 'sys' && count >= 1) {
+        const have = (await store.list('rdy:')).find((r) => r.value && r.value.owner === owner);
+        return [409, { error: 'לבית הספר כבר יש מערך מוכנות. הוא נפתח עכשיו.', id: have && have.value.id }];
+      }
       if (count >= MAX_MINE) return err(429, 'יש כבר הרבה מערכים. אפשר למחוק מערך ישן ולנסות שוב');
       const at = new Date(now()).toISOString();
       const d = { id: randomUUID(), owner, createdAt: at, updatedAt: at, rev: 1, revs: {}, log: [{ at, by: str(body.by, 60) || 'צוות', what: 'פתיחת מערך המוכנות' }],

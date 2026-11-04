@@ -223,7 +223,7 @@
     { k: 'cycles', name: 'סבבי שיפור שהושלמו' }
   ];
   C.ROUTINE = 'גם בשגרה: אותם צעדים (תכנון, חשיבה משותפת, אחריות, תרגול ותחקיר) מתאימים לשיחה מורכבת עם הורים, לקונפליקט בצוות או לשינוי.';
-  C.ROUTINE_LINKS = [['team-thinking.html', 'חשיבת צוות'], ['conversation-planner.html', 'תכנון שיחה'], ['routines-hub.html', 'מרכז השגרות'], ['yesh-ma-laasot.html', 'יש מה לעשות']];
+  C.ROUTINE_LINKS = [['continuity-kit.html', 'תיק רציפות'], ['team-thinking.html', 'חשיבת צוות'], ['conversation-planner.html', 'תכנון שיחה'], ['routines-hub.html', 'מרכז השגרות'], ['yesh-ma-laasot.html', 'יש מה לעשות']];
 
   C.UI = {
     tool: 'מערך המוכנות', sub: 'בונים, מתרגלים ומשפרים יחד את המוכנות של בית הספר',
@@ -403,6 +403,20 @@
   C.IDEA_DEC = { adopt: 'מאמצים', reject: 'לא מאמצים', check: 'בודקים עוד' };
   C.IDEA_INFO = 'תוך שבוע מכל תחקיר צוות הניהול מחליט על הרעיונות. רעיון שאומץ הופך לפעולה עם אחראי/ת ומועד. רעיון שלא אומץ נרשם עם הסבר, ומי שהציע/ה מקבל/ת תשובה. רעיון שבודקים עוד מקבל אחראי/ת לבדיקה ומועד שבו הוא חוזר לדיון.';
   C.IDEA_COLS = ['הרעיון', 'מי הציע/ה', 'ההחלטה', 'הסבר או תשובה', 'אחראי/ת', 'עד מתי'];
+
+  // ---------- פגישות (02, "טקסים"; 03: כל מפגש נפתח בסבב עדכון ונסגר בסיכום) ----------
+  // פגישה חדשה מתוכננת לפי סוג הטקס; סדר היום מתמלא לפי הסוג, והצוות משנה.
+  C.MEET_TYPES = [
+    { k: 'weekly', name: 'זמן מוכנות שבועי', when: 'במפגש הצוות השבועי', agenda: ['סבב עדכון: כל צוות מדווח לפי תבנית הדיווח', 'מעבר על הקצוות הפתוחים', 'תרחיש שולחן קצר או סימולציה (רשות)', 'סיכום: החלטות, פעולות, אחראים ולו"ז'] },
+    { k: 'resday', name: 'יום חוסן', when: 'פעם בחודש', agenda: ['סבב עדכון ומעבר על כל מה שעדיין פתוח', 'תרגול כלשהו לכל בית הספר', 'בדיקת כרטיס הכיס בזוגות', 'בדיקת פעולות שמחכות לבדיקה בתרגיל', 'סיכום: החלטות, פעולות, אחראים ולו"ז'] },
+    { k: 'decide', name: 'דיון החלטות', when: 'תוך שבוע מכל תחקיר', agenda: ['מעבר על הרעיונות מהתחקיר, לפי צוותים', 'לכל רעיון: מאמצים, לא מאמצים או בודקים עוד', 'תשובה לכל מי שהציע/ה', 'שליחת ההחלטות לכל המשתתפים'] },
+    { k: 'drill', name: 'תרגיל גדול', when: 'פעמיים בשנה לפחות, במועדים קבועים', agenda: ['סבב עדכון', 'תרחיש שונה מהפעם הקודמת', 'תחקיר מיידי', 'סיכום ומועד לדיון ההחלטות'] },
+    { k: 'annual', name: 'בדיקה שנתית', when: 'פעם בשנה', agenda: ['אישור מפת ההחלטות עם הרשות והמפקח/ת', 'רענון עזרה ראשונה פיזית ונפשית', 'אישור נוסח פעולות ההתגוננות בידי אחראי/ת הביטחון', 'עדכון הנספחים ומדרגת הבשלות'] },
+    { k: 'onboard', name: 'קליטת צוות חדש', when: 'בתחילת העבודה', agenda: ['היכרות עם הצוותים והתפקידים', 'נהלי החירום', 'כרטיס הכיס', 'שיבוץ לצוות, עם מוביל/ה וממלא/ת מקום'] },
+    { k: 'other', name: 'פגישה אחרת', when: 'לפי הצורך', agenda: ['סבב עדכון', 'הנושא', 'סיכום: החלטות, פעולות, אחראים ולו"ז'] }
+  ];
+  // טבלת מעקב אחת, בגיליונות. פריט עובר מגיליון לגיליון לפי סימון.
+  C.SHEETS = { tasks: 'משימות', decisions: 'החלטות', ends: 'קצוות פתוחים', done: 'הושלמו' };
 
   // ---------- מילים לגרסה הארגונית (לפני הרשימה הכללית של org-words.js; הארוך לפני הקצר) ----------
   const ORG_INTRO = 'המרחב הארגוני: מערך המוכנות של קהילה, רשות, מרכז קהילתי או ארגון. בלי המילים מחנך/ת ומורה, ודוגמאות מעולם הקהילה והארגון.';
@@ -632,6 +646,33 @@
       'החזירו JSON בלבד: {"rows":[{"topic":"...","s3":"...","s5":"...","state":"closed|better|open|fresh","todo":"..."}]}', langLine(lang)].join('\n');
   }
   const validCompare = (o) => !!o && Array.isArray(o.rows);
+  // הדיון במפגש: המודל גוזר משימות, החלטות וקצוות פתוחים, והצוות בוחר מה נכנס לטבלת המעקב
+  function meetingSystem(lang) {
+    return ['מתוך מה שנרשם בדיון במפגש של צוות מערך המוכנות, גזרו שלושה סוגים של פריטים:',
+      'tasks: משימה שמישהו לקח/ה על עצמו/ה או שהוחלט שתיעשה. team הוא אחד מהמזהים: ' + C.TEAMS.map((x) => x.id + ' (' + x.name + ')').join(', ') + ', או all. owner ו-due (YYYY-MM-DD) רק אם נאמרו.',
+      'decisions: מה שהוחלט בדיון. by רק אם נאמר מי החליט/ה.',
+      'ends: קצה פתוח: "אבדוק", "אחזור אליך", "נחליט אחר כך", "מחכים ל...", או שאלה שנשארה בלי תשובה. owner רק אם נאמר.',
+      'רק מה שעולה מהדיון, בלי להמציא ובלי לחזור על אותו פריט בשני סוגים. ניסוח קצר כשם פעולה ("הזמנת מפתח נוסף למרחב בקומה השנייה"). בלי שמות של תלמידים. על המערך, לא על אנשים.',
+      'החזירו JSON בלבד: {"tasks":[{"text":"...","team":"...","owner":"","due":""}],"decisions":[{"text":"...","by":""}],"ends":[{"text":"...","owner":""}]}', langLine(lang)].join('\n');
+  }
+  const validMeeting = (o) => !!o && Array.isArray(o.tasks) && Array.isArray(o.decisions) && Array.isArray(o.ends);
+  function normalizeMeeting(o) {
+    const s = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n);
+    const ids = new Set(C.TEAMS.map((x) => x.id).concat('all'));
+    const date = (v) => (/^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? String(v) : '');
+    const ok = (x) => x && s(x.text, 300);
+    return {
+      tasks: (o.tasks || []).filter(ok).slice(0, 30).map((x) => ({ text: s(x.text, 300), team: ids.has(x.team) ? x.team : '', owner: s(x.owner, 80), due: date(x.due) })),
+      decisions: (o.decisions || []).filter(ok).slice(0, 30).map((x) => ({ text: s(x.text, 300), by: s(x.by, 80) })),
+      ends: (o.ends || []).filter(ok).slice(0, 30).map((x) => ({ text: s(x.text, 300), owner: s(x.owner, 80) }))
+    };
+  }
+  // באיזה גיליון נמצא פריט: פעולה שנבדקה בתרגיל, קצה שנסגר והחלטה שסומנה "בוצע" עוברים להושלמו
+  function sheetOf(kind, it) {
+    if (kind === 'actions') return it.status === 'tested' ? 'done' : 'tasks';
+    if (kind === 'ends') return it.status === 'closed' ? 'done' : 'ends';
+    return it.done ? 'done' : 'decisions';
+  }
   // מפת ההחלטות: שנה מהאישור האחרון (מול הרשות ומול המפקח/ת)
   function decmapDue(dm, now = Date.now()) {
     const a = dm && dm.approvedAuth, b = dm && dm.approvedSup;
@@ -649,7 +690,8 @@
   const PII_RX = /(05\d[- ]?\d{3}[- ]?\d{4}|0[2-489][- ]?\d{7}|(^|[^\d])\d{9}([^\d]|$))/;
 
   return Object.assign({}, C, { space, content, t, endState, detectEnds, stats, independence, debriefSystem, debriefInput, validDebrief, planSystem, validPlan, PII_RX,
-    checkSelection, generatorSystem, generatorInput, normalizeScenario, validScenario, altSystem, validAlts, roleSystem, compareSystem, validCompare, decmapDue, ideasState });
+    checkSelection, generatorSystem, generatorInput, normalizeScenario, validScenario, altSystem, validAlts, roleSystem, compareSystem, validCompare, decmapDue, ideasState,
+    meetingSystem, validMeeting, normalizeMeeting, sheetOf });
   }
   const API = makeApi(C, AR, 'edu');
   const ORGAPI = makeOrg();
@@ -701,7 +743,7 @@
     if (ARO && Array.isArray(ARO.MANDATORY) && ARO.MANDATORY.length === C.MANDATORY.length) ARO.MANDATORY = keepIdx.map((i) => ARO.MANDATORY[i]);
     const api = makeApi(O, ARO, 'org');
     const wrap = (fn) => function () { const out = fn.apply(null, arguments); return ORG_INTRO + '\n\n' + (ORGW ? ORGW.swap(out, EX) : out); };
-    ['generatorSystem', 'debriefSystem', 'planSystem', 'altSystem', 'roleSystem', 'compareSystem'].forEach((k) => { api[k] = wrap(api[k]); });
+    ['generatorSystem', 'debriefSystem', 'planSystem', 'altSystem', 'roleSystem', 'compareSystem', 'meetingSystem'].forEach((k) => { api[k] = wrap(api[k]); });
     api.words = (t) => (ORGW ? ORGW.swap(t, EX) : t);
     api.arWords = (t) => runPairs(t, AR_ORG_PAIRS);
     return api;

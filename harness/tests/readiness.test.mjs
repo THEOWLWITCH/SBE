@@ -39,6 +39,10 @@ test('a staff code of the same school shares the program; another school and a c
   assert.equal((await call(store, { action: 'rdyMine', token: b }))[1].items.length, 1);
   assert.equal((await call(store, { action: 'rdyGet', token: other, id }))[0], 404);
   assert.equal((await call(store, { action: 'rdyMine', token: other }))[1].items.length, 0);
+  // מערך אחד לבית ספר: קוד אחר של אותו בית ספר מקבל את המערך הקיים
+  const [st2, dup] = await call(store, { action: 'rdyCreate', token: b, profile: { name: 'שני' } });
+  assert.equal(st2, 409); assert.equal(dup.id, id);
+  assert.equal((await call(store, { action: 'rdyCreate', token: other, profile: { name: 'אחר' } }))[0], 201);
 });
 
 test('saving a part: whitelist, revision check, change log and no ID numbers', async () => {

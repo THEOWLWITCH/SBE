@@ -17,7 +17,9 @@
     get(k, d) { try { const v = localStorage.getItem(UK(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
     set(k, v) { try { localStorage.setItem(UK(k), JSON.stringify(v)); } catch (e) {} }
   };
-  const S = { lang: LS.get('sbe.prep.lang', 'he') === 'ar' ? 'ar' : 'he', by: LS.get('sbe.prep.by', ''), doc: null, list: null, step: 0, panel: '', exId: '', busy: false };
+  const S = { lang: LS.get('sbe.prep.lang', 'he') === 'ar' ? 'ar' : 'he', by: LS.get('sbe.prep.by', ''), doc: null, list: null, view: 'home', tab: {}, sheet: 'tasks', menu: false, exId: '', busy: false };
+  // מנהלת המערכת רואה את כל המערכים; לבית ספר יש מערך אחד (04/11/2026)
+  const SYS = ss('sbe.session.homeUrl') === 'admin.html?role=sys';
   let L = P.content(S.lang);
 
   // טקסטים קבועים שנוספו במסך (העיקריים ב-P.UI). ערבית ספרותית פשוטה.
@@ -37,15 +39,26 @@
       callAfter: 'אחרי שההודעה נשלחת', recNo: 'בלי טלפון או בלי הסכמה: מסמנים רגעי החלטה כאן, בכפתור.', ledByDeputy: 'ממלא/ת המקום הוביל/ה', builtByTeam: 'התרחיש נבנה על ידי הצוות',
       decmapT: 'מפת ההחלטות לפי רמות', decmapNotApproved: 'עוד לא אושרה עם הרשות והמפקח/ת', printDecmap: '🖨 מפת ההחלטות', ideasT: 'דיון החלטות', ideasOpen: 'רעיונות מחכים להחלטה',
       discussBy: 'הדיון עד', whyNot: 'הסבר למי שהציע/ה', sendDecisions: '✉️ שליחת ההחלטות לכל המשתתפים', printIdeas: '🖨 ההחלטות',
-      s4: 'מפגש 4', s5: 'מפגש 5', routineStep: '🎲 בשגרה: מחולל תרחישי משבר וחירום', intent: 'כוונת בית הספר', success: 'מה נחשב הצלחה', scenario: 'התרחיש',
+      s4: 'מפגש 4', s5: 'מפגש 5', routineStep: '🎲 מחולל תרחישים: מוכנות למשברים ולמצבי חירום', intent: 'כוונת בית הספר', success: 'מה נחשב הצלחה', scenario: 'התרחיש',
       ourTeam: 'הצוות שלנו', sayIt: 'מה אומרים לדמות', roleplay: 'משחק תפקידים: דמויות מבחוץ', roleInfo: 'הכלי מגלם את הדמות ומגיב למה שאתם אומרים. אפשר לעבור בין הדמויות.', character: 'הדמות',
       learnWhat: 'מה לומדים במפגש', pickGap: 'הפער שהצוות בחר מהתחקיר', aidDate: 'מתי הצוות עבר עזרה ראשונה פיזית ונפשית', annexToUpdate: 'הנספח שמתעדכן', updatedAfter: 'סימון: עודכן אחרי תחקיר', learnPlan: 'מה לומדים, ואיך', noGaps: 'עוד אין פערים. הם נוספים ממפגש 2 ומהתחקיר של מפגש 3.',
       noPrep: 'התרחיש לא מתפרסם מראש.', compareT: 'השוואה בין מפגש 3 למפגש 5', compareInfo: 'לכל נושא מדוח מפגש 3: מה קרה אז, מה קרה עכשיו, והמצב. מתחילים במה שהשתפר. פער שנסגר נכנס כנוהל למערך; פער שהשתפר, פתוח או חדש מקבל פעולה ונבדק ביום החוסן הבא.',
       needS3: 'ההשוואה נפתחת אחרי שיש דוח תחקיר של מפגש 3.', needS5: 'הטיוטה נבנית אחרי שיש דוח תחקיר של מפגש 5.', compareDraft: 'טיוטת השוואה משני הדוחות', compareApply: 'עדכון המערך לפי ההשוואה', printCompare: '🖨 ההשוואה',
-      genT: 'מחולל תרחישי משבר וחירום', genInfo: 'לתרגול בשגרה ובחירום: משבר בשגרה (גשם שמציף, אלימות של הורה, תלמיד/ה שנעדר/ת בטיול) או חירום. אתם בונים את התרחיש, והכלי עוזר: קודם מחליטים מה בודקים, אחר כך בוחרים את הצירים, ורק אז הכלי כותב טיוטה שאפשר לערוך. נהלים מחייבים קופצים בתרחיש, ונוהל שחסר נכנס לקצוות הפתוחים.',
+      genT: 'מחולל תרחישים: מוכנות למשברים ולמצבי חירום', genInfo: 'לתרגול בשגרה ובחירום: משבר בשגרה (גשם שמציף, אלימות של הורה, תלמיד/ה שנעדר/ת בטיול) או חירום. אתם בונים את התרחיש, והכלי עוזר: קודם מחליטים מה בודקים, אחר כך בוחרים את הצירים, ורק אז הכלי כותב טיוטה שאפשר לערוך. נהלים מחייבים קופצים בתרחיש, ונוהל שחסר נכנס לקצוות הפתוחים.',
       notPracticed: 'נספח שעוד לא תורגל', genTests: 'מה בודקים', teamOnly: 'רק בבחירה שלכם', noSensitive: 'הכלי לא בוחר משבר רגשי־חברתי', genAxes: 'הצירים', genCheck: 'בדיקה לפני הבנייה (הצעה)',
       adaptNote: 'בכל תרחיש יש לפחות עדכון אחד על מענה מותאם לכל קושי.', genBuild: 'בניית טיוטה', genBad: 'הטיוטה לא עמדה בכללים (שלושה סבבים, בלי הפניה ובלי פגיעה עצמית). אפשר לנסות שוב.', ourScenarios: 'התרחישים שבניתם',
       builtBy: 'נבנה על ידי הצוות', runS5: 'להרצה במפגש 5', runS3: 'להרצה בתרגיל צוות', confirmDel: 'למחוק את התרחיש?',
+
+      meetings: '📅 מפגשים', newMeeting: '➕ תכנון פגישה חדשה', fixedSessions: 'חמשת המפגשים', ourMeetings: 'פגישות שתכננתם', noMeetings: 'עוד אין פגישות נוספות.',
+      mType: 'סוג הפגישה', mTitle: 'שם הפגישה', mDate: 'תאריך', mTime: 'שעה', mWho: 'מי משתתף/ת', agenda: 'סדר היום', createMeeting: 'יצירת הפגישה', delMeeting: 'מחיקת הפגישה', confirmDelM: 'למחוק את הפגישה?',
+      tabUpdate: '1. סבב עדכון', tabMain: '2. המפגש', tabTalk: '3. דיון וסיכום', updateInfo: 'פותחים בסבב עדכון: כל צוות מדווח לפי תבנית הדיווח, ומעדכנים את הסטטוס בטבלת המעקב.',
+      notes: 'מה עלה בדיון', notesPh: 'למשל: הוחלט להזמין מפתח נוסף למרחב בקומה השנייה. מוביל/ת צוות הביטחון בודק/ת עם הרשות את האתר החלופי. מחכים לתשובה על ההסעות.',
+      extract: '🤖 גזירת משימות, החלטות וקצוות פתוחים', extractInfo: 'הכלי מציע, והצוות בוחר מה נכנס לטבלת המעקב ולאיזה גיליון.', toTrack: 'הוספה לטבלת המעקב', added: 'נוסף לטבלת המעקב', pick: 'להוסיף',
+      sheet: 'גיליון', scheduleNext: 'קביעת הפגישה הבאה', sendSummary: '✉️ שליחת הסיכום לכל המשתתפים', summaryT: 'סיכום המפגש', fromHere: 'מהמפגש הזה',
+      track: '📋 טבלת מעקב', trackT: 'טבלת מעקב', moveTo: 'העברה לגיליון', index: '📊 מדד המוכנות', contKit: '🗂 תיק הרציפות', partnersBtn: '🤝 שותפים',
+      contInfo: 'מוכנות הכיתה לחירום, צוותי העבודה בכיתה ושרשרת הקשר נמצאים בתיק הרציפות של כל מחנך/ת. כך לא כותבים פעמיים.', contAfter: 'מה המחנכים מוסיפים לתיק הרציפות אחרי התחקיר',
+      openMeeting: 'פתיחת המפגש', confirmTested: 'הפעולה נבדקה בתרגיל או ביום החוסן? רק אז היא עוברת להושלמו.', kindT: 'מאיפה', closedAt: 'נסגר',
+      contShort: 'מוכנות הכיתה לחירום ושרשרת הקשר', remsT: 'ששת השלבים', exRun: 'הרצת התרגיל', exDebrief: 'התחקיר', timing: 'לוח הזמנים של התרגיל', goTeams: '🖨 טבלת הצוותים וכרטיס הכיס', allOpen: 'פתוחים', ours2: 'כל המערכים (רק לך)',
       min: 'דק׳', byName: 'השם שלי', allTeams: 'כל הצוות', exportNote: 'שמות של תלמידים לא נכנסים לכלי. הפרטים נשמרים בבית הספר.' },
     ar: { login: 'لفتح منظومة الجاهزية، يمكن الدخول برمز يشمل هذه الأداة.', ours: 'منظوماتنا', none: 'لا توجد منظومة جاهزية بعد.', updated: 'آخر تحديث',
       sessions: 'اللقاءات', later: 'في المرحلة القادمة', escalate: 'أطراف تُرفع إلى مدير/ة حالة الطوارئ', partners: 'الشركاء: مع من ننسّق في الطوارئ؟', expect: 'ما نتوقع أن نحصل عليه', provide: 'ما نقدّمه',
@@ -62,15 +75,26 @@
       callAfter: 'بعد إرسال الرسالة', recNo: 'بدون هاتف أو بدون موافقة: نشير إلى لحظات القرار هنا، بالزر.', ledByDeputy: 'قاد/ت القائم/ة بالأعمال', builtByTeam: 'بنى الطاقم السيناريو',
       decmapT: 'مفتاح القرارات حسب المستويات', decmapNotApproved: 'لم يُصادَق عليه بعد مع السلطة المحلية والمفتّش/ة', printDecmap: '🖨 مفتاح القرارات', ideasT: 'نقاش القرارات', ideasOpen: 'أفكار تنتظر قرارًا',
       discussBy: 'النقاش حتى', whyNot: 'شرح لمن اقترح/ت', sendDecisions: '✉️ إرسال القرارات لكل المشاركين', printIdeas: '🖨 القرارات',
-      s4: 'اللقاء 4', s5: 'اللقاء 5', routineStep: '🎲 في الروتين: مولّد سيناريوهات الأزمات والطوارئ', intent: 'نية المدرسة', success: 'ما الذي يُعدّ نجاحًا', scenario: 'السيناريو',
+      s4: 'اللقاء 4', s5: 'اللقاء 5', routineStep: '🎲 مولّد السيناريوهات: الجاهزية للأزمات وحالات الطوارئ', intent: 'نية المدرسة', success: 'ما الذي يُعدّ نجاحًا', scenario: 'السيناريو',
       ourTeam: 'طاقمنا', sayIt: 'ماذا نقول للشخصية', roleplay: 'لعب أدوار: شخصيات من الخارج', roleInfo: 'تؤدّي الأداة دور الشخصية وتتجاوب مع ما تقولونه. يمكن التنقّل بين الشخصيات.', character: 'الشخصية',
       learnWhat: 'ماذا نتعلّم في اللقاء', pickGap: 'الفجوة التي اختارها الطاقم من استخلاص العبر', aidDate: 'متى اجتاز الطاقم الإسعاف الأولي الجسدي والنفسي', annexToUpdate: 'الملحق الذي يُحدَّث', updatedAfter: 'إشارة: حُدِّث بعد استخلاص العبر', learnPlan: 'ماذا نتعلّم، وكيف', noGaps: 'لا توجد فجوات بعد. تُضاف من اللقاء 2 ومن استخلاص العبر في اللقاء 3.',
       noPrep: 'لا يُنشر السيناريو مسبقًا.', compareT: 'مقارنة بين اللقاء 3 واللقاء 5', compareInfo: 'لكل موضوع من تقرير اللقاء 3: ما الذي حدث آنذاك، ما الذي حدث الآن، والوضع. نبدأ بما تحسّن. الفجوة التي أُغلقت تدخل كإجراء في المنظومة؛ والفجوة التي تحسّنت أو بقيت مفتوحة أو جديدة تحصل على إجراء وتُفحص في يوم الصمود القادم.',
       needS3: 'تُفتح المقارنة بعد وجود تقرير استخلاص العبر للقاء 3.', needS5: 'تُبنى المسودة بعد وجود تقرير استخلاص العبر للقاء 5.', compareDraft: 'مسودة مقارنة من التقريرين', compareApply: 'تحديث المنظومة حسب المقارنة', printCompare: '🖨 المقارنة',
-      genT: 'مولّد سيناريوهات الأزمات والطوارئ', genInfo: 'للتدريب في الروتين وفي الطوارئ: أزمة في الروتين (مطر يُغرق المدرسة، عنف من أحد الأهالي، طالب/ة غاب/ت في رحلة) أو طوارئ. أنتم تبنون السيناريو والأداة تساعد: أولًا تقرّرون ما الذي نفحصه، ثم تختارون المحاور، وبعدها فقط تكتب الأداة مسودة يمكن تحريرها. تظهر الإجراءات المُلزِمة في السيناريو، والإجراء الناقص يدخل إلى الأطراف المفتوحة.',
+      genT: 'مولّد السيناريوهات: الجاهزية للأزمات وحالات الطوارئ', genInfo: 'للتدريب في الروتين وفي الطوارئ: أزمة في الروتين (مطر يُغرق المدرسة، عنف من أحد الأهالي، طالب/ة غاب/ت في رحلة) أو طوارئ. أنتم تبنون السيناريو والأداة تساعد: أولًا تقرّرون ما الذي نفحصه، ثم تختارون المحاور، وبعدها فقط تكتب الأداة مسودة يمكن تحريرها. تظهر الإجراءات المُلزِمة في السيناريو، والإجراء الناقص يدخل إلى الأطراف المفتوحة.',
       notPracticed: 'ملحق لم يُتدرَّب عليه بعد', genTests: 'ما الذي نفحصه', teamOnly: 'فقط باختياركم', noSensitive: 'الأداة لا تختار أزمة عاطفية اجتماعية', genAxes: 'المحاور', genCheck: 'فحص قبل البناء (اقتراح)',
       adaptNote: 'في كل سيناريو تحديث واحد على الأقل حول الاستجابة الملائمة لكل صعوبة.', genBuild: 'بناء مسودة', genBad: 'المسودة لم تستوفِ القواعد (ثلاث جولات، دون إحالة ودون إيذاء ذاتي). يمكن المحاولة من جديد.', ourScenarios: 'السيناريوهات التي بنيتموها',
       builtBy: 'بناه الطاقم', runS5: 'للتشغيل في اللقاء 5', runS3: 'للتشغيل في تمرين طاقم', confirmDel: 'هل نحذف السيناريو؟',
+
+      meetings: '📅 اللقاءات', newMeeting: '➕ تخطيط اجتماع جديد', fixedSessions: 'اللقاءات الخمسة', ourMeetings: 'اجتماعات خطّطتم لها', noMeetings: 'لا توجد اجتماعات إضافية بعد.',
+      mType: 'نوع الاجتماع', mTitle: 'اسم الاجتماع', mDate: 'التاريخ', mTime: 'الساعة', mWho: 'من يشارك', agenda: 'جدول الأعمال', createMeeting: 'إنشاء الاجتماع', delMeeting: 'حذف الاجتماع', confirmDelM: 'هل نحذف الاجتماع؟',
+      tabUpdate: '1. جولة تحديث', tabMain: '2. اللقاء', tabTalk: '3. نقاش وتلخيص', updateInfo: 'نبدأ بجولة تحديث: كل طاقم يقدّم تقريرًا حسب نموذج التقرير، ونحدّث الحالة في جدول المتابعة.',
+      notes: 'ما الذي طُرح في النقاش', notesPh: 'مثلًا: تقرّر طلب مفتاح إضافي للحيّز المحمي في الطابق الثاني. قائد/ة طاقم الأمن يفحص مع السلطة المحلية الموقع البديل. ننتظر ردًّا بشأن المواصلات.',
+      extract: '🤖 استخراج مهام وقرارات وأطراف مفتوحة', extractInfo: 'تقترح الأداة، ويختار الطاقم ما يدخل إلى جدول المتابعة وإلى أي ورقة.', toTrack: 'إضافة إلى جدول المتابعة', added: 'أُضيف إلى جدول المتابعة', pick: 'إضافة',
+      sheet: 'ورقة', scheduleNext: 'تحديد الاجتماع القادم', sendSummary: '✉️ إرسال التلخيص لكل المشاركين', summaryT: 'تلخيص اللقاء', fromHere: 'من هذا اللقاء',
+      track: '📋 جدول المتابعة', trackT: 'جدول المتابعة', moveTo: 'نقل إلى ورقة', index: '📊 مؤشّر الجاهزية', contKit: '🗂 ملف الاستمرارية', partnersBtn: '🤝 الشركاء',
+      contInfo: 'جاهزية الصف للطوارئ، وطواقم العمل في الصف وسلسلة الاتصال موجودة في ملف الاستمرارية لكل مربٍّ/ية. هكذا لا نكتب مرتين.', contAfter: 'ما الذي يضيفه المربّون إلى ملف الاستمرارية بعد استخلاص العبر',
+      openMeeting: 'فتح اللقاء', confirmTested: 'هل فُحص الإجراء في تمرين أو في يوم الصمود؟ عندها فقط ينتقل إلى اكتملت.', kindT: 'من أين', closedAt: 'أُغلق',
+      contShort: 'جاهزية الصف للطوارئ وسلسلة الاتصال', remsT: 'المراحل الست', exRun: 'تشغيل التمرين', exDebrief: 'استخلاص العبر', timing: 'الجدول الزمني للتمرين', goTeams: '🖨 جدول الطواقم وبطاقة الجيب', allOpen: 'مفتوحة', ours2: 'كل المنظومات (لك فقط)',
       min: 'د', byName: 'اسمي', allTeams: 'كل الطاقم', exportNote: 'أسماء الطلاب لا تدخل الأداة. التفاصيل تُحفظ في المدرسة.' }
   };
   const T = (k) => P.t(S.lang, k);
@@ -169,39 +193,78 @@
     const last = LS.get('sbe.prep.last', '');
     const want = new URLSearchParams(location.search).get('id') || last;
     if (want && S.list.some((x) => x.id === want)) return openDoc(want);
-    if (S.list.length === 1) return openDoc(S.list[0].id);
+    // בית ספר: מערך אחד, נפתח ישר. רשימה רק למנהלת המערכת.
+    if (S.list.length && (!SYS || S.list.length === 1)) return openDoc(S.list[0].id);
     render();
   }
   async function openDoc(id) {
     const [st, out] = await api('rdyGet', { id });
     if (st !== 200) { toast(out.error || ''); S.doc = null; render(); return; }
-    S.doc = out.doc; LS.set('sbe.prep.last', id); S.step = LS.get('sbe.prep.step.' + id, 0) || 0;
+    S.doc = out.doc; LS.set('sbe.prep.last', id);
+    S.view = LS.get('sbe.prep.view.' + id, 'home') || 'home';
+    if (S.view.startsWith('mt:') && !arr('meetings').some((m) => 'mt:' + m.id === S.view)) S.view = 'home';
     const ex = arr('exercises'); S.exId = ex.length ? ex[ex.length - 1].id : '';
     render();
+  }
+  function go(view, sheet) {
+    S.view = view; if (sheet) S.sheet = sheet; S.menu = false;
+    if (S.doc) LS.set('sbe.prep.view.' + S.doc.id, view);
+    render(); window.scrollTo(0, 0);
+  }
+  // לשוניות בתוך מסך, במקום גלילה ארוכה
+  function tabs(key, list, def) {
+    const cur = Math.max(0, Math.min(S.tab[key] == null ? (def || 0) : S.tab[key], list.length - 1));
+    const bar = h('div', { class: 'tabs noprint sbe-no-theme', role: 'tablist' }, list.map(([label], i) => h('button', { type: 'button', role: 'tab', 'aria-selected': i === cur ? 'true' : 'false', text: label,
+      onclick: () => { S.tab[key] = i; render(); } })));
+    return h('div', {}, bar, list[cur][1]());
+  }
+  const typeName = (k) => ((L.MEET_TYPES.find((t) => t.k === k) || L.MEET_TYPES[L.MEET_TYPES.length - 1]).name);
+  const isMeetingView = () => /^s[1-5]$/.test(S.view) || S.view.startsWith('mt:') || S.view === 'new';
+  function trackCount() {
+    const acts = arr('actions').filter((a) => P.sheetOf('actions', a) === 'tasks').length;
+    const ends = arr('ends').filter((e) => P.sheetOf('ends', e) === 'ends').length;
+    const ist = P.ideasState(arr('ideas'));
+    const late = arr('exercises').some((ex) => P.ideasState(arr('ideas'), ex).late);
+    return { open: acts + ends + ist.open, alert: !!P.stats(S.doc).escalate || late };
   }
 
   function render() {
     if (!S.doc) return renderList();
-    const sessions = obj('sessions');
-    const st = P.stats(S.doc);
     const head = h('div', { class: 'row noprint' },
       h('b', { class: 'grow', text: parts().profile?.name || '' }),
       h('label', { class: 'row muted' }, Y('byName') + ': ', piiCheck(h('input', { type: 'text', value: S.by, style: 'width:150px', 'aria-label': T('by'), oninput: (e) => { S.by = e.target.value.slice(0, 60); LS.set('sbe.prep.by', S.by); } }))),
       h('button', { class: 'btn ghost sm', type: 'button', text: T('lang2'), onclick: () => setLang(S.lang === 'ar' ? 'he' : 'ar') }),
-      h('button', { class: 'btn ghost sm', type: 'button', text: Y('ours'), onclick: () => { S.doc = null; LS.set('sbe.prep.last', ''); start(); } }));
-    const sessOf = (i) => (i >= 2 && i <= 6 ? i - 1 : 0);
-    const steps = h('ol', { class: 'steps noprint', 'aria-label': T('tool') }, T('steps').concat([Y('s4'), Y('s5'), Y('routineStep')]).map((label, i) =>
-      h('li', {}, h('button', { type: 'button', class: (sessOf(i) && sessions[sessOf(i)] && sessions[sessOf(i)].done) ? 'done' : '', 'aria-current': S.step === i ? 'step' : null,
-        text: label, onclick: () => { S.step = i; S.panel = ''; LS.set('sbe.prep.step.' + S.doc.id, i); render(); window.scrollTo(0, 0); } }))));
-    const side = h('div', { class: 'side noprint' },
-      h('button', { class: 'btn ghost sm', type: 'button', onclick: () => { S.panel = S.panel === 'ends' ? '' : 'ends'; render(); } }, T('ends') + ' ', h('span', { class: 'pill' + (st.escalate ? ' red' : ''), text: String(st.openEnds) })),
-      h('button', { class: 'btn ghost sm', type: 'button', text: T('actions'), onclick: () => { S.panel = S.panel === 'actions' ? '' : 'actions'; render(); } }),
-      h('button', { class: 'btn ghost sm', type: 'button', onclick: () => { S.panel = S.panel === 'ideas' ? '' : 'ideas'; render(); } }, Y('ideasT') + ' ', h('span', { class: 'pill' + (P.ideasState(arr('ideas')).open ? ' red' : ''), text: String(P.ideasState(arr('ideas')).open) })),
-      h('button', { class: 'btn ghost sm', type: 'button', text: T('log'), onclick: () => { S.panel = S.panel === 'log' ? '' : 'log'; render(); } }));
-    const body = S.panel === 'ends' ? viewEnds() : S.panel === 'actions' ? viewActions() : S.panel === 'ideas' ? viewIdeas() : S.panel === 'log' ? viewLog()
-      : ([viewHome, viewPlan, viewS1, viewS2, viewS3, viewS4, viewS5, viewRoutine][S.step] || viewHome)();
-    app.replaceChildren(head, steps, side, body);
+      SYS ? h('button', { class: 'btn ghost sm', type: 'button', text: Y('ours2'), onclick: () => { S.doc = null; LS.set('sbe.prep.last', ''); render(); } }) : null);
+    const cnt = trackCount();
+    const navBtn = (view, label, extra) => h('button', { type: 'button', class: 'nav', 'aria-current': S.view === view ? 'page' : null, onclick: () => go(view) }, label, extra || null);
+    const nav = h('nav', { class: 'navrow noprint sbe-no-theme', 'aria-label': T('tool') },
+      navBtn('home', '🏠 ' + T('steps')[0]),
+      navBtn('plan', '✍️ ' + T('steps')[1]),
+      h('span', { class: 'menuwrap' }, h('button', { type: 'button', class: 'nav', 'aria-haspopup': 'true', 'aria-expanded': S.menu ? 'true' : 'false', 'aria-current': isMeetingView() ? 'page' : null,
+        text: Y('meetings') + ' ▾', onclick: (e) => { e.stopPropagation(); S.menu = !S.menu; render(); } }), S.menu ? meetingsMenu() : null),
+      navBtn('gen', Y('routineStep')),
+      navBtn('index', Y('index')),
+      navBtn('track', Y('track') + ' ', h('span', { class: 'pill' + (cnt.alert ? ' red' : ''), text: String(cnt.open) })),
+      h('a', { class: 'nav', href: 'continuity-kit.html', target: '_blank', rel: 'noopener', text: Y('contKit') }));
+    const v = S.view;
+    const body = v === 'plan' ? viewPlan() : /^s[1-5]$/.test(v) ? viewMeeting('s', Number(v[1])) : v.startsWith('mt:') ? viewMeeting('m', v.slice(3)) : v === 'new' ? viewNewMeeting()
+      : v === 'gen' ? viewRoutine() : v === 'index' ? viewIndex() : v === 'track' ? viewTrack(false) : v === 'partners' ? viewPartners() : viewHome();
+    app.replaceChildren(head, nav, body);
   }
+  // הרשימה הנפתחת של המפגשים: חמשת המפגשים, הפגישות שתוכננו, ותכנון פגישה חדשה
+  function meetingsMenu() {
+    const sessions = obj('sessions');
+    const mts = arr('meetings').slice().sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+    const item = (view, label, sub) => h('li', {}, h('button', { type: 'button', role: 'menuitem', 'aria-current': S.view === view ? 'page' : null, onclick: () => go(view) },
+      label, sub ? h('small', { class: 'muted', text: '  ' + sub }) : null));
+    return h('div', { class: 'menu sbe-no-theme', role: 'menu', onclick: (e) => e.stopPropagation() },
+      h('div', { class: 'mh', text: Y('fixedSessions') }),
+      h('ul', {}, L.SESSIONS.map((s) => item('s' + s.n, s.n + '. ' + s.title, sessions[s.n] && sessions[s.n].done ? '✓ ' + dateIL(sessions[s.n].at) : ''))),
+      h('div', { class: 'mh', text: Y('ourMeetings') }),
+      mts.length ? h('ul', {}, mts.map((m) => item('mt:' + m.id, m.title || typeName(m.type), dateIL(m.date) + (m.done ? ' ✓' : '')))) : h('p', { class: 'muted', text: Y('noMeetings') }),
+      h('button', { type: 'button', class: 'btn sm', text: Y('newMeeting'), onclick: () => { S.newPre = null; go('new'); } }));
+  }
+  document.addEventListener('click', () => { if (S.menu) { S.menu = false; render(); } });
 
   function renderList() {
     const list = h('div', { class: 'card' }, h('h2', { text: Y('ours') }),
@@ -211,13 +274,14 @@
       lang: h('select', { 'data-closed': '' }, ['he', 'ar', 'both'].map((v) => h('option', { value: v, text: T(v) }))),
       size: h('select', { 'data-closed': '' }, h('option', { value: 'big', text: T('big') }), h('option', { value: 'small', text: T('small') })) };
     if (S.lang === 'ar') f.lang.value = 'ar';
-    const go = h('button', { class: 'btn', type: 'button', text: T('open'), onclick: async () => {
+    const go2 = h('button', { class: 'btn', type: 'button', text: T('open'), onclick: async () => {
       if (!f.name.value.trim()) { f.name.focus(); toast(T('name') + ': ' + T('main')); return; }
-      go.disabled = true;
+      go2.disabled = true;
       const [st, out] = await api('rdyCreate', { by: S.by, profile: { name: f.name.value.trim(), levels: f.levels.value.trim(), lang: f.lang.value, size: f.size.value } });
-      go.disabled = false;
+      go2.disabled = false;
+      if (st === 409 && out.id) { toast(out.error || ''); return openDoc(out.id); }
       if (st !== 201) { toast(out.error || ''); return; }
-      S.doc = out.doc; S.step = 0;
+      S.doc = out.doc; S.view = 'home';
       // הצוותים וההגדרה של מנהל/ת מצב החירום מהמתווה, כנקודת התחלה שהצוות משנה. רשימת המשימות נשארת ריקה: הצוות כותב קודם.
       S.doc.parts.teams = L.TEAMS.map((t) => ({ id: t.id, name: t.name, lead: { name: '', email: '' }, deputy: { name: '', email: '' }, members: [] }));
       await save('teams', 'פתיחת טבלת הצוותים');
@@ -228,33 +292,58 @@
     } });
     const form = h('div', { class: 'card' }, h('h2', { text: T('newProgram') }),
       field(T('name'), piiCheck(f.name), T('main')), field(T('levels'), f.levels, T('opt')), h('div', { class: 'row' }, h('div', { class: 'grow' }, field(T('lang'), f.lang)), h('div', { class: 'grow' }, field(T('size'), f.size))),
-      h('p', { class: 'muted', text: Y('exportNote') }), go);
-    app.replaceChildren(list, form);
+      h('p', { class: 'muted', text: Y('exportNote') }), go2);
+    // בית ספר בלי מערך רואה רק את הפתיחה; מנהלת המערכת רואה גם את הרשימה
+    app.replaceChildren(SYS ? list : '', form);
   }
 
-  // ---------- 🏠 המערך שלנו ----------
+  // ---------- 🏠 המערך שלנו: מבט אחד, וכפתורים לכל מרחב ----------
+  function nextUp() {
+    const sessions = obj('sessions'), today = new Date().toISOString().slice(0, 10);
+    const fixed = L.SESSIONS.find((s) => !(sessions[s.n] && sessions[s.n].done));
+    const mt = arr('meetings').filter((m) => !m.done && String(m.date || '') >= today).sort((a, b) => String(a.date).localeCompare(String(b.date)))[0];
+    const out = [];
+    if (mt) out.push({ view: 'mt:' + mt.id, label: (mt.title || typeName(mt.type)) + ' · ' + dateIL(mt.date) + (mt.time ? ' ' + mt.time : ''), sub: '' });
+    if (fixed) out.push({ view: 's' + fixed.n, label: fixed.n + '. ' + fixed.title, sub: Y('before') + ': ' + fixed.before });
+    return out;
+  }
   function viewHome() {
-    const st = P.stats(S.doc), ind = P.independence(S.doc), sessions = obj('sessions');
-    const next = L.SESSIONS.find((s) => !(sessions[s.n] && sessions[s.n].done)) || null;
-    const prog = h('div', { class: 'card' }, h('h2', { text: Y('sessions') }),
-      h('div', { class: 'grid3' }, L.SESSIONS.map((s) => h('div', { class: 'tile' }, h('b', { text: s.n + '. ' + s.title }),
-        (sessions[s.n] && sessions[s.n].done) ? h('span', { class: 'pill green', text: '✓ ' + dateIL(sessions[s.n].at) }) : null))));
-    const nextCard = next ? h('div', { class: 'note' }, h('b', { text: T('next1') + ': ' + next.n + '. ' + next.title }), h('div', { text: Y('before') + ': ' + next.before })) : null;
+    const st = P.stats(S.doc), sessions = obj('sessions'), cnt = trackCount();
+    const esc = st.escalate ? h('div', { class: 'warn' }, h('b', { text: Y('escalate') + ': ' + st.escalate + ' ' }), h('button', { class: 'btn sm', type: 'button', text: T('ends'), onclick: () => go('track', 'ends') })) : null;
+    const dm = obj('decmap');
+    const dmWarn = (dm.intent || dm.rows) && P.decmapDue(dm) ? h('div', { class: 'sunny' }, h('b', { text: Y('decmapT') + ': ' }), dm.approvedAuth && dm.approvedSup ? L.APPROVE.due : Y('decmapNotApproved'), ' ',
+      h('button', { class: 'btn ghost sm', type: 'button', text: Y('decmapT'), onclick: () => { S.tab.plan = 2; go('plan'); } })) : null;
+    const ist = P.ideasState(arr('ideas'));
+    const ideaWarn = ist.open ? h('div', { class: cnt.alert ? 'warn' : 'sunny' }, h('b', { text: Y('ideasT') + ': ' }), ist.open + ' ' + Y('ideasOpen'), ' ',
+      h('button', { class: 'btn ghost sm', type: 'button', text: L.SHEETS.decisions, onclick: () => go('track', 'decisions') })) : null;
+    const nexts = nextUp();
+    const nextCard = nexts.length ? h('div', { class: 'card' }, h('h2', { text: T('next1') }), nexts.map((x) => h('div', { class: 'row', style: 'margin:4px 0' },
+      h('div', { class: 'grow' }, h('b', { text: x.label }), x.sub ? h('div', { class: 'muted', text: x.sub }) : null),
+      h('button', { class: 'btn sm', type: 'button', text: Y('openMeeting'), onclick: () => go(x.view) }))),
+      h('button', { class: 'btn ghost sm', type: 'button', text: Y('newMeeting'), onclick: () => { S.newPre = null; go('new'); } })) : null;
+    const done = L.SESSIONS.filter((s) => sessions[s.n] && sessions[s.n].done).length;
+    const tile = (label, lines, on) => h('button', { type: 'button', class: 'tile tbtn sbe-no-theme', onclick: on }, h('b', { text: label }), lines.map((x) => h('div', { class: 'muted', text: x })));
+    const tiles = h('div', { class: 'tiles' },
+      tile(Y('meetings'), [Y('fixedSessions') + ': ' + done + '/5', Y('ourMeetings') + ': ' + arr('meetings').length], (e) => { e.stopPropagation(); S.menu = true; render(); window.scrollTo(0, 0); }),
+      tile(Y('track'), [L.SHEETS.tasks + ': ' + arr('actions').filter((a) => P.sheetOf('actions', a) === 'tasks').length + ' · ' + L.SHEETS.ends + ': ' + st.openEnds, L.SHEETS.decisions + ': ' + ist.open + ' ' + Y('ideasOpen')], () => go('track')),
+      tile(Y('index'), [L.PILLARS.map((p) => p.name).join(' · ')], () => go('index')),
+      tile(Y('partnersBtn'), [String(arr('partners').length)], () => go('partners')),
+      tile(Y('routineStep'), [Y('ourScenarios') + ': ' + arr('scenarios').length], () => go('gen')),
+      h('a', { class: 'tile tbtn sbe-no-theme', href: 'continuity-kit.html', target: '_blank', rel: 'noopener' }, h('b', { text: Y('contKit') }), h('div', { class: 'muted', text: Y('contShort') })));
+    return h('div', {}, esc, dmWarn, ideaWarn, nextCard, tiles, routineCard(), h('p', { class: 'muted', text: L.TABLETOP_NOTE }));
+  }
+  // 📊 מדד המוכנות: שלושת העמודים, ומה הצוות כבר עושה בעצמו
+  function viewIndex() {
+    const st = P.stats(S.doc), ind = P.independence(S.doc);
     const pill = (p) => {
       const lines = p.k === 'rel' ? [Y('partners').split(':')[0] + ': ' + st.rel.partners, T('deputy') + ': ' + st.rel.withDeputy + '/' + st.rel.teams]
         : p.k === 'info' ? [T('actions') + ': ' + st.info.actionsDone + '/' + st.info.actions, T('log') + ': ' + st.info.logs]
           : [T('lead') + ': ' + st.inst.staffed + '/' + st.inst.teams, Y('exercises') + ': ' + st.inst.exercises];
       return h('div', { class: 'tile' }, h('b', { text: p.name }), h('div', { class: 'muted', text: p.what }), h('ul', { class: 'list' }, lines.map((x) => h('li', { text: x }))));
     };
-    const pillars = h('div', { class: 'card' }, h('h2', { text: T('pillars') }), h('div', { class: 'grid3' }, L.PILLARS.map(pill)));
-    const indep = h('div', { class: 'card' }, h('h2', { text: T('independence') }),
-      h('div', { class: 'grid3' }, L.INDEPENDENCE.map((x) => h('div', { class: 'tile' }, h('span', { class: 'big', text: String(ind[x.k] || 0) }), h('div', { text: x.name })))));
-    const esc = st.escalate ? h('div', { class: 'warn' }, h('b', { text: Y('escalate') + ': ' + st.escalate + ' ' }), h('button', { class: 'btn sm', type: 'button', text: T('ends'), onclick: () => { S.panel = 'ends'; render(); } })) : null;
-    const dm = obj('decmap');
-    const dmWarn = (dm.intent || dm.rows) && P.decmapDue(dm) ? h('div', { class: 'sunny' }, h('b', { text: Y('decmapT') + ': ' }), dm.approvedAuth && dm.approvedSup ? L.APPROVE.due : Y('decmapNotApproved'), ' ', h('button', { class: 'btn ghost sm', type: 'button', text: Y('decmapT'), onclick: () => { S.step = 1; render(); } })) : null;
-    const ist = P.ideasState(arr('ideas'));
-    const ideaWarn = ist.open ? h('div', { class: ist.late ? 'warn' : 'sunny' }, h('b', { text: Y('ideasT') + ': ' }), ist.open + ' ' + Y('ideasOpen'), ' ', h('button', { class: 'btn ghost sm', type: 'button', text: Y('ideasT'), onclick: () => { S.panel = 'ideas'; render(); } })) : null;
-    return h('div', {}, esc, dmWarn, ideaWarn, nextCard, prog, pillars, indep, viewPartners(), routineCard(), h('p', { class: 'muted', text: L.TABLETOP_NOTE }));
+    return h('div', {}, h('div', { class: 'card' }, h('h2', { text: T('pillars') }), h('div', { class: 'grid3' }, L.PILLARS.map(pill))),
+      h('div', { class: 'card' }, h('h2', { text: T('independence') }),
+        h('div', { class: 'grid3' }, L.INDEPENDENCE.map((x) => h('div', { class: 'tile' }, h('span', { class: 'big', text: String(ind[x.k] || 0) }), h('div', { text: x.name }))))));
   }
   function routineCard() {
     return h('div', { class: 'card' }, h('h2', { text: T('routine') }), h('p', { text: String(L.ROUTINE).replace(/^[^:：]{2,30}[:：]\s*/, '') }),
@@ -311,11 +400,11 @@
           sel.value = String(a.maturity == null ? -1 : a.maturity);
           sel.addEventListener('change', () => { a.maturity = Number(sel.value); a.updatedAt = nowIso(); a.by = S.by; save('plan', 'נספח ' + a.name + ': ' + (L.MATURITY[a.maturity] || '')); });
           const ta = bindText(h('textarea', { rows: 2, placeholder: base.q || '' }), () => a.text, (v) => { a.text = v; a.updatedAt = nowIso(); a.by = S.by; }, 'plan', 'נספח ' + a.name);
-          return h('tr', {}, h('td', { 'data-h': T('annexes') }, h('b', { text: base.name || a.name })), h('td', { 'data-h': T('team'), text: teamName(a.team) }), h('td', { 'data-h': T('maturity') }, sel), h('td', { 'data-h': Y('annexText') }, ta));
+          return h('tr', {}, h('td', { 'data-h': T('annexes') }, h('b', { text: base.name || a.name }), a.id === 'cont' ? h('div', {}, h('a', { href: 'continuity-kit.html', target: '_blank', rel: 'noopener', text: Y('contKit') })) : null), h('td', { 'data-h': T('team'), text: teamName(a.team) }), h('td', { 'data-h': T('maturity') }, sel), h('td', { 'data-h': Y('annexText') }, ta));
         }))));
     const pm = bindText(h('textarea', { rows: 3 }), () => plan.premortem, (v) => { plan.premortem = v; }, 'plan', 'תחקיר מקדים');
-    return h('div', {}, h('div', { class: 'note', text: L.TABLETOP_NOTE }), steps, annex, viewDecmap(),
-      h('div', { class: 'card' }, h('h2', { text: T('premortem') }), h('p', { text: L.REMS[4].q[1] }), pm),
+    return h('div', {}, tabs('plan', [[Y('remsT'), () => h('div', {}, h('div', { class: 'note', text: L.TABLETOP_NOTE }), steps)], [T('annexes'), () => annex], [Y('decmapT'), viewDecmap],
+      [T('premortem'), () => h('div', { class: 'card' }, h('h2', { text: T('premortem') }), h('p', { text: L.REMS[4].q[1] }), pm)]]),
       h('div', { class: 'row noprint' }, h('button', { class: 'btn ghost', type: 'button', text: Y('printPlan'), onclick: printPlan })));
   }
   const firstEmpty = (plan) => (L.REMS.find((r) => !plan.steps[r.n]) || L.REMS[0]).n;
@@ -341,9 +430,9 @@
   // ---------- 👥 מפגש 1 ----------
   function sessionHead(n) {
     const s = L.SESSIONS[n - 1], done = obj('sessions')[n];
-    return h('div', { class: 'card' }, h('h2', { text: n + '. ' + s.title }),
-      h('table', { class: 'rt' }, h('tbody', {}, h('tr', {}, h('th', { text: Y('before') }), h('td', { text: s.before })), h('tr', {}, h('th', { text: Y('during') }), h('td', { text: s.during })), h('tr', {}, h('th', { text: Y('product') }), h('td', { text: s.product })))),
-      h('label', { class: 'row noprint' }, h('input', { type: 'checkbox', checked: !!(done && done.done), onchange: (e) => { const ss2 = obj('sessions'); ss2[n] = { done: e.target.checked, at: nowIso() }; S.doc.parts.sessions = ss2; save('sessions', 'מפגש ' + n + (e.target.checked ? ' הושלם' : '')); } }), ' ', T('sessionDone')));
+    return h('div', { class: 'card' }, h('h2', {}, n + '. ' + s.title, done && done.done ? h('span', { class: 'pill green', text: ' ✓ ' + dateIL(done.at) }) : null),
+      h('details', {}, h('summary', { text: Y('before') + ' · ' + Y('during') + ' · ' + Y('product') }),
+        h('table', { class: 'rt' }, h('tbody', {}, h('tr', {}, h('th', { text: Y('before') }), h('td', { text: s.before })), h('tr', {}, h('th', { text: Y('during') }), h('td', { text: s.during })), h('tr', {}, h('th', { text: Y('product') }), h('td', { text: s.product }))))));
   }
   function viewS1() {
     const tasks = arr('tasks'); S.doc.parts.tasks = tasks;
@@ -362,9 +451,9 @@
         h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, [T('text'), Y('when'), T('team'), ''].map((x) => h('th', { text: x })))),
           h('tbody', {}, L.TASKS.map((m) => { const has = tasks.some((t) => t.ref === m.id); return h('tr', {}, h('td', { 'data-h': T('text'), text: m.text }), h('td', { 'data-h': Y('when'), text: L.WHEN[m.when] }), h('td', { 'data-h': T('team'), text: teamName(m.team) }),
             h('td', {}, has ? h('span', { class: 'pill green', text: '✓' }) : h('button', { class: 'btn ghost sm', type: 'button', text: T('take'), onclick: () => { tasks.push({ id: uid('t'), ref: m.id, text: m.text, when: m.when, team: m.team }); save('tasks', 'משימה מהמתווה: ' + m.text.slice(0, 60)); render(); } }))); }))));
-    return h('div', {}, sessionHead(1),
-      h('div', { class: 'card' }, h('h2', { text: T('mine') }), h('p', { class: 'muted', text: T('ownFirst') }), own, addTask), ref,
-      viewTeams(), viewEM(),
+    return h('div', {}, tabs('s1', [
+      [T('mine'), () => h('div', {}, h('div', { class: 'card' }, h('h2', { text: T('mine') }), h('p', { class: 'muted', text: T('ownFirst') }), own, addTask), ref)],
+      [Y('teamsT'), viewTeams], [L.TEAMS[0].lead.split(',')[0], viewEM]]),
       h('div', { class: 'row noprint' }, h('button', { class: 'btn ghost', type: 'button', text: Y('printTeams'), onclick: printTeams })));
   }
   function viewTeams() {
@@ -416,10 +505,9 @@
       const rep = L.REPORT.map(([k, hint], i) => field(k, bindText(h('input', { type: 'text', placeholder: hint }), () => m.report[i], (v) => { m.report[i] = v; }, 'mapping', 'דיווח: ' + t.name)));
       return h('details', { class: 'card' }, h('summary', { text: t.name }),
         h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, [Y('checklist'), T('status'), ''].map((x) => h('th', { text: x })))), h('tbody', {}, rows)),
-        h('h3', { text: Y('reportOf') }), makeTimer(180), rep);
+        h('h3', { text: Y('reportOf') }), makeTimer(180), rep, t.id === 'educators' ? contBox() : null);
     });
-    return h('div', {}, sessionHead(2), h('div', { class: 'note' }, h('b', { text: T('report') + ': ' }), L.REPORT.map((r) => r[0]).join(' · ')), cards,
-      h('div', { class: 'row noprint' }, h('button', { class: 'btn ghost', type: 'button', text: Y('printSummary'), onclick: () => printSummary(2) })));
+    return h('div', {}, h('div', { class: 'note' }, h('b', { text: T('report') + ': ' }), L.REPORT.map((r) => r[0]).join(' · ')), cards);
   }
 
   // ---------- 🎬 תרגילים: מפגש 3, מפגש 5 ותרחיש שהצוות בנה ----------
@@ -461,12 +549,26 @@
 
   function viewS3() {
     const ex = curEx(3);
-    const top = h('div', {}, sessionHead(3), h('div', { class: 'note', text: L.TABLETOP_NOTE }), exerciseTop(3, 'sirens'),
-      h('table', { class: 'rt' }, h('thead', {}, h('tr', {}, [Y('step'), '20', '60'].map((x) => h('th', { text: x })))), h('tbody', {}, L.SIRENS.timing.map((r) => h('tr', {}, r.map((c) => h('td', { text: String(c) })))))));
+    const top = h('div', {}, h('div', { class: 'note', text: L.TABLETOP_NOTE }), exerciseTop(3, 'sirens'),
+      h('details', { class: 'card' }, h('summary', { text: Y('timing') }), h('table', { class: 'rt' }, h('thead', {}, h('tr', {}, [Y('step'), '20', '60'].map((x) => h('th', { text: x })))), h('tbody', {}, L.SIRENS.timing.map((r) => h('tr', {}, r.map((c) => h('td', { text: String(c) }))))))));
     if (!ex) return top;
-    return h('div', {}, top, viewRec(ex), viewRun(ex), viewDebrief(ex));
+    return h('div', {}, top, exTabs(3, ex));
   }
 
+  // תרגיל: הרצה, הקלטה ותחקיר בלשוניות (ובמפגש 5 גם ההשוואה), במקום גלילה
+  function exTabs(n, ex) {
+    const list = [[Y('exRun'), () => viewRun(ex)], [T('rec'), () => viewRec(ex)], [Y('exDebrief'), () => viewDebrief(ex)]];
+    if (n === 5) list.push([Y('compareT'), viewCompare]);
+    return tabs('ex' + n, list);
+  }
+  // תיק הרציפות: מוכנות הכיתה לחירום כבר כתובה שם, כדי לא לכתוב פעמיים
+  function contBox(text) {
+    const CK = window.SBE_CONT && (ORGSP && window.SBE_CONT.forSpace ? window.SBE_CONT.forSpace('org') : window.SBE_CONT);
+    const list = !text && S.lang === 'he' && CK && Array.isArray(CK.DEFAULT_READINESS) ? CK.DEFAULT_READINESS : [];
+    return h('div', { class: 'note' }, h('b', { text: Y('contKit') }), h('p', { text: text || Y('contInfo') }),
+      list.length ? h('ul', { class: 'list' }, list.map((x) => h('li', { text: x }))) : null,
+      h('a', { class: 'btn ghost sm', href: 'continuity-kit.html', target: '_blank', rel: 'noopener', text: Y('contKit') }));
+  }
   function viewRec(ex) {
     const box = h('div', { class: 'card noprint' }, h('h2', { text: T('rec') }), h('p', { text: T('recInfo') }));
     const consent = h('input', { type: 'checkbox', id: 'rdyConsent' });
@@ -709,14 +811,14 @@
         field(Y('pickGap'), sel), field(Y('learnPlan'), bindText(h('textarea', { rows: 2 }), () => m.plan, (v) => { m.plan = v; }, 'learning', '')),
         field(Y('aidDate'), aid), field(Y('annexToUpdate'), annexSel), annexBox);
     });
-    return h('div', {}, sessionHead(4), res, gaps.length ? null : h('p', { class: 'muted', text: Y('noGaps') }), cards);
+    return h('div', {}, res, gaps.length ? null : h('p', { class: 'muted', text: Y('noGaps') }), cards);
   }
 
   // ---------- 🎯 מפגש 5: תרחיש בלי הכנה, והשוואה למפגש 3 ----------
   function viewS5() {
     const ex = curEx(5);
-    const top = h('div', {}, sessionHead(5), h('div', { class: 'sunny', text: L.EM_ABSENT + '. ' + Y('noPrep') }), h('div', { class: 'note', text: L.TABLETOP_NOTE }), exerciseTop(5, 'disconnect'));
-    return h('div', {}, top, ex ? viewRec(ex) : null, ex ? viewRun(ex) : null, ex ? viewDebrief(ex) : null, viewCompare(), h('div', { class: 'note', text: L.COMMUNITY }));
+    const top = h('div', {}, h('div', { class: 'sunny', text: L.EM_ABSENT + '. ' + Y('noPrep') }), h('div', { class: 'note', text: L.TABLETOP_NOTE }), exerciseTop(5, 'disconnect'));
+    return h('div', {}, top, ex ? exTabs(5, ex) : viewCompare(), h('div', { class: 'note', text: L.COMMUNITY }));
   }
   function viewCompare() {
     const r3 = exList(3).filter((x) => x.report && x.report.rows && x.report.rows.length).pop();
@@ -848,8 +950,8 @@
           (R.missing || []).length ? h('p', { class: 'muted', text: L.PROC_KIND.missing + ': ' + R.missing.join(' · ') }) : null)),
         (scn.characters || []).length ? h('p', { class: 'muted', text: Y('roleplay') + ': ' + scn.characters.map((c) => c.name).join(', ') }) : null,
         h('div', { class: 'row noprint' },
-          h('button', { class: 'btn', type: 'button', text: Y('runS5'), onclick: () => { S.pickScn = { 5: 'gen:' + it.id }; S.step = 6; LS.set('sbe.prep.step.' + S.doc.id, 6); render(); window.scrollTo(0, 0); } }),
-          h('button', { class: 'btn ghost', type: 'button', text: Y('runS3'), onclick: () => { S.pickScn = { 3: 'gen:' + it.id }; S.step = 4; LS.set('sbe.prep.step.' + S.doc.id, 4); render(); window.scrollTo(0, 0); } }),
+          h('button', { class: 'btn', type: 'button', text: Y('runS5'), onclick: () => { S.pickScn = { 5: 'gen:' + it.id }; S.tab['mt:s5'] = 1; go('s5'); } }),
+          h('button', { class: 'btn ghost', type: 'button', text: Y('runS3'), onclick: () => { S.pickScn = { 3: 'gen:' + it.id }; S.tab['mt:s3'] = 1; go('s3'); } }),
           h('button', { class: 'btn ghost', type: 'button', text: Y('printCards'), onclick: () => printCards({ scenario: 'gen', scn, title: scn.title }) }),
           h('button', { class: 'btn ghost sm', type: 'button', text: T('del'), onclick: () => { if (!confirm(Y('confirmDel'))) return; const l = arr('scenarios').filter((x) => x.id !== it.id); S.doc.parts.scenarios = l; save('scenarios', 'מחיקת תרחיש: ' + scn.title); render(); } }))) : null;
       return h('div', { class: 'teamcard' }, h('button', { class: 'btn ghost sm', type: 'button', 'aria-expanded': open ? 'true' : 'false', text: '🎲 ' + scn.title, onclick: () => { S.genOpen = open ? '' : it.id; render(); } }), body);
@@ -897,7 +999,207 @@
       h('p', { text: L.APPROVE.auth + ': ' + (dateIL(dm.approvedAuth) || '____') + ' · ' + L.APPROVE.sup + ': ' + (dateIL(dm.approvedSup) || '____') }), h('p', { class: 'muted', text: L.DEC_INFO })]);
   }
 
-  // ---------- דיון החלטות (צד) ----------
+  // ---------- 📅 מפגשים: חמשת המפגשים ופגישות שהצוות מתכנן ----------
+  // כל מפגש: 1. סבב עדכון (טבלת המעקב) · 2. המפגש · 3. דיון וסיכום (הכלי גוזר משימות, החלטות וקצוות פתוחים)
+  function meetRec(kind, key) {
+    if (kind === 's') {
+      const ss2 = obj('sessions'); S.doc.parts.sessions = ss2;
+      const r = ss2[key] = ss2[key] || {};
+      return { r, part: 'sessions', n: key, title: key + '. ' + L.SESSIONS[key - 1].title };
+    }
+    const list = arr('meetings'); S.doc.parts.meetings = list;
+    const m = list.find((x) => x.id === key);
+    return m ? { r: m, part: 'meetings', m, title: m.title || typeName(m.type) } : null;
+  }
+  function viewMeeting(kind, key) {
+    const R = meetRec(kind, key);
+    if (!R) { S.view = 'home'; return viewHome(); }
+    const main = kind === 's' ? [null, viewS1, viewS2, viewS3, viewS4, viewS5][key] : () => viewCustom(R.m);
+    const head = kind === 's' ? sessionHead(key) : h('div', { class: 'card' }, h('h2', {}, R.title, R.m.done ? h('span', { class: 'pill green', text: ' ✓' }) : null),
+      h('p', { class: 'muted', text: typeName(R.m.type) + ' · ' + dateIL(R.m.date) + (R.m.time ? ' · ' + R.m.time : '') }));
+    const open = trackCount().open;
+    return h('div', {}, head, tabs('mt:' + kind + key, [[Y('tabUpdate'), viewUpdateRound], [Y('tabMain'), main], [Y('tabTalk'), () => viewTalk(R)]], open && !(kind === 's' && key === 1) ? 0 : 1));
+  }
+  function viewUpdateRound() {
+    return h('div', {}, h('div', { class: 'note' }, h('b', { text: Y('updateInfo') }), h('div', { class: 'muted', text: T('report') + ': ' + L.REPORT.map((r) => r[0]).join(' · ') }), makeTimer(120)),
+      viewTrack(true));
+  }
+  // תכנון פגישה חדשה: סוג לפי הטקסים, תאריך, משתתפים, וסדר היום שמתמלא לפי הסוג
+  function viewNewMeeting() {
+    const pre = S.newPre || {};
+    const type = h('select', { 'data-closed': '', 'aria-label': Y('mType') }, L.MEET_TYPES.map((t) => h('option', { value: t.k, text: t.name })));
+    type.value = pre.type || 'weekly';
+    const tp = () => L.MEET_TYPES.find((t) => t.k === type.value) || L.MEET_TYPES[0];
+    const when = h('p', { class: 'muted' });
+    const title = piiCheck(h('input', { type: 'text', value: pre.title || '' }));
+    const date = h('input', { type: 'date', value: pre.date || plus(7) });
+    const time = h('input', { type: 'text', placeholder: 'למשל: 13:30', style: 'max-width:140px' });
+    const agenda = piiCheck(h('textarea', { rows: 5 }));
+    let touched = false;
+    const fill = () => { when.textContent = Y('when') + ': ' + tp().when; if (!touched) agenda.value = tp().agenda.map((x, i) => (i + 1) + '. ' + x).join('\n'); title.placeholder = tp().name; };
+    agenda.addEventListener('input', () => { touched = true; });
+    type.addEventListener('change', fill); fill();
+    const teams = new Set(pre.teams || L.TEAMS.map((t) => t.id));
+    const who = h('div', { class: 'row' }, L.TEAMS.map((t) => h('label', { class: 'pill' }, h('input', { type: 'checkbox', checked: teams.has(t.id), onchange: (e) => { if (e.target.checked) teams.add(t.id); else teams.delete(t.id); } }), ' ', t.name)));
+    const create = h('button', { class: 'btn', type: 'button', text: Y('createMeeting'), onclick: async () => {
+      const list = arr('meetings'); S.doc.parts.meetings = list;
+      const m = { id: uid('mt'), type: type.value, title: title.value.trim() || tp().name, date: date.value, time: time.value.trim(), teams: [...teams], agenda: agenda.value, notes: '', createdAt: nowIso(), by: S.by, from: pre.from || '' };
+      list.push(m); create.disabled = true;
+      await save('meetings', 'פגישה חדשה: ' + m.title + ' · ' + dateIL(m.date));
+      S.newPre = null; S.tab['mt:m' + m.id] = 1; go('mt:' + m.id);
+    } });
+    return h('div', { class: 'card' }, h('h2', { text: Y('newMeeting').replace('➕ ', '') }),
+      h('div', { class: 'row' }, h('div', { class: 'grow' }, field(Y('mType'), type)), h('div', { class: 'grow' }, field(Y('mTitle'), title, T('opt')))), when,
+      h('div', { class: 'row' }, h('div', { class: 'grow' }, field(Y('mDate'), date)), h('div', {}, field(Y('mTime'), time, T('opt')))),
+      field(Y('mWho'), who), field(Y('agenda'), agenda), create);
+  }
+  // פגישה שתוכננה: סדר היום, ומעבר מהיר למה שהסוג שלה צריך
+  function viewCustom(m) {
+    const agenda = bindText(h('textarea', { rows: 6 }), () => m.agenda, (v) => { m.agenda = v; }, 'meetings', '');
+    const date = h('input', { type: 'date', value: m.date || '' }); date.onchange = () => { m.date = date.value; save('meetings', ''); };
+    const goBtn = (label, fn) => h('button', { class: 'btn ghost sm', type: 'button', text: label, onclick: fn });
+    const quick = {
+      weekly: [goBtn(Y('routineStep'), () => go('gen'))], resday: [goBtn(Y('routineStep'), () => go('gen')), goBtn(L.SHEETS.tasks, () => go('track', 'tasks'))],
+      decide: [goBtn(L.SHEETS.decisions, () => go('track', 'decisions')), goBtn(Y('sendDecisions'), () => go('track', 'decisions'))],
+      drill: [goBtn(Y('routineStep'), () => go('gen')), goBtn(Y('runS3'), () => { S.tab['mt:s3'] = 1; go('s3'); })],
+      annual: [goBtn(Y('decmapT'), () => { S.tab.plan = 2; go('plan'); }), goBtn(T('annexes'), () => { S.tab.plan = 1; go('plan'); })],
+      onboard: [goBtn(Y('goTeams'), printTeams), goBtn(Y('teamsT'), () => { S.tab.s1 = 1; go('s1'); })], other: []
+    }[m.type] || [];
+    return h('div', { class: 'card' }, h('div', { class: 'row' }, h('div', { class: 'grow' }, field(Y('mDate'), date)), h('div', { class: 'grow muted', text: Y('mWho') + ': ' + (m.teams || []).map(teamName).join(', ') })),
+      field(Y('agenda'), agenda), quick.length ? h('div', { class: 'row noprint' }, quick) : null,
+      h('div', { class: 'row noprint' }, h('button', { class: 'btn ghost sm', type: 'button', text: Y('delMeeting'), onclick: () => {
+        if (!confirm(Y('confirmDelM'))) return; const l = arr('meetings').filter((x) => x.id !== m.id); S.doc.parts.meetings = l; save('meetings', 'מחיקת פגישה: ' + m.title); go('home'); } })));
+  }
+  // שמות אנשי הצוות מוחלפים בתפקיד לפני שליחה למודל
+  function anon(text) {
+    let out = String(text || '');
+    for (const tm of arr('teams')) {
+      const role = teamName(tm.id);
+      const ppl = [[tm.lead, T('lead') + ' · ' + role], [tm.deputy, T('deputy') + ' · ' + role]].concat((tm.members || []).map((x) => [x, role]));
+      for (const [pp, label] of ppl) { const nm = pp && String(pp.name || '').trim(); if (nm && nm.length > 1) out = out.split(nm).join('[' + label + ']'); }
+    }
+    return out;
+  }
+  // 3. דיון וסיכום: מה עלה בדיון ← הכלי גוזר משימות, החלטות וקצוות ← הצוות בוחר ← טבלת המעקב; ובסוף: המפגש הבא, שליחה והדפסה
+  function viewTalk(R) {
+    const r = R.r;
+    const notes = bindText(h('textarea', { rows: 6, placeholder: Y('notesPh') }), () => r.notes, (v) => { r.notes = v; }, R.part, '');
+    const out = h('div', {});
+    const ex = h('button', { class: 'btn', type: 'button', text: Y('extract'), onclick: async () => {
+      if (String(notes.value).trim().length < 20) { notes.focus(); toast(Y('notes') + ': ' + T('main')); return; }
+      ex.disabled = true; out.replaceChildren(h('p', { class: 'muted', text: Y('working') }));
+      try {
+        const content = 'המפגש: ' + R.title + (R.m && R.m.agenda ? '\nסדר היום:\n' + anon(R.m.agenda) : '') + '\n\nמה עלה בדיון:\n' + anon(notes.value);
+        const v = await window.sbeCallAIJson(SERVER, { system: P.meetingSystem(S.lang), messages: [{ role: 'user', content }], maxTokens: 4000, fast: true }, 180000, P.validMeeting);
+        const n = P.normalizeMeeting(v);
+        r.found = [].concat(n.tasks.map((x) => Object.assign({ sheet: 'tasks', pick: true }, x)), n.decisions.map((x) => Object.assign({ sheet: 'decisions', pick: true }, x)), n.ends.map((x) => Object.assign({ sheet: 'ends', pick: true }, x)));
+        await save(R.part, ''); render();
+      } catch (e) { out.replaceChildren(h('div', { class: 'warn', text: T('noModel') })); ex.disabled = false; }
+    } });
+    const found = (r.found || []).filter((x) => !x.added);
+    if (found.length) {
+      const sheetSel = (x) => { const sl = h('select', { 'data-closed': '', 'aria-label': Y('sheet') }, ['tasks', 'decisions', 'ends'].map((k) => h('option', { value: k, text: L.SHEETS[k] }))); sl.value = x.sheet; sl.onchange = () => { x.sheet = sl.value; saveSoon(R.part, ''); }; return sl; };
+      const rows = found.map((x) => h('tr', {},
+        h('td', { 'data-h': Y('pick') }, h('input', { type: 'checkbox', checked: x.pick !== false, 'aria-label': Y('pick'), onchange: (e) => { x.pick = e.target.checked; saveSoon(R.part, ''); } })),
+        h('td', { 'data-h': Y('sheet') }, sheetSel(x)),
+        h('td', { 'data-h': T('text') }, bindText(h('input', { type: 'text' }), () => x.text, (v) => { x.text = v; }, R.part, '')),
+        h('td', { 'data-h': T('owner') }, bindText(h('input', { type: 'text', list: 'rdyTeams' }), () => x.owner || x.by || (x.team ? teamName(x.team) : ''), (v) => { x.owner = v; }, R.part, ''))));
+      const add = h('button', { class: 'btn', type: 'button', text: Y('toTrack'), onclick: async () => {
+        const acts = arr('actions'), ends = arr('ends'), ideas = arr('ideas'); let n = 0;
+        for (const x of found) {
+          if (x.pick === false) continue;
+          const base = { id: uid(x.sheet[0]), text: x.text, src: R.title };
+          if (x.sheet === 'tasks') acts.push(Object.assign(base, { team: x.team || '', owner: x.owner || '', due: x.due || plus(14), status: 'todo' }));
+          else if (x.sheet === 'ends') ends.push(Object.assign(base, { owner: x.owner || '', openedAt: nowIso(), next: plus(3), status: 'open', missed: 0, by: S.by }));
+          else ideas.push(Object.assign(base, { by: x.by || x.owner || '', at: nowIso(), decision: 'adopt', decidedAt: nowIso(), owner: x.owner || '', fromMeeting: true }));
+          x.added = true; n++;
+        }
+        S.doc.parts.actions = acts; S.doc.parts.ends = ends; S.doc.parts.ideas = ideas;
+        await save('actions', ''); await save('ends', ''); await save('ideas', ''); await save(R.part, R.title + ': ' + Y('added') + ' (' + n + ')');
+        toast(Y('added') + ': ' + n); render();
+      } });
+      out.append(h('p', { class: 'muted', text: Y('extractInfo') }),
+        h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, ['', Y('sheet'), T('text'), T('owner')].map((c) => h('th', { text: c })))), h('tbody', {}, rows)), add);
+    }
+    // הסיכום: המפגש הבא, שליחה לכולם והדפסה
+    const next = h('input', { type: 'date', value: r.next || plus(7) }); next.onchange = () => { r.next = next.value; save(R.part, ''); };
+    const sched = h('button', { class: 'btn ghost sm', type: 'button', text: Y('scheduleNext'), onclick: () => { r.next = next.value; save(R.part, ''); S.newPre = { date: next.value, type: R.m ? R.m.type : 'weekly', teams: R.m ? R.m.teams : null, from: R.title }; go('new'); } });
+    const send = h('button', { class: 'btn ghost', type: 'button', text: Y('sendSummary'), onclick: async () => {
+      send.disabled = true;
+      const [s2, o] = await api('rdyMail', { id: S.doc.id, subject: Y('summaryT') + ': ' + R.title, items: L.TEAMS.filter((t) => !R.m || !(R.m.teams || []).length || R.m.teams.includes(t.id)).map((t) => ({ teamId: t.id, text: summaryText(R, t.id) })) });
+      send.disabled = false;
+      toast(s2 === 200 ? (o.available ? Y('mailSent') + ': ' + o.sent : T('mailOff')) : (o.error || ''));
+    } });
+    const doneBox = h('label', { class: 'row noprint' }, h('input', { type: 'checkbox', checked: !!r.done, onchange: (e) => { r.done = e.target.checked; r.at = nowIso(); save(R.part, R.title + (r.done ? ': הושלם' : '')); render(); } }), ' ', T('sessionDone'));
+    return h('div', {},
+      h('div', { class: 'card' }, h('h2', { text: Y('notes') }), notes, h('div', { class: 'row noprint' }, ex), out, h('datalist', { id: 'rdyTeams' }, L.TEAMS.map((t) => h('option', { value: t.name })))),
+      R.n === 3 || R.n === 5 ? contBox(Y('contAfter')) : null,
+      h('div', { class: 'card' }, h('h2', { text: Y('summaryT') }),
+        h('div', { class: 'row' }, h('div', {}, field(T('next1'), next)), sched),
+        h('div', { class: 'row noprint' }, send, h('button', { class: 'btn ghost', type: 'button', text: Y('printSummary'), onclick: () => printMeeting(R) })), doneBox));
+  }
+  // מה נכנס לסיכום: ההחלטות והקצוות מהמפגש הזה, הפעולות הפתוחות (לצוות, אם נבחר) והמפגש הבא
+  function summaryText(R, teamId) {
+    const mine = (x) => x.src === R.title;
+    const dec = arr('ideas').filter(mine).map((x) => '• ' + x.text);
+    const acts = arr('actions').filter((a) => a.status !== 'tested' && (!teamId || !a.team || a.team === teamId || a.team === 'all')).map((a) => '• ' + a.text + (a.owner ? ' · ' + a.owner : '') + (a.due ? ' · ' + dateIL(a.due) : '') + ' · ' + (L.STATUS[a.status] || ''));
+    const ends = arr('ends').filter((e) => e.status !== 'closed').map((e) => '• ' + e.text + (e.owner ? ' · ' + e.owner : ''));
+    return [R.title, dec.length ? L.SHEETS.decisions + ':\n' + dec.join('\n') : '', acts.length ? L.SHEETS.tasks + ':\n' + acts.join('\n') : '', ends.length ? L.SHEETS.ends + ':\n' + ends.join('\n') : '',
+      R.r.next ? T('next1') + ': ' + dateIL(R.r.next) : ''].filter(Boolean).join('\n\n');
+  }
+
+  // ---------- 📋 טבלת מעקב: גיליון לכל סוג, ופריט עובר מגיליון לגיליון לפי סימון ----------
+  const KIND_OF = { tasks: 'actions', ends: 'ends', decisions: 'ideas' };
+  function viewTrack(compact) {
+    S.doc.parts.actions = arr('actions'); S.doc.parts.ends = arr('ends'); S.doc.parts.ideas = arr('ideas');
+    const count = (sh) => ['actions', 'ends', 'ideas'].reduce((n, k) => n + arr(k).filter((x) => P.sheetOf(k, x) === sh).length, 0);
+    const keys = ['tasks', 'decisions', 'ends', 'done'].concat(compact ? [] : ['log']);
+    const cur = keys.includes(S.sheet) ? S.sheet : 'tasks';
+    const bar = h('div', { class: 'tabs noprint sbe-no-theme', role: 'tablist', 'aria-label': Y('trackT') }, keys.map((k) => h('button', { type: 'button', role: 'tab', 'aria-selected': k === cur ? 'true' : 'false',
+      onclick: () => { S.sheet = k; render(); } }, k === 'log' ? T('log') : L.SHEETS[k], k === 'log' ? null : h('span', { class: 'pill', text: String(count(k)) }))));
+    const body = cur === 'decisions' ? viewIdeas() : cur === 'ends' ? viewEnds() : cur === 'done' ? viewDone() : cur === 'log' ? viewLog() : viewActions();
+    return h('div', {}, compact ? null : h('h2', { text: Y('trackT') }), bar, body, h('datalist', { id: 'rdyTeams' }, L.TEAMS.map((t) => h('option', { value: t.name }))));
+  }
+  function moveSel(kind, it) {
+    const here = P.sheetOf(kind, it);
+    const sl = h('select', { 'data-closed': '', 'aria-label': Y('moveTo') }, h('option', { value: '', text: Y('moveTo') + '…' }),
+      Object.keys(L.SHEETS).filter((k) => k !== here).map((k) => h('option', { value: k, text: L.SHEETS[k] })));
+    sl.onchange = () => { const to = sl.value; sl.value = ''; if (to) moveItem(kind, it, to); };
+    return sl;
+  }
+  async function moveItem(kind, it, to) {
+    const from = arr(kind); S.doc.parts[kind] = from;
+    if (to === 'done') {
+      if (kind === 'actions') { if (!confirm(Y('confirmTested'))) return; it.status = 'tested'; }
+      else if (kind === 'ends') { if (!confirm(Y('confirmClose'))) return; it.status = 'closed'; it.closedAt = nowIso(); }
+      else it.done = true;
+      it.doneAt = nowIso();
+      await save(kind, L.SHEETS.done + ': ' + String(it.text || '').slice(0, 60)); render(); return;
+    }
+    const target = KIND_OF[to];
+    if (target === kind) { // חזרה מהושלמו
+      if (kind === 'actions') it.status = 'done'; else if (kind === 'ends') it.status = 'open'; else it.done = false;
+      await save(kind, Y('moveTo') + ': ' + L.SHEETS[to] + ': ' + String(it.text || '').slice(0, 60)); render(); return;
+    }
+    const base = { id: uid(target[0]), text: it.text || '', src: it.src || '' }, owner = it.owner || '';
+    const item = target === 'actions' ? Object.assign(base, { team: it.team || '', owner, due: it.due || String(it.next || '').slice(0, 10) || plus(14), status: 'todo' })
+      : target === 'ends' ? Object.assign(base, { owner, openedAt: nowIso(), next: plus(3), status: 'open', missed: 0, by: S.by })
+        : Object.assign(base, { by: it.by || S.by, at: nowIso(), decision: '', owner, due: it.due || '' });
+    const i = from.indexOf(it); if (i >= 0) from.splice(i, 1);
+    const dst = arr(target); dst.push(item); S.doc.parts[target] = dst;
+    await save(kind, Y('moveTo') + ': ' + L.SHEETS[to] + ': ' + String(item.text).slice(0, 60)); await save(target, ''); render();
+  }
+  function viewDone() {
+    const rows = [];
+    for (const k of ['actions', 'ends', 'ideas']) for (const it of arr(k)) if (P.sheetOf(k, it) === 'done') rows.push([k, it]);
+    const label = { actions: L.SHEETS.tasks, ends: L.SHEETS.ends, ideas: L.SHEETS.decisions };
+    return h('div', { class: 'card' }, h('h2', { text: L.SHEETS.done }),
+      rows.length ? h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, [T('text'), Y('kindT'), T('owner'), Y('closedAt'), ''].map((c) => h('th', { text: c })))),
+        h('tbody', {}, rows.map(([k, it]) => h('tr', {}, h('td', { 'data-h': T('text'), text: it.text || '' }), h('td', { 'data-h': Y('kindT'), text: label[k] + (it.src ? ' · ' + it.src : '') }),
+          h('td', { 'data-h': T('owner'), text: it.owner || '' }), h('td', { 'data-h': Y('closedAt'), text: dateIL(it.doneAt || it.closedAt || '') }), h('td', { class: 'noprint' }, moveSel(k, it)))))) : h('p', { class: 'muted', text: Y('none2') }));
+  }
+
+  // ---------- דיון החלטות (גיליון ההחלטות בטבלת המעקב) ----------
   function viewIdeas() {
     const ideas = arr('ideas'); S.doc.parts.ideas = ideas;
     const exs = arr('exercises').filter((x) => x.report && x.report.approvedAt);
@@ -908,7 +1210,8 @@
       for (const ex of exs) { const st = P.ideasState(ideas, ex); if (st.total && !st.open && !ex.ideasDecidedAt) { ex.ideasDecidedAt = nowIso(); changed = true; } }
       if (changed) save('exercises', 'דיון ההחלטות הושלם');
     };
-    const rows = ideas.map((it, i) => {
+    const rows = ideas.filter((it) => !it.done).map((it) => {
+      const i = ideas.indexOf(it);
       const dec = h('select', { 'data-closed': '' }, h('option', { value: '', text: '…' }), Object.entries(L.IDEA_DEC).map(([k, v]) => h('option', { value: k, text: v })));
       dec.value = it.decision || '';
       dec.onchange = async () => {
@@ -930,7 +1233,7 @@
         h('td', { 'data-h': L.IDEA_COLS[3] }, bindText(h('textarea', { rows: 2, class: 'cell', placeholder: it.decision === 'reject' ? Y('whyNot') : '' }), () => it.answer, (v) => { it.answer = v; }, 'ideas', ''), needWhy ? h('span', { class: 'pill red', text: Y('whyNot') }) : null),
         h('td', { 'data-h': L.IDEA_COLS[4] }, bindText(h('input', { type: 'text' }), () => it.owner, (v) => { it.owner = v; }, 'ideas', '')),
         h('td', { 'data-h': L.IDEA_COLS[5] }, due),
-        h('td', { class: 'noprint' }, h('button', { class: 'btn ghost sm', type: 'button', text: T('del'), onclick: () => { ideas.splice(i, 1); save('ideas', ''); render(); } })));
+        h('td', { class: 'noprint' }, moveSel('ideas', it), h('button', { class: 'btn ghost sm', type: 'button', text: T('del'), onclick: () => { ideas.splice(i, 1); save('ideas', ''); render(); } })));
     });
     const sendAll = h('button', { class: 'btn ghost', type: 'button', text: Y('sendDecisions'), onclick: async () => {
       const decided = ideas.filter((x) => x.decision);
@@ -942,7 +1245,7 @@
       toast(s2 === 200 ? (o.available ? Y('mailSent') + ': ' + o.sent : T('mailOff')) : (o.error || ''));
     } });
     return h('div', { class: 'card' }, h('h2', { text: Y('ideasT') }), h('p', { class: 'muted', text: L.IDEA_INFO }), heads,
-      ideas.length ? h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, L.IDEA_COLS.map((c) => h('th', { text: c })), h('th', { class: 'noprint' }))), h('tbody', {}, rows)) : h('p', { class: 'muted', text: Y('none2') }),
+      rows.length ? h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, L.IDEA_COLS.map((c) => h('th', { text: c })), h('th', { class: 'noprint' }))), h('tbody', {}, rows)) : h('p', { class: 'muted', text: Y('none2') }),
       h('div', { class: 'row noprint' }, h('button', { class: 'btn ghost sm', type: 'button', text: T('add'), onclick: () => { ideas.push({ id: uid('i'), text: '', at: nowIso(), decision: '', by: S.by }); save('ideas', ''); render(); } }), sendAll,
         h('button', { class: 'btn ghost', type: 'button', text: Y('printIdeas'), onclick: () => doPrint(Y('ideasT'), Y('ideasT'), [h('h2', { text: Y('ideasT') }), tbl(L.IDEA_COLS, ideas.map((x) => [x.text, x.by || '', L.IDEA_DEC[x.decision] || '', x.answer || '', x.owner || '', dateIL(x.due)]))]) })));
   }
@@ -955,7 +1258,7 @@
   }
   function viewEnds() {
     const ends = arr('ends'); S.doc.parts.ends = ends;
-    const open = ends.filter((e) => e.status !== 'closed'), closed = ends.filter((e) => e.status === 'closed');
+    const open = ends.filter((e) => e.status !== 'closed');
     const row = (e) => {
       const state = P.endState(e);
       const next = h('input', { type: 'date', value: String(e.next || '').slice(0, 10) });
@@ -963,34 +1266,33 @@
       const st = h('select', { 'data-closed': '' }, Object.entries(L.END_STATUS).map(([k, v]) => h('option', { value: k, text: v }))); st.value = e.status || 'open';
       st.onchange = () => { if (st.value === 'closed' && !confirm(Y('confirmClose'))) { st.value = e.status; return; } if (st.value === 'closed') { e.closedAt = nowIso(); e.closedLate = state === 'late' || state === 'escalate'; } e.status = st.value; save('ends', st.value === 'closed' ? 'קצה נסגר: ' + String(e.text).slice(0, 80) : ''); render(); };
       return h('tr', {},
-        h('td', { 'data-h': T('text') }, bindText(h('input', { type: 'text' }), () => e.text, (v) => { e.text = v; }, 'ends', '')),
+        h('td', { 'data-h': T('text') }, bindText(h('textarea', { rows: 2, class: 'cell wide' }), () => e.text, (v) => { e.text = v; }, 'ends', '')),
         h('td', { 'data-h': T('endOpened'), text: e.src || dateIL(e.openedAt) }),
         h('td', { 'data-h': T('owner') }, bindText(h('input', { type: 'text', list: 'rdyTeams' }), () => e.owner, (v) => { e.owner = v; }, 'ends', '')),
         h('td', { 'data-h': T('endNext') }, next),
-        h('td', { 'data-h': T('endState') }, st, state === 'noOwner' ? h('span', { class: 'pill red', text: T('noOwner') }) : state === 'escalate' ? h('span', { class: 'pill red', text: Y('escalate') }) : state === 'late' ? h('span', { class: 'pill red', text: T('late') }) : null));
+        h('td', { 'data-h': T('endState') }, st, moveSel('ends', e), state === 'noOwner' ? h('span', { class: 'pill red', text: T('noOwner') }) : state === 'escalate' ? h('span', { class: 'pill red', text: Y('escalate') }) : state === 'late' ? h('span', { class: 'pill red', text: T('late') }) : null));
     };
     const head = h('thead', {}, h('tr', {}, [T('text'), T('endOpened'), T('owner'), T('endNext'), T('endState')].map((x) => h('th', { text: x }))));
     return h('div', { class: 'card' }, h('h2', { text: T('ends') }),
-      h('datalist', { id: 'rdyTeams' }, L.TEAMS.map((t) => h('option', { value: t.name }))),
       open.length ? h('table', { class: 'rt stack' }, head, h('tbody', {}, open.map(row))) : h('p', { class: 'muted', text: Y('none2') }),
-      h('button', { class: 'btn ghost sm noprint', type: 'button', text: T('add'), onclick: () => { addEnd('', '', ''); render(); } }),
-      closed.length ? h('details', {}, h('summary', { text: L.END_STATUS.closed + ' (' + closed.length + ')' }), h('table', { class: 'rt stack' }, head, h('tbody', {}, closed.map(row)))) : null);
+      h('button', { class: 'btn ghost sm noprint', type: 'button', text: T('add'), onclick: () => { addEnd('', '', ''); render(); } }));
   }
   function viewActions() {
     const acts = arr('actions'); S.doc.parts.actions = acts;
     const teamSel = (a) => { const s = h('select', { 'data-closed': '' }, h('option', { value: '', text: '…' }), [...L.TEAMS.map((t) => h('option', { value: t.id, text: t.name })), h('option', { value: 'all', text: Y('allTeams') })]); s.value = a.team || ''; s.onchange = () => { a.team = s.value; save('actions', ''); }; return s; };
-    const rows = acts.map((a, i) => {
+    const rows = acts.filter((a) => P.sheetOf('actions', a) === 'tasks').map((a) => {
+      const i = acts.indexOf(a);
       const st = h('select', { 'data-closed': '' }, Object.entries(L.STATUS).map(([k, v]) => h('option', { value: k, text: v }))); st.value = a.status || 'todo';
-      st.onchange = () => { a.status = st.value; save('actions', 'פעולה: ' + L.STATUS[a.status] + ': ' + String(a.text).slice(0, 60)); };
+      st.onchange = () => { if (st.value === 'tested' && !confirm(Y('confirmTested'))) { st.value = a.status || 'todo'; return; } a.status = st.value; if (a.status === 'tested') a.doneAt = nowIso(); save('actions', 'פעולה: ' + L.STATUS[a.status] + ': ' + String(a.text).slice(0, 60)); if (a.status === 'tested') render(); };
       const due = h('input', { type: 'date', value: a.due || '' }); due.onchange = () => { a.due = due.value; save('actions', ''); };
-      return h('tr', {}, h('td', { 'data-h': T('text') }, bindText(h('input', { type: 'text' }), () => a.text, (v) => { a.text = v; }, 'actions', '')),
+      return h('tr', {}, h('td', { 'data-h': T('text') }, bindText(h('textarea', { rows: 2, class: 'cell wide' }), () => a.text, (v) => { a.text = v; }, 'actions', '')),
         h('td', { 'data-h': T('team') }, teamSel(a)), h('td', { 'data-h': T('owner') }, bindText(h('input', { type: 'text' }), () => a.owner, (v) => { a.owner = v; }, 'actions', '')),
         h('td', { 'data-h': T('due') }, due), h('td', { 'data-h': T('status') }, st),
-        h('td', { class: 'noprint' }, h('button', { class: 'btn ghost sm', type: 'button', text: T('del'), onclick: () => { acts.splice(i, 1); save('actions', ''); render(); } })));
+        h('td', { class: 'noprint' }, moveSel('actions', a), h('button', { class: 'btn ghost sm', type: 'button', text: T('del'), onclick: () => { acts.splice(i, 1); save('actions', ''); render(); } })));
     });
     return h('div', { class: 'card' }, h('h2', { text: T('actions') }),
       h('p', { class: 'muted', text: L.STATUS.tested + ': ' + (S.lang === 'ar' ? 'يُغلق الإجراء فقط بعد فحصه في تمرين أو في يوم الصمود.' : 'פעולה נסגרת רק אחרי שנבדקה בתרגיל או ביום החוסן.') }),
-      acts.length ? h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, [T('text'), T('team'), T('owner'), T('due'), T('status'), ''].map((x) => h('th', { text: x })))), h('tbody', {}, rows)) : h('p', { class: 'muted', text: Y('none2') }),
+      rows.length ? h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, [T('text'), T('team'), T('owner'), T('due'), T('status'), ''].map((x) => h('th', { text: x })))), h('tbody', {}, rows)) : h('p', { class: 'muted', text: Y('none2') }),
       h('button', { class: 'btn ghost sm noprint', type: 'button', text: T('add'), onclick: () => { acts.push({ id: uid('a'), text: '', team: '', owner: '', due: plus(14), status: 'todo' }); save('actions', ''); render(); } }));
   }
   function viewLog() {
@@ -1052,13 +1354,18 @@
       (v.ideas || []).length ? h('div', {}, h('h2', { text: T('ideas') }), tbl([T('text'), T('ifThen')], v.ideas.map((x) => [x.text, x.ifThen]))) : null,
       (v.feedback || []).length ? h('div', {}, h('h2', { text: Y('fb') }), tbl([T('text'), Y('src')], v.feedback.map((x) => [x.text, srcLabel(x.source)]))) : null];
   }
-  function printSummary(n) {
-    const acts = arr('actions'), ends = arr('ends').filter((e) => e.status !== 'closed');
-    const ex = (n === 3 || n === 5) ? curEx(n) : null;
-    doPrint(L.SESSIONS[n - 1].title, Y('printSummary').replace('🖨 ', ''), [
+  function printSummary(n) { printMeeting(meetRec('s', n)); }
+  function printMeeting(R) {
+    const acts = arr('actions').filter((a) => a.status !== 'tested'), ends = arr('ends').filter((e) => e.status !== 'closed');
+    const dec = arr('ideas').filter((x) => x.src === R.title);
+    const ex = (R.n === 3 || R.n === 5) ? curEx(R.n) : null;
+    doPrint(R.title, Y('summaryT'), [
+      R.m && R.m.agenda ? h('div', {}, h('h2', { text: Y('agenda') }), h('p', { style: 'white-space:pre-line', text: R.m.agenda })) : null,
       ex ? h('div', {}, h('h2', { text: T('decision') }), tbl([T('round'), T('decision')], (ex.rounds || []).map((r, i) => [String(i + 1), r.decision || '']))) : null,
+      dec.length ? h('div', {}, h('h2', { text: L.SHEETS.decisions }), tbl([T('text'), T('owner')], dec.map((x) => [x.text, x.owner || x.by || '']))) : null,
       h('h2', { text: T('actions') }), tbl([T('text'), T('team'), T('owner'), T('due'), T('status')], acts.map((a) => [a.text, teamName(a.team), a.owner, dateIL(a.due), L.STATUS[a.status] || ''])),
-      h('h2', { text: T('ends') }), tbl([T('text'), T('owner'), T('endNext')], ends.map((e) => [e.text, e.owner, dateIL(e.next)]))]);
+      h('h2', { text: T('ends') }), tbl([T('text'), T('owner'), T('endNext')], ends.map((e) => [e.text, e.owner, dateIL(e.next)])),
+      R.r.next ? h('p', {}, h('b', { text: T('next1') + ': ' }), dateIL(R.r.next)) : null]);
   }
 
   // ---------- מעבדת הדמו (demo-hook.js): שני תוצרים מול המודל האמיתי, בלי לשמור במערך ----------

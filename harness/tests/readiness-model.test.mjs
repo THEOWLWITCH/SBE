@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url);
 const P = require('../../app/lib/readiness-model.js');
 
 const leaves = (o, out = []) => { if (typeof o === 'string') out.push(o); else if (o && typeof o === 'object') for (const v of Object.values(o)) leaves(v, out); return out; };
-const TEXT = ['TEAMS', 'TEAM_NOTES', 'TASKS', 'EM', 'REPORT', 'REMS', 'ANNEXES', 'SESSIONS', 'MAPPING', 'TABLETOP_NOTE', 'SIRENS', 'ROUND_DEBRIEF', 'DEBRIEF', 'PILLARS', 'INDEPENDENCE', 'ROUTINE', 'UI'];
+const TEXT = ['TEAMS', 'TEAM_NOTES', 'TASKS', 'EM', 'REPORT', 'REMS', 'ANNEXES', 'SESSIONS', 'MAPPING', 'TABLETOP_NOTE', 'SIRENS', 'ROUND_DEBRIEF', 'DEBRIEF', 'PILLARS', 'INDEPENDENCE', 'ROUTINE', 'UI', 'MEET_TYPES', 'SHEETS'];
 
 test('structure follows the outline: seven teams, 23 tasks, five sessions, three rounds, eight debrief steps', () => {
   assert.equal(P.TEAMS.length, 7);
@@ -144,16 +144,35 @@ test('community version: no school words, no school-only guidelines, prompts mar
   const O = P.forSpace('org');
   assert.equal(O.space, 'org'); assert.equal(P.forSpace('edu'), P); assert.equal(O.forSpace('org'), O);
   assert.deepEqual(O.TEAMS.map((t) => t.id), P.TEAMS.map((t) => t.id));
-  const keys = ['TEAMS', 'TEAM_NOTES', 'TASKS', 'EM', 'REMS', 'ANNEXES', 'SESSIONS', 'MAPPING', 'SIRENS', 'DISCONNECT', 'DEBRIEF', 'UI', 'S4', 'CRISIS', 'AXES', 'DEC_ROWS', 'DEC_INFO', 'IDEA_INFO', 'COMMUNITY'];
+  const keys = ['TEAMS', 'TEAM_NOTES', 'TASKS', 'EM', 'REMS', 'ANNEXES', 'SESSIONS', 'MAPPING', 'SIRENS', 'DISCONNECT', 'DEBRIEF', 'UI', 'S4', 'CRISIS', 'AXES', 'DEC_ROWS', 'DEC_INFO', 'IDEA_INFO', 'COMMUNITY', 'MEET_TYPES', 'SHEETS'];
   const left = keys.flatMap((k) => leaves(O[k])).filter((s) => /מחנכ|מורה|תלמיד|כיתה|כיתת|בית ספר|בית הספר|שיעור|שכבה|הורים|יועץ|מפקח/.test(s));
   assert.deepEqual(left, []);
   for (const k of ['drills', 'file', 'unusual', 'gate', 'evacuees', 'remote']) assert.ok(!O.MANDATORY.some((m) => m.key === k), k);
   assert.ok(!O.DEC_ROWS.find((r) => r.k === 'unusual').fixed);
   assert.ok(O.DISCONNECT.rounds.every((r) => (r.procedures || []).every((k) => O.MANDATORY.some((m) => m.key === k))));
-  for (const fn of ['generatorSystem', 'debriefSystem', 'planSystem', 'altSystem', 'compareSystem']) assert.match(O[fn]('he'), /^המרחב הארגוני/, fn);
+  for (const fn of ['generatorSystem', 'debriefSystem', 'planSystem', 'altSystem', 'compareSystem', 'meetingSystem']) assert.match(O[fn]('he'), /^המרחב הארגוני/, fn);
   assert.match(O.roleSystem(O.DISCONNECT.characters[0], O.DISCONNECT, null, 'he'), /^המרחב הארגוני/);
   assert.ok(O.CRISIS[0].what.some((w) => /אלימות כלפי איש\/אשת צוות/.test(w)));
   assert.equal(O.content('ar').MANDATORY.length, O.MANDATORY.length);
   assert.ok(!/مدرسة|طالب|معلّم/.test(JSON.stringify(O.content('ar').TEAMS)));
   assert.ok(O.checkSelection({ complications: ['בני משפחה בכניסה'] }).pillars.rel);
+});
+
+test('meetings: types from the rituals, the discussion becomes tasks, decisions and open ends, and one tracking table in sheets', () => {
+  assert.deepEqual(P.MEET_TYPES.map((t) => t.k), ['weekly', 'resday', 'decide', 'drill', 'annual', 'onboard', 'other']);
+  for (const t of P.MEET_TYPES) assert.ok(t.agenda.length >= 3 && t.when, t.k);
+  assert.equal(P.content('ar').MEET_TYPES[0].k, 'weekly');
+  const sys = P.meetingSystem('he');
+  for (const rx of [/tasks/, /decisions/, /ends/, /בלי להמציא/, /JSON/, /educators/]) assert.match(sys, rx);
+  assert.ok(P.validMeeting({ tasks: [], decisions: [], ends: [] })); assert.ok(!P.validMeeting({ tasks: [] }));
+  const n = P.normalizeMeeting({ tasks: [{ text: ' מפתח נוסף ', team: 'security', due: '2026-12-01' }, { text: 'x', team: 'nope', due: 'מחר' }, { text: '' }], decisions: [{ text: 'יום חוסן ביום שלישי' }], ends: [{ text: 'מחכים לרשות', owner: 'קשר עם הרשויות' }] });
+  assert.deepEqual(n.tasks.map((t) => [t.text, t.team, t.due]), [['מפתח נוסף', 'security', '2026-12-01'], ['x', '', '']]);
+  assert.equal(n.decisions.length, 1); assert.equal(n.ends[0].owner, 'קשר עם הרשויות');
+  assert.deepEqual(Object.keys(P.SHEETS), ['tasks', 'decisions', 'ends', 'done']);
+  assert.equal(P.sheetOf('actions', { status: 'done' }), 'tasks');
+  assert.equal(P.sheetOf('actions', { status: 'tested' }), 'done');
+  assert.equal(P.sheetOf('ends', { status: 'closed' }), 'done');
+  assert.equal(P.sheetOf('ideas', { decision: 'adopt' }), 'decisions');
+  assert.equal(P.sheetOf('ideas', { done: true }), 'done');
+  assert.equal(P.ROUTINE_LINKS[0][0], 'continuity-kit.html');
 });

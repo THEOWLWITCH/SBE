@@ -17,6 +17,7 @@
 <script src="lib/org-words.js"></script>
 <script src="lib/readiness-ar.js"></script>
 <script src="lib/readiness-model.js"></script>
+<script src="lib/continuity-model.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 <style>
 :root{
@@ -79,6 +80,24 @@ table.rt td select{min-width:150px}
 .qr{display:inline-block;background:#fff;padding:6px;border-radius:8px}
 details>summary{cursor:pointer;font-weight:600}
 .list li{margin:3px 0}
+.navrow{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px;align-items:center}
+.navrow .nav{border:1px solid var(--hair);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;gap:6px;align-items:center}
+.navrow .nav[aria-current]{border-color:var(--brand);background:var(--brand);color:#fff}
+.navrow .nav[aria-current] .pill{background:transparent;color:#fff;border-color:#fff}
+.menuwrap{position:relative}
+.menu{position:absolute;z-index:40;inset-inline-start:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--hair);border-radius:12px;padding:8px 10px 10px;min-width:300px;max-width:92vw;box-shadow:0 8px 28px rgba(20,33,43,.10)}
+.menu ul{list-style:none;margin:0 0 6px;padding:0}
+.menu li button{display:block;width:100%;text-align:start;background:none;border:0;padding:6px 8px;border-radius:8px;color:var(--ink);font:inherit;cursor:pointer}
+.menu li button:hover,.menu li button[aria-current]{background:var(--teal-soft)}
+.menu .mh{font-size:.85rem;color:var(--muted);margin:6px 0 2px;font-weight:600}
+.tabs{display:flex;gap:2px;flex-wrap:wrap;border-bottom:1px solid var(--hair);margin:12px 0 6px}
+.tabs button{border:0;background:none;padding:7px 12px;color:var(--muted);border-bottom:2px solid transparent;font:inherit;font-weight:600;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.tabs button[aria-selected="true"]{color:var(--brand);border-bottom-color:var(--brand)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:12px 0}
+table.rt td textarea.cell.wide{min-width:200px}
+@media screen and (max-width:640px){ .tiles{grid-template-columns:1fr 1fr} .tiles .tile{padding:8px 10px;font-size:.92rem} }
+.tbtn{text-align:start;cursor:pointer;font:inherit;color:var(--ink);text-decoration:none;display:block;width:100%}
+.tbtn:hover{border-color:var(--brand)}
 .hidden{display:none!important}
 .toast{position:fixed;inset-inline-start:16px;bottom:16px;background:var(--brand);color:#fff;padding:8px 14px;border-radius:10px;z-index:50}
 @media screen and (max-width:640px){ table.rt.stack thead{display:none} table.rt.stack tr{display:block;border:1px solid var(--hair);border-radius:10px;margin:8px 0} table.rt.stack td{display:block;border:0;border-bottom:1px solid var(--hair)} table.rt.stack td::before{content:attr(data-h);display:block;font-size:.82rem;color:var(--muted)} }
