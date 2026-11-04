@@ -28,7 +28,7 @@
       sessions: 'המפגשים', later: 'בשלב הבא', escalate: 'קצוות שעולים למנהל/ת מצב החירום', partners: 'שותפים: עם מי מתאמים בחירום?', expect: 'מה אנחנו מצפים לקבל', provide: 'מה אנחנו מספקים',
       ifGap: 'פער ממשק: חסר צד אחד', partner: 'שותף/ה', step: 'שלב', product: 'התוצר', questions: 'שאלות לצוות', ourText: 'מה כתבנו', ask: 'חוליות חלשות וחלופות', working: 'עובדים על זה…',
       gaps: 'פערים', alts: 'חלופות שאולי לא עלו', nextSteps: 'צעדי המשך', toEnds: 'לקצוות הפתוחים', addGap: 'לרשימת הפערים', before: 'לפני המפגש', during: 'במפגש', our: 'שלנו',
-      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', editT: 'עריכה', closeT: 'סגירה', trNotLoaded: 'התמליל של ההקלטה עוד לא נכנס לדיון, והוא יימחק כשהמפגש מסומן כהושלם. להמשיך?', notSummed: 'המפגש עבר ועוד לא סוכם', nextSet: 'המפגש הבא נקבע ל־', ownerFilled: 'אחראי/ת הושלם/ה לפי ראש הצוות או מנהל/ת מצב החירום', undoT: '↩ ביטול', undoneT: 'השינוי בוטל', cancelWhy: 'למה הפעולה בוטלה? (רשות, נשמר לתיעוד)', ownerPerson: 'אחראי/ת: שם של אדם מהצוות', noPeople: 'עוד אין שמות בטבלת הצוותים, ולכן האחראי/ת הוא/היא מנהל/ת מצב החירום. כדי שיופיעו שמות, אפשר למלא אותם:', delQ: 'למחוק את המשימה?', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
+      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', editT: 'עריכה', closeT: 'סגירה', unsaved: 'אין חיבור כרגע. השינויים נשמרו במסך וייכנסו כשהחיבור יחזור.', trNotLoaded: 'התמליל של ההקלטה עוד לא נכנס לדיון, והוא יימחק כשהמפגש מסומן כהושלם. להמשיך?', notSummed: 'המפגש עבר ועוד לא סוכם', nextSet: 'המפגש הבא נקבע ל־', ownerFilled: 'אחראי/ת הושלם/ה לפי ראש הצוות או מנהל/ת מצב החירום', undoT: '↩ ביטול', undoneT: 'השינוי בוטל', cancelWhy: 'למה הפעולה בוטלה? (רשות, נשמר לתיעוד)', ownerPerson: 'אחראי/ת: שם של אדם מהצוות', noPeople: 'עוד אין שמות בטבלת הצוותים, ולכן האחראי/ת הוא/היא מנהל/ת מצב החירום. כדי שיופיעו שמות, אפשר למלא אותם:', delQ: 'למחוק את המשימה?', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
       version: 'אורך התרגיל', v20: '20 דקות (ישיבת צוות)', v60: 'שעה', startEx: 'התחלת התרגיל', exercises: 'התרגילים', cont: 'המשך', finish: 'סיום התרחיש', opening: 'פתיחה',
       closing: 'סגירה', copy: 'העתקה', copied: 'הועתק', openRec: 'פתיחת קישור לטלפון', recOn: 'ההקלטה פתוחה', marks: 'רגעי החלטה', segs: 'קטעים בתמליל', loadTr: 'טעינת התמליל',
       editTr: 'עריכת התמליל (לפני שהוא משמש לדוח)', saveTr: 'שמירת התמליל', worked: 'מה עבד', timeline: 'ציר הזמן', fb: 'משוב מקצועי', src: 'מקור', addRow: '➕ שורה',
@@ -70,7 +70,7 @@
       sessions: 'اللقاءات', later: 'في المرحلة القادمة', escalate: 'أطراف تُرفع إلى مدير/ة حالة الطوارئ', partners: 'الشركاء: مع من ننسّق في الطوارئ؟', expect: 'ما نتوقع أن نحصل عليه', provide: 'ما نقدّمه',
       ifGap: 'فجوة في التنسيق: ينقص أحد الطرفين', partner: 'الشريك/ة', step: 'مرحلة', product: 'الناتج', questions: 'أسئلة للطاقم', ourText: 'ما كتبناه', ask: 'حلقات ضعيفة وبدائل', working: 'نعمل على ذلك…',
       gaps: 'فجوات', alts: 'بدائل ربما لم تُطرح', nextSteps: 'خطوات تالية', toEnds: 'إلى الأطراف المفتوحة', addGap: 'إلى قائمة الفجوات', before: 'قبل اللقاء', during: 'في اللقاء', our: 'لنا',
-      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', editT: 'تعديل', closeT: 'إغلاق', trNotLoaded: 'نص التسجيل لم يدخل إلى النقاش بعد، وسيُحذف عند تعليم اللقاء كمكتمل. هل نتابع؟', notSummed: 'اللقاء مضى ولم يُلخَّص بعد', nextSet: 'اللقاء القادم مُحدَّد في ', ownerFilled: 'أُكمل المسؤول/ة حسب رئيس/ة الطاقم أو مدير/ة حالة الطوارئ', undoT: '↩ تراجع', undoneT: 'أُلغي التغيير', cancelWhy: 'لماذا أُلغي الإجراء؟ (اختياري، يُحفظ للتوثيق)', ownerPerson: 'المسؤول/ة: اسم شخص من الطاقم', noPeople: 'لاختيار مسؤول/ة بالاسم، يمكن تعبئة الأسماء في جدول الطواقم:', delQ: 'حذف المهمة؟', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
+      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', editT: 'تعديل', closeT: 'إغلاق', unsaved: 'لا يوجد اتصال حاليًا. التغييرات محفوظة على الشاشة وستدخل عند عودة الاتصال.', trNotLoaded: 'نص التسجيل لم يدخل إلى النقاش بعد، وسيُحذف عند تعليم اللقاء كمكتمل. هل نتابع؟', notSummed: 'اللقاء مضى ولم يُلخَّص بعد', nextSet: 'اللقاء القادم مُحدَّد في ', ownerFilled: 'أُكمل المسؤول/ة حسب رئيس/ة الطاقم أو مدير/ة حالة الطوارئ', undoT: '↩ تراجع', undoneT: 'أُلغي التغيير', cancelWhy: 'لماذا أُلغي الإجراء؟ (اختياري، يُحفظ للتوثيق)', ownerPerson: 'المسؤول/ة: اسم شخص من الطاقم', noPeople: 'لاختيار مسؤول/ة بالاسم، يمكن تعبئة الأسماء في جدول الطواقم:', delQ: 'حذف المهمة؟', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
       version: 'مدة التمرين', v20: '20 دقيقة (جلسة طاقم)', v60: 'ساعة', startEx: 'بدء التمرين', exercises: 'التمارين', cont: 'متابعة', finish: 'إنهاء السيناريو', opening: 'افتتاح',
       closing: 'إغلاق', copy: 'نسخ', copied: 'تم النسخ', openRec: 'فتح رابط للهاتف', recOn: 'التسجيل مفتوح', marks: 'لحظات قرار', segs: 'مقاطع في النص المكتوب', loadTr: 'تحميل النص المكتوب',
       editTr: 'تحرير النص المكتوب (قبل استخدامه في التقرير)', saveTr: 'حفظ النص المكتوب', worked: 'ما الذي نجح', timeline: 'التسلسل الزمني', fb: 'ملاحظات مهنية', src: 'مصدر', addRow: '➕ سطر',
@@ -238,15 +238,71 @@
     return [res.status, data];
   }
 
-  // שמירת חלק: גרסה לכל חלק; כשמישהו אחר עדכן, המסך נטען מחדש עם הגרסה העדכנית.
-  const timers = {};
-  async function save(part, what) {
-    clearTimeout(timers[part]); delete timers[part];
-    const [st, out] = await api('rdySave', { id: S.doc.id, part, value: S.doc.parts[part], rev: S.doc.revs[part] || 0, what: what || '', by: S.by });
-    if (st === 200) { S.doc.revs[part] = out.rev; S.doc.updatedAt = out.updatedAt; if (what) S.doc.log.push({ at: out.updatedAt, by: S.by || '', part, what }); return true; }
-    if (st === 409 && out.doc) { S.doc = out.doc; toast(Y('reloaded')); render(); return false; }
+  // שמירת חלק (04/11/2026, בדיקת המומחים: "טקסט שהוקלד בו זמנית נמחק"):
+  // 1. שמירה אחת בכל פעם לכל חלק (תור), כך ששמירה שנייה יוצאת עם הגרסה החדשה ולא מתנגשת בשמירה שלפניה.
+  // 2. כשמישהו אחר עדכן (409): ממזגים. מה ששיניתי נשאר, מה שאחרים שינו נכנס (לפי שדה, ולפי מזהה בפריטים), ושומרים שוב.
+  // 3. בלי חיבור: החלק נשאר מסומן "לא נשמר עדיין", ונשמר שוב כשהחיבור חוזר.
+  const timers = {}, chains = {}, unsaved = new Set();
+  let BASE = {};
+  const clone = (v) => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)));
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  function setDoc(doc) { S.doc = doc; BASE = clone(doc ? doc.parts : {}) || {}; }
+  const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);
+  const byId = (a) => Array.isArray(a) && a.length > 0 && a.every((x) => isObj(x) && x.id);
+  function merge3(b, l, r) {
+    if (same(l, b)) return clone(r);
+    if (same(r, b) || same(l, r)) return clone(l);
+    if (isObj(l) && isObj(r)) {
+      const out = {}, bb = isObj(b) ? b : {};
+      for (const k of new Set([...Object.keys(l), ...Object.keys(r), ...Object.keys(bb)])) { const v = merge3(bb[k], l[k], r[k]); if (v !== undefined) out[k] = v; }
+      return out;
+    }
+    if (Array.isArray(l) && Array.isArray(r) && (byId(l) || byId(r))) {
+      const bm = new Map((Array.isArray(b) ? b : []).filter(isObj).map((x) => [x.id, x])), lm = new Map(l.filter(isObj).map((x) => [x.id, x])), rm = new Map(r.filter(isObj).map((x) => [x.id, x]));
+      const ids = [...r.filter(isObj).map((x) => x.id), ...l.filter((x) => isObj(x) && !rm.has(x.id)).map((x) => x.id)];
+      const out = [];
+      for (const id of ids) { const v = merge3(bm.get(id), lm.get(id), rm.get(id)); if (v !== undefined) out.push(v); }
+      return out;
+    }
+    if (Array.isArray(l) && Array.isArray(r) && l.length === r.length) return l.map((x, i) => merge3(Array.isArray(b) ? b[i] : undefined, x, r[i]));
+    return clone(l);
+  }
+  function unsavedNote() {
+    let el = document.getElementById('rdyUnsaved');
+    if (!unsaved.size) { if (el) el.remove(); return; }
+    if (!el) { el = h('div', { id: 'rdyUnsaved', class: 'toast unsaved sbe-no-theme', role: 'status' }); document.body.appendChild(el); }
+    el.textContent = Y('unsaved');
+  }
+  async function saveNow(part, what, tries) {
+    const sent = clone(S.doc.parts[part]);
+    const [st, out] = await api('rdySave', { id: S.doc.id, part, value: sent, rev: S.doc.revs[part] || 0, what: what || '', by: S.by });
+    if (st === 200) {
+      S.doc.revs[part] = out.rev; S.doc.updatedAt = out.updatedAt; BASE[part] = sent;
+      if (what) S.doc.log.push({ at: out.updatedAt, by: S.by || '', part, what });
+      unsaved.delete(part); unsavedNote(); return true;
+    }
+    if (st === 409 && out.doc) {
+      // מיזוג: כל החלקים (גם כאלה שעוד מחכים לשמירה), ואז שמירה חוזרת של החלק הזה עם הגרסה החדשה
+      const local = S.doc.parts, srv = out.doc.parts || {};
+      const merged = {};
+      for (const k of new Set([...Object.keys(local), ...Object.keys(srv)])) { const v = merge3(BASE[k], local[k], srv[k]); if (v !== undefined) merged[k] = v; }
+      BASE = clone(srv) || {};
+      S.doc = Object.assign({}, out.doc, { parts: merged });
+      if (tries < 3 && !same(merged[part], srv[part])) return saveNow(part, what, tries + 1);
+      render(); return true;
+    }
+    if (st === 0 || st >= 500) { unsaved.add(part); unsavedNote(); return false; }
     toast(out.error || 'לא נשמר'); return false;
   }
+  function save(part, what) {
+    clearTimeout(timers[part]); delete timers[part];
+    const run = (chains[part] || Promise.resolve()).catch(() => {}).then(() => saveNow(part, what, 0));
+    chains[part] = run;
+    return run;
+  }
+  const retryUnsaved = () => { for (const p of [...unsaved]) save(p, ''); };
+  window.addEventListener('online', retryUnsaved);
+  setInterval(() => { if (unsaved.size && navigator.onLine !== false) retryUnsaved(); }, 20000);
   function saveSoon(part, what) { clearTimeout(timers[part]); timers[part] = setTimeout(() => save(part, what), 900); }
   function setPart(part, value, what, soon) { S.doc.parts[part] = value; return soon ? saveSoon(part, what) : save(part, what); }
 
@@ -296,8 +352,8 @@
   }
   async function openDoc(id) {
     const [st, out] = await api('rdyGet', { id });
-    if (st !== 200) { toast(out.error || ''); S.doc = null; render(); return; }
-    S.doc = out.doc; LS.set('sbe.prep.last', id);
+    if (st !== 200) { toast(out.error || ''); setDoc(null); render(); return; }
+    setDoc(out.doc); LS.set('sbe.prep.last', id);
     S.view = LS.get('sbe.prep.view.' + id, 'home') || 'home';
     const q = new URLSearchParams(location.search);
     if (/^(home|plan|track|index|gen|s[1-5])$/.test(q.get('view') || '')) S.view = q.get('view');
@@ -336,7 +392,7 @@
       piiCheck(h('input', { type: 'text', value: S.by, 'aria-label': T('by'), placeholder: Y('byName'), oninput: (e) => { S.by = e.target.value.slice(0, 60); LS.set('sbe.prep.by', S.by); } })));
     const head = h('div', { class: 'headrow noprint' }, h('b', { text: parts().profile?.name || '' }), me,
       lnk(T('lang2'), () => setLang(S.lang === 'ar' ? 'he' : 'ar')),
-      SYS ? lnk(Y('ours2'), () => { S.doc = null; LS.set('sbe.prep.last', ''); render(); }) : null);
+      SYS ? lnk(Y('ours2'), () => { setDoc(null); LS.set('sbe.prep.last', ''); render(); }) : null);
     const cnt = trackCount();
     const navLnk = (view, label, extra) => lnk([label, extra || null].filter(Boolean), () => go(view), { 'aria-current': S.view === view ? 'page' : null });
     // הסרגל: מילים בשורה אחת שנגללת לרוחב בטלפון. כל יעד מופיע בו פעם אחת.
@@ -382,7 +438,7 @@
       go2.disabled = false;
       if (st === 409 && out.id) { toast(out.error || ''); return openDoc(out.id); }
       if (st !== 201) { toast(out.error || ''); return; }
-      S.doc = out.doc; S.view = 'home';
+      setDoc(out.doc); S.view = 'home';
       // הצוותים וההגדרה של מנהל/ת מצב החירום מהמתווה, כנקודת התחלה שהצוות משנה. רשימת המשימות נשארת ריקה: הצוות כותב קודם.
       S.doc.parts.teams = L.TEAMS.map((t) => ({ id: t.id, name: t.name, lead: { name: '', email: '' }, deputy: { name: '', email: '' }, members: [] }));
       await save('teams', 'פתיחת טבלת הצוותים');
