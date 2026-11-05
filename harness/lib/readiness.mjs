@@ -10,7 +10,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
 export const RDY_PARTS = ['profile', 'plan', 'teams', 'tasks', 'em', 'mapping', 'gaps', 'ends', 'actions', 'exercises', 'sessions', 'partners', 'ideas', 'scenarios', 'learning', 'compare', 'decmap', 'meetings', 'binder'];
 const MAX_PART = 400_000, MAX_DOC = 1_800_000, MAX_MINE = 30, MAX_LOG = 400;
-// תיקיית הרציפות: קובץ אחד לכל פריט, קובץ חדש מחליף את הקודם (הגרסה הקודמת נמחקת). פריטים רגישים לא עולים.
+// תיקיית המוכנות: קובץ אחד לכל פריט, קובץ חדש מחליף את הקודם (הגרסה הקודמת נמחקת). פריטים רגישים לא עולים.
 // BINDER_SENS: אותם מספרים כמו C.BINDER_SENS ב-readiness-model.js (רשימות כיתות, פרטי הורים, מענה מותאם, תיקי המחנכים).
 export const BINDER_SENS = [0, 1, 4, 7];
 const BINDER_N = 8, MAX_FILE_B64 = 5_600_000, MAX_FILES = 40;
@@ -297,7 +297,7 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
         return [200, { ok: true }];
       }
 
-      // תיקיית הרציפות: העלאה (מחליפה את הגרסה הקודמת), פתיחה ומחיקה
+      // תיקיית המוכנות: העלאה (מחליפה את הגרסה הקודמת), פתיחה ומחיקה
       if (/^rdyFile(Put|Get|Del)$/.test(action)) {
         let it = binderItem(d, body.key);
         // קובץ של פריט שכבר הוסר מהרשימה: אפשר עדיין לפתוח ולמחוק אותו
@@ -314,7 +314,7 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
         if (action === 'rdyFileDel') {
           const old = d.files[it.key];
           await store.del(fKey); delete d.files[it.key];
-          d.updatedAt = at; if (old) logIt('מחיקת קובץ מתיקיית הרציפות: ' + str(old.title, 120));
+          d.updatedAt = at; if (old) logIt('מחיקת קובץ מתיקיית המוכנות: ' + str(old.title, 120));
           await store.set('rdy:' + d.id, d);
           return [200, { ok: true, files: d.files }];
         }
@@ -335,7 +335,7 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
         const replaced = !!d.files[it.key];
         await store.set(fKey, { data, mime, name: str(body.name, 160) });
         d.files[it.key] = { title, date: body.date, name: str(body.name, 160), mime, size: Math.round(data.length * 0.75), at, by };
-        d.updatedAt = at; logIt((replaced ? 'גרסה חדשה בתיקיית הרציפות: ' : 'קובץ חדש בתיקיית הרציפות: ') + title);
+        d.updatedAt = at; logIt((replaced ? 'גרסה חדשה בתיקיית המוכנות: ' : 'קובץ חדש בתיקיית המוכנות: ') + title);
         await store.set('rdy:' + d.id, d);
         return [200, { ok: true, replaced, files: d.files }];
       }

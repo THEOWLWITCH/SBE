@@ -176,7 +176,7 @@ test('continuity binder files: clear name and date, a new file replaces the old 
   assert.equal((await put(a, { key: 'csens1234', title: 'רשימת ההסעות' }))[0], 400);
   assert.equal((await put(a, { key: 'cnothere1' }))[0], 404);
   const doc = (await call(store, { action: 'rdyGet', token: a, id }))[1].doc;
-  assert.ok(doc.files.cabc12345 && doc.log.some((l) => /גרסה חדשה בתיקיית הרציפות/.test(l.what)));
+  assert.ok(doc.files.cabc12345 && doc.log.some((l) => /גרסה חדשה בתיקיית המוכנות/.test(l.what)));
   assert.equal((await call(store, { action: 'rdyFileDel', token: a, id, key: 'm2' }))[0], 200);
   assert.equal(await store.get('rdyf:' + id + ':m2'), null);
   assert.equal((await put(a, { noStudents: false }))[0], 400);

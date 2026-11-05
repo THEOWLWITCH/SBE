@@ -1,7 +1,7 @@
 // ארכיון הפרוטוקולים של מערך המוכנות, בתוך תיק הרציפות (04/11/2026: "חשוב שיהיה ארכיון של הפרוטוקולים בתיק הרציפות...
 // וגם ניתן יהיה להכנס לטבלת המשימות/החלטות מתיק הרציפות"). הנתונים נשארים במערך המוכנות (שרת, תחת המוסד);
 // כאן רק קוראים ומציגים, למי שיש לו/ה גם את מערך המוכנות. בלי התמליל: רק מה שהועבר בכפתור "העברת הפרוטוקול לתיק הרציפות".
-// תיקיית הרציפות (04/11/2026: "הוסף אפשרות להוסיף לרשימה. הוסף אפשרות להעלות את הקובץ למערכת לתיק הרציפות. לוודא שייתנו שם ברור
+// תיקיית המוכנות (04/11/2026: "הוסף אפשרות להוסיף לרשימה. הוסף אפשרות להעלות את הקובץ למערכת לתיק הרציפות. לוודא שייתנו שם ברור
 // ותאריך עדכון. כל קובץ חדש שמועלה גורס גירסה קודמת"): לכל פריט קובץ אחד עם שם ותאריך עדכון; קובץ חדש מחליף את הקודם.
 // פריט עם פרטים של תלמידים, הורים או אנשי צוות (BINDER_SENS, או "רגיש" בפריט שנוסף) לא עולה: כותבים איפה הוא נשמר ומתי עודכן.
 (function () {
@@ -111,7 +111,7 @@
       if (place.value.trim().length < 3) { note.textContent = 'אפשר לכתוב איפה זה נשמר, כדי שממלא/ת מקום ימצא/תמצא את זה.'; return; }
       if (!date.value) { note.textContent = 'תאריך העדכון הוא שדה עיקרי.'; return; }
       const bd = binder(), next = Object.assign({}, bd, { where: Object.assign({}, bd.where || {}, { [it.key]: { place: place.value.trim(), date: date.value, by: by() } }) });
-      if (await saveBinder(next, 'עדכון בתיקיית הרציפות: ' + it.text.slice(0, 80))) { openKey = ''; msg = 'נשמר.'; draw(); }
+      if (await saveBinder(next, 'עדכון בתיקיית המוכנות: ' + it.text.slice(0, 80))) { openKey = ''; msg = 'נשמר.'; draw(); }
     };
     return h('form', { class: 'bform', onsubmit: send },
       h('label', {}, h('span', { text: 'איפה זה נשמר' }), place),
@@ -138,7 +138,7 @@
     if (!confirm('להסיר את "' + it.text + '" מהרשימה?' + (f ? ' גם הקובץ שלו יימחק.' : ''))) return;
     if (f) { const [st, out] = await api('rdyFileDel', { id: doc.id, key: it.key, by: by() }); if (st !== 200) { msg = out.error || 'הקובץ לא נמחק, ולכן הפריט נשאר ברשימה. אפשר לנסות שוב.'; draw(); return; } doc.files = out.files; }
     const bd = binder(), where = Object.assign({}, bd.where || {}); delete where[it.key];
-    if (await saveBinder(Object.assign({}, bd, { items: (bd.items || []).filter((x) => x && x.key !== it.key), where }), 'הסרה מתיקיית הרציפות: ' + it.text.slice(0, 80))) { msg = 'הוסר מהרשימה.'; draw(); }
+    if (await saveBinder(Object.assign({}, bd, { items: (bd.items || []).filter((x) => x && x.key !== it.key), where }), 'הסרה מתיקיית המוכנות: ' + it.text.slice(0, 80))) { msg = 'הוסר מהרשימה.'; draw(); }
   }
   function addForm() {
     const text = h('input', { type: 'text', maxlength: '160', placeholder: W('למשל: רשימת ציוד החירום במחסן'), 'aria-label': 'מה עוד מוסיפים לתיקייה' });
@@ -150,7 +150,7 @@
       if (t.length < 3) { note.textContent = 'אפשר לכתוב מה מוסיפים.'; return; }
       if (items().some((x) => x.text.trim() === t)) { note.textContent = 'הפריט כבר ברשימה.'; return; }
       const bd = binder(), key = 'c' + Math.random().toString(36).slice(2, 10);
-      if (await saveBinder(Object.assign({}, bd, { items: (bd.items || []).concat({ key, text: t, sens: sens.checked }) }), 'הוספה לתיקיית הרציפות: ' + t.slice(0, 80))) { msg = 'נוסף לרשימה.'; draw(); }
+      if (await saveBinder(Object.assign({}, bd, { items: (bd.items || []).concat({ key, text: t, sens: sens.checked }) }), 'הוספה לתיקיית המוכנות: ' + t.slice(0, 80))) { msg = 'נוסף לרשימה.'; draw(); }
     };
     return h('form', { class: 'bform badd', onsubmit: send },
       h('label', {}, h('span', { text: 'מה עוד מוסיפים לתיקייה' }), text),
@@ -171,9 +171,9 @@
     });
     const done = rows.filter((r) => r.classList.contains('ok')).length;
     return h('section', { class: 'card no-print', id: 'binder' },
-      h('h2', { text: '📎 ' + W('תיקיית הרציפות: מה מוסיפים ידנית') }),
+      h('h2', { text: '📎 ' + W('תיקיית המוכנות: מה מוסיפים ידנית') }),
       h('p', { class: 'muted small', text: W('לכל פריט קובץ אחד, עם שם ברור ותאריך עדכון. קובץ חדש מחליף את הקודם, והגרסה הקודמת נמחקת. פריט רגיש (פרטים של תלמידים, הורים או אנשי צוות) נשמר בבית הספר, וכאן כותבים רק איפה הוא ומתי עודכן.') }),
-      h('p', { class: 'small' }, h('b', { text: done + ' מתוך ' + rows.length }), ' מוכנים · ', h('a', { href: 'readiness.html?id=' + encodeURIComponent(doc.id) + '&print=binder', text: '🖨 ' + W('תיקיית הרציפות להדפסה') })),
+      h('p', { class: 'small' }, h('b', { text: done + ' מתוך ' + rows.length }), ' מוכנים · ', h('a', { href: 'readiness.html?id=' + encodeURIComponent(doc.id) + '&print=binder', text: '🖨 ' + W('תיקיית המוכנות להדפסה') })),
       msg ? h('p', { class: 'bmsg', role: 'status', text: msg }) : null,
       h('ul', { class: 'blist' }, rows), addForm());
   }
