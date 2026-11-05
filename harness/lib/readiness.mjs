@@ -323,7 +323,7 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
             '<p style="color:#2F7D7A;font-weight:700;margin:0 0 6px">' + esc(head) + '</p>' +
             '<p style="font-size:20px;font-weight:700;margin:0 0 10px">' + esc(subject) + '</p>' +
             '<p>' + esc(text).replace(/\n/g, '<br>') + '</p>' +
-            '<p style="font-size:12.5px;color:#5B6873;border-top:1px solid #ddd;padding-top:8px">' + (direct ? 'זה סיכום מפגש במערך המוכנות של Begood. הוא נשלח למי שהשתתף/ה במפגש.' : 'זה עדכון מתרגיל צוות במערך המוכנות של Begood. העדכון מגיע רק לצוות שלך. מה לשתף עם שאר הצוותים, מחליטים אתם.') + '</p></div>';
+            '<p style="font-size:12.5px;color:#5B6873;border-top:1px solid #ddd;padding-top:8px">' + (direct && rec ? 'זה סיכום מפגש במערך המוכנות של Begood. הוא נשלח למי שהשתתף/ה במפגש.' : direct ? 'זו הודעה ממערך המוכנות של Begood, שנשלחה בשם צוות בית הספר.' : 'זה עדכון מתרגיל צוות במערך המוכנות של Begood. העדכון מגיע רק לצוות שלך. מה לשתף עם שאר הצוותים, מחליטים אתם.') + '</p></div>';
           for (const to of cands) {
             if (!can(to)) { if (isNew(to)) skippedNew++; else skipped++; continue; }
             if (d.mail.n >= MAX_MAIL_DAY) { skipped++; continue; }
