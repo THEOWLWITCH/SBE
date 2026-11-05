@@ -331,8 +331,14 @@ h1{font-size:26px}.hd img{height:56px}
   // כדי שמעבדת הדמו תשמור בדיוק את מה שהכלי מדפיס (לוגו, כותרת, תאריך ורק התוצר). extraCss: עיצוב הכלי, לפני עיצוב ההדפסה.
   // lang: 'ar' (05/11/2026, מערך המוכנות: "ערבית בהדפסה"): המסמך בערבית: lang, תחתית העמוד, כפתור ההדפסה ושורת הסיום. tool: {name, purpose} בשפת המסמך.
   const PRINT_AR = { page: "صفحة ", of: " من ", btn: "طباعة / حفظ كـ PDF", ft: "أُعدّ في Begood · be-good.co.il" };
+  // הודעות המסך סביב ההדפסה (חלון חסום, תצוגה מקדימה): בערבית כשההדפסה בערבית או כשהדף בערבית
+  const UI_STR = {
+    he: { blocked: "הדפדפן חסם את חלון ההדפסה. אפשר לאפשר חלונות קופצים לאתר ולנסות שוב.", preview: "תצוגה מקדימה להדפסה", close: "סגירת התצוגה", frame: "מסמך להדפסה: " },
+    ar: { blocked: "منع المتصفح نافذة الطباعة. يمكن السماح بالنوافذ المنبثقة لهذا الموقع والمحاولة مرة أخرى.", preview: "معاينة قبل الطباعة", close: "إغلاق المعاينة", frame: "مستند للطباعة: " }
+  };
   function print({ title, subtitle, kind, node, nodes, inline = false, landscape = false, pocket = false, toHtml = false, extraCss = "", lang = "he", tool }) {
     const AR = lang === "ar";
+    const U = UI_STR[AR || /^ar\b/i.test((document.documentElement && document.documentElement.getAttribute && document.documentElement.getAttribute("lang")) || "") ? "ar" : "he"];
     const parts = (nodes || [node]).filter(Boolean).map((n) => {
       const c = n.cloneNode(true);
       if (window.SBE_REFS && SBE_REFS.forPrint) SBE_REFS.forPrint(c); // מקורות: רק כשבחרו "צירוף המקורות לקובץ"
@@ -351,22 +357,22 @@ h1{font-size:26px}.hd img{height:56px}
     } else if (inline) {
       // An authenticated export can finish after the browser's popup gesture expires.
       const preview = document.createElement("dialog");
-      preview.setAttribute("aria-label", "תצוגה מקדימה להדפסה");
+      preview.setAttribute("aria-label", U.preview);
       preview.style.cssText = "width:min(900px,94vw);height:90vh;padding:12px;border:1px solid #CDD3D8;border-radius:10px";
       const close = document.createElement("button");
-      close.type = "button"; close.textContent = "סגירת התצוגה";
+      close.type = "button"; close.textContent = U.close;
       close.style.cssText = "font:inherit;padding:6px 12px;margin-bottom:8px";
       close.addEventListener("click", () => preview.close());
       preview.addEventListener("close", () => preview.remove(), { once: true });
       const frame = document.createElement("iframe");
-      frame.title = "מסמך להדפסה: " + String(title || "Begood");
+      frame.title = U.frame + String(title || "Begood");
       frame.style.cssText = "display:block;width:100%;height:calc(100% - 48px);border:0";
       preview.append(close, frame); document.body.append(preview); preview.showModal();
       w = frame.contentWindow;
     } else {
       w = window.open("", "_blank");
     }
-    if (!w) { alert("הדפדפן חסם את חלון ההדפסה. אפשר לאפשר חלונות קופצים לאתר ולנסות שוב."); return; }
+    if (!w) { alert(U.blocked); return; }
     w.document.write(`<!doctype html><html lang="${AR ? "ar" : "he"}" dir="rtl"><head><meta charset="utf-8"><title>${esc(fileTitle(title, tool, kind))}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Fredoka:wght@500;600&display=swap">
 ${extraCss ? "<style>" + extraCss + "</style>" : ""}<style>

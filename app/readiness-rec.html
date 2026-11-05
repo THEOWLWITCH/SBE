@@ -32,7 +32,7 @@ button:disabled{opacity:.45}
 <div class="wrap">
   <h1 id="t">הקלטת התרגיל</h1>
   <p class="muted" id="school"></p>
-  <div id="app"><p class="muted">…</p></div>
+  <div id="app"><p class="muted">מתחברים… · <span lang="ar">جارٍ الاتصال…</span></p></div>
 </div>
 <script>
 (function () {
@@ -44,13 +44,16 @@ button:disabled{opacity:.45}
     he: { t: 'הקלטת התרגיל', info: 'ההקלטה עוברת לתמלול בשירות חיצוני (OpenAI) ולא נשמרת. התמליל נמחק כשדוח התרגיל מאושר או כשהמפגש מסומן כהושלם, ולכל המאוחר אחרי 30 יום. כל אחד ואחת יכולים לבקש לעצור.', start: '🎙 התחלת ההקלטה', pause: '⏸ עצירה',
       resume: '🎙 המשך ההקלטה', mark: '⭐ רגע החלטה', stop: 'סיום ההקלטה', round: 'סבב', rec: 'מקליטים', paused: 'ההקלטה עצורה', sent: 'קטעים שעלו', wait: 'קטעים שמחכים לרשת',
       marks: 'רגעי החלטה', done: 'ההקלטה הסתיימה. אפשר לסגור את הדף.', waiting: 'עוד {n} קטעים לא עלו (אין חיבור או שהתמלול לא זמין). אם מסיימים עכשיו, הם יימחקו מהטלפון ולא ייכנסו לתמליל. לסיים?', bad: 'הקישור להקלטה הסתיים. אפשר לפתוח קישור חדש ממסך התרגיל או המפגש.', mic: 'אין גישה למיקרופון. אפשר לאשר גישה בהגדרות הדפדפן ולנסות שוב.',
-      nosupport: 'הדפדפן הזה לא מקליט. אפשר לסמן רגעי החלטה בכפתור, או לנסות בדפדפן אחר.', screen: 'כדאי להשאיר את המסך דולק ואת הדף פתוח.', marked: 'סומן', note: 'מה הוחלט? (רשות)' },
+      nosupport: 'הדפדפן הזה לא מקליט. אפשר לסמן רגעי החלטה בכפתור, או לנסות בדפדפן אחר.', screen: 'כדאי להשאיר את המסך דולק ואת הדף פתוח.', marked: 'סומן', note: 'מה הוחלט? (רשות)',
+      big: 'קטע אחד ארוך מדי ולא נכנס לתמליל. ההקלטה ממשיכה.', connecting: 'מתחברים…', offline: 'אין חיבור לשרת כרגע.', retry: 'לנסות שוב', idnote: 'נראה שיש בהערה מספר זהות. אפשר למחוק אותו ולסמן שוב.' },
     ar: { t: 'تسجيل التمرين', info: 'يُرسل التسجيل للتحويل إلى نص لدى خدمة خارجية (OpenAI) ولا يُحفظ. يُحذف النص المكتوب عند المصادقة على تقرير التمرين أو عند تعليم اللقاء كمكتمل، وفي موعد أقصاه 30 يومًا. يمكن لكل واحد وواحدة أن يطلب التوقف.', start: '🎙 بدء التسجيل', pause: '⏸ توقف',
       resume: '🎙 متابعة التسجيل', mark: '⭐ لحظة قرار', stop: 'إنهاء التسجيل', round: 'جولة', rec: 'نسجّل', paused: 'التسجيل متوقف', sent: 'مقاطع أُرسلت', wait: 'مقاطع تنتظر الشبكة',
       marks: 'لحظات قرار', done: 'انتهى التسجيل. يمكن إغلاق الصفحة.', waiting: 'لم تُرفع بعد {n} مقاطع (لا يوجد اتصال أو التفريغ غير متاح). إذا أنهينا الآن، ستُحذف من الهاتف ولن تدخل النص المفرّغ. هل ننهي؟', bad: 'انتهى رابط التسجيل. يمكن فتح رابط جديد من شاشة التمرين أو اللقاء.', mic: 'لا يوجد وصول إلى الميكروفون. يمكن السماح بالوصول في إعدادات المتصفح والمحاولة من جديد.',
-      nosupport: 'هذا المتصفح لا يسجّل. يمكن الإشارة إلى لحظات القرار بالزر، أو تجربة متصفح آخر.', screen: 'من المفيد إبقاء الشاشة مضاءة والصفحة مفتوحة.', marked: 'تمت الإشارة', note: 'ما الذي تقرّر؟ (اختياري)' }
+      nosupport: 'هذا المتصفح لا يسجّل. يمكن الإشارة إلى لحظات القرار بالزر، أو تجربة متصفح آخر.', screen: 'من المفيد إبقاء الشاشة مضاءة والصفحة مفتوحة.', marked: 'تمت الإشارة', note: 'ما الذي تقرّر؟ (اختياري)',
+      big: 'مقطع واحد طويل جدًا ولم يدخل النص المفرّغ. التسجيل مستمر.', connecting: 'جارٍ الاتصال…', offline: 'لا يوجد اتصال بالخادم حاليًا.', retry: 'المحاولة من جديد', idnote: 'يبدو أن في الملاحظة رقم هوية. يمكن حذفه والإشارة من جديد.' }
   };
-  var lang = 'he', w = W.he;
+  var lang = 'he', w = W.he, known = false;
+  var gone = function (s) { return s === 401 || s === 410; };
   var st = { round: 1, seq: 0, t0: 0, rec: null, stream: null, on: false, sent: 0, marks: 0, lock: null, timer: null, chunkStart: 0, queue: 0 };
 
   function call(action, extra) {
@@ -81,7 +84,9 @@ button:disabled{opacity:.45}
         return p.then(function () {
           return call('rdyRecChunk', { seq: it.seq, t: it.t, round: it.round, mime: it.mime, audio: it.audio }).then(function (res) {
             if (res[0] === 200) { st.sent++; return qDel(it.k); }
-            if (res[0] === 401) { bad(); throw new Error('stop'); }
+            if (gone(res[0])) { bad(); throw new Error('stop'); }
+            // קטע גדול מדי (או תמליל שהגיע למקסימום): לא שולחים אותו שוב ושוב. נמחק מהטלפון, עם הודעה.
+            if (res[0] === 413) { msg(w.big); return qDel(it.k); }
           }).catch(function (e) { if (e && e.message === 'stop') throw e; });
         });
       }, Promise.resolve());
@@ -131,7 +136,7 @@ button:disabled{opacity:.45}
   }
   function mark() {
     var note = (document.getElementById('note') || {}).value || '';
-    call('rdyRecMark', { t: st.t0 ? Date.now() - st.t0 : 0, round: st.round, note: note }).then(function (r) { if (r[0] === 200) { st.marks = r[1].marks; var n = document.getElementById('note'); if (n) n.value = ''; draw(w.marked + ' ⭐'); } else if (r[0] === 401) bad(); });
+    call('rdyRecMark', { t: st.t0 ? Date.now() - st.t0 : 0, round: st.round, note: note }).then(function (r) { if (r[0] === 200) { st.marks = r[1].marks; var n = document.getElementById('note'); if (n) n.value = ''; draw(w.marked + ' ⭐'); } else if (gone(r[0])) bad(); else if (r[0] === 400) msg(w.idnote); else if (r[1] && r[1].error) msg(r[1].error); }).catch(function () { msg(w.offline); });
   }
   // סיום: קודם שולחים את מה שמחכה. אם עדיין יש קטעים שלא עלו, שואלים; בסיום מוחקים מהטלפון את מה שנשאר מההקלטה הזאת.
   function clearQueue() { return qAll().then(function (q) { return Promise.all(q.map(function (it) { return qDel(it.k); })); }); }
@@ -145,7 +150,8 @@ button:disabled{opacity:.45}
     }, 800);
   }
   function msg(text, ok) { var m = document.getElementById('msg'); if (m) { m.textContent = text; m.style.color = ok ? 'var(--teal)' : ''; } }
-  function bad() { st.on = false; clearQueue(); app.innerHTML = '<div class="card"><p class="warn">' + w.bad + '</p></div>'; }
+  // עד שיודעים את שפת המערך, ההודעה בעברית ובערבית
+  function bad() { if (st.on) pause(); st.on = false; clearQueue(); app.innerHTML = '<div class="card"><p class="warn">' + (known ? w.bad : W.he.bad + '</p><p class="warn" lang="ar" dir="rtl">' + W.ar.bad) + '</p></div>'; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
   function draw(flash) {
@@ -170,15 +176,27 @@ button:disabled{opacity:.45}
   }
 
   if (!/^[a-f0-9]{48}$/.test(rk)) { bad(); return; }
-  call('rdyRecPing').then(function (r) {
+  // בדיקת החיבור הראשונה: כמה ניסיונות (השרת עשוי להתעורר), ואז "לנסות שוב"
+  function both(k) { return W.he[k] + ' · <span lang="ar">' + W.ar[k] + '</span>'; }
+  function connect(tries) {
+    app.innerHTML = '<p class="muted" role="status">' + both('connecting') + '</p>';
+    call('rdyRecPing').then(ready).catch(function () {
+      if (tries > 1) { setTimeout(function () { connect(tries - 1); }, 4000); return; }
+      app.innerHTML = '<div class="card"><p class="warn" role="status">' + both('offline') + '</p><p><a href="#" id="again">' + both('retry') + '</a></p></div>';
+      document.getElementById('again').onclick = function (e) { e.preventDefault(); connect(4); };
+    });
+  }
+  connect(4);
+  function ready(r) {
     if (r[0] !== 200) { bad(); return; }
+    known = true;
     lang = r[1].lang === 'ar' ? 'ar' : 'he'; w = W[lang];
     document.documentElement.lang = lang;
     document.getElementById('t').textContent = w.t;
     document.getElementById('school').textContent = r[1].title || '';
     st.round = r[1].round || 1; st.marks = r[1].marks || 0; st.sent = r[1].segments || 0; st.seq = Math.max(r[1].nextSeq || 0, r[1].segments || 0) + (r[1].nextSeq != null ? 0 : 0); clearOld();
     qAll().then(function (q) { q.forEach(function (it) { if (it.seq >= st.seq) st.seq = it.seq + 1; }); draw(); flush(); });
-  }).catch(function () { msg('…'); });
+  }
 })();
 </script>
 </body>

@@ -9,9 +9,9 @@ const P = require('../../app/lib/readiness-model.js');
 const leaves = (o, out = []) => { if (typeof o === 'string') out.push(o); else if (o && typeof o === 'object') for (const v of Object.values(o)) leaves(v, out); return out; };
 const TEXT = ['TEAMS', 'TEAM_NOTES', 'TASKS', 'EM', 'REPORT', 'REMS', 'ANNEXES', 'SESSIONS', 'MAPPING', 'TABLETOP_NOTE', 'SIRENS', 'ROUND_DEBRIEF', 'DEBRIEF', 'PILLARS', 'INDEPENDENCE', 'ROUTINE', 'UI', 'MEET_TYPES', 'SHEETS', 'BINDER_MANUAL', 'INDEX_HOW', 'INDEX_INFO'];
 
-test('structure follows the outline: seven teams, 23 tasks, five sessions, three rounds, eight debrief steps', () => {
+test('structure follows the outline: seven teams, 24 tasks, five sessions, three rounds, eight debrief steps', () => {
   assert.equal(P.TEAMS.length, 7);
-  assert.equal(P.TASKS.length, 23);
+  assert.equal(P.TASKS.length, 24);
   assert.equal(P.SESSIONS.length, 5);
   assert.equal(P.REMS.length, 6);
   assert.equal(P.SIRENS.rounds.length, 3);
@@ -176,4 +176,59 @@ test('meetings: types from the rituals, the discussion becomes tasks, decisions 
   assert.equal(P.sheetOf('ideas', { decision: 'adopt' }), 'decisions');
   assert.equal(P.sheetOf('ideas', { done: true }), 'done');
   assert.equal(P.ROUTINE_LINKS[0][0], 'continuity-kit.html');
+});
+
+// כל מחרוזת בתוכן הערבי, בגרסה החינוכית ובגרסה לקהילה: בלי אותיות עבריות.
+// חריג יחיד: UI.lang2, הכפתור שחוזר לעברית ("עברית"), שכתוב בשפה שאליה עוברים.
+test('Arabic content has no Hebrew left, in the school and the community versions', () => {
+  const ALLOW = new Set(['UI.lang2']);
+  const walk = (o, path, out) => {
+    if (typeof o === 'string') { if (/[\u0590-\u05FF]/.test(o) && !ALLOW.has(path)) out.push(path + ': ' + o.slice(0, 80)); }
+    else if (o && typeof o === 'object' && !(o instanceof RegExp)) for (const [k, v] of Object.entries(o)) walk(v, path ? path + '.' + k : k, out);
+    return out;
+  };
+  for (const api of [P, P.forSpace('org')]) {
+    const A = api.content('ar'), out = [];
+    for (const [k, v] of Object.entries(A)) if (typeof v !== 'function') walk(v, k, out);
+    assert.deepEqual(out, [], api.space);
+  }
+});
+
+test('expert review fixes: partner suggestions, staff rest, debrief closing, community wording', () => {
+  const O = P.forSpace('org');
+  assert.ok(P.PARTNER_SUG.includes('ועד ההורים')); assert.ok(O.PARTNER_SUG.includes('ועד השכונה'));
+  assert.ok(!/لجنة أفراد العائلات/.test(O.content('ar').PARTNER_SUG.join(' ')));
+  assert.equal(P.content('ar').PARTNER_SUG.length, P.PARTNER_SUG.length);
+  assert.match(P.TASKS.at(-1).text, /סבב מנוחה/); assert.equal(P.TASKS.at(-1).team, 'mgmt'); assert.equal(P.TASKS.at(-1).when, 'during');
+  assert.match(P.MAPPING.mgmt.at(-1), /סבב מנוחה/); assert.match(O.MAPPING.mgmt.at(-1), /סבב מנוחה/);
+  assert.equal(P.S4.at(-1).k, 'staff'); assert.equal(P.content('ar').S4.length, P.S4.length);
+  assert.match(O.MAPPING.parents.at(-1), /ועד השכונה/);
+  assert.match(P.DEBRIEF.at(-1).text, /מי בודק\/ת איתו\/ה מחר/);
+  assert.match(O.SIRENS.success[0], /אדם מוכר שנשאר איתו\/ה/);
+  assert.match(O.DISCONNECT.hardTalk.feedback[2], /איש\/אשת הקשר שבבית/);
+  assert.ok(!/دورة راحة/.test(JSON.stringify(P.content('ar'))));
+  assert.deepEqual(P.INDEX_HOW.rel.length, 4); assert.equal(P.content('ar').INDEX_HOW.rel.length, 4);
+  assert.match(P.debriefSystem('he'), /"students"/);
+  assert.match(P.generatorSystem('he'), /howTo/);
+});
+
+test('generator with students in the audience: no hard talk, a student card, no missing or injured; always an emotional success line', () => {
+  const round = (i, extra = '') => ({ time: '10:0' + i, title: 't' + i, all: 'עדכון' + extra, teams: { mgmt: 'א' }, decision: 'מה עושים?' });
+  const o = { title: 'תרחיש', intro: 'פתיחה', card: { tests: 'ספירה', success: ['הספירה הושלמה'] }, rounds: [round(1), round(2), round(3)], hardTalk: { q: 'שאלה', how: 'איך', feedback: ['x'], howTo: ['a', 'b', 'c', 'd', 'e'] } };
+  const plain = P.normalizeScenario(o);
+  assert.equal(plain.rounds[2].hardTalk, true); assert.equal(plain.hardTalk.howTo.length, 4); assert.equal(plain.studentCard, null);
+  assert.equal(plain.card.success[0], P.SIRENS.success[0]);
+  const sel = { audience: ['כיתה או שכבה'] };
+  assert.ok(P.hasStudents(sel)); assert.ok(!P.hasStudents({ audience: ['כל הצוות'] })); assert.ok(!P.forSpace('org').hasStudents(sel));
+  const st = P.normalizeScenario(o, sel);
+  assert.ok(st.rounds.every((r) => !r.hardTalk)); assert.equal(st.hardTalk.q, '');
+  assert.equal(st.studentCard.ifBad, P.STUDENT_SAFE);
+  assert.ok(P.validScenario(o, sel));
+  assert.ok(!P.validScenario({ ...o, rounds: [round(1), round(2, ': תלמיד נעדר'), round(3)] }, sel));
+  assert.ok(!P.validScenario({ ...o, rounds: [round(1), round(2, ': يوجد مصاب'), round(3)] }, sel));
+  assert.ok(P.validScenario({ ...o, rounds: [round(1), round(2, ': תלמיד נעדר'), round(3)] }));
+  const ar = P.normalizeScenario({ ...o, title: 'سيناريو', card: { success: ['اكتمل العدّ'] } }, sel);
+  assert.equal(ar.card.success[0], P.content('ar').SIRENS.success[0]); assert.equal(ar.studentCard.ifBad, P.content('ar').STUDENT_SAFE);
+  const emo = P.normalizeScenario({ ...o, card: { success: ['לכל מי שבמצוקה יש מבוגר/ת'] } });
+  assert.equal(emo.card.success.length, 1);
 });

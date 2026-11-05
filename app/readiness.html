@@ -182,6 +182,12 @@ table.rt td textarea.cell.wide{min-width:200px}
   table.rt.protot tr{grid-template-columns:1fr 104px 22px}
 }
 @media print{ .noprint{display:none!important} }
+/* סבב בקרה שלישי: תאריך וכפתור לוח השנה באותה שורה; מה נחשב הצלחה בשורה מקופלת בכל סבב */
+@media screen{
+  td:has(> input.sbe-date){white-space:nowrap}
+  .succrow{margin:4px 0 8px}
+  .succrow summary{cursor:pointer;color:var(--muted,#55606e)}
+}
 </style>
 </head>
 <body>

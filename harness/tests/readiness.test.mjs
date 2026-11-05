@@ -48,15 +48,24 @@ test('a staff code of the same school shares the program; another school and a c
 test('saving a part: whitelist, revision check, change log and no ID numbers', async () => {
   const { store, a, b } = await setup();
   const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S' } }))[1].doc.id;
-  assert.equal((await call(store, { action: 'rdySave', token: a, id, part: 'secret', value: 1 }))[0], 400);
+  assert.equal((await call(store, { action: 'rdySave', token: a, id, rev: 0, part: 'secret', value: 1 }))[0], 400);
   const [s1, r1] = await call(store, { action: 'rdySave', token: a, id, part: 'teams', rev: 0, value: [{ id: 't1', name: 'צוות ניהול' }], what: 'טבלת צוותים', by: 'דנה' });
   assert.equal(s1, 200); assert.equal(r1.rev, 1);
   const [s2, r2] = await call(store, { action: 'rdySave', token: b, id, part: 'teams', rev: 0, value: [] });
   assert.equal(s2, 409); assert.equal(r2.doc.parts.teams[0].name, 'צוות ניהול');
-  assert.equal((await call(store, { action: 'rdySave', token: a, id, part: 'gaps', value: [{ text: 'תלמיד ת.ז. 000000018' }] }))[0], 400);
+  assert.equal((await call(store, { action: 'rdySave', token: a, id, rev: 0, part: 'gaps', value: [{ text: 'תלמיד ת.ז. 000000018' }] }))[0], 400);
   assert.equal(hasIdNumber('טלפון 050-1234567'), false);
   assert.equal(hasIdNumber('טלפון קווי 039876543'), false);
   assert.equal(hasIdNumber('ת.ז. 000000018'), true);
+  // תעודת זהות בקבוצות עם רווח או מקף; טלפונים ותאריכים לא נחסמים
+  assert.equal(hasIdNumber('ת.ז. 123-456-782'), true);
+  assert.equal(hasIdNumber('1234 5678 2'), true);
+  assert.equal(hasIdNumber('123-456-783'), false);
+  assert.equal(hasIdNumber('נייד 052-123-4567'), false);
+  assert.equal(hasIdNumber('קווי 03-9876543'), false);
+  assert.equal(hasIdNumber('05-11-2026 · 2026-11-05'), false);
+  // בלי מספר גרסה: לא נשמר
+  assert.equal((await call(store, { action: 'rdySave', token: a, id, part: 'gaps', value: [] }))[0], 400);
   const doc = (await call(store, { action: 'rdyGet', token: a, id }))[1].doc;
   assert.equal(doc.log.at(-1).what, 'טבלת צוותים');
   assert.equal(doc.log.at(-1).by, 'דנה');
@@ -65,15 +74,16 @@ test('saving a part: whitelist, revision check, change log and no ID numbers', a
 test('updates by email go only to the addresses in the program teams', async () => {
   const { store, a } = await setup();
   const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S' } }))[1].doc.id;
-  await call(store, { action: 'rdySave', token: a, id, part: 'teams', value: [{ id: 't1', name: 'קשר עם הורים', members: [{ name: 'רונית', email: 'ronit@example.org' }, { email: 'bad' }] }] });
+  await call(store, { action: 'rdySave', token: a, id, rev: 0, part: 'teams', value: [{ id: 't1', name: 'קשר עם הורים', members: [{ name: 'רונית', email: 'ronit@example.org' }, { email: 'bad' }] }] });
   const sent = [];
   const fetchImpl = async (url, o) => { sent.push(JSON.parse(o.body)); return { ok: true }; };
   const who = async () => ({ principal: 'p', inst: 'School', sys: false });
   const doc = (await call(store, { action: 'rdyGet', token: a, id }))[1].doc;
   const owner = (await store.get('rdy:' + id)).owner;
   assert.equal(owner, 'inst:School');
+  const later = () => Date.now() + 25 * 3600e3; // כתובת בצוותים מקבלת מייל רק אחרי 24 שעות
   const [st, out] = await handleReadiness(store, { action: 'rdyMail', token: 'x', id: doc.id, subject: 'סבב 1', items: [{ teamId: 't1', text: 'בקבוצת ההורים מתחילות שאלות' }, { teamId: 'nope', text: 'x' }] },
-    { who, fetchImpl, env: { RESEND_API_KEY: 'k', NOTIFY_FROM: 'Begood <n@b.il>' } });
+    { who, fetchImpl, env: { RESEND_API_KEY: 'k', NOTIFY_FROM: 'Begood <n@b.il>' }, now: later });
   assert.equal(st, 200);
   assert.equal(out.sent, 1);
   assert.deepEqual(sent.map((m) => m.to[0]), ['ronit@example.org']);
@@ -84,7 +94,7 @@ test('updates by email go only to the addresses in the program teams', async () 
 test('recording: consent first, phone key only, audio transcribed and dropped, transcript deleted on request', async () => {
   const { store, a } = await setup();
   const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S', lang: 'he' } }))[1].doc.id;
-  await call(store, { action: 'rdySave', token: a, id, part: 'exercises', value: [{ id: 'ex-1', session: 3, round: 1 }] });
+  await call(store, { action: 'rdySave', token: a, id, rev: 0, part: 'exercises', value: [{ id: 'ex-1', session: 3, round: 1 }] });
   assert.equal((await call(store, { action: 'rdyRecStart', token: a, id, exId: 'ex-1' }))[0], 400);
   const [, start] = await call(store, { action: 'rdyRecStart', token: a, id, exId: 'ex-1', consent: true });
   assert.match(start.rk, /^[a-f0-9]{48}$/);
@@ -127,7 +137,7 @@ test('deleting a program (system admin only) removes it and its transcripts', as
 test('recording a meeting: a planned meeting and one of the five sessions, but not an unknown id', async () => {
   const { store, a } = await setup();
   const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S', lang: 'he' } }))[1].doc.id;
-  await call(store, { action: 'rdySave', token: a, id, part: 'meetings', value: [{ id: 'mt-abc123', type: 'weekly', title: 'זמן מוכנות' }] });
+  await call(store, { action: 'rdySave', token: a, id, rev: 0, part: 'meetings', value: [{ id: 'mt-abc123', type: 'weekly', title: 'זמן מוכנות' }] });
   const [s1, m] = await call(store, { action: 'rdyRecStart', token: a, id, exId: 'mt-abc123', consent: true });
   assert.equal(s1, 200); assert.equal((await call(store, { action: 'rdyRecPing', rk: m.rk }))[1].ok, true);
   const [s2] = await call(store, { action: 'rdyRecStart', token: a, id, exId: 'sess-2', consent: true });
@@ -139,13 +149,13 @@ test('recording a meeting: a planned meeting and one of the five sessions, but n
 test('meeting summary goes only to the people checked in at that meeting', async () => {
   const { store, a } = await setup();
   const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S' } }))[1].doc.id;
-  await call(store, { action: 'rdySave', token: a, id, part: 'teams', value: [{ id: 't1', name: 'ניהול', lead: { name: 'דנה', email: 'dana@example.org' } }] });
-  await call(store, { action: 'rdySave', token: a, id, part: 'meetings', value: [{ id: 'mt-abc123', title: 'זמן מוכנות', attendees: [{ name: 'אורח', role: 'נציג הרשות', email: 'guest@example.org', here: true }, { name: 'לא הגיע', email: 'away@example.org', here: false }] }] });
+  await call(store, { action: 'rdySave', token: a, id, rev: 0, part: 'teams', value: [{ id: 't1', name: 'ניהול', lead: { name: 'דנה', email: 'dana@example.org' } }] });
+  await call(store, { action: 'rdySave', token: a, id, rev: 0, part: 'meetings', value: [{ id: 'mt-abc123', title: 'זמן מוכנות', attendees: [{ name: 'אורח', role: 'נציג הרשות', email: 'guest@example.org', here: true }, { name: 'לא הגיע', email: 'away@example.org', here: false }] }] });
   const sent = [];
   const fetchImpl = async (url, o) => { sent.push(JSON.parse(o.body)); return { ok: true }; };
   const who = async () => ({ principal: 'p', inst: 'School', sys: false });
   const env = { RESEND_API_KEY: 'k', NOTIFY_FROM: 'Begood <noreply@example.org>' };
-  const [st, out] = await handleReadiness(store, { action: 'rdyMail', token: 'x', id, meetingId: 'mt-abc123', subject: 'סיכום', items: [{ to: ['guest@example.org', 'away@example.org', 'dana@example.org', 'evil@example.org'], text: 'סיכום המפגש' }] }, { who, fetchImpl, env });
+  const [st, out] = await handleReadiness(store, { action: 'rdyMail', token: 'x', id, meetingId: 'mt-abc123', subject: 'סיכום', items: [{ to: ['guest@example.org', 'away@example.org', 'dana@example.org', 'evil@example.org'], text: 'סיכום המפגש' }] }, { who, fetchImpl, env, now: () => Date.now() + 25 * 3600e3 });
   assert.equal(st, 200);
   assert.deepEqual(sent.map((m) => m.to[0]).sort(), ['dana@example.org', 'guest@example.org']);
   assert.equal(out.sent, 2);
@@ -171,7 +181,7 @@ test('continuity binder files: clear name and date, a new file replaces the old 
   assert.equal(g, 200); assert.equal(got.file.data, data2);
   assert.equal((await call(store, { action: 'rdyFileGet', token: other, id, key: 'm2' }))[0], 404);
   // פריט שנוסף לרשימה: רגיש לא עולה, רגיל עולה
-  await call(store, { action: 'rdySave', token: a, id, part: 'binder', value: { items: [{ key: 'cabc12345', text: 'ציוד חירום' }, { key: 'csens1234', text: 'רשימת תלמידים בהסעות', sens: true }] } });
+  await call(store, { action: 'rdySave', token: a, id, rev: 0, part: 'binder', value: { items: [{ key: 'cabc12345', text: 'ציוד חירום' }, { key: 'csens1234', text: 'רשימת תלמידים בהסעות', sens: true }] } });
   assert.equal((await put(a, { key: 'cabc12345', title: 'רשימת ציוד החירום' }))[0], 200);
   assert.equal((await put(a, { key: 'csens1234', title: 'רשימת ההסעות' }))[0], 400);
   assert.equal((await put(a, { key: 'cnothere1' }))[0], 404);
@@ -191,4 +201,92 @@ test('binder sensitive items match the model', async () => {
   const P = createRequire(import.meta.url)('../../app/lib/readiness-model.js');
   assert.deepEqual(P.BINDER_SENS, BINDER_SENS);
   assert.equal(P.content('he').BINDER_MANUAL.length, 8);
+});
+
+test('email: a new team address waits 24 hours, old addresses keep working, every send is logged without addresses', async () => {
+  const { store, a } = await setup();
+  const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S' } }))[1].doc.id;
+  // מערך מלפני השינוי: כתובת שכבר הייתה בצוותים (בלי emailSeen) נחשבת ישנה
+  const d0 = await store.get('rdy:' + id);
+  d0.parts.teams = [{ id: 't1', name: 'ניהול', lead: { name: 'דנה', email: 'old@example.org' } }];
+  await store.set('rdy:' + id, d0);
+  const sent = [];
+  const fetchImpl = async (url, o) => { sent.push(JSON.parse(o.body)); return { ok: true }; };
+  const who = async () => ({ principal: 'p', inst: 'School', sys: false });
+  const env = { RESEND_API_KEY: 'k', NOTIFY_FROM: 'Begood <noreply@example.org>' };
+  const t0 = Date.now();
+  const rev = (await store.get('rdy:' + id)).revs.teams || 0;
+  await call(store, { action: 'rdySave', token: a, id, part: 'teams', rev, value: [{ id: 't1', name: 'ניהול', lead: { email: 'old@example.org' }, members: [{ email: 'new@example.org' }] }] });
+  const mail = (now, extra = {}) => handleReadiness(store, Object.assign({ action: 'rdyMail', token: 'x', id, subject: 'עדכון', items: [{ teamId: 't1', text: 'שלום' }] }, extra), { who, fetchImpl, env, now: () => now });
+  const [s1, o1] = await mail(t0);
+  assert.equal(s1, 200);
+  assert.deepEqual(sent.map((m) => m.to[0]), ['old@example.org']);
+  assert.equal(o1.skippedNew, 1); assert.equal(o1.reason, 'new');
+  sent.length = 0;
+  const [, o2] = await mail(t0 + 25 * 3600e3);
+  assert.deepEqual(sent.map((m) => m.to[0]).sort(), ['new@example.org', 'old@example.org']);
+  assert.equal(o2.reason, undefined);
+  const log = (await store.get('rdy:' + id)).log.filter((l) => l.part === 'mail');
+  assert.equal(log.length, 2);
+  assert.ok(log.every((l) => /עדכון/.test(l.what) && !/@/.test(l.what)));
+  // מספר זהות בטקסט המייל: לא נשלח
+  assert.equal((await mail(t0 + 25 * 3600e3, { items: [{ teamId: 't1', text: 'ת.ז. 123-456-782' }] }))[0], 400);
+});
+
+test('email: at most 20 new team addresses a day per program', async () => {
+  const { store, a } = await setup();
+  const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S' } }))[1].doc.id;
+  const members = Array.from({ length: 30 }, (_, i) => ({ email: 'p' + i + '@example.org' }));
+  await call(store, { action: 'rdySave', token: a, id, part: 'teams', rev: 0, value: [{ id: 't1', name: 'ניהול', members }] });
+  assert.equal(Object.keys((await store.get('rdy:' + id)).emailSeen).length, 20);
+  const sent = [];
+  const fetchImpl = async (url, o) => { sent.push(JSON.parse(o.body)); return { ok: true }; };
+  const [, o] = await handleReadiness(store, { action: 'rdyMail', token: 'x', id, items: [{ teamId: 't1', text: 'שלום' }] },
+    { who: async () => ({ principal: 'p', inst: 'School', sys: false }), fetchImpl, env: { RESEND_API_KEY: 'k', NOTIFY_FROM: 'n@example.org' }, now: () => Date.now() + 25 * 3600e3 });
+  assert.equal(o.sent, 20); assert.equal(o.skippedNew, 10);
+});
+
+test('transcripts keep their date (30-day sweep), also when edited or created by a decision mark', async () => {
+  const { store, a } = await setup();
+  const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S' } }))[1].doc.id;
+  await call(store, { action: 'rdySave', token: a, id, part: 'exercises', rev: 0, value: [{ id: 'ex-1', session: 3, round: 1 }] });
+  const rk = (await call(store, { action: 'rdyRecStart', token: a, id, exId: 'ex-1', consent: true }))[1].rk;
+  assert.equal((await call(store, { action: 'rdyRecMark', rk, t: 1, note: 'ת.ז. 1234 5678 2' }))[0], 400);
+  assert.equal((await call(store, { action: 'rdyRecMark', rk, t: 1, note: 'מפנים' }))[0], 200);
+  const at = (await store.get('rdyt:' + id + ':ex-1')).at;
+  assert.ok(at);
+  await call(store, { action: 'rdyTranscriptSave', token: a, id, exId: 'ex-1', segments: [{ seq: 0, text: 'נערך' }] });
+  assert.equal((await store.get('rdyt:' + id + ':ex-1')).at, at);
+  const tr = await store.get('rdyt:' + id + ':ex-1'); tr.at = new Date(Date.now() - 31 * 864e5).toISOString(); await store.set('rdyt:' + id + ':ex-1', tr);
+  await call(store, { action: 'rdyMine', token: a });
+  assert.equal(await store.get('rdyt:' + id + ':ex-1'), null);
+});
+
+test('one active recording key per target: a new link or deleting the transcript ends the old key', async () => {
+  const { store, a } = await setup();
+  const id = (await call(store, { action: 'rdyCreate', token: a, profile: { name: 'S' } }))[1].doc.id;
+  await call(store, { action: 'rdySave', token: a, id, part: 'meetings', rev: 0, value: [{ id: 'mt-abc123', title: 'זמן מוכנות' }] });
+  const fetchImpl = async () => ({ ok: true, json: async () => ({ text: 'דיברנו' }) });
+  const env = { OPENAI_API_KEY: 'k' };
+  const audio = Buffer.from('fake').toString('base64');
+  const chunk = (rk, seq) => handleReadiness(store, { action: 'rdyRecChunk', rk, seq, audio }, { who: async () => null, fetchImpl, env });
+  const k1 = (await call(store, { action: 'rdyRecStart', token: a, id, exId: 'mt-abc123', consent: true }))[1].rk;
+  const k2 = (await call(store, { action: 'rdyRecStart', token: a, id, exId: 'mt-abc123', consent: true }))[1].rk;
+  assert.equal((await call(store, { action: 'rdyRecPing', rk: k1 }))[0], 410);
+  assert.equal((await chunk(k1, 0))[0], 410);
+  assert.equal((await chunk(k2, 0))[0], 200);
+  // המפגש סומן כהושלם: התמליל נמחק והמפתח מבוטל, וקטע מאוחר לא יוצר אותו מחדש
+  await call(store, { action: 'rdyTranscriptDelete', token: a, id, exId: 'mt-abc123' });
+  assert.equal((await chunk(k2, 1))[0], 410);
+  assert.equal((await call(store, { action: 'rdyRecMark', rk: k2, t: 1 }))[0], 410);
+  assert.equal(await store.get('rdyt:' + id + ':mt-abc123'), null);
+  // קטע שהתמלול שלו נגמר אחרי שהמפתח בוטל: לא נשמר
+  const k3 = (await call(store, { action: 'rdyRecStart', token: a, id, exId: 'mt-abc123', consent: true }))[1].rk;
+  const slow = async () => { await call(store, { action: 'rdyRecStart', token: a, id, exId: 'mt-abc123', consent: true }); return { ok: true, json: async () => ({ text: 'מאוחר' }) }; };
+  const [ls] = await handleReadiness(store, { action: 'rdyRecChunk', rk: k3, seq: 0, audio }, { who: async () => null, fetchImpl: slow, env });
+  assert.equal(ls, 410);
+  assert.equal(await store.get('rdyt:' + id + ':mt-abc123'), null);
+  // קטע גדול ממגבלת הבקשה: 413
+  const k4 = (await call(store, { action: 'rdyRecStart', token: a, id, exId: 'mt-abc123', consent: true }))[1].rk;
+  assert.equal((await handleReadiness(store, { action: 'rdyRecChunk', rk: k4, seq: 0, audio: 'A'.repeat(1_950_000) }, { who: async () => null, fetchImpl, env }))[0], 413);
 });

@@ -83,3 +83,13 @@ test('joining and return kit: choice, rotating peers, adult responsibility, and 
   assert.ok(C2.validJoin({ info: [{}], ways: [{}], first: { task: 'x' }, board: [{}] })); assert.ok(!C2.validJoin({ info: [{}], ways: [], first: { task: 'x' }, board: [{}] }));
   assert.ok(!C2.JOIN_FIELDS.some((f) => /סיבה/.test(f.l)));
 });
+
+test('the class readiness list in Arabic, same order, and inclusive Hebrew', () => {
+  assert.equal(C.DEFAULT_READINESS_AR.length, C.DEFAULT_READINESS.length);
+  assert.equal(C.readinessFor('ar'), C.DEFAULT_READINESS_AR); assert.equal(C.readinessFor('he'), C.DEFAULT_READINESS);
+  assert.ok(!/[\u0590-\u05FF]/.test(C.DEFAULT_READINESS_AR.join(' ')));
+  assert.ok(!/המחנכת|למחנכת/.test(C.DEFAULT_READINESS.join(' ')));
+  const O = C.forSpace('org');
+  assert.equal(O.readinessFor('ar').length, O.DEFAULT_READINESS.length);
+  assert.ok(!/مدرسة|طالب|مربّي/.test(O.readinessFor('ar').join(' ')));
+});

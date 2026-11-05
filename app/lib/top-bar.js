@@ -26,6 +26,16 @@
   }
   var ROOTS = /^(home|admin|entry|index|system-select)\.html$/;
 
+  // ערבית (05/11/2026, מערך המוכנות במצב ערבית): המילים הקבועות בסרגל לפי השפה של הדף (html lang). שמות שהדף כותב לא מתורגמים.
+  var STR = {
+    he: { home: 'המרחב שלי', site: 'דף הבית', back: 'חזרה', backT: 'חזרה למסך הקודם', bar: 'איפה אני ואיך חוזרים', logoIn: 'Begood: המרחב שלי', logoOut: 'Begood: דף הבית', admin: 'ניהול', menu: '', hl: 'מעבדת האופק', games: 'משחקי חוסן' },
+    ar: { home: 'المساحة الخاصة بي', site: 'الصفحة الرئيسية', back: 'رجوع', backT: 'رجوع إلى الشاشة السابقة', bar: 'أين أنا وكيف أعود', logoIn: 'Begood: المساحة الخاصة بي', logoOut: 'Begood: الصفحة الرئيسية', admin: 'الإدارة', menu: 'القائمة', hl: 'مختبر الأفق', games: 'ألعاب الحصانة' }
+  };
+  function lang() { return /^ar\b/i.test(document.documentElement.getAttribute('lang') || '') ? 'ar' : 'he'; }
+  function S(k) { return STR[lang()][k]; }
+  // שם קבוע בעברית (למשל "המרחב שלי" שנשמר בנתיב) מוצג בשפת הדף
+  var FIXED = {}; ['home', 'admin', 'hl', 'games'].forEach(function (k) { FIXED[STR.he[k]] = k; });
+
   var CSS = '@media screen{'
     + '#sbeTop{display:flex;align-items:center;gap:12px;min-height:50px;padding:7px 16px;box-sizing:border-box;direction:rtl;background:#fff;border-bottom:1px solid #e3e9ef;'
     + 'font:500 13.5px/1.4 Assistant,"Segoe UI",system-ui,sans-serif;color:#5b6b7a;position:relative;z-index:60;text-align:right}'
@@ -65,8 +75,8 @@
     return t.length > 42 ? t.slice(0, 42) + '…' : t;
   }
   function pageName(oldCrumb) {
-    if (file === 'home.html') return 'המרחב שלי';
-    if (file === 'admin.html') return 'ניהול';
+    if (file === 'home.html') return STR.he.home;
+    if (file === 'admin.html') return STR.he.admin;
     var b = document.body.getAttribute('data-crumb') || document.documentElement.getAttribute('data-crumb'); if (b) return clean(b);
     if (oldCrumb) { var c = clean(oldCrumb); if (c && !/^be ?good$/i.test(c)) return c; }
     var h = document.querySelector('h1'), im = h && h.querySelector('img[alt]');
@@ -129,9 +139,8 @@
     var name = pageName(oldCrumb);
     var list = trail(name);
 
-    var bar = document.createElement('div'); bar.id = 'sbeTop'; bar.className = 'no-print sbe-no-theme'; bar.setAttribute('role', 'navigation'); bar.setAttribute('aria-label', 'איפה אני ואיך חוזרים');
+    var bar = document.createElement('div'); bar.id = 'sbeTop'; bar.className = 'no-print sbe-no-theme'; bar.setAttribute('role', 'navigation');
     var logo = document.createElement('a'); logo.className = 't-logo sbe-no-theme'; logo.href = token ? HOME : 'entry.html';
-    logo.setAttribute('aria-label', token ? 'Begood: המרחב שלי' : 'Begood: דף הבית');
     // הלוגו של המרחב (29/10/2026: "אני לא רואה את הלוגו המתאים לכל מרחב בפינה הימנית העליונה"): Begood בחינוך או Begood together; בלי כניסה הלוגו הכללי
     var SPACE = null; try { SPACE = token && typeof window.sbeSpace === 'function' ? window.sbeSpace() : null; } catch (e) {}
     var LG = SPACE === 'org' ? ['assets/begood-org.webp', 'Be good בארגונים', 1306, 988] : SPACE === 'edu' ? ['assets/begood-edu.webp', 'Be good בחינוך', 1306, 988] : ['assets/begood-logo-mark.webp', 'Begood', 1248, 756];
@@ -140,20 +149,22 @@
 
     var path = document.createElement('div'); path.className = 't-path';
     function sep() { var s = document.createElement('span'); s.className = 'sep'; s.textContent = '›'; s.setAttribute('aria-hidden', 'true'); path.appendChild(s); }
-    function link(href, text) { var a = document.createElement('a'); a.href = href; a.textContent = text; a.className = 'sbe-no-theme'; path.appendChild(a); }
+    var fixedEls = []; // [element, מפתח] לשמות קבועים שמתחלפים לפי השפה
+    function fixedName(el, text) { el.textContent = text; if (FIXED[text]) fixedEls.push([el, FIXED[text]]); }
+    function link(href, text) { var a = document.createElement('a'); a.href = href; fixedName(a, text); a.className = 'sbe-no-theme'; path.appendChild(a); }
     var steps = [];
-    if (file !== 'home.html' && file !== 'admin.html') steps.push(token ? { p: HOME, n: 'המרחב שלי' } : { p: 'entry.html', n: 'Begood' });
+    if (file !== 'home.html' && file !== 'admin.html') steps.push(token ? { p: HOME, n: STR.he.home } : { p: 'entry.html', n: 'Begood' });
     var before = list.slice(0, -1);
     var par = parentOf(file);
     if (par && !before.some(function (x) { return x.f === par.p; })) before.push({ f: par.p, p: par.p, n: par.n });
     before.slice(-2).forEach(function (x) { steps.push({ p: x.p, n: x.n }); });
     steps.forEach(function (s) { link(s.p, s.n); sep(); });
-    var cur = document.createElement('b'); cur.textContent = name; cur.setAttribute('aria-current', 'page'); path.appendChild(cur);
+    var cur = document.createElement('b'); fixedName(cur, name); cur.setAttribute('aria-current', 'page'); path.appendChild(cur);
     bar.appendChild(path);
 
     var act = document.createElement('div'); act.className = 't-act';
     var ex = document.createElement('div'); ex.className = 't-extra'; extras.forEach(function (el) { ex.appendChild(el); }); act.appendChild(ex);
-    var back = document.createElement('button'); back.type = 'button'; back.innerHTML = '<i class="t-ic" aria-hidden="true">→</i><span class="t-tx">חזרה</span>'; back.title = 'חזרה למסך הקודם'; back.setAttribute('aria-label', 'חזרה'); back.className = 'sbe-no-theme';
+    var back = document.createElement('button'); back.type = 'button'; back.innerHTML = '<i class="t-ic" aria-hidden="true">→</i><span class="t-tx"></span>'; back.className = 'sbe-no-theme';
     back.addEventListener('click', function () {
       if (oldBack && oldBack.tagName === 'BUTTON') { oldBack.click(); return; }
       if (oldBack && oldBack.href) { location.href = oldBack.href; return; }
@@ -162,26 +173,46 @@
       if (sameSite && history.length > 1) history.back(); else location.href = prev ? prev.p : (token ? HOME : 'entry.html');
     });
     act.appendChild(back);
+    var home = null;
     if (file !== 'home.html') {
-      var home = document.createElement('a'); home.className = 'sbe-no-theme';
-      home.setAttribute('aria-label', token ? 'המרחב שלי' : 'דף הבית'); home.title = home.getAttribute('aria-label');
-      if (token) { home.innerHTML = '<i class="t-ic" aria-hidden="true">⌂</i><span class="t-tx">המרחב שלי</span>'; home.href = HOME; home.addEventListener('click', function () { if (oldHome && oldHome.getAttribute('href')) home.href = oldHome.getAttribute('href'); }); }
-      else { home.innerHTML = '<i class="t-ic" aria-hidden="true">⌂</i><span class="t-tx">דף הבית</span>'; home.href = 'entry.html'; }
+      home = document.createElement('a'); home.className = 'sbe-no-theme';
+      home.innerHTML = '<i class="t-ic" aria-hidden="true">⌂</i><span class="t-tx"></span>';
+      if (token) { home.href = HOME; home.addEventListener('click', function () { if (oldHome && oldHome.getAttribute('href')) home.href = oldHome.getAttribute('href'); }); }
+      else home.href = 'entry.html';
       act.appendChild(home);
     }
     menus.forEach(function (el) { act.appendChild(el); }); // ☰ תמיד אחרון, בקצה השמאלי
     bar.appendChild(act);
+
+    // המילים הקבועות לפי השפה; מתעדכנות כשהדף מחליף שפה (למשל "العربية" במערך המוכנות)
+    var menuHe = null;
+    function applyLang() {
+      bar.setAttribute('aria-label', S('bar'));
+      logo.setAttribute('aria-label', token ? S('logoIn') : S('logoOut'));
+      back.querySelector('.t-tx').textContent = S('back'); back.title = S('backT'); back.setAttribute('aria-label', S('back'));
+      if (home) { var h = token ? S('home') : S('site'); home.querySelector('.t-tx').textContent = h; home.setAttribute('aria-label', h); home.title = h; }
+      fixedEls.forEach(function (x) { x[0].textContent = S(x[1]); });
+      var mb = act.querySelector('#sbeAutoMenu>button');
+      if (mb) {
+        if (menuHe === null) menuHe = [mb.getAttribute('aria-label'), mb.getAttribute('title'), mb.textContent];
+        var setA = function (a, v) { if (v === null || v === undefined) mb.removeAttribute(a); else mb.setAttribute(a, v); };
+        if (lang() === 'ar') { mb.textContent = '☰ ' + S('menu'); mb.setAttribute('aria-label', S('menu')); mb.setAttribute('title', S('menu')); }
+        else if (mb.textContent !== menuHe[2] || mb.getAttribute('title') !== menuHe[1]) { mb.textContent = menuHe[2]; setA('aria-label', menuHe[0]); setA('title', menuHe[1]); }
+      }
+    }
+    applyLang();
+    try { new MutationObserver(applyLang).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] }); } catch (e) {}
 
     document.body.insertBefore(bar, document.body.firstChild);
     fit(bar);
     window.addEventListener('resize', function () { fit(bar); });
     // תפריט המסכים של מנהלת המערכת נכנס לסרגל
     var tries = 0, iv = setInterval(function () {
-      var m = document.getElementById('sbeAutoMenu'); if (m && m.parentNode !== act) act.appendChild(m);
+      var m = document.getElementById('sbeAutoMenu'); if (m && m.parentNode !== act) { act.appendChild(m); applyLang(); }
       if (++tries > 12) clearInterval(iv);
     }, 250);
     // שם הכלי כשהכותרת נבנית אחרי הטעינה
-    setTimeout(function () { var n2 = pageName(oldCrumb); if (n2 && n2 !== cur.textContent && cur.textContent === 'Begood') cur.textContent = n2; }, 900);
+    setTimeout(function () { var n2 = pageName(oldCrumb); if (n2 && n2 !== cur.textContent && cur.textContent === 'Begood') { fixedEls = fixedEls.filter(function (x) { return x[0] !== cur; }); fixedName(cur, n2); applyLang(); } }, 900);
   }
 
   // לרוחב כל המסך, צמוד למעלה, גם כשלגוף הדף יש שוליים או רוחב מוגבל

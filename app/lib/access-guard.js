@@ -199,15 +199,29 @@
       return dt.getMonth() === mo - 1 && dt.getDate() === d ? y + "-" + p2(mo) + "-" + p2(d) : null;
     };
     var desc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+    // ערבית (05/11/2026, מערך המוכנות): הטקסטים של השדה לפי השפה הקרובה ([lang]), ומתעדכנים כשהשפה של הדף מתחלפת.
+    var DSTR = {
+      he: { ph: "יום.חודש.שנה", label: "תאריך", cal: "פתיחת לוח שנה", calT: "לוח שנה", msg: "כדי לשמור, אפשר לכתוב תאריך תקין כמו 25.10.26" },
+      ar: { ph: "يوم.شهر.سنة", label: "تاريخ", cal: "فتح التقويم", calT: "التقويم", msg: "للحفظ، يمكن كتابة تاريخ صحيح مثل 25.10.26" }
+    };
+    var dLang = function(el){ var n = el && el.closest && el.closest("[lang]"); var l = (n ? n.getAttribute("lang") : document.documentElement.getAttribute("lang")) || ""; return /^ar\b/i.test(l) ? "ar" : "he"; };
     var dateIL = function(inp){
       if (inp.getAttribute("data-il") || inp.closest("[data-native-date]")) return; inp.setAttribute("data-il", "1");
       var t = document.createElement("input"); t.type = "text"; t.inputMode = "numeric"; t.className = "sbe-date " + (inp.className || "");
       t.dir = inp.getAttribute("dir") === "rtl" ? "rtl" : "ltr";
-      t.placeholder = "יום.חודש.שנה"; t.setAttribute("aria-label", inp.getAttribute("aria-label") || (inp.id && document.querySelector('label[for="' + inp.id + '"]') ? document.querySelector('label[for="' + inp.id + '"]').textContent : "תאריך"));
+      var ownLabel = inp.getAttribute("aria-label") || (inp.id && document.querySelector('label[for="' + inp.id + '"]') ? document.querySelector('label[for="' + inp.id + '"]').textContent : "");
+      if (ownLabel) t.setAttribute("aria-label", ownLabel);
       t.style.cssText = "width:7.5em;direction:" + t.dir + ";text-align:right";
-      var cal = document.createElement("button"); cal.type = "button"; cal.textContent = "📅"; cal.title = "לוח שנה"; cal.setAttribute("aria-label", "פתיחת לוח שנה");
+      var cal = document.createElement("button"); cal.type = "button"; cal.textContent = "📅";
       cal.style.cssText = "font:inherit;border:1px solid #CDD3D8;border-radius:6px;background:transparent;cursor:pointer;padding:.2rem .4rem;margin-inline-start:.25rem";
-      var message = "כדי לשמור, אפשר לכתוב תאריך תקין כמו 25.10.26";
+      var message = "";
+      var applyLang = function(){
+        var L = DSTR[dLang(inp)]; message = L.msg;
+        t.placeholder = L.ph; if (!ownLabel) t.setAttribute("aria-label", L.label);
+        cal.title = L.calT; cal.setAttribute("aria-label", L.cal);
+        if (t.getAttribute("aria-invalid") === "true") { t.setCustomValidity(message); inp.setCustomValidity(message); t.title = message; }
+      };
+      applyLang(); t._sbeDateLang = applyLang;
       var validity = function(valid){ t.setCustomValidity(valid ? "" : message); inp.setCustomValidity(valid ? "" : message); t.setAttribute("aria-invalid", String(!valid)); t.style.borderColor = valid ? "" : "#B3261E"; t.title = valid ? "" : message; return valid; };
       var sync = function(){ t.value = window.sbeDateIL(desc.get.call(inp)); validity(true); };
       var locked = function(){ return inp.disabled || inp.readOnly; };
@@ -239,6 +253,7 @@
       new MutationObserver(syncLock).observe(inp, {attributes:true, attributeFilter:["disabled", "readonly"]});
     };
     var scanDates = function(){ [].forEach.call(document.querySelectorAll('input[type="date"]:not([data-il])'), dateIL); };
+    try { new MutationObserver(function(){ [].forEach.call(document.querySelectorAll("input.sbe-date"), function(t){ if (t._sbeDateLang) t._sbeDateLang(); }); }).observe(document.documentElement, {attributes: true, attributeFilter: ["lang"]}); } catch(e){}
     var dPending = 0;
     document.addEventListener("DOMContentLoaded", function(){ scanDates(); try { new MutationObserver(function(){ if (dPending) return; dPending = setTimeout(function(){ dPending = 0; scanDates(); }, 0); }).observe(document.body, {childList: true, subtree: true}); } catch(e){} });
   } catch(e){}
