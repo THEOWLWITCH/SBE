@@ -131,7 +131,7 @@
       else if (k === 'value') el.value = v;
       else el.setAttribute(k, v === true ? '' : v);
     }
-    for (const c of kids.flat()) if (c != null && c !== false) el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    for (const c of kids.flat(Infinity)) if (c != null && c !== false && c !== '') el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
     return el;
   }
   // קישור במילה: לחיצה על המילה עוברת (04/11/2026: "אני רוצה מילה, הקישור יהיה בלחיצה עליה")
@@ -1288,10 +1288,12 @@
       h('div', { style: 'font-size:10.5pt;line-height:1.45;text-align:right', text: young && X[xk]['rsh_' + r.k] ? X[xk]['rsh_' + r.k] : r.what }),
       young ? null : h('div', { style: 'font-size:9.5pt;line-height:1.4;margin-top:1mm;text-align:right' }, h('b', { text: C.ROLE_CARD.who + ': ' }), C.ROLE_CARD.whoText, h('br'), h('b', { text: C.ROLE_CARD.scared + ': ' }), C.ROLE_CARD.scaredText),
       h('div', { style: 'font-size:9.5pt;font-weight:700;margin-top:1.5mm;color:#1d3f63;text-align:right', text: young ? X[xk].rsh_safe : C.STUDENT_SAFE }));
-    const card = ([r, a]) => h('div', { class: 'sbe-rc', style: 'display:inline-block;vertical-align:top;box-sizing:border-box;width:48%;min-height:112mm;margin:0 1% 5mm;padding:5mm;border:1px dashed #8a99a8;border-radius:3mm;break-inside:avoid;page-break-inside:avoid' },
+    const card = ([r, a]) => h('div', { class: 'sbe-rc', style: 'display:inline-block;vertical-align:top;box-sizing:border-box;width:48%;min-height:105mm;margin:0 1% 5mm;padding:5mm;border:1px dashed #8a99a8;border-radius:3mm;break-inside:avoid;page-break-inside:avoid' },
       h('div', { style: 'font-size:30pt;line-height:1;text-align:center;margin:0 0 2mm', 'aria-hidden': 'true', text: ROLE_EMOJI[r.k] || '🧒' }),
       blk(he, r, 'he', 'he'), h('div', { style: 'border-top:1px solid #d5dde5;margin:2mm 0 3mm' }), blk(ar, a, 'ar', 'ar'));
-    doPrint(Y('roleCards').replace('🖨 ', ''), Y('sRolesT'), [h('div', { style: 'text-align:center;font-size:0' }, pick.map((pa) => { const c = card(pa); c.style.fontSize = '10.5pt'; return c; }))], { forStudents: true });
+    // שורה של שני כרטיסים בכל בלוק, כדי שהשורה הראשונה תישאר בעמוד הראשון מתחת לכותרת
+    const rowsOf = []; for (let i = 0; i < pick.length; i += 2) rowsOf.push(pick.slice(i, i + 2));
+    doPrint(Y('roleCards').replace('🖨 ', ''), Y('sRolesT'), rowsOf.map((pair) => h('div', { style: 'text-align:center;font-size:0;break-inside:avoid;page-break-inside:avoid' }, pair.map((pa) => { const c = card(pa); c.style.fontSize = '10.5pt'; return c; }))), { forStudents: true });
   }
   // ---------- 🎯 מפגש 5: תרחיש בלי הכנה, והשוואה למפגש 3 ----------
   function viewS5() {
