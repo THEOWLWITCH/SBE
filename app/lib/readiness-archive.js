@@ -15,7 +15,10 @@
   if (!TOKEN || !(SYS || perms.includes('readiness'))) return;
   const SERVER = (typeof window.sbeAIOrigin === 'function' && window.sbeAIOrigin()) || 'https://sbe-server.onrender.com';
   const ORG = !!(window.SBE_ORGW && window.SBE_ORGW.isOrg && window.SBE_ORGW.isOrg());
-  const W = (t) => (ORG && window.SBE_ORGW.swap ? window.SBE_ORGW.swap(t) : t);
+  const W = (t) => (ORG && window.SBE_ORGW.swap && !/[\u0600-\u06ff]/.test(t) ? window.SBE_ORGW.swap(t) : t);
+  // ערבית (05/11/2026: "ערבית... בכרטיס הארכיון בתיק הרציפות"): לפי השפה שנבחרה במערך המוכנות (sbe.prep.lang)
+  const LANG = (() => { try { return JSON.parse(localStorage.getItem(window.sbeUserKey ? window.sbeUserKey('sbe.prep.lang') : 'sbe.prep.lang') || '"he"') === 'ar' ? 'ar' : 'he'; } catch (e) { return 'he'; } })();
+  const tr = (he, ar) => (LANG === 'ar' ? ar : he);
   const dateIL = (iso) => (window.sbeDateIL ? window.sbeDateIL(String(iso || '').slice(0, 10)) : String(iso || '').slice(0, 10));
   const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
   const by = () => { try { return JSON.parse(localStorage.getItem('sbe.prep.by') || '""') || ''; } catch (e) { return ''; } };
@@ -27,17 +30,17 @@
   }
   const lnk = (text, on, cls) => h('a', { href: '#', class: cls || null, text, onclick: (e) => { e.preventDefault(); on(e); } });
   const tbl = (cols, rows) => h('table', { class: 'rtable' }, h('thead', {}, h('tr', {}, cols.map((c) => h('th', { text: c })))), h('tbody', {}, rows.map((r) => h('tr', {}, r.map((c) => h('td', { text: c == null ? '' : String(c) }))))));
-  const KIND = { said: '', decision: 'החלטה', task: 'משימה', end: 'קצה פתוח' };
+  const KIND = { said: '', decision: tr('החלטה', 'قرار'), task: tr('משימה', 'مهمة'), end: tr('קצה פתוח', 'طرف مفتوح') };
   function body(a) {
     return h('div', {},
-      a.attendees && a.attendees.length ? h('p', {}, h('b', { text: 'משתתפים: ' }), a.attendees.map((x) => x.name + (x.role ? ' (' + x.role + ')' : '')).join(' · ')) : null,
-      a.reports && a.reports.length ? tbl(['הצוות', 'מצב', 'מה עשינו', 'מה עובד', 'פער', 'מה חסר לנו, וממי', 'הצעד הבא'], a.reports) : null,
-      a.proto && a.proto.length ? tbl(['דובר/ת', 'מה זה', 'עיקרי הדברים'], a.proto.map((x) => [x.who, KIND[x.kind] || '', x.what])) : null,
-      a.decisions && a.decisions.length ? tbl(['החלטות'], a.decisions.map((x) => [x])) : null,
-      a.tasks && a.tasks.length ? tbl(['משימות', 'אחראי/ת', 'עד מתי'], a.tasks.map((x) => [x[0], x[1], dateIL(x[2])])) : null,
-      a.ends && a.ends.length ? tbl(['קצוות פתוחים', 'אחראי/ת'], a.ends) : null,
-      a.notes ? h('details', {}, h('summary', { text: 'הפרוטוקול מהקובץ' }), h('p', { style: 'white-space:pre-line', text: a.notes })) : null,
-      a.next ? h('p', {}, h('b', { text: 'המפגש הבא: ' }), dateIL(a.next)) : null);
+      a.attendees && a.attendees.length ? h('p', {}, h('b', { text: tr('משתתפים: ', 'المشاركون: ') }), a.attendees.map((x) => x.name + (x.role ? ' (' + x.role + ')' : '')).join(' · ')) : null,
+      a.reports && a.reports.length ? tbl([tr('הצוות', 'الطاقم'), tr('מצב', 'الوضع'), tr('מה עשינו', 'ماذا فعلنا'), tr('מה עובד', 'ما الذي ينجح'), tr('פער', 'فجوة'), tr('מה חסר לנו, וממי', 'ما الذي ينقصنا، وممّن'), tr('הצעד הבא', 'الخطوة التالية')], a.reports) : null,
+      a.proto && a.proto.length ? tbl([tr('דובר/ת', 'المتحدّث/ة'), tr('מה זה', 'ما هذا'), tr('עיקרי הדברים', 'أهمّ ما قيل')], a.proto.map((x) => [x.who, KIND[x.kind] || '', x.what])) : null,
+      a.decisions && a.decisions.length ? tbl([tr('החלטות', 'قرارات')], a.decisions.map((x) => [x])) : null,
+      a.tasks && a.tasks.length ? tbl([tr('משימות', 'مهام'), tr('אחראי/ת', 'المسؤول/ة'), tr('עד מתי', 'حتى متى')], a.tasks.map((x) => [x[0], x[1], dateIL(x[2])])) : null,
+      a.ends && a.ends.length ? tbl([tr('קצוות פתוחים', 'أطراف مفتوحة'), tr('אחראי/ת', 'المسؤول/ة')], a.ends) : null,
+      a.notes ? h('details', {}, h('summary', { text: tr('הפרוטוקול מהקובץ', 'المحضر من الملف') }), h('p', { style: 'white-space:pre-line', text: a.notes })) : null,
+      a.next ? h('p', {}, h('b', { text: tr('המפגש הבא: ', 'اللقاء القادم: ') }), dateIL(a.next)) : null);
   }
   async function api(action, extra) {
     const res = await fetch(SERVER + (/^rdyFile/.test(action) ? '/api/readiness-file' : '/api/access'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ action, token: TOKEN }, extra || {})) });
@@ -60,7 +63,7 @@
   let doc = null, P = null, openKey = '', msg = '';
   const binder = () => (doc.parts.binder && typeof doc.parts.binder === 'object' ? doc.parts.binder : {});
   function items() {
-    const L = P ? (ORG && P.forSpace ? P.forSpace('org') : P).content('he') : null;
+    const L = P ? (ORG && P.forSpace ? P.forSpace('org') : P).content(LANG) : null;
     const fixed = L && Array.isArray(L.BINDER_MANUAL) ? L.BINDER_MANUAL : [];
     const sens = (L && L.BINDER_SENS) || [0, 1, 4, 7];
     return fixed.map((text, i) => ({ key: 'm' + i, text, sens: sens.includes(i) }))
@@ -68,59 +71,59 @@
   }
   async function saveBinder(next, what) {
     const [st, out] = await api('rdySave', { id: doc.id, part: 'binder', rev: (doc.revs && doc.revs.binder) || 0, value: next, what, by: by() });
-    if (st === 409 && out.doc) { doc = out.doc; msg = 'מישהו אחר עדכן את התיקייה. הרשימה נטענה מחדש, ואפשר לנסות שוב.'; draw(); return false; }
-    if (st !== 200) { msg = out.error || 'השמירה לא הצליחה. אפשר לנסות שוב.'; draw(); return false; }
+    if (st === 409 && out.doc) { doc = out.doc; msg = tr('מישהו אחר עדכן את התיקייה. הרשימה נטענה מחדש, ואפשר לנסות שוב.', 'شخص آخر حدّث المجلّد. أُعيد تحميل القائمة، ويمكن المحاولة مرة أخرى.'); draw(); return false; }
+    if (st !== 200) { msg = out.error || tr('השמירה לא הצליחה. אפשר לנסות שוב.', 'لم ينجح الحفظ. يمكن المحاولة مرة أخرى.'); draw(); return false; }
     doc.parts.binder = next; doc.revs = Object.assign({}, doc.revs, { binder: out.rev }); msg = ''; return true;
   }
 
   function fileForm(it, f) {
-    const file = h('input', { type: 'file', accept: ACCEPT, 'aria-label': 'הקובץ' });
-    const title = h('input', { type: 'text', maxlength: '120', placeholder: 'למשל: ' + W(it.text.replace(/\s*\(.*\)\s*$/, '')).slice(0, 60), value: f ? f.title : '', 'aria-label': 'שם ברור לקובץ' });
-    const date = h('input', { type: 'date', value: today(), 'aria-label': 'תאריך העדכון של הקובץ' });
+    const file = h('input', { type: 'file', accept: ACCEPT, 'aria-label': tr('הקובץ', 'الملف') });
+    const title = h('input', { type: 'text', maxlength: '120', placeholder: tr('למשל: ', 'مثلًا: ') + W(it.text.replace(/\s*\(.*\)\s*$/, '')).slice(0, 60), value: f ? f.title : '', 'aria-label': tr('שם ברור לקובץ', 'اسم واضح للملف') });
+    const date = h('input', { type: 'date', value: today(), 'aria-label': tr('תאריך העדכון של הקובץ', 'تاريخ تحديث الملف') });
     const ok = h('input', { type: 'checkbox' });
     const note = h('p', { class: 'bnote', role: 'status' });
     const send = async (e) => {
       e.preventDefault();
       const fl = file.files && file.files[0];
-      if (!ok.checked) { note.textContent = 'לפני ההעלאה, אפשר לסמן שאין בקובץ פרטים של תלמידים או הורים.'; return; }
-      if (!fl) { note.textContent = 'כדי להעלות, אפשר לבחור קובץ.'; return; }
-      if (vague(title.value)) { note.textContent = 'כדי שכולם ימצאו את הקובץ, אפשר לתת לו שם ברור שאומר מה יש בו.'; title.focus(); return; }
-      if (!date.value) { note.textContent = 'תאריך העדכון של הקובץ הוא שדה עיקרי.'; return; }
+      if (!ok.checked) { note.textContent = tr('לפני ההעלאה, אפשר לסמן שאין בקובץ פרטים של תלמידים או הורים.', 'قبل الرفع، يمكن التأكيد أن الملف لا يحتوي على تفاصيل طلاب أو أهالٍ.'); return; }
+      if (!fl) { note.textContent = tr('כדי להעלות, אפשר לבחור קובץ.', 'للرفع، يمكن اختيار ملف.'); return; }
+      if (vague(title.value)) { note.textContent = tr('כדי שכולם ימצאו את הקובץ, אפשר לתת לו שם ברור שאומר מה יש בו.', 'كي يجد الجميع الملف، يمكن إعطاؤه اسمًا واضحًا يقول ما فيه.'); title.focus(); return; }
+      if (!date.value) { note.textContent = tr('תאריך העדכון של הקובץ הוא שדה עיקרי.', 'تاريخ تحديث الملف حقل أساسي.'); return; }
       const ext = (fl.name.split('.').pop() || '').toLowerCase(), mime = MIME[ext];
-      if (!mime) { note.textContent = 'אפשר להעלות PDF, תמונה, Word, Excel, PowerPoint או טקסט.'; return; }
-      if (fl.size > MAX_BYTES) { note.textContent = 'הקובץ גדול מ־4 מגה. אפשר לשמור אותו מוקטן (למשל PDF דחוס) ולהעלות שוב.'; return; }
-      if (f && !confirm('הקובץ החדש יחליף את "' + f.title + '", והגרסה הקודמת תימחק. להמשיך?')) return;
-      note.textContent = 'מעלים את הקובץ...';
+      if (!mime) { note.textContent = tr('אפשר להעלות PDF, תמונה, Word, Excel, PowerPoint או טקסט.', 'يمكن رفع PDF أو صورة أو Word أو Excel أو PowerPoint أو نص.'); return; }
+      if (fl.size > MAX_BYTES) { note.textContent = tr('הקובץ גדול מ־4 מגה. אפשר לשמור אותו מוקטן (למשל PDF דחוס) ולהעלות שוב.', 'الملف أكبر من 4 ميغابايت. يمكن حفظه بحجم أصغر (مثلًا PDF مضغوط) ورفعه مرة أخرى.'); return; }
+      if (f && !confirm(tr('הקובץ החדש יחליף את "', 'الملف الجديد سيحلّ محلّ "') + f.title + tr('", והגרסה הקודמת תימחק. להמשיך?', '"، والنسخة السابقة ستُحذف. هل نتابع؟'))) return;
+      note.textContent = tr('מעלים את הקובץ...', 'نرفع الملف...');
       const [st, out] = await api('rdyFilePut', { id: doc.id, key: it.key, title: title.value.trim(), date: date.value, name: fl.name, mime, data: await b64(fl), noStudents: true, by: by() });
-      if (st !== 200) { note.textContent = out.error || 'ההעלאה לא הצליחה. אפשר לנסות שוב.'; return; }
-      doc.files = out.files; openKey = ''; msg = out.replaced ? 'הגרסה החדשה נשמרה, והקודמת נמחקה.' : 'הקובץ נשמר בתיקייה.'; draw();
+      if (st !== 200) { note.textContent = out.error || tr('ההעלאה לא הצליחה. אפשר לנסות שוב.', 'لم ينجح الرفع. يمكن المحاولة مرة أخرى.'); return; }
+      doc.files = out.files; openKey = ''; msg = out.replaced ? tr('הגרסה החדשה נשמרה, והקודמת נמחקה.', 'حُفظت النسخة الجديدة، وحُذفت السابقة.') : tr('הקובץ נשמר בתיקייה.', 'حُفظ الملف في المجلّد.'); draw();
     };
     return h('form', { class: 'bform', onsubmit: send },
-      h('label', {}, h('span', { text: 'הקובץ' }), file),
-      h('label', {}, h('span', { text: 'שם ברור לקובץ' }), title),
-      h('label', {}, h('span', { text: 'תאריך העדכון של הקובץ' }), date),
-      h('label', { class: 'bchk' }, ok, h('span', { text: W('אין בקובץ פרטים של תלמידים או הורים') })),
-      h('div', {}, h('button', { type: 'submit', text: f ? 'העלאת הגרסה החדשה' : 'העלאה' }), ' ', lnk('ביטול', () => { openKey = ''; draw(); })), note);
+      h('label', {}, h('span', { text: tr('הקובץ', 'الملف') }), file),
+      h('label', {}, h('span', { text: tr('שם ברור לקובץ', 'اسم واضح للملف') }), title),
+      h('label', {}, h('span', { text: tr('תאריך העדכון של הקובץ', 'تاريخ تحديث الملف') }), date),
+      h('label', { class: 'bchk' }, ok, h('span', { text: W(tr('אין בקובץ פרטים של תלמידים או הורים', 'لا يحتوي الملف على تفاصيل طلاب أو أهالٍ')) })),
+      h('div', {}, h('button', { type: 'submit', text: f ? tr('העלאת הגרסה החדשה', 'رفع النسخة الجديدة') : tr('העלאה', 'رفع') }), ' ', lnk(tr('ביטול', 'إلغاء'), () => { openKey = ''; draw(); })), note);
   }
   function whereForm(it, w) {
-    const place = h('input', { type: 'text', maxlength: '160', placeholder: W('למשל: בתיקייה המשותפת של ההנהלה, במזכירות'), value: (w && w.place) || '', 'aria-label': 'איפה זה נשמר' });
-    const date = h('input', { type: 'date', value: (w && w.date) || today(), 'aria-label': 'תאריך העדכון' });
+    const place = h('input', { type: 'text', maxlength: '160', placeholder: W(tr('למשל: בתיקייה המשותפת של ההנהלה, במזכירות', 'مثلًا: في المجلّد المشترك للإدارة، في السكرتارية')), value: (w && w.place) || '', 'aria-label': tr('איפה זה נשמר', 'أين يُحفظ') });
+    const date = h('input', { type: 'date', value: (w && w.date) || today(), 'aria-label': tr('תאריך העדכון', 'تاريخ التحديث') });
     const note = h('p', { class: 'bnote', role: 'status' });
     const send = async (e) => {
       e.preventDefault();
-      if (place.value.trim().length < 3) { note.textContent = 'אפשר לכתוב איפה זה נשמר, כדי שממלא/ת מקום ימצא/תמצא את זה.'; return; }
-      if (!date.value) { note.textContent = 'תאריך העדכון הוא שדה עיקרי.'; return; }
+      if (place.value.trim().length < 3) { note.textContent = tr('אפשר לכתוב איפה זה נשמר, כדי שממלא/ת מקום ימצא/תמצא את זה.', 'يمكن كتابة أين يُحفظ، كي يجده البديل/ة.'); return; }
+      if (!date.value) { note.textContent = tr('תאריך העדכון הוא שדה עיקרי.', 'تاريخ التحديث حقل أساسي.'); return; }
       const bd = binder(), next = Object.assign({}, bd, { where: Object.assign({}, bd.where || {}, { [it.key]: { place: place.value.trim(), date: date.value, by: by() } }) });
-      if (await saveBinder(next, 'עדכון בתיקיית המוכנות: ' + it.text.slice(0, 80))) { openKey = ''; msg = 'נשמר.'; draw(); }
+      if (await saveBinder(next, 'עדכון בתיקיית המוכנות: ' + it.text.slice(0, 80))) { openKey = ''; msg = tr('נשמר.', 'حُفظ.'); draw(); }
     };
     return h('form', { class: 'bform', onsubmit: send },
-      h('label', {}, h('span', { text: 'איפה זה נשמר' }), place),
-      h('label', {}, h('span', { text: 'תאריך העדכון' }), date),
-      h('div', {}, h('button', { type: 'submit', text: 'שמירה' }), ' ', lnk('ביטול', () => { openKey = ''; draw(); })), note);
+      h('label', {}, h('span', { text: tr('איפה זה נשמר', 'أين يُحفظ') }), place),
+      h('label', {}, h('span', { text: tr('תאריך העדכון', 'تاريخ التحديث') }), date),
+      h('div', {}, h('button', { type: 'submit', text: tr('שמירה', 'حفظ') }), ' ', lnk(tr('ביטול', 'إلغاء'), () => { openKey = ''; draw(); })), note);
   }
   async function openFile(it, f) {
     const [st, out] = await api('rdyFileGet', { id: doc.id, key: it.key });
-    if (st !== 200 || !out.file) { msg = out.error || 'הקובץ לא נפתח. אפשר לנסות שוב.'; draw(); return; }
+    if (st !== 200 || !out.file) { msg = out.error || tr('הקובץ לא נפתח. אפשר לנסות שוב.', 'لم يُفتح الملف. يمكن المحاولة مرة أخرى.'); draw(); return; }
     const bin = atob(out.file.data), u8 = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
     const url = URL.createObjectURL(new Blob([u8], { type: out.file.mime }));
@@ -128,52 +131,52 @@
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
   async function delFile(it, f) {
-    if (!confirm('למחוק את "' + f.title + '" מהתיקייה?')) return;
+    if (!confirm(tr('למחוק את "', 'حذف "') + f.title + tr('" מהתיקייה?', '" من المجلّد؟'))) return;
     const [st, out] = await api('rdyFileDel', { id: doc.id, key: it.key, by: by() });
-    if (st !== 200) { msg = out.error || 'המחיקה לא הצליחה.'; draw(); return; }
-    doc.files = out.files; msg = 'הקובץ נמחק.'; draw();
+    if (st !== 200) { msg = out.error || tr('המחיקה לא הצליחה.', 'لم ينجح الحذف.'); draw(); return; }
+    doc.files = out.files; msg = tr('הקובץ נמחק.', 'حُذف الملف.'); draw();
   }
   async function removeItem(it) {
     const f = (doc.files || {})[it.key];
-    if (!confirm('להסיר את "' + it.text + '" מהרשימה?' + (f ? ' גם הקובץ שלו יימחק.' : ''))) return;
-    if (f) { const [st, out] = await api('rdyFileDel', { id: doc.id, key: it.key, by: by() }); if (st !== 200) { msg = out.error || 'הקובץ לא נמחק, ולכן הפריט נשאר ברשימה. אפשר לנסות שוב.'; draw(); return; } doc.files = out.files; }
+    if (!confirm(tr('להסיר את "', 'إزالة "') + it.text + tr('" מהרשימה?', '" من القائمة؟') + (f ? tr(' גם הקובץ שלו יימחק.', ' سيُحذف ملفه أيضًا.') : ''))) return;
+    if (f) { const [st, out] = await api('rdyFileDel', { id: doc.id, key: it.key, by: by() }); if (st !== 200) { msg = out.error || tr('הקובץ לא נמחק, ולכן הפריט נשאר ברשימה. אפשר לנסות שוב.', 'لم يُحذف الملف، لذلك بقي البند في القائمة. يمكن المحاولة مرة أخرى.'); draw(); return; } doc.files = out.files; }
     const bd = binder(), where = Object.assign({}, bd.where || {}); delete where[it.key];
-    if (await saveBinder(Object.assign({}, bd, { items: (bd.items || []).filter((x) => x && x.key !== it.key), where }), 'הסרה מתיקיית המוכנות: ' + it.text.slice(0, 80))) { msg = 'הוסר מהרשימה.'; draw(); }
+    if (await saveBinder(Object.assign({}, bd, { items: (bd.items || []).filter((x) => x && x.key !== it.key), where }), 'הסרה מתיקיית המוכנות: ' + it.text.slice(0, 80))) { msg = tr('הוסר מהרשימה.', 'أُزيل من القائمة.'); draw(); }
   }
   function addForm() {
-    const text = h('input', { type: 'text', maxlength: '160', placeholder: W('למשל: רשימת ציוד החירום במחסן'), 'aria-label': 'מה עוד מוסיפים לתיקייה' });
+    const text = h('input', { type: 'text', maxlength: '160', placeholder: W(tr('למשל: רשימת ציוד החירום במחסן', 'مثلًا: قائمة معدّات الطوارئ في المخزن')), 'aria-label': tr('מה עוד מוסיפים לתיקייה', 'ماذا نضيف أيضًا إلى المجلّد') });
     const sens = h('input', { type: 'checkbox' });
     const note = h('p', { class: 'bnote', role: 'status' });
     const send = async (e) => {
       e.preventDefault();
       const t = text.value.trim();
-      if (t.length < 3) { note.textContent = 'אפשר לכתוב מה מוסיפים.'; return; }
-      if (items().some((x) => x.text.trim() === t)) { note.textContent = 'הפריט כבר ברשימה.'; return; }
+      if (t.length < 3) { note.textContent = tr('אפשר לכתוב מה מוסיפים.', 'يمكن كتابة ما نضيفه.'); return; }
+      if (items().some((x) => x.text.trim() === t)) { note.textContent = tr('הפריט כבר ברשימה.', 'البند موجود في القائمة.'); return; }
       const bd = binder(), key = 'c' + Math.random().toString(36).slice(2, 10);
-      if (await saveBinder(Object.assign({}, bd, { items: (bd.items || []).concat({ key, text: t, sens: sens.checked }) }), 'הוספה לתיקיית המוכנות: ' + t.slice(0, 80))) { msg = 'נוסף לרשימה.'; draw(); }
+      if (await saveBinder(Object.assign({}, bd, { items: (bd.items || []).concat({ key, text: t, sens: sens.checked }) }), 'הוספה לתיקיית המוכנות: ' + t.slice(0, 80))) { msg = tr('נוסף לרשימה.', 'أُضيف إلى القائمة.'); draw(); }
     };
     return h('form', { class: 'bform badd', onsubmit: send },
-      h('label', {}, h('span', { text: 'מה עוד מוסיפים לתיקייה' }), text),
-      h('label', { class: 'bchk' }, sens, h('span', { text: W('יש בזה פרטים של תלמידים, הורים או אנשי צוות (נשמר בבית הספר, לא עולה למערכת)') })),
-      h('div', {}, h('button', { type: 'submit', text: '➕ הוספה לרשימה' })), note);
+      h('label', {}, h('span', { text: tr('מה עוד מוסיפים לתיקייה', 'ماذا نضيف أيضًا إلى المجلّد') }), text),
+      h('label', { class: 'bchk' }, sens, h('span', { text: W(tr('יש בזה פרטים של תלמידים, הורים או אנשי צוות (נשמר בבית הספר, לא עולה למערכת)', 'فيه تفاصيل طلاب أو أهالٍ أو أفراد طاقم (يُحفظ في المدرسة، ولا يُرفع إلى المنظومة)')) })),
+      h('div', {}, h('button', { type: 'submit', text: tr('➕ הוספה לרשימה', '➕ إضافة إلى القائمة') })), note);
   }
   function binderCard() {
     const files = doc.files || {}, where = binder().where || {};
     const rows = items().map((it) => {
       const f = files[it.key], w = where[it.key], ok = !!(f || (w && w.place));
-      const status = f ? h('div', { class: 'bst' }, '📎 ', h('b', { text: f.title }), ' · עודכן ' + dateIL(f.date), ' · ', lnk('פתיחה', () => openFile(it, f)), ' · ', lnk('גרסה חדשה', () => { openKey = it.key; draw(); }), ' · ', lnk('מחיקה', () => delFile(it, f)))
-        : w && w.place ? h('div', { class: 'bst' }, 'נשמר ב: ', h('b', { text: w.place }), w.date ? ' · עודכן ' + dateIL(w.date) : '', ' · ', lnk('עדכון', () => { openKey = it.key; draw(); }))
-        : h('div', { class: 'bst' }, lnk(it.sens ? 'איפה זה נשמר?' : '📎 העלאת קובץ', () => { openKey = it.key; draw(); }));
+      const status = f ? h('div', { class: 'bst' }, '📎 ', h('b', { text: f.title }), tr(' · עודכן ', ' · حُدِّث ') + dateIL(f.date), ' · ', lnk(tr('פתיחה', 'فتح'), () => openFile(it, f)), ' · ', lnk(tr('גרסה חדשה', 'نسخة جديدة'), () => { openKey = it.key; draw(); }), ' · ', lnk(tr('מחיקה', 'حذف'), () => delFile(it, f)))
+        : w && w.place ? h('div', { class: 'bst' }, tr('נשמר ב: ', 'محفوظ في: '), h('b', { text: w.place }), w.date ? tr(' · עודכן ', ' · حُدِّث ') + dateIL(w.date) : '', ' · ', lnk(tr('עדכון', 'تحديث'), () => { openKey = it.key; draw(); }))
+        : h('div', { class: 'bst' }, lnk(it.sens ? tr('איפה זה נשמר?', 'أين يُحفظ؟') : tr('📎 העלאת קובץ', '📎 رفع ملف'), () => { openKey = it.key; draw(); }));
       return h('li', { class: 'bitem' + (ok ? ' ok' : '') },
-        h('div', {}, h('span', { class: 'bbox', 'aria-hidden': 'true', text: ok ? '☑' : '☐' }), ' ', W(it.text), it.sens ? h('span', { class: 'btag', text: 'רגיש' }) : null,
-          it.custom ? h('span', {}, ' · ', lnk('הסרה מהרשימה', () => removeItem(it), 'bmuted')) : null),
+        h('div', {}, h('span', { class: 'bbox', 'aria-hidden': 'true', text: ok ? '☑' : '☐' }), ' ', W(it.text), it.sens ? h('span', { class: 'btag', text: tr('רגיש', 'حسّاس') }) : null,
+          it.custom ? h('span', {}, ' · ', lnk(tr('הסרה מהרשימה', 'إزالة من القائمة'), () => removeItem(it), 'bmuted')) : null),
         status, openKey === it.key ? (it.sens ? whereForm(it, w) : fileForm(it, f)) : null);
     });
     const done = rows.filter((r) => r.classList.contains('ok')).length;
     return h('section', { class: 'card no-print', id: 'binder' },
-      h('h2', { text: '📎 ' + W('תיקיית המוכנות: מה מוסיפים ידנית') }),
-      h('p', { class: 'muted small', text: W('לכל פריט קובץ אחד, עם שם ברור ותאריך עדכון. קובץ חדש מחליף את הקודם, והגרסה הקודמת נמחקת. פריט רגיש (פרטים של תלמידים, הורים או אנשי צוות) נשמר בבית הספר, וכאן כותבים רק איפה הוא ומתי עודכן.') }),
-      h('p', { class: 'small' }, h('b', { text: done + ' מתוך ' + rows.length }), ' מוכנים · ', h('a', { href: 'readiness.html?id=' + encodeURIComponent(doc.id) + '&print=binder', text: '🖨 ' + W('תיקיית המוכנות להדפסה') })),
+      h('h2', { text: '📎 ' + W(tr('תיקיית המוכנות: מה מוסיפים ידנית', 'مجلّد الجاهزية: ما يُضاف يدويًا')) }),
+      h('p', { class: 'muted small', text: W(tr('לכל פריט קובץ אחד, עם שם ברור ותאריך עדכון. קובץ חדש מחליף את הקודם, והגרסה הקודמת נמחקת. פריט רגיש (פרטים של תלמידים, הורים או אנשי צוות) נשמר בבית הספר, וכאן כותבים רק איפה הוא ומתי עודכן.', 'لكل بند ملف واحد، باسم واضح وتاريخ تحديث. الملف الجديد يحلّ محلّ السابق، والنسخة السابقة تُحذف. البند الحسّاس (تفاصيل طلاب أو أهالٍ أو أفراد طاقم) يُحفظ في المدرسة، وهنا نكتب فقط أين هو ومتى حُدِّث.')) }),
+      h('p', { class: 'small' }, h('b', { text: done + tr(' מתוך ', ' من ') + rows.length }), tr(' מוכנים · ', ' جاهزة · '), h('a', { href: 'readiness.html?id=' + encodeURIComponent(doc.id) + '&print=binder', text: '🖨 ' + W(tr('תיקיית המוכנות להדפסה', 'مجلّد الجاهزية للطباعة')) })),
       msg ? h('p', { class: 'bmsg', role: 'status', text: msg }) : null,
       h('ul', { class: 'blist' }, rows), addForm());
   }
@@ -185,16 +188,16 @@
     list.sort((a, b) => String(b.date || b.at).localeCompare(String(a.date || a.at)));
     const go = (q) => 'readiness.html?id=' + encodeURIComponent(doc.id) + '&' + q;
     return h('section', { class: 'card no-print', id: 'archive' },
-      h('h2', { text: '🗂 ' + W('ארכיון הפרוטוקולים ממערך המוכנות') }),
-      h('p', { class: 'links' }, h('a', { href: go('view=track&sheet=tasks'), text: 'משימות' }), ' · ', h('a', { href: go('view=track&sheet=decisions'), text: 'החלטות' }), ' · ',
-        h('a', { href: go('view=track&sheet=ends'), text: 'קצוות פתוחים' })),
+      h('h2', { text: '🗂 ' + W(tr('ארכיון הפרוטוקולים ממערך המוכנות', 'أرشيف المحاضر من منظومة الجاهزية')) }),
+      h('p', { class: 'links' }, h('a', { href: go('view=track&sheet=tasks'), text: tr('משימות', 'مهام') }), ' · ', h('a', { href: go('view=track&sheet=decisions'), text: tr('החלטות', 'قرارات') }), ' · ',
+        h('a', { href: go('view=track&sheet=ends'), text: tr('קצוות פתוחים', 'أطراف مفتوحة') })),
       list.length ? list.map((a) => h('details', { class: 'arch' }, h('summary', { text: a.title + (a.date ? ' · ' + dateIL(a.date) : '') }), body(a),
-        h('p', {}, h('a', { href: '#', text: '🖨 הדפסת הפרוטוקול', onclick: (e) => { e.preventDefault(); if (window.SBE_DOC) window.SBE_DOC.print({ title: a.title, kind: 'פרוטוקול', node: body(a) }); else window.print(); } })))) :
-        h('p', { class: 'muted', text: W('עוד אין פרוטוקולים בארכיון. בסוף כל מפגש במערך המוכנות: "העברת הפרוטוקול לתיק הרציפות".') }));
+        h('p', {}, h('a', { href: '#', text: tr('🖨 הדפסת הפרוטוקול', '🖨 طباعة المحضر'), onclick: (e) => { e.preventDefault(); if (window.SBE_DOC) window.SBE_DOC.print({ title: a.title, kind: tr('פרוטוקול', 'محضر'), node: body(a), lang: LANG, tool: LANG === 'ar' ? { name: 'منظومة الجاهزية', purpose: 'أرشيف المحاضر' } : undefined }); else window.print(); } })))) :
+        h('p', { class: 'muted', text: W(tr('עוד אין פרוטוקולים בארכיון. בסוף כל מפגש במערך המוכנות: "העברת הפרוטוקול לתיק הרציפות".', 'لا توجد محاضر في الأرشيف بعد. في نهاية كل لقاء في منظومة الجاهزية: "نقل المحضر إلى ملف الاستمرارية".')) }));
   }
   function draw() {
     const y = window.scrollY;
-    box.replaceChildren(archiveCard(), binderCard());
+    box.replaceChildren(archiveCard(), binderCard()); if (LANG === 'ar') box.setAttribute('lang', 'ar');
     window.scrollTo(0, y);
   }
   (async () => {

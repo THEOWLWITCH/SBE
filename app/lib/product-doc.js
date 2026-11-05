@@ -329,7 +329,10 @@ h1{font-size:26px}.hd img{height:56px}
 
   // toHtml (12/10/2026: "ל PDF תגיע רק עריכה עם לוגו"): מחזיר את מסמך ההדפסה כטקסט במקום לפתוח חלון,
   // כדי שמעבדת הדמו תשמור בדיוק את מה שהכלי מדפיס (לוגו, כותרת, תאריך ורק התוצר). extraCss: עיצוב הכלי, לפני עיצוב ההדפסה.
-  function print({ title, subtitle, kind, node, nodes, inline = false, landscape = false, pocket = false, toHtml = false, extraCss = "" }) {
+  // lang: 'ar' (05/11/2026, מערך המוכנות: "ערבית בהדפסה"): המסמך בערבית: lang, תחתית העמוד, כפתור ההדפסה ושורת הסיום. tool: {name, purpose} בשפת המסמך.
+  const PRINT_AR = { page: "صفحة ", of: " من ", btn: "طباعة / حفظ كـ PDF", ft: "أُعدّ في Begood · be-good.co.il" };
+  function print({ title, subtitle, kind, node, nodes, inline = false, landscape = false, pocket = false, toHtml = false, extraCss = "", lang = "he", tool }) {
+    const AR = lang === "ar";
     const parts = (nodes || [node]).filter(Boolean).map((n) => {
       const c = n.cloneNode(true);
       if (window.SBE_REFS && SBE_REFS.forPrint) SBE_REFS.forPrint(c); // מקורות: רק כשבחרו "צירוף המקורות לקובץ"
@@ -364,12 +367,12 @@ h1{font-size:26px}.hd img{height:56px}
       w = window.open("", "_blank");
     }
     if (!w) { alert("הדפדפן חסם את חלון ההדפסה. אפשר לאפשר חלונות קופצים לאתר ולנסות שוב."); return; }
-    w.document.write(`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc(fileTitle(title, undefined, kind))}</title>
+    w.document.write(`<!doctype html><html lang="${AR ? "ar" : "he"}" dir="rtl"><head><meta charset="utf-8"><title>${esc(fileTitle(title, tool, kind))}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Fredoka:wght@500;600&display=swap">
 ${extraCss ? "<style>" + extraCss + "</style>" : ""}<style>
 /* עיצוב של מוצר מוגמר (12/10/2026: "התוצרים ב PDF יהיו מעוצבים כמוצר למכירה בחנות"): גופני המותג, כותרת עם לוגו, מספרי עמודים */
 @page{size:A4${landscape ? " landscape" : ""};margin:24mm 24mm;
-  @bottom-center{content:"עמוד " counter(page) " מתוך " counter(pages);font:600 9pt Assistant,Arial,sans-serif;color:#5C6771}
+  @bottom-center{content:"${AR ? PRINT_AR.page : "עמוד "}" counter(page) "${AR ? PRINT_AR.of : " מתוך "}" counter(pages);font:600 9pt Assistant,Arial,sans-serif;color:#5C6771}
   @bottom-right{content:"Begood · be-good.co.il";font:9pt Assistant,Arial,sans-serif;color:#8A949C}}
 body{font-family:"Assistant","Segoe UI",Arial,sans-serif;color:#141C24;max-width:${landscape ? 1040 : 720}px;margin:24px auto;padding:0 16px;line-height:1.7;font-size:14.5px}
 .hd{display:flex;justify-content:space-between;align-items:center;border-top:5px solid #2E5A7D;border-bottom:1px solid #CDD3D8;padding:14px 0 12px;margin-bottom:22px;gap:16px;position:relative}
@@ -417,10 +420,10 @@ table tr>:first-child:nth-last-child(n+3)~td:not(.n):not(.ck),table tr>:first-ch
 .bar button{font:inherit;font-weight:700;padding:7px 16px;border-radius:6px;border:1px solid #2E5A7D;background:#2E5A7D;color:#fff;cursor:pointer}
 @media print{.bar{display:none}body{margin:0;max-width:none}}
 ${pocket ? POCKET_CSS : ""}</style></head><body>
-${toHtml ? "" : '<div class="bar"><button onclick="window.print()">הדפסה / שמירה כ-PDF</button></div>'}
-<div class="hd"><div>${ctxHTML()}<h1>${esc(title)}</h1>${subtitle ? `<p class="sub">${esc(subtitle)}</p>` : ""}<div class="dt">${esc(date)}</div></div><img src="${logo}" alt="Begood"></div>
+${toHtml ? "" : '<div class="bar"><button onclick="window.print()">' + (AR ? PRINT_AR.btn : "הדפסה / שמירה כ-PDF") + '</button></div>'}
+<div class="hd"><div>${ctxHTML(tool)}<h1>${esc(title)}</h1>${subtitle ? `<p class="sub">${esc(subtitle)}</p>` : ""}<div class="dt">${esc(date)}</div></div><img src="${logo}" alt="Begood"></div>
 ${parts}
-<div class="ft">הופק ב-Begood · be-good.co.il</div>
+<div class="ft">${AR ? PRINT_AR.ft : "הופק ב-Begood · be-good.co.il"}</div>
 <script>var relaxTall=${relaxTall.toString()};var BRK_CSS=${JSON.stringify(BRK_CSS)};var repeatHeads=${repeatHeads.toString()};var RH_CSS=${JSON.stringify(RH_CSS)};function sbeRelax(){try{repeatHeads(document)}catch(e){}relaxTall(document,{widthMm:${landscape ? 249 : 162},heightMm:${landscape ? 162 : 249}})}
 window.addEventListener("beforeprint",sbeRelax);${inline || toHtml ? "window.addEventListener('load',sbeRelax);" : "window.onload=function(){sbeRelax();setTimeout(function(){window.print()},300)}"}<\/script>
 </body></html>`);
