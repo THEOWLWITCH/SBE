@@ -32,6 +32,11 @@
 :root[data-theme="dark"]{ --ground:#11171C; --surface:#182027; --ink:#E4E8EB; --muted:#9AA6AF; --hair:#2E3A44;
   --teal-soft:#16302F; --sun-soft:#33280F; --coral-soft:#3A1F1A; --green-soft:#17291C; --brand:#9CC3E6; }
 *{box-sizing:border-box}
+/* שדות במצב כהה: רקע כהה וטקסט בהיר, כדי שהערך ייקרא (בדיקת המומחים, סבב 2) */
+select,input,textarea{background-color:var(--surface);color:var(--ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) select,:root:not([data-theme="light"]) input,:root:not([data-theme="light"]) textarea{background-color:#1F2A33!important;color:#E4E8EB!important;border-color:#3A4853!important}}
+:root[data-theme="dark"] select,:root[data-theme="dark"] input,:root[data-theme="dark"] textarea{background-color:#1F2A33!important;color:#E4E8EB!important;border-color:#3A4853!important}
+p.small a.lnk,.small>a.lnk{display:inline-block;min-height:24px;padding-block:3px}
 body{margin:0;background:var(--ground);color:var(--ink);font-family:Assistant,Arial,sans-serif;font-size:17px;line-height:1.6}
 .wrap{max-width:1080px;margin:0 auto;padding:12px 16px 80px}
 h1{margin:6px 0 2px}

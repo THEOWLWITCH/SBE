@@ -45,6 +45,13 @@ function recTarget(d, id) {
   if (n) { const ss = d.parts.sessions && typeof d.parts.sessions === 'object' && !Array.isArray(d.parts.sessions) ? d.parts.sessions : (d.parts.sessions = {}); return (ss[n[1]] = ss[n[1]] && typeof ss[n[1]] === 'object' ? ss[n[1]] : {}); }
   return null;
 }
+// החלק שמחזיק את התרגיל או המפגש: כדי לעדכן את מספר הגרסה כשההקלטה מתחילה או נגמרת (בדיקת המומחים, סבב 2)
+function recPart(d, id) {
+  if ((d.parts.exercises || []).some((x) => x && x.id === id)) return 'exercises';
+  if ((Array.isArray(d.parts.meetings) ? d.parts.meetings : []).some((x) => x && x.id === id)) return 'meetings';
+  return /^sess-[1-5]$/.test(id) ? 'sessions' : '';
+}
+const bumpRev = (d, part) => { if (!part) return; d.revs = d.revs || {}; d.revs[part] = (d.revs[part] || 0) + 1; d.rev = (d.rev || 1) + 1; };
 const EMAIL_RE = /^[^\s@<>()",;:]+@[^\s@<>()",;:]+\.[^\s@<>()",;:]{2,}$/;
 const str = (v, max = 200) => String(v == null ? '' : v).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim().slice(0, max);
 const err = (status, error) => [status, { error }];
@@ -59,7 +66,7 @@ export function validIsraeliId(d) {
 }
 export function hasIdNumber(value) {
   const text = typeof value === 'string' ? value : JSON.stringify(value);
-  for (const m of text.matchAll(/(?:^|[^\d])(\d{9})(?=[^\d]|$)/g)) if (validIsraeliId(m[1])) return true;
+  for (const m of text.matchAll(/(?:^|[^\d])(\d{9})(?=[^\d]|$)/g)) if (!/^0[234589]/.test(m[1]) && validIsraeliId(m[1])) return true;
   return false;
 }
 
@@ -136,8 +143,8 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
         if (!ex) return err(404, 'התרגיל או המפגש לא נמצאו');
         const tKey = 'rdyt:' + ref.id + ':' + ref.exId;
         const tr = (await store.get(tKey)) || { segments: [], marks: [] };
-        if (action === 'rdyRecPing') return [200, { ok: true, title: str(d.parts.profile?.name, 120), round: ex.round || 1, lang: d.parts.profile?.lang === 'ar' ? 'ar' : 'he', segments: tr.segments.length, marks: tr.marks.length }];
-        if (action === 'rdyRecStop') { ex.rec = { ...(ex.rec || {}), on: false, stoppedAt: new Date(now()).toISOString() }; await store.set('rdy:' + d.id, d); await store.del('rdyk:' + hash(rk)); return [200, { ok: true }]; }
+        if (action === 'rdyRecPing') return [200, { ok: true, title: str(d.parts.profile?.name, 120), round: ex.round || 1, lang: d.parts.profile?.lang === 'ar' ? 'ar' : 'he', segments: tr.segments.length, nextSeq: tr.segments.reduce((m, x) => Math.max(m, (Number(x.seq) || 0) + 1), 0), marks: tr.marks.length }];
+        if (action === 'rdyRecStop') { ex.rec = { ...(ex.rec || {}), on: false, stoppedAt: new Date(now()).toISOString() }; bumpRev(d, recPart(d, ref.exId)); await store.set('rdy:' + d.id, d); await store.del('rdyk:' + hash(rk)); return [200, { ok: true }]; }
         if (action === 'rdyRecMark') {
           if (tr.marks.length >= 300) return err(409, 'הגענו למספר הסימונים המרבי בתרגיל');
           const t = Math.max(0, Math.min(36e6, Number(body.t) || 0));
@@ -167,8 +174,10 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
 
     if (action === 'rdyMine') {
       const rows = await store.list('rdy:');
-      const mine = rows.map((r) => r.value).filter((d) => d && d.id && canSee(d, me))
-        .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))).slice(0, 60).map(summary);
+      const docs = rows.map((r) => r.value).filter((d) => d && d.id && canSee(d, me));
+      // תמלילים ישנים (מעל 30 יום) נמחקים גם בלי שמישהו פותח אותם
+      for (const d of docs) for (const t of await store.list('rdyt:' + d.id + ':')) if (t.value && t.value.at && Date.parse(t.value.at) < now() - 30 * 864e5) await store.del(t.key);
+      const mine = docs.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))).slice(0, 60).map(summary);
       return [200, { items: mine }];
     }
 
@@ -215,7 +224,8 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
         const base = Number(body.rev);
         if (Number.isFinite(base) && base !== (d.revs[part] || 0)) return [409, { error: 'מישהו אחר עדכן את החלק הזה. המסך נטען מחדש עם הגרסה העדכנית', doc: publicDoc(d) }];
         const value = body.value;
-        const json = JSON.stringify(value === undefined ? null : value);
+        if (value === undefined) return err(400, 'אין מה לשמור');
+        const json = JSON.stringify(value);
         if (json.length > MAX_PART) return err(413, 'החלק גדול מדי');
         if (hasIdNumber(value)) return err(400, 'נראה שיש כאן מספר זהות. פרטים של תלמידים לא נשמרים במערך');
         if (part === 'profile' && !str(value && value.name, 120)) return err(400, 'שם בית הספר או הארגון הוא שדה עיקרי');
@@ -245,7 +255,10 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
         // אורחים: עד 10 למפגש, כדי שהשליחה לא תהיה פתוחה לכל כתובת
         const teamSet = new Set(teams.flatMap((t) => (t && (t.members || []).concat(t.lead || [], t.deputy || [])) || []).map((m) => str(m && m.email, 254).toLowerCase()));
         const attMail = rec && Array.isArray(rec.attendees) ? rec.attendees.filter((a) => a && a.here).map((a) => str(a.email, 254).toLowerCase()).filter((e, i, all) => teamSet.has(e) || all.filter((x) => !teamSet.has(x)).indexOf(e) < 10) : [];
+        d.guestMail = d.guestMail && d.guestMail.day === day ? d.guestMail : { day, list: [] };
         const allowed = new Set(teamMail.concat(attMail).filter((e) => EMAIL_RE.test(e)));
+        // כתובות של אורחים (לא מהצוותים): עד 30 שונות ביום לכל מערך
+        for (const e of [...allowed]) if (!teamSet.has(e)) { if (d.guestMail.list.includes(e)) continue; if (d.guestMail.list.length >= 30) allowed.delete(e); else d.guestMail.list.push(e); }
         for (const it of items) {
           const team = teams.find((t) => t && t.id === it.teamId);
           const text = str(it.text, 4000);
@@ -275,7 +288,7 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
         if (body.consent !== true) return err(400, 'ההקלטה מתחילה רק אחרי שכולם הסכימו');
         const rk = randomBytes(24).toString('hex');
         await store.set('rdyk:' + hash(rk), { id: d.id, exId: body.exId, exp: now() + REC_HOURS * 3600e3 });
-        ex.rec = { on: true, consentAt: new Date(now()).toISOString() };
+        ex.rec = { on: true, consentAt: new Date(now()).toISOString() }; bumpRev(d, recPart(d, body.exId));
         await store.set('rdy:' + d.id, d);
         return [200, { rk, hours: REC_HOURS }];
       }
@@ -330,7 +343,14 @@ export async function handleReadiness(store, body, { who, fetchImpl = globalThis
         if (!FILE_TYPES.includes(mime)) return err(400, 'אפשר להעלות PDF, תמונה, Word, Excel, PowerPoint או טקסט');
         const data = typeof body.data === 'string' ? body.data : '';
         if (!data || data.length > MAX_FILE_B64 || !/^[A-Za-z0-9+/=]+$/.test(data)) return err(413, 'הקובץ גדול מדי (עד כ־4 מגה) או אינו תקין');
-        if (/^text\//.test(mime) && hasIdNumber(Buffer.from(data, 'base64').toString('utf8'))) return err(400, 'נראה שיש בקובץ מספר זהות. פרטים של תלמידים לא נשמרים במערך');
+        const bytes = Buffer.from(data, 'base64');
+        const head = bytes.subarray(0, 8).toString('latin1');
+        const magicOk = mime === 'application/pdf' ? head.startsWith('%PDF') : mime === 'image/png' ? head.startsWith('\x89PNG') : mime === 'image/jpeg' ? bytes[0] === 0xff && bytes[1] === 0xd8 : mime === 'image/webp' ? head.startsWith('RIFF')
+          : /openxmlformats/.test(mime) ? head.startsWith('PK') : /msword|ms-excel/.test(mime) ? bytes[0] === 0xd0 && bytes[1] === 0xcf : true;
+        if (!magicOk) return err(400, 'סוג הקובץ לא תואם לתוכן שלו. אפשר לשמור אותו שוב בתוכנה המקורית ולהעלות');
+        if (/^text\//.test(mime) && hasIdNumber(bytes.toString('utf8'))) return err(400, 'נראה שיש בקובץ מספר זהות. פרטים של תלמידים לא נשמרים במערך');
+        // קבצי Word ו-Excel: בודקים את הטקסט שבתוכם (רק קבצים שלא דחוסים לגמרי נבדקים כך; השאר נשען על האישור של המעלה/ת)
+        if (/openxmlformats/.test(mime) && hasIdNumber(bytes.toString('latin1').replace(/[^\x20-\x7e]/g, ' '))) return err(400, 'נראה שיש בקובץ מספר זהות. פרטים של תלמידים לא נשמרים במערך');
         if (!d.files[it.key] && Object.keys(d.files).length >= MAX_FILES) return err(409, 'הגענו למספר הקבצים המרבי בתיקייה. אפשר למחוק קובץ שכבר לא בשימוש');
         const replaced = !!d.files[it.key];
         await store.set(fKey, { data, mime, name: str(body.name, 160) });

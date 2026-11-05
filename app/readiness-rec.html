@@ -41,11 +41,11 @@ button:disabled{opacity:.45}
   var rk = new URLSearchParams(location.search).get('rk') || '';
   var app = document.getElementById('app');
   var W = {
-    he: { t: 'הקלטת התרגיל', info: 'ההקלטה עוברת לתמלול ולא נשמרת. התמליל נמחק כשהדוח מאושר. כל אחד ואחת יכולים לבקש לעצור.', start: '🎙 התחלת ההקלטה', pause: '⏸ עצירה',
+    he: { t: 'הקלטת התרגיל', info: 'ההקלטה עוברת לתמלול בשירות חיצוני (OpenAI) ולא נשמרת. התמליל נמחק כשדוח התרגיל מאושר או כשהמפגש מסומן כהושלם, ולכל המאוחר אחרי 30 יום. כל אחד ואחת יכולים לבקש לעצור.', start: '🎙 התחלת ההקלטה', pause: '⏸ עצירה',
       resume: '🎙 המשך ההקלטה', mark: '⭐ רגע החלטה', stop: 'סיום ההקלטה', round: 'סבב', rec: 'מקליטים', paused: 'ההקלטה עצורה', sent: 'קטעים שעלו', wait: 'קטעים שמחכים לרשת',
       marks: 'רגעי החלטה', done: 'ההקלטה הסתיימה. אפשר לסגור את הדף.', waiting: 'עוד {n} קטעים לא עלו (אין חיבור או שהתמלול לא זמין). אם מסיימים עכשיו, הם יימחקו מהטלפון ולא ייכנסו לתמליל. לסיים?', bad: 'הקישור להקלטה הסתיים. אפשר לפתוח קישור חדש ממסך התרגיל או המפגש.', mic: 'אין גישה למיקרופון. אפשר לאשר גישה בהגדרות הדפדפן ולנסות שוב.',
       nosupport: 'הדפדפן הזה לא מקליט. אפשר לסמן רגעי החלטה בכפתור, או לנסות בדפדפן אחר.', screen: 'כדאי להשאיר את המסך דולק ואת הדף פתוח.', marked: 'סומן', note: 'מה הוחלט? (רשות)' },
-    ar: { t: 'تسجيل التمرين', info: 'يُرسل التسجيل للتحويل إلى نص ولا يُحفظ. يُحذف النص المكتوب عند المصادقة على التقرير. يمكن لكل شخص أن يطلب التوقف.', start: '🎙 بدء التسجيل', pause: '⏸ توقف',
+    ar: { t: 'تسجيل التمرين', info: 'يُرسل التسجيل للتحويل إلى نص لدى خدمة خارجية (OpenAI) ولا يُحفظ. يُحذف النص المكتوب عند المصادقة على تقرير التمرين أو عند تعليم اللقاء كمكتمل، وفي موعد أقصاه 30 يومًا. يمكن لكل واحد وواحدة أن يطلب التوقف.', start: '🎙 بدء التسجيل', pause: '⏸ توقف',
       resume: '🎙 متابعة التسجيل', mark: '⭐ لحظة قرار', stop: 'إنهاء التسجيل', round: 'جولة', rec: 'نسجّل', paused: 'التسجيل متوقف', sent: 'مقاطع أُرسلت', wait: 'مقاطع تنتظر الشبكة',
       marks: 'لحظات قرار', done: 'انتهى التسجيل. يمكن إغلاق الصفحة.', waiting: 'لم تُرفع بعد {n} مقاطع (لا يوجد اتصال أو التفريغ غير متاح). إذا أنهينا الآن، ستُحذف من الهاتف ولن تدخل النص المفرّغ. هل ننهي؟', bad: 'انتهى رابط التسجيل. يمكن فتح رابط جديد من شاشة التمرين أو اللقاء.', mic: 'لا يوجد وصول إلى الميكروفون. يمكن السماح بالوصول في إعدادات المتصفح والمحاولة من جديد.',
       nosupport: 'هذا المتصفح لا يسجّل. يمكن الإشارة إلى لحظات القرار بالزر، أو تجربة متصفح آخر.', screen: 'من المفيد إبقاء الشاشة مضاءة والصفحة مفتوحة.', marked: 'تمت الإشارة', note: 'ما الذي تقرّر؟ (اختياري)' }
@@ -66,6 +66,8 @@ button:disabled{opacity:.45}
   });
   function qPut(item) { return dbp.then(function (db) { if (!db) return; return new Promise(function (r) { var tx = db.transaction('q', 'readwrite'); tx.objectStore('q').put(item); tx.oncomplete = r; tx.onerror = r; }); }); }
   function qDel(k) { return dbp.then(function (db) { if (!db) return; return new Promise(function (r) { var tx = db.transaction('q', 'readwrite'); tx.objectStore('q').delete(k); tx.oncomplete = r; tx.onerror = r; }); }); }
+  // קטעים שנשארו בטלפון מקישור הקלטה אחר (ישן): נמחקים, כדי שקול לא יישאר בטלפון
+  function clearOld() { dbp.then(function (db) { if (!db) return; var tx = db.transaction('q', 'readwrite'), os = tx.objectStore('q'), c = os.openCursor(); c.onsuccess = function () { var x = c.result; if (x) { if (x.value.rk !== rk) x.delete(); x.continue(); } }; }); }
   function qAll() { return dbp.then(function (db) { if (!db) return []; return new Promise(function (r) { var out = []; var c = db.transaction('q').objectStore('q').openCursor(); c.onsuccess = function () { var x = c.result; if (x) { if (x.value.rk === rk) out.push(x.value); x.continue(); } else r(out); }; c.onerror = function () { r(out); }; }); }); }
 
   function b64(blob) { return new Promise(function (r) { var fr = new FileReader(); fr.onload = function () { r(String(fr.result).split(',')[1] || ''); }; fr.readAsDataURL(blob); }); }
@@ -174,7 +176,7 @@ button:disabled{opacity:.45}
     document.documentElement.lang = lang;
     document.getElementById('t').textContent = w.t;
     document.getElementById('school').textContent = r[1].title || '';
-    st.round = r[1].round || 1; st.marks = r[1].marks || 0; st.sent = r[1].segments || 0; st.seq = r[1].segments || 0;
+    st.round = r[1].round || 1; st.marks = r[1].marks || 0; st.sent = r[1].segments || 0; st.seq = Math.max(r[1].nextSeq || 0, r[1].segments || 0) + (r[1].nextSeq != null ? 0 : 0); clearOld();
     qAll().then(function (q) { q.forEach(function (it) { if (it.seq >= st.seq) st.seq = it.seq + 1; }); draw(); flush(); });
   }).catch(function () { msg('…'); });
 })();

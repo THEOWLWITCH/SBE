@@ -21,7 +21,8 @@
   const tr = (he, ar) => (LANG === 'ar' ? ar : he);
   const dateIL = (iso) => (window.sbeDateIL ? window.sbeDateIL(String(iso || '').slice(0, 10)) : String(iso || '').slice(0, 10));
   const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
-  const by = () => { try { return JSON.parse(localStorage.getItem('sbe.prep.by') || '""') || ''; } catch (e) { return ''; } };
+  // השם מ"מי אני?" במערך המוכנות (נשמר לפי משתמש/ת)
+  const by = () => { try { return JSON.parse(localStorage.getItem(window.sbeUserKey ? window.sbeUserKey('sbe.prep.by') : 'sbe.prep.by') || '""') || ''; } catch (e) { return ''; } };
   function h(tag, attrs, ...kids) {
     const el = document.createElement(tag);
     for (const [k, v] of Object.entries(attrs || {})) { if (v == null || v === false) continue; if (k === 'class') el.className = v; else if (k === 'text') el.textContent = v; else if (k.startsWith('on')) el.addEventListener(k.slice(2), v); else el.setAttribute(k, v); }
@@ -49,7 +50,9 @@
   // רשימת הפריטים הקבועה נמצאת במודל של מערך המוכנות; נטען רק למי שיש לו/ה את הכלי
   function loadModel() {
     if (window.SBE_PREP) return Promise.resolve(window.SBE_PREP);
-    return new Promise((ok) => { const s = document.createElement('script'); s.src = 'lib/readiness-model.js'; s.onload = () => ok(window.SBE_PREP || null); s.onerror = () => ok(null); document.head.appendChild(s); });
+    // קודם הערבית, ואחריה המודל (המודל קורא את הערבית כשהוא נטען)
+    const load = (src) => new Promise((ok) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = ok; document.head.appendChild(s); });
+    return (window.SBE_PREP_AR ? Promise.resolve() : load('lib/readiness-ar.js')).then(() => load('lib/readiness-model.js')).then(() => window.SBE_PREP || null);
   }
   // שם ברור: לא שם קובץ אוטומטי ולא רק סיומת (אותו כלל כמו vagueTitle בשרת)
   const vague = (t) => { const s = String(t || '').trim(); return s.length < 4 || /\.(pdf|docx?|xlsx?|pptx?|png|jpe?g|webp|txt|csv)$/i.test(s) || /^(img|dsc|scan|scanned|document|doc|file|image|photo|whatsapp|screenshot|צילום|מסמך|קובץ|תמונה|סריקה)[\s_\-\d.()]*$/i.test(s); };
@@ -139,9 +142,11 @@
   async function removeItem(it) {
     const f = (doc.files || {})[it.key];
     if (!confirm(tr('להסיר את "', 'إزالة "') + it.text + tr('" מהרשימה?', '" من القائمة؟') + (f ? tr(' גם הקובץ שלו יימחק.', ' سيُحذف ملفه أيضًا.') : ''))) return;
-    if (f) { const [st, out] = await api('rdyFileDel', { id: doc.id, key: it.key, by: by() }); if (st !== 200) { msg = out.error || tr('הקובץ לא נמחק, ולכן הפריט נשאר ברשימה. אפשר לנסות שוב.', 'لم يُحذف الملف، لذلك بقي البند في القائمة. يمكن المحاولة مرة أخرى.'); draw(); return; } doc.files = out.files; }
+    // קודם מסירים מהרשימה, ורק אחר כך מוחקים את הקובץ (קובץ של פריט שהוסר אפשר למחוק גם אחר כך)
     const bd = binder(), where = Object.assign({}, bd.where || {}); delete where[it.key];
-    if (await saveBinder(Object.assign({}, bd, { items: (bd.items || []).filter((x) => x && x.key !== it.key), where }), 'הסרה מתיקיית המוכנות: ' + it.text.slice(0, 80))) { msg = tr('הוסר מהרשימה.', 'أُزيل من القائمة.'); draw(); }
+    if (!(await saveBinder(Object.assign({}, bd, { items: (bd.items || []).filter((x) => x && x.key !== it.key), where }), 'הסרה מתיקיית המוכנות: ' + it.text.slice(0, 80)))) return;
+    if (f) { const [st, out] = await api('rdyFileDel', { id: doc.id, key: it.key, by: by() }); if (st === 200) doc.files = out.files; }
+    msg = tr('הוסר מהרשימה.', 'أُزيل من القائمة.'); draw();
   }
   function addForm() {
     const text = h('input', { type: 'text', maxlength: '160', placeholder: W(tr('למשל: רשימת ציוד החירום במחסן', 'مثلًا: قائمة معدّات الطوارئ في المخزن')), 'aria-label': tr('מה עוד מוסיפים לתיקייה', 'ماذا نضيف أيضًا إلى المجلّد') });
@@ -180,6 +185,7 @@
       msg ? h('p', { class: 'bmsg', role: 'status', text: msg }) : null,
       h('ul', { class: 'blist' }, rows), addForm());
   }
+  const titleOf = (a) => { if (a.typeKey && P) { const L2 = (ORG && P.forSpace ? P.forSpace('org') : P).content(LANG); const t = (L2.MEET_TYPES || []).find((x) => x.k === a.typeKey); if (t) return t.name; } return a.title; };
   function archiveCard() {
     const p = doc.parts || {}, list = [];
     const ses = p.sessions && typeof p.sessions === 'object' ? p.sessions : {};
@@ -191,7 +197,7 @@
       h('h2', { text: '🗂 ' + W(tr('ארכיון הפרוטוקולים ממערך המוכנות', 'أرشيف المحاضر من منظومة الجاهزية')) }),
       h('p', { class: 'links' }, h('a', { href: go('view=track&sheet=tasks'), text: tr('משימות', 'مهام') }), ' · ', h('a', { href: go('view=track&sheet=decisions'), text: tr('החלטות', 'قرارات') }), ' · ',
         h('a', { href: go('view=track&sheet=ends'), text: tr('קצוות פתוחים', 'أطراف مفتوحة') })),
-      list.length ? list.map((a) => h('details', { class: 'arch' }, h('summary', { text: a.title + (a.date ? ' · ' + dateIL(a.date) : '') }), body(a),
+      list.length ? list.map((a) => h('details', { class: 'arch' }, h('summary', { text: titleOf(a) + (a.date ? ' · ' + dateIL(a.date) : '') }), body(a),
         h('p', {}, h('a', { href: '#', text: tr('🖨 הדפסת הפרוטוקול', '🖨 طباعة المحضر'), onclick: (e) => { e.preventDefault(); if (window.SBE_DOC) window.SBE_DOC.print({ title: a.title, kind: tr('פרוטוקול', 'محضر'), node: body(a), lang: LANG, tool: LANG === 'ar' ? { name: 'منظومة الجاهزية', purpose: 'أرشيف المحاضر' } : undefined }); else window.print(); } })))) :
         h('p', { class: 'muted', text: W(tr('עוד אין פרוטוקולים בארכיון. בסוף כל מפגש במערך המוכנות: "העברת הפרוטוקול לתיק הרציפות".', 'لا توجد محاضر في الأرشيف بعد. في نهاية كل لقاء في منظومة الجاهزية: "نقل المحضر إلى ملف الاستمرارية".')) }));
   }
