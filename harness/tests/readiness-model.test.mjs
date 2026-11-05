@@ -24,7 +24,8 @@ test('structure follows the outline: seven teams, 23 tasks, five sessions, three
 test('fixed text: invitation language, no long dash, no referral to professionals', () => {
   const all = TEXT.flatMap((k) => leaves(P[k]));
   for (const s of all) {
-    assert.ok(!/(^|[\s"(])(צריך|צריכה|צריכים|חייב|חייבת|חייבים|חובה|אסור)(?=[\s.,:;!?")]|$)/.test(s), 'invitation language: ' + s);
+    // "תרגיל חובה" הוא מונח קבוע של משרד החינוך (05/11/2026: "תסמן אותם כתרגילי חובה"), כמו "חובת דיווח"
+    assert.ok(!/(^|[\s"(])(צריך|צריכה|צריכים|חייב|חייבת|חייבים|חובה|אסור)(?=[\s.,:;!?")]|$)/.test(s.replace(/תרגילי? חובה/g, '')), 'invitation language: ' + s);
     assert.ok(!s.includes('—'), 'long dash: ' + s);
     assert.ok(!/פסיכולוג|עובד\/ת סוציאלי|גורם טיפולי|איש\/אשת מקצוע|אנשי מקצוע|רווחה נפשית|שלומות/.test(s), 'no referral: ' + s);
   }
@@ -159,7 +160,7 @@ test('community version: no school words, no school-only guidelines, prompts mar
 });
 
 test('meetings: types from the rituals, the discussion becomes tasks, decisions and open ends, and one tracking table in sheets', () => {
-  assert.deepEqual(P.MEET_TYPES.map((t) => t.k), ['weekly', 'resday', 'decide', 'drill', 'annual', 'onboard', 'other']);
+  assert.deepEqual(P.MEET_TYPES.map((t) => t.k), ['weekly', 'resday', 'decide', 'drill', 'annual', 'onboard', 'students', 'mandatory', 'other']);
   for (const t of P.MEET_TYPES) assert.ok(t.agenda.length >= 3 && t.when, t.k);
   assert.equal(P.content('ar').MEET_TYPES[0].k, 'weekly');
   const sys = P.meetingSystem('he');

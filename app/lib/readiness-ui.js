@@ -28,7 +28,7 @@
       sessions: 'המפגשים', later: 'בשלב הבא', escalate: 'קצוות שעולים למנהל/ת מצב החירום', partners: 'שותפים: עם מי מתאמים בחירום?', expect: 'מה אנחנו מצפים לקבל', provide: 'מה אנחנו מספקים',
       ifGap: 'פער ממשק: חסר צד אחד', partner: 'שותף/ה', step: 'שלב', product: 'התוצר', questions: 'שאלות לצוות', ourText: 'מה כתבנו', ask: 'חוליות חלשות וחלופות', working: 'עובדים על זה…',
       gaps: 'פערים', alts: 'חלופות שאולי לא עלו', nextSteps: 'צעדי המשך', toEnds: 'לקצוות הפתוחים', addGap: 'לרשימת הפערים', before: 'לפני המפגש', during: 'במפגש', our: 'שלנו',
-      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', editT: 'עריכה', closeT: 'סגירה', notYet: 'עוד לא בוצע', sRolesT: 'תפקידי תלמידים בתרגיל הכיתתי', sRolesWhat: 'מה עושים', sRolesNote: 'מה עוד חשוב בכיתה שלנו', sRolesPh: 'למשל: התפקידים מתחלפים כל חודש, ולוח התפקידים תלוי ליד הדלת', drillsT: 'תרגילים מחייבים', toGap: '➕ לפער בטבלת המעקב', learnFirst: 'אפשר לכתוב קודם מה למדנו בתרגיל.', mineT: 'המשימות שלי', mineAll: 'כל המשימות', mineSetMe: 'כדי לראות את המשימות שלך, אפשר לכתוב את השם ב"מי אני?".', mineMail: 'המשימות והקצוות הפתוחים שלך', keptT: 'נשמר (עבד, ממשיכים כך)', gapT: 'פער', gapsClosed: 'פערים נסגרו: הפעולה שלהם נבדקה בתרגיל', noAction: 'עוד אין פעולה', linkedAct: 'הפעולה', gapsInfo: 'פער נסגר כשהפעולה שנוצרה ממנו נבדקה בתרגיל או ביום החוסן, או בהעברה להושלמו.', lastEx: 'התרגיל האחרון', draftReplace: 'טיוטה חדשה תחליף את הטבלה, כולל מה שהצוות ערך בה. להמשיך?', saveFirst: 'הסיכום לא נשלח, כי השמירה לא הצליחה. אפשר לנסות שוב בעוד רגע.', mailSkipped: 'לא נשלח', safeLine: 'מי שהתרחיש קרוב מדי אליו/ה יכול/ה לבחור תפקיד של רשם/ת או צופה, ולצאת לרגע בכל שלב.', howAnswer: 'איך עונים', parentsMsgT: 'ההודעה להורים', parentsMsgCues: 'כותבים את ההודעה כמו שתישלח: מה קרה, בעובדות · איפה הילדים ומה עושים · מה מבקשים מההורים · מתי העדכון הבא.', parentsMsgPh: 'למשל: הורים יקרים, לפני כרבע שעה...', heOnly: 'הרשימה מתיק הרציפות כתובה בעברית.', toJourney: 'למסע אל החוסן החברתי', unsaved: 'אין חיבור כרגע. השינויים נשמרו במסך וייכנסו כשהחיבור יחזור.', trNotLoaded: 'התמליל של ההקלטה עוד לא נכנס לדיון, והוא יימחק כשהמפגש מסומן כהושלם. להמשיך?', notSummed: 'המפגש עבר ועוד לא סוכם', nextSet: 'המפגש הבא נקבע ל־', ownerFilled: 'אחראי/ת הושלם/ה לפי ראש הצוות או מנהל/ת מצב החירום', undoT: '↩ ביטול', undoneT: 'השינוי בוטל', cancelWhy: 'למה הפעולה בוטלה? (רשות, נשמר לתיעוד)', ownerPerson: 'אחראי/ת: שם של אדם מהצוות', noPeople: 'עוד אין שמות בטבלת הצוותים, ולכן האחראי/ת הוא/היא מנהל/ת מצב החירום. כדי שיופיעו שמות, אפשר למלא אותם:', delQ: 'למחוק את המשימה?', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
+      teamsT: 'טבלת הצוותים', addTeam: '➕ צוות שלא ברשימה', cancelT: 'ביטול', editT: 'עריכה', closeT: 'סגירה', planDrill: '📅 תכנון התרגיל', mandTag: '🔒 תרגיל חובה', mandRun: 'מתנהל לפי הנוהל של משרד החינוך, בלי שינוי. ב"דיון וסיכום" כותבים מה עבד ומה למדנו, וזה נכנס לטבלת המעקב. כשמסמנים שהמפגש הושלם, התאריך נכנס לטבלת התרגילים המחייבים.', mandHome: '🔒 תרגילי חובה שמחכים', fromStudents: 'רעיון של תלמידים', noStudentIdeas: 'עוד אין רעיונות שסומנו כרעיון של תלמידים.', notDecided: 'עוד בדיון', roleCards: '🖨 כרטיסי תפקיד לכיתה', pickRoles: 'אפשר לבחור קודם תפקידים.', studentCardT: 'כרטיס לתלמידים', scPractice: 'מה מתרגלים', scRole: 'מה התפקיד שלי', scIfBad: 'אם מרגישים לא טוב', notYet: 'עוד לא בוצע', sRolesT: 'תפקידי תלמידים בתרגיל הכיתתי', sRolesWhat: 'מה עושים', sRolesNote: 'מה עוד חשוב בכיתה שלנו', sRolesPh: 'למשל: התפקידים מתחלפים כל חודש, ולוח התפקידים תלוי ליד הדלת', drillsT: 'תרגילים מחייבים', toGap: '➕ לפער בטבלת המעקב', learnFirst: 'אפשר לכתוב קודם מה למדנו בתרגיל.', mineT: 'המשימות שלי', mineAll: 'כל המשימות', mineSetMe: 'כדי לראות את המשימות שלך, אפשר לכתוב את השם ב"מי אני?".', mineMail: 'המשימות והקצוות הפתוחים שלך', keptT: 'נשמר (עבד, ממשיכים כך)', gapT: 'פער', gapsClosed: 'פערים נסגרו: הפעולה שלהם נבדקה בתרגיל', noAction: 'עוד אין פעולה', linkedAct: 'הפעולה', gapsInfo: 'פער נסגר כשהפעולה שנוצרה ממנו נבדקה בתרגיל או ביום החוסן, או בהעברה להושלמו.', lastEx: 'התרגיל האחרון', draftReplace: 'טיוטה חדשה תחליף את הטבלה, כולל מה שהצוות ערך בה. להמשיך?', saveFirst: 'הסיכום לא נשלח, כי השמירה לא הצליחה. אפשר לנסות שוב בעוד רגע.', mailSkipped: 'לא נשלח', safeLine: 'מי שהתרחיש קרוב מדי אליו/ה יכול/ה לבחור תפקיד של רשם/ת או צופה, ולצאת לרגע בכל שלב.', howAnswer: 'איך עונים', parentsMsgT: 'ההודעה להורים', parentsMsgCues: 'כותבים את ההודעה כמו שתישלח: מה קרה, בעובדות · איפה הילדים ומה עושים · מה מבקשים מההורים · מתי העדכון הבא.', parentsMsgPh: 'למשל: הורים יקרים, לפני כרבע שעה...', heOnly: 'הרשימה מתיק הרציפות כתובה בעברית.', toJourney: 'למסע אל החוסן החברתי', unsaved: 'אין חיבור כרגע. השינויים נשמרו במסך וייכנסו כשהחיבור יחזור.', trNotLoaded: 'התמליל של ההקלטה עוד לא נכנס לדיון, והוא יימחק כשהמפגש מסומן כהושלם. להמשיך?', notSummed: 'המפגש עבר ועוד לא סוכם', nextSet: 'המפגש הבא נקבע ל־', ownerFilled: 'אחראי/ת הושלם/ה לפי ראש הצוות או מנהל/ת מצב החירום', undoT: '↩ ביטול', undoneT: 'השינוי בוטל', cancelWhy: 'למה הפעולה בוטלה? (רשות, נשמר לתיעוד)', ownerPerson: 'אחראי/ת: שם של אדם מהצוות', noPeople: 'עוד אין שמות בטבלת הצוותים, ולכן האחראי/ת הוא/היא מנהל/ת מצב החירום. כדי שיופיעו שמות, אפשר למלא אותם:', delQ: 'למחוק את המשימה?', addTeamBtn: 'הוספת הצוות', teamName: 'שם הצוות', teamNamePh: 'למשל: צוות הסעות', teamDuty: 'מה הצוות עושה', teamDutyPh: 'למשל: יציאה מסודרת של ההסעות וספירה בהגעה', teamNameAsk: 'כדי להוסיף צוות, אפשר לכתוב את שמו.', teamExists: 'צוות בשם הזה כבר ברשימה.', teamOurs: 'צוות של בית הספר', teamDel: 'הסרת הצוות', teamDelQ: 'להסיר את הצוות מהרשימה? המשימות שכבר נכתבו נשארות.', addMember: '➕ חבר/ה בצוות', checklist: 'רשימת בדיקה', yes: 'קיים', part: 'חלקי', no: 'חסר', reportOf: 'הדיווח של הצוות', timer3: 'שעון של 3 דקות',
       version: 'אורך התרגיל', v20: '20 דקות (ישיבת צוות)', v60: 'שעה', startEx: 'התחלת התרגיל', exercises: 'התרגילים', cont: 'המשך', finish: 'סיום התרחיש', opening: 'פתיחה',
       closing: 'סגירה', copy: 'העתקה', copied: 'הועתק', openRec: 'פתיחת קישור לטלפון', recOn: 'ההקלטה פתוחה', marks: 'רגעי החלטה', segs: 'קטעים בתמליל', loadTr: 'טעינת התמליל',
       editTr: 'עריכת התמליל (לפני שהוא משמש לדוח)', saveTr: 'שמירת התמליל', worked: 'מה עבד', timeline: 'ציר הזמן', fb: 'משוב מקצועי', src: 'מקור', addRow: '➕ שורה',
@@ -70,7 +70,7 @@
       sessions: 'اللقاءات', later: 'في المرحلة القادمة', escalate: 'أطراف تُرفع إلى مدير/ة حالة الطوارئ', partners: 'الشركاء: مع من ننسّق في الطوارئ؟', expect: 'ما نتوقع أن نحصل عليه', provide: 'ما نقدّمه',
       ifGap: 'فجوة في التنسيق: ينقص أحد الطرفين', partner: 'الشريك/ة', step: 'مرحلة', product: 'الناتج', questions: 'أسئلة للطاقم', ourText: 'ما كتبناه', ask: 'حلقات ضعيفة وبدائل', working: 'نعمل على ذلك…',
       gaps: 'فجوات', alts: 'بدائل ربما لم تُطرح', nextSteps: 'خطوات تالية', toEnds: 'إلى الأطراف المفتوحة', addGap: 'إلى قائمة الفجوات', before: 'قبل اللقاء', during: 'في اللقاء', our: 'لنا',
-      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', editT: 'تعديل', closeT: 'إغلاق', notYet: 'لم يُنفَّذ بعد', sRolesT: 'أدوار الطلاب في تمرين الصف', sRolesWhat: 'ماذا يفعلون', sRolesNote: 'ما المهم أيضًا في صفّنا', sRolesPh: 'مثلًا: الأدوار تتبدّل كل شهر، ولوح الأدوار معلّق قرب الباب', drillsT: 'تمارين إلزامية', toGap: '➕ إلى فجوة في جدول المتابعة', learnFirst: 'يمكن أن نكتب أولًا ماذا تعلّمنا في التمرين.', mineT: 'مهامي', mineAll: 'كل المهام', mineSetMe: 'لرؤية مهامك، يمكن كتابة الاسم في "من أنا؟".', mineMail: 'مهامك وأطرافك المفتوحة', keptT: 'حُفظ (نجح، نستمر هكذا)', gapT: 'فجوة', gapsClosed: 'أُغلقت فجوات: الإجراء الخاص بها فُحص في تمرين', noAction: 'لا يوجد إجراء بعد', linkedAct: 'الإجراء', gapsInfo: 'تُغلق الفجوة عندما يُفحص الإجراء الناتج عنها في تمرين أو في يوم الصمود، أو بنقلها إلى اكتملت.', lastEx: 'التمرين الأخير', draftReplace: 'مسودة جديدة ستستبدل الجدول، بما في ذلك ما عدّله الطاقم. هل نتابع؟', saveFirst: 'لم يُرسل التلخيص لأن الحفظ لم ينجح. يمكن المحاولة بعد لحظة.', mailSkipped: 'لم يُرسل', safeLine: 'من يشعر/تشعر أن السيناريو قريب جدًا منه/ها يمكنه/ها اختيار دور المسجِّل/ة أو المراقب/ة، والخروج للحظة في أي مرحلة.', howAnswer: 'كيف نجيب', parentsMsgT: 'الرسالة إلى الأهالي', parentsMsgCues: 'نكتب الرسالة كما ستُرسل: ماذا حدث، بالحقائق · أين الأبناء وماذا نفعل · ماذا نطلب من الأهالي · متى التحديث القادم.', parentsMsgPh: 'مثلًا: أهالينا الأعزاء، قبل نحو ربع ساعة...', heOnly: 'القائمة من ملف الاستمرارية مكتوبة بالعبرية.', toJourney: 'إلى الرحلة نحو الصمود الاجتماعي', unsaved: 'لا يوجد اتصال حاليًا. التغييرات محفوظة على الشاشة وستدخل عند عودة الاتصال.', trNotLoaded: 'نص التسجيل لم يدخل إلى النقاش بعد، وسيُحذف عند تعليم اللقاء كمكتمل. هل نتابع؟', notSummed: 'اللقاء مضى ولم يُلخَّص بعد', nextSet: 'اللقاء القادم مُحدَّد في ', ownerFilled: 'أُكمل المسؤول/ة حسب رئيس/ة الطاقم أو مدير/ة حالة الطوارئ', undoT: '↩ تراجع', undoneT: 'أُلغي التغيير', cancelWhy: 'لماذا أُلغي الإجراء؟ (اختياري، يُحفظ للتوثيق)', ownerPerson: 'المسؤول/ة: اسم شخص من الطاقم', noPeople: 'لاختيار مسؤول/ة بالاسم، يمكن تعبئة الأسماء في جدول الطواقم:', delQ: 'حذف المهمة؟', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
+      teamsT: 'جدول الطواقم', addTeam: '➕ طاقم غير موجود في القائمة', cancelT: 'إلغاء', editT: 'تعديل', closeT: 'إغلاق', planDrill: '📅 تخطيط التمرين', mandTag: '🔒 تمرين إلزامي', mandRun: 'يُدار حسب إجراء وزارة التربية والتعليم، بدون تغيير. في "نقاش وتلخيص" نكتب ما الذي نجح وماذا تعلّمنا، ويدخل ذلك إلى جدول المتابعة. عند تعليم اللقاء كمكتمل، يدخل التاريخ إلى جدول التمارين الإلزامية.', mandHome: '🔒 تمارين إلزامية تنتظر', fromStudents: 'فكرة من الطلاب', noStudentIdeas: 'لا توجد بعد أفكار عُلِّمت كفكرة من الطلاب.', notDecided: 'ما زالت في النقاش', roleCards: '🖨 بطاقات أدوار للصف', pickRoles: 'يمكن اختيار الأدوار أولًا.', studentCardT: 'بطاقة للطلاب', scPractice: 'ماذا نتدرّب', scRole: 'ما دوري', scIfBad: 'إذا شعرنا بعدم الارتياح', notYet: 'لم يُنفَّذ بعد', sRolesT: 'أدوار الطلاب في تمرين الصف', sRolesWhat: 'ماذا يفعلون', sRolesNote: 'ما المهم أيضًا في صفّنا', sRolesPh: 'مثلًا: الأدوار تتبدّل كل شهر، ولوح الأدوار معلّق قرب الباب', drillsT: 'تمارين إلزامية', toGap: '➕ إلى فجوة في جدول المتابعة', learnFirst: 'يمكن أن نكتب أولًا ماذا تعلّمنا في التمرين.', mineT: 'مهامي', mineAll: 'كل المهام', mineSetMe: 'لرؤية مهامك، يمكن كتابة الاسم في "من أنا؟".', mineMail: 'مهامك وأطرافك المفتوحة', keptT: 'حُفظ (نجح، نستمر هكذا)', gapT: 'فجوة', gapsClosed: 'أُغلقت فجوات: الإجراء الخاص بها فُحص في تمرين', noAction: 'لا يوجد إجراء بعد', linkedAct: 'الإجراء', gapsInfo: 'تُغلق الفجوة عندما يُفحص الإجراء الناتج عنها في تمرين أو في يوم الصمود، أو بنقلها إلى اكتملت.', lastEx: 'التمرين الأخير', draftReplace: 'مسودة جديدة ستستبدل الجدول، بما في ذلك ما عدّله الطاقم. هل نتابع؟', saveFirst: 'لم يُرسل التلخيص لأن الحفظ لم ينجح. يمكن المحاولة بعد لحظة.', mailSkipped: 'لم يُرسل', safeLine: 'من يشعر/تشعر أن السيناريو قريب جدًا منه/ها يمكنه/ها اختيار دور المسجِّل/ة أو المراقب/ة، والخروج للحظة في أي مرحلة.', howAnswer: 'كيف نجيب', parentsMsgT: 'الرسالة إلى الأهالي', parentsMsgCues: 'نكتب الرسالة كما ستُرسل: ماذا حدث، بالحقائق · أين الأبناء وماذا نفعل · ماذا نطلب من الأهالي · متى التحديث القادم.', parentsMsgPh: 'مثلًا: أهالينا الأعزاء، قبل نحو ربع ساعة...', heOnly: 'القائمة من ملف الاستمرارية مكتوبة بالعبرية.', toJourney: 'إلى الرحلة نحو الصمود الاجتماعي', unsaved: 'لا يوجد اتصال حاليًا. التغييرات محفوظة على الشاشة وستدخل عند عودة الاتصال.', trNotLoaded: 'نص التسجيل لم يدخل إلى النقاش بعد، وسيُحذف عند تعليم اللقاء كمكتمل. هل نتابع؟', notSummed: 'اللقاء مضى ولم يُلخَّص بعد', nextSet: 'اللقاء القادم مُحدَّد في ', ownerFilled: 'أُكمل المسؤول/ة حسب رئيس/ة الطاقم أو مدير/ة حالة الطوارئ', undoT: '↩ تراجع', undoneT: 'أُلغي التغيير', cancelWhy: 'لماذا أُلغي الإجراء؟ (اختياري، يُحفظ للتوثيق)', ownerPerson: 'المسؤول/ة: اسم شخص من الطاقم', noPeople: 'لاختيار مسؤول/ة بالاسم، يمكن تعبئة الأسماء في جدول الطواقم:', delQ: 'حذف المهمة؟', addTeamBtn: 'إضافة الطاقم', teamName: 'اسم الطاقم', teamNamePh: 'مثلًا: طاقم الحافلات', teamDuty: 'ماذا يفعل الطاقم', teamDutyPh: 'مثلًا: خروج منظّم للحافلات والعدّ عند الوصول', teamNameAsk: 'لإضافة طاقم، يمكن كتابة اسمه.', teamExists: 'طاقم بهذا الاسم موجود في القائمة.', teamOurs: 'طاقم المدرسة', teamDel: 'إزالة الطاقم', teamDelQ: 'إزالة الطاقم من القائمة؟ المهام التي كُتبت تبقى.', addMember: '➕ عضو/ة في الطاقم', checklist: 'قائمة فحص', yes: 'موجود', part: 'جزئي', no: 'ناقص', reportOf: 'تقرير الطاقم', timer3: 'ساعة لثلاث دقائق',
       version: 'مدة التمرين', v20: '20 دقيقة (جلسة طاقم)', v60: 'ساعة', startEx: 'بدء التمرين', exercises: 'التمارين', cont: 'متابعة', finish: 'إنهاء السيناريو', opening: 'افتتاح',
       closing: 'إغلاق', copy: 'نسخ', copied: 'تم النسخ', openRec: 'فتح رابط للهاتف', recOn: 'التسجيل مفتوح', marks: 'لحظات قرار', segs: 'مقاطع في النص المكتوب', loadTr: 'تحميل النص المكتوب',
       editTr: 'تحرير النص المكتوب (قبل استخدامه في التقرير)', saveTr: 'حفظ النص المكتوب', worked: 'ما الذي نجح', timeline: 'التسلسل الزمني', fb: 'ملاحظات مهنية', src: 'مصدر', addRow: '➕ سطر',
@@ -455,7 +455,7 @@
       h('div', { class: 'mh', text: Y('fixedSessions') }),
       h('ul', {}, L.SESSIONS.map((s) => item('s' + s.n, s.n + '. ' + s.title, sessions[s.n] && sessions[s.n].done ? '✓ ' + dateIL(sessions[s.n].at) : ''))),
       h('div', { class: 'mh', text: Y('ourMeetings') }),
-      mts.length ? h('ul', {}, mts.map((m) => item('mt:' + m.id, m.title || typeName(m.type), dateIL(m.date) + (m.done ? ' ✓' : '')))) : h('p', { class: 'muted', text: Y('noMeetings') }));
+      mts.length ? h('ul', {}, mts.map((m) => item('mt:' + m.id, (m.type === 'mandatory' ? '🔒 ' : '') + (m.title || typeName(m.type)), dateIL(m.date) + (m.done ? ' ✓' : '')))) : h('p', { class: 'muted', text: Y('noMeetings') }));
   }
   document.addEventListener('click', () => { if (S.menu) { S.menu = false; render(); } });
 
@@ -515,16 +515,19 @@
       lnk(L.SHEETS.decisions, () => go('track', 'decisions'))) : null;
     const nexts = nextUp();
     const myH = S.by ? myItems() : null, myHN = myH ? myH.acts.length + myH.ends.length : 0;
+    const dAl = drillsAlert();
+    const drillsHome = dAl.length ? h('div', { class: dAl.some((a) => a.late) ? 'warn' : 'sunny' }, h('b', { text: Y('mandHome') + ': ' }),
+      dAl.map((a, i) => h('span', {}, i ? ' · ' : '', a.x.name + ' (' + a.x.by + ') ', drillMeeting(a.x.k) ? lnk('📄', () => go('mt:' + drillMeeting(a.x.k).id), { 'aria-label': a.x.name }) : lnk(Y('planDrill'), () => planDrill(a.x))))) : null;
     const mineHome = myHN ? h('p', {}, lnk('👤 ' + Y('mineT') + ': ' + myHN, () => { S.mine = true; go('track'); }, { class: 'lnk strong' })) : null;
     // מה הלאה: המפגש הבא, במילה שנפתחת. בלי אריחים שחוזרים על הסרגל.
     const nextCard = nexts.length ? h('div', { class: 'card' }, h('h2', { text: T('next1') }), h('ul', { class: 'list' }, nexts.map((x) => h('li', {},
       lnk(x.label, () => { if (x.pre) S.newPre = x.pre; go(x.view); }, { class: 'lnk strong' }), x.sub ? h('div', { class: 'muted small', text: x.sub }) : null)))) : null;
-    return h('div', {}, esc, dmWarn, ideaWarn, mineHome, nextCard, routineCard(), h('p', { class: 'small' }, lnk(Y('binder'), printBinder), !window.sbeCanOpen || window.sbeCanOpen('continuity-kit.html') ? [' · ', h('a', { class: 'lnk', href: 'continuity-kit.html#binder', text: Y('bFiles') })] : null), h('p', { class: 'muted small', text: L.TABLETOP_NOTE }));
+    return h('div', {}, esc, drillsHome, dmWarn, ideaWarn, mineHome, nextCard, routineCard(), h('p', { class: 'small' }, lnk(Y('binder'), printBinder), !window.sbeCanOpen || window.sbeCanOpen('continuity-kit.html') ? [' · ', h('a', { class: 'lnk', href: 'continuity-kit.html#binder', text: Y('bFiles') })] : null), h('p', { class: 'muted small', text: L.TABLETOP_NOTE }));
   }
   // 📊 מדד המוכנות: שלושת העמודים, ומה הצוות כבר עושה בעצמו
   function viewIndex() {
     const st = P.stats(S.doc), ind = P.independence(S.doc);
-    const val = { rel: [String(st.rel.partners), st.rel.withDeputy + ' / ' + st.rel.teams], info: [st.info.actionsDone + ' / ' + st.info.actions, String(st.info.logs)], inst: [st.inst.staffed + ' / ' + st.inst.teams, String(st.inst.exercises), drillsDone() + ' / ' + L.DRILLS.length] };
+    const val = { rel: [String(st.rel.partners), st.rel.withDeputy + ' / ' + st.rel.teams, ((obj('learning').educators || {}).roles || []).length + ' · ' + arr('ideas').filter((x) => x.students && x.decision).length + ' / ' + arr('ideas').filter((x) => x.students).length], info: [st.info.actionsDone + ' / ' + st.info.actions, String(st.info.logs)], inst: [st.inst.staffed + ' / ' + st.inst.teams, String(st.inst.exercises), drillsDone() + ' / ' + L.DRILLS.length] };
     const rows = [];
     for (const p of L.PILLARS) L.INDEX_HOW[p.k].slice(0, ORGSP && p.k === 'inst' ? 2 : 9).forEach((how, i, all) => rows.push(h('tr', {}, i === 0 ? h('th', { rowspan: String(all.length), 'data-h': L.INDEX_COLS[0] }, h('b', { text: p.name }), h('div', { class: 'muted small', text: p.what })) : null,
       h('td', { 'data-h': L.INDEX_COLS[1], text: how }), h('td', { class: 'n', 'data-h': L.INDEX_COLS[2], text: val[p.k][i] }))));
@@ -597,20 +600,35 @@
   }
   // התרגילים המחייבים שבוצעו (05/11/2026): לכל תרגיל מתי בוצע, מי הוביל/ה ומה למדנו; "לפער" מעביר את מה שלמדנו לטבלת המעקב
   const schoolYearStart = () => { const d = new Date(); const y = d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1; return y + '-08-01'; };
+  // תרגילי חובה (05/11/2026: "המערכת תדרוש שילוב תרגילי החובה ותסמן אותם כתרגילי חובה. הם יתנהלו לפי הדרישות אך הלמידות מהם ייכנסו למערך המוכנות")
+  const drillDue = (x) => { if (!x.due) return ''; const y = Number(schoolYearStart().slice(0, 4)); const [mm] = x.due.split('-'); return (Number(mm) >= 8 ? y : y + 1) + '-' + x.due; };
+  const drillMeeting = (k) => arr('meetings').filter((m) => m.type === 'mandatory' && m.drill === k).pop();
+  function planDrill(x) { const d = drillDue(x); S.newPre = { type: 'mandatory', title: x.name, drill: x.k, date: d && d >= new Date().toISOString().slice(0, 10) ? d : plus(7) }; go('new'); }
+  // מה מחכה: תרגיל חובה שהמועד שלו בעוד שלושה שבועות או שעבר, ועוד לא בוצע השנה
+  function drillsAlert() {
+    if (ORGSP) return [];
+    const dr = (obj('plan').drills) || {}, today = new Date().toISOString().slice(0, 10), soon = plus(21);
+    return L.DRILLS.filter((x) => { const due = drillDue(x); const done = dr[x.k] && dr[x.k].date && dr[x.k].date >= schoolYearStart(); return due && !done && due <= soon; })
+      .map((x) => ({ x, late: drillDue(x) < today }));
+  }
   const drillsDone = () => { const dr = (obj('plan').drills) || {}; return L.DRILLS.filter((x) => dr[x.k] && dr[x.k].date && dr[x.k].date >= schoolYearStart()).length; };
   function viewDrills() {
     const plan = planObj(); plan.drills = plan.drills || {};
     const rows = L.DRILLS.map((x) => {
       const d = plan.drills[x.k] = plan.drills[x.k] || {};
       const date = h('input', { type: 'date', value: d.date || '', 'aria-label': L.DRILL_COLS[2] + ': ' + x.name }); date.onchange = () => { d.date = date.value; save('plan', Y('drillsT') + ': ' + x.name + ' · ' + dateIL(d.date)); };
-      return h('tr', {}, h('td', { 'data-h': L.DRILL_COLS[0] }, h('b', { text: x.name })), h('td', { 'data-h': L.DRILL_COLS[1], text: x.by }), h('td', { 'data-h': L.DRILL_COLS[2] }, date),
+      const mt = drillMeeting(x.k);
+      const planL = h('div', { class: 'noprint small' }, mt ? lnk('📄 ' + (mt.title || x.name) + ' · ' + dateIL(mt.date), () => go('mt:' + mt.id)) : lnk(Y('planDrill'), () => planDrill(x)));
+      return h('tr', {}, h('td', { 'data-h': L.DRILL_COLS[0] }, h('span', { class: 'pill', text: Y('mandTag') }), ' ', h('b', { text: x.name }), planL), h('td', { 'data-h': L.DRILL_COLS[1], text: x.by }), h('td', { 'data-h': L.DRILL_COLS[2] }, date),
         h('td', { 'data-h': L.DRILL_COLS[3] }, bindText(h('input', { type: 'text', list: 'rdyPeople', 'aria-label': L.DRILL_COLS[3] }), () => d.lead, (v) => { d.lead = v; }, 'plan', '')),
         h('td', { 'data-h': L.DRILL_COLS[4] }, bindText(h('textarea', { rows: 2, class: 'cell', 'aria-label': L.DRILL_COLS[4] }), () => d.learned, (v) => { d.learned = v; }, 'plan', ''),
           h('div', { class: 'noprint' }, lnk(Y('toGap'), () => { if (!String(d.learned || '').trim()) { toast(Y('learnFirst')); return; } addGap(x.name + ': ' + d.learned, Y('drillsT'), 'security'); }, { class: 'lnk small' }))));
     });
     // בטלפון: שורה קצרה לכל תרגיל (מה · עד מתי · בוצע או עוד לא), והפרטים נפתחים ב"עריכה"
     const mob = () => h('ul', { class: 'mlist' }, L.DRILLS.map((x, i) => { const d = plan.drills[x.k]; const tds = rows[i].children;
-      return mrow('dr-' + x.k, x.name, [h('span', { text: x.by }), h('span', { class: d.date ? '' : 'late', text: d.date ? L.DRILL_COLS[2] + ' ' + dateIL(d.date) : Y('notYet') })], [],
+      const mt = drillMeeting(x.k);
+      return mrow('dr-' + x.k, '🔒 ' + x.name, [h('span', { text: x.by }), h('span', { class: d.date ? '' : 'late', text: d.date ? L.DRILL_COLS[2] + ' ' + dateIL(d.date) : Y('notYet') })],
+        [mt ? lnk('📄 ' + dateIL(mt.date), () => go('mt:' + mt.id)) : lnk(Y('planDrill'), () => planDrill(x))],
         [field(L.DRILL_COLS[2], tds[2].firstChild), field(L.DRILL_COLS[3], tds[3].firstChild), field(L.DRILL_COLS[4], tds[4].firstChild), tds[4].lastChild]); }));
     return h('div', { class: 'card' }, h('h2', { text: Y('drillsT') + ' (' + drillsDone() + '/' + L.DRILLS.length + ')' }), h('p', { class: 'muted small', text: L.DRILL_INFO }),
       MOB() ? mob() : h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, L.DRILL_COLS.map((c) => h('th', { text: c })))), h('tbody', {}, rows)), peopleList());
@@ -686,9 +704,18 @@
           h('button', { class: 'btn ghost sm', type: 'button', text: T('del'), onclick: () => { t.members.splice(i, 1); save('teams', ''); render(); } }))),
         h('button', { class: 'btn ghost sm', type: 'button', text: Y('addMember'), onclick: () => { t.members.push({ name: '', email: '' }); save('teams', ''); render(); } }),
         warns.length ? h('div', { class: 'row' }, warns.map((w) => h('span', { class: 'pill red', text: w }))) : null,
+        t.id === 'social' && !ORGSP ? studentRepBox(t) : null,
         t.custom ? h('p', { class: 'small' }, lnk(Y('teamDel'), () => { if (!confirm(Y('teamDelQ'))) return; S.doc.parts.teams = teams.filter((x) => x !== t); save('teams', 'הסרת צוות: ' + t.name); render(); })) : null);
     });
     return h('div', { class: 'card' }, h('h2', { text: Y('teamsT') }), h('ul', { class: 'list muted' }, L.TEAM_NOTES.map((x) => h('li', { text: x }))), cards, addTeamRow());
+  }
+  // נציגות תלמידים בצוות החוסן החברתי (החלטות 10 ו-21): בלי שמות. שכבה, כמה נציגים ואיש/אשת קשר מבוגר/ת. לא ברשימת האחראים ולא במיילים.
+  function studentRepBox(t) {
+    const rep2 = t.studentRep = t.studentRep || {}, SR = L.STUDENT_REP;
+    return h('div', { class: 'note' }, h('b', { text: '🧒 ' + SR.title }), h('p', { class: 'muted small', text: SR.info }),
+      h('div', { class: 'row' }, h('div', { class: 'grow' }, field(SR.grade, bindText(h('input', { type: 'text', maxlength: '30', placeholder: 'למשל: ט׳' }), () => rep2.grade, (v) => { rep2.grade = v; }, 'teams', ''))),
+        h('div', {}, field(SR.count, bindText(h('input', { type: 'text', inputmode: 'numeric', maxlength: '3', style: 'max-width:90px' }), () => rep2.count, (v) => { rep2.count = v.replace(/\D/g, ''); }, 'teams', '')))),
+      field(SR.contact, bindText(h('input', { type: 'text', list: 'rdyPeople' }), () => rep2.contact, (v) => { rep2.contact = v; }, 'teams', SR.title)), peopleList());
   }
   function viewEM() {
     const em = obj('em'); em.does = em.does || L.EM.does.slice(); em.doesnt = em.doesnt || L.EM.doesnt.slice(); S.doc.parts.em = em;
@@ -929,6 +956,11 @@
     const steps = L.DEBRIEF.map((d, i) => h('details', { class: 'card', open: i === 0 }, h('summary', { text: (i + 1) + '. ' + d.title + ' · ' + d.min + ' ' + Y('min') }),
       h('p', { text: d.text }), makeTimer(d.min * 60),
       bindText(h('textarea', { rows: 3 }), () => ex.debrief[d.k], (v) => { ex.debrief[d.k] = v; }, 'exercises', '')));
+    // קול התלמידים אחרי התרגיל הכיתתי: משפט או שניים מכל מחנך/ת, בלי שמות. נכנס לטיוטת התחקיר.
+    ex.studentVoice = ex.studentVoice || {};
+    const SV = L.STUDENT_VOICE;
+    const voice = h('details', { class: 'card' }, h('summary', { text: '🧒 ' + SV.title }), h('p', { class: 'muted small', text: SV.info }),
+      SV.q.map((q, i) => field(q, bindText(piiCheck(h('textarea', { rows: 2 })), () => ex.studentVoice['q' + i], (v) => { ex.studentVoice['q' + i] = v; }, 'exercises', ''))));
     const draftBox = h('div', {});
     if (ex.draft) draftBox.appendChild(draftView(ex));
     const draftBtn = h('button', { class: 'btn', type: 'button', text: T('draft'), onclick: async () => {
@@ -959,7 +991,7 @@
       trBox.replaceChildren(h('p', { class: 'muted', text: Y('segs') + ': ' + segs.length + ' · ' + Y('marks') + ': ' + (o.transcript.marks || []).length }), ...areas,
         segs.length ? h('button', { class: 'btn ghost sm', type: 'button', text: Y('saveTr'), onclick: async () => { const [s2, o2] = await api('rdyTranscriptSave', { id: S.doc.id, exId: ex.id, segments: segs }); toast(s2 === 200 ? T('saved') : (o2.error || '')); } }) : '');
     } });
-    return h('div', {}, h('div', { class: 'card' }, h('h2', { text: T('debrief') }), h('p', { class: 'muted', text: L.SIRENS.timing.map((x) => x[0] + ' ' + x[1] + '/' + x[2]).join(' · ') })), steps,
+    return h('div', {}, h('div', { class: 'card' }, h('h2', { text: T('debrief') }), h('p', { class: 'muted', text: L.SIRENS.timing.map((x) => x[0] + ' ' + x[1] + '/' + x[2]).join(' · ') })), steps, voice,
       h('div', { class: 'card noprint' }, h('h3', { text: T('transcript') }), h('p', { class: 'muted', text: Y('editTr') }), trBtn, trBox),
       h('div', { class: 'card' }, h('h2', { text: T('reportT') }), ex.report && ex.report.approvedAt ? h('p', {}, h('span', { class: 'pill green', text: T('approved') + ' · ' + dateIL(ex.report.approvedAt) })) : h('div', { class: 'row noprint' }, draftBtn), draftBox));
   }
@@ -1047,10 +1079,22 @@
     return h('div', { class: 'note' }, h('h3', { text: Y('sRolesT') }), h('p', { class: 'muted small', text: L.STUDENT_ROLES_INFO }),
       h('ul', { class: 'list', style: 'list-style:none;padding-inline-start:0' }, L.STUDENT_ROLES.map((r) => h('li', {}, h('label', { style: 'display:flex;flex-wrap:nowrap;align-items:flex-start;gap:8px;margin:4px 0' },
         h('input', { type: 'checkbox', checked: m.roles.includes(r.k), onchange: (e) => { m.roles = e.target.checked ? m.roles.concat(r.k) : m.roles.filter((x) => x !== r.k); save('learning', Y('sRolesT') + ': ' + r.name); } }),
-        h('span', {}, h('b', { text: r.name }), ': ' + r.what))))),
+        h('span', {}, h('b', { text: r.name }), r.age ? h('span', { class: 'pill', text: L.ROLE_AGES[r.age] }) : null, ': ' + r.what))))),
+      h('p', { class: 'noprint small' }, lnk(Y('roleCards'), () => printRoleCards(m))),
       field(Y('sRolesNote'), bindText(piiCheck(h('textarea', { rows: 2, placeholder: Y('sRolesPh') })), () => m.rolesNote, (v) => { m.rolesNote = v; }, 'learning', '')));
   }
 
+  // כרטיסי תפקיד לכיתה: כרטיס לכל תפקיד שנבחר, בעברית ובערבית על אותו כרטיס (כיתות מעורבות), עם המשפט "אפשר לבחור לצפות"
+  function printRoleCards(m) {
+    const he = P.content('he'), ar = P.content('ar');
+    const pick = he.STUDENT_ROLES.map((r, i) => [r, ar.STUDENT_ROLES[i]]).filter(([r]) => (m.roles || []).includes(r.k));
+    if (!pick.length) { toast(Y('pickRoles')); return; }
+    const card = ([r, a]) => h('div', { class: 'rcard', style: 'margin-bottom:12px' },
+      h('h3', { text: r.name + ' · ' + a.name }), h('p', { text: r.what }), h('p', { lang: 'ar', text: a.what }),
+      tbl([he.ROLE_CARD.who + ' · ' + ar.ROLE_CARD.who, he.ROLE_CARD.scared + ' · ' + ar.ROLE_CARD.scared], [[he.ROLE_CARD.whoText + ' · ' + ar.ROLE_CARD.whoText, he.ROLE_CARD.scaredText + ' · ' + ar.ROLE_CARD.scaredText]]),
+      h('p', {}, h('b', { text: he.STUDENT_SAFE })), h('p', { lang: 'ar' }, h('b', { text: ar.STUDENT_SAFE })));
+    doPrint(Y('roleCards').replace('🖨 ', ''), Y('sRolesT'), pick.map(card));
+  }
   // ---------- 🎯 מפגש 5: תרחיש בלי הכנה, והשוואה למפגש 3 ----------
   function viewS5() {
     const ex = curEx(5);
@@ -1373,7 +1417,7 @@
     const who = h('div', { class: 'row' }, allTeams().map((t) => h('label', { class: 'pill' }, h('input', { type: 'checkbox', checked: teams.has(t.id), onchange: (e) => { if (e.target.checked) teams.add(t.id); else teams.delete(t.id); } }), ' ', t.name)));
     const create = h('button', { class: 'btn', type: 'button', text: Y('createMeeting'), onclick: async () => {
       const list = arr('meetings'); S.doc.parts.meetings = list;
-      const m = { id: uid('mt'), type: type.value, title: title.value.trim() && title.value.trim() !== tp().name ? title.value.trim() : '', date: date.value, time: time.value.trim(), teams: [...teams], agenda: agenda.value, notes: '', createdAt: nowIso(), by: S.by, from: pre.from || '' };
+      const m = { id: uid('mt'), drill: type.value === 'mandatory' ? (pre.drill || '') : '', type: type.value, title: title.value.trim() && title.value.trim() !== tp().name ? title.value.trim() : '', date: date.value, time: time.value.trim(), teams: [...teams], agenda: agenda.value, notes: '', createdAt: nowIso(), by: S.by, from: pre.from || '' };
       list.push(m); create.disabled = true;
       await save('meetings', Y('newMeeting').replace('➕ ', '') + ': ' + (m.title || typeName(m.type)) + ' · ' + dateIL(m.date));
       S.newPre = null; S.tab['mt:m' + m.id] = 1; go('mt:' + m.id);
@@ -1395,7 +1439,9 @@
       annual: [goBtn(Y('decmapT'), () => { S.tab.plan = 2; go('plan'); }), goBtn(T('annexes'), () => { S.tab.plan = 1; go('plan'); })],
       onboard: [goBtn(Y('goTeams'), printTeams), goBtn(Y('teamsT'), () => { S.tab.s1 = 1; go('s1'); })], other: []
     }[m.type] || [];
-    return h('div', { class: 'card' }, h('div', { class: 'row' }, h('div', { class: 'grow' }, field(Y('mDate'), date)), h('div', { class: 'grow muted', text: Y('mWho') + ': ' + (m.teams || []).map(teamName).join(', ') })),
+    const mandNote = m.type === 'mandatory' ? h('div', { class: 'note' }, h('b', { text: Y('mandTag') + ': ' }), Y('mandRun'), ' ', lnk(Y('drillsT'), () => { S.tab.plan = 3; go('plan'); })) : null;
+    if (m.type === 'mandatory') quick.push(lnk(L.SHEETS.gaps, () => go('track', 'gaps')));
+    return h('div', { class: 'card' }, mandNote, h('div', { class: 'row' }, h('div', { class: 'grow' }, field(Y('mDate'), date)), h('div', { class: 'grow muted', text: Y('mWho') + ': ' + (m.teams || []).map(teamName).join(', ') })),
       field(Y('agenda'), agenda), quick.length ? h('p', { class: 'links noprint' }, quick) : null,
       h('p', { class: 'noprint small' }, lnk(Y('delMeeting'), () => {
         if (!confirm(Y('confirmDelM'))) return; const l = arr('meetings').filter((x) => x.id !== m.id); S.doc.parts.meetings = l; save('meetings', 'מחיקת מפגש: ' + m.title); go('home'); })));
@@ -1559,6 +1605,8 @@
       if (e.target.checked && r.rec && !r.recInNotes && !confirm(Y('trNotLoaded'))) { e.target.checked = false; return; }
       r.done = e.target.checked; r.at = nowIso();
       if (r.done) { api('rdyTranscriptDelete', { id: S.doc.id, exId: recId }); r.archive = archiveSnap(R); }
+      // תרגיל חובה שהושלם: התאריך נכנס לטבלת התרגילים המחייבים, והלמידה כבר עברה לטבלת המעקב בגזירה
+      if (r.done && R.m && R.m.type === 'mandatory' && R.m.drill) { const pl = planObj(); pl.drills = pl.drills || {}; const d = pl.drills[R.m.drill] = pl.drills[R.m.drill] || {}; if (!d.date) d.date = R.m.date || nowIso().slice(0, 10); if (!d.learned) d.learned = (arr('actions').filter(fromMeeting(R)).map((a) => a.text).concat(arr('gaps').filter((g) => g.src === R.title).map((g) => g.text))).join(' · ').slice(0, 600); await save('plan', Y('drillsT') + ': ' + R.title); }
       await save(R.part, R.title + (r.done ? ': הושלם · ' + Y('archived') : '')); render();
     } }), ' ', T('sessionDone'));
     return h('div', {},
@@ -1707,7 +1755,8 @@
       const needWhy = it.decision === 'reject' && !String(it.answer || '').trim();
       return h('tr', {},
         h('td', { 'data-h': L.IDEA_COLS[0] }, bindText(h('textarea', { rows: 2, class: 'cell' }), () => it.text + (it.ifThen && !it.edited ? ' · ' + it.ifThen : ''), (v) => { it.text = v; it.edited = true; }, 'ideas', '')),
-        h('td', { 'data-h': L.IDEA_COLS[1] }, bindText(h('input', { type: 'text' }), () => it.by, (v) => { it.by = v; }, 'ideas', '')),
+        h('td', { 'data-h': L.IDEA_COLS[1] }, bindText(h('input', { type: 'text', 'aria-label': L.IDEA_COLS[1] }), () => it.by, (v) => { it.by = v; }, 'ideas', ''),
+          h('label', { class: 'row small', style: 'gap:4px;margin-top:2px' }, h('input', { type: 'checkbox', checked: !!it.students, onchange: (e) => { it.students = e.target.checked; save('ideas', ''); } }), ' ', Y('fromStudents'))),
         h('td', { 'data-h': L.IDEA_COLS[2] }, dec),
         h('td', { 'data-h': L.IDEA_COLS[3] }, bindText(h('textarea', { rows: 2, class: 'cell', placeholder: it.decision === 'reject' ? Y('whyNot') : '' }), () => it.answer, (v) => { it.answer = v; }, 'ideas', ''), needWhy ? h('span', { class: 'pill red', text: Y('whyNot') }) : null),
         h('td', { 'data-h': L.IDEA_COLS[4] }, bindText(h('input', { type: 'text', list: 'rdyPeople' }), () => it.owner, (v) => { it.owner = v; }, 'ideas', ''), it.decision === 'adopt' || it.decision === 'check' ? ownerWarn(it.owner) : null),
@@ -1726,9 +1775,16 @@
     return h('div', { class: 'card' }, h('h2', { text: Y('ideasT') }), h('p', { class: 'muted', text: L.IDEA_INFO }), heads,
       rows.length ? h('table', { class: 'rt stack' }, h('thead', {}, h('tr', {}, L.IDEA_COLS.map((c) => h('th', { text: c })), h('th', { class: 'noprint' }))), h('tbody', {}, rows)) : h('p', { class: 'muted', text: Y('none2') }),
       h('div', { class: 'row noprint' }, h('button', { class: 'btn ghost sm', type: 'button', text: T('add'), onclick: () => { ideas.push({ id: uid('i'), text: '', at: nowIso(), decision: '', by: S.by }); save('ideas', ''); render(); } }), sendAll,
+        h('button', { class: 'btn ghost', type: 'button', text: '🧒 ' + L.YOU_SAID.title, onclick: printYouSaid }),
         h('button', { class: 'btn ghost', type: 'button', text: Y('printIdeas'), onclick: () => doPrint(Y('ideasT'), Y('ideasT'), [h('h2', { text: Y('ideasT') }), tbl(L.IDEA_COLS, ideas.map((x) => [x.text, x.by || '', L.IDEA_DEC[x.decision] || '', x.answer || '', x.owner || '', dateIL(x.due)]))]) })));
   }
 
+  // "אמרתם, עשינו": דף לכיתה או למועצת התלמידים, על הרעיונות שהגיעו מהתלמידים ומה הוחלט (בשפת המסך)
+  function printYouSaid() {
+    const YS = L.YOU_SAID, list = arr('ideas').filter((x) => x.students);
+    if (!list.length) { toast(Y('noStudentIdeas')); return; }
+    doPrint(YS.title, YS.title, [h('h2', { text: YS.title }), h('p', { text: YS.intro }), tbl(YS.cols, list.map((x) => [x.text, L.IDEA_DEC[x.decision] || Y('notDecided'), x.answer || '', dateIL(x.due)])), h('p', { class: 'muted', text: L.STUDENT_SAFE })]);
+  }
   // ---------- צד: קצוות פתוחים, פעולות, רישום ----------
   function addEnd(text, team, src) {
     const ends = arr('ends');
@@ -1860,6 +1916,7 @@
   function scenarioNodes(scn) {
     const cards = [h('p', { text: scn.intro || '' })];
     if (scn.card && scn.card.tests) cards.unshift(tbl([Y('genTests'), Y('success')], [[scn.card.tests, (scn.card.success || []).join(' · ')]]));
+    if (scn.studentCard) cards.push(h('h2', { text: '🧒 ' + Y('studentCardT') }), tbl([Y('scPractice'), Y('scRole'), Y('scIfBad')], [[scn.studentCard.practice, scn.studentCard.role, scn.studentCard.ifBad]]), h('p', {}, h('b', { text: L.STUDENT_SAFE })));
     for (const R of scn.rounds) {
       cards.push(h('h2', { text: T('round') + ' ' + R.n + (R.time ? ' · ' + R.time : '') + ' · ' + R.title }));
       cards.push(tbl([T('team'), T('round') + ' ' + R.n], [[T('toAll'), R.all], ...allTeams().filter((t) => R.teams[t.id]).map((t) => [t.name, R.teams[t.id]])]));
@@ -1919,6 +1976,7 @@
     doPrint(Y('binderT'), Y('binderT'), [
       h('h2', { text: Y('binderManual') }), h('ul', { class: 'checklist', style: 'list-style:none;padding-inline-start:0' }, MANUAL),
       ...sec(Y('teamsT'), [T('team'), T('lead'), T('deputy'), T('members')], teamRows),
+      ...(() => { const sr = (teams.find((t) => t.id === 'social') || {}).studentRep || {}; return sr.grade || sr.count ? sec(L.STUDENT_REP.title, [L.STUDENT_REP.grade, L.STUDENT_REP.count, L.STUDENT_REP.contact], [[sr.grade || '', sr.count || '', sr.contact || '']]) : []; })(),
       ...sec(L.TEAMS[0].lead.split(',')[0], [T('emDoes'), T('emDoesnt')], emRows),
       h('h2', { text: Y('callT') }), h('ol', {}, L.SIRENS.callHelp.map((x) => h('li', { text: x }))),
       h('h2', { text: Y('reportT2') }), h('ol', {}, L.REPORT.map((r) => h('li', { text: r[0] }))),
