@@ -12,3 +12,8 @@
 | 2026-11-01 | Good et al. (2025). A meta-analysis of resilience in the workplace | לא נמצא DOI | לא אומת: לא נמצאו כתב העת וה-DOI |
 | 2026-11-01 | Navigating the bounce: a meta-analysis of the nomological network of employee resilience (2026) | https://doi.org/10.1007/s11301-026-00629-6 | לא עמד בסף: כתב עת מחוץ לרשימה, ובאותו נושא נבחר מקור חזק יותר (VonBoros2026) |
 | 2026-11-01 | Scenario planning and futures thinking with 161 educational leaders (2026). Frontiers in Education | https://www.frontiersin.org/journals/education/articles/10.3389/feduc.2026.1877708/full | לא אומת: הדף לא נפתח בזמן הסבב |
+| 2026-11-08 | Cohen Zada (2026). Principals leading bereaved school communities during the 2023–2025 war in Israel | https://doi.org/10.1108/jea-08-2025-0333 | כפילות (CohenZada2026 כבר בספרייה) |
+| 2026-11-08 | Alon & Schechter (2025). Wartime leadership: the role of displaced school principals during war | https://doi.org/10.1108/jea-07-2025-0291 | לא עמד בסף: באותו נושא יש בספרייה כמה מקורות של Schechter על מנהלות ומנהלים מפונים |
+| 2026-11-08 | Kurto et al. (2026). Inclusive emergency preparedness as a lever for school improvement | https://doi.org/10.1177/08959048261448550 | לא עמד בסף: המדגם לא מדווח בתקציר, והממצא הוא תחושת מוכנות בדיווח עצמי |
+| 2026-11-08 | LLM-powered multiagent framework emulating standardized patients (2026). JMIR | https://doi.org/10.2196/84747 | לא עמד בסף: מחקר פיתוח בלי קבוצת השוואה |
+| 2026-11-08 | Yang & Khan (2026). Neighborhood crime and social cohesion trajectories, 2020–2024 cohort | https://doi.org/10.1002/ajcp.70116 | לא עמד בסף: מחקר בריאות נפשית באוכלוסייה כללית, רחוק מהכלים; באותו נושא יש מקורות חזקים יותר |
