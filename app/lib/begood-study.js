@@ -1,0 +1,80 @@
+// מחקר "תכנון ותרגול שיחות מאתגרות ב-Be Good": שלושת השאלונים ונקודות המדידה.
+// הנוסח של הפריטים לפי ערכת שיפוט המומחים (11.11.2026). אין כאן נתוני משתתפים.
+// השאלונים נטענים במרכז המחקר (בונה השאלונים), ומשם המחקר שומר אותם בשרת.
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.SBE_BGSTUDY = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  const SCALE = Object.freeze({ min: 1, max: 5, anchors: Object.freeze({ 1: 'כלל לא', 2: 'במידה מועטה', 3: 'במידה בינונית', 4: 'במידה רבה', 5: 'במידה רבה מאוד' }), decline: 'מעדיף/ה לא לענות' });
+
+  const ITEMS = Object.freeze({
+    M1: 'אני מסוגל/ת לפתוח שיחה מאתגרת באופן המזמין את האדם שמולי לדבר.',
+    M2: 'אני מסוגל/ת לברר באמצעות שאלות והקשבה מה חשוב לאדם שמולי בשיחה.',
+    M3: 'אני מסוגל/ת להתאים את תגובתי כאשר מתגלה מידע חדש במהלך השיחה.',
+    M4: 'אני מסוגל/ת לקיים שיחה משמעותית גם כאשר אין פתרון מיידי למצב.',
+    B1: 'כשנדרשת ממני שיחה קשה, אני חש/ה ביטחון בתפקידי כאיש/אשת חינוך.',
+    B2: 'גם כשהשיחה מתפתחת באופן בלתי צפוי, אני שומר/ת על תחושת ביטחון מקצועי.',
+    B3: 'בשיחה על נושא מכאיב אני חש/ה שיש לי בסיס מקצועי להישאר בשיחה.',
+    B4: 'גם כאשר השיחה אינה מתקדמת כפי שקיוויתי, אני ממשיך/ה לחוש ביטחון במקומי המקצועי.',
+    N1: 'כשנדרשת שיחה קשה במסגרת תפקידי, אהיה נכון/ה ליזום אותה גם אם אני חושש/ת מהתגובה.',
+    N2: 'אם תלמיד/ה יעלה נושא מכאיב, אהיה נכון/ה להקדיש לו מקום בשיחה ולא להסיט מיד את הנושא.',
+    N3: 'כאשר תתעורר מחלוקת מקצועית קשה, אהיה נכון/ה ליזום דיאלוג גם ללא הבטחה להסכמה.',
+    N4: 'אם שיחה משמעותית תסתיים ללא מענה ברור, אהיה נכון/ה לחזור אליה ביוזמתי.',
+    T1: 'במצב משברי אני מסוגל/ת להביא לצוות מידע רלוונטי שיכול לסייע להתמודדות משותפת.',
+    T2: 'אני מסוגל/ת להציג נקודת מבט מקצועית בדיון צוותי גם כאשר קיימת מחלוקת.',
+    T3: 'אני מסוגל/ת לסייע בגיבוש דרך פעולה משותפת כאשר מתעורר מצב חינוכי מורכב.',
+    T4: 'כאשר מתגלה מידע חדש, אני מסוגל/ת להשתתף עם עמיתיי בהתאמת דרך הפעולה המשותפת.',
+    A1: 'אני מסוגל/ת לזהות יותר מדרך מקצועית אחת לניהול שיחה מאתגרת.',
+    A2: 'אני מסוגל/ת להסביר מדוע דרך שיחה מסוימת מתאימה למצב יותר מחלופה אחרת.',
+    A3: 'אני מסוגל/ת לזהות מתי נכון להמשיך בדרך השיחה שבחרתי.',
+    A4: 'אני מסוגל/ת לזהות מתי התפתחות השיחה מחייבת בחינה של דרך פעולה אחרת.',
+    P1: 'גם אנשי חינוך מנוסים יכולים לשפר את יכולתם לנהל שיחות קשות באמצעות אימון מכוון.',
+    P2: 'חשוב לתרגל שיחות מאתגרות בשגרה, ולא רק כשמתרחש משבר.',
+    P3: 'חזרה על אותה שיחה קשה עם בחינת חלופות יכולה לשפר מוכנות להתמודדות בעתיד.',
+    U1: 'הרגשתי שההחלטה באיזו גישה להשתמש הייתה בידי.',
+    U2: 'הרגשתי חופשי/ה לבחור בין הגישות שהוצגו לי.',
+    U3: 'הרגשתי שיכולתי לשנות את הגישה או להמשיך בה, לפי שיקול דעתי.',
+    U4: 'הרגשתי אחריות ובעלות מקצועית על הדרך שבה בחרתי לנהל את השיחה.',
+    O1: 'התרגול החוזר עזר לי להבין על אילו היבטים של שיחה כדאי לי להתאמן.',
+    O2: 'הייתי מעוניינ/ת להקדיש זמן קבוע לתרגול שיחות מאתגרות גם לאחר הקורס.',
+    O3: 'מסלול התרגול היה רלוונטי למצבים שאני עשוי/ה לפגוש כאיש/אשת חינוך.'
+  });
+
+  const CORE = ['M', 'B', 'N', 'T', 'A', 'P'];
+  const likert = prefixes => Object.keys(ITEMS).filter(id => prefixes.includes(id[0])).map(id => ({ id, type: 'likert', label: ITEMS[id], required: false, min: SCALE.min, max: SCALE.max }));
+
+  const BACKGROUND = Object.freeze([
+    { id: 'bg_track', type: 'text', label: 'באיזה מסלול הכשרה את/ה לומד/ת?', required: false },
+    { id: 'bg_experience', type: 'choice', label: 'ניסיון מעשי בהוראה או בייעוץ', required: false, options: ['אין ניסיון', 'עד שנה', 'שנה עד שלוש שנים', 'יותר משלוש שנים', 'מעדיף/ה לא לענות'] },
+    { id: 'bg_models', type: 'choice', label: 'היכרות קודמת עם מודלים לניהול שיחות מאתגרות', required: false, options: ['לא הכרתי', 'שמעתי עליהם', 'הכרתי והשתמשתי בהם', 'מעדיף/ה לא לענות'] },
+    { id: 'bg_simulations', type: 'choice', label: 'שימוש קודם בסימולציות או בתרגול שיחות', required: false, options: ['לא', 'פעם או פעמיים', 'כמה פעמים', 'מעדיף/ה לא לענות'] }
+  ]);
+
+  const OPEN = { id: 'open_helped', type: 'text', label: 'איזה רכיב בתרגול סייע לך במיוחד, ואיזה רכיב לא סייע?', required: false };
+
+  const INTRO = 'לכל היגד: עד כמה הוא מתאר אותך כרגע, מ־1 (כלל לא) עד 5 (במידה רבה מאוד). אפשר לבחור גם "מעדיף/ה לא לענות". אין תשובות נכונות או לא נכונות.';
+
+  // waveId: אותיות לטיניות בלבד (חוקי השרת). label: מה שהמשתתפים רואים.
+  const WAVES = Object.freeze([
+    Object.freeze({ waveId: 'bg-s1-open', label: 'פתיחת מפגש 1, לפני התכנון', place: 'before', offsetDays: 0,
+      definition: { title: 'שאלון פתיחה · מפגש 1', construct: 'conversation_readiness', validationStatus: 'under-development', description: 'השאלון ממולא בתחילת המפגש הראשון, לפני התכנון והתרגול. ' + INTRO, items: [...BACKGROUND, ...likert(CORE)] } }),
+    Object.freeze({ waveId: 'bg-s2-close', label: 'סוף מפגש 2', place: 'after', offsetDays: 7,
+      definition: { title: 'שאלון ביניים · סוף מפגש 2', construct: 'conversation_readiness', validationStatus: 'under-development', description: 'השאלון ממולא בסוף המפגש השני, אחרי התרגול והמשוב. ' + INTRO, items: likert(CORE) } }),
+    Object.freeze({ waveId: 'bg-s3-close', label: 'סיום מפגש 3', place: 'after', offsetDays: 14,
+      definition: { title: 'שאלון סיום · מפגש 3', construct: 'conversation_readiness', validationStatus: 'under-development', description: 'השאלון ממולא בסיום המפגש השלישי. בסופו כמה שאלות על חוויית הבחירה ועל התרגול. ' + INTRO, items: [...likert(CORE), ...likert(['U']), ...likert(['O']), OPEN] } })
+  ]);
+
+  // באילו כלים מופיע כל כפתור. before: לפני העבודה בכלי. after: אחרי התרגול והמשוב.
+  const PLACES = Object.freeze({
+    'conversation-planner': Object.freeze({ before: ['bg-s1-open'] }),
+    'practice': Object.freeze({ before: ['bg-s1-open'], after: ['bg-s2-close', 'bg-s3-close'] })
+  });
+
+  const byId = id => WAVES.find(w => w.waveId === id) || null;
+  function waveLabel(id) { const w = byId(id); return w ? w.label : ''; }
+  function isStudyItem(item) { return !!item && item.type === 'likert' && item.min === SCALE.min && item.max === SCALE.max; }
+
+  return Object.freeze({ SCALE, ITEMS, WAVES, PLACES, byId, waveLabel, isStudyItem });
+});
