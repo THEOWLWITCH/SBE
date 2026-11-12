@@ -2286,6 +2286,10 @@ function openModDlg(instName) {
       const note = el("p",{style:"margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.6"},
         "התקרה של המוסד: רק מה שמסומן כאן מנהל/ת המוסד יכול/ה לתת לצוות. ברירת מחדל: הכול כבוי, מסמנים רק את מה שהמוסד רוצה.");
       body.append(note);
+      // השרת מחזיר את כל המערכות שהוא מכיר. מערכת שחסרה כאן: השרת עוד לא עודכן, ולא ישמור אותה (12/11/2026).
+      const unknown = loaded ? Object.keys(MOD_LABELS).filter(k => !(k in cfg)) : [];
+      if (unknown.length) body.append(el("div",{class:"lock",style:"margin-top:0"},
+        "השרת עוד לא מכיר את: " + unknown.map(k => MOD_LABELS[k]).join(", ") + ". אי אפשר לשמור אותן עד שהשרת יתעדכן (ב-Render: Manual Deploy)."));
 
       const toggles = {};
       Object.entries(MOD_LABELS).forEach(([k, label]) => {
@@ -2323,7 +2327,14 @@ function openModDlg(instName) {
         try {
           const modules = {};
           Object.keys(toggles).forEach(k => modules[k] = toggles[k].checked);
-          await accessCall("setModules", { inst: instName, modules });
+          const res = await accessCall("setModules", { inst: instName, modules });
+          const saved = (res && res.modules) || {};
+          const lost = Object.keys(modules).filter(k => modules[k] && saved[k] !== true);
+          if (lost.length) {
+            errMsg.textContent = "לא נשמרו: " + lost.map(k => MOD_LABELS[k] || k).join(", ") + ". השרת עוד לא מכיר אותן, וצריך לעדכן אותו (ב-Render: Manual Deploy). שאר הבחירות נשמרו.";
+            errMsg.style.display = "block"; instList = null; render();
+            return;
+          }
           dlg.close(); instList = null; render();
         } catch (e) {
           accessAuth = prevAuth;
