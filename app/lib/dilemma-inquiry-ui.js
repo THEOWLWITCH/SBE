@@ -53,10 +53,11 @@
     const TABS = [['dilemma', '🧭 הדילמה'], ['sources', '📚 מקורות'], ['classes', '🏫 כיתות ו־QR'], ['research', '🔒 מחקר והסכמה'], ['boards', '🗂 הלוחות'], ['export', '⇩ ייצוא']];
     app.innerHTML = '<p><a href="#" id="back">→ לכל הפעילויות</a></p><div class="dlm-card"><div class="dlm-row" style="justify-content:space-between"><div><h2 style="margin:0">' + esc(a.title) + '</h2>'
       + '<p class="dlm-sub">' + esc(a.mode === 'group' ? 'עבודה קבוצתית' : 'עבודה אישית') + ' · ' + a.durationMin + ' דקות · משתתפים: ' + (st.participants || 0) + (a.research.enabled ? ' (במחקר: ' + (st.research || 0) + ', לימודי בלבד: ' + (st.learning || 0) + ')' : '') + '</p></div>'
-      + '<div class="dlm-row"><b>מצב: ' + esc(STATUS[a.status]) + '</b>' + (a.status !== 'open' ? '<button class="dlm-btn main" data-st="open">פתיחה למשתתפים</button>' : '<button class="dlm-btn" data-st="closed">סיום הפעילות</button>')
+      + '<div class="dlm-row"><button class="dlm-btn acc" id="projBtn"' + (a.classes.length ? '' : ' disabled title="אפשר להוסיף כיתה קודם"') + '>📽 מצב הקרנה</button><b>מצב: ' + esc(STATUS[a.status]) + '</b>' + (a.status !== 'open' ? '<button class="dlm-btn main" data-st="open">פתיחה למשתתפים</button>' : '<button class="dlm-btn" data-st="closed">סיום הפעילות</button>')
       + (a.status === 'closed' ? '' : a.status === 'open' ? '<button class="dlm-btn small" data-st="draft">השהיה</button>' : '') + '</div></div><div id="topmsg"></div></div>'
       + '<nav class="dlm-steps">' + TABS.map(([k, t]) => '<button type="button" data-tab="' + k + '"' + (S.tab === k ? ' aria-current="step"' : '') + '>' + t + '</button>').join('') + '</nav><div id="tab"></div>';
     $('#back').onclick = (e) => { e.preventDefault(); list(); };
+    $('#projBtn').onclick = () => projector();
     app.querySelectorAll('[data-st]').forEach((b) => b.onclick = async () => {
       if (b.dataset.st === 'closed' && !confirm('לסיים את הפעילות? המשתתפים יוכלו לקרוא, אבל לא לכתוב.')) return;
       try { const r = await call('f.status', { id: a.id, status: b.dataset.st }); S.a = r.activity; draw(); } catch (e) { $('#topmsg').innerHTML = msg(e.message, 'err'); }
@@ -219,6 +220,103 @@
       catch (e) { $('#em').innerHTML = msg(e.message, 'err'); }
     };
     $('#del').onclick = async () => { if (!confirm('למחוק את הפעילות ואת כל הנתונים שלה? אי אפשר לבטל.')) return; try { await call('f.delete', { id: S.a.id }); list(); } catch (e) { fail(e, tab()); } };
+  }
+
+  // ── מצב הקרנה (12/11/2026): מסך מלא באותיות גדולות, בלי כפתורי עבודה ובלי קודים אישיים.
+  // כל הקבוצות יחד (תקציר לכל קבוצה) או קבוצה אחת בגדול, מעבר אוטומטי בין הקבוצות, ו־QR של הכיתה למי שמצטרף/ת.
+  // התגובות האישיות והרפלקציות לא מגיעות לכאן בכלל (השרת לא שולח אותן למנחה).
+  const P = { cls: null, view: 'all', g: null, auto: false, qr: true, zoom: 1, timer: null, rot: null, boards: {} };
+  function projector() {
+    const a = S.a; if (!a.classes.length) return;
+    P.cls = P.cls && a.classes.some((c) => c.id === P.cls) ? P.cls : a.classes[0].id;
+    let ov = $('#dlmProj');
+    if (!ov) { ov = document.createElement('div'); ov.id = 'dlmProj'; ov.className = 'dlm-proj dlm-page'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'מצב הקרנה'); document.body.appendChild(ov); }
+    ov.hidden = false; document.documentElement.classList.add('dlm-proj-on');
+    try { if (ov.requestFullscreen) ov.requestFullscreen().catch(() => {}); } catch (e) {}
+    drawProj(); projLoad();
+    clearInterval(P.timer); P.timer = setInterval(() => { if (!document.hidden) projLoad(); }, 8000);
+    document.addEventListener('keydown', projKey);
+  }
+  function projKey(e) {
+    if (e.key === 'Escape') projClose();
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') projStep(e.key === 'ArrowLeft' ? 1 : -1);
+  }
+  function projClose() {
+    clearInterval(P.timer); clearInterval(P.rot); P.auto = false;
+    const ov = $('#dlmProj'); if (ov) ov.hidden = true; document.documentElement.classList.remove('dlm-proj-on');
+    document.removeEventListener('keydown', projKey);
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+  }
+  const projCls = () => S.a.classes.find((c) => c.id === P.cls) || S.a.classes[0];
+  const projGroups = () => (S.a.mode === 'personal' ? Object.keys(P.boards).map((g) => ({ id: g, name: 'עבודה אישית ' + g.slice(-4).toUpperCase() })) : projCls().groups);
+  function projStep(d) {
+    const gs = projGroups(); if (!gs.length) return;
+    const i = gs.findIndex((g) => g.id === P.g);
+    P.view = 'one'; P.g = gs[((i < 0 ? -1 : i) + d + gs.length) % gs.length].id; drawProj();
+  }
+  async function projLoad() {
+    try {
+      const a = S.a, gs = a.mode === 'personal' ? (await call('f.boards', { id: a.id })).boards.filter((b) => /^p-/.test(b.groupId)).map((b) => b.groupId) : projCls().groups.map((g) => g.id);
+      const want = P.view === 'one' && P.g ? [P.g] : gs;
+      const got = await Promise.all(want.map((g) => call('f.board', { id: a.id, g }).then((r) => [g, r.board]).catch(() => [g, null])));
+      if (a.mode === 'personal') for (const k of Object.keys(P.boards)) if (!gs.includes(k)) delete P.boards[k];
+      for (const [g, b] of got) if (b) P.boards[g] = b;
+      drawProj(true);
+    } catch (e) {}
+  }
+  // תצוגה בלי קודים אישיים: מסירים את "by" לפני הציור.
+  const anon = (b) => b && Object.assign({}, b, { items: (b.items || []).map((i) => Object.assign({}, i, { by: '' })) });
+  function groupSummary(g) {
+    const b = P.boards[g.id], items = (b && b.items) || [];
+    const zone = (k) => items.filter((i) => i.zone === k);
+    const srcs = zone('sources'), cl = zone('claims'), q = zone('questions');
+    const conc = b && b.conclusion && b.conclusion.submitted;
+    return '<button type="button" class="dlm-proj-tile" data-pg="' + esc(g.id) + '"><h2>' + esc(g.name) + (conc ? ' <span class="dlm-tag ok">✓ מסקנה</span>' : '') + '</h2>'
+      + '<p class="dlm-proj-count">' + items.length + ' כרטיסים · ' + srcs.length + ' מקורות' + (b && b.alerts.length ? ' · ⚠ ' + b.alerts.length : '') + '</p>'
+      + (srcs.length ? '<p class="dlm-proj-dots">' + srcs.map((i) => { const s = i.sourceId && U.sourceById(b, i.sourceId); return s ? M.dotHTML(U.scoreNow(s, b)) : ''; }).join(' ') + '</p>' : '')
+      + (cl.length ? '<ul>' + cl.slice(-3).map((i) => '<li>' + esc(i.text.slice(0, 90)) + '</li>').join('') + '</ul>' : '<p class="dlm-hint">עוד אין טענות בלוח</p>')
+      + (q.length ? '<p class="dlm-hint">❓ ' + esc(q[q.length - 1].text.slice(0, 80)) + '</p>' : '') + '</button>';
+  }
+  function drawProj(soft) {
+    const ov = $('#dlmProj'); if (!ov || ov.hidden) return;
+    const a = S.a, c = projCls(), gs = projGroups();
+    if (P.view === 'one' && !gs.some((g) => g.id === P.g)) P.view = 'all';
+    const url = joinUrl(c.code);
+    const scroll = soft ? (ov.querySelector('.dlm-proj-body') || {}).scrollTop : 0;
+    let bodyHTML;
+    if (P.view === 'one') {
+      const g = gs.find((x) => x.id === P.g), b = P.boards[P.g];
+      const conc = b && b.conclusion;
+      bodyHTML = '<h2 class="dlm-proj-gname">' + esc(g.name) + '</h2>' + (b ? '<div class="dlm-boardwrap"><div>' + U.boardHTML(anon(b), { readOnly: true }) + '</div><aside>' + M.legendHTML() + '</aside></div>'
+        + (conc && (conc.confident || conc.disputed || conc.next) ? '<div class="dlm-card soft"><h3>המסקנה המותנית' + (conc.submitted ? ' (הוגשה)' : ' (בעבודה)') + '</h3>' + M.CONCLUSION_Q.map((q) => conc[q.k] ? '<p><b>' + esc(q.t) + '</b> ' + esc(conc[q.k]) + '</p>' : '').join('') + '</div>' : '')
+        : '<p>טוען…</p>');
+    } else {
+      bodyHTML = gs.length ? '<div class="dlm-proj-grid">' + gs.map(groupSummary).join('') + '</div>' : '<p class="dlm-hint">עוד אין לוחות. אפשר לסרוק את ה־QR ולהצטרף.</p>';
+    }
+    ov.innerHTML = '<div class="dlm-proj-bar dlm-noprint">'
+      + (a.classes.length > 1 ? '<select id="pjCls" aria-label="הכיתה">' + a.classes.map((x) => '<option value="' + esc(x.id) + '"' + (x.id === c.id ? ' selected' : '') + '>' + esc(x.name) + '</option>').join('') + '</select>' : '')
+      + '<button type="button" class="dlm-btn small' + (P.view === 'all' ? ' main' : '') + '" data-pv="all">כל הקבוצות</button>'
+      + gs.map((g) => '<button type="button" class="dlm-btn small' + (P.view === 'one' && P.g === g.id ? ' main' : '') + '" data-pg="' + esc(g.id) + '">' + esc(g.name) + '</button>').join('')
+      + '<span class="dlm-proj-sep"></span>'
+      + '<button type="button" class="dlm-btn small' + (P.auto ? ' main' : '') + '" id="pjAuto">' + (P.auto ? '⏸ עצירת המעבר' : '▶ מעבר אוטומטי') + '</button>'
+      + '<button type="button" class="dlm-btn small" id="pjQr">' + (P.qr ? 'הסתרת ה־QR' : 'הצגת ה־QR') + '</button>'
+      + '<button type="button" class="dlm-btn small" id="pjMinus" aria-label="הקטנת הטקסט">א־</button><button type="button" class="dlm-btn small" id="pjPlus" aria-label="הגדלת הטקסט">א+</button>'
+      + '<button type="button" class="dlm-btn small red" id="pjExit">✕ יציאה</button></div>'
+      + '<div class="dlm-proj-body" style="font-size:' + P.zoom + 'em">'
+      + '<header class="dlm-proj-head"><div><h1>' + esc(a.dilemma.title || a.title) + '</h1><p class="dlm-gq">' + esc(M.GUIDING_QUESTION) + '</p></div>'
+      + (P.qr ? '<div class="dlm-proj-qr"><div class="dlm-qr" id="pjQrBox"></div><p>להצטרפות: סריקה, או קוד הכיתה <b dir="ltr">' + esc(c.code) + '</b></p></div>' : '') + '</header>'
+      + bodyHTML + '</div>';
+    if (P.qr) U.qr($('#pjQrBox'), url);
+    const pb = ov.querySelector('.dlm-proj-body'); if (soft && scroll) pb.scrollTop = scroll;
+    if ($('#pjCls')) $('#pjCls').onchange = () => { P.cls = $('#pjCls').value; P.view = 'all'; P.boards = {}; drawProj(); projLoad(); };
+    ov.querySelectorAll('[data-pv]').forEach((b) => b.onclick = () => { P.view = 'all'; drawProj(); projLoad(); });
+    ov.querySelectorAll('[data-pg]').forEach((b) => b.onclick = () => { P.view = 'one'; P.g = b.dataset.pg; drawProj(); projLoad(); });
+    ov.querySelectorAll('.dlm-proj-body [data-src]').forEach((x) => x.onclick = () => { const b = P.boards[P.g]; const s = b && U.sourceById(b, x.dataset.src); if (s) openDlg(U.sourceCardHTML(s, b, { openWhy: true })); });
+    $('#pjAuto').onclick = () => { P.auto = !P.auto; clearInterval(P.rot); if (P.auto) { projStep(1); P.rot = setInterval(() => { projStep(1); projLoad(); }, 20000); } else drawProj(); };
+    $('#pjQr').onclick = () => { P.qr = !P.qr; drawProj(); };
+    $('#pjPlus').onclick = () => { P.zoom = Math.min(1.8, +(P.zoom + 0.1).toFixed(1)); drawProj(true); };
+    $('#pjMinus').onclick = () => { P.zoom = Math.max(0.8, +(P.zoom - 0.1).toFixed(1)); drawProj(true); };
+    $('#pjExit').onclick = projClose;
   }
 
   list();

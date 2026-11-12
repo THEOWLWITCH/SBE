@@ -299,6 +299,9 @@ test('integration: card text, about card, home tile, spaces, permissions and a c
   assert.match(read('lib/dilemma-join.js'), /שום דבר לא נמחק/, 'graceful AI failure message');
   assert.match(M.CARD_DESC, /^כלי ללמידה אישית וקבוצתית באמצעות בחינת טענות, מידע סותר ומקורות ראייתיים, בסיוע AI שקוף/);
   assert.equal(M.GUIDING_QUESTION, 'כיצד נוכל לבחון יחד טענות ומידע סותר, להבחין בין עובדות לפרשנויות ולגבש מסקנה מושכלת ומבוססת ראיות, גם כשאין הסכמה בינינו?');
+  // projection mode: full screen, no personal codes, the class QR
+  const fui = read('lib/dilemma-inquiry-ui.js');
+  assert.match(fui, /📽 מצב הקרנה/); assert.match(fui, /const anon = /); assert.match(fui, /requestFullscreen/);
   // inclusive language in the fixed participant text: no long dash connector
   for (const f of ['lib/dilemma-join.js', 'lib/dilemma-inquiry-ui.js', 'dilemma-join.html', 'dilemma-inquiry.html']) assert.doesNotMatch(read(f), / — /, f);
 });
