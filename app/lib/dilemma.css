@@ -1,0 +1,102 @@
+/* בירור דילמות (12/11/2026): עיצוב משותף לדף המנחה, לדף המשתתפים ולדף ההסבר.
+   עדין ונקי: כרטיסים לבנים, קווים דקים, פס עליון דק. צבע הכלי: בורדו עמוק. */
+:root{--dl-ink:#1f2a37;--dl-mut:#5b6573;--dl-line:#e3e6ea;--dl-bg:#f7f8fa;--dl-acc:#5A1F2C;--dl-acc2:#A3561F;--dl-tq:#1aa3a3;--dl-blue:#1d3f63;--dl-warn:#b45309}
+.dlm-page{font-family:Assistant,system-ui,sans-serif;color:var(--dl-ink);background:var(--dl-bg);margin:0;line-height:1.6}
+.dlm-page h1,.dlm-page h2,.dlm-page h3,.dlm-page h4{font-family:Fredoka,Assistant,sans-serif;color:var(--dl-blue);line-height:1.3}
+.dlm-page h1{font-weight:600;font-size:1.7rem;margin:.2rem 0 .3rem}.dlm-page h2{font-weight:500;font-size:1.25rem;margin:1.1rem 0 .5rem}.dlm-page h3{font-weight:500;font-size:1.05rem;margin:.9rem 0 .4rem}
+.dlm-wrap{max-width:1180px;margin:0 auto;padding:14px 16px 60px}
+.dlm-card{background:#fff;border:1px solid var(--dl-line);border-top:2px solid var(--dl-acc);border-radius:12px;padding:16px 18px;margin:12px 0;box-shadow:0 1px 3px rgba(20,30,50,.04)}
+.dlm-card.soft{border-top-color:var(--dl-tq)}
+.dlm-sub{color:var(--dl-mut);margin:.1rem 0 .6rem}
+.dlm-gq{font-weight:600;color:var(--dl-acc);border-inline-start:3px solid var(--dl-acc);padding:.2rem .7rem;margin:.6rem 0}
+.dlm-page p,.dlm-page li{text-align:justify}
+.dlm-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.dlm-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dlm-page label{display:block;font-weight:600;margin:.55rem 0 .2rem}
+.dlm-page input[type=text],.dlm-page input[type=url],.dlm-page input[type=number],.dlm-page select,.dlm-page textarea{width:100%;box-sizing:border-box;font:inherit;border:1px solid #cfd5dc;border-radius:9px;padding:.5rem .6rem;background:#fff;color:inherit}
+.dlm-page textarea{min-height:84px;resize:vertical}
+.dlm-page input:focus,.dlm-page select:focus,.dlm-page textarea:focus{outline:none;border-color:var(--dl-tq);box-shadow:0 0 0 3px rgba(26,163,163,.15)}
+.dlm-btn{font:inherit;font-weight:600;border-radius:999px;padding:.45rem 1rem;border:1px solid var(--dl-blue);background:#fff;color:var(--dl-blue);cursor:pointer}
+.dlm-btn.main{background:var(--dl-blue);color:#fff}.dlm-btn.acc{background:var(--dl-acc);border-color:var(--dl-acc);color:#fff}
+.dlm-btn.small{padding:.2rem .65rem;font-size:.88rem}.dlm-btn.red{border-color:#b42318;color:#b42318}
+.dlm-btn:disabled{opacity:.5;cursor:not-allowed}
+.dlm-hint{color:var(--dl-mut);font-size:.9rem}
+.dlm-msg{border-radius:10px;padding:.55rem .8rem;margin:.6rem 0;background:#eef7f7;border:1px solid #c6e6e6}
+.dlm-msg.err{background:#fff4f2;border-color:#f3c7bf;color:#8a2a1c}.dlm-msg.warn{background:#fff8eb;border-color:#f1d9a8;color:#7a4a05}
+.dlm-tag{display:inline-block;font-size:.78rem;border:1px solid var(--dl-line);border-radius:999px;padding:.05rem .55rem;color:var(--dl-mut);background:#fff;margin-inline-end:4px}
+.dlm-tag.ai{border-color:#c9b6e4;color:#5b3d8a}.dlm-tag.unv{border-color:#f1d9a8;color:#7a4a05}.dlm-tag.ok{border-color:#b5dfc0;color:#1f6b35}
+/* נקודת אמינות: צבע ומספר (לא רק צבע) */
+.dlm-dot{display:inline-flex;align-items:center;justify-content:center;min-width:1.45em;height:1.45em;border-radius:50%;font-weight:700;font-size:.82rem;font-family:Assistant,sans-serif;vertical-align:middle;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+.dlm-dot.big{min-width:2.1em;height:2.1em;font-size:1.05rem}
+.dlm-legend{background:#fff;border:1px solid var(--dl-line);border-radius:12px;padding:10px 12px}
+.dlm-legend h3{margin:.1rem 0 .4rem;font-size:1rem}.dlm-legend ul{list-style:none;padding:0;margin:0}
+.dlm-legend li{display:flex;gap:8px;align-items:flex-start;margin:.25rem 0;font-size:.88rem;text-align:start}
+.dlm-legend-note{font-size:.82rem;color:var(--dl-mut);margin:.5rem 0 0}
+/* אינפוגרפיקת המחוון */
+.dlm-ig{border:1px solid var(--dl-line);border-radius:14px;overflow:hidden;background:#fff;max-width:640px;margin:.6rem 0}
+.dlm-ig-head{background:var(--dl-blue);color:#fff;padding:.6rem .9rem;display:flex;flex-direction:column}.dlm-ig-head span{opacity:.85;font-size:.9rem}
+.dlm-ig-row{display:flex;align-items:stretch;border-top:1px solid #fff}
+.dlm-ig-n{background:var(--c);color:var(--k);min-width:64px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.15rem}
+.dlm-ig-t{padding:.45rem .8rem;border-inline-start:6px solid var(--c);flex:1}
+.dlm-ig-remember{padding:.6rem .9rem;background:#f6f7f9}.dlm-ig-remember ul{margin:.2rem 0}
+.dlm-ig-foot{font-size:.85rem;color:var(--dl-mut);padding:0 .9rem .6rem;margin:0}
+/* שלבי הפעילות */
+.dlm-steps{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.dlm-steps button{font:inherit;border:1px solid var(--dl-line);background:#fff;border-radius:999px;padding:.35rem .8rem;cursor:pointer;color:var(--dl-ink)}
+.dlm-steps button[aria-current=step]{border-color:var(--dl-acc);color:#fff;background:var(--dl-acc)}
+/* הלוח */
+.dlm-boardwrap{display:grid;grid-template-columns:1fr 250px;gap:12px;align-items:start}
+.dlm-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.dlm-zone{background:#fff;border:1px solid var(--dl-line);border-radius:12px;padding:8px;min-height:140px;display:flex;flex-direction:column}
+.dlm-zone>h3{margin:.1rem 0;font-size:.98rem}.dlm-zone>.dlm-hint{margin:0 0 .4rem;font-size:.8rem}
+.dlm-item{border:1px solid var(--dl-line);border-inline-start:3px solid var(--dl-tq);border-radius:9px;padding:.4rem .5rem;margin:.25rem 0;background:#fcfdfd;font-size:.92rem;text-align:start}
+.dlm-item.sel{outline:2px solid var(--dl-acc)}
+.dlm-item .meta{font-size:.75rem;color:var(--dl-mut);display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:.2rem}
+.dlm-item .acts{display:flex;gap:4px;flex-wrap:wrap;margin-top:.25rem}
+.dlm-item .acts button{font:inherit;font-size:.75rem;border:1px solid var(--dl-line);background:#fff;border-radius:999px;padding:0 .5rem;cursor:pointer;color:var(--dl-blue)}
+.dlm-warnmark{color:var(--dl-warn);font-weight:700}
+.dlm-links{font-size:.78rem;color:var(--dl-mut);margin-top:.2rem}
+.dlm-add{margin-top:auto;display:flex;gap:4px}.dlm-add input{font-size:.88rem;padding:.3rem .45rem}
+.dlm-src{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--dl-line);border-radius:10px;padding:.45rem .55rem;margin:.3rem 0;background:#fff;text-align:start}
+.dlm-src .t{font-weight:600}.dlm-src .s{font-size:.8rem;color:var(--dl-mut)}
+.dlm-dialog{border:none;border-radius:14px;max-width:min(760px,94vw);padding:0;box-shadow:0 20px 50px rgba(15,25,40,.25)}
+.dlm-dialog::backdrop{background:rgba(20,30,45,.35)}
+.dlm-dialog .in{padding:16px 20px;max-height:82vh;overflow:auto}
+.dlm-dialog .x{float:left;font-size:1.2rem;background:none;border:none;cursor:pointer}
+.dlm-kv{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:.92rem}.dlm-kv b{color:var(--dl-mut);font-weight:600}
+.dlm-ai{border:1px dashed #c9b6e4;border-radius:12px;padding:10px 12px;background:#fbf9fe}
+.dlm-ai-res{margin-top:.6rem}.dlm-ai-res .it{border-bottom:1px solid #eee;padding:.35rem 0}
+.dlm-code{font-family:ui-monospace,monospace;font-size:1.5rem;letter-spacing:.12em;background:#fff;border:1px dashed var(--dl-acc);border-radius:10px;padding:.3rem .8rem;display:inline-block;direction:ltr}
+.dlm-qr{background:#fff;padding:8px;border:1px solid var(--dl-line);border-radius:10px;display:inline-block}
+.dlm-table{width:100%;border-collapse:collapse;font-size:.92rem}.dlm-table th,.dlm-table td{border-bottom:1px solid var(--dl-line);padding:.35rem .4rem;text-align:start;vertical-align:top}
+.dlm-consent .opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--dl-line);border-radius:12px;padding:.7rem .8rem;margin:.5rem 0;background:#fff;cursor:pointer;font-weight:600}
+.dlm-consent .opt input{margin-top:.35rem;width:1.15rem;height:1.15rem}
+.dlm-consent details{border:1px solid var(--dl-line);border-radius:10px;padding:.4rem .7rem;margin:.3rem 0;background:#fff}
+.dlm-consent summary{cursor:pointer;font-weight:600}
+.dlm-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;background:#fff;border-bottom:1px solid var(--dl-line)}
+.dlm-top img{height:34px}
+.dlm-save{font-size:.82rem;color:var(--dl-mut)}
+@media screen and (max-width:900px){.dlm-boardwrap{grid-template-columns:1fr}.dlm-board{grid-template-columns:1fr 1fr}.dlm-grid2{grid-template-columns:1fr}}
+@media screen and (max-width:560px){.dlm-board{grid-template-columns:1fr}.dlm-kv{grid-template-columns:1fr}.dlm-page h1{font-size:1.4rem}}
+@media (prefers-reduced-motion:no-preference){.dlm-item{transition:box-shadow .2s}.dlm-item:hover{box-shadow:0 2px 8px rgba(20,30,50,.08)}}
+@media print{.dlm-noprint{display:none!important}.dlm-card{border:none;box-shadow:none}}
+/* מצב הקרנה */
+html.dlm-proj-on{overflow:hidden}
+.dlm-proj{position:fixed;inset:0;z-index:9000;background:#f7f8fa;display:flex;flex-direction:column;font-size:19px}
+.dlm-proj[hidden]{display:none}
+.dlm-proj-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 14px;background:#fff;border-bottom:1px solid var(--dl-line);font-size:15px}
+.dlm-proj-bar select{width:auto;font-size:15px;padding:.25rem .5rem}
+.dlm-proj-sep{flex:1}
+.dlm-proj-body{flex:1;overflow:auto;padding:16px 24px 40px}
+.dlm-proj-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.dlm-proj-head h1{font-size:2em;margin:0 0 .2em}
+.dlm-proj-qr{text-align:center;font-size:.85em;flex:none}.dlm-proj-qr p{margin:.3em 0 0;text-align:center}
+.dlm-proj-gname{font-size:1.5em;margin:.4em 0}
+.dlm-proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin-top:10px}
+.dlm-proj-tile{font:inherit;text-align:start;cursor:pointer;background:#fff;border:1px solid var(--dl-line);border-top:2px solid var(--dl-tq);border-radius:12px;padding:12px 16px;color:inherit}
+.dlm-proj-tile h2{margin:0 0 .2em;font-size:1.25em}
+.dlm-proj-tile ul{margin:.3em 0;padding-inline-start:1.1em}.dlm-proj-tile li{margin:.15em 0;text-align:start}
+.dlm-proj-count{color:var(--dl-mut);margin:0}.dlm-proj-dots{margin:.3em 0}
+.dlm-proj .dlm-item{font-size:1em}.dlm-proj .dlm-zone>h3{font-size:1.1em}
+.dlm-proj .dlm-zone{min-height:0}
+@media screen and (max-width:700px){.dlm-proj-head{flex-direction:column}}
