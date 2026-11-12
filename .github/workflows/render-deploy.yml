@@ -16,8 +16,9 @@ jobs:
         env:
           HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
-          # 12/11/2026: בלי הסוד השרת לא התעדכן מ-1.11 בלי שאיש ידע. מעכשיו זו שגיאה (וגיטהאב שולח מייל).
-          if [ -z "$HOOK" ]; then echo "::error::RENDER_DEPLOY_HOOK לא הוגדר, והשרת לא יתעדכן. אפשר לעדכן ידנית: Manual Deploy ב-Render."; exit 1; fi
+          # 12/11/2026: מ-28.10 ה-Auto-Deploy ב-Render היה כבוי ולא היה סוד, והשרת לא התעדכן בלי שאיש ידע.
+          # בלי הסוד סומכים על Auto-Deploy, והשלב הבא נכשל (וגיטהאב שולח מייל) אם השרת לא עלה בגרסה החדשה.
+          if [ -z "$HOOK" ]; then echo "::warning::RENDER_DEPLOY_HOOK לא הוגדר: העדכון תלוי ב-Auto-Deploy של Render."; exit 0; fi
           code=$(curl -sS -X POST "$HOOK" -o /dev/null -w "%{http_code}")
           echo "deploy hook: $code"
           case "$code" in 2*) ;; *) echo "::error::Render לא קיבל את בקשת העדכון ($code)"; exit 1;; esac
