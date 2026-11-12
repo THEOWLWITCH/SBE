@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-no-topbar data-no-theme>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>בירור דילמות</title>
+<!-- דף המשתתפים: נכנסים בסריקת ה־QR של הכיתה, בלי קוד Begood. אין כאן מעבר לכלים אחרים. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Assistant:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lib/dilemma.css">
+<script src="lib/dilemma-model.js"></script>
+<script src="lib/dilemma-client.js"></script>
+</head>
+<body class="dlm-page">
+<header class="dlm-top">
+  <div class="dlm-row"><img src="assets/begood-edu.webp" alt="Begood בחינוך"><b id="topTitle">בירור דילמות</b></div>
+  <div class="dlm-row dlm-noprint">
+    <span class="dlm-save" id="saveState" aria-live="polite"></span>
+    <button type="button" class="dlm-btn small" id="aboutBtn">ⓘ הסבר על הכלי</button>
+    <button type="button" class="dlm-btn small" id="meBtn" hidden>ההשתתפות שלי</button>
+  </div>
+</header>
+<main class="dlm-wrap" id="app" aria-live="polite"><p>טוען…</p></main>
+<dialog class="dlm-dialog" id="dlg"><div class="in"><button type="button" class="x" aria-label="סגירה" data-close>✕</button><div id="dlgBody"></div></div></dialog>
+<script src="lib/dilemma-join.js"></script>
+</body>
+</html>

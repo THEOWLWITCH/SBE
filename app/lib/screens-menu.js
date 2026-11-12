@@ -41,6 +41,7 @@ window.SBE_SCREENS = [
       { file:'facilitation-advisor.html', label:'ננה: מהוראה להנחיה', who:'הרשאת ננה' },
       { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'הרשאת גשר (bridge)' },
       { file:'shared-dialogue-lab.html', label:'מעבדת שיח וחקר משותף', who:'הרשאת מעבדת שיח וחקר משותף (dialogue)' },
+      { file:'dilemma-inquiry.html', label:'בירור דילמות', who:'הרשאת בירור דילמות (dilemma); המשתתפים בסריקת QR של הכיתה (dilemma-join.html)' },
       { file:'team-thinking.html', label:'חשיבת צוות', who:'הרשאת חשיבת צוות (teamthink)' },
       { file:'games.html', label:'משחקי חוסן', who:'הרשאת משחקים (games)' },
     ]},

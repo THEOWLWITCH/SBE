@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>בירור דילמות</title>
+<script src="lib/access-guard.js"></script>
+<script src="lib/ai-call.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Assistant:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lib/dilemma.css">
+<script src="lib/dilemma-model.js"></script>
+<script src="lib/dilemma-client.js"></script>
+</head>
+<body class="dlm-page">
+<nav class="topnav no-print">
+  <button type="button" onclick="history.back()">→ חזרה</button>
+  <a id="nav-home" href="home.html">⌂ המרחב שלי</a>
+  <span class="crumb">Begood › בירור דילמות</span>
+</nav>
+<main class="dlm-wrap">
+  <h1>בירור דילמות</h1>
+  <p class="dlm-sub" id="cardDesc"></p>
+  <p class="dlm-gq" id="gq"></p>
+  <p><a href="dilemma-about.html" target="_blank" rel="noopener">ⓘ הסבר על הכלי ועל מחוון האמינות</a></p>
+  <div id="app" aria-live="polite"><p>טוען…</p></div>
+</main>
+<dialog class="dlm-dialog" id="dlg"><div class="in"><button type="button" class="x" aria-label="סגירה" data-close>✕</button><div id="dlgBody"></div></div></dialog>
+<script src="lib/dilemma-inquiry-ui.js"></script>
+</body>
+</html>
