@@ -10,14 +10,18 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - name: Trigger Render deploy
         env:
           HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
-          if [ -z "$HOOK" ]; then echo "RENDER_DEPLOY_HOOK לא הוגדר. אפשר לעדכן ידנית: Manual Deploy ב-Render."; exit 0; fi
-          curl -sS -X POST "$HOOK" -o /dev/null -w "deploy hook: %{http_code}\n"
+          # 12/11/2026: מ-28.10 ה-Auto-Deploy ב-Render היה כבוי ולא היה סוד, והשרת לא התעדכן בלי שאיש ידע.
+          # בלי הסוד סומכים על Auto-Deploy, והשלב הבא נכשל (וגיטהאב שולח מייל) אם השרת לא עלה בגרסה החדשה.
+          if [ -z "$HOOK" ]; then echo "::warning::RENDER_DEPLOY_HOOK לא הוגדר: העדכון תלוי ב-Auto-Deploy של Render."; exit 0; fi
+          code=$(curl -sS -X POST "$HOOK" -o /dev/null -w "%{http_code}")
+          echo "deploy hook: $code"
+          case "$code" in 2*) ;; *) echo "::error::Render לא קיבל את בקשת העדכון ($code)"; exit 1;; esac
       - name: Wait for the new version
         run: |
           want="${GITHUB_SHA:0:7}"
@@ -27,4 +31,5 @@ jobs:
             [ "$got" = "$want" ] && exit 0
             sleep 20
           done
-          echo "השרת עוד לא על הגרסה החדשה"
+          echo "::error::השרת עוד לא על הגרסה החדשה ($want). כדאי לבדוק ב-Render (Events ו-Logs)."
+          exit 1
