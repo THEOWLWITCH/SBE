@@ -314,3 +314,29 @@ test('facilitator: deleting an activity removes every record and its class codes
   assert.deepEqual([...s.store.data.keys()].filter((k) => /^dl[abjpxfc]/.test(k)), []);
   assert.equal((await s.run('p.open', { code: s.c1.code }))[0], 404);
 });
+
+test('two facilitators: separate activities stay apart; a co-facilitator joins with a code; AI quota is per group', async () => {
+  const s = await setup();
+  // a second facilitator with her own activity at the same hour
+  const { activity: b } = await s.fac('f.create', { template: 'corruption' }, 'T2');
+  const mine1 = (await s.fac('f.mine', {})).activities.map((x) => x.id), mine2 = (await s.fac('f.mine', {}, 'T2')).activities.map((x) => x.id);
+  assert.ok(mine1.includes(s.A.id) && !mine1.includes(b.id)); assert.ok(mine2.includes(b.id) && !mine2.includes(s.A.id));
+  // co-facilitation of the same activity
+  const { activity: withCode } = await s.fac('f.coCode', { id: s.A.id });
+  assert.match(withCode.coCode, /^[A-Z0-9]{8}$/);
+  assert.equal((await s.run('f.coCode', { id: s.A.id }, { token: 'T2' }))[0], 404, 'not a partner yet');
+  await s.fac('f.coJoin', { code: withCode.coCode, name: 'ד״ר עינת' }, 'T2');
+  const [gs, g] = await s.run('f.get', { id: s.A.id }, { token: 'T2' });
+  assert.equal(gs, 200); assert.equal(g.activity.isOwner, false); assert.equal(g.activity.cofacs[0].name, 'ד״ר עינת');
+  assert.doesNotMatch(JSON.stringify(g), /fac-1|fac-2/, 'facilitator identities are not exposed');
+  assert.equal((await s.run('f.board', { id: s.A.id, g: s.c1.groups[0].id }, { token: 'T2' }))[0], 200);
+  assert.equal((await s.run('f.delete', { id: s.A.id }, { token: 'T2' }))[0], 403, 'only the creator deletes');
+  assert.equal((await s.run('f.coCode', { id: s.A.id }, { token: 'T2' }))[0], 403);
+  assert.ok((await s.fac('f.mine', {}, 'T2')).activities.find((x) => x.id === s.A.id).co);
+  // AI quota bucket: per group, not per activity
+  const p1 = await s.join(s.c1, 'learning', 0), p2 = await s.join(s.c1, 'learning', 1), p3 = await s.join(s.c2, 'learning', 0);
+  const inst = async (p) => (await dlmModelGate(s.store, { dlm: p.cred }, 'dilemma-join.html')).institution;
+  const [i1, i2, i3] = [await inst(p1), await inst(p2), await inst(p3)];
+  assert.notEqual(i1, i2); assert.notEqual(i1, i3);
+  assert.equal(i1, await inst(await s.join(s.c1, 'learning', 0)), 'same group shares one bucket');
+});

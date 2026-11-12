@@ -30,8 +30,11 @@
       + '<label style="font-weight:400"><input type="checkbox" id="nr" checked> הפעילות מלווה במחקר (המשתתפים יבחרו אם להשתתף בו)</label>'
       + '<p><button class="dlm-btn main" id="create">יצירת הפעילות</button></p><div id="cm"></div></div>'
       + '<div class="dlm-card soft"><h2>הפעילויות שלי</h2>' + (rows.length ? '<table class="dlm-table"><thead><tr><th>הפעילות</th><th>מצב</th><th>כיתות</th><th>עודכנה</th></tr></thead><tbody>'
-        + rows.map((r) => '<tr><td><a href="#" data-open="' + esc(r.id) + '">' + esc(r.title) + '</a></td><td>' + esc(STATUS[r.status]) + '</td><td>' + r.classes + '</td><td>' + esc(new Date(r.updatedAt).toLocaleDateString('he-IL')) + '</td></tr>').join('') + '</tbody></table>'
-        : '<p>עדיין אין פעילויות. אפשר להתחיל מאחת משלוש הדילמות המוכנות.</p>') + '</div>';
+        + rows.map((r) => '<tr><td><a href="#" data-open="' + esc(r.id) + '">' + esc(r.title) + '</a>' + (r.co ? ' <span class="dlm-tag">שותפות בהנחיה</span>' : '') + '</td><td>' + esc(STATUS[r.status]) + '</td><td>' + r.classes + '</td><td>' + esc(new Date(r.updatedAt).toLocaleDateString('he-IL')) + '</td></tr>').join('') + '</tbody></table>'
+        : '<p>עדיין אין פעילויות. אפשר להתחיל מאחת משלוש הדילמות המוכנות.</p>') + '</div>'
+      + '<div class="dlm-card soft"><h2>הצטרפות להנחיה של פעילות קיימת</h2><p class="dlm-hint">כשמנחים יחד את אותה פעילות: מי שיצר/ה אותה מפיק/ה קוד שותפות (בלשונית "כיתות ו־QR"), ומי שמצטרף/ת מזינה אותו כאן.</p>'
+      + '<div class="dlm-grid2"><div><label for="coc">קוד השותפות</label><input type="text" id="coc" dir="ltr" placeholder="למשל: AB12CD34"></div><div><label for="con">השם שלי, כפי שיופיע לשותפים (רשות)</label><input type="text" id="con" placeholder="למשל: ד״ר עינת"></div></div>'
+      + '<p><button class="dlm-btn" id="cojoin">הצטרפות</button></p><div id="com"></div></div>';
     $('#nt').onchange = () => { const t = M.TEMPLATES.find((x) => x.id === $('#nt').value); if (t && !$('#nn').value) $('#nn').value = t.title; };
     $('#create').onclick = async () => {
       try { const t = M.TEMPLATES.find((x) => x.id === $('#nt').value);
@@ -40,6 +43,7 @@
       catch (e) { $('#cm').innerHTML = msg(e.message, 'err'); }
     };
     app.querySelectorAll('[data-open]').forEach((a) => a.onclick = (e) => { e.preventDefault(); open(a.dataset.open); });
+    $('#cojoin').onclick = async () => { try { const r = await call('f.coJoin', { code: $('#coc').value, name: $('#con').value }); open(r.activity.id); } catch (e) { $('#com').innerHTML = msg(e.message, 'err'); } };
   }
 
   async function open(id) {
@@ -155,12 +159,29 @@
         + '<div class="dlm-row"><input type="text" data-ng="' + esc(c.id) + '" aria-label="קבוצה חדשה" placeholder="קבוצה חדשה" style="max-width:220px"><button class="dlm-btn small" data-addg="' + esc(c.id) + '">➕ הוספת קבוצה</button></div></div>'
         + '<div class="dlm-qr" data-qr="' + esc(joinUrl(c.code)) + '"></div></div></div>').join('')
       + '<h3>כיתה חדשה</h3><div class="dlm-grid2"><div><label for="cn">שם הכיתה</label><input type="text" id="cn" placeholder="למשל: הוראת מדעים, שנה ב׳"></div><div><label for="cg">שמות הקבוצות (שורה לכל קבוצה, רשות)</label><textarea id="cg" placeholder="למשל: קבוצה 1"></textarea></div></div>'
-      + '<p><button class="dlm-btn main" id="cadd">הוספת הכיתה</button></p><div id="ccm"></div></div>';
+      + '<p><button class="dlm-btn main" id="cadd">הוספת הכיתה</button></p><div id="ccm"></div></div>'
+      + coHTML(a);
     tab().querySelectorAll('[data-qr]').forEach((n) => U.qr(n, n.dataset.qr));
     tab().querySelectorAll('[data-copy]').forEach((b) => b.onclick = () => { navigator.clipboard && navigator.clipboard.writeText(b.dataset.copy); b.textContent = '✓ הועתק'; });
     tab().querySelectorAll('[data-recode]').forEach((b) => b.onclick = async () => { if (!confirm('לבטל את הקוד הנוכחי ולהפיק קוד חדש? ה־QR הישן יפסיק לעבוד.')) return; try { const r = await call('f.classCode', { id: a.id, classId: b.dataset.recode }); S.a = r.activity; tabClasses(); } catch (e) { fail(e, tab()); } });
     tab().querySelectorAll('[data-addg]').forEach((b) => b.onclick = async () => { const v = tab().querySelector('[data-ng="' + b.dataset.addg + '"]').value.trim(); if (!v) return; try { const r = await call('f.classEdit', { id: a.id, classId: b.dataset.addg, addGroup: v }); S.a = r.activity; tabClasses(); } catch (e) { fail(e, tab()); } });
+    bindCo(a);
     $('#cadd').onclick = async () => { try { const r = await call('f.classAdd', { id: a.id, name: $('#cn').value, groups: $('#cg').value.split('\n').map((x) => x.trim()).filter(Boolean) }); S.a = r.activity; tabClasses(); } catch (e) { $('#ccm').innerHTML = msg(e.message, 'err'); } };
+  }
+
+  // שותפים להנחיה: כמה מנחים באותה פעילות, כל אחד/ת עם הכיתה שלו/ה, מכל מכשיר.
+  function coHTML(a) {
+    const list = (a.cofacs || []).map((c) => '<li>' + esc(c.name) + (a.isOwner ? ' <button class="dlm-btn small red" data-rmco="' + esc(c.id) + '">הסרה</button>' : '') + '</li>').join('');
+    return '<div class="dlm-card soft"><h2>שותפים להנחיה</h2><p class="dlm-hint">כשמנחים יחד את אותה פעילות, כל מנחה נכנס/ת עם הקוד שלו/ה ורואה את כל הכיתות והלוחות. אם כל מנחה מנחה כיתה אחרת בפעילות נפרדת, אין צורך בשותפות: כל פעילות עומדת בפני עצמה.</p>'
+      + (list ? '<ul>' + list + '</ul>' : '<p>עדיין אין שותפים להנחיה.</p>')
+      + (a.isOwner ? (a.coCode ? '<p>קוד השותפות: <span class="dlm-code">' + esc(a.coCode) + '</span></p><div class="dlm-row"><button class="dlm-btn small" data-copy="' + esc(a.coCode) + '">העתקה</button><button class="dlm-btn small red" id="coOff">ביטול הקוד</button></div>'
+        : '<p><button class="dlm-btn" id="coNew">הפקת קוד שותפות</button></p>') : '') + '</div>';
+  }
+  function bindCo(a) {
+    const go = async (input) => { try { const r = await call('f.coCode', Object.assign({ id: a.id }, input)); S.a = r.activity; tabClasses(); } catch (e) { fail(e, tab()); } };
+    if ($('#coNew')) $('#coNew').onclick = () => go({});
+    if ($('#coOff')) $('#coOff').onclick = () => go({ revoke: true });
+    tab().querySelectorAll('[data-rmco]').forEach((b) => b.onclick = () => { if (confirm('להסיר את השותף/ה מהפעילות?')) go({ revoke: !S.a.coCode, removeCofac: b.dataset.rmco }); });
   }
 
   function tabResearch() {
@@ -212,14 +233,14 @@
   function tabExport() {
     tab().innerHTML = '<div class="dlm-card"><h2>ייצוא מחקרי</h2><p>הקובץ כולל רק משתתפים שהסכימו למחקר (לפי ההחלטה האחרונה שלהם). תרומות של מי שלא הסכים/ה אינן נכללות. מסקנה קבוצתית נכללת רק כשכל מי שתרם/ה לה הסכים/ה. הנתונים פסאודונימיים: קודים אקראיים, בלי שמות.</p>'
       + '<p><button class="dlm-btn main" id="exp">הורדת קובץ JSON</button></p><div id="em"></div>'
-      + '<h2>מחיקת הפעילות</h2><p class="dlm-hint">מוחקת את הפעילות, את הלוחות ואת כל מה שהמשתתפים כתבו. אי אפשר לבטל.</p><button class="dlm-btn red" id="del">מחיקת הפעילות</button></div>';
+      + (S.a.isOwner ? '<h2>מחיקת הפעילות</h2><p class="dlm-hint">מוחקת את הפעילות, את הלוחות ואת כל מה שהמשתתפים כתבו. אי אפשר לבטל.</p><button class="dlm-btn red" id="del">מחיקת הפעילות</button>' : '') + '</div>';
     $('#exp').onclick = async () => {
       try { const r = await call('f.export', { id: S.a.id }); const blob = new Blob([JSON.stringify(r, null, 2)], { type: 'application/json' });
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'begood-dilemma-' + S.a.id.slice(0, 8) + '-' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
         $('#em').innerHTML = msg('הקובץ ירד: ' + r.participants.filter((p) => !p.excluded).length + ' משתתפים במחקר, ' + r.participants.filter((p) => p.excluded).length + ' לא נכללו.'); }
       catch (e) { $('#em').innerHTML = msg(e.message, 'err'); }
     };
-    $('#del').onclick = async () => { if (!confirm('למחוק את הפעילות ואת כל הנתונים שלה? אי אפשר לבטל.')) return; try { await call('f.delete', { id: S.a.id }); list(); } catch (e) { fail(e, tab()); } };
+    if ($('#del')) $('#del').onclick = async () => { if (!confirm('למחוק את הפעילות ואת כל הנתונים שלה? אי אפשר לבטל.')) return; try { await call('f.delete', { id: S.a.id }); list(); } catch (e) { fail(e, tab()); } };
   }
 
   // ── מצב הקרנה (12/11/2026): מסך מלא באותיות גדולות, בלי כפתורי עבודה ובלי קודים אישיים.

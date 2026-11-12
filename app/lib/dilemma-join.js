@@ -274,7 +274,7 @@
         $('#aiKeep').onclick = async () => { await boardOp({ kind: 'assess', sourceId: sid, assessment: Object.assign({}, r.out, { claim, method: 'ai' }) }).catch(() => {}); refreshBoard(); sourceDialog(sid); };
         $('#aiMan').onclick = () => manualAssess(out, sid, Object.assign({}, r.out, { claim }));
         $('#aiRep').onclick = () => reportForm(out, 'assessment', sid);
-      } catch (e) { logAI('assess', claim, String(e.message), [], 'נכשל', false); out.innerHTML = aiFail(); }
+      } catch (e) { logAI('assess', claim, String(e.message), [], 'נכשל', false); out.innerHTML = aiFail(e); }
     };
   }
   function manualAssess(out, sid, pre) {
@@ -329,7 +329,7 @@
         if ($('#saveCons')) $('#saveCons').onclick = async () => { await boardOp({ kind: 'alert', type: 'conspiracy', itemId: id, target: it.text, data: { by: 'ai', signs: c.signs, questions: c.questions, alternatives: c.alternatives } }).catch(() => {}); refreshBoard(); manipDialog(id); };
         if ($('#saveMedia')) $('#saveMedia').onclick = async () => { await boardOp({ kind: 'alert', type: 'media', itemId: id, target: it.text, data: Object.assign({ by: 'ai' }, m) }).catch(() => {}); refreshBoard(); manipDialog(id); };
         $('#repAI').onclick = () => reportForm(out, 'ai', 'manipulation');
-      } catch (e) { logAI('manipulation', it.text, String(e.message), [], 'נכשל', false); out.innerHTML = aiFail(); }
+      } catch (e) { logAI('manipulation', it.text, String(e.message), [], 'נכשל', false); out.innerHTML = aiFail(e); }
     };
     $('#mdCons').onclick = () => {
       out.innerHTML = '<p>אילו סימנים זיהיתם? (כל סימן לבדיקה, לא הוכחה)</p>' + M.CONSPIRACY.signs.map((s) => '<label style="font-weight:400"><input type="checkbox" value="' + s.k + '"> ' + esc(s.t) + '</label>').join('')
@@ -404,10 +404,10 @@
         const r = await U.ai(k, ctx, auth());
         logAI(k, r.request, r.out, (r.out.items || []).flatMap((i) => i.sourceRefs || []), (r.out.items || []).some((i) => !i.verified) ? 'יש מידע שטרם אומת' : 'נשען על מקורות מהרשימה');
         S.aiOut = { k, r }; res.innerHTML = aiResultHTML(k, r); bindAIResult(k, r, res);
-      } catch (e) { logAI(k, ctx.request, String(e.message), [], 'נכשל', false); res.innerHTML = aiFail(); }
+      } catch (e) { logAI(k, ctx.request, String(e.message), [], 'נכשל', false); res.innerHTML = aiFail(e); }
     };
   }
-  const aiFail = () => msg('ה־AI לא זמין כרגע. שום דבר לא נמחק: אפשר להמשיך לעבוד בלוח בלי AI, ולנסות שוב מאוחר יותר.', 'warn');
+  const aiFail = (e) => msg(e && e.status === 429 ? 'הרבה בקשות ל־AI באותו רגע. שום דבר לא נמחק: אפשר להמשיך לעבוד בלוח, ולנסות שוב בעוד דקה.' : 'ה־AI לא זמין כרגע. שום דבר לא נמחק: אפשר להמשיך לעבוד בלוח בלי AI, ולנסות שוב מאוחר יותר.', 'warn');
   const checkList = (extra) => '<details><summary>כדאי לבדוק</summary><ul>' + [].concat(extra || [], M.AI_CHECK_PROMPTS).map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul></details>';
   function refName(r, ref) { const s = r.refs.find((x) => x.ref === ref); return s ? s.title : ref; }
   function aiResultHTML(k, r) {
@@ -471,7 +471,7 @@
         if (r.out.none) { out.innerHTML = msg(r.out.why || 'לא נמצא ברשימה מידע מאתגר מתאים.', 'warn'); return; }
         const sid = r.refs.find((x) => x.ref === r.out.sourceRef).id;
         await boardOp({ kind: 'challenge', sourceRef: sid, info: r.out.info, challenges: r.out.challenges, caveats: r.out.caveats, check: r.out.check }); stepChallenge();
-      } catch (e) { logAI('challenge', '', String(e.message), [], 'נכשל', false); out.innerHTML = aiFail(); }
+      } catch (e) { logAI('challenge', '', String(e.message), [], 'נכשל', false); out.innerHTML = aiFail(e); }
     };
   }
 
@@ -494,7 +494,7 @@
       const ctx = U.boardContext(S.activity, S.board); const f = fields(); ctx.request = 'המסקנה: ' + M.CONCLUSION_Q.map((q) => q.t + ' ' + (f[q.k] || '')).join(' | ');
       try { const r = await U.ai('conclusion_check', ctx, auth()); logAI('conclusion_check', r.request, r.out, [], 'שאלות לבדיקה');
         out.innerHTML = '<div class="dlm-ai"><p class="dlm-hint">ה־AI לא משנה את המסקנה. אלה שאלות לבדיקה:</p>' + (r.out.summary ? '<p>' + esc(r.out.summary) + '</p>' : '') + '<ul>' + r.out.items.map((i) => '<li>' + esc(i.text) + '</li>').join('') + '</ul></div>'; }
-      catch (e) { out.innerHTML = aiFail(); }
+      catch (e) { out.innerHTML = aiFail(e); }
     };
   }
 

@@ -207,7 +207,8 @@ export async function dlmModelGate(store, auth, page) {
   try {
     const { a, p } = await participantOf(store, auth.dlm);
     if (a.status !== 'open') return null;
-    return { principal: 'dlm:' + a.id + ':' + p.id, institution: 'dlm:' + a.id, inst: a.inst || null };
+    // מכסת הפניות למודל לכל לוח (קבוצה או לוח אישי), כדי שכיתות וקבוצות שעובדות באותה שעה לא יחסמו זו את זו.
+    return { principal: 'dlm:' + a.id + ':' + p.id, institution: 'dlm:' + a.id + ':' + (boardKeyOf(a, p) || p.classId), inst: a.inst || null };
   } catch { return null; }
 }
 
@@ -223,14 +224,16 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
     if (op.startsWith('f.')) {
       const me = await who(body.token);
       if (!me) throw new DlmError('כדי להמשיך, אפשר להיכנס שוב עם קוד שיש בו את הכלי בירור דילמות', 401);
-      const owns = (a) => me.sys || a.owner === me.principal;
+      // מנחה ושותפים להנחיה (מנחה נוסף/ת שהצטרף/ה בקוד שותפות): אותן הרשאות, חוץ ממחיקה ומשותפים.
+      const owns = (a) => me.sys || a.owner === me.principal || (a.cofacs || []).some((c) => c.principal === me.principal);
+      const isOwner = (a) => me.sys || a.owner === me.principal;
       const mine = async (id) => { const a = await getActivity(store, id); if (!owns(a)) throw new DlmError('הפעילות לא נמצאה', 404); return a; };
       const saveAct = (id, fn) => mutate(store, 'dla:' + id, async (a) => { if (!owns(a)) throw new DlmError('הפעילות לא נמצאה', 404); a.updatedAt = now(); return fn(a); });
 
       if (op === 'f.mine') {
         const rows = (await store.list('dla:')).map((r) => r.value).filter((a) => a && !expired(a) && owns(a))
           .sort((x, y) => String(y.updatedAt).localeCompare(String(x.updatedAt))).slice(0, LIM.mine)
-          .map((a) => ({ id: a.id, title: a.title, status: a.status, mode: a.mode, createdAt: a.createdAt, updatedAt: a.updatedAt, classes: a.classes.length }));
+          .map((a) => ({ id: a.id, title: a.title, co: a.owner !== me.principal && !me.sys, status: a.status, mode: a.mode, createdAt: a.createdAt, updatedAt: a.updatedAt, classes: a.classes.length }));
         return [200, { activities: rows }];
       }
       if (op === 'f.create') {
@@ -245,7 +248,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
           sources: [], classes: [], files: [] };
         if (t) for (const s of t.sources) a.sources.push(newSource(s, 'facilitator', 'facilitator'));
         await store.set('dla:' + a.id, a);
-        return [201, { activity: a }];
+        return [201, { activity: viewAct(a, me) }];
       }
       if (op === 'f.get') {
         const a = await mine(d.id);
@@ -253,7 +256,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
         const stats = { participants: parts.length, research: parts.filter((p) => p.consent && p.consent.type === 'research').length,
           learning: parts.filter((p) => p.consent && p.consent.type === 'learning').length,
           byGroup: Object.fromEntries(a.classes.flatMap((c) => c.groups).map((g) => [g.id, parts.filter((p) => p.groupId === g.id).length])) };
-        return [200, { activity: a, stats }];
+        return [200, { activity: viewAct(a, me), stats }];
       }
       if (op === 'f.update') {
         const a = await saveAct(d.id, (a) => {
@@ -274,7 +277,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
             if (JSON.stringify([r.sections, r.ethics, r.contact]) !== before) r.consentVersion = M.CONSENT_VERSION + '.' + Date.now().toString(36);
           }
         });
-        return [200, { activity: a }];
+        return [200, { activity: viewAct(a, me) }];
       }
       if (op === 'f.status') {
         if (!['draft', 'open', 'closed'].includes(d.status)) throw new DlmError('מצב לא תקין');
@@ -282,7 +285,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
           if (d.status === 'open' && !a.classes.length) throw new DlmError('כדי לפתוח, אפשר להוסיף כיתה אחת לפחות');
           a.status = d.status;
         });
-        return [200, { activity: a }];
+        return [200, { activity: viewAct(a, me) }];
       }
       if (op === 'f.classAdd') {
         let jc;
@@ -297,7 +300,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
           a.classes.push(cls);
         });
         await store.set('dlj:' + jc, { a: a.id, c: cls.id });
-        return [200, { activity: a, class: cls }];
+        return [200, { activity: viewAct(a, me), class: cls }];
       }
       if (op === 'f.classCode') {
         // ביטול קוד והפקת קוד חדש: הסריקה של הקוד הישן מפסיקה מיד. משתתפים שכבר נכנסו ממשיכים עם המפתח שלהם.
@@ -311,7 +314,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
         });
         await store.del('dlj:' + old);
         await store.set('dlj:' + jc, { a: a.id, c: d.classId });
-        return [200, { activity: a }];
+        return [200, { activity: viewAct(a, me) }];
       }
       if (op === 'f.classEdit') {
         const a = await saveAct(d.id, (a) => {
@@ -321,7 +324,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
           if (d.addGroup) { if (c.groups.length >= LIM.groups) throw new DlmError('הגענו למספר הקבוצות המרבי'); c.groups.push({ id: 'g-' + code(8).toLowerCase(), name: txt(d.addGroup, 'שם הקבוצה', 60, true) }); }
           if (d.renameGroup) { const g = c.groups.find((x) => x.id === d.renameGroup.id); if (g) g.name = txt(d.renameGroup.name, 'שם הקבוצה', 60, true); }
         });
-        return [200, { activity: a }];
+        return [200, { activity: viewAct(a, me) }];
       }
       if (op === 'f.sourceAdd') {
         const a = await saveAct(d.id, (a) => {
@@ -329,7 +332,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
           if (d.source && d.source.fileId && !a.files.some((f) => f.id === d.source.fileId)) throw new DlmError('הקובץ לא נמצא');
           a.sources.push(newSource(d.source || {}, 'facilitator', 'facilitator'));
         });
-        return [200, { activity: a }];
+        return [200, { activity: viewAct(a, me) }];
       }
       if (op === 'f.sourceEdit') {
         const a = await saveAct(d.id, (a) => {
@@ -340,7 +343,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
           a.sources[i] = { ...s, title: n.title, publisher: n.publisher, date: n.date, type: n.type, excerpt: n.excerpt, part: n.part,
             ...(n.url !== s.url ? { url: n.url, verify: n.verify } : {}) };
         });
-        return [200, { activity: a }];
+        return [200, { activity: viewAct(a, me) }];
       }
       if (op === 'f.assess') {
         // הערכת אמינות של המנחה, או סימון בדיקה אנושית להערכה קיימת (לא משנה את הציון).
@@ -356,7 +359,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
             if (s.assessments.length > LIM.assess) s.assessments.shift();
           }
         });
-        return [200, { activity: a }];
+        return [200, { activity: viewAct(a, me) }];
       }
       if (op === 'f.verify') {
         const a0 = await mine(d.id);
@@ -364,7 +367,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
         if (!s0 || !s0.url) throw new DlmError('אין קישור לבדיקה');
         const v = await verifyUrl(s0.url, { fetchImpl, resolve });
         const a = await saveAct(d.id, (a) => { const s = a.sources.find((x) => x.id === d.sourceId); if (s) s.verify = { ...v, at: now() }; });
-        return [200, { activity: a, verify: v }];
+        return [200, { activity: viewAct(a, me), verify: v }];
       }
       if (op === 'f.file') {
         // קובץ למאגר המקורות: PDF, תמונה או טקסט, עד 1 מגה (base64). נשמר בשרת לפעילות הזו בלבד.
@@ -378,7 +381,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
           a.files.push({ id: fid, name: txt(d.name, 'שם הקובץ', 200, true), type, size: Math.round(data.length * 0.75), at: now() });
         });
         await store.set('dlf:' + a.id + ':' + fid, { type, data });
-        return [200, { activity: a, fileId: fid }];
+        return [200, { activity: viewAct(a, me), fileId: fid }];
       }
       if (op === 'f.boards') {
         const a = await mine(d.id);
@@ -413,8 +416,30 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
         return [200, { ok: true }];
       }
       if (op === 'f.export') return [200, await researchExport(store, await mine(d.id))];
+      if (op === 'f.coCode') {
+        // קוד שותפות להנחיה: מנחה נוסף/ת (עם קוד Begood משלו/ה והרשאת בירור דילמות) מצטרף/ת לאותה פעילות.
+        const a0 = await mine(d.id);
+        if (!isOwner(a0)) throw new DlmError('רק מי שיצר/ה את הפעילות יכול/ה להזמין שותפים להנחיה', 403);
+        if (a0.coCode) await store.del('dlco:' + a0.coCode);
+        const cc = d.revoke ? null : code(8);
+        const a = await saveAct(d.id, (a) => { a.coCode = cc; if (d.removeCofac) a.cofacs = (a.cofacs || []).filter((c) => c.id !== d.removeCofac); });
+        if (cc) await store.set('dlco:' + cc, { a: a.id });
+        return [200, { activity: viewAct(a, me) }];
+      }
+      if (op === 'f.coJoin') {
+        const c = String(d.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const ref = c.length === 8 ? await store.get('dlco:' + c) : null;
+        if (!ref) { await pause(); throw new DlmError('קוד השותפות לא נמצא. אפשר לבקש קוד חדש ממי שיצר/ה את הפעילות', 404); }
+        const a = await mutate(store, 'dla:' + ref.a, (a) => {
+          if (a.owner === me.principal || (a.cofacs || []).some((x) => x.principal === me.principal)) return;
+          a.cofacs = [...(a.cofacs || []), { id: 'cf-' + code(6).toLowerCase(), principal: me.principal, name: txt(d.name, 'שם', 80) || 'מנחה נוסף/ת', at: now() }].slice(0, 6);
+        });
+        return [200, { activity: { id: a.id, title: a.title } }];
+      }
       if (op === 'f.delete') {
         const a = await mine(d.id);
+        if (!isOwner(a)) throw new DlmError('רק מי שיצר/ה את הפעילות יכול/ה למחוק אותה', 403);
+        if (a.coCode) await store.del('dlco:' + a.coCode);
         for (const c of a.classes) await store.del('dlj:' + c.code);
         for (const pre of ['dlp:', 'dlpc:', 'dlx:', 'dlb:', 'dlf:']) {
           if (typeof store.delPrefix === 'function') await store.delPrefix(pre + a.id + ':');
@@ -658,6 +683,11 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
     console.error('dilemma failed', err && err.message);
     return [500, { error: 'לא ניתן להשלים את הפעולה. הנתונים הקודמים נשמרו; אפשר לנסות שוב' }];
   }
+}
+
+// הפעילות כפי שהמנחים רואים אותה: בלי מזהי הכניסה של השותפים.
+function viewAct(a, me) {
+  return { ...a, owner: undefined, isOwner: !!(me.sys || a.owner === me.principal), cofacs: (a.cofacs || []).map((c) => ({ id: c.id, name: c.name, at: c.at })) };
 }
 
 function dilemmaOf(t) {
