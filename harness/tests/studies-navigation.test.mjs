@@ -49,6 +49,6 @@ test('an expired code session loses reader access even when studies was granted'
   const token = Buffer.from(JSON.stringify({ k: 'code', c: 'EXAMPLE', exp: Date.now() - 1000 })).toString('base64url') + '.signature';
   const state = screen('home.html', ['studies'], {}, token);
   assert.equal(state.allowed, false);
-  assert.equal(state.redirect, 'entry.html?expired=1');
+  assert.equal(state.redirect, 'entry.html?expired=1&next=social-resilience-studies.html');
   assert.equal(state.data.has('sbe.session.token'), false);
 });

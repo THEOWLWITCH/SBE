@@ -158,6 +158,7 @@ button.primary{background:var(--spoken);border-color:var(--spoken);color:#fff;}
 html .card.sbe-s{border-top:1px solid #e3e9ef!important}
 label.remember{display:flex;align-items:center;gap:8px;font-weight:400;font-size:13.5px;color:var(--muted);margin:0 0 12px;cursor:pointer}
 label.remember input{width:auto;margin:0}
+label.remember.stay{margin:8px 0 0;font-size:12.5px}
 .login-card .in{padding:16px 18px}
 .code-row input.code,.code-row button.go-in,.code-row a.ask-code{height:38px!important;box-sizing:border-box!important;padding-top:0!important;padding-bottom:0!important;line-height:36px!important}
 .code-row a.ask-code{display:inline-flex;align-items:center;font-size:14px;font-weight:600;padding:6px 20px;border-radius:999px;border:1px solid #1d3f63;color:#1d3f63;background:#fff;text-decoration:none;line-height:1.5;transition:background .16s ease}
@@ -281,6 +282,25 @@ async function codeLogin(code){
   finally { clearTimeout(timer); }
 }
 
+// להישאר מחוברים במכשיר (13/11/2026: "אני, כמנהלת מערכת וכל אחד אחר אוכל להשאיר את המערכת מחוברת במכשיר שלי
+// ככל שארצה ובלי הגבלת זמן"): הקוד נשמר במכשיר הזה (רק כשמסמנים), ובכל פעם שהכניסה מתחדשת נכנסים לבד.
+// הקוד עדיין נבדק בשרת בכל כניסה: קוד שבוטל או שתוקפו הסתיים נמחק מהמכשיר. "יציאה" מוחקת אותו.
+const REMEMBER = "sbe.remember.code";
+function rememberedCode(){ try { const r = JSON.parse(localStorage.getItem(REMEMBER) || "null"); return r && r.code ? r.code : ""; } catch(e){ return ""; } }
+function rememberCode(c){ try { localStorage.setItem(REMEMBER, JSON.stringify({ code:c, at:new Date().toISOString() })); } catch(e){} }
+function forgetCode(){ try { localStorage.removeItem(REMEMBER); } catch(e){} }
+function setCodeSession(res){
+  clearSession();
+  try {
+    sessionStorage.setItem("sbe.session.token", res.token);
+    sessionStorage.setItem("sbe.session.perms", JSON.stringify(res.perms || []));
+    sessionStorage.setItem("sbe.session.info", JSON.stringify({ kind:res.kind, inst:res.inst, label:res.label,
+      notices:res.notices || [], sub:res.sub || null, space:res.space || null }));
+    sessionStorage.setItem("sbe.session.role", res.label || res.inst || "");
+    sessionStorage.setItem("sbe.session.homeUrl", "home.html");
+  } catch(e){}
+}
+
 // מקלדת בעברית (01/10/2026): הקודים באותיות לטיניות, ומי שמקלידה בפריסה עברית
 // מקבלת "שגכ..." במקום "ASD...". ממירים לפי מיקום המקש בפריסה הישראלית התקנית.
 const HE_KEYS = { "/":"Q", "'":"W", "ק":"E", "ר":"R", "א":"T", "ט":"Y", "ו":"U", "ן":"I", "ם":"O", "פ":"P",
@@ -297,6 +317,7 @@ function renderEntry(){
   // הגעה מכניסה שהסתיימה (access-guard.js, ?expired=1)
   if (new URLSearchParams(location.search).get("expired")) { err.textContent = "הכניסה הקודמת הסתיימה (כניסה תקפה ל-12 שעות). אפשר להיכנס שוב: מה ששמרת במכשיר מחכה לך."; err.hidden = false; err.style.color = "var(--ink, #14212B)"; }
   const btn = el("button",{class:"primary"},"כניסה");
+  const stay = el("input",{type:"checkbox"}); stay.checked = true;
   const submit = async () => {
     const c = fixCodeKeys(code.value.replace(/[‎‏؜]/g, "")).trim();
     if (!c) { err.textContent = "אפשר להקליד את הקוד כדי להיכנס."; err.hidden = false; return; }
@@ -312,15 +333,8 @@ function renderEntry(){
       }
       err.hidden = false; return;
     }
-    clearSession();
-    try {
-      sessionStorage.setItem("sbe.session.token", res.token);
-      sessionStorage.setItem("sbe.session.perms", JSON.stringify(res.perms || []));
-      sessionStorage.setItem("sbe.session.info", JSON.stringify({ kind:res.kind, inst:res.inst, label:res.label,
-        notices:res.notices || [], sub:res.sub || null, space:res.space || null }));
-      sessionStorage.setItem("sbe.session.role", res.label || res.inst || "");
-      sessionStorage.setItem("sbe.session.homeUrl", "home.html");
-    } catch(e){}
+    setCodeSession(res);
+    if (stay.checked) rememberCode(c); else forgetCode();
     // entry.html?c=קוד&go=message-writer.html (QR להתנסות בהרצאה): אחרי הכניסה הכלי נפתח ישר.
     // רק שם של דף באתר; דף שלא פתוח בקוד הזה מחזיר ל"המרחב שלי" (access-guard.js).
     const go = new URLSearchParams(location.search).get("go") || "";
@@ -340,7 +354,8 @@ function renderEntry(){
   // שורה אחת, בלי כותרת (29/10/2026: "לעצב יפה בשורה אחת: בלי הכותרת כניסה למערכת. כפתור נוסף בדומה לכפתור הכניסה ולידו - לבקש קוד")
   code.setAttribute("aria-label", "קוד כניסה");
   inn.append(
-    el("div",{class:"code-row"}, code, btn, el("a",{class:"ask-code sbe-no-theme",href:"renew.html"},"בקשת קוד")), err);
+    el("div",{class:"code-row"}, code, btn, el("a",{class:"ask-code sbe-no-theme",href:"renew.html"},"בקשת קוד")),
+    el("label",{class:"remember stay"}, stay, " להישאר מחובר/ת במכשיר הזה (עד ליציאה)"), err);
   card.classList.add("login-card");
   card.append(inn);
   view.append(card);
@@ -373,6 +388,8 @@ function renderEntry(){
   links.append(admBtn, el("span",{class:"sep"},"·"),
     el("a",{href:"about.html"},"אודות המערכת"), el("span",{class:"sep"},"·"), el("a",{href:"map.html"},"מפת הכלים"), el("span",{class:"sep"},"·"), el("a",{href:"examples.html"},"תוצרים לדוגמה: חינוך"), el("span",{class:"sep"},"·"), el("a",{href:"examples-org.html"},"תוצרים לדוגמה: ארגונים"), el("span",{class:"sep"},"·"), el("a",{href:"renew.html"},"בקשה לכלים של Begood"), el("span",{class:"sep"},"·"), el("a",{href:"research-partnership.html",title:"שותפות במחקר: הצעה לשיתוף פעולה במחקר"},"מחקר"));
   minn.append(links, alt);
+  // מנהלת המערכת שהכניסה שלה הסתיימה (access-guard.js, ?expired=1&who=sys): שדה הסיסמה פתוח מיד
+  if (new URLSearchParams(location.search).get("who") === "sys" && !sysDevice()) { alt.hidden = false; alt.append(buildAdminField("sys")); }
   more.append(minn);
   view.append(more);
   // זמני — להרצאה (01/10/2026): כניסה ישירה לפרקטי בלי קוד, עד GUEST_UNTIL.
@@ -487,6 +504,7 @@ async function sysAutoLogin(){
     const data = await r.json().catch(() => ({}));
     if (r.status === 403) { try { localStorage.removeItem(SYS_DEV); } catch(e){} return false; }
     if (!r.ok || !data.token) return false;
+    if (data.exp) try { localStorage.setItem(SYS_DEV, JSON.stringify({ key:d.key, exp:data.exp })); } catch(e){}
     clearSession();
     sessionStorage.setItem("sbe.session.token", data.token);
     persistSession(null, "ניהול מערכת");
@@ -631,16 +649,18 @@ function buildAdminField(role){
     err.hidden = true;
     persistSession(null, role === "sys" ? "ניהול מערכת" : "ניהול מוסד");
     if (role === "sys" && remember.checked) { btn.disabled = true; btn.textContent = "שומרים את המכשיר..."; await sysRemember(); }
-    const dest = "admin.html?role=" + role;
-    try { sessionStorage.setItem("sbe.session.homeUrl", dest); } catch(e){}
-    location.href = dest;
+    const home = "admin.html?role=" + role;
+    try { sessionStorage.setItem("sbe.session.homeUrl", home); } catch(e){}
+    // חזרה לדף שממנו הגיעו כשהכניסה הסתיימה (access-guard.js, ?next=), כמו בכניסה האוטומטית
+    const next = role === "sys" ? (new URLSearchParams(location.search).get("next") || "") : "";
+    location.href = /^[a-z0-9-]+\.html([?#][^\s]*)?$/.test(next) ? next : home;
   };
   btn.addEventListener("click", submit);
   pass.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
   wrap.append(
     el("p",{class:"hint"},"כאן נכנסים עם סיסמה, לא עם קוד: לניהול מוסד אחד או לניהול כל המערכת."),
     el("label",{},"סיסמה"), passWrap,
-    role === "sys" ? el("label",{class:"remember"}, remember, " לזכור את המכשיר הזה: בפעם הבאה בלי סיסמה (עד 90 יום)") : "",
+    role === "sys" ? el("label",{class:"remember"}, remember, " להישאר מחוברת במכשיר הזה, בלי סיסמה בפעם הבאה (עד ליציאה)") : "",
     err, btn);
   return wrap;
 }
@@ -656,7 +676,7 @@ function buildAdminField(role){
   // יציאה רק כשמבקשים אותה (?logout=1 או כפתור "יציאה"), לא בכל הגעה למסך
   // הכניסה — אחרת קישור "Begood" או "מסך כניסה" ניתק את מנהלת המערכת וחסם
   // אותה מכל המסכים. כניסה חדשה מוחקת ממילא את הקודמת (clearSession).
-  if (new URLSearchParams(location.search).get("logout")) { sysForget(); clearSession(); }
+  if (new URLSearchParams(location.search).get("logout")) { sysForget(); forgetCode(); clearSession(); }
   // entry.html?practi — קישור ישיר להתנסות (לשקף/QR בהרצאה)
   if (new URLSearchParams(location.search).has("practi") && guestOpen()) { enterGuest(); return; }
   // entry.html?open=<מזהה>: קישור פתוח ליום אחד, בלי קוד (נוצר בניהול, "🔗 קישור פתוח ליום אחד")
@@ -686,13 +706,28 @@ function buildAdminField(role){
       wait.textContent = "הכניסה האוטומטית לא הצליחה. אפשר להיכנס עם הסיסמה בכניסת הניהול למטה.";
     });
   }
+  // קוד שנשמר במכשיר: נכנסים לבד, וחוזרים לדף שביקשו (?next=) או ל"המרחב שלי"
+  else if (!home && rememberedCode()) {
+    var waitC = el("p",{class:"logged"}, "נכנסים עם הקוד שנשמר במכשיר. הכניסה נמשכת לפעמים עד דקה.");
+    view.prepend(waitC);
+    codeLogin(rememberedCode()).then(function(res){
+      if (res.error) {
+        if (res.error !== "down") forgetCode();
+        waitC.textContent = res.error === "down" ? CODE_ERRORS.down : (CODE_ERRORS[res.error] || CODE_ERRORS.wrong) + " אפשר להיכנס שוב עם קוד.";
+        return;
+      }
+      setCodeSession(res);
+      var nextC = new URLSearchParams(location.search).get("next") || "";
+      location.replace(/^[a-z0-9-]+\.html([?#][^\s]*)?$/.test(nextC) ? nextC : "home.html");
+    });
+  }
   if (home) {
     // מחובר/ת: שורה דקה אחת מעל הכניסה, בלי כרטיס (28/10/2026: "הסרגל העליון של הקוד לא נראה טוב")
     var bar = el("div",{class:"logged sbe-no-theme"});
     var goHome = el("button",{class:"lg-home sbe-no-theme"},"⌂ המרחב שלי");
     var out = el("button",{class:"lg-out sbe-no-theme"},"יציאה");
     goHome.addEventListener("click", function(){ location.href = home; });
-    out.addEventListener("click", function(){ sysForget(); clearSession(); bar.remove(); });
+    out.addEventListener("click", function(){ sysForget(); forgetCode(); clearSession(); bar.remove(); });
     bar.append(el("span",{class:"lg-who"}, "מחובר/ת", roleLabel ? " · " : "", roleLabel ? el("b",{},roleLabel) : ""), goHome, out);
     view.prepend(bar);
   }
