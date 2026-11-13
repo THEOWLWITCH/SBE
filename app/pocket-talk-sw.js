@@ -1,5 +1,5 @@
 // Offline cache for the pocket booklet only (registered with scope "./pocket-talk").
-const CACHE = 'pocket-talk-v1';
+const CACHE = 'pocket-talk-v2';
 const FILES = [
   'pocket-talk.html', 'pocket-talk.webmanifest', 'assets/begood-logo-mark.webp',
   'assets/pocket-talk/p1.webp', 'assets/pocket-talk/p2.webp', 'assets/pocket-talk/p3.webp',
