@@ -677,6 +677,9 @@ function buildAdminField(role){
   // הכניסה — אחרת קישור "Begood" או "מסך כניסה" ניתק את מנהלת המערכת וחסם
   // אותה מכל המסכים. כניסה חדשה מוחקת ממילא את הקודמת (clearSession).
   if (new URLSearchParams(location.search).get("logout")) { sysForget(); forgetCode(); clearSession(); }
+  // החלפת תפקיד: יוצאים מהכניסה בלשונית בלבד. המכשיר נשאר זכור, ולא נכנסים לבד הפעם.
+  var switching = !!new URLSearchParams(location.search).get("switch");
+  if (switching) clearSession();
   // entry.html?practi — קישור ישיר להתנסות (לשקף/QR בהרצאה)
   if (new URLSearchParams(location.search).has("practi") && guestOpen()) { enterGuest(); return; }
   // entry.html?open=<מזהה>: קישור פתוח ליום אחד, בלי קוד (נוצר בניהול, "🔗 קישור פתוח ליום אחד")
@@ -696,7 +699,7 @@ function buildAdminField(role){
     }
   } catch(e){}
   // מכשיר מוכר של מנהלת המערכת: נכנסים לבד, וחוזרים לדף שביקשו (?next=) או נשארים כאן מחוברים.
-  if (!home && sysDevice()) {
+  if (!home && !switching && sysDevice()) {
     var wait = el("p",{class:"logged"}, "נכנסים כמנהלת המערכת. הכניסה נמשכת לפעמים עד דקה.");
     view.prepend(wait);
     sysAutoLogin().then(function(ok){
@@ -707,7 +710,7 @@ function buildAdminField(role){
     });
   }
   // קוד שנשמר במכשיר: נכנסים לבד, וחוזרים לדף שביקשו (?next=) או ל"המרחב שלי"
-  else if (!home && rememberedCode()) {
+  else if (!home && !switching && rememberedCode()) {
     var waitC = el("p",{class:"logged"}, "נכנסים עם הקוד שנשמר במכשיר. הכניסה נמשכת לפעמים עד דקה.");
     view.prepend(waitC);
     codeLogin(rememberedCode()).then(function(res){
