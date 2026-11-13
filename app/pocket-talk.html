@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-no-topbar data-no-theme>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>פנקס כיס לשיחה מאתגרת · Begood</title>
+  <meta name="description" content="שלושה מודלים לשיחה מאתגרת: SPIKES + NURSE, תקשורת מקרבת ועזרה ראשונה נפשית לבית הספר.">
+  <meta name="theme-color" content="#1d3f63">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="פנקס כיס">
+  <link rel="manifest" href="pocket-talk.webmanifest">
+  <link rel="icon" href="assets/pocket-talk/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/pocket-talk/icon-192.png">
+  <style>
+    :root{--ink:#1d3f63;--teal:#157a86;--muted:#5b6778;--line:#e3e8ee}
+    *{box-sizing:border-box}
+    [hidden]{display:none!important}
+    body{margin:0;background:#f4f7fa;color:#1f2a37;font-family:Assistant,"Segoe UI",Arial,sans-serif;line-height:1.5}
+    header{background:#fff;border-bottom:1px solid var(--line);padding:14px 16px calc(12px) ;position:sticky;top:0;z-index:2}
+    header .in{max-width:620px;margin:0 auto;display:flex;align-items:center;gap:12px}
+    header img{width:44px;height:auto}
+    header b{display:block;color:var(--ink);font-size:17px}
+    header span{color:var(--muted);font-size:13px}
+    main{max-width:620px;margin:0 auto;padding:14px 12px 40px}
+    .card{background:#fff;border:1px solid var(--line);border-top:2px solid var(--teal);border-radius:12px;padding:14px 16px;margin:0 0 14px}
+    .card h2{margin:0 0 6px;font-size:17px;color:var(--ink)}
+    .card p{margin:6px 0}
+    .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .btn{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:9px 16px;font:600 15px Assistant,Arial,sans-serif;text-decoration:none;cursor:pointer;border:1px solid var(--ink)}
+    .btn.primary{background:var(--ink);color:#fff}
+    .btn.secondary{background:#fff;color:var(--ink)}
+    .how{display:none}
+    .how.on{display:block}
+    .how ol{margin:6px 0 0;padding-inline-start:20px}
+    nav.pages{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+    nav.pages a{flex:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;color:var(--ink);text-decoration:none;font-size:14px}
+    figure{margin:0 0 14px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;scroll-margin-top:84px}
+    figure img{display:block;width:100%;height:auto}
+    figcaption{padding:8px 14px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}
+    figcaption a{color:var(--teal)}
+    .installed .install-card{display:none}
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 0 20px}
+  </style>
+</head>
+<body>
+  <header><div class="in"><img src="assets/begood-logo-mark.webp" alt="Begood"><div><b>פנקס כיס לשיחה מאתגרת</b><span>ד״ר עינת שושן־רפאלי · ד״ר יעל שדה</span></div></div></header>
+  <main>
+    <section class="card install-card" id="install">
+      <h2>📱 הפנקס בטלפון</h2>
+      <p>כדאי להוסיף את הפנקס למסך הבית בטלפון. כך הוא נפתח בלחיצה אחת, גם בלי אינטרנט, רגע לפני שיחה.</p>
+      <div class="row">
+        <button class="btn primary" id="installBtn" type="button" hidden>התקנה בטלפון</button>
+        <a class="btn secondary" href="assets/pocket-talk/pocket-talk.pdf" download="פנקס כיס לשיחה מאתגרת - Begood.pdf">⬇ הורדת הפנקס (PDF)</a>
+      </div>
+      <div class="how" id="howIos"><p><b>באייפון (ספארי):</b></p><ol><li>לוחצים על כפתור השיתוף (ריבוע עם חץ למעלה).</li><li>בוחרים "הוספה למסך הבית".</li><li>לוחצים "הוספה".</li></ol></div>
+      <div class="how" id="howAndroid"><p><b>באנדרואיד (כרום):</b></p><ol><li>לוחצים על שלוש הנקודות בפינה.</li><li>בוחרים "התקנת אפליקציה" או "הוספה למסך הבית".</li></ol></div>
+      <div class="how" id="howDesk"><p>כדי להתקין בטלפון: פותחים את הדף הזה בטלפון (אפשר לסרוק או לשלוח לעצמך את הקישור), ומוסיפים למסך הבית.</p></div>
+    </section>
+
+    <nav class="pages" aria-label="דפי הפנקס">
+      <a href="#p1">שער</a><a href="#p2">איך בוחרים</a><a href="#p3">SPIKES + NURSE</a><a href="#p4">תקשורת מקרבת</a><a href="#p5">עזרה ראשונה נפשית</a>
+    </nav>
+
+    <figure id="p1"><img src="assets/pocket-talk/p1.webp" width="1118" height="1588" alt="שער: שלושה מודלים לשיחה מאתגרת"></figure>
+    <figure id="p2"><img src="assets/pocket-talk/p2.webp" width="1118" height="1588" alt="איך בוחרים מודל: מתחילים ממה שקורה בשיחה" loading="lazy"></figure>
+    <figure id="p3"><img src="assets/pocket-talk/p3.webp" width="1118" height="1588" alt="SPIKES + NURSE: מסירת מידע מאתגר, צעד אחר צעד" loading="lazy">
+      <figcaption>מקורות: <a href="https://doi.org/10.1634/theoncologist.5-4-302" target="_blank" rel="noopener">Baile et al., 2000</a> · <a href="https://doi.org/10.3322/canjclin.55.3.164" target="_blank" rel="noopener">Back et al., 2005</a></figcaption></figure>
+    <figure id="p4"><img src="assets/pocket-talk/p4.webp" width="1118" height="1588" alt="תקשורת מקרבת: מתצפית לבקשה, בארבעה צעדים" loading="lazy">
+      <figcaption>מקור: Rosenberg, 2015 · <a href="https://www.cnvc.org" target="_blank" rel="noopener">cnvc.org</a></figcaption></figure>
+    <figure id="p5"><img src="assets/pocket-talk/p5.webp" width="1118" height="1588" alt="עזרה ראשונה נפשית לבית הספר: הקשבה, הגנה, חיבור, דוגמה אישית ולימוד" loading="lazy">
+      <figcaption>מקור: <a href="https://www.schoolcrisiscenter.org/wp-content/uploads/2017/04/ncscb-psychological-first-aid-students-and-teachers.pdf" target="_blank" rel="noopener">Schreiber, Gurwitch &amp; Wong, 2006 (PDF)</a></figcaption></figure>
+  </main>
+  <footer>Begood · be-good.co.il</footer>
+  <script>
+  (function(){
+    var standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    if (standalone) document.documentElement.classList.add('installed');
+    var ua = navigator.userAgent || '';
+    var ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var android = /Android/.test(ua);
+    document.getElementById(ios ? 'howIos' : android ? 'howAndroid' : 'howDesk').classList.add('on');
+    var deferred = null, btn = document.getElementById('installBtn');
+    addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferred = e; btn.hidden = false; });
+    btn.addEventListener('click', function(){ if (!deferred) return; deferred.prompt(); deferred.userChoice.finally(function(){ deferred = null; btn.hidden = true; }); });
+    addEventListener('appinstalled', function(){ document.documentElement.classList.add('installed'); });
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('pocket-talk-sw.js', { scope: './pocket-talk' }).catch(function(){});
+  })();
+  </script>
+</body>
+</html>
