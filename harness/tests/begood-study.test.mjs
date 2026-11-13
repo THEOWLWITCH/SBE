@@ -20,7 +20,7 @@ test('three waves, ids the server accepts, each definition valid', () => {
 
 test('items follow the protocol: core every time, U and O and open question only at the end', () => {
   const ids = w => BG.byId(w).definition.items.map(i => i.id);
-  const core = ['M', 'B', 'N', 'T', 'A', 'P'];
+  const core = ['M', 'B', 'N', 'T', 'A', 'P', 'K'];
   for (const w of ['bg-s1-open', 'bg-s2-close', 'bg-s3-close']) for (const p of core) assert.ok(ids(w).some(id => id[0] === p), w + p);
   assert.ok(ids('bg-s1-open').some(id => id.startsWith('bg_')));
   assert.ok(!ids('bg-s2-close').some(id => /^[UO]\d/.test(id)));
@@ -81,7 +81,7 @@ test('participant sees only the wave from the button, with the 1 to 5 scale, "pr
     const links = all(root).filter(n => n.tagName === 'a');
     assert.ok(links.some(a => a.href === 'practice.html'));
     const selects = all(root).filter(n => n.tagName === 'select');
-    assert.equal(selects.length, 23);
+    assert.equal(selects.length, 26); // 23 היגדי ליבה ועוד K1 עד K3
     const opts = selects[0].children.map(o => o.textContent);
     assert.ok(opts.includes('1 · כלל לא') && opts.includes('5 · במידה רבה מאוד') && opts.includes('מעדיף/ה לא לענות'));
     selects[0].value = '4'; selects[1].value = '__decline';
