@@ -28,7 +28,8 @@
     ['initiative', 'יוזמה פרואקטיבית'], ['empathy', 'אמפתיה והבנת צורכי הקהל'],
     ['communication_confidence', 'ביטחון בתקשורת'], ['relationships', 'איכות הקשר הנתפסת'],
     ['shared_agency', 'מיומנויות משותפות ויכולת פעולה משותפת'], ['preparedness_actions', 'פעולות מוכנות בפועל'],
-    ['unexpected_changes', 'שינויים שהתגלו בשאלות פתוחות']
+    ['unexpected_changes', 'שינויים שהתגלו בשאלות פתוחות'],
+    ['conversation_readiness', 'מוכנות לשיחות מאתגרות'], ['choice_experience', 'חוויית בחירה וקבילות התרגול']
   ].map(([id, title]) => Object.freeze({ id, title, status: 'under-development' })));
   const ITEM_TYPES = Object.freeze({ likert: 'סולם תשובות', number: 'מספר', text: 'תשובה פתוחה', choice: 'בחירה אחת', multiple: 'בחירה מרובה', date: 'תאריך' });
   const DATA_CATEGORIES = Object.freeze({ surveys: 'תשובות לשאלונים', usage: 'נתוני שימוש', historical: 'דוגמאות קודמות', generated: 'דוגמאות שנוצרו בכלי', identities: 'פרטים מזהים', contacts: 'פרטי קשר' });

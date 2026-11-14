@@ -252,6 +252,8 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 </dialog>
 
 <section id="screen-select">
+  <!-- שאלון המחקר לפני התרגול: רק למי שהצטרף/ה למחקר (study-links.js) -->
+  <div data-study-tool="practice" data-study-place="before" hidden></div>
   <div class="own-card">
     <div><b>✍️ מקרה משלך</b><span>יש שיחה מאתגרת שלא נמצאת כאן? מספרים עליה, עונים על כמה שאלות, מאשרים את הסיפור ומתחילים להתאמן.</span></div>
     <button type="button" class="primary" id="bOwnCase">לתרגול על מקרה משלי</button>
@@ -336,6 +338,8 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
     <summary>מה נרשם (לצורכי מחקר ואיכות)</summary>
     <pre id="fbLog"></pre>
   </details>
+  <!-- שאלון המחקר אחרי התרגול והמשוב (study-links.js) -->
+  <div data-study-tool="practice" data-study-place="after" hidden></div>
   <div class="fb-save" id="fbSave">
     <h3 class="fb-h">🤝 שמירת השיחה במאגר Begood (רשות)</h3>
     <p class="fb-lead">אפשר לשמור את השיחה (מה שאמרת ומה שהדמות אמרה) במאגר של Begood, בלי שם ובלי קוד, כדי לשפר את התרגולים. אחרי השמירה אפשר לבטל אותה כאן.</p>
@@ -2619,6 +2623,8 @@ body.sbe-hasnav{padding-top:38px;}
 </div>
 <div id="navPanel" hidden></div>
 <script src="lib/screens-menu.js"></script>
+<script src="lib/begood-study.js"></script>
+<script src="lib/study-links.js"></script>
 <script>
 (function(){
   "use strict";
