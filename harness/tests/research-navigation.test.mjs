@@ -19,7 +19,7 @@ test('dedicated research shell opens for live individual sessions without granti
     assert.equal(screen(page,{k:'code',c:'SYNTHETIC',kind:'instadmin'},'admin.html?role=inst').allowed,true,page);
     assert.equal(screen(page,{k:'sys'},'admin.html?role=sys').allowed,true,page);
     for(const payload of [{k:'inst'},{k:'open'}, {k:'code',c:'COURSE',kind:'course'}, {k:'code',c:'LEGACY',kind:'legacy'}]) assert.equal(screen(page,payload).allowed,false);
-    assert.equal(screen(page,{k:'code',c:'SYNTHETIC',kind:'staff',exp:Date.now()-1000}).redirect,'entry.html?expired=1');
+    assert.equal(screen(page,{k:'code',c:'SYNTHETIC',kind:'staff',exp:Date.now()-1000}).redirect,'entry.html?expired=1&next='+page);
   }
   assert.equal(screen('admin.html',{k:'code',c:'SYNTHETIC',kind:'staff'}).allowed,false);
 });

@@ -597,7 +597,9 @@ function render(){
   const nav = $("navPanel"); nav.textContent = "";
   if (role === "sys" && window.SBE_SCREENS_RENDER) window.SBE_SCREENS_RENDER(nav, { linkClass:"nlink", skip:["admin.html"] });
   nav.append(el("h5",{}, "יציאה"));
-  nav.append(el("a",{ class:"nlink", href:"entry.html?logout=1" }, "יציאה / החלפת תפקיד"));
+  // החלפת תפקיד לא שוכחת את המכשיר (13/11/2026: "עד עכשיו נדרשתי לקוד בכל כניסה"); רק "יציאה" מנתקת אותו
+  nav.append(el("a",{ class:"nlink", href:"entry.html?switch=1" }, "החלפת תפקיד"));
+  nav.append(el("a",{ class:"nlink", href:"entry.html?logout=1" }, "יציאה: ניתוק המכשיר הזה"));
 
   const p = $("panels"); p.textContent = "";
   // התראות קצרות מעל התוכן, רק כשלא נמצאים כבר במקום הטיפול

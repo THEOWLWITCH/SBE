@@ -22,8 +22,11 @@
   function ss(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
   // מכשיר מוכר למנהלת המערכת (28/10/2026): בלי כניסה בלשונית, עוברים לדף הכניסה שנכנס לבד וחוזר לדף הזה.
   function sysDeviceKey(){ try { var d = JSON.parse(localStorage.getItem("sbe.sys.device") || "null"); return d && d.key && Date.parse(d.exp) > Date.now() ? d.key : ""; } catch(e){ return ""; } }
+  // להישאר מחוברים במכשיר (13/11/2026: "אני, כמנהלת מערכת וכל אחד אחר אוכל להשאיר את המערכת מחוברת במכשיר שלי
+  // ככל שארצה ובלי הגבלת זמן"): קוד שנשמר במכשיר בכניסה (entry.html, sbe.remember.code). "יציאה" מוחקת אותו.
+  function rememberedCode(){ try { var r = JSON.parse(localStorage.getItem("sbe.remember.code") || "null"); return r && r.code ? r.code : ""; } catch(e){ return ""; } }
   function sysNext(){
-    if (!sysDeviceKey()) return "entry.html";
+    if (!sysDeviceKey() && !rememberedCode()) return "entry.html";
     var here = (location.pathname.split("/").pop() || "") + location.search + location.hash;
     return "entry.html?next=" + encodeURIComponent(here);
   }
@@ -355,7 +358,12 @@
           KEYS.forEach(function(k){ sessionStorage.removeItem(k); });
           localStorage.removeItem(MIRROR);
           document.documentElement.style.display = "none";
-          location.replace(base + (sysDeviceKey() ? sysNext() : "entry.html?expired=1"));
+          // 13/11/2026: "ניסיתי לעבור למרכז המחקר והוא זרק אותי לדף הכניסה": שומרים לאן רצו להגיע ומי נכנס/ה,
+          // כדי שאחרי הכניסה מחדש יחזרו לאותו דף, ומנהלת המערכת תקבל מיד את שדה הסיסמה.
+          var wasSys = home === "admin.html?role=sys";
+          var here = (location.pathname.split("/").pop() || "") + (location.search || "") + (location.hash || "");
+          location.replace(base + (sysDeviceKey() || rememberedCode() ? sysNext()
+            : "entry.html?expired=1" + (wasSys ? "&who=sys" : "") + (inProducts ? "" : "&next=" + encodeURIComponent(here))));
           return;
         }
       }
