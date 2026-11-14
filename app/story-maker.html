@@ -153,7 +153,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
     <div>
       <span class="logo"><img src="assets/begood-logo-sm.webp" alt="Begood"></span>
       <h1>מחולל <span>סיפורי חוסן</span></h1>
-      <p>ממציאים דמויות, בוחרים נושא ותפניות בעלילה, ומקבלים סיפור חוסן מאויר, לילדים מהגן ועד התיכון, וגם סיפור לבוגרים: לצוות, להורים ולקהילה. אפשר לערוך, להדפיס ולשמור כ-PDF, עם הקדשה למי שיצר/ה את הסיפור.</p>
+      <p>ממציאים דמויות, בוחרים נושא ותפניות בעלילה, ומקבלים סיפור חוסן מאויר, לילדים מהגן ועד התיכון, וגם סיפור לבוגרים: לצוות, להורים ולקהילה. את הסיפור כותבת תוכנת מחשב לפי מה שבחרתם, ואפשר לשנות בו כל מילה. אפשר לערוך, להדפיס ולשמור כ-PDF, עם הקדשה למי שיצר/ה את הסיפור.</p>
     </div>
     <div class="book" id="heroBook" aria-hidden="true"></div>
   </header>
@@ -382,7 +382,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
   function drawBook() {
     const st = D.story; if (!st) return;
     const chars = D.storyChars || F().chars, A = D.author, ded = S.dedication(A, chars);
-    let h = `<article class="leaf cover"><div class="art">${S.cover(st, chars, F().place)}</div><h2 contenteditable="true" spellcheck="false" data-k="title">${esc(st.title)}</h2>${A.name ? `<div class="by">${A.g === 'm' ? 'כתב' : 'כתבה'}: ${esc(A.name)}</div>` : ''}</article>`;
+    let h = `<article class="leaf cover"><div class="art">${S.cover(st, chars, F().place)}</div><h2 contenteditable="true" spellcheck="false" data-k="title">${esc(st.title)}</h2>${A.name ? `<div class="by">${A.g === 'm' ? 'יצר' : 'יצרה'}: ${esc(A.name)}, בעזרת מחולל סיפורים ממוחשב</div>` : ''}</article>`;
     h += `<article class="leaf ded"><div class="h">${esc(ded.head)}</div><p>${esc(ded.line)}</p>${ded.from ? `<p class="dfrom" style="font-weight:800">${esc(ded.from)}</p><div class="dcast">${chars.map((c) => S.portrait(c, 'wave')).join('')}</div>` : ''}${A.dedi ? `<p>${esc(A.dedi)}</p>` : ''}${A.from ? `<p style="font-weight:800">${esc(A.from)}</p>` : ''}</article>`;
     st.pages.forEach((p, i) => { h += `<article class="leaf pg2"><div class="art">${S.scene(p, chars)}</div><div class="txt" contenteditable="true" spellcheck="false" data-k="p${i}"><span class="num" contenteditable="false">${i + 1}</span>${esc(p.text)}</div></article>`; });
     h += `<article class="leaf end">${st.resilience ? `<h3>מה עזר לדמויות?</h3><p style="font-size:18px;margin:0 0 14px">${esc(st.resilience)}</p>` : ''}${st.questions.length ? `<h3>שאלות לשיחה אחרי הקריאה</h3><p style="margin:0 0 6px;color:#5a6672">${qIntro()}</p><ol>${st.questions.map((q) => `<li>${esc(q)}</li>`).join('')}</ol>` : ''}</article>`;
@@ -404,7 +404,7 @@ h3.q small{font-weight:600;color:var(--muted);font-size:14px}
     const chars = D.storyChars || F().chars, A = D.author, ded = S.dedication(A, chars);
     const today = new Date().toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\//g, '.');
     const top = `<div class="lg"><img src="assets/begood-logo-sm.webp" alt="Begood"><span>מחולל סיפורי חוסן · ${today}</span></div>`;
-    let h = `<section class="pp cv"><img class="lgc" src="assets/begood-logo.webp" alt="Begood"><div class="art">${S.cover(st, chars, F().place)}</div><h1>${esc(st.title)}</h1>${A.name ? `<div class="by">${A.g === 'm' ? 'כתב' : 'כתבה'}: ${esc(A.name)}</div>` : ''}</section>`;
+    let h = `<section class="pp cv"><img class="lgc" src="assets/begood-logo.webp" alt="Begood"><div class="art">${S.cover(st, chars, F().place)}</div><h1>${esc(st.title)}</h1>${A.name ? `<div class="by">${A.g === 'm' ? 'יצר' : 'יצרה'}: ${esc(A.name)}, בעזרת מחולל סיפורים ממוחשב</div>` : ''}</section>`;
     h += `<section class="pp">${top}<div class="pp dd" style="min-height:auto;flex:1"><div class="h">${esc(ded.head)}</div><p>${esc(ded.line)}</p>${ded.from ? `<p class="dfrom" style="font-weight:800">${esc(ded.from)}</p><div class="dcast">${chars.map((c) => S.portrait(c, 'wave')).join('')}</div>` : ''}${A.dedi ? `<p>${esc(A.dedi)}</p>` : ''}${A.from ? `<p style="font-weight:800">${esc(A.from)}</p>` : ''}</div></section>`;
     st.pages.forEach((p, i) => { h += `<section class="pp">${top}<div class="art">${S.scene(p, chars)}</div><div class="tx">${esc(p.text)}</div><div class="pn">${i + 1}</div></section>`; });
     h += `<section class="pp ed">${top}${st.resilience ? `<h2>מה עזר לדמויות?</h2><p>${esc(st.resilience)}</p>` : ''}${st.questions.length ? `<h2>שאלות לשיחה אחרי הקריאה</h2><p>${qIntro()}</p><ol>${st.questions.map((q) => `<li>${esc(q)}</li>`).join('')}</ol>` : ''}</section>`;

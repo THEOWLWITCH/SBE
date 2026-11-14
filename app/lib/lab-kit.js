@@ -127,9 +127,9 @@
     const send = btn('שליחה', 'btn sm', async () => {
       const q = ta.value.trim(); if (!q) return; err.hidden = true;
       hist.push({ role: 'user', content: q }); ta.value = ''; draw(); o.save();
-      send.disabled = true; const stop = waiting(w, 'חושבת על השאלה.', 20);
+      send.disabled = true; const stop = waiting(w, 'הכנת התשובה.', 20);
       try {
-        const msgs = hist.slice(-8).map((m, i, a) => ({ role: m.role, content: i === 0 && m.role === 'user' ? 'ההקשר של העבודה עכשיו:\n' + o.context() + '\n\nהשאלה: ' + m.content : m.content }));
+        const msgs = hist.slice(-8).map((m, i, a) => ({ role: m.role, content: (o.anon || String)(i === 0 && m.role === 'user' ? 'ההקשר של העבודה עכשיו:\n' + o.context() + '\n\nהשאלה: ' + m.content : m.content) }));
         if (msgs[0].role !== 'user') msgs.shift();
         const a = await plain(o.system(), msgs, 3000);
         if (!String(a || '').trim()) throw new Error('empty');
@@ -152,9 +152,9 @@
     const w = el('div', 'wait'); w.hidden = true; const err = el('p', 'err'); err.hidden = true; const out = el('div');
     const go = btn('ניסוח מכבד', 'btn sm', async () => {
       const t = ta.value.trim(); if (!t) return; err.hidden = true; out.textContent = '';
-      go.disabled = true; const stop = waiting(w, 'קוראת את המשוב.', 15);
+      go.disabled = true; const stop = waiting(w, 'קריאת המשוב.', 15);
       let r = null, bad = null;
-      try { r = await window.sbeCallAIJson(SERVER(), { system: FEEDBACK_SYSTEM, messages: [{ role: 'user', content: 'ההקשר:\n' + o.context() + (about.value.trim() ? '\n\nהמשוב מתייחס ל: ' + about.value.trim() : '') + '\n\nהמשוב כפי שנכתב:\n' + t }], maxTokens: 3000 }, 120000, validFeedback); }
+      try { r = await window.sbeCallAIJson(SERVER(), { system: FEEDBACK_SYSTEM, messages: [{ role: 'user', content: (o.anon || String)('ההקשר:\n' + o.context() + (about.value.trim() ? '\n\nהמשוב מתייחס ל: ' + about.value.trim() : '') + '\n\nהמשוב כפי שנכתב:\n' + t) }], maxTokens: 3000 }, 120000, validFeedback); }
       catch (e) { bad = e; }
       finally { stop(); go.disabled = false; }
       if (!validFeedback(r)) { err.textContent = why(bad); err.hidden = false; return; }

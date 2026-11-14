@@ -66,8 +66,8 @@
   const ORG_LEVEL = 'צוות בארגון או בקהילה (בוגרים)';
   const ORG_PH = { challenge: 'בעיה, החלטה, רעיון או תכנית. למשל: איך מקבלים בברכה מתנדבים חדשים כך שירצו להישאר.',
     hard: 'למשל: אותם שניים מדברים, ויש שמחכים בשקט. בלי שמות.' };
-  const chatOpts = (n) => ({ ph: 'למשל: איך מזמינים מי שעוד לא דיבר/ה?', history: () => (I.chats[n] = I.chats[n] || []), save: () => save(), context, system: () => M.stageSystem(n) });
-  const fbOpts = { adult: ADULT, context, log: (x) => { I.feedback.push(x); save(); } };
+  const chatOpts = (n) => ({ ph: 'למשל: איך מזמינים מי שעוד לא דיבר/ה?', history: () => (I.chats[n] = I.chats[n] || []), save: () => save(), context, anon, system: () => M.stageSystem(n) });
+  const fbOpts = { adult: ADULT, context, anon, log: (x) => { I.feedback.push(x); save(); } };
   function withRefs(root, build) {
     if (window.SBE_REFS) SBE_REFS.begin(SRC, 'resilience-advisor-sources.html');
     build(root);
