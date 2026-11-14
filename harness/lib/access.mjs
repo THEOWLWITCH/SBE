@@ -132,7 +132,7 @@ async function status(store) {
 // הדפדפן לא יכול לזייף אותו, ולכן פעולות שדורשות כניסה (למשל פתיחת כיתת חוסן)
 // נבדקות מולו כאן בשרת. המפתח נוצר פעם אחת ונשמר במאגר (token-secret).
 const TOKEN_HOURS = 12;
-const SYS_DEVICE_DAYS = 90;
+const SYS_DEVICE_DAYS = 3650; // בלי הגבלת זמן בפועל (13/11/2026), ומתחדש בכל כניסה מהמכשיר (sysDevice)
 const b64u = (buf) => Buffer.from(buf).toString('base64url');
 
 async function tokenSecret(store) {
@@ -1793,7 +1793,10 @@ export async function handleAccess(store, body) {
       if (rec) await store.del('sysdev:' + sha(key));
       await pause(); return [403, { error: 'wrong' }];
     }
-    return [200, { ok: true, token: await signToken(store, { k: 'sys' }), exp: rec.exp }];
+    // בלי הגבלת זמן (13/11/2026): כל כניסה מהמכשיר מאריכה את התוקף מחדש, כך שמכשיר בשימוש לא נשכח. "יציאה" מוחקת אותו.
+    const exp = new Date(Date.now() + SYS_DEVICE_DAYS * 864e5).toISOString();
+    await store.set('sysdev:' + sha(key), { ...rec, exp, used: new Date().toISOString() });
+    return [200, { ok: true, token: await signToken(store, { k: 'sys' }), exp }];
   }
   if (action === 'sysForget') {
     const key = typeof body.key === 'string' && /^[a-f0-9]{64}$/.test(body.key) ? body.key : '';
