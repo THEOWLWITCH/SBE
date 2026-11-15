@@ -8,6 +8,7 @@ import { createRequire } from 'node:module';
 import { handleHlRooms, roomModelGate } from './hl-rooms.mjs';
 import { handleOrgSuite } from './org-suite.mjs';
 import { handleDilemma, dlmModelGate } from './dilemma.mjs';
+import { handlePartnerDocs } from './partner-docs.mjs';
 const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
 const JOURNEY_WORKSPACE = createRequire(import.meta.url)('../../app/lib/journey-workspace-model.js');
 const JOURNEY_ANALYSIS = createRequire(import.meta.url)('../../app/lib/journey-analysis-model.js');
@@ -1858,6 +1859,7 @@ export async function handleAccess(store, body) {
   const isSys = (sysTok && sysTok.k === 'sys') || await checkPassword(store, 'sys', body?.auth);
   if (/^open(Join|List|Create|Update|Revoke)$/.test(action || '')) return handleOpenLinks(store, body, isSys);
   if (/^story(Share|Withdraw|List|Status|Delete)$/.test(action || '')) return handleStories(store, body, isSys);
+  if (/^pdoc(Get|Respond|List|Save|Reply|Delete)$/.test(action || '')) return handlePartnerDocs(store, body, { isSys, notifyAdmin, siteUrl: SITE_URL });
 
   if (['renewRequest', 'codesList', 'codeCreate', 'codeRevoke', 'codeUse', 'setSubscription', 'renewSubscription',
     'getSettings', 'setSettings', 'renewList', 'renewDone', 'renewApprove'].includes(action)) {
