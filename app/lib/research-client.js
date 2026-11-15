@@ -58,7 +58,9 @@
   function lifecycle(page,client,environment=window){let suspended=null,loading=false,again=false;
     function suspend(){if(!suspended)suspended={token:client.getSessionToken?.()||client.getToken(),pending:page.capture?.()};client.invalidate('refresh');}
     async function refresh(){if(loading){again=true;return;}loading=true;const saved=suspended||{token:client.getSessionToken?.()||client.getToken(),pending:page.capture?.()};suspended=null;client.invalidate('refresh');try{await page.load(saved.token===client.getToken()?saved.pending:undefined);}finally{loading=false;if(again){again=false;refresh();}}}
-    environment.addEventListener('pageshow',refresh);environment.addEventListener('focus',refresh);environment.addEventListener('pagehide',()=>{suspended=null;client.invalidate('leave');});environment.addEventListener('storage',()=>{suspended=null;refresh();});environment.document?.addEventListener('visibilitychange',()=>{if(environment.document.visibilityState==='visible')refresh();else suspend();});
+    // מעבר בין חלונות לא טוען מחדש (15/11/2026: "בכל פעם שאני עוברת מסך... נטענת שוב"): רק כשהכניסה התחלפה או אחרי עשר דקות
+    let lastLoad=Date.now();const SOFT=10*60*1000;const soft=()=>{if((suspended&&suspended.token!==client.getToken())||(client.getSessionToken?.()&&client.getSessionToken()!==client.getToken())||Date.now()-lastLoad>SOFT){lastLoad=Date.now();refresh();}else{suspended=null;}};
+    environment.addEventListener('pageshow',e=>{if(e&&e.persisted===false)return;refresh();});environment.addEventListener('focus',soft);environment.addEventListener('pagehide',()=>{suspended=null;client.invalidate('leave');});environment.addEventListener('storage',()=>{suspended=null;refresh();});environment.document?.addEventListener('visibilitychange',()=>{if(environment.document.visibilityState==='visible')soft();else suspend();});
     return Object.freeze({refresh});
   }
   return Object.freeze({create,dom,display,download,lifecycle,snapshot,restore,error,MESSAGES});
