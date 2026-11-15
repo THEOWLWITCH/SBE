@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>מסמך שותפות · Begood</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Assistant:wght@400;600;700&display=swap">
+<style>
+:root{--ink:#25394a;--blue:#1d3f63;--teal:#317c7a;--line:#dbe4ea;--sun:#e0a92d;--paper:#f6f8f7}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:18px/1.75 Assistant,Arial,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:28px 18px 60px}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.brand img{height:46px;width:auto}
+.brand span{font-size:14px;color:#6b7a86}
+.letter{background:#fff;border:1px solid var(--line);border-top:2px solid var(--teal);border-radius:12px;padding:34px 38px;box-shadow:0 2px 14px #1d3f630a}
+.kicker{font-size:14px;color:var(--teal);font-weight:700;margin:0 0 4px}
+h1{font:600 30px/1.3 Fredoka,Assistant,sans-serif;color:var(--blue);margin:0 0 6px}
+.who{color:#5d6d79;font-size:16px;margin:0 0 20px}
+.intro{font-size:19px;background:#f3f8f7;border-radius:10px;padding:16px 20px;margin:0 0 26px}
+.intro p{margin:0}
+section{margin:0 0 22px;break-inside:avoid}
+h2{font:500 21px/1.4 Fredoka,Assistant,sans-serif;color:var(--blue);margin:0 0 6px;display:flex;align-items:center;gap:10px}
+h2::before{content:"";width:18px;height:2px;background:var(--teal);border-radius:2px;flex:0 0 18px}
+section p,section li{text-align:justify;margin:0 0 8px}
+section ul{margin:0 0 8px;padding-inline-start:22px}
+.closing{border-top:1px solid var(--line);padding-top:18px;margin-top:26px;font-weight:600;color:var(--blue)}
+.sign{margin-top:8px;color:#5d6d79;font-size:16px}
+.box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 26px;margin-top:18px}
+.box h3{font:500 20px/1.4 Fredoka,Assistant,sans-serif;color:var(--blue);margin:0 0 8px}
+.box p{margin:0 0 12px;color:#4b5b67}
+label.f{display:block;font-weight:600;margin:10px 0 4px}
+input[type=text],textarea{width:100%;font:inherit;border:1px solid #c3d0da;border-radius:9px;padding:9px 12px;background:#fff;color:var(--ink)}
+input[type=text]:focus,textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px #317c7a22}
+textarea{min-height:96px;resize:vertical}
+.check{display:flex;gap:10px;align-items:flex-start;margin:12px 0}
+.check input{width:20px;height:20px;margin-top:5px;accent-color:var(--teal)}
+button{font:inherit;font-weight:600;cursor:pointer;border-radius:999px;padding:9px 22px;border:1px solid var(--blue);background:var(--blue);color:#fff}
+button.soft{background:#fff;color:var(--blue)}
+button:disabled{opacity:.55;cursor:wait}
+.links{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:16px}
+.links a{color:var(--blue);text-decoration:none;cursor:pointer}
+.links a:hover{text-decoration:underline}
+.done{background:#eef7f2;border:1px solid #bfe0cc;border-top:2px solid #3f9a6a;border-radius:12px;padding:18px 22px;margin-top:18px}
+.done b{color:#2b6f4b}
+.talk{margin-top:18px}
+.msg{border-inline-start:2px solid var(--line);padding:4px 14px;margin:10px 0}
+.msg.owner{border-color:var(--teal)}
+.msg small{display:block;color:#6b7a86;font-size:14px}
+.msg p{margin:2px 0;white-space:pre-wrap}
+.note{color:#6b7a86;font-size:15px}
+.status{margin:12px 0 0;font-size:16px}
+.status.bad{color:#9b2d31}
+footer{text-align:center;color:#6b7a86;font-size:14px;margin-top:30px}
+:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+@media screen and (max-width:640px){body{font-size:17px}.letter{padding:24px 18px}.box{padding:18px}h1{font-size:25px}}
+@media print{@page{size:A4;margin:24mm 24mm}body{background:#fff;font-size:12pt}.wrap{padding:0;max-width:none}.letter{border:0;box-shadow:none;padding:0}.box,.links,.talk,footer .np{display:none}.intro{background:none;padding:0}h2{break-after:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><img src="assets/begood-logo.webp" alt="Begood"><span>מרכז המחקר של Begood</span></div>
+  <main id="root" aria-live="polite"><p class="note">טעינת המסמך…</p></main>
+  <footer>Begood · be-good.co.il</footer>
+</div>
+<script src="lib/partner-doc-core.js"></script>
+<script>
+(function(){
+  'use strict';
+  var SERVER='https://sbe-server.onrender.com', P=window.SBE_PDOC, root=document.getElementById('root');
+  var id=new URLSearchParams(location.search).get('d')||'', doc=null;
+  function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
+  function dateIL(iso){try{return new Date(iso).toLocaleDateString('he-IL',{day:'numeric',month:'numeric',year:'2-digit'}).replace(/\//g,'.');}catch(e){return '';}}
+  async function call(body,tries){
+    tries=tries||0;
+    try{var r=await fetch(SERVER+'/api/access',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});var j=await r.json().catch(function(){return {};});return {ok:r.ok,status:r.status,data:j};}
+    catch(e){if(tries<3){await new Promise(function(r){setTimeout(r,6000);});return call(body,tries+1);}return {ok:false,status:0,data:{}};}
+  }
+  async function load(){
+    if(!/^[a-f0-9]{32}$/.test(id)){root.replaceChildren(el('p','note','הקישור לא שלם. אפשר לבקש קישור חדש ממי ששלח.ה אותו.'));return;}
+    var t=setTimeout(function(){root.replaceChildren(el('p','note','מתחברים לשרת. החיבור הראשון נמשך עד כ־30 שניות.'));},2500);
+    var r=await call({action:'pdocGet',id:id});clearTimeout(t);
+    if(!r.ok){root.replaceChildren(el('p','note',r.status===404?'המסמך לא נמצא. ייתכן שהקישור השתנה; אפשר לבקש קישור חדש ממי ששלח.ה אותו.':'לא הצלחנו לטעון את המסמך כרגע. אפשר לרענן את הדף ולנסות שוב.'));return;}
+    doc=r.data.doc;draw();
+  }
+  function draw(msg,bad){
+    document.title=(doc.title||'מסמך שותפות')+' · Begood';
+    var letter=el('article','letter');
+    letter.append(el('p','kicker','מסמך שותפות'),el('h1','',doc.title||'מסמך שותפות'));
+    var who=[];if(doc.partnerName)who.push('אל: '+doc.partnerName);if(doc.fromName)who.push('מאת: '+doc.fromName);if(doc.updated)who.push(dateIL(doc.updated));
+    if(who.length)letter.append(el('p','who',who.join(' · ')));
+    if(doc.intro){var i=el('div','intro');i.append(P.render(document,doc.intro));letter.append(i);}
+    (doc.sections||[]).forEach(function(s){var sec=el('section');if(s.title)sec.append(el('h2','',s.title));sec.append(P.render(document,s.text));letter.append(sec);});
+    if(doc.closing){var c=el('div','closing');c.append(P.render(document,doc.closing));letter.append(c);}
+    if(doc.fromName)letter.append(el('p','sign','בברכה, '+doc.fromName));
+    var parts=[letter];
+    if(doc.approval){var d=el('div','done');d.append(el('b','','✓ המסמך אושר'),document.createTextNode(' על ידי '+doc.approval.name+', '+dateIL(doc.approval.at)+'. תודה! יוצאים לדרך יחד.'));parts.push(d);}
+    else parts.push(approveBox());
+    parts.push(askBox());
+    var talk=(doc.responses||[]);if(talk.length){var tk=el('div','talk box');tk.append(el('h3','','השיחה שלנו על המסמך'));talk.forEach(function(m){var b=el('div','msg'+(m.from==='owner'?' owner':''));b.append(el('small','',(m.name||(m.from==='owner'?'Begood':''))+' · '+dateIL(m.at)+(m.kind==='approve'?' · אישור':'')));if(m.text)b.append(el('p','',m.text));tk.append(b);});parts.push(tk);}
+    var links=el('div','links');var pr=el('a','','🖨 הדפסה או שמירה כ־PDF');pr.href='#';pr.onclick=function(e){e.preventDefault();window.print();};links.append(pr);parts.push(links);
+    root.replaceChildren.apply(root,parts);
+    if(msg){var s=el('p','status'+(bad?' bad':''),msg);s.setAttribute('role','status');root.insertBefore(s,root.children[1]||null);s.scrollIntoView({block:'center',behavior:'smooth'});}
+  }
+  function approveBox(){
+    var b=el('div','box');b.append(el('h3','','מסכימים? אפשר לאשר כאן'),el('p','','אישור המסמך אומר שאנחנו יוצאים לדרך יחד לפי מה שכתוב בו. תמיד אפשר לבקש לעדכן אותו בהמשך.'));
+    var l=el('label','f','שם מלא');l.htmlFor='nm';var n=el('input');n.type='text';n.id='nm';n.autocomplete='name';n.placeholder='למשל: ד״ר רונית לוי';
+    var c=el('label','check');var cb=el('input');cb.type='checkbox';c.append(cb,el('span','','קראתי, ואני שמח.ה להצטרף לעבודה המשותפת'));
+    var go=el('button','','אישור המסמך');go.type='button';
+    go.onclick=async function(){
+      if(n.value.trim().length<2){n.focus();draw('כדי לאשר, אפשר לכתוב שם מלא.',true);return;}
+      if(!cb.checked){draw('כדי לאשר, אפשר לסמן את תיבת ההסכמה.',true);return;}
+      go.disabled=true;go.textContent='שולחים…';
+      var r=await call({action:'pdocRespond',id:id,kind:'approve',name:n.value,agree:true,version:doc.version});
+      if(r.ok){doc=r.data.doc;draw('✓ תודה! האישור נשמר, וההודעה נשלחה אלינו.');}
+      else if(r.status===409){doc=r.data.doc||doc;draw('המסמך עודכן בינתיים. אפשר לעבור עליו שוב ולאשר את הנוסח החדש.',true);}
+      else{go.disabled=false;go.textContent='אישור המסמך';draw('האישור לא נשמר. אפשר לנסות שוב בעוד רגע.',true);}
+    };
+    b.append(l,n,c,go);return b;
+  }
+  function askBox(){
+    var b=el('div','box');b.append(el('h3','','יש שאלה, רעיון או הצעה לשינוי?'),el('p','','נשמח לשמוע. ההודעה מגיעה אלינו, ונעדכן את המסמך יחד.'));
+    var l=el('label','f','שם (רשות)');l.htmlFor='qn';var n=el('input');n.type='text';n.id='qn';
+    var l2=el('label','f','מה תרצו לשאול או להציע?');l2.htmlFor='qt';var t=el('textarea');t.id='qt';t.placeholder='למשל: אפשר להוסיף מפגש חודשי קבוע?';
+    var go=el('button','soft','שליחה');go.type='button';
+    go.onclick=async function(){
+      if(t.value.trim().length<2){t.focus();return;}
+      go.disabled=true;go.textContent='שולחים…';
+      var r=await call({action:'pdocRespond',id:id,kind:'question',name:n.value,text:t.value});
+      if(r.ok){doc=r.data.doc;draw('✓ ההודעה נשלחה. תודה!');}
+      else{go.disabled=false;go.textContent='שליחה';draw('ההודעה לא נשלחה. אפשר לנסות שוב בעוד רגע.',true);}
+    };
+    b.append(l,n,l2,t,go);return b;
+  }
+  load();
+})();
+</script>
+</body>
+</html>
