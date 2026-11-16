@@ -693,9 +693,10 @@ function setAIStatus(status){
   else chip.innerHTML = dot + "בודקת חיבור למודל...";
 }
 
-async function callAI(system, userText, maxTokens, timeoutMs) {
+async function callAI(system, userText, maxTokens, timeoutMs, fast) {
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
-  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200 }, timeoutMs || 60000);
+  // fast (16/11/2026: "יצירת תרחיש לוקח הרבה מידי זמן"): הצעות שמחכים להן מול המסך, ב-effort בינוני (VARIATION.fast)
+  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, ...(fast ? { fast: true } : {}) }, timeoutMs || 60000);
 }
 
 // טקסונומיות/כרטיסים כטקסט לפרומפט — נגזרים מאותם מקורות אמת (TAXONOMIES/
@@ -775,8 +776,8 @@ async function generateProposals(required) {
 
     // שתי הקריאות רצות במקביל — חוסכת ~40% מזמן ההמתנה
     const [rawA, rawB] = await Promise.all([
-      callAI(sysActor,   "בני את מבנה התרחיש ואת דמות השחקנית לתרחיש הזה, בעברית, לפי כל ההנחיות.", 14000, 360000),
-      callAI(sysTrainee, "בני את דמות המתנסה לתרחיש הזה, בעברית, לפי כל ההנחיות.", 12000, 360000),
+      callAI(sysActor,   "בני את מבנה התרחיש ואת דמות השחקנית לתרחיש הזה, בעברית, לפי כל ההנחיות.", 14000, 360000, true),
+      callAI(sysTrainee, "בני את דמות המתנסה לתרחיש הזה, בעברית, לפי כל ההנחיות.", 12000, 360000, true),
     ]);
 
     const mA = sbeJsonMatch(rawA);
@@ -1205,7 +1206,10 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
   if (reqKeys.some(k => !val(k))) {
     return show("נשארו שדות עיקריים למילוי", el("p",{},"יש למלא את תפקיד המתנסה (דמות 1), תפקיד השחקנית (דמות 2), וסיפור האירוע לפני שאפשר לייצר הצעות."));
   }
-  e.target.disabled = true; e.target.textContent = "מייצר...";
+  e.target.disabled = true;
+  // זמן ההמתנה על הכפתור (16/11/2026), בניסוח הרשמי של המערכת
+  const t0 = Date.now(), tick = () => { e.target.textContent = "הכנת ההצעות נמשכת עד כ־2 דקות. חלפו " + Math.round((Date.now() - t0) / 1000) + " שניות"; };
+  tick(); const tickIv = setInterval(tick, 1000);
   try {
     const out = await generateProposals(Object.fromEntries(reqKeys.map(k => [k, val(k)])));
     if (out._noModel) return show("ההצעות לא הופקו", el("p",{}, "אין כרגע חיבור למודל, ולכן לא הופקו הצעות. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים."));
@@ -1223,7 +1227,7 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
     if (out._mock) document.getElementById("hint").textContent =
       "⚠ אין חיבור למודל כרגע. זה תרחיש דוגמה קבוע (הדגמה), לא דמויות שנבנו עבור מה שכתבת." +
       (out._why ? " · סיבה: " + out._why : "");
-  } finally { e.target.disabled = false; e.target.textContent = "מילוי הצעות"; }
+  } finally { clearInterval(tickIv); e.target.disabled = false; e.target.textContent = "מילוי הצעות"; }
 });
 
 // ── הדהוד תכונות (17/09/2026) — "המערכת תדע לתרגם את התכונות ולהדהד אותן
