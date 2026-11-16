@@ -339,9 +339,9 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <section id="screen-feedback" hidden>
   <h2 style="font-family:'Frank Ruhl Libre',Georgia,serif;">מה קרה בתרגול</h2>
   <div id="fbComm"></div>
-  <h3 class="fb-h">רגעי המפתח בשיחה</h3>
-  <p class="fb-lead">בשיחה הזאת יש כמה רגעים שבהם הדמות יכולה להיפתח. לכל רגע: מה היא אומרת בו, מה מביא אליו, ומה קרה בשיחה שלך.</p>
-  <div id="fbTurningPoints"></div>
+  <!-- 16/11/2026 ("זה לא משוב - זו הכנה וזה לא מעניין. המשוב הוא על מה שסוכם ורק על זה. כל הטבלה הזאת לא במקום"):
+       טבלת "רגעי המפתח בשיחה" לא מוצגת ולא מודפסת. הקוד ממלא אותה עדיין (לחישובים), אבל היא מוסתרת. -->
+  <div id="fbTurningPoints" hidden></div>
   <h3 class="fb-h">מיומנויות בשיחה</h3>
   <div id="fbSkills"></div>
   <h3 class="fb-h" id="fbAlmostH">רגע שאפשר לנסות שוב</h3>
@@ -1141,7 +1141,7 @@ document.getElementById("bPrintFb").addEventListener("click", () => {
   conv.append(SBE_TABLE(["מי", "מה נאמר"], state.transcript.filter(m => m.who === "character" || m.who === "trainee")
     .map(m => [m.who === "trainee" ? "אני" : (SCENARIO.actor.name || "הדמות"), m.line])));
   const fb = document.getElementById("screen-feedback").cloneNode(true);
-  fb.querySelectorAll("button,details").forEach(x => x.remove());
+  fb.querySelectorAll("button,details,#fbTurningPoints").forEach(x => x.remove());
   // המקרה בראש ה-PDF, כדי שאפשר יהיה לקרוא אותו אחר כך (12/10/2026, בדיקת הלקוחה)
   const tr = SCENARIO.trainee || {}, cs = el("div");
   const op = Array.isArray(tr.opening) ? tr.opening : [tr.opening].filter(Boolean), opEl = el("div"); op.forEach(p => opEl.append(el("p", {}, p)));
