@@ -854,9 +854,10 @@ function setAIStatus(status){
   else chip.innerHTML = dot + "בודקת חיבור למודל...";
 }
 
-async function callAI(system, userText, maxTokens, timeoutMs) {
+async function callAI(system, userText, maxTokens, timeoutMs, fast) {
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך (06/10/2026)
-  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200 }, timeoutMs || 60000);
+  // fast (16/11/2026: "יצירת תרחיש לוקח הרבה מידי זמן"): הצעות שמחכים להן מול המסך, ב-effort בינוני (VARIATION.fast)
+  return sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, ...(fast ? { fast: true } : {}) }, timeoutMs || 60000);
 }
 
 function taxonomyPromptText(name){
@@ -912,7 +913,7 @@ async function generateProposals(required) {
     // maxTokens/timeout גדולים בכוונה, אותו סדר גודל כמו input-screen.html —
     // שני גיליונות דמות מלאים + קונפליקט, כולל כמה שדות מורכבים (Register,
     // Anchor, opening, turningPoints). יכויל שוב אם יתגלה בפועל שלא מספיק.
-    const raw = await callAI(system, "בני דמויות וסיטואציה מלאות לתרגול הזה, בעברית, לפי כל ההנחיות.", 20000, 420000);
+    const raw = await callAI(system, "בני דמויות וסיטואציה מלאות לתרגול הזה, בעברית, לפי כל ההנחיות.", 20000, 420000, true);
     const m = sbeJsonMatch(raw);
     if (!m) throw new Error("לא התקבל JSON תקין מהמודל");
     const parsed = JSON.parse(m[0]);
@@ -1369,7 +1370,10 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
   if (reqKeys.some(k => !val(k))) {
     return show("נשארו שדות עיקריים למילוי", el("p",{},"יש למלא את מסגרת ההתנסות, דמות 1, דמות 2 ותיאור הפגישה לפני שאפשר לייצר הצעות."));
   }
-  e.target.disabled = true; e.target.textContent = "מייצר...";
+  e.target.disabled = true;
+  // זמן ההמתנה על הכפתור (16/11/2026), בניסוח הרשמי של המערכת
+  const t0 = Date.now(), tick = () => { e.target.textContent = "הכנת ההצעות נמשכת עד כ־2 דקות. חלפו " + Math.round((Date.now() - t0) / 1000) + " שניות"; };
+  tick(); const tickIv = setInterval(tick, 1000);
   try {
     const out = await generateProposals(Object.fromEntries(reqKeys.map(k => [k, val(k)])));
     if (out._noModel) return show("ההצעות לא הופקו", el("p",{}, "אין כרגע חיבור למודל, ולכן לא הופקו הצעות. מה שמילאת נשמר. אפשר לנסות שוב בעוד דקה–שתיים."));
@@ -1386,7 +1390,7 @@ document.getElementById("bSuggest").addEventListener("click", async (e) => {
     // צריכה לדעת שזה לא נבנה במיוחד עבור מה שכתבה (19/09/2026).
     if (out._mock) document.getElementById("hint").textContent =
       "⚠ אין חיבור למודל כרגע. זה תרחיש דוגמה קבוע (הדגמה), לא סיטואציה שנבנתה עבור מה שכתבת.";
-  } finally { e.target.disabled = false; e.target.textContent = "מילוי הצעות"; }
+  } finally { clearInterval(tickIv); e.target.disabled = false; e.target.textContent = "מילוי הצעות"; }
 });
 
 // ── הדהוד תכונות (17/09/2026) — "המערכת תדע לתרגם את התכונות ולהדהד אותן
