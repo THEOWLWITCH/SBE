@@ -15,6 +15,7 @@
   if (window.self !== window.top) return;
   if (document.documentElement.hasAttribute('data-no-topbar')) return;
   if (!token && (params.has('room') || params.has('join') || params.has('share'))) return; // משתתפים בקישור: בלי מעבר לכלים אחרים
+  if (!token && window.SBE_QUICK_OPEN) return; // התנסות קצרה פתוחה בלי כניסה (16/11/2026): בלי מעבר לכלים ולמרחבים אחרים
   window.SBE_TOPBAR = {};
 
   var HOME = /admin\.html\?role=sys/.test(homeUrl) || !homeUrl ? 'home.html' : homeUrl;

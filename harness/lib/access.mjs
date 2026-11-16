@@ -442,6 +442,10 @@ export async function authorizeModel(store, auth, route = '/api/complete') {
     const g = await roomModelGate(store, a, page);
     if (g) return { ok: true, who: 'hlroom', page, route, ...modelIdentity({ k: 'hlroom', c: g.principal, inst: g.institution }, g.principal), institutionId: null, space: g.space === 'org' ? 'org' : 'edu' };
   }
+  // התנסות קצרה פתוחה בלי כניסה (16/11/2026: "תשאיר את הכלי הזה פתוח לעוד יומיים... אשלח את הקישור בווצאפ הקבוצתי"):
+  // רק quick-practice.html, רק עד QUICK_OPEN_UNTIL כולל (שעון ישראל), ומזהה אורח/ת אקראי מהמכשיר למכסות.
+  if (!a.token && a.quick && page === 'quick-practice.html' && quickOpenNow() && /^[a-f0-9]{16}$/.test(String(a.quick)))
+    return { ok: true, who: 'quickopen', page, route, ...modelIdentity({ k: 'quickopen', c: a.quick, inst: 'quickopen:' + a.quick }, 'quickopen:' + a.quick), institutionId: null, space: 'edu' };
   // בירור דילמות: משתתפים בלי קוד Begood, עם המפתח האישי, רק בדף ההשתתפות ורק כשהפעילות פתוחה.
   if (a.dlm && route === '/api/complete') {
     const g = await dlmModelGate(store, a, page);
@@ -1609,6 +1613,8 @@ const OPEN_ALL_PERMS = [...new Set(Object.values(OPEN_PAGES))].filter((p) => !/^
 // קישור פתוח לתרגול לפי תרחיש: פנייה למודל רק מדף התרגול (בלי יצירת תרחישים ובלי מסכי המנחה)
 export const openModelPageOk = (rec, page) => !rec || !/^fac_/.test(rec.perm || '') || page === rec.page;
 const openPerms = (rec) => (rec && Array.isArray(rec.perms) && rec.perms.length ? rec.perms : [rec && rec.perm]).filter((p) => PERMS.includes(p));
+export const QUICK_OPEN_UNTIL = '2026-11-18';
+export const quickOpenNow = (d = new Date()) => ilToday(d) <= QUICK_OPEN_UNTIL;
 export const ilToday = (d = new Date()) => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
 const OPEN_MAX = 500;
 const validOpenId = (id) => /^[a-z0-9][a-z0-9-]{2,31}$/.test(String(id || ''));

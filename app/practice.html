@@ -2336,6 +2336,13 @@ function renderCommFeedback(box, r){
     $("bReady").addEventListener("click", goReady);
     // קישור ישיר: practice.html?ready=1, וההתנסות הקצרה (quick-practice.html)
     if (window.SBE_SOLO_READY) {
+      // פתוח בלי כניסה (SBE_QUICK_OPEN, access-guard.js): בלי ניווט, בלי "איך נראה התוצר?" ובלי שמירה במאגר (דורשת כניסה)
+      if (window.SBE_QUICK_OPEN) {
+        const nb = document.getElementById("navBar"); if (nb) nb.remove();
+        const np = document.getElementById("navPanel"); if (np) np.remove();
+        const fs = document.getElementById("fbSave"); if (fs) fs.remove();
+        document.head.append(el("style", {}, ".sbe-peek{display:none!important}"));
+      }
       // לשון הפנייה עוברת למסך "לפני שמתחילים", ושינוי בה מחליף את הפתיחה
       const meRow = el("label", { class: "solo-me" }, "איך לפנות אליי: ");
       meRow.append($("readyMe")); $("bBackToSelect").replaceWith(meRow);
@@ -2705,6 +2712,8 @@ body.sbe-hasnav{padding-top:38px;}
 <script>
 (function(){
   "use strict";
+  // התנסות קצרה פתוחה בלי כניסה (16/11/2026): בלי סרגל הניווט הישן ובלי מעבר לכלים אחרים
+  if (window.SBE_QUICK_OPEN) { var _qb = document.getElementById("navBar"); if (_qb) _qb.remove(); var _qp = document.getElementById("navPanel"); if (_qp) _qp.remove(); return; }
   if (window.self !== window.top) {
     // מוטמע בתוך iframe (admin.html/demo-hub.html) — לעמוד המארח יש
     // תפריט ניווט משלו; עותק כפול היה מתמקם לפי חלון ה-iframe ולא לפי המסך.
