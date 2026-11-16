@@ -355,7 +355,7 @@ function renderEntry(){
   code.setAttribute("aria-label", "קוד כניסה");
   inn.append(
     el("div",{class:"code-row"}, code, btn, el("a",{class:"ask-code sbe-no-theme",href:"renew.html"},"בקשת קוד")),
-    el("label",{class:"remember stay"}, stay, " להישאר מחובר/ת במכשיר הזה (עד ליציאה)"), err);
+    el("label",{class:"remember stay"}, stay, " להישאר מחובר/ת במכשיר הזה (עד לניתוק המכשיר)"), err);
   card.classList.add("login-card");
   card.append(inn);
   view.append(card);
@@ -651,16 +651,19 @@ function buildAdminField(role){
     if (role === "sys" && remember.checked) { btn.disabled = true; btn.textContent = "שומרים את המכשיר..."; await sysRemember(); }
     const home = "admin.html?role=" + role;
     try { sessionStorage.setItem("sbe.session.homeUrl", home); } catch(e){}
+    // 16/11/2026 ("הכניסה שלי תהיה למרחב שלי"): מנהלת המערכת נכנסת ל"המרחב שלי"; הניהול בכפתור בסרגל העליון.
+    // homeUrl נשאר admin.html?role=sys כי לפיו המערכת יודעת שזו מנהלת המערכת.
+    const land = role === "sys" ? "home.html" : home;
     // חזרה לדף שממנו הגיעו כשהכניסה הסתיימה (access-guard.js, ?next=), כמו בכניסה האוטומטית
     const next = role === "sys" ? (new URLSearchParams(location.search).get("next") || "") : "";
-    location.href = /^[a-z0-9-]+\.html([?#][^\s]*)?$/.test(next) ? next : home;
+    location.href = /^[a-z0-9-]+\.html([?#][^\s]*)?$/.test(next) ? next : land;
   };
   btn.addEventListener("click", submit);
   pass.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
   wrap.append(
     el("p",{class:"hint"},"כאן נכנסים עם סיסמה, לא עם קוד: לניהול מוסד אחד או לניהול כל המערכת."),
     el("label",{},"סיסמה"), passWrap,
-    role === "sys" ? el("label",{class:"remember"}, remember, " להישאר מחוברת במכשיר הזה, בלי סיסמה בפעם הבאה (עד ליציאה)") : "",
+    role === "sys" ? el("label",{class:"remember"}, remember, " להישאר מחוברת במכשיר הזה, בלי סיסמה בפעם הבאה (עד לניתוק המכשיר)") : "",
     err, btn);
   return wrap;
 }
@@ -676,7 +679,13 @@ function buildAdminField(role){
   // יציאה רק כשמבקשים אותה (?logout=1 או כפתור "יציאה"), לא בכל הגעה למסך
   // הכניסה — אחרת קישור "Begood" או "מסך כניסה" ניתק את מנהלת המערכת וחסם
   // אותה מכל המסכים. כניסה חדשה מוחקת ממילא את הקודמת (clearSession).
-  if (new URLSearchParams(location.search).get("logout")) { sysForget(); forgetCode(); clearSession(); }
+  // 16/11/2026 ("השאר אותי מחוברת במחשב שלי. זו בקשה חמישית לפחות"): "יציאה" בכל מסך לא מנתקת את המכשיר לבד.
+  // כשהמכשיר זוכר את הכניסה, שואלים קודם; ברירת המחדל היא להישאר מחובר/ת ולחזור ל"המרחב שלי".
+  var askLogout = false;
+  if (new URLSearchParams(location.search).get("logout")) {
+    if (sysDevice() || rememberedCode()) askLogout = true;
+    else clearSession();
+  }
   // החלפת תפקיד: יוצאים מהכניסה בלשונית בלבד. המכשיר נשאר זכור, ולא נכנסים לבד הפעם.
   var switching = !!new URLSearchParams(location.search).get("switch");
   if (switching) clearSession();
@@ -686,6 +695,19 @@ function buildAdminField(role){
   var openId = (new URLSearchParams(location.search).get("open") || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 32);
   if (openId) { enterOpen(openId); return; }
   renderEntry();
+  if (askLogout) {
+    var ask = el("div",{class:"logged sbe-no-theme", style:"flex-wrap:wrap;gap:10px"});
+    var stayBtn = el("button",{class:"lg-home sbe-no-theme"},"⌂ להישאר מחובר/ת ולחזור למרחב שלי");
+    var cutBtn = el("button",{class:"lg-out sbe-no-theme"},"ניתוק המכשיר הזה");
+    stayBtn.addEventListener("click", function(){ location.replace("home.html"); });
+    cutBtn.addEventListener("click", function(){
+      sysForget(); forgetCode(); clearSession();
+      ask.replaceChildren(el("span",{class:"lg-who"},"המכשיר נותק. בכניסה הבאה יתבקשו קוד או סיסמה."));
+    });
+    ask.append(el("span",{class:"lg-who"},"המכשיר הזה זוכר את הכניסה, ולכן אין צורך בקוד או בסיסמה בכל פעם. לנתק אותו?"), stayBtn, cutBtn);
+    view.prepend(ask);
+    return;
+  }
   var home = null, roleLabel = "";
   try {
     home = sessionStorage.getItem("sbe.session.homeUrl");
@@ -705,7 +727,7 @@ function buildAdminField(role){
     sysAutoLogin().then(function(ok){
       var next = new URLSearchParams(location.search).get("next") || "";
       if (ok && /^[a-z0-9-]+\.html([?#][^\s]*)?$/.test(next)) { location.replace(next); return; }
-      if (ok) { location.replace("entry.html"); return; }
+      if (ok) { location.replace("home.html"); return; } // 16/11/2026: "הכניסה שלי תהיה למרחב שלי"
       wait.textContent = "הכניסה האוטומטית לא הצליחה. אפשר להיכנס עם הסיסמה בכניסת הניהול למטה.";
     });
   }
@@ -725,13 +747,22 @@ function buildAdminField(role){
     });
   }
   if (home) {
+    var isSys = home === "admin.html?role=sys";
+    var myHome = isSys ? "home.html" : home;
+    // 16/11/2026 ("הכניסה שלי תהיה למרחב שלי"): מי שכבר מחובר/ת ומגיע/ה לאתר מבחוץ (כתובת, סימנייה), נכנס/ת ישר ל"המרחב שלי".
+    // מעבר לדף הבית מתוך האתר (לוגו, קישור) או קישור עם פרטים (?c=, ?next=) משאיר את דף הבית.
+    var fromSite = false; try { fromSite = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch(e){}
+    if (!location.search && !fromSite && /^(home\.html|admin\.html\?role=sys)$/.test(home)) { location.replace(myHome); return; }
     // מחובר/ת: שורה דקה אחת מעל הכניסה, בלי כרטיס (28/10/2026: "הסרגל העליון של הקוד לא נראה טוב")
     var bar = el("div",{class:"logged sbe-no-theme"});
     var goHome = el("button",{class:"lg-home sbe-no-theme"},"⌂ המרחב שלי");
-    var out = el("button",{class:"lg-out sbe-no-theme"},"יציאה");
-    goHome.addEventListener("click", function(){ location.href = home; });
-    out.addEventListener("click", function(){ sysForget(); forgetCode(); clearSession(); bar.remove(); });
-    bar.append(el("span",{class:"lg-who"}, "מחובר/ת", roleLabel ? " · " : "", roleLabel ? el("b",{},roleLabel) : ""), goHome, out);
+    goHome.addEventListener("click", function(){ location.href = myHome; });
+    bar.append(el("span",{class:"lg-who"}, "מחובר/ת", roleLabel ? " · " : "", roleLabel ? el("b",{},roleLabel) : ""), goHome);
+    if (isSys) { var goAdm = el("button",{class:"lg-home sbe-no-theme"},"⚙ ניהול"); goAdm.addEventListener("click", function(){ location.href = "admin.html?role=sys"; }); bar.append(goAdm); }
+    // "יציאה" כבר לא מנתקת בלחיצה אחת: עוברת לשאלה (?logout=1), וברירת המחדל היא להישאר מחובר/ת
+    var out = el("button",{class:"lg-out sbe-no-theme"},"ניתוק המכשיר");
+    out.addEventListener("click", function(){ if (sysDevice() || rememberedCode()) location.href = "entry.html?logout=1"; else { clearSession(); bar.remove(); } });
+    bar.append(out);
     view.prepend(bar);
   }
 })();

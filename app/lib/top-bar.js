@@ -169,6 +169,15 @@
       else { home.innerHTML = '<i class="t-ic" aria-hidden="true">⌂</i><span class="t-tx">דף הבית</span>'; home.href = 'entry.html'; }
       act.appendChild(home);
     }
+    // 16/11/2026 ("נכנסתי למעבדת הדמו משם אין לי מעבר למרחב שלי או לניהול"): למנהלת המערכת "⚙ ניהול" קבוע בכל מסך,
+    // גם בטלפון (הכפתורים הנוספים מהסרגל הישן מוסתרים בטלפון), במקום קישור ישן למסך הניהול.
+    if (/^admin\.html\?role=sys$/.test(homeUrl) && file !== 'admin.html') {
+      Array.prototype.forEach.call(ex.querySelectorAll('a[href^="admin.html"]'), function (a) { a.remove(); });
+      var adm = document.createElement('a'); adm.className = 'sbe-no-theme'; adm.href = 'admin.html?role=sys';
+      adm.title = 'מסך הניהול'; adm.setAttribute('aria-label', 'ניהול');
+      adm.innerHTML = '<i class="t-ic" aria-hidden="true">⚙</i><span class="t-tx">ניהול</span>';
+      act.appendChild(adm);
+    }
     menus.forEach(function (el) { act.appendChild(el); }); // ☰ תמיד אחרון, בקצה השמאלי
     bar.appendChild(act);
 
