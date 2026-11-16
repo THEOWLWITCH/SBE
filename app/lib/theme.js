@@ -49,6 +49,8 @@
     'html input::placeholder,html textarea::placeholder{color:#8a97a5;letter-spacing:normal;font-family:inherit}',
     'html input:not([type=checkbox]):not([type=radio]):not([type=range]):focus-visible,html select:focus-visible,html textarea:focus-visible{outline:none!important;border-color:#1b9aaa!important;box-shadow:0 0 0 3px rgba(27,154,170,.16)!important}',
     'html :focus-visible{outline-color:#1b9aaa}',
+    // 16/11/2026 ("התפריט נפתח בגופן קטן מידי. תקן בכל המערכת"): האפשרויות ברשימה נפתחת בגודל של התיבה, ולא פחות מ-17 פיקסלים
+    'html select option,html select optgroup{font-size:max(17px,1em)!important;line-height:1.5;padding:4px 8px}',
     'html .sbe-vh{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;margin:0!important;padding:0!important;border:0!important}',
     // כפתור הפניות הצף (דיווח, רעיון או תקלה): שם אחד, ובטלפון עיגול קטן בצד שלא מסתיר כפתורים
     'html #rptFab,html #fb-fab{border-radius:999px!important;font-weight:600!important;box-shadow:0 2px 8px rgba(22,50,74,.14)!important}',
