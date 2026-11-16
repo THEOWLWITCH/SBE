@@ -158,7 +158,9 @@ const INFO = jparse(ss("sbe.session.info"), {});
 // מנהלת המערכת (23/10/2026: "כשאני נכנסת כמנהלת הכל צריך להיות פתוח"): כל הכלים פתוחים במרחב שלי,
 // גם בלי הרשאות בקוד, וגם הכלים שטרם אושרו למשתמשים.
 const IS_SYS = ss("sbe.session.homeUrl") === "admin.html?role=sys";
-const has = (p) => IS_SYS ? p !== "lecturer" : PERMS.includes(p);
+// קישור פתוח לתרגול לפי תרחיש (16/11/2026): בלי כלי המנחה, רק כרטיס התרגול
+const OPEN_PRACTICE = !IS_SYS && INFO.kind === "open" && PERMS.includes("fac_trainee");
+const has = (p) => IS_SYS ? p !== "lecturer" : OPEN_PRACTICE && /^fac_/.test(p) ? false : PERMS.includes(p);
 const fmtDate = (ymd) => ymd ? ymd.slice(0,10).split("-").reverse().map((x,i)=>i===2?x.slice(2):x).join(".") : "";
 
 // מה כל הרשאה אומרת — בשפה פשוטה (אותה רשימה כמו PERMS בשרת).
@@ -202,7 +204,8 @@ async function api(action, extra = {}) {
 // ── הכלים ──
 {
   const T = [];
-  const fac = IS_SYS || PERMS.some(p => /^fac_/.test(p));
+  const fac = IS_SYS || (!OPEN_PRACTICE && PERMS.some(p => /^fac_/.test(p)));
+  if (OPEN_PRACTICE) T.push(["practice.html", "תרגול לפי תרחיש", "שיחה מאתגרת עם דמות: על מקרה משלך, על התרחיש המוכן או על תרחיש מהמאגר, ומשוב בסוף"]);
   if (has("fac_trainee")) T.push(["input-screen.html", "יצירת תרחיש: סטודנטיות.ים", "בוחרים דמויות ונתונים, ומקבלים הצעה לשאר התרחיש"]);
   if (has("fac_parent")) T.push(["parent-input-screen.html", "יצירת תרחיש: הורים", "שתי דמויות, ארבע גישות הוריות"]);
   if (has("fac_youth")) T.push(["student-input-screen.html", "יצירת תרחיש: נוער", "משחק תפקידים בין שני בני נוער"]);

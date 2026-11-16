@@ -169,12 +169,28 @@
       else { home.innerHTML = '<i class="t-ic" aria-hidden="true">⌂</i><span class="t-tx">דף הבית</span>'; home.href = 'entry.html'; }
       act.appendChild(home);
     }
+    // 16/11/2026 ("נכנסתי למעבדת הדמו משם אין לי מעבר למרחב שלי או לניהול"): למנהלת המערכת "⚙ ניהול" קבוע בכל מסך,
+    // גם בטלפון (הכפתורים הנוספים מהסרגל הישן מוסתרים בטלפון), במקום קישור ישן למסך הניהול.
+    if (/^admin\.html\?role=sys$/.test(homeUrl) && file !== 'admin.html') {
+      Array.prototype.forEach.call(ex.querySelectorAll('a[href^="admin.html"]'), function (a) { a.remove(); });
+      var adm = document.createElement('a'); adm.className = 'sbe-no-theme'; adm.href = 'admin.html?role=sys';
+      adm.title = 'מסך הניהול'; adm.setAttribute('aria-label', 'ניהול');
+      adm.innerHTML = '<i class="t-ic" aria-hidden="true">⚙</i><span class="t-tx">ניהול</span>';
+      act.appendChild(adm);
+    }
     menus.forEach(function (el) { act.appendChild(el); }); // ☰ תמיד אחרון, בקצה השמאלי
     bar.appendChild(act);
 
     document.body.insertBefore(bar, document.body.firstChild);
     fit(bar);
-    window.addEventListener('resize', function () { fit(bar); });
+    // 16/11/2026 ("נעלמו החיצים שמחזירים צעד אחורה, למרחב שלי, יציאה"): דף שנטען כשהחלון מוסתר (רוחב 0, למשל בחלונית
+    // הדפדפן של אפליקציית Claude, או בלשונית ברקע) קיבל שוליים לפי רוחב 0, והסרגל נדחק אל מחוץ למסך. מודדים שוב בכל שינוי גודל.
+    var again = function () { if (again.q) return; again.q = true; requestAnimationFrame(function () { again.q = false; fit(bar); }); };
+    window.addEventListener('resize', again);
+    window.addEventListener('load', again);
+    window.addEventListener('pageshow', again);
+    document.addEventListener('visibilitychange', again);
+    try { new ResizeObserver(again).observe(document.documentElement); } catch (e) {}
     // תפריט המסכים של מנהלת המערכת נכנס לסרגל
     var tries = 0, iv = setInterval(function () {
       var m = document.getElementById('sbeAutoMenu'); if (m && m.parentNode !== act) act.appendChild(m);
@@ -186,14 +202,19 @@
 
   // לרוחב כל המסך, צמוד למעלה, גם כשלגוף הדף יש שוליים או רוחב מוגבל
   function fit(bar) {
+    var W = document.documentElement.clientWidth;
+    if (!W) return; // חלון מוסתר: מודדים כשיחזור
     bar.style.marginLeft = bar.style.marginRight = bar.style.marginTop = '0px';
-    var r = bar.getBoundingClientRect(), W = document.documentElement.clientWidth;
+    var r = bar.getBoundingClientRect();
     bar.style.marginLeft = (-r.left) + 'px';
     bar.style.marginRight = (-(W - r.right)) + 'px';
     var top = r.top + (window.scrollY || 0);
     if (top > 0) bar.style.marginTop = (-top) + 'px';
     var mb = parseFloat(getComputedStyle(bar).marginBottom) || 0;
     if (top > 0 && mb < 12) bar.style.marginBottom = Math.max(12, top) + 'px';
+    // בדיקה: הסרגל מכסה את כל רוחב המסך. אם לא, בלי שוליים, כדי שהכפתורים תמיד יהיו על המסך
+    var r2 = bar.getBoundingClientRect();
+    if (Math.abs(r2.left) > 2 || Math.abs(r2.right - W) > 2) { bar.style.marginLeft = bar.style.marginRight = '0px'; }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();

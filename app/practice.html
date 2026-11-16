@@ -258,6 +258,11 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
     <div><b>✍️ מקרה משלך</b><span>יש שיחה מאתגרת שלא נמצאת כאן? מספרים עליה, עונים על כמה שאלות, מאשרים את הסיפור ומתחילים להתאמן.</span></div>
     <button type="button" class="primary" id="bOwnCase">לתרגול על מקרה משלי</button>
   </div>
+  <!-- תרחיש מוכן (16/11/2026): למי שאין מקרה משלו/ה בראש. ממלא את "מקרה משלך" (SBE_PCUSTOM.READY) -->
+  <div class="own-card" id="readyCard" hidden>
+    <div><b id="readyTitle">⏳ תרחיש מוכן</b><span id="readyTeaser"></span></div>
+    <button type="button" id="bReady">לתרגול על התרחיש המוכן</button>
+  </div>
   <div id="myCases"></div>
   <p class="sub" style="margin-bottom:10px;">אפשר גם לבחור תרחיש מהמאגר.</p>
   <div class="filters" id="filterBar"></div>
@@ -2280,6 +2285,18 @@ function renderCommFeedback(box, r){
   const caseText = () => PC.caseText(Object.assign({}, draft.form, { answers: answersList() }));
 
   $("bOwnCase").addEventListener("click", () => step(draft.scenario ? 3 : 1));
+  // תרחיש מוכן: ממלאים את צעד 1, ואפשר לשנות בו לפני שממשיכים
+  if (PC.READY) {
+    $("readyTitle").textContent = "⏳ תרחיש מוכן: " + PC.READY.title;
+    $("readyTeaser").textContent = PC.READY.teaser + " לתרגול כשאין מקרה משלך בראש.";
+    $("readyCard").hidden = false;
+    $("bReady").addEventListener("click", () => {
+      const me = draft.form.me || "נקבה";
+      draft.form = Object.assign({}, PC.READY.form, { me }); draft.questions = []; draft.answers = {}; draft.scenario = null; saveDraft();
+      Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; });
+      step(1);
+    });
+  }
   $("ownCancel").addEventListener("click", () => { const h = $("scenarioName"); h.classList.add("hero-banner"); h.innerHTML = '<img src="assets/practice-banner.webp" alt="תרגול לפי תרחיש" width="1100" height="216">'; show("screen-select"); });
   $("ownBack1").addEventListener("click", () => step(1));
   $("ownBack2").addEventListener("click", () => draft.questions.length ? (renderQs(), step(2)) : step(1));

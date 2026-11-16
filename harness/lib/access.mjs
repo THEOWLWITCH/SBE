@@ -456,6 +456,7 @@ export async function authorizeModel(store, auth, route = '/api/complete') {
     // מנהלת המערכת: המרחב שבחרה במרחב שלי (_auth.space)
     if (t && t.k === 'sys') return { ok: true, who: 'sys', page, route, ...modelIdentity(t, a.token), space: a.space === 'org' ? 'org' : 'edu' };
     const perms = MODEL_PAGES[page];
+    if (t && t.k === 'open' && !openModelPageOk(await store.get('open:' + t.o), page)) return { ok: false };
     const live = t && perms && await authorizePermission(store, a.token, perms);
     if (live) return { ok: true, who: 'code', page, route, ...modelIdentity(live, a.token), space: await spaceOf(store, live.inst, live.perms) };
     return { ok: false }; // a rejected token cannot fall back to workshop access
@@ -1596,8 +1597,14 @@ async function handleFeedbackInbox(store, body) {
 // כלי הסימולציה (סדנה וקוד מנחה), וכלים שטרם אושרו.
 export const OPEN_PAGES = { 'message-writer.html': 'writer', 'conversation-planner.html': 'conv', 'activity-planner.html': 'activity',
   'facilitation-advisor.html': 'nana', 'resilience-advisor.html': 'practi', 'leadership-advisor.html': 'leadership',
-  'academic-review.html': 'academic', 'shared-dialogue-lab.html': 'dialogue', 'team-thinking.html': 'teamthink' };
+  'academic-review.html': 'academic', 'shared-dialogue-lab.html': 'dialogue', 'team-thinking.html': 'teamthink',
+  // 16/11/2026 ("ההתנסות תהיה עם כלי האימון על תרחישים... הכניסה של כולם תהיה עם ברקוד שיהיה תקף מהיום ועד יום 18.11 כולל"):
+  // תרגול לפי תרחיש, עם ההרשאה של מתנסות הסימולציה. קישור כזה פותח רק את practice.html (openModelPage), ולא נכנס ל"כל הכלים".
+  'practice.html': 'fac_trainee' };
 export const OPEN_ALL = 'home.html';
+const OPEN_ALL_PERMS = [...new Set(Object.values(OPEN_PAGES))].filter((p) => !/^fac_/.test(p));
+// קישור פתוח לתרגול לפי תרחיש: פנייה למודל רק מדף התרגול (בלי יצירת תרחישים ובלי מסכי המנחה)
+export const openModelPageOk = (rec, page) => !rec || !/^fac_/.test(rec.perm || '') || page === rec.page;
 const openPerms = (rec) => (rec && Array.isArray(rec.perms) && rec.perms.length ? rec.perms : [rec && rec.perm]).filter((p) => PERMS.includes(p));
 export const ilToday = (d = new Date()) => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
 const OPEN_MAX = 500;
@@ -1640,7 +1647,7 @@ async function handleOpenLinks(store, body, isSys) {
     else { do { id = randomBytes(5).toString('hex'); } while (await store.get('open:' + id)); }
     const max = Math.max(1, Math.min(OPEN_MAX, parseInt(body.max, 10) || OPEN_MAX));
     const all = page === OPEN_ALL;
-    const rec = { id, page, perm: all ? 'all' : OPEN_PAGES[page], ...(all ? { perms: [...new Set(Object.values(OPEN_PAGES))] } : {}), date: dates.date, ...(dates.until ? { until: dates.until } : {}), label: String(body.label || '').trim().slice(0, 80), max, joins: 0,
+    const rec = { id, page, perm: all ? 'all' : OPEN_PAGES[page], ...(all ? { perms: OPEN_ALL_PERMS } : {}), date: dates.date, ...(dates.until ? { until: dates.until } : {}), label: String(body.label || '').trim().slice(0, 80), max, joins: 0,
       createdAt: new Date().toISOString(), revoked: false };
     await store.set('open:' + id, rec);
     return [200, { ok: true, item: rec }];

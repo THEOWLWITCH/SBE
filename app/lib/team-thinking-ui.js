@@ -20,7 +20,7 @@
   let I = S.items.find((x) => x.id === S.cur) || S.items[0];
   function save(edit) { if (edit) I.rev = (I.rev || 0) + 1; try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }
   const edited = () => save(true);
-  const nameOf = (it) => txt(it.plan && it.plan.title) || (it.form.challenge || '').slice(0, 50) || 'אתגר חדש';
+  const nameOf = (it) => txt(it.form && it.form.name) || txt(it.plan && it.plan.title) || ((it.form && it.form.challenge) || '').slice(0, 50) || 'אתגר חדש';
   const names = () => arr(I.roles).flatMap((r) => String(r.who || '').split(/[,،]/)).concat(arr(I.thanks).map((t) => t.who || ''));
   const anon = (t) => M.anonymize(t, names());
 
@@ -95,7 +95,7 @@
       input.id = id; if (f.ph) input.placeholder = (ORG && ORG_PH[f.k]) || f.ph;
       const v = I.form[f.k];
       if (v) { if (f.type === 'select' && ![...input.options].some((o) => o.value === v)) input.appendChild(new Option(v, v)); input.value = v; }
-      const keep = () => { I.form[f.k] = input.value; edited(); if (f.k === 'level') { M.FIELDS.forEach((g) => { const n = F('f-' + g.k); if (n && g.k !== 'level') I.form[g.k] = n.value; }); [['age', M.AGES_BY_LEVEL], ['team', M.TEAMS_BY_LEVEL]].forEach(([k, by]) => { const ok = by[I.form.level]; if (ok && I.form[k] && !ok.includes(I.form[k])) I.form[k] = ''; }); save(); buildForm(); } };
+      const keep = () => { I.form[f.k] = input.value; edited(); if (f.k === 'name' || f.k === 'challenge') renderHub(); if (f.k === 'level') { M.FIELDS.forEach((g) => { const n = F('f-' + g.k); if (n && g.k !== 'level') I.form[g.k] = n.value; }); [['age', M.AGES_BY_LEVEL], ['team', M.TEAMS_BY_LEVEL]].forEach(([k, by]) => { const ok = by[I.form.level]; if (ok && I.form[k] && !ok.includes(I.form[k])) I.form[k] = ''; }); save(); buildForm(); } };
       input.addEventListener('input', keep); input.addEventListener('change', keep);
       box.append(label, input); (f.type === 'area' ? form : grid).appendChild(box);
       if (f.k === 'time') form.appendChild(grid);
@@ -107,7 +107,7 @@
     const miss = M.FIELDS.filter((f) => f.main && !d[f.k]).map((f) => f.l);
     F('err1').hidden = true;
     if (miss.length) { F('err1').textContent = 'כדי להמשיך, אפשר למלא: ' + miss.join(', ') + '.'; F('err1').hidden = false; return; }
-    const b = F('go'); b.disabled = true; const stop = K.waiting(F('wait1'), 'הכנת מהלך החשיבה, התפקידים וההסכמות.', 45);
+    const b = F('go'); b.disabled = true; const stop = K.waiting(F('wait1'), 'הכנת מהלך החשיבה, התפקידים וההסכמות.', 180);
     const it = I, st = it.rev || 0; let o = null, bad = null;
     try { o = await K.json(M.planSystem(KB), anon('השדות:\n' + M.inputText(d) + '\n\nהכיני את מהלך החשיבה.'), M.validPlan, 12000); }
     catch (e) { bad = e; console.warn('חשיבת צוות:', e.message); }

@@ -298,6 +298,9 @@
     allowed = ["home.html"];
     perms.forEach(function(p){ (PAGES_BY_PERM[p] || []).forEach(function(x){ allowed.push(x); }); });
     if (perms.some(function(p){ return /^fac_/.test(p); })) allowed = allowed.concat(FAC_PAGES);
+    // קישור פתוח לתרגול לפי תרחיש (16/11/2026): רק התרגול, בלי יצירת תרחישים ומסכי המנחה
+    var openInfo = {}; try { openInfo = JSON.parse(ss("sbe.session.info") || "{}") || {}; } catch(e){}
+    if (openInfo.kind === "open" && perms.indexOf("fac_trainee") !== -1) allowed = ["home.html", "practice.html", "feedback.html"];
   } else if (home === "admin.html?role=sys") {
     allowed = null;
   } else if (home === "admin.html?role=inst") {
