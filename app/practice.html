@@ -261,7 +261,9 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <!-- תרחיש מוכן (16/11/2026): למי שאין מקרה משלו/ה בראש. ממלא את "מקרה משלך" (SBE_PCUSTOM.READY) -->
   <div class="own-card" id="readyCard" hidden>
     <div><b id="readyTitle">⏳ תרחיש מוכן</b><span id="readyTeaser"></span></div>
-    <button type="button" id="bReady">לתרגול על התרחיש המוכן</button>
+    <select id="readyMe" aria-label="איך לפנות אליי" data-closed><option value="נקבה">בלשון נקבה</option><option value="זכר">בלשון זכר</option></select>
+    <button type="button" class="primary" id="bReady">▶ מתחילים להתאמן</button>
+    <button type="button" id="bReadyEdit">לשנות פרטים</button>
   </div>
   <div id="myCases"></div>
   <p class="sub" style="margin-bottom:10px;">אפשר גם לבחור תרחיש מהמאגר.</p>
@@ -2288,10 +2290,20 @@ function renderCommFeedback(box, r){
   // תרחיש מוכן: ממלאים את צעד 1, ואפשר לשנות בו לפני שממשיכים
   if (PC.READY) {
     $("readyTitle").textContent = "⏳ תרחיש מוכן: " + PC.READY.title;
-    $("readyTeaser").textContent = PC.READY.teaser + " לתרגול כשאין מקרה משלך בראש.";
+    $("readyTeaser").textContent = PC.READY.teaser + " התרחיש כבר מוכן: מתחילים מיד, בלי למלא פרטים.";
     $("readyCard").hidden = false;
-    $("bReady").addEventListener("click", () => {
-      const me = draft.form.me || "נקבה";
+    // כניסה ישירה (16/11/2026): התרחיש כבר כתוב, ישר למסך "לפני שמתחילים" ולשיחה
+    $("readyMe").value = draft.form.me || "נקבה";
+    const goReady = () => {
+      if (!PC.readyScenario) return;
+      SCENARIOS["ready-" + PC.READY.id] = PC.readyScenario($("readyMe").value);
+      selectScenario("ready-" + PC.READY.id);
+    };
+    $("bReady").addEventListener("click", goReady);
+    // קישור ישיר: practice.html?ready=1
+    if (new URLSearchParams(location.search).get("ready") === "1") setTimeout(goReady, 0);
+    $("bReadyEdit").addEventListener("click", () => {
+      const me = $("readyMe").value || draft.form.me || "נקבה";
       draft.form = Object.assign({}, PC.READY.form, { me }); draft.questions = []; draft.answers = {}; draft.scenario = null; saveDraft();
       Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; });
       step(1);

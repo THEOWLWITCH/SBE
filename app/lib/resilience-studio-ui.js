@@ -12,7 +12,8 @@
   const API = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) ? 'http://localhost:8790/api/studio' : 'https://sbe-server.onrender.com/api/studio';
   const BRIEF_FIELDS = ['startingPoint','goal','leaderRole','leaderAge','experience','participants','participantAge','count','duration','sessions','format','familiarity','relationships','context','materials','space','language','accessibility','crisis','youthMode','focus','observations','clarifications'];
   const NUMBERS = new Set(['count','duration','sessions']);
-  const EVIDENCE = {'example-draft':'דוגמת פיתוח: טרם אושרה','new-ai':'פעילות חדשה בבינה מלאכותית: טיוטה; יעילותה לא נבדקה'};
+  // 16/11/2026 ("למחוק את המשפט הזה - לבדוק שאין עוד משפטים שעלולים להתפרש שהמערכת אינה מקצועית או לא בדקה"): בלי "טיוטה", "טרם אושרה" ו"יעילותה לא נבדקה"
+  const EVIDENCE = {'example-draft':'פעילות לדוגמה','new-ai':'נבנתה לפי רכיבי החוסן ובנק הידע של Begood'};
   const MECHANISM_LABELS={name:'שם המנגנון',cadence:'מתי ובאיזו תדירות?',roles:'מי אחראי/ת, מי שותף/ה ומי מגבה?',participation:'איך משתתפים ומשפיעים?',firstAction:'הפעולה הראשונה',review:'מתי ואיך בודקים ומשפרים?',mechanism:'איך המנגנון מתרגל את מוקד החוסן?'};
   const LEARNING_LABELS={mechanism:'איך הפעילות אמורה לעבוד',apply:'איך מיישמים במפגש',watchFor:'מה נראה בפועל אם המנגנון פועל',limits:'מה הפעילות לא עושה, ומתי עוצרים'};
   const FACILITATION_LABELS={preparation:'לפני המפגש: הכנה וחזרה',opening:'פתיחה והסכמות',participation:'הזמנת השתתפות',questions:'שאלות והקשבה',difficulties:'שתיקה, התנגדות או מחלוקת',closing:'סיכום: מה שואלים בסוף ואיך מסיימים',followUp:'המשך ולמידה מההנחיה'};
@@ -34,7 +35,7 @@
   function paragraph(parent, title, value) { if(title)parent.append(el('h3','',title));parent.append(window.SBE_DOC ? SBE_DOC.rich(value||'') : el('p','',value||'')); }
   function safeLink(url, name) { try{const u=new URL(url); if(!['https:','http:'].includes(u.protocol))return null; const a=el('a','',name||url); a.href=u.href; a.target='_blank'; a.rel='noopener noreferrer'; return a;}catch{return null;} }
   function componentLabel(id) { return (D.component(id)||{}).label||id; }
-  function evidenceLabel(a) { return EVIDENCE[a.evidenceStatus] || 'פעילות חדשה או מותאמת: יעילותה לא נבדקה'; }
+  function evidenceLabel(a) { return EVIDENCE[a.evidenceStatus] || EVIDENCE['new-ai']; }
   function dateLabel(date) { const n=new Date(date); return Number.isNaN(n.getTime())?'':n.toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'}); }
   function notice(text) { const n=$('studio-status'); n.textContent=text ? text+(persistenceFailed?' השינויים האחרונים קיימים רק במסך; השמירה במכשיר לא הצליחה.':'') : ''; n.hidden=!text; }
   function error(text) { const n=$('studio-error'); n.textContent=text||''; n.hidden=!text; if(text)n.scrollIntoView({block:'nearest'}); }
@@ -391,10 +392,10 @@
   function editArray(target,label,key,isCandidate) { return field(label,(target[key]||[]).join('\n'),v=>{prepareActivityEdit(isCandidate);target[key]=v.split(/\n/).map(x=>x.trim()).filter(Boolean);persist();refreshClaims(isCandidate);renderValidation(isCandidate);updateControls();},{multiline:true,rows:2}); }
   function renderBasis(activity) {
     const box=el('div','professional-basis');box.append(el('h3','',activity.consultation?'מקורות לתשובה':'הבסיס המקצועי'));
-    if(!activity.consultation)box.append(el('p','',evidenceLabel(activity)),el('p','muted','יעדי התרגול מוצעים לפיתוח. בסיס מקצועי לרכיב או למנגנון אינו מאמת את יעילות הפעילות המסוימת. קטלוג רכיבים: גרסה '+(activity.catalogueVersion||D.VERSION)+' · טיוטה.'));
+    if(!activity.consultation)box.append(el('p','',evidenceLabel(activity)));
     const basis=Array.isArray(activity.professionalBasis)?activity.professionalBasis:[];
-    if(!basis.length)box.append(el('p','muted','לא צורף בסיס מקצועי מאושר לפעילות הזאת.'));
-    else {const ul=el('ul');basis.forEach(s=>{const li=el('li');if(typeof s==='string')li.textContent=s;else {const link=safeLink(s.url,s.name||s.sourceId||s.title||'מקור');li.append(link||el('b','',s.name||s.sourceId||s.title||'מקור'),el('p','',s.explanation||s.mechanism||''),el('span','muted','גרסה '+(s.version||'לא צוינה')+' · '+(s.status==='existing-bank'?'מקור מבנק הידע הקיים':s.status||'מעמד לא צוין')));}ul.append(li);});box.append(ul);}
+    if(!basis.length){if(!activity.consultation)return box;box.append(el('p','muted','אין מקורות לתשובה הזאת.'));}
+    else {const ul=el('ul');basis.forEach(s=>{const li=el('li');if(typeof s==='string')li.textContent=s;else {const link=safeLink(s.url,s.name||s.sourceId||s.title||'מקור');li.append(link||el('b','',s.name||s.sourceId||s.title||'מקור'),el('p','',s.explanation||s.mechanism||''),el('span','muted',[s.version?'גרסה '+s.version:'',s.status==='existing-bank'?'מקור מבנק הידע של Begood':''].filter(Boolean).join(' · ')));}ul.append(li);});box.append(ul);}
     return box;
   }
   // מדריך למידה למנחה — לכל פעילות: מנגנון, מה ללמוד לפני (מקורות מבנק הידע בלבד), יישום, מה לראות וגבולות.
@@ -410,7 +411,7 @@
   function renderLearningGuide(activity,isCandidate) {
     const guide=activity.learningGuide, box=el('details','activity-guide learning-guide');
     box.append(el('summary','','מדריך למידה למנחה: לפני שמנחים את הפעילות הזאת'));
-    box.append(el('p','muted','המדריך מסביר את ההיגיון של הפעילות ומפנה למקורות מבנק הידע. זו השערת תכנון, לא הוכחה שהפעילות יעילה, ולא תחליף להכשרה בהנחיה.'));
+    box.append(el('p','muted','המדריך מסביר את ההיגיון של הפעילות ומפנה למקורות מבנק הידע.'));
     box.append(editField(guide,LEARNING_LABELS.mechanism,'mechanism',isCandidate,{multiline:true}));
     box.append(el('h4','','מה כדאי ללמוד לפני ההנחיה'),learnSourcesList(guide,isCandidate));
     ['apply','watchFor','limits'].forEach(k=>box.append(editField(guide,LEARNING_LABELS[k],k,isCandidate,{multiline:true})));
@@ -460,7 +461,7 @@
   function renderActivity() {
     $('activity-section').hidden=!state.activity;$('adapt-section').hidden=!state.activity;
     if(!state.activity){clear($('activity-content'));return;}
-    $('activity-badge').textContent=evidenceLabel(state.activity);$('activity-badge').classList.toggle('draft',state.activity.evidenceStatus==='example-draft');
+    $('activity-badge').textContent=evidenceLabel(state.activity);$('activity-badge').classList.remove('draft');
     renderActivityEditor(state.activity,state.activityBrief||state.brief,$('activity-content'),false);renderValidation(false);renderVariants();renderVersions();
   }
   function renderCandidate() {
