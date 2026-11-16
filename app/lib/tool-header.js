@@ -76,7 +76,7 @@
   function key(src) { var m = /assets\/([a-z0-9-]+)-banner\.webp/.exec(src || ''); return m ? m[1] : null; }
   function build(img) {
     var h = img.closest('h1'); if (!h) return;
-    var k = key(img.getAttribute('src')); if (!k || !MAP[k]) return;
+    var k = key(img.getAttribute('src')); if (!k || !MAP[k]) { h.classList.add('sbe-th-skip'); return; }
     if (h.getAttribute('data-th') === k) return;
     var alt = img.getAttribute('alt') || MAP[k][0];
     var ic = document.createElement('span'); ic.className = 'sbe-th-ic'; ic.setAttribute('aria-hidden', 'true');

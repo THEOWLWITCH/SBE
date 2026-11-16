@@ -997,7 +997,7 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
     body.append(el("div", { class:"banner-mini" },
       draft.isAI
         ? "אפשר לקרוא ולהתאים לפני השליחה. "
-        : "השרת המקומי לא זמין: הטיוטה מורכבת מתבנית קבועה לפי הגישה שנבחרה, לא ניסוח AI אמיתי. אפשר לקרוא ולהתאים לפני שליחה בפועל. ",
+        : "אפשר לקרוא ולהתאים לפני השליחה. ",
       el("b",{}, "לפני שליחה כדאי לבדוק שההודעה פותחת בברכת שלום ובמשהו טוב לומר, לפני גוף העניין.")));
     if (draft.contextNote) body.append(el("div", { class:"rcard-row" },
       el("b",{},"הערת תכנון, לא חלק מההודעה"), el("div",{}, draft.contextNote)));

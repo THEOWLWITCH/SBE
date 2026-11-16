@@ -137,6 +137,15 @@
     (document.head || document.documentElement).appendChild(st);
   } catch(e){}
 
+  // 16/11/2026 ("בטעינת הכלי עולה כותרת ישנה בגודל ענקי... זה נראה כמו שגיאה"): תמונת הבאנר הישנה לא מוצגת עד ש-tool-header.js
+  // הופך אותה לכותרת האחידה (h1.sbe-th). כותרת בלי התאמה ב-MAP מקבלת sbe-th-skip ונחשפת; ואם הקובץ לא נטען, הכול נחשף אחרי 4 שניות.
+  try { (function () {
+    if (document.getElementById("sbe-th-hold")) return;
+    var st = document.createElement("style"); st.id = "sbe-th-hold";
+    st.textContent = "@media screen{h1:not(.sbe-th):not(.sbe-th-skip) img[src*='-banner.webp']{visibility:hidden}}";
+    (document.head || document.documentElement).appendChild(st);
+    setTimeout(function () { if (!window.SBE_TH && st.parentNode) st.parentNode.removeChild(st); }, 4000);
+  })(); } catch (e) {}
   // עיצוב אחיד לכפתורים ולקופסאות בכל המערכת (28/10/2026), מ-lib/theme.js
   try {
     if (!window.SBE_THEME && !document.getElementById("sbe-theme-js")) {
@@ -286,7 +295,7 @@
     orgsuite: ["org-suite.html", "org-library.html"], // תרגול צוותים (המרחב הארגוני, 28/10/2026)
     horizon: ["horizon-lab.html", "hl-voice.html", "hl-radar.html", "hl-futures.html", "hl-circles.html", "hl-horizons.html", "hl-collage.html", "hl-roadmap.html", "hl-game.html", "hl-stress.html"], // מעבדת האופק (אושר 28/10/2026)
     bridge: ["family-bridge.html", "resilience-advisor-sources.html"], routines: ["routines-hub.html", "resilience-advisor-sources.html"], continuity: ["continuity-kit.html", "resilience-advisor-sources.html"], // אושרו 28/10/2026
-    dilemma: ["dilemma-inquiry.html"], // בירור דילמות (12/11/2026); המשתתפים ב-dilemma-join.html בלי קוד
+    dilemma: ["dilemma-inquiry.html"], quickpractice: ["quick-practice.html"], // התנסות קצרה (16/11/2026) // בירור דילמות (12/11/2026); המשתתפים ב-dilemma-join.html בלי קוד
   };
   var SIM_DOCS = ["doc-trainee.html", "doc-actor.html", "card-actor.html", "doc-facilitator.html"];
   var FAC_PAGES = ["facilitator-screen.html", "feedback.html", "feedback-results.html", "search.html"].concat(SIM_DOCS);

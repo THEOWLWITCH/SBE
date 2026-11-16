@@ -14,6 +14,17 @@
   to = "/yesh-ma-laasot.html?g=:id"
   status = 301
 
+# התנסות קצרה ככלי עצמאי (16/11/2026): אותו קובץ כמו תרגול לפי תרחיש, והדף מזהה את הכתובת ונפתח ישר על התרחיש המוכן
+[[redirects]]
+  from = "/quick-practice.html"
+  to = "/practice.html"
+  status = 200
+
+[[redirects]]
+  from = "/quick-practice"
+  to = "/practice.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
