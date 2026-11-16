@@ -107,7 +107,7 @@
     const miss = M.FIELDS.filter((f) => f.main && !d[f.k]).map((f) => f.l);
     F('err1').hidden = true;
     if (miss.length) { F('err1').textContent = 'כדי להמשיך, אפשר למלא: ' + miss.join(', ') + '.'; F('err1').hidden = false; return; }
-    const b = F('go'); b.disabled = true; const stop = K.waiting(F('wait1'), 'הכנת מהלך החשיבה, התפקידים וההסכמות.', 45);
+    const b = F('go'); b.disabled = true; const stop = K.waiting(F('wait1'), 'הכנת מהלך החשיבה, התפקידים וההסכמות.', 180);
     const it = I, st = it.rev || 0; let o = null, bad = null;
     try { o = await K.json(M.planSystem(KB), anon('השדות:\n' + M.inputText(d) + '\n\nהכיני את מהלך החשיבה.'), M.validPlan, 12000); }
     catch (e) { bad = e; console.warn('חשיבת צוות:', e.message); }

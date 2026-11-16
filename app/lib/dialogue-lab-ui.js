@@ -108,7 +108,7 @@
     const miss = M.FIELDS.filter((f) => f.main && !d[f.k]).map((f) => f.l);
     F('err1').hidden = true;
     if (miss.length) { F('err1').textContent = 'כדי להמשיך, אפשר למלא: ' + miss.join(', ') + '.'; F('err1').hidden = false; return; }
-    const b = F('go'); b.disabled = true; const stop = K.waiting(F('wait1'), 'מכינה שאלות חקר, תנאי בדיקה ותפקידים.', 60);
+    const b = F('go'); b.disabled = true; const stop = K.waiting(F('wait1'), 'הכנת שאלות חקר, תנאי בדיקה ותפקידים.', 180);
     const it = I, st = it.rev || 0; let o = null, bad = null;
     try { o = await K.json(M.startSystem(KB), anon('השדות:\n' + M.inputText(d) + '\n\nהכיני את נקודת הפתיחה.'), M.validStart, 16000); }
     catch (e) { bad = e; console.warn('מעבדת שיח וחקר:', e.message); }

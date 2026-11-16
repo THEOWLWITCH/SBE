@@ -49,7 +49,12 @@
     node.hidden = false; node.textContent = '';
     const line = el('div'), bar = el('div', 'bar'), fill = el('div'); bar.appendChild(fill); node.append(line, bar);
     const t0 = Date.now();
-    const tick = () => { const s = Math.round((Date.now() - t0) / 1000); line.textContent = text + ' התהליך נמשך כ־' + exp + ' שניות. חלפו ' + s + ' שניות.'; fill.style.width = Math.min(95, s / exp * 90) + '%'; };
+    // 16/11/2026 ("לא נוצר המשך" אחרי 68 שניות מתוך "כ־45"): תוצר שעובר את בדיקת הלקוחה (שני סבבים) נמשך כמה דקות.
+    // זמן ארוך נאמר בדקות, ואחרי הזמן הצפוי נאמר מה קורה, כדי שלא ייראה כמו תקלה.
+    const span = exp >= 120 ? 'עד כ־' + Math.round(exp / 60) + ' דקות' : 'כ־' + exp + ' שניות';
+    const tick = () => { const s = Math.round((Date.now() - t0) / 1000); const m = Math.floor(s / 60), r = s % 60;
+      line.textContent = text + ' התהליך נמשך ' + span + '. חלפו ' + (m ? m + ' דקות ו־' + r + ' שניות' : s + ' שניות') + '.' + (s > exp ? ' ההכנה ממשיכה: התוצר נבדק ומתוקן לפני שהוא מוצג.' : '');
+      fill.style.width = Math.min(95, s / exp * 90) + '%'; };
     tick(); const iv = setInterval(tick, 1000);
     return () => { clearInterval(iv); node.hidden = true; };
   }
