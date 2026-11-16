@@ -23,3 +23,18 @@ test('התרחיש המוכן תקין בשתי לשונות הפנייה', () =
   const P = require('../../app/lib/practice-custom.js');
   for (const g of ['נקבה', 'זכר']) { const sc = P.readyScenario(g); assert.ok(P.valid(sc)); assert.equal(sc.trainee.gender, g); }
 });
+
+test('התנסות קצרה פתוחה בלי כניסה עד 18.11.2026, רק בדף הזה', async () => {
+  const { authorizeModel, QUICK_OPEN_UNTIL, quickOpenNow } = await import('../lib/access.mjs');
+  assert.equal(QUICK_OPEN_UNTIL, '2026-11-18');
+  assert.equal(quickOpenNow(new Date('2026-11-18T21:00:00Z')), true);  // 23:00 בישראל
+  assert.equal(quickOpenNow(new Date('2026-11-18T22:30:00Z')), false); // 00:30 ב-19.11
+  const store = { get: async () => null, set: async () => {} };
+  const g = '0123456789abcdef';
+  if (quickOpenNow()) {
+    assert.equal((await authorizeModel(store, { page: 'quick-practice.html', quick: g }, '/api/character-turn')).ok, true);
+    assert.equal((await authorizeModel(store, { page: 'quick-practice.html', quick: g }, '/api/complete')).ok, true);
+  }
+  assert.equal((await authorizeModel(store, { page: 'practice.html', quick: g }, '/api/complete')).ok, false);
+  assert.equal((await authorizeModel(store, { page: 'quick-practice.html', quick: 'x' }, '/api/complete')).ok, false);
+});

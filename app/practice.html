@@ -340,7 +340,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <h2 style="font-family:'Frank Ruhl Libre',Georgia,serif;">מה קרה בתרגול</h2>
   <div id="fbComm"></div>
   <h3 class="fb-h">רגעי המפתח בשיחה</h3>
-  <p class="fb-lead">בשיחה הזאת יש כמה רגעים שבהם הדמות יכולה להיפתח. לכל רגע: מה היא אומרת בו, מה מביא אליו, ומה קרה בשיחה שלך.</p>
+  <p class="fb-lead">לכל רגע: מה הדמות אומרת בו, מה מביא אליו, ומה קרה בפועל בשיחה שלך.</p>
   <div id="fbTurningPoints"></div>
   <h3 class="fb-h">מיומנויות בשיחה</h3>
   <div id="fbSkills"></div>
@@ -1528,7 +1528,10 @@ function genderNote(sc){
   const male = /זכר|גבר/.test((sc.actor && sc.actor.gender) || ""), trMale = /זכר|גבר/.test((sc.trainee && sc.trainee.gender) || "");
   const L = [];
   if (male) L.push("הדמות שלך היא גבר. דבר בלשון זכר על עצמך (\"אני חושב\", \"אני לא יודע\"), גם אם ההנחיות כאן כתובות בלשון נקבה.");
-  if (trMale) L.push("מי שמולך הוא גבר: פני אליו בלשון זכר (\"אתה\").");
+  // 16/11/2026 ("הפניה תהיה בזכר או בנקבה אל המתנסה"): תמיד ביחיד ולפי לשון הפנייה, לא "אתם"
+  const v = male ? "פנה" : "פני";
+  if (trMale) L.push("מי שמולך הוא גבר: " + v + " אליו ביחיד ובלשון זכר (\"אתה\", \"תגיד\"), לא בלשון רבים.");
+  else L.push("מי שמולך היא אישה: " + v + " אליה ביחיד ובלשון נקבה (\"את\", \"תגידי\"), לא בלשון רבים.");
   return L.length ? "\n\n" + L.join("\n") : "";
 }
 
@@ -2123,8 +2126,7 @@ function analyzeSkills(){
   });
 }
 
-function showFeedback(){
-  // טבלאות (07/10/2026), בקו אחיד עם שאר התוצרים
+function renderMomentsTable(){
   const tpBox = document.getElementById("fbTurningPoints");
   tpBox.textContent = "";
   // טבלה שמובנת בלי מונחים פנימיים (14/10/2026: "כל הטבלה מאוד לא מובנת"; "נפתחה · השיחה נסגרה"):
@@ -2133,11 +2135,18 @@ function showFeedback(){
     const fired = state.firedTPs[tp.n];
     const line = tp.does && tp.does.line || "";
     const said = line && !line.includes(tp.name) ? el("div", { class:"fb-said" }, (/זכר|גבר/.test(SCENARIO.actor.gender || "") ? "הוא אומר: " : "היא אומרת: ") + "\"" + line + "\"") : "";
-    const what = !fired
-      ? "השיחה לא הגיעה לרגע הזה." + (tp.missed ? " מה קורה לעתים קרובות במקום: " + tp.missed : "")
-      : ({"פותח":"✓ הגעת לרגע הזה, והתגובה שלך קידמה את השיחה.","מחזיק":"הגעת לרגע הזה. התגובה שלך השאירה את השיחה במקום, בלי להתקדם.","סוגר":"הגעת לרגע הזה. אחרי התגובה שלך הדמות נסגרה ושיתפה פחות."}[fired.effect] || "✓ הגעת לרגע הזה.");
+    // 16/11/2026 ("בלי 'אתה לא הגעת לזה' ו'בדרך כלל' - אלא לציין מה כן קרה"): מה קרה בפועל בשיחה, מהמשוב על התקשורת (moments)
+    const m = state.commFb && Array.isArray(state.commFb.moments) ? state.commFb.moments.find(x => Number(x.n) === tp.n) : null;
+    const what = m && String(m.happened || "").trim() ? String(m.happened).trim()
+      : fired ? ({"פותח":"✓ הרגע הזה קרה בשיחה, והתגובה שלך קידמה אותה.","מחזיק":"הרגע הזה קרה בשיחה, והשיחה נשארה במקום.","סוגר":"הרגע הזה קרה בשיחה, ואחריו הדמות שיתפה פחות."}[fired.effect] || "✓ הרגע הזה קרה בשיחה.")
+      : (state.commFbFailed || state.commFb) ? "הדמות לא אמרה את המשפט הזה בשיחה." : "בודקים מה קרה בשיחה.";
     return [String(tp.n), el("div", {}, el("b", {}, "\"" + tp.name + "\""), said), tp.trigger || "", el("span", { class:"fb-st " + (!fired ? "missed" : fired.effect === "פותח" ? "reached" : "held") }, what)];
   }), "fb-tp-table"));
+}
+
+function showFeedback(){
+  // טבלאות (07/10/2026), בקו אחיד עם שאר התוצרים
+  renderMomentsTable();
 
   renderSkillsTable();
 
@@ -2194,13 +2203,21 @@ function commSystem(){
     "המקרה: " + (SCENARIO.subtitle || SCENARIO.name || ""),
     "תני משוב על התקשורת של המתנסה בלבד, לפי התיאוריות והמודלים של תקשורת שאת מכירה, ובחרי רק מה שרלוונטי לשיחה הזאת. למשל: הקשבה פעילה ושיקוף (רוג'רס); תקשורת מקרבת (רוזנברג: תצפית, רגש, צורך, בקשה); מסרי \"אני\" (גורדון); ראיון מוטיבציוני (שאלות פתוחות, אישור, שיקוף, סיכום); תיקוף רגשי; \"שיחות קשות\" (סטון, פאטון והין: מה קרה, רגשות, זהות); אימון רגשי (גוטמן); פתרון בעיות שיתופי (גרין); הבחנה בין עובדה לפרשנות; קצב, שתיקה והפחתת הסלמה; ותחושת שליטה לצד השני (\"מה היית רוצה שיקרה?\"). כשהדמות התנגדה, ניסתה להסיט את השיחה או דיברה בחוסר כבוד: התייחסי גם לאופן שבו המתנסה שמה גבול (ברור, שקט ומכבד, עם הכרה ברגש) ושמרה על הקשר.",
     "כללים: התייחסי לפעולות ולמשפטים, לא לאדם. בלי ציון ובלי דירוג. כל נקודה עם ציטוט מדויק מדברי המתנסה (quote). בהצעות לשיפור: ניסוח חלופי לדוגמה שאפשר לומר בפעם הבאה (tryInstead). שפה של הזמנה (\"אפשר לנסות\", \"כדאי\"). " + (male ? "פני למתנסה בלשון זכר." : "פני למתנסה בלשון נקבה."),
-    "החזירי אך ורק JSON: {\"summary\":\"שניים או שלושה משפטים על השיחה\",\"strengths\":[{\"what\":\"מה עבד\",\"quote\":\"ציטוט\",\"why\":\"למה זה עובד\",\"basis\":\"על מה זה נשען (מודל או תיאוריה)\"}],\"growth\":[{\"what\":\"מה אפשר לחזק\",\"quote\":\"ציטוט\",\"tryInstead\":\"ניסוח לדוגמה\",\"why\":\"למה\",\"basis\":\"על מה זה נשען\"}],\"next\":[\"שלושה צעדים לתרגול הבא\"],\"tips\":[\"שלושה עד חמישה טיפים כלליים לשיחות כאלה\"],\"skills\":[{\"n\":1,\"found\":true,\"quote\":\"ציטוט מדויק מדברי המתנסה, או ריק\",\"note\":\"משפט קצר\"}]}. strengths: שתיים עד ארבע. growth: שתיים עד ארבע.",
-    commSkillsRule()
+    "החזירי אך ורק JSON: {\"summary\":\"שניים או שלושה משפטים על השיחה\",\"strengths\":[{\"what\":\"מה עבד\",\"quote\":\"ציטוט\",\"why\":\"למה זה עובד\",\"basis\":\"על מה זה נשען (מודל או תיאוריה)\"}],\"growth\":[{\"what\":\"מה אפשר לחזק\",\"quote\":\"ציטוט\",\"tryInstead\":\"ניסוח לדוגמה\",\"why\":\"למה\",\"basis\":\"על מה זה נשען\"}],\"next\":[\"שלושה צעדים לתרגול הבא\"],\"tips\":[\"שלושה עד חמישה טיפים כלליים לשיחות כאלה\"],\"skills\":[{\"n\":1,\"found\":true,\"quote\":\"ציטוט מדויק מדברי המתנסה, או ריק\",\"note\":\"משפט קצר\"}],\"moments\":[{\"n\":1,\"happened\":\"משפט שלם\"}]}. strengths: שתיים עד ארבע. growth: שתיים עד ארבע.",
+    commSkillsRule(),
+    commMomentsRule()
   ].join("\n\n");
 }
 // המיומנויות נבדקות בידי המודל (14/10/2026: "הטבלה לא נכונה. כן היתה שאלה פתוחה"): התאמת מילות מפתח
 // פספסה שאלות פתוחות וניסוחים אחרים, ולכן היא לא משמשת עוד לטבלת המיומנויות.
 function commSkillList(){ return (SCENARIO.skills || []).filter(s => !s.undetectable && !s.note); }
+// רגעי המפתח (16/11/2026: "בלי 'אתה לא הגעת לזה' ו'בדרך כלל' - אלא לציין מה כן קרה")
+function commMomentsRule(){
+  const tps = SCENARIO.turningPoints || [];
+  if (!tps.length) return "moments: מערך ריק.";
+  return "moments: לכל אחד מרגעי המפתח הבאים, לפי המספר שלו, משפט שלם אחד או שניים על מה שקרה בפועל בשיחה הזאת סביב הרגע או הנושא שלו: מה המתנסה אמר/ה (ציטוט קצר מדויק כשאפשר) ומה הדמות ענתה. רק מה שקרה. בלי \"לא הגעת\", בלי \"בדרך כלל\", בלי \"היה אפשר\" ובלי מה שקורה בשיחות אחרות. כשהשיחה לא נגעה בנושא הזה, כתבי במה היא עסקה באותו שלב. הרגעים:\n"
+    + tps.map(tp => tp.n + ". \"" + tp.name + "\" (מה מביא אליו: " + (tp.trigger || "") + ")" + (state.firedTPs[tp.n] ? " [הרגע קרה בשיחה]" : "")).join("\n");
+}
 function commSkillsRule(){
   const list = commSkillList();
   if (!list.length) return "skills: מערך ריק.";
@@ -2208,6 +2225,7 @@ function commSkillsRule(){
     + list.map((x, i) => (i + 1) + ". " + x.text).join("\n");
 }
 function renderSkillsTable(){
+  try { renderMomentsTable(); } catch (e) {}
   const skBox = document.getElementById("fbSkills"); if (!skBox) return;
   skBox.textContent = "";
   const r = state.commFb;
@@ -2318,6 +2336,13 @@ function renderCommFeedback(box, r){
     $("bReady").addEventListener("click", goReady);
     // קישור ישיר: practice.html?ready=1, וההתנסות הקצרה (quick-practice.html)
     if (window.SBE_SOLO_READY) {
+      // פתוח בלי כניסה (SBE_QUICK_OPEN, access-guard.js): בלי ניווט, בלי "איך נראה התוצר?" ובלי שמירה במאגר (דורשת כניסה)
+      if (window.SBE_QUICK_OPEN) {
+        const nb = document.getElementById("navBar"); if (nb) nb.remove();
+        const np = document.getElementById("navPanel"); if (np) np.remove();
+        const fs = document.getElementById("fbSave"); if (fs) fs.remove();
+        document.head.append(el("style", {}, ".sbe-peek{display:none!important}"));
+      }
       // לשון הפנייה עוברת למסך "לפני שמתחילים", ושינוי בה מחליף את הפתיחה
       const meRow = el("label", { class: "solo-me" }, "איך לפנות אליי: ");
       meRow.append($("readyMe")); $("bBackToSelect").replaceWith(meRow);
@@ -2687,6 +2712,8 @@ body.sbe-hasnav{padding-top:38px;}
 <script>
 (function(){
   "use strict";
+  // התנסות קצרה פתוחה בלי כניסה (16/11/2026): בלי סרגל הניווט הישן ובלי מעבר לכלים אחרים
+  if (window.SBE_QUICK_OPEN) { var _qb = document.getElementById("navBar"); if (_qb) _qb.remove(); var _qp = document.getElementById("navPanel"); if (_qp) _qp.remove(); return; }
   if (window.self !== window.top) {
     // מוטמע בתוך iframe (admin.html/demo-hub.html) — לעמוד המארח יש
     // תפריט ניווט משלו; עותק כפול היה מתמקם לפי חלון ה-iframe ולא לפי המסך.

@@ -20,6 +20,20 @@
   var MIRROR = "sbe.session.mirror", HOURS = 12;
 
   function ss(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
+  // התנסות קצרה פתוחה בלי כניסה (16/11/2026: "תשאיר את הכלי הזה פתוח לעוד יומיים ואל תאפשר לעבור ממנו למרחבים אחרים
+  // ואז פשוט אשלח את הקישור בווצאפ הקבוצתי"): quick-practice.html עד QUICK_OPEN_UNTIL כולל (שעון ישראל), בלי קוד.
+  // השרת בודק את אותו תאריך (QUICK_OPEN_UNTIL ב-access.mjs). מי שנכנס/ה בקוד ממשיך/ה כרגיל.
+  var QUICK_OPEN_UNTIL = "2026-11-18";
+  function quickOpen(){
+    try {
+      if ((location.pathname.split("/").pop() || "") !== "quick-practice.html" || ss("sbe.session.token")) return false;
+      return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" }) <= QUICK_OPEN_UNTIL;
+    } catch(e){ return false; }
+  }
+  function quickGuest(){
+    try { var g = localStorage.getItem("sbe.quick.g"); if (!/^[a-f0-9]{16}$/.test(g || "")) { g = ""; for (var i = 0; i < 16; i++) g += "0123456789abcdef".charAt(Math.floor(Math.random() * 16)); localStorage.setItem("sbe.quick.g", g); } return g; } catch(e){ return ""; }
+  }
+  window.SBE_QUICK_OPEN = quickOpen();
   // מכשיר מוכר למנהלת המערכת (28/10/2026): בלי כניסה בלשונית, עוברים לדף הכניסה שנכנס לבד וחוזר לדף הזה.
   function sysDeviceKey(){ try { var d = JSON.parse(localStorage.getItem("sbe.sys.device") || "null"); return d && d.key && Date.parse(d.exp) > Date.now() ? d.key : ""; } catch(e){ return ""; } }
   // להישאר מחוברים במכשיר (13/11/2026: "אני, כמנהלת מערכת וכל אחד אחר אוכל להשאיר את המערכת מחוברת במכשיר שלי
@@ -81,6 +95,7 @@
             // מעבדת האופק: עבודה משותפת בקישור (?room=) — המשתתפים פונים למודל רק בתוך העבודה הזו.
             var hlRoom = (location.search.match(/[?&]room=([a-f0-9]{24})(?:&|$)/) || [])[1];
             if (hlRoom) { b._auth.room = hlRoom; try { b._auth.g = localStorage.getItem("sbe.hl.g") || ""; } catch(e){} }
+            if (!token && quickOpen()) b._auth.quick = quickGuest();
             opts = Object.assign({}, opts, { body: JSON.stringify(b) });
           }
         } catch(e){}
@@ -358,6 +373,8 @@
   // Begood together (28/10/2026): צופים וצופות מצטרפים לתצפית בקוד המפגש, בלי קוד Begood (?join= או ?observe=1).
   // השרת נותן להם רק את התצפית שלהם במפגש שהצטרפו אליו (org-suite.mjs).
   if (page === "org-suite.html" && /[?&](join=\d{6}|observe=1)(&|$)/.test(location.search)) return;
+  // התנסות קצרה פתוחה בלי כניסה, עד QUICK_OPEN_UNTIL (ראו למעלה)
+  if (quickOpen()) return;
   // כניסה שהסתיימה (07/10/2026): האסימון החתום תקף 12 שעות, אבל לשונית פתוחה שומרת אותו גם אחר כך —
   // והשרת דוחה אותו ("אין הרשאה פעילה"). חוזרים למסך הכניסה עם הסבר, במקום הודעת הרשאה מבלבלת.
   if (ALL_USERS.indexOf(page) === -1) {
