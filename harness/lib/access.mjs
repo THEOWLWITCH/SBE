@@ -20,7 +20,7 @@ const MIN_PASSWORD = 8;
 // ההרשאות במערכת. לכל מוסד יש "תקרה" (modules:<מוסד>) — מה שמנהלת המערכת פתחה
 // לו; ברירת המחדל: שום דבר. קודי הצוות שמנהל/ת המוסד מפיק/ה מקבלים רק צירוף
 // מתוך התקרה.
-export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi', 'journey', 'writer', 'nana', 'studio', 'dialogue', 'teamthink', 'studies', 'games', 'horizon', 'bridge', 'routines', 'continuity', 'orgsuite', 'dilemma'];
+export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi', 'journey', 'writer', 'nana', 'studio', 'dialogue', 'teamthink', 'studies', 'games', 'horizon', 'bridge', 'routines', 'continuity', 'orgsuite', 'dilemma', 'quickpractice'];
 const DEFAULT_MODULES = Object.fromEntries(PERMS.map((p) => [p, false]));
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
@@ -394,6 +394,7 @@ export const MODEL_PAGES = {
   'org-suite.html': ['orgsuite'], 'org-library.html': ['orgsuite'], // תרגול צוותים (בלי מודל; כאן כדי שהרשימות יתאימו)
   'horizon-lab.html': ['horizon'], 'hl-voice.html': ['horizon'], 'hl-radar.html': ['horizon'], 'hl-futures.html': ['horizon'], 'hl-circles.html': ['horizon'], 'hl-horizons.html': ['horizon'], 'hl-collage.html': ['horizon'], 'hl-roadmap.html': ['horizon'], 'hl-game.html': ['horizon'], 'hl-stress.html': ['horizon'], // מעבדת האופק (אושר 28/10/2026)
   'family-bridge.html': ['bridge'], 'routines-hub.html': ['routines'], 'continuity-kit.html': ['continuity'], // אושרו 28/10/2026
+  'quick-practice.html': ['quickpractice'], // התנסות קצרה (16/11/2026): התרגול על התרחיש המוכן ככלי עצמאי
   'dilemma-inquiry.html': ['dilemma'] // בירור דילמות (12/11/2026); המשתתפים ב-dilemma-join.html דרך dlmModelGate
 };
 export const WORKSHOP_MODEL_PAGES = ['practice.html', 'conversation-planner.html', 'activity-planner.html', 'academic-review.html', 'parent-input-screen.html'];
@@ -422,7 +423,7 @@ export function modelPage(page) {
 }
 export const MODEL_ROUTES = {
   '/api/complete': null,
-  '/api/character-turn': ['practice.html'],
+  '/api/character-turn': ['practice.html', 'quick-practice.html'],
   '/api/pipeline': ['input-screen.html'],
 };
 export function modelIdentity(actor, credential) {
@@ -1600,7 +1601,9 @@ export const OPEN_PAGES = { 'message-writer.html': 'writer', 'conversation-plann
   'academic-review.html': 'academic', 'shared-dialogue-lab.html': 'dialogue', 'team-thinking.html': 'teamthink',
   // 16/11/2026 ("ההתנסות תהיה עם כלי האימון על תרחישים... הכניסה של כולם תהיה עם ברקוד שיהיה תקף מהיום ועד יום 18.11 כולל"):
   // תרגול לפי תרחיש, עם ההרשאה של מתנסות הסימולציה. קישור כזה פותח רק את practice.html (openModelPage), ולא נכנס ל"כל הכלים".
-  'practice.html': 'fac_trainee' };
+  'practice.html': 'fac_trainee',
+  // 16/11/2026 ("הוסף זאת גם ככלי עצמאי"): התנסות קצרה על התרחיש המוכן
+  'quick-practice.html': 'quickpractice' };
 export const OPEN_ALL = 'home.html';
 const OPEN_ALL_PERMS = [...new Set(Object.values(OPEN_PAGES))].filter((p) => !/^fac_/.test(p));
 // קישור פתוח לתרגול לפי תרחיש: פנייה למודל רק מדף התרגול (בלי יצירת תרחישים ובלי מסכי המנחה)

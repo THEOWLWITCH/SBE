@@ -1865,7 +1865,7 @@ function gate(w, loaded, loader, pwLabel){
 const OPEN_TOOLS = [["home.html","כל הכלים (המרחב שלי)"],["message-writer.html","תקשורת שמקדמת חוסן חברתי"],["conversation-planner.html","תכנון שיחה"],["activity-planner.html","תכנון פעילות"],
   ["facilitation-advisor.html","ננה: מהוראה להנחיה"],["resilience-advisor.html","פרקטי: חוסן חברתי בכיתה"],["leadership-advisor.html","נוגי: יועצת למנהיגות שמקדמת חוסן"],
   ["academic-review.html","משוב לעבודות"],["shared-dialogue-lab.html","מעבדת שיח וחקר משותף"],["team-thinking.html","חשיבת צוות"],
-  ["practice.html","תרגול לפי תרחיש (גם מקרה משלך)"]]; // 16/11/2026: לסדנת התרגול
+  ["practice.html","תרגול לפי תרחיש (גם מקרה משלך)"], ["quick-practice.html","התנסות קצרה בשיחה מאתגרת"]]; // 16/11/2026: לסדנת התרגול
 let openData = null;
 const openUrl = id => "https://be-good.co.il/entry.html?open=" + id;
 const ilDay = d => { const m = String(d||"").match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? (+m[3]) + "." + (+m[2]) + "." + m[1].slice(2) : d; };
@@ -2224,6 +2224,7 @@ const MOD_LABELS = {
   routines:    "מרכז שגרות ויוזמות חברתיות",
   continuity:  "תיק רציפות",
   dilemma:     "בירור דילמות",
+  quickpractice: "התנסות קצרה בשיחה מאתגרת",
   studies:     "לימודי חוסן חברתי",
 };
 

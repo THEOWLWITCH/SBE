@@ -1,5 +1,11 @@
 <meta charset="UTF-8">
 <title>תרגול לפי תרחיש</title>
+<script>
+// התנסות קצרה ככלי עצמאי (16/11/2026: "הוסף זאת גם ככלי עצמאי"): quick-practice.html מוגש מאותו קובץ (rewrite ב-netlify.toml),
+// ונפתח ישר על התרחיש המוכן, בלי מסך הבחירה ובלי "מקרה משלך".
+window.SBE_SOLO_READY = /(^|\/)quick-practice(\.html)?$/.test(location.pathname);
+if (window.SBE_SOLO_READY) document.title = "התנסות קצרה בשיחה מאתגרת";
+</script>
 <script src="lib/access-guard.js"></script>
 <script src="lib/example-peek.js" data-tool="practice,practice-own" defer></script>
 <script src="lib/ai-status.js"></script>
@@ -204,6 +210,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 .my-case{display:flex;gap:8px;align-items:center}
 .own-share{border:1px solid var(--hair,#cdd3d8);border-radius:10px;padding:10px 14px;margin-top:12px;background:var(--surface-2,#f4f6f8)}
 .own-share label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}.own-share p{margin:6px 0;font-size:.92rem;color:var(--muted)}
+.solo-me{display:inline-flex;gap:6px;align-items:center;font-size:.95rem;color:var(--muted)}.solo-me select{font:inherit}
 .own-share .warn{color:var(--brick,#9a4a3f);font-weight:600}
 .my-share{font-size:.82rem;border:1px solid var(--hair,#cdd3d8);background:transparent;border-radius:6px;padding:2px 8px;cursor:pointer;color:inherit}
 #redlineBanner:empty{display:none}.rl-fold summary{cursor:pointer;list-style:none}.rl-fold summary::-webkit-details-marker{display:none}.rl-fold summary::after{content:" ▾";color:#8a97a5}.rl-fold[open] summary{margin-bottom:6px}
@@ -275,7 +282,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
 <section id="screen-custom" hidden>
   <ol class="own-steps" id="ownSteps"><li data-s="1">1. מספרים על המקרה</li><li data-s="2">2. עוד כמה פרטים</li><li data-s="3">3. מאשרים את הסיפור</li></ol>
   <div class="card" id="own1">
-    <div class="f"><label for="ownStory">על איזו שיחה רוצים להתאמן? מה קרה?</label>
+    <div class="f"><label for="ownStory" id="ownStoryLabel">על איזו שיחה רוצים להתאמן? מה קרה?</label>
       <textarea id="ownStory" rows="5" placeholder="למשל: אבא של תלמיד בכיתה ו׳ כתב לי שהבן שלו לא רוצה לבוא לבית הספר בגלל ילדים בכיתה, ומבקש להיפגש מחר. בלי שמות אמיתיים."></textarea></div>
     <div class="grid2">
       <div class="f"><label for="ownRole">התפקיד שלי</label><input id="ownRole" list="ownRoles" placeholder="למשל: מחנך/ת"></div>
@@ -1170,6 +1177,7 @@ function resetAll(){
 
 // "לבחור תרחיש אחר" — חזרה למסך הבחירה, לא תרגול חוזר על אותו תרחיש.
 function backToSelect(){
+  if (window.SBE_SOLO_READY) return resetAll(); // בהתנסות הקצרה יש רק את התרחיש המוכן
   clearSessionState();
   SCENARIO = null;
   show("screen-select");
@@ -2274,7 +2282,10 @@ function renderCommFeedback(box, r){
     [1, 2, 3].forEach(i => { $("own" + i).hidden = i !== n; });
     $("ownSteps").querySelectorAll("li").forEach(li => li.classList.toggle("on", Number(li.dataset.s) === n));
     $("ownErr").hidden = true; show("screen-custom"); window.scrollTo(0, 0);
-    $("scenarioName").classList.remove("hero-banner"); $("scenarioName").textContent = "תרגול על מקרה משלך"; $("scenarioSubtitle").textContent = "";
+    // 16/11/2026 ("זו לא כותרת מתאימה כי השיחה כבר נמצאת"): בתרחיש המוכן הכותרות אומרות שהשיחה כבר כתובה ואפשר לשנות בה
+    const isReady = !!draft.fromReady;
+    $("ownStoryLabel").textContent = isReady ? "השיחה כבר כתובה כאן. אפשר לשנות בה כל פרט:" : "על איזו שיחה רוצים להתאמן? מה קרה?";
+    $("scenarioName").classList.remove("hero-banner"); $("scenarioName").textContent = isReady ? "תרחיש מוכן: " + PC.READY.title : "תרגול על מקרה משלך"; $("scenarioSubtitle").textContent = isReady ? "אפשר לשנות פרטים במקרה, ואז להמשיך." : "";
   }
   function wait(text, sec){
     const w = $("ownWait"), t0 = Date.now(); w.hidden = false;
@@ -2286,7 +2297,11 @@ function renderCommFeedback(box, r){
   const answersList = () => draft.questions.map((q, i) => ({ q: q.q, a: draft.answers[i] || "" }));
   const caseText = () => PC.caseText(Object.assign({}, draft.form, { answers: answersList() }));
 
-  $("bOwnCase").addEventListener("click", () => step(draft.scenario ? 3 : 1));
+  $("bOwnCase").addEventListener("click", () => {
+    // מקרה משלך: אם הטופס מולא מהתרחיש המוכן ועוד לא נוצר סיפור, מתחילים מטופס ריק
+    if (draft.fromReady && !draft.scenario) { draft.form = { me: draft.form.me || "נקבה" }; draft.questions = []; draft.answers = {}; Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; }); }
+    draft.fromReady = false; saveDraft(); step(draft.scenario ? 3 : 1);
+  });
   // תרחיש מוכן: ממלאים את צעד 1, ואפשר לשנות בו לפני שממשיכים
   if (PC.READY) {
     $("readyTitle").textContent = "⏳ תרחיש מוכן: " + PC.READY.title;
@@ -2300,11 +2315,18 @@ function renderCommFeedback(box, r){
       selectScenario("ready-" + PC.READY.id);
     };
     $("bReady").addEventListener("click", goReady);
-    // קישור ישיר: practice.html?ready=1
-    if (new URLSearchParams(location.search).get("ready") === "1") setTimeout(goReady, 0);
+    // קישור ישיר: practice.html?ready=1, וההתנסות הקצרה (quick-practice.html)
+    if (window.SBE_SOLO_READY) {
+      // לשון הפנייה עוברת למסך "לפני שמתחילים", ושינוי בה מחליף את הפתיחה
+      const meRow = el("label", { class: "solo-me" }, "איך לפנות אליי: ");
+      meRow.append($("readyMe")); $("bBackToSelect").replaceWith(meRow);
+      $("readyMe").addEventListener("change", () => { draft.form.me = $("readyMe").value; saveDraft(); goReady(); });
+      $("bAgainOther").hidden = true;
+      goReady();
+    } else if (new URLSearchParams(location.search).get("ready") === "1") setTimeout(goReady, 0);
     $("bReadyEdit").addEventListener("click", () => {
       const me = $("readyMe").value || draft.form.me || "נקבה";
-      draft.form = Object.assign({}, PC.READY.form, { me }); draft.questions = []; draft.answers = {}; draft.scenario = null; saveDraft();
+      draft.form = Object.assign({}, PC.READY.form, { me }); draft.questions = []; draft.answers = {}; draft.scenario = null; draft.fromReady = true; saveDraft();
       Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; });
       step(1);
     });
@@ -2386,7 +2408,7 @@ function renderCommFeedback(box, r){
     mine.unshift({ id, at: new Date().toISOString().slice(0, 10), sc: draft.scenario, form }); mine = mine.slice(0, 12); saveMine();
     if (wantShare) { try { await shareStory(mine[0], research); } catch (e) { mine[0].shareFailed = true; saveMine(); } }
     $("ownShare").checked = false; $("ownResearch").checked = false; $("ownResearch").disabled = true;
-    Object.assign(draft, { form: {}, questions: [], answers: {}, scenario: null }); saveDraft();
+    Object.assign(draft, { form: {}, questions: [], answers: {}, scenario: null, fromReady: false }); saveDraft();
     Object.values(FIELDS).forEach(f => { if (f !== "ownMe") $(f).value = ""; });
     renderMine(); SCENARIOS[id] = mine[0].sc; selectScenario(id);
   });
@@ -2428,7 +2450,7 @@ function renderCommFeedback(box, r){
 
 renderFilters();
 renderScenarioList();
-show("screen-select");
+if (!window.SBE_SOLO_READY) show("screen-select");
 </script>
 
 <!-- ── כפתור דיווח גלובלי — אותו רכיב שבכל 17 מסכי app/, ראו entry.html (09/09/2026) ── -->
