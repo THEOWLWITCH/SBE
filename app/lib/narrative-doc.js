@@ -357,6 +357,7 @@ function createRenderer(config) {
   function page(scn, { badge, meta, body }) {
     const byline = [scn.creator, dateIL(scn.date), scn.institution].filter(Boolean).map(esc).join(' · ');
     return `<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(scn.name)} · ${esc(badge)}</title>
 ${GUARD}
 ${FONTS}
@@ -382,6 +383,7 @@ ${WIDGET}`;
 
   function card(scn, badge, title, inner) {
     return `<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(scn.name)} · ${esc(badge)}</title>
 ${GUARD}
 ${FONTS}

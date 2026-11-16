@@ -1,4 +1,5 @@
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>סגרנו על משהו · כרטיס דמות · רועי</title>
 <script>/* ── שמירת הרשאות לכל דף ──
    נטען ב-<head> של כל מסך (חוץ ממסך הכניסה ושאלון החוסן שנפתח מ-QR), לפני
@@ -22,10 +23,27 @@
   var MIRROR = "sbe.session.mirror", HOURS = 12;
 
   function ss(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
+  // התנסות קצרה פתוחה בלי כניסה (16/11/2026: "תשאיר את הכלי הזה פתוח לעוד יומיים ואל תאפשר לעבור ממנו למרחבים אחרים
+  // ואז פשוט אשלח את הקישור בווצאפ הקבוצתי"): quick-practice.html עד QUICK_OPEN_UNTIL כולל (שעון ישראל), בלי קוד.
+  // השרת בודק את אותו תאריך (QUICK_OPEN_UNTIL ב-access.mjs). מי שנכנס/ה בקוד ממשיך/ה כרגיל.
+  var QUICK_OPEN_UNTIL = "2026-11-18";
+  function quickOpen(){
+    try {
+      if ((location.pathname.split("/").pop() || "") !== "quick-practice.html" || ss("sbe.session.token")) return false;
+      return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" }) <= QUICK_OPEN_UNTIL;
+    } catch(e){ return false; }
+  }
+  function quickGuest(){
+    try { var g = localStorage.getItem("sbe.quick.g"); if (!/^[a-f0-9]{16}$/.test(g || "")) { g = ""; for (var i = 0; i < 16; i++) g += "0123456789abcdef".charAt(Math.floor(Math.random() * 16)); localStorage.setItem("sbe.quick.g", g); } return g; } catch(e){ return ""; }
+  }
+  window.SBE_QUICK_OPEN = quickOpen();
   // מכשיר מוכר למנהלת המערכת (28/10/2026): בלי כניסה בלשונית, עוברים לדף הכניסה שנכנס לבד וחוזר לדף הזה.
   function sysDeviceKey(){ try { var d = JSON.parse(localStorage.getItem("sbe.sys.device") || "null"); return d && d.key && Date.parse(d.exp) > Date.now() ? d.key : ""; } catch(e){ return ""; } }
+  // להישאר מחוברים במכשיר (13/11/2026: "אני, כמנהלת מערכת וכל אחד אחר אוכל להשאיר את המערכת מחוברת במכשיר שלי
+  // ככל שארצה ובלי הגבלת זמן"): קוד שנשמר במכשיר בכניסה (entry.html, sbe.remember.code). "יציאה" מוחקת אותו.
+  function rememberedCode(){ try { var r = JSON.parse(localStorage.getItem("sbe.remember.code") || "null"); return r && r.code ? r.code : ""; } catch(e){ return ""; } }
   function sysNext(){
-    if (!sysDeviceKey()) return "entry.html";
+    if (!sysDeviceKey() && !rememberedCode()) return "entry.html";
     var here = (location.pathname.split("/").pop() || "") + location.search + location.hash;
     return "entry.html?next=" + encodeURIComponent(here);
   }
@@ -80,6 +98,7 @@
             // מעבדת האופק: עבודה משותפת בקישור (?room=) — המשתתפים פונים למודל רק בתוך העבודה הזו.
             var hlRoom = (location.search.match(/[?&]room=([a-f0-9]{24})(?:&|$)/) || [])[1];
             if (hlRoom) { b._auth.room = hlRoom; try { b._auth.g = localStorage.getItem("sbe.hl.g") || ""; } catch(e){} }
+            if (!token && quickOpen()) b._auth.quick = quickGuest();
             opts = Object.assign({}, opts, { body: JSON.stringify(b) });
           }
         } catch(e){}
@@ -136,6 +155,15 @@
     (document.head || document.documentElement).appendChild(st);
   } catch(e){}
 
+  // 16/11/2026 ("בטעינת הכלי עולה כותרת ישנה בגודל ענקי... זה נראה כמו שגיאה"): תמונת הבאנר הישנה לא מוצגת עד ש-tool-header.js
+  // הופך אותה לכותרת האחידה (h1.sbe-th). כותרת בלי התאמה ב-MAP מקבלת sbe-th-skip ונחשפת; ואם הקובץ לא נטען, הכול נחשף אחרי 4 שניות.
+  try { (function () {
+    if (document.getElementById("sbe-th-hold")) return;
+    var st = document.createElement("style"); st.id = "sbe-th-hold";
+    st.textContent = "@media screen{h1:not(.sbe-th):not(.sbe-th-skip) img[src*='-banner.webp']{visibility:hidden}}";
+    (document.head || document.documentElement).appendChild(st);
+    setTimeout(function () { if (!window.SBE_TH && st.parentNode) st.parentNode.removeChild(st); }, 4000);
+  })(); } catch (e) {}
   // עיצוב אחיד לכפתורים ולקופסאות בכל המערכת (28/10/2026), מ-lib/theme.js
   try {
     if (!window.SBE_THEME && !document.getElementById("sbe-theme-js")) {
@@ -297,6 +325,9 @@
     allowed = ["home.html"];
     perms.forEach(function(p){ (PAGES_BY_PERM[p] || []).forEach(function(x){ allowed.push(x); }); });
     if (perms.some(function(p){ return /^fac_/.test(p); })) allowed = allowed.concat(FAC_PAGES);
+    // קישור פתוח לתרגול לפי תרחיש (16/11/2026): רק התרגול, בלי יצירת תרחישים ומסכי המנחה
+    var openInfo = {}; try { openInfo = JSON.parse(ss("sbe.session.info") || "{}") || {}; } catch(e){}
+    if (openInfo.kind === "open" && perms.indexOf("fac_trainee") !== -1) allowed = ["home.html", "practice.html", "feedback.html"];
   } else if (home === "admin.html?role=sys") {
     allowed = null;
   } else if (home === "admin.html?role=inst") {
@@ -345,6 +376,8 @@
   // Begood together (28/10/2026): צופים וצופות מצטרפים לתצפית בקוד המפגש, בלי קוד Begood (?join= או ?observe=1).
   // השרת נותן להם רק את התצפית שלהם במפגש שהצטרפו אליו (org-suite.mjs).
   if (page === "org-suite.html" && /[?&](join=\d{6}|observe=1)(&|$)/.test(location.search)) return;
+  // התנסות קצרה פתוחה בלי כניסה, עד QUICK_OPEN_UNTIL (ראו למעלה)
+  if (quickOpen()) return;
   // כניסה שהסתיימה (07/10/2026): האסימון החתום תקף 12 שעות, אבל לשונית פתוחה שומרת אותו גם אחר כך —
   // והשרת דוחה אותו ("אין הרשאה פעילה"). חוזרים למסך הכניסה עם הסבר, במקום הודעת הרשאה מבלבלת.
   if (ALL_USERS.indexOf(page) === -1) {
@@ -357,7 +390,12 @@
           KEYS.forEach(function(k){ sessionStorage.removeItem(k); });
           localStorage.removeItem(MIRROR);
           document.documentElement.style.display = "none";
-          location.replace(base + (sysDeviceKey() ? sysNext() : "entry.html?expired=1"));
+          // 13/11/2026: "ניסיתי לעבור למרכז המחקר והוא זרק אותי לדף הכניסה": שומרים לאן רצו להגיע ומי נכנס/ה,
+          // כדי שאחרי הכניסה מחדש יחזרו לאותו דף, ומנהלת המערכת תקבל מיד את שדה הסיסמה.
+          var wasSys = home === "admin.html?role=sys";
+          var here = (location.pathname.split("/").pop() || "") + (location.search || "") + (location.hash || "");
+          location.replace(base + (sysDeviceKey() || rememberedCode() ? sysNext()
+            : "entry.html?expired=1" + (wasSys ? "&who=sys" : "") + (inProducts ? "" : "&next=" + encodeURIComponent(here))));
           return;
         }
       }
