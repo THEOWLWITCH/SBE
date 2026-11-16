@@ -305,7 +305,8 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
       <label><input type="checkbox" id="ownShare"> <span><b>🤝 שיתוף הסיפור עם Begood (רשות)</b></span></label>
       <p>אפשר לשתף את המקרה כדי שנלמד ממנו ונבנה ממנו תרחישים לתרגול לאחרים. נשלח רק מה שכתבת בצעד 1 ושם הסיפור, בלי השם שלך ובלי הקוד. לפני כל שימוש הסיפור נקרא ונערך, ופרטים מזהים מוסרים. אפשר לבטל את השיתוף בכל עת ב"המקרים שלי".</p>
       <p>כדאי לבדוק שאין בסיפור שמות אמיתיים, מספרי טלפון או פרטים שאפשר לזהות מהם תלמיד/ה, משפחה או בית ספר.</p>
-      <label><input type="checkbox" id="ownResearch" disabled> <span>מותר להשתמש בסיפור גם במחקר, באופן אנונימי</span></label>
+      <!-- 16/11/2026 ("להסיר את המשפט הזה"): בלי האפשרות לשימוש במחקר. השדה נשאר מוסתר ולא מסומן, כדי שהקוד הקיים ימשיך לעבוד -->
+      <input type="checkbox" id="ownResearch" disabled hidden>
       <p class="warn" id="ownShareWarn" hidden></p>
     </div>
     <div class="own-acts"><button type="button" class="primary" id="ownApprove">✓ מאשרים ומתחילים להתאמן</button></div>
