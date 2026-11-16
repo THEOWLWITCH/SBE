@@ -2337,6 +2337,13 @@ function renderCommFeedback(box, r){
 
   // 1 → 2: שאלות הבהרה, רק מה שחסר
   $("ownNext").addEventListener("click", async () => {
+    // 16/11/2026 ("השיחה הזאת תהיה מוכנה ורק תעלה בהבדל של זכר ונקבה - כי אין לי זמן לחכות"):
+    // התרחיש המוכן בלי שינוי בפרטים: ישר לתרגול, בלי שאלות ובלי כתיבת סיפור
+    if (draft.fromReady && PC.readyScenario && ["story", "role", "other", "goal", "hard"].every(k => (draft.form[k] || "").trim() === (PC.READY.form[k] || "").trim())) {
+      draft.fromReady = false; saveDraft();
+      SCENARIOS["ready-" + PC.READY.id] = PC.readyScenario(draft.form.me || "נקבה");
+      return selectScenario("ready-" + PC.READY.id);
+    }
     if (!(draft.form.story || "").trim()) { $("ownErr").textContent = "כדי להמשיך, אפשר לספר בכמה משפטים על המקרה."; $("ownErr").hidden = false; $("ownStory").focus(); return; }
     const b = $("ownNext"); b.disabled = true; const stop = wait("קריאת המקרה נמשכת כ־20 שניות.", 20); let r = null, bad = null;
     try { r = await sbeCallAIJson(AI_SERVER, { system: PC.clarifySystem(), messages: [{ role: "user", content: PC.caseText(draft.form) }], maxTokens: 900, fast: true }, 90000, PC.validQuestions); }
