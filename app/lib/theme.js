@@ -7,6 +7,15 @@
 (function () {
   'use strict';
   if (window.SBE_THEME) return;
+  // 16/11/2026 ("בטעינת הכלי עולה כותרת ישנה בגודל ענקי... זה נראה כמו שגיאה"): תמונת הבאנר הישנה לא מוצגת עד ש-tool-header.js
+  // הופך אותה לכותרת האחידה (h1.sbe-th). כותרת בלי התאמה ב-MAP מקבלת sbe-th-skip ונחשפת; ואם הקובץ לא נטען, הכול נחשף אחרי 4 שניות.
+  (function () {
+    if (document.getElementById("sbe-th-hold")) return;
+    var st = document.createElement("style"); st.id = "sbe-th-hold";
+    st.textContent = "@media screen{h1:not(.sbe-th):not(.sbe-th-skip) img[src*='-banner.webp']{visibility:hidden}}";
+    (document.head || document.documentElement).appendChild(st);
+    setTimeout(function () { if (!window.SBE_TH && st.parentNode) st.parentNode.removeChild(st); }, 4000);
+  })();
   var path = (location.pathname.split('/').pop() || '').toLowerCase();
   // הסרגל העליון האחיד (lib/top-bar.js), בכל דף פנימי, גם בדפי המשחקים
   (function () {
