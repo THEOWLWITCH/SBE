@@ -110,3 +110,25 @@ test('open link: title can change without touching dates', async () => {
   const [st, r] = await handleAccess(store, { action: 'openUpdate', token, id: 'title-1', label: 'היכרות והכנה' });
   assert.equal(st, 200); assert.equal(r.item.label, 'היכרות והכנה'); assert.equal(r.item.date, ilToday());
 });
+
+// 16/11/2026: קישור פתוח לתרגול לפי תרחיש, מהיום ועד יום הסדנה, רק לדף התרגול
+test('a practice link opens only the practice page, over a range of days', async () => {
+  const store = memoryStore();
+  const token = await sys(store);
+  let [st, out] = await handleAccess(store, { action: 'openCreate', token, page: 'practice.html', date: ilToday(), until: dayShift(2), id: 'tirgul' });
+  assert.equal(st, 200); assert.equal(out.item.perm, 'fac_trainee');
+  [st, out] = await handleAccess(store, { action: 'openJoin', id: 'tirgul' });
+  assert.equal(st, 200); assert.equal(out.page, 'practice.html');
+  const guest = out.token;
+  assert.ok((await authorizeModel(store, { token: guest, page: 'practice.html' })).ok);
+  assert.ok((await authorizeModel(store, { token: guest, page: 'practice.html' }, '/api/character-turn')).ok);
+  for (const page of ['input-screen.html', 'facilitator-screen.html', 'message-writer.html'])
+    assert.equal((await authorizeModel(store, { token: guest, page })).ok, false, page);
+  assert.equal((await authorizeModel(store, { token: guest, page: 'input-screen.html' }, '/api/pipeline')).ok, false);
+  // the day after the range: closed
+  const rec = await store.get('open:tirgul'); await store.set('open:tirgul', { ...rec, date: dayShift(-3), until: dayShift(-1) });
+  assert.equal((await authorizeModel(store, { token: guest, page: 'practice.html' })).ok, false);
+  // "all tools" does not include the simulation permissions
+  [st, out] = await handleAccess(store, { action: 'openCreate', token, page: 'home.html', date: ilToday(), id: 'kol' });
+  assert.ok(!out.item.perms.some((p) => /^fac_/.test(p)));
+});
