@@ -10,7 +10,7 @@
   const token = () => { try { return sessionStorage.getItem('sbe.session.token') || ''; } catch (e) { return ''; } };
   const call = (op, input) => U.api(op, input, { token: token() });
   const msg = (t, cls) => '<div class="dlm-msg' + (cls ? ' ' + cls : '') + '" role="' + (cls === 'err' ? 'alert' : 'status') + '">' + esc(t) + '</div>';
-  const STATUS = { draft: 'טיוטה (סגורה למשתתפים)', open: 'פתוחה', closed: 'הסתיימה' };
+  const STATUS = { draft: 'סגורה למשתתפים', open: 'פתוחה', closed: 'הסתיימה' };
   const S = { a: null, tab: 'dilemma', stats: null, board: null, g: null, timer: null };
   // 17/11/2026 ("אם אני עוברת ממסך למסך - השאר את הלוח שפתחתי פתוח. אני אסגור אותו כשארצה"; "לא לזרוק אותי ממסכים
   // ולא לסגור עבורי"): הפעילות, הלשונית והלוח שנפתחו נשמרים במכשיר, וכשחוזרים לכלי הם נפתחים שוב באותו מקום.
@@ -64,14 +64,14 @@
     app.innerHTML = '<p><a href="#" id="back">→ לכל הפעילויות</a></p><div class="dlm-card"><div class="dlm-row" style="justify-content:space-between"><div><h2 style="margin:0">' + esc(a.title) + '</h2>'
       + '<p class="dlm-sub">' + esc(a.mode === 'group' ? 'עבודה קבוצתית' : 'עבודה אישית') + ' · ' + a.durationMin + ' דקות · משתתפים: ' + (st.participants || 0) + (a.research.enabled ? ' (במחקר: ' + (st.research || 0) + ', לימודי בלבד: ' + (st.learning || 0) + ')' : '') + '</p></div>'
       + '<div class="dlm-row"><button class="dlm-btn acc" id="projBtn"' + (a.classes.length ? '' : ' disabled title="אפשר להוסיף כיתה קודם"') + '>📽 מצב הקרנה</button><b>מצב: ' + esc(STATUS[a.status]) + '</b>' + (a.status !== 'open' ? '<button class="dlm-btn main" data-st="open">פתיחה למשתתפים</button>' : '<button class="dlm-btn" data-st="closed">סיום הפעילות</button>')
-      + (a.status === 'closed' ? '' : a.status === 'open' ? '<button class="dlm-btn small" data-st="draft">השהיה</button>' : '') + '</div></div><div id="topmsg"></div></div>'
+      + (a.status === 'closed' ? '' : a.status === 'open' ? '<button class="dlm-btn small" data-st="draft">סגירה למשתתפים</button>' : '') + '</div></div><div id="topmsg"></div></div>'
       + '<nav class="dlm-steps">' + TABS.map(([k, t]) => '<button type="button" data-tab="' + k + '"' + (S.tab === k ? ' aria-current="step"' : '') + '>' + t + '</button>').join('') + '</nav><div id="tab"></div>';
     remember();
     $('#back').onclick = (e) => { e.preventDefault(); place(null); list(); };
     $('#projBtn').onclick = () => projector();
     app.querySelectorAll('[data-st]').forEach((b) => b.onclick = async () => {
       if (b.dataset.st === 'closed' && !confirm('לסיים את הפעילות? המשתתפים יוכלו לקרוא, אבל לא לכתוב.')) return;
-      if (b.dataset.st === 'draft' && !confirm('להשהות את הפעילות? עד שתפתחו אותה שוב, המשתתפים לא יוכלו להיכנס ולכתוב.')) return;
+      if (b.dataset.st === 'draft' && !confirm('לסגור את הפעילות למשתתפים? אפשר לפתוח אותה שוב בכל רגע. עד אז המשתתפים לא יוכלו להיכנס ולכתוב.')) return;
       try { const r = await call('f.status', { id: a.id, status: b.dataset.st }); S.a = r.activity; draw(); } catch (e) { $('#topmsg').innerHTML = msg(e.message, 'err'); }
     });
     app.querySelectorAll('[data-tab]').forEach((b) => b.onclick = async () => {
@@ -250,7 +250,7 @@
       const keepScroll = quiet ? window.scrollY : null;
       v.innerHTML = '<div class="dlm-card"><h2>הלוח</h2><p class="dlm-hint">תצוגה בלבד. התגובות האישיות והרפלקציות אינן מוצגות כאן.</p><div class="dlm-boardwrap"><div>' + U.boardHTML(b, { readOnly: true }) + '</div><aside>' + M.legendHTML() + '</aside></div>'
         + (b.challenges.length ? '<h3>מידע מאתגר</h3><ul>' + b.challenges.map((c) => '<li>' + esc(c.info) + (c.decision ? ' · <b>' + esc({ update: 'עדכנו את הלוח', keep: 'השאירו את הלוח', open: 'נשאר פתוח' }[c.decision.value]) + '</b>' + (c.decision.note ? ': ' + esc(c.decision.note) : '') : ' · טרם הוחלט') + '</li>').join('') + '</ul>' : '')
-        + (b.conclusion ? '<h3>המסקנה המותנית' + (b.conclusion.submitted ? ' (הוגשה)' : ' (טיוטה)') + '</h3>' + M.CONCLUSION_Q.map((q) => b.conclusion[q.k] ? '<p><b>' + esc(q.t) + '</b> ' + esc(b.conclusion[q.k]) + '</p>' : '').join('') : '')
+        + (b.conclusion ? '<h3>המסקנה המותנית' + (b.conclusion.submitted ? ' (הוגשה)' : ' (עוד לא הוגשה)') + '</h3>' + M.CONCLUSION_Q.map((q) => b.conclusion[q.k] ? '<p><b>' + esc(q.t) + '</b> ' + esc(b.conclusion[q.k]) + '</p>' : '').join('') : '')
         + (b.alerts.length ? '<h3>התרעות</h3><ul>' + b.alerts.map((al) => '<li>⚠ ' + esc(al.type === 'media' ? 'בירור מדיה' : 'סימני קונספירציה') + ': ' + esc(al.target.slice(0, 120)) + ' · תגובות: ' + al.responses.length + '</li>').join('') + '</ul>' : '')
         + '<h3>דיווחים על בעיות</h3>' + (b.reports.length ? '<table class="dlm-table"><thead><tr><th>על מה</th><th>הבעיה</th><th>מצב</th></tr></thead><tbody>' + b.reports.map((x) => '<tr><td>' + esc({ source: 'מקור', ai: 'תשובת AI', assessment: 'הערכת אמינות', alert: 'התרעה' }[x.target]) + '</td><td>' + esc(x.text) + '</td><td><select data-rep="' + esc(x.id) + '" aria-label="מצב הדיווח">'
           + [['new', 'חדש'], ['reviewed', 'נקרא'], ['fixed', 'תוקן'], ['dismissed', 'לא נדרש שינוי']].map(([k, t]) => '<option value="' + k + '"' + (x.status === k ? ' selected' : '') + '>' + t + '</option>').join('') + '</select></td></tr>').join('') + '</tbody></table>' : '<p class="dlm-hint">אין דיווחים.</p>')
