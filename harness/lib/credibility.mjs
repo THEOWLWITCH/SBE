@@ -86,7 +86,7 @@ function checkFile(d) {
 }
 const publicActivity = (a, c) => ({ id: a.id, title: a.title, dilemma: a.dilemma, status: a.status, research: !!a.research.enabled, reflectOpen: !!a.reflectOpen,
   class: c ? { id: c.id, name: c.name } : null, consent: { ...M.CONSENT, ethics: a.research.ethics || '', contact: a.research.contact || '' } });
-const teamView = (t) => ({ id: t.id, name: t.name, code: t.tcode, classId: t.classId, members: t.members.map((m) => ({ id: m.id, name: m.name, consent: m.consent })), createdAt: t.createdAt });
+const teamView = (t) => ({ id: t.id, name: t.name, code: t.tcode, classId: t.classId, members: t.members.map((m) => ({ id: m.id, name: m.name, consent: m.consent })), workOpen: !!t.workOpen, createdAt: t.createdAt });
 
 // ההסכמה (17/11/2026: "יש לחתום על הסכמה אבל לא לכתוב במצגת שזה לבחירה - המנחות יפתרו בעיות נקודתיות"):
 // בצוות כל משתתף/ת חותם/ת על ההסכמה (research). "רק ללמידה" הוא חריג שרק המנחה מסמנת (f.teamEdit),
@@ -375,11 +375,19 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
         const t2 = await mutate(store, 'crt:' + a.id + ':' + t.id, (t) => { t.members = members(d.members, t.members); if (d.name) t.name = txt(d.name, 'שם הצוות', 80, true); });
         return [200, { team: teamView(t2) }];
       }
+      // פתיחת אזור העבודה (17/11/2026: "הוסף כפתור לפתיחת אזור העבודה"): אחרי שלפחות משתתף/ת אחד/ת מילא/ה את השאלון.
+      // מי שעוד לא מילא/ה ממלא/ת במכשיר שלו/ה כשנכנס/ת
+      if (op === 'p.openWork') {
+        const rr0 = (await store.get(RR)) || { members: {} };
+        if (!t.members.some((m) => (rr0.members[m.id] || {}).pre)) throw new CrdError('אזור העבודה נפתח אחרי שלפחות משתתף/ת אחד/ת ממלא/ת את שאלון העמדות הראשוני', 409);
+        const t2 = await mutate(store, 'crt:' + a.id + ':' + t.id, (t) => { t.workOpen = true; });
+        return [200, { team: teamView(t2) }];
+      }
       // לפני עבודת הצוות: כל משתתף/ת חתם/ה על ההסכמה (בפתיחת הצוות) ומילא/ה את שאלון העמדות הראשוני
       if (op === 'p.upload' || op === 'p.check') {
         const rr0 = (await store.get(RR)) || { members: {} };
         const miss = t.members.filter((m) => !(rr0.members[m.id] || {}).pre);
-        if (miss.length) throw new CrdError('לפני עבודת הצוות, כל משתתף/ת ממלא/ת את שאלון העמדות הראשוני. עוד לא מילאו: ' + miss.map((m) => m.name).join(', '), 409);
+        if (miss.length && !t.workOpen) throw new CrdError('לפני עבודת הצוות, כל משתתף/ת ממלא/ת את שאלון העמדות הראשוני. עוד לא מילאו: ' + miss.map((m) => m.name).join(', '), 409);
       }
       if (op === 'p.upload') {
         const f = checkFile(d);

@@ -209,6 +209,11 @@ test('שאלון עמדות ראשוני: עבודת הצוות מתחילה ר�
   { const [sx] = await t.P('p.reflect', { member: m1, pre: full }); assert.equal(sx, 400, 'stance question is required'); }
   await t.P('p.reflect', { member: m1, pre: full, initial: 'עמדה' });
   const [s2] = await t.P('p.check', { kind: 'new', url: 'https://example.org/a' }); assert.equal(s2, 409);
+  { const t2 = await E.team(E.c1, 'פתיחה', ['research', 'research'], true);
+    const [so0] = await t2.P('p.openWork', {}); assert.equal(so0, 409, 'needs one questionnaire');
+    await t2.P('p.reflect', { member: t2.r.team.members[0].id, pre: full, initial: 'עמדה' });
+    const [so, bo] = await t2.P('p.openWork', {}); assert.equal(so, 200); assert.equal(bo.team.workOpen, true);
+    const [sc] = await t2.P('p.check', { kind: 'new', url: 'https://example.org/b' }); assert.equal(sc, 200, 'work area opened'); }
   await t.P('p.reflect', { member: m2, pre: full, initial: 'עמדה' });
   const [s3] = await t.P('p.check', { kind: 'new', url: 'https://example.org/a' }); assert.equal(s3, 200);
   const [, g] = await t.P('p.get');

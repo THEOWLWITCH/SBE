@@ -113,7 +113,8 @@
       + '<div class="dlm-steps" role="tablist">' + [['checks', 'בדיקת מקורות'], ['reflect', 'עמדה ורפלקציה'], ['team', 'הצוות'], ['scale', 'המחוון']].map((x) => '<button type="button" role="tab" data-tab="' + x[0] + '"' + (S.tab === x[0] ? ' aria-current="step"' : '') + '>' + x[1] + '</button>').join('') + '</div></div>';
     let body = '';
     const missingPre = t.members.filter((m) => !(D.reflections[m.id] || {}).pre);
-    if (S.tab === 'checks') body = missingPre.length ? preView(missingPre) : (S.open ? checkView(D.checks.find((k) => k.id === S.open)) : checksList());
+    const myPreDone = me() && !missingPre.some((m) => m.id === me()) && t.members.some((m) => m.id === me());
+    if (S.tab === 'checks') body = missingPre.length && !(t.workOpen && myPreDone) ? preView(missingPre) : (S.open ? checkView(D.checks.find((k) => k.id === S.open)) : checksList());
     else if (S.tab === 'reflect') body = reflectView();
     else if (S.tab === 'team') body = teamView();
     else body = '<div class="dlm-card">' + M.aboutHTML() + '</div>';
@@ -134,14 +135,14 @@
   function preView(missing) {
     const t = S.data.team, done = t.members.filter((m) => (S.data.reflections[m.id] || {}).pre);
     const isMiss = (id) => missing.some((m) => m.id === id);
-    const sel = isMiss(S.pm) ? S.pm : isMiss(me()) ? me() : (missing.length === 1 ? missing[0].id : '');
     const mine = me() && !isMiss(me()) && t.members.find((m) => m.id === me());
+    const sel = isMiss(S.pm) ? S.pm : isMiss(me()) ? me() : (!mine && missing.length === 1 ? missing[0].id : '');
     return '<div class="dlm-card"><h2>' + esc(M.ATT.pre) + '</h2>'
       + '<p>לפני שמתחילים לבדוק מקורות, כל משתתף/ת ממלא/ת שאלון עמדות אישי קצר. עבודת הצוות נפתחת אחרי שכולם מילאו.</p>'
       + '<p class="dlm-hint">' + esc(M.ATT.note) + '</p>'
-      + (mine ? '<div class="dlm-msg">✓ השאלון של ' + esc(mine.name) + ' נשמר. מסך בדיקת המקורות ייפתח כשגם ' + missing.map((m) => esc(m.name)).join(' ו') + ' ימלאו את השאלון.</div>' : '')
-      + (done.length ? '<p class="dlm-hint">כבר מילאו: ' + done.map((m) => esc(m.name) + ' ✓').join(' · ') + '</p>' : '')
-      + (missing.length > 1 || !sel ? '<p class="crd-pre-who">' + (mine || done.length ? 'עוד לא מילאו. מי ממלא/ת עכשיו? ' : 'מי ממלא/ת עכשיו? ') + missing.map((m) => '<button type="button" class="crd-link" data-pm="' + esc(m.id) + '"' + (sel === m.id ? ' aria-pressed="true"' : '') + '>' + esc(m.name) + '</button>').join(' · ') + '</p>' : '')
+      + (mine && !t.workOpen ? '<div class="dlm-msg">✓ השאלון של ' + esc(mine.name) + ' נשמר. עוד לא מילאו: ' + missing.map((m) => esc(m.name)).join(', ') + '.</div><p><button class="dlm-btn main" id="openWork">פתיחת אזור העבודה</button></p><p class="dlm-hint">אזור העבודה נפתח לכל הצוות. מי שעוד לא מילא/ה את השאלון ממלא/ת אותו כשנכנס/ת מהמכשיר שלו/ה.</p>' : '')
+      + (done.length && !(mine && !t.workOpen) ? (t.workOpen ? '<p>אזור העבודה פתוח. כבר מילאת? לוחצים על השם: ' + done.map((m) => '<button type="button" class="crd-link" data-pme="' + esc(m.id) + '">' + esc(m.name) + ' ✓</button>').join(' · ') + '</p>' : '<p class="dlm-hint">כבר מילאו: ' + done.map((m) => esc(m.name) + ' ✓').join(' · ') + '</p>') : '')
+      + (missing.length > 1 || !sel ? '<p class="crd-pre-who">' + (mine ? 'ממלאים עכשיו במכשיר הזה בשם אחר? ' : done.length ? 'עוד לא מילאו. מי ממלא/ת עכשיו? ' : 'מי ממלא/ת עכשיו? ') + missing.map((m) => '<button type="button" class="crd-link" data-pm="' + esc(m.id) + '"' + (sel === m.id ? ' aria-pressed="true"' : '') + '>' + esc(m.name) + '</button>').join(' · ') + '</p>' : '')
       + (sel ? '<h3>השאלון של ' + esc((t.members.find((m) => m.id === sel) || {}).name || '') + '</h3><input type="hidden" id="pm" value="' + esc(sel) + '">' + attForm('pre-') + '<label for="pi" class="crd-ini-h">' + esc(M.INITIAL.t) + ' <span class="crd-req">(שדה עיקרי)</span> <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="pi" rows="5"></textarea>'
         + '<p><button class="dlm-btn main" id="savePre">שליחת השאלון</button></p>' : '')
       + '<div id="pmm"></div></div>';
@@ -396,6 +397,8 @@
     const lk = () => 'sbe.crd.refl.' + S.cred.t + '.' + $('#rm').value;
     const keepLocal = (patch) => { try { const cur = JSON.parse(localStorage.getItem(lk()) || '{}'); localStorage.setItem(lk(), JSON.stringify(Object.assign(cur, patch))); } catch (e) {} };
     app.querySelectorAll('[data-pm]').forEach((x) => { x.onclick = () => { S.pm = x.dataset.pm; setMe(x.dataset.pm); render(); }; });
+    app.querySelectorAll('[data-pme]').forEach((x) => { x.onclick = () => { setMe(x.dataset.pme); S.tab = 'checks'; render(); }; });
+    on('#openWork', () => act(async () => { const r = await call('p.openWork', {}); S.data.team = r.team; S.tab = 'checks'; render(); window.scrollTo(0, 0); }, $('#pmm')));
     on('#savePre', () => act(async () => {
       const id = $('#pm').value, pre = readAtt('pre-');
       if (!id) throw new Error('אפשר לבחור את השם שלך.');
