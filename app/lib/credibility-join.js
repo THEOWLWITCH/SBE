@@ -103,9 +103,10 @@
       + '<div><label for="who">מי עובד/ת עכשיו במכשיר הזה?</label><select id="who" data-closed><option value="">בחירה</option>' + t.members.map((m) => '<option value="' + esc(m.id) + '"' + (who === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>').join('') + '</select></div></div>'
       + (D.activity.dilemma ? '<p><b>הדילמה:</b> ' + esc(D.activity.dilemma) + '</p>' : '')
       + (D.activity.status !== 'open' ? msg('הפעילות סגורה כרגע: אפשר לצפות, אבל לא לשנות.') : '')
-      + '<div class="dlm-steps" role="tablist">' + [['checks', '🔎 בדיקת מקורות'], ['reflect', '✍️ עמדה ורפלקציה'], ['team', '👥 הצוות'], ['scale', '📏 המחוון']].map((x) => '<button type="button" role="tab" data-tab="' + x[0] + '"' + (S.tab === x[0] ? ' aria-current="step"' : '') + '>' + x[1] + '</button>').join('') + '</div></div>';
+      + '<div class="dlm-steps" role="tablist">' + [['checks', 'בדיקת מקורות'], ['reflect', 'עמדה ורפלקציה'], ['team', 'הצוות'], ['scale', 'המחוון']].map((x) => '<button type="button" role="tab" data-tab="' + x[0] + '"' + (S.tab === x[0] ? ' aria-current="step"' : '') + '>' + x[1] + '</button>').join('') + '</div></div>';
     let body = '';
-    if (S.tab === 'checks') body = S.open ? checkView(D.checks.find((k) => k.id === S.open)) : checksList();
+    const missingPre = t.members.filter((m) => !(D.reflections[m.id] || {}).pre);
+    if (S.tab === 'checks') body = missingPre.length ? preView(missingPre) : (S.open ? checkView(D.checks.find((k) => k.id === S.open)) : checksList());
     else if (S.tab === 'reflect') body = reflectView();
     else if (S.tab === 'team') body = teamView();
     else body = '<div class="dlm-card">' + M.aboutHTML() + '</div>';
@@ -113,6 +114,26 @@
     $('#who').onchange = (e) => { setMe(e.target.value); };
     app.querySelectorAll('[data-tab]').forEach((b) => { b.onclick = () => { S.tab = b.dataset.tab; S.open = null; render(); }; });
     bind();
+  }
+  // שאלון עמדות: כל היגד בשורה, סולם 1–5 ו"מעדיף/ה לא לענות"
+  function attForm(pfx, vals) {
+    vals = vals || {};
+    return '<div class="crd-att">' + M.ATTITUDES.map((q, i) => '<fieldset class="crd-att-q"><legend><span class="crd-att-n">' + (i + 1) + '</span> ' + esc(q.t) + '</legend><div class="crd-att-o">'
+      + M.ATT_SCALE.map((o) => '<label title="' + esc(o[1]) + '"><input type="radio" name="' + pfx + q.k + '" value="' + o[0] + '"' + (String(vals[q.k]) === String(o[0]) ? ' checked' : '') + '><span>' + o[0] + '</span></label>').join('')
+      + '<label class="na"><input type="radio" name="' + pfx + q.k + '" value="na"' + (vals[q.k] === 'na' ? ' checked' : '') + '><span>מעדיף/ה לא לענות</span></label></div></fieldset>').join('')
+      + '<p class="dlm-hint crd-att-key">' + M.ATT_SCALE.map((o) => o[0] + ' ' + esc(o[1])).join(' · ') + '</p></div>';
+  }
+  const readAtt = (pfx) => { const r = {}; for (const q of M.ATTITUDES) { const c = app.querySelector('input[name="' + pfx + q.k + '"]:checked'); if (!c) return null; r[q.k] = c.value === 'na' ? 'na' : Number(c.value); } return r; };
+  function preView(missing) {
+    const t = S.data.team, sel = missing.some((m) => m.id === (S.pm || me())) ? (S.pm || me()) : '';
+    return '<div class="dlm-card"><h2>' + esc(M.ATT.pre) + '</h2>'
+      + '<p>לפני שמתחילים לבדוק מקורות, כל משתתף/ת ממלא/ת שאלון עמדות אישי קצר. עבודת הצוות נפתחת אחרי שכולם מילאו.</p>'
+      + '<p class="dlm-hint">' + esc(M.ATT.note) + '</p>'
+      + '<ul class="crd-prelist">' + t.members.map((m) => '<li>' + ((S.data.reflections[m.id] || {}).pre ? '✓ ' : '○ ') + esc(m.name) + '</li>').join('') + '</ul>'
+      + '<label for="pm">השם שלי</label><select id="pm" data-closed><option value="">בחירה</option>' + missing.map((m) => '<option value="' + esc(m.id) + '"' + (sel === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>').join('') + '</select>'
+      + (sel ? attForm('pre-') + '<label for="pi">' + esc(M.INITIAL.t) + '</label><textarea id="pi" rows="3" placeholder="' + esc(M.INITIAL.ph) + '"></textarea>'
+        + '<p><button class="dlm-btn main" id="savePre">שליחת השאלון</button></p>' : '')
+      + '<div id="pmm"></div></div>';
   }
   function checksList() {
     const ks = S.data.checks;
@@ -198,11 +219,13 @@
     const r = local.reflect || (st.reflect && typeof st.reflect === 'object' ? st.reflect : {});
     return '<div class="dlm-card"><h2>עמדה ורפלקציה</h2><p class="dlm-hint">כל אחד ואחת כותב/ת את הרפלקציה בעצמו/ה. הרפלקציה משותפת עם הצוות, וה־AI מנתח אותה לפי קריטריונים שנקבעו מראש.</p>'
       + '<label for="rm">השם שלי</label><select id="rm" data-closed><option value="">בחירה</option>' + t.members.map((x) => '<option value="' + esc(x.id) + '"' + (sel === x.id ? ' selected' : '') + '>' + esc(x.name) + ((S.data.reflections[x.id] || {}).reflect ? ' ✓' : '') + '</option>').join('') + '</select>'
-      + (!m ? '' : '<h3>' + esc(M.INITIAL.t) + (st.initial ? ' ✓' : '') + '</h3><p class="dlm-hint">במפגש הראשון, לפני הבדיקה.</p><textarea id="ri" rows="3" placeholder="' + esc(M.INITIAL.ph) + '">' + esc(local.initial || '') + '</textarea><p><button class="dlm-btn" id="saveInit">שמירת העמדה הראשונית</button></p>'
+      + (!m ? '' : (st.initial && st.initial.text ? '<h3>העמדה הראשונית שלי</h3><p class="crd-quote">' + esc(st.initial.text) + '</p>' : '')
         + '<h3>רפלקציה' + (st.reflect ? ' ✓ נשלחה' : '') + '</h3><p class="dlm-hint">' + esc(M.REFLECT_NOTE) + '</p>'
         + M.REFLECT.map((q) => q.opts ? '<fieldset class="crd-fs"><legend>' + esc(q.t) + '</legend>' + q.opts.map((o) => '<label><input type="radio" name="rf-' + q.k + '" value="' + o[0] + '"' + (r[q.k] === o[0] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>').join(' ') + '</fieldset>'
           : '<div class="crd-q" data-when="' + esc((q.when || []).join(',')) + '"><label for="rf-' + q.k + '">' + esc(q.t) + '</label><textarea id="rf-' + q.k + '" rows="3" placeholder="' + esc(q.ph || '') + '">' + esc(r[q.k] || '') + '</textarea></div>').join('')
-        + '<p><button class="dlm-btn main" id="saveRefl">שליחת הרפלקציה</button></p>') + '<div id="rmm"></div></div>'
+        + '<p><button class="dlm-btn main" id="saveRefl">שליחת הרפלקציה</button></p>'
+        + '<h3>' + esc(M.ATT.post) + (st.post ? ' ✓ נשלח' : '') + '</h3><p class="dlm-hint">אותם היגדים כמו בהתחלה, כדי לראות אם משהו השתנה. התשובות האישיות לא מוצגות לצוות.</p>'
+        + attForm('post-') + '<p><button class="dlm-btn" id="savePost">שליחת השאלון המסכם</button></p>') + '<div id="rmm"></div></div>'
       + teamReflections();
   }
   // הרפלקציות של הצוות, עם ניתוח ה־AI לפי הקריטריונים
@@ -360,7 +383,23 @@
     app.querySelectorAll('input[name=rf-changed]').forEach((r) => { r.onchange = toggleWhen; }); toggleWhen();
     const lk = () => 'sbe.crd.refl.' + S.cred.t + '.' + $('#rm').value;
     const keepLocal = (patch) => { try { const cur = JSON.parse(localStorage.getItem(lk()) || '{}'); localStorage.setItem(lk(), JSON.stringify(Object.assign(cur, patch))); } catch (e) {} };
-    on('#saveInit', () => act(async () => { const v = $('#ri').value.trim(); if (!v) throw new Error('אפשר לכתוב כמה משפטים.'); await call('p.reflect', { member: $('#rm').value, initial: v }); keepLocal({ initial: v }); S.data.reflections[$('#rm').value] = Object.assign({}, S.data.reflections[$('#rm').value], { initial: { text: v } }); $('#rmm').innerHTML = msg('העמדה הראשונית נשמרה.'); }, $('#rmm')));
+    const pm = $('#pm'); if (pm) pm.onchange = () => { S.pm = pm.value; render(); };
+    on('#savePre', () => act(async () => {
+      const id = $('#pm').value, pre = readAtt('pre-');
+      if (!id) throw new Error('אפשר לבחור את השם שלך.');
+      if (!pre) throw new Error('כדי לשלוח, אפשר לענות על כל ההיגדים, או לבחור "מעדיף/ה לא לענות".');
+      const init = $('#pi').value.trim();
+      await call('p.reflect', Object.assign({ member: id, pre }, init ? { initial: init } : {}));
+      if (!me()) setMe(id);
+      S.pm = ''; window.scrollTo(0, 0); await load();
+    }, $('#pmm')));
+    on('#savePost', () => act(async () => {
+      const post = readAtt('post-');
+      if (!post) throw new Error('כדי לשלוח, אפשר לענות על כל ההיגדים, או לבחור "מעדיף/ה לא לענות".');
+      await call('p.reflect', { member: $('#rm').value, post });
+      S.data.reflections[$('#rm').value] = Object.assign({}, S.data.reflections[$('#rm').value], { post: true });
+      $('#rmm').innerHTML = msg('השאלון המסכם נשמר. תודה!');
+    }, $('#rmm')));
     on('#saveRefl', () => act(async () => {
       const r = {}; for (const q of M.REFLECT) r[q.k] = q.opts ? ((app.querySelector('input[name=rf-' + q.k + ']:checked') || {}).value || '') : $('#rf-' + q.k).value;
       await call('p.reflect', { member: $('#rm').value, reflect: r }); keepLocal({ reflect: r });

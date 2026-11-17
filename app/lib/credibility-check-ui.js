@@ -46,7 +46,7 @@
   }
   function render() {
     const a = S.a;
-    const tabs = [['classes', '🏫 כיתות וכניסה'], ['teams', '👥 צוותים ועבודה'], ['findings', '📊 ממצאים'], ['settings', '⚙ הגדרות']];
+    const tabs = [['classes', 'כיתות וכניסה'], ['teams', 'צוותים ועבודה'], ['findings', 'ממצאים'], ['settings', 'הגדרות']];
     app.innerHTML = '<div class="dlm-card"><p><button class="crd-link" id="all">לכל הפעילויות</button></p><h2>' + esc(a.title) + '</h2>'
       + '<p>' + (a.status === 'open' ? '<b>פתוחה:</b> הצוותים יכולים להיכנס ולעבוד.' : '<b>סגורה:</b> הצוותים רואים את העבודה ואינם יכולים לשנות.') + ' <button class="crd-link" id="st">' + (a.status === 'open' ? 'סגירה' : 'פתיחה') + '</button></p>'
       + '<div class="dlm-steps" role="tablist">' + tabs.map((t) => '<button type="button" data-tab="' + t[0] + '"' + (S.tab === t[0] ? ' aria-current="step"' : '') + '>' + t[1] + '</button>').join('') + '</div></div><div id="tab"></div>';
@@ -81,8 +81,9 @@
   function teamsTab() {
     const n = $('#tab');
     if (!S.teams.length) { n.innerHTML = '<div class="dlm-card"><p>עוד לא נפתחו צוותים. הצוותים נפתחים בסריקת ה־QR של הכיתה.</p></div>'; return; }
-    n.innerHTML = '<div class="dlm-card"><h3>הצוותים</h3><p class="dlm-hint">הציונים: AI ראשונה ← הצוות ← AI חוזרת. ✓ = חתם/ה על ההסכמה, ○ = רק ללמידה (חריג שהמנחה סימנה).</p><div class="crd-tablewrap"><table class="dlm-table"><thead><tr><th>צוות</th><th>כיתה</th><th>משתתפים</th><th>מקורות שנבדקו</th><th>רפלקציות</th><th>ציון בתרגיל</th><th></th></tr></thead><tbody>'
+    n.innerHTML = '<div class="dlm-card"><h3>הצוותים</h3><p class="dlm-hint">הציונים: AI ראשונה ← הצוות ← AI חוזרת. ✓ = חתם/ה על ההסכמה, ○ = רק ללמידה (חריג שהמנחה סימנה).</p><div class="crd-tablewrap"><table class="dlm-table"><thead><tr><th>צוות</th><th>כיתה</th><th>משתתפים</th><th>שאלון ראשוני</th><th>מקורות שנבדקו</th><th>רפלקציות</th><th>ציון בתרגיל</th><th></th></tr></thead><tbody>'
       + S.teams.map((t) => '<tr><td><b>' + esc(t.name) + '</b><br><span class="dlm-hint" dir="ltr">' + esc(t.code) + '</span></td><td>' + esc(cname(t.classId)) + '</td><td>' + t.members.map((m) => esc(m.name) + ' ' + (m.consent === 'research' ? '✓' : '○')).join('<br>') + '</td>'
+        + '<td>' + t.reflections.filter((r) => r.pre).length + ' מתוך ' + t.members.length + '</td>'
         + '<td>' + (t.checks.length ? t.checks.map((k) => '<div>' + esc(k.title.slice(0, 40)) + ' ' + [k.first, k.team, k.final].map((v) => M.dotHTML(v === undefined ? null : v)).join(' ') + ' <span class="dlm-hint">' + k.ext + ' מקורות</span></div>').join('') : '—') + '</td>'
         + '<td>' + t.reflections.filter((r) => r.reflect).length + ' מתוך ' + t.members.length + '</td><td>' + (t.grade && t.grade.total != null ? '<b>' + t.grade.total + '</b>' : '—') + '</td>'
         + '<td><button class="crd-link" data-team="' + esc(t.id) + '">פתיחה</button></td></tr>').join('') + '</tbody></table></div></div>';

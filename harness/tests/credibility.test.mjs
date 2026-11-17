@@ -25,7 +25,7 @@ async function setup() {
   const { activity } = await fac('f.create', { title: 'גורדון', dilemma: 'האם התקשורת שמאלנית?' });
   const c1 = (await fac('f.classAdd', { id: activity.id, name: 'כיתה א' })).class;
   const c2 = (await fac('f.classAdd', { id: activity.id, name: 'כיתה ב' })).class;
-  const team = async (cls, name, consents = ['research', 'research']) => {
+  const team = async (cls, name, consents = ['research', 'research'], noPre = false) => {
     const [s, r] = await run('p.teamCreate', { code: cls.code, name, members: consents.map((c, i) => ({ name: 'משתתפת ' + i, consent: 'research' })) });
     assert.equal(s, 201, JSON.stringify(r));
     if (consents.includes('learning')) {
@@ -33,6 +33,8 @@ async function setup() {
       r.team = ed.team;
     }
     const cred = { a: r.a, t: r.t, key: r.key };
+    const pre = Object.fromEntries(['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8'].map((k, i) => [k, i % 2 ? 4 : 'na']));
+    if (!noPre) for (const m of r.team.members) await run('p.reflect', { member: m.id, pre }, cred);
     return { r, cred, P: (op, input) => run(op, input || {}, cred) };
   };
   return { store, run, fac, A: activity, c1, c2, team };
@@ -190,4 +192,22 @@ test('consent: teams sign; "learning only" is a lecturer exception that a team c
   const [, r] = await t.P('p.members', { members: t.r.team.members.map((m) => ({ id: m.id, name: m.name, consent: 'research' })) });
   assert.equal(r.team.members[1].consent, 'learning', 'the exception stays when the team saves again');
   assert.ok(!M.CONSENT.text.join(' ').includes('בלי להסכים'), 'no opt-out wording');
+});
+
+test('שאלון עמדות ראשוני: עבודת הצוות מתחילה רק אחרי שכולם מילאו', async () => {
+  const E = await setup();
+  const t = await E.team(E.c1, 'לפני', ['research', 'research'], true);
+  const [s1, b1] = await t.P('p.check', { kind: 'new', url: 'https://example.org/a' });
+  assert.equal(s1, 409); assert.match(b1.error, /שאלון העמדות/);
+  const [m1, m2] = t.r.team.members.map((m) => m.id);
+  const [sb] = await t.P('p.reflect', { member: m1, pre: { a1: 3 } }); assert.equal(sb, 400);
+  const full = { a1: 1, a2: 2, a3: 3, a4: 4, a5: 5, a6: 'na', a7: 3, a8: 2 };
+  await t.P('p.reflect', { member: m1, pre: full });
+  const [s2] = await t.P('p.check', { kind: 'new', url: 'https://example.org/a' }); assert.equal(s2, 409);
+  await t.P('p.reflect', { member: m2, pre: full });
+  const [s3] = await t.P('p.check', { kind: 'new', url: 'https://example.org/a' }); assert.equal(s3, 200);
+  const [, g] = await t.P('p.get');
+  assert.equal(g.reflections[m1].pre, true); assert.equal(typeof g.reflections[m1].pre, 'boolean');
+  const x = await E.fac('f.export', { id: E.A.id });
+  assert.equal(x.teams[0].members[0].pre.a1, 1);
 });

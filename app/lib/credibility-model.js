@@ -124,6 +124,26 @@
     if (!crit.some((c) => c.note) && !level) return null;
     return { criteria: crit, level, levelWhy: s(o.levelWhy, 400), strength: s(o.strength, 400), question: s(o.question, 300) };
   }
+  // שאלון עמדות אישי: לפני עבודת הצוות (ראשוני), ושוב בסוף (מסכם, רשות). אותם היגדים, כדי להשוות.
+  const ATT_SCALE = [[1, 'בכלל לא'], [2, 'במידה מועטה'], [3, 'במידה בינונית'], [4, 'במידה רבה'], [5, 'במידה רבה מאוד']];
+  const ATTITUDES = [
+    { k: 'a1', t: 'אני יודע/ת לזהות מידע כוזב ברשת.' },
+    { k: 'a2', t: 'לפני שאני משתף/ת ידיעה, אני בודק/ת מאיפה היא הגיעה.' },
+    { k: 'a3', t: 'אני בודק/ת ידיעה בעוד מקור עצמאי לפני שאני מאמין/ה לה.' },
+    { k: 'a4', t: 'אני יודע/ת איך לבדוק אם תמונה או סרטון נערכו או נוצרו ב־AI.' },
+    { k: 'a5', t: 'כשידיעה מתאימה לדעה שלי, קשה לי לפקפק בה.' },
+    { k: 'a6', t: 'אני סומך/ת על ציון אמינות שנותן כלי AI.' },
+    { k: 'a7', t: 'כלי AI יכולים לעזור לי להבין אם מקור אמין.' },
+    { k: 'a8', t: 'אני מרגיש/ה מוכן/ה ללמד תלמידים לבדוק מקורות.' },
+  ];
+  const ATT = { pre: 'שאלון עמדות ראשוני', post: 'שאלון עמדות מסכם (רשות)',
+    note: 'שאלון אישי וקצר. אין תשובות נכונות. על כל היגד: עד כמה הוא מתאר אותך? אפשר גם לבחור "מעדיף/ה לא לענות". התשובות האישיות לא מוצגות לצוות.' };
+  function cleanAttitudes(o) {
+    if (!o || typeof o !== 'object') return null;
+    const r = {};
+    for (const q of ATTITUDES) { const v = o[q.k]; if (v === 'na') r[q.k] = 'na'; else if ([1, 2, 3, 4, 5].includes(Number(v)) && v !== '' && v != null) r[q.k] = Number(v); else return null; }
+    return r;
+  }
   const INITIAL = { t: 'עמדה ראשונית על הדילמה (רשות)', ph: 'כמה משפטים: מה אני חושב/ת עכשיו, מה איני יודע/ת, ומה יכול לשנות את דעתי. אין צורך בהזדהות פוליטית.' };
   // מחוון לציון התרגיל (למרצות): משקלות, ארבע רמות
   const GRADE = {
@@ -251,6 +271,6 @@
       + '<p class="crd-hint">ה־AI אינו מחובר לאינטרנט ואינו כלי טכני לזיהוי דיפ־פייק. הוא מציע ושואל; הבדיקה וההכרעה שלכם.</p>';
   }
 
-  return { esc, SCALE, GREY, FROM_OLD, validScore, levelOf, dotHTML, REMEMBER, EXAMPLES, QUESTIONS, FIELDS, EXT_KINDS, REFLECT, REFLECT_NOTE, INITIAL,
+  return { esc, SCALE, GREY, FROM_OLD, validScore, levelOf, dotHTML, REMEMBER, EXAMPLES, QUESTIONS, FIELDS, EXT_KINDS, REFLECT, REFLECT_NOTE, INITIAL, ATT_SCALE, ATTITUDES, ATT, cleanAttitudes,
     GRADE, gradeTotal, CONSENT, REFLECT_CRITERIA, reflectSystem, reflectText, cleanReflectAI, BASE, fieldsSystem, assessSystem, chatSystem, sourceText, inquiryText, aiText, parseJSON, cleanFields, cleanAssess, cleanChat, aboutHTML };
 });

@@ -84,7 +84,7 @@
   function pageDark() { var c = parse(getComputedStyle(document.body).backgroundColor); if (!c || c.a < .5) c = parse(getComputedStyle(document.documentElement).backgroundColor); return !!(c && c.a >= .5 && lum(c) < .35); }
 
   // כפתורים שלא נוגעים בהם: לשוניות, מתגים, בוררים, תפריטים נפתחים, כפתורים שנראים כקישור או כאייקון
-  var B_SKIP = '.r-center .r-btn,.chip,.tile,.tab-btn,.step-tab,.j-step,.linkbtn,.crd-link,.linkish,.switchlink,.iconbtn,.closebtn,.customsel-opt,.customsel-trigger,.combo-trigger,.traits-trigger,.sbe-no-theme,[role=tab],[role=switch],[role=option],[aria-pressed],[aria-selected],.choose button,.sw button,.space,.sbe-i,.sbe-info,summary';
+  var B_SKIP = '.r-center .r-btn,.chip,.tile,.tab-btn,.step-tab,.j-step,.linkbtn,.crd-link,.crd-page button,.crd-page a.dlm-btn,.linkish,.switchlink,.iconbtn,.closebtn,.customsel-opt,.customsel-trigger,.combo-trigger,.traits-trigger,.sbe-no-theme,[role=tab],[role=switch],[role=option],[aria-pressed],[aria-selected],.choose button,.sw button,.space,.sbe-i,.sbe-info,summary';
   function classifyButton(el) {
     if (el.hasAttribute('data-sbe-b')) return;
     el.setAttribute('data-sbe-b', '');

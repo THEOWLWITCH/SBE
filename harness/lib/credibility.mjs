@@ -145,7 +145,7 @@ async function teamsOf(store, a) { return (await store.list('crt:' + a.id + ':')
 function teamReflection(r) {
   r = r || {};
   const ai = r.ai ? { criteria: r.ai.criteria, strength: r.ai.strength, question: r.ai.question, at: r.ai.at } : null;
-  return { initial: r.initial || null, reflect: r.reflect || null, ai };
+  return { initial: r.initial || null, reflect: r.reflect || null, ai, pre: !!r.pre, post: !!r.post };
 }
 // סיכום בדיקה למרצה ולממצאים
 function checkSummary(k) {
@@ -193,7 +193,7 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
           const ks = (await store.get('crs:' + a.id + ':' + t.id)) || { checks: [] };
           const rr = (await store.get('crr:' + a.id + ':' + t.id)) || { members: {} };
           out.push({ ...teamView(t), grade: t.grade || null, checks: ks.checks.map(checkSummary),
-            reflections: t.members.map((m) => ({ id: m.id, initial: !!(rr.members[m.id] || {}).initial, reflect: !!(rr.members[m.id] || {}).reflect, ai: !!(rr.members[m.id] || {}).ai })) });
+            reflections: t.members.map((m) => ({ id: m.id, initial: !!(rr.members[m.id] || {}).initial, reflect: !!(rr.members[m.id] || {}).reflect, ai: !!(rr.members[m.id] || {}).ai, pre: !!(rr.members[m.id] || {}).pre, post: !!(rr.members[m.id] || {}).post })) });
         }
         return [200, { activity: view(a), teams: out }];
       }
@@ -358,6 +358,12 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
         const t2 = await mutate(store, 'crt:' + a.id + ':' + t.id, (t) => { t.members = members(d.members, t.members); if (d.name) t.name = txt(d.name, 'שם הצוות', 80, true); });
         return [200, { team: teamView(t2) }];
       }
+      // לפני עבודת הצוות: כל משתתף/ת חתם/ה על ההסכמה (בפתיחת הצוות) ומילא/ה את שאלון העמדות הראשוני
+      if (op === 'p.upload' || op === 'p.check') {
+        const rr0 = (await store.get(RR)) || { members: {} };
+        const miss = t.members.filter((m) => !(rr0.members[m.id] || {}).pre);
+        if (miss.length) throw new CrdError('לפני עבודת הצוות, כל משתתף/ת ממלא/ת את שאלון העמדות הראשוני. עוד לא מילאו: ' + miss.map((m) => m.name).join(', '), 409);
+      }
       if (op === 'p.upload') {
         const f = checkFile(d);
         const n = (await store.list('crf:' + a.id + ':', { keysOnly: true })).length;
@@ -434,6 +440,12 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
         if (!m) throw new CrdError('אפשר לבחור את השם שלך מהרשימה', 404);
         await mutate(store, RR, (rr) => {
           const cur = rr.members[m.id] || {};
+          for (const w of ['pre', 'post']) {
+            if (d[w] === undefined) continue;
+            const att = M.cleanAttitudes(d[w]);
+            if (!att) throw new CrdError('כדי לשלוח, אפשר לענות על כל ההיגדים, או לבחור "מעדיף/ה לא לענות"');
+            cur[w] = { ...att, at: now() };
+          }
           if (d.initial !== undefined) cur.initial = { text: txt(d.initial, M.INITIAL.t, LIM.long, true), at: now() };
           if (d.reflect) {
             const r = {}; for (const q of M.REFLECT) r[q.k] = q.opts ? (q.opts.some((o) => o[0] === d.reflect[q.k]) ? d.reflect[q.k] : '') : txt(d.reflect[q.k], q.t, LIM.long);
@@ -471,7 +483,7 @@ export async function researchExport(store, a) {
     const all = t.members.every((m) => m.consent === 'research');
     const ks = (await store.get('crs:' + a.id + ':' + t.id)) || { checks: [] };
     const rr = (await store.get('crr:' + a.id + ':' + t.id)) || { members: {} };
-    const ppl = t.members.map((m, i) => ({ code: 'T' + ti + '-P' + (i + 1), consent: m.consent, ...(m.consent === 'research' ? { initial: (rr.members[m.id] || {}).initial || null, reflect: (rr.members[m.id] || {}).reflect || null, reflectAI: (rr.members[m.id] || {}).ai || null } : {}) }));
+    const ppl = t.members.map((m, i) => ({ code: 'T' + ti + '-P' + (i + 1), consent: m.consent, ...(m.consent === 'research' ? { pre: (rr.members[m.id] || {}).pre || null, post: (rr.members[m.id] || {}).post || null, initial: (rr.members[m.id] || {}).initial || null, reflect: (rr.members[m.id] || {}).reflect || null, reflectAI: (rr.members[m.id] || {}).ai || null } : {}) }));
     out.teams.push({ code: 'T' + ti, class: cmap[t.classId], size: t.members.length, allConsented: all, members: ppl,
       checks: all ? ks.checks.map((k) => ({ ...k, fileId: undefined, by: undefined, log: k.log.map((l) => ({ at: l.at, kind: l.kind })), chat: k.chat.map((m) => ({ role: m.role, text: m.text, at: m.at })), external: k.external.map((e) => ({ ...e, by: undefined })) })) : null,
       summary: all ? ks.checks.map(checkSummary).map((s) => ({ ...s, fileName: undefined })) : null });
