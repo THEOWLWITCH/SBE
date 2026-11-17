@@ -258,19 +258,72 @@
   async function viewBoard(g, quiet) {
     S.g = g; remember();
     try {
+      if (quiet && ((window.SBE_DLM_MAP && window.SBE_DLM_MAP.busy()) || (document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName) && document.activeElement.value))) return;
       const r = await call('f.board', { id: S.a.id, g }); const b = S.board = r.board; const v = $('#bview'); if (!v) return;
       const keepScroll = quiet ? window.scrollY : null;
-      v.innerHTML = '<div class="dlm-card"><h2>הלוח</h2><p class="dlm-hint">תצוגה בלבד. התגובות האישיות והרפלקציות אינן מוצגות כאן.</p><div class="dlm-boardwrap"><div>' + U.boardHTML(b, { readOnly: true }) + '</div><aside>' + M.legendHTML() + '</aside></div>'
+      v.innerHTML = '<div class="dlm-card"><h2>הלוח</h2><p class="dlm-hint">אפשר להוסיף כרטיסים, מקורות וקבצים, להזיז, לקבץ ולקשר. מה שהמנחה מוסיף/ה מסומן "מנחה". התגובות האישיות והרפלקציות אינן מוצגות כאן.</p>'
+        + '<div id="fboard"></div><details class="dlm-card soft"><summary><b>מקרא אמינות מקורות</b></summary>' + M.legendHTML() + '</details>'
         + (b.challenges.length ? '<h3>מידע מאתגר</h3><ul>' + b.challenges.map((c) => '<li>' + esc(c.info) + (c.decision ? ' · <b>' + esc({ update: 'עדכנו את הלוח', keep: 'השאירו את הלוח', open: 'נשאר פתוח' }[c.decision.value]) + '</b>' + (c.decision.note ? ': ' + esc(c.decision.note) : '') : ' · טרם הוחלט') + '</li>').join('') + '</ul>' : '')
         + (b.conclusion ? '<h3>המסקנה המותנית' + (b.conclusion.submitted ? ' (הוגשה)' : ' (עוד לא הוגשה)') + '</h3>' + M.CONCLUSION_Q.map((q) => b.conclusion[q.k] ? '<p><b>' + esc(q.t) + '</b> ' + esc(b.conclusion[q.k]) + '</p>' : '').join('') : '')
         + (b.alerts.length ? '<h3>התרעות</h3><ul>' + b.alerts.map((al) => '<li>⚠ ' + esc(al.type === 'media' ? 'בירור מדיה' : 'סימני קונספירציה') + ': ' + esc(al.target.slice(0, 120)) + ' · תגובות: ' + al.responses.length + '</li>').join('') + '</ul>' : '')
         + '<h3>דיווחים על בעיות</h3>' + (b.reports.length ? '<table class="dlm-table"><thead><tr><th>על מה</th><th>הבעיה</th><th>מצב</th></tr></thead><tbody>' + b.reports.map((x) => '<tr><td>' + esc({ source: 'מקור', ai: 'תשובת AI', assessment: 'הערכת אמינות', alert: 'התרעה' }[x.target]) + '</td><td>' + esc(x.text) + '</td><td><select data-rep="' + esc(x.id) + '" aria-label="מצב הדיווח">'
           + [['new', 'חדש'], ['reviewed', 'נקרא'], ['fixed', 'תוקן'], ['dismissed', 'לא נדרש שינוי']].map(([k, t]) => '<option value="' + k + '"' + (x.status === k ? ' selected' : '') + '>' + t + '</option>').join('') + '</select></td></tr>').join('') + '</tbody></table>' : '<p class="dlm-hint">אין דיווחים.</p>')
         + '</div>';
-      v.querySelectorAll('[data-src]').forEach((x) => x.onclick = () => { const s = U.sourceById(b, x.dataset.src); if (s) openDlg(U.sourceCardHTML(s, b, { openWhy: true })); });
+      fbRender(g);
       v.querySelectorAll('[data-rep]').forEach((x) => x.onchange = () => call('f.reportStatus', { id: S.a.id, g, reportId: x.dataset.rep, status: x.value }).catch((e) => fail(e, v)));
       if (keepScroll != null) window.scrollTo(0, keepScroll);
     } catch (e) { if (!quiet) fail(e, $('#bview')); }
+  }
+
+  // ── הלוח של קבוצה, אצל המנחה: מפת חשיבה שאפשר לעבוד עליה (17/11/2026) ──
+  const fbOp = async (g, op) => { const r = await call('f.boardOp', { id: S.a.id, g, op }); S.board = r.board; return r; };
+  function fbRender(g) {
+    const host = $('#fboard'); if (!host || !S.board) return;
+    const b = S.board;
+    host.innerHTML = (S.linkFrom ? '<div class="dlm-msg warn" data-cancel-link>בחרו כרטיס אחר כדי לקשר אליו, או לחצו כאן לביטול.</div>' : '')
+      + window.SBE_DLM_MAP.html(b, { sel: S.linkFrom, conf: false, manip: false });
+    const again = () => fbRender(g), act = async (op) => { try { await fbOp(g, op); } catch (e) { alert(e.message); } again(); };
+    window.SBE_DLM_MAP.bind(host, { board: b, op: (op) => fbOp(g, op).catch((e) => { alert(e.message); }), refresh: again });
+    host.querySelectorAll('[data-src]').forEach((x) => x.onclick = (e) => { e.stopPropagation(); const s = U.sourceById(b, x.dataset.src); if (s) openDlg(U.sourceCardHTML(s, b, { openWhy: true })); });
+    const cl = host.querySelector('[data-cancel-link]'); if (cl) cl.onclick = () => { S.linkFrom = null; again(); };
+    host.querySelectorAll('form[data-addto]').forEach((f) => f.onsubmit = (e) => { e.preventDefault(); const v = f.querySelector('input[type=text]').value.trim(); if (v) act({ kind: 'add', zone: f.dataset.addto, text: v }); });
+    host.querySelectorAll('[data-del]').forEach((x) => x.onclick = () => { if (confirm('להסיר את הכרטיס מהלוח? הגרסה הקודמת נשמרת ביומן.')) act({ kind: 'remove', id: x.dataset.del }); });
+    host.querySelectorAll('[data-unlink]').forEach((x) => x.onclick = () => act({ kind: 'unlink', id: x.dataset.unlink }));
+    host.querySelectorAll('[data-edit]').forEach((x) => x.onclick = () => {
+      const it = b.items.find((i) => i.id === x.dataset.edit); if (!it) return;
+      openDlg('<h2>עריכת כרטיס</h2><label for="fe-t">הטקסט</label><textarea id="fe-t">' + esc(it.text) + '</textarea><label for="fe-z">האזור בלוח</label><select id="fe-z">'
+        + M.ZONES.map((z) => '<option value="' + z.k + '"' + (z.k === it.zone ? ' selected' : '') + '>' + esc(z.t) + '</option>').join('') + '</select><p><button class="dlm-btn main" id="fe-s">שמירה</button></p>');
+      $('#fe-s').onclick = () => { dlg.close(); act({ kind: 'edit', id: it.id, text: $('#fe-t').value, zone: $('#fe-z').value }); };
+    });
+    host.querySelectorAll('[data-link]').forEach((x) => x.onclick = () => { S.linkFrom = x.dataset.link; again(); });
+    if (S.linkFrom) host.querySelectorAll('.mm-card').forEach((el) => { if (el.dataset.item !== S.linkFrom) el.addEventListener('click', (e) => {
+      if (e.target.closest('button,summary')) return;
+      const from = S.linkFrom, to = el.dataset.item, A = b.items.find((i) => i.id === from), B = b.items.find((i) => i.id === to);
+      openDlg('<h2>קשר בין כרטיסים</h2><p><b>' + esc(A ? A.text : '') + '</b></p><label for="fl-r">הקשר</label><select id="fl-r">' + M.RELATIONS.map((r) => '<option value="' + r.k + '">' + esc(r.t) + '</option>').join('') + '</select><p><b>' + esc(B ? B.text : '') + '</b></p><p><button class="dlm-btn main" id="fl-s">שמירת הקשר</button></p>');
+      $('#fl-s').onclick = () => { dlg.close(); S.linkFrom = null; act({ kind: 'link', from, to, rel: $('#fl-r').value }); };
+    }); });
+    host.querySelectorAll('[data-addsrc]').forEach((x) => x.onclick = () => {
+      openDlg('<h2>מקור או קובץ ללוח</h2><label for="fs-t">שם המקור (שדה עיקרי)</label><input type="text" id="fs-t"><div class="dlm-grid2"><div><label for="fs-p">מחבר או גוף מפרסם</label><input type="text" id="fs-p"></div><div><label for="fs-d">תאריך פרסום</label><input type="text" id="fs-d" placeholder="למשל: 2024"></div></div>'
+        + '<label for="fs-u">קישור</label><input type="url" id="fs-u" dir="ltr" placeholder="https://"><label for="fs-f">או קובץ: תמונה, וידאו, הקלטת קול, PDF או טקסט</label><input type="file" id="fs-f" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm,video/quicktime,audio/*,application/pdf,text/plain">'
+        + '<p class="dlm-hint">תמונה ו־PDF עד 3 מגה, קול עד 6 מגה, וידאו עד 8 מגה.</p><label for="fs-x">קטע מהמקור או תיאור (רשות)</label><textarea id="fs-x"></textarea><p><button class="dlm-btn main" id="fs-s">הוספה ללוח</button></p><div id="fs-m"></div>');
+      $('#fs-s').onclick = async () => {
+        const src = { title: $('#fs-t').value, publisher: $('#fs-p').value, date: $('#fs-d').value, url: $('#fs-u').value, excerpt: $('#fs-x').value };
+        try {
+          const file = $('#fs-f').files[0];
+          if (file) {
+            const t = (file.type || '').toLowerCase();
+            if (file.size > (/^video\//.test(t) ? 8e6 : /^audio\//.test(t) ? 6e6 : 3e6)) throw new Error('הקובץ גדול מדי: תמונה ו־PDF עד 3 מגה, קול עד 6 מגה, וידאו עד 8 מגה.');
+            $('#fs-s').disabled = true; $('#fs-m').innerHTML = msg('מעלים את הקובץ…');
+            const data = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(file); });
+            const up = await call('f.file', { id: S.a.id, name: file.name, type: t, data }); S.a = up.activity;
+            src.fileId = up.fileId; src.fileName = file.name; if (!src.title) src.title = file.name;
+            src.type = /^image\//.test(t) ? 'תמונה' : /^video\//.test(t) ? 'וידאו' : /^audio\//.test(t) ? 'הקלטת קול' : '';
+          }
+          if (!src.title.trim()) throw new Error('כדי להוסיף, אפשר לכתוב את שם המקור או לבחור קובץ.');
+          await fbOp(g, { kind: 'add', source: src, text: src.title }); dlg.close(); again();
+        } catch (e) { $('#fs-s').disabled = false; $('#fs-m').innerHTML = msg(e.message, 'err'); }
+      };
+    });
   }
 
   function tabExport() {

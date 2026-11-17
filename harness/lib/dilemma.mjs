@@ -26,7 +26,7 @@ const M = require('../../app/lib/dilemma-model.js');
 export const DLM_JOIN_PAGE = 'dilemma-join.html';
 const KEEP_DAYS = 400;
 const LIM = { title: 200, text: 2000, long: 6000, items: 500, links: 800, sources: 150, assess: 40, alerts: 120, challenges: 30, snapshots: 12,
-  events: 4000, classes: 30, groups: 40, participants: 400, mine: 80, files: 30, allFiles: 300, actSources: 80, reports: 300 };
+  events: 4000, classes: 30, groups: 40, participants: 400, mine: 80, files: 100, allFiles: 300, clusters: 60, actSources: 80, reports: 300 };
 
 // קבצים (17/11/2026: "אפשרי לכולם להעלות תמונות וקבצים שונים - וידאו/ קול"): מנחים ומשתתפים.
 // תמונה, PDF וטקסט עד 3 מגה, קול עד 6 מגה, וידאו עד 8 מגה. נשמרים בשרת לפעילות הזו בלבד.
@@ -194,6 +194,154 @@ function verifyBudget(id) {
 }
 
 // ── מי פונה ──
+const MAP = { w: 3200, h: 2200 };
+const CLUSTER_COLORS = ['#2A9D8F', '#1D3F63', '#F4A261', '#E76F51', '#8AB17D', '#9B5DE5', '#E9C46A'];
+const clampN = (v, lo, hi) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : lo; };
+
+// ── פעולה על לוח של קבוצה: משתתפים (p.board) והמנחה (f.boardOp) ──
+// 17/11/2026 ("אני חייבת לוח הרבה יותר דינאמי יותר כמו מפת חשיבה"): גם מיקום חופשי של כרטיסים (move),
+// וקבוצות של כרטיסים דומים עם שם (cluster), שאפשר לערום ולפתוח.
+async function applyBoardOp(store, a, bk, d, by, role) {
+  const bkey = 'dlb:' + a.id + ':' + bk;
+  let result = {};
+  const isFac = role === 'facilitator';
+  const b = await mutate(store, bkey, async (b) => {
+    b.clusters = b.clusters || [];
+        const kind = String(d.kind || '');
+        if (kind === 'add') {
+          if (b.items.length >= LIM.items) throw new DlmError('הלוח מלא');
+          const zone = M.ZONES.some((z) => z.k === d.zone) ? d.zone : 'claims';
+          const item = { id: 'i-' + code(10).toLowerCase(), zone, text: txt(d.text, 'הטקסט', LIM.text, !d.source), by, at: now(), history: [],
+            origin: isFac ? 'facilitator' : ['participant', 'ai'].includes(d.origin) ? d.origin : 'participant', ...(d.confidence && M.CONFIDENCE.some((c) => c.k === d.confidence) ? { confidence: d.confidence } : {}) };
+          if (d.source) {
+            if (b.sources.length >= LIM.sources) throw new DlmError('הגענו למספר המקורות המרבי בלוח');
+            if (d.source.fileId) {
+              const fr = okId(String(d.source.fileId)) ? await store.get('dlf:' + a.id + ':' + d.source.fileId) : null;
+              if (!fr || (fr.board !== bk && !a.files.some((f) => f.id === d.source.fileId))) throw new DlmError('הקובץ לא נמצא', 404);
+            }
+            const s = newSource(d.source, isFac ? 'facilitator' : ['participant', 'ai', 'search', 'unverified'].includes(d.source.origin) ? d.source.origin : 'participant', by);
+            b.sources.push(s); item.sourceId = s.id; item.zone = 'sources'; if (!item.text) item.text = s.title;
+          } else if (d.sourceId) {
+            if (!sourceIn(a, b, d.sourceId)) throw new DlmError('המקור לא נמצא', 404);
+            item.sourceId = d.sourceId;
+          }
+          if (d.x !== undefined && d.y !== undefined) item.pos = { x: clampN(d.x, 0, MAP.w), y: clampN(d.y, 0, MAP.h) };
+          if (d.cluster && b.clusters.some((c) => c.id === d.cluster)) item.cluster = d.cluster;
+          b.items.push(item); result.id = item.id; log(b, 'add', by, { id: item.id, zone, origin: item.origin });
+        } else if (kind === 'edit') {
+          const it = b.items.find((i) => i.id === d.id && !i.deleted);
+          if (!it) throw new DlmError('הכרטיס לא נמצא', 404);
+          it.history.push({ at: now(), by, text: it.text, zone: it.zone, confidence: it.confidence || null }); if (it.history.length > 30) it.history.shift();
+          if (d.text !== undefined) it.text = txt(d.text, 'הטקסט', LIM.text, true);
+          if (d.zone && M.ZONES.some((z) => z.k === d.zone)) it.zone = d.zone;
+          if (d.confidence !== undefined) it.confidence = M.CONFIDENCE.some((c) => c.k === d.confidence) ? d.confidence : null;
+          if (d.confidenceWhy !== undefined) it.confidenceWhy = txt(d.confidenceWhy, 'הסבר', 600);
+          it.editedBy = by; it.editedAt = now(); log(b, 'edit', by, { id: it.id });
+        } else if (kind === 'remove') {
+          const it = b.items.find((i) => i.id === d.id && !i.deleted);
+          if (!it) throw new DlmError('הכרטיס לא נמצא', 404);
+          it.deleted = { by, at: now() }; b.links = b.links.filter((l) => l.from !== it.id && l.to !== it.id); log(b, 'remove', by, { id: it.id });
+        } else if (kind === 'link') {
+          if (!M.RELATIONS.some((r) => r.k === d.rel)) throw new DlmError('סוג הקשר אינו תקין');
+          if (!itemExists(b, d.from) || !itemExists(b, d.to) || d.from === d.to) throw new DlmError('אפשר לבחור שני כרטיסים');
+          if (b.links.length >= LIM.links) throw new DlmError('יש הרבה קשרים בלוח');
+          const l = { id: 'l-' + code(8).toLowerCase(), from: d.from, to: d.to, rel: d.rel, by, at: now() };
+          b.links.push(l); result.id = l.id; log(b, 'link', by, { rel: d.rel });
+        } else if (kind === 'unlink') {
+          b.links = b.links.filter((l) => l.id !== d.id); log(b, 'unlink', by, { id: d.id });
+        } else if (kind === 'assess') {
+          // הערכת אמינות של מקור בהקשר הטענה (AI או משתתף/ת). נשמרת כהיסטוריה; הציון הנוכחי הוא האחרון.
+          if (!sourceIn(a, b, d.sourceId)) throw new DlmError('המקור לא נמצא', 404);
+          const as = newAssessment(d.assessment || {}, by, isFac ? 'facilitator' : 'participant');
+          if (d.assessment && d.assessment.method === 'ai') as.method = 'ai';
+          (b.assess[d.sourceId] = b.assess[d.sourceId] || []).push(as);
+          if (b.assess[d.sourceId].length > LIM.assess) b.assess[d.sourceId].shift();
+          log(b, 'assess', by, { source: d.sourceId, score: as.score, method: as.method });
+        } else if (kind === 'checked') {
+          // "בדקתי את המקור": נרשם, אבל אינו מעיד בהכרח על בדיקה איכותית.
+          if (!sourceIn(a, b, d.sourceId)) throw new DlmError('המקור לא נמצא', 404);
+          (b.checks[d.sourceId] = b.checks[d.sourceId] || []).push({ by, at: now(), note: txt(d.note, 'הערה', 600) });
+          log(b, 'checked', by, { source: d.sourceId });
+        } else if (kind === 'report') {
+          // "מצאתי בעיה במקור או בתשובת ה־AI" (SourceFeedback).
+          if (b.reports.length >= LIM.reports) throw new DlmError('יש הרבה דיווחים בלוח');
+          const r = { id: 'r-' + code(8).toLowerCase(), target: ['source', 'ai', 'assessment', 'alert'].includes(d.target) ? d.target : 'ai', targetId: txt(d.targetId, 'מזהה', 60),
+            issue: ['not_exist', 'not_support', 'misread', 'outdated', 'missing_caveat', 'wrong_score', 'other'].includes(d.issue) ? d.issue : 'other', text: txt(d.text, 'מה הבעיה', LIM.text, true), by, at: now(), status: 'new' };
+          b.reports.push(r); result.id = r.id; log(b, 'report', by, { target: r.target, issue: r.issue });
+        } else if (kind === 'alert') {
+          // התרעת קונספירציה או מדיה: סמל נפרד, לא משנה ציון אמינות.
+          if (b.alerts.length >= LIM.alerts) throw new DlmError('יש הרבה התרעות בלוח');
+          const al = { id: 'al-' + code(8).toLowerCase(), type: d.type === 'media' ? 'media' : 'conspiracy', target: txt(d.target, 'מה נבדק', LIM.text, true),
+            itemId: d.itemId && itemExists(b, d.itemId) ? d.itemId : null, data: d.data && typeof d.data === 'object' ? JSON.parse(JSON.stringify(d.data).slice(0, 12000)) : {},
+            text: d.type === 'media' ? '' : M.CONSPIRACY.alert, status: 'open', responses: [], by, at: now() };
+          b.alerts.push(al); result.id = al.id; log(b, 'alert', by, { type: al.type });
+        } else if (kind === 'alertRespond') {
+          const al = b.alerts.find((x) => x.id === d.id);
+          if (!al) throw new DlmError('ההתרעה לא נמצאה', 404);
+          al.responses.push({ by, at: now(), text: txt(d.text, 'מה בדקתם ומה המסקנה', LIM.text, true), conclusion: ['dismissed', 'needs_more', 'confirmed_concern', 'undetermined'].includes(d.conclusion) ? d.conclusion : 'undetermined' });
+          al.status = d.conclusion || al.status; log(b, 'alertRespond', by, { id: al.id });
+        } else if (kind === 'challenge') {
+          // מידע מאתגר: רק ממקור של המנחה או ממקור שאומת בלוח. לפני ההצגה נשמרת גרסת הלוח.
+          if (a.challengeMode === 'facilitator' && !a.challengeOpen) throw new DlmError('המידע המאתגר ייפתח כשהמנחה תפתח אותו', 409);
+          if (b.challenges.length >= LIM.challenges) throw new DlmError('הוצג כבר הרבה מידע מאתגר');
+          const s = sourceIn(a, b, d.sourceRef);
+          if (!s || !(s.origin === 'facilitator' || ['exists', 'file'].includes((s.verify || {}).status))) throw new DlmError('מידע מאתגר מוצג רק ממקור של המנחה או ממקור שאומת');
+          b.snapshots.push({ at: now(), reason: 'before_challenge', items: structuredClone(b.items.filter((i) => !i.deleted)), links: structuredClone(b.links) });
+          if (b.snapshots.length > LIM.snapshots) b.snapshots.shift();
+          const ch = { id: 'ch-' + code(8).toLowerCase(), info: txt(d.info, 'המידע', LIM.text, true), sourceRef: s.id, challenges: txt(d.challenges, 'מה הוא מאתגר', 600),
+            caveats: arr(d.caveats, 6).map((x) => txt(x, 'הסתייגות', 400)), check: arr(d.check, 6).map((x) => txt(x, 'מה לבדוק', 400)),
+            snapshot: b.snapshots.length - 1, by, at: now(), decision: null };
+          b.challenges.push(ch); result.id = ch.id; log(b, 'challenge', by, { source: s.id });
+        } else if (kind === 'challengeDecide') {
+          const ch = b.challenges.find((x) => x.id === d.id);
+          if (!ch) throw new DlmError('המידע לא נמצא', 404);
+          ch.decision = { value: ['update', 'keep', 'open'].includes(d.value) ? d.value : 'open', note: txt(d.note, 'הסבר', 1200), by, at: now() };
+          log(b, 'challengeDecide', by, { id: ch.id, value: ch.decision.value });
+        } else if (kind === 'conclusion') {
+          const prev = b.conclusion;
+          const c = {}; for (const q of M.CONCLUSION_Q) c[q.k] = txt(d.fields && d.fields[q.k], q.t, LIM.long);
+          if (d.submit && (!c.confident && !c.disputed && !c.next)) throw new DlmError('כדי להגיש, אפשר למלא לפחות חלק אחד');
+          b.conclusion = { ...c, submitted: !!d.submit, by, at: now(), contributors: [...new Set([...(prev ? prev.contributors || [] : []), by])],
+            history: [...((prev && prev.history) || []), ...(prev ? [{ at: prev.at, by: prev.by, fields: Object.fromEntries(M.CONCLUSION_Q.map((q) => [q.k, prev[q.k]])), submitted: prev.submitted }] : [])].slice(-20) };
+          log(b, d.submit ? 'conclusionSubmit' : 'conclusion', by);
+        } else if (kind === 'move') {
+          const it = b.items.find((i) => i.id === d.id && !i.deleted);
+          if (!it) throw new DlmError('הכרטיס לא נמצא', 404);
+          it.pos = { x: clampN(d.x, 0, MAP.w), y: clampN(d.y, 0, MAP.h) };
+          if (d.cluster !== undefined) it.cluster = d.cluster && b.clusters.some((c) => c.id === d.cluster) ? d.cluster : null;
+        } else if (kind === 'cluster') {
+          const act = String(d.action || '');
+          if (act === 'add') {
+            if (b.clusters.length >= LIM.clusters) throw new DlmError('יש הרבה קבוצות בלוח');
+            const c = { id: 'k-' + code(8).toLowerCase(), name: txt(d.name, 'שם הקבוצה', 120) || 'קבוצה חדשה', x: clampN(d.x, 0, MAP.w), y: clampN(d.y, 0, MAP.h),
+              w: clampN(d.w || 320, 160, 1600), h: clampN(d.h || 240, 120, 1200), color: CLUSTER_COLORS.includes(d.color) ? d.color : CLUSTER_COLORS[b.clusters.length % CLUSTER_COLORS.length], stacked: false, by, at: now() };
+            b.clusters.push(c); result.id = c.id;
+            for (const id of arr(d.items, 60)) { const it = b.items.find((i) => i.id === id && !i.deleted); if (it) it.cluster = c.id; }
+            log(b, 'clusterAdd', by, { id: c.id });
+          } else {
+            const c = b.clusters.find((x) => x.id === d.id);
+            if (!c) throw new DlmError('הקבוצה לא נמצאה', 404);
+            if (act === 'edit') {
+              if (d.name !== undefined) c.name = txt(d.name, 'שם הקבוצה', 120) || c.name;
+              if (d.color && CLUSTER_COLORS.includes(d.color)) c.color = d.color;
+              if (d.stacked !== undefined) c.stacked = !!d.stacked;
+              if (d.w !== undefined) c.w = clampN(d.w, 160, 1600);
+              if (d.h !== undefined) c.h = clampN(d.h, 120, 1200);
+            } else if (act === 'move') {
+              const nx = clampN(d.x, 0, MAP.w), ny = clampN(d.y, 0, MAP.h), dx = nx - c.x, dy = ny - c.y;
+              c.x = nx; c.y = ny;
+              b.items.forEach((i) => { if (i.cluster === c.id && i.pos) i.pos = { x: clampN(i.pos.x + dx, 0, MAP.w), y: clampN(i.pos.y + dy, 0, MAP.h) }; });
+            } else if (act === 'remove') {
+              b.clusters = b.clusters.filter((x) => x.id !== c.id); b.items.forEach((i) => { if (i.cluster === c.id) i.cluster = null; });
+              log(b, 'clusterRemove', by, { id: c.id });
+            } else throw new DlmError('פעולה אינה נתמכת', 405);
+          }
+        } else throw new DlmError('פעולה אינה נתמכת', 405);
+        b.ver++;
+  }, () => emptyBoard(a.id, bk));
+  return { b, result };
+}
+
 async function participantOf(store, body) {
   const a = await getActivity(store, body.a);
   const pid = String(body.p || '');
@@ -460,6 +608,17 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
         const f = a.files.find((x) => x.id === fid);
         return [200, { name: (f && f.name) || rec.name || 'קובץ', type: rec.type, data: rec.data }];
       }
+      if (op === 'f.boardOp') {
+        // 17/11/2026 ("אני לא רואה איפה אני כמנחה יכולה להעלות חומרים ללוח"): המנחה עובד/ת על לוח של קבוצה:
+        // מוסיף/ה כרטיסים, מקורות וקבצים, מזיז/ה, מקבץ/ת ומקשר/ת, גם כשהפעילות סגורה למשתתפים.
+        const a = await mine(d.id);
+        const g = String(d.g || '');
+        const okBoard = a.classes.some((c) => c.groups.some((x) => x.id === g)) || (a.mode === 'personal' && /^p-p-[a-z0-9]+$/.test(g) && await store.get('dlb:' + a.id + ':' + g));
+        if (!okBoard) throw new DlmError('הלוח לא נמצא', 404);
+        const op2 = d.op && typeof d.op === 'object' ? d.op : {};
+        const { b, result } = await applyBoardOp(store, a, g, op2, 'מנחה', 'facilitator');
+        return [200, { ...result, board: boardView(a, b) }];
+      }
       if (op === 'f.participantRemove') {
         // 17/11/2026 ("לאפשר לי למחוק"): המנחה מוחק/ת משתתף/ת: הרשומה, ההסכמה, התגובה האישית והרפלקציה,
         // והכרטיסים, המקורות והקבצים שהעלה/תה ללוח. אי אפשר לבטל.
@@ -651,106 +810,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
     if (op === 'p.board') {
       if (a.status !== 'open') throw new DlmError('הפעילות אינה פתוחה לכתיבה כרגע', 409);
       const by = p.pcode;
-      let result = {};
-      const b = await mutate(store, bkey, async (b) => {
-        const kind = String(d.kind || '');
-        if (kind === 'add') {
-          if (b.items.length >= LIM.items) throw new DlmError('הלוח מלא');
-          const zone = M.ZONES.some((z) => z.k === d.zone) ? d.zone : 'claims';
-          const item = { id: 'i-' + code(10).toLowerCase(), zone, text: txt(d.text, 'הטקסט', LIM.text, !d.source), by, at: now(), history: [],
-            origin: ['participant', 'ai'].includes(d.origin) ? d.origin : 'participant', ...(d.confidence && M.CONFIDENCE.some((c) => c.k === d.confidence) ? { confidence: d.confidence } : {}) };
-          if (d.source) {
-            if (b.sources.length >= LIM.sources) throw new DlmError('הגענו למספר המקורות המרבי בלוח');
-            if (d.source.fileId) {
-              const fr = okId(String(d.source.fileId)) ? await store.get('dlf:' + a.id + ':' + d.source.fileId) : null;
-              if (!fr || (fr.board !== bk && !a.files.some((f) => f.id === d.source.fileId))) throw new DlmError('הקובץ לא נמצא', 404);
-            }
-            const s = newSource(d.source, ['participant', 'ai', 'search', 'unverified'].includes(d.source.origin) ? d.source.origin : 'participant', by);
-            b.sources.push(s); item.sourceId = s.id; item.zone = 'sources'; if (!item.text) item.text = s.title;
-          } else if (d.sourceId) {
-            if (!sourceIn(a, b, d.sourceId)) throw new DlmError('המקור לא נמצא', 404);
-            item.sourceId = d.sourceId;
-          }
-          b.items.push(item); result.id = item.id; log(b, 'add', by, { id: item.id, zone, origin: item.origin });
-        } else if (kind === 'edit') {
-          const it = b.items.find((i) => i.id === d.id && !i.deleted);
-          if (!it) throw new DlmError('הכרטיס לא נמצא', 404);
-          it.history.push({ at: now(), by, text: it.text, zone: it.zone, confidence: it.confidence || null }); if (it.history.length > 30) it.history.shift();
-          if (d.text !== undefined) it.text = txt(d.text, 'הטקסט', LIM.text, true);
-          if (d.zone && M.ZONES.some((z) => z.k === d.zone)) it.zone = d.zone;
-          if (d.confidence !== undefined) it.confidence = M.CONFIDENCE.some((c) => c.k === d.confidence) ? d.confidence : null;
-          if (d.confidenceWhy !== undefined) it.confidenceWhy = txt(d.confidenceWhy, 'הסבר', 600);
-          it.editedBy = by; it.editedAt = now(); log(b, 'edit', by, { id: it.id });
-        } else if (kind === 'remove') {
-          const it = b.items.find((i) => i.id === d.id && !i.deleted);
-          if (!it) throw new DlmError('הכרטיס לא נמצא', 404);
-          it.deleted = { by, at: now() }; b.links = b.links.filter((l) => l.from !== it.id && l.to !== it.id); log(b, 'remove', by, { id: it.id });
-        } else if (kind === 'link') {
-          if (!M.RELATIONS.some((r) => r.k === d.rel)) throw new DlmError('סוג הקשר אינו תקין');
-          if (!itemExists(b, d.from) || !itemExists(b, d.to) || d.from === d.to) throw new DlmError('אפשר לבחור שני כרטיסים');
-          if (b.links.length >= LIM.links) throw new DlmError('יש הרבה קשרים בלוח');
-          const l = { id: 'l-' + code(8).toLowerCase(), from: d.from, to: d.to, rel: d.rel, by, at: now() };
-          b.links.push(l); result.id = l.id; log(b, 'link', by, { rel: d.rel });
-        } else if (kind === 'unlink') {
-          b.links = b.links.filter((l) => l.id !== d.id); log(b, 'unlink', by, { id: d.id });
-        } else if (kind === 'assess') {
-          // הערכת אמינות של מקור בהקשר הטענה (AI או משתתף/ת). נשמרת כהיסטוריה; הציון הנוכחי הוא האחרון.
-          if (!sourceIn(a, b, d.sourceId)) throw new DlmError('המקור לא נמצא', 404);
-          const as = newAssessment(d.assessment || {}, by, 'participant');
-          if (d.assessment && d.assessment.method === 'ai') as.method = 'ai';
-          (b.assess[d.sourceId] = b.assess[d.sourceId] || []).push(as);
-          if (b.assess[d.sourceId].length > LIM.assess) b.assess[d.sourceId].shift();
-          log(b, 'assess', by, { source: d.sourceId, score: as.score, method: as.method });
-        } else if (kind === 'checked') {
-          // "בדקתי את המקור": נרשם, אבל אינו מעיד בהכרח על בדיקה איכותית.
-          if (!sourceIn(a, b, d.sourceId)) throw new DlmError('המקור לא נמצא', 404);
-          (b.checks[d.sourceId] = b.checks[d.sourceId] || []).push({ by, at: now(), note: txt(d.note, 'הערה', 600) });
-          log(b, 'checked', by, { source: d.sourceId });
-        } else if (kind === 'report') {
-          // "מצאתי בעיה במקור או בתשובת ה־AI" (SourceFeedback).
-          if (b.reports.length >= LIM.reports) throw new DlmError('יש הרבה דיווחים בלוח');
-          const r = { id: 'r-' + code(8).toLowerCase(), target: ['source', 'ai', 'assessment', 'alert'].includes(d.target) ? d.target : 'ai', targetId: txt(d.targetId, 'מזהה', 60),
-            issue: ['not_exist', 'not_support', 'misread', 'outdated', 'missing_caveat', 'wrong_score', 'other'].includes(d.issue) ? d.issue : 'other', text: txt(d.text, 'מה הבעיה', LIM.text, true), by, at: now(), status: 'new' };
-          b.reports.push(r); result.id = r.id; log(b, 'report', by, { target: r.target, issue: r.issue });
-        } else if (kind === 'alert') {
-          // התרעת קונספירציה או מדיה: סמל נפרד, לא משנה ציון אמינות.
-          if (b.alerts.length >= LIM.alerts) throw new DlmError('יש הרבה התרעות בלוח');
-          const al = { id: 'al-' + code(8).toLowerCase(), type: d.type === 'media' ? 'media' : 'conspiracy', target: txt(d.target, 'מה נבדק', LIM.text, true),
-            itemId: d.itemId && itemExists(b, d.itemId) ? d.itemId : null, data: d.data && typeof d.data === 'object' ? JSON.parse(JSON.stringify(d.data).slice(0, 12000)) : {},
-            text: d.type === 'media' ? '' : M.CONSPIRACY.alert, status: 'open', responses: [], by, at: now() };
-          b.alerts.push(al); result.id = al.id; log(b, 'alert', by, { type: al.type });
-        } else if (kind === 'alertRespond') {
-          const al = b.alerts.find((x) => x.id === d.id);
-          if (!al) throw new DlmError('ההתרעה לא נמצאה', 404);
-          al.responses.push({ by, at: now(), text: txt(d.text, 'מה בדקתם ומה המסקנה', LIM.text, true), conclusion: ['dismissed', 'needs_more', 'confirmed_concern', 'undetermined'].includes(d.conclusion) ? d.conclusion : 'undetermined' });
-          al.status = d.conclusion || al.status; log(b, 'alertRespond', by, { id: al.id });
-        } else if (kind === 'challenge') {
-          // מידע מאתגר: רק ממקור של המנחה או ממקור שאומת בלוח. לפני ההצגה נשמרת גרסת הלוח.
-          if (a.challengeMode === 'facilitator' && !a.challengeOpen) throw new DlmError('המידע המאתגר ייפתח כשהמנחה תפתח אותו', 409);
-          if (b.challenges.length >= LIM.challenges) throw new DlmError('הוצג כבר הרבה מידע מאתגר');
-          const s = sourceIn(a, b, d.sourceRef);
-          if (!s || !(s.origin === 'facilitator' || ['exists', 'file'].includes((s.verify || {}).status))) throw new DlmError('מידע מאתגר מוצג רק ממקור של המנחה או ממקור שאומת');
-          b.snapshots.push({ at: now(), reason: 'before_challenge', items: structuredClone(b.items.filter((i) => !i.deleted)), links: structuredClone(b.links) });
-          if (b.snapshots.length > LIM.snapshots) b.snapshots.shift();
-          const ch = { id: 'ch-' + code(8).toLowerCase(), info: txt(d.info, 'המידע', LIM.text, true), sourceRef: s.id, challenges: txt(d.challenges, 'מה הוא מאתגר', 600),
-            caveats: arr(d.caveats, 6).map((x) => txt(x, 'הסתייגות', 400)), check: arr(d.check, 6).map((x) => txt(x, 'מה לבדוק', 400)),
-            snapshot: b.snapshots.length - 1, by, at: now(), decision: null };
-          b.challenges.push(ch); result.id = ch.id; log(b, 'challenge', by, { source: s.id });
-        } else if (kind === 'challengeDecide') {
-          const ch = b.challenges.find((x) => x.id === d.id);
-          if (!ch) throw new DlmError('המידע לא נמצא', 404);
-          ch.decision = { value: ['update', 'keep', 'open'].includes(d.value) ? d.value : 'open', note: txt(d.note, 'הסבר', 1200), by, at: now() };
-          log(b, 'challengeDecide', by, { id: ch.id, value: ch.decision.value });
-        } else if (kind === 'conclusion') {
-          const prev = b.conclusion;
-          const c = {}; for (const q of M.CONCLUSION_Q) c[q.k] = txt(d.fields && d.fields[q.k], q.t, LIM.long);
-          if (d.submit && (!c.confident && !c.disputed && !c.next)) throw new DlmError('כדי להגיש, אפשר למלא לפחות חלק אחד');
-          b.conclusion = { ...c, submitted: !!d.submit, by, at: now(), contributors: [...new Set([...(prev ? prev.contributors || [] : []), by])],
-            history: [...((prev && prev.history) || []), ...(prev ? [{ at: prev.at, by: prev.by, fields: Object.fromEntries(M.CONCLUSION_Q.map((q) => [q.k, prev[q.k]])), submitted: prev.submitted }] : [])].slice(-20) };
-          log(b, d.submit ? 'conclusionSubmit' : 'conclusion', by);
-        } else throw new DlmError('פעולה אינה נתמכת', 405);
-        b.ver++;
-      }, () => emptyBoard(a.id, bk));
+      const { b, result } = await applyBoardOp(store, a, bk, d, by, 'participant');
       return [200, { ...result, board: boardView(a, b) }];
     }
     throw new DlmError('פעולה אינה נתמכת', 405);
