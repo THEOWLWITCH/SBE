@@ -150,5 +150,7 @@ dialog{z-index:9500}
 .mm-pick button{font:inherit;font-size:.85rem;border:1px solid var(--rc,#ccd);color:var(--rc,#334);background:#fff;border-radius:999px;padding:.15rem .6rem;cursor:pointer;text-align:start}
 .mm-pick button:hover{background:color-mix(in srgb,var(--rc,#ccd) 10%,#fff)}
 
-.mm-card.mm-new{animation:mmnew 2.4s ease-out;z-index:40}
-@keyframes mmnew{0%{box-shadow:0 0 0 6px rgba(42,157,143,.55),0 8px 24px rgba(20,30,50,.2)}100%{box-shadow:0 1px 3px rgba(20,30,50,.08)}}
+.mm-card.mm-new{animation:mmnew 1.2s ease-in-out 4;z-index:40;background:#fffbe6;outline:3px solid #F4A261;outline-offset:2px}
+.mm-card.mm-new::after{content:'חדש';position:absolute;top:-12px;right:-8px;background:#E76F51;color:#fff;font-size:.72rem;font-weight:700;border-radius:999px;padding:.05rem .5rem}
+@keyframes mmnew{0%,100%{box-shadow:0 0 0 4px rgba(244,162,97,.35),0 8px 24px rgba(20,30,50,.2)}50%{box-shadow:0 0 0 14px rgba(244,162,97,.15),0 8px 24px rgba(20,30,50,.2)}}
+@media (prefers-reduced-motion:reduce){.mm-card.mm-new{animation:none}}

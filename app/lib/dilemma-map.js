@@ -107,7 +107,7 @@
     if (view.flash) { const nc = canvas.querySelector('.mm-card[data-item="' + CSS.escape(view.flash) + '"]'); view.flash = null;
       if (nc) { const zz = view.zoom; const tx = nc.offsetLeft * zz - vw.clientWidth / 2 + 115 * zz, ty = nc.offsetTop * zz - vw.clientHeight / 2 + 60 * zz;
         if (nc.offsetLeft * zz < vw.scrollLeft || nc.offsetLeft * zz > vw.scrollLeft + vw.clientWidth - 100 || nc.offsetTop * zz < vw.scrollTop || nc.offsetTop * zz > vw.scrollTop + vw.clientHeight - 60) { vw.scrollLeft = Math.max(0, tx); vw.scrollTop = Math.max(0, ty); view.sx = vw.scrollLeft; view.sy = vw.scrollTop; }
-        setTimeout(() => nc.classList.remove('mm-new'), 2600); } }
+        setTimeout(() => nc.classList.remove('mm-new'), 5200); } }
     vw.addEventListener('scroll', () => { view.sx = vw.scrollLeft; view.sy = vw.scrollTop; });
     requestAnimationFrame(() => drawLines(root, board));
     root.querySelectorAll('[data-zoom]').forEach((b) => b.onclick = () => {
