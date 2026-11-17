@@ -222,7 +222,7 @@
       + (!m ? '' : (st.initial && st.initial.text ? '<h3>העמדה הראשונית שלי</h3><p class="crd-quote">' + esc(st.initial.text) + '</p>' : '')
         + '<h3>רפלקציה' + (st.reflect ? ' ✓ נשלחה' : '') + '</h3><p class="dlm-hint">' + esc(M.REFLECT_NOTE) + '</p>'
         + M.REFLECT.map((q) => q.opts ? '<fieldset class="crd-fs"><legend>' + esc(q.t) + '</legend>' + q.opts.map((o) => '<label><input type="radio" name="rf-' + q.k + '" value="' + o[0] + '"' + (r[q.k] === o[0] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>').join(' ') + '</fieldset>'
-          : '<div class="crd-q" data-when="' + esc((q.when || []).join(',')) + '"><label for="rf-' + q.k + '">' + esc(q.t) + '</label><textarea id="rf-' + q.k + '" rows="3" placeholder="' + esc(q.ph || '') + '">' + esc(r[q.k] || '') + '</textarea></div>').join('')
+          : '<div class="crd-q" data-when="' + esc((q.when || []).join(',')) + '"><label for="rf-' + q.k + '">' + esc(q.t) + ' <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="rf-' + q.k + '" rows="3" placeholder="' + esc(q.ph || '') + '">' + esc(r[q.k] || '') + '</textarea></div>').join('')
         + '<p><button class="dlm-btn main" id="saveRefl">שליחת הרפלקציה</button></p>'
         + '<h3>' + esc(M.ATT.post) + (st.post ? ' ✓ נשלח' : '') + '</h3><p class="dlm-hint">אותם היגדים כמו בהתחלה, כדי לראות אם משהו השתנה. התשובות האישיות לא מוצגות לצוות.</p>'
         + attForm('post-') + '<p><button class="dlm-btn" id="savePost">שליחת השאלון המסכם</button></p>') + '<div id="rmm"></div></div>'

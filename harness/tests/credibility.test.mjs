@@ -81,7 +81,7 @@ test('separation: a team sees only itself; reflections are shared within the tea
   const [sb] = await E.run('p.get', {}, { a: t1.cred.a, t: t1.cred.t, key: t2.cred.key });
   assert.equal(sb, 401);
   const m = t1.r.team.members[0].id;
-  await t1.P('p.reflect', { member: m, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'partly', why: 'מקור רשמי', free: '' } });
+  await t1.P('p.reflect', { member: m, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'yes', why: 'מקור רשמי', free: '' } });
   const [sn] = await t1.P('p.reflect', { member: m, ai: { criteria: [], level: null } });
   assert.equal(sn, 400, 'empty analysis rejected');
   await t1.P('p.reflect', { member: m, ai: { criteria: [{ k: 'cross', found: true, note: 'בדקה מקור רשמי' }], level: 75, levelWhy: 'בלי דוגמה', strength: 'כנות', question: 'מה עוד?' } });

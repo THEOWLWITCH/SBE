@@ -78,13 +78,14 @@
     { k: 'other', t: 'אחר' }
   ];
   const REFLECT = [
-    { k: 'feel', t: 'מה אני מרגיש/ה עכשיו, אחרי הבדיקה?' },
-    { k: 'think', t: 'מה אני חושב/ת עכשיו על הדילמה ועל המקור שבדקנו?' },
-    { k: 'changed', t: 'האם חל שינוי בעמדתי כלפי הדילמה?', opts: [['yes', 'כן'], ['partly', 'חלקית'], ['no', 'לא']] },
-    { k: 'why', t: 'מה הביא לשינוי?', when: ['yes', 'partly'], ph: 'מקור, שיחה בצוות, שאלה של המודל, משהו אחר' },
-    { k: 'could', t: 'מה היה יכול לשנות את דעתי?', when: ['no'] },
-    { k: 'free', t: 'רפלקציה חופשית על תהליך הלמידה', ph: 'מה למדתי על בדיקת מקורות, על עבודה עם AI ועל עבודה בצוות, ומה אקח לכיתה שלי' }
+    { k: 'feel', t: 'מה אני מרגישה לגבי תהליך הבדיקה?' },
+    { k: 'think', t: 'מה אני חושבת על תהליך הבדיקה?' },
+    { k: 'changed', t: 'האם חל שינוי בעמדתי', opts: [['yes', 'כן'], ['no', 'לא']] },
+    { k: 'why', t: 'אם כן - מה הביא לשינוי בעמדתי?', when: ['yes'] },
+    { k: 'could', t: 'אם לא - מה יכול היה לשנות את עמדתך?', when: ['no'] },
+    { k: 'free', t: 'רפלקציה חופשית על תהליך הלמידה' }
   ];
+  const REFLECT_MIN = 'כתבי לפחות 3 משפטים';
   const REFLECT_NOTE = 'כתבו על מה שקרה לכם ולצוות בפועל. אין תשובות רצויות: אפשר לכתוב גם שלא השתנה דבר, שלא השתכנעתם, או שהתהליך היה מתסכל.';
   // ניתוח הרפלקציה בידי ה־AI (17/11/2026: "ברור שאת מנתחת לפי הקריטריונים שנקבעו"): קטגוריות הפתיחה של הניתוח התמטי
   // בהצעת המחקר (סעיף ט), ורמה מוצעת לפי קריטריון "רפלקציה אישית" במחוון. הרמה מוצגת רק למרצה, כהצעה.
@@ -271,6 +272,6 @@
       + '<p class="crd-hint">ה־AI אינו מחובר לאינטרנט ואינו כלי טכני לזיהוי דיפ־פייק. הוא מציע ושואל; הבדיקה וההכרעה שלכם.</p>';
   }
 
-  return { esc, SCALE, GREY, FROM_OLD, validScore, levelOf, dotHTML, REMEMBER, EXAMPLES, QUESTIONS, FIELDS, EXT_KINDS, REFLECT, REFLECT_NOTE, INITIAL, ATT_SCALE, ATTITUDES, ATT, cleanAttitudes,
+  return { esc, SCALE, GREY, FROM_OLD, validScore, levelOf, dotHTML, REMEMBER, EXAMPLES, QUESTIONS, FIELDS, EXT_KINDS, REFLECT, REFLECT_NOTE, REFLECT_MIN, INITIAL, ATT_SCALE, ATTITUDES, ATT, cleanAttitudes,
     GRADE, gradeTotal, CONSENT, REFLECT_CRITERIA, reflectSystem, reflectText, cleanReflectAI, BASE, fieldsSystem, assessSystem, chatSystem, sourceText, inquiryText, aiText, parseJSON, cleanFields, cleanAssess, cleanChat, aboutHTML };
 });
