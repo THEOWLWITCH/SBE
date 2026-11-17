@@ -80,3 +80,6 @@
   .studies-wrap{padding:0;max-width:none;}.studies-header{box-shadow:none;}.studies-intro{padding-top:24px;}.studies-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
   .studies-card{box-shadow:none;break-inside:avoid;}.studies-section-heading{break-after:avoid;}
 }
+
+/* 17/11/2026: פליירי הקורסים */
+.studies-flyer{display:block;background:var(--surface-2);border-radius:17px 17px 0 0;padding:14px 14px 0;line-height:0;overflow:hidden;max-height:300px}.studies-flyer img{display:block;width:100%;height:auto;border-radius:8px 8px 0 0;border:1px solid #e3e9ef;border-bottom:0;background:#fff}.studies-flyer:hover img,.studies-flyer:focus-visible img{border-color:#2bb3b1}

@@ -4,6 +4,21 @@
   var groupsNav = document.getElementById('studies-groups');
   var count = document.getElementById('studies-count');
   var openedUrls = new Map();
+  // 17/11/2026: פליירי הקורסים של ד״ר יעל שדה ("להוסיף את הפליירים לחלק של לימוד חוסן").
+  // קבועים באתר (assets/studies), ומוצגים לפני החומרים מהספרייה שבניהול.
+  var FIXED = [{
+    title: 'קורסים יישומיים לנשות ולאנשי חינוך',
+    items: [
+      { id: 'fx-leaders', title: 'מובילי חוסן', description: 'פיתוח חוסן חברתי בכיתה, בשכבה, בצוות, בבית הספר ובקהילה.', file: 'flyer-resilience-leaders' },
+      { id: 'fx-creative', title: 'חינוך יצירתי', description: 'להוסיף משמעות, דינמיות ואופני ביטוי מגוונים לחינוך.', file: 'flyer-creative-education' },
+      { id: 'fx-hosen', title: 'חינוך לחוסן', description: 'חוסן חברתי כחלק מהלמידה ומחיי היום־יום.', file: 'flyer-education-for-resilience' },
+      { id: 'fx-idea', title: 'מרעיון למציאות', description: 'פיתוח והוצאה לאור של רעיונות פדגוגיים בחינוך.', file: 'flyer-idea-to-reality' },
+      { id: 'fx-ai', title: 'בינה מלאכותית יוצרת בחינוך · Human in the loop', description: 'לחשוב, ליצור ולפתח עם AI, כשהאדם נשאר בתהליך.', file: 'flyer-ai-in-education' }
+    ].map(function (item) {
+      return { id: item.id, title: item.title, description: item.description, date: '2026-11-16',
+        href: 'assets/studies/' + item.file + '.pdf', img: 'assets/studies/' + item.file + '.webp' };
+    })
+  }];
 
   function node(tag, className, text) {
     var element = document.createElement(tag);
@@ -58,7 +73,12 @@
       return /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/.test(url);
     }).slice(0, 3);
     var extension = item.file && item.file.name ? item.file.name.split('.').pop().toUpperCase() : '';
-    if (previews.length) {
+    if (item.img) {
+      var flyer = node('a', 'studies-flyer'), pic = node('img');
+      flyer.href = item.href; flyer.target = '_blank'; flyer.rel = 'noopener';
+      pic.src = item.img; pic.alt = 'הפלייר: ' + item.title; pic.loading = 'lazy';
+      flyer.appendChild(pic); card.appendChild(flyer);
+    } else if (previews.length) {
       var strip = node('div', 'studies-previews');
       previews.forEach(function (url, index) {
         var figure = node('figure', 'studies-preview'), image = node('img');
@@ -74,7 +94,8 @@
       card.appendChild(cover);
     }
     var body = node('div', 'studies-card-body'), meta = node('div', 'studies-meta');
-    if (item.file) meta.appendChild(node('span', 'studies-type', extension || 'קובץ'));
+    if (item.href) meta.appendChild(node('span', 'studies-type', 'PDF'));
+    else if (item.file) meta.appendChild(node('span', 'studies-type', extension || 'קובץ'));
     else meta.appendChild(node('span', 'studies-type', 'קישור'));
     var time = node('time', '', date(item.date)); time.dateTime = item.date; meta.appendChild(time);
     body.appendChild(meta); body.appendChild(node('h3', '', item.title));
@@ -83,6 +104,10 @@
       var filename = node('p', 'studies-filename', item.file.name); filename.dir = 'auto'; body.appendChild(filename);
     }
     var actions = node('div', 'studies-actions'), status = node('p', 'studies-card-status'); status.setAttribute('role', 'status');
+    if (item.href) {
+      var open = node('a', 'studies-btn', 'פתיחת הפלייר ↗');
+      open.href = item.href; open.target = '_blank'; open.rel = 'noopener'; actions.appendChild(open);
+    }
     if (item.file) {
       var button = node('button', 'studies-btn', 'פתיחת הקובץ ↗'); button.type = 'button';
       button.addEventListener('click', function () { openFile(item, button, status); }); actions.appendChild(button);
@@ -107,9 +132,10 @@
   }
   function render(data) {
     var groups = Array.isArray(data.groups) ? data.groups : [], items = Array.isArray(data.items) ? data.items : [];
-    count.textContent = amount(items.length); count.hidden = !items.length;
+    var fixedCount = FIXED.reduce(function (n, g) { return n + g.items.length; }, 0);
+    count.textContent = amount(items.length + fixedCount); count.hidden = !(items.length + fixedCount);
     groupsNav.replaceChildren(); content.replaceChildren();
-    if (!items.length) {
+    if (!items.length && !fixedCount) {
       groupsNav.hidden = true;
       state('מרחב ללמידה משותפת', 'חומרי הלימוד יופיעו כאן כשיתווספו לספרייה.', '▤', false);
       return;
@@ -119,7 +145,7 @@
       if (item.groupId && buckets.has(item.groupId)) buckets.get(item.groupId).push(item);
       else ungrouped.push(item);
     });
-    var sections = groups.map(function (group) { return { title: group.title, items: buckets.get(group.id) }; });
+    var sections = FIXED.concat(groups.map(function (group) { return { title: group.title, items: buckets.get(group.id) }; }));
     if (ungrouped.length) sections.push({ title: groups.length ? 'חומרי לימוד נוספים' : 'חומרי לימוד', items: ungrouped });
     sections.forEach(function (group, index) {
       var id = 'studies-group-' + index, section = node('section', 'studies-section'); section.id = id;
@@ -138,7 +164,15 @@
     content.setAttribute('aria-busy', 'true'); groupsNav.hidden = true; count.hidden = true;
     state('חומרי הלימוד בדרך', 'טוענים את הספרייה...', '◌', false);
     try { render(await window.SBE_STUDIES.call('list')); }
-    catch (error) { state('הספרייה לא נטענה כעת', errorText(error), '◌', true); }
+    catch (error) {
+      if (FIXED.length) {
+        render({ groups: [], items: [] });
+        var note = node('p', 'studies-card-status', errorText(error)); note.setAttribute('role', 'status');
+        var again = node('button', 'studies-btn studies-btn-secondary', 'ניסיון נוסף'); again.type = 'button';
+        again.addEventListener('click', load);
+        var box = node('div', 'studies-state'); box.appendChild(note); box.appendChild(again); content.appendChild(box);
+      } else state('הספרייה לא נטענה כעת', errorText(error), '◌', true);
+    }
     finally { content.setAttribute('aria-busy', 'false'); }
   }
   try {
