@@ -66,7 +66,11 @@
       if (b.dataset.st === 'closed' && !confirm('לסיים את הפעילות? המשתתפים יוכלו לקרוא, אבל לא לכתוב.')) return;
       try { const r = await call('f.status', { id: a.id, status: b.dataset.st }); S.a = r.activity; draw(); } catch (e) { $('#topmsg').innerHTML = msg(e.message, 'err'); }
     });
-    app.querySelectorAll('[data-tab]').forEach((b) => b.onclick = () => { S.tab = b.dataset.tab; draw(); });
+    app.querySelectorAll('[data-tab]').forEach((b) => b.onclick = async () => {
+      S.tab = b.dataset.tab;
+      if (S.tab === 'research') { try { const r = await call('f.get', { id: S.a.id }); S.a = r.activity; S.stats = r.stats; } catch (e) { /* מציגים את מה שיש */ } }
+      draw();
+    });
     ({ dilemma: tabDilemma, sources: tabSources, classes: tabClasses, research: tabResearch, boards: tabBoards, export: tabExport })[S.tab]();
   }
   const tab = () => $('#tab');
@@ -184,14 +188,33 @@
     tab().querySelectorAll('[data-rmco]').forEach((b) => b.onclick = () => { if (confirm('להסיר את השותף/ה מהפעילות?')) go({ revoke: !S.a.coCode, removeCofac: b.dataset.rmco }); });
   }
 
+  // מי בחר/ה מה: לפי הקוד האישי האקראי בלבד, בלי שמות. ההחלטה האחרונה של כל משתתף/ת.
+  function consentList() {
+    const rows = ((S.stats || {}).consents) || [];
+    const cls = {}, grp = {};
+    (S.a.classes || []).forEach((c) => { cls[c.id] = c.name; (c.groups || []).forEach((g) => { grp[g.id] = g.name; }); });
+    const label = (x) => x.type === 'research' ? (x.withdrawData ? 'ביקש/ה למשוך את הנתונים' : 'הסכים/ה למחקר') : x.type === 'learning' ? 'פעילות לימודית בלבד' : 'לא נבחר';
+    const when = (t) => { try { return t ? new Date(t).toLocaleString('he-IL', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''; } catch (e) { return ''; } };
+    const yes = rows.filter((x) => x.type === 'research' && !x.withdrawData).length;
+    return '<div class="dlm-card" id="consentList"><h2>מי הסכים/ה למחקר</h2>'
+      + '<p class="dlm-hint">המשתתפים מופיעים לפי הקוד האישי האקראי שקיבלו בכניסה, בלי שמות. מוצגת ההחלטה האחרונה של כל אחד ואחת; אפשר לשנות אותה בכל שלב. הרשימה מתעדכנת כשנכנסים מחדש ללשונית.</p>'
+      + (rows.length ? '<p><b>הסכימו למחקר: ' + yes + '</b> מתוך ' + rows.length + ' משתתפים.</p>'
+        + '<table class="dlm-table"><thead><tr><th>קוד אישי</th><th>כיתה</th><th>קבוצה</th><th>הבחירה</th><th>מתי</th></tr></thead><tbody>'
+        + rows.map((x) => '<tr><td><span class="dlm-code">' + esc(x.code) + '</span></td><td>' + esc(cls[x.classId] || '') + '</td><td>' + esc(grp[x.groupId] || '') + '</td><td>' + esc(label(x)) + (x.changed ? ' <span class="dlm-hint">(שונתה)</span>' : '') + '</td><td>' + esc(when(x.at)) + '</td></tr>').join('')
+        + '</tbody></table>'
+        : '<p>עדיין לא נכנסו משתתפים לפעילות.</p>') + '</div>';
+  }
+
   function tabResearch() {
     const r = S.a.research;
     tab().innerHTML = '<div class="dlm-card"><h2>מחקר והסכמה מדעת</h2><label style="font-weight:400"><input type="checkbox" id="re"' + (r.enabled ? ' checked' : '') + '> הפעילות מלווה במחקר</label>'
-      + '<p class="dlm-hint">המשתתפים רואים את ההסבר ושתי אפשרויות נפרדות, שאף אחת מהן לא מסומנת מראש: השתתפות במחקר, או בפעילות הלימודית בלבד. הנוסח כאן טיוטה, והנוסח הסופי לפי אישור ועדת האתיקה. כל שינוי בנוסח מקבל גרסה חדשה, וכל הסכמה נשמרת עם הגרסה שבה ניתנה. גרסה נוכחית: ' + esc(r.consentVersion) + '</p>'
-      + '<label for="reth">מספר אישור ועדת האתיקה</label><input type="text" id="reth" value="' + esc(r.ethics) + '" placeholder="' + esc(M.CONSENT.ethics) + '">'
+      + '<p class="dlm-hint">המשתתפים רואים את ההסבר ושתי אפשרויות נפרדות, שאף אחת מהן לא מסומנת מראש: השתתפות במחקר, או בפעילות הלימודית בלבד. אפשר לערוך כאן את הנוסח. כל שינוי בנוסח מקבל גרסה חדשה, וכל הסכמה נשמרת עם הגרסה שבה ניתנה. גרסה נוכחית: ' + esc(r.consentVersion) + '</p>'
+      + '<label for="reth">מספר אישור ועדת האתיקה (רשות)</label><input type="text" id="reth" value="' + esc(r.ethics) + '" placeholder="אם יש אישור, אפשר לכתוב כאן את מספרו">'
+      + '<p class="dlm-hint">אם השדה ריק, השורה על אישור ועדת האתיקה לא מופיעה למשתתפים.</p>'
       + '<label for="rcon">פרטי קשר לשאלות</label><input type="text" id="rcon" value="' + esc(r.contact) + '" placeholder="למשל: מייל של צוות המחקר">'
       + M.CONSENT.sections.filter((s) => s.k !== 'contact').map((s) => '<label for="rs-' + s.k + '">' + esc(s.t) + '</label><textarea id="rs-' + s.k + '" placeholder="' + esc(s.k === 'who' ? M.CONSENT.researchers : s.d) + '">' + esc((r.sections || {})[s.k] || '') + '</textarea>').join('')
-      + '<p class="dlm-hint">שדה ריק מציג את הנוסח המוצע (שמופיע בתוך השדה).</p><p><button class="dlm-btn main" id="rsave">שמירה</button></p><div id="rm"></div></div>';
+      + '<p class="dlm-hint">שדה ריק מציג את הנוסח המוצע (שמופיע בתוך השדה).</p><p><button class="dlm-btn main" id="rsave">שמירה</button></p><div id="rm"></div></div>'
+      + consentList();
     $('#rsave').onclick = async () => {
       const sections = {}; M.CONSENT.sections.filter((s) => s.k !== 'contact').forEach((s) => { sections[s.k] = $('#rs-' + s.k).value; });
       try { await save({ research: { enabled: $('#re').checked, ethics: $('#reth').value, contact: $('#rcon').value, sections } }); tabResearch(); $('#rm').innerHTML = msg('נשמר.'); } catch (e) { $('#rm').innerHTML = msg(e.message, 'err'); }

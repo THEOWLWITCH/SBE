@@ -41,7 +41,7 @@
     app.innerHTML = '<div class="dlm-card dlm-consent"><h1>' + esc(a.title) + '</h1><p class="dlm-gq">' + esc(M.GUIDING_QUESTION) + '</p>'
       + '<h2>הסכמה מדעת</h2><p>לפני שמתחילים: הסבר קצר על הפעילות ועל המחקר שמלווה אותה. אפשר לפתוח כל סעיף.</p>'
       + c.sections.map((s) => '<details><summary>' + esc(s.t) + '</summary><p>' + esc(s.d) + '</p></details>').join('')
-      + '<p class="dlm-hint">אישור ועדת האתיקה: ' + esc(c.ethics) + ' · גרסת נוסח: ' + esc(c.version) + '</p>'
+      + (c.ethics && !/^\[.*\]$/.test(c.ethics) ? '<p class="dlm-hint">אישור ועדת האתיקה: ' + esc(c.ethics) + '</p>' : '')
       + '<fieldset style="border:none;padding:0;margin:.8rem 0"><legend><b>מה בחרתם?</b> (אחת משתי האפשרויות)</legend>'
       + (a.researchEnabled ? '<label class="opt"><input type="radio" name="consent" value="research"><span>' + esc(c.research) + '</span></label>' : '<p class="dlm-hint">בפעילות הזו לא נאסף מידע למחקר.</p>')
       + '<label class="opt"><input type="radio" name="consent" value="learning"><span>' + esc(c.learning) + '</span></label></fieldset>'

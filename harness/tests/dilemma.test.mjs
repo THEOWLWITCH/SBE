@@ -87,6 +87,10 @@ test('consent: a choice is required, nothing is chosen by default, and the versi
   const { P } = await s.join(s.c1, 'learning');
   const [, st] = await P('p.state');
   assert.equal(st.me.consent.type, 'learning'); assert.ok(st.me.consent.version); assert.ok(st.me.consent.at);
+  assert.equal(o.activity.consent.ethics, '', 'no ethics number → nothing shown to participants');
+  const fg = await s.fac('f.get', { id: s.A.id });
+  const row = fg.stats.consents.find((x) => x.code === st.me.code);
+  assert.equal(row.type, 'learning'); assert.ok(row.at); assert.equal(row.name, undefined);
   const js = read('lib/dilemma-join.js');
   assert.doesNotMatch(js.match(/function consentView[\s\S]*?\n  }\n/)[0], /type="radio"[^>]*checked/, 'consent radios are not pre-checked');
 });
