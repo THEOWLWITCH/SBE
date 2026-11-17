@@ -4,6 +4,7 @@
 // טיוטות (תגובה אישית, רפלקציה, מסקנה) נשמרות גם במכשיר, כך שתקלה בשרת או ב־AI לא מוחקת כלום.
 (function () {
   'use strict';
+  const FILE_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm,video/quicktime,audio/*,application/pdf,text/plain';
   const M = window.SBE_DILEMMA, U = window.SBE_DLM_UI, esc = M.esc;
   const $ = (s, r) => (r || document).querySelector(s);
   const app = $('#app'), dlg = $('#dlg'), dlgBody = $('#dlgBody'), saveEl = $('#saveState');
@@ -229,14 +230,23 @@
       + '<div class="dlm-grid2"><div><label for="sf-pub">מחבר או גוף מפרסם</label><input type="text" id="sf-pub" value="' + esc(p.publisher) + '"></div><div><label for="sf-date">תאריך פרסום</label><input type="text" id="sf-date" value="' + esc(p.date) + '" placeholder="למשל: 2023"></div></div>'
       + '<label for="sf-type">סוג המקור</label><select id="sf-type"><option value="">(רשות)</option>' + M.SOURCE_TYPES.map((t) => '<option' + (p.type === t ? ' selected' : '') + '>' + esc(t) + '</option>').join('') + '</select>'
       + '<label for="sf-url">קישור</label><input type="url" id="sf-url" dir="ltr" value="' + esc(p.url) + '" placeholder="https://">'
+      + '<label for="sf-file">או קובץ: תמונה, וידאו, הקלטת קול, PDF או טקסט (רשות)</label><input type="file" id="sf-file" accept="' + FILE_ACCEPT + '">'
+      + '<p class="dlm-hint">תמונה ו־PDF עד 3 מגה, קול עד 6 מגה, וידאו עד 8 מגה.</p>'
       + '<label for="sf-part">החלק במקור שעליו נשענת הטענה (רשות)</label><input type="text" id="sf-part" placeholder="למשל: עמוד 12, טבלה 3">'
       + '<label for="sf-ex">קטע מהמקור (רשות)</label><textarea id="sf-ex"></textarea>'
       + '<p><button class="dlm-btn main" id="sf-save">הוספה ללוח</button></p><div id="sf-msg"></div>');
     $('#sf-save').onclick = async () => {
       const source = { title: $('#sf-title').value, publisher: $('#sf-pub').value, date: $('#sf-date').value, type: $('#sf-type').value, url: $('#sf-url').value, part: $('#sf-part').value, excerpt: $('#sf-ex').value, origin: p.origin || 'participant' };
-      try { const r = await call('p.board', { kind: 'add', source, origin: p.origin === 'ai' ? 'ai' : 'participant', text: source.title }); S.board = r.board; S.ver = r.board.ver; dlg.close(); refreshBoard();
+      try {
+        const file = $('#sf-file') && $('#sf-file').files[0];
+        if (file) {
+          $('#sf-save').disabled = true; $('#sf-msg').innerHTML = msg('מעלים את הקובץ…');
+          const fid = await uploadFile(file); source.fileId = fid; source.fileName = file.name; if (!source.title) source.title = file.name;
+          if (!source.type) source.type = /^image\//.test(file.type) ? 'תמונה' : /^video\//.test(file.type) ? 'וידאו' : /^audio\//.test(file.type) ? 'הקלטת קול' : '';
+        }
+        const r = await call('p.board', { kind: 'add', source, origin: p.origin === 'ai' ? 'ai' : 'participant', text: source.title }); S.board = r.board; S.ver = r.board.ver; dlg.close(); refreshBoard();
         const it = itemById(r.id); if (it && source.url) verifySource(it.sourceId, true); }
-      catch (e) { $('#sf-msg').innerHTML = msg(e.message, 'err'); }
+      catch (e) { $('#sf-save').disabled = false; $('#sf-msg').innerHTML = msg(e.message, 'err'); }
     };
   }
   async function verifySource(sid, quiet) {
@@ -296,6 +306,15 @@
     out.innerHTML = '<h3>מצאתי בעיה</h3><label for="ri">מה הבעיה?</label><select id="ri">' + Object.entries(ISS).map(([k, t]) => '<option value="' + k + '">' + esc(t) + '</option>').join('') + '</select>'
       + '<label for="rt">פירוט</label><textarea id="rt" placeholder="למשל: הקישור מוביל לדף אחר, והנתון לא מופיע שם"></textarea><p><button class="dlm-btn main" id="rs">שליחת הדיווח</button></p><div id="rm"></div>';
     $('#rs').onclick = async () => { try { await boardOp({ kind: 'report', target, targetId, issue: $('#ri').value, text: $('#rt').value }); $('#rm').innerHTML = msg('הדיווח נשמר, והמנחה יראה אותו. תודה!'); } catch (e) {} };
+  }
+  // 17/11/2026 ("אפשרי לכולם להעלות תמונות וקבצים שונים - וידאו/ קול"): העלאה ללוח של הקבוצה.
+  const FILE_MAX = (t) => /^video\//.test(t) ? 8e6 : /^audio\//.test(t) ? 6e6 : 3e6;
+  async function uploadFile(file) {
+    const t = (file.type || '').toLowerCase();
+    if (!/^(image\/(png|jpeg|webp|gif)|application\/pdf|text\/plain|audio\/|video\/(mp4|webm|quicktime))/.test(t)) throw new Error('אפשר להעלות תמונה, וידאו, הקלטת קול, PDF או קובץ טקסט.');
+    if (file.size > FILE_MAX(t)) throw new Error('הקובץ גדול מדי: תמונה ו־PDF עד 3 מגה, קול עד 6 מגה, וידאו עד 8 מגה.');
+    const data = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(file); });
+    return (await call('p.upload', { name: file.name, type: t, data })).fileId;
   }
   async function openFile(fid) {
     try { const r = await call('p.file', { fileId: fid }); const bin = atob(r.data), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
