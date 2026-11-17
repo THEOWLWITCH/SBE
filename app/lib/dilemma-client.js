@@ -12,7 +12,8 @@
   async function api(op, input, cred) {
     const body = Object.assign({ action: 'dlmCall', op, input: input || {} }, cred || {});
     let r;
-    try { r = await fetch(SERVER + '/api/access', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); }
+    const path = op === 'p.upload' || op === 'f.file' ? '/api/access-upload' : '/api/access';
+    try { r = await fetch(SERVER + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); }
     catch (e) { const x = new Error('אין כרגע חיבור לשרת. מה שכתבתם נשמר במכשיר, ואפשר לנסות שוב בעוד רגע.'); x.offline = true; throw x; }
     let j = {}; try { j = await r.json(); } catch (e) {}
     if (!r.ok) { const x = new Error(j.error || ('שגיאה ' + r.status)); x.status = r.status; throw x; }

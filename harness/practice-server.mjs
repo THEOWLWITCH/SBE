@@ -313,11 +313,21 @@ const server = createServer(async (req, res) => {
   }
 
   // POST /api/access — סיסמאות הניהול וקוד "משוב לעבודות" (lib/access.mjs).
+  // העלאת קבצים לבירור דילמות (וידאו וקול עד 8 מגה, ב־base64): נתיב נפרד עם גבול של 12 מגה,
+  // כדי ש־/api/access ישמור על הגבול הקטן שלו. רק p.upload ו־f.file.
+  if (req.method === 'POST' && req.url === '/api/access-upload') {
+    if (!jobStore()) return sendJson(res, 503, { error: 'storage unavailable' });
+    let body;
+    try { body = JSON.parse(await readBody(req, 12 * 1024 * 1024)); }
+    catch { return sendJson(res, 413, { error: 'הקובץ גדול מדי' }); }
+    if (!body || body.action !== 'dlmCall' || !['p.upload', 'f.file'].includes(body.op)) return sendJson(res, 400, { error: 'invalid' });
+    try { const [status, out] = await handleAccess(jobStore(), body); return sendJson(res, status, out); }
+    catch (e) { console.error('access-upload: storage unavailable'); return sendJson(res, 503, { error: 'storage unavailable' }); }
+  }
   if (req.method === 'POST' && req.url === '/api/access') {
     if (!jobStore()) return sendJson(res, 503, { error: 'storage unavailable' });
     let body;
-    // עד 12 מגה: קבצי וידאו וקול בבירור דילמות (עד 8 מגה, ב־base64)
-    try { body = JSON.parse(await readBody(req, 12 * 1024 * 1024)); }
+    try { body = JSON.parse(await readBody(req)); }
     catch { return sendJson(res, 400, { error: 'invalid JSON' }); }
     try {
       const [status, out] = await handleAccess(jobStore(), body);
