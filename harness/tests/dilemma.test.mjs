@@ -400,3 +400,19 @@ test('mind map: free position, named clusters that stack and move their cards; f
   assert.equal((await s.run('f.boardOp', { id: s.A.id, g: 'g-nope', op: { kind: 'add', text: 'x' } }, { token: 'T1' }))[0], 404);
   assert.equal((await s.run('f.boardOp', { id: s.A.id, g, op: { kind: 'add', text: 'x' } }, { token: 'T2' }))[0], 404, 'another facilitator cannot write');
 });
+
+// 17/11/2026: דילמות שהמנחה מוסיף/ה לרשימה
+test('facilitator adds a dilemma to the list, creates an activity from it, and only the owner sees and deletes it', async () => {
+  const s = await setup();
+  const r = await s.fac('f.dlmSave', { dilemma: { title: 'רשתות חברתיות: חופש ביטוי או הגנה?', topic: 'חופש ביטוי', openingQuestions: ['מה ההבדל בין דעה לפגיעה?'] } });
+  assert.match(r.id, /^u-/);
+  assert.equal((await s.fac('f.dlmList', {})).mine.length, 1);
+  assert.equal((await s.fac('f.dlmList', {}, 'T2')).mine.length, 0, 'another facilitator does not see it');
+  const { activity } = await s.fac('f.create', { template: r.id });
+  assert.equal(activity.dilemma.title, 'רשתות חברתיות: חופש ביטוי או הגנה?');
+  const fromAct = await s.fac('f.dlmSave', { fromActivity: s.A.id });
+  assert.ok(fromAct.title);
+  assert.equal((await s.run('f.dlmDelete', { id: r.id }, { token: 'T2' }))[0], 404);
+  await s.fac('f.dlmDelete', { id: r.id });
+  assert.equal((await s.fac('f.dlmList', {})).mine.length, 1);
+});

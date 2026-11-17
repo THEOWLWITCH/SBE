@@ -402,7 +402,8 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
       if (op === 'f.create') {
         const n = (await store.list('dla:')).filter((r) => r.value && r.value.owner === me.principal && !expired(r.value)).length;
         if (n >= LIM.mine) throw new DlmError('יש כבר הרבה פעילויות. אפשר למחוק פעילויות ישנות ולנסות שוב', 429);
-        const t = M.TEMPLATES.find((x) => x.id === d.template);
+        let t = M.TEMPLATES.find((x) => x.id === d.template);
+        if (!t && /^u-[a-z0-9]{10}$/.test(String(d.template || ''))) { const u = await store.get('dlt:' + d.template); if (u && (me.sys || u.owner === me.principal)) t = { ...u.dilemma, sources: u.sources || [] }; }
         const a = { id: randomUUID(), owner: me.principal, inst: me.inst || null, status: 'draft', createdAt: now(), updatedAt: now(),
           title: txt(d.title || (t && t.title), 'שם הפעילות', LIM.title, true), mode: d.mode === 'personal' ? 'personal' : 'group',
           durationMin: Math.min(240, Math.max(20, Number(d.durationMin) || 90)), challengeMode: d.challengeMode === 'group' ? 'group' : 'facilitator', challengeOpen: false,
@@ -412,6 +413,30 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
         if (t) for (const s of t.sources) a.sources.push(newSource(s, 'facilitator', 'facilitator'));
         await store.set('dla:' + a.id, a);
         return [201, { activity: viewAct(a, me) }];
+      }
+      // דילמות שהמנחה מוסיף/ה לרשימה (17/11/2026: "תן לי אפשרות להוסיף דילמה"): נשמרות לכל מנחה, ומופיעות ב"בחירת דילמה".
+      if (op === 'f.dlmList') {
+        const rows = (await store.list('dlt:')).map((r) => r.value).filter((u) => u && (me.sys || u.owner === me.principal))
+          .sort((x, y) => String(y.at).localeCompare(String(x.at))).slice(0, 100).map((u) => ({ id: u.id, title: u.dilemma.title, topic: u.dilemma.topic, at: u.at }));
+        return [200, { mine: rows }];
+      }
+      if (op === 'f.dlmSave') {
+        let dil = d.dilemma || {}, sources = [];
+        if (d.fromActivity) { const fa = await mine(d.fromActivity); dil = fa.dilemma; sources = fa.sources.filter((x) => !x.fileId).map((x) => ({ title: x.title, publisher: x.publisher, date: x.date, type: x.type, url: x.url, excerpt: x.excerpt })); }
+        const clean = dilemmaOf(dil);
+        if (!clean.title) throw new DlmError('כדי לשמור, אפשר לכתוב כותרת לדילמה');
+        const id = d.id && /^u-[a-z0-9]{10}$/.test(d.id) ? d.id : 'u-' + code(10).toLowerCase();
+        const old = await store.get('dlt:' + id);
+        if (old && !me.sys && old.owner !== me.principal) throw new DlmError('הדילמה לא נמצאה', 404);
+        const count = (await store.list('dlt:', { keysOnly: true })).length;
+        if (!old && count >= 2000) throw new DlmError('הרשימה מלאה', 409);
+        await store.set('dlt:' + id, { id, owner: old ? old.owner : me.principal, dilemma: clean, sources: sources.slice(0, 40), at: now() });
+        return [200, { id, title: clean.title }];
+      }
+      if (op === 'f.dlmDelete') {
+        const u = /^u-[a-z0-9]{10}$/.test(String(d.id || '')) ? await store.get('dlt:' + d.id) : null;
+        if (!u || (!me.sys && u.owner !== me.principal)) throw new DlmError('הדילמה לא נמצאה', 404);
+        await store.del('dlt:' + d.id); return [200, { ok: true }];
       }
       if (op === 'f.get') {
         const a = await mine(d.id);
