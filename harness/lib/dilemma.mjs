@@ -26,8 +26,23 @@ const M = require('../../app/lib/dilemma-model.js');
 export const DLM_JOIN_PAGE = 'dilemma-join.html';
 const KEEP_DAYS = 400;
 const LIM = { title: 200, text: 2000, long: 6000, items: 500, links: 800, sources: 150, assess: 40, alerts: 120, challenges: 30, snapshots: 12,
-  events: 4000, classes: 30, groups: 40, participants: 400, mine: 80, files: 30, fileBytes: 1_000_000, actSources: 80, reports: 300 };
+  events: 4000, classes: 30, groups: 40, participants: 400, mine: 80, files: 30, allFiles: 300, actSources: 80, reports: 300 };
 
+// קבצים (17/11/2026: "אפשרי לכולם להעלות תמונות וקבצים שונים - וידאו/ קול"): מנחים ומשתתפים.
+// תמונה, PDF וטקסט עד 3 מגה, קול עד 6 מגה, וידאו עד 8 מגה. נשמרים בשרת לפעילות הזו בלבד.
+const FILE_KINDS = [
+  { re: /^(image\/(png|jpeg|webp|gif)|application\/pdf|text\/plain)$/, max: 3_000_000, t: '3 מגה' },
+  { re: /^audio\/(mpeg|mp3|mp4|x-m4a|m4a|aac|ogg|wav|x-wav|webm)$/, max: 6_000_000, t: '6 מגה' },
+  { re: /^video\/(mp4|webm|quicktime)$/, max: 8_000_000, t: '8 מגה' }
+];
+function checkFile(d) {
+  const data = String(d.data || ''), type = String(d.type || '').toLowerCase();
+  const k = FILE_KINDS.find((x) => x.re.test(type));
+  if (!k) throw new DlmError('אפשר להעלות תמונה, וידאו, הקלטת קול, PDF או קובץ טקסט');
+  if (!/^[A-Za-z0-9+/=]+$/.test(data)) throw new DlmError('הקובץ אינו תקין');
+  if (data.length * 0.75 > k.max) throw new DlmError('הקובץ גדול מדי (עד ' + k.t + ')', 413);
+  return { data, type, size: Math.round(data.length * 0.75) };
+}
 export class DlmError extends Error { constructor(msg, status = 400) { super(msg); this.status = status; } }
 const hash = (v) => createHash('sha256').update(String(v)).digest('hex');
 const newKey = () => randomBytes(24).toString('hex');
@@ -374,10 +389,7 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
       }
       if (op === 'f.file') {
         // קובץ למאגר המקורות: PDF, תמונה או טקסט, עד 1 מגה (base64). נשמר בשרת לפעילות הזו בלבד.
-        const data = String(d.data || '');
-        if (!/^[A-Za-z0-9+/=]+$/.test(data) || data.length * 0.75 > LIM.fileBytes) throw new DlmError('הקובץ גדול מדי (עד 1 מגה) או אינו תקין', 413);
-        const type = String(d.type || '');
-        if (!/^(application\/pdf|image\/(png|jpeg|webp)|text\/plain)$/.test(type)) throw new DlmError('אפשר להעלות PDF, תמונה או קובץ טקסט');
+        const { data, type } = checkFile(d);
         const fid = 'f-' + code(10).toLowerCase();
         const a = await saveAct(d.id, (a) => {
           if (a.files.length >= LIM.files) throw new DlmError('הגענו למספר הקבצים המרבי');
@@ -438,6 +450,49 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
           a.cofacs = [...(a.cofacs || []), { id: 'cf-' + code(6).toLowerCase(), principal: me.principal, name: txt(d.name, 'שם', 80) || 'מנחה נוסף/ת', at: now() }].slice(0, 6);
         });
         return [200, { activity: { id: a.id, title: a.title } }];
+      }
+      if (op === 'f.fileGet') {
+        // קובץ מהמאגר של הפעילות או מלוח של קבוצה (צפייה של המנחה).
+        const a = await mine(d.id);
+        const fid = String(d.fileId || '');
+        const rec = okId(fid) ? await store.get('dlf:' + a.id + ':' + fid) : null;
+        if (!rec) throw new DlmError('הקובץ לא נמצא', 404);
+        const f = a.files.find((x) => x.id === fid);
+        return [200, { name: (f && f.name) || rec.name || 'קובץ', type: rec.type, data: rec.data }];
+      }
+      if (op === 'f.participantRemove') {
+        // 17/11/2026 ("לאפשר לי למחוק"): המנחה מוחק/ת משתתף/ת: הרשומה, ההסכמה, התגובה האישית והרפלקציה,
+        // והכרטיסים, המקורות והקבצים שהעלה/תה ללוח. אי אפשר לבטל.
+        const a = await mine(d.id);
+        const pc = String(d.code || '').toUpperCase();
+        const look = /^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(pc) ? await store.get('dlpc:' + a.id + ':' + pc) : null;
+        const p = look ? await store.get('dlp:' + a.id + ':' + look.p) : null;
+        if (!p) throw new DlmError('המשתתף/ת לא נמצא/ה', 404);
+        const bk = boardKeyOf(a, p);
+        if (bk) {
+          const bkey = 'dlb:' + a.id + ':' + bk;
+          if (await store.get(bkey)) {
+            const gone = [];
+            await mutate(store, bkey, (b) => {
+              const mine = new Set(b.items.filter((i) => i.by === p.pcode).map((i) => i.id));
+              b.items = b.items.filter((i) => !mine.has(i.id));
+              b.links = b.links.filter((l) => l.by !== p.pcode && !mine.has(l.from) && !mine.has(l.to));
+              const srcGone = new Set(b.sources.filter((x) => x.by === p.pcode).map((x) => x.id));
+              b.sources.filter((x) => srcGone.has(x.id) && x.fileId).forEach((x) => gone.push(x.fileId));
+              b.sources = b.sources.filter((x) => !srcGone.has(x.id));
+              b.items.forEach((i) => { if (i.sourceId && srcGone.has(i.sourceId)) i.deleted = { by: 'facilitator', at: now() }; });
+              srcGone.forEach((id) => { delete b.assess[id]; delete b.checks[id]; });
+              Object.keys(b.assess || {}).forEach((k) => { b.assess[k] = b.assess[k].filter((x) => x.by !== p.pcode); });
+              b.reports = (b.reports || []).filter((r) => r.by !== p.pcode);
+              b.ver = (b.ver || 0) + 1; log(b, 'participantRemoved', 'facilitator', {});
+            });
+            for (const fid of gone) await store.del('dlf:' + a.id + ':' + fid);
+          }
+        }
+        await store.del('dlx:' + a.id + ':' + p.id);
+        await store.del('dlpc:' + a.id + ':' + p.pcode);
+        await store.del('dlp:' + a.id + ':' + p.id);
+        return [200, { ok: true }];
       }
       if (op === 'f.delete') {
         const a = await mine(d.id);
@@ -547,10 +602,24 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
       return [200, { ok: true }];
     }
     if (op === 'p.file') {
-      const f = a.files.find((x) => x.id === d.fileId);
-      if (!f) throw new DlmError('הקובץ לא נמצא', 404);
-      const rec = await store.get('dlf:' + a.id + ':' + f.id);
-      return [200, { name: f.name, type: rec.type, data: rec.data }];
+      // קובץ מהמאגר של הפעילות, או קובץ שהועלה ללוח של הקבוצה שלי.
+      const fid = String(d.fileId || '');
+      const f = a.files.find((x) => x.id === fid);
+      const rec = okId(fid) ? await store.get('dlf:' + a.id + ':' + fid) : null;
+      if (!rec || (!f && rec.board !== boardKeyOf(a, p))) throw new DlmError('הקובץ לא נמצא', 404);
+      return [200, { name: (f && f.name) || rec.name || 'קובץ', type: rec.type, data: rec.data }];
+    }
+    if (op === 'p.upload') {
+      // משתתפים מעלים תמונה, וידאו, הקלטת קול, PDF או טקסט ללוח של הקבוצה (ואז מוסיפים אותו כמקור).
+      if (a.status !== 'open') throw new DlmError('הפעילות אינה פתוחה לכתיבה כרגע', 409);
+      const bk = boardKeyOf(a, p);
+      if (!bk) throw new DlmError('אפשר לבחור קבוצה קודם', 409);
+      const { data, type, size } = checkFile(d);
+      const count = (await store.list('dlf:' + a.id + ':', { keysOnly: true })).length;
+      if (count >= LIM.allFiles) throw new DlmError('הגענו למספר הקבצים המרבי בפעילות', 409);
+      const fid = 'f-' + code(10).toLowerCase();
+      await store.set('dlf:' + a.id + ':' + fid, { type, data, size, name: txt(d.name, 'שם הקובץ', 200) || 'קובץ', board: bk, by: p.pcode, at: now() });
+      return [200, { fileId: fid }];
     }
     if (op === 'p.verify') {
       // בדיקת קיום של מקור בלוח (קישור). לא משנה ציון אמינות.
@@ -592,6 +661,10 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
             origin: ['participant', 'ai'].includes(d.origin) ? d.origin : 'participant', ...(d.confidence && M.CONFIDENCE.some((c) => c.k === d.confidence) ? { confidence: d.confidence } : {}) };
           if (d.source) {
             if (b.sources.length >= LIM.sources) throw new DlmError('הגענו למספר המקורות המרבי בלוח');
+            if (d.source.fileId) {
+              const fr = okId(String(d.source.fileId)) ? await store.get('dlf:' + a.id + ':' + d.source.fileId) : null;
+              if (!fr || (fr.board !== bk && !a.files.some((f) => f.id === d.source.fileId))) throw new DlmError('הקובץ לא נמצא', 404);
+            }
             const s = newSource(d.source, ['participant', 'ai', 'search', 'unverified'].includes(d.source.origin) ? d.source.origin : 'participant', by);
             b.sources.push(s); item.sourceId = s.id; item.zone = 'sources'; if (!item.text) item.text = s.title;
           } else if (d.sourceId) {

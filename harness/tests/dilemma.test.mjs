@@ -344,3 +344,32 @@ test('two facilitators: separate activities stay apart; a co-facilitator joins w
   assert.notEqual(i1, i2); assert.notEqual(i1, i3);
   assert.equal(i1, await inst(await s.join(s.c1, 'learning', 0)), 'same group shares one bucket');
 });
+
+// 17/11/2026: משתתפים מעלים תמונה, וידאו או קול ללוח; המנחה רואה ומוחק/ת משתתף/ת
+test('participants upload media to their own board; facilitator can open it and remove a participant with their contributions', async () => {
+  const s = await setup();
+  const x = await s.join(s.c1, 'learning', 0), other = await s.join(s.c1, 'learning', 1);
+  const data = Buffer.from('fake-video-bytes').toString('base64');
+  const [us, up] = await x.P('p.upload', { name: 'clip.mp4', type: 'video/mp4', data });
+  assert.equal(us, 200, JSON.stringify(up));
+  assert.equal((await x.P('p.upload', { name: 'x.exe', type: 'application/x-msdownload', data }))[0], 400);
+  const [as, ad] = await x.P('p.board', { kind: 'add', source: { title: 'סרטון מהאירוע', fileId: up.fileId, fileName: 'clip.mp4' } });
+  assert.equal(as, 200, JSON.stringify(ad));
+  assert.equal((await x.P('p.file', { fileId: up.fileId }))[0], 200);
+  assert.equal((await other.P('p.file', { fileId: up.fileId }))[0], 404, 'another group cannot read it');
+  assert.equal((await other.P('p.board', { kind: 'add', source: { title: 'גניבה', fileId: up.fileId } }))[0], 404);
+  const fg = await s.fac('f.fileGet', { id: s.A.id, fileId: up.fileId });
+  assert.equal(fg.type, 'video/mp4');
+  await x.P('p.board', { kind: 'add', zone: 'claims', text: 'טענה של משתתף/ת מדומה' });
+  await s.fac('f.participantRemove', { id: s.A.id, code: x.code });
+  assert.equal((await x.P('p.state'))[0], 401, 'removed participant cannot continue');
+  const [, st] = await other.P('p.state');
+  const g = s.c1.groups[0].id;
+  const b = await s.store.get('dlb:' + s.A.id + ':' + g);
+  assert.equal(b.items.filter((i) => i.by === x.code).length, 0);
+  assert.equal(b.sources.length, 0);
+  assert.equal(await s.store.get('dlf:' + s.A.id + ':' + up.fileId), null);
+  const fget = await s.fac('f.get', { id: s.A.id });
+  assert.equal(fget.stats.consents.some((c) => c.code === x.code), false);
+  assert.ok(st);
+});

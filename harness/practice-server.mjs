@@ -316,7 +316,8 @@ const server = createServer(async (req, res) => {
   if (req.method === 'POST' && req.url === '/api/access') {
     if (!jobStore()) return sendJson(res, 503, { error: 'storage unavailable' });
     let body;
-    try { body = JSON.parse(await readBody(req)); }
+    // עד 12 מגה: קבצי וידאו וקול בבירור דילמות (עד 8 מגה, ב־base64)
+    try { body = JSON.parse(await readBody(req, 12 * 1024 * 1024)); }
     catch { return sendJson(res, 400, { error: 'invalid JSON' }); }
     try {
       const [status, out] = await handleAccess(jobStore(), body);

@@ -20,6 +20,12 @@
   const joinUrl = (code) => location.href.replace(/[^/]*$/, '') + 'dilemma-join.html?c=' + code;
   function openDlg(html) { dlgBody.innerHTML = html; if (!dlg.open) dlg.showModal(); }
   dlg.addEventListener('click', (e) => { if (e.target.hasAttribute('data-close') || e.target === dlg) dlg.close(); });
+  // פתיחת קובץ (מהמאגר או מלוח של קבוצה) מתוך כרטיס מקור
+  dlg.addEventListener('click', async (e) => {
+    const b = e.target.closest && e.target.closest('[data-file]'); if (!b || !S.a) return;
+    try { const r = await call('f.fileGet', { id: S.a.id, fileId: b.dataset.file }); const bin = atob(r.data), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      window.open(URL.createObjectURL(new Blob([u8], { type: r.type })), '_blank', 'noopener'); } catch (err) { alert(err.message); }
+  });
   function fail(e, where) { (where || app).insertAdjacentHTML('afterbegin', msg(e.message || 'משהו לא הצליח. אפשר לנסות שוב.', 'err')); }
 
   // ── רשימת הפעילויות ──
@@ -110,7 +116,7 @@
       + a.sources.map((s) => '<div class="dlm-row" style="justify-content:space-between"><div data-src="' + esc(s.id) + '" style="cursor:pointer;flex:1">' + U.sourceRowHTML(s, null) + '</div><button class="dlm-btn small red" data-rm="' + esc(s.id) + '">הסרה</button></div>').join('')
       + '<h3>הוספת מקור</h3><div class="dlm-grid2"><div><label for="s-title">שם המקור (שדה עיקרי)</label><input type="text" id="s-title"></div><div><label for="s-pub">מחבר או גוף מפרסם</label><input type="text" id="s-pub"></div>'
       + '<div><label for="s-date">תאריך פרסום</label><input type="text" id="s-date"></div><div><label for="s-type">סוג המקור</label><select id="s-type"><option value="">(רשות)</option>' + M.SOURCE_TYPES.map((t) => '<option>' + esc(t) + '</option>').join('') + '</select></div></div>'
-      + '<label for="s-url">קישור</label><input type="url" id="s-url" dir="ltr" placeholder="https://"><label for="s-file">או קובץ (PDF, תמונה או טקסט, עד 1 מגה)</label><input type="file" id="s-file" accept="application/pdf,image/png,image/jpeg,image/webp,text/plain">'
+      + '<label for="s-url">קישור</label><input type="url" id="s-url" dir="ltr" placeholder="https://"><label for="s-file">או קובץ: תמונה, וידאו, הקלטת קול, PDF או טקסט</label><input type="file" id="s-file" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm,video/quicktime,audio/*,application/pdf,text/plain"><p class="dlm-hint">תמונה ו־PDF עד 3 מגה, קול עד 6 מגה, וידאו עד 8 מגה.</p>'
       + '<label for="s-ex">קטע מהמקור (רשות)</label><textarea id="s-ex"></textarea><p><button class="dlm-btn main" id="sadd">הוספה</button></p><div id="sm"></div></div>';
     tab().querySelectorAll('[data-src]').forEach((b) => b.onclick = () => sourceDlg(b.dataset.src));
     tab().querySelectorAll('[data-rm]').forEach((b) => b.onclick = async () => { if (!confirm('להסיר את המקור?')) return; try { const r = await call('f.sourceEdit', { id: a.id, sourceId: b.dataset.rm, remove: true }); S.a = r.activity; tabSources(); } catch (e) { fail(e, tab()); } });
@@ -119,7 +125,7 @@
       try {
         const file = $('#s-file').files[0];
         if (file) {
-          if (file.size > 1_000_000) throw new Error('הקובץ גדול מ־1 מגה.');
+          if (file.size > (/^video\//.test(file.type) ? 8e6 : /^audio\//.test(file.type) ? 6e6 : 3e6)) throw new Error('הקובץ גדול מדי: תמונה ו־PDF עד 3 מגה, קול עד 6 מגה, וידאו עד 8 מגה.');
           const data = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(file); });
           const up = await call('f.file', { id: a.id, name: file.name, type: file.type, data }); src.fileId = up.fileId; src.fileName = file.name; if (!src.title) src.title = file.name;
         }
@@ -207,8 +213,8 @@
     return '<div class="dlm-card" id="consentList"><h2>מי הסכים/ה למחקר</h2>'
       + '<p class="dlm-hint">המשתתפים מופיעים לפי הקוד האישי האקראי שקיבלו בכניסה, בלי שמות. מוצגת ההחלטה האחרונה של כל אחד ואחת; אפשר לשנות אותה בכל שלב. הרשימה מתעדכנת כשנכנסים מחדש ללשונית.</p>'
       + (rows.length ? '<p><b>הסכימו למחקר: ' + yes + '</b> מתוך ' + rows.length + ' משתתפים.</p>'
-        + '<table class="dlm-table"><thead><tr><th>קוד אישי</th><th>כיתה</th><th>קבוצה</th><th>הבחירה</th><th>מתי</th></tr></thead><tbody>'
-        + rows.map((x) => '<tr><td><span class="dlm-code">' + esc(x.code) + '</span></td><td>' + esc(cls[x.classId] || '') + '</td><td>' + esc(grp[x.groupId] || '') + '</td><td>' + esc(label(x)) + (x.changed ? ' <span class="dlm-hint">(שונתה)</span>' : '') + '</td><td>' + esc(when(x.at)) + '</td></tr>').join('')
+        + '<table class="dlm-table"><thead><tr><th>קוד אישי</th><th>כיתה</th><th>קבוצה</th><th>הבחירה</th><th>מתי</th><th></th></tr></thead><tbody>'
+        + rows.map((x) => '<tr><td><span class="dlm-code">' + esc(x.code) + '</span></td><td>' + esc(cls[x.classId] || '') + '</td><td>' + esc(grp[x.groupId] || '') + '</td><td>' + esc(label(x)) + (x.changed ? ' <span class="dlm-hint">(שונתה)</span>' : '') + '</td><td>' + esc(when(x.at)) + '</td><td><button class="dlm-btn small red" data-delp="' + esc(x.code) + '">מחיקה</button></td></tr>').join('')
         + '</tbody></table>'
         : '<p>עדיין לא נכנסו משתתפים לפעילות.</p>') + '</div>';
   }
@@ -223,6 +229,12 @@
       + M.CONSENT.sections.filter((s) => s.k !== 'contact').map((s) => '<label for="rs-' + s.k + '">' + esc(s.t) + '</label><textarea id="rs-' + s.k + '" placeholder="' + esc(s.k === 'who' ? M.CONSENT.researchers : s.d) + '">' + esc((r.sections || {})[s.k] || '') + '</textarea>').join('')
       + '<p class="dlm-hint">שדה ריק מציג את הנוסח המוצע (שמופיע בתוך השדה).</p><p><button class="dlm-btn main" id="rsave">שמירה</button></p><div id="rm"></div></div>'
       + consentList();
+    // 17/11/2026 ("לאפשר לי למחוק"): מחיקת משתתף/ת, עם כל מה שהעלה/תה ללוח
+    tab().querySelectorAll('[data-delp]').forEach((b) => b.onclick = async () => {
+      if (!confirm('למחוק את המשתתף/ת ' + b.dataset.delp + '? יימחקו גם הכרטיסים, המקורות והקבצים שהעלה/תה ללוח, והתגובה האישית. אי אפשר לבטל.')) return;
+      try { await call('f.participantRemove', { id: S.a.id, code: b.dataset.delp }); const r = await call('f.get', { id: S.a.id }); S.a = r.activity; S.stats = r.stats; tabResearch(); }
+      catch (e) { fail(e, tab()); }
+    });
     $('#rsave').onclick = async () => {
       const sections = {}; M.CONSENT.sections.filter((s) => s.k !== 'contact').forEach((s) => { sections[s.k] = $('#rs-' + s.k).value; });
       try { await save({ research: { enabled: $('#re').checked, ethics: $('#reth').value, contact: $('#rcon').value, sections } }); tabResearch(); $('#rm').innerHTML = msg('נשמר.'); } catch (e) { $('#rm').innerHTML = msg(e.message, 'err'); }
