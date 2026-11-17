@@ -8,6 +8,7 @@ import { createRequire } from 'node:module';
 import { handleHlRooms, roomModelGate } from './hl-rooms.mjs';
 import { handleOrgSuite } from './org-suite.mjs';
 import { handleDilemma, dlmModelGate } from './dilemma.mjs';
+import { handleCredibility, crdModelGate } from './credibility.mjs';
 import { handlePartnerDocs } from './partner-docs.mjs';
 const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
 const JOURNEY_WORKSPACE = createRequire(import.meta.url)('../../app/lib/journey-workspace-model.js');
@@ -20,7 +21,7 @@ const MIN_PASSWORD = 8;
 // ההרשאות במערכת. לכל מוסד יש "תקרה" (modules:<מוסד>) — מה שמנהלת המערכת פתחה
 // לו; ברירת המחדל: שום דבר. קודי הצוות שמנהל/ת המוסד מפיק/ה מקבלים רק צירוף
 // מתוך התקרה.
-export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi', 'journey', 'writer', 'nana', 'studio', 'dialogue', 'teamthink', 'studies', 'games', 'horizon', 'bridge', 'routines', 'continuity', 'orgsuite', 'dilemma', 'quickpractice'];
+export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi', 'journey', 'writer', 'nana', 'studio', 'dialogue', 'teamthink', 'studies', 'games', 'horizon', 'bridge', 'routines', 'continuity', 'orgsuite', 'dilemma', 'quickpractice', 'credibility'];
 const DEFAULT_MODULES = Object.fromEntries(PERMS.map((p) => [p, false]));
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
@@ -395,7 +396,8 @@ export const MODEL_PAGES = {
   'horizon-lab.html': ['horizon'], 'hl-voice.html': ['horizon'], 'hl-radar.html': ['horizon'], 'hl-futures.html': ['horizon'], 'hl-circles.html': ['horizon'], 'hl-horizons.html': ['horizon'], 'hl-collage.html': ['horizon'], 'hl-roadmap.html': ['horizon'], 'hl-game.html': ['horizon'], 'hl-stress.html': ['horizon'], // מעבדת האופק (אושר 28/10/2026)
   'family-bridge.html': ['bridge'], 'routines-hub.html': ['routines'], 'continuity-kit.html': ['continuity'], // אושרו 28/10/2026
   'quick-practice.html': ['quickpractice'], // התנסות קצרה (16/11/2026): התרגול על התרחיש המוכן ככלי עצמאי
-  'dilemma-inquiry.html': ['dilemma'] // בירור דילמות (12/11/2026); המשתתפים ב-dilemma-join.html דרך dlmModelGate
+  'dilemma-inquiry.html': ['dilemma'], // בירור דילמות (12/11/2026); המשתתפים ב-dilemma-join.html דרך dlmModelGate
+  'credibility-check.html': ['credibility', 'dilemma'] // בדיקת אמינות של מקורות (17/11/2026; גם למי שיש בירור דילמות: איבנה ועינת); הצוותים ב-credibility-join.html דרך crdModelGate
 };
 export const WORKSHOP_MODEL_PAGES = ['practice.html', 'conversation-planner.html', 'activity-planner.html', 'academic-review.html', 'parent-input-screen.html'];
 const WORKSHOP_HOURS = 48;
@@ -450,6 +452,12 @@ export async function authorizeModel(store, auth, route = '/api/complete') {
   if (a.dlm && route === '/api/complete') {
     const g = await dlmModelGate(store, a, page);
     if (g) return { ok: true, who: 'dlm', page, route, ...modelIdentity({ k: 'dlm', c: g.principal, inst: g.institution }, g.principal), institutionId: null, space: 'edu' };
+    return { ok: false };
+  }
+  // בדיקת אמינות של מקורות: צוותים בלי קוד Begood, עם מפתח הצוות, רק בדף הצוות ורק כשהפעילות פתוחה.
+  if (a.crd && route === '/api/complete') {
+    const g = await crdModelGate(store, a, page);
+    if (g) return { ok: true, who: 'crd', page, route, ...modelIdentity({ k: 'crd', c: g.principal, inst: g.institution }, g.principal), institutionId: null, space: 'edu' };
     return { ok: false };
   }
   if (a.token) {
@@ -1863,6 +1871,11 @@ export async function handleAccess(store, body) {
   // בירור דילמות (12/11/2026): המנחה לפי הרשאה חיה; משתתפים לפי המפתח האישי (ההפרדה בשרת)
   if (action === 'dlmCall') return handleDilemma(store, body, { pause, who: async (token) => {
     const t = token ? await authorizePermission(store, token, ['dilemma']) : null;
+    return t ? { principal: modelIdentity(t, token).principal, inst: t.inst || null, sys: t.k === 'sys' } : null;
+  } });
+  // בדיקת אמינות של מקורות (17/11/2026): המרצות לפי הרשאה חיה (credibility או dilemma); צוותים לפי מפתח הצוות
+  if (action === 'crdCall') return handleCredibility(store, body, { who: async (token) => {
+    const t = token ? await authorizePermission(store, token, ['credibility', 'dilemma']) : null;
     return t ? { principal: modelIdentity(t, token).principal, inst: t.inst || null, sys: t.k === 'sys' } : null;
   } });
   if (/^hl(RoomCreate|Poll|Write|RoomClose)$/.test(action || '')) return handleHlRooms(store, body, { authorize: async (token) => {

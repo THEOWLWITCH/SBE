@@ -1,0 +1,41 @@
+/* בדיקת אמינות של מקורות: תוספות לעיצוב של dilemma.css (17/11/2026) */
+.crd-dot{display:inline-flex;align-items:center;justify-content:center;min-width:1.7rem;height:1.7rem;border-radius:50%;color:#fff;font-weight:700;font-size:.9rem;flex:none}
+.crd-dot.big{min-width:2.6rem;height:2.6rem;font-size:1.25rem}
+.crd-scores{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin:.4rem 0}
+.crd-sc{display:flex;flex-direction:column;align-items:center;gap:.15rem;font-size:.78rem;color:#4a5560}
+.crd-arr{color:#9aa4ad}
+.crd-list{display:grid;gap:.6rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.crd-item{text-align:right;background:#fff;border:1px solid #d9dee4;border-radius:12px;padding:.7rem .8rem;font:inherit;cursor:pointer}
+.crd-item:hover{border-color:#2a9d8f}
+.crd-src{background:#f7f9fa;border:1px solid #e3e7eb;border-radius:10px;padding:.6rem .8rem;margin:.4rem 0 .8rem}
+.crd-steps button:disabled{opacity:.45;cursor:not-allowed}
+.crd-assess{border:1px solid #e3e7eb;border-top:2px solid #2a9d8f;border-radius:12px;padding:.8rem 1rem;margin:.6rem 0;background:#fff}
+.crd-assess-h{display:flex;gap:.7rem;align-items:center}
+.crd-assess h4{margin:.7rem 0 .2rem;font-size:.95rem}
+.crd-chat{max-height:420px;overflow:auto;border:1px solid #e3e7eb;border-radius:12px;padding:.6rem;background:#fbfcfd;display:flex;flex-direction:column;gap:.5rem}
+.crd-msg{max-width:88%;padding:.5rem .7rem;border-radius:12px;line-height:1.5}
+.crd-msg.ai{background:#eef6f5;align-self:flex-start}
+.crd-msg.me{background:#eef1f8;align-self:flex-end}
+.crd-msg b{font-size:.8rem;color:#4a5560}
+.crd-say{display:flex;gap:.5rem;align-items:flex-end;margin:.5rem 0}
+.crd-say textarea{flex:1}
+.crd-ext li{margin:.35rem 0}
+.crd-donebar{margin-top:1rem;padding-top:.8rem;border-top:1px solid #e3e7eb}
+.crd-pick{display:grid;gap:.4rem}
+.crd-opt{display:flex;gap:.6rem;align-items:flex-start;border:1px solid #e3e7eb;border-radius:10px;padding:.5rem .7rem;font-weight:400;cursor:pointer}
+.crd-opt:has(input:checked){border-color:#2a9d8f;background:#f1f8f7}
+.crd-mrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin:.35rem 0}
+.crd-mrow .mn{flex:1 1 12rem}
+.crd-mrow label{font-weight:400;font-size:.88rem}
+.crd-consent{background:#f7f9fa;border-radius:10px;padding:.5rem .8rem;margin:.5rem 0}
+.crd-fs{border:1px solid #e3e7eb;border-radius:10px;padding:.4rem .8rem;margin:.6rem 0}
+.crd-seen{background:#f7f9fa;padding:.5rem .7rem;border-radius:8px}
+.crd-scale td{padding:.35rem .5rem;vertical-align:top;text-align:right}
+.crd-hint{color:#5c6873;font-size:.9rem}
+.crd-bar{display:flex;align-items:center;gap:.5rem;margin:.2rem 0}
+.crd-bar i{display:block;height:14px;border-radius:7px;background:#2a9d8f;min-width:2px}
+.crd-kpi{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem;margin:.6rem 0}
+.crd-kpi div{border:1px solid #e3e7eb;border-radius:12px;padding:.6rem .8rem;background:#fff}
+.crd-kpi b{display:block;font-size:1.5rem;color:#1d3f63}
+.crd-explain{background:#f4f8fb;border-right:3px solid #1d3f63;padding:.5rem .8rem;border-radius:6px;margin:.4rem 0 1rem}
+@media print{.dlm-noprint,.crd-say,.crd-addext,.crd-donebar{display:none!important}}
