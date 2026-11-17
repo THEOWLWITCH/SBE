@@ -134,3 +134,18 @@ html.dlm-proj-on{overflow:hidden}
 .mm-cluster.stacked{box-shadow:4px 4px 0 color-mix(in srgb,var(--kc) 25%,#fff),8px 8px 0 color-mix(in srgb,var(--kc) 12%,#fff)}
 .dlm-boardwrap.mm-wide{grid-template-columns:1fr}
 .mm-card.in-stack{height:96px;overflow:hidden}
+
+/* מסך מלא (17/11/2026) */
+.mm-wrap.mm-full{position:fixed;inset:8px;z-index:9000;background:#fff;border-radius:14px;box-shadow:0 10px 40px rgba(20,30,50,.25);padding:10px 12px;display:flex;flex-direction:column}
+.mm-wrap.mm-full .mm-view{flex:1;height:auto;min-height:0}
+html:has(.mm-full),html:has(.mm-full) body{overflow:hidden}
+dialog{z-index:9500}
+
+/* קווים (17/11/2026) */
+.mm-handle{position:absolute;top:-10px;left:-10px;width:22px;height:22px;border-radius:50%;background:#1D3F63;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:crosshair;touch-action:none;box-shadow:0 1px 3px rgba(0,0,0,.25);opacity:.85}
+.mm-card:hover .mm-handle{opacity:1;transform:scale(1.1)}
+.mm-lines .mm-lab{pointer-events:auto;cursor:pointer}
+.mm-pick{position:absolute;z-index:80;direction:rtl;background:#fff;border:1px solid var(--dl-line);border-radius:12px;box-shadow:0 8px 24px rgba(20,30,50,.18);padding:8px;display:flex;flex-direction:column;gap:4px;min-width:150px}
+.mm-pick b{font-size:.85rem}
+.mm-pick button{font:inherit;font-size:.85rem;border:1px solid var(--rc,#ccd);color:var(--rc,#334);background:#fff;border-radius:999px;padding:.15rem .6rem;cursor:pointer;text-align:start}
+.mm-pick button:hover{background:color-mix(in srgb,var(--rc,#ccd) 10%,#fff)}
