@@ -80,7 +80,7 @@
       + '<div class="dlm-kv">'
       + kv('מחבר או גוף מפרסם', esc(s.publisher)) + kv('תאריך פרסום', esc(s.date)) + kv('סוג המקור', esc(s.type))
       + kv('קישור', s.url ? '<a href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer" dir="ltr">' + esc(s.url) + '</a>' : '')
-      + kv('קובץ', s.fileId ? '<button type="button" class="dlm-btn small" data-file="' + esc(s.fileId) + '">פתיחת ' + esc(s.fileName || 'הקובץ') + '</button>' : '')
+      + kv('קובץ', s.fileId ? '<button type="button" class="dlm-btn small" data-file="' + esc(s.fileId) + '">פתיחת ' + esc(s.fileName || 'הקובץ') + '</button> <button type="button" class="dlm-btn small" data-file="' + esc(s.fileId) + '" data-dl="' + esc(s.fileName || 'קובץ') + '">⬇ הורדה</button>' : '')
       + kv('מאיפה המקור', esc(M.ORIGINS[s.origin] || ''))
       + kv('סטטוס אימות', esc(verifyLabel(s.verify)) + (s.verify && s.verify.at ? ' · ' + esc(new Date(s.verify.at).toLocaleDateString('he-IL')) : '') + (s.verify && s.verify.title ? '<br><span class="dlm-hint">כותרת הדף: ' + esc(s.verify.title) + '</span>' : '') + (s.verify && s.verify.note ? '<br><span class="dlm-hint">' + esc(s.verify.note) + '</span>' : ''))
       + kv('דירוג אמינות', esc(r.score === null ? 'טרם נבדק' : r.score + ' · ' + r.label) + ' (' + esc(r.name) + ')')
@@ -149,5 +149,11 @@
   }
   async function qr(node, text) { node.innerHTML = ''; try { await loadQR(); new window.QRCode(node, { text, width: 180, height: 180, correctLevel: window.QRCode.CorrectLevel.M }); } catch (e) { node.textContent = 'לא ניתן לצייר QR כרגע. אפשר להעתיק את הקישור.'; } }
 
-  window.SBE_DLM_UI = { SERVER, api, ai, callModel, scoreNow, assessOf, sourceById, sourceRowHTML, sourceCardHTML, boardHTML, boardContext, verifyLabel, qr };
+  function showFile(r, dlName) {
+    const bin = atob(r.data), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([u8], { type: r.type }));
+    if (dlName) { const a = document.createElement('a'); a.href = url; a.download = dlName || r.name || 'קובץ'; document.body.appendChild(a); a.click(); a.remove(); }
+    else window.open(url, '_blank', 'noopener');
+  }
+  window.SBE_DLM_UI = { showFile, SERVER, api, ai, callModel, scoreNow, assessOf, sourceById, sourceRowHTML, sourceCardHTML, boardHTML, boardContext, verifyLabel, qr };
 })();

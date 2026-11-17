@@ -23,8 +23,7 @@
   // פתיחת קובץ (מהמאגר או מלוח של קבוצה) מתוך כרטיס מקור
   dlg.addEventListener('click', async (e) => {
     const b = e.target.closest && e.target.closest('[data-file]'); if (!b || !S.a) return;
-    try { const r = await call('f.fileGet', { id: S.a.id, fileId: b.dataset.file }); const bin = atob(r.data), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-      window.open(URL.createObjectURL(new Blob([u8], { type: r.type })), '_blank', 'noopener'); } catch (err) { alert(err.message); }
+    try { const r = await call('f.fileGet', { id: S.a.id, fileId: b.dataset.file }); U.showFile(r, b.dataset.dl || ''); } catch (err) { alert(err.message); }
   });
   function fail(e, where) { (where || app).insertAdjacentHTML('afterbegin', msg(e.message || 'משהו לא הצליח. אפשר לנסות שוב.', 'err')); }
 

@@ -77,6 +77,7 @@
         + '<button type="button" class="dlm-btn small" data-addsrc="1">➕ מקור או קובץ</button><button type="button" class="dlm-btn small" data-kadd="1">🗂 קבוצה או ערימה</button><button type="button" class="dlm-btn small' + (view.connect ? ' main' : '') + '" data-connect="1">🔗 ' + (view.connect ? 'סיום מתיחת קווים' : 'קו בין כרטיסים') + '</button>')
       + '<span class="mm-sp"></span><button type="button" class="dlm-btn small" data-zoom="-1" aria-label="הקטנה">−</button><button type="button" class="dlm-btn small" data-zoom="0" title="התאמה למסך">⤢</button><button type="button" class="dlm-btn small" data-zoom="1" aria-label="הגדלה">+</button>'
       + '<label class="mm-zt"><input type="checkbox" data-zones' + (view.zones ? ' checked' : '') + '> אזורי הלוח</label>'
+      + '<button type="button" class="dlm-btn small" data-png="1" title="הורדת הלוח כתמונה">⬇ תמונה</button>'
       + '<button type="button" class="dlm-btn small main" data-full="1">' + (view.full ? '✕ יציאה ממסך מלא' : '⛶ מסך מלא') + '</button></div>'
       + (o.readOnly ? '' : (view.connect ? '<p class="dlm-msg warn mm-help">מצב מתיחת קווים: לוחצים על כרטיס, ואחר כך על הכרטיס שרוצים לחבר אליו.</p>' : '') + '<p class="dlm-hint mm-help">גוררים כרטיס לכל מקום בלוח. כדי למתוח קו: גוררים את ⟶ שבפינת הכרטיס אל כרטיס אחר. גוררים כרטיס על כרטיס אחר כדי לערום אותם יחד, או לתוך קבוצה כדי לצרף אותו אליה. "⧉ ערימה" מקבצת את הכרטיסים של הקבוצה, ו"⋯" פותח פעולות על כרטיס.</p>');
     return '<div class="mm-wrap' + (view.full ? ' mm-full' : '') + '">' + tools + '<div class="mm-view" tabindex="0" aria-label="הלוח כמפת חשיבה"><div class="mm-size" style="width:' + Math.round(W * view.zoom) + 'px;height:' + Math.round(H * view.zoom) + 'px">'
@@ -118,6 +119,25 @@
     // 17/11/2026 ("אפשר לפרוס את הלוח על רוב המסך שלי גם במצב עבודה"): מסך מלא, עם כל הכלים. Esc יוצא.
     const fb = root.querySelector('[data-full]'); if (fb) fb.onclick = () => { view.full = !view.full; o.refresh(); };
     if (!window.__mmEsc) { window.__mmEsc = true; document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && view.full && !document.querySelector('dialog[open]')) { const b = document.querySelector('.mm-full [data-full]'); if (b) b.click(); } }); }
+    // 17/11/2026 ("תאפשר גם הורדת תמונה"): הורדת הלוח כקובץ PNG, רק החלק שיש בו כרטיסים, בגודל מלא.
+    const pb = root.querySelector('[data-png]'); if (pb) pb.onclick = async () => {
+      pb.disabled = true; const old = pb.textContent; pb.textContent = 'מכינים תמונה…';
+      try {
+        if (!window.htmlToImage) await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'lib/vendor/html-to-image.js'; sc.onload = res; sc.onerror = () => rej(new Error('לא ניתן לטעון את כלי התמונה כרגע. אפשר לנסות שוב.')); document.head.appendChild(sc); });
+        let x0 = Infinity, y0 = Infinity, x1 = 0, y1 = 0;
+        canvas.querySelectorAll('.mm-card,.mm-cluster').forEach((el) => { x0 = Math.min(x0, el.offsetLeft); y0 = Math.min(y0, el.offsetTop); x1 = Math.max(x1, el.offsetLeft + el.offsetWidth); y1 = Math.max(y1, el.offsetTop + el.offsetHeight); });
+        if (!isFinite(x0)) { x0 = 0; y0 = 0; x1 = canvas.offsetWidth; y1 = canvas.offsetHeight; }
+        const pad = 40; x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 += pad; y1 += pad;
+        const prev = canvas.style.transform; canvas.style.transform = 'none';
+        root.querySelectorAll('.mm-handle,.mm-more').forEach((e) => { e.dataset.vis = e.style.visibility; e.style.visibility = 'hidden'; });
+        let url;
+        try { url = await window.htmlToImage.toPng(canvas, { width: x1 - x0, height: y1 - y0, pixelRatio: 1.5, backgroundColor: '#ffffff', skipFonts: true,
+          style: { transform: 'translate(' + (-x0) + 'px,' + (-y0) + 'px)', transformOrigin: '0 0' } }); }
+        finally { canvas.style.transform = prev; root.querySelectorAll('.mm-handle,.mm-more').forEach((e) => { e.style.visibility = e.dataset.vis || ''; }); }
+        const a = document.createElement('a'); a.download = 'לוח בירור דילמות ' + new Date().toLocaleDateString('he-IL').replace(/\./g, '-') + '.png'; a.href = url; document.body.appendChild(a); a.click(); a.remove();
+      } catch (e) { alert(e.message || 'לא ניתן להכין תמונה כרגע.'); }
+      pb.disabled = false; pb.textContent = old;
+    };
     const zt = root.querySelector('[data-zones]'); if (zt) zt.onchange = () => { view.zones = zt.checked; saveView(); o.refresh(); };
     const zs = root.querySelector('.mm-zsel'); if (zs) zs.onchange = () => { zs.closest('form').dataset.addto = zs.value; };
     root.querySelectorAll('.mm-more').forEach((d) => d.addEventListener('toggle', () => { busy = d.open; if (d.open) root.querySelectorAll('.mm-more[open]').forEach((x) => { if (x !== d) x.open = false; }); }));

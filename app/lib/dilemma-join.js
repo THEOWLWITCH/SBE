@@ -271,7 +271,7 @@
       + (s.url ? '<button class="dlm-btn small" id="sd-verify">בדיקה שהקישור קיים</button>' : '')
       + '<button class="dlm-btn small" id="sd-ai">הערכת אמינות בעזרת AI</button><button class="dlm-btn small" id="sd-man">הערכה שלנו</button>'
       + '<button class="dlm-btn small" id="sd-checked">✓ בדקתי את המקור</button><button class="dlm-btn small red" id="sd-report">מצאתי בעיה</button></div><div id="sd-out"></div>'));
-    const f = dlgBody.querySelector('[data-file]'); if (f) f.onclick = () => openFile(f.dataset.file);
+    dlgBody.querySelectorAll('[data-file]').forEach((f) => f.onclick = () => openFile(f.dataset.file, f.dataset.dl));
     if (ro) return;
     const out = $('#sd-out');
     if ($('#sd-verify')) $('#sd-verify').onclick = () => { out.innerHTML = msg('בודקים את הקישור…'); verifySource(sid); };
@@ -326,9 +326,8 @@
     const data = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(file); });
     return (await call('p.upload', { name: file.name, type: t, data })).fileId;
   }
-  async function openFile(fid) {
-    try { const r = await call('p.file', { fileId: fid }); const bin = atob(r.data), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-      window.open(URL.createObjectURL(new Blob([u8], { type: r.type })), '_blank', 'noopener'); }
+  async function openFile(fid, dl) {
+    try { const r = await call('p.file', { fileId: fid }); U.showFile(r, dl || ''); }
     catch (e) { alertBox(e.message); }
   }
 
