@@ -27,32 +27,63 @@
   });
   function fail(e, where) { (where || app).insertAdjacentHTML('afterbegin', msg(e.message || 'משהו לא הצליח. אפשר לנסות שוב.', 'err')); }
 
+  // הוספת דילמה לרשימה (17/11/2026: "תן לי אפשרות להוסיף דילמה")
+  function dilemmaDialog() {
+    const fld = (k, t, area, ph) => '<label for="nd-' + k + '">' + esc(t) + '</label>' + (area ? '<textarea id="nd-' + k + '" placeholder="' + esc(ph || '') + '"></textarea>' : '<input type="text" id="nd-' + k + '" placeholder="' + esc(ph || '') + '">');
+    openDlg('<h2>הוספת דילמה לרשימה</h2><p class="dlm-hint">הדילמה תופיע ב"בחירת דילמה" בכל פעילות חדשה. אפשר לערוך אותה גם בתוך כל פעילות.</p>'
+      + fld('title', 'כותרת הדילמה (שדה עיקרי)', false, 'למשל: רשתות חברתיות: חופש ביטוי או הגנה מפגיעה?') + fld('topic', 'נושא', false, 'למשל: חופש ביטוי')
+      + fld('claim', 'הטענה המרכזית', true) + fld('background', 'רקע', true) + fld('concepts', 'מושגים', true, 'למשל: טענה · ראיה · פרשנות')
+      + '<label for="nd-oq">שאלות פתיחה (שורה לכל שאלה)</label><textarea id="nd-oq"></textarea>'
+      + '<p><button class="dlm-btn main" id="nd-save">שמירה ברשימה</button></p><div id="nd-m"></div>');
+    $('#nd-save').onclick = async () => {
+      const dilemma = { title: $('#nd-title').value, topic: $('#nd-topic').value, claim: $('#nd-claim').value, background: $('#nd-background').value, concepts: $('#nd-concepts').value,
+        openingQuestions: $('#nd-oq').value.split('\n').map((x) => x.trim()).filter(Boolean) };
+      try { await call('f.dlmSave', { dilemma }); dlg.close(); list(); } catch (e) { $('#nd-m').innerHTML = msg(e.message, 'err'); }
+    };
+  }
+
   // ── רשימת הפעילויות ──
   async function list() {
     clearInterval(S.timer); S.a = null;
     let rows = [];
     try { rows = (await call('f.mine')).activities; } catch (e) { app.innerHTML = msg(e.message, 'err'); return; }
-    app.innerHTML = '<div class="dlm-card"><h2>פעילות חדשה</h2><div class="dlm-grid2"><div><label for="nt">בחירת דילמה</label><select id="nt"><option value="">דילמה חדשה (ריקה)</option>'
-      + M.TEMPLATES.map((t) => '<option value="' + t.id + '">' + esc(t.title) + '</option>').join('') + '</select></div>'
+    let mineD = []; try { mineD = (await call('f.dlmList')).mine || []; } catch (e) {}
+    app.innerHTML = '<div class="dlm-card"><h2>פעילות חדשה</h2><div class="dlm-grid2"><div><label for="nt">בחירת דילמה</label><select id="nt" data-closed><option value="">דילמה חדשה (ריקה)</option>'
+      + '<optgroup label="דילמות מוכנות">' + M.TEMPLATES.map((t) => '<option value="' + t.id + '">' + esc(t.title) + '</option>').join('') + '</optgroup>'
+      + (mineD.length ? '<optgroup label="הדילמות שלי">' + mineD.map((t) => '<option value="' + esc(t.id) + '">' + esc(t.title) + '</option>').join('') + '</optgroup>' : '')
+      + '<option value="__add">➕ הוספת דילמה לרשימה…</option></select>'
+      + '<div class="dlm-row" style="margin-top:.3rem"><button type="button" class="dlm-btn small" id="addDil">➕ הוספת דילמה</button>' + (mineD.length ? '<button type="button" class="dlm-btn small" id="manDil">הדילמות שלי</button>' : '') + '</div></div>'
       + '<div><label for="nn">שם הפעילות</label><input type="text" id="nn" placeholder="למשל: בירור דילמות · קבוצה ב׳"></div>'
       + '<div><label for="nm">אופן העבודה</label><select id="nm"><option value="group">קבוצתי: לוח לכל קבוצה</option><option value="personal">אישי: לוח לכל משתתף/ת</option></select></div>'
       + '<div><label for="nd">משך משוער (דקות)</label><input type="number" id="nd" min="20" max="240" value="90"></div></div>'
       + '<label style="font-weight:400"><input type="checkbox" id="nr" checked> הפעילות מלווה במחקר (המשתתפים יבחרו אם להשתתף בו)</label>'
       + '<p><button class="dlm-btn main" id="create">יצירת הפעילות</button></p><div id="cm"></div></div>'
-      + '<div class="dlm-card soft"><h2>הפעילויות שלי</h2>' + (rows.length ? '<table class="dlm-table"><thead><tr><th>הפעילות</th><th>מצב</th><th>כיתות</th><th>עודכנה</th></tr></thead><tbody>'
-        + rows.map((r) => '<tr><td><a href="#" data-open="' + esc(r.id) + '">' + esc(r.title) + '</a>' + (r.co ? ' <span class="dlm-tag">שותפות בהנחיה</span>' : '') + '</td><td>' + esc(STATUS[r.status]) + '</td><td>' + r.classes + '</td><td>' + esc(new Date(r.updatedAt).toLocaleDateString('he-IL')) + '</td></tr>').join('') + '</tbody></table>'
+      + '<div class="dlm-card soft"><h2>הפעילויות שלי</h2>' + (rows.length ? '<table class="dlm-table"><thead><tr><th>הפעילות</th><th>מצב</th><th>כיתות</th><th>עודכנה</th><th></th></tr></thead><tbody>'
+        + rows.map((r) => '<tr><td><a href="#" data-open="' + esc(r.id) + '">' + esc(r.title) + '</a>' + (r.co ? ' <span class="dlm-tag">שותפות בהנחיה</span>' : '') + '</td><td>' + esc(STATUS[r.status]) + '</td><td>' + r.classes + '</td><td>' + esc(new Date(r.updatedAt).toLocaleDateString('he-IL')) + '</td><td>' + (r.co ? '' : '<button type="button" class="dlm-btn small red" data-delact="' + esc(r.id) + '" data-name="' + esc(r.title) + '">מחיקה</button>') + '</td></tr>').join('') + '</tbody></table>'
         : '<p>עדיין אין פעילויות. אפשר להתחיל מאחת משלוש הדילמות המוכנות.</p>') + '</div>'
       + '<div class="dlm-card soft"><h2>הצטרפות להנחיה של פעילות קיימת</h2><p class="dlm-hint">כשמנחים יחד את אותה פעילות: מי שיצר/ה אותה מפיק/ה קוד שותפות (בלשונית "כיתות ו־QR"), ומי שמצטרף/ת מזינה אותו כאן.</p>'
       + '<div class="dlm-grid2"><div><label for="coc">קוד השותפות</label><input type="text" id="coc" dir="ltr" placeholder="למשל: AB12CD34"></div><div><label for="con">השם שלי, כפי שיופיע לשותפים (רשות)</label><input type="text" id="con" placeholder="למשל: ד״ר עינת"></div></div>'
       + '<p><button class="dlm-btn" id="cojoin">הצטרפות</button></p><div id="com"></div></div>';
-    $('#nt').onchange = () => { const t = M.TEMPLATES.find((x) => x.id === $('#nt').value); if (t && !$('#nn').value) $('#nn').value = t.title; };
+    $('#nt').onchange = () => {
+      if ($('#nt').value === '__add') { $('#nt').value = ''; dilemmaDialog(); return; }
+      const t = M.TEMPLATES.find((x) => x.id === $('#nt').value) || mineD.find((x) => x.id === $('#nt').value); if (t && !$('#nn').value) $('#nn').value = t.title; };
+    $('#addDil').onclick = () => dilemmaDialog();
+    if ($('#manDil')) $('#manDil').onclick = () => {
+      openDlg('<h2>הדילמות שלי</h2><table class="dlm-table"><tbody>' + mineD.map((t) => '<tr><td>' + esc(t.title) + (t.topic ? '<div class="dlm-hint">' + esc(t.topic) + '</div>' : '') + '</td><td><button class="dlm-btn small red" data-deld="' + esc(t.id) + '">מחיקה</button></td></tr>').join('') + '</tbody></table><p><button class="dlm-btn" data-close>סגירה</button></p>');
+      dlgBody.querySelectorAll('[data-deld]').forEach((b) => b.onclick = async () => { if (!confirm('למחוק את הדילמה מהרשימה? פעילויות שכבר נוצרו ממנה לא ישתנו.')) return; try { await call('f.dlmDelete', { id: b.dataset.deld }); dlg.close(); list(); } catch (e) { alert(e.message); } });
+    };
     $('#create').onclick = async () => {
-      try { const t = M.TEMPLATES.find((x) => x.id === $('#nt').value);
+      try { const t = M.TEMPLATES.find((x) => x.id === $('#nt').value) || mineD.find((x) => x.id === $('#nt').value);
         const r = await call('f.create', { template: $('#nt').value, title: $('#nn').value || (t && t.title) || '', mode: $('#nm').value, durationMin: +$('#nd').value, research: $('#nr').checked });
         open(r.activity.id); }
       catch (e) { $('#cm').innerHTML = msg(e.message, 'err'); }
     };
     app.querySelectorAll('[data-open]').forEach((a) => a.onclick = (e) => { e.preventDefault(); open(a.dataset.open); });
+    // 17/11/2026 ("אפשר למחוק פעילות מכאן"): מחיקה מרשימת הפעילויות, עם אישור
+    app.querySelectorAll('[data-delact]').forEach((b) => b.onclick = async () => {
+      if (!confirm('למחוק את הפעילות "' + b.dataset.name + '"? יימחקו הלוחות וכל מה שהמשתתפים כתבו. אי אפשר לבטל.')) return;
+      try { await call('f.delete', { id: b.dataset.delact }); const pl = place(); if (pl && pl.id === b.dataset.delact) place(null); list(); } catch (e) { fail(e); }
+    });
     $('#cojoin').onclick = async () => { try { const r = await call('f.coJoin', { code: $('#coc').value, name: $('#con').value }); open(r.activity.id); } catch (e) { $('#com').innerHTML = msg(e.message, 'err'); } };
   }
 
@@ -100,7 +131,8 @@
       + '<div><label for="d-ch">מי מציג מידע מאתגר?</label><select id="d-ch"><option value="facilitator"' + (a.challengeMode === 'facilitator' ? ' selected' : '') + '>המנחה פותח/ת אותו לכולם</option><option value="group"' + (a.challengeMode === 'group' ? ' selected' : '') + '>הקבוצה, כשהיא מוכנה</option></select></div>'
       + '<div><label>&nbsp;</label><label style="font-weight:400"><input type="checkbox" id="d-cho"' + (a.challengeOpen ? ' checked' : '') + '> המידע המאתגר פתוח עכשיו</label></div></div>'
       + '<label for="d-rq">שאלות הרפלקציה (שורה לכל שאלה)</label><textarea id="d-rq" style="min-height:160px">' + esc(a.reflectionQs.join('\n')) + '</textarea>'
-      + '<p><button class="dlm-btn main" id="dsave">שמירה</button></p><div id="dm"></div></div>';
+      + '<p class="dlm-row"><button class="dlm-btn main" id="dsave">שמירה</button><button class="dlm-btn" id="dtpl" title="שומרים את הדילמה הזו (בלי הקבצים) כדי לבחור בה בפעילויות הבאות">💾 שמירת הדילמה ברשימה שלי</button></p><div id="dm"></div></div>';
+    $('#dtpl').onclick = async () => { try { const r = await call('f.dlmSave', { fromActivity: S.a.id }); $('#dm').innerHTML = msg('הדילמה "' + r.title + '" נשמרה ברשימה. היא תופיע ב"בחירת דילמה" בפעילות הבאה.'); } catch (e) { $('#dm').innerHTML = msg(e.message, 'err'); } };
     $('#dsave').onclick = async () => {
       const dd = {}; ['topic', 'title', 'claim', 'background', 'concepts', 'examples', 'args'].forEach((k) => { dd[k] = $('#d-' + k).value; });
       dd.openingQuestions = $('#d-oq').value.split('\n').map((x) => x.trim()).filter(Boolean);
