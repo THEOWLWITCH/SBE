@@ -23,7 +23,7 @@
   // פתיחת קובץ (מהמאגר או מלוח של קבוצה) מתוך כרטיס מקור
   dlg.addEventListener('click', async (e) => {
     const b = e.target.closest && e.target.closest('[data-file]'); if (!b || !S.a) return;
-    try { const r = await call('f.fileGet', { id: S.a.id, fileId: b.dataset.file }); U.showFile(r, b.dataset.dl || ''); } catch (err) { alert(err.message); }
+    try { const r = await call('f.fileGet', { id: S.a.id, fileId: b.dataset.file }); U.showFile(r, b.dataset.dl || ''); } catch (err) { U.say(err.message); }
   });
   function fail(e, where) { (where || app).insertAdjacentHTML('afterbegin', msg(e.message || 'משהו לא הצליח. אפשר לנסות שוב.', 'err')); }
 
@@ -70,7 +70,7 @@
     $('#addDil').onclick = () => dilemmaDialog();
     if ($('#manDil')) $('#manDil').onclick = () => {
       openDlg('<h2>הדילמות שלי</h2><table class="dlm-table"><tbody>' + mineD.map((t) => '<tr><td>' + esc(t.title) + (t.topic ? '<div class="dlm-hint">' + esc(t.topic) + '</div>' : '') + '</td><td><button class="dlm-btn small red" data-deld="' + esc(t.id) + '">מחיקה</button></td></tr>').join('') + '</tbody></table><p><button class="dlm-btn" data-close>סגירה</button></p>');
-      dlgBody.querySelectorAll('[data-deld]').forEach((b) => b.onclick = async () => { if (!confirm('למחוק את הדילמה מהרשימה? פעילויות שכבר נוצרו ממנה לא ישתנו.')) return; try { await call('f.dlmDelete', { id: b.dataset.deld }); dlg.close(); list(); } catch (e) { alert(e.message); } });
+      dlgBody.querySelectorAll('[data-deld]').forEach((b) => b.onclick = async () => { if (!await U.ask('למחוק את הדילמה מהרשימה? פעילויות שכבר נוצרו ממנה לא ישתנו.')) return; try { await call('f.dlmDelete', { id: b.dataset.deld }); dlg.close(); list(); } catch (e) { U.say(e.message); } });
     };
     $('#create').onclick = async () => {
       try { const t = M.TEMPLATES.find((x) => x.id === $('#nt').value) || mineD.find((x) => x.id === $('#nt').value);
@@ -81,17 +81,19 @@
     app.querySelectorAll('[data-open]').forEach((a) => a.onclick = (e) => { e.preventDefault(); open(a.dataset.open); });
     // 17/11/2026 ("אני יצרתי את הפעילות ואיני יכולה לתת קוד"): קוד שותפות ישר מרשימת הפעילויות
     app.querySelectorAll('[data-coact]').forEach((b) => b.onclick = async () => {
+      const t0 = b.textContent; b.disabled = true; b.textContent = 'מכינים קוד…';
       try {
         let a = (await call('f.get', { id: b.dataset.coact })).activity;
         if (!a.coCode) a = (await call('f.coCode', { id: a.id })).activity;
         openDlg('<h2>קוד שותפות: ' + esc(b.dataset.name) + '</h2><p>שולחים את הקוד למנחה השותף/ה. הוא/היא נכנס/ת לבירור דילמות עם קוד Begood משלו/ה, ומזין/ה את הקוד ב"קיבלתי קוד שותפות ממנחה אחר/ת".</p>'
           + '<p><span class="dlm-code" style="font-size:1.6rem">' + esc(a.coCode) + '</span></p><div class="dlm-row"><button class="dlm-btn main" id="coCopy">העתקה</button><button class="dlm-btn" data-close>סגירה</button></div>');
         $('#coCopy').onclick = () => { navigator.clipboard.writeText(a.coCode).then(() => { $('#coCopy').textContent = '✓ הועתק'; }).catch(() => {}); };
-      } catch (e) { alert(e.message); }
+      } catch (e) { U.say(e.message); }
+      b.disabled = false; b.textContent = t0;
     });
     // 17/11/2026 ("אפשר למחוק פעילות מכאן"): מחיקה מרשימת הפעילויות, עם אישור
     app.querySelectorAll('[data-delact]').forEach((b) => b.onclick = async () => {
-      if (!confirm('למחוק את הפעילות "' + b.dataset.name + '"? יימחקו הלוחות וכל מה שהמשתתפים כתבו. אי אפשר לבטל.')) return;
+      if (!await U.ask('למחוק את הפעילות "' + b.dataset.name + '"? יימחקו הלוחות וכל מה שהמשתתפים כתבו. אי אפשר לבטל.')) return;
       try { await call('f.delete', { id: b.dataset.delact }); const pl = place(); if (pl && pl.id === b.dataset.delact) place(null); list(); } catch (e) { fail(e); }
     });
     $('#cojoin').onclick = async () => { try { const r = await call('f.coJoin', { code: $('#coc').value, name: $('#con').value }); open(r.activity.id); } catch (e) { $('#com').innerHTML = msg(e.message, 'err'); } };
@@ -116,8 +118,8 @@
     $('#back').onclick = (e) => { e.preventDefault(); place(null); list(); };
     $('#projBtn').onclick = () => projector();
     app.querySelectorAll('[data-st]').forEach((b) => b.onclick = async () => {
-      if (b.dataset.st === 'closed' && !confirm('לסיים את הפעילות? המשתתפים יוכלו לקרוא, אבל לא לכתוב.')) return;
-      if (b.dataset.st === 'draft' && !confirm('לסגור את הפעילות למשתתפים? אפשר לפתוח אותה שוב בכל רגע. עד אז המשתתפים לא יוכלו להיכנס ולכתוב.')) return;
+      if (b.dataset.st === 'closed' && !await U.ask('לסיים את הפעילות? המשתתפים יוכלו לקרוא, אבל לא לכתוב.')) return;
+      if (b.dataset.st === 'draft' && !await U.ask('לסגור את הפעילות למשתתפים? אפשר לפתוח אותה שוב בכל רגע. עד אז המשתתפים לא יוכלו להיכנס ולכתוב.')) return;
       try { const r = await call('f.status', { id: a.id, status: b.dataset.st }); S.a = r.activity; draw(); } catch (e) { $('#topmsg').innerHTML = msg(e.message, 'err'); }
     });
     app.querySelectorAll('[data-tab]').forEach((b) => b.onclick = async () => {
@@ -160,7 +162,7 @@
       + '<label for="s-url">קישור</label><input type="url" id="s-url" dir="ltr" placeholder="https://"><label for="s-file">או קובץ: תמונה, וידאו, הקלטת קול, PDF או טקסט</label><input type="file" id="s-file" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm,video/quicktime,audio/*,application/pdf,text/plain"><p class="dlm-hint">תמונה ו־PDF עד 3 מגה, קול עד 6 מגה, וידאו עד 8 מגה.</p>'
       + '<label for="s-ex">קטע מהמקור (רשות)</label><textarea id="s-ex"></textarea><p><button class="dlm-btn main" id="sadd">הוספה</button></p><div id="sm"></div></div>';
     tab().querySelectorAll('[data-src]').forEach((b) => b.onclick = () => sourceDlg(b.dataset.src));
-    tab().querySelectorAll('[data-rm]').forEach((b) => b.onclick = async () => { if (!confirm('להסיר את המקור?')) return; try { const r = await call('f.sourceEdit', { id: a.id, sourceId: b.dataset.rm, remove: true }); S.a = r.activity; tabSources(); } catch (e) { fail(e, tab()); } });
+    tab().querySelectorAll('[data-rm]').forEach((b) => b.onclick = async () => { if (!await U.ask('להסיר את המקור?')) return; try { const r = await call('f.sourceEdit', { id: a.id, sourceId: b.dataset.rm, remove: true }); S.a = r.activity; tabSources(); } catch (e) { fail(e, tab()); } });
     $('#sadd').onclick = async () => {
       const src = { title: $('#s-title').value, publisher: $('#s-pub').value, date: $('#s-date').value, type: $('#s-type').value, url: $('#s-url').value, excerpt: $('#s-ex').value };
       try {
@@ -222,7 +224,7 @@
       + coHTML(a);
     tab().querySelectorAll('[data-qr]').forEach((n) => U.qr(n, n.dataset.qr));
     tab().querySelectorAll('[data-copy]').forEach((b) => b.onclick = () => { navigator.clipboard && navigator.clipboard.writeText(b.dataset.copy); b.textContent = '✓ הועתק'; });
-    tab().querySelectorAll('[data-recode]').forEach((b) => b.onclick = async () => { if (!confirm('לבטל את הקוד הנוכחי ולהפיק קוד חדש? ה־QR הישן יפסיק לעבוד.')) return; try { const r = await call('f.classCode', { id: a.id, classId: b.dataset.recode }); S.a = r.activity; tabClasses(); } catch (e) { fail(e, tab()); } });
+    tab().querySelectorAll('[data-recode]').forEach((b) => b.onclick = async () => { if (!await U.ask('לבטל את הקוד הנוכחי ולהפיק קוד חדש? ה־QR הישן יפסיק לעבוד.')) return; try { const r = await call('f.classCode', { id: a.id, classId: b.dataset.recode }); S.a = r.activity; tabClasses(); } catch (e) { fail(e, tab()); } });
     tab().querySelectorAll('[data-addg]').forEach((b) => b.onclick = async () => { const v = tab().querySelector('[data-ng="' + b.dataset.addg + '"]').value.trim(); if (!v) return; try { const r = await call('f.classEdit', { id: a.id, classId: b.dataset.addg, addGroup: v }); S.a = r.activity; tabClasses(); } catch (e) { fail(e, tab()); } });
     bindCo(a);
     $('#cadd').onclick = async () => { try { const r = await call('f.classAdd', { id: a.id, name: $('#cn').value, groups: $('#cg').value.split('\n').map((x) => x.trim()).filter(Boolean) }); S.a = r.activity; tabClasses(); } catch (e) { $('#ccm').innerHTML = msg(e.message, 'err'); } };
@@ -240,7 +242,7 @@
     const go = async (input) => { try { const r = await call('f.coCode', Object.assign({ id: a.id }, input)); S.a = r.activity; tabClasses(); } catch (e) { fail(e, tab()); } };
     if ($('#coNew')) $('#coNew').onclick = () => go({});
     if ($('#coOff')) $('#coOff').onclick = () => go({ revoke: true });
-    tab().querySelectorAll('[data-rmco]').forEach((b) => b.onclick = () => { if (confirm('להסיר את השותף/ה מהפעילות?')) go({ revoke: !S.a.coCode, removeCofac: b.dataset.rmco }); });
+    tab().querySelectorAll('[data-rmco]').forEach((b) => b.onclick = async () => { if (await U.ask('להסיר את השותף/ה מהפעילות?')) go({ revoke: !S.a.coCode, removeCofac: b.dataset.rmco }); });
   }
 
   // מי בחר/ה מה: לפי הקוד האישי האקראי בלבד, בלי שמות. ההחלטה האחרונה של כל משתתף/ת.
@@ -272,7 +274,7 @@
       + consentList();
     // 17/11/2026 ("לאפשר לי למחוק"): מחיקת משתתף/ת, עם כל מה שהעלה/תה ללוח
     tab().querySelectorAll('[data-delp]').forEach((b) => b.onclick = async () => {
-      if (!confirm('למחוק את המשתתף/ת ' + b.dataset.delp + '? יימחקו גם הכרטיסים, המקורות והקבצים שהעלה/תה ללוח, והתגובה האישית. אי אפשר לבטל.')) return;
+      if (!await U.ask('למחוק את המשתתף/ת ' + b.dataset.delp + '? יימחקו גם הכרטיסים, המקורות והקבצים שהעלה/תה ללוח, והתגובה האישית. אי אפשר לבטל.')) return;
       try { await call('f.participantRemove', { id: S.a.id, code: b.dataset.delp }); const r = await call('f.get', { id: S.a.id }); S.a = r.activity; S.stats = r.stats; tabResearch(); }
       catch (e) { fail(e, tab()); }
     });
@@ -323,14 +325,14 @@
     const b = S.board;
     host.innerHTML = (S.linkFrom ? '<div class="dlm-msg warn" data-cancel-link>בחרו כרטיס אחר כדי לקשר אליו, או לחצו כאן לביטול.</div>' : '')
       + window.SBE_DLM_MAP.html(b, { sel: S.linkFrom, conf: false, manip: false });
-    const again = () => fbRender(g), act = async (op) => { try { await fbOp(g, op); } catch (e) { alert(e.message); } again(); };
-    window.SBE_DLM_MAP.bind(host, { board: b, op: (op) => fbOp(g, op).catch((e) => { alert(e.message); }), refresh: again });
+    const again = () => fbRender(g), act = async (op) => { try { await fbOp(g, op); } catch (e) { U.say(e.message); } again(); };
+    window.SBE_DLM_MAP.bind(host, { board: b, op: (op) => fbOp(g, op).catch((e) => { U.say(e.message); }), refresh: again });
     host.querySelectorAll('[data-src]').forEach((x) => x.onclick = (e) => { e.stopPropagation(); const s = U.sourceById(b, x.dataset.src); if (s) openDlg(U.sourceCardHTML(s, b, { openWhy: true })); });
     const cl = host.querySelector('[data-cancel-link]'); if (cl) cl.onclick = () => { S.linkFrom = null; again(); };
     const MAPX = window.SBE_DLM_MAP, at = () => (MAPX.center && MAPX.center()) || {};
-    const addAndShow = async (op) => { try { const r = await fbOp(g, Object.assign(at(), op)); if (r && r.id) MAPX.flash(r.id); } catch (e) { alert(e.message); } again(); };
+    const addAndShow = async (op) => { try { const r = await fbOp(g, Object.assign(at(), op)); if (r && r.id) MAPX.flash(r.id); } catch (e) { U.say(e.message); } again(); };
     host.querySelectorAll('form[data-addto]').forEach((f) => f.onsubmit = (e) => { e.preventDefault(); const inp = f.querySelector('input[type=text]'), v = inp.value.trim(); if (!v) { inp.focus(); return; } addAndShow({ kind: 'add', zone: f.dataset.addto, text: v }); });
-    host.querySelectorAll('[data-del]').forEach((x) => x.onclick = () => { if (confirm('להסיר את הכרטיס מהלוח? הגרסה הקודמת נשמרת ביומן.')) act({ kind: 'remove', id: x.dataset.del }); });
+    host.querySelectorAll('[data-del]').forEach((x) => x.onclick = async () => { if (await U.ask('להסיר את הכרטיס מהלוח? הגרסה הקודמת נשמרת ביומן.')) act({ kind: 'remove', id: x.dataset.del }); });
     host.querySelectorAll('[data-unlink]').forEach((x) => x.onclick = () => act({ kind: 'unlink', id: x.dataset.unlink }));
     host.querySelectorAll('[data-edit]').forEach((x) => x.onclick = () => {
       const it = b.items.find((i) => i.id === x.dataset.edit); if (!it) return;
@@ -379,7 +381,7 @@
         $('#em').innerHTML = msg('הקובץ ירד: ' + r.participants.filter((p) => !p.excluded).length + ' משתתפים במחקר, ' + r.participants.filter((p) => p.excluded).length + ' לא נכללו.'); }
       catch (e) { $('#em').innerHTML = msg(e.message, 'err'); }
     };
-    if ($('#del')) $('#del').onclick = async () => { if (!confirm('למחוק את הפעילות ואת כל הנתונים שלה? אי אפשר לבטל.')) return; try { await call('f.delete', { id: S.a.id }); list(); } catch (e) { fail(e, tab()); } };
+    if ($('#del')) $('#del').onclick = async () => { if (!await U.ask('למחוק את הפעילות ואת כל הנתונים שלה? אי אפשר לבטל.')) return; try { await call('f.delete', { id: S.a.id }); list(); } catch (e) { fail(e, tab()); } };
   }
 
   // ── מצב הקרנה (12/11/2026): מסך מלא באותיות גדולות, בלי כפתורי עבודה ובלי קודים אישיים.

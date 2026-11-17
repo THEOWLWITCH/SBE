@@ -155,5 +155,29 @@
     if (dlName) { const a = document.createElement('a'); a.href = url; a.download = dlName || r.name || 'קובץ'; document.body.appendChild(a); a.click(); a.remove(); }
     else window.open(url, '_blank', 'noopener');
   }
-  window.SBE_DLM_UI = { showFile, SERVER, api, ai, callModel, scoreNow, assessOf, sourceById, sourceRowHTML, sourceCardHTML, boardHTML, boardContext, verifyLabel, qr };
+  // שאלות אישור, שם וכו' בחלון של הדף, ולא בחלונות של הדפדפן (17/11/2026: "הכפתורים לא פועלים": בחלונית הדפדפן
+  // של Claude, וגם בדפדפנים שחוסמים חלונות קופצים, confirm ו־prompt חוזרים מיד בלי לשאול).
+  function askBox(text, opts) {
+    opts = opts || {};
+    return new Promise((res) => {
+      const d = document.createElement('dialog'); d.className = 'dlm-dialog dlm-ask'; d.dir = 'rtl';
+      d.innerHTML = '<p style="white-space:pre-line;margin:.2rem 0 .8rem">' + esc(text) + '</p>'
+        + (opts.input !== undefined ? '<input type="text" class="dlm-ask-in" style="width:100%;box-sizing:border-box;font:inherit;padding:.45rem .6rem;border:1px solid #cfd5dc;border-radius:8px;margin-bottom:.8rem">' : '')
+        + '<div style="display:flex;gap:8px;justify-content:flex-start;flex-wrap:wrap"><button type="button" class="dlm-btn main" data-ok>' + esc(opts.ok || 'אישור') + '</button>'
+        + (opts.alert ? '' : '<button type="button" class="dlm-btn" data-no>' + esc(opts.no || 'ביטול') + '</button>') + '</div>';
+      document.body.appendChild(d);
+      const inp = d.querySelector('.dlm-ask-in'); if (inp) inp.value = opts.input || '';
+      const done = (v) => { try { d.close(); } catch (e) {} d.remove(); res(v); };
+      d.querySelector('[data-ok]').onclick = () => done(inp ? inp.value : true);
+      const no = d.querySelector('[data-no]'); if (no) no.onclick = () => done(inp ? null : false);
+      d.addEventListener('cancel', (e) => { e.preventDefault(); done(opts.alert ? true : inp ? null : false); });
+      if (inp) inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); done(inp.value); } });
+      try { d.showModal(); } catch (e) { d.setAttribute('open', ''); }
+      (inp || d.querySelector('[data-ok]')).focus();
+    });
+  }
+  const ask = (text, o) => askBox(text, o);
+  const askText = (text, def) => askBox(text, { input: def || '' });
+  const say = (text) => askBox(text, { alert: true, ok: 'סגירה' });
+  window.SBE_DLM_UI = { showFile, ask, askText, say, SERVER, api, ai, callModel, scoreNow, assessOf, sourceById, sourceRowHTML, sourceCardHTML, boardHTML, boardContext, verifyLabel, qr };
 })();
