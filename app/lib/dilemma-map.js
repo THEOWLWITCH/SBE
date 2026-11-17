@@ -135,7 +135,7 @@
           style: { transform: 'translate(' + (-x0) + 'px,' + (-y0) + 'px)', transformOrigin: '0 0' } }); }
         finally { canvas.style.transform = prev; root.querySelectorAll('.mm-handle,.mm-more').forEach((e) => { e.style.visibility = e.dataset.vis || ''; }); }
         const a = document.createElement('a'); a.download = 'לוח בירור דילמות ' + new Date().toLocaleDateString('he-IL').replace(/\./g, '-') + '.png'; a.href = url; document.body.appendChild(a); a.click(); a.remove();
-      } catch (e) { alert(e.message || 'לא ניתן להכין תמונה כרגע.'); }
+      } catch (e) { window.SBE_DLM_UI.say(e.message || 'לא ניתן להכין תמונה כרגע.'); }
       pb.disabled = false; pb.textContent = old;
     };
     const zt = root.querySelector('[data-zones]'); if (zt) zt.onchange = () => { view.zones = zt.checked; saveView(); o.refresh(); };
@@ -153,7 +153,7 @@
         const st = point(e), ox = el.offsetLeft, oy = el.offsetTop; let moved = false;
         el.setPointerCapture(e.pointerId); busy = true;
         const mv = (ev) => { const p = point(ev), dx = p.x - st.x, dy = p.y - st.y; if (!moved && Math.hypot(dx, dy) < 4) return; moved = true; el.classList.add('drag'); el.style.left = Math.round(ox + dx) + 'px'; el.style.top = Math.round(oy + dy) + 'px'; drawLines(root, board); };
-        const up = (ev) => {
+        const up = async (ev) => {
           el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
           if (!moved) { el.classList.remove('drag'); busy = false; return; }
           // 17/11/2026 ("לא רואה סימון של ערמה"): כרטיס שנגרר על כרטיס אחר יוצר איתו ערימה (או מצטרף לקבוצה שלו)
@@ -164,7 +164,7 @@
           if (tc && tc !== el && !k) {
             const tIt = (board.items || []).find((i) => i.id === tc.dataset.item);
             if (tIt && tIt.cluster) { send({ kind: 'move', id: el.dataset.item, x, y, cluster: tIt.cluster }); return; }
-            const n = prompt('ערימה חדשה משני הכרטיסים. מה שם הערימה? (למשל: טענות על ניגוד עניינים)', '');
+            const n = await window.SBE_DLM_UI.askText('ערימה חדשה משני הכרטיסים. מה שם הערימה? (למשל: טענות על ניגוד עניינים)', '');
             if (n === null) { send({ kind: 'move', id: el.dataset.item, x, y, cluster: null }); return; }
             send({ kind: 'cluster', action: 'add', name: n.trim() || 'ערימה', x: Math.max(0, tc.offsetLeft - 14), y: Math.max(0, tc.offsetTop - 46), w: 300, h: 230, items: [tc.dataset.item, el.dataset.item], stacked: true });
             return;
@@ -209,7 +209,7 @@
         if (view.from !== el.dataset.item) { const r = canvas.getBoundingClientRect(); pick(view.from, el.dataset.item, { x: (e.clientX - r.left) / z(), y: (e.clientY - r.top) / z() }); }
       });
     });
-    const svgEl = root.querySelector('.mm-lines'); if (svgEl) svgEl.addEventListener('click', (e) => { const g = e.target.closest && e.target.closest('.mm-lab'); if (g && confirm('להסיר את הקו?')) send({ kind: 'unlink', id: g.getAttribute('data-lid') }); });
+    const svgEl = root.querySelector('.mm-lines'); if (svgEl) svgEl.addEventListener('click', async (e) => { const g = e.target.closest && e.target.closest('.mm-lab'); if (g && await window.SBE_DLM_UI.ask('להסיר את הקו?')) send({ kind: 'unlink', id: g.getAttribute('data-lid') }); });
     // גרירת קבוצה (מהכותרת) ושינוי הגודל
     root.querySelectorAll('.mm-cluster').forEach((el) => {
       const id = el.dataset.cluster, head = el.querySelector('[data-kdrag]'), res = el.querySelector('[data-kres]');
@@ -229,11 +229,11 @@
       });
     });
     root.querySelectorAll('[data-kstack]').forEach((b) => b.onclick = () => { const c = (board.clusters || []).find((x) => x.id === b.dataset.kstack); send({ kind: 'cluster', action: 'edit', id: b.dataset.kstack, stacked: !(c && c.stacked) }); });
-    root.querySelectorAll('[data-kname]').forEach((b) => b.onclick = () => { const c = (board.clusters || []).find((x) => x.id === b.dataset.kname); const n = prompt('שם הקבוצה', c ? c.name : ''); if (n && n.trim()) send({ kind: 'cluster', action: 'edit', id: b.dataset.kname, name: n.trim() }); });
-    root.querySelectorAll('[data-kdel]').forEach((b) => b.onclick = () => { if (confirm('לבטל את הקבוצה? הכרטיסים נשארים בלוח.')) send({ kind: 'cluster', action: 'remove', id: b.dataset.kdel }); });
+    root.querySelectorAll('[data-kname]').forEach((b) => b.onclick = async () => { const c = (board.clusters || []).find((x) => x.id === b.dataset.kname); const n = await window.SBE_DLM_UI.askText('שם הקבוצה', c ? c.name : ''); if (n && n.trim()) send({ kind: 'cluster', action: 'edit', id: b.dataset.kname, name: n.trim() }); });
+    root.querySelectorAll('[data-kdel]').forEach((b) => b.onclick = async () => { if (await window.SBE_DLM_UI.ask('לבטל את הקבוצה? הכרטיסים נשארים בלוח.')) send({ kind: 'cluster', action: 'remove', id: b.dataset.kdel }); });
     root.querySelectorAll('[data-unk]').forEach((b) => b.onclick = () => { const el = b.closest('.mm-card'); send({ kind: 'move', id: b.dataset.unk, x: el.offsetLeft + 60, y: el.offsetTop + 60, cluster: null }); });
-    const ka = root.querySelector('[data-kadd]'); if (ka) ka.onclick = () => {
-      const n = prompt('שם הקבוצה (למשל: טענות על ניגוד עניינים)', ''); if (n === null) return;
+    const ka = root.querySelector('[data-kadd]'); if (ka) ka.onclick = async () => {
+      const n = await window.SBE_DLM_UI.askText('שם הקבוצה (למשל: טענות על ניגוד עניינים)', ''); if (n === null) return;
       const x = Math.round((vw.scrollLeft + vw.clientWidth / 2) / z() - 180), y = Math.round((vw.scrollTop + vw.clientHeight / 2) / z() - 130);
       send({ kind: 'cluster', action: 'add', name: n.trim() || 'קבוצה חדשה', x: Math.max(0, x), y: Math.max(0, y), w: 380, h: 280 });
     };

@@ -202,7 +202,7 @@
       const r = await boardOp(Object.assign(c, { kind: 'add', zone: f.dataset.addto, text: v })).catch(() => null); if (r && r.id && window.SBE_DLM_MAP) window.SBE_DLM_MAP.flash(r.id); refreshBoard();
     });
     root.querySelectorAll('[data-addsrc]').forEach((b) => b.onclick = () => sourceForm());
-    root.querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => { if (confirm('להסיר את הכרטיס מהלוח? הגרסה הקודמת נשמרת ביומן.')) { await boardOp({ kind: 'remove', id: b.dataset.del }).catch(() => {}); refreshBoard(); } });
+    root.querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => { if (await U.ask('להסיר את הכרטיס מהלוח? הגרסה הקודמת נשמרת ביומן.')) { await boardOp({ kind: 'remove', id: b.dataset.del }).catch(() => {}); refreshBoard(); } });
     root.querySelectorAll('[data-unlink]').forEach((b) => b.onclick = async () => { await boardOp({ kind: 'unlink', id: b.dataset.unlink }).catch(() => {}); refreshBoard(); });
     root.querySelectorAll('[data-edit]').forEach((b) => b.onclick = () => editDialog(b.dataset.edit));
     root.querySelectorAll('[data-conf]').forEach((b) => b.onclick = () => confDialog(b.dataset.conf));
@@ -282,7 +282,7 @@
     $('#sd-report').onclick = () => reportForm(out, 'source', sid);
     $('#sd-man').onclick = () => manualAssess(out, sid);
     $('#sd-ai').onclick = async () => {
-      const claim = prompt('לאיזו טענה בודקים את המקור? (רשות)', (S.board.items.find((i) => i.zone === 'claims') || {}).text || S.activity.dilemma.claim || '') || '';
+      const claim = await U.askText('לאיזו טענה בודקים את המקור? (רשות)', (S.board.items.find((i) => i.zone === 'claims') || {}).text || S.activity.dilemma.claim || '') || '';
       out.innerHTML = msg('ה־AI מעריך את המקור… זה נמשך כ־30 שניות.');
       const ctx = U.boardContext(S.activity, S.board); ctx.sources = [ctx.sources.find((x) => x.id === sid)].filter(Boolean); ctx.request = 'הערכת אמינות המקור S1 בהקשר הטענה: ' + claim;
       try {
@@ -373,7 +373,7 @@
         + '<label for="dfb">על מה זה נשען? ומה עוד לעשות?</label><textarea id="dfb"></textarea><ul class="dlm-hint">' + M.DEEPFAKE.limits.map((l) => '<li>' + esc(l) + '</li>').join('') + '</ul><button class="dlm-btn main" id="dfs">שמירת הבירור</button>';
       $('#dfs').onclick = async () => {
         const aspects = {}; out.querySelectorAll('[data-a]').forEach((x) => { if (x.value.trim()) aspects[x.dataset.a] = x.value.trim(); });
-        if ($('#dfl').value === 'technical_evidence' && !aspects.service && !aspects.c2pa && !aspects.meta) { alert('"קיימת ראיה טכנית" מתאים רק כשיש תוצאה של בדיקה טכנית ממשית (מטא־דאטה, C2PA או שירות זיהוי). אפשר לבחור התרעה אחרת.'); return; }
+        if ($('#dfl').value === 'technical_evidence' && !aspects.service && !aspects.c2pa && !aspects.meta) { U.say('"קיימת ראיה טכנית" מתאים רק כשיש תוצאה של בדיקה טכנית ממשית (מטא־דאטה, C2PA או שירות זיהוי). אפשר לבחור התרעה אחרת.'); return; }
         await boardOp({ kind: 'alert', type: 'media', itemId: id, target: it.text, data: { by: 'participant', aspects, category: $('#dfc').value, alert: $('#dfl').value, basis: $('#dfb').value } }).catch(() => {}); refreshBoard(); manipDialog(id);
       };
     };
