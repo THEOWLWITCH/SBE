@@ -93,3 +93,7 @@ body.crd-page .crd-link{font-size:16px;font-weight:500;text-decoration-color:rgb
 .crd-att-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media screen and (max-width:640px){.crd-att-head{justify-content:flex-start}.crd-att-hq{display:none}.crd-att-o label,.crd-att-hl{width:56px}.crd-att-hl{font-size:11.5px}}
 .crd-att-o span.crd-att-hl{display:block;box-sizing:border-box;height:auto;min-width:0;padding:0 2px;border:0;border-radius:0;background:none;color:#3b4556;font-size:12.5px}
+/* שלב 3: פריט מידע נוסף */
+.crd-additem{border:1px solid #e3e7ee;border-top:2px solid #2aa5a0;border-radius:12px;padding:12px 14px;margin:12px 0;background:#fff}
+.crd-additem h4{margin-top:0}
+.crd-ftable th{width:38%;text-align:right;vertical-align:top}

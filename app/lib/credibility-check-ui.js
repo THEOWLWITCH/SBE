@@ -49,8 +49,10 @@
     const tabs = [['classes', 'כיתות וכניסה'], ['teams', 'צוותים ועבודה'], ['findings', 'ממצאים'], ['settings', 'הגדרות']];
     app.innerHTML = '<div class="dlm-card"><p><button class="crd-link" id="all">לכל הפעילויות</button></p><h2>' + esc(a.title) + '</h2>'
       + '<p>' + (a.status === 'open' ? '<b>פתוחה:</b> הצוותים יכולים להיכנס ולעבוד.' : '<b>סגורה:</b> הצוותים רואים את העבודה ואינם יכולים לשנות.') + ' <button class="crd-link" id="st">' + (a.status === 'open' ? 'סגירה' : 'פתיחה') + '</button></p>'
+      + '<p>' + (a.reflectOpen ? '<b>הרפלקציה פתוחה</b> לכל הצוותים.' : '<b>הרפלקציה סגורה.</b> פותחים אותה בשיעור הבא.') + ' <button class="crd-link" id="rfo">' + (a.reflectOpen ? 'סגירת הרפלקציה' : 'פתיחת הרפלקציה') + '</button></p>'
       + '<div class="dlm-steps" role="tablist">' + tabs.map((t) => '<button type="button" data-tab="' + t[0] + '"' + (S.tab === t[0] ? ' aria-current="step"' : '') + '>' + t[1] + '</button>').join('') + '</div></div><div id="tab"></div>';
     $('#all').onclick = list;
+    $('#rfo').onclick = async () => { try { await call('f.update', { id: a.id, reflectOpen: !a.reflectOpen }); open(a.id); } catch (e) { U.say(e.message); } };
     $('#st').onclick = async () => { try { await call('f.status', { id: a.id, status: a.status === 'open' ? 'closed' : 'open' }); open(a.id); } catch (e) { U.say(e.message); } };
     app.querySelectorAll('[data-tab]').forEach((b) => { b.onclick = () => { S.tab = b.dataset.tab; place({ id: a.id, tab: S.tab }); render(); }; });
     ({ classes: classesTab, teams: teamsTab, findings: findingsTab, settings: settingsTab })[S.tab]();
@@ -91,7 +93,7 @@
     n.innerHTML = '<div class="dlm-card"><h3>הצוותים</h3><p class="dlm-hint">הציונים: AI ראשונה ← הצוות ← AI חוזרת. ✓ = חתם/ה על ההסכמה, ○ = רק ללמידה (חריג שהמנחה סימנה).</p><div class="crd-tablewrap"><table class="dlm-table"><thead><tr><th>צוות</th><th>כיתה</th><th>משתתפים</th><th>שאלון ראשוני</th><th>מקורות שנבדקו</th><th>רפלקציות</th><th>ציון בתרגיל</th><th></th></tr></thead><tbody>'
       + S.teams.map((t) => '<tr><td><b>' + esc(t.name) + '</b><br><span class="dlm-hint" dir="ltr">' + esc(t.code) + '</span></td><td>' + esc(cname(t.classId)) + '</td><td>' + t.members.map((m) => esc(m.name) + ' ' + (m.consent === 'research' ? '✓' : '○')).join('<br>') + '</td>'
         + '<td>' + t.reflections.filter((r) => r.pre).length + ' מתוך ' + t.members.length + '</td>'
-        + '<td>' + (t.checks.length ? t.checks.map((k) => '<div>' + esc(k.title.slice(0, 40)) + ' ' + [k.first, k.team, k.final].map((v) => M.dotHTML(v === undefined ? null : v)).join(' ') + ' <span class="dlm-hint">' + k.ext + ' מקורות</span></div>').join('') : '—') + '</td>'
+        + '<td>' + (t.checks.length ? t.checks.map((k) => '<div>' + esc(k.title.slice(0, 40)) + ' ' + [k.team, k.first, k.final].map((v) => M.dotHTML(v === undefined ? null : v)).join(' ') + ' <span class="dlm-hint">' + k.ext + ' מקורות</span></div>').join('') : '—') + '</td>'
         + '<td>' + t.reflections.filter((r) => r.reflect).length + ' מתוך ' + t.members.length + '</td><td>' + (t.grade && t.grade.total != null ? '<b>' + t.grade.total + '</b>' : '—') + '</td>'
         + '<td><button class="crd-link" data-team="' + esc(t.id) + '">פתיחה</button></td></tr>').join('') + '</tbody></table></div></div>';
     n.querySelectorAll('[data-team]').forEach((b) => { b.onclick = () => teamDialog(b.dataset.team); });
@@ -104,10 +106,10 @@
     const checkHTML = (k) => '<details class="dlm-card soft"><summary><b>' + esc(k.title) + '</b> ' + U.scoresRow(k) + '</summary>'
       + (k.url ? '<p><a href="' + esc(k.url) + '" target="_blank" rel="noopener noreferrer" dir="ltr">' + esc(k.url) + '</a></p>' : '') + (k.fileId ? '<p><button class="crd-link" data-f="' + esc(k.fileId) + '">פתיחת הקובץ</button></p>' : '')
       + '<h4>תיאור המקור</h4><table class="dlm-table">' + M.FIELDS.map((x) => '<tr><th>' + esc(x.t) + '</th><td>' + esc((k.fields || {})[x.k] || '') + '</td></tr>').join('') + (k.extra || []).map((x) => '<tr><th>' + esc(x.t) + '</th><td>' + esc(x.v || '') + '</td></tr>').join('') + '</table>'
+      + (k.team ? '<h4>הציון של הצוות, לפני ה־AI: ' + M.dotHTML(k.team.score) + '</h4><p>' + esc(k.team.why) + '</p>' : '')
       + U.assessHTML(k.first, 'AI, הערכה ראשונה')
-      + '<h4>השיחה עם ה־AI (' + (k.chat || []).length + ')</h4><div class="crd-chat">' + (k.chat || []).map((m) => '<div class="crd-msg ' + (m.role === 'ai' ? 'ai' : 'me') + '"><b>' + (m.role === 'ai' ? 'AI' : esc(nm(m.by) || 'הצוות')) + '</b><div>' + esc(m.text).replace(/\n/g, '<br>') + '</div></div>').join('') + '</div>'
+      + ((k.chat || []).length ? '<h4>השיחה עם ה־AI (' + k.chat.length + ')</h4><div class="crd-chat">' + k.chat.map((m) => '<div class="crd-msg ' + (m.role === 'ai' ? 'ai' : 'me') + '"><b>' + (m.role === 'ai' ? 'AI' : esc(nm(m.by) || 'הצוות')) + '</b><div>' + esc(m.text).replace(/\n/g, '<br>') + '</div></div>').join('') + '</div>' : '')
       + '<h4>מקורות חיצוניים (' + (k.external || []).length + ')</h4><ol>' + (k.external || []).map((e) => '<li><b>' + esc(e.title || e.url) + '</b> · ' + esc((M.EXT_KINDS.find((x) => x.k === e.kind) || {}).t || '') + (e.url ? ' · <a href="' + esc(e.url) + '" target="_blank" rel="noopener noreferrer">קישור</a>' : '') + '<br>' + esc(e.found) + '</li>').join('') + '</ol>'
-      + (k.team ? '<h4>הציון של הצוות: ' + M.dotHTML(k.team.score) + '</h4><p>' + esc(k.team.why) + '</p>' + (k.team.basis ? '<p><b>מול ה־AI:</b> ' + esc(k.team.basis) + '</p>' : '') : '')
       + U.assessHTML(k.final, 'AI, הערכה חוזרת') + '</details>';
     const refl = t.members.map((m) => { const r = d.reflections[m.id] || {}; const rf = r.reflect;
       return '<details class="dlm-card soft"><summary><b>' + esc(m.name) + '</b> ' + (m.consent === 'research' ? '✓ חתם/ה על ההסכמה' : '○ רק ללמידה (חריג)') + ' · ' + (r.initial ? 'עמדה ✓' : 'בלי עמדה') + ' · ' + (rf ? 'רפלקציה ✓' : 'עוד בלי רפלקציה') + '</summary>'
@@ -178,14 +180,13 @@
       + '<h4>ממוצע הציונים</h4><div class="crd-kpi"><div><b>' + f1(mean(firsts)) + '</b>AI, הערכה ראשונה</div><div><b>' + f1(mean(tms)) + '</b>הצוותים</div><div><b>' + f1(mean(fins)) + '</b>AI, הערכה חוזרת</div></div>'
       + ex('הציון הוא 1 עד 5. ממוצע של הצוותים נמוך מהממוצע של ה־AI אומר שהצוותים היו זהירים יותר, למשל כי לא מצאו מקור ראשוני. ממוצע גבוה יותר אומר שמצאו ראיות שה־AI לא ראה בהתחלה.')
       + '<h4>הצוות מול ההערכה הראשונה של ה־AI</h4>' + bars({ same, lower, higher }, { same: 'אותו ציון', lower: 'הצוות נתן ציון נמוך יותר', higher: 'הצוות נתן ציון גבוה יותר' }, both.length)
-      + ex('כמה פעמים הצוות פשוט אימץ את הציון של ה־AI, וכמה פעמים חלק עליו. "אותו ציון" אינו בהכרח בעיה: כדאי לקרוא את הנימוק ולראות אם הצוות בדק בעצמו או העתיק.')
-      + '<h4>ההערכה החוזרת של ה־AI</h4><p>' + aiMoved + ' מתוך ' + trio.length + ' פעמים ה־AI שינה את הציון אחרי החקירה, ו־' + aiToTeam + ' פעמים התקרב לציון של הצוות.</p>'
-      + ex('האם מה שהצוות מצא שכנע את המודל? שינוי בציון החוזר מראה שהמידע החדש היה משמעותי. כשה־AI נשאר בציון שלו מול צוות שחלק עליו, שווה לקרוא את שני הנימוקים.')
+      + ex('הצוות נותן ציון לפני שהוא רואה את ה־AI. ההשוואה מראה עד כמה השיפוט העצמאי של הצוות קרוב להערכה של המודל, ואיפה הם רחוקים. כדאי לקרוא את שני הנימוקים.')
+      + '<h4>ההערכה החוזרת של ה־AI</h4><p>' + aiMoved + ' מתוך ' + trio.length + ' פעמים ה־AI שינה את הציון אחרי החקירה, ו־' + aiToTeam + ' פעמים התקרב לציון שהצוות נתן בהתחלה.</p>'
+      + ex('האם פריטי המידע שהצוות הביא בחקירה שינו את ההערכה? שינוי בציון החוזר מראה שהמידע החדש היה משמעותי.')
       + '<h4>התפלגות הציונים של הצוותים</h4>' + bars(dist(tms), lbl5, tms.length)
-      + '<h4>הצלבה עם מקורות חיצוניים</h4><p>בממוצע ' + f1(mean(ext)) + ' מקורות חיצוניים לכל מקור שנבדק. ' + ext.filter((x) => x === 0).length + ' בדיקות הסתיימו בלי אף מקור חיצוני.</p>'
+      + '<h4>פריטי מידע נוספים מהחקירה</h4><p>בממוצע ' + f1(mean(ext)) + ' פריטים לכל מקור שנבדק. ' + ext.filter((x) => x === 0).length + ' בדיקות הסתיימו בלי אף פריט נוסף.</p>'
       + bars(kinds, Object.fromEntries(M.EXT_KINDS.map((x) => [x.k, x.t.replace(/ \(.*/, '')])), Math.max(1, ...Object.values(kinds)))
       + ex('הצלבה היא הלב של קריאה לרוחב. מקור ראשוני או רשמי חזק יותר מכלי תקשורת נוסף שמעתיק את אותו נוסח.')
-      + '<p>בממוצע ' + f1(mean(turns)) + ' הודעות של הצוות בשיחה עם ה־AI לכל מקור.</p>'
       + '<h4>האם חל שינוי בעמדה כלפי הדילמה? (' + nRefl + ' רפלקציות)</h4>' + bars(ch, { yes: 'כן', partly: 'חלקית', no: 'לא' }, nRefl)
       + ex('זה דיווח עצמי. המשמעות נמצאת בתשובות הפתוחות: מה הביא לשינוי, ומה היה יכול לשנות את הדעה. אפשר לקרוא אותן בלשונית הצוותים, או בקובץ הייצוא.')
       + '<h4>בדיקות לקריאה לעומק</h4><ul>' + checks.filter((k) => has(k, 'first') && has(k, 'team') && Math.abs(k.first.score - k.team.score) >= 2).map((k) => '<li>' + esc(k._team.name) + ': ' + esc(k.title) + ' (AI ' + k.first.score + ', צוות ' + k.team.score + ')</li>').join('') + '</ul>'
@@ -211,7 +212,7 @@
       + '<label for="se">מספר אישור ועדת האתיקה (רשות)</label><input type="text" id="se" value="' + esc(a.research.ethics || '') + '">'
       + '<label for="sc">פרטי קשר לשאלות על המחקר (רשות)</label><input type="text" id="sc" value="' + esc(a.research.contact || '') + '">'
       + '<label style="font-weight:400"><input type="checkbox" id="sr"' + (a.research.enabled ? ' checked' : '') + '> הפעילות מלווה במחקר</label>'
-      + '<label style="font-weight:400"><input type="checkbox" id="sro"' + (a.reflectOpen ? ' checked' : '') + '> לפתוח את הרפלקציה לכל הצוותים עכשיו</label><p class="dlm-hint">בלי הסימון, הרפלקציה נפתחת לכל צוות בסיום התרגיל: כשבדיקה של מקור אחד לפחות מגיעה להערכה החוזרת.</p>'
+      + '<label style="font-weight:400"><input type="checkbox" id="sro"' + (a.reflectOpen ? ' checked' : '') + '> הרפלקציה פתוחה לכל הצוותים</label><p class="dlm-hint">הרפלקציה נכתבת בשיעור הבא. עד שפותחים אותה, הצוותים לא רואים אותה.</p>'
       + '<p><button class="dlm-btn main" id="ss">שמירה</button></p><div id="sm"></div></div>'
       + (a.isOwner ? '<div class="dlm-card"><h3>שותפות</h3><p class="dlm-hint">החוקרות השותפות (איבנה, עינת ויעל) נכנסות לפעילות עם קוד שותפות, ורואות את כל הכיתות והצוותים.</p>'
         + (a.coCode ? '<p>קוד השותפות: <b class="dlm-code" dir="ltr">' + esc(a.coCode) + '</b></p>' : '') + '<button class="dlm-btn" id="co">' + (a.coCode ? 'קוד שותפות חדש' : 'הפקת קוד שותפות') + '</button> <span class="dlm-hint">שותפות: ' + a.cofacs + '</span></div>'

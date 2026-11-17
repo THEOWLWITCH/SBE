@@ -51,7 +51,8 @@ test('scale: five levels, merged from 0–7, grey is not a score', () => {
   assert.equal(M.GRADE.criteria.reduce((s, c) => s + c.w, 0), 100);
   assert.equal(M.gradeTotal({ desc: 100, cross: 100, reason: 100, ai: 100, update: 100, reflect: 100 }), 100);
   assert.match(M.BASE, /אין לך גישה לאינטרנט/);
-  assert.match(M.chatSystem(), /רק הצוות מחליט מתי אין לו יותר מידע/);
+  assert.ok(M.FIELDS.length >= 12 && M.FIELDS[0].k === 'claim');
+  assert.match(M.assessSystem('final'), /process/);
   assert.deepEqual(M.REFLECT.map((q) => q.k), ['feel', 'think', 'changed', 'why', 'could', 'free']);
 });
 
@@ -82,7 +83,7 @@ test('separation: a team sees only itself; reflections are shared within the tea
   const [sb] = await E.run('p.get', {}, { a: t1.cred.a, t: t1.cred.t, key: t2.cred.key });
   assert.equal(sb, 401);
   const m = t1.r.team.members[0].id;
-  { const [sx] = await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'yes', why: 'מקור רשמי', free: '' } }); assert.equal(sx, 409, 'reflection opens only after the exercise'); }
+  { const [sx] = await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'yes', why: 'מקור רשמי', free: '' } }); assert.equal(sx, 409, 'reflection opens only when the lecturer opens it'); }
   await E.fac('f.update', { id: E.A.id, reflectOpen: true });
   { const [sp] = await t1.P('p.reflect', { member: m, reflect: { feel: 'א', think: 'ב', changed: 'no' } }); assert.equal(sp, 400, 'post questionnaire is required'); }
   await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'yes', why: 'מקור רשמי', free: '' } });
@@ -102,31 +103,36 @@ test('separation: a team sees only itself; reflections are shared within the tea
   assert.equal(g3.reflections[m].ai, null, 'new reflection clears the old analysis');
 });
 
-test('stages: team score only after "no more information", AI final only after team score', async () => {
+test('stages: 1 details and team score · 2 AI · 3 more items until "no more" · 4 AI again with process feedback', async () => {
   const E = await setup();
   const t = await E.team(E.c1, 'צוות 1');
   const [, k] = await t.P('p.check', { kind: 'new', url: 'https://example.org/a' });
   assert.equal(k.check.verify.status, 'exists');
-  await t.P('p.check', { kind: 'fields', id: k.id, fields: { claim: 'מדענים ממציאים נתונים' } });
-  const [sa] = await t.P('p.check', { kind: 'ai', id: k.id, stage: 'first', result: { score: 9, summary: 'x' } });
+  { const [sx] = await t.P('p.check', { kind: 'ai', id: k.id, stage: 'first', result: { score: 3, summary: 'x' } }); assert.equal(sx, 409, 'AI only after the team score'); }
+  { const [sx] = await t.P('p.check', { kind: 'team', id: k.id, score: 3, why: 'x' }); assert.equal(sx, 409, 'team score needs the claim'); }
+  await t.P('p.check', { kind: 'fields', id: k.id, fields: { claim: 'מדענים ממציאים נתונים', who: 'חשבון אנונימי' } });
+  const [s6] = await t.P('p.check', { kind: 'team', id: k.id, score: 6, why: 'x' }); assert.equal(s6, 400);
+  await t.P('p.check', { kind: 'team', id: k.id, score: 2, why: 'אין מקור' });
+  { const [sx] = await t.P('p.check', { kind: 'ext', id: k.id, found: 'x' }); assert.equal(sx, 409, 'items only after the AI check'); }
+  const [sa] = await t.P('p.check', { kind: 'ai', id: k.id, stage: 'first', result: { score: 9, summary: 'x', missing: ['מקור ראשוני'] } });
   assert.equal(sa, 200);
   let [, g] = await t.P('p.get');
   assert.equal(g.checks[0].first.score, 5, 'clamped to 1..5');
-  const [sf] = await t.P('p.check', { kind: 'ai', id: k.id, stage: 'final', result: { score: 3, summary: 'x' } });
-  assert.equal(sf, 409);
-  const [st] = await t.P('p.check', { kind: 'team', id: k.id, score: 3, why: 'x' });
-  assert.equal(st, 409);
+  { const [sx] = await t.P('p.check', { kind: 'fields', id: k.id, fields: { claim: 'y' } }); assert.equal(sx, 409, 'details locked after AI'); }
+  { const [sx] = await t.P('p.check', { kind: 'team', id: k.id, score: 4, why: 'x' }); assert.equal(sx, 409, 'team score locked after AI'); }
+  { const [sx] = await t.P('p.check', { kind: 'ai', id: k.id, stage: 'final', result: { score: 3, summary: 'x' } }); assert.equal(sx, 409, 'final only after no more info'); }
   await t.P('p.check', { kind: 'ext', id: k.id, url: 'https://example.org/b', title: 'אתר הכנסת', extKind: 'official', found: 'החוק קיים' });
-  await t.P('p.check', { kind: 'msg', id: k.id, role: 'team', text: 'מצאנו' });
+  await t.P('p.check', { kind: 'ext', id: k.id, found: 'אתר בדיקת עובדות מצא שהציטוט חתוך' });
   await t.P('p.check', { kind: 'done', id: k.id });
-  const [s6] = await t.P('p.check', { kind: 'team', id: k.id, score: 6, why: 'x' });
-  assert.equal(s6, 400);
-  await t.P('p.check', { kind: 'team', id: k.id, score: 4, why: 'יש מסמך רשמי' });
-  await t.P('p.check', { kind: 'ai', id: k.id, stage: 'final', result: { score: 4, summary: 'מסכים', vsTeam: 'קרוב', changed: 'עלה' } });
+  { const [sx] = await t.P('p.check', { kind: 'ext', id: k.id, found: 'z' }); assert.equal(sx, 409); }
+  await t.P('p.check', { kind: 'ai', id: k.id, stage: 'final', result: { score: 4, summary: 'מסכים', vsTeam: 'קרוב', changed: 'עלה', process: { strong: ['הצליבו עם מקור רשמי'], improve: ['לחפש את המקור הראשוני'], tip: 'להתחיל מהמפרסם' } } });
   [, g] = await t.P('p.get');
-  assert.deepEqual([g.checks[0].first.score, g.checks[0].team.score, g.checks[0].final.score], [5, 4, 4]);
+  assert.deepEqual([g.checks[0].team.score, g.checks[0].first.score, g.checks[0].final.score], [2, 5, 4]);
+  assert.equal(g.checks[0].external.length, 2);
+  assert.deepEqual(g.checks[0].final.process.strong, ['הצליבו עם מקור רשמי']);
   const [sr] = await t.P('p.check', { kind: 'reopen', id: k.id });
   assert.equal(sr, 409);
+  const [, k2] = await t.P('p.check', { kind: 'new', url: 'https://example.org/c' }); assert.ok(k2.id, 'several checks per team');
 });
 
 test('closed activity: teams can read but not change', async () => {
