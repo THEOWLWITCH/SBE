@@ -86,6 +86,44 @@
     { k: 'free', t: 'רפלקציה חופשית על תהליך הלמידה', ph: 'מה למדתי על בדיקת מקורות, על עבודה עם AI ועל עבודה בצוות, ומה אקח לכיתה שלי' }
   ];
   const REFLECT_NOTE = 'כתבו על מה שקרה לכם ולצוות בפועל. אין תשובות רצויות: אפשר לכתוב גם שלא השתנה דבר, שלא השתכנעתם, או שהתהליך היה מתסכל.';
+  // ניתוח הרפלקציה בידי ה־AI (17/11/2026: "ברור שאת מנתחת לפי הקריטריונים שנקבעו"): קטגוריות הפתיחה של הניתוח התמטי
+  // בהצעת המחקר (סעיף ט), ורמה מוצעת לפי קריטריון "רפלקציה אישית" במחוון. הרמה מוצגת רק למרצה, כהצעה.
+  const REFLECT_CRITERIA = [
+    { k: 'signs', t: 'סימנים לאמינות', d: 'על אילו סימנים נשענה ההערכה, ואילו סימנים מטעים זוהו' },
+    { k: 'cross', t: 'הצלבה', d: 'בדיקה במקורות חיצוניים עצמאיים' },
+    { k: 'ai', t: 'עבודה עם ה־AI', d: 'הסתמכות על ה־AI, או מחלוקת איתו ונימוק' },
+    { k: 'doubt', t: 'ניהול אי־ודאות', d: 'החזקת ספק, מה עוד לא ידוע ומה היה משנה את ההערכה' },
+    { k: 'emotion', t: 'רגש ועמדה קודמת', d: 'הקשר בין מה שמרגישים ובין העמדה הקודמת לבין הבדיקה' },
+    { k: 'team', t: 'עבודת צוות', d: 'מה קרה בצוות: הסכמה, מחלוקת, חלוקת עבודה' },
+    { k: 'teach', t: 'העברה להוראה', d: 'מה מזה רלוונטי להנחיית תלמידים' }
+  ];
+  function reflectSystem() {
+    return [
+      'את/ה מנתח/ת רפלקציה של סטודנט/ית להוראה אחרי תרגיל בבדיקת אמינות של מקורות. הניתוח מוצג לצוות ולמרצה.',
+      'מנתחים לפי הקריטריונים האלה (לכל אחד: האם עולה ברפלקציה, ובמשפט אחד מה נכתב):',
+      REFLECT_CRITERIA.map((c) => c.k + ': ' + c.t + ' (' + c.d + ')').join('\n'),
+      'ורמה מוצעת לפי המחוון של התרגיל, קריטריון "רפלקציה אישית": ' + GRADE.criteria.find((c) => c.k === 'reflect').l.map((x, i) => GRADE.levels[i][0] + ' = ' + x).join('; ') + '.',
+      'כללים: מתייחסים למה שנכתב ולא לאדם. לא שופטים את העמדה כלפי הדילמה ולא את הרגש. "לא השתנה דבר" היא תשובה לגיטימית. מצטטים בקיצור מתוך הרפלקציה, בלי להמציא. כותבים בעברית פשוטה ובלשון כוללת.',
+      'מחזירים JSON בלבד:',
+      '{"criteria":[{"k":"signs","found":true,"note":"משפט אחד"}],"level":75,"levelWhy":"משפט אחד: למה הרמה הזו","strength":"מה חזק ברפלקציה, במשפט","question":"שאלה אחת שיכולה להעמיק את הרפלקציה"}'
+    ].join('\n');
+  }
+  function reflectText(ctx) {
+    const r = ctx.reflect || {}, L = [];
+    if (ctx.dilemma) L.push('הדילמה: ' + ctx.dilemma);
+    if (ctx.initial) L.push('העמדה הראשונית: ' + ctx.initial);
+    for (const q of REFLECT) { const v = r[q.k]; if (!v) continue; L.push(q.t + ' ' + (q.opts ? ((q.opts.find((o) => o[0] === v) || [, v])[1]) : v)); }
+    if (ctx.checks) L.push('הבדיקות של הצוות (ציון ראשון של ה־AI / ציון הצוות / ציון חוזר): ' + ctx.checks);
+    return L.join('\n');
+  }
+  function cleanReflectAI(o) {
+    if (!o || typeof o !== 'object') return null;
+    const s = (v, n) => String(v == null ? '' : v).replace(/[*#]/g, '').trim().slice(0, n);
+    const crit = REFLECT_CRITERIA.map((c) => { const x = (Array.isArray(o.criteria) ? o.criteria : []).find((y) => y && y.k === c.k) || {}; return { k: c.k, found: !!x.found, note: s(x.note, 400) }; });
+    const level = [100, 75, 50, 25].includes(Number(o.level)) ? Number(o.level) : null;
+    if (!crit.some((c) => c.note) && !level) return null;
+    return { criteria: crit, level, levelWhy: s(o.levelWhy, 400), strength: s(o.strength, 400), question: s(o.question, 300) };
+  }
   const INITIAL = { t: 'עמדה ראשונית על הדילמה (רשות)', ph: 'כמה משפטים: מה אני חושב/ת עכשיו, מה איני יודע/ת, ומה יכול לשנות את דעתי. אין צורך בהזדהות פוליטית.' };
   // מחוון לציון התרגיל (למרצות): משקלות, ארבע רמות
   const GRADE = {
@@ -110,6 +148,7 @@
     text: [
       'העבודה בכלי היא חלק מהקורס. בנוסף, אנחנו חוקרות איך סטודנטים וסטודנטיות להוראה בודקים אמינות של מקורות בעזרת AI.',
       'אם תסכימו, נשתמש בתוצרים שלכם בכלי (תיאור המקור, הציונים, השיחה עם המודל, המקורות שמצאתם והרפלקציה) לצורך המחקר, בלי שמות ובלי פרטים מזהים.',
+      'הרפלקציה משותפת עם הצוות, וה־AI מנתח אותה לפי קריטריונים שנקבעו מראש.',
       'ההשתתפות במחקר אינה משפיעה על הציון בקורס. אפשר לעבוד בכלי גם בלי להסכים, ואפשר לשנות את הבחירה בכל עת.',
       'התוכן שמעלים נשלח למודל AI לצורך הבדיקה. כדאי לא להעלות פרטים מזהים של אנשים פרטיים.'
     ],
@@ -212,5 +251,5 @@
   }
 
   return { esc, SCALE, GREY, FROM_OLD, validScore, levelOf, dotHTML, REMEMBER, EXAMPLES, QUESTIONS, FIELDS, EXT_KINDS, REFLECT, REFLECT_NOTE, INITIAL,
-    GRADE, gradeTotal, CONSENT, BASE, fieldsSystem, assessSystem, chatSystem, sourceText, inquiryText, aiText, parseJSON, cleanFields, cleanAssess, cleanChat, aboutHTML };
+    GRADE, gradeTotal, CONSENT, REFLECT_CRITERIA, reflectSystem, reflectText, cleanReflectAI, BASE, fieldsSystem, assessSystem, chatSystem, sourceText, inquiryText, aiText, parseJSON, cleanFields, cleanAssess, cleanChat, aboutHTML };
 });

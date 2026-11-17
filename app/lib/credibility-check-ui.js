@@ -104,7 +104,15 @@
     const refl = t.members.map((m) => { const r = d.reflections[m.id] || {}; const rf = r.reflect;
       return '<details class="dlm-card soft"><summary><b>' + esc(m.name) + '</b> ' + (m.consent === 'research' ? '✓ מחקר' : '○ רק ללמידה') + ' · ' + (r.initial ? 'עמדה ראשונית ✓' : 'בלי עמדה ראשונית') + ' · ' + (rf ? 'רפלקציה ✓' : 'עוד בלי רפלקציה') + '</summary>'
         + (r.initial ? '<h4>' + esc(M.INITIAL.t) + '</h4><p>' + esc(r.initial.text) + '</p>' : '')
-        + (rf ? M.REFLECT.map((q) => rf[q.k] ? '<h4>' + esc(q.t) + '</h4><p>' + esc(q.opts ? (q.opts.find((o) => o[0] === rf[q.k]) || [])[1] : rf[q.k]) + '</p>' : '').join('') : '') + '</details>'; }).join('');
+        + (rf ? M.REFLECT.map((q) => rf[q.k] ? '<h4>' + esc(q.t) + '</h4><p>' + esc(q.opts ? (q.opts.find((o) => o[0] === rf[q.k]) || [])[1] : rf[q.k]) + '</p>' : '').join('') : '') + reflAI(r.ai) + '</details>'; }).join('');
+    function reflAI(ai) {
+      if (!ai) return '';
+      const lv = (v) => (M.GRADE.levels.find((l) => l[0] === v) || [, ''])[1];
+      return '<div class="crd-assess"><h4>ניתוח ה־AI לפי הקריטריונים</h4><table class="dlm-table"><thead><tr><th>הקריטריון</th><th>עולה?</th><th>מה נכתב</th></tr></thead><tbody>'
+        + M.REFLECT_CRITERIA.map((c) => { const x = (ai.criteria || []).find((y) => y.k === c.k) || {}; return '<tr><th>' + esc(c.t) + '</th><td class="ck">' + (x.found ? '✓' : '○') + '</td><td>' + esc(x.note || '') + '</td></tr>'; }).join('')
+        + '</tbody></table>' + (ai.level ? '<p><b>רמה מוצעת לקריטריון "רפלקציה אישית":</b> ' + esc(lv(ai.level)) + (ai.levelWhy ? '. ' + esc(ai.levelWhy) : '') + ' <span class="dlm-hint">(רק המנחה רואה את זה. הציון בידי המנחה.)</span></p>' : '')
+        + (ai.strength ? '<p><b>מה חזק:</b> ' + esc(ai.strength) + '</p>' : '') + (ai.question ? '<p><b>שאלה להעמקה:</b> ' + esc(ai.question) + '</p>' : '') + '</div>';
+    }
     const g = t.grade || {};
     const grade = '<h3>ציון בתרגיל לפי המחוון</h3><div class="crd-tablewrap"><table class="dlm-table"><thead><tr><th>קריטריון</th><th>משקל</th>' + M.GRADE.levels.map((l) => '<th>' + esc(l[1]) + '</th>').join('') + '</tr></thead><tbody>'
       + M.GRADE.criteria.map((c) => '<tr><th>' + esc(c.t) + '</th><td>' + c.w + '</td>' + M.GRADE.levels.map((l, i) => '<td><label style="font-weight:400"><input type="radio" name="g-' + c.k + '" value="' + l[0] + '"' + (g[c.k] === l[0] ? ' checked' : '') + '> ' + esc(c.l[i]) + '</label></td>').join('') + '</tr>').join('')

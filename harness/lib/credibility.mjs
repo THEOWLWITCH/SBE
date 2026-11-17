@@ -4,7 +4,8 @@
 //  - צוותים: בלי קוד Begood. סורקים את ה־QR של הכיתה (credibility-join.html?c=<קוד כיתה>), פותחים צוות (עד 10 בכיתה)
 //    עם שמות המשתתפים וההסכמה של כל אחד ואחת, ומקבלים קוד צוות ומפתח שנשמר בדפדפן. אפשר להצטרף לצוות קיים
 //    רק עם קוד הצוות, כך שכל אחד ואחת נכנס/ת רק לצוות שלו/ה.
-// ההפרדה נאכפת כאן: צוות רואה רק את עצמו. רפלקציות אישיות לא חוזרות לצוות (רק "נשלחה").
+// ההפרדה נאכפת כאן: צוות רואה רק את עצמו. הרפלקציות משותפות עם הצוות (17/11/2026), עם ניתוח ה־AI לפי הקריטריונים;
+// הרמה המוצעת לפי המחוון מוצגת רק למרצה.
 // אחסון (access_settings):
 //  cra:<a>          הפעילות: הכותרת, הדילמה, הכיתות, ההגדרות, השותפים להנחיה.
 //  crj:<קוד>        קוד כיתה → {a, c}.
@@ -135,6 +136,12 @@ async function newJoinCode(store) {
 }
 async function teamsOf(store, a) { return (await store.list('crt:' + a.id + ':')).map((r) => r.value).filter(Boolean); }
 
+// הרפלקציה כפי שהצוות רואה אותה: הטקסט והניתוח, בלי הרמה המוצעת (היא רק למרצה).
+function teamReflection(r) {
+  r = r || {};
+  const ai = r.ai ? { criteria: r.ai.criteria, strength: r.ai.strength, question: r.ai.question, at: r.ai.at } : null;
+  return { initial: r.initial || null, reflect: r.reflect || null, ai };
+}
 // סיכום בדיקה למרצה ולממצאים
 function checkSummary(k) {
   return { id: k.id, title: k.title, url: k.url, fileName: k.fileName, fileType: k.fileType, at: k.at,
@@ -181,7 +188,7 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
           const ks = (await store.get('crs:' + a.id + ':' + t.id)) || { checks: [] };
           const rr = (await store.get('crr:' + a.id + ':' + t.id)) || { members: {} };
           out.push({ ...teamView(t), grade: t.grade || null, checks: ks.checks.map(checkSummary),
-            reflections: t.members.map((m) => ({ id: m.id, initial: !!(rr.members[m.id] || {}).initial, reflect: !!(rr.members[m.id] || {}).reflect })) });
+            reflections: t.members.map((m) => ({ id: m.id, initial: !!(rr.members[m.id] || {}).initial, reflect: !!(rr.members[m.id] || {}).reflect, ai: !!(rr.members[m.id] || {}).ai })) });
         }
         return [200, { activity: view(a), teams: out }];
       }
@@ -339,7 +346,7 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
         const ks = (await store.get(KS)) || { checks: [] };
         const rr = (await store.get(RR)) || { members: {} };
         return [200, { activity: publicActivity(a, c), team: teamView(t), checks: ks.checks.map((k) => ({ ...k, log: undefined })),
-          reflections: Object.fromEntries(t.members.map((m) => [m.id, { initial: !!(rr.members[m.id] || {}).initial, reflect: !!(rr.members[m.id] || {}).reflect }])) }];
+          reflections: Object.fromEntries(t.members.map((m) => [m.id, teamReflection(rr.members[m.id])])) }];
       }
       if (closedNow) throw new CrdError('הפעילות סגורה כרגע. אפשר לצפות בעבודה, אבל לא לשנות', 409);
       if (op === 'p.members') {
@@ -428,6 +435,13 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
             if (!r.changed) throw new CrdError('אפשר לבחור: האם חל שינוי בעמדה כלפי הדילמה?');
             if (!r.feel && !r.think) throw new CrdError('אפשר לכתוב לפחות מה את/ה מרגיש/ה או חושב/ת');
             cur.reflect = { ...r, at: now() };
+            cur.ai = null;
+          }
+          if (d.ai !== undefined) {
+            if (!cur.reflect) throw new CrdError('הניתוח נשמר אחרי שליחת הרפלקציה', 409);
+            const ai = M.cleanReflectAI(d.ai);
+            if (!ai) throw new CrdError('הניתוח לא נקרא. אפשר לנסות שוב');
+            cur.ai = { ...ai, at: now() };
           }
           rr.members[m.id] = cur;
         }, () => ({ members: {} }));
@@ -452,7 +466,7 @@ export async function researchExport(store, a) {
     const all = t.members.every((m) => m.consent === 'research');
     const ks = (await store.get('crs:' + a.id + ':' + t.id)) || { checks: [] };
     const rr = (await store.get('crr:' + a.id + ':' + t.id)) || { members: {} };
-    const ppl = t.members.map((m, i) => ({ code: 'T' + ti + '-P' + (i + 1), consent: m.consent, ...(m.consent === 'research' ? { initial: (rr.members[m.id] || {}).initial || null, reflect: (rr.members[m.id] || {}).reflect || null } : {}) }));
+    const ppl = t.members.map((m, i) => ({ code: 'T' + ti + '-P' + (i + 1), consent: m.consent, ...(m.consent === 'research' ? { initial: (rr.members[m.id] || {}).initial || null, reflect: (rr.members[m.id] || {}).reflect || null, reflectAI: (rr.members[m.id] || {}).ai || null } : {}) }));
     out.teams.push({ code: 'T' + ti, class: cmap[t.classId], size: t.members.length, allConsented: all, members: ppl,
       checks: all ? ks.checks.map((k) => ({ ...k, fileId: undefined, by: undefined, log: k.log.map((l) => ({ at: l.at, kind: l.kind })), chat: k.chat.map((m) => ({ role: m.role, text: m.text, at: m.at })), external: k.external.map((e) => ({ ...e, by: undefined })) })) : null,
       summary: all ? ks.checks.map(checkSummary).map((s) => ({ ...s, fileName: undefined })) : null });

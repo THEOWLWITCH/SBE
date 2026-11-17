@@ -39,3 +39,7 @@
 .crd-kpi b{display:block;font-size:1.5rem;color:#1d3f63}
 .crd-explain{background:#f4f8fb;border-right:3px solid #1d3f63;padding:.5rem .8rem;border-radius:6px;margin:.4rem 0 1rem}
 @media print{.dlm-noprint,.crd-say,.crd-addext,.crd-donebar{display:none!important}}
+.crd-rt{width:100%;border-collapse:collapse;margin:.4rem 0;font-size:.92rem}
+.crd-rt th{background:#1d3f63;color:#fff;text-align:right;padding:.35rem .5rem;font-weight:600}
+.crd-rt td{border-bottom:1px solid #e3e7eb;padding:.35rem .5rem;text-align:right;vertical-align:top}
+.crd-rt td.ck{text-align:center;width:5.5rem}

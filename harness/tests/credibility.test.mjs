@@ -66,7 +66,7 @@ test('team entry: up to 10 teams per class, consent per member, join only with t
   assert.ok(!JSON.stringify(info).includes('משתתפת'), 'class view shows no names');
 });
 
-test('separation: a team sees only itself; reflections never return to the team', async () => {
+test('separation: a team sees only itself; reflections are shared within the team, AI level only to the lecturer', async () => {
   const E = await setup();
   const t1 = await E.team(E.c1, 'צוות 1'), t2 = await E.team(E.c1, 'צוות 2');
   const [, k] = await t1.P('p.check', { kind: 'new', url: 'https://example.org/a', title: 'פוסט' });
@@ -76,9 +76,20 @@ test('separation: a team sees only itself; reflections never return to the team'
   assert.equal(sb, 401);
   const m = t1.r.team.members[0].id;
   await t1.P('p.reflect', { member: m, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'partly', why: 'מקור רשמי', free: '' } });
+  const [sn] = await t1.P('p.reflect', { member: m, ai: { criteria: [], level: null } });
+  assert.equal(sn, 400, 'empty analysis rejected');
+  await t1.P('p.reflect', { member: m, ai: { criteria: [{ k: 'cross', found: true, note: 'בדקה מקור רשמי' }], level: 75, levelWhy: 'בלי דוגמה', strength: 'כנות', question: 'מה עוד?' } });
   const [, g] = await t1.P('p.get');
-  assert.equal(g.reflections[m].reflect, true);
-  assert.ok(!JSON.stringify(g).includes('סקרנות'));
+  assert.equal(g.reflections[m].reflect.feel, 'סקרנות', 'team sees the reflection');
+  assert.equal(g.reflections[m].ai.criteria.find((c) => c.k === 'cross').found, true);
+  assert.equal(g.reflections[m].ai.level, undefined, 'suggested level hidden from the team');
+  const [, g2] = await t2.P('p.get');
+  assert.ok(!JSON.stringify(g2).includes('סקרנות'), 'another team does not see it');
+  const ft = await E.fac('f.team', { id: E.A.id, teamId: t1.r.t });
+  assert.equal(ft.reflections[m].ai.level, 75, 'lecturer sees the suggested level');
+  await t1.P('p.reflect', { member: m, reflect: { feel: 'אחר', think: 'x', changed: 'no' } });
+  const [, g3] = await t1.P('p.get');
+  assert.equal(g3.reflections[m].ai, null, 'new reflection clears the old analysis');
 });
 
 test('stages: team score only after "no more information", AI final only after team score', async () => {

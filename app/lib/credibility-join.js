@@ -192,14 +192,46 @@
     const m = t.members.find((x) => x.id === sel);
     const st = m ? S.data.reflections[m.id] || {} : {};
     let local = {}; try { local = JSON.parse(localStorage.getItem('sbe.crd.refl.' + S.cred.t + '.' + sel) || '{}'); } catch (e) {}
-    const r = local.reflect || {};
-    return '<div class="dlm-card"><h2>עמדה ורפלקציה</h2><p class="dlm-hint">אישי: כל אחד ואחת כותב/ת בעצמו/ה. הצוות לא רואה מה כתבת, רק שהרפלקציה נשלחה.</p>'
+    if (!local.initial && st.initial && st.initial.text) local.initial = st.initial.text;
+    const r = local.reflect || (st.reflect && typeof st.reflect === 'object' ? st.reflect : {});
+    return '<div class="dlm-card"><h2>עמדה ורפלקציה</h2><p class="dlm-hint">כל אחד ואחת כותב/ת את הרפלקציה בעצמו/ה. הרפלקציה משותפת עם הצוות, וה־AI מנתח אותה לפי קריטריונים שנקבעו מראש.</p>'
       + '<label for="rm">השם שלי</label><select id="rm" data-closed><option value="">בחירה</option>' + t.members.map((x) => '<option value="' + esc(x.id) + '"' + (sel === x.id ? ' selected' : '') + '>' + esc(x.name) + ((S.data.reflections[x.id] || {}).reflect ? ' ✓' : '') + '</option>').join('') + '</select>'
       + (!m ? '' : '<h3>' + esc(M.INITIAL.t) + (st.initial ? ' ✓' : '') + '</h3><p class="dlm-hint">במפגש הראשון, לפני הבדיקה.</p><textarea id="ri" rows="3" placeholder="' + esc(M.INITIAL.ph) + '">' + esc(local.initial || '') + '</textarea><p><button class="dlm-btn" id="saveInit">שמירת העמדה הראשונית</button></p>'
         + '<h3>רפלקציה' + (st.reflect ? ' ✓ נשלחה' : '') + '</h3><p class="dlm-hint">' + esc(M.REFLECT_NOTE) + '</p>'
         + M.REFLECT.map((q) => q.opts ? '<fieldset class="crd-fs"><legend>' + esc(q.t) + '</legend>' + q.opts.map((o) => '<label><input type="radio" name="rf-' + q.k + '" value="' + o[0] + '"' + (r[q.k] === o[0] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>').join(' ') + '</fieldset>'
           : '<div class="crd-q" data-when="' + esc((q.when || []).join(',')) + '"><label for="rf-' + q.k + '">' + esc(q.t) + '</label><textarea id="rf-' + q.k + '" rows="3" placeholder="' + esc(q.ph || '') + '">' + esc(r[q.k] || '') + '</textarea></div>').join('')
-        + '<p><button class="dlm-btn main" id="saveRefl">שליחת הרפלקציה</button></p>') + '<div id="rmm"></div></div>';
+        + '<p><button class="dlm-btn main" id="saveRefl">שליחת הרפלקציה</button></p>') + '<div id="rmm"></div></div>'
+      + teamReflections();
+  }
+  // הרפלקציות של הצוות, עם ניתוח ה־AI לפי הקריטריונים
+  function teamReflections() {
+    const t = S.data.team, done = t.members.filter((m) => (S.data.reflections[m.id] || {}).reflect);
+    if (!done.length) return '';
+    return '<div class="dlm-card"><h2>הרפלקציות של הצוות</h2>' + done.map((m) => {
+      const st = S.data.reflections[m.id], r = st.reflect || {};
+      const ans = M.REFLECT.filter((q) => r[q.k]).map((q) => '<p><b>' + esc(q.t) + '</b> ' + esc(q.opts ? ((q.opts.find((o) => o[0] === r[q.k]) || [, r[q.k]])[1]) : r[q.k]) + '</p>').join('');
+      return '<details class="dlm-card soft" open><summary><b>' + esc(m.name) + '</b>' + (st.ai ? ' · נותחה' : '') + '</summary>' + ans + reflectAIHTML(st.ai, m.id) + '</details>';
+    }).join('') + '</div>';
+  }
+  function reflectAIHTML(ai, id) {
+    if (!ai) return '<p><button class="dlm-btn small" data-rai="' + esc(id) + '">ניתוח ה־AI לפי הקריטריונים</button></p>';
+    return '<div class="crd-assess"><h4>ניתוח ה־AI לפי הקריטריונים</h4><table class="rtable crd-rt"><thead><tr><th>הקריטריון</th><th>עולה ברפלקציה?</th><th>מה נכתב</th></tr></thead><tbody>'
+      + M.REFLECT_CRITERIA.map((c) => { const x = (ai.criteria || []).find((y) => y.k === c.k) || {}; return '<tr><td>' + esc(c.t) + '</td><td class="ck">' + (x.found ? '✓' : '○') + '</td><td>' + esc(x.note || '') + '</td></tr>'; }).join('')
+      + '</tbody></table>' + (ai.strength ? '<p><b>מה חזק:</b> ' + esc(ai.strength) + '</p>' : '') + (ai.question ? '<p><b>שאלה להעמקה:</b> ' + esc(ai.question) + '</p>' : '')
+      + '<p class="dlm-hint">הניתוח של ה־AI הוא הצעה לקריאה, והוא יכול לטעות.</p><p><button class="dlm-btn small" data-rai="' + esc(id) + '">ניתוח מחדש</button></p></div>';
+  }
+  async function analyzeReflection(id) {
+    const st = S.data.reflections[id] || {};
+    if (!st.reflect) return;
+    const checks = (S.data.checks || []).map((k) => (k.title || 'מקור') + ': ' + [k.first && k.first.score, k.team && k.team.score, k.final && k.final.score].map((v) => v || '-').join('/')).join('; ');
+    const ctx = { dilemma: S.data.activity.dilemma, initial: st.initial && st.initial.text, reflect: st.reflect, checks };
+    const stop = waiting('ה־AI מנתח את הרפלקציה. זה נמשך כ־20 שניות.');
+    try {
+      const out = M.cleanReflectAI(M.parseJSON(await U.model(M.reflectSystem(), M.reflectText(ctx), auth(), 1500)));
+      if (!out) throw new Error('הניתוח לא נקרא. אפשר לנסות שוב.');
+      await call('p.reflect', { member: id, ai: out });
+      st.ai = { criteria: out.criteria, strength: out.strength, question: out.question };
+    } finally { stop(); }
   }
   function teamView() {
     const t = S.data.team;
@@ -239,7 +271,7 @@
     return '';
   }
   const ctxOf = async (k) => ({ dilemma: S.data.activity.dilemma, source: k, fields: k.fields, extra: k.extra, seen: k.seen, text: await fileText(k), first: k.first, chat: k.chat, external: k.external, doneNote: k.done && k.done.note, team: k.team });
-  function waiting(text) { const n = $('#stage'); if (n) n.insertAdjacentHTML('beforeend', '<div class="dlm-msg crd-wait" role="status">' + esc(text) + ' <span class="crd-sec">0</span></div>'); const t0 = Date.now(); const iv = setInterval(() => { const s = document.querySelector('.crd-sec'); if (s) s.textContent = 'חלפו ' + Math.round((Date.now() - t0) / 1000) + ' שניות'; else clearInterval(iv); }, 1000); return () => clearInterval(iv); }
+  function waiting(text) { const n = $('#stage') || $('#rmm'); if (n) n.insertAdjacentHTML('beforeend', '<div class="dlm-msg crd-wait" role="status">' + esc(text) + ' <span class="crd-sec">0</span></div>'); const t0 = Date.now(); const iv = setInterval(() => { const s = document.querySelector('.crd-sec'); if (s) s.textContent = 'חלפו ' + Math.round((Date.now() - t0) / 1000) + ' שניות'; else clearInterval(iv); }, 1000); return () => clearInterval(iv); }
   async function runAI(k, what) {
     const ctx = await ctxOf(k);
     const stop = waiting(what === 'fields' ? 'ה־AI קורא את המקור. זה נמשך כ־20 שניות.' : what === 'chat' ? 'ה־AI עונה.' : 'ה־AI בודק את המקור. זה נמשך עד כדקה.');
@@ -326,12 +358,15 @@
     app.querySelectorAll('input[name=rf-changed]').forEach((r) => { r.onchange = toggleWhen; }); toggleWhen();
     const lk = () => 'sbe.crd.refl.' + S.cred.t + '.' + $('#rm').value;
     const keepLocal = (patch) => { try { const cur = JSON.parse(localStorage.getItem(lk()) || '{}'); localStorage.setItem(lk(), JSON.stringify(Object.assign(cur, patch))); } catch (e) {} };
-    on('#saveInit', () => act(async () => { const v = $('#ri').value.trim(); if (!v) throw new Error('אפשר לכתוב כמה משפטים.'); await call('p.reflect', { member: $('#rm').value, initial: v }); keepLocal({ initial: v }); S.data.reflections[$('#rm').value] = Object.assign({}, S.data.reflections[$('#rm').value], { initial: true }); $('#rmm').innerHTML = msg('העמדה הראשונית נשמרה.'); }, $('#rmm')));
+    on('#saveInit', () => act(async () => { const v = $('#ri').value.trim(); if (!v) throw new Error('אפשר לכתוב כמה משפטים.'); await call('p.reflect', { member: $('#rm').value, initial: v }); keepLocal({ initial: v }); S.data.reflections[$('#rm').value] = Object.assign({}, S.data.reflections[$('#rm').value], { initial: { text: v } }); $('#rmm').innerHTML = msg('העמדה הראשונית נשמרה.'); }, $('#rmm')));
     on('#saveRefl', () => act(async () => {
       const r = {}; for (const q of M.REFLECT) r[q.k] = q.opts ? ((app.querySelector('input[name=rf-' + q.k + ']:checked') || {}).value || '') : $('#rf-' + q.k).value;
       await call('p.reflect', { member: $('#rm').value, reflect: r }); keepLocal({ reflect: r });
-      S.data.reflections[$('#rm').value] = Object.assign({}, S.data.reflections[$('#rm').value], { reflect: true }); render(); $('#rmm').innerHTML = msg('הרפלקציה נשלחה. תודה!');
+      const id = $('#rm').value;
+      S.data.reflections[id] = Object.assign({}, S.data.reflections[id], { reflect: r, ai: null }); render(); $('#rmm').innerHTML = msg('הרפלקציה נשלחה. תודה! עכשיו ה־AI מנתח אותה.');
+      try { await analyzeReflection(id); render(); $('#rmm').innerHTML = msg('הרפלקציה נשלחה ונותחה.'); } catch (e) { render(); $('#rmm').innerHTML = msg('הרפלקציה נשלחה. הניתוח לא הצליח: ' + (e.message || '') + ' אפשר ללחוץ על "ניתוח ה־AI".'); }
     }, $('#rmm')));
+    app.querySelectorAll('[data-rai]').forEach((b) => { b.onclick = () => act(async () => { await analyzeReflection(b.dataset.rai); render(); }, $('#rmm')); });
     // הצוות
     on('#addm', () => { const n = $('#mrows').children.length; if (n < 8) $('#mrows').insertAdjacentHTML('beforeend', memberRow({}, n)); });
     on('#saveTeamM', () => act(async () => { const members = readMembers($('#mrows')); if (members.some((m) => !m.consent)) throw new Error('לכל משתתף/ת אפשר לבחור אם להסכים להשתתף במחקר.'); const r = await call('p.members', { members, name: $('#tn2').value }); S.data.team = r.team; render(); $('#tm').innerHTML = msg('נשמר.'); }, $('#tm')));
