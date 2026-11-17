@@ -32,7 +32,7 @@
     clearInterval(S.timer); S.a = null;
     let rows = [];
     try { rows = (await call('f.mine')).activities; } catch (e) { app.innerHTML = msg(e.message, 'err'); return; }
-    app.innerHTML = '<div class="dlm-card"><h2>פעילות חדשה</h2><div class="dlm-grid2"><div><label for="nt">מאיזו דילמה מתחילים?</label><select id="nt"><option value="">דילמה חדשה (ריקה)</option>'
+    app.innerHTML = '<div class="dlm-card"><h2>פעילות חדשה</h2><div class="dlm-grid2"><div><label for="nt">בחירת דילמה</label><select id="nt"><option value="">דילמה חדשה (ריקה)</option>'
       + M.TEMPLATES.map((t) => '<option value="' + t.id + '">' + esc(t.title) + '</option>').join('') + '</select></div>'
       + '<div><label for="nn">שם הפעילות</label><input type="text" id="nn" placeholder="למשל: בירור דילמות · קבוצה ב׳"></div>'
       + '<div><label for="nm">אופן העבודה</label><select id="nm"><option value="group">קבוצתי: לוח לכל קבוצה</option><option value="personal">אישי: לוח לכל משתתף/ת</option></select></div>'
