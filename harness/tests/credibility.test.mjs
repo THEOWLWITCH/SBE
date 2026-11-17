@@ -72,6 +72,7 @@ test('team entry: up to 10 teams per class, consent per member, join only with t
   assert.ok(!JSON.stringify(info).includes('משתתפת'), 'class view shows no names');
 });
 
+const P8 = Object.fromEntries(['a1','a2','a3','a4','a5','a6','a7','a8'].map((k) => [k, 3]));
 test('separation: a team sees only itself; reflections are shared within the team, AI level only to the lecturer', async () => {
   const E = await setup();
   const t1 = await E.team(E.c1, 'צוות 1'), t2 = await E.team(E.c1, 'צוות 2');
@@ -81,7 +82,10 @@ test('separation: a team sees only itself; reflections are shared within the tea
   const [sb] = await E.run('p.get', {}, { a: t1.cred.a, t: t1.cred.t, key: t2.cred.key });
   assert.equal(sb, 401);
   const m = t1.r.team.members[0].id;
-  await t1.P('p.reflect', { member: m, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'yes', why: 'מקור רשמי', free: '' } });
+  { const [sx] = await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'yes', why: 'מקור רשמי', free: '' } }); assert.equal(sx, 409, 'reflection opens only after the exercise'); }
+  await E.fac('f.update', { id: E.A.id, reflectOpen: true });
+  { const [sp] = await t1.P('p.reflect', { member: m, reflect: { feel: 'א', think: 'ב', changed: 'no' } }); assert.equal(sp, 400, 'post questionnaire is required'); }
+  await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'yes', why: 'מקור רשמי', free: '' } });
   const [sn] = await t1.P('p.reflect', { member: m, ai: { criteria: [], level: null } });
   assert.equal(sn, 400, 'empty analysis rejected');
   await t1.P('p.reflect', { member: m, ai: { criteria: [{ k: 'cross', found: true, note: 'בדקה מקור רשמי' }], level: 75, levelWhy: 'בלי דוגמה', strength: 'כנות', question: 'מה עוד?' } });
@@ -93,7 +97,7 @@ test('separation: a team sees only itself; reflections are shared within the tea
   assert.ok(!JSON.stringify(g2).includes('סקרנות'), 'another team does not see it');
   const ft = await E.fac('f.team', { id: E.A.id, teamId: t1.r.t });
   assert.equal(ft.reflections[m].ai.level, 75, 'lecturer sees the suggested level');
-  await t1.P('p.reflect', { member: m, reflect: { feel: 'אחר', think: 'x', changed: 'no' } });
+  await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: 'אחר', think: 'x', changed: 'no' } });
   const [, g3] = await t1.P('p.get');
   assert.equal(g3.reflections[m].ai, null, 'new reflection clears the old analysis');
 });
@@ -150,7 +154,7 @@ test('research export: only consented people, team work only when all consented,
   const all = await E.team(E.c1, 'כולם', ['research', 'research']);
   const part = await E.team(E.c1, 'חלק', ['research', 'learning']);
   for (const t of [all, part]) { const [, k] = await t.P('p.check', { kind: 'new', url: 'https://example.org/x', title: 'סוד' }); }
-  await part.P('p.reflect', { member: part.r.team.members[1].id, reflect: { feel: 'פרטי', changed: 'no' } });
+  await part.P('p.reflect', { member: part.r.team.members[1].id, post: P8, reflect: { feel: 'פרטי', changed: 'no' } });
   const a = await E.store.get('cra:' + E.A.id);
   const x = await researchExport(E.store, a);
   const s = JSON.stringify(x);
@@ -205,6 +209,11 @@ test('שאלון עמדות ראשוני: עבודת הצוות מתחילה ר�
   { const [sx] = await t.P('p.reflect', { member: m1, pre: full }); assert.equal(sx, 400, 'stance question is required'); }
   await t.P('p.reflect', { member: m1, pre: full, initial: 'עמדה' });
   const [s2] = await t.P('p.check', { kind: 'new', url: 'https://example.org/a' }); assert.equal(s2, 409);
+  { const t2 = await E.team(E.c1, 'פתיחה', ['research', 'research'], true);
+    const [so0] = await t2.P('p.openWork', {}); assert.equal(so0, 409, 'needs one questionnaire');
+    await t2.P('p.reflect', { member: t2.r.team.members[0].id, pre: full, initial: 'עמדה' });
+    const [so, bo] = await t2.P('p.openWork', {}); assert.equal(so, 200); assert.equal(bo.team.workOpen, true);
+    const [sc] = await t2.P('p.check', { kind: 'new', url: 'https://example.org/b' }); assert.equal(sc, 200, 'work area opened'); }
   await t.P('p.reflect', { member: m2, pre: full, initial: 'עמדה' });
   const [s3] = await t.P('p.check', { kind: 'new', url: 'https://example.org/a' }); assert.equal(s3, 200);
   const [, g] = await t.P('p.get');

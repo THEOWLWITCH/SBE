@@ -113,7 +113,8 @@
       + '<div class="dlm-steps" role="tablist">' + [['checks', 'בדיקת מקורות'], ['reflect', 'עמדה ורפלקציה'], ['team', 'הצוות'], ['scale', 'המחוון']].map((x) => '<button type="button" role="tab" data-tab="' + x[0] + '"' + (S.tab === x[0] ? ' aria-current="step"' : '') + '>' + x[1] + '</button>').join('') + '</div></div>';
     let body = '';
     const missingPre = t.members.filter((m) => !(D.reflections[m.id] || {}).pre);
-    if (S.tab === 'checks') body = missingPre.length ? preView(missingPre) : (S.open ? checkView(D.checks.find((k) => k.id === S.open)) : checksList());
+    const myPreDone = me() && !missingPre.some((m) => m.id === me()) && t.members.some((m) => m.id === me());
+    if (S.tab === 'checks') body = missingPre.length && !(t.workOpen && myPreDone) ? preView(missingPre) : (S.open ? checkView(D.checks.find((k) => k.id === S.open)) : checksList());
     else if (S.tab === 'reflect') body = reflectView();
     else if (S.tab === 'team') body = teamView();
     else body = '<div class="dlm-card">' + M.aboutHTML() + '</div>';
@@ -125,20 +126,24 @@
   // שאלון עמדות: כל היגד בשורה, סולם 1–5
   function attForm(pfx, vals) {
     vals = vals || {};
-    return '<div class="crd-att">' + M.ATTITUDES.map((q, i) => '<fieldset class="crd-att-q"><legend><span class="crd-att-n">' + (i + 1) + '</span> ' + esc(q.t) + '</legend><div class="crd-att-o">'
-      + M.ATT_SCALE.map((o) => '<label title="' + esc(o[1]) + '"><input type="radio" name="' + pfx + q.k + '" value="' + o[0] + '"' + (String(vals[q.k]) === String(o[0]) ? ' checked' : '') + '><span>' + o[0] + '</span></label>').join('')
+    return '<div class="crd-att"><div class="crd-att-head" aria-hidden="true"><span class="crd-att-hq"></span><div class="crd-att-o">' + M.ATT_SCALE.map((o) => '<span class="crd-att-hl">' + esc(o[1]) + '</span>').join('') + '</div></div>' + M.ATTITUDES.map((q, i) => '<fieldset class="crd-att-q"><legend><span class="crd-att-n">' + (i + 1) + '</span> ' + esc(q.t) + '</legend><div class="crd-att-o">'
+      + M.ATT_SCALE.map((o) => '<label title="' + esc(o[1]) + '"><input type="radio" name="' + pfx + q.k + '" value="' + o[0] + '"' + (String(vals[q.k]) === String(o[0]) ? ' checked' : '') + '><span>' + o[0] + '</span><i class="crd-att-sr">' + esc(o[1]) + '</i></label>').join('')
       + '</div></fieldset>').join('')
-      + '<p class="dlm-hint crd-att-key">' + M.ATT_SCALE.map((o) => o[0] + ' ' + esc(o[1])).join(' · ') + '</p></div>';
+      + '</div>';
   }
   const readAtt = (pfx) => { const r = {}; for (const q of M.ATTITUDES) { const c = app.querySelector('input[name="' + pfx + q.k + '"]:checked'); if (!c) return null; r[q.k] = Number(c.value); } return r; };
   function preView(missing) {
-    const t = S.data.team, sel = missing.some((m) => m.id === (S.pm || me())) ? (S.pm || me()) : '';
+    const t = S.data.team, done = t.members.filter((m) => (S.data.reflections[m.id] || {}).pre);
+    const isMiss = (id) => missing.some((m) => m.id === id);
+    const mine = me() && !isMiss(me()) && t.members.find((m) => m.id === me());
+    const sel = isMiss(S.pm) ? S.pm : isMiss(me()) ? me() : (!mine && missing.length === 1 ? missing[0].id : '');
     return '<div class="dlm-card"><h2>' + esc(M.ATT.pre) + '</h2>'
       + '<p>לפני שמתחילים לבדוק מקורות, כל משתתף/ת ממלא/ת שאלון עמדות אישי קצר. עבודת הצוות נפתחת אחרי שכולם מילאו.</p>'
       + '<p class="dlm-hint">' + esc(M.ATT.note) + '</p>'
-      + '<ul class="crd-prelist">' + t.members.map((m) => '<li>' + ((S.data.reflections[m.id] || {}).pre ? '✓ ' : '○ ') + esc(m.name) + '</li>').join('') + '</ul>'
-      + '<label for="pm">השם שלי</label><select id="pm" data-closed><option value="">בחירה</option>' + missing.map((m) => '<option value="' + esc(m.id) + '"' + (sel === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>').join('') + '</select>'
-      + (sel ? attForm('pre-') + '<label for="pi" class="crd-ini-h">' + esc(M.INITIAL.t) + ' <span class="crd-req">(שדה עיקרי)</span> <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="pi" rows="5"></textarea>'
+      + (mine && !t.workOpen ? '<div class="dlm-msg">✓ השאלון של ' + esc(mine.name) + ' נשמר. עוד לא מילאו: ' + missing.map((m) => esc(m.name)).join(', ') + '.</div><p><button class="dlm-btn main" id="openWork">פתיחת אזור העבודה</button></p><p class="dlm-hint">אזור העבודה נפתח לכל הצוות. מי שעוד לא מילא/ה את השאלון ממלא/ת אותו כשנכנס/ת מהמכשיר שלו/ה.</p>' : '')
+      + (done.length && !(mine && !t.workOpen) ? (t.workOpen ? '<p>אזור העבודה פתוח. כבר מילאת? לוחצים על השם: ' + done.map((m) => '<button type="button" class="crd-link" data-pme="' + esc(m.id) + '">' + esc(m.name) + ' ✓</button>').join(' · ') + '</p>' : '<p class="dlm-hint">כבר מילאו: ' + done.map((m) => esc(m.name) + ' ✓').join(' · ') + '</p>') : '')
+      + (missing.length > 1 || !sel ? '<p class="crd-pre-who">' + (mine ? 'ממלאים עכשיו במכשיר הזה בשם אחר? ' : done.length ? 'עוד לא מילאו. מי ממלא/ת עכשיו? ' : 'מי ממלא/ת עכשיו? ') + missing.map((m) => '<button type="button" class="crd-link" data-pm="' + esc(m.id) + '"' + (sel === m.id ? ' aria-pressed="true"' : '') + '>' + esc(m.name) + '</button>').join(' · ') + '</p>' : '')
+      + (sel ? '<h3>השאלון של ' + esc((t.members.find((m) => m.id === sel) || {}).name || '') + '</h3><input type="hidden" id="pm" value="' + esc(sel) + '">' + attForm('pre-') + '<label for="pi" class="crd-ini-h">' + esc(M.INITIAL.t) + ' <span class="crd-req">(שדה עיקרי)</span> <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="pi" rows="5"></textarea>'
         + '<p><button class="dlm-btn main" id="savePre">שליחת השאלון</button></p>' : '')
       + '<div id="pmm"></div></div>';
   }
@@ -217,6 +222,7 @@
   }
   const nameOf = (id) => ((S.data.team.members.find((m) => m.id === id) || {}).name || '');
 
+  const reflectReady = () => !!(S.data.activity.reflectOpen || (S.data.checks || []).some((k) => k.final));
   function reflectView() {
     const t = S.data.team, sel = S.rm || me();
     const m = t.members.find((x) => x.id === sel);
@@ -225,14 +231,14 @@
     if (!local.initial && st.initial && st.initial.text) local.initial = st.initial.text;
     const r = local.reflect || (st.reflect && typeof st.reflect === 'object' ? st.reflect : {});
     return '<div class="dlm-card"><h2>עמדה ורפלקציה</h2><p class="dlm-hint">כל אחד ואחת כותב/ת את הרפלקציה בעצמו/ה. הרפלקציה משותפת עם הצוות, וה־AI מנתח אותה לפי קריטריונים שנקבעו מראש.</p>'
-      + '<label for="rm">השם שלי</label><select id="rm" data-closed><option value="">בחירה</option>' + t.members.map((x) => '<option value="' + esc(x.id) + '"' + (sel === x.id ? ' selected' : '') + '>' + esc(x.name) + ((S.data.reflections[x.id] || {}).reflect ? ' ✓' : '') + '</option>').join('') + '</select>'
+      + (m ? '<input type="hidden" id="rm" value="' + esc(m.id) + '"><p class="crd-pre-who">' + esc(m.name) + ' · <button type="button" class="crd-link" data-rmx="1">לא ' + esc(m.name) + '? בחירת שם אחר</button></p>' : '<p class="crd-pre-who">מי כותב/ת עכשיו? ' + t.members.map((x) => '<button type="button" class="crd-link" data-rmp="' + esc(x.id) + '">' + esc(x.name) + ((S.data.reflections[x.id] || {}).reflect ? ' ✓' : '') + '</button>').join(' · ') + '</p>')
       + (!m ? '' : (st.initial && st.initial.text ? '<h3>' + esc(M.INITIAL.h) + '</h3><p class="crd-quote">' + esc(st.initial.text) + '</p>' : '')
+        + (!reflectReady() ? '<div class="dlm-msg">הרפלקציה ושאלון העמדות המסכם נפתחים בסיום התרגיל: אחרי שבדיקה של מקור אחד לפחות מגיעה להערכה החוזרת (שלב 5).</div>' : '<h3>' + esc(M.ATT.post) + ' <span class="crd-req">(שדה עיקרי)</span>' + (st.post ? ' ✓ נשלח' : '') + '</h3><p class="dlm-hint">אותם היגדים כמו בהתחלה, כדי לראות אם משהו השתנה. התשובות האישיות לא מוצגות לצוות.</p>'
+        + attForm('post-')
         + '<h3>רפלקציה' + (st.reflect ? ' ✓ נשלחה' : '') + '</h3><p class="dlm-hint">' + esc(M.REFLECT_NOTE) + '</p>'
         + M.REFLECT.map((q) => q.opts ? '<fieldset class="crd-fs"><legend>' + esc(q.t) + '</legend>' + q.opts.map((o) => '<label><input type="radio" name="rf-' + q.k + '" value="' + o[0] + '"' + (r[q.k] === o[0] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>').join(' ') + '</fieldset>'
           : '<div class="crd-q" data-when="' + esc((q.when || []).join(',')) + '"><label for="rf-' + q.k + '">' + esc(q.t) + ' <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="rf-' + q.k + '" rows="3" placeholder="' + esc(q.ph || '') + '">' + esc(r[q.k] || '') + '</textarea></div>').join('')
-        + '<p><button class="dlm-btn main" id="saveRefl">שליחת הרפלקציה</button></p>'
-        + '<h3>' + esc(M.ATT.post) + (st.post ? ' ✓ נשלח' : '') + '</h3><p class="dlm-hint">אותם היגדים כמו בהתחלה, כדי לראות אם משהו השתנה. התשובות האישיות לא מוצגות לצוות.</p>'
-        + attForm('post-') + '<p><button class="dlm-btn" id="savePost">שליחת השאלון המסכם</button></p>') + '<div id="rmm"></div></div>'
+        + '<p><button class="dlm-btn main" id="saveRefl">שליחת השאלון והרפלקציה</button></p>')) + '<div id="rmm"></div></div>'
       + teamReflections();
   }
   // הרפלקציות של הצוות, עם ניתוח ה־AI לפי הקריטריונים
@@ -271,7 +277,6 @@
       + '<label for="tn2">שם הצוות</label><input type="text" id="tn2" value="' + esc(t.name) + '">'
       + '<div id="mrows">' + t.members.map(memberRow).join('') + '</div><p><button class="crd-link" id="addm">➕ משתתף/ת נוסף/ת</button></p>'
       + '<p><button class="dlm-btn main" id="saveTeamM">שמירה</button></p><div id="tm"></div>'
-      + '<details><summary>' + esc(M.CONSENT.title) + '</summary>' + M.CONSENT.text.map((x) => '<p>' + esc(x) + '</p>').join('') + '</details>'
       + '<p class="dlm-hint">יציאה מהצוות במכשיר הזה: <button class="crd-link" id="leave">יציאה</button></p></div>';
   }
 
@@ -385,12 +390,15 @@
       await saveCheck('team', { id: k.id, score: Number(s), why: $('#tw').value, basis: $('#tb').value }); S.stage = 'final'; S.stageFor = k.id; render();
     }));
     // רפלקציה
-    const rm = $('#rm'); if (rm) rm.onchange = () => { S.rm = rm.value; if (rm.value) setMe(rm.value); render(); };
+    app.querySelectorAll('[data-rmp]').forEach((x) => { x.onclick = () => { S.rm = x.dataset.rmp; setMe(x.dataset.rmp); render(); }; });
+    app.querySelectorAll('[data-rmx]').forEach((x) => { x.onclick = () => { S.rm = '-'; render(); }; });
     const toggleWhen = () => { const v = (app.querySelector('input[name=rf-changed]:checked') || {}).value || ''; app.querySelectorAll('.crd-q[data-when]').forEach((q) => { const w = q.dataset.when; q.hidden = !!w && !w.split(',').includes(v); }); };
     app.querySelectorAll('input[name=rf-changed]').forEach((r) => { r.onchange = toggleWhen; }); toggleWhen();
     const lk = () => 'sbe.crd.refl.' + S.cred.t + '.' + $('#rm').value;
     const keepLocal = (patch) => { try { const cur = JSON.parse(localStorage.getItem(lk()) || '{}'); localStorage.setItem(lk(), JSON.stringify(Object.assign(cur, patch))); } catch (e) {} };
-    const pm = $('#pm'); if (pm) pm.onchange = () => { S.pm = pm.value; render(); };
+    app.querySelectorAll('[data-pm]').forEach((x) => { x.onclick = () => { S.pm = x.dataset.pm; setMe(x.dataset.pm); render(); }; });
+    app.querySelectorAll('[data-pme]').forEach((x) => { x.onclick = () => { setMe(x.dataset.pme); S.tab = 'checks'; render(); }; });
+    on('#openWork', () => act(async () => { const r = await call('p.openWork', {}); S.data.team = r.team; S.tab = 'checks'; render(); window.scrollTo(0, 0); }, $('#pmm')));
     on('#savePre', () => act(async () => {
       const id = $('#pm').value, pre = readAtt('pre-');
       if (!id) throw new Error('אפשר לבחור את השם שלך.');
@@ -401,18 +409,13 @@
       if (!me()) setMe(id);
       S.pm = ''; window.scrollTo(0, 0); await load();
     }, $('#pmm')));
-    on('#savePost', () => act(async () => {
-      const post = readAtt('post-');
-      if (!post) throw new Error('כדי לשלוח, אפשר לבחור תשובה בכל אחד מההיגדים.');
-      await call('p.reflect', { member: $('#rm').value, post });
-      S.data.reflections[$('#rm').value] = Object.assign({}, S.data.reflections[$('#rm').value], { post: true });
-      $('#rmm').innerHTML = msg('השאלון המסכם נשמר. תודה!');
-    }, $('#rmm')));
     on('#saveRefl', () => act(async () => {
       const r = {}; for (const q of M.REFLECT) r[q.k] = q.opts ? ((app.querySelector('input[name=rf-' + q.k + ']:checked') || {}).value || '') : $('#rf-' + q.k).value;
-      await call('p.reflect', { member: $('#rm').value, reflect: r }); keepLocal({ reflect: r });
+      const post = readAtt('post-'), had = (S.data.reflections[$('#rm').value] || {}).post;
+      if (!post && !had) throw new Error('כדי לשלוח, אפשר לבחור תשובה בכל אחד מההיגדים בשאלון העמדות המסכם.');
+      await call('p.reflect', Object.assign({ member: $('#rm').value, reflect: r }, post ? { post } : {})); keepLocal({ reflect: r });
       const id = $('#rm').value;
-      S.data.reflections[id] = Object.assign({}, S.data.reflections[id], { reflect: r, ai: null }); render(); $('#rmm').innerHTML = msg('הרפלקציה נשלחה. תודה! עכשיו ה־AI מנתח אותה.');
+      S.data.reflections[id] = Object.assign({}, S.data.reflections[id], { reflect: r, post: true, ai: null }); render(); $('#rmm').innerHTML = msg('הרפלקציה נשלחה. תודה! עכשיו ה־AI מנתח אותה.');
       try { await analyzeReflection(id); render(); $('#rmm').innerHTML = msg('הרפלקציה נשלחה ונותחה.'); } catch (e) { render(); $('#rmm').innerHTML = msg('הרפלקציה נשלחה. הניתוח לא הצליח: ' + (e.message || '') + ' אפשר ללחוץ על "ניתוח ה־AI".'); }
     }, $('#rmm')));
     app.querySelectorAll('[data-rai]').forEach((b) => { b.onclick = () => act(async () => { await analyzeReflection(b.dataset.rai); render(); }, $('#rmm')); });
