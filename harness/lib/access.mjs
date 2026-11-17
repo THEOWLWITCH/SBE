@@ -1996,7 +1996,9 @@ export function supabaseStore(url, key, { fetchImpl = fetch, timeoutMs } = {}) {
         return (await r.json()).length === 1;
       }
       if (!Number.isInteger(expectedRevision) || expectedRevision < 0) throw new Error('invalid revision');
-      const r = await check(await request(`${base}?key=eq.${encodeURIComponent(k)}&value->>revision=eq.${expectedRevision}&select=key`, {
+      // רשומה שנשמרה בלי revision (למשל פעילות שנוצרה ב-set) נחשבת revision 0. בלי זה כל עדכון שלה נכשל לתמיד ב"עודכן בדיוק עכשיו".
+      const revFilter = expectedRevision === 0 ? 'or=(value->>revision.eq.0,value->>revision.is.null)' : `value->>revision=eq.${expectedRevision}`;
+      const r = await check(await request(`${base}?key=eq.${encodeURIComponent(k)}&${revFilter}&select=key`, {
         method: 'PATCH', headers: { ...headers, Prefer: 'return=representation' },
         body: JSON.stringify({ value, updated_at: new Date().toISOString() })
       }));

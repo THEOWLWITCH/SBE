@@ -93,7 +93,7 @@ function consentView(a) {
   const r = a.research || {};
   return { version: r.consentVersion || M.CONSENT_VERSION, sections: M.CONSENT.sections.map((s) => ({ k: s.k, t: s.t,
     d: (r.sections && typeof r.sections[s.k] === 'string' && r.sections[s.k].trim()) ? r.sections[s.k] : (s.k === 'who' ? M.CONSENT.researchers + ' · ' + M.CONSENT.institutions : s.k === 'contact' ? (r.contact || s.d) : s.d) })),
-    ethics: r.ethics || M.CONSENT.ethics, research: M.CONSENT.research, learning: M.CONSENT.learning, note: M.CONSENT.note, recording: M.CONSENT.recording };
+    ethics: (r.ethics || '').trim(), research: M.CONSENT.research, learning: M.CONSENT.learning, note: M.CONSENT.note, recording: M.CONSENT.recording };
 }
 function publicSource(s) {
   return { id: s.id, origin: s.origin, title: s.title, publisher: s.publisher, date: s.date, type: s.type, url: s.url, fileId: s.fileId || '', fileName: s.fileName || '',
@@ -255,7 +255,10 @@ export async function handleDilemma(store, body, { who, pause = async () => {}, 
         const parts = (await store.list('dlp:' + a.id + ':')).map((r) => r.value).filter(Boolean);
         const stats = { participants: parts.length, research: parts.filter((p) => p.consent && p.consent.type === 'research').length,
           learning: parts.filter((p) => p.consent && p.consent.type === 'learning').length,
-          byGroup: Object.fromEntries(a.classes.flatMap((c) => c.groups).map((g) => [g.id, parts.filter((p) => p.groupId === g.id).length])) };
+          byGroup: Object.fromEntries(a.classes.flatMap((c) => c.groups).map((g) => [g.id, parts.filter((p) => p.groupId === g.id).length])),
+          // רשימת הבחירות לפי קוד אישי אקראי בלבד (בלי שמות), למנחה ולחוקרות
+          consents: parts.map((p) => ({ code: p.pcode, classId: p.classId, groupId: p.groupId, type: (p.consent || {}).type || '', at: (p.consent || {}).at || '',
+            withdrawData: !!(p.consent || {}).withdrawData, changed: (p.consentHistory || []).length > 1 })).sort((x, y) => String(x.at).localeCompare(String(y.at))) };
         return [200, { activity: viewAct(a, me), stats }];
       }
       if (op === 'f.update') {
