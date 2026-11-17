@@ -11,7 +11,7 @@
   const ZCOL = { claims: '#2A9D8F', sources: '#1D3F63', missing: '#E9A23B', alternatives: '#8AB17D', certainty: '#9B5DE5', questions: '#E76F51' };
   const REL_COL = { supports: '#2E9E32', weakens: '#EF6C00', contradicts: '#C62828', raises: '#1D3F63', check: '#9B5DE5' };
   let busy = false;
-  const view = { zoom: 0.7, sx: null, sy: null, zones: true };
+  const view = { zoom: 0.7, sx: null, sy: null, zones: true, full: false };
   try { const v = JSON.parse(localStorage.getItem('sbe.dlm.map.view') || 'null'); if (v) Object.assign(view, { zoom: v.zoom || 0.7, zones: v.zones !== false }); } catch (e) {}
   const saveView = () => { try { localStorage.setItem('sbe.dlm.map.view', JSON.stringify({ zoom: view.zoom, zones: view.zones })); } catch (e) {} };
 
@@ -74,10 +74,11 @@
         + '<input type="text" aria-label="כרטיס חדש" placeholder="כרטיס חדש: טענה, שאלה, מידע חסר…"><button class="dlm-btn small main">➕ כרטיס</button></form>'
         + '<button type="button" class="dlm-btn small" data-addsrc="1">➕ מקור או קובץ</button><button type="button" class="dlm-btn small" data-kadd="1">🗂 קבוצה חדשה</button>')
       + '<span class="mm-sp"></span><button type="button" class="dlm-btn small" data-zoom="-1" aria-label="הקטנה">−</button><button type="button" class="dlm-btn small" data-zoom="0" title="התאמה למסך">⤢</button><button type="button" class="dlm-btn small" data-zoom="1" aria-label="הגדלה">+</button>'
-      + '<label class="mm-zt"><input type="checkbox" data-zones' + (view.zones ? ' checked' : '') + '> אזורי הלוח</label></div>'
+      + '<label class="mm-zt"><input type="checkbox" data-zones' + (view.zones ? ' checked' : '') + '> אזורי הלוח</label>'
+      + '<button type="button" class="dlm-btn small main" data-full="1">' + (view.full ? '✕ יציאה ממסך מלא' : '⛶ מסך מלא') + '</button></div>'
       + (o.readOnly ? '' : '<p class="dlm-hint mm-help">גוררים כרטיס לכל מקום בלוח. כרטיס שנגרר לתוך קבוצה מצטרף אליה. "⧉ ערימה" מקבצת את הכרטיסים של הקבוצה, ו"⋯" פותח פעולות על כרטיס.</p>');
-    return tools + '<div class="mm-view" tabindex="0" aria-label="הלוח כמפת חשיבה"><div class="mm-size" style="width:' + Math.round(W * view.zoom) + 'px;height:' + Math.round(H * view.zoom) + 'px">'
-      + '<div class="mm-canvas" style="width:' + W + 'px;height:' + H + 'px;transform:scale(' + view.zoom + ')">' + zonesBg + clusterHTML + '<svg class="mm-lines" width="' + W + '" height="' + H + '"></svg>' + cards + '</div></div></div>';
+    return '<div class="mm-wrap' + (view.full ? ' mm-full' : '') + '">' + tools + '<div class="mm-view" tabindex="0" aria-label="הלוח כמפת חשיבה"><div class="mm-size" style="width:' + Math.round(W * view.zoom) + 'px;height:' + Math.round(H * view.zoom) + 'px">'
+      + '<div class="mm-canvas" style="width:' + W + 'px;height:' + H + 'px;transform:scale(' + view.zoom + ')">' + zonesBg + clusterHTML + '<svg class="mm-lines" width="' + W + '" height="' + H + '"></svg>' + cards + '</div></div></div></div>';
   }
 
   function drawLines(root, board) {
@@ -106,6 +107,9 @@
       view.zoom = d === 0 ? Math.max(0.3, Math.min(1, (vw.clientWidth - 20) / (canvas.offsetWidth || W))) : Math.max(0.3, Math.min(1.6, +(view.zoom + d * 0.15).toFixed(2)));
       saveView(); o.refresh();
     });
+    // 17/11/2026 ("אפשר לפרוס את הלוח על רוב המסך שלי גם במצב עבודה"): מסך מלא, עם כל הכלים. Esc יוצא.
+    const fb = root.querySelector('[data-full]'); if (fb) fb.onclick = () => { view.full = !view.full; o.refresh(); };
+    if (!window.__mmEsc) { window.__mmEsc = true; document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && view.full && !document.querySelector('dialog[open]')) { const b = document.querySelector('.mm-full [data-full]'); if (b) b.click(); } }); }
     const zt = root.querySelector('[data-zones]'); if (zt) zt.onchange = () => { view.zones = zt.checked; saveView(); o.refresh(); };
     const zs = root.querySelector('.mm-zsel'); if (zs) zs.onchange = () => { zs.closest('form').dataset.addto = zs.value; };
     root.querySelectorAll('.mm-more').forEach((d) => d.addEventListener('toggle', () => { busy = d.open; if (d.open) root.querySelectorAll('.mm-more[open]').forEach((x) => { if (x !== d) x.open = false; }); }));

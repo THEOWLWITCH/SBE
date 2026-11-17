@@ -134,3 +134,9 @@ html.dlm-proj-on{overflow:hidden}
 .mm-cluster.stacked{box-shadow:4px 4px 0 color-mix(in srgb,var(--kc) 25%,#fff),8px 8px 0 color-mix(in srgb,var(--kc) 12%,#fff)}
 .dlm-boardwrap.mm-wide{grid-template-columns:1fr}
 .mm-card.in-stack{height:96px;overflow:hidden}
+
+/* מסך מלא (17/11/2026) */
+.mm-wrap.mm-full{position:fixed;inset:8px;z-index:9000;background:#fff;border-radius:14px;box-shadow:0 10px 40px rgba(20,30,50,.25);padding:10px 12px;display:flex;flex-direction:column}
+.mm-wrap.mm-full .mm-view{flex:1;height:auto;min-height:0}
+html:has(.mm-full),html:has(.mm-full) body{overflow:hidden}
+dialog{z-index:9500}
