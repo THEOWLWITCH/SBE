@@ -50,12 +50,14 @@
     const nb = $('#new'); if (nb) nb.onclick = () => newTeam(info);
   }
   function memberRow(m, i) {
+    const learn = m.consent === 'learning';
     return '<div class="crd-mrow" data-i="' + i + '"><input type="text" class="mn" aria-label="שם משתתף/ת ' + (i + 1) + '" placeholder="שם מלא" value="' + esc(m.name || '') + '">'
-      + '<label><input type="radio" name="mc' + i + '" value="research"' + (m.consent === 'research' ? ' checked' : '') + '> ' + esc(M.CONSENT.research) + '</label>'
-      + '<label><input type="radio" name="mc' + i + '" value="learning"' + (m.consent === 'learning' ? ' checked' : '') + '> ' + esc(M.CONSENT.learning) + '</label>'
+      + (learn ? '<span class="dlm-hint">סומן/ה בידי המנחה: רק ללמידה</span><input type="hidden" class="mlearn" value="1">'
+        : '<label><input type="checkbox" class="msign"' + (m.consent === 'research' ? ' checked' : '') + '> ' + esc(M.CONSENT.research) + '</label>')
       + (m.id ? '<input type="hidden" class="mid" value="' + esc(m.id) + '">' : '') + '</div>';
   }
-  const readMembers = (root) => [...root.querySelectorAll('.crd-mrow')].map((r) => ({ id: (r.querySelector('.mid') || {}).value, name: r.querySelector('.mn').value.trim(), consent: (r.querySelector('input[type=radio]:checked') || {}).value }))
+  const readMembers = (root) => [...root.querySelectorAll('.crd-mrow')].map((r) => ({ id: (r.querySelector('.mid') || {}).value, name: r.querySelector('.mn').value.trim(),
+    consent: r.querySelector('.mlearn') ? 'learning' : ((r.querySelector('.msign') || {}).checked ? 'research' : '') }))
     .filter((m) => m.name || m.id);
   function consentHTML(a) {
     return '<details class="crd-consent" open><summary><b>' + esc(M.CONSENT.title) + '</b></summary>' + M.CONSENT.text.map((t) => '<p>' + esc(t) + '</p>').join('')
@@ -65,14 +67,14 @@
     const rows = [{}, {}, {}, {}];
     app.innerHTML = '<div class="dlm-card"><h1>פתיחת צוות</h1>' + consentHTML(info.activity)
       + '<label for="tn">שם הצוות</label><input type="text" id="tn" maxlength="80" placeholder="למשל: צוות 3">'
-      + '<h3>המשתתפים בצוות</h3><p class="dlm-hint">לכל משתתף/ת: שם, והבחירה האישית לגבי המחקר. כל בחירה בסדר גמור, ואפשר לשנות אותה בהמשך.</p>'
+      + '<h3>המשתתפים בצוות</h3><p class="dlm-hint">לכל משתתף/ת: שם, וחתימה על ההסכמה.</p>'
       + '<div id="mrows">' + rows.map(memberRow).join('') + '</div><p><button class="dlm-btn small" id="addm">➕ משתתף/ת נוסף/ת</button></p>'
       + '<p><button class="dlm-btn main" id="save">פתיחת הצוות</button> <button class="dlm-btn" id="back">חזרה</button></p><div id="m"></div></div>';
     $('#addm').onclick = () => { const n = $('#mrows').children.length; if (n < 8) $('#mrows').insertAdjacentHTML('beforeend', memberRow({}, n)); };
     $('#back').onclick = start;
     $('#save').onclick = async () => {
       const members = readMembers($('#mrows'));
-      if (members.some((m) => !m.consent)) { $('#m').innerHTML = msg('לכל משתתף/ת אפשר לבחור אם להסכים להשתתף במחקר.', 'err'); return; }
+      if (members.some((m) => !m.consent)) { $('#m').innerHTML = msg('כדי לפתוח את הצוות, כל משתתף/ת חותם/ת על ההסכמה.', 'err'); return; }
       try {
         const r = await U.api('p.teamCreate', { code: classCode, name: $('#tn').value, members });
         S.cred = { a: r.a, t: r.t, key: r.key }; saveCred(classCode, S.cred);
@@ -369,7 +371,7 @@
     app.querySelectorAll('[data-rai]').forEach((b) => { b.onclick = () => act(async () => { await analyzeReflection(b.dataset.rai); render(); }, $('#rmm')); });
     // הצוות
     on('#addm', () => { const n = $('#mrows').children.length; if (n < 8) $('#mrows').insertAdjacentHTML('beforeend', memberRow({}, n)); });
-    on('#saveTeamM', () => act(async () => { const members = readMembers($('#mrows')); if (members.some((m) => !m.consent)) throw new Error('לכל משתתף/ת אפשר לבחור אם להסכים להשתתף במחקר.'); const r = await call('p.members', { members, name: $('#tn2').value }); S.data.team = r.team; render(); $('#tm').innerHTML = msg('נשמר.'); }, $('#tm')));
+    on('#saveTeamM', () => act(async () => { const members = readMembers($('#mrows')); if (members.some((m) => !m.consent)) throw new Error('כדי לשמור, כל משתתף/ת חותם/ת על ההסכמה.'); const r = await call('p.members', { members, name: $('#tn2').value }); S.data.team = r.team; render(); $('#tm').innerHTML = msg('נשמר.'); }, $('#tm')));
     on('#leave', async () => { if (await U.ask('לצאת מהצוות במכשיר הזה? אפשר לחזור עם קוד הצוות.')) { saveCred(classCode, null); S.cred = null; clearInterval(S.timer); start(); } });
     scrollChat();
   }

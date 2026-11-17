@@ -81,7 +81,7 @@
   function teamsTab() {
     const n = $('#tab');
     if (!S.teams.length) { n.innerHTML = '<div class="dlm-card"><p>עוד לא נפתחו צוותים. הצוותים נפתחים בסריקת ה־QR של הכיתה.</p></div>'; return; }
-    n.innerHTML = '<div class="dlm-card"><h3>הצוותים</h3><p class="dlm-hint">הציונים: AI ראשונה ← הצוות ← AI חוזרת. ✓ = מסכים/ה למחקר, ○ = רק ללמידה.</p><div class="crd-tablewrap"><table class="dlm-table"><thead><tr><th>צוות</th><th>כיתה</th><th>משתתפים</th><th>מקורות שנבדקו</th><th>רפלקציות</th><th>ציון בתרגיל</th><th></th></tr></thead><tbody>'
+    n.innerHTML = '<div class="dlm-card"><h3>הצוותים</h3><p class="dlm-hint">הציונים: AI ראשונה ← הצוות ← AI חוזרת. ✓ = חתם/ה על ההסכמה, ○ = רק ללמידה (חריג שהמנחה סימנה).</p><div class="crd-tablewrap"><table class="dlm-table"><thead><tr><th>צוות</th><th>כיתה</th><th>משתתפים</th><th>מקורות שנבדקו</th><th>רפלקציות</th><th>ציון בתרגיל</th><th></th></tr></thead><tbody>'
       + S.teams.map((t) => '<tr><td><b>' + esc(t.name) + '</b><br><span class="dlm-hint" dir="ltr">' + esc(t.code) + '</span></td><td>' + esc(cname(t.classId)) + '</td><td>' + t.members.map((m) => esc(m.name) + ' ' + (m.consent === 'research' ? '✓' : '○')).join('<br>') + '</td>'
         + '<td>' + (t.checks.length ? t.checks.map((k) => '<div>' + esc(k.title.slice(0, 40)) + ' ' + [k.first, k.team, k.final].map((v) => M.dotHTML(v === undefined ? null : v)).join(' ') + ' <span class="dlm-hint">' + k.ext + ' מקורות</span></div>').join('') : '—') + '</td>'
         + '<td>' + t.reflections.filter((r) => r.reflect).length + ' מתוך ' + t.members.length + '</td><td>' + (t.grade && t.grade.total != null ? '<b>' + t.grade.total + '</b>' : '—') + '</td>'
@@ -102,7 +102,7 @@
       + (k.team ? '<h4>הציון של הצוות: ' + M.dotHTML(k.team.score) + '</h4><p>' + esc(k.team.why) + '</p>' + (k.team.basis ? '<p><b>מול ה־AI:</b> ' + esc(k.team.basis) + '</p>' : '') : '')
       + U.assessHTML(k.final, 'AI, הערכה חוזרת') + '</details>';
     const refl = t.members.map((m) => { const r = d.reflections[m.id] || {}; const rf = r.reflect;
-      return '<details class="dlm-card soft"><summary><b>' + esc(m.name) + '</b> ' + (m.consent === 'research' ? '✓ מחקר' : '○ רק ללמידה') + ' · ' + (r.initial ? 'עמדה ראשונית ✓' : 'בלי עמדה ראשונית') + ' · ' + (rf ? 'רפלקציה ✓' : 'עוד בלי רפלקציה') + '</summary>'
+      return '<details class="dlm-card soft"><summary><b>' + esc(m.name) + '</b> ' + (m.consent === 'research' ? '✓ חתם/ה על ההסכמה' : '○ רק ללמידה (חריג)') + ' · ' + (r.initial ? 'עמדה ראשונית ✓' : 'בלי עמדה ראשונית') + ' · ' + (rf ? 'רפלקציה ✓' : 'עוד בלי רפלקציה') + '</summary>'
         + (r.initial ? '<h4>' + esc(M.INITIAL.t) + '</h4><p>' + esc(r.initial.text) + '</p>' : '')
         + (rf ? M.REFLECT.map((q) => rf[q.k] ? '<h4>' + esc(q.t) + '</h4><p>' + esc(q.opts ? (q.opts.find((o) => o[0] === rf[q.k]) || [])[1] : rf[q.k]) + '</p>' : '').join('') : '') + reflAI(r.ai) + '</details>'; }).join('');
     function reflAI(ai) {
@@ -119,13 +119,22 @@
       + '</tbody></table></div><label for="gn">הערה לצוות</label><textarea id="gn" rows="2">' + esc(g.note || '') + '</textarea><p><button class="dlm-btn main" id="gs">שמירת הציון</button> <b id="gt">' + (g.total != null ? 'סך הכול: ' + g.total : '') + '</b></p><div id="gm"></div>';
     dlgBody.innerHTML = '<h2>' + esc(t.name) + '</h2><p class="dlm-hint">' + esc(cname(t.classId)) + ' · קוד הצוות: ' + esc(t.code) + '</p>'
       + '<h3>המקורות שנבדקו (' + d.checks.length + ')</h3>' + (d.checks.map(checkHTML).join('') || '<p>עוד אין.</p>')
-      + '<h3>עמדות ורפלקציות</h3>' + refl + grade
+      + '<h3>עמדות ורפלקציות</h3>' + refl
+      + '<details class="dlm-card soft"><summary>חריג בהסכמה למחקר</summary><p class="dlm-hint">כל משתתף/ת חותם/ת על ההסכמה בכניסה לצוות. כשצריך לפתור מקרה נקודתי, אפשר לסמן כאן "רק ללמידה": העבודה נשארת בכלי, ולא נכנסת לייצוא המחקרי.</p>'
+      + t.members.map((m) => '<p><label><input type="checkbox" class="cx" value="' + esc(m.id) + '"' + (m.consent === 'learning' ? ' checked' : '') + '> ' + esc(m.name) + ': רק ללמידה</label></p>').join('')
+      + '<p><button class="dlm-btn small" id="cxs">שמירת החריגים</button></p><div id="cxm"></div></details>' + grade
       + '<p style="margin-top:1.5rem"><button class="dlm-btn small" id="tdel" style="color:#b3261e">מחיקת הצוות</button></p>';
     dlgBody.querySelectorAll('[data-f]').forEach((b) => { b.onclick = async () => { try { U.showFile(await call('f.file', { id: S.a.id, fid: b.dataset.f })); } catch (e) { U.say(e.message); } }; });
     $('#gs').onclick = async () => {
       const gr = {}; for (const c of M.GRADE.criteria) { const v = (dlgBody.querySelector('input[name=g-' + c.k + ']:checked') || {}).value; if (v) gr[c.k] = Number(v); }
       try { const r = await call('f.grade', { id: S.a.id, teamId: t.id, grade: gr, note: $('#gn').value }); $('#gt').textContent = r.grade.total != null ? 'סך הכול: ' + r.grade.total : ''; $('#gm').innerHTML = msg('נשמר.'); delete S.details[t.id]; }
       catch (e) { $('#gm').innerHTML = msg(e.message, 'err'); }
+    };
+    $('#cxs').onclick = async () => {
+      const learn = new Set([...dlgBody.querySelectorAll('.cx:checked')].map((x) => x.value));
+      const members = t.members.map((m) => ({ id: m.id, name: m.name, consent: learn.has(m.id) ? 'learning' : 'research' }));
+      try { const r = await call('f.teamEdit', { id: S.a.id, teamId: t.id, members }); t.members = r.team.members; delete S.details[t.id]; $('#cxm').innerHTML = msg('נשמר.'); }
+      catch (e) { $('#cxm').innerHTML = msg(e.message, 'err'); }
     };
     $('#tdel').onclick = async () => { if (await U.ask('למחוק את הצוות "' + t.name + '" וכל העבודה שלו? אי אפשר לבטל.', { ok: 'מחיקה' })) { try { await call('f.teamRemove', { id: S.a.id, teamId: t.id }); dlg.close(); open(S.a.id); } catch (e) { U.say(e.message); } } };
   }

@@ -26,8 +26,12 @@ async function setup() {
   const c1 = (await fac('f.classAdd', { id: activity.id, name: 'כיתה א' })).class;
   const c2 = (await fac('f.classAdd', { id: activity.id, name: 'כיתה ב' })).class;
   const team = async (cls, name, consents = ['research', 'research']) => {
-    const [s, r] = await run('p.teamCreate', { code: cls.code, name, members: consents.map((c, i) => ({ name: 'משתתפת ' + i, consent: c })) });
+    const [s, r] = await run('p.teamCreate', { code: cls.code, name, members: consents.map((c, i) => ({ name: 'משתתפת ' + i, consent: 'research' })) });
     assert.equal(s, 201, JSON.stringify(r));
+    if (consents.includes('learning')) {
+      const ed = await fac('f.teamEdit', { id: activity.id, teamId: r.t, members: r.team.members.map((m, i) => ({ ...m, consent: consents[i] })) });
+      r.team = ed.team;
+    }
     const cred = { a: r.a, t: r.t, key: r.key };
     return { r, cred, P: (op, input) => run(op, input || {}, cred) };
   };
@@ -59,7 +63,7 @@ test('team entry: up to 10 teams per class, consent per member, join only with t
   const [sx] = await E.run('p.teamJoin', { code: E.c2.code, tcode: t1.r.team.code });
   assert.equal(sx, 404, 'team code from another class');
   for (let i = 2; i <= 10; i++) await E.team(E.c1, 'צוות ' + i);
-  const [sf] = await E.run('p.teamCreate', { code: E.c1.code, name: 'צוות 11', members: [{ name: 'x', consent: 'learning' }] });
+  const [sf] = await E.run('p.teamCreate', { code: E.c1.code, name: 'צוות 11', members: [{ name: 'x', consent: 'research' }] });
   assert.equal(sf, 409);
   const [, info] = await E.run('p.class', { code: E.c1.code });
   assert.equal(info.full, true); assert.equal(info.teams.length, 10);
@@ -175,4 +179,15 @@ test('integration: permission, pages, about, map, pocket', () => {
   assert.match(pocket, /credibility-join.html/); assert.doesNotMatch(pocket, /access-guard/);
   const join = read('credibility-join.html');
   assert.doesNotMatch(join, /access-guard|screens-menu|home\.html/);
+});
+
+test('consent: teams sign; "learning only" is a lecturer exception that a team cannot set or undo', async () => {
+  const E = await setup();
+  const [sl] = await E.run('p.teamCreate', { code: E.c1.code, name: 'א', members: [{ name: 'רונית', consent: 'learning' }] });
+  assert.equal(sl, 400, 'a team cannot choose learning only');
+  const t = await E.team(E.c1, 'צוות 1', ['research', 'learning']);
+  assert.equal(t.r.team.members[1].consent, 'learning');
+  const [, r] = await t.P('p.members', { members: t.r.team.members.map((m) => ({ id: m.id, name: m.name, consent: 'research' })) });
+  assert.equal(r.team.members[1].consent, 'learning', 'the exception stays when the team saves again');
+  assert.ok(!M.CONSENT.text.join(' ').includes('בלי להסכים'), 'no opt-out wording');
 });

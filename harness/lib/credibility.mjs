@@ -88,12 +88,17 @@ const publicActivity = (a, c) => ({ id: a.id, title: a.title, dilemma: a.dilemma
   class: c ? { id: c.id, name: c.name } : null, consent: { ...M.CONSENT, ethics: a.research.ethics || '', contact: a.research.contact || '' } });
 const teamView = (t) => ({ id: t.id, name: t.name, code: t.tcode, classId: t.classId, members: t.members.map((m) => ({ id: m.id, name: m.name, consent: m.consent })), createdAt: t.createdAt });
 
-function members(list, old) {
+// ההסכמה (17/11/2026: "יש לחתום על הסכמה אבל לא לכתוב במצגת שזה לבחירה - המנחות יפתרו בעיות נקודתיות"):
+// בצוות כל משתתף/ת חותם/ת על ההסכמה (research). "רק ללמידה" הוא חריג שרק המנחה מסמנת (f.teamEdit),
+// והוא נשמר כשהצוות שומר שוב את רשימת המשתתפים.
+function members(list, old, byFac = false) {
   const arr = (Array.isArray(list) ? list : []).slice(0, LIM.members);
   const out = arr.map((m) => {
     const prev = old && m && m.id ? old.find((x) => x.id === m.id) : null;
-    const consent = m && ['research', 'learning'].includes(m.consent) ? m.consent : null;
-    if (!consent) throw new CrdError('כל משתתף/ת בוחר/ת אם להסכים להשתתף במחקר');
+    let consent = m && ['research', 'learning'].includes(m.consent) ? m.consent : null;
+    if (!byFac && consent === 'learning') consent = prev && prev.consent === 'learning' ? 'learning' : null;
+    if (!byFac && prev && prev.consent === 'learning') consent = 'learning';
+    if (!consent) throw new CrdError('כדי להמשיך, כל משתתף/ת חותם/ת על ההסכמה');
     const name = txt(m && m.name, 'שם המשתתף/ת', 80, true);
     const rec = { id: prev ? prev.id : sid('m'), name, consent, at: prev && prev.consent === consent ? prev.at : now(), history: prev ? prev.history || [] : [] };
     if (!prev || prev.consent !== consent) rec.history = rec.history.concat([{ consent, at: rec.at }]).slice(-10);
@@ -241,7 +246,7 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
         const a = await mine(d.id);
         const t = await mutate(store, 'crt:' + a.id + ':' + d.teamId, (t) => {
           if (d.name !== undefined) t.name = txt(d.name, 'שם הצוות', 80, true);
-          if (d.members) t.members = members(d.members, t.members);
+          if (d.members) t.members = members(d.members, t.members, true);
         });
         return [200, { team: teamView(t) }];
       }
