@@ -26,7 +26,7 @@
       + '<label style="font-weight:400"><input type="checkbox" id="nr" checked> הפעילות מלווה במחקר (כל משתתף/ת בוחר/ת אם להשתתף בו)</label>'
       + '<p><button class="dlm-btn main" id="create">יצירת הפעילות</button></p><div id="cm"></div></div>'
       + '<div class="dlm-card"><h2>הפעילויות שלי</h2>' + (rows.length ? '<table class="dlm-table"><thead><tr><th>פעילות</th><th>כיתות</th><th>מצב</th><th></th></tr></thead><tbody>'
-        + rows.map((r) => '<tr><td><b>' + esc(r.title) + '</b>' + (r.co ? ' <span class="dlm-tag">שותפות</span>' : '') + '</td><td>' + esc(r.classes.join(' · ')) + '</td><td>' + (r.status === 'open' ? 'פתוחה' : 'סגורה') + '</td><td><button class="dlm-btn small" data-go="' + esc(r.id) + '">פתיחה</button></td></tr>').join('') + '</tbody></table>'
+        + rows.map((r) => '<tr><td><b>' + esc(r.title) + '</b>' + (r.co ? ' <span class="dlm-tag">שותפות</span>' : '') + '</td><td>' + esc(r.classes.join(' · ')) + '</td><td>' + (r.status === 'open' ? 'פתוחה' : 'סגורה') + '</td><td><button class="crd-link" data-go="' + esc(r.id) + '">פתיחה</button></td></tr>').join('') + '</tbody></table>'
         : '<p>עוד אין פעילויות.</p>')
       + '<details><summary>קיבלתי קוד שותפות ממרצה אחרת</summary><label for="cj">קוד השותפות</label><input type="text" id="cj" dir="ltr" style="max-width:14rem"> <button class="dlm-btn" id="cjb">הצטרפות</button><div id="cjm"></div></details></div>';
     $('#create').onclick = async () => {
@@ -47,8 +47,8 @@
   function render() {
     const a = S.a;
     const tabs = [['classes', '🏫 כיתות וכניסה'], ['teams', '👥 צוותים ועבודה'], ['findings', '📊 ממצאים'], ['settings', '⚙ הגדרות']];
-    app.innerHTML = '<div class="dlm-card"><p><button class="dlm-btn small" id="all">→ לכל הפעילויות</button></p><h2>' + esc(a.title) + '</h2>'
-      + '<p>' + (a.status === 'open' ? '<b>פתוחה:</b> הצוותים יכולים להיכנס ולעבוד.' : '<b>סגורה:</b> הצוותים רואים את העבודה ואינם יכולים לשנות.') + ' <button class="dlm-btn small" id="st">' + (a.status === 'open' ? 'סגירה' : 'פתיחה') + '</button></p>'
+    app.innerHTML = '<div class="dlm-card"><p><button class="crd-link" id="all">לכל הפעילויות</button></p><h2>' + esc(a.title) + '</h2>'
+      + '<p>' + (a.status === 'open' ? '<b>פתוחה:</b> הצוותים יכולים להיכנס ולעבוד.' : '<b>סגורה:</b> הצוותים רואים את העבודה ואינם יכולים לשנות.') + ' <button class="crd-link" id="st">' + (a.status === 'open' ? 'סגירה' : 'פתיחה') + '</button></p>'
       + '<div class="dlm-steps" role="tablist">' + tabs.map((t) => '<button type="button" data-tab="' + t[0] + '"' + (S.tab === t[0] ? ' aria-current="step"' : '') + '>' + t[1] + '</button>').join('') + '</div></div><div id="tab"></div>';
     $('#all').onclick = list;
     $('#st').onclick = async () => { try { await call('f.status', { id: a.id, status: a.status === 'open' ? 'closed' : 'open' }); open(a.id); } catch (e) { U.say(e.message); } };
@@ -64,9 +64,9 @@
         const t = S.teams.filter((x) => x.classId === c.id);
         return '<div class="dlm-card"><div class="dlm-grid2"><div><h3>' + esc(c.name) + '</h3><p>קוד הכיתה: <b class="dlm-code" dir="ltr">' + esc(c.code) + '</b></p>'
           + '<p><input type="text" readonly dir="ltr" value="' + esc(joinUrl(c.code)) + '" aria-label="קישור הכניסה"></p>'
-          + '<div class="dlm-row"><button class="dlm-btn small" data-copy="' + esc(joinUrl(c.code)) + '">העתקת הקישור</button><a class="dlm-btn small" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent('כניסה לבדיקת אמינות של מקורות (' + c.name + '): ' + joinUrl(c.code)) + '">וואטסאפ</a>'
-          + '<button class="dlm-btn small" data-copy="' + esc(joinUrl(c.code).replace('credibility-join.html', 'credibility-pocket.html')) + '">העתקת קישור לפנקס הכיס של הכיתה</button>'
-          + '<button class="dlm-btn small" data-big="' + esc(c.id) + '">📽 QR גדול להקרנה</button><button class="dlm-btn small" data-recode="' + esc(c.id) + '">קוד חדש</button><button class="dlm-btn small" data-ren="' + esc(c.id) + '">שינוי שם</button></div>'
+          + '<div class="dlm-row"><button class="crd-link" data-copy="' + esc(joinUrl(c.code)) + '">העתקת הקישור</button><a class="crd-link" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent('כניסה לבדיקת אמינות של מקורות (' + c.name + '): ' + joinUrl(c.code)) + '">וואטסאפ</a>'
+          + '<button class="crd-link" data-copy="' + esc(joinUrl(c.code).replace('credibility-join.html', 'credibility-pocket.html')) + '">העתקת קישור לפנקס הכיס של הכיתה</button>'
+          + '<button class="crd-link" data-big="' + esc(c.id) + '">QR גדול להקרנה</button><button class="crd-link" data-recode="' + esc(c.id) + '">קוד חדש</button><button class="crd-link" data-ren="' + esc(c.id) + '">שינוי שם</button></div>'
           + '<p class="dlm-hint">' + t.length + ' צוותים · ' + t.reduce((s, x) => s + x.members.length, 0) + ' משתתפים</p></div><div class="dlm-qr" data-qr="' + esc(c.code) + '"></div></div></div>';
       }).join('');
     n.querySelectorAll('[data-qr]').forEach((q) => U.qr(q, joinUrl(q.dataset.qr)));
@@ -85,7 +85,7 @@
       + S.teams.map((t) => '<tr><td><b>' + esc(t.name) + '</b><br><span class="dlm-hint" dir="ltr">' + esc(t.code) + '</span></td><td>' + esc(cname(t.classId)) + '</td><td>' + t.members.map((m) => esc(m.name) + ' ' + (m.consent === 'research' ? '✓' : '○')).join('<br>') + '</td>'
         + '<td>' + (t.checks.length ? t.checks.map((k) => '<div>' + esc(k.title.slice(0, 40)) + ' ' + [k.first, k.team, k.final].map((v) => M.dotHTML(v === undefined ? null : v)).join(' ') + ' <span class="dlm-hint">' + k.ext + ' מקורות</span></div>').join('') : '—') + '</td>'
         + '<td>' + t.reflections.filter((r) => r.reflect).length + ' מתוך ' + t.members.length + '</td><td>' + (t.grade && t.grade.total != null ? '<b>' + t.grade.total + '</b>' : '—') + '</td>'
-        + '<td><button class="dlm-btn small" data-team="' + esc(t.id) + '">פתיחה</button></td></tr>').join('') + '</tbody></table></div></div>';
+        + '<td><button class="crd-link" data-team="' + esc(t.id) + '">פתיחה</button></td></tr>').join('') + '</tbody></table></div></div>';
     n.querySelectorAll('[data-team]').forEach((b) => { b.onclick = () => teamDialog(b.dataset.team); });
   }
   async function teamDetail(id) { if (!S.details[id] || Date.now() - S.details[id].t > 15000) S.details[id] = { t: Date.now(), d: await call('f.team', { id: S.a.id, teamId: id }) }; return S.details[id].d; }
@@ -94,7 +94,7 @@
     let d; try { d = await teamDetail(id); } catch (e) { dlgBody.innerHTML = msg(e.message, 'err'); return; }
     const t = d.team, nm = (mid) => ((t.members.find((m) => m.id === mid) || {}).name || '');
     const checkHTML = (k) => '<details class="dlm-card soft"><summary><b>' + esc(k.title) + '</b> ' + U.scoresRow(k) + '</summary>'
-      + (k.url ? '<p><a href="' + esc(k.url) + '" target="_blank" rel="noopener noreferrer" dir="ltr">' + esc(k.url) + '</a></p>' : '') + (k.fileId ? '<p><button class="dlm-btn small" data-f="' + esc(k.fileId) + '">פתיחת הקובץ</button></p>' : '')
+      + (k.url ? '<p><a href="' + esc(k.url) + '" target="_blank" rel="noopener noreferrer" dir="ltr">' + esc(k.url) + '</a></p>' : '') + (k.fileId ? '<p><button class="crd-link" data-f="' + esc(k.fileId) + '">פתיחת הקובץ</button></p>' : '')
       + '<h4>תיאור המקור</h4><table class="dlm-table">' + M.FIELDS.map((x) => '<tr><th>' + esc(x.t) + '</th><td>' + esc((k.fields || {})[x.k] || '') + '</td></tr>').join('') + (k.extra || []).map((x) => '<tr><th>' + esc(x.t) + '</th><td>' + esc(x.v || '') + '</td></tr>').join('') + '</table>'
       + U.assessHTML(k.first, 'AI, הערכה ראשונה')
       + '<h4>השיחה עם ה־AI (' + (k.chat || []).length + ')</h4><div class="crd-chat">' + (k.chat || []).map((m) => '<div class="crd-msg ' + (m.role === 'ai' ? 'ai' : 'me') + '"><b>' + (m.role === 'ai' ? 'AI' : esc(nm(m.by) || 'הצוות')) + '</b><div>' + esc(m.text).replace(/\n/g, '<br>') + '</div></div>').join('') + '</div>'
@@ -122,8 +122,8 @@
       + '<h3>עמדות ורפלקציות</h3>' + refl
       + '<details class="dlm-card soft"><summary>חריג בהסכמה למחקר</summary><p class="dlm-hint">כל משתתף/ת חותם/ת על ההסכמה בכניסה לצוות. כשצריך לפתור מקרה נקודתי, אפשר לסמן כאן "רק ללמידה": העבודה נשארת בכלי, ולא נכנסת לייצוא המחקרי.</p>'
       + t.members.map((m) => '<p><label><input type="checkbox" class="cx" value="' + esc(m.id) + '"' + (m.consent === 'learning' ? ' checked' : '') + '> ' + esc(m.name) + ': רק ללמידה</label></p>').join('')
-      + '<p><button class="dlm-btn small" id="cxs">שמירת החריגים</button></p><div id="cxm"></div></details>' + grade
-      + '<p style="margin-top:1.5rem"><button class="dlm-btn small" id="tdel" style="color:#b3261e">מחיקת הצוות</button></p>';
+      + '<p><button class="crd-link" id="cxs">שמירת החריגים</button></p><div id="cxm"></div></details>' + grade
+      + '<p style="margin-top:1.5rem"><button class="crd-link" id="tdel" style="color:#b3261e">מחיקת הצוות</button></p>';
     dlgBody.querySelectorAll('[data-f]').forEach((b) => { b.onclick = async () => { try { U.showFile(await call('f.file', { id: S.a.id, fid: b.dataset.f })); } catch (e) { U.say(e.message); } }; });
     $('#gs').onclick = async () => {
       const gr = {}; for (const c of M.GRADE.criteria) { const v = (dlgBody.querySelector('input[name=g-' + c.k + ']:checked') || {}).value; if (v) gr[c.k] = Number(v); }

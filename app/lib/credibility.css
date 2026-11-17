@@ -43,3 +43,7 @@
 .crd-rt th{background:#1d3f63;color:#fff;text-align:right;padding:.35rem .5rem;font-weight:600}
 .crd-rt td{border-bottom:1px solid #e3e7eb;padding:.35rem .5rem;text-align:right;vertical-align:top}
 .crd-rt td.ck{text-align:center;width:5.5rem}
+
+/* כפתור ניווט: מילה עם קישור */
+.crd-link{background:none;border:0;padding:0;margin:0 0 0 18px;font:inherit;font-size:16px;color:#1d3f63;text-decoration:underline;text-underline-offset:3px;cursor:pointer;box-shadow:none;border-radius:0}
+.crd-link:hover,.crd-link:focus-visible{color:#0f766e}

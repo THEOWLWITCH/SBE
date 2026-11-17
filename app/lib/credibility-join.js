@@ -68,7 +68,7 @@
     app.innerHTML = '<div class="dlm-card"><h1>פתיחת צוות</h1>' + consentHTML(info.activity)
       + '<label for="tn">שם הצוות</label><input type="text" id="tn" maxlength="80" placeholder="למשל: צוות 3">'
       + '<h3>המשתתפים בצוות</h3><p class="dlm-hint">לכל משתתף/ת: שם, וחתימה על ההסכמה.</p>'
-      + '<div id="mrows">' + rows.map(memberRow).join('') + '</div><p><button class="dlm-btn small" id="addm">➕ משתתף/ת נוסף/ת</button></p>'
+      + '<div id="mrows">' + rows.map(memberRow).join('') + '</div><p><button class="crd-link" id="addm">➕ משתתף/ת נוסף/ת</button></p>'
       + '<p><button class="dlm-btn main" id="save">פתיחת הצוות</button> <button class="dlm-btn" id="back">חזרה</button></p><div id="m"></div></div>';
     $('#addm').onclick = () => { const n = $('#mrows').children.length; if (n < 8) $('#mrows').insertAdjacentHTML('beforeend', memberRow({}, n)); };
     $('#back').onclick = start;
@@ -139,7 +139,7 @@
     const reach = { describe: true, first: !!(k.fields && k.fields.claim) || !!k.first, inquiry: !!k.first, team: !!k.done, final: !!k.team };
     const nav = '<div class="dlm-steps crd-steps">' + STAGES.map((s) => '<button type="button" data-stage="' + s[0] + '"' + (st === s[0] ? ' aria-current="step"' : '') + (reach[s[0]] ? '' : ' disabled') + '>' + s[1] + '</button>').join('') + '</div>';
     const src = '<div class="crd-src"><b>' + esc(k.title) + '</b>' + (k.url ? ' · <a href="' + esc(k.url) + '" target="_blank" rel="noopener noreferrer" dir="ltr">' + esc(k.url.slice(0, 60)) + '</a>' : '')
-      + (k.fileId ? ' · <button type="button" class="dlm-btn small" data-file="' + esc(k.fileId) + '">פתיחת הקובץ</button>' : '')
+      + (k.fileId ? ' · <button type="button" class="crd-link" data-file="' + esc(k.fileId) + '">פתיחת הקובץ</button>' : '')
       + (k.verify ? ' <span class="dlm-tag">' + esc({ exists: 'הקישור נפתח', not_found: 'הקישור לא נמצא', unreachable: 'הקישור לא נפתח' }[k.verify.status] || '') + '</span>' : '') + U.scoresRow(k) + '</div>';
     let inner = '';
     if (st === 'describe') inner = describeHTML(k);
@@ -148,7 +148,7 @@
     else if (st === 'inquiry') inner = inquiryHTML(k);
     else if (st === 'team') inner = teamScoreHTML(k);
     else inner = finalHTML(k);
-    return '<div class="dlm-card"><p><button class="dlm-btn small" id="backList">→ לכל המקורות</button></p>' + src + nav + '<div id="stage">' + inner + '</div><div id="sm"></div></div>';
+    return '<div class="dlm-card"><p><button class="crd-link" id="backList">לכל המקורות</button></p>' + src + nav + '<div id="stage">' + inner + '</div><div id="sm"></div></div>';
   }
   function describeHTML(k) {
     const f = k.fields || {};
@@ -163,7 +163,7 @@
     const chat = (k.chat || []).map((m) => '<div class="crd-msg ' + (m.role === 'ai' ? 'ai' : 'me') + '"><b>' + (m.role === 'ai' ? 'AI' : esc(nameOf(m.by) || 'הצוות')) + '</b><div>' + esc(m.text).replace(/\n/g, '<br>') + '</div></div>').join('');
     const ext = (k.external || []).map((e) => '<li><b>' + esc(e.title || e.url) + '</b>' + (e.url ? ' · <a href="' + esc(e.url) + '" target="_blank" rel="noopener noreferrer" dir="ltr">קישור</a>' : '') + ' · ' + esc((M.EXT_KINDS.find((x) => x.k === e.kind) || {}).t || '')
       + (e.verify ? ' <span class="dlm-tag">' + esc({ exists: 'נפתח', not_found: 'לא נמצא', unreachable: 'לא נפתח' }[e.verify.status] || '') + '</span>' : '') + '<br>' + esc(e.found)
-      + (k.done ? '' : ' <button type="button" class="dlm-btn small" data-extdel="' + esc(e.id) + '" aria-label="הסרה">✕</button>') + '</li>').join('');
+      + (k.done ? '' : ' <button type="button" class="crd-link" data-extdel="' + esc(e.id) + '" aria-label="הסרה">✕</button>') + '</li>').join('');
     return '<h3>ממשיכים לחקור</h3><p class="dlm-hint">ה־AI ישלח אתכם לבדוק במקורות חיצוניים. כל מה שמצאתם, כותבים כאן. הבדיקה נמשכת עד שאתם קובעים: אין לנו יותר מידע.</p>'
       + '<details><summary>ההערכה הראשונה של ה־AI</summary>' + U.assessHTML(k.first, 'ההערכה הראשונה') + '</details>'
       + '<div class="crd-chat" id="chat">' + (chat || '<p class="dlm-hint">אפשר להתחיל: "מאיפה כדאי להתחיל?", או לכתוב מה כבר מצאתם.</p>') + '</div>'
@@ -172,7 +172,7 @@
       + (k.done ? '' : '<details class="crd-addext"' + ((k.external || []).length ? '' : ' open') + '><summary><b>➕ הוספת מקור שמצאנו</b></summary><div class="dlm-grid2"><div><label for="eu">קישור</label><input type="url" id="eu" dir="ltr" placeholder="https://"></div><div><label for="et">שם המקור</label><input type="text" id="et" placeholder="למשל: אתר הכנסת, פסק הדין"></div></div>'
         + '<label for="ek">סוג המקור</label><select id="ek" data-closed>' + M.EXT_KINDS.map((x) => '<option value="' + x.k + '">' + esc(x.t) + '</option>').join('') + '</select>'
         + '<label for="ef">מה מצאנו, ומה זה אומר על הטענה?</label><textarea id="ef" rows="2"></textarea><p><button class="dlm-btn" id="addext">הוספה</button></p></details>')
-      + (k.done ? '<p>' + msg('קבעתם: אין לנו יותר מידע.') + ' <button class="dlm-btn small" id="reopen">ממשיכים לחקור</button> <button class="dlm-btn main" data-stage="team">לציון שלנו ←</button></p>'
+      + (k.done ? '<p>' + msg('קבעתם: אין לנו יותר מידע.') + ' <button class="crd-link" id="reopen">ממשיכים לחקור</button> <button class="dlm-btn main" data-stage="team">לציון שלנו ←</button></p>'
         : '<p class="crd-donebar"><button class="dlm-btn main" id="done">✋ אין לנו יותר מידע</button></p>');
   }
   function teamScoreHTML(k) {
@@ -216,11 +216,11 @@
     }).join('') + '</div>';
   }
   function reflectAIHTML(ai, id) {
-    if (!ai) return '<p><button class="dlm-btn small" data-rai="' + esc(id) + '">ניתוח ה־AI לפי הקריטריונים</button></p>';
+    if (!ai) return '<p><button class="crd-link" data-rai="' + esc(id) + '">ניתוח ה־AI לפי הקריטריונים</button></p>';
     return '<div class="crd-assess"><h4>ניתוח ה־AI לפי הקריטריונים</h4><table class="rtable crd-rt"><thead><tr><th>הקריטריון</th><th>עולה ברפלקציה?</th><th>מה נכתב</th></tr></thead><tbody>'
       + M.REFLECT_CRITERIA.map((c) => { const x = (ai.criteria || []).find((y) => y.k === c.k) || {}; return '<tr><td>' + esc(c.t) + '</td><td class="ck">' + (x.found ? '✓' : '○') + '</td><td>' + esc(x.note || '') + '</td></tr>'; }).join('')
       + '</tbody></table>' + (ai.strength ? '<p><b>מה חזק:</b> ' + esc(ai.strength) + '</p>' : '') + (ai.question ? '<p><b>שאלה להעמקה:</b> ' + esc(ai.question) + '</p>' : '')
-      + '<p class="dlm-hint">הניתוח של ה־AI הוא הצעה לקריאה, והוא יכול לטעות.</p><p><button class="dlm-btn small" data-rai="' + esc(id) + '">ניתוח מחדש</button></p></div>';
+      + '<p class="dlm-hint">הניתוח של ה־AI הוא הצעה לקריאה, והוא יכול לטעות.</p><p><button class="crd-link" data-rai="' + esc(id) + '">ניתוח מחדש</button></p></div>';
   }
   async function analyzeReflection(id) {
     const st = S.data.reflections[id] || {};
@@ -239,10 +239,10 @@
     const t = S.data.team;
     return '<div class="dlm-card"><h2>הצוות</h2><p>קוד הצוות: <b dir="ltr" class="dlm-code">' + esc(t.code) + '</b>. כל אחד ואחת מהצוות נכנס/ת עם הקוד הזה ועם קוד הכיתה, מהמכשיר שלו/ה.</p>'
       + '<label for="tn2">שם הצוות</label><input type="text" id="tn2" value="' + esc(t.name) + '">'
-      + '<div id="mrows">' + t.members.map(memberRow).join('') + '</div><p><button class="dlm-btn small" id="addm">➕ משתתף/ת נוסף/ת</button></p>'
+      + '<div id="mrows">' + t.members.map(memberRow).join('') + '</div><p><button class="crd-link" id="addm">➕ משתתף/ת נוסף/ת</button></p>'
       + '<p><button class="dlm-btn main" id="saveTeamM">שמירה</button></p><div id="tm"></div>'
       + '<details><summary>' + esc(M.CONSENT.title) + '</summary>' + M.CONSENT.text.map((x) => '<p>' + esc(x) + '</p>').join('') + '</details>'
-      + '<p class="dlm-hint">יציאה מהצוות במכשיר הזה: <button class="dlm-btn small" id="leave">יציאה</button></p></div>';
+      + '<p class="dlm-hint">יציאה מהצוות במכשיר הזה: <button class="crd-link" id="leave">יציאה</button></p></div>';
   }
 
   // ── פעולות ──
