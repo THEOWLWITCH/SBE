@@ -230,12 +230,25 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
           a.classes.push(cls);
         });
         await store.set('crj:' + jc, { a: a.id, c: cls.id });
-        return [200, { activity: view(a), class: cls }];
+        let a2 = a;
+        if (a.classes.length >= 2 && !a.allCode) {
+          const ac = await newJoinCode(store);
+          a2 = await saveAct(d.id, (x) => { if (!x.allCode) x.allCode = ac; });
+          if (a2.allCode === ac) await store.set('crj:' + ac, { a: a.id, all: true });
+        }
+        return [200, { activity: view(a2), class: cls }];
       }
       if (op === 'f.classCode') {
         const jc = await newJoinCode(store); let old;
         const a = await saveAct(d.id, (a) => { const c = a.classes.find((x) => x.id === d.classId); if (!c) throw new CrdError('הכיתה לא נמצאה', 404); old = c.code; c.code = jc; });
         await store.del('crj:' + old); await store.set('crj:' + jc, { a: a.id, c: d.classId });
+        return [200, { activity: view(a) }];
+      }
+      if (op === 'f.allCode') {
+        const jc = await newJoinCode(store); let old;
+        const a = await saveAct(d.id, (a) => { old = a.allCode; a.allCode = jc; });
+        if (old) await store.del('crj:' + old);
+        await store.set('crj:' + jc, { a: a.id, all: true });
         return [200, { activity: view(a) }];
       }
       if (op === 'f.classEdit') {
@@ -289,6 +302,7 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
         if (!me.sys && a.owner !== me.principal) throw new CrdError('רק מי שפתח/ה את הפעילות יכול/ה למחוק אותה', 403);
         for (const p of ['crt:', 'crtc:', 'crs:', 'crr:', 'crf:']) for (const r of await store.list(p + a.id + ':', { keysOnly: true })) await store.del(r.key);
         for (const c of a.classes) await store.del('crj:' + c.code);
+        if (a.allCode) await store.del('crj:' + a.allCode);
         if (a.coCode) await store.del('crco:' + a.coCode);
         await store.del('cra:' + a.id);
         return [200, { ok: true }];
@@ -304,7 +318,9 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
     if (op === 'p.class') {
       const r = await store.get('crj:' + String(d.code || '').toUpperCase().trim());
       if (!r) throw new CrdError('קוד הכיתה לא נמצא. אפשר לסרוק שוב את ה־QR', 404);
-      const a = await getActivity(store, r.a), c = a.classes.find((x) => x.id === r.c);
+      const a = await getActivity(store, r.a);
+      if (r.all) return [200, { pick: { title: a.title, classes: a.classes.map((x) => ({ name: x.name, code: x.code })) } }];
+      const c = a.classes.find((x) => x.id === r.c);
       if (!c) throw new CrdError('הכיתה לא נמצאה', 404);
       const teams = (await teamsOf(store, a)).filter((t) => t.classId === c.id);
       return [200, { activity: publicActivity(a, c), teams: teams.map((t) => ({ name: t.name, count: t.members.length })), full: teams.length >= LIM.teams }];
@@ -312,7 +328,7 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
     if (op === 'p.teamCreate' || op === 'p.teamJoin') {
       const jc = String(d.code || '').toUpperCase().trim();
       const r = await store.get('crj:' + jc);
-      if (!r) throw new CrdError('קוד הכיתה לא נמצא. אפשר לסרוק שוב את ה־QR', 404);
+      if (!r || r.all) throw new CrdError('קוד הכיתה לא נמצא. אפשר לסרוק שוב את ה־QR', 404);
       const a = await getActivity(store, r.a);
       if (a.status !== 'open') throw new CrdError('הפעילות סגורה כרגע. המרצה תפתח אותה', 409);
       const key = randomBytes(24).toString('hex');

@@ -60,6 +60,11 @@
     const a = S.a, n = $('#tab');
     n.innerHTML = '<div class="dlm-card"><h3>הוספת כיתה</h3><p class="dlm-hint">לכל כיתה QR משלה. הסטודנטים סורקים, ונכנסים ישר למרחב הכיתה: פותחים צוות (עד 10 בכיתה) או מצטרפים לצוות שלהם.</p>'
       + '<label for="cn">שם הכיתה</label><input type="text" id="cn" placeholder="למשל: גורדון · הוראת האזרחות"> <button class="dlm-btn main" id="ca">הוספה</button><div id="cam"></div></div>'
+      + (a.allCode ? '<div class="dlm-card"><div class="dlm-grid2"><div><h3>QR אחד לכל הכיתות</h3><p class="dlm-hint">סורקים, בוחרים את הכיתה (' + a.classes.map((c) => esc(c.name)).join(' / ') + '), ונכנסים למרחב שלה.</p>'
+        + '<p><input type="text" readonly dir="ltr" value="' + esc(joinUrl(a.allCode)) + '" aria-label="קישור הכניסה לכל הכיתות"></p>'
+        + '<div class="dlm-row"><button class="crd-link" data-copy="' + esc(joinUrl(a.allCode)) + '">העתקת הקישור</button><a class="crd-link" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent('כניסה לבדיקת אמינות של מקורות: ' + joinUrl(a.allCode)) + '">וואטסאפ</a>'
+        + '<button class="crd-link" id="bigAll">QR גדול להקרנה</button><button class="crd-link" id="recodeAll">קוד חדש</button></div></div><div class="dlm-qr" data-qr="' + esc(a.allCode) + '"></div></div></div>'
+        : a.classes.length >= 2 ? '<div class="dlm-card"><button class="crd-link" id="recodeAll">יצירת QR אחד לכל הכיתות</button></div>' : '')
       + a.classes.map((c) => {
         const t = S.teams.filter((x) => x.classId === c.id);
         return '<div class="dlm-card"><div class="dlm-grid2"><div><h3>' + esc(c.name) + '</h3><p>קוד הכיתה: <b class="dlm-code" dir="ltr">' + esc(c.code) + '</b></p>'
@@ -70,6 +75,8 @@
           + '<p class="dlm-hint">' + t.length + ' צוותים · ' + t.reduce((s, x) => s + x.members.length, 0) + ' משתתפים</p></div><div class="dlm-qr" data-qr="' + esc(c.code) + '"></div></div></div>';
       }).join('');
     n.querySelectorAll('[data-qr]').forEach((q) => U.qr(q, joinUrl(q.dataset.qr)));
+    if ($('#bigAll')) $('#bigAll').onclick = () => { openDlg('<div style="text-align:center"><h2>' + esc(a.title) + '</h2><h3>' + a.classes.map((c) => esc(c.name)).join(' / ') + '</h3><div id="bigqr" style="display:inline-block"></div><p class="dlm-hint" dir="ltr">' + esc(joinUrl(a.allCode)) + '</p></div>'); U.qr($('#bigqr'), joinUrl(a.allCode), 360); };
+    if ($('#recodeAll')) $('#recodeAll').onclick = async () => { if (!a.allCode || await U.ask('להפיק קוד חדש ל־QR המשותף? ה־QR הישן יפסיק לעבוד.')) { try { await call('f.allCode', { id: a.id }); open(a.id); } catch (e) { U.say(e.message); } } };
     $('#ca').onclick = async () => { try { await call('f.classAdd', { id: a.id, name: $('#cn').value }); open(a.id); } catch (e) { $('#cam').innerHTML = msg(e.message, 'err'); } };
     n.querySelectorAll('[data-copy]').forEach((b) => { b.onclick = () => { try { navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'הועתק ✓'; } catch (e) {} }; });
     n.querySelectorAll('[data-recode]').forEach((b) => { b.onclick = async () => { if (await U.ask('להפיק קוד כיתה חדש? ה־QR הישן יפסיק לעבוד. צוותים שכבר נכנסו ממשיכים כרגיל.')) { try { await call('f.classCode', { id: a.id, classId: b.dataset.recode }); open(a.id); } catch (e) { U.say(e.message); } } }; });

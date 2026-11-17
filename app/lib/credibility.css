@@ -84,3 +84,4 @@ body.crd-page .crd-link{font-size:16px;font-weight:500;text-decoration-color:rgb
 .crd-min{font-weight:400;font-size:14px;color:#0f766e;margin-right:6px;white-space:nowrap}
 .crd-ini-h{margin:22px 0 4px;font-size:17px}
 .crd-req{font-weight:400;font-size:13px;color:#6b7482}
+.crd-pick{display:flex;gap:28px;flex-wrap:wrap;margin-top:14px}.crd-pick .dlm-btn{font-size:22px!important}

@@ -212,3 +212,19 @@ test('שאלון עמדות ראשוני: עבודת הצוות מתחילה ר�
   const x = await E.fac('f.export', { id: E.A.id });
   assert.equal(x.teams[0].members[0].pre.a1, 1);
 });
+
+test('one QR for all classes: picks a class, then enters only that class', async () => {
+  const { run, fac, A, c1, c2 } = await setup();
+  const { activity } = await fac('f.get', { id: A.id });
+  assert.ok(activity.allCode, 'shared code created with the second class');
+  const [s, b] = await run('p.class', { code: activity.allCode });
+  assert.equal(s, 200);
+  assert.deepEqual(b.pick.classes.map((c) => c.code), [c1.code, c2.code]);
+  assert.equal(b.activity, undefined);
+  const [st] = await run('p.teamCreate', { code: activity.allCode, name: 'x', members: [{ name: 'א', consent: 'research' }] });
+  assert.equal(st, 404, 'shared code cannot open a team directly');
+  const old = activity.allCode;
+  const { activity: a2 } = await fac('f.allCode', { id: A.id });
+  assert.notEqual(a2.allCode, old);
+  const [so] = await run('p.class', { code: old }); assert.equal(so, 404);
+});

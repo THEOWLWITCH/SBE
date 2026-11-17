@@ -34,6 +34,13 @@
     let info;
     try { info = await U.api('p.class', { code: classCode }); }
     catch (e) { app.innerHTML = msg(e.message, 'err') + '<p><button class="dlm-btn" id="other">קוד כיתה אחר</button></p>'; $('#other').onclick = () => { classCode = ''; start(); }; return; }
+    if (info.pick) {
+      $('#topTitle').textContent = info.pick.title;
+      app.innerHTML = '<div class="dlm-card"><h1>' + esc(info.pick.title) + '</h1><h2>באיזו כיתה אני?</h2><p class="crd-pick">'
+        + info.pick.classes.map((c) => '<button class="dlm-btn main" data-pick="' + esc(c.code) + '">' + esc(c.name) + '</button>').join('') + '</p></div>';
+      app.querySelectorAll('[data-pick]').forEach((b) => { b.onclick = () => { classCode = b.dataset.pick; history.replaceState(null, '', '?c=' + classCode); start(); }; });
+      return;
+    }
     const a = info.activity;
     $('#topTitle').textContent = a.title;
     app.innerHTML = '<div class="dlm-card"><h1>' + esc(a.title) + '</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
