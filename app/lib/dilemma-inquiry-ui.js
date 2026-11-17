@@ -10,7 +10,7 @@
   const token = () => { try { return sessionStorage.getItem('sbe.session.token') || ''; } catch (e) { return ''; } };
   const call = (op, input) => U.api(op, input, { token: token() });
   const msg = (t, cls) => '<div class="dlm-msg' + (cls ? ' ' + cls : '') + '" role="' + (cls === 'err' ? 'alert' : 'status') + '">' + esc(t) + '</div>';
-  const STATUS = { draft: 'סגורה למשתתפים', open: 'פתוחה', closed: 'הסתיימה' };
+  const STATUS = { draft: 'סגורה (אי אפשר להיכנס)', open: 'פתוחה', closed: 'הסתיימה (קריאה בלבד)' };
   const S = { a: null, tab: 'dilemma', stats: null, board: null, g: null, timer: null };
   // 17/11/2026 ("אם אני עוברת ממסך למסך - השאר את הלוח שפתחתי פתוח. אני אסגור אותו כשארצה"; "לא לזרוק אותי ממסכים
   // ולא לסגור עבורי"): הפעילות, הלשונית והלוח שנפתחו נשמרים במכשיר, וכשחוזרים לכלי הם נפתחים שוב באותו מקום.
@@ -63,8 +63,8 @@
     const TABS = [['dilemma', '🧭 הדילמה'], ['sources', '📚 מקורות'], ['classes', '🏫 כיתות ו־QR'], ['research', '🔒 מחקר והסכמה'], ['boards', '🗂 הלוחות'], ['export', '⇩ ייצוא']];
     app.innerHTML = '<p><a href="#" id="back">→ לכל הפעילויות</a></p><div class="dlm-card"><div class="dlm-row" style="justify-content:space-between"><div><h2 style="margin:0">' + esc(a.title) + '</h2>'
       + '<p class="dlm-sub">' + esc(a.mode === 'group' ? 'עבודה קבוצתית' : 'עבודה אישית') + ' · ' + a.durationMin + ' דקות · משתתפים: ' + (st.participants || 0) + (a.research.enabled ? ' (במחקר: ' + (st.research || 0) + ', לימודי בלבד: ' + (st.learning || 0) + ')' : '') + '</p></div>'
-      + '<div class="dlm-row"><button class="dlm-btn acc" id="projBtn"' + (a.classes.length ? '' : ' disabled title="אפשר להוסיף כיתה קודם"') + '>📽 מצב הקרנה</button><b>מצב: ' + esc(STATUS[a.status]) + '</b>' + (a.status !== 'open' ? '<button class="dlm-btn main" data-st="open">פתיחה למשתתפים</button>' : '<button class="dlm-btn" data-st="closed">סיום הפעילות</button>')
-      + (a.status === 'closed' ? '' : a.status === 'open' ? '<button class="dlm-btn small" data-st="draft">סגירה למשתתפים</button>' : '') + '</div></div><div id="topmsg"></div></div>'
+      + '<div class="dlm-row"><button class="dlm-btn acc" id="projBtn"' + (a.classes.length ? '' : ' disabled title="אפשר להוסיף כיתה קודם"') + '>📽 מצב הקרנה</button><b>מצב: ' + esc(STATUS[a.status]) + '</b>' + (a.status !== 'open' ? '<button class="dlm-btn main" data-st="open">פתיחה למשתתפים</button>' : '<button class="dlm-btn" data-st="closed">סיום (קריאה בלבד)</button>')
+      + (a.status === 'closed' ? '' : a.status === 'open' ? '<button class="dlm-btn small" data-st="draft">סגירה (אי אפשר להיכנס)</button>' : '') + '</div></div><div id="topmsg"></div></div>'
       + '<nav class="dlm-steps">' + TABS.map(([k, t]) => '<button type="button" data-tab="' + k + '"' + (S.tab === k ? ' aria-current="step"' : '') + '>' + t + '</button>').join('') + '</nav><div id="tab"></div>';
     remember();
     $('#back').onclick = (e) => { e.preventDefault(); place(null); list(); };
