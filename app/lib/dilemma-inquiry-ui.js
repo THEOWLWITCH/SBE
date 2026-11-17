@@ -286,7 +286,9 @@
     window.SBE_DLM_MAP.bind(host, { board: b, op: (op) => fbOp(g, op).catch((e) => { alert(e.message); }), refresh: again });
     host.querySelectorAll('[data-src]').forEach((x) => x.onclick = (e) => { e.stopPropagation(); const s = U.sourceById(b, x.dataset.src); if (s) openDlg(U.sourceCardHTML(s, b, { openWhy: true })); });
     const cl = host.querySelector('[data-cancel-link]'); if (cl) cl.onclick = () => { S.linkFrom = null; again(); };
-    host.querySelectorAll('form[data-addto]').forEach((f) => f.onsubmit = (e) => { e.preventDefault(); const v = f.querySelector('input[type=text]').value.trim(); if (v) act({ kind: 'add', zone: f.dataset.addto, text: v }); });
+    const MAPX = window.SBE_DLM_MAP, at = () => (MAPX.center && MAPX.center()) || {};
+    const addAndShow = async (op) => { try { const r = await fbOp(g, Object.assign(at(), op)); if (r && r.id) MAPX.flash(r.id); } catch (e) { alert(e.message); } again(); };
+    host.querySelectorAll('form[data-addto]').forEach((f) => f.onsubmit = (e) => { e.preventDefault(); const inp = f.querySelector('input[type=text]'), v = inp.value.trim(); if (!v) { inp.focus(); return; } addAndShow({ kind: 'add', zone: f.dataset.addto, text: v }); });
     host.querySelectorAll('[data-del]').forEach((x) => x.onclick = () => { if (confirm('להסיר את הכרטיס מהלוח? הגרסה הקודמת נשמרת ביומן.')) act({ kind: 'remove', id: x.dataset.del }); });
     host.querySelectorAll('[data-unlink]').forEach((x) => x.onclick = () => act({ kind: 'unlink', id: x.dataset.unlink }));
     host.querySelectorAll('[data-edit]').forEach((x) => x.onclick = () => {
@@ -320,7 +322,7 @@
             src.type = /^image\//.test(t) ? 'תמונה' : /^video\//.test(t) ? 'וידאו' : /^audio\//.test(t) ? 'הקלטת קול' : '';
           }
           if (!src.title.trim()) throw new Error('כדי להוסיף, אפשר לכתוב את שם המקור או לבחור קובץ.');
-          await fbOp(g, { kind: 'add', source: src, text: src.title }); dlg.close(); again();
+          const r = await fbOp(g, Object.assign(at(), { kind: 'add', source: src, text: src.title })); if (r && r.id) MAPX.flash(r.id); dlg.close(); again();
         } catch (e) { $('#fs-s').disabled = false; $('#fs-m').innerHTML = msg(e.message, 'err'); }
       };
     });

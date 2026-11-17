@@ -149,3 +149,6 @@ dialog{z-index:9500}
 .mm-pick b{font-size:.85rem}
 .mm-pick button{font:inherit;font-size:.85rem;border:1px solid var(--rc,#ccd);color:var(--rc,#334);background:#fff;border-radius:999px;padding:.15rem .6rem;cursor:pointer;text-align:start}
 .mm-pick button:hover{background:color-mix(in srgb,var(--rc,#ccd) 10%,#fff)}
+
+.mm-card.mm-new{animation:mmnew 2.4s ease-out;z-index:40}
+@keyframes mmnew{0%{box-shadow:0 0 0 6px rgba(42,157,143,.55),0 8px 24px rgba(20,30,50,.2)}100%{box-shadow:0 1px 3px rgba(20,30,50,.08)}}

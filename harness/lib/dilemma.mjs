@@ -314,7 +314,7 @@ async function applyBoardOp(store, a, bk, d, by, role) {
           if (act === 'add') {
             if (b.clusters.length >= LIM.clusters) throw new DlmError('יש הרבה קבוצות בלוח');
             const c = { id: 'k-' + code(8).toLowerCase(), name: txt(d.name, 'שם הקבוצה', 120) || 'קבוצה חדשה', x: clampN(d.x, 0, MAP.w), y: clampN(d.y, 0, MAP.h),
-              w: clampN(d.w || 320, 160, 1600), h: clampN(d.h || 240, 120, 1200), color: CLUSTER_COLORS.includes(d.color) ? d.color : CLUSTER_COLORS[b.clusters.length % CLUSTER_COLORS.length], stacked: false, by, at: now() };
+              w: clampN(d.w || 320, 160, 1600), h: clampN(d.h || 240, 120, 1200), color: CLUSTER_COLORS.includes(d.color) ? d.color : CLUSTER_COLORS[b.clusters.length % CLUSTER_COLORS.length], stacked: !!d.stacked, by, at: now() };
             b.clusters.push(c); result.id = c.id;
             for (const id of arr(d.items, 60)) { const it = b.items.find((i) => i.id === id && !i.deleted); if (it) it.cluster = c.id; }
             log(b, 'clusterAdd', by, { id: c.id });
