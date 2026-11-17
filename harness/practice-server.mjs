@@ -320,7 +320,7 @@ const server = createServer(async (req, res) => {
     let body;
     try { body = JSON.parse(await readBody(req, 12 * 1024 * 1024)); }
     catch { return sendJson(res, 413, { error: 'הקובץ גדול מדי' }); }
-    if (!body || body.action !== 'dlmCall' || !['p.upload', 'f.file'].includes(body.op)) return sendJson(res, 400, { error: 'invalid' });
+    if (!body || !((body.action === 'dlmCall' && ['p.upload', 'f.file'].includes(body.op)) || (body.action === 'crdCall' && ['p.upload', 'p.file', 'f.file'].includes(body.op)))) return sendJson(res, 400, { error: 'invalid' });
     try { const [status, out] = await handleAccess(jobStore(), body); return sendJson(res, status, out); }
     catch (e) { console.error('access-upload: storage unavailable'); return sendJson(res, 503, { error: 'storage unavailable' }); }
   }

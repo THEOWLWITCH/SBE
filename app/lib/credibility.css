@@ -1,0 +1,86 @@
+/* בדיקת אמינות של מקורות: תוספות לעיצוב של dilemma.css (17/11/2026) */
+.crd-dot{display:inline-flex;align-items:center;justify-content:center;min-width:1.7rem;height:1.7rem;border-radius:50%;color:#fff;font-weight:700;font-size:.9rem;flex:none}
+.crd-dot.big{min-width:2.6rem;height:2.6rem;font-size:1.25rem}
+.crd-scores{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin:.4rem 0}
+.crd-sc{display:flex;flex-direction:column;align-items:center;gap:.15rem;font-size:.78rem;color:#4a5560}
+.crd-arr{color:#9aa4ad}
+.crd-list{display:grid;gap:.6rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.crd-item{text-align:right;background:#fff;border:1px solid #d9dee4;border-radius:12px;padding:.7rem .8rem;font:inherit;cursor:pointer}
+.crd-item:hover{border-color:#2a9d8f}
+.crd-src{background:#f7f9fa;border:1px solid #e3e7eb;border-radius:10px;padding:.6rem .8rem;margin:.4rem 0 .8rem}
+.crd-steps button:disabled{opacity:.45;cursor:not-allowed}
+.crd-assess{border:1px solid #e3e7eb;border-top:2px solid #2a9d8f;border-radius:12px;padding:.8rem 1rem;margin:.6rem 0;background:#fff}
+.crd-assess-h{display:flex;gap:.7rem;align-items:center}
+.crd-assess h4{margin:.7rem 0 .2rem;font-size:.95rem}
+.crd-chat{max-height:420px;overflow:auto;border:1px solid #e3e7eb;border-radius:12px;padding:.6rem;background:#fbfcfd;display:flex;flex-direction:column;gap:.5rem}
+.crd-msg{max-width:88%;padding:.5rem .7rem;border-radius:12px;line-height:1.5}
+.crd-msg.ai{background:#eef6f5;align-self:flex-start}
+.crd-msg.me{background:#eef1f8;align-self:flex-end}
+.crd-msg b{font-size:.8rem;color:#4a5560}
+.crd-say{display:flex;gap:.5rem;align-items:flex-end;margin:.5rem 0}
+.crd-say textarea{flex:1}
+.crd-ext li{margin:.35rem 0}
+.crd-donebar{margin-top:1rem;padding-top:.8rem;border-top:1px solid #e3e7eb}
+.crd-pick{display:grid;gap:.4rem}
+.crd-opt{display:flex;gap:.6rem;align-items:flex-start;border:1px solid #e3e7eb;border-radius:10px;padding:.5rem .7rem;font-weight:400;cursor:pointer}
+.crd-opt:has(input:checked){border-color:#2a9d8f;background:#f1f8f7}
+.crd-mrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin:.35rem 0}
+.crd-mrow .mn{flex:1 1 12rem}
+.crd-mrow label{font-weight:400;font-size:.88rem}
+.crd-consent{background:#f7f9fa;border-radius:10px;padding:.5rem .8rem;margin:.5rem 0}
+.crd-fs{border:1px solid #e3e7eb;border-radius:10px;padding:.4rem .8rem;margin:.6rem 0}
+.crd-seen{background:#f7f9fa;padding:.5rem .7rem;border-radius:8px}
+.crd-scale td{padding:.35rem .5rem;vertical-align:top;text-align:right}
+.crd-hint{color:#5c6873;font-size:.9rem}
+.crd-bar{display:flex;align-items:center;gap:.5rem;margin:.2rem 0}
+.crd-bar i{display:block;height:14px;border-radius:7px;background:#2a9d8f;min-width:2px}
+.crd-kpi{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem;margin:.6rem 0}
+.crd-kpi div{border:1px solid #e3e7eb;border-radius:12px;padding:.6rem .8rem;background:#fff}
+.crd-kpi b{display:block;font-size:1.5rem;color:#1d3f63}
+.crd-explain{background:#f4f8fb;border-right:3px solid #1d3f63;padding:.5rem .8rem;border-radius:6px;margin:.4rem 0 1rem}
+@media print{.dlm-noprint,.crd-say,.crd-addext,.crd-donebar{display:none!important}}
+.crd-rt{width:100%;border-collapse:collapse;margin:.4rem 0;font-size:.92rem}
+.crd-rt th{background:#1d3f63;color:#fff;text-align:right;padding:.35rem .5rem;font-weight:600}
+.crd-rt td{border-bottom:1px solid #e3e7eb;padding:.35rem .5rem;text-align:right;vertical-align:top}
+.crd-rt td.ck{text-align:center;width:5.5rem}
+
+/* כפתור ניווט: מילה עם קישור */
+.crd-link{background:none;border:0;padding:0;margin:0 0 0 18px;font:inherit;font-size:16px;color:#1d3f63;text-decoration:underline;text-underline-offset:3px;cursor:pointer;box-shadow:none;border-radius:0}
+.crd-link:hover,.crd-link:focus-visible{color:#0f766e}
+
+/* ── כל הפעולות כמילה עם קישור: עדין ואלגנטי ── */
+body.crd-page .dlm-btn,body.crd-page .dlm-btn.small,body.crd-page .dlm-btn.main,body.crd-page .dlm-btn.acc,body.crd-page .dlm-btn.red{
+  background:none;border:0;border-radius:0;padding:2px 0;margin:0 0 0 22px;box-shadow:none;font:inherit;font-size:16px;font-weight:500;
+  color:#1d3f63;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:rgba(29,63,99,.35);cursor:pointer;transition:color .15s,text-decoration-color .15s}
+body.crd-page .dlm-btn.main,body.crd-page .dlm-btn.acc{font-weight:700;font-size:17px;color:#0f5f58;text-decoration-color:rgba(15,95,88,.45)}
+body.crd-page .dlm-btn.main::after{content:" ←";text-decoration:none;display:inline-block;margin-right:4px}
+body.crd-page .dlm-btn.red{color:#b42318;text-decoration-color:rgba(180,35,24,.35)}
+body.crd-page .dlm-btn:hover,body.crd-page .dlm-btn:focus-visible,body.crd-page .crd-link:hover{color:#0f766e;text-decoration-color:currentColor}
+body.crd-page .dlm-btn:disabled{opacity:.4;text-decoration:none}
+/* לשוניות ושלבים: מילים, והנוכחית מודגשת עם קו */
+body.crd-page .dlm-steps{gap:4px 22px;border-bottom:1px solid #e3e7ee;padding-bottom:0}
+body.crd-page .dlm-steps button{background:none;border:0;border-radius:0;padding:6px 0;margin:0 0 -1px;color:#5b6576;font-size:16px;border-bottom:2px solid transparent}
+body.crd-page .dlm-steps button[aria-current=step]{background:none;color:#1d3f63;font-weight:700;border-bottom-color:#0f766e}
+body.crd-page .dlm-steps button:disabled{color:#b8bfca;background:none}
+body.crd-page .dlm-steps button:hover:not(:disabled){color:#1d3f63}
+body.crd-page .crd-link{font-size:16px;font-weight:500;text-decoration-color:rgba(29,63,99,.35);text-decoration-thickness:1px;text-underline-offset:4px}
+
+/* ── שאלון עמדות ── */
+.crd-att{display:flex;flex-direction:column;gap:2px;margin:10px 0 14px}
+.crd-att-q{border:0;border-bottom:1px solid #edf0f4;margin:0;padding:12px 0;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 18px}
+.crd-att-q legend{float:right;font-weight:500;max-width:30rem;line-height:1.45;padding:0}
+.crd-att-n{display:inline-block;min-width:1.4em;color:#0f766e;font-weight:700}
+.crd-att-o{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.crd-att-o label{display:inline-flex;align-items:center;cursor:pointer;margin:0}
+.crd-att-o input{position:absolute;opacity:0;width:1px;height:1px}
+.crd-att-o span{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;padding:0 6px;border:1px solid #d5dbe4;border-radius:50%;color:#3b4556;font-size:15px;transition:all .15s}
+.crd-att-o label.na span{border-radius:17px;padding:0 12px;font-size:13px;color:#6b7482}
+.crd-att-o input:checked+span{background:#0f766e;border-color:#0f766e;color:#fff}
+.crd-att-o input:focus-visible+span{outline:2px solid #0f766e;outline-offset:2px}
+.crd-att-key{margin-top:8px}
+.crd-prelist{list-style:none;padding:0;margin:6px 0 12px;display:flex;flex-wrap:wrap;gap:4px 18px}
+.crd-quote{border-right:3px solid #d5dbe4;padding:2px 12px 2px 0;color:#3b4556}
+@media screen and (max-width:640px){.crd-att-q{flex-direction:column;align-items:flex-start}.crd-att-o span{min-width:30px;height:30px}}
+.crd-min{font-weight:400;font-size:14px;color:#0f766e;margin-right:6px;white-space:nowrap}
+.crd-ini-h{margin:22px 0 4px;font-size:17px}
+.crd-req{font-weight:400;font-size:13px;color:#6b7482}

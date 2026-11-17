@@ -42,6 +42,7 @@ window.SBE_SCREENS = [
       { file:'family-bridge.html', label:'גשר בין הבית לכיתה', who:'הרשאת גשר (bridge)' },
       { file:'shared-dialogue-lab.html', label:'מעבדת שיח וחקר משותף', who:'הרשאת מעבדת שיח וחקר משותף (dialogue)' },
       { file:'quick-practice.html', label:'התנסות קצרה בשיחה מאתגרת', who:'הרשאת התנסות קצרה (quickpractice), או קישור פתוח ליום' },
+      { file:'credibility-check.html', label:'בדיקת אמינות של מקורות', who:'הרשאת credibility או dilemma; הצוותים בסריקת QR של הכיתה (credibility-join.html)' },
       { file:'dilemma-inquiry.html', label:'בירור דילמות', who:'הרשאת בירור דילמות (dilemma); המשתתפים בסריקת QR של הכיתה (dilemma-join.html)' },
       { file:'team-thinking.html', label:'חשיבת צוות', who:'הרשאת חשיבת צוות (teamthink)' },
       { file:'games.html', label:'משחקי חוסן', who:'הרשאת משחקים (games)' },
