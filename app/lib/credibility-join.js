@@ -125,10 +125,10 @@
   // שאלון עמדות: כל היגד בשורה, סולם 1–5
   function attForm(pfx, vals) {
     vals = vals || {};
-    return '<div class="crd-att">' + M.ATTITUDES.map((q, i) => '<fieldset class="crd-att-q"><legend><span class="crd-att-n">' + (i + 1) + '</span> ' + esc(q.t) + '</legend><div class="crd-att-o">'
-      + M.ATT_SCALE.map((o) => '<label title="' + esc(o[1]) + '"><input type="radio" name="' + pfx + q.k + '" value="' + o[0] + '"' + (String(vals[q.k]) === String(o[0]) ? ' checked' : '') + '><span>' + o[0] + '</span></label>').join('')
+    return '<div class="crd-att"><div class="crd-att-head" aria-hidden="true"><span class="crd-att-hq"></span><div class="crd-att-o">' + M.ATT_SCALE.map((o) => '<span class="crd-att-hl">' + esc(o[1]) + '</span>').join('') + '</div></div>' + M.ATTITUDES.map((q, i) => '<fieldset class="crd-att-q"><legend><span class="crd-att-n">' + (i + 1) + '</span> ' + esc(q.t) + '</legend><div class="crd-att-o">'
+      + M.ATT_SCALE.map((o) => '<label title="' + esc(o[1]) + '"><input type="radio" name="' + pfx + q.k + '" value="' + o[0] + '"' + (String(vals[q.k]) === String(o[0]) ? ' checked' : '') + '><span>' + o[0] + '</span><i class="crd-att-sr">' + esc(o[1]) + '</i></label>').join('')
       + '</div></fieldset>').join('')
-      + '<p class="dlm-hint crd-att-key">' + M.ATT_SCALE.map((o) => o[0] + ' ' + esc(o[1])).join(' · ') + '</p></div>';
+      + '</div>';
   }
   const readAtt = (pfx) => { const r = {}; for (const q of M.ATTITUDES) { const c = app.querySelector('input[name="' + pfx + q.k + '"]:checked'); if (!c) return null; r[q.k] = Number(c.value); } return r; };
   function preView(missing) {
