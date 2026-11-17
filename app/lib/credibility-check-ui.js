@@ -211,11 +211,12 @@
       + '<label for="se">מספר אישור ועדת האתיקה (רשות)</label><input type="text" id="se" value="' + esc(a.research.ethics || '') + '">'
       + '<label for="sc">פרטי קשר לשאלות על המחקר (רשות)</label><input type="text" id="sc" value="' + esc(a.research.contact || '') + '">'
       + '<label style="font-weight:400"><input type="checkbox" id="sr"' + (a.research.enabled ? ' checked' : '') + '> הפעילות מלווה במחקר</label>'
+      + '<label style="font-weight:400"><input type="checkbox" id="sro"' + (a.reflectOpen ? ' checked' : '') + '> לפתוח את הרפלקציה לכל הצוותים עכשיו</label><p class="dlm-hint">בלי הסימון, הרפלקציה נפתחת לכל צוות בסיום התרגיל: כשבדיקה של מקור אחד לפחות מגיעה להערכה החוזרת.</p>'
       + '<p><button class="dlm-btn main" id="ss">שמירה</button></p><div id="sm"></div></div>'
       + (a.isOwner ? '<div class="dlm-card"><h3>שותפות</h3><p class="dlm-hint">החוקרות השותפות (איבנה, עינת ויעל) נכנסות לפעילות עם קוד שותפות, ורואות את כל הכיתות והצוותים.</p>'
         + (a.coCode ? '<p>קוד השותפות: <b class="dlm-code" dir="ltr">' + esc(a.coCode) + '</b></p>' : '') + '<button class="dlm-btn" id="co">' + (a.coCode ? 'קוד שותפות חדש' : 'הפקת קוד שותפות') + '</button> <span class="dlm-hint">שותפות: ' + a.cofacs + '</span></div>'
         + '<div class="dlm-card"><h3>מחיקת הפעילות</h3><button class="dlm-btn" id="del" style="color:#b3261e">מחיקה</button></div>' : '');
-    $('#ss').onclick = async () => { try { await call('f.update', { id: a.id, title: $('#sn').value, dilemma: $('#sd').value, research: { ethics: $('#se').value, contact: $('#sc').value, enabled: $('#sr').checked } }); $('#sm').innerHTML = msg('נשמר.'); open(a.id, true); } catch (e) { $('#sm').innerHTML = msg(e.message, 'err'); } };
+    $('#ss').onclick = async () => { try { await call('f.update', { id: a.id, title: $('#sn').value, dilemma: $('#sd').value, research: { ethics: $('#se').value, contact: $('#sc').value, enabled: $('#sr').checked }, reflectOpen: $('#sro').checked }); $('#sm').innerHTML = msg('נשמר.'); open(a.id, true); } catch (e) { $('#sm').innerHTML = msg(e.message, 'err'); } };
     const co = $('#co'); if (co) co.onclick = async () => { try { await call('f.coCode', { id: a.id }); open(a.id); } catch (e) { U.say(e.message); } };
     const del = $('#del'); if (del) del.onclick = async () => { if (await U.ask('למחוק את הפעילות וכל העבודה של כל הצוותים? אי אפשר לבטל.', { ok: 'מחיקה' })) { try { await call('f.delete', { id: a.id }); list(); } catch (e) { U.say(e.message); } } };
   }

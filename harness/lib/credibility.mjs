@@ -84,7 +84,7 @@ function checkFile(d) {
   if (data.length * 0.75 > k.max) throw new CrdError('הקובץ גדול מדי (עד ' + k.t + ')', 413);
   return { data, type, size: Math.round(data.length * 0.75) };
 }
-const publicActivity = (a, c) => ({ id: a.id, title: a.title, dilemma: a.dilemma, status: a.status, research: !!a.research.enabled,
+const publicActivity = (a, c) => ({ id: a.id, title: a.title, dilemma: a.dilemma, status: a.status, research: !!a.research.enabled, reflectOpen: !!a.reflectOpen,
   class: c ? { id: c.id, name: c.name } : null, consent: { ...M.CONSENT, ethics: a.research.ethics || '', contact: a.research.contact || '' } });
 const teamView = (t) => ({ id: t.id, name: t.name, code: t.tcode, classId: t.classId, members: t.members.map((m) => ({ id: m.id, name: m.name, consent: m.consent })), createdAt: t.createdAt });
 
@@ -209,6 +209,7 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
         const a = await saveAct(d.id, (a) => {
           if (d.title !== undefined) a.title = txt(d.title, 'שם הפעילות', 200, true);
           if (d.dilemma !== undefined) a.dilemma = txt(d.dilemma, 'הדילמה', LIM.text);
+          if (typeof d.reflectOpen === 'boolean') a.reflectOpen = d.reflectOpen;
           if (d.research && typeof d.research === 'object') {
             if (typeof d.research.enabled === 'boolean') a.research.enabled = d.research.enabled;
             if (d.research.ethics !== undefined) a.research.ethics = txt(d.research.ethics, 'אישור האתיקה', 200);
@@ -454,6 +455,10 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
       if (op === 'p.reflect') {
         const m = t.members.find((x) => x.id === d.member);
         if (!m) throw new CrdError('אפשר לבחור את השם שלך מהרשימה', 404);
+        if ((d.reflect || d.post !== undefined) && !a.reflectOpen) {
+          const ks0 = (await store.get(KS)) || { checks: [] };
+          if (!ks0.checks.some((k) => k.final)) throw new CrdError('הרפלקציה נפתחת בסיום התרגיל: אחרי שבדיקה של מקור אחד לפחות מגיעה להערכה החוזרת', 409);
+        }
         await mutate(store, RR, (rr) => {
           const cur = rr.members[m.id] || {};
           for (const w of ['pre', 'post']) {
@@ -468,6 +473,7 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
             const r = {}; for (const q of M.REFLECT) r[q.k] = q.opts ? (q.opts.some((o) => o[0] === d.reflect[q.k]) ? d.reflect[q.k] : '') : txt(d.reflect[q.k], q.t, LIM.long);
             if (!r.changed) throw new CrdError('אפשר לבחור: האם חל שינוי בעמדתי - כן או לא');
             if (!r.feel && !r.think) throw new CrdError('אפשר לכתוב לפחות מה את/ה מרגיש/ה או חושב/ת');
+            if (!cur.post) throw new CrdError('כדי לשלוח, אפשר לבחור תשובה בכל אחד מההיגדים בשאלון העמדות המסכם');
             cur.reflect = { ...r, at: now() };
             cur.ai = null;
           }
