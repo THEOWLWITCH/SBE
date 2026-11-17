@@ -11,7 +11,7 @@
   const ZCOL = { claims: '#2A9D8F', sources: '#1D3F63', missing: '#E9A23B', alternatives: '#8AB17D', certainty: '#9B5DE5', questions: '#E76F51' };
   const REL_COL = { supports: '#2E9E32', weakens: '#EF6C00', contradicts: '#C62828', raises: '#1D3F63', check: '#9B5DE5' };
   let busy = false;
-  const view = { zoom: 0.7, sx: null, sy: null, zones: true, full: false };
+  const view = { zoom: 0.7, sx: null, sy: null, zones: true, full: false, connect: false, from: null };
   try { const v = JSON.parse(localStorage.getItem('sbe.dlm.map.view') || 'null'); if (v) Object.assign(view, { zoom: v.zoom || 0.7, zones: v.zones !== false }); } catch (e) {}
   const saveView = () => { try { localStorage.setItem('sbe.dlm.map.view', JSON.stringify({ zoom: view.zoom, zones: view.zones })); } catch (e) {} };
 
@@ -53,6 +53,7 @@
       return '<div class="dlm-item mm-card' + (o.sel === i.id ? ' sel' : '') + (inStack ? ' in-stack' : '') + '" data-item="' + esc(i.id) + '" style="left:' + p.x + 'px;top:' + p.y + 'px;--zc:' + ZCOL[z.k] + (inStack ? ';z-index:' + (10 + stackIdx[i.id]) : '') + '">'
         + '<div class="mm-zone">' + esc(z.t) + (i.origin === 'facilitator' ? ' · מנחה' : '') + '</div>'
         + (s ? M.dotHTML(U.scoreNow(s, board)) + ' ' : '') + (al.length ? '<span class="dlm-warnmark" title="התרעה: לבדיקה">⚠</span> ' : '')
+        + (o.readOnly || inStack ? '' : '<span class="mm-handle" data-handle="1" title="גוררים מכאן לכרטיס אחר כדי למתוח קו" aria-label="קו לכרטיס אחר">⟶</span>')
         + '<span class="mm-text">' + esc(i.text) + '</span>'
         + (s && s.fileId ? '<div class="mm-file">📎 ' + esc(s.fileName || 'קובץ') + '</div>' : '')
         + '<div class="meta">' + (i.origin === 'ai' ? '<span class="dlm-tag ai">AI</span>' : '') + (i.confidence ? '<span class="dlm-tag">ביטחון: ' + esc(conf(i.confidence)) + '</span>' : '') + '<span>' + esc(i.by || '') + '</span>'
@@ -72,11 +73,11 @@
     const tools = '<div class="mm-tools">'
       + (o.readOnly ? '' : '<form class="dlm-add mm-addcard" data-addto="claims"><select class="mm-zsel" aria-label="לאיזה אזור">' + M.ZONES.filter((z) => z.k !== 'sources').map((z) => '<option value="' + z.k + '">' + esc(z.t) + '</option>').join('') + '</select>'
         + '<input type="text" aria-label="כרטיס חדש" placeholder="כרטיס חדש: טענה, שאלה, מידע חסר…"><button class="dlm-btn small main">➕ כרטיס</button></form>'
-        + '<button type="button" class="dlm-btn small" data-addsrc="1">➕ מקור או קובץ</button><button type="button" class="dlm-btn small" data-kadd="1">🗂 קבוצה חדשה</button>')
+        + '<button type="button" class="dlm-btn small" data-addsrc="1">➕ מקור או קובץ</button><button type="button" class="dlm-btn small" data-kadd="1">🗂 קבוצה חדשה</button><button type="button" class="dlm-btn small' + (view.connect ? ' main' : '') + '" data-connect="1">🔗 ' + (view.connect ? 'סיום מתיחת קווים' : 'קו בין כרטיסים') + '</button>')
       + '<span class="mm-sp"></span><button type="button" class="dlm-btn small" data-zoom="-1" aria-label="הקטנה">−</button><button type="button" class="dlm-btn small" data-zoom="0" title="התאמה למסך">⤢</button><button type="button" class="dlm-btn small" data-zoom="1" aria-label="הגדלה">+</button>'
       + '<label class="mm-zt"><input type="checkbox" data-zones' + (view.zones ? ' checked' : '') + '> אזורי הלוח</label>'
       + '<button type="button" class="dlm-btn small main" data-full="1">' + (view.full ? '✕ יציאה ממסך מלא' : '⛶ מסך מלא') + '</button></div>'
-      + (o.readOnly ? '' : '<p class="dlm-hint mm-help">גוררים כרטיס לכל מקום בלוח. כרטיס שנגרר לתוך קבוצה מצטרף אליה. "⧉ ערימה" מקבצת את הכרטיסים של הקבוצה, ו"⋯" פותח פעולות על כרטיס.</p>');
+      + (o.readOnly ? '' : (view.connect ? '<p class="dlm-msg warn mm-help">מצב מתיחת קווים: לוחצים על כרטיס, ואחר כך על הכרטיס שרוצים לחבר אליו.</p>' : '') + '<p class="dlm-hint mm-help">גוררים כרטיס לכל מקום בלוח. כדי למתוח קו: גוררים את ⟶ שבפינת הכרטיס אל כרטיס אחר. כרטיס שנגרר לתוך קבוצה מצטרף אליה. "⧉ ערימה" מקבצת את הכרטיסים של הקבוצה, ו"⋯" פותח פעולות על כרטיס.</p>');
     return '<div class="mm-wrap' + (view.full ? ' mm-full' : '') + '">' + tools + '<div class="mm-view" tabindex="0" aria-label="הלוח כמפת חשיבה"><div class="mm-size" style="width:' + Math.round(W * view.zoom) + 'px;height:' + Math.round(H * view.zoom) + 'px">'
       + '<div class="mm-canvas" style="width:' + W + 'px;height:' + H + 'px;transform:scale(' + view.zoom + ')">' + zonesBg + clusterHTML + '<svg class="mm-lines" width="' + W + '" height="' + H + '"></svg>' + cards + '</div></div></div></div>';
   }
@@ -90,7 +91,7 @@
         const c = REL_COL[l.rel] || '#556', t = (M.RELATIONS.find((r) => r.k === l.rel) || {}).t || '';
         const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
         return '<line x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '" stroke="' + c + '" stroke-width="2.5" stroke-opacity=".75" marker-end="url(#mm-ar-' + l.rel + ')"/>'
-          + '<g transform="translate(' + mx + ',' + my + ')"><rect x="-' + (t.length * 5 + 10) + '" y="-12" width="' + (t.length * 10 + 20) + '" height="24" rx="12" fill="#fff" stroke="' + c + '"/><text text-anchor="middle" y="5" font-size="14" fill="' + c + '" font-family="Assistant,sans-serif">' + esc(t) + '</text></g>';
+          + '<g class="mm-lab" data-lid="' + esc(l.id) + '" transform="translate(' + mx + ',' + my + ')"><rect x="-' + (t.length * 5 + 10) + '" y="-12" width="' + (t.length * 10 + 20) + '" height="24" rx="12" fill="#fff" stroke="' + c + '"/><text text-anchor="middle" y="5" font-size="14" fill="' + c + '" font-family="Assistant,sans-serif">' + esc(t) + '</text></g>';
       }).join('');
   }
 
@@ -134,6 +135,42 @@
         el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
       });
     });
+    // קווים (17/11/2026: "לא רואה דרך להוסיף קווים"): גוררים את ⟶ לכרטיס אחר, או מצב "🔗 קו בין כרטיסים"; לחיצה על שם הקו מסירה אותו.
+    const pick = (from, to, at) => {
+      const old = canvas.querySelector('.mm-pick'); if (old) old.remove();
+      const box = document.createElement('div'); box.className = 'mm-pick'; box.style.left = Math.round(at.x) + 'px'; box.style.top = Math.round(at.y) + 'px';
+      box.innerHTML = '<b>מה הקשר?</b>' + M.RELATIONS.map((r) => '<button type="button" data-rel="' + r.k + '" style="--rc:' + (REL_COL[r.k] || '#556') + '">' + esc(r.t) + '</button>').join('') + '<button type="button" data-rel="">ביטול</button>';
+      canvas.appendChild(box); busy = true;
+      box.addEventListener('pointerdown', (e) => e.stopPropagation());
+      box.querySelectorAll('[data-rel]').forEach((b) => b.onclick = () => { box.remove(); view.from = null; if (b.dataset.rel) send({ kind: 'link', from, to, rel: b.dataset.rel }); else { busy = false; o.refresh(); } });
+    };
+    const cardAt = (ev) => { const el = document.elementFromPoint(ev.clientX, ev.clientY); return el && el.closest ? el.closest('.mm-card') : null; };
+    root.querySelectorAll('[data-handle]').forEach((h) => h.addEventListener('pointerdown', (e) => {
+      e.stopPropagation(); e.preventDefault();
+      const card = h.closest('.mm-card'), from = card.dataset.item, svg = root.querySelector('.mm-lines');
+      const a = { x: card.offsetLeft + card.offsetWidth / 2, y: card.offsetTop + card.offsetHeight / 2 };
+      const tmp = document.createElementNS('http://www.w3.org/2000/svg', 'line'); tmp.setAttribute('x1', a.x); tmp.setAttribute('y1', a.y); tmp.setAttribute('x2', a.x); tmp.setAttribute('y2', a.y);
+      tmp.setAttribute('stroke', '#1D3F63'); tmp.setAttribute('stroke-width', '3'); tmp.setAttribute('stroke-dasharray', '8 6'); svg.appendChild(tmp);
+      h.setPointerCapture(e.pointerId); busy = true;
+      const mv = (ev) => { const p = point(ev); tmp.setAttribute('x2', p.x); tmp.setAttribute('y2', p.y); };
+      const up = (ev) => {
+        h.removeEventListener('pointermove', mv); h.removeEventListener('pointerup', up); tmp.remove();
+        try { h.releasePointerCapture(ev.pointerId); } catch (x) {}
+        const t = cardAt(ev);
+        if (t && t.dataset.item !== from) pick(from, t.dataset.item, point(ev)); else busy = false;
+      };
+      h.addEventListener('pointermove', mv); h.addEventListener('pointerup', up);
+    }));
+    const cb = root.querySelector('[data-connect]'); if (cb) cb.onclick = () => { view.connect = !view.connect; view.from = null; o.refresh(); };
+    if (view.connect) root.querySelectorAll('.mm-card').forEach((el) => {
+      if (el.dataset.item === view.from) el.classList.add('sel');
+      el.addEventListener('click', (e) => {
+        if (e.target.closest('button,summary,a,input')) return;
+        if (!view.from) { view.from = el.dataset.item; root.querySelectorAll('.mm-card.sel').forEach((x) => x.classList.remove('sel')); el.classList.add('sel'); return; }
+        if (view.from !== el.dataset.item) { const r = canvas.getBoundingClientRect(); pick(view.from, el.dataset.item, { x: (e.clientX - r.left) / z(), y: (e.clientY - r.top) / z() }); }
+      });
+    });
+    const svgEl = root.querySelector('.mm-lines'); if (svgEl) svgEl.addEventListener('click', (e) => { const g = e.target.closest && e.target.closest('.mm-lab'); if (g && confirm('להסיר את הקו?')) send({ kind: 'unlink', id: g.getAttribute('data-lid') }); });
     // גרירת קבוצה (מהכותרת) ושינוי הגודל
     root.querySelectorAll('.mm-cluster').forEach((el) => {
       const id = el.dataset.cluster, head = el.querySelector('[data-kdrag]'), res = el.querySelector('[data-kres]');
