@@ -115,15 +115,15 @@
     app.querySelectorAll('[data-tab]').forEach((b) => { b.onclick = () => { S.tab = b.dataset.tab; S.open = null; render(); }; });
     bind();
   }
-  // שאלון עמדות: כל היגד בשורה, סולם 1–5 ו"מעדיף/ה לא לענות"
+  // שאלון עמדות: כל היגד בשורה, סולם 1–5
   function attForm(pfx, vals) {
     vals = vals || {};
     return '<div class="crd-att">' + M.ATTITUDES.map((q, i) => '<fieldset class="crd-att-q"><legend><span class="crd-att-n">' + (i + 1) + '</span> ' + esc(q.t) + '</legend><div class="crd-att-o">'
       + M.ATT_SCALE.map((o) => '<label title="' + esc(o[1]) + '"><input type="radio" name="' + pfx + q.k + '" value="' + o[0] + '"' + (String(vals[q.k]) === String(o[0]) ? ' checked' : '') + '><span>' + o[0] + '</span></label>').join('')
-      + '<label class="na"><input type="radio" name="' + pfx + q.k + '" value="na"' + (vals[q.k] === 'na' ? ' checked' : '') + '><span>מעדיף/ה לא לענות</span></label></div></fieldset>').join('')
+      + '</div></fieldset>').join('')
       + '<p class="dlm-hint crd-att-key">' + M.ATT_SCALE.map((o) => o[0] + ' ' + esc(o[1])).join(' · ') + '</p></div>';
   }
-  const readAtt = (pfx) => { const r = {}; for (const q of M.ATTITUDES) { const c = app.querySelector('input[name="' + pfx + q.k + '"]:checked'); if (!c) return null; r[q.k] = c.value === 'na' ? 'na' : Number(c.value); } return r; };
+  const readAtt = (pfx) => { const r = {}; for (const q of M.ATTITUDES) { const c = app.querySelector('input[name="' + pfx + q.k + '"]:checked'); if (!c) return null; r[q.k] = Number(c.value); } return r; };
   function preView(missing) {
     const t = S.data.team, sel = missing.some((m) => m.id === (S.pm || me())) ? (S.pm || me()) : '';
     return '<div class="dlm-card"><h2>' + esc(M.ATT.pre) + '</h2>'
@@ -131,7 +131,7 @@
       + '<p class="dlm-hint">' + esc(M.ATT.note) + '</p>'
       + '<ul class="crd-prelist">' + t.members.map((m) => '<li>' + ((S.data.reflections[m.id] || {}).pre ? '✓ ' : '○ ') + esc(m.name) + '</li>').join('') + '</ul>'
       + '<label for="pm">השם שלי</label><select id="pm" data-closed><option value="">בחירה</option>' + missing.map((m) => '<option value="' + esc(m.id) + '"' + (sel === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>').join('') + '</select>'
-      + (sel ? attForm('pre-') + '<h4 class="crd-ini-h">' + esc(M.INITIAL.h) + '</h4><label for="pi">' + esc(M.INITIAL.t) + ' <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="pi" rows="5"></textarea>'
+      + (sel ? attForm('pre-') + '<label for="pi" class="crd-ini-h">' + esc(M.INITIAL.t) + ' <span class="crd-req">(שדה עיקרי)</span> <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="pi" rows="5"></textarea>'
         + '<p><button class="dlm-btn main" id="savePre">שליחת השאלון</button></p>' : '')
       + '<div id="pmm"></div></div>';
   }
@@ -219,7 +219,7 @@
     const r = local.reflect || (st.reflect && typeof st.reflect === 'object' ? st.reflect : {});
     return '<div class="dlm-card"><h2>עמדה ורפלקציה</h2><p class="dlm-hint">כל אחד ואחת כותב/ת את הרפלקציה בעצמו/ה. הרפלקציה משותפת עם הצוות, וה־AI מנתח אותה לפי קריטריונים שנקבעו מראש.</p>'
       + '<label for="rm">השם שלי</label><select id="rm" data-closed><option value="">בחירה</option>' + t.members.map((x) => '<option value="' + esc(x.id) + '"' + (sel === x.id ? ' selected' : '') + '>' + esc(x.name) + ((S.data.reflections[x.id] || {}).reflect ? ' ✓' : '') + '</option>').join('') + '</select>'
-      + (!m ? '' : (st.initial && st.initial.text ? '<h3>העמדה הראשונית שלי</h3><p class="crd-quote">' + esc(st.initial.text) + '</p>' : '')
+      + (!m ? '' : (st.initial && st.initial.text ? '<h3>' + esc(M.INITIAL.h) + '</h3><p class="crd-quote">' + esc(st.initial.text) + '</p>' : '')
         + '<h3>רפלקציה' + (st.reflect ? ' ✓ נשלחה' : '') + '</h3><p class="dlm-hint">' + esc(M.REFLECT_NOTE) + '</p>'
         + M.REFLECT.map((q) => q.opts ? '<fieldset class="crd-fs"><legend>' + esc(q.t) + '</legend>' + q.opts.map((o) => '<label><input type="radio" name="rf-' + q.k + '" value="' + o[0] + '"' + (r[q.k] === o[0] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>').join(' ') + '</fieldset>'
           : '<div class="crd-q" data-when="' + esc((q.when || []).join(',')) + '"><label for="rf-' + q.k + '">' + esc(q.t) + ' <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="rf-' + q.k + '" rows="3" placeholder="' + esc(q.ph || '') + '">' + esc(r[q.k] || '') + '</textarea></div>').join('')
@@ -387,15 +387,16 @@
     on('#savePre', () => act(async () => {
       const id = $('#pm').value, pre = readAtt('pre-');
       if (!id) throw new Error('אפשר לבחור את השם שלך.');
-      if (!pre) throw new Error('כדי לשלוח, אפשר לענות על כל ההיגדים, או לבחור "מעדיף/ה לא לענות".');
+      if (!pre) throw new Error('כדי לשלוח, אפשר לבחור תשובה בכל אחד מההיגדים.');
       const init = $('#pi').value.trim();
-      await call('p.reflect', Object.assign({ member: id, pre }, init ? { initial: init } : {}));
+      if (!init) throw new Error('כדי לשלוח, אפשר לכתוב את עמדתך לגבי ספקולציות, פייק ניוז, קונספירציות ודיסאינפורמציה.');
+      await call('p.reflect', { member: id, pre, initial: init });
       if (!me()) setMe(id);
       S.pm = ''; window.scrollTo(0, 0); await load();
     }, $('#pmm')));
     on('#savePost', () => act(async () => {
       const post = readAtt('post-');
-      if (!post) throw new Error('כדי לשלוח, אפשר לענות על כל ההיגדים, או לבחור "מעדיף/ה לא לענות".');
+      if (!post) throw new Error('כדי לשלוח, אפשר לבחור תשובה בכל אחד מההיגדים.');
       await call('p.reflect', { member: $('#rm').value, post });
       S.data.reflections[$('#rm').value] = Object.assign({}, S.data.reflections[$('#rm').value], { post: true });
       $('#rmm').innerHTML = msg('השאלון המסכם נשמר. תודה!');

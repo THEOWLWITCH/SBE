@@ -443,9 +443,10 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
           for (const w of ['pre', 'post']) {
             if (d[w] === undefined) continue;
             const att = M.cleanAttitudes(d[w]);
-            if (!att) throw new CrdError('כדי לשלוח, אפשר לענות על כל ההיגדים, או לבחור "מעדיף/ה לא לענות"');
+            if (!att) throw new CrdError('כדי לשלוח, אפשר לבחור תשובה בכל אחד מההיגדים');
             cur[w] = { ...att, at: now() };
           }
+          if (d.pre !== undefined && !String(d.initial || '').trim() && !(cur.initial && cur.initial.text)) throw new CrdError('כדי לשלוח, אפשר לכתוב את עמדתך לגבי ספקולציות, פייק ניוז, קונספירציות ודיסאינפורמציה');
           if (d.initial !== undefined) cur.initial = { text: txt(d.initial, M.INITIAL.t, LIM.long, true), at: now() };
           if (d.reflect) {
             const r = {}; for (const q of M.REFLECT) r[q.k] = q.opts ? (q.opts.some((o) => o[0] === d.reflect[q.k]) ? d.reflect[q.k] : '') : txt(d.reflect[q.k], q.t, LIM.long);

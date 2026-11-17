@@ -103,7 +103,7 @@
       + (k.team ? '<h4>הציון של הצוות: ' + M.dotHTML(k.team.score) + '</h4><p>' + esc(k.team.why) + '</p>' + (k.team.basis ? '<p><b>מול ה־AI:</b> ' + esc(k.team.basis) + '</p>' : '') : '')
       + U.assessHTML(k.final, 'AI, הערכה חוזרת') + '</details>';
     const refl = t.members.map((m) => { const r = d.reflections[m.id] || {}; const rf = r.reflect;
-      return '<details class="dlm-card soft"><summary><b>' + esc(m.name) + '</b> ' + (m.consent === 'research' ? '✓ חתם/ה על ההסכמה' : '○ רק ללמידה (חריג)') + ' · ' + (r.initial ? 'עמדה ראשונית ✓' : 'בלי עמדה ראשונית') + ' · ' + (rf ? 'רפלקציה ✓' : 'עוד בלי רפלקציה') + '</summary>'
+      return '<details class="dlm-card soft"><summary><b>' + esc(m.name) + '</b> ' + (m.consent === 'research' ? '✓ חתם/ה על ההסכמה' : '○ רק ללמידה (חריג)') + ' · ' + (r.initial ? 'עמדה ✓' : 'בלי עמדה') + ' · ' + (rf ? 'רפלקציה ✓' : 'עוד בלי רפלקציה') + '</summary>'
         + (r.initial ? '<h4>' + esc(M.INITIAL.h) + '</h4><p class="dlm-hint">' + esc(M.INITIAL.t) + '</p><p>' + esc(r.initial.text) + '</p>' : '')
         + (rf ? M.REFLECT.map((q) => rf[q.k] ? '<h4>' + esc(q.t) + '</h4><p>' + esc(q.opts ? (q.opts.find((o) => o[0] === rf[q.k]) || [])[1] : rf[q.k]) + '</p>' : '').join('') : '') + reflAI(r.ai) + '</details>'; }).join('');
     function reflAI(ai) {

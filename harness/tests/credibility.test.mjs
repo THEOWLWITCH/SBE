@@ -33,8 +33,8 @@ async function setup() {
       r.team = ed.team;
     }
     const cred = { a: r.a, t: r.t, key: r.key };
-    const pre = Object.fromEntries(['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8'].map((k, i) => [k, i % 2 ? 4 : 'na']));
-    if (!noPre) for (const m of r.team.members) await run('p.reflect', { member: m.id, pre }, cred);
+    const pre = Object.fromEntries(['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8'].map((k, i) => [k, i % 2 ? 4 : 2]));
+    if (!noPre) for (const m of r.team.members) await run('p.reflect', { member: m.id, pre, initial: 'עמדה' }, cred);
     return { r, cred, P: (op, input) => run(op, input || {}, cred) };
   };
   return { store, run, fac, A: activity, c1, c2, team };
@@ -201,10 +201,11 @@ test('שאלון עמדות ראשוני: עבודת הצוות מתחילה ר�
   assert.equal(s1, 409); assert.match(b1.error, /שאלון העמדות/);
   const [m1, m2] = t.r.team.members.map((m) => m.id);
   const [sb] = await t.P('p.reflect', { member: m1, pre: { a1: 3 } }); assert.equal(sb, 400);
-  const full = { a1: 1, a2: 2, a3: 3, a4: 4, a5: 5, a6: 'na', a7: 3, a8: 2 };
-  await t.P('p.reflect', { member: m1, pre: full });
+  const full = { a1: 1, a2: 2, a3: 3, a4: 4, a5: 5, a6: 4, a7: 3, a8: 2 };
+  { const [sx] = await t.P('p.reflect', { member: m1, pre: full }); assert.equal(sx, 400, 'stance question is required'); }
+  await t.P('p.reflect', { member: m1, pre: full, initial: 'עמדה' });
   const [s2] = await t.P('p.check', { kind: 'new', url: 'https://example.org/a' }); assert.equal(s2, 409);
-  await t.P('p.reflect', { member: m2, pre: full });
+  await t.P('p.reflect', { member: m2, pre: full, initial: 'עמדה' });
   const [s3] = await t.P('p.check', { kind: 'new', url: 'https://example.org/a' }); assert.equal(s3, 200);
   const [, g] = await t.P('p.get');
   assert.equal(g.reflections[m1].pre, true); assert.equal(typeof g.reflections[m1].pre, 'boolean');
