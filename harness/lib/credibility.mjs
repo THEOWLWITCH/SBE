@@ -415,7 +415,9 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
           }
           const k = ks.checks.find((x) => x.id === d.id);
           if (!k) throw new CrdError('הבדיקה לא נמצאה', 404);
+          // הסדר (17/11/2026): 1 תיאור וציון של הצוות · 2 בדיקת AI · 3 פריטי מידע נוספים עד "אין לנו עוד מידע" · 4 בדיקת AI חוזרת ומשוב על התהליך
           if (kind === 'fields') {
+            if (k.first) throw new CrdError('תיאור המקור נשמר לפני בדיקת ה־AI. פריטים חדשים מוסיפים בשלב 3', 409);
             const f = {}; for (const x of M.FIELDS) f[x.k] = txt(d.fields && d.fields[x.k], x.t, 1500);
             k.fields = f; k.extra = (Array.isArray(d.extra) ? d.extra : []).slice(0, 3).map((x) => ({ t: txt(x && x.t, 'שאלה', 200), ph: txt(x && x.ph, 'רמז', 200), v: txt(x && x.v, 'תשובה', 1500) })).filter((x) => x.t);
             if (d.seen !== undefined) k.seen = txt(d.seen, 'מה רואים', 1500);
@@ -423,7 +425,9 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
             stamp(k, 'fields', by);
           } else if (kind === 'ai') {
             const stage = d.stage === 'final' ? 'final' : 'first';
-            if (stage === 'final' && !k.team) throw new CrdError('ההערכה החוזרת של המודל מגיעה אחרי הציון של הצוות', 409);
+            if (stage === 'first' && !k.team) throw new CrdError('בדיקת ה־AI מגיעה אחרי שהצוות מילא את פרטי המקור ונתן ציון', 409);
+            if (stage === 'first' && k.done) throw new CrdError('אחרי "אין לנו עוד מידע" עוברים לבדיקה החוזרת', 409);
+            if (stage === 'final' && !k.done) throw new CrdError('הבדיקה החוזרת מגיעה אחרי "אין לנו עוד מידע"', 409);
             const r = M.cleanAssess(d.result, stage);
             if (!r) throw new CrdError('התשובה של המודל לא נקראה. אפשר לנסות שוב');
             r.at = now();
@@ -435,20 +439,24 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
             k.chat.push({ role: d.role === 'ai' ? 'ai' : 'team', text: txt(d.text, 'ההודעה', d.role === 'ai' ? 4000 : LIM.text, true), by: d.role === 'ai' ? null : by, at: now() });
             stamp(k, 'msg-' + (d.role === 'ai' ? 'ai' : 'team'), by);
           } else if (kind === 'ext') {
+            if (!k.first || k.done) throw new CrdError('פריטי מידע נוספים מוסיפים אחרי בדיקת ה־AI, עד "אין לנו עוד מידע"', 409);
             if (k.external.length >= LIM.ext) throw new CrdError('הגעתם למספר המקורות החיצוניים המרבי');
             const e = { id: sid('e'), url: httpUrl(d.url), title: txt(d.title, 'שם המקור', 300), kind: M.EXT_KINDS.some((x) => x.k === d.extKind) ? d.extKind : 'other',
               found: txt(d.found, 'מה מצאתם', LIM.text, true), verify, by, at: now() };
-            if (!e.url && !e.title) throw new CrdError('אפשר לכתוב שם או קישור למקור שמצאתם');
+
             k.external.push(e); result.id = e.id; stamp(k, 'ext', by);
           } else if (kind === 'extDel') {
+            if (k.done) throw new CrdError('אחרי "אין לנו עוד מידע" הפריטים נשמרים כמו שהם', 409);
             k.external = k.external.filter((e) => e.id !== d.extId); stamp(k, 'extDel', by);
           } else if (kind === 'done') {
+            if (!k.first) throw new CrdError('"אין לנו עוד מידע" מגיע אחרי בדיקת ה־AI', 409);
             k.done = { note: txt(d.note, 'הערה', 1500), at: now(), by }; stamp(k, 'done', by);
           } else if (kind === 'reopen') {
             if (k.final) throw new CrdError('אחרי ההערכה החוזרת אי אפשר לפתוח שוב את החקירה. אפשר לפתוח בדיקה חדשה', 409);
-            k.done = null; k.team = null; stamp(k, 'reopen', by);
+            k.done = null; stamp(k, 'reopen', by);
           } else if (kind === 'team') {
-            if (!k.done) throw new CrdError('הציון של הצוות ניתן אחרי שקובעים "אין לנו יותר מידע"', 409);
+            if (k.first) throw new CrdError('הציון של הצוות ניתן לפני בדיקת ה־AI', 409);
+            if (!(k.fields && k.fields.claim)) throw new CrdError('לפני הציון, אפשר למלא את פרטי המקור. לפחות את הטענה', 409);
             const s = Number(d.score);
             if (!Number.isInteger(s) || s < 1 || s > 5) throw new CrdError('הציון הוא מספר שלם מ־1 עד 5');
             k.team = { score: s, why: txt(d.why, 'הנימוק', LIM.text, true), basis: txt(d.basis, 'על מה זה נשען', LIM.text), at: now(), by };
@@ -463,10 +471,8 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
       if (op === 'p.reflect') {
         const m = t.members.find((x) => x.id === d.member);
         if (!m) throw new CrdError('אפשר לבחור את השם שלך מהרשימה', 404);
-        if ((d.reflect || d.post !== undefined) && !a.reflectOpen) {
-          const ks0 = (await store.get(KS)) || { checks: [] };
-          if (!ks0.checks.some((k) => k.final)) throw new CrdError('הרפלקציה נפתחת בסיום התרגיל: אחרי שבדיקה של מקור אחד לפחות מגיעה להערכה החוזרת', 409);
-        }
+        // הרפלקציה בשיעור הבא (17/11/2026: "בשעור הבא הן יכתבו רפלקציה"): נפתחת כשהמרצה פותחת אותה
+        if ((d.reflect || d.post !== undefined) && !a.reflectOpen) throw new CrdError('הרפלקציה נפתחת בשיעור הבא, כשהמרצה פותחת אותה', 409);
         await mutate(store, RR, (rr) => {
           const cur = rr.members[m.id] || {};
           for (const w of ['pre', 'post']) {

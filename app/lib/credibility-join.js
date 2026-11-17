@@ -151,78 +151,74 @@
     const ks = S.data.checks;
     return '<div class="dlm-card"><h2>המקורות שאנחנו בודקים</h2>'
       + (ks.length ? '<div class="crd-list">' + ks.map((k) => '<button type="button" class="crd-item" data-open="' + esc(k.id) + '"><b>' + esc(k.title || 'מקור') + '</b>' + U.scoresRow(k) + '<span class="dlm-hint">' + stageLabel(k) + '</span></button>').join('') + '</div>'
-        : '<p>עוד לא התחלנו. מעלים מקור (קובץ או קישור) ולוחצים על "בדיקת אמינות באמצעות AI".</p>')
-      + '<h3>➕ מקור חדש לבדיקה</h3><div class="dlm-grid2"><div><label for="nf">העלאת קובץ</label><input type="file" id="nf" accept="image/*,application/pdf,text/plain,audio/*,video/*">'
+        + '<p class="dlm-hint">אפשר לבדוק כמה מקורות. כל בדיקה נוספת היא הזדמנות לראות מה השתפר.</p>'
+        : '<p>עוד לא התחלנו. מעלים מקור (קובץ או קישור), ואז ממלאים את כל מה שידוע עליו ונותנים ציון.</p>')
+      + '<h3>מקור חדש לבדיקה</h3><div class="dlm-grid2"><div><label for="nf">העלאת קובץ</label><input type="file" id="nf" accept="image/*,application/pdf,text/plain,audio/*,video/*">'
       + '<p class="dlm-hint">תמונה, צילום מסך, PDF, טקסט, הקלטה או וידאו קצר.</p></div><div><label for="nu">או קישור</label><input type="url" id="nu" dir="ltr" placeholder="https://"></div></div>'
       + '<label for="nt">שם קצר למקור (רשות)</label><input type="text" id="nt" placeholder="למשל: הפוסט על הנתונים המזויפים">'
       + '<p><button class="dlm-btn main" id="addk">התחלת בדיקה</button></p><div id="km"></div></div>';
   }
   function stageLabel(k) {
     if (k.final) return 'הבדיקה הושלמה';
-    if (k.team) return 'מחכה להערכה החוזרת של ה־AI';
-    if (k.done) return 'מחכה לציון של הצוות';
-    if (k.first) return 'בחקירה';
-    return 'מתחילים: תיאור המקור';
+    if (k.done) return 'שלב 4: מחכה לבדיקת AI חוזרת';
+    if (k.first) return 'שלב 3: מוסיפים פריטי מידע';
+    if (k.team) return 'שלב 2: מחכה לבדיקת AI';
+    return 'שלב 1: פרטי המקור והציון שלנו';
   }
-  const STAGES = [['describe', '1. תיאור המקור'], ['first', '2. בדיקה עם AI'], ['inquiry', '3. ממשיכים לחקור'], ['team', '4. הציון שלנו'], ['final', '5. הערכה חוזרת']];
-  function stageOf(k) { return k.final ? 'final' : k.team ? 'final' : k.done ? 'team' : k.first ? 'inquiry' : (k.fields && k.fields.claim) ? 'first' : 'describe'; }
+  // ארבעה שלבים (17/11/2026): 1 פרטים וציון של הצוות · 2 בדיקת AI · 3 פריטי מידע נוספים · 4 בדיקת AI חוזרת ומשוב על התהליך
+  const STAGES = [['describe', '1. פרטי המקור והציון שלנו'], ['first', '2. בדיקת AI'], ['inquiry', '3. פריטי מידע נוספים'], ['final', '4. בדיקת AI חוזרת']];
+  function stageOf(k) { return k.done ? 'final' : k.first ? 'inquiry' : k.team ? 'first' : 'describe'; }
   function checkView(k) {
     if (!k) { S.open = null; return checksList(); }
     const st = S.stage && S.stageFor === k.id ? S.stage : stageOf(k);
-    const reach = { describe: true, first: !!(k.fields && k.fields.claim) || !!k.first, inquiry: !!k.first, team: !!k.done, final: !!k.team };
+    const reach = { describe: true, first: !!k.team, inquiry: !!k.first, final: !!k.done };
     const nav = '<div class="dlm-steps crd-steps">' + STAGES.map((s) => '<button type="button" data-stage="' + s[0] + '"' + (st === s[0] ? ' aria-current="step"' : '') + (reach[s[0]] ? '' : ' disabled') + '>' + s[1] + '</button>').join('') + '</div>';
     const src = '<div class="crd-src"><b>' + esc(k.title) + '</b>' + (k.url ? ' · <a href="' + esc(k.url) + '" target="_blank" rel="noopener noreferrer" dir="ltr">' + esc(k.url.slice(0, 60)) + '</a>' : '')
       + (k.fileId ? ' · <button type="button" class="crd-link" data-file="' + esc(k.fileId) + '">פתיחת הקובץ</button>' : '')
       + (k.verify ? ' <span class="dlm-tag">' + esc({ exists: 'הקישור נפתח', not_found: 'הקישור לא נמצא', unreachable: 'הקישור לא נפתח' }[k.verify.status] || '') + '</span>' : '') + U.scoresRow(k) + '</div>';
     let inner = '';
     if (st === 'describe') inner = describeHTML(k);
-    else if (st === 'first') inner = '<h3>בדיקת אמינות באמצעות AI</h3>' + (k.first ? U.assessHTML(k.first, 'ההערכה הראשונה של ה־AI') + '<p><button class="dlm-btn" data-ai="first">בדיקה מחדש</button> <button class="dlm-btn main" data-stage="inquiry">ממשיכים לחקור ←</button></p>'
-      : '<p>ה־AI יקרא את המקור ואת התיאור שלכם, ויחזיר ציון 1–5, הסבר, ומה כדאי לבדוק.</p><p><button class="dlm-btn main" data-ai="first">בדיקת אמינות באמצעות AI</button></p>');
+    else if (st === 'first') inner = '<h3>בדיקת AI</h3>' + (k.first ? U.assessHTML(k.first, 'ההערכה של ה־AI') + '<p><button class="dlm-btn main" data-stage="inquiry">ממשיכים לחקור</button></p>'
+      : '<p>ה־AI יקרא את המקור, את הפרטים שמילאתם ואת הציון שנתתם, ויחזיר ציון 1–5, הסבר, ומה חסר כדי לדעת יותר.</p><p><button class="dlm-btn main" data-ai="first">בדיקת AI</button></p>');
     else if (st === 'inquiry') inner = inquiryHTML(k);
-    else if (st === 'team') inner = teamScoreHTML(k);
     else inner = finalHTML(k);
     return '<div class="dlm-card"><p><button class="crd-link" id="backList">לכל המקורות</button></p>' + src + nav + '<div id="stage">' + inner + '</div><div id="sm"></div></div>';
   }
   function describeHTML(k) {
-    const f = k.fields || {};
-    return '<h3>מה ידוע לנו על המקור?</h3><p class="dlm-hint">ה־AI יכול למלא את מה שרואים במקור, ואתם משלימים ומתקנים. מה שלא ידוע: כותבים "לא ידוע".</p>'
-      + '<p><button class="dlm-btn" data-ai="fields">✨ הכנת הסעיפים עם AI</button></p>' + (k.seen ? '<p class="crd-seen"><b>מה ה־AI ראה במקור:</b> ' + esc(k.seen) + '</p>' : '')
+    const f = k.fields || {}, lock = !!k.first, sc = k.team ? k.team.score : null;
+    if (lock) return '<h3>פרטי המקור והציון שלנו</h3><table class="dlm-table crd-ftable">' + M.FIELDS.filter((x) => f[x.k]).map((x) => '<tr><th>' + esc(x.t) + '</th><td>' + esc(f[x.k]) + '</td></tr>').join('') + '</table>'
+      + '<h4>הציון שלנו: ' + M.dotHTML(sc) + '</h4><p>' + esc(k.team ? k.team.why : '') + '</p><p class="dlm-hint">הפרטים והציון נשמרו לפני בדיקת ה־AI. מה שמוצאים מעכשיו מוסיפים בשלב 3.</p>';
+    return '<h3>מה ידוע לנו על המקור?</h3><p class="dlm-hint">ממלאים כל מה שאפשר. מה שלא ידוע: כותבים "לא ידוע". אחר כך נותנים ציון, ורק אז מבקשים בדיקת AI.</p>'
       + '<label for="ft">שם המקור</label><input type="text" id="ft" value="' + esc(k.title) + '">'
-      + M.FIELDS.map((x) => '<label for="f-' + x.k + '">' + esc(x.t) + (x.k === 'claim' ? ' (שדה עיקרי)' : '') + '</label><textarea id="f-' + x.k + '" rows="2" placeholder="' + esc(x.ph) + '">' + esc(f[x.k] || '') + '</textarea>').join('')
-      + (k.extra || []).map((x, i) => '<label for="fx-' + i + '">' + esc(x.t) + '</label><textarea id="fx-' + i + '" rows="2" data-t="' + esc(x.t) + '" data-ph="' + esc(x.ph || '') + '" placeholder="' + esc(x.ph || '') + '">' + esc(x.v || '') + '</textarea>').join('')
-      + '<p><button class="dlm-btn main" id="saveFields">שמירה וממשיכים ←</button></p>';
+      + M.FIELDS.map((x) => '<label for="f-' + x.k + '">' + esc(x.t) + (x.k === 'claim' ? ' <span class="crd-req">(שדה עיקרי)</span>' : '') + '</label><textarea id="f-' + x.k + '" rows="2" placeholder="' + esc(x.ph) + '">' + esc(f[x.k] || '') + '</textarea>').join('')
+      + '<h3>הציון שלנו</h3><p class="dlm-hint">הציון ניתן למקור בהקשר של הטענה. אפשר להיעזר בעשר השאלות במחוון.</p>'
+      + '<div class="crd-pick" role="radiogroup" aria-label="הציון של הצוות">' + M.SCALE.map((l) => '<label class="crd-opt"><input type="radio" name="ts" value="' + l.score + '"' + (sc === l.score ? ' checked' : '') + '>' + M.dotHTML(l.score) + '<span><b>' + esc(l.name) + '</b><br>' + esc(l.d) + '</span></label>').join('') + '</div>'
+      + '<label for="tw">הנימוק שלנו <span class="crd-req">(שדה עיקרי)</span></label><textarea id="tw" rows="3" placeholder="על מה הציון נשען, ומה עדיין לא ידוע">' + esc(k.team ? k.team.why : '') + '</textarea>'
+      + '<p><button class="dlm-btn main" id="saveFields">שמירה וממשיכים לבדיקת AI</button></p>';
   }
   function inquiryHTML(k) {
-    const chat = (k.chat || []).map((m) => '<div class="crd-msg ' + (m.role === 'ai' ? 'ai' : 'me') + '"><b>' + (m.role === 'ai' ? 'AI' : esc(nameOf(m.by) || 'הצוות')) + '</b><div>' + esc(m.text).replace(/\n/g, '<br>') + '</div></div>').join('');
-    const ext = (k.external || []).map((e) => '<li><b>' + esc(e.title || e.url) + '</b>' + (e.url ? ' · <a href="' + esc(e.url) + '" target="_blank" rel="noopener noreferrer" dir="ltr">קישור</a>' : '') + ' · ' + esc((M.EXT_KINDS.find((x) => x.k === e.kind) || {}).t || '')
-      + (e.verify ? ' <span class="dlm-tag">' + esc({ exists: 'נפתח', not_found: 'לא נמצא', unreachable: 'לא נפתח' }[e.verify.status] || '') + '</span>' : '') + '<br>' + esc(e.found)
-      + (k.done ? '' : ' <button type="button" class="crd-link" data-extdel="' + esc(e.id) + '" aria-label="הסרה">✕</button>') + '</li>').join('');
-    return '<h3>ממשיכים לחקור</h3><p class="dlm-hint">ה־AI ישלח אתכם לבדוק במקורות חיצוניים. כל מה שמצאתם, כותבים כאן. הבדיקה נמשכת עד שאתם קובעים: אין לנו יותר מידע.</p>'
-      + '<details><summary>ההערכה הראשונה של ה־AI</summary>' + U.assessHTML(k.first, 'ההערכה הראשונה') + '</details>'
-      + '<div class="crd-chat" id="chat">' + (chat || '<p class="dlm-hint">אפשר להתחיל: "מאיפה כדאי להתחיל?", או לכתוב מה כבר מצאתם.</p>') + '</div>'
-      + (k.done ? '' : '<div class="crd-say"><textarea id="say" rows="2" placeholder="מה מצאתם, או מה תרצו לשאול?"></textarea><button class="dlm-btn main" id="send">שליחה</button></div>')
-      + '<h3>מקורות חיצוניים שמצאנו (' + (k.external || []).length + ')</h3>' + (ext ? '<ol class="crd-ext">' + ext + '</ol>' : '<p class="dlm-hint">עוד לא נוספו. הצלבה עם מקורות עצמאיים היא הלב של הבדיקה.</p>')
-      + (k.done ? '' : '<details class="crd-addext"' + ((k.external || []).length ? '' : ' open') + '><summary><b>➕ הוספת מקור שמצאנו</b></summary><div class="dlm-grid2"><div><label for="eu">קישור</label><input type="url" id="eu" dir="ltr" placeholder="https://"></div><div><label for="et">שם המקור</label><input type="text" id="et" placeholder="למשל: אתר הכנסת, פסק הדין"></div></div>'
+    const items = (k.external || []).map((e) => '<li>' + esc(e.found)
+      + ((e.title || e.url) ? '<br><span class="dlm-hint">מאיפה: ' + esc(e.title || '') + (e.url ? ' <a href="' + esc(e.url) + '" target="_blank" rel="noopener noreferrer" dir="ltr">קישור</a>' : '') + ' · ' + esc(((M.EXT_KINDS.find((x) => x.k === e.kind) || {}).t || '').replace(/ \(.*/, '')) + '</span>' : '')
+      + (e.verify ? ' <span class="dlm-tag">' + esc({ exists: 'הקישור נפתח', not_found: 'הקישור לא נמצא', unreachable: 'הקישור לא נפתח' }[e.verify.status] || '') + '</span>' : '')
+      + (k.done ? '' : ' <button type="button" class="crd-link" data-extdel="' + esc(e.id) + '">הסרה</button>') + '</li>').join('');
+    return '<h3>פריטי מידע נוספים שמצאנו</h3><p class="dlm-hint">יוצאים לחקור לפי מה שה־AI כתב שחסר. כל פריט שמוצאים מוסיפים כאן, ועוד ועוד, כמה שאפשר. בכל שלב אפשר לקבוע: אין לנו עוד מידע.</p>'
+      + '<details><summary>מה ה־AI כתב שחסר</summary>' + U.assessHTML(k.first, 'ההערכה של ה־AI') + '</details>'
+      + (items ? '<ol class="crd-ext">' + items + '</ol>' : '<p class="dlm-hint">עוד לא נוספו פריטים.</p>')
+      + (k.done ? '' : '<div class="crd-additem"><h4>פריט מידע נוסף</h4><label for="ef">מה מצאנו, ומה זה אומר על הטענה? <span class="crd-req">(שדה עיקרי)</span></label><textarea id="ef" rows="3"></textarea>'
+        + '<div class="dlm-grid2"><div><label for="et">מאיפה (רשות)</label><input type="text" id="et" placeholder="למשל: אתר הכנסת, פסק הדין, אתר בדיקת עובדות"></div><div><label for="eu">קישור (רשות)</label><input type="url" id="eu" dir="ltr" placeholder="https://"></div></div>'
         + '<label for="ek">סוג המקור</label><select id="ek" data-closed>' + M.EXT_KINDS.map((x) => '<option value="' + x.k + '">' + esc(x.t) + '</option>').join('') + '</select>'
-        + '<label for="ef">מה מצאנו, ומה זה אומר על הטענה?</label><textarea id="ef" rows="2"></textarea><p><button class="dlm-btn" id="addext">הוספה</button></p></details>')
-      + (k.done ? '<p>' + msg('קבעתם: אין לנו יותר מידע.') + ' <button class="crd-link" id="reopen">ממשיכים לחקור</button> <button class="dlm-btn main" data-stage="team">לציון שלנו ←</button></p>'
-        : '<p class="crd-donebar"><button class="dlm-btn main" id="done">✋ אין לנו יותר מידע</button></p>');
-  }
-  function teamScoreHTML(k) {
-    const sc = k.team ? k.team.score : null;
-    return '<h3>הציון שלנו</h3><p class="dlm-hint">הציון ניתן למקור בהקשר של הטענה. כדאי לעבור על עשר השאלות במחוון לפני שמחליטים.</p>'
-      + '<div class="crd-pick" role="radiogroup" aria-label="הציון של הצוות">' + M.SCALE.map((l) => '<label class="crd-opt"><input type="radio" name="ts" value="' + l.score + '"' + (sc === l.score ? ' checked' : '') + (k.final ? ' disabled' : '') + '>' + M.dotHTML(l.score) + '<span><b>' + esc(l.name) + '</b><br>' + esc(l.d) + '</span></label>').join('') + '</div>'
-      + '<label for="tw">הנימוק שלנו (שדה עיקרי)</label><textarea id="tw" rows="3" placeholder="על אילו ראיות הציון נשען, ומה עדיין לא ידוע"' + (k.final ? ' disabled' : '') + '>' + esc(k.team ? k.team.why : '') + '</textarea>'
-      + '<label for="tb">במה אנחנו מסכימים או חולקים על ה־AI?</label><textarea id="tb" rows="2"' + (k.final ? ' disabled' : '') + '>' + esc(k.team ? k.team.basis : '') + '</textarea>'
-      + (k.final ? '' : '<p><button class="dlm-btn main" id="saveTeam">שמירת הציון שלנו ←</button></p>');
+        + '<p><button class="dlm-btn" id="addext">הוספת הפריט</button></p></div>')
+      + (k.done ? '<p>' + msg('קבעתם: אין לנו עוד מידע.') + (k.final ? '' : ' <button class="crd-link" id="reopen">ממשיכים לחקור</button>') + ' <button class="dlm-btn main" data-stage="final">לבדיקת AI חוזרת</button></p>'
+        : '<p class="crd-donebar"><button class="dlm-btn main" id="done">אין לנו עוד מידע</button></p>');
   }
   function finalHTML(k) {
-    return '<h3>הערכה חוזרת של ה־AI</h3>' + (k.final ? U.assessHTML(k.final, 'ההערכה החוזרת של ה־AI') + '<h4>שלושת הציונים</h4>' + U.scoresRow(k) + '<p class="dlm-hint">אפשר לדבר בצוות: מה גרם להבדלים? מה הייתם עושים אחרת?</p>'
-      : '<p>ה־AI יקרא את כל מה שמצאתם ואת הציון והנימוק שלכם, וייתן הערכה חוזרת.</p><p><button class="dlm-btn main" data-ai="final">הערכה חוזרת של ה־AI</button></p>');
+    return '<h3>בדיקת AI חוזרת</h3>' + (k.final ? U.assessHTML(k.final, 'ההערכה החוזרת של ה־AI') + '<h4>שלושת הציונים</h4>' + U.scoresRow(k)
+        + '<p>הבדיקה הושלמה. <button class="dlm-btn main" id="nextCheck">בדיקה של מקור נוסף</button></p>'
+      : '<p>ה־AI יקרא את כל פריטי המידע שמצאתם, וייתן ציון, הסבר, מה עדיין חסר, ומשוב על תהליך הבדיקה שלכם.</p><p><button class="dlm-btn main" data-ai="final">בדיקת AI חוזרת</button></p>');
   }
   const nameOf = (id) => ((S.data.team.members.find((m) => m.id === id) || {}).name || '');
 
-  const reflectReady = () => !!(S.data.activity.reflectOpen || (S.data.checks || []).some((k) => k.final));
+  const reflectReady = () => !!S.data.activity.reflectOpen;
   function reflectView() {
     const t = S.data.team, sel = S.rm || me();
     const m = t.members.find((x) => x.id === sel);
@@ -233,7 +229,7 @@
     return '<div class="dlm-card"><h2>עמדה ורפלקציה</h2><p class="dlm-hint">כל אחד ואחת כותב/ת את הרפלקציה בעצמו/ה. הרפלקציה משותפת עם הצוות, וה־AI מנתח אותה לפי קריטריונים שנקבעו מראש.</p>'
       + (m ? '<input type="hidden" id="rm" value="' + esc(m.id) + '"><p class="crd-pre-who">' + esc(m.name) + ' · <button type="button" class="crd-link" data-rmx="1">לא ' + esc(m.name) + '? בחירת שם אחר</button></p>' : '<p class="crd-pre-who">מי כותב/ת עכשיו? ' + t.members.map((x) => '<button type="button" class="crd-link" data-rmp="' + esc(x.id) + '">' + esc(x.name) + ((S.data.reflections[x.id] || {}).reflect ? ' ✓' : '') + '</button>').join(' · ') + '</p>')
       + (!m ? '' : (st.initial && st.initial.text ? '<h3>' + esc(M.INITIAL.h) + '</h3><p class="crd-quote">' + esc(st.initial.text) + '</p>' : '')
-        + (!reflectReady() ? '<div class="dlm-msg">הרפלקציה ושאלון העמדות המסכם נפתחים בסיום התרגיל: אחרי שבדיקה של מקור אחד לפחות מגיעה להערכה החוזרת (שלב 5).</div>' : '<h3>' + esc(M.ATT.post) + ' <span class="crd-req">(שדה עיקרי)</span>' + (st.post ? ' ✓ נשלח' : '') + '</h3><p class="dlm-hint">אותם היגדים כמו בהתחלה, כדי לראות אם משהו השתנה. התשובות האישיות לא מוצגות לצוות.</p>'
+        + (!reflectReady() ? '<div class="dlm-msg">הרפלקציה ושאלון העמדות המסכם נכתבים בשיעור הבא, כשהמרצה פותחת אותם.</div>' : '<h3>' + esc(M.ATT.post) + ' <span class="crd-req">(שדה עיקרי)</span>' + (st.post ? ' ✓ נשלח' : '') + '</h3><p class="dlm-hint">אותם היגדים כמו בהתחלה, כדי לראות אם משהו השתנה. התשובות האישיות לא מוצגות לצוות.</p>'
         + attForm('post-')
         + '<h3>רפלקציה' + (st.reflect ? ' ✓ נשלחה' : '') + '</h3><p class="dlm-hint">' + esc(M.REFLECT_NOTE) + '</p>'
         + M.REFLECT.map((q) => q.opts ? '<fieldset class="crd-fs"><legend>' + esc(q.t) + '</legend>' + q.opts.map((o) => '<label><input type="radio" name="rf-' + q.k + '" value="' + o[0] + '"' + (r[q.k] === o[0] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>').join(' ') + '</fieldset>'
@@ -308,10 +304,10 @@
     return '';
   }
   const ctxOf = async (k) => ({ dilemma: S.data.activity.dilemma, source: k, fields: k.fields, extra: k.extra, seen: k.seen, text: await fileText(k), first: k.first, chat: k.chat, external: k.external, doneNote: k.done && k.done.note, team: k.team });
-  function waiting(text) { const n = $('#stage') || $('#rmm'); if (n) n.insertAdjacentHTML('beforeend', '<div class="dlm-msg crd-wait" role="status">' + esc(text) + ' <span class="crd-sec">0</span></div>'); const t0 = Date.now(); const iv = setInterval(() => { const s = document.querySelector('.crd-sec'); if (s) s.textContent = 'חלפו ' + Math.round((Date.now() - t0) / 1000) + ' שניות'; else clearInterval(iv); }, 1000); return () => clearInterval(iv); }
+  function waiting(text) { const n = $('#stage') || $('#rmm'); if (n) n.insertAdjacentHTML('beforeend', '<div class="dlm-msg crd-wait" role="status">' + esc(text) + ' <span class="crd-sec">חלפו 0 שניות</span></div>'); const t0 = Date.now(); const iv = setInterval(() => { const s = document.querySelector('.crd-sec'); if (s) s.textContent = 'חלפו ' + Math.round((Date.now() - t0) / 1000) + ' שניות'; else clearInterval(iv); }, 1000); return () => clearInterval(iv); }
   async function runAI(k, what) {
     const ctx = await ctxOf(k);
-    const stop = waiting(what === 'fields' ? 'ה־AI קורא את המקור. זה נמשך כ־20 שניות.' : what === 'chat' ? 'ה־AI עונה.' : 'ה־AI בודק את המקור. זה נמשך עד כדקה.');
+    const stop = waiting(what === 'fields' ? 'ה־AI קורא את המקור. זה נמשך כ־20 שניות.' : what === 'chat' ? 'ה־AI עונה.' : 'בדיקת ה־AI נמשכת עד כדקה.');
     try {
       if (what === 'fields') {
         const out = M.cleanFields(M.parseJSON(await U.model(M.fieldsSystem(), await userContent(k, M.sourceText(ctx)), auth(), 1500)));
@@ -357,38 +353,28 @@
     on('#saveFields', () => act(async () => {
       const fields = {}; for (const x of M.FIELDS) fields[x.k] = $('#f-' + x.k).value;
       if (!fields.claim.trim()) throw new Error('אפשר לנסח את הטענה במשפט אחד. זה השדה העיקרי.');
-      const extra = [...app.querySelectorAll('[id^=fx-]')].map((n) => ({ t: n.dataset.t, ph: n.dataset.ph, v: n.value }));
-      await saveCheck('fields', { id: k.id, fields, extra, title: $('#ft').value || k.title });
-      S.stage = 'first'; S.stageFor = k.id; render();
+      const s = (app.querySelector('input[name=ts]:checked') || {}).value;
+      if (!s) throw new Error('אפשר לבחור ציון מ־1 עד 5.');
+      if (!$('#tw').value.trim()) throw new Error('אפשר לכתוב נימוק: על מה הציון נשען.');
+      await saveCheck('fields', { id: k.id, fields, extra: [], title: $('#ft').value || k.title });
+      await saveCheck('team', { id: k.id, score: Number(s), why: $('#tw').value });
+      S.stage = 'first'; S.stageFor = k.id; render(); window.scrollTo(0, 0);
     }));
-    on('#send', () => act(async () => {
-      const v = $('#say').value.trim(); if (!v) return;
-      await saveCheck('msg', { id: k.id, role: 'team', text: v }); render();
-      await runAI(S.data.checks.find((x) => x.id === k.id), 'chat'); render(); scrollChat();
-    }));
-    const say = $('#say'); if (say) say.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#send').click(); } });
+    on('#nextCheck', () => { S.open = null; S.stage = null; render(); window.scrollTo(0, 0); });
     on('#addext', () => act(async () => {
       const url = $('#eu').value.trim(), title = $('#et').value.trim(), found = $('#ef').value.trim();
-      if (!found) throw new Error('אפשר לכתוב מה מצאתם במקור הזה.');
+      if (!found) throw new Error('אפשר לכתוב מה מצאתם.');
       await saveCheck('ext', { id: k.id, url, title, extKind: $('#ek').value, found });
-      // ה־AI מגיב למקור החדש ושולח לבדיקה הבאה
-      const kk = S.data.checks.find((x) => x.id === k.id);
-      await saveCheck('msg', { id: k.id, role: 'team', text: 'הוספנו מקור: ' + (title || url) + '. מה מצאנו: ' + found });
-      render(); await runAI(S.data.checks.find((x) => x.id === kk.id), 'chat'); render(); scrollChat();
+      render(); const f = $('#ef'); if (f) f.focus();
     }));
     on('#done', () => act(async () => {
       const n = (k.external || []).length;
-      const ok = await U.ask(n ? 'לקבוע שאין לכם יותר מידע? אחרי זה נותנים ציון.' : 'עוד לא הוספתם אף מקור חיצוני. הצלבה היא הלב של הבדיקה.\nלקבוע בכל זאת שאין לכם יותר מידע?', { ok: 'כן, אין לנו יותר מידע', no: 'ממשיכים לחקור' });
+      const ok = await U.ask(n ? 'לקבוע שאין לכם עוד מידע? אחרי זה עוברים לבדיקת AI חוזרת.' : 'עוד לא הוספתם אף פריט מידע. הצלבה עם מקורות אחרים היא הלב של הבדיקה.\nלקבוע בכל זאת שאין לכם עוד מידע?', { ok: 'כן, אין לנו עוד מידע', no: 'ממשיכים לחקור' });
       if (!ok) return;
-      await saveCheck('done', { id: k.id }); S.stage = 'team'; S.stageFor = k.id; render();
+      await saveCheck('done', { id: k.id }); S.stage = 'final'; S.stageFor = k.id; render();
     }));
     on('#reopen', () => act(async () => { await saveCheck('reopen', { id: k.id }); S.stage = 'inquiry'; S.stageFor = k.id; render(); }));
-    on('#saveTeam', () => act(async () => {
-      const s = (app.querySelector('input[name=ts]:checked') || {}).value;
-      if (!s) throw new Error('אפשר לבחור ציון מ־1 עד 5.');
-      if (!$('#tw').value.trim()) throw new Error('אפשר לכתוב נימוק: על אילו ראיות הציון נשען.');
-      await saveCheck('team', { id: k.id, score: Number(s), why: $('#tw').value, basis: $('#tb').value }); S.stage = 'final'; S.stageFor = k.id; render();
-    }));
+
     // רפלקציה
     app.querySelectorAll('[data-rmp]').forEach((x) => { x.onclick = () => { S.rm = x.dataset.rmp; setMe(x.dataset.rmp); render(); }; });
     app.querySelectorAll('[data-rmx]').forEach((x) => { x.onclick = () => { S.rm = '-'; render(); }; });

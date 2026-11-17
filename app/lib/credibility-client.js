@@ -94,13 +94,14 @@
       + (r.basis && r.basis.length ? '<h4>על מה זה נשען</h4>' + li(r.basis) : '')
       + (r.missing && r.missing.length ? '<h4>מה חסר כדי לדעת יותר</h4>' + li(r.missing) : '')
       + (r.warnings && r.warnings.length ? '<h4>סימנים שכדאי לבדוק</h4>' + li(r.warnings) : '')
-      + (r.checks && r.checks.length ? '<h4>בדיקות חיצוניות מוצעות</h4><ol>' + r.checks.map((c) => '<li><b>' + esc(c.what) + '</b>' + (c.where ? ': ' + esc(c.where) : '') + '</li>').join('') + '</ol>' : '')
+      + (r.checks && r.checks.length ? '<h4>מה כדאי לחקור, ואיפה</h4><ol>' + r.checks.map((c) => '<li><b>' + esc(c.what) + '</b>' + (c.where ? ': ' + esc(c.where) : '') + '</li>').join('') + '</ol>' : '')
       + (r.vsTeam ? '<h4>מול הציון שלכם</h4><p>' + esc(r.vsTeam) + '</p>' : '') + (r.changed ? '<h4>מה השתנה מההערכה הראשונה</h4><p>' + esc(r.changed) + '</p>' : '')
+      + (r.process && (r.process.strong.length || r.process.improve.length || r.process.tip) ? '<h4>משוב על תהליך הבדיקה שלכם</h4>' + (r.process.strong.length ? '<p><b>מה עשיתם טוב</b></p>' + li(r.process.strong) : '') + (r.process.improve.length ? '<p><b>מה אפשר לעשות אחרת בבדיקה הבאה</b></p>' + li(r.process.improve) : '') + (r.process.tip ? '<p><b>עצה לבדיקה הבאה:</b> ' + esc(r.process.tip) + '</p>' : '') : '')
       + '<p class="dlm-hint">זו הצעה של AI לבדיקה. ה־AI אינו מחובר לאינטרנט ויכול לטעות.</p></div>';
   }
   function scoresRow(k) {
     const cell = (t, v) => '<div class="crd-sc"><span>' + esc(t) + '</span>' + M.dotHTML(v === undefined ? null : v) + '</div>';
-    return '<div class="crd-scores">' + cell('AI, ראשונה', k.first ? k.first.score : undefined) + '<span class="crd-arr">←</span>' + cell('הצוות', k.team ? k.team.score : undefined) + '<span class="crd-arr">←</span>' + cell('AI, חוזרת', k.final ? k.final.score : undefined) + '</div>';
+    return '<div class="crd-scores">' + cell('הצוות', k.team ? k.team.score : undefined) + '<span class="crd-arr">←</span>' + cell('AI, ראשונה', k.first ? k.first.score : undefined) + '<span class="crd-arr">←</span>' + cell('AI, חוזרת', k.final ? k.final.score : undefined) + '</div>';
   }
   window.SBE_CRD_UI = { SERVER, api, model, showFile, blobOf, readFile, shrinkImage, ask, askText, say, qr, assessHTML, scoresRow };
 })();
