@@ -160,9 +160,14 @@
       if (oldBack && oldBack.href) { location.href = oldBack.href; return; }
       var prev = list.length > 1 ? list[list.length - 2] : (par || null);
       var sameSite = false; try { sameSite = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (e) {}
+      // 17/11/2026 ("אני עדיין נזרקת מהמערכת כשאני יוצאת ממסך כל הכלים"): מי שמחובר/ת לא חוזר/ת בכפתור הזה לדף הכניסה
+      // (שם "יציאה" או "החלפת תפקיד" מנתקים), אלא למרחב שלי.
+      if (sameSite && token && fromEntry) { location.href = HOME; return; }
       if (sameSite && history.length > 1) history.back(); else location.href = prev ? prev.p : (token ? HOME : 'entry.html');
     });
-    act.appendChild(back);
+    var fromEntry = false; try { fromEntry = /^\/?(entry|index)\.html$|^\/$/.test(new URL(document.referrer).pathname.replace(/^.*\//, '/')) ; } catch (e) {}
+    // במרחב שלי, כשהגיעו אליו מדף הכניסה, אין לאן לחזור: בלי כפתור חזרה (הניהול ב"⚙ ניהול").
+    if (!(token && fromEntry && file === 'home.html')) act.appendChild(back);
     if (file !== 'home.html') {
       var home = document.createElement('a'); home.className = 'sbe-no-theme';
       home.setAttribute('aria-label', token ? 'המרחב שלי' : 'דף הבית'); home.title = home.getAttribute('aria-label');

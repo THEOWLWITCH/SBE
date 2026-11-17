@@ -684,7 +684,11 @@ function buildAdminField(role){
   // כשהמכשיר זוכר את הכניסה, שואלים קודם; ברירת המחדל היא להישאר מחובר/ת ולחזור ל"המרחב שלי".
   var askLogout = false;
   if (new URLSearchParams(location.search).get("logout")) {
-    if (sysDevice() || rememberedCode()) askLogout = true;
+    // 17/11/2026 ("אני עדיין נזרקת מהמערכת כשאני יוצאת ממסך כל הכלים"): "יציאה" אף פעם לא מנתקת בלחיצה אחת.
+    // גם כשהמכשיר לא זוכר את הכניסה, שואלים קודם, וברירת המחדל היא לחזור למרחב שלי.
+    var hasSession = false; try { hasSession = !!sessionStorage.getItem("sbe.session.homeUrl");
+      if (!hasSession) { var mm = JSON.parse(localStorage.getItem("sbe.session.mirror") || "null"); hasSession = !!(mm && mm.exp > Date.now() && mm.data && mm.data["sbe.session.homeUrl"]); } } catch(e){}
+    if (sysDevice() || rememberedCode() || hasSession) askLogout = true;
     else clearSession();
   }
   // החלפת תפקיד: יוצאים מהכניסה בלשונית בלבד. המכשיר נשאר זכור, ולא נכנסים לבד הפעם.
@@ -699,13 +703,20 @@ function buildAdminField(role){
   if (askLogout) {
     var ask = el("div",{class:"logged sbe-no-theme", style:"flex-wrap:wrap;gap:10px"});
     var stayBtn = el("button",{class:"lg-home sbe-no-theme"},"⌂ להישאר מחובר/ת ולחזור למרחב שלי");
-    var cutBtn = el("button",{class:"lg-out sbe-no-theme"},"ניתוק המכשיר הזה");
+    var remembers = !!(sysDevice() || rememberedCode());
+    var isSysNow = false; try { var hu = sessionStorage.getItem("sbe.session.homeUrl"); if (!hu) { var m2 = JSON.parse(localStorage.getItem("sbe.session.mirror") || "null"); hu = m2 && m2.data ? m2.data["sbe.session.homeUrl"] : ""; } isSysNow = hu === "admin.html?role=sys" || (!hu && !!sysDevice()); } catch(e){}
+    var cutBtn = el("button",{class:"lg-out sbe-no-theme"}, remembers ? "ניתוק המכשיר הזה" : "יציאה מהמערכת");
     stayBtn.addEventListener("click", function(){ location.replace("home.html"); });
     cutBtn.addEventListener("click", function(){
       sysForget(); forgetCode(); clearSession();
-      ask.replaceChildren(el("span",{class:"lg-who"},"המכשיר נותק. בכניסה הבאה יתבקשו קוד או סיסמה."));
+      ask.replaceChildren(el("span",{class:"lg-who"}, remembers ? "המכשיר נותק. בכניסה הבאה יתבקשו קוד או סיסמה." : "יצאת מהמערכת. בכניסה הבאה יתבקשו קוד או סיסמה."));
     });
-    ask.append(el("span",{class:"lg-who"},"המכשיר הזה זוכר את הכניסה, ולכן אין צורך בקוד או בסיסמה בכל פעם. לנתק אותו?"), stayBtn, cutBtn);
+    var admBtn = isSysNow ? el("button",{class:"lg-home sbe-no-theme"},"⚙ לממשק הניהול") : null;
+    if (admBtn) admBtn.addEventListener("click", function(){ location.replace("admin.html?role=sys"); });
+    ask.append(el("span",{class:"lg-who"}, remembers ? "המכשיר הזה זוכר את הכניסה, ולכן אין צורך בקוד או בסיסמה בכל פעם. לנתק אותו?"
+      : "לצאת מהמערכת? בכניסה הבאה יתבקשו קוד או סיסמה."), stayBtn);
+    if (admBtn) ask.append(admBtn);
+    ask.append(cutBtn);
     view.prepend(ask);
     return;
   }
