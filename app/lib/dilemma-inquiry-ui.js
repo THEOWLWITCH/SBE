@@ -12,6 +12,11 @@
   const msg = (t, cls) => '<div class="dlm-msg' + (cls ? ' ' + cls : '') + '" role="' + (cls === 'err' ? 'alert' : 'status') + '">' + esc(t) + '</div>';
   const STATUS = { draft: 'טיוטה (סגורה למשתתפים)', open: 'פתוחה', closed: 'הסתיימה' };
   const S = { a: null, tab: 'dilemma', stats: null, board: null, g: null, timer: null };
+  // 17/11/2026 ("אם אני עוברת ממסך למסך - השאר את הלוח שפתחתי פתוח. אני אסגור אותו כשארצה"; "לא לזרוק אותי ממסכים
+  // ולא לסגור עבורי"): הפעילות, הלשונית והלוח שנפתחו נשמרים במכשיר, וכשחוזרים לכלי הם נפתחים שוב באותו מקום.
+  const PLACE = 'sbe.dlm.fac.place';
+  const place = (v) => { try { if (v === undefined) return JSON.parse(localStorage.getItem(PLACE) || 'null'); if (v === null) localStorage.removeItem(PLACE); else localStorage.setItem(PLACE, JSON.stringify(v)); } catch (e) { return null; } };
+  const remember = () => { if (S.a) place({ id: S.a.id, tab: S.tab, g: S.g }); };
   const joinUrl = (code) => location.href.replace(/[^/]*$/, '') + 'dilemma-join.html?c=' + code;
   function openDlg(html) { dlgBody.innerHTML = html; if (!dlg.open) dlg.showModal(); }
   dlg.addEventListener('click', (e) => { if (e.target.hasAttribute('data-close') || e.target === dlg) dlg.close(); });
@@ -47,7 +52,8 @@
   }
 
   async function open(id) {
-    try { const r = await call('f.get', { id }); S.a = r.activity; S.stats = r.stats; draw(); } catch (e) { fail(e); }
+    try { const r = await call('f.get', { id }); if (!S.a || S.a.id !== id) { const pl = place(); S.tab = pl && pl.id === id && pl.tab ? pl.tab : 'dilemma'; S.g = pl && pl.id === id ? pl.g || null : null; }
+      S.a = r.activity; S.stats = r.stats; draw(); } catch (e) { fail(e); }
   }
   async function save(input) { const r = await call('f.update', Object.assign({ id: S.a.id }, input)); S.a = r.activity; return r; }
 
@@ -60,10 +66,12 @@
       + '<div class="dlm-row"><button class="dlm-btn acc" id="projBtn"' + (a.classes.length ? '' : ' disabled title="אפשר להוסיף כיתה קודם"') + '>📽 מצב הקרנה</button><b>מצב: ' + esc(STATUS[a.status]) + '</b>' + (a.status !== 'open' ? '<button class="dlm-btn main" data-st="open">פתיחה למשתתפים</button>' : '<button class="dlm-btn" data-st="closed">סיום הפעילות</button>')
       + (a.status === 'closed' ? '' : a.status === 'open' ? '<button class="dlm-btn small" data-st="draft">השהיה</button>' : '') + '</div></div><div id="topmsg"></div></div>'
       + '<nav class="dlm-steps">' + TABS.map(([k, t]) => '<button type="button" data-tab="' + k + '"' + (S.tab === k ? ' aria-current="step"' : '') + '>' + t + '</button>').join('') + '</nav><div id="tab"></div>';
-    $('#back').onclick = (e) => { e.preventDefault(); list(); };
+    remember();
+    $('#back').onclick = (e) => { e.preventDefault(); place(null); list(); };
     $('#projBtn').onclick = () => projector();
     app.querySelectorAll('[data-st]').forEach((b) => b.onclick = async () => {
       if (b.dataset.st === 'closed' && !confirm('לסיים את הפעילות? המשתתפים יוכלו לקרוא, אבל לא לכתוב.')) return;
+      if (b.dataset.st === 'draft' && !confirm('להשהות את הפעילות? עד שתפתחו אותה שוב, המשתתפים לא יוכלו להיכנס ולכתוב.')) return;
       try { const r = await call('f.status', { id: a.id, status: b.dataset.st }); S.a = r.activity; draw(); } catch (e) { $('#topmsg').innerHTML = msg(e.message, 'err'); }
     });
     app.querySelectorAll('[data-tab]').forEach((b) => b.onclick = async () => {
@@ -224,7 +232,7 @@
   // ── הלוחות בזמן אמת ──
   async function tabBoards() {
     tab().innerHTML = '<div class="dlm-card"><div class="dlm-row" style="justify-content:space-between"><h2 style="margin:0">הלוחות</h2><button class="dlm-btn small" id="bref">רענון</button></div><div id="blist"><p>טוען…</p></div></div><div id="bview"></div>';
-    $('#bref').onclick = loadBoards; await loadBoards();
+    $('#bref').onclick = loadBoards; await loadBoards(); if (S.g) viewBoard(S.g, true);
     S.timer = setInterval(() => { if (!document.hidden && S.tab === 'boards' && !dlg.open) { loadBoards(); if (S.g) viewBoard(S.g, true); } }, 8000);
   }
   async function loadBoards() {
@@ -236,7 +244,7 @@
     } catch (e) { const el = $('#blist'); if (el) el.innerHTML = msg(e.message, 'err'); }
   }
   async function viewBoard(g, quiet) {
-    S.g = g;
+    S.g = g; remember();
     try {
       const r = await call('f.board', { id: S.a.id, g }); const b = S.board = r.board; const v = $('#bview'); if (!v) return;
       const keepScroll = quiet ? window.scrollY : null;
@@ -363,5 +371,5 @@
     $('#pjExit').onclick = projClose;
   }
 
-  list();
+  { const pl = place(); if (pl && pl.id) open(pl.id).then(() => { if (!S.a) { place(null); list(); } }); else list(); }
 })();
